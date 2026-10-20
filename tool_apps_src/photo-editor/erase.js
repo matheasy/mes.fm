@@ -33,7 +33,7 @@
 			var rc = mk(512, 512), rid = rc.getContext("2d").createImageData(512, 512); for (var k = 0; k < n; k++) { rid.data[k * 4] = out[k]; rid.data[k * 4 + 1] = out[n + k]; rid.data[k * 4 + 2] = out[2 * n + k]; rid.data[k * 4 + 3] = 255; } rc.getContext("2d").putImageData(rid, 0, 0);
 			var res = mk(ww, wh), rx = res.getContext("2d"); rx.imageSmoothingQuality = "high"; rx.drawImage(rc, 0, 0, ww, wh);
 			var soft = P.featherMask(P.growShrinkMask(wm, ww, wh, 2, true), ww, wh, 3), sc = mk(ww, wh), sid = sc.getContext("2d").createImageData(ww, wh); for (var j = 0; j < soft.length; j++) sid.data[j * 4 + 3] = soft[j]; sc.getContext("2d").putImageData(sid, 0, 0);
-			rx.globalCompositeOperation = "destination-in"; rx.drawImage(sc, 0, 0); var lx2 = L.canvas.getContext("2d"); lx2.drawImage(res, wx, wy); L.rev++; PE.commit("Erase object (AI)"); return true;
+			rx.globalCompositeOperation = "destination-in"; rx.drawImage(sc, 0, 0); var lx2 = L.canvas.getContext("2d"); lx2.drawImage(res, wx, wy); L.rev++; PE.markAi(L, "object erased"); PE.commit("Erase object (AI)"); return true;
 		});
 	}
 

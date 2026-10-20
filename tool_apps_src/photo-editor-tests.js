@@ -37,6 +37,33 @@ t("autoLevels", () => { const h = new Uint32Array(256); for (let i = 40; i <= 20
 t("convolve identity", () => { const w = 3, h = 3, d = new Uint8ClampedArray(w * h * 4); for (let i = 0; i < d.length; i++) d[i] = (i * 7) % 256; const c = new Uint8ClampedArray(d); P.convolve(d, w, h, [0, 0, 0, 0, 1, 0, 0, 0, 0], 1, 0); for (let i = 0; i < d.length; i++) if (i % 4 !== 3) assert.strictEqual(d[i], c[i]); });
 console.log(n + " photo-editor pixel checks passed");
 
+// where a layer came from (Files and folders dialog), side-panel width
+t("describeSource: every kind", () => {
+	const d = P.describeSource;
+	assert.strictEqual(d(null).how, "made"); assert.strictEqual(d(undefined).text, "Made in the editor"); assert.strictEqual(d({ how: "nonsense" }).how, "made");
+	assert.strictEqual(d({ how: "open", file: "photo.jpg", bytes: 2516582 }).text, "Opened from a file: photo.jpg (2.4 MB)");
+	assert.strictEqual(d({ how: "drop", file: "a.png", bytes: 900 }).text, "Dropped onto the editor: a.png (900 B)");
+	assert.strictEqual(d({ how: "folder", dir: "Pics", file: "cat.webp", bytes: 20480 }).text, "From a folder on this computer: Pics/cat.webp (20 KB)");
+	assert.strictEqual(d({ how: "folder-ro", path: "Pics/2024/cat.png" }).where, "Pics/2024/cat.png"); assert.strictEqual(d({ how: "folder-ro", dir: "Pics", file: "x.png" }).where, "Pics/x.png");
+	assert.strictEqual(d({ how: "paste" }).text, "Pasted from the clipboard"); assert.strictEqual(d({ how: "paste", clip: "editor" }).label, "Pasted (copied inside the editor)");
+	assert.strictEqual(d({ how: "psd", file: "design.psd" }).text, "From a Photoshop file: design.psd"); assert.strictEqual(d({ how: "project", file: "thumb.mesproj" }).where, "thumb.mesproj");
+	assert.strictEqual(d({ how: "merge", from: ["A", "B", "C", "D", "E"] }).where, "A, B, C and 2 more"); assert.strictEqual(d({ how: "merge", from: ["A", "B"] }).text, "Merged from layers: A, B");
+	assert.strictEqual(d({ how: "open", file: "p.jpg", copy: true, ai: ["background removed", "upscaled 2×"] }).text, "Opened from a file: p.jpg, duplicated · then AI: background removed, upscaled 2×");
+	assert.strictEqual(d({ how: "made", ai: ["object erased"] }).text, "Made in the editor · then AI: object erased");
+	assert.strictEqual(P.bytesText(0), "0 B"); assert.strictEqual(P.bytesText(1536), "1.5 KB"); assert.strictEqual(P.bytesText(52428800), "50 MB");
+});
+t("panelClamp: 12-48 em, leaves the picture 240 px", () => {
+	assert.strictEqual(P.panelClamp(17.5, 1400, 60, 13), 17.5); assert.strictEqual(P.panelClamp(5, 1400, 60, 13), 12); assert.strictEqual(P.panelClamp(99, 4000, 60, 13), 48);
+	assert.strictEqual(P.panelClamp(40, 800, 60, 13), Math.round((800 - 60 - 240) / 13 * 100) / 100);   // 38.46 em: the picture keeps 240 px
+	assert.strictEqual(P.panelClamp(30, 300, 60, 13), 12);   // tiny editor: never below the minimum
+	assert.strictEqual(P.panelClamp(NaN, 1400, 60, 13), 17.5); assert.strictEqual(P.panelClamp(20, 1400, 60, 0), 20);
+});
+t("panelKey: arrows follow the grip, Shift = 4 em", () => {
+	assert.deepStrictEqual(P.panelKey("ArrowLeft", false, false), { d: 1 }); assert.deepStrictEqual(P.panelKey("ArrowRight", false, false), { d: -1 });   // panels on the right: grip to the left = wider
+	assert.deepStrictEqual(P.panelKey("ArrowRight", true, true), { d: 4 }); assert.deepStrictEqual(P.panelKey("ArrowLeft", false, true), { d: -1 });       // panels on the left
+	assert.deepStrictEqual(P.panelKey("Home"), { to: "min" }); assert.deepStrictEqual(P.panelKey("End"), { to: "max" }); assert.deepStrictEqual(P.panelKey("Enter"), { to: "reset" }); assert.strictEqual(P.panelKey("a"), null);
+});
+
 // GIMP (.xcf) writer: structure checked with a tiny reader (and, once, against the independent Python `gimpformats` reader)
 t("xcf: header, layer list, tiles", () => {
 	const X = require("./photo-editor/xcf.js"), mk = (w, h, c) => { const d = new Uint8Array(w * h * 4); for (let i = 0; i < w * h; i++) d.set(c, i * 4); return d; };

@@ -1,7 +1,8 @@
-/* MES Photo Editor: GIMP (.xcf) export and a connected folder on this computer (File System Access API, Chrome / Edge / Brave): browse its pictures, add them as layers, save into it. */
+/* MES Photo Editor: GIMP (.xcf) export, and File -> "Files and folders": where each layer came from, the autosave in this browser, and a folder on this computer
+ * (File System Access API: Chrome and Edge on a computer, Brave only after brave://flags/#file-system-access-api; elsewhere a read-only folder through <input webkitdirectory>). */
 (function () {
 	"use strict";
-	var PE = window.PE, X = window.MESXcf, el = PE.el, esc = PE.esc;
+	var PE = window.PE, X = window.MESXcf, P = window.MESPixel, I = window.MESImg, el = PE.el, esc = PE.esc;
 
 	/* ---------- save as GIMP ---------- */
 	PE.saveXcf = function () {
@@ -19,45 +20,168 @@
 		PE.download(new Blob([bytes], { type: "image/x-xcf" }), window.MESImg.cleanFileName(d.name) + ".xcf"); PE.toast("Saved a GIMP file with " + out.length + " layer" + (out.length === 1 ? "" : "s") + (skipped ? " (" + skipped + " outside the canvas skipped)" : "") + ". Text became pixels; groups and masks are flattened.");
 	};
 
-	/* ---------- connected folder ---------- */
-	var IMG = /\.(png|jpe?g|webp|gif|bmp|avif|psd|mesproj)$/i, dirHandle = null;
+	/* ---------- files and folders ---------- */
+	var IMG = /\.(png|jpe?g|webp|gif|bmp|avif|psd|mesproj)$/i, BRAVE_FLAG = "brave://flags/#file-system-access-api", dirHandle = null, roFiles = null, roName = "";
+	var handles = PE.srcHandles = {}, hseq = 0;   // memory only: file handles of pictures added from the connected folder (a handle cannot go into a project file)
+	function canFS() { return typeof window.showDirectoryPicker === "function"; }
+	function isBrave() { return !!(navigator.brave && typeof navigator.brave.isBrave === "function"); }
+	function isMobile() { return /Android|iPhone|iPad|iPod|Mobile/i.test(navigator.userAgent || "") || (navigator.maxTouchPoints > 1 && /Mac/.test(navigator.platform || "")); }
 	function idb(fn) { return new Promise(function (res, rej) { var r = indexedDB.open("mes-photo-editor", 1); r.onupgradeneeded = function () { r.result.createObjectStore("kv"); }; r.onsuccess = function () { var db = r.result; Promise.resolve(fn(db.transaction("kv", "readwrite").objectStore("kv"))).then(res, rej); }; r.onerror = function () { rej(r.error); }; }); }
 	function rq(r) { return new Promise(function (res, rej) { r.onsuccess = function () { res(r.result); }; r.onerror = function () { rej(r.error); }; }); }
-	function perm(h, write) { var o = { mode: write ? "readwrite" : "read" }; return (h.queryPermission ? h.queryPermission(o) : Promise.resolve("granted")).then(function (p) { return p === "granted" ? p : h.requestPermission(o); }); }
-	PE.dlgFolder = function () {
-		if (!window.showDirectoryPicker) { PE.toast("This browser cannot connect to a folder. Use Chrome, Edge or Brave on a computer."); return; }
-		var wrap = el("div", "pe-fold"), head = el("div", "pe-fold-h"), grid = el("div", "pe-fold-g"), msg = el("p", "pe-hint2"), search = el("input", "pe-fold-s");
+	function perm(h, write, ask) { var o = { mode: write ? "readwrite" : "read" }; if (!h || !h.queryPermission) return Promise.resolve("granted"); return h.queryPermission(o).then(function (p) { return p === "granted" || !ask ? p : h.requestPermission(o); }); }
+	function permText(p) { return p === "granted" ? "the editor can open and save files there" : p === "prompt" ? "the browser will ask again before the editor saves there" : "the browser blocks saving there"; }
+	function errText(x) { return x && x.message ? x.message : String(x); }
+	function namesIn(dir) { return (async function () { var used = {}; for await (var k of dir.keys()) used[String(k).toLowerCase()] = 1; return used; })(); }
+	function writeFile(dir, name, blob) { return dir.getFileHandle(name, { create: true }).then(function (fh) { return fh.createWritable().then(function (w) { return w.write(blob).then(function () { return w.close(); }, function (e) { try { w.abort(); } catch (x) {} throw e; }); }).then(function () { return fh; }); }); }
+	function regHandle(fh, dir) { var k = "h" + (++hseq); handles[k] = { fh: fh, dir: dir, name: fh.name, dirName: dir ? dir.name : "" }; return k; }
+	/* a layer's provenance, with the live location of a picture that was moved since it was added */
+	function srcOf(s) { var h = s && s.hk && handles[s.hk]; return h ? Object.assign({}, s, { dir: h.dirName, file: h.name }) : s; }
+	function retarget(hk, dirName, fileName) { var d = PE.doc; if (!d) return; var fix = function (s) { return s && s.hk === hk ? Object.assign({}, s, { dir: dirName, file: fileName }) : s; }; d.layers.forEach(function (L) { L.src = fix(L.src); }); d.file = fix(d.file); }
+	/* move = FileSystemHandle.move() when the browser has it for files on disk, else copy, check the size, then remove the original */
+	function moveOne(fh, src, target, name, newName) {
+		var copy = function () { return fh.getFile().then(function (f) { return writeFile(target, newName, f).then(function (nfh) { return nfh.getFile().then(function (c) { if (c.size !== f.size) throw new Error("the copy in “" + target.name + "” is incomplete, so the original was kept"); return src.removeEntry(name); }).then(function () { return nfh; }); }); }); };
+		if (typeof fh.move !== "function") return copy();
+		return fh.move(target, newName).then(function () { return fh; }, function () { return src.getFileHandle(name).then(copy, function () { return target.getFileHandle(newName); }); });
+	}
+	function thumbOf(L, n) { var c = PE.mk(n, n), x = c.getContext("2d"), w = L.canvas.width, h = L.canvas.height, s = Math.min(n / w, n / h); x.fillStyle = "#4a4a55"; x.fillRect(0, 0, n, n); x.fillStyle = "#6a6a76"; for (var i = 0; i < n; i += 6) for (var j = 0; j < n; j += 6) if (((i + j) / 6) % 2 === 0) x.fillRect(i, j, 6, 6); x.drawImage(L.canvas, (n - w * s) / 2, (n - h * s) / 2, w * s, h * s); c.className = "pe-fx-th"; return c; }
+	function btn(t, title) { var b = el("button", "pe-btn pe-btn--sm", esc(t)); b.type = "button"; if (title) b.title = title; return b; }
+
+	/* focus: "folder" scrolls to the folder section, anything else opens at the top ("Where your images are") */
+	PE.dlgFolder = function (focus) {
+		var wrap = el("div", "pe-fx"), token = 0, entries = [], stored = null;
+		function sec(title, help) { var s = el("section", "pe-fx-sec"), h = el("h3", "pe-fx-h", esc(title)); if (help) h.appendChild(PE.helpBtn(title, esc(help))); s.appendChild(h); wrap.appendChild(s); return s; }
+
+		/* 1. where the images are */
+		var sW = sec("Where your images are"), docP = el("p", "pe-fx-doc"), list = el("div", "pe-fx-list");
+		sW.appendChild(el("p", "pe-hint2", "Browsers never show where a file is on your disk (its full path), only its name, and for a connected folder the folder's name. This is everything the editor knows about the open image:"));
+		sW.appendChild(docP); sW.appendChild(list);
+		function drawWhere() {
+			var d = PE.doc; list.innerHTML = ""; if (!d) { docP.textContent = "No image is open."; return; }
+			var f = d.file ? P.describeSource(srcOf(d.file)) : null;
+			docP.innerHTML = "<b>This image</b>: " + esc(d.name) + " · " + d.w + " × " + d.h + " px · " + esc(f ? f.text : "Made in the editor (New image)");
+			var rows = d.layers.slice().reverse().filter(function (L) { return !PE.isGroup(L); }), shown = rows.slice(0, 80); PE.relink();
+			shown.forEach(function (L) {
+				var s = srcOf(L.src), info = P.describeSource(s), r = el("div", "pe-fx-row"), m = el("div", "pe-fx-m"), grp = PE.ancestorsOf(L).map(function (g) { return g.name; }).reverse().join(" › ");
+				r.appendChild(thumbOf(L, 34));
+				m.innerHTML = '<b class="pe-fx-n">' + esc(L.name) + "</b>" + (grp ? '<span class="pe-fx-g">in ' + esc(grp) + "</span>" : "") + '<span class="pe-fx-from pe-fx-from--' + info.how + '">' + esc(info.text) + '</span><span class="pe-fx-px">' + L.canvas.width + " × " + L.canvas.height + " px" + (s && s.w && (s.w !== L.canvas.width || s.h !== L.canvas.height) ? " (the file: " + s.w + " × " + s.h + ")" : "") + (L.type === "text" ? " · text layer" : L.eq ? " · equation" : "") + "</span>";
+				r.appendChild(m);
+				var h = s && s.hk && handles[s.hk];
+				if (h && canFS()) { var b = btn("Move to another folder…", "Move the file " + h.name + " out of “" + h.dirName + "” into a folder you choose (you confirm first)"); b.addEventListener("click", function () { moveFile(s.hk, b); }); r.appendChild(b); }
+				list.appendChild(r);
+			});
+			if (!rows.length) list.appendChild(el("p", "pe-hint2", "No layers."));
+			if (rows.length > shown.length) list.appendChild(el("p", "pe-hint2", "…and " + (rows.length - shown.length) + " more layers."));
+		}
+
+		/* 2. a folder on this computer */
+		var sF = sec("Folder on this computer", "Connect a folder and the editor lists its pictures. Click one to add it as a layer (or to open it, if nothing is open); Shift-click opens it as a new image. Nothing is uploaded: the editor reads the files straight from your disk, and only with the permission you give in the browser's pop-up.");
+		var stP = el("p", "pe-fx-st"), note = el("div", "pe-fx-note"), bar = el("div", "pe-fold-h"), saveRow = el("div", "pe-fx-save"), search = el("input", "pe-fold-s"), msg = el("p", "pe-hint2"), grid = el("div", "pe-fold-g");
 		search.type = "search"; search.placeholder = "Filter by name…"; search.setAttribute("aria-label", "Filter pictures by name");
-		var bPick = el("button", "pe-btn pe-btn--sm", "📂 Choose a folder…"), bAgain = el("button", "pe-btn pe-btn--sm", "↺ Reconnect to last folder"), bSave = el("button", "pe-btn pe-btn--sm", "⬇ Save this image here"); [bPick, bAgain, bSave].forEach(function (b) { b.type = "button"; });
-		bSave.title = "Writes the current image as a PNG into the connected folder";
-		head.appendChild(bPick); head.appendChild(bAgain); head.appendChild(bSave); head.appendChild(PE.helpBtn("Connected folder", "Connect a folder on your computer and the editor lists its pictures. Click one to add it as a layer (or open it as the image if nothing is open); hold Shift to open it as a new image instead. Nothing is uploaded: the editor reads the files straight from your disk, and only with the permission you give in the browser's pop-up. Chrome, Edge and Brave only."));
-		wrap.appendChild(head); wrap.appendChild(search); wrap.appendChild(msg); wrap.appendChild(grid);
-		var m = PE.modal({ title: "Folder on this computer", wide: true, body: wrap, noFocus: true, buttons: [{ label: "Close", primary: true, act: function (mm) { mm.close(); } }] });
-		var entries = [], token = 0;
+		var bPick = btn("📂 Choose a folder…", "Pick a folder; the browser asks whether the editor may see and save files in it"), bAgain = btn("↺ Reconnect", "Use the folder from last time again (the browser asks for permission once more)"), bRo = btn("📂 Open a folder (read only)…", "List the pictures of a folder. This browser cannot save into it: saving goes to your Downloads folder"), roInp = el("input");
+		roInp.type = "file"; roInp.multiple = true; roInp.setAttribute("webkitdirectory", ""); roInp.hidden = true; roInp.setAttribute("aria-hidden", "true"); bAgain.hidden = true;
+		var nameIn = el("input"), kind = el("select"), bSave = btn("⬇ Save"), saveHint = el("p", "pe-hint2");
+		nameIn.type = "text"; nameIn.value = PE.doc ? PE.doc.name : "image"; nameIn.setAttribute("aria-label", "File name"); nameIn.spellcheck = false; kind.setAttribute("aria-label", "Save as");
+		kind.innerHTML = '<option value="png">PNG picture (flattened)</option><option value="proj">Project .mesproj (keeps layers)</option>';
+		saveRow.appendChild(el("span", "pe-fx-l", "Save this image as")); saveRow.appendChild(nameIn); saveRow.appendChild(kind); saveRow.appendChild(bSave);
+		if (canFS()) { bar.appendChild(bPick); bar.appendChild(bAgain); note.hidden = true; }
+		else {
+			note.innerHTML = (isBrave() ? "<b>Brave has folder access switched off.</b> To switch it on, copy <code>" + BRAVE_FLAG + "</code> into the address bar, set <i>File System Access API</i> to <i>Enabled</i> and press <i>Relaunch</i>. Then this window can open, save and move files in a folder."
+				: isMobile() ? "<b>Phones and tablets cannot connect a folder</b> to a web page. On a computer, Chrome and Edge can (Brave after switching it on)."
+				: "<b>This browser cannot connect a folder.</b> Chrome and Edge on a computer can, and Brave after switching on <code>" + BRAVE_FLAG + "</code>. Safari and Firefox cannot.")
+				+ " You can still open a folder read only: its pictures are listed below and can be added as layers, but saving goes to your Downloads folder.";
+			if (isBrave()) { var bCopy = btn("Copy the address", "Copies " + BRAVE_FLAG + " so you can paste it into Brave's address bar"); bCopy.addEventListener("click", function () { var fail = function () { window.prompt("Copy this address:", BRAVE_FLAG); }; try { navigator.clipboard.writeText(BRAVE_FLAG).then(function () { PE.toast("Copied. Paste it into the address bar"); }, fail); } catch (x) { fail(); } }); note.appendChild(document.createTextNode(" ")); note.appendChild(bCopy); }
+			bar.appendChild(bRo); bar.appendChild(roInp);
+		}
+		[stP, note, bar, saveRow, saveHint, search, msg, grid].forEach(function (x) { sF.appendChild(x); });
+
+		function refreshState() {
+			if (canFS()) {
+				bPick.textContent = dirHandle ? "📂 Choose another folder…" : "📂 Choose a folder…"; bAgain.hidden = !(stored && !dirHandle); if (stored) bAgain.textContent = "↺ Reconnect to “" + stored.name + "”";
+				bSave.textContent = dirHandle ? "⬇ Save into “" + dirHandle.name + "”" : "⬇ Save into a folder…"; saveHint.textContent = dirHandle ? "If a file with that name is already there, you are asked before it is replaced." : "You pick the folder first.";
+				if (dirHandle) { var h = dirHandle; perm(h, true, false).then(function (p) { if (h === dirHandle) stP.innerHTML = "Connected: <b>“" + esc(h.name) + "”</b> · " + esc(permText(p)) + "."; }).catch(function () {}); }
+				else stP.textContent = "No folder is connected." + (stored ? " Last time it was “" + stored.name + "”." : "");
+			} else {
+				stP.textContent = roFiles ? "Open read only: “" + roName + "”, " + roFiles.length + " picture" + (roFiles.length === 1 ? "" : "s") + " (subfolders included)." : ""; stP.hidden = !roFiles;
+				bSave.textContent = "⬇ Download"; saveHint.textContent = "This browser cannot write into a folder, so the file goes to your Downloads folder.";
+			}
+		}
+		function count(name, n) { msg.textContent = n + " picture" + (n === 1 ? "" : "s") + " in “" + name + "”" + (n > 400 ? " (showing the first 400: use the filter)" : "") + (n ? ". Click: add as a layer · Shift-click: open as a new image." : "."); }
+		function roEntries() { return roFiles.map(function (f) { var rel = (f.webkitRelativePath || f.name).split("/").slice(1).join("/") || f.name; return { name: f.name, label: rel, file: function () { return Promise.resolve(f); } }; }); }
 		function load(h) {
-			dirHandle = h; var my = ++token; grid.innerHTML = ""; entries = []; msg.textContent = "Reading " + h.name + "…"; bAgain.hidden = true;
-			(async function () { try { for await (var e of h.values()) { if (e.kind === "file" && IMG.test(e.name)) entries.push(e); } } catch (x) { msg.textContent = "Could not read the folder: " + x.message; return; }
-				if (my !== token) return; entries.sort(function (a, b) { return a.name.localeCompare(b.name, undefined, { numeric: true }); }); msg.textContent = h.name + ": " + entries.length + " picture" + (entries.length === 1 ? "" : "s") + (entries.length > 400 ? " (showing the first 400, use the filter)" : ""); render(); })();
+			dirHandle = h; roFiles = null; var my = ++token; entries = []; grid.innerHTML = ""; msg.textContent = "Reading “" + h.name + "”…"; refreshState();
+			(async function () { var out = []; try { for await (var e of h.values()) if (e.kind === "file" && IMG.test(e.name)) out.push(e); } catch (x) { if (my === token) msg.textContent = "Could not read the folder: " + errText(x); return; }
+				if (my !== token) return; out.sort(function (a, b) { return a.name.localeCompare(b.name, undefined, { numeric: true }); }); entries = out.map(function (fh) { return { name: fh.name, label: fh.name, fh: fh, file: function () { return fh.getFile(); } }; }); count(h.name, entries.length); render(); })();
 		}
 		function render() {
-			var q = search.value.trim().toLowerCase(), list = entries.filter(function (e) { return !q || e.name.toLowerCase().indexOf(q) >= 0; }).slice(0, 400); grid.innerHTML = "";
+			var q = search.value.trim().toLowerCase(), shown = entries.filter(function (e) { return !q || e.label.toLowerCase().indexOf(q) >= 0; }).slice(0, 400); grid.innerHTML = "";
 			var io = "IntersectionObserver" in window ? new IntersectionObserver(function (es) { es.forEach(function (x) { if (x.isIntersecting) { io.unobserve(x.target); x.target._load(); } }); }, { root: grid, rootMargin: "200px" }) : null;
-			list.forEach(function (e) {
-				var t = el("button", "pe-fold-t"), c = el("canvas"), n = el("span", "pe-fold-n", esc(e.name)); t.type = "button"; c.width = 120; c.height = 90; t.appendChild(c); t.appendChild(n); t.title = e.name + " — click: add as layer · Shift-click: open as new image";
+			shown.forEach(function (e) {
+				var t = el("button", "pe-fold-t"), c = el("canvas"), n = el("span", "pe-fold-n", esc(e.label)); t.type = "button"; c.width = 120; c.height = 90; t.appendChild(c); t.appendChild(n); t.title = e.label + " · click: add as a layer · Shift-click: open as a new image";
 				t._load = function () { if (/\.(psd|mesproj)$/i.test(e.name)) { var x = c.getContext("2d"); x.fillStyle = "#26262e"; x.fillRect(0, 0, 120, 90); x.fillStyle = "#9b9bab"; x.font = "bold 14px sans-serif"; x.textAlign = "center"; x.fillText(e.name.split(".").pop().toUpperCase(), 60, 50); return; }
-					e.getFile().then(function (f) { return createImageBitmap(f, { resizeWidth: 120, resizeQuality: "medium" }).catch(function () { return PE.decodeFile(f); }); }).then(function (im) { var x = c.getContext("2d"), w = im.width || im.naturalWidth, h = im.height || im.naturalHeight, s = Math.min(120 / w, 90 / h); x.drawImage(im, (120 - w * s) / 2, (90 - h * s) / 2, w * s, h * s); }).catch(function () { n.textContent = "⚠ " + e.name; }); };
+					e.file().then(function (f) { return createImageBitmap(f, { resizeWidth: 120, resizeQuality: "medium" }).catch(function () { return PE.decodeFile(f); }); }).then(function (im) { var x = c.getContext("2d"), w = im.width || im.naturalWidth, h = im.height || im.naturalHeight, s = Math.min(120 / w, 90 / h); x.drawImage(im, (120 - w * s) / 2, (90 - h * s) / 2, w * s, h * s); }).catch(function () { n.textContent = "⚠ " + e.label; }); };
 				if (io) io.observe(t); else t._load();
-				t.addEventListener("click", function (ev) { e.getFile().then(function (f) { PE.openFiles([f], { place: !!PE.doc && !ev.shiftKey }); m.close(); }); });
+				t.addEventListener("click", function (ev) { var o = { place: !!PE.doc && !ev.shiftKey }; if (e.fh) { o.how = "folder"; o.dir = dirHandle ? dirHandle.name : ""; o.hk = regHandle(e.fh, dirHandle); } else { o.how = "folder-ro"; o.dir = roName; }
+					e.file().then(function (f) { PE.openFiles([f], o); m.close(); }).catch(function (x) { PE.toast("Could not open " + e.name + ": " + errText(x)); }); });
 				grid.appendChild(t);
 			});
 		}
 		search.addEventListener("input", render);
-		bPick.addEventListener("click", function () { window.showDirectoryPicker({ id: "mes-photo-folder", mode: "readwrite" }).then(function (h) { idb(function (st) { return rq(st.put(h, "dir")); }).catch(function () {}); load(h); }).catch(function () {}); });
-		bAgain.addEventListener("click", function () { idb(function (st) { return rq(st.get("dir")); }).then(function (h) { return h ? perm(h, false).then(function (p) { if (p === "granted") load(h); else msg.textContent = "Permission was not given."; }) : null; }).catch(function (x) { msg.textContent = "Could not reconnect: " + x.message; }); });
-		bSave.addEventListener("click", function () {
-			if (!PE.doc) { PE.toast("Open or create an image first"); return; } if (!dirHandle) { PE.toast("Choose a folder first"); return; }
-			perm(dirHandle, true).then(function (p) { if (p !== "granted") throw new Error("no permission"); return PE.exportBlob("png", 1, {}); }).then(function (b) { var name = window.MESImg.cleanFileName(PE.doc.name || "image") + ".png"; return dirHandle.getFileHandle(name, { create: true }).then(function (fh) { return fh.createWritable(); }).then(function (w) { return w.write(b).then(function () { return w.close(); }); }).then(function () { PE.toast("Saved " + name + " into " + dirHandle.name); load(dirHandle); }); }).catch(function (x) { PE.toast("Could not save: " + x.message); });
+		bPick.addEventListener("click", function () { window.showDirectoryPicker({ id: "mes-photo-folder", mode: "readwrite" }).then(function (h) { stored = h; idb(function (st) { return rq(st.put(h, "dir")); }).catch(function () {}); load(h); }).catch(function (x) { if (!x || x.name !== "AbortError") msg.textContent = "Could not open the folder: " + errText(x); }); });
+		bAgain.addEventListener("click", function () { var h = stored; if (!h) return; perm(h, true, true).then(function (p) { if (p === "granted") load(h); else msg.textContent = "The browser did not give access to “" + h.name + "”. Press Reconnect again, or choose the folder."; }).catch(function (x) { msg.textContent = "Could not reconnect: " + errText(x); }); });
+		bRo.addEventListener("click", function () { roInp.click(); });
+		roInp.addEventListener("change", function () {
+			var fs = Array.prototype.slice.call(roInp.files || []); roInp.value = ""; if (!fs.length) return; roName = (fs[0].webkitRelativePath || "").split("/")[0] || "folder"; dirHandle = null; ++token;
+			roFiles = fs.filter(function (f) { return IMG.test(f.name); }).sort(function (a, b) { return (a.webkitRelativePath || a.name).localeCompare(b.webkitRelativePath || b.name, undefined, { numeric: true }); });
+			entries = roEntries(); count(roName, entries.length); render(); refreshState();
 		});
-		if (dirHandle) { load(dirHandle); } else { msg.textContent = "Choose a folder to see its pictures."; idb(function (st) { return rq(st.get("dir")); }).then(function (h) { bAgain.hidden = !h; if (h) bAgain.textContent = "↺ Reconnect to “" + h.name + "”"; }).catch(function () { bAgain.hidden = true; }); }
+		function saveTo(dh, k, name) {
+			return perm(dh, true, true).then(function (p) { if (p !== "granted") throw new Error("the browser did not allow saving into “" + dh.name + "”"); return namesIn(dh); })
+				.then(function (used) { if (used[name.toLowerCase()] && !window.confirm("“" + name + "” is already in “" + dh.name + "”. Replace it?")) throw "cancel"; return k === "proj" ? PE.projectBlob() : PE.exportBlob("png", 1, {}); })
+				.then(function (b) { return writeFile(dh, name, b); });
+		}
+		bSave.addEventListener("click", function () {
+			if (!PE.doc) { PE.toast("Open or create an image first"); return; }
+			var k = kind.value, base = I.cleanFileName((nameIn.value || "").trim().replace(/\.(png|mesproj)$/i, "") || PE.doc.name || "image"), name = base + (k === "proj" ? ".mesproj" : ".png");
+			var ok = function (where) { if (k === "proj") { PE.dirty = false; if (PE.saveState) PE.saveState(); } PE.toast("Saved " + name + " " + where); };
+			if (!canFS()) { (k === "proj" ? PE.projectBlob() : PE.exportBlob("png", 1, {})).then(function (b) { PE.download(b, name); ok("to your Downloads"); }).catch(function (x) { PE.toast("Could not save: " + errText(x)); }); return; }
+			bSave.disabled = true;
+			(dirHandle ? Promise.resolve(dirHandle) : window.showDirectoryPicker({ id: "mes-photo-folder", mode: "readwrite" }).then(function (h) { stored = h; idb(function (st) { return rq(st.put(h, "dir")); }).catch(function () {}); load(h); return h; }))
+				.then(function (dh) { return saveTo(dh, k, name).then(function () { ok("into “" + dh.name + "”"); if (dh === dirHandle) load(dh); }); })
+				.catch(function (x) { if (x === "cancel") { PE.toast("Not saved. Change the name to keep both files."); return; } if (x && x.name === "AbortError") return; PE.toast("Could not save: " + errText(x)); })
+				.then(function () { bSave.disabled = false; });
+		});
+		nameIn.addEventListener("keydown", function (e) { if (e.key === "Enter") { e.preventDefault(); bSave.click(); } });
+		function moveFile(hk, b) {
+			var H = handles[hk]; if (!H) return; var src = H.dir, target, newName; b.disabled = true;
+			perm(src, true, true).then(function (p) { if (p !== "granted") throw new Error("the browser did not allow changes in “" + src.name + "”"); return window.showDirectoryPicker({ id: "mes-photo-move", mode: "readwrite", startIn: src }); })
+				.then(function (t) { target = t; return src.isSameEntry ? src.isSameEntry(t) : false; })
+				.then(function (same) { if (same) throw new Error("that is the folder it is in already"); return namesIn(target); })
+				.then(function (used) { newName = I.uniqueName(H.name, used);
+					var q = "Move “" + H.name + "” from “" + src.name + "” to “" + target.name + "”?" + (newName !== H.name ? "\n\n“" + target.name + "” already has a file called “" + H.name + "”, so the moved one will be called “" + newName + "”." : "") + "\n\nThe original is removed from “" + src.name + "” only after the copy in “" + target.name + "” is complete.";
+					if (!window.confirm(q)) throw "cancel"; return moveOne(H.fh, src, target, H.name, newName); })
+				.then(function (nfh) { handles[hk] = { fh: nfh, dir: target, name: newName, dirName: target.name }; retarget(hk, target.name, newName); PE.toast("Moved " + newName + " to “" + target.name + "”"); if (dirHandle && src === dirHandle) load(dirHandle); drawWhere(); })
+				.catch(function (x) { if (x === "cancel" || (x && x.name === "AbortError")) return; PE.toast(x && x.name === "SecurityError" ? "Press Move again: the browser needs a fresh click to open the folder chooser" : "Could not move: " + errText(x)); })
+				.then(function () { b.disabled = false; });
+		}
+
+		/* 3. the autosave in this browser */
+		var sA = sec("Autosave in this browser"), aP = el("p", "pe-fx-auto"), uP = el("p", "pe-hint2"), ab = el("div", "pe-fold-h"), bClear = btn("🗑 Clear autosave", "Delete the autosaved copy of your project from this browser (you are asked first)");
+		sA.appendChild(el("p", "pe-hint2", "While you work, the editor keeps a copy of your project in this browser's own storage (the IndexedDB database “mes-photo-editor” of mes.fm), 5 seconds after each change, so a reload or a crash does not lose your work. It stays on this computer, in this browser only, and is not a file you can find in a folder."));
+		ab.appendChild(bClear); sA.appendChild(aP); sA.appendChild(ab); sA.appendChild(uP);
+		sA.appendChild(el("p", "pe-hint2", "💾 Save project and Export make a real file: the browser puts it in its Downloads folder (or asks where, if it is set to ask)."));
+		function drawAuto() {
+			idb(function (st) { return rq(st.get("auto")); }).then(function (r) { bClear.disabled = !r; aP.innerHTML = r ? "Last autosave: <b>" + esc(r.name || "Untitled") + "</b>, " + r.w + " × " + r.h + " px, " + esc(P.bytesText(r.blob ? r.blob.size : 0)) + ", " + esc(new Date(r.t).toLocaleString()) + "." : "Nothing is autosaved at the moment."; })
+				.catch(function () { bClear.disabled = true; aP.textContent = "This browser's storage cannot be read here (a private window, or site data is blocked), so nothing is autosaved."; });
+			if (navigator.storage && navigator.storage.estimate) navigator.storage.estimate().then(function (e) { uP.textContent = "All of mes.fm (every tool) uses about " + P.bytesText(e.usage || 0) + " of this browser's storage."; }).catch(function () {});
+		}
+		bClear.addEventListener("click", function () { if (!window.confirm("Delete the autosaved copy of your project from this browser?\n\nThe image that is open now stays open, and it is autosaved again 5 seconds after your next change.")) return; idb(function (st) { return rq(st.delete("auto")); }).then(function () { var rb = document.getElementById("pe-restore"); if (rb) rb.hidden = true; PE.toast("Autosave cleared"); drawAuto(); }).catch(function (x) { PE.toast("Could not clear the autosave: " + errText(x)); }); });
+
+		var m = PE.modal({ title: "Files and folders", wide: true, cls: "pe-dlg--files", body: wrap, noFocus: true, buttons: [{ label: "Close", act: function (mm) { mm.close(); } }] });
+		drawWhere(); drawAuto(); refreshState();
+		if (canFS() && dirHandle) load(dirHandle);
+		else if (canFS()) { msg.textContent = "Choose a folder to see its pictures."; idb(function (st) { return rq(st.get("dir")); }).then(function (h) { stored = h || null; refreshState(); }).catch(function () {}); }
+		else if (roFiles) { entries = roEntries(); count(roName, entries.length); render(); }
+		if (focus === "folder") setTimeout(function () { m.body.scrollTop = Math.max(0, sF.offsetTop - wrap.offsetTop - 4); }, 0);
+		return m;
 	};
 })();

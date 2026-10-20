@@ -66,19 +66,32 @@
 		var ts = $("pe-tswap"); if (ts) ts.title = UI.tside === "r" ? "Move the toolbox to the left" : "Move the toolbox to the right";
 		var sw = $("pe-sswap"); if (sw) sw.title = UI.side === "l" ? "Move the panels to the right" : "Move the panels to the left";
 		var sh = $("pe-sshow"); if (sh) { sh.hidden = !UI.hide; sh.textContent = UI.side === "l" ? "Panels ›" : "‹ Panels"; }
-		setTimeout(function () { window.dispatchEvent(new Event("resize")); }, 0);
+		ariaSide(); setTimeout(function () { window.dispatchEvent(new Event("resize")); }, 0);
 	}
+	function ariaSide() { var g = $("pe-sgrip"), s = $("pe-side"); if (!g) return; var fs = parseFloat(getComputedStyle(s).fontSize) || 13, now = Math.round(s.getBoundingClientRect().width) || Math.round(UI.sw * fs); g.setAttribute("aria-valuemin", String(Math.round(12 * fs))); g.setAttribute("aria-valuemax", String(Math.round(48 * fs))); g.setAttribute("aria-valuenow", String(now)); g.setAttribute("aria-valuetext", "Panels " + now + " pixels wide"); }
 	function initLayoutUI() {
 		var tg = el("button", "pe-ttoggle", "»"); tg.type = "button"; tg.id = "pe-ttoggle"; tg.addEventListener("click", function () { UI.tw = !UI.tw; saveUI(); applyUI(); }); var th = el("div", "pe-thead"), tsw = el("button", "pe-tswap", "⇄"); tsw.type = "button"; tsw.id = "pe-tswap"; tsw.addEventListener("click", function () { UI.tside = UI.tside === "r" ? "l" : "r"; saveUI(); applyUI(); }); th.appendChild(tg); th.appendChild(tsw); $("pe-tools").insertBefore(th, $("pe-tools").firstChild);
 		var bar = el("div", "pe-sbar"); bar.innerHTML = '<span>Panels</span><button type="button" id="pe-sswap" class="pe-mini">⇄</button><button type="button" id="pe-shide" class="pe-mini" title="Hide the panels (more room for the picture)">Hide ✕</button>'; $("pe-side").insertBefore(bar, $("pe-side").firstChild);
-		var grip = el("div", "pe-sres"); grip.title = "Drag to make the panels wider or narrower (double-click to reset)"; $("pe-side").appendChild(grip);
+		/* the panels' grip is its own flex item between the picture and the panels (it used to sit inside the scrolling panel column, where the
+		   search box's .pe-sres styles moved it to the bottom as an 8 px square: that is why the panels could not be resized) */
+		var side = $("pe-side"), grip = el("div", "pe-sgrip"); grip.id = "pe-sgrip"; grip.tabIndex = 0; grip.setAttribute("role", "separator"); grip.setAttribute("aria-orientation", "vertical"); grip.setAttribute("aria-controls", "pe-side"); grip.setAttribute("aria-label", "Width of the panels");
+		grip.title = "Drag to make the panels wider or narrower. Arrow keys work too when it is selected (Shift = bigger steps). Double-click: back to the normal width."; grip.innerHTML = "<i></i>"; side.parentNode.insertBefore(grip, side);
 		var show = el("button", "pe-sshow", "‹ Panels"); show.type = "button"; show.id = "pe-sshow"; show.hidden = true; $("pe-stage").appendChild(show);
 		$("pe-sswap").addEventListener("click", function () { UI.side = UI.side === "l" ? "r" : "l"; saveUI(); applyUI(); });
 		$("pe-shide").addEventListener("click", function () { UI.hide = true; saveUI(); applyUI(); }); show.addEventListener("click", function () { UI.hide = false; saveUI(); applyUI(); });
-		grip.addEventListener("dblclick", function () { UI.sw = 17.5; saveUI(); applyUI(); });
-		grip.addEventListener("pointerdown", function (e) { e.preventDefault(); grip.setPointerCapture(e.pointerId); var x0 = e.clientX, w0 = $("pe-side").getBoundingClientRect().width, fs = parseFloat(getComputedStyle($("pe-side")).fontSize) || 16, dir = UI.side === "l" ? 1 : -1;
-			function mv(ev) { UI.sw = Math.max(12, Math.min(40, (w0 + (ev.clientX - x0) * dir) / fs)); $("pe-side").style.width = UI.sw + "em"; }
-			function up() { grip.removeEventListener("pointermove", mv); grip.removeEventListener("pointerup", up); saveUI(); window.dispatchEvent(new Event("resize")); } grip.addEventListener("pointermove", mv); grip.addEventListener("pointerup", up); });
+		function fsOf() { return parseFloat(getComputedStyle(side).fontSize) || 13; }
+		function otherW() { var w = 0; Array.prototype.forEach.call(root.querySelector(".pe-main").children, function (c) { if (c !== side && c !== grip && c !== PE.els.stage && c.offsetParent !== null) w += c.offsetWidth; }); return w; }
+		function setSide(em, save) { UI.sw = P.panelClamp(em, root.querySelector(".pe-main").clientWidth, otherW() + grip.offsetWidth, fsOf()); side.style.width = UI.sw + "em"; ariaSide(); if (save) saveUI(); }
+		PE.setPanelWidth = setSide;
+		grip.addEventListener("dblclick", function () { setSide(17.5, true); });
+		grip.addEventListener("keydown", function (e) { var r = P.panelKey(e.key, e.shiftKey, UI.side === "l"); if (!r) return; e.preventDefault(); e.stopPropagation(); setSide(r.to === "reset" ? 17.5 : r.to === "min" ? 0 : r.to === "max" ? 999 : UI.sw + r.d, true); });
+		grip.addEventListener("pointerdown", function (e) {
+			if (e.button > 0) return; e.preventDefault(); try { grip.setPointerCapture(e.pointerId); } catch (x) {} grip.classList.add("is-drag"); grip.focus({ preventScroll: true });
+			var x0 = e.clientX, w0 = side.getBoundingClientRect().width, fs = fsOf(), dir = UI.side === "l" ? 1 : -1;
+			function mv(ev) { setSide((w0 + (ev.clientX - x0) * dir) / fs, false); }
+			function up() { grip.removeEventListener("pointermove", mv); grip.removeEventListener("pointerup", up); grip.removeEventListener("pointercancel", up); grip.classList.remove("is-drag"); saveUI(); window.dispatchEvent(new Event("resize")); }
+			grip.addEventListener("pointermove", mv); grip.addEventListener("pointerup", up); grip.addEventListener("pointercancel", up);
+		});
 		var tg2 = el("div", "pe-tres"); tg2.title = "Drag to make the toolbox wider or narrower (double-click to reset)"; $("pe-tools").parentNode.insertBefore(tg2, $("pe-tools").nextSibling);
 		tg2.addEventListener("dblclick", function () { UI.tws = 15.5; UI.tw = true; saveUI(); applyUI(); });
 		tg2.addEventListener("pointerdown", function (e) { e.preventDefault(); tg2.setPointerCapture(e.pointerId); var x0 = e.clientX, w0 = $("pe-tools").getBoundingClientRect().width, fs = parseFloat(getComputedStyle($("pe-tools")).fontSize) || 16, dir = UI.tside === "r" ? -1 : 1;
@@ -172,7 +185,7 @@
 			row.appendChild(eye);
 			if (grp) { var ar = el("button", "pe-arrow", L.collapsed ? "▸" : "▾"); ar.type = "button"; ar.title = L.collapsed ? "Expand group" : "Collapse group"; ar.addEventListener("click", function (e) { e.stopPropagation(); L.collapsed = !L.collapsed; buildLayers(); }); row.appendChild(ar); var th0 = el("span", "pe-th pe-th--grp", "📁"); row.appendChild(th0); }
 			else { var th = el("span", "pe-th"); th.appendChild(thumbFor(L)); row.appendChild(th); }
-			var nm = el("span", "pe-lname", esc(L.name) + (L.type === "text" ? " ᵀ" : "") + (grp ? ' <small class="pe-cnt">' + PE.descendants(L).filter(function (k) { return !PE.isGroup(k); }).length + "</small>" : "")); nm.title = "Double-click to rename";
+			var nm = el("span", "pe-lname", esc(L.name) + (L.type === "text" ? " ᵀ" : "") + (grp ? ' <small class="pe-cnt">' + PE.descendants(L).filter(function (k) { return !PE.isGroup(k); }).length + "</small>" : "")); nm.title = L.name + " (double-click to rename)";
 			if (L.mask) { var mt = el("span", "pe-th pe-th--mask" + (L.editMask ? " is-on" : "")); var mc = PE.mk(36, 36), mx = mc.getContext("2d"); mx.fillStyle = "#000"; mx.fillRect(0, 0, 36, 36); var wm = PE.mk(36, 36), wx = wm.getContext("2d"); wx.drawImage(L.mask, 0, 0, 36, 36); wx.globalCompositeOperation = "source-in"; wx.fillStyle = "#fff"; wx.fillRect(0, 0, 36, 36); mx.drawImage(wm, 0, 0); mt.appendChild(mc); mt.title = "Layer mask: click to paint on the mask (white-ish = shown). Click the picture to paint on the layer."; mt.addEventListener("click", function (e) { e.stopPropagation(); PE.setActive(L.id); L.editMask = true; buildLayers(); }); row.querySelector(".pe-th").addEventListener("click", function (e) { e.stopPropagation(); PE.setActive(L.id); L.editMask = false; buildLayers(); }); row.appendChild(mt); }
 			row.appendChild(nm);
 			if (grp) { var xg = el("button", "pe-pen", "⬇"); xg.type = "button"; xg.title = "Export this group as its own image, on a canvas of any size"; xg.addEventListener("click", function (e) { e.stopPropagation(); PE.dlgExportGroup(L); }); row.appendChild(xg); }
@@ -183,7 +196,13 @@
 				if (e.shiftKey && act) { var order = rowsTopDown().map(function (x) { return x.L; }), i0 = order.indexOf(act), i1 = order.indexOf(L); if (i0 >= 0 && i1 >= 0) { multi = {}; order.slice(Math.min(i0, i1), Math.max(i0, i1) + 1).forEach(function (x) { multi[x.id] = true; }); buildLayers(); return; } }
 				multi = {}; PE.setActive(L.id);
 			});
-			nm.addEventListener("dblclick", function (e) { e.stopPropagation(); var inp = el("input", "pe-rename"); inp.value = L.name; nm.replaceWith(inp); inp.focus(); inp.select(); var done = function (ok) { if (ok && inp.value.trim()) { L.name = inp.value.trim(); PE.commit("Rename layer"); } else buildLayers(); }; inp.addEventListener("keydown", function (ev) { ev.stopPropagation(); if (ev.key === "Enter") done(true); if (ev.key === "Escape") done(false); }); inp.addEventListener("blur", function () { done(true); }); });
+			nm.addEventListener("dblclick", function (e) {
+				e.stopPropagation(); var inp = el("input", "pe-rename"), fin = false; inp.type = "text"; inp.value = L.name; inp.spellcheck = false; inp.setAttribute("aria-label", "New name for " + (grp ? "the group " : "the layer ") + L.name); row.draggable = false; row.classList.add("is-renaming"); nm.replaceWith(inp); inp.focus(); inp.select();
+				var done = function (ok) { if (fin) return; fin = true; var v = inp.value.trim(); if (ok && v && v !== L.name) { L.name = v; PE.commit(grp ? "Rename group" : "Rename layer"); } else buildLayers(); };
+				// clicks inside the box must not reach the row: its click selects the layer, which rebuilds the list and threw the half-typed name away
+				["click", "mousedown", "pointerdown", "dblclick", "dragstart"].forEach(function (t) { inp.addEventListener(t, function (ev) { ev.stopPropagation(); }); });
+				inp.addEventListener("keydown", function (ev) { ev.stopPropagation(); if (ev.key === "Enter") { ev.preventDefault(); done(true); } if (ev.key === "Escape") { ev.preventDefault(); done(false); } }); inp.addEventListener("blur", function () { done(true); });
+			});
 			row.addEventListener("dragstart", function (e) { dragId = L.id; e.dataTransfer.effectAllowed = "move"; e.dataTransfer.setData("text/x-pe-layer", String(L.id)); });
 			function zoneOf(e) { var rc = row.getBoundingClientRect(), y = (e.clientY - rc.top) / rc.height; return grp ? (y < 0.25 ? "above" : "into") : (y < 0.5 ? "above" : "below"); }
 			row.addEventListener("dragover", function (e) { if (dragId == null) return; e.preventDefault(); row.classList.remove("is-over-above", "is-over-below", "is-over-into"); row.classList.add("is-over-" + zoneOf(e)); });
@@ -245,7 +264,7 @@
 	$("pe-zoom").addEventListener("click", function () { PE.view.zoom === 1 ? PE.fit() : PE.setZoom(1); });
 	$("pe-zin").addEventListener("click", function () { PE.setZoom(PE.view.zoom * 1.25); }); $("pe-zout").addEventListener("click", function () { PE.setZoom(PE.view.zoom / 1.25); });
 	$("pe-fit").addEventListener("click", function () { PE.fit(); }); $("pe-undo").addEventListener("click", function () { PE.undo(); }); $("pe-redo").addEventListener("click", function () { PE.redo(); }); $("pe-export").addEventListener("click", function () { PE.dlgExport(); }); $("pe-copy").addEventListener("click", function () { if (needDoc()) copyMerged(); });
-$("pe-share").addEventListener("click", function () { if (needDoc()) PE.dlgShare(); });
+$("pe-share").addEventListener("click", function () { if (needDoc()) PE.dlgShare(); }); $("pe-save").addEventListener("click", function () { saveProject(); });
 
 	/* ---------- edit actions ---------- */
 	PE.clipCanvas = null;
@@ -262,13 +281,13 @@ $("pe-share").addEventListener("click", function () { if (needDoc()) PE.dlgShare
 		var L = PE.active(); if (!PE.doc || !PE.prepare(L)) return; var o = PE.origin(L), c = PE.mk(L.canvas.width, L.canvas.height), x = c.getContext("2d"); x.fillStyle = color; x.fillRect(0, 0, c.width, c.height);
 		PE.paintInto(L, c, o.x, o.y, { target: L.editMask && L.mask ? "mask" : "pixel" }); PE.commit("Fill");
 	}
-	function paintClipboardImage(src, name, at) { if (!PE.doc) { PE.openImageSource(src, name || "Pasted image"); PE.setTool("move"); return; } PE.placeSource(src, name || "Pasted", at); PE.setTool("move"); }
-	function pasteInternal() { if (PE.clipCanvas) paintClipboardImage(PE.clipCanvas, "Pasted layer"); else if (navigator.clipboard && navigator.clipboard.read) { navigator.clipboard.read().then(function (items) { for (var i = 0; i < items.length; i++) { var t = items[i].types.filter(function (t) { return /^image\//.test(t); })[0]; if (t) { items[i].getType(t).then(function (b) { return PE.decodeFile(b); }).then(function (im) { paintClipboardImage(im, "Pasted image"); }); return; } } PE.toast("Nothing to paste"); }).catch(function () { PE.toast("Use Ctrl+V to paste an image"); }); } else PE.toast("Use Ctrl+V to paste an image"); }
+	function paintClipboardImage(src, name, at, clip) { var meta = { how: "paste", clip: clip || "clipboard" }; if (!PE.doc) { PE.openImageSource(src, name || "Pasted image", meta); PE.setTool("move"); return; } PE.placeSource(src, name || "Pasted", at, meta); PE.setTool("move"); }
+	function pasteInternal() { if (PE.clipCanvas) paintClipboardImage(PE.clipCanvas, "Pasted layer", null, "editor"); else if (navigator.clipboard && navigator.clipboard.read) { navigator.clipboard.read().then(function (items) { for (var i = 0; i < items.length; i++) { var t = items[i].types.filter(function (t) { return /^image\//.test(t); })[0]; if (t) { items[i].getType(t).then(function (b) { return PE.decodeFile(b); }).then(function (im) { paintClipboardImage(im, "Pasted image"); }); return; } } PE.toast("Nothing to paste"); }).catch(function () { PE.toast("Use Ctrl+V to paste an image"); }); } else PE.toast("Use Ctrl+V to paste an image"); }
 	document.addEventListener("paste", function (e) {
 		if (/INPUT|TEXTAREA|SELECT/.test((e.target || {}).tagName || "") || PE.modalOpen()) return; var items = (e.clipboardData && e.clipboardData.items) || [];
 		for (var i = 0; i < items.length; i++) if (items[i].kind === "file" && /^image\//.test(items[i].type)) { var f = items[i].getAsFile(); e.preventDefault(); PE.decodeFile(f).then(function (im) { paintClipboardImage(im, "Pasted image"); }).catch(function () { PE.toast("Can't read that image"); }); return; }
 		var tx = e.clipboardData && e.clipboardData.getData("text/plain"); if (tx && PE.looksLikeLatex(tx)) { e.preventDefault(); PE.dlgEquation(null, null, tx.trim().replace(/^\$+|\$+$/g, "")); return; }
-		if (PE.clipCanvas) { e.preventDefault(); paintClipboardImage(PE.clipCanvas, "Pasted layer"); }
+		if (PE.clipCanvas) { e.preventDefault(); paintClipboardImage(PE.clipCanvas, "Pasted layer", null, "editor"); }
 	});
 	function align(how) {
 		var L = PE.active(), d = PE.doc; if (!L) return; var b = PE.bounds(L), dx = 0, dy = 0;
@@ -282,14 +301,14 @@ $("pe-share").addEventListener("click", function () { if (needDoc()) PE.dlgShare
 	function needDoc() { if (!PE.doc) { PE.toast("Open or create an image first"); return false; } return true; }
 
 	/* ---------- files ---------- */
-	function loadPsd(buf, name) {
+	function loadPsd(buf, name, meta) {
 		return loadScript("https://cdn.jsdelivr.net/npm/ag-psd@30.1.1/dist/bundle.js", function () { return window.agPsd; }).then(function (ag) {
 			var psd = ag.readPsd(new Uint8Array(buf), { skipThumbnail: true }), layers = [];
 			(function walk(list) { (list || []).forEach(function (n) { if (n.children) walk(n.children); else if (n.canvas) layers.push(n); }); })(psd.children);
-			if (!PE.newDoc(psd.width, psd.height, null, I.baseName(name))) return; var d = PE.doc; d.layers = [];
+			if (!PE.newDoc(psd.width, psd.height, null, I.baseName(name))) return; var d = PE.doc; d.layers = []; var from = Object.assign({ file: name }, meta || {}, { how: "psd" }); d.file = PE.mkSrc(from);
 			var MAP = { "normal": "source-over", "multiply": "multiply", "screen": "screen", "overlay": "overlay", "darken": "darken", "lighten": "lighten", "color dodge": "color-dodge", "color burn": "color-burn", "hard light": "hard-light", "soft light": "soft-light", "difference": "difference", "exclusion": "exclusion", "hue": "hue", "saturation": "saturation", "color": "color", "luminosity": "luminosity" };
 			if (!layers.length && psd.canvas) layers.push({ name: "Background", canvas: psd.canvas, left: 0, top: 0 });
-			layers.forEach(function (n) { var c = PE.clone(n.canvas), L = PE.makeLayer({ canvas: c, name: n.name || "Layer", x: n.left || 0, y: n.top || 0 }); L.visible = !n.hidden; L.opacity = n.opacity == null ? 1 : n.opacity; L.blend = MAP[n.blendMode] || "source-over"; d.layers.push(L); });
+			layers.forEach(function (n) { var c = PE.clone(n.canvas), L = PE.makeLayer({ canvas: c, name: n.name || "Layer", x: n.left || 0, y: n.top || 0, src: PE.mkSrc({ how: "psd", file: name }, c.width, c.height) }); L.visible = !n.hidden; L.opacity = n.opacity == null ? 1 : n.opacity; L.blend = MAP[n.blendMode] || "source-over"; d.layers.push(L); });
 			if (!d.layers.length) d.layers.push(PE.makeLayer({ name: "Layer 1" })); d.activeId = d.layers[d.layers.length - 1].id; PE.commit("Open PSD"); PE.dirty = false; PE.fit(); PE.emit("docsize"); PE.setTool("move");
 			if (layers.length) PE.toast("Opened " + layers.length + " layer" + (layers.length === 1 ? "" : "s") + " from the PSD (effects, text and adjustment layers are flattened)");
 		});
@@ -305,11 +324,12 @@ $("pe-share").addEventListener("click", function () { if (needDoc()) PE.dlgShare
 	function openFiles(files, opts) {
 		opts = opts || {}; files = Array.prototype.slice.call(files); if (!files.length) return;
 		var proj = files.filter(function (f) { return /\.mesproj$/i.test(f.name); })[0], psd = files.filter(function (f) { return /\.psd$/i.test(f.name); })[0], imgs = files.filter(function (f) { return /^image\//.test(f.type) || /\.(png|jpe?g|webp|gif|bmp|avif|svg|ico)$/i.test(f.name); });
-		if (proj) { if (!confirmReplace()) return; proj.arrayBuffer().then(PE.loadProject).then(function () { PE.setTool("move"); PE.toast("Project opened"); }).catch(function (e) { PE.toast(e.message); }); return; }
-		if (psd && !opts.place) { if (!confirmReplace()) return; psd.arrayBuffer().then(function (b) { return loadPsd(b, psd.name); }).catch(function (e) { PE.toast(e.message); }); return; }
+		var meta = function (f) { return { how: opts.how || "open", file: f.name, path: f.webkitRelativePath || "", bytes: f.size || 0, dir: opts.dir || "", hk: opts.hk || "" }; };
+		if (proj) { if (!confirmReplace()) return; proj.arrayBuffer().then(function (b) { return PE.loadProject(b, proj.name, meta(proj)); }).then(function () { PE.setTool("move"); PE.toast("Project opened"); }).catch(function (e) { PE.toast(e.message); }); return; }
+		if (psd && !opts.place) { if (!confirmReplace()) return; psd.arrayBuffer().then(function (b) { return loadPsd(b, psd.name, meta(psd)); }).catch(function (e) { PE.toast(e.message); }); return; }
 		if (!imgs.length) { PE.toast("That file type is not supported (use PNG, JPG, WebP, GIF, BMP, AVIF, SVG, PSD)"); return; }
 		var first = !PE.doc || (!opts.place && confirmReplace()); if (!PE.doc) first = true; else if (!opts.place && !first) return;
-		var chain = Promise.resolve(); imgs.forEach(function (f, i) { chain = chain.then(function () { return PE.decodeFile(f).then(function (im) { if (first && i === 0 && (!PE.doc || !opts.place)) { PE.openImageSource(im, f.name); } else PE.placeSource(im, I.baseName(f.name), opts.at); }).catch(function () { PE.toast("Can't read " + f.name); }); }); });
+		var chain = Promise.resolve(); imgs.forEach(function (f, i) { chain = chain.then(function () { return PE.decodeFile(f).then(function (im) { if (first && i === 0 && (!PE.doc || !opts.place)) { PE.openImageSource(im, f.name, meta(f)); } else PE.placeSource(im, I.baseName(f.name), opts.at, meta(f)); }).catch(function () { PE.toast("Can't read " + f.name); }); }); });
 		chain.then(function () { PE.setTool("move"); if (imgs.length > 1) PE.toast(imgs.length + " images added as layers"); });
 	}
 	function confirmReplace() { if (!PE.doc || !PE.dirty || PE.hist.stack.length < 2) return true; return window.confirm("Replace the current image? Unsaved changes will be lost (you can still restore the last auto-saved session)."); }
@@ -319,14 +339,18 @@ $("pe-share").addEventListener("click", function () { if (needDoc()) PE.dlgShare
 	var stage = PE.els.stage;
 	["dragenter", "dragover"].forEach(function (ev) { stage.addEventListener(ev, function (e) { if (e.dataTransfer && Array.prototype.indexOf.call(e.dataTransfer.types || [], "Files") >= 0) { e.preventDefault(); stage.classList.add("is-drop"); } }); });
 	["dragleave", "drop"].forEach(function (ev) { stage.addEventListener(ev, function () { stage.classList.remove("is-drop"); }); });
-	stage.addEventListener("drop", function (e) { if (e.dataTransfer && e.dataTransfer.files && e.dataTransfer.files.length) { e.preventDefault(); var at = PE.doc ? PE.toDoc(e.clientX, e.clientY) : null; openFiles(e.dataTransfer.files, { place: !!PE.doc, at: null }); } });
-	function saveProject() { if (!needDoc()) return; PE.projectBlob().then(function (b) { PE.download(b, I.cleanFileName(PE.doc.name) + ".mesproj"); PE.dirty = false; PE.toast("Project saved (open it again with File → Open)"); }); }
+	stage.addEventListener("drop", function (e) { if (e.dataTransfer && e.dataTransfer.files && e.dataTransfer.files.length) { e.preventDefault(); var at = PE.doc ? PE.toDoc(e.clientX, e.clientY) : null; openFiles(e.dataTransfer.files, { place: !!PE.doc, at: null, how: "drop" }); } });
+	function saveProject() { if (!needDoc()) return; PE.projectBlob().then(function (b) { PE.download(b, I.cleanFileName(PE.doc.name) + ".mesproj"); PE.dirty = false; saveState(); PE.toast("Project saved to your Downloads (open it again with File → Open)"); }).catch(function (e) { PE.toast("Could not save the project: " + (e && e.message || e)); }); }
+	PE.saveProject = saveProject;
+	/* the top-bar Save button shows a dot while there are changes that are not in a saved project file */
+	function saveState() { setTimeout(function () { var b = $("pe-save"), on = !!(PE.doc && PE.dirty && PE.hist.stack.length > 1); if (!b) return; b.classList.toggle("is-dirty", on); b.title = "Save project: a .mesproj file that keeps every layer, group and comp (" + MOD + "S)" + (on ? ". You have changes that are not saved in a project file yet." : ""); }, 0); }
+	PE.saveState = saveState; PE.on("history", saveState); PE.on("docsize", saveState);
 
 	/* ---------- autosave (IndexedDB) ---------- */
 	function idb(fn) { return new Promise(function (res, rej) { var r = indexedDB.open("mes-photo-editor", 1); r.onupgradeneeded = function () { r.result.createObjectStore("kv"); }; r.onsuccess = function () { var db = r.result; Promise.resolve(fn(db.transaction("kv", "readwrite").objectStore("kv"))).then(function (v) { res(v); }, rej); }; r.onerror = function () { rej(r.error); }; }); }
 	function req(r) { return new Promise(function (res, rej) { r.onsuccess = function () { res(r.result); }; r.onerror = function () { rej(r.error); }; }); }
 	var asTimer = 0; PE.scheduleAutosave = function () { clearTimeout(asTimer); asTimer = setTimeout(function () { if (!PE.doc || PE.hist.stack.length < 2) return; PE.projectBlob().then(function (b) { return idb(function (st) { return req(st.put({ blob: b, t: Date.now(), name: PE.doc.name, w: PE.doc.w, h: PE.doc.h }, "auto")); }); }).catch(function () {}); }, 5000); };
-	function restoreAuto() { idb(function (st) { return req(st.get("auto")); }).then(function (r) { if (!r) return; return r.blob.arrayBuffer().then(PE.loadProject).then(function () { PE.setTool("move"); PE.toast("Restored your last session"); }); }).catch(function () { PE.toast("Could not restore"); }); }
+	function restoreAuto() { idb(function (st) { return req(st.get("auto")); }).then(function (r) { if (!r) return; return r.blob.arrayBuffer().then(function (b) { return PE.loadProject(b, "autosave"); }).then(function () { PE.setTool("move"); PE.toast("Restored your last session"); }); }).catch(function () { PE.toast("Could not restore"); }); }
 	function checkAuto() { try { idb(function (st) { return req(st.get("auto")); }).then(function (r) { var b = $("pe-restore"); if (r && b) { b.hidden = false; b.textContent = "↺ Restore last session (" + r.name + ", " + r.w + "×" + r.h + ", " + new Date(r.t).toLocaleString() + ")"; } }).catch(function () {}); } catch (e) {} }
 	window.addEventListener("beforeunload", function (e) { if (PE.doc && PE.dirty && PE.hist.stack.length > 1) { e.preventDefault(); e.returnValue = ""; } });
 
@@ -335,7 +359,8 @@ $("pe-share").addEventListener("click", function () { if (needDoc()) PE.dlgShare
 	function adj(list) { return list.map(function (a) { return { label: a.title, act: function () { if (needDoc()) PE.runAdjust(a.id); } }; }); }
 	var MENUS = [
 		{ label: "File", items: [{ label: "New image…", act: function () { PE.dlgNew(); } }, { label: "Open image / PSD / project…", act: function () { pickFiles("image/*,.psd,.mesproj", true, function (fs) { openFiles(fs); }); } }, { label: "Insert equation (LaTeX)…", act: function () { PE.dlgEquation(null, null); } }, { label: "Place image(s) as layers…", act: function () { if (!needDoc()) return; pickFiles("image/*", true, function (fs) { openFiles(fs, { place: true }); }); } }, "-",
-			{ label: "Export the selected group as its own image…", act: function () { if (needDoc()) PE.dlgExportGroup(); } }, { label: "Export as PNG / JPEG / WebP…", key: MOD + "Shift+S", act: function () { if (needDoc()) PE.dlgExport(); } }, { label: "Save project (keeps layers)", key: MOD + "S", act: saveProject }, { label: "Save as PSD (Photoshop)", act: savePsd }, { label: "Save as GIMP file (.xcf)", act: function () { PE.saveXcf(); } }, { label: "Connect a folder on this computer…", act: function () { PE.dlgFolder(); } }, { label: "Export all comps as pictures (ZIP)…", act: function () { if (needDoc()) PE.dlgExportComps(); } }, { label: "Copy merged image to clipboard", act: function () { if (needDoc()) copyMerged(); } }, { label: "Share as a link (temporary upload)…", act: function () { if (needDoc()) PE.dlgShare(); } }, "-", { label: "Bulk convert images…", act: function () { window.open("/image-converter", "_blank"); } }] },
+			{ label: "Save project", tag: "keeps layers", icon: "💾", hi: true, key: MOD + "S", act: saveProject, title: "A .mesproj file with every layer, group, mask, text and comp: open it again here to keep working" }, { label: "Export as PNG / JPEG / WebP…", key: MOD + "Shift+S", act: function () { if (needDoc()) PE.dlgExport(); } }, { label: "Export the selected group as its own image…", act: function () { if (needDoc()) PE.dlgExportGroup(); } }, { label: "Export all comps as pictures (ZIP)…", act: function () { if (needDoc()) PE.dlgExportComps(); } }, { label: "Save as PSD (Photoshop)", act: savePsd }, { label: "Save as GIMP file (.xcf)", act: function () { PE.saveXcf(); } }, "-",
+			{ label: "Where are my images? (files, folder, autosave)…", act: function () { PE.dlgFolder("where"); } }, { label: "Connect a folder on this computer…", act: function () { PE.dlgFolder("folder"); } }, "-", { label: "Copy merged image to clipboard", act: function () { if (needDoc()) copyMerged(); } }, { label: "Share as a link (temporary upload)…", act: function () { if (needDoc()) PE.dlgShare(); } }, "-", { label: "Bulk convert images…", act: function () { window.open("/image-converter", "_blank"); } }] },
 		{ label: "Edit", items: [{ label: "Undo", key: MOD + "Z", act: function () { PE.undo(); } }, { label: "Redo", key: MOD + "Shift+Z", act: function () { PE.redo(); } }, "-", { label: "Cut", key: MOD + "X", act: function () { copySel(true); } }, { label: "Copy", key: MOD + "C", act: function () { copySel(false); } }, { label: "Copy merged", act: function () { if (needDoc()) copyMerged(); } }, { label: "Paste as new layer", key: MOD + "V", act: pasteInternal }, "-",
 			{ label: "Erase selection with AI (remove object)", act: function () { if (needSel()) PE.aiEraseRun(); } }, { label: "Clear selection (transparent)", key: "Del", act: clearSel }, { label: "Fill with foreground colour", key: "Alt+Backspace", act: function () { if (needDoc()) fillSel(PE.fg); } }, { label: "Fill with background colour", key: MOD + "Backspace", act: function () { if (needDoc()) fillSel(PE.bg); } }, "-",
 			{ label: "Select all", key: MOD + "A", act: function () { if (needDoc()) { PE.selAll(); PE.commit("Select all"); } } }, { label: "Deselect", key: MOD + "D", act: function () { if (PE.sel) { PE.selClear(); PE.commit("Deselect"); } } }, { label: "Invert selection", key: MOD + "Shift+I", act: function () { if (needDoc()) { PE.selInvert(); PE.commit("Invert selection"); } } },
@@ -356,7 +381,7 @@ $("pe-share").addEventListener("click", function () { if (needDoc()) PE.dlgShare
 		MENUS.forEach(function (m) {
 			var b = el("button", "pe-menu", esc(m.label)); b.type = "button"; b.setAttribute("aria-haspopup", "true"); b.setAttribute("aria-expanded", "false");
 			var pop = el("div", "pe-pop"); pop.hidden = true; pop.setAttribute("role", "menu");
-			m.items.forEach(function (it) { if (it === "-") { pop.appendChild(el("div", "pe-sep")); return; } var r = el("button", "pe-item", "<span>" + esc(it.label) + "</span>" + (it.key ? "<kbd>" + esc(it.key) + "</kbd>" : "")); r.type = "button"; r.setAttribute("role", "menuitem"); r.addEventListener("click", function () { closeMenu(); it.act(); }); pop.appendChild(r); });
+			m.items.forEach(function (it) { if (it === "-") { pop.appendChild(el("div", "pe-sep")); return; } var r = el("button", "pe-item" + (it.hi ? " pe-item--hi" : ""), "<span>" + (it.icon ? '<span class="pe-iic" aria-hidden="true">' + esc(it.icon) + "</span>" : "") + esc(it.label) + (it.tag ? ' <small class="pe-itag">' + esc(it.tag) + "</small>" : "") + "</span>" + (it.key ? "<kbd>" + esc(it.key) + "</kbd>" : "")); r.type = "button"; r.setAttribute("role", "menuitem"); if (it.title) r.title = it.title; r.addEventListener("click", function () { closeMenu(); it.act(); }); pop.appendChild(r); });
 			var wrap = el("div", "pe-mwrap"); wrap.appendChild(b); wrap.appendChild(pop); bar.appendChild(wrap);
 			b.addEventListener("click", function (e) { e.stopPropagation(); if (openMenu && openMenu.b === b) closeMenu(); else showMenu(b, pop, wrap); }); b.addEventListener("mouseenter", function () { if (openMenu && openMenu.b !== b) showMenu(b, pop, wrap); });
 		});
@@ -365,7 +390,7 @@ $("pe-share").addEventListener("click", function () { if (needDoc()) PE.dlgShare
 	function closeMenu() { if (openMenu) { openMenu.pop.hidden = true; openMenu.pop.style.left = ""; openMenu.b.setAttribute("aria-expanded", "false"); openMenu = null; } }
 	document.addEventListener("click", closeMenu); document.addEventListener("keydown", function (e) { if (e.key === "Escape") closeMenu(); });
 	function shortcuts() {
-		var rows = [["V M L W C", "Move, Marquee, Lasso, Magic wand, Crop"], ["B E S R", "Brush, Eraser, Clone stamp, Retouch"], ["K G I", "Paint bucket, Gradient, Eyedropper"], ["T U", "Text, Shapes & annotations"], ["H / Space", "Pan (hold Space with any tool)"], ["Z, Ctrl + wheel", "Zoom"], ["[ and ]", "Smaller / larger brush"], ["X / D", "Swap / reset colours"], [MOD + "Z, " + MOD + "Shift+Z", "Undo, redo"], [MOD + "A, " + MOD + "D, " + MOD + "Shift+I", "Select all, deselect, invert selection"], [MOD + "C X V", "Copy, cut, paste as layer"], [MOD + "J, " + MOD + "E", "Duplicate layer, merge down"], ["Delete", "Clear selection (or delete the layer)"], ["Arrow keys", "Nudge the layer (Shift = 10 px)"], ["Enter / Esc", "Apply crop, close polygon / cancel"], [MOD + "0 / " + MOD + "1", "Fit on screen / 100%"], [MOD + "S", "Save project"], [MOD + "Shift+S", "Export PNG / JPEG / WebP"]];
+		var rows = [["V M L W C", "Move, Marquee, Lasso, Magic wand, Crop"], ["B E S R", "Brush, Eraser, Clone stamp, Retouch"], ["K G I", "Paint bucket, Gradient, Eyedropper"], ["T U", "Text, Shapes & annotations"], ["H / Space", "Pan (hold Space with any tool)"], ["Z, Ctrl + wheel", "Zoom"], ["[ and ]", "Smaller / larger brush"], ["X / D", "Swap / reset colours"], [MOD + "Z, " + MOD + "Shift+Z", "Undo, redo"], [MOD + "A, " + MOD + "D, " + MOD + "Shift+I", "Select all, deselect, invert selection"], [MOD + "C X V", "Copy, cut, paste as layer"], [MOD + "J, " + MOD + "E", "Duplicate layer, merge down"], ["Delete", "Clear selection (or delete the layer)"], ["Arrow keys", "Nudge the layer (Shift = 10 px)"], ["Enter / Esc", "Apply crop, close polygon / cancel"], [MOD + "0 / " + MOD + "1", "Fit on screen / 100%"], [MOD + "S", "Save project (keeps layers)"], [MOD + "Shift+S", "Export PNG / JPEG / WebP"]];
 		var w = el("div"); w.innerHTML = '<table class="pe-keys">' + rows.map(function (r) { return "<tr><td><kbd>" + esc(r[0]) + "</kbd></td><td>" + esc(r[1]) + "</td></tr>"; }).join("") + "</table>"; PE.modal({ title: "Keyboard shortcuts", body: w, buttons: [{ label: "Close", primary: true, act: function (m) { m.close(); } }] });
 	}
 	function tips() {
@@ -378,7 +403,7 @@ $("pe-share").addEventListener("click", function () { if (needDoc()) PE.dlgShare
 		function build() {
 			var list = [];
 			PE.toolOrder.forEach(function (id) { var t = PE.tools[id]; if (t) list.push({ k: "Tool", l: t.name, sub: t.key ? "key " + t.key.toUpperCase() : "", hay: (t.name + " " + (HELP[id] || t.hint || "")).toLowerCase(), run: function () { PE.setTool(id); } }); });
-			MENUS.forEach(function (m) { m.items.forEach(function (it) { if (it !== "-") list.push({ k: m.label, l: it.label.replace(/…$/, ""), sub: it.key || "", hay: (it.label + " " + m.label).toLowerCase(), run: function () { it.act(); } }); }); });
+			MENUS.forEach(function (m) { m.items.forEach(function (it) { if (it !== "-") list.push({ k: m.label, l: it.label.replace(/…$/, "") + (it.tag ? " (" + it.tag + ")" : ""), sub: it.key || "", hay: (it.label + " " + (it.tag || "") + " " + (it.title || "") + " " + m.label).toLowerCase(), run: function () { it.act(); } }); }); });
 			if (PE.doc) PE.doc.layers.slice().reverse().forEach(function (L) { if (!PE.isGroup(L) || true) list.push({ k: PE.isGroup(L) ? "Group" : "Layer", l: L.name, sub: PE.isGroup(L) ? "group" : (L.type === "text" ? "text layer" : "layer"), hay: L.name.toLowerCase(), run: function () { PE.setActive(L.id); PE.emit("layers"); } }); });
 			return list;
 		}
@@ -443,7 +468,7 @@ $("pe-share").addEventListener("click", function () { if (needDoc()) PE.dlgShare
 	$("pe-restore").addEventListener("click", restoreAuto);
 	if (S.opt) for (var k in S.opt) if (PE.opt[k]) for (var kk in S.opt[k]) if (kk in PE.opt[k]) PE.opt[k][kk] = S.opt[k][kk];
 	PE.opt.shape.next = 1; PE.opt.text.str = "Text";
-	showTab(S.tab === "comps" ? "comps" : "hist"); buildMenus(); buildTools(); PE.initPointer(); PE.initTextEditor(); buildColor(); resize(); PE.setTool("move"); status(); checkAuto();
+	showTab(S.tab === "comps" ? "comps" : "hist"); buildMenus(); buildTools(); PE.initPointer(); PE.initTextEditor(); buildColor(); resize(); PE.setTool("move"); status(); checkAuto(); saveState();
 	if (S.win) { autoWin = true; toggleWin(true); }
 	var q = new URLSearchParams(location.search); if (q.get("new")) { var wh = (q.get("new") || "").split("x"); if (wh.length === 2) PE.newDoc(+wh[0], +wh[1], "#ffffff"); }
 	window.PEdebug = PE;

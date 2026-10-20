@@ -324,7 +324,33 @@ var MESPixel = (function () {
 		s = 0; for (i = 255; i >= 0; i--) { s += hist[i]; if (s > lim) { w = i; break; } }
 		if (w - b < 2) { b = 0; w = 255; } return { black: b, white: w };
 	}
-	var api = { clamp: clamp, hexToRgb: hexToRgb, rgbToHex: rgbToHex, rgbToHsl: rgbToHsl, hslToRgb: hslToRgb, histogram: histogram, identityLUT: identityLUT, applyLUT: applyLUT, levelsLUT: levelsLUT, curveLUT: curveLUT,
+	/* ---------- UI helpers (pure): where a layer came from, the width of the side panels ---------- */
+	var HOW = { open: "Opened from a file", drop: "Dropped onto the editor", paste: "Pasted", folder: "From a folder on this computer", "folder-ro": "From a folder (read only)", psd: "From a Photoshop file", project: "From a project file", autosave: "From the autosaved session", merge: "Merged from layers", made: "Made in the editor" };
+	function bytesText(b) { b = +b || 0; return b < 1024 ? b + " B" : b < 1048576 ? (b / 1024).toFixed(b < 10240 ? 1 : 0) + " KB" : (b / 1048576).toFixed(b < 10485760 ? 1 : 0) + " MB"; }
+	/* s = layer.src: {how, file, path, dir, bytes, from: [names], copy, ai: [steps], clip} -> {how, label, where, bytes, text} */
+	function describeSource(s) {
+		s = s || {}; var how = HOW[s.how] ? s.how : "made", label = HOW[how], where = "";
+		if (how === "folder") where = (s.dir ? s.dir + "/" : "") + (s.file || "");
+		else if (how === "folder-ro") where = s.path || ((s.dir ? s.dir + "/" : "") + (s.file || ""));
+		else if (how === "paste") label = s.clip === "editor" ? "Pasted (copied inside the editor)" : "Pasted from the clipboard";
+		else if (how === "merge") { var f = s.from || []; where = f.slice(0, 3).join(", ") + (f.length > 3 ? " and " + (f.length - 3) + " more" : ""); }
+		else if (how !== "made") where = s.path || s.file || "";
+		var bytes = s.bytes > 0 ? bytesText(s.bytes) : "", ai = (s.ai || []).join(", ");
+		return { how: how, label: label, where: where, bytes: bytes, text: label + (where ? ": " + where : "") + (bytes ? " (" + bytes + ")" : "") + (s.copy ? ", duplicated" : "") + (ai ? " · then AI: " + ai : "") };
+	}
+	/* side panels: a width in em kept between 12 em and 48 em, and never so wide that the picture gets less than 240 px */
+	function panelClamp(em, mainPx, otherPx, fontPx) {
+		fontPx = fontPx > 0 ? fontPx : 13; var max = Math.max(12, Math.min(48, ((mainPx || 0) - (otherPx || 0) - 240) / fontPx)); em = +em; if (!isFinite(em)) em = 17.5;
+		return Math.round(clamp(em, 12, max) * 100) / 100;
+	}
+	/* arrow keys on the focused grip: the grip moves with the arrow, so the panels get wider when it moves towards the picture's side */
+	function panelKey(key, shift, sideLeft) {
+		var step = shift ? 4 : 1;
+		if (key === "ArrowLeft" || key === "ArrowRight") return { d: (key === "ArrowRight" ? 1 : -1) * (sideLeft ? 1 : -1) * step };
+		if (key === "Home") return { to: "min" }; if (key === "End") return { to: "max" }; if (key === "Enter") return { to: "reset" };
+		return null;
+	}
+	var api = { describeSource: describeSource, bytesText: bytesText, panelClamp: panelClamp, panelKey: panelKey, clamp: clamp, hexToRgb: hexToRgb, rgbToHex: rgbToHex, rgbToHsl: rgbToHsl, hslToRgb: hslToRgb, histogram: histogram, identityLUT: identityLUT, applyLUT: applyLUT, levelsLUT: levelsLUT, curveLUT: curveLUT,
 		brightnessContrast: brightnessContrast, exposure: exposure, hueSat: hueSat, vibrance: vibrance, temperature: temperature, invert: invert, grayscale: grayscale, sepia: sepia, threshold: threshold, posterize: posterize,
 		gaussianBlur: gaussianBlur, boxBlur: boxBlur, unsharp: unsharp, noise: noise, pixelate: pixelate, vignette: vignette, convolve: convolve, floodMask: floodMask, growShrinkMask: growShrinkMask, featherMask: featherMask, invertMask: invertMask,
 		maskBounds: maskBounds, opaqueBounds: opaqueBounds, blendByMask: blendByMask, autoLevels: autoLevels, premultiply: premultiply, unpremultiply: unpremultiply };
@@ -357,8 +383,12 @@ var MESPixel = (function () {
 		o = o || {}; var d = PE.doc, w = o.w || (d ? d.w : 1), h = o.h || (d ? d.h : 1);
 		var c = o.canvas || mk(w, h);
 		return { id: d ? d.next++ : 1, name: o.name || "Layer", type: o.type || "raster", canvas: c, cx: o.cx != null ? o.cx : (o.x || 0) + c.width / 2, cy: o.cy != null ? o.cy : (o.y || 0) + c.height / 2,
-			sx: 1, sy: 1, rot: 0, visible: true, opacity: 1, blend: "source-over", locked: false, text: o.text || null, mask: null, editMask: false, rev: 0, _snap: null, group: null, collapsed: false, _p: null };
+			sx: 1, sy: 1, rot: 0, visible: true, opacity: 1, blend: "source-over", locked: false, text: o.text || null, mask: null, editMask: false, rev: 0, _snap: null, group: null, collapsed: false, _p: null, src: o.src || null };
 	};
+	/* where a layer came from (shown in File -> Files and folders): {how: open|drop|paste|folder|folder-ro|psd|project|autosave|merge|made, file, path, dir, bytes, w, h, t, hk (memory-only key of a folder file handle), copy, ai: [steps]}.
+	 * src objects are never changed in place (history snapshots share them): every update makes a new object. */
+	PE.mkSrc = function (meta, w, h) { var s = {}; meta = meta || {}; for (var k in meta) if (meta[k] != null && meta[k] !== "") s[k] = meta[k]; if (!s.how) s.how = "made"; if (w) { s.w = Math.round(w); s.h = Math.round(h); } s.t = Date.now(); return s; };
+	PE.markAi = function (L, what) { if (!L) return; var s = L.src || { how: "made" }, ai = (s.ai || []).concat([what]).slice(-6); L.src = Object.assign({}, s, { ai: ai }); };
 	PE.active = function () { var d = PE.doc; if (!d) return null; for (var i = 0; i < d.layers.length; i++) if (d.layers[i].id === d.activeId) return d.layers[i]; return d.layers[d.layers.length - 1] || null; };
 	PE.layerById = function (id) { var d = PE.doc; for (var i = 0; i < d.layers.length; i++) if (d.layers[i].id === id) return d.layers[i]; return null; };
 	PE.indexOf = function (L) { return PE.doc.layers.indexOf(L); };
@@ -606,7 +636,7 @@ var MESPixel = (function () {
 	var H = PE.hist = { stack: [], idx: -1 };
 	function snapLayer(L) {
 		var s = L._snap; if (!s || s.rev !== L.rev || (L.mask ? !s.m : !!s.m)) { s = L._snap = { rev: L.rev, c: clone(L.canvas), m: L.mask ? clone(L.mask) : null }; }
-		return { meta: { id: L.id, group: L.group, collapsed: L.collapsed, name: L.name, type: L.type, cx: L.cx, cy: L.cy, sx: L.sx, sy: L.sy, rot: L.rot, visible: L.visible, opacity: L.opacity, blend: L.blend, locked: L.locked, text: L.text ? JSON.parse(JSON.stringify(L.text)) : null, eq: L.eq ? JSON.parse(JSON.stringify(L.eq)) : null, editMask: L.editMask }, snap: s };
+		return { meta: { id: L.id, group: L.group, collapsed: L.collapsed, name: L.name, type: L.type, cx: L.cx, cy: L.cy, sx: L.sx, sy: L.sy, rot: L.rot, visible: L.visible, opacity: L.opacity, blend: L.blend, locked: L.locked, text: L.text ? JSON.parse(JSON.stringify(L.text)) : null, eq: L.eq ? JSON.parse(JSON.stringify(L.eq)) : null, editMask: L.editMask, src: L.src || null }, snap: s };
 	}
 	var lastSel = { ver: -1, obj: null };
 	function takeSnapshot(label) {
@@ -640,11 +670,11 @@ var MESPixel = (function () {
 		var L = PE.makeLayer({ name: bg ? "Background" : "Layer 1" }); if (bg) { var x = L.canvas.getContext("2d"); x.fillStyle = bg; x.fillRect(0, 0, w, h); }
 		PE.doc.layers.push(L); PE.doc.activeId = L.id; PE.commit("New document"); PE.dirty = false; PE.emit("docsize"); PE.emit("sel"); PE.fit(); return true;
 	};
-	PE.openImageSource = function (src, name) {
-		var w = src.naturalWidth || src.width, h = src.naturalHeight || src.height;
+	PE.openImageSource = function (src, name, meta) {
+		var w = src.naturalWidth || src.width, h = src.naturalHeight || src.height, w0 = w, h0 = h;
 		if (w > PE.MAXPX || h > PE.MAXPX || w * h > PE.MAXAREA) { var s = Math.min(PE.MAXPX / w, PE.MAXPX / h, Math.sqrt(PE.MAXAREA / (w * h))), c = mk(w * s, h * s), x = c.getContext("2d"); x.imageSmoothingQuality = "high"; x.drawImage(src, 0, 0, c.width, c.height); src = c; w = c.width; h = c.height; PE.toast("Very large image: scaled down to " + w + " × " + h + " to fit the browser"); }
 		if (!PE.newDoc(w, h, null, I.baseName(name || "image"))) return false;
-		var L = PE.doc.layers[0]; L.name = "Background"; L.canvas.getContext("2d").drawImage(src, 0, 0); L.rev++; PE.commit("Open " + (name || "image")); PE.dirty = false; PE.fit(); return true;
+		var L = PE.doc.layers[0]; L.name = "Background"; L.canvas.getContext("2d").drawImage(src, 0, 0); L.rev++; L.src = PE.mkSrc(meta || { how: "open", file: name }, w0, h0); PE.doc.file = L.src; PE.commit("Open " + (name || "image")); PE.dirty = false; PE.fit(); return true;
 	};
 	PE.decodeFile = function (file) {
 		if (window.createImageBitmap && !/svg/.test(file.type)) return createImageBitmap(file).catch(function () { return viaImg(file); });
@@ -652,9 +682,9 @@ var MESPixel = (function () {
 	};
 	function viaImg(file) { return new Promise(function (res, rej) { var u = URL.createObjectURL(file), im = new Image(); im.onload = function () { URL.revokeObjectURL(u); res(im); }; im.onerror = function () { URL.revokeObjectURL(u); rej(new Error("Can't read this image")); }; im.src = u; }); }
 	/* add an image / canvas as a new layer, centred (scaled down if bigger than the document) */
-	PE.placeSource = function (src, name, at) {
+	PE.placeSource = function (src, name, at, meta) {
 		var w = src.naturalWidth || src.width, h = src.naturalHeight || src.height, c = mk(w, h); c.getContext("2d").drawImage(src, 0, 0);
-		var L = PE.makeLayer({ canvas: c, name: name || "Layer", cx: at ? at.x : PE.doc.w / 2, cy: at ? at.y : PE.doc.h / 2 });
+		var L = PE.makeLayer({ canvas: c, name: name || "Layer", cx: at ? at.x : PE.doc.w / 2, cy: at ? at.y : PE.doc.h / 2, src: meta ? PE.mkSrc(meta, w, h) : null });
 		if (!at && (w > PE.doc.w || h > PE.doc.h)) { var s = Math.min(PE.doc.w / w, PE.doc.h / h); L.sx = L.sy = s; }
 		if (!at) { L.cx = Math.round(PE.doc.w / 2 * 2) / 2; L.cy = Math.round(PE.doc.h / 2 * 2) / 2; if (PE.isIdentity(L)) { L.cx = Math.round(L.cx - w / 2) + w / 2; L.cy = Math.round(L.cy - h / 2) + h / 2; } }
 		PE.addLayer(L); PE.commit("Place " + (name || "image")); return L;
@@ -665,7 +695,7 @@ var MESPixel = (function () {
 	PE.duplicateLayer = function (L) {
 		L = L || PE.active(); if (!L) return; var d = PE.doc, block = PE.blockOf(L), map = {}, copies = block.map(function (B) {
 			var n = PE.makeLayer({ canvas: clone(B.canvas), type: B.type, name: B.name + (B === L ? " copy" : ""), text: B.text ? JSON.parse(JSON.stringify(B.text)) : null }); map[B.id] = n;
-			["cx", "cy", "sx", "sy", "rot", "visible", "opacity", "blend", "collapsed"].forEach(function (k) { n[k] = B[k]; }); if (B.eq) n.eq = JSON.parse(JSON.stringify(B.eq)); if (B.mask) n.mask = clone(B.mask); return n; });
+			["cx", "cy", "sx", "sy", "rot", "visible", "opacity", "blend", "collapsed"].forEach(function (k) { n[k] = B[k]; }); if (B.eq) n.eq = JSON.parse(JSON.stringify(B.eq)); if (B.mask) n.mask = clone(B.mask); if (B.src) n.src = Object.assign({}, B.src, { copy: true }); return n; });
 		copies.forEach(function (n, i) { var B = block[i]; n.group = B === L ? L.group : (map[B.group] ? map[B.group].id : L.group); });
 		var at = d.layers.indexOf(L) + 1; Array.prototype.splice.apply(d.layers, [at, 0].concat(copies)); d.activeId = copies[copies.length - 1].id; PE.relink(); PE.commit("Duplicate " + (PE.isGroup(L) ? "group" : "layer"));
 	};
@@ -707,7 +737,7 @@ var MESPixel = (function () {
 		var x0 = 1e9, y0 = 1e9, x1 = -1e9, y1 = -1e9; list.forEach(function (L) { var b = PE.bounds(L); x0 = Math.min(x0, b.x); y0 = Math.min(y0, b.y); x1 = Math.max(x1, b.x + b.w); y1 = Math.max(y1, b.y + b.h); });
 		x0 = Math.floor(x0); y0 = Math.floor(y0); var W = Math.ceil(x1) - x0, Hh = Math.ceil(y1) - y0; if (W * Hh > PE.MAXAREA) { PE.toast("Merged layer would be too large"); return; }
 		var c = mk(W, Hh), x = c.getContext("2d"); x.imageSmoothingQuality = "high"; list.forEach(function (L) { drawLayer(x, L, [1, 0, 0, 1, -x0, -y0], "merge", W, Hh); });
-		var top = list[list.length - 1], n = PE.makeLayer({ canvas: c, name: list[0].name, x: x0, y: y0 }), at = d.layers.indexOf(top); n.group = top.group;
+		var top = list[list.length - 1], n = PE.makeLayer({ canvas: c, name: list[0].name, x: x0, y: y0, src: { how: "merge", from: list.map(function (L) { return L.name; }).reverse(), t: Date.now() } }), at = d.layers.indexOf(top); n.group = top.group;
 		d.layers = d.layers.filter(function (L) { return list.indexOf(L) < 0; }); d.layers.splice(Math.min(at - list.length + 1, d.layers.length), 0, n); d.activeId = n.id; PE.relink(); PE.commit(label || "Merge layers");
 	};
 	PE.mergeDown = function () { var d = PE.doc, L = PE.active(), i = PE.indexOf(L); if (!L || PE.isGroup(L)) { PE.toast("Select a normal layer to merge"); return; } var below = d.layers[i - 1]; if (!below || PE.isGroup(below) || below.group !== L.group) { PE.toast("There is no layer directly below in this group"); return; } PE.mergeLayers([below, L], "Merge down"); };
@@ -800,7 +830,7 @@ var MESPixel = (function () {
 	PE.projectBlob = function () {
 		var d = PE.doc, files = [], metas = [], jobs = [];
 		d.layers.forEach(function (L) {
-			var m = { id: L.id, group: L.group, collapsed: L.collapsed, name: L.name, type: L.type, cx: L.cx, cy: L.cy, sx: L.sx, sy: L.sy, rot: L.rot, visible: L.visible, opacity: L.opacity, blend: L.blend, locked: L.locked, text: L.text, w: L.canvas.width, h: L.canvas.height, hasMask: !!L.mask, eq: L.eq || null }; metas.push(m);
+			var m = { id: L.id, group: L.group, collapsed: L.collapsed, name: L.name, type: L.type, cx: L.cx, cy: L.cy, sx: L.sx, sy: L.sy, rot: L.rot, visible: L.visible, opacity: L.opacity, blend: L.blend, locked: L.locked, text: L.text, w: L.canvas.width, h: L.canvas.height, hasMask: !!L.mask, eq: L.eq || null, src: L.src ? Object.assign({}, L.src, { hk: undefined }) : null }; metas.push(m);
 			jobs.push(canvasBytes(L.canvas).then(function (u) { files.push({ name: "layer-" + L.id + ".png", data: u }); }));
 			if (L.mask) jobs.push(canvasBytes(L.mask).then(function (u) { files.push({ name: "mask-" + L.id + ".png", data: u }); }));
 		});
@@ -810,14 +840,14 @@ var MESPixel = (function () {
 		});
 	};
 	function loadPng(u8) { return new Promise(function (res, rej) { var u = URL.createObjectURL(new Blob([u8], { type: "image/png" })), im = new Image(); im.onload = function () { var c = mk(im.naturalWidth, im.naturalHeight); c.getContext("2d").drawImage(im, 0, 0); URL.revokeObjectURL(u); res(c); }; im.onerror = function () { rej(new Error("bad layer image")); }; im.src = u; }); }
-	PE.loadProject = function (buf) {
+	PE.loadProject = function (buf, fileName, meta) {
 		var files = I.zipRead(new Uint8Array(buf)); if (!files) return Promise.reject(new Error("Not a MES project file"));
 		var by = {}; files.forEach(function (f) { by[f.name] = f.data; }); if (!by["project.json"]) return Promise.reject(new Error("Not a MES project file"));
 		var p = JSON.parse(new TextDecoder().decode(by["project.json"])), layers = [];
 		return Promise.all(p.layers.map(function (m, i) {
-			return loadPng(by["layer-" + m.id + ".png"]).then(function (c) { var L = PE.makeLayer({ canvas: c, name: m.name, type: m.type, text: m.text }); L.id = m.id; L.eq = m.eq || null; ["cx", "cy", "sx", "sy", "rot", "visible", "opacity", "blend", "locked", "group", "collapsed"].forEach(function (k) { if (m[k] !== undefined) L[k] = m[k]; }); layers[i] = L; return m.hasMask ? loadPng(by["mask-" + m.id + ".png"]).then(function (mc) { L.mask = mc; }) : null; });
+			return loadPng(by["layer-" + m.id + ".png"]).then(function (c) { var L = PE.makeLayer({ canvas: c, name: m.name, type: m.type, text: m.text }); L.id = m.id; L.eq = m.eq || null; L.src = m.src || (m.type === "group" ? null : { how: fileName === "autosave" ? "autosave" : "project", file: fileName === "autosave" ? "" : fileName || "" }); ["cx", "cy", "sx", "sy", "rot", "visible", "opacity", "blend", "locked", "group", "collapsed"].forEach(function (k) { if (m[k] !== undefined) L[k] = m[k]; }); layers[i] = L; return m.hasMask ? loadPng(by["mask-" + m.id + ".png"]).then(function (mc) { L.mask = mc; }) : null; });
 		})).then(function () {
-			PE.doc = { w: p.w, h: p.h, layers: layers, activeId: p.active, next: p.next || 1000, name: p.name || "Untitled", comps: p.comps || [] }; PE.relink(); PE.sel = null; H.stack = []; H.idx = -1; lastSel = { ver: -1 };
+			PE.doc = { w: p.w, h: p.h, layers: layers, activeId: p.active, next: p.next || 1000, name: p.name || "Untitled", comps: p.comps || [], file: PE.mkSrc(fileName === "autosave" ? { how: "autosave" } : Object.assign({ how: "project", file: fileName }, meta || {}, { how: "project" })) }; PE.relink(); PE.sel = null; H.stack = []; H.idx = -1; lastSel = { ver: -1 };
 			PE.commit("Open project"); PE.dirty = false; PE.emit("docsize"); PE.emit("sel"); PE.fit();
 		});
 	};
@@ -1412,7 +1442,7 @@ var MESPixel = (function () {
 	var openModal = null;
 	PE.modal = function (o) {
 		if (openModal) openModal.close(true);
-		var back = el("div", "pe-modal"), box = el("div", "pe-dlg" + (o.wide ? " pe-dlg--wide" : "")), head = el("div", "pe-dlg-h"), body = el("div", "pe-dlg-b"), foot = el("div", "pe-dlg-f");
+		var back = el("div", "pe-modal"), box = el("div", "pe-dlg" + (o.wide ? " pe-dlg--wide" : "") + (o.cls ? " " + o.cls : "")), head = el("div", "pe-dlg-h"), body = el("div", "pe-dlg-b"), foot = el("div", "pe-dlg-f");
 		head.innerHTML = "<b>" + esc(o.title) + "</b>"; var x = el("button", "pe-x", "✕"); x.type = "button"; x.setAttribute("aria-label", "Close"); head.appendChild(x);
 		body.appendChild(o.body); (o.buttons || []).forEach(function (b) { var bt = el("button", "pe-btn" + (b.primary ? " pe-btn--primary" : ""), esc(b.label)); bt.type = "button"; bt.addEventListener("click", function () { b.act(m); }); foot.appendChild(bt); b.el = bt; });
 		box.appendChild(head); box.appendChild(body); if (o.buttons) box.appendChild(foot); back.appendChild(box); (PE.els.root || document.body).appendChild(back);
@@ -1830,8 +1860,8 @@ var MESPixel = (function () {
 			getModel(v.model, prog).then(function (mod) { fill.style.width = "100%"; st.textContent = "Analysing…"; return infer(mod, src, function (t) { st.textContent = t; }); }).then(function (r) {
 				if (cancelled) return; var mc = maskCanvas(r, src.width, src.height, v.edge), o = PE.origin(L);
 				if (v.result === "sel") { var sc = mk(PE.doc.w, PE.doc.h); sc.getContext("2d").drawImage(mc, o.x, o.y); var sx = sc.getContext("2d"); sx.globalCompositeOperation = "source-in"; sx.fillStyle = "#fff"; sx.fillRect(0, 0, sc.width, sc.height); PE.selCombine(sc, "new"); PE.commit("Select subject (AI)"); }
-				else if (v.result === "cut") { var x = L.canvas.getContext("2d"); x.save(); x.globalCompositeOperation = "destination-in"; x.drawImage(mc, 0, 0); x.restore(); if (L.mask) { var mx = L.mask.getContext("2d"); } L.rev++; PE.commit("Remove background (AI)"); }
-				else { if (L.mask) { var ex = L.mask.getContext("2d"); ex.save(); ex.globalCompositeOperation = "destination-in"; ex.drawImage(mc, 0, 0); ex.restore(); } else L.mask = mc; L.editMask = true; L.rev++; PE.commit("Remove background (AI)"); }
+				else if (v.result === "cut") { var x = L.canvas.getContext("2d"); x.save(); x.globalCompositeOperation = "destination-in"; x.drawImage(mc, 0, 0); x.restore(); if (L.mask) { var mx = L.mask.getContext("2d"); } L.rev++; PE.markAi(L, "background removed"); PE.commit("Remove background (AI)"); }
+				else { if (L.mask) { var ex = L.mask.getContext("2d"); ex.save(); ex.globalCompositeOperation = "destination-in"; ex.drawImage(mc, 0, 0); ex.restore(); } else L.mask = mc; L.editMask = true; L.rev++; PE.markAi(L, "background masked"); PE.commit("Remove background (AI)"); }
 				PE.emit("layers"); PE.invalidate(); mm.close(); PE.toast(v.result === "mask" ? "Done. Paint on the mask to fix edges: brush reveals, eraser hides." : "Done");
 			}).catch(function (e) { busy = false; btns[1].disabled = false; btns[1].textContent = "Try again"; bar.hidden = true; st.textContent = "Could not run the AI model: " + (e && e.message ? e.message : e) + (/fetch|network|load/i.test(String(e && e.message)) ? " (check your connection)" : ""); });
 		}
@@ -1913,7 +1943,7 @@ var MESPixel = (function () {
 			var rc = mk(512, 512), rid = rc.getContext("2d").createImageData(512, 512); for (var k = 0; k < n; k++) { rid.data[k * 4] = out[k]; rid.data[k * 4 + 1] = out[n + k]; rid.data[k * 4 + 2] = out[2 * n + k]; rid.data[k * 4 + 3] = 255; } rc.getContext("2d").putImageData(rid, 0, 0);
 			var res = mk(ww, wh), rx = res.getContext("2d"); rx.imageSmoothingQuality = "high"; rx.drawImage(rc, 0, 0, ww, wh);
 			var soft = P.featherMask(P.growShrinkMask(wm, ww, wh, 2, true), ww, wh, 3), sc = mk(ww, wh), sid = sc.getContext("2d").createImageData(ww, wh); for (var j = 0; j < soft.length; j++) sid.data[j * 4 + 3] = soft[j]; sc.getContext("2d").putImageData(sid, 0, 0);
-			rx.globalCompositeOperation = "destination-in"; rx.drawImage(sc, 0, 0); var lx2 = L.canvas.getContext("2d"); lx2.drawImage(res, wx, wy); L.rev++; PE.commit("Erase object (AI)"); return true;
+			rx.globalCompositeOperation = "destination-in"; rx.drawImage(sc, 0, 0); var lx2 = L.canvas.getContext("2d"); lx2.drawImage(res, wx, wy); L.rev++; PE.markAi(L, "object erased"); PE.commit("Erase object (AI)"); return true;
 		});
 	}
 
@@ -1990,7 +2020,7 @@ var MESPixel = (function () {
 				var results = []; var chain = Promise.resolve(); layers.forEach(function (L) { chain = chain.then(function () { PE.bake(L); return upscaleCanvas(L.canvas, s, o, prog).then(function (r) { o = r.o; var nm = null; if (L.mask) nm = PE.resample(L.mask, r.canvas.width, r.canvas.height); results.push({ L: L, c: r.canvas, m: nm }); }); }); });
 				return chain.then(function () { return results; });
 			}).then(function (results) {
-				if (cancelled) return; results.forEach(function (r) { r.L.canvas = r.c; if (r.m) r.L.mask = r.m; r.L.rev++; });
+				if (cancelled) return; results.forEach(function (r) { r.L.canvas = r.c; if (r.m) r.L.mask = r.m; r.L.rev++; PE.markAi(r.L, "upscaled " + s + "×"); });
 				d.layers.forEach(function (L) { var cx = L.cx * s, cy = L.cy * s; if (L.type === "text") { L.text.size *= s; L.text.strokeW *= s; L.text.shadowBlur *= s; L.text.shadowDx *= s; L.text.shadowDy *= s; L.text.bgPad *= s; L.text.bgRadius *= s; PE.renderText(L); L.cx = cx; L.cy = cy; } else { L.cx = cx; L.cy = cy; if (L.eq) { L.sx *= s; L.sy *= s; L.eq.size *= s; L.eq.nw *= s; L.eq.pad *= s; L.eq.radius *= s; } } });
 				d.w = W; d.h = H; PE.sel = null; PE.emit("sel"); PE.emit("docsize"); PE.commit("Upscale " + s + "× (AI)"); PE.fit(); busy = false; mm.close(true); PE.toast("Done: " + W + " × " + H + " px");
 			}).catch(function (e) { busy = false; if (cancelled || (e && e.message === "cancelled")) return; btns[1].disabled = false; btns[1].textContent = "Try again"; bar.hidden = true; st.textContent = "Could not upscale: " + (e && e.message ? e.message : e); });
@@ -2115,10 +2145,11 @@ var MESPixel = (function () {
 	if (typeof module !== "undefined" && module.exports) module.exports = root.MESXcf;
 })(typeof window !== "undefined" ? window : globalThis);
 
-/* MES Photo Editor: GIMP (.xcf) export and a connected folder on this computer (File System Access API, Chrome / Edge / Brave): browse its pictures, add them as layers, save into it. */
+/* MES Photo Editor: GIMP (.xcf) export, and File -> "Files and folders": where each layer came from, the autosave in this browser, and a folder on this computer
+ * (File System Access API: Chrome and Edge on a computer, Brave only after brave://flags/#file-system-access-api; elsewhere a read-only folder through <input webkitdirectory>). */
 (function () {
 	"use strict";
-	var PE = window.PE, X = window.MESXcf, el = PE.el, esc = PE.esc;
+	var PE = window.PE, X = window.MESXcf, P = window.MESPixel, I = window.MESImg, el = PE.el, esc = PE.esc;
 
 	/* ---------- save as GIMP ---------- */
 	PE.saveXcf = function () {
@@ -2136,46 +2167,169 @@ var MESPixel = (function () {
 		PE.download(new Blob([bytes], { type: "image/x-xcf" }), window.MESImg.cleanFileName(d.name) + ".xcf"); PE.toast("Saved a GIMP file with " + out.length + " layer" + (out.length === 1 ? "" : "s") + (skipped ? " (" + skipped + " outside the canvas skipped)" : "") + ". Text became pixels; groups and masks are flattened.");
 	};
 
-	/* ---------- connected folder ---------- */
-	var IMG = /\.(png|jpe?g|webp|gif|bmp|avif|psd|mesproj)$/i, dirHandle = null;
+	/* ---------- files and folders ---------- */
+	var IMG = /\.(png|jpe?g|webp|gif|bmp|avif|psd|mesproj)$/i, BRAVE_FLAG = "brave://flags/#file-system-access-api", dirHandle = null, roFiles = null, roName = "";
+	var handles = PE.srcHandles = {}, hseq = 0;   // memory only: file handles of pictures added from the connected folder (a handle cannot go into a project file)
+	function canFS() { return typeof window.showDirectoryPicker === "function"; }
+	function isBrave() { return !!(navigator.brave && typeof navigator.brave.isBrave === "function"); }
+	function isMobile() { return /Android|iPhone|iPad|iPod|Mobile/i.test(navigator.userAgent || "") || (navigator.maxTouchPoints > 1 && /Mac/.test(navigator.platform || "")); }
 	function idb(fn) { return new Promise(function (res, rej) { var r = indexedDB.open("mes-photo-editor", 1); r.onupgradeneeded = function () { r.result.createObjectStore("kv"); }; r.onsuccess = function () { var db = r.result; Promise.resolve(fn(db.transaction("kv", "readwrite").objectStore("kv"))).then(res, rej); }; r.onerror = function () { rej(r.error); }; }); }
 	function rq(r) { return new Promise(function (res, rej) { r.onsuccess = function () { res(r.result); }; r.onerror = function () { rej(r.error); }; }); }
-	function perm(h, write) { var o = { mode: write ? "readwrite" : "read" }; return (h.queryPermission ? h.queryPermission(o) : Promise.resolve("granted")).then(function (p) { return p === "granted" ? p : h.requestPermission(o); }); }
-	PE.dlgFolder = function () {
-		if (!window.showDirectoryPicker) { PE.toast("This browser cannot connect to a folder. Use Chrome, Edge or Brave on a computer."); return; }
-		var wrap = el("div", "pe-fold"), head = el("div", "pe-fold-h"), grid = el("div", "pe-fold-g"), msg = el("p", "pe-hint2"), search = el("input", "pe-fold-s");
+	function perm(h, write, ask) { var o = { mode: write ? "readwrite" : "read" }; if (!h || !h.queryPermission) return Promise.resolve("granted"); return h.queryPermission(o).then(function (p) { return p === "granted" || !ask ? p : h.requestPermission(o); }); }
+	function permText(p) { return p === "granted" ? "the editor can open and save files there" : p === "prompt" ? "the browser will ask again before the editor saves there" : "the browser blocks saving there"; }
+	function errText(x) { return x && x.message ? x.message : String(x); }
+	function namesIn(dir) { return (async function () { var used = {}; for await (var k of dir.keys()) used[String(k).toLowerCase()] = 1; return used; })(); }
+	function writeFile(dir, name, blob) { return dir.getFileHandle(name, { create: true }).then(function (fh) { return fh.createWritable().then(function (w) { return w.write(blob).then(function () { return w.close(); }, function (e) { try { w.abort(); } catch (x) {} throw e; }); }).then(function () { return fh; }); }); }
+	function regHandle(fh, dir) { var k = "h" + (++hseq); handles[k] = { fh: fh, dir: dir, name: fh.name, dirName: dir ? dir.name : "" }; return k; }
+	/* a layer's provenance, with the live location of a picture that was moved since it was added */
+	function srcOf(s) { var h = s && s.hk && handles[s.hk]; return h ? Object.assign({}, s, { dir: h.dirName, file: h.name }) : s; }
+	function retarget(hk, dirName, fileName) { var d = PE.doc; if (!d) return; var fix = function (s) { return s && s.hk === hk ? Object.assign({}, s, { dir: dirName, file: fileName }) : s; }; d.layers.forEach(function (L) { L.src = fix(L.src); }); d.file = fix(d.file); }
+	/* move = FileSystemHandle.move() when the browser has it for files on disk, else copy, check the size, then remove the original */
+	function moveOne(fh, src, target, name, newName) {
+		var copy = function () { return fh.getFile().then(function (f) { return writeFile(target, newName, f).then(function (nfh) { return nfh.getFile().then(function (c) { if (c.size !== f.size) throw new Error("the copy in “" + target.name + "” is incomplete, so the original was kept"); return src.removeEntry(name); }).then(function () { return nfh; }); }); }); };
+		if (typeof fh.move !== "function") return copy();
+		return fh.move(target, newName).then(function () { return fh; }, function () { return src.getFileHandle(name).then(copy, function () { return target.getFileHandle(newName); }); });
+	}
+	function thumbOf(L, n) { var c = PE.mk(n, n), x = c.getContext("2d"), w = L.canvas.width, h = L.canvas.height, s = Math.min(n / w, n / h); x.fillStyle = "#4a4a55"; x.fillRect(0, 0, n, n); x.fillStyle = "#6a6a76"; for (var i = 0; i < n; i += 6) for (var j = 0; j < n; j += 6) if (((i + j) / 6) % 2 === 0) x.fillRect(i, j, 6, 6); x.drawImage(L.canvas, (n - w * s) / 2, (n - h * s) / 2, w * s, h * s); c.className = "pe-fx-th"; return c; }
+	function btn(t, title) { var b = el("button", "pe-btn pe-btn--sm", esc(t)); b.type = "button"; if (title) b.title = title; return b; }
+
+	/* focus: "folder" scrolls to the folder section, anything else opens at the top ("Where your images are") */
+	PE.dlgFolder = function (focus) {
+		var wrap = el("div", "pe-fx"), token = 0, entries = [], stored = null;
+		function sec(title, help) { var s = el("section", "pe-fx-sec"), h = el("h3", "pe-fx-h", esc(title)); if (help) h.appendChild(PE.helpBtn(title, esc(help))); s.appendChild(h); wrap.appendChild(s); return s; }
+
+		/* 1. where the images are */
+		var sW = sec("Where your images are"), docP = el("p", "pe-fx-doc"), list = el("div", "pe-fx-list");
+		sW.appendChild(el("p", "pe-hint2", "Browsers never show where a file is on your disk (its full path), only its name, and for a connected folder the folder's name. This is everything the editor knows about the open image:"));
+		sW.appendChild(docP); sW.appendChild(list);
+		function drawWhere() {
+			var d = PE.doc; list.innerHTML = ""; if (!d) { docP.textContent = "No image is open."; return; }
+			var f = d.file ? P.describeSource(srcOf(d.file)) : null;
+			docP.innerHTML = "<b>This image</b>: " + esc(d.name) + " · " + d.w + " × " + d.h + " px · " + esc(f ? f.text : "Made in the editor (New image)");
+			var rows = d.layers.slice().reverse().filter(function (L) { return !PE.isGroup(L); }), shown = rows.slice(0, 80); PE.relink();
+			shown.forEach(function (L) {
+				var s = srcOf(L.src), info = P.describeSource(s), r = el("div", "pe-fx-row"), m = el("div", "pe-fx-m"), grp = PE.ancestorsOf(L).map(function (g) { return g.name; }).reverse().join(" › ");
+				r.appendChild(thumbOf(L, 34));
+				m.innerHTML = '<b class="pe-fx-n">' + esc(L.name) + "</b>" + (grp ? '<span class="pe-fx-g">in ' + esc(grp) + "</span>" : "") + '<span class="pe-fx-from pe-fx-from--' + info.how + '">' + esc(info.text) + '</span><span class="pe-fx-px">' + L.canvas.width + " × " + L.canvas.height + " px" + (s && s.w && (s.w !== L.canvas.width || s.h !== L.canvas.height) ? " (the file: " + s.w + " × " + s.h + ")" : "") + (L.type === "text" ? " · text layer" : L.eq ? " · equation" : "") + "</span>";
+				r.appendChild(m);
+				var h = s && s.hk && handles[s.hk];
+				if (h && canFS()) { var b = btn("Move to another folder…", "Move the file " + h.name + " out of “" + h.dirName + "” into a folder you choose (you confirm first)"); b.addEventListener("click", function () { moveFile(s.hk, b); }); r.appendChild(b); }
+				list.appendChild(r);
+			});
+			if (!rows.length) list.appendChild(el("p", "pe-hint2", "No layers."));
+			if (rows.length > shown.length) list.appendChild(el("p", "pe-hint2", "…and " + (rows.length - shown.length) + " more layers."));
+		}
+
+		/* 2. a folder on this computer */
+		var sF = sec("Folder on this computer", "Connect a folder and the editor lists its pictures. Click one to add it as a layer (or to open it, if nothing is open); Shift-click opens it as a new image. Nothing is uploaded: the editor reads the files straight from your disk, and only with the permission you give in the browser's pop-up.");
+		var stP = el("p", "pe-fx-st"), note = el("div", "pe-fx-note"), bar = el("div", "pe-fold-h"), saveRow = el("div", "pe-fx-save"), search = el("input", "pe-fold-s"), msg = el("p", "pe-hint2"), grid = el("div", "pe-fold-g");
 		search.type = "search"; search.placeholder = "Filter by name…"; search.setAttribute("aria-label", "Filter pictures by name");
-		var bPick = el("button", "pe-btn pe-btn--sm", "📂 Choose a folder…"), bAgain = el("button", "pe-btn pe-btn--sm", "↺ Reconnect to last folder"), bSave = el("button", "pe-btn pe-btn--sm", "⬇ Save this image here"); [bPick, bAgain, bSave].forEach(function (b) { b.type = "button"; });
-		bSave.title = "Writes the current image as a PNG into the connected folder";
-		head.appendChild(bPick); head.appendChild(bAgain); head.appendChild(bSave); head.appendChild(PE.helpBtn("Connected folder", "Connect a folder on your computer and the editor lists its pictures. Click one to add it as a layer (or open it as the image if nothing is open); hold Shift to open it as a new image instead. Nothing is uploaded: the editor reads the files straight from your disk, and only with the permission you give in the browser's pop-up. Chrome, Edge and Brave only."));
-		wrap.appendChild(head); wrap.appendChild(search); wrap.appendChild(msg); wrap.appendChild(grid);
-		var m = PE.modal({ title: "Folder on this computer", wide: true, body: wrap, noFocus: true, buttons: [{ label: "Close", primary: true, act: function (mm) { mm.close(); } }] });
-		var entries = [], token = 0;
+		var bPick = btn("📂 Choose a folder…", "Pick a folder; the browser asks whether the editor may see and save files in it"), bAgain = btn("↺ Reconnect", "Use the folder from last time again (the browser asks for permission once more)"), bRo = btn("📂 Open a folder (read only)…", "List the pictures of a folder. This browser cannot save into it: saving goes to your Downloads folder"), roInp = el("input");
+		roInp.type = "file"; roInp.multiple = true; roInp.setAttribute("webkitdirectory", ""); roInp.hidden = true; roInp.setAttribute("aria-hidden", "true"); bAgain.hidden = true;
+		var nameIn = el("input"), kind = el("select"), bSave = btn("⬇ Save"), saveHint = el("p", "pe-hint2");
+		nameIn.type = "text"; nameIn.value = PE.doc ? PE.doc.name : "image"; nameIn.setAttribute("aria-label", "File name"); nameIn.spellcheck = false; kind.setAttribute("aria-label", "Save as");
+		kind.innerHTML = '<option value="png">PNG picture (flattened)</option><option value="proj">Project .mesproj (keeps layers)</option>';
+		saveRow.appendChild(el("span", "pe-fx-l", "Save this image as")); saveRow.appendChild(nameIn); saveRow.appendChild(kind); saveRow.appendChild(bSave);
+		if (canFS()) { bar.appendChild(bPick); bar.appendChild(bAgain); note.hidden = true; }
+		else {
+			note.innerHTML = (isBrave() ? "<b>Brave has folder access switched off.</b> To switch it on, copy <code>" + BRAVE_FLAG + "</code> into the address bar, set <i>File System Access API</i> to <i>Enabled</i> and press <i>Relaunch</i>. Then this window can open, save and move files in a folder."
+				: isMobile() ? "<b>Phones and tablets cannot connect a folder</b> to a web page. On a computer, Chrome and Edge can (Brave after switching it on)."
+				: "<b>This browser cannot connect a folder.</b> Chrome and Edge on a computer can, and Brave after switching on <code>" + BRAVE_FLAG + "</code>. Safari and Firefox cannot.")
+				+ " You can still open a folder read only: its pictures are listed below and can be added as layers, but saving goes to your Downloads folder.";
+			if (isBrave()) { var bCopy = btn("Copy the address", "Copies " + BRAVE_FLAG + " so you can paste it into Brave's address bar"); bCopy.addEventListener("click", function () { var fail = function () { window.prompt("Copy this address:", BRAVE_FLAG); }; try { navigator.clipboard.writeText(BRAVE_FLAG).then(function () { PE.toast("Copied. Paste it into the address bar"); }, fail); } catch (x) { fail(); } }); note.appendChild(document.createTextNode(" ")); note.appendChild(bCopy); }
+			bar.appendChild(bRo); bar.appendChild(roInp);
+		}
+		[stP, note, bar, saveRow, saveHint, search, msg, grid].forEach(function (x) { sF.appendChild(x); });
+
+		function refreshState() {
+			if (canFS()) {
+				bPick.textContent = dirHandle ? "📂 Choose another folder…" : "📂 Choose a folder…"; bAgain.hidden = !(stored && !dirHandle); if (stored) bAgain.textContent = "↺ Reconnect to “" + stored.name + "”";
+				bSave.textContent = dirHandle ? "⬇ Save into “" + dirHandle.name + "”" : "⬇ Save into a folder…"; saveHint.textContent = dirHandle ? "If a file with that name is already there, you are asked before it is replaced." : "You pick the folder first.";
+				if (dirHandle) { var h = dirHandle; perm(h, true, false).then(function (p) { if (h === dirHandle) stP.innerHTML = "Connected: <b>“" + esc(h.name) + "”</b> · " + esc(permText(p)) + "."; }).catch(function () {}); }
+				else stP.textContent = "No folder is connected." + (stored ? " Last time it was “" + stored.name + "”." : "");
+			} else {
+				stP.textContent = roFiles ? "Open read only: “" + roName + "”, " + roFiles.length + " picture" + (roFiles.length === 1 ? "" : "s") + " (subfolders included)." : ""; stP.hidden = !roFiles;
+				bSave.textContent = "⬇ Download"; saveHint.textContent = "This browser cannot write into a folder, so the file goes to your Downloads folder.";
+			}
+		}
+		function count(name, n) { msg.textContent = n + " picture" + (n === 1 ? "" : "s") + " in “" + name + "”" + (n > 400 ? " (showing the first 400: use the filter)" : "") + (n ? ". Click: add as a layer · Shift-click: open as a new image." : "."); }
+		function roEntries() { return roFiles.map(function (f) { var rel = (f.webkitRelativePath || f.name).split("/").slice(1).join("/") || f.name; return { name: f.name, label: rel, file: function () { return Promise.resolve(f); } }; }); }
 		function load(h) {
-			dirHandle = h; var my = ++token; grid.innerHTML = ""; entries = []; msg.textContent = "Reading " + h.name + "…"; bAgain.hidden = true;
-			(async function () { try { for await (var e of h.values()) { if (e.kind === "file" && IMG.test(e.name)) entries.push(e); } } catch (x) { msg.textContent = "Could not read the folder: " + x.message; return; }
-				if (my !== token) return; entries.sort(function (a, b) { return a.name.localeCompare(b.name, undefined, { numeric: true }); }); msg.textContent = h.name + ": " + entries.length + " picture" + (entries.length === 1 ? "" : "s") + (entries.length > 400 ? " (showing the first 400, use the filter)" : ""); render(); })();
+			dirHandle = h; roFiles = null; var my = ++token; entries = []; grid.innerHTML = ""; msg.textContent = "Reading “" + h.name + "”…"; refreshState();
+			(async function () { var out = []; try { for await (var e of h.values()) if (e.kind === "file" && IMG.test(e.name)) out.push(e); } catch (x) { if (my === token) msg.textContent = "Could not read the folder: " + errText(x); return; }
+				if (my !== token) return; out.sort(function (a, b) { return a.name.localeCompare(b.name, undefined, { numeric: true }); }); entries = out.map(function (fh) { return { name: fh.name, label: fh.name, fh: fh, file: function () { return fh.getFile(); } }; }); count(h.name, entries.length); render(); })();
 		}
 		function render() {
-			var q = search.value.trim().toLowerCase(), list = entries.filter(function (e) { return !q || e.name.toLowerCase().indexOf(q) >= 0; }).slice(0, 400); grid.innerHTML = "";
+			var q = search.value.trim().toLowerCase(), shown = entries.filter(function (e) { return !q || e.label.toLowerCase().indexOf(q) >= 0; }).slice(0, 400); grid.innerHTML = "";
 			var io = "IntersectionObserver" in window ? new IntersectionObserver(function (es) { es.forEach(function (x) { if (x.isIntersecting) { io.unobserve(x.target); x.target._load(); } }); }, { root: grid, rootMargin: "200px" }) : null;
-			list.forEach(function (e) {
-				var t = el("button", "pe-fold-t"), c = el("canvas"), n = el("span", "pe-fold-n", esc(e.name)); t.type = "button"; c.width = 120; c.height = 90; t.appendChild(c); t.appendChild(n); t.title = e.name + " — click: add as layer · Shift-click: open as new image";
+			shown.forEach(function (e) {
+				var t = el("button", "pe-fold-t"), c = el("canvas"), n = el("span", "pe-fold-n", esc(e.label)); t.type = "button"; c.width = 120; c.height = 90; t.appendChild(c); t.appendChild(n); t.title = e.label + " · click: add as a layer · Shift-click: open as a new image";
 				t._load = function () { if (/\.(psd|mesproj)$/i.test(e.name)) { var x = c.getContext("2d"); x.fillStyle = "#26262e"; x.fillRect(0, 0, 120, 90); x.fillStyle = "#9b9bab"; x.font = "bold 14px sans-serif"; x.textAlign = "center"; x.fillText(e.name.split(".").pop().toUpperCase(), 60, 50); return; }
-					e.getFile().then(function (f) { return createImageBitmap(f, { resizeWidth: 120, resizeQuality: "medium" }).catch(function () { return PE.decodeFile(f); }); }).then(function (im) { var x = c.getContext("2d"), w = im.width || im.naturalWidth, h = im.height || im.naturalHeight, s = Math.min(120 / w, 90 / h); x.drawImage(im, (120 - w * s) / 2, (90 - h * s) / 2, w * s, h * s); }).catch(function () { n.textContent = "⚠ " + e.name; }); };
+					e.file().then(function (f) { return createImageBitmap(f, { resizeWidth: 120, resizeQuality: "medium" }).catch(function () { return PE.decodeFile(f); }); }).then(function (im) { var x = c.getContext("2d"), w = im.width || im.naturalWidth, h = im.height || im.naturalHeight, s = Math.min(120 / w, 90 / h); x.drawImage(im, (120 - w * s) / 2, (90 - h * s) / 2, w * s, h * s); }).catch(function () { n.textContent = "⚠ " + e.label; }); };
 				if (io) io.observe(t); else t._load();
-				t.addEventListener("click", function (ev) { e.getFile().then(function (f) { PE.openFiles([f], { place: !!PE.doc && !ev.shiftKey }); m.close(); }); });
+				t.addEventListener("click", function (ev) { var o = { place: !!PE.doc && !ev.shiftKey }; if (e.fh) { o.how = "folder"; o.dir = dirHandle ? dirHandle.name : ""; o.hk = regHandle(e.fh, dirHandle); } else { o.how = "folder-ro"; o.dir = roName; }
+					e.file().then(function (f) { PE.openFiles([f], o); m.close(); }).catch(function (x) { PE.toast("Could not open " + e.name + ": " + errText(x)); }); });
 				grid.appendChild(t);
 			});
 		}
 		search.addEventListener("input", render);
-		bPick.addEventListener("click", function () { window.showDirectoryPicker({ id: "mes-photo-folder", mode: "readwrite" }).then(function (h) { idb(function (st) { return rq(st.put(h, "dir")); }).catch(function () {}); load(h); }).catch(function () {}); });
-		bAgain.addEventListener("click", function () { idb(function (st) { return rq(st.get("dir")); }).then(function (h) { return h ? perm(h, false).then(function (p) { if (p === "granted") load(h); else msg.textContent = "Permission was not given."; }) : null; }).catch(function (x) { msg.textContent = "Could not reconnect: " + x.message; }); });
-		bSave.addEventListener("click", function () {
-			if (!PE.doc) { PE.toast("Open or create an image first"); return; } if (!dirHandle) { PE.toast("Choose a folder first"); return; }
-			perm(dirHandle, true).then(function (p) { if (p !== "granted") throw new Error("no permission"); return PE.exportBlob("png", 1, {}); }).then(function (b) { var name = window.MESImg.cleanFileName(PE.doc.name || "image") + ".png"; return dirHandle.getFileHandle(name, { create: true }).then(function (fh) { return fh.createWritable(); }).then(function (w) { return w.write(b).then(function () { return w.close(); }); }).then(function () { PE.toast("Saved " + name + " into " + dirHandle.name); load(dirHandle); }); }).catch(function (x) { PE.toast("Could not save: " + x.message); });
+		bPick.addEventListener("click", function () { window.showDirectoryPicker({ id: "mes-photo-folder", mode: "readwrite" }).then(function (h) { stored = h; idb(function (st) { return rq(st.put(h, "dir")); }).catch(function () {}); load(h); }).catch(function (x) { if (!x || x.name !== "AbortError") msg.textContent = "Could not open the folder: " + errText(x); }); });
+		bAgain.addEventListener("click", function () { var h = stored; if (!h) return; perm(h, true, true).then(function (p) { if (p === "granted") load(h); else msg.textContent = "The browser did not give access to “" + h.name + "”. Press Reconnect again, or choose the folder."; }).catch(function (x) { msg.textContent = "Could not reconnect: " + errText(x); }); });
+		bRo.addEventListener("click", function () { roInp.click(); });
+		roInp.addEventListener("change", function () {
+			var fs = Array.prototype.slice.call(roInp.files || []); roInp.value = ""; if (!fs.length) return; roName = (fs[0].webkitRelativePath || "").split("/")[0] || "folder"; dirHandle = null; ++token;
+			roFiles = fs.filter(function (f) { return IMG.test(f.name); }).sort(function (a, b) { return (a.webkitRelativePath || a.name).localeCompare(b.webkitRelativePath || b.name, undefined, { numeric: true }); });
+			entries = roEntries(); count(roName, entries.length); render(); refreshState();
 		});
-		if (dirHandle) { load(dirHandle); } else { msg.textContent = "Choose a folder to see its pictures."; idb(function (st) { return rq(st.get("dir")); }).then(function (h) { bAgain.hidden = !h; if (h) bAgain.textContent = "↺ Reconnect to “" + h.name + "”"; }).catch(function () { bAgain.hidden = true; }); }
+		function saveTo(dh, k, name) {
+			return perm(dh, true, true).then(function (p) { if (p !== "granted") throw new Error("the browser did not allow saving into “" + dh.name + "”"); return namesIn(dh); })
+				.then(function (used) { if (used[name.toLowerCase()] && !window.confirm("“" + name + "” is already in “" + dh.name + "”. Replace it?")) throw "cancel"; return k === "proj" ? PE.projectBlob() : PE.exportBlob("png", 1, {}); })
+				.then(function (b) { return writeFile(dh, name, b); });
+		}
+		bSave.addEventListener("click", function () {
+			if (!PE.doc) { PE.toast("Open or create an image first"); return; }
+			var k = kind.value, base = I.cleanFileName((nameIn.value || "").trim().replace(/\.(png|mesproj)$/i, "") || PE.doc.name || "image"), name = base + (k === "proj" ? ".mesproj" : ".png");
+			var ok = function (where) { if (k === "proj") { PE.dirty = false; if (PE.saveState) PE.saveState(); } PE.toast("Saved " + name + " " + where); };
+			if (!canFS()) { (k === "proj" ? PE.projectBlob() : PE.exportBlob("png", 1, {})).then(function (b) { PE.download(b, name); ok("to your Downloads"); }).catch(function (x) { PE.toast("Could not save: " + errText(x)); }); return; }
+			bSave.disabled = true;
+			(dirHandle ? Promise.resolve(dirHandle) : window.showDirectoryPicker({ id: "mes-photo-folder", mode: "readwrite" }).then(function (h) { stored = h; idb(function (st) { return rq(st.put(h, "dir")); }).catch(function () {}); load(h); return h; }))
+				.then(function (dh) { return saveTo(dh, k, name).then(function () { ok("into “" + dh.name + "”"); if (dh === dirHandle) load(dh); }); })
+				.catch(function (x) { if (x === "cancel") { PE.toast("Not saved. Change the name to keep both files."); return; } if (x && x.name === "AbortError") return; PE.toast("Could not save: " + errText(x)); })
+				.then(function () { bSave.disabled = false; });
+		});
+		nameIn.addEventListener("keydown", function (e) { if (e.key === "Enter") { e.preventDefault(); bSave.click(); } });
+		function moveFile(hk, b) {
+			var H = handles[hk]; if (!H) return; var src = H.dir, target, newName; b.disabled = true;
+			perm(src, true, true).then(function (p) { if (p !== "granted") throw new Error("the browser did not allow changes in “" + src.name + "”"); return window.showDirectoryPicker({ id: "mes-photo-move", mode: "readwrite", startIn: src }); })
+				.then(function (t) { target = t; return src.isSameEntry ? src.isSameEntry(t) : false; })
+				.then(function (same) { if (same) throw new Error("that is the folder it is in already"); return namesIn(target); })
+				.then(function (used) { newName = I.uniqueName(H.name, used);
+					var q = "Move “" + H.name + "” from “" + src.name + "” to “" + target.name + "”?" + (newName !== H.name ? "\n\n“" + target.name + "” already has a file called “" + H.name + "”, so the moved one will be called “" + newName + "”." : "") + "\n\nThe original is removed from “" + src.name + "” only after the copy in “" + target.name + "” is complete.";
+					if (!window.confirm(q)) throw "cancel"; return moveOne(H.fh, src, target, H.name, newName); })
+				.then(function (nfh) { handles[hk] = { fh: nfh, dir: target, name: newName, dirName: target.name }; retarget(hk, target.name, newName); PE.toast("Moved " + newName + " to “" + target.name + "”"); if (dirHandle && src === dirHandle) load(dirHandle); drawWhere(); })
+				.catch(function (x) { if (x === "cancel" || (x && x.name === "AbortError")) return; PE.toast(x && x.name === "SecurityError" ? "Press Move again: the browser needs a fresh click to open the folder chooser" : "Could not move: " + errText(x)); })
+				.then(function () { b.disabled = false; });
+		}
+
+		/* 3. the autosave in this browser */
+		var sA = sec("Autosave in this browser"), aP = el("p", "pe-fx-auto"), uP = el("p", "pe-hint2"), ab = el("div", "pe-fold-h"), bClear = btn("🗑 Clear autosave", "Delete the autosaved copy of your project from this browser (you are asked first)");
+		sA.appendChild(el("p", "pe-hint2", "While you work, the editor keeps a copy of your project in this browser's own storage (the IndexedDB database “mes-photo-editor” of mes.fm), 5 seconds after each change, so a reload or a crash does not lose your work. It stays on this computer, in this browser only, and is not a file you can find in a folder."));
+		ab.appendChild(bClear); sA.appendChild(aP); sA.appendChild(ab); sA.appendChild(uP);
+		sA.appendChild(el("p", "pe-hint2", "💾 Save project and Export make a real file: the browser puts it in its Downloads folder (or asks where, if it is set to ask)."));
+		function drawAuto() {
+			idb(function (st) { return rq(st.get("auto")); }).then(function (r) { bClear.disabled = !r; aP.innerHTML = r ? "Last autosave: <b>" + esc(r.name || "Untitled") + "</b>, " + r.w + " × " + r.h + " px, " + esc(P.bytesText(r.blob ? r.blob.size : 0)) + ", " + esc(new Date(r.t).toLocaleString()) + "." : "Nothing is autosaved at the moment."; })
+				.catch(function () { bClear.disabled = true; aP.textContent = "This browser's storage cannot be read here (a private window, or site data is blocked), so nothing is autosaved."; });
+			if (navigator.storage && navigator.storage.estimate) navigator.storage.estimate().then(function (e) { uP.textContent = "All of mes.fm (every tool) uses about " + P.bytesText(e.usage || 0) + " of this browser's storage."; }).catch(function () {});
+		}
+		bClear.addEventListener("click", function () { if (!window.confirm("Delete the autosaved copy of your project from this browser?\n\nThe image that is open now stays open, and it is autosaved again 5 seconds after your next change.")) return; idb(function (st) { return rq(st.delete("auto")); }).then(function () { var rb = document.getElementById("pe-restore"); if (rb) rb.hidden = true; PE.toast("Autosave cleared"); drawAuto(); }).catch(function (x) { PE.toast("Could not clear the autosave: " + errText(x)); }); });
+
+		var m = PE.modal({ title: "Files and folders", wide: true, cls: "pe-dlg--files", body: wrap, noFocus: true, buttons: [{ label: "Close", act: function (mm) { mm.close(); } }] });
+		drawWhere(); drawAuto(); refreshState();
+		if (canFS() && dirHandle) load(dirHandle);
+		else if (canFS()) { msg.textContent = "Choose a folder to see its pictures."; idb(function (st) { return rq(st.get("dir")); }).then(function (h) { stored = h || null; refreshState(); }).catch(function () {}); }
+		else if (roFiles) { entries = roEntries(); count(roName, entries.length); render(); }
+		if (focus === "folder") setTimeout(function () { m.body.scrollTop = Math.max(0, sF.offsetTop - wrap.offsetTop - 4); }, 0);
+		return m;
 	};
 })();
 
@@ -2247,19 +2401,32 @@ var MESPixel = (function () {
 		var ts = $("pe-tswap"); if (ts) ts.title = UI.tside === "r" ? "Move the toolbox to the left" : "Move the toolbox to the right";
 		var sw = $("pe-sswap"); if (sw) sw.title = UI.side === "l" ? "Move the panels to the right" : "Move the panels to the left";
 		var sh = $("pe-sshow"); if (sh) { sh.hidden = !UI.hide; sh.textContent = UI.side === "l" ? "Panels ›" : "‹ Panels"; }
-		setTimeout(function () { window.dispatchEvent(new Event("resize")); }, 0);
+		ariaSide(); setTimeout(function () { window.dispatchEvent(new Event("resize")); }, 0);
 	}
+	function ariaSide() { var g = $("pe-sgrip"), s = $("pe-side"); if (!g) return; var fs = parseFloat(getComputedStyle(s).fontSize) || 13, now = Math.round(s.getBoundingClientRect().width) || Math.round(UI.sw * fs); g.setAttribute("aria-valuemin", String(Math.round(12 * fs))); g.setAttribute("aria-valuemax", String(Math.round(48 * fs))); g.setAttribute("aria-valuenow", String(now)); g.setAttribute("aria-valuetext", "Panels " + now + " pixels wide"); }
 	function initLayoutUI() {
 		var tg = el("button", "pe-ttoggle", "»"); tg.type = "button"; tg.id = "pe-ttoggle"; tg.addEventListener("click", function () { UI.tw = !UI.tw; saveUI(); applyUI(); }); var th = el("div", "pe-thead"), tsw = el("button", "pe-tswap", "⇄"); tsw.type = "button"; tsw.id = "pe-tswap"; tsw.addEventListener("click", function () { UI.tside = UI.tside === "r" ? "l" : "r"; saveUI(); applyUI(); }); th.appendChild(tg); th.appendChild(tsw); $("pe-tools").insertBefore(th, $("pe-tools").firstChild);
 		var bar = el("div", "pe-sbar"); bar.innerHTML = '<span>Panels</span><button type="button" id="pe-sswap" class="pe-mini">⇄</button><button type="button" id="pe-shide" class="pe-mini" title="Hide the panels (more room for the picture)">Hide ✕</button>'; $("pe-side").insertBefore(bar, $("pe-side").firstChild);
-		var grip = el("div", "pe-sres"); grip.title = "Drag to make the panels wider or narrower (double-click to reset)"; $("pe-side").appendChild(grip);
+		/* the panels' grip is its own flex item between the picture and the panels (it used to sit inside the scrolling panel column, where the
+		   search box's .pe-sres styles moved it to the bottom as an 8 px square: that is why the panels could not be resized) */
+		var side = $("pe-side"), grip = el("div", "pe-sgrip"); grip.id = "pe-sgrip"; grip.tabIndex = 0; grip.setAttribute("role", "separator"); grip.setAttribute("aria-orientation", "vertical"); grip.setAttribute("aria-controls", "pe-side"); grip.setAttribute("aria-label", "Width of the panels");
+		grip.title = "Drag to make the panels wider or narrower. Arrow keys work too when it is selected (Shift = bigger steps). Double-click: back to the normal width."; grip.innerHTML = "<i></i>"; side.parentNode.insertBefore(grip, side);
 		var show = el("button", "pe-sshow", "‹ Panels"); show.type = "button"; show.id = "pe-sshow"; show.hidden = true; $("pe-stage").appendChild(show);
 		$("pe-sswap").addEventListener("click", function () { UI.side = UI.side === "l" ? "r" : "l"; saveUI(); applyUI(); });
 		$("pe-shide").addEventListener("click", function () { UI.hide = true; saveUI(); applyUI(); }); show.addEventListener("click", function () { UI.hide = false; saveUI(); applyUI(); });
-		grip.addEventListener("dblclick", function () { UI.sw = 17.5; saveUI(); applyUI(); });
-		grip.addEventListener("pointerdown", function (e) { e.preventDefault(); grip.setPointerCapture(e.pointerId); var x0 = e.clientX, w0 = $("pe-side").getBoundingClientRect().width, fs = parseFloat(getComputedStyle($("pe-side")).fontSize) || 16, dir = UI.side === "l" ? 1 : -1;
-			function mv(ev) { UI.sw = Math.max(12, Math.min(40, (w0 + (ev.clientX - x0) * dir) / fs)); $("pe-side").style.width = UI.sw + "em"; }
-			function up() { grip.removeEventListener("pointermove", mv); grip.removeEventListener("pointerup", up); saveUI(); window.dispatchEvent(new Event("resize")); } grip.addEventListener("pointermove", mv); grip.addEventListener("pointerup", up); });
+		function fsOf() { return parseFloat(getComputedStyle(side).fontSize) || 13; }
+		function otherW() { var w = 0; Array.prototype.forEach.call(root.querySelector(".pe-main").children, function (c) { if (c !== side && c !== grip && c !== PE.els.stage && c.offsetParent !== null) w += c.offsetWidth; }); return w; }
+		function setSide(em, save) { UI.sw = P.panelClamp(em, root.querySelector(".pe-main").clientWidth, otherW() + grip.offsetWidth, fsOf()); side.style.width = UI.sw + "em"; ariaSide(); if (save) saveUI(); }
+		PE.setPanelWidth = setSide;
+		grip.addEventListener("dblclick", function () { setSide(17.5, true); });
+		grip.addEventListener("keydown", function (e) { var r = P.panelKey(e.key, e.shiftKey, UI.side === "l"); if (!r) return; e.preventDefault(); e.stopPropagation(); setSide(r.to === "reset" ? 17.5 : r.to === "min" ? 0 : r.to === "max" ? 999 : UI.sw + r.d, true); });
+		grip.addEventListener("pointerdown", function (e) {
+			if (e.button > 0) return; e.preventDefault(); try { grip.setPointerCapture(e.pointerId); } catch (x) {} grip.classList.add("is-drag"); grip.focus({ preventScroll: true });
+			var x0 = e.clientX, w0 = side.getBoundingClientRect().width, fs = fsOf(), dir = UI.side === "l" ? 1 : -1;
+			function mv(ev) { setSide((w0 + (ev.clientX - x0) * dir) / fs, false); }
+			function up() { grip.removeEventListener("pointermove", mv); grip.removeEventListener("pointerup", up); grip.removeEventListener("pointercancel", up); grip.classList.remove("is-drag"); saveUI(); window.dispatchEvent(new Event("resize")); }
+			grip.addEventListener("pointermove", mv); grip.addEventListener("pointerup", up); grip.addEventListener("pointercancel", up);
+		});
 		var tg2 = el("div", "pe-tres"); tg2.title = "Drag to make the toolbox wider or narrower (double-click to reset)"; $("pe-tools").parentNode.insertBefore(tg2, $("pe-tools").nextSibling);
 		tg2.addEventListener("dblclick", function () { UI.tws = 15.5; UI.tw = true; saveUI(); applyUI(); });
 		tg2.addEventListener("pointerdown", function (e) { e.preventDefault(); tg2.setPointerCapture(e.pointerId); var x0 = e.clientX, w0 = $("pe-tools").getBoundingClientRect().width, fs = parseFloat(getComputedStyle($("pe-tools")).fontSize) || 16, dir = UI.tside === "r" ? -1 : 1;
@@ -2353,7 +2520,7 @@ var MESPixel = (function () {
 			row.appendChild(eye);
 			if (grp) { var ar = el("button", "pe-arrow", L.collapsed ? "▸" : "▾"); ar.type = "button"; ar.title = L.collapsed ? "Expand group" : "Collapse group"; ar.addEventListener("click", function (e) { e.stopPropagation(); L.collapsed = !L.collapsed; buildLayers(); }); row.appendChild(ar); var th0 = el("span", "pe-th pe-th--grp", "📁"); row.appendChild(th0); }
 			else { var th = el("span", "pe-th"); th.appendChild(thumbFor(L)); row.appendChild(th); }
-			var nm = el("span", "pe-lname", esc(L.name) + (L.type === "text" ? " ᵀ" : "") + (grp ? ' <small class="pe-cnt">' + PE.descendants(L).filter(function (k) { return !PE.isGroup(k); }).length + "</small>" : "")); nm.title = "Double-click to rename";
+			var nm = el("span", "pe-lname", esc(L.name) + (L.type === "text" ? " ᵀ" : "") + (grp ? ' <small class="pe-cnt">' + PE.descendants(L).filter(function (k) { return !PE.isGroup(k); }).length + "</small>" : "")); nm.title = L.name + " (double-click to rename)";
 			if (L.mask) { var mt = el("span", "pe-th pe-th--mask" + (L.editMask ? " is-on" : "")); var mc = PE.mk(36, 36), mx = mc.getContext("2d"); mx.fillStyle = "#000"; mx.fillRect(0, 0, 36, 36); var wm = PE.mk(36, 36), wx = wm.getContext("2d"); wx.drawImage(L.mask, 0, 0, 36, 36); wx.globalCompositeOperation = "source-in"; wx.fillStyle = "#fff"; wx.fillRect(0, 0, 36, 36); mx.drawImage(wm, 0, 0); mt.appendChild(mc); mt.title = "Layer mask: click to paint on the mask (white-ish = shown). Click the picture to paint on the layer."; mt.addEventListener("click", function (e) { e.stopPropagation(); PE.setActive(L.id); L.editMask = true; buildLayers(); }); row.querySelector(".pe-th").addEventListener("click", function (e) { e.stopPropagation(); PE.setActive(L.id); L.editMask = false; buildLayers(); }); row.appendChild(mt); }
 			row.appendChild(nm);
 			if (grp) { var xg = el("button", "pe-pen", "⬇"); xg.type = "button"; xg.title = "Export this group as its own image, on a canvas of any size"; xg.addEventListener("click", function (e) { e.stopPropagation(); PE.dlgExportGroup(L); }); row.appendChild(xg); }
@@ -2364,7 +2531,13 @@ var MESPixel = (function () {
 				if (e.shiftKey && act) { var order = rowsTopDown().map(function (x) { return x.L; }), i0 = order.indexOf(act), i1 = order.indexOf(L); if (i0 >= 0 && i1 >= 0) { multi = {}; order.slice(Math.min(i0, i1), Math.max(i0, i1) + 1).forEach(function (x) { multi[x.id] = true; }); buildLayers(); return; } }
 				multi = {}; PE.setActive(L.id);
 			});
-			nm.addEventListener("dblclick", function (e) { e.stopPropagation(); var inp = el("input", "pe-rename"); inp.value = L.name; nm.replaceWith(inp); inp.focus(); inp.select(); var done = function (ok) { if (ok && inp.value.trim()) { L.name = inp.value.trim(); PE.commit("Rename layer"); } else buildLayers(); }; inp.addEventListener("keydown", function (ev) { ev.stopPropagation(); if (ev.key === "Enter") done(true); if (ev.key === "Escape") done(false); }); inp.addEventListener("blur", function () { done(true); }); });
+			nm.addEventListener("dblclick", function (e) {
+				e.stopPropagation(); var inp = el("input", "pe-rename"), fin = false; inp.type = "text"; inp.value = L.name; inp.spellcheck = false; inp.setAttribute("aria-label", "New name for " + (grp ? "the group " : "the layer ") + L.name); row.draggable = false; row.classList.add("is-renaming"); nm.replaceWith(inp); inp.focus(); inp.select();
+				var done = function (ok) { if (fin) return; fin = true; var v = inp.value.trim(); if (ok && v && v !== L.name) { L.name = v; PE.commit(grp ? "Rename group" : "Rename layer"); } else buildLayers(); };
+				// clicks inside the box must not reach the row: its click selects the layer, which rebuilds the list and threw the half-typed name away
+				["click", "mousedown", "pointerdown", "dblclick", "dragstart"].forEach(function (t) { inp.addEventListener(t, function (ev) { ev.stopPropagation(); }); });
+				inp.addEventListener("keydown", function (ev) { ev.stopPropagation(); if (ev.key === "Enter") { ev.preventDefault(); done(true); } if (ev.key === "Escape") { ev.preventDefault(); done(false); } }); inp.addEventListener("blur", function () { done(true); });
+			});
 			row.addEventListener("dragstart", function (e) { dragId = L.id; e.dataTransfer.effectAllowed = "move"; e.dataTransfer.setData("text/x-pe-layer", String(L.id)); });
 			function zoneOf(e) { var rc = row.getBoundingClientRect(), y = (e.clientY - rc.top) / rc.height; return grp ? (y < 0.25 ? "above" : "into") : (y < 0.5 ? "above" : "below"); }
 			row.addEventListener("dragover", function (e) { if (dragId == null) return; e.preventDefault(); row.classList.remove("is-over-above", "is-over-below", "is-over-into"); row.classList.add("is-over-" + zoneOf(e)); });
@@ -2426,7 +2599,7 @@ var MESPixel = (function () {
 	$("pe-zoom").addEventListener("click", function () { PE.view.zoom === 1 ? PE.fit() : PE.setZoom(1); });
 	$("pe-zin").addEventListener("click", function () { PE.setZoom(PE.view.zoom * 1.25); }); $("pe-zout").addEventListener("click", function () { PE.setZoom(PE.view.zoom / 1.25); });
 	$("pe-fit").addEventListener("click", function () { PE.fit(); }); $("pe-undo").addEventListener("click", function () { PE.undo(); }); $("pe-redo").addEventListener("click", function () { PE.redo(); }); $("pe-export").addEventListener("click", function () { PE.dlgExport(); }); $("pe-copy").addEventListener("click", function () { if (needDoc()) copyMerged(); });
-$("pe-share").addEventListener("click", function () { if (needDoc()) PE.dlgShare(); });
+$("pe-share").addEventListener("click", function () { if (needDoc()) PE.dlgShare(); }); $("pe-save").addEventListener("click", function () { saveProject(); });
 
 	/* ---------- edit actions ---------- */
 	PE.clipCanvas = null;
@@ -2443,13 +2616,13 @@ $("pe-share").addEventListener("click", function () { if (needDoc()) PE.dlgShare
 		var L = PE.active(); if (!PE.doc || !PE.prepare(L)) return; var o = PE.origin(L), c = PE.mk(L.canvas.width, L.canvas.height), x = c.getContext("2d"); x.fillStyle = color; x.fillRect(0, 0, c.width, c.height);
 		PE.paintInto(L, c, o.x, o.y, { target: L.editMask && L.mask ? "mask" : "pixel" }); PE.commit("Fill");
 	}
-	function paintClipboardImage(src, name, at) { if (!PE.doc) { PE.openImageSource(src, name || "Pasted image"); PE.setTool("move"); return; } PE.placeSource(src, name || "Pasted", at); PE.setTool("move"); }
-	function pasteInternal() { if (PE.clipCanvas) paintClipboardImage(PE.clipCanvas, "Pasted layer"); else if (navigator.clipboard && navigator.clipboard.read) { navigator.clipboard.read().then(function (items) { for (var i = 0; i < items.length; i++) { var t = items[i].types.filter(function (t) { return /^image\//.test(t); })[0]; if (t) { items[i].getType(t).then(function (b) { return PE.decodeFile(b); }).then(function (im) { paintClipboardImage(im, "Pasted image"); }); return; } } PE.toast("Nothing to paste"); }).catch(function () { PE.toast("Use Ctrl+V to paste an image"); }); } else PE.toast("Use Ctrl+V to paste an image"); }
+	function paintClipboardImage(src, name, at, clip) { var meta = { how: "paste", clip: clip || "clipboard" }; if (!PE.doc) { PE.openImageSource(src, name || "Pasted image", meta); PE.setTool("move"); return; } PE.placeSource(src, name || "Pasted", at, meta); PE.setTool("move"); }
+	function pasteInternal() { if (PE.clipCanvas) paintClipboardImage(PE.clipCanvas, "Pasted layer", null, "editor"); else if (navigator.clipboard && navigator.clipboard.read) { navigator.clipboard.read().then(function (items) { for (var i = 0; i < items.length; i++) { var t = items[i].types.filter(function (t) { return /^image\//.test(t); })[0]; if (t) { items[i].getType(t).then(function (b) { return PE.decodeFile(b); }).then(function (im) { paintClipboardImage(im, "Pasted image"); }); return; } } PE.toast("Nothing to paste"); }).catch(function () { PE.toast("Use Ctrl+V to paste an image"); }); } else PE.toast("Use Ctrl+V to paste an image"); }
 	document.addEventListener("paste", function (e) {
 		if (/INPUT|TEXTAREA|SELECT/.test((e.target || {}).tagName || "") || PE.modalOpen()) return; var items = (e.clipboardData && e.clipboardData.items) || [];
 		for (var i = 0; i < items.length; i++) if (items[i].kind === "file" && /^image\//.test(items[i].type)) { var f = items[i].getAsFile(); e.preventDefault(); PE.decodeFile(f).then(function (im) { paintClipboardImage(im, "Pasted image"); }).catch(function () { PE.toast("Can't read that image"); }); return; }
 		var tx = e.clipboardData && e.clipboardData.getData("text/plain"); if (tx && PE.looksLikeLatex(tx)) { e.preventDefault(); PE.dlgEquation(null, null, tx.trim().replace(/^\$+|\$+$/g, "")); return; }
-		if (PE.clipCanvas) { e.preventDefault(); paintClipboardImage(PE.clipCanvas, "Pasted layer"); }
+		if (PE.clipCanvas) { e.preventDefault(); paintClipboardImage(PE.clipCanvas, "Pasted layer", null, "editor"); }
 	});
 	function align(how) {
 		var L = PE.active(), d = PE.doc; if (!L) return; var b = PE.bounds(L), dx = 0, dy = 0;
@@ -2463,14 +2636,14 @@ $("pe-share").addEventListener("click", function () { if (needDoc()) PE.dlgShare
 	function needDoc() { if (!PE.doc) { PE.toast("Open or create an image first"); return false; } return true; }
 
 	/* ---------- files ---------- */
-	function loadPsd(buf, name) {
+	function loadPsd(buf, name, meta) {
 		return loadScript("https://cdn.jsdelivr.net/npm/ag-psd@30.1.1/dist/bundle.js", function () { return window.agPsd; }).then(function (ag) {
 			var psd = ag.readPsd(new Uint8Array(buf), { skipThumbnail: true }), layers = [];
 			(function walk(list) { (list || []).forEach(function (n) { if (n.children) walk(n.children); else if (n.canvas) layers.push(n); }); })(psd.children);
-			if (!PE.newDoc(psd.width, psd.height, null, I.baseName(name))) return; var d = PE.doc; d.layers = [];
+			if (!PE.newDoc(psd.width, psd.height, null, I.baseName(name))) return; var d = PE.doc; d.layers = []; var from = Object.assign({ file: name }, meta || {}, { how: "psd" }); d.file = PE.mkSrc(from);
 			var MAP = { "normal": "source-over", "multiply": "multiply", "screen": "screen", "overlay": "overlay", "darken": "darken", "lighten": "lighten", "color dodge": "color-dodge", "color burn": "color-burn", "hard light": "hard-light", "soft light": "soft-light", "difference": "difference", "exclusion": "exclusion", "hue": "hue", "saturation": "saturation", "color": "color", "luminosity": "luminosity" };
 			if (!layers.length && psd.canvas) layers.push({ name: "Background", canvas: psd.canvas, left: 0, top: 0 });
-			layers.forEach(function (n) { var c = PE.clone(n.canvas), L = PE.makeLayer({ canvas: c, name: n.name || "Layer", x: n.left || 0, y: n.top || 0 }); L.visible = !n.hidden; L.opacity = n.opacity == null ? 1 : n.opacity; L.blend = MAP[n.blendMode] || "source-over"; d.layers.push(L); });
+			layers.forEach(function (n) { var c = PE.clone(n.canvas), L = PE.makeLayer({ canvas: c, name: n.name || "Layer", x: n.left || 0, y: n.top || 0, src: PE.mkSrc({ how: "psd", file: name }, c.width, c.height) }); L.visible = !n.hidden; L.opacity = n.opacity == null ? 1 : n.opacity; L.blend = MAP[n.blendMode] || "source-over"; d.layers.push(L); });
 			if (!d.layers.length) d.layers.push(PE.makeLayer({ name: "Layer 1" })); d.activeId = d.layers[d.layers.length - 1].id; PE.commit("Open PSD"); PE.dirty = false; PE.fit(); PE.emit("docsize"); PE.setTool("move");
 			if (layers.length) PE.toast("Opened " + layers.length + " layer" + (layers.length === 1 ? "" : "s") + " from the PSD (effects, text and adjustment layers are flattened)");
 		});
@@ -2486,11 +2659,12 @@ $("pe-share").addEventListener("click", function () { if (needDoc()) PE.dlgShare
 	function openFiles(files, opts) {
 		opts = opts || {}; files = Array.prototype.slice.call(files); if (!files.length) return;
 		var proj = files.filter(function (f) { return /\.mesproj$/i.test(f.name); })[0], psd = files.filter(function (f) { return /\.psd$/i.test(f.name); })[0], imgs = files.filter(function (f) { return /^image\//.test(f.type) || /\.(png|jpe?g|webp|gif|bmp|avif|svg|ico)$/i.test(f.name); });
-		if (proj) { if (!confirmReplace()) return; proj.arrayBuffer().then(PE.loadProject).then(function () { PE.setTool("move"); PE.toast("Project opened"); }).catch(function (e) { PE.toast(e.message); }); return; }
-		if (psd && !opts.place) { if (!confirmReplace()) return; psd.arrayBuffer().then(function (b) { return loadPsd(b, psd.name); }).catch(function (e) { PE.toast(e.message); }); return; }
+		var meta = function (f) { return { how: opts.how || "open", file: f.name, path: f.webkitRelativePath || "", bytes: f.size || 0, dir: opts.dir || "", hk: opts.hk || "" }; };
+		if (proj) { if (!confirmReplace()) return; proj.arrayBuffer().then(function (b) { return PE.loadProject(b, proj.name, meta(proj)); }).then(function () { PE.setTool("move"); PE.toast("Project opened"); }).catch(function (e) { PE.toast(e.message); }); return; }
+		if (psd && !opts.place) { if (!confirmReplace()) return; psd.arrayBuffer().then(function (b) { return loadPsd(b, psd.name, meta(psd)); }).catch(function (e) { PE.toast(e.message); }); return; }
 		if (!imgs.length) { PE.toast("That file type is not supported (use PNG, JPG, WebP, GIF, BMP, AVIF, SVG, PSD)"); return; }
 		var first = !PE.doc || (!opts.place && confirmReplace()); if (!PE.doc) first = true; else if (!opts.place && !first) return;
-		var chain = Promise.resolve(); imgs.forEach(function (f, i) { chain = chain.then(function () { return PE.decodeFile(f).then(function (im) { if (first && i === 0 && (!PE.doc || !opts.place)) { PE.openImageSource(im, f.name); } else PE.placeSource(im, I.baseName(f.name), opts.at); }).catch(function () { PE.toast("Can't read " + f.name); }); }); });
+		var chain = Promise.resolve(); imgs.forEach(function (f, i) { chain = chain.then(function () { return PE.decodeFile(f).then(function (im) { if (first && i === 0 && (!PE.doc || !opts.place)) { PE.openImageSource(im, f.name, meta(f)); } else PE.placeSource(im, I.baseName(f.name), opts.at, meta(f)); }).catch(function () { PE.toast("Can't read " + f.name); }); }); });
 		chain.then(function () { PE.setTool("move"); if (imgs.length > 1) PE.toast(imgs.length + " images added as layers"); });
 	}
 	function confirmReplace() { if (!PE.doc || !PE.dirty || PE.hist.stack.length < 2) return true; return window.confirm("Replace the current image? Unsaved changes will be lost (you can still restore the last auto-saved session)."); }
@@ -2500,14 +2674,18 @@ $("pe-share").addEventListener("click", function () { if (needDoc()) PE.dlgShare
 	var stage = PE.els.stage;
 	["dragenter", "dragover"].forEach(function (ev) { stage.addEventListener(ev, function (e) { if (e.dataTransfer && Array.prototype.indexOf.call(e.dataTransfer.types || [], "Files") >= 0) { e.preventDefault(); stage.classList.add("is-drop"); } }); });
 	["dragleave", "drop"].forEach(function (ev) { stage.addEventListener(ev, function () { stage.classList.remove("is-drop"); }); });
-	stage.addEventListener("drop", function (e) { if (e.dataTransfer && e.dataTransfer.files && e.dataTransfer.files.length) { e.preventDefault(); var at = PE.doc ? PE.toDoc(e.clientX, e.clientY) : null; openFiles(e.dataTransfer.files, { place: !!PE.doc, at: null }); } });
-	function saveProject() { if (!needDoc()) return; PE.projectBlob().then(function (b) { PE.download(b, I.cleanFileName(PE.doc.name) + ".mesproj"); PE.dirty = false; PE.toast("Project saved (open it again with File → Open)"); }); }
+	stage.addEventListener("drop", function (e) { if (e.dataTransfer && e.dataTransfer.files && e.dataTransfer.files.length) { e.preventDefault(); var at = PE.doc ? PE.toDoc(e.clientX, e.clientY) : null; openFiles(e.dataTransfer.files, { place: !!PE.doc, at: null, how: "drop" }); } });
+	function saveProject() { if (!needDoc()) return; PE.projectBlob().then(function (b) { PE.download(b, I.cleanFileName(PE.doc.name) + ".mesproj"); PE.dirty = false; saveState(); PE.toast("Project saved to your Downloads (open it again with File → Open)"); }).catch(function (e) { PE.toast("Could not save the project: " + (e && e.message || e)); }); }
+	PE.saveProject = saveProject;
+	/* the top-bar Save button shows a dot while there are changes that are not in a saved project file */
+	function saveState() { setTimeout(function () { var b = $("pe-save"), on = !!(PE.doc && PE.dirty && PE.hist.stack.length > 1); if (!b) return; b.classList.toggle("is-dirty", on); b.title = "Save project: a .mesproj file that keeps every layer, group and comp (" + MOD + "S)" + (on ? ". You have changes that are not saved in a project file yet." : ""); }, 0); }
+	PE.saveState = saveState; PE.on("history", saveState); PE.on("docsize", saveState);
 
 	/* ---------- autosave (IndexedDB) ---------- */
 	function idb(fn) { return new Promise(function (res, rej) { var r = indexedDB.open("mes-photo-editor", 1); r.onupgradeneeded = function () { r.result.createObjectStore("kv"); }; r.onsuccess = function () { var db = r.result; Promise.resolve(fn(db.transaction("kv", "readwrite").objectStore("kv"))).then(function (v) { res(v); }, rej); }; r.onerror = function () { rej(r.error); }; }); }
 	function req(r) { return new Promise(function (res, rej) { r.onsuccess = function () { res(r.result); }; r.onerror = function () { rej(r.error); }; }); }
 	var asTimer = 0; PE.scheduleAutosave = function () { clearTimeout(asTimer); asTimer = setTimeout(function () { if (!PE.doc || PE.hist.stack.length < 2) return; PE.projectBlob().then(function (b) { return idb(function (st) { return req(st.put({ blob: b, t: Date.now(), name: PE.doc.name, w: PE.doc.w, h: PE.doc.h }, "auto")); }); }).catch(function () {}); }, 5000); };
-	function restoreAuto() { idb(function (st) { return req(st.get("auto")); }).then(function (r) { if (!r) return; return r.blob.arrayBuffer().then(PE.loadProject).then(function () { PE.setTool("move"); PE.toast("Restored your last session"); }); }).catch(function () { PE.toast("Could not restore"); }); }
+	function restoreAuto() { idb(function (st) { return req(st.get("auto")); }).then(function (r) { if (!r) return; return r.blob.arrayBuffer().then(function (b) { return PE.loadProject(b, "autosave"); }).then(function () { PE.setTool("move"); PE.toast("Restored your last session"); }); }).catch(function () { PE.toast("Could not restore"); }); }
 	function checkAuto() { try { idb(function (st) { return req(st.get("auto")); }).then(function (r) { var b = $("pe-restore"); if (r && b) { b.hidden = false; b.textContent = "↺ Restore last session (" + r.name + ", " + r.w + "×" + r.h + ", " + new Date(r.t).toLocaleString() + ")"; } }).catch(function () {}); } catch (e) {} }
 	window.addEventListener("beforeunload", function (e) { if (PE.doc && PE.dirty && PE.hist.stack.length > 1) { e.preventDefault(); e.returnValue = ""; } });
 
@@ -2516,7 +2694,8 @@ $("pe-share").addEventListener("click", function () { if (needDoc()) PE.dlgShare
 	function adj(list) { return list.map(function (a) { return { label: a.title, act: function () { if (needDoc()) PE.runAdjust(a.id); } }; }); }
 	var MENUS = [
 		{ label: "File", items: [{ label: "New image…", act: function () { PE.dlgNew(); } }, { label: "Open image / PSD / project…", act: function () { pickFiles("image/*,.psd,.mesproj", true, function (fs) { openFiles(fs); }); } }, { label: "Insert equation (LaTeX)…", act: function () { PE.dlgEquation(null, null); } }, { label: "Place image(s) as layers…", act: function () { if (!needDoc()) return; pickFiles("image/*", true, function (fs) { openFiles(fs, { place: true }); }); } }, "-",
-			{ label: "Export the selected group as its own image…", act: function () { if (needDoc()) PE.dlgExportGroup(); } }, { label: "Export as PNG / JPEG / WebP…", key: MOD + "Shift+S", act: function () { if (needDoc()) PE.dlgExport(); } }, { label: "Save project (keeps layers)", key: MOD + "S", act: saveProject }, { label: "Save as PSD (Photoshop)", act: savePsd }, { label: "Save as GIMP file (.xcf)", act: function () { PE.saveXcf(); } }, { label: "Connect a folder on this computer…", act: function () { PE.dlgFolder(); } }, { label: "Export all comps as pictures (ZIP)…", act: function () { if (needDoc()) PE.dlgExportComps(); } }, { label: "Copy merged image to clipboard", act: function () { if (needDoc()) copyMerged(); } }, { label: "Share as a link (temporary upload)…", act: function () { if (needDoc()) PE.dlgShare(); } }, "-", { label: "Bulk convert images…", act: function () { window.open("/image-converter", "_blank"); } }] },
+			{ label: "Save project", tag: "keeps layers", icon: "💾", hi: true, key: MOD + "S", act: saveProject, title: "A .mesproj file with every layer, group, mask, text and comp: open it again here to keep working" }, { label: "Export as PNG / JPEG / WebP…", key: MOD + "Shift+S", act: function () { if (needDoc()) PE.dlgExport(); } }, { label: "Export the selected group as its own image…", act: function () { if (needDoc()) PE.dlgExportGroup(); } }, { label: "Export all comps as pictures (ZIP)…", act: function () { if (needDoc()) PE.dlgExportComps(); } }, { label: "Save as PSD (Photoshop)", act: savePsd }, { label: "Save as GIMP file (.xcf)", act: function () { PE.saveXcf(); } }, "-",
+			{ label: "Where are my images? (files, folder, autosave)…", act: function () { PE.dlgFolder("where"); } }, { label: "Connect a folder on this computer…", act: function () { PE.dlgFolder("folder"); } }, "-", { label: "Copy merged image to clipboard", act: function () { if (needDoc()) copyMerged(); } }, { label: "Share as a link (temporary upload)…", act: function () { if (needDoc()) PE.dlgShare(); } }, "-", { label: "Bulk convert images…", act: function () { window.open("/image-converter", "_blank"); } }] },
 		{ label: "Edit", items: [{ label: "Undo", key: MOD + "Z", act: function () { PE.undo(); } }, { label: "Redo", key: MOD + "Shift+Z", act: function () { PE.redo(); } }, "-", { label: "Cut", key: MOD + "X", act: function () { copySel(true); } }, { label: "Copy", key: MOD + "C", act: function () { copySel(false); } }, { label: "Copy merged", act: function () { if (needDoc()) copyMerged(); } }, { label: "Paste as new layer", key: MOD + "V", act: pasteInternal }, "-",
 			{ label: "Erase selection with AI (remove object)", act: function () { if (needSel()) PE.aiEraseRun(); } }, { label: "Clear selection (transparent)", key: "Del", act: clearSel }, { label: "Fill with foreground colour", key: "Alt+Backspace", act: function () { if (needDoc()) fillSel(PE.fg); } }, { label: "Fill with background colour", key: MOD + "Backspace", act: function () { if (needDoc()) fillSel(PE.bg); } }, "-",
 			{ label: "Select all", key: MOD + "A", act: function () { if (needDoc()) { PE.selAll(); PE.commit("Select all"); } } }, { label: "Deselect", key: MOD + "D", act: function () { if (PE.sel) { PE.selClear(); PE.commit("Deselect"); } } }, { label: "Invert selection", key: MOD + "Shift+I", act: function () { if (needDoc()) { PE.selInvert(); PE.commit("Invert selection"); } } },
@@ -2537,7 +2716,7 @@ $("pe-share").addEventListener("click", function () { if (needDoc()) PE.dlgShare
 		MENUS.forEach(function (m) {
 			var b = el("button", "pe-menu", esc(m.label)); b.type = "button"; b.setAttribute("aria-haspopup", "true"); b.setAttribute("aria-expanded", "false");
 			var pop = el("div", "pe-pop"); pop.hidden = true; pop.setAttribute("role", "menu");
-			m.items.forEach(function (it) { if (it === "-") { pop.appendChild(el("div", "pe-sep")); return; } var r = el("button", "pe-item", "<span>" + esc(it.label) + "</span>" + (it.key ? "<kbd>" + esc(it.key) + "</kbd>" : "")); r.type = "button"; r.setAttribute("role", "menuitem"); r.addEventListener("click", function () { closeMenu(); it.act(); }); pop.appendChild(r); });
+			m.items.forEach(function (it) { if (it === "-") { pop.appendChild(el("div", "pe-sep")); return; } var r = el("button", "pe-item" + (it.hi ? " pe-item--hi" : ""), "<span>" + (it.icon ? '<span class="pe-iic" aria-hidden="true">' + esc(it.icon) + "</span>" : "") + esc(it.label) + (it.tag ? ' <small class="pe-itag">' + esc(it.tag) + "</small>" : "") + "</span>" + (it.key ? "<kbd>" + esc(it.key) + "</kbd>" : "")); r.type = "button"; r.setAttribute("role", "menuitem"); if (it.title) r.title = it.title; r.addEventListener("click", function () { closeMenu(); it.act(); }); pop.appendChild(r); });
 			var wrap = el("div", "pe-mwrap"); wrap.appendChild(b); wrap.appendChild(pop); bar.appendChild(wrap);
 			b.addEventListener("click", function (e) { e.stopPropagation(); if (openMenu && openMenu.b === b) closeMenu(); else showMenu(b, pop, wrap); }); b.addEventListener("mouseenter", function () { if (openMenu && openMenu.b !== b) showMenu(b, pop, wrap); });
 		});
@@ -2546,7 +2725,7 @@ $("pe-share").addEventListener("click", function () { if (needDoc()) PE.dlgShare
 	function closeMenu() { if (openMenu) { openMenu.pop.hidden = true; openMenu.pop.style.left = ""; openMenu.b.setAttribute("aria-expanded", "false"); openMenu = null; } }
 	document.addEventListener("click", closeMenu); document.addEventListener("keydown", function (e) { if (e.key === "Escape") closeMenu(); });
 	function shortcuts() {
-		var rows = [["V M L W C", "Move, Marquee, Lasso, Magic wand, Crop"], ["B E S R", "Brush, Eraser, Clone stamp, Retouch"], ["K G I", "Paint bucket, Gradient, Eyedropper"], ["T U", "Text, Shapes & annotations"], ["H / Space", "Pan (hold Space with any tool)"], ["Z, Ctrl + wheel", "Zoom"], ["[ and ]", "Smaller / larger brush"], ["X / D", "Swap / reset colours"], [MOD + "Z, " + MOD + "Shift+Z", "Undo, redo"], [MOD + "A, " + MOD + "D, " + MOD + "Shift+I", "Select all, deselect, invert selection"], [MOD + "C X V", "Copy, cut, paste as layer"], [MOD + "J, " + MOD + "E", "Duplicate layer, merge down"], ["Delete", "Clear selection (or delete the layer)"], ["Arrow keys", "Nudge the layer (Shift = 10 px)"], ["Enter / Esc", "Apply crop, close polygon / cancel"], [MOD + "0 / " + MOD + "1", "Fit on screen / 100%"], [MOD + "S", "Save project"], [MOD + "Shift+S", "Export PNG / JPEG / WebP"]];
+		var rows = [["V M L W C", "Move, Marquee, Lasso, Magic wand, Crop"], ["B E S R", "Brush, Eraser, Clone stamp, Retouch"], ["K G I", "Paint bucket, Gradient, Eyedropper"], ["T U", "Text, Shapes & annotations"], ["H / Space", "Pan (hold Space with any tool)"], ["Z, Ctrl + wheel", "Zoom"], ["[ and ]", "Smaller / larger brush"], ["X / D", "Swap / reset colours"], [MOD + "Z, " + MOD + "Shift+Z", "Undo, redo"], [MOD + "A, " + MOD + "D, " + MOD + "Shift+I", "Select all, deselect, invert selection"], [MOD + "C X V", "Copy, cut, paste as layer"], [MOD + "J, " + MOD + "E", "Duplicate layer, merge down"], ["Delete", "Clear selection (or delete the layer)"], ["Arrow keys", "Nudge the layer (Shift = 10 px)"], ["Enter / Esc", "Apply crop, close polygon / cancel"], [MOD + "0 / " + MOD + "1", "Fit on screen / 100%"], [MOD + "S", "Save project (keeps layers)"], [MOD + "Shift+S", "Export PNG / JPEG / WebP"]];
 		var w = el("div"); w.innerHTML = '<table class="pe-keys">' + rows.map(function (r) { return "<tr><td><kbd>" + esc(r[0]) + "</kbd></td><td>" + esc(r[1]) + "</td></tr>"; }).join("") + "</table>"; PE.modal({ title: "Keyboard shortcuts", body: w, buttons: [{ label: "Close", primary: true, act: function (m) { m.close(); } }] });
 	}
 	function tips() {
@@ -2559,7 +2738,7 @@ $("pe-share").addEventListener("click", function () { if (needDoc()) PE.dlgShare
 		function build() {
 			var list = [];
 			PE.toolOrder.forEach(function (id) { var t = PE.tools[id]; if (t) list.push({ k: "Tool", l: t.name, sub: t.key ? "key " + t.key.toUpperCase() : "", hay: (t.name + " " + (HELP[id] || t.hint || "")).toLowerCase(), run: function () { PE.setTool(id); } }); });
-			MENUS.forEach(function (m) { m.items.forEach(function (it) { if (it !== "-") list.push({ k: m.label, l: it.label.replace(/…$/, ""), sub: it.key || "", hay: (it.label + " " + m.label).toLowerCase(), run: function () { it.act(); } }); }); });
+			MENUS.forEach(function (m) { m.items.forEach(function (it) { if (it !== "-") list.push({ k: m.label, l: it.label.replace(/…$/, "") + (it.tag ? " (" + it.tag + ")" : ""), sub: it.key || "", hay: (it.label + " " + (it.tag || "") + " " + (it.title || "") + " " + m.label).toLowerCase(), run: function () { it.act(); } }); }); });
 			if (PE.doc) PE.doc.layers.slice().reverse().forEach(function (L) { if (!PE.isGroup(L) || true) list.push({ k: PE.isGroup(L) ? "Group" : "Layer", l: L.name, sub: PE.isGroup(L) ? "group" : (L.type === "text" ? "text layer" : "layer"), hay: L.name.toLowerCase(), run: function () { PE.setActive(L.id); PE.emit("layers"); } }); });
 			return list;
 		}
@@ -2624,7 +2803,7 @@ $("pe-share").addEventListener("click", function () { if (needDoc()) PE.dlgShare
 	$("pe-restore").addEventListener("click", restoreAuto);
 	if (S.opt) for (var k in S.opt) if (PE.opt[k]) for (var kk in S.opt[k]) if (kk in PE.opt[k]) PE.opt[k][kk] = S.opt[k][kk];
 	PE.opt.shape.next = 1; PE.opt.text.str = "Text";
-	showTab(S.tab === "comps" ? "comps" : "hist"); buildMenus(); buildTools(); PE.initPointer(); PE.initTextEditor(); buildColor(); resize(); PE.setTool("move"); status(); checkAuto();
+	showTab(S.tab === "comps" ? "comps" : "hist"); buildMenus(); buildTools(); PE.initPointer(); PE.initTextEditor(); buildColor(); resize(); PE.setTool("move"); status(); checkAuto(); saveState();
 	if (S.win) { autoWin = true; toggleWin(true); }
 	var q = new URLSearchParams(location.search); if (q.get("new")) { var wh = (q.get("new") || "").split("x"); if (wh.length === 2) PE.newDoc(+wh[0], +wh[1], "#ffffff"); }
 	window.PEdebug = PE;

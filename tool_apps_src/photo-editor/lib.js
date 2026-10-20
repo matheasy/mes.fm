@@ -233,7 +233,33 @@ var MESPixel = (function () {
 		s = 0; for (i = 255; i >= 0; i--) { s += hist[i]; if (s > lim) { w = i; break; } }
 		if (w - b < 2) { b = 0; w = 255; } return { black: b, white: w };
 	}
-	var api = { clamp: clamp, hexToRgb: hexToRgb, rgbToHex: rgbToHex, rgbToHsl: rgbToHsl, hslToRgb: hslToRgb, histogram: histogram, identityLUT: identityLUT, applyLUT: applyLUT, levelsLUT: levelsLUT, curveLUT: curveLUT,
+	/* ---------- UI helpers (pure): where a layer came from, the width of the side panels ---------- */
+	var HOW = { open: "Opened from a file", drop: "Dropped onto the editor", paste: "Pasted", folder: "From a folder on this computer", "folder-ro": "From a folder (read only)", psd: "From a Photoshop file", project: "From a project file", autosave: "From the autosaved session", merge: "Merged from layers", made: "Made in the editor" };
+	function bytesText(b) { b = +b || 0; return b < 1024 ? b + " B" : b < 1048576 ? (b / 1024).toFixed(b < 10240 ? 1 : 0) + " KB" : (b / 1048576).toFixed(b < 10485760 ? 1 : 0) + " MB"; }
+	/* s = layer.src: {how, file, path, dir, bytes, from: [names], copy, ai: [steps], clip} -> {how, label, where, bytes, text} */
+	function describeSource(s) {
+		s = s || {}; var how = HOW[s.how] ? s.how : "made", label = HOW[how], where = "";
+		if (how === "folder") where = (s.dir ? s.dir + "/" : "") + (s.file || "");
+		else if (how === "folder-ro") where = s.path || ((s.dir ? s.dir + "/" : "") + (s.file || ""));
+		else if (how === "paste") label = s.clip === "editor" ? "Pasted (copied inside the editor)" : "Pasted from the clipboard";
+		else if (how === "merge") { var f = s.from || []; where = f.slice(0, 3).join(", ") + (f.length > 3 ? " and " + (f.length - 3) + " more" : ""); }
+		else if (how !== "made") where = s.path || s.file || "";
+		var bytes = s.bytes > 0 ? bytesText(s.bytes) : "", ai = (s.ai || []).join(", ");
+		return { how: how, label: label, where: where, bytes: bytes, text: label + (where ? ": " + where : "") + (bytes ? " (" + bytes + ")" : "") + (s.copy ? ", duplicated" : "") + (ai ? " · then AI: " + ai : "") };
+	}
+	/* side panels: a width in em kept between 12 em and 48 em, and never so wide that the picture gets less than 240 px */
+	function panelClamp(em, mainPx, otherPx, fontPx) {
+		fontPx = fontPx > 0 ? fontPx : 13; var max = Math.max(12, Math.min(48, ((mainPx || 0) - (otherPx || 0) - 240) / fontPx)); em = +em; if (!isFinite(em)) em = 17.5;
+		return Math.round(clamp(em, 12, max) * 100) / 100;
+	}
+	/* arrow keys on the focused grip: the grip moves with the arrow, so the panels get wider when it moves towards the picture's side */
+	function panelKey(key, shift, sideLeft) {
+		var step = shift ? 4 : 1;
+		if (key === "ArrowLeft" || key === "ArrowRight") return { d: (key === "ArrowRight" ? 1 : -1) * (sideLeft ? 1 : -1) * step };
+		if (key === "Home") return { to: "min" }; if (key === "End") return { to: "max" }; if (key === "Enter") return { to: "reset" };
+		return null;
+	}
+	var api = { describeSource: describeSource, bytesText: bytesText, panelClamp: panelClamp, panelKey: panelKey, clamp: clamp, hexToRgb: hexToRgb, rgbToHex: rgbToHex, rgbToHsl: rgbToHsl, hslToRgb: hslToRgb, histogram: histogram, identityLUT: identityLUT, applyLUT: applyLUT, levelsLUT: levelsLUT, curveLUT: curveLUT,
 		brightnessContrast: brightnessContrast, exposure: exposure, hueSat: hueSat, vibrance: vibrance, temperature: temperature, invert: invert, grayscale: grayscale, sepia: sepia, threshold: threshold, posterize: posterize,
 		gaussianBlur: gaussianBlur, boxBlur: boxBlur, unsharp: unsharp, noise: noise, pixelate: pixelate, vignette: vignette, convolve: convolve, floodMask: floodMask, growShrinkMask: growShrinkMask, featherMask: featherMask, invertMask: invertMask,
 		maskBounds: maskBounds, opaqueBounds: opaqueBounds, blendByMask: blendByMask, autoLevels: autoLevels, premultiply: premultiply, unpremultiply: unpremultiply };

@@ -54,8 +54,8 @@
 			getModel(v.model, prog).then(function (mod) { fill.style.width = "100%"; st.textContent = "Analysing…"; return infer(mod, src, function (t) { st.textContent = t; }); }).then(function (r) {
 				if (cancelled) return; var mc = maskCanvas(r, src.width, src.height, v.edge), o = PE.origin(L);
 				if (v.result === "sel") { var sc = mk(PE.doc.w, PE.doc.h); sc.getContext("2d").drawImage(mc, o.x, o.y); var sx = sc.getContext("2d"); sx.globalCompositeOperation = "source-in"; sx.fillStyle = "#fff"; sx.fillRect(0, 0, sc.width, sc.height); PE.selCombine(sc, "new"); PE.commit("Select subject (AI)"); }
-				else if (v.result === "cut") { var x = L.canvas.getContext("2d"); x.save(); x.globalCompositeOperation = "destination-in"; x.drawImage(mc, 0, 0); x.restore(); if (L.mask) { var mx = L.mask.getContext("2d"); } L.rev++; PE.commit("Remove background (AI)"); }
-				else { if (L.mask) { var ex = L.mask.getContext("2d"); ex.save(); ex.globalCompositeOperation = "destination-in"; ex.drawImage(mc, 0, 0); ex.restore(); } else L.mask = mc; L.editMask = true; L.rev++; PE.commit("Remove background (AI)"); }
+				else if (v.result === "cut") { var x = L.canvas.getContext("2d"); x.save(); x.globalCompositeOperation = "destination-in"; x.drawImage(mc, 0, 0); x.restore(); if (L.mask) { var mx = L.mask.getContext("2d"); } L.rev++; PE.markAi(L, "background removed"); PE.commit("Remove background (AI)"); }
+				else { if (L.mask) { var ex = L.mask.getContext("2d"); ex.save(); ex.globalCompositeOperation = "destination-in"; ex.drawImage(mc, 0, 0); ex.restore(); } else L.mask = mc; L.editMask = true; L.rev++; PE.markAi(L, "background masked"); PE.commit("Remove background (AI)"); }
 				PE.emit("layers"); PE.invalidate(); mm.close(); PE.toast(v.result === "mask" ? "Done. Paint on the mask to fix edges: brush reveals, eraser hides." : "Done");
 			}).catch(function (e) { busy = false; btns[1].disabled = false; btns[1].textContent = "Try again"; bar.hidden = true; st.textContent = "Could not run the AI model: " + (e && e.message ? e.message : e) + (/fetch|network|load/i.test(String(e && e.message)) ? " (check your connection)" : ""); });
 		}

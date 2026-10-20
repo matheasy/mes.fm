@@ -308,8 +308,8 @@ body.dark-mode .tu .rw-head {color:#a0a8b3;border-bottom-color:#555;} body.dark-
 	/* MES Photo Editor: a wide, always-dark workspace. Every colour is a custom property (the derived dark theme leaves var() alone). */
 	/* width comes from the page's Standard | Wide | Theatre switch (Wide by default via the inline snippet in content.html) */
 	.tu [hidden] {display:none !important;}
-	.pe {--pe-bg:#141418;--pe-panel:#1d1d23;--pe-panel2:#26262e;--pe-line:#34343f;--pe-text:#ececf1;--pe-dim:#9b9bab;--pe-hover:#2f2f3a;--pe-on:var(--accent);--pe-onfg:#fff;--pe-field:#101014;--pe-stage:#1b1b1f;--pe-white:#ffffff;--pe-black:#000000;--pe-dropbg:rgba(124,58,237,0.12);--pe-scrim:rgba(0,0,0,0.55);--pe-shadow:rgba(0,0,0,0.5);--pe-shadow2:rgba(0,0,0,0.6);--pe-gray:#888888;--pe-err:#ff8a80;
-		display:flex;flex-direction:column;height:clamp(540px,calc(100vh - 140px),1200px);background:var(--pe-bg);border:1px solid var(--pe-line);border-radius:0.5em;overflow:hidden;color:var(--pe-text);font-size:13px;line-height:1.3;position:relative;}
+	.pe {--pe-bg:#141418;--pe-panel:#1d1d23;--pe-panel2:#26262e;--pe-line:#34343f;--pe-text:#ececf1;--pe-dim:#9b9bab;--pe-hover:#2f2f3a;--pe-on:var(--accent);--pe-onfg:#fff;--pe-field:#101014;--pe-stage:#1b1b1f;--pe-hi:#ffffff;--pe-lo:#000000;--pe-ring:#c4b5fd;--pe-acc2:#c4b5fd;--pe-hibg:rgba(124,58,237,0.20);--pe-selbg:rgba(139,92,246,0.60);--pe-selfg:#ffffff;--pe-notebg:#231f33;--pe-dropbg:rgba(124,58,237,0.12);--pe-scrim:rgba(0,0,0,0.55);--pe-shadow:rgba(0,0,0,0.5);--pe-shadow2:rgba(0,0,0,0.6);--pe-gray:#888888;--pe-err:#ff8a80;
+		display:flex;flex-direction:column;height:clamp(540px,calc(100vh - 140px),1200px);background:var(--pe-bg);border:1px solid var(--pe-line);border-radius:0.5em;overflow:hidden;color:var(--pe-text);font-size:13px;line-height:1.3;position:relative;color-scheme:dark;}
 	.pe *, .pe *::before, .pe *::after {box-sizing:border-box;color:inherit;}
 	.pe button, .pe input, .pe select, .pe textarea {font:inherit;margin:0;}
 	.pe button {cursor:pointer;}
@@ -320,7 +320,7 @@ body.dark-mode .tu .rw-head {color:#a0a8b3;border-bottom-color:#555;} body.dark-
 	.pe-mwrap {position:relative;}
 	.pe-menu {background:none;border:0;padding:0.45em 0.7em;border-radius:0.3em;color:var(--pe-text);}
 	.pe-menu:hover, .pe-menu[aria-expanded="true"] {background:var(--pe-hover);}
-	.pe-pop {position:absolute;left:0;top:100%;z-index:50;min-width:16em;max-height:80vh;overflow:auto;background:var(--pe-panel2);border:1px solid var(--pe-line);border-radius:0.4em;padding:0.3em;box-shadow:0 0.6em 1.6em var(--pe-shadow);}
+	.pe-pop {position:absolute;left:0;top:100%;z-index:50;min-width:16em;width:max-content;max-width:min(28em, calc(100vw - 16px));max-height:80vh;overflow:auto;background:var(--pe-panel2);border:1px solid var(--pe-line);border-radius:0.4em;padding:0.3em;box-shadow:0 0.6em 1.6em var(--pe-shadow);}
 	.pe-item {display:flex;justify-content:space-between;gap:1.5em;width:100%;text-align:left;background:none;border:0;padding:0.45em 0.7em;border-radius:0.3em;color:var(--pe-text);}
 	.pe-item:hover, .pe-item:focus-visible {background:var(--pe-on);color:var(--pe-onfg);outline:none;}
 	.pe-item kbd {font:inherit;font-size:0.9em;opacity:0.65;white-space:nowrap;}
@@ -360,7 +360,7 @@ body.dark-mode .tu .rw-head {color:#a0a8b3;border-bottom-color:#555;} body.dark-
 	.pe-panel {border-bottom:1px solid var(--pe-line);padding:0.4em 0.6em 0.6em;} .pe-panel--layers {flex:1 1 auto;min-height:12em;display:flex;flex-direction:column;} .pe-panel--hist {flex:none;}
 	.pe-ph {font-size:0.78em;font-weight:700;text-transform:uppercase;letter-spacing:0.05em;color:var(--pe-dim);margin-bottom:0.4em;}
 	.pe-col-top {display:flex;gap:0.8em;align-items:flex-start;} .pe-sw {position:relative;width:3.6em;height:3.4em;flex:none;}
-	.pe-sw-fg, .pe-sw-bg {position:absolute;width:2.3em;height:2.3em;border:2px solid var(--pe-white);border-radius:0.25em;box-shadow:0 0 0 1px var(--pe-black);display:block;overflow:hidden;cursor:pointer;} .pe-sw-fg {left:0;top:0;z-index:2;} .pe-sw-bg {right:0;bottom:0;}
+	.pe-sw-fg, .pe-sw-bg {position:absolute;width:2.3em;height:2.3em;border:2px solid var(--pe-hi);border-radius:0.25em;box-shadow:0 0 0 1px var(--pe-lo);display:block;overflow:hidden;cursor:pointer;} .pe-sw-fg {left:0;top:0;z-index:2;} .pe-sw-bg {right:0;bottom:0;}
 	.pe-sw input {opacity:0;width:100%;height:100%;cursor:pointer;border:0;padding:0;}
 	.pe-col-b {display:flex;flex-wrap:wrap;gap:0.3em;align-items:center;} .pe-hex {width:5.8em;font-family:ui-monospace,Menlo,Consolas,monospace;}
 	.pe-mini {background:var(--pe-panel2);border:1px solid var(--pe-line);border-radius:0.3em;width:2.1em;height:2.1em;padding:0;color:var(--pe-text);} .pe-mini:hover {border-color:var(--pe-on);} .pe-mini[aria-pressed="true"] {background:var(--pe-on);color:var(--pe-onfg);}
@@ -370,8 +370,8 @@ body.dark-mode .tu .rw-head {color:#a0a8b3;border-bottom-color:#555;} body.dark-
 	.pe-layers {flex:1 1 auto;overflow-y:auto;min-height:6em;display:flex;flex-direction:column;gap:2px;}
 	.pe-layer {display:flex;align-items:center;gap:0.4em;padding:0.25em 0.3em;border-radius:0.3em;border:1px solid transparent;cursor:pointer;} .pe-layer:hover {background:var(--pe-hover);} .pe-layer.is-active {background:var(--pe-on);color:var(--pe-onfg);} .pe-layer.is-hidden .pe-lname {opacity:0.5;} .pe-layer.is-over {border-color:var(--pe-on);}
 	.pe-eye {background:none;border:0;padding:0;width:1.6em;color:inherit;opacity:0.85;font-size:1em;}
-	.pe-th {width:36px;height:36px;flex:none;border-radius:0.2em;overflow:hidden;border:1px solid var(--pe-line);display:block;} .pe-th canvas {width:36px;height:36px;display:block;} .pe-th--mask {border-color:var(--pe-gray);} .pe-th--mask.is-on {outline:2px solid var(--pe-white);}
-	.pe-lname {flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;} .pe-rename {width:100%;min-width:0;}
+	.pe-th {width:36px;height:36px;flex:none;border-radius:0.2em;overflow:hidden;border:1px solid var(--pe-line);display:block;} .pe-th canvas {width:36px;height:36px;display:block;} .pe-th--mask {border-color:var(--pe-gray);} .pe-th--mask.is-on {outline:2px solid var(--pe-hi);}
+	.pe-lname {flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;} .pe-rename {flex:1 1 auto;width:100%;min-width:0;}
 	.pe-history {max-height:9.5em;overflow-y:auto;display:flex;flex-direction:column;}
 	.pe-hrow {text-align:left;background:none;border:0;padding:0.22em 0.4em;border-radius:0.25em;color:var(--pe-text);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;} .pe-hrow:hover {background:var(--pe-hover);} .pe-hrow.is-active {background:var(--pe-on);color:var(--pe-onfg);} .pe-hrow.is-future {opacity:0.4;}
 	.pe-status {display:flex;gap:1.4em;align-items:center;padding:0.3em 0.8em;background:var(--pe-panel);border-top:1px solid var(--pe-line);color:var(--pe-dim);font-size:0.92em;flex:none;overflow:hidden;white-space:nowrap;} .pe-hint {margin-left:auto;overflow:hidden;text-overflow:ellipsis;min-width:0;}
@@ -394,11 +394,14 @@ body.dark-mode .tu .rw-head {color:#a0a8b3;border-bottom-color:#555;} body.dark-
 	.pe-tools--wide .pe-thelp {display:inline-block;flex:none;width:1.7em;height:1.7em;border-radius:50%;border:1px solid var(--pe-line);background:var(--pe-field);color:var(--pe-text);font-size:0.8em;font-weight:700;padding:0;cursor:pointer;} .pe-tools--wide .pe-thelp:hover {background:var(--pe-on);color:var(--pe-onfg);}
 	.pe {position:relative;} .pe-help {position:absolute;z-index:30;width:19em;max-width:calc(100% - 1em);background:var(--pe-panel2);color:var(--pe-text);border:1px solid var(--pe-line);border-radius:0.5em;padding:0.7em 0.9em;box-shadow:0 8px 28px rgba(0,0,0,0.5);} .pe-help p {margin:0.4em 0 0.7em;line-height:1.45;font-size:0.92em;} .pe-help-t {font-weight:700;} .pe-help kbd {font:inherit;font-size:0.8em;border:1px solid var(--pe-line);border-radius:0.25em;padding:0 0.35em;color:var(--pe-dim);}
 	.pe-side {position:relative;} .pe-sbar {display:flex;align-items:center;gap:0.3em;padding:0.25em 0.6em;border-bottom:1px solid var(--pe-line);font-size:0.78em;font-weight:700;text-transform:uppercase;letter-spacing:0.05em;color:var(--pe-dim);} .pe-sbar span {flex:1;}
-	.pe-tres {flex:none;width:7px;margin:0 -3px;position:relative;z-index:5;cursor:col-resize;} .pe-tres:hover {background:var(--pe-on);opacity:0.5;} .pe-sres {position:absolute;top:0;bottom:0;left:-3px;width:7px;cursor:col-resize;z-index:4;} .pe-sres:hover {background:var(--pe-on);opacity:0.5;}
-	.pe-tools {order:-4;} .pe-tres {order:-3;} .pe-side {order:1;} .pe-main--sl .pe-side {order:-2;border-left:0;border-right:1px solid var(--pe-line);} .pe-main--tr .pe-tools {order:3;border-right:0;border-left:1px solid var(--pe-line);} .pe-main--tr .pe-tres {order:2;} .pe-main--sl .pe-sres {left:auto;right:-3px;}
-	.pe-main--shide .pe-side {display:none;} .pe-sshow {position:absolute;top:0.6em;right:0;z-index:7;background:var(--pe-panel2);border:1px solid var(--pe-line);border-right:0;border-radius:0.4em 0 0 0.4em;color:var(--pe-text);padding:0.35em 0.7em;font-size:0.85em;cursor:pointer;} .pe-sshow[hidden] {display:none;} .pe-main--sl .pe-sshow {right:auto;left:0;border:1px solid var(--pe-line);border-left:0;border-radius:0 0.4em 0.4em 0;}
+	/* grips between the toolbox, the picture and the panels: 12 px to grab, a thin line that lights up on hover / focus / drag, a pill in the middle so they can be found */
+	.pe-tres, .pe-sgrip {flex:none;width:12px;margin:0 -6px;position:relative;z-index:6;cursor:col-resize;touch-action:none;outline:none;}
+	.pe-tres::before, .pe-sgrip::before {content:"";position:absolute;top:0;bottom:0;left:5px;width:2px;background:transparent;transition:background 0.12s;} .pe-sgrip i {position:absolute;left:3px;top:50%;width:6px;height:2.6em;margin-top:-1.3em;border-radius:3px;background:var(--pe-line);border:1px solid var(--pe-panel2);transition:background 0.12s;}
+	.pe-tres:hover::before, .pe-sgrip:hover::before, .pe-sgrip:focus-visible::before, .pe-sgrip.is-drag::before {background:var(--pe-on);} .pe-sgrip:hover i, .pe-sgrip:focus-visible i, .pe-sgrip.is-drag i {background:var(--pe-on);} .pe-sgrip:focus-visible i {box-shadow:0 0 0 2px var(--pe-ring);}
+	.pe-tools {order:-4;} .pe-tres {order:-3;} .pe-sgrip {order:1;} .pe-side {order:2;max-width:max(12em, calc(100% - 22em));} .pe-main--sl .pe-side {order:-2;border-left:0;border-right:1px solid var(--pe-line);} .pe-main--sl .pe-sgrip {order:-1;} .pe-main--tr .pe-tools {order:4;border-right:0;border-left:1px solid var(--pe-line);} .pe-main--tr .pe-tres {order:3;}
+	.pe-main--shide .pe-side, .pe-main--shide .pe-sgrip {display:none;} .pe-sshow {position:absolute;top:0.6em;right:0;z-index:7;background:var(--pe-panel2);border:1px solid var(--pe-line);border-right:0;border-radius:0.4em 0 0 0.4em;color:var(--pe-text);padding:0.35em 0.7em;font-size:0.85em;cursor:pointer;} .pe-sshow[hidden] {display:none;} .pe-main--sl .pe-sshow {right:auto;left:0;border:1px solid var(--pe-line);border-left:0;border-radius:0 0.4em 0.4em 0;}
 	@media (max-width:820px) {
-		.pe {height:auto;min-height:calc(100vh - 120px);} .pe-main {flex-direction:column;} .pe-tools {flex-direction:row;overflow-x:auto;border-right:0;border-bottom:1px solid var(--pe-line);} .pe-tool {flex:none;} .pe-trow {flex:none;} .pe-tools--wide {width:auto;} .pe-tools--wide .pe-tname, .pe-tools--wide .pe-tkey, .pe-tools--wide .pe-thelp {display:none;} .pe-tools--wide .pe-tool {width:2.5em;justify-content:center;padding:0;} .pe-tres, .pe-thead, .pe-sbar, .pe-sres, .pe-sshow {display:none !important;} .pe-tools, .pe-tres, .pe-side, .pe-main--sl .pe-side, .pe-main--tr .pe-tools {order:0;} .pe-main--shide .pe-side {display:block;}
+		.pe {height:auto;min-height:calc(100vh - 120px);} .pe-main {flex-direction:column;} .pe-tools {flex-direction:row;overflow-x:auto;border-right:0;border-bottom:1px solid var(--pe-line);} .pe-tool {flex:none;} .pe-trow {flex:none;} .pe-tools--wide {width:auto;} .pe-tools--wide .pe-tname, .pe-tools--wide .pe-tkey, .pe-tools--wide .pe-thelp {display:none;} .pe-tools--wide .pe-tool {width:2.5em;justify-content:center;padding:0;} .pe-tres, .pe-thead, .pe-sbar, .pe-sgrip, .pe-sshow {display:none !important;} .pe-tools, .pe-tres, .pe-side, .pe-main--sl .pe-side, .pe-main--tr .pe-tools {order:0;max-width:none;} .pe-main--shide .pe-side {display:block;}
 		.pe-stage {height:60vh;flex:none;} .pe-side {width:auto;border-left:0;border-top:1px solid var(--pe-line);max-height:none;overflow:visible;} .pe-opts {gap:0.3em 0.7em;} .pe-opt input[type=range] {width:6em;} .pe-status {gap:0.8em;font-size:0.85em;} .pe-hint {display:none;}
 		.pe.pe-win .pe-stage {height:auto;flex:1;} .pe.pe-win {overflow:auto;}
 		.pe-top-r {flex:1 1 100%;min-width:0;flex-wrap:nowrap;overflow-x:auto;-webkit-overflow-scrolling:touch;scrollbar-width:thin;padding-bottom:0.25em;} .pe-top-r > * {flex:none;}
@@ -430,9 +433,37 @@ body.dark-mode .tu .rw-head {color:#a0a8b3;border-bottom-color:#555;} body.dark-
 	.pe-lbtns {display:flex;flex-wrap:wrap;gap:0.3em;} .pe-mini--t {width:auto !important;min-width:0;padding:0.25em 0.55em !important;font-size:0.85em;white-space:nowrap;}
 	.pe-cs-cv {display:block;width:100%;max-width:440px;aspect-ratio:440/280;border-radius:0.4em;margin:0 auto 0.6em;touch-action:none;} .pe-cs-chips {display:flex;flex-wrap:wrap;align-items:center;gap:0.4em;margin:0.5em 0;}
 	.pe-fold-h {display:flex;flex-wrap:wrap;gap:0.4em;align-items:center;margin-bottom:0.5em;} .pe-fold-s {width:100%;margin-bottom:0.3em;} .pe-fold-g {display:grid;grid-template-columns:repeat(auto-fill,minmax(130px,1fr));gap:0.5em;max-height:55vh;overflow:auto;}
-	.pe-fold-t {display:flex;flex-direction:column;align-items:center;gap:0.25em;background:var(--pe-field);border:1px solid var(--pe-line);border-radius:0.4em;padding:0.4em;cursor:pointer;color:var(--pe-text);} .pe-fold-t:hover {border-color:var(--pe-on);} .pe-fold-t canvas {width:100%;height:auto;border-radius:0.25em;background:#26262e;} .pe-fold-n {font-size:0.78em;word-break:break-all;max-height:2.6em;overflow:hidden;}
+	.pe-fold-t {display:flex;flex-direction:column;align-items:center;gap:0.25em;background:var(--pe-field);border:1px solid var(--pe-line);border-radius:0.4em;padding:0.4em;cursor:pointer;color:var(--pe-text);} .pe-fold-t:hover {border-color:var(--pe-on);} .pe-fold-t canvas {width:100%;height:auto;border-radius:0.25em;background:var(--pe-panel2);} .pe-fold-n {font-size:0.78em;word-break:break-all;max-height:2.6em;overflow:hidden;}
 	@media (max-width:760px) {.pe-search {flex:1 1 100%;max-width:none;margin:0.2em 0;order:5;}}
 	.pe-pen {background:none;border:0;color:inherit;opacity:0.45;cursor:pointer;padding:0 0.25em;font-size:1em;} .pe-layer:hover .pe-pen, .pe-layer.is-active .pe-pen {opacity:0.9;}
+
+	/* ---- text fields: workspace colours with an id prefix, so neither the page's input rules nor the derived TOOL-DARK block can turn them white ---- */
+	#pe input:not([type]), #pe input[type=text], #pe input[type=search], #pe input[type=number], #pe input[type=url], #pe select, #pe textarea:not(.pe-textedit) {background:var(--pe-field);color:var(--pe-text);border:1px solid var(--pe-line);border-radius:0.3em;caret-color:var(--pe-text);outline:none;}
+	#pe input:not([type]):focus, #pe input[type=text]:focus, #pe input[type=search]:focus, #pe input[type=number]:focus, #pe input[type=url]:focus, #pe select:focus, #pe textarea:not(.pe-textedit):focus {border-color:var(--pe-ring);box-shadow:0 0 0 2px var(--pe-hibg);}
+	#pe input::selection, #pe textarea:not(.pe-textedit)::selection {background:var(--pe-selbg);color:var(--pe-selfg);}
+	#pe input::placeholder, #pe textarea::placeholder {color:var(--pe-dim);opacity:1;}
+	#pe option {background:var(--pe-panel2);color:var(--pe-text);}
+	#pe input.pe-rename {padding:0.2em 0.4em;font-weight:inherit;border-color:var(--pe-ring);box-shadow:0 0 0 2px var(--pe-hibg);} .pe-layer.is-renaming {background:var(--pe-hover);color:var(--pe-text);}
+
+	/* ---- Save project: the one the user reaches for most ---- */
+	/* #pe prefix: the derived dark theme paints every button #d8d8d8 at (0,2,1), which would take the colour off the highlight */
+	#pe .pe-item--hi {color:var(--pe-acc2);background:var(--pe-hibg);box-shadow:inset 3px 0 0 var(--pe-on);margin:0.1em 0;font-weight:700;} #pe .pe-item--hi:hover, #pe .pe-item--hi:focus-visible {background:var(--pe-on);color:var(--pe-onfg);} .pe-item--hi kbd {opacity:0.9;}
+	.pe-iic {display:inline-block;width:1.4em;} .pe-itag {display:inline-block;margin-left:0.45em;padding:0 0.5em;border:1px solid currentColor;border-radius:1em;font-size:0.76em;font-weight:600;line-height:1.5;opacity:0.9;vertical-align:1px;}
+	#pe .pe-btn--save {border-color:var(--pe-on);color:var(--pe-acc2);font-weight:700;position:relative;} .pe .pe-btn--primary {font-weight:600;} #pe .pe-btn--save:hover {background:var(--pe-hibg);color:var(--pe-text);}
+	.pe-btn--save .pe-dot {display:none;position:absolute;top:0.25em;right:0.25em;width:0.5em;height:0.5em;border-radius:50%;background:var(--pe-acc2);} .pe-btn--save.is-dirty .pe-dot {display:block;}
+
+	/* ---- Files and folders dialog ---- */
+	.pe-dlg--files {width:min(48em,100%);} .pe-fx {display:flex;flex-direction:column;gap:1.1em;}
+	.pe-fx-sec {display:flex;flex-direction:column;gap:0.45em;} .pe-fx-sec + .pe-fx-sec {border-top:1px solid var(--pe-line);padding-top:1em;}
+	#pe .pe-fx-h {margin:0;font-size:1.08em;font-weight:700;color:var(--pe-text);display:flex;align-items:center;line-height:1.3;} .pe-fx .pe-hint2 {margin:0;}
+	.pe-fx-doc, .pe-fx-st, .pe-fx-auto {margin:0;color:var(--pe-text);}
+	.pe-fx-list {display:flex;flex-direction:column;gap:2px;max-height:16em;overflow-y:auto;border:1px solid var(--pe-line);border-radius:0.4em;padding:0.25em;background:var(--pe-field);}
+	.pe-fx-row {display:flex;align-items:center;gap:0.6em;padding:0.3em 0.35em;border-radius:0.3em;} .pe-fx-row:hover {background:var(--pe-hover);}
+	.pe-fx-th {width:34px;height:34px;flex:none;border-radius:0.2em;border:1px solid var(--pe-line);} .pe-fx-m {flex:1;min-width:0;display:flex;flex-direction:column;gap:0.1em;}
+	.pe-fx-n {overflow:hidden;text-overflow:ellipsis;white-space:nowrap;} #pe .pe-fx-g {color:var(--pe-dim);font-size:0.85em;} #pe .pe-fx-from {color:var(--pe-text);font-size:0.92em;overflow-wrap:anywhere;} #pe .pe-fx-from--made, #pe .pe-fx-from--merge {color:var(--pe-dim);} #pe .pe-fx-px {color:var(--pe-dim);font-size:0.85em;}
+	.pe-fx-note {background:var(--pe-notebg);border:1px solid var(--pe-line);border-left:3px solid var(--pe-on);border-radius:0.4em;padding:0.6em 0.8em;line-height:1.5;} .pe-fx-note code {font-family:ui-monospace,Menlo,Consolas,monospace;font-size:0.92em;background:var(--pe-field);border:1px solid var(--pe-line);border-radius:0.25em;padding:0 0.3em;overflow-wrap:anywhere;}
+	.pe-fx-save {display:flex;flex-wrap:wrap;align-items:center;gap:0.4em;} .pe-fx-save input {flex:1 1 10em;min-width:8em;} #pe .pe-fx-l, #pe .pe-fx .pe-hint2 {color:var(--pe-dim);} #pe .pe-item--hi .pe-itag, #pe .pe-item--hi .pe-iic {color:inherit;}
+	.pe-dlg--files .pe-fold-g {max-height:40vh;}
 
 
 	@media print {
@@ -472,6 +503,46 @@ body.dark-mode .tu .rw-head {color:#a0a8b3;border-bottom-color:#555;} body.dark-
 		.footer__item--extra-padding { padding-left: 0; }
 		.footer__text--extra-info { float: none; display: block; margin-top: 0.5em; }
 	}
+
+	/* TOOL-DARK:START -- generated by add_tool_page_controls.py, do not edit */
+	body.dark-mode .page-content :where(div,span,p,li,ul,ol,h1,h2,h3,h4,h5,h6,td,th,label,summary,small,strong,b,em,i,code,pre,legend,figcaption,dl,dt,dd,blockquote,caption,cite,button,input,select,textarea){color:#d8d8d8}
+	body.dark-mode .page-content code{background-color:#33363d;color:#f0a8bd}
+	body.dark-mode .page-content .btn-default{background-color:#2e2e2e;background-image:none;color:#ddd;border-color:#555}
+	body.dark-mode .tu{--accent-dark:#7230d9}
+	body.dark-mode .tu h2{color:#d1d6dc;border-bottom:2px solid #1b0346}
+	body.dark-mode .tu h3{color:#d1d6dc}
+	body.dark-mode .tu-card{background:#1a1a1a;border:1px solid #28323e}
+	body.dark-mode .tu-card--tint{background:#171025;border-color:#1b0346}
+	body.dark-mode .tu-field > label,body.dark-mode .tu-label{color:#9a9aa2}
+	body.dark-mode .tu-input,body.dark-mode .tu-select{border:1px solid #404a58;background:#1a1a1a;color:#dddddd}
+	body.dark-mode .tu-suffix span{color:#989ca4}
+	body.dark-mode .tu-btn{background:#1a1a1a}
+	body.dark-mode .tu-btn--ghost{border-color:#3a424d;color:#aaaaaa}
+	body.dark-mode .tu-btn--ghost:hover{background:#191c20;color:#dddddd;border-color:#3a424d}
+	body.dark-mode .tu-seg{border:1px solid #404a58;background:#1a1a1a}
+	body.dark-mode .tu-seg button{color:#aaaaaa;border-right:1px solid #28323e}
+	body.dark-mode .tu-seg button:hover{background:#16191d}
+	body.dark-mode .tu-chip{border:1px solid #3a424d;background:#1a1a1a;color:#aaaaaa}
+	body.dark-mode .tu-stat{background:#1a1a1a;border:1px solid #28323e}
+	body.dark-mode .tu-stat--hero{background:#171025;border-color:#1b0346}
+	body.dark-mode .tu-stat__label{color:#9a9aa2}
+	body.dark-mode .tu-stat__value{color:#d1d6dc}
+	body.dark-mode .tu-stat__sub{color:#9a9ea4}
+	body.dark-mode .tu-pos{color:#7dde9d !important}
+	body.dark-mode .tu-neg{color:#e87973 !important}
+	body.dark-mode .tu-table th,body.dark-mode .tu-table td{border-bottom:1px solid #29323d;color:#cccccc}
+	body.dark-mode .tu-table th{color:#9a9da3;background:#1a1a1a}
+	body.dark-mode .tu-table tr.is-active td{background:#171025}
+	body.dark-mode .tu-note{color:#9a9da3}
+	body.dark-mode .tu-toast{background:#3c4f67}
+	body.dark-mode .tu-seo{border-top:1px solid #333333}
+	body.dark-mode .tu-svg-line{stroke:#394a60}
+	body.dark-mode .tu-svg-text{fill:#cccccc}
+	body.dark-mode .tu-svg-grid{stroke:#28323e}
+	body.dark-mode .tu [data-names="0"] .rw-num,body.dark-mode .tu [data-table="1"] .rw-num{color:#999da3}
+	body.dark-mode .tu [data-table="1"] .rw-head{color:#9a9aa2;border-bottom:2px solid #2b323c}
+	body.dark-mode .tu [data-table="1"] .rw-row{border-bottom:1px solid #27313f}
+	/* TOOL-DARK:END */
 /* Floating compact header bar: once the full header + nav scroll out of
    view, a slim fixed bar (small logo, title, as many nav links as fit)
    slides in, and the hamburger is pinned into its right end. Toggled by
@@ -514,49 +585,6 @@ body.is-stuck #navbar.hide { position: fixed; top: 56px; right: 8px; }
 @media (max-width: 480px) {
   #compact-nav { padding-right: 70px; gap: 8px; }
 }
-
-	/* TOOL-DARK:START -- generated by add_tool_page_controls.py, do not edit */
-	body.dark-mode .page-content :where(div,span,p,li,ul,ol,h1,h2,h3,h4,h5,h6,td,th,label,summary,small,strong,b,em,i,code,pre,legend,figcaption,dl,dt,dd,blockquote,caption,cite,button,input,select,textarea){color:#d8d8d8}
-	body.dark-mode .page-content code{background-color:#33363d;color:#f0a8bd}
-	body.dark-mode .page-content .btn-default{background-color:#2e2e2e;background-image:none;color:#ddd;border-color:#555}
-	body.dark-mode .tu{--accent-dark:#7230d9}
-	body.dark-mode .tu h2{color:#d1d6dc;border-bottom:2px solid #1b0346}
-	body.dark-mode .tu h3{color:#d1d6dc}
-	body.dark-mode .tu-card{background:#1a1a1a;border:1px solid #28323e}
-	body.dark-mode .tu-card--tint{background:#171025;border-color:#1b0346}
-	body.dark-mode .tu-field > label,body.dark-mode .tu-label{color:#9a9aa2}
-	body.dark-mode .tu-input,body.dark-mode .tu-select{border:1px solid #404a58;background:#1a1a1a;color:#dddddd}
-	body.dark-mode .tu-suffix span{color:#989ca4}
-	body.dark-mode .tu-btn{background:#1a1a1a}
-	body.dark-mode .tu-btn--ghost{border-color:#3a424d;color:#aaaaaa}
-	body.dark-mode .tu-btn--ghost:hover{background:#191c20;color:#dddddd;border-color:#3a424d}
-	body.dark-mode .tu-seg{border:1px solid #404a58;background:#1a1a1a}
-	body.dark-mode .tu-seg button{color:#aaaaaa;border-right:1px solid #28323e}
-	body.dark-mode .tu-seg button:hover{background:#16191d}
-	body.dark-mode .tu-chip{border:1px solid #3a424d;background:#1a1a1a;color:#aaaaaa}
-	body.dark-mode .tu-stat{background:#1a1a1a;border:1px solid #28323e}
-	body.dark-mode .tu-stat--hero{background:#171025;border-color:#1b0346}
-	body.dark-mode .tu-stat__label{color:#9a9aa2}
-	body.dark-mode .tu-stat__value{color:#d1d6dc}
-	body.dark-mode .tu-stat__sub{color:#9a9ea4}
-	body.dark-mode .tu-pos{color:#7dde9d !important}
-	body.dark-mode .tu-neg{color:#e87973 !important}
-	body.dark-mode .tu-table th,body.dark-mode .tu-table td{border-bottom:1px solid #29323d;color:#cccccc}
-	body.dark-mode .tu-table th{color:#9a9da3;background:#1a1a1a}
-	body.dark-mode .tu-table tr.is-active td{background:#171025}
-	body.dark-mode .tu-note{color:#9a9da3}
-	body.dark-mode .tu-toast{background:#3c4f67}
-	body.dark-mode .tu-seo{border-top:1px solid #333333}
-	body.dark-mode .tu-svg-line{stroke:#394a60}
-	body.dark-mode .tu-svg-text{fill:#cccccc}
-	body.dark-mode .tu-svg-grid{stroke:#28323e}
-	body.dark-mode .tu [data-names="0"] .rw-num,body.dark-mode .tu [data-table="1"] .rw-num{color:#999da3}
-	body.dark-mode .tu [data-table="1"] .rw-head{color:#9a9aa2;border-bottom:2px solid #2b323c}
-	body.dark-mode .tu [data-table="1"] .rw-row{border-bottom:1px solid #27313f}
-	body.dark-mode .pe-sw-fg,body.dark-mode .pe-sw-bg{border:2px solid var(--pe-#333333)}
-	body.dark-mode .pe-th--mask.is-on{outline:2px solid var(--pe-#333333)}
-	body.dark-mode .pe-fold-t canvas{background:#4a4a59}
-	/* TOOL-DARK:END */
 </style>
         <meta property="fb:app_id" content="" />
         <meta name="author" content="Math Easy Solutions Staff">
@@ -781,7 +809,7 @@ body.is-stuck #navbar.hide { position: fixed; top: 56px; right: 8px; }
 				<button type="button" class="pe-ib pe-ib--txt" id="pe-fit" title="Fit on screen (Ctrl+0)">Fit</button>
 				<span class="pe-vsep"></span>
 				<button type="button" class="pe-ib pe-ib--txt" id="pe-winbtn" aria-pressed="false" title="Fill the browser window (F)">⤢ Full window</button>
-				<button type="button" class="pe-btn" id="pe-copy" title="Copy the image to the clipboard (selection only, if there is one)" aria-label="Copy image to clipboard">⧉ Copy</button><button type="button" class="pe-btn" id="pe-share" title="Get a link to this picture (temporary upload to a free file host)" aria-label="Share image as a link">🔗 Link</button><button type="button" class="pe-btn pe-btn--primary" id="pe-export">Export</button>
+				<button type="button" class="pe-btn pe-btn--save" id="pe-save" title="Save project: a .mesproj file that keeps every layer, group and comp (Ctrl+S)"><span aria-hidden="true">💾</span> Save project<span class="pe-dot" aria-hidden="true"></span></button><button type="button" class="pe-btn" id="pe-copy" title="Copy the image to the clipboard (selection only, if there is one)" aria-label="Copy image to clipboard">⧉ Copy</button><button type="button" class="pe-btn" id="pe-share" title="Get a link to this picture (temporary upload to a free file host)" aria-label="Share image as a link">🔗 Link</button><button type="button" class="pe-btn pe-btn--primary" id="pe-export">Export</button>
 			</div>
 		</div>
 		<div class="pe-opts" id="pe-opts" aria-label="Tool options"></div>
@@ -834,7 +862,8 @@ body.is-stuck #navbar.hide { position: fixed; top: 56px; right: 8px; }
 			<dt>Can I open Photoshop (PSD) files?</dt><dd>Yes. Layers, opacity, visibility and blend modes come across. Photoshop-only features (smart objects, layer styles, adjustment layers, live text) are flattened. You can also save a layered PSD.</dd>
 			<dt>How do I make a background transparent?</dt><dd>Choose the Magic Wand, click the background, press Delete, then export as PNG or WebP. For soft edges use Adjust → Make a colour transparent.</dd>
 			<dt>How do I add labels and arrows to a screenshot?</dt><dd>Use the Text tool with its Background box option for labels, and the Shapes tool for arrows, boxes, callouts, numbered steps, highlights and blur/hide areas. Each lands on its own layer so you can move or delete it later.</dd>
-			<dt>Is my work saved?</dt><dd>It is auto-saved in this browser while you work, so you can restore your last session after a reload. Use File → Save project to keep a file with all layers.</dd>
+			<dt>Is my work saved?</dt><dd>It is auto-saved in this browser while you work, so you can restore your last session after a reload. Press <b>💾 Save project</b> (Ctrl+S) to keep a file with all layers, groups and comps that you can open again later. File → Where are my images? shows where each layer came from and lets you clear the autosave.</dd>
+			<dt>Can it open and save files in a folder on my computer?</dt><dd>Yes, in Chrome and Edge on a computer: File → Connect a folder lists the pictures in a folder, adds them as layers, saves into it and can move a picture to another folder. Brave has this switched off: turn on brave://flags/#file-system-access-api and relaunch. Safari and Firefox can open a folder read only; saving there goes to your Downloads folder.</dd>
 			<dt>Does it work on a phone or tablet?</dt><dd>Yes, with touch and pen support (pinch to zoom, two fingers to pan). A larger screen is more comfortable for detailed work.</dd>
 			<dt>How do I convert many files at once?</dt><dd>Use the <a href="/image-converter">Bulk Image Converter</a> to turn a whole folder of PNG, JPEG or WebP files into another format in one go.</dd>
 		</dl>
@@ -848,7 +877,7 @@ body.is-stuck #navbar.hide { position: fixed; top: 56px; right: 8px; }
 <!-- /MES-BOTTOM-AD -->
                             </div>
                         <!-- MES-ASIDE -->
-<aside id="mes-aside" class="mes-aside" data-aside-family="tools" aria-label="More from MES Tools"><div class="mes-aside__sticky"><div class="mes-aside__ad" data-ad-slot="8429975111"></div><div class="mes-aside__head"><h2 class="mes-aside__title-h">More like this</h2><button type="button" class="mes-aside__flip" aria-label="Move this sidebar to the other side" title="Move sidebar to the other side">&#8644;</button></div><ul class="mes-aside__list"><li><a class="mes-aside__card" href="/pdf"><img class="mes-aside__img mes-aside__img--logo" src="/pdf/img/logo.png" width="56" height="56" loading="lazy" alt=""><span class="mes-aside__text"><span class="mes-aside__name">Free PDF Editor: Sign, Fill, Annotate, Redact and Edit PDFs Online</span><span class="mes-aside__tag">Tool</span></span></a></li><li><a class="mes-aside__card" href="/one-rep-max-calculator"><img class="mes-aside__img mes-aside__img--logo" src="/one-rep-max-calculator/img/logo.png" width="56" height="56" loading="lazy" alt=""><span class="mes-aside__text"><span class="mes-aside__name">One-Rep Max (1RM) Calculator: 7 Formulas, Rep Chart, Plates and Strength Level</span><span class="mes-aside__tag">Calculator</span></span></a></li><li><a class="mes-aside__card" href="/tools"><img class="mes-aside__img" src="/img/tools-icon.jpg" width="56" height="56" loading="lazy" alt=""><span class="mes-aside__text"><span class="mes-aside__name">All MES Tools</span><span class="mes-aside__tag">Gallery</span></span></a></li><li><a class="mes-aside__card" href="/percentagecalculator"><img class="mes-aside__img mes-aside__img--logo" src="/percentagecalculator/img/logo.png" width="56" height="56" loading="lazy" alt=""><span class="mes-aside__text"><span class="mes-aside__name">Percentage Calculator</span><span class="mes-aside__tag">Calculator</span></span></a></li></ul></div></aside>
+<aside id="mes-aside" class="mes-aside" data-aside-family="tools" aria-label="More from MES Tools"><div class="mes-aside__sticky"><div class="mes-aside__ad" data-ad-slot="8429975111"></div><div class="mes-aside__head"><h2 class="mes-aside__title-h">More like this</h2><button type="button" class="mes-aside__flip" aria-label="Move this sidebar to the other side" title="Move sidebar to the other side">&#8644;</button></div><ul class="mes-aside__list"><li><a class="mes-aside__card" href="/pdf"><img class="mes-aside__img mes-aside__img--logo" src="/pdf/img/logo.png" width="56" height="56" loading="lazy" alt=""><span class="mes-aside__text"><span class="mes-aside__name">Free PDF Editor: Sign, Fill, Annotate, Redact and Edit PDFs Online</span><span class="mes-aside__tag">Tool</span></span></a></li><li><a class="mes-aside__card" href="/shapes-calculator"><img class="mes-aside__img mes-aside__img--logo" src="/shapes-calculator/img/logo.png" width="56" height="56" loading="lazy" alt=""><span class="mes-aside__text"><span class="mes-aside__name">Volume, Area and Surface Area Calculator: Cylinder, Sphere, Cone, Box and More</span><span class="mes-aside__tag">Calculator</span></span></a></li><li><a class="mes-aside__card" href="/tools"><img class="mes-aside__img" src="/img/tools-icon.jpg" width="56" height="56" loading="lazy" alt=""><span class="mes-aside__text"><span class="mes-aside__name">All MES Tools</span><span class="mes-aside__tag">Gallery</span></span></a></li><li><a class="mes-aside__card" href="/percentagecalculator"><img class="mes-aside__img mes-aside__img--logo" src="/percentagecalculator/img/logo.png" width="56" height="56" loading="lazy" alt=""><span class="mes-aside__text"><span class="mes-aside__name">Percentage Calculator</span><span class="mes-aside__tag">Calculator</span></span></a></li></ul></div></aside>
 <!-- /MES-ASIDE -->
 </div>
 
@@ -898,7 +927,7 @@ body.is-stuck #navbar.hide { position: fixed; top: 56px; right: 8px; }
             hide_search:false,
             current_tab:0
         }        </script><!-- FASTCOMMENTS-LAZY: widget init moved to main_js/main.js -- it pulls embed.min.js only when #fastcomments-widget nears the viewport or on the first Comments-toggle click, so it no longer blocks first render -->                <script src="https://mes.fm/main_js/lazysizes.min.js?v=1.0.3" async></script>
-	<script src="/photo/js/photo.js?v=21" defer></script>
+	<script src="/photo/js/photo.js?v=22" defer></script>
             <script src="https://mes.fm/main_js/main.js?v=1.0.5"></script>    <!-- PAGEVIEW-TRACKING-INSERTED --><script src="https://mes.fm/main_js/track.js" defer></script><script>document.getElementById('copyright-year').textContent = new Date().getFullYear();</script><script src="/main_js/info-bar-fit.js" defer></script><script>
   // Floating compact header bar (see #compact-nav CSS): appears once the
   // header + nav bar have scrolled off the top; nav links that don't fit
