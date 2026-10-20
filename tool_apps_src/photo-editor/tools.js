@@ -208,11 +208,18 @@
 		dbl: function () { if (lasso && lasso.poly) { lasso.pts.pop(); lassoDone(lasso.mode); } },
 		enter: function () { if (lasso && lasso.poly) lassoDone(lasso.mode); }, cancel: function () { lasso = null; },
 		overlay: function (x) { if (!lasso) return; x.lineWidth = 1; [["#000", 0], ["#fff", 5]].forEach(function (p) { x.strokeStyle = p[0]; x.setLineDash([5, 5]); x.lineDashOffset = p[1]; x.beginPath(); lasso.pts.forEach(function (q, i) { var s = PE.toScreen(q.x, q.y); i ? x.lineTo(s.x, s.y) : x.moveTo(s.x, s.y); }); if (lasso.poly && lasso.cur) { var c = PE.toScreen(lasso.cur.x, lasso.cur.y); x.lineTo(c.x, c.y); } x.stroke(); }); x.setLineDash([]); x.lineDashOffset = 0; } });
-	PE.defTool({ id: "wand", name: "Magic Wand (select by colour)", key: "w", icon: "✨", opts: { tol: 32, contiguous: true, merged: false, mode: "new", smooth: true },
-		ui: [{ k: "tol", label: "Tolerance", type: "range", min: 0, max: 255, step: 1 }, { k: "contiguous", label: "Contiguous", type: "check" }, { k: "merged", label: "All layers", type: "check" }, { k: "smooth", label: "Smooth edges", type: "check" }, { k: "mode", label: "Mode", type: "seg", options: [["new", "New"], ["add", "Add"], ["sub", "Subtract"], ["int", "Intersect"]] }],
+	PE.defTool({ id: "wand", name: "Magic Wand (select by colour)", key: "w", icon: "✨", opts: { tol: 32, contiguous: true, merged: false, mode: "new", smooth: true, auto: true },
+		ui: [{ k: "tol", label: "Tolerance", type: "range", min: 0, max: 255, step: 1 }, { k: "contiguous", label: "Contiguous", type: "check" }, { k: "merged", label: "All layers", type: "check" }, { k: "smooth", label: "Smooth edges", type: "check" }, { k: "auto", label: "Pick the layer under the click", type: "check", help: "On: clicking a letter or shape picks the layer that is actually showing there, so the selection (and a following Delete) acts on that layer and not on the picture behind it. Off: always use the selected layer." }, { k: "mode", label: "Mode", type: "seg", options: [["new", "New"], ["add", "Add"], ["sub", "Subtract"], ["int", "Intersect"]] }],
 		hint: "Click a colour to select it. Raise Tolerance to include similar colours. Great for removing a plain background.",
 		down: function (e) {
 			var o = PE.opt.wand, d = PE.doc, L = PE.active(), mask, w, h;
+			if (o.auto && !o.merged && L) {   // the layer that is really visible under the click (a letter on its own layer, a pasted picture ...)
+				for (var li = d.layers.length - 1; li >= 0; li--) {
+					var C = d.layers[li]; if (PE.isGroup(C) || !PE.effVisible(C)) continue; var q = PE.toLayerPt(C, e.x, e.y), cw = C.canvas.width, ch = C.canvas.height;
+					if (q.x < 0 || q.y < 0 || q.x >= cw || q.y >= ch) continue; if (C.canvas.getContext("2d").getImageData(Math.floor(q.x), Math.floor(q.y), 1, 1).data[3] < 24) continue;
+					if (C !== L && !C.locked) { PE.setActive(C.id); L = C; PE.toast("Picked layer \u201c" + C.name + "\u201d"); } break;
+				}
+			}
 			if (o.merged || !L) { var c = PE.flatten(), id = c.getContext("2d").getImageData(0, 0, c.width, c.height); mask = P.floodMask(id.data, c.width, c.height, e.x, e.y, o.tol, o.contiguous); w = c.width; h = c.height; }
 			else { var og = PE.origin(L), lp = PE.toLayerPt(L, e.x, e.y); if (!PE.isIdentity(L)) { PE.bake(L); og = PE.origin(L); lp = { x: e.x - og.x, y: e.y - og.y }; } var data = PE.layerData(L); var m = P.floodMask(data.data, data.width, data.height, lp.x, lp.y, o.tol, o.contiguous); mask = new Uint8Array(d.w * d.h); for (var y = 0; y < data.height; y++) { var dy = y + og.y; if (dy < 0 || dy >= d.h) continue; for (var x = 0; x < data.width; x++) { var dx = x + og.x; if (dx >= 0 && dx < d.w) mask[dy * d.w + dx] = m[y * data.width + x]; } } w = d.w; h = d.h; }
 			if (o.smooth) mask = P.featherMask(P.growShrinkMask(mask, w, h, 0, true), w, h, 1.5);

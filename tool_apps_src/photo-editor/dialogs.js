@@ -247,6 +247,37 @@
 		PE.modal({ title: "Export image", body: wrap, buttons: [{ label: "Copy to clipboard", act: function (m) { var v = f.get(); PE.exportBlob("png", 1, { scale: v.scale / 100 }).then(function (b) { return navigator.clipboard.write([new ClipboardItem({ "image/png": b })]); }).then(function () { PE.toast("Copied as PNG"); }).catch(function () { PE.toast("This browser can't copy images"); }); } },
 			{ label: "Cancel", act: function (m) { m.close(); } }, { label: "⬇ Download", primary: true, act: function (m) { var v = f.get(); PE.savedParams.export = v; getBlob(v).then(function (b) { PE.download(b, I.cleanFileName(v.name || "image") + "." + I.FORMATS[v.fmt].ext); PE.toast("Saved"); m.close(); }).catch(function (e) { PE.toast(e.message); }); } }] });
 	};
+	/* ---------- export one group as its own image, on a canvas of its own size ---------- */
+	PE.dlgExportGroup = function (G) {
+		var d = PE.doc; if (!d) return; G = G || PE.active(); while (G && !PE.isGroup(G)) G = d.layers.filter(function (k) { return k.id === G.group; })[0];
+		if (!G) { PE.toast("Select a group (or a layer inside one) first"); return; }
+		var members = PE.descendants(G).filter(function (k) { return !PE.isGroup(k); }); if (!members.length) { PE.toast("This group has no layers in it"); return; }
+		var gb = PE.groupBounds(G), cx0 = Math.floor(gb.x), cy0 = Math.floor(gb.y), cw = Math.max(1, Math.ceil(gb.x + gb.w) - cx0), ch = Math.max(1, Math.ceil(gb.y + gb.h) - cy0);
+		var saved = PE.savedParams.groupExport || { fmt: "png", q: 90, area: "contents", fit: "fit", bg: "#ffffff", solid: false }, wrap = el("div", "pe-exp");
+		var f = PE.form([{ k: "area", label: "Take from", help: "<p><b>The group's contents</b>: the smallest box around everything in the group (you can use any size below).</p><p><b>The whole canvas</b>: the full image area, with only this group showing.</p>", type: "seg", options: [["contents", "The group's contents"], ["canvas", "The whole canvas"]], val: saved.area },
+			{ k: "w", label: "Canvas width", type: "number", min: 1, max: 12000, step: 1, val: cw }, { k: "h", label: "Canvas height", type: "number", min: 1, max: 12000, step: 1, val: ch },
+			{ k: "fit", label: "Place the group", help: "<p><b>Fit</b>: scaled to fit inside, nothing cut off.</p><p><b>Fill</b>: scaled to cover the whole canvas, the edges may be cut off.</p><p><b>Actual size</b>: not scaled, centred.</p><p><b>Stretch</b>: squashed to the exact shape.</p>", type: "seg", options: [["fit", "Fit"], ["fill", "Fill"], ["none", "Actual size"], ["stretch", "Stretch"]], val: saved.fit },
+			{ k: "solid", label: "Solid background", type: "check", val: saved.solid }, { k: "bg", label: "Background colour", type: "color", val: saved.bg },
+			{ k: "fmt", label: "Format", type: "seg", options: [["png", "PNG"], ["jpg", "JPEG"], ["webp", "WebP"]], val: saved.fmt }, { k: "q", label: "Quality", type: "range", min: 30, max: 100, step: 1, val: saved.q, unit: "%" }], function () { vis(); });
+		wrap.appendChild(f.el); var info = el("p", "pe-hint2", "Exports only this group (" + members.length + " layer" + (members.length > 1 ? "s" : "") + ") as its own picture, on a canvas of the size you choose. Your document is not changed.");
+		wrap.appendChild(info);
+		var lastArea = saved.area;
+		function vis() { var v = f.get(), F = I.FORMATS[v.fmt]; f.inputs.q.inp.closest(".pe-row").style.display = F.lossy ? "" : "none"; var sol = v.solid || !F.alpha; f.inputs.bg.inp.closest(".pe-row").style.display = sol ? "" : "none"; if (v.area !== lastArea) { lastArea = v.area; f.set("w", v.area === "canvas" ? d.w : cw); f.set("h", v.area === "canvas" ? d.h : ch); } }
+		vis();
+		function render(v) {
+			var rx = v.area === "canvas" ? 0 : cx0, ry = v.area === "canvas" ? 0 : cy0, rw = v.area === "canvas" ? d.w : cw, rh = v.area === "canvas" ? d.h : ch;
+			var chain = []; for (var g = G; g; g = d.layers.filter(function (k) { return k.id === g.group; })[0]) chain.push(g); var was = chain.map(function (k) { return k.visible; }); chain.forEach(function (k) { k.visible = true; }); PE.relink();
+			var src = mk(rw, rh), sx = src.getContext("2d"); sx.imageSmoothingQuality = "high";
+			try { d.layers.forEach(function (L) { if (members.indexOf(L) >= 0) PE.drawLayer(sx, L, [1, 0, 0, 1, -rx, -ry], "exp", rw, rh); }); } finally { chain.forEach(function (k, i) { k.visible = was[i]; }); }
+			var W = Math.max(1, Math.min(12000, Math.round(v.w))), H = Math.max(1, Math.min(12000, Math.round(v.h))), out = mk(W, H), x = out.getContext("2d"), F = I.FORMATS[v.fmt];
+			if (v.solid || !F.alpha) { x.fillStyle = v.bg; x.fillRect(0, 0, W, H); }
+			x.imageSmoothingQuality = "high";
+			if (v.fit === "stretch") x.drawImage(src, 0, 0, W, H); else { var k = v.fit === "none" ? 1 : v.fit === "fill" ? Math.max(W / rw, H / rh) : Math.min(W / rw, H / rh); x.drawImage(src, (W - rw * k) / 2, (H - rh * k) / 2, rw * k, rh * k); }
+			return out;
+		}
+		PE.modal({ title: "Export group: " + G.name, body: wrap, buttons: [{ label: "Cancel", act: function (m) { m.close(); } }, { label: "⬇ Download", primary: true, act: function (m) {
+			var v = f.get(), F = I.FORMATS[v.fmt]; PE.savedParams.groupExport = v; render(v).toBlob(function (b) { if (!b || b.type !== F.mime) { PE.toast("This browser can't save " + F.name); return; } PE.download(b, I.cleanFileName(G.name || "group") + "." + F.ext); PE.toast("Saved"); m.close(); }, F.mime, v.q / 100); } }] });
+	};
 	/* ---------- layer effects (new layer under the active one) + round corners + straighten ---------- */
 	function flatLayer(L) { var c = mk(L.canvas.width, L.canvas.height); PE.drawLayer(c.getContext("2d"), Object.assign({}, L, { opacity: 1, blend: "source-over", live: null, preview: null, _p: null }), [1, 0, 0, 1, 0, 0], "fl", c.width, c.height); return c; }
 	function effectDialog(kind) {
