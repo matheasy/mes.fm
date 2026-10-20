@@ -377,6 +377,20 @@ body.dark-mode .tool-grid__link { color: #8ec5ff; }
   flex: 1;
 }
 
+/* Which kind a card is, on an "All" tab only (Q/A / stats). */
+.link-card-tag {
+  align-self: flex-start;
+  font-size: 0.72em;
+  font-weight: bold;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  padding: 2px 7px;
+  border-radius: 4px;
+  color: #ffffff;
+  background-color: #1d5f9e;
+}
+.link-card-tag--stats { background-color: #3f6212; }
+
 .link-card-title {
   font-size: 0.9rem;
   font-weight: 700;
@@ -22265,7 +22279,7 @@ body.dark-mode .ls-empty { color: #aaa; }
     var chips = document.getElementById(id + 'Chips');
     var empty = document.getElementById(id + 'Empty');
     if (!box || !input || !chips) return;
-    var panes = ['Grid', 'List', 'Trailers', 'Stats'].map(function (s) { return document.getElementById(id + s); }).filter(Boolean);
+    var panes = ['All', 'Grid', 'List', 'Trailers', 'Stats'].map(function (s) { return document.getElementById(id + s); }).filter(Boolean);
     var cat = 'all';
 
     function items(pane) { return Array.prototype.slice.call(pane.querySelectorAll('[data-cats]')); }

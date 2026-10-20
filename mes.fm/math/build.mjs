@@ -142,7 +142,8 @@ const SECTIONS = [
     ],
     items: [
       { href: "https://www.youtube.com/playlist?list=PLai3U8-WIK0F1GgkU63uA9NIncxDS2q0-", title: "Playlist", standalone: true },
-      { href: "https://mes.fm/math-qa-72-ground-rod", title: "72: What is a Ground Rod and how to find it in your house?" },
+      // extraLinks: appended after the platform links (X is not in PLATFORM_ORDER; the simulator link is one of the post's own links).
+      { href: "https://mes.fm/math-qa-72-ground-rod", title: "72: What is a Ground Rod and how to find it in your house?", extraLinks: [{ label: "X", href: "https://x.com/i/broadcasts/1jxXgBQPgEoJZ" }, { label: "Simulator", href: "https://mes.fm/grounding-rod-simulator" }] },
       { href: "https://mes.fm/math-qa-71-conservation-angular-momentum", title: "71: What is the Conservation of Angular Momentum?", playlistHref: "https://youtube.com/live/glW2rC5Ew5I" },
       { href: "https://mes.fm/math-qa-70-lorentz-force", title: "70: What is the Lorentz Force?", playlistHref: "https://youtube.com/live/BJ1zYm_ZCVw" },
       { href: "https://mes.fm/math-qa-69-electromotive-force-emf", title: "69: What is Electromotive Force (emf)?" },
@@ -351,6 +352,8 @@ function fmtViews(n) {
 }
 SECTIONS.push({
   id: "mathYoutube",
+  // List View thumbnails here keep the video title as alt text (every other section's are alt="", see buildRow).
+  thumbAlt: true,
   title: "MES YouTube: All Videos",
   compactList: true,
   sortable: true,
@@ -742,7 +745,7 @@ function buildLinksForItem(item, meta) {
   // An item whose own link is a YouTube video (a livestream not mirrored to
   // mes.fm yet) is labeled "YouTube", not "Notes".
   const primaryLabel = /^https?:\/\/(?:www\.)?(?:youtube\.com|youtu\.be)\//.test(item.href) ? "YouTube" : "Notes";
-  return [{ label: primaryLabel, href: item.href }, ...sorted];
+  return [{ label: primaryLabel, href: item.href }, ...sorted, ...(item.extraLinks || [])];
 }
 
 // For extraViews items (see e.g. MES Math Q/A Livestreams' "Stats" view):
@@ -801,7 +804,8 @@ function buildRow(item, meta, linksBuilder) {
     .map((l) => `<a href="${escapeHtml(l.href)}" target="_blank" rel="noopener">${escapeHtml(l.label)}</a>`)
     .join(" - ");
   const rowImage = item.image || m.image;
-  const imgHtml = rowImage && item.listThumb !== false ? `<img class="list-thumb" src="${escapeHtml(rowImage)}" alt="${escapeHtml(item.title)}">` : "";
+  // alt="" by default: the row's <h3> right above already says the title, so a screen reader would hear it twice.
+  const imgHtml = rowImage && item.listThumb !== false ? `<img class="list-thumb" src="${escapeHtml(rowImage)}" alt="${item.thumbAlt ? escapeHtml(item.title) : ""}">` : "";
   const catsAttr = item.cats !== undefined ? ` data-cats="${escapeHtml(item.cats)}"` : "";
   return `<div class="list-row"${catsAttr}${sortAttrs(item)}>
       <h3>${escapeHtml(item.title)}</h3>
@@ -867,7 +871,7 @@ function buildSection(section, meta) {
     .map((item) => `<p class="section-standalone-link"><a href="${escapeHtml(item.href)}">&#9654;&#65039; ${escapeHtml(item.title)}</a></p>`)
     .join("\n  ");
   const cards = cardItems.map((item) => buildCard(item, meta)).join("\n    ");
-  const rows = cardItems.map((item) => buildRow(item, meta)).join("\n    ");
+  const rows = cardItems.map((item) => buildRow(section.thumbAlt ? { ...item, thumbAlt: true } : item, meta)).join("\n    ");
   const listViewClass = section.compactList ? "list-view list-view--compact" : "list-view";
 
   const extraViews = section.extraViews || [];
