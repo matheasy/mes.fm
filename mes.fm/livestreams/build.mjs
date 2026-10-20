@@ -183,6 +183,8 @@ const SECTIONS = [
       { href: "https://www.youtube.com/playlist?list=PLai3U8-WIK0FqwyUa_ICwTlqO0S6Y3kAn", title: "Playlist" },
       { href: "https://mes.fm/troubleshooting", title: "Troubleshooting Notes", icon: "&#128736;&#65039;" },
     ],
+    // "All" tab (right of Trailers; Grid View stays the default): streams, trailers and stats together, see allItems().
+    allView: true,
     extraViews: [
       { id: "stats", label: "Stats", items: STATS },
       { id: "trailers", label: "Trailers", kind: "grid", items: trailerItems },
@@ -479,7 +481,7 @@ function buildCard(item, meta) {
   return `<a class="link-card"${catsAttr} href="${escapeHtml(href)}"${external ? ' target="_blank" rel="noopener"' : ""}>
       <span class="link-card-thumb"${thumbStyle}></span>
       <span class="link-card-body">
-        <span class="link-card-title">${escapeHtml(item.title)}</span>${item.note ? `
+        ${item.tag ? `<span class="link-card-tag link-card-tag--${escapeHtml(item.tag.toLowerCase())}">${escapeHtml(item.tag)}</span>` : ""}<span class="link-card-title">${escapeHtml(item.title)}</span>${item.note ? `
         <span class="link-card-note">${escapeHtml(noteText(item.note))}</span>` : ""}
         <span class="link-card-readmore">View &rarr;</span>
       </span>
@@ -500,6 +502,23 @@ function buildRow(item, meta, linksBuilder) {
       <p>${linksHtml}</p>
       ${imgHtml}
     </div>`;
+}
+
+// The "All" tab (last button, right of Trailers): livestreams, trailers and stats in one grid, newest stream number first, and per number the
+// stream, then its trailers, then its stats. Each card gets a small tag saying which it is. An item with no
+// number in its title takes the number of the item before it in its own list (same idea as newestFirst()).
+function allItems(section) {
+  const lists = [["Livestream", section.items], ...(section.extraViews || []).map((v) => [v.id === "stats" ? "Stats" : v.label.replace(/s$/, ""), v.items])];
+  const keyed = [];
+  lists.forEach(([tag, items], li) => {
+    let carried = 0;
+    items.forEach((item, i) => {
+      const m = item.title.match(/^(\d+):/);
+      if (m) carried = Number(m[1]);
+      keyed.push({ item: { ...item, tag }, key: carried, li, i });
+    });
+  });
+  return keyed.sort((a, b) => b.key - a.key || a.li - b.li || a.i - b.i).map((k) => k.item);
 }
 
 function capitalize(str) {
@@ -569,6 +588,11 @@ function buildSection(section, meta) {
     </div>`;
     })
     .join("\n");
+  const allPane = section.allView
+    ? `<div class="card-grid view-hidden" id="${section.id}All">
+    ${allItems(section).map((item) => buildCard(item, meta)).join("\n    ")}
+    </div>`
+    : "";
 
   if (section.single) {
     return `<div class="list-container">
@@ -588,7 +612,7 @@ function buildSection(section, meta) {
     <div class="view-toggle">
       <button type="button" class="view-toggle-btn active" id="${section.id}GridBtn">Grid View</button>
       <button type="button" class="view-toggle-btn" id="${section.id}ListBtn">List View</button>
-      ${extraButtons}
+      ${extraButtons}${section.allView ? `\n      <button type="button" class="view-toggle-btn" id="${section.id}AllBtn">All</button>` : ""}
     </div>
     <div class="card-grid" id="${section.id}Grid">
     ${cards}
@@ -597,6 +621,7 @@ function buildSection(section, meta) {
     ${rows}
     </div>
 ${extraPanes}
+${allPane}
   </div>
 </div>`;
 }
@@ -608,7 +633,7 @@ function buildPage(meta, page) {
   const viewToggleWiring = sections
     .filter((s) => !s.single)
     .map((s) => {
-      const extraIds = (s.extraViews || []).map((v) => capitalize(v.id));
+      const extraIds = (s.extraViews || []).map((v) => capitalize(v.id)).concat(s.allView ? ["All"] : []);
       return `      wireViewToggle('${s.id}', ${JSON.stringify(extraIds)});`;
     })
     .join("\n");
@@ -928,6 +953,21 @@ sub {vertical-align:sub;}
   gap: 0.35rem;
   flex: 1;
 }
+
+/* Which kind a card is, on the All tab only (livestream / trailer / stats). */
+.link-card-tag {
+  align-self: flex-start;
+  font-size: 0.72em;
+  font-weight: bold;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  padding: 2px 7px;
+  border-radius: 4px;
+  color: #ffffff;
+  background-color: #1d5f9e;
+}
+.link-card-tag--trailer { background-color: #8a4b08; }
+.link-card-tag--stats { background-color: #3f6212; }
 
 .link-card-title {
   font-size: 0.9rem;
@@ -1876,7 +1916,7 @@ ${viewToggleWiring}
     var empty = document.getElementById(id + 'Empty');
     var plBox = document.getElementById(id + 'Playlist');
     if (!box || !input || !chips) return;
-    var panes = ['Grid', 'List', 'Trailers', 'Stats'].map(function (s) { return document.getElementById(id + s); }).filter(Boolean);
+    var panes = ['All', 'Grid', 'List', 'Trailers', 'Stats'].map(function (s) { return document.getElementById(id + s); }).filter(Boolean);
     var cat = 'all';
 
     function items(pane) { return Array.prototype.slice.call(pane.querySelectorAll('[data-cats]')); }
