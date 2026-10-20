@@ -339,6 +339,7 @@ body.dark-mode .tu .rw-head {color:#a0a8b3;border-bottom-color:#555;} body.dark-
 	body.dark-mode #rs .rs-pinbar .rs-pill {background:#2b2b2b;color:#e8e8e8;border-color:#555;} body.dark-mode #rs .rs-pinbar .rs-pill[aria-pressed=true] {background:var(--accent);color:#111;} body.dark-mode #rs .rs-pinwrap.rs-pinned {background:#1a1a1a;}
 	@media print {#rs .rs-run, #rs .rs-controls {display:none;}}
 	#rs .rs-scrubrow {display:flex;flex-wrap:wrap;align-items:center;gap:0.5em 0.8em;margin-top:0.4em;} #rs .rs-scrubrow input[type=range] {flex:1 1 12em;min-width:8em;} #rs .rs-scrubrow label {font-weight:600;}
+	#rs .rs-scrubrow .rs-pill {color:#f2f4f8;}
 
 
 	@media print {
@@ -690,7 +691,8 @@ body.is-stuck #navbar.hide { position: fixed; top: 56px; right: 8px; }
 		<section data-panel="grav" role="tabpanel">
 			<p class="tu-note rs-lead">Light that falls <b>toward</b> a heavy mass arrives <b class="rs-blue">blueshifted</b>; light that climbs <b>away</b> from it arrives <b class="rs-red">redshifted</b>. In the picture below the mass is on the left: clocks run slower there, so a wave of fixed frequency has a <i>shorter</i> wavelength, as if the space were a medium with a higher refractive index <i>n = 1 / (clock rate)</i>. Press <b>Emit pulse</b>.</p>
 			<div class="rs-stage"><canvas id="rs-g" tabindex="0" role="img" aria-label="A light pulse crossing the gap between a place near a heavy mass, on the left, and a place far from it, on the right. Its colour and wavelength change along the way."></canvas>
-				<div class="rs-run"><button type="button" id="rs-g-emit" class="rs-pill rs-pill--on">&#9889; Emit pulse</button><button type="button" id="rs-g-dir" class="rs-pill" aria-pressed="false">Light travels: far &rarr; near</button><label class="rs-pill rs-chk"><input type="checkbox" id="rs-g-rep" checked> repeat</label><button type="button" id="rs-g-pause" class="rs-pill" aria-pressed="false">&#9208; Pause</button><button type="button" id="rs-g-reset" class="rs-pill" title="Start the clocks and the light again from zero">&#8634; Reset clocks</button></div><div class="rs-run rs-scrubrow"><label for="rs-g-scrub">Move the light yourself:</label><input type="range" id="rs-g-scrub" min="0" max="1000" value="0" aria-label="Position of the light pulse; dragging pauses the animation"><span class="tu-note">drag to slide the pulse along and watch its colour change</span></div></div>
+				<div class="rs-run"><button type="button" id="rs-g-emit" class="rs-pill rs-pill--on">&#9889; Emit pulse</button><button type="button" id="rs-g-dir" class="rs-pill" aria-pressed="false">Light travels: far &rarr; near</button><label class="rs-pill rs-chk"><input type="checkbox" id="rs-g-rep" checked> repeat</label></div></div>
+			<div class="rs-scrubrow"><button type="button" id="rs-g-pause" class="rs-pill" aria-pressed="false">&#9208; Pause</button><button type="button" id="rs-g-reset" class="rs-pill" title="Start the clocks and the light again from zero">&#8634; Reset clocks</button><label for="rs-g-scrub">Move the light yourself:</label><input type="range" id="rs-g-scrub" min="0" max="1000" value="0" aria-label="Position of the light pulse; dragging pauses the animation"><span class="tu-note">drag to slide the pulse along and watch its colour change</span></div>
 			<div class="rs-cards" id="rs-g-cards"></div>
 			<div class="tu-card rs-controls">
 				<div class="rs-grid">
@@ -827,7 +829,7 @@ body.is-stuck #navbar.hide { position: fixed; top: 56px; right: 8px; }
             hide_search:false,
             current_tab:0
         }        </script><!-- FASTCOMMENTS-LAZY: widget init moved to main_js/main.js -- it pulls embed.min.js only when #fastcomments-widget nears the viewport or on the first Comments-toggle click, so it no longer blocks first render -->                <script src="https://mes.fm/main_js/lazysizes.min.js?v=1.0.3" async></script>
-	<script src="/redshift-simulator/js/redshift-simulator.js?v=5" defer></script>
+	<script src="/redshift-simulator/js/redshift-simulator.js?v=6" defer></script>
             <script src="https://mes.fm/main_js/main.js?v=1.0.5"></script>    <!-- PAGEVIEW-TRACKING-INSERTED --><script src="https://mes.fm/main_js/track.js" defer></script><script>document.getElementById('copyright-year').textContent = new Date().getFullYear();</script><script src="/main_js/info-bar-fit.js" defer></script><script>
   // Floating compact header bar (see #compact-nav CSS): appears once the
   // header + nav bar have scrolled off the top; nav links that don't fit

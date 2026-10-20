@@ -258,7 +258,7 @@
 		// receiver / emitter labels with colour dots
 		var recvU = inw ? 0 : 1, emU = inw ? 1 : 0; function dotAt(u, wl, label) { var col = R.wlToRgb(wl); x.fillStyle = col[3] ? rgba(col, 1) : "#999"; x.beginPath(); x.arc(left + sw * u + (u === 0 ? -12 : 12) * 0, cy + bandH / 2 + 13, 5, 0, TAU); x.fill(); text(x, label, left + sw * u + (u === 0 ? 10 : -10), cy + bandH / 2 + 13, 11, "#cfd6e6", u === 0 ? "left" : "right"); }
 		dotAt(emU, c.wlE, "emits " + c.wlE + " nm"); dotAt(recvU, c.wlO, "sees " + fmt(c.wlO, 6) + " nm");
-		if (gs.k > 1.5) text(x, "drawn " + fmt(gs.k, 3) + "× exaggerated (real values below)", W - 8, 14, 11, "#7f8ba6", "right");
+		if (gs.k > 1.5) text(x, "drawn " + fmt(gs.k, 3) + "× exaggerated (real values below)", left + sw / 2, cy + bandH / 2 + 28, 11, "#7f8ba6", "center");
 	}
 
 	/* =========================== 2. DOPPLER =========================== */
