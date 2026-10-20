@@ -377,6 +377,20 @@ body.dark-mode .tool-grid__link { color: #8ec5ff; }
   flex: 1;
 }
 
+/* Which kind a card is, on an "All" tab only (Q/A / stats). */
+.link-card-tag {
+  align-self: flex-start;
+  font-size: 0.72em;
+  font-weight: bold;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  padding: 2px 7px;
+  border-radius: 4px;
+  color: #ffffff;
+  background-color: #1d5f9e;
+}
+.link-card-tag--stats { background-color: #3f6212; }
+
 .link-card-title {
   font-size: 0.9rem;
   font-weight: 700;
@@ -1197,6 +1211,7 @@ body.dark-mode .ls-empty { color: #aaa; }
       <button type="button" class="view-toggle-btn active" id="mathQaLivestreamsGridBtn">Grid View</button>
       <button type="button" class="view-toggle-btn" id="mathQaLivestreamsListBtn">List View</button>
       <button type="button" class="view-toggle-btn" id="mathQaLivestreamsStatsBtn">Stats</button>
+      <button type="button" class="view-toggle-btn" id="mathQaLivestreamsAllBtn">All</button>
     </div>
     <div class="card-grid" id="mathQaLivestreamsGrid">
     <a class="link-card" data-cats="" data-s="MES Math Q/A 72 livestream: what is a ground rod, and how do you find the one in your house? A copper-clad rod driven into the earth gives surges, lightning and fault current a low-impedance path to ground." href="https://mes.fm/math-qa-72-ground-rod">
@@ -2072,6 +2087,526 @@ body.dark-mode .ls-empty { color: #aaa; }
       <p><a href="https://mes.fm/math-qa-72-stats" target="_blank" rel="noopener">MES</a> - <a href="https://inleo.io/threads/view/mes/re-leothreads-2kwmaev5u" target="_blank" rel="noopener">Hive</a> - <a href="https://t.me/meslinks/35628" target="_blank" rel="noopener">Telegram</a></p>
       <img class="list-thumb" src="https://mes.fm/math-qa-72-stats/img/stats-screen.png" alt="">
     </div>
+<div class="card-grid view-hidden" id="mathQaLivestreamsAll">
+    <a class="link-card" data-cats="" data-s="MES Math Q/A 72 livestream: what is a ground rod, and how do you find the one in your house? A copper-clad rod driven into the earth gives surges, lightning and fault current a low-impedance path to ground. Wide View Theater Mode View on 3Speak &amp;nearr; A ground rod (also called a grounding rod, earthing rod, or rod-type grounding electrode) is a metal rod&amp;mdash;typically copper-clad steel&amp;mdash;driven into the earth to establish a direct electrical connection between an electrical system (or lightning-protection system) and the earth. It provides a low-impedance (the total opposition to current flow, combining resistance and the effects of inductance and capacitance) path that helps stabiliz" href="https://mes.fm/math-qa-72-ground-rod">
+      <span class="link-card-thumb" style="background-image:url('https://images.3speak.tv/images/1792019634394-b3728e1bf835c14a.webp')"></span>
+      <span class="link-card-body">
+        <span class="link-card-tag link-card-tag--q/a">Q/A</span><span class="link-card-title">72: What is a Ground Rod and how to find it in your house?</span>
+        <span class="link-card-readmore">View &rarr;</span>
+      </span>
+    </a>
+    <a class="link-card" data-cats="" href="https://mes.fm/math-qa-72-stats">
+      <span class="link-card-thumb" style="background-image:url('https://mes.fm/math-qa-72-stats/img/stats-screen.png')"></span>
+      <span class="link-card-body">
+        <span class="link-card-tag link-card-tag--stats">Stats</span><span class="link-card-title">72: Stats</span>
+        <span class="link-card-readmore">View &rarr;</span>
+      </span>
+    </a>
+    <a class="link-card" data-cats="" data-s="MES Math Q/A 71 livestream: what is the conservation of angular momentum? The total angular momentum of a system is constant whenever the net external torque is zero -- deep dive into common misunderstandings. Mirrored from the Hive blockchain. Wide View Theater Mode View on 3Speak &amp;nearr; The law of conservation of angular momentum states that the total angular momentum of a system is constant whenever the net external torque on that system is zero. The law does not require the system (or its parts) to be rigid. That is why a figure skater spins faster when she pulls her arms in, and why a spinning solid that crumbles no longer rotates as a single object: the same total angular momentum is " href="https://mes.fm/math-qa-71-conservation-angular-momentum">
+      <span class="link-card-thumb" style="background-image:url('https://images.3speak.tv/images/1790197710256-ca831a9af0f7b0e4.webp')"></span>
+      <span class="link-card-body">
+        <span class="link-card-tag link-card-tag--q/a">Q/A</span><span class="link-card-title">71: What is the Conservation of Angular Momentum?</span>
+        <span class="link-card-readmore">View &rarr;</span>
+      </span>
+    </a>
+    <a class="link-card" data-cats="" href="https://mes.fm/math-qa-71-stats">
+      <span class="link-card-thumb" style="background-image:url('https://img.leopedia.io/DQmWkDaYKKRygyeMcskvkUXxg39C7YPvnNUhCYZdY2oX8hr/telegram-cloud-photo-size-1-4997088063016078455-y.jpg')"></span>
+      <span class="link-card-body">
+        <span class="link-card-tag link-card-tag--stats">Stats</span><span class="link-card-title">71: Stats</span>
+        <span class="link-card-readmore">View &rarr;</span>
+      </span>
+    </a>
+    <a class="link-card" data-cats="em" data-s="MES Math Q/A 70 livestream: what is the Lorentz force? F = q(E + v x B) -- the force on a charged particle from electric and magnetic fields. Mirrored from the Hive blockchain. Wide View Theater Mode View on 3Speak &amp;nearr; The Lorentz force is the force exerted on a charged particle by electric and magnetic fields, and is proportional to the signed charge q. The electric force acts in the direction of the electric field for positive charges and opposite the field for negative charges. The magnetic force is perpendicular to both the particle's velocity and the magnetic field (hence the cross product), and also reverses if the charge is negative. F = q( E + v &amp;times; B ) Livestreamed on Wednes" href="https://mes.fm/math-qa-70-lorentz-force">
+      <span class="link-card-thumb" style="background-image:url('https://images.3speak.tv/images/1788374815252-d4c1cea39d2687da.webp')"></span>
+      <span class="link-card-body">
+        <span class="link-card-tag link-card-tag--q/a">Q/A</span><span class="link-card-title">70: What is the Lorentz Force?</span>
+        <span class="link-card-readmore">View &rarr;</span>
+      </span>
+    </a>
+    <a class="link-card" data-cats="em" data-s="MES Math Q/A 69 livestream: What is Electromotive Force (emf)? Electromotive force (emf) is the work done per unit charge by any non-conservative forces (chemical reactions inside a battery, or the induced electric field from a changing... Mirrored from the Hive blockchain. Wide View Theater Mode View on 3Speak &amp;nearr; Electromotive force (emf) is the work done per unit charge by any non-conservative forces (chemical reactions inside a battery, or the induced electric field from a changing magnetic flux) that drive current around a closed circuit. Emf is analogous to the mechanical work done by a pump, which creates a pressure difference (analogous to voltage) to cause water to flow even wit" href="https://mes.fm/math-qa-69-electromotive-force-emf">
+      <span class="link-card-thumb" style="background-image:url('https://i.ytimg.com/vi/uj40t_DgiCQ/maxresdefault.jpg')"></span>
+      <span class="link-card-body">
+        <span class="link-card-tag link-card-tag--q/a">Q/A</span><span class="link-card-title">69: What is Electromotive Force (emf)?</span>
+        <span class="link-card-readmore">View &rarr;</span>
+      </span>
+    </a>
+    <a class="link-card" data-cats="em" data-s="MES Math Q/A 68 livestream: What is Faraday&amp;#x27;s Flux Rule? Faraday’s flux rule states that a changing magnetic flux through a closed circuit induces an electromotive force (emf) that opposes the change. Mirrored from the Hive blockchain. Wide View Theater Mode View on 3Speak &amp;nearr; Faraday’s flux rule states that a changing magnetic flux through a closed circuit induces an electromotive force (emf) that opposes the change. The main difference from the more general Faraday’s law of induction is that the flux rule applies specifically to closed circuits, while the broader law describes how a changing magnetic field produces a circulating electric field even without a physical circuit. Live" href="https://mes.fm/math-qa-68-faraday-flux-rule">
+      <span class="link-card-thumb" style="background-image:url('https://i.ytimg.com/vi/PEn5LFJrAUg/maxresdefault.jpg')"></span>
+      <span class="link-card-body">
+        <span class="link-card-tag link-card-tag--q/a">Q/A</span><span class="link-card-title">68: What is Faraday's Flux Rule?</span>
+        <span class="link-card-readmore">View &rarr;</span>
+      </span>
+    </a>
+    <a class="link-card" data-cats="em" data-s="MES Math Q/A 67 livestream: What is Faraday&amp;#x27;s Law? Faraday&amp;#x27;s law of induction states that a time-varying magnetic field is always accompanied by a circulating electric field, described via the curl (the cross-product operator... Mirrored from the Hive blockchain. Wide View Theater Mode View on 3Speak &amp;nearr; Faraday's law of induction states that a time-varying magnetic field is always accompanied by a circulating electric field, described via the curl (the cross-product operator built from the partial derivatives of the electric field components). Livestreamed on Wednesday, July 15, 2026 at 10:00 AM PDT. Watch on: 3Speak &amp;middot; YouTube &amp;middot; BitChute &amp;middot; Odysee &amp;middot; " href="https://mes.fm/math-qa-67-faraday-law">
+      <span class="link-card-thumb" style="background-image:url('https://i.ytimg.com/vi/3WcNEobSAAg/maxresdefault.jpg')"></span>
+      <span class="link-card-body">
+        <span class="link-card-tag link-card-tag--q/a">Q/A</span><span class="link-card-title">67: What is Faraday's Law?</span>
+        <span class="link-card-readmore">View &rarr;</span>
+      </span>
+    </a>
+    <a class="link-card" data-cats="em" data-s="MES Math Q/A 66 livestream: What are Gauss&amp;#x27;s Laws for Electricity and Magnetism? Gauss&amp;#x27;s law states that the divergence of the electric field is proportional to the electric charge density. Mirrored from the Hive blockchain. Wide View Theater Mode View on 3Speak &amp;nearr; Gauss's law states that the divergence of the electric field is proportional to the electric charge density. This means electric field lines diverge away from positive charges and converge towards negative charges. Gauss's law for magnetism states that the divergence of the magnetic field is zero everywhere, so magnetic field lines form closed loops; hence magnetic monopoles should not exist. If they did, the law wo" href="https://mes.fm/math-qa-66-gauss-laws-electricity-magnetism">
+      <span class="link-card-thumb" style="background-image:url('https://i.ytimg.com/vi/kt5cM87cUDE/maxresdefault.jpg')"></span>
+      <span class="link-card-body">
+        <span class="link-card-tag link-card-tag--q/a">Q/A</span><span class="link-card-title">66: What are Gauss's Laws for Electricity and Magnetism?</span>
+        <span class="link-card-readmore">View &rarr;</span>
+      </span>
+    </a>
+    <a class="link-card" data-cats="em" data-s="MES Math Q/A 65 livestream: What are Maxwell&amp;#x27;s Equations? Maxwell’s equations, together with the Lorentz force law, form the foundation of classical electromagnetism. Mirrored from the Hive blockchain. Wide View Theater Mode View on 3Speak &amp;nearr; Maxwell’s equations, together with the Lorentz force law, form the foundation of classical electromagnetism. The four Maxwell equations are Gauss’s law for electricity, Gauss’s law for magnetism, Faraday’s law of induction, and the Ampère–Maxwell circuital law. Livestreamed on Wednesday, June 17, 2026 at 10:00 AM PDT. Watch on: 3Speak &amp;middot; YouTube &amp;middot; BitChute &amp;middot; Odysee &amp;middot; Rumble &amp;middot; X &amp;middot; Twitch See more: MES Ma" href="https://mes.fm/math-qa-65-maxwell-equations">
+      <span class="link-card-thumb" style="background-image:url('https://i.ytimg.com/vi/-RC-NpAQbsA/maxresdefault.jpg')"></span>
+      <span class="link-card-body">
+        <span class="link-card-tag link-card-tag--q/a">Q/A</span><span class="link-card-title">65: What are Maxwell's Equations?</span>
+        <span class="link-card-readmore">View &rarr;</span>
+      </span>
+    </a>
+    <a class="link-card" data-cats="em" data-s="MES Math Q/A 64 livestream: What are Electromagnetic Potentials? Electromagnetic potentials are mathematical fields introduced via vector calculus identities to satisfy the homogeneous Maxwell equations that follow from physical electromagnetic... Mirrored from the Hive blockchain. Wide View Theater Mode View on 3Speak &amp;nearr; Electromagnetic potentials are mathematical fields introduced via vector calculus identities to satisfy the homogeneous Maxwell equations that follow from physical electromagnetic laws. The Aharonov–Bohm effect demonstrates that the vector potential nevertheless has direct physical significance in quantum mechanics, producing observable phase shifts even in regions whe" href="https://mes.fm/math-qa-64-electromagnetic-potentials">
+      <span class="link-card-thumb" style="background-image:url('https://i.ytimg.com/vi/5yDfbyJkkQU/maxresdefault.jpg')"></span>
+      <span class="link-card-body">
+        <span class="link-card-tag link-card-tag--q/a">Q/A</span><span class="link-card-title">64: What are Electromagnetic Potentials?</span>
+        <span class="link-card-readmore">View &rarr;</span>
+      </span>
+    </a>
+    <a class="link-card" data-cats="em" data-s="MES Math Q/A 63 livestream: What is the Aharonov-Bohm Effect? The Aharonov–Bohm effect is a quantum phenomenon in which a charged particle’s wavefunction acquires a measurable phase shift when the particle travels through a region where the... Mirrored from the Hive blockchain. Wide View Theater Mode View on 3Speak &amp;nearr; The Aharonov–Bohm effect is a quantum phenomenon in which a charged particle’s wavefunction acquires a measurable phase shift when the particle travels through a region where the magnetic field is zero but encloses a confined magnetic flux. In the standard magnetic version, two coherent charged-particle beams pass along different paths around the flux, and when they recomb" href="https://mes.fm/math-qa-63-aharonov-bohm-effect">
+      <span class="link-card-thumb" style="background-image:url('https://i.ytimg.com/vi/reEByVqyEbs/maxresdefault.jpg')"></span>
+      <span class="link-card-body">
+        <span class="link-card-tag link-card-tag--q/a">Q/A</span><span class="link-card-title">63: What is the Aharonov-Bohm Effect?</span>
+        <span class="link-card-readmore">View &rarr;</span>
+      </span>
+    </a>
+    <a class="link-card" data-cats="" data-s="MES Math Q/A 62 livestream: What is Electrolysis? Electrolysis is the use of a direct electric current to drive a nonspontaneous chemical reaction in an electrolyte, which conducts electricity by the movement of ions. Mirrored from the Hive blockchain. Wide View Theater Mode View on 3Speak &amp;nearr; Electrolysis is the use of a direct electric current to drive a nonspontaneous chemical reaction in an electrolyte, which conducts electricity by the movement of ions. Oxidation, which is the loss of electrons, occurs at the anode, and reduction, which is the gain of electrons, occurs at the cathode. Livestreamed on Wednesday, May 6, 2026 at 10:00 AM PDT. Watch on: 3Speak &amp;middot; YouTube Summary: " href="https://mes.fm/math-qa-62-electrolysis">
+      <span class="link-card-thumb" style="background-image:url('https://i.ytimg.com/vi/GeN1SNV0hUI/maxresdefault.jpg')"></span>
+      <span class="link-card-body">
+        <span class="link-card-tag link-card-tag--q/a">Q/A</span><span class="link-card-title">62: What is Electrolysis?</span>
+        <span class="link-card-readmore">View &rarr;</span>
+      </span>
+    </a>
+    <a class="link-card" data-cats="" data-s="MES Math Q/A 61 livestream: What is a Hologram? Math and physics questions answered live. Mirrored from the Hive blockchain. Wide View Theater Mode View on 3Speak &amp;nearr; If you have math related questions, I may have answers. Livestreamed on Wednesday, April 22, 2026 at 10:00 AM PDT. Watch on: 3Speak &amp;middot; YouTube Summary: MES Math Q/A 61 summary See more: MES Math Q/A YouTube Playlist More math: mes.fm/math Originally posted on the Hive blockchain &amp;rarr; Text and image retrieved from the Hive blockchain on September 23, 2026." href="https://mes.fm/math-qa-61-hologram">
+      <span class="link-card-thumb" style="background-image:url('https://i.ytimg.com/vi/q2bHAF8hqa0/maxresdefault.jpg')"></span>
+      <span class="link-card-body">
+        <span class="link-card-tag link-card-tag--q/a">Q/A</span><span class="link-card-title">61: What is a Hologram?</span>
+        <span class="link-card-readmore">View &rarr;</span>
+      </span>
+    </a>
+    <a class="link-card" data-cats="" data-s="MES Math Q/A 60 livestream: What is the Brewster&amp;#x27;s (Polarization) Angle? Math and physics questions answered live. Mirrored from the Hive blockchain. Wide View Theater Mode View on 3Speak &amp;nearr; If you have math related questions, I may have answers. Livestreamed on Wednesday, April 8, 2026 at 10:00 AM PDT. Watch on: 3Speak &amp;middot; YouTube Summary: MES Math Q/A 60 summary See more: MES Math Q/A YouTube Playlist More math: mes.fm/math Originally posted on the Hive blockchain &amp;rarr; Text and image retrieved from the Hive blockchain on September 23, 2026." href="https://mes.fm/math-qa-60-brewster-polarization-angle">
+      <span class="link-card-thumb" style="background-image:url('https://i.ytimg.com/vi/AB-qpNj2jtE/maxresdefault.jpg')"></span>
+      <span class="link-card-body">
+        <span class="link-card-tag link-card-tag--q/a">Q/A</span><span class="link-card-title">60: What is the Brewster's (Polarization) Angle?</span>
+        <span class="link-card-readmore">View &rarr;</span>
+      </span>
+    </a>
+    <a class="link-card" data-cats="" data-s="MES Math Q/A 59 livestream: What is Polarization of Waves? Math and physics questions answered live. Mirrored from the Hive blockchain. Wide View Theater Mode View on 3Speak &amp;nearr; If you have math related questions, I may have answers. Livestreamed on Wednesday, March 25, 2026 at 10:00 AM PDT. Watch on: 3Speak &amp;middot; YouTube Summary: MES Math Q/A 59 summary See more: MES Math Q/A YouTube Playlist More math: mes.fm/math Originally posted on the Hive blockchain &amp;rarr; Text and image retrieved from the Hive blockchain on September 23, 2026." href="https://mes.fm/math-qa-59-polarization-of-waves">
+      <span class="link-card-thumb" style="background-image:url('https://i.ytimg.com/vi/oWY3vElY8YQ/maxresdefault.jpg')"></span>
+      <span class="link-card-body">
+        <span class="link-card-tag link-card-tag--q/a">Q/A</span><span class="link-card-title">59: What is Polarization of Waves?</span>
+        <span class="link-card-readmore">View &rarr;</span>
+      </span>
+    </a>
+    <a class="link-card" data-cats="aether" data-s="MES Math Q/A 58 livestream: What is Stellar Aberration? Math and physics questions answered live. Mirrored from the Hive blockchain. Wide View Theater Mode View on 3Speak &amp;nearr; If you have math related questions, I may have answers. Livestreamed on Wednesday, March 11, 2026 at 10:00 AM PDT. Watch on: 3Speak &amp;middot; YouTube Summary: MES Math Q/A 58 summary See more: MES Math Q/A YouTube Playlist More math: mes.fm/math Originally posted on the Hive blockchain &amp;rarr; Text and image retrieved from the Hive blockchain on September 23, 2026." href="https://mes.fm/math-qa-58-stellar-aberration">
+      <span class="link-card-thumb" style="background-image:url('https://i.ytimg.com/vi/1aikEXIstdw/maxresdefault.jpg')"></span>
+      <span class="link-card-body">
+        <span class="link-card-tag link-card-tag--q/a">Q/A</span><span class="link-card-title">58: What is Stellar Aberration?</span>
+        <span class="link-card-readmore">View &rarr;</span>
+      </span>
+    </a>
+    <a class="link-card" data-cats="aether" data-s="MES Math Q/A 57 livestream: What is the Michelson–Morley Experiment? Math and physics questions answered live. Mirrored from the Hive blockchain. Wide View Theater Mode View on 3Speak &amp;nearr; If you have math related questions, I may have answers. Livestreamed on Wednesday, February 25, 2026 at 10:00 AM PST. Watch on: 3Speak &amp;middot; YouTube Summary: MES Math Q/A 57 summary See more: MES Math Q/A YouTube Playlist More math: mes.fm/math Originally posted on the Hive blockchain &amp;rarr; Text and image retrieved from the Hive blockchain on September 23, 2026." href="https://mes.fm/math-qa-57-michelson-morley-experiment">
+      <span class="link-card-thumb" style="background-image:url('https://i.ytimg.com/vi/Y_O8ZH4Lsq4/maxresdefault.jpg')"></span>
+      <span class="link-card-body">
+        <span class="link-card-tag link-card-tag--q/a">Q/A</span><span class="link-card-title">57: What is the Michelson–Morley Experiment?</span>
+        <span class="link-card-readmore">View &rarr;</span>
+      </span>
+    </a>
+    <a class="link-card" data-cats="aether" data-s="MES Math Q/A 56 livestream: Ionel Dinu&amp;#x27;s Theory of Aether. Math and physics questions answered live. Mirrored from the Hive blockchain. Wide View Theater Mode View on 3Speak &amp;nearr; If you have math related questions, I may have answers. Livestreamed on Wednesday, February 11, 2026 at 10:00 AM PST. Watch on: 3Speak &amp;middot; YouTube Summary: MES Math Q/A 56 summary See more: MES Math Q/A YouTube Playlist More math: mes.fm/math Originally posted on the Hive blockchain &amp;rarr; Text and image retrieved from the Hive blockchain on September 23, 2026." href="https://mes.fm/math-qa-56-ionel-dinu-theory-of-aether">
+      <span class="link-card-thumb" style="background-image:url('https://i.ytimg.com/vi/WTEOktsgHOk/maxresdefault.jpg')"></span>
+      <span class="link-card-body">
+        <span class="link-card-tag link-card-tag--q/a">Q/A</span><span class="link-card-title">56: Ionel Dinu's Theory of Aether</span>
+        <span class="link-card-readmore">View &rarr;</span>
+      </span>
+    </a>
+    <a class="link-card" data-cats="aether" data-s="MES Math Q/A 55 livestream: Ionel Dinu&amp;#x27;s Theory of Aether. Math and physics questions answered live. Mirrored from the Hive blockchain. Wide View Theater Mode View on 3Speak &amp;nearr; If you have math related questions, I may have answers. Livestreamed on Wednesday, February 4, 2026 at 10:00 AM PST. Watch on: 3Speak &amp;middot; YouTube Summary: MES Math Q/A 55 summary See more: MES Math Q/A YouTube Playlist More math: mes.fm/math Originally posted on the Hive blockchain &amp;rarr; Text and image retrieved from the Hive blockchain on September 23, 2026." href="https://mes.fm/math-qa-55-ionel-dinu-theory-of-aether">
+      <span class="link-card-thumb" style="background-image:url('https://i.ytimg.com/vi/Ds23ilMy3Jw/maxresdefault.jpg')"></span>
+      <span class="link-card-body">
+        <span class="link-card-tag link-card-tag--q/a">Q/A</span><span class="link-card-title">55: Ionel Dinu's Theory of Aether</span>
+        <span class="link-card-readmore">View &rarr;</span>
+      </span>
+    </a>
+    <a class="link-card" data-cats="aether" data-s="MES Math Q/A 54 livestream: Ionel Dinu&amp;#x27;s Theory of Aether. Math and physics questions answered live. Mirrored from the Hive blockchain. Wide View Theater Mode View on 3Speak &amp;nearr; If you have math related questions, I may have answers. Livestreamed on Wednesday, January 28, 2026 at 10:00 AM PST. Watch on: 3Speak &amp;middot; YouTube Summary: MES Math Q/A 54 summary See more: MES Math Q/A YouTube Playlist More math: mes.fm/math Originally posted on the Hive blockchain &amp;rarr; Text and image retrieved from the Hive blockchain on September 23, 2026." href="https://mes.fm/math-qa-54-ionel-dinu-theory-of-aether">
+      <span class="link-card-thumb" style="background-image:url('https://i.ytimg.com/vi/ceN5oKin43M/maxresdefault.jpg')"></span>
+      <span class="link-card-body">
+        <span class="link-card-tag link-card-tag--q/a">Q/A</span><span class="link-card-title">54: Ionel Dinu's Theory of Aether</span>
+        <span class="link-card-readmore">View &rarr;</span>
+      </span>
+    </a>
+    <a class="link-card" data-cats="aether" data-s="MES Math Q/A 53 livestream: Ionel Dinu&amp;#x27;s Theory of Aether. Math and physics questions answered live. Mirrored from the Hive blockchain. Wide View Theater Mode View on 3Speak &amp;nearr; If you have math related questions, I may have answers. Livestreamed on Wednesday, January 21, 2026 at 10:00 AM PST. Watch on: 3Speak &amp;middot; YouTube Summary: MES Math Q/A 53 summary See more: MES Math Q/A YouTube Playlist More math: mes.fm/math Originally posted on the Hive blockchain &amp;rarr; Text and image retrieved from the Hive blockchain on September 23, 2026." href="https://mes.fm/math-qa-53-ionel-dinu-theory-of-aether">
+      <span class="link-card-thumb" style="background-image:url('https://i.ytimg.com/vi/7Wn8e--RSn4/maxresdefault.jpg')"></span>
+      <span class="link-card-body">
+        <span class="link-card-tag link-card-tag--q/a">Q/A</span><span class="link-card-title">53: Ionel Dinu's Theory of Aether</span>
+        <span class="link-card-readmore">View &rarr;</span>
+      </span>
+    </a>
+    <a class="link-card" data-cats="aether" data-s="MES Math Q/A 52 livestream: Ionel Dinu&amp;#x27;s Theory of Aether. Math and physics questions answered live. Mirrored from the Hive blockchain. Wide View Theater Mode View on 3Speak &amp;nearr; If you have math related questions, I may have answers. Livestreamed on Wednesday, January 14, 2026 at 10:00 AM PST. Watch on: 3Speak &amp;middot; YouTube Summary: MES Math Q/A 52 summary See more: MES Math Q/A YouTube Playlist More math: mes.fm/math Originally posted on the Hive blockchain &amp;rarr; Text and image retrieved from the Hive blockchain on September 23, 2026." href="https://mes.fm/math-qa-52-ionel-dinu-theory-of-aether">
+      <span class="link-card-thumb" style="background-image:url('https://i.ytimg.com/vi/OYHplqhAxhU/maxresdefault.jpg')"></span>
+      <span class="link-card-body">
+        <span class="link-card-tag link-card-tag--q/a">Q/A</span><span class="link-card-title">52: Ionel Dinu's Theory of Aether</span>
+        <span class="link-card-readmore">View &rarr;</span>
+      </span>
+    </a>
+    <a class="link-card" data-cats="aether" data-s="MES Math Q/A 51 livestream: Ionel Dinu&amp;#x27;s Theory of Aether. Math and physics questions answered live. Mirrored from the Hive blockchain. Wide View Theater Mode View on 3Speak &amp;nearr; If you have math related questions, I may have answers. Livestreamed on Wednesday, January 7, 2026 at 10:00 AM PST. Watch on: 3Speak &amp;middot; YouTube See more: MES Math Q/A YouTube Playlist More math: mes.fm/math Originally posted on the Hive blockchain &amp;rarr; Text and image retrieved from the Hive blockchain on September 23, 2026." href="https://mes.fm/math-qa-51-ionel-dinu-theory-of-aether">
+      <span class="link-card-thumb" style="background-image:url('https://i.ytimg.com/vi/lLxgyHSguRs/maxresdefault.jpg')"></span>
+      <span class="link-card-body">
+        <span class="link-card-tag link-card-tag--q/a">Q/A</span><span class="link-card-title">51: Ionel Dinu's Theory of Aether</span>
+        <span class="link-card-readmore">View &rarr;</span>
+      </span>
+    </a>
+    <a class="link-card" data-cats="aether" data-s="MES Math Q/A 50 livestream: Ionel Dinu&amp;#x27;s Theory of Aether. Math and physics questions answered live. Mirrored from the Hive blockchain. Wide View Theater Mode View on 3Speak &amp;nearr; If you have math related questions, I may have answers. Livestreamed on Wednesday, December 31, 2025 at 10:00 AM PST. Watch on: 3Speak &amp;middot; YouTube Summary: MES Math Q/A 50 summary See more: MES Math Q/A YouTube Playlist More math: mes.fm/math Originally posted on the Hive blockchain &amp;rarr; Text and image retrieved from the Hive blockchain on September 23, 2026." href="https://mes.fm/math-qa-50-ionel-dinu-theory-of-aether">
+      <span class="link-card-thumb" style="background-image:url('https://i.ytimg.com/vi/TAxz_PmNff0/maxresdefault.jpg')"></span>
+      <span class="link-card-body">
+        <span class="link-card-tag link-card-tag--q/a">Q/A</span><span class="link-card-title">50: Ionel Dinu's Theory of Aether</span>
+        <span class="link-card-readmore">View &rarr;</span>
+      </span>
+    </a>
+    <a class="link-card" data-cats="aether" data-s="MES Math Q/A 49 livestream: Ionel Dinu&amp;#x27;s Theory of Aether. Math and physics questions answered live. Mirrored from the Hive blockchain. Wide View Theater Mode View on 3Speak &amp;nearr; If you have math related questions, I may have answers. Livestreamed on Wednesday, December 24, 2025 at 10:00 AM PST. Watch on: 3Speak &amp;middot; YouTube Summary: MES Math Q/A 49 summary See more: MES Math Q/A YouTube Playlist More math: mes.fm/math Originally posted on the Hive blockchain &amp;rarr; Text and image retrieved from the Hive blockchain on September 23, 2026." href="https://mes.fm/math-qa-49-ionel-dinu-theory-of-aether">
+      <span class="link-card-thumb" style="background-image:url('https://i.ytimg.com/vi/6mfBM5BecMI/maxresdefault.jpg')"></span>
+      <span class="link-card-body">
+        <span class="link-card-tag link-card-tag--q/a">Q/A</span><span class="link-card-title">49: Ionel Dinu's Theory of Aether</span>
+        <span class="link-card-readmore">View &rarr;</span>
+      </span>
+    </a>
+    <a class="link-card" data-cats="" data-s="MES Math Q/A 48 livestream: What is a Photon? Math and physics questions answered live. Mirrored from the Hive blockchain. Wide View Theater Mode View on 3Speak &amp;nearr; If you have math related questions, I may have answers. Livestreamed on Wednesday, December 10, 2025 at 10:00 AM PST. Watch on: 3Speak &amp;middot; YouTube Summary: MES Math Q/A 48 summary See more: MES Math Q/A YouTube Playlist More math: mes.fm/math Originally posted on the Hive blockchain &amp;rarr; Text and image retrieved from the Hive blockchain on September 23, 2026." href="https://mes.fm/math-qa-48-photon">
+      <span class="link-card-thumb" style="background-image:url('https://i.ytimg.com/vi/u_fPl8KFtNQ/maxresdefault.jpg')"></span>
+      <span class="link-card-body">
+        <span class="link-card-tag link-card-tag--q/a">Q/A</span><span class="link-card-title">48: What is a Photon?</span>
+        <span class="link-card-readmore">View &rarr;</span>
+      </span>
+    </a>
+    <a class="link-card" data-cats="" data-s="MES Math Q/A 47 livestream: What Happened to FractalWoman&amp;#x27;s Channel?!. Math and physics questions answered live. Mirrored from the Hive blockchain. Wide View Theater Mode View on 3Speak &amp;nearr; If you have math related questions, I may have answers. Livestreamed on Wednesday, December 10, 2025 at 10:00 AM PST. Watch on: 3Speak &amp;middot; YouTube Summary: MES Math Q/A 47 summary Hutchison Effect: https://www.youtube.com/playlist?list=PLai3U8-WIK0GlfVj5AYNtbF688pr8fk9X See more: MES Math Q/A YouTube Playlist More math: mes.fm/math Originally posted on the Hive blockchain &amp;rarr; Text and image retrieved from the Hive blockchain on September 23, 2026." href="https://mes.fm/math-qa-47-fractalwoman-channel">
+      <span class="link-card-thumb" style="background-image:url('https://i.ytimg.com/vi/97DdxdC5wIs/maxresdefault.jpg')"></span>
+      <span class="link-card-body">
+        <span class="link-card-tag link-card-tag--q/a">Q/A</span><span class="link-card-title">47: What Happened to FractalWoman's Channel?!</span>
+        <span class="link-card-readmore">View &rarr;</span>
+      </span>
+    </a>
+    <a class="link-card" data-cats="freeenergy" data-s="MES Math Q/A 46 livestream: What is a Moray Device? Math and physics questions answered live. Mirrored from the Hive blockchain. Wide View Theater Mode View on 3Speak &amp;nearr; If you have math related questions, I may have answers. Livestreamed on Wednesday, December 3, 2025 at 10:00 AM PST. Watch on: 3Speak &amp;middot; YouTube Summary: MES Math Q/A 46 summary Hutchison Effect: https://www.youtube.com/playlist?list=PLai3U8-WIK0GlfVj5AYNtbF688pr8fk9X See more: MES Math Q/A YouTube Playlist More math: mes.fm/math Originally posted on the Hive blockchain &amp;rarr; Text and image retrieved from the Hive blockchain on September 23, 2026." href="https://mes.fm/math-qa-46-moray-device">
+      <span class="link-card-thumb" style="background-image:url('https://i.ytimg.com/vi/5ojey4ll1LM/maxresdefault.jpg')"></span>
+      <span class="link-card-body">
+        <span class="link-card-tag link-card-tag--q/a">Q/A</span><span class="link-card-title">46: What is a Moray Device?</span>
+        <span class="link-card-readmore">View &rarr;</span>
+      </span>
+    </a>
+    <a class="link-card" data-cats="" data-s="MES Math Q/A 45 livestream: What is a Vacuum Tube? Math and physics questions answered live. Mirrored from the Hive blockchain. Wide View Theater Mode View on 3Speak &amp;nearr; If you have math related questions, I may have answers. Livestreamed on Wednesday, November 26, 2025 at 10:00 AM PST. Watch on: 3Speak &amp;middot; YouTube Summary: MES Math Q/A 45 summary Hutchison Effect: https://www.youtube.com/playlist?list=PLai3U8-WIK0GlfVj5AYNtbF688pr8fk9X See more: MES Math Q/A YouTube Playlist More math: mes.fm/math Originally posted on the Hive blockchain &amp;rarr; Text and image retrieved from the Hive blockchain on September 23, 2026." href="https://mes.fm/math-qa-45-vacuum-tube">
+      <span class="link-card-thumb" style="background-image:url('https://i.ytimg.com/vi/I4s7ut-Ddwg/maxresdefault.jpg')"></span>
+      <span class="link-card-body">
+        <span class="link-card-tag link-card-tag--q/a">Q/A</span><span class="link-card-title">45: What is a Vacuum Tube?</span>
+        <span class="link-card-readmore">View &rarr;</span>
+      </span>
+    </a>
+    <a class="link-card" data-cats="" data-s="MES Math Q/A 44 livestream: What is the Planck Length? Math and physics questions answered live. Mirrored from the Hive blockchain. Wide View Theater Mode View on 3Speak &amp;nearr; If you have math related questions, I may have answers. Livestreamed on Wednesday, November 12, 2025 at 10:00 AM PST. Watch on: 3Speak &amp;middot; YouTube Summary: MES Math Q/A 44 summary See more: MES Math Q/A YouTube Playlist More math: mes.fm/math Originally posted on the Hive blockchain &amp;rarr; Text and image retrieved from the Hive blockchain on September 23, 2026." href="https://mes.fm/math-qa-44-planck-length">
+      <span class="link-card-thumb" style="background-image:url('https://i.ytimg.com/vi/ZRv0cMHsxH4/maxresdefault.jpg')"></span>
+      <span class="link-card-body">
+        <span class="link-card-tag link-card-tag--q/a">Q/A</span><span class="link-card-title">44: What is the Planck Length?</span>
+        <span class="link-card-readmore">View &rarr;</span>
+      </span>
+    </a>
+    <a class="link-card" data-cats="" data-s="MES Math Q/A 43 livestream: What are Radio Waves? Math and physics questions answered live. Mirrored from the Hive blockchain. Wide View Theater Mode View on 3Speak &amp;nearr; If you have math related questions, I may have answers. Livestreamed on Wednesday, November 5, 2025 at 10:00 AM PST. Watch on: 3Speak &amp;middot; YouTube Summary: MES Math Q/A 43 summary See more: MES Math Q/A YouTube Playlist More math: mes.fm/math Originally posted on the Hive blockchain &amp;rarr; Text and image retrieved from the Hive blockchain on September 23, 2026." href="https://mes.fm/math-qa-43-radio-waves">
+      <span class="link-card-thumb" style="background-image:url('https://i.ytimg.com/vi/_xaATiA-b7A/maxresdefault.jpg')"></span>
+      <span class="link-card-body">
+        <span class="link-card-tag link-card-tag--q/a">Q/A</span><span class="link-card-title">43: What are Radio Waves?</span>
+        <span class="link-card-readmore">View &rarr;</span>
+      </span>
+    </a>
+    <a class="link-card" data-cats="" data-s="MES Math Q/A 42 livestream: What is LiDAR? Math and physics questions answered live. Watch the full livestream here. Mirrored from YouTube. Wide View Theater Mode View on YouTube &amp;nearr; If you have math related questions, I may have answers. Livestreamed on Wednesday, October 29, 2025 at 10:00 AM PDT. Watch on: YouTube Summary: MES Math Q/A 42 summary See more: MES Math Q/A YouTube Playlist More math: mes.fm/math Originally streamed on YouTube &amp;rarr; Text retrieved from YouTube on September 23, 2026." href="https://mes.fm/math-qa-42-lidar">
+      <span class="link-card-thumb" style="background-image:url('https://i.ytimg.com/vi/px8fubzwlpY/maxresdefault.jpg')"></span>
+      <span class="link-card-body">
+        <span class="link-card-tag link-card-tag--q/a">Q/A</span><span class="link-card-title">42: What is LiDAR?</span>
+        <span class="link-card-readmore">View &rarr;</span>
+      </span>
+    </a>
+    <a class="link-card" data-cats="em" data-s="MES Math Q/A 41 livestream: What is Back EMF? Math and physics questions answered live. Watch the full livestream here. Mirrored from YouTube. Wide View Theater Mode View on YouTube &amp;nearr; If you have math related questions, I may have answers. Livestreamed on Wednesday, October 22, 2025 at 10:00 AM PDT. Watch on: YouTube Summary: MES Math Q/A 41 summary See more: MES Math Q/A YouTube Playlist More math: mes.fm/math Originally streamed on YouTube &amp;rarr; Text retrieved from YouTube on September 23, 2026." href="https://mes.fm/math-qa-41-back-emf">
+      <span class="link-card-thumb" style="background-image:url('https://i.ytimg.com/vi/ikw_ttKrVCI/maxresdefault.jpg')"></span>
+      <span class="link-card-body">
+        <span class="link-card-tag link-card-tag--q/a">Q/A</span><span class="link-card-title">41: What is Back EMF?</span>
+        <span class="link-card-readmore">View &rarr;</span>
+      </span>
+    </a>
+    <a class="link-card" data-cats="" data-s="MES Math Q/A 40 livestream: How was Coral Castle Built? Math and physics questions answered live. Mirrored from the Hive blockchain. Wide View Theater Mode View on 3Speak &amp;nearr; If you have math related questions, I may have answers. Livestreamed on Wednesday, October 15, 2025 at 10:00 AM PDT. Watch on: 3Speak &amp;middot; YouTube Summary: MES Math Q/A 40 summary See more: MES Math Q/A YouTube Playlist More math: mes.fm/math Originally posted on the Hive blockchain &amp;rarr; Text and image retrieved from the Hive blockchain on September 23, 2026." href="https://mes.fm/math-qa-40-coral-castle">
+      <span class="link-card-thumb" style="background-image:url('https://i.ytimg.com/vi/MSbHWH5EO8A/maxresdefault.jpg')"></span>
+      <span class="link-card-body">
+        <span class="link-card-tag link-card-tag--q/a">Q/A</span><span class="link-card-title">40: How was Coral Castle Built?</span>
+        <span class="link-card-readmore">View &rarr;</span>
+      </span>
+    </a>
+    <a class="link-card" data-cats="em" data-s="MES Math Q/A 39 livestream: What are Magnetic Poles? Math and physics questions answered live. Watch the full livestream here. Mirrored from YouTube. Wide View Theater Mode View on YouTube &amp;nearr; If you have math related questions, I may have answers. Livestreamed on Wednesday, October 8, 2025 at 10:00 AM PDT. Watch on: YouTube Summary: MES Math Q/A 39 summary Hutchison Effect playlist: https://www.youtube.com/playlist?list=PLai3U8-WIK0GlfVj5AYNtbF688pr8fk9X See more: MES Math Q/A YouTube Playlist More math: mes.fm/math Originally streamed on YouTube &amp;rarr; Text retrieved from YouTube on September 23, 2026." href="https://mes.fm/math-qa-39-magnetic-poles">
+      <span class="link-card-thumb" style="background-image:url('https://i.ytimg.com/vi/0Wq7arT-7eM/maxresdefault.jpg')"></span>
+      <span class="link-card-body">
+        <span class="link-card-tag link-card-tag--q/a">Q/A</span><span class="link-card-title">39: What are Magnetic Poles?</span>
+        <span class="link-card-readmore">View &rarr;</span>
+      </span>
+    </a>
+    <a class="link-card" data-cats="em" data-s="MES Math Q/A 38 livestream: What is a Faraday Cage? Math and physics questions answered live. Watch the full livestream here. Mirrored from YouTube. Wide View Theater Mode View on YouTube &amp;nearr; If you have math related questions, I may have answers. Livestreamed on Wednesday, October 1, 2025 at 10:00 AM PDT. Watch on: YouTube Hutchison Effect playlist: https://www.youtube.com/playlist?list=PLai3U8-WIK0GlfVj5AYNtbF688pr8fk9X See more: MES Math Q/A YouTube Playlist More math: mes.fm/math Originally streamed on YouTube &amp;rarr; Text retrieved from YouTube on September 23, 2026." href="https://mes.fm/math-qa-38-faraday-cage">
+      <span class="link-card-thumb" style="background-image:url('https://i.ytimg.com/vi/yTX0r5nbuws/maxresdefault.jpg')"></span>
+      <span class="link-card-body">
+        <span class="link-card-tag link-card-tag--q/a">Q/A</span><span class="link-card-title">38: What is a Faraday Cage?</span>
+        <span class="link-card-readmore">View &rarr;</span>
+      </span>
+    </a>
+    <a class="link-card" data-cats="" data-s="MES Math Q/A 37 livestream: What is Vortex Math? Math and physics questions answered live. Mirrored from the Hive blockchain. Wide View Theater Mode View on 3Speak &amp;nearr; If you have math related questions, I may have answers. Livestreamed on Wednesday, September 24, 2025 at 10:00 AM PDT. Watch on: 3Speak &amp;middot; YouTube Summary: MES Math Q/A 37 summary See more: MES Math Q/A YouTube Playlist More math: mes.fm/math Originally posted on the Hive blockchain &amp;rarr; Text and image retrieved from the Hive blockchain on September 23, 2026." href="https://mes.fm/math-qa-37-vortex-math">
+      <span class="link-card-thumb" style="background-image:url('https://i.ytimg.com/vi/4xtTQEIKsjQ/maxresdefault.jpg')"></span>
+      <span class="link-card-body">
+        <span class="link-card-tag link-card-tag--q/a">Q/A</span><span class="link-card-title">37: What is Vortex Math?</span>
+        <span class="link-card-readmore">View &rarr;</span>
+      </span>
+    </a>
+    <a class="link-card" data-cats="" data-s="MES Math Q/A 36 livestream: What is an Atomic Bomb? Math and physics questions answered live. Mirrored from the Hive blockchain. Wide View Theater Mode View on 3Speak &amp;nearr; If you have math related questions, I may have answers. Livestreamed on Wednesday, September 17, 2025 at 10:00 AM PDT. Watch on: 3Speak &amp;middot; YouTube Summary: MES Math Q/A 36 summary See more: MES Math Q/A YouTube Playlist More math: mes.fm/math Originally posted on the Hive blockchain &amp;rarr; Text and image retrieved from the Hive blockchain on September 23, 2026." href="https://mes.fm/math-qa-36-atomic-bomb">
+      <span class="link-card-thumb" style="background-image:url('https://i.ytimg.com/vi/7zojWjVDO1o/maxresdefault.jpg')"></span>
+      <span class="link-card-body">
+        <span class="link-card-tag link-card-tag--q/a">Q/A</span><span class="link-card-title">36: What is an Atomic Bomb?</span>
+        <span class="link-card-readmore">View &rarr;</span>
+      </span>
+    </a>
+    <a class="link-card" data-cats="911" data-s="MES Math Q/A 35 livestream: What is Thermite? Math and physics questions answered live. Mirrored from the Hive blockchain. Wide View Theater Mode View on YouTube &amp;nearr; If you have math related questions, I may have answers. Livestreamed on Wednesday, September 10, 2025 at 10:00 AM PDT. Watch on: YouTube Summary: MES Math Q/A 35 summary MES 9/11 Livestreams: https://www.youtube.com/playlist?list=PLai3U8-WIK0G_HHWt33moIqEeUBP3cgCh See more: MES Math Q/A YouTube Playlist More math: mes.fm/math Originally posted on the Hive blockchain &amp;rarr; Text and image retrieved from the Hive blockchain on September 23, 2026." href="https://mes.fm/math-qa-35-thermite">
+      <span class="link-card-thumb" style="background-image:url('https://i.ytimg.com/vi/LY9fIlEqaDc/maxresdefault.jpg')"></span>
+      <span class="link-card-body">
+        <span class="link-card-tag link-card-tag--q/a">Q/A</span><span class="link-card-title">35: What is Thermite?</span>
+        <span class="link-card-readmore">View &rarr;</span>
+      </span>
+    </a>
+    <a class="link-card" data-cats="911" data-s="MES Math Q/A 34 livestream: Can a Plane going 590 mph Slice Through Steel Columns? Math and physics questions answered live. Mirrored from the Hive blockchain. Wide View Theater Mode View on YouTube &amp;nearr; If you have math related questions, I may have answers. Livestreamed on Wednesday, September 3, 2025 at 10:00 AM PDT. Watch on: YouTube Summary: MES Math Q/A 34 summary MES 9/11 Livestreams: https://www.youtube.com/playlist?list=PLai3U8-WIK0G_HHWt33moIqEeUBP3cgCh See more: MES Math Q/A YouTube Playlist More math: mes.fm/math Originally posted on the Hive blockchain &amp;rarr; Text and image retrieved from the Hive blockchain on September 23, 2026." href="https://mes.fm/math-qa-34-plane-590-mph-steel-columns">
+      <span class="link-card-thumb" style="background-image:url('https://i.ytimg.com/vi/c7dcdMt0uFk/maxresdefault.jpg')"></span>
+      <span class="link-card-body">
+        <span class="link-card-tag link-card-tag--q/a">Q/A</span><span class="link-card-title">34: Can a Plane going 590 mph Slice Through Steel Columns?</span>
+        <span class="link-card-readmore">View &rarr;</span>
+      </span>
+    </a>
+    <a class="link-card" data-cats="" data-s="MES Math Q/A 33 livestream: What is Antimatter? Math and physics questions answered live. Mirrored from the Hive blockchain. Wide View Theater Mode View on 3Speak &amp;nearr; If you have math related questions, I may have answers. Livestreamed on Wednesday, August 27, 2025 at 10:00 AM PDT. Watch on: 3Speak &amp;middot; YouTube See more: MES Math Q/A YouTube Playlist More math: mes.fm/math Originally posted on the Hive blockchain &amp;rarr; Text and image retrieved from the Hive blockchain on September 23, 2026." href="https://mes.fm/math-qa-33-antimatter">
+      <span class="link-card-thumb" style="background-image:url('https://i.ytimg.com/vi/BqaoMRMZioQ/maxresdefault.jpg')"></span>
+      <span class="link-card-body">
+        <span class="link-card-tag link-card-tag--q/a">Q/A</span><span class="link-card-title">33: What is Antimatter?</span>
+        <span class="link-card-readmore">View &rarr;</span>
+      </span>
+    </a>
+    <a class="link-card" data-cats="freeenergy" data-s="MES Math Q/A 32 livestream: How Does a Joule Thief Work? Math and physics questions answered live. Mirrored from the Hive blockchain. Wide View Theater Mode View on 3Speak &amp;nearr; If you have math related questions, I may have answers. Livestreamed on Wednesday, August 20, 2025 at 10:00 AM PDT. Watch on: 3Speak &amp;middot; YouTube Summary: MES Math Q/A 32 summary See more: MES Math Q/A YouTube Playlist More math: mes.fm/math Originally posted on the Hive blockchain &amp;rarr; Text and image retrieved from the Hive blockchain on September 23, 2026." href="https://mes.fm/math-qa-32-joule-thief">
+      <span class="link-card-thumb" style="background-image:url('https://i.ytimg.com/vi/QLSs6Ky-sxc/maxresdefault.jpg')"></span>
+      <span class="link-card-body">
+        <span class="link-card-tag link-card-tag--q/a">Q/A</span><span class="link-card-title">32: How Does a Joule Thief Work?</span>
+        <span class="link-card-readmore">View &rarr;</span>
+      </span>
+    </a>
+    <a class="link-card" data-cats="moon" data-s="MES Math Q/A 31 livestream: What is a Potentiometer? (and Moon Landing Evidence). Math and physics questions answered live. Mirrored from the Hive blockchain. Wide View Theater Mode View on 3Speak &amp;nearr; If you have math related questions, I may have answers. Livestreamed on Wednesday, August 13, 2025 at 10:00 AM PDT. Watch on: 3Speak &amp;middot; YouTube Summary: MES Math Q/A 31 summary Moon Landing playlist: https://www.youtube.com/playlist?list=PLai3U8-WIK0GIlZkaJYnTiWrHfvVy9DkR See more: MES Math Q/A YouTube Playlist More math: mes.fm/math Originally posted on the Hive blockchain &amp;rarr; Text and image retrieved from the Hive blockchain on September 23, 2026." href="https://mes.fm/math-qa-31-potentiometer-moon-landing-evidence">
+      <span class="link-card-thumb" style="background-image:url('https://i.ytimg.com/vi/ZGuq_ZRldQQ/maxresdefault.jpg')"></span>
+      <span class="link-card-body">
+        <span class="link-card-tag link-card-tag--q/a">Q/A</span><span class="link-card-title">31: What is a Potentiometer? (and Moon Landing Evidence)</span>
+        <span class="link-card-readmore">View &rarr;</span>
+      </span>
+    </a>
+    <a class="link-card" data-cats="freeenergy" data-s="MES Math Q/A 30 livestream: What is the Bedini Motor? Math and physics questions answered live. Mirrored from the Hive blockchain. Wide View Theater Mode View on 3Speak &amp;nearr; If you have math related questions, I may have answers. Livestreamed on Wednesday, August 6, 2025 at 10:00 AM PDT. Watch on: 3Speak &amp;middot; YouTube Summary: MES Math Q/A 30 summary See more: MES Math Q/A YouTube Playlist More math: mes.fm/math Originally posted on the Hive blockchain &amp;rarr; Text and image retrieved from the Hive blockchain on September 23, 2026." href="https://mes.fm/math-qa-30-bedini-motor">
+      <span class="link-card-thumb" style="background-image:url('https://i.ytimg.com/vi/hfx14Svd9Y0/maxresdefault.jpg')"></span>
+      <span class="link-card-body">
+        <span class="link-card-tag link-card-tag--q/a">Q/A</span><span class="link-card-title">30: What is the Bedini Motor?</span>
+        <span class="link-card-readmore">View &rarr;</span>
+      </span>
+    </a>
+    <a class="link-card" data-cats="em" data-s="MES Math Q/A 29 livestream: Why do Magnets Attract or Repel? Math and physics questions answered live. Mirrored from the Hive blockchain. Wide View Theater Mode View on 3Speak &amp;nearr; If you have math related questions, I may have answers. Livestreamed on Wednesday, July 30, 2025 at 10:00 AM PDT. Watch on: 3Speak &amp;middot; YouTube Summary: MES Math Q/A 29 summary See more: MES Math Q/A YouTube Playlist More math: mes.fm/math Originally posted on the Hive blockchain &amp;rarr; Text and image retrieved from the Hive blockchain on September 23, 2026." href="https://mes.fm/math-qa-29-magnets-attract-repel">
+      <span class="link-card-thumb" style="background-image:url('https://i.ytimg.com/vi/g-cJk0SAhQM/maxresdefault.jpg')"></span>
+      <span class="link-card-body">
+        <span class="link-card-tag link-card-tag--q/a">Q/A</span><span class="link-card-title">29: Why do Magnets Attract or Repel?</span>
+        <span class="link-card-readmore">View &rarr;</span>
+      </span>
+    </a>
+    <a class="link-card" data-cats="" data-s="MES Math Q/A 28 livestream: What is a Plasmoid? Math and physics questions answered live. Watch the full livestream here. Mirrored from YouTube. Wide View Theater Mode View on YouTube &amp;nearr; If you have math related questions, I may have answers. Livestreamed on Wednesday, July 23, 2025 at 10:00 AM PDT. Watch on: YouTube See more: MES Math Q/A YouTube Playlist More math: mes.fm/math Originally streamed on YouTube &amp;rarr; Text retrieved from YouTube on September 23, 2026." href="https://mes.fm/math-qa-28-plasmoid">
+      <span class="link-card-thumb" style="background-image:url('https://i.ytimg.com/vi/Ioy2IIli018/maxresdefault.jpg')"></span>
+      <span class="link-card-body">
+        <span class="link-card-tag link-card-tag--q/a">Q/A</span><span class="link-card-title">28: What is a Plasmoid?</span>
+        <span class="link-card-readmore">View &rarr;</span>
+      </span>
+    </a>
+    <a class="link-card" data-cats="" data-s="MES Math Q/A 27 livestream: What is Ball Lightning? Math and physics questions answered live. Mirrored from the Hive blockchain. Wide View Theater Mode View on 3Speak &amp;nearr; If you have math related questions, I may have answers. Livestreamed on Wednesday, July 16, 2025 at 10:00 AM PDT. Watch on: 3Speak &amp;middot; YouTube Summary: MES Math Q/A 27 summary See more: MES Math Q/A YouTube Playlist More math: mes.fm/math Originally posted on the Hive blockchain &amp;rarr; Text and image retrieved from the Hive blockchain on September 23, 2026." href="https://mes.fm/math-qa-27-ball-lightning">
+      <span class="link-card-thumb" style="background-image:url('https://i.ytimg.com/vi/V1bqAws-5r0/maxresdefault.jpg')"></span>
+      <span class="link-card-body">
+        <span class="link-card-tag link-card-tag--q/a">Q/A</span><span class="link-card-title">27: What is Ball Lightning?</span>
+        <span class="link-card-readmore">View &rarr;</span>
+      </span>
+    </a>
+    <a class="link-card" data-cats="" data-s="MES Math Q/A 26 livestream: What is Consciousness? Math and physics questions answered live. Mirrored from the Hive blockchain. Wide View Theater Mode View on 3Speak &amp;nearr; If you have math related questions, I may have answers. Livestreamed on Wednesday, July 9, 2025 at 10:00 AM PDT. Watch on: 3Speak &amp;middot; YouTube See more: MES Math Q/A YouTube Playlist More math: mes.fm/math Originally posted on the Hive blockchain &amp;rarr; Text and image retrieved from the Hive blockchain on September 23, 2026." href="https://mes.fm/math-qa-26-consciousness">
+      <span class="link-card-thumb" style="background-image:url('https://i.ytimg.com/vi/1njhG7-sEdo/maxresdefault.jpg')"></span>
+      <span class="link-card-body">
+        <span class="link-card-tag link-card-tag--q/a">Q/A</span><span class="link-card-title">26: What is Consciousness?</span>
+        <span class="link-card-readmore">View &rarr;</span>
+      </span>
+    </a>
+    <a class="link-card" data-cats="" data-s="MES Math Q/A 25 livestream: What is the Stern-Gerlach Experiment. Math and physics questions answered live. Mirrored from the Hive blockchain. Wide View Theater Mode View on 3Speak &amp;nearr; If you have math related questions, I may have answers. Livestreamed on Wednesday, July 2, 2025 at 10:00 AM PDT. Watch on: 3Speak &amp;middot; YouTube Summary: MES Math Q/A 25 summary See more: MES Math Q/A YouTube Playlist More math: mes.fm/math Originally posted on the Hive blockchain &amp;rarr; Text and image retrieved from the Hive blockchain on September 23, 2026." href="https://mes.fm/math-qa-25-stern-gerlach-experiment">
+      <span class="link-card-thumb" style="background-image:url('https://i.ytimg.com/vi/KZTyTpUdSPw/maxresdefault.jpg')"></span>
+      <span class="link-card-body">
+        <span class="link-card-tag link-card-tag--q/a">Q/A</span><span class="link-card-title">25: What is the Stern-Gerlach Experiment</span>
+        <span class="link-card-readmore">View &rarr;</span>
+      </span>
+    </a>
+    <a class="link-card" data-cats="911" data-s="MES Math Q/A 24 livestream: Can Plane Tires Survive a Plane Crash Explosion? Math and physics questions answered live. Mirrored from the Hive blockchain. Wide View Theater Mode View on 3Speak &amp;nearr; If you have math related questions, I may have answers. Livestreamed on Wednesday, June 25, 2025 at 10:00 AM PDT. Watch on: 3Speak &amp;middot; YouTube See more: MES Math Q/A YouTube Playlist More math: mes.fm/math Originally posted on the Hive blockchain &amp;rarr; Text and image retrieved from the Hive blockchain on September 23, 2026." href="https://mes.fm/math-qa-24-plane-tires-crash-explosion">
+      <span class="link-card-thumb" style="background-image:url('https://i.ytimg.com/vi/sdWniBAJHZc/maxresdefault.jpg')"></span>
+      <span class="link-card-body">
+        <span class="link-card-tag link-card-tag--q/a">Q/A</span><span class="link-card-title">24: Can Plane Tires Survive a Plane Crash Explosion?</span>
+        <span class="link-card-readmore">View &rarr;</span>
+      </span>
+    </a>
+    <a class="link-card" data-cats="" data-s="MES Math Q/A 23 livestream: What is a Grand Unified Theory? Math and physics questions answered live. Mirrored from the Hive blockchain. Wide View Theater Mode View on 3Speak &amp;nearr; If you have math related questions, I may have answers. Livestreamed on Wednesday, June 18, 2025 at 10:00 AM PDT. Watch on: 3Speak &amp;middot; YouTube Summary: MES Math Q/A 23 summary See more: MES Math Q/A YouTube Playlist More math: mes.fm/math Originally posted on the Hive blockchain &amp;rarr; Text and image retrieved from the Hive blockchain on September 23, 2026." href="https://mes.fm/math-qa-23-grand-unified-theory">
+      <span class="link-card-thumb" style="background-image:url('https://i.ytimg.com/vi/znD7maLqc5M/maxresdefault.jpg')"></span>
+      <span class="link-card-body">
+        <span class="link-card-tag link-card-tag--q/a">Q/A</span><span class="link-card-title">23: What is a Grand Unified Theory?</span>
+        <span class="link-card-readmore">View &rarr;</span>
+      </span>
+    </a>
+    <a class="link-card" data-cats="freeenergy" data-s="MES Math Q/A 22 livestream: What is Focus Fusion? Math and physics questions answered live. Mirrored from the Hive blockchain. Wide View Theater Mode View on 3Speak &amp;nearr; If you have math related questions, I may have answers. Livestreamed on Wednesday, June 11, 2025 at 10:00 AM PDT. Watch on: 3Speak &amp;middot; YouTube Summary: MES Math Q/A 22 summary See more: MES Math Q/A YouTube Playlist More math: mes.fm/math Originally posted on the Hive blockchain &amp;rarr; Text and image retrieved from the Hive blockchain on September 23, 2026." href="https://mes.fm/math-qa-22-focus-fusion">
+      <span class="link-card-thumb" style="background-image:url('https://i.ytimg.com/vi/qkaHLPHB9uE/maxresdefault.jpg')"></span>
+      <span class="link-card-body">
+        <span class="link-card-tag link-card-tag--q/a">Q/A</span><span class="link-card-title">22: What is Focus Fusion?</span>
+        <span class="link-card-readmore">View &rarr;</span>
+      </span>
+    </a>
+    <a class="link-card" data-cats="" data-s="MES Math Q/A 21 livestream: What Shape is the Earth? Math and physics questions answered live. Mirrored from the Hive blockchain. Wide View Theater Mode View on 3Speak &amp;nearr; If you have math related questions, I may have answers. Livestreamed on Wednesday, June 4, 2025 at 10:00 AM PDT. Watch on: 3Speak &amp;middot; YouTube See more: MES Math Q/A YouTube Playlist More math: mes.fm/math Originally posted on the Hive blockchain &amp;rarr; Text and image retrieved from the Hive blockchain on September 23, 2026." href="https://mes.fm/math-qa-21-shape-of-the-earth">
+      <span class="link-card-thumb" style="background-image:url('https://i.ytimg.com/vi/LVXr1Aq92DE/maxresdefault.jpg')"></span>
+      <span class="link-card-body">
+        <span class="link-card-tag link-card-tag--q/a">Q/A</span><span class="link-card-title">21: What Shape is the Earth?</span>
+        <span class="link-card-readmore">View &rarr;</span>
+      </span>
+    </a>
+    <a class="link-card" data-cats="aether" data-s="MES Math Q/A 20 livestream: What is the Aether? Math and physics questions answered live. Mirrored from the Hive blockchain. Wide View Theater Mode View on 3Speak &amp;nearr; If you have math related questions, I may have answers. Livestreamed on Wednesday, May 28, 2025 at 10:00 AM PDT. Watch on: 3Speak &amp;middot; YouTube Summary: MES Math Q/A 20 summary See more: MES Math Q/A YouTube Playlist More math: mes.fm/math Originally posted on the Hive blockchain &amp;rarr; Text and image retrieved from the Hive blockchain on September 23, 2026." href="https://mes.fm/math-qa-20-aether">
+      <span class="link-card-thumb" style="background-image:url('https://i.ytimg.com/vi/2tnGtFY03VY/maxresdefault.jpg')"></span>
+      <span class="link-card-body">
+        <span class="link-card-tag link-card-tag--q/a">Q/A</span><span class="link-card-title">20: What is the Aether?</span>
+        <span class="link-card-readmore">View &rarr;</span>
+      </span>
+    </a>
+    <a class="link-card" data-cats="em" data-s="MES Math Q/A 19 livestream: What is a Magnetic Mirror? Math and physics questions answered live. Mirrored from the Hive blockchain. Wide View Theater Mode View on 3Speak &amp;nearr; If you have math related questions, I may have answers. Livestreamed on Wednesday, May 21, 2025 at 10:00 AM PDT. Watch on: 3Speak &amp;middot; YouTube Summary: MES Math Q/A 19 summary See more: MES Math Q/A YouTube Playlist More math: mes.fm/math Originally posted on the Hive blockchain &amp;rarr; Text and image retrieved from the Hive blockchain on September 23, 2026." href="https://mes.fm/math-qa-19-magnetic-mirror">
+      <span class="link-card-thumb" style="background-image:url('https://i.ytimg.com/vi/D4Z-O1gwZck/maxresdefault.jpg')"></span>
+      <span class="link-card-body">
+        <span class="link-card-tag link-card-tag--q/a">Q/A</span><span class="link-card-title">19: What is a Magnetic Mirror?</span>
+        <span class="link-card-readmore">View &rarr;</span>
+      </span>
+    </a>
+    <a class="link-card" data-cats="" data-s="MES Math Q/A 18 livestream: What is the Atwood Machine? Math and physics questions answered live. Mirrored from the Hive blockchain. Wide View Theater Mode View on 3Speak &amp;nearr; If you have math related questions, I may have answers. Livestreamed on Wednesday, May 14, 2025 at 10:00 AM PDT. Watch on: 3Speak &amp;middot; YouTube Summary: MES Math Q/A 18 summary See more: MES Math Q/A YouTube Playlist More math: mes.fm/math Originally posted on the Hive blockchain &amp;rarr; Text and image retrieved from the Hive blockchain on September 23, 2026." href="https://mes.fm/math-qa-18-atwood-machine">
+      <span class="link-card-thumb" style="background-image:url('https://i.ytimg.com/vi/NSauM4n6u-o/maxresdefault.jpg')"></span>
+      <span class="link-card-body">
+        <span class="link-card-tag link-card-tag--q/a">Q/A</span><span class="link-card-title">18: What is the Atwood Machine?</span>
+        <span class="link-card-readmore">View &rarr;</span>
+      </span>
+    </a>
+    <a class="link-card" data-cats="moon" data-s="MES Math Q/A 17 livestream: What is Lunar Regolith (Moon Dust)? Math and physics questions answered live. Mirrored from the Hive blockchain. Wide View Theater Mode View on 3Speak &amp;nearr; If you have math related questions, I may have answers. Livestreamed on Wednesday, May 7, 2025 at 10:00 AM PDT. Watch on: 3Speak &amp;middot; YouTube Moon Landing playlist: https://www.youtube.com/playlist?list=PLai3U8-WIK0GIlZkaJYnTiWrHfvVy9DkR See more: MES Math Q/A YouTube Playlist More math: mes.fm/math Originally posted on the Hive blockchain &amp;rarr; Text and image retrieved from the Hive blockchain on September 23, 2026." href="https://mes.fm/math-qa-17-lunar-regolith-moon-dust">
+      <span class="link-card-thumb" style="background-image:url('https://i.ytimg.com/vi/P3glFFIvyUw/maxresdefault.jpg')"></span>
+      <span class="link-card-body">
+        <span class="link-card-tag link-card-tag--q/a">Q/A</span><span class="link-card-title">17: What is Lunar Regolith (Moon Dust)?</span>
+        <span class="link-card-readmore">View &rarr;</span>
+      </span>
+    </a>
+    <a class="link-card" data-cats="moon" data-s="MES Math Q/A 16 livestream: What are the Van Allen Radiations Belts? Math and physics questions answered live. Mirrored from the Hive blockchain. Wide View Theater Mode View on 3Speak &amp;nearr; If you have math related questions, I may have answers. Livestreamed on Wednesday, April 30, 2025 at 10:00 AM PDT. Watch on: 3Speak &amp;middot; YouTube Summary: MES Math Q/A 16 summary See more: MES Math Q/A YouTube Playlist More math: mes.fm/math Originally posted on the Hive blockchain &amp;rarr; Text and image retrieved from the Hive blockchain on September 23, 2026." href="https://mes.fm/math-qa-16-van-allen-radiation-belts">
+      <span class="link-card-thumb" style="background-image:url('https://i.ytimg.com/vi/JfLV1bI2T7k/maxresdefault.jpg')"></span>
+      <span class="link-card-body">
+        <span class="link-card-tag link-card-tag--q/a">Q/A</span><span class="link-card-title">16: What are the Van Allen Radiations Belts?</span>
+        <span class="link-card-readmore">View &rarr;</span>
+      </span>
+    </a>
+    <a class="link-card" data-cats="freeenergy" data-s="MES Math Q/A 15 livestream: What is Cold Fusion? Math and physics questions answered live. Mirrored from the Hive blockchain. Wide View Theater Mode View on 3Speak &amp;nearr; If you have math related questions, I may have answers. Livestreamed on Wednesday, April 23, 2025 at 10:00 AM PDT. Watch on: 3Speak &amp;middot; YouTube See more: MES Math Q/A YouTube Playlist More math: mes.fm/math Originally posted on the Hive blockchain &amp;rarr; Text and image retrieved from the Hive blockchain on September 23, 2026." href="https://mes.fm/math-qa-15-cold-fusion">
+      <span class="link-card-thumb" style="background-image:url('https://i.ytimg.com/vi/GPaDjuyphuU/maxresdefault.jpg')"></span>
+      <span class="link-card-body">
+        <span class="link-card-tag link-card-tag--q/a">Q/A</span><span class="link-card-title">15: What is Cold Fusion?</span>
+        <span class="link-card-readmore">View &rarr;</span>
+      </span>
+    </a>
+    <a class="link-card" data-cats="moon" data-s="MES Math Q/A 14 livestream: Are NASA Apollo photos composites? Math and physics questions answered live. Mirrored from the Hive blockchain. Wide View Theater Mode View on 3Speak &amp;nearr; If you have math related questions, I may have answers. Livestreamed on Wednesday, April 16, 2025 at 10:00 AM PDT. Watch on: 3Speak &amp;middot; YouTube See more: MES Math Q/A YouTube Playlist More math: mes.fm/math Originally posted on the Hive blockchain &amp;rarr; Text and image retrieved from the Hive blockchain on September 23, 2026." href="https://mes.fm/math-qa-14-nasa-apollo-photos-composites">
+      <span class="link-card-thumb" style="background-image:url('https://i.ytimg.com/vi/3Rwt49n2kMM/maxresdefault.jpg')"></span>
+      <span class="link-card-body">
+        <span class="link-card-tag link-card-tag--q/a">Q/A</span><span class="link-card-title">14: Are NASA Apollo photos composites?</span>
+        <span class="link-card-readmore">View &rarr;</span>
+      </span>
+    </a>
+    <a class="link-card" data-cats="freeenergy" data-s="MES Math Q/A 13 livestream: What is Inertial Propulsion? Math and physics questions answered live. Mirrored from the Hive blockchain. Wide View Theater Mode View on 3Speak &amp;nearr; If you have math related questions, I may have answers. Livestreamed on Wednesday, April 9, 2025 at 10:00 AM PDT. Watch on: 3Speak &amp;middot; YouTube See more: MES Math Q/A YouTube Playlist More math: mes.fm/math Originally posted on the Hive blockchain &amp;rarr; Text and image retrieved from the Hive blockchain on September 23, 2026." href="https://mes.fm/math-qa-13-inertial-propulsion">
+      <span class="link-card-thumb" style="background-image:url('https://i.ytimg.com/vi/FNglvk7FmiQ/maxresdefault.jpg')"></span>
+      <span class="link-card-body">
+        <span class="link-card-tag link-card-tag--q/a">Q/A</span><span class="link-card-title">13: What is Inertial Propulsion?</span>
+        <span class="link-card-readmore">View &rarr;</span>
+      </span>
+    </a>
+    <a class="link-card" data-cats="911" data-s="MES Math Q/A 12 livestream: What types of Building Demolitions are there? Math and physics questions answered live. Mirrored from YouTube. Wide View Theater Mode View on YouTube &amp;nearr; If you have math related questions, I may have answers. Livestreamed on Wednesday, April 2, 2025 at 10:00 AM PDT. Watch on: YouTube See more: MES Math Q/A YouTube Playlist More math: mes.fm/math Originally streamed on YouTube &amp;rarr; Text retrieved from YouTube on September 23, 2026." href="https://mes.fm/math-qa-12-building-demolition-types">
+      <span class="link-card-thumb" style="background-image:url('https://i.ytimg.com/vi/V7yU0HCR38I/maxresdefault.jpg')"></span>
+      <span class="link-card-body">
+        <span class="link-card-tag link-card-tag--q/a">Q/A</span><span class="link-card-title">12: What types of Building Demolitions are there?</span>
+        <span class="link-card-readmore">View &rarr;</span>
+      </span>
+    </a>
+    <a class="link-card" data-cats="freeenergy" data-s="MES Math Q/A 11 livestream: How does a Tesla Coil work? Math and physics questions answered live. Mirrored from the Hive blockchain. Wide View Theater Mode View on 3Speak &amp;nearr; If you have math related questions, I may have answers. Livestreamed on Wednesday, March 26, 2025 at 10:00 AM PDT. Watch on: 3Speak &amp;middot; YouTube Summary: MES Math Q/A 11 summary See more: MES Math Q/A YouTube Playlist More math: mes.fm/math Originally posted on the Hive blockchain &amp;rarr; Text and image retrieved from the Hive blockchain on September 23, 2026." href="https://mes.fm/math-qa-11-tesla-coil">
+      <span class="link-card-thumb" style="background-image:url('https://i.ytimg.com/vi/Okw6JBXlIPY/maxresdefault.jpg')"></span>
+      <span class="link-card-body">
+        <span class="link-card-tag link-card-tag--q/a">Q/A</span><span class="link-card-title">11: How does a Tesla Coil work?</span>
+        <span class="link-card-readmore">View &rarr;</span>
+      </span>
+    </a>
+    <a class="link-card" data-cats="" data-s="MES Math Q/A 10 livestream: What is Gravity? Math and physics questions answered live. Mirrored from the Hive blockchain. Wide View Theater Mode View on 3Speak &amp;nearr; If you have math related questions, I may have answers. Livestreamed on Wednesday, March 19, 2025 at 10:00 AM PDT. Watch on: 3Speak &amp;middot; YouTube See more: MES Math Q/A YouTube Playlist More math: mes.fm/math Originally posted on the Hive blockchain &amp;rarr; Text and image retrieved from the Hive blockchain on September 23, 2026." href="https://mes.fm/math-qa-10-gravity">
+      <span class="link-card-thumb" style="background-image:url('https://i.ytimg.com/vi/-dXBmlUeOtI/maxresdefault.jpg')"></span>
+      <span class="link-card-body">
+        <span class="link-card-tag link-card-tag--q/a">Q/A</span><span class="link-card-title">10: What is Gravity?</span>
+        <span class="link-card-readmore">View &rarr;</span>
+      </span>
+    </a>
+    <a class="link-card" data-cats="em" data-s="MES Math Q/A 9 livestream: Do opposing magnets fall SLOWER than gravity? Math and physics questions answered live. Mirrored from the Hive blockchain. Wide View Theater Mode View on 3Speak &amp;nearr; If you have math related questions, I may have answers. Livestreamed on Wednesday, March 5, 2025 at 10:00 AM PST. Watch on: 3Speak &amp;middot; YouTube See more: MES Math Q/A YouTube Playlist More math: mes.fm/math Originally posted on the Hive blockchain &amp;rarr; Text and image retrieved from the Hive blockchain on September 23, 2026." href="https://mes.fm/math-qa-9-opposing-magnets-fall-slower-than-gravity">
+      <span class="link-card-thumb" style="background-image:url('https://i.ytimg.com/vi/tDIMfpt_bk8/maxresdefault.jpg')"></span>
+      <span class="link-card-body">
+        <span class="link-card-tag link-card-tag--q/a">Q/A</span><span class="link-card-title">9: Do opposing magnets fall SLOWER than gravity?</span>
+        <span class="link-card-readmore">View &rarr;</span>
+      </span>
+    </a>
+    <a class="link-card" data-cats="" data-s="MES Math Q/A 8 livestream: What are High Frequency Radio Waves? Math and physics questions answered live. Mirrored from the Hive blockchain. Wide View Theater Mode View on 3Speak &amp;nearr; If you have math related questions, I may have answers. Livestreamed on Wednesday, March 5, 2025 at 10:00 AM PST. Watch on: 3Speak &amp;middot; YouTube Summary: MES Math Q/A 8 summary See more: MES Math Q/A YouTube Playlist More math: mes.fm/math Originally posted on the Hive blockchain &amp;rarr; Text and image retrieved from the Hive blockchain on September 23, 2026." href="https://mes.fm/math-qa-8-high-frequency-radio-waves">
+      <span class="link-card-thumb" style="background-image:url('https://i.ytimg.com/vi/lprjXQDvA3I/maxresdefault.jpg')"></span>
+      <span class="link-card-body">
+        <span class="link-card-tag link-card-tag--q/a">Q/A</span><span class="link-card-title">8: What are High Frequency Radio Waves?</span>
+        <span class="link-card-readmore">View &rarr;</span>
+      </span>
+    </a>
+    <a class="link-card" data-cats="" data-s="MES Math Q/A 7 livestream: How are Crop Circles Formed? Math and physics questions answered live. Mirrored from the Hive blockchain. Wide View Theater Mode View on 3Speak &amp;nearr; If you have math related questions, I may have answers. Livestreamed on Wednesday, February 26, 2025 at 10:00 AM PST. Watch on: 3Speak &amp;middot; YouTube See more: MES Math Q/A YouTube Playlist More math: mes.fm/math Originally posted on the Hive blockchain &amp;rarr; Text and image retrieved from the Hive blockchain on September 23, 2026." href="https://mes.fm/math-qa-7-crop-circles">
+      <span class="link-card-thumb" style="background-image:url('https://i.ytimg.com/vi/agKXLowAR5A/maxresdefault.jpg')"></span>
+      <span class="link-card-body">
+        <span class="link-card-tag link-card-tag--q/a">Q/A</span><span class="link-card-title">7: How are Crop Circles Formed?</span>
+        <span class="link-card-readmore">View &rarr;</span>
+      </span>
+    </a>
+    <a class="link-card" data-cats="" data-s="MES Math Q/A 6 livestream: What Lab Equipment is Needed for the Hutchison Effect? Math and physics questions answered live. Mirrored from the Hive blockchain. Wide View Theater Mode View on 3Speak &amp;nearr; If you have math related questions, I may have answers. Livestreamed on Wednesday, February 19, 2025 at 10:00 AM PST. Watch on: 3Speak &amp;middot; YouTube Summary: MES Math Q/A 6 summary Hutchison Effect Grok AI equipment list: https://x.com/i/grok/share/ctJAma6pAnDCOWxVl2jthXjnx Tom Bearden ChatGPT list: https://chatgpt.com/g/g-O0GoFppe7-tom-bearden-energy-explorer/c/67b63b67-cb48-8008-86e1-d622c481ae51 Hutchison Effect playlist: https://www.youtube.com/playlist?list=PLai3U8-WIK0GlfVj5AYNtbF6" href="https://mes.fm/math-qa-6-hutchison-effect-lab-equipment">
+      <span class="link-card-thumb" style="background-image:url('https://i.ytimg.com/vi/uM7u-Bxx1HU/maxresdefault.jpg')"></span>
+      <span class="link-card-body">
+        <span class="link-card-tag link-card-tag--q/a">Q/A</span><span class="link-card-title">6: What Lab Equipment is Needed for the Hutchison Effect?</span>
+        <span class="link-card-readmore">View &rarr;</span>
+      </span>
+    </a>
+    <a class="link-card" data-cats="" data-s="MES Math Q/A 5 livestream: How does the Hutchison Effect work? Math and physics questions answered live. Mirrored from the Hive blockchain. Wide View Theater Mode View on 3Speak &amp;nearr; If you have math related questions, I may have answers. Livestreamed on Wednesday, February 12, 2025 at 10:00 AM PST. Watch on: 3Speak &amp;middot; YouTube Hutchison Effect Grok AI equipment list: https://x.com/i/grok/share/ctJAma6pAnDCOWxVl2jthXjnx See more: MES Math Q/A YouTube Playlist More math: mes.fm/math Originally posted on the Hive blockchain &amp;rarr; Text and image retrieved from the Hive blockchain on September 23, 2026." href="https://mes.fm/math-qa-5-hutchison-effect">
+      <span class="link-card-thumb" style="background-image:url('https://i.ytimg.com/vi/-sBn4TkmIEM/maxresdefault.jpg')"></span>
+      <span class="link-card-body">
+        <span class="link-card-tag link-card-tag--q/a">Q/A</span><span class="link-card-title">5: How does the Hutchison Effect work?</span>
+        <span class="link-card-readmore">View &rarr;</span>
+      </span>
+    </a>
+    <a class="link-card" data-cats="freeenergy" data-s="MES Math Q/A 4 livestream: Analyzing Free Energy Device Claims. Math and physics questions answered live. Mirrored from the Hive blockchain. Wide View Theater Mode View on 3Speak &amp;nearr; If you have math related questions, I may have answers. Livestreamed on Wednesday, February 5, 2025 at 10:00 AM PST. Watch on: 3Speak &amp;middot; YouTube See more: MES Math Q/A YouTube Playlist More math: mes.fm/math Originally posted on the Hive blockchain &amp;rarr; Text and image retrieved from the Hive blockchain on September 23, 2026." href="https://mes.fm/math-qa-4-free-energy-device-claims">
+      <span class="link-card-thumb" style="background-image:url('https://i.ytimg.com/vi/oOSOAwJ5-3Y/maxresdefault.jpg')"></span>
+      <span class="link-card-body">
+        <span class="link-card-tag link-card-tag--q/a">Q/A</span><span class="link-card-title">4: Analyzing Free Energy Device Claims</span>
+        <span class="link-card-readmore">View &rarr;</span>
+      </span>
+    </a>
+    <a class="link-card" data-cats="" data-s="MES Math Q/A 3 livestream: How does AI work? Math and physics questions answered live. Mirrored from the Hive blockchain. Wide View Theater Mode View on 3Speak &amp;nearr; If you have math related questions, I may have answers. Livestreamed on Wednesday, January 29, 2025 at 10:00 AM PST. Watch on: 3Speak &amp;middot; YouTube See more: MES Math Q/A YouTube Playlist More math: mes.fm/math Originally posted on the Hive blockchain &amp;rarr; Text and image retrieved from the Hive blockchain on September 23, 2026." href="https://mes.fm/math-qa-3-how-ai-works">
+      <span class="link-card-thumb" style="background-image:url('https://i.ytimg.com/vi/eNoHKaftMVI/maxresdefault.jpg')"></span>
+      <span class="link-card-body">
+        <span class="link-card-tag link-card-tag--q/a">Q/A</span><span class="link-card-title">3: How does AI work?</span>
+        <span class="link-card-readmore">View &rarr;</span>
+      </span>
+    </a>
+    <a class="link-card" data-cats="" data-s="MES Math Q/A 2 livestream: How are Hurricanes Formed? Math and physics questions answered live. Mirrored from the Hive blockchain. Wide View Theater Mode View on 3Speak &amp;nearr; If you have math related questions, I may have answers. Livestreamed on Wednesday, January 22, 2025 at 10:00 AM PST. Watch on: 3Speak &amp;middot; YouTube See more: MES Math Q/A YouTube Playlist More math: mes.fm/math Originally posted on the Hive blockchain &amp;rarr; Text and image retrieved from the Hive blockchain on September 23, 2026." href="https://mes.fm/math-qa-2-hurricanes">
+      <span class="link-card-thumb" style="background-image:url('https://i.ytimg.com/vi/SsAlh5uXCQQ/maxresdefault.jpg')"></span>
+      <span class="link-card-body">
+        <span class="link-card-tag link-card-tag--q/a">Q/A</span><span class="link-card-title">2: How are Hurricanes Formed?</span>
+        <span class="link-card-readmore">View &rarr;</span>
+      </span>
+    </a>
+    <a class="link-card" data-cats="" data-s="MES Math Q/A 1 livestream: Special Birthday Stream. Math and physics questions answered live. Mirrored from the Hive blockchain. Wide View Theater Mode View on 3Speak &amp;nearr; If you have math related questions, I may have answers. Livestreamed on Wednesday, January 15, 2025 at 10:00 AM PST. Watch on: 3Speak &amp;middot; YouTube See more: MES Math Q/A YouTube Playlist More math: mes.fm/math Originally posted on the Hive blockchain &amp;rarr; Text and image retrieved from the Hive blockchain on September 23, 2026." href="https://mes.fm/math-qa-1-special-birthday-stream">
+      <span class="link-card-thumb" style="background-image:url('https://i.ytimg.com/vi/sVbnX7EUVIc/maxresdefault.jpg')"></span>
+      <span class="link-card-body">
+        <span class="link-card-tag link-card-tag--q/a">Q/A</span><span class="link-card-title">1: Special Birthday Stream</span>
+        <span class="link-card-readmore">View &rarr;</span>
+      </span>
+    </a>
+    </div>
     <div class="list-row" data-cats="">
       <h3>71: Stats</h3>
       <p><a href="https://mes.fm/math-qa-71-stats" target="_blank" rel="noopener">MES</a> - <a href="https://inleo.io/threads/view/mes/re-leothreads-65mktyu4" target="_blank" rel="noopener">Hive</a> - <a href="https://t.me/meslinks/35530" target="_blank" rel="noopener">Telegram</a></p>
@@ -2200,7 +2735,7 @@ body.dark-mode .ls-empty { color: #aaa; }
     });
   }
 
-      wireViewToggle('mathQaLivestreams', ["Stats"]);
+      wireViewToggle('mathQaLivestreams', ["Stats","All"]);
   // Search + category filter (see buildFilter()). Applies to every pane that carries data-cats
   // (Grid, List and Trailers) so the choice survives switching tabs; the chip counts show how many
   // items each chip would give in the pane that is showing. Stats items carry their Q/A's cats
@@ -2211,7 +2746,7 @@ body.dark-mode .ls-empty { color: #aaa; }
     var chips = document.getElementById(id + 'Chips');
     var empty = document.getElementById(id + 'Empty');
     if (!box || !input || !chips) return;
-    var panes = ['Grid', 'List', 'Trailers', 'Stats'].map(function (s) { return document.getElementById(id + s); }).filter(Boolean);
+    var panes = ['All', 'Grid', 'List', 'Trailers', 'Stats'].map(function (s) { return document.getElementById(id + s); }).filter(Boolean);
     var cat = 'all';
 
     function items(pane) { return Array.prototype.slice.call(pane.querySelectorAll('[data-cats]')); }
