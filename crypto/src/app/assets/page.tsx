@@ -1,49 +1,57 @@
 'use client';
 
-import { useState } from 'react';
-import BitcoinSummary from '@/apps/assets/components/BitcoinSummary';
+import { useMemo, useState } from 'react';
 import Breakdown from '@/apps/assets/components/Breakdown';
-import GroupCards from '@/apps/assets/components/GroupCards';
-import HiveSummary from '@/apps/assets/components/HiveSummary';
-import HoldingsTable from '@/apps/assets/components/HoldingsTable';
+import GroupedTable from '@/apps/assets/components/GroupedTable';
 import RefreshButton from '@/apps/assets/components/RefreshButton';
-import SourceStatus from '@/apps/assets/components/SourceStatus';
 import StateView from '@/apps/assets/components/StateView';
-import TotalCard from '@/apps/assets/components/TotalCard';
 import { useHoldings } from '@/apps/assets/hooks/useHoldings';
-import { DEFAULT_MIN_VALUE_USD } from '@/apps/assets/lib/constants';
-import type { GroupKey } from '@/apps/assets/lib/types';
+import { groupHoldings } from '@/apps/assets/lib/assetGroups';
+import { DEFAULT_MIN_VALUE_USD, SOURCE_LABELS } from '@/apps/assets/lib/constants';
+import { timeAgo, usd } from '@/apps/assets/lib/format';
 
-export default function OverviewPage() {
+/**
+ * mes.fm/assets, kept simple on request (2026-10-19): the total, one table with every asset and its
+ * wrapped forms folded under it (GroupedTable), and two donuts (by asset, by type). The per-account
+ * cards, Bitcoin / Hive summaries and the source list were dropped; a source that failed still shows
+ * as one warning line.
+ */
+export default function AssetsPage() {
   const [showDust, setShowDust] = useState(false);
-  const [group, setGroup] = useState<GroupKey | 'all'>('all');
   const { snapshot, isLoading, isValidating, error, refresh } = useHoldings(showDust ? 0 : DEFAULT_MIN_VALUE_USD);
-
-  const holdings = snapshot ? snapshot.holdings.filter((h) => group === 'all' || h.group === group) : [];
+  const groups = useMemo(() => (snapshot ? groupHoldings(snapshot.holdings) : []), [snapshot]);
+  const failed = snapshot ? snapshot.sources.filter((s) => !s.ok) : [];
 
   return (
     <div className="flex flex-col gap-6">
-      <div className="flex flex-wrap items-center justify-between gap-3">
-        <p className="max-w-2xl text-sm text-gray-400">
-          Everything held across Hive, Hive Engine, Magi, and the EVM / Hyperliquid / XRP wallets — fetched once here, then shared with the other
-          dashboards. Shows assets worth ≥ ${DEFAULT_MIN_VALUE_USD} unless you ask for all.
-        </p>
-        <div className="flex items-center gap-3">
-          {isValidating && !isLoading && <span className="text-xs text-gray-500">updating…</span>}
-          <RefreshButton onRefreshed={refresh} />
-        </div>
-      </div>
-
       <StateView loading={isLoading} error={snapshot ? null : error} onRetry={refresh}>
         {snapshot && (
           <div className="flex flex-col gap-6">
-            <TotalCard snapshot={snapshot} showDust={showDust} onToggleDust={() => setShowDust(!showDust)} />
-            <BitcoinSummary holdings={holdings} groups={snapshot.groups} />
-            <HiveSummary holdings={holdings} groups={snapshot.groups} />
-            <GroupCards groups={snapshot.groups} selected={group} onSelect={setGroup} showDust={showDust} />
-            <Breakdown holdings={holdings} groups={snapshot.groups} />
-            <HoldingsTable holdings={holdings} groups={snapshot.groups} />
-            <SourceStatus sources={snapshot.sources} groups={snapshot.groups} />
+            <div className="panel flex flex-wrap items-end justify-between gap-4">
+              <div>
+                <p className="stat-label">Total · everything you hold</p>
+                <p className="mt-1 text-3xl font-semibold">{usd(showDust ? snapshot.totalAllUsd : snapshot.totalUsd)}</p>
+                <p className="mt-1 text-xs text-gray-500">
+                  {groups.length} assets · updated {timeAgo(snapshot.fetchedAt)}
+                  {isValidating && !isLoading ? ' · updating…' : ''} ·{' '}
+                  <button type="button" onClick={() => setShowDust(!showDust)} className="text-accent hover:underline">
+                    {showDust ? `only show ≥ ${usd(DEFAULT_MIN_VALUE_USD, 0)}` : snapshot.hiddenCount ? `show ${snapshot.hiddenCount} small ones (${usd(snapshot.hiddenUsd)})` : 'show small ones'}
+                  </button>
+                </p>
+              </div>
+              <RefreshButton onRefreshed={refresh} />
+            </div>
+
+            {failed.length > 0 && (
+              <p className="text-xs text-yellow-300">
+                Couldn&apos;t read right now: {[...new Set(failed.map((s) => SOURCE_LABELS[s.source] ?? s.source))].join(', ')} - their balances may be missing from the total.
+                {' '}
+                <span className="text-gray-500">({[...new Set(failed.map((s) => s.error).filter(Boolean))].join('; ')})</span>
+              </p>
+            )}
+
+            <GroupedTable groups={groups} accounts={snapshot.groups} />
+            <Breakdown holdings={snapshot.holdings} assets={groups} />
           </div>
         )}
       </StateView>

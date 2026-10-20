@@ -3,7 +3,8 @@
 import { Cell, Pie, PieChart, ResponsiveContainer, Tooltip } from 'recharts';
 import { usd } from '@/apps/assets/lib/format';
 import { CHART_COLORS, KIND_LABELS } from './kinds';
-import type { GroupSummary, Holding } from '@/apps/assets/lib/types';
+import type { AssetGroup } from '@/apps/assets/lib/assetGroups';
+import type { Holding } from '@/apps/assets/lib/types';
 
 function Donut({ title, data }: { title: string; data: { name: string; value: number }[] }) {
   if (data.length === 0) return <div className="panel flex h-64 items-center justify-center text-gray-500">Nothing to chart</div>;
@@ -41,12 +42,13 @@ function Donut({ title, data }: { title: string; data: { name: string; value: nu
   );
 }
 
-/** Two donuts: where the money is (by owner) and what shape it is in (by asset type) */
-export default function Breakdown({ holdings, groups }: { holdings: Holding[]; groups: GroupSummary[] }) {
-  const byGroup = groups
-    .map((g) => ({ name: g.label, value: holdings.filter((h) => h.group === g.key).reduce((s, h) => s + (h.valueUsd ?? 0), 0) }))
-    .filter((d) => d.value > 0)
-    .sort((a, b) => b.value - a.value);
+/** Two donuts: which assets (wrapped forms counted with their asset, as in the table) and what shape they are in */
+export default function Breakdown({ holdings, assets }: { holdings: Holding[]; assets: AssetGroup[] }) {
+  // assets under 2% of the total become one "Other" slice (no slivers, and fewer slices than colours)
+  const sum = assets.reduce((s, g) => s + g.valueUsd, 0);
+  const big = assets.filter((g) => g.valueUsd > 0 && g.valueUsd >= sum * 0.02);
+  const rest = assets.filter((g) => g.valueUsd > 0 && g.valueUsd < sum * 0.02).reduce((s, g) => s + g.valueUsd, 0);
+  const byAsset = [...big.map((g) => ({ name: g.name, value: g.valueUsd })), ...(rest > 0 ? [{ name: 'Other', value: rest }] : [])];
 
   const kinds = new Map<string, number>();
   for (const h of holdings) kinds.set(KIND_LABELS[h.kind], (kinds.get(KIND_LABELS[h.kind]) ?? 0) + (h.valueUsd ?? 0));
@@ -54,7 +56,7 @@ export default function Breakdown({ holdings, groups }: { holdings: Holding[]; g
 
   return (
     <div className="grid gap-6 lg:grid-cols-2">
-      <Donut title="By account" data={byGroup} />
+      <Donut title="By asset" data={byAsset} />
       <Donut title="By type" data={byKind} />
     </div>
   );
