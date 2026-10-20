@@ -1,7 +1,7 @@
 <!DOCTYPE html>    <html lang="id">
 <!-- Kalkulator BMI -- mes.fm/kalkulator-bmi -->
 <!-- Added by HTTrack --><meta http-equiv="content-type" content="text/html;charset=UTF-8" /><!-- /Added by HTTrack -->
-<head>                    <link rel="icon" href="/bmicalculator/img/logo.png?v=2" type="image/png" /><link rel="canonical" href="https://mes.fm/kalkulator-bmi" />                    <title>Kalkulator BMI: Hitung IMT (Indeks Massa Tubuh) | MES</title><link rel="alternate" hreflang="en" href="https://mes.fm/bmicalculator" /><link rel="alternate" hreflang="es" href="https://mes.fm/calculadora-imc" /><link rel="alternate" hreflang="pt-BR" href="https://mes.fm/calculadora-imc-pt" /><link rel="alternate" hreflang="id" href="https://mes.fm/kalkulator-bmi" /><link rel="alternate" hreflang="fr" href="https://mes.fm/calcul-imc" /><link rel="alternate" hreflang="de" href="https://mes.fm/bmi-rechner" /><link rel="alternate" hreflang="it" href="https://mes.fm/calcolo-bmi" /><link rel="alternate" hreflang="tr" href="https://mes.fm/vucut-kitle-indeksi" /><link rel="alternate" hreflang="vi" href="https://mes.fm/tinh-chi-so-bmi" /><link rel="alternate" hreflang="pl" href="https://mes.fm/kalkulator-bmi-pl" /><link rel="alternate" hreflang="x-default" href="https://mes.fm/bmicalculator" />
+<head>                    <link rel="icon" href="/bmicalculator/img/logo.png?v=2" type="image/png" /><link rel="canonical" href="https://mes.fm/kalkulator-bmi" />                    <title>Kalkulator BMI: Hitung IMT (Indeks Massa Tubuh) | MES</title><link rel="alternate" hreflang="en" href="https://mes.fm/bmicalculator" /><link rel="alternate" hreflang="es" href="https://mes.fm/calculadora-imc" /><link rel="alternate" hreflang="pt-BR" href="https://mes.fm/calculadora-imc-pt" /><link rel="alternate" hreflang="id" href="https://mes.fm/kalkulator-bmi" /><link rel="alternate" hreflang="fr" href="https://mes.fm/calcul-imc" /><link rel="alternate" hreflang="de" href="https://mes.fm/bmi-rechner" /><link rel="alternate" hreflang="it" href="https://mes.fm/calcolo-bmi" /><link rel="alternate" hreflang="tr" href="https://mes.fm/vucut-kitle-indeksi" /><link rel="alternate" hreflang="vi" href="https://mes.fm/tinh-chi-so-bmi" /><link rel="alternate" hreflang="pl" href="https://mes.fm/kalkulator-bmi-pl" /><link rel="alternate" hreflang="ar" href="https://mes.fm/hasibat-kutlat-al-jism" /><link rel="alternate" hreflang="hi" href="https://mes.fm/bmi-calculator-hindi" /><link rel="alternate" hreflang="x-default" href="https://mes.fm/bmicalculator" />
         <meta name="viewport" content="width=device-width, initial-scale=1">	<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css" integrity="sha384-BVYiiSIFeK1dGmJRAkycuHAHRg32OmUcww7on3RYdg4Va+PmSTsz/K68vbdEjh4u" crossorigin="anonymous">
         <style>html, body, div, span, applet, object, iframe, h1, h2, h3, h4, h5, h6, p, blockquote, pre, a, abbr, acronym, address, big, cite, code,del, dfn, em, img,
 ins, kbd, q, s, samp, small, strike, strong, sub, tt, var, u, i, center, dl, dt, dd, ol, ul, li, fieldset, form, label, legend, table, caption, tbody,
@@ -372,6 +372,12 @@ body.dark-mode #bm .bm-lang li a {color:#e6e6e6 !important;}
 body.dark-mode #bm .bm-lang li a:hover, body.dark-mode #bm .bm-lang li a:focus {background:#3a2a35;}
 body.dark-mode #bm .bm-lang li a[aria-current] {color:#f0a6d8 !important;}
 .tu #bm-imperial[hidden] {display:none;}
+/* right-to-left pages (Arabic): the calculator box carries dir="rtl"; the page title and intro follow; the gauge, like any number line, stays left to right */
+html[lang="ar"] .page-title, html[lang="ar"] .page-description {direction:rtl; text-align:right;}
+.tu .bm-gauge, .tu .bm-chart {direction:ltr;}
+#bm[dir="rtl"] .tu-suffix span {right:auto; left:0.7em;}
+#bm[dir="rtl"] .tu-suffix .tu-input {padding-right:0.7em; padding-left:3.2em;}
+@media (max-width: 600px) { #bm[dir="rtl"] .tu-suffix .tu-input {padding-right:0.55em; padding-left:2.2em;} }
 
 
 	@media print {
@@ -733,8 +739,8 @@ body.is-stuck #navbar.hide { position: fixed; top: 56px; right: 8px; }
                                                         <div class="outer-page-content">
                             <div class="page-content" role="main">                                    <div class="color-box"></div>
                                     <h1 class="page-title">Kalkulator BMI (Indeks Massa Tubuh / IMT)</h1>                                        <p class="page-description">Kalkulator BMI gratis: masukkan berat badan (kg) dan tinggi badan (cm) untuk menghitung IMT Anda, kategorinya menurut WHO atau standar Asia, berat badan ideal, dan berapa kg yang perlu naik atau turun.</p>                                    	<div id="main-content" data-tool data-text-scale>
-	<div class="tu" id="bm" data-lang="id">
-		<nav class="bm-lang" aria-label="Bahasa"><details><summary>&#127760; Bahasa Indonesia</summary><ul><li><a href="/bmicalculator" hreflang="en" lang="en">English</a></li><li><a href="/calculadora-imc" hreflang="es" lang="es">Español</a></li><li><a href="/calculadora-imc-pt" hreflang="pt-BR" lang="pt-BR">Português (Brasil)</a></li><li><a href="/kalkulator-bmi" hreflang="id" lang="id" aria-current="page">Bahasa Indonesia</a></li><li><a href="/calcul-imc" hreflang="fr" lang="fr">Français</a></li><li><a href="/bmi-rechner" hreflang="de" lang="de">Deutsch</a></li><li><a href="/calcolo-bmi" hreflang="it" lang="it">Italiano</a></li><li><a href="/vucut-kitle-indeksi" hreflang="tr" lang="tr">Türkçe</a></li><li><a href="/tinh-chi-so-bmi" hreflang="vi" lang="vi">Tiếng Việt</a></li><li><a href="/kalkulator-bmi-pl" hreflang="pl" lang="pl">Polski</a></li></ul></details></nav>
+	<div class="tu" id="bm" data-lang="id" dir="ltr">
+		<nav class="bm-lang" aria-label="Bahasa"><details><summary>&#127760; Bahasa Indonesia</summary><ul><li><a href="/bmicalculator" hreflang="en" lang="en">English</a></li><li><a href="/calculadora-imc" hreflang="es" lang="es">Español</a></li><li><a href="/calculadora-imc-pt" hreflang="pt-BR" lang="pt-BR">Português (Brasil)</a></li><li><a href="/kalkulator-bmi" hreflang="id" lang="id" aria-current="page">Bahasa Indonesia</a></li><li><a href="/calcul-imc" hreflang="fr" lang="fr">Français</a></li><li><a href="/bmi-rechner" hreflang="de" lang="de">Deutsch</a></li><li><a href="/calcolo-bmi" hreflang="it" lang="it">Italiano</a></li><li><a href="/vucut-kitle-indeksi" hreflang="tr" lang="tr">Türkçe</a></li><li><a href="/tinh-chi-so-bmi" hreflang="vi" lang="vi">Tiếng Việt</a></li><li><a href="/kalkulator-bmi-pl" hreflang="pl" lang="pl">Polski</a></li><li><a href="/hasibat-kutlat-al-jism" hreflang="ar" lang="ar">العربية</a></li><li><a href="/bmi-calculator-hindi" hreflang="hi" lang="hi">हिन्दी</a></li></ul></details></nav>
 		<div id="bm-notice" class="tu-card tu-card--tint" hidden style="margin-bottom:1em;"></div>
 
 		<div class="tu-card" id="bm-setup">
@@ -889,7 +895,7 @@ body.is-stuck #navbar.hide { position: fixed; top: 56px; right: 8px; }
             hide_search:false,
             current_tab:0
         }        </script><!-- FASTCOMMENTS-LAZY: widget init moved to main_js/main.js -- it pulls embed.min.js only when #fastcomments-widget nears the viewport or on the first Comments-toggle click, so it no longer blocks first render -->                <script src="https://mes.fm/main_js/lazysizes.min.js?v=1.0.3" async></script>
-	<script src="/bmicalculator/js/bmicalculator.js?v=7" defer></script>
+	<script src="/bmicalculator/js/bmicalculator.js?v=8" defer></script>
             <script src="https://mes.fm/main_js/main.js?v=1.0.5"></script>    <!-- PAGEVIEW-TRACKING-INSERTED --><script src="https://mes.fm/main_js/track.js" defer></script><script>document.getElementById('copyright-year').textContent = new Date().getFullYear();</script><script src="/main_js/info-bar-fit.js" defer></script><script>
   // Floating compact header bar (see #compact-nav CSS): appears once the
   // header + nav bar have scrolled off the top; nav links that don't fit

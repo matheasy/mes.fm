@@ -73,6 +73,8 @@ TOOLS = [  # (directory, compact-bar title[, home path of the site the page belo
     ("vucut-kitle-indeksi", "VKİ Hesaplama"),   # BMI Calculator in another language (build_tool_apps.py BMI_LANG_SLUGS)
     ("tinh-chi-so-bmi", "Tính chỉ số BMI"),   # BMI Calculator in another language (build_tool_apps.py BMI_LANG_SLUGS)
     ("kalkulator-bmi-pl", "Kalkulator BMI"),   # BMI Calculator in another language (build_tool_apps.py BMI_LANG_SLUGS)
+    ("hasibat-kutlat-al-jism", "حاسبة كتلة الجسم"),   # BMI Calculator in another language (build_tool_apps.py BMI_LANG_SLUGS)
+    ("bmi-calculator-hindi", "बीएमआई कैलकुलेटर"),   # BMI Calculator in another language (build_tool_apps.py BMI_LANG_SLUGS)
     ("shear-stress-calculator", "Mechanics of Materials", "/materials"),   # MES Mechanics of Materials family page (brand option in build_tool_apps.py)
     ("tensile-test-simulator", "Mechanics of Materials", "/materials"),   # MES Mechanics of Materials family page (brand option in build_tool_apps.py)
     ("youngs-modulus-calculator", "Mechanics of Materials", "/materials"),   # MES Mechanics of Materials family page (brand option in build_tool_apps.py)

@@ -13,9 +13,10 @@
 	}
 	// typed numbers on a decimal-comma page (es, de, vi ...): "68,5" = 68.5 and "1.234,5" = 1234.5, while a plain "68.5" still works
 	function numLoc(v, comma) {
-		if (!comma) return num(v);
 		if (v == null) return null;
-		var t = String(v).trim().replace(/[\s\u00a0\u202f']+/g, "");
+		var t = String(v).trim().replace(/[\u0660-\u0669]/g, function (c) { return c.charCodeAt(0) - 0x660; }).replace(/[\u06f0-\u06f9]/g, function (c) { return c.charCodeAt(0) - 0x6f0; }).replace(/\u066b/g, ".").replace(/\u066c/g, "");   // Arabic-Indic digits, Arabic decimal / thousands marks
+		if (!comma) return num(t);
+		t = t.replace(/[\s\u00a0\u202f']+/g, "");
 		if (t.indexOf(",") >= 0) t = t.replace(/\./g, "").replace(",", ".");
 		return num(t);
 	}

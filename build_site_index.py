@@ -163,7 +163,7 @@ CALC_SITES = {"gradecalculator": "grade", "percentagecalculator": "percentage", 
               "inflationcalculator": "inflation", "mortgagecalculator": "mortgage", "vatcalculator": "vat",
               "pokemongocalculator": "pokemongo", "youtubemoney": "youtubemoney"}
 CALC_SITES.update({s: "bmi" for s in ("calculadora-imc", "calculadora-imc-pt", "kalkulator-bmi", "calcul-imc", "bmi-rechner", "calcolo-bmi",
-                                      "vucut-kitle-indeksi", "tinh-chi-so-bmi", "kalkulator-bmi-pl")})   # the BMI Calculator in other languages
+                                      "vucut-kitle-indeksi", "tinh-chi-so-bmi", "kalkulator-bmi-pl", "hasibat-kutlat-al-jism", "bmi-calculator-hindi")})   # the BMI Calculator in other languages
 SITE_PAGES = {"", "contact", "donate", "privacy-policy", "calculators", "tools", "mobile-apps"}
 MATH_RE = re.compile(r"^(math|problems-plus-.*|cubic-formula.*|quadratic-formula.*|cube-root-unity|vectors?|vector-functions.*|"
                      r"sequences-series|spherical-harmonics|projectile-hits-target)$")

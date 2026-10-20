@@ -12,7 +12,7 @@
 	/* ---------- language (i18n.js, global BM_I18N): the page's <div id="bm" data-lang=".."> picks the strings, number format and defaults ---------- */
 	var I = window.BM_I18N, LANG = root.getAttribute("data-lang") || "en", EN = I.table.en, T = I.table[LANG] || EN, LOC = T.locale, EN_PAGE = LANG === "en";
 	var PKEY = KEY + ":" + LANG;      // translated pages keep their own units / scale / options choice; the measurements (KEY) are shared with every language
-	var PATH = T.path, COMMA = T.dec === ",", PL = window.Intl && Intl.PluralRules ? new Intl.PluralRules(LOC) : null;
+	var PATH = T.path, RTL = T.dir === "rtl", COMMA = T.dec === ",", PL = window.Intl && Intl.PluralRules ? new Intl.PluralRules(LOC) : null;
 	function t(k, v) { var s = T[k] != null ? T[k] : EN[k]; return v ? String(s).replace(/\{(\w+)\}/g, function (m, x) { return v[x] != null ? v[x] : m; }) : s; }
 	function plural(k, n) { var o = T[k] || EN[k], f = PL ? PL.select(n) : (n === 1 ? "one" : "other"); return (o[f] || o.other).replace("{n}", n); }
 	function nf(n, lo, hi) { return new Intl.NumberFormat(LOC, { minimumFractionDigits: lo, maximumFractionDigits: hi, useGrouping: false }).format(n); }
@@ -25,7 +25,7 @@
 	var EXAMPLES = (T.examples || EN.examples).map(function (x) { return [x[0], { kg: x[1], cm: x[2] }]; });
 	function esc(s) { return String(s == null ? "" : s).replace(/[&<>"]/g, function (c) { return { "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c]; }); }
 	var st = { kg: "", cm: "", units: T.defUnits || "b", scale: T.defScale || "who", oh: false, history: [] };
-	if (!EN_PAGE) st.imp = false;     // (kept out of the English page's saved object)
+	if (!EN_PAGE) st.imp = !!T.defImp;     // (kept out of the English page's saved object)
 	function load() {
 		if (!EN_PAGE) return loadShared();
 		try { var s = JSON.parse(localStorage.getItem(KEY) || "null"); if (s) { st.kg = String(s.kg || ""); st.cm = String(s.cm || ""); st.units = s.ru === "m" || s.ru === "i" ? s.ru : "b"; st.scale = s.scale === "asia" ? "asia" : "who"; st.oh = s.oh === true; st.history = (Array.isArray(s.history) ? s.history : []).map(BM.cleanEntry).filter(Boolean); } } catch (e) { memOnly = true; }
@@ -105,7 +105,7 @@
 	$("bm-examples").addEventListener("click", function (e) { var b = e.target.closest("button"); if (!b) return; var x = EXAMPLES[+b.dataset.i][1]; st.kg = x.kg; st.cm = x.cm; fillOthers(); save(); update(); });
 
 	/* ---------- result ---------- */
-	function wt(kg) { var lb = tr(BM.kgToLb(kg), 1) + " lb", k = tr(kg, 1) + " kg"; return st.units === "i" ? lb : st.units === "m" ? k : lb + " (" + k + ")"; }
+	function wt(kg) { var lb = tr(BM.kgToLb(kg), 1) + " lb", k = tr(kg, 1) + " kg", w = st.units === "i" ? lb : st.units === "m" ? k : lb + " (" + k + ")"; return RTL ? "\u2066" + w + "\u2069" : w; }   // RTL pages: isolate "53.5 kg" so the bidi algorithm keeps number and unit together
 	function stat(l, v, s, c) { return '<div class="tu-stat' + (c ? " " + c : "") + '"><div class="tu-stat__label">' + l + '</div><div class="tu-stat__value">' + v + '</div><div class="tu-stat__sub">' + s + "</div></div>"; }
 	var cur = null;
 	var GAUGE = { min: 14, max: 42 };

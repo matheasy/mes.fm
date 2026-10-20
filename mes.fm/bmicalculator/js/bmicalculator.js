@@ -13,9 +13,10 @@
 	}
 	// typed numbers on a decimal-comma page (es, de, vi ...): "68,5" = 68.5 and "1.234,5" = 1234.5, while a plain "68.5" still works
 	function numLoc(v, comma) {
-		if (!comma) return num(v);
 		if (v == null) return null;
-		var t = String(v).trim().replace(/[\s\u00a0\u202f']+/g, "");
+		var t = String(v).trim().replace(/[\u0660-\u0669]/g, function (c) { return c.charCodeAt(0) - 0x660; }).replace(/[\u06f0-\u06f9]/g, function (c) { return c.charCodeAt(0) - 0x6f0; }).replace(/\u066b/g, ".").replace(/\u066c/g, "");   // Arabic-Indic digits, Arabic decimal / thousands marks
+		if (!comma) return num(t);
+		t = t.replace(/[\s\u00a0\u202f']+/g, "");
 		if (t.indexOf(",") >= 0) t = t.replace(/\./g, "").replace(",", ".");
 		return num(t);
 	}
@@ -101,7 +102,7 @@
 	function cats(list) { var o = {}; CATS_EN.forEach(function (k, i) { o[k] = list[i]; }); return o; }
 	var I18N = {
 		en: {
-			code: "en", name: "English", path: "/bmicalculator", locale: "en-US", dec: ".", langLabel: "Language", defScale: "who", defUnits: "b",
+			code: "en", name: "English", path: "/bmicalculator", locale: "en-US", dec: ".", langLabel: "Language", defScale: "who", defUnits: "b", defImp: false, dir: "ltr",
 			meta: { title: "BMI Calculator", tag: "Body mass index, healthy weight range and progress.", h1: "BMI Calculator", docTitle: "BMI Calculator | Math Easy Solutions", ogLocale: "en_US",
 				desc: "Free BMI calculator: enter your weight and height in kg/cm or lb/ft/in to get your body mass index, your category, your healthy weight range and how much to gain or lose. WHO or Asian cut-offs, a gauge, and saved measurements with a BMI-over-time chart." },
 			mixUnits: "<b>Mix units freely:</b> type weight in kg or lb and height in cm or ft + in, in any combination &mdash; the other fields fill in as you type.",
@@ -138,7 +139,7 @@
 			cats: cats(CATS_EN)
 		},
 		es: {
-			code: "es", name: "Español", path: "/calculadora-imc", locale: "es-ES", dec: ",", langLabel: "Idioma", defScale: "who", defUnits: "m",
+			code: "es", name: "Español", path: "/calculadora-imc", locale: "es-ES", dec: ",", langLabel: "Idioma", defScale: "who", defUnits: "m", defImp: false, dir: "ltr",
 			meta: { title: "Calculadora IMC", tag: "Índice de masa corporal, peso saludable y tu evolución.", h1: "Calculadora de IMC (índice de masa corporal)", docTitle: "Calculadora IMC: calcula tu índice de masa corporal | MES", ogLocale: "es_ES",
 				desc: "Calculadora de IMC gratis: escribe tu peso en kg y tu altura en cm y obtén tu índice de masa corporal, tu categoría según la OMS, tu peso saludable y cuántos kilos te sobran o te faltan." },
 			mixUnits: "<b>Escribe tu peso en kilos y tu altura en centímetros.</b> Si prefieres libras y pies, ábrelos abajo: los demás campos se rellenan solos mientras escribes.",
@@ -175,7 +176,7 @@
 			cats: cats(["Delgadez severa", "Delgadez moderada", "Delgadez leve", "Peso normal", "Sobrepeso", "Obesidad (clase I)", "Obesidad (clase II)", "Obesidad (clase III)", "Obesidad"])
 		},
 		"pt-BR": {
-			code: "pt-BR", name: "Português (Brasil)", path: "/calculadora-imc-pt", locale: "pt-BR", dec: ",", langLabel: "Idioma", defScale: "who", defUnits: "m",
+			code: "pt-BR", name: "Português (Brasil)", path: "/calculadora-imc-pt", locale: "pt-BR", dec: ",", langLabel: "Idioma", defScale: "who", defUnits: "m", defImp: false, dir: "ltr",
 			meta: { title: "Calculadora de IMC", tag: "Índice de massa corporal, peso ideal e sua evolução.", h1: "Calculadora de IMC (índice de massa corporal)", docTitle: "Calculadora de IMC: calcule seu índice de massa corporal | MES", ogLocale: "pt_BR",
 				desc: "Calculadora de IMC grátis: informe seu peso em kg e sua altura em cm e veja seu índice de massa corporal, sua classificação pela OMS, sua faixa de peso ideal e quantos quilos ganhar ou perder." },
 			mixUnits: "<b>Digite seu peso em quilos e sua altura em centímetros.</b> Se preferir libras e pés, abra os campos abaixo: os outros campos são preenchidos enquanto você digita.",
@@ -212,7 +213,7 @@
 			cats: cats(["Magreza grave", "Magreza moderada", "Magreza leve", "Peso normal", "Sobrepeso", "Obesidade grau I", "Obesidade grau II", "Obesidade grau III", "Obesidade"])
 		},
 		id: {
-			code: "id", name: "Bahasa Indonesia", path: "/kalkulator-bmi", locale: "id-ID", dec: ",", langLabel: "Bahasa", defScale: "who", defUnits: "m",
+			code: "id", name: "Bahasa Indonesia", path: "/kalkulator-bmi", locale: "id-ID", dec: ",", langLabel: "Bahasa", defScale: "who", defUnits: "m", defImp: false, dir: "ltr",
 			meta: { title: "Kalkulator BMI", tag: "Indeks massa tubuh (IMT), berat badan ideal dan perkembangannya.", h1: "Kalkulator BMI (Indeks Massa Tubuh / IMT)", docTitle: "Kalkulator BMI: Hitung IMT (Indeks Massa Tubuh) | MES", ogLocale: "id_ID",
 				desc: "Kalkulator BMI gratis: masukkan berat badan (kg) dan tinggi badan (cm) untuk menghitung IMT Anda, kategorinya menurut WHO atau standar Asia, berat badan ideal, dan berapa kg yang perlu naik atau turun." },
 			mixUnits: "<b>Masukkan berat badan dalam kilogram dan tinggi badan dalam sentimeter.</b> Jika ingin memakai pon dan kaki, buka kolomnya di bawah: kolom lain terisi otomatis saat Anda mengetik.",
@@ -250,7 +251,7 @@
 			cats: cats(["Kurus berat", "Kurus sedang", "Kurus ringan", "Berat badan normal", "Berat badan berlebih", "Obesitas kelas I", "Obesitas kelas II", "Obesitas kelas III", "Obesitas"])
 		},
 		fr: {
-			code: "fr", name: "Français", path: "/calcul-imc", locale: "fr-FR", dec: ",", langLabel: "Langue", defScale: "who", defUnits: "m",
+			code: "fr", name: "Français", path: "/calcul-imc", locale: "fr-FR", dec: ",", langLabel: "Langue", defScale: "who", defUnits: "m", defImp: false, dir: "ltr",
 			meta: { title: "Calcul IMC", tag: "Indice de masse corporelle, poids de forme et suivi.", h1: "Calcul de l’IMC (indice de masse corporelle)", docTitle: "Calcul IMC : calculer son indice de masse corporelle | MES", ogLocale: "fr_FR",
 				desc: "Calculez votre IMC gratuitement : entrez votre poids en kg et votre taille en cm pour connaître votre indice de masse corporelle, votre catégorie selon l’OMS, votre poids santé et combien de kilos prendre ou perdre." },
 			mixUnits: "<b>Saisissez votre poids en kilos et votre taille en centimètres.</b> Si vous préférez les livres et les pieds, ouvrez-les ci-dessous : les autres champs se remplissent pendant la saisie.",
@@ -287,7 +288,7 @@
 			cats: cats(["Maigreur sévère", "Maigreur modérée", "Maigreur légère", "Poids normal", "Surpoids", "Obésité (classe I)", "Obésité (classe II)", "Obésité (classe III)", "Obésité"])
 		},
 		de: {
-			code: "de", name: "Deutsch", path: "/bmi-rechner", locale: "de-DE", dec: ",", langLabel: "Sprache", defScale: "who", defUnits: "m",
+			code: "de", name: "Deutsch", path: "/bmi-rechner", locale: "de-DE", dec: ",", langLabel: "Sprache", defScale: "who", defUnits: "m", defImp: false, dir: "ltr",
 			meta: { title: "BMI-Rechner", tag: "Body-Mass-Index, Normalgewicht und Verlauf.", h1: "BMI-Rechner: Body-Mass-Index berechnen", docTitle: "BMI-Rechner: Body-Mass-Index berechnen | MES", ogLocale: "de_DE",
 				desc: "Kostenloser BMI-Rechner: Gewicht in kg und Größe in cm eingeben und Body-Mass-Index, WHO-Kategorie, Normalgewicht für Ihre Größe und die nötige Zu- oder Abnahme sehen." },
 			mixUnits: "<b>Geben Sie Ihr Gewicht in Kilogramm und Ihre Größe in Zentimetern ein.</b> Wer lieber Pfund und Fuß nutzt, kann die Felder unten öffnen: Die übrigen Felder füllen sich beim Tippen von selbst.",
@@ -324,7 +325,7 @@
 			cats: cats(["Starkes Untergewicht", "Mäßiges Untergewicht", "Leichtes Untergewicht", "Normalgewicht", "Übergewicht", "Adipositas Grad I", "Adipositas Grad II", "Adipositas Grad III", "Adipositas"])
 		},
 		it: {
-			code: "it", name: "Italiano", path: "/calcolo-bmi", locale: "it-IT", dec: ",", langLabel: "Lingua", defScale: "who", defUnits: "m",
+			code: "it", name: "Italiano", path: "/calcolo-bmi", locale: "it-IT", dec: ",", langLabel: "Lingua", defScale: "who", defUnits: "m", defImp: false, dir: "ltr",
 			meta: { title: "Calcolo BMI", tag: "Indice di massa corporea, peso forma e andamento.", h1: "Calcolo BMI (IMC, indice di massa corporea)", docTitle: "Calcolo BMI: calcola il tuo indice di massa corporea (IMC) | MES", ogLocale: "it_IT",
 				desc: "Calcola il BMI gratis: inserisci peso in kg e altezza in cm per conoscere il tuo indice di massa corporea (IMC), la categoria OMS, il tuo peso forma e quanti chili prendere o perdere." },
 			mixUnits: "<b>Inserisci il peso in chili e l’altezza in centimetri.</b> Se preferisci libbre e piedi, aprili qui sotto: gli altri campi si compilano mentre scrivi.",
@@ -361,7 +362,7 @@
 			cats: cats(["Magrezza grave", "Magrezza moderata", "Magrezza lieve", "Normopeso", "Sovrappeso", "Obesità di classe I", "Obesità di classe II", "Obesità di classe III", "Obesità"])
 		},
 		tr: {
-			code: "tr", name: "Türkçe", path: "/vucut-kitle-indeksi", locale: "tr-TR", dec: ",", langLabel: "Dil", defScale: "who", defUnits: "m",
+			code: "tr", name: "Türkçe", path: "/vucut-kitle-indeksi", locale: "tr-TR", dec: ",", langLabel: "Dil", defScale: "who", defUnits: "m", defImp: false, dir: "ltr",
 			meta: { title: "VKİ Hesaplama", tag: "Vücut kitle indeksi, ideal kilo aralığı ve gelişim takibi.", h1: "Vücut Kitle İndeksi (VKİ) Hesaplama", docTitle: "Vücut Kitle İndeksi Hesaplama (VKİ / BMI) | MES", ogLocale: "tr_TR",
 				desc: "Ücretsiz vücut kitle indeksi hesaplama: kilonuzu (kg) ve boyunuzu (cm) girin; VKİ değerinizi, Dünya Sağlık Örgütü sınıfınızı, ideal kilo aralığınızı ve kaç kilo almanız ya da vermeniz gerektiğini görün." },
 			mixUnits: "<b>Kilonuzu kilogram, boyunuzu santimetre olarak yazın.</b> Libre ve fit kullanmak isterseniz aşağıdan açabilirsiniz: siz yazdıkça diğer alanlar kendiliğinden dolar.",
@@ -398,7 +399,7 @@
 			cats: cats(["İleri derecede zayıf", "Orta derecede zayıf", "Hafif zayıf", "Normal kilolu", "Fazla kilolu", "1. derece obez", "2. derece obez", "3. derece obez (morbid obez)", "Obez"])
 		},
 		vi: {
-			code: "vi", name: "Tiếng Việt", path: "/tinh-chi-so-bmi", locale: "vi-VN", dec: ",", langLabel: "Ngôn ngữ", defScale: "asia", defUnits: "m",
+			code: "vi", name: "Tiếng Việt", path: "/tinh-chi-so-bmi", locale: "vi-VN", dec: ",", langLabel: "Ngôn ngữ", defScale: "asia", defUnits: "m", defImp: false, dir: "ltr",
 			meta: { title: "Tính chỉ số BMI", tag: "Chỉ số khối cơ thể, cân nặng lý tưởng và theo dõi.", h1: "Tính chỉ số BMI (chỉ số khối cơ thể)", docTitle: "Tính chỉ số BMI online: chuẩn châu Á và WHO | MES", ogLocale: "vi_VN",
 				desc: "Tính chỉ số BMI miễn phí: nhập cân nặng (kg) và chiều cao (cm) để biết chỉ số khối cơ thể, phân loại theo chuẩn châu Á hoặc WHO, cân nặng lý tưởng và số kg cần tăng hoặc giảm." },
 			mixUnits: "<b>Nhập cân nặng theo kilôgam và chiều cao theo xentimét.</b> Nếu muốn dùng pound và feet, hãy mở các ô bên dưới: các ô còn lại tự điền khi bạn gõ.",
@@ -436,7 +437,7 @@
 			cats: cats(["Gầy độ III", "Gầy độ II", "Gầy độ I", "Bình thường", "Thừa cân", "Béo phì độ I", "Béo phì độ II", "Béo phì độ III", "Béo phì"])
 		},
 		pl: {
-			code: "pl", name: "Polski", path: "/kalkulator-bmi-pl", locale: "pl-PL", dec: ",", langLabel: "Język", defScale: "who", defUnits: "m",
+			code: "pl", name: "Polski", path: "/kalkulator-bmi-pl", locale: "pl-PL", dec: ",", langLabel: "Język", defScale: "who", defUnits: "m", defImp: false, dir: "ltr",
 			meta: { title: "Kalkulator BMI", tag: "Wskaźnik masy ciała, prawidłowa waga i postępy.", h1: "Kalkulator BMI: oblicz wskaźnik masy ciała", docTitle: "Kalkulator BMI: oblicz wskaźnik masy ciała | MES", ogLocale: "pl_PL",
 				desc: "Darmowy kalkulator BMI: podaj wagę w kg i wzrost w cm, aby poznać swój wskaźnik masy ciała, kategorię według WHO, prawidłową wagę dla swojego wzrostu i ile kilogramów przytyć lub schudnąć." },
 			mixUnits: "<b>Wpisz wagę w kilogramach i wzrost w centymetrach.</b> Jeśli wolisz funty i stopy, otwórz je poniżej: pozostałe pola wypełniają się same podczas pisania.",
@@ -471,6 +472,81 @@
 			refClasses: "Stopnie otyłości według WHO: I stopień 30 – 34,9, II stopień 35 – 39,9, III stopień 40 i więcej.",
 			dotTitle: "{d}: BMI {b}, {w}",
 			cats: cats(["Wygłodzenie", "Wychudzenie", "Niedowaga", "Waga prawidłowa", "Nadwaga", "Otyłość I stopnia", "Otyłość II stopnia", "Otyłość III stopnia", "Otyłość"])
+		},
+		ar: {
+			code: "ar", name: "العربية", path: "/hasibat-kutlat-al-jism", locale: "ar-u-nu-latn", dec: ".", langLabel: "اللغة", defScale: "who", defUnits: "m", defImp: false, dir: "rtl",
+			meta: { title: "حاسبة كتلة الجسم", tag: "مؤشر كتلة الجسم والوزن الصحي ومتابعة التقدم.", h1: "حاسبة مؤشر كتلة الجسم (BMI)", docTitle: "حاسبة مؤشر كتلة الجسم BMI: احسب وزنك المثالي | MES", ogLocale: "ar_AR",
+				desc: "حاسبة مؤشر كتلة الجسم مجانًا: أدخل وزنك بالكيلوغرام وطولك بالسنتيمتر لتعرف مؤشر كتلة جسمك وتصنيفك حسب منظمة الصحة العالمية ووزنك الصحي وكم كيلوغرامًا تحتاج أن تزيد أو تنقص." },
+			mixUnits: "<b>أدخل وزنك بالكيلوغرام وطولك بالسنتيمتر.</b> إذا كنت تفضّل الرطل والقدم فافتح حقولهما أدناه: تمتلئ الحقول الأخرى تلقائيًا أثناء الكتابة.",
+			weight: "الوزن", height: "الطول", phKg: "مثال: 70.5", phCm: "مثال: 170", phLb: "مثال: 155", phFt: "مثال: 5", phIn: "مثال: 7",
+			impShow: "استخدام الرطل والقدم والبوصة", impHide: "إخفاء الرطل والقدم والبوصة", hideOptions: "إخفاء الخيارات", options: "الخيارات",
+			showResultsIn: "عرض النتائج بـ", both: "كلاهما", metric: "متري", us: "أمريكي",
+			bmiScale: "مقياس المؤشر", scaleWho: "معيار منظمة الصحة العالمية (زيادة الوزن من 25)", scaleAsia: "المقياس الآسيوي (زيادة الوزن من 23)", scaleHint: "",
+			stepNote: "كل حقل يتغيّر مع نظيره. للبالغين من عمر 20 عامًا فأكثر فقط؛ راجع الملاحظات أدناه.",
+			emptyPrompt: "أدخل وزنك وطولك لترى مؤشر كتلة جسمك، أو جرّب مثالًا: ",
+			copyLink: "نسخ رابط هذه النتيجة", saveMeasurement: "حفظ هذا القياس", print: "طباعة", whereScale: "موقعك على المقياس",
+			myMeasurements: "قياساتي", date: "التاريخ", noteOpt: "ملاحظة (اختياري)", notePh: "مثال: بعد العطلة", save: "حفظ", cancel: "إلغاء",
+			chartAria: "رسم بياني لمؤشر كتلة جسمك المحفوظ عبر الزمن", copyCsv: "نسخ كجدول بيانات", copyLinkAll: "نسخ الرابط مع سجلّي",
+			storeBlocked: "متصفحك يمنع التخزين، لذلك ستضيع قياساتك عند إغلاق علامة التبويب هذه. انسخ رابطًا للاحتفاظ بها.",
+			saved: { zero: "لا توجد قياسات محفوظة في هذا المتصفح.", one: "قياس واحد محفوظ في هذا المتصفح.", two: "قياسان محفوظان في هذا المتصفح.", few: "{n} قياسات محفوظة في هذا المتصفح.", many: "{n} قياسًا محفوظًا في هذا المتصفح.", other: "{n} قياس محفوظ في هذا المتصفح." },
+			copyFailed: "تعذّر النسخ", copiedBtn: "تم النسخ ✓",
+			sumResults: "النتائج بـ{u} · {s}", unitsUS: "الوحدات الأمريكية", unitsMetric: "النظام المتري", unitsBoth: "النظامين", scaleShortWho: "مقياس منظمة الصحة العالمية", scaleShortAsia: "المقياس الآسيوي",
+			examples: [["170 cm, 65 kg", "65", "170"], ["160 cm, 75 kg", "75", "160"], ["180 cm, 100 kg", "100", "180"]],
+			yourBmi: "مؤشر كتلة جسمك", healthyWeight: "الوزن الصحي لطولك", bmiRange: "المؤشر من {lo} إلى {hi}", bmiPrime: "BMI Prime", primeSub: "مؤشرك &divide; {hi}؛ القيمة 1.00 أو أقل ضمن المعدل الطبيعي",
+			ponderal: "مؤشر بوندرال", ponderalSub: "kg لكل m&sup3; (بديل يناسب الأشخاص الطوال جدًا أو القصار جدًا)",
+			verdictNormal: "وزنك <b>طبيعي</b>. أحسنت! نطاق الوزن الصحي لهذا الطول من {lo} إلى {hi}.",
+			verdictGain: "تصنيفك: <b>{cat}</b>. لتصل إلى الوزن الطبيعي تحتاج إلى زيادة وزنك بمقدار يتراوح بين <b>{min}</b> و<b>{max}</b>.",
+			verdictLose: "تصنيفك: <b>{cat}</b>. لتصل إلى الوزن الطبيعي تحتاج إلى إنقاص وزنك بمقدار يتراوح بين <b>{min}</b> و<b>{max}</b>.",
+			verdictSmall: "مؤشر كتلة الجسم أداة فحص أولي وليس تشخيصًا، ولا يأخذ في الحسبان العضلات أو بنية الجسم أو العمر أو الأصل العرقي.",
+			enterFirst: "أدخل وزنك وطولك أولًا", pickDate: "اختر تاريخًا", savedOn: "تم الحفظ: {d}",
+			thDate: "التاريخ", thWeight: "الوزن", thBmi: "المؤشر", thCategory: "التصنيف", thNote: "ملاحظة", deleteAria: "حذف قياس {d}",
+			chartMore: "احفظ قياسًا آخر لترى تغيّر مؤشرك مع الوقت.", entryDeleted: "تم حذف القياس.", undo: "تراجع",
+			csvHeader: "التاريخ\tالوزن (kg)\tالطول (cm)\tالمؤشر\tملاحظة", csvCopied: "تم النسخ: الصقه في جدول بيانات",
+			linkCopied: "تم نسخ الرابط", linkCopiedAll: "تم نسخ الرابط: يحتوي على سجلّك كاملًا",
+			loadingOld: "جارٍ تحميل الحساب من الرابط…", oldFailed: "تعذّر تحميل ذلك الرابط القديم (ربما انتهت صلاحيته). أدخل وزنك وطولك في الأعلى.",
+			sharedLoaded: "تم تحميل النتيجة المشتركة", openedShared: "فتحت نتيجة مشتركة، وهي محفوظة الآن في هذا المتصفح.", linkUnreadable: "تعذّرت قراءة ذلك الرابط.",
+			refCategory: "التصنيف", refWho: "معيار منظمة الصحة العالمية", refAsian: "آسيوي", refAndOver: "{n} فأكثر",
+			refClasses: "درجات السمنة حسب منظمة الصحة العالمية: الدرجة الأولى 30 – 34.9، الثانية 35 – 39.9، الثالثة 40 فأكثر.",
+			dotTitle: "{d}: المؤشر {b}، {w}",
+			cats: cats(["نحافة شديدة", "نحافة متوسطة", "نحافة خفيفة", "وزن طبيعي", "زيادة في الوزن", "سمنة من الدرجة الأولى", "سمنة من الدرجة الثانية", "سمنة من الدرجة الثالثة", "سمنة"])
+		},
+		hi: {
+			code: "hi", name: "हिन्दी", path: "/bmi-calculator-hindi", locale: "hi-IN", dec: ".", langLabel: "भाषा", defScale: "asia", defUnits: "m", defImp: true, dir: "ltr",
+			meta: { title: "बीएमआई कैलकुलेटर", tag: "बॉडी मास इंडेक्स, सही वज़न और आपकी प्रगति।", h1: "बीएमआई कैलकुलेटर (बॉडी मास इंडेक्स)", docTitle: "BMI कैलकुलेटर हिंदी में: अपना बॉडी मास इंडेक्स जानें | MES", ogLocale: "hi_IN",
+				desc: "मुफ़्त बीएमआई कैलकुलेटर: अपना वज़न और लंबाई डालें और जानें अपना बॉडी मास इंडेक्स, एशियाई या WHO मानक के अनुसार श्रेणी, आपकी लंबाई के लिए सही वज़न और कितना वज़न घटाना या बढ़ाना है।" },
+			mixUnits: "<b>वज़न किलो या पाउंड में और लंबाई सेंटीमीटर या फ़ुट-इंच में लिखें,</b> जो भी आसान हो: लिखते ही बाकी खाने अपने-आप भर जाते हैं।",
+			weight: "वज़न", height: "लंबाई", phKg: "जैसे 65.5", phCm: "जैसे 165", phLb: "जैसे 144", phFt: "जैसे 5", phIn: "जैसे 5",
+			impShow: "पाउंड, फ़ुट और इंच दिखाएँ", impHide: "पाउंड, फ़ुट और इंच छिपाएँ", hideOptions: "विकल्प छिपाएँ", options: "विकल्प",
+			showResultsIn: "नतीजे दिखाएँ", both: "दोनों", metric: "मीट्रिक", us: "अमेरिकी",
+			bmiScale: "बीएमआई मानक", scaleWho: "WHO मानक (25 से ज़्यादा वज़न)", scaleAsia: "एशियाई मानक (23 से ज़्यादा वज़न)",
+			scaleHint: "भारतीयों और दूसरे एशियाई लोगों में कम बीएमआई पर ही डायबिटीज़ और दिल की बीमारी का ख़तरा बढ़ जाता है, इसलिए यहाँ एशियाई मानक पहले से चुना गया है। ऊपर WHO मानक भी चुन सकते हैं।",
+			stepNote: "हर खाना अपने जोड़ीदार खाने के साथ बदलता है। केवल 20 साल या उससे ज़्यादा उम्र के वयस्कों के लिए; नीचे की बातें ज़रूर पढ़ें।",
+			emptyPrompt: "अपना बीएमआई देखने के लिए वज़न और लंबाई डालें, या कोई उदाहरण आज़माएँ: ",
+			copyLink: "इस नतीजे का लिंक कॉपी करें", saveMeasurement: "यह माप सेव करें", print: "प्रिंट करें", whereScale: "पैमाने पर आप कहाँ हैं",
+			myMeasurements: "मेरे माप", date: "तारीख़", noteOpt: "नोट (वैकल्पिक)", notePh: "जैसे छुट्टियों के बाद", save: "सेव करें", cancel: "रद्द करें",
+			chartAria: "समय के साथ आपके सेव किए गए बीएमआई का चार्ट", copyCsv: "स्प्रेडशीट टेबल के रूप में कॉपी करें", copyLinkAll: "मेरे इतिहास के साथ लिंक कॉपी करें",
+			storeBlocked: "आपका ब्राउज़र स्टोरेज रोक रहा है, इसलिए यह टैब बंद करते ही आपके माप मिट जाएँगे। उन्हें रखने के लिए लिंक कॉपी कर लें।",
+			saved: { one: "इस ब्राउज़र में {n} माप सेव है।", other: "इस ब्राउज़र में {n} माप सेव हैं।" },
+			copyFailed: "कॉपी नहीं हो सका", copiedBtn: "कॉपी हो गया ✓",
+			sumResults: "नतीजे {u} में · {s}", unitsUS: "अमेरिकी इकाइयों", unitsMetric: "मीट्रिक इकाइयों", unitsBoth: "दोनों इकाइयों", scaleShortWho: "WHO मानक", scaleShortAsia: "एशियाई मानक",
+			examples: [["5 फ़ुट 6 इंच, 70 kg", "70", "167.64"], ["160 cm, 55 kg", "55", "160"], ["5 फ़ुट 2 इंच, 68 kg", "68", "157.48"]],
+			yourBmi: "आपका बीएमआई", healthyWeight: "आपकी लंबाई के लिए सही वज़न", bmiRange: "बीएमआई {lo} से {hi}", bmiPrime: "BMI Prime", primeSub: "आपका बीएमआई &divide; {hi} (1.00 या कम सामान्य है)",
+			ponderal: "पॉन्डरल इंडेक्स", ponderalSub: "kg प्रति m&sup3; (बहुत लंबे या बहुत छोटे क़द वालों के लिए एक विकल्प)",
+			verdictNormal: "आपका वज़न <b>सामान्य</b> है। बहुत बढ़िया! इस लंबाई के लिए सही वज़न {lo} से {hi} तक है।",
+			verdictGain: "आपकी श्रेणी: <b>{cat}</b>। सामान्य वज़न तक पहुँचने के लिए आपको <b>{min}</b> से <b>{max}</b> तक वज़न बढ़ाना होगा।",
+			verdictLose: "आपकी श्रेणी: <b>{cat}</b>। सामान्य वज़न तक पहुँचने के लिए आपको <b>{min}</b> से <b>{max}</b> तक वज़न घटाना होगा।",
+			verdictSmall: "बीएमआई शुरुआती जाँच का एक पैमाना है, बीमारी का निदान नहीं। यह मांसपेशियों, शरीर की बनावट, उम्र या नस्ल को नहीं देखता।",
+			enterFirst: "पहले अपना वज़न और लंबाई डालें", pickDate: "कोई तारीख़ चुनें", savedOn: "सेव हुआ: {d}",
+			thDate: "तारीख़", thWeight: "वज़न", thBmi: "बीएमआई", thCategory: "श्रेणी", thNote: "नोट", deleteAria: "{d} का माप हटाएँ",
+			chartMore: "समय के साथ अपना बीएमआई देखने के लिए एक और माप सेव करें।", entryDeleted: "माप हटा दिया गया।", undo: "वापस लाएँ",
+			csvHeader: "तारीख़\tवज़न (kg)\tलंबाई (cm)\tबीएमआई\tनोट", csvCopied: "कॉपी हो गया: इसे स्प्रेडशीट में पेस्ट करें",
+			linkCopied: "लिंक कॉपी हो गया", linkCopiedAll: "लिंक कॉपी हो गया: इसमें आपका पूरा इतिहास है",
+			loadingOld: "शेयर किए गए लिंक से हिसाब लोड हो रहा है…", oldFailed: "वह पुराना लिंक लोड नहीं हो सका (शायद उसकी अवधि ख़त्म हो गई)। ऊपर अपना वज़न और लंबाई डालें।",
+			sharedLoaded: "शेयर किया गया नतीजा लोड हो गया", openedShared: "आपने शेयर किया गया एक नतीजा खोला है। अब यह इस ब्राउज़र में सेव है।", linkUnreadable: "वह लिंक पढ़ा नहीं जा सका।",
+			refCategory: "श्रेणी", refWho: "WHO मानक", refAsian: "एशियाई", refAndOver: "{n} या उससे ज़्यादा",
+			refClasses: "WHO के अनुसार मोटापे की श्रेणियाँ: श्रेणी I 30 – 34.9, श्रेणी II 35 – 39.9, श्रेणी III 40 या उससे ज़्यादा।",
+			dotTitle: "{d}: बीएमआई {b}, {w}",
+			cats: cats(["गंभीर दुबलापन", "मध्यम दुबलापन", "हल्का दुबलापन", "सामान्य वज़न", "ज़्यादा वज़न", "मोटापा (श्रेणी I)", "मोटापा (श्रेणी II)", "मोटापा (श्रेणी III)", "मोटापा"])
 		}
 	};
 	var out = { langs: Object.keys(I18N), table: I18N, CATS_EN: CATS_EN };
@@ -491,7 +567,7 @@
 	/* ---------- language (i18n.js, global BM_I18N): the page's <div id="bm" data-lang=".."> picks the strings, number format and defaults ---------- */
 	var I = window.BM_I18N, LANG = root.getAttribute("data-lang") || "en", EN = I.table.en, T = I.table[LANG] || EN, LOC = T.locale, EN_PAGE = LANG === "en";
 	var PKEY = KEY + ":" + LANG;      // translated pages keep their own units / scale / options choice; the measurements (KEY) are shared with every language
-	var PATH = T.path, COMMA = T.dec === ",", PL = window.Intl && Intl.PluralRules ? new Intl.PluralRules(LOC) : null;
+	var PATH = T.path, RTL = T.dir === "rtl", COMMA = T.dec === ",", PL = window.Intl && Intl.PluralRules ? new Intl.PluralRules(LOC) : null;
 	function t(k, v) { var s = T[k] != null ? T[k] : EN[k]; return v ? String(s).replace(/\{(\w+)\}/g, function (m, x) { return v[x] != null ? v[x] : m; }) : s; }
 	function plural(k, n) { var o = T[k] || EN[k], f = PL ? PL.select(n) : (n === 1 ? "one" : "other"); return (o[f] || o.other).replace("{n}", n); }
 	function nf(n, lo, hi) { return new Intl.NumberFormat(LOC, { minimumFractionDigits: lo, maximumFractionDigits: hi, useGrouping: false }).format(n); }
@@ -504,7 +580,7 @@
 	var EXAMPLES = (T.examples || EN.examples).map(function (x) { return [x[0], { kg: x[1], cm: x[2] }]; });
 	function esc(s) { return String(s == null ? "" : s).replace(/[&<>"]/g, function (c) { return { "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c]; }); }
 	var st = { kg: "", cm: "", units: T.defUnits || "b", scale: T.defScale || "who", oh: false, history: [] };
-	if (!EN_PAGE) st.imp = false;     // (kept out of the English page's saved object)
+	if (!EN_PAGE) st.imp = !!T.defImp;     // (kept out of the English page's saved object)
 	function load() {
 		if (!EN_PAGE) return loadShared();
 		try { var s = JSON.parse(localStorage.getItem(KEY) || "null"); if (s) { st.kg = String(s.kg || ""); st.cm = String(s.cm || ""); st.units = s.ru === "m" || s.ru === "i" ? s.ru : "b"; st.scale = s.scale === "asia" ? "asia" : "who"; st.oh = s.oh === true; st.history = (Array.isArray(s.history) ? s.history : []).map(BM.cleanEntry).filter(Boolean); } } catch (e) { memOnly = true; }
@@ -584,7 +660,7 @@
 	$("bm-examples").addEventListener("click", function (e) { var b = e.target.closest("button"); if (!b) return; var x = EXAMPLES[+b.dataset.i][1]; st.kg = x.kg; st.cm = x.cm; fillOthers(); save(); update(); });
 
 	/* ---------- result ---------- */
-	function wt(kg) { var lb = tr(BM.kgToLb(kg), 1) + " lb", k = tr(kg, 1) + " kg"; return st.units === "i" ? lb : st.units === "m" ? k : lb + " (" + k + ")"; }
+	function wt(kg) { var lb = tr(BM.kgToLb(kg), 1) + " lb", k = tr(kg, 1) + " kg", w = st.units === "i" ? lb : st.units === "m" ? k : lb + " (" + k + ")"; return RTL ? "\u2066" + w + "\u2069" : w; }   // RTL pages: isolate "53.5 kg" so the bidi algorithm keeps number and unit together
 	function stat(l, v, s, c) { return '<div class="tu-stat' + (c ? " " + c : "") + '"><div class="tu-stat__label">' + l + '</div><div class="tu-stat__value">' + v + '</div><div class="tu-stat__sub">' + s + "</div></div>"; }
 	var cur = null;
 	var GAUGE = { min: 14, max: 42 };

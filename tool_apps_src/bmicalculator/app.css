@@ -65,3 +65,9 @@ body.dark-mode #bm .bm-lang li a {color:#e6e6e6 !important;}
 body.dark-mode #bm .bm-lang li a:hover, body.dark-mode #bm .bm-lang li a:focus {background:#3a2a35;}
 body.dark-mode #bm .bm-lang li a[aria-current] {color:#f0a6d8 !important;}
 .tu #bm-imperial[hidden] {display:none;}
+/* right-to-left pages (Arabic): the calculator box carries dir="rtl"; the page title and intro follow; the gauge, like any number line, stays left to right */
+html[lang="ar"] .page-title, html[lang="ar"] .page-description {direction:rtl; text-align:right;}
+.tu .bm-gauge, .tu .bm-chart {direction:ltr;}
+#bm[dir="rtl"] .tu-suffix span {right:auto; left:0.7em;}
+#bm[dir="rtl"] .tu-suffix .tu-input {padding-right:0.7em; padding-left:3.2em;}
+@media (max-width: 600px) { #bm[dir="rtl"] .tu-suffix .tu-input {padding-right:0.55em; padding-left:2.2em;} }

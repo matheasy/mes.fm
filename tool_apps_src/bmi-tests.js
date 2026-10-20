@@ -26,7 +26,7 @@ const d = BM.decode(BM.encode(st)); eq(d.kg, "70.5", "kg"); eq(d.scale, "asia", 
 eq(BM.fromOldShare({ weight: 65.8, height: 182.9 }), { kg: "65.8", cm: "182.9" }, "old"); eq(BM.fromOldShare({}), null, "old empty"); eq(BM.fromOldShare('{"weight":70,"height":175}').kg, "70", "old string");
 // typed numbers on decimal-comma pages
 eq(BM.numLoc("68,5", true), 68.5, "comma decimal"); eq(BM.numLoc("68.5", true), 68.5, "dot still works"); eq(BM.numLoc("1.234,5", true), 1234.5, "dot thousands"); eq(BM.numLoc("170", true), 170, "integer");
-eq(BM.numLoc("182,88", true), 182.88, "two decimals"); eq(BM.numLoc("65,855", true), 65.855, "three decimals are not thousands on a comma page"); eq(BM.numLoc(" 70 ", true), 70, "spaces"); eq(BM.numLoc("abc", true), null, "bad"); eq(BM.numLoc("1,200", false), 1200, "en unchanged");
+eq(BM.numLoc("182,88", true), 182.88, "two decimals"); eq(BM.numLoc("65,855", true), 65.855, "three decimals are not thousands on a comma page"); eq(BM.numLoc(" 70 ", true), 70, "spaces"); eq(BM.numLoc("abc", true), null, "bad"); eq(BM.numLoc("1,200", false), 1200, "en unchanged"); eq(BM.numLoc("٧٠٫٥", false), 70.5, "Arabic-Indic digits"); eq(BM.numLoc("۱۷۰", false), 170, "Persian digits");
 // i18n: every language has every key of the English source (nested objects too), same placeholders, and nothing empty except scaleHint
 const I = require("./bmicalculator/i18n.js"), EN = I.table.en, fs = require("fs"), path = require("path");
 const ph = s => (String(s).match(/\{\w+\}/g) || []).sort().join(",");
