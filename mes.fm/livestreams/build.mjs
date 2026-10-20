@@ -68,11 +68,11 @@ const MIRRORS = {
 };
 
 // Stats-screen pages (the Stats tab), newest first. `cats` are the filter chip ids (CATEGORIES) the stream
-// belongs to, so the chips filter this tab too: 141 is a Hutchison Effect stream, 140 is 9/11 Truth + MES Truth.
+// belongs to, so the chips filter this tab too: 141 is a Hutchison Effect stream, 140 is 9/11 Truth + MES Truth (both had Dr. Judy Wood on).
 const STATS = [
   { href: "https://mes.fm/livestream-142-stats", title: "142: Stats", cats: "mestruth" },
-  { href: "https://mes.fm/livestream-141-stats", title: "141: Stats", cats: "hutchison" },
-  { href: "https://mes.fm/livestream-140-stats", title: "140: Stats", cats: "911 mestruth" },
+  { href: "https://mes.fm/livestream-141-stats", title: "141: Stats", cats: "hutchison judywood" },
+  { href: "https://mes.fm/livestream-140-stats", title: "140: Stats", cats: "911 mestruth judywood" },
 ];
 
 // Filter chips above the tabs (same idea as the chips on mes.fm/calculators). A video can be in
@@ -100,6 +100,8 @@ const CATEGORIES = [
 const EXTRA_CATS = {
   lRxpPXnrLgo: ["911", "planes", "mestruth"], // Trailer for 55 (Debbie Welsh, UA93): about 9/11 planes research, shown with MES Truth
   PiJhwXKbRNU: ["911", "planes", "mestruth"], // Trailer for 130 (Impossible Crash Physics on 9/11): same as the 55 trailer
+  Sde1DG0JhyA: ["judywood"], // 140 (Real 9/11 Avengers Meetup): Dr. Judy Wood was on the show
+  Bzxr55VZ6OI: ["judywood"], // 141 (John Hutchison & Tom Sky): Dr. Judy Wood was on the show
   "1z-OrtI-rzI": ["judywood"], // 108 (Turning the Tide on 9/11 Disinformation Agents): its trailer is "Disinfo Agents Triggered by Dr. Judy Wood"
 };
 const catsOf = (v) => [...new Set([...CATEGORIES.filter((c) => c.test(v)).map((c) => c.id), ...(EXTRA_CATS[v.id] || [])])].join(" ");
