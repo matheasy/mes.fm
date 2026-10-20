@@ -49,7 +49,7 @@
     var ov = V.siteMode(S, host), tv = S.scope === 'all' ? '' : tabMode();   // a switch pressed in this tab only counts while the button is set to "this tab only"
     // mes.fm has its own dark mode (moon button, body.dark-mode): inverting on top of it made the two fight (the site's light button still looked dark,
     // and the page flashed while the extension re-sampled the colours), so the extension stays out of mes.fm unless this site is set to dark / light by hand
-    var own = (host === 'mes.fm' || /\.mes\.fm$/.test(host)) && !ov;
+    var own = (host === 'mes.fm' || /\.mes\.fm$/.test(host)) && !ov && !tv;
     state.off = !S.enabled || ov === 'off' || own;
     state.want = tv ? tv === 'dark' : ov === 'dark' ? true : ov === 'light' ? false : V.wantDark(cfg, mql.matches, new Date());
   }
@@ -65,8 +65,10 @@
   function update() {
     if (!ready) return;
     resolve();
-    var idle = state.off || state.want == null;   // manual setup and this tab not switched: touch nothing
-    var invert = !idle && state.want !== knownDark();
+    var idle = state.off || (state.want == null && !(S.scope !== 'all' && tabMode()));   // manual setup and this tab not switched: touch nothing
+    var tv = S.scope === 'all' ? '' : tabMode();
+    // a switch pressed in this tab is obeyed literally: 'dark' always inverts this page, 'light' never does (no guessing from how the page looks)
+    var invert = state.off ? false : tv === 'dark' ? true : tv === 'light' ? false : !idle && state.want !== knownDark();
     state.invert = invert;
     var css = idle ? '' : V.buildCss(invert, cfg);
     if (css === applied) return;
@@ -191,7 +193,7 @@
       if (!m || !m.mesdm || window !== window.top) return;
       if (m.mesdm === 'toggle') {
         resolve();
-        var cur = state.want != null ? state.want : knownDark(), to = cur ? 'light' : 'dark';   // flip what the page looks like now
+        var cur = state.invert, to = cur ? 'light' : 'dark';   // click = switch our dark filter on, click again = switch it off (back to the page as it was)
         if (S.scope === 'all') { V.profileById(S, S.active).config.mode = to; Object.keys(S.siteModes).forEach(function (h) { if (S.siteModes[h] !== 'off') delete S.siteModes[h]; }); saveAll(); update(); }   // every page: the setup itself flips
         else setTab(to);
         send({ ok: true });

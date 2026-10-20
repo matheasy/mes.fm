@@ -31,3 +31,4 @@
 	}
 	body.dark-mode #rs .rs-pinbar .rs-pill {background:#2b2b2b;color:#e8e8e8;border-color:#555;} body.dark-mode #rs .rs-pinbar .rs-pill[aria-pressed=true] {background:var(--accent);color:#111;} body.dark-mode #rs .rs-pinwrap.rs-pinned {background:#1a1a1a;}
 	@media print {#rs .rs-run, #rs .rs-controls {display:none;}}
+	#rs .rs-scrubrow {display:flex;flex-wrap:wrap;align-items:center;gap:0.5em 0.8em;margin-top:0.4em;} #rs .rs-scrubrow input[type=range] {flex:1 1 12em;min-width:8em;} #rs .rs-scrubrow label {font-weight:600;}

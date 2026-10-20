@@ -125,3 +125,4 @@
 	.pe-fold-h {display:flex;flex-wrap:wrap;gap:0.4em;align-items:center;margin-bottom:0.5em;} .pe-fold-s {width:100%;margin-bottom:0.3em;} .pe-fold-g {display:grid;grid-template-columns:repeat(auto-fill,minmax(130px,1fr));gap:0.5em;max-height:55vh;overflow:auto;}
 	.pe-fold-t {display:flex;flex-direction:column;align-items:center;gap:0.25em;background:var(--pe-field);border:1px solid var(--pe-line);border-radius:0.4em;padding:0.4em;cursor:pointer;color:var(--pe-text);} .pe-fold-t:hover {border-color:var(--pe-on);} .pe-fold-t canvas {width:100%;height:auto;border-radius:0.25em;background:#26262e;} .pe-fold-n {font-size:0.78em;word-break:break-all;max-height:2.6em;overflow:hidden;}
 	@media (max-width:760px) {.pe-search {flex:1 1 100%;max-width:none;margin:0.2em 0;order:5;}}
+	.pe-pen {background:none;border:0;color:inherit;opacity:0.45;cursor:pointer;padding:0 0.25em;font-size:1em;} .pe-layer:hover .pe-pen, .pe-layer.is-active .pe-pen {opacity:0.9;}

@@ -101,6 +101,8 @@
             // a page whose title (without a leading "MES") or address IS the search gets to the top: "calculator" finds /calculator before the 100 other calculators
             var tt = p.t.replace(/^ mes /, " ");
             if (tt === " " + nq + " ") score += 40; else if (p.u === " " + nq.replace(/ /g, " ") + " " || p.u.replace(/ /g, "") === " " + nq.replace(/ /g, "") + " ") score += 30;
+            // "calc", "calcul", "calculato", "calculator": the MES Calculator itself comes first (people look for BMI, GPA ... by their own names)
+            if (p.r[0].replace(/\/$/, "") === "/calculator" && nq.length >= 3 && ("calculator".indexOf(nq) === 0 || nq === "calculators")) score += 200;
             score += CAT_BOOST[data.cats[p.r[4]][0]] || 0;
             (matched === terms.length ? all : partial).push({ p: p, s: score, m: matched });
         });

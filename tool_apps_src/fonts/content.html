@@ -2,7 +2,8 @@
 	<div class="tu fn" id="fn">
 		<div class="tu-card fn-bar">
 			<label class="tu-label" for="fn-text">Your text <span class="tu-note">(type here and every font below updates)</span></label>
-			<textarea id="fn-text" class="tu-input" rows="2" spellcheck="false"></textarea>
+			<div class="fn-fmt" role="toolbar" aria-label="Format the selected words"><button type="button" class="tu-chip" data-fmt="bold" title="Bold the selected words (Ctrl+B)"><b>B</b></button><button type="button" class="tu-chip" data-fmt="italic" title="Italic the selected words (Ctrl+I)"><i>I</i></button><button type="button" class="tu-chip" data-fmt="underline" title="Underline the selected words (Ctrl+U)"><u>U</u></button><button type="button" class="tu-chip" id="fn-fmtclear" title="Remove bold, italic and underline from everything">Clear formatting</button><span class="tu-note">Select some words, then press B, I or U.</span></div>
+			<div id="fn-text" class="tu-input fn-rich" contenteditable="true" role="textbox" aria-multiline="true" spellcheck="false"></div>
 			<div class="fn-row">
 				<label>Size <input type="range" id="fn-size" min="12" max="200" step="1"><input type="number" id="fn-sizen" min="8" max="400" step="1"> px</label>
 				<label>Weight <select id="fn-weight"><option value="300">Light</option><option value="400">Regular</option><option value="500">Medium</option><option value="600">Semibold</option><option value="700">Bold</option><option value="800">Extra bold</option><option value="900">Black</option></select></label>

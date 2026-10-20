@@ -37,7 +37,7 @@ function setIcon(tabId, kind, title) {
   } catch (e) { /* ignore */ }
 }
 function showState(tabId, r) {
-  var dark = !!(r && !r.off && r.want);
+  var dark = !!(r && !r.off && r.invert);
   setIcon(tabId, dark ? 'moon' : 'sun', dark ? 'MES Dark Mode: this tab is dark. Click for light.' : 'MES Dark Mode: this tab is light. Click for dark.');
 }
 function status(tabId, cb) {

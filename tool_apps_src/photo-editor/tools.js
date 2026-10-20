@@ -333,6 +333,49 @@
 	paintTool("retouch", "Retouch (blur / sharpen / dodge / burn)", "r", "💧", "retouch", { size: 40, hardness: 50, strength: 50, mode: "blur" }, [{ k: "mode", label: "Effect", type: "select", options: [["blur", "Blur"], ["sharpen", "Sharpen"], ["dodge", "Lighten (dodge)"], ["burn", "Darken (burn)"], ["saturate", "Saturate"], ["desaturate", "Desaturate"]] }, BRUSHUI[0], BRUSHUI[1], { k: "strength", label: "Strength", type: "range", min: 5, max: 100, step: 1, unit: "%" }],
 		{ hint: "Paint to blur, sharpen, lighten, darken or change saturation just where you drag." });
 
+	/* ---------- smudge: picks up the colours under the pointer and drags them along ---------- */
+	(function () {
+		var sm = null;
+		function region(L, x, y, D) { var c = PE.tmp("smr", D, D), g = c.getContext("2d"); g.clearRect(0, 0, D, D); g.drawImage(L.canvas, Math.round(x), Math.round(y), D, D, 0, 0, D, D); return c; }
+		function smudgeDab(px, py) {
+			var L = sm.L, o = sm.o, r = Math.max(1, o.size / 2), D = Math.ceil(r * 2) + 2, c = D / 2, lx = px - sm.og.x, ly = py - sm.og.y, rx = lx - c, ry = ly - c;
+			var rr = r + 2, q = sm.bb; sm.bb = q ? { x0: Math.min(q.x0, px - rr), y0: Math.min(q.y0, py - rr), x1: Math.max(q.x1, px + rr), y1: Math.max(q.y1, py + rr) } : { x0: px - rr, y0: py - rr, x1: px + rr, y1: py + rr };
+			var under = PE.mk(D, D); under.getContext("2d").drawImage(region(L, rx, ry, D), 0, 0);
+			if (!sm.carry) { sm.carry = PE.mk(D, D); sm.carry.getContext("2d").drawImage(under, 0, 0); return; }
+			var s = Math.max(0.05, o.strength / 100), t = PE.tmp("smt", D, D), tx = t.getContext("2d");
+			tx.globalCompositeOperation = "source-over"; tx.clearRect(0, 0, D, D); tx.drawImage(sm.carry, 0, 0); tx.globalCompositeOperation = "destination-in"; softDab(tx, r, Math.min(o.hardness / 100, 0.9), { solid: "#000", clear: "rgba(0,0,0,0)" }, c, c); tx.globalCompositeOperation = "source-over";
+			if (PE.sel) PE.restrictToSel(tx, Math.round(px - c), Math.round(py - c), D, D);
+			var lg = L.canvas.getContext("2d"); lg.save(); lg.globalAlpha = Math.min(1, s * 0.9 + 0.1); lg.drawImage(t, Math.round(rx), Math.round(ry)); lg.restore();
+			var cg = sm.carry.getContext("2d"); cg.save(); cg.globalAlpha = 1 - Math.min(0.95, s * 0.8); cg.drawImage(under, 0, 0); cg.restore();
+			L.rev++;
+		}
+		function moveTo(e, first) {
+			var o = sm.o; if (first || !sm.last) { smudgeDab(e.x, e.y); sm.last = { x: e.x, y: e.y }; return; }
+			var dx = e.x - sm.last.x, dy = e.y - sm.last.y, len = Math.hypot(dx, dy), sp = Math.max(1, o.size * 0.12), pos = sp - sm.rem;
+			while (pos <= len) { smudgeDab(sm.last.x + dx * pos / len, sm.last.y + dy * pos / len); pos += sp; }
+			sm.rem = len - (pos - sp); sm.last = { x: e.x, y: e.y }; PE.invalidate();
+		}
+		function end() {
+			if (!sm) return; var s = sm, L = s.L; sm = null;
+			if (s.pre && s.bb && !L.mask) { var b = s.bb, p0 = s.pre; PE.cropLayerTo(L, { x: Math.min(p0.x, b.x0), y: Math.min(p0.y, b.y0), w: Math.max(p0.x + p0.w, b.x1) - Math.min(p0.x, b.x0), h: Math.max(p0.y + p0.h, b.y1) - Math.min(p0.y, b.y0) }); }
+			L.rev++; PE.commit("Smudge");
+		}
+		PE.defTool({ id: "smudge", name: "Smudge", key: "n", icon: "👆", opts: { size: 40, hardness: 50, strength: 60 },
+			ui: [BRUSHUI[0], BRUSHUI[1], { k: "strength", label: "Strength", type: "range", min: 5, max: 100, step: 1, unit: "%" }],
+			hint: "Drag across the picture to smear the colours along, like dragging a finger through wet paint.",
+			cursorSize: function () { return PE.opt.smudge.size; },
+			down: function (e) {
+				var L = PE.active(); if (!L || L.type === "group") return; if (L.editMask && L.mask) { PE.toast("Smudge works on the picture, not on the layer mask"); return; }
+				if (!PE.prepare(L, false, true)) return;
+				var pre = (function () { var q = PE.origin(L); return { x: q.x, y: q.y, w: L.canvas.width, h: L.canvas.height }; })();
+				PE.growLayer(L, { x: 0, y: 0, w: PE.doc.w, h: PE.doc.h });
+				sm = { L: L, o: PE.opt.smudge, og: PE.origin(L), pre: pre, bb: null, carry: null, last: null, rem: 0 };
+				moveTo(e, true);
+			},
+			move: function (e) { if (sm) moveTo(e, false); },
+			up: function () { end(); }, abort: function () { end(); }, cancel: function () { end(); } });
+	})();
+
 	/* ---------- bucket + gradient ---------- */
 	PE.defTool({ id: "bucket", name: "Paint Bucket", key: "k", icon: "🪣", opts: { tol: 24, contiguous: true, merged: false, opacity: 100 },
 		ui: [{ k: "tol", label: "Tolerance", type: "range", min: 0, max: 255, step: 1 }, { k: "contiguous", label: "Contiguous", type: "check" }, { k: "merged", label: "Sample all layers", type: "check" }, { k: "opacity", label: "Opacity", type: "range", min: 1, max: 100, step: 1, unit: "%" }],

@@ -18,3 +18,5 @@
 	body.dark-mode #fn .fn-card, body.dark-mode #fn .fn-res {background:#262a2e;border-color:#3a3f45;} body.dark-mode #fn .fn-chead {background:#2f3338;border-color:#3a3f45;} body.dark-mode #fn .fn-name {color:#dfe3e8;} body.dark-mode #fn .fn-ib {color:#b8bec7;} body.dark-mode #fn .fn-ib:hover {background:#3a3f45;} body.dark-mode #fn .fn-ib.on {color:#ffb14a;}
 	body.dark-mode #fn .fn-sample {color-scheme:dark;} body.dark-mode #fn .fn-res-s {color:#f0f0f0;} body.dark-mode #fn .fn-drop {background:rgba(255,255,255,0.05);} body.dark-mode #fn .fn-bigprev {border-color:#3a3f45;} body.dark-mode #fn .fn-stage {border-color:#3a3f45;}
 	@media (max-width:560px) {#fn .fn-row input[type=text] {min-width:0;width:100%;}}
+	#fn .fn-fmt {display:flex;flex-wrap:wrap;gap:0.4em;align-items:center;margin:0 0 0.4em;} #fn .fn-fmt .tu-chip {min-width:2.4em;min-height:36px;} #fn .fn-rich {min-height:3.6em;max-height:14em;overflow:auto;font-size:1.1em;white-space:pre-wrap;outline-offset:1px;} #fn .fn-rich:focus {outline:2px solid var(--accent);}
+	body.dark-mode #fn .fn-card .fn-sample {color:var(--fgd,var(--fg));} body.dark-mode #fn .fn-rich {background:#1f2326;color:#eee;}
