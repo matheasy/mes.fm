@@ -42,6 +42,11 @@ STAGE_CTL = {"julia-set-explorer", "fluid-simulator", "light-in-a-medium", "blac
 PDF_NAV_INFO = '<li class="info-bar__item"><a class="info-bar__item__text" href=\'/pdf\'>Editor</a></li><li class="info-bar__item"><a class="info-bar__item__text" href=\'/merge-pdf\'>Merge</a></li><li class="info-bar__item"><a class="info-bar__item__text" href=\'/split-pdf\'>Split</a></li><li class="info-bar__item"><a class="info-bar__item__text" href=\'/organize-pdf\'>Organize</a></li><li class="info-bar__item"><a class="info-bar__item__text" href=\'/jpg-to-pdf\'>Images to PDF</a></li><li class="info-bar__item"><a class="info-bar__item__text" href=\'/pdf-to-jpg\'>PDF to images</a></li><li class="info-bar__item"><a class="info-bar__item__text" href=\'/compress-pdf\'>Compress</a></li>'
 PDF_NAV_MENU = '<li class="navbar__item"><a class="navbar__link" href="/pdf">Editor</a></li><li class="navbar__item"><a class="navbar__link" href="/merge-pdf">Merge</a></li><li class="navbar__item"><a class="navbar__link" href="/split-pdf">Split</a></li><li class="navbar__item"><a class="navbar__link" href="/organize-pdf">Organize</a></li><li class="navbar__item"><a class="navbar__link" href="/jpg-to-pdf">Images to PDF</a></li><li class="navbar__item"><a class="navbar__link" href="/pdf-to-jpg">PDF to images</a></li><li class="navbar__item"><a class="navbar__link" href="/compress-pdf">Compress</a></li>'
 
+# MES Mechanics of Materials family nav (2026-10-20): Home = /materials (all tools as tabs), then the three single-topic pages and the materials table
+MAT_BRAND = dict(slug="materials", title="MES Mechanics of Materials", tag="Stress, strain, shear and torsion, with the pictures.")
+MAT_NAV_INFO = "<li class=\"info-bar__item\"><a class=\"info-bar__item__text\" href='/youngs-modulus-calculator'>Young's Modulus</a></li><li class=\"info-bar__item\"><a class=\"info-bar__item__text\" href='/tensile-test-simulator'>Tensile Test</a></li><li class=\"info-bar__item\"><a class=\"info-bar__item__text\" href='/shear-stress-calculator'>Shear &amp; Torsion</a></li><li class=\"info-bar__item\"><a class=\"info-bar__item__text\" href='/materials?tab=table'>Materials Table</a></li>"
+MAT_NAV_MENU = '<li class="navbar__item"><a class="navbar__link" href="/youngs-modulus-calculator">Young\'s Modulus Calculator</a></li><li class="navbar__item"><a class="navbar__link" href="/tensile-test-simulator">Tensile Test Simulator</a></li><li class="navbar__item"><a class="navbar__link" href="/shear-stress-calculator">Shear &amp; Torsion Calculator</a></li><li class="navbar__item"><a class="navbar__link" href="/materials?tab=table">Materials Table</a></li>'
+
 APPS = {
     "earth-curvature-calculator": dict(title="MES Earth Curvature Calculator", page_title="Earth Curvature Calculator",
                                        tag="How much does the Earth curve over a distance?", accent="#0b6f6d", dark="#075250", tint="#e2f3f2",
@@ -309,7 +314,7 @@ APPS = {
     "photo": dict(title="MES Photo Editor", src="photo-editor", page_title="Free Online Photo Editor with Layers",
                          tag="Pro tools. No upload. No sign-up.", accent="#7c3aed", dark="#5b21b6", tint="#f1eafe",
                          desc="Free online photo editor with layers, selections, magic wand, clone stamp, levels and curves. Add text labels, arrows, callouts and blur boxes to screenshots, combine images, keep transparency, open PSD files and export PNG, JPEG or WebP. Private: nothing is uploaded.",
-                         js_v="21", js_parts=["core.js", "tools.js", "tools2.js", "dialogs.js", "ai.js", "aiort.js", "erase.js", "upscale.js", "equation.js", "xcf.js", "files.js"], lib_from=["image-converter"]),
+                         js_v="22", js_parts=["core.js", "tools.js", "tools2.js", "dialogs.js", "ai.js", "aiort.js", "erase.js", "upscale.js", "equation.js", "xcf.js", "files.js"], lib_from=["image-converter"]),
     # Bulk Image Converter: PNG / JPEG / WebP in bulk in the browser (canvas), optional resize, ZIP download. lib.js = MESImg (formats, sizes, names, ZIP writer; node-tested: tool_apps_src/image-converter-tests.js), shared with the photo editor.
     "image-converter": dict(title="MES Bulk Image Converter", page_title="Bulk Image Converter: PNG to JPG, JPG to PNG, WebP",
                          tag="Convert many images at once. Nothing is uploaded.", accent="#0f766e", dark="#0b5a54", tint="#e2f3f1",
@@ -349,6 +354,25 @@ APPS = {
                             tag="Laminar or turbulent? Find out.", accent="#0e7490", dark="#155e75", tint="#e0f4f8",
                             desc="Free Reynolds number calculator: enter the fluid, speed and size in any units to get Re, whether the flow is laminar or turbulent, pipe friction and pressure drop, drag and vortex-shedding frequency. Or solve for the speed or size that gives a target Re.",
                             js_v="3"),
+    # MES Mechanics of Materials (2026-10-20): ONE source (tool_apps_src/materials: lib.js = MESMech, node tests tool_apps_src/materials-tests.js; app.js, app.css, content.html with {{VIEWS}} / {{PAGE}} / {{SEO}},
+    # seo/<slug>.html) and one served script (materials/js/materials.js) for four pages; data-views on #mt picks the tabs: axial, tensile, shear, torsion, poisson, thermal, table.
+    # /materials shows all seven; the other three use the materials brand (logo, header, Home). State: localStorage mes-materials:v1 (shared). Share links are plain query strings.
+    "materials": dict(title="MES Mechanics of Materials", page_title="Mechanics of Materials Calculator: Stress, Strain, Young's Modulus, Shear, Torsion",
+                      tag="Stress, strain, shear and torsion, with the pictures.", accent="#2f6690", dark="#22496a", tint="#e1edf6",
+                      desc="Free mechanics of materials calculators: stress and strain with Young's modulus, a tensile test simulator with the stress-strain curve, shear stress in bolts and pins, torsion of shafts, Poisson's ratio and 3D Hooke's law, thermal stress, and a table of 30 materials. SI and US units.",
+                      js_v="1", vars={"VIEWS": "axial,tensile,shear,torsion,poisson,thermal,table", "PAGE": "materials", "SEO": "@seo/materials.html"}, nav_extra=MAT_NAV_INFO, menu_extra=MAT_NAV_MENU),
+    "youngs-modulus-calculator": dict(title="Young's Modulus Calculator", page_title="Young's Modulus Calculator: Stress, Strain and Elongation",
+                      tag="Stress, strain and stretch from any four values.", accent="#2f6690", dark="#22496a", tint="#e1edf6", src="materials", js_path="materials/js/materials.js",
+                      desc="Free Young's modulus calculator: find stress, strain, elongation or the modulus of elasticity from the force, area and length, with a live picture of the stretched bar, safety factor, buckling load and 30 materials. SI and US units, every formula shown.",
+                      js_v="1", vars={"VIEWS": "axial,tensile,table", "PAGE": "youngs", "SEO": "@seo/youngs-modulus-calculator.html"}, brand=MAT_BRAND, tab=1, nav_extra=MAT_NAV_INFO, menu_extra=MAT_NAV_MENU),
+    "tensile-test-simulator": dict(title="Tensile Test Simulator", page_title="Tensile Test Simulator: Stress-Strain Curve, Yield, UTS and Necking",
+                      tag="Pull a bar until it breaks and watch the curve.", accent="#2f6690", dark="#22496a", tint="#e1edf6", src="materials", js_path="materials/js/materials.js",
+                      desc="Free tensile test simulator: pull steel, aluminium, cast iron, glass, plastics, rubber and more until they break and watch the stress-strain curve being drawn: yield, 0.2% offset, Lüders plateau, UTS, necking, unloading, true stress, resilience and toughness. Compare three materials.",
+                      js_v="1", vars={"VIEWS": "tensile,table", "PAGE": "tensile", "SEO": "@seo/tensile-test-simulator.html"}, brand=MAT_BRAND, tab=2, nav_extra=MAT_NAV_INFO, menu_extra=MAT_NAV_MENU),
+    "shear-stress-calculator": dict(title="Shear Stress Calculator", page_title="Shear Stress Calculator: Bolts, Pins, Punching and Shaft Torsion",
+                      tag="Shear in bolts and pins, and twisted shafts.", accent="#2f6690", dark="#22496a", tint="#e1edf6", src="materials", js_path="materials/js/materials.js",
+                      desc="Free shear stress calculator: shear stress and strain in bolts and pins in single or double shear, glued joints and punching, shear modulus from E and Poisson's ratio, and torsion of solid and hollow shafts with the angle of twist and motor power. Safety factors and sizes.",
+                      js_v="1", vars={"VIEWS": "shear,torsion,table", "PAGE": "shear", "SEO": "@seo/shear-stress-calculator.html"}, brand=MAT_BRAND, tab=3, nav_extra=MAT_NAV_INFO, menu_extra=MAT_NAV_MENU),
     # Photoelectric Effect Simulator: light on a metal, electrons, stopping voltage, I-V and KE-vs-f graphs, and a "measure h" lab. lib.js node-tested (tool_apps_src/photoelectric-effect-tests.js). Normal-width page with the sidebar (Wide by default); opensearch.xml lets browsers add it as a search engine.
     "photoelectric-effect-simulator": dict(title="MES Photoelectric Effect Simulator", page_title="Photoelectric Effect Simulator",
                             tag="Light knocks electrons out of metal.", accent="#6d28d9", dark="#5b21b6", tint="#ede9fe",
@@ -669,20 +693,21 @@ APPS = {
                        js_v="1", lib_from=["image-converter"]),
     # MES Video Compressor (2026-10-18): WebCodecs fast path (mp4box.js demux, VideoDecoder -> VideoEncoder, mp4-muxer / webm-muxer, optional File System Access streaming to disk),
     # real-time canvas + MediaRecorder fallback. Decisions in lib.js (MESVid, node tests tool_apps_src/compress-video-tests.js).
+    # 2026-10-20: "Choose a quality" = constant quality (per-frame H.264 quantizer, size measured on a short probe of each video), 10 s key frames.
     "compress-video": dict(title="MES Video Compressor", page_title="Video Compressor: Make Videos Smaller Online, No Upload",
                        tag="Make videos smaller, privately.", accent="#0f766e", dark="#115e59", tint="#dcf5f1",
                        desc="Free online video compressor: shrink MP4 and MOV videos to a file size you choose (say 25 MB for email or chat) or a quality, lower the resolution and frame rate, and save as MP4 or WebM. Fast with your computer's own video encoder, a queue for several files, and nothing is uploaded.",
-                       js_v="1"),
+                       js_v="2"),
     # MES Font Preview and Finder (2026-10-19): text in every font the browser really has (+ optional Google Fonts), effects, PNG / CSS export, compare, and a picture matcher. lib.js = MESFont (node tests tool_apps_src/fonts-tests.js).
     "fonts": dict(title="MES Font Preview and Finder", page_title="Font Preview: See Your Text in Every Font, and Find a Font from a Picture",
                   tag="See your text in every font.", accent="#7c2d92", dark="#5f2070", tint="#f3e5f8",
                   desc="Free online font previewer: type your text and see it in every font on your computer at once, with size, colour, shadow, outline, gradient and glow. Make marketing text, download a transparent PNG or copy the CSS, compare fonts side by side, and find a font from a picture. Private: nothing is uploaded.",
                   js_v="3"),
     # Machine-learning teaching tools (2026-10-19): matrix calculator (lib = MESMat), neural network playground (MESNN), letter / digit recognition (MESOCR, uses MESNN), toy language model (MESLM). Node tests: tool_apps_src/<slug>-tests.js
-    "matrix-calculator": dict(title="MES Matrix Calculator for Machine Learning", page_title="Matrix Calculator: Multiply, Inverse, Eigenvalues, SVD, Softmax and Attention",
-                  tag="Linear algebra, with the machine-learning parts.", accent="#0369a1", dark="#075985", tint="#e0f2fe",
-                  desc="Free matrix calculator that shows the working: multiply, add, transpose, determinant, inverse, rank, row reduction, eigenvalues, SVD and QR, plus the machine-learning operations: softmax with temperature, activation functions, a dense neural-network layer and one attention step. Private: nothing is uploaded.",
-                  js_v="1"),
+    "matrix-calculator": dict(title="MES Matrix Calculator", page_title="Matrix Calculator with Steps: Multiply, Inverse, Determinant, Eigenvalues, SVD and Machine Learning",
+                  tag="Linear algebra with the working shown, plus machine-learning tools.", accent="#0369a1", dark="#075985", tint="#e0f2fe",
+                  desc="Free matrix calculator with steps: type or paste matrices into a grid (from Excel, MATLAB, NumPy or LaTeX), then multiply, invert, find the determinant, rank, RREF, eigenvalues, SVD and QR, or solve A·x = b. Also softmax, activations, a dense layer and attention for machine learning.",
+                  js_v="2"),
     "neural-network-playground": dict(title="MES Neural Network Playground", page_title="Neural Network Playground: Train a Network in Your Browser and Watch It Learn",
                   tag="Train a neural network and watch it learn.", accent="#c2410c", dark="#9a3412", tint="#ffedd5",
                   desc="Free neural network playground: choose a dataset, inputs, layers, neurons and activation, then train a real network in your browser and watch the decision boundary, the loss curve and what every hidden neuron has learned. Follow one point through the maths. Private: nothing is uploaded.",

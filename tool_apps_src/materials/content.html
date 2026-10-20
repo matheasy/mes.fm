@@ -1,0 +1,329 @@
+	<script>try{if(!localStorage.getItem('pageMode')){document.documentElement.classList.add('page-wide')}}catch(e){}</script>
+	<div class="tu mt" id="mt" data-views="{{VIEWS}}" data-page="{{PAGE}}">
+		<div class="mt-tabs" role="tablist" aria-label="Tools">
+			<button type="button" role="tab" data-tab="axial" aria-selected="false">Stress &amp; strain</button>
+			<button type="button" role="tab" data-tab="tensile" aria-selected="false">Tensile test</button>
+			<button type="button" role="tab" data-tab="shear" aria-selected="false">Shear</button>
+			<button type="button" role="tab" data-tab="torsion" aria-selected="false">Torsion</button>
+			<button type="button" role="tab" data-tab="poisson" aria-selected="false">Poisson &amp; 3D</button>
+			<button type="button" role="tab" data-tab="thermal" aria-selected="false">Thermal</button>
+			<button type="button" role="tab" data-tab="table" aria-selected="false">Materials table</button>
+		</div>
+		<div class="tu-card mt-bar">
+			<div class="tu-field mt-matf"><label for="mt-mat">Material</label><select id="mt-mat" class="tu-select"></select></div>
+			<div class="mt-sysf"><span class="tu-label">Units</span><div class="tu-seg" id="mt-sys" role="group" aria-label="Units"><button type="button" data-v="si" aria-pressed="true">SI (metric)</button><button type="button" data-v="us" aria-pressed="false">US</button></div></div>
+			<button type="button" class="tu-btn tu-btn--ghost mt-linkb" id="mt-link">🔗 Copy link</button>
+			<p class="mt-matnote" id="mt-matnote"></p>
+		</div>
+		<div class="tu-card mt-custom" id="mt-custom" hidden>
+			<h2 class="mt-h">Your own material</h2>
+			<div class="tu-row">
+				<div class="tu-field" style="flex-basis:15em;"><label for="mt-cu-c">Kind</label><select id="mt-cu-c" class="tu-select"><option value="duct">Ductile metal (smooth yield)</option><option value="luders">Mild steel (yield point)</option><option value="brittle">Brittle (no yield)</option><option value="polymer">Plastic (yield peak, then drawing)</option><option value="rubber">Rubber</option></select></div>
+				<div class="mt-f" data-f="cu-E" data-k="stress" data-d="modulus" data-l="Young's modulus E"></div>
+				<div class="mt-f" data-f="cu-nu" data-k="strain" data-d="ratio" data-l="Poisson's ratio ν"></div>
+				<div class="mt-f" data-f="cu-sy" data-k="stress" data-d="stress" data-l="Yield strength"></div>
+				<div class="mt-f" data-f="cu-su" data-k="stress" data-d="stress" data-l="Tensile strength (UTS)"></div>
+				<div class="mt-f" data-f="cu-el" data-k="strain" data-d="pct" data-l="Elongation at break"></div>
+				<div class="mt-f" data-f="cu-ra" data-k="strain" data-d="pct" data-l="Reduction of area"></div>
+				<div class="mt-f" data-f="cu-rho" data-k="density" data-d="density" data-l="Density"></div>
+				<div class="mt-f" data-f="cu-a" data-k="alpha" data-d="alpha" data-l="Thermal expansion α"></div>
+			</div>
+			<p class="tu-note" id="mt-cu-msg">Start from a material in the list and change what you know. Yield is not used for brittle materials or rubber.</p>
+		</div>
+
+		<!-- ============ 1. AXIAL ============ -->
+		<section data-panel="axial" role="tabpanel" hidden>
+			<div class="mt-grid2">
+				<div class="tu-card mt-fig">
+					<svg id="mt-ax-svg" class="mt-svg" viewBox="0 0 520 560" role="img" aria-label="A rod hanging from a fixed support, stretched by a force at its end"></svg>
+					<div class="mt-slide"><label for="mt-ax-fs">Force</label><input type="range" id="mt-ax-fs" min="0" max="1000" step="1"><output id="mt-ax-fsv" for="mt-ax-fs"></output></div>
+					<div class="mt-seg2"><div class="tu-seg" id="mt-ax-dir" role="group" aria-label="Direction of the force"><button type="button" data-v="t" aria-pressed="true">Pull (tension)</button><button type="button" data-v="c" aria-pressed="false">Push (compression)</button></div></div>
+					<p class="mt-cap" id="mt-ax-cap"></p>
+				</div>
+				<div class="tu-card mt-inp">
+					<h2 class="mt-h">Type what you know</h2>
+					<p class="tu-note">Any four values give the rest. The value you typed last always stays; an older one is worked out again when the newer ones fix it. Clear a box (×) to leave it unknown.</p>
+					<div class="tu-row">
+						<div class="mt-f" data-f="ax-F" data-k="force" data-d="force" data-l="Force F" data-x></div>
+						<div class="mt-f" data-f="ax-L" data-k="len" data-d="len" data-l="Original length L" data-x></div>
+					</div>
+					<div class="mt-sec">
+						<div class="tu-row">
+							<div class="tu-field" style="flex-basis:12em;"><label for="mt-ax-shape">Cross-section</label><select id="mt-ax-shape" class="tu-select"></select></div>
+							<div class="mt-f" data-f="ax-d" data-k="len" data-d="small" data-l="Diameter d" data-sh="round"></div>
+							<div class="mt-f" data-f="ax-D" data-k="len" data-d="small" data-l="Outside diameter D" data-sh="tube"></div>
+							<div class="mt-f" data-f="ax-b" data-k="len" data-d="small" data-l="Width b" data-sh="rect"></div>
+							<div class="mt-f" data-f="ax-h" data-k="len" data-d="small" data-l="Height h" data-sh="rect"></div>
+							<div class="mt-f" data-f="ax-B" data-k="len" data-d="small" data-l="Outside width B" data-sh="rtube"></div>
+							<div class="mt-f" data-f="ax-H" data-k="len" data-d="small" data-l="Outside height H" data-sh="rtube"></div>
+							<div class="mt-f" data-f="ax-t" data-k="len" data-d="small" data-l="Wall thickness t" data-sh="tube rtube"></div>
+						</div>
+						<div class="tu-row" style="margin-top:0.6em;"><div class="mt-f" data-f="ax-A" data-k="area" data-d="area" data-l="Area A" data-x></div></div>
+					</div>
+					<div class="tu-row">
+						<div class="mt-f" data-f="ax-dL" data-k="len" data-d="small" data-l="Change in length ΔL" data-x></div>
+						<div class="mt-f" data-f="ax-s" data-k="stress" data-d="stress" data-l="Stress σ" data-x></div>
+						<div class="mt-f" data-f="ax-e" data-k="strain" data-d="strain" data-l="Strain ε" data-x></div>
+						<div class="mt-f" data-f="ax-E" data-k="stress" data-d="modulus" data-l="Young's modulus E" data-x></div>
+					</div>
+					<div class="mt-btns">
+						<span class="mt-sfw"><button type="button" class="tu-btn" id="mt-ax-size">Size it for a safety factor of</button><input id="mt-ax-sfv" class="tu-input mt-mini" type="text" inputmode="decimal" value="2" aria-label="Safety factor"></span>
+						<button type="button" class="tu-btn tu-btn--ghost" id="mt-ax-reset">↺ Reset</button>
+					</div>
+					<p class="mt-msg" id="mt-ax-msg" aria-live="polite"></p>
+					<div class="tu-chips" id="mt-ax-ex" role="group" aria-label="Examples"></div>
+				</div>
+			</div>
+			<div class="tu-stats" id="mt-ax-stats"></div>
+			<div class="tu-card mt-eq" id="mt-ax-eq">
+				<div class="mt-eqb"><span class="mt-eqb__n">Stress</span><span class="mt-eqb__f mes-tex">\(\displaystyle \sigma = \frac{F}{A}\)</span><span class="mt-eqb__v" id="mt-ax-v1"></span></div>
+				<div class="mt-eqb"><span class="mt-eqb__n">Strain</span><span class="mt-eqb__f mes-tex">\(\displaystyle \varepsilon = \frac{\Delta L}{L}\)</span><span class="mt-eqb__v" id="mt-ax-v2"></span></div>
+				<div class="mt-eqb"><span class="mt-eqb__n">Young's modulus</span><span class="mt-eqb__f mes-tex">\(\displaystyle E = \frac{\sigma}{\varepsilon}\)</span><span class="mt-eqb__v" id="mt-ax-v3"></span></div>
+				<div class="mt-eqb"><span class="mt-eqb__n">Stretch</span><span class="mt-eqb__f mes-tex">\(\displaystyle \Delta L = \frac{F\,L}{A\,E}\)</span><span class="mt-eqb__v" id="mt-ax-v4"></span></div>
+			</div>
+		</section>
+
+		<!-- ============ 2. TENSILE TEST ============ -->
+		<section data-panel="tensile" role="tabpanel" hidden>
+			<div class="tu-card mt-tt" id="mt-tt">
+				<div class="mt-tt-top">
+					<div class="tu-field"><label for="mt-tt-c2">Compare with</label><select id="mt-tt-c2" class="tu-select mt-cmp"></select></div>
+					<div class="tu-field"><label for="mt-tt-c3">and</label><select id="mt-tt-c3" class="tu-select mt-cmp"></select></div>
+					<div class="mt-tt-opts">
+						<div class="tu-seg" id="mt-tt-zoom" role="group" aria-label="Chart range"><button type="button" data-v="all" aria-pressed="true">Whole curve</button><button type="button" data-v="el" aria-pressed="false">Start (elastic part)</button></div>
+						<label class="mt-chk"><input type="checkbox" id="mt-tt-true"> True stress–strain</label>
+						<label class="mt-chk"><input type="checkbox" id="mt-tt-areas" checked> Shade areas</label>
+					</div>
+				</div>
+				<div class="mt-tt-stage" id="mt-tt-stage">
+					<div class="mt-tt-spec"><svg id="mt-tt-spec" class="mt-svg" viewBox="0 0 240 640" role="img" aria-label="The test specimen in the grips of the testing machine"></svg><div class="mt-tt-live" id="mt-tt-live" aria-live="off"></div></div>
+					<div class="mt-tt-chart"><svg id="mt-tt-chart" class="mt-svg" viewBox="0 0 720 500" role="img" aria-label="Stress-strain chart drawn as the test runs"></svg></div>
+				</div>
+				<div class="mt-tt-ctl">
+					<button type="button" class="tu-btn tu-btn--primary" id="mt-tt-play">▶ Play</button>
+					<button type="button" class="tu-btn" id="mt-tt-unload" title="Take the load off from where the test is now, then load it again">⤓ Unload here</button>
+					<button type="button" class="tu-btn tu-btn--ghost" id="mt-tt-reset">↺ Reset</button>
+					<label class="mt-speed">Speed <select id="mt-tt-speed" class="tu-select"><option value="0.25">¼×</option><option value="0.5">½×</option><option value="1" selected>1×</option><option value="2">2×</option><option value="4">4×</option><option value="8">8×</option></select></label>
+					<input type="range" id="mt-tt-scrub" min="0" max="1000" step="1" value="0" aria-label="How far the test has gone">
+					<button type="button" class="tu-btn tu-btn--ghost" id="mt-tt-full" title="Full screen" aria-label="Full screen">⛶</button>
+				</div>
+				<p class="mt-msg" id="mt-tt-msg" aria-live="polite"></p>
+			</div>
+			<div class="tu-stats" id="mt-tt-stats"></div>
+			<div class="tu-card" id="mt-tt-cmpw" hidden><h2 class="mt-h">Side by side</h2><div class="tu-table-wrap"><table class="tu-table" id="mt-tt-cmpt"></table></div></div>
+			<div class="tu-card mt-eq">
+				<div class="mt-eqb"><span class="mt-eqb__n">Engineering stress</span><span class="mt-eqb__f mes-tex">\(\displaystyle \sigma = \frac{F}{A_0},\qquad \varepsilon = \frac{L - L_0}{L_0}\)</span></div>
+				<div class="mt-eqb"><span class="mt-eqb__n">True stress</span><span class="mt-eqb__f mes-tex">\(\displaystyle \sigma_t = \frac{F}{A} = \sigma\,(1+\varepsilon),\qquad \varepsilon_t = \ln(1+\varepsilon)\)</span></div>
+				<div class="mt-eqb"><span class="mt-eqb__n">Hardening</span><span class="mt-eqb__f mes-tex">\(\displaystyle \sigma_t = K\,\varepsilon_p^{\,n}\)</span></div>
+				<div class="mt-eqb"><span class="mt-eqb__n">Necking starts</span><span class="mt-eqb__f mes-tex">\(\displaystyle \frac{d\sigma_t}{d\varepsilon_t} = \sigma_t \;\Rightarrow\; \varepsilon_t \approx n\)</span></div>
+				<div class="mt-eqb"><span class="mt-eqb__n">Resilience</span><span class="mt-eqb__f mes-tex">\(\displaystyle U_r = \frac{\sigma_y^2}{2E}\)</span></div>
+				<div class="mt-eqb"><span class="mt-eqb__n">Toughness</span><span class="mt-eqb__f mes-tex">\(\displaystyle U_t = \int_0^{\varepsilon_f} \sigma\,d\varepsilon\)</span></div>
+			</div>
+			<p class="tu-note" id="mt-tt-note">The curves are a model fitted to each material's typical Young's modulus, yield strength, tensile strength and elongation (Hollomon / Ramberg–Osgood hardening, a Lüders plateau for mild steel). Specimen: a standard round bar, 12.5 mm across with a 50 mm gauge length (0.500 in and 2.000 in in US units). Real curves also depend on the test speed, temperature and the exact alloy.</p>
+		</section>
+
+		<!-- ============ 3. SHEAR ============ -->
+		<section data-panel="shear" role="tabpanel" hidden>
+			<div class="mt-grid2">
+				<div class="tu-card mt-fig">
+					<svg id="mt-sh-svg" class="mt-svg" viewBox="0 0 520 370" role="img" aria-label="A bolt or pin loaded in shear between plates"></svg>
+					<p class="mt-cap" id="mt-sh-cap"></p>
+				</div>
+				<div class="tu-card mt-inp">
+					<div class="tu-seg mt-modes" id="mt-sh-mode" role="group" aria-label="What is in shear"><button type="button" data-v="pin" aria-pressed="true">Bolt or pin</button><button type="button" data-v="area" aria-pressed="false">Glued or welded area</button><button type="button" data-v="punch" aria-pressed="false">Punching a hole</button></div>
+					<div class="tu-row" style="margin-top:0.8em;">
+						<div class="mt-f" data-f="sh-V" data-k="force" data-d="force" data-l="Shear force V" data-m="pin area"></div>
+						<div class="mt-f" data-f="sh-d" data-k="len" data-d="small" data-l="Pin / bolt diameter d" data-m="pin"></div>
+						<div class="mt-f" data-f="sh-A" data-k="area" data-d="area" data-l="Area in shear A" data-m="area"></div>
+						<div class="mt-f" data-f="sh-hd" data-k="len" data-d="small" data-l="Hole diameter d" data-m="punch"></div>
+						<div class="mt-f" data-f="sh-t" data-k="len" data-d="small" data-l="Plate thickness t" data-m="pin punch" data-x></div>
+					</div>
+					<div class="tu-row mt-r2" data-m="pin"><div class="tu-field"><span class="tu-label">Shear planes</span><div class="tu-seg" id="mt-sh-n" role="group" aria-label="Shear planes"><button type="button" data-v="1" aria-pressed="true">Single shear</button><button type="button" data-v="2" aria-pressed="false">Double shear</button></div></div></div>
+					<div class="tu-row mt-r2" data-m="punch"><div class="tu-field" style="flex-basis:16em;"><label for="mt-sh-ratio">Shear strength = this × tensile strength</label><input id="mt-sh-ratio" class="tu-input" type="text" inputmode="decimal" value="0.75"></div></div>
+					<div class="tu-row mt-r2">
+						<div class="mt-f" data-f="sh-G" data-k="stress" data-d="modulus" data-l="Shear modulus G" data-x></div>
+						<div class="tu-field" style="flex-basis:9em;" data-m="pin area"><label for="mt-sh-sf">Safety factor wanted</label><input id="mt-sh-sf" class="tu-input" type="text" inputmode="decimal" value="2"></div>
+					</div>
+					<div class="mt-btns" data-m="pin"><button type="button" class="tu-btn" id="mt-sh-size">Find the pin size for this safety factor</button></div>
+					<p class="mt-msg" id="mt-sh-msg" aria-live="polite"></p>
+					<div class="tu-chips" id="mt-sh-ex" role="group" aria-label="Examples"></div>
+				</div>
+			</div>
+			<div class="tu-stats" id="mt-sh-stats"></div>
+			<div class="tu-card mt-eq">
+				<div class="mt-eqb"><span class="mt-eqb__n">Shear stress</span><span class="mt-eqb__f mes-tex">\(\displaystyle \tau = \frac{V}{A},\qquad A = \frac{\pi d^2}{4}\ \text{per plane}\)</span></div>
+				<div class="mt-eqb"><span class="mt-eqb__n">Double shear</span><span class="mt-eqb__f mes-tex">\(\displaystyle \tau = \frac{V}{2A}\)</span></div>
+				<div class="mt-eqb"><span class="mt-eqb__n">Shear strain</span><span class="mt-eqb__f mes-tex">\(\displaystyle \gamma = \frac{\tau}{G},\qquad G = \frac{E}{2(1+\nu)}\)</span></div>
+				<div class="mt-eqb"><span class="mt-eqb__n">Bearing stress</span><span class="mt-eqb__f mes-tex">\(\displaystyle \sigma_b = \frac{V}{d\,t}\)</span></div>
+				<div class="mt-eqb"><span class="mt-eqb__n">Punching force</span><span class="mt-eqb__f mes-tex">\(\displaystyle F = \tau_u\,\pi\, d\, t\)</span></div>
+				<div class="mt-eqb"><span class="mt-eqb__n">Shear yield</span><span class="mt-eqb__f mes-tex">\(\displaystyle \tau_y \approx 0.577\,\sigma_y\quad\text{(von Mises)}\)</span></div>
+			</div>
+		</section>
+
+		<!-- ============ 4. TORSION ============ -->
+		<section data-panel="torsion" role="tabpanel" hidden>
+			<div class="mt-grid2">
+				<div class="tu-card mt-fig">
+					<svg id="mt-to-svg" class="mt-svg" viewBox="0 0 520 400" role="img" aria-label="A shaft fixed at one end and twisted by a torque at the other"></svg>
+					<div class="mt-slide"><label for="mt-to-ts">Torque</label><input type="range" id="mt-to-ts" min="0" max="1000" step="1"><output id="mt-to-tsv" for="mt-to-ts"></output></div>
+					<p class="mt-cap" id="mt-to-cap"></p>
+				</div>
+				<div class="tu-card mt-inp">
+					<div class="tu-seg mt-modes" id="mt-to-src" role="group" aria-label="Load given as"><button type="button" data-v="T" aria-pressed="true">Torque</button><button type="button" data-v="P" aria-pressed="false">Power and speed</button></div>
+					<div class="tu-row" style="margin-top:0.8em;">
+						<div class="mt-f" data-f="to-T" data-k="torque" data-d="torque" data-l="Torque T" data-m="T"></div>
+						<div class="mt-f" data-f="to-P" data-k="power" data-d="power" data-l="Power P" data-m="P"></div>
+						<div class="mt-f" data-f="to-n" data-k="speed" data-d="speed" data-l="Speed" data-x></div>
+					</div>
+					<div class="tu-row mt-r2"><div class="tu-field"><span class="tu-label">Shaft</span><div class="tu-seg" id="mt-to-hol" role="group" aria-label="Shaft"><button type="button" data-v="0" aria-pressed="true">Solid</button><button type="button" data-v="1" aria-pressed="false">Hollow</button></div></div></div>
+					<div class="tu-row mt-r2">
+						<div class="mt-f" data-f="to-D" data-k="len" data-d="small" data-l="Outside diameter D"></div>
+						<div class="mt-f" data-f="to-di" data-k="len" data-d="small" data-l="Inside diameter d" data-m="hollow"></div>
+						<div class="mt-f" data-f="to-L" data-k="len" data-d="len" data-l="Length L"></div>
+					</div>
+					<div class="tu-row mt-r2">
+						<div class="mt-f" data-f="to-G" data-k="stress" data-d="modulus" data-l="Shear modulus G" data-x></div>
+						<div class="tu-field" style="flex-basis:9em;"><label for="mt-to-sf">Safety factor wanted</label><input id="mt-to-sf" class="tu-input" type="text" inputmode="decimal" value="2"></div>
+					</div>
+					<div class="mt-btns"><button type="button" class="tu-btn" id="mt-to-size">Find the shaft size for this safety factor</button></div>
+					<p class="mt-msg" id="mt-to-msg" aria-live="polite"></p>
+					<div class="tu-chips" id="mt-to-ex" role="group" aria-label="Examples"></div>
+				</div>
+			</div>
+			<div class="tu-stats" id="mt-to-stats"></div>
+			<div class="tu-card mt-eq">
+				<div class="mt-eqb"><span class="mt-eqb__n">Shear stress</span><span class="mt-eqb__f mes-tex">\(\displaystyle \tau_{max} = \frac{T\,c}{J},\qquad c = \frac{D}{2}\)</span></div>
+				<div class="mt-eqb"><span class="mt-eqb__n">Polar moment</span><span class="mt-eqb__f mes-tex">\(\displaystyle J = \frac{\pi D^4}{32}\ \text{(solid)},\qquad J = \frac{\pi\,(D^4 - d^4)}{32}\ \text{(hollow)}\)</span></div>
+				<div class="mt-eqb"><span class="mt-eqb__n">Angle of twist</span><span class="mt-eqb__f mes-tex">\(\displaystyle \theta = \frac{T\,L}{G\,J}\)</span></div>
+				<div class="mt-eqb"><span class="mt-eqb__n">Power</span><span class="mt-eqb__f mes-tex">\(\displaystyle P = T\,\omega,\qquad \omega = \frac{2\pi n}{60}\)</span></div>
+			</div>
+		</section>
+
+		<!-- ============ 5. POISSON & 3D HOOKE ============ -->
+		<section data-panel="poisson" role="tabpanel" hidden>
+			<div class="tu-card"><div class="tu-seg mt-modes" id="mt-po-mode" role="group" aria-label="Tool"><button type="button" data-v="bar" aria-pressed="true">Bar under load</button><button type="button" data-v="3d" aria-pressed="false">3D Hooke's law</button><button type="button" data-v="const" aria-pressed="false">Elastic constants</button></div></div>
+			<div class="mt-grid2" data-pm="bar">
+				<div class="tu-card mt-fig"><svg id="mt-po-svg" class="mt-svg" viewBox="0 0 520 330" role="img" aria-label="A bar before and after loading: longer and thinner"></svg><p class="mt-cap" id="mt-po-cap"></p></div>
+				<div class="tu-card mt-inp">
+					<div class="tu-row"><div class="tu-field"><span class="tu-label">Load given as</span><div class="tu-seg" id="mt-po-by" role="group" aria-label="Load given as"><button type="button" data-v="s" aria-pressed="true">Stress</button><button type="button" data-v="e" aria-pressed="false">Strain</button></div></div></div>
+					<div class="tu-row mt-r2">
+						<div class="mt-f" data-f="po-s" data-k="stress" data-d="stress" data-l="Axial stress σ" data-b="s" data-sg></div>
+						<div class="mt-f" data-f="po-e" data-k="strain" data-d="strain" data-l="Axial strain ε" data-b="e" data-sg></div>
+						<div class="mt-f" data-f="po-d" data-k="len" data-d="small" data-l="Diameter d"></div>
+						<div class="mt-f" data-f="po-L" data-k="len" data-d="len" data-l="Length L"></div>
+					</div>
+					<div class="tu-row mt-r2">
+						<div class="mt-f" data-f="po-E" data-k="stress" data-d="modulus" data-l="Young's modulus E" data-x></div>
+						<div class="mt-f" data-f="po-nu" data-k="strain" data-d="ratio" data-l="Poisson's ratio ν" data-x></div>
+					</div>
+					<p class="mt-msg" id="mt-po-msg" aria-live="polite"></p>
+				</div>
+			</div>
+			<div class="tu-stats" id="mt-po-stats" data-pm="bar"></div>
+			<div class="mt-grid2" data-pm="3d">
+				<div class="tu-card mt-fig"><svg id="mt-p3-svg" class="mt-svg" viewBox="0 0 520 420" role="img" aria-label="A small cube of material with the stresses on its faces and its deformed shape"></svg><p class="mt-cap" id="mt-p3-cap"></p></div>
+				<div class="tu-card mt-inp">
+					<div class="tu-row"><div class="tu-field"><span class="tu-label">Direction</span><div class="tu-seg" id="mt-p3-dir" role="group" aria-label="Direction"><button type="button" data-v="s" aria-pressed="true">Stresses → strains</button><button type="button" data-v="e" aria-pressed="false">Strains → stresses</button></div></div></div>
+					<div class="tu-row mt-r2" data-d3="s">
+						<div class="mt-f" data-f="p3-sx" data-k="stress" data-d="stress" data-l="σx" data-sg></div><div class="mt-f" data-f="p3-sy" data-k="stress" data-d="stress" data-l="σy" data-sg></div><div class="mt-f" data-f="p3-sz" data-k="stress" data-d="stress" data-l="σz" data-sg></div>
+						<div class="mt-f" data-f="p3-txy" data-k="stress" data-d="stress" data-l="τxy" data-sg></div><div class="mt-f" data-f="p3-tyz" data-k="stress" data-d="stress" data-l="τyz" data-sg></div><div class="mt-f" data-f="p3-tzx" data-k="stress" data-d="stress" data-l="τzx" data-sg></div>
+					</div>
+					<div class="tu-row mt-r2" data-d3="e">
+						<div class="mt-f" data-f="p3-ex" data-k="strain" data-d="ustrain" data-l="εx" data-sg></div><div class="mt-f" data-f="p3-ey" data-k="strain" data-d="ustrain" data-l="εy" data-sg></div><div class="mt-f" data-f="p3-ez" data-k="strain" data-d="ustrain" data-l="εz" data-sg></div>
+						<div class="mt-f" data-f="p3-gxy" data-k="strain" data-d="ustrain" data-l="γxy" data-sg></div><div class="mt-f" data-f="p3-gyz" data-k="strain" data-d="ustrain" data-l="γyz" data-sg></div><div class="mt-f" data-f="p3-gzx" data-k="strain" data-d="ustrain" data-l="γzx" data-sg></div>
+					</div>
+					<div class="tu-row mt-r2">
+						<div class="mt-f" data-f="p3-E" data-k="stress" data-d="modulus" data-l="Young's modulus E" data-x></div>
+						<div class="mt-f" data-f="p3-nu" data-k="strain" data-d="ratio" data-l="Poisson's ratio ν" data-x></div>
+					</div>
+					<p class="mt-msg" id="mt-p3-msg" aria-live="polite"></p>
+					<div class="tu-chips" id="mt-p3-ex" role="group" aria-label="Examples"></div>
+				</div>
+			</div>
+			<div class="tu-card" data-pm="3d"><div class="tu-table-wrap"><table class="tu-table" id="mt-p3-out"></table></div></div>
+			<div class="tu-card mt-inp" data-pm="const">
+				<div class="tu-row">
+					<div class="tu-field" style="flex-basis:12em;"><label for="mt-ec-pair">I know</label><select id="mt-ec-pair" class="tu-select"><option value="E,nu">E and ν</option><option value="E,G">E and G</option><option value="E,K">E and K</option><option value="G,K">G and K</option><option value="G,nu">G and ν</option><option value="K,nu">K and ν</option></select></div>
+					<div class="mt-f" data-f="ec-E" data-k="stress" data-d="modulus" data-l="Young's modulus E" data-ec="E"></div>
+					<div class="mt-f" data-f="ec-G" data-k="stress" data-d="modulus" data-l="Shear modulus G" data-ec="G"></div>
+					<div class="mt-f" data-f="ec-K" data-k="stress" data-d="modulus" data-l="Bulk modulus K" data-ec="K"></div>
+					<div class="mt-f" data-f="ec-nu" data-k="strain" data-d="ratio" data-l="Poisson's ratio ν" data-ec="nu"></div>
+				</div>
+				<p class="mt-msg" id="mt-ec-msg" aria-live="polite"></p>
+				<div class="tu-table-wrap"><table class="tu-table" id="mt-ec-out"></table></div>
+				<p class="tu-note">For an isotropic material (the same in every direction) any two elastic constants fix all the others. Wood, carbon fibre laminates and bone are not isotropic, so these formulas do not link their E, G and ν.</p>
+			</div>
+			<div class="tu-card mt-eq">
+				<div class="mt-eqb"><span class="mt-eqb__n">Poisson's ratio</span><span class="mt-eqb__f mes-tex">\(\displaystyle \nu = -\frac{\varepsilon_{lat}}{\varepsilon_{axial}},\qquad \Delta d = -\nu\,\varepsilon\,d\)</span></div>
+				<div class="mt-eqb"><span class="mt-eqb__n">Hooke's law in 3D</span><span class="mt-eqb__f mes-tex">\(\displaystyle \varepsilon_x = \frac{1}{E}\left[\sigma_x - \nu\,(\sigma_y + \sigma_z)\right],\qquad \gamma_{xy} = \frac{\tau_{xy}}{G}\)</span></div>
+				<div class="mt-eqb"><span class="mt-eqb__n">Volume change</span><span class="mt-eqb__f mes-tex">\(\displaystyle \frac{\Delta V}{V} \approx \varepsilon_x + \varepsilon_y + \varepsilon_z = \frac{1-2\nu}{E}\,(\sigma_x+\sigma_y+\sigma_z)\)</span></div>
+				<div class="mt-eqb"><span class="mt-eqb__n">Moduli</span><span class="mt-eqb__f mes-tex">\(\displaystyle G = \frac{E}{2(1+\nu)},\qquad K = \frac{E}{3(1-2\nu)}\)</span></div>
+			</div>
+		</section>
+
+		<!-- ============ 6. THERMAL ============ -->
+		<section data-panel="thermal" role="tabpanel" hidden>
+			<div class="mt-grid2">
+				<div class="tu-card mt-fig"><svg id="mt-th-svg" class="mt-svg" viewBox="0 0 520 300" role="img" aria-label="A bar that is heated, free to grow or held between walls"></svg><p class="mt-cap" id="mt-th-cap"></p></div>
+				<div class="tu-card mt-inp">
+					<div class="tu-seg mt-modes" id="mt-th-cond" role="group" aria-label="Ends of the bar"><button type="button" data-v="free" aria-pressed="true">Free to grow</button><button type="button" data-v="held" aria-pressed="false">Held between walls</button><button type="button" data-v="gap" aria-pressed="false">Walls with a gap</button></div>
+					<div class="tu-row" style="margin-top:0.8em;">
+						<div class="mt-f" data-f="th-dT" data-k="dtemp" data-d="dtemp" data-l="Temperature change ΔT" data-sg></div>
+						<div class="mt-f" data-f="th-L" data-k="len" data-d="len" data-l="Length L"></div>
+						<div class="mt-f" data-f="th-g" data-k="len" data-d="small" data-l="Gap δ" data-m="gap"></div>
+						<div class="mt-f" data-f="th-d" data-k="len" data-d="small" data-l="Bar diameter (for the force)" data-x></div>
+					</div>
+					<div class="tu-row mt-r2">
+						<div class="mt-f" data-f="th-a" data-k="alpha" data-d="alpha" data-l="Thermal expansion α" data-x data-sg></div>
+						<div class="mt-f" data-f="th-E" data-k="stress" data-d="modulus" data-l="Young's modulus E" data-x></div>
+					</div>
+					<p class="mt-msg" id="mt-th-msg" aria-live="polite"></p>
+					<div class="tu-chips" id="mt-th-ex" role="group" aria-label="Examples"></div>
+				</div>
+			</div>
+			<div class="tu-stats" id="mt-th-stats"></div>
+			<div class="tu-card mt-eq">
+				<div class="mt-eqb"><span class="mt-eqb__n">Free expansion</span><span class="mt-eqb__f mes-tex">\(\displaystyle \delta_T = \alpha\,\Delta T\,L\)</span></div>
+				<div class="mt-eqb"><span class="mt-eqb__n">Held between walls</span><span class="mt-eqb__f mes-tex">\(\displaystyle \sigma = -E\,\alpha\,\Delta T\)</span></div>
+				<div class="mt-eqb"><span class="mt-eqb__n">With a gap δ</span><span class="mt-eqb__f mes-tex">\(\displaystyle \sigma = -E\,\frac{\alpha\,\Delta T\,L - \delta}{L}\quad\text{once } \alpha\,\Delta T\,L > \delta\)</span></div>
+			</div>
+		</section>
+
+		<!-- ============ 7. TABLE ============ -->
+		<section data-panel="table" role="tabpanel" hidden>
+			<div class="tu-card">
+				<div class="tu-row">
+					<div class="tu-field" style="flex-basis:14em;"><label for="mt-tb-q">Search</label><input id="mt-tb-q" class="tu-input" type="search" placeholder="steel, aluminium, plastic…" autocomplete="off"></div>
+				</div>
+				<div class="tu-chips" id="mt-tb-fam" role="group" aria-label="Kinds of material"></div>
+				<div class="tu-table-wrap mt-tbw"><table class="tu-table mt-tbl" id="mt-tb"></table></div>
+				<p class="tu-note">Click a row to use that material in every tool. Click a column heading to sort.</p>
+			</div>
+			<div class="tu-card">
+				<div class="mt-ash-top"><h2 class="mt-h">Stiffness against weight</h2>
+					<div class="tu-row mt-ash-sel"><div class="tu-field"><label for="mt-as-y">Up</label><select id="mt-as-y" class="tu-select"></select></div><div class="tu-field"><label for="mt-as-x">Across</label><select id="mt-as-x" class="tu-select"></select></div></div></div>
+				<svg id="mt-as" class="mt-svg" viewBox="0 0 720 480" role="img" aria-label="Chart of the materials: Young's modulus against density, both on log scales"></svg>
+				<p class="tu-note" id="mt-as-note">Both scales are logarithmic (each step is ten times the last). Click a dot to use that material. Dashed lines join materials with the same stiffness per kilogram (E/ρ): steel, aluminium and titanium sit on the same line.</p>
+			</div>
+			<div class="tu-card mt-src">
+				<h2 class="mt-h">Where the numbers come from</h2>
+				<p>These are <strong>typical room-temperature values</strong> for learning and first estimates. They change with the exact alloy, heat treatment, temper, bar size, moisture (wood, nylon), direction (wood, composites, bone) and supplier. Yield and tensile strengths of the A36 steel are the specification minimums. Elongation is in a 50 mm (2 in) gauge length. Reduction of area is a rough figure that only shapes the neck in the tensile test.</p>
+				<p>Sources: published supplier data sheets (Special Metals for nickel alloys, mill and distributor sheets for steels, aluminium and copper alloys), the ASTM / UNS property collections summarised by MatWeb and MakeItFrom, ASM handbooks, the USDA Forest Products Laboratory <em>Wood Handbook</em> (clear wood at 12% moisture), ACI and Eurocode figures for concrete, textbook tables (Hibbeler, Gere &amp; Goodno, Callister) and biomechanics reviews for bone. For design, use the certified values for your material and the rules of your design code.</p>
+			</div>
+		</section>
+
+		<div class="tu-toast" id="mt-toast" role="status" aria-live="polite"></div>
+		<p class="tu-note mt-disc">For learning and first estimates. Real parts need certified material values, the design code that applies (AISC, Eurocode, ASME…) and a check by a qualified engineer.</p>
+		<nav class="mt-fam" aria-label="MES Mechanics of Materials">
+			<span class="mt-fam__l">More MES Mechanics of Materials:</span>
+			<a href="/materials">All tools</a>
+			<a href="/youngs-modulus-calculator">Young's modulus, stress &amp; strain</a>
+			<a href="/tensile-test-simulator">Tensile test simulator</a>
+			<a href="/shear-stress-calculator">Shear &amp; torsion</a>
+			<a href="/materials?tab=poisson">Poisson's ratio &amp; 3D Hooke's law</a>
+			<a href="/materials?tab=thermal">Thermal stress</a>
+			<a href="/materials?tab=table">Materials table</a>
+		</nav>
+{{SEO}}
+	</div>
+	<script src="/main_js/mes-math.js" defer></script>

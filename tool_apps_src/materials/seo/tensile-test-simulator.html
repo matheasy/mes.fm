@@ -1,0 +1,27 @@
+		<div class="tu-seo">
+			<h2>Tensile test simulator: the stress-strain curve, step by step</h2>
+			<p>A tensile test pulls a standard bar (here a round bar 12.5 mm across with a 50 mm gauge length, like ASTM E8 / ISO 6892-1) until it breaks, and plots the force against the stretch as a stress-strain curve. Press Start and watch the bar stretch in the grips while the curve is drawn point by point. Drag the slider to go back and forth, press <strong>Unload here</strong> to take the load off at any point, compare up to three materials on one chart, switch on the true stress-strain curve and see the resilience and toughness shaded. Steels, aluminium, titanium, copper, cast iron, glass, wood, plastics, rubber, carbon fibre and bone are in the list, or type your own material.</p>
+			<h3>What the curve shows</h3>
+			<ul>
+				<li><strong>Elastic part:</strong> a straight line whose slope is Young's modulus, <span class="mes-tex">\(E = \sigma / \varepsilon\)</span>. Unload here and the bar goes back to its old length.</li>
+				<li><strong>Yield:</strong> most metals bend over smoothly, so the yield strength is taken where a line parallel to the elastic part, starting at 0.2% strain, meets the curve (the 0.2% offset rule, drawn dashed). Mild steel is different: it has an <em>upper yield point</em>, drops to a <em>lower yield point</em> and stretches at an almost constant force (the Lüders plateau) before it hardens.</li>
+				<li><strong>Strain hardening:</strong> the metal gets stronger as it is stretched, roughly <span class="mes-tex">\(\sigma_t = K\,\varepsilon_p^{\,n}\)</span> in true stress and plastic strain (Hollomon). Unload from here and the line comes down with slope E, leaving a permanent set; load it again and it stays elastic up to the higher stress.</li>
+				<li><strong>Tensile strength (UTS) and necking:</strong> the highest point of the engineering curve. After it the bar thins in one place, so the force falls even though the metal in the neck keeps hardening. Necking starts when the hardening can no longer keep up with the loss of area, <span class="mes-tex">\(d\sigma_t / d\varepsilon_t = \sigma_t\)</span> (Considère), which for the Hollomon law is at a true strain of about n.</li>
+				<li><strong>Fracture:</strong> ductile metals break with a cup-and-cone surface after a long neck; brittle materials (cast iron, glass, concrete, wood along the grain, carbon fibre) break with no yield and no neck.</li>
+			</ul>
+			<h3>Resilience and toughness</h3>
+			<p>The area under the curve is energy per unit volume. The green triangle is the <strong>modulus of resilience</strong>, the energy the bar can store and give back: <span class="mes-tex">\(U_r = \sigma_y^2 / (2E)\)</span>. For A36 steel that is 250² ÷ (2 × 200,000) = 0.156 MJ/m³. The blue area is the <strong>toughness</strong>, the energy needed to break it, <span class="mes-tex">\(U_t = \int \sigma\,d\varepsilon\)</span>: about 80 MJ/m³ for A36, five hundred times the resilience. A quick estimate for a ductile metal is the average of the yield and tensile strengths times the elongation: (250 + 400) ÷ 2 × 0.23 ≈ 75 MJ/m³.</p>
+			<h3>Engineering and true stress</h3>
+			<p>Engineering stress divides the force by the original area, <span class="mes-tex">\(\sigma = F / A_0\)</span>; true stress divides it by the area the bar has now, <span class="mes-tex">\(\sigma_t = \sigma\,(1 + \varepsilon)\)</span>, with the true strain <span class="mes-tex">\(\varepsilon_t = \ln(1 + \varepsilon)\)</span>. The two formulas hold while the bar stretches evenly; after necking the true stress is worked out from the area of the neck (dashed).</p>
+			<h3>How the curves are made</h3>
+			<p>Each curve is fitted to the material's typical Young's modulus, yield strength, tensile strength and elongation at break, so the simulator hits those numbers exactly: the hardening exponent n and strength coefficient K come out of the fit and are shown. Real tests also depend on the test speed, temperature, the exact alloy and its heat treatment, so treat the curves as a typical shape, not a certificate.</p>
+			<h3>Questions</h3>
+			<h4>What is the difference between yield strength and tensile strength?</h4>
+			<p>Yield strength is where permanent stretching starts; tensile strength is the highest stress the bar takes before it necks and breaks. Parts are designed to stay below yield, with a safety factor.</p>
+			<h4>Why does the curve go down before it breaks?</h4>
+			<p>Because engineering stress uses the original area. Once the neck forms, the area there shrinks fast, so the force needed to keep stretching falls. The true stress in the neck keeps rising.</p>
+			<h4>What is elongation at break?</h4>
+			<p>How much longer the gauge length is when the pieces are fitted together after the break, in percent. It measures ductility: about 20 to 25% for structural steel, 12% for 6061-T6 aluminium, under 1% for cast iron. The elastic part springs back after the break, so it is a little less than the strain at the moment of fracture.</p>
+			<h4>Why do plastics look so different?</h4>
+			<p>Many plastics reach a yield peak, then a neck forms and travels along the bar at a steady force (cold drawing) until the whole bar is drawn out; HDPE can stretch to several times its length. Rubber has no yield at all: it is soft at first and stiffens as its chains straighten, and it springs back completely.</p>
+		</div>

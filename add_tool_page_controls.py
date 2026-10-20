@@ -64,6 +64,10 @@ TOOLS = [  # (directory, compact-bar title[, home path of the site the page belo
     ("exif-viewer", "EXIF Viewer"),
     ("contraction-timer", "Contraction Timer"),
     ("bmr-calculator", "BMR Calculator"),
+    ("shear-stress-calculator", "Mechanics of Materials", "/materials"),   # MES Mechanics of Materials family page (brand option in build_tool_apps.py)
+    ("tensile-test-simulator", "Mechanics of Materials", "/materials"),   # MES Mechanics of Materials family page (brand option in build_tool_apps.py)
+    ("youngs-modulus-calculator", "Mechanics of Materials", "/materials"),   # MES Mechanics of Materials family page (brand option in build_tool_apps.py)
+    ("materials", "Mechanics of Materials"),   # also built by build_tool_apps.py
     ("matrix-calculator", "Matrix Calculator for Machine Learning"),   # also built by build_tool_apps.py
     ("trigonometry", "Trigonometry Calculator"),   # also built by build_tool_apps.py
     ("geometry", "Geometry & Angle Lab"),   # also built by build_tool_apps.py

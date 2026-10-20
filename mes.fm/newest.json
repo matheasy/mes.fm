@@ -1,11 +1,43 @@
 {
- "generated": "2026-10-19",
+ "generated": "2026-10-20",
  "calculators": [
   {
+   "href": "/materials",
+   "title": "Mechanics of Materials",
+   "icon": "/img/materials-logo.png",
+   "desc": "Stress, strain, shear, torsion, Poisson's ratio, thermal stress and 30 materials.",
+   "added": "2026-10-20",
+   "kind": "calculator"
+  },
+  {
+   "href": "/shear-stress-calculator",
+   "title": "Shear Stress Calculator",
+   "icon": "/img/shear-stress-calculator-logo.png",
+   "desc": "Bolts and pins in single or double shear, punching, and twisted shafts.",
+   "added": "2026-10-20",
+   "kind": "calculator"
+  },
+  {
+   "href": "/tensile-test-simulator",
+   "title": "Tensile Test Simulator",
+   "icon": "/img/tensile-test-simulator-logo.png",
+   "desc": "Pull a bar until it breaks and watch the stress-strain curve, necking and toughness.",
+   "added": "2026-10-20",
+   "kind": "calculator"
+  },
+  {
+   "href": "/youngs-modulus-calculator",
+   "title": "Young's Modulus Calculator",
+   "icon": "/img/youngs-modulus-calculator-logo.png",
+   "desc": "Stress, strain and stretch of a bar from any four values, with a live picture.",
+   "added": "2026-10-20",
+   "kind": "calculator"
+  },
+  {
    "href": "/matrix-calculator",
-   "title": "Matrix Calculator for Machine Learning",
+   "title": "Matrix Calculator",
    "icon": "/img/matrix-calculator-logo.png",
-   "desc": "Multiply, invert, find determinants, eigenvalues and SVD with the working shown, plus softmax, activation functions, a neural-network layer and attention.",
+   "desc": "Type or paste matrices into a grid: multiply, invert, determinants, eigenvalues and SVD with the working shown, plus softmax, a neural-network layer and attention.",
    "added": "2026-10-19",
    "kind": "calculator"
   },
@@ -62,38 +94,6 @@
    "title": "Calories Burned Calculator",
    "icon": "/img/calories-burned-calculator-logo.png",
    "desc": "Calories burned by 80+ activities for your weight, with a weekly plan.",
-   "added": "2026-10-14",
-   "kind": "calculator"
-  },
-  {
-   "href": "/sleep-calculator",
-   "title": "Sleep Calculator",
-   "icon": "/img/sleep-calculator-logo.png",
-   "desc": "Best bedtime and wake-up time using 90-minute sleep cycles.",
-   "added": "2026-10-14",
-   "kind": "calculator"
-  },
-  {
-   "href": "/heart-rate-zone-calculator",
-   "title": "Heart Rate Zone Calculator",
-   "icon": "/img/heart-rate-zone-calculator-logo.png",
-   "desc": "Your max heart rate and five training zones, with the Karvonen method.",
-   "added": "2026-10-14",
-   "kind": "calculator"
-  },
-  {
-   "href": "/protein-intake-calculator",
-   "title": "Protein Intake Calculator",
-   "icon": "/img/protein-intake-calculator-logo.png",
-   "desc": "How much protein per day for your weight and goal, with a food builder.",
-   "added": "2026-10-14",
-   "kind": "calculator"
-  },
-  {
-   "href": "/pace-calculator",
-   "title": "Running Pace Calculator",
-   "icon": "/img/pace-calculator-logo.png",
-   "desc": "Pace, time and distance, splits, and race time predictions.",
    "added": "2026-10-14",
    "kind": "calculator"
   }
@@ -198,10 +198,42 @@
  ],
  "latest": [
   {
+   "href": "/materials",
+   "title": "Mechanics of Materials",
+   "icon": "/img/materials-logo.png",
+   "desc": "Stress, strain, shear, torsion, Poisson's ratio, thermal stress and 30 materials.",
+   "added": "2026-10-20",
+   "kind": "calculator"
+  },
+  {
+   "href": "/shear-stress-calculator",
+   "title": "Shear Stress Calculator",
+   "icon": "/img/shear-stress-calculator-logo.png",
+   "desc": "Bolts and pins in single or double shear, punching, and twisted shafts.",
+   "added": "2026-10-20",
+   "kind": "calculator"
+  },
+  {
+   "href": "/tensile-test-simulator",
+   "title": "Tensile Test Simulator",
+   "icon": "/img/tensile-test-simulator-logo.png",
+   "desc": "Pull a bar until it breaks and watch the stress-strain curve, necking and toughness.",
+   "added": "2026-10-20",
+   "kind": "calculator"
+  },
+  {
+   "href": "/youngs-modulus-calculator",
+   "title": "Young's Modulus Calculator",
+   "icon": "/img/youngs-modulus-calculator-logo.png",
+   "desc": "Stress, strain and stretch of a bar from any four values, with a live picture.",
+   "added": "2026-10-20",
+   "kind": "calculator"
+  },
+  {
    "href": "/matrix-calculator",
-   "title": "Matrix Calculator for Machine Learning",
+   "title": "Matrix Calculator",
    "icon": "/img/matrix-calculator-logo.png",
-   "desc": "Multiply, invert, find determinants, eigenvalues and SVD with the working shown, plus softmax, activation functions, a neural-network layer and attention.",
+   "desc": "Type or paste matrices into a grid: multiply, invert, determinants, eigenvalues and SVD with the working shown, plus softmax, a neural-network layer and attention.",
    "added": "2026-10-19",
    "kind": "calculator"
   },
@@ -228,38 +260,6 @@
    "desc": "See how a language model works in miniature: tokens, next-word probabilities, temperature, word vectors and attention.",
    "added": "2026-10-19",
    "kind": "tool"
-  },
-  {
-   "href": "/fonts",
-   "title": "Font Preview and Finder",
-   "icon": "/img/fonts-logo.png",
-   "desc": "Type your text and see it in every font, with shadow, outline, gradient and glow. Download a transparent PNG, copy the CSS, or find a font from a picture.",
-   "added": "2026-10-19",
-   "kind": "tool"
-  },
-  {
-   "href": "/compress-video",
-   "title": "Video Compressor",
-   "icon": "/img/compress-video-logo.png",
-   "desc": "Make MP4 and MOV videos smaller: aim for a file size like 25 MB, lower the resolution, save as MP4 or WebM. Fast, and nothing is uploaded.",
-   "added": "2026-10-18",
-   "kind": "tool"
-  },
-  {
-   "href": "/geometry",
-   "title": "Geometry & Angle Lab",
-   "icon": "/img/geometry-logo.png",
-   "desc": "Drag triangles, lines and circles and watch the angles update.",
-   "added": "2026-10-18",
-   "kind": "calculator"
-  },
-  {
-   "href": "/trigonometry",
-   "title": "Trigonometry Calculator",
-   "icon": "/img/trigonometry-logo.png",
-   "desc": "Unit circle, triangle solver, graphs, tables and identities.",
-   "added": "2026-10-18",
-   "kind": "calculator"
   }
  ]
 }

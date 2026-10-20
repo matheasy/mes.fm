@@ -1,0 +1,28 @@
+		<div class="tu-seo">
+			<h2>Young's modulus, stress and strain calculator</h2>
+			<p>Type any four of the force, cross-section, length, change in length, stress, strain and Young's modulus, and the calculator works out the other three. It shows which values are still missing, warns when the bar would yield or break, gives a safety factor against the material's yield strength and, for a push, the load at which a long bar buckles. The picture is live: drag the red force arrow and the bar stretches (the stretch is drawn larger than real, and the drawing says by how much). It works in SI and US units, and every box takes its own unit, so you can mix kN with inches if your data is like that.</p>
+			<h3>The three formulas</h3>
+			<ul>
+				<li><strong>Stress</strong> is force per area: <span class="mes-tex">\(\sigma = F / A\)</span>. One megapascal (MPa) is one newton on every square millimetre; 1 ksi = 6.895 MPa.</li>
+				<li><strong>Strain</strong> is the stretch per unit length: <span class="mes-tex">\(\varepsilon = \Delta L / L\)</span>. It has no unit; 0.001 is 0.1% or 1,000 microstrain (µε).</li>
+				<li><strong>Young's modulus</strong> (the modulus of elasticity) is stress divided by strain while the material is elastic: <span class="mes-tex">\(E = \sigma / \varepsilon\)</span>. Put together, the stretch of a bar is <span class="mes-tex">\(\Delta L = F L / (A E)\)</span>.</li>
+			</ul>
+			<h3>Worked examples</h3>
+			<p><strong>A 10 mm steel rod, 1 m long, pulled with 10 kN.</strong> The area is π × 10² ÷ 4 = 78.54 mm², so the stress is 10,000 N ÷ 78.54 mm² = 127.3 MPa. With E = 200 GPa the strain is 127.3 ÷ 200,000 = 0.000637, so the rod stretches 0.637 mm. A36 steel yields at 250 MPa, so the safety factor is about 1.96. Pull the same rod with 50 kN and the stress is 636.6 MPa: past the tensile strength, so it breaks.</p>
+			<p><strong>Finding E from a test.</strong> A 12.5 mm bar with a 50 mm gauge length stretches 0.0245 mm under 12 kN. The stress is 12,000 ÷ 122.7 = 97.8 MPa and the strain 0.0245 ÷ 50 = 0.00049, so E = 97.8 MPa ÷ 0.00049 = 199.6 GPa: a steel. Type F, the diameter, L and ΔL and the calculator does this for you (the "Find E from a test" example).</p>
+			<p><strong>In US units.</strong> A 1/2 in A36 rod (0.1963 in²) carrying 2 kip has a stress of 10.19 ksi. With E = 29,000 ksi the strain is 0.000351, so a 40 in rod stretches 0.0140 in.</p>
+			<p><strong>Sizing a rod.</strong> Type the force, pick the material and press "Size it for a safety factor of 2": the stress is set to the yield strength ÷ 2 and the diameter you need is worked out. For 25 kN in A36 that is 125 MPa, 200 mm², a 15.96 mm bar: round up to 16 mm.</p>
+			<h3>Questions</h3>
+			<h4>What does Young's modulus tell you?</h4>
+			<p>How stiff a material is: how much stress it takes to stretch it by a given strain. Steel (about 200 GPa) is three times stiffer than aluminium (about 70 GPa), so the same bar in aluminium stretches three times as much under the same load. Stiffness is not strength: a stiff material can still be weak, and glass is stiffer than aluminium but breaks at a far lower stress.</p>
+			<h4>Does Young's modulus depend on the size of the bar?</h4>
+			<p>No. It is a property of the material. A thicker bar is stiffer because it has more area, and a longer bar stretches more because there is more of it, but E stays the same. That is why the stretch formula has F, L and A in it as well as E.</p>
+			<h4>When does Hooke's law stop working?</h4>
+			<p>At the proportional limit, close to the yield strength. Beyond it the bar stretches much more for each extra newton and stays longer when unloaded. The calculator warns you, and the <a href="/tensile-test-simulator">tensile test simulator</a> shows the whole stress-strain curve, including what happens when you unload past yield.</p>
+			<h4>Is E the same in compression?</h4>
+			<p>For metals, yes. Concrete, cast iron and wood behave differently in tension and compression, and a long thin bar in compression usually buckles sideways long before its stress gets high. The calculator gives the Euler buckling load for pinned ends, <span class="mes-tex">\(P_{cr} = \pi^2 E I / L^2\)</span>, when you choose "Push".</p>
+			<h4>Why is my measured E different from the table?</h4>
+			<p>Table values are typical. Real E varies by a few percent with the alloy and its condition, and a test measures a little low if the grips slip or the strain is taken from the machine's crosshead instead of an extensometer on the bar. Very small strains are also hard to measure: 0.025 mm is a thin hair.</p>
+			<h4>What are the units of Young's modulus?</h4>
+			<p>The same as stress: pascals. Engineers use GPa (10⁹ Pa) in SI and ksi or Msi (10⁶ psi) in US units. 200 GPa = 29,000 ksi = 29 Msi.</p>
+		</div>

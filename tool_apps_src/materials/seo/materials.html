@@ -1,0 +1,31 @@
+		<div class="tu-seo">
+			<h2>Mechanics of materials calculators</h2>
+			<p>Seven tools for strength of materials, in one place and with one material list, so the material you pick is used in every tab. Each tool shows the formula, the numbers put into it, a live picture drawn from the same numbers and a warning when the material would yield or break. SI and US units, a shareable link for every tab, and nothing is uploaded: your numbers stay in your browser.</p>
+			<h3>What is here</h3>
+			<ul>
+				<li><strong>Stress &amp; strain</strong> (axial loading): type any four of F, A, L, ΔL, σ, ε and E and get the rest, with a draggable picture of a stretched bar, the safety factor and the buckling load. Also on its own page: the <a href="/youngs-modulus-calculator">Young's modulus calculator</a>.</li>
+				<li><strong>Tensile test:</strong> the stress-strain curve drawn as a bar is pulled to destruction, with unloading, true stress, resilience and toughness, and three materials side by side. Bigger on the <a href="/tensile-test-simulator">tensile test simulator</a> page.</li>
+				<li><strong>Shear</strong> of bolts and pins (single and double shear), glued joints and punching, and <strong>Torsion</strong> of solid and hollow shafts with the angle of twist and motor power. Together on the <a href="/shear-stress-calculator">shear stress calculator</a> page.</li>
+				<li><strong>Poisson &amp; 3D:</strong> how much a bar gets thinner when it is pulled, the change in volume, Hooke's law for stresses in all three directions (and back from strains to stresses), and a converter between E, G, ν and the bulk modulus K.</li>
+				<li><strong>Thermal:</strong> how much a bar grows when it is heated, and the stress when walls stop it, with or without a gap.</li>
+				<li><strong>Materials table:</strong> about 30 materials (steels, stainless, aluminium, titanium, copper, brass, bronze, cast iron, nickel alloys, tungsten, lead, gold, silver, wood, concrete, glass, plastics, rubber, carbon fibre and bone) with E, G, ν, yield and tensile strength, elongation, density and thermal expansion, a search, sorting and a chart of stiffness against weight.</li>
+			</ul>
+			<h3>The key formulas</h3>
+			<ul>
+				<li>Stress and strain: <span class="mes-tex">\(\sigma = F/A\)</span>, <span class="mes-tex">\(\varepsilon = \Delta L / L\)</span>, <span class="mes-tex">\(E = \sigma/\varepsilon\)</span>, so <span class="mes-tex">\(\Delta L = FL/(AE)\)</span>.</li>
+				<li>Shear: <span class="mes-tex">\(\tau = V/A\)</span>, <span class="mes-tex">\(\gamma = \tau/G\)</span>, <span class="mes-tex">\(G = E/(2(1+\nu))\)</span>.</li>
+				<li>Torsion: <span class="mes-tex">\(\tau_{max} = Tc/J\)</span>, <span class="mes-tex">\(\theta = TL/(GJ)\)</span>, <span class="mes-tex">\(P = T\omega\)</span>.</li>
+				<li>Poisson's ratio and volume: <span class="mes-tex">\(\varepsilon_{lat} = -\nu\,\varepsilon\)</span>, <span class="mes-tex">\(\Delta V / V \approx \varepsilon\,(1 - 2\nu)\)</span>, <span class="mes-tex">\(K = E/(3(1-2\nu))\)</span>.</li>
+				<li>Thermal: <span class="mes-tex">\(\delta_T = \alpha\,\Delta T\,L\)</span>, and between rigid walls <span class="mes-tex">\(\sigma = -E\,\alpha\,\Delta T\)</span>.</li>
+			</ul>
+			<h3>Worked examples</h3>
+			<p><strong>A steel rail held at both ends, warmed by 40 °C.</strong> With α = 11.7 × 10⁻⁶ per °C and E = 200 GPa the stress is 200,000 × 11.7 × 10⁻⁶ × 40 = 93.6 MPa in compression. Free, a 10 m rail would have grown 4.68 mm. That is why rails and bridges have expansion joints, or are laid with the stress planned in.</p>
+			<p><strong>A 20 mm steel bar pulled to 100 MPa.</strong> The strain is 0.0005 and, with ν = 0.26, the bar gets 0.00013 thinner: its diameter shrinks by 2.6 µm. Its volume grows by about 0.024%, because ν is below 0.5.</p>
+			<h3>Questions</h3>
+			<h4>What is mechanics of materials?</h4>
+			<p>The part of engineering (also called strength of materials) that works out how solid parts stretch, bend, twist and break under loads: stress, strain, the material properties that link them, and how to size a part so it stays safe.</p>
+			<h4>How accurate are the material values?</h4>
+			<p>They are typical room-temperature values from data sheets, handbooks and textbooks, good for learning and first estimates. Real values change with the alloy, heat treatment, size, moisture and supplier; use certified values and your design code for real parts.</p>
+			<h4>Can I use my own material?</h4>
+			<p>Yes: pick "Your own material" at the end of the list and type its Young's modulus, Poisson's ratio, strengths, elongation, density and thermal expansion. Every tool, including the tensile test curve, uses it.</p>
+		</div>

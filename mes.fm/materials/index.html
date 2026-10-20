@@ -1,0 +1,1353 @@
+<!DOCTYPE html>    <html lang="en">
+<!-- MES Mechanics of Materials -- mes.fm/materials -->
+<!-- Added by HTTrack --><meta http-equiv="content-type" content="text/html;charset=UTF-8" /><!-- /Added by HTTrack -->
+<head>                    <link rel="icon" href="/materials/img/logo.png?v=2" type="image/png" /><link rel="canonical" href="https://mes.fm/materials" />                    <title>MES Mechanics of Materials | Math Easy Solutions</title>
+        <meta name="viewport" content="width=device-width, initial-scale=1">	<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css" integrity="sha384-BVYiiSIFeK1dGmJRAkycuHAHRg32OmUcww7on3RYdg4Va+PmSTsz/K68vbdEjh4u" crossorigin="anonymous">
+        <style>html, body, div, span, applet, object, iframe, h1, h2, h3, h4, h5, h6, p, blockquote, pre, a, abbr, acronym, address, big, cite, code,del, dfn, em, img,
+ins, kbd, q, s, samp, small, strike, strong, sub, tt, var, u, i, center, dl, dt, dd, ol, ul, li, fieldset, form, label, legend, table, caption, tbody,
+tfoot, thead, tr, th, td, article, aside, canvas, details, embed, figure, figcaption, footer, header, hgroup, menu, nav, output, ruby, section, summary,
+time, mark, audio, video {margin:0;padding:0;border:0;font-size:100%;font-family:Helvetica,Arial,Optima,Sans Pro;vertical-align:baseline;color:#333333;}
+sup {margin:0;padding:0;border:0;font-size:100%;font-family:Helvetica,Arial,Optima,Sans Pro;vertical-align:super;color:black;}
+b {margin:0;padding:0;border:0;font-size:100%;font-family:Helvetica,Arial,Optima,Sans Pro;vertical-align:baseline;}
+/* HTML5 display-role reset for older browsers */
+article, aside, details, figcaption, figure, footer, header, hgroup, menu, nav, section {display:block;}
+body {background-color:#e2e2e2;line-height:1;}
+ol, ul {list-style:none;}
+blockquote, q {quotes:none;}
+blockquote:before, blockquote:after,
+q:before, q:after {content:'';content:none;}
+table {border-collapse:collapse;border-spacing:0;}
+a {text-decoration:none;}
+sub {vertical-align:sub;}        .warning-message {font-size:1em;text-align:center;padding:0.5em;background-color:#2f6690;color:white;}
+        .button {color:#2f6690;border:0.125em solid#2f6690;margin:0.7em 0;padding:0.5em 0.2em;text-align:center;-moz-user-select:none; -webkit-user-select:none; -ms-user-select:none; user-select:none; cursor:pointer;}
+        .button--subscribe {line-height:1.2;}
+        .button--share-calc {display: inline-block;padding-left: 1em;padding-right: 1em;margin-top: 0.5em;margin-bottom: 0.5em;}
+        .italic {font-style:italic;}
+        .bold {font-weight:700;}
+        .list {list-style-type:disc;}
+        .list__indent {line-height:1.2;margin-left:2em;margin-top:0.4em;margin-bottom:0.2em;font-size: 0.95em;}
+        .time {font-style:italic;font-weight:100;color:#939393;}
+        .small-text {font-size:0.9em;}
+        .big-text {font-size:1.1em;}
+        .link {color:#2f6690; font-weight:700;}
+        .link--dark {color: blue; font-weight: 700;}
+        .link--dark:hover {text-decoration: underline;}
+        .basic-table {margin:1em auto;}
+        .basic-table td, .basic-table th {border: 1px solid black; padding:0.5em 1em; text-align: center;}
+        .basic-table th {background-color: #ededed}
+        .basic-table--full {width:100%;}
+        .sponsored-ad {text-align:right;display:block;font-size:0.7em;margin-bottom:0.3em;font-style:italic;}
+        .box-border {border:0.1em solid#2f6690; padding:1em;margin-bottom: 1.2em;}
+        .selected {background-color:#2f6690;color:white;}
+        .right-arrow {font-size:2em;vertical-align:middle;margin:0 0.2em;display:inline-block;color:#2f6690;}
+        .share-calc-url {border: 2px solid black;font-size:0.9em;display:inline-block;width:15.5em;padding:0.45em 0.8em;font-weight:700;vertical-align:middle;color:#2f6690;background-color:#fdc010;}
+        .share-calc-url-container {margin-bottom: 0.5em;display: inline-block;}
+        .scissors-icon {vertical-align:middle;cursor: pointer;}
+        .hide {display:none;}
+        .crypto-container {background-color: #257bb6; padding: 10px; border-radius: 5px;}
+        .crypto-text {color: white; line-height: 1.4; padding: 5px;}.header2 {font-size:1.1em; margin-top:1.3em;margin-bottom:0.5em;}
+.header3 {font-size:1.0em; margin-top:1.0em;margin-bottom:0.3em;}
+.sentence {margin-top:0.5em; margin-bottom:0.5em;line-height:1.5}
+.sentence--indent {margin-left:1.5em;}
+
+.shadow {box-shadow:0.2em 0.2em 0.5em #999999;}
+.link:hover {color:#22496a;text-decoration:underline; cursor:pointer;}
+
+.outer-container {width:68.25em;margin:0 auto;}
+.inner-container {padding:1em 2em 1em 2em;overflow:hidden;background-color:white;box-shadow:0 0 1em #BBBBBB;}
+.header {position:relative;margin-bottom: 0.7em;}
+.logo-image-container {display:table-cell;}
+.logo {display:block;}
+.logo-text-container {display:table-cell;vertical-align:middle;padding-left:1.5em;}
+.calculator-title-link {display: block;}
+.calculator-title {margin-bottom:0.3em;font-size:1.8em;}
+.tag-line {font-size:1.2em;}
+
+.social-container {position:absolute;right:0;top:0;}
+.social-container--bottom {position:absolute;right:0;bottom:0;}
+.social {display: table-cell;}
+.social__text {display:table-cell;font-size:1.2em;vertical-align:middle;padding-right:0.6em;font-style:italic;color:#2f6690;}.social__logo {float:left;}
+.social__logo:not(:last-child) {margin-right:0.5em;}
+.social__link {height:2em;width:2em;display:block;}
+.social__fb {background: url(https://mes.fm/main_img/social-sprites.png) 0 0;}
+.social__gplus {background: url(https://mes.fm/main_img/social-sprites.png) -2em 0;}
+.social__insta {background: url(https://mes.fm/main_img/social-sprites.png) -4em 0;}
+.social__pin {background: url(https://mes.fm/main_img/social-sprites.png) -6em 0;}
+.social__twitter {background: url(https://mes.fm/main_img/social-sprites.png) -8em 0;}
+.social__yt {background: url(https://mes.fm/main_img/social-sprites.png) -10em 0;}
+.social__patreon {background: url(https://mes.fm/main_img/social-sprites.png) -12em 0;}
+.social__steemit {background: url(https://mes.fm/main_img/social-sprites.png) -14em 0;}
+.social__hive {background: url(https://mes.fm/main_img/social-sprites.png) -16em 0;}
+.social__telegram {background: url(https://mes.fm/main_img/social-sprites.png) -18em 0;}
+
+.info-bar-container {display: table-cell;}
+.info-bar {display:inline-block;margin-left:-2em;padding-left:1.1em;overflow:hidden;}
+.info-bar__item {float:left;}
+.info-bar__item__text {display:block;text-align:center;padding:0.7em 1em 0.7em 1em;font-size:0.9em;color:white}
+.info-bar__logo-container {display: table-cell;vertical-align: middle;}
+.info-bar__logo {display: block; margin-left: 0.8em;}
+
+.outer-page-content {width:45.5em;display:inline-block;}
+.page-content {padding:1.2em 2.25em 0 0;}
+.color-box {width:1.2em;height:1.2em;display:inline-block;margin-right:0.5em;}
+.page-title {display:inline-block;font-size:1.5em;font-weight:400;margin-bottom:0.3em;}
+.page-description {line-height:1.3;}
+#main-content {margin:1.5em 0;position:relative;}
+
+.side-bar {width:18.75em;float:right;}
+.navbar-container {margin:2.1em 0.8em;}
+.navbar {margin-bottom:-1em;}
+.button--navbar {padding:0.7em 0.2em;font-size:1.2em;margin-bottom:0;color:#2f6690;border:0.125em solid#2f6690;}
+
+.navbar__item:hover {cursor:pointer;}
+.navbar__link  {display:block;color:white;padding:0.7em 1em 0.7em 1.4em;}
+.navbar__link--first {padding-top:0.8em;}
+.navbar__dropdown-item {color:#222222;}
+.navbar__dropdown-item:hover {text-decoration:underline;}
+.dropdown-symbol {margin-left:1em;color:white;}
+
+.latest-article {margin-top:1em;padding:0.5em;text-align:center;box-shadow:0 0 1em #BBBBBB;}
+.latest-article__tag:first-child {margin-bottom:0.5em;line-height:normal;}
+.latest-article__title:last-child {text-align:left;font-weight:700;}
+.latest-article__logo {vertical-align:bottom;margin-bottom:0.5em;}
+
+.footer {padding:2em;}
+.footer__item-container {display:table;width:100%;margin-bottom:1.6em;}
+.footer__item {display:table-cell;}
+.footer__item--extra-padding {padding-left:2.5em;}
+.footer__text {color:white;line-height:1.5;}
+.footer__text--title {display:inline-block;margin-bottom:1.6em;font-size:1.3em;font-style:italic;}
+.footer__text--extra-info {float:right;}
+.footer__text:not(.footer__text--copyright):hover {text-decoration:underline; cursor:pointer;}
+.footer__text--black {color:#000;}
+.footer__separator {color:white;}
+#copyright-year {color:white;}
+
+.active-tab {background-color:#fdc010;color: #222222;}
+.navbar__link:hover:not(.navbar__dropdown-item):not(.active-tab),.info-bar__item__text:hover:not(.active-tab) {background-color:#22496a;}
+        .info-bar,.color-box,.navbar,.footer {background-color:#2f6690;}
+        .dropdown-symbol--dark {color:#2f6690;}
+        .button--active {background-color:#2f6690;color:white;}
+        .navbar__dropdown-container {color: #222222;background-color:#fdc010;}
+        .header2--top {margin-top: 0.5em;}
+        .basic-table td, .basic-table th {border: 1px solid black; padding:0.3em 0.5em; text-align: center;}
+        /* RESPONSIVE-FIX-INSERTED */
+@media (max-width: 768px) {
+  .outer-container { width: 100% !important; margin: 0 !important; }
+  .outer-page-content { width: 100% !important; display: block !important; }
+  .side-bar { width: 100% !important; float: none !important; }
+  .page-box { width: auto !important; display: block !important; margin: 0 auto 0.5em auto !important; }
+  img { max-width: 100% !important; height: auto !important; }
+  table { max-width: 100% !important; }
+
+  #info-bar > .info-bar__item:has(a[href$="index.html"]),
+  #info-bar > .info-bar__item:has(a[href*="donate"]),
+  #info-bar > .info-bar__item:has(a[href*="substack.com"]),
+  #info-bar > .info-bar__item:has(a[href*="mes.fm/links"]) { display: none !important; }
+}
+
+.inner-container { position: relative !important; }
+.header .social-container { display: none !important; }
+.side-bar { width: auto !important; float: none !important; }
+.navbar-container { margin: 0 !important; box-shadow: none !important; }
+.navbar__item--social { display: list-item; padding: 1em 1.6em 1em 1.4em; border-bottom: 1px solid rgba(255,255,255,0.25); }
+.navbar__item--social .social-container--navbar { position: static !important; display: flex; flex-wrap: wrap; align-items: center; gap: 0.6em; }
+.navbar__item--social .social__text { color: white; margin: 0; }
+.navbar__item--social .social { display: flex; flex-wrap: wrap; gap: 0.5em; margin: 0; padding: 0; }
+.navbar__item--social .info-bar__logo-container { display: block; margin-top: 0.4em; }
+#navbar-button {
+  position: absolute !important; top: 16px !important; right: 16px !important; z-index: 20;
+  width: 44px; height: 44px; padding: 0; margin: 0 !important;
+  background: transparent !important; border: none !important;
+  font-size: 0;
+}
+
+@media (max-width: 768px) {
+  .header { padding-right: 4em !important; box-sizing: border-box; }
+}
+#navbar-button::before {
+  content: ""; display: block; margin: 0 auto;
+  width: 26px; height: 4px; background: currentColor; border-radius: 1px;
+  box-shadow: 0 7px 0 currentColor, 0 -7px 0 currentColor;
+}
+#navbar { display: none; }
+#navbar.hide {
+  display: block !important; box-sizing: border-box;
+  position: absolute; top: 76px; right: 16px; z-index: 19;
+  width: 16em; max-width: 90vw; max-height: 75vh; overflow-y: auto;
+  scrollbar-gutter: stable;
+  box-shadow: 0 0.25em 1em rgba(0,0,0,0.3);
+  border-radius: 0.25em;
+}
+
+#navbar.hide { display: flex !important; flex-direction: column; }
+.navbar__item--social { order: 999; }
+.navbar__item--social .info-bar__logo-container { display: block !important; }
+
+.outer-container { width: auto !important; max-width: 50em; margin: 0 auto !important; }
+.outer-page-content { width: 100% !important; display: block !important; }
+.page-content { padding-right: 0 !important; }
+
+</style>	<style>
+	.hide {display:none;}
+	a,a:hover {text-decoration: none !important;color:white;}
+	a.active-tab:hover {color:#222222;}
+	.navbar {border:none;}
+
+	/* the tool itself (scoped to #main-content) */
+	/* shared widget kit for the calculator tool pages (build_tool_apps.py prepends this to each app's own CSS) */
+	.tu {margin:1em 0;--accent:#2f6690;--accent-dark:#22496a;--tint:#e1edf6;}
+	.tu *, .tu *::before, .tu *::after {box-sizing:border-box;}
+	.tu a {color:var(--accent);text-decoration:underline !important;}
+	.tu a:hover {color:var(--accent-dark);}
+	.tu button, .tu input, .tu select {font:inherit;}
+	.tu h2 {font-size:1.05em;color:#1e2733;margin:1.4em 0 0.6em;padding-bottom:0.3em;border-bottom:2px solid #e1edf6;}
+	.tu h3 {font-size:0.98em;color:#1e2733;margin:1em 0 0.4em;}
+	.tu p {line-height:1.5;margin:0.5em 0;}
+	.tu-card {background:#fff;border:1px solid #dfe4ea;border-radius:0.55em;padding:1em 1.1em;}
+	.tu-card--tint {background:#e1edf6;border-color:#e1edf6;}
+	.tu-row {display:flex;flex-wrap:wrap;gap:0.9em 1.1em;align-items:flex-end;}
+	.tu-field {display:flex;flex-direction:column;gap:0.3em;flex:1 1 11em;min-width:0;}
+	.tu-field--sm {flex:0 1 8em;}
+	.tu-field > label, .tu-label {font-size:0.75em;font-weight:700;text-transform:uppercase;letter-spacing:0.04em;color:#667;}
+	.tu-input, .tu-select {width:100%;font-size:1.05em;padding:0.55em 0.65em;border:1px solid #b9c1cc;border-radius:0.4em;background:#fff;color:#222;}
+	.tu-input:focus, .tu-select:focus {outline:none;border-color:var(--accent);box-shadow:0 0 0 2px #e1edf6;}
+	.tu-input--big {font-size:1.35em;padding:0.55em 0.7em;}
+	.tu-suffix {position:relative;}
+	.tu-suffix .tu-input {padding-right:3.2em;}
+	.tu-suffix span {position:absolute;right:0.7em;top:50%;transform:translateY(-50%);font-size:0.85em;color:#667085;pointer-events:none;}
+	.tu-btn {cursor:pointer;padding:0.5em 0.95em;border-radius:0.35em;border:0.125em solid var(--accent);background:#fff;color:var(--accent);font-size:0.9em;line-height:1.1;}
+	.tu-btn:hover {background:var(--accent);color:#fff;}
+	.tu-btn--primary {background:var(--accent);color:#fff;}
+	.tu-btn--primary:hover {background:var(--accent-dark);border-color:var(--accent-dark);}
+	.tu-btn--ghost {border-color:#c3c9d2;color:#555;}
+	.tu-btn--ghost:hover {background:#eef1f5;color:#222;border-color:#c3c9d2;}
+	.tu-seg {display:inline-flex;border:1px solid #b9c1cc;border-radius:0.4em;overflow:hidden;background:#fff;}
+	.tu-seg button {cursor:pointer;border:0;background:transparent;padding:0.55em 0.9em;color:#555;font-size:0.95em;border-right:1px solid #dfe4ea;}
+	.tu-seg button:last-child {border-right:0;}
+	.tu-seg button:hover {background:#f4f6f9;}
+	.tu-seg button[aria-pressed="true"] {background:var(--accent);color:#fff;}
+	.tu-chips {display:flex;flex-wrap:wrap;gap:0.4em;margin:0.6em 0 0;}
+	.tu-chip {cursor:pointer;font-size:0.82em;padding:0.35em 0.8em;border-radius:1.2em;border:1px solid #c3c9d2;background:#fff;color:#555;}
+	.tu-chip:hover {border-color:var(--accent);color:var(--accent);}
+	.tu-chip[aria-pressed="true"] {background:var(--accent);border-color:var(--accent);color:#fff;}
+	.tu-stats {display:grid;grid-template-columns:repeat(auto-fit,minmax(13em,1fr));gap:0.8em;margin:1em 0;}
+	.tu-stat {background:#fff;border:1px solid #dfe4ea;border-radius:0.55em;padding:0.8em 1em;}
+	.tu-stat--hero {background:#e1edf6;border-color:#e1edf6;}
+	.tu-stat__label {font-size:0.72em;font-weight:700;text-transform:uppercase;letter-spacing:0.05em;color:#667;}
+	.tu-stat__value {font-size:1.7em;font-weight:700;color:#1e2733;line-height:1.2;margin:0.15em 0;word-break:break-word;}
+	.tu-stat__sub {font-size:0.85em;color:#555d6b;line-height:1.35;}
+	.tu-pos {color:#1f7a3d !important;}
+	.tu-neg {color:#b3261e !important;}
+	.tu-table-wrap {overflow-x:auto;}
+	.tu-table {width:100%;border-collapse:collapse;font-size:0.95em;}
+	.tu-table th, .tu-table td {text-align:right;padding:0.5em 0.7em;border-bottom:1px solid #e3e7ec;color:#333;white-space:nowrap;}
+	.tu-table th:first-child, .tu-table td:first-child {text-align:left;}
+	.tu-table th {font-size:0.75em;text-transform:uppercase;letter-spacing:0.03em;color:#6a7280;background:#fff;}
+	.tu-table tr.is-active td {background:#e1edf6;font-weight:700;}
+	.tu-note {font-size:0.85em;color:#6a7280;line-height:1.45;}
+	.tu-toast {position:fixed;left:50%;bottom:2em;transform:translateX(-50%) translateY(0.5em);background:#1e2733;color:#fff;padding:0.6em 1.1em;border-radius:2em;font-size:0.9em;box-shadow:0 0.4em 1.2em rgba(0,0,0,0.25);opacity:0;pointer-events:none;transition:opacity 0.15s, transform 0.15s;z-index:60;}
+	.tu-toast--show {opacity:1;transform:translateX(-50%) translateY(0);}
+	.tu-seo {margin-top:2em;border-top:1px solid #e3e3e3;padding-top:1.2em;}
+	/* SEO-HEADINGS: headlines and questions stand out from the body text (also added to built pages by add_seo_heading_style.py) */
+	body .tu-seo {font-size:1.04em;line-height:1.65;}
+	body .tu-seo h2 {font-size:1.45em;font-weight:800;line-height:1.25;margin:0 0 0.6em;color:#1e2733;border-bottom:0;padding-bottom:0;}
+	body .tu-seo h3 {font-size:1.2em;font-weight:800;line-height:1.3;margin:1.6em 0 0.5em;padding:0.15em 0 0.15em 0.65em;border-left:5px solid var(--accent,#4a6fa5);color:#1e2733;}
+	body .tu-seo h4, body .tu-seo dt {font-size:1.08em;font-weight:700;font-style:normal;line-height:1.35;margin:1.3em 0 0.3em;color:#1e2733;}
+	body .tu-seo dd {margin:0 0 0.6em;} body .tu-seo p, body .tu-seo li, body .tu-seo dd {line-height:1.65;}
+	body.dark-mode .tu-seo h2, body.dark-mode .tu-seo h3, body.dark-mode .tu-seo h4, body.dark-mode .tu-seo dt {color:#f2f2f2;}
+	.tu sup, .tu sub {font-size:0.72em !important;line-height:0;vertical-align:baseline;position:relative;} .tu sup {top:-0.5em;} .tu sub {top:0.3em;}
+	.tu div[class$="-eq"] {overflow-y:hidden;}
+	.tu-seo ul {list-style:disc;margin:0.5em 0 0.5em 1.5em;line-height:1.5;}
+	.tu-svg-line {fill:none;stroke:#1e2733;stroke-width:2;}
+	.tu-svg-accent {fill:none;stroke:var(--accent);stroke-width:3;}
+	.tu-svg-fill {fill:var(--accent);}
+	.tu-svg-tint {fill:#e1edf6;}
+	.tu-svg-text {font-size:13px;fill:#333;}
+	.tu-svg-grid {stroke:#dfe4ea;stroke-width:1;fill:none;}
+	/* selected states: the derived dark theme would darken these, so restate them for dark mode */
+	/* the dark theme lightens --accent so it reads on dark; text on filled accent surfaces then has to be dark */
+	body.dark-mode .tu .tu-seg button[aria-pressed="true"], body.dark-mode .tu .tu-chip[aria-pressed="true"], body.dark-mode .tu .uc-cat[aria-selected="true"],
+	body.dark-mode .tu .tu-btn:hover, body.dark-mode .tu .tu-btn--primary, body.dark-mode .tu .tu-btn--primary:hover {background:var(--accent);border-color:var(--accent);color:#0b1416;}
+	body.dark-mode .tu .tu-btn--ghost:hover {background:#2e2e2e;border-color:#666;color:#eee;}
+	body.dark-mode .tu .uc-cat[aria-selected="true"] span {color:#0b1416;}
+	body.dark-mode .tu .tu-svg-tint {fill:rgba(255,255,255,0.09);}
+	body.dark-mode .tu .gm-card[aria-pressed="true"] {border-color:var(--accent);background:rgba(255,255,255,0.08);}
+	/* dark mode: the tool's accent lightened (same hue) so links, outlines and the text on filled buttons keep their contrast on the dark page */
+	body.dark-mode .tu {--accent:#639fcc !important;--accent-dark:#639fcc !important;}
+	@media (max-width:600px) {
+		.tu-stat__value {font-size:1.45em;}
+		.tu-field--sm {flex:1 1 7em;}
+	}
+	@media print {
+		.tu-btn, .tu-chips, .tu-seg {display:none !important;}
+	}
+
+/* row layout options on the grade / GPA / weighted-average calculators (names on-off, table layout) */
+.tu .rw-bar {display:flex;gap:0.4em;flex-wrap:wrap;margin:0.5em 0 0.1em;}
+.tu .gc-n {display:none;}
+.tu [data-names="0"] .rw-name {display:none !important;}
+.tu [data-names="0"] .rw-num, .tu [data-table="1"] .rw-num {display:block !important;flex:0 0 1.7em;text-align:right;color:#8a93a0;font-size:0.85em;padding-bottom:0.7em;}
+.tu [data-table="1"] .rw-head, .tu [data-table="1"] .rw-row {display:grid !important;grid-template-columns:var(--rw-cols);gap:0.3em;align-items:center;}
+.tu [data-table="1"] .rw-head {font-size:0.68em;font-weight:700;text-transform:uppercase;letter-spacing:0.03em;color:#667;padding:0.4em 0 0.2em;border-bottom:2px solid #d5dae1;} .tu [data-table="1"] .rw-head span {text-align:center;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;} .tu [data-table="1"] .rw-head span:first-child {text-align:right;}
+.tu [data-table="1"] .rw-row {padding:0.22em 0;border-bottom:1px solid #eceff3;}
+.tu [data-table="1"] .rw-row > * {order:0 !important;flex:none !important;margin:0 !important;min-width:0 !important;width:auto !important;}
+.tu [data-table="1"] .rw-row .rw-num {padding:0;}
+.tu [data-table="1"] .rw-f label {display:none;}
+.tu [data-table="1"] .rw-row .tu-input, .tu [data-table="1"] .rw-row .tu-select {padding:0.35em 0.2em;width:100%;min-width:0;text-align:center;}
+.tu [data-table="1"] .rw-row .rw-name .tu-input {text-align:left;padding-left:0.4em;}
+.tu [data-table="1"] .rw-del {padding:0.25em 0 !important;font-size:0.95em !important;}
+.tu [data-table="1"] .rw-pts {padding:0 !important;font-size:0.78em;text-align:center;}
+body.dark-mode .tu .rw-head {color:#a0a8b3;border-bottom-color:#555;} body.dark-mode .tu [data-table="1"] .rw-row {border-bottom-color:#333;}
+/* equation boxes typeset by main_js/mes-math.js (MathJax) */
+.tu [class$="-eq__f"].mes-tex {font-family:inherit;white-space:normal;display:inline-block;vertical-align:middle;max-width:100%;overflow-x:auto;overflow-y:hidden;}
+.tu [class$="-eq"] mjx-container {margin:0.15em 0 !important;}
+.tu [class$="-eq"] > div {margin:0.25em 0;}
+.tu [class$="-eq__n"] {vertical-align:middle;}
+
+	/* MES Mechanics of Materials (tool_apps_src/materials). Every colour is a --mt-* custom property so the derived dark theme leaves it alone; dark values are restated under body.dark-mode #mt.mt */
+	#mt {--mt-ink:#1e2733;--mt-mut:#5b6573;--mt-line:#d5dbe3;--mt-card:#ffffff;--mt-soft:#f3f6f9;--mt-grid:#e6eaef;--mt-axis:#5b6573;--mt-dim:#334155;--mt-red:#c62828;--mt-farrow:#d4351c;--mt-warn:#a15c07;--mt-bad:#b3261e;--mt-good:#1f7a3d;
+		--mt-s1:#8d9aab;--mt-s2:#eef2f6;--mt-s3:#6f7d8e;--mt-sup:#c5ccd5;--mt-hatch:#7b8794;--mt-yield:#f59e0b;--mt-break:#e04a3a;--mt-sec:#9aaabd;--mt-hole:#ffffff;--mt-ghost:#8a96a4;
+		--mt-main:#2563eb;--mt-true:#7c3aed;--mt-res:rgba(16,185,129,0.35);--mt-tgh:rgba(37,99,235,0.12);--mt-dot:#ffffff;--mt-grip:#4b5563;--mt-gript:#ffffff;--mt-frame:#d1d5db;
+		--mt-plate:#c8d1dc;--mt-bolt:#7d8b9c;--mt-glue:#f2c94c;--mt-die:#9aa4b0;--mt-shaft:#b8c4d2;--mt-shaftend:#d6dee7;--mt-twl:#2b3a4d;--mt-heat:#f5b7a8;--mt-cold:#a8cdf5;--mt-cube0:rgba(148,163,184,0.18);--mt-cube1:rgba(37,99,235,0.28);}
+	#mt [hidden] {display:none !important;}
+	#mt {color:var(--mt-ink);}
+	:where(#mt) :is(div, span, p, li, label, b, strong, em, small, td, th, dt, dd, h2, h3, h4, output) {color:inherit;}   /* the shell's reset paints every div / span / p #333; inherit the tool's ink instead (class colours still win) */
+	#mt .mt-q > label, #mt .tu-stat__label, #mt .tu-field > label, #mt .tu-label {text-transform:none;letter-spacing:0.01em;font-size:0.8em;}
+	#mt .mt-tabs {display:flex;gap:0.35em;flex-wrap:wrap;margin:0 0 0.8em;}
+	#mt .mt-tabs button {border:1px solid var(--mt-line);background:var(--mt-card);color:var(--mt-ink);padding:0.55em 1em;border-radius:2em;cursor:pointer;font:inherit;min-height:40px;}
+	#mt .mt-tabs button[aria-selected="true"] {background:var(--accent);border-color:var(--accent);color:#ffffff;font-weight:700;}
+	#mt .mt-tabs button:focus-visible {outline:3px solid var(--accent);outline-offset:2px;}
+	#mt .mt-bar {display:flex;flex-wrap:wrap;gap:0.8em 1.1em;align-items:flex-end;margin-bottom:0.9em;}
+	#mt .mt-matf {flex:1 1 17em;max-width:28em;}
+	#mt .mt-sysf {display:flex;flex-direction:column;gap:0.3em;}
+	#mt .mt-linkb {min-height:40px;}
+	#mt .mt-matnote {flex:1 1 100%;margin:0;font-size:0.88em;color:var(--mt-mut);line-height:1.45;}
+	#mt .mt-custom {margin-bottom:0.9em;}
+	#mt .mt-custom .tu-row > .mt-q {flex:1 1 10em;}
+	#mt .mt-h {font-size:1.05em;margin:0 0 0.6em;padding:0;border:0;color:var(--mt-ink);}
+	#mt .mt-grid2 {display:grid;grid-template-columns:minmax(0,1.15fr) minmax(0,1fr);gap:0.9em;align-items:start;margin-bottom:0.9em;}
+	#mt .mt-fig {padding:0.6em;}
+	#mt .mt-svg {display:block;width:100%;height:auto;touch-action:none;user-select:none;-webkit-user-select:none;}
+	#mt .mt-cap {font-size:0.9em;color:var(--mt-ink);margin:0.4em 0.3em 0.2em;line-height:1.45;}
+	#mt .mt-slide {display:flex;align-items:center;gap:0.6em;margin:0.4em 0.3em;}
+	#mt .mt-slide label {font-size:0.75em;font-weight:700;text-transform:uppercase;letter-spacing:0.04em;color:var(--mt-mut);}
+	#mt .mt-slide input[type=range] {flex:1;min-width:0;height:36px;accent-color:var(--accent);}
+	#mt .mt-slide output {min-width:6.5em;text-align:right;font-weight:700;color:var(--mt-ink);font-variant-numeric:tabular-nums;}
+	#mt .mt-seg2 {margin:0.2em 0.3em 0.4em;}
+	#mt .tu-seg button {min-height:40px;}
+	#mt .mt-modes {flex-wrap:wrap;}
+	#mt .mt-inp .tu-row {margin-bottom:0.7em;}
+	#mt .mt-r2 {margin-top:0.2em;}
+	#mt .mt-q {flex:1 1 11em;}
+	#mt .mt-qin {display:flex;align-items:stretch;gap:0;min-width:0;}
+	#mt .mt-qin .tu-input {flex:1 1 auto;min-width:0;border-top-right-radius:0;border-bottom-right-radius:0;font-variant-numeric:tabular-nums;}
+	#mt .mt-qin .tu-input:only-child, #mt .mt-qin .tu-input:last-child {border-radius:0.4em;}
+	#mt .mt-qin .mt-u {flex:0 0 auto;width:auto;max-width:7.2em;border-left:0;border-radius:0 0.4em 0.4em 0;padding:0.55em 0.35em;background:var(--mt-soft);font-size:0.95em;}
+	#mt .mt-qin .mt-x {flex:0 0 auto;width:2.3em;min-height:36px;margin-left:0.25em;border:1px solid var(--mt-line);background:var(--mt-card);color:var(--mt-mut);border-radius:0.4em;cursor:pointer;font-size:1.1em;line-height:1;}
+	#mt .mt-qin .mt-x:hover {color:var(--mt-bad);border-color:var(--mt-bad);}
+	#mt .mt-qs {font-size:0.76em;min-height:1.1em;color:var(--mt-mut);}
+	#mt .mt-q[data-s="calc"] .tu-input {background:#e1edf6;border-color:var(--accent);font-weight:700;}
+	#mt .mt-q[data-s="calc"] .mt-qs {color:var(--accent-dark);font-weight:700;}
+	#mt .mt-q[data-s="mat"] .tu-input, #mt .mt-q[data-s="shape"] .tu-input {background:var(--mt-soft);color:var(--mt-ink);}
+	#mt .mt-q[data-s="miss"] .tu-input {border-style:dashed;}
+	#mt .mt-q[data-s="bad"] .tu-input {border-color:var(--mt-bad);}
+	#mt .mt-q[data-s="bad"] .mt-qs {color:var(--mt-bad);}
+	#mt .mt-sec {border:1px dashed var(--mt-line);border-radius:0.5em;padding:0.6em 0.7em 0.2em;margin:0 0 0.7em;}
+	#mt .mt-btns {display:flex;flex-wrap:wrap;gap:0.6em;align-items:center;margin:0.3em 0 0.4em;}
+	#mt .mt-btns .tu-btn {min-height:40px;}
+	#mt .mt-sfw {display:inline-flex;align-items:center;gap:0.4em;flex-wrap:wrap;}
+	#mt .mt-mini {width:4.2em;padding:0.45em 0.5em;min-height:40px;}
+	#mt .mt-msg {font-size:0.9em;color:var(--mt-ink);min-height:1.2em;margin:0.3em 0;line-height:1.45;}
+	#mt .mt-msg--err {color:var(--mt-bad);font-weight:700;}
+	#mt .tu-chips .tu-chip {min-height:36px;}
+	#mt .tu-stat.mt-bad {border-color:var(--mt-bad);} #mt .tu-stat.mt-bad .tu-stat__value {color:var(--mt-bad);}
+	#mt .tu-stat.mt-warn {border-color:var(--mt-warn);} #mt .tu-stat.mt-warn .tu-stat__value {color:var(--mt-warn);}
+	#mt .mt-eq {display:flex;flex-wrap:wrap;gap:0.4em 1.2em;margin:0.9em 0;}
+	#mt .mt-eqb {flex:1 1 18em;display:flex;flex-wrap:wrap;align-items:center;gap:0.2em 0.7em;padding:0.4em 0;border-bottom:1px solid var(--mt-grid);min-width:0;}
+	#mt .mt-eqb__n {flex:0 0 100%;font-size:0.72em;font-weight:700;text-transform:uppercase;letter-spacing:0.05em;color:var(--mt-mut);}
+	#mt .mt-eqb__f {font-size:1.12em;max-width:100%;overflow-x:auto;overflow-y:hidden;color:var(--mt-ink);}
+	#mt .mt-eqb__v {font-size:0.9em;color:var(--mt-mut);font-variant-numeric:tabular-nums;}
+	#mt .mt-disc {margin-top:1em;}
+	#mt .mt-fam {display:flex;flex-wrap:wrap;gap:0.4em 0.9em;align-items:center;margin:1em 0;padding:0.8em 1em;border:1px solid var(--mt-line);border-radius:0.55em;background:var(--mt-soft);}
+	#mt .mt-fam__l {font-weight:700;color:var(--mt-ink);}
+	#mt .mt-fam a {padding:0.3em 0;}
+	#mt .mt-sw {display:inline-block;width:0.8em;height:0.8em;border-radius:50%;margin-right:0.45em;vertical-align:-0.05em;}
+	/* svg pieces */
+	#mt .mt-t {font:19px system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;fill:var(--mt-ink);}
+	#mt .mt-ts {font-size:16px;fill:var(--mt-mut);}
+	#mt .mt-sym {text-transform:none;letter-spacing:0;}
+	#mt .mt-b {font-weight:700;fill:var(--mt-ink);}
+	#mt .mt-tf {fill:var(--mt-farrow);}
+	#mt .mt-tbig {font-size:26px;}
+	#mt .mt-red {fill:var(--mt-red);}
+	#mt .mt-sup {fill:var(--mt-sup);stroke:var(--mt-hatch);stroke-width:1;}
+	#mt .mt-hatch {stroke:var(--mt-hatch);stroke-width:1.5;}
+	#mt .mt-g1 {stop-color:var(--mt-s1);} #mt .mt-g2 {stop-color:var(--mt-s2);} #mt .mt-g3 {stop-color:var(--mt-s3);}
+	#mt .mt-rod {stroke:var(--mt-s3);stroke-width:1.2;}
+	#mt .mt-rod--yield {fill:var(--mt-yield);} #mt .mt-rod--break {fill:var(--mt-break);}
+	#mt .mt-ghost {fill:none;stroke:var(--mt-ghost);stroke-width:1.4;stroke-dasharray:5 4;}
+	#mt .mt-ghostl {stroke:var(--mt-ghost);stroke-width:1.4;stroke-dasharray:4 3;}
+	#mt .mt-buckle {fill:none;stroke:var(--mt-red);stroke-width:2.5;stroke-dasharray:8 5;}
+	#mt .mt-crack {fill:none;stroke:var(--mt-ink);stroke-width:2.5;}
+	#mt .mt-endp {fill:var(--mt-s3);}
+	#mt .mt-farrow {fill:var(--mt-farrow);}
+	#mt .mt-farl {stroke:var(--mt-farrow);stroke-width:4;}
+	#mt .mt-drag {cursor:ns-resize;}
+	#mt .mt-handle {fill:var(--mt-card);stroke:var(--mt-farrow);stroke-width:3;}
+	#mt .mt-drag:hover .mt-handle, #mt .mt-drag:active .mt-handle {fill:#e1edf6;}
+	#mt .mt-hgrip {fill:none;stroke:var(--mt-farrow);stroke-width:2;}
+	#mt .mt-dim {stroke:var(--mt-dim);stroke-width:1.5;}
+	#mt .mt-dimar {fill:var(--mt-dim);}
+	#mt .mt-ext {stroke:var(--mt-dim);stroke-width:1;}
+	#mt .mt-dash {stroke:var(--mt-dim);stroke-width:1.2;stroke-dasharray:5 4;}
+	#mt .mt-callc {fill:none;stroke:var(--mt-dim);stroke-width:1.5;stroke-dasharray:6 5;}
+	#mt .mt-secf {fill:var(--mt-sec);stroke:var(--mt-s3);stroke-width:1.5;}
+	#mt .mt-hole {fill:var(--mt-hole);stroke:var(--mt-s3);stroke-width:1.2;}
+	#mt .mt-grid {stroke:var(--mt-grid);stroke-width:1;}
+	#mt .mt-axis {stroke:var(--mt-axis);stroke-width:1.5;fill:none;}
+	/* tensile test */
+	#mt .mt-tt-top {display:flex;flex-wrap:wrap;gap:0.7em 1em;align-items:flex-end;margin-bottom:0.6em;}
+	#mt .mt-tt-top .tu-field {flex:1 1 13em;max-width:22em;}
+	#mt .mt-tt-opts {display:flex;flex-wrap:wrap;gap:0.5em 1em;align-items:center;}
+	#mt .mt-chk {display:inline-flex;align-items:center;gap:0.4em;min-height:36px;cursor:pointer;color:var(--mt-ink);}
+	#mt .mt-chk input {width:1.15em;height:1.15em;accent-color:var(--accent);}
+	#mt .mt-tt-stage {display:grid;grid-template-columns:minmax(150px,0.36fr) minmax(0,1fr);gap:0.8em;align-items:start;}
+	#mt .mt-tt-live {display:flex;flex-wrap:wrap;gap:0.15em 0.8em;font-size:0.85em;color:var(--mt-ink);font-variant-numeric:tabular-nums;margin-top:0.3em;}
+	#mt .mt-tt-live b {color:var(--mt-mut);font-weight:600;margin-right:0.25em;}
+	#mt .mt-tt-ctl {display:flex;flex-wrap:wrap;gap:0.5em 0.6em;align-items:center;margin-top:0.6em;}
+	#mt .mt-tt-ctl .tu-btn {min-height:40px;}
+	#mt .mt-tt-ctl .tu-btn:disabled {opacity:0.45;cursor:not-allowed;}
+	#mt .mt-tt-ctl input[type=range] {flex:1 1 12em;min-width:8em;height:36px;accent-color:var(--accent);}
+	#mt .mt-speed {display:inline-flex;align-items:center;gap:0.4em;color:var(--mt-mut);font-size:0.9em;}
+	#mt .mt-speed .tu-select {width:auto;padding:0.4em 0.5em;min-height:40px;}
+	#mt .mt-tt:fullscreen {background:var(--mt-card);overflow:auto;padding:1em;}
+	#mt .mt-tt:fullscreen .mt-tt-stage {grid-template-columns:minmax(180px,0.3fr) minmax(0,1fr);}
+	#mt .mt-tt-main {fill:none;stroke:var(--mt-main);stroke-width:3;stroke-linejoin:round;}
+	#mt .mt-tt-true {fill:none;stroke:var(--mt-true);stroke-width:2.5;}
+	#mt .mt-tt-trueN {stroke-dasharray:7 5;}
+	#mt .mt-tt-cmp {fill:none;stroke-width:2.2;opacity:0.85;}
+	#mt .mt-tt-cmpt {stroke-dasharray:6 5;opacity:0.6;}
+	#mt .mt-tt-lg {stroke-width:4;}
+	#mt .mt-tt-lgb {fill:var(--mt-card);stroke:var(--mt-grid);opacity:0.92;}
+	#mt .mt-tt-res {fill:var(--mt-res);}
+	#mt .mt-tt-tgh {fill:var(--mt-tgh);}
+	#mt .mt-tt-off {stroke:var(--mt-mut);stroke-width:1.5;stroke-dasharray:6 4;}
+	#mt .mt-tt-mk {fill:var(--mt-card);stroke:var(--mt-ink);stroke-width:2;}
+	#mt .mt-tt-lab {fill:var(--mt-ink);font-weight:600;paint-order:stroke;stroke:var(--mt-card);stroke-width:4px;stroke-linejoin:round;}
+	#mt .mt-tt-dot {fill:var(--mt-dot);stroke:var(--mt-main);stroke-width:3;}
+	#mt .mt-tt-brk {stroke:var(--mt-main);stroke-width:2;stroke-dasharray:4 4;}
+	#mt .mt-tt-x {stroke:var(--mt-bad);stroke-width:3;}
+	#mt .mt-tt-set {stroke:var(--mt-bad);stroke-width:6;}
+	#mt .mt-tt-rec {stroke:var(--mt-good);stroke-width:6;}
+	#mt .mt-tt-hit {fill:transparent;pointer-events:all;}
+	#mt .mt-tt-hl {stroke:var(--mt-mut);stroke-width:1;stroke-dasharray:3 3;}
+	#mt .mt-tt-hvt {paint-order:stroke;stroke:var(--mt-card);stroke-width:4px;stroke-linejoin:round;}
+	#mt .mt-frame {fill:var(--mt-frame);}
+	#mt .mt-grip {fill:var(--mt-grip);}
+	#mt .mt-tgrip {fill:var(--mt-gript);}
+	#mt .mt-pull {fill:none;stroke:var(--mt-farrow);stroke-width:3.5;stroke-linecap:round;stroke-linejoin:round;}
+	#mt .mt-gauge {stroke:var(--mt-dim);stroke-width:1.2;}
+	#mt .mt-sp {stroke:var(--mt-s3);stroke-width:1.2;}
+	#mt .mt-s1 {stop-color:var(--mt-s1);} #mt .mt-s2 {stop-color:var(--mt-s2);} #mt .mt-s3 {stop-color:var(--mt-s3);}
+	#mt .mt-sp--polymer {fill:#efe9dc;} #mt .mt-sp--elastomer {fill:#3f3f46;} #mt .mt-sp--ceramic {fill:#c9d4dc;} #mt .mt-sp--wood {fill:#c99a5b;} #mt .mt-sp--composite {fill:#2b2f36;} #mt .mt-sp--bio {fill:#eee6cf;}
+	/* shear / torsion / poisson / thermal pictures */
+	#mt .mt-plate {fill:var(--mt-plate);stroke:var(--mt-s3);stroke-width:1.2;}
+	#mt .mt-bolt {fill:var(--mt-bolt);stroke:#4b5563;stroke-width:1;}
+	#mt .mt-glue {fill:var(--mt-glue);}
+	#mt .mt-die {fill:var(--mt-die);}
+	#mt .mt-shplane {stroke:var(--mt-red);stroke-width:2.5;stroke-dasharray:7 4;}
+	#mt .mt-elem {fill:#e1edf6;stroke:var(--accent);stroke-width:2;}
+	#mt .mt-shaft {fill:var(--mt-shaft);stroke:var(--mt-s3);stroke-width:1.2;}
+	#mt .mt-shaftend {fill:var(--mt-shaftend);stroke:var(--mt-s3);stroke-width:1.2;}
+	#mt .mt-shaft--over {fill:var(--mt-yield);}
+	#mt .mt-twl {fill:none;stroke:var(--mt-twl);stroke-width:1.6;}
+	#mt .mt-twr {stroke:var(--mt-red);stroke-width:3;stroke-linecap:round;}
+	#mt .mt-tq {fill:none;stroke:var(--mt-farrow);stroke-width:4;stroke-linecap:round;stroke-linejoin:round;}
+	#mt .mt-tdist {fill:none;stroke:var(--accent);stroke-width:2.5;}
+	#mt .mt-tdistf {fill:var(--mt-tgh);}
+	#mt .mt-tdistl {stroke:var(--accent);stroke-width:1.4;}
+	#mt .mt-heat {fill:var(--mt-sec);} #mt .mt-heat--hot {fill:var(--mt-heat);} #mt .mt-heat--cold {fill:var(--mt-cold);}
+	#mt .mt-cube0 {fill:var(--mt-cube0);stroke:var(--mt-ghost);stroke-width:1.4;stroke-dasharray:5 4;}
+	#mt .mt-cube1 {fill:var(--mt-cube1);stroke:var(--mt-main);stroke-width:1.6;}
+	#mt .mt-cube1.mt-cs {fill-opacity:0.8;} #mt .mt-cube1.mt-ct {fill-opacity:0.6;}
+	#mt .mt-trsep td {border-top:2px solid var(--mt-line);}
+	/* table + chart */
+	#mt .mt-tbw {max-height:34em;overflow:auto;margin-top:0.6em;border:1px solid var(--mt-grid);border-radius:0.4em;}
+	#mt .mt-tbl th {text-transform:none;position:sticky;top:0;z-index:1;background:var(--mt-card);padding:0;}
+	#mt .mt-sort {all:unset;box-sizing:border-box;display:block;width:100%;min-height:40px;padding:0.55em 0.7em;cursor:pointer;text-align:inherit;font-size:1em;letter-spacing:0.03em;color:var(--mt-mut);font-weight:700;}
+	#mt .mt-sort:focus-visible {outline:2px solid var(--accent);outline-offset:-2px;}
+	#mt .mt-thu {display:block;font-weight:400;text-transform:none;letter-spacing:0;font-size:0.9em;}
+	#mt .mt-tbl tbody tr {cursor:pointer;}
+	#mt .mt-tbl tbody tr:hover td {background:var(--mt-soft);}
+	#mt .mt-tbl tbody tr:focus-visible td {outline:2px solid var(--accent);outline-offset:-2px;}
+	#mt .mt-tbl td {font-variant-numeric:tabular-nums;}
+	#mt .mt-tbl td:first-child {white-space:normal;min-width:12em;}
+	#mt .mt-na {color:var(--mt-mut) !important;}
+	#mt .mt-ash-top {display:flex;flex-wrap:wrap;justify-content:space-between;align-items:flex-end;gap:0.6em;}
+	#mt .mt-ash-sel .tu-field {flex:0 1 14em;}
+	#mt .mt-asp {cursor:pointer;}
+	#mt .mt-asp circle {stroke:var(--mt-card);stroke-width:1.5;}
+	#mt .mt-asp:hover circle, #mt .mt-asp:focus circle {stroke:var(--mt-ink);stroke-width:2.5;}
+	#mt .mt-asp--on circle {stroke:var(--mt-ink);stroke-width:3;}
+	#mt .mt-asp:focus {outline:none;}
+	#mt .mt-aslab {paint-order:stroke;stroke:var(--mt-card);stroke-width:4px;stroke-linejoin:round;}
+	#mt .mt-asl {stroke:var(--mt-mut);stroke-width:1;stroke-dasharray:6 5;}
+	#mt .mt-asl--hi {stroke:var(--accent);stroke-width:1.8;}
+	#mt .mt-asll {font-size:13px;}
+	#mt .mt-src p {font-size:0.9em;color:var(--mt-ink);}
+	#mt .tu-table td, #mt .tu-table th {color:var(--mt-ink);}
+	#mt section[data-panel] {container-type:inline-size;}
+	@container (max-width: 760px) { #mt .mt-grid2 {grid-template-columns:minmax(0,1fr);} #mt .mt-fig .mt-svg {max-width:560px;margin:0 auto;} }
+	@container (max-width: 560px) { #mt .mt-tt-stage {grid-template-columns:minmax(0,1fr);} #mt .mt-tt-spec {max-width:15em;margin:0 auto;width:56%;} }
+	@media (max-width: 860px) {
+		#mt .mt-grid2 {grid-template-columns:minmax(0,1fr);}
+		#mt .mt-tt-stage {grid-template-columns:minmax(0,0.42fr) minmax(0,1fr);}
+	}
+	@media (max-width: 600px) {
+		#mt .mt-t {font-size:21px;} #mt .mt-ts {font-size:18px;} #mt .mt-tbig {font-size:30px;}
+		#mt .mt-tt-stage {grid-template-columns:minmax(0,1fr);}
+		#mt .mt-tt-spec {max-width:15em;margin:0 auto;width:56%;}
+		#mt .mt-tabs button {padding:0.5em 0.8em;}
+		#mt .mt-q {flex:1 1 100%;}
+		#mt .mt-custom .tu-row > .mt-q, #mt .mt-inp .tu-row > .mt-q {flex:1 1 100%;}
+		#mt .mt-tt-ctl .tu-btn {flex:1 1 auto;}
+	}
+	/* dark mode (the page's own colours; the derived TOOL-DARK block cannot see custom properties) */
+	body.dark-mode #mt.mt {--mt-ink:#e8ecf1;--mt-mut:#a9b2be;--mt-line:#4a4f57;--mt-card:#1f1f1f;--mt-soft:#2a2c30;--mt-grid:#34383e;--mt-axis:#a9b2be;--mt-dim:#c3ccd8;--mt-red:#ff8a80;--mt-farrow:#ff7b61;--mt-warn:#f6b04d;--mt-bad:#ff8a80;--mt-good:#6ee7a1;
+		--mt-s1:#5d6a7a;--mt-s2:#b7c3d1;--mt-s3:#8693a4;--mt-sup:#3c434c;--mt-hatch:#8d99a6;--mt-sec:#6b7a8c;--mt-hole:#1f1f1f;--mt-ghost:#8d99a6;
+		--mt-main:#7aa7ff;--mt-true:#c4a3ff;--mt-res:rgba(52,211,153,0.35);--mt-tgh:rgba(122,167,255,0.16);--mt-dot:#1f1f1f;--mt-grip:#6b7280;--mt-gript:#f3f4f6;--mt-frame:#3a3f46;
+		--mt-plate:#4f5b69;--mt-bolt:#8693a4;--mt-glue:#c9a227;--mt-die:#5b6573;--mt-shaft:#56657a;--mt-shaftend:#6f8098;--mt-twl:#e8ecf1;--mt-heat:#b8573f;--mt-cold:#3f78b8;--mt-cube0:rgba(148,163,184,0.12);--mt-cube1:rgba(122,167,255,0.3);}
+	body.dark-mode #mt.mt .mt-tabs button[aria-selected="true"] {color:#0b1416;}
+	body.dark-mode #mt.mt .mt-q[data-s="calc"] .tu-input {background:#16324a;border-color:var(--accent);color:#ffffff;}
+	body.dark-mode #mt.mt .mt-q[data-s="calc"] .mt-qs {color:var(--accent);}
+	body.dark-mode #mt.mt .mt-q[data-s="mat"] .tu-input, body.dark-mode #mt.mt .mt-q[data-s="shape"] .tu-input, body.dark-mode #mt.mt .mt-qin .mt-u {background:#2a2c30;color:#e8ecf1;}
+	body.dark-mode #mt.mt .mt-qin .mt-x {background:#2a2c30;color:#c3ccd8;border-color:#555b63;}
+	body.dark-mode #mt.mt .mt-elem {fill:rgba(122,167,255,0.25);}
+	body.dark-mode #mt.mt .mt-sp--polymer {fill:#cfc6b2;} body.dark-mode #mt.mt .mt-sp--elastomer {fill:#71717a;} body.dark-mode #mt.mt .mt-sp--composite {fill:#5a606b;} body.dark-mode #mt.mt .mt-sp--bio {fill:#cfc6a8;}
+	body.dark-mode #mt.mt .mt-tbl th {background:#1f1f1f;}
+	body.dark-mode #mt.mt .mt-fam {background:#26282c;}
+	body.dark-mode #mt.mt .tu-card, body.dark-mode #mt.mt .tu-stat {background:#1f1f1f;border-color:#3a3f46;}
+	body.dark-mode #mt.mt .tu-stat__value, body.dark-mode #mt.mt .tu h2, body.dark-mode #mt.mt .mt-h {color:#f3f4f6;}
+	body.dark-mode #mt.mt .tu-stat__label, body.dark-mode #mt.mt .tu-stat__sub, body.dark-mode #mt.mt .tu-note, body.dark-mode #mt.mt .tu-field > label, body.dark-mode #mt.mt .tu-label, body.dark-mode #mt.mt .mt-qs {color:#b3bcc8;}
+	body.dark-mode #mt.mt .tu-input, body.dark-mode #mt.mt .tu-select {background:#2a2c30;color:#eef1f4;border-color:#555b63;}
+	body.dark-mode #mt.mt .tu-btn {background:#232529;}
+	body.dark-mode #mt.mt .tu-btn--ghost {color:#d7dde4;border-color:#555b63;}
+	body.dark-mode #mt.mt .tu-seg {background:#232529;border-color:#555b63;} body.dark-mode #mt.mt .tu-seg button {color:#d7dde4;border-color:#3a3f46;}
+	body.dark-mode #mt.mt .tu-chip {background:#232529;color:#d7dde4;border-color:#555b63;}
+	body.dark-mode #mt.mt .tu-seg button[aria-pressed="true"], body.dark-mode #mt.mt .tu-chip[aria-pressed="true"], body.dark-mode #mt.mt .tu-btn--primary {background:var(--accent);color:#0b1416;border-color:var(--accent);}
+	body.dark-mode #mt.mt .tu-table td, body.dark-mode #mt.mt .tu-table th {border-bottom-color:#3a3f46;color:#e8ecf1;}
+	body.dark-mode #mt.mt .tu-table tr.is-active td {background:#16324a;}
+	body.dark-mode #mt.mt .tu-stat--hero {background:#16324a;border-color:#2d5375;}
+
+
+	@media print {
+		.header, .info-bar-container, .side-bar, #footer, #comments-button, #comments-box, .color-box { display:none !important; }
+		.outer-container, .inner-container, .outer-page-content, .page-content { width:auto !important; box-shadow:none !important; padding:0 !important; margin:0 !important; }
+	}
+	/* Mobile layout: stack header/nav/footer, full-width calculator inputs */
+	@media (max-width: 600px) {
+		.inner-container { padding: 1em 0.75em; }
+
+		.header { display: flex; flex-wrap: wrap; align-items: center; }
+		.logo-image-container { flex: 0 0 auto; }
+		.logo-text-container { display: block; flex: 1 1 0; min-width: 0; padding-left: 0.75em; vertical-align: initial; }
+		.calculator-title { font-size: 1.3em; }
+		.tag-line { font-size: 1em; }
+		.social-container, .social-container--bottom { position: static; flex: 0 0 100%; margin-top: 0.5em; }
+		.social-container { display: flex; align-items: center; flex-wrap: wrap; gap: 0.5em; }
+		.social-container .social__text { margin: 0; font-size: 0.9em; }
+		.social { display: flex; gap: 0.4em; }
+		.social-container .info-bar__logo-container { margin-left: auto; }
+		#mes-logo { width: 110px; height: auto; }
+
+		.info-bar-container { display: block; width: 100%; }
+		.info-bar { display: flex; flex-wrap: wrap; margin-left: 0; padding-left: 0; width: 100%; }
+		.info-bar__item { float: none; flex: 1 1 33%; min-width: 0; }
+		.info-bar__item__text { padding: 0.5em 0.2em; font-size: 0.75em; text-align: center; white-space: normal; line-height: 1.2; }
+		.navbar-container { margin: 1em 0; width: 100%; box-sizing: border-box; }
+		.button--navbar { box-sizing: border-box; width: 100%; }
+		.navbar { width: 100%; }
+		.navbar__link { box-sizing: border-box; }
+
+		.page-content { padding: 1.2em 0 0 0; }
+
+		.footer { padding: 1.25em 0.75em; }
+		.footer__item-container { display: block; }
+		.footer__item { display: block; margin-bottom: 0.75em; }
+		.footer__item--extra-padding { padding-left: 0; }
+		.footer__text--extra-info { float: none; display: block; margin-top: 0.5em; }
+	}
+
+	/* TOOL-DARK:START -- generated by add_tool_page_controls.py, do not edit */
+	body.dark-mode .page-content :where(div,span,p,li,ul,ol,h1,h2,h3,h4,h5,h6,td,th,label,summary,small,strong,b,em,i,code,pre,legend,figcaption,dl,dt,dd,blockquote,caption,cite,button,input,select,textarea){color:#d8d8d8}
+	body.dark-mode .page-content code{background-color:#33363d;color:#f0a8bd}
+	body.dark-mode .page-content .btn-default{background-color:#2e2e2e;background-image:none;color:#ddd;border-color:#555}
+	body.dark-mode .tu{--accent:#468dc3;--accent-dark:#468ac4}
+	body.dark-mode .tu h2{color:#d1d6dc;border-bottom:2px solid #153045}
+	body.dark-mode .tu h3{color:#d1d6dc}
+	body.dark-mode .tu-card{background:#1a1a1a;border:1px solid #28323e}
+	body.dark-mode .tu-card--tint{background:#1a242b;border-color:#153045}
+	body.dark-mode .tu-field > label,body.dark-mode .tu-label{color:#9a9aa2}
+	body.dark-mode .tu-input,body.dark-mode .tu-select{border:1px solid #404a58;background:#1a1a1a;color:#dddddd}
+	body.dark-mode .tu-suffix span{color:#989ca4}
+	body.dark-mode .tu-btn{background:#1a1a1a}
+	body.dark-mode .tu-btn--ghost{border-color:#3a424d;color:#aaaaaa}
+	body.dark-mode .tu-btn--ghost:hover{background:#191c20;color:#dddddd;border-color:#3a424d}
+	body.dark-mode .tu-seg{border:1px solid #404a58;background:#1a1a1a}
+	body.dark-mode .tu-seg button{color:#aaaaaa;border-right:1px solid #28323e}
+	body.dark-mode .tu-seg button:hover{background:#16191d}
+	body.dark-mode .tu-chip{border:1px solid #3a424d;background:#1a1a1a;color:#aaaaaa}
+	body.dark-mode .tu-stat{background:#1a1a1a;border:1px solid #28323e}
+	body.dark-mode .tu-stat--hero{background:#1a242b;border-color:#153045}
+	body.dark-mode .tu-stat__label{color:#9a9aa2}
+	body.dark-mode .tu-stat__value{color:#d1d6dc}
+	body.dark-mode .tu-stat__sub{color:#9a9ea4}
+	body.dark-mode .tu-pos{color:#7dde9d !important}
+	body.dark-mode .tu-neg{color:#e87973 !important}
+	body.dark-mode .tu-table th,body.dark-mode .tu-table td{border-bottom:1px solid #29323d;color:#cccccc}
+	body.dark-mode .tu-table th{color:#9a9da3;background:#1a1a1a}
+	body.dark-mode .tu-table tr.is-active td{background:#1a242b}
+	body.dark-mode .tu-note{color:#9a9da3}
+	body.dark-mode .tu-toast{background:#3c4f67}
+	body.dark-mode .tu-seo{border-top:1px solid #333333}
+	body.dark-mode .tu-svg-line{stroke:#394a60}
+	body.dark-mode .tu-svg-text{fill:#cccccc}
+	body.dark-mode .tu-svg-grid{stroke:#28323e}
+	body.dark-mode .tu [data-names="0"] .rw-num,body.dark-mode .tu [data-table="1"] .rw-num{color:#999da3}
+	body.dark-mode .tu [data-table="1"] .rw-head{color:#9a9aa2;border-bottom:2px solid #2b323c}
+	body.dark-mode .tu [data-table="1"] .rw-row{border-bottom:1px solid #27313f}
+	body.dark-mode #mt{--mt-red:#d63333;--mt-farrow:#e24027;--mt-warn:#f59014;--mt-bad:#dc372d;--mt-good:#3ccd6c;--mt-yield:#f5a214;--mt-res:rgba(30,236,167,0.35)}
+	body.dark-mode #mt .mt-q[data-s="calc"] .tu-input{background:#1a242b}
+	body.dark-mode #mt .mt-sp--elastomer{fill:#bbbbbe}
+	body.dark-mode #mt .mt-sp--ceramic{fill:#94a0a8}
+	body.dark-mode #mt .mt-sp--wood{fill:#d7b384}
+	body.dark-mode #mt .mt-sp--composite{fill:#ccced1}
+	/* TOOL-DARK:END */
+/* Floating compact header bar: once the full header + nav scroll out of
+   view, a slim fixed bar (small logo, title, as many nav links as fit)
+   slides in, and the hamburger is pinned into its right end. Toggled by
+   the compact-nav script below. Ported from mes.fm/math's version (see
+   its build.mjs) -- display-controls.js pins the A-/A+/moon buttons into its right end.
+
+   Hidden by default via the inline style="display:none" on the element
+   itself (not just this stylesheet's "display: none" below) -- some
+   browser extensions strip or neutralize cosmetic-looking CSS for
+   elements named "sticky-*"/"*-bar" (a common ad/cookie-bar filter
+   pattern), which left an earlier version's raw unstyled markup visible
+   above the real header on mes.fm/math. The inline attribute is a
+   fallback the JS clears itself, independent of this stylesheet
+   surviving intact. */
+#compact-nav {
+  position: fixed; top: 0; left: 0; right: 0; height: 52px; z-index: 15;
+  display: none; align-items: center; gap: 12px;
+  padding: 0 80px 0 12px; box-sizing: border-box;
+  background: #ffffff; border-bottom: 3px solid #2f6690;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.18);
+  transform: translateY(-110%); transition: transform 0.2s ease;
+}
+#compact-nav.is-visible { display: flex; }
+body.is-stuck #compact-nav { transform: none; }
+#compact-nav .compact-nav-logo { display: block; width: 32px; height: 32px; border-radius: 6px; flex: 0 0 auto; }
+#compact-nav .compact-nav-title {
+  flex: 0 1 auto; min-width: 0; font-weight: 700; font-size: 1.05em; color: #1a1a1a;
+  text-decoration: none; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+}
+#compact-nav .compact-nav-links { display: flex; flex: 1 1 0; min-width: 0; overflow: hidden; margin: 0 0 0 8px; padding: 0; list-style: none; }
+#compact-nav .compact-nav-links li { flex: 0 0 auto; }
+#compact-nav .compact-nav-links a { display: block; padding: 0 10px; line-height: 52px; font-size: 0.9em; color: #2f6690; text-decoration: none; white-space: nowrap; }
+#compact-nav .compact-nav-links a:hover { background: rgba(47,102,144,0.12); }
+body.is-stuck #navbar-button { position: fixed !important; top: 4px !important; right: 8px !important; display: flex; align-items: center; }
+body.is-stuck #navbar.hide { position: fixed; top: 56px; right: 8px; }
+@media (max-width: 700px) {
+  #compact-nav .compact-nav-title { display: none; }
+  #compact-nav .compact-nav-logo { width: 36px; height: 36px; }
+}
+@media (max-width: 480px) {
+  #compact-nav { padding-right: 70px; gap: 8px; }
+}
+</style>
+        <meta property="fb:app_id" content="" />
+        <meta name="author" content="Math Easy Solutions Staff">
+        <meta property="og:type" content="website" />
+        <meta property="og:url" content="https://mes.fm/materials" />            <meta property="og:title" content="MES Mechanics of Materials | Math Easy Solutions" />        <meta property="og:image" content="https://mes.fm/materials/img/logo-big.png" />
+        <meta property="og:description" content="Free mechanics of materials calculators: stress and strain with Young's modulus, a tensile test simulator with the stress-strain curve, shear stress in bolts and pins, torsion of shafts, Poisson's ratio and 3D Hooke's law, thermal stress, and a table of 30 materials. SI and US units." />
+
+        <meta name="description" content="Free mechanics of materials calculators: stress and strain with Young's modulus, a tensile test simulator with the stress-strain curve, shear stress in bolts and pins, torsion of shafts, Poisson's ratio and 3D Hooke's law, thermal stress, and a table of 30 materials. SI and US units.">            <meta name="twitter:card" content="summary">        <meta name="twitter:site" content="@MathEasySolns">
+        <meta name="twitter:title" content="MES Mechanics of Materials">
+        <meta name="twitter:description" content="Free mechanics of materials calculators: stress and strain with Young's modulus, a tensile test simulator with the stress-strain curve, shear stress in bolts and pins, torsion of shafts, Poisson's ratio and 3D Hooke's law, thermal stress, and a table of 30 materials. SI and US units.">
+        <meta name="twitter:image" content="https://mes.fm/materials/img/logo-big.png">
+        <meta name="twitter:image:alt" content="MES Mechanics of Materials">
+        <script type="application/ld+json">
+        {"@context": "https://schema.org", "@type": "WebApplication", "name": "MES Mechanics of Materials", "url": "https://mes.fm/materials", "applicationCategory": "UtilitiesApplication", "operatingSystem": "Any", "offers": {"@type": "Offer", "price": "0", "priceCurrency": "USD"}, "description": "Free mechanics of materials calculators: stress and strain with Young's modulus, a tensile test simulator with the stress-strain curve, shear stress in bolts and pins, torsion of shafts, Poisson's ratio and 3D Hooke's law, thermal stress, and a table of 30 materials. SI and US units."}
+        </script>            <!-- Google Tag Manager -->
+            <script>(function(w,d,s,l,i){w[l]=w[l]||[];w[l].push({'gtm.start':
+            new Date().getTime(),event:'gtm.js'});var f=d.getElementsByTagName(s)[0],
+            j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
+            'https://www.googletagmanager.com/gtm.js?id='+i+dl;f.parentNode.insertBefore(j,f);
+            })(window,document,'script','dataLayer','GTM-PL6QNQR');</script>
+            <!-- End Google Tag Manager -->
+<!-- Legacy Universal Analytics removed: every UA property stopped processing data in 2023; pageviews are tracked via main_js/track.js (+ GTM) -->
+    <!-- ADSENSE-DEFERRED: load adsbygoogle.js (auto ads + consent) on the first
+     real interaction (scroll / pointer / key), or after a 15s idle fallback,
+     so its ad + consent JS (doubleclick ads ~100KB, Funding Choices ~70KB,
+     sodar, osd) never runs during the page-load / Lighthouse trace window. -->
+    <script>
+    (function () {
+      var EVT = ['scroll', 'pointerdown', 'keydown', 'touchstart'];
+      var done = false;
+      function go() {
+        if (done) return;
+        done = true;
+        EVT.forEach(function (e) { removeEventListener(e, go); });
+        var s = document.createElement('script');
+        s.async = true;
+        s.crossOrigin = 'anonymous';
+        s.src = 'https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-1461238060884369';
+        document.head.appendChild(s);
+      }
+      EVT.forEach(function (e) { addEventListener(e, go, { passive: true }); });
+      setTimeout(go, 15000);
+    })();
+    </script>
+    <script>
+/* autoads-header-gap-guard: guards two gaps against Google Auto ads (in-page ad blocks,
+   class `google-auto-placed`), plus Google's separate "annotation" text-ad
+   formats, which are a different Auto ads mechanism than the in-page blocks
+   above. 1) Logo header <-> nav bar: on desktop, any in-page ad caught here
+   is relocated to just below the whole header+nav+logo-badge complex
+   (before .outer-page-content) and allowed to show if it fills; on mobile
+   (max-width: 768px, this repo's existing responsive breakpoint) it is
+   hidden outright instead -- no ad shows below the nav bar on mobile at
+   all. 2) Comments toggle (#comments-button) <-> comments widget
+   (#comments-box): on every device, any in-page ad caught here is relocated
+   to just after the comments box and allowed to show if it fills.
+   3) Annotation/related-entry chips -- any element carrying the
+   `google-anno-skip` class, which covers every chip variant Google serves
+   (`google-anno-sc` pill/badge tooltips, `goog-rentry` related-entry
+   tooltips, `google-anno-sa-qtx` tooltip text) -- and 4) in-text link ads
+   (`<a class="google-anno">` wrapping a `<span class="google-anno-t">`
+   around an ordinary word, e.g. turning "Calculate" into a
+   double-underlined, clickable ad): both are only guarded inside #header,
+   #footer, the top .info-bar-container nav, or the .side-bar "Site
+   Navigation" widget -- chips are hidden outright there, and in-text links
+   are unwrapped back to plain text there, so the word stays readable
+   without the ad behavior. Elsewhere in the actual page content both are
+   left alone on purpose. Unlike the in-page ad blocks, Google serves many
+   of these chips/links per page load, so removing the guarded-zone ones
+   doesn't cost the page its one shot at an ad the way deleting the in-page
+   block did -- no relocate/poll needed, just hide/unwrap on sight.
+   In the first two cases Google's own placeholder-collapse doesn't reliably
+   fire once we've moved the node, so we poll it: if no real ad iframe shows
+   up within ~2s, we force the reserved space to 0 ourselves, so an unfilled
+   slot never leaves a blank gap. */
+(function () {
+    function isMobile() {
+        return window.matchMedia('(max-width: 768px)').matches;
+    }
+    function isBetween(before, after, el) {
+        if (!before || !after) return false;
+        return !!(before.compareDocumentPosition(el) & Node.DOCUMENT_POSITION_FOLLOWING) &&
+               !!(after.compareDocumentPosition(el) & Node.DOCUMENT_POSITION_PRECEDING);
+    }
+    function collapseIfUnfilled(node) {
+        var attempts = 0;
+        var poll = setInterval(function () {
+            attempts++;
+            if (!node.isConnected) {
+                clearInterval(poll);
+                return;
+            }
+            if (node.querySelector('iframe')) {
+                clearInterval(poll);
+                return;
+            }
+            if (attempts >= 10) {
+                node.style.setProperty('display', 'none', 'important');
+                clearInterval(poll);
+            }
+        }, 200);
+    }
+    function handleHeaderNavZone(node) {
+        var header = document.getElementById('header');
+        var nav = document.querySelector('.info-bar-container');
+        if (!isBetween(header, nav, node)) return false;
+        if (isMobile()) {
+            node.style.setProperty('display', 'none', 'important');
+            return true;
+        }
+        var target = document.querySelector('.outer-page-content');
+        if (target) {
+            target.before(node);
+        } else if (nav) {
+            nav.after(node);
+        }
+        collapseIfUnfilled(node);
+        return true;
+    }
+    function handleCommentsZone(node) {
+        var button = document.getElementById('comments-button');
+        var box = document.getElementById('comments-box');
+        if (!isBetween(button, box, node)) return false;
+        box.after(node);
+        collapseIfUnfilled(node);
+        return true;
+    }
+    function inAnnotationGuardedZone(el) {
+        return !!(el.closest('#header') || el.closest('#footer') || el.closest('.side-bar') || el.closest('.info-bar-container'));
+    }
+    function handleAnnotationChip(node) {
+        if (node.classList && node.classList.contains('google-anno-skip') && inAnnotationGuardedZone(node)) {
+            node.style.setProperty('display', 'none', 'important');
+            return true;
+        }
+        return false;
+    }
+    function handleInTextLinkAd(node) {
+        if (node.classList && node.classList.contains('google-anno') && node.parentNode && inAnnotationGuardedZone(node)) {
+            node.replaceWith(document.createTextNode(node.textContent));
+            return true;
+        }
+        return false;
+    }
+    function handle(node) {
+        if (node.nodeType !== 1) return;
+        if (node.classList && node.classList.contains('google-auto-placed')) {
+            if (handleHeaderNavZone(node)) return;
+            handleCommentsZone(node);
+            return;
+        }
+        if (handleAnnotationChip(node)) return;
+        if (handleInTextLinkAd(node)) return;
+        if (node.querySelectorAll) {
+            node.querySelectorAll('.google-auto-placed').forEach(function (n) {
+                if (handleHeaderNavZone(n)) return;
+                handleCommentsZone(n);
+            });
+            node.querySelectorAll('.google-anno-skip').forEach(function (n) {
+                handleAnnotationChip(n);
+            });
+            node.querySelectorAll('.google-anno').forEach(function (n) {
+                handleInTextLinkAd(n);
+            });
+        }
+    }
+    new MutationObserver(function (mutations) {
+        mutations.forEach(function (m) {
+            m.addedNodes.forEach(handle);
+        });
+    }).observe(document.documentElement, {childList: true, subtree: true});
+})();
+</script>
+    <!-- MES-ASIDE-HEAD --><link rel="stylesheet" href="/main_js/aside.css?v=2"><script>try{if(localStorage.getItem('asideSide')==='left')document.documentElement.classList.add('aside-left')}catch(e){}try{if(localStorage.getItem('pageWide')==='1')document.documentElement.classList.add('page-wide')}catch(e){}try{if(localStorage.getItem('pageMode')==='theatre')document.documentElement.classList.add('page-theatre')}catch(e){}try{if(localStorage.getItem('asideHidden')==='1')document.documentElement.classList.add('aside-hidden')}catch(e){}</script><!-- /MES-ASIDE-HEAD --></head>
+    <body>            <!-- Google Tag Manager (noscript) -->
+            <noscript><iframe src="https://www.googletagmanager.com/ns.html?id=GTM-PL6QNQR"
+            height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
+            <!-- End Google Tag Manager (noscript) -->        <div id="compact-nav" aria-hidden="true" style="display:none">
+  <a href="/materials" tabindex="-1"><img class="compact-nav-logo" alt="" width="32" height="32" src="/materials/img/logo.png?v=2"></a>
+  <a class="compact-nav-title" href="/materials" tabindex="-1">Mechanics of Materials</a>
+  <ul class="compact-nav-links">
+    <li><a href="/math" tabindex="-1">Math Tutorials</a></li>
+    <li><a href="/calculators" tabindex="-1">Calculators</a></li>
+    <li><a href="/tools" tabindex="-1">Tools</a></li>
+    <li><a href="/mobile-apps" tabindex="-1">Mobile Apps</a></li>
+    <li><a href="/puzzles" tabindex="-1">Puzzles</a></li>
+    <li><a href="/memes" tabindex="-1">Memes</a></li>
+    <li><a href="/" tabindex="-1"><b>MES.fm</b></a></li>
+  </ul>
+</div>
+<div id="outer-container" class="outer-container has-aside">                <div class = "inner-container">                        <div id="header" class="header" role="banner">                                <a class="logo-image-container" href='/materials'><img height="88" width="88" id="logo" class="logo lazyload" alt="MES Mechanics of Materials logo" data-src="/materials/img/logo.png?v=2"></a>
+                            <div class="logo-text-container">
+                                <a class="calculator-title-link" href='/materials'>
+                                    <p class="calculator-title">MES Mechanics of Materials</p>
+                                </a>
+                                <p class="tag-line">Stress, strain, shear and torsion, with the pictures.</p>                            </div>
+
+                            <div class="social-container"><ul class="social">	<li class="social__logo social__hive"><a class="social__link" href="https://peakd.com/@mes" target="_blank"></a></li></a></li>
+    <li class="social__logo social__telegram"><a class="social__link" href="https://t.me/meslinks" target="_blank"></a></li></a></li></ul><a class="info-bar__logo-container" href="https://mes.fm/" title="Math Easy Solutions"><img id="mes-logo" class="info-bar__logo lazyload" alt="math easy solutions logo" height="29" width="126" data-src="https://mes.fm/main_img/mes-logo-small.png"></a>                            </div>                                                        </div>
+                        <div class="info-bar-container" role="navigation" aria-label="Primary">
+                            <ul id="info-bar" class="info-bar shadow">
+                                <li class="info-bar__item"><a class="info-bar__item__text" href='/materials'>Home</a></li><li class="info-bar__item"><a class="info-bar__item__text" href='/youngs-modulus-calculator'>Young's Modulus</a></li><li class="info-bar__item"><a class="info-bar__item__text" href='/tensile-test-simulator'>Tensile Test</a></li><li class="info-bar__item"><a class="info-bar__item__text" href='/shear-stress-calculator'>Shear &amp; Torsion</a></li><li class="info-bar__item"><a class="info-bar__item__text" href='/materials?tab=table'>Materials Table</a></li>                                    <li class="info-bar__item"><a class="info-bar__item__text" href='https://mes.fm/calculators'>Calculators</a></li><li class="info-bar__item"><a class="info-bar__item__text" href='https://mes.fm/tools'>Tools</a></li>                                    <li class="info-bar__item info-bar__item--utility" style="display:none !important;"><a class="info-bar__item__text" href='/contact'>Contact Us</a></li>
+                                    <li class="info-bar__item info-bar__item--utility" style="display:none !important;"><a class="info-bar__item__text" target='_blank' href='https://mes.fm/donate.html'>Donate</a></li><li class="info-bar__item info-bar__item--utility" style="display:none !important;"><a class="info-bar__item__text" target='_blank' rel="nofollow" href='https://matheasy.substack.com/'>Subscribe</a></li>
+                                    <li class="info-bar__item info-bar__item--mes"><a class="info-bar__item__text" href="/" style="font-weight:bold;">MES.fm</a></li></ul>
+                        </div>
+                                                        <!-- (Responsive) Horizontal -->
+                                                        <div class="outer-page-content">
+                            <div class="page-content" role="main">                                    <div class="color-box"></div>
+                                    <h1 class="page-title">Mechanics of Materials Calculator: Stress, Strain, Young's Modulus, Shear, Torsion</h1>                                        <p class="page-description">Free mechanics of materials calculators: stress and strain with Young's modulus, a tensile test simulator with the stress-strain curve, shear stress in bolts and pins, torsion of shafts, Poisson's ratio and 3D Hooke's law, thermal stress, and a table of 30 materials. SI and US units.</p>                                    	<div id="main-content" data-tool data-text-scale>
+	<script>try{if(!localStorage.getItem('pageMode')){document.documentElement.classList.add('page-wide')}}catch(e){}</script>
+	<div class="tu mt" id="mt" data-views="axial,tensile,shear,torsion,poisson,thermal,table" data-page="materials">
+		<div class="mt-tabs" role="tablist" aria-label="Tools">
+			<button type="button" role="tab" data-tab="axial" aria-selected="false">Stress &amp; strain</button>
+			<button type="button" role="tab" data-tab="tensile" aria-selected="false">Tensile test</button>
+			<button type="button" role="tab" data-tab="shear" aria-selected="false">Shear</button>
+			<button type="button" role="tab" data-tab="torsion" aria-selected="false">Torsion</button>
+			<button type="button" role="tab" data-tab="poisson" aria-selected="false">Poisson &amp; 3D</button>
+			<button type="button" role="tab" data-tab="thermal" aria-selected="false">Thermal</button>
+			<button type="button" role="tab" data-tab="table" aria-selected="false">Materials table</button>
+		</div>
+		<div class="tu-card mt-bar">
+			<div class="tu-field mt-matf"><label for="mt-mat">Material</label><select id="mt-mat" class="tu-select"></select></div>
+			<div class="mt-sysf"><span class="tu-label">Units</span><div class="tu-seg" id="mt-sys" role="group" aria-label="Units"><button type="button" data-v="si" aria-pressed="true">SI (metric)</button><button type="button" data-v="us" aria-pressed="false">US</button></div></div>
+			<button type="button" class="tu-btn tu-btn--ghost mt-linkb" id="mt-link">🔗 Copy link</button>
+			<p class="mt-matnote" id="mt-matnote"></p>
+		</div>
+		<div class="tu-card mt-custom" id="mt-custom" hidden>
+			<h2 class="mt-h">Your own material</h2>
+			<div class="tu-row">
+				<div class="tu-field" style="flex-basis:15em;"><label for="mt-cu-c">Kind</label><select id="mt-cu-c" class="tu-select"><option value="duct">Ductile metal (smooth yield)</option><option value="luders">Mild steel (yield point)</option><option value="brittle">Brittle (no yield)</option><option value="polymer">Plastic (yield peak, then drawing)</option><option value="rubber">Rubber</option></select></div>
+				<div class="mt-f" data-f="cu-E" data-k="stress" data-d="modulus" data-l="Young's modulus E"></div>
+				<div class="mt-f" data-f="cu-nu" data-k="strain" data-d="ratio" data-l="Poisson's ratio ν"></div>
+				<div class="mt-f" data-f="cu-sy" data-k="stress" data-d="stress" data-l="Yield strength"></div>
+				<div class="mt-f" data-f="cu-su" data-k="stress" data-d="stress" data-l="Tensile strength (UTS)"></div>
+				<div class="mt-f" data-f="cu-el" data-k="strain" data-d="pct" data-l="Elongation at break"></div>
+				<div class="mt-f" data-f="cu-ra" data-k="strain" data-d="pct" data-l="Reduction of area"></div>
+				<div class="mt-f" data-f="cu-rho" data-k="density" data-d="density" data-l="Density"></div>
+				<div class="mt-f" data-f="cu-a" data-k="alpha" data-d="alpha" data-l="Thermal expansion α"></div>
+			</div>
+			<p class="tu-note" id="mt-cu-msg">Start from a material in the list and change what you know. Yield is not used for brittle materials or rubber.</p>
+		</div>
+
+		<!-- ============ 1. AXIAL ============ -->
+		<section data-panel="axial" role="tabpanel" hidden>
+			<div class="mt-grid2">
+				<div class="tu-card mt-fig">
+					<svg id="mt-ax-svg" class="mt-svg" viewBox="0 0 520 560" role="img" aria-label="A rod hanging from a fixed support, stretched by a force at its end"></svg>
+					<div class="mt-slide"><label for="mt-ax-fs">Force</label><input type="range" id="mt-ax-fs" min="0" max="1000" step="1"><output id="mt-ax-fsv" for="mt-ax-fs"></output></div>
+					<div class="mt-seg2"><div class="tu-seg" id="mt-ax-dir" role="group" aria-label="Direction of the force"><button type="button" data-v="t" aria-pressed="true">Pull (tension)</button><button type="button" data-v="c" aria-pressed="false">Push (compression)</button></div></div>
+					<p class="mt-cap" id="mt-ax-cap"></p>
+				</div>
+				<div class="tu-card mt-inp">
+					<h2 class="mt-h">Type what you know</h2>
+					<p class="tu-note">Any four values give the rest. The value you typed last always stays; an older one is worked out again when the newer ones fix it. Clear a box (×) to leave it unknown.</p>
+					<div class="tu-row">
+						<div class="mt-f" data-f="ax-F" data-k="force" data-d="force" data-l="Force F" data-x></div>
+						<div class="mt-f" data-f="ax-L" data-k="len" data-d="len" data-l="Original length L" data-x></div>
+					</div>
+					<div class="mt-sec">
+						<div class="tu-row">
+							<div class="tu-field" style="flex-basis:12em;"><label for="mt-ax-shape">Cross-section</label><select id="mt-ax-shape" class="tu-select"></select></div>
+							<div class="mt-f" data-f="ax-d" data-k="len" data-d="small" data-l="Diameter d" data-sh="round"></div>
+							<div class="mt-f" data-f="ax-D" data-k="len" data-d="small" data-l="Outside diameter D" data-sh="tube"></div>
+							<div class="mt-f" data-f="ax-b" data-k="len" data-d="small" data-l="Width b" data-sh="rect"></div>
+							<div class="mt-f" data-f="ax-h" data-k="len" data-d="small" data-l="Height h" data-sh="rect"></div>
+							<div class="mt-f" data-f="ax-B" data-k="len" data-d="small" data-l="Outside width B" data-sh="rtube"></div>
+							<div class="mt-f" data-f="ax-H" data-k="len" data-d="small" data-l="Outside height H" data-sh="rtube"></div>
+							<div class="mt-f" data-f="ax-t" data-k="len" data-d="small" data-l="Wall thickness t" data-sh="tube rtube"></div>
+						</div>
+						<div class="tu-row" style="margin-top:0.6em;"><div class="mt-f" data-f="ax-A" data-k="area" data-d="area" data-l="Area A" data-x></div></div>
+					</div>
+					<div class="tu-row">
+						<div class="mt-f" data-f="ax-dL" data-k="len" data-d="small" data-l="Change in length ΔL" data-x></div>
+						<div class="mt-f" data-f="ax-s" data-k="stress" data-d="stress" data-l="Stress σ" data-x></div>
+						<div class="mt-f" data-f="ax-e" data-k="strain" data-d="strain" data-l="Strain ε" data-x></div>
+						<div class="mt-f" data-f="ax-E" data-k="stress" data-d="modulus" data-l="Young's modulus E" data-x></div>
+					</div>
+					<div class="mt-btns">
+						<span class="mt-sfw"><button type="button" class="tu-btn" id="mt-ax-size">Size it for a safety factor of</button><input id="mt-ax-sfv" class="tu-input mt-mini" type="text" inputmode="decimal" value="2" aria-label="Safety factor"></span>
+						<button type="button" class="tu-btn tu-btn--ghost" id="mt-ax-reset">↺ Reset</button>
+					</div>
+					<p class="mt-msg" id="mt-ax-msg" aria-live="polite"></p>
+					<div class="tu-chips" id="mt-ax-ex" role="group" aria-label="Examples"></div>
+				</div>
+			</div>
+			<div class="tu-stats" id="mt-ax-stats"></div>
+			<div class="tu-card mt-eq" id="mt-ax-eq">
+				<div class="mt-eqb"><span class="mt-eqb__n">Stress</span><span class="mt-eqb__f mes-tex">\(\displaystyle \sigma = \frac{F}{A}\)</span><span class="mt-eqb__v" id="mt-ax-v1"></span></div>
+				<div class="mt-eqb"><span class="mt-eqb__n">Strain</span><span class="mt-eqb__f mes-tex">\(\displaystyle \varepsilon = \frac{\Delta L}{L}\)</span><span class="mt-eqb__v" id="mt-ax-v2"></span></div>
+				<div class="mt-eqb"><span class="mt-eqb__n">Young's modulus</span><span class="mt-eqb__f mes-tex">\(\displaystyle E = \frac{\sigma}{\varepsilon}\)</span><span class="mt-eqb__v" id="mt-ax-v3"></span></div>
+				<div class="mt-eqb"><span class="mt-eqb__n">Stretch</span><span class="mt-eqb__f mes-tex">\(\displaystyle \Delta L = \frac{F\,L}{A\,E}\)</span><span class="mt-eqb__v" id="mt-ax-v4"></span></div>
+			</div>
+		</section>
+
+		<!-- ============ 2. TENSILE TEST ============ -->
+		<section data-panel="tensile" role="tabpanel" hidden>
+			<div class="tu-card mt-tt" id="mt-tt">
+				<div class="mt-tt-top">
+					<div class="tu-field"><label for="mt-tt-c2">Compare with</label><select id="mt-tt-c2" class="tu-select mt-cmp"></select></div>
+					<div class="tu-field"><label for="mt-tt-c3">and</label><select id="mt-tt-c3" class="tu-select mt-cmp"></select></div>
+					<div class="mt-tt-opts">
+						<div class="tu-seg" id="mt-tt-zoom" role="group" aria-label="Chart range"><button type="button" data-v="all" aria-pressed="true">Whole curve</button><button type="button" data-v="el" aria-pressed="false">Start (elastic part)</button></div>
+						<label class="mt-chk"><input type="checkbox" id="mt-tt-true"> True stress–strain</label>
+						<label class="mt-chk"><input type="checkbox" id="mt-tt-areas" checked> Shade areas</label>
+					</div>
+				</div>
+				<div class="mt-tt-stage" id="mt-tt-stage">
+					<div class="mt-tt-spec"><svg id="mt-tt-spec" class="mt-svg" viewBox="0 0 240 640" role="img" aria-label="The test specimen in the grips of the testing machine"></svg><div class="mt-tt-live" id="mt-tt-live" aria-live="off"></div></div>
+					<div class="mt-tt-chart"><svg id="mt-tt-chart" class="mt-svg" viewBox="0 0 720 500" role="img" aria-label="Stress-strain chart drawn as the test runs"></svg></div>
+				</div>
+				<div class="mt-tt-ctl">
+					<button type="button" class="tu-btn tu-btn--primary" id="mt-tt-play">▶ Play</button>
+					<button type="button" class="tu-btn" id="mt-tt-unload" title="Take the load off from where the test is now, then load it again">⤓ Unload here</button>
+					<button type="button" class="tu-btn tu-btn--ghost" id="mt-tt-reset">↺ Reset</button>
+					<label class="mt-speed">Speed <select id="mt-tt-speed" class="tu-select"><option value="0.25">¼×</option><option value="0.5">½×</option><option value="1" selected>1×</option><option value="2">2×</option><option value="4">4×</option><option value="8">8×</option></select></label>
+					<input type="range" id="mt-tt-scrub" min="0" max="1000" step="1" value="0" aria-label="How far the test has gone">
+					<button type="button" class="tu-btn tu-btn--ghost" id="mt-tt-full" title="Full screen" aria-label="Full screen">⛶</button>
+				</div>
+				<p class="mt-msg" id="mt-tt-msg" aria-live="polite"></p>
+			</div>
+			<div class="tu-stats" id="mt-tt-stats"></div>
+			<div class="tu-card" id="mt-tt-cmpw" hidden><h2 class="mt-h">Side by side</h2><div class="tu-table-wrap"><table class="tu-table" id="mt-tt-cmpt"></table></div></div>
+			<div class="tu-card mt-eq">
+				<div class="mt-eqb"><span class="mt-eqb__n">Engineering stress</span><span class="mt-eqb__f mes-tex">\(\displaystyle \sigma = \frac{F}{A_0},\qquad \varepsilon = \frac{L - L_0}{L_0}\)</span></div>
+				<div class="mt-eqb"><span class="mt-eqb__n">True stress</span><span class="mt-eqb__f mes-tex">\(\displaystyle \sigma_t = \frac{F}{A} = \sigma\,(1+\varepsilon),\qquad \varepsilon_t = \ln(1+\varepsilon)\)</span></div>
+				<div class="mt-eqb"><span class="mt-eqb__n">Hardening</span><span class="mt-eqb__f mes-tex">\(\displaystyle \sigma_t = K\,\varepsilon_p^{\,n}\)</span></div>
+				<div class="mt-eqb"><span class="mt-eqb__n">Necking starts</span><span class="mt-eqb__f mes-tex">\(\displaystyle \frac{d\sigma_t}{d\varepsilon_t} = \sigma_t \;\Rightarrow\; \varepsilon_t \approx n\)</span></div>
+				<div class="mt-eqb"><span class="mt-eqb__n">Resilience</span><span class="mt-eqb__f mes-tex">\(\displaystyle U_r = \frac{\sigma_y^2}{2E}\)</span></div>
+				<div class="mt-eqb"><span class="mt-eqb__n">Toughness</span><span class="mt-eqb__f mes-tex">\(\displaystyle U_t = \int_0^{\varepsilon_f} \sigma\,d\varepsilon\)</span></div>
+			</div>
+			<p class="tu-note" id="mt-tt-note">The curves are a model fitted to each material's typical Young's modulus, yield strength, tensile strength and elongation (Hollomon / Ramberg–Osgood hardening, a Lüders plateau for mild steel). Specimen: a standard round bar, 12.5 mm across with a 50 mm gauge length (0.500 in and 2.000 in in US units). Real curves also depend on the test speed, temperature and the exact alloy.</p>
+		</section>
+
+		<!-- ============ 3. SHEAR ============ -->
+		<section data-panel="shear" role="tabpanel" hidden>
+			<div class="mt-grid2">
+				<div class="tu-card mt-fig">
+					<svg id="mt-sh-svg" class="mt-svg" viewBox="0 0 520 370" role="img" aria-label="A bolt or pin loaded in shear between plates"></svg>
+					<p class="mt-cap" id="mt-sh-cap"></p>
+				</div>
+				<div class="tu-card mt-inp">
+					<div class="tu-seg mt-modes" id="mt-sh-mode" role="group" aria-label="What is in shear"><button type="button" data-v="pin" aria-pressed="true">Bolt or pin</button><button type="button" data-v="area" aria-pressed="false">Glued or welded area</button><button type="button" data-v="punch" aria-pressed="false">Punching a hole</button></div>
+					<div class="tu-row" style="margin-top:0.8em;">
+						<div class="mt-f" data-f="sh-V" data-k="force" data-d="force" data-l="Shear force V" data-m="pin area"></div>
+						<div class="mt-f" data-f="sh-d" data-k="len" data-d="small" data-l="Pin / bolt diameter d" data-m="pin"></div>
+						<div class="mt-f" data-f="sh-A" data-k="area" data-d="area" data-l="Area in shear A" data-m="area"></div>
+						<div class="mt-f" data-f="sh-hd" data-k="len" data-d="small" data-l="Hole diameter d" data-m="punch"></div>
+						<div class="mt-f" data-f="sh-t" data-k="len" data-d="small" data-l="Plate thickness t" data-m="pin punch" data-x></div>
+					</div>
+					<div class="tu-row mt-r2" data-m="pin"><div class="tu-field"><span class="tu-label">Shear planes</span><div class="tu-seg" id="mt-sh-n" role="group" aria-label="Shear planes"><button type="button" data-v="1" aria-pressed="true">Single shear</button><button type="button" data-v="2" aria-pressed="false">Double shear</button></div></div></div>
+					<div class="tu-row mt-r2" data-m="punch"><div class="tu-field" style="flex-basis:16em;"><label for="mt-sh-ratio">Shear strength = this × tensile strength</label><input id="mt-sh-ratio" class="tu-input" type="text" inputmode="decimal" value="0.75"></div></div>
+					<div class="tu-row mt-r2">
+						<div class="mt-f" data-f="sh-G" data-k="stress" data-d="modulus" data-l="Shear modulus G" data-x></div>
+						<div class="tu-field" style="flex-basis:9em;" data-m="pin area"><label for="mt-sh-sf">Safety factor wanted</label><input id="mt-sh-sf" class="tu-input" type="text" inputmode="decimal" value="2"></div>
+					</div>
+					<div class="mt-btns" data-m="pin"><button type="button" class="tu-btn" id="mt-sh-size">Find the pin size for this safety factor</button></div>
+					<p class="mt-msg" id="mt-sh-msg" aria-live="polite"></p>
+					<div class="tu-chips" id="mt-sh-ex" role="group" aria-label="Examples"></div>
+				</div>
+			</div>
+			<div class="tu-stats" id="mt-sh-stats"></div>
+			<div class="tu-card mt-eq">
+				<div class="mt-eqb"><span class="mt-eqb__n">Shear stress</span><span class="mt-eqb__f mes-tex">\(\displaystyle \tau = \frac{V}{A},\qquad A = \frac{\pi d^2}{4}\ \text{per plane}\)</span></div>
+				<div class="mt-eqb"><span class="mt-eqb__n">Double shear</span><span class="mt-eqb__f mes-tex">\(\displaystyle \tau = \frac{V}{2A}\)</span></div>
+				<div class="mt-eqb"><span class="mt-eqb__n">Shear strain</span><span class="mt-eqb__f mes-tex">\(\displaystyle \gamma = \frac{\tau}{G},\qquad G = \frac{E}{2(1+\nu)}\)</span></div>
+				<div class="mt-eqb"><span class="mt-eqb__n">Bearing stress</span><span class="mt-eqb__f mes-tex">\(\displaystyle \sigma_b = \frac{V}{d\,t}\)</span></div>
+				<div class="mt-eqb"><span class="mt-eqb__n">Punching force</span><span class="mt-eqb__f mes-tex">\(\displaystyle F = \tau_u\,\pi\, d\, t\)</span></div>
+				<div class="mt-eqb"><span class="mt-eqb__n">Shear yield</span><span class="mt-eqb__f mes-tex">\(\displaystyle \tau_y \approx 0.577\,\sigma_y\quad\text{(von Mises)}\)</span></div>
+			</div>
+		</section>
+
+		<!-- ============ 4. TORSION ============ -->
+		<section data-panel="torsion" role="tabpanel" hidden>
+			<div class="mt-grid2">
+				<div class="tu-card mt-fig">
+					<svg id="mt-to-svg" class="mt-svg" viewBox="0 0 520 400" role="img" aria-label="A shaft fixed at one end and twisted by a torque at the other"></svg>
+					<div class="mt-slide"><label for="mt-to-ts">Torque</label><input type="range" id="mt-to-ts" min="0" max="1000" step="1"><output id="mt-to-tsv" for="mt-to-ts"></output></div>
+					<p class="mt-cap" id="mt-to-cap"></p>
+				</div>
+				<div class="tu-card mt-inp">
+					<div class="tu-seg mt-modes" id="mt-to-src" role="group" aria-label="Load given as"><button type="button" data-v="T" aria-pressed="true">Torque</button><button type="button" data-v="P" aria-pressed="false">Power and speed</button></div>
+					<div class="tu-row" style="margin-top:0.8em;">
+						<div class="mt-f" data-f="to-T" data-k="torque" data-d="torque" data-l="Torque T" data-m="T"></div>
+						<div class="mt-f" data-f="to-P" data-k="power" data-d="power" data-l="Power P" data-m="P"></div>
+						<div class="mt-f" data-f="to-n" data-k="speed" data-d="speed" data-l="Speed" data-x></div>
+					</div>
+					<div class="tu-row mt-r2"><div class="tu-field"><span class="tu-label">Shaft</span><div class="tu-seg" id="mt-to-hol" role="group" aria-label="Shaft"><button type="button" data-v="0" aria-pressed="true">Solid</button><button type="button" data-v="1" aria-pressed="false">Hollow</button></div></div></div>
+					<div class="tu-row mt-r2">
+						<div class="mt-f" data-f="to-D" data-k="len" data-d="small" data-l="Outside diameter D"></div>
+						<div class="mt-f" data-f="to-di" data-k="len" data-d="small" data-l="Inside diameter d" data-m="hollow"></div>
+						<div class="mt-f" data-f="to-L" data-k="len" data-d="len" data-l="Length L"></div>
+					</div>
+					<div class="tu-row mt-r2">
+						<div class="mt-f" data-f="to-G" data-k="stress" data-d="modulus" data-l="Shear modulus G" data-x></div>
+						<div class="tu-field" style="flex-basis:9em;"><label for="mt-to-sf">Safety factor wanted</label><input id="mt-to-sf" class="tu-input" type="text" inputmode="decimal" value="2"></div>
+					</div>
+					<div class="mt-btns"><button type="button" class="tu-btn" id="mt-to-size">Find the shaft size for this safety factor</button></div>
+					<p class="mt-msg" id="mt-to-msg" aria-live="polite"></p>
+					<div class="tu-chips" id="mt-to-ex" role="group" aria-label="Examples"></div>
+				</div>
+			</div>
+			<div class="tu-stats" id="mt-to-stats"></div>
+			<div class="tu-card mt-eq">
+				<div class="mt-eqb"><span class="mt-eqb__n">Shear stress</span><span class="mt-eqb__f mes-tex">\(\displaystyle \tau_{max} = \frac{T\,c}{J},\qquad c = \frac{D}{2}\)</span></div>
+				<div class="mt-eqb"><span class="mt-eqb__n">Polar moment</span><span class="mt-eqb__f mes-tex">\(\displaystyle J = \frac{\pi D^4}{32}\ \text{(solid)},\qquad J = \frac{\pi\,(D^4 - d^4)}{32}\ \text{(hollow)}\)</span></div>
+				<div class="mt-eqb"><span class="mt-eqb__n">Angle of twist</span><span class="mt-eqb__f mes-tex">\(\displaystyle \theta = \frac{T\,L}{G\,J}\)</span></div>
+				<div class="mt-eqb"><span class="mt-eqb__n">Power</span><span class="mt-eqb__f mes-tex">\(\displaystyle P = T\,\omega,\qquad \omega = \frac{2\pi n}{60}\)</span></div>
+			</div>
+		</section>
+
+		<!-- ============ 5. POISSON & 3D HOOKE ============ -->
+		<section data-panel="poisson" role="tabpanel" hidden>
+			<div class="tu-card"><div class="tu-seg mt-modes" id="mt-po-mode" role="group" aria-label="Tool"><button type="button" data-v="bar" aria-pressed="true">Bar under load</button><button type="button" data-v="3d" aria-pressed="false">3D Hooke's law</button><button type="button" data-v="const" aria-pressed="false">Elastic constants</button></div></div>
+			<div class="mt-grid2" data-pm="bar">
+				<div class="tu-card mt-fig"><svg id="mt-po-svg" class="mt-svg" viewBox="0 0 520 330" role="img" aria-label="A bar before and after loading: longer and thinner"></svg><p class="mt-cap" id="mt-po-cap"></p></div>
+				<div class="tu-card mt-inp">
+					<div class="tu-row"><div class="tu-field"><span class="tu-label">Load given as</span><div class="tu-seg" id="mt-po-by" role="group" aria-label="Load given as"><button type="button" data-v="s" aria-pressed="true">Stress</button><button type="button" data-v="e" aria-pressed="false">Strain</button></div></div></div>
+					<div class="tu-row mt-r2">
+						<div class="mt-f" data-f="po-s" data-k="stress" data-d="stress" data-l="Axial stress σ" data-b="s" data-sg></div>
+						<div class="mt-f" data-f="po-e" data-k="strain" data-d="strain" data-l="Axial strain ε" data-b="e" data-sg></div>
+						<div class="mt-f" data-f="po-d" data-k="len" data-d="small" data-l="Diameter d"></div>
+						<div class="mt-f" data-f="po-L" data-k="len" data-d="len" data-l="Length L"></div>
+					</div>
+					<div class="tu-row mt-r2">
+						<div class="mt-f" data-f="po-E" data-k="stress" data-d="modulus" data-l="Young's modulus E" data-x></div>
+						<div class="mt-f" data-f="po-nu" data-k="strain" data-d="ratio" data-l="Poisson's ratio ν" data-x></div>
+					</div>
+					<p class="mt-msg" id="mt-po-msg" aria-live="polite"></p>
+				</div>
+			</div>
+			<div class="tu-stats" id="mt-po-stats" data-pm="bar"></div>
+			<div class="mt-grid2" data-pm="3d">
+				<div class="tu-card mt-fig"><svg id="mt-p3-svg" class="mt-svg" viewBox="0 0 520 420" role="img" aria-label="A small cube of material with the stresses on its faces and its deformed shape"></svg><p class="mt-cap" id="mt-p3-cap"></p></div>
+				<div class="tu-card mt-inp">
+					<div class="tu-row"><div class="tu-field"><span class="tu-label">Direction</span><div class="tu-seg" id="mt-p3-dir" role="group" aria-label="Direction"><button type="button" data-v="s" aria-pressed="true">Stresses → strains</button><button type="button" data-v="e" aria-pressed="false">Strains → stresses</button></div></div></div>
+					<div class="tu-row mt-r2" data-d3="s">
+						<div class="mt-f" data-f="p3-sx" data-k="stress" data-d="stress" data-l="σx" data-sg></div><div class="mt-f" data-f="p3-sy" data-k="stress" data-d="stress" data-l="σy" data-sg></div><div class="mt-f" data-f="p3-sz" data-k="stress" data-d="stress" data-l="σz" data-sg></div>
+						<div class="mt-f" data-f="p3-txy" data-k="stress" data-d="stress" data-l="τxy" data-sg></div><div class="mt-f" data-f="p3-tyz" data-k="stress" data-d="stress" data-l="τyz" data-sg></div><div class="mt-f" data-f="p3-tzx" data-k="stress" data-d="stress" data-l="τzx" data-sg></div>
+					</div>
+					<div class="tu-row mt-r2" data-d3="e">
+						<div class="mt-f" data-f="p3-ex" data-k="strain" data-d="ustrain" data-l="εx" data-sg></div><div class="mt-f" data-f="p3-ey" data-k="strain" data-d="ustrain" data-l="εy" data-sg></div><div class="mt-f" data-f="p3-ez" data-k="strain" data-d="ustrain" data-l="εz" data-sg></div>
+						<div class="mt-f" data-f="p3-gxy" data-k="strain" data-d="ustrain" data-l="γxy" data-sg></div><div class="mt-f" data-f="p3-gyz" data-k="strain" data-d="ustrain" data-l="γyz" data-sg></div><div class="mt-f" data-f="p3-gzx" data-k="strain" data-d="ustrain" data-l="γzx" data-sg></div>
+					</div>
+					<div class="tu-row mt-r2">
+						<div class="mt-f" data-f="p3-E" data-k="stress" data-d="modulus" data-l="Young's modulus E" data-x></div>
+						<div class="mt-f" data-f="p3-nu" data-k="strain" data-d="ratio" data-l="Poisson's ratio ν" data-x></div>
+					</div>
+					<p class="mt-msg" id="mt-p3-msg" aria-live="polite"></p>
+					<div class="tu-chips" id="mt-p3-ex" role="group" aria-label="Examples"></div>
+				</div>
+			</div>
+			<div class="tu-card" data-pm="3d"><div class="tu-table-wrap"><table class="tu-table" id="mt-p3-out"></table></div></div>
+			<div class="tu-card mt-inp" data-pm="const">
+				<div class="tu-row">
+					<div class="tu-field" style="flex-basis:12em;"><label for="mt-ec-pair">I know</label><select id="mt-ec-pair" class="tu-select"><option value="E,nu">E and ν</option><option value="E,G">E and G</option><option value="E,K">E and K</option><option value="G,K">G and K</option><option value="G,nu">G and ν</option><option value="K,nu">K and ν</option></select></div>
+					<div class="mt-f" data-f="ec-E" data-k="stress" data-d="modulus" data-l="Young's modulus E" data-ec="E"></div>
+					<div class="mt-f" data-f="ec-G" data-k="stress" data-d="modulus" data-l="Shear modulus G" data-ec="G"></div>
+					<div class="mt-f" data-f="ec-K" data-k="stress" data-d="modulus" data-l="Bulk modulus K" data-ec="K"></div>
+					<div class="mt-f" data-f="ec-nu" data-k="strain" data-d="ratio" data-l="Poisson's ratio ν" data-ec="nu"></div>
+				</div>
+				<p class="mt-msg" id="mt-ec-msg" aria-live="polite"></p>
+				<div class="tu-table-wrap"><table class="tu-table" id="mt-ec-out"></table></div>
+				<p class="tu-note">For an isotropic material (the same in every direction) any two elastic constants fix all the others. Wood, carbon fibre laminates and bone are not isotropic, so these formulas do not link their E, G and ν.</p>
+			</div>
+			<div class="tu-card mt-eq">
+				<div class="mt-eqb"><span class="mt-eqb__n">Poisson's ratio</span><span class="mt-eqb__f mes-tex">\(\displaystyle \nu = -\frac{\varepsilon_{lat}}{\varepsilon_{axial}},\qquad \Delta d = -\nu\,\varepsilon\,d\)</span></div>
+				<div class="mt-eqb"><span class="mt-eqb__n">Hooke's law in 3D</span><span class="mt-eqb__f mes-tex">\(\displaystyle \varepsilon_x = \frac{1}{E}\left[\sigma_x - \nu\,(\sigma_y + \sigma_z)\right],\qquad \gamma_{xy} = \frac{\tau_{xy}}{G}\)</span></div>
+				<div class="mt-eqb"><span class="mt-eqb__n">Volume change</span><span class="mt-eqb__f mes-tex">\(\displaystyle \frac{\Delta V}{V} \approx \varepsilon_x + \varepsilon_y + \varepsilon_z = \frac{1-2\nu}{E}\,(\sigma_x+\sigma_y+\sigma_z)\)</span></div>
+				<div class="mt-eqb"><span class="mt-eqb__n">Moduli</span><span class="mt-eqb__f mes-tex">\(\displaystyle G = \frac{E}{2(1+\nu)},\qquad K = \frac{E}{3(1-2\nu)}\)</span></div>
+			</div>
+		</section>
+
+		<!-- ============ 6. THERMAL ============ -->
+		<section data-panel="thermal" role="tabpanel" hidden>
+			<div class="mt-grid2">
+				<div class="tu-card mt-fig"><svg id="mt-th-svg" class="mt-svg" viewBox="0 0 520 300" role="img" aria-label="A bar that is heated, free to grow or held between walls"></svg><p class="mt-cap" id="mt-th-cap"></p></div>
+				<div class="tu-card mt-inp">
+					<div class="tu-seg mt-modes" id="mt-th-cond" role="group" aria-label="Ends of the bar"><button type="button" data-v="free" aria-pressed="true">Free to grow</button><button type="button" data-v="held" aria-pressed="false">Held between walls</button><button type="button" data-v="gap" aria-pressed="false">Walls with a gap</button></div>
+					<div class="tu-row" style="margin-top:0.8em;">
+						<div class="mt-f" data-f="th-dT" data-k="dtemp" data-d="dtemp" data-l="Temperature change ΔT" data-sg></div>
+						<div class="mt-f" data-f="th-L" data-k="len" data-d="len" data-l="Length L"></div>
+						<div class="mt-f" data-f="th-g" data-k="len" data-d="small" data-l="Gap δ" data-m="gap"></div>
+						<div class="mt-f" data-f="th-d" data-k="len" data-d="small" data-l="Bar diameter (for the force)" data-x></div>
+					</div>
+					<div class="tu-row mt-r2">
+						<div class="mt-f" data-f="th-a" data-k="alpha" data-d="alpha" data-l="Thermal expansion α" data-x data-sg></div>
+						<div class="mt-f" data-f="th-E" data-k="stress" data-d="modulus" data-l="Young's modulus E" data-x></div>
+					</div>
+					<p class="mt-msg" id="mt-th-msg" aria-live="polite"></p>
+					<div class="tu-chips" id="mt-th-ex" role="group" aria-label="Examples"></div>
+				</div>
+			</div>
+			<div class="tu-stats" id="mt-th-stats"></div>
+			<div class="tu-card mt-eq">
+				<div class="mt-eqb"><span class="mt-eqb__n">Free expansion</span><span class="mt-eqb__f mes-tex">\(\displaystyle \delta_T = \alpha\,\Delta T\,L\)</span></div>
+				<div class="mt-eqb"><span class="mt-eqb__n">Held between walls</span><span class="mt-eqb__f mes-tex">\(\displaystyle \sigma = -E\,\alpha\,\Delta T\)</span></div>
+				<div class="mt-eqb"><span class="mt-eqb__n">With a gap δ</span><span class="mt-eqb__f mes-tex">\(\displaystyle \sigma = -E\,\frac{\alpha\,\Delta T\,L - \delta}{L}\quad\text{once } \alpha\,\Delta T\,L > \delta\)</span></div>
+			</div>
+		</section>
+
+		<!-- ============ 7. TABLE ============ -->
+		<section data-panel="table" role="tabpanel" hidden>
+			<div class="tu-card">
+				<div class="tu-row">
+					<div class="tu-field" style="flex-basis:14em;"><label for="mt-tb-q">Search</label><input id="mt-tb-q" class="tu-input" type="search" placeholder="steel, aluminium, plastic…" autocomplete="off"></div>
+				</div>
+				<div class="tu-chips" id="mt-tb-fam" role="group" aria-label="Kinds of material"></div>
+				<div class="tu-table-wrap mt-tbw"><table class="tu-table mt-tbl" id="mt-tb"></table></div>
+				<p class="tu-note">Click a row to use that material in every tool. Click a column heading to sort.</p>
+			</div>
+			<div class="tu-card">
+				<div class="mt-ash-top"><h2 class="mt-h">Stiffness against weight</h2>
+					<div class="tu-row mt-ash-sel"><div class="tu-field"><label for="mt-as-y">Up</label><select id="mt-as-y" class="tu-select"></select></div><div class="tu-field"><label for="mt-as-x">Across</label><select id="mt-as-x" class="tu-select"></select></div></div></div>
+				<svg id="mt-as" class="mt-svg" viewBox="0 0 720 480" role="img" aria-label="Chart of the materials: Young's modulus against density, both on log scales"></svg>
+				<p class="tu-note" id="mt-as-note">Both scales are logarithmic (each step is ten times the last). Click a dot to use that material. Dashed lines join materials with the same stiffness per kilogram (E/ρ): steel, aluminium and titanium sit on the same line.</p>
+			</div>
+			<div class="tu-card mt-src">
+				<h2 class="mt-h">Where the numbers come from</h2>
+				<p>These are <strong>typical room-temperature values</strong> for learning and first estimates. They change with the exact alloy, heat treatment, temper, bar size, moisture (wood, nylon), direction (wood, composites, bone) and supplier. Yield and tensile strengths of the A36 steel are the specification minimums. Elongation is in a 50 mm (2 in) gauge length. Reduction of area is a rough figure that only shapes the neck in the tensile test.</p>
+				<p>Sources: published supplier data sheets (Special Metals for nickel alloys, mill and distributor sheets for steels, aluminium and copper alloys), the ASTM / UNS property collections summarised by MatWeb and MakeItFrom, ASM handbooks, the USDA Forest Products Laboratory <em>Wood Handbook</em> (clear wood at 12% moisture), ACI and Eurocode figures for concrete, textbook tables (Hibbeler, Gere &amp; Goodno, Callister) and biomechanics reviews for bone. For design, use the certified values for your material and the rules of your design code.</p>
+			</div>
+		</section>
+
+		<div class="tu-toast" id="mt-toast" role="status" aria-live="polite"></div>
+		<p class="tu-note mt-disc">For learning and first estimates. Real parts need certified material values, the design code that applies (AISC, Eurocode, ASME…) and a check by a qualified engineer.</p>
+		<nav class="mt-fam" aria-label="MES Mechanics of Materials">
+			<span class="mt-fam__l">More MES Mechanics of Materials:</span>
+			<a href="/materials">All tools</a>
+			<a href="/youngs-modulus-calculator">Young's modulus, stress &amp; strain</a>
+			<a href="/tensile-test-simulator">Tensile test simulator</a>
+			<a href="/shear-stress-calculator">Shear &amp; torsion</a>
+			<a href="/materials?tab=poisson">Poisson's ratio &amp; 3D Hooke's law</a>
+			<a href="/materials?tab=thermal">Thermal stress</a>
+			<a href="/materials?tab=table">Materials table</a>
+		</nav>
+		<div class="tu-seo">
+			<h2>Mechanics of materials calculators</h2>
+			<p>Seven tools for strength of materials, in one place and with one material list, so the material you pick is used in every tab. Each tool shows the formula, the numbers put into it, a live picture drawn from the same numbers and a warning when the material would yield or break. SI and US units, a shareable link for every tab, and nothing is uploaded: your numbers stay in your browser.</p>
+			<h3>What is here</h3>
+			<ul>
+				<li><strong>Stress &amp; strain</strong> (axial loading): type any four of F, A, L, ΔL, σ, ε and E and get the rest, with a draggable picture of a stretched bar, the safety factor and the buckling load. Also on its own page: the <a href="/youngs-modulus-calculator">Young's modulus calculator</a>.</li>
+				<li><strong>Tensile test:</strong> the stress-strain curve drawn as a bar is pulled to destruction, with unloading, true stress, resilience and toughness, and three materials side by side. Bigger on the <a href="/tensile-test-simulator">tensile test simulator</a> page.</li>
+				<li><strong>Shear</strong> of bolts and pins (single and double shear), glued joints and punching, and <strong>Torsion</strong> of solid and hollow shafts with the angle of twist and motor power. Together on the <a href="/shear-stress-calculator">shear stress calculator</a> page.</li>
+				<li><strong>Poisson &amp; 3D:</strong> how much a bar gets thinner when it is pulled, the change in volume, Hooke's law for stresses in all three directions (and back from strains to stresses), and a converter between E, G, ν and the bulk modulus K.</li>
+				<li><strong>Thermal:</strong> how much a bar grows when it is heated, and the stress when walls stop it, with or without a gap.</li>
+				<li><strong>Materials table:</strong> about 30 materials (steels, stainless, aluminium, titanium, copper, brass, bronze, cast iron, nickel alloys, tungsten, lead, gold, silver, wood, concrete, glass, plastics, rubber, carbon fibre and bone) with E, G, ν, yield and tensile strength, elongation, density and thermal expansion, a search, sorting and a chart of stiffness against weight.</li>
+			</ul>
+			<h3>The key formulas</h3>
+			<ul>
+				<li>Stress and strain: <span class="mes-tex">\(\sigma = F/A\)</span>, <span class="mes-tex">\(\varepsilon = \Delta L / L\)</span>, <span class="mes-tex">\(E = \sigma/\varepsilon\)</span>, so <span class="mes-tex">\(\Delta L = FL/(AE)\)</span>.</li>
+				<li>Shear: <span class="mes-tex">\(\tau = V/A\)</span>, <span class="mes-tex">\(\gamma = \tau/G\)</span>, <span class="mes-tex">\(G = E/(2(1+\nu))\)</span>.</li>
+				<li>Torsion: <span class="mes-tex">\(\tau_{max} = Tc/J\)</span>, <span class="mes-tex">\(\theta = TL/(GJ)\)</span>, <span class="mes-tex">\(P = T\omega\)</span>.</li>
+				<li>Poisson's ratio and volume: <span class="mes-tex">\(\varepsilon_{lat} = -\nu\,\varepsilon\)</span>, <span class="mes-tex">\(\Delta V / V \approx \varepsilon\,(1 - 2\nu)\)</span>, <span class="mes-tex">\(K = E/(3(1-2\nu))\)</span>.</li>
+				<li>Thermal: <span class="mes-tex">\(\delta_T = \alpha\,\Delta T\,L\)</span>, and between rigid walls <span class="mes-tex">\(\sigma = -E\,\alpha\,\Delta T\)</span>.</li>
+			</ul>
+			<h3>Worked examples</h3>
+			<p><strong>A steel rail held at both ends, warmed by 40 °C.</strong> With α = 11.7 × 10⁻⁶ per °C and E = 200 GPa the stress is 200,000 × 11.7 × 10⁻⁶ × 40 = 93.6 MPa in compression. Free, a 10 m rail would have grown 4.68 mm. That is why rails and bridges have expansion joints, or are laid with the stress planned in.</p>
+			<p><strong>A 20 mm steel bar pulled to 100 MPa.</strong> The strain is 0.0005 and, with ν = 0.26, the bar gets 0.00013 thinner: its diameter shrinks by 2.6 µm. Its volume grows by about 0.024%, because ν is below 0.5.</p>
+			<h3>Questions</h3>
+			<h4>What is mechanics of materials?</h4>
+			<p>The part of engineering (also called strength of materials) that works out how solid parts stretch, bend, twist and break under loads: stress, strain, the material properties that link them, and how to size a part so it stays safe.</p>
+			<h4>How accurate are the material values?</h4>
+			<p>They are typical room-temperature values from data sheets, handbooks and textbooks, good for learning and first estimates. Real values change with the alloy, heat treatment, size, moisture and supplier; use certified values and your design code for real parts.</p>
+			<h4>Can I use my own material?</h4>
+			<p>Yes: pick "Your own material" at the end of the list and type its Young's modulus, Poisson's ratio, strengths, elongation, density and thermal expansion. Every tool, including the tensile test curve, uses it.</p>
+		</div>
+	</div>
+	<script src="/main_js/mes-math.js" defer></script>
+	</div>                                    <!-- PC (Responsive/Rectangle) Matched Content -->
+                                                                        <div id="comments-button" class="hide-div-button button">Comments</div>
+                                    <div id="comments-box" class="hide">
+                                        <div id="fastcomments-widget"></div>                                    </div>
+<!-- MES-BOTTOM-AD -->
+<div class="mes-bottom-ad" data-ad-slot="1532113018" data-ad-mode="rect" style="clear:both;text-align:center;margin:1.5em auto 1.75em;min-height:330px;"><span style="display:block;font-size:11px;line-height:16px;color:#595959;margin-bottom:4px;">Advertisement</span><div class="mes-bottom-ad__slot" style="width:100%;min-height:310px;margin:0 auto;"></div></div>
+<!-- /MES-BOTTOM-AD -->
+                            </div>
+                        <!-- MES-ASIDE -->
+<aside id="mes-aside" class="mes-aside" data-aside-family="tools" aria-label="More from MES Tools"><div class="mes-aside__sticky"><div class="mes-aside__ad" data-ad-slot="8429975111"></div><div class="mes-aside__head"><h2 class="mes-aside__title-h">More like this</h2><button type="button" class="mes-aside__flip" aria-label="Move this sidebar to the other side" title="Move sidebar to the other side">&#8644;</button></div><ul class="mes-aside__list"><li><a class="mes-aside__card" href="/matrix-calculator"><img class="mes-aside__img mes-aside__img--logo" src="/matrix-calculator/img/logo.png" width="56" height="56" loading="lazy" alt=""><span class="mes-aside__text"><span class="mes-aside__name">Matrix Calculator with Steps: Multiply, Inverse, Determinant, Eigenvalues, SVD and Machine Learning</span><span class="mes-aside__tag">Calculator</span></span></a></li><li><a class="mes-aside__card" href="/ideal-weight-calculator"><img class="mes-aside__img mes-aside__img--logo" src="/ideal-weight-calculator/img/logo.png" width="56" height="56" loading="lazy" alt=""><span class="mes-aside__text"><span class="mes-aside__name">Ideal Weight Calculator: Devine, Robinson, Miller and Hamwi Formulas</span><span class="mes-aside__tag">Calculator</span></span></a></li><li><a class="mes-aside__card" href="/tools"><img class="mes-aside__img" src="/img/tools-icon.jpg" width="56" height="56" loading="lazy" alt=""><span class="mes-aside__text"><span class="mes-aside__name">All MES Tools</span><span class="mes-aside__tag">Gallery</span></span></a></li><li><a class="mes-aside__card" href="/gpacalculator"><img class="mes-aside__img mes-aside__img--logo" src="/gpacalculator/img/logo.png" width="56" height="56" loading="lazy" alt=""><span class="mes-aside__text"><span class="mes-aside__name">GPA Calculator</span><span class="mes-aside__tag">Calculator</span></span></a></li></ul></div></aside>
+<!-- /MES-ASIDE -->
+</div>
+
+                        <!-- side bar -->                            <div class="side-bar">                                    <div class="navbar-container shadow" role="navigation" aria-label="Site menu">
+                                        <div class="button button--navbar" id="navbar-button" style="position:relative;">Site Navigation<span class="dropdown-symbol dropdown-symbol--dark" style="position:absolute;right:0.75em;top:50%;transform:translateY(-50%);margin-left:0;">&#9660;</span></div>    <ul id="navbar" class="navbar">
+    <li class="navbar__item navbar__item--social"><div class="social-container social-container--navbar"><ul class="social">	<li class="social__logo social__hive"><a class="social__link" href="https://peakd.com/@mes" target="_blank"></a></li>
+    <li class="social__logo social__telegram"><a class="social__link" href="https://t.me/meslinks" target="_blank"></a></li></ul><a class="info-bar__logo-container" href="https://mes.fm/" title="Math Easy Solutions"><img id="mes-logo" class="info-bar__logo lazyload" alt="math easy solutions logo" height="29" width="126" data-src="https://mes.fm/main_img/mes-logo-small.png"></a></div></li>
+        <li class="navbar__item"><a class="navbar__link navbar__link--first" href="/materials">Home</a></li><li class="navbar__item"><a class="navbar__link" href="/youngs-modulus-calculator">Young's Modulus Calculator</a></li><li class="navbar__item"><a class="navbar__link" href="/tensile-test-simulator">Tensile Test Simulator</a></li><li class="navbar__item"><a class="navbar__link" href="/shear-stress-calculator">Shear &amp; Torsion Calculator</a></li><li class="navbar__item"><a class="navbar__link" href="/materials?tab=table">Materials Table</a></li>    <li class="navbar__item"><a class="navbar__link" href="/calculators">Calculators</a></li>
+    <li class="navbar__item"><a class="navbar__link" href="/tools">Tools</a></li>
+    <li class="navbar__item"><a class="navbar__link" href="/browser">Browser Extensions</a></li>
+    <!-- MOBILE-APPS-DROPDOWN-REMOVED: every linked app was a dead App Store / Play Store listing (lapsed developer account) -- add an entry back here for each app once it is relaunched -->
+    <li class="navbar__item"><a target="_blank" class="navbar__link" target='_blank' href="https://teespring.com/stores/mes-store">Store</a></li><li class="navbar__item"><a class="navbar__link" target="_blank" rel="nofollow" href="https://matheasy.substack.com/">Subscribe</a></li></ul>
+                                    </div>                                        <!-- (Responsive) Vertical -->
+
+                            </div>                            <!-- (Responsive) Horizontal -->
+                                            </div><div id="footer" class="footer" role="contentinfo">
+            <div class="footer__item-container">
+            <div class="footer__item">
+                <a class="footer__text footer__text--title" href="https://mes.fm/calculators.html">Calculators</a>
+            </div>
+
+            <div class="footer__item">
+                <a class="footer__text footer__text--title" href="https://mes.fm/tools">Tools</a>
+            </div>
+
+            <div class="footer__item footer__item--extra-padding">
+                <a class="footer__text footer__text--title" href="https://mes.fm/mobile-apps">Mobile Apps</a>
+            </div>
+
+            <div class="footer__item">
+                <a class="footer__text footer__text--title" href="https://mes.fm">MES.fm</a>
+            </div>
+        </div>
+        <a class="footer__text" href="/contact">Contact Us</a><span class="footer__separator"> | </span>
+        <a class="footer__text" href="/privacy-policy">Privacy Policy</a><span class="footer__separator"> | </span>
+        <a class="footer__text" target='_blank' href="https://mes.fm/donate.html">Donate</a><span class="footer__separator"> | </span><a class="footer__text" target='_blank' rel="nofollow" href="https://matheasy.substack.com/">Subscribe</a>
+        <div class="footer__text--extra-info"><span class="footer__text footer__text--copyright">Copyright &copy; <span id="copyright-year">2013</span>&nbsp;Math Easy Solutions</span></div>
+    </div>
+
+
+        </div>
+
+        <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.11.3/jquery.min.js"></script>
+        <script>
+        var MES_Vars = {
+            mobile:false,
+            hide_search:false,
+            current_tab:0
+        }        </script><!-- FASTCOMMENTS-LAZY: widget init moved to main_js/main.js -- it pulls embed.min.js only when #fastcomments-widget nears the viewport or on the first Comments-toggle click, so it no longer blocks first render -->                <script src="https://mes.fm/main_js/lazysizes.min.js?v=1.0.3" async></script>
+	<script src="/materials/js/materials.js?v=1" defer></script>
+            <script src="https://mes.fm/main_js/main.js?v=1.0.5"></script>    <!-- PAGEVIEW-TRACKING-INSERTED --><script src="https://mes.fm/main_js/track.js" defer></script><script>document.getElementById('copyright-year').textContent = new Date().getFullYear();</script><script src="/main_js/info-bar-fit.js" defer></script><script>
+  // Floating compact header bar (see #compact-nav CSS): appears once the
+  // header + nav bar have scrolled off the top; nav links that don't fit
+  // are dropped from the right, least important first, rather than
+  // wrapping. The last link is kept longest, so drop from the one before
+  // it first. Visibility is driven from here via the inline style
+  // attribute (not just a CSS class) so the bar stays hidden even if the
+  // stylesheet rules for it get stripped -- see the CSS comment above
+  // #compact-nav. Identical across every page that has this bar.
+  (function () {
+    var bar = document.getElementById('compact-nav');
+    var nav = document.querySelector('.info-bar-container');
+    var links = bar && bar.querySelector('.compact-nav-links');
+    if (!bar || !nav || !links) return;
+    var items = Array.prototype.slice.call(links.children);
+    var stuck = false, ticking = false, hideTimer;
+
+    function fit() {
+      items.forEach(function (li) { li.style.display = ''; });
+      var order = items.slice(0, -1).reverse();
+      for (var i = 0; i < order.length && links.scrollWidth > links.clientWidth; i++) {
+        order[i].style.display = 'none';
+      }
+      if (links.scrollWidth > links.clientWidth) items[items.length - 1].style.display = 'none';
+    }
+
+    function update() {
+      ticking = false;
+      var now = nav.getBoundingClientRect().bottom < 0;
+      if (now === stuck) return;
+      stuck = now;
+      bar.setAttribute('aria-hidden', stuck ? 'false' : 'true');
+      Array.prototype.forEach.call(bar.querySelectorAll('a'), function (a) {
+        a.tabIndex = stuck ? 0 : -1;
+      });
+      if (stuck) {
+        clearTimeout(hideTimer);
+        bar.style.display = 'flex';
+        fit();
+        requestAnimationFrame(function () {
+          requestAnimationFrame(function () { document.body.classList.add('is-stuck'); });
+        });
+      } else {
+        document.body.classList.remove('is-stuck');
+        hideTimer = setTimeout(function () { bar.style.display = 'none'; }, 220);
+      }
+    }
+
+    window.addEventListener('scroll', function () {
+      if (!ticking) { ticking = true; requestAnimationFrame(update); }
+    }, { passive: true });
+    window.addEventListener('resize', function () { if (stuck) fit(); });
+    update();
+  })();
+</script><script src="/main_js/display-controls.js?v=1.7" defer></script><!-- MES-ASIDE-JS --><script src="/main_js/aside.js?v=2" defer></script><!-- /MES-ASIDE-JS --><!-- MES-BOTTOM-AD-JS --><script src="/main_js/bottom-ad.js?v=1" defer></script><!-- /MES-BOTTOM-AD-JS --></body>
+
+</html>
