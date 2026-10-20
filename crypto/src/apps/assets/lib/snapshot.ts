@@ -3,6 +3,7 @@ import { DEFAULT_MIN_VALUE_USD, GROUPS, GROUP_BY_KEY, TTL, type GroupConfig } fr
 import { RateLimitError } from './errors';
 import { fetchBitcoin } from './sources/bitcoin';
 import { fetchBlockscoutChain } from './sources/blockscout';
+import { fetchEtherscanChain } from './sources/etherscanChain';
 import { fetchBsc } from './sources/bsc';
 import { fetchHiveEngine } from './sources/hiveEngine';
 import { fetchHiveL1 } from './sources/hiveL1';
@@ -22,11 +23,13 @@ async function runUnit(group: GroupConfig, source: SourceId): Promise<SourceResu
     case 'magi':
       return fetchMagi(addr);
     case 'ethereum':
+    case 'optimism':
+      return fetchBlockscoutChain(source, addr);
+    // their Blockscout instances now sit behind a Cloudflare bot check (2026-10): see sources/etherscanChain.ts
     case 'arbitrum':
     case 'polygon':
     case 'base':
-    case 'optimism':
-      return fetchBlockscoutChain(source, addr);
+      return fetchEtherscanChain(source, addr);
     case 'bsc':
       return fetchBsc(addr);
     case 'hyperliquid':
