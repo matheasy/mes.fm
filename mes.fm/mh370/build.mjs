@@ -65,7 +65,7 @@ const PAGES = [
     slug: "mh370-posts",
     sectionId: "mh370-posts",
     tileLabel: "Posts",
-    iconVersion: 2, // icon = crop of the newest post's first image (img/mh370-posts-icon.jpg); bump when refreshed
+    iconVersion: 3, // icon = crop of the newest post's first image (img/mh370-posts-icon.jpg); bump when refreshed
     title: "MH370 Teleportation Psyop Posts",
     description:
       "MES posts on the MH370 teleportation psyop, newest first: Drew Ponder, the new X account spamming more MH370 teleportation cartoons, and whether it is an Ashton Forbes AI spam bot.",

@@ -87,7 +87,7 @@ const PAGES = [
     slug: "conspiracy-posts",
     sectionId: "conspiracy-posts",
     tileLabel: "Posts",
-    iconVersion: 2, // icon = crop of the newest post's thumbnail; bump when you refresh img/conspiracy-posts-icon.jpg
+    iconVersion: 3, // icon = crop of the newest post's thumbnail; bump when you refresh img/conspiracy-posts-icon.jpg
     title: "MES Conspiracy Posts",
     description:
       "MES conspiracy posts, newest first: alt-news checkups, UFO disclosure drama, Iran war psyops, humanoid robot soldiers, Illuminati hands and more.",
