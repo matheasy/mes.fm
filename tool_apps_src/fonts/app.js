@@ -128,12 +128,12 @@
 	}
 	var CTL = [["fn-size", "size", 1], ["fn-weight", "weight"], ["fn-italic", "italic"], ["fn-tf", "tf"], ["fn-align", "align"], ["fn-color", "color"], ["fn-bgon", "bgOn"], ["fn-bg", "bg"], ["fn-ls", "ls", 1], ["fn-lh", "lh", 1], ["fn-shon", "shadowOn"], ["fn-sh", "shadow"], ["fn-shblur", "shBlur", 1], ["fn-shx", "shX", 1], ["fn-shy", "shY", 1], ["fn-stron", "strokeOn"], ["fn-str", "stroke"], ["fn-strw", "strokeW", 1], ["fn-glon", "glowOn"], ["fn-gl", "glow"], ["fn-glb", "glowBlur", 1], ["fn-grad", "gradOn"], ["fn-g1", "g1"], ["fn-g2", "g2"], ["fn-gang", "gAng", 1]];
 	CTL.forEach(function (c) { bind(c[0], c[1], c[2]); });
-	var box = $("fn-text"); fillBox();
-	box.addEventListener("input", function () { setRuns(runsOf(box)); changed(); });
-	box.addEventListener("paste", function (e) { e.preventDefault(); var t = (e.clipboardData || window.clipboardData).getData("text/plain"); document.execCommand("insertText", false, t); });
+	var richBox = $("fn-text"); fillBox();
+	richBox.addEventListener("input", function () { setRuns(runsOf(richBox)); changed(); });
+	richBox.addEventListener("paste", function (e) { e.preventDefault(); var t = (e.clipboardData || window.clipboardData).getData("text/plain"); document.execCommand("insertText", false, t); });
 	Array.prototype.forEach.call(document.querySelectorAll("[data-fmt]"), function (b) {
-		b.addEventListener("mousedown", function (e) { e.preventDefault(); });   /* keep the selection in the box */
-		b.addEventListener("click", function () { box.focus(); document.execCommand(b.getAttribute("data-fmt")); setRuns(runsOf(box)); changed(); });
+		b.addEventListener("mousedown", function (e) { e.preventDefault(); });   /* keep the selection in the richBox */
+		b.addEventListener("click", function () { richBox.focus(); document.execCommand(b.getAttribute("data-fmt")); setRuns(runsOf(richBox)); changed(); });
 	});
 	$("fn-fmtclear").addEventListener("click", function () { setRuns([{ t: S.text, b: false, i: false, u: false }]); fillBox(); changed(); });
 	var ct = 0; function changed() { clearTimeout(ct); ct = setTimeout(function () { save(); renderGrid(); renderCompare(); if (st.big) { var f = fontByName(st.big); if (f) { applyVars($("fn-bigprev")); $("fn-bigprev").firstChild.innerHTML = sampleHtml(); $("fn-css").textContent = F.css(f.name, f.cat, S); } } }, 60); }

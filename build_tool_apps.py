@@ -677,7 +677,7 @@ APPS = {
     "fonts": dict(title="MES Font Preview and Finder", page_title="Font Preview: See Your Text in Every Font, and Find a Font from a Picture",
                   tag="See your text in every font.", accent="#7c2d92", dark="#5f2070", tint="#f3e5f8",
                   desc="Free online font previewer: type your text and see it in every font on your computer at once, with size, colour, shadow, outline, gradient and glow. Make marketing text, download a transparent PNG or copy the CSS, compare fonts side by side, and find a font from a picture. Private: nothing is uploaded.",
-                  js_v="2"),
+                  js_v="3"),
     # Machine-learning teaching tools (2026-10-19): matrix calculator (lib = MESMat), neural network playground (MESNN), letter / digit recognition (MESOCR, uses MESNN), toy language model (MESLM). Node tests: tool_apps_src/<slug>-tests.js
     "matrix-calculator": dict(title="MES Matrix Calculator for Machine Learning", page_title="Matrix Calculator: Multiply, Inverse, Eigenvalues, SVD, Softmax and Attention",
                   tag="Linear algebra, with the machine-learning parts.", accent="#0369a1", dark="#075985", tint="#e0f2fe",
