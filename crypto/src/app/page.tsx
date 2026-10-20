@@ -1,7 +1,7 @@
 'use client';
 
 import AssetsTotalCard from '@/components/AssetsTotalCard';
-import PortfolioSummary from '@/components/PortfolioSummary';
+import RandomWalletsCard from '@/components/RandomWalletsCard';
 import { useSWRConfig } from 'swr';
 import FreshNote from '@/components/FreshNote';
 import SyncStatus from '@/components/SyncStatus';
@@ -21,27 +21,11 @@ export default function OverviewPage() {
   return (
     <div className="flex flex-col gap-6">
       <p className="text-sm text-gray-400">
-        Your wallets by group - the Main wallet,{' '}
-        <a href="https://mes.fm/ai" className="text-accent hover:underline">
-          AI Trading
-        </a>
-        ,{' '}
-        <a href="https://mes.fm/mfa" className="text-accent hover:underline">
-          MikeFA Trading
-        </a>
-        ,{' '}
-        <a href="https://mes.fm/sov" className="text-accent hover:underline">
-          Store of Value
-        </a>{' '}
-        and{' '}
-        <a href="https://mes.fm/lp" className="text-accent hover:underline">
-          Liquidity
-        </a>{' '}
-        - and, below them, everything held anywhere from{' '}
+        Everything you hold, at a glance. The total counts every wallet and account (from{' '}
         <a href="https://mes.fm/assets" className="text-accent hover:underline">
           mes.fm/assets
         </a>
-        . Every transfer from these wallets is on{' '}
+        ); the cards below are the parts you follow. Every transfer is on{' '}
         <a href="https://mes.fm/portfolio/transactions" className="text-accent hover:underline">
           Transactions
         </a>
@@ -64,22 +48,18 @@ export default function OverviewPage() {
         </button>
       </div>
 
+      <AssetsTotalCard />
+
       <FreshNote savedAt={savedAt} updating={updating} error={error} />
       <StateView loading={isLoading} error={portfolio ? null : error} onRetry={refreshPrices}>
-        {portfolio && (
-          <div className="flex flex-col gap-6">
-            <PortfolioSummary summary={portfolio} />
-            <WalletBreakdown wallets={portfolio.wallets} />
-          </div>
-        )}
+        {portfolio && <WalletBreakdown wallets={portfolio.wallets.filter((w) => w.key === 'ai' || w.key === 'mfa')} />}
       </StateView>
 
       <div className="grid gap-4 sm:grid-cols-2">
         <SovCard />
         <LpCard />
+        <RandomWalletsCard />
       </div>
-
-      <AssetsTotalCard />
     </div>
   );
 }

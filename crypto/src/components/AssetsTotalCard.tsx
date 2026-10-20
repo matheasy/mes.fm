@@ -8,9 +8,9 @@ function formatUsd(value: number): string {
 }
 
 /**
- * "All assets" card on the overview: mes.fm/assets' grand total with its per-group split. Kept
- * separate from the trading-wallet total above because it already includes those wallets (and
- * everything else: Hive, the Main wallet, XRP, native BTC), so adding the two would double count.
+ * The overview's total: mes.fm/assets' grand total over every wallet and account (the cards below are
+ * parts of it). The per-group split was dropped on request (2026-10-19, "keep everything simple");
+ * it is on mes.fm/assets.
  */
 export default function AssetsTotalCard() {
   const { assets, isLoading, error, savedAt, updating } = useAssetsTotal();
@@ -18,7 +18,7 @@ export default function AssetsTotalCard() {
   return (
     <a href="https://mes.fm/assets" className="panel block transition hover:border-accent">
       <div className="flex items-center justify-between">
-        <p className="stat-label">All assets &middot; every wallet and account</p>
+        <p className="stat-label">Total &middot; everything you hold</p>
         <span className="text-xs text-accent">mes.fm/assets &rarr;</span>
       </div>
       {isLoading && <p className="mt-2 text-sm text-gray-400">Loading&hellip;</p>}
@@ -28,17 +28,9 @@ export default function AssetsTotalCard() {
           <FreshNote savedAt={savedAt} updating={updating} error={error} />
           <p className="mt-1 text-3xl font-semibold">{formatUsd(assets.totalAllUsd)}</p>
           <p className="mt-1 text-xs text-gray-500">
-            Includes the wallets above &middot; {formatUsd(assets.totalUsd)} in holdings worth $10+ &middot; updated{' '}
-            {new Date(assets.fetchedAt).toLocaleTimeString()}
+            Every wallet and account (Random Wallets not included) &middot; updated {new Date(assets.fetchedAt).toLocaleTimeString()} &middot; the
+            breakdown is on mes.fm/assets
           </p>
-          <ul className="mt-4 grid gap-x-6 gap-y-1 text-sm sm:grid-cols-2 lg:grid-cols-3">
-            {assets.groups.map((g) => (
-              <li key={g.key} className="flex justify-between gap-3 border-b border-bg-border/60 py-1">
-                <span className="truncate text-gray-300">{g.label}</span>
-                <span className="tabular-nums">{formatUsd(g.totalUsd)}</span>
-              </li>
-            ))}
-          </ul>
         </>
       )}
     </a>
