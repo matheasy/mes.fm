@@ -1,7 +1,9 @@
-/* MES Dark Mode: setups (profiles) and pure helpers. Loaded by the content script, popup, options page and the node tests
+/* MES Dark Mode: setups (profiles) and pure helpers. Loaded by the content script, the service worker, the popup, the options page and the node tests
    (node tool_apps_src/dark-mode-tests.js). */
 (function (root) {
   'use strict';
+
+  var BUILTIN_DEFAULT = 'Only when I switch it on';
 
   function defaultConfig() {
     return {
@@ -18,7 +20,7 @@
     var always = defaultConfig(); always.mode = 'dark';
     var night = defaultConfig(); night.mode = 'dark'; night.brightness = 85; night.contrast = 95; night.sepia = 20;
     var paper = defaultConfig(); paper.mode = 'light'; paper.sepia = 18; paper.brightness = 98;
-    return [{ id: 'default', name: 'Only when I switch it on', config: defaultConfig() }, { id: 'always', name: 'Always dark (every page)', config: always }, { id: 'system', name: 'Follow system', config: system },
+    return [{ id: 'default', name: BUILTIN_DEFAULT, config: defaultConfig() }, { id: 'always', name: 'Always dark (every page)', config: always }, { id: 'system', name: 'Follow system', config: system },
             { id: 'night', name: 'Night (dim and warm)', config: night }, { id: 'paper', name: 'Paper (light, warm)', config: paper }];
   }
 
@@ -38,12 +40,19 @@
 
   function uid() { return 'p' + Date.now().toString(36) + Math.random().toString(36).slice(2, 6); }
 
-  // everything stored in chrome.storage.sync under "mesdm"
-  function merge(stored) {
-    var out = { v: 2, enabled: true, toolbar: 'toggle', scope: 'tab', active: 'default', profiles: [], siteModes: {} };   // toolbar: what clicking the toolbar button does: 'toggle' = switch this site dark / light, 'menu' = open the panel
+  /* Everything stored in chrome.storage.sync (and a copy in .local) under "mesdm", made safe, plus the one-time clean-ups of older versions.
+     -> { S: the settings, reset: what an upgrade changed (empty when nothing was) }.
+     v3 (1.5.0): before 1.3.0 a click on the toolbar button was saved per site in the site list and synced, so a site clicked once (mail.google.com ...) stayed dark
+     everywhere, for good, with no visible reason. Those Dark / Light entries are removed (Off is kept: that was only ever set by hand). "What the button changes: All pages"
+     turned one click into a permanent whole-browser setting (and the next click made dark pages light), so it goes back to "Only this tab". The built-in default setup
+     ("Only when I switch it on") is put back to that if its mode was changed, since a press with "All pages" did exactly that. Any other setup the person picked is kept. */
+  function migrate(stored) {
+    var out = { v: 3, enabled: true, toolbar: 'toggle', scope: 'tab', active: 'default', profiles: [], siteModes: {} };   // toolbar: what clicking the toolbar button does: 'toggle' = switch this tab dark / light, 'menu' = open the panel
+    var reset = { sites: [], scope: false, setup: '', kept: '' };
+    var old = stored && typeof stored === 'object' ? (Number(stored.v) || 1) : 3;
     if (stored && stored.enabled === false) out.enabled = false;
     if (stored && stored.toolbar === 'menu') out.toolbar = 'menu';
-    if (stored && stored.scope === 'all') out.scope = 'all';   // scope: what the toolbar button / shortcut changes: 'tab' = only the tab it is pressed in, 'all' = every page (flips the setup between dark and light)
+    if (stored && stored.scope === 'all') out.scope = 'all';   // scope: what the toolbar button / shortcut changes: 'tab' = only the tab it is pressed in, 'all' = every page (flips the setup between dark and as-it-was)
     if (stored && Array.isArray(stored.profiles) && stored.profiles.length) {
       var seen = {};
       stored.profiles.slice(0, 30).forEach(function (p) {
@@ -52,27 +61,55 @@
         out.profiles.push({ id: p.id, name: String(p.name || 'Setup').slice(0, 40), config: normConfig(p.config) });
       });
     }
-    if (stored && (stored.v || 1) < 2) out.profiles.forEach(function (p) { if (p.id === 'default' && p.config.mode === 'dark') { p.config.mode = 'manual'; p.name = 'Only when I switch it on'; } });   // v2: dark mode is no longer applied to every page by default
+    if (old < 2) out.profiles.forEach(function (p) { if (p.id === 'default' && p.config.mode === 'dark') { p.config.mode = 'manual'; p.name = BUILTIN_DEFAULT; reset.setup = 'dark'; } });   // v2: dark mode is no longer applied to every page by default
     if (!out.profiles.length) out.profiles = builtins();
     out.active = stored && out.profiles.some(function (p) { return p.id === stored.active; }) ? stored.active : out.profiles[0].id;
     if (stored && stored.siteModes && typeof stored.siteModes === 'object') {
-      for (var h in stored.siteModes) if (['dark', 'light', 'off'].indexOf(stored.siteModes[h]) >= 0) out.siteModes[h.toLowerCase()] = stored.siteModes[h];
+      for (var h in stored.siteModes) {
+        var mode = stored.siteModes[h], key = String(h).toLowerCase();
+        if (['dark', 'light', 'off'].indexOf(mode) < 0 || !key) continue;
+        if (old < 3 && mode !== 'off') { reset.sites.push(key); continue; }
+        out.siteModes[key] = mode;
+      }
     }
-    return out;
+    if (old < 3) {
+      if (out.scope === 'all') { out.scope = 'tab'; reset.scope = true; }
+      out.profiles.forEach(function (p) { if (p.id === 'default' && p.name === BUILTIN_DEFAULT && p.config.mode !== 'manual') { reset.setup = p.config.mode; p.config.mode = 'manual'; } });
+      var act = profileById(out, out.active);
+      if (['dark', 'system', 'schedule'].indexOf(act.config.mode) >= 0) reset.kept = act.name;
+    }
+    return { S: out, reset: reset };
   }
+  function merge(stored) { return migrate(stored).S; }
+  function anyReset(r) { return !!(r && ((r.sites && r.sites.length) || r.scope || r.setup || r.kept)); }   // anything to tell the person
+
+  // one line for the options page about what migrate() changed (empty when nothing was changed)
+  function resetText(r) {
+    if (!anyReset(r)) return '';
+    var parts = [], sites = Array.isArray(r.sites) ? r.sites.map(String) : [];
+    if (sites.length) parts.push('removed ' + (sites.length === 1 ? 'a per-site Dark / Light choice' : sites.length + ' per-site Dark / Light choices') + ' left over from the old one-click button (' + sites.slice(0, 6).join(', ') + (sites.length > 6 ? ', ...' : '') + ')');
+    if (r.scope) parts.push('set “What the button changes” back to “Only this tab”');
+    if (r.setup) parts.push('set the setup “' + BUILTIN_DEFAULT + '” back to leaving pages alone (it was ' + (r.setup === 'dark' ? 'dark on every page' : r.setup === 'light' ? 'light on every page' : r.setup) + ')');
+    var t = parts.length ? 'Version 1.5.0 cleaned up old settings once: it ' + join(parts) + '.' : 'Version 1.5.0 checked your old settings once and changed nothing.';
+    if (r.kept) t += (parts.length ? ' Kept: the' : ' Note: the') + ' setup “' + String(r.kept) + '” you chose changes every page; pick “' + BUILTIN_DEFAULT + '” at the top to leave pages alone.';
+    return t;
+  }
+  function join(a) { return a.length < 2 ? a.join('') : a.slice(0, -1).join(', ') + ' and ' + a[a.length - 1]; }
 
   function profileById(S, id) {
     for (var i = 0; i < S.profiles.length; i++) if (S.profiles[i].id === id) return S.profiles[i];
     return S.profiles[0];
   }
 
-  // 'dark' | 'light' | 'off' | '' (follow the setup) for a site; the longest matching entry wins
-  function siteMode(S, host) {
+  // the site-list entry that applies to a host (the longest matching one): its key or ''
+  function siteKey(S, host) {
     host = String(host || '').toLowerCase();
-    var best = '', bl = -1;
-    for (var d in S.siteModes) if ((host === d || host.slice(-(d.length + 1)) === '.' + d) && d.length > bl) { best = S.siteModes[d]; bl = d.length; }
+    var best = '';
+    for (var d in S.siteModes) if ((host === d || host.slice(-(d.length + 1)) === '.' + d) && d.length > best.length) best = d;
     return best;
   }
+  // 'dark' | 'light' | 'off' | '' (follow the setup) for a site
+  function siteMode(S, host) { var k = siteKey(S, host); return k ? S.siteModes[k] : ''; }
 
   function minutes(t) { var m = /^(\d\d):(\d\d)$/.exec(t); return m ? Number(m[1]) * 60 + Number(m[2]) : 0; }
   // is `nowMin` (minutes since midnight) inside the window from -> to (which may run past midnight)?
@@ -90,6 +127,89 @@
     if (cfg.mode === 'system') return !!systemDark;
     var d = date || new Date();
     return inWindow(d.getHours() * 60 + d.getMinutes(), cfg.scheduleFrom, cfg.scheduleTo);
+  }
+
+  /* What happens to a page, and why. o = { enabled, tab: this tab's own switch ('dark' | 'light' | ''), site: its site-list entry ('dark' | 'light' | 'off' | ''),
+     own: the site has a dark mode of its own (mes.fm), want: wantDark() of the setup (true / false / null), pageDark: does the page look dark by itself }.
+     -> { why: 'disabled' | 'tab' | 'siteoff' | 'site' | 'mesfm' | 'none' | 'setup', off, want, invert, on (= we are making it dark) }
+     The tab's own switch wins and is obeyed literally ('dark' always inverts, 'light' never does); the site list and the setup only invert a page that does not
+     already look the way they want. */
+  function decide(o) {
+    var why = !o.enabled ? 'disabled' : o.tab ? 'tab' : o.site === 'off' ? 'siteoff' : o.site ? 'site' : o.own ? 'mesfm' : o.want == null ? 'none' : 'setup';
+    var want = why === 'tab' ? o.tab === 'dark' : why === 'site' ? o.site === 'dark' : why === 'setup' ? !!o.want : null;
+    var invert = why === 'tab' ? want : why === 'site' || why === 'setup' ? want !== !!o.pageDark : false;
+    return { why: why, off: why === 'disabled' || why === 'siteoff' || why === 'mesfm', want: want, invert: !!invert, on: !!invert && want === true };
+  }
+  // the switch a click stores for this tab: dark, or back to the page's own colours ('light' only when the site list / setup would otherwise change it)
+  function clickTab(o) {
+    if (!decide(o).invert) return 'dark';
+    var base = {}; for (var k in o) base[k] = o[k]; base.tab = '';
+    return decide(base).invert ? 'light' : '';
+  }
+
+  /* ---- this tab's own switch ----
+     The page keeps a timestamped record in its sessionStorage: {"m":"dark","h":"mail.google.com","t":1760000000000}. sessionStorage lasts as long as the tab and is
+     copied into duplicated tabs, tabs restored after a restart or reopened, and windows the page opens, so on its own it made a click linger for days. A record
+     still counts only for a reload, back / forward, or a link within the same site (same-origin referrer); not for a page opened by another page, typed or
+     restored, nor once the page has been gone for TAB_AWAY. The service worker also keeps each tab's switch (chrome.storage.session, keyed by tab id, dropped
+     when the tab goes to another site, closes or the browser restarts), and the page only keeps its switch when both agree (tabFinal). */
+  var TAB_AWAY = 30 * 60 * 1000;
+  function tabRec(m, h, now) { return JSON.stringify({ m: m, h: h, t: now }); }
+  // the stored text -> { m, h, t } or null (also for the bare 'dark' / 'light' of versions before 1.5.0, which is not trusted)
+  function parseTabRec(s) {
+    if (typeof s !== 'string' || s.charAt(0) !== '{') return null;
+    var r; try { r = JSON.parse(s); } catch (e) { return null; }
+    return r && (r.m === 'dark' || r.m === 'light') && typeof r.h === 'string' && typeof r.t === 'number' && isFinite(r.t) ? { m: r.m, h: r.h, t: r.t } : null;
+  }
+  function sameOrigin(ref, origin) { if (!ref || !origin || origin === 'null') return false; try { return new URL(ref).origin === origin; } catch (e) { return false; } }
+  /* ctx = { now, host (location.host), origin (location.origin), nav: performance navigation type ('navigate' | 'reload' | 'back_forward' | 'prerender'),
+     ref: document.referrer, opened: the page was opened by another page (window.opener) and has no history of its own } -> 'dark' | 'light' | '' */
+  function tabKeep(rec, ctx) {
+    if (!rec || !ctx || rec.h !== ctx.host) return '';
+    var age = ctx.now - rec.t;
+    if (!(age <= TAB_AWAY) || age < -5 * 60 * 1000) return '';   // gone too long (or the clock jumped back)
+    if (ctx.opened) return '';
+    if (ctx.nav === 'reload' || ctx.nav === 'back_forward') return rec.m;
+    if ((ctx.nav === 'navigate' || ctx.nav === 'prerender') && sameOrigin(ctx.ref, ctx.origin)) return rec.m;
+    return '';
+  }
+  // the page's verdict (local) and the service worker's record of this tab (bg: a mode or '', null = no answer); ssOk = the page could read its sessionStorage
+  function tabFinal(local, bg, ssOk) {
+    if (bg == null) return local;
+    if (!ssOk) return bg === 'dark' || bg === 'light' ? bg : '';
+    return local && local === bg ? local : '';
+  }
+  // service worker side: tabs = { tabId: { h, m } }. A page says hello when it loads: a different host means the tab left the site, so its switch is dropped.
+  // passive (a prerendered page, about:blank) only reads.
+  function bgHello(tabs, id, host, passive) {
+    var r = tabs[id];
+    if (!r) return '';
+    if (r.h !== host) { if (!passive) delete tabs[id]; return ''; }
+    return r.m;
+  }
+  function bgSet(tabs, id, host, m) { if ((m === 'dark' || m === 'light') && host) tabs[id] = { h: host, m: m }; else delete tabs[id]; }
+
+  /* ---- telling the person why ---- st = the content script's status { why, invert, want, on, host, tab, site, setup: { name, mode, from, to }, sys, scope, toolbar }
+     -> { on, text, click } */
+  function modeText(s, sys) {
+    if (s.mode === 'dark') return 'dark on every page';
+    if (s.mode === 'light') return 'light on every page';
+    if (s.mode === 'system') return 'follows your system, which is ' + (sys ? 'dark' : 'light') + ' now';
+    if (s.mode === 'schedule') return 'dark on a schedule, ' + s.from + ' to ' + s.to;
+    return 'leaves pages alone';
+  }
+  function explain(st) {
+    if (!st) return { on: false, text: 'It cannot change this page (browser pages and the Web Store are off limits).', click: '' };
+    var h = st.host || 'This site', t, allOn = st.want === true;
+    if (st.why === 'disabled') t = 'MES Dark Mode is switched off (the On switch in the panel).';
+    else if (st.why === 'mesfm') t = 'mes.fm has its own dark mode (the moon button at the top of the page), so the extension leaves it alone.';
+    else if (st.why === 'siteoff') t = h + ' is set to Off in your site list.';
+    else if (st.why === 'tab') t = st.tab === 'dark' ? 'You switched this tab to dark.' : 'You switched this tab back to its own colours.';
+    else if (st.why === 'site') t = h + ' is set to ' + (st.site === 'dark' ? 'Dark' : 'Light') + ' in your site list.' + (st.invert ? '' : ' This page already looks ' + st.site + ', so it is left alone.');
+    else if (st.why === 'setup') t = (st.scope === 'all' && st.setup.mode === 'dark' ? 'Every page is dark: the toolbar button is set to change all pages (setup “' + st.setup.name + '”).' : 'Setup “' + st.setup.name + '”: ' + modeText(st.setup, st.sys) + '.') + (st.invert ? '' : ' This page already looks ' + (st.want ? 'dark' : 'light') + ', so it is left alone.');
+    else t = 'Nothing is changed on this page.';
+    var click = st.toolbar === 'menu' ? 'Click to open the panel.' : st.scope === 'all' ? (allOn ? 'Click: every page back to normal.' : 'Click: every page dark.') : st.on ? 'Click to switch this tab back.' : 'Click to make this tab dark.';
+    return { on: !!st.on, text: t, click: click };
   }
 
   /* ---- colours ---- */
@@ -133,8 +253,21 @@
     return css + '@media print{html{filter:none !important}}';
   }
 
-  var api = { defaultConfig: defaultConfig, builtins: builtins, normConfig: normConfig, merge: merge, profileById: profileById, siteMode: siteMode,
-              inWindow: inWindow, wantDark: wantDark, parseColor: parseColor, lightness: lightness, isDarkPage: isDarkPage, buildCss: buildCss, uid: uid, MEDIA: MEDIA };
+  /* ---- reading the settings (browser only; `api` = chrome) ----
+     sync first, then local (Brave may have no working sync), and never wait more than 1.5 s. cb(stored mesdm object or null) is called once. */
+  function loadStored(api, cb, wait) {
+    var done = false;
+    function fin(v) { if (done) return; done = true; clearTimeout(safety); cb(v && typeof v === 'object' ? v : null); }
+    var safety = setTimeout(function () { fin(null); }, wait || 1500);
+    function local() { try { api.storage.local.get('mesdm', function (c) { fin(api.runtime.lastError ? null : c && c.mesdm); }); } catch (e) { fin(null); } }
+    try { api.storage.sync.get('mesdm', function (a) { if (api.runtime.lastError || !a || !a.mesdm) local(); else fin(a.mesdm); }); } catch (e) { local(); }
+  }
+
+  var api = { defaultConfig: defaultConfig, builtins: builtins, normConfig: normConfig, migrate: migrate, merge: merge, anyReset: anyReset, resetText: resetText,
+              profileById: profileById, siteKey: siteKey, siteMode: siteMode, inWindow: inWindow, wantDark: wantDark, decide: decide, clickTab: clickTab,
+              TAB_AWAY: TAB_AWAY, tabRec: tabRec, parseTabRec: parseTabRec, tabKeep: tabKeep, tabFinal: tabFinal, bgHello: bgHello, bgSet: bgSet,
+              modeText: modeText, explain: explain, parseColor: parseColor, lightness: lightness, isDarkPage: isDarkPage, buildCss: buildCss, loadStored: loadStored,
+              uid: uid, MEDIA: MEDIA, BUILTIN_DEFAULT: BUILTIN_DEFAULT };
   root.MESDM = api;
   if (typeof module !== 'undefined' && module.exports) module.exports = api;
 })(typeof self !== 'undefined' ? self : this);

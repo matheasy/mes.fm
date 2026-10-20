@@ -17,7 +17,8 @@
   </div>
 </header>
 <main>
-  <p class="lead">A <b>setup</b> is a mode plus brightness, contrast and colour tweaks. Make one for each purpose (day, night, reading) and switch in the toolbar popup. Changes save automatically. Each site can also be forced dark, light or off from the popup.</p>
+  <p class="note" id="reset" hidden><span id="resettext"></span> <button id="resetok">OK</button></p>
+  <p class="lead">A <b>setup</b> is a mode plus brightness, contrast and colour tweaks. Make one for each purpose (day, night, reading) and switch in the toolbar popup. Changes save automatically. Each site can also be set to Dark, Light or Off from the popup (see “Sites with their own choice” below).</p>
 
   <h2>Mode</h2>
   <div class="pref"><div><b>Make pages</b><span>Dark makes light pages dark. Light makes dark pages light. System follows your computer's theme. Schedule is dark between two times. A page that already matches is left alone.</span></div>
@@ -25,10 +26,10 @@
   <div class="pref" id="schedrow"><div><b>Schedule</b><span>Dark from the first time until the second (it can run past midnight).</span></div><div class="col2"><input type="time" id="scheduleFrom"> to <input type="time" id="scheduleTo"></div></div>
 
   <h2>Toolbar button</h2>
-  <div class="pref"><div><b>Clicking the toolbar button</b><span>Switches the current site between dark and light with one click (a small DARK / LIGHT badge confirms it), or opens the panel. With the switch, the panel is still one right-click away: right-click the button and choose “Open the Dark Mode panel”. The keyboard shortcut Alt+Shift+D always switches.</span></div>
+  <div class="pref"><div><b>Clicking the toolbar button</b><span>Switches the current tab between dark and its own colours with one click (the button shows a moon while the tab is dark, and its tooltip says why a page is dark), or opens the panel. With the switch, the panel is still one right-click away: right-click the button and choose “Open the Dark Mode panel”. The keyboard shortcut Alt+Shift+D always switches.</span></div>
     <select id="toolbar"><option value="toggle">Switch dark / light</option><option value="menu">Open the panel</option></select></div>
 
-  <div class="pref"><div><b>What the button changes</b><span>“Only this tab” switches just the page you press it on (other tabs are untouched; a reload keeps it). “All pages” turns every page dark, and pressing again turns every page light (and back). The keyboard shortcut does the same.</span></div>
+  <div class="pref"><div><b>What the button changes</b><span>“Only this tab” switches just the page you press it on. It stays while you keep using that site in that tab (reload, back / forward, links within the site) and is forgotten when the tab goes to another site, is closed, duplicated, opened from another page or restored after a restart, and after 30 minutes away. Other tabs are never touched. “All pages” turns every page dark, and pressing again puts every page back to normal (it changes the mode of the setup in use). The keyboard shortcut does the same.</span></div>
     <select id="scope"><option value="tab">Only this tab</option><option value="all">All pages</option></select></div>
 
   <h2>Look</h2>
@@ -39,8 +40,9 @@
   <div class="pref"><div><b>Keep photos and videos natural</b><span>Images, video, canvas, embedded frames and CSS background photos keep their real colours. Turn off to invert everything (logos that are dark on transparent show up better).</span></div><input type="checkbox" id="keepImages"></div>
 
   <h2>Sites with their own choice</h2>
+  <p class="hint">Saved for the site in every tab, on every visit, until you remove it. Set from the toolbar popup (“Site list”). The toolbar button and Alt+Shift+D never add sites here; they only switch the tab you are in. Change the shortcut at chrome://extensions/shortcuts (brave://, edge://).</p>
   <div id="sitemap"></div>
-  <p class="hint">Set from the toolbar popup or with Alt+Shift+D (switches the current site between dark and light). Change the shortcut at chrome://extensions/shortcuts (brave://, edge://).</p>
+  <p><button id="clearsites" class="warn">Clear all</button></p>
   <p><button id="factory">Restore the built-in setups</button></p>
 </main>
 <script src="shared.js"></script>

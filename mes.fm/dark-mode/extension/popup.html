@@ -9,11 +9,13 @@
 <body>
 <header><span class="brand">MES Dark Mode</span><label class="sw" title="Turn MES Dark Mode on or off everywhere"><input type="checkbox" id="enabled"><span>On</span></label></header>
 <section>
-  <p class="status" id="status">&nbsp;</p>
-  <div class="lbl">This site</div>
-  <div class="seg" id="site"><button data-m="">Auto</button><button data-m="manual">Manual</button><button data-m="dark">Dark</button><button data-m="light">Light</button><button data-m="off">Off</button></div>
-  <div class="lbl">Mode of the setup</div>
-  <div class="seg" id="mode"><button data-m="dark">Dark</button><button data-m="light">Light</button><button data-m="system">System</button><button data-m="schedule">Schedule</button></div>
+  <p class="status" id="status" aria-live="polite">&nbsp;</p>
+  <button class="flip" id="flip" disabled>Make this tab dark</button>
+  <div class="lbl">Site list: <b id="host">this site</b></div>
+  <div class="seg" id="site"><button data-m="">Auto</button><button data-m="dark">Dark</button><button data-m="light">Light</button><button data-m="off">Off</button></div>
+  <p class="small">Auto follows the setup below. Dark, Light and Off are saved for this site in every tab (see All settings).</p>
+  <div class="lbl">Every page (mode of the setup)</div>
+  <div class="seg seg5" id="mode"><button data-m="manual" title="Pages are left alone until you switch a tab">Manual</button><button data-m="dark">Dark</button><button data-m="light">Light</button><button data-m="system">System</button><button data-m="schedule">Schedule</button></div>
 </section>
 <section class="opts">
   <label>Setup <select id="profile"></select></label>
@@ -21,7 +23,7 @@
   <label>Contrast <input type="range" id="contrast" min="40" max="150"><output id="contrastout"></output></label>
   <label>Sepia <input type="range" id="sepia" min="0" max="100"><output id="sepiaout"></output></label>
 </section>
-<section class="opts"><label>Toolbar button <select id="toolbar"><option value="toggle">Switches dark / light</option><option value="menu">Opens this panel</option></select></label></section>
+<section class="opts"><label>Toolbar button <select id="toolbar"><option value="toggle">Switches this tab</option><option value="menu">Opens this panel</option></select></label></section>
 <footer><a href="options.html" target="_blank">All settings</a> <span class="small">Shortcut: Alt+Shift+D</span></footer>
 <script src="shared.js"></script>
 <script src="popup.js"></script>

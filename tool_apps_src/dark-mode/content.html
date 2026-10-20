@@ -1,7 +1,7 @@
 	<div class="tu" id="dm">
 		<div class="tu-card tu-card--tint">
 			<h2 style="margin-top:0;">Dark mode for any website (or light mode for the dark ones)</h2>
-			<p style="margin-top:0;">A free browser extension by MES for Chrome, Brave, Edge and other Chromium browsers. It turns light pages dark, leaves pages that are already dark alone, and can go the other way too: <b>Dark</b>, <b>Light</b>, <b>follow your system</b> or <b>a schedule</b>. Photos and videos keep their natural colours, every site can have its own choice, and a shortcut flips the current site in one keypress.</p>
+			<p style="margin-top:0;">A free browser extension by MES for Chrome, Brave, Edge and other Chromium browsers. By default it leaves every page alone until you click its button: then the page in that tab turns dark (click again to switch it back). It can also darken every page, follow your system or run on a schedule, and it leaves pages that are already dark alone. Photos and videos keep their natural colours, every site can have its own choice, and Alt+Shift+D switches the current tab.</p>
 			<div class="dm-btns">
 				<a class="tu-btn tu-btn--primary" id="dm-dl" href="/dark-mode/mes-dark-mode.zip" download>Download <span id="dm-ver">v1.0.0</span> (zip)</a>
 				<a class="tu-btn tu-btn--ghost" href="#dm-install">How to install</a>
@@ -27,9 +27,10 @@
 			<ul class="dm-list">
 				<li><b>Smart invert.</b> It first looks at how the page is painted. If you want dark and the page is light (or the other way round), it adds one stylesheet that flips the page's colours and flips <b>photos, video, canvas, embedded frames and CSS background images</b> back so they look normal. If the page already matches, it does nothing, so sites with their own dark theme are not made worse.</li>
 				<li><b>Remembers each site</b> (on your computer only) so a dark site is not flashed light on your next visit.</li>
-				<li><b>One click.</b> Clicking the toolbar button switches the current site between dark and light straight away (a small DARK / LIGHT badge confirms it) and remembers it for that site. Prefer a panel? Right-click the button and choose “Open the Dark Mode panel”, or change “Toolbar button” in the settings so a click opens the panel instead.</li>
-				<li><b>Per-site choice.</b> In the panel set a site to <b>Auto</b>, <b>Dark</b>, <b>Light</b> or <b>Off</b>. <kbd>Alt</kbd>+<kbd>Shift</kbd>+<kbd>D</kbd> flips the current site between dark and light.</li>
-				<li><b>Setups.</b> Save different modes and looks for different purposes (it ships with <b>Dark</b>, <b>Follow system</b>, <b>Night</b> (dim and warm) and <b>Paper</b> (light, warm)), switch in the popup, and export or import them as text.</li>
+				<li><b>One click, this tab only.</b> Clicking the toolbar button (or <kbd>Alt</kbd>+<kbd>Shift</kbd>+<kbd>D</kbd>) makes the page in that tab dark; click again to switch it back. It stays while you keep using that site in that tab (reload, back / forward, links within the site) and is forgotten when the tab goes to another site, is closed, duplicated, opened from another page or restored after a restart, or after 30 minutes away. Other tabs are never touched.</li>
+				<li><b>It tells you why.</b> The button shows a moon while the tab is dark, and its tooltip (and the panel) says why a page is dark: “You switched this tab”, “mail.google.com is set to Dark in your site list”, or the setup in use. Right-click the button and choose “Open the Dark Mode panel”, or change “Toolbar button” in the settings so a click opens the panel instead.</li>
+				<li><b>Per-site choice.</b> In the panel set a site to <b>Auto</b>, <b>Dark</b>, <b>Light</b> or <b>Off</b>: that is kept for the site in every tab. The settings page lists every saved site with a Remove button.</li>
+				<li><b>Setups.</b> Save different modes and looks for different purposes (it ships with <b>Only when I switch it on</b>, <b>Always dark</b>, <b>Follow system</b>, <b>Night</b> (dim and warm) and <b>Paper</b> (light, warm)), switch in the popup, and export or import them as text.</li>
 				<li><b>Tweaks:</b> brightness, contrast, sepia and grayscale, and a schedule (for example dark from 19:00 to 07:00).</li>
 			</ul>
 		</div>
@@ -37,12 +38,14 @@
 		<h2>Honest limits</h2>
 		<div class="tu-card">
 			<p style="margin-top:0;">Inverting is the most reliable way to darken any page, but it is not a hand-tuned theme: brand colours can shift in hue a little, and a dark logo on a transparent background can disappear against the dark page (there is a setting to invert images too). If one site looks wrong, set it to <b>Off</b> or <b>Light</b> in the popup. It cannot change browser pages (<code>chrome://</code>), the Web Store or the built-in PDF viewer.</p>
-			<p style="margin-bottom:0;"><b>Permissions:</b> it has to run on every page you open to be able to darken it, which the browser words as "read and change your data on all websites". It does not read page content: it only checks the background colour to see whether the page is dark, and adds the stylesheet. <code>storage</code> keeps your setups and the per-site memory; <code>activeTab</code> lets the popup show the current site.</p>
+			<p style="margin-bottom:0;"><b>Permissions:</b> it has to run on every page you open to be able to darken it, which the browser words as "read and change your data on all websites". It does not read page content: it only checks the background colour to see whether the page is dark, and adds the stylesheet. <code>storage</code> keeps your setups and the per-site memory; <code>activeTab</code> and <code>scripting</code> let a click switch a tab that was open before the extension was installed or updated (an update also refreshes the open tabs, so nothing stays dark from the old version).</p>
 		</div>
 
 		<div class="tu-seo">
 			<h2>Questions</h2>
 			<dl>
+				<dt>Why is a page dark when I did not switch it?</dt>
+				<dd>Hover over the toolbar button or open the panel: the first line says why. It is either your click in that tab, the site's entry in your site list (remove it in the settings) or a setup that darkens every page (pick “Only when I switch it on”).</dd>
 				<dt>Why is a page still light?</dt>
 				<dd>Check the popup: the site may be set to Off or Light, or the setup's mode may be Light or System (and your system is light). A page the extension judges to be dark already is left alone.</dd>
 				<dt>Why did a site get brighter or odd?</dt>

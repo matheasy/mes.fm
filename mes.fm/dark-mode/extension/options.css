@@ -24,3 +24,6 @@ input[type=color] { width: 54px; height: 34px; padding: 2px; }
 kbd { border: 1px solid var(--line); border-bottom-width: 2px; border-radius: 4px; padding: 0 5px; background: var(--chip); }
 .sm { display: flex; gap: 8px; align-items: center; margin: 4px 0; }
 input[type=time] { font: inherit; background: var(--chip); color: var(--fg); border: 1px solid var(--line); border-radius: 8px; padding: 5px 8px; }
+.note { background: var(--chip); border: 1px solid var(--line); border-left: 4px solid var(--acc); border-radius: 8px; padding: 10px 12px; margin: 0 0 14px; }
+.note button { margin-left: 6px; padding: 3px 10px; }
+.sm b { min-width: 3.4em; display: inline-block; }

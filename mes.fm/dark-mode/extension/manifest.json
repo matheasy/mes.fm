@@ -1,7 +1,7 @@
 {
   "manifest_version": 3,
   "name": "MES Dark Mode",
-  "version": "1.4.1",
+  "version": "1.5.0",
   "description": "Dark mode (or light mode) for any website, with per-site control, schedules and brightness / sepia tweaks. Free, private, no tracking. By MES (mes.fm).",
   "homepage_url": "https://mes.fm/dark-mode",
   "icons": {
@@ -11,7 +11,7 @@
     "128": "icons/icon128.png"
   },
   "action": {
-    "default_title": "MES Dark Mode: click to switch this tab between dark and light",
+    "default_title": "MES Dark Mode: click to make this tab dark (click again to switch it back)",
     "default_icon": {
       "16": "icons/icon16.png",
       "32": "icons/icon32.png"
@@ -30,12 +30,15 @@
     "contextMenus",
     "scripting"
   ],
+  "host_permissions": [
+    "<all_urls>"
+  ],
   "commands": {
     "toggle-site": {
       "suggested_key": {
         "default": "Alt+Shift+D"
       },
-      "description": "Switch this tab (or all pages, see settings) between dark and light"
+      "description": "Switch this tab (or all pages, see settings) between dark and its own colours"
     }
   },
   "content_scripts": [

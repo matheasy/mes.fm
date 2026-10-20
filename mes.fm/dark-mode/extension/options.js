@@ -26,14 +26,17 @@
     $('mode').value = c.mode; $('scheduleFrom').value = c.scheduleFrom; $('scheduleTo').value = c.scheduleTo; $('keepImages').checked = c.keepImages;
     $('schedrow').style.display = c.mode === 'schedule' ? '' : 'none';
   }
+  var WORD = { dark: 'Dark', light: 'Light', off: 'Off' };
   function drawSites() {
     var box = $('sitemap'); box.innerHTML = '';
-    var hosts = Object.keys(S.siteModes);
-    if (!hosts.length) box.innerHTML = '<p class="hint">None yet.</p>';
+    var hosts = Object.keys(S.siteModes).sort();
+    $('clearsites').hidden = hosts.length < 2;
+    if (!hosts.length) box.innerHTML = '<p class="hint">None. Every site follows the setup.</p>';
     hosts.forEach(function (h) {
       var d = document.createElement('div'); d.className = 'sm';
-      d.appendChild(document.createTextNode(h + ': ' + S.siteModes[h] + ' '));
-      var b = document.createElement('button'); b.textContent = 'Remove';
+      var w = document.createElement('b'); w.textContent = WORD[S.siteModes[h]] || S.siteModes[h];
+      d.appendChild(w); d.appendChild(document.createTextNode(' ' + h + ' '));
+      var b = document.createElement('button'); b.textContent = 'Remove'; b.title = 'Let ' + h + ' follow the setup again';
       b.onclick = function () { delete S.siteModes[h]; drawSites(); save(); };
       d.appendChild(b); box.appendChild(d);
     });
@@ -70,6 +73,14 @@
     var t = prompt('Paste a setup exported from this extension:'); if (!t) return;
     try { var o = JSON.parse(t); if (!o || !o.config) throw 0; add(String(o.name || 'Imported setup').slice(0, 40), o.config); } catch (e) { alert('That does not look like an exported setup.'); }
   };
+  $('clearsites').onclick = function () {
+    var n = Object.keys(S.siteModes).length;
+    if (!n || !confirm('Remove all ' + n + ' sites from the list? They will follow the setup again.')) return;
+    S.siteModes = {}; drawSites(); save();
+  };
+  // what an upgrade cleaned up (written by the service worker, or here if this page is first)
+  function showReset(r) { var t = V.resetText(r); $('resettext').textContent = t; $('reset').hidden = !t; }
+  $('resetok').onclick = function () { $('reset').hidden = true; try { chrome.storage.local.remove('mesdmReset'); } catch (e) { /* ignore */ } };
   $('factory').onclick = function () {
     V.builtins().forEach(function (b) {
       var have = S.profiles.filter(function (p) { return p.id === b.id; })[0];
@@ -78,9 +89,12 @@
     draw(); save();
   };
 
-  chrome.storage.sync.get('mesdm', function (a) {
-    var had = !!(a && a.mesdm);
-    S = V.merge(a && a.mesdm); cur = S.active; $('toolbar').value = S.toolbar; $('scope').value = S.scope; draw();
-    if (!had) save();
+  V.loadStored(chrome, function (stored) {
+    var m = V.migrate(stored), old = stored && (Number(stored.v) || 1) < 3;
+    S = m.S; cur = S.active; $('toolbar').value = S.toolbar; $('scope').value = S.scope; draw();
+    if (old && V.anyReset(m.reset)) { var r = { at: Date.now(), sites: m.reset.sites, scope: m.reset.scope, setup: m.reset.setup, kept: m.reset.kept }; try { chrome.storage.local.set({ mesdmReset: r }); } catch (e) { /* ignore */ } showReset(r); }
+    else chrome.storage.local.get('mesdmReset', function (b) { void chrome.runtime.lastError; if (b && b.mesdmReset) showReset(b.mesdmReset); });
+    if (!stored || old) save();
   });
+  chrome.storage.onChanged.addListener(function (ch, area) { if (area === 'local' && ch.mesdmReset && ch.mesdmReset.newValue) showReset(ch.mesdmReset.newValue); });
 })();

@@ -215,7 +215,7 @@ sub {vertical-align:sub;}        .warning-message {font-size:1em;text-align:cent
 	.tu-input--big {font-size:1.35em;padding:0.55em 0.7em;}
 	.tu-suffix {position:relative;}
 	.tu-suffix .tu-input {padding-right:3.2em;}
-	.tu-suffix span {position:absolute;right:0.7em;top:50%;transform:translateY(-50%);font-size:0.85em;color:#8a93a0;pointer-events:none;}
+	.tu-suffix span {position:absolute;right:0.7em;top:50%;transform:translateY(-50%);font-size:0.85em;color:#667085;pointer-events:none;}
 	.tu-btn {cursor:pointer;padding:0.5em 0.95em;border-radius:0.35em;border:0.125em solid var(--accent);background:#fff;color:var(--accent);font-size:0.9em;line-height:1.1;}
 	.tu-btn:hover {background:var(--accent);color:#fff;}
 	.tu-btn--primary {background:var(--accent);color:#fff;}
@@ -236,7 +236,7 @@ sub {vertical-align:sub;}        .warning-message {font-size:1em;text-align:cent
 	.tu-stat--hero {background:#e9e8fb;border-color:#e9e8fb;}
 	.tu-stat__label {font-size:0.72em;font-weight:700;text-transform:uppercase;letter-spacing:0.05em;color:#667;}
 	.tu-stat__value {font-size:1.7em;font-weight:700;color:#1e2733;line-height:1.2;margin:0.15em 0;word-break:break-word;}
-	.tu-stat__sub {font-size:0.85em;color:#6a7280;line-height:1.35;}
+	.tu-stat__sub {font-size:0.85em;color:#555d6b;line-height:1.35;}
 	.tu-pos {color:#1f7a3d !important;}
 	.tu-neg {color:#b3261e !important;}
 	.tu-table-wrap {overflow-x:auto;}
@@ -249,7 +249,15 @@ sub {vertical-align:sub;}        .warning-message {font-size:1em;text-align:cent
 	.tu-toast {position:fixed;left:50%;bottom:2em;transform:translateX(-50%) translateY(0.5em);background:#1e2733;color:#fff;padding:0.6em 1.1em;border-radius:2em;font-size:0.9em;box-shadow:0 0.4em 1.2em rgba(0,0,0,0.25);opacity:0;pointer-events:none;transition:opacity 0.15s, transform 0.15s;z-index:60;}
 	.tu-toast--show {opacity:1;transform:translateX(-50%) translateY(0);}
 	.tu-seo {margin-top:2em;border-top:1px solid #e3e3e3;padding-top:1.2em;}
-	.tu-seo h2 {border-bottom:0;padding-bottom:0;font-size:1.2em;}
+	/* SEO-HEADINGS: headlines and questions stand out from the body text (also added to built pages by add_seo_heading_style.py) */
+	body .tu-seo {font-size:1.04em;line-height:1.65;}
+	body .tu-seo h2 {font-size:1.45em;font-weight:800;line-height:1.25;margin:0 0 0.6em;color:#1e2733;border-bottom:0;padding-bottom:0;}
+	body .tu-seo h3 {font-size:1.2em;font-weight:800;line-height:1.3;margin:1.6em 0 0.5em;padding:0.15em 0 0.15em 0.65em;border-left:5px solid var(--accent,#4a6fa5);color:#1e2733;}
+	body .tu-seo h4, body .tu-seo dt {font-size:1.08em;font-weight:700;font-style:normal;line-height:1.35;margin:1.3em 0 0.3em;color:#1e2733;}
+	body .tu-seo dd {margin:0 0 0.6em;} body .tu-seo p, body .tu-seo li, body .tu-seo dd {line-height:1.65;}
+	body.dark-mode .tu-seo h2, body.dark-mode .tu-seo h3, body.dark-mode .tu-seo h4, body.dark-mode .tu-seo dt {color:#f2f2f2;}
+	.tu sup, .tu sub {font-size:0.72em !important;line-height:0;vertical-align:baseline;position:relative;} .tu sup {top:-0.5em;} .tu sub {top:0.3em;}
+	.tu div[class$="-eq"] {overflow-y:hidden;}
 	.tu-seo ul {list-style:disc;margin:0.5em 0 0.5em 1.5em;line-height:1.5;}
 	.tu-svg-line {fill:none;stroke:#1e2733;stroke-width:2;}
 	.tu-svg-accent {fill:none;stroke:var(--accent);stroke-width:3;}
@@ -359,7 +367,7 @@ body.dark-mode #dm kbd { background: #2c2f34; border-color: #555b66; color: #f0f
 	body.dark-mode .tu-card--tint{background:#151426;border-color:#0e0c42}
 	body.dark-mode .tu-field > label,body.dark-mode .tu-label{color:#9a9aa2}
 	body.dark-mode .tu-input,body.dark-mode .tu-select{border:1px solid #404a58;background:#1a1a1a;color:#dddddd}
-	body.dark-mode .tu-suffix span{color:#999da3}
+	body.dark-mode .tu-suffix span{color:#989ca4}
 	body.dark-mode .tu-btn{background:#1a1a1a}
 	body.dark-mode .tu-btn--ghost{border-color:#3a424d;color:#aaaaaa}
 	body.dark-mode .tu-btn--ghost:hover{background:#191c20;color:#dddddd;border-color:#3a424d}
@@ -371,7 +379,7 @@ body.dark-mode #dm kbd { background: #2c2f34; border-color: #555b66; color: #f0f
 	body.dark-mode .tu-stat--hero{background:#151426;border-color:#0e0c42}
 	body.dark-mode .tu-stat__label{color:#9a9aa2}
 	body.dark-mode .tu-stat__value{color:#d1d6dc}
-	body.dark-mode .tu-stat__sub{color:#9a9da3}
+	body.dark-mode .tu-stat__sub{color:#9a9ea4}
 	body.dark-mode .tu-pos{color:#7dde9d !important}
 	body.dark-mode .tu-neg{color:#e87973 !important}
 	body.dark-mode .tu-table th,body.dark-mode .tu-table td{border-bottom:1px solid #29323d;color:#cccccc}
@@ -604,18 +612,7 @@ body.is-stuck #navbar.hide { position: fixed; top: 56px; right: 8px; }
     }).observe(document.documentElement, {childList: true, subtree: true});
 })();
 </script>
-    <!-- MES-ASIDE-HEAD --><link rel="stylesheet" href="/main_js/aside.css?v=2"><script>try{if(localStorage.getItem('asideSide')==='left')document.documentElement.classList.add('aside-left')}catch(e){}try{if(localStorage.getItem('pageWide')==='1')document.documentElement.classList.add('page-wide')}catch(e){}try{if(localStorage.getItem('pageMode')==='theatre')document.documentElement.classList.add('page-theatre')}catch(e){}try{if(localStorage.getItem('asideHidden')==='1')document.documentElement.classList.add('aside-hidden')}catch(e){}</script><!-- /MES-ASIDE-HEAD --><style id="seo-headings">
-/* SEO-HEADINGS */
-body .tu-seo {font-size:1.04em;line-height:1.65;}
-body .tu-seo h2 {font-size:1.45em;font-weight:800;line-height:1.25;margin:0 0 0.6em;color:#1e2733;border-bottom:0;padding-bottom:0;}
-body .tu-seo h3 {font-size:1.2em;font-weight:800;line-height:1.3;margin:1.6em 0 0.5em;padding:0.15em 0 0.15em 0.65em;border-left:5px solid var(--accent,#4a6fa5);color:#1e2733;}
-body .tu-seo h4, body .tu-seo dt {font-size:1.08em;font-weight:700;font-style:normal;line-height:1.35;margin:1.3em 0 0.3em;color:#1e2733;}
-body .tu-seo dd {margin:0 0 0.6em;} body .tu-seo p, body .tu-seo li, body .tu-seo dd {line-height:1.65;}
-body.dark-mode .tu-seo h2, body.dark-mode .tu-seo h3, body.dark-mode .tu-seo h4, body.dark-mode .tu-seo dt {color:#f2f2f2;}
-.tu sup, .tu sub {font-size:0.72em !important;line-height:0;vertical-align:baseline;position:relative;} .tu sup {top:-0.5em;} .tu sub {top:0.3em;}   /* the page reset made superscripts as big as the text, e.g. 10^-13 */
-.tu div[class$="-eq"] {overflow-y:hidden;}   /* equation boxes: overflow-x:auto made overflow-y auto too, so a tall formula showed a vertical scrollbar */
-</style>
-</head>
+    <!-- MES-ASIDE-HEAD --><link rel="stylesheet" href="/main_js/aside.css?v=2"><script>try{if(localStorage.getItem('asideSide')==='left')document.documentElement.classList.add('aside-left')}catch(e){}try{if(localStorage.getItem('pageWide')==='1')document.documentElement.classList.add('page-wide')}catch(e){}try{if(localStorage.getItem('pageMode')==='theatre')document.documentElement.classList.add('page-theatre')}catch(e){}try{if(localStorage.getItem('asideHidden')==='1')document.documentElement.classList.add('aside-hidden')}catch(e){}</script><!-- /MES-ASIDE-HEAD --></head>
     <body>            <!-- Google Tag Manager (noscript) -->
             <noscript><iframe src="https://www.googletagmanager.com/ns.html?id=GTM-PL6QNQR"
             height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
@@ -654,7 +651,7 @@ body.dark-mode .tu-seo h2, body.dark-mode .tu-seo h3, body.dark-mode .tu-seo h4,
 	<div class="tu" id="dm">
 		<div class="tu-card tu-card--tint">
 			<h2 style="margin-top:0;">Dark mode for any website (or light mode for the dark ones)</h2>
-			<p style="margin-top:0;">A free browser extension by MES for Chrome, Brave, Edge and other Chromium browsers. It turns light pages dark, leaves pages that are already dark alone, and can go the other way too: <b>Dark</b>, <b>Light</b>, <b>follow your system</b> or <b>a schedule</b>. Photos and videos keep their natural colours, every site can have its own choice, and a shortcut flips the current site in one keypress.</p>
+			<p style="margin-top:0;">A free browser extension by MES for Chrome, Brave, Edge and other Chromium browsers. By default it leaves every page alone until you click its button: then the page in that tab turns dark (click again to switch it back). It can also darken every page, follow your system or run on a schedule, and it leaves pages that are already dark alone. Photos and videos keep their natural colours, every site can have its own choice, and Alt+Shift+D switches the current tab.</p>
 			<div class="dm-btns">
 				<a class="tu-btn tu-btn--primary" id="dm-dl" href="/dark-mode/mes-dark-mode.zip" download>Download <span id="dm-ver">v1.0.0</span> (zip)</a>
 				<a class="tu-btn tu-btn--ghost" href="#dm-install">How to install</a>
@@ -680,9 +677,10 @@ body.dark-mode .tu-seo h2, body.dark-mode .tu-seo h3, body.dark-mode .tu-seo h4,
 			<ul class="dm-list">
 				<li><b>Smart invert.</b> It first looks at how the page is painted. If you want dark and the page is light (or the other way round), it adds one stylesheet that flips the page's colours and flips <b>photos, video, canvas, embedded frames and CSS background images</b> back so they look normal. If the page already matches, it does nothing, so sites with their own dark theme are not made worse.</li>
 				<li><b>Remembers each site</b> (on your computer only) so a dark site is not flashed light on your next visit.</li>
-				<li><b>One click.</b> Clicking the toolbar button switches the current site between dark and light straight away (a small DARK / LIGHT badge confirms it) and remembers it for that site. Prefer a panel? Right-click the button and choose “Open the Dark Mode panel”, or change “Toolbar button” in the settings so a click opens the panel instead.</li>
-				<li><b>Per-site choice.</b> In the panel set a site to <b>Auto</b>, <b>Dark</b>, <b>Light</b> or <b>Off</b>. <kbd>Alt</kbd>+<kbd>Shift</kbd>+<kbd>D</kbd> flips the current site between dark and light.</li>
-				<li><b>Setups.</b> Save different modes and looks for different purposes (it ships with <b>Dark</b>, <b>Follow system</b>, <b>Night</b> (dim and warm) and <b>Paper</b> (light, warm)), switch in the popup, and export or import them as text.</li>
+				<li><b>One click, this tab only.</b> Clicking the toolbar button (or <kbd>Alt</kbd>+<kbd>Shift</kbd>+<kbd>D</kbd>) makes the page in that tab dark; click again to switch it back. It stays while you keep using that site in that tab (reload, back / forward, links within the site) and is forgotten when the tab goes to another site, is closed, duplicated, opened from another page or restored after a restart, or after 30 minutes away. Other tabs are never touched.</li>
+				<li><b>It tells you why.</b> The button shows a moon while the tab is dark, and its tooltip (and the panel) says why a page is dark: “You switched this tab”, “mail.google.com is set to Dark in your site list”, or the setup in use. Right-click the button and choose “Open the Dark Mode panel”, or change “Toolbar button” in the settings so a click opens the panel instead.</li>
+				<li><b>Per-site choice.</b> In the panel set a site to <b>Auto</b>, <b>Dark</b>, <b>Light</b> or <b>Off</b>: that is kept for the site in every tab. The settings page lists every saved site with a Remove button.</li>
+				<li><b>Setups.</b> Save different modes and looks for different purposes (it ships with <b>Only when I switch it on</b>, <b>Always dark</b>, <b>Follow system</b>, <b>Night</b> (dim and warm) and <b>Paper</b> (light, warm)), switch in the popup, and export or import them as text.</li>
 				<li><b>Tweaks:</b> brightness, contrast, sepia and grayscale, and a schedule (for example dark from 19:00 to 07:00).</li>
 			</ul>
 		</div>
@@ -690,12 +688,14 @@ body.dark-mode .tu-seo h2, body.dark-mode .tu-seo h3, body.dark-mode .tu-seo h4,
 		<h2>Honest limits</h2>
 		<div class="tu-card">
 			<p style="margin-top:0;">Inverting is the most reliable way to darken any page, but it is not a hand-tuned theme: brand colours can shift in hue a little, and a dark logo on a transparent background can disappear against the dark page (there is a setting to invert images too). If one site looks wrong, set it to <b>Off</b> or <b>Light</b> in the popup. It cannot change browser pages (<code>chrome://</code>), the Web Store or the built-in PDF viewer.</p>
-			<p style="margin-bottom:0;"><b>Permissions:</b> it has to run on every page you open to be able to darken it, which the browser words as "read and change your data on all websites". It does not read page content: it only checks the background colour to see whether the page is dark, and adds the stylesheet. <code>storage</code> keeps your setups and the per-site memory; <code>activeTab</code> lets the popup show the current site.</p>
+			<p style="margin-bottom:0;"><b>Permissions:</b> it has to run on every page you open to be able to darken it, which the browser words as "read and change your data on all websites". It does not read page content: it only checks the background colour to see whether the page is dark, and adds the stylesheet. <code>storage</code> keeps your setups and the per-site memory; <code>activeTab</code> and <code>scripting</code> let a click switch a tab that was open before the extension was installed or updated (an update also refreshes the open tabs, so nothing stays dark from the old version).</p>
 		</div>
 
 		<div class="tu-seo">
 			<h2>Questions</h2>
 			<dl>
+				<dt>Why is a page dark when I did not switch it?</dt>
+				<dd>Hover over the toolbar button or open the panel: the first line says why. It is either your click in that tab, the site's entry in your site list (remove it in the settings) or a setup that darkens every page (pick “Only when I switch it on”).</dd>
 				<dt>Why is a page still light?</dt>
 				<dd>Check the popup: the site may be set to Off or Light, or the setup's mode may be Light or System (and your system is light). A page the extension judges to be dark already is left alone.</dd>
 				<dt>Why did a site get brighter or odd?</dt>
@@ -718,7 +718,7 @@ body.dark-mode .tu-seo h2, body.dark-mode .tu-seo h3, body.dark-mode .tu-seo h4,
 <!-- /MES-BOTTOM-AD -->
                             </div>
                         <!-- MES-ASIDE -->
-<aside id="mes-aside" class="mes-aside" data-aside-family="tools" aria-label="More from MES Tools"><div class="mes-aside__sticky"><div class="mes-aside__ad" data-ad-slot="8429975111"></div><div class="mes-aside__head"><h2 class="mes-aside__title-h">More like this</h2><button type="button" class="mes-aside__flip" aria-label="Move this sidebar to the other side" title="Move sidebar to the other side">&#8644;</button></div><ul class="mes-aside__list"><li><a class="mes-aside__card" href="/volume-booster"><img class="mes-aside__img mes-aside__img--logo" src="/volume-booster/img/logo.png" width="56" height="56" loading="lazy" alt=""><span class="mes-aside__text"><span class="mes-aside__name">Volume Booster</span><span class="mes-aside__tag">Tool</span></span></a></li><li><a class="mes-aside__card" href="/orbit-simulator"><img class="mes-aside__img mes-aside__img--logo" src="/orbit-simulator/img/logo.png" width="56" height="56" loading="lazy" alt=""><span class="mes-aside__text"><span class="mes-aside__name">Orbit Simulator: Planets, Gravity and Kepler's Laws</span><span class="mes-aside__tag">Tool</span></span></a></li><li><a class="mes-aside__card" href="/tools"><img class="mes-aside__img" src="/img/tools-icon.jpg" width="56" height="56" loading="lazy" alt=""><span class="mes-aside__text"><span class="mes-aside__name">All MES Tools</span><span class="mes-aside__tag">Gallery</span></span></a></li><li><a class="mes-aside__card" href="/mortgagecalculator"><img class="mes-aside__img mes-aside__img--logo" src="/mortgagecalculator/img/logo.png" width="56" height="56" loading="lazy" alt=""><span class="mes-aside__text"><span class="mes-aside__name">Mortgage Calculator</span><span class="mes-aside__tag">Calculator</span></span></a></li></ul></div></aside>
+<aside id="mes-aside" class="mes-aside" data-aside-family="tools" aria-label="More from MES Tools"><div class="mes-aside__sticky"><div class="mes-aside__ad" data-ad-slot="8429975111"></div><div class="mes-aside__head"><h2 class="mes-aside__title-h">More like this</h2><button type="button" class="mes-aside__flip" aria-label="Move this sidebar to the other side" title="Move sidebar to the other side">&#8644;</button></div><ul class="mes-aside__list"><li><a class="mes-aside__card" href="/volume-booster"><img class="mes-aside__img mes-aside__img--logo" src="/volume-booster/img/logo.png" width="56" height="56" loading="lazy" alt=""><span class="mes-aside__text"><span class="mes-aside__name">Volume Booster</span><span class="mes-aside__tag">Tool</span></span></a></li><li><a class="mes-aside__card" href="/faster-than-light-shadow-simulator"><img class="mes-aside__img mes-aside__img--logo" src="/faster-than-light-shadow-simulator/img/logo.png" width="56" height="56" loading="lazy" alt=""><span class="mes-aside__text"><span class="mes-aside__name">Faster-Than-Light Shadow Simulator</span><span class="mes-aside__tag">Tool</span></span></a></li><li><a class="mes-aside__card" href="/tools"><img class="mes-aside__img" src="/img/tools-icon.jpg" width="56" height="56" loading="lazy" alt=""><span class="mes-aside__text"><span class="mes-aside__name">All MES Tools</span><span class="mes-aside__tag">Gallery</span></span></a></li><li><a class="mes-aside__card" href="/percentagecalculator"><img class="mes-aside__img mes-aside__img--logo" src="/percentagecalculator/img/logo.png" width="56" height="56" loading="lazy" alt=""><span class="mes-aside__text"><span class="mes-aside__name">Percentage Calculator</span><span class="mes-aside__tag">Calculator</span></span></a></li></ul></div></aside>
 <!-- /MES-ASIDE -->
 </div>
 
