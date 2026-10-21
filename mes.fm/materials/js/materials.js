@@ -225,6 +225,7 @@
 		{ id: "ss304", name: "Stainless steel 304, annealed", fam: "metal", E: 193, G: 75, nu: 0.29, sy: 215, su: 505, el: 60, ra: 65, rho: 8000, a: 17.3, c: "duct" },
 		{ id: "ss316", name: "Stainless steel 316, annealed", fam: "metal", E: 193, G: 75, nu: 0.29, sy: 290, su: 580, el: 50, ra: 65, rho: 8000, a: 16.0, c: "duct" },
 		{ id: "al6061", name: "Aluminium 6061-T6", fam: "metal", E: 68.9, G: 26, nu: 0.33, sy: 276, su: 310, el: 12, ra: 40, rho: 2700, a: 23.6, c: "duct" },
+		{ id: "al2014", name: "Aluminium 2014-T6", fam: "metal", E: 73.1, G: 27, nu: 0.35, sy: 414, su: 469, el: 10, ra: 25, rho: 2790, a: 23, c: "duct", note: "Hibbeler's textbook values (also: ultimate shear strength 290 MPa)." },
 		{ id: "al2024", name: "Aluminium 2024-T3", fam: "metal", E: 73.1, G: 28, nu: 0.33, sy: 345, su: 483, el: 18, ra: 25, rho: 2780, a: 23.2, c: "duct" },
 		{ id: "al7075", name: "Aluminium 7075-T6", fam: "metal", E: 71.7, G: 26.9, nu: 0.33, sy: 503, su: 572, el: 11, ra: 25, rho: 2810, a: 23.4, c: "duct" },
 		{ id: "ti64", name: "Titanium Ti-6Al-4V (grade 5)", fam: "metal", E: 113.8, G: 44, nu: 0.342, sy: 880, su: 950, el: 14, ra: 36, rho: 4430, a: 8.6, c: "duct" },
@@ -439,10 +440,11 @@
 	function num(s) { return M.parseNum(s); }
 
 	/* ---------- state ---------- */
-	var S = { sys: "", mat: "a36", tabs: {}, f: {}, ax: { ord: ["F", "A", "L", "E"], shape: "round", dir: "t", sf: "2" }, tt: { c2: "", c3: "", zoom: "all", tr: false, ar: true, sp: "1" },
+	var S = { sys: "", mat: "a36", tabs: {}, f: {}, ax: { ord: ["F", "A", "L", "E"], shape: "round", dir: "t", sf: "2" }, tt: { c2: "", c3: "", zoom: "follow", tr: false, ar: true, sp: "1" },
 		sh: { mode: "pin", n: "1", ratio: "0.75", sf: "2" }, to: { src: "T", hol: "0", sf: "2" }, po: { mode: "bar", by: "s", dir: "s", pair: "E,nu" }, th: { cond: "free" },
 		tb: { q: "", fam: "", sort: "", dir: 1, x: "rho", y: "E" }, cu: null };
 	try { var sv = JSON.parse(localStorage.getItem(KEY) || "null"); if (sv && typeof sv === "object") for (var k0 in S) { if (sv[k0] == null) continue; if (S[k0] && typeof S[k0] === "object" && !Array.isArray(S[k0])) { for (var j0 in sv[k0]) S[k0][j0] = sv[k0][j0]; } else S[k0] = sv[k0]; } } catch (e) { /* ignore */ }
+	if (S.tt.zv !== 1) { S.tt.zoom = "follow"; S.tt.zv = 1; }   /* 2026-10-21: "Follow the test" became the default chart view */
 	if (S.sys !== "si" && S.sys !== "us") { var lng = (navigator.language || "") + ""; S.sys = /^en-(US|LR)$|^my/i.test(lng) ? "us" : "si"; }
 	if (!Array.isArray(S.ax.ord)) S.ax.ord = ["F", "A", "L", "E"]; S.ax.ord = S.ax.ord.filter(function (v, i, a) { return M.AX.indexOf(v) >= 0 && a.indexOf(v) === i; });
 	if (S.mat !== "custom" && !M.mat(S.mat)) S.mat = "a36"; if (S.mat === "custom" && !S.cu) S.mat = "a36";
@@ -459,8 +461,17 @@
 	function fmtO(si, d) { return U(d) === UO(d) ? "" : "= " + fmtIn(si, d, UO(d)); }
 	function strainTxt(e) { if (e == null || !isFinite(e)) return "–"; return M.pretty(e * 100, 4) + "%"; }
 	function sym(html) { return String(html).replace(/([α-ωΑ-Ω]+)/g, "<span class='mt-sym'>$1</span>"); }
-	function tile(label, val, sub, cls) { return "<div class='tu-stat" + (cls ? " " + cls : "") + "'><div class='tu-stat__label'>" + sym(label) + "</div><div class='tu-stat__value'>" + val + "</div><div class='tu-stat__sub'>" + (sub || "") + "</div></div>"; }
-	function tx(x, y, s, cls, anchor, extra) { return "<text x='" + r1(x) + "' y='" + r1(y) + "' class='" + (cls || "mt-t") + "'" + (anchor ? " text-anchor='" + anchor + "'" : "") + (extra || "") + ">" + esc(s) + "</text>"; }
+	/* subscripts: σx, τxy, τmax, εlat, εt, δT ... are written as plain text and turned into real subscripts here (HTML <sub>, SVG tspans) */
+	var SUBRE = /([σετγδ])(xy|yz|zx|max|lat|x|y|z|t|p|T|b|u)(?![A-Za-zα-ω])/g;
+	function subH(h) { return String(h).replace(SUBRE, "$1<sub>$2</sub>"); }
+	function subS(h) {
+		var re = new RegExp(SUBRE.source, "g"), out = "", last = 0, up = false, m;
+		function seg(t) { if (!t) return ""; if (up) { up = false; return "<tspan dy='-0.225em'>" + t + "</tspan>"; } return t; }
+		while ((m = re.exec(h))) { out += seg(h.slice(last, m.index) + m[1]) + "<tspan dy='0.3em' font-size='75%'>" + m[2] + "</tspan>"; up = true; last = re.lastIndex; }
+		return out + seg(h.slice(last));
+	}
+	function tile(label, val, sub, cls) { return "<div class='tu-stat" + (cls ? " " + cls : "") + "'><div class='tu-stat__label'>" + sym(subH(label)) + "</div><div class='tu-stat__value'>" + val + "</div><div class='tu-stat__sub'>" + subH(sub || "") + "</div></div>"; }
+	function tx(x, y, s, cls, anchor, extra) { return "<text x='" + r1(x) + "' y='" + r1(y) + "' class='" + (cls || "mt-t") + "'" + (anchor ? " text-anchor='" + anchor + "'" : "") + (extra || "") + ">" + subS(esc(s)) + "</text>"; }
 	function svgPt(svg, ev) { var p = svg.createSVGPoint(); p.x = ev.clientX; p.y = ev.clientY; var m = svg.getScreenCTM(); return m ? p.matrixTransform(m.inverse()) : { x: 0, y: 0 }; }
 	var MARK = "<marker id='@' viewBox='0 0 10 10' refX='9' refY='5' markerWidth='7' markerHeight='7' orient='auto-start-reverse'><path d='M0,0 L10,5 L0,10 z' class='mt-dimar'/></marker>";
 	function dimV(x, y1, y2, mk) { return "<line x1='" + r1(x) + "' y1='" + r1(y1) + "' x2='" + r1(x) + "' y2='" + r1(y2) + "' class='mt-dim' marker-start='url(#" + mk + ")' marker-end='url(#" + mk + ")'/>"; }
@@ -478,7 +489,7 @@
 	[].forEach.call(root.querySelectorAll(".mt-f"), function (div) {
 		var id = div.getAttribute("data-f"), d = div.getAttribute("data-d"), k = kindOf(d), lab = div.getAttribute("data-l"), x = div.hasAttribute("data-x"), sgn = div.hasAttribute("data-sg");
 		div.className += " tu-field mt-q";
-		div.innerHTML = "<label for='mt-" + id + "'>" + sym(esc(lab)) + "</label><div class='mt-qin'><input id='mt-" + id + "' class='tu-input' type='text' inputmode='" + (sgn ? "text" : "decimal") + "' autocomplete='off' spellcheck='false'>" +
+		div.innerHTML = "<label for='mt-" + id + "'>" + sym(subH(esc(lab))) + "</label><div class='mt-qin'><input id='mt-" + id + "' class='tu-input' type='text' inputmode='" + (sgn ? "text" : "decimal") + "' autocomplete='off' spellcheck='false'>" +
 			(d === "ratio" ? "" : "<select class='tu-select mt-u' aria-label='Unit for " + esc(lab) + "'>" + M.UNITS[k].map(function (u) { return "<option>" + u[0] + "</option>"; }).join("") + "</select>") +
 			(x ? "<button type='button' class='mt-x' title='Clear this box' aria-label='Clear " + esc(lab) + "'>×</button>" : "") + "</div><span class='mt-qs'></span>";
 		var f = { id: id, d: d, k: k, div: div, inp: div.querySelector("input"), sel: div.querySelector("select"), st: div.querySelector(".mt-qs"), x: div.querySelector(".mt-x") };
@@ -522,6 +533,43 @@
 	/* ---------- material ---------- */
 	var matSel = $("mt-mat");
 	matSel.innerHTML = M.FAMS.map(function (fm) { var ms = M.MATS.filter(function (m) { return m.fam === fm[0]; }); return ms.length ? "<optgroup label='" + esc(fm[1]) + "'>" + ms.map(function (m) { return "<option value='" + m.id + "'>" + esc(m.name) + "</option>"; }).join("") + "</optgroup>" : ""; }).join("") + "<option value='custom'>Your own material…</option>";
+	/* searchable picker over a <select> (with optgroups): the select stays the source of truth and fires its own change event */
+	function searchSel(sel) {
+		var wrap = document.createElement("div"), lab = root.querySelector("label[for='" + sel.id + "']"), act = -1, items = [];
+		wrap.className = "mt-ss"; sel.parentNode.insertBefore(wrap, sel); wrap.appendChild(sel); sel.className += " mt-ss__sel"; sel.tabIndex = -1; sel.setAttribute("aria-hidden", "true");
+		wrap.insertAdjacentHTML("beforeend", "<button type='button' class='tu-select mt-ss__btn' id='" + sel.id + "-b' aria-haspopup='listbox' aria-expanded='false'></button><div class='mt-ss__pop' hidden><input type='search' class='tu-input mt-ss__q' placeholder='Search: steel, 2014, plastic…' autocomplete='off' spellcheck='false' aria-label='Search the list'><ul class='mt-ss__list' role='listbox'></ul></div>");
+		var btn = wrap.querySelector(".mt-ss__btn"), pop = wrap.querySelector(".mt-ss__pop"), q = wrap.querySelector(".mt-ss__q"), ul = wrap.querySelector(".mt-ss__list");
+		if (lab) lab.htmlFor = btn.id;
+		function sync() { var o = sel.options[sel.selectedIndex]; btn.textContent = o ? o.text : ""; }
+		function norm(t) { return t.toLowerCase().replace(/aluminum/g, "aluminium"); }
+		function list() {
+			var words = norm(q.value).trim().split(/\s+/).filter(Boolean), h = [], n = 0; items = [];
+			[].forEach.call(sel.children, function (g) {
+				var opts = g.tagName === "OPTGROUP" ? [].slice.call(g.children) : [g], gl = g.tagName === "OPTGROUP" ? g.label : "";
+				var hit = opts.filter(function (o) { var t = norm(o.text + " " + gl); return words.every(function (w) { return t.indexOf(w) >= 0; }); });
+				if (!hit.length) return; if (gl) h.push("<li class='mt-ss__g' role='presentation'>" + esc(gl) + "</li>");
+				hit.forEach(function (o) { items.push(o.value); h.push("<li role='option' class='mt-ss__o' data-i='" + n + "' aria-selected='" + (o.value === sel.value) + "'>" + esc(o.text) + "</li>"); n++; });
+			});
+			ul.innerHTML = h.join("") || "<li class='mt-ss__g'>Nothing matches.</li>";
+			act = Math.max(0, items.indexOf(sel.value)); if (words.length) act = 0; hl();
+		}
+		function hl() { [].forEach.call(ul.querySelectorAll(".mt-ss__o"), function (li) { var on = +li.getAttribute("data-i") === act; li.classList.toggle("mt-ss__o--act", on); if (on) li.scrollIntoView({ block: "nearest" }); }); }
+		function open() { pop.hidden = false; btn.setAttribute("aria-expanded", "true"); q.value = ""; list(); q.focus(); }
+		function close(back) { pop.hidden = true; btn.setAttribute("aria-expanded", "false"); if (back) btn.focus(); }
+		function pick(i) { if (items[i] == null) return; close(true); if (sel.value !== items[i]) { sel.value = items[i]; sel.dispatchEvent(new Event("change")); } sync(); }
+		btn.addEventListener("click", function () { if (pop.hidden) open(); else close(); });
+		btn.addEventListener("keydown", function (e) { if (e.key === "ArrowDown" || e.key === "ArrowUp") { e.preventDefault(); open(); } });
+		q.addEventListener("input", list);
+		q.addEventListener("keydown", function (e) {
+			if (e.key === "ArrowDown") { e.preventDefault(); act = Math.min(items.length - 1, act + 1); hl(); } else if (e.key === "ArrowUp") { e.preventDefault(); act = Math.max(0, act - 1); hl(); }
+			else if (e.key === "Enter") { e.preventDefault(); pick(act); } else if (e.key === "Escape") { e.preventDefault(); e.stopPropagation(); close(true); } else if (e.key === "Tab") close();
+		});
+		ul.addEventListener("mousedown", function (e) { e.preventDefault(); });
+		ul.addEventListener("click", function (e) { var li = e.target.closest(".mt-ss__o"); if (li) pick(+li.getAttribute("data-i")); });
+		document.addEventListener("pointerdown", function (e) { if (!pop.hidden && !wrap.contains(e.target)) close(); });
+		sel._ssSync = sync; sync();
+	}
+	function ssSync() { ["mt-mat", "mt-tt-c2", "mt-tt-c3"].forEach(function (id) { var el = $(id); if (el && el._ssSync) el._ssSync(); }); }
 	function matRec() { return S.mat === "custom" && S.cu ? S.cu : (M.mat(S.mat) || M.MATS[0]); }
 	function mv() { var m = matRec(); return { E: m.E * 1e9, G: m.G * 1e9, nu: m.nu, sy: m.sy ? m.sy * 1e6 : null, su: m.su * 1e6, sc: m.sc ? m.sc * 1e6 : null, a: m.a != null ? m.a * 1e-6 : null, rho: m.rho, name: m.name, short: m.id === "custom" ? "your material" : m.name, m: m }; }
 	function custFrom(m) { return { id: "custom", name: "Your material", fam: m.fam === "elastomer" || m.fam === "polymer" ? m.fam : "metal", E: m.E, G: m.G, nu: m.nu, sy: m.sy, su: m.su, el: m.el != null ? m.el : (m.su / m.E / 10), ra: m.ra, rho: m.rho, a: m.a, c: m.c, x: m.x ? JSON.parse(JSON.stringify(m.x)) : null }; }
@@ -536,6 +584,7 @@
 		save(); matNote(); if (!quiet) renderAll();
 	}
 	function matNote() {
+		ssSync();
 		var m = matRec(), sy = m.sy ? fmt(m.sy * 1e6, "stress") : "none (brittle)", parts = ["E " + fmt(m.E * 1e9, "modulus"), "yield " + sy, "tensile strength " + fmt(m.su * 1e6, "stress"), "ν " + M.sig(m.nu, 3)];
 		$("mt-matnote").innerHTML = "<strong>" + esc(m.name) + ":</strong> " + esc(parts.join(" · ")) + ". Typical values." + (m.note ? " " + esc(m.note) : "");
 	}
@@ -778,8 +827,8 @@
 	function spD() { return S.sys === "us" ? 0.0127 : 0.0125; } function spL() { return S.sys === "us" ? 0.0508 : 0.05; }
 	var TC = ["#2563eb", "#d9480f", "#0f9d58"];
 	var X0 = 74, X1 = 704, Y0 = 18, Y1 = 440;
-	function cmpOpts(sel, val) { sel.innerHTML = "<option value=''>(nothing)</option>" + M.FAMS.map(function (fm) { var ms = M.MATS.filter(function (m) { return m.fam === fm[0]; }); return ms.length ? "<optgroup label='" + esc(fm[1]) + "'>" + ms.map(function (m) { return "<option value='" + m.id + "'>" + esc(m.name) + "</option>"; }).join("") + "</optgroup>" : ""; }).join(""); sel.value = M.mat(val) ? val : ""; }
-	cmpOpts($("mt-tt-c2"), S.tt.c2); cmpOpts($("mt-tt-c3"), S.tt.c3);
+	function cmpOpts(sel, val) { sel.innerHTML = "<option value=''>(nothing)</option>" + M.FAMS.map(function (fm) { var ms = M.MATS.filter(function (m) { return m.fam === fm[0]; }); return ms.length ? "<optgroup label='" + esc(fm[1]) + "'>" + ms.map(function (m) { return "<option value='" + m.id + "'>" + esc(m.name) + "</option>"; }).join("") + "</optgroup>" : ""; }).join(""); sel.value = M.mat(val) ? val : ""; if (sel._ssSync) sel._ssSync(); }
+	cmpOpts($("mt-tt-c2"), S.tt.c2); cmpOpts($("mt-tt-c3"), S.tt.c3); searchSel(matSel); searchSel($("mt-tt-c2")); searchSel($("mt-tt-c3"));
 	$("mt-tt-c2").addEventListener("change", function () { S.tt.c2 = this.value; save(); if (TT.c) { ttBuildCmp(); ttStatic(); ttRender(); ttStats(); } });
 	$("mt-tt-c3").addEventListener("change", function () { S.tt.c3 = this.value; save(); if (TT.c) { ttBuildCmp(); ttStatic(); ttRender(); ttStats(); } });
 	seg("mt-tt-zoom", function () { return S.tt.zoom; }, function (v) { S.tt.zoom = v; ttStatic(); ttRender(); });
@@ -833,10 +882,17 @@
 	function ttShow() { if (!TT.c) ttBuild(); ttStatic(); ttRender(); ttStats(); }
 	/* --- chart --- */
 	function stepOf(range, n) { var raw = range / (n || 5), p = Math.pow(10, Math.floor(Math.log10(raw))), m = raw / p; return (m <= 1 ? 1 : m <= 2 ? 2 : m <= 5 ? 5 : 10) * p; }
+	function elX(c) { if (c.brittle) return c.ef * 1.04; if (c.elastic) return Math.min(c.ef, 0.6); if (c.type === "polymer") return Math.min(c.ef, c.ey * 1.8); return Math.min(c.ef * 1.02, Math.max(0.006, 3 * (c.suy || c.sy) / c.E + 0.004)); }
 	function ttScale() {
 		var c = TT.c, tr = !!S.tt.tr, all = [c].concat(TT.cmp), xm = 0, ym = 0;
-		if (S.tt.zoom === "el") {
-			if (c.brittle) xm = c.ef * 1.04; else if (c.elastic) xm = Math.min(c.ef, 0.6); else if (c.type === "polymer") xm = Math.min(c.ef, c.ey * 1.8); else xm = Math.min(c.ef * 1.02, Math.max(0.006, 3 * (c.suy || c.sy) / c.E + 0.004));
+		if (S.tt.zoom === "follow") {   /* zoomed in on the start, widening as the bar stretches (never wider than the whole curve) */
+			var full = 0; all.forEach(function (o) { full = Math.max(full, tr ? o.et[o.et.length - 1] : o.ef); }); full *= 1.04;
+			var st0 = TT.P.length ? ttState() : null, em = st0 ? st0.emax : 0;
+			xm = Math.min(full, Math.max(elX(c) * 0.55, em * 1.3));
+			all.forEach(function (o) { for (var i = 0; i < o.e.length; i++) { if (o.e[i] <= xm) ym = Math.max(ym, o.s[i]); if (tr && o.et[i] <= xm) ym = Math.max(ym, o.t[i]); } });
+			ym *= 1.15;
+		} else if (S.tt.zoom === "el") {
+			xm = elX(c);
 			all.forEach(function (o) { for (var i = 0; i < o.e.length; i++) { if (o.e[i] <= xm) ym = Math.max(ym, o.s[i]); if (tr && o.et[i] <= xm) ym = Math.max(ym, o.t[i]); } });
 			ym *= 1.15;
 		} else {
@@ -846,8 +902,8 @@
 		if (!(xm > 0)) xm = 0.01; if (!(ym > 0)) ym = 1e6;
 		return { xm: xm, ym: ym, x: function (e) { return X0 + (X1 - X0) * e / xm; }, y: function (s) { return Y1 - (Y1 - Y0) * s / ym; } };
 	}
-	function ttStatic() {
-		if (!TT.c) return; var sc = ttScale(); TT.sc = sc;
+	function ttStatic(sc0) {
+		if (!TT.c) return; var sc = sc0 || ttScale(); TT.sc = sc;
 		var h = ["<defs><clipPath id='mt-tt-clip'><rect x='" + X0 + "' y='" + (Y0 - 4) + "' width='" + (X1 - X0 + 4) + "' height='" + (Y1 - Y0 + 4) + "'/></clipPath></defs>"];
 		var su = U("stress"), xs = stepOf(sc.xm * 100, 6), ys = stepOf(M.fromSI("stress", sc.ym, su), 6), v;
 		for (v = 0; v <= sc.xm * 100 + 1e-9; v += xs) { var X = sc.x(v / 100); h.push(line(X, Y0, X, Y1, "mt-grid"), tx(X, Y1 + 20, M.sig(v, 4), "mt-t mt-ts", "middle")); }
@@ -865,6 +921,7 @@
 	function polyPts(xa, ya, sc) { var s = []; for (var i = 0; i < xa.length; i++) s.push(r1(sc.x(xa[i])) + "," + r1(sc.y(ya[i]))); return s.join(" "); }
 	function ttRender() {
 		if (!TT.c || !TT.sc) return;
+		if (S.tt.zoom === "follow") { var ns = ttScale(); if (Math.abs(ns.xm / TT.sc.xm - 1) > 0.002 || Math.abs(ns.ym / TT.sc.ym - 1) > 0.002) ttStatic(ns); }
 		var c = TT.c, sc = TT.sc, st = ttState(), P = TT.P, h = [], i, mm = TT.meas, tr = !!S.tt.tr;
 		var upto = st.i, pts = [], tp = [], tpN = [];
 		for (i = 0; i <= upto; i++) pts.push([P[i].e, P[i].s]); pts.push([st.e, st.s]);
@@ -1026,7 +1083,11 @@
 		TT.play = true; TT.last = 0; ttRender(); requestAnimationFrame(ttTick);
 	});
 	$("mt-tt-scrub").addEventListener("input", function () { TT.play = false; TT.p = TT.total * (+this.value) / 1000; ttRender(); });
-	$("mt-tt-full").addEventListener("click", function () { var el = $("mt-tt"); if (document.fullscreenElement) document.exitFullscreen(); else if (el.requestFullscreen) el.requestFullscreen().catch(function () { toast("Full screen is not available here."); }); });
+	$("mt-tt-full").addEventListener("click", function () { var el = $("mt-tt"); if (document.fullscreenElement) document.exitFullscreen(); else if (el.requestFullscreen) el.requestFullscreen().catch(function () { toast("Full screen is not available here."); }); else toast("Full screen is not available here: use Fill window."); });
+	/* Fill window: the test box covers the browser window (more practical than full screen on a big monitor); Esc or Close leaves */
+	function ttWin(on) { TT.win = on; $("mt-tt").classList.toggle("mt-tt--win", on); document.documentElement.classList.toggle("mt-noscroll", on); $("mt-tt-win").textContent = on ? "✕ Close" : "⤢ Fill window"; $("mt-tt-win").title = on ? "Back to the page (Esc)" : "Fill the browser window (Esc to close)"; }
+	$("mt-tt-win").addEventListener("click", function () { ttWin(!TT.win); });
+	document.addEventListener("keydown", function (e) { if (e.key === "Escape" && TT.win && !document.fullscreenElement && !e.defaultPrevented) ttWin(false); });
 	(function () {
 		var ch = $("mt-tt-chart");
 		ch.addEventListener("pointermove", function (ev) {
@@ -1109,6 +1170,7 @@
 			h.push("<rect x='" + gx + "' y='" + gy + "' width='" + sz + "' height='" + sz + "' class='mt-ghost'/>", "<polygon points='" + [[gx, gy + sz], [gx + sz, gy + sz], [gx + sz + off, gy], [gx + off, gy]].map(function (p) { return r1(p[0]) + "," + r1(p[1]); }).join(" ") + "' class='mt-elem'/>");
 			h.push(tx(gx + sz + off + 22, gy + 26, "shear strain γ:", "mt-t mt-ts mt-b", "start"), tx(gx + sz + off + 22, gy + 50, "a square turns slanted (angle drawn ×" + kTxt(k) + ")", "mt-t mt-ts", "start"));
 		}
+		if (md !== "punch" && isFinite(res.tau)) h.push(tx(506, 34, "τ = V/" + (res.planes === 2 ? "2A" : "A") + " = " + fmt(res.tau, "stress"), "mt-t mt-b mt-red", "end"), tx(506, 58, "γ = τ/G" + (isFinite(res.gam) ? " = " + M.pretty(res.gam, 3) + " rad" : ""), "mt-t mt-ts", "end"));
 		$("mt-sh-svg").innerHTML = h.join("");
 		$("mt-sh-cap").textContent = md === "pin" ? (n === 2 ? "Double shear: the pin is cut across in two places, so each plane carries half the force." : "Single shear: the bolt would be cut across at the one plane where the plates meet.") : md === "area" ? "Lap joint: the glue or weld area slides in shear." : "Punching: the punch shears a ring of metal (the wall of the hole) out of the plate.";
 	}
@@ -1207,7 +1269,7 @@
 		else if (!isFinite(e)) msg = by === "s" ? "Type the stress and Young's modulus." : "Type the strain.";
 		var r = isFinite(e) && d > 0 && L > 0 && !msg ? M.poissonBar(e, nu, d, L) : null;
 		if (r) {
-			h.push(tile("Lateral strain", M.pretty(r.lat, 4), "= −ν ε · " + M.pretty(r.lat * 1e6, 4) + " µε", "tu-stat--hero"));
+			h.push(tile("Lateral strain εlat", M.pretty(r.lat, 4), "= −ν ε · " + M.pretty(r.lat * 1e6, 4) + " µε", "tu-stat--hero"));
 			h.push(tile("Change in diameter Δd", fmt(r.dd, "small"), (r.dd < 0 ? "thinner" : "thicker") + ": " + fmt(d, "small", 7) + " → " + fmt(r.d1, "small", 7)));
 			h.push(tile("Change in length ΔL", fmt(r.dL, "small"), fmt(L, "len") + " → " + fmt(r.L1, "len", 7)));
 			var V0 = PI * d * d / 4 * L, dV = r.vol * V0;
@@ -1218,17 +1280,66 @@
 			else if (m.sy == null && Math.abs(s) > m.su) msg = "Above the tensile strength of " + m.short + ".";
 		}
 		$("mt-po-stats").innerHTML = h.join(""); $("mt-po-msg").textContent = msg;
-		var svg = $("mt-po-svg"), g = [], k = exag(isFinite(e) ? e : 0, 0.18), de = clamp((isFinite(e) ? e : 0) * k, -0.4, 0.5), ld = clamp(-(isFinite(nu) ? nu : 0) * de, -0.6, 0.6), x1 = 60, w0 = 360, h0 = 90, yc = 150;
-		g.push("<defs>" + MARK.replace("@", "mt-po-mk") + "</defs>");
+		/* sliders: the load (stress or strain) and ν; their ranges stay put while one is dragged */
+		var R = 1.25 * (m.sy || m.su), Re = E > 0 ? R / E : 0.005;
+		sliders("mt-po-sl", [
+			by === "s" ? { key: "s", label: "Axial stress σ", min: -R, max: R, v: s, show: function (v) { return fmt(v, "stress"); }, set: function (v) { setFieldSI("po-s", v); poCompute(); } }
+				: { key: "e", label: "Axial strain ε", min: -Re, max: Re, v: e, show: function (v) { return M.pretty(v * 1e6, 3) + " µε"; }, set: function (v) { setFieldSI("po-e", v); poCompute(); } },
+			{ key: "nu", label: "Poisson's ratio ν", min: 0, max: 0.5, v: nu, show: function (v) { return M.sig(v, 3); }, set: function (v) { setField("po-nu", Math.round(v * 1000) / 1000, "mm/mm"); poCompute(); } }
+		]);
+		var svg = $("mt-po-svg"), g = [], ee = isFinite(e) ? e : 0;
+		if (!PO.lock) PO.k = exag(ee, 0.18);
+		var k = PO.k, de = clamp(ee * k, -0.4, 0.25), ld = clamp(-(isFinite(nu) ? nu : 0) * de, -0.6, 0.6), x1 = 50, w0 = 330, h0 = 90, yc = 160;
+		PO.g = { x1: x1, w0: w0, E: E, by: by };
+		g.push("<defs>" + MARK.replace("@", "mt-po-mk") + "<linearGradient id='mt-po-gr' x1='0' x2='0' y1='0' y2='1'><stop offset='0' class='mt-g1'/><stop offset='0.42' class='mt-g2'/><stop offset='1' class='mt-g3'/></linearGradient></defs>");
 		g.push("<rect x='" + x1 + "' y='" + (yc - h0 / 2) + "' width='" + w0 + "' height='" + h0 + "' class='mt-ghost'/>");
-		var w1 = w0 * (1 + de), h1 = h0 * (1 + ld);
-		g.push("<rect x='" + x1 + "' y='" + r1(yc - h1 / 2) + "' width='" + r1(w1) + "' height='" + r1(h1) + "' class='mt-rod' fill='" + "url(#mt-ax-gr)" + "'/>");
-		var dirT = (isFinite(e) ? e : 0) >= 0;
-		g.push(arrowSimple(x1 + w1 + (dirT ? 6 : 46), yc, x1 + w1 + (dirT ? 46 : 6), yc), arrowSimple(x1 - (dirT ? 6 : 46), yc, x1 - (dirT ? 46 : 6), yc));
-		g.push(dimV(x1 + w1 / 2, yc - h1 / 2, yc + h1 / 2, "mt-po-mk"), tx(x1 + w1 / 2 + 8, yc + 5, "d " + (r ? "→ " + fmt(r.d1, "small") : ""), "mt-t mt-ts", "start"));
-		g.push(tx(260, 285, k > 1 ? "Drawn " + kTxt(k) + "× larger than real. Dashed: before loading." : "Dashed: before loading.", "mt-t mt-ts", "middle"));
+		var w1 = w0 * (1 + de), h1 = h0 * (1 + ld), xe = x1 + w1;
+		g.push("<rect x='" + x1 + "' y='" + r1(yc - h1 / 2) + "' width='" + r1(w1) + "' height='" + r1(h1) + "' class='mt-rod' fill='url(#mt-po-gr)'/>");
+		var dirT = ee >= 0;
+		if (Math.abs(ee) > 0) g.push(arrowSimple(xe + (dirT ? 22 : 62), yc, xe + (dirT ? 62 : 22), yc), arrowSimple(x1 - (dirT ? 6 : 46), yc, x1 - (dirT ? 46 : 6), yc));
+		/* original and new length, original and new diameter */
+		g.push(line(x1, yc - h0 / 2 - 6, x1, 62, "mt-ext"), line(x1 + w0, yc - h0 / 2 - 6, x1 + w0, 62, "mt-ext"), dimH(68, x1, x1 + w0, "mt-po-mk"), tx(x1 + w0 / 2, 58, "L₀ = " + (L > 0 ? fmt(L, "len") : "?"), "mt-t mt-ts", "middle"));
+		if (Math.abs(de) > 0.004) g.push(line(xe, yc + h1 / 2 + 4, xe, 262, "mt-ext"), line(x1, yc + Math.max(h0, h1) / 2 + 4, x1, 262, "mt-ext"), dimH(256, x1, xe, "mt-po-mk"), tx(x1 + w1 / 2, 280, "L = " + (r ? fmt(r.L1, "len", 7) : "?"), "mt-t mt-ts", "middle"));
+		var xd = x1 + 34;
+		g.push(dimV(xd, yc - h1 / 2, yc + h1 / 2, "mt-po-mk"), tx(xd + 10, yc - 4, "d = " + (r ? fmt(r.d1, "small", 6) : "?"), "mt-t mt-ts mt-b", "start"), tx(xd + 10, yc + 18, "d₀ = " + (d > 0 ? fmt(d, "small") : "?"), "mt-t mt-ts", "start"));
+		if (r) g.push(tx(xd + 10, yc + 38, "εlat = −ν ε = " + M.pretty(r.lat, 3), "mt-t mt-ts", "start"));
+		/* the handle: drag the right end of the bar */
+		g.push("<g class='mt-dragx' data-drag='po' tabindex='-1'><circle cx='" + r1(xe) + "' cy='" + yc + "' r='13' class='mt-handle'/><path d='M" + r1(xe - 4) + "," + (yc - 5) + " l-5,5 l5,5 M" + r1(xe + 4) + "," + (yc - 5) + " l5,5 l-5,5' class='mt-hgrip'/></g>");
+		g.push(tx(260, 316, (k > 1 ? "Drawn " + kTxt(k) + "× larger than real. " : "") + "Dashed: before loading. Drag the right end.", "mt-t mt-ts", "middle"));
 		svg.innerHTML = g.join("");
-		$("mt-po-cap").textContent = isFinite(nu) ? (nu > 0.45 ? "ν close to 0.5: the volume hardly changes (rubber, or any metal once it yields)." : "Pulled longer, the bar gets thinner by ν times the stretch strain.") : "";
+		$("mt-po-cap").textContent = isFinite(nu) ? (nu > 0.45 ? "ν close to 0.5: the volume hardly changes (rubber, or any metal once it yields)." : ee < 0 ? "Pushed shorter, the bar gets fatter by ν times the squash strain." : "Pulled longer, the bar gets thinner by ν times the stretch strain.") : "";
+	}
+	var PO = { lock: false, k: 1, drag: false, g: null }, P3 = { lock: false, k: 1, kg: 1 };
+	(function () {
+		var svg = $("mt-po-svg");
+		function to(ev) {
+			var g = PO.g; if (!g) return; var p = svgPt(svg, ev), de = clamp((p.x - g.x1) / g.w0 - 1, -0.4, 0.25), e = de / PO.k;
+			if (g.by === "s") setFieldSI("po-s", e * g.E); else setFieldSI("po-e", e); poCompute();
+		}
+		svg.addEventListener("pointerdown", function (ev) { if (!ev.target.closest("[data-drag]")) return; ev.preventDefault(); PO.drag = PO.lock = true; try { svg.setPointerCapture(ev.pointerId); } catch (e) { /* ignore */ } to(ev); });
+		svg.addEventListener("pointermove", function (ev) { if (PO.drag) to(ev); });
+		function end() { if (!PO.drag) return; PO.drag = PO.lock = false; poCompute(); }
+		svg.addEventListener("pointerup", end); svg.addEventListener("pointercancel", end);
+	})();
+	/* a set of sliders under a figure: spec = {key, label, min, max, v (SI), show(v), set(v)}. Built once per set of keys; while one is dragged the
+	   ranges and the figure's exaggeration stay fixed (the box's lock), so the picture does not jump. */
+	function sliders(boxId, specs) {
+		var box = $(boxId), sig = specs.map(function (o) { return o.key; }).join(",");
+		if (box._sig !== sig) {
+			box._sig = sig;
+			box.innerHTML = specs.map(function (o, i) { return "<div class='mt-slide'><label for='" + boxId + "-" + i + "'>" + sym(subH(esc(o.label))) + "</label><input type='range' id='" + boxId + "-" + i + "' min='0' max='1000' step='1'><output for='" + boxId + "-" + i + "'></output></div>"; }).join("");
+			[].forEach.call(box.querySelectorAll("input"), function (inp, i) {
+				inp.addEventListener("input", function () { if (!box._lock) { box._lock = box._specs.map(function (o) { return [o.min, o.max]; }); PO.lock = P3.lock = true; } var o = box._specs[i], r = box._lock[i]; o.set(r[0] + (r[1] - r[0]) * (+inp.value) / 1000); });
+				inp.addEventListener("change", function () { box._lock = null; PO.lock = P3.lock = false; poCompute(); });
+			});
+		}
+		box._specs = specs;
+		specs.forEach(function (o, i) {
+			var inp = box.querySelector("#" + boxId + "-" + i), out = inp.nextElementSibling, r = box._lock ? box._lock[i] : [o.min, o.max];
+			if (!box._lock && isFinite(o.v)) { if (o.v < o.min) r[0] = o.min = o.v; if (o.v > o.max) r[1] = o.max = o.v; }
+			if (isFinite(o.v) && r[1] > r[0] && document.activeElement !== inp) inp.value = String(Math.round(clamp((o.v - r[0]) / (r[1] - r[0]), 0, 1) * 1000));
+			out.textContent = isFinite(o.v) ? o.show(o.v) : "–";
+		});
 	}
 	function arrowSimple(x1, y1, x2, y2) { var a = Math.atan2(y2 - y1, x2 - x1), hl = 12; return "<line x1='" + r1(x1) + "' y1='" + r1(y1) + "' x2='" + r1(x2 - Math.cos(a) * hl * 0.6) + "' y2='" + r1(y2 - Math.sin(a) * hl * 0.6) + "' class='mt-farl'/><path d='M" + r1(x2) + "," + r1(y2) + " L" + r1(x2 - hl * Math.cos(a - 0.45)) + "," + r1(y2 - hl * Math.sin(a - 0.45)) + " L" + r1(x2 - hl * Math.cos(a + 0.45)) + "," + r1(y2 - hl * Math.sin(a + 0.45)) + " Z' class='mt-farrow'/>"; }
 	var P3S = ["p3-sx", "p3-sy", "p3-sz", "p3-txy", "p3-tyz", "p3-tzx"], P3E = ["p3-ex", "p3-ey", "p3-ez", "p3-gxy", "p3-gyz", "p3-gzx"], P3N = ["x", "y", "z", "xy", "yz", "zx"];
@@ -1242,29 +1353,42 @@
 		if (!msg) {
 			if (dir === "s") { var r = M.hooke(src, E, nu); sig = src; eps = r.eps; } else { var q = M.hookeInv(src, E, nu); sig = q.sig; eps = src; }
 			var vol = eps[0] + eps[1] + eps[2], mean = (sig[0] + sig[1] + sig[2]) / 3;
-			var rows = P3N.map(function (n, i) { return "<tr" + (i === 3 ? " class='mt-trsep'" : "") + "><td>" + (i < 3 ? "ε" : "γ") + n + "</td><td>" + M.pretty(eps[i], 4) + "</td><td>" + M.pretty(eps[i] * 1e6, 4) + " µε</td><td>" + (i < 3 ? "σ" : "τ") + n + " = " + fmt(sig[i], "stress") + "</td></tr>"; });
+			var rows = P3N.map(function (n, i) { return "<tr" + (i === 3 ? " class='mt-trsep'" : "") + "><td>" + subH((i < 3 ? "ε" : "γ") + n) + "</td><td>" + M.pretty(eps[i], 4) + "</td><td>" + M.pretty(eps[i] * 1e6, 4) + " µε</td><td>" + subH((i < 3 ? "σ" : "τ") + n) + " = " + fmt(sig[i], "stress") + "</td></tr>"; });
 			out = "<thead><tr><th>Strain</th><th>Value</th><th>Micro-strain</th><th>Stress</th></tr></thead><tbody>" + rows.join("") + "<tr class='is-active'><td>Volume change ΔV/V</td><td>" + M.pretty(vol, 4) + "</td><td>" + M.pretty(vol * 1e6, 4) + " µε</td><td>mean stress " + fmt(mean, "stress") + "</td></tr></tbody>";
 			var vm = Math.sqrt(0.5 * (Math.pow(sig[0] - sig[1], 2) + Math.pow(sig[1] - sig[2], 2) + Math.pow(sig[2] - sig[0], 2)) + 3 * (sig[3] * sig[3] + sig[4] * sig[4] + sig[5] * sig[5]));
 			if (m.sy) msg = "Von Mises stress " + fmt(vm, "stress") + (vm > m.sy ? ": above the yield strength of " + m.short + ", so these elastic formulas no longer hold." : ": below the yield strength of " + m.short + " (" + fmt(m.sy, "stress") + "), so the material is still elastic.");
 		}
 		$("mt-p3-out").innerHTML = out; $("mt-p3-msg").textContent = msg;
+		var R = 1.25 * (m.sy || m.su), Re = E > 0 ? R / E : 0.002, ids = dir === "s" ? P3S : P3E;
+		sliders("mt-p3-sl", ids.map(function (id, i) {
+			var v = dir === "s" ? (sig ? sig[i] : NaN) : (eps ? eps[i] : NaN), shear = i >= 3, f = shear ? (dir === "s" ? 0.6 : 1.5) : 1;
+			return { key: id, label: (dir === "s" ? (shear ? "τ" : "σ") : (shear ? "γ" : "ε")) + P3N[i], min: -(dir === "s" ? R : Re) * f, max: (dir === "s" ? R : Re) * f, v: v,
+				show: function (x) { return dir === "s" ? fmt(x, "stress") : M.pretty(x * 1e6, 3) + " µε"; }, set: function (x) { setFieldSI(id, x); poCompute(); } };
+		}));
 		drawCube(sig, eps);
 	}
 	function drawCube(sig, eps) {
-		var svg = $("mt-p3-svg"), h = ["<defs>" + MARK.replace("@", "mt-p3-mk") + "</defs>"], s = 140, ox = 150, oy = 310, dx = 72, dy = -56, ab = [1, 1, 1];
-		var mx = 0; if (eps) for (var i = 0; i < 3; i++) mx = Math.max(mx, Math.abs(eps[i])); var k = exag(mx, 0.15);
-		function P(x, y, z) { return [ox + x * s + z * dx, oy - y * s + z * dy]; }
+		var svg = $("mt-p3-svg"), h = ["<defs>" + MARK.replace("@", "mt-p3-mk") + "</defs>"], s = 140, ox = 150, oy = 300, dx = 72, dy = -56, ab = [1, 1, 1], gs = [0, 0, 0];
+		var mx = 0, mg = 0; if (eps) for (var i = 0; i < 3; i++) { mx = Math.max(mx, Math.abs(eps[i])); mg = Math.max(mg, Math.abs(eps[i + 3])); }
+		if (!P3.lock) { P3.k = exag(mx, 0.15); P3.kg = exag(mg, 0.3); } var k = P3.k, kg = P3.kg;
+		if (eps) gs = [clamp(eps[3] * kg, -0.5, 0.5), clamp(eps[4] * kg, -0.5, 0.5), clamp(eps[5] * kg, -0.5, 0.5)];
+		/* small-strain shape: x' = x + γxy y/2 + γzx z/2, y' = y + γxy x/2 + γyz z/2, z' = z + γyz y/2 + γzx x/2, then the oblique projection */
+		function Pg(x, y, z, g) { var X = x + g[0] * y / 2 + g[2] * z / 2, Y = y + g[0] * x / 2 + g[1] * z / 2, Z = z + g[1] * y / 2 + g[2] * x / 2; return [ox + X * s + Z * dx, oy - Y * s + Z * dy]; }
 		function face(pts, cls) { return "<polygon points='" + pts.map(function (p) { return r1(p[0]) + "," + r1(p[1]); }).join(" ") + "' class='" + cls + "'/>"; }
-		function cube(a, b, c, cls) { return face([P(0, 0, 0), P(a, 0, 0), P(a, b, 0), P(0, b, 0)], cls) + face([P(a, 0, 0), P(a, 0, c), P(a, b, c), P(a, b, 0)], cls + " mt-cs") + face([P(0, b, 0), P(a, b, 0), P(a, b, c), P(0, b, c)], cls + " mt-ct"); }
-		h.push(cube(1, 1, 1, "mt-cube0"));
-		if (eps) { ab = [1 + clamp(eps[0] * k, -0.4, 0.4), 1 + clamp(eps[1] * k, -0.4, 0.4), 1 + clamp(eps[2] * k, -0.4, 0.4)]; h.push(cube(ab[0], ab[1], ab[2], "mt-cube1")); }
+		function cube(a, b, c, cls, g) { function P(x, y, z) { return Pg(x, y, z, g); } return face([P(0, 0, 0), P(a, 0, 0), P(a, b, 0), P(0, b, 0)], cls) + face([P(a, 0, 0), P(a, 0, c), P(a, b, c), P(a, b, 0)], cls + " mt-cs") + face([P(0, b, 0), P(a, b, 0), P(a, b, c), P(0, b, c)], cls + " mt-ct"); }
+		h.push(cube(1, 1, 1, "mt-cube0", [0, 0, 0]));
+		if (eps) { ab = [1 + clamp(eps[0] * k, -0.4, 0.4), 1 + clamp(eps[1] * k, -0.4, 0.4), 1 + clamp(eps[2] * k, -0.4, 0.4)]; h.push(cube(ab[0], ab[1], ab[2], "mt-cube1", gs)); }
 		if (sig) {
-			var smax = Math.max(1, Math.abs(sig[0]), Math.abs(sig[1]), Math.abs(sig[2]));
-			function arr(c0, dir, v, lab) { if (Math.abs(v) < smax * 0.02) return; var L = 25 + 55 * Math.abs(v) / smax, out = v > 0, p1 = out ? c0 : [c0[0] + dir[0] * L, c0[1] + dir[1] * L], p2 = out ? [c0[0] + dir[0] * L, c0[1] + dir[1] * L] : c0; h.push(arrowSimple(p1[0], p1[1], p2[0], p2[1]), tx(c0[0] + dir[0] * (L + 18), c0[1] + dir[1] * (L + 18) + 5, lab, "mt-t mt-ts mt-b", "middle")); }
-			var cxF = P(ab[0], ab[1] / 2, ab[2] / 2), cyF = P(ab[0] / 2, ab[1], ab[2] / 2), czF = P(ab[0] / 2, ab[1] / 2, 0);
-			arr(cxF, [1, 0], sig[0], "σx"); arr(cyF, [0, -1], sig[1], "σy"); arr(czF, [-0.79, 0.62], sig[2], "σz");
+			var smax = Math.max(1, Math.abs(sig[0]), Math.abs(sig[1]), Math.abs(sig[2]), Math.abs(sig[3]), Math.abs(sig[4]), Math.abs(sig[5]));
+			var P = function (x, y, z) { return Pg(x, y, z, gs); };
+			var arr = function (c0, dir, v, lab) { if (Math.abs(v) < smax * 0.02) return; var L = 25 + 55 * Math.abs(v) / smax, out = v > 0, p1 = out ? c0 : [c0[0] + dir[0] * L, c0[1] + dir[1] * L], p2 = out ? [c0[0] + dir[0] * L, c0[1] + dir[1] * L] : c0; h.push(arrowSimple(p1[0], p1[1], p2[0], p2[1]), tx(c0[0] + dir[0] * (L + 18), c0[1] + dir[1] * (L + 18) + 5, lab, "mt-t mt-ts mt-b", "middle")); };
+			/* shear: an arrow along the face, centred on a point of it (positive = towards +axis on a positive face) */
+			var sh = function (c0, dir, v, lab, lo) { if (Math.abs(v) < smax * 0.02) return; var L = 22 + 40 * Math.abs(v) / smax, sg = v > 0 ? 1 : -1, p1 = [c0[0] - dir[0] * sg * L / 2, c0[1] - dir[1] * sg * L / 2], p2 = [c0[0] + dir[0] * sg * L / 2, c0[1] + dir[1] * sg * L / 2]; h.push(arrowSimple(p1[0], p1[1], p2[0], p2[1]), tx(c0[0] + lo[0], c0[1] + lo[1], lab, "mt-t mt-ts mt-b", "middle")); };
+			arr(P(ab[0], ab[1] / 2, ab[2] / 2), [1, 0], sig[0], "σx"); arr(P(ab[0] / 2, ab[1], ab[2] / 2), [0, -1], sig[1], "σy"); arr(P(ab[0] / 2, ab[1] / 2, 0), [-0.79, 0.62], sig[2], "σz");
+			sh(P(ab[0], ab[1] * 0.5, ab[2] * 0.75), [0, -1], sig[3], "τxy", [26, 4]); sh(P(ab[0] * 0.22, ab[1], ab[2] * 0.95), [1, 0], sig[3], "τxy", [-30, 4]);
+			sh(P(ab[0] * 0.75, ab[1], ab[2] * 0.35), [0.79, -0.62], sig[4], "τyz", [24, -4]); sh(P(ab[0], ab[1] * 0.25, ab[2] * 0.4), [0.79, -0.62], sig[5], "τzx", [28, 14]);
 		}
-		h.push(tx(260, 396, "Arrows out: pulling. Arrows in: pushing.", "mt-t mt-ts", "middle"), tx(260, 414, "Shaded: the shape after loading, drawn " + kTxt(k) + "× larger (shear not drawn).", "mt-t mt-ts", "middle"));
+		h.push(tx(260, 392, "Arrows out: pulling. Arrows in: pushing. Along a face: shear.", "mt-t mt-ts", "middle"), tx(260, 412, "Shaded: after loading. Stretch drawn " + kTxt(k) + "×" + (mg > 0 ? ", shear " + kTxt(kg) + "×" : "") + " larger.", "mt-t mt-ts", "middle"));
 		svg.innerHTML = h.join("");
 	}
 	chipRow("mt-p3-ex", [["Pulled one way (uniaxial)", [100, 0, 0, 0, 0, 0]], ["Equal pull both ways (thin pressure vessel wall, 2:1)", [100, 50, 0, 0, 0, 0]], ["Squeezed equally from all sides (deep water)", [-100, -100, -100, 0, 0, 0]], ["Pure shear", [0, 0, 0, 60, 0, 0]]], function (v) { S.po.dir = "s"; paintSeg("mt-p3-dir", "s"); P3S.forEach(function (id, i) { setField(id, S.sys === "us" ? v[i] * 0.145 : v[i], S.sys === "us" ? "ksi" : "MPa"); }); poCompute(); });
@@ -1408,7 +1532,7 @@
 		if (S.mat === "custom" && S.cu) q.push("cu=" + encodeURIComponent([S.cu.c, S.cu.E, S.cu.nu, S.cu.sy == null ? "" : S.cu.sy, S.cu.su, S.cu.el, S.cu.ra == null ? "" : S.cu.ra, S.cu.rho, S.cu.a == null ? "" : S.cu.a].join("~")));
 		(LINKF[t] || []).forEach(function (id) { if (!typed(id) || FL[id].div.hidden || FL[id].div.closest("[hidden]")) return; var f = FL[id], v = f.inp.value.trim(); if (v) q.push(pkey(id) + "=" + encodeURIComponent(v + (f.sel ? f.u : ""))); });
 		if (t === "axial") q.push("o=" + S.ax.ord.join(","), "sh=" + S.ax.shape, "dir=" + S.ax.dir);
-		if (t === "tensile") { if (S.tt.c2) q.push("c2=" + S.tt.c2); if (S.tt.c3) q.push("c3=" + S.tt.c3); if (S.tt.tr) q.push("tr=1"); if (S.tt.zoom !== "all") q.push("z=" + S.tt.zoom); }
+		if (t === "tensile") { if (S.tt.c2) q.push("c2=" + S.tt.c2); if (S.tt.c3) q.push("c3=" + S.tt.c3); if (S.tt.tr) q.push("tr=1"); if (S.tt.zoom !== "follow") q.push("z=" + S.tt.zoom); }
 		if (t === "shear") q.push("md=" + S.sh.mode, "n=" + S.sh.n, "sf=" + encodeURIComponent(S.sh.sf), "rt=" + encodeURIComponent(S.sh.ratio));
 		if (t === "torsion") q.push("src=" + S.to.src, "hol=" + S.to.hol, "sf=" + encodeURIComponent(S.to.sf));
 		if (t === "poisson") q.push("md=" + S.po.mode, "by=" + S.po.by, "dir=" + S.po.dir, "pair=" + encodeURIComponent(S.po.pair));
@@ -1426,7 +1550,7 @@
 		var t = tab || VIEWS[0];
 		(LINKF[t] || []).forEach(function (id) { var v = p.get(pkey(id)); if (v != null) S.f[id] = { t: v, u: S.f[id] && S.f[id].u }; else if (MATF.indexOf(id) >= 0) S.f[id] = { t: "", u: S.f[id] && S.f[id].u }; });
 		if (t === "axial") { if (p.get("o")) S.ax.ord = p.get("o").split(",").filter(function (v) { return M.AX.indexOf(v) >= 0; }); if (p.get("sh")) S.ax.shape = p.get("sh"); if (p.get("dir")) S.ax.dir = p.get("dir") === "c" ? "c" : "t"; }
-		if (t === "tensile") { S.tt.c2 = M.mat(p.get("c2")) ? p.get("c2") : ""; S.tt.c3 = M.mat(p.get("c3")) ? p.get("c3") : ""; S.tt.tr = p.get("tr") === "1"; S.tt.zoom = p.get("z") === "el" ? "el" : "all"; }
+		if (t === "tensile") { S.tt.c2 = M.mat(p.get("c2")) ? p.get("c2") : ""; S.tt.c3 = M.mat(p.get("c3")) ? p.get("c3") : ""; S.tt.tr = p.get("tr") === "1"; S.tt.zoom = p.get("z") === "el" ? "el" : p.get("z") === "all" ? "all" : "follow"; }
 		if (t === "shear") { if (p.get("md")) S.sh.mode = p.get("md"); if (p.get("n")) S.sh.n = p.get("n") === "2" ? "2" : "1"; if (p.get("sf")) S.sh.sf = p.get("sf"); if (p.get("rt")) S.sh.ratio = p.get("rt"); }
 		if (t === "torsion") { if (p.get("src")) S.to.src = p.get("src") === "P" ? "P" : "T"; if (p.get("hol")) S.to.hol = p.get("hol") === "1" ? "1" : "0"; if (p.get("sf")) S.to.sf = p.get("sf"); }
 		if (t === "poisson") { if (p.get("md")) S.po.mode = p.get("md"); if (p.get("by")) S.po.by = p.get("by") === "e" ? "e" : "s"; if (p.get("dir")) S.po.dir = p.get("dir") === "e" ? "e" : "s"; if (p.get("pair")) S.po.pair = p.get("pair"); }

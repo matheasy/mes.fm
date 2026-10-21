@@ -90,7 +90,7 @@
 					<div class="tu-field"><label for="mt-tt-c2">Compare with</label><select id="mt-tt-c2" class="tu-select mt-cmp"></select></div>
 					<div class="tu-field"><label for="mt-tt-c3">and</label><select id="mt-tt-c3" class="tu-select mt-cmp"></select></div>
 					<div class="mt-tt-opts">
-						<div class="tu-seg" id="mt-tt-zoom" role="group" aria-label="Chart range"><button type="button" data-v="all" aria-pressed="true">Whole curve</button><button type="button" data-v="el" aria-pressed="false">Start (elastic part)</button></div>
+						<div class="tu-seg" id="mt-tt-zoom" role="group" aria-label="Chart range"><button type="button" data-v="follow" aria-pressed="true" title="Zoomed in at the start, widening as the bar stretches">Follow the test</button><button type="button" data-v="all" aria-pressed="false">Whole curve</button><button type="button" data-v="el" aria-pressed="false">Start (elastic part)</button></div>
 						<label class="mt-chk"><input type="checkbox" id="mt-tt-true"> True stress–strain</label>
 						<label class="mt-chk"><input type="checkbox" id="mt-tt-areas" checked> Shade areas</label>
 					</div>
@@ -105,7 +105,7 @@
 					<button type="button" class="tu-btn tu-btn--ghost" id="mt-tt-reset">↺ Reset</button>
 					<label class="mt-speed">Speed <select id="mt-tt-speed" class="tu-select"><option value="0.25">¼×</option><option value="0.5">½×</option><option value="1" selected>1×</option><option value="2">2×</option><option value="4">4×</option><option value="8">8×</option></select></label>
 					<input type="range" id="mt-tt-scrub" min="0" max="1000" step="1" value="0" aria-label="How far the test has gone">
-					<button type="button" class="tu-btn tu-btn--ghost" id="mt-tt-full" title="Full screen" aria-label="Full screen">⛶</button>
+					<span class="mt-tt-view"><button type="button" class="tu-btn tu-btn--ghost" id="mt-tt-win" title="Fill the browser window (Esc to close)">⤢ Fill window</button><button type="button" class="tu-btn tu-btn--ghost" id="mt-tt-full" title="Full screen">⛶ Full screen</button></span>
 				</div>
 				<p class="mt-msg" id="mt-tt-msg" aria-live="polite"></p>
 			</div>
@@ -203,7 +203,7 @@
 		<section data-panel="poisson" role="tabpanel" hidden>
 			<div class="tu-card"><div class="tu-seg mt-modes" id="mt-po-mode" role="group" aria-label="Tool"><button type="button" data-v="bar" aria-pressed="true">Bar under load</button><button type="button" data-v="3d" aria-pressed="false">3D Hooke's law</button><button type="button" data-v="const" aria-pressed="false">Elastic constants</button></div></div>
 			<div class="mt-grid2" data-pm="bar">
-				<div class="tu-card mt-fig"><svg id="mt-po-svg" class="mt-svg" viewBox="0 0 520 330" role="img" aria-label="A bar before and after loading: longer and thinner"></svg><p class="mt-cap" id="mt-po-cap"></p></div>
+				<div class="tu-card mt-fig"><svg id="mt-po-svg" class="mt-svg" viewBox="0 0 520 330" role="img" aria-label="A bar before and after loading: longer and thinner. Drag the right end to load it."></svg><div class="mt-sliders" id="mt-po-sl"></div><p class="mt-cap" id="mt-po-cap"></p></div>
 				<div class="tu-card mt-inp">
 					<div class="tu-row"><div class="tu-field"><span class="tu-label">Load given as</span><div class="tu-seg" id="mt-po-by" role="group" aria-label="Load given as"><button type="button" data-v="s" aria-pressed="true">Stress</button><button type="button" data-v="e" aria-pressed="false">Strain</button></div></div></div>
 					<div class="tu-row mt-r2">
@@ -221,14 +221,14 @@
 			</div>
 			<div class="tu-stats" id="mt-po-stats" data-pm="bar"></div>
 			<div class="mt-grid2" data-pm="3d">
-				<div class="tu-card mt-fig"><svg id="mt-p3-svg" class="mt-svg" viewBox="0 0 520 420" role="img" aria-label="A small cube of material with the stresses on its faces and its deformed shape"></svg><p class="mt-cap" id="mt-p3-cap"></p></div>
+				<div class="tu-card mt-fig"><svg id="mt-p3-svg" class="mt-svg" viewBox="0 0 520 420" role="img" aria-label="A small cube of material with the stresses on its faces and its deformed shape"></svg><div class="mt-sliders" id="mt-p3-sl"></div><p class="mt-cap" id="mt-p3-cap"></p></div>
 				<div class="tu-card mt-inp">
 					<div class="tu-row"><div class="tu-field"><span class="tu-label">Direction</span><div class="tu-seg" id="mt-p3-dir" role="group" aria-label="Direction"><button type="button" data-v="s" aria-pressed="true">Stresses → strains</button><button type="button" data-v="e" aria-pressed="false">Strains → stresses</button></div></div></div>
-					<div class="tu-row mt-r2" data-d3="s">
+					<div class="mt-g3 mt-r2" data-d3="s">
 						<div class="mt-f" data-f="p3-sx" data-k="stress" data-d="stress" data-l="σx" data-sg></div><div class="mt-f" data-f="p3-sy" data-k="stress" data-d="stress" data-l="σy" data-sg></div><div class="mt-f" data-f="p3-sz" data-k="stress" data-d="stress" data-l="σz" data-sg></div>
 						<div class="mt-f" data-f="p3-txy" data-k="stress" data-d="stress" data-l="τxy" data-sg></div><div class="mt-f" data-f="p3-tyz" data-k="stress" data-d="stress" data-l="τyz" data-sg></div><div class="mt-f" data-f="p3-tzx" data-k="stress" data-d="stress" data-l="τzx" data-sg></div>
 					</div>
-					<div class="tu-row mt-r2" data-d3="e">
+					<div class="mt-g3 mt-r2" data-d3="e">
 						<div class="mt-f" data-f="p3-ex" data-k="strain" data-d="ustrain" data-l="εx" data-sg></div><div class="mt-f" data-f="p3-ey" data-k="strain" data-d="ustrain" data-l="εy" data-sg></div><div class="mt-f" data-f="p3-ez" data-k="strain" data-d="ustrain" data-l="εz" data-sg></div>
 						<div class="mt-f" data-f="p3-gxy" data-k="strain" data-d="ustrain" data-l="γxy" data-sg></div><div class="mt-f" data-f="p3-gyz" data-k="strain" data-d="ustrain" data-l="γyz" data-sg></div><div class="mt-f" data-f="p3-gzx" data-k="strain" data-d="ustrain" data-l="γzx" data-sg></div>
 					</div>

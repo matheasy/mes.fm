@@ -225,6 +225,7 @@
 		{ id: "ss304", name: "Stainless steel 304, annealed", fam: "metal", E: 193, G: 75, nu: 0.29, sy: 215, su: 505, el: 60, ra: 65, rho: 8000, a: 17.3, c: "duct" },
 		{ id: "ss316", name: "Stainless steel 316, annealed", fam: "metal", E: 193, G: 75, nu: 0.29, sy: 290, su: 580, el: 50, ra: 65, rho: 8000, a: 16.0, c: "duct" },
 		{ id: "al6061", name: "Aluminium 6061-T6", fam: "metal", E: 68.9, G: 26, nu: 0.33, sy: 276, su: 310, el: 12, ra: 40, rho: 2700, a: 23.6, c: "duct" },
+		{ id: "al2014", name: "Aluminium 2014-T6", fam: "metal", E: 73.1, G: 27, nu: 0.35, sy: 414, su: 469, el: 10, ra: 25, rho: 2790, a: 23, c: "duct", note: "Hibbeler's textbook values (also: ultimate shear strength 290 MPa)." },
 		{ id: "al2024", name: "Aluminium 2024-T3", fam: "metal", E: 73.1, G: 28, nu: 0.33, sy: 345, su: 483, el: 18, ra: 25, rho: 2780, a: 23.2, c: "duct" },
 		{ id: "al7075", name: "Aluminium 7075-T6", fam: "metal", E: 71.7, G: 26.9, nu: 0.33, sy: 503, su: 572, el: 11, ra: 25, rho: 2810, a: 23.4, c: "duct" },
 		{ id: "ti64", name: "Titanium Ti-6Al-4V (grade 5)", fam: "metal", E: 113.8, G: 44, nu: 0.342, sy: 880, su: 950, el: 14, ra: 36, rho: 4430, a: 8.6, c: "duct" },

@@ -413,7 +413,10 @@ body.dark-mode .tu .rw-head {color:#a0a8b3;border-bottom-color:#555;} body.dark-
 	#mt .mt-chk {display:inline-flex;align-items:center;gap:0.4em;min-height:36px;cursor:pointer;color:var(--mt-ink);}
 	#mt .mt-chk input {width:1.15em;height:1.15em;accent-color:var(--accent);}
 	#mt .mt-tt-stage {display:grid;grid-template-columns:minmax(150px,0.36fr) minmax(0,1fr);gap:0.8em;align-items:start;}
-	#mt .mt-tt-live {display:flex;flex-wrap:wrap;gap:0.15em 0.8em;font-size:0.85em;color:var(--mt-ink);font-variant-numeric:tabular-nums;margin-top:0.3em;}
+	#mt .mt-tt-live {display:grid;grid-template-columns:repeat(auto-fill,minmax(10.5em,1fr));gap:0.15em 0.8em;font-size:0.85em;color:var(--mt-ink);font-variant-numeric:tabular-nums;margin-top:0.3em;}
+	#mt .mt-tt-live span {white-space:nowrap;}   /* fixed columns: the readout must not re-wrap as the numbers change (that made the page jump while playing) */
+	#mt #mt-tt-msg {min-height:4.4em;}
+	#mt #mt-tt-play {min-width:9.6em;}
 	#mt .mt-tt-live b {color:var(--mt-mut);font-weight:600;margin-right:0.25em;}
 	#mt .mt-tt-ctl {display:flex;flex-wrap:wrap;gap:0.5em 0.6em;align-items:center;margin-top:0.6em;}
 	#mt .mt-tt-ctl .tu-btn {min-height:40px;}
@@ -421,8 +424,14 @@ body.dark-mode .tu .rw-head {color:#a0a8b3;border-bottom-color:#555;} body.dark-
 	#mt .mt-tt-ctl input[type=range] {flex:1 1 12em;min-width:8em;height:36px;accent-color:var(--accent);}
 	#mt .mt-speed {display:inline-flex;align-items:center;gap:0.4em;color:var(--mt-mut);font-size:0.9em;}
 	#mt .mt-speed .tu-select {width:auto;padding:0.4em 0.5em;min-height:40px;}
+	#mt .mt-tt-view {display:inline-flex;gap:0.5em;flex-wrap:wrap;}
 	#mt .mt-tt:fullscreen {background:var(--mt-card);overflow:auto;padding:1em;}
-	#mt .mt-tt:fullscreen .mt-tt-stage {grid-template-columns:minmax(180px,0.3fr) minmax(0,1fr);}
+	#mt .mt-tt:fullscreen #mt-tt-win {display:none;}
+	#mt .mt-tt.mt-tt--win {position:fixed;inset:0;z-index:2147483000;margin:0;border-radius:0;overflow:auto;background:var(--mt-card);padding:0.8em 1.2em;box-sizing:border-box;}
+	#mt .mt-tt--win .mt-tt-stage, #mt .mt-tt:fullscreen .mt-tt-stage {grid-template-columns:minmax(170px,0.26fr) minmax(0,1fr);}
+	#mt .mt-tt--win .mt-tt-chart .mt-svg, #mt .mt-tt:fullscreen .mt-tt-chart .mt-svg {max-height:calc(100vh - 14.5em);}
+	#mt .mt-tt--win .mt-tt-spec .mt-svg, #mt .mt-tt:fullscreen .mt-tt-spec .mt-svg {max-height:calc(100vh - 21em);}
+	html.mt-noscroll, html.mt-noscroll body {overflow:hidden;}
 	#mt .mt-tt-main {fill:none;stroke:var(--mt-main);stroke-width:3;stroke-linejoin:round;}
 	#mt .mt-tt-true {fill:none;stroke:var(--mt-true);stroke-width:2.5;}
 	#mt .mt-tt-trueN {stroke-dasharray:7 5;}
@@ -472,16 +481,40 @@ body.dark-mode .tu .rw-head {color:#a0a8b3;border-bottom-color:#555;} body.dark-
 	#mt .mt-cube1 {fill:var(--mt-cube1);stroke:var(--mt-main);stroke-width:1.6;}
 	#mt .mt-cube1.mt-cs {fill-opacity:0.8;} #mt .mt-cube1.mt-ct {fill-opacity:0.6;}
 	#mt .mt-trsep td {border-top:2px solid var(--mt-line);}
+	/* subscripts, sliders under figures, compact input grids, searchable picker */
+	#mt sub {font-size:0.72em;line-height:0;vertical-align:-0.25em;}
+	#mt .mt-sliders {margin:0.2em 0.3em 0.4em;display:grid;grid-template-columns:max-content minmax(0,1fr) max-content;gap:0 0.7em;align-items:center;}
+	#mt .mt-sliders .mt-slide {display:contents;}
+	#mt .mt-sliders .mt-slide label {text-transform:none;letter-spacing:0;font-size:0.92em;color:var(--mt-ink);}
+	#mt .mt-dragx {cursor:ew-resize;}
+	#mt .mt-dragx:hover .mt-handle {fill:#e1edf6;}
+	#mt .mt-g3 {display:grid;grid-template-columns:repeat(auto-fill,minmax(9em,1fr));gap:0.6em 0.8em;margin-bottom:0.7em;}
+	#mt .mt-ss {position:relative;}
+	#mt .mt-ss__sel {position:absolute;opacity:0;pointer-events:none;width:1px;height:1px;left:0;top:0;}
+	#mt .mt-ss__btn {display:block;width:100%;text-align:left;cursor:pointer;font:inherit;min-height:40px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+	#mt .mt-ss__pop {position:absolute;left:0;right:0;top:calc(100% + 4px);min-width:16em;z-index:40;background:var(--mt-card);border:1px solid var(--mt-line);border-radius:0.5em;box-shadow:0 10px 28px rgba(0,0,0,0.18);padding:0.5em;}
+	#mt .mt-ss__q {width:100%;box-sizing:border-box;min-height:40px;}
+	#mt .mt-ss__list {list-style:none;margin:0.4em 0 0;padding:0;max-height:min(22em,55vh);overflow:auto;}
+	#mt .mt-ss__g {font-size:0.72em;font-weight:700;text-transform:uppercase;letter-spacing:0.05em;color:var(--mt-mut);padding:0.7em 0.6em 0.25em;}
+	#mt .mt-ss__o {padding:0.55em 0.7em;border-radius:0.35em;cursor:pointer;color:var(--mt-ink);}
+	#mt .mt-ss__o[aria-selected="true"] {font-weight:700;}
+	#mt .mt-ss__o:hover, #mt .mt-ss__o--act {background:#e1edf6;}
+	body.dark-mode #mt.mt .mt-ss__o:hover, body.dark-mode #mt.mt .mt-ss__o--act {background:#16324a;}
 	/* table + chart */
 	#mt .mt-tbw {max-height:34em;overflow:auto;margin-top:0.6em;border:1px solid var(--mt-grid);border-radius:0.4em;}
 	#mt .mt-tbl th {text-transform:none;position:sticky;top:0;z-index:1;background:var(--mt-card);padding:0;}
 	#mt .mt-sort {all:unset;box-sizing:border-box;display:block;width:100%;min-height:40px;padding:0.55em 0.7em;cursor:pointer;text-align:inherit;font-size:1em;letter-spacing:0.03em;color:var(--mt-mut);font-weight:700;}
 	#mt .mt-sort:focus-visible {outline:2px solid var(--accent);outline-offset:-2px;}
-	#mt .mt-thu {display:block;font-weight:400;text-transform:none;letter-spacing:0;font-size:0.9em;}
+	#mt .mt-thu {display:block;font-weight:400;text-transform:none;letter-spacing:0;font-size:0.9em;margin-top:0.35em;line-height:1.2;}
 	#mt .mt-tbl tbody tr {cursor:pointer;}
 	#mt .mt-tbl tbody tr:hover td {background:var(--mt-soft);}
 	#mt .mt-tbl tbody tr:focus-visible td {outline:2px solid var(--accent);outline-offset:-2px;}
 	#mt .mt-tbl td {font-variant-numeric:tabular-nums;}
+	#mt .mt-tbl th, #mt .mt-tbl td {text-align:center;}
+	#mt .mt-tbl th:first-child, #mt .mt-tbl td:first-child {text-align:left;position:sticky;left:0;background:var(--mt-card);}
+	#mt .mt-tbl th:first-child {z-index:2;}
+	#mt .mt-tbl tr.is-active td:first-child {background:#e1edf6;}
+	#mt .mt-tbl tbody tr:hover td:first-child {background:var(--mt-soft);}
 	#mt .mt-tbl td:first-child {white-space:normal;min-width:12em;}
 	#mt .mt-na {color:var(--mt-mut) !important;}
 	#mt .mt-ash-top {display:flex;flex-wrap:wrap;justify-content:space-between;align-items:flex-end;gap:0.6em;}
@@ -505,6 +538,7 @@ body.dark-mode .tu .rw-head {color:#a0a8b3;border-bottom-color:#555;} body.dark-
 		#mt .mt-tt-stage {grid-template-columns:minmax(0,0.42fr) minmax(0,1fr);}
 	}
 	@media (max-width: 600px) {
+		#mt .mt-tbl td:first-child {min-width:8.5em;}
 		#mt .mt-t {font-size:21px;} #mt .mt-ts {font-size:18px;} #mt .mt-tbig {font-size:30px;}
 		#mt .mt-tt-stage {grid-template-columns:minmax(0,1fr);}
 		#mt .mt-tt-spec {max-width:15em;margin:0 auto;width:56%;}
@@ -623,6 +657,8 @@ body.dark-mode .tu .rw-head {color:#a0a8b3;border-bottom-color:#555;} body.dark-
 	body.dark-mode #mt .mt-sp--ceramic{fill:#94a0a8}
 	body.dark-mode #mt .mt-sp--wood{fill:#d7b384}
 	body.dark-mode #mt .mt-sp--composite{fill:#ccced1}
+	body.dark-mode #mt .mt-ss__o:hover,body.dark-mode #mt .mt-ss__o--act{background:#1a242b}
+	body.dark-mode #mt .mt-tbl tr.is-active td:first-child{background:#1a242b}
 	/* TOOL-DARK:END */
 /* Floating compact header bar: once the full header + nav scroll out of
    view, a slim fixed bar (small logo, title, as many nav links as fit)
@@ -967,7 +1003,7 @@ body.is-stuck #navbar.hide { position: fixed; top: 56px; right: 8px; }
 					<div class="tu-field"><label for="mt-tt-c2">Compare with</label><select id="mt-tt-c2" class="tu-select mt-cmp"></select></div>
 					<div class="tu-field"><label for="mt-tt-c3">and</label><select id="mt-tt-c3" class="tu-select mt-cmp"></select></div>
 					<div class="mt-tt-opts">
-						<div class="tu-seg" id="mt-tt-zoom" role="group" aria-label="Chart range"><button type="button" data-v="all" aria-pressed="true">Whole curve</button><button type="button" data-v="el" aria-pressed="false">Start (elastic part)</button></div>
+						<div class="tu-seg" id="mt-tt-zoom" role="group" aria-label="Chart range"><button type="button" data-v="follow" aria-pressed="true" title="Zoomed in at the start, widening as the bar stretches">Follow the test</button><button type="button" data-v="all" aria-pressed="false">Whole curve</button><button type="button" data-v="el" aria-pressed="false">Start (elastic part)</button></div>
 						<label class="mt-chk"><input type="checkbox" id="mt-tt-true"> True stress–strain</label>
 						<label class="mt-chk"><input type="checkbox" id="mt-tt-areas" checked> Shade areas</label>
 					</div>
@@ -982,7 +1018,7 @@ body.is-stuck #navbar.hide { position: fixed; top: 56px; right: 8px; }
 					<button type="button" class="tu-btn tu-btn--ghost" id="mt-tt-reset">↺ Reset</button>
 					<label class="mt-speed">Speed <select id="mt-tt-speed" class="tu-select"><option value="0.25">¼×</option><option value="0.5">½×</option><option value="1" selected>1×</option><option value="2">2×</option><option value="4">4×</option><option value="8">8×</option></select></label>
 					<input type="range" id="mt-tt-scrub" min="0" max="1000" step="1" value="0" aria-label="How far the test has gone">
-					<button type="button" class="tu-btn tu-btn--ghost" id="mt-tt-full" title="Full screen" aria-label="Full screen">⛶</button>
+					<span class="mt-tt-view"><button type="button" class="tu-btn tu-btn--ghost" id="mt-tt-win" title="Fill the browser window (Esc to close)">⤢ Fill window</button><button type="button" class="tu-btn tu-btn--ghost" id="mt-tt-full" title="Full screen">⛶ Full screen</button></span>
 				</div>
 				<p class="mt-msg" id="mt-tt-msg" aria-live="polite"></p>
 			</div>
@@ -1080,7 +1116,7 @@ body.is-stuck #navbar.hide { position: fixed; top: 56px; right: 8px; }
 		<section data-panel="poisson" role="tabpanel" hidden>
 			<div class="tu-card"><div class="tu-seg mt-modes" id="mt-po-mode" role="group" aria-label="Tool"><button type="button" data-v="bar" aria-pressed="true">Bar under load</button><button type="button" data-v="3d" aria-pressed="false">3D Hooke's law</button><button type="button" data-v="const" aria-pressed="false">Elastic constants</button></div></div>
 			<div class="mt-grid2" data-pm="bar">
-				<div class="tu-card mt-fig"><svg id="mt-po-svg" class="mt-svg" viewBox="0 0 520 330" role="img" aria-label="A bar before and after loading: longer and thinner"></svg><p class="mt-cap" id="mt-po-cap"></p></div>
+				<div class="tu-card mt-fig"><svg id="mt-po-svg" class="mt-svg" viewBox="0 0 520 330" role="img" aria-label="A bar before and after loading: longer and thinner. Drag the right end to load it."></svg><div class="mt-sliders" id="mt-po-sl"></div><p class="mt-cap" id="mt-po-cap"></p></div>
 				<div class="tu-card mt-inp">
 					<div class="tu-row"><div class="tu-field"><span class="tu-label">Load given as</span><div class="tu-seg" id="mt-po-by" role="group" aria-label="Load given as"><button type="button" data-v="s" aria-pressed="true">Stress</button><button type="button" data-v="e" aria-pressed="false">Strain</button></div></div></div>
 					<div class="tu-row mt-r2">
@@ -1098,14 +1134,14 @@ body.is-stuck #navbar.hide { position: fixed; top: 56px; right: 8px; }
 			</div>
 			<div class="tu-stats" id="mt-po-stats" data-pm="bar"></div>
 			<div class="mt-grid2" data-pm="3d">
-				<div class="tu-card mt-fig"><svg id="mt-p3-svg" class="mt-svg" viewBox="0 0 520 420" role="img" aria-label="A small cube of material with the stresses on its faces and its deformed shape"></svg><p class="mt-cap" id="mt-p3-cap"></p></div>
+				<div class="tu-card mt-fig"><svg id="mt-p3-svg" class="mt-svg" viewBox="0 0 520 420" role="img" aria-label="A small cube of material with the stresses on its faces and its deformed shape"></svg><div class="mt-sliders" id="mt-p3-sl"></div><p class="mt-cap" id="mt-p3-cap"></p></div>
 				<div class="tu-card mt-inp">
 					<div class="tu-row"><div class="tu-field"><span class="tu-label">Direction</span><div class="tu-seg" id="mt-p3-dir" role="group" aria-label="Direction"><button type="button" data-v="s" aria-pressed="true">Stresses → strains</button><button type="button" data-v="e" aria-pressed="false">Strains → stresses</button></div></div></div>
-					<div class="tu-row mt-r2" data-d3="s">
+					<div class="mt-g3 mt-r2" data-d3="s">
 						<div class="mt-f" data-f="p3-sx" data-k="stress" data-d="stress" data-l="σx" data-sg></div><div class="mt-f" data-f="p3-sy" data-k="stress" data-d="stress" data-l="σy" data-sg></div><div class="mt-f" data-f="p3-sz" data-k="stress" data-d="stress" data-l="σz" data-sg></div>
 						<div class="mt-f" data-f="p3-txy" data-k="stress" data-d="stress" data-l="τxy" data-sg></div><div class="mt-f" data-f="p3-tyz" data-k="stress" data-d="stress" data-l="τyz" data-sg></div><div class="mt-f" data-f="p3-tzx" data-k="stress" data-d="stress" data-l="τzx" data-sg></div>
 					</div>
-					<div class="tu-row mt-r2" data-d3="e">
+					<div class="mt-g3 mt-r2" data-d3="e">
 						<div class="mt-f" data-f="p3-ex" data-k="strain" data-d="ustrain" data-l="εx" data-sg></div><div class="mt-f" data-f="p3-ey" data-k="strain" data-d="ustrain" data-l="εy" data-sg></div><div class="mt-f" data-f="p3-ez" data-k="strain" data-d="ustrain" data-l="εz" data-sg></div>
 						<div class="mt-f" data-f="p3-gxy" data-k="strain" data-d="ustrain" data-l="γxy" data-sg></div><div class="mt-f" data-f="p3-gyz" data-k="strain" data-d="ustrain" data-l="γyz" data-sg></div><div class="mt-f" data-f="p3-gzx" data-k="strain" data-d="ustrain" data-l="γzx" data-sg></div>
 					</div>
@@ -1293,7 +1329,7 @@ body.is-stuck #navbar.hide { position: fixed; top: 56px; right: 8px; }
             hide_search:false,
             current_tab:0
         }        </script><!-- FASTCOMMENTS-LAZY: widget init moved to main_js/main.js -- it pulls embed.min.js only when #fastcomments-widget nears the viewport or on the first Comments-toggle click, so it no longer blocks first render -->                <script src="https://mes.fm/main_js/lazysizes.min.js?v=1.0.3" async></script>
-	<script src="/materials/js/materials.js?v=1" defer></script>
+	<script src="/materials/js/materials.js?v=2" defer></script>
             <script src="https://mes.fm/main_js/main.js?v=1.0.5"></script>    <!-- PAGEVIEW-TRACKING-INSERTED --><script src="https://mes.fm/main_js/track.js" defer></script><script>document.getElementById('copyright-year').textContent = new Date().getFullYear();</script><script src="/main_js/info-bar-fit.js" defer></script><script>
   // Floating compact header bar (see #compact-nav CSS): appears once the
   // header + nav bar have scrolled off the top; nav links that don't fit
