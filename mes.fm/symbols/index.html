@@ -416,6 +416,22 @@ body.is-stuck #navbar.hide { position: fixed; top: 56px; right: 8px; }
 	body.dark-mode .sym-seo a{color:#a592c9}
 	body.dark-mode .sym-seo a:hover{color:#a590cb}
 	/* TOOL-DARK:END */
+</style><style id="mes-rel-css">
+	/* MES-RELATED-TOOLS: cross-links between the Emoji Copier, Symbol Copier and LaTeX Render (hand-written light + dark rules) */
+	.mes-rel {margin:1.8em 0 0.6em;}
+	.mes-rel__h {font-size:1.05em;font-weight:bold;color:#1e2733;margin:0 0 0.55em;}
+	.mes-rel__grid {display:grid;grid-template-columns:repeat(auto-fit,minmax(14em,1fr));gap:0.6em;}
+	.mes-rel__card {display:flex;gap:0.7em;align-items:flex-start;padding:0.65em 0.75em;border:1px solid #d5dbe3;border-radius:0.55em;background:#fff;text-decoration:none;color:#333;}
+	.mes-rel__card:hover {border-color:#8a94a3;background:#f5f7fa;}
+	.mes-rel__card img {width:40px;height:40px;border-radius:9px;flex:none;}
+	.mes-rel .mes-rel__name {display:block;font-weight:bold;color:#1d4f91;}
+	.mes-rel .mes-rel__desc {display:block;font-size:0.85em;line-height:1.4;color:#4a5260;margin-top:0.15em;}
+	body.dark-mode .page-content .mes-rel__h {color:#e2e6eb;}
+	body.dark-mode .page-content .mes-rel__card {background:#1f2226;border-color:#3a424d;}
+	body.dark-mode .page-content .mes-rel__card:hover {background:#262a30;border-color:#5b6572;}
+	body.dark-mode .page-content .mes-rel .mes-rel__name {color:#8ab4f8;}
+	body.dark-mode .page-content .mes-rel .mes-rel__desc {color:#bcc3cc;}
+	.sym__btn--latex {white-space:nowrap;}
 </style>
         <meta property="fb:app_id" content="" />
         <meta name="author" content="Math Easy Solutions Staff">
@@ -647,6 +663,7 @@ body.is-stuck #navbar.hide { position: fixed; top: 56px; right: 8px; }
 			<div class="sym__builder-row">
 				<input type="text" id="sym-builder-input" readonly aria-label="Selected symbols" placeholder="Click symbols above to build a string&hellip;">
 				<button type="button" class="sym__btn sym__btn--ghost" id="sym-builder-copy">Copy all</button>
+				<button type="button" class="sym__btn sym__btn--ghost sym__btn--latex" id="sym-builder-latex" title="Open these symbols as LaTeX in MES LaTeX Render">Open in LaTeX Render</button>
 				<button type="button" class="sym__btn sym__btn--ghost" id="sym-builder-clear">Clear</button>
 			</div>
 		</div>
@@ -660,12 +677,16 @@ body.is-stuck #navbar.hide { position: fixed; top: 56px; right: 8px; }
 
 	<span class="sym__toast" id="sym-toast"></span>
 
+	<!-- MES-RELATED-TOOLS -->
+	<nav class="mes-rel" aria-label="Related tools"><h2 class="mes-rel__h">Related tools</h2><div class="mes-rel__grid"><a class="mes-rel__card" href="/emoji"><img src="/img/emoji-logo.png" width="40" height="40" loading="lazy" alt=""><span class="mes-rel__txt"><span class="mes-rel__name">Emoji Copier</span><span class="mes-rel__desc">Colour emoji for posts, chats and video thumbnails, with big transparent PNGs.</span></span></a><a class="mes-rel__card" href="/latex"><img src="/img/latex-logo.png" width="40" height="40" loading="lazy" alt=""><span class="mes-rel__txt"><span class="mes-rel__name">LaTeX Render</span><span class="mes-rel__desc">Typeset whole equations and documents from LaTeX, then screenshot, expand or print them.</span></span></a><a class="mes-rel__card" href="/copy-text"><img src="/img/copy-text-logo.png" width="40" height="40" loading="lazy" alt=""><span class="mes-rel__txt"><span class="mes-rel__name">Copy Text</span><span class="mes-rel__desc">Keep your own snippets (signatures, hashtags, links) on boards and copy them in one click.</span></span></a></div></nav>
+	<!-- /MES-RELATED-TOOLS -->
+
 	<div class="sym-seo">
 		<h2>How to use the symbol copier</h2>
 		<ul>
 			<li>Click any tile to <strong>copy that symbol instantly</strong> &mdash; a toast confirms it, and it's ready to paste anywhere.</li>
 			<li>Switch the format to <strong>LaTeX</strong> to copy the command instead of the glyph (e.g. clicking &pi; copies <code>\pi</code>) &mdash; handy for <a href="/latex">MES LaTeX Render</a> or Overleaf. <strong>HTML entity</strong> copies the numeric character reference (e.g. <code>&amp;#960;</code>) for web pages and email templates.</li>
-			<li>Click several symbols in a row to build a combo in the box at the bottom (like &ldquo;x&sup2;+y&sup2;&rdquo;), then hit <strong>Copy all</strong> to grab the whole string at once.</li>
+			<li>Click several symbols in a row to build a combo in the box at the bottom (like &ldquo;x&sup2;+y&sup2;&rdquo;), then hit <strong>Copy all</strong> to grab the whole string at once, or <strong>Open in LaTeX Render</strong> to see it typeset as an equation.</li>
 			<li>Use the <strong>search box</strong> to jump straight to a symbol by name &mdash; try &ldquo;theta&rdquo;, &ldquo;infinity&rdquo;, or &ldquo;arrow&rdquo;.</li>
 			<li>Your last several copies show up under <strong>Recently copied</strong> for quick reuse.</li>
 		</ul>
@@ -738,7 +759,7 @@ body.is-stuck #navbar.hide { position: fixed; top: 56px; right: 8px; }
             hide_search:false,
             current_tab:0
         }        </script><!-- FASTCOMMENTS-LAZY: widget init moved to main_js/main.js -- it pulls embed.min.js only when #fastcomments-widget nears the viewport or on the first Comments-toggle click, so it no longer blocks first render -->                <script src="https://mes.fm/main_js/lazysizes.min.js?v=1.0.3" async></script>
-	<script src="/symbols/js/symbols.js?v=2" defer></script>
+	<script src="/symbols/js/symbols.js?v=3" defer></script>
             <script src="https://mes.fm/main_js/main.js?v=1.0.5"></script>    <!-- PAGEVIEW-TRACKING-INSERTED --><script src="https://mes.fm/main_js/track.js" defer></script><script>document.getElementById('copyright-year').textContent = new Date().getFullYear();</script><script src="/main_js/info-bar-fit.js" defer></script><script>
   // Floating compact header bar (see #compact-nav CSS): appears once the
   // header + nav bar have scrolled off the top; nav links that don't fit

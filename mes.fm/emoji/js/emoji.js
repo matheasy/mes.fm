@@ -1029,6 +1029,114 @@
 			]
 		},
 		{
+			name: "Metals & Materials",
+			items: [
+				{ c: "🔩", n: "nut and bolt", k: "metal steel iron screw hardware fastener" },
+				{ c: "⚙️", n: "gear", k: "settings cog metal steel machine engineering" },
+				{ c: "🔧", n: "wrench", k: "spanner metal steel tool" },
+				{ c: "🔨", n: "hammer", k: "metal steel tool forge" },
+				{ c: "🪛", n: "screwdriver", k: "metal steel tool" },
+				{ c: "🛠️", n: "hammer and wrench", k: "tools metal steel repair" },
+				{ c: "⚒️", n: "hammer and pick", k: "mining metal steel blacksmith tools" },
+				{ c: "⛏️", n: "pick", k: "pickaxe mining ore metal" },
+				{ c: "🗜️", n: "clamp", k: "vise vice compression metal steel" },
+				{ c: "⛓️", n: "chains", k: "chain metal steel iron link" },
+				{ c: "🔗", n: "link", k: "chain hyperlink metal" },
+				{ c: "🪝", n: "hook", k: "metal steel" },
+				{ c: "🧲", n: "magnet", k: "magnetic iron steel metal" },
+				{ c: "🪙", n: "coin", k: "metal gold silver copper money" },
+				{ c: "🥇", n: "1st place medal", k: "gold metal" },
+				{ c: "🥈", n: "2nd place medal", k: "silver metal" },
+				{ c: "🥉", n: "3rd place medal", k: "bronze copper metal" },
+				{ c: "🏅", n: "sports medal", k: "gold metal" },
+				{ c: "🏆", n: "trophy", k: "winner gold metal cup" },
+				{ c: "💍", n: "ring", k: "gold silver platinum metal jewelry" },
+				{ c: "💎", n: "gem stone", k: "diamond crystal jewel" },
+				{ c: "🧰", n: "toolbox", k: "tools metal steel" },
+				{ c: "🔑", n: "key", k: "metal brass" },
+				{ c: "🗝️", n: "old key", k: "metal iron brass" },
+				{ c: "🪚", n: "carpentry saw", k: "steel blade wood" },
+				{ c: "🥄", n: "spoon", k: "stainless steel cutlery metal" },
+				{ c: "🍴", n: "fork and knife", k: "stainless steel cutlery metal" },
+				{ c: "🔪", n: "kitchen knife", k: "steel blade stainless" },
+				{ c: "🛡️", n: "shield", k: "armor armour steel metal" },
+				{ c: "⚔️", n: "crossed swords", k: "steel sword blade metal" },
+				{ c: "🗡️", n: "dagger", k: "knife steel blade metal" },
+				{ c: "⚓", n: "anchor", k: "iron steel metal ship" },
+				{ c: "🔋", n: "battery", k: "lithium metal energy" },
+				{ c: "🛞", n: "wheel", k: "tyre tire rim metal" },
+				{ c: "🛢️", n: "oil drum", k: "barrel steel metal" },
+				{ c: "🥫", n: "canned food", k: "tin can aluminium aluminum steel metal" },
+				{ c: "🎺", n: "trumpet", k: "brass metal" },
+				{ c: "🔔", n: "bell", k: "notification bronze brass metal" },
+				{ c: "🚂", n: "locomotive", k: "train steam iron steel" },
+				{ c: "🏭", n: "factory", k: "industry steel mill metal" },
+				{ c: "🏗️", n: "building construction", k: "crane steel" },
+				{ c: "🚧", n: "construction", k: "steel barrier" },
+				{ c: "🔥", n: "fire", k: "forge heat smelting melt" },
+				{ c: "⚡", n: "high voltage", k: "lightning bolt electricity copper" },
+				{ c: "🧪", n: "test tube", k: "science chemistry lab material" },
+				{ c: "⚗️", n: "alembic", k: "chemistry alchemy distill" },
+				{ c: "🔬", n: "microscope", k: "materials science lab" },
+				{ c: "🧱", n: "brick", k: "clay masonry material wall" },
+				{ c: "🪨", n: "rock", k: "stone ore mineral material" },
+				{ c: "🪵", n: "wood", k: "log timber lumber material" },
+				{ c: "🏺", n: "amphora", k: "ceramic pottery clay" },
+				{ c: "🧊", n: "ice cube", k: "glass frozen" },
+				{ c: "🪟", n: "window", k: "glass pane" },
+				{ c: "🫙", n: "jar", k: "glass container" },
+				{ c: "🪞", n: "mirror", k: "glass silver reflection" },
+				{ c: "🧶", n: "yarn", k: "wool textile fabric knit" },
+				{ c: "🧵", n: "thread", k: "textile fabric sewing" },
+				{ c: "🪡", n: "sewing needle", k: "textile fabric sew steel" },
+				{ c: "♻️", n: "recycling symbol", k: "recycle materials" }
+			]
+		},
+		{
+			name: "Calculator & Math",
+			items: [
+				{ c: "🧮", n: "abacus", k: "calculator counting math" },
+				{ c: "🔢", n: "input numbers", k: "1234 digits math" },
+				{ c: "🔣", n: "input symbols", k: "math" },
+				{ c: "➕", n: "plus", k: "add addition math" },
+				{ c: "➖", n: "minus", k: "subtract subtraction math" },
+				{ c: "✖️", n: "multiply", k: "times multiplication math" },
+				{ c: "➗", n: "divide", k: "division math" },
+				{ c: "🟰", n: "heavy equals sign", k: "equal math" },
+				{ c: "♾️", n: "infinity", k: "infinite math" },
+				{ c: "💯", n: "hundred points", k: "100 percent score" },
+				{ c: "📐", n: "triangular ruler", k: "set square geometry angle math" },
+				{ c: "📏", n: "straight ruler", k: "measure length math" },
+				{ c: "📊", n: "bar chart", k: "graph statistics data math" },
+				{ c: "📈", n: "chart increasing", k: "graph up growth statistics math" },
+				{ c: "📉", n: "chart decreasing", k: "graph down statistics math" },
+				{ c: "💹", n: "chart increasing with yen", k: "graph stock market finance" },
+				{ c: "🧾", n: "receipt", k: "bill total invoice" },
+				{ c: "💲", n: "heavy dollar sign", k: "money price" },
+				{ c: "💱", n: "currency exchange", k: "money rate convert" },
+				{ c: "💰", n: "money bag" },
+				{ c: "✅", n: "check mark button", k: "checkmark done correct right tick" },
+				{ c: "✔️", n: "check mark", k: "correct right tick" },
+				{ c: "❌", n: "cross mark", k: "x wrong incorrect" },
+				{ c: "☑️", n: "check box with check", k: "checkbox ticked done correct" },
+				{ c: "✏️", n: "pencil", k: "write homework" },
+				{ c: "📝", n: "memo", k: "note notes homework" },
+				{ c: "#️⃣", n: "keycap number sign", k: "hash pound" },
+				{ c: "*️⃣", n: "keycap asterisk", k: "star times" },
+				{ c: "0️⃣", n: "keycap 0", k: "zero number digit" },
+				{ c: "1️⃣", n: "keycap 1", k: "one number digit" },
+				{ c: "2️⃣", n: "keycap 2", k: "two number digit" },
+				{ c: "3️⃣", n: "keycap 3", k: "three number digit" },
+				{ c: "4️⃣", n: "keycap 4", k: "four number digit" },
+				{ c: "5️⃣", n: "keycap 5", k: "five number digit" },
+				{ c: "6️⃣", n: "keycap 6", k: "six number digit" },
+				{ c: "7️⃣", n: "keycap 7", k: "seven number digit" },
+				{ c: "8️⃣", n: "keycap 8", k: "eight number digit" },
+				{ c: "9️⃣", n: "keycap 9", k: "nine number digit" },
+				{ c: "🔟", n: "keycap 10", k: "ten number" }
+			]
+		},
+		{
 			name: "Symbols & Signs",
 			items: [
 				{ c: "✅", n: "check mark button", k: "checkmark done" },
@@ -1269,10 +1377,23 @@
 	}
 	function untone(ch) { return String(ch).replace(/[\u{1F3FB}-\u{1F3FF}]/gu, ""); }
 
+	// emoji that have a plain (one-colour, text) twin on the Symbol Copier:
+	// [plain character, what to search for there]
+	var PLAIN = {
+		"➕": ["+", "plus"], "➖": ["−", "minus"], "✖️": ["×", "times"], "➗": ["÷", "divide"],
+		"🟰": ["=", "equal"], "♾️": ["∞", "infinity"], "✔️": ["✓", "check mark"], "✅": ["✓", "check mark"],
+		"☑️": ["☑", "ballot box"], "❌": ["✗", "ballot x"], "❎": ["✗", "ballot x"],
+		"⬆️": ["↑", "up arrow"], "⬇️": ["↓", "down arrow"], "⬅️": ["←", "left arrow"], "➡️": ["→", "right arrow"],
+		"↗️": ["↗", "arrow"], "↘️": ["↘", "arrow"], "↙️": ["↙", "arrow"], "↖️": ["↖", "arrow"],
+		"↕️": ["↕", "up-down arrow"], "↔️": ["↔", "left-right arrow"],
+		"©️": ["©", "copyright"], "®️": ["®", "registered"], "™️": ["™", "trademark"], "💲": ["$", "dollar"]
+	};
+
 	function tileHtml(item) {
 		var c = toned(item.c);
+		var pl = PLAIN[item.c];
 		return '<div class="emo__tile-wrap">' +
-			'<button type="button" class="emo__tile" data-emoji="' + esc(c) + '" data-name="' + esc(item.n) + '" title="' + esc(item.n) + '">' +
+			'<button type="button" class="emo__tile" data-emoji="' + esc(c) + '" data-name="' + esc(item.n) + '" title="' + esc(item.n) + (pl ? " · plain symbol " + esc(pl[0]) + " on the Symbol Copier" : "") + '">' +
 			'<span class="emo__tile-glyph">' + c + '</span>' +
 			'<span class="emo__tile-name">' + esc(item.n) + '</span></button>' +
 			'<button type="button" class="emo__tile-expand" data-expand="' + esc(c) + '" data-expand-name="' + esc(item.n) + '" title="Expand to large PNG" aria-label="Expand ' + esc(item.n) + ' to large PNG">' + EXPAND_ICON + '</button>' +
@@ -1356,7 +1477,7 @@
 			var catHasMatch = false;
 			for (var j = 0; j < cat.items.length; j++) {
 				var item = cat.items[j];
-				var hay = norm(item.n + " " + (item.k || ""));
+				var hay = norm(item.n + " " + (item.k || "") + " " + item.c);
 				var match = !q || hay.indexOf(q) !== -1;
 				wraps[j].hidden = !match;
 				if (match) catHasMatch = true;
@@ -1448,9 +1569,29 @@
 		builderChars.push(ch);
 		renderBuilder();
 		pushRecent(ch);
+		showPlainHint(item);
+	}
+
+	// "this emoji has a plain-text twin" note under the builder
+	var symHint = $("emo-symhint");
+	function showPlainHint(item) {
+		if (!symHint) return;
+		var pl = PLAIN[item.c];
+		if (!pl) { symHint.classList.add("hide"); return; }
+		symHint.innerHTML = 'Need it in plain text (one colour, fits in equations)? ' +
+			'<span class="emo__symhint-glyph">' + esc(pl[0]) + '</span> ' +
+			'<button type="button" class="emo__btn emo__btn--ghost emo__symhint-copy" data-plain="' + esc(pl[0]) + '">Copy ' + esc(pl[0]) + '</button> ' +
+			'<a href="/symbols?q=' + encodeURIComponent(pl[1]) + '">More on the Symbol Copier</a>';
+		symHint.classList.remove("hide");
 	}
 
 	document.addEventListener("click", function (e) {
+		var plainBtn = e.target.closest ? e.target.closest("[data-plain]") : null;
+		if (plainBtn) {
+			var p = plainBtn.getAttribute("data-plain");
+			copyToClipboard(p).then(function () { toast("Copied " + p); }, function () { toast("Couldn't copy — press Ctrl/Cmd+C"); });
+			return;
+		}
 		var expandBtn = e.target.closest ? e.target.closest(".emo__tile-expand") : null;
 		if (expandBtn) { openZoom(expandBtn.getAttribute("data-expand"), expandBtn.getAttribute("data-expand-name")); return; }
 		var tile = e.target.closest ? e.target.closest(".emo__tile") : null;

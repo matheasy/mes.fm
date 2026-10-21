@@ -426,6 +426,35 @@ body.is-stuck #navbar.hide { position: fixed; top: 56px; right: 8px; }
 	body.dark-mode .latex-tool__error{background:#251311;border:1px solid #64121a;color:#ed7c6e}
 	body.dark-mode .latex-tool__copied{color:#72e9bd}
 	/* TOOL-DARK:END */
+</style><style id="mes-rel-css">
+	/* MES-RELATED-TOOLS: cross-links between the Emoji Copier, Symbol Copier and LaTeX Render (hand-written light + dark rules) */
+	.mes-rel {margin:1.8em 0 0.6em;}
+	.mes-rel__h {font-size:1.05em;font-weight:bold;color:#1e2733;margin:0 0 0.55em;}
+	.mes-rel__grid {display:grid;grid-template-columns:repeat(auto-fit,minmax(14em,1fr));gap:0.6em;}
+	.mes-rel__card {display:flex;gap:0.7em;align-items:flex-start;padding:0.65em 0.75em;border:1px solid #d5dbe3;border-radius:0.55em;background:#fff;text-decoration:none;color:#333;}
+	.mes-rel__card:hover {border-color:#8a94a3;background:#f5f7fa;}
+	.mes-rel__card img {width:40px;height:40px;border-radius:9px;flex:none;}
+	.mes-rel .mes-rel__name {display:block;font-weight:bold;color:#1d4f91;}
+	.mes-rel .mes-rel__desc {display:block;font-size:0.85em;line-height:1.4;color:#4a5260;margin-top:0.15em;}
+	body.dark-mode .page-content .mes-rel__h {color:#e2e6eb;}
+	body.dark-mode .page-content .mes-rel__card {background:#1f2226;border-color:#3a424d;}
+	body.dark-mode .page-content .mes-rel__card:hover {background:#262a30;border-color:#5b6572;}
+	body.dark-mode .page-content .mes-rel .mes-rel__name {color:#8ab4f8;}
+	body.dark-mode .page-content .mes-rel .mes-rel__desc {color:#bcc3cc;}
+	.latex-pal {display:flex;flex-wrap:wrap;align-items:center;gap:0.3em;margin:0 0 0.75em;}
+	.latex-pal__label {font-size:0.82em;color:#555;margin-right:0.2em;}
+	.latex-pal__key {font:inherit;font-size:0.95em;min-width:2.1em;height:2.1em;padding:0 0.35em;cursor:pointer;border:1px solid #ccd2da;border-radius:0.35em;background:#fff;color:#222;line-height:1;}
+	.latex-pal__key:hover {border-color:#1a9e6e;background:#effaf5;}
+	.latex-pal__more {font-size:0.85em;margin-left:0.4em;color:#1d4f91;text-decoration:underline;white-space:nowrap;}
+	@media (max-width:600px) {
+		.latex-pal {flex-wrap:nowrap;overflow-x:auto;padding-bottom:0.3em;-webkit-overflow-scrolling:touch;}
+		.latex-pal__key {flex:none;min-width:2.4em;height:2.4em;}
+		.latex-pal__more {order:-1;margin:0 0.3em 0 0;}
+	}
+	body.dark-mode .page-content .latex-pal__label {color:#b4bac2;}
+	body.dark-mode .page-content .latex-pal__key {background:#1f2226;border-color:#3a424d;color:#e6e6e6;}
+	body.dark-mode .page-content .latex-pal__key:hover {background:#17312a;border-color:#23dc98;}
+	body.dark-mode .page-content .latex-pal__more {color:#8ab4f8;}
 </style>
         <meta property="fb:app_id" content="" />
         <meta name="author" content="Math Easy Solutions Staff">
@@ -643,6 +672,8 @@ body.is-stuck #navbar.hide { position: fixed; top: 56px; right: 8px; }
 			<button type="button" class="latex-tool__example" data-ex="bare">Bare paste (no $ signs)</button>
 		</div>
 
+		<div class="latex-pal" id="latex-palette" role="group" aria-label="Insert a symbol"><a class="latex-pal__more" href="/symbols">Find a symbol &rarr;</a></div>
+
 		<div class="latex-tool__grid">
 			<div>
 				<label class="latex-tool__pane-label" for="latex-source">LaTeX source</label>
@@ -660,6 +691,7 @@ body.is-stuck #navbar.hide { position: fixed; top: 56px; right: 8px; }
 			<button type="button" id="latex-clear" class="latex-tool__btn">Clear</button>
 			<button type="button" id="latex-print" class="latex-tool__btn">Print / Save PDF</button>
 			<button type="button" id="latex-expand" class="latex-tool__btn">Expand</button>
+			<button type="button" id="latex-restore" class="latex-tool__btn hide" title="Put back the text you had before you opened this link">Bring back my previous text</button>
 			<span class="latex-tool__hint" id="latex-status">Auto-renders as you type</span>
 		</div>
 
@@ -681,6 +713,10 @@ body.is-stuck #navbar.hide { position: fixed; top: 56px; right: 8px; }
 			<p class="latex-zoom__hint">Screenshot this for thumbnails &mdash; Esc to close</p>
 		</div>
 	</div>
+
+	<!-- MES-RELATED-TOOLS -->
+	<nav class="mes-rel" aria-label="Related tools"><h2 class="mes-rel__h">Related tools</h2><div class="mes-rel__grid"><a class="mes-rel__card" href="/emoji"><img src="/img/emoji-logo.png" width="40" height="40" loading="lazy" alt=""><span class="mes-rel__txt"><span class="mes-rel__name">Emoji Copier</span><span class="mes-rel__desc">Colour emoji for posts, chats and video thumbnails, with big transparent PNGs.</span></span></a><a class="mes-rel__card" href="/symbols"><img src="/img/symbols-logo.png" width="40" height="40" loading="lazy" alt=""><span class="mes-rel__txt"><span class="mes-rel__name">Symbol Copier</span><span class="mes-rel__desc">Plain one-colour symbols for text and equations: &pi; &divide; &le; x&sup2; &rarr; &alpha;. Copies as symbol, LaTeX or HTML.</span></span></a><a class="mes-rel__card" href="/copy-text"><img src="/img/copy-text-logo.png" width="40" height="40" loading="lazy" alt=""><span class="mes-rel__txt"><span class="mes-rel__name">Copy Text</span><span class="mes-rel__desc">Keep your own snippets (signatures, hashtags, links) on boards and copy them in one click.</span></span></a></div></nav>
+	<!-- /MES-RELATED-TOOLS -->
 	</div>                                    <!-- PC (Responsive/Rectangle) Matched Content -->
                                                                         <div id="comments-button" class="hide-div-button button">Comments</div>
                                     <div id="comments-box" class="hide">
@@ -761,7 +797,7 @@ body.is-stuck #navbar.hide { position: fixed; top: 56px; right: 8px; }
 	};
 	</script>
 	<script id="MathJax-script" async src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/3.2.2/es5/tex-mml-chtml.js"></script>
-	<script src="/latex/js/latex.js" defer></script>
+	<script src="/latex/js/latex.js?v=2" defer></script>
             <script src="https://mes.fm/main_js/main.js?v=1.0.5"></script>    <!-- PAGEVIEW-TRACKING-INSERTED --><script src="https://mes.fm/main_js/track.js" defer></script><script>document.getElementById('copyright-year').textContent = new Date().getFullYear();</script><script src="/main_js/info-bar-fit.js" defer></script><script>
   // Floating compact header bar (see #compact-nav CSS): appears once the
   // header + nav bar have scrolled off the top; nav links that don't fit

@@ -65,6 +65,7 @@
 			items: [
 				{ c: "±", n: "plus-minus", l: "\\pm" },
 				{ c: "∓", n: "minus-plus", l: "\\mp" },
+				{ c: "−", n: "minus sign", k: "subtract subtraction negative", l: "-" },
 				{ c: "×", n: "times", k: "multiply cross", l: "\\times" },
 				{ c: "÷", n: "divide", k: "division", l: "\\div" },
 				{ c: "·", n: "middle dot", k: "multiply dot product", l: "\\cdot" },
@@ -186,7 +187,11 @@
 				{ c: "⇒", n: "implies", k: "right double arrow", l: "\\Rightarrow" },
 				{ c: "⇐", n: "implied by", k: "left double arrow", l: "\\Leftarrow" },
 				{ c: "⇔", n: "if and only if", k: "iff double arrow", l: "\\Leftrightarrow" },
-				{ c: "↦", n: "maps to", l: "\\mapsto" }
+				{ c: "↦", n: "maps to", l: "\\mapsto" },
+				{ c: "↗", n: "up-right arrow", k: "north east diagonal increasing", l: "\\nearrow" },
+				{ c: "↘", n: "down-right arrow", k: "south east diagonal decreasing", l: "\\searrow" },
+				{ c: "↙", n: "down-left arrow", k: "south west diagonal", l: "\\swarrow" },
+				{ c: "↖", n: "up-left arrow", k: "north west diagonal", l: "\\nwarrow" }
 			]
 		},
 		{
@@ -224,6 +229,55 @@
 			]
 		},
 		{
+			name: "Metals & Alchemy",
+			items: [
+				{ c: "☉", n: "gold (Sun)", k: "sun metal alchemy planet circled dot", l: "\\odot" },
+				{ c: "☽", n: "silver (Moon)", k: "moon crescent first quarter metal alchemy" },
+				{ c: "♂", n: "iron (Mars)", k: "mars male metal alchemy steel" },
+				{ c: "♀", n: "copper (Venus)", k: "venus female metal alchemy" },
+				{ c: "☿", n: "mercury (quicksilver)", k: "mercury planet metal alchemy" },
+				{ c: "♃", n: "tin (Jupiter)", k: "jupiter metal alchemy" },
+				{ c: "♄", n: "lead (Saturn)", k: "saturn metal alchemy" },
+				{ c: "♁", n: "antimony (Earth)", k: "earth globus cruciger metal alchemy" },
+				{ c: "🜚", n: "alchemical gold", k: "metal alchemy" },
+				{ c: "🜛", n: "alchemical silver", k: "metal alchemy" },
+				{ c: "🜜", n: "iron ore", k: "metal alchemy steel" },
+				{ c: "🜠", n: "copper ore", k: "metal alchemy" },
+				{ c: "🜩", n: "tin ore", k: "metal alchemy" },
+				{ c: "🜪", n: "lead ore", k: "metal alchemy" },
+				{ c: "🜫", n: "antimony ore", k: "metal alchemy" },
+				{ c: "🜾", n: "bismuth ore", k: "metal alchemy" },
+				{ c: "🜺", n: "arsenic", k: "alchemy element" },
+				{ c: "🜍", n: "sulfur", k: "sulphur brimstone alchemy element" },
+				{ c: "🜔", n: "salt", k: "alchemy" },
+				{ c: "🜓", n: "cinnabar", k: "mercury ore alchemy" },
+				{ c: "🜨", n: "verdigris", k: "copper patina alchemy" },
+				{ c: "🜖", n: "vitriol", k: "sulfuric acid alchemy" },
+				{ c: "🜅", n: "aquafortis", k: "nitric acid alchemy" },
+				{ c: "🜆", n: "aqua regia", k: "acid gold dissolve alchemy" },
+				{ c: "🜂", n: "fire (element)", k: "alchemy classical element triangle" },
+				{ c: "🜄", n: "water (element)", k: "alchemy classical element triangle" },
+				{ c: "🜁", n: "air (element)", k: "alchemy classical element triangle" },
+				{ c: "🜃", n: "earth (element)", k: "alchemy classical element triangle" },
+				{ c: "🜀", n: "quintessence", k: "aether ether fifth element alchemy" }
+			]
+		},
+		{
+			name: "Calculator & Keyboard Keys",
+			items: [
+				{ c: "🖩", n: "pocket calculator (Windows / Android fonts only)", k: "calculator calc" },
+				{ c: "⌫", n: "backspace / delete", k: "erase key keyboard" },
+				{ c: "⏎", n: "return / enter", k: "enter key keyboard" },
+				{ c: "⇧", n: "shift", k: "key keyboard" },
+				{ c: "⇥", n: "tab", k: "key keyboard" },
+				{ c: "⌘", n: "command (Mac)", k: "cmd key keyboard apple" },
+				{ c: "⌥", n: "option / alt (Mac)", k: "key keyboard apple" },
+				{ c: "⌃", n: "control (Mac)", k: "ctrl key keyboard apple" },
+				{ c: "⎋", n: "escape", k: "esc key keyboard" },
+				{ c: "␣", n: "space", k: "spacebar key keyboard blank" }
+			]
+		},
+		{
 			name: "Currency",
 			items: [
 				{ c: "$", n: "dollar", l: "\\$" },
@@ -249,6 +303,10 @@
 				{ c: "†", n: "dagger", l: "\\dagger" },
 				{ c: "‡", n: "double dagger", l: "\\ddagger" },
 				{ c: "•", n: "bullet point" },
+				{ c: "✓", n: "check mark", k: "tick correct done checkmark", l: "\\checkmark" },
+				{ c: "✗", n: "ballot x", k: "cross wrong incorrect x mark" },
+				{ c: "☑", n: "ballot box with check", k: "checkbox ticked done" },
+				{ c: "☐", n: "ballot box", k: "empty checkbox unchecked" },
 				{ c: "…", n: "ellipsis", k: "dot dot dot", l: "\\ldots" },
 				{ c: "—", n: "em dash" },
 				{ c: "–", n: "en dash" },
@@ -363,7 +421,7 @@
 			var catHasMatch = false;
 			for (var j = 0; j < cat.items.length; j++) {
 				var item = cat.items[j];
-				var hay = norm(item.n + " " + (item.k || ""));
+				var hay = norm(item.n + " " + (item.k || "") + " " + item.c + " " + (item.l || ""));
 				var match = !q || hay.indexOf(q) !== -1;
 				tiles[j].hidden = !match;
 				if (match) catHasMatch = true;
@@ -507,6 +565,26 @@
 			toast("Couldn't copy — press Ctrl/Cmd+C");
 		});
 	});
+	// LaTeX of the built string, always (whatever the copy mode): a space only
+	// where a command would otherwise run into the next letter (\\alpha o)
+	function builderLatex() {
+		var out = "";
+		builderChars.forEach(function (ch) {
+			var item = findItem(ch);
+			var t = item ? (item.l || item.c) : ch;
+			if (/\\[A-Za-z]+$/.test(out) && /^[A-Za-z]/.test(t)) out += " ";
+			out += t;
+		});
+		return out;
+	}
+	$("sym-builder-latex").addEventListener("click", function () {
+		var tex = builderLatex();
+		if (!tex) { toast("Click a few symbols first"); return; }
+		var url = "/latex?tex=" + encodeURIComponent("$$" + tex + "$$");
+		var w = window.open(url, "_blank");
+		if (!w) location.href = url;
+	});
+
 	$("sym-builder-clear").addEventListener("click", function () {
 		builderChars = [];
 		renderBuilder();
@@ -517,5 +595,10 @@
 
 	renderCategories();
 	renderRecent();
+	// ?q=divide (links from the Emoji Copier / LaTeX Render) fills the search box
+	try {
+		var qp = new URLSearchParams(location.search).get("q");
+		if (qp) searchEl.value = qp.slice(0, 60);
+	} catch (e) {}
 	applySearch();
 })();

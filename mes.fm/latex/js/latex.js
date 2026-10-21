@@ -367,6 +367,68 @@
 		output.scrollIntoView({ block: "nearest" });
 	});
 
+	/* ---- symbol palette ---------------------------------------------------- */
+
+	// [label, LaTeX, caret offset from the end of the inserted LaTeX]
+	var PALETTE = [
+		["α", "\\alpha"], ["β", "\\beta"], ["γ", "\\gamma"], ["θ", "\\theta"], ["λ", "\\lambda"],
+		["μ", "\\mu"], ["π", "\\pi"], ["σ", "\\sigma"], ["φ", "\\phi"], ["ω", "\\omega"],
+		["Δ", "\\Delta"], ["Σ", "\\Sigma"], ["Ω", "\\Omega"],
+		["±", "\\pm"], ["×", "\\times"], ["÷", "\\div"], ["·", "\\cdot"], ["≈", "\\approx"],
+		["≠", "\\neq"], ["≤", "\\leq"], ["≥", "\\geq"], ["∞", "\\infty"], ["°", "^\\circ"],
+		["x²", "^{2}"], ["xₙ", "_{n}"], ["a⁄b", "\\frac{}{}", 3], ["√", "\\sqrt{}", 1],
+		["∫", "\\int_{}^{}", 4], ["∑", "\\sum_{}^{}", 4], ["∂", "\\partial"], ["∇", "\\nabla"],
+		["→", "\\to"], ["⇒", "\\Rightarrow"], ["∈", "\\in"], ["⊂", "\\subset"],
+		["∪", "\\cup"], ["∩", "\\cap"], ["∀", "\\forall"], ["∃", "\\exists"]
+	];
+	var paletteEl = document.getElementById("latex-palette");
+
+	// is position `pos` of `text` inside math ($..$, $$..$$, \(..\), \[..\], math environments)?
+	function inMath(text, pos) {
+		var b = text.slice(0, pos), inl = false, disp = false;
+		for (var i = 0; i < b.length; i++) {
+			if (b[i] === "\\") { i++; continue; }
+			if (b[i] === "$") {
+				if (b[i + 1] === "$") { disp = !disp; i++; } else if (!disp) inl = !inl;
+			}
+		}
+		if (inl || disp) return true;
+		function opened(open, close) { return b.lastIndexOf(open) > b.lastIndexOf(close); }
+		if (opened("\\[", "\\]") || opened("\\(", "\\)")) return true;
+		var envs = new RegExp("\\\\(begin|end)\\{(" + MATH_ENVS + ")\\*?\\}", "g"), m, depth = 0;
+		while ((m = envs.exec(b))) depth += m[1] === "begin" ? 1 : -1;
+		return depth > 0;
+	}
+
+	function insertTex(tex, back) {
+		var start = source.selectionStart == null ? source.value.length : source.selectionStart;
+		var end = source.selectionEnd == null ? start : source.selectionEnd;
+		var v = source.value, ins = tex, caretBack = back || 0;
+		// a command followed by a letter needs a space: \alpha x, not \alphax
+		if (/^\\[A-Za-z]+$/.test(tex) && /^[A-Za-z]/.test(v.slice(end))) ins += " ";
+		if (/\\[A-Za-z]+$/.test(v.slice(0, start)) && /^[A-Za-z]/.test(ins)) ins = " " + ins;
+		if (!inMath(v, start)) { ins = "$" + ins + "$"; caretBack += 1; }
+		source.value = v.slice(0, start) + ins + v.slice(end);
+		var caret = start + ins.length - caretBack;
+		source.focus();
+		source.setSelectionRange(caret, caret);
+		scheduleRender();
+	}
+
+	if (paletteEl) {
+		paletteEl.insertAdjacentHTML("afterbegin", PALETTE.map(function (p, i) {
+			return '<button type="button" class="latex-pal__key" data-pal="' + i + '" title="' + escapeHtml(p[1]) + '">' + escapeHtml(p[0]) + "</button>";
+		}).join(""));
+		// keep the textarea's caret: don't let the click take focus first
+		paletteEl.addEventListener("mousedown", function (e) { if (e.target.closest("[data-pal]")) e.preventDefault(); });
+		paletteEl.addEventListener("click", function (e) {
+			var k = e.target.closest("[data-pal]");
+			if (!k) return;
+			var p = PALETTE[+k.getAttribute("data-pal")];
+			insertTex(p[1], p[2]);
+		});
+	}
+
 	/* ---- expand / zoom ----------------------------------------------------- */
 
 	var zoom = document.getElementById("latex-zoom");
@@ -407,9 +469,33 @@
 		});
 	}
 
-	// restore last session, else seed with a friendly example
+	// restore last session, else seed with a friendly example; ?tex= / ?q= (links
+	// from the Symbol Copier and elsewhere) wins, with a button to get the old text back
 	var saved = "";
 	try { saved = localStorage.getItem(STORAGE_KEY) || ""; } catch (e) {}
-	source.value = saved || EXAMPLES.quadratic;
+	var fromLink = null;
+	try {
+		var sp = new URLSearchParams(location.search);
+		fromLink = sp.get("tex") || sp.get("q");
+		if (fromLink != null && (sp.has("tex") || sp.has("q")) && history.replaceState) {
+			sp.delete("tex"); sp.delete("q");
+			var rest = sp.toString();
+			history.replaceState(null, "", location.pathname + (rest ? "?" + rest : "") + location.hash);
+		}
+	} catch (e) {}
+	if (fromLink) {
+		source.value = fromLink.slice(0, 20000);
+		var restoreBtn = document.getElementById("latex-restore");
+		if (restoreBtn && saved && saved !== source.value) {
+			restoreBtn.classList.remove("hide");
+			restoreBtn.addEventListener("click", function () {
+				source.value = saved;
+				restoreBtn.classList.add("hide");
+				render();
+			});
+		}
+	} else {
+		source.value = saved || EXAMPLES.quadratic;
+	}
 	render();
 })();

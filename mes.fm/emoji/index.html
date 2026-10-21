@@ -413,6 +413,27 @@ body.is-stuck #navbar.hide { position: fixed; top: 56px; right: 8px; }
 	body.dark-mode .emo-seo a{color:#e67496}
 	body.dark-mode .emo-seo a:hover{color:#d5869e}
 	/* TOOL-DARK:END */
+</style><style id="mes-rel-css">
+	/* MES-RELATED-TOOLS: cross-links between the Emoji Copier, Symbol Copier and LaTeX Render (hand-written light + dark rules) */
+	.mes-rel {margin:1.8em 0 0.6em;}
+	.mes-rel__h {font-size:1.05em;font-weight:bold;color:#1e2733;margin:0 0 0.55em;}
+	.mes-rel__grid {display:grid;grid-template-columns:repeat(auto-fit,minmax(14em,1fr));gap:0.6em;}
+	.mes-rel__card {display:flex;gap:0.7em;align-items:flex-start;padding:0.65em 0.75em;border:1px solid #d5dbe3;border-radius:0.55em;background:#fff;text-decoration:none;color:#333;}
+	.mes-rel__card:hover {border-color:#8a94a3;background:#f5f7fa;}
+	.mes-rel__card img {width:40px;height:40px;border-radius:9px;flex:none;}
+	.mes-rel .mes-rel__name {display:block;font-weight:bold;color:#1d4f91;}
+	.mes-rel .mes-rel__desc {display:block;font-size:0.85em;line-height:1.4;color:#4a5260;margin-top:0.15em;}
+	body.dark-mode .page-content .mes-rel__h {color:#e2e6eb;}
+	body.dark-mode .page-content .mes-rel__card {background:#1f2226;border-color:#3a424d;}
+	body.dark-mode .page-content .mes-rel__card:hover {background:#262a30;border-color:#5b6572;}
+	body.dark-mode .page-content .mes-rel .mes-rel__name {color:#8ab4f8;}
+	body.dark-mode .page-content .mes-rel .mes-rel__desc {color:#bcc3cc;}
+	.emo__symhint {margin:0.4em 0 0.2em;padding:0.55em 0.75em;border:1px solid #d5dbe3;border-radius:0.5em;background:#f7f9fc;font-size:0.9em;line-height:1.6;color:#333;}
+	.emo__symhint .emo__symhint-glyph {font-size:1.35em;font-weight:bold;color:#1e2733;vertical-align:-0.08em;margin:0 0.15em;}
+	.emo__symhint a {color:#1d4f91;text-decoration:underline;}
+	body.dark-mode .page-content .emo__symhint {background:#1f2226;border-color:#3a424d;color:#d8d8d8;}
+	body.dark-mode .page-content .emo__symhint .emo__symhint-glyph {color:#f2f2f2;}
+	body.dark-mode .page-content .emo__symhint a {color:#8ab4f8;}
 </style>
         <meta property="fb:app_id" content="" />
         <meta name="author" content="Math Easy Solutions Staff">
@@ -644,6 +665,8 @@ body.is-stuck #navbar.hide { position: fixed; top: 56px; right: 8px; }
 			</div>
 		</div>
 
+		<div class="emo__symhint hide" id="emo-symhint" aria-live="polite"></div>
+
 		<div class="emo__collapse-toolbar">
 			<button type="button" class="emo__collapse-all-btn" id="emo-collapse-all">Collapse all sections</button>
 		</div>
@@ -652,6 +675,10 @@ body.is-stuck #navbar.hide { position: fixed; top: 56px; right: 8px; }
 	</div>
 
 	<span class="emo__toast" id="emo-toast"></span>
+
+	<!-- MES-RELATED-TOOLS -->
+	<nav class="mes-rel" aria-label="Related tools"><h2 class="mes-rel__h">Related tools</h2><div class="mes-rel__grid"><a class="mes-rel__card" href="/symbols"><img src="/img/symbols-logo.png" width="40" height="40" loading="lazy" alt=""><span class="mes-rel__txt"><span class="mes-rel__name">Symbol Copier</span><span class="mes-rel__desc">Plain one-colour symbols for text and equations: &pi; &divide; &le; x&sup2; &rarr; &alpha;. Copies as symbol, LaTeX or HTML.</span></span></a><a class="mes-rel__card" href="/latex"><img src="/img/latex-logo.png" width="40" height="40" loading="lazy" alt=""><span class="mes-rel__txt"><span class="mes-rel__name">LaTeX Render</span><span class="mes-rel__desc">Typeset whole equations and documents from LaTeX, then screenshot, expand or print them.</span></span></a><a class="mes-rel__card" href="/copy-text"><img src="/img/copy-text-logo.png" width="40" height="40" loading="lazy" alt=""><span class="mes-rel__txt"><span class="mes-rel__name">Copy Text</span><span class="mes-rel__desc">Keep your own snippets (signatures, hashtags, links) on boards and copy them in one click.</span></span></a></div></nav>
+	<!-- /MES-RELATED-TOOLS -->
 
 	<div id="emo-zoom" class="emo-zoom hide">
 		<div class="emo-zoom__bar">
@@ -753,7 +780,7 @@ body.is-stuck #navbar.hide { position: fixed; top: 56px; right: 8px; }
             current_tab:0
         }        </script><!-- FASTCOMMENTS-LAZY: widget init moved to main_js/main.js -- it pulls embed.min.js only when #fastcomments-widget nears the viewport or on the first Comments-toggle click, so it no longer blocks first render -->                <script src="https://mes.fm/main_js/lazysizes.min.js?v=1.0.3" async></script>
 	<script src="https://cdn.jsdelivr.net/npm/@twemoji/api@17.0.3/dist/twemoji.min.js" defer></script>
-	<script src="/emoji/js/emoji.js?v=7" defer></script>
+	<script src="/emoji/js/emoji.js?v=8" defer></script>
             <script src="https://mes.fm/main_js/main.js?v=1.0.5"></script>    <!-- PAGEVIEW-TRACKING-INSERTED --><script src="https://mes.fm/main_js/track.js" defer></script><script>document.getElementById('copyright-year').textContent = new Date().getFullYear();</script><script src="/main_js/info-bar-fit.js" defer></script><script>
   // Floating compact header bar (see #compact-nav CSS): appears once the
   // header + nav bar have scrolled off the top; nav links that don't fit
