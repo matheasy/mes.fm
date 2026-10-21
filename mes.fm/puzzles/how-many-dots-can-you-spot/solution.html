@@ -232,7 +232,16 @@ sub {vertical-align:sub;}        .warning-message {font-size:1em;text-align:cent
 	.btn-link:not(:last-child) {border-right:0.4em solid transparent;}
 	.button--small {margin:0;}
 		.button--small:hover {background-color: #277bb6;color:white;}
-		</style>
+		
+	/* PREV-NEXT-ARROWS */
+	.button-container {display: flex; gap: 0.4em;}
+	.button-container .btn-link {display: block; flex: 1 1 0; min-width: 0; width: auto; border-right: 0;}
+	.button-container .button, .btn-container > .btn-link {white-space: nowrap;}
+	.btn-arrow {display: inline-block; font-size: 0.75em; vertical-align: 0.1em;}
+	.btn-arrow--prev {margin-right: 0.5em;}
+	.btn-arrow--next {margin-left: 0.5em;}
+	@media (max-width: 360px) {.btn-arrow--prev {margin-right: 0.3em;} .btn-arrow--next {margin-left: 0.3em;} .button-container .button {font-size: 0.94em;}}
+</style>
 
         <meta property="fb:app_id" content="120877788060946" />
         <meta name="author" content="Math Easy Solutions Staff">
@@ -416,12 +425,12 @@ sub {vertical-align:sub;}        .warning-message {font-size:1em;text-align:cent
                             <div class="page-content" role="main">                                    <div class="color-box"></div>
                                     <h1 class="page-title">How Many Dots Can You Spot? (SOLUTION)</h1>                                        <p class="page-description"><div>There are exactly 12 black dots in this photo. If you scan your eyes around the image you will notice that you can only spot the dots that you are looking directly at, but the dots on the further away appear to disappear. This is because you brain plays a guessing game to try to figure out what is exactly that you are seeing. The reason for this is that there is so much information being sent to your eyes in the form of light bouncing off the objects that your brain needs to compensate accuracy for speed. It does this by only processing what your eyes are focused on and then the surrounding areas is predicted to save time, and processing power. The black dots are obscure enough, and spread just far enough, that your brain doesn’t recognize the pattern, so it leaves them out when you focus on a region on the image.<div><br></div><div>But in this solution, I have circled where the dots are and AMAZINGLY the dots magically appear! When I was photoshopping the solution I had no idea that the black dots would be visible at all times when I circled them, which makes this even more amazing. Thus the circles around the dots indicate to your brain that there are in fact some special reason for those circles to be there, i.e. because of the dots inside. This is just some of the amazing quirks of your brain, and eyes, and you can learn more by watching the video below.</div><div><br></div><div>Source: https://youtu.be/0NPH_udOOek</div></div><br><br>Check out the puzzle (without the solution) by clicking <a class="link" href="/puzzles/how-many-dots-can-you-spot">here</a>!</p>	<div id="main-content">
 		<div class="button-container">
-			<a class="btn-link" href="/puzzles/round3-mes--psyducker-puzzle/solution"><div class="button button--small" style="position:relative;">Previous<span class="btn-arrow" style="position:absolute;left:0.75em;top:50%;transform:translateY(-50%);">&#9668;</span></div></a>			<a class="btn-link" href="/puzzles/math-riddle/solution"><div class="button button--small">Random</div></a>
-			<a class="btn-link" href="/puzzles/system-of-equations-puzzle/solution"><div class="button button--small" style="position:relative;">Next<span class="btn-arrow" style="position:absolute;right:0.75em;top:50%;transform:translateY(-50%);">&#9658;</span></div></a>		</div>
+			<a class="btn-link" href="/puzzles/round3-mes--psyducker-puzzle/solution"><div class="button button--small"><span class="btn-arrow btn-arrow--prev" aria-hidden="true">&#9668;</span>Previous</div></a>			<a class="btn-link" href="/puzzles/math-riddle/solution"><div class="button button--small">Random</div></a>
+			<a class="btn-link" href="/puzzles/system-of-equations-puzzle/solution"><div class="button button--small">Next<span class="btn-arrow btn-arrow--next" aria-hidden="true">&#9658;</span></div></a>		</div>
 		<img class="single-img lazyload" height="auto" width="692" data-src="https://mes.fm/img/memes/how-many-dots-can-you-spot-solution.jpeg" alt="How Many Dots Can You Spot? (SOLUTION)">
 		<div class="button-container button-container--last">
-			<a class="btn-link" href="/puzzles/round3-mes--psyducker-puzzle/solution"><div class="button button--small" style="position:relative;">Previous<span class="btn-arrow" style="position:absolute;left:0.75em;top:50%;transform:translateY(-50%);">&#9668;</span></div></a>			<a class="btn-link" href="/puzzles/math-riddle/solution"><div class="button button--small">Random</div></a>
-			<a class="btn-link" href="/puzzles/system-of-equations-puzzle/solution"><div class="button button--small" style="position:relative;">Next<span class="btn-arrow" style="position:absolute;right:0.75em;top:50%;transform:translateY(-50%);">&#9658;</span></div></a>		</div>
+			<a class="btn-link" href="/puzzles/round3-mes--psyducker-puzzle/solution"><div class="button button--small"><span class="btn-arrow btn-arrow--prev" aria-hidden="true">&#9668;</span>Previous</div></a>			<a class="btn-link" href="/puzzles/math-riddle/solution"><div class="button button--small">Random</div></a>
+			<a class="btn-link" href="/puzzles/system-of-equations-puzzle/solution"><div class="button button--small">Next<span class="btn-arrow btn-arrow--next" aria-hidden="true">&#9658;</span></div></a>		</div>
 	</div>
                                     <!-- (Responsive) Rectangle Ad -->                                    <!-- PC (Responsive/Rectangle) Matched Content -->                                    <div id="comments-button" class="hide-div-button button">Comments</div>
                                     <div id="comments-box" class="hide">

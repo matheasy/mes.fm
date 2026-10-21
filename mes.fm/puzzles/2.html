@@ -247,7 +247,16 @@ sub {vertical-align:sub;}        .warning-message {font-size:1em;text-align:cent
 		.memes__img:hover {border-color: #277bb6;}
 	.page-link:hover:not(.active-page) {text-decoration: underline;}
 	.btn-link:hover {background-color: #277bb6;color:white;}
-		</style>
+		
+	/* PREV-NEXT-ARROWS */
+	.button-container {display: flex; gap: 0.4em;}
+	.button-container .btn-link {display: block; flex: 1 1 0; min-width: 0; width: auto; border-right: 0;}
+	.button-container .button, .btn-container > .btn-link {white-space: nowrap;}
+	.btn-arrow {display: inline-block; font-size: 0.75em; vertical-align: 0.1em;}
+	.btn-arrow--prev {margin-right: 0.5em;}
+	.btn-arrow--next {margin-left: 0.5em;}
+	@media (max-width: 360px) {.btn-arrow--prev {margin-right: 0.3em;} .btn-arrow--next {margin-left: 0.3em;} .button-container .button {font-size: 0.94em;}}
+</style>
 
         <meta property="fb:app_id" content="120877788060946" />
         <meta name="author" content="Math Easy Solutions Staff">
@@ -477,7 +486,7 @@ sub {vertical-align:sub;}        .warning-message {font-size:1em;text-align:cent
 										</tr>
 		</table>
 		<div class="btn-container">
-			<a class="button btn-link" href="/puzzles/1" style="position:relative;">Previous<span class="btn-arrow" style="position:absolute;left:0.75em;top:50%;transform:translateY(-50%);">&#9668;</span></a>							<div class="page-numbers">
+			<a class="button btn-link" href="/puzzles/1"><span class="btn-arrow btn-arrow--prev" aria-hidden="true">&#9668;</span>Previous</a>							<div class="page-numbers">
 																										<a class="page-link" href="/puzzles/1">1</a>
 															<a class="page-link" href="/puzzles/2">2</a>
 																						</div>

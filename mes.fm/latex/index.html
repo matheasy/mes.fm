@@ -239,6 +239,14 @@ sub {vertical-align:sub;}        .warning-message {font-size:1em;text-align:cent
 	   down to a sliver -- this makes the two columns actually split evenly and
 	   pushes overflow onto the scrollbars #latex-output/mjx-container already have */
 	.latex-tool__grid > div {min-width:0;}
+	/* both panes the same height: each column is a flex column and the box
+	   fills it, so the textarea (14px font, so its em-based min-height came out
+	   ~50px shorter) no longer ends above the output box, and the button row
+	   sits under BOTH boxes with clear space instead of butting against the
+	   taller output box */
+	.latex-tool__grid > div {display:flex;flex-direction:column;}
+	.latex-tool__grid > div > #latex-source, .latex-tool__grid > div > #latex-output {flex:1 1 auto;min-height:26rem;}
+	.latex-tool__grid {margin-bottom:1.1em;}
 	.latex-tool__pane-label {font-size:0.8em;font-weight:700;text-transform:uppercase;letter-spacing:0.05em;color:#888;margin-bottom:0.35em;display:block;}
 	/* full-screen "screenshot me" view: MathJax CHTML output is built entirely
 	   in em units, so bumping .latex-zoom__stage's own font-size scales the
@@ -298,7 +306,7 @@ sub {vertical-align:sub;}        .warning-message {font-size:1em;text-align:cent
 	.latex-tool__copied {color:#137752;font-size:0.85em;font-weight:700;}
 	@media (max-width: 800px) {
 		.latex-tool__grid {grid-template-columns:1fr;}
-		#latex-source, #latex-output {min-height:16em;}
+		#latex-source, #latex-output, .latex-tool__grid > div > #latex-source, .latex-tool__grid > div > #latex-output {min-height:16rem;}
 		.latex-tool__hint {margin-left:0;flex-basis:100%;}
 	}
 	@media print {

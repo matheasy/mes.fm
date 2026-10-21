@@ -232,7 +232,16 @@ sub {vertical-align:sub;}        .warning-message {font-size:1em;text-align:cent
 	.btn-link:not(:last-child) {border-right:0.4em solid transparent;}
 	.button--small {margin:0;}
 		.button--small:hover {background-color: #277bb6;color:white;}
-		</style>
+		
+	/* PREV-NEXT-ARROWS */
+	.button-container {display: flex; gap: 0.4em;}
+	.button-container .btn-link {display: block; flex: 1 1 0; min-width: 0; width: auto; border-right: 0;}
+	.button-container .button, .btn-container > .btn-link {white-space: nowrap;}
+	.btn-arrow {display: inline-block; font-size: 0.75em; vertical-align: 0.1em;}
+	.btn-arrow--prev {margin-right: 0.5em;}
+	.btn-arrow--next {margin-left: 0.5em;}
+	@media (max-width: 360px) {.btn-arrow--prev {margin-right: 0.3em;} .btn-arrow--next {margin-left: 0.3em;} .button-container .button {font-size: 0.94em;}}
+</style>
 
         <meta property="fb:app_id" content="120877788060946" />
         <meta name="author" content="Math Easy Solutions Staff">
@@ -416,12 +425,12 @@ sub {vertical-align:sub;}        .warning-message {font-size:1em;text-align:cent
                             <div class="page-content" role="main">                                    <div class="color-box"></div>
                                     <h1 class="page-title">Integralception</h1>                                        <p class="page-description">Next level integrals while integrating</p>	<div id="main-content">
 		<div class="button-container">
-			<a class="btn-link" href="/memes/200-percent-not-enough"><div class="button button--small" style="position:relative;">Previous<span class="btn-arrow" style="position:absolute;left:0.75em;top:50%;transform:translateY(-50%);">&#9668;</span></div></a>			<a class="btn-link" href="/memes/cant-remember-important-things"><div class="button button--small">Random</div></a>
-			<a class="btn-link" href="/memes/bike-taxi"><div class="button button--small" style="position:relative;">Next<span class="btn-arrow" style="position:absolute;right:0.75em;top:50%;transform:translateY(-50%);">&#9658;</span></div></a>		</div>
+			<a class="btn-link" href="/memes/200-percent-not-enough"><div class="button button--small"><span class="btn-arrow btn-arrow--prev" aria-hidden="true">&#9668;</span>Previous</div></a>			<a class="btn-link" href="/memes/cant-remember-important-things"><div class="button button--small">Random</div></a>
+			<a class="btn-link" href="/memes/bike-taxi"><div class="button button--small">Next<span class="btn-arrow btn-arrow--next" aria-hidden="true">&#9658;</span></div></a>		</div>
 		<img class="single-img lazyload" height="auto" width="692" data-src="https://mes.fm/img/memes/m10-integrals-inception.jpg" alt="Integralception">
 		<div class="button-container button-container--last">
-			<a class="btn-link" href="/memes/200-percent-not-enough"><div class="button button--small" style="position:relative;">Previous<span class="btn-arrow" style="position:absolute;left:0.75em;top:50%;transform:translateY(-50%);">&#9668;</span></div></a>			<a class="btn-link" href="/memes/cant-remember-important-things"><div class="button button--small">Random</div></a>
-			<a class="btn-link" href="/memes/bike-taxi"><div class="button button--small" style="position:relative;">Next<span class="btn-arrow" style="position:absolute;right:0.75em;top:50%;transform:translateY(-50%);">&#9658;</span></div></a>		</div>
+			<a class="btn-link" href="/memes/200-percent-not-enough"><div class="button button--small"><span class="btn-arrow btn-arrow--prev" aria-hidden="true">&#9668;</span>Previous</div></a>			<a class="btn-link" href="/memes/cant-remember-important-things"><div class="button button--small">Random</div></a>
+			<a class="btn-link" href="/memes/bike-taxi"><div class="button button--small">Next<span class="btn-arrow btn-arrow--next" aria-hidden="true">&#9658;</span></div></a>		</div>
 	</div>
                                     <!-- (Responsive) Rectangle Ad -->                                    <!-- PC (Responsive/Rectangle) Matched Content -->                                    <div id="comments-button" class="hide-div-button button">Comments</div>
                                     <div id="comments-box" class="hide">

@@ -232,7 +232,16 @@ sub {vertical-align:sub;}        .warning-message {font-size:1em;text-align:cent
 	.btn-link:not(:last-child) {border-right:0.4em solid transparent;}
 	.button--small {margin:0;}
 		.button--small:hover {background-color: #277bb6;color:white;}
-		</style>
+		
+	/* PREV-NEXT-ARROWS */
+	.button-container {display: flex; gap: 0.4em;}
+	.button-container .btn-link {display: block; flex: 1 1 0; min-width: 0; width: auto; border-right: 0;}
+	.button-container .button, .btn-container > .btn-link {white-space: nowrap;}
+	.btn-arrow {display: inline-block; font-size: 0.75em; vertical-align: 0.1em;}
+	.btn-arrow--prev {margin-right: 0.5em;}
+	.btn-arrow--next {margin-left: 0.5em;}
+	@media (max-width: 360px) {.btn-arrow--prev {margin-right: 0.3em;} .btn-arrow--next {margin-left: 0.3em;} .button-container .button {font-size: 0.94em;}}
+</style>
 
         <meta property="fb:app_id" content="120877788060946" />
         <meta name="author" content="Math Easy Solutions Staff">
@@ -416,12 +425,12 @@ sub {vertical-align:sub;}        .warning-message {font-size:1em;text-align:cent
                             <div class="page-content" role="main">                                    <div class="color-box"></div>
                                     <h1 class="page-title">Can you solve for the Triangle?</h1>                                        <p class="page-description">This is another fun and challenging math puzzle, which is a simple system of equations made up of the shapes instead of numbers. The shapes include a circle, square, and triangle, in which you are asked to solve for the value of the triangle. This is good and quick math puzzle to challenge your brain, so try to solve it for yourself before checking the solution!<br><br>Check out the solution to this puzzle by clicking <a class="link" href="/puzzles/can-you-solve-for-the-triangle/solution">here</a>!</p>	<div id="main-content">
 		<div class="button-container">
-			<a class="btn-link" href="/puzzles/system-of-equations-puzzle"><div class="button button--small" style="position:relative;">Previous<span class="btn-arrow" style="position:absolute;left:0.75em;top:50%;transform:translateY(-50%);">&#9668;</span></div></a>			<a class="btn-link" href="/puzzles/can-you-solve-for-n"><div class="button button--small">Random</div></a>
-			<a class="btn-link" href="/puzzles/connect-the-dots-puzzle"><div class="button button--small" style="position:relative;">Next<span class="btn-arrow" style="position:absolute;right:0.75em;top:50%;transform:translateY(-50%);">&#9658;</span></div></a>		</div>
+			<a class="btn-link" href="/puzzles/system-of-equations-puzzle"><div class="button button--small"><span class="btn-arrow btn-arrow--prev" aria-hidden="true">&#9668;</span>Previous</div></a>			<a class="btn-link" href="/puzzles/can-you-solve-for-n"><div class="button button--small">Random</div></a>
+			<a class="btn-link" href="/puzzles/connect-the-dots-puzzle"><div class="button button--small">Next<span class="btn-arrow btn-arrow--next" aria-hidden="true">&#9658;</span></div></a>		</div>
 		<img class="single-img lazyload" height="auto" width="692" data-src="https://mes.fm/img/memes/can-you-solve-for-the-triangle.jpeg" alt="Can you solve for the Triangle?">
 		<div class="button-container button-container--last">
-			<a class="btn-link" href="/puzzles/system-of-equations-puzzle"><div class="button button--small" style="position:relative;">Previous<span class="btn-arrow" style="position:absolute;left:0.75em;top:50%;transform:translateY(-50%);">&#9668;</span></div></a>			<a class="btn-link" href="/puzzles/can-you-solve-for-n"><div class="button button--small">Random</div></a>
-			<a class="btn-link" href="/puzzles/connect-the-dots-puzzle"><div class="button button--small" style="position:relative;">Next<span class="btn-arrow" style="position:absolute;right:0.75em;top:50%;transform:translateY(-50%);">&#9658;</span></div></a>		</div>
+			<a class="btn-link" href="/puzzles/system-of-equations-puzzle"><div class="button button--small"><span class="btn-arrow btn-arrow--prev" aria-hidden="true">&#9668;</span>Previous</div></a>			<a class="btn-link" href="/puzzles/can-you-solve-for-n"><div class="button button--small">Random</div></a>
+			<a class="btn-link" href="/puzzles/connect-the-dots-puzzle"><div class="button button--small">Next<span class="btn-arrow btn-arrow--next" aria-hidden="true">&#9658;</span></div></a>		</div>
 	</div>
                                     <!-- (Responsive) Rectangle Ad -->                                    <!-- PC (Responsive/Rectangle) Matched Content -->                                    <div id="comments-button" class="hide-div-button button">Comments</div>
                                     <div id="comments-box" class="hide">
