@@ -30,7 +30,7 @@
 	/* ---------- state ---------- */
 	var S = { sys: "", mat: "a36", tabs: {}, f: {}, ax: { ord: ["F", "A", "L", "E"], shape: "round", dir: "t", sf: "2" }, tt: { c2: "", c3: "", zoom: "follow", tr: false, ar: true, sp: "1" },
 		sh: { mode: "pin", n: "1", ratio: "0.75", sf: "2" }, to: { src: "T", hol: "0", sf: "2" }, po: { mode: "bar", by: "s", dir: "s", pair: "E,nu" }, th: { cond: "free" },
-		tb: { q: "", fam: "", sort: "", dir: 1, x: "rho", y: "E" }, cu: null };
+		tb: { q: "", fam: "", sort: "", dir: 1, x: "rho", y: "E" }, cu: null, lab: {} };
 	try { var sv = JSON.parse(localStorage.getItem(KEY) || "null"); if (sv && typeof sv === "object") for (var k0 in S) { if (sv[k0] == null) continue; if (S[k0] && typeof S[k0] === "object" && !Array.isArray(S[k0])) { for (var j0 in sv[k0]) S[k0][j0] = sv[k0][j0]; } else S[k0] = sv[k0]; } } catch (e) { /* ignore */ }
 	if (S.tt.zv !== 1) { S.tt.zoom = "follow"; S.tt.zv = 1; }   /* 2026-10-21: "Follow the test" became the default chart view */
 	if (S.sys !== "si" && S.sys !== "us") { var lng = (navigator.language || "") + ""; S.sys = /^en-(US|LR)$|^my/i.test(lng) ? "us" : "si"; }
@@ -67,6 +67,9 @@
 	function line(x1, y1, x2, y2, cls) { return "<line x1='" + r1(x1) + "' y1='" + r1(y1) + "' x2='" + r1(x2) + "' y2='" + r1(y2) + "' class='" + cls + "'/>"; }
 	function exag(e, target) { var a = Math.abs(e); if (!(a > 0)) return 1; var k = (target || 0.16) / a; if (k <= 1) return 1; var p = Math.pow(10, Math.floor(Math.log10(k))), m = k / p; return (m >= 5 ? 5 : m >= 2 ? 2 : 1) * p; }
 	function kTxt(k) { return k >= 1e4 ? M.pretty(k, 3) : String(k); }
+	/* a label the reader can drag out of the way: id = "<svg id>:<name>", offsets in S.lab (saved), "Reset labels" in the figure's bar puts them back */
+	if (!S.lab || typeof S.lab !== "object" || Array.isArray(S.lab)) S.lab = {};
+	function lab(id, x, y, s, cls, anchor, extra) { var o = S.lab[id], t = o && (o[0] || o[1]) ? " transform='translate(" + r1(o[0]) + " " + r1(o[1]) + ")'" : ""; return "<g class='mt-lab' data-lab='" + id + "'" + t + "><title>Drag to move this label</title>" + tx(x, y, s, cls, anchor, extra) + "</g>"; }
 
 	var LINKF = { axial: ["ax-F", "ax-L", "ax-d", "ax-D", "ax-t", "ax-b", "ax-h", "ax-B", "ax-H", "ax-A", "ax-dL", "ax-s", "ax-e", "ax-E"], shear: ["sh-V", "sh-d", "sh-A", "sh-hd", "sh-t", "sh-G"], torsion: ["to-T", "to-P", "to-n", "to-D", "to-di", "to-L", "to-G"],
 		poisson: ["po-s", "po-e", "po-d", "po-L", "po-E", "po-nu", "p3-sx", "p3-sy", "p3-sz", "p3-txy", "p3-tyz", "p3-tzx", "p3-ex", "p3-ey", "p3-ez", "p3-gxy", "p3-gyz", "p3-gzx", "p3-E", "p3-nu", "ec-E", "ec-G", "ec-K", "ec-nu"], thermal: ["th-dT", "th-L", "th-g", "th-d", "th-a", "th-E"], tensile: [], table: [] };
@@ -323,35 +326,35 @@
 		var h = ["<title>A rod hanging from a fixed support, stretched by a force at its end</title><defs>" + MARK.replace("@", "mt-ax-mk") + "<linearGradient id='mt-ax-gr' x1='0' x2='1'><stop offset='0' class='mt-g1'/><stop offset='0.42' class='mt-g2'/><stop offset='1' class='mt-g3'/></linearGradient></defs>"];
 		h.push("<rect x='" + (x0 - 120) + "' y='" + (y0 - 20) + "' width='240' height='20' class='mt-sup'/>");
 		for (var i = 0; i < 13; i++) h.push(line(x0 - 116 + i * 19, y0 - 20, x0 - 130 + i * 19, y0 - 36, "mt-hatch"));
-		h.push(tx(x0, y0 - 42, "fixed support", "mt-t mt-ts", "middle"));
+		h.push(lab("mt-ax-svg:n1", x0, y0 - 42, "fixed support", "mt-t mt-ts", "middle"));
 		if (Math.abs(de) > 0.004) h.push("<rect x='" + r1(x0 - rw / 2) + "' y='" + y0 + "' width='" + rw + "' height='" + Ld + "' class='mt-ghost'/>");
 		h.push("<rect x='" + r1(x0 - ws / 2) + "' y='" + y0 + "' width='" + r1(ws) + "' height='" + r1(Ls) + "' rx='2' class='mt-rod mt-rod--" + st + "' fill='url(#mt-ax-gr)'/>");
-		if (x.buckle) { var bow = 46; h.push("<path d='M" + (x0 - ws / 2) + "," + y0 + " Q" + r1(x0 - ws / 2 + 2 * bow) + "," + r1(y0 + Ls / 2) + " " + (x0 - ws / 2) + "," + r1(yE) + " M" + (x0 + ws / 2) + "," + y0 + " Q" + r1(x0 + ws / 2 + 2 * bow) + "," + r1(y0 + Ls / 2) + " " + (x0 + ws / 2) + "," + r1(yE) + "' class='mt-buckle'/>", tx(x0 + ws / 2 + bow + 10, y0 + Ls * 0.62, "buckles", "mt-t mt-b mt-red", "start")); }
+		if (x.buckle) { var bow = 46; h.push("<path d='M" + (x0 - ws / 2) + "," + y0 + " Q" + r1(x0 - ws / 2 + 2 * bow) + "," + r1(y0 + Ls / 2) + " " + (x0 - ws / 2) + "," + r1(yE) + " M" + (x0 + ws / 2) + "," + y0 + " Q" + r1(x0 + ws / 2 + 2 * bow) + "," + r1(y0 + Ls / 2) + " " + (x0 + ws / 2) + "," + r1(yE) + "' class='mt-buckle'/>", lab("mt-ax-svg:n2", x0 + ws / 2 + bow + 10, y0 + Ls * 0.62, "buckles", "mt-t mt-b mt-red", "start")); }
 		if (st === "break") { var yc = y0 + Ls * 0.55; h.push("<polyline points='" + [[x0 - ws / 2 - 4, yc], [x0 - 8, yc - 7], [x0, yc + 4], [x0 + 8, yc - 6], [x0 + ws / 2 + 4, yc + 2]].map(function (p) { return r1(p[0]) + "," + r1(p[1]); }).join(" ") + "' class='mt-crack'/>"); }
 		h.push("<rect x='" + r1(x0 - ws / 2 - 8) + "' y='" + r1(yE) + "' width='" + r1(ws + 16) + "' height='10' rx='2' class='mt-endp'/>");
 		/* force arrow (drag it) */
 		function arrowV(cx, y1, y2) { var d = y2 > y1 ? 1 : -1, hl = Math.min(22, Math.abs(y2 - y1) * 0.6), yh = y2 - d * hl; return "M" + (cx - 4) + "," + r1(y1) + " L" + (cx + 4) + "," + r1(y1) + " L" + (cx + 4) + "," + r1(yh) + " L" + (cx + 13) + "," + r1(yh) + " L" + cx + "," + r1(y2) + " L" + (cx - 13) + "," + r1(yh) + " L" + (cx - 4) + "," + r1(yh) + " Z"; }
 		var ap = sg > 0 ? arrowV(x0, yb, yb + aLen) : arrowV(x0, yb + aLen, yb);
 		h.push("<g class='mt-drag' data-drag='F' tabindex='-1'><path d='" + ap + "' class='mt-farrow'/><circle cx='" + x0 + "' cy='" + r1(yb + aLen) + "' r='14' class='mt-handle'/><path d='M" + (x0 - 5) + "," + r1(yb + aLen - 4) + " l5,-6 l5,6 M" + (x0 - 5) + "," + r1(yb + aLen + 4) + " l5,6 l5,-6' class='mt-hgrip'/></g>");
-		var fl = "F = " + (isFinite(Fa) ? fmt(Fa, "force") : "?"); if (yb + aLen + 42 < 512) h.push(tx(x0, yb + aLen + 40, fl, "mt-t mt-tf mt-b", "middle")); else h.push(tx(x0 - 24, yb + aLen - 4, fl, "mt-t mt-tf mt-b", "end"));
+		var fl = "F = " + (isFinite(Fa) ? fmt(Fa, "force") : "?"); if (yb + aLen + 42 < 512) h.push(lab("mt-ax-svg:n3", x0, yb + aLen + 40, fl, "mt-t mt-tf mt-b", "middle")); else h.push(lab("mt-ax-svg:n4", x0 - 24, yb + aLen - 4, fl, "mt-t mt-tf mt-b", "end"));
 		/* L and ΔL */
 		var xL = x0 - rw / 2 - 46;
 		h.push(line(xL - 8, y0, x0 - rw / 2 - 4, y0, "mt-ext"), line(xL - 8, y0 + Ld, x0 - Math.max(rw, ws) / 2 - 4, y0 + Ld, "mt-ext"), dimV(xL, y0, y0 + Ld, "mt-ax-mk"));
-		h.push(tx(xL - 10, y0 + Ld / 2 - 6, "L", "mt-t mt-b", "end"), tx(xL - 10, y0 + Ld / 2 + 16, v.L != null ? fmt(v.L, "len") : "?", "mt-t", "end"));
+		h.push(lab("mt-ax-svg:n5", xL - 10, y0 + Ld / 2 - 6, "L", "mt-t mt-b", "end"), lab("mt-ax-svg:n6", xL - 10, y0 + Ld / 2 + 16, v.L != null ? fmt(v.L, "len") : "?", "mt-t", "end"));
 		var xD = x0 + rw / 2 + 52;
 		h.push(line(x0 + Math.max(ws, rw) / 2 + 2, y0 + Ld, xD + 10, y0 + Ld, "mt-dash"));
 		if (Math.abs(yE - (y0 + Ld)) > 3) h.push(line(x0 + ws / 2 + 10, yE, xD + 10, yE, "mt-ext"), dimV(xD, y0 + Ld, yE, "mt-ax-mk"));
 		var gapY = Math.abs(yE - (y0 + Ld)), ly = gapY > 46 ? (y0 + Ld + yE) / 2 - 6 : sg > 0 ? yE + 26 : y0 + Ld + 46;
-		h.push(tx(xD + 14, ly, "ΔL", "mt-t mt-b", "start"), tx(xD + 14, ly + 21, v.dL != null ? (comp(sg) + fmt(Math.abs(v.dL), "small")) : "?", "mt-t", "start"));
-		h.push(tx(xD + 14, y0 + Ld + (sg > 0 ? -8 : 20), "original end", "mt-t mt-ts", "start"));
+		h.push(lab("mt-ax-svg:n7", xD + 14, ly, "ΔL", "mt-t mt-b", "start"), lab("mt-ax-svg:n8", xD + 14, ly + 21, v.dL != null ? (comp(sg) + fmt(Math.abs(v.dL), "small")) : "?", "mt-t", "start"));
+		h.push(lab("mt-ax-svg:n9", xD + 14, y0 + Ld + (sg > 0 ? -8 : 20), "original end", "mt-t mt-ts", "start"));
 		/* cross-section callout */
 		var cx = 420, cy = 150, R = 70;
 		h.push(line(x0 + ws / 2 + 2, cy, cx - R, cy, "mt-dash"), "<circle cx='" + cx + "' cy='" + cy + "' r='" + R + "' class='mt-callc'/>");
 		h.push(secShape(S.ax.shape, x.dims, cx, cy));
-		h.push(tx(cx, cy - R - 12, "Cross-section", "mt-t mt-b", "middle"), tx(cx, cy + R + 24, "A = " + (v.A != null ? fmt(v.A, "area") : "?"), "mt-t mt-b", "middle"));
-		var dimTxt = secDimTxt(S.ax.shape, x.dims, r); if (dimTxt) h.push(tx(cx, cy + R + 46, dimTxt, "mt-t mt-ts", "middle"));
-		h.push(tx(512, 532, k > 1 ? (sg > 0 ? "Stretch" : "Shortening") + " drawn " + kTxt(k) + "× larger than real" : "Drawn to true scale", "mt-t mt-ts", "end"));
-		if (k > 1) h.push(tx(512, 554, "(the width changes too: Poisson's ratio)", "mt-t mt-ts", "end"));
+		h.push(lab("mt-ax-svg:n10", cx, cy - R - 12, "Cross-section", "mt-t mt-b", "middle"), lab("mt-ax-svg:n11", cx, cy + R + 24, "A = " + (v.A != null ? fmt(v.A, "area") : "?"), "mt-t mt-b", "middle"));
+		var dimTxt = secDimTxt(S.ax.shape, x.dims, r); if (dimTxt) h.push(lab("mt-ax-svg:n12", cx, cy + R + 46, dimTxt, "mt-t mt-ts", "middle"));
+		h.push(lab("mt-ax-svg:n13", 512, 532, k > 1 ? (sg > 0 ? "Stretch" : "Shortening") + " drawn " + kTxt(k) + "× larger than real" : "Drawn to true scale", "mt-t mt-ts", "end"));
+		if (k > 1) h.push(lab("mt-ax-svg:n14", 512, 554, "(the width changes too: Poisson's ratio)", "mt-t mt-ts", "end"));
 		svg.innerHTML = h.join("");
 		function comp(s) { return s < 0 ? "−" : "+"; }
 	}
@@ -725,42 +728,85 @@
 		}
 		h.push(tile("G from E and ν", fmt(gG, "modulus", 3), "E ÷ 2(1 + ν) for " + m.short + (matRec().aniso ? " (not isotropic: use the table's G)" : "")));
 		$("mt-sh-stats").innerHTML = h.join(""); $("mt-sh-msg").textContent = msg;
+		/* what the picture shows: elastic, yielding (past the shear yield) or cut through (past the shear strength, about 0.6 x the tensile strength) */
+		var tauUlt = 0.6 * m.su; res.state = !(res.tau > 0) || md === "area" ? "el" : res.tau >= tauUlt ? "break" : tauY && res.tau >= tauY ? "yield" : "el";
+		shSliders(md, res, { V: V, d: d, t: t, A: A, hd: hd }, tauUlt, tauY);
 		drawShear(md, n, res, { V: V, d: d, t: t, hd: hd });
 	}
 	$("mt-sh-size").addEventListener("click", function () { var m = mv(), V = fval("sh-V"), sf = num(S.sh.sf); if (!(V > 0) || !(sf > 0)) { toast("Type the force and a safety factor first."); return; } var dn = M.pinSize(V, (m.sy ? 0.577 * m.sy : 0.6 * m.su) / sf, +S.sh.n || 1); setFieldSI("sh-d", dn); shCompute(); toast("Diameter set to " + fmt(dn, "small") + ". Round up to the next standard size."); });
+	/* sliders under the shear picture: they write into the boxes (and the boxes move them). While one is dragged the ranges and the drawing scale stay put, so the
+	   plates visibly slide, the bolt leans, yields (orange) and is finally cut through as the force goes up. */
+	var SHD = { lock: false, k: 1 };
+	function shSliders(md, res, v, tauUlt, tauY) {
+		var big = S.sys === "us", specs = [];
+		function lenS(id, label, val, fb) { return { key: id, label: label, keep: true, min: 0, max: isFinite(val) && val > 0 ? 3 * val : fb, v: val, show: function (x) { return fmt(x, "small"); }, set: function (x) { setFieldSI(id, Math.max(x, 1e-6)); shCompute(); } }; }
+		if (md !== "punch") {
+			var cap = res.A > 0 && res.planes ? 1.15 * (md === "pin" ? tauUlt : (tauY || tauUlt)) * res.A * res.planes : NaN;
+			specs.push({ key: "sh-V", label: "Shear force V", min: 0, max: md === "pin" && isFinite(cap) ? cap : Math.max(isFinite(v.V) ? 2.5 * v.V : 0, big ? 17.8e3 : 20e3), v: v.V, show: function (x) { return fmt(x, "force"); }, set: function (x) { setFieldSI("sh-V", x); shCompute(); } });
+			if (md === "pin") specs.push(lenS("sh-d", "Pin / bolt diameter d", v.d, 0.04), lenS("sh-t", "Plate thickness t", v.t, 0.03));
+			else specs.push({ key: "sh-A", label: "Area in shear A", keep: true, min: 0, max: isFinite(v.A) && v.A > 0 ? 3 * v.A : 2e-3, v: v.A, show: function (x) { return fmt(x, "area"); }, set: function (x) { setFieldSI("sh-A", Math.max(x, 1e-9)); shCompute(); } });
+		} else specs.push(lenS("sh-hd", "Hole diameter d", v.hd, 0.05), lenS("sh-t", "Plate thickness t", v.t, 0.03));
+		sliders("mt-sh-sl", specs, { lock: function (on) { SHD.lock = on; }, done: shCompute });
+	}
 	function drawShear(md, n, res, v) {
-		var h = ["<defs>" + MARK.replace("@", "mt-sh-mk") + "</defs>"], k = exag(res.gam || 0, 0.3);
-		function plate(x, y, w, hh, cls) { return "<rect x='" + x + "' y='" + y + "' width='" + w + "' height='" + hh + "' rx='3' class='" + (cls || "mt-plate") + "'/>"; }
-		function arrowH(x1, x2, y, lab) { var d = x2 > x1 ? 1 : -1; return "<path d='M" + x1 + "," + (y - 4) + " L" + (x2 - d * 18) + "," + (y - 4) + " L" + (x2 - d * 18) + "," + (y - 12) + " L" + x2 + "," + y + " L" + (x2 - d * 18) + "," + (y + 12) + " L" + (x2 - d * 18) + "," + (y + 4) + " L" + x1 + "," + (y + 4) + " Z' class='mt-farrow'/>" + tx((x1 + x2) / 2, x2 > x1 ? y + 34 : y - 18, lab, "mt-t mt-b mt-tf", "middle"); }
+		var P = "mt-sh-svg:" + (md === "pin" ? "pin" + n : md) + ":", h = ["<defs>" + MARK.replace("@", "mt-sh-mk") + "</defs>"];
+		if (!SHD.lock) SHD.k = exag(res.gam || 0, 0.3); var k = SHD.k;
+		var g = clamp((res.gam || 0) * k, 0, 0.9), st = res.state || "el", brk = st === "break";
+		var s = md === "punch" ? 0 : clamp(g * 30, 0, 22) + (brk ? 14 : 0), a = -s / 2, b = s / 2;   /* how far the plates have slid (drawn), each half of it */
+		var bcls = "mt-bolt" + (st === "yield" ? " mt-bolt--yield" : brk ? " mt-bolt--break" : "");
+		function plate(x, y, w, hh, cls) { return "<rect x='" + r1(x) + "' y='" + r1(y) + "' width='" + r1(w) + "' height='" + r1(hh) + "' rx='3' class='" + (cls || "mt-plate") + "'/>"; }
+		function arrowH(x1, x2, y) { var d = x2 > x1 ? 1 : -1; return "<path d='M" + r1(x1) + "," + (y - 4) + " L" + r1(x2 - d * 18) + "," + (y - 4) + " L" + r1(x2 - d * 18) + "," + (y - 12) + " L" + r1(x2) + "," + y + " L" + r1(x2 - d * 18) + "," + (y + 12) + " L" + r1(x2 - d * 18) + "," + (y + 4) + " L" + r1(x1) + "," + (y + 4) + " Z' class='mt-farrow'/>"; }
+		function poly(pts, cls) { return "<polygon points='" + pts.map(function (q) { return r1(q[0]) + "," + r1(q[1]); }).join(" ") + "' class='" + cls + "'/>"; }
+		/* a bolt cut into pieces by the shear planes ys[]; piece i is shifted by off[i]; it leans across each plane (or is cut through when it breaks) */
+		function bolt(ys, off, top, bot) {
+			var x0 = 244, x1 = 276, out = [], y0 = top + 16, R = [], Lf = [], i, ya, yb;
+			out.push(poly([[228 + off[0], top], [292 + off[0], top], [292 + off[0], top + 18], [228 + off[0], top + 18]], bcls));
+			for (i = 0; i <= ys.length; i++) {
+				ya = i === 0 ? y0 : ys[i - 1] + (brk ? 3 : 5); yb = i === ys.length ? bot : ys[i] - (brk ? 3 : 5);
+				if (brk) out.push(poly([[x0 + off[i], ya], [x1 + off[i], ya], [x1 + off[i], yb], [x0 + off[i], yb]], bcls));
+				else { R.push([x1 + off[i], ya], [x1 + off[i], yb]); Lf.push([x0 + off[i], ya], [x0 + off[i], yb]); }
+			}
+			if (!brk) out.push(poly(R.concat(Lf.reverse()), bcls));   /* one shank that leans across each plane */
+			var ol = off[off.length - 1]; out.push(poly([[230 + ol, bot - 2], [290 + ol, bot - 2], [290 + ol, bot + 16], [230 + ol, bot + 16]], bcls));
+			return out.join("");
+		}
 		var Vt = isFinite(v.V) ? fmt(v.V, "force") : "V";
 		if (md === "pin" && n === 1) {
-			h.push(plate(40, 120, 290, 40), plate(190, 160, 290, 40));
-			h.push("<rect x='244' y='92' width='32' height='136' rx='3' class='mt-bolt'/><rect x='228' y='78' width='64' height='18' rx='3' class='mt-bolt'/><rect x='230' y='226' width='60' height='18' rx='2' class='mt-bolt'/>");
-			h.push(line(214, 160, 306, 160, "mt-shplane"), tx(338, 152, "shear plane", "mt-t mt-ts mt-red", "start"));
-			h.push(arrowH(118, 24, 140, "V = " + Vt), arrowH(402, 500, 180, "V"));
+			h.push(plate(150 + a, 150, 200, 40), plate(170 + b, 190, 200, 40));
+			h.push(bolt([190], [a, b], 112, 262));
+			h.push(line(220 + a, 190, 300 + b, 190, "mt-shplane"), line(304, 138, 284 + b * 0.3, 186, "mt-lead"));
+			h.push(lab(P + "pl", 304, 132, brk ? "cut through here" : "shear plane", "mt-t mt-ts mt-red", "start"));
+			h.push(arrowH(146 + a, 46 + a, 170), lab(P + "V", 96, 214, "V = " + Vt, "mt-t mt-b mt-tf", "middle"));
+			h.push(arrowH(374 + b, 474 + b, 210), lab(P + "V2", 424, 190, "V", "mt-t mt-b mt-tf", "middle"));
 		} else if (md === "pin") {
-			h.push(plate(40, 98, 290, 30), plate(40, 192, 290, 30), plate(190, 130, 290, 60));
-			h.push("<rect x='244' y='70' width='32' height='180' rx='3' class='mt-bolt'/><rect x='228' y='56' width='64' height='18' rx='3' class='mt-bolt'/><rect x='230' y='248' width='60' height='18' rx='2' class='mt-bolt'/>");
-			h.push(line(214, 129, 306, 129, "mt-shplane"), line(214, 191, 306, 191, "mt-shplane"), tx(338, 124, "two shear planes", "mt-t mt-ts mt-red", "start"));
-			h.push(arrowH(118, 24, 113, "V/2"), arrowH(118, 24, 207, "V/2"), arrowH(402, 500, 160, "V = " + Vt));
+			h.push(plate(150 + a, 136, 200, 30), plate(150 + a, 214, 200, 30), plate(170 + b, 166, 200, 48));
+			h.push(bolt([166, 214], [a, b, a], 98, 276));
+			h.push(line(220 + a, 166, 300 + b, 166, "mt-shplane"), line(220 + a, 214, 300 + b, 214, "mt-shplane"), line(304, 124, 284 + b * 0.3, 162, "mt-lead"));
+			h.push(lab(P + "pl", 304, 118, brk ? "cut through at both planes" : "two shear planes", "mt-t mt-ts mt-red", "start"));
+			h.push(arrowH(146 + a, 46 + a, 151), lab(P + "V1", 96, 131, "V/2", "mt-t mt-b mt-tf", "middle"));
+			h.push(arrowH(146 + a, 46 + a, 229), lab(P + "V3", 96, 266, "V/2", "mt-t mt-b mt-tf", "middle"));
+			h.push(arrowH(374 + b, 474 + b, 190), lab(P + "V", 424, 228, "V = " + Vt, "mt-t mt-b mt-tf", "middle"));
 		} else if (md === "area") {
-			h.push(plate(40, 120, 290, 36), "<rect x='190' y='156' width='140' height='9' class='mt-glue'/>", plate(190, 165, 290, 36));
-			h.push(tx(260, 228, "glued or welded area A", "mt-t mt-ts mt-red", "middle"));
-			h.push(arrowH(118, 24, 138, "V = " + Vt), arrowH(402, 500, 183, "V"));
+			h.push(plate(120 + a, 150, 220, 36), poly([[180 + a, 186], [340 + a, 186], [340 + b, 195], [180 + b, 195]], "mt-glue"), plate(180 + b, 195, 220, 36));
+			h.push(lab(P + "A", 260, 262, "glued or welded area A", "mt-t mt-ts mt-red", "middle"));
+			h.push(arrowH(116 + a, 30 + a, 168), lab(P + "V", 73, 212, "V = " + Vt, "mt-t mt-b mt-tf", "middle"));
+			h.push(arrowH(404 + b, 500 + b, 213), lab(P + "V2", 452, 192, "V", "mt-t mt-b mt-tf", "middle"));
 		} else {
 			h.push(plate(50, 176, 420, 34), "<rect x='50' y='210' width='170' height='56' class='mt-die'/><rect x='300' y='210' width='170' height='56' class='mt-die'/>");
 			h.push("<rect x='222' y='52' width='76' height='124' rx='3' class='mt-bolt'/>", line(222, 176, 222, 210, "mt-shplane"), line(298, 176, 298, 210, "mt-shplane"));
-			h.push("<path d='M260,8 L260,36 M250,26 L260,40 L270,26' class='mt-pull mt-pullr'/>", tx(278, 30, "punch force F", "mt-t mt-b mt-tf", "start"), tx(310, 120, "punch", "mt-t mt-ts", "start"), tx(474, 172, "plate", "mt-t mt-ts", "end"));
-			h.push(tx(260, 296, "the wall of the hole (π d t) is sheared", "mt-t mt-ts mt-red", "middle"), tx(135, 246, "die", "mt-t mt-ts", "middle"), tx(385, 246, "die", "mt-t mt-ts", "middle"));
+			h.push("<path d='M260,8 L260,36 M250,26 L260,40 L270,26' class='mt-pull mt-pullr'/>", lab(P + "F", 278, 30, "punch force F", "mt-t mt-b mt-tf", "start"), lab(P + "pu", 310, 120, "punch", "mt-t mt-ts", "start"), lab(P + "pl", 474, 164, "plate", "mt-t mt-ts", "end"));
+			h.push(lab(P + "w", 260, 296, "the wall of the hole (π d t) is sheared", "mt-t mt-ts mt-red", "middle"), lab(P + "d1", 135, 244, "die", "mt-t mt-ts", "middle"), lab(P + "d2", 385, 244, "die", "mt-t mt-ts", "middle"));
+			if (isFinite(res.F)) h.push(lab(P + "Fv", 260, 344, "F = τu π d t = " + fmt(res.F, "force"), "mt-t mt-b mt-red", "middle"), lab(P + "Fa", 260, 370, "sheared area π d t = " + fmt(res.A, "area"), "mt-t mt-ts", "middle"));
 		}
 		if (md !== "punch") {
-			var gx = 70, gy = 292, sz = 64, g = clamp((res.gam || 0) * k, 0, 0.9), off = sz * Math.tan(g);
-			h.push("<rect x='" + gx + "' y='" + gy + "' width='" + sz + "' height='" + sz + "' class='mt-ghost'/>", "<polygon points='" + [[gx, gy + sz], [gx + sz, gy + sz], [gx + sz + off, gy], [gx + off, gy]].map(function (p) { return r1(p[0]) + "," + r1(p[1]); }).join(" ") + "' class='mt-elem'/>");
-			h.push(tx(gx + sz + off + 22, gy + 26, "shear strain γ:", "mt-t mt-ts mt-b", "start"), tx(gx + sz + off + 22, gy + 50, "a square turns slanted (angle drawn ×" + kTxt(k) + ")", "mt-t mt-ts", "start"));
+			var gx = 60, gy = 318, sz = 64, off = sz * Math.tan(g);
+			h.push("<rect x='" + gx + "' y='" + gy + "' width='" + sz + "' height='" + sz + "' class='mt-ghost'/>", poly([[gx, gy + sz], [gx + sz, gy + sz], [gx + sz + off, gy], [gx + off, gy]], "mt-elem"));
+			h.push(lab(P + "g1", 232, gy + 24, "shear strain γ", "mt-t mt-ts mt-b", "start"), lab(P + "g2", 232, gy + 48, "the square slants (angle ×" + kTxt(k) + ")", "mt-t mt-ts", "start"));
+			if (st !== "el") h.push(lab(P + "st", 232, gy + 72, brk ? "past the shear strength: cut through" : "past the shear yield: bent for good", "mt-t mt-ts mt-b mt-red", "start"));
 		}
-		if (md !== "punch" && isFinite(res.tau)) h.push(tx(506, 34, "τ = V/" + (res.planes === 2 ? "2A" : "A") + " = " + fmt(res.tau, "stress"), "mt-t mt-b mt-red", "end"), tx(506, 58, "γ = τ/G" + (isFinite(res.gam) ? " = " + M.pretty(res.gam, 3) + " rad" : ""), "mt-t mt-ts", "end"));
+		if (md !== "punch" && isFinite(res.tau)) h.push(lab(P + "tau", 506, 34, "τ = V/" + (res.planes === 2 ? "2A" : "A") + " = " + fmt(res.tau, "stress"), "mt-t mt-b mt-red", "end"), lab(P + "gam", 506, 58, "γ = τ/G" + (isFinite(res.gam) ? " = " + M.pretty(res.gam, 3) + " rad" : ""), "mt-t mt-ts", "end"));
 		$("mt-sh-svg").innerHTML = h.join("");
-		$("mt-sh-cap").textContent = md === "pin" ? (n === 2 ? "Double shear: the pin is cut across in two places, so each plane carries half the force." : "Single shear: the bolt would be cut across at the one plane where the plates meet.") : md === "area" ? "Lap joint: the glue or weld area slides in shear." : "Punching: the punch shears a ring of metal (the wall of the hole) out of the plate.";
+		$("mt-sh-cap").textContent = (md === "pin" ? (n === 2 ? "Double shear: the pin is cut across in two places, so each plane carries half the force." : "Single shear: the bolt would be cut across at the one plane where the plates meet.") : md === "area" ? "Lap joint: the glue or weld area slides in shear." : "Punching: the punch shears a ring of metal (the wall of the hole) out of the plate.") + (md === "pin" ? " Drag the force slider: the plates slide (drawn larger than real) and the bolt leans, yields and is finally cut." : md === "area" ? " Drag the force slider: the joint slides (drawn larger than real)." : "");
 	}
 	chipRow("mt-sh-ex", [
 		["M10 bolt, single shear, 10 kN", function () { S.sh.mode = "pin"; S.sh.n = "1"; paintSeg("mt-sh-mode", "pin"); paintSeg("mt-sh-n", "1"); setField("sh-V", 10, "kN"); setField("sh-d", 10, "mm"); setField("sh-t", 6, "mm"); setMat("s4140", true); shCompute(); }],
@@ -816,17 +862,17 @@
 		});
 		var a0 = -PI / 2, a1 = a0 + tk; h.push(line(x2, yc, x2 + ex * 0.0, yc - R, "mt-ghostl"), line(x2, yc, r1(x2 + ex * Math.sin(tk)), r1(yc - R * Math.cos(tk)), "mt-twr"));
 		h.push("<path d='M" + (x2 + 30) + "," + (yc - R - 18) + " A40,70 0 0 1 " + (x2 + 30) + "," + (yc + R + 18) + "' class='mt-tq'/><path d='M" + (x2 + 18) + "," + (yc + R + 10) + " L" + (x2 + 30) + "," + (yc + R + 22) + " L" + (x2 + 40) + "," + (yc + R + 6) + "' class='mt-tq'/>");
-		h.push(tx(x2 + 82, yc + 10, "T", "mt-t mt-b mt-tf mt-tbig", "start"));
-		h.push(tx((x1 + x2) / 2, yc + R + 30, th > 0 ? "twist drawn ×" + kTxt(k) + " (θ = " + M.pretty(th * 180 / PI, 3) + "°)" : "type the length and G to see the twist", "mt-t mt-ts", "middle"));
+		h.push(lab("mt-to-svg:n1", x2 + 82, yc + 10, "T", "mt-t mt-b mt-tf mt-tbig", "start"));
+		h.push(lab("mt-to-svg:n2", (x1 + x2) / 2, yc + R + 30, th > 0 ? "twist drawn ×" + kTxt(k) + " (θ = " + M.pretty(th * 180 / PI, 3) + "°)" : "type the length and G to see the twist", "mt-t mt-ts", "middle"));
 		/* stress across the shaft: grows straight out from the middle (only in the wall of a hollow shaft) */
 		var bx = 110, bw = 280, by = 312, bh = 46, ri = hol && D > 0 ? di / D : 0, mx = function (xr) { return bx + bw * (xr + 1) / 2; };
-		h.push(line(bx - 12, by, bx + bw + 12, by, "mt-axis"), tx(bx + bw / 2, by + bh + 34, "Shear stress across the shaft", "mt-t mt-ts", "middle"));
+		h.push(line(bx - 12, by, bx + bw + 12, by, "mt-axis"), lab("mt-to-svg:n3", bx + bw / 2, by + bh + 34, "Shear stress across the shaft", "mt-t mt-ts", "middle"));
 		h.push("<polygon points='" + r1(mx(ri)) + "," + by + " " + r1(mx(ri)) + "," + r1(by - bh * ri) + " " + r1(mx(1)) + "," + r1(by - bh) + " " + r1(mx(1)) + "," + by + "' class='mt-tdistf'/>", "<polygon points='" + r1(mx(-ri)) + "," + by + " " + r1(mx(-ri)) + "," + r1(by + bh * ri) + " " + r1(mx(-1)) + "," + r1(by + bh) + " " + r1(mx(-1)) + "," + by + "' class='mt-tdistf'/>");
 		if (ri > 0) h.push(line(mx(ri), by, mx(ri), by - bh * ri, "mt-tdist"), line(mx(-ri), by, mx(-ri), by + bh * ri, "mt-tdist"));
 		h.push(line(mx(ri), by - bh * ri, mx(1), by - bh, "mt-tdist"), line(mx(-ri), by + bh * ri, mx(-1), by + bh, "mt-tdist"));
 		for (var a = -1; a <= 1.0001; a += 0.2) if (Math.abs(a) >= ri - 1e-9 && Math.abs(a) > 0.05) h.push(line(mx(a), by, mx(a), by - bh * a, "mt-tdistl"));
-		h.push(tx(bx - 16, by + 5, "surface", "mt-t mt-ts", "end"), tx(bx + bw + 16, by + 5, "surface", "mt-t mt-ts", "start"), tx(mx(0), by + 20, ri > 0 ? "hole" : "middle: 0", "mt-t mt-ts", "middle"));
-		if (r) h.push(tx(mx(1) - 4, by - bh - 8, "τmax " + fmt(r.tau, "stress", 3), "mt-t mt-ts mt-b", "end"));
+		h.push(lab("mt-to-svg:n4", bx - 16, by + 5, "surface", "mt-t mt-ts", "end"), lab("mt-to-svg:n5", bx + bw + 16, by + 5, "surface", "mt-t mt-ts", "start"), lab("mt-to-svg:n6", mx(0) - 8, by - 8, ri > 0 ? "hole" : "middle: 0", "mt-t mt-ts", "end"));
+		if (r) h.push(lab("mt-to-svg:n7", mx(1) + 8, by - bh + 5, "τmax " + fmt(r.tau, "stress", 3), "mt-t mt-ts mt-b", "start"));
 		$("mt-to-svg").innerHTML = h.join("");
 		$("mt-to-cap").textContent = !r ? "" : over ? "Above the shear yield strength: the shaft would stay twisted (and could fail)." : "Elastic: the twist goes away when the torque is removed. A hollow shaft saves weight because the middle of a solid shaft carries little stress.";
 	}
@@ -886,14 +932,17 @@
 		var dirT = ee >= 0;
 		if (Math.abs(ee) > 0) g.push(arrowSimple(xe + (dirT ? 22 : 62), yc, xe + (dirT ? 62 : 22), yc), arrowSimple(x1 - (dirT ? 6 : 46), yc, x1 - (dirT ? 46 : 6), yc));
 		/* original and new length, original and new diameter */
-		g.push(line(x1, yc - h0 / 2 - 6, x1, 62, "mt-ext"), line(x1 + w0, yc - h0 / 2 - 6, x1 + w0, 62, "mt-ext"), dimH(68, x1, x1 + w0, "mt-po-mk"), tx(x1 + w0 / 2, 58, "L₀ = " + (L > 0 ? fmt(L, "len") : "?"), "mt-t mt-ts", "middle"));
-		if (Math.abs(de) > 0.004) g.push(line(xe, yc + h1 / 2 + 4, xe, 262, "mt-ext"), line(x1, yc + Math.max(h0, h1) / 2 + 4, x1, 262, "mt-ext"), dimH(256, x1, xe, "mt-po-mk"), tx(x1 + w1 / 2, 280, "L = " + (r ? fmt(r.L1, "len", 7) : "?"), "mt-t mt-ts", "middle"));
+		var P = "mt-po-svg:";
+		g.push(line(x1, yc - h0 / 2 - 6, x1, 62, "mt-ext"), line(x1 + w0, yc - h0 / 2 - 6, x1 + w0, 62, "mt-ext"), dimH(68, x1, x1 + w0, "mt-po-mk"), lab(P + "L0", x1 + w0 / 2, 56, "L₀ = " + (L > 0 ? fmt(L, "len") : "?"), "mt-t mt-ts", "middle"));
+		if (Math.abs(de) > 0.004) g.push(line(xe, yc + h1 / 2 + 4, xe, 262, "mt-ext"), line(x1, yc + Math.max(h0, h1) / 2 + 4, x1, 262, "mt-ext"), dimH(256, x1, xe, "mt-po-mk"), lab(P + "L", x1 + w1 / 2, 282, "L = " + (r ? fmt(r.L1, "len", 7) : "?"), "mt-t mt-ts", "middle"));
+		/* the diameter: a dimension line inside the bar with only "d" beside it; the numbers sit under the picture, never on the bar */
 		var xd = x1 + 34;
-		g.push(dimV(xd, yc - h1 / 2, yc + h1 / 2, "mt-po-mk"), tx(xd + 10, yc - 4, "d = " + (r ? fmt(r.d1, "small", 6) : "?"), "mt-t mt-ts mt-b", "start"), tx(xd + 10, yc + 18, "d₀ = " + (d > 0 ? fmt(d, "small") : "?"), "mt-t mt-ts", "start"));
-		if (r) g.push(tx(xd + 10, yc + 38, "εlat = −ν ε = " + M.pretty(r.lat, 3), "mt-t mt-ts", "start"));
+		g.push(dimV(xd, yc - h1 / 2, yc + h1 / 2, "mt-po-mk"), lab(P + "d", xd + 10, yc + 7, "d", "mt-t mt-b", "start"));
+		g.push(lab(P + "dd", 260, 318, "d₀ = " + (d > 0 ? fmt(d, "small") : "?") + "  →  d = " + (r ? fmt(r.d1, "small", 6) : "?"), "mt-t mt-ts mt-b", "middle"));
+		if (r) g.push(lab(P + "lat", 260, 342, "εlat = −ν ε = " + M.pretty(r.lat, 3), "mt-t mt-ts", "middle"));
 		/* the handle: drag the right end of the bar */
 		g.push("<g class='mt-dragx' data-drag='po' tabindex='-1'><circle cx='" + r1(xe) + "' cy='" + yc + "' r='13' class='mt-handle'/><path d='M" + r1(xe - 4) + "," + (yc - 5) + " l-5,5 l5,5 M" + r1(xe + 4) + "," + (yc - 5) + " l5,5 l-5,5' class='mt-hgrip'/></g>");
-		g.push(tx(260, 316, (k > 1 ? "Drawn " + kTxt(k) + "× larger than real. " : "") + "Dashed: before loading. Drag the right end.", "mt-t mt-ts", "middle"));
+		g.push(lab(P + "note", 260, 370, "Dashed: before loading" + (k > 1 ? " (drawn " + kTxt(k) + "× larger)" : "") + ". Drag the right end.", "mt-t mt-ts", "middle"));
 		svg.innerHTML = g.join("");
 		$("mt-po-cap").textContent = isFinite(nu) ? (nu > 0.45 ? "ν close to 0.5: the volume hardly changes (rubber, or any metal once it yields)." : ee < 0 ? "Pushed shorter, the bar gets fatter by ν times the squash strain." : "Pulled longer, the bar gets thinner by ν times the stretch strain.") : "";
 	}
@@ -911,18 +960,24 @@
 	})();
 	/* a set of sliders under a figure: spec = {key, label, min, max, v (SI), show(v), set(v)}. Built once per set of keys; while one is dragged the
 	   ranges and the figure's exaggeration stay fixed (the box's lock), so the picture does not jump. */
-	function sliders(boxId, specs) {
+	function sliders(boxId, specs, opt) {
 		var box = $(boxId), sig = specs.map(function (o) { return o.key; }).join(",");
+		box._opt = opt || { lock: function (on) { PO.lock = P3.lock = on; }, done: poCompute };   /* lock(on): freeze the drawing scale while dragging; done(): redraw after */
 		if (box._sig !== sig) {
 			box._sig = sig;
 			box.innerHTML = specs.map(function (o, i) { return "<div class='mt-slide'><label for='" + boxId + "-" + i + "'>" + sym(subH(esc(o.label))) + "</label><input type='range' id='" + boxId + "-" + i + "' min='0' max='1000' step='1'><output for='" + boxId + "-" + i + "'></output></div>"; }).join("");
 			[].forEach.call(box.querySelectorAll("input"), function (inp, i) {
-				inp.addEventListener("input", function () { if (!box._lock) { box._lock = box._specs.map(function (o) { return [o.min, o.max]; }); PO.lock = P3.lock = true; } var o = box._specs[i], r = box._lock[i]; o.set(r[0] + (r[1] - r[0]) * (+inp.value) / 1000); });
-				inp.addEventListener("change", function () { box._lock = null; PO.lock = P3.lock = false; poCompute(); });
+				inp.addEventListener("input", function () { if (!box._lock) { box._lock = box._specs.map(function (o) { return [o.min, o.max]; }); box._opt.lock(true); } var o = box._specs[i], r = box._lock[i]; o.set(r[0] + (r[1] - r[0]) * (+inp.value) / 1000); });
+				inp.addEventListener("change", function () { box._lock = null; box._opt.lock(false); box._opt.done(); });
 			});
 		}
 		box._specs = specs;
 		specs.forEach(function (o, i) {
+			if (o.keep && !box._lock) {   /* keep: the range stays where it was while the value is inside it (so a thumb does not jump back to the middle after every drag) */
+				var kr = (box._kr = box._kr || {})[o.key];
+				if (kr && isFinite(o.v) && o.v >= kr[0] && o.v <= kr[1] && kr[1] > kr[0] && o.v > kr[1] * 0.04) { o.min = kr[0]; o.max = kr[1]; }
+				box._kr[o.key] = [o.min, o.max];
+			}
 			var inp = box.querySelector("#" + boxId + "-" + i), out = inp.nextElementSibling, r = box._lock ? box._lock[i] : [o.min, o.max];
 			if (!box._lock && isFinite(o.v)) { if (o.v < o.min) r[0] = o.min = o.v; if (o.v > o.max) r[1] = o.max = o.v; }
 			if (isFinite(o.v) && r[1] > r[0] && document.activeElement !== inp) inp.value = String(Math.round(clamp((o.v - r[0]) / (r[1] - r[0]), 0, 1) * 1000));
@@ -969,14 +1024,14 @@
 		if (sig) {
 			var smax = Math.max(1, Math.abs(sig[0]), Math.abs(sig[1]), Math.abs(sig[2]), Math.abs(sig[3]), Math.abs(sig[4]), Math.abs(sig[5]));
 			var P = function (x, y, z) { return Pg(x, y, z, gs); };
-			var arr = function (c0, dir, v, lab) { if (Math.abs(v) < smax * 0.02) return; var L = 25 + 55 * Math.abs(v) / smax, out = v > 0, p1 = out ? c0 : [c0[0] + dir[0] * L, c0[1] + dir[1] * L], p2 = out ? [c0[0] + dir[0] * L, c0[1] + dir[1] * L] : c0; h.push(arrowSimple(p1[0], p1[1], p2[0], p2[1]), tx(c0[0] + dir[0] * (L + 18), c0[1] + dir[1] * (L + 18) + 5, lab, "mt-t mt-ts mt-b", "middle")); };
+			var arr = function (c0, dir, v, lb) { if (Math.abs(v) < smax * 0.02) return; var L = 25 + 55 * Math.abs(v) / smax, out = v > 0, p1 = out ? c0 : [c0[0] + dir[0] * L, c0[1] + dir[1] * L], p2 = out ? [c0[0] + dir[0] * L, c0[1] + dir[1] * L] : c0; h.push(arrowSimple(p1[0], p1[1], p2[0], p2[1]), lab("mt-p3-svg:a" + lb, c0[0] + dir[0] * (L + 18), c0[1] + dir[1] * (L + 18) + 5, lb, "mt-t mt-ts mt-b", "middle")); };
 			/* shear: an arrow along the face, centred on a point of it (positive = towards +axis on a positive face) */
-			var sh = function (c0, dir, v, lab, lo) { if (Math.abs(v) < smax * 0.02) return; var L = 22 + 40 * Math.abs(v) / smax, sg = v > 0 ? 1 : -1, p1 = [c0[0] - dir[0] * sg * L / 2, c0[1] - dir[1] * sg * L / 2], p2 = [c0[0] + dir[0] * sg * L / 2, c0[1] + dir[1] * sg * L / 2]; h.push(arrowSimple(p1[0], p1[1], p2[0], p2[1]), tx(c0[0] + lo[0], c0[1] + lo[1], lab, "mt-t mt-ts mt-b", "middle")); };
+			var sh = function (c0, dir, v, lb, lo) { if (Math.abs(v) < smax * 0.02) return; var L = 22 + 40 * Math.abs(v) / smax, sg = v > 0 ? 1 : -1, p1 = [c0[0] - dir[0] * sg * L / 2, c0[1] - dir[1] * sg * L / 2], p2 = [c0[0] + dir[0] * sg * L / 2, c0[1] + dir[1] * sg * L / 2]; h.push(arrowSimple(p1[0], p1[1], p2[0], p2[1]), lab("mt-p3-svg:s" + lb + lo[0], c0[0] + lo[0], c0[1] + lo[1], lb, "mt-t mt-ts mt-b", "middle")); };
 			arr(P(ab[0], ab[1] / 2, ab[2] / 2), [1, 0], sig[0], "σx"); arr(P(ab[0] / 2, ab[1], ab[2] / 2), [0, -1], sig[1], "σy"); arr(P(ab[0] / 2, ab[1] / 2, 0), [-0.79, 0.62], sig[2], "σz");
-			sh(P(ab[0], ab[1] * 0.5, ab[2] * 0.75), [0, -1], sig[3], "τxy", [26, 4]); sh(P(ab[0] * 0.22, ab[1], ab[2] * 0.95), [1, 0], sig[3], "τxy", [-30, 4]);
+			sh(P(ab[0], ab[1] * 0.8, ab[2] * 0.85), [0, -1], sig[3], "τxy", [22, 5]); sh(P(ab[0] * 0.3, ab[1], ab[2] * 0.15), [1, 0], sig[3], "τxy", [0, -14]);
 			sh(P(ab[0] * 0.75, ab[1], ab[2] * 0.35), [0.79, -0.62], sig[4], "τyz", [24, -4]); sh(P(ab[0], ab[1] * 0.25, ab[2] * 0.4), [0.79, -0.62], sig[5], "τzx", [28, 14]);
 		}
-		h.push(tx(260, 392, "Arrows out: pulling. Arrows in: pushing. Along a face: shear.", "mt-t mt-ts", "middle"), tx(260, 412, "Shaded: after loading. Stretch drawn " + kTxt(k) + "×" + (mg > 0 ? ", shear " + kTxt(kg) + "×" : "") + " larger.", "mt-t mt-ts", "middle"));
+		h.push(lab("mt-p3-svg:n1", 260, 392, "Arrows out: pulling. Arrows in: pushing. Along a face: shear.", "mt-t mt-ts", "middle"), lab("mt-p3-svg:n2", 260, 412, "Shaded: after loading. Stretch drawn " + kTxt(k) + "×" + (mg > 0 ? ", shear " + kTxt(kg) + "×" : "") + " larger.", "mt-t mt-ts", "middle"));
 		svg.innerHTML = h.join("");
 	}
 	chipRow("mt-p3-ex", [["Pulled one way (uniaxial)", [100, 0, 0, 0, 0, 0]], ["Equal pull both ways (thin pressure vessel wall, 2:1)", [100, 50, 0, 0, 0, 0]], ["Squeezed equally from all sides (deep water)", [-100, -100, -100, 0, 0, 0]], ["Pure shear", [0, 0, 0, 60, 0, 0]]], function (v) { S.po.dir = "s"; paintSeg("mt-p3-dir", "s"); P3S.forEach(function (id, i) { setField(id, S.sys === "us" ? v[i] * 0.145 : v[i], S.sys === "us" ? "ksi" : "MPa"); }); poCompute(); });
@@ -1021,10 +1076,10 @@
 		if (cond !== "free") { h.push("<rect x='" + (x1 - 26) + "' y='60' width='26' height='160' class='mt-sup'/>", "<rect x='" + r1(x1 + w0 + gapPx) + "' y='60' width='26' height='160' class='mt-sup'/>"); }
 		h.push("<rect x='" + x1 + "' y='" + (yc - hh / 2) + "' width='" + w0 + "' height='" + hh + "' class='mt-ghost'/>");
 		h.push("<rect x='" + x1 + "' y='" + (yc - hh / 2) + "' width='" + r1(wBar) + "' height='" + hh + "' class='mt-rod mt-heat" + (dT > 0 ? " mt-heat--hot" : dT < 0 ? " mt-heat--cold" : "") + "'/>");
-		if (r && r.sigma < 0) h.push(arrowSimple(x1 + 46, yc, x1 + 6, yc), arrowSimple(x1 + wBar - 46, yc, x1 + wBar - 6, yc), tx(x1 + wBar / 2, yc + 6, "pushes on the walls", "mt-t mt-ts mt-b", "middle"));
-		if (r && r.sigma > 0) h.push(arrowSimple(x1 + 6, yc, x1 + 46, yc), arrowSimple(x1 + wBar - 6, yc, x1 + wBar - 46, yc), tx(x1 + wBar / 2, yc + 6, "pulls on the walls", "mt-t mt-ts mt-b", "middle"));
-		if (cond === "free" && r) h.push(dimH(yc + hh / 2 + 22, x1 + w0, x1 + wFree, "mt-th-mk"), tx(x1 + w0, yc + hh / 2 + 46, "δT = " + fmt(Math.abs(r.free), "small"), "mt-t mt-ts mt-b", "middle"));
-		h.push(tx(260, 262, k > 1 ? "Change drawn " + kTxt(k) + "× larger than real." : "Drawn to true scale.", "mt-t mt-ts", "middle"), tx(260, 284, "Dashed: the bar before the temperature change.", "mt-t mt-ts", "middle"));
+		if (r && r.sigma < 0) h.push(arrowSimple(x1 + 46, yc, x1 + 6, yc), arrowSimple(x1 + wBar - 46, yc, x1 + wBar - 6, yc), lab("mt-th-svg:n1", x1 + wBar / 2, yc + 6, "pushes on the walls", "mt-t mt-ts mt-b", "middle"));
+		if (r && r.sigma > 0) h.push(arrowSimple(x1 + 6, yc, x1 + 46, yc), arrowSimple(x1 + wBar - 6, yc, x1 + wBar - 46, yc), lab("mt-th-svg:n2", x1 + wBar / 2, yc + 6, "pulls on the walls", "mt-t mt-ts mt-b", "middle"));
+		if (cond === "free" && r) h.push(dimH(yc + hh / 2 + 22, x1 + w0, x1 + wFree, "mt-th-mk"), lab("mt-th-svg:n3", x1 + w0, yc + hh / 2 + 46, "δT = " + fmt(Math.abs(r.free), "small"), "mt-t mt-ts mt-b", "middle"));
+		h.push(lab("mt-th-svg:n4", 260, 262, k > 1 ? "Change drawn " + kTxt(k) + "× larger than real." : "Drawn to true scale.", "mt-t mt-ts", "middle"), lab("mt-th-svg:n5", 260, 284, "Dashed: the bar before the temperature change.", "mt-t mt-ts", "middle"));
 		$("mt-th-svg").innerHTML = h.join("");
 		$("mt-th-cap").textContent = !r ? "" : cond === "free" ? (hot ? "Heated, the bar grows; nothing stops it, so there is no stress." : "Cooled, the bar shrinks; nothing stops it, so there is no stress.") : cond === "held" ? "The walls stop the bar changing length, so all of the thermal strain turns into stress: σ = −E α ΔT." : r.touching ? "The bar grew until it closed the gap; only the rest of the growth turns into stress." : "The gap has not closed yet, so there is no stress.";
 	}
@@ -1079,9 +1134,13 @@
 	function axUnit(key) { if (key === "Er" || key === "sr") return "MJ/kg"; return tbUnit({ E: "modulus", G: "modulus", sy: "stress", su: "stress", rho: "density", a: "alpha" }[key]); }
 	function axShow(key, v) { if (key === "Er" || key === "sr") return v / 1e6; var d = { E: "modulus", G: "modulus", sy: "stress", su: "stress", rho: "density", a: "alpha" }[key]; return M.fromSI(kindOf(d), v, tbUnit(d)); }
 	function ashby() {
-		var svg = $("mt-as"), kx = S.tb.x, ky = S.tb.y, list = M.MATS.filter(function (m) { return !S.tb.fam || m.fam === S.tb.fam; }), L = 80, R = 700, T = 20, B = 420, h = [], skipped = [];
+		var svg = $("mt-as");
+		if (!WIN || WIN._svg !== svg) { var cw = svg.parentNode.clientWidth; svg.setAttribute("viewBox", "0 0 " + (cw > 0 && cw < 600 ? 560 : 720) + " 480"); }   /* a narrower drawing on phones, so its text is not shrunk to nothing */
+		var vb = svg.getAttribute("viewBox").split(/[ ,]+/).map(Number), W = vb[2] > 0 ? vb[2] : 720, kx = S.tb.x, ky = S.tb.y, eqLines = kx === "rho" && ky === "E";
+		var list = M.MATS.filter(function (m) { return !S.tb.fam || m.fam === S.tb.fam; }), L = 80, R = W - (eqLines ? 96 : 20), T = eqLines ? 30 : 20, B = 420, h = [], skipped = [];
 		var pts = list.map(function (m) { return { m: m, x: axShow(kx, axVal(m, kx)), y: axShow(ky, axVal(m, ky)) }; }).filter(function (p) { var ok = p.x > 0 && p.y > 0; if (!ok) skipped.push(p.m.name); return ok; });
-		if (!pts.length) { svg.innerHTML = tx(360, 240, "Nothing to show for this choice.", "mt-t", "middle"); return; }
+		ashLegend(eqLines);
+		if (!pts.length) { svg.innerHTML = tx(W / 2, 240, "Nothing to show for this choice.", "mt-t", "middle"); return; }
 		function rng(a) { var lo = Math.min.apply(null, a), hi = Math.max.apply(null, a); var l0 = Math.floor(Math.log10(lo) - 0.15), l1 = Math.ceil(Math.log10(hi) + 0.15); if (l1 - l0 < 2) { l0--; l1++; } return [l0, l1]; }
 		var rx = rng(pts.map(function (p) { return p.x; })), ry = rng(pts.map(function (p) { return p.y; }));
 		function X(v) { return L + (R - L) * (Math.log10(v) - rx[0]) / (rx[1] - rx[0]); } function Y(v) { return B - (B - T) * (Math.log10(v) - ry[0]) / (ry[1] - ry[0]); }
@@ -1090,27 +1149,33 @@
 		h.push(line(L, B, R, B, "mt-axis"), line(L, T, L, B, "mt-axis"));
 		var nx = AXO.filter(function (o) { return o[0] === kx; })[0][1], ny = AXO.filter(function (o) { return o[0] === ky; })[0][1];
 		h.push(tx((L + R) / 2, B + 46, nx + " (" + axUnit(kx) + ")", "mt-t mt-b", "middle"), tx(20, (T + B) / 2, ny + " (" + axUnit(ky) + ")", "mt-t mt-b", "middle", " transform='rotate(-90 20 " + (T + B) / 2 + ")'"));
-		if (kx === "rho" && ky === "E") {   /* lines of equal E/rho: E = c rho (in display units) */
-			[[1e5, ""], [1e6, ""], [2.55e7, " (steel, aluminium, titanium)"], [1e8, ""]].forEach(function (cl) {
-				var c = cl[0], pa = [], ex = Math.pow(10, rx[0]), ex2 = Math.pow(10, rx[1]);
+		if (eqLines) {   /* lines of equal E/rho: E = c rho (in display units); each is labelled where it leaves the plot (right margin or above the top), never on the dots */
+			[[1e5, 0], [1e6, 0], [2.55e7, 1], [1e8, 0]].forEach(function (cl) {
+				var c = cl[0], ex = Math.pow(10, rx[0]), ex2 = Math.pow(10, rx[1]);
 				function yAt(xv) { return Y(M.fromSI("stress", c * M.toSI("density", xv, tbUnit("density")), tbUnit("modulus"))); }
-				[ex, ex2].forEach(function (xv) { pa.push([X(xv), yAt(xv)]); });
-				h.push("<line x1='" + r1(pa[0][0]) + "' y1='" + r1(pa[0][1]) + "' x2='" + r1(pa[1][0]) + "' y2='" + r1(pa[1][1]) + "' class='mt-asl" + (cl[1] ? " mt-asl--hi" : "") + "' clip-path='url(#mt-as-clip)'/>");
-				var lab = "E/ρ = " + M.pretty(c / 1e6, 3) + " MJ/kg" + cl[1], ly = yAt(ex2);
-				if (!cl[1] && ly > T + 14 && ly < B - 6) h.push(tx(R - 6, ly + 16, lab, "mt-t mt-ts mt-asll mt-aslab", "end"));
+				var p0 = [X(ex), yAt(ex)], p1 = [X(ex2), yAt(ex2)];
+				h.push("<line x1='" + r1(p0[0]) + "' y1='" + r1(p0[1]) + "' x2='" + r1(p1[0]) + "' y2='" + r1(p1[1]) + "' class='mt-asl" + (cl[1] ? " mt-asl--hi" : "") + "' clip-path='url(#mt-as-clip)'/>");
+				var lab0 = M.pretty(c / 1e6, 3) + " MJ/kg", cls = "mt-t mt-ts mt-asll mt-aslab" + (cl[1] ? " mt-asll--hi" : "");
+				if (p1[1] >= T && p1[1] <= B) h.push(tx(R + 6, p1[1] + 5, lab0, cls, "start"));
+				else if (p1[1] < T && p1[1] !== p0[1]) { var xT = p0[0] + (p1[0] - p0[0]) * (T - p0[1]) / (p1[1] - p0[1]); if (xT >= L + 20 && xT <= R) h.push(tx(Math.min(xT, R - 30), T - 9, lab0, cls, "middle")); }
 			});
 		}
-		var fams = M.FAMS.filter(function (f) { return pts.some(function (p) { return p.m.fam === f[0]; }); });
-		fams.forEach(function (f, i) { h.push("<circle cx='" + (L + 16) + "' cy='" + (T + 14 + i * 19) + "' r='5.5' fill='" + FAMC[f[0]] + "'/>", tx(L + 28, T + 19 + i * 19, f[1], "mt-t mt-ts mt-aslab", "start")); });
-		if (kx === "rho" && ky === "E") { var ly2 = T + 14 + fams.length * 19 + 6; h.push(line(L + 8, ly2, L + 26, ly2, "mt-asl mt-asl--hi"), tx(L + 32, ly2 + 5, "E/ρ = 25 MJ/kg: steel, aluminium, titanium", "mt-t mt-ts mt-aslab", "start")); }
 		var cur = S.mat;
 		pts.sort(function (a, b) { return (a.m.id === cur) - (b.m.id === cur); }).forEach(function (p) {
 			var on = p.m.id === cur, cxx = X(p.x), cyy = Y(p.y);
 			h.push("<g class='mt-asp" + (on ? " mt-asp--on" : "") + "' data-id='" + p.m.id + "' tabindex='0' role='button' aria-label='" + esc(p.m.name + ": " + axFmt(kx, axVal(p.m, kx)) + ", " + axFmt(ky, axVal(p.m, ky))) + "'><title>" + esc(p.m.name + "\n" + nx + ": " + axFmt(kx, axVal(p.m, kx)) + "\n" + ny + ": " + axFmt(ky, axVal(p.m, ky))) + "</title><circle cx='" + r1(cxx) + "' cy='" + r1(cyy) + "' r='" + (on ? 9 : 6.5) + "' fill='" + FAMC[p.m.fam] + "'/>" + (on ? tx(cxx + (cxx > R - 160 ? -14 : 14), cyy + 5, p.m.name, "mt-t mt-ts mt-b mt-aslab", cxx > R - 160 ? "end" : "start") : "") + "</g>");
 		});
 		svg.innerHTML = "<defs><clipPath id='mt-as-clip'><rect x='" + L + "' y='" + T + "' width='" + (R - L) + "' height='" + (B - T) + "'/></clipPath></defs>" + h.join("");
-		$("mt-as-note").textContent = "Both scales are logarithmic (each step is ten times the last). Click a dot to use that material; hover or focus a dot for its numbers." + (kx === "rho" && ky === "E" ? " Dashed lines join materials with the same stiffness per kilogram (E/ρ): steel, aluminium and titanium sit on almost the same line." : "") + (skipped.length ? " Not shown (no value, or zero or below on a log scale): " + skipped.join(", ") + "." : "");
+		$("mt-as-note").textContent = "Both scales are logarithmic (each step is ten times the last). Click a dot to use that material; hover or focus a dot for its numbers." + (eqLines ? " Dashed lines join materials with the same stiffness per kilogram (E/ρ): steel, aluminium and titanium sit on almost the same line." : "") + (skipped.length ? " Not shown (no value, or zero or below on a log scale): " + skipped.join(", ") + "." : "");
 	}
+	/* the chart's legend is HTML under the picture (it used to sit inside the plot, on top of the dots): one button per kind of material, which also filters the table */
+	function ashLegend(eqLines) {
+		var el = $("mt-as-lg"); if (!el) return;
+		var have = M.FAMS.filter(function (f) { return M.MATS.some(function (m) { return m.fam === f[0]; }); });
+		el.innerHTML = have.map(function (f) { var on = S.tb.fam === f[0]; return "<button type='button' class='mt-as-li' data-f='" + f[0] + "' aria-pressed='" + on + "'" + (S.tb.fam && !on ? " data-off='1'" : "") + "><span class='mt-sw' style='background:" + FAMC[f[0]] + "'></span>" + esc(f[1]) + "</button>"; }).join("") +
+			(eqLines ? "<span class='mt-as-li mt-as-li--line'><span class='mt-as-dash'></span>E/ρ ≈ 25 MJ/kg: steel, aluminium, titanium</span>" : "");
+	}
+	$("mt-as-lg").addEventListener("click", function (e) { var b = e.target.closest("button[data-f]"); if (!b) return; var f = b.getAttribute("data-f"); S.tb.fam = S.tb.fam === f ? "" : f; save(); tbRender(); if (WIN) winFit(); });
 	$("mt-as").addEventListener("click", function (e) { var g = e.target.closest("[data-id]"); if (g) { setMat(g.getAttribute("data-id")); toast(matRec().name + " is now used in every tool."); } });
 	$("mt-as").addEventListener("keydown", function (e) { if (e.key !== "Enter" && e.key !== " ") return; var g = e.target.closest("[data-id]"); if (g) { e.preventDefault(); setMat(g.getAttribute("data-id")); } });
 
@@ -1159,6 +1224,96 @@
 	matSel.value = S.mat; $("mt-custom").hidden = S.mat !== "custom"; if (S.mat === "custom") custFill();
 	axShapeFields();
 	matNote();
+	/* =========================== figures: Fill window / Full screen / Reset labels, draggable labels, equation layout =========================== */
+	var FIGT = { "mt-ax-svg": "Stress and strain", "mt-sh-svg": "Shear", "mt-to-svg": "Torsion", "mt-po-svg": "Poisson's ratio", "mt-p3-svg": "3D Hooke's law", "mt-th-svg": "Thermal stress", "mt-as": "" }, WIN = null, figs = [];
+	function figInit(card) {
+		var svg = card.querySelector(".mt-svg"); if (!svg || card._bar) return;
+		var bar = document.createElement("div"); bar.className = "mt-figbar"; bar.setAttribute("role", "toolbar"); bar.setAttribute("aria-label", "View of the picture");
+		bar.innerHTML = "<span class='mt-figt'>" + esc(FIGT[svg.id] || "") + "</span><button type='button' data-a='lab' hidden title='Put every label you dragged back in its own place'>↺ Reset labels</button>" +
+			"<button type='button' data-a='win' title='Fill the browser window with this picture (Esc leaves)'>⤢ Fill window</button>" +
+			(document.fullscreenEnabled ? "<button type='button' data-a='fs' title='Use the whole screen'>⛶ Full screen</button>" : "") + "<button type='button' data-a='close' hidden>✕ Close (Esc)</button>";
+		card.insertBefore(bar, card.firstChild); card._svg = svg; card._bar = bar; figs.push(card);
+		bar.addEventListener("click", function (e) {
+			var b = e.target.closest("button"); if (!b) return; var a = b.getAttribute("data-a");
+			if (a === "win") winOn(card);
+			else if (a === "close") { if (document.fullscreenElement === card) document.exitFullscreen(); else winOff(); }
+			else if (a === "fs") { if (document.fullscreenElement) { document.exitFullscreen(); return; } card._fromWin = WIN === card; winOn(card); if (card.requestFullscreen) card.requestFullscreen().catch(function () { if (!card._fromWin) winOff(); }); }
+			else if (a === "lab") labReset(svg.id);
+		});
+	}
+	function figBtns(card) {
+		var fs = document.fullscreenElement === card, on = WIN === card, q = function (a) { return card._bar.querySelector("[data-a='" + a + "']"); };
+		q("win").hidden = on; q("close").hidden = !on || fs; if (q("fs")) q("fs").textContent = fs ? "✕ Leave full screen" : "⛶ Full screen";
+	}
+	function winOn(card) {
+		if (WIN && WIN !== card) winOff();
+		WIN = card; card.classList.add("mt-win"); root.classList.add("mt-winon"); document.documentElement.classList.add("mt-noscroll");
+		figBtns(card); winFit(); setTimeout(winFit, 60);
+	}
+	function winOff() {
+		var card = WIN; if (!card) return; WIN = null;
+		card.classList.remove("mt-win"); root.classList.remove("mt-winon"); if (!TT.win) document.documentElement.classList.remove("mt-noscroll");
+		card._svg.style.height = "";
+		if (card._svg.id === "mt-as") { card._svg.setAttribute("viewBox", "0 0 720 480"); ashby(); }
+		figBtns(card);
+	}
+	/* the picture takes the window height that the bar, sliders and caption leave free; the materials chart is redrawn for the window's shape instead of being letterboxed */
+	function winFit() {
+		var card = WIN; if (!card) return; var svg = card._svg, cs = getComputedStyle(card), extra = parseFloat(cs.paddingTop) + parseFloat(cs.paddingBottom);
+		[].forEach.call(card.children, function (k) { if (k === svg) return; var c = getComputedStyle(k); if (c.display === "none" || c.position === "absolute" || c.position === "fixed") return; extra += k.offsetHeight + parseFloat(c.marginTop) + parseFloat(c.marginBottom); });
+		var H = Math.max(220, (window.innerHeight || 600) - extra - 6);
+		if (svg.id === "mt-as") { var w = card.clientWidth - parseFloat(cs.paddingLeft) - parseFloat(cs.paddingRight); svg.setAttribute("viewBox", "0 0 " + Math.round(clamp(480 * w / H, 560, 1500)) + " 480"); ashby(); }
+		svg.style.height = H + "px";
+	}
+	document.addEventListener("fullscreenchange", function () {
+		figs.forEach(function (card) { if (document.fullscreenElement === card) { if (WIN !== card) winOn(card); } else if (WIN === card && card._fs && !card._fromWin) winOff(); card._fs = document.fullscreenElement === card; if (card._bar) figBtns(card); });
+		setTimeout(winFit, 80);
+	});
+	document.addEventListener("keydown", function (e) { if (e.key === "Escape" && WIN && !document.fullscreenElement) winOff(); });
+	var wfT; window.addEventListener("resize", function () { clearTimeout(wfT); wfT = setTimeout(function () { if (WIN) winFit(); else if (CUR === "table") ashby(); }, 60); });
+	function labBtns() { figs.forEach(function (card) { var id = card._svg.id + ":", b = card._bar.querySelector("[data-a='lab']"); b.hidden = !Object.keys(S.lab).some(function (k) { return k.indexOf(id) === 0; }); }); }
+	function labReset(svgId) { Object.keys(S.lab).forEach(function (k) { if (k.indexOf(svgId + ":") === 0) delete S.lab[k]; }); save(); labBtns(); renderTab(CUR); }
+	/* drag a label: pointer events in the picture's own coordinates; the offset is saved when it is dropped */
+	var LD = null;
+	root.addEventListener("pointerdown", function (ev) {
+		var g = ev.target.closest && ev.target.closest(".mt-lab"); if (!g || (ev.button && ev.button > 0)) return; var svg = g.ownerSVGElement; if (!svg) return;
+		ev.preventDefault(); ev.stopPropagation();
+		var id = g.getAttribute("data-lab"), o = S.lab[id] || [0, 0];
+		LD = { g: g, id: id, o: [+o[0] || 0, +o[1] || 0], p0: svgPt(svg, ev), svg: svg }; g.classList.add("mt-lab--drag");
+		try { g.setPointerCapture(ev.pointerId); } catch (e) { /* ignore */ }
+	}, true);
+	document.addEventListener("pointermove", function (ev) { if (!LD) return; var p = svgPt(LD.svg, ev); LD.d = [r1(clamp(LD.o[0] + p.x - LD.p0.x, -700, 700)), r1(clamp(LD.o[1] + p.y - LD.p0.y, -700, 700))]; LD.g.setAttribute("transform", "translate(" + LD.d[0] + " " + LD.d[1] + ")"); });
+	function ldEnd() { if (!LD) return; if (LD.d) { S.lab[LD.id] = LD.d; save(); labBtns(); } LD.g.classList.remove("mt-lab--drag"); LD = null; }
+	document.addEventListener("pointerup", ldEnd); document.addEventListener("pointercancel", ldEnd);
+	[].forEach.call(root.querySelectorAll(".mt-fig, .mt-ascard"), figInit); labBtns();
+	/* equation boxes: each box asks for the width of its own formula, so short ones share a row and a long one gets a row to itself; a formula a little too wide for its row
+	   is scaled down (to 80% at most) and only a formula wider than that scrolls (a thin bar, phones only in practice) */
+	function eqFit() {
+		[].forEach.call(root.querySelectorAll(".mt-eqb"), function (bx) {
+			var fs = [].slice.call(bx.querySelectorAll(".mt-eqb__f")), ws = [], gap = parseFloat(getComputedStyle(bx).columnGap) || 0;
+			for (var i = 0; i < fs.length; i++) {
+				var svg = fs[i].querySelector("mjx-container svg"); if (!svg) return;
+				if (!svg._w) { svg.style.width = ""; svg.style.height = ""; var rc = svg.getBoundingClientRect(); if (!(rc.width > 0)) return; svg._w = rc.width; svg._h = rc.height; }
+				ws.push(svg);
+			}
+			if (!ws.length) return;
+			var n = bx.querySelector(".mt-eqb__n"), sum = ws.reduce(function (t, v) { return t + v._w + 4; }, 0) + gap * (ws.length - 1);
+			bx.style.flexBasis = Math.ceil(Math.max(sum, n ? n.scrollWidth : 0)) + "px";   /* the parts of one formula sit side by side when there is room, else they wrap */
+			var avail = bx.clientWidth; if (!(avail > 0)) return;
+			ws.forEach(function (svg, j) {
+				var sc = svg._w > avail ? Math.max(0.8, avail / svg._w) : 1;
+				svg.style.width = sc < 1 ? r1(svg._w * sc) + "px" : ""; svg.style.height = sc < 1 ? r1(svg._h * sc) + "px" : "";
+				fs[j].classList.toggle("mt-eqb__f--scroll", svg._w * sc > avail + 1);
+			});
+		});
+	}
+	(function () {
+		var eqT, run = function () { clearTimeout(eqT); eqT = setTimeout(eqFit, 40); };
+		if (window.ResizeObserver) { var ro = new ResizeObserver(run); [].forEach.call(root.querySelectorAll(".mt-eq"), function (c) { ro.observe(c); }); }
+		window.addEventListener("resize", run);
+		var tries = 0, iv = setInterval(function () { if (root.querySelector(".mt-eqb .mes-tex--done") || ++tries > 120) { clearInterval(iv); run(); } }, 250);   /* MathJax loads after the page */
+		document.addEventListener("click", function (e) { if (e.target.closest && e.target.closest(".mt-tabs")) run(); });
+	})();
 	showTab(qtab || S.tabs[PAGE] || VIEWS[0], false);
 	document.addEventListener("visibilitychange", function () { if (document.hidden && TT.play) { TT.play = false; ttRender(); } });
 })();

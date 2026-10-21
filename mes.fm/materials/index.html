@@ -309,10 +309,10 @@ body.dark-mode .tu .rw-head {color:#a0a8b3;border-bottom-color:#555;} body.dark-
 	#mt {--mt-ink:#1e2733;--mt-mut:#5b6573;--mt-line:#d5dbe3;--mt-card:#ffffff;--mt-soft:#f3f6f9;--mt-grid:#e6eaef;--mt-axis:#5b6573;--mt-dim:#334155;--mt-red:#c62828;--mt-farrow:#d4351c;--mt-warn:#a15c07;--mt-bad:#b3261e;--mt-good:#1f7a3d;
 		--mt-s1:#8d9aab;--mt-s2:#eef2f6;--mt-s3:#6f7d8e;--mt-sup:#c5ccd5;--mt-hatch:#7b8794;--mt-yield:#f59e0b;--mt-break:#e04a3a;--mt-sec:#9aaabd;--mt-hole:#ffffff;--mt-ghost:#8a96a4;
 		--mt-main:#2563eb;--mt-true:#7c3aed;--mt-res:rgba(16,185,129,0.35);--mt-tgh:rgba(37,99,235,0.12);--mt-dot:#ffffff;--mt-grip:#4b5563;--mt-gript:#ffffff;--mt-frame:#d1d5db;
-		--mt-plate:#c8d1dc;--mt-bolt:#7d8b9c;--mt-glue:#f2c94c;--mt-die:#9aa4b0;--mt-shaft:#b8c4d2;--mt-shaftend:#d6dee7;--mt-twl:#2b3a4d;--mt-heat:#f5b7a8;--mt-cold:#a8cdf5;--mt-cube0:rgba(148,163,184,0.18);--mt-cube1:rgba(37,99,235,0.28);}
+		--mt-plate:#c8d1dc;--mt-bolt:#7d8b9c;--mt-glue:#f2c94c;--mt-die:#9aa4b0;--mt-shaft:#b8c4d2;--mt-shaftend:#d6dee7;--mt-twl:#2b3a4d;--mt-heat:#f5b7a8;--mt-cold:#a8cdf5;--mt-cube0:rgba(148,163,184,0.18);--mt-cube1:rgba(37,99,235,0.28);--mt-hl:#dbeafe;}
 	#mt [hidden] {display:none !important;}
 	#mt {color:var(--mt-ink);}
-	:where(#mt) :is(div, span, p, li, label, b, strong, em, small, td, th, dt, dd, h2, h3, h4, output) {color:inherit;}   /* the shell's reset paints every div / span / p #333; inherit the tool's ink instead (class colours still win) */
+	:where(#mt) :is(div, span, p, li, label, b, strong, em, i, u, small, sub, sup, abbr, code, td, th, dt, dd, h2, h3, h4, output) {color:inherit;}   /* the shell's reset paints every div / span / p #333; inherit the tool's ink instead (class colours still win) */
 	#mt .mt-q > label, #mt .tu-stat__label, #mt .tu-field > label, #mt .tu-label {text-transform:none;letter-spacing:0.01em;font-size:0.8em;}
 	#mt .mt-tabs {display:flex;gap:0.35em;flex-wrap:wrap;margin:0 0 0.8em;}
 	#mt .mt-tabs button {border:1px solid var(--mt-line);background:var(--mt-card);color:var(--mt-ink);padding:0.55em 1em;border-radius:2em;cursor:pointer;font:inherit;min-height:40px;}
@@ -364,9 +364,11 @@ body.dark-mode .tu .rw-head {color:#a0a8b3;border-bottom-color:#555;} body.dark-
 	#mt .tu-stat.mt-bad {border-color:var(--mt-bad);} #mt .tu-stat.mt-bad .tu-stat__value {color:var(--mt-bad);}
 	#mt .tu-stat.mt-warn {border-color:var(--mt-warn);} #mt .tu-stat.mt-warn .tu-stat__value {color:var(--mt-warn);}
 	#mt .mt-eq {display:flex;flex-wrap:wrap;gap:0.4em 1.2em;margin:0.9em 0;}
-	#mt .mt-eqb {flex:1 1 18em;display:flex;flex-wrap:wrap;align-items:center;gap:0.2em 0.7em;padding:0.4em 0;border-bottom:1px solid var(--mt-grid);min-width:0;}
+	#mt .mt-eqb {flex:1 1 14em;display:flex;flex-wrap:wrap;align-items:center;gap:0.25em 1.4em;padding:0.4em 0;border-bottom:1px solid var(--mt-grid);min-width:0;}
 	#mt .mt-eqb__n {flex:0 0 100%;font-size:0.72em;font-weight:700;text-transform:uppercase;letter-spacing:0.05em;color:var(--mt-mut);}
-	#mt .mt-eqb__f {font-size:1.12em;max-width:100%;overflow-x:auto;overflow-y:hidden;color:var(--mt-ink);}
+	#mt .mt-eqb__f {font-size:1.12em;max-width:100%;overflow-x:auto;overflow-y:hidden;color:var(--mt-ink);scrollbar-width:thin;scrollbar-color:var(--mt-line) transparent;}
+	#mt .mt-eqb__f::-webkit-scrollbar {height:5px;} #mt .mt-eqb__f::-webkit-scrollbar-thumb {background:var(--mt-line);border-radius:3px;} #mt .mt-eqb__f::-webkit-scrollbar-track {background:transparent;}
+	#mt .mt-eqb__f mjx-container {margin:0 !important;}
 	#mt .mt-eqb__v {font-size:0.9em;color:var(--mt-mut);font-variant-numeric:tabular-nums;}
 	#mt .mt-disc {margin-top:1em;}
 	#mt .mt-fam {display:flex;flex-wrap:wrap;gap:0.4em 0.9em;align-items:center;margin:1em 0;padding:0.8em 1em;border:1px solid var(--mt-line);border-radius:0.55em;background:var(--mt-soft);}
@@ -482,7 +484,9 @@ body.dark-mode .tu .rw-head {color:#a0a8b3;border-bottom-color:#555;} body.dark-
 	#mt .mt-cube1.mt-cs {fill-opacity:0.8;} #mt .mt-cube1.mt-ct {fill-opacity:0.6;}
 	#mt .mt-trsep td {border-top:2px solid var(--mt-line);}
 	/* subscripts, sliders under figures, compact input grids, searchable picker */
-	#mt sub {font-size:0.72em;line-height:0;vertical-align:-0.25em;}
+	#mt sub {font-size:0.8em;line-height:0;vertical-align:-0.25em;color:inherit;}   /* the shell's reset paints sub #333 at 100%: inherit the label's own colour so σ_x, ε_y... stay readable in dark mode */
+	#mt .tu-stat__label sub, #mt .mt-q > label sub, #mt .tu-field > label sub, #mt .mt-slide label sub {font-size:0.9em;}
+	#mt .mt-g3 .mt-q > label {font-size:1em;font-weight:700;}   /* the 3D Hooke boxes are labelled only by a symbol (σx, τxy, εz ...): show it at full size */
 	#mt .mt-sliders {margin:0.2em 0.3em 0.4em;display:grid;grid-template-columns:max-content minmax(0,1fr) max-content;gap:0 0.7em;align-items:center;}
 	#mt .mt-sliders .mt-slide {display:contents;}
 	#mt .mt-sliders .mt-slide label {text-transform:none;letter-spacing:0;font-size:0.92em;color:var(--mt-ink);}
@@ -547,11 +551,41 @@ body.dark-mode .tu .rw-head {color:#a0a8b3;border-bottom-color:#555;} body.dark-
 		#mt .mt-custom .tu-row > .mt-q, #mt .mt-inp .tu-row > .mt-q {flex:1 1 100%;}
 		#mt .mt-tt-ctl .tu-btn {flex:1 1 auto;}
 	}
+	/* figure bar: Fill window (the browser window) / Full screen / Reset labels; the filled card covers the window, its picture takes the height that is left */
+	#mt .mt-figbar {display:flex;flex-wrap:wrap;gap:0.35em;align-items:center;justify-content:flex-end;margin:0 0 0.3em;font-size:0.82em;}
+	#mt .mt-figbar button {cursor:pointer;font:inherit;padding:0.25em 0.75em;min-height:32px;border-radius:0.4em;border:1px solid var(--mt-line);background:var(--mt-soft);color:var(--mt-ink);}
+	#mt .mt-figbar button:hover, #mt .mt-figbar button:focus-visible {border-color:var(--accent);}
+	#mt .mt-figt {margin-right:auto;font-weight:700;font-size:1.1em;display:none;}
+	#mt .mt-win .mt-figt {display:block;}
+	#mt .mt-win, #mt .mt-fig:fullscreen, #mt .mt-ascard:fullscreen {position:fixed;inset:0;z-index:2147483000;margin:0;border-radius:0;border:0;overflow:auto;background:var(--mt-card);padding:0.6em 1.2em 0.8em;box-sizing:border-box;}
+	#mt .mt-win .mt-svg {width:100%;max-width:none !important;margin:0;}
+	#mt .mt-win .mt-sliders, #mt .mt-win > .mt-slide, #mt .mt-win .mt-cap, #mt .mt-win .tu-note, #mt .mt-win .mt-as-lg {max-width:64em;margin-left:auto;margin-right:auto;}
+	#mt.mt-winon section[data-panel] {container-type:normal;}
+	body.dark-mode #mt.mt .mt-win, body.dark-mode #mt.mt .mt-fig:fullscreen {background:#1f1f1f;}
+	@media (max-width: 600px) { #mt .mt-win {padding:0.4em 0.5em 0.6em;} #mt .mt-figbar button {min-height:36px;} }
+	/* draggable labels: a halo in the card colour keeps them readable over plates, bars and arrows */
+	#mt .mt-lab {cursor:move;}
+	#mt .mt-lab text {paint-order:stroke;stroke:var(--mt-card);stroke-width:5px;stroke-linejoin:round;}
+	#mt .mt-lab:hover text, #mt .mt-lab--drag text {stroke:var(--mt-hl);}
+	#mt .mt-lead {stroke:var(--mt-red);stroke-width:1.2;stroke-dasharray:3 3;}
+	#mt .mt-bolt--yield {fill:var(--mt-yield);}
+	#mt .mt-bolt--break {fill:var(--mt-break);}
+	/* materials chart legend (HTML, under the chart) */
+	#mt .mt-as-lg {display:flex;flex-wrap:wrap;gap:0.35em 0.5em;align-items:center;margin:0.4em 0 0.2em;font-size:0.88em;}
+	#mt .mt-as-li {display:inline-flex;align-items:center;gap:0.1em;padding:0.3em 0.7em;min-height:34px;border:1px solid var(--mt-line);border-radius:2em;background:var(--mt-card);color:var(--mt-ink);font:inherit;}
+	#mt button.mt-as-li {cursor:pointer;}
+	#mt button.mt-as-li:hover {border-color:var(--accent);}
+	#mt .mt-as-li[aria-pressed="true"] {border-color:var(--accent);box-shadow:inset 0 0 0 1px var(--accent);font-weight:700;}
+	#mt .mt-as-li[data-off] {opacity:0.55;}
+	#mt .mt-as-li--line {border-style:dashed;}
+	#mt .mt-as-dash {display:inline-block;width:1.6em;margin-right:0.45em;border-top:2px dashed var(--accent);}
+	#mt .mt-asll--hi {fill:var(--accent-dark);font-weight:700;}
+	body.dark-mode #mt.mt .mt-asll--hi {fill:var(--accent);}
 	/* dark mode (the page's own colours; the derived TOOL-DARK block cannot see custom properties) */
 	body.dark-mode #mt.mt {--mt-ink:#e8ecf1;--mt-mut:#a9b2be;--mt-line:#4a4f57;--mt-card:#1f1f1f;--mt-soft:#2a2c30;--mt-grid:#34383e;--mt-axis:#a9b2be;--mt-dim:#c3ccd8;--mt-red:#ff8a80;--mt-farrow:#ff7b61;--mt-warn:#f6b04d;--mt-bad:#ff8a80;--mt-good:#6ee7a1;
 		--mt-s1:#5d6a7a;--mt-s2:#b7c3d1;--mt-s3:#8693a4;--mt-sup:#3c434c;--mt-hatch:#8d99a6;--mt-sec:#6b7a8c;--mt-hole:#1f1f1f;--mt-ghost:#8d99a6;
-		--mt-main:#7aa7ff;--mt-true:#c4a3ff;--mt-res:rgba(52,211,153,0.35);--mt-tgh:rgba(122,167,255,0.16);--mt-dot:#1f1f1f;--mt-grip:#6b7280;--mt-gript:#f3f4f6;--mt-frame:#3a3f46;
-		--mt-plate:#4f5b69;--mt-bolt:#8693a4;--mt-glue:#c9a227;--mt-die:#5b6573;--mt-shaft:#56657a;--mt-shaftend:#6f8098;--mt-twl:#e8ecf1;--mt-heat:#b8573f;--mt-cold:#3f78b8;--mt-cube0:rgba(148,163,184,0.12);--mt-cube1:rgba(122,167,255,0.3);}
+		--mt-main:#7aa7ff;--mt-true:#c4a3ff;--mt-res:rgba(52,211,153,0.35);--mt-tgh:rgba(122,167,255,0.16);--mt-dot:#1f1f1f;--mt-grip:#525a66;--mt-gript:#f3f4f6;--mt-frame:#3a3f46;
+		--mt-plate:#4f5b69;--mt-bolt:#8693a4;--mt-glue:#c9a227;--mt-die:#5b6573;--mt-shaft:#56657a;--mt-shaftend:#6f8098;--mt-twl:#e8ecf1;--mt-heat:#b8573f;--mt-cold:#3f78b8;--mt-cube0:rgba(148,163,184,0.12);--mt-cube1:rgba(122,167,255,0.3);--mt-hl:#1e3a5f;}
 	body.dark-mode #mt.mt .mt-tabs button[aria-selected="true"] {color:#0b1416;}
 	body.dark-mode #mt.mt .mt-q[data-s="calc"] .tu-input {background:#16324a;border-color:var(--accent);color:#ffffff;}
 	body.dark-mode #mt.mt .mt-q[data-s="calc"] .mt-qs {color:var(--accent);}
@@ -1025,8 +1059,8 @@ body.is-stuck #navbar.hide { position: fixed; top: 56px; right: 8px; }
 			<div class="tu-stats" id="mt-tt-stats"></div>
 			<div class="tu-card" id="mt-tt-cmpw" hidden><h2 class="mt-h">Side by side</h2><div class="tu-table-wrap"><table class="tu-table" id="mt-tt-cmpt"></table></div></div>
 			<div class="tu-card mt-eq">
-				<div class="mt-eqb"><span class="mt-eqb__n">Engineering stress</span><span class="mt-eqb__f mes-tex">\(\displaystyle \sigma = \frac{F}{A_0},\qquad \varepsilon = \frac{L - L_0}{L_0}\)</span></div>
-				<div class="mt-eqb"><span class="mt-eqb__n">True stress</span><span class="mt-eqb__f mes-tex">\(\displaystyle \sigma_t = \frac{F}{A} = \sigma\,(1+\varepsilon),\qquad \varepsilon_t = \ln(1+\varepsilon)\)</span></div>
+				<div class="mt-eqb"><span class="mt-eqb__n">Engineering stress</span><span class="mt-eqb__f mes-tex">\(\displaystyle \sigma = \frac{F}{A_0},\)</span><span class="mt-eqb__f mes-tex">\(\displaystyle \varepsilon = \frac{L - L_0}{L_0}\)</span></div>
+				<div class="mt-eqb"><span class="mt-eqb__n">True stress</span><span class="mt-eqb__f mes-tex">\(\displaystyle \sigma_t = \frac{F}{A} = \sigma\,(1+\varepsilon),\)</span><span class="mt-eqb__f mes-tex">\(\displaystyle \varepsilon_t = \ln(1+\varepsilon)\)</span></div>
 				<div class="mt-eqb"><span class="mt-eqb__n">Hardening</span><span class="mt-eqb__f mes-tex">\(\displaystyle \sigma_t = K\,\varepsilon_p^{\,n}\)</span></div>
 				<div class="mt-eqb"><span class="mt-eqb__n">Necking starts</span><span class="mt-eqb__f mes-tex">\(\displaystyle \frac{d\sigma_t}{d\varepsilon_t} = \sigma_t \;\Rightarrow\; \varepsilon_t \approx n\)</span></div>
 				<div class="mt-eqb"><span class="mt-eqb__n">Resilience</span><span class="mt-eqb__f mes-tex">\(\displaystyle U_r = \frac{\sigma_y^2}{2E}\)</span></div>
@@ -1039,7 +1073,8 @@ body.is-stuck #navbar.hide { position: fixed; top: 56px; right: 8px; }
 		<section data-panel="shear" role="tabpanel" hidden>
 			<div class="mt-grid2">
 				<div class="tu-card mt-fig">
-					<svg id="mt-sh-svg" class="mt-svg" viewBox="0 0 520 370" role="img" aria-label="A bolt or pin loaded in shear between plates"></svg>
+					<svg id="mt-sh-svg" class="mt-svg" viewBox="0 0 520 400" role="img" aria-label="A bolt or pin loaded in shear between plates"></svg>
+					<div class="mt-sliders" id="mt-sh-sl"></div>
 					<p class="mt-cap" id="mt-sh-cap"></p>
 				</div>
 				<div class="tu-card mt-inp">
@@ -1064,9 +1099,9 @@ body.is-stuck #navbar.hide { position: fixed; top: 56px; right: 8px; }
 			</div>
 			<div class="tu-stats" id="mt-sh-stats"></div>
 			<div class="tu-card mt-eq">
-				<div class="mt-eqb"><span class="mt-eqb__n">Shear stress</span><span class="mt-eqb__f mes-tex">\(\displaystyle \tau = \frac{V}{A},\qquad A = \frac{\pi d^2}{4}\ \text{per plane}\)</span></div>
+				<div class="mt-eqb"><span class="mt-eqb__n">Shear stress</span><span class="mt-eqb__f mes-tex">\(\displaystyle \tau = \frac{V}{A},\)</span><span class="mt-eqb__f mes-tex">\(\displaystyle A = \frac{\pi d^2}{4}\ \text{per plane}\)</span></div>
 				<div class="mt-eqb"><span class="mt-eqb__n">Double shear</span><span class="mt-eqb__f mes-tex">\(\displaystyle \tau = \frac{V}{2A}\)</span></div>
-				<div class="mt-eqb"><span class="mt-eqb__n">Shear strain</span><span class="mt-eqb__f mes-tex">\(\displaystyle \gamma = \frac{\tau}{G},\qquad G = \frac{E}{2(1+\nu)}\)</span></div>
+				<div class="mt-eqb"><span class="mt-eqb__n">Shear strain</span><span class="mt-eqb__f mes-tex">\(\displaystyle \gamma = \frac{\tau}{G},\)</span><span class="mt-eqb__f mes-tex">\(\displaystyle G = \frac{E}{2(1+\nu)}\)</span></div>
 				<div class="mt-eqb"><span class="mt-eqb__n">Bearing stress</span><span class="mt-eqb__f mes-tex">\(\displaystyle \sigma_b = \frac{V}{d\,t}\)</span></div>
 				<div class="mt-eqb"><span class="mt-eqb__n">Punching force</span><span class="mt-eqb__f mes-tex">\(\displaystyle F = \tau_u\,\pi\, d\, t\)</span></div>
 				<div class="mt-eqb"><span class="mt-eqb__n">Shear yield</span><span class="mt-eqb__f mes-tex">\(\displaystyle \tau_y \approx 0.577\,\sigma_y\quad\text{(von Mises)}\)</span></div>
@@ -1105,10 +1140,10 @@ body.is-stuck #navbar.hide { position: fixed; top: 56px; right: 8px; }
 			</div>
 			<div class="tu-stats" id="mt-to-stats"></div>
 			<div class="tu-card mt-eq">
-				<div class="mt-eqb"><span class="mt-eqb__n">Shear stress</span><span class="mt-eqb__f mes-tex">\(\displaystyle \tau_{max} = \frac{T\,c}{J},\qquad c = \frac{D}{2}\)</span></div>
-				<div class="mt-eqb"><span class="mt-eqb__n">Polar moment</span><span class="mt-eqb__f mes-tex">\(\displaystyle J = \frac{\pi D^4}{32}\ \text{(solid)},\qquad J = \frac{\pi\,(D^4 - d^4)}{32}\ \text{(hollow)}\)</span></div>
+				<div class="mt-eqb"><span class="mt-eqb__n">Shear stress</span><span class="mt-eqb__f mes-tex">\(\displaystyle \tau_{max} = \frac{T\,c}{J},\)</span><span class="mt-eqb__f mes-tex">\(\displaystyle c = \frac{D}{2}\)</span></div>
+				<div class="mt-eqb"><span class="mt-eqb__n">Polar moment</span><span class="mt-eqb__f mes-tex">\(\displaystyle J = \frac{\pi D^4}{32}\ \text{(solid)},\)</span><span class="mt-eqb__f mes-tex">\(\displaystyle J = \frac{\pi\,(D^4 - d^4)}{32}\ \text{(hollow)}\)</span></div>
 				<div class="mt-eqb"><span class="mt-eqb__n">Angle of twist</span><span class="mt-eqb__f mes-tex">\(\displaystyle \theta = \frac{T\,L}{G\,J}\)</span></div>
-				<div class="mt-eqb"><span class="mt-eqb__n">Power</span><span class="mt-eqb__f mes-tex">\(\displaystyle P = T\,\omega,\qquad \omega = \frac{2\pi n}{60}\)</span></div>
+				<div class="mt-eqb"><span class="mt-eqb__n">Power</span><span class="mt-eqb__f mes-tex">\(\displaystyle P = T\,\omega,\)</span><span class="mt-eqb__f mes-tex">\(\displaystyle \omega = \frac{2\pi n}{60}\)</span></div>
 			</div>
 		</section>
 
@@ -1116,7 +1151,7 @@ body.is-stuck #navbar.hide { position: fixed; top: 56px; right: 8px; }
 		<section data-panel="poisson" role="tabpanel" hidden>
 			<div class="tu-card"><div class="tu-seg mt-modes" id="mt-po-mode" role="group" aria-label="Tool"><button type="button" data-v="bar" aria-pressed="true">Bar under load</button><button type="button" data-v="3d" aria-pressed="false">3D Hooke's law</button><button type="button" data-v="const" aria-pressed="false">Elastic constants</button></div></div>
 			<div class="mt-grid2" data-pm="bar">
-				<div class="tu-card mt-fig"><svg id="mt-po-svg" class="mt-svg" viewBox="0 0 520 330" role="img" aria-label="A bar before and after loading: longer and thinner. Drag the right end to load it."></svg><div class="mt-sliders" id="mt-po-sl"></div><p class="mt-cap" id="mt-po-cap"></p></div>
+				<div class="tu-card mt-fig"><svg id="mt-po-svg" class="mt-svg" viewBox="0 0 520 384" role="img" aria-label="A bar before and after loading: longer and thinner. Drag the right end to load it."></svg><div class="mt-sliders" id="mt-po-sl"></div><p class="mt-cap" id="mt-po-cap"></p></div>
 				<div class="tu-card mt-inp">
 					<div class="tu-row"><div class="tu-field"><span class="tu-label">Load given as</span><div class="tu-seg" id="mt-po-by" role="group" aria-label="Load given as"><button type="button" data-v="s" aria-pressed="true">Stress</button><button type="button" data-v="e" aria-pressed="false">Strain</button></div></div></div>
 					<div class="tu-row mt-r2">
@@ -1167,10 +1202,10 @@ body.is-stuck #navbar.hide { position: fixed; top: 56px; right: 8px; }
 				<p class="tu-note">For an isotropic material (the same in every direction) any two elastic constants fix all the others. Wood, carbon fibre laminates and bone are not isotropic, so these formulas do not link their E, G and ν.</p>
 			</div>
 			<div class="tu-card mt-eq">
-				<div class="mt-eqb"><span class="mt-eqb__n">Poisson's ratio</span><span class="mt-eqb__f mes-tex">\(\displaystyle \nu = -\frac{\varepsilon_{lat}}{\varepsilon_{axial}},\qquad \Delta d = -\nu\,\varepsilon\,d\)</span></div>
-				<div class="mt-eqb"><span class="mt-eqb__n">Hooke's law in 3D</span><span class="mt-eqb__f mes-tex">\(\displaystyle \varepsilon_x = \frac{1}{E}\left[\sigma_x - \nu\,(\sigma_y + \sigma_z)\right],\qquad \gamma_{xy} = \frac{\tau_{xy}}{G}\)</span></div>
-				<div class="mt-eqb"><span class="mt-eqb__n">Volume change</span><span class="mt-eqb__f mes-tex">\(\displaystyle \frac{\Delta V}{V} \approx \varepsilon_x + \varepsilon_y + \varepsilon_z = \frac{1-2\nu}{E}\,(\sigma_x+\sigma_y+\sigma_z)\)</span></div>
-				<div class="mt-eqb"><span class="mt-eqb__n">Moduli</span><span class="mt-eqb__f mes-tex">\(\displaystyle G = \frac{E}{2(1+\nu)},\qquad K = \frac{E}{3(1-2\nu)}\)</span></div>
+				<div class="mt-eqb"><span class="mt-eqb__n">Poisson's ratio</span><span class="mt-eqb__f mes-tex">\(\displaystyle \nu = -\frac{\varepsilon_{lat}}{\varepsilon_{axial}},\)</span><span class="mt-eqb__f mes-tex">\(\displaystyle \Delta d = -\nu\,\varepsilon\,d\)</span></div>
+				<div class="mt-eqb"><span class="mt-eqb__n">Hooke's law in 3D</span><span class="mt-eqb__f mes-tex">\(\displaystyle \varepsilon_x = \frac{1}{E}\left[\sigma_x - \nu\,(\sigma_y + \sigma_z)\right],\)</span><span class="mt-eqb__f mes-tex">\(\displaystyle \gamma_{xy} = \frac{\tau_{xy}}{G}\)</span></div>
+				<div class="mt-eqb"><span class="mt-eqb__n">Volume change</span><span class="mt-eqb__f mes-tex">\(\displaystyle \frac{\Delta V}{V} \approx \varepsilon_x + \varepsilon_y + \varepsilon_z\)</span><span class="mt-eqb__f mes-tex">\(\displaystyle = \frac{1-2\nu}{E}\,(\sigma_x+\sigma_y+\sigma_z)\)</span></div>
+				<div class="mt-eqb"><span class="mt-eqb__n">Moduli</span><span class="mt-eqb__f mes-tex">\(\displaystyle G = \frac{E}{2(1+\nu)},\)</span><span class="mt-eqb__f mes-tex">\(\displaystyle K = \frac{E}{3(1-2\nu)}\)</span></div>
 			</div>
 		</section>
 
@@ -1212,10 +1247,11 @@ body.is-stuck #navbar.hide { position: fixed; top: 56px; right: 8px; }
 				<div class="tu-table-wrap mt-tbw"><table class="tu-table mt-tbl" id="mt-tb"></table></div>
 				<p class="tu-note">Click a row to use that material in every tool. Click a column heading to sort.</p>
 			</div>
-			<div class="tu-card">
+			<div class="tu-card mt-ascard">
 				<div class="mt-ash-top"><h2 class="mt-h">Stiffness against weight</h2>
 					<div class="tu-row mt-ash-sel"><div class="tu-field"><label for="mt-as-y">Up</label><select id="mt-as-y" class="tu-select"></select></div><div class="tu-field"><label for="mt-as-x">Across</label><select id="mt-as-x" class="tu-select"></select></div></div></div>
 				<svg id="mt-as" class="mt-svg" viewBox="0 0 720 480" role="img" aria-label="Chart of the materials: Young's modulus against density, both on log scales"></svg>
+				<div class="mt-as-lg" id="mt-as-lg" role="group" aria-label="Kinds of material (click one to show only that kind)"></div>
 				<p class="tu-note" id="mt-as-note">Both scales are logarithmic (each step is ten times the last). Click a dot to use that material. Dashed lines join materials with the same stiffness per kilogram (E/ρ): steel, aluminium and titanium sit on the same line.</p>
 			</div>
 			<div class="tu-card mt-src">
@@ -1329,7 +1365,7 @@ body.is-stuck #navbar.hide { position: fixed; top: 56px; right: 8px; }
             hide_search:false,
             current_tab:0
         }        </script><!-- FASTCOMMENTS-LAZY: widget init moved to main_js/main.js -- it pulls embed.min.js only when #fastcomments-widget nears the viewport or on the first Comments-toggle click, so it no longer blocks first render -->                <script src="https://mes.fm/main_js/lazysizes.min.js?v=1.0.3" async></script>
-	<script src="/materials/js/materials.js?v=2" defer></script>
+	<script src="/materials/js/materials.js?v=3" defer></script>
             <script src="https://mes.fm/main_js/main.js?v=1.0.5"></script>    <!-- PAGEVIEW-TRACKING-INSERTED --><script src="https://mes.fm/main_js/track.js" defer></script><script>document.getElementById('copyright-year').textContent = new Date().getFullYear();</script><script src="/main_js/info-bar-fit.js" defer></script><script>
   // Floating compact header bar (see #compact-nav CSS): appears once the
   // header + nav bar have scrolled off the top; nav links that don't fit

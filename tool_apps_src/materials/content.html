@@ -112,8 +112,8 @@
 			<div class="tu-stats" id="mt-tt-stats"></div>
 			<div class="tu-card" id="mt-tt-cmpw" hidden><h2 class="mt-h">Side by side</h2><div class="tu-table-wrap"><table class="tu-table" id="mt-tt-cmpt"></table></div></div>
 			<div class="tu-card mt-eq">
-				<div class="mt-eqb"><span class="mt-eqb__n">Engineering stress</span><span class="mt-eqb__f mes-tex">\(\displaystyle \sigma = \frac{F}{A_0},\qquad \varepsilon = \frac{L - L_0}{L_0}\)</span></div>
-				<div class="mt-eqb"><span class="mt-eqb__n">True stress</span><span class="mt-eqb__f mes-tex">\(\displaystyle \sigma_t = \frac{F}{A} = \sigma\,(1+\varepsilon),\qquad \varepsilon_t = \ln(1+\varepsilon)\)</span></div>
+				<div class="mt-eqb"><span class="mt-eqb__n">Engineering stress</span><span class="mt-eqb__f mes-tex">\(\displaystyle \sigma = \frac{F}{A_0},\)</span><span class="mt-eqb__f mes-tex">\(\displaystyle \varepsilon = \frac{L - L_0}{L_0}\)</span></div>
+				<div class="mt-eqb"><span class="mt-eqb__n">True stress</span><span class="mt-eqb__f mes-tex">\(\displaystyle \sigma_t = \frac{F}{A} = \sigma\,(1+\varepsilon),\)</span><span class="mt-eqb__f mes-tex">\(\displaystyle \varepsilon_t = \ln(1+\varepsilon)\)</span></div>
 				<div class="mt-eqb"><span class="mt-eqb__n">Hardening</span><span class="mt-eqb__f mes-tex">\(\displaystyle \sigma_t = K\,\varepsilon_p^{\,n}\)</span></div>
 				<div class="mt-eqb"><span class="mt-eqb__n">Necking starts</span><span class="mt-eqb__f mes-tex">\(\displaystyle \frac{d\sigma_t}{d\varepsilon_t} = \sigma_t \;\Rightarrow\; \varepsilon_t \approx n\)</span></div>
 				<div class="mt-eqb"><span class="mt-eqb__n">Resilience</span><span class="mt-eqb__f mes-tex">\(\displaystyle U_r = \frac{\sigma_y^2}{2E}\)</span></div>
@@ -126,7 +126,8 @@
 		<section data-panel="shear" role="tabpanel" hidden>
 			<div class="mt-grid2">
 				<div class="tu-card mt-fig">
-					<svg id="mt-sh-svg" class="mt-svg" viewBox="0 0 520 370" role="img" aria-label="A bolt or pin loaded in shear between plates"></svg>
+					<svg id="mt-sh-svg" class="mt-svg" viewBox="0 0 520 400" role="img" aria-label="A bolt or pin loaded in shear between plates"></svg>
+					<div class="mt-sliders" id="mt-sh-sl"></div>
 					<p class="mt-cap" id="mt-sh-cap"></p>
 				</div>
 				<div class="tu-card mt-inp">
@@ -151,9 +152,9 @@
 			</div>
 			<div class="tu-stats" id="mt-sh-stats"></div>
 			<div class="tu-card mt-eq">
-				<div class="mt-eqb"><span class="mt-eqb__n">Shear stress</span><span class="mt-eqb__f mes-tex">\(\displaystyle \tau = \frac{V}{A},\qquad A = \frac{\pi d^2}{4}\ \text{per plane}\)</span></div>
+				<div class="mt-eqb"><span class="mt-eqb__n">Shear stress</span><span class="mt-eqb__f mes-tex">\(\displaystyle \tau = \frac{V}{A},\)</span><span class="mt-eqb__f mes-tex">\(\displaystyle A = \frac{\pi d^2}{4}\ \text{per plane}\)</span></div>
 				<div class="mt-eqb"><span class="mt-eqb__n">Double shear</span><span class="mt-eqb__f mes-tex">\(\displaystyle \tau = \frac{V}{2A}\)</span></div>
-				<div class="mt-eqb"><span class="mt-eqb__n">Shear strain</span><span class="mt-eqb__f mes-tex">\(\displaystyle \gamma = \frac{\tau}{G},\qquad G = \frac{E}{2(1+\nu)}\)</span></div>
+				<div class="mt-eqb"><span class="mt-eqb__n">Shear strain</span><span class="mt-eqb__f mes-tex">\(\displaystyle \gamma = \frac{\tau}{G},\)</span><span class="mt-eqb__f mes-tex">\(\displaystyle G = \frac{E}{2(1+\nu)}\)</span></div>
 				<div class="mt-eqb"><span class="mt-eqb__n">Bearing stress</span><span class="mt-eqb__f mes-tex">\(\displaystyle \sigma_b = \frac{V}{d\,t}\)</span></div>
 				<div class="mt-eqb"><span class="mt-eqb__n">Punching force</span><span class="mt-eqb__f mes-tex">\(\displaystyle F = \tau_u\,\pi\, d\, t\)</span></div>
 				<div class="mt-eqb"><span class="mt-eqb__n">Shear yield</span><span class="mt-eqb__f mes-tex">\(\displaystyle \tau_y \approx 0.577\,\sigma_y\quad\text{(von Mises)}\)</span></div>
@@ -192,10 +193,10 @@
 			</div>
 			<div class="tu-stats" id="mt-to-stats"></div>
 			<div class="tu-card mt-eq">
-				<div class="mt-eqb"><span class="mt-eqb__n">Shear stress</span><span class="mt-eqb__f mes-tex">\(\displaystyle \tau_{max} = \frac{T\,c}{J},\qquad c = \frac{D}{2}\)</span></div>
-				<div class="mt-eqb"><span class="mt-eqb__n">Polar moment</span><span class="mt-eqb__f mes-tex">\(\displaystyle J = \frac{\pi D^4}{32}\ \text{(solid)},\qquad J = \frac{\pi\,(D^4 - d^4)}{32}\ \text{(hollow)}\)</span></div>
+				<div class="mt-eqb"><span class="mt-eqb__n">Shear stress</span><span class="mt-eqb__f mes-tex">\(\displaystyle \tau_{max} = \frac{T\,c}{J},\)</span><span class="mt-eqb__f mes-tex">\(\displaystyle c = \frac{D}{2}\)</span></div>
+				<div class="mt-eqb"><span class="mt-eqb__n">Polar moment</span><span class="mt-eqb__f mes-tex">\(\displaystyle J = \frac{\pi D^4}{32}\ \text{(solid)},\)</span><span class="mt-eqb__f mes-tex">\(\displaystyle J = \frac{\pi\,(D^4 - d^4)}{32}\ \text{(hollow)}\)</span></div>
 				<div class="mt-eqb"><span class="mt-eqb__n">Angle of twist</span><span class="mt-eqb__f mes-tex">\(\displaystyle \theta = \frac{T\,L}{G\,J}\)</span></div>
-				<div class="mt-eqb"><span class="mt-eqb__n">Power</span><span class="mt-eqb__f mes-tex">\(\displaystyle P = T\,\omega,\qquad \omega = \frac{2\pi n}{60}\)</span></div>
+				<div class="mt-eqb"><span class="mt-eqb__n">Power</span><span class="mt-eqb__f mes-tex">\(\displaystyle P = T\,\omega,\)</span><span class="mt-eqb__f mes-tex">\(\displaystyle \omega = \frac{2\pi n}{60}\)</span></div>
 			</div>
 		</section>
 
@@ -203,7 +204,7 @@
 		<section data-panel="poisson" role="tabpanel" hidden>
 			<div class="tu-card"><div class="tu-seg mt-modes" id="mt-po-mode" role="group" aria-label="Tool"><button type="button" data-v="bar" aria-pressed="true">Bar under load</button><button type="button" data-v="3d" aria-pressed="false">3D Hooke's law</button><button type="button" data-v="const" aria-pressed="false">Elastic constants</button></div></div>
 			<div class="mt-grid2" data-pm="bar">
-				<div class="tu-card mt-fig"><svg id="mt-po-svg" class="mt-svg" viewBox="0 0 520 330" role="img" aria-label="A bar before and after loading: longer and thinner. Drag the right end to load it."></svg><div class="mt-sliders" id="mt-po-sl"></div><p class="mt-cap" id="mt-po-cap"></p></div>
+				<div class="tu-card mt-fig"><svg id="mt-po-svg" class="mt-svg" viewBox="0 0 520 384" role="img" aria-label="A bar before and after loading: longer and thinner. Drag the right end to load it."></svg><div class="mt-sliders" id="mt-po-sl"></div><p class="mt-cap" id="mt-po-cap"></p></div>
 				<div class="tu-card mt-inp">
 					<div class="tu-row"><div class="tu-field"><span class="tu-label">Load given as</span><div class="tu-seg" id="mt-po-by" role="group" aria-label="Load given as"><button type="button" data-v="s" aria-pressed="true">Stress</button><button type="button" data-v="e" aria-pressed="false">Strain</button></div></div></div>
 					<div class="tu-row mt-r2">
@@ -254,10 +255,10 @@
 				<p class="tu-note">For an isotropic material (the same in every direction) any two elastic constants fix all the others. Wood, carbon fibre laminates and bone are not isotropic, so these formulas do not link their E, G and ν.</p>
 			</div>
 			<div class="tu-card mt-eq">
-				<div class="mt-eqb"><span class="mt-eqb__n">Poisson's ratio</span><span class="mt-eqb__f mes-tex">\(\displaystyle \nu = -\frac{\varepsilon_{lat}}{\varepsilon_{axial}},\qquad \Delta d = -\nu\,\varepsilon\,d\)</span></div>
-				<div class="mt-eqb"><span class="mt-eqb__n">Hooke's law in 3D</span><span class="mt-eqb__f mes-tex">\(\displaystyle \varepsilon_x = \frac{1}{E}\left[\sigma_x - \nu\,(\sigma_y + \sigma_z)\right],\qquad \gamma_{xy} = \frac{\tau_{xy}}{G}\)</span></div>
-				<div class="mt-eqb"><span class="mt-eqb__n">Volume change</span><span class="mt-eqb__f mes-tex">\(\displaystyle \frac{\Delta V}{V} \approx \varepsilon_x + \varepsilon_y + \varepsilon_z = \frac{1-2\nu}{E}\,(\sigma_x+\sigma_y+\sigma_z)\)</span></div>
-				<div class="mt-eqb"><span class="mt-eqb__n">Moduli</span><span class="mt-eqb__f mes-tex">\(\displaystyle G = \frac{E}{2(1+\nu)},\qquad K = \frac{E}{3(1-2\nu)}\)</span></div>
+				<div class="mt-eqb"><span class="mt-eqb__n">Poisson's ratio</span><span class="mt-eqb__f mes-tex">\(\displaystyle \nu = -\frac{\varepsilon_{lat}}{\varepsilon_{axial}},\)</span><span class="mt-eqb__f mes-tex">\(\displaystyle \Delta d = -\nu\,\varepsilon\,d\)</span></div>
+				<div class="mt-eqb"><span class="mt-eqb__n">Hooke's law in 3D</span><span class="mt-eqb__f mes-tex">\(\displaystyle \varepsilon_x = \frac{1}{E}\left[\sigma_x - \nu\,(\sigma_y + \sigma_z)\right],\)</span><span class="mt-eqb__f mes-tex">\(\displaystyle \gamma_{xy} = \frac{\tau_{xy}}{G}\)</span></div>
+				<div class="mt-eqb"><span class="mt-eqb__n">Volume change</span><span class="mt-eqb__f mes-tex">\(\displaystyle \frac{\Delta V}{V} \approx \varepsilon_x + \varepsilon_y + \varepsilon_z\)</span><span class="mt-eqb__f mes-tex">\(\displaystyle = \frac{1-2\nu}{E}\,(\sigma_x+\sigma_y+\sigma_z)\)</span></div>
+				<div class="mt-eqb"><span class="mt-eqb__n">Moduli</span><span class="mt-eqb__f mes-tex">\(\displaystyle G = \frac{E}{2(1+\nu)},\)</span><span class="mt-eqb__f mes-tex">\(\displaystyle K = \frac{E}{3(1-2\nu)}\)</span></div>
 			</div>
 		</section>
 
@@ -299,10 +300,11 @@
 				<div class="tu-table-wrap mt-tbw"><table class="tu-table mt-tbl" id="mt-tb"></table></div>
 				<p class="tu-note">Click a row to use that material in every tool. Click a column heading to sort.</p>
 			</div>
-			<div class="tu-card">
+			<div class="tu-card mt-ascard">
 				<div class="mt-ash-top"><h2 class="mt-h">Stiffness against weight</h2>
 					<div class="tu-row mt-ash-sel"><div class="tu-field"><label for="mt-as-y">Up</label><select id="mt-as-y" class="tu-select"></select></div><div class="tu-field"><label for="mt-as-x">Across</label><select id="mt-as-x" class="tu-select"></select></div></div></div>
 				<svg id="mt-as" class="mt-svg" viewBox="0 0 720 480" role="img" aria-label="Chart of the materials: Young's modulus against density, both on log scales"></svg>
+				<div class="mt-as-lg" id="mt-as-lg" role="group" aria-label="Kinds of material (click one to show only that kind)"></div>
 				<p class="tu-note" id="mt-as-note">Both scales are logarithmic (each step is ten times the last). Click a dot to use that material. Dashed lines join materials with the same stiffness per kilogram (E/ρ): steel, aluminium and titanium sit on the same line.</p>
 			</div>
 			<div class="tu-card mt-src">
