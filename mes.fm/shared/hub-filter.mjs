@@ -148,3 +148,37 @@ export function buildFilter(section, escapeHtml) {
     <p class="ls-empty" id="${section.id}Empty" hidden>Nothing matches. Try fewer words or a different filter.</p>`;
 }
 
+
+// "All Content" page (mes.fm/<hub>-all, 2026-10-21): every item of every section the hub writes a page for, on one page with
+// the search box and one chip per section (an item listed in two sections gets both chips). Call it right after the PAGES
+// array: it appends a section `<hub>-all` to SECTIONS and puts its page first in PAGES (tile = img/<hub>-all-icon.jpg, a copy
+// of the hub's own homepage tile). Items are shallow copies, so the section pages' own cats are untouched.
+export function addAllPage(SECTIONS, PAGES, { hub, name, iconVersion = 1 }) {
+  const pages = PAGES.filter((p) => !p.tileOnly && p.sectionId && SECTIONS.some((s) => s.id === p.sectionId));
+  const byKey = new Map();
+  const chips = [];
+  for (const p of pages) {
+    const sec = SECTIONS.find((s) => s.id === p.sectionId);
+    const chip = { id: "s-" + sec.id, label: p.tileLabel || sec.title };
+    let n = 0;
+    for (const item of sec.items) {
+      if (item.standalone) continue;
+      const key = item.href || (item.links && item.links[0] && item.links[0][1]) || item.title;
+      const have = byKey.get(key);
+      if (have) { if (!have.cats.split(" ").includes(chip.id)) have.cats += " " + chip.id; n++; continue; }
+      byKey.set(key, { ...item, cats: chip.id, kw: [item.kw, chip.label].filter(Boolean).join(" ") });
+      n++;
+    }
+    if (n) chips.push(chip);
+  }
+  const items = [...byKey.values()];
+  SECTIONS.push({ id: `${hub}-all`, title: "All Content", items, filter: chips, filterPlaceholder: `Search everything in ${name}…` });
+  PAGES.unshift({
+    slug: `${hub}-all`,
+    sectionId: `${hub}-all`,
+    iconVersion,
+    tileLabel: "All Content",
+    title: `All ${name} Content`,
+    description: `Everything in MES ${name} on one page: all ${items.length} posts, videos and articles from every section, searchable, with a filter per section and Grid or List view.`,
+  });
+}

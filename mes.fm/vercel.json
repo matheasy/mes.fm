@@ -2,6 +2,9 @@
   "ignoreCommand": "if [ -n \"$VERCEL_GIT_PREVIOUS_SHA\" ] && git cat-file -e \"$VERCEL_GIT_PREVIOUS_SHA^{commit}\" 2>/dev/null && git diff --quiet \"$VERCEL_GIT_PREVIOUS_SHA\" HEAD -- ./; then exit 0; else exit 1; fi",
   "cleanUrls": true,
   "redirects": [
+    { "source": "/mathqa", "destination": "/math-qa", "permanent": true },
+    { "source": "/mathqa/:path*", "destination": "/math-qa", "permanent": true },
+    { "source": "/math-q-a", "destination": "/math-qa", "permanent": true },
     { "source": "/", "has": [{ "type": "host", "value": "bmi.mes.fm" }], "destination": "https://mes.fm/bmicalculator", "permanent": true },
     { "source": "/:path*", "has": [{ "type": "host", "value": "bmi.mes.fm" }], "destination": "https://mes.fm/bmicalculator/:path*", "permanent": true },
     { "source": "/", "has": [{ "type": "host", "value": "gc.mes.fm" }], "destination": "https://mes.fm/gradecalculator", "permanent": true },
