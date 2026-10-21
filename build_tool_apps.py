@@ -633,7 +633,7 @@ APPS = {
     "birthday": dict(title="MES Famous Birthdays", page_title="Famous Birthdays: Who Shares Your Birthday?",
                      tag="Who was born on your day?", accent="#b45309", dark="#8a3f06", tint="#fdf0e1",
                      desc="Free famous birthdays finder: see which celebrities, scientists, athletes, musicians and leaders were born today or on your birthday, who shares your exact birth date and year, with their zodiac signs. Search 10,000 famous people by name.",
-                     js_v="1", pre_js=["/moon/js/astronomy.browser.min.js"], lib_from=["clock", "zodiac"],
+                     js_v="2", pre_js=["/moon/js/astronomy.browser.min.js"], lib_from=["clock", "zodiac"],
                      nav_extra="<li class=\"info-bar__item\"><a class=\"info-bar__item__text\" href='/zodiac'>Zodiac</a></li><li class=\"info-bar__item\"><a class=\"info-bar__item__text\" href='/calendar'>Calendar</a></li>",
                      menu_extra="<li class=\"navbar__item\"><a class=\"navbar__link\" href=\"/zodiac\">Zodiac &amp; Birth Chart</a></li><li class=\"navbar__item\"><a class=\"navbar__link\" href=\"/calendar\">Calendar</a></li>"),
     # Zodiac & Birth Chart (new 2026-10-21, mes.fm/zodiac; aliases /birth-chart /natal-chart /horoscope /star-sign ...): Sun / Moon / rising sign, planets in signs + retrograde,
@@ -642,7 +642,7 @@ APPS = {
     "zodiac": dict(title="MES Zodiac & Birth Chart", page_title="Zodiac Sign and Birth Chart Calculator",
                    tag="Sun, Moon and rising sign, for fun.", accent="#6b3fa0", dark="#4e2c78", tint="#efe8f8",
                    desc="Free birth chart calculator: find your Sun sign, Moon sign and rising sign, where the planets were when you were born, the Moon phase and your Chinese zodiac animal, with a chart wheel. Compare your signs with famous people born on your day.",
-                   js_v="1", pre_js=["/moon/js/astronomy.browser.min.js"], lib_from=["clock", "birthday"],
+                   js_v="2", pre_js=["/moon/js/astronomy.browser.min.js"], lib_from=["clock", "birthday"],
                    nav_extra="<li class=\"info-bar__item\"><a class=\"info-bar__item__text\" href='/birthday'>Birthdays</a></li><li class=\"info-bar__item\"><a class=\"info-bar__item__text\" href='/moon'>Moon</a></li><li class=\"info-bar__item\"><a class=\"info-bar__item__text\" href='/solar-system-today'>Solar System</a></li>",
                    menu_extra="<li class=\"navbar__item\"><a class=\"navbar__link\" href=\"/birthday\">Famous Birthdays</a></li><li class=\"navbar__item\"><a class=\"navbar__link\" href=\"/moon\">Moon</a></li><li class=\"navbar__item\"><a class=\"navbar__link\" href=\"/solar-system-today\">Solar System Today</a></li>"),
     # Short Links (new 2026-10-06, mes.fm/go; aliases /redirects /short-links /shortlinks /urls): every redirect of vercel.json, categorized + searchable + a helper that writes the next line.

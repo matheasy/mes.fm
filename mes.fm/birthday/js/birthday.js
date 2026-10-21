@@ -284,7 +284,7 @@
  * written by build_birthdays.py from Wikidata (CC0). Used by mes.fm/birthday and mes.fm/zodiac. Tests: node tool_apps_src/birthday-tests.js */
 (function (root) {
 	"use strict";
-	var DATA_V = "2026-10-21";    // date of the data files: build_birthdays.py --apply updates it (then rebuild both pages so browsers fetch the new files)
+	var DATA_V = "2026-10-21.2";    // date of the data files: build_birthdays.py --apply updates it (then rebuild both pages so browsers fetch the new files)
 	var MONTHS = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"];
 	var FIELDS = { music: "Music", film: "Film, TV & internet", sports: "Sports", politics: "Politics & law", science: "Science & ideas", writing: "Writing",
 		art: "Art & design", business: "Business", religion: "Religion", royalty: "Royalty", military: "Military & exploration", other: "Other" };
@@ -398,6 +398,56 @@
 		if (o.sort && o.sort !== "fame") q.set("s", o.sort);
 		return q.toString();
 	}
+	// portrait thumbnail on upload.wikimedia.org from "<md5 prefix>|<Commons file name>" (build_birthdays.py). TIFF thumbnails are JPEGs, SVG ones PNGs;
+	// 120px is one of Wikimedia's standard thumbnail widths (drawn at 60 CSS px, sharp on 2x screens).
+	function thumbUrl(img, w) {
+		if (!img || img.indexOf("|") !== 2) return "";
+		var h = img.slice(0, 2), f = img.slice(3), ext = f.slice(f.lastIndexOf(".") + 1).toLowerCase(), q = encodeURIComponent(f).replace(/%2C/g, ",").replace(/%28/g, "(").replace(/%29/g, ")");
+		var tail = ext === "tif" || ext === "tiff" ? ".jpg" : ext === "svg" ? ".png" : "";
+		return "https://upload.wikimedia.org/wikipedia/commons/thumb/" + h[0] + "/" + h + "/" + q + "/" + (w || 120) + "px-" + q + tail;
+	}
+	function commonsUrl(img) { return img && img.indexOf("|") === 2 ? "https://commons.wikimedia.org/wiki/File:" + encodeURIComponent(img.slice(3)).replace(/%2C/g, ",").replace(/%28/g, "(").replace(/%29/g, ")") : ""; }
+	function initials(name) { var w = String(name || "?").replace(/\(.*?\)/g, "").trim().split(/\s+/); return ((w[0] || "?").charAt(0) + (w.length > 1 ? w[w.length - 1].charAt(0) : "")).toUpperCase(); }
+	// whole years from date a to a later date b ({y, mo, d})
+	function yearsBetween(a, b) { var n = b.y - a.y; if (b.mo < a.mo || (b.mo === a.mo && b.d < a.d)) n--; return n; }
+	function dayNum(o) { return Math.round(Date.UTC(o.y, o.mo - 1, o.d) / 86400000); }
+	// "8 years older than you" / "3 years younger than you" / "born the same day as you" / "a few months older than you"
+	function ageGapText(p, me, you) {
+		you = you || "you";
+		var dn = dayNum(p) - dayNum(me);
+		if (dn === 0) return "born the same day as " + you;
+		var older = dn < 0, n = older ? yearsBetween(p, me) : yearsBetween(me, p);
+		if (n === 0) { var days = Math.abs(dn); return (days < 61 ? days + (days === 1 ? " day " : " days ") : Math.round(days / 30.44) + " months ") + (older ? "older" : "younger") + " than " + you; }
+		return n + (n === 1 ? " year " : " years ") + (older ? "older" : "younger") + " than " + you;
+	}
+	// next birthday on or after `today` ({y, mo, d}); 29 February is celebrated on 28 February in other years
+	function nextBirthday(mo, d, today, birthYear) {
+		function at(y) { var dd = mo === 2 && d === 29 && new Date(Date.UTC(y, 1, 29)).getUTCMonth() !== 1 ? 28 : d; return { y: y, mo: mo, d: dd }; }
+		var n = at(today.y);
+		if (dayNum(n) < dayNum(today)) n = at(today.y + 1);
+		n.days = dayNum(n) - dayNum(today);
+		n.wd = new Date(Date.UTC(n.y, n.mo - 1, n.d)).getUTCDay();
+		if (birthYear) n.turns = n.y - birthYear;
+		return n;
+	}
+	// the person in the index born closest to the date (either side, any amount), excluding ids in `skip`
+	function closestTwin(index, y, mo, d, skip) {
+		var me = dayNum({ y: y, mo: mo, d: d }), best = null;
+		index.forEach(function (r) {
+			if (skip && skip.indexOf(r[0]) >= 0) return;
+			var g = Math.abs(Math.round(Date.UTC(+r[2].slice(0, 4), +r[2].slice(5, 7) - 1, +r[2].slice(8, 10)) / 86400000) - me);
+			if (!best || g < best.gap || (g === best.gap && r[3] < best.rank)) best = { id: r[0], name: r[1], dob: r[2], rank: r[3], gap: g, y: +r[2].slice(0, 4), mo: +r[2].slice(5, 7), d: +r[2].slice(8, 10) };
+		});
+		return best;
+	}
+	var WEEKDAYS = ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"];
+	// Wikipedia "On this day" (REST feed, CC BY-SA): keep only year, text and the first linked article of each item
+	function slimOnThisDay(json, type) {
+		return (json[type] || []).map(function (e) {
+			var pg = (e.pages || [])[0];
+			return { y: e.year === undefined ? null : e.year, t: e.text || "", a: pg ? (pg.titles && pg.titles.normalized) || pg.title || "" : "", u: pg && pg.content_urls && pg.content_urls.desktop ? pg.content_urls.desktop.page : "" };
+		}).filter(function (e) { return e.t; });
+	}
 	// fetch helpers (browser): cached promises per file
 	function loader(base) {
 		var cache = {};
@@ -413,7 +463,7 @@
 			range: function (parts) { var self = this; return Promise.all(parts.map(function (r) { return self.month(r[0]).then(function (l) { return l.filter(function (p) { return p.d >= r[1] && p.d <= r[2]; }); }); })).then(function (a) { return [].concat.apply([], a); }); }
 		};
 	}
-	var BD = { DATA_V: DATA_V, MONTHS: MONTHS, FIELDS: FIELDS, ERAS: ERAS, rows: rows, eraOf: eraOf, ageOn: ageOn, lifeText: lifeText, alive: alive, norm: norm, filter: filter, counts: counts, sortBy: sortBy,
+	var BD = { WEEKDAYS: WEEKDAYS, thumbUrl: thumbUrl, commonsUrl: commonsUrl, initials: initials, yearsBetween: yearsBetween, dayNum: dayNum, ageGapText: ageGapText, nextBirthday: nextBirthday, closestTwin: closestTwin, slimOnThisDay: slimOnThisDay, DATA_V: DATA_V, MONTHS: MONTHS, FIELDS: FIELDS, ERAS: ERAS, rows: rows, eraOf: eraOf, ageOn: ageOn, lifeText: lifeText, alive: alive, norm: norm, filter: filter, counts: counts, sortBy: sortBy,
 		doy: doy, dayGap: dayGap, shift: shift, search: search, sameYear: sameYear, nearest: nearest, dateText: dateText, dobText: dobText, wikiUrl: wikiUrl, iso: iso, fromQuery: fromQuery, toQuery: toQuery, loader: loader, pad: pad };
 	if (typeof module !== "undefined" && module.exports) module.exports = BD; else root.BD = BD;
 })(typeof window !== "undefined" ? window : globalThis);
@@ -427,7 +477,11 @@
 	if (!root || !window.BD) return;
 	var L = BD.loader("/birthday/data/"), PAGE = 30;
 	var now = new Date(), TODAY = { y: now.getFullYear(), mo: now.getMonth() + 1, d: now.getDate() };
-	var S = { mo: TODAY.mo, d: TODAY.d, y: null, field: "", country: "", era: "", alive: false, sort: "fame", shown: PAGE, hl: "" };
+	var S = { mo: TODAY.mo, d: TODAY.d, y: null, me: null, field: "", country: "", era: "", alive: false, sort: "fame", shown: PAGE, hl: "" };
+	// per-browser preferences (never sent): pictures on / off, and the "Line them up" list
+	var KEY = "mes-birthday:v1", P = { pics: true, friends: [] };
+	try { var sv = JSON.parse(localStorage.getItem(KEY) || "null"); if (sv) { if (typeof sv.pics === "boolean") P.pics = sv.pics; if (Array.isArray(sv.friends)) P.friends = sv.friends.filter(function (f) { return f && typeof f.n === "string" && /^\d{4}-\d{2}-\d{2}$/.test(f.d); }).slice(0, 12); } } catch (e) {}
+	function savePrefs() { try { localStorage.setItem(KEY, JSON.stringify(P)); } catch (e) {} }
 	var DAY = [];          // people of the current day
 	function esc(s) { return String(s == null ? "" : s).replace(/[&<>"]/g, function (c) { return { "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c]; }); }
 	function toast(msg) { var t = $("bd-toast"); if (!t) { t = document.createElement("div"); t.id = "bd-toast"; t.className = "tu-toast"; document.body.appendChild(t); } t.textContent = msg; t.classList.add("tu-toast--show"); clearTimeout(toast._t); toast._t = setTimeout(function () { t.classList.remove("tu-toast--show"); }, 2200); }
@@ -452,16 +506,24 @@
 		if (s.cn) h += '<span class="bd-sign" title="Chinese zodiac (year from Lunar New Year)">' + s.cn.emoji + " " + s.cn.element + " " + s.cn.animal + "</span>";
 		return h;
 	}
+	function avatar(p) {
+		if (!P.pics) return "";
+		var u = BD.thumbUrl(p.img, 120), ini = '<span class="bd-ini" aria-hidden="true">' + esc(BD.initials(p.name)) + "</span>";
+		if (!u) return '<span class="bd-av bd-av--none">' + ini + "</span>";
+		return '<a class="bd-av" href="' + esc(BD.commonsUrl(p.img)) + '" target="_blank" rel="noopener" title="Photo from Wikimedia Commons: ' + esc(p.img.slice(3).replace(/_/g, " ")) + ' (opens the file page with its author and licence)">' + ini +
+			'<img src="' + esc(u) + '" width="60" height="60" loading="lazy" decoding="async" alt="' + esc(p.name) + '" referrerpolicy="no-referrer"></a>';
+	}
 	function zodiacUrl(p, extra) { return "/zodiac?d=" + BD.iso(p) + (extra || ""); }
 	function card(p) {
-		var url = p.link || BD.wikiUrl(p), cmp = "/zodiac?p=" + encodeURIComponent(p.id) + (S.y ? "&d=" + BD.iso({ y: S.y, mo: S.mo, d: S.d }) : "");
-		return '<div class="bd-p' + (p.id === S.hl ? " bd-hl" : "") + '" id="p-' + esc(p.id) + '">' +
+		var url = p.link || BD.wikiUrl(p), cmp = "/zodiac?p=" + encodeURIComponent(p.id) + (S.me ? "&d=" + BD.iso(S.me) : "");
+		return '<div class="bd-p' + (p.id === S.hl ? " bd-hl" : "") + '" id="p-' + esc(p.id) + '">' + avatar(p) +
 			'<div class="bd-main"><div class="bd-top"><a class="bd-name" href="' + esc(url) + '" target="_blank" rel="noopener">' + esc(p.name) + "</a>" +
 			'<span class="bd-life">' + esc(BD.lifeText(p, TODAY)) + "</span></div>" +
+			(S.me ? '<div class="bd-gap">' + esc(BD.ageGapText(p, S.me)) + "</div>" : "") +
 			(p.desc ? '<div class="bd-desc">' + esc(p.desc) + "</div>" : "") +
 			'<div class="bd-meta"><span class="bd-tag bd-f-' + esc(p.field) + '">' + esc(BD.FIELDS[p.field] || "Other") + "</span>" +
 			(p.country ? '<span class="bd-ctry">' + esc(p.country) + "</span>" : "") + signHtml(p) +
-			'<a class="bd-cmp" href="' + esc(cmp) + '">' + (S.y ? "Compare signs with yours" : "Compare signs") + "</a>" +
+			'<a class="bd-cmp" href="' + esc(cmp) + '">' + (S.me ? "Compare signs with yours" : "Compare signs") + "</a>" +
 			(p.os ? '<span class="bd-os" title="Born when the old Julian calendar was used there: the date is shown in today&rsquo;s calendar">modern-calendar date</span>' : "") +
 			"</div></div></div>";
 	}
@@ -513,7 +575,7 @@
 		$("bd-moreb").textContent = "Show more (" + (list.length - S.shown) + " left)";
 		$("bd-zlink").href = "/zodiac?d=" + (S.y ? S.y + "-" : "") + BD.pad(S.mo) + "-" + BD.pad(S.d);
 		$("bd-zlink").textContent = S.y ? "Your birth chart" : "Zodiac sign for this date";
-		renderYou(); renderExtra();
+		renderYou(); renderNext(); renderExtra(); renderLine(); otdReset();
 		history.replaceState(null, "", location.pathname + (function () { var q = BD.toQuery({ mo: S.mo, d: S.d, y: S.y, field: S.field, country: S.country, era: S.era, alive: S.alive, sort: S.sort }); return q && !(isToday && !S.y && q === BD.toQuery({ mo: S.mo, d: S.d })) ? "?" + q : ""; })());
 		if (S.hl) { var el = $("p-" + S.hl); if (el) el.scrollIntoView({ block: "center", behavior: "smooth" }); }
 	}
@@ -526,6 +588,24 @@
 			(s.cn ? " · <strong>" + s.cn.emoji + " " + s.cn.element + " " + s.cn.animal + "</strong> in the Chinese zodiac" : "") + ' · <a href="' + esc(zodiacUrl(me)) + '">Your full birth chart</a></p>';
 		h += same.length ? '<p class="bd-youline">Born on <strong>exactly the same date</strong>: ' + same.map(function (p) { return '<a href="' + esc(p.link || BD.wikiUrl(p)) + '" target="_blank" rel="noopener">' + esc(p.name) + "</a>"; }).join(", ") + "</p>"
 			: '<p class="bd-youline">Nobody in the list was born on exactly the same date (' + esc(BD.dateText(S.mo, S.d, S.y)) + ").</p>";
+		h += '<p class="bd-youline" id="bd-twin"></p>';
+		box.innerHTML = h + "</div>"; box.hidden = false;
+		var want = BD.iso(me);
+		L.index().then(function (idx) {
+			var t = BD.closestTwin(idx, me.y, me.mo, me.d), el = $("bd-twin");
+			if (!t || !el || BD.iso(S.me || {}) !== want) return;
+			el.innerHTML = "Closest birth-date twin: " + mini(t, t.gap === 0 ? "born the same day as you" : BD.dobText(t.dob) + ", " + t.gap + (t.gap === 1 ? " day " : " days ") + (BD.dayNum(t) < BD.dayNum(me) ? "before you" : "after you"));
+		}).catch(function () {});
+	}
+	// "Next October 26": weekday, days to go, the age you turn, and famous living people turning N that day
+	function renderNext() {
+		var box = $("bd-nextc"), mine = S.me && S.me.mo === S.mo && S.me.d === S.d, nb = BD.nextBirthday(S.mo, S.d, TODAY, mine ? S.me.y : null);
+		var when = BD.WEEKDAYS[nb.wd] + ", " + BD.dateText(nb.mo, nb.d, nb.y), soon = nb.days === 0 ? "today!" : nb.days === 1 ? "tomorrow" : "in " + nb.days + " days";
+		var h = '<div class="bd-nextbig"><span class="bd-nextn">' + (nb.days === 0 ? "🎉" : nb.days) + '</span><span class="bd-nextl">' + (nb.days === 0 ? "today" : nb.days === 1 ? "day to go" : "days to go") + "</span></div><div>";
+		h += "<h3>" + (mine ? "Your next birthday" : "Next " + esc(BD.dateText(S.mo, S.d))) + "</h3><p>" + esc(when) + (nb.days === 0 ? ": today!" : ", " + soon + ".") + (mine && nb.turns > 0 ? " You turn <strong>" + nb.turns + "</strong>." : "") + "</p>";
+		var turning = DAY.filter(function (p) { return BD.alive(p, TODAY) && p.d === nb.d; }).slice(0, 3);
+		if (turning.length) h += '<p class="bd-turns">' + turning.map(function (p) { return esc(p.name) + " turns " + (nb.y - p.y); }).join(" · ") + " that day.</p>";
+		if (S.mo === 2 && S.d === 29 && nb.d === 28) h += '<p class="bd-turns">Not a leap year, so most people born on 29 February celebrate on 28 February.</p>';
 		box.innerHTML = h + "</div>"; box.hidden = false;
 	}
 	function renderExtra() {
@@ -539,6 +619,8 @@
 				var sy = BD.sameYear(idx, S.y, S.mo, S.d, 16).filter(function (p) { return !(p.mo === S.mo && p.d === S.d); }).slice(0, 12);
 				if (sy.length) h += '<div class="tu-card"><h3>Also born in ' + S.y + ", closest to your birthday</h3><div class=\"bd-minis\">" + sy.map(function (p) { return mini(p, BD.dateText(p.mo, p.d) + " (" + p.gap + (p.gap === 1 ? " day " : " days ") + (BD.doy(p.mo, p.d) > BD.doy(S.mo, S.d) ? "after" : "before") + ")"); }).join("") + "</div></div>";
 			}
+			[["bd-prevn", r[1][1]], ["bd-nextn2", r[1][2]]].forEach(function (x) { var el = $(x[0]), top = BD.sortBy(x[1], "fame")[0]; if (el) el.textContent = top ? top.name : ""; });
+			[["bd-prevd", near[1]], ["bd-nextd", near[2]]].forEach(function (x) { var el = $(x[0]); if (el) el.textContent = BD.MONTHS[x[1].mo - 1].slice(0, 3) + " " + x[1].d; });
 			var nr = [].concat.apply([], r[1]).sort(function (a, b) { return a.gap - b.gap || a.rank - b.rank; }).slice(0, 12);
 			if (nr.length) h += '<div class="tu-card"><h3>Birthdays a day or two away</h3><div class="bd-minis">' + nr.map(function (p) { return mini(p, BD.dateText(p.mo, p.d) + ", " + p.y); }).join("") + "</div></div>";
 			box.innerHTML = h;
@@ -575,7 +657,8 @@
 	function fromInput() {
 		var p = window.ZD ? ZD.parseDate($("bd-date").value) : null;
 		if (!p) { if ($("bd-date").value.trim()) toast("Type a date like Oct 26, 1980 or 1980-10-26"); return; }
-		S.hl = ""; setDay(p.mo, p.d, p.y || null, true);
+		S.hl = ""; if (p.y) S.me = { y: p.y, mo: p.mo, d: p.d };
+		setDay(p.mo, p.d, p.y || null, true);
 	}
 	$("bd-go").addEventListener("click", function () { if ($("bd-date").value.trim()) fromInput(); else { S.hl = ""; setDay(+$("bd-month").value, +$("bd-day").value, null, true); } });
 	$("bd-date").addEventListener("keydown", function (e) { if (e.key === "Enter") fromInput(); });
@@ -598,11 +681,81 @@
 		var u = location.origin + "/birthday?" + BD.toQuery({ mo: S.mo, d: S.d, y: S.y, field: S.field, country: S.country, era: S.era, alive: S.alive, sort: S.sort });
 		(navigator.clipboard ? navigator.clipboard.writeText(u) : Promise.reject()).then(function () { toast("Link copied"); }, function () { prompt("Copy this link:", u); });
 	});
-	$("bd-gen").textContent = BD.DATA_V;
+	$("bd-gen").textContent = BD.DATA_V.slice(0, 10);
+
+	/* ---------- pictures on / off ---------- */
+	function applyPics() { root.classList.toggle("bd-nopics", !P.pics); $("bd-pics").checked = P.pics; }
+	$("bd-pics").addEventListener("change", function () { P.pics = this.checked; savePrefs(); applyPics(); render(); });
+	// a portrait that fails to load (deleted file, blocked host) leaves the initials avatar underneath
+	root.addEventListener("error", function (e) { var t = e.target; if (t && t.tagName === "IMG" && t.parentNode && t.parentNode.classList.contains("bd-av")) { t.parentNode.classList.add("bd-av--none"); t.remove(); } }, true);
+	applyPics();
+
+	/* ---------- Line them up (friends, kept in this browser only) ---------- */
+	function renderLine() {
+		var box = $("bd-line"), rows = P.friends.map(function (f) { var y = +f.d.slice(0, 4), mo = +f.d.slice(5, 7), d = +f.d.slice(8, 10); return { name: f.n, y: y, mo: mo, d: d, friend: true }; });
+		if (S.me) rows.push({ name: "You", y: S.me.y, mo: S.me.mo, d: S.me.d, you: true });
+		rows.sort(function (a, b) { return BD.dayNum(a) - BD.dayNum(b); });
+		if (!rows.length) { box.innerHTML = '<p class="tu-note" style="margin:0.4em 0 0;">Add a friend or relative to compare ages and signs. Type your own birthday (with the year) above to be in the line too.</p>'; return; }
+		var h = '<div class="tu-table-wrap"><table class="tu-table bd-ltab"><thead><tr><th>Name</th><th>Born</th><th>Age</th><th>Signs</th><th>Next birthday</th>' + (S.me ? "<th>Compared with you</th>" : "") + "<th></th></tr></thead><tbody>";
+		rows.forEach(function (r) {
+			var sg = signs(r), nb = BD.nextBirthday(r.mo, r.d, TODAY, r.y), i = r.friend ? P.friends.findIndex(function (f) { return f.n === r.name && f.d === BD.iso(r); }) : -1;
+			h += "<tr" + (r.you ? ' class="bd-lyou"' : "") + "><td>" + esc(r.name) + "</td><td>" + esc(BD.dateText(r.mo, r.d, r.y)) + "</td><td>" + BD.ageOn(r.y, r.mo, r.d, TODAY) + "</td><td>" +
+				(sg.sun ? sg.sun.glyph + " " + sg.sun.name : "") + (sg.cn ? " · " + sg.cn.emoji + " " + sg.cn.animal : "") + "</td><td>" + (nb.days === 0 ? "today 🎉" : "in " + nb.days + " d, turns " + nb.turns) + "</td>" +
+				(S.me ? "<td>" + (r.you ? "—" : esc(BD.ageGapText(r, S.me))) + "</td>" : "") +
+				"<td>" + (i >= 0 ? '<button type="button" class="bd-x" data-del="' + i + '" aria-label="Remove ' + esc(r.name) + '">✕</button>' : "") + "</td></tr>";
+		});
+		box.innerHTML = h + "</tbody></table></div>";
+	}
+	$("bd-ladd").addEventListener("click", function () {
+		var n = $("bd-lname").value.trim().slice(0, 40), p = window.ZD ? ZD.parseDate($("bd-ldate").value) : null;
+		if (!p || !p.y) { toast("Type their birthday with the year, e.g. 1984-03-02"); $("bd-ldate").focus(); return; }
+		if (P.friends.length >= 12) { toast("Up to 12 people"); return; }
+		P.friends.push({ n: n || "Friend " + (P.friends.length + 1), d: BD.iso(p) }); savePrefs();
+		$("bd-lname").value = ""; $("bd-ldate").value = ""; renderLine();
+	});
+	$("bd-ldate").addEventListener("keydown", function (e) { if (e.key === "Enter") $("bd-ladd").click(); });
+	$("bd-line").addEventListener("click", function (e) { var b = e.target.closest("[data-del]"); if (!b) return; P.friends.splice(+b.getAttribute("data-del"), 1); savePrefs(); renderLine(); });
+
+	/* ---------- On this day (Wikipedia feed, CC BY-SA): loaded when the section comes into view, cached for the tab's session ---------- */
+	var OTD = { tab: "events", open: false, all: false };
+	function otdKey(t) { return "mes-otd:" + t + ":" + BD.pad(S.mo) + "-" + BD.pad(S.d); }
+	function otdReset() { OTD.all = false; if (OTD.open) otdLoad(); else $("bd-otdlist").innerHTML = ""; $("bd-otdh").textContent = "On this day, " + BD.dateText(S.mo, S.d); }
+	function otdLoad() {
+		var t = OTD.tab, key = otdKey(t), box = $("bd-otdlist"), cached = null;
+		OTD.open = true;
+		Array.prototype.forEach.call($("bd-otdtabs").querySelectorAll("[data-otd]"), function (b) { b.setAttribute("aria-pressed", String(b.getAttribute("data-otd") === t)); });
+		try { cached = JSON.parse(sessionStorage.getItem(key) || "null"); } catch (e) {}
+		if (cached) { otdShow(cached); return; }
+		box.innerHTML = '<p class="bd-empty">Loading from Wikipedia…</p>';
+		fetch("https://en.wikipedia.org/api/rest_v1/feed/onthisday/" + t + "/" + BD.pad(S.mo) + "/" + BD.pad(S.d), { headers: { "Api-User-Agent": "MES Famous Birthdays (https://mes.fm/birthday)" } })
+			.then(function (r) { if (!r.ok) throw new Error(r.status); return r.json(); })
+			.then(function (j) {
+				var list = BD.slimOnThisDay(j, t);
+				try { sessionStorage.setItem(key, JSON.stringify(list)); } catch (e) {}
+				if (key === otdKey(OTD.tab)) otdShow(list);
+			})
+			.catch(function () { if (key === otdKey(OTD.tab)) box.innerHTML = '<p class="bd-empty">Wikipedia could not be reached (offline, or blocked by an extension). <a href="https://en.wikipedia.org/wiki/' + BD.MONTHS[S.mo - 1] + "_" + S.d + '" target="_blank" rel="noopener">Open ' + BD.dateText(S.mo, S.d) + " on Wikipedia</a>.</p>"; });
+	}
+	function otdShow(list) {
+		var box = $("bd-otdlist"), n = OTD.all ? list.length : 15;
+		if (!list.length) { box.innerHTML = '<p class="bd-empty">Nothing listed for this day.</p>'; return; }
+		var h = '<ul class="bd-otd">' + list.slice(0, n).map(function (e) {
+			return "<li>" + (e.y !== null ? '<span class="bd-oty">' + (e.y < 0 ? -e.y + " BC" : e.y) + "</span>" : "") + '<span class="bd-ott">' + esc(e.t) +
+				(e.u && /^https:\/\/en\.wikipedia\.org\//.test(e.u) ? ' <a href="' + esc(e.u) + '" target="_blank" rel="noopener">' + esc(e.a) + " →</a>" : "") + "</span></li>";
+		}).join("") + "</ul>";
+		if (list.length > n) h += '<button type="button" class="tu-btn" id="bd-otdmore">Show all ' + list.length + "</button>";
+		box.innerHTML = h;
+	}
+	$("bd-otdtabs").addEventListener("click", function (e) { var b = e.target.closest("[data-otd]"); if (!b) return; OTD.tab = b.getAttribute("data-otd"); OTD.all = false; otdLoad(); });
+	$("bd-otdlist").addEventListener("click", function (e) { if (e.target.id === "bd-otdmore") { OTD.all = true; otdLoad(); } });
+	if ("IntersectionObserver" in window) {
+		var io = new IntersectionObserver(function (en) { if (en.some(function (x) { return x.isIntersecting; })) { io.disconnect(); if (!OTD.open) otdLoad(); } }, { rootMargin: "200px" });
+		io.observe($("bd-otdc"));
+	} else otdLoad();
 
 	/* ---------- start ---------- */
 	var q = BD.fromQuery(location.search);
-	if (q.mo) { S.mo = q.mo; S.d = q.d; S.y = q.y || null; if (q.y) $("bd-date").value = BD.dateText(q.mo, q.d, q.y); }
+	if (q.mo) { S.mo = q.mo; S.d = q.d; S.y = q.y || null; if (q.y) { $("bd-date").value = BD.dateText(q.mo, q.d, q.y); S.me = { y: q.y, mo: q.mo, d: q.d }; } }
 	["field", "country", "era", "alive", "sort"].forEach(function (k) { if (q[k] !== undefined) S[k] = q[k]; });
 	fillPickers();
 	if (q.q) { $("bd-q").value = q.q; doSearch(); }

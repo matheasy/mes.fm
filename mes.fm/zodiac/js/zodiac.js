@@ -56,7 +56,7 @@
  * written by build_birthdays.py from Wikidata (CC0). Used by mes.fm/birthday and mes.fm/zodiac. Tests: node tool_apps_src/birthday-tests.js */
 (function (root) {
 	"use strict";
-	var DATA_V = "2026-10-21";    // date of the data files: build_birthdays.py --apply updates it (then rebuild both pages so browsers fetch the new files)
+	var DATA_V = "2026-10-21.2";    // date of the data files: build_birthdays.py --apply updates it (then rebuild both pages so browsers fetch the new files)
 	var MONTHS = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"];
 	var FIELDS = { music: "Music", film: "Film, TV & internet", sports: "Sports", politics: "Politics & law", science: "Science & ideas", writing: "Writing",
 		art: "Art & design", business: "Business", religion: "Religion", royalty: "Royalty", military: "Military & exploration", other: "Other" };
@@ -170,6 +170,56 @@
 		if (o.sort && o.sort !== "fame") q.set("s", o.sort);
 		return q.toString();
 	}
+	// portrait thumbnail on upload.wikimedia.org from "<md5 prefix>|<Commons file name>" (build_birthdays.py). TIFF thumbnails are JPEGs, SVG ones PNGs;
+	// 120px is one of Wikimedia's standard thumbnail widths (drawn at 60 CSS px, sharp on 2x screens).
+	function thumbUrl(img, w) {
+		if (!img || img.indexOf("|") !== 2) return "";
+		var h = img.slice(0, 2), f = img.slice(3), ext = f.slice(f.lastIndexOf(".") + 1).toLowerCase(), q = encodeURIComponent(f).replace(/%2C/g, ",").replace(/%28/g, "(").replace(/%29/g, ")");
+		var tail = ext === "tif" || ext === "tiff" ? ".jpg" : ext === "svg" ? ".png" : "";
+		return "https://upload.wikimedia.org/wikipedia/commons/thumb/" + h[0] + "/" + h + "/" + q + "/" + (w || 120) + "px-" + q + tail;
+	}
+	function commonsUrl(img) { return img && img.indexOf("|") === 2 ? "https://commons.wikimedia.org/wiki/File:" + encodeURIComponent(img.slice(3)).replace(/%2C/g, ",").replace(/%28/g, "(").replace(/%29/g, ")") : ""; }
+	function initials(name) { var w = String(name || "?").replace(/\(.*?\)/g, "").trim().split(/\s+/); return ((w[0] || "?").charAt(0) + (w.length > 1 ? w[w.length - 1].charAt(0) : "")).toUpperCase(); }
+	// whole years from date a to a later date b ({y, mo, d})
+	function yearsBetween(a, b) { var n = b.y - a.y; if (b.mo < a.mo || (b.mo === a.mo && b.d < a.d)) n--; return n; }
+	function dayNum(o) { return Math.round(Date.UTC(o.y, o.mo - 1, o.d) / 86400000); }
+	// "8 years older than you" / "3 years younger than you" / "born the same day as you" / "a few months older than you"
+	function ageGapText(p, me, you) {
+		you = you || "you";
+		var dn = dayNum(p) - dayNum(me);
+		if (dn === 0) return "born the same day as " + you;
+		var older = dn < 0, n = older ? yearsBetween(p, me) : yearsBetween(me, p);
+		if (n === 0) { var days = Math.abs(dn); return (days < 61 ? days + (days === 1 ? " day " : " days ") : Math.round(days / 30.44) + " months ") + (older ? "older" : "younger") + " than " + you; }
+		return n + (n === 1 ? " year " : " years ") + (older ? "older" : "younger") + " than " + you;
+	}
+	// next birthday on or after `today` ({y, mo, d}); 29 February is celebrated on 28 February in other years
+	function nextBirthday(mo, d, today, birthYear) {
+		function at(y) { var dd = mo === 2 && d === 29 && new Date(Date.UTC(y, 1, 29)).getUTCMonth() !== 1 ? 28 : d; return { y: y, mo: mo, d: dd }; }
+		var n = at(today.y);
+		if (dayNum(n) < dayNum(today)) n = at(today.y + 1);
+		n.days = dayNum(n) - dayNum(today);
+		n.wd = new Date(Date.UTC(n.y, n.mo - 1, n.d)).getUTCDay();
+		if (birthYear) n.turns = n.y - birthYear;
+		return n;
+	}
+	// the person in the index born closest to the date (either side, any amount), excluding ids in `skip`
+	function closestTwin(index, y, mo, d, skip) {
+		var me = dayNum({ y: y, mo: mo, d: d }), best = null;
+		index.forEach(function (r) {
+			if (skip && skip.indexOf(r[0]) >= 0) return;
+			var g = Math.abs(Math.round(Date.UTC(+r[2].slice(0, 4), +r[2].slice(5, 7) - 1, +r[2].slice(8, 10)) / 86400000) - me);
+			if (!best || g < best.gap || (g === best.gap && r[3] < best.rank)) best = { id: r[0], name: r[1], dob: r[2], rank: r[3], gap: g, y: +r[2].slice(0, 4), mo: +r[2].slice(5, 7), d: +r[2].slice(8, 10) };
+		});
+		return best;
+	}
+	var WEEKDAYS = ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"];
+	// Wikipedia "On this day" (REST feed, CC BY-SA): keep only year, text and the first linked article of each item
+	function slimOnThisDay(json, type) {
+		return (json[type] || []).map(function (e) {
+			var pg = (e.pages || [])[0];
+			return { y: e.year === undefined ? null : e.year, t: e.text || "", a: pg ? (pg.titles && pg.titles.normalized) || pg.title || "" : "", u: pg && pg.content_urls && pg.content_urls.desktop ? pg.content_urls.desktop.page : "" };
+		}).filter(function (e) { return e.t; });
+	}
 	// fetch helpers (browser): cached promises per file
 	function loader(base) {
 		var cache = {};
@@ -185,7 +235,7 @@
 			range: function (parts) { var self = this; return Promise.all(parts.map(function (r) { return self.month(r[0]).then(function (l) { return l.filter(function (p) { return p.d >= r[1] && p.d <= r[2]; }); }); })).then(function (a) { return [].concat.apply([], a); }); }
 		};
 	}
-	var BD = { DATA_V: DATA_V, MONTHS: MONTHS, FIELDS: FIELDS, ERAS: ERAS, rows: rows, eraOf: eraOf, ageOn: ageOn, lifeText: lifeText, alive: alive, norm: norm, filter: filter, counts: counts, sortBy: sortBy,
+	var BD = { WEEKDAYS: WEEKDAYS, thumbUrl: thumbUrl, commonsUrl: commonsUrl, initials: initials, yearsBetween: yearsBetween, dayNum: dayNum, ageGapText: ageGapText, nextBirthday: nextBirthday, closestTwin: closestTwin, slimOnThisDay: slimOnThisDay, DATA_V: DATA_V, MONTHS: MONTHS, FIELDS: FIELDS, ERAS: ERAS, rows: rows, eraOf: eraOf, ageOn: ageOn, lifeText: lifeText, alive: alive, norm: norm, filter: filter, counts: counts, sortBy: sortBy,
 		doy: doy, dayGap: dayGap, shift: shift, search: search, sameYear: sameYear, nearest: nearest, dateText: dateText, dobText: dobText, wikiUrl: wikiUrl, iso: iso, fromQuery: fromQuery, toQuery: toQuery, loader: loader, pad: pad };
 	if (typeof module !== "undefined" && module.exports) module.exports = BD; else root.BD = BD;
 })(typeof window !== "undefined" ? window : globalThis);

@@ -54,4 +54,30 @@ const q = B.fromQuery("?d=1980-10-26&q=x&f=music&e=l20&a=1&s=old&c=Canada"); ok(
 ok(B.fromQuery("?d=10-26").y === undefined && B.fromQuery("?d=02-30").mo === undefined && B.fromQuery("?f=evil").field === undefined, "bad params dropped");
 ok(B.toQuery(q) === "d=1980-10-26&q=x&f=music&c=Canada&e=l20&a=1&s=old" && B.toQuery({ mo: 1, d: 5 }) === "d=01-05", "toQuery");
 ok(B.wikiUrl({ wiki: "Hillary Clinton" }) === "https://en.wikipedia.org/wiki/Hillary_Clinton" && B.wikiUrl({ id: "Q1" }) === "https://www.wikidata.org/wiki/Q1", "links");
+// portraits
+const withImg = []; for (let m = 1; m <= 12; m++) month(m).forEach(p => { if (p.img) withImg.push(p); });
+ok(withImg.length > 9000, "portraits " + withImg.length);
+withImg.forEach(p => { ok(/^[0-9a-f]{2}\|[^|/]+\.(jpe?g|png|gif|svg|tiff?|webp)$/i.test(p.img), "img code " + p.img); });
+const md5 = s => require("crypto").createHash("md5").update(s, "utf8").digest("hex");
+withImg.slice(0, 300).forEach(p => ok(md5(p.img.slice(3)) .slice(0, 2) === p.img.slice(0, 2), "md5 prefix " + p.img));
+ok(B.thumbUrl("ab|Foo_(bar),_1990.jpg") === "https://upload.wikimedia.org/wikipedia/commons/thumb/a/ab/Foo_(bar),_1990.jpg/120px-Foo_(bar),_1990.jpg", "thumb jpg");
+ok(B.thumbUrl("ab|X.tif", 60).endsWith("/60px-X.tif.jpg") && B.thumbUrl("ab|X.svg").endsWith("/120px-X.svg.png") && B.thumbUrl("ab|X.webp").endsWith("/120px-X.webp"), "thumb tif / svg / webp");
+ok(B.thumbUrl("ab|Café_Ø.jpg").includes("Caf%C3%A9_%C3%98.jpg") && B.thumbUrl("ab|A&B?.jpg").includes("A%26B%3F.jpg") && B.thumbUrl("") === "" && B.thumbUrl("x") === "", "thumb encoding / empty");
+ok(B.commonsUrl("ab|Hillary_Clinton.jpg") === "https://commons.wikimedia.org/wiki/File:Hillary_Clinton.jpg", "commons link");
+ok(B.initials("Judy Sheindlin (Judge Judy)") === "JS" && B.initials("Madonna") === "M", "initials");
+// age gaps, next birthday, closest twin
+const me = { y: 1980, mo: 10, d: 21 };
+ok(B.ageGapText({ y: 1947, mo: 10, d: 26 }, me) === "32 years older than you" && B.ageGapText({ y: 1981, mo: 10, d: 21 }, me) === "1 year younger than you", "age gap years");
+ok(B.ageGapText({ y: 1980, mo: 10, d: 21 }, me) === "born the same day as you" && B.ageGapText({ y: 1980, mo: 10, d: 26 }, me) === "5 days younger than you" && B.ageGapText({ y: 1980, mo: 3, d: 1 }, me) === "8 months older than you", "age gap short");
+let nb = B.nextBirthday(10, 26, { y: 2026, mo: 10, d: 21 }, 1947); ok(nb.y === 2026 && nb.days === 5 && nb.turns === 79 && B.WEEKDAYS[nb.wd] === "Monday", "next birthday Clinton 2026");
+nb = B.nextBirthday(10, 21, { y: 2026, mo: 10, d: 21 }, 1980); ok(nb.days === 0 && nb.turns === 46, "birthday today");
+nb = B.nextBirthday(1, 5, { y: 2026, mo: 12, d: 30 }); ok(nb.y === 2027 && nb.days === 6, "next year");
+nb = B.nextBirthday(2, 29, { y: 2026, mo: 1, d: 1 }, 2000); ok(nb.mo === 2 && nb.d === 28 && nb.turns === 26, "29 Feb in a common year");
+nb = B.nextBirthday(2, 29, { y: 2028, mo: 1, d: 1 }); ok(nb.d === 29, "29 Feb in a leap year");
+const tw = B.closestTwin(index, 1947, 10, 26); ok(tw.name === "Hillary Clinton" && tw.gap === 0, "closest twin same date");
+const tw2 = B.closestTwin(index, 1947, 10, 26, [tw.id]); ok(tw2.gap >= 0 && tw2.id !== tw.id, "closest twin, next one");
+// On this day: keep year, text, first article
+const otd = B.slimOnThisDay({ events: [{ year: 1881, text: "Gunfight at the O.K. Corral.", pages: [{ titles: { normalized: "Gunfight at the O.K. Corral" }, content_urls: { desktop: { page: "https://en.wikipedia.org/wiki/Gunfight_at_the_O.K._Corral" } } }] }, { text: "" }], holidays: [{ text: "Flag Day", pages: [] }] }, "events");
+ok(otd.length === 1 && otd[0].y === 1881 && otd[0].a === "Gunfight at the O.K. Corral" && otd[0].u.startsWith("https://en.wikipedia.org/"), "on this day slim");
+ok(B.slimOnThisDay({ holidays: [{ text: "Flag Day", pages: [] }] }, "holidays")[0].y === null && B.slimOnThisDay({}, "deaths").length === 0, "holidays have no year");
 console.log("birthday tests: " + n + " checks passed");

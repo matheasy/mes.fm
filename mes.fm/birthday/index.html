@@ -355,7 +355,54 @@ body.dark-mode .tu .rw-head {color:#a0a8b3;border-bottom-color:#555;} body.dark-
 	body.dark-mode #bd .bd-life, body.dark-mode #bd .bd-sub, body.dark-mode #bd .bd-mini-d, body.dark-mode #bd .bd-age, body.dark-mode #bd .bd-empty, body.dark-mode #bd .bd-meta .bd-os {color:var(--bd-muted);}
 	body.dark-mode #bd .bd-p, body.dark-mode #bd .bd-mini {background:var(--bd-card);border-color:var(--bd-line);}
 	body.dark-mode #bd .bd-p.bd-hl {background:var(--bd-hl);}
+	/* portraits (Pictures on): round 60px avatar left of the text; initials underneath show when there is no picture or it fails */
+	.tu .bd-p {display:flex;gap:0.75em;align-items:flex-start;}
+	.tu .bd-main {flex:1 1 auto;min-width:0;}
+	#bd .bd-av {position:relative;flex:0 0 60px;width:60px;height:60px;border-radius:50%;overflow:hidden;background:#fdf0e1;display:block;text-decoration:none !important;}
+	#bd .bd-av img {position:absolute;inset:0;width:60px;height:60px;object-fit:cover;object-position:50% 20%;border-radius:50%;background:var(--bd-card);}
+	#bd .bd-ini {position:absolute;inset:0;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:1.15em;color:var(--accent-dark);letter-spacing:0.02em;}
+	#bd.bd-nopics .bd-av {display:none;}
+	.tu .bd-gap {font-size:0.86em;font-weight:600;color:var(--accent-dark);margin-top:0.1em;}
+	/* next birthday */
+	.tu .bd-next {display:flex;gap:1em;align-items:center;}
+	.tu .bd-next h3 {margin:0 0 0.2em;font-size:1.1em;}
+	.tu .bd-next p {margin:0.15em 0;color:var(--bd-ink);}
+	.tu .bd-nextbig {flex:0 0 auto;text-align:center;background:#fdf0e1;border-radius:0.7em;padding:0.4em 0.7em;min-width:4.6em;}
+	.tu .bd-nextn {display:block;font-size:2em;font-weight:700;line-height:1.1;color:var(--accent-dark);font-variant-numeric:tabular-nums;}
+	.tu .bd-nextl {display:block;font-size:0.75em;color:var(--bd-ink);}
+	.tu .bd-turns {font-size:0.9em;color:var(--bd-muted) !important;}
+	/* day before / after with the best-known person of that day */
+	.tu .bd-arrow {display:flex;align-items:center;gap:0.4em;max-width:12em;text-align:left;}
+	.tu .bd-arrow--next {text-align:right;}
+	.tu .bd-arr {font-size:1.5em;line-height:1;}
+	.tu .bd-nb {display:flex;flex-direction:column;min-width:0;}
+	.tu .bd-nbd {font-size:0.62em;font-weight:700;white-space:nowrap;}
+	.tu .bd-nbn {font-size:0.55em;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:8em;opacity:0.85;}
+	/* on this day */
+	.tu .bd-otdc {margin-top:0.8em;}
+	.tu .bd-otdc h3, .tu .bd-linec h3 {margin:0 0 0.5em;font-size:1.1em;}
+	.tu .bd-otd {list-style:none;padding:0;margin:0.6em 0;}
+	.tu .bd-otd li {display:flex;gap:0.7em;padding:0.4em 0;border-bottom:1px solid var(--bd-line);line-height:1.4;}
+	.tu .bd-oty {flex:0 0 3.4em;font-weight:700;color:var(--accent-dark);font-variant-numeric:tabular-nums;}
+	.tu .bd-ott {color:var(--bd-ink);min-width:0;overflow-wrap:anywhere;}
+	.tu .bd-otdsrc {margin-bottom:0;}
+	/* line them up */
+	.tu .bd-linec {margin-top:0.8em;}
+	.tu .bd-ltab td, .tu .bd-ltab th {text-align:left;}
+	.tu .bd-ltab tr.bd-lyou td {font-weight:700;}
+	.tu .bd-x {background:none;border:1px solid var(--bd-line);border-radius:0.4em;cursor:pointer;color:var(--bd-ink);min-width:36px;min-height:36px;}
+	body.dark-mode #bd .bd-gap, body.dark-mode #bd .bd-oty, body.dark-mode #bd .bd-nextn, body.dark-mode #bd .bd-ini {color:#f2c879;}
+	body.dark-mode #bd .bd-av {background:#3a2a10;}
+	body.dark-mode #bd .bd-nextbig {background:#3a2a10;}
+	body.dark-mode #bd .bd-next p, body.dark-mode #bd .bd-nextl, body.dark-mode #bd .bd-ott, body.dark-mode #bd .bd-x {color:var(--bd-ink);}
+	body.dark-mode #bd .bd-turns {color:var(--bd-muted) !important;}
+	body.dark-mode #bd .bd-ott a, body.dark-mode #bd .bd-otdsrc a, body.dark-mode #bd .bd-src a {color:#f2c879;}
+	body.dark-mode #bd .bd-otd li, body.dark-mode #bd .bd-x {border-color:var(--bd-line);}
+	body.dark-mode #bd .bd-arrow {color:#f2c879;}
 	@media (max-width: 600px) {
+		.tu .bd-nbn {display:none;} .tu .bd-arrow {max-width:none;flex:0 0 auto;padding:0.2em 0.4em;gap:0.25em;} .tu .bd-nbd {font-size:0.55em;}
+		#bd .bd-av, #bd .bd-av img {width:52px;height:52px;flex-basis:52px;}
+		.tu .bd-next {align-items:flex-start;}
 		.tu .bd-list {grid-template-columns:1fr;}
 		.tu .bd-daytitle h2 {font-size:1.2em;}
 		.tu .bd-btns {flex:1 1 100%;} .tu .bd-btns .tu-btn {flex:1 1 auto;min-height:44px;}
@@ -440,6 +487,8 @@ body.dark-mode .tu .rw-head {color:#a0a8b3;border-bottom-color:#555;} body.dark-
 	body.dark-mode .tu [data-table="1"] .rw-head{color:#9a9aa2;border-bottom:2px solid #2b323c}
 	body.dark-mode .tu [data-table="1"] .rw-row{border-bottom:1px solid #27313f}
 	body.dark-mode .tu .bd-meta .bd-tag{background:#2c2013}
+	body.dark-mode #bd .bd-av{background:#2c2013}
+	body.dark-mode .tu .bd-nextbig{background:#2c2013}
 	/* TOOL-DARK:END */
 /* Floating compact header bar: once the full header + nav scroll out of
    view, a slim fixed bar (small logo, title, as many nav links as fit)
@@ -706,12 +755,13 @@ body.is-stuck #navbar.hide { position: fixed; top: 56px; right: 8px; }
 		</div>
 
 		<div class="bd-dayhead">
-			<button type="button" class="tu-btn bd-arrow" id="bd-prev" aria-label="Previous day">‹</button>
+			<button type="button" class="tu-btn bd-arrow" id="bd-prev" aria-label="Previous day"><span class="bd-arr">‹</span><span class="bd-nb"><span class="bd-nbd" id="bd-prevd"></span><span class="bd-nbn" id="bd-prevn"></span></span></button>
 			<div class="bd-daytitle"><h2 id="bd-title">Born today</h2><p id="bd-sub" class="bd-sub"></p></div>
-			<button type="button" class="tu-btn bd-arrow" id="bd-next" aria-label="Next day">›</button>
+			<button type="button" class="tu-btn bd-arrow bd-arrow--next" id="bd-next" aria-label="Next day"><span class="bd-nb"><span class="bd-nbd" id="bd-nextd"></span><span class="bd-nbn" id="bd-nextn2"></span></span><span class="bd-arr">›</span></button>
 		</div>
 
 		<div class="bd-you" id="bd-you" hidden></div>
+		<div class="tu-card bd-next" id="bd-nextc" hidden></div>
 
 		<div class="tu-card bd-filters">
 			<div class="tu-chips" id="bd-fields" role="group" aria-label="Field"></div>
@@ -720,6 +770,7 @@ body.is-stuck #navbar.hide { position: fixed; top: 56px; right: 8px; }
 				<div class="tu-field" style="flex:1 1 10em;"><label for="bd-era">Born</label><select id="bd-era" class="tu-input"></select></div>
 				<div class="tu-field" style="flex:1 1 10em;"><label for="bd-sort">Sort</label><select id="bd-sort" class="tu-input"><option value="fame">Most famous first</option><option value="old">Oldest first</option><option value="young">Youngest first</option><option value="name">A to Z</option></select></div>
 				<label class="bd-check"><input type="checkbox" id="bd-alive"> Living only</label>
+				<label class="bd-check" title="Portraits load from Wikimedia Commons (upload.wikimedia.org) in your browser"><input type="checkbox" id="bd-pics" checked> Pictures</label>
 			</div>
 		</div>
 
@@ -728,11 +779,29 @@ body.is-stuck #navbar.hide { position: fixed; top: 56px; right: 8px; }
 
 		<div id="bd-extra"></div>
 
+		<div class="tu-card bd-otdc" id="bd-otdc">
+			<h3 id="bd-otdh">On this day</h3>
+			<div class="tu-chips" id="bd-otdtabs" role="group" aria-label="On this day"><button type="button" class="tu-chip" data-otd="events" aria-pressed="true">Events</button><button type="button" class="tu-chip" data-otd="deaths" aria-pressed="false">Deaths</button><button type="button" class="tu-chip" data-otd="holidays" aria-pressed="false">Holidays &amp; observances</button></div>
+			<div id="bd-otdlist" aria-live="polite"></div>
+			<p class="tu-note bd-otdsrc">From <a href="https://en.wikipedia.org/wiki/Wikipedia:Selected_anniversaries" target="_blank" rel="noopener">Wikipedia&rsquo;s &ldquo;On this day&rdquo;</a>, <a href="https://creativecommons.org/licenses/by-sa/4.0/" target="_blank" rel="noopener">CC BY-SA 4.0</a>. Loaded from Wikipedia by your browser when you reach this box.</p>
+		</div>
+
+		<div class="tu-card bd-linec">
+			<h3>Line them up</h3>
+			<p class="tu-note" style="margin-top:0;">Add friends and family to see who is older, by how much, their signs and whose birthday comes next. The list stays in this browser only.</p>
+			<div class="tu-row" style="align-items:flex-end;">
+				<div class="tu-field" style="flex:2 1 10em;"><label for="bd-lname">Name</label><input id="bd-lname" class="tu-input" type="text" maxlength="40" autocomplete="off" placeholder="e.g. Mum"></div>
+				<div class="tu-field" style="flex:2 1 10em;"><label for="bd-ldate">Birthday</label><input id="bd-ldate" class="tu-input" type="text" autocomplete="off" placeholder="e.g. March 2, 1984"></div>
+				<div class="bd-btns"><button type="button" class="tu-btn tu-btn--primary" id="bd-ladd">Add</button></div>
+			</div>
+			<div id="bd-line"></div>
+		</div>
+
 		<div class="bd-share">
 			<button type="button" class="tu-btn" id="bd-copy">Copy link to this day</button>
 			<a class="tu-btn" id="bd-zlink" href="/zodiac">Birth chart for this date</a>
 		</div>
-		<p class="tu-note bd-src">People: the ~10,000 best-known people with an exact birth date on <a href="https://www.wikidata.org/" target="_blank" rel="noopener">Wikidata</a> (CC0), ranked by how many Wikipedia language editions have an article about them, plus a few hand-picked ones. Data updated <span id="bd-gen">recently</span>. A wrong date? Wikidata can be corrected by anyone.</p>
+		<p class="tu-note bd-src">People: the ~10,000 best-known people with an exact birth date on <a href="https://www.wikidata.org/" target="_blank" rel="noopener">Wikidata</a> (CC0), ranked by how many Wikipedia language editions have an article about them, plus a few hand-picked ones. Data updated <span id="bd-gen">recently</span>. A wrong date? Wikidata can be corrected by anyone.<br>Portraits: <a href="https://commons.wikimedia.org/" target="_blank" rel="noopener">Wikimedia Commons</a> (various licences; click a picture for its author and licence). They load from upload.wikimedia.org in your browser: untick <em>Pictures</em> to avoid that.</p>
 
 		<div class="tu-seo">
 			<h2>Famous birthdays: who shares your birthday?</h2>
@@ -747,7 +816,7 @@ body.is-stuck #navbar.hide { position: fixed; top: 56px; right: 8px; }
 			<h4>Why is someone famous missing?</h4>
 			<p>Either their exact birth date is not on Wikidata, Wikidata records two different dates (they are left out rather than guessed), or they are just outside the 10,000 most-linked people. Search by name to check.</p>
 			<h4>Is anything I type sent anywhere?</h4>
-			<p>No. The list of people is downloaded once and every search and filter runs in your browser; your birthday is never sent or stored.</p>
+			<p>No. The list of people is downloaded from mes.fm and every search and filter runs in your browser; your birthday and the people you line up are never sent (the line-up is kept in this browser only). Two things load from Wikimedia&rsquo;s servers, like any embedded picture: the portraits (switch <em>Pictures</em> off to stop them) and the &ldquo;On this day&rdquo; box (only the date is asked for).</p>
 			<h4>Related</h4>
 			<p>Get your full birth chart with the <a href="/zodiac">Zodiac &amp; Birth Chart</a>, count the days with <a href="/days-between-dates-calculator">Days Between Dates</a>, and see the sky on any date in <a href="/solar-system-today">Solar System Today</a>.</p>
 		</div>
@@ -811,7 +880,7 @@ body.is-stuck #navbar.hide { position: fixed; top: 56px; right: 8px; }
             hide_search:false,
             current_tab:0
         }        </script><!-- FASTCOMMENTS-LAZY: widget init moved to main_js/main.js -- it pulls embed.min.js only when #fastcomments-widget nears the viewport or on the first Comments-toggle click, so it no longer blocks first render -->                <script src="https://mes.fm/main_js/lazysizes.min.js?v=1.0.3" async></script>
-	<script src="/moon/js/astronomy.browser.min.js" defer></script><script src="/birthday/js/birthday.js?v=1" defer></script>
+	<script src="/moon/js/astronomy.browser.min.js" defer></script><script src="/birthday/js/birthday.js?v=2" defer></script>
             <script src="https://mes.fm/main_js/main.js?v=1.0.5"></script>    <!-- PAGEVIEW-TRACKING-INSERTED --><script src="https://mes.fm/main_js/track.js" defer></script><script>document.getElementById('copyright-year').textContent = new Date().getFullYear();</script><script src="/main_js/info-bar-fit.js" defer></script><script>
   // Floating compact header bar (see #compact-nav CSS): appears once the
   // header + nav bar have scrolled off the top; nav links that don't fit

@@ -78,6 +78,34 @@ def candidates():
     return found
 
 
+# portraits: Wikidata P18 (a Commons file). Stored as "<md5 prefix>|<file name>" so the page can build a direct
+# upload.wikimedia.org thumbnail URL (/thumb/a/ab/<file>/<w>px-<file>[.png|.jpg]) without the Special:FilePath redirect.
+IMG_EXT = {"jpg", "jpeg", "png", "gif", "svg", "tif", "tiff", "webp"}
+
+
+def img_code(fname):
+    import hashlib
+    f = fname.replace(" ", "_")
+    ext = f.rsplit(".", 1)[-1].lower() if "." in f else ""
+    if ext not in IMG_EXT or "|" in f or len(f) > 160:
+        return ""
+    return hashlib.md5(f.encode("utf-8")).hexdigest()[:2] + "|" + f
+
+
+def images(ids):
+    out = {}
+    for i in range(0, len(ids), 400):
+        chunk = ids[i:i + 400]
+        q = """SELECT ?p (SAMPLE(?img) AS ?i) WHERE { VALUES ?p { %s } ?p p:P18 ?st . ?st a wikibase:BestRank ; ps:P18 ?img . } GROUP BY ?p""" % " ".join("wd:" + x for x in chunk)
+        for r in sparql(q):
+            out[qid(r["p"]["value"])] = urllib.parse.unquote(r["i"]["value"].rsplit("/Special:FilePath/", 1)[-1])
+        for k in chunk:
+            out.setdefault(k, "")
+        print("  images %d/%d" % (min(i + 400, len(ids)), len(ids)))
+        time.sleep(1)
+    return out
+
+
 def details(ids):
     out = {}
     for i in range(0, len(ids), 300):
@@ -162,10 +190,11 @@ def main():
         cache = json.loads(CACHE.read_text())
         cand = {k: {"sl": v["sl"], "dobs": set(v["dobs"]), "os": v["os"]} for k, v in cache["cand"].items()}
         det = cache["det"]
+        imgs = cache.get("imgs", {})
         print("cache: %d candidates, %d details" % (len(cand), len(det)))
     else:
         print("querying candidates (sitelinks >= %d, day-precision birth date)" % MIN_SL)
-        cand, det = candidates(), {}
+        cand, det, imgs = candidates(), {}, {}
     # people whose best-rank birth dates disagree on the day are left out (no guessing)
     clash = [k for k, v in cand.items() if len(v["dobs"]) > 1]
     for k in clash:
@@ -190,7 +219,11 @@ def main():
     if need:
         print("fetching details for %d people" % len(need))
         det.update(details(need))
-    CACHE.write_text(json.dumps({"cand": {k: {"sl": v["sl"], "dobs": sorted(v["dobs"]), "os": v["os"]} for k, v in cand.items()}, "det": det}))
+    need_img = [k for k in ranked + ex_ids if k in cand and k not in imgs]
+    if need_img:
+        print("fetching portraits (P18) for %d people" % len(need_img))
+        imgs.update(images(need_img))
+    CACHE.write_text(json.dumps({"cand": {k: {"sl": v["sl"], "dobs": sorted(v["dobs"]), "os": v["os"]} for k, v in cand.items()}, "det": det, "imgs": imgs}))
     people = {}
     for k in ranked + ex_ids:
         if k not in cand or len(cand[k]["dobs"]) != 1:
@@ -206,7 +239,7 @@ def main():
             continue
         people[k] = {"id": k, "name": name, "dob": dob, "dod": d.get("dod", ""), "desc": clean_desc(d.get("desc", "")),
                      "country": d.get("country", ""), "field": field_of(d.get("desc", ""), d.get("occ", [])),
-                     "wiki": d.get("wiki", ""), "sl": cand[k]["sl"], "os": 1 if cand[k]["os"] else 0, "g": d.get("g", ""), "x": 0}
+                     "wiki": d.get("wiki", ""), "sl": cand[k]["sl"], "os": 1 if cand[k]["os"] else 0, "g": d.get("g", ""), "x": 0, "img": img_code(imgs.get(k, ""))}
     # extras: overrides, and people without a Wikidata item (need dob + source)
     for e in extras:
         k = e.get("qid") or ("X" + re.sub(r"[^a-z0-9]+", "-", e["name"].lower()).strip("-"))
@@ -217,9 +250,11 @@ def main():
                 print("  EXTRA %s: no dob + source, left out" % e.get("name"))
                 continue
             people[k] = {"id": k, "name": e["name"], "dob": e["dob"], "dod": "", "desc": "", "country": "", "field": "other",
-                         "wiki": "", "sl": 0, "os": 0, "g": "", "x": 1}
+                         "wiki": "", "sl": 0, "os": 0, "g": "", "x": 1, "img": ""}
         p = people[k]
         p["x"] = 1
+        if e.get("image"):          # a Commons file name chosen by hand
+            p["img"] = img_code(e["image"])
         for f in ("name", "desc", "country", "field", "wiki", "dod"):
             if e.get(f):
                 p[f] = e[f]
@@ -231,7 +266,7 @@ def main():
     order = sorted(people.values(), key=lambda p: (-p["sl"], p["name"]))
     for i, p in enumerate(order):
         p["rank"] = i + 1
-    cols = ["id", "name", "dob", "dod", "desc", "country", "field", "wiki", "rank", "sl", "os", "g", "x", "link"]
+    cols = ["id", "name", "dob", "dod", "desc", "country", "field", "wiki", "rank", "sl", "os", "g", "x", "link", "img"]
     months = {m: [] for m in range(1, 13)}
     for p in order:
         months[int(p["dob"][5:7])].append(p)
@@ -240,7 +275,7 @@ def main():
         OUT.mkdir(parents=True, exist_ok=True)
     for m, lst in months.items():
         lst.sort(key=lambda p: (p["dob"][8:10], p["rank"]))
-        rows = [[p.get(c, "") if c != "link" else p.get("link", "") for c in cols] for p in lst]
+        rows = [[p.get(c, "") for c in cols] for p in lst]
         txt = json.dumps({"cols": cols, "fields": FIELD_NAMES, "rows": rows}, ensure_ascii=False, separators=(",", ":"))
         total += len(txt.encode())
         if APPLY:
@@ -251,13 +286,16 @@ def main():
         (OUT / "index.json").write_text(idx, encoding="utf-8")
         lib = ROOT / "tool_apps_src" / "birthday" / "lib.js"     # cache-buster of the data files, shared by /birthday and /zodiac
         ls = lib.read_text(encoding="utf-8")
-        ls2 = re.sub(r'var DATA_V = "[^"]*"', 'var DATA_V = "%s"' % time.strftime("%Y-%m-%d"), ls, count=1)
+        today, cur = time.strftime("%Y-%m-%d"), re.search(r'var DATA_V = "([^"]*)"', ls).group(1)
+        ver = today if not cur.startswith(today) else today + "." + str(int(cur.split(".")[1]) + 1 if "." in cur else 2)   # a second run on the same day still busts caches
+        ls2 = re.sub(r'var DATA_V = "[^"]*"', 'var DATA_V = "%s"' % ver, ls, count=1)
         if ls2 != ls:
             lib.write_text(ls2, encoding="utf-8")
             print("DATA_V updated in tool_apps_src/birthday/lib.js: rebuild with build_tool_apps.py --only=birthday,zodiac --apply")
     fc = {}
     for p in order:
         fc[p["field"]] = fc.get(p["field"], 0) + 1
+    print("portraits: %d of %d people" % (sum(1 for p in order if p.get("img")), len(order)))
     print("people: %d (%d extras); month files %d KB total, index %d KB" % (len(order), sum(p["x"] for p in order), total // 1024, len(idx.encode()) // 1024))
     print("fields:", ", ".join("%s %d" % kv for kv in sorted(fc.items(), key=lambda kv: -kv[1])))
     for e in extras:

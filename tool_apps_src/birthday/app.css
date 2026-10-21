@@ -48,7 +48,54 @@
 	body.dark-mode #bd .bd-life, body.dark-mode #bd .bd-sub, body.dark-mode #bd .bd-mini-d, body.dark-mode #bd .bd-age, body.dark-mode #bd .bd-empty, body.dark-mode #bd .bd-meta .bd-os {color:var(--bd-muted);}
 	body.dark-mode #bd .bd-p, body.dark-mode #bd .bd-mini {background:var(--bd-card);border-color:var(--bd-line);}
 	body.dark-mode #bd .bd-p.bd-hl {background:var(--bd-hl);}
+	/* portraits (Pictures on): round 60px avatar left of the text; initials underneath show when there is no picture or it fails */
+	.tu .bd-p {display:flex;gap:0.75em;align-items:flex-start;}
+	.tu .bd-main {flex:1 1 auto;min-width:0;}
+	#bd .bd-av {position:relative;flex:0 0 60px;width:60px;height:60px;border-radius:50%;overflow:hidden;background:var(--tint);display:block;text-decoration:none !important;}
+	#bd .bd-av img {position:absolute;inset:0;width:60px;height:60px;object-fit:cover;object-position:50% 20%;border-radius:50%;background:var(--bd-card);}
+	#bd .bd-ini {position:absolute;inset:0;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:1.15em;color:var(--accent-dark);letter-spacing:0.02em;}
+	#bd.bd-nopics .bd-av {display:none;}
+	.tu .bd-gap {font-size:0.86em;font-weight:600;color:var(--accent-dark);margin-top:0.1em;}
+	/* next birthday */
+	.tu .bd-next {display:flex;gap:1em;align-items:center;}
+	.tu .bd-next h3 {margin:0 0 0.2em;font-size:1.1em;}
+	.tu .bd-next p {margin:0.15em 0;color:var(--bd-ink);}
+	.tu .bd-nextbig {flex:0 0 auto;text-align:center;background:var(--tint);border-radius:0.7em;padding:0.4em 0.7em;min-width:4.6em;}
+	.tu .bd-nextn {display:block;font-size:2em;font-weight:700;line-height:1.1;color:var(--accent-dark);font-variant-numeric:tabular-nums;}
+	.tu .bd-nextl {display:block;font-size:0.75em;color:var(--bd-ink);}
+	.tu .bd-turns {font-size:0.9em;color:var(--bd-muted) !important;}
+	/* day before / after with the best-known person of that day */
+	.tu .bd-arrow {display:flex;align-items:center;gap:0.4em;max-width:12em;text-align:left;}
+	.tu .bd-arrow--next {text-align:right;}
+	.tu .bd-arr {font-size:1.5em;line-height:1;}
+	.tu .bd-nb {display:flex;flex-direction:column;min-width:0;}
+	.tu .bd-nbd {font-size:0.62em;font-weight:700;white-space:nowrap;}
+	.tu .bd-nbn {font-size:0.55em;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:8em;opacity:0.85;}
+	/* on this day */
+	.tu .bd-otdc {margin-top:0.8em;}
+	.tu .bd-otdc h3, .tu .bd-linec h3 {margin:0 0 0.5em;font-size:1.1em;}
+	.tu .bd-otd {list-style:none;padding:0;margin:0.6em 0;}
+	.tu .bd-otd li {display:flex;gap:0.7em;padding:0.4em 0;border-bottom:1px solid var(--bd-line);line-height:1.4;}
+	.tu .bd-oty {flex:0 0 3.4em;font-weight:700;color:var(--accent-dark);font-variant-numeric:tabular-nums;}
+	.tu .bd-ott {color:var(--bd-ink);min-width:0;overflow-wrap:anywhere;}
+	.tu .bd-otdsrc {margin-bottom:0;}
+	/* line them up */
+	.tu .bd-linec {margin-top:0.8em;}
+	.tu .bd-ltab td, .tu .bd-ltab th {text-align:left;}
+	.tu .bd-ltab tr.bd-lyou td {font-weight:700;}
+	.tu .bd-x {background:none;border:1px solid var(--bd-line);border-radius:0.4em;cursor:pointer;color:var(--bd-ink);min-width:36px;min-height:36px;}
+	body.dark-mode #bd .bd-gap, body.dark-mode #bd .bd-oty, body.dark-mode #bd .bd-nextn, body.dark-mode #bd .bd-ini {color:#f2c879;}
+	body.dark-mode #bd .bd-av {background:#3a2a10;}
+	body.dark-mode #bd .bd-nextbig {background:#3a2a10;}
+	body.dark-mode #bd .bd-next p, body.dark-mode #bd .bd-nextl, body.dark-mode #bd .bd-ott, body.dark-mode #bd .bd-x {color:var(--bd-ink);}
+	body.dark-mode #bd .bd-turns {color:var(--bd-muted) !important;}
+	body.dark-mode #bd .bd-ott a, body.dark-mode #bd .bd-otdsrc a, body.dark-mode #bd .bd-src a {color:#f2c879;}
+	body.dark-mode #bd .bd-otd li, body.dark-mode #bd .bd-x {border-color:var(--bd-line);}
+	body.dark-mode #bd .bd-arrow {color:#f2c879;}
 	@media (max-width: 600px) {
+		.tu .bd-nbn {display:none;} .tu .bd-arrow {max-width:none;flex:0 0 auto;padding:0.2em 0.4em;gap:0.25em;} .tu .bd-nbd {font-size:0.55em;}
+		#bd .bd-av, #bd .bd-av img {width:52px;height:52px;flex-basis:52px;}
+		.tu .bd-next {align-items:flex-start;}
 		.tu .bd-list {grid-template-columns:1fr;}
 		.tu .bd-daytitle h2 {font-size:1.2em;}
 		.tu .bd-btns {flex:1 1 100%;} .tu .bd-btns .tu-btn {flex:1 1 auto;min-height:44px;}
