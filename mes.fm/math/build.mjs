@@ -21,6 +21,7 @@
 import { writeFileSync, readFileSync, existsSync, mkdirSync } from "node:fs";
 import { fileURLToPath } from "node:url";
 import { dirname, join } from "node:path";
+import { lpMap, lpAttrs, lpCaption, lpIcon, lpSite, lpSwitch, LP_CSS, LP_SCRIPT } from "../shared/link-pref.mjs";
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 
@@ -308,6 +309,11 @@ qaSection.extraViews.forEach((view) => view.items.forEach((item) => {
   if (qa) item.cats = qa.cats;
   else throw new Error("No Q/A item found for stats page: " + item.title);
 }));
+// "Open in:" switch (shared/link-pref.mjs) at the right of the chips: cards / List View titles of the Q/As and their stats
+// pages can open the mes.fm page, YouTube, 3Speak ... instead (localStorage mes-linkpref, shared with mes.fm/livestreams).
+qaSection.linkPref = true;
+qaSection.items.forEach((item) => { if (!item.standalone) item.lp = true; });
+qaSection.extraViews.forEach((view) => view.items.forEach((item) => { item.lp = true; }));
 
 // ---------------------------------------------------------------------------
 // mes.fm/youtube: every video of https://www.youtube.com/@mes/videos (snapshot written by update_youtube_lists.py into
@@ -788,11 +794,12 @@ function buildCard(item, meta) {
   const thumbStyle = image ? ` style="background-image:url('${cssSafeUrl(escapeHtml(image))}')"` : "";
   const catsAttr = item.cats !== undefined ? ` data-cats="${escapeHtml(item.cats)}"` : "";
   const external = item.image && /^https?:\/\/(?:www\.)?(?:youtube\.com|peakd\.com)\//.test(item.href);
-  return `<a class="link-card"${catsAttr}${sortAttrs(item)} href="${escapeHtml(item.href)}"${external ? ' target="_blank" rel="noopener"' : ""}>
+  const lp = item.lp ? lpAttrs(lpMap(buildLinksForItem(item, meta)), item.href) : "";
+  return `<a class="link-card${lp ? " lp-a" : ""}"${catsAttr}${sortAttrs(item)}${lp} href="${escapeHtml(item.href)}"${external ? ' target="_blank" rel="noopener"' : ""}>
       <span class="link-card-thumb"${thumbStyle}></span>
       <span class="link-card-body">
         ${item.tag ? `<span class="link-card-tag link-card-tag--${escapeHtml(item.tag.toLowerCase())}">${escapeHtml(item.tag)}</span>` : ""}<span class="link-card-title">${escapeHtml(item.title)}</span>
-        ${item.meta ? `<span class="link-card-meta">${escapeHtml(item.meta)}</span>` : `<span class="link-card-readmore">View &rarr;</span>`}
+        ${item.meta ? `<span class="link-card-meta">${escapeHtml(item.meta)}</span>` : `<span class="link-card-readmore">${lp ? lpCaption(item.href) : "View &rarr;"}</span>`}
       </span>
     </a>`;
 }
@@ -807,8 +814,13 @@ function buildRow(item, meta, linksBuilder) {
   // alt="" by default: the row's <h3> right above already says the title, so a screen reader would hear it twice.
   const imgHtml = rowImage && item.listThumb !== false ? `<img class="list-thumb" src="${escapeHtml(rowImage)}" alt="${item.thumbAlt ? escapeHtml(item.title) : ""}">` : "";
   const catsAttr = item.cats !== undefined ? ` data-cats="${escapeHtml(item.cats)}"` : "";
+  // A link-pref item's title links where its Grid View card goes (and follows the "Open in:" switch).
+  const lp = item.lp ? lpAttrs(lpMap(links), item.href) : "";
+  const titleHtml = lp
+    ? `<a class="lp-a" href="${escapeHtml(item.href)}"${lp}>${escapeHtml(item.title)}${lpIcon(lpSite(item.href))}</a>`
+    : escapeHtml(item.title);
   return `<div class="list-row"${catsAttr}${sortAttrs(item)}>
-      <h3>${escapeHtml(item.title)}</h3>
+      <h3>${titleHtml}</h3>
       <p>${linksHtml}${item.meta ? ` <span class="list-meta">&middot; ${escapeHtml(item.meta)}</span>` : ""}</p>
       ${imgHtml}
     </div>`;
@@ -851,14 +863,15 @@ function capitalize(str) {
 // entirely and renders just the List View row as a featured item.
 // Search box + category chips above the view tabs. Counts here are for the Grid/List view (the client
 // script recomputes them per showing tab).
-function buildFilter(section) {
+function buildFilter(section, meta) {
   const count = (id) => section.items.filter((i) => i.cats !== undefined && (id === "all" || i.cats.split(" ").includes(id))).length;
   const chips = [{ id: "all", label: "All" }, ...section.filter]
     .map((c) => `<button type="button" data-c="${c.id}" data-label="${escapeHtml(c.label)}" aria-pressed="${c.id === "all"}">${escapeHtml(c.label)} (${count(c.id)})</button>`)
     .join("");
   return `<div class="ls-filter" id="${section.id}Filter">
       <input type="search" id="${section.id}Search" placeholder="${escapeHtml(section.filterPlaceholder || "Search\u2026")}" aria-label="Search" autocomplete="off">
-      <div class="ls-chips" id="${section.id}Chips">${chips}</div>${section.sortable ? `
+      ${section.linkPref ? '<div class="lp-row">' : ""}<div class="ls-chips" id="${section.id}Chips">${chips}</div>${section.linkPref ? `
+      ${lpSwitch(section.items.filter((i) => i.lp).map((i) => lpMap(buildLinksForItem(i, meta))))}</div>` : ""}${section.sortable ? `
       <label class="ls-sort">Sort by <select id="${section.id}Sort" aria-label="Sort"><option value="new">Newest first</option><option value="old">Oldest first</option><option value="views">Most viewed</option><option value="long">Longest</option><option value="short">Shortest</option><option value="az">A to Z</option></select></label>` : ""}
     </div>
     <p class="ls-empty" id="${section.id}Empty" hidden>Nothing matches. Try fewer words or a different filter.</p>`;
@@ -905,7 +918,7 @@ function buildSection(section, meta) {
 
   return `<div class="list-container">
   <div id="${section.id}" class="section-body${section.big ? " ls-big" : ""}">
-  ${standaloneHtml}${section.filter ? `\n    ${buildFilter(section)}` : ""}
+  ${standaloneHtml}${section.filter ? `\n    ${buildFilter(section, meta)}` : ""}
     <div class="view-toggle">
       <button type="button" class="view-toggle-btn active" id="${section.id}GridBtn">Grid View</button>
       <button type="button" class="view-toggle-btn" id="${section.id}ListBtn">List View</button>
@@ -941,6 +954,7 @@ function buildPage(meta, page) {
     ? `<div class="icon-grid">\n${PAGES.filter((p) => !p.tileOnly).map(buildTile).join("\n")}\n</div>\n<h2 class="tool-heading">Calculators &amp; Tools</h2>\n<div class="tool-grid">\n${PAGES.filter((p) => p.tileOnly).map(buildToolLink).join("\n")}\n</div>\n<p class="hub-more">More from MES: <a href="/science">MES Science</a> &ndash; videos, posts, tutorials and physics</p>`
     : sections.map((s) => buildSection(s, meta)).join("\n\n");
   const hasFilter = sections.some((s) => s.filter);
+  const hasLinkPref = sections.some((s) => s.linkPref);
   const filterWiring = sections
     .filter((s) => s.filter)
     .map((s) => `  wireFilter('${s.id}');`)
@@ -1917,7 +1931,7 @@ body.is-stuck #header-controls { transform: none; bottom: auto; }
   #header-controls { top: auto; bottom: 0; right: 8px; transform: none; }
   body.is-stuck #header-controls { top: 13px; bottom: auto; }
 }
-${hasFilter ? FILTER_CSS : ""}</style>
+${hasFilter ? FILTER_CSS : ""}${hasLinkPref ? LP_CSS : ""}</style>
 
 <meta property="fb:app_id" content="120877788060946" />
 <meta name="author" content="Math Easy Solutions Staff">
@@ -2580,7 +2594,7 @@ var MES_Vars = {
 <script src="/main_js/main.js?v=1.0.3"></script>
 <script>document.getElementById('copyright-year').textContent = new Date().getFullYear();</script>
 <!-- PAGEVIEW-TRACKING-INSERTED --><script src="/main_js/track.js" defer></script><script src="/main_js/info-bar-fit.js" defer></script>
-<script src="/main_js/site-search.js?v=1" defer></script><!-- HUB-THEATRE-JS --><script src="/main_js/hub-theatre.js?v=1" defer></script><!-- /HUB-THEATRE-JS --></body>
+<script src="/main_js/site-search.js?v=1" defer></script><!-- HUB-THEATRE-JS --><script src="/main_js/hub-theatre.js?v=1" defer></script><!-- /HUB-THEATRE-JS -->${hasLinkPref ? LP_SCRIPT : ""}</body>
 </html>
 `;
 }
