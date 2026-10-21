@@ -58,6 +58,7 @@
         /* dark mode */
         "body.dark-mode{background-color:#1a1a1a}",
         "body.dark-mode .inner-container{background-color:#232323;box-shadow:none}",
+        "body.dark-mode .shadow{box-shadow:0.2em 0.2em 0.5em rgba(0,0,0,.6)}",
         "body.dark-mode .calculator-title,body.dark-mode .page-title,body.dark-mode .page-description,",
         "body.dark-mode:not(.tool-page) .page-content :is(h1,h2,h3,p,span,b,strong,li){color:#eee}",
         "body.dark-mode.tool-page{color-scheme:dark}",
