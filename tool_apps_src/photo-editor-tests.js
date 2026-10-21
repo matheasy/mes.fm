@@ -46,7 +46,7 @@ t("describeSource: every kind", () => {
 	assert.strictEqual(d({ how: "folder", dir: "Pics", file: "cat.webp", bytes: 20480 }).text, "From a folder on this computer: Pics/cat.webp (20 KB)");
 	assert.strictEqual(d({ how: "folder-ro", path: "Pics/2024/cat.png" }).where, "Pics/2024/cat.png"); assert.strictEqual(d({ how: "folder-ro", dir: "Pics", file: "x.png" }).where, "Pics/x.png");
 	assert.strictEqual(d({ how: "paste" }).text, "Pasted from the clipboard"); assert.strictEqual(d({ how: "paste", clip: "editor" }).label, "Pasted (copied inside the editor)");
-	assert.strictEqual(d({ how: "psd", file: "design.psd" }).text, "From a Photoshop file: design.psd"); assert.strictEqual(d({ how: "project", file: "thumb.mesproj" }).where, "thumb.mesproj");
+	assert.strictEqual(d({ how: "psd", file: "design.psd" }).text, "From a Photoshop file: design.psd"); assert.strictEqual(d({ how: "xcf", file: "thumb.xcf", bytes: 2048 }).text, "From a GIMP file: thumb.xcf (2.0 KB)"); assert.strictEqual(d({ how: "project", file: "thumb.mesproj" }).where, "thumb.mesproj");
 	assert.strictEqual(d({ how: "merge", from: ["A", "B", "C", "D", "E"] }).where, "A, B, C and 2 more"); assert.strictEqual(d({ how: "merge", from: ["A", "B"] }).text, "Merged from layers: A, B");
 	assert.strictEqual(d({ how: "open", file: "p.jpg", copy: true, ai: ["background removed", "upscaled 2×"] }).text, "Opened from a file: p.jpg, duplicated · then AI: background removed, upscaled 2×");
 	assert.strictEqual(d({ how: "made", ai: ["object erased"] }).text, "Made in the editor · then AI: object erased");
@@ -75,4 +75,104 @@ t("xcf: header, layer list, tiles", () => {
 	const name = (off) => { const L = u32(off + 12); return String.fromCharCode(...b.slice(off + 16, off + 16 + L - 1)); };
 	assert.strictEqual(u32(p0), 70); assert.strictEqual(u32(p0 + 4), 100); assert.ok(/^Top/.test(name(p0))); assert.strictEqual(u32(p1), 150); assert.strictEqual(name(p1), "Bottom");   // top-first
 });
+
+// GIMP (.xcf) reader: round trip through the writer, hand-made v3 / v11 files (RLE, zlib, groups, masks), and real GIMP 3.2 files in photo-editor/xcf-fixtures/
+{
+	const X = require("./photo-editor/xcf.js"), fs = require("fs"), zlib = require("zlib"), path = require("path"), FIX = path.join(__dirname, "photo-editor", "xcf-fixtures");
+	const fx = (f) => X.read(fs.readFileSync(path.join(FIX, f))), at = (L, x, y) => Array.from(L.data.slice((y * L.w + x) * 4, (y * L.w + x) * 4 + 4));
+	const near = (a, b, tol) => a.every((v, i) => Math.abs(v - b[i]) <= tol);
+	t("xcf read: writer round trip (v0, 32-bit pointers, uncompressed, several tiles)", () => {
+		const W = 130, H = 70, d = new Uint8Array(W * H * 4); for (let y = 0; y < H; y++) for (let x = 0; x < W; x++) d.set([x, y * 3, (x + y) & 255, x % 5 ? 255 : 90], (y * W + x) * 4);
+		const top = new Uint8Array(20 * 10 * 4).fill(200);
+		const b = X.write({ w: 140, h: 80, layers: [{ name: "Bottom ü", x: 3, y: -4, w: W, h: H, data: d, opacity: 1, visible: true, mode: 0 }, { name: "Top", x: 100, y: 70, w: 20, h: 10, data: top, opacity: 0.5, visible: false, mode: X.MODES.multiply }] });
+		const r = X.read(b); assert.strictEqual(r.version, 0); assert.strictEqual(r.w, 140); assert.strictEqual(r.compression, "none"); assert.strictEqual(r.layers.length, 2);
+		const [T, B] = r.layers; assert.strictEqual(B.name, "Bottom ü"); assert.deepStrictEqual([B.x, B.y, B.w, B.h], [3, -4, W, H]); assert.deepStrictEqual(Array.from(B.data), Array.from(d));
+		assert.strictEqual(T.visible, false); assert.ok(Math.abs(T.opacity - 0.5) < 0.003); assert.strictEqual(T.blend, "multiply"); assert.deepStrictEqual(at(T, 19, 9), [200, 200, 200, 200]);
+	});
+	// a small XCF builder for cases GIMP 3 no longer writes: v3 (32-bit pointers) with RLE, groups via PROP_ITEM_PATH, a mask, a grey and an indexed image
+	function build(o) {
+		const v = o.version, wide = v >= 11, out = []; let n = 0; const push = (a) => { for (const x of a) out.push(x & 255); };
+		const u32 = (x) => [x >>> 24, x >>> 16, x >>> 8, x], ptrB = (x) => wide ? [0, 0, 0, 0].concat(u32(x)) : u32(x), str = (s) => { const e = Array.from(Buffer.from(s + "\0")); return u32(e.length).concat(e); };
+		const prop = (id, pl) => u32(id).concat(u32(pl.length), pl);
+		const rle = (bytes, bpp) => { const r = []; const np = bytes.length / bpp; for (let c = 0; c < bpp; c++) { const plane = []; for (let i = 0; i < np; i++) plane.push(bytes[i * bpp + c]); for (let i = 0; i < np;) { let k = 1; while (i + k < np && plane[i + k] === plane[i] && k < 127) k++; if (k >= 3) { r.push(k - 1, plane[i]); i += k; } else { const m = Math.min(127, np - i); r.push(256 - m, ...plane.slice(i, i + m)); i += m; } } } return r; };
+		const enc = (bytes, bpp) => o.comp === 2 ? Array.from(zlib.deflateSync(Buffer.from(bytes))) : o.comp === 1 ? rle(bytes, bpp) : Array.from(bytes);
+		const blocks = []; // [{bytes, patches: [[offsetInBlock, blockIndex]]}] laid out sequentially
+		const hdr = Array.from(Buffer.from("gimp xcf " + (v === 0 ? "file" : "v" + String(v).padStart(3, "0")) + "\0")).concat(u32(o.w), u32(o.h), u32(o.base || 0));
+		if (v >= 4) hdr.push(...u32(o.precision || 150));
+		hdr.push(...prop(17, [o.comp]));
+		if (o.cmap) hdr.push(...u32(1), ...u32(o.cmap.length / 3 + 4), ...u32(o.cmap.length / 3), ...o.cmap);   // the old, wrong length word
+		hdr.push(...u32(0), ...u32(0));
+		// layout: header + layer ptrs, then each layer: struct, hierarchy, level, tiles (one tile per layer: layers <= 64 px), mask likewise
+		let parts = [hdr]; const ptrSize = wide ? 8 : 4; let offset = hdr.length + (o.layers.length + 2) * ptrSize; const lptr = [];
+		const chunks = [];
+		for (const L of o.layers) {
+			lptr.push(offset);
+			const props = [].concat(prop(15, u32(L.x || 0).concat(u32(L.y || 0))), prop(6, u32(L.op == null ? 255 : L.op)), L.group ? prop(29, []) : [], L.path ? prop(30, [].concat(...L.path.map(u32))) : [], u32(0), u32(0));
+			const head = u32(L.w).concat(u32(L.h), u32(L.type), str(L.name), props); const hptrAt = head.length; const after = head.length + ptrSize * 2;
+			let block = head.concat(ptrB(0), ptrB(0));
+			const pix = (bytes, bpp, w, h) => { const hp = offset + block.length; const tile = enc(bytes, bpp); const lvl = offset + block.length + 12 + ptrSize * 2; block = block.concat(u32(w), u32(h), u32(bpp), ptrB(lvl), ptrB(0)); const tp = offset + block.length + 8 + ptrSize * 2; block = block.concat(u32(w), u32(h), ptrB(tp), ptrB(0), tile); return hp; };
+			const hp = pix(L.bytes, L.bpp, L.w, L.h); block.splice(hptrAt, ptrSize, ...ptrB(hp));
+			if (L.mask) { const mp = offset + block.length; block = block.concat(u32(L.w), u32(L.h), str("mask"), u32(0), u32(0)); const hpAt = block.length; block = block.concat(ptrB(0)); const mh = pix(L.mask, 1, L.w, L.h); block.splice(hpAt, ptrSize, ...ptrB(mh)); block.splice(hptrAt + ptrSize, ptrSize, ...ptrB(mp)); }
+			void after; chunks.push(block); offset += block.length;
+		}
+		parts.push([].concat(...lptr.map(ptrB), ptrB(0), ptrB(0)));
+		for (const c of chunks) parts.push(c);
+		const all = [].concat(...parts); return new Uint8Array(all);
+	}
+	const solid = (w, h, px) => { const a = []; for (let i = 0; i < w * h; i++) a.push(...px); return a; };
+	for (const [v, comp] of [[3, 1], [3, 2], [11, 0], [11, 1]]) t("xcf read: hand-made v" + v + " " + ["none", "RLE", "zlib"][comp] + ", groups + mask", () => {
+		const mask = []; for (let y = 0; y < 8; y++) for (let x = 0; x < 10; x++) mask.push(x < 5 ? 255 : 0);
+		const b = build({ version: v, comp, w: 40, h: 30, layers: [
+			{ name: "G", type: 1, w: 1, h: 1, bpp: 4, bytes: [0, 0, 0, 0], group: true, op: 128 },
+			{ name: "Kid", type: 1, w: 10, h: 8, x: 5, y: 6, bpp: 4, bytes: solid(10, 8, [1, 2, 3, 255]), path: [0, 0], mask },
+			{ name: "Bg", type: 0, w: 40, h: 30, bpp: 3, bytes: solid(40, 30, [9, 8, 7]) }] });
+		const r = X.read(b); assert.strictEqual(r.version, v); assert.deepStrictEqual(r.notes, []);
+		const [G, K, B] = r.layers; assert.ok(G.group); assert.ok(Math.abs(G.opacity - 128 / 255) < 1e-6); assert.strictEqual(K.parent, 0); assert.strictEqual(B.parent, -1);
+		assert.deepStrictEqual(at(K, 9, 7), [1, 2, 3, 255]); assert.deepStrictEqual([K.x, K.y], [5, 6]); assert.strictEqual(K.mask.data[0], 255); assert.strictEqual(K.mask.data[9], 0);
+		assert.deepStrictEqual(at(B, 39, 29), [9, 8, 7, 255]);
+	});
+	t("xcf read: hand-made grey and indexed (colour map with the old wrong length)", () => {
+		const g = X.read(build({ version: 3, comp: 1, base: 1, w: 4, h: 4, layers: [{ name: "g", type: 3, w: 4, h: 4, bpp: 2, bytes: solid(4, 4, [77, 200]) }] }));
+		assert.deepStrictEqual(at(g.layers[0], 3, 3), [77, 77, 77, 200]);
+		const ix = X.read(build({ version: 3, comp: 0, base: 2, w: 3, h: 1, cmap: [255, 0, 0, 0, 255, 0], layers: [{ name: "i", type: 5, w: 3, h: 1, bpp: 2, bytes: [1, 255, 0, 255, 1, 0] }] }));
+		assert.deepStrictEqual(Array.from(ix.layers[0].data), [0, 255, 0, 255, 255, 0, 0, 255, 0, 255, 0, 0]);
+	});
+	t("xcf read: bad input gives a clear error, a broken layer only a note", () => {
+		assert.throws(() => X.read(new Uint8Array(40)), /not a GIMP/); assert.throws(() => X.read(new Uint8Array([0x1f, 0x8b].concat(Array(40).fill(0)))), /not a GIMP|gz/);
+		const b = X.write({ w: 70, h: 70, layers: [{ name: "A", x: 0, y: 0, w: 70, h: 70, data: new Uint8Array(70 * 70 * 4).fill(9), opacity: 1, visible: true, mode: 0 }] });
+		const r = X.read(b.slice(0, b.length - 100)); assert.strictEqual(r.layers.length, 0); assert.ok(/could not be read/.test(r.notes[0]));
+	});
+	t("xcf read: GIMP 3.2, 8-bit RGB, RLE and zlib: groups, masks, offsets, opacity, mode, text", () => {
+		for (const f of ["full-rgb8-rle.xcf", "full-rgb8-zlib.xcf"]) {
+			const r = fx(f); assert.strictEqual(r.compression, f.indexOf("zlib") > 0 ? "zlib" : "RLE"); assert.strictEqual(r.version, 19);
+			assert.deepStrictEqual(r.layers.map((L) => L.name), ["Hello XCF", "Outer", "Inner", "Deep", "Shallow", "Masked", "Hidden", "Offset", "Background"]);
+			const by = {}; r.layers.forEach((L) => { by[L.name] = L; });
+			assert.strictEqual(by["Hello XCF"].text, "Hello XCF"); assert.deepStrictEqual(r.notes, ["Text layers became pixels, named after their text (Hello XCF)"]); assert.ok(by.Outer.group && by.Inner.group); assert.strictEqual(by.Inner.parent, 1); assert.strictEqual(by.Deep.parent, 2); assert.strictEqual(by.Shallow.parent, 1); assert.strictEqual(by.Masked.parent, -1);
+			assert.ok(Math.abs(by.Outer.opacity - 0.8) < 1e-6); assert.ok(Math.abs(by.Shallow.opacity - 0.5) < 1e-6);
+			const O = by.Offset; assert.deepStrictEqual([O.x, O.y, O.w, O.h], [-10, 30, 80, 50]); assert.ok(Math.abs(O.opacity - 0.6) < 1e-6); assert.strictEqual(O.blend, "multiply");
+			for (const [x, y] of [[0, 0], [1, 1], [70, 45], [79, 49], [64, 3]]) assert.deepStrictEqual(at(O, x, y), [(x * 3) & 255, (y * 5) & 255, 77, (x + y) % 7 ? 255 : 0]);
+			const B = by.Background; for (const [x, y] of [[0, 0], [99, 69], [64, 64], [63, 65]]) assert.deepStrictEqual(at(B, x, y), [(x * 2) & 255, (y * 3) & 255, 128, 255]);
+			assert.strictEqual(by.Hidden.visible, false); const M = by.Masked.mask; assert.strictEqual(M.data[49], 255); assert.strictEqual(M.data[50], 0); assert.strictEqual(M.data[69 * 100 + 10], 255);
+			// zlib tiles decoded by node's zlib give the same pixels
+			if (f.indexOf("zlib") > 0) { const r2 = X.read(fs.readFileSync(path.join(FIX, f)), { inflate: (u, p) => new Uint8Array(zlib.inflateSync(Buffer.from(u.buffer, u.byteOffset + p, u.length - p))) }); r2.layers.forEach((L, i) => { if (L.data) assert.deepStrictEqual(Array.from(L.data), Array.from(r.layers[i].data)); }); }
+		}
+	});
+	t("xcf read: GIMP 3.2 high bit depth (16/32-bit integer, half / float / double, linear and gamma) gives the 8-bit values", () => {
+		for (const f of ["small-u16-linear-rle.xcf", "small-u32-gamma-rle.xcf", "small-half-gamma-rle.xcf", "small-half-linear-zlib.xcf", "small-float-linear-rle.xcf", "small-double-gamma-rle.xcf"]) {
+			const r = fx(f), [T, B] = r.layers; assert.deepStrictEqual(r.notes, [], f);
+			for (const [x, y] of [[0, 0], [1, 1], [65, 39], [64, 10], [30, 20]]) assert.ok(near(at(B, x, y), [x * 3, y * 6, 200, 255], 1), f + " bg " + x + "," + y + " = " + at(B, x, y));
+			assert.ok(near(at(T, 0, 0), [250, 128, 10, 255], 1), f + " top"); assert.ok(near(at(T, 29, 19), [250, 128, 10, 100], 1), f + " top alpha " + at(T, 29, 19));
+			assert.deepStrictEqual([T.x, T.y], [40, -5]); assert.ok(Math.abs(T.opacity - 0.75) < 1e-6); assert.strictEqual(T.mask.data[0], 0); assert.strictEqual(T.mask.data[5 * 30], 255);
+		}
+		const l8 = fx("small-u8-linear-rle.xcf"); assert.ok(near(at(l8.layers[1], 65, 39), [195, 234, 200, 255], 3));
+	});
+	t("xcf read: GIMP 3.2 grayscale 8/16-bit, indexed, legacy mode, live filter note", () => {
+		for (const f of ["small-gray8-rle.xcf", "small-gray16-rle.xcf"]) { const r = fx(f); assert.strictEqual(r.base, "Grayscale"); const p = at(r.layers[0], 0, 0); assert.ok(p[0] === p[1] && p[1] === p[2] && Math.abs(p[0] - 163) <= 2 && p[3] === 255, f + " " + p); }
+		const ix = fx("small-indexed-rle.xcf"); assert.strictEqual(ix.base, "Indexed"); assert.ok(near(at(ix.layers[0], 0, 0), [250, 128, 10, 255], 4)); assert.ok(near(at(ix.layers[1], 65, 39), [195, 234, 200, 255], 30));
+		const pl = fx("plain-rgb8-rle.xcf"); assert.strictEqual(pl.layers[0].blend, "screen"); assert.deepStrictEqual(at(pl.layers[0], 0, 0), [10, 200, 90, 128]);
+		const lo = fx("lossy-rgb8-rle.xcf"); assert.strictEqual(lo.version, 23); assert.strictEqual(lo.layers[0].mask, null); assert.ok(lo.layers[0].maskOff); assert.strictEqual(lo.layers[2].parent, 1); assert.strictEqual(lo.layers[3].blend, null); assert.strictEqual(lo.layers[4].blend, null);
+		assert.deepStrictEqual(lo.notes, ["Disabled layer masks were left out (Mask off)", "Masks on layer groups are not supported: left out (Masked group)", "Group blend modes are not supported: groups are drawn as pass-through (Masked group)", "Layer mode “Grain merge” is not in this editor: drawn as Normal (Grain)", "Layer mode “Addition” is not in this editor: drawn as Normal (Add)"]);
+		const ef = fx("effect-rgb8-rle.xcf"); assert.strictEqual(ef.version, 22); assert.strictEqual(ef.layers[1].effects, 1); assert.ok(ef.notes.some((s) => /live filters/.test(s)));
+	});
+}
 console.log(n + " checks ok");

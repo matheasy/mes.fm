@@ -20,8 +20,47 @@
 		PE.download(new Blob([bytes], { type: "image/x-xcf" }), window.MESImg.cleanFileName(d.name) + ".xcf"); PE.toast("Saved a GIMP file with " + out.length + " layer" + (out.length === 1 ? "" : "s") + (skipped ? " (" + skipped + " outside the canvas skipped)" : "") + ". Text became pixels; groups and masks are flattened.");
 	};
 
+	/* ---------- open a GIMP file: layers, groups, masks, offsets, opacity, modes (MESXcf.read). place = add into the open image as a group named after the file ---------- */
+	PE.loadXcf = function (buf, name, meta, place) {
+		var r; try { r = X.read(buf); } catch (e) { PE.toast("Can't open " + name + ": " + (e && e.message || e)); return false; }
+		var notes = r.notes.slice(), d, made = [], skipped = 0;
+		if (place && PE.doc) d = PE.doc; else { if (!PE.newDoc(r.w, r.h, null, I.baseName(name))) return false; d = PE.doc; d.layers = []; d.file = PE.mkSrc(Object.assign({ file: name }, meta || {}, { how: "xcf" })); }
+		var src = PE.mkSrc(Object.assign({}, meta || {}, { how: "xcf", file: name }));
+		r.layers.forEach(function (n) {   // top-first, like the file
+			var L;
+			if (n.group) { L = PE.makeGroup(n.name); L.collapsed = true; }
+			else {
+				if (!n.data || n.w > PE.MAXPX || n.h > PE.MAXPX || n.w * n.h > PE.MAXAREA) { if (n.data) { skipped++; notes.push("“" + n.name + "” is too large for a browser (" + n.w + " × " + n.h + "): left out"); } made.push(null); return; }
+				var c = PE.mk(n.w, n.h); c.getContext("2d").putImageData(new ImageData(n.data, n.w, n.h), 0, 0);
+				L = PE.makeLayer({ canvas: c, name: n.name, x: n.x, y: n.y, src: Object.assign({}, src, { w: n.w, h: n.h }) });
+				L.blend = n.blend || "source-over";
+				if (n.mask) { var mc = PE.mk(n.w, n.h), mx = mc.getContext("2d"), id = mx.createImageData(n.w, n.h), a = id.data, m = n.mask.data; for (var i = 0; i < m.length; i++) a[i * 4 + 3] = m[i]; mx.putImageData(id, 0, 0); L.mask = mc; }
+			}
+			L.visible = n.visible; L.opacity = n.opacity; made.push(L);
+		});
+		r.layers.forEach(function (n, i) { var L = made[i]; if (!L) return; var p = n.parent >= 0 ? made[n.parent] : null; L.group = p ? p.id : null; });
+		var list = made.filter(Boolean).reverse();   // the editor keeps layers bottom-first, a group's header after its members
+		if (!list.some(function (L) { return !PE.isGroup(L); })) { if (!place) { d.layers.push(PE.makeLayer({ name: "Layer 1" })); d.activeId = d.layers[0].id; PE.commit("Open GIMP file"); PE.fit(); PE.emit("docsize"); } PE.toast("No layers could be read from " + name + (notes.length ? ": " + notes[0] : "")); return false; }
+		if (place) {
+			var G = PE.makeGroup(I.baseName(name)); G.collapsed = true;   // the file becomes one group on top of everything, outside any other group
+			list.forEach(function (L) { if (L.group == null) L.group = G.id; }); list.push(G);
+			Array.prototype.push.apply(d.layers, list); d.activeId = G.id; PE.relink(); PE.commit("Add GIMP file " + name); PE.emit("layers"); PE.invalidate();
+		} else {
+			d.layers = list; d.activeId = list[list.length - 1].id; PE.relink(); PE.commit("Open GIMP file"); PE.dirty = false; PE.fit(); PE.emit("docsize"); PE.emit("layers");
+		}
+		PE.setTool("move");
+		var nl = list.filter(function (L) { return !PE.isGroup(L); }).length, ng = list.length - nl - (place ? 1 : 0);
+		var msg = (place ? "Added " : "Opened ") + nl + " layer" + (nl === 1 ? "" : "s") + (ng ? " and " + ng + " group" + (ng === 1 ? "" : "s") : "") + " from the GIMP file" + (r.precision.indexOf("8-bit") !== 0 || / linear/.test(r.precision) ? " (" + r.precision + ", shown in 8-bit)" : "");
+		var info = notes.filter(function (t) { return /^Text layers/.test(t); }); notes = notes.filter(function (t) { return info.indexOf(t) < 0; });
+		if (info.length) msg += ". Text layers are now pixels (the text is the layer name)";
+		if (!notes.length) { PE.toast(msg); return true; }
+		var w = el("div", "pe-xcf-notes"); w.innerHTML = "<p>" + esc(msg) + ". A few things in it work differently here:</p><ul>" + notes.map(function (t) { return "<li>" + esc(t) + "</li>"; }).join("") + "</ul>";
+		PE.modal({ title: "Opened “" + name + "”", body: w, buttons: [{ label: "OK", primary: true, act: function (m) { m.close(); } }] });
+		return true;
+	};
+
 	/* ---------- files and folders ---------- */
-	var IMG = /\.(png|jpe?g|webp|gif|bmp|avif|psd|mesproj)$/i, BRAVE_FLAG = "brave://flags/#file-system-access-api", dirHandle = null, roFiles = null, roName = "";
+	var IMG = /\.(png|jpe?g|webp|gif|bmp|avif|psd|xcf|mesproj)$/i, BRAVE_FLAG = "brave://flags/#file-system-access-api", dirHandle = null, roFiles = null, roName = "";
 	var handles = PE.srcHandles = {}, hseq = 0;   // memory only: file handles of pictures added from the connected folder (a handle cannot go into a project file)
 	function canFS() { return typeof window.showDirectoryPicker === "function"; }
 	function isBrave() { return !!(navigator.brave && typeof navigator.brave.isBrave === "function"); }
@@ -117,7 +156,7 @@
 			var io = "IntersectionObserver" in window ? new IntersectionObserver(function (es) { es.forEach(function (x) { if (x.isIntersecting) { io.unobserve(x.target); x.target._load(); } }); }, { root: grid, rootMargin: "200px" }) : null;
 			shown.forEach(function (e) {
 				var t = el("button", "pe-fold-t"), c = el("canvas"), n = el("span", "pe-fold-n", esc(e.label)); t.type = "button"; c.width = 120; c.height = 90; t.appendChild(c); t.appendChild(n); t.title = e.label + " · click: add as a layer · Shift-click: open as a new image";
-				t._load = function () { if (/\.(psd|mesproj)$/i.test(e.name)) { var x = c.getContext("2d"); x.fillStyle = "#26262e"; x.fillRect(0, 0, 120, 90); x.fillStyle = "#9b9bab"; x.font = "bold 14px sans-serif"; x.textAlign = "center"; x.fillText(e.name.split(".").pop().toUpperCase(), 60, 50); return; }
+				t._load = function () { if (/\.(psd|xcf|mesproj)$/i.test(e.name)) { var x = c.getContext("2d"); x.fillStyle = "#26262e"; x.fillRect(0, 0, 120, 90); x.fillStyle = "#9b9bab"; x.font = "bold 14px sans-serif"; x.textAlign = "center"; x.fillText(e.name.split(".").pop().toUpperCase(), 60, 50); return; }
 					e.file().then(function (f) { return createImageBitmap(f, { resizeWidth: 120, resizeQuality: "medium" }).catch(function () { return PE.decodeFile(f); }); }).then(function (im) { var x = c.getContext("2d"), w = im.width || im.naturalWidth, h = im.height || im.naturalHeight, s = Math.min(120 / w, 90 / h); x.drawImage(im, (120 - w * s) / 2, (90 - h * s) / 2, w * s, h * s); }).catch(function () { n.textContent = "⚠ " + e.label; }); };
 				if (io) io.observe(t); else t._load();
 				t.addEventListener("click", function (ev) { var o = { place: !!PE.doc && !ev.shiftKey }; if (e.fh) { o.how = "folder"; o.dir = dirHandle ? dirHandle.name : ""; o.hk = regHandle(e.fh, dirHandle); } else { o.how = "folder-ro"; o.dir = roName; }

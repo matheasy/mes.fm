@@ -26,7 +26,7 @@
 				<div class="pe-empty" id="pe-empty">
 					<div class="pe-empty-in">
 						<div class="pe-empty-t">Free photo editor</div>
-						<div class="pe-empty-s">Layers, selections, text labels, arrows, blur, PSD. Everything stays in your browser.</div>
+						<div class="pe-empty-s">Layers, selections, text labels, arrows, blur, PSD and GIMP files. Everything stays in your browser.</div>
 						<div class="pe-empty-b"><button type="button" class="pe-btn pe-btn--primary" id="pe-e-open">Open image(s)</button> <button type="button" class="pe-btn" id="pe-e-new">New image</button> <button type="button" class="pe-btn" id="pe-e-paste">Paste</button></div>
 						<div class="pe-empty-s">…or drop pictures here, or press Ctrl+V. Drop several to combine them as layers.</div>
 						<button type="button" class="pe-btn pe-btn--ghost" id="pe-restore" hidden></button>
@@ -61,9 +61,10 @@
 
 	<div class="tu-seo">
 		<h2>A free online photo editor with layers</h2>
-		<p>MES Photo Editor runs entirely in your browser: pictures are never uploaded. Use layers, selections, the magic wand, a clone stamp, blur and sharpen, levels and curves, and add text labels, arrows, callouts, numbered steps and highlights to screenshots. Open PNG, JPEG, WebP, GIF, BMP and PSD files, combine several images as layers, keep transparency, and export PNG, JPEG, WebP or a layered PSD.</p>
+		<p>MES Photo Editor runs entirely in your browser: pictures are never uploaded. Use layers, selections, the magic wand, a clone stamp, blur and sharpen, levels and curves, and add text labels, arrows, callouts, numbered steps and highlights to screenshots. Open PNG, JPEG, WebP, GIF, BMP, PSD and GIMP (.xcf) files, combine several images as layers, keep transparency, and export PNG, JPEG, WebP or a layered PSD.</p>
 		<dl>
 			<dt>Can I open Photoshop (PSD) files?</dt><dd>Yes. Layers, opacity, visibility and blend modes come across. Photoshop-only features (smart objects, layer styles, adjustment layers, live text) are flattened. You can also save a layered PSD.</dd>
+			<dt>Can I open GIMP (.xcf) files?</dt><dd>Yes, from GIMP 2.x and GIMP 3, including 16-bit and 32-bit images (shown in 8-bit), grayscale and indexed ones. Layers, layer groups, layer masks, positions, opacity, visibility and most layer modes come across; text layers open as pixels with the text as the layer name. GIMP's live filters and the few layer modes this editor does not have (for example Addition or Grain merge) are listed when the file opens. Drop an .xcf onto an open image to add it as a group of layers. File → Save as GIMP file writes an .xcf GIMP can open.</dd>
 			<dt>How do I make a background transparent?</dt><dd>Choose the Magic Wand, click the background, press Delete, then export as PNG or WebP. For soft edges use Adjust → Make a colour transparent.</dd>
 			<dt>How do I add labels and arrows to a screenshot?</dt><dd>Use the Text tool with its Background box option for labels, and the Shapes tool for arrows, boxes, callouts, numbered steps, highlights and blur/hide areas. Each lands on its own layer so you can move or delete it later.</dd>
 			<dt>Is my work saved?</dt><dd>It is auto-saved in this browser while you work, so you can restore your last session after a reload. Press <b>💾 Save project</b> (Ctrl+S) to keep a file with all layers, groups and comps that you can open again later. File → Where are my images? shows where each layer came from and lets you clear the autosave.</dd>

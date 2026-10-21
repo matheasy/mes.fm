@@ -25,7 +25,7 @@
 		return { id: d ? d.next++ : 1, name: o.name || "Layer", type: o.type || "raster", canvas: c, cx: o.cx != null ? o.cx : (o.x || 0) + c.width / 2, cy: o.cy != null ? o.cy : (o.y || 0) + c.height / 2,
 			sx: 1, sy: 1, rot: 0, visible: true, opacity: 1, blend: "source-over", locked: false, text: o.text || null, mask: null, editMask: false, rev: 0, _snap: null, group: null, collapsed: false, _p: null, src: o.src || null };
 	};
-	/* where a layer came from (shown in File -> Files and folders): {how: open|drop|paste|folder|folder-ro|psd|project|autosave|merge|made, file, path, dir, bytes, w, h, t, hk (memory-only key of a folder file handle), copy, ai: [steps]}.
+	/* where a layer came from (shown in File -> Files and folders): {how: open|drop|paste|folder|folder-ro|psd|xcf|project|autosave|merge|made, file, path, dir, bytes, w, h, t, hk (memory-only key of a folder file handle), copy, ai: [steps]}.
 	 * src objects are never changed in place (history snapshots share them): every update makes a new object. */
 	PE.mkSrc = function (meta, w, h) { var s = {}; meta = meta || {}; for (var k in meta) if (meta[k] != null && meta[k] !== "") s[k] = meta[k]; if (!s.how) s.how = "made"; if (w) { s.w = Math.round(w); s.h = Math.round(h); } s.t = Date.now(); return s; };
 	PE.markAi = function (L, what) { if (!L) return; var s = L.src || { how: "made" }, ai = (s.ai || []).concat([what]).slice(-6); L.src = Object.assign({}, s, { ai: ai }); };

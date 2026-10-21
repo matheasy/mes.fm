@@ -157,3 +157,7 @@
 	.pe-fx-note {background:var(--pe-notebg);border:1px solid var(--pe-line);border-left:3px solid var(--pe-on);border-radius:0.4em;padding:0.6em 0.8em;line-height:1.5;} .pe-fx-note code {font-family:ui-monospace,Menlo,Consolas,monospace;font-size:0.92em;background:var(--pe-field);border:1px solid var(--pe-line);border-radius:0.25em;padding:0 0.3em;overflow-wrap:anywhere;}
 	.pe-fx-save {display:flex;flex-wrap:wrap;align-items:center;gap:0.4em;} .pe-fx-save input {flex:1 1 10em;min-width:8em;} #pe .pe-fx-l, #pe .pe-fx .pe-hint2 {color:var(--pe-dim);} #pe .pe-item--hi .pe-itag, #pe .pe-item--hi .pe-iic {color:inherit;}
 	.pe-dlg--files .pe-fold-g {max-height:40vh;}
+/* GIMP file opened: what came across differently */
+.pe-xcf-notes p{margin:0 0 .5em}
+.pe-xcf-notes ul{margin:0;padding-left:1.3em;list-style:disc}
+.pe-xcf-notes li{margin:.3em 0;list-style:disc}
