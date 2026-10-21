@@ -22,6 +22,7 @@
 import { writeFileSync, readFileSync, existsSync } from "node:fs";
 import { fileURLToPath } from "node:url";
 import { dirname, join } from "node:path";
+import { lpMap, lpAttrs, lpCaption, lpIcon, lpSite, lpSwitch, LP_CSS, LP_SCRIPT } from "../shared/link-pref.mjs";
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 
@@ -481,12 +482,14 @@ function buildCard(item, meta) {
   const external = !/^https?:\/\/(?:www\.)?mes\.fm\//.test(href);
   const thumbStyle = image ? ` style="background-image:url('${cssSafeUrl(escapeHtml(image))}')"` : "";
   const catsAttr = item.cats !== undefined ? ` data-cats="${escapeHtml(item.cats)}"` : "";
-  return `<a class="link-card"${catsAttr} href="${escapeHtml(href)}"${external ? ' target="_blank" rel="noopener"' : ""}>
+  // "Open in:" switch (shared/link-pref.mjs): every site this item has a link on, so main_js/link-pref.js can retarget the card.
+  const lp = lpAttrs(lpMap(buildLinksForItem(item, meta)), href);
+  return `<a class="link-card${lp ? " lp-a" : ""}"${catsAttr}${lp} href="${escapeHtml(href)}"${external ? ' target="_blank" rel="noopener"' : ""}>
       <span class="link-card-thumb"${thumbStyle}></span>
       <span class="link-card-body">
         ${item.tag ? `<span class="link-card-tag link-card-tag--${escapeHtml(item.tag.toLowerCase())}">${escapeHtml(item.tag)}</span>` : ""}<span class="link-card-title">${escapeHtml(item.title)}</span>${item.note ? `
         <span class="link-card-note">${escapeHtml(noteText(item.note))}</span>` : ""}
-        <span class="link-card-readmore">View &rarr;</span>
+        <span class="link-card-readmore">${lp ? lpCaption(href) : "View &rarr;"}</span>
       </span>
     </a>`;
 }
@@ -499,8 +502,14 @@ function buildRow(item, meta, linksBuilder) {
     .join(" - ");
   const imgHtml = image ? `<img class="list-thumb" src="${escapeHtml(image)}" alt="${escapeHtml(item.title)}">` : "";
   const catsAttr = item.cats !== undefined ? ` data-cats="${escapeHtml(item.cats)}"` : "";
+  // The title links to the same place as the Grid View card (and follows the "Open in:" switch).
+  const href = itemHref(item);
+  const lp = lpAttrs(lpMap(links), href);
+  const titleHtml = lp
+    ? `<a class="lp-a" href="${escapeHtml(href)}"${lp}${/^https?:\/\/(?:www\.)?mes\.fm\//.test(href) ? "" : ' target="_blank" rel="noopener"'}>${escapeHtml(item.title)}${lpIcon(lpSite(href))}</a>`
+    : escapeHtml(item.title);
   return `<div class="list-row"${catsAttr}>
-      <h3>${escapeHtml(item.title)}</h3>${item.note ? `
+      <h3>${titleHtml}</h3>${item.note ? `
       <p class="list-note">${noteHtml(item.note)}</p>` : ""}
       <p>${linksHtml}</p>
       ${imgHtml}
@@ -543,14 +552,15 @@ function capitalize(str) {
 // entirely and renders just the List View row as a featured item.
 // Search box + category chips above the view tabs. Counts here are for the default (Grid/List)
 // view; the client script recomputes them for whichever view is showing (Trailers has its own).
-function buildFilter(section) {
+function buildFilter(section, meta) {
   const count = (id) => section.items.filter((i) => i.id === undefined && (id === "all" || (i.cats || "").split(" ").includes(id))).length;
   const chips = [{ id: "all", label: "All" }, ...section.filter]
     .map((c) => `<button type="button" data-c="${c.id}" data-label="${escapeHtml(c.label)}"${c.playlist ? ` data-pl="${escapeHtml(c.playlist)}"` : ""} aria-pressed="${c.id === "all"}">${escapeHtml(c.label)} (${count(c.id)})</button>`)
     .join("");
   return `<div class="ls-filter" id="${section.id}Filter">
       <input type="search" id="${section.id}Search" placeholder="Search livestreams&hellip;" aria-label="Search livestreams" autocomplete="off">
-      <div class="ls-chips" id="${section.id}Chips">${chips}</div>
+      <div class="lp-row"><div class="ls-chips" id="${section.id}Chips">${chips}</div>
+      ${lpSwitch(section.items.map((i) => lpMap(buildLinksForItem(i, meta))))}</div>
     </div>
     <p class="ls-playlist" id="${section.id}Playlist" hidden><a href="#" target="_blank" rel="noopener"><svg viewBox="0 0 24 24" width="22" height="16" aria-hidden="true"><path fill="#f00" d="M23.5 6.2a3 3 0 0 0-2.1-2.1C19.5 3.6 12 3.6 12 3.6s-7.500 0-9.400.5A3 3 0 0 0 .5 6.200C0 8.100 0 12 0 12s0 3.900.5 5.800a3 3 0 0 0 2.100 2.100c1.900.5 9.400.5 9.400.5s7.500 0 9.400-.5a3 3 0 0 0 2.100-2.100c.5-1.900.5-5.800.5-5.800s0-3.900-.5-5.800z"/><path fill="#fff" d="M9.600 15.600V8.400l6.200 3.600z"/></svg><span></span></a></p>
     <p class="ls-empty" id="${section.id}Empty" hidden>No livestreams match. Try fewer words or a different filter.</p>`;
@@ -611,7 +621,7 @@ function buildSection(section, meta) {
   return `<div class="list-container">
   <div id="${section.id}" class="section-body">
   ${standaloneHtml}
-    ${section.filter ? buildFilter(section) : ""}
+    ${section.filter ? buildFilter(section, meta) : ""}
     <div class="view-toggle">
       <button type="button" class="view-toggle-btn active" id="${section.id}GridBtn">Grid View</button>
       <button type="button" class="view-toggle-btn" id="${section.id}ListBtn">List View</button>
@@ -1090,7 +1100,7 @@ sub {vertical-align:sub;}
 .ls-playlist a { display: inline-flex; align-items: center; gap: 0.45em; font-weight: 600; }
 .ls-playlist[hidden] { display: none !important; }
 .ls-empty { color: #6a7280; font-style: italic; padding: 0.5em 0 1em; }
-/* a bare [hidden] loses to .link-card { display: flex } etc. */
+${LP_CSS}/* a bare [hidden] loses to .link-card { display: flex } etc. */
 [data-cats][hidden], .ls-empty[hidden], .ls-filter[hidden] { display: none !important; }
 
 /* Full-viewport image lightbox for List View thumbnails -- click to
@@ -2311,7 +2321,7 @@ var MES_Vars = {
 <script src="/main_js/main.js?v=1.0.3"></script>
 <script>document.getElementById('copyright-year').textContent = new Date().getFullYear();</script>
 <!-- PAGEVIEW-TRACKING-INSERTED --><script src="/main_js/track.js" defer></script><script src="/main_js/info-bar-fit.js" defer></script>
-<script src="/main_js/site-search.js?v=1" defer></script><!-- HUB-THEATRE-JS --><script src="/main_js/hub-theatre.js?v=1" defer></script><!-- /HUB-THEATRE-JS --></body>
+<script src="/main_js/site-search.js?v=1" defer></script><!-- HUB-THEATRE-JS --><script src="/main_js/hub-theatre.js?v=1" defer></script><!-- /HUB-THEATRE-JS -->${LP_SCRIPT}</body>
 </html>
 `;
 }
