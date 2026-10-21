@@ -628,6 +628,14 @@
     $("cl-jm").addEventListener("change", function () { go(state.y, +this.value); });
     $("cl-jy").addEventListener("change", function () { var v = parseInt(this.value, 10); if (!isNaN(v)) go(v, state.m); else render(); });
     $("cl-jd").addEventListener("change", function () { if (this.value) selectKey(this.value, true); });
+    // "Type it in words" (main_js/when-parse.js, loaded after this script): "easter 2027", "next friday", "Dec 25"
+    function wireWhen() {
+        if (!window.MESWhen || document.querySelector("#cl-jump-when")) return;
+        var w = MESWhen.attach({ after: document.querySelector(".cl-jump"), noLocal: true, label: "Or type a date in words", placeholder: "Easter 2027, next Friday, Dec 25", doneText: "Showing",
+            onApply: function (r) { $("cl-jd").value = r.date; selectKey(r.date, true); } });
+        if (w) w.el.id = "cl-jump-when";
+    }
+    if (window.MESWhen) wireWhen(); else document.addEventListener("DOMContentLoaded", wireWhen);
     $("cl-o-ws").addEventListener("change", function () { state.ws = this.checked ? 1 : 0; save(); render(); });
     $("cl-o-wk").addEventListener("change", function () { state.wk = this.checked; save(); render(); });
     $("cl-o-md").addEventListener("change", function () { state.md = this.checked; save(); render(); });

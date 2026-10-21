@@ -411,4 +411,11 @@
 	});
 	$("rm-clear").addEventListener("click", function () { ["rm-title", "rm-url", "rm-desc", "rm-time"].forEach(function (id) { $(id).value = ""; }); $("rm-rep").value = ""; $("rm-len").value = "60"; $("rm-tz").value = LOCAL; upd(); });
 	upd();
+
+	/* ---------- "Type it in words" (main_js/when-parse.js, loaded after this script) ---------- */
+	function wireWhen() {
+		if (!window.MESWhen || root.querySelector(".mes-when")) return;
+		MESWhen.attach({ anchor: $("rm-date").closest(".tu-row"), date: "rm-date", time: "rm-time", zone: "rm-tz", label: "Type the date and time in words", placeholder: "Oct 28 2026, Wed 10 am PT" });
+	}
+	if (window.MESWhen) wireWhen(); else document.addEventListener("DOMContentLoaded", wireWhen);
 })();

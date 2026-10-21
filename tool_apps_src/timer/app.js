@@ -476,6 +476,17 @@
 				if (S.ev.length >= 12) { toast("You can keep up to 12 events"); return; } S.ev.push({ id: uid(), name: (name || "").trim().slice(0, 60), at: at }); renderEvents(); save();
 			};
 			$("tm-ev-add").onclick = function () { add($("tm-ev-name").value, $("tm-ev-date").value, $("tm-ev-time").value); $("tm-ev-name").value = ""; };
+			var wireWhen = function () {
+				var form = root.querySelector(".tm-ev-form"); if (!window.MESWhen || !form || (form.nextElementSibling && form.nextElementSibling.classList.contains("mes-when"))) return;
+				MESWhen.attach({ after: form, date: "tm-ev-date", time: "tm-ev-time", label: "Or type it in words", placeholder: "Christmas, Dec 31 11:59 pm, next Friday 5pm PT", doneText: "Added",
+					onApply: function (r, api) {
+						var date = r.date, time = r.time || "";
+						if (r.zone && r.ms != null) { var lz = Intl.DateTimeFormat().resolvedOptions().timeZone, w = MESWhen.wallIn(r.ms, lz); date = w.y + "-" + ("0" + w.mo).slice(-2) + "-" + ("0" + w.d).slice(-2); time = ("0" + w.h).slice(-2) + ":" + ("0" + w.mi).slice(-2); }
+						api.setVal("tm-ev-date", date); api.setVal("tm-ev-time", time);
+						add($("tm-ev-name").value || api.input.value, date, time); $("tm-ev-name").value = "";
+					} });
+			};
+			if (window.MESWhen) wireWhen(); else document.addEventListener("DOMContentLoaded", wireWhen);
 			$("tm-ev-quick").onclick = function (e) { var b = e.target.closest("button[data-d]"); if (b) add(b.dataset.n, b.dataset.d, ""); };
 			$("tm-events").onclick = function (e) { var b = e.target.closest("[data-a]"); if (!b) return; var card = b.closest(".tm-event"); if (b.dataset.a === "del") { S.ev = S.ev.filter(function (x) { return x.id !== card.dataset.id; }); renderEvents(); save(); } else toggleFull(card); };
 		}

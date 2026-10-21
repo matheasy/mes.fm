@@ -165,4 +165,19 @@
 	setUnits(state.units); Array.prototype.forEach.call($('db-wk').querySelectorAll('input'), function (i) { i.checked = state.weekend.indexOf(+i.dataset.wd) >= 0; });
 	$('db-region').value = state.region; $('db-hol').value = state.hol; if ($('db-zone').querySelector('option[value="' + state.zone + '"]')) $('db-zone').value = state.zone;
 	sync(); update();
+
+	/* ---------- "Type it in words": two dates, or one end date (main_js/when-parse.js) ---------- */
+	function wireWhen() {
+		if (!window.MESWhen || document.querySelector('#db .mes-when')) return;
+		MESWhen.attach({
+			anchor: $('db-quick'), range: true, single: 'end', futureOnly: false, noLocal: true, label: 'Type the dates in words', placeholder: 'from Oct 1 to Christmas 2026',
+			onApply: function (r) {
+				var a = r.b ? r.a : null, b = r.b || r.a, hm = function (t) { return t ? t + ':00' : '00:00:00'; };
+				if (a) $('db-a').value = a.date; $('db-b').value = b.date;
+				if ((a && a.time) || b.time) { state.time = true; if (a) $('db-ta').value = hm(a.time); $('db-tb').value = hm(b.time); }
+				changed();
+			}
+		});
+	}
+	if (window.MESWhen) wireWhen(); else document.addEventListener('DOMContentLoaded', wireWhen);
 })();

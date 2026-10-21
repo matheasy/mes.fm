@@ -945,5 +945,15 @@
 		});
 		paint();
 	})();
+	// "Type it in words" (main_js/when-parse.js): "Oct 28 2026 10 am PT", "tomorrow 6 pm Tokyo", "next Friday 19:30 London"
+	(function wireWhen() {
+		if (!window.MESWhen) return;
+		MESWhen.attach({ anchor: document.querySelector("#tz .tz__btns"), futureOnly: false, getZone: function () { return state.from; }, label: "Type the date, time and city in words", placeholder: "Oct 28 2026, Wed 10 am PT",
+			onApply: function (r) {
+				if (r.zone && isValidZone(r.zone)) { state.targets = state.targets.filter(function (t) { return t !== r.zone; }); state.from = r.zone; }
+				state.date = r.date; if (r.time) state.time = r.time;
+				commit();
+			} });
+	})();
 	render();
 })();
