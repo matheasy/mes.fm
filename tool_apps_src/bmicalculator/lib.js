@@ -35,7 +35,9 @@
 	// WHO adult cut-offs, or the WHO Asia-Pacific cut-offs ("asia": 23 and 27.5)
 	var SCALES = {
 		who: { name: "WHO standard", cuts: [[16, "Severe thinness", "under"], [17, "Moderate thinness", "under"], [18.5, "Mild thinness", "under"], [25, "Normal weight", "normal"], [30, "Overweight", "over"], [35, "Obese (class I)", "obese"], [40, "Obese (class II)", "obese"], [Infinity, "Obese (class III)", "obese"]], lo: 18.5, hi: 25 },
-		asia: { name: "Asian (WHO Asia-Pacific)", cuts: [[16, "Severe thinness", "under"], [17, "Moderate thinness", "under"], [18.5, "Mild thinness", "under"], [23, "Normal weight", "normal"], [27.5, "Overweight", "over"], [Infinity, "Obese", "obese"]], lo: 18.5, hi: 23 }
+		asia: { name: "Asian (WHO Asia-Pacific)", cuts: [[16, "Severe thinness", "under"], [17, "Moderate thinness", "under"], [18.5, "Mild thinness", "under"], [23, "Normal weight", "normal"], [27.5, "Overweight", "over"], [Infinity, "Obese", "obese"]], lo: 18.5, hi: 23 },
+		// Consensus statement for Asian Indians (Misra et al., JAPI 2009), used by Indian doctors: underweight < 18, normal 18-22.9, overweight 23-24.9, obese from 25
+		india: { name: "India (2009 consensus guideline)", cuts: [[18, "Underweight", "under"], [23, "Normal weight", "normal"], [25, "Overweight", "over"], [Infinity, "Obese", "obese"]], lo: 18, hi: 23 }
 	};
 	// the BMI is rounded to 1 decimal first (as the old calculator did): 24.95 -> 25.0 counts as overweight
 	function category(b, scale) {
@@ -70,13 +72,13 @@
 	/* ---------- sharing ---------- */
 	function b64e(str) { var b = typeof Buffer !== "undefined" ? Buffer.from(str, "utf8").toString("base64") : btoa(unescape(encodeURIComponent(str))); return b.replace(/\+/g, "-").replace(/\//g, "_").replace(/=+$/, ""); }
 	function b64d(s) { s = String(s).replace(/-/g, "+").replace(/_/g, "/"); while (s.length % 4) s += "="; return typeof Buffer !== "undefined" ? Buffer.from(s, "base64").toString("utf8") : decodeURIComponent(escape(atob(s))); }
-	function encode(st) { return "1" + b64e(JSON.stringify([st.kg || "", st.cm || "", st.scale === "asia" ? 1 : 0, sortEntries(st.history || []).map(function (e) { return [e.d, e.kg, e.cm, e.n || ""]; })])); }
+	function encode(st) { return "1" + b64e(JSON.stringify([st.kg || "", st.cm || "", st.scale === "asia" ? 1 : st.scale === "india" ? 2 : 0, sortEntries(st.history || []).map(function (e) { return [e.d, e.kg, e.cm, e.n || ""]; })])); }
 	function decode(s) {
 		try {
 			s = String(s || ""); if (s.charAt(0) !== "1") return null;
 			var j = JSON.parse(b64d(s.slice(1))); if (!Array.isArray(j)) return null;
 			var h = (Array.isArray(j[3]) ? j[3] : []).slice(0, 400).map(function (a) { return cleanEntry({ d: a[0], kg: a[1], cm: a[2], n: a[3] }); }).filter(Boolean);
-			return { kg: String(j[0] || "").slice(0, 8), cm: String(j[1] || "").slice(0, 8), scale: j[2] ? "asia" : "who", history: h };
+			return { kg: String(j[0] || "").slice(0, 8), cm: String(j[1] || "").slice(0, 8), scale: j[2] === 2 ? "india" : j[2] ? "asia" : "who", history: h };
 		} catch (e) { return null; }
 	}
 	// the 2013-2025 /bmicalculator/s/<id> links: { weight (kg), height (cm) }

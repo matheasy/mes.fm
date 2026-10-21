@@ -378,6 +378,9 @@ html[lang="ar"] .page-title, html[lang="ar"] .page-description {direction:rtl; t
 #bm[dir="rtl"] .tu-suffix span {right:auto; left:0.7em;}
 #bm[dir="rtl"] .tu-suffix .tu-input {padding-right:0.7em; padding-left:3.2em;}
 @media (max-width: 600px) { #bm[dir="rtl"] .tu-suffix .tu-input {padding-right:0.55em; padding-left:2.2em;} }
+/* the India guideline's own small table (English and Hindi pages) */
+.tu .bm-ref-india {margin-top:0.6em;}
+.tu .bm-ref-india caption {caption-side:top; text-align:start; font-weight:700; padding:0 0 0.4em;}
 
 
 	@media print {
@@ -764,8 +767,8 @@ body.is-stuck #navbar.hide { position: fixed; top: 56px; right: 8px; }
 						<button type="button" data-u="i" aria-pressed="false">अमेरिकी</button>
 					</div></div>
 				<div class="bm-opt"><label for="bm-scale" class="tu-label">बीएमआई मानक</label>
-					<select id="bm-scale" class="tu-select"><option value="who">WHO मानक (25 से ज़्यादा वज़न)</option><option value="asia">एशियाई मानक (23 से ज़्यादा वज़न)</option></select></div>
-				<p class="tu-note bm-scalehint" id="bm-scalehint">भारतीयों और दूसरे एशियाई लोगों में कम बीएमआई पर ही डायबिटीज़ और दिल की बीमारी का ख़तरा बढ़ जाता है, इसलिए यहाँ एशियाई मानक पहले से चुना गया है। ऊपर WHO मानक भी चुन सकते हैं।</p>
+					<select id="bm-scale" class="tu-select"><option value="who">WHO मानक (25 से ज़्यादा वज़न)</option><option value="asia">एशियाई मानक (23 से ज़्यादा वज़न)</option><option value="india">भारतीय दिशानिर्देश 2009 (23 से ज़्यादा वज़न, 25 से मोटापा)</option></select></div>
+				<p class="tu-note bm-scalehint" id="bm-scalehint">भारत में डॉक्टर 2009 का भारतीय दिशानिर्देश इस्तेमाल करते हैं: 18 से 22.9 सामान्य, 23 से 24.9 ज़्यादा वज़न और 25 से मोटापा। इसलिए यहाँ यही मानक पहले से चुना गया है; ऊपर WHO या एशियाई मानक भी चुन सकते हैं।</p>
 			</div>
 			<p class="tu-note" style="margin-bottom:0;">हर खाना अपने जोड़ीदार खाने के साथ बदलता है। केवल 20 साल या उससे ज़्यादा उम्र के वयस्कों के लिए; नीचे की बातें ज़रूर पढ़ें।</p>
 		</div>
@@ -810,10 +813,10 @@ body.is-stuck #navbar.hide { position: fixed; top: 56px; right: 8px; }
 			<h2>बीएमआई कैसे निकालें?</h2>
 			<p>बीएमआई (बॉडी मास इंडेक्स, यानी शरीर द्रव्यमान सूचकांक) आपके वज़न (किलोग्राम) को आपकी लंबाई (मीटर) के वर्ग से भाग देकर निकलता है:</p>
 			<p style="text-align:center;"><b>बीएमआई = वज़न (kg) &divide; लंबाई (m)&sup2;</b></p>
-			<p>उदाहरण: अगर आपका वज़न 70 किलो है और लंबाई 5 फ़ुट 6 इंच (1.676 मीटर) है, तो बीएमआई = 70 &divide; (1.676 &times; 1.676) = <b>24.9</b>। WHO मानक में यह सामान्य की ऊपरी सीमा पर है, लेकिन एशियाई मानक में यह "ज़्यादा वज़न" गिना जाता है। ऊपर का कैलकुलेटर वज़न और लंबाई डालते ही हिसाब कर देता है और बताता है कि सही वज़न तक पहुँचने के लिए कितना वज़न घटाना या बढ़ाना है। लंबाई फ़ुट-इंच में और वज़न किलो में, दोनों एक साथ डाल सकते हैं।</p>
+			<p>उदाहरण: अगर आपका वज़न 70 किलो है और लंबाई 5 फ़ुट 6 इंच (1.676 मीटर) है, तो बीएमआई = 70 &divide; (1.676 &times; 1.676) = <b>24.9</b>। WHO मानक में यह सामान्य की ऊपरी सीमा पर है, लेकिन भारतीय और एशियाई मानक में यह "ज़्यादा वज़न" गिना जाता है। ऊपर का कैलकुलेटर वज़न और लंबाई डालते ही हिसाब कर देता है और बताता है कि सही वज़न तक पहुँचने के लिए कितना वज़न घटाना या बढ़ाना है। लंबाई फ़ुट-इंच में और वज़न किलो में, दोनों एक साथ डाल सकते हैं।</p>
 			<h3>वयस्कों के लिए बीएमआई चार्ट</h3>
 			<div class="tu-table-wrap"><table class="tu-table" id="bm-ref"></table></div>
-			<p class="tu-note">भारतीयों और दूसरे एशियाई लोगों के शरीर में उसी बीएमआई पर चर्बी ज़्यादा होती है और डायबिटीज़ व दिल की बीमारी का ख़तरा जल्दी बढ़ता है। इसलिए यह कैलकुलेटर पहले से WHO का एशियाई मानक इस्तेमाल करता है (23 से ज़्यादा वज़न, 27.5 से मोटापा)। भारत की 2009 की राष्ट्रीय सलाह इससे भी सख़्त है: 18 से 22.9 सामान्य, 23 से 24.9 ज़्यादा वज़न और 25 से मोटापा। चाहें तो <em>बीएमआई मानक</em> में WHO मानक चुन सकते हैं।</p>
+			<p class="tu-note">भारतीयों के शरीर में उसी बीएमआई पर चर्बी ज़्यादा होती है और डायबिटीज़ व दिल की बीमारी का ख़तरा जल्दी बढ़ता है। इसलिए भारत के डॉक्टर 2009 का भारतीय दिशानिर्देश इस्तेमाल करते हैं, और यह कैलकुलेटर भी पहले से यही मानक इस्तेमाल करता है: 18 से कम यानी कम वज़न, 18 से 22.9 सामान्य, 23 से 24.9 ज़्यादा वज़न और 25 से मोटापा। <em>बीएमआई मानक</em> में आप WHO मानक (25 से ज़्यादा वज़न, 30 से मोटापा) या WHO का एशियाई मानक (23 से ज़्यादा वज़न, 27.5 से मोटापा) भी चुन सकते हैं। ऊपर की तालिका WHO और एशियाई मानक दिखाती है और उसके नीचे की छोटी तालिका भारतीय दिशानिर्देश।</p>
 			<h3>बीएमआई की सीमाएँ</h3>
 			<p>बीएमआई शुरुआती जाँच का पैमाना है, बीमारी का निदान नहीं। ज़्यादातर वयस्कों के लिए यह अच्छा अंदाज़ा देता है, पर इसकी कुछ सीमाएँ हैं:</p>
 			<ul>
@@ -824,9 +827,9 @@ body.is-stuck #navbar.hide { position: fixed; top: 56px; right: 8px; }
 			</ul>
 			<h3>अक्सर पूछे जाने वाले सवाल</h3>
 			<h4>सामान्य बीएमआई कितना होना चाहिए?</h4>
-			<p>वयस्कों में WHO के अनुसार 18.5 से 24.9 सामान्य है। एशियाई मानक में 18.5 से 22.9 सामान्य माना जाता है। 18.5 से कम होने पर वज़न कम (दुबलापन) माना जाता है।</p>
+			<p>भारत के 2009 के दिशानिर्देश के अनुसार वयस्कों में 18 से 22.9 सामान्य है, 23 से 24.9 ज़्यादा वज़न और 25 या उससे ज़्यादा मोटापा। WHO के अंतरराष्ट्रीय मानक में 18.5 से 24.9 सामान्य माना जाता है।</p>
 			<h4>मेरी लंबाई के हिसाब से मेरा वज़न कितना होना चाहिए?</h4>
-			<p>सही वज़न वह है जिससे आपकी लंबाई पर बीएमआई सामान्य रहे। 5 फ़ुट 6 इंच (167.6 सेमी) के लिए यह एशियाई मानक में लगभग 52 से 64.4 किलो और WHO मानक में 52 से 70 किलो है। कैलकुलेटर इसे <em>आपकी लंबाई के लिए सही वज़न</em> वाले खाने में दिखाता है।</p>
+			<p>सही वज़न वह है जिससे आपकी लंबाई पर बीएमआई सामान्य रहे। 5 फ़ुट 6 इंच (167.6 सेमी) के लिए यह भारतीय मानक में लगभग 50.6 से 64.4 किलो और WHO मानक में 52 से 70 किलो है। कैलकुलेटर इसे <em>आपकी लंबाई के लिए सही वज़न</em> वाले खाने में दिखाता है।</p>
 			<h4>क्या पुरुषों और महिलाओं का बीएमआई अलग तरीक़े से निकलता है?</h4>
 			<p>नहीं, वयस्कों के लिए फ़ॉर्मूला और चार्ट एक ही है। उसी बीएमआई पर महिलाओं के शरीर में आम तौर पर पुरुषों से ज़्यादा चर्बी होती है, जो बीएमआई नहीं दिखाता।</p>
 			<h4>फ़ुट-इंच को मीटर में कैसे बदलें?</h4>
@@ -895,7 +898,7 @@ body.is-stuck #navbar.hide { position: fixed; top: 56px; right: 8px; }
             hide_search:false,
             current_tab:0
         }        </script><!-- FASTCOMMENTS-LAZY: widget init moved to main_js/main.js -- it pulls embed.min.js only when #fastcomments-widget nears the viewport or on the first Comments-toggle click, so it no longer blocks first render -->                <script src="https://mes.fm/main_js/lazysizes.min.js?v=1.0.3" async></script>
-	<script src="/bmicalculator/js/bmicalculator.js?v=8" defer></script>
+	<script src="/bmicalculator/js/bmicalculator.js?v=9" defer></script>
             <script src="https://mes.fm/main_js/main.js?v=1.0.5"></script>    <!-- PAGEVIEW-TRACKING-INSERTED --><script src="https://mes.fm/main_js/track.js" defer></script><script>document.getElementById('copyright-year').textContent = new Date().getFullYear();</script><script src="/main_js/info-bar-fit.js" defer></script><script>
   // Floating compact header bar (see #compact-nav CSS): appears once the
   // header + nav bar have scrolled off the top; nav links that don't fit

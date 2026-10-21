@@ -439,7 +439,7 @@ APPS = {
     "bmicalculator": dict(title="BMI Calculator", page_title="BMI Calculator",
                           tag="Body mass index, healthy weight range and progress.", accent="#b3529d", dark="#8a3d79", tint="#f8e2ed",
                           desc="Free BMI calculator: enter your weight and height in kg/cm or lb/ft/in to get your body mass index, your category, your healthy weight range and how much to gain or lose. WHO or Asian cut-offs, a gauge, and saved measurements with a BMI-over-time chart.",
-                          js_v="8", js_parts=["i18n.js"],
+                          js_v="9", js_parts=["i18n.js"],
                           nav_extra="<li class=\"info-bar__item\"><a class=\"info-bar__item__text\" href='/bmicalculator/health-tips'>Health Tips</a></li><li class=\"info-bar__item\"><a class=\"info-bar__item__text\" href='/bmicalculator/memes'>Memes</a></li><li class=\"info-bar__item\"><a class=\"info-bar__item__text\" href='/bmicalculator/body-mass-index'>What is BMI?</a></li>",
                           menu_extra="<li class=\"navbar__item\"><a class=\"navbar__link\" href=\"/bmicalculator/health-tips\">Health Tips</a></li><li class=\"navbar__item\"><a class=\"navbar__link\" href=\"/bmicalculator/memes\">Memes</a></li><li class=\"navbar__item\"><a class=\"navbar__link\" href=\"/bmicalculator/body-mass-index\">What is BMI?</a></li><li class=\"navbar__item\"><a class=\"navbar__link\" href=\"/bmicalculator/bmi-chart\">BMI Chart</a></li><li class=\"navbar__item\"><a class=\"navbar__link\" href=\"/bmicalculator/bmi-formula\">BMI Formula</a></li><li class=\"navbar__item\"><a class=\"navbar__link\" href=\"/bmicalculator/sports\">Sports Articles</a></li>"),
     # BMR Calculator (2026-10-14): basal metabolic rate + TDEE + calories for a goal. Mifflin-St Jeor / revised Harris-Benedict / Katch-McArdle / Cunningham, kg/cm mirrored with lb/ft/in,
@@ -885,6 +885,7 @@ def build_from_source(slug, cfg, tpl):
     if cfg.get("i18n") is not None:   # {{t:key}} = a UI string of the page's language (the BMI pages: tool_apps_src/bmicalculator/i18n.js)
         content = re.sub(r"\{\{t:(\w+)\}\}", lambda m: cfg["i18n"][m.group(1)], content)
         assert "{{" not in content, re.findall(r"\{\{[^}]*\}\}", content)[:3]
+        content = re.sub(r'<option value="[a-z]+"></option>', "", content)    # an option whose label is empty in this language is not offered (the BMI India scale)
     desc = cfg["desc"]
     ldd = {"@context": "https://schema.org", "@type": "WebApplication", "name": cfg["title"],
            "url": "https://mes.fm/" + slug, "applicationCategory": "UtilitiesApplication", "operatingSystem": "Any",

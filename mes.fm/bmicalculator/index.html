@@ -378,6 +378,9 @@ html[lang="ar"] .page-title, html[lang="ar"] .page-description {direction:rtl; t
 #bm[dir="rtl"] .tu-suffix span {right:auto; left:0.7em;}
 #bm[dir="rtl"] .tu-suffix .tu-input {padding-right:0.7em; padding-left:3.2em;}
 @media (max-width: 600px) { #bm[dir="rtl"] .tu-suffix .tu-input {padding-right:0.55em; padding-left:2.2em;} }
+/* the India guideline's own small table (English and Hindi pages) */
+.tu .bm-ref-india {margin-top:0.6em;}
+.tu .bm-ref-india caption {caption-side:top; text-align:start; font-weight:700; padding:0 0 0.4em;}
 
 
 	@media print {
@@ -764,7 +767,7 @@ body.is-stuck #navbar.hide { position: fixed; top: 56px; right: 8px; }
 						<button type="button" data-u="i" aria-pressed="false">US</button>
 					</div></div>
 				<div class="bm-opt"><label for="bm-scale" class="tu-label">BMI scale</label>
-					<select id="bm-scale" class="tu-select"><option value="who">WHO standard (overweight from 25)</option><option value="asia">Asian (overweight from 23)</option></select></div>
+					<select id="bm-scale" class="tu-select"><option value="who">WHO standard (overweight from 25)</option><option value="asia">Asian (overweight from 23)</option><option value="india">India (2009 guideline: overweight from 23, obese from 25)</option></select></div>
 				<p class="tu-note bm-scalehint" id="bm-scalehint"></p>
 			</div>
 			<p class="tu-note" style="margin-bottom:0;">Every field stays in step with its twin. Adults 20 and over only; see the notes below.</p>
@@ -813,7 +816,7 @@ body.is-stuck #navbar.hide { position: fixed; top: 56px; right: 8px; }
 			<p>For example, 65.8 kg at 182.9 cm is 65.8 &divide; (1.829 &times; 1.829) = <b>19.7</b>, in the normal range.</p>
 			<h3>BMI categories for adults</h3>
 			<div class="tu-table-wrap"><table class="tu-table" id="bm-ref"></table></div>
-			<p class="tu-note">The WHO standard cut-offs are used by most countries. The WHO Asia-Pacific cut-offs (overweight from 23, obese from 27.5) reflect the higher health risk at lower BMI in many Asian populations. Switch the <em>BMI scale</em> above to use them.</p>
+			<p class="tu-note">The WHO standard cut-offs are used by most countries. The WHO Asia-Pacific cut-offs (overweight from 23, obese from 27.5) reflect the higher health risk at lower BMI in many Asian populations. Switch the <em>BMI scale</em> above to use them. Doctors in India use the 2009 consensus guideline for Asian Indians (normal 18 to 22.9, overweight 23 to 24.9, obese from 25), also in the <em>BMI scale</em> menu; its bands are in the small table below.</p>
 			<h3>Important notes on BMI</h3>
 			<p>BMI is a general screening tool, not a diagnosis. It assumes a &ldquo;normal&rdquo; proportion of weight to height for people of average build and activity, which has some limits:</p>
 			<ul>
@@ -886,7 +889,7 @@ body.is-stuck #navbar.hide { position: fixed; top: 56px; right: 8px; }
             hide_search:false,
             current_tab:0
         }        </script><!-- FASTCOMMENTS-LAZY: widget init moved to main_js/main.js -- it pulls embed.min.js only when #fastcomments-widget nears the viewport or on the first Comments-toggle click, so it no longer blocks first render -->                <script src="https://mes.fm/main_js/lazysizes.min.js?v=1.0.3" async></script>
-	<script src="/bmicalculator/js/bmicalculator.js?v=8" defer></script>
+	<script src="/bmicalculator/js/bmicalculator.js?v=9" defer></script>
             <script src="https://mes.fm/main_js/main.js?v=1.0.5"></script>    <!-- PAGEVIEW-TRACKING-INSERTED --><script src="https://mes.fm/main_js/track.js" defer></script><script>document.getElementById('copyright-year').textContent = new Date().getFullYear();</script><script src="/main_js/info-bar-fit.js" defer></script><script>
   // Floating compact header bar (see #compact-nav CSS): appears once the
   // header + nav bar have scrolled off the top; nav links that don't fit

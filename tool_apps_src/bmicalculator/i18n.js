@@ -5,7 +5,7 @@
  * Adding a language: copy an entry, translate every key (node tool_apps_src/bmi-tests.js checks that none is missing), add an APPS entry in build_tool_apps.py (BMI_LANGS) and seo/<code>.html. */
 (function (root) {
 	"use strict";
-	var CATS_EN = ["Severe thinness", "Moderate thinness", "Mild thinness", "Normal weight", "Overweight", "Obese (class I)", "Obese (class II)", "Obese (class III)", "Obese"];
+	var CATS_EN = ["Severe thinness", "Moderate thinness", "Mild thinness", "Normal weight", "Overweight", "Obese (class I)", "Obese (class II)", "Obese (class III)", "Obese", "Underweight"];
 	function cats(list) { var o = {}; CATS_EN.forEach(function (k, i) { o[k] = list[i]; }); return o; }
 	var I18N = {
 		en: {
@@ -16,7 +16,7 @@
 			weight: "Weight", height: "Height", phKg: "e.g. 65.8", phCm: "e.g. 182.9", phLb: "e.g. 145.1", phFt: "e.g. 6", phIn: "e.g. 0",
 			impShow: "Use pounds, feet and inches", impHide: "Hide pounds, feet and inches", hideOptions: "Hide options", options: "Options",
 			showResultsIn: "Show results in", both: "Both", metric: "Metric", us: "US",
-			bmiScale: "BMI scale", scaleWho: "WHO standard (overweight from 25)", scaleAsia: "Asian (overweight from 23)", scaleHint: "",
+			bmiScale: "BMI scale", scaleWho: "WHO standard (overweight from 25)", scaleAsia: "Asian (overweight from 23)", scaleIndia: "India (2009 guideline: overweight from 23, obese from 25)", scaleHint: "",
 			stepNote: "Every field stays in step with its twin. Adults 20 and over only; see the notes below.",
 			emptyPrompt: "Enter your weight and height to see your BMI &mdash; or try an example: ",
 			copyLink: "Copy link to this result", saveMeasurement: "Save this measurement", print: "Print", whereScale: "Where you are on the scale",
@@ -25,7 +25,7 @@
 			storeBlocked: "Your browser is blocking storage, so your measurements will be lost when you close this tab. Copy a link to keep them.",
 			saved: { one: "{n} measurement saved in this browser.", other: "{n} measurements saved in this browser." },
 			copyFailed: "Copy failed", copiedBtn: "Copied ✓",
-			sumResults: "Results in {u} · {s}", unitsUS: "US units", unitsMetric: "metric", unitsBoth: "both units", scaleShortWho: "WHO scale", scaleShortAsia: "Asian scale",
+			sumResults: "Results in {u} · {s}", unitsUS: "US units", unitsMetric: "metric", unitsBoth: "both units", scaleShortWho: "WHO scale", scaleShortIndia: "India scale", scaleShortAsia: "Asian scale",
 			examples: [["6 ft, 145 lb", "65.77", "182.88"], ["170 cm, 85 kg", "85", "170"], ["5 ft 4 in, 120 lb", "54.43", "162.56"]],
 			yourBmi: "Your BMI", healthyWeight: "Healthy weight for your height", bmiRange: "BMI {lo} to {hi}", bmiPrime: "BMI Prime", primeSub: "your BMI &divide; {hi} (1.00 or less is in range)",
 			ponderal: "Ponderal Index", ponderalSub: "kg per m&sup3; (an alternative that suits very tall or short people)",
@@ -40,7 +40,7 @@
 			linkCopied: "Link copied", linkCopiedAll: "Link copied: it holds your whole history",
 			loadingOld: "Loading the calculation from your shared link…", oldFailed: "That old shared link could not be loaded (it may have expired). Enter your weight and height above.",
 			sharedLoaded: "Shared result loaded", openedShared: "Opened a shared result. It is saved in this browser now.", linkUnreadable: "That link could not be read.",
-			refCategory: "Category", refWho: "WHO standard", refAsian: "Asian", refAndOver: "{n} and over",
+			refCategory: "Category", refWho: "WHO standard", refIndia: "India: 2009 consensus guideline for Asian Indians", refAsian: "Asian", refAndOver: "{n} and over",
 			refClasses: "WHO obesity classes: class I 30 – 34.9, class II 35 – 39.9, class III 40 and over.",
 			dotTitle: "{d}: BMI {b}, {w}",
 			cats: cats(CATS_EN)
@@ -53,7 +53,7 @@
 			weight: "Peso", height: "Altura", phKg: "p. ej. 68,5", phCm: "p. ej. 170", phLb: "p. ej. 151", phFt: "p. ej. 5", phIn: "p. ej. 7",
 			impShow: "Usar libras, pies y pulgadas", impHide: "Ocultar libras, pies y pulgadas", hideOptions: "Ocultar opciones", options: "Opciones",
 			showResultsIn: "Mostrar resultados en", both: "Ambos", metric: "Métrico", us: "EE. UU.",
-			bmiScale: "Escala de IMC", scaleWho: "OMS estándar (sobrepeso desde 25)", scaleAsia: "Asiática (sobrepeso desde 23)", scaleHint: "",
+			bmiScale: "Escala de IMC", scaleWho: "OMS estándar (sobrepeso desde 25)", scaleAsia: "Asiática (sobrepeso desde 23)", scaleIndia: "", scaleHint: "",
 			stepNote: "Cada campo se actualiza junto con su equivalente. Solo para adultos de 20 años o más; lee las notas de abajo.",
 			emptyPrompt: "Escribe tu peso y tu altura para ver tu IMC, o prueba un ejemplo: ",
 			copyLink: "Copiar enlace a este resultado", saveMeasurement: "Guardar esta medición", print: "Imprimir", whereScale: "Dónde estás en la escala",
@@ -62,7 +62,7 @@
 			storeBlocked: "Tu navegador bloquea el almacenamiento, así que tus mediciones se perderán al cerrar esta pestaña. Copia un enlace para conservarlas.",
 			saved: { one: "{n} medición guardada en este navegador.", other: "{n} mediciones guardadas en este navegador." },
 			copyFailed: "No se pudo copiar", copiedBtn: "Copiado ✓",
-			sumResults: "Resultados en {u} · {s}", unitsUS: "unidades de EE. UU.", unitsMetric: "sistema métrico", unitsBoth: "ambos sistemas", scaleShortWho: "escala de la OMS", scaleShortAsia: "escala asiática",
+			sumResults: "Resultados en {u} · {s}", unitsUS: "unidades de EE. UU.", unitsMetric: "sistema métrico", unitsBoth: "ambos sistemas", scaleShortWho: "escala de la OMS", scaleShortIndia: "", scaleShortAsia: "escala asiática",
 			examples: [["170 cm, 65 kg", "65", "170"], ["160 cm, 72 kg", "72", "160"], ["182 cm, 95 kg", "95", "182"]],
 			yourBmi: "Tu IMC", healthyWeight: "Peso saludable para tu altura", bmiRange: "IMC de {lo} a {hi}", bmiPrime: "IMC Prime", primeSub: "tu IMC &divide; {hi} (1,00 o menos está en el rango normal)",
 			ponderal: "Índice ponderal", ponderalSub: "kg por m&sup3; (una alternativa para personas muy altas o muy bajas)",
@@ -77,10 +77,10 @@
 			linkCopied: "Enlace copiado", linkCopiedAll: "Enlace copiado: incluye todo tu historial",
 			loadingOld: "Cargando el cálculo de tu enlace…", oldFailed: "No se pudo cargar ese enlace antiguo (puede haber caducado). Escribe tu peso y tu altura arriba.",
 			sharedLoaded: "Resultado compartido cargado", openedShared: "Has abierto un resultado compartido. Ya está guardado en este navegador.", linkUnreadable: "No se pudo leer ese enlace.",
-			refCategory: "Categoría", refWho: "OMS estándar", refAsian: "Asiática", refAndOver: "{n} o más",
+			refCategory: "Categoría", refWho: "OMS estándar", refIndia: "", refAsian: "Asiática", refAndOver: "{n} o más",
 			refClasses: "Clases de obesidad de la OMS: clase I 30 – 34,9, clase II 35 – 39,9, clase III 40 o más.",
 			dotTitle: "{d}: IMC {b}, {w}",
-			cats: cats(["Delgadez severa", "Delgadez moderada", "Delgadez leve", "Peso normal", "Sobrepeso", "Obesidad (clase I)", "Obesidad (clase II)", "Obesidad (clase III)", "Obesidad"])
+			cats: cats(["Delgadez severa", "Delgadez moderada", "Delgadez leve", "Peso normal", "Sobrepeso", "Obesidad (clase I)", "Obesidad (clase II)", "Obesidad (clase III)", "Obesidad", "Bajo peso"])
 		},
 		"pt-BR": {
 			code: "pt-BR", name: "Português (Brasil)", path: "/calculadora-imc-pt", locale: "pt-BR", dec: ",", langLabel: "Idioma", defScale: "who", defUnits: "m", defImp: false, dir: "ltr",
@@ -90,7 +90,7 @@
 			weight: "Peso", height: "Altura", phKg: "ex.: 68,5", phCm: "ex.: 170", phLb: "ex.: 151", phFt: "ex.: 5", phIn: "ex.: 7",
 			impShow: "Usar libras, pés e polegadas", impHide: "Ocultar libras, pés e polegadas", hideOptions: "Ocultar opções", options: "Opções",
 			showResultsIn: "Mostrar resultados em", both: "Ambos", metric: "Métrico", us: "EUA",
-			bmiScale: "Escala do IMC", scaleWho: "Padrão da OMS (sobrepeso a partir de 25)", scaleAsia: "Asiática (sobrepeso a partir de 23)", scaleHint: "",
+			bmiScale: "Escala do IMC", scaleWho: "Padrão da OMS (sobrepeso a partir de 25)", scaleAsia: "Asiática (sobrepeso a partir de 23)", scaleIndia: "", scaleHint: "",
 			stepNote: "Cada campo acompanha o seu equivalente. Somente para adultos a partir de 20 anos; veja as observações abaixo.",
 			emptyPrompt: "Informe seu peso e sua altura para ver seu IMC, ou experimente um exemplo: ",
 			copyLink: "Copiar link deste resultado", saveMeasurement: "Salvar esta medição", print: "Imprimir", whereScale: "Onde você está na escala",
@@ -99,7 +99,7 @@
 			storeBlocked: "Seu navegador está bloqueando o armazenamento, então suas medições serão perdidas ao fechar esta aba. Copie um link para guardá-las.",
 			saved: { one: "{n} medição salva neste navegador.", other: "{n} medições salvas neste navegador." },
 			copyFailed: "Não foi possível copiar", copiedBtn: "Copiado ✓",
-			sumResults: "Resultados em {u} · {s}", unitsUS: "unidades dos EUA", unitsMetric: "sistema métrico", unitsBoth: "os dois sistemas", scaleShortWho: "escala da OMS", scaleShortAsia: "escala asiática",
+			sumResults: "Resultados em {u} · {s}", unitsUS: "unidades dos EUA", unitsMetric: "sistema métrico", unitsBoth: "os dois sistemas", scaleShortWho: "escala da OMS", scaleShortIndia: "", scaleShortAsia: "escala asiática",
 			examples: [["170 cm, 65 kg", "65", "170"], ["160 cm, 72 kg", "72", "160"], ["180 cm, 95 kg", "95", "180"]],
 			yourBmi: "Seu IMC", healthyWeight: "Peso saudável para sua altura", bmiRange: "IMC de {lo} a {hi}", bmiPrime: "IMC Prime", primeSub: "seu IMC &divide; {hi} (1,00 ou menos está na faixa normal)",
 			ponderal: "Índice ponderal", ponderalSub: "kg por m&sup3; (uma alternativa para pessoas muito altas ou muito baixas)",
@@ -114,10 +114,10 @@
 			linkCopied: "Link copiado", linkCopiedAll: "Link copiado: ele contém todo o seu histórico",
 			loadingOld: "Carregando o cálculo do link compartilhado…", oldFailed: "Não foi possível carregar esse link antigo (talvez tenha expirado). Informe seu peso e sua altura acima.",
 			sharedLoaded: "Resultado compartilhado carregado", openedShared: "Você abriu um resultado compartilhado. Ele já está salvo neste navegador.", linkUnreadable: "Não foi possível ler esse link.",
-			refCategory: "Classificação", refWho: "Padrão da OMS", refAsian: "Asiática", refAndOver: "{n} ou mais",
+			refCategory: "Classificação", refWho: "Padrão da OMS", refIndia: "", refAsian: "Asiática", refAndOver: "{n} ou mais",
 			refClasses: "Graus de obesidade da OMS: grau I 30 – 34,9, grau II 35 – 39,9, grau III 40 ou mais.",
 			dotTitle: "{d}: IMC {b}, {w}",
-			cats: cats(["Magreza grave", "Magreza moderada", "Magreza leve", "Peso normal", "Sobrepeso", "Obesidade grau I", "Obesidade grau II", "Obesidade grau III", "Obesidade"])
+			cats: cats(["Magreza grave", "Magreza moderada", "Magreza leve", "Peso normal", "Sobrepeso", "Obesidade grau I", "Obesidade grau II", "Obesidade grau III", "Obesidade", "Abaixo do peso"])
 		},
 		id: {
 			code: "id", name: "Bahasa Indonesia", path: "/kalkulator-bmi", locale: "id-ID", dec: ",", langLabel: "Bahasa", defScale: "who", defUnits: "m", defImp: false, dir: "ltr",
@@ -127,7 +127,7 @@
 			weight: "Berat badan", height: "Tinggi badan", phKg: "mis. 60,5", phCm: "mis. 165", phLb: "mis. 133", phFt: "mis. 5", phIn: "mis. 5",
 			impShow: "Pakai pon, kaki dan inci", impHide: "Sembunyikan pon, kaki dan inci", hideOptions: "Sembunyikan opsi", options: "Opsi",
 			showResultsIn: "Tampilkan hasil dalam", both: "Keduanya", metric: "Metrik", us: "AS",
-			bmiScale: "Skala BMI", scaleWho: "Standar WHO (berlebih mulai 25)", scaleAsia: "Asia (berlebih mulai 23)",
+			bmiScale: "Skala BMI", scaleWho: "Standar WHO (berlebih mulai 25)", scaleAsia: "Asia (berlebih mulai 23)", scaleIndia: "",
 			scaleHint: "Pada orang Asia, risiko kesehatan sudah naik pada IMT yang lebih rendah, jadi banyak dokter di Indonesia memakai skala Asia (WHO Asia-Pasifik). Pilih skala di atas.",
 			stepNote: "Setiap kolom selalu sama dengan pasangannya. Hanya untuk orang dewasa usia 20 tahun ke atas; lihat catatan di bawah.",
 			emptyPrompt: "Masukkan berat dan tinggi badan Anda untuk melihat BMI, atau coba contoh: ",
@@ -137,7 +137,7 @@
 			storeBlocked: "Browser Anda memblokir penyimpanan, jadi pengukuran Anda akan hilang saat tab ini ditutup. Salin tautan untuk menyimpannya.",
 			saved: { other: "{n} pengukuran tersimpan di browser ini." },
 			copyFailed: "Gagal menyalin", copiedBtn: "Tersalin ✓",
-			sumResults: "Hasil dalam {u} · {s}", unitsUS: "satuan AS", unitsMetric: "satuan metrik", unitsBoth: "kedua satuan", scaleShortWho: "skala WHO", scaleShortAsia: "skala Asia",
+			sumResults: "Hasil dalam {u} · {s}", unitsUS: "satuan AS", unitsMetric: "satuan metrik", unitsBoth: "kedua satuan", scaleShortWho: "skala WHO", scaleShortIndia: "", scaleShortAsia: "skala Asia",
 			examples: [["160 cm, 55 kg", "55", "160"], ["160 cm, 60 kg", "60", "160"], ["170 cm, 80 kg", "80", "170"]],
 			yourBmi: "BMI Anda", healthyWeight: "Berat badan sehat untuk tinggi Anda", bmiRange: "BMI {lo} sampai {hi}", bmiPrime: "BMI Prime", primeSub: "BMI Anda &divide; {hi} (1,00 atau kurang berarti normal)",
 			ponderal: "Indeks Ponderal", ponderalSub: "kg per m&sup3; (alternatif untuk orang yang sangat tinggi atau sangat pendek)",
@@ -152,10 +152,10 @@
 			linkCopied: "Tautan tersalin", linkCopiedAll: "Tautan tersalin: berisi seluruh riwayat Anda",
 			loadingOld: "Memuat perhitungan dari tautan Anda…", oldFailed: "Tautan lama itu tidak bisa dimuat (mungkin sudah kedaluwarsa). Masukkan berat dan tinggi badan di atas.",
 			sharedLoaded: "Hasil yang dibagikan sudah dimuat", openedShared: "Anda membuka hasil yang dibagikan. Sekarang hasil ini tersimpan di browser ini.", linkUnreadable: "Tautan itu tidak bisa dibaca.",
-			refCategory: "Kategori", refWho: "Standar WHO", refAsian: "Asia", refAndOver: "{n} ke atas",
+			refCategory: "Kategori", refWho: "Standar WHO", refIndia: "", refAsian: "Asia", refAndOver: "{n} ke atas",
 			refClasses: "Kelas obesitas WHO: kelas I 30 – 34,9, kelas II 35 – 39,9, kelas III 40 ke atas.",
 			dotTitle: "{d}: BMI {b}, {w}",
-			cats: cats(["Kurus berat", "Kurus sedang", "Kurus ringan", "Berat badan normal", "Berat badan berlebih", "Obesitas kelas I", "Obesitas kelas II", "Obesitas kelas III", "Obesitas"])
+			cats: cats(["Kurus berat", "Kurus sedang", "Kurus ringan", "Berat badan normal", "Berat badan berlebih", "Obesitas kelas I", "Obesitas kelas II", "Obesitas kelas III", "Obesitas", "Berat badan kurang"])
 		},
 		fr: {
 			code: "fr", name: "Français", path: "/calcul-imc", locale: "fr-FR", dec: ",", langLabel: "Langue", defScale: "who", defUnits: "m", defImp: false, dir: "ltr",
@@ -165,7 +165,7 @@
 			weight: "Poids", height: "Taille", phKg: "ex. 68,5", phCm: "ex. 170", phLb: "ex. 151", phFt: "ex. 5", phIn: "ex. 7",
 			impShow: "Utiliser livres, pieds et pouces", impHide: "Masquer livres, pieds et pouces", hideOptions: "Masquer les options", options: "Options",
 			showResultsIn: "Afficher les résultats en", both: "Les deux", metric: "Métrique", us: "US",
-			bmiScale: "Échelle d’IMC", scaleWho: "Standard OMS (surpoids dès 25)", scaleAsia: "Asiatique (surpoids dès 23)", scaleHint: "",
+			bmiScale: "Échelle d’IMC", scaleWho: "Standard OMS (surpoids dès 25)", scaleAsia: "Asiatique (surpoids dès 23)", scaleIndia: "", scaleHint: "",
 			stepNote: "Chaque champ reste synchronisé avec son équivalent. Adultes de 20 ans et plus uniquement ; voir les remarques plus bas.",
 			emptyPrompt: "Entrez votre poids et votre taille pour voir votre IMC, ou essayez un exemple : ",
 			copyLink: "Copier le lien de ce résultat", saveMeasurement: "Enregistrer cette mesure", print: "Imprimer", whereScale: "Votre position sur l’échelle",
@@ -174,7 +174,7 @@
 			storeBlocked: "Votre navigateur bloque le stockage : vos mesures seront perdues à la fermeture de cet onglet. Copiez un lien pour les garder.",
 			saved: { one: "{n} mesure enregistrée dans ce navigateur.", other: "{n} mesures enregistrées dans ce navigateur." },
 			copyFailed: "Échec de la copie", copiedBtn: "Copié ✓",
-			sumResults: "Résultats en {u} · {s}", unitsUS: "unités US", unitsMetric: "système métrique", unitsBoth: "deux systèmes", scaleShortWho: "échelle OMS", scaleShortAsia: "échelle asiatique",
+			sumResults: "Résultats en {u} · {s}", unitsUS: "unités US", unitsMetric: "système métrique", unitsBoth: "deux systèmes", scaleShortWho: "échelle OMS", scaleShortIndia: "", scaleShortAsia: "échelle asiatique",
 			examples: [["170 cm, 65 kg", "65", "170"], ["160 cm, 72 kg", "72", "160"], ["180 cm, 92 kg", "92", "180"]],
 			yourBmi: "Votre IMC", healthyWeight: "Poids santé pour votre taille", bmiRange: "IMC de {lo} à {hi}", bmiPrime: "IMC Prime", primeSub: "votre IMC &divide; {hi} (1,00 ou moins = dans la norme)",
 			ponderal: "Indice pondéral", ponderalSub: "kg par m&sup3; (une alternative adaptée aux personnes très grandes ou très petites)",
@@ -189,10 +189,10 @@
 			linkCopied: "Lien copié", linkCopiedAll: "Lien copié : il contient tout votre historique",
 			loadingOld: "Chargement du calcul depuis votre lien…", oldFailed: "Ce lien ancien n’a pas pu être chargé (il a peut-être expiré). Entrez votre poids et votre taille ci-dessus.",
 			sharedLoaded: "Résultat partagé chargé", openedShared: "Vous avez ouvert un résultat partagé. Il est maintenant enregistré dans ce navigateur.", linkUnreadable: "Ce lien n’a pas pu être lu.",
-			refCategory: "Catégorie", refWho: "Standard OMS", refAsian: "Asiatique", refAndOver: "{n} et plus",
+			refCategory: "Catégorie", refWho: "Standard OMS", refIndia: "", refAsian: "Asiatique", refAndOver: "{n} et plus",
 			refClasses: "Classes d’obésité de l’OMS : classe I 30 – 34,9, classe II 35 – 39,9, classe III 40 et plus.",
 			dotTitle: "{d} : IMC {b}, {w}",
-			cats: cats(["Maigreur sévère", "Maigreur modérée", "Maigreur légère", "Poids normal", "Surpoids", "Obésité (classe I)", "Obésité (classe II)", "Obésité (classe III)", "Obésité"])
+			cats: cats(["Maigreur sévère", "Maigreur modérée", "Maigreur légère", "Poids normal", "Surpoids", "Obésité (classe I)", "Obésité (classe II)", "Obésité (classe III)", "Obésité", "Insuffisance pondérale"])
 		},
 		de: {
 			code: "de", name: "Deutsch", path: "/bmi-rechner", locale: "de-DE", dec: ",", langLabel: "Sprache", defScale: "who", defUnits: "m", defImp: false, dir: "ltr",
@@ -202,7 +202,7 @@
 			weight: "Gewicht", height: "Größe", phKg: "z. B. 68,5", phCm: "z. B. 170", phLb: "z. B. 151", phFt: "z. B. 5", phIn: "z. B. 7",
 			impShow: "Pfund, Fuß und Zoll verwenden", impHide: "Pfund, Fuß und Zoll ausblenden", hideOptions: "Optionen ausblenden", options: "Optionen",
 			showResultsIn: "Ergebnisse anzeigen in", both: "Beides", metric: "Metrisch", us: "US",
-			bmiScale: "BMI-Skala", scaleWho: "WHO-Standard (Übergewicht ab 25)", scaleAsia: "Asiatisch (Übergewicht ab 23)", scaleHint: "",
+			bmiScale: "BMI-Skala", scaleWho: "WHO-Standard (Übergewicht ab 25)", scaleAsia: "Asiatisch (Übergewicht ab 23)", scaleIndia: "", scaleHint: "",
 			stepNote: "Jedes Feld bleibt mit seinem Gegenstück synchron. Nur für Erwachsene ab 20 Jahren; siehe die Hinweise unten.",
 			emptyPrompt: "Geben Sie Gewicht und Größe ein, um Ihren BMI zu sehen, oder probieren Sie ein Beispiel: ",
 			copyLink: "Link zu diesem Ergebnis kopieren", saveMeasurement: "Diese Messung speichern", print: "Drucken", whereScale: "Ihre Position auf der Skala",
@@ -211,7 +211,7 @@
 			storeBlocked: "Ihr Browser blockiert den Speicher, daher gehen Ihre Messungen beim Schließen dieses Tabs verloren. Kopieren Sie einen Link, um sie zu behalten.",
 			saved: { one: "{n} Messung in diesem Browser gespeichert.", other: "{n} Messungen in diesem Browser gespeichert." },
 			copyFailed: "Kopieren fehlgeschlagen", copiedBtn: "Kopiert ✓",
-			sumResults: "Ergebnisse in {u} · {s}", unitsUS: "US-Einheiten", unitsMetric: "metrischen Einheiten", unitsBoth: "beiden Systemen", scaleShortWho: "WHO-Skala", scaleShortAsia: "asiatische Skala",
+			sumResults: "Ergebnisse in {u} · {s}", unitsUS: "US-Einheiten", unitsMetric: "metrischen Einheiten", unitsBoth: "beiden Systemen", scaleShortWho: "WHO-Skala", scaleShortIndia: "", scaleShortAsia: "asiatische Skala",
 			examples: [["170 cm, 65 kg", "65", "170"], ["165 cm, 78 kg", "78", "165"], ["185 cm, 98 kg", "98", "185"]],
 			yourBmi: "Ihr BMI", healthyWeight: "Normalgewicht für Ihre Größe", bmiRange: "BMI {lo} bis {hi}", bmiPrime: "BMI Prime", primeSub: "Ihr BMI &divide; {hi} (1,00 oder weniger liegt im Normbereich)",
 			ponderal: "Ponderal-Index", ponderalSub: "kg pro m&sup3; (eine Alternative für sehr große oder sehr kleine Menschen)",
@@ -226,10 +226,10 @@
 			linkCopied: "Link kopiert", linkCopiedAll: "Link kopiert: Er enthält Ihren gesamten Verlauf",
 			loadingOld: "Die Berechnung aus Ihrem Link wird geladen…", oldFailed: "Dieser alte Link konnte nicht geladen werden (vielleicht ist er abgelaufen). Geben Sie oben Gewicht und Größe ein.",
 			sharedLoaded: "Geteiltes Ergebnis geladen", openedShared: "Sie haben ein geteiltes Ergebnis geöffnet. Es ist jetzt in diesem Browser gespeichert.", linkUnreadable: "Dieser Link konnte nicht gelesen werden.",
-			refCategory: "Kategorie", refWho: "WHO-Standard", refAsian: "Asiatisch", refAndOver: "ab {n}",
+			refCategory: "Kategorie", refWho: "WHO-Standard", refIndia: "", refAsian: "Asiatisch", refAndOver: "ab {n}",
 			refClasses: "Adipositas-Grade der WHO: Grad I 30 – 34,9, Grad II 35 – 39,9, Grad III ab 40.",
 			dotTitle: "{d}: BMI {b}, {w}",
-			cats: cats(["Starkes Untergewicht", "Mäßiges Untergewicht", "Leichtes Untergewicht", "Normalgewicht", "Übergewicht", "Adipositas Grad I", "Adipositas Grad II", "Adipositas Grad III", "Adipositas"])
+			cats: cats(["Starkes Untergewicht", "Mäßiges Untergewicht", "Leichtes Untergewicht", "Normalgewicht", "Übergewicht", "Adipositas Grad I", "Adipositas Grad II", "Adipositas Grad III", "Adipositas", "Untergewicht"])
 		},
 		it: {
 			code: "it", name: "Italiano", path: "/calcolo-bmi", locale: "it-IT", dec: ",", langLabel: "Lingua", defScale: "who", defUnits: "m", defImp: false, dir: "ltr",
@@ -239,7 +239,7 @@
 			weight: "Peso", height: "Altezza", phKg: "es. 68,5", phCm: "es. 170", phLb: "es. 151", phFt: "es. 5", phIn: "es. 7",
 			impShow: "Usa libbre, piedi e pollici", impHide: "Nascondi libbre, piedi e pollici", hideOptions: "Nascondi opzioni", options: "Opzioni",
 			showResultsIn: "Mostra i risultati in", both: "Entrambi", metric: "Metrico", us: "USA",
-			bmiScale: "Scala del BMI", scaleWho: "Standard OMS (sovrappeso da 25)", scaleAsia: "Asiatica (sovrappeso da 23)", scaleHint: "",
+			bmiScale: "Scala del BMI", scaleWho: "Standard OMS (sovrappeso da 25)", scaleAsia: "Asiatica (sovrappeso da 23)", scaleIndia: "", scaleHint: "",
 			stepNote: "Ogni campo resta allineato al suo corrispondente. Solo per adulti dai 20 anni in su; vedi le note più in basso.",
 			emptyPrompt: "Inserisci peso e altezza per vedere il tuo BMI, oppure prova un esempio: ",
 			copyLink: "Copia il link a questo risultato", saveMeasurement: "Salva questa misurazione", print: "Stampa", whereScale: "Dove ti trovi sulla scala",
@@ -248,7 +248,7 @@
 			storeBlocked: "Il browser sta bloccando la memoria locale, quindi le misurazioni andranno perse alla chiusura di questa scheda. Copia un link per conservarle.",
 			saved: { one: "{n} misurazione salvata in questo browser.", other: "{n} misurazioni salvate in questo browser." },
 			copyFailed: "Copia non riuscita", copiedBtn: "Copiato ✓",
-			sumResults: "Risultati in {u} · {s}", unitsUS: "unità USA", unitsMetric: "sistema metrico", unitsBoth: "entrambi i sistemi", scaleShortWho: "scala OMS", scaleShortAsia: "scala asiatica",
+			sumResults: "Risultati in {u} · {s}", unitsUS: "unità USA", unitsMetric: "sistema metrico", unitsBoth: "entrambi i sistemi", scaleShortWho: "scala OMS", scaleShortIndia: "", scaleShortAsia: "scala asiatica",
 			examples: [["170 cm, 65 kg", "65", "170"], ["160 cm, 72 kg", "72", "160"], ["180 cm, 92 kg", "92", "180"]],
 			yourBmi: "Il tuo BMI", healthyWeight: "Peso forma per la tua altezza", bmiRange: "BMI da {lo} a {hi}", bmiPrime: "BMI Prime", primeSub: "il tuo BMI &divide; {hi} (1,00 o meno è nella norma)",
 			ponderal: "Indice ponderale", ponderalSub: "kg per m&sup3; (un’alternativa adatta a persone molto alte o molto basse)",
@@ -263,10 +263,10 @@
 			linkCopied: "Link copiato", linkCopiedAll: "Link copiato: contiene tutto il tuo storico",
 			loadingOld: "Caricamento del calcolo dal link condiviso…", oldFailed: "Non è stato possibile caricare quel vecchio link (forse è scaduto). Inserisci peso e altezza qui sopra.",
 			sharedLoaded: "Risultato condiviso caricato", openedShared: "Hai aperto un risultato condiviso. Ora è salvato in questo browser.", linkUnreadable: "Non è stato possibile leggere quel link.",
-			refCategory: "Categoria", refWho: "Standard OMS", refAsian: "Asiatica", refAndOver: "{n} e oltre",
+			refCategory: "Categoria", refWho: "Standard OMS", refIndia: "", refAsian: "Asiatica", refAndOver: "{n} e oltre",
 			refClasses: "Classi di obesità dell’OMS: classe I 30 – 34,9, classe II 35 – 39,9, classe III 40 e oltre.",
 			dotTitle: "{d}: BMI {b}, {w}",
-			cats: cats(["Magrezza grave", "Magrezza moderata", "Magrezza lieve", "Normopeso", "Sovrappeso", "Obesità di classe I", "Obesità di classe II", "Obesità di classe III", "Obesità"])
+			cats: cats(["Magrezza grave", "Magrezza moderata", "Magrezza lieve", "Normopeso", "Sovrappeso", "Obesità di classe I", "Obesità di classe II", "Obesità di classe III", "Obesità", "Sottopeso"])
 		},
 		tr: {
 			code: "tr", name: "Türkçe", path: "/vucut-kitle-indeksi", locale: "tr-TR", dec: ",", langLabel: "Dil", defScale: "who", defUnits: "m", defImp: false, dir: "ltr",
@@ -276,7 +276,7 @@
 			weight: "Kilo", height: "Boy", phKg: "örn. 68,5", phCm: "örn. 170", phLb: "örn. 151", phFt: "örn. 5", phIn: "örn. 7",
 			impShow: "Libre, fit ve inç kullan", impHide: "Libre, fit ve inçi gizle", hideOptions: "Seçenekleri gizle", options: "Seçenekler",
 			showResultsIn: "Sonuç birimi", both: "İkisi de", metric: "Metrik", us: "ABD",
-			bmiScale: "VKİ ölçeği", scaleWho: "DÜÖ standardı (25’ten itibaren fazla kilolu)", scaleAsia: "Asya (23’ten itibaren fazla kilolu)", scaleHint: "",
+			bmiScale: "VKİ ölçeği", scaleWho: "DÜÖ standardı (25’ten itibaren fazla kilolu)", scaleAsia: "Asya (23’ten itibaren fazla kilolu)", scaleIndia: "", scaleHint: "",
 			stepNote: "Her alan karşılığıyla eşzamanlı kalır. Yalnızca 20 yaş ve üstü yetişkinler içindir; aşağıdaki notlara bakın.",
 			emptyPrompt: "VKİ değerinizi görmek için kilonuzu ve boyunuzu girin ya da bir örnek deneyin: ",
 			copyLink: "Bu sonucun bağlantısını kopyala", saveMeasurement: "Bu ölçümü kaydet", print: "Yazdır", whereScale: "Ölçekteki yeriniz",
@@ -285,7 +285,7 @@
 			storeBlocked: "Tarayıcınız depolamayı engelliyor, bu yüzden bu sekmeyi kapattığınızda ölçümleriniz kaybolacak. Saklamak için bir bağlantı kopyalayın.",
 			saved: { one: "Bu tarayıcıda {n} ölçüm kayıtlı.", other: "Bu tarayıcıda {n} ölçüm kayıtlı." },
 			copyFailed: "Kopyalanamadı", copiedBtn: "Kopyalandı ✓",
-			sumResults: "Sonuçlar: {u} · {s}", unitsUS: "ABD birimleri", unitsMetric: "metrik birimler", unitsBoth: "iki birim de", scaleShortWho: "DÜÖ ölçeği", scaleShortAsia: "Asya ölçeği",
+			sumResults: "Sonuçlar: {u} · {s}", unitsUS: "ABD birimleri", unitsMetric: "metrik birimler", unitsBoth: "iki birim de", scaleShortWho: "DÜÖ ölçeği", scaleShortIndia: "", scaleShortAsia: "Asya ölçeği",
 			examples: [["170 cm, 65 kg", "65", "170"], ["160 cm, 72 kg", "72", "160"], ["180 cm, 95 kg", "95", "180"]],
 			yourBmi: "VKİ değeriniz", healthyWeight: "Boyunuza göre sağlıklı kilo", bmiRange: "VKİ {lo} ile {hi} arası", bmiPrime: "BMI Prime", primeSub: "VKİ &divide; {hi} (1,00 veya altı normal aralıktadır)",
 			ponderal: "Ponderal İndeks", ponderalSub: "m&sup3; başına kg (çok uzun veya çok kısa kişiler için bir alternatif)",
@@ -300,10 +300,10 @@
 			linkCopied: "Bağlantı kopyalandı", linkCopiedAll: "Bağlantı kopyalandı: tüm geçmişinizi içerir",
 			loadingOld: "Paylaşılan bağlantıdaki hesap yükleniyor…", oldFailed: "Bu eski bağlantı yüklenemedi (süresi dolmuş olabilir). Kilonuzu ve boyunuzu yukarıya girin.",
 			sharedLoaded: "Paylaşılan sonuç yüklendi", openedShared: "Paylaşılan bir sonucu açtınız. Artık bu tarayıcıda kayıtlı.", linkUnreadable: "Bu bağlantı okunamadı.",
-			refCategory: "Sınıf", refWho: "DÜÖ standardı", refAsian: "Asya", refAndOver: "{n} ve üzeri",
+			refCategory: "Sınıf", refWho: "DÜÖ standardı", refIndia: "", refAsian: "Asya", refAndOver: "{n} ve üzeri",
 			refClasses: "DÜÖ obezite sınıfları: 1. derece 30 – 34,9, 2. derece 35 – 39,9, 3. derece 40 ve üzeri.",
 			dotTitle: "{d}: VKİ {b}, {w}",
-			cats: cats(["İleri derecede zayıf", "Orta derecede zayıf", "Hafif zayıf", "Normal kilolu", "Fazla kilolu", "1. derece obez", "2. derece obez", "3. derece obez (morbid obez)", "Obez"])
+			cats: cats(["İleri derecede zayıf", "Orta derecede zayıf", "Hafif zayıf", "Normal kilolu", "Fazla kilolu", "1. derece obez", "2. derece obez", "3. derece obez (morbid obez)", "Obez", "Zayıf"])
 		},
 		vi: {
 			code: "vi", name: "Tiếng Việt", path: "/tinh-chi-so-bmi", locale: "vi-VN", dec: ",", langLabel: "Ngôn ngữ", defScale: "asia", defUnits: "m", defImp: false, dir: "ltr",
@@ -313,7 +313,7 @@
 			weight: "Cân nặng", height: "Chiều cao", phKg: "vd. 55,5", phCm: "vd. 160", phLb: "vd. 122", phFt: "vd. 5", phIn: "vd. 3",
 			impShow: "Dùng pound, feet và inch", impHide: "Ẩn pound, feet và inch", hideOptions: "Ẩn tùy chọn", options: "Tùy chọn",
 			showResultsIn: "Hiển thị kết quả theo", both: "Cả hai", metric: "Hệ mét", us: "Hệ Mỹ",
-			bmiScale: "Thang BMI", scaleWho: "Chuẩn WHO (thừa cân từ 25)", scaleAsia: "Chuẩn châu Á (thừa cân từ 23)",
+			bmiScale: "Thang BMI", scaleWho: "Chuẩn WHO (thừa cân từ 25)", scaleAsia: "Chuẩn châu Á (thừa cân từ 23)", scaleIndia: "",
 			scaleHint: "Người châu Á có nguy cơ sức khỏe cao hơn ở cùng mức BMI, nên chuẩn châu Á của WHO (thừa cân từ 23, béo phì từ 27,5) được dùng mặc định ở đây. Bạn có thể chuyển sang chuẩn WHO ở trên.",
 			stepNote: "Mỗi ô luôn khớp với ô tương ứng. Chỉ dành cho người trưởng thành từ 20 tuổi; xem lưu ý bên dưới.",
 			emptyPrompt: "Nhập cân nặng và chiều cao để xem chỉ số BMI, hoặc thử một ví dụ: ",
@@ -323,7 +323,7 @@
 			storeBlocked: "Trình duyệt đang chặn bộ nhớ, nên các lần đo sẽ mất khi bạn đóng thẻ này. Hãy sao chép liên kết để giữ lại.",
 			saved: { other: "Đã lưu {n} lần đo trong trình duyệt này." },
 			copyFailed: "Không sao chép được", copiedBtn: "Đã sao chép ✓",
-			sumResults: "Kết quả theo {u} · {s}", unitsUS: "đơn vị Mỹ", unitsMetric: "hệ mét", unitsBoth: "cả hai hệ", scaleShortWho: "chuẩn WHO", scaleShortAsia: "chuẩn châu Á",
+			sumResults: "Kết quả theo {u} · {s}", unitsUS: "đơn vị Mỹ", unitsMetric: "hệ mét", unitsBoth: "cả hai hệ", scaleShortWho: "chuẩn WHO", scaleShortIndia: "", scaleShortAsia: "chuẩn châu Á",
 			examples: [["160 cm, 50 kg", "50", "160"], ["160 cm, 60 kg", "60", "160"], ["170 cm, 80 kg", "80", "170"]],
 			yourBmi: "BMI của bạn", healthyWeight: "Cân nặng khỏe mạnh theo chiều cao", bmiRange: "BMI từ {lo} đến {hi}", bmiPrime: "BMI Prime", primeSub: "BMI của bạn &divide; {hi} (từ 1,00 trở xuống là bình thường)",
 			ponderal: "Chỉ số Ponderal", ponderalSub: "kg trên m&sup3; (phù hợp hơn với người rất cao hoặc rất thấp)",
@@ -338,10 +338,10 @@
 			linkCopied: "Đã sao chép liên kết", linkCopiedAll: "Đã sao chép liên kết: chứa toàn bộ lịch sử của bạn",
 			loadingOld: "Đang tải phép tính từ liên kết…", oldFailed: "Không tải được liên kết cũ đó (có thể đã hết hạn). Hãy nhập cân nặng và chiều cao ở trên.",
 			sharedLoaded: "Đã tải kết quả được chia sẻ", openedShared: "Bạn vừa mở một kết quả được chia sẻ. Kết quả đã được lưu trong trình duyệt này.", linkUnreadable: "Không đọc được liên kết đó.",
-			refCategory: "Phân loại", refWho: "Chuẩn WHO", refAsian: "Chuẩn châu Á", refAndOver: "từ {n} trở lên",
+			refCategory: "Phân loại", refWho: "Chuẩn WHO", refIndia: "", refAsian: "Chuẩn châu Á", refAndOver: "từ {n} trở lên",
 			refClasses: "Các mức béo phì theo WHO: độ I 30 – 34,9, độ II 35 – 39,9, độ III từ 40 trở lên.",
 			dotTitle: "{d}: BMI {b}, {w}",
-			cats: cats(["Gầy độ III", "Gầy độ II", "Gầy độ I", "Bình thường", "Thừa cân", "Béo phì độ I", "Béo phì độ II", "Béo phì độ III", "Béo phì"])
+			cats: cats(["Gầy độ III", "Gầy độ II", "Gầy độ I", "Bình thường", "Thừa cân", "Béo phì độ I", "Béo phì độ II", "Béo phì độ III", "Béo phì", "Thiếu cân"])
 		},
 		pl: {
 			code: "pl", name: "Polski", path: "/kalkulator-bmi-pl", locale: "pl-PL", dec: ",", langLabel: "Język", defScale: "who", defUnits: "m", defImp: false, dir: "ltr",
@@ -351,7 +351,7 @@
 			weight: "Waga", height: "Wzrost", phKg: "np. 68,5", phCm: "np. 170", phLb: "np. 151", phFt: "np. 5", phIn: "np. 7",
 			impShow: "Użyj funtów, stóp i cali", impHide: "Ukryj funty, stopy i cale", hideOptions: "Ukryj opcje", options: "Opcje",
 			showResultsIn: "Pokaż wyniki w", both: "Obu", metric: "Metryczne", us: "USA",
-			bmiScale: "Skala BMI", scaleWho: "Standard WHO (nadwaga od 25)", scaleAsia: "Azjatycka (nadwaga od 23)", scaleHint: "",
+			bmiScale: "Skala BMI", scaleWho: "Standard WHO (nadwaga od 25)", scaleAsia: "Azjatycka (nadwaga od 23)", scaleIndia: "", scaleHint: "",
 			stepNote: "Każde pole jest zsynchronizowane ze swoim odpowiednikiem. Tylko dla dorosłych od 20. roku życia; zobacz uwagi poniżej.",
 			emptyPrompt: "Wpisz wagę i wzrost, aby zobaczyć swoje BMI, albo wypróbuj przykład: ",
 			copyLink: "Skopiuj link do tego wyniku", saveMeasurement: "Zapisz ten pomiar", print: "Drukuj", whereScale: "Twoje miejsce na skali",
@@ -360,7 +360,7 @@
 			storeBlocked: "Przeglądarka blokuje pamięć, więc pomiary znikną po zamknięciu tej karty. Skopiuj link, aby je zachować.",
 			saved: { one: "{n} pomiar zapisany w tej przeglądarce.", few: "{n} pomiary zapisane w tej przeglądarce.", many: "{n} pomiarów zapisanych w tej przeglądarce.", other: "{n} pomiarów zapisanych w tej przeglądarce." },
 			copyFailed: "Nie udało się skopiować", copiedBtn: "Skopiowano ✓",
-			sumResults: "Wyniki w {u} · {s}", unitsUS: "jednostkach USA", unitsMetric: "jednostkach metrycznych", unitsBoth: "obu systemach", scaleShortWho: "skala WHO", scaleShortAsia: "skala azjatycka",
+			sumResults: "Wyniki w {u} · {s}", unitsUS: "jednostkach USA", unitsMetric: "jednostkach metrycznych", unitsBoth: "obu systemach", scaleShortWho: "skala WHO", scaleShortIndia: "", scaleShortAsia: "skala azjatycka",
 			examples: [["170 cm, 65 kg", "65", "170"], ["165 cm, 78 kg", "78", "165"], ["182 cm, 98 kg", "98", "182"]],
 			yourBmi: "Twoje BMI", healthyWeight: "Prawidłowa waga dla Twojego wzrostu", bmiRange: "BMI od {lo} do {hi}", bmiPrime: "BMI Prime", primeSub: "Twoje BMI &divide; {hi} (1,00 lub mniej to norma)",
 			ponderal: "Wskaźnik ponderalny", ponderalSub: "kg na m&sup3; (alternatywa dla osób bardzo wysokich lub bardzo niskich)",
@@ -375,10 +375,10 @@
 			linkCopied: "Link skopiowany", linkCopiedAll: "Link skopiowany: zawiera całą Twoją historię",
 			loadingOld: "Wczytywanie obliczeń z udostępnionego linku…", oldFailed: "Nie udało się wczytać tego starego linku (mógł wygasnąć). Wpisz wagę i wzrost powyżej.",
 			sharedLoaded: "Wczytano udostępniony wynik", openedShared: "Otwarto udostępniony wynik. Jest już zapisany w tej przeglądarce.", linkUnreadable: "Nie udało się odczytać tego linku.",
-			refCategory: "Kategoria", refWho: "Standard WHO", refAsian: "Azjatycka", refAndOver: "{n} i więcej",
+			refCategory: "Kategoria", refWho: "Standard WHO", refIndia: "", refAsian: "Azjatycka", refAndOver: "{n} i więcej",
 			refClasses: "Stopnie otyłości według WHO: I stopień 30 – 34,9, II stopień 35 – 39,9, III stopień 40 i więcej.",
 			dotTitle: "{d}: BMI {b}, {w}",
-			cats: cats(["Wygłodzenie", "Wychudzenie", "Niedowaga", "Waga prawidłowa", "Nadwaga", "Otyłość I stopnia", "Otyłość II stopnia", "Otyłość III stopnia", "Otyłość"])
+			cats: cats(["Wygłodzenie", "Wychudzenie", "Niedowaga", "Waga prawidłowa", "Nadwaga", "Otyłość I stopnia", "Otyłość II stopnia", "Otyłość III stopnia", "Otyłość", "Niedowaga"])
 		},
 		ar: {
 			code: "ar", name: "العربية", path: "/hasibat-kutlat-al-jism", locale: "ar-u-nu-latn", dec: ".", langLabel: "اللغة", defScale: "who", defUnits: "m", defImp: false, dir: "rtl",
@@ -388,7 +388,7 @@
 			weight: "الوزن", height: "الطول", phKg: "مثال: 70.5", phCm: "مثال: 170", phLb: "مثال: 155", phFt: "مثال: 5", phIn: "مثال: 7",
 			impShow: "استخدام الرطل والقدم والبوصة", impHide: "إخفاء الرطل والقدم والبوصة", hideOptions: "إخفاء الخيارات", options: "الخيارات",
 			showResultsIn: "عرض النتائج بـ", both: "كلاهما", metric: "متري", us: "أمريكي",
-			bmiScale: "مقياس المؤشر", scaleWho: "معيار منظمة الصحة العالمية (زيادة الوزن من 25)", scaleAsia: "المقياس الآسيوي (زيادة الوزن من 23)", scaleHint: "",
+			bmiScale: "مقياس المؤشر", scaleWho: "معيار منظمة الصحة العالمية (زيادة الوزن من 25)", scaleAsia: "المقياس الآسيوي (زيادة الوزن من 23)", scaleIndia: "", scaleHint: "",
 			stepNote: "كل حقل يتغيّر مع نظيره. للبالغين من عمر 20 عامًا فأكثر فقط؛ راجع الملاحظات أدناه.",
 			emptyPrompt: "أدخل وزنك وطولك لترى مؤشر كتلة جسمك، أو جرّب مثالًا: ",
 			copyLink: "نسخ رابط هذه النتيجة", saveMeasurement: "حفظ هذا القياس", print: "طباعة", whereScale: "موقعك على المقياس",
@@ -397,7 +397,7 @@
 			storeBlocked: "متصفحك يمنع التخزين، لذلك ستضيع قياساتك عند إغلاق علامة التبويب هذه. انسخ رابطًا للاحتفاظ بها.",
 			saved: { zero: "لا توجد قياسات محفوظة في هذا المتصفح.", one: "قياس واحد محفوظ في هذا المتصفح.", two: "قياسان محفوظان في هذا المتصفح.", few: "{n} قياسات محفوظة في هذا المتصفح.", many: "{n} قياسًا محفوظًا في هذا المتصفح.", other: "{n} قياس محفوظ في هذا المتصفح." },
 			copyFailed: "تعذّر النسخ", copiedBtn: "تم النسخ ✓",
-			sumResults: "النتائج بـ{u} · {s}", unitsUS: "الوحدات الأمريكية", unitsMetric: "النظام المتري", unitsBoth: "النظامين", scaleShortWho: "مقياس منظمة الصحة العالمية", scaleShortAsia: "المقياس الآسيوي",
+			sumResults: "النتائج بـ{u} · {s}", unitsUS: "الوحدات الأمريكية", unitsMetric: "النظام المتري", unitsBoth: "النظامين", scaleShortWho: "مقياس منظمة الصحة العالمية", scaleShortIndia: "", scaleShortAsia: "المقياس الآسيوي",
 			examples: [["170 cm, 65 kg", "65", "170"], ["160 cm, 75 kg", "75", "160"], ["180 cm, 100 kg", "100", "180"]],
 			yourBmi: "مؤشر كتلة جسمك", healthyWeight: "الوزن الصحي لطولك", bmiRange: "المؤشر من {lo} إلى {hi}", bmiPrime: "BMI Prime", primeSub: "مؤشرك &divide; {hi}؛ القيمة 1.00 أو أقل ضمن المعدل الطبيعي",
 			ponderal: "مؤشر بوندرال", ponderalSub: "kg لكل m&sup3; (بديل يناسب الأشخاص الطوال جدًا أو القصار جدًا)",
@@ -412,21 +412,21 @@
 			linkCopied: "تم نسخ الرابط", linkCopiedAll: "تم نسخ الرابط: يحتوي على سجلّك كاملًا",
 			loadingOld: "جارٍ تحميل الحساب من الرابط…", oldFailed: "تعذّر تحميل ذلك الرابط القديم (ربما انتهت صلاحيته). أدخل وزنك وطولك في الأعلى.",
 			sharedLoaded: "تم تحميل النتيجة المشتركة", openedShared: "فتحت نتيجة مشتركة، وهي محفوظة الآن في هذا المتصفح.", linkUnreadable: "تعذّرت قراءة ذلك الرابط.",
-			refCategory: "التصنيف", refWho: "معيار منظمة الصحة العالمية", refAsian: "آسيوي", refAndOver: "{n} فأكثر",
+			refCategory: "التصنيف", refWho: "معيار منظمة الصحة العالمية", refIndia: "", refAsian: "آسيوي", refAndOver: "{n} فأكثر",
 			refClasses: "درجات السمنة حسب منظمة الصحة العالمية: الدرجة الأولى 30 – 34.9، الثانية 35 – 39.9، الثالثة 40 فأكثر.",
 			dotTitle: "{d}: المؤشر {b}، {w}",
-			cats: cats(["نحافة شديدة", "نحافة متوسطة", "نحافة خفيفة", "وزن طبيعي", "زيادة في الوزن", "سمنة من الدرجة الأولى", "سمنة من الدرجة الثانية", "سمنة من الدرجة الثالثة", "سمنة"])
+			cats: cats(["نحافة شديدة", "نحافة متوسطة", "نحافة خفيفة", "وزن طبيعي", "زيادة في الوزن", "سمنة من الدرجة الأولى", "سمنة من الدرجة الثانية", "سمنة من الدرجة الثالثة", "سمنة", "نقص الوزن"])
 		},
 		hi: {
-			code: "hi", name: "हिन्दी", path: "/bmi-calculator-hindi", locale: "hi-IN", dec: ".", langLabel: "भाषा", defScale: "asia", defUnits: "m", defImp: true, dir: "ltr",
+			code: "hi", name: "हिन्दी", path: "/bmi-calculator-hindi", locale: "hi-IN", dec: ".", langLabel: "भाषा", defScale: "india", defUnits: "m", defImp: true, dir: "ltr",
 			meta: { title: "बीएमआई कैलकुलेटर", tag: "बॉडी मास इंडेक्स, सही वज़न और आपकी प्रगति।", h1: "बीएमआई कैलकुलेटर (बॉडी मास इंडेक्स)", docTitle: "BMI कैलकुलेटर हिंदी में: अपना बॉडी मास इंडेक्स जानें | MES", ogLocale: "hi_IN",
 				desc: "मुफ़्त बीएमआई कैलकुलेटर: अपना वज़न और लंबाई डालें और जानें अपना बॉडी मास इंडेक्स, एशियाई या WHO मानक के अनुसार श्रेणी, आपकी लंबाई के लिए सही वज़न और कितना वज़न घटाना या बढ़ाना है।" },
 			mixUnits: "<b>वज़न किलो या पाउंड में और लंबाई सेंटीमीटर या फ़ुट-इंच में लिखें,</b> जो भी आसान हो: लिखते ही बाकी खाने अपने-आप भर जाते हैं।",
 			weight: "वज़न", height: "लंबाई", phKg: "जैसे 65.5", phCm: "जैसे 165", phLb: "जैसे 144", phFt: "जैसे 5", phIn: "जैसे 5",
 			impShow: "पाउंड, फ़ुट और इंच दिखाएँ", impHide: "पाउंड, फ़ुट और इंच छिपाएँ", hideOptions: "विकल्प छिपाएँ", options: "विकल्प",
 			showResultsIn: "नतीजे दिखाएँ", both: "दोनों", metric: "मीट्रिक", us: "अमेरिकी",
-			bmiScale: "बीएमआई मानक", scaleWho: "WHO मानक (25 से ज़्यादा वज़न)", scaleAsia: "एशियाई मानक (23 से ज़्यादा वज़न)",
-			scaleHint: "भारतीयों और दूसरे एशियाई लोगों में कम बीएमआई पर ही डायबिटीज़ और दिल की बीमारी का ख़तरा बढ़ जाता है, इसलिए यहाँ एशियाई मानक पहले से चुना गया है। ऊपर WHO मानक भी चुन सकते हैं।",
+			bmiScale: "बीएमआई मानक", scaleWho: "WHO मानक (25 से ज़्यादा वज़न)", scaleAsia: "एशियाई मानक (23 से ज़्यादा वज़न)", scaleIndia: "भारतीय दिशानिर्देश 2009 (23 से ज़्यादा वज़न, 25 से मोटापा)",
+			scaleHint: "भारत में डॉक्टर 2009 का भारतीय दिशानिर्देश इस्तेमाल करते हैं: 18 से 22.9 सामान्य, 23 से 24.9 ज़्यादा वज़न और 25 से मोटापा। इसलिए यहाँ यही मानक पहले से चुना गया है; ऊपर WHO या एशियाई मानक भी चुन सकते हैं।",
 			stepNote: "हर खाना अपने जोड़ीदार खाने के साथ बदलता है। केवल 20 साल या उससे ज़्यादा उम्र के वयस्कों के लिए; नीचे की बातें ज़रूर पढ़ें।",
 			emptyPrompt: "अपना बीएमआई देखने के लिए वज़न और लंबाई डालें, या कोई उदाहरण आज़माएँ: ",
 			copyLink: "इस नतीजे का लिंक कॉपी करें", saveMeasurement: "यह माप सेव करें", print: "प्रिंट करें", whereScale: "पैमाने पर आप कहाँ हैं",
@@ -435,7 +435,7 @@
 			storeBlocked: "आपका ब्राउज़र स्टोरेज रोक रहा है, इसलिए यह टैब बंद करते ही आपके माप मिट जाएँगे। उन्हें रखने के लिए लिंक कॉपी कर लें।",
 			saved: { one: "इस ब्राउज़र में {n} माप सेव है।", other: "इस ब्राउज़र में {n} माप सेव हैं।" },
 			copyFailed: "कॉपी नहीं हो सका", copiedBtn: "कॉपी हो गया ✓",
-			sumResults: "नतीजे {u} में · {s}", unitsUS: "अमेरिकी इकाइयों", unitsMetric: "मीट्रिक इकाइयों", unitsBoth: "दोनों इकाइयों", scaleShortWho: "WHO मानक", scaleShortAsia: "एशियाई मानक",
+			sumResults: "नतीजे {u} में · {s}", unitsUS: "अमेरिकी इकाइयों", unitsMetric: "मीट्रिक इकाइयों", unitsBoth: "दोनों इकाइयों", scaleShortWho: "WHO मानक", scaleShortIndia: "भारतीय मानक", scaleShortAsia: "एशियाई मानक",
 			examples: [["5 फ़ुट 6 इंच, 70 kg", "70", "167.64"], ["160 cm, 55 kg", "55", "160"], ["5 फ़ुट 2 इंच, 68 kg", "68", "157.48"]],
 			yourBmi: "आपका बीएमआई", healthyWeight: "आपकी लंबाई के लिए सही वज़न", bmiRange: "बीएमआई {lo} से {hi}", bmiPrime: "BMI Prime", primeSub: "आपका बीएमआई &divide; {hi} (1.00 या कम सामान्य है)",
 			ponderal: "पॉन्डरल इंडेक्स", ponderalSub: "kg प्रति m&sup3; (बहुत लंबे या बहुत छोटे क़द वालों के लिए एक विकल्प)",
@@ -450,10 +450,10 @@
 			linkCopied: "लिंक कॉपी हो गया", linkCopiedAll: "लिंक कॉपी हो गया: इसमें आपका पूरा इतिहास है",
 			loadingOld: "शेयर किए गए लिंक से हिसाब लोड हो रहा है…", oldFailed: "वह पुराना लिंक लोड नहीं हो सका (शायद उसकी अवधि ख़त्म हो गई)। ऊपर अपना वज़न और लंबाई डालें।",
 			sharedLoaded: "शेयर किया गया नतीजा लोड हो गया", openedShared: "आपने शेयर किया गया एक नतीजा खोला है। अब यह इस ब्राउज़र में सेव है।", linkUnreadable: "वह लिंक पढ़ा नहीं जा सका।",
-			refCategory: "श्रेणी", refWho: "WHO मानक", refAsian: "एशियाई", refAndOver: "{n} या उससे ज़्यादा",
+			refCategory: "श्रेणी", refWho: "WHO मानक", refIndia: "भारतीय दिशानिर्देश (2009)", refAsian: "एशियाई", refAndOver: "{n} या उससे ज़्यादा",
 			refClasses: "WHO के अनुसार मोटापे की श्रेणियाँ: श्रेणी I 30 – 34.9, श्रेणी II 35 – 39.9, श्रेणी III 40 या उससे ज़्यादा।",
 			dotTitle: "{d}: बीएमआई {b}, {w}",
-			cats: cats(["गंभीर दुबलापन", "मध्यम दुबलापन", "हल्का दुबलापन", "सामान्य वज़न", "ज़्यादा वज़न", "मोटापा (श्रेणी I)", "मोटापा (श्रेणी II)", "मोटापा (श्रेणी III)", "मोटापा"])
+			cats: cats(["गंभीर दुबलापन", "मध्यम दुबलापन", "हल्का दुबलापन", "सामान्य वज़न", "ज़्यादा वज़न", "मोटापा (श्रेणी I)", "मोटापा (श्रेणी II)", "मोटापा (श्रेणी III)", "मोटापा", "कम वज़न"])
 		}
 	};
 	var out = { langs: Object.keys(I18N), table: I18N, CATS_EN: CATS_EN };

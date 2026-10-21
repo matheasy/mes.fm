@@ -71,3 +71,6 @@ html[lang="ar"] .page-title, html[lang="ar"] .page-description {direction:rtl; t
 #bm[dir="rtl"] .tu-suffix span {right:auto; left:0.7em;}
 #bm[dir="rtl"] .tu-suffix .tu-input {padding-right:0.7em; padding-left:3.2em;}
 @media (max-width: 600px) { #bm[dir="rtl"] .tu-suffix .tu-input {padding-right:0.55em; padding-left:2.2em;} }
+/* the India guideline's own small table (English and Hindi pages) */
+.tu .bm-ref-india {margin-top:0.6em;}
+.tu .bm-ref-india caption {caption-side:top; text-align:start; font-weight:700; padding:0 0 0.4em;}
