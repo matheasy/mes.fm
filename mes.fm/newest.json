@@ -100,18 +100,18 @@
  ],
  "tools": [
   {
-   "href": "/zodiac",
-   "title": "Zodiac & Birth Chart",
-   "icon": "/img/zodiac-logo.png",
-   "desc": "Your Sun, Moon and rising sign, planets, Moon phase and Chinese zodiac, with a chart wheel. For fun.",
-   "added": "2026-10-21",
-   "kind": "tool"
-  },
-  {
    "href": "/birthday",
    "title": "Famous Birthdays",
    "icon": "/img/birthday-logo.png",
    "desc": "See which famous people were born today or on your birthday, who shares your exact date, and their zodiac signs.",
+   "added": "2026-10-21",
+   "kind": "tool"
+  },
+  {
+   "href": "/zodiac",
+   "title": "Zodiac & Birth Chart",
+   "icon": "/img/zodiac-logo.png",
+   "desc": "Your Sun, Moon and rising sign, planets, Moon phase and Chinese zodiac, with a chart wheel. For fun.",
    "added": "2026-10-21",
    "kind": "tool"
   },
@@ -198,18 +198,18 @@
  ],
  "latest": [
   {
-   "href": "/zodiac",
-   "title": "Zodiac & Birth Chart",
-   "icon": "/img/zodiac-logo.png",
-   "desc": "Your Sun, Moon and rising sign, planets, Moon phase and Chinese zodiac, with a chart wheel. For fun.",
-   "added": "2026-10-21",
-   "kind": "tool"
-  },
-  {
    "href": "/birthday",
    "title": "Famous Birthdays",
    "icon": "/img/birthday-logo.png",
    "desc": "See which famous people were born today or on your birthday, who shares your exact date, and their zodiac signs.",
+   "added": "2026-10-21",
+   "kind": "tool"
+  },
+  {
+   "href": "/zodiac",
+   "title": "Zodiac & Birth Chart",
+   "icon": "/img/zodiac-logo.png",
+   "desc": "Your Sun, Moon and rising sign, planets, Moon phase and Chinese zodiac, with a chart wheel. For fun.",
    "added": "2026-10-21",
    "kind": "tool"
   },
