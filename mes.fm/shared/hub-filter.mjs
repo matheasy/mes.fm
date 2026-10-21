@@ -135,14 +135,15 @@ export function withCats(items, cats) {
   });
 }
 
-export function buildFilter(section, escapeHtml) {
+// lpHtml (optional): the "Open in:" switch from shared/link-pref.mjs, put at the right end of the chip row.
+export function buildFilter(section, escapeHtml, lpHtml = "") {
   const count = (id) => section.items.filter((i) => i.cats !== undefined && (id === "all" || i.cats.split(" ").includes(id))).length;
   const chips = (section.filter.length ? [{ id: "all", label: "All" }, ...section.filter] : [])
     .map((c) => `<button type="button" data-c="${c.id}" data-label="${escapeHtml(c.label)}" aria-pressed="${c.id === "all"}">${escapeHtml(c.label)} (${count(c.id)})</button>`)
     .join("");
   return `<div class="ls-filter" id="${section.id}Filter">
       <input type="search" id="${section.id}Search" placeholder="${escapeHtml(section.filterPlaceholder || "Search\u2026")}" aria-label="Search" autocomplete="off">
-      <div class="ls-chips" id="${section.id}Chips">${chips}</div>${section.sortable ? `
+      ${lpHtml ? '<div class="lp-row">' : ""}<div class="ls-chips" id="${section.id}Chips">${chips}</div>${lpHtml ? `\n      ${lpHtml}</div>` : ""}${section.sortable ? `
       <label class="ls-sort">Sort by <select id="${section.id}Sort" aria-label="Sort"><option value="new">Newest first</option><option value="old">Oldest first</option><option value="views">Most viewed</option><option value="long">Longest</option><option value="short">Shortest</option><option value="az">A to Z</option></select></label>` : ""}
     </div>
     <p class="ls-empty" id="${section.id}Empty" hidden>Nothing matches. Try fewer words or a different filter.</p>`;

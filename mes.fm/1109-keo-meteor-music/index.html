@@ -986,6 +986,48 @@ body.dark-mode .ls-chips button { background: #2a2a2a; color: #ddd; border-color
 body.dark-mode .ls-chips button:hover { border-color: #6cb6f5; color: #6cb6f5; }
 body.dark-mode .ls-chips button[aria-pressed="true"] { background: #6cb6f5; border-color: #6cb6f5; color: #111; }
 body.dark-mode .ls-empty { color: #aaa; }
+/* "Open in:" preferred-site switch + per-card site icon (shared/link-pref.mjs, main_js/link-pref.js). */
+.lp-row { display: flex; flex-wrap: wrap; align-items: flex-start; column-gap: 1em; }
+.lp-row > .ls-chips { flex: 1 1 22em; }
+.lp-row--solo { margin: 0 0 0.6em; }
+.lp { display: flex; flex-wrap: wrap; align-items: center; gap: 0.3em; margin: 0.7em 0 0 auto; font-size: 0.85em; }
+.lp-lbl { color: #555; margin-right: 0.15em; }
+.lp button {
+  font: inherit; cursor: pointer; display: inline-flex; align-items: center; gap: 0.3em; min-height: 2.2em;
+  padding: 0.3em 0.65em; border-radius: 1.2em; border: 1px solid #c3c9d2; background: #fff; color: #333;
+}
+.lp button:hover { border-color: #277bb6; color: #1a6fb0; }
+.lp button:focus-visible { outline: 2px solid #277bb6; outline-offset: 2px; }
+.lp button[aria-pressed="true"] { background: #277bb6; border-color: #277bb6; color: #fff; }
+.lp button.lp-few:not([aria-pressed="true"]) { color: #6a7280; border-style: dashed; }
+.lp-n { font-size: 0.85em; font-variant-numeric: tabular-nums; }
+.lp-ic {
+  display: inline-block; flex: none; width: 1.15em; height: 1.15em; vertical-align: -0.2em; background: currentColor;
+  -webkit-mask: var(--lp-i) center / contain no-repeat; mask: var(--lp-i) center / contain no-repeat;
+}
+/* the pages' CSS reset paints every span / a #333: take the button's / caption's colour instead */
+.lp button span, .lp-a .lp-ic, .lp-a .lp-name { color: inherit; }
+.link-card-readmore .lp-ic { margin-right: 0.3em; }
+.list-row h3 .lp-a { color: inherit; text-decoration: none; }
+.list-row h3 .lp-a:hover { text-decoration: underline; }
+.list-row h3 .lp-ic { width: 0.85em; height: 0.85em; margin-left: 0.35em; vertical-align: -0.05em; opacity: 0.75; }
+.lp-ic[data-s="mes"] { --lp-i: url("data:image/svg+xml,%3Csvg%20xmlns%3D'http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg'%20viewBox%3D'0%200%2024%2024'%3E%3Cpath%20fill-rule%3D'evenodd'%20d%3D'M2%2020V4h3.6L12%2012.6%2018.4%204H22v16h-3.4V9.6L12%2018.2%205.4%209.6V20z'%2F%3E%3C%2Fsvg%3E"); }
+.lp-ic[data-s="youtube"] { --lp-i: url("data:image/svg+xml,%3Csvg%20xmlns%3D'http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg'%20viewBox%3D'0%200%2024%2024'%3E%3Cpath%20fill-rule%3D'evenodd'%20d%3D'M23%207.2a3%203%200%200%200-2.1-2.1C19%204.6%2012%204.6%2012%204.6s-7%200-8.9.5A3%203%200%200%200%201%207.2C.5%209.1.5%2012%20.5%2012s0%202.9.5%204.8a3%203%200%200%200%202.1%202.1c1.9.5%208.9.5%208.9.5s7%200%208.9-.5a3%203%200%200%200%202.1-2.1c.5-1.9.5-4.8.5-4.8s0-2.9-.5-4.8zM9.7%2015.4V8.6l5.9%203.4z'%2F%3E%3C%2Fsvg%3E"); }
+.lp-ic[data-s="hive"] { --lp-i: url("data:image/svg+xml,%3Csvg%20xmlns%3D'http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg'%20viewBox%3D'0%200%2024%2024'%3E%3Cpath%20fill-rule%3D'evenodd'%20d%3D'M6.8%202.5h10.4L22.5%2012l-5.3%209.5H6.8L1.5%2012zM9%206.5%206.3%2012%209%2017.5h6l2.7-5.5L15%206.5z'%2F%3E%3C%2Fsvg%3E"); }
+.lp-ic[data-s="3speak"] { --lp-i: url("data:image/svg+xml,%3Csvg%20xmlns%3D'http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg'%20viewBox%3D'0%200%2024%2024'%3E%3Cpath%20fill-rule%3D'evenodd'%20d%3D'M12%201.5a10.5%2010.5%200%201%201%200%2021%2010.5%2010.5%200%200%201%200-21zM9.5%207.5v9l7-4.5z'%2F%3E%3C%2Fsvg%3E"); }
+.lp-ic[data-s="rumble"] { --lp-i: url("data:image/svg+xml,%3Csvg%20xmlns%3D'http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg'%20viewBox%3D'0%200%2024%2024'%3E%3Cpath%20fill-rule%3D'evenodd'%20d%3D'M5%203.8c0-1.6%201.7-2.5%203-1.6l12.4%208.2c1.2.8%201.2%202.4%200%203.2L8%2021.8c-1.3.9-3-.1-3-1.6zM8.6%208.5v7l5.4-3.5z'%2F%3E%3C%2Fsvg%3E"); }
+.lp-ic[data-s="odysee"] { --lp-i: url("data:image/svg+xml,%3Csvg%20xmlns%3D'http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg'%20viewBox%3D'0%200%2024%2024'%3E%3Cpath%20fill-rule%3D'evenodd'%20d%3D'M12%201.5a10.5%2010.5%200%201%201%200%2021%2010.5%2010.5%200%200%201%200-21zM12%206a6%206%200%201%200%200%2012%206%206%200%200%200%200-12z'%2F%3E%3C%2Fsvg%3E"); }
+.lp-ic[data-s="x"] { --lp-i: url("data:image/svg+xml,%3Csvg%20xmlns%3D'http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg'%20viewBox%3D'0%200%2024%2024'%3E%3Cpath%20fill-rule%3D'evenodd'%20d%3D'M3%203h5.4l4.2%205.9L17.7%203h3l-6.7%207.7L21.5%2021h-5.4l-4.6-6.4L5.9%2021H3l7.2-8.3z'%2F%3E%3C%2Fsvg%3E"); }
+.lp-ic[data-s="bitchute"] { --lp-i: url("data:image/svg+xml,%3Csvg%20xmlns%3D'http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg'%20viewBox%3D'0%200%2024%2024'%3E%3Cpath%20fill-rule%3D'evenodd'%20d%3D'M3%203h18v18H3zM8%206.5v11h5.3c2.2%200%203.7-1.2%203.7-3.1%200-1.4-.8-2.4-2.1-2.7%201-.4%201.6-1.3%201.6-2.4%200-1.8-1.4-2.8-3.5-2.8zM10.6%208.6h2.1c.9%200%201.4.4%201.4%201.1s-.5%201.2-1.4%201.2h-2.1zm0%204.2h2.4c1%200%201.5.5%201.5%201.2%200%20.8-.6%201.3-1.5%201.3h-2.4z'%2F%3E%3C%2Fsvg%3E"); }
+.lp-ic[data-s="telegram"] { --lp-i: url("data:image/svg+xml,%3Csvg%20xmlns%3D'http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg'%20viewBox%3D'0%200%2024%2024'%3E%3Cpath%20fill-rule%3D'evenodd'%20d%3D'M1.5%2011.2%2021.6%203.3c.9-.3%201.7.3%201.4%201.7l-3.4%2016c-.2%201.1-.9%201.4-1.8.9l-5-3.7-2.4%202.3c-.3.3-.5.5-1%20.5l.4-5.1%209.3-8.4c.4-.4-.1-.6-.6-.2L6.9%2014.6%202%2013.1c-1.1-.3-1.1-1.1.5-1.9z'%2F%3E%3C%2Fsvg%3E"); }
+.lp-ic[data-s="twitch"] { --lp-i: url("data:image/svg+xml,%3Csvg%20xmlns%3D'http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg'%20viewBox%3D'0%200%2024%2024'%3E%3Cpath%20fill-rule%3D'evenodd'%20d%3D'M4%202%202.5%206v14h5v2.5h2.8L13%2020h4l5-5V2zm16%2012-3%203h-4.5L10%2019.5V17H6V4h14zM15%207h2v5h-2zm-5%200h2v5h-2z'%2F%3E%3C%2Fsvg%3E"); }
+body.dark-mode .lp-lbl, body.dark .lp-lbl { color: #bbb; }
+body.dark-mode .list-row h3 .lp-a, body.dark .list-row h3 .lp-a { color: inherit; }
+body.dark-mode .lp button, body.dark .lp button { background: #2a2a2a; color: #ddd; border-color: #555; }
+body.dark-mode .lp button:hover, body.dark .lp button:hover { border-color: #6cb6f5; color: #6cb6f5; }
+body.dark-mode .lp button[aria-pressed="true"], body.dark .lp button[aria-pressed="true"] { background: #6cb6f5; border-color: #6cb6f5; color: #111; }
+body.dark-mode .lp button.lp-few:not([aria-pressed="true"]), body.dark .lp button.lp-few:not([aria-pressed="true"]) { color: #a3abb8; }
+body.dark-mode .lp button:focus-visible, body.dark .lp button:focus-visible { outline-color: #6cb6f5; }
 </style>
 
 <meta property="fb:app_id" content="120877788060946" />
@@ -1206,7 +1248,10 @@ body.dark-mode .ls-empty { color: #aaa; }
   <p class="section-standalone-link"><a href="https://www.youtube.com/playlist?list=PLai3U8-WIK0FUd8p-bzqCVSDd6gOcHcDr" target="_blank" rel="noopener">&#9654;&#65039; Playlist</a><span class="standalone-sep">&middot;</span><a href="https://keormeteor1.bandcamp.com/album/1109" target="_blank" rel="noopener">&#127925; Album (Bandcamp)</a></p>
     <div class="ls-filter" id="1109-keo-meteor-musicFilter">
       <input type="search" id="1109-keo-meteor-musicSearch" placeholder="Search the music…" aria-label="Search" autocomplete="off">
-      <div class="ls-chips" id="1109-keo-meteor-musicChips"></div>
+      <div class="lp-row"><div class="ls-chips" id="1109-keo-meteor-musicChips"></div>
+      <div class="lp" data-lp role="group" aria-label="Open links in">
+        <span class="lp-lbl" aria-hidden="true">Open in:</span><button type="button" data-s="auto" aria-pressed="true" aria-label="Open in: Auto (the usual link: the mes.fm page when there is one)" title="Auto: the usual link (the mes.fm page when there is one)">Auto</button><button type="button" data-s="youtube" data-label="YouTube" aria-pressed="false" aria-label="Open in YouTube (7 of 7 have a YouTube link)" title="Open in YouTube (7 of 7 have a YouTube link)"><span class="lp-ic" data-s="youtube" aria-hidden="true"></span><span class="lp-n">7</span></button><button type="button" data-s="telegram" data-label="Telegram" aria-pressed="false" aria-label="Open in Telegram (7 of 7 have a Telegram link)" title="Open in Telegram (7 of 7 have a Telegram link)"><span class="lp-ic" data-s="telegram" aria-hidden="true"></span><span class="lp-n">7</span></button>
+      </div></div>
     </div>
     <p class="ls-empty" id="1109-keo-meteor-musicEmpty" hidden>Nothing matches. Try fewer words or a different filter.</p>
     <div class="view-toggle">
@@ -1215,89 +1260,89 @@ body.dark-mode .ls-empty { color: #aaa; }
       
     </div>
     <div class="card-grid" id="1109-keo-meteor-musicGrid">
-    <a class="link-card" data-cats="all" href="https://youtu.be/hQlPItudSSQ" target="_blank" rel="noopener">
+    <a class="link-card lp-a" data-cats="all" data-lp-def="youtube" data-l-youtube="https://youtu.be/hQlPItudSSQ" data-l-telegram="https://t.me/meslinks/22706" href="https://youtu.be/hQlPItudSSQ" target="_blank" rel="noopener">
       <span class="link-card-thumb" style="background-image:url('https://files.peakd.com/file/peakd-hive/mes/244A8vfVzd2wbPx6NwHLQDbGQdW1ZTqgTFjvFVd1QzV1RFyoNrNyBj8nCDqMGXWbFJrrt.jpg')"></span>
       <span class="link-card-body">
         <span class="link-card-title">1109 by Keor Meteor: Intro</span>
-        <span class="link-card-readmore">View &rarr;</span>
+        <span class="link-card-readmore"><span class="lp-ic" data-s="youtube" aria-hidden="true"></span><span class="lp-name">View on YouTube</span> &rarr;</span>
       </span>
     </a>
-    <a class="link-card" data-cats="all" href="https://youtu.be/yzuI-O2mhok" target="_blank" rel="noopener">
+    <a class="link-card lp-a" data-cats="all" data-lp-def="youtube" data-l-youtube="https://youtu.be/yzuI-O2mhok" data-l-telegram="https://t.me/meslinks/22864" href="https://youtu.be/yzuI-O2mhok" target="_blank" rel="noopener">
       <span class="link-card-thumb" style="background-image:url('https://files.peakd.com/file/peakd-hive/mes/23y8zPY47q8XekoqM1J9i4FfhvLwLxW74zpunPT7vYLAe7M5oDjzMxi4ab3sLhWdct3vp.jpg')"></span>
       <span class="link-card-body">
         <span class="link-card-title">1109 by Keor Meteor: 1109</span>
-        <span class="link-card-readmore">View &rarr;</span>
+        <span class="link-card-readmore"><span class="lp-ic" data-s="youtube" aria-hidden="true"></span><span class="lp-name">View on YouTube</span> &rarr;</span>
       </span>
     </a>
-    <a class="link-card" data-cats="all" href="https://youtu.be/F3sgbzG2Fgs" target="_blank" rel="noopener">
+    <a class="link-card lp-a" data-cats="all" data-lp-def="youtube" data-l-youtube="https://youtu.be/F3sgbzG2Fgs" data-l-telegram="https://t.me/meslinks/23071" href="https://youtu.be/F3sgbzG2Fgs" target="_blank" rel="noopener">
       <span class="link-card-thumb" style="background-image:url('https://files.peakd.com/file/peakd-hive/mes/23uQg7f37MrF37TxVKjVN9pEpmXD9eHPsvtdE6Yrx3A4idRYXdzKy5Cmmg39w6vz22kGo.jpg')"></span>
       <span class="link-card-body">
         <span class="link-card-title">1109 by Keor Meteor: Liberty Street</span>
-        <span class="link-card-readmore">View &rarr;</span>
+        <span class="link-card-readmore"><span class="lp-ic" data-s="youtube" aria-hidden="true"></span><span class="lp-name">View on YouTube</span> &rarr;</span>
       </span>
     </a>
-    <a class="link-card" data-cats="all" href="https://youtu.be/jhgpcI1xhrc" target="_blank" rel="noopener">
+    <a class="link-card lp-a" data-cats="all" data-lp-def="youtube" data-l-youtube="https://youtu.be/jhgpcI1xhrc" data-l-telegram="https://t.me/meslinks/23195" href="https://youtu.be/jhgpcI1xhrc" target="_blank" rel="noopener">
       <span class="link-card-thumb" style="background-image:url('https://files.peakd.com/file/peakd-hive/mes/23wWyBz1LGtKoy4dMWReYqkE3PkbZK4unjsXJUkHXZPGPPAtdX4v2bLuK8X56LouqUjpX.jpg')"></span>
       <span class="link-card-body">
         <span class="link-card-title">1109 by Keor Meteor: Melted Vehicles</span>
-        <span class="link-card-readmore">View &rarr;</span>
+        <span class="link-card-readmore"><span class="lp-ic" data-s="youtube" aria-hidden="true"></span><span class="lp-name">View on YouTube</span> &rarr;</span>
       </span>
     </a>
-    <a class="link-card" data-cats="all" href="https://youtu.be/gajxilO2BNw" target="_blank" rel="noopener">
+    <a class="link-card lp-a" data-cats="all" data-lp-def="youtube" data-l-youtube="https://youtu.be/gajxilO2BNw" data-l-telegram="https://t.me/meslinks/23320" href="https://youtu.be/gajxilO2BNw" target="_blank" rel="noopener">
       <span class="link-card-thumb" style="background-image:url('https://files.peakd.com/file/peakd-hive/mes/243fvqWcw8wj3FvBWsm4jbWnou7HkAGRB9eG8rYN61jo2aFAr6g2xznofyyA7Xh5YGkGj.jpg')"></span>
       <span class="link-card-body">
         <span class="link-card-title">1109 by Keor Meteor: George Comedy Club</span>
-        <span class="link-card-readmore">View &rarr;</span>
+        <span class="link-card-readmore"><span class="lp-ic" data-s="youtube" aria-hidden="true"></span><span class="lp-name">View on YouTube</span> &rarr;</span>
       </span>
     </a>
-    <a class="link-card" data-cats="all" href="https://youtu.be/kbQblhUUQzY" target="_blank" rel="noopener">
+    <a class="link-card lp-a" data-cats="all" data-lp-def="youtube" data-l-youtube="https://youtu.be/kbQblhUUQzY" data-l-telegram="https://t.me/meslinks/23416" href="https://youtu.be/kbQblhUUQzY" target="_blank" rel="noopener">
       <span class="link-card-thumb" style="background-image:url('https://files.peakd.com/file/peakd-hive/mes/244eP8AMstJVjt7W1NF9q7WczQhoPXmJ7bzwnzEpGoxcq7AiWZmuH7sabcRamWBeShPd3.jpg')"></span>
       <span class="link-card-body">
         <span class="link-card-title">1109 by Keor Meteor: Osama</span>
-        <span class="link-card-readmore">View &rarr;</span>
+        <span class="link-card-readmore"><span class="lp-ic" data-s="youtube" aria-hidden="true"></span><span class="lp-name">View on YouTube</span> &rarr;</span>
       </span>
     </a>
-    <a class="link-card" data-cats="all" href="https://youtu.be/P4gc7b67eH0" target="_blank" rel="noopener">
+    <a class="link-card lp-a" data-cats="all" data-lp-def="youtube" data-l-youtube="https://youtu.be/P4gc7b67eH0" data-l-telegram="https://t.me/meslinks/23477" href="https://youtu.be/P4gc7b67eH0" target="_blank" rel="noopener">
       <span class="link-card-thumb" style="background-image:url('https://files.peakd.com/file/peakd-hive/mes/23xpCriKHjCov6gjqoMNcgod4Kae21HrERT6nEZXiKg7uUtL3a8kwS6c3DyGWGMrd72Nq.jpg')"></span>
       <span class="link-card-body">
         <span class="link-card-title">1109 by Keor Meteor: Falling Down</span>
-        <span class="link-card-readmore">View &rarr;</span>
+        <span class="link-card-readmore"><span class="lp-ic" data-s="youtube" aria-hidden="true"></span><span class="lp-name">View on YouTube</span> &rarr;</span>
       </span>
     </a>
     </div>
     <div class="list-view view-hidden" id="1109-keo-meteor-musicList">
     <div class="list-row" data-cats="all">
-      <h3>1109 by Keor Meteor: Intro</h3>
+      <h3><a class="lp-a" href="https://youtu.be/hQlPItudSSQ" data-lp-def="youtube" data-l-youtube="https://youtu.be/hQlPItudSSQ" data-l-telegram="https://t.me/meslinks/22706" target="_blank" rel="noopener">1109 by Keor Meteor: Intro<span class="lp-ic" data-s="youtube" aria-hidden="true"></span></a></h3>
       <p><a href="https://youtu.be/hQlPItudSSQ" target="_blank" rel="noopener">YouTube</a> - <a href="https://t.me/meslinks/22706" target="_blank" rel="noopener">Telegram</a></p>
       <img loading="lazy" class="list-thumb" src="https://files.peakd.com/file/peakd-hive/mes/244A8vfVzd2wbPx6NwHLQDbGQdW1ZTqgTFjvFVd1QzV1RFyoNrNyBj8nCDqMGXWbFJrrt.jpg" alt="1109 by Keor Meteor: Intro">
     </div>
     <div class="list-row" data-cats="all">
-      <h3>1109 by Keor Meteor: 1109</h3>
+      <h3><a class="lp-a" href="https://youtu.be/yzuI-O2mhok" data-lp-def="youtube" data-l-youtube="https://youtu.be/yzuI-O2mhok" data-l-telegram="https://t.me/meslinks/22864" target="_blank" rel="noopener">1109 by Keor Meteor: 1109<span class="lp-ic" data-s="youtube" aria-hidden="true"></span></a></h3>
       <p><a href="https://youtu.be/yzuI-O2mhok" target="_blank" rel="noopener">YouTube</a> - <a href="https://t.me/meslinks/22864" target="_blank" rel="noopener">Telegram</a></p>
       <img loading="lazy" class="list-thumb" src="https://files.peakd.com/file/peakd-hive/mes/23y8zPY47q8XekoqM1J9i4FfhvLwLxW74zpunPT7vYLAe7M5oDjzMxi4ab3sLhWdct3vp.jpg" alt="1109 by Keor Meteor: 1109">
     </div>
     <div class="list-row" data-cats="all">
-      <h3>1109 by Keor Meteor: Liberty Street</h3>
+      <h3><a class="lp-a" href="https://youtu.be/F3sgbzG2Fgs" data-lp-def="youtube" data-l-youtube="https://youtu.be/F3sgbzG2Fgs" data-l-telegram="https://t.me/meslinks/23071" target="_blank" rel="noopener">1109 by Keor Meteor: Liberty Street<span class="lp-ic" data-s="youtube" aria-hidden="true"></span></a></h3>
       <p><a href="https://youtu.be/F3sgbzG2Fgs" target="_blank" rel="noopener">YouTube</a> - <a href="https://t.me/meslinks/23071" target="_blank" rel="noopener">Telegram</a></p>
       <img loading="lazy" class="list-thumb" src="https://files.peakd.com/file/peakd-hive/mes/23uQg7f37MrF37TxVKjVN9pEpmXD9eHPsvtdE6Yrx3A4idRYXdzKy5Cmmg39w6vz22kGo.jpg" alt="1109 by Keor Meteor: Liberty Street">
     </div>
     <div class="list-row" data-cats="all">
-      <h3>1109 by Keor Meteor: Melted Vehicles</h3>
+      <h3><a class="lp-a" href="https://youtu.be/jhgpcI1xhrc" data-lp-def="youtube" data-l-youtube="https://youtu.be/jhgpcI1xhrc" data-l-telegram="https://t.me/meslinks/23195" target="_blank" rel="noopener">1109 by Keor Meteor: Melted Vehicles<span class="lp-ic" data-s="youtube" aria-hidden="true"></span></a></h3>
       <p><a href="https://youtu.be/jhgpcI1xhrc" target="_blank" rel="noopener">YouTube</a> - <a href="https://t.me/meslinks/23195" target="_blank" rel="noopener">Telegram</a></p>
       <img loading="lazy" class="list-thumb" src="https://files.peakd.com/file/peakd-hive/mes/23wWyBz1LGtKoy4dMWReYqkE3PkbZK4unjsXJUkHXZPGPPAtdX4v2bLuK8X56LouqUjpX.jpg" alt="1109 by Keor Meteor: Melted Vehicles">
     </div>
     <div class="list-row" data-cats="all">
-      <h3>1109 by Keor Meteor: George Comedy Club</h3>
+      <h3><a class="lp-a" href="https://youtu.be/gajxilO2BNw" data-lp-def="youtube" data-l-youtube="https://youtu.be/gajxilO2BNw" data-l-telegram="https://t.me/meslinks/23320" target="_blank" rel="noopener">1109 by Keor Meteor: George Comedy Club<span class="lp-ic" data-s="youtube" aria-hidden="true"></span></a></h3>
       <p><a href="https://youtu.be/gajxilO2BNw" target="_blank" rel="noopener">YouTube</a> - <a href="https://t.me/meslinks/23320" target="_blank" rel="noopener">Telegram</a></p>
       <img loading="lazy" class="list-thumb" src="https://files.peakd.com/file/peakd-hive/mes/243fvqWcw8wj3FvBWsm4jbWnou7HkAGRB9eG8rYN61jo2aFAr6g2xznofyyA7Xh5YGkGj.jpg" alt="1109 by Keor Meteor: George Comedy Club">
     </div>
     <div class="list-row" data-cats="all">
-      <h3>1109 by Keor Meteor: Osama</h3>
+      <h3><a class="lp-a" href="https://youtu.be/kbQblhUUQzY" data-lp-def="youtube" data-l-youtube="https://youtu.be/kbQblhUUQzY" data-l-telegram="https://t.me/meslinks/23416" target="_blank" rel="noopener">1109 by Keor Meteor: Osama<span class="lp-ic" data-s="youtube" aria-hidden="true"></span></a></h3>
       <p><a href="https://youtu.be/kbQblhUUQzY" target="_blank" rel="noopener">YouTube</a> - <a href="https://t.me/meslinks/23416" target="_blank" rel="noopener">Telegram</a></p>
       <img loading="lazy" class="list-thumb" src="https://files.peakd.com/file/peakd-hive/mes/244eP8AMstJVjt7W1NF9q7WczQhoPXmJ7bzwnzEpGoxcq7AiWZmuH7sabcRamWBeShPd3.jpg" alt="1109 by Keor Meteor: Osama">
     </div>
     <div class="list-row" data-cats="all">
-      <h3>1109 by Keor Meteor: Falling Down</h3>
+      <h3><a class="lp-a" href="https://youtu.be/P4gc7b67eH0" data-lp-def="youtube" data-l-youtube="https://youtu.be/P4gc7b67eH0" data-l-telegram="https://t.me/meslinks/23477" target="_blank" rel="noopener">1109 by Keor Meteor: Falling Down<span class="lp-ic" data-s="youtube" aria-hidden="true"></span></a></h3>
       <p><a href="https://youtu.be/P4gc7b67eH0" target="_blank" rel="noopener">YouTube</a> - <a href="https://t.me/meslinks/23477" target="_blank" rel="noopener">Telegram</a></p>
       <img loading="lazy" class="list-thumb" src="https://files.peakd.com/file/peakd-hive/mes/23xpCriKHjCov6gjqoMNcgod4Kae21HrERT6nEZXiKg7uUtL3a8kwS6c3DyGWGMrd72Nq.jpg" alt="1109 by Keor Meteor: Falling Down">
     </div>
@@ -1845,5 +1890,5 @@ var MES_Vars = {
 <script src="/main_js/main.js?v=1.0.3"></script>
 <script>document.getElementById('copyright-year').textContent = new Date().getFullYear();</script>
 <!-- PAGEVIEW-TRACKING-INSERTED --><script src="/main_js/track.js" defer></script><script src="/main_js/info-bar-fit.js" defer></script>
-<script src="/main_js/site-search.js?v=1" defer></script><!-- HUB-THEATRE-JS --><script src="/main_js/hub-theatre.js?v=1" defer></script><!-- /HUB-THEATRE-JS --></body>
+<script src="/main_js/site-search.js?v=1" defer></script><!-- HUB-THEATRE-JS --><script src="/main_js/hub-theatre.js?v=1" defer></script><!-- /HUB-THEATRE-JS --><script src="/main_js/link-pref.js?v=1" defer></script></body>
 </html>

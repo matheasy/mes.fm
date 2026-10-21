@@ -74,10 +74,12 @@ export function lpCaption(defHref, fallback = "View &rarr;") {
 }
 
 // The switch. maps = one lpMap() per item of the main list (for the counts); a site is offered when at least
-// `min` items have it (the sites in `keep`: as soon as one item has it), and drawn faint (dashed, still usable) when
-// fewer than `few` (fraction) of the items have it. min 8 keeps out e.g. the livestreams' Twitch links (channel links).
-export function lpSwitch(maps, { min = 8, few = 0.25, keep = ["mes", "youtube", "hive"] } = {}) {
+// `min` items have it (default: half the items, at most 8; the sites in `keep`: as soon as one item has it), and drawn
+// faint (dashed, still usable) when fewer than `few` (fraction) of the items have it. min 8 keeps out e.g. the
+// livestreams' Twitch links (channel links, 5 streams).
+export function lpSwitch(maps, { min, few = 0.25, keep = ["mes", "youtube", "hive"] } = {}) {
   const n = maps.length;
+  if (min === undefined) min = Math.min(8, Math.max(2, Math.ceil(n / 2)));
   const sites = LP_SITES.map((s) => ({ ...s, count: maps.filter((m) => m[s.id]).length })).filter(
     (s) => s.count >= min || (s.count > 0 && keep.includes(s.id))
   );
@@ -93,11 +95,22 @@ export function lpSwitch(maps, { min = 8, few = 0.25, keep = ["mes", "youtube", 
       </div>`;
 }
 
+// Should a section get the switch? Yes when at least `share` of its items have links on two or more sites and the
+// switch would offer at least two sites (so the posts-only sections of the hubs stay as they were).
+export function lpWanted(maps, share = 0.4) {
+  const multi = maps.filter((m) => Object.keys(m).length >= 2).length;
+  return maps.length > 0 && multi >= share * maps.length && lpSwitch(maps) !== "";
+}
+
+// The switch on its own line (a section without the search box / chips).
+export const lpSolo = (html) => (html ? `<div class="lp-row lp-row--solo">${html}</div>` : "");
+
 const icons = LP_SITES.map((s) => `.lp-ic[data-s="${s.id}"] { --lp-i: ${svg(s.d)}; }`).join("\n");
 
 export const LP_CSS = `/* "Open in:" preferred-site switch + per-card site icon (shared/link-pref.mjs, main_js/link-pref.js). */
 .lp-row { display: flex; flex-wrap: wrap; align-items: flex-start; column-gap: 1em; }
 .lp-row > .ls-chips { flex: 1 1 22em; }
+.lp-row--solo { margin: 0 0 0.6em; }
 .lp { display: flex; flex-wrap: wrap; align-items: center; gap: 0.3em; margin: 0.7em 0 0 auto; font-size: 0.85em; }
 .lp-lbl { color: #555; margin-right: 0.15em; }
 .lp button {
