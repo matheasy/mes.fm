@@ -1,0 +1,60 @@
+	<div class="tu" id="bd">
+		<div class="tu-card bd-pick">
+			<div class="tu-row bd-inrow">
+				<div class="tu-field" style="flex:2 1 14em;"><label for="bd-date">Your birthday</label><input id="bd-date" class="tu-input" type="text" autocomplete="off" inputmode="text" placeholder="e.g. Oct 26, 1980 or 10-26"></div>
+				<div class="tu-field" style="flex:1 1 8em;"><label for="bd-month">Month</label><select id="bd-month" class="tu-input"></select></div>
+				<div class="tu-field" style="flex:0 1 5.5em;"><label for="bd-day">Day</label><select id="bd-day" class="tu-input"></select></div>
+				<div class="bd-btns"><button type="button" class="tu-btn tu-btn--primary" id="bd-go">Show</button><button type="button" class="tu-btn" id="bd-today">Today</button></div>
+			</div>
+			<p class="tu-note bd-hint">Type a date with the year to also see who was born the very same day and the same year. Nothing you type leaves this browser.</p>
+			<div class="tu-field bd-searchf"><label for="bd-q">Or find a famous person</label><input id="bd-q" class="tu-input" type="search" autocomplete="off" placeholder="Name, e.g. Tesla, Hillary Clinton, Judge Judy"></div>
+			<div class="bd-results" id="bd-results" hidden></div>
+		</div>
+
+		<div class="bd-dayhead">
+			<button type="button" class="tu-btn bd-arrow" id="bd-prev" aria-label="Previous day">‹</button>
+			<div class="bd-daytitle"><h2 id="bd-title">Born today</h2><p id="bd-sub" class="bd-sub"></p></div>
+			<button type="button" class="tu-btn bd-arrow" id="bd-next" aria-label="Next day">›</button>
+		</div>
+
+		<div class="bd-you" id="bd-you" hidden></div>
+
+		<div class="tu-card bd-filters">
+			<div class="tu-chips" id="bd-fields" role="group" aria-label="Field"></div>
+			<div class="tu-row bd-frow">
+				<div class="tu-field" style="flex:1 1 11em;"><label for="bd-country">Country</label><select id="bd-country" class="tu-input"></select></div>
+				<div class="tu-field" style="flex:1 1 10em;"><label for="bd-era">Born</label><select id="bd-era" class="tu-input"></select></div>
+				<div class="tu-field" style="flex:1 1 10em;"><label for="bd-sort">Sort</label><select id="bd-sort" class="tu-input"><option value="fame">Most famous first</option><option value="old">Oldest first</option><option value="young">Youngest first</option><option value="name">A to Z</option></select></div>
+				<label class="bd-check"><input type="checkbox" id="bd-alive"> Living only</label>
+			</div>
+		</div>
+
+		<div id="bd-list" class="bd-list" aria-live="polite"></div>
+		<div class="bd-more"><button type="button" class="tu-btn" id="bd-moreb" hidden>Show more</button></div>
+
+		<div id="bd-extra"></div>
+
+		<div class="bd-share">
+			<button type="button" class="tu-btn" id="bd-copy">Copy link to this day</button>
+			<a class="tu-btn" id="bd-zlink" href="/zodiac">Birth chart for this date</a>
+		</div>
+		<p class="tu-note bd-src">People: the ~10,000 best-known people with an exact birth date on <a href="https://www.wikidata.org/" target="_blank" rel="noopener">Wikidata</a> (CC0), ranked by how many Wikipedia language editions have an article about them, plus a few hand-picked ones. Data updated <span id="bd-gen">recently</span>. A wrong date? Wikidata can be corrected by anyone.</p>
+
+		<div class="tu-seo">
+			<h2>Famous birthdays: who shares your birthday?</h2>
+			<p>Type your birthday and see which famous people were born on the same day: actors, musicians, athletes, scientists, writers, presidents and royalty, most famous first. Add the year to find people born on exactly the same date, people born the same year, and the stars whose birthdays are a day or two from yours. Every person shows their Sun sign and Chinese zodiac animal, with a link to compare birth charts.</p>
+			<h3>How it works</h3>
+			<ul>
+				<li><strong>Who is included.</strong> About 10,000 people whose exact day of birth is recorded on Wikidata, the free database behind Wikipedia, ranked by how many Wikipedias and sister projects have a page about them. People with only a birth year are left out.</li>
+				<li><strong>Dates.</strong> Dates before the calendar change (1582, later in some countries) are shown in the modern (Gregorian) calendar, as Wikidata stores them, so they can differ from the date printed in old books by 10 to 13 days.</li>
+				<li><strong>Signs.</strong> The Sun sign is worked out for that exact date and year (the Sun changes sign on slightly different days each year); on a change day both signs are shown, since the birth time is not known.</li>
+			</ul>
+			<h3>Questions</h3>
+			<h4>Why is someone famous missing?</h4>
+			<p>Either their exact birth date is not on Wikidata, Wikidata records two different dates (they are left out rather than guessed), or they are just outside the 10,000 most-linked people. Search by name to check.</p>
+			<h4>Is anything I type sent anywhere?</h4>
+			<p>No. The list of people is downloaded once and every search and filter runs in your browser; your birthday is never sent or stored.</p>
+			<h4>Related</h4>
+			<p>Get your full birth chart with the <a href="/zodiac">Zodiac &amp; Birth Chart</a>, count the days with <a href="/days-between-dates-calculator">Days Between Dates</a>, and see the sky on any date in <a href="/solar-system-today">Solar System Today</a>.</p>
+		</div>
+	</div>

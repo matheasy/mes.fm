@@ -626,6 +626,25 @@ APPS = {
                      js_v="2", lib_from=["clock"],
                      nav_extra="<li class=\"info-bar__item\"><a class=\"info-bar__item__text\" href='/timezone'>Time Zones</a></li><li class=\"info-bar__item\"><a class=\"info-bar__item__text\" href='/timer'>Timer</a></li><li class=\"info-bar__item\"><a class=\"info-bar__item__text\" href='/calendar'>Calendar</a></li>",
                      menu_extra="<li class=\"navbar__item\"><a class=\"navbar__link\" href=\"/timezone\">Time Zone Converter</a></li><li class=\"navbar__item\"><a class=\"navbar__link\" href=\"/timer\">Timer</a></li><li class=\"navbar__item\"><a class=\"navbar__link\" href=\"/calendar\">Calendar</a></li>"),
+    # Famous Birthdays (new 2026-10-21, mes.fm/birthday; aliases /birthdays /celebrity-birthdays /famous-birthdays /born-today ...): who shares your birthday, born today,
+    # name search, filters (field / country / era / living), same date + same year + nearest. Data = mes.fm/birthday/data/MM.json + index.json from Wikidata (CC0),
+    # written by build_birthdays.py (+ birthday_extras.json). lib.js = BD (helpers + loader; tests tool_apps_src/birthday-tests.js); Sun sign / Chinese animal from the
+    # zodiac page's ZD (lib_from) on Astronomy Engine (pre_js). Bump nothing by hand: build_birthdays.py --apply updates BD's DATA_V cache-buster.
+    "birthday": dict(title="MES Famous Birthdays", page_title="Famous Birthdays: Who Shares Your Birthday?",
+                     tag="Who was born on your day?", accent="#b45309", dark="#8a3f06", tint="#fdf0e1",
+                     desc="Free famous birthdays finder: see which celebrities, scientists, athletes, musicians and leaders were born today or on your birthday, who shares your exact birth date and year, with their zodiac signs. Search 10,000 famous people by name.",
+                     js_v="1", pre_js=["/moon/js/astronomy.browser.min.js"], lib_from=["clock", "zodiac"],
+                     nav_extra="<li class=\"info-bar__item\"><a class=\"info-bar__item__text\" href='/zodiac'>Zodiac</a></li><li class=\"info-bar__item\"><a class=\"info-bar__item__text\" href='/calendar'>Calendar</a></li>",
+                     menu_extra="<li class=\"navbar__item\"><a class=\"navbar__link\" href=\"/zodiac\">Zodiac &amp; Birth Chart</a></li><li class=\"navbar__item\"><a class=\"navbar__link\" href=\"/calendar\">Calendar</a></li>"),
+    # Zodiac & Birth Chart (new 2026-10-21, mes.fm/zodiac; aliases /birth-chart /natal-chart /horoscope /star-sign ...): Sun / Moon / rising sign, planets in signs + retrograde,
+    # whole-sign or equal houses, Moon phase, Chinese zodiac by Lunar New Year, SVG wheel, famous people with your day / Sun sign, compare with a celebrity.
+    # lib.js = ZD (tropical, Astronomy Engine; tests tool_apps_src/zodiac-tests.js); people from the birthday data via BD (lib_from).
+    "zodiac": dict(title="MES Zodiac & Birth Chart", page_title="Zodiac Sign and Birth Chart Calculator",
+                   tag="Sun, Moon and rising sign, for fun.", accent="#6b3fa0", dark="#4e2c78", tint="#efe8f8",
+                   desc="Free birth chart calculator: find your Sun sign, Moon sign and rising sign, where the planets were when you were born, the Moon phase and your Chinese zodiac animal, with a chart wheel. Compare your signs with famous people born on your day.",
+                   js_v="1", pre_js=["/moon/js/astronomy.browser.min.js"], lib_from=["clock", "birthday"],
+                   nav_extra="<li class=\"info-bar__item\"><a class=\"info-bar__item__text\" href='/birthday'>Birthdays</a></li><li class=\"info-bar__item\"><a class=\"info-bar__item__text\" href='/moon'>Moon</a></li><li class=\"info-bar__item\"><a class=\"info-bar__item__text\" href='/solar-system-today'>Solar System</a></li>",
+                   menu_extra="<li class=\"navbar__item\"><a class=\"navbar__link\" href=\"/birthday\">Famous Birthdays</a></li><li class=\"navbar__item\"><a class=\"navbar__link\" href=\"/moon\">Moon</a></li><li class=\"navbar__item\"><a class=\"navbar__link\" href=\"/solar-system-today\">Solar System Today</a></li>"),
     # Short Links (new 2026-10-06, mes.fm/go; aliases /redirects /short-links /shortlinks /urls): every redirect of vercel.json, categorized + searchable + a helper that writes the next line.
     # Data = mes.fm/go/redirects.json written by build_redirects_index.py (only `redirects`, never the private finance `rewrites`); notes in mes.fm/go/notes.json. Wide, ad-free, like Site Index.
     # Browser: recommended browser extensions / apps (moved from the "Recommended Browser Extensions" list of mes.fm/links). Static list, no app logic. Ad-free like /go.

@@ -1,0 +1,65 @@
+	<div class="tu" id="zd">
+		<div class="tu-card zd-form">
+			<div class="tu-row zd-row">
+				<div class="tu-field" style="flex:2 1 13em;"><label for="zd-date">Birth date</label><input id="zd-date" class="tu-input" type="text" autocomplete="off" placeholder="e.g. Oct 26, 1980 or 1980-10-26"></div>
+				<div class="tu-field" style="flex:1 1 9em;"><label for="zd-time">Birth time <span class="zd-opt">(optional)</span></label><input id="zd-time" class="tu-input" type="time"></div>
+			</div>
+			<div class="tu-row zd-row">
+				<div class="tu-field zd-placef" style="flex:2 1 14em;"><label for="zd-place">Birth place <span class="zd-opt">(for the rising sign)</span></label>
+					<input id="zd-place" class="tu-input" type="text" autocomplete="off" placeholder="Type a city: Vancouver, London…" role="combobox" aria-expanded="false" aria-controls="zd-places">
+					<div class="zd-places" id="zd-places" role="listbox" hidden></div></div>
+				<div class="tu-field" style="flex:1 1 10em;"><label for="zd-ll">Latitude, longitude</label><input id="zd-ll" class="tu-input" type="text" autocomplete="off" placeholder="49.28, -123.12"></div>
+				<div class="tu-field" style="flex:1 1 11em;"><label for="zd-tz">Time zone</label><input id="zd-tz" class="tu-input" type="text" list="zd-zones" autocomplete="off" placeholder="America/Vancouver or +05:30"><datalist id="zd-zones"></datalist></div>
+			</div>
+			<div class="tu-row zd-row zd-actrow">
+				<div class="tu-field" style="flex:0 1 13em;"><label for="zd-houses">Houses</label><select id="zd-houses" class="tu-input"><option value="whole">Whole-sign houses</option><option value="equal">Equal houses</option></select></div>
+				<div class="zd-btns"><button type="button" class="tu-btn tu-btn--primary" id="zd-go">Show my chart</button><button type="button" class="tu-btn" id="zd-clear">Clear</button></div>
+			</div>
+			<p class="tu-note zd-offset" id="zd-offset"></p>
+			<p class="tu-note zd-honest">For fun: astrology is entertainment, not science; no study has found that the sky at birth shapes personality. The astronomy is real, though: the positions are computed for your exact date with Astronomy Engine, in your browser. Nothing you type is sent anywhere.</p>
+		</div>
+
+		<div id="zd-out" hidden>
+			<h2 id="zd-head" class="zd-head"></h2>
+			<div class="zd-warn" id="zd-warn" hidden></div>
+			<div class="zd-big" id="zd-big"></div>
+			<div class="zd-chartrow">
+				<div class="tu-card zd-wheelc"><div id="zd-wheel" class="zd-wheel"></div><p class="tu-note zd-wheelnote" id="zd-wheelnote"></p></div>
+				<div class="tu-card zd-tablec"><div class="tu-table-wrap"><table class="tu-table zd-table" id="zd-table"></table></div><div id="zd-balance" class="zd-balance"></div></div>
+			</div>
+			<div class="tu-card" id="zd-moonc"></div>
+			<div class="zd-actions"><button type="button" class="tu-btn" id="zd-copy">Copy link to this chart</button><a class="tu-btn" id="zd-bdlink" href="/birthday">Who shares this birthday?</a></div>
+		</div>
+
+		<div id="zd-famous"></div>
+
+		<h2>Compare with a famous person</h2>
+		<div class="tu-card zd-cmpc">
+			<div class="tu-field zd-placef"><label for="zd-cq">Search a name</label><input id="zd-cq" class="tu-input" type="search" autocomplete="off" placeholder="e.g. Tesla, Hillary Clinton, Einstein"><div class="zd-places" id="zd-cres" hidden></div></div>
+			<div id="zd-cmp"></div>
+			<p class="tu-note">Birth times of famous people are not in the list, so their Moon is worked out for noon (UTC) and flagged when it changed sign that day. Their rising sign cannot be known.</p>
+		</div>
+
+		<div class="tu-seo">
+			<h2>Zodiac sign and birth chart calculator</h2>
+			<p>Type your birthday to get your <strong>Sun sign</strong> (star sign), <strong>Moon sign</strong> and <strong>Chinese zodiac</strong> animal and element. Add the time and place you were born for your <strong>rising sign</strong> (ascendant), the twelve houses and a chart wheel with Mercury, Venus, Mars, Jupiter, Saturn, Uranus, Neptune and Pluto, each with its sign, degree and whether it was retrograde, plus the Moon phase on the day you were born.</p>
+			<h3>How it is worked out</h3>
+			<ul>
+				<li><strong>Positions.</strong> Where the Sun, Moon and planets were, seen from Earth, comes from <a href="https://github.com/cosinekitty/astronomy" target="_blank" rel="noopener">Astronomy Engine</a> (accurate to well under a minute of arc), on the ecliptic of the date. The signs are the <em>tropical</em> zodiac used by Western astrology: 30° each, starting at the March equinox.</li>
+				<li><strong>Time zone.</strong> Your local birth time is turned into world time with your browser&rsquo;s time-zone database, daylight saving included; the offset used is shown under the form. For an old date or an unusual place, type the offset yourself (for example +05:30).</li>
+				<li><strong>Moon sign without a time.</strong> The Moon changes sign every two to three days. If it did so on your birthday, the page says so and gives both signs with the time of the change.</li>
+				<li><strong>Rising sign and houses.</strong> The ascendant is the point of the zodiac rising on the eastern horizon at your birth time and place; it moves through all twelve signs in a day, so it needs both. Houses are <em>whole-sign</em> (house 1 = the whole rising sign) or <em>equal</em> (30° from the ascendant): simple systems that work at any latitude. Placidus and Koch are not offered.</li>
+				<li><strong>Chinese zodiac.</strong> The Chinese year starts at Lunar New Year (a new moon between 21 January and 20 February), not on 1 January, so people born in January or early February often belong to the previous year&rsquo;s animal.</li>
+			</ul>
+			<h3>Questions</h3>
+			<h4>Why is my sign different on another website?</h4>
+			<p>Near a sign change (a &ldquo;cusp&rdquo;) the exact day moves by a day between years, and many sites use fixed dates. This page works it out for your actual date and time. Sidereal (Vedic) astrology uses a zodiac shifted by about 24°, so its signs are usually one sign earlier.</p>
+			<h4>Are the zodiac signs the same as the constellations?</h4>
+			<p>No. The signs were named after constellations about 2,000 years ago; since then the slow wobble of Earth&rsquo;s axis has shifted the sky by almost a whole sign, so on your birthday the Sun was usually in the constellation before your sign.</p>
+			<h4>Is anything I type stored?</h4>
+			<p>No. Everything is computed in your browser, and the share link only exists if you copy it.</p>
+			<h4>Related</h4>
+			<p>See who shares your birthday on <a href="/birthday">Famous Birthdays</a>, the sky today in <a href="/solar-system-today">Solar System Today</a>, and the Moon on any date on the <a href="/moon">Moon</a> page.</p>
+		</div>
+	</div>
+<script src="/main_js/time-input.js?v=3" defer></script>

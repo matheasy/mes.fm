@@ -1,0 +1,56 @@
+	#bd {--bd-muted:#5b6472;--bd-line:#e1e5eb;--bd-card:#fff;--bd-hl:#fff5d6;--bd-chipbg:#f2f4f7;--bd-ink:#222;}
+	body.dark-mode #bd.tu {--bd-muted:#b3bbc6;--bd-line:#3a434f;--bd-card:#22272e;--bd-hl:#3d3517;--bd-chipbg:#2c333c;--bd-ink:#e8e8e8;}
+	.tu .bd-inrow {align-items:flex-end;}
+	.tu .bd-btns {display:flex;gap:0.4em;flex:0 0 auto;}
+	.tu .bd-hint {margin:0.5em 0 0.8em;}
+	.tu .bd-searchf {margin-top:0.2em;}
+	.tu .bd-results {display:flex;flex-wrap:wrap;gap:0.4em;margin-top:0.6em;}
+	.tu .bd-dayhead {display:flex;align-items:center;gap:0.6em;margin:1.2em 0 0.6em;}
+	.tu .bd-daytitle {flex:1 1 auto;text-align:center;min-width:0;}
+	.tu .bd-daytitle h2 {margin:0;font-size:1.5em;}
+	.tu .bd-sub {margin:0.2em 0 0;color:var(--bd-muted);font-size:0.92em;}
+	.tu .bd-arrow {font-size:1.5em;line-height:1;padding:0.2em 0.6em;min-width:44px;min-height:44px;}
+	.tu .bd-filters {padding-top:0.8em;padding-bottom:0.8em;}
+	.tu .bd-frow {align-items:flex-end;margin-top:0.6em;}
+	.tu .bd-check {display:inline-flex;align-items:center;gap:0.4em;cursor:pointer;padding-bottom:0.55em;white-space:nowrap;}
+	.tu .bd-check input {width:1.15em;height:1.15em;}
+	.tu .bd-list {display:grid;grid-template-columns:repeat(auto-fill, minmax(19em, 1fr));gap:0.6em;margin-top:0.8em;}
+	.tu .bd-p {background:var(--bd-card);border:1px solid var(--bd-line);border-radius:0.6em;padding:0.7em 0.85em;min-width:0;}
+	.tu .bd-p.bd-hl {background:var(--bd-hl);border-color:var(--accent);box-shadow:0 0 0 2px var(--accent);}
+	.tu .bd-top {display:flex;flex-wrap:wrap;align-items:baseline;gap:0.2em 0.6em;}
+	#bd .bd-name {font-weight:700;font-size:1.08em;text-decoration:none !important;overflow-wrap:anywhere;}
+	#bd .bd-name:hover {text-decoration:underline !important;}
+	.tu .bd-life {color:var(--bd-muted);font-size:0.88em;white-space:nowrap;}
+	.tu .bd-desc {margin:0.25em 0 0.4em;color:var(--bd-ink);font-size:0.94em;line-height:1.35;}
+	.tu .bd-meta {display:flex;flex-wrap:wrap;gap:0.3em 0.45em;align-items:center;font-size:0.82em;}
+	.tu .bd-meta > span {background:var(--bd-chipbg);color:var(--bd-ink);border-radius:1em;padding:0.15em 0.6em;}
+	.tu .bd-meta .bd-tag {background:var(--tint);color:var(--accent-dark);font-weight:600;}
+	.tu .bd-meta .bd-os {background:none;color:var(--bd-muted);font-style:italic;padding:0;}
+	#bd .bd-cmp {font-size:1em;}
+	.tu .bd-empty {color:var(--bd-muted);grid-column:1 / -1;}
+	.tu .bd-more {text-align:center;margin:0.8em 0;}
+	.tu .bd-youc h3, #bd-extra h3 {margin:0 0 0.5em;font-size:1.1em;}
+	.tu .bd-age {font-weight:400;color:var(--bd-muted);}
+	.tu .bd-yousigns, .tu .bd-youline {margin:0.3em 0;line-height:1.5;}
+	.tu #bd-extra .tu-card {margin-top:0.8em;}
+	.tu .bd-minis {display:flex;flex-wrap:wrap;gap:0.4em;}
+	.tu .bd-mini {display:inline-flex;flex-direction:column;align-items:flex-start;text-align:left;gap:0.1em;background:var(--bd-card);border:1px solid var(--bd-line);border-radius:0.5em;padding:0.4em 0.7em;cursor:pointer;color:var(--bd-ink);font:inherit;min-height:44px;max-width:100%;}
+	.tu .bd-mini:hover {border-color:var(--accent);}
+	.tu .bd-mini-n {font-weight:600;font-size:0.95em;overflow-wrap:anywhere;}
+	.tu .bd-mini-d {font-size:0.8em;color:var(--bd-muted);}
+	.tu .bd-share {display:flex;flex-wrap:wrap;gap:0.5em;justify-content:center;margin:1em 0 0.4em;}
+	#bd a.tu-btn {text-decoration:none !important;color:var(--accent-dark);}
+	.tu .bd-src {text-align:center;}
+	body.dark-mode #bd .bd-meta .bd-tag {background:#3a2a10;color:#f2c879;}
+	body.dark-mode #bd .bd-name, body.dark-mode #bd .bd-cmp, body.dark-mode #bd .bd-youline a, body.dark-mode #bd .bd-yousigns a {color:#f2c879;}
+	body.dark-mode #bd a.tu-btn {color:#f2c879;}
+	body.dark-mode #bd .bd-desc, body.dark-mode #bd .bd-mini, body.dark-mode #bd .bd-meta > span:not(.bd-tag):not(.bd-os) {color:var(--bd-ink);}
+	body.dark-mode #bd .bd-life, body.dark-mode #bd .bd-sub, body.dark-mode #bd .bd-mini-d, body.dark-mode #bd .bd-age, body.dark-mode #bd .bd-empty, body.dark-mode #bd .bd-meta .bd-os {color:var(--bd-muted);}
+	body.dark-mode #bd .bd-p, body.dark-mode #bd .bd-mini {background:var(--bd-card);border-color:var(--bd-line);}
+	body.dark-mode #bd .bd-p.bd-hl {background:var(--bd-hl);}
+	@media (max-width: 600px) {
+		.tu .bd-list {grid-template-columns:1fr;}
+		.tu .bd-daytitle h2 {font-size:1.2em;}
+		.tu .bd-btns {flex:1 1 100%;} .tu .bd-btns .tu-btn {flex:1 1 auto;min-height:44px;}
+		.tu .bd-mini {flex:1 1 100%;}
+	}

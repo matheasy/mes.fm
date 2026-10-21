@@ -38,6 +38,8 @@ TOOLS = [  # (directory, compact-bar title[, home path of the site the page belo
     ("timer", "Timer"),
     ("clock", "Clock"),
     ("reminder", "Reminder"),
+    ("birthday", "Famous Birthdays"),   # also built by build_tool_apps.py
+    ("zodiac", "Zodiac & Birth Chart"),
     ("enigma", "Enigma Machine"),   # also built by build_tool_apps.py
     ("countdown-timer", "Timer", "/timer"),   # Timer family page (brand option in build_tool_apps.py)
     ("stopwatch", "Timer", "/timer"),   # Timer family page (brand option in build_tool_apps.py)

@@ -100,6 +100,22 @@
  ],
  "tools": [
   {
+   "href": "/zodiac",
+   "title": "Zodiac & Birth Chart",
+   "icon": "/img/zodiac-logo.png",
+   "desc": "Your Sun, Moon and rising sign, planets, Moon phase and Chinese zodiac, with a chart wheel. For fun.",
+   "added": "2026-10-21",
+   "kind": "tool"
+  },
+  {
+   "href": "/birthday",
+   "title": "Famous Birthdays",
+   "icon": "/img/birthday-logo.png",
+   "desc": "See which famous people were born today or on your birthday, who shares your exact date, and their zodiac signs.",
+   "added": "2026-10-21",
+   "kind": "tool"
+  },
+  {
    "href": "/reminder",
    "title": "Reminder",
    "icon": "/img/reminder-logo.png",
@@ -178,25 +194,25 @@
    "desc": "Build your own page of favourite mes.fm calculators and tools: search, drag into groups, and take it to any device with one link.",
    "added": "2026-10-15",
    "kind": "tool"
-  },
-  {
-   "href": "/pdf-tools",
-   "title": "PDF Tools: Merge, Split, Convert",
-   "icon": "/img/pdf-tools-logo.png",
-   "desc": "Merge, split, rearrange, compress and convert PDFs and pictures. Private: nothing is uploaded.",
-   "added": "2026-10-15",
-   "kind": "tool"
-  },
-  {
-   "href": "/pdf",
-   "title": "PDF Editor",
-   "icon": "/img/pdf-logo.png",
-   "desc": "Sign, fill in, annotate, highlight, redact and edit text in a PDF. Private: it never leaves your browser.",
-   "added": "2026-10-15",
-   "kind": "tool"
   }
  ],
  "latest": [
+  {
+   "href": "/zodiac",
+   "title": "Zodiac & Birth Chart",
+   "icon": "/img/zodiac-logo.png",
+   "desc": "Your Sun, Moon and rising sign, planets, Moon phase and Chinese zodiac, with a chart wheel. For fun.",
+   "added": "2026-10-21",
+   "kind": "tool"
+  },
+  {
+   "href": "/birthday",
+   "title": "Famous Birthdays",
+   "icon": "/img/birthday-logo.png",
+   "desc": "See which famous people were born today or on your birthday, who shares your exact date, and their zodiac signs.",
+   "added": "2026-10-21",
+   "kind": "tool"
+  },
   {
    "href": "/reminder",
    "title": "Reminder",
@@ -244,22 +260,6 @@
    "desc": "Type or paste matrices into a grid: multiply, invert, determinants, eigenvalues and SVD with the working shown, plus softmax, a neural-network layer and attention.",
    "added": "2026-10-19",
    "kind": "calculator"
-  },
-  {
-   "href": "/letter-recognition",
-   "title": "Letter and Digit Recognition",
-   "icon": "/img/letter-recognition-logo.png",
-   "desc": "Train a small network to read digits and letters, draw a character and see what it thinks, test it on unseen fonts, and teach it your handwriting.",
-   "added": "2026-10-19",
-   "kind": "tool"
-  },
-  {
-   "href": "/neural-network-playground",
-   "title": "Neural Network Playground",
-   "icon": "/img/neural-network-playground-logo.png",
-   "desc": "Train a real neural network in your browser: pick the data, layers and activation, and watch the decision boundary, the loss and every hidden neuron.",
-   "added": "2026-10-19",
-   "kind": "tool"
   }
  ]
 }

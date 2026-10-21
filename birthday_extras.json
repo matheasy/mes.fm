@@ -1,0 +1,16 @@
+[
+  {"qid": "Q6294", "why": "asked for by the user (born 26 Oct 1947 per Wikidata)"},
+  {"qid": "Q2660811", "name": "Judy Sheindlin (Judge Judy)", "why": "asked for by the user (born 21 Oct 1942 per Wikidata, not 26 Oct)"},
+  {"qid": "Q43723", "why": "asked for by the user (born 21 Oct 1949 per Wikidata, not 26 Oct)"},
+  {"name": "John Hutchison", "dob": "1945-10-19", "desc": "Canadian experimenter known for the Hutchison Effect", "country": "Canada", "field": "science",
+   "link": "https://mes.fm/hutchison",
+   "source": "The Hutchison File (Planetary Association for Clean Energy, 1996, ISBN 0-919969-34-8), timeline: '1945 Born October 19 in Vancouver. Canada.' https://www.slideshare.net/slideshow/hutchison-effect/8307718",
+   "why": "MES: Hutchison Effect hub (no Wikidata item)"},
+  {"qid": "Q9036", "why": "MES: Tesla"},
+  {"qid": "Q1373153", "why": "MES: cold fusion / free energy"},
+  {"qid": "Q899264", "why": "MES: cold fusion"},
+  {"qid": "Q730952", "why": "MES: cold fusion"},
+  {"qid": "Q1245721", "why": "MES: anti-gravity (Biefeld-Brown)"},
+  {"qid": "Q89544", "why": "MES: free energy / implosion"},
+  {"qid": "Q2063478", "why": "MES: Searl effect generator"}
+]
