@@ -27,7 +27,6 @@
 	var EXAMPLES = (T.examples || EN.examples).map(function (x) { return [x[0], { kg: x[1], cm: x[2] }]; });
 	function esc(s) { return String(s == null ? "" : s).replace(/[&<>"]/g, function (c) { return { "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c]; }); }
 	var st = { kg: "", cm: "", units: T.defUnits || "b", scale: T.defScale || "who", oh: false, history: [] };
-	if (!EN_PAGE) st.imp = !!T.defImp;     // (kept out of the English page's saved object)
 	function load() {
 		if (!EN_PAGE) return loadShared();
 		try { var s = JSON.parse(localStorage.getItem(KEY) || "null"); if (s) { st.kg = String(s.kg || ""); st.cm = String(s.cm || ""); st.units = s.ru === "m" || s.ru === "i" ? s.ru : "b"; st.scale = okScale(s.scale) || "who"; st.oh = s.oh === true; st.history = (Array.isArray(s.history) ? s.history : []).map(BM.cleanEntry).filter(Boolean); } } catch (e) { memOnly = true; }
@@ -36,7 +35,7 @@
 	function loadShared() {
 		try {
 			var s = JSON.parse(localStorage.getItem(KEY) || "null"); if (s) { st.kg = String(s.kg || ""); st.cm = String(s.cm || ""); st.history = (Array.isArray(s.history) ? s.history : []).map(BM.cleanEntry).filter(Boolean); }
-			var p = JSON.parse(localStorage.getItem(PKEY) || "null"); if (p) { st.units = p.ru === "b" || p.ru === "i" || p.ru === "m" ? p.ru : st.units; st.scale = okScale(p.scale) || st.scale; st.oh = p.oh === true; st.imp = p.imp === true; }
+			var p = JSON.parse(localStorage.getItem(PKEY) || "null"); if (p) { st.units = p.ru === "b" || p.ru === "i" || p.ru === "m" ? p.ru : st.units; st.scale = okScale(p.scale) || st.scale; st.oh = p.oh === true; }
 		} catch (e) { memOnly = true; }
 	}
 	function save() {
@@ -45,7 +44,7 @@
 			else {
 				var s = {}; try { s = JSON.parse(localStorage.getItem(KEY) || "null") || {}; } catch (x) { s = {}; }
 				s.kg = st.kg; s.cm = st.cm; s.history = st.history; localStorage.setItem(KEY, JSON.stringify(s));
-				localStorage.setItem(PKEY, JSON.stringify({ ru: st.units, scale: st.scale, oh: st.oh, imp: st.imp }));
+				localStorage.setItem(PKEY, JSON.stringify({ ru: st.units, scale: st.scale, oh: st.oh }));
 			}
 			memOnly = false;
 		} catch (e) { memOnly = true; }
@@ -92,13 +91,6 @@
 		$("bm-opttoggle").textContent = h ? t("options") : t("hideOptions"); $("bm-opttoggle").setAttribute("aria-expanded", String(!h));
 	}
 	$("bm-opttoggle").addEventListener("click", function () { st.oh = !st.oh; save(); showOpts(); });
-	// pounds / feet / inches: always shown on the English page, behind a toggle on the translated (kg / cm) pages
-	function showImp() {
-		if (EN_PAGE) return;
-		var b = $("bm-imptoggle"); b.hidden = false; $("bm-imperial").hidden = !st.imp;
-		b.textContent = st.imp ? t("impHide") : t("impShow"); b.setAttribute("aria-expanded", String(st.imp));
-	}
-	$("bm-imptoggle").addEventListener("click", function () { st.imp = !st.imp; save(); showImp(); });
 	function showUnits() {
 		[].forEach.call($("bm-units").children, function (b) { b.setAttribute("aria-pressed", String(b.dataset.u === st.units)); });
 	}
@@ -209,7 +201,7 @@
 		else { var lb = BM.num(q.get("lb")), ft = BM.num(q.get("ft")), inch = BM.num(q.get("in")); st.kg = lb > 0 ? String(Math.round(BM.lbToKg(lb) * 1000) / 1000) : ""; st.cm = ((ft || 0) * 12 + (inch || 0)) > 0 ? String(Math.round(BM.ftInToCm(ft, inch) * 100) / 100) : ""; }
 		if (okScale(q.get("scale"))) st.scale = okScale(q.get("scale")); history.replaceState(null, "", location.pathname);
 	}
-	$("bm-scale").value = st.scale; showUnits(); showOpts(); showImp(); fillOthers(); save(); update();
+	$("bm-scale").value = st.scale; showUnits(); showOpts(); fillOthers(); save(); update();
 	if (m && !q.get("s")) loadOld(m[1]);
 	// the reference table
 	(function () { var ref = $("bm-ref"); if (!ref) return;
@@ -221,5 +213,5 @@
 			w.className = "tu-table-wrap"; w.innerHTML = '<table class="tu-table bm-ref-india" id="bm-ref-india">' + ih + "</tbody></table>"; nt.insertAdjacentElement("afterend", w);
 		}
 	})();
-	window.addEventListener("storage", function (e) { if ((e.key !== KEY && e.key !== PKEY) || (document.activeElement && root.contains(document.activeElement) && /INPUT|SELECT/.test(document.activeElement.tagName))) return; try { var s = JSON.parse(e.newValue); if (s) { load(); $("bm-scale").value = st.scale; showUnits(); showOpts(); showImp(); fillOthers(); update(); } } catch (x) {} });
+	window.addEventListener("storage", function (e) { if ((e.key !== KEY && e.key !== PKEY) || (document.activeElement && root.contains(document.activeElement) && /INPUT|SELECT/.test(document.activeElement.tagName))) return; try { var s = JSON.parse(e.newValue); if (s) { load(); $("bm-scale").value = st.scale; showUnits(); showOpts(); fillOthers(); update(); } } catch (x) {} });
 })();

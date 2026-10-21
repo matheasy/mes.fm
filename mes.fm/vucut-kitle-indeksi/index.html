@@ -364,14 +364,12 @@ body.dark-mode .tu .rw-head {color:#a0a8b3;border-bottom-color:#555;} body.dark-
 .tu .bm-lang li a {display:block; padding:0.45em 1em; color:#333 !important; text-decoration:none !important;}
 .tu .bm-lang li a:hover, .tu .bm-lang li a:focus {background:#f8e2ed;}
 .tu .bm-lang li a[aria-current] {font-weight:700; color:#8a3d79 !important;}
-.tu .bm-imptoggle {margin-top:0.8em;}
 .tu .bm-scalehint {flex-basis:100%; margin:0.2em 0 0;}
 .tu .bm-scalehint:empty {display:none;}
 body.dark-mode #bm .bm-lang summary, body.dark-mode #bm .bm-lang ul {background:#262626; border-color:#5a4554; color:#f0d4e6;}
 body.dark-mode #bm .bm-lang li a {color:#e6e6e6 !important;}
 body.dark-mode #bm .bm-lang li a:hover, body.dark-mode #bm .bm-lang li a:focus {background:#3a2a35;}
 body.dark-mode #bm .bm-lang li a[aria-current] {color:#f0a6d8 !important;}
-.tu #bm-imperial[hidden] {display:none;}
 /* right-to-left pages (Arabic): the calculator box carries dir="rtl"; the page title and intro follow; the gauge, like any number line, stays left to right */
 html[lang="ar"] .page-title, html[lang="ar"] .page-description {direction:rtl; text-align:right;}
 .tu .bm-gauge, .tu .bm-chart {direction:ltr;}
@@ -747,12 +745,11 @@ body.is-stuck #navbar.hide { position: fixed; top: 56px; right: 8px; }
 		<div id="bm-notice" class="tu-card tu-card--tint" hidden style="margin-bottom:1em;"></div>
 
 		<div class="tu-card" id="bm-setup">
-			<p class="tu-note" style="margin:0;"><b>Kilonuzu kilogram, boyunuzu santimetre olarak yazın.</b> Libre ve fit kullanmak isterseniz aşağıdan açabilirsiniz: siz yazdıkça diğer alanlar kendiliğinden dolar.</p>
+			<p class="tu-note" style="margin:0;"><b>Birimleri dilediğiniz gibi karıştırın:</b> kilonuzu kilogram ya da libre, boyunuzu santimetre ya da fit ve inç olarak yazın; siz yazdıkça diğer alanlar kendiliğinden dolar.</p>
 			<div class="tu-row" style="margin-top:1em;" id="bm-metric">
 				<div class="tu-field tu-field--sm" style="flex-basis:11em;"><label for="bm-kg">Kilo</label><div class="tu-suffix"><input id="bm-kg" class="tu-input tu-input--big" type="text" inputmode="decimal" autocomplete="off" placeholder="örn. 68,5"><span>kg</span></div></div>
 				<div class="tu-field tu-field--sm" style="flex-basis:11em;"><label for="bm-cm">Boy</label><div class="tu-suffix"><input id="bm-cm" class="tu-input tu-input--big" type="text" inputmode="decimal" autocomplete="off" placeholder="örn. 170"><span>cm</span></div></div>
 			</div>
-			<button type="button" class="bm-optbtn bm-imptoggle" id="bm-imptoggle" aria-controls="bm-imperial" hidden>Libre, fit ve inç kullan</button>
 			<div class="tu-row" style="margin-top:1em;" id="bm-imperial">
 				<div class="tu-field tu-field--sm" style="flex-basis:11em;"><label for="bm-lb">Kilo</label><div class="tu-suffix"><input id="bm-lb" class="tu-input tu-input--big" type="text" inputmode="decimal" autocomplete="off" placeholder="örn. 151"><span>lb</span></div></div>
 				<div class="tu-field tu-field--sm" style="flex-basis:7em;"><label for="bm-ft">Boy</label><div class="tu-suffix"><input id="bm-ft" class="tu-input tu-input--big" type="text" inputmode="numeric" autocomplete="off" placeholder="örn. 5"><span>ft</span></div></div>
@@ -898,7 +895,7 @@ body.is-stuck #navbar.hide { position: fixed; top: 56px; right: 8px; }
             hide_search:false,
             current_tab:0
         }        </script><!-- FASTCOMMENTS-LAZY: widget init moved to main_js/main.js -- it pulls embed.min.js only when #fastcomments-widget nears the viewport or on the first Comments-toggle click, so it no longer blocks first render -->                <script src="https://mes.fm/main_js/lazysizes.min.js?v=1.0.3" async></script>
-	<script src="/bmicalculator/js/bmicalculator.js?v=9" defer></script>
+	<script src="/bmicalculator/js/bmicalculator.js?v=10" defer></script>
             <script src="https://mes.fm/main_js/main.js?v=1.0.5"></script>    <!-- PAGEVIEW-TRACKING-INSERTED --><script src="https://mes.fm/main_js/track.js" defer></script><script>document.getElementById('copyright-year').textContent = new Date().getFullYear();</script><script src="/main_js/info-bar-fit.js" defer></script><script>
   // Floating compact header bar (see #compact-nav CSS): appears once the
   // header + nav bar have scrolled off the top; nav links that don't fit
