@@ -38,8 +38,8 @@
 		try { return new Intl.DateTimeFormat(navigator.language, { hour: "numeric" }).resolvedOptions().hour12 !== true; } catch (e) { return false; }
 	}
 	var H24 = pref(), fields = [];
-	var CSS = ".mes-time{position:relative;display:block}.mes-time>input.mes-time__in{width:100%;box-sizing:border-box;padding-right:6.4em}" +
-		".mes-time__pick{position:absolute;right:4.3em;top:50%;transform:translateY(-50%);font:inherit;font-size:0.8em;line-height:1;padding:0.4em 0.45em;border:0;border-radius:0.4em;background:none;color:#555;cursor:pointer}.mes-time__pick:hover,.mes-time__pick[aria-expanded=true]{background:#eef2f6;color:#277bb6}" +
+	var CSS = ".mes-time{position:relative;display:block}.mes-time>input.mes-time__in{width:100%;box-sizing:border-box;padding-right:5.4em}" +
+		".mes-time__pick{position:absolute;right:3.3em;top:50%;transform:translateY(-50%);font:inherit;font-size:0.8em;line-height:1;padding:0.4em 0.45em;border:0;border-radius:0.4em;background:none;color:#555;cursor:pointer}.mes-time__pick:hover,.mes-time__pick[aria-expanded=true]{background:#eef2f6;color:#277bb6}" +
 		".mes-time__menu{position:absolute;left:0;right:0;top:calc(100% + 4px);z-index:40;max-height:15em;overflow-y:auto;background:#fff;border:1px solid #c3c9d2;border-radius:0.5em;box-shadow:0 0.4em 1.2em rgba(0,0,0,0.18);display:grid;grid-template-columns:repeat(auto-fill,minmax(5.5em,1fr));gap:2px;padding:4px}" +
 		".mes-time__menu[hidden]{display:none}.mes-time__menu button{font:inherit;font-size:0.92em;border:0;border-radius:0.35em;background:none;color:#333;padding:0.45em 0.3em;cursor:pointer;text-align:center}.mes-time__menu button:hover,.mes-time__menu button:focus{background:#eef2f6;outline:none}.mes-time__menu button[aria-selected=true]{background:#277bb6;color:#fff}" +
 		"body.dark-mode .mes-time__pick{color:#ccc}body.dark-mode .mes-time__pick:hover,body.dark-mode .mes-time__pick[aria-expanded=true]{background:#333;color:#8cc8ff}body.dark-mode .mes-time__menu{background:#222;border-color:#555}body.dark-mode .mes-time__menu button{color:#ddd}body.dark-mode .mes-time__menu button:hover,body.dark-mode .mes-time__menu button:focus{background:#333}body.dark-mode .mes-time__menu button[aria-selected=true]{background:#6cb6f5;color:#111}" +
@@ -66,7 +66,7 @@
 		var d = Object.getOwnPropertyDescriptor(HTMLInputElement.prototype, "value");
 		Object.defineProperty(orig, "value", { configurable: true, get: function () { return d.get.call(orig); }, set: function (v) { d.set.call(orig, v); show(); } });
 		function show() { if (document.activeElement !== vis) { vis.value = format(d.get.call(orig), H24, withSec); vis.classList.remove("mes-time--bad"); } }
-		function label() { sw.textContent = H24 ? "24h" : "AM/PM"; sw.title = H24 ? "Showing 24-hour time: switch to AM / PM" : "Showing AM / PM: switch to 24-hour time"; sw.setAttribute("aria-label", sw.title); vis.placeholder = H24 ? (withSec ? "18:30:00" : "18:30") : "6:30 PM"; if (!menu.hidden) fill(); }
+		function label() { sw.textContent = H24 ? "24h" : "12h"; sw.title = H24 ? "Showing 24-hour time: switch to AM / PM" : "Showing AM / PM: switch to 24-hour time"; sw.setAttribute("aria-label", sw.title); vis.placeholder = H24 ? (withSec ? "18:30:00" : "18:30") : "6:30 PM"; if (!menu.hidden) fill(); }
 		// the time list: every half hour, the one nearest the current value marked and scrolled into view
 		function fill() {
 			var cur = parse(vis.value, withSec) || d.get.call(orig), cm = cur ? +cur.slice(0, 2) * 60 + +cur.slice(3, 5) : 12 * 60, html = "";
