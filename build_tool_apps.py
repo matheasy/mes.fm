@@ -624,8 +624,8 @@ APPS = {
                      tag="One link: a countdown and a calendar reminder in everyone's time zone.", accent="#b4235a", dark="#86183f", tint="#fbe6ee",
                      desc="Free event reminder link: make one link for a livestream, class or meeting and share it. Everyone who opens it sees a countdown and the time in their own time zone, and can add it to Google Calendar, Apple Calendar, Outlook or their phone with alerts, or get a browser notification.",
                      js_v="1", lib_from=["clock"],
-                     nav_extra="<li class=\"info-bar__item\"><a class=\"info-bar__item__text\" href='/timezone'>Time Zones</a></li><li class=\"info-bar__item\"><a class=\"info-bar__item__text\" href='/timer'>Timer</a></li>",
-                     menu_extra="<li class=\"navbar__item\"><a class=\"navbar__link\" href=\"/timezone\">Time Zone Converter</a></li><li class=\"navbar__item\"><a class=\"navbar__link\" href=\"/timer\">Timer</a></li>"),
+                     nav_extra="<li class=\"info-bar__item\"><a class=\"info-bar__item__text\" href='/timezone'>Time Zones</a></li><li class=\"info-bar__item\"><a class=\"info-bar__item__text\" href='/timer'>Timer</a></li><li class=\"info-bar__item\"><a class=\"info-bar__item__text\" href='/calendar'>Calendar</a></li>",
+                     menu_extra="<li class=\"navbar__item\"><a class=\"navbar__link\" href=\"/timezone\">Time Zone Converter</a></li><li class=\"navbar__item\"><a class=\"navbar__link\" href=\"/timer\">Timer</a></li><li class=\"navbar__item\"><a class=\"navbar__link\" href=\"/calendar\">Calendar</a></li>"),
     # Short Links (new 2026-10-06, mes.fm/go; aliases /redirects /short-links /shortlinks /urls): every redirect of vercel.json, categorized + searchable + a helper that writes the next line.
     # Data = mes.fm/go/redirects.json written by build_redirects_index.py (only `redirects`, never the private finance `rewrites`); notes in mes.fm/go/notes.json. Wide, ad-free, like Site Index.
     # Browser: recommended browser extensions / apps (moved from the "Recommended Browser Extensions" list of mes.fm/links). Static list, no app logic. Ad-free like /go.

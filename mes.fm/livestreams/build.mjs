@@ -184,6 +184,7 @@ const SECTIONS = [
     standalone: [
       { href: "https://www.youtube.com/playlist?list=PLai3U8-WIK0FqwyUa_ICwTlqO0S6Y3kAn", title: "Playlist" },
       { href: "https://mes.fm/troubleshooting", title: "Troubleshooting Notes", icon: "&#128736;&#65039;" },
+      { href: "https://mes.fm/reminder", title: "Stream Reminders", icon: "&#9200;" },
     ],
     // "All" tab (right of Trailers; Grid View stays the default): streams, trailers and stats together, see allItems().
     allView: true,
