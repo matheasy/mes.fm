@@ -89,8 +89,8 @@
 			vis.value = format(nv, H24, withSec); d.set.call(orig, nv); fire();
 		});
 		sw.addEventListener("click", function () {
-			H24 = !H24; try { localStorage.setItem(KEY, H24 ? "1" : "0"); } catch (e) {}
-			fields.forEach(function (f) { f(); });
+			set24(!H24);
+			try { window.dispatchEvent(new CustomEvent("mes-time24", { detail: H24 })); } catch (e) {}
 		});
 		fields.push(function () { label(); vis.value = format(d.get.call(orig), H24, withSec) || vis.value; });
 		label(); vis.value = format(d.get.call(orig), H24, withSec);
@@ -99,7 +99,13 @@
 		if (!document.getElementById("mes-time-css")) { var s = document.createElement("style"); s.id = "mes-time-css"; s.textContent = CSS; document.head.appendChild(s); }
 		Array.prototype.forEach.call(document.querySelectorAll('input[type="time"]'), enhance);
 	}
-	API.enhance = enhance;
+	// pages with their own 12 / 24 hour setting (the Time Zone Converter) call this to keep the fields in step; the field's own
+	// switch fires a "mes-time24" window event (detail = true for 24 hour) so the page can follow it the other way
+	function set24(on) {
+		H24 = !!on; try { localStorage.setItem(KEY, H24 ? "1" : "0"); } catch (e) {}
+		fields.forEach(function (f) { f(); });
+	}
+	API.enhance = enhance; API.set24 = set24; API.is24 = function () { return H24; };
 	window.addEventListener("storage", function (e) { if (e.key === KEY) { H24 = pref(); fields.forEach(function (f) { f(); }); } });
 	if (document.readyState === "loading") document.addEventListener("DOMContentLoaded", init); else init();
 })(typeof window !== "undefined" ? window : globalThis);
