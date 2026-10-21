@@ -1,5 +1,5 @@
 {
- "generated": "2026-10-20",
+ "generated": "2026-10-21",
  "calculators": [
   {
    "href": "/materials",
@@ -100,6 +100,14 @@
  ],
  "tools": [
   {
+   "href": "/reminder",
+   "title": "Reminder",
+   "icon": "/img/reminder-logo.png",
+   "desc": "Make one link for a livestream or event: a countdown in everyone's time zone and one-click calendar reminders.",
+   "added": "2026-10-21",
+   "kind": "tool"
+  },
+  {
    "href": "/letter-recognition",
    "title": "Letter and Digit Recognition",
    "icon": "/img/letter-recognition-logo.png",
@@ -186,17 +194,17 @@
    "desc": "Sign, fill in, annotate, highlight, redact and edit text in a PDF. Private: it never leaves your browser.",
    "added": "2026-10-15",
    "kind": "tool"
-  },
-  {
-   "href": "/grounding-rod-simulator",
-   "title": "Ground Rod & Earthing Simulator",
-   "icon": "/img/grounding-rod-simulator-logo.png",
-   "desc": "Find a ground rod's resistance for your soil, see why a rod doesn't trip a breaker, model lightning step voltage and static discharge, and read the grounding rules for your region.",
-   "added": "2026-10-14",
-   "kind": "tool"
   }
  ],
  "latest": [
+  {
+   "href": "/reminder",
+   "title": "Reminder",
+   "icon": "/img/reminder-logo.png",
+   "desc": "Make one link for a livestream or event: a countdown in everyone's time zone and one-click calendar reminders.",
+   "added": "2026-10-21",
+   "kind": "tool"
+  },
   {
    "href": "/materials",
    "title": "Mechanics of Materials",
@@ -250,14 +258,6 @@
    "title": "Neural Network Playground",
    "icon": "/img/neural-network-playground-logo.png",
    "desc": "Train a real neural network in your browser: pick the data, layers and activation, and watch the decision boundary, the loss and every hidden neuron.",
-   "added": "2026-10-19",
-   "kind": "tool"
-  },
-  {
-   "href": "/llm-simulator",
-   "title": "Toy Language Model Simulator",
-   "icon": "/img/llm-simulator-logo.png",
-   "desc": "See how a language model works in miniature: tokens, next-word probabilities, temperature, word vectors and attention.",
    "added": "2026-10-19",
    "kind": "tool"
   }

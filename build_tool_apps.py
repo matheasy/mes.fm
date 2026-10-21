@@ -617,6 +617,15 @@ APPS = {
                   js_v="3",
                   nav_extra="<li class=\"info-bar__item\"><a class=\"info-bar__item__text\" href='/timer'>Timer</a></li><li class=\"info-bar__item\"><a class=\"info-bar__item__text\" href='/timezone'>Time Zones</a></li>",
                   menu_extra="<li class=\"navbar__item\"><a class=\"navbar__link\" href=\"/timer\">Timer</a></li><li class=\"navbar__item\"><a class=\"navbar__link\" href=\"/timezone\">Time Zone Converter</a></li>"),
+    # Reminder (new 2026-10-21, mes.fm/reminder; aliases /remind /remindme /reminders /notify): share link for a livestream / event (the whole event is in the query string,
+    # nothing stored on a server): countdown in the viewer's zone, Google / .ics (with alarms, weekly events keep the host's TZID) / Outlook.com buttons, and in-browser alerts
+    # (notification + chime while a tab is open). lib.js = RM on top of the Clock's CK (lib_from); tests: tool_apps_src/reminder-tests.js. PIL placeholder logos until Grok art.
+    "reminder": dict(title="MES Reminder", page_title="Livestream and Event Reminder",
+                     tag="One link: a countdown and a calendar reminder in everyone's time zone.", accent="#b4235a", dark="#86183f", tint="#fbe6ee",
+                     desc="Free event reminder link: make one link for a livestream, class or meeting and share it. Everyone who opens it sees a countdown and the time in their own time zone, and can add it to Google Calendar, Apple Calendar, Outlook or their phone with alerts, or get a browser notification.",
+                     js_v="1", lib_from=["clock"],
+                     nav_extra="<li class=\"info-bar__item\"><a class=\"info-bar__item__text\" href='/timezone'>Time Zones</a></li><li class=\"info-bar__item\"><a class=\"info-bar__item__text\" href='/timer'>Timer</a></li>",
+                     menu_extra="<li class=\"navbar__item\"><a class=\"navbar__link\" href=\"/timezone\">Time Zone Converter</a></li><li class=\"navbar__item\"><a class=\"navbar__link\" href=\"/timer\">Timer</a></li>"),
     # Short Links (new 2026-10-06, mes.fm/go; aliases /redirects /short-links /shortlinks /urls): every redirect of vercel.json, categorized + searchable + a helper that writes the next line.
     # Data = mes.fm/go/redirects.json written by build_redirects_index.py (only `redirects`, never the private finance `rewrites`); notes in mes.fm/go/notes.json. Wide, ad-free, like Site Index.
     # Browser: recommended browser extensions / apps (moved from the "Recommended Browser Extensions" list of mes.fm/links). Static list, no app logic. Ad-free like /go.

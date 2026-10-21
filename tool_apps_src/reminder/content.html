@@ -1,0 +1,79 @@
+	<div class="tu" id="rm">
+		<div class="tu-card rm-event" id="rm-event" hidden>
+			<p class="rm-kicker">Reminder</p>
+			<h2 class="rm-title" id="rm-ev-title"></h2>
+			<div class="rm-count" id="rm-count" aria-live="off"></div>
+			<p class="rm-when" id="rm-when"></p>
+			<p class="rm-host" id="rm-host"></p>
+			<p class="rm-notes" id="rm-notes" hidden></p>
+			<p class="rm-golink" id="rm-golink" hidden></p>
+
+			<h3>Get reminded</h3>
+			<div class="rm-leads" id="rm-leads" role="group" aria-label="When to remind you"></div>
+			<div class="rm-actions">
+				<a class="tu-btn tu-btn--primary" id="rm-gcal" target="_blank" rel="noopener">Google Calendar</a>
+				<button type="button" class="tu-btn tu-btn--primary" id="rm-ics">Apple / Outlook / phone calendar (.ics)</button>
+				<a class="tu-btn" id="rm-ocal" target="_blank" rel="noopener">Outlook.com</a>
+				<button type="button" class="tu-btn" id="rm-browser">🔔 Remind me in this browser</button>
+			</div>
+			<p class="tu-note" id="rm-tip">A calendar reminder is the most reliable one: your phone or computer alerts you even when the browser is closed. The calendar file includes the alarms ticked above (Google Calendar uses your own default reminder instead).</p>
+			<p class="tu-note rm-saved" id="rm-saved" hidden></p>
+		</div>
+
+		<h2 id="rm-mine-h" hidden>My reminders</h2>
+		<div class="tu-card" id="rm-mine-card" hidden>
+			<div id="rm-mine"></div>
+			<div class="rm-row">
+				<label class="rm-check"><input type="checkbox" id="rm-sound"> Play a sound</label>
+				<button type="button" class="tu-btn" id="rm-test">Test the alert</button>
+			</div>
+			<p class="tu-note" id="rm-perm" style="margin-bottom:0;"></p>
+		</div>
+
+		<h2 id="rm-make-h">Make a reminder link</h2>
+		<div class="tu-card" id="rm-make">
+			<div class="tu-chips" id="rm-presets" role="group" aria-label="Quick start" style="margin-bottom:0.7em;"></div>
+			<div class="tu-row" style="align-items:flex-end;">
+				<div class="tu-field" style="flex:3 1 18em;"><label for="rm-title">What is it?</label><input id="rm-title" class="tu-input" type="text" maxlength="120" autocomplete="off" placeholder="e.g. MES Livestream 150: Hutchison Effect"></div>
+			</div>
+			<div class="tu-row" style="align-items:flex-end;margin-top:0.7em;">
+				<div class="tu-field" style="flex:1 1 10em;"><label for="rm-date">Date</label><input id="rm-date" class="tu-input" type="date"></div>
+				<div class="tu-field" style="flex:1 1 8em;"><label for="rm-time">Time</label><input id="rm-time" class="tu-input" type="time"></div>
+				<div class="tu-field" style="flex:2 1 14em;"><label for="rm-tz">Time zone of that time</label><input id="rm-tz" class="tu-input" list="rm-zones" type="text" autocomplete="off" placeholder="Type a city: Vancouver, London…"><datalist id="rm-zones"></datalist></div>
+			</div>
+			<div class="tu-row" style="align-items:flex-end;margin-top:0.7em;">
+				<div class="tu-field" style="flex:3 1 18em;"><label for="rm-url">Link to watch or join (optional)</label><input id="rm-url" class="tu-input" type="url" autocomplete="off" placeholder="https://youtube.com/live/..."></div>
+				<div class="tu-field" style="flex:1 1 8em;"><label for="rm-len">Length</label><select id="rm-len" class="tu-input"><option value="30">30 min</option><option value="60" selected>1 hour</option><option value="90">1.5 hours</option><option value="120">2 hours</option><option value="180">3 hours</option><option value="240">4 hours</option></select></div>
+				<div class="tu-field" style="flex:1 1 9em;"><label for="rm-rep">Repeats</label><select id="rm-rep" class="tu-input"><option value="">Once</option><option value="weekly">Every week</option></select></div>
+			</div>
+			<div class="tu-field" style="margin-top:0.7em;"><label for="rm-desc">Notes (optional)</label><textarea id="rm-desc" class="tu-input" rows="2" maxlength="600" placeholder="What it is about, who is on, ..."></textarea></div>
+			<p class="rm-preview" id="rm-preview"></p>
+			<div class="tu-field" style="margin-top:0.5em;"><label for="rm-link">Share this link</label>
+				<div class="rm-linkrow"><input id="rm-link" class="tu-input" type="text" readonly><button type="button" class="tu-btn tu-btn--primary" id="rm-copy">Copy link</button></div></div>
+			<div class="rm-actions" style="margin-top:0.6em;">
+				<button type="button" class="tu-btn" id="rm-copytext">Copy text for a video description</button>
+				<a class="tu-btn" id="rm-open">Open the reminder page</a>
+				<button type="button" class="tu-btn" id="rm-clear">Clear</button>
+			</div>
+			<p class="tu-note" style="margin-bottom:0;">The link holds everything (title, time, time zone, link, notes), so nothing is stored on a server. Everyone who opens it sees the time in their own time zone.</p>
+		</div>
+
+		<div class="tu-seo">
+			<h2>Reminders for livestreams and events</h2>
+			<p>Make one link for a livestream, a class, a meeting or any event and share it in a video description, a chat or a post. Whoever opens it sees a live countdown, the time in their own time zone and one-click buttons to put it in Google Calendar, Apple Calendar, Outlook or their phone&rsquo;s calendar, with alerts before it starts.</p>
+			<h3>How to get reminded</h3>
+			<ul>
+				<li><strong>Calendar (recommended).</strong> Add it to your calendar and your phone or computer alerts you at the times you ticked, even when the browser is closed. Weekly events stay at the host&rsquo;s time across daylight saving changes.</li>
+				<li><strong>This browser.</strong> <em>Remind me in this browser</em> saves the event here and shows a notification with a sound. It only works while a tab of this page is open (a pinned tab is handy); if the tab was closed at the time, you get the alert when you next open it.</li>
+			</ul>
+			<h3>Questions</h3>
+			<h4>Why not just use YouTube&rsquo;s &ldquo;Notify me&rdquo;?</h4>
+			<p>YouTube&rsquo;s live notifications are often late, grouped or never sent, depending on your notification settings and how many channels you follow. A calendar alert comes from your own device at the time you chose.</p>
+			<h4>Can I get an email?</h4>
+			<p>Not yet: an email reminder needs a server that stores your address and sends the message, and this page deliberately stores nothing. Most calendars can send you an email reminder themselves (in Google Calendar, edit the event and add an &ldquo;Email&rdquo; notification).</p>
+			<h4>What is stored?</h4>
+			<p>Nothing on mes.fm. The event is in the link itself, and the reminders you save with <em>Remind me in this browser</em> stay in this browser only.</p>
+			<h4>Related tools</h4>
+			<p>Convert a time with the <a href="/timezone">Time Zone Converter</a>, count down with the <a href="/countdown-to-date">Date Countdown</a>, and see the past streams on <a href="/livestreams">MES Livestreams</a> and <a href="/math-qa">MES Math Q/A</a>.</p>
+		</div>
+	</div>

@@ -2,6 +2,11 @@
   "ignoreCommand": "if [ -n \"$VERCEL_GIT_PREVIOUS_SHA\" ] && git cat-file -e \"$VERCEL_GIT_PREVIOUS_SHA^{commit}\" 2>/dev/null && git diff --quiet \"$VERCEL_GIT_PREVIOUS_SHA\" HEAD -- ./; then exit 0; else exit 1; fi",
   "cleanUrls": true,
   "redirects": [
+    { "source": "/remind", "destination": "/reminder", "permanent": true },
+    { "source": "/remindme", "destination": "/reminder", "permanent": true },
+    { "source": "/remind-me", "destination": "/reminder", "permanent": true },
+    { "source": "/reminders", "destination": "/reminder", "permanent": true },
+    { "source": "/notify", "destination": "/reminder", "permanent": true },
     { "source": "/mathqa", "destination": "/math-qa", "permanent": true },
     { "source": "/mathqa/:path*", "destination": "/math-qa", "permanent": true },
     { "source": "/math-q-a", "destination": "/math-qa", "permanent": true },
