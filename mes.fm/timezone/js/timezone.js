@@ -941,20 +941,8 @@
 			var b = e.target.closest("button[data-fmt]"); if (!b) return;
 			fmtMode = b.getAttribute("data-fmt");
 			try { localStorage.setItem(FMT_KEY, fmtMode); } catch (x) {}
-			syncField(); paint(); render();
-		});
-		// the Time field (main_js/time-input.js) follows this setting, and its own AM/PM / 24h switch sets it
-		function syncField() {
-			if (!window.MESTime || !MESTime.set24) return;
-			var m = fmtMode === "auto" ? (browserUses12() ? "12" : "24") : fmtMode;
-			MESTime.set24(m === "24");
-		}
-		window.addEventListener("mes-time24", function (e) {
-			fmtMode = e.detail ? "24" : fmtMode === "both" ? "both" : "12";
-			try { localStorage.setItem(FMT_KEY, fmtMode); } catch (x) {}
 			paint(); render();
 		});
-		syncField();
 		paint();
 	})();
 	render();
