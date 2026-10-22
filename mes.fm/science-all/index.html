@@ -988,6 +988,48 @@ body.dark-mode .ls-chips button { background: #2a2a2a; color: #ddd; border-color
 body.dark-mode .ls-chips button:hover { border-color: #6cb6f5; color: #6cb6f5; }
 body.dark-mode .ls-chips button[aria-pressed="true"] { background: #6cb6f5; border-color: #6cb6f5; color: #111; }
 body.dark-mode .ls-empty { color: #aaa; }
+/* "Open in:" preferred-site switch + per-card site icon (shared/link-pref.mjs, main_js/link-pref.js). */
+.lp-row { display: flex; flex-wrap: wrap; align-items: flex-start; column-gap: 1em; }
+.lp-row > .ls-chips { flex: 1 1 22em; }
+.lp-row--solo { margin: 0 0 0.6em; }
+.lp { display: flex; flex-wrap: wrap; align-items: center; gap: 0.3em; margin: 0.7em 0 0 auto; font-size: 0.85em; }
+.lp-lbl { color: #555; margin-right: 0.15em; }
+.lp button {
+  font: inherit; cursor: pointer; display: inline-flex; align-items: center; gap: 0.3em; min-height: 2.2em;
+  padding: 0.3em 0.65em; border-radius: 1.2em; border: 1px solid #c3c9d2; background: #fff; color: #333;
+}
+.lp button:hover { border-color: #277bb6; color: #1a6fb0; }
+.lp button:focus-visible { outline: 2px solid #277bb6; outline-offset: 2px; }
+.lp button[aria-pressed="true"] { background: #277bb6; border-color: #277bb6; color: #fff; }
+.lp button.lp-few:not([aria-pressed="true"]) { color: #6a7280; border-style: dashed; }
+.lp-n { font-size: 0.85em; font-variant-numeric: tabular-nums; }
+.lp-ic {
+  display: inline-block; flex: none; width: 1.15em; height: 1.15em; vertical-align: -0.2em; background: currentColor;
+  -webkit-mask: var(--lp-i) center / contain no-repeat; mask: var(--lp-i) center / contain no-repeat;
+}
+/* the pages' CSS reset paints every span / a #333: take the button's / caption's colour instead */
+.lp button span, .lp-a .lp-ic, .lp-a .lp-name { color: inherit; }
+.link-card-readmore .lp-ic { margin-right: 0.3em; }
+.list-row h3 .lp-a { color: inherit; text-decoration: none; }
+.list-row h3 .lp-a:hover { text-decoration: underline; }
+.list-row h3 .lp-ic { width: 0.85em; height: 0.85em; margin-left: 0.35em; vertical-align: -0.05em; opacity: 0.75; }
+.lp-ic[data-s="mes"] { --lp-i: url("data:image/svg+xml,%3Csvg%20xmlns%3D'http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg'%20viewBox%3D'0%200%2024%2024'%3E%3Cpath%20fill-rule%3D'evenodd'%20d%3D'M1%2012.6%204.6%2010.6%208.6%2017.4%2014.6%201.8H23.2V4.8H16.6L10%2022.4H7.4z'%2F%3E%3C%2Fsvg%3E"); }
+.lp-ic[data-s="youtube"] { --lp-i: url("data:image/svg+xml,%3Csvg%20xmlns%3D'http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg'%20viewBox%3D'0%200%2024%2024'%3E%3Cpath%20fill-rule%3D'evenodd'%20d%3D'M23%207.2a3%203%200%200%200-2.1-2.1C19%204.6%2012%204.6%2012%204.6s-7%200-8.9.5A3%203%200%200%200%201%207.2C.5%209.1.5%2012%20.5%2012s0%202.9.5%204.8a3%203%200%200%200%202.1%202.1c1.9.5%208.9.5%208.9.5s7%200%208.9-.5a3%203%200%200%200%202.1-2.1c.5-1.9.5-4.8.5-4.8s0-2.9-.5-4.8zM9.7%2015.4V8.6l5.9%203.4z'%2F%3E%3C%2Fsvg%3E"); }
+.lp-ic[data-s="hive"] { --lp-i: url("data:image/svg+xml,%3Csvg%20xmlns%3D'http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg'%20viewBox%3D'0%200%2024%2024'%3E%3Cpath%20fill-rule%3D'evenodd'%20d%3D'M6.8%202.5h10.4L22.5%2012l-5.3%209.5H6.8L1.5%2012zM9%206.5%206.3%2012%209%2017.5h6l2.7-5.5L15%206.5z'%2F%3E%3C%2Fsvg%3E"); }
+.lp-ic[data-s="3speak"] { --lp-i: url("data:image/svg+xml,%3Csvg%20xmlns%3D'http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg'%20viewBox%3D'0%200%2024%2024'%3E%3Cpath%20fill-rule%3D'evenodd'%20d%3D'M12%201.5a10.5%2010.5%200%201%201%200%2021%2010.5%2010.5%200%200%201%200-21zM9.5%207.5v9l7-4.5z'%2F%3E%3C%2Fsvg%3E"); }
+.lp-ic[data-s="rumble"] { --lp-i: url("data:image/svg+xml,%3Csvg%20xmlns%3D'http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg'%20viewBox%3D'0%200%2024%2024'%3E%3Cpath%20fill-rule%3D'evenodd'%20d%3D'M5%203.8c0-1.6%201.7-2.5%203-1.6l12.4%208.2c1.2.8%201.2%202.4%200%203.2L8%2021.8c-1.3.9-3-.1-3-1.6zM8.6%208.5v7l5.4-3.5z'%2F%3E%3C%2Fsvg%3E"); }
+.lp-ic[data-s="odysee"] { --lp-i: url("data:image/svg+xml,%3Csvg%20xmlns%3D'http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg'%20viewBox%3D'0%200%2024%2024'%3E%3Cpath%20fill-rule%3D'evenodd'%20d%3D'M12%201.5a10.5%2010.5%200%201%201%200%2021%2010.5%2010.5%200%200%201%200-21zM12%206a6%206%200%201%200%200%2012%206%206%200%200%200%200-12z'%2F%3E%3C%2Fsvg%3E"); }
+.lp-ic[data-s="x"] { --lp-i: url("data:image/svg+xml,%3Csvg%20xmlns%3D'http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg'%20viewBox%3D'0%200%2024%2024'%3E%3Cpath%20fill-rule%3D'evenodd'%20d%3D'M3%203h5.4l4.2%205.9L17.7%203h3l-6.7%207.7L21.5%2021h-5.4l-4.6-6.4L5.9%2021H3l7.2-8.3z'%2F%3E%3C%2Fsvg%3E"); }
+.lp-ic[data-s="bitchute"] { --lp-i: url("data:image/svg+xml,%3Csvg%20xmlns%3D'http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg'%20viewBox%3D'0%200%2024%2024'%3E%3Cpath%20fill-rule%3D'evenodd'%20d%3D'M3%203h18v18H3zM8%206.5v11h5.3c2.2%200%203.7-1.2%203.7-3.1%200-1.4-.8-2.4-2.1-2.7%201-.4%201.6-1.3%201.6-2.4%200-1.8-1.4-2.8-3.5-2.8zM10.6%208.6h2.1c.9%200%201.4.4%201.4%201.1s-.5%201.2-1.4%201.2h-2.1zm0%204.2h2.4c1%200%201.5.5%201.5%201.2%200%20.8-.6%201.3-1.5%201.3h-2.4z'%2F%3E%3C%2Fsvg%3E"); }
+.lp-ic[data-s="telegram"] { --lp-i: url("data:image/svg+xml,%3Csvg%20xmlns%3D'http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg'%20viewBox%3D'0%200%2024%2024'%3E%3Cpath%20fill-rule%3D'evenodd'%20d%3D'M1.5%2011.2%2021.6%203.3c.9-.3%201.7.3%201.4%201.7l-3.4%2016c-.2%201.1-.9%201.4-1.8.9l-5-3.7-2.4%202.3c-.3.3-.5.5-1%20.5l.4-5.1%209.3-8.4c.4-.4-.1-.6-.6-.2L6.9%2014.6%202%2013.1c-1.1-.3-1.1-1.1.5-1.9z'%2F%3E%3C%2Fsvg%3E"); }
+.lp-ic[data-s="twitch"] { --lp-i: url("data:image/svg+xml,%3Csvg%20xmlns%3D'http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg'%20viewBox%3D'0%200%2024%2024'%3E%3Cpath%20fill-rule%3D'evenodd'%20d%3D'M4%202%202.5%206v14h5v2.5h2.8L13%2020h4l5-5V2zm16%2012-3%203h-4.5L10%2019.5V17H6V4h14zM15%207h2v5h-2zm-5%200h2v5h-2z'%2F%3E%3C%2Fsvg%3E"); }
+body.dark-mode .lp-lbl, body.dark .lp-lbl { color: #bbb; }
+body.dark-mode .list-row h3 .lp-a, body.dark .list-row h3 .lp-a { color: inherit; }
+body.dark-mode .lp button, body.dark .lp button { background: #2a2a2a; color: #ddd; border-color: #555; }
+body.dark-mode .lp button:hover, body.dark .lp button:hover { border-color: #6cb6f5; color: #6cb6f5; }
+body.dark-mode .lp button[aria-pressed="true"], body.dark .lp button[aria-pressed="true"] { background: #6cb6f5; border-color: #6cb6f5; color: #111; }
+body.dark-mode .lp button.lp-few:not([aria-pressed="true"]), body.dark .lp button.lp-few:not([aria-pressed="true"]) { color: #a3abb8; }
+body.dark-mode .lp button:focus-visible, body.dark .lp button:focus-visible { outline-color: #6cb6f5; }
 </style>
 
 <meta property="fb:app_id" content="120877788060946" />
@@ -1212,7 +1254,10 @@ body.dark-mode .ls-empty { color: #aaa; }
   
     <div class="ls-filter" id="science-allFilter">
       <input type="search" id="science-allSearch" placeholder="Search everything in Science…" aria-label="Search" autocomplete="off">
-      <div class="ls-chips" id="science-allChips"><button type="button" data-c="all" data-label="All" aria-pressed="true">All (33)</button><button type="button" data-c="s-science-posts" data-label="Posts" aria-pressed="false">Posts (5)</button><button type="button" data-c="s-science-videos" data-label="Videos" aria-pressed="false">Videos (14)</button><button type="button" data-c="s-science-tutorials" data-label="Tutorials" aria-pressed="false">Tutorials (5)</button><button type="button" data-c="s-physics" data-label="Physics" aria-pressed="false">Physics (9)</button></div>
+      <div class="lp-row"><div class="ls-chips" id="science-allChips"><button type="button" data-c="all" data-label="All" aria-pressed="true">All (33)</button><button type="button" data-c="s-science-posts" data-label="Posts" aria-pressed="false">Posts (5)</button><button type="button" data-c="s-science-videos" data-label="Videos" aria-pressed="false">Videos (14)</button><button type="button" data-c="s-science-tutorials" data-label="Tutorials" aria-pressed="false">Tutorials (5)</button><button type="button" data-c="s-physics" data-label="Physics" aria-pressed="false">Physics (9)</button></div>
+      <div class="lp" data-lp role="group" aria-label="Open links in">
+        <span class="lp-lbl" aria-hidden="true">Open in:</span><button type="button" data-s="auto" aria-pressed="true" aria-label="Open in: Auto (the usual link: the mes.fm page when there is one)" title="Auto: the usual link (the mes.fm page when there is one)">Auto</button><button type="button" data-s="mes" data-label="MES.fm" aria-pressed="false" aria-label="Open in MES.fm (5 of 33 have a MES.fm link)" title="Open in MES.fm (5 of 33 have a MES.fm link)" class="lp-few"><span class="lp-ic" data-s="mes" aria-hidden="true"></span><span class="lp-n">5</span></button><button type="button" data-s="youtube" data-label="YouTube" aria-pressed="false" aria-label="Open in YouTube (28 of 33 have a YouTube link)" title="Open in YouTube (28 of 33 have a YouTube link)"><span class="lp-ic" data-s="youtube" aria-hidden="true"></span><span class="lp-n">28</span></button><button type="button" data-s="hive" data-label="Hive" aria-pressed="false" aria-label="Open in Hive (3 of 33 have a Hive link)" title="Open in Hive (3 of 33 have a Hive link)" class="lp-few"><span class="lp-ic" data-s="hive" aria-hidden="true"></span><span class="lp-n">3</span></button>
+      </div></div>
     </div>
     <p class="ls-empty" id="science-allEmpty" hidden>Nothing matches. Try fewer words or a different filter.</p>
     <div class="view-toggle">
@@ -1221,401 +1266,401 @@ body.dark-mode .ls-empty { color: #aaa; }
       
     </div>
     <div class="card-grid" id="science-allGrid">
-    <a class="link-card" data-cats="s-science-posts" data-kw="Posts" href="https://mes.fm/fungi-poop">
+    <a class="link-card lp-a" data-cats="s-science-posts" data-kw="Posts" data-lp-def="mes" data-l-mes="https://mes.fm/fungi-poop" href="https://mes.fm/fungi-poop">
       <span class="link-card-thumb" style="background-image:url('https://mes.fm/fungi-poop/img/fungi-poop-1.jpg')"></span>
       <span class="link-card-body">
         <span class="link-card-title">Fungi Decomposin' Dog Poop 🦠💩👀</span>
-        <span class="link-card-readmore">View &rarr;</span>
+        <span class="link-card-readmore"><span class="lp-ic" data-s="mes" aria-hidden="true"></span><span class="lp-name">View on MES.fm</span> &rarr;</span>
       </span>
     </a>
-    <a class="link-card" data-cats="s-science-posts" data-kw="Posts" href="https://mes.fm/america-gov-ai-chat">
+    <a class="link-card lp-a" data-cats="s-science-posts" data-kw="Posts" data-lp-def="mes" data-l-mes="https://mes.fm/america-gov-ai-chat" href="https://mes.fm/america-gov-ai-chat">
       <span class="link-card-thumb" style="background-image:url('https://mes.fm/america-gov-ai-chat/img/america-gov-ai-chat.jpg')"></span>
       <span class="link-card-body">
         <span class="link-card-title">USA Launches America.gov, an AI Chat Site for Government Services</span>
-        <span class="link-card-readmore">View &rarr;</span>
+        <span class="link-card-readmore"><span class="lp-ic" data-s="mes" aria-hidden="true"></span><span class="lp-name">View on MES.fm</span> &rarr;</span>
       </span>
     </a>
-    <a class="link-card" data-cats="s-science-posts" data-kw="Posts" href="https://mes.fm/mendeleev-chemical-table-dream">
+    <a class="link-card lp-a" data-cats="s-science-posts" data-kw="Posts" data-lp-def="mes" data-l-mes="https://mes.fm/mendeleev-chemical-table-dream" href="https://mes.fm/mendeleev-chemical-table-dream">
       <span class="link-card-thumb" style="background-image:url('https://img.leopedia.io/DQmUTrX5k5PiS72xqnGTE2NXcv5iiEykGj1gRXDap9Nd2Re/telegram-cloud-photo-size-1-5015179805296627018-y.jpg')"></span>
       <span class="link-card-body">
         <span class="link-card-title">Dmitri Mendeleev Said He Came Up With the Periodic Table in a Dream</span>
-        <span class="link-card-readmore">View &rarr;</span>
+        <span class="link-card-readmore"><span class="lp-ic" data-s="mes" aria-hidden="true"></span><span class="lp-name">View on MES.fm</span> &rarr;</span>
       </span>
     </a>
-    <a class="link-card" data-cats="s-science-posts" data-kw="Posts" href="https://mes.fm/fleischmann-corn-starch">
+    <a class="link-card lp-a" data-cats="s-science-posts" data-kw="Posts" data-lp-def="mes" data-l-mes="https://mes.fm/fleischmann-corn-starch" href="https://mes.fm/fleischmann-corn-starch">
       <span class="link-card-thumb" style="background-image:url('https://mes.fm/fleischmann-corn-starch/img/fleischmann-corn-starch-1.jpg')"></span>
       <span class="link-card-body">
         <span class="link-card-title">Is Corn Starch the Key to Martin Fleischmann's Cold Fusion Experiments?</span>
-        <span class="link-card-readmore">View &rarr;</span>
+        <span class="link-card-readmore"><span class="lp-ic" data-s="mes" aria-hidden="true"></span><span class="lp-name">View on MES.fm</span> &rarr;</span>
       </span>
     </a>
-    <a class="link-card" data-cats="s-science-posts" data-kw="Posts" href="https://mes.fm/ferrocell-specular-reflection">
+    <a class="link-card lp-a" data-cats="s-science-posts" data-kw="Posts" data-lp-def="mes" data-l-mes="https://mes.fm/ferrocell-specular-reflection" href="https://mes.fm/ferrocell-specular-reflection">
       <span class="link-card-thumb" style="background-image:url('https://files.peakd.com/file/peakd-hive/mes/23vhny5FYdGt5Vi9vRPtqXcPUCNTMTAhM3FtxDNqwoqgWWWmd6Ua5nzvWDPZbD1AZts7y.png')"></span>
       <span class="link-card-body">
         <span class="link-card-title">Demystifying the Ferrocell: Specular Reflection</span>
-        <span class="link-card-readmore">View &rarr;</span>
+        <span class="link-card-readmore"><span class="lp-ic" data-s="mes" aria-hidden="true"></span><span class="lp-name">View on MES.fm</span> &rarr;</span>
       </span>
     </a>
-    <a class="link-card" data-cats="s-science-videos" data-kw="Videos" href="https://www.youtube.com/watch?v=_iwAATk0IOI" target="_blank" rel="noopener">
+    <a class="link-card lp-a" data-cats="s-science-videos" data-kw="Videos" data-lp-def="youtube" data-l-youtube="https://www.youtube.com/watch?v=_iwAATk0IOI" href="https://www.youtube.com/watch?v=_iwAATk0IOI" target="_blank" rel="noopener">
       <span class="link-card-thumb" style="background-image:url('https://i.ytimg.com/vi/_iwAATk0IOI/maxresdefault.jpg')"></span>
       <span class="link-card-body">
         <span class="link-card-title">Amazing 360-degree fog image projection + interactive display! 😮</span>
-        <span class="link-card-readmore">View &rarr;</span>
+        <span class="link-card-readmore"><span class="lp-ic" data-s="youtube" aria-hidden="true"></span><span class="lp-name">View on YouTube</span> &rarr;</span>
       </span>
     </a>
-    <a class="link-card" data-cats="s-science-videos" data-kw="Videos" href="https://www.youtube.com/watch?v=r_CrobH0m7g" target="_blank" rel="noopener">
+    <a class="link-card lp-a" data-cats="s-science-videos" data-kw="Videos" data-lp-def="youtube" data-l-youtube="https://www.youtube.com/watch?v=r_CrobH0m7g" href="https://www.youtube.com/watch?v=r_CrobH0m7g" target="_blank" rel="noopener">
       <span class="link-card-thumb" style="background-image:url('https://i.ytimg.com/vi/r_CrobH0m7g/sddefault.jpg')"></span>
       <span class="link-card-body">
         <span class="link-card-title">Laser-induced plasma to create 3D volumetric images with sound 🤯</span>
-        <span class="link-card-readmore">View &rarr;</span>
+        <span class="link-card-readmore"><span class="lp-ic" data-s="youtube" aria-hidden="true"></span><span class="lp-name">View on YouTube</span> &rarr;</span>
       </span>
     </a>
-    <a class="link-card" data-cats="s-science-videos" data-kw="Videos" href="https://www.youtube.com/watch?v=6lX3uZOqvdI" target="_blank" rel="noopener">
+    <a class="link-card lp-a" data-cats="s-science-videos" data-kw="Videos" data-lp-def="youtube" data-l-youtube="https://www.youtube.com/watch?v=6lX3uZOqvdI" href="https://www.youtube.com/watch?v=6lX3uZOqvdI" target="_blank" rel="noopener">
       <span class="link-card-thumb" style="background-image:url('https://i.ytimg.com/vi/6lX3uZOqvdI/hqdefault.jpg')"></span>
       <span class="link-card-body">
         <span class="link-card-title">Tom Wind discusses the 1985 Fleischmann and Pons cold fusion hole in the floor experiment</span>
-        <span class="link-card-readmore">View &rarr;</span>
+        <span class="link-card-readmore"><span class="lp-ic" data-s="youtube" aria-hidden="true"></span><span class="lp-name">View on YouTube</span> &rarr;</span>
       </span>
     </a>
-    <a class="link-card" data-cats="s-science-videos" data-kw="Videos" href="https://www.youtube.com/watch?v=41FBcKnpJWA" target="_blank" rel="noopener">
+    <a class="link-card lp-a" data-cats="s-science-videos" data-kw="Videos" data-lp-def="youtube" data-l-youtube="https://www.youtube.com/watch?v=41FBcKnpJWA" href="https://www.youtube.com/watch?v=41FBcKnpJWA" target="_blank" rel="noopener">
       <span class="link-card-thumb" style="background-image:url('https://i.ytimg.com/vi/41FBcKnpJWA/hqdefault.jpg')"></span>
       <span class="link-card-body">
         <span class="link-card-title">Amazing street performance with Tesla coils and special suits! ⚡⚡⚡⚡</span>
-        <span class="link-card-readmore">View &rarr;</span>
+        <span class="link-card-readmore"><span class="lp-ic" data-s="youtube" aria-hidden="true"></span><span class="lp-name">View on YouTube</span> &rarr;</span>
       </span>
     </a>
-    <a class="link-card" data-cats="s-science-videos" data-kw="Videos" href="https://www.youtube.com/watch?v=sLNuU5ELAGk" target="_blank" rel="noopener">
+    <a class="link-card lp-a" data-cats="s-science-videos" data-kw="Videos" data-lp-def="youtube" data-l-youtube="https://www.youtube.com/watch?v=sLNuU5ELAGk" href="https://www.youtube.com/watch?v=sLNuU5ELAGk" target="_blank" rel="noopener">
       <span class="link-card-thumb" style="background-image:url('https://i.ytimg.com/vi/sLNuU5ELAGk/hqdefault.jpg')"></span>
       <span class="link-card-body">
         <span class="link-card-title">Band plays music with Tesla Coil plasma speakers! 🎸🎸⚡⚡</span>
-        <span class="link-card-readmore">View &rarr;</span>
+        <span class="link-card-readmore"><span class="lp-ic" data-s="youtube" aria-hidden="true"></span><span class="lp-name">View on YouTube</span> &rarr;</span>
       </span>
     </a>
-    <a class="link-card" data-cats="s-science-videos" data-kw="Videos" href="https://www.youtube.com/watch?v=VEwTmPTYrTM" target="_blank" rel="noopener">
+    <a class="link-card lp-a" data-cats="s-science-videos" data-kw="Videos" data-lp-def="youtube" data-l-youtube="https://www.youtube.com/watch?v=VEwTmPTYrTM" href="https://www.youtube.com/watch?v=VEwTmPTYrTM" target="_blank" rel="noopener">
       <span class="link-card-thumb" style="background-image:url('https://i.ytimg.com/vi/VEwTmPTYrTM/hqdefault.jpg')"></span>
       <span class="link-card-body">
         <span class="link-card-title">Rare footage of a tornado appears to form from the ground up! 🌪😮</span>
-        <span class="link-card-readmore">View &rarr;</span>
+        <span class="link-card-readmore"><span class="lp-ic" data-s="youtube" aria-hidden="true"></span><span class="lp-name">View on YouTube</span> &rarr;</span>
       </span>
     </a>
-    <a class="link-card" data-cats="s-science-videos" data-kw="Videos" href="https://www.youtube.com/watch?v=Ge0FcItQDe0" target="_blank" rel="noopener">
+    <a class="link-card lp-a" data-cats="s-science-videos" data-kw="Videos" data-lp-def="youtube" data-l-youtube="https://www.youtube.com/watch?v=Ge0FcItQDe0" href="https://www.youtube.com/watch?v=Ge0FcItQDe0" target="_blank" rel="noopener">
       <span class="link-card-thumb" style="background-image:url('https://i.ytimg.com/vi/Ge0FcItQDe0/maxresdefault.jpg')"></span>
       <span class="link-card-body">
         <span class="link-card-title">Meteorologist Ted Fujita's explanation for how tornadoes are formed 🌪</span>
-        <span class="link-card-readmore">View &rarr;</span>
+        <span class="link-card-readmore"><span class="lp-ic" data-s="youtube" aria-hidden="true"></span><span class="lp-name">View on YouTube</span> &rarr;</span>
       </span>
     </a>
-    <a class="link-card" data-cats="s-science-videos" data-kw="Videos" href="https://www.youtube.com/watch?v=50lGlnq3irc" target="_blank" rel="noopener">
+    <a class="link-card lp-a" data-cats="s-science-videos" data-kw="Videos" data-lp-def="youtube" data-l-youtube="https://www.youtube.com/watch?v=50lGlnq3irc" href="https://www.youtube.com/watch?v=50lGlnq3irc" target="_blank" rel="noopener">
       <span class="link-card-thumb" style="background-image:url('https://i.ytimg.com/vi/50lGlnq3irc/hqdefault.jpg')"></span>
       <span class="link-card-body">
         <span class="link-card-title">Rare extended footage of a tornado being formed in Mexico 2012 🌪</span>
-        <span class="link-card-readmore">View &rarr;</span>
+        <span class="link-card-readmore"><span class="lp-ic" data-s="youtube" aria-hidden="true"></span><span class="lp-name">View on YouTube</span> &rarr;</span>
       </span>
     </a>
-    <a class="link-card" data-cats="s-science-videos" data-kw="Videos" href="https://www.youtube.com/watch?v=L4CGd4A4W70" target="_blank" rel="noopener">
+    <a class="link-card lp-a" data-cats="s-science-videos" data-kw="Videos" data-lp-def="youtube" data-l-youtube="https://www.youtube.com/watch?v=L4CGd4A4W70" href="https://www.youtube.com/watch?v=L4CGd4A4W70" target="_blank" rel="noopener">
       <span class="link-card-thumb" style="background-image:url('https://i.ytimg.com/vi/L4CGd4A4W70/maxresdefault.jpg')"></span>
       <span class="link-card-body">
         <span class="link-card-title">Mini-tornado at the WTC on 9/11 🌪👀</span>
-        <span class="link-card-readmore">View &rarr;</span>
+        <span class="link-card-readmore"><span class="lp-ic" data-s="youtube" aria-hidden="true"></span><span class="lp-name">View on YouTube</span> &rarr;</span>
       </span>
     </a>
-    <a class="link-card" data-cats="s-science-videos" data-kw="Videos" href="https://www.youtube.com/watch?v=ZbBmd1KphP8" target="_blank" rel="noopener">
+    <a class="link-card lp-a" data-cats="s-science-videos" data-kw="Videos" data-lp-def="youtube" data-l-youtube="https://www.youtube.com/watch?v=ZbBmd1KphP8" href="https://www.youtube.com/watch?v=ZbBmd1KphP8" target="_blank" rel="noopener">
       <span class="link-card-thumb" style="background-image:url('https://i.ytimg.com/vi/ZbBmd1KphP8/maxresdefault.jpg')"></span>
       <span class="link-card-body">
         <span class="link-card-title">Rare extended footage of the ball lightning spotted in Alberta, Canada on July 2, 2025 ⚡💥</span>
-        <span class="link-card-readmore">View &rarr;</span>
+        <span class="link-card-readmore"><span class="lp-ic" data-s="youtube" aria-hidden="true"></span><span class="lp-name">View on YouTube</span> &rarr;</span>
       </span>
     </a>
-    <a class="link-card" data-cats="s-science-videos" data-kw="Videos" href="https://www.youtube.com/watch?v=rJ7ag17LxA8" target="_blank" rel="noopener">
+    <a class="link-card lp-a" data-cats="s-science-videos" data-kw="Videos" data-lp-def="youtube" data-l-youtube="https://www.youtube.com/watch?v=rJ7ag17LxA8" href="https://www.youtube.com/watch?v=rJ7ag17LxA8" target="_blank" rel="noopener">
       <span class="link-card-thumb" style="background-image:url('https://i.ytimg.com/vi/rJ7ag17LxA8/maxresdefault.jpg')"></span>
       <span class="link-card-body">
         <span class="link-card-title">Francis McCabe’s 88X Torque Over-Unity Oscillating Gyro Piston Prototype</span>
-        <span class="link-card-readmore">View &rarr;</span>
+        <span class="link-card-readmore"><span class="lp-ic" data-s="youtube" aria-hidden="true"></span><span class="lp-name">View on YouTube</span> &rarr;</span>
       </span>
     </a>
-    <a class="link-card" data-cats="s-science-videos" data-kw="Videos" href="https://www.youtube.com/watch?v=GgAtdqZ-s-A" target="_blank" rel="noopener">
+    <a class="link-card lp-a" data-cats="s-science-videos" data-kw="Videos" data-lp-def="youtube" data-l-youtube="https://www.youtube.com/watch?v=GgAtdqZ-s-A" href="https://www.youtube.com/watch?v=GgAtdqZ-s-A" target="_blank" rel="noopener">
       <span class="link-card-thumb" style="background-image:url('https://i.ytimg.com/vi/GgAtdqZ-s-A/sddefault.jpg')"></span>
       <span class="link-card-body">
         <span class="link-card-title">500 mph steel plow splits car in half + Super-slow motion</span>
-        <span class="link-card-readmore">View &rarr;</span>
+        <span class="link-card-readmore"><span class="lp-ic" data-s="youtube" aria-hidden="true"></span><span class="lp-name">View on YouTube</span> &rarr;</span>
       </span>
     </a>
-    <a class="link-card" data-cats="s-science-videos" data-kw="Videos" href="https://www.youtube.com/watch?v=0v9ErjS3op4" target="_blank" rel="noopener">
+    <a class="link-card lp-a" data-cats="s-science-videos" data-kw="Videos" data-lp-def="youtube" data-l-youtube="https://www.youtube.com/watch?v=0v9ErjS3op4" href="https://www.youtube.com/watch?v=0v9ErjS3op4" target="_blank" rel="noopener">
       <span class="link-card-thumb" style="background-image:url('https://i.ytimg.com/vi/0v9ErjS3op4/maxresdefault.jpg')"></span>
       <span class="link-card-body">
         <span class="link-card-title">WARNING: Tesla coil sparks can burst your ear drums when wearing earbuds headphones! ⚠️⚡️</span>
-        <span class="link-card-readmore">View &rarr;</span>
+        <span class="link-card-readmore"><span class="lp-ic" data-s="youtube" aria-hidden="true"></span><span class="lp-name">View on YouTube</span> &rarr;</span>
       </span>
     </a>
-    <a class="link-card" data-cats="s-science-videos" data-kw="Videos" href="https://www.youtube.com/watch?v=ZAvQccbPRH0" target="_blank" rel="noopener">
+    <a class="link-card lp-a" data-cats="s-science-videos" data-kw="Videos" data-lp-def="youtube" data-l-youtube="https://www.youtube.com/watch?v=ZAvQccbPRH0" href="https://www.youtube.com/watch?v=ZAvQccbPRH0" target="_blank" rel="noopener">
       <span class="link-card-thumb" style="background-image:url('https://i.ytimg.com/vi/ZAvQccbPRH0/maxresdefault.jpg')"></span>
       <span class="link-card-body">
         <span class="link-card-title">Shadow on the Moon can move faster than the speed of light because a shadow is not a physical object</span>
-        <span class="link-card-readmore">View &rarr;</span>
+        <span class="link-card-readmore"><span class="lp-ic" data-s="youtube" aria-hidden="true"></span><span class="lp-name">View on YouTube</span> &rarr;</span>
       </span>
     </a>
-    <a class="link-card" data-cats="s-science-tutorials" data-kw="Tutorials" href="https://peakd.com/hive-128780/@mes/messcience-4-review-of-covid-19-virus-isolation-paper" target="_blank" rel="noopener">
+    <a class="link-card lp-a" data-cats="s-science-tutorials" data-kw="Tutorials" data-lp-def="hive" data-l-youtube="https://www.youtube.com/watch?v=cvDO85Rw4d8" data-l-hive="https://peakd.com/hive-128780/@mes/messcience-4-review-of-covid-19-virus-isolation-paper" href="https://peakd.com/hive-128780/@mes/messcience-4-review-of-covid-19-virus-isolation-paper" target="_blank" rel="noopener">
       <span class="link-card-thumb" style="background-image:url('https://i.ytimg.com/vi/cvDO85Rw4d8/maxresdefault.jpg')"></span>
       <span class="link-card-body">
         <span class="link-card-title">🔥#MESScience 4: Review of COVID-19 &quot;Virus&quot; Isolation Paper</span>
-        <span class="link-card-readmore">View &rarr;</span>
+        <span class="link-card-readmore"><span class="lp-ic" data-s="hive" aria-hidden="true"></span><span class="lp-name">View on Hive</span> &rarr;</span>
       </span>
     </a>
-    <a class="link-card" data-cats="s-science-tutorials" data-kw="Tutorials" href="https://peakd.com/hive-128780/@mes/messcience-3-overview-of-biology" target="_blank" rel="noopener">
+    <a class="link-card lp-a" data-cats="s-science-tutorials" data-kw="Tutorials" data-lp-def="hive" data-l-youtube="https://www.youtube.com/watch?v=WX_qzT0nZFY" data-l-hive="https://peakd.com/hive-128780/@mes/messcience-3-overview-of-biology" href="https://peakd.com/hive-128780/@mes/messcience-3-overview-of-biology" target="_blank" rel="noopener">
       <span class="link-card-thumb" style="background-image:url('https://i.ytimg.com/vi/WX_qzT0nZFY/maxresdefault.jpg')"></span>
       <span class="link-card-body">
         <span class="link-card-title">🔥#MESScience 3: Overview of Biology</span>
-        <span class="link-card-readmore">View &rarr;</span>
+        <span class="link-card-readmore"><span class="lp-ic" data-s="hive" aria-hidden="true"></span><span class="lp-name">View on Hive</span> &rarr;</span>
       </span>
     </a>
-    <a class="link-card" data-cats="s-science-tutorials" data-kw="Tutorials" href="https://www.youtube.com/watch?v=9qztFaK8kmQ" target="_blank" rel="noopener">
+    <a class="link-card lp-a" data-cats="s-science-tutorials" data-kw="Tutorials" data-lp-def="youtube" data-l-youtube="https://www.youtube.com/watch?v=9qztFaK8kmQ" href="https://www.youtube.com/watch?v=9qztFaK8kmQ" target="_blank" rel="noopener">
       <span class="link-card-thumb" style="background-image:url('https://i.ytimg.com/vi/9qztFaK8kmQ/maxresdefault.jpg')"></span>
       <span class="link-card-body">
         <span class="link-card-title">🔥#MESScience 3: Progress and Update</span>
-        <span class="link-card-readmore">View &rarr;</span>
+        <span class="link-card-readmore"><span class="lp-ic" data-s="youtube" aria-hidden="true"></span><span class="lp-name">View on YouTube</span> &rarr;</span>
       </span>
     </a>
-    <a class="link-card" data-cats="s-science-tutorials" data-kw="Tutorials" href="https://peakd.com/hive-128780/@mes/messcience-2-vortex-math-part-1-number-theory-and-modular-arithmetic" target="_blank" rel="noopener">
+    <a class="link-card lp-a" data-cats="s-science-tutorials" data-kw="Tutorials" data-lp-def="hive" data-l-youtube="https://www.youtube.com/watch?v=mTeZD8rsiTs" data-l-hive="https://peakd.com/hive-128780/@mes/messcience-2-vortex-math-part-1-number-theory-and-modular-arithmetic" href="https://peakd.com/hive-128780/@mes/messcience-2-vortex-math-part-1-number-theory-and-modular-arithmetic" target="_blank" rel="noopener">
       <span class="link-card-thumb" style="background-image:url('https://i.ytimg.com/vi/mTeZD8rsiTs/maxresdefault.jpg')"></span>
       <span class="link-card-body">
         <span class="link-card-title">🔥#MESScience 2: Vortex Math Part 1: Number Theory and Modular Arithmetic</span>
-        <span class="link-card-readmore">View &rarr;</span>
+        <span class="link-card-readmore"><span class="lp-ic" data-s="hive" aria-hidden="true"></span><span class="lp-name">View on Hive</span> &rarr;</span>
       </span>
     </a>
-    <a class="link-card" data-cats="s-science-tutorials" data-kw="Tutorials" href="https://www.youtube.com/watch?v=6cRkjWN8Uds" target="_blank" rel="noopener">
+    <a class="link-card lp-a" data-cats="s-science-tutorials" data-kw="Tutorials" data-lp-def="youtube" data-l-youtube="https://www.youtube.com/watch?v=6cRkjWN8Uds" href="https://www.youtube.com/watch?v=6cRkjWN8Uds" target="_blank" rel="noopener">
       <span class="link-card-thumb" style="background-image:url('https://i.ytimg.com/vi/6cRkjWN8Uds/maxresdefault.jpg')"></span>
       <span class="link-card-body">
         <span class="link-card-title">🔥#MESScience 1: How Does a Powerball Gyroscope Work? + Gyros Are Inverted Pendulums</span>
-        <span class="link-card-readmore">View &rarr;</span>
+        <span class="link-card-readmore"><span class="lp-ic" data-s="youtube" aria-hidden="true"></span><span class="lp-name">View on YouTube</span> &rarr;</span>
       </span>
     </a>
-    <a class="link-card" data-cats="s-physics" data-kw="Physics" href="https://www.youtube.com/watch?v=0c0k3MgFYcQ" target="_blank" rel="noopener">
+    <a class="link-card lp-a" data-cats="s-physics" data-kw="Physics" data-lp-def="youtube" data-l-youtube="https://www.youtube.com/watch?v=0c0k3MgFYcQ" href="https://www.youtube.com/watch?v=0c0k3MgFYcQ" target="_blank" rel="noopener">
       <span class="link-card-thumb" style="background-image:url('https://i.ytimg.com/vi/0c0k3MgFYcQ/maxresdefault.jpg')"></span>
       <span class="link-card-body">
         <span class="link-card-title">The Magnetic Field Resembles the Electric Field of 2 Bound Charges</span>
-        <span class="link-card-readmore">View &rarr;</span>
+        <span class="link-card-readmore"><span class="lp-ic" data-s="youtube" aria-hidden="true"></span><span class="lp-name">View on YouTube</span> &rarr;</span>
       </span>
     </a>
-    <a class="link-card" data-cats="s-physics" data-kw="Physics" href="https://www.youtube.com/watch?v=NOG9VOBtpY4" target="_blank" rel="noopener">
+    <a class="link-card lp-a" data-cats="s-physics" data-kw="Physics" data-lp-def="youtube" data-l-youtube="https://www.youtube.com/watch?v=NOG9VOBtpY4" href="https://www.youtube.com/watch?v=NOG9VOBtpY4" target="_blank" rel="noopener">
       <span class="link-card-thumb" style="background-image:url('https://i.ytimg.com/vi/NOG9VOBtpY4/maxresdefault.jpg')"></span>
       <span class="link-card-body">
         <span class="link-card-title">Magnetic Isopotentials Explain the Faraday Paradox, Stern-Gerlach Experiment, and Atomic Orbitals</span>
-        <span class="link-card-readmore">View &rarr;</span>
+        <span class="link-card-readmore"><span class="lp-ic" data-s="youtube" aria-hidden="true"></span><span class="lp-name">View on YouTube</span> &rarr;</span>
       </span>
     </a>
-    <a class="link-card" data-cats="s-physics" data-kw="Physics" href="https://www.youtube.com/watch?v=hotOO9bwrrA" target="_blank" rel="noopener">
+    <a class="link-card lp-a" data-cats="s-physics" data-kw="Physics" data-lp-def="youtube" data-l-youtube="https://www.youtube.com/watch?v=hotOO9bwrrA" href="https://www.youtube.com/watch?v=hotOO9bwrrA" target="_blank" rel="noopener">
       <span class="link-card-thumb" style="background-image:url('https://i.ytimg.com/vi/hotOO9bwrrA/maxresdefault.jpg')"></span>
       <span class="link-card-body">
         <span class="link-card-title">🔬#MESExperiments 35: Faraday's Paradox using Iron Filings</span>
-        <span class="link-card-readmore">View &rarr;</span>
+        <span class="link-card-readmore"><span class="lp-ic" data-s="youtube" aria-hidden="true"></span><span class="lp-name">View on YouTube</span> &rarr;</span>
       </span>
     </a>
-    <a class="link-card" data-cats="s-physics" data-kw="Physics" href="https://www.youtube.com/watch?v=MgsWBi4Jr5E" target="_blank" rel="noopener">
+    <a class="link-card lp-a" data-cats="s-physics" data-kw="Physics" data-lp-def="youtube" data-l-youtube="https://www.youtube.com/watch?v=MgsWBi4Jr5E" href="https://www.youtube.com/watch?v=MgsWBi4Jr5E" target="_blank" rel="noopener">
       <span class="link-card-thumb" style="background-image:url('https://i.ytimg.com/vi/MgsWBi4Jr5E/maxresdefault.jpg')"></span>
       <span class="link-card-body">
         <span class="link-card-title">🔬#MESExperiments 36: Faraday's Paradox using Ferrofluid (and Iron Filings)</span>
-        <span class="link-card-readmore">View &rarr;</span>
+        <span class="link-card-readmore"><span class="lp-ic" data-s="youtube" aria-hidden="true"></span><span class="lp-name">View on YouTube</span> &rarr;</span>
       </span>
     </a>
-    <a class="link-card" data-cats="s-physics" data-kw="Physics" href="https://www.youtube.com/watch?v=W6-FvG8OBAk" target="_blank" rel="noopener">
+    <a class="link-card lp-a" data-cats="s-physics" data-kw="Physics" data-lp-def="youtube" data-l-youtube="https://www.youtube.com/watch?v=W6-FvG8OBAk" href="https://www.youtube.com/watch?v=W6-FvG8OBAk" target="_blank" rel="noopener">
       <span class="link-card-thumb" style="background-image:url('https://i.ytimg.com/vi/W6-FvG8OBAk/maxresdefault.jpg')"></span>
       <span class="link-card-body">
         <span class="link-card-title">Planck's Constant is the Quantum of Energy and NOT &quot;Quantum of Action&quot;</span>
-        <span class="link-card-readmore">View &rarr;</span>
+        <span class="link-card-readmore"><span class="lp-ic" data-s="youtube" aria-hidden="true"></span><span class="lp-name">View on YouTube</span> &rarr;</span>
       </span>
     </a>
-    <a class="link-card" data-cats="s-physics" data-kw="Physics" href="https://www.youtube.com/watch?v=eHZfSHjME90" target="_blank" rel="noopener">
+    <a class="link-card lp-a" data-cats="s-physics" data-kw="Physics" data-lp-def="youtube" data-l-youtube="https://www.youtube.com/watch?v=eHZfSHjME90" href="https://www.youtube.com/watch?v=eHZfSHjME90" target="_blank" rel="noopener">
       <span class="link-card-thumb" style="background-image:url('https://i.ytimg.com/vi/eHZfSHjME90/maxresdefault.jpg')"></span>
       <span class="link-card-body">
         <span class="link-card-title">🔬#MESExperiments 45: Rotating Cylinders in Water Behave Like Magnets</span>
-        <span class="link-card-readmore">View &rarr;</span>
+        <span class="link-card-readmore"><span class="lp-ic" data-s="youtube" aria-hidden="true"></span><span class="lp-name">View on YouTube</span> &rarr;</span>
       </span>
     </a>
-    <a class="link-card" data-cats="s-physics" data-kw="Physics" href="https://www.youtube.com/watch?v=fUYl4F6vkg0" target="_blank" rel="noopener">
+    <a class="link-card lp-a" data-cats="s-physics" data-kw="Physics" data-lp-def="youtube" data-l-youtube="https://www.youtube.com/watch?v=fUYl4F6vkg0" href="https://www.youtube.com/watch?v=fUYl4F6vkg0" target="_blank" rel="noopener">
       <span class="link-card-thumb" style="background-image:url('https://i.ytimg.com/vi/fUYl4F6vkg0/maxresdefault.jpg')"></span>
       <span class="link-card-body">
         <span class="link-card-title">🔬#MESExperiments 33: Spinning Tops in Opposing Directions Spin Together</span>
-        <span class="link-card-readmore">View &rarr;</span>
+        <span class="link-card-readmore"><span class="lp-ic" data-s="youtube" aria-hidden="true"></span><span class="lp-name">View on YouTube</span> &rarr;</span>
       </span>
     </a>
-    <a class="link-card" data-cats="s-physics" data-kw="Physics" href="https://www.youtube.com/watch?v=hsZgypWKGjE" target="_blank" rel="noopener">
+    <a class="link-card lp-a" data-cats="s-physics" data-kw="Physics" data-lp-def="youtube" data-l-youtube="https://www.youtube.com/watch?v=hsZgypWKGjE" href="https://www.youtube.com/watch?v=hsZgypWKGjE" target="_blank" rel="noopener">
       <span class="link-card-thumb" style="background-image:url('https://i.ytimg.com/vi/hsZgypWKGjE/maxresdefault.jpg')"></span>
       <span class="link-card-body">
         <span class="link-card-title">🔬#MESExperiments 31: Mechanical Demonstration of Inertia by Francis McCabe</span>
-        <span class="link-card-readmore">View &rarr;</span>
+        <span class="link-card-readmore"><span class="lp-ic" data-s="youtube" aria-hidden="true"></span><span class="lp-name">View on YouTube</span> &rarr;</span>
       </span>
     </a>
-    <a class="link-card" data-cats="s-physics" data-kw="Physics" href="https://www.youtube.com/watch?v=baaeRfhvJso" target="_blank" rel="noopener">
+    <a class="link-card lp-a" data-cats="s-physics" data-kw="Physics" data-lp-def="youtube" data-l-youtube="https://www.youtube.com/watch?v=baaeRfhvJso" href="https://www.youtube.com/watch?v=baaeRfhvJso" target="_blank" rel="noopener">
       <span class="link-card-thumb" style="background-image:url('https://i.ytimg.com/vi/baaeRfhvJso/maxresdefault.jpg')"></span>
       <span class="link-card-body">
         <span class="link-card-title">🔬#MESExperiments 32: Comparing Tippe Top, Phi Top, and Gyroscope Rising Tests</span>
-        <span class="link-card-readmore">View &rarr;</span>
+        <span class="link-card-readmore"><span class="lp-ic" data-s="youtube" aria-hidden="true"></span><span class="lp-name">View on YouTube</span> &rarr;</span>
       </span>
     </a>
     </div>
     <div class="list-view view-hidden" id="science-allList">
     <div class="list-row" data-cats="s-science-posts" data-kw="Posts">
-      <h3>Fungi Decomposin' Dog Poop 🦠💩👀</h3>
+      <h3><a class="lp-a" href="https://mes.fm/fungi-poop" data-lp-def="mes" data-l-mes="https://mes.fm/fungi-poop">Fungi Decomposin' Dog Poop 🦠💩👀<span class="lp-ic" data-s="mes" aria-hidden="true"></span></a></h3>
       <p><a href="https://mes.fm/fungi-poop" target="_blank" rel="noopener">Notes</a></p>
       <img class="list-thumb" src="https://mes.fm/fungi-poop/img/fungi-poop-1.jpg" alt="Fungi Decomposin' Dog Poop 🦠💩👀">
     </div>
     <div class="list-row" data-cats="s-science-posts" data-kw="Posts">
-      <h3>USA Launches America.gov, an AI Chat Site for Government Services</h3>
+      <h3><a class="lp-a" href="https://mes.fm/america-gov-ai-chat" data-lp-def="mes" data-l-mes="https://mes.fm/america-gov-ai-chat">USA Launches America.gov, an AI Chat Site for Government Services<span class="lp-ic" data-s="mes" aria-hidden="true"></span></a></h3>
       <p><a href="https://mes.fm/america-gov-ai-chat" target="_blank" rel="noopener">Notes</a></p>
       <img class="list-thumb" src="https://mes.fm/america-gov-ai-chat/img/america-gov-ai-chat.jpg" alt="USA Launches America.gov, an AI Chat Site for Government Services">
     </div>
     <div class="list-row" data-cats="s-science-posts" data-kw="Posts">
-      <h3>Dmitri Mendeleev Said He Came Up With the Periodic Table in a Dream</h3>
+      <h3><a class="lp-a" href="https://mes.fm/mendeleev-chemical-table-dream" data-lp-def="mes" data-l-mes="https://mes.fm/mendeleev-chemical-table-dream">Dmitri Mendeleev Said He Came Up With the Periodic Table in a Dream<span class="lp-ic" data-s="mes" aria-hidden="true"></span></a></h3>
       <p><a href="https://mes.fm/mendeleev-chemical-table-dream" target="_blank" rel="noopener">Notes</a></p>
       <img loading="lazy" class="list-thumb" src="https://img.leopedia.io/DQmUTrX5k5PiS72xqnGTE2NXcv5iiEykGj1gRXDap9Nd2Re/telegram-cloud-photo-size-1-5015179805296627018-y.jpg" alt="Dmitri Mendeleev Said He Came Up With the Periodic Table in a Dream">
     </div>
     <div class="list-row" data-cats="s-science-posts" data-kw="Posts">
-      <h3>Is Corn Starch the Key to Martin Fleischmann's Cold Fusion Experiments?</h3>
+      <h3><a class="lp-a" href="https://mes.fm/fleischmann-corn-starch" data-lp-def="mes" data-l-mes="https://mes.fm/fleischmann-corn-starch">Is Corn Starch the Key to Martin Fleischmann's Cold Fusion Experiments?<span class="lp-ic" data-s="mes" aria-hidden="true"></span></a></h3>
       <p><a href="https://mes.fm/fleischmann-corn-starch" target="_blank" rel="noopener">Notes</a></p>
       <img class="list-thumb" src="https://mes.fm/fleischmann-corn-starch/img/fleischmann-corn-starch-1.jpg" alt="Is Corn Starch the Key to Martin Fleischmann's Cold Fusion Experiments?">
     </div>
     <div class="list-row" data-cats="s-science-posts" data-kw="Posts">
-      <h3>Demystifying the Ferrocell: Specular Reflection</h3>
+      <h3><a class="lp-a" href="https://mes.fm/ferrocell-specular-reflection" data-lp-def="mes" data-l-mes="https://mes.fm/ferrocell-specular-reflection">Demystifying the Ferrocell: Specular Reflection<span class="lp-ic" data-s="mes" aria-hidden="true"></span></a></h3>
       <p><a href="https://mes.fm/ferrocell-specular-reflection" target="_blank" rel="noopener">Notes</a></p>
       <img loading="lazy" class="list-thumb" src="https://files.peakd.com/file/peakd-hive/mes/23vhny5FYdGt5Vi9vRPtqXcPUCNTMTAhM3FtxDNqwoqgWWWmd6Ua5nzvWDPZbD1AZts7y.png" alt="Demystifying the Ferrocell: Specular Reflection">
     </div>
     <div class="list-row" data-cats="s-science-videos" data-kw="Videos">
-      <h3>Amazing 360-degree fog image projection + interactive display! 😮</h3>
+      <h3><a class="lp-a" href="https://www.youtube.com/watch?v=_iwAATk0IOI" data-lp-def="youtube" data-l-youtube="https://www.youtube.com/watch?v=_iwAATk0IOI" target="_blank" rel="noopener">Amazing 360-degree fog image projection + interactive display! 😮<span class="lp-ic" data-s="youtube" aria-hidden="true"></span></a></h3>
       <p><a href="https://www.youtube.com/watch?v=_iwAATk0IOI" target="_blank" rel="noopener">YouTube</a></p>
       <img loading="lazy" class="list-thumb" src="https://i.ytimg.com/vi/_iwAATk0IOI/maxresdefault.jpg" alt="Amazing 360-degree fog image projection + interactive display! 😮">
     </div>
     <div class="list-row" data-cats="s-science-videos" data-kw="Videos">
-      <h3>Laser-induced plasma to create 3D volumetric images with sound 🤯</h3>
+      <h3><a class="lp-a" href="https://www.youtube.com/watch?v=r_CrobH0m7g" data-lp-def="youtube" data-l-youtube="https://www.youtube.com/watch?v=r_CrobH0m7g" target="_blank" rel="noopener">Laser-induced plasma to create 3D volumetric images with sound 🤯<span class="lp-ic" data-s="youtube" aria-hidden="true"></span></a></h3>
       <p><a href="https://www.youtube.com/watch?v=r_CrobH0m7g" target="_blank" rel="noopener">YouTube</a></p>
       <img loading="lazy" class="list-thumb" src="https://i.ytimg.com/vi/r_CrobH0m7g/sddefault.jpg" alt="Laser-induced plasma to create 3D volumetric images with sound 🤯">
     </div>
     <div class="list-row" data-cats="s-science-videos" data-kw="Videos">
-      <h3>Tom Wind discusses the 1985 Fleischmann and Pons cold fusion hole in the floor experiment</h3>
+      <h3><a class="lp-a" href="https://www.youtube.com/watch?v=6lX3uZOqvdI" data-lp-def="youtube" data-l-youtube="https://www.youtube.com/watch?v=6lX3uZOqvdI" target="_blank" rel="noopener">Tom Wind discusses the 1985 Fleischmann and Pons cold fusion hole in the floor experiment<span class="lp-ic" data-s="youtube" aria-hidden="true"></span></a></h3>
       <p><a href="https://www.youtube.com/watch?v=6lX3uZOqvdI" target="_blank" rel="noopener">YouTube</a></p>
       <img loading="lazy" class="list-thumb" src="https://i.ytimg.com/vi/6lX3uZOqvdI/hqdefault.jpg" alt="Tom Wind discusses the 1985 Fleischmann and Pons cold fusion hole in the floor experiment">
     </div>
     <div class="list-row" data-cats="s-science-videos" data-kw="Videos">
-      <h3>Amazing street performance with Tesla coils and special suits! ⚡⚡⚡⚡</h3>
+      <h3><a class="lp-a" href="https://www.youtube.com/watch?v=41FBcKnpJWA" data-lp-def="youtube" data-l-youtube="https://www.youtube.com/watch?v=41FBcKnpJWA" target="_blank" rel="noopener">Amazing street performance with Tesla coils and special suits! ⚡⚡⚡⚡<span class="lp-ic" data-s="youtube" aria-hidden="true"></span></a></h3>
       <p><a href="https://www.youtube.com/watch?v=41FBcKnpJWA" target="_blank" rel="noopener">YouTube</a></p>
       <img loading="lazy" class="list-thumb" src="https://i.ytimg.com/vi/41FBcKnpJWA/hqdefault.jpg" alt="Amazing street performance with Tesla coils and special suits! ⚡⚡⚡⚡">
     </div>
     <div class="list-row" data-cats="s-science-videos" data-kw="Videos">
-      <h3>Band plays music with Tesla Coil plasma speakers! 🎸🎸⚡⚡</h3>
+      <h3><a class="lp-a" href="https://www.youtube.com/watch?v=sLNuU5ELAGk" data-lp-def="youtube" data-l-youtube="https://www.youtube.com/watch?v=sLNuU5ELAGk" target="_blank" rel="noopener">Band plays music with Tesla Coil plasma speakers! 🎸🎸⚡⚡<span class="lp-ic" data-s="youtube" aria-hidden="true"></span></a></h3>
       <p><a href="https://www.youtube.com/watch?v=sLNuU5ELAGk" target="_blank" rel="noopener">YouTube</a></p>
       <img loading="lazy" class="list-thumb" src="https://i.ytimg.com/vi/sLNuU5ELAGk/hqdefault.jpg" alt="Band plays music with Tesla Coil plasma speakers! 🎸🎸⚡⚡">
     </div>
     <div class="list-row" data-cats="s-science-videos" data-kw="Videos">
-      <h3>Rare footage of a tornado appears to form from the ground up! 🌪😮</h3>
+      <h3><a class="lp-a" href="https://www.youtube.com/watch?v=VEwTmPTYrTM" data-lp-def="youtube" data-l-youtube="https://www.youtube.com/watch?v=VEwTmPTYrTM" target="_blank" rel="noopener">Rare footage of a tornado appears to form from the ground up! 🌪😮<span class="lp-ic" data-s="youtube" aria-hidden="true"></span></a></h3>
       <p><a href="https://www.youtube.com/watch?v=VEwTmPTYrTM" target="_blank" rel="noopener">YouTube</a></p>
       <img loading="lazy" class="list-thumb" src="https://i.ytimg.com/vi/VEwTmPTYrTM/hqdefault.jpg" alt="Rare footage of a tornado appears to form from the ground up! 🌪😮">
     </div>
     <div class="list-row" data-cats="s-science-videos" data-kw="Videos">
-      <h3>Meteorologist Ted Fujita's explanation for how tornadoes are formed 🌪</h3>
+      <h3><a class="lp-a" href="https://www.youtube.com/watch?v=Ge0FcItQDe0" data-lp-def="youtube" data-l-youtube="https://www.youtube.com/watch?v=Ge0FcItQDe0" target="_blank" rel="noopener">Meteorologist Ted Fujita's explanation for how tornadoes are formed 🌪<span class="lp-ic" data-s="youtube" aria-hidden="true"></span></a></h3>
       <p><a href="https://www.youtube.com/watch?v=Ge0FcItQDe0" target="_blank" rel="noopener">YouTube</a></p>
       <img loading="lazy" class="list-thumb" src="https://i.ytimg.com/vi/Ge0FcItQDe0/maxresdefault.jpg" alt="Meteorologist Ted Fujita's explanation for how tornadoes are formed 🌪">
     </div>
     <div class="list-row" data-cats="s-science-videos" data-kw="Videos">
-      <h3>Rare extended footage of a tornado being formed in Mexico 2012 🌪</h3>
+      <h3><a class="lp-a" href="https://www.youtube.com/watch?v=50lGlnq3irc" data-lp-def="youtube" data-l-youtube="https://www.youtube.com/watch?v=50lGlnq3irc" target="_blank" rel="noopener">Rare extended footage of a tornado being formed in Mexico 2012 🌪<span class="lp-ic" data-s="youtube" aria-hidden="true"></span></a></h3>
       <p><a href="https://www.youtube.com/watch?v=50lGlnq3irc" target="_blank" rel="noopener">YouTube</a></p>
       <img loading="lazy" class="list-thumb" src="https://i.ytimg.com/vi/50lGlnq3irc/hqdefault.jpg" alt="Rare extended footage of a tornado being formed in Mexico 2012 🌪">
     </div>
     <div class="list-row" data-cats="s-science-videos" data-kw="Videos">
-      <h3>Mini-tornado at the WTC on 9/11 🌪👀</h3>
+      <h3><a class="lp-a" href="https://www.youtube.com/watch?v=L4CGd4A4W70" data-lp-def="youtube" data-l-youtube="https://www.youtube.com/watch?v=L4CGd4A4W70" target="_blank" rel="noopener">Mini-tornado at the WTC on 9/11 🌪👀<span class="lp-ic" data-s="youtube" aria-hidden="true"></span></a></h3>
       <p><a href="https://www.youtube.com/watch?v=L4CGd4A4W70" target="_blank" rel="noopener">YouTube</a></p>
       <img loading="lazy" class="list-thumb" src="https://i.ytimg.com/vi/L4CGd4A4W70/maxresdefault.jpg" alt="Mini-tornado at the WTC on 9/11 🌪👀">
     </div>
     <div class="list-row" data-cats="s-science-videos" data-kw="Videos">
-      <h3>Rare extended footage of the ball lightning spotted in Alberta, Canada on July 2, 2025 ⚡💥</h3>
+      <h3><a class="lp-a" href="https://www.youtube.com/watch?v=ZbBmd1KphP8" data-lp-def="youtube" data-l-youtube="https://www.youtube.com/watch?v=ZbBmd1KphP8" target="_blank" rel="noopener">Rare extended footage of the ball lightning spotted in Alberta, Canada on July 2, 2025 ⚡💥<span class="lp-ic" data-s="youtube" aria-hidden="true"></span></a></h3>
       <p><a href="https://www.youtube.com/watch?v=ZbBmd1KphP8" target="_blank" rel="noopener">YouTube</a></p>
       <img loading="lazy" class="list-thumb" src="https://i.ytimg.com/vi/ZbBmd1KphP8/maxresdefault.jpg" alt="Rare extended footage of the ball lightning spotted in Alberta, Canada on July 2, 2025 ⚡💥">
     </div>
     <div class="list-row" data-cats="s-science-videos" data-kw="Videos">
-      <h3>Francis McCabe’s 88X Torque Over-Unity Oscillating Gyro Piston Prototype</h3>
+      <h3><a class="lp-a" href="https://www.youtube.com/watch?v=rJ7ag17LxA8" data-lp-def="youtube" data-l-youtube="https://www.youtube.com/watch?v=rJ7ag17LxA8" target="_blank" rel="noopener">Francis McCabe’s 88X Torque Over-Unity Oscillating Gyro Piston Prototype<span class="lp-ic" data-s="youtube" aria-hidden="true"></span></a></h3>
       <p><a href="https://www.youtube.com/watch?v=rJ7ag17LxA8" target="_blank" rel="noopener">YouTube</a></p>
       <img loading="lazy" class="list-thumb" src="https://i.ytimg.com/vi/rJ7ag17LxA8/maxresdefault.jpg" alt="Francis McCabe’s 88X Torque Over-Unity Oscillating Gyro Piston Prototype">
     </div>
     <div class="list-row" data-cats="s-science-videos" data-kw="Videos">
-      <h3>500 mph steel plow splits car in half + Super-slow motion</h3>
+      <h3><a class="lp-a" href="https://www.youtube.com/watch?v=GgAtdqZ-s-A" data-lp-def="youtube" data-l-youtube="https://www.youtube.com/watch?v=GgAtdqZ-s-A" target="_blank" rel="noopener">500 mph steel plow splits car in half + Super-slow motion<span class="lp-ic" data-s="youtube" aria-hidden="true"></span></a></h3>
       <p><a href="https://www.youtube.com/watch?v=GgAtdqZ-s-A" target="_blank" rel="noopener">YouTube</a></p>
       <img loading="lazy" class="list-thumb" src="https://i.ytimg.com/vi/GgAtdqZ-s-A/sddefault.jpg" alt="500 mph steel plow splits car in half + Super-slow motion">
     </div>
     <div class="list-row" data-cats="s-science-videos" data-kw="Videos">
-      <h3>WARNING: Tesla coil sparks can burst your ear drums when wearing earbuds headphones! ⚠️⚡️</h3>
+      <h3><a class="lp-a" href="https://www.youtube.com/watch?v=0v9ErjS3op4" data-lp-def="youtube" data-l-youtube="https://www.youtube.com/watch?v=0v9ErjS3op4" target="_blank" rel="noopener">WARNING: Tesla coil sparks can burst your ear drums when wearing earbuds headphones! ⚠️⚡️<span class="lp-ic" data-s="youtube" aria-hidden="true"></span></a></h3>
       <p><a href="https://www.youtube.com/watch?v=0v9ErjS3op4" target="_blank" rel="noopener">YouTube</a></p>
       <img loading="lazy" class="list-thumb" src="https://i.ytimg.com/vi/0v9ErjS3op4/maxresdefault.jpg" alt="WARNING: Tesla coil sparks can burst your ear drums when wearing earbuds headphones! ⚠️⚡️">
     </div>
     <div class="list-row" data-cats="s-science-videos" data-kw="Videos">
-      <h3>Shadow on the Moon can move faster than the speed of light because a shadow is not a physical object</h3>
+      <h3><a class="lp-a" href="https://www.youtube.com/watch?v=ZAvQccbPRH0" data-lp-def="youtube" data-l-youtube="https://www.youtube.com/watch?v=ZAvQccbPRH0" target="_blank" rel="noopener">Shadow on the Moon can move faster than the speed of light because a shadow is not a physical object<span class="lp-ic" data-s="youtube" aria-hidden="true"></span></a></h3>
       <p><a href="https://www.youtube.com/watch?v=ZAvQccbPRH0" target="_blank" rel="noopener">YouTube</a></p>
       <img loading="lazy" class="list-thumb" src="https://i.ytimg.com/vi/ZAvQccbPRH0/maxresdefault.jpg" alt="Shadow on the Moon can move faster than the speed of light because a shadow is not a physical object">
     </div>
     <div class="list-row" data-cats="s-science-tutorials" data-kw="Tutorials">
-      <h3>🔥#MESScience 4: Review of COVID-19 &quot;Virus&quot; Isolation Paper</h3>
+      <h3><a class="lp-a" href="https://peakd.com/hive-128780/@mes/messcience-4-review-of-covid-19-virus-isolation-paper" data-lp-def="hive" data-l-youtube="https://www.youtube.com/watch?v=cvDO85Rw4d8" data-l-hive="https://peakd.com/hive-128780/@mes/messcience-4-review-of-covid-19-virus-isolation-paper" target="_blank" rel="noopener">🔥#MESScience 4: Review of COVID-19 &quot;Virus&quot; Isolation Paper<span class="lp-ic" data-s="hive" aria-hidden="true"></span></a></h3>
       <p><a href="https://www.youtube.com/watch?v=cvDO85Rw4d8" target="_blank" rel="noopener">YouTube</a> - <a href="https://peakd.com/hive-128780/@mes/messcience-4-review-of-covid-19-virus-isolation-paper" target="_blank" rel="noopener">Hive</a></p>
       <img loading="lazy" class="list-thumb" src="https://i.ytimg.com/vi/cvDO85Rw4d8/maxresdefault.jpg" alt="🔥#MESScience 4: Review of COVID-19 &quot;Virus&quot; Isolation Paper">
     </div>
     <div class="list-row" data-cats="s-science-tutorials" data-kw="Tutorials">
-      <h3>🔥#MESScience 3: Overview of Biology</h3>
+      <h3><a class="lp-a" href="https://peakd.com/hive-128780/@mes/messcience-3-overview-of-biology" data-lp-def="hive" data-l-youtube="https://www.youtube.com/watch?v=WX_qzT0nZFY" data-l-hive="https://peakd.com/hive-128780/@mes/messcience-3-overview-of-biology" target="_blank" rel="noopener">🔥#MESScience 3: Overview of Biology<span class="lp-ic" data-s="hive" aria-hidden="true"></span></a></h3>
       <p><a href="https://www.youtube.com/watch?v=WX_qzT0nZFY" target="_blank" rel="noopener">YouTube</a> - <a href="https://peakd.com/hive-128780/@mes/messcience-3-overview-of-biology" target="_blank" rel="noopener">Hive</a></p>
       <img loading="lazy" class="list-thumb" src="https://i.ytimg.com/vi/WX_qzT0nZFY/maxresdefault.jpg" alt="🔥#MESScience 3: Overview of Biology">
     </div>
     <div class="list-row" data-cats="s-science-tutorials" data-kw="Tutorials">
-      <h3>🔥#MESScience 3: Progress and Update</h3>
+      <h3><a class="lp-a" href="https://www.youtube.com/watch?v=9qztFaK8kmQ" data-lp-def="youtube" data-l-youtube="https://www.youtube.com/watch?v=9qztFaK8kmQ" target="_blank" rel="noopener">🔥#MESScience 3: Progress and Update<span class="lp-ic" data-s="youtube" aria-hidden="true"></span></a></h3>
       <p><a href="https://www.youtube.com/watch?v=9qztFaK8kmQ" target="_blank" rel="noopener">YouTube</a></p>
       <img loading="lazy" class="list-thumb" src="https://i.ytimg.com/vi/9qztFaK8kmQ/maxresdefault.jpg" alt="🔥#MESScience 3: Progress and Update">
     </div>
     <div class="list-row" data-cats="s-science-tutorials" data-kw="Tutorials">
-      <h3>🔥#MESScience 2: Vortex Math Part 1: Number Theory and Modular Arithmetic</h3>
+      <h3><a class="lp-a" href="https://peakd.com/hive-128780/@mes/messcience-2-vortex-math-part-1-number-theory-and-modular-arithmetic" data-lp-def="hive" data-l-youtube="https://www.youtube.com/watch?v=mTeZD8rsiTs" data-l-hive="https://peakd.com/hive-128780/@mes/messcience-2-vortex-math-part-1-number-theory-and-modular-arithmetic" target="_blank" rel="noopener">🔥#MESScience 2: Vortex Math Part 1: Number Theory and Modular Arithmetic<span class="lp-ic" data-s="hive" aria-hidden="true"></span></a></h3>
       <p><a href="https://www.youtube.com/watch?v=mTeZD8rsiTs" target="_blank" rel="noopener">YouTube</a> - <a href="https://peakd.com/hive-128780/@mes/messcience-2-vortex-math-part-1-number-theory-and-modular-arithmetic" target="_blank" rel="noopener">Hive</a></p>
       <img loading="lazy" class="list-thumb" src="https://i.ytimg.com/vi/mTeZD8rsiTs/maxresdefault.jpg" alt="🔥#MESScience 2: Vortex Math Part 1: Number Theory and Modular Arithmetic">
     </div>
     <div class="list-row" data-cats="s-science-tutorials" data-kw="Tutorials">
-      <h3>🔥#MESScience 1: How Does a Powerball Gyroscope Work? + Gyros Are Inverted Pendulums</h3>
+      <h3><a class="lp-a" href="https://www.youtube.com/watch?v=6cRkjWN8Uds" data-lp-def="youtube" data-l-youtube="https://www.youtube.com/watch?v=6cRkjWN8Uds" target="_blank" rel="noopener">🔥#MESScience 1: How Does a Powerball Gyroscope Work? + Gyros Are Inverted Pendulums<span class="lp-ic" data-s="youtube" aria-hidden="true"></span></a></h3>
       <p><a href="https://www.youtube.com/watch?v=6cRkjWN8Uds" target="_blank" rel="noopener">YouTube</a></p>
       <img loading="lazy" class="list-thumb" src="https://i.ytimg.com/vi/6cRkjWN8Uds/maxresdefault.jpg" alt="🔥#MESScience 1: How Does a Powerball Gyroscope Work? + Gyros Are Inverted Pendulums">
     </div>
     <div class="list-row" data-cats="s-physics" data-kw="Physics">
-      <h3>The Magnetic Field Resembles the Electric Field of 2 Bound Charges</h3>
+      <h3><a class="lp-a" href="https://www.youtube.com/watch?v=0c0k3MgFYcQ" data-lp-def="youtube" data-l-youtube="https://www.youtube.com/watch?v=0c0k3MgFYcQ" target="_blank" rel="noopener">The Magnetic Field Resembles the Electric Field of 2 Bound Charges<span class="lp-ic" data-s="youtube" aria-hidden="true"></span></a></h3>
       <p><a href="https://www.youtube.com/watch?v=0c0k3MgFYcQ" target="_blank" rel="noopener">YouTube</a></p>
       <img loading="lazy" class="list-thumb" src="https://i.ytimg.com/vi/0c0k3MgFYcQ/maxresdefault.jpg" alt="The Magnetic Field Resembles the Electric Field of 2 Bound Charges">
     </div>
     <div class="list-row" data-cats="s-physics" data-kw="Physics">
-      <h3>Magnetic Isopotentials Explain the Faraday Paradox, Stern-Gerlach Experiment, and Atomic Orbitals</h3>
+      <h3><a class="lp-a" href="https://www.youtube.com/watch?v=NOG9VOBtpY4" data-lp-def="youtube" data-l-youtube="https://www.youtube.com/watch?v=NOG9VOBtpY4" target="_blank" rel="noopener">Magnetic Isopotentials Explain the Faraday Paradox, Stern-Gerlach Experiment, and Atomic Orbitals<span class="lp-ic" data-s="youtube" aria-hidden="true"></span></a></h3>
       <p><a href="https://www.youtube.com/watch?v=NOG9VOBtpY4" target="_blank" rel="noopener">YouTube</a></p>
       <img loading="lazy" class="list-thumb" src="https://i.ytimg.com/vi/NOG9VOBtpY4/maxresdefault.jpg" alt="Magnetic Isopotentials Explain the Faraday Paradox, Stern-Gerlach Experiment, and Atomic Orbitals">
     </div>
     <div class="list-row" data-cats="s-physics" data-kw="Physics">
-      <h3>🔬#MESExperiments 35: Faraday's Paradox using Iron Filings</h3>
+      <h3><a class="lp-a" href="https://www.youtube.com/watch?v=hotOO9bwrrA" data-lp-def="youtube" data-l-youtube="https://www.youtube.com/watch?v=hotOO9bwrrA" target="_blank" rel="noopener">🔬#MESExperiments 35: Faraday's Paradox using Iron Filings<span class="lp-ic" data-s="youtube" aria-hidden="true"></span></a></h3>
       <p><a href="https://www.youtube.com/watch?v=hotOO9bwrrA" target="_blank" rel="noopener">YouTube</a></p>
       <img loading="lazy" class="list-thumb" src="https://i.ytimg.com/vi/hotOO9bwrrA/maxresdefault.jpg" alt="🔬#MESExperiments 35: Faraday's Paradox using Iron Filings">
     </div>
     <div class="list-row" data-cats="s-physics" data-kw="Physics">
-      <h3>🔬#MESExperiments 36: Faraday's Paradox using Ferrofluid (and Iron Filings)</h3>
+      <h3><a class="lp-a" href="https://www.youtube.com/watch?v=MgsWBi4Jr5E" data-lp-def="youtube" data-l-youtube="https://www.youtube.com/watch?v=MgsWBi4Jr5E" target="_blank" rel="noopener">🔬#MESExperiments 36: Faraday's Paradox using Ferrofluid (and Iron Filings)<span class="lp-ic" data-s="youtube" aria-hidden="true"></span></a></h3>
       <p><a href="https://www.youtube.com/watch?v=MgsWBi4Jr5E" target="_blank" rel="noopener">YouTube</a></p>
       <img loading="lazy" class="list-thumb" src="https://i.ytimg.com/vi/MgsWBi4Jr5E/maxresdefault.jpg" alt="🔬#MESExperiments 36: Faraday's Paradox using Ferrofluid (and Iron Filings)">
     </div>
     <div class="list-row" data-cats="s-physics" data-kw="Physics">
-      <h3>Planck's Constant is the Quantum of Energy and NOT &quot;Quantum of Action&quot;</h3>
+      <h3><a class="lp-a" href="https://www.youtube.com/watch?v=W6-FvG8OBAk" data-lp-def="youtube" data-l-youtube="https://www.youtube.com/watch?v=W6-FvG8OBAk" target="_blank" rel="noopener">Planck's Constant is the Quantum of Energy and NOT &quot;Quantum of Action&quot;<span class="lp-ic" data-s="youtube" aria-hidden="true"></span></a></h3>
       <p><a href="https://www.youtube.com/watch?v=W6-FvG8OBAk" target="_blank" rel="noopener">YouTube</a></p>
       <img loading="lazy" class="list-thumb" src="https://i.ytimg.com/vi/W6-FvG8OBAk/maxresdefault.jpg" alt="Planck's Constant is the Quantum of Energy and NOT &quot;Quantum of Action&quot;">
     </div>
     <div class="list-row" data-cats="s-physics" data-kw="Physics">
-      <h3>🔬#MESExperiments 45: Rotating Cylinders in Water Behave Like Magnets</h3>
+      <h3><a class="lp-a" href="https://www.youtube.com/watch?v=eHZfSHjME90" data-lp-def="youtube" data-l-youtube="https://www.youtube.com/watch?v=eHZfSHjME90" target="_blank" rel="noopener">🔬#MESExperiments 45: Rotating Cylinders in Water Behave Like Magnets<span class="lp-ic" data-s="youtube" aria-hidden="true"></span></a></h3>
       <p><a href="https://www.youtube.com/watch?v=eHZfSHjME90" target="_blank" rel="noopener">YouTube</a></p>
       <img loading="lazy" class="list-thumb" src="https://i.ytimg.com/vi/eHZfSHjME90/maxresdefault.jpg" alt="🔬#MESExperiments 45: Rotating Cylinders in Water Behave Like Magnets">
     </div>
     <div class="list-row" data-cats="s-physics" data-kw="Physics">
-      <h3>🔬#MESExperiments 33: Spinning Tops in Opposing Directions Spin Together</h3>
+      <h3><a class="lp-a" href="https://www.youtube.com/watch?v=fUYl4F6vkg0" data-lp-def="youtube" data-l-youtube="https://www.youtube.com/watch?v=fUYl4F6vkg0" target="_blank" rel="noopener">🔬#MESExperiments 33: Spinning Tops in Opposing Directions Spin Together<span class="lp-ic" data-s="youtube" aria-hidden="true"></span></a></h3>
       <p><a href="https://www.youtube.com/watch?v=fUYl4F6vkg0" target="_blank" rel="noopener">YouTube</a></p>
       <img loading="lazy" class="list-thumb" src="https://i.ytimg.com/vi/fUYl4F6vkg0/maxresdefault.jpg" alt="🔬#MESExperiments 33: Spinning Tops in Opposing Directions Spin Together">
     </div>
     <div class="list-row" data-cats="s-physics" data-kw="Physics">
-      <h3>🔬#MESExperiments 31: Mechanical Demonstration of Inertia by Francis McCabe</h3>
+      <h3><a class="lp-a" href="https://www.youtube.com/watch?v=hsZgypWKGjE" data-lp-def="youtube" data-l-youtube="https://www.youtube.com/watch?v=hsZgypWKGjE" target="_blank" rel="noopener">🔬#MESExperiments 31: Mechanical Demonstration of Inertia by Francis McCabe<span class="lp-ic" data-s="youtube" aria-hidden="true"></span></a></h3>
       <p><a href="https://www.youtube.com/watch?v=hsZgypWKGjE" target="_blank" rel="noopener">YouTube</a></p>
       <img loading="lazy" class="list-thumb" src="https://i.ytimg.com/vi/hsZgypWKGjE/maxresdefault.jpg" alt="🔬#MESExperiments 31: Mechanical Demonstration of Inertia by Francis McCabe">
     </div>
     <div class="list-row" data-cats="s-physics" data-kw="Physics">
-      <h3>🔬#MESExperiments 32: Comparing Tippe Top, Phi Top, and Gyroscope Rising Tests</h3>
+      <h3><a class="lp-a" href="https://www.youtube.com/watch?v=baaeRfhvJso" data-lp-def="youtube" data-l-youtube="https://www.youtube.com/watch?v=baaeRfhvJso" target="_blank" rel="noopener">🔬#MESExperiments 32: Comparing Tippe Top, Phi Top, and Gyroscope Rising Tests<span class="lp-ic" data-s="youtube" aria-hidden="true"></span></a></h3>
       <p><a href="https://www.youtube.com/watch?v=baaeRfhvJso" target="_blank" rel="noopener">YouTube</a></p>
       <img loading="lazy" class="list-thumb" src="https://i.ytimg.com/vi/baaeRfhvJso/maxresdefault.jpg" alt="🔬#MESExperiments 32: Comparing Tippe Top, Phi Top, and Gyroscope Rising Tests">
     </div>
@@ -2163,5 +2208,5 @@ var MES_Vars = {
 <script src="/main_js/main.js?v=1.0.3"></script>
 <script>document.getElementById('copyright-year').textContent = new Date().getFullYear();</script>
 <!-- PAGEVIEW-TRACKING-INSERTED --><script src="/main_js/track.js" defer></script><script src="/main_js/info-bar-fit.js" defer></script>
-<script src="/main_js/site-search.js?v=1" defer></script><!-- HUB-THEATRE-JS --><script src="/main_js/hub-theatre.js?v=1" defer></script><!-- /HUB-THEATRE-JS --></body>
+<script src="/main_js/site-search.js?v=1" defer></script><!-- HUB-THEATRE-JS --><script src="/main_js/hub-theatre.js?v=1" defer></script><!-- /HUB-THEATRE-JS --><script src="/main_js/link-pref.js?v=1" defer></script></body>
 </html>

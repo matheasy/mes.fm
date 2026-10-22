@@ -986,6 +986,48 @@ body.dark-mode .ls-chips button { background: #2a2a2a; color: #ddd; border-color
 body.dark-mode .ls-chips button:hover { border-color: #6cb6f5; color: #6cb6f5; }
 body.dark-mode .ls-chips button[aria-pressed="true"] { background: #6cb6f5; border-color: #6cb6f5; color: #111; }
 body.dark-mode .ls-empty { color: #aaa; }
+/* "Open in:" preferred-site switch + per-card site icon (shared/link-pref.mjs, main_js/link-pref.js). */
+.lp-row { display: flex; flex-wrap: wrap; align-items: flex-start; column-gap: 1em; }
+.lp-row > .ls-chips { flex: 1 1 22em; }
+.lp-row--solo { margin: 0 0 0.6em; }
+.lp { display: flex; flex-wrap: wrap; align-items: center; gap: 0.3em; margin: 0.7em 0 0 auto; font-size: 0.85em; }
+.lp-lbl { color: #555; margin-right: 0.15em; }
+.lp button {
+  font: inherit; cursor: pointer; display: inline-flex; align-items: center; gap: 0.3em; min-height: 2.2em;
+  padding: 0.3em 0.65em; border-radius: 1.2em; border: 1px solid #c3c9d2; background: #fff; color: #333;
+}
+.lp button:hover { border-color: #277bb6; color: #1a6fb0; }
+.lp button:focus-visible { outline: 2px solid #277bb6; outline-offset: 2px; }
+.lp button[aria-pressed="true"] { background: #277bb6; border-color: #277bb6; color: #fff; }
+.lp button.lp-few:not([aria-pressed="true"]) { color: #6a7280; border-style: dashed; }
+.lp-n { font-size: 0.85em; font-variant-numeric: tabular-nums; }
+.lp-ic {
+  display: inline-block; flex: none; width: 1.15em; height: 1.15em; vertical-align: -0.2em; background: currentColor;
+  -webkit-mask: var(--lp-i) center / contain no-repeat; mask: var(--lp-i) center / contain no-repeat;
+}
+/* the pages' CSS reset paints every span / a #333: take the button's / caption's colour instead */
+.lp button span, .lp-a .lp-ic, .lp-a .lp-name { color: inherit; }
+.link-card-readmore .lp-ic { margin-right: 0.3em; }
+.list-row h3 .lp-a { color: inherit; text-decoration: none; }
+.list-row h3 .lp-a:hover { text-decoration: underline; }
+.list-row h3 .lp-ic { width: 0.85em; height: 0.85em; margin-left: 0.35em; vertical-align: -0.05em; opacity: 0.75; }
+.lp-ic[data-s="mes"] { --lp-i: url("data:image/svg+xml,%3Csvg%20xmlns%3D'http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg'%20viewBox%3D'0%200%2024%2024'%3E%3Cpath%20fill-rule%3D'evenodd'%20d%3D'M1%2012.6%204.6%2010.6%208.6%2017.4%2014.6%201.8H23.2V4.8H16.6L10%2022.4H7.4z'%2F%3E%3C%2Fsvg%3E"); }
+.lp-ic[data-s="youtube"] { --lp-i: url("data:image/svg+xml,%3Csvg%20xmlns%3D'http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg'%20viewBox%3D'0%200%2024%2024'%3E%3Cpath%20fill-rule%3D'evenodd'%20d%3D'M23%207.2a3%203%200%200%200-2.1-2.1C19%204.6%2012%204.6%2012%204.6s-7%200-8.9.5A3%203%200%200%200%201%207.2C.5%209.1.5%2012%20.5%2012s0%202.9.5%204.8a3%203%200%200%200%202.1%202.1c1.9.5%208.9.5%208.9.5s7%200%208.9-.5a3%203%200%200%200%202.1-2.1c.5-1.9.5-4.8.5-4.8s0-2.9-.5-4.8zM9.7%2015.4V8.6l5.9%203.4z'%2F%3E%3C%2Fsvg%3E"); }
+.lp-ic[data-s="hive"] { --lp-i: url("data:image/svg+xml,%3Csvg%20xmlns%3D'http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg'%20viewBox%3D'0%200%2024%2024'%3E%3Cpath%20fill-rule%3D'evenodd'%20d%3D'M6.8%202.5h10.4L22.5%2012l-5.3%209.5H6.8L1.5%2012zM9%206.5%206.3%2012%209%2017.5h6l2.7-5.5L15%206.5z'%2F%3E%3C%2Fsvg%3E"); }
+.lp-ic[data-s="3speak"] { --lp-i: url("data:image/svg+xml,%3Csvg%20xmlns%3D'http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg'%20viewBox%3D'0%200%2024%2024'%3E%3Cpath%20fill-rule%3D'evenodd'%20d%3D'M12%201.5a10.5%2010.5%200%201%201%200%2021%2010.5%2010.5%200%200%201%200-21zM9.5%207.5v9l7-4.5z'%2F%3E%3C%2Fsvg%3E"); }
+.lp-ic[data-s="rumble"] { --lp-i: url("data:image/svg+xml,%3Csvg%20xmlns%3D'http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg'%20viewBox%3D'0%200%2024%2024'%3E%3Cpath%20fill-rule%3D'evenodd'%20d%3D'M5%203.8c0-1.6%201.7-2.5%203-1.6l12.4%208.2c1.2.8%201.2%202.4%200%203.2L8%2021.8c-1.3.9-3-.1-3-1.6zM8.6%208.5v7l5.4-3.5z'%2F%3E%3C%2Fsvg%3E"); }
+.lp-ic[data-s="odysee"] { --lp-i: url("data:image/svg+xml,%3Csvg%20xmlns%3D'http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg'%20viewBox%3D'0%200%2024%2024'%3E%3Cpath%20fill-rule%3D'evenodd'%20d%3D'M12%201.5a10.5%2010.5%200%201%201%200%2021%2010.5%2010.5%200%200%201%200-21zM12%206a6%206%200%201%200%200%2012%206%206%200%200%200%200-12z'%2F%3E%3C%2Fsvg%3E"); }
+.lp-ic[data-s="x"] { --lp-i: url("data:image/svg+xml,%3Csvg%20xmlns%3D'http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg'%20viewBox%3D'0%200%2024%2024'%3E%3Cpath%20fill-rule%3D'evenodd'%20d%3D'M3%203h5.4l4.2%205.9L17.7%203h3l-6.7%207.7L21.5%2021h-5.4l-4.6-6.4L5.9%2021H3l7.2-8.3z'%2F%3E%3C%2Fsvg%3E"); }
+.lp-ic[data-s="bitchute"] { --lp-i: url("data:image/svg+xml,%3Csvg%20xmlns%3D'http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg'%20viewBox%3D'0%200%2024%2024'%3E%3Cpath%20fill-rule%3D'evenodd'%20d%3D'M3%203h18v18H3zM8%206.5v11h5.3c2.2%200%203.7-1.2%203.7-3.1%200-1.4-.8-2.4-2.1-2.7%201-.4%201.6-1.3%201.6-2.4%200-1.8-1.4-2.8-3.5-2.8zM10.6%208.6h2.1c.9%200%201.4.4%201.4%201.1s-.5%201.2-1.4%201.2h-2.1zm0%204.2h2.4c1%200%201.5.5%201.5%201.2%200%20.8-.6%201.3-1.5%201.3h-2.4z'%2F%3E%3C%2Fsvg%3E"); }
+.lp-ic[data-s="telegram"] { --lp-i: url("data:image/svg+xml,%3Csvg%20xmlns%3D'http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg'%20viewBox%3D'0%200%2024%2024'%3E%3Cpath%20fill-rule%3D'evenodd'%20d%3D'M1.5%2011.2%2021.6%203.3c.9-.3%201.7.3%201.4%201.7l-3.4%2016c-.2%201.1-.9%201.4-1.8.9l-5-3.7-2.4%202.3c-.3.3-.5.5-1%20.5l.4-5.1%209.3-8.4c.4-.4-.1-.6-.6-.2L6.9%2014.6%202%2013.1c-1.1-.3-1.1-1.1.5-1.9z'%2F%3E%3C%2Fsvg%3E"); }
+.lp-ic[data-s="twitch"] { --lp-i: url("data:image/svg+xml,%3Csvg%20xmlns%3D'http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg'%20viewBox%3D'0%200%2024%2024'%3E%3Cpath%20fill-rule%3D'evenodd'%20d%3D'M4%202%202.5%206v14h5v2.5h2.8L13%2020h4l5-5V2zm16%2012-3%203h-4.5L10%2019.5V17H6V4h14zM15%207h2v5h-2zm-5%200h2v5h-2z'%2F%3E%3C%2Fsvg%3E"); }
+body.dark-mode .lp-lbl, body.dark .lp-lbl { color: #bbb; }
+body.dark-mode .list-row h3 .lp-a, body.dark .list-row h3 .lp-a { color: inherit; }
+body.dark-mode .lp button, body.dark .lp button { background: #2a2a2a; color: #ddd; border-color: #555; }
+body.dark-mode .lp button:hover, body.dark .lp button:hover { border-color: #6cb6f5; color: #6cb6f5; }
+body.dark-mode .lp button[aria-pressed="true"], body.dark .lp button[aria-pressed="true"] { background: #6cb6f5; border-color: #6cb6f5; color: #111; }
+body.dark-mode .lp button.lp-few:not([aria-pressed="true"]), body.dark .lp button.lp-few:not([aria-pressed="true"]) { color: #a3abb8; }
+body.dark-mode .lp button:focus-visible, body.dark .lp button:focus-visible { outline-color: #6cb6f5; }
 </style>
 
 <meta property="fb:app_id" content="120877788060946" />
@@ -1209,7 +1251,10 @@ body.dark-mode .ls-empty { color: #aaa; }
   
     <div class="ls-filter" id="crypto-allFilter">
       <input type="search" id="crypto-allSearch" placeholder="Search everything in Crypto…" aria-label="Search" autocomplete="off">
-      <div class="ls-chips" id="crypto-allChips"><button type="button" data-c="all" data-label="All" aria-pressed="true">All (14)</button><button type="button" data-c="s-crypto-posts" data-label="Posts" aria-pressed="false">Posts (6)</button><button type="button" data-c="s-crypto-tutorials" data-label="Blockchain Tutorials" aria-pressed="false">Blockchain Tutorials (8)</button></div>
+      <div class="lp-row"><div class="ls-chips" id="crypto-allChips"><button type="button" data-c="all" data-label="All" aria-pressed="true">All (14)</button><button type="button" data-c="s-crypto-posts" data-label="Posts" aria-pressed="false">Posts (6)</button><button type="button" data-c="s-crypto-tutorials" data-label="Blockchain Tutorials" aria-pressed="false">Blockchain Tutorials (8)</button></div>
+      <div class="lp" data-lp role="group" aria-label="Open links in">
+        <span class="lp-lbl" aria-hidden="true">Open in:</span><button type="button" data-s="auto" aria-pressed="true" aria-label="Open in: Auto (the usual link: the mes.fm page when there is one)" title="Auto: the usual link (the mes.fm page when there is one)">Auto</button><button type="button" data-s="mes" data-label="MES.fm" aria-pressed="false" aria-label="Open in MES.fm (7 of 14 have a MES.fm link)" title="Open in MES.fm (7 of 14 have a MES.fm link)"><span class="lp-ic" data-s="mes" aria-hidden="true"></span><span class="lp-n">7</span></button><button type="button" data-s="youtube" data-label="YouTube" aria-pressed="false" aria-label="Open in YouTube (8 of 14 have a YouTube link)" title="Open in YouTube (8 of 14 have a YouTube link)"><span class="lp-ic" data-s="youtube" aria-hidden="true"></span><span class="lp-n">8</span></button><button type="button" data-s="hive" data-label="Hive" aria-pressed="false" aria-label="Open in Hive (2 of 14 have a Hive link)" title="Open in Hive (2 of 14 have a Hive link)" class="lp-few"><span class="lp-ic" data-s="hive" aria-hidden="true"></span><span class="lp-n">2</span></button>
+      </div></div>
     </div>
     <p class="ls-empty" id="crypto-allEmpty" hidden>Nothing matches. Try fewer words or a different filter.</p>
     <div class="view-toggle">
@@ -1218,173 +1263,173 @@ body.dark-mode .ls-empty { color: #aaa; }
       
     </div>
     <div class="card-grid" id="crypto-allGrid">
-    <a class="link-card" data-cats="s-crypto-posts" data-kw="Posts" href="https://mes.fm/claude-hyperliquid-flagged-crypto">
+    <a class="link-card lp-a" data-cats="s-crypto-posts" data-kw="Posts" data-lp-def="mes" data-l-mes="https://mes.fm/claude-hyperliquid-flagged-crypto" href="https://mes.fm/claude-hyperliquid-flagged-crypto">
       <span class="link-card-thumb" style="background-image:url('https://mes.fm/claude-hyperliquid-flagged-crypto/img/claude-hyperliquid-flagged-crypto.jpg')"></span>
       <span class="link-card-body">
         <span class="link-card-title">I Used Claude AI to Get My Flagged Funds Out of Hyperliquid</span>
-        <span class="link-card-readmore">View &rarr;</span>
+        <span class="link-card-readmore"><span class="lp-ic" data-s="mes" aria-hidden="true"></span><span class="lp-name">View on MES.fm</span> &rarr;</span>
       </span>
     </a>
-    <a class="link-card" data-cats="s-crypto-posts" data-kw="Posts" href="https://mes.fm/cadd-stablecoin-solana">
+    <a class="link-card lp-a" data-cats="s-crypto-posts" data-kw="Posts" data-lp-def="mes" data-l-mes="https://mes.fm/cadd-stablecoin-solana" href="https://mes.fm/cadd-stablecoin-solana">
       <span class="link-card-thumb" style="background-image:url('https://mes.fm/cadd-stablecoin-solana/img/cadd-stablecoin-solana.jpg')"></span>
       <span class="link-card-body">
         <span class="link-card-title">Canada's First Stablecoin $CADD Is Live on Solana</span>
-        <span class="link-card-readmore">View &rarr;</span>
+        <span class="link-card-readmore"><span class="lp-ic" data-s="mes" aria-hidden="true"></span><span class="lp-name">View on MES.fm</span> &rarr;</span>
       </span>
     </a>
-    <a class="link-card" data-cats="s-crypto-posts" data-kw="Posts" href="https://mes.fm/3speak-ad-revenue-sharing">
+    <a class="link-card lp-a" data-cats="s-crypto-posts" data-kw="Posts" data-lp-def="mes" data-l-mes="https://mes.fm/3speak-ad-revenue-sharing" href="https://mes.fm/3speak-ad-revenue-sharing">
       <span class="link-card-thumb" style="background-image:url('https://img.leopedia.io/DQmYC1gpEkjBkby4mqB1xU2SP5Cnv1bvohTQtKzD1kGPjWk/telegram-cloud-photo-size-1-4999448963589021590-y.jpg')"></span>
       <span class="link-card-body">
         <span class="link-card-title">3Speak Now Pays Users a 10% Share of Ad Revenue for Watching</span>
-        <span class="link-card-readmore">View &rarr;</span>
+        <span class="link-card-readmore"><span class="lp-ic" data-s="mes" aria-hidden="true"></span><span class="lp-name">View on MES.fm</span> &rarr;</span>
       </span>
     </a>
-    <a class="link-card" data-cats="s-crypto-posts" data-kw="Posts" href="https://mes.fm/stock-market-vs-oil">
+    <a class="link-card lp-a" data-cats="s-crypto-posts" data-kw="Posts" data-lp-def="mes" data-l-mes="https://mes.fm/stock-market-vs-oil" href="https://mes.fm/stock-market-vs-oil">
       <span class="link-card-thumb" style="background-image:url('https://img.leopedia.io/DQmdvuyozcMSZ2zM1rVXEqXz7Q2YosiM3Gq5Dog4FQGsdSc/telegram-cloud-photo-size-1-4999448963589020306-y.jpg')"></span>
       <span class="link-card-body">
         <span class="link-card-title">The Top 10 S&amp;P 500 Stocks Are 41% of the Market, and Oil Is at Record Lows Vs. Stocks</span>
-        <span class="link-card-readmore">View &rarr;</span>
+        <span class="link-card-readmore"><span class="lp-ic" data-s="mes" aria-hidden="true"></span><span class="lp-name">View on MES.fm</span> &rarr;</span>
       </span>
     </a>
-    <a class="link-card" data-cats="s-crypto-posts" data-kw="Posts" href="https://mes.fm/alex-jones-xrp-bitcoin">
+    <a class="link-card lp-a" data-cats="s-crypto-posts" data-kw="Posts" data-lp-def="mes" data-l-mes="https://mes.fm/alex-jones-xrp-bitcoin" href="https://mes.fm/alex-jones-xrp-bitcoin">
       <span class="link-card-thumb" style="background-image:url('https://mes.fm/alex-jones-xrp-bitcoin/img/crypto-news-1-10Sz8k.jpg')"></span>
       <span class="link-card-body">
         <span class="link-card-title">Crypto News: Alex Jones on Your $XRP and a $320M $BTC Hack</span>
-        <span class="link-card-readmore">View &rarr;</span>
+        <span class="link-card-readmore"><span class="lp-ic" data-s="mes" aria-hidden="true"></span><span class="lp-name">View on MES.fm</span> &rarr;</span>
       </span>
     </a>
-    <a class="link-card" data-cats="s-crypto-posts" data-kw="Posts" href="https://mes.fm/hyperliquid-flagged-address">
+    <a class="link-card lp-a" data-cats="s-crypto-posts" data-kw="Posts" data-lp-def="mes" data-l-mes="https://mes.fm/hyperliquid-flagged-address" href="https://mes.fm/hyperliquid-flagged-address">
       <span class="link-card-thumb" style="background-image:url('https://img.leopedia.io/DQmNyMvvspTTTFaNxWzjgJDxJ6ZC3fPpsQ3ggDnjGjgToS1/telegram-cloud-photo-size-1-4936468297599880198-y.jpg')"></span>
       <span class="link-card-body">
         <span class="link-card-title">The Hyperliquid Crypto Exchange Flagged My Wallet Address</span>
-        <span class="link-card-readmore">View &rarr;</span>
+        <span class="link-card-readmore"><span class="lp-ic" data-s="mes" aria-hidden="true"></span><span class="lp-name">View on MES.fm</span> &rarr;</span>
       </span>
     </a>
-    <a class="link-card" data-cats="s-crypto-tutorials" data-kw="Blockchain Tutorials" href="https://mes.fm/hive-crypto-tutorial">
+    <a class="link-card lp-a" data-cats="s-crypto-tutorials" data-kw="Blockchain Tutorials" data-lp-def="mes" data-l-mes="https://mes.fm/hive-crypto-tutorial" data-l-youtube="https://www.youtube.com/watch?v=ogxTNlTgyLU" href="https://mes.fm/hive-crypto-tutorial">
       <span class="link-card-thumb" style="background-image:url('https://i.ytimg.com/vi/ogxTNlTgyLU/maxresdefault.jpg')"></span>
       <span class="link-card-body">
         <span class="link-card-title">Hive Cryptocurrency Overview and How to Sign Up</span>
-        <span class="link-card-readmore">View &rarr;</span>
+        <span class="link-card-readmore"><span class="lp-ic" data-s="mes" aria-hidden="true"></span><span class="lp-name">View on MES.fm</span> &rarr;</span>
       </span>
     </a>
-    <a class="link-card" data-cats="s-crypto-tutorials" data-kw="Blockchain Tutorials" href="https://peakd.com/general/@mes/blockchain-the-big-picture-part-2-tokenization" target="_blank" rel="noopener">
+    <a class="link-card lp-a" data-cats="s-crypto-tutorials" data-kw="Blockchain Tutorials" data-lp-def="hive" data-l-youtube="https://www.youtube.com/watch?v=_LgCufeCjFI" data-l-hive="https://peakd.com/general/@mes/blockchain-the-big-picture-part-2-tokenization" href="https://peakd.com/general/@mes/blockchain-the-big-picture-part-2-tokenization" target="_blank" rel="noopener">
       <span class="link-card-thumb" style="background-image:url('https://i.ytimg.com/vi/_LgCufeCjFI/maxresdefault.jpg')"></span>
       <span class="link-card-body">
         <span class="link-card-title">Ⓑ Blockchain: The Big Picture - Part 2: Tokenization</span>
-        <span class="link-card-readmore">View &rarr;</span>
+        <span class="link-card-readmore"><span class="lp-ic" data-s="hive" aria-hidden="true"></span><span class="lp-name">View on Hive</span> &rarr;</span>
       </span>
     </a>
-    <a class="link-card" data-cats="s-crypto-tutorials" data-kw="Blockchain Tutorials" href="https://peakd.com/general/@mes/blockchain-the-big-picture-part-1-what-do-you-own" target="_blank" rel="noopener">
+    <a class="link-card lp-a" data-cats="s-crypto-tutorials" data-kw="Blockchain Tutorials" data-lp-def="hive" data-l-youtube="https://www.youtube.com/watch?v=sEkip6F4Mv0" data-l-hive="https://peakd.com/general/@mes/blockchain-the-big-picture-part-1-what-do-you-own" href="https://peakd.com/general/@mes/blockchain-the-big-picture-part-1-what-do-you-own" target="_blank" rel="noopener">
       <span class="link-card-thumb" style="background-image:url('https://i.ytimg.com/vi/sEkip6F4Mv0/maxresdefault.jpg')"></span>
       <span class="link-card-body">
         <span class="link-card-title">Ⓑ Blockchain: The Big Picture - Part 1: What Do You Own?</span>
-        <span class="link-card-readmore">View &rarr;</span>
+        <span class="link-card-readmore"><span class="lp-ic" data-s="hive" aria-hidden="true"></span><span class="lp-name">View on Hive</span> &rarr;</span>
       </span>
     </a>
-    <a class="link-card" data-cats="s-crypto-tutorials" data-kw="Blockchain Tutorials" href="https://www.youtube.com/watch?v=8VZBrgRL9KA" target="_blank" rel="noopener">
+    <a class="link-card lp-a" data-cats="s-crypto-tutorials" data-kw="Blockchain Tutorials" data-lp-def="youtube" data-l-youtube="https://www.youtube.com/watch?v=8VZBrgRL9KA" href="https://www.youtube.com/watch?v=8VZBrgRL9KA" target="_blank" rel="noopener">
       <span class="link-card-thumb" style="background-image:url('https://i.ytimg.com/vi/8VZBrgRL9KA/maxresdefault.jpg')"></span>
       <span class="link-card-body">
         <span class="link-card-title">Create YouTube Summaries with an AI Agent on the Hive Blockchain in Seconds</span>
-        <span class="link-card-readmore">View &rarr;</span>
+        <span class="link-card-readmore"><span class="lp-ic" data-s="youtube" aria-hidden="true"></span><span class="lp-name">View on YouTube</span> &rarr;</span>
       </span>
     </a>
-    <a class="link-card" data-cats="s-crypto-tutorials" data-kw="Blockchain Tutorials" href="https://www.youtube.com/watch?v=JaZRcA1Xut0" target="_blank" rel="noopener">
+    <a class="link-card lp-a" data-cats="s-crypto-tutorials" data-kw="Blockchain Tutorials" data-lp-def="youtube" data-l-youtube="https://www.youtube.com/watch?v=JaZRcA1Xut0" href="https://www.youtube.com/watch?v=JaZRcA1Xut0" target="_blank" rel="noopener">
       <span class="link-card-thumb" style="background-image:url('https://i.ytimg.com/vi/JaZRcA1Xut0/maxresdefault.jpg')"></span>
       <span class="link-card-body">
         <span class="link-card-title">Ⓑ Blockchain Overview: Bitcoin, Cryptocurrency, Cryptography, &amp; Satoshi Nakamoto</span>
-        <span class="link-card-readmore">View &rarr;</span>
+        <span class="link-card-readmore"><span class="lp-ic" data-s="youtube" aria-hidden="true"></span><span class="lp-name">View on YouTube</span> &rarr;</span>
       </span>
     </a>
-    <a class="link-card" data-cats="s-crypto-tutorials" data-kw="Blockchain Tutorials" href="https://www.youtube.com/watch?v=Va47UH2k-ww" target="_blank" rel="noopener">
+    <a class="link-card lp-a" data-cats="s-crypto-tutorials" data-kw="Blockchain Tutorials" data-lp-def="youtube" data-l-youtube="https://www.youtube.com/watch?v=Va47UH2k-ww" href="https://www.youtube.com/watch?v=Va47UH2k-ww" target="_blank" rel="noopener">
       <span class="link-card-thumb" style="background-image:url('https://i.ytimg.com/vi/Va47UH2k-ww/maxresdefault.jpg')"></span>
       <span class="link-card-body">
         <span class="link-card-title">🔧Custom Browser User Scripts: Unblock Brave Browser from Archive.is</span>
-        <span class="link-card-readmore">View &rarr;</span>
+        <span class="link-card-readmore"><span class="lp-ic" data-s="youtube" aria-hidden="true"></span><span class="lp-name">View on YouTube</span> &rarr;</span>
       </span>
     </a>
-    <a class="link-card" data-cats="s-crypto-tutorials" data-kw="Blockchain Tutorials" href="https://www.youtube.com/watch?v=F5f1duDJG9Q" target="_blank" rel="noopener">
+    <a class="link-card lp-a" data-cats="s-crypto-tutorials" data-kw="Blockchain Tutorials" data-lp-def="youtube" data-l-youtube="https://www.youtube.com/watch?v=F5f1duDJG9Q" href="https://www.youtube.com/watch?v=F5f1duDJG9Q" target="_blank" rel="noopener">
       <span class="link-card-thumb" style="background-image:url('https://i.ytimg.com/vi/F5f1duDJG9Q/maxresdefault.jpg')"></span>
       <span class="link-card-body">
         <span class="link-card-title">Steemit Tutorial: Steem (STEEM), Steem Power (SP), and Steem Dollars (SMD) #GetOnSteem</span>
-        <span class="link-card-readmore">View &rarr;</span>
+        <span class="link-card-readmore"><span class="lp-ic" data-s="youtube" aria-hidden="true"></span><span class="lp-name">View on YouTube</span> &rarr;</span>
       </span>
     </a>
-    <a class="link-card" data-cats="s-crypto-tutorials" data-kw="Blockchain Tutorials" href="https://www.youtube.com/watch?v=1RBzUDRScyQ" target="_blank" rel="noopener">
+    <a class="link-card lp-a" data-cats="s-crypto-tutorials" data-kw="Blockchain Tutorials" data-lp-def="youtube" data-l-youtube="https://www.youtube.com/watch?v=1RBzUDRScyQ" href="https://www.youtube.com/watch?v=1RBzUDRScyQ" target="_blank" rel="noopener">
       <span class="link-card-thumb" style="background-image:url('https://i.ytimg.com/vi/1RBzUDRScyQ/maxresdefault.jpg')"></span>
       <span class="link-card-body">
         <span class="link-card-title">Steemit: Overview: Social Media Platform on Steem Blockchain #GetOnSteem</span>
-        <span class="link-card-readmore">View &rarr;</span>
+        <span class="link-card-readmore"><span class="lp-ic" data-s="youtube" aria-hidden="true"></span><span class="lp-name">View on YouTube</span> &rarr;</span>
       </span>
     </a>
     </div>
     <div class="list-view view-hidden" id="crypto-allList">
     <div class="list-row" data-cats="s-crypto-posts" data-kw="Posts">
-      <h3>I Used Claude AI to Get My Flagged Funds Out of Hyperliquid</h3>
+      <h3><a class="lp-a" href="https://mes.fm/claude-hyperliquid-flagged-crypto" data-lp-def="mes" data-l-mes="https://mes.fm/claude-hyperliquid-flagged-crypto">I Used Claude AI to Get My Flagged Funds Out of Hyperliquid<span class="lp-ic" data-s="mes" aria-hidden="true"></span></a></h3>
       <p><a href="https://mes.fm/claude-hyperliquid-flagged-crypto" target="_blank" rel="noopener">mes.fm</a></p>
       <img class="list-thumb" src="https://mes.fm/claude-hyperliquid-flagged-crypto/img/claude-hyperliquid-flagged-crypto.jpg" alt="I Used Claude AI to Get My Flagged Funds Out of Hyperliquid">
     </div>
     <div class="list-row" data-cats="s-crypto-posts" data-kw="Posts">
-      <h3>Canada's First Stablecoin $CADD Is Live on Solana</h3>
+      <h3><a class="lp-a" href="https://mes.fm/cadd-stablecoin-solana" data-lp-def="mes" data-l-mes="https://mes.fm/cadd-stablecoin-solana">Canada's First Stablecoin $CADD Is Live on Solana<span class="lp-ic" data-s="mes" aria-hidden="true"></span></a></h3>
       <p><a href="https://mes.fm/cadd-stablecoin-solana" target="_blank" rel="noopener">mes.fm</a></p>
       <img class="list-thumb" src="https://mes.fm/cadd-stablecoin-solana/img/cadd-stablecoin-solana.jpg" alt="Canada's First Stablecoin $CADD Is Live on Solana">
     </div>
     <div class="list-row" data-cats="s-crypto-posts" data-kw="Posts">
-      <h3>3Speak Now Pays Users a 10% Share of Ad Revenue for Watching</h3>
+      <h3><a class="lp-a" href="https://mes.fm/3speak-ad-revenue-sharing" data-lp-def="mes" data-l-mes="https://mes.fm/3speak-ad-revenue-sharing">3Speak Now Pays Users a 10% Share of Ad Revenue for Watching<span class="lp-ic" data-s="mes" aria-hidden="true"></span></a></h3>
       <p><a href="https://mes.fm/3speak-ad-revenue-sharing" target="_blank" rel="noopener">mes.fm</a></p>
       <img loading="lazy" class="list-thumb" src="https://img.leopedia.io/DQmYC1gpEkjBkby4mqB1xU2SP5Cnv1bvohTQtKzD1kGPjWk/telegram-cloud-photo-size-1-4999448963589021590-y.jpg" alt="3Speak Now Pays Users a 10% Share of Ad Revenue for Watching">
     </div>
     <div class="list-row" data-cats="s-crypto-posts" data-kw="Posts">
-      <h3>The Top 10 S&amp;P 500 Stocks Are 41% of the Market, and Oil Is at Record Lows Vs. Stocks</h3>
+      <h3><a class="lp-a" href="https://mes.fm/stock-market-vs-oil" data-lp-def="mes" data-l-mes="https://mes.fm/stock-market-vs-oil">The Top 10 S&amp;P 500 Stocks Are 41% of the Market, and Oil Is at Record Lows Vs. Stocks<span class="lp-ic" data-s="mes" aria-hidden="true"></span></a></h3>
       <p><a href="https://mes.fm/stock-market-vs-oil" target="_blank" rel="noopener">mes.fm</a></p>
       <img loading="lazy" class="list-thumb" src="https://img.leopedia.io/DQmdvuyozcMSZ2zM1rVXEqXz7Q2YosiM3Gq5Dog4FQGsdSc/telegram-cloud-photo-size-1-4999448963589020306-y.jpg" alt="The Top 10 S&amp;P 500 Stocks Are 41% of the Market, and Oil Is at Record Lows Vs. Stocks">
     </div>
     <div class="list-row" data-cats="s-crypto-posts" data-kw="Posts">
-      <h3>Crypto News: Alex Jones on Your $XRP and a $320M $BTC Hack</h3>
+      <h3><a class="lp-a" href="https://mes.fm/alex-jones-xrp-bitcoin" data-lp-def="mes" data-l-mes="https://mes.fm/alex-jones-xrp-bitcoin">Crypto News: Alex Jones on Your $XRP and a $320M $BTC Hack<span class="lp-ic" data-s="mes" aria-hidden="true"></span></a></h3>
       <p><a href="https://mes.fm/alex-jones-xrp-bitcoin" target="_blank" rel="noopener">mes.fm</a></p>
       <img class="list-thumb" src="https://mes.fm/alex-jones-xrp-bitcoin/img/crypto-news-1-10Sz8k.jpg" alt="Crypto News: Alex Jones on Your $XRP and a $320M $BTC Hack">
     </div>
     <div class="list-row" data-cats="s-crypto-posts" data-kw="Posts">
-      <h3>The Hyperliquid Crypto Exchange Flagged My Wallet Address</h3>
+      <h3><a class="lp-a" href="https://mes.fm/hyperliquid-flagged-address" data-lp-def="mes" data-l-mes="https://mes.fm/hyperliquid-flagged-address">The Hyperliquid Crypto Exchange Flagged My Wallet Address<span class="lp-ic" data-s="mes" aria-hidden="true"></span></a></h3>
       <p><a href="https://mes.fm/hyperliquid-flagged-address" target="_blank" rel="noopener">mes.fm</a></p>
       <img loading="lazy" class="list-thumb" src="https://img.leopedia.io/DQmNyMvvspTTTFaNxWzjgJDxJ6ZC3fPpsQ3ggDnjGjgToS1/telegram-cloud-photo-size-1-4936468297599880198-y.jpg" alt="The Hyperliquid Crypto Exchange Flagged My Wallet Address">
     </div>
     <div class="list-row" data-cats="s-crypto-tutorials" data-kw="Blockchain Tutorials">
-      <h3>Hive Cryptocurrency Overview and How to Sign Up</h3>
+      <h3><a class="lp-a" href="https://mes.fm/hive-crypto-tutorial" data-lp-def="mes" data-l-mes="https://mes.fm/hive-crypto-tutorial" data-l-youtube="https://www.youtube.com/watch?v=ogxTNlTgyLU">Hive Cryptocurrency Overview and How to Sign Up<span class="lp-ic" data-s="mes" aria-hidden="true"></span></a></h3>
       <p><a href="https://www.youtube.com/watch?v=ogxTNlTgyLU" target="_blank" rel="noopener">YouTube</a> - <a href="https://mes.fm/hive-crypto-tutorial" target="_blank" rel="noopener">mes.fm</a></p>
       <img loading="lazy" class="list-thumb" src="https://i.ytimg.com/vi/ogxTNlTgyLU/maxresdefault.jpg" alt="Hive Cryptocurrency Overview and How to Sign Up">
     </div>
     <div class="list-row" data-cats="s-crypto-tutorials" data-kw="Blockchain Tutorials">
-      <h3>Ⓑ Blockchain: The Big Picture - Part 2: Tokenization</h3>
+      <h3><a class="lp-a" href="https://peakd.com/general/@mes/blockchain-the-big-picture-part-2-tokenization" data-lp-def="hive" data-l-youtube="https://www.youtube.com/watch?v=_LgCufeCjFI" data-l-hive="https://peakd.com/general/@mes/blockchain-the-big-picture-part-2-tokenization" target="_blank" rel="noopener">Ⓑ Blockchain: The Big Picture - Part 2: Tokenization<span class="lp-ic" data-s="hive" aria-hidden="true"></span></a></h3>
       <p><a href="https://www.youtube.com/watch?v=_LgCufeCjFI" target="_blank" rel="noopener">YouTube</a> - <a href="https://peakd.com/general/@mes/blockchain-the-big-picture-part-2-tokenization" target="_blank" rel="noopener">Hive</a></p>
       <img loading="lazy" class="list-thumb" src="https://i.ytimg.com/vi/_LgCufeCjFI/maxresdefault.jpg" alt="Ⓑ Blockchain: The Big Picture - Part 2: Tokenization">
     </div>
     <div class="list-row" data-cats="s-crypto-tutorials" data-kw="Blockchain Tutorials">
-      <h3>Ⓑ Blockchain: The Big Picture - Part 1: What Do You Own?</h3>
+      <h3><a class="lp-a" href="https://peakd.com/general/@mes/blockchain-the-big-picture-part-1-what-do-you-own" data-lp-def="hive" data-l-youtube="https://www.youtube.com/watch?v=sEkip6F4Mv0" data-l-hive="https://peakd.com/general/@mes/blockchain-the-big-picture-part-1-what-do-you-own" target="_blank" rel="noopener">Ⓑ Blockchain: The Big Picture - Part 1: What Do You Own?<span class="lp-ic" data-s="hive" aria-hidden="true"></span></a></h3>
       <p><a href="https://www.youtube.com/watch?v=sEkip6F4Mv0" target="_blank" rel="noopener">YouTube</a> - <a href="https://peakd.com/general/@mes/blockchain-the-big-picture-part-1-what-do-you-own" target="_blank" rel="noopener">Hive</a></p>
       <img loading="lazy" class="list-thumb" src="https://i.ytimg.com/vi/sEkip6F4Mv0/maxresdefault.jpg" alt="Ⓑ Blockchain: The Big Picture - Part 1: What Do You Own?">
     </div>
     <div class="list-row" data-cats="s-crypto-tutorials" data-kw="Blockchain Tutorials">
-      <h3>Create YouTube Summaries with an AI Agent on the Hive Blockchain in Seconds</h3>
+      <h3><a class="lp-a" href="https://www.youtube.com/watch?v=8VZBrgRL9KA" data-lp-def="youtube" data-l-youtube="https://www.youtube.com/watch?v=8VZBrgRL9KA" target="_blank" rel="noopener">Create YouTube Summaries with an AI Agent on the Hive Blockchain in Seconds<span class="lp-ic" data-s="youtube" aria-hidden="true"></span></a></h3>
       <p><a href="https://www.youtube.com/watch?v=8VZBrgRL9KA" target="_blank" rel="noopener">YouTube</a></p>
       <img loading="lazy" class="list-thumb" src="https://i.ytimg.com/vi/8VZBrgRL9KA/maxresdefault.jpg" alt="Create YouTube Summaries with an AI Agent on the Hive Blockchain in Seconds">
     </div>
     <div class="list-row" data-cats="s-crypto-tutorials" data-kw="Blockchain Tutorials">
-      <h3>Ⓑ Blockchain Overview: Bitcoin, Cryptocurrency, Cryptography, &amp; Satoshi Nakamoto</h3>
+      <h3><a class="lp-a" href="https://www.youtube.com/watch?v=JaZRcA1Xut0" data-lp-def="youtube" data-l-youtube="https://www.youtube.com/watch?v=JaZRcA1Xut0" target="_blank" rel="noopener">Ⓑ Blockchain Overview: Bitcoin, Cryptocurrency, Cryptography, &amp; Satoshi Nakamoto<span class="lp-ic" data-s="youtube" aria-hidden="true"></span></a></h3>
       <p><a href="https://www.youtube.com/watch?v=JaZRcA1Xut0" target="_blank" rel="noopener">YouTube</a></p>
       <img loading="lazy" class="list-thumb" src="https://i.ytimg.com/vi/JaZRcA1Xut0/maxresdefault.jpg" alt="Ⓑ Blockchain Overview: Bitcoin, Cryptocurrency, Cryptography, &amp; Satoshi Nakamoto">
     </div>
     <div class="list-row" data-cats="s-crypto-tutorials" data-kw="Blockchain Tutorials">
-      <h3>🔧Custom Browser User Scripts: Unblock Brave Browser from Archive.is</h3>
+      <h3><a class="lp-a" href="https://www.youtube.com/watch?v=Va47UH2k-ww" data-lp-def="youtube" data-l-youtube="https://www.youtube.com/watch?v=Va47UH2k-ww" target="_blank" rel="noopener">🔧Custom Browser User Scripts: Unblock Brave Browser from Archive.is<span class="lp-ic" data-s="youtube" aria-hidden="true"></span></a></h3>
       <p><a href="https://www.youtube.com/watch?v=Va47UH2k-ww" target="_blank" rel="noopener">YouTube</a></p>
       <img loading="lazy" class="list-thumb" src="https://i.ytimg.com/vi/Va47UH2k-ww/maxresdefault.jpg" alt="🔧Custom Browser User Scripts: Unblock Brave Browser from Archive.is">
     </div>
     <div class="list-row" data-cats="s-crypto-tutorials" data-kw="Blockchain Tutorials">
-      <h3>Steemit Tutorial: Steem (STEEM), Steem Power (SP), and Steem Dollars (SMD) #GetOnSteem</h3>
+      <h3><a class="lp-a" href="https://www.youtube.com/watch?v=F5f1duDJG9Q" data-lp-def="youtube" data-l-youtube="https://www.youtube.com/watch?v=F5f1duDJG9Q" target="_blank" rel="noopener">Steemit Tutorial: Steem (STEEM), Steem Power (SP), and Steem Dollars (SMD) #GetOnSteem<span class="lp-ic" data-s="youtube" aria-hidden="true"></span></a></h3>
       <p><a href="https://www.youtube.com/watch?v=F5f1duDJG9Q" target="_blank" rel="noopener">YouTube</a></p>
       <img loading="lazy" class="list-thumb" src="https://i.ytimg.com/vi/F5f1duDJG9Q/maxresdefault.jpg" alt="Steemit Tutorial: Steem (STEEM), Steem Power (SP), and Steem Dollars (SMD) #GetOnSteem">
     </div>
     <div class="list-row" data-cats="s-crypto-tutorials" data-kw="Blockchain Tutorials">
-      <h3>Steemit: Overview: Social Media Platform on Steem Blockchain #GetOnSteem</h3>
+      <h3><a class="lp-a" href="https://www.youtube.com/watch?v=1RBzUDRScyQ" data-lp-def="youtube" data-l-youtube="https://www.youtube.com/watch?v=1RBzUDRScyQ" target="_blank" rel="noopener">Steemit: Overview: Social Media Platform on Steem Blockchain #GetOnSteem<span class="lp-ic" data-s="youtube" aria-hidden="true"></span></a></h3>
       <p><a href="https://www.youtube.com/watch?v=1RBzUDRScyQ" target="_blank" rel="noopener">YouTube</a></p>
       <img loading="lazy" class="list-thumb" src="https://i.ytimg.com/vi/1RBzUDRScyQ/maxresdefault.jpg" alt="Steemit: Overview: Social Media Platform on Steem Blockchain #GetOnSteem">
     </div>
@@ -1933,5 +1978,5 @@ var MES_Vars = {
 <script src="/main_js/main.js?v=1.0.3"></script>
 <script>document.getElementById('copyright-year').textContent = new Date().getFullYear();</script>
 <!-- PAGEVIEW-TRACKING-INSERTED --><script src="/main_js/track.js" defer></script><script src="/main_js/info-bar-fit.js" defer></script>
-<script src="/main_js/site-search.js?v=1" defer></script><!-- HUB-THEATRE-JS --><script src="/main_js/hub-theatre.js?v=1" defer></script><!-- /HUB-THEATRE-JS --></body>
+<script src="/main_js/site-search.js?v=1" defer></script><!-- HUB-THEATRE-JS --><script src="/main_js/hub-theatre.js?v=1" defer></script><!-- /HUB-THEATRE-JS --><script src="/main_js/link-pref.js?v=1" defer></script></body>
 </html>

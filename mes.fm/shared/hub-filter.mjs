@@ -173,7 +173,7 @@ export function addAllPage(SECTIONS, PAGES, { hub, name, iconVersion = 1 }) {
     if (n) chips.push(chip);
   }
   const items = [...byKey.values()];
-  SECTIONS.push({ id: `${hub}-all`, title: "All Content", items, filter: chips, filterPlaceholder: `Search everything in ${name}…` });
+  SECTIONS.push({ id: `${hub}-all`, title: "All Content", items, filter: chips, filterPlaceholder: `Search everything in ${name}…`, lpAlways: true });
   PAGES.unshift({
     slug: `${hub}-all`,
     sectionId: `${hub}-all`,

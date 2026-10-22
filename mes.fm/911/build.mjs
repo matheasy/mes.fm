@@ -555,8 +555,9 @@ function buildSection(section, meta) {
   const cardItems = section.items;
   // "Open in:" preferred-site switch (shared/link-pref.mjs) when most items have links on several sites.
   const lpMaps = cardItems.filter((i) => !i.standalone).map((i) => lpMap(buildLinksForItem(i, meta)));
-  const lpHtml = lpWanted(lpMaps) ? lpSwitch(lpMaps) : "";
-  if (lpHtml) { section.linkPref = true; cardItems.forEach((i) => { if (!i.standalone) i.lp = true; }); }
+  // lpAlways (the "All Content" page, shared/hub-filter.mjs addAllPage): site icons on every card even when few items have several sites.
+  const lpHtml = lpWanted(lpMaps) || section.lpAlways ? lpSwitch(lpMaps) : "";
+  if (lpHtml || section.lpAlways) { section.linkPref = true; cardItems.forEach((i) => { if (!i.standalone) i.lp = true; }); }
   // One line of links (icon + label, separated by dots) rather than one paragraph each, so the playlist and
   // the troubleshooting notes sit side by side; external links open in a new tab.
   const standaloneHtml = standaloneItems.length

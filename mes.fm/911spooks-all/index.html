@@ -986,6 +986,48 @@ body.dark-mode .ls-chips button { background: #2a2a2a; color: #ddd; border-color
 body.dark-mode .ls-chips button:hover { border-color: #6cb6f5; color: #6cb6f5; }
 body.dark-mode .ls-chips button[aria-pressed="true"] { background: #6cb6f5; border-color: #6cb6f5; color: #111; }
 body.dark-mode .ls-empty { color: #aaa; }
+/* "Open in:" preferred-site switch + per-card site icon (shared/link-pref.mjs, main_js/link-pref.js). */
+.lp-row { display: flex; flex-wrap: wrap; align-items: flex-start; column-gap: 1em; }
+.lp-row > .ls-chips { flex: 1 1 22em; }
+.lp-row--solo { margin: 0 0 0.6em; }
+.lp { display: flex; flex-wrap: wrap; align-items: center; gap: 0.3em; margin: 0.7em 0 0 auto; font-size: 0.85em; }
+.lp-lbl { color: #555; margin-right: 0.15em; }
+.lp button {
+  font: inherit; cursor: pointer; display: inline-flex; align-items: center; gap: 0.3em; min-height: 2.2em;
+  padding: 0.3em 0.65em; border-radius: 1.2em; border: 1px solid #c3c9d2; background: #fff; color: #333;
+}
+.lp button:hover { border-color: #277bb6; color: #1a6fb0; }
+.lp button:focus-visible { outline: 2px solid #277bb6; outline-offset: 2px; }
+.lp button[aria-pressed="true"] { background: #277bb6; border-color: #277bb6; color: #fff; }
+.lp button.lp-few:not([aria-pressed="true"]) { color: #6a7280; border-style: dashed; }
+.lp-n { font-size: 0.85em; font-variant-numeric: tabular-nums; }
+.lp-ic {
+  display: inline-block; flex: none; width: 1.15em; height: 1.15em; vertical-align: -0.2em; background: currentColor;
+  -webkit-mask: var(--lp-i) center / contain no-repeat; mask: var(--lp-i) center / contain no-repeat;
+}
+/* the pages' CSS reset paints every span / a #333: take the button's / caption's colour instead */
+.lp button span, .lp-a .lp-ic, .lp-a .lp-name { color: inherit; }
+.link-card-readmore .lp-ic { margin-right: 0.3em; }
+.list-row h3 .lp-a { color: inherit; text-decoration: none; }
+.list-row h3 .lp-a:hover { text-decoration: underline; }
+.list-row h3 .lp-ic { width: 0.85em; height: 0.85em; margin-left: 0.35em; vertical-align: -0.05em; opacity: 0.75; }
+.lp-ic[data-s="mes"] { --lp-i: url("data:image/svg+xml,%3Csvg%20xmlns%3D'http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg'%20viewBox%3D'0%200%2024%2024'%3E%3Cpath%20fill-rule%3D'evenodd'%20d%3D'M1%2012.6%204.6%2010.6%208.6%2017.4%2014.6%201.8H23.2V4.8H16.6L10%2022.4H7.4z'%2F%3E%3C%2Fsvg%3E"); }
+.lp-ic[data-s="youtube"] { --lp-i: url("data:image/svg+xml,%3Csvg%20xmlns%3D'http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg'%20viewBox%3D'0%200%2024%2024'%3E%3Cpath%20fill-rule%3D'evenodd'%20d%3D'M23%207.2a3%203%200%200%200-2.1-2.1C19%204.6%2012%204.6%2012%204.6s-7%200-8.9.5A3%203%200%200%200%201%207.2C.5%209.1.5%2012%20.5%2012s0%202.9.5%204.8a3%203%200%200%200%202.1%202.1c1.9.5%208.9.5%208.9.5s7%200%208.9-.5a3%203%200%200%200%202.1-2.1c.5-1.9.5-4.8.5-4.8s0-2.9-.5-4.8zM9.7%2015.4V8.6l5.9%203.4z'%2F%3E%3C%2Fsvg%3E"); }
+.lp-ic[data-s="hive"] { --lp-i: url("data:image/svg+xml,%3Csvg%20xmlns%3D'http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg'%20viewBox%3D'0%200%2024%2024'%3E%3Cpath%20fill-rule%3D'evenodd'%20d%3D'M6.8%202.5h10.4L22.5%2012l-5.3%209.5H6.8L1.5%2012zM9%206.5%206.3%2012%209%2017.5h6l2.7-5.5L15%206.5z'%2F%3E%3C%2Fsvg%3E"); }
+.lp-ic[data-s="3speak"] { --lp-i: url("data:image/svg+xml,%3Csvg%20xmlns%3D'http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg'%20viewBox%3D'0%200%2024%2024'%3E%3Cpath%20fill-rule%3D'evenodd'%20d%3D'M12%201.5a10.5%2010.5%200%201%201%200%2021%2010.5%2010.5%200%200%201%200-21zM9.5%207.5v9l7-4.5z'%2F%3E%3C%2Fsvg%3E"); }
+.lp-ic[data-s="rumble"] { --lp-i: url("data:image/svg+xml,%3Csvg%20xmlns%3D'http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg'%20viewBox%3D'0%200%2024%2024'%3E%3Cpath%20fill-rule%3D'evenodd'%20d%3D'M5%203.8c0-1.6%201.7-2.5%203-1.6l12.4%208.2c1.2.8%201.2%202.4%200%203.2L8%2021.8c-1.3.9-3-.1-3-1.6zM8.6%208.5v7l5.4-3.5z'%2F%3E%3C%2Fsvg%3E"); }
+.lp-ic[data-s="odysee"] { --lp-i: url("data:image/svg+xml,%3Csvg%20xmlns%3D'http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg'%20viewBox%3D'0%200%2024%2024'%3E%3Cpath%20fill-rule%3D'evenodd'%20d%3D'M12%201.5a10.5%2010.5%200%201%201%200%2021%2010.5%2010.5%200%200%201%200-21zM12%206a6%206%200%201%200%200%2012%206%206%200%200%200%200-12z'%2F%3E%3C%2Fsvg%3E"); }
+.lp-ic[data-s="x"] { --lp-i: url("data:image/svg+xml,%3Csvg%20xmlns%3D'http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg'%20viewBox%3D'0%200%2024%2024'%3E%3Cpath%20fill-rule%3D'evenodd'%20d%3D'M3%203h5.4l4.2%205.9L17.7%203h3l-6.7%207.7L21.5%2021h-5.4l-4.6-6.4L5.9%2021H3l7.2-8.3z'%2F%3E%3C%2Fsvg%3E"); }
+.lp-ic[data-s="bitchute"] { --lp-i: url("data:image/svg+xml,%3Csvg%20xmlns%3D'http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg'%20viewBox%3D'0%200%2024%2024'%3E%3Cpath%20fill-rule%3D'evenodd'%20d%3D'M3%203h18v18H3zM8%206.5v11h5.3c2.2%200%203.7-1.2%203.7-3.1%200-1.4-.8-2.4-2.1-2.7%201-.4%201.6-1.3%201.6-2.4%200-1.8-1.4-2.8-3.5-2.8zM10.6%208.6h2.1c.9%200%201.4.4%201.4%201.1s-.5%201.2-1.4%201.2h-2.1zm0%204.2h2.4c1%200%201.5.5%201.5%201.2%200%20.8-.6%201.3-1.5%201.3h-2.4z'%2F%3E%3C%2Fsvg%3E"); }
+.lp-ic[data-s="telegram"] { --lp-i: url("data:image/svg+xml,%3Csvg%20xmlns%3D'http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg'%20viewBox%3D'0%200%2024%2024'%3E%3Cpath%20fill-rule%3D'evenodd'%20d%3D'M1.5%2011.2%2021.6%203.3c.9-.3%201.7.3%201.4%201.7l-3.4%2016c-.2%201.1-.9%201.4-1.8.9l-5-3.7-2.4%202.3c-.3.3-.5.5-1%20.5l.4-5.1%209.3-8.4c.4-.4-.1-.6-.6-.2L6.9%2014.6%202%2013.1c-1.1-.3-1.1-1.1.5-1.9z'%2F%3E%3C%2Fsvg%3E"); }
+.lp-ic[data-s="twitch"] { --lp-i: url("data:image/svg+xml,%3Csvg%20xmlns%3D'http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg'%20viewBox%3D'0%200%2024%2024'%3E%3Cpath%20fill-rule%3D'evenodd'%20d%3D'M4%202%202.5%206v14h5v2.5h2.8L13%2020h4l5-5V2zm16%2012-3%203h-4.5L10%2019.5V17H6V4h14zM15%207h2v5h-2zm-5%200h2v5h-2z'%2F%3E%3C%2Fsvg%3E"); }
+body.dark-mode .lp-lbl, body.dark .lp-lbl { color: #bbb; }
+body.dark-mode .list-row h3 .lp-a, body.dark .list-row h3 .lp-a { color: inherit; }
+body.dark-mode .lp button, body.dark .lp button { background: #2a2a2a; color: #ddd; border-color: #555; }
+body.dark-mode .lp button:hover, body.dark .lp button:hover { border-color: #6cb6f5; color: #6cb6f5; }
+body.dark-mode .lp button[aria-pressed="true"], body.dark .lp button[aria-pressed="true"] { background: #6cb6f5; border-color: #6cb6f5; color: #111; }
+body.dark-mode .lp button.lp-few:not([aria-pressed="true"]), body.dark .lp button.lp-few:not([aria-pressed="true"]) { color: #a3abb8; }
+body.dark-mode .lp button:focus-visible, body.dark .lp button:focus-visible { outline-color: #6cb6f5; }
 </style>
 
 <meta property="fb:app_id" content="120877788060946" />
@@ -1209,7 +1251,10 @@ body.dark-mode .ls-empty { color: #aaa; }
   
     <div class="ls-filter" id="911spooks-allFilter">
       <input type="search" id="911spooks-allSearch" placeholder="Search everything in 9/11 Spooks…" aria-label="Search" autocomplete="off">
-      <div class="ls-chips" id="911spooks-allChips"><button type="button" data-c="all" data-label="All" aria-pressed="true">All (15)</button><button type="button" data-c="s-911spooks-posts" data-label="Posts" aria-pressed="false">Posts (13)</button><button type="button" data-c="s-911spooks-videos" data-label="Videos" aria-pressed="false">Videos (2)</button></div>
+      <div class="lp-row"><div class="ls-chips" id="911spooks-allChips"><button type="button" data-c="all" data-label="All" aria-pressed="true">All (15)</button><button type="button" data-c="s-911spooks-posts" data-label="Posts" aria-pressed="false">Posts (13)</button><button type="button" data-c="s-911spooks-videos" data-label="Videos" aria-pressed="false">Videos (2)</button></div>
+      <div class="lp" data-lp role="group" aria-label="Open links in">
+        <span class="lp-lbl" aria-hidden="true">Open in:</span><button type="button" data-s="auto" aria-pressed="true" aria-label="Open in: Auto (the usual link: the mes.fm page when there is one)" title="Auto: the usual link (the mes.fm page when there is one)">Auto</button><button type="button" data-s="mes" data-label="MES.fm" aria-pressed="false" aria-label="Open in MES.fm (15 of 15 have a MES.fm link)" title="Open in MES.fm (15 of 15 have a MES.fm link)"><span class="lp-ic" data-s="mes" aria-hidden="true"></span><span class="lp-n">15</span></button><button type="button" data-s="youtube" data-label="YouTube" aria-pressed="false" aria-label="Open in YouTube (3 of 15 have a YouTube link)" title="Open in YouTube (3 of 15 have a YouTube link)" class="lp-few"><span class="lp-ic" data-s="youtube" aria-hidden="true"></span><span class="lp-n">3</span></button>
+      </div></div>
     </div>
     <p class="ls-empty" id="911spooks-allEmpty" hidden>Nothing matches. Try fewer words or a different filter.</p>
     <div class="view-toggle">
@@ -1218,185 +1263,185 @@ body.dark-mode .ls-empty { color: #aaa; }
       
     </div>
     <div class="card-grid" id="911spooks-allGrid">
-    <a class="link-card" data-cats="s-911spooks-posts" data-kw="Posts" href="https://mes.fm/mh370-litmus-spooks">
+    <a class="link-card lp-a" data-cats="s-911spooks-posts" data-kw="Posts" data-lp-def="mes" data-l-mes="https://mes.fm/mh370-litmus-spooks" href="https://mes.fm/mh370-litmus-spooks">
       <span class="link-card-thumb" style="background-image:url('https://img.leopedia.io/DQmUbPhYLJApryihLsPh92imJHKrzJrbpDAuiHEX8brG5Lv/telegram-cloud-photo-size-1-5089256253007007191-y.jpg')"></span>
       <span class="link-card-body">
         <span class="link-card-title">MH370 Teleportation Cartoons are a Litmus Test for Spooks</span>
-        <span class="link-card-readmore">View &rarr;</span>
+        <span class="link-card-readmore"><span class="lp-ic" data-s="mes" aria-hidden="true"></span><span class="lp-name">View on MES.fm</span> &rarr;</span>
       </span>
     </a>
-    <a class="link-card" data-cats="s-911spooks-posts" data-kw="Posts" href="https://mes.fm/abby-martin-911-spook">
+    <a class="link-card lp-a" data-cats="s-911spooks-posts" data-kw="Posts" data-lp-def="mes" data-l-mes="https://mes.fm/abby-martin-911-spook" href="https://mes.fm/abby-martin-911-spook">
       <span class="link-card-thumb" style="background-image:url('https://snipboard.io/hKE7BS.jpg')"></span>
       <span class="link-card-body">
         <span class="link-card-title">Abby Martin Outed Herself as a 9/11 Spook as Far Back as 2012</span>
-        <span class="link-card-readmore">View &rarr;</span>
+        <span class="link-card-readmore"><span class="lp-ic" data-s="mes" aria-hidden="true"></span><span class="lp-name">View on MES.fm</span> &rarr;</span>
       </span>
     </a>
-    <a class="link-card" data-cats="s-911spooks-posts" data-kw="Posts" href="https://mes.fm/911-revisionist-slander-mes">
+    <a class="link-card lp-a" data-cats="s-911spooks-posts" data-kw="Posts" data-lp-def="mes" data-l-mes="https://mes.fm/911-revisionist-slander-mes" href="https://mes.fm/911-revisionist-slander-mes">
       <span class="link-card-thumb" style="background-image:url('https://mes.fm/img/911-revisionist-slander-mes-thumbnail.jpg')"></span>
       <span class="link-card-body">
         <span class="link-card-title">9/11 Revisionist Slanders MES</span>
-        <span class="link-card-readmore">View &rarr;</span>
+        <span class="link-card-readmore"><span class="lp-ic" data-s="mes" aria-hidden="true"></span><span class="lp-name">View on MES.fm</span> &rarr;</span>
       </span>
     </a>
-    <a class="link-card" data-cats="s-911spooks-posts" data-kw="Posts" href="https://mes.fm/energy-vampire">
+    <a class="link-card lp-a" data-cats="s-911spooks-posts" data-kw="Posts" data-lp-def="mes" data-l-mes="https://mes.fm/energy-vampire" data-l-youtube="https://youtu.be/nNPz9nhPAxI" data-l-3speak="https://3speak.tv/watch?v=mestruth/disinfo-agents-literally-ar-3" data-l-telegram="https://t.me/meslinks/21827" href="https://mes.fm/energy-vampire">
       <span class="link-card-thumb" style="background-image:url('https://images.3speak.tv/images/1787339256394-2740b425584a0e05.webp')"></span>
       <span class="link-card-body">
         <span class="link-card-title">Disinfo Agents Literally Are Energy Vampires 😂😅😳</span>
-        <span class="link-card-readmore">View &rarr;</span>
+        <span class="link-card-readmore"><span class="lp-ic" data-s="mes" aria-hidden="true"></span><span class="lp-name">View on MES.fm</span> &rarr;</span>
       </span>
     </a>
-    <a class="link-card" data-cats="s-911spooks-posts" data-kw="Posts" href="https://mes.fm/offguardian-911-spooks">
+    <a class="link-card lp-a" data-cats="s-911spooks-posts" data-kw="Posts" data-lp-def="mes" data-l-mes="https://mes.fm/offguardian-911-spooks" href="https://mes.fm/offguardian-911-spooks">
       <span class="link-card-thumb" style="background-image:url('https://snipboard.io/GHwOhe.jpg')"></span>
       <span class="link-card-body">
         <span class="link-card-title">Another 9/11 Spook Outs Themselves: The OffGuardian X Account</span>
-        <span class="link-card-readmore">View &rarr;</span>
+        <span class="link-card-readmore"><span class="lp-ic" data-s="mes" aria-hidden="true"></span><span class="lp-name">View on MES.fm</span> &rarr;</span>
       </span>
     </a>
-    <a class="link-card" data-cats="s-911spooks-posts" data-kw="Posts" href="https://mes.fm/911-spammer-dust-baggie">
+    <a class="link-card lp-a" data-cats="s-911spooks-posts" data-kw="Posts" data-lp-def="mes" data-l-mes="https://mes.fm/911-spammer-dust-baggie" href="https://mes.fm/911-spammer-dust-baggie">
       <span class="link-card-thumb" style="background-image:url('https://img.leopedia.io/DQmYTAsxYWVLfMYvmz8LcX6NMYwu3yMPdddfMXSTAek5rSu/telegram-cloud-photo-size-1-5001700763402708281-y.jpg')"></span>
       <span class="link-card-body">
         <span class="link-card-title">9/11 Revisionist Spammin' Dust Baggie Nonsense</span>
-        <span class="link-card-readmore">View &rarr;</span>
+        <span class="link-card-readmore"><span class="lp-ic" data-s="mes" aria-hidden="true"></span><span class="lp-name">View on MES.fm</span> &rarr;</span>
       </span>
     </a>
-    <a class="link-card" data-cats="s-911spooks-posts" data-kw="Posts" href="https://mes.fm/911-spook-ryan-banister">
+    <a class="link-card lp-a" data-cats="s-911spooks-posts" data-kw="Posts" data-lp-def="mes" data-l-mes="https://mes.fm/911-spook-ryan-banister" href="https://mes.fm/911-spook-ryan-banister">
       <span class="link-card-thumb" style="background-image:url('https://files.peakd.com/file/peakd-hive/mes/23viTTnzutebUw9Kuez3JymrRSse229hCX9EibaV4LPzPs6ERrZQRNJqxQrcJSMmw1W8m.jpg')"></span>
       <span class="link-card-body">
         <span class="link-card-title">9/11 Spooky Drama: Ryan Banister Wildin'</span>
-        <span class="link-card-readmore">View &rarr;</span>
+        <span class="link-card-readmore"><span class="lp-ic" data-s="mes" aria-hidden="true"></span><span class="lp-name">View on MES.fm</span> &rarr;</span>
       </span>
     </a>
-    <a class="link-card" data-cats="s-911spooks-posts" data-kw="Posts" href="https://mes.fm/hughes-911-spammer-ryan-spooks">
+    <a class="link-card lp-a" data-cats="s-911spooks-posts" data-kw="Posts" data-lp-def="mes" data-l-mes="https://mes.fm/hughes-911-spammer-ryan-spooks" href="https://mes.fm/hughes-911-spammer-ryan-spooks">
       <span class="link-card-thumb" style="background-image:url('https://img.leopedia.io/DQmXV6JfRD9jsMbizsxHVJF3ChP4yxQ2T9QyJR3bFD81awV/telegram-cloud-photo-size-1-4988200031923932284-y.jpg')"></span>
       <span class="link-card-body">
         <span class="link-card-title">9/11 Brings Out the Spooks: David Hughes, 9/11 Revisionist, Ryan Bannister</span>
-        <span class="link-card-readmore">View &rarr;</span>
+        <span class="link-card-readmore"><span class="lp-ic" data-s="mes" aria-hidden="true"></span><span class="lp-name">View on MES.fm</span> &rarr;</span>
       </span>
     </a>
-    <a class="link-card" data-cats="s-911spooks-posts" data-kw="Posts" href="https://mes.fm/bg-notes">
+    <a class="link-card lp-a" data-cats="s-911spooks-posts" data-kw="Posts" data-lp-def="mes" data-l-mes="https://mes.fm/bg-notes" href="https://mes.fm/bg-notes">
       <span class="link-card-thumb" style="background-image:url('https://mes.fm/img/bg-logo-big.jpg')"></span>
       <span class="link-card-body">
         <span class="link-card-title">Bob Greenyer's Claims About Dr. Judy Wood &amp; 9/11</span>
-        <span class="link-card-readmore">View &rarr;</span>
+        <span class="link-card-readmore"><span class="lp-ic" data-s="mes" aria-hidden="true"></span><span class="lp-name">View on MES.fm</span> &rarr;</span>
       </span>
     </a>
-    <a class="link-card" data-cats="s-911spooks-posts" data-kw="Posts" href="https://mes.fm/norman-patricia-ai-email">
+    <a class="link-card lp-a" data-cats="s-911spooks-posts" data-kw="Posts" data-lp-def="mes" data-l-mes="https://mes.fm/norman-patricia-ai-email" href="https://mes.fm/norman-patricia-ai-email">
       <span class="link-card-thumb" style="background-image:url('https://files.peakd.com/file/peakd-hive/mestruth/EpA2wmzztd9yC7MhyMWTZo8KxWhWVigedoJ3qobU1AGpDGqdDRoLXGKYFJ7fJtyv1ZE.png')"></span>
       <span class="link-card-body">
         <span class="link-card-title">9/11 Jersey Girl Patricia Casazza's Bizarre AI Generated Email to MES</span>
-        <span class="link-card-readmore">View &rarr;</span>
+        <span class="link-card-readmore"><span class="lp-ic" data-s="mes" aria-hidden="true"></span><span class="lp-name">View on MES.fm</span> &rarr;</span>
       </span>
     </a>
-    <a class="link-card" data-cats="s-911spooks-posts" data-kw="Posts" href="https://mes.fm/911-revisionist-spammer">
+    <a class="link-card lp-a" data-cats="s-911spooks-posts" data-kw="Posts" data-lp-def="mes" data-l-mes="https://mes.fm/911-revisionist-spammer" href="https://mes.fm/911-revisionist-spammer">
       <span class="link-card-thumb" style="background-image:url('https://img.leopedia.io/DQmbpgZNh1aVMsLjBor5QupBNRbH4wS7ZFmbcoRMmmoPjPh/telegram-cloud-photo-size-1-4969851364699737239-y.jpg')"></span>
       <span class="link-card-body">
         <span class="link-card-title">9/11 Revisionist = 9/11 Spammer</span>
-        <span class="link-card-readmore">View &rarr;</span>
+        <span class="link-card-readmore"><span class="lp-ic" data-s="mes" aria-hidden="true"></span><span class="lp-name">View on MES.fm</span> &rarr;</span>
       </span>
     </a>
-    <a class="link-card" data-cats="s-911spooks-posts" data-kw="Posts" href="https://mes.fm/911revisited-blocks-mes">
+    <a class="link-card lp-a" data-cats="s-911spooks-posts" data-kw="Posts" data-lp-def="mes" data-l-mes="https://mes.fm/911revisited-blocks-mes" href="https://mes.fm/911revisited-blocks-mes">
       <span class="link-card-thumb" style="background-image:url('https://mes.fm/911revisited-blocks-mes/img/911revisionist-blocked-mes.jpg')"></span>
       <span class="link-card-body">
         <span class="link-card-title">Norman aka 9/11 Revisited Blocked MES on X</span>
-        <span class="link-card-readmore">View &rarr;</span>
+        <span class="link-card-readmore"><span class="lp-ic" data-s="mes" aria-hidden="true"></span><span class="lp-name">View on MES.fm</span> &rarr;</span>
       </span>
     </a>
-    <a class="link-card" data-cats="s-911spooks-posts" data-kw="Posts" href="https://mes.fm/andrew-mason-clown">
+    <a class="link-card lp-a" data-cats="s-911spooks-posts" data-kw="Posts" data-lp-def="mes" data-l-mes="https://mes.fm/andrew-mason-clown" href="https://mes.fm/andrew-mason-clown">
       <span class="link-card-thumb" style="background-image:url('https://mes.fm/andrew-mason-clown/img/andrew-mason-4.jpg')"></span>
       <span class="link-card-body">
         <span class="link-card-title">New 9/11 Disinfo Spook Dropped: Andrew Mason</span>
-        <span class="link-card-readmore">View &rarr;</span>
+        <span class="link-card-readmore"><span class="lp-ic" data-s="mes" aria-hidden="true"></span><span class="lp-name">View on MES.fm</span> &rarr;</span>
       </span>
     </a>
-    <a class="link-card" data-cats="s-911spooks-videos" data-kw="Videos" href="https://mes.fm/richard-gage-flat-earth">
+    <a class="link-card lp-a" data-cats="s-911spooks-videos" data-kw="Videos" data-lp-def="mes" data-l-mes="https://mes.fm/richard-gage-flat-earth" data-l-youtube="https://youtu.be/BFkQwoDXCFg" data-l-3speak="https://3speak.tv/watch?v=mestruth/mr-richard-gage-doesnt-know-54" data-l-telegram="https://t.me/meslinks/16967" href="https://mes.fm/richard-gage-flat-earth">
       <span class="link-card-thumb" style="background-image:url('https://images.hive.blog/DQmU7JXmLDsiR95nv5ooN9RVxN8AWb1eBoDxN2new7GqaoG/image')"></span>
       <span class="link-card-body">
         <span class="link-card-title">Mr. Richard Gage Doesn't Know if the Earth Is Round or Flat</span>
-        <span class="link-card-readmore">View &rarr;</span>
+        <span class="link-card-readmore"><span class="lp-ic" data-s="mes" aria-hidden="true"></span><span class="lp-name">View on MES.fm</span> &rarr;</span>
       </span>
     </a>
-    <a class="link-card" data-cats="s-911spooks-videos" data-kw="Videos" href="https://mes.fm/ashton-forbes-letter">
+    <a class="link-card lp-a" data-cats="s-911spooks-videos" data-kw="Videos" data-lp-def="mes" data-l-mes="https://mes.fm/ashton-forbes-letter" data-l-youtube="https://youtu.be/zMXxyKljWA4" data-l-3speak="https://3speak.tv/watch?v=mestruth/highlights-from-the-letter-893" data-l-telegram="https://t.me/meslinks/29685" href="https://mes.fm/ashton-forbes-letter">
       <span class="link-card-thumb" style="background-image:url('https://images.hive.blog/DQmWgwRYxidEYcB19FehHeSFpTgoJFJFFpRxG5CdMsesseq/image')"></span>
       <span class="link-card-body">
         <span class="link-card-title">Highlights from the Letter that Ashton Forbes Totally Didn't Write to Himself</span>
-        <span class="link-card-readmore">View &rarr;</span>
+        <span class="link-card-readmore"><span class="lp-ic" data-s="mes" aria-hidden="true"></span><span class="lp-name">View on MES.fm</span> &rarr;</span>
       </span>
     </a>
     </div>
     <div class="list-view view-hidden" id="911spooks-allList">
     <div class="list-row" data-cats="s-911spooks-posts" data-kw="Posts">
-      <h3>MH370 Teleportation Cartoons are a Litmus Test for Spooks</h3>
+      <h3><a class="lp-a" href="https://mes.fm/mh370-litmus-spooks" data-lp-def="mes" data-l-mes="https://mes.fm/mh370-litmus-spooks">MH370 Teleportation Cartoons are a Litmus Test for Spooks<span class="lp-ic" data-s="mes" aria-hidden="true"></span></a></h3>
       <p><a href="https://mes.fm/mh370-litmus-spooks" target="_blank" rel="noopener">Notes</a></p>
       <img loading="lazy" class="list-thumb" src="https://img.leopedia.io/DQmUbPhYLJApryihLsPh92imJHKrzJrbpDAuiHEX8brG5Lv/telegram-cloud-photo-size-1-5089256253007007191-y.jpg" alt="MH370 Teleportation Cartoons are a Litmus Test for Spooks">
     </div>
     <div class="list-row" data-cats="s-911spooks-posts" data-kw="Posts">
-      <h3>Abby Martin Outed Herself as a 9/11 Spook as Far Back as 2012</h3>
+      <h3><a class="lp-a" href="https://mes.fm/abby-martin-911-spook" data-lp-def="mes" data-l-mes="https://mes.fm/abby-martin-911-spook">Abby Martin Outed Herself as a 9/11 Spook as Far Back as 2012<span class="lp-ic" data-s="mes" aria-hidden="true"></span></a></h3>
       <p><a href="https://mes.fm/abby-martin-911-spook" target="_blank" rel="noopener">Notes</a></p>
       <img loading="lazy" class="list-thumb" src="https://snipboard.io/hKE7BS.jpg" alt="Abby Martin Outed Herself as a 9/11 Spook as Far Back as 2012">
     </div>
     <div class="list-row" data-cats="s-911spooks-posts" data-kw="Posts">
-      <h3>9/11 Revisionist Slanders MES</h3>
+      <h3><a class="lp-a" href="https://mes.fm/911-revisionist-slander-mes" data-lp-def="mes" data-l-mes="https://mes.fm/911-revisionist-slander-mes">9/11 Revisionist Slanders MES<span class="lp-ic" data-s="mes" aria-hidden="true"></span></a></h3>
       <p><a href="https://mes.fm/911-revisionist-slander-mes" target="_blank" rel="noopener">Notes</a></p>
       <img class="list-thumb" src="https://mes.fm/img/911-revisionist-slander-mes-thumbnail.jpg" alt="9/11 Revisionist Slanders MES">
     </div>
     <div class="list-row" data-cats="s-911spooks-posts" data-kw="Posts">
-      <h3>Disinfo Agents Literally Are Energy Vampires 😂😅😳</h3>
+      <h3><a class="lp-a" href="https://mes.fm/energy-vampire" data-lp-def="mes" data-l-mes="https://mes.fm/energy-vampire" data-l-youtube="https://youtu.be/nNPz9nhPAxI" data-l-3speak="https://3speak.tv/watch?v=mestruth/disinfo-agents-literally-ar-3" data-l-telegram="https://t.me/meslinks/21827">Disinfo Agents Literally Are Energy Vampires 😂😅😳<span class="lp-ic" data-s="mes" aria-hidden="true"></span></a></h3>
       <p><a href="https://mes.fm/energy-vampire" target="_blank" rel="noopener">Notes</a> - <a href="https://3speak.tv/watch?v=mestruth/disinfo-agents-literally-ar-3" target="_blank" rel="noopener">3Speak</a> - <a href="https://youtu.be/nNPz9nhPAxI" target="_blank" rel="noopener">YouTube</a> - <a href="https://t.me/meslinks/21827" target="_blank" rel="noopener">Telegram</a></p>
       <img loading="lazy" class="list-thumb" src="https://images.3speak.tv/images/1787339256394-2740b425584a0e05.webp" alt="Disinfo Agents Literally Are Energy Vampires 😂😅😳">
     </div>
     <div class="list-row" data-cats="s-911spooks-posts" data-kw="Posts">
-      <h3>Another 9/11 Spook Outs Themselves: The OffGuardian X Account</h3>
+      <h3><a class="lp-a" href="https://mes.fm/offguardian-911-spooks" data-lp-def="mes" data-l-mes="https://mes.fm/offguardian-911-spooks">Another 9/11 Spook Outs Themselves: The OffGuardian X Account<span class="lp-ic" data-s="mes" aria-hidden="true"></span></a></h3>
       <p><a href="https://mes.fm/offguardian-911-spooks" target="_blank" rel="noopener">Notes</a></p>
       <img loading="lazy" class="list-thumb" src="https://snipboard.io/GHwOhe.jpg" alt="Another 9/11 Spook Outs Themselves: The OffGuardian X Account">
     </div>
     <div class="list-row" data-cats="s-911spooks-posts" data-kw="Posts">
-      <h3>9/11 Revisionist Spammin' Dust Baggie Nonsense</h3>
+      <h3><a class="lp-a" href="https://mes.fm/911-spammer-dust-baggie" data-lp-def="mes" data-l-mes="https://mes.fm/911-spammer-dust-baggie">9/11 Revisionist Spammin' Dust Baggie Nonsense<span class="lp-ic" data-s="mes" aria-hidden="true"></span></a></h3>
       <p><a href="https://mes.fm/911-spammer-dust-baggie" target="_blank" rel="noopener">Notes</a></p>
       <img loading="lazy" class="list-thumb" src="https://img.leopedia.io/DQmYTAsxYWVLfMYvmz8LcX6NMYwu3yMPdddfMXSTAek5rSu/telegram-cloud-photo-size-1-5001700763402708281-y.jpg" alt="9/11 Revisionist Spammin' Dust Baggie Nonsense">
     </div>
     <div class="list-row" data-cats="s-911spooks-posts" data-kw="Posts">
-      <h3>9/11 Spooky Drama: Ryan Banister Wildin'</h3>
+      <h3><a class="lp-a" href="https://mes.fm/911-spook-ryan-banister" data-lp-def="mes" data-l-mes="https://mes.fm/911-spook-ryan-banister">9/11 Spooky Drama: Ryan Banister Wildin'<span class="lp-ic" data-s="mes" aria-hidden="true"></span></a></h3>
       <p><a href="https://mes.fm/911-spook-ryan-banister" target="_blank" rel="noopener">Notes</a></p>
       <img loading="lazy" class="list-thumb" src="https://files.peakd.com/file/peakd-hive/mes/23viTTnzutebUw9Kuez3JymrRSse229hCX9EibaV4LPzPs6ERrZQRNJqxQrcJSMmw1W8m.jpg" alt="9/11 Spooky Drama: Ryan Banister Wildin'">
     </div>
     <div class="list-row" data-cats="s-911spooks-posts" data-kw="Posts">
-      <h3>9/11 Brings Out the Spooks: David Hughes, 9/11 Revisionist, Ryan Bannister</h3>
+      <h3><a class="lp-a" href="https://mes.fm/hughes-911-spammer-ryan-spooks" data-lp-def="mes" data-l-mes="https://mes.fm/hughes-911-spammer-ryan-spooks">9/11 Brings Out the Spooks: David Hughes, 9/11 Revisionist, Ryan Bannister<span class="lp-ic" data-s="mes" aria-hidden="true"></span></a></h3>
       <p><a href="https://mes.fm/hughes-911-spammer-ryan-spooks" target="_blank" rel="noopener">Notes</a></p>
       <img loading="lazy" class="list-thumb" src="https://img.leopedia.io/DQmXV6JfRD9jsMbizsxHVJF3ChP4yxQ2T9QyJR3bFD81awV/telegram-cloud-photo-size-1-4988200031923932284-y.jpg" alt="9/11 Brings Out the Spooks: David Hughes, 9/11 Revisionist, Ryan Bannister">
     </div>
     <div class="list-row" data-cats="s-911spooks-posts" data-kw="Posts">
-      <h3>Bob Greenyer's Claims About Dr. Judy Wood &amp; 9/11</h3>
+      <h3><a class="lp-a" href="https://mes.fm/bg-notes" data-lp-def="mes" data-l-mes="https://mes.fm/bg-notes">Bob Greenyer's Claims About Dr. Judy Wood &amp; 9/11<span class="lp-ic" data-s="mes" aria-hidden="true"></span></a></h3>
       <p><a href="https://mes.fm/bg-notes" target="_blank" rel="noopener">Notes</a></p>
       <img class="list-thumb" src="https://mes.fm/img/bg-logo-big.jpg" alt="Bob Greenyer's Claims About Dr. Judy Wood &amp; 9/11">
     </div>
     <div class="list-row" data-cats="s-911spooks-posts" data-kw="Posts">
-      <h3>9/11 Jersey Girl Patricia Casazza's Bizarre AI Generated Email to MES</h3>
+      <h3><a class="lp-a" href="https://mes.fm/norman-patricia-ai-email" data-lp-def="mes" data-l-mes="https://mes.fm/norman-patricia-ai-email">9/11 Jersey Girl Patricia Casazza's Bizarre AI Generated Email to MES<span class="lp-ic" data-s="mes" aria-hidden="true"></span></a></h3>
       <p><a href="https://mes.fm/norman-patricia-ai-email" target="_blank" rel="noopener">Notes</a></p>
       <img loading="lazy" class="list-thumb" src="https://files.peakd.com/file/peakd-hive/mestruth/EpA2wmzztd9yC7MhyMWTZo8KxWhWVigedoJ3qobU1AGpDGqdDRoLXGKYFJ7fJtyv1ZE.png" alt="9/11 Jersey Girl Patricia Casazza's Bizarre AI Generated Email to MES">
     </div>
     <div class="list-row" data-cats="s-911spooks-posts" data-kw="Posts">
-      <h3>9/11 Revisionist = 9/11 Spammer</h3>
+      <h3><a class="lp-a" href="https://mes.fm/911-revisionist-spammer" data-lp-def="mes" data-l-mes="https://mes.fm/911-revisionist-spammer">9/11 Revisionist = 9/11 Spammer<span class="lp-ic" data-s="mes" aria-hidden="true"></span></a></h3>
       <p><a href="https://mes.fm/911-revisionist-spammer" target="_blank" rel="noopener">Notes</a></p>
       <img loading="lazy" class="list-thumb" src="https://img.leopedia.io/DQmbpgZNh1aVMsLjBor5QupBNRbH4wS7ZFmbcoRMmmoPjPh/telegram-cloud-photo-size-1-4969851364699737239-y.jpg" alt="9/11 Revisionist = 9/11 Spammer">
     </div>
     <div class="list-row" data-cats="s-911spooks-posts" data-kw="Posts">
-      <h3>Norman aka 9/11 Revisited Blocked MES on X</h3>
+      <h3><a class="lp-a" href="https://mes.fm/911revisited-blocks-mes" data-lp-def="mes" data-l-mes="https://mes.fm/911revisited-blocks-mes">Norman aka 9/11 Revisited Blocked MES on X<span class="lp-ic" data-s="mes" aria-hidden="true"></span></a></h3>
       <p><a href="https://mes.fm/911revisited-blocks-mes" target="_blank" rel="noopener">Notes</a></p>
       <img class="list-thumb" src="https://mes.fm/911revisited-blocks-mes/img/911revisionist-blocked-mes.jpg" alt="Norman aka 9/11 Revisited Blocked MES on X">
     </div>
     <div class="list-row" data-cats="s-911spooks-posts" data-kw="Posts">
-      <h3>New 9/11 Disinfo Spook Dropped: Andrew Mason</h3>
+      <h3><a class="lp-a" href="https://mes.fm/andrew-mason-clown" data-lp-def="mes" data-l-mes="https://mes.fm/andrew-mason-clown">New 9/11 Disinfo Spook Dropped: Andrew Mason<span class="lp-ic" data-s="mes" aria-hidden="true"></span></a></h3>
       <p><a href="https://mes.fm/andrew-mason-clown" target="_blank" rel="noopener">Notes</a></p>
       <img class="list-thumb" src="https://mes.fm/andrew-mason-clown/img/andrew-mason-4.jpg" alt="New 9/11 Disinfo Spook Dropped: Andrew Mason">
     </div>
     <div class="list-row" data-cats="s-911spooks-videos" data-kw="Videos">
-      <h3>Mr. Richard Gage Doesn't Know if the Earth Is Round or Flat</h3>
+      <h3><a class="lp-a" href="https://mes.fm/richard-gage-flat-earth" data-lp-def="mes" data-l-mes="https://mes.fm/richard-gage-flat-earth" data-l-youtube="https://youtu.be/BFkQwoDXCFg" data-l-3speak="https://3speak.tv/watch?v=mestruth/mr-richard-gage-doesnt-know-54" data-l-telegram="https://t.me/meslinks/16967">Mr. Richard Gage Doesn't Know if the Earth Is Round or Flat<span class="lp-ic" data-s="mes" aria-hidden="true"></span></a></h3>
       <p><a href="https://mes.fm/richard-gage-flat-earth" target="_blank" rel="noopener">Notes</a> - <a href="https://3speak.tv/watch?v=mestruth/mr-richard-gage-doesnt-know-54" target="_blank" rel="noopener">3Speak</a> - <a href="https://youtu.be/BFkQwoDXCFg" target="_blank" rel="noopener">YouTube</a> - <a href="https://t.me/meslinks/16967" target="_blank" rel="noopener">Telegram</a></p>
       <img loading="lazy" class="list-thumb" src="https://images.hive.blog/DQmU7JXmLDsiR95nv5ooN9RVxN8AWb1eBoDxN2new7GqaoG/image" alt="Mr. Richard Gage Doesn't Know if the Earth Is Round or Flat">
     </div>
     <div class="list-row" data-cats="s-911spooks-videos" data-kw="Videos">
-      <h3>Highlights from the Letter that Ashton Forbes Totally Didn't Write to Himself</h3>
+      <h3><a class="lp-a" href="https://mes.fm/ashton-forbes-letter" data-lp-def="mes" data-l-mes="https://mes.fm/ashton-forbes-letter" data-l-youtube="https://youtu.be/zMXxyKljWA4" data-l-3speak="https://3speak.tv/watch?v=mestruth/highlights-from-the-letter-893" data-l-telegram="https://t.me/meslinks/29685">Highlights from the Letter that Ashton Forbes Totally Didn't Write to Himself<span class="lp-ic" data-s="mes" aria-hidden="true"></span></a></h3>
       <p><a href="https://mes.fm/ashton-forbes-letter" target="_blank" rel="noopener">Notes</a> - <a href="https://3speak.tv/watch?v=mestruth/highlights-from-the-letter-893" target="_blank" rel="noopener">3Speak</a> - <a href="https://youtu.be/zMXxyKljWA4" target="_blank" rel="noopener">YouTube</a> - <a href="https://t.me/meslinks/29685" target="_blank" rel="noopener">Telegram</a></p>
       <img loading="lazy" class="list-thumb" src="https://images.hive.blog/DQmWgwRYxidEYcB19FehHeSFpTgoJFJFFpRxG5CdMsesseq/image" alt="Highlights from the Letter that Ashton Forbes Totally Didn't Write to Himself">
     </div>
@@ -1945,5 +1990,5 @@ var MES_Vars = {
 <script src="/main_js/main.js?v=1.0.3"></script>
 <script>document.getElementById('copyright-year').textContent = new Date().getFullYear();</script>
 <!-- PAGEVIEW-TRACKING-INSERTED --><script src="/main_js/track.js" defer></script><script src="/main_js/info-bar-fit.js" defer></script>
-<script src="/main_js/site-search.js?v=1" defer></script><!-- HUB-THEATRE-JS --><script src="/main_js/hub-theatre.js?v=1" defer></script><!-- /HUB-THEATRE-JS --></body>
+<script src="/main_js/site-search.js?v=1" defer></script><!-- HUB-THEATRE-JS --><script src="/main_js/hub-theatre.js?v=1" defer></script><!-- /HUB-THEATRE-JS --><script src="/main_js/link-pref.js?v=1" defer></script></body>
 </html>
