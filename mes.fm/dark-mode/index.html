@@ -653,7 +653,7 @@ body.is-stuck #navbar.hide { position: fixed; top: 56px; right: 8px; }
 			<h2 style="margin-top:0;">Dark mode for any website (or light mode for the dark ones)</h2>
 			<p style="margin-top:0;">A free browser extension by MES for Chrome, Brave, Edge and other Chromium browsers. By default it leaves every page alone until you click its button: then the page in that tab turns dark (click again to switch it back). It can also darken every page, follow your system or run on a schedule, and it leaves pages that are already dark alone. Photos and videos keep their natural colours, every site can have its own choice, and Alt+Shift+D switches the current tab.</p>
 			<div class="dm-btns">
-				<a class="tu-btn tu-btn--primary" id="dm-dl" href="/dark-mode/mes-dark-mode.zip" download>Download <span id="dm-ver">v1.0.0</span> (zip)</a>
+				<a class="tu-btn tu-btn--primary" id="dm-dl" href="/dark-mode/mes-dark-mode.zip?v=1.5.1" download>Download <span id="dm-ver">v1.5.1</span> (zip)</a>
 				<a class="tu-btn tu-btn--ghost" href="#dm-install">How to install</a>
 				<a class="tu-btn tu-btn--ghost" href="/dark-mode/extension/content.js">View the source</a>
 			</div>
@@ -681,6 +681,7 @@ body.is-stuck #navbar.hide { position: fixed; top: 56px; right: 8px; }
 				<li><b>It tells you why.</b> The button shows a moon while the tab is dark, and its tooltip (and the panel) says why a page is dark: “You switched this tab”, “mail.google.com is set to Dark in your site list”, or the setup in use. Right-click the button and choose “Open the Dark Mode panel”, or change “Toolbar button” in the settings so a click opens the panel instead.</li>
 				<li><b>Per-site choice.</b> In the panel set a site to <b>Auto</b>, <b>Dark</b>, <b>Light</b> or <b>Off</b>: that is kept for the site in every tab. The settings page lists every saved site with a Remove button.</li>
 				<li><b>Setups.</b> Save different modes and looks for different purposes (it ships with <b>Only when I switch it on</b>, <b>Always dark</b>, <b>Follow system</b>, <b>Night</b> (dim and warm) and <b>Paper</b> (light, warm)), switch in the popup, and export or import them as text.</li>
+				<li><b>Works with <a href="/read-aloud">MES Read Aloud</a>.</b> Read Aloud's player has its own dark-page button; when Dark Mode darkens a page it switches that one off, so the page is never inverted twice (which would make it light again).</li>
 				<li><b>Tweaks:</b> brightness, contrast, sepia and grayscale, and a schedule (for example dark from 19:00 to 07:00).</li>
 			</ul>
 		</div>
@@ -768,7 +769,7 @@ body.is-stuck #navbar.hide { position: fixed; top: 56px; right: 8px; }
             hide_search:false,
             current_tab:0
         }        </script><!-- FASTCOMMENTS-LAZY: widget init moved to main_js/main.js -- it pulls embed.min.js only when #fastcomments-widget nears the viewport or on the first Comments-toggle click, so it no longer blocks first render -->                <script src="https://mes.fm/main_js/lazysizes.min.js?v=1.0.3" async></script>
-	<script src="/dark-mode/js/dark-mode.js?v=2" defer></script>
+	<script src="/dark-mode/js/dark-mode.js?v=3" defer></script>
             <script src="https://mes.fm/main_js/main.js?v=1.0.5"></script>    <!-- PAGEVIEW-TRACKING-INSERTED --><script src="https://mes.fm/main_js/track.js" defer></script><script>document.getElementById('copyright-year').textContent = new Date().getFullYear();</script><script src="/main_js/info-bar-fit.js" defer></script><script>
   // Floating compact header bar (see #compact-nav CSS): appears once the
   // header + nav bar have scrolled off the top; nav links that don't fit

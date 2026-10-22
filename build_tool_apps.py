@@ -664,13 +664,13 @@ APPS = {
     "read-aloud": dict(tools_extra=EXT_TAB, title="MES Read Aloud", page_title="Read Aloud",
                        tag="Listen to any page with the words highlighted.", accent="#15803d", dark="#105f2c", tint="#e3f4ea",
                        desc="Free MES Read Aloud browser extension for Chrome, Brave and Edge: reads any web page or selected text aloud and highlights the word and sentence being read, right on the page. Private, no tracking, setups for different voices and speeds.",
-                       js_v="2"),
+                       js_v="3"),
     # Dark Mode: download + install page of MES's own dark / light mode browser extension (source in mes.fm/dark-mode/extension/, zipped by
     # build_dark_mode_extension.py; tests node tool_apps_src/dark-mode-tests.js). app.js only fills in the version from the extension's manifest.
     "dark-mode": dict(tools_extra=EXT_TAB, title="MES Dark Mode", page_title="Dark Mode",
                       tag="Dark mode (or light mode) for any website.", accent="#4338ca", dark="#312e81", tint="#e9e8fb",
                       desc="Free MES Dark Mode browser extension for Chrome, Brave and Edge: dark mode for any website, or light mode for dark ones, with per-site control, a schedule, setups and brightness, sepia and contrast tweaks. Private, no tracking.",
-                      js_v="2"),
+                      js_v="3"),
     # Volume Booster / Text Size: download + install pages of MES's own browser extensions (sources in mes.fm/<slug>/extension/, zipped by
     # build_<name>_extension.py; tests node tool_apps_src/<name>-tests.js). app.js only fills in the version from the extension's manifest.
     "volume-booster": dict(tools_extra=EXT_TAB, title="MES Volume Booster", page_title="Volume Booster",
