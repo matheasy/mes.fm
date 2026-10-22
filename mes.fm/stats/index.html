@@ -475,6 +475,15 @@ body.is-stuck #navbar.hide { position: fixed; top: 56px; right: 8px; }
 	body.dark-mode .st-seo a{color:#71adea}
 	body.dark-mode .st-seo a:hover{color:#6facec}
 	/* TOOL-DARK:END */
+	/* Google Ads return check (after TOOL-DARK:END, so add_tool_page_controls.py keeps these hand-written rules) */
+	.st .adr-note {font-size:0.88em;color:var(--muted);margin:0 0 0.8em;}
+	.st .adr-tiles {display:grid;grid-template-columns:repeat(auto-fit,minmax(9.5em,1fr));gap:0.6em;margin:0 0 1em;}
+	.st .adr-tile {border:1px solid var(--line);border-radius:0.5em;padding:0.6em 0.75em;background:#fff;}
+	.st .adr-tile b {display:block;font-size:1.45em;color:#1e2733;line-height:1.2;}
+	.st .adr-tile span {font-size:0.8em;color:var(--muted);}
+	body.dark-mode .st .adr-tile {background:#1f2327;border-color:#3a4047;}
+	body.dark-mode .st .adr-tile b {color:#e3e7ec;}
+	body.dark-mode .st .adr-note, body.dark-mode .st .adr-tile span {color:#aab2bd;}
 </style>
         <meta property="fb:app_id" content="" />
         <meta name="author" content="Math Easy Solutions Staff">
@@ -774,6 +783,29 @@ body.is-stuck #navbar.hide { position: fixed; top: 56px; right: 8px; }
 			</div>
 		</section>
 
+		<section class="stats-section" id="adReturns">
+			<h2>Do Google Ads Visitors Come Back?</h2>
+			<p class="adr-note">Visitors whose first visit was a Google Ads click, by the page they landed on, and whether they came back later on their own (not through another ad). A day counts once however many pages are opened.</p>
+			<div class="range-tabs" id="adrTabs">
+				<button type="button" class="range-tab" data-adr="7d">First click in the last 7 days</button>
+				<button type="button" class="range-tab active" data-adr="30d">30 days</button>
+				<button type="button" class="range-tab" data-adr="90d">90 days</button>
+			</div>
+			<div class="adr-tiles" id="adrTiles"></div>
+			<div class="table-wrap">
+				<table>
+					<thead>
+						<tr><th>Landing page</th><th class="views">Ad visitors</th><th class="views">Came back</th><th class="views">Came back 5+ days</th><th class="views">Days back per visitor</th></tr>
+					</thead>
+					<tbody id="adrBody">
+						<tr><td colspan="99" class="empty-state">Loading&hellip;</td></tr>
+					</tbody>
+					<tfoot id="adrFoot"></tfoot>
+				</table>
+			</div>
+			<p class="adr-note" id="adrYoung"></p>
+		</section>
+
 		<div class="st-seo">
 			<h2>How to read the stats</h2>
 			<ul>
@@ -786,7 +818,7 @@ body.is-stuck #navbar.hide { position: fixed; top: 56px; right: 8px; }
 			<p>One page load on a mes.fm page that carries the tracking beacon. Bots are classified separately as their own device type, and traffic from other mes.fm pages shows up as <em>Internal</em> so you can tell it apart from search and social visitors.</p>
 
 			<h3>Is anything about me stored?</h3>
-			<p>No cookies and no accounts. The beacon records the page path plus a coarse device type and traffic source; the only thing this page keeps on your device is your selected time range.</p>
+			<p>No cookies and no accounts. The beacon records the page path plus a coarse device type and traffic source; the only thing this page keeps on your device is your selected time range. If your first visit came from one of our Google Ads, your browser also remembers that ad's landing page and day (for 180 days, on your device only), so later visits can be counted in the totals above as &ldquo;came back&rdquo;.</p>
 		</div>
 	</div>
 	</div>                                    <!-- PC (Responsive/Rectangle) Matched Content -->
@@ -845,7 +877,7 @@ body.is-stuck #navbar.hide { position: fixed; top: 56px; right: 8px; }
             hide_search:false,
             current_tab:0
         }        </script><!-- FASTCOMMENTS-LAZY: widget init moved to main_js/main.js -- it pulls embed.min.js only when #fastcomments-widget nears the viewport or on the first Comments-toggle click, so it no longer blocks first render -->                <script src="https://mes.fm/main_js/lazysizes.min.js?v=1.0.3" async></script>
-	<script src="/stats/js/stats.js?v=11" defer></script>
+	<script src="/stats/js/stats.js?v=12" defer></script>
             <script src="https://mes.fm/main_js/main.js?v=1.0.5"></script>    <!-- PAGEVIEW-TRACKING-INSERTED --><script src="https://mes.fm/main_js/track.js" defer></script><script>document.getElementById('copyright-year').textContent = new Date().getFullYear();</script><script src="/main_js/info-bar-fit.js" defer></script><script>
   // Floating compact header bar (see #compact-nav CSS): appears once the
   // header + nav bar have scrolled off the top; nav links that don't fit

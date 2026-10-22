@@ -133,7 +133,7 @@ function thCell(label, key, state, extraClass) {
 }
 
 function setActiveTab() {
-  document.querySelectorAll('.range-tab').forEach(function (btn) {
+  document.querySelectorAll('#rangeTabs .range-tab').forEach(function (btn) {
     btn.classList.toggle('active', btn.dataset.range === currentRange);
   });
 }
@@ -1063,3 +1063,65 @@ viewBtns.forEach(function (btn) {
     applyStatsView();
   });
 });
+
+// ---- Do Google Ads visitors come back? (/api/ads-returns, written by api/track.js from main_js/track.js).
+// Its own 7 / 30 / 90-day tabs: the days are when a visitor's first ad click happened, so a range is one cohort.
+let adrRange = '30d';
+try { adrRange = localStorage.getItem('statsAdrRange') || '30d'; } catch (e) {}
+if (!/^(7d|30d|90d)$/.test(adrRange)) adrRange = '30d';
+
+function adrTile(value, label) {
+  return '<div class="adr-tile"><b>' + value + '</b><span>' + label + '</span></div>';
+}
+
+async function loadAdReturns() {
+  document.querySelectorAll('#adrTabs .range-tab').forEach(function (btn) {
+    btn.classList.toggle('active', btn.dataset.adr === adrRange);
+  });
+  const body = document.getElementById('adrBody');
+  const foot = document.getElementById('adrFoot');
+  const tiles = document.getElementById('adrTiles');
+  const young = document.getElementById('adrYoung');
+  body.innerHTML = '<tr><td colspan="99" class="empty-state">Loading&hellip;</td></tr>';
+  foot.innerHTML = '';
+  try {
+    const res = await fetch('/api/ads-returns?range=' + adrRange);
+    if (!res.ok) throw new Error('bad response');
+    const data = await res.json();
+    const t = data.totals || { arrivals: 0, returned: 0, loyal: 0, returnDays: 0 };
+    const perVisitor = function (r) { return r.arrivals ? (r.returnDays / r.arrivals).toFixed(2) : '0'; };
+    tiles.innerHTML = adrTile(t.arrivals.toLocaleString(), 'ad visitors (first click)') +
+      adrTile(pctText(t.returned, t.arrivals), 'came back at least once') +
+      adrTile(pctText(t.loyal, t.arrivals), 'came back on 5+ days') +
+      adrTile(perVisitor(t), 'days back per ad visitor');
+    const rows = data.rows || [];
+    if (!rows.length) {
+      body.innerHTML = '<tr><td colspan="99" class="empty-state">No ad visitors recorded yet for this range (counting started Oct 22, 2026).</td></tr>';
+    } else {
+      body.innerHTML = rows.map(function (r) {
+        return '<tr><td><a href="' + escapeHtml(r.path) + '">' + escapeHtml(r.path) + '</a></td>' +
+          '<td class="views">' + r.arrivals.toLocaleString() + '</td>' +
+          '<td class="views">' + r.returned.toLocaleString() + ' <small>(' + pctText(r.returned, r.arrivals) + ')</small></td>' +
+          '<td class="views">' + r.loyal.toLocaleString() + ' <small>(' + pctText(r.loyal, r.arrivals) + ')</small></td>' +
+          '<td class="views">' + perVisitor(r) + '</td></tr>';
+      }).join('');
+      foot.innerHTML = '<tr><td>Total</td><td class="views">' + t.arrivals.toLocaleString() + '</td><td class="views">' + t.returned.toLocaleString() +
+        '</td><td class="views">' + t.loyal.toLocaleString() + '</td><td class="views">' + perVisitor(t) + '</td></tr>';
+    }
+    young.textContent = data.recentArrivals
+      ? data.recentArrivals.toLocaleString() + ' of these ad visitors arrived in the last 7 days and have had little time to come back, so the newest numbers rise over the following weeks. Counted per browser: someone who comes back on another device counts as not returning.'
+      : 'Counted per browser: someone who comes back on another device counts as not returning.';
+  } catch (e) {
+    body.innerHTML = '<tr><td colspan="99" class="empty-state">Ad return stats are temporarily unavailable.</td></tr>';
+    tiles.innerHTML = '';
+  }
+}
+
+document.getElementById('adrTabs').addEventListener('click', function (e) {
+  const btn = e.target.closest('.range-tab');
+  if (!btn || btn.dataset.adr === adrRange) return;
+  adrRange = btn.dataset.adr;
+  try { localStorage.setItem('statsAdrRange', adrRange); } catch (e) {}
+  loadAdReturns();
+});
+loadAdReturns();

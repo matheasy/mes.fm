@@ -19,5 +19,24 @@
     referrer: document.referrer || '',
     ad: paid
   });
+  // Do Google Ads visitors come back? The first ad click remembers its landing page and day in this browser only
+  // (localStorage 'mes-adv', never a cookie, forgotten after 180 days); a later non-ad visit on another day reports
+  // "came back" against that landing page and day. /stats shows totals only (api/track.js, api/ads-returns.js).
+  try {
+    var day = new Date().toISOString().slice(0, 10), rec = JSON.parse(localStorage.getItem('mes-adv') || 'null');
+    if (rec && !(Date.parse(day) - Date.parse(rec.d) <= 180 * 864e5)) rec = null;
+    if (paid && !rec) {
+      rec = { p: location.pathname.slice(0, 150), d: day, n: 0, l: day };
+      data.set('adf', '1');
+    } else if (rec && !paid && day !== rec.l) {
+      rec.n++;
+      data.set('adr', String(rec.n));
+    }
+    if (rec) {
+      rec.l = day;
+      if (data.has('adf') || data.has('adr')) { data.set('adp', rec.p); data.set('add', rec.d); }
+      localStorage.setItem('mes-adv', JSON.stringify(rec));
+    } else localStorage.removeItem('mes-adv');
+  } catch (e) {}
   navigator.sendBeacon('https://mes.fm/api/track', data);
 })();

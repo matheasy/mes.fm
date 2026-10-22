@@ -7,6 +7,7 @@ const SITE_RE = /^([a-z0-9-]+\.)*mes\.fm$/i;
 
 const HOUR_TTL = 26 * 3600; // covers the rolling 24h window plus buffer
 const DAY_TTL = 366 * 86400; // covers the rolling 365d window plus buffer
+const ADS_TTL = 400 * 86400; // ad-visitor cohorts: 180 days of returns + a 90-day view window + buffer
 
 // Bucket keys already given a TTL by this (warm) serverless instance.
 const expiredKeys = new Set();
@@ -148,6 +149,28 @@ module.exports = async (req, res) => {
   };
   [hourlyLeaderboard, hourlyDeviceTotals, hourlySourceTotals, hourlyPageDeviceSources].forEach((k) => expireOnce(k, HOUR_TTL));
   [dailyLeaderboard, dailyDeviceTotals, dailySourceTotals, dailyPageDeviceSources].forEach((k) => expireOnce(k, DAY_TTL));
+
+  // Google Ads return check (main_js/track.js): every key is the ad visitor's first ad-click day, so a range of days
+  // is one cohort of ad visitors. adf = a browser's first ad click (must be today), adr = its Nth later day back.
+  const adPath = String(body.adp || '');
+  const adDay = String(body.add || '');
+  if (adPath.startsWith('/') && adPath.length <= 150 && !adPath.includes('|') && /^\d{4}-\d{2}-\d{2}$/.test(adDay)) {
+    const age = (Date.parse(dk) - Date.parse(adDay)) / 86400000;
+    const adMember = `${site}|${adPath}`;
+    const adKeys = [];
+    if (body.adf === '1' && age === 0) {
+      adKeys.push(`ads:arr:${adDay}`);
+    } else if (/^\d{1,4}$/.test(String(body.adr || '')) && age > 0 && age <= 180) {
+      const n = Number(body.adr);
+      adKeys.push(`ads:retdays:${adDay}`);
+      if (n === 1) adKeys.push(`ads:ret1:${adDay}`);
+      if (n === 5) adKeys.push(`ads:ret5:${adDay}`);
+    }
+    adKeys.forEach((k) => {
+      commands.push(['ZINCRBY', k, '1', adMember]);
+      expireOnce(k, ADS_TTL);
+    });
+  }
 
   try {
     await fetch(`${process.env.UPSTASH_REDIS_REST_URL}/pipeline`, {
