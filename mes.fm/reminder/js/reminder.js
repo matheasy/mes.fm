@@ -369,8 +369,7 @@
 	}
 	var PRESETS = [
 		["MES Livestream", "MES Livestream ", "https://www.youtube.com/@mes/streams"],
-		["MES Math Q/A", "MES Math Q/A ", "https://www.youtube.com/@mes/streams"],
-		["MES Truth Livestream", "MES Livestream ", "https://www.youtube.com/@mestruth/streams"]
+		["MES Math Q/A", "MES Math Q/A ", "https://www.youtube.com/@mes/streams"]
 	];
 	$("rm-presets").innerHTML = PRESETS.map(function (p, i) { return '<button type="button" class="tu-chip" data-p="' + i + '">' + esc(p[0]) + "</button>"; }).join("");
 	$("rm-presets").addEventListener("click", function (e) {
