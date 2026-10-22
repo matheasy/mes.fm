@@ -188,15 +188,6 @@
 		var q = t.toLowerCase().replace(/\s+/g, "_");
 		return ALL.filter(function (z) { return CK.city(z).toLowerCase().replace(/\s+/g, "_") === q; })[0] || ALL.filter(function (z) { return z.toLowerCase().indexOf(q) >= 0; })[0] || "";
 	}
-	var PRESETS = [
-		["MES Livestream", "MES Livestream ", "https://www.youtube.com/@mes/streams"],
-		["MES Math Q/A", "MES Math Q/A ", "https://www.youtube.com/@mes/streams"]
-	];
-	$("rm-presets").innerHTML = PRESETS.map(function (p, i) { return '<button type="button" class="tu-chip" data-p="' + i + '">' + esc(p[0]) + "</button>"; }).join("");
-	$("rm-presets").addEventListener("click", function (e) {
-		var b = e.target.closest("[data-p]"); if (!b) return; var p = PRESETS[+b.getAttribute("data-p")];
-		$("rm-title").value = p[1]; $("rm-url").value = p[2]; $("rm-title").focus(); var L = $("rm-title").value.length; $("rm-title").setSelectionRange(L, L); upd();
-	});
 	var MK = "mes-reminder:draft";
 	function draft() { return { title: $("rm-title").value, t: $("rm-date").value && $("rm-time").value ? $("rm-date").value + "T" + $("rm-time").value : "", tz: resolveZone($("rm-tz").value), u: $("rm-url").value, d: $("rm-desc").value, r: $("rm-rep").value, len: +$("rm-len").value }; }
 	function upd() {
@@ -288,7 +279,9 @@
 		["rm-date", "rm-time"].forEach(function (id) { $(id).dispatchEvent(new Event("input", { bubbles: true })); $(id).dispatchEvent(new Event("change", { bubbles: true })); });
 		upd(); toast("Filled in: " + x.title);
 	}
-	fetch("/reminder/upcoming.json", { cache: "no-cache" }).then(function (r) { return r.ok ? r.json() : null; }).then(function (data) {
+	// MES's own next streams: off for ordinary visitors (the page is a neutral tool); ?mes=1 turns them on in this browser, ?mes=0 off
+	var MES_ON = (function () { var q = new URLSearchParams(location.search).get("mes"); try { if (q === "1" || q === "0") localStorage.setItem("mes-reminder:mes", q); return localStorage.getItem("mes-reminder:mes") === "1"; } catch (e) { return q === "1"; } })();
+	if (MES_ON) fetch("/reminder/upcoming.json", { cache: "no-cache" }).then(function (r) { return r.ok ? r.json() : null; }).then(function (data) {
 		if (!data || !Array.isArray(data.streams)) return;
 		var now = Date.now(), list = data.streams.map(function (x) { return { title: String(x.title || ""), url: RM.safeUrl(x.url), ms: Date.parse(x.start) }; })
 			.filter(function (x) { return x.title && x.url && x.ms > now - 2 * 3600000; }).slice(0, 4);    // keep a stream for 2 h after its start (it is live then)
