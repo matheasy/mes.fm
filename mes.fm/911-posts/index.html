@@ -986,6 +986,48 @@ body.dark-mode .ls-chips button { background: #2a2a2a; color: #ddd; border-color
 body.dark-mode .ls-chips button:hover { border-color: #6cb6f5; color: #6cb6f5; }
 body.dark-mode .ls-chips button[aria-pressed="true"] { background: #6cb6f5; border-color: #6cb6f5; color: #111; }
 body.dark-mode .ls-empty { color: #aaa; }
+/* "Open in:" preferred-site switch + per-card site icon (shared/link-pref.mjs, main_js/link-pref.js). */
+.lp-row { display: flex; flex-wrap: wrap; align-items: flex-start; column-gap: 1em; }
+.lp-row > .ls-chips { flex: 1 1 22em; }
+.lp-row--solo { margin: 0 0 0.6em; }
+.lp { display: flex; flex-wrap: wrap; align-items: center; gap: 0.3em; margin: 0.7em 0 0 auto; font-size: 0.85em; }
+.lp-lbl { color: #555; margin-right: 0.15em; }
+.lp button {
+  font: inherit; cursor: pointer; display: inline-flex; align-items: center; gap: 0.3em; min-height: 2.2em;
+  padding: 0.3em 0.65em; border-radius: 1.2em; border: 1px solid #c3c9d2; background: #fff; color: #333;
+}
+.lp button:hover { border-color: #277bb6; color: #1a6fb0; }
+.lp button:focus-visible { outline: 2px solid #277bb6; outline-offset: 2px; }
+.lp button[aria-pressed="true"] { background: #277bb6; border-color: #277bb6; color: #fff; }
+.lp button.lp-few:not([aria-pressed="true"]) { color: #6a7280; border-style: dashed; }
+.lp-n { font-size: 0.85em; font-variant-numeric: tabular-nums; }
+.lp-ic {
+  display: inline-block; flex: none; width: 1.15em; height: 1.15em; vertical-align: -0.2em; background: currentColor;
+  -webkit-mask: var(--lp-i) center / contain no-repeat; mask: var(--lp-i) center / contain no-repeat;
+}
+/* the pages' CSS reset paints every span / a #333: take the button's / caption's colour instead */
+.lp button span, .lp-a .lp-ic, .lp-a .lp-name { color: inherit; }
+.link-card-readmore .lp-ic { margin-right: 0.3em; }
+.list-row h3 .lp-a { color: inherit; text-decoration: none; }
+.list-row h3 .lp-a:hover { text-decoration: underline; }
+.list-row h3 .lp-ic { width: 0.85em; height: 0.85em; margin-left: 0.35em; vertical-align: -0.05em; opacity: 0.75; }
+.lp-ic[data-s="mes"] { --lp-i: url("data:image/svg+xml,%3Csvg%20xmlns%3D'http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg'%20viewBox%3D'0%200%2024%2024'%3E%3Cpath%20fill-rule%3D'evenodd'%20d%3D'M1%2012.6%204.6%2010.6%208.6%2017.4%2014.6%201.8H23.2V4.8H16.6L10%2022.4H7.4z'%2F%3E%3C%2Fsvg%3E"); }
+.lp-ic[data-s="youtube"] { --lp-i: url("data:image/svg+xml,%3Csvg%20xmlns%3D'http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg'%20viewBox%3D'0%200%2024%2024'%3E%3Cpath%20fill-rule%3D'evenodd'%20d%3D'M23%207.2a3%203%200%200%200-2.1-2.1C19%204.6%2012%204.6%2012%204.6s-7%200-8.9.5A3%203%200%200%200%201%207.2C.5%209.1.5%2012%20.5%2012s0%202.9.5%204.8a3%203%200%200%200%202.1%202.1c1.9.5%208.9.5%208.9.5s7%200%208.9-.5a3%203%200%200%200%202.1-2.1c.5-1.9.5-4.8.5-4.8s0-2.9-.5-4.8zM9.7%2015.4V8.6l5.9%203.4z'%2F%3E%3C%2Fsvg%3E"); }
+.lp-ic[data-s="hive"] { --lp-i: url("data:image/svg+xml,%3Csvg%20xmlns%3D'http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg'%20viewBox%3D'0%200%2024%2024'%3E%3Cpath%20fill-rule%3D'evenodd'%20d%3D'M6.8%202.5h10.4L22.5%2012l-5.3%209.5H6.8L1.5%2012zM9%206.5%206.3%2012%209%2017.5h6l2.7-5.5L15%206.5z'%2F%3E%3C%2Fsvg%3E"); }
+.lp-ic[data-s="3speak"] { --lp-i: url("data:image/svg+xml,%3Csvg%20xmlns%3D'http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg'%20viewBox%3D'0%200%2024%2024'%3E%3Cpath%20fill-rule%3D'evenodd'%20d%3D'M12%201.5a10.5%2010.5%200%201%201%200%2021%2010.5%2010.5%200%200%201%200-21zM9.5%207.5v9l7-4.5z'%2F%3E%3C%2Fsvg%3E"); }
+.lp-ic[data-s="rumble"] { --lp-i: url("data:image/svg+xml,%3Csvg%20xmlns%3D'http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg'%20viewBox%3D'0%200%2024%2024'%3E%3Cpath%20fill-rule%3D'evenodd'%20d%3D'M5%203.8c0-1.6%201.7-2.5%203-1.6l12.4%208.2c1.2.8%201.2%202.4%200%203.2L8%2021.8c-1.3.9-3-.1-3-1.6zM8.6%208.5v7l5.4-3.5z'%2F%3E%3C%2Fsvg%3E"); }
+.lp-ic[data-s="odysee"] { --lp-i: url("data:image/svg+xml,%3Csvg%20xmlns%3D'http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg'%20viewBox%3D'0%200%2024%2024'%3E%3Cpath%20fill-rule%3D'evenodd'%20d%3D'M12%201.5a10.5%2010.5%200%201%201%200%2021%2010.5%2010.5%200%200%201%200-21zM12%206a6%206%200%201%200%200%2012%206%206%200%200%200%200-12z'%2F%3E%3C%2Fsvg%3E"); }
+.lp-ic[data-s="x"] { --lp-i: url("data:image/svg+xml,%3Csvg%20xmlns%3D'http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg'%20viewBox%3D'0%200%2024%2024'%3E%3Cpath%20fill-rule%3D'evenodd'%20d%3D'M3%203h5.4l4.2%205.9L17.7%203h3l-6.7%207.7L21.5%2021h-5.4l-4.6-6.4L5.9%2021H3l7.2-8.3z'%2F%3E%3C%2Fsvg%3E"); }
+.lp-ic[data-s="bitchute"] { --lp-i: url("data:image/svg+xml,%3Csvg%20xmlns%3D'http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg'%20viewBox%3D'0%200%2024%2024'%3E%3Cpath%20fill-rule%3D'evenodd'%20d%3D'M3%203h18v18H3zM8%206.5v11h5.3c2.2%200%203.7-1.2%203.7-3.1%200-1.4-.8-2.4-2.1-2.7%201-.4%201.6-1.3%201.6-2.4%200-1.8-1.4-2.8-3.5-2.8zM10.6%208.6h2.1c.9%200%201.4.4%201.4%201.1s-.5%201.2-1.4%201.2h-2.1zm0%204.2h2.4c1%200%201.5.5%201.5%201.2%200%20.8-.6%201.3-1.5%201.3h-2.4z'%2F%3E%3C%2Fsvg%3E"); }
+.lp-ic[data-s="telegram"] { --lp-i: url("data:image/svg+xml,%3Csvg%20xmlns%3D'http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg'%20viewBox%3D'0%200%2024%2024'%3E%3Cpath%20fill-rule%3D'evenodd'%20d%3D'M1.5%2011.2%2021.6%203.3c.9-.3%201.7.3%201.4%201.7l-3.4%2016c-.2%201.1-.9%201.4-1.8.9l-5-3.7-2.4%202.3c-.3.3-.5.5-1%20.5l.4-5.1%209.3-8.4c.4-.4-.1-.6-.6-.2L6.9%2014.6%202%2013.1c-1.1-.3-1.1-1.1.5-1.9z'%2F%3E%3C%2Fsvg%3E"); }
+.lp-ic[data-s="twitch"] { --lp-i: url("data:image/svg+xml,%3Csvg%20xmlns%3D'http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg'%20viewBox%3D'0%200%2024%2024'%3E%3Cpath%20fill-rule%3D'evenodd'%20d%3D'M4%202%202.5%206v14h5v2.5h2.8L13%2020h4l5-5V2zm16%2012-3%203h-4.5L10%2019.5V17H6V4h14zM15%207h2v5h-2zm-5%200h2v5h-2z'%2F%3E%3C%2Fsvg%3E"); }
+body.dark-mode .lp-lbl, body.dark .lp-lbl { color: #bbb; }
+body.dark-mode .list-row h3 .lp-a, body.dark .list-row h3 .lp-a { color: inherit; }
+body.dark-mode .lp button, body.dark .lp button { background: #2a2a2a; color: #ddd; border-color: #555; }
+body.dark-mode .lp button:hover, body.dark .lp button:hover { border-color: #6cb6f5; color: #6cb6f5; }
+body.dark-mode .lp button[aria-pressed="true"], body.dark .lp button[aria-pressed="true"] { background: #6cb6f5; border-color: #6cb6f5; color: #111; }
+body.dark-mode .lp button.lp-few:not([aria-pressed="true"]), body.dark .lp button.lp-few:not([aria-pressed="true"]) { color: #a3abb8; }
+body.dark-mode .lp button:focus-visible, body.dark .lp button:focus-visible { outline-color: #6cb6f5; }
 </style>
 
 <meta property="fb:app_id" content="120877788060946" />
@@ -1206,7 +1248,10 @@ body.dark-mode .ls-empty { color: #aaa; }
   
     <div class="ls-filter" id="911-postsFilter">
       <input type="search" id="911-postsSearch" placeholder="Search the posts…" aria-label="Search" autocomplete="off">
-      <div class="ls-chips" id="911-postsChips"><button type="button" data-c="all" data-label="All" aria-pressed="true">All (18)</button><button type="button" data-c="judy" data-label="Dr. Judy Wood" aria-pressed="false">Dr. Judy Wood (6)</button><button type="button" data-c="planes" data-label="Planes" aria-pressed="false">Planes (3)</button><button type="button" data-c="people" data-label="Witnesses &amp; Researchers" aria-pressed="false">Witnesses &amp; Researchers (6)</button><button type="button" data-c="events" data-label="News &amp; Documents" aria-pressed="false">News &amp; Documents (4)</button><button type="button" data-c="other" data-label="Everything else" aria-pressed="false">Everything else (2)</button></div>
+      <div class="lp-row"><div class="ls-chips" id="911-postsChips"><button type="button" data-c="all" data-label="All" aria-pressed="true">All (18)</button><button type="button" data-c="judy" data-label="Dr. Judy Wood" aria-pressed="false">Dr. Judy Wood (6)</button><button type="button" data-c="planes" data-label="Planes" aria-pressed="false">Planes (3)</button><button type="button" data-c="people" data-label="Witnesses &amp; Researchers" aria-pressed="false">Witnesses &amp; Researchers (6)</button><button type="button" data-c="events" data-label="News &amp; Documents" aria-pressed="false">News &amp; Documents (4)</button><button type="button" data-c="other" data-label="Everything else" aria-pressed="false">Everything else (2)</button></div>
+      <div class="lp" data-lp role="group" aria-label="Open links in">
+        <span class="lp-lbl" aria-hidden="true">Open in:</span><button type="button" data-s="auto" aria-pressed="true" aria-label="Open in: Auto (the usual link: the mes.fm page when there is one)" title="Auto: the usual link (the mes.fm page when there is one)">Auto</button><button type="button" data-s="mes" data-label="MES.fm" aria-pressed="false" aria-label="Open in MES.fm (18 of 18 have a MES.fm link)" title="Open in MES.fm (18 of 18 have a MES.fm link)"><span class="lp-ic" data-s="mes" aria-hidden="true"></span><span class="lp-n">18</span></button><button type="button" data-s="hive" data-label="Hive" aria-pressed="false" aria-label="Open in Hive (8 of 18 have a Hive link)" title="Open in Hive (8 of 18 have a Hive link)"><span class="lp-ic" data-s="hive" aria-hidden="true"></span><span class="lp-n">8</span></button><button type="button" data-s="telegram" data-label="Telegram" aria-pressed="false" aria-label="Open in Telegram (17 of 18 have a Telegram link)" title="Open in Telegram (17 of 18 have a Telegram link)"><span class="lp-ic" data-s="telegram" aria-hidden="true"></span><span class="lp-n">17</span></button>
+      </div></div>
     </div>
     <p class="ls-empty" id="911-postsEmpty" hidden>Nothing matches. Try fewer words or a different filter.</p>
     <div class="view-toggle">
@@ -1215,222 +1260,222 @@ body.dark-mode .ls-empty { color: #aaa; }
       
     </div>
     <div class="card-grid" id="911-postsGrid">
-    <a class="link-card" data-cats="planes people" href="https://mes.fm/911planesresearch-telegram">
+    <a class="link-card lp-a" data-cats="planes people" data-lp-def="mes" data-l-mes="https://mes.fm/911planesresearch-telegram" data-l-hive="https://inleo.io/threads/view/mestruth/re-leothreads-2vwcfciug" href="https://mes.fm/911planesresearch-telegram">
       <span class="link-card-thumb" style="background-image:url('https://mes.fm/911planesresearch-telegram/img/planes-research.jpg')"></span>
       <span class="link-card-body">
         <span class="link-card-title">Mark Conlon aka 9/11 Planes Research Is Back with a New Telegram Channel</span>
-        <span class="link-card-readmore">View &rarr;</span>
+        <span class="link-card-readmore"><span class="lp-ic" data-s="mes" aria-hidden="true"></span><span class="lp-name">View on MES.fm</span> &rarr;</span>
       </span>
     </a>
-    <a class="link-card" data-cats="judy" href="https://mes.fm/amaterasu-solar-judy-wood-quote">
+    <a class="link-card lp-a" data-cats="judy" data-lp-def="mes" data-l-mes="https://mes.fm/amaterasu-solar-judy-wood-quote" data-l-telegram="https://t.me/meslinks/31848" href="https://mes.fm/amaterasu-solar-judy-wood-quote">
       <span class="link-card-thumb" style="background-image:url('https://mes.fm/amaterasu-solar-judy-wood-quote/img/amaterasu-solar-judy-wood-quote-1.png')"></span>
       <span class="link-card-body">
         <span class="link-card-title">Amaterasu Solar Bought a Dr. Judy Wood Quote Coffee Mug</span>
-        <span class="link-card-readmore">View &rarr;</span>
+        <span class="link-card-readmore"><span class="lp-ic" data-s="mes" aria-hidden="true"></span><span class="lp-name">View on MES.fm</span> &rarr;</span>
       </span>
     </a>
-    <a class="link-card" data-cats="events" href="https://mes.fm/youtube-removed-curt-weldon-911">
+    <a class="link-card lp-a" data-cats="events" data-lp-def="mes" data-l-mes="https://mes.fm/youtube-removed-curt-weldon-911" data-l-telegram="https://t.me/meslinks/35602" href="https://mes.fm/youtube-removed-curt-weldon-911">
       <span class="link-card-thumb" style="background-image:url('https://mes.fm/youtube-removed-curt-weldon-911/img/youtube-removed-curt-weldon-911-1.png')"></span>
       <span class="link-card-body">
         <span class="link-card-title">YouTube Removed My Curt Weldon 9/11 Video for &quot;Hate Speech&quot; (Appeal Rejected)</span>
-        <span class="link-card-readmore">View &rarr;</span>
+        <span class="link-card-readmore"><span class="lp-ic" data-s="mes" aria-hidden="true"></span><span class="lp-name">View on MES.fm</span> &rarr;</span>
       </span>
     </a>
-    <a class="link-card" data-cats="planes" href="https://mes.fm/alleged-hijackers-id-911">
+    <a class="link-card lp-a" data-cats="planes" data-lp-def="mes" data-l-mes="https://mes.fm/alleged-hijackers-id-911" data-l-hive="https://inleo.io/@mestruth/alleged-hijackers-alleged-id-on-all-four-911-sites-cav" data-l-telegram="https://t.me/meslinks/35581" href="https://mes.fm/alleged-hijackers-id-911">
       <span class="link-card-thumb" style="background-image:url('https://snipboard.io/JjRc1x.jpg')"></span>
       <span class="link-card-body">
         <span class="link-card-title">Alleged Hijackers' Alleged ID on all Four 9/11 sites</span>
-        <span class="link-card-readmore">View &rarr;</span>
+        <span class="link-card-readmore"><span class="lp-ic" data-s="mes" aria-hidden="true"></span><span class="lp-name">View on MES.fm</span> &rarr;</span>
       </span>
     </a>
-    <a class="link-card" data-cats="judy" href="https://mes.fm/drjudywood-total-disclosure-podcast">
+    <a class="link-card lp-a" data-cats="judy" data-lp-def="mes" data-l-mes="https://mes.fm/drjudywood-total-disclosure-podcast" data-l-hive="https://inleo.io/threads/view/mestruth/re-leothreads-rn7i2ltd" data-l-telegram="https://t.me/meslinks/35555" href="https://mes.fm/drjudywood-total-disclosure-podcast">
       <span class="link-card-thumb" style="background-image:url('https://mes.fm/drjudywood-total-disclosure-podcast/podcast.jpg')"></span>
       <span class="link-card-body">
         <span class="link-card-title">Dr. Judy Wood on the Total Disclosure Podcast</span>
-        <span class="link-card-readmore">View &rarr;</span>
+        <span class="link-card-readmore"><span class="lp-ic" data-s="mes" aria-hidden="true"></span><span class="lp-name">View on MES.fm</span> &rarr;</span>
       </span>
     </a>
-    <a class="link-card" data-cats="events" href="https://mes.fm/osama-911-plans-parody">
+    <a class="link-card lp-a" data-cats="events" data-lp-def="mes" data-l-mes="https://mes.fm/osama-911-plans-parody" data-l-hive="https://inleo.io/threads/view/mestruth/re-leothreads-2swq4wmuy" data-l-telegram="https://t.me/meslinks/35541" href="https://mes.fm/osama-911-plans-parody">
       <span class="link-card-thumb" style="background-image:url('https://img.leopedia.io/DQmWz6aEvGR9GePoHTwfsAX577kNWXHRVFzpFZ4bRKUG9aH/telegram-cloud-photo-size-1-4999448963589025076-y.jpg')"></span>
       <span class="link-card-body">
         <span class="link-card-title">BREAKING: CIA Unseals Osama Bin Laden's Writing Pad with His 9/11 Plans</span>
-        <span class="link-card-readmore">View &rarr;</span>
+        <span class="link-card-readmore"><span class="lp-ic" data-s="mes" aria-hidden="true"></span><span class="lp-name">View on MES.fm</span> &rarr;</span>
       </span>
     </a>
-    <a class="link-card" data-cats="people" href="https://mes.fm/peter-baron-ufo-ai-testimony">
+    <a class="link-card lp-a" data-cats="people" data-lp-def="mes" data-l-mes="https://mes.fm/peter-baron-ufo-ai-testimony" data-l-hive="https://inleo.io/@mestruth/mes-talks-to-peter-baron-about-his-ufo-911-sighting-8wr" data-l-telegram="https://t.me/meslinks/34685" href="https://mes.fm/peter-baron-ufo-ai-testimony">
       <span class="link-card-thumb" style="background-image:url('https://files.peakd.com/file/peakd-hive/mestruth/23xAZuUjwun9rsLm4Yn2bUjhTDc7FQvCv8KJLhS6CDrz5N2yqXVZGQyu2hLiBjSDKmuU7.jpg')"></span>
       <span class="link-card-body">
         <span class="link-card-title">MES Talks to Peter Baron About His UFO 9/11 Sighting</span>
-        <span class="link-card-readmore">View &rarr;</span>
+        <span class="link-card-readmore"><span class="lp-ic" data-s="mes" aria-hidden="true"></span><span class="lp-name">View on MES.fm</span> &rarr;</span>
       </span>
     </a>
-    <a class="link-card" data-cats="people" href="https://mes.fm/melissa-doi-voices-bleeped">
+    <a class="link-card lp-a" data-cats="people" data-lp-def="mes" data-l-mes="https://mes.fm/melissa-doi-voices-bleeped" data-l-hive="https://inleo.io/@mestruth/melissa-doi-and-the-1613-emergency-911-calls--7rf" data-l-telegram="https://t.me/meslinks/35523" href="https://mes.fm/melissa-doi-voices-bleeped">
       <span class="link-card-thumb" style="background-image:url('https://img.leopedia.io/DQmUEgBiwouKVBeFRpH9NrSS1F4aNmBjzJEdaQDpHz22ZnZ/telegram-cloud-photo-size-1-4994836263202393220-y.jpg')"></span>
       <span class="link-card-body">
         <span class="link-card-title">Melissa Doi and the 1,613 Emergency 9/11 Calls</span>
-        <span class="link-card-readmore">View &rarr;</span>
+        <span class="link-card-readmore"><span class="lp-ic" data-s="mes" aria-hidden="true"></span><span class="lp-name">View on MES.fm</span> &rarr;</span>
       </span>
     </a>
-    <a class="link-card" data-cats="other" href="https://mes.fm/911-3d-print-pin">
+    <a class="link-card lp-a" data-cats="other" data-lp-def="mes" data-l-mes="https://mes.fm/911-3d-print-pin" data-l-hive="https://inleo.io/threads/view/mestruth/re-leothreads-2l9pblb1n" data-l-telegram="https://t.me/meslinks/35521" href="https://mes.fm/911-3d-print-pin">
       <span class="link-card-thumb" style="background-image:url('https://snipboard.io/rRJXk6.jpg')"></span>
       <span class="link-card-body">
         <span class="link-card-title">Niece Made MES a 9/11 Pin with Her 3D Printing Pen</span>
-        <span class="link-card-readmore">View &rarr;</span>
+        <span class="link-card-readmore"><span class="lp-ic" data-s="mes" aria-hidden="true"></span><span class="lp-name">View on MES.fm</span> &rarr;</span>
       </span>
     </a>
-    <a class="link-card" data-cats="other" href="https://mes.fm/911-hiroshima-fumes">
+    <a class="link-card lp-a" data-cats="other" data-lp-def="mes" data-l-mes="https://mes.fm/911-hiroshima-fumes" data-l-hive="https://inleo.io/threads/view/mestruth/re-leothreads-2hnqzzfcv" data-l-telegram="https://t.me/meslinks/31654" href="https://mes.fm/911-hiroshima-fumes">
       <span class="link-card-thumb" style="background-image:url('https://snipboard.io/0XfKeg.jpg')"></span>
       <span class="link-card-body">
         <span class="link-card-title">Photo of Hiroshima One Day After the Atomic Bomb Shows Similar Fuming as 9/11</span>
-        <span class="link-card-readmore">View &rarr;</span>
+        <span class="link-card-readmore"><span class="lp-ic" data-s="mes" aria-hidden="true"></span><span class="lp-name">View on MES.fm</span> &rarr;</span>
       </span>
     </a>
-    <a class="link-card" data-cats="judy" href="https://mes.fm/judy-wood-john-wells-live">
+    <a class="link-card lp-a" data-cats="judy" data-lp-def="mes" data-l-mes="https://mes.fm/judy-wood-john-wells-live" data-l-telegram="https://t.me/meslinks/35496" href="https://mes.fm/judy-wood-john-wells-live">
       <span class="link-card-thumb" style="background-image:url('https://mes.fm/judy-wood-john-wells-live/img/judy-wood-caravan-to-midnight.jpg')"></span>
       <span class="link-card-body">
         <span class="link-card-title">Dr. Judy Wood Live on the John B. Wells – Caravan to Midnight Show</span>
-        <span class="link-card-readmore">View &rarr;</span>
+        <span class="link-card-readmore"><span class="lp-ic" data-s="mes" aria-hidden="true"></span><span class="lp-name">View on MES.fm</span> &rarr;</span>
       </span>
     </a>
-    <a class="link-card" data-cats="people" href="https://mes.fm/chris-hampton-big-idea">
+    <a class="link-card lp-a" data-cats="people" data-lp-def="mes" data-l-mes="https://mes.fm/chris-hampton-big-idea" data-l-telegram="https://t.me/meslinks/35487" href="https://mes.fm/chris-hampton-big-idea">
       <span class="link-card-thumb" style="background-image:url('https://mes.fm/chris-hampton-big-idea/img/chris-hampton-911-alchemy-comment.png')"></span>
       <span class="link-card-body">
         <span class="link-card-title">THE Chris Hampton Comments on the 9/11 Alchemy – A Big Idea Documentary</span>
-        <span class="link-card-readmore">View &rarr;</span>
+        <span class="link-card-readmore"><span class="lp-ic" data-s="mes" aria-hidden="true"></span><span class="lp-name">View on MES.fm</span> &rarr;</span>
       </span>
     </a>
-    <a class="link-card" data-cats="planes" href="https://mes.fm/911-mystery-plane-photos">
+    <a class="link-card lp-a" data-cats="planes" data-lp-def="mes" data-l-mes="https://mes.fm/911-mystery-plane-photos" data-l-telegram="https://t.me/meslinks/35464" href="https://mes.fm/911-mystery-plane-photos">
       <span class="link-card-thumb" style="background-image:url('https://mes.fm/911-mystery-plane-photos/img/mystery-plane-1-EhBWk8.jpg')"></span>
       <span class="link-card-body">
         <span class="link-card-title">Rare Photos of a Mystery White Plane Before the South Tower Hit</span>
-        <span class="link-card-readmore">View &rarr;</span>
+        <span class="link-card-readmore"><span class="lp-ic" data-s="mes" aria-hidden="true"></span><span class="lp-name">View on MES.fm</span> &rarr;</span>
       </span>
     </a>
-    <a class="link-card" data-cats="judy people events" href="https://mes.fm/matthew-naus-g-edward-griffin-wdtttg-book">
+    <a class="link-card lp-a" data-cats="judy people events" data-lp-def="mes" data-l-mes="https://mes.fm/matthew-naus-g-edward-griffin-wdtttg-book" data-l-telegram="https://t.me/meslinks/35461" href="https://mes.fm/matthew-naus-g-edward-griffin-wdtttg-book">
       <span class="link-card-thumb" style="background-image:url('https://mes.fm/matthew-naus-g-edward-griffin-wdtttg-book/img/naus-griffin-yYg38f.jpg')"></span>
       <span class="link-card-body">
         <span class="link-card-title">Matthew Naus Gave G. Edward Griffin the WDTTTG Book in 2012</span>
-        <span class="link-card-readmore">View &rarr;</span>
+        <span class="link-card-readmore"><span class="lp-ic" data-s="mes" aria-hidden="true"></span><span class="lp-name">View on MES.fm</span> &rarr;</span>
       </span>
     </a>
-    <a class="link-card" data-cats="people" href="https://mes.fm/kj-french-911-100k">
+    <a class="link-card lp-a" data-cats="people" data-lp-def="mes" data-l-mes="https://mes.fm/kj-french-911-100k" data-l-telegram="https://t.me/meslinks/35458" href="https://mes.fm/kj-french-911-100k">
       <span class="link-card-thumb" style="background-image:url('https://mes.fm/kj-french-911-100k/img/kj-french-100k-views.jpg')"></span>
       <span class="link-card-body">
         <span class="link-card-title">French 9/11 Researcher KJ Hits 100k Views in 24 Hours</span>
-        <span class="link-card-readmore">View &rarr;</span>
+        <span class="link-card-readmore"><span class="lp-ic" data-s="mes" aria-hidden="true"></span><span class="lp-name">View on MES.fm</span> &rarr;</span>
       </span>
     </a>
-    <a class="link-card" data-cats="judy" href="https://mes.fm/bought-911-hutchison-shirt">
+    <a class="link-card lp-a" data-cats="judy" data-lp-def="mes" data-l-mes="https://mes.fm/bought-911-hutchison-shirt" data-l-telegram="https://t.me/meslinks/35448" href="https://mes.fm/bought-911-hutchison-shirt">
       <span class="link-card-thumb" style="background-image:url('https://mes.fm/bought-911-hutchison-shirt/img/djw-book-shirt-sold.png')"></span>
       <span class="link-card-body">
         <span class="link-card-title">Someone bought a 9/11 DJW Book shirt and Hutchison Effect shirt</span>
-        <span class="link-card-readmore">View &rarr;</span>
+        <span class="link-card-readmore"><span class="lp-ic" data-s="mes" aria-hidden="true"></span><span class="lp-name">View on MES.fm</span> &rarr;</span>
       </span>
     </a>
-    <a class="link-card" data-cats="events" href="https://mes.fm/csis-911-lights">
+    <a class="link-card lp-a" data-cats="events" data-lp-def="mes" data-l-mes="https://mes.fm/csis-911-lights" data-l-telegram="https://t.me/meslinks/35438" href="https://mes.fm/csis-911-lights">
       <span class="link-card-thumb" style="background-image:url('https://mes.fm/csis-911-lights/img/csis-x-post.jpg')"></span>
       <span class="link-card-body">
         <span class="link-card-title">CSIS Posts a Photo of the 9/11 Tribute in Light &quot;Blue Beam&quot; Lights</span>
-        <span class="link-card-readmore">View &rarr;</span>
+        <span class="link-card-readmore"><span class="lp-ic" data-s="mes" aria-hidden="true"></span><span class="lp-name">View on MES.fm</span> &rarr;</span>
       </span>
     </a>
-    <a class="link-card" data-cats="judy" href="https://mes.fm/cat-wdttg-book">
+    <a class="link-card lp-a" data-cats="judy" data-lp-def="mes" data-l-mes="https://mes.fm/cat-wdttg-book" data-l-telegram="https://t.me/meslinks/35431" href="https://mes.fm/cat-wdttg-book">
       <span class="link-card-thumb" style="background-image:url('https://mes.fm/cat-wdttg-book/img/cat-wdttg-1.jpg')"></span>
       <span class="link-card-body">
         <span class="link-card-title">Story Time with Cat and Dr. Judy Wood's WDTTG Book</span>
-        <span class="link-card-readmore">View &rarr;</span>
+        <span class="link-card-readmore"><span class="lp-ic" data-s="mes" aria-hidden="true"></span><span class="lp-name">View on MES.fm</span> &rarr;</span>
       </span>
     </a>
     </div>
     <div class="list-view view-hidden" id="911-postsList">
     <div class="list-row" data-cats="planes people">
-      <h3>Mark Conlon aka 9/11 Planes Research Is Back with a New Telegram Channel</h3>
-      <p><a href="https://mes.fm/911planesresearch-telegram" target="_blank" rel="noopener">Notes</a></p>
+      <h3><a class="lp-a" href="https://mes.fm/911planesresearch-telegram" data-lp-def="mes" data-l-mes="https://mes.fm/911planesresearch-telegram" data-l-hive="https://inleo.io/threads/view/mestruth/re-leothreads-2vwcfciug">Mark Conlon aka 9/11 Planes Research Is Back with a New Telegram Channel<span class="lp-ic" data-s="mes" aria-hidden="true"></span></a></h3>
+      <p><a href="https://mes.fm/911planesresearch-telegram" target="_blank" rel="noopener">Notes</a> - <a href="https://inleo.io/threads/view/mestruth/re-leothreads-2vwcfciug" target="_blank" rel="noopener">Hive</a></p>
       <img class="list-thumb" src="https://mes.fm/911planesresearch-telegram/img/planes-research.jpg" alt="Mark Conlon aka 9/11 Planes Research Is Back with a New Telegram Channel">
     </div>
     <div class="list-row" data-cats="judy">
-      <h3>Amaterasu Solar Bought a Dr. Judy Wood Quote Coffee Mug</h3>
-      <p><a href="https://mes.fm/amaterasu-solar-judy-wood-quote" target="_blank" rel="noopener">Notes</a></p>
+      <h3><a class="lp-a" href="https://mes.fm/amaterasu-solar-judy-wood-quote" data-lp-def="mes" data-l-mes="https://mes.fm/amaterasu-solar-judy-wood-quote" data-l-telegram="https://t.me/meslinks/31848">Amaterasu Solar Bought a Dr. Judy Wood Quote Coffee Mug<span class="lp-ic" data-s="mes" aria-hidden="true"></span></a></h3>
+      <p><a href="https://mes.fm/amaterasu-solar-judy-wood-quote" target="_blank" rel="noopener">Notes</a> - <a href="https://t.me/meslinks/31848" target="_blank" rel="noopener">Telegram</a></p>
       <img class="list-thumb" src="https://mes.fm/amaterasu-solar-judy-wood-quote/img/amaterasu-solar-judy-wood-quote-1.png" alt="Amaterasu Solar Bought a Dr. Judy Wood Quote Coffee Mug">
     </div>
     <div class="list-row" data-cats="events">
-      <h3>YouTube Removed My Curt Weldon 9/11 Video for &quot;Hate Speech&quot; (Appeal Rejected)</h3>
-      <p><a href="https://mes.fm/youtube-removed-curt-weldon-911" target="_blank" rel="noopener">Notes</a></p>
+      <h3><a class="lp-a" href="https://mes.fm/youtube-removed-curt-weldon-911" data-lp-def="mes" data-l-mes="https://mes.fm/youtube-removed-curt-weldon-911" data-l-telegram="https://t.me/meslinks/35602">YouTube Removed My Curt Weldon 9/11 Video for &quot;Hate Speech&quot; (Appeal Rejected)<span class="lp-ic" data-s="mes" aria-hidden="true"></span></a></h3>
+      <p><a href="https://mes.fm/youtube-removed-curt-weldon-911" target="_blank" rel="noopener">Notes</a> - <a href="https://t.me/meslinks/35602" target="_blank" rel="noopener">Telegram</a></p>
       <img class="list-thumb" src="https://mes.fm/youtube-removed-curt-weldon-911/img/youtube-removed-curt-weldon-911-1.png" alt="YouTube Removed My Curt Weldon 9/11 Video for &quot;Hate Speech&quot; (Appeal Rejected)">
     </div>
     <div class="list-row" data-cats="planes">
-      <h3>Alleged Hijackers' Alleged ID on all Four 9/11 sites</h3>
-      <p><a href="https://mes.fm/alleged-hijackers-id-911" target="_blank" rel="noopener">Notes</a></p>
+      <h3><a class="lp-a" href="https://mes.fm/alleged-hijackers-id-911" data-lp-def="mes" data-l-mes="https://mes.fm/alleged-hijackers-id-911" data-l-hive="https://inleo.io/@mestruth/alleged-hijackers-alleged-id-on-all-four-911-sites-cav" data-l-telegram="https://t.me/meslinks/35581">Alleged Hijackers' Alleged ID on all Four 9/11 sites<span class="lp-ic" data-s="mes" aria-hidden="true"></span></a></h3>
+      <p><a href="https://mes.fm/alleged-hijackers-id-911" target="_blank" rel="noopener">Notes</a> - <a href="https://inleo.io/@mestruth/alleged-hijackers-alleged-id-on-all-four-911-sites-cav" target="_blank" rel="noopener">Hive</a> - <a href="https://t.me/meslinks/35581" target="_blank" rel="noopener">Telegram</a></p>
       <img loading="lazy" class="list-thumb" src="https://snipboard.io/JjRc1x.jpg" alt="Alleged Hijackers' Alleged ID on all Four 9/11 sites">
     </div>
     <div class="list-row" data-cats="judy">
-      <h3>Dr. Judy Wood on the Total Disclosure Podcast</h3>
-      <p><a href="https://mes.fm/drjudywood-total-disclosure-podcast" target="_blank" rel="noopener">Notes</a></p>
+      <h3><a class="lp-a" href="https://mes.fm/drjudywood-total-disclosure-podcast" data-lp-def="mes" data-l-mes="https://mes.fm/drjudywood-total-disclosure-podcast" data-l-hive="https://inleo.io/threads/view/mestruth/re-leothreads-rn7i2ltd" data-l-telegram="https://t.me/meslinks/35555">Dr. Judy Wood on the Total Disclosure Podcast<span class="lp-ic" data-s="mes" aria-hidden="true"></span></a></h3>
+      <p><a href="https://mes.fm/drjudywood-total-disclosure-podcast" target="_blank" rel="noopener">Notes</a> - <a href="https://inleo.io/threads/view/mestruth/re-leothreads-rn7i2ltd" target="_blank" rel="noopener">Hive</a> - <a href="https://t.me/meslinks/35555" target="_blank" rel="noopener">Telegram</a></p>
       <img class="list-thumb" src="https://mes.fm/drjudywood-total-disclosure-podcast/podcast.jpg" alt="Dr. Judy Wood on the Total Disclosure Podcast">
     </div>
     <div class="list-row" data-cats="events">
-      <h3>BREAKING: CIA Unseals Osama Bin Laden's Writing Pad with His 9/11 Plans</h3>
-      <p><a href="https://mes.fm/osama-911-plans-parody" target="_blank" rel="noopener">Notes</a></p>
+      <h3><a class="lp-a" href="https://mes.fm/osama-911-plans-parody" data-lp-def="mes" data-l-mes="https://mes.fm/osama-911-plans-parody" data-l-hive="https://inleo.io/threads/view/mestruth/re-leothreads-2swq4wmuy" data-l-telegram="https://t.me/meslinks/35541">BREAKING: CIA Unseals Osama Bin Laden's Writing Pad with His 9/11 Plans<span class="lp-ic" data-s="mes" aria-hidden="true"></span></a></h3>
+      <p><a href="https://mes.fm/osama-911-plans-parody" target="_blank" rel="noopener">Notes</a> - <a href="https://inleo.io/threads/view/mestruth/re-leothreads-2swq4wmuy" target="_blank" rel="noopener">Hive</a> - <a href="https://t.me/meslinks/35541" target="_blank" rel="noopener">Telegram</a></p>
       <img loading="lazy" class="list-thumb" src="https://img.leopedia.io/DQmWz6aEvGR9GePoHTwfsAX577kNWXHRVFzpFZ4bRKUG9aH/telegram-cloud-photo-size-1-4999448963589025076-y.jpg" alt="BREAKING: CIA Unseals Osama Bin Laden's Writing Pad with His 9/11 Plans">
     </div>
     <div class="list-row" data-cats="people">
-      <h3>MES Talks to Peter Baron About His UFO 9/11 Sighting</h3>
-      <p><a href="https://mes.fm/peter-baron-ufo-ai-testimony" target="_blank" rel="noopener">Notes</a></p>
+      <h3><a class="lp-a" href="https://mes.fm/peter-baron-ufo-ai-testimony" data-lp-def="mes" data-l-mes="https://mes.fm/peter-baron-ufo-ai-testimony" data-l-hive="https://inleo.io/@mestruth/mes-talks-to-peter-baron-about-his-ufo-911-sighting-8wr" data-l-telegram="https://t.me/meslinks/34685">MES Talks to Peter Baron About His UFO 9/11 Sighting<span class="lp-ic" data-s="mes" aria-hidden="true"></span></a></h3>
+      <p><a href="https://mes.fm/peter-baron-ufo-ai-testimony" target="_blank" rel="noopener">Notes</a> - <a href="https://inleo.io/@mestruth/mes-talks-to-peter-baron-about-his-ufo-911-sighting-8wr" target="_blank" rel="noopener">Hive</a> - <a href="https://t.me/meslinks/34685" target="_blank" rel="noopener">Telegram</a></p>
       <img loading="lazy" class="list-thumb" src="https://files.peakd.com/file/peakd-hive/mestruth/23xAZuUjwun9rsLm4Yn2bUjhTDc7FQvCv8KJLhS6CDrz5N2yqXVZGQyu2hLiBjSDKmuU7.jpg" alt="MES Talks to Peter Baron About His UFO 9/11 Sighting">
     </div>
     <div class="list-row" data-cats="people">
-      <h3>Melissa Doi and the 1,613 Emergency 9/11 Calls</h3>
-      <p><a href="https://mes.fm/melissa-doi-voices-bleeped" target="_blank" rel="noopener">Notes</a></p>
+      <h3><a class="lp-a" href="https://mes.fm/melissa-doi-voices-bleeped" data-lp-def="mes" data-l-mes="https://mes.fm/melissa-doi-voices-bleeped" data-l-hive="https://inleo.io/@mestruth/melissa-doi-and-the-1613-emergency-911-calls--7rf" data-l-telegram="https://t.me/meslinks/35523">Melissa Doi and the 1,613 Emergency 9/11 Calls<span class="lp-ic" data-s="mes" aria-hidden="true"></span></a></h3>
+      <p><a href="https://mes.fm/melissa-doi-voices-bleeped" target="_blank" rel="noopener">Notes</a> - <a href="https://inleo.io/@mestruth/melissa-doi-and-the-1613-emergency-911-calls--7rf" target="_blank" rel="noopener">Hive</a> - <a href="https://t.me/meslinks/35523" target="_blank" rel="noopener">Telegram</a></p>
       <img loading="lazy" class="list-thumb" src="https://img.leopedia.io/DQmUEgBiwouKVBeFRpH9NrSS1F4aNmBjzJEdaQDpHz22ZnZ/telegram-cloud-photo-size-1-4994836263202393220-y.jpg" alt="Melissa Doi and the 1,613 Emergency 9/11 Calls">
     </div>
     <div class="list-row" data-cats="other">
-      <h3>Niece Made MES a 9/11 Pin with Her 3D Printing Pen</h3>
-      <p><a href="https://mes.fm/911-3d-print-pin" target="_blank" rel="noopener">Notes</a></p>
+      <h3><a class="lp-a" href="https://mes.fm/911-3d-print-pin" data-lp-def="mes" data-l-mes="https://mes.fm/911-3d-print-pin" data-l-hive="https://inleo.io/threads/view/mestruth/re-leothreads-2l9pblb1n" data-l-telegram="https://t.me/meslinks/35521">Niece Made MES a 9/11 Pin with Her 3D Printing Pen<span class="lp-ic" data-s="mes" aria-hidden="true"></span></a></h3>
+      <p><a href="https://mes.fm/911-3d-print-pin" target="_blank" rel="noopener">Notes</a> - <a href="https://inleo.io/threads/view/mestruth/re-leothreads-2l9pblb1n" target="_blank" rel="noopener">Hive</a> - <a href="https://t.me/meslinks/35521" target="_blank" rel="noopener">Telegram</a></p>
       <img loading="lazy" class="list-thumb" src="https://snipboard.io/rRJXk6.jpg" alt="Niece Made MES a 9/11 Pin with Her 3D Printing Pen">
     </div>
     <div class="list-row" data-cats="other">
-      <h3>Photo of Hiroshima One Day After the Atomic Bomb Shows Similar Fuming as 9/11</h3>
-      <p><a href="https://mes.fm/911-hiroshima-fumes" target="_blank" rel="noopener">Notes</a></p>
+      <h3><a class="lp-a" href="https://mes.fm/911-hiroshima-fumes" data-lp-def="mes" data-l-mes="https://mes.fm/911-hiroshima-fumes" data-l-hive="https://inleo.io/threads/view/mestruth/re-leothreads-2hnqzzfcv" data-l-telegram="https://t.me/meslinks/31654">Photo of Hiroshima One Day After the Atomic Bomb Shows Similar Fuming as 9/11<span class="lp-ic" data-s="mes" aria-hidden="true"></span></a></h3>
+      <p><a href="https://mes.fm/911-hiroshima-fumes" target="_blank" rel="noopener">Notes</a> - <a href="https://inleo.io/threads/view/mestruth/re-leothreads-2hnqzzfcv" target="_blank" rel="noopener">Hive</a> - <a href="https://t.me/meslinks/31654" target="_blank" rel="noopener">Telegram</a></p>
       <img loading="lazy" class="list-thumb" src="https://snipboard.io/0XfKeg.jpg" alt="Photo of Hiroshima One Day After the Atomic Bomb Shows Similar Fuming as 9/11">
     </div>
     <div class="list-row" data-cats="judy">
-      <h3>Dr. Judy Wood Live on the John B. Wells – Caravan to Midnight Show</h3>
-      <p><a href="https://mes.fm/judy-wood-john-wells-live" target="_blank" rel="noopener">Notes</a></p>
+      <h3><a class="lp-a" href="https://mes.fm/judy-wood-john-wells-live" data-lp-def="mes" data-l-mes="https://mes.fm/judy-wood-john-wells-live" data-l-telegram="https://t.me/meslinks/35496">Dr. Judy Wood Live on the John B. Wells – Caravan to Midnight Show<span class="lp-ic" data-s="mes" aria-hidden="true"></span></a></h3>
+      <p><a href="https://mes.fm/judy-wood-john-wells-live" target="_blank" rel="noopener">Notes</a> - <a href="https://t.me/meslinks/35496" target="_blank" rel="noopener">Telegram</a></p>
       <img class="list-thumb" src="https://mes.fm/judy-wood-john-wells-live/img/judy-wood-caravan-to-midnight.jpg" alt="Dr. Judy Wood Live on the John B. Wells – Caravan to Midnight Show">
     </div>
     <div class="list-row" data-cats="people">
-      <h3>THE Chris Hampton Comments on the 9/11 Alchemy – A Big Idea Documentary</h3>
-      <p><a href="https://mes.fm/chris-hampton-big-idea" target="_blank" rel="noopener">Notes</a></p>
+      <h3><a class="lp-a" href="https://mes.fm/chris-hampton-big-idea" data-lp-def="mes" data-l-mes="https://mes.fm/chris-hampton-big-idea" data-l-telegram="https://t.me/meslinks/35487">THE Chris Hampton Comments on the 9/11 Alchemy – A Big Idea Documentary<span class="lp-ic" data-s="mes" aria-hidden="true"></span></a></h3>
+      <p><a href="https://mes.fm/chris-hampton-big-idea" target="_blank" rel="noopener">Notes</a> - <a href="https://t.me/meslinks/35487" target="_blank" rel="noopener">Telegram</a></p>
       <img class="list-thumb" src="https://mes.fm/chris-hampton-big-idea/img/chris-hampton-911-alchemy-comment.png" alt="THE Chris Hampton Comments on the 9/11 Alchemy – A Big Idea Documentary">
     </div>
     <div class="list-row" data-cats="planes">
-      <h3>Rare Photos of a Mystery White Plane Before the South Tower Hit</h3>
-      <p><a href="https://mes.fm/911-mystery-plane-photos" target="_blank" rel="noopener">Notes</a></p>
+      <h3><a class="lp-a" href="https://mes.fm/911-mystery-plane-photos" data-lp-def="mes" data-l-mes="https://mes.fm/911-mystery-plane-photos" data-l-telegram="https://t.me/meslinks/35464">Rare Photos of a Mystery White Plane Before the South Tower Hit<span class="lp-ic" data-s="mes" aria-hidden="true"></span></a></h3>
+      <p><a href="https://mes.fm/911-mystery-plane-photos" target="_blank" rel="noopener">Notes</a> - <a href="https://t.me/meslinks/35464" target="_blank" rel="noopener">Telegram</a></p>
       <img class="list-thumb" src="https://mes.fm/911-mystery-plane-photos/img/mystery-plane-1-EhBWk8.jpg" alt="Rare Photos of a Mystery White Plane Before the South Tower Hit">
     </div>
     <div class="list-row" data-cats="judy people events">
-      <h3>Matthew Naus Gave G. Edward Griffin the WDTTTG Book in 2012</h3>
-      <p><a href="https://mes.fm/matthew-naus-g-edward-griffin-wdtttg-book" target="_blank" rel="noopener">Notes</a></p>
+      <h3><a class="lp-a" href="https://mes.fm/matthew-naus-g-edward-griffin-wdtttg-book" data-lp-def="mes" data-l-mes="https://mes.fm/matthew-naus-g-edward-griffin-wdtttg-book" data-l-telegram="https://t.me/meslinks/35461">Matthew Naus Gave G. Edward Griffin the WDTTTG Book in 2012<span class="lp-ic" data-s="mes" aria-hidden="true"></span></a></h3>
+      <p><a href="https://mes.fm/matthew-naus-g-edward-griffin-wdtttg-book" target="_blank" rel="noopener">Notes</a> - <a href="https://t.me/meslinks/35461" target="_blank" rel="noopener">Telegram</a></p>
       <img class="list-thumb" src="https://mes.fm/matthew-naus-g-edward-griffin-wdtttg-book/img/naus-griffin-yYg38f.jpg" alt="Matthew Naus Gave G. Edward Griffin the WDTTTG Book in 2012">
     </div>
     <div class="list-row" data-cats="people">
-      <h3>French 9/11 Researcher KJ Hits 100k Views in 24 Hours</h3>
-      <p><a href="https://mes.fm/kj-french-911-100k" target="_blank" rel="noopener">Notes</a></p>
+      <h3><a class="lp-a" href="https://mes.fm/kj-french-911-100k" data-lp-def="mes" data-l-mes="https://mes.fm/kj-french-911-100k" data-l-telegram="https://t.me/meslinks/35458">French 9/11 Researcher KJ Hits 100k Views in 24 Hours<span class="lp-ic" data-s="mes" aria-hidden="true"></span></a></h3>
+      <p><a href="https://mes.fm/kj-french-911-100k" target="_blank" rel="noopener">Notes</a> - <a href="https://t.me/meslinks/35458" target="_blank" rel="noopener">Telegram</a></p>
       <img class="list-thumb" src="https://mes.fm/kj-french-911-100k/img/kj-french-100k-views.jpg" alt="French 9/11 Researcher KJ Hits 100k Views in 24 Hours">
     </div>
     <div class="list-row" data-cats="judy">
-      <h3>Someone bought a 9/11 DJW Book shirt and Hutchison Effect shirt</h3>
-      <p><a href="https://mes.fm/bought-911-hutchison-shirt" target="_blank" rel="noopener">Notes</a></p>
+      <h3><a class="lp-a" href="https://mes.fm/bought-911-hutchison-shirt" data-lp-def="mes" data-l-mes="https://mes.fm/bought-911-hutchison-shirt" data-l-telegram="https://t.me/meslinks/35448">Someone bought a 9/11 DJW Book shirt and Hutchison Effect shirt<span class="lp-ic" data-s="mes" aria-hidden="true"></span></a></h3>
+      <p><a href="https://mes.fm/bought-911-hutchison-shirt" target="_blank" rel="noopener">Notes</a> - <a href="https://t.me/meslinks/35448" target="_blank" rel="noopener">Telegram</a></p>
       <img class="list-thumb" src="https://mes.fm/bought-911-hutchison-shirt/img/djw-book-shirt-sold.png" alt="Someone bought a 9/11 DJW Book shirt and Hutchison Effect shirt">
     </div>
     <div class="list-row" data-cats="events">
-      <h3>CSIS Posts a Photo of the 9/11 Tribute in Light &quot;Blue Beam&quot; Lights</h3>
-      <p><a href="https://mes.fm/csis-911-lights" target="_blank" rel="noopener">Notes</a></p>
+      <h3><a class="lp-a" href="https://mes.fm/csis-911-lights" data-lp-def="mes" data-l-mes="https://mes.fm/csis-911-lights" data-l-telegram="https://t.me/meslinks/35438">CSIS Posts a Photo of the 9/11 Tribute in Light &quot;Blue Beam&quot; Lights<span class="lp-ic" data-s="mes" aria-hidden="true"></span></a></h3>
+      <p><a href="https://mes.fm/csis-911-lights" target="_blank" rel="noopener">Notes</a> - <a href="https://t.me/meslinks/35438" target="_blank" rel="noopener">Telegram</a></p>
       <img class="list-thumb" src="https://mes.fm/csis-911-lights/img/csis-x-post.jpg" alt="CSIS Posts a Photo of the 9/11 Tribute in Light &quot;Blue Beam&quot; Lights">
     </div>
     <div class="list-row" data-cats="judy">
-      <h3>Story Time with Cat and Dr. Judy Wood's WDTTG Book</h3>
-      <p><a href="https://mes.fm/cat-wdttg-book" target="_blank" rel="noopener">Notes</a></p>
+      <h3><a class="lp-a" href="https://mes.fm/cat-wdttg-book" data-lp-def="mes" data-l-mes="https://mes.fm/cat-wdttg-book" data-l-telegram="https://t.me/meslinks/35431">Story Time with Cat and Dr. Judy Wood's WDTTG Book<span class="lp-ic" data-s="mes" aria-hidden="true"></span></a></h3>
+      <p><a href="https://mes.fm/cat-wdttg-book" target="_blank" rel="noopener">Notes</a> - <a href="https://t.me/meslinks/35431" target="_blank" rel="noopener">Telegram</a></p>
       <img class="list-thumb" src="https://mes.fm/cat-wdttg-book/img/cat-wdttg-1.jpg" alt="Story Time with Cat and Dr. Judy Wood's WDTTG Book">
     </div>
     </div>
@@ -1977,5 +2022,5 @@ var MES_Vars = {
 <script src="/main_js/main.js?v=1.0.3"></script>
 <script>document.getElementById('copyright-year').textContent = new Date().getFullYear();</script>
 <!-- PAGEVIEW-TRACKING-INSERTED --><script src="/main_js/track.js" defer></script><script src="/main_js/info-bar-fit.js" defer></script>
-<script src="/main_js/site-search.js?v=1" defer></script><!-- HUB-THEATRE-JS --><script src="/main_js/hub-theatre.js?v=1" defer></script><!-- /HUB-THEATRE-JS --></body>
+<script src="/main_js/site-search.js?v=1" defer></script><!-- HUB-THEATRE-JS --><script src="/main_js/hub-theatre.js?v=1" defer></script><!-- /HUB-THEATRE-JS --><script src="/main_js/link-pref.js?v=1" defer></script></body>
 </html>

@@ -360,7 +360,11 @@ function buildLinksForItem(item, meta) {
   // An item whose own link is a YouTube video (a livestream not mirrored to
   // mes.fm yet) is labeled "YouTube", not "Notes".
   const primaryLabel = /^https?:\/\/(?:www\.)?(?:youtube\.com|youtu\.be)\//.test(item.href) ? "YouTube" : "Notes";
-  return [{ label: primaryLabel, href: item.href }, ...sorted];
+  // then the post's own copies elsewhere ("Hive:" / "Hive article:" / "Telegram:" lines of the mirror page): the same post, so
+  // they belong in the row and in the "Open in:" switch. Other links in the article (sources, accounts quoted) are left out.
+  const own = (m.namedLinks || []).filter((l) => /^(hive|hive article|hive post|telegram)$/i.test(l.label) && !sorted.some((x) => x.href === l.href))
+    .map((l) => ({ label: /^hive/i.test(l.label) ? "Hive" : "Telegram", href: l.href }));
+  return [{ label: primaryLabel, href: item.href }, ...sorted, ...own];
 }
 
 // For extraViews items (see e.g. MES Math Q/A Livestreams' "Stats" view):
@@ -455,7 +459,7 @@ function buildSection(section, meta) {
   // "Open in:" preferred-site switch (shared/link-pref.mjs) when most items have links on several sites.
   const lpMaps = cardItems.filter((i) => !i.standalone).map((i) => lpMap(buildLinksForItem(i, meta)));
   // lpAlways (the "All Content" page, shared/hub-filter.mjs addAllPage): site icons on every card even when few items have several sites.
-  const lpHtml = lpWanted(lpMaps) || section.lpAlways ? lpSwitch(lpMaps, section.lpAlways ? { min: 1 } : undefined) : "";   // All Content: offer every site any item has
+  const lpHtml = lpWanted(lpMaps) || section.lpAlways ? lpSwitch(lpMaps, { min: 1 }) : "";   // offer every site any item has (rare ones get the dashed "few" style)
   if (lpHtml || section.lpAlways) { section.linkPref = true; cardItems.forEach((i) => { if (!i.standalone) i.lp = true; }); }
   // One line of links (icon + label, separated by dots) rather than one paragraph each, so the playlist and
   // the troubleshooting notes sit side by side; external links open in a new tab.
