@@ -56,7 +56,8 @@
 	.tu .rm-event:fullscreen {background:#fff;}
 	html.rm-noscroll, html.rm-noscroll body {overflow:hidden;}
 	@media (max-width: 600px) { .tu .rm-view {justify-content:center;} .tu .rm-event.rm-fill .rm-count {flex-wrap:wrap;font-size:min(6vw, 5vh);} .tu .rm-event.rm-fill .rm-title {font-size:min(6vw, 4.4vh);} .tu .rm-event.rm-sz-3 .rm-count {font-size:1.8em;} .tu .rm-event.rm-sz-2 .rm-count {font-size:1.3em;} }
-	.tu .rm-nextrow {display:flex;flex-wrap:wrap;gap:0.4em;margin-bottom:0.6em;}
+	.tu .rm-top {margin-bottom:0.7em;}
+	.tu .rm-top .rm-ql {min-width:0;margin-right:0.2em;} .tu .rm-top .tu-chip {font-size:0.88em;}
 	body.dark-mode #rm .rm-seg, body.dark-mode #rm .rm-vbtn, body.dark-mode #rm .rm-seg button + button {border-color:#555;}
 	body.dark-mode #rm .rm-seg button, body.dark-mode #rm .rm-vbtn {color:#e6e6e6;}
 	body.dark-mode #rm .rm-seg button[aria-pressed="true"] {color:#fff;}

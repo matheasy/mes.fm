@@ -304,8 +304,8 @@
 		setDT(p.y + "-" + CK.pad(p.mo) + "-" + CK.pad(p.d), holT);
 	}
 	var holT = "";
+	$("rm-top").addEventListener("click", function (e) { var hb = e.target.closest("[data-h]"); if (hb) holiday(hb.getAttribute("data-h")); });
 	$("rm-quick").addEventListener("click", function (e) {
-		var hb = e.target.closest("[data-h]"); if (hb) { holiday(hb.getAttribute("data-h")); return; }
 		var b = e.target.closest("[data-q]"); if (!b) return;
 		var q = b.getAttribute("data-q"), tz = resolveZone($("rm-tz").value) || LOCAL, now = CK.partsIn(new Date(), tz), today = ymd(now);
 		var keepT = /^\d\d:\d\d/.test($("rm-time").value) ? $("rm-time").value.slice(0, 5) : "09:00";
