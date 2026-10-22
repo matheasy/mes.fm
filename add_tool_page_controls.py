@@ -64,6 +64,7 @@ TOOLS = [  # (directory, compact-bar title[, home path of the site the page belo
     ("baby-growth-percentile-calculator", "Baby Growth Percentile Calculator"),
     ("baby-feeding-log", "Baby Feeding Log"),
     ("domain-lookup", "Domain Lookup"),
+    ("site-traffic", "Site Traffic"),
     ("exif-viewer", "EXIF Viewer"),
     ("contraction-timer", "Contraction Timer"),
     ("bmr-calculator", "BMR Calculator"),

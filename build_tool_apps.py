@@ -134,6 +134,12 @@ APPS = {
                           tag="Who is behind a website, and how old is it?", accent="#1d4ed8", dark="#1e3a8a", tint="#e1e9fc",
                           desc="Free domain lookup (whois / RDAP): see when a domain was registered and how old the website is, the registrar, expiry date, name servers, who hosts it, DNS and email setup, when the Internet Archive first saved it, and warning signs like a brand-new domain.",
                           js_v="1"),
+    # Site Traffic & Rank: Tranco popularity rank (+30-day history), domain age / hosting (domain-lookup's lib via lib_from + its API), Wayback history, opt-in tech detection (api/site-traffic.js).
+    # Rank only, never visit counts (Similarweb's numbers are proprietary). Tests: node tool_apps_src/site-traffic-tests.js.
+    "site-traffic": dict(title="MES Site Traffic & Rank", page_title="Website Traffic Checker: Site Rank, Popularity and Age",
+                         tag="How popular is a website, and for how long?", accent="#0f766e", dark="#134e4a", tint="#d9f2ee",
+                         desc="Free website traffic checker: see a site's public popularity rank and its 30-day trend, how old the domain is, who hosts it, when the Internet Archive first saved it and what technology it uses. Rank data, never made-up visit numbers.",
+                         js_v="1", lib_from=["domain-lookup"]),
     "baby-growth-percentile-calculator": dict(title="MES Baby Growth Percentile Calculator", page_title="Baby Growth Percentile Calculator (WHO Weight, Length, Head)",
                           tag="Weight, length and head percentiles on the WHO chart.", accent="#15803d", dark="#0f5f2c", tint="#dcf3e3", src="baby-growth", js_path="baby-growth/js/baby-growth.js", js_parts=["data.js"],
                           desc="Free baby growth percentile calculator using the WHO Child Growth Standards: enter age, weight, length and head circumference to see the percentile and z-score on the growth chart, corrected age for premature babies, and a private growth log that shows your baby's trend.",

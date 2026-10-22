@@ -1,5 +1,5 @@
 {
- "generated": "2026-10-21",
+ "generated": "2026-10-22",
  "calculators": [
   {
    "href": "/materials",
@@ -100,6 +100,14 @@
  ],
  "tools": [
   {
+   "href": "/site-traffic",
+   "title": "Site Traffic & Rank",
+   "icon": "/img/site-traffic-logo.png",
+   "desc": "How popular is a website? Public popularity rank and 30-day trend, domain age, hosting and Internet Archive history. An honest alternative to traffic-estimate extensions.",
+   "added": "2026-10-22",
+   "kind": "tool"
+  },
+  {
    "href": "/birthday",
    "title": "Famous Birthdays",
    "icon": "/img/birthday-logo.png",
@@ -186,17 +194,17 @@
    "desc": "Make JPG, PNG, WebP, PDF and audio files smaller with a before and after preview. Private: nothing is uploaded.",
    "added": "2026-10-16",
    "kind": "tool"
-  },
-  {
-   "href": "/fav",
-   "title": "MES Favourites",
-   "icon": "/img/fav-logo.png",
-   "desc": "Build your own page of favourite mes.fm calculators and tools: search, drag into groups, and take it to any device with one link.",
-   "added": "2026-10-15",
-   "kind": "tool"
   }
  ],
  "latest": [
+  {
+   "href": "/site-traffic",
+   "title": "Site Traffic & Rank",
+   "icon": "/img/site-traffic-logo.png",
+   "desc": "How popular is a website? Public popularity rank and 30-day trend, domain age, hosting and Internet Archive history. An honest alternative to traffic-estimate extensions.",
+   "added": "2026-10-22",
+   "kind": "tool"
+  },
   {
    "href": "/birthday",
    "title": "Famous Birthdays",
@@ -251,14 +259,6 @@
    "icon": "/img/youngs-modulus-calculator-logo.png",
    "desc": "Stress, strain and stretch of a bar from any four values, with a live picture.",
    "added": "2026-10-20",
-   "kind": "calculator"
-  },
-  {
-   "href": "/matrix-calculator",
-   "title": "Matrix Calculator",
-   "icon": "/img/matrix-calculator-logo.png",
-   "desc": "Type or paste matrices into a grid: multiply, invert, determinants, eigenvalues and SVD with the working shown, plus softmax, a neural-network layer and attention.",
-   "added": "2026-10-19",
    "kind": "calculator"
   }
  ]

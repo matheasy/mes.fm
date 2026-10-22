@@ -1,0 +1,52 @@
+	<script>try{if(!localStorage.getItem('pageMode')){document.documentElement.classList.add('page-wide')}}catch(e){}</script>
+	<div class="tu st" id="st">
+		<div class="tu-card">
+			<label class="tu-label" for="st-q">Website or domain name</label>
+			<div class="st-row"><input id="st-q" class="tu-input tu-input--big" type="text" inputmode="url" autocomplete="off" autocapitalize="off" spellcheck="false" placeholder="example.com or https://www.example.com/page"><button type="button" class="tu-btn tu-btn--primary st-go" id="st-go">Check site</button></div>
+			<div class="tu-chips" id="st-recent" aria-label="Recent checks"></div>
+			<p class="tu-note"><b>An honest note first:</b> real visit counts (the numbers Similarweb shows) come from paid panels and private analytics that nobody can see from outside. This page does <b>not</b> guess them. It shows a site's public <b>popularity rank</b>, how its rank has moved, how old the domain is, who hosts it and when the Internet Archive first saved it.</p>
+		</div>
+		<div class="st-status" id="st-status" role="status" aria-live="polite" hidden></div>
+		<div id="st-out" hidden>
+			<div class="tu-card tu-card--tint st-hero">
+				<div class="st-hero__k" id="st-host"></div>
+				<div class="st-hero__lab">Popularity rank</div>
+				<div class="st-hero__big" id="st-rank">&mdash;</div>
+				<div class="st-hero__sub" id="st-tier"></div>
+				<div class="tu-row st-hero__btns"><button type="button" class="tu-btn tu-btn--ghost" id="st-copy">Copy summary</button><button type="button" class="tu-btn tu-btn--ghost" id="st-link">Copy link</button></div>
+			</div>
+			<h2>Things to know</h2>
+			<ul class="st-sig" id="st-sig"></ul>
+			<div class="tu-card" id="st-chartcard" hidden>
+				<div class="st-charthead"><b>Rank over the last <span id="st-days">30</span> days</b><span class="tu-note">Higher on the chart = better rank (closer to #1)</span></div>
+				<div class="st-chartwrap"><svg id="st-chart" viewBox="0 0 640 200" role="img" aria-label="Rank history chart" preserveAspectRatio="none"></svg><div class="st-tip" id="st-tip" hidden></div></div>
+			</div>
+			<div class="tu-stats" id="st-cards"></div>
+			<h2>Internet Archive history</h2>
+			<div class="tu-card" id="st-arch"><span class="tu-note">Checking the Internet Archive&hellip;</span></div>
+			<h2>Technology on the home page</h2>
+			<div class="tu-card" id="st-tech">
+				<p class="tu-note">This is the one check that visits the site itself: our server fetches the home page once (public addresses only, 250 KB at most), reads the response headers and page code, and sends back only the technology names it recognises. Nothing is stored.</p>
+				<button type="button" class="tu-btn tu-btn--ghost" id="st-techgo">Detect technology</button>
+			</div>
+			<h2>Look deeper</h2>
+			<div class="tu-card"><ul class="st-links" id="st-links"></ul></div>
+		</div>
+		<div class="tu-toast" id="st-toast" role="status" aria-live="polite"></div>
+		<div class="tu-seo">
+			<h2>Website traffic checker: how popular is a site, and how old?</h2>
+			<p>Type any website to see its <strong>popularity rank</strong> from the Tranco list, the daily rank for the last 30 days (so you can see whether it is growing), how old the domain is, who hosts it, and how long the Internet Archive has been saving it. It works as a free, honest alternative to browser extensions that show a rank badge on every site.</p>
+			<h3>Where the rank comes from</h3>
+			<p>The <a href="https://tranco-list.eu" target="_blank" rel="noopener">Tranco list</a> is a research ranking that combines five public sources: the Chrome User Experience Report (real Chrome users), Cloudflare Radar, Majestic, Cisco Umbrella and Farsight. It averages 30 days so one lucky day cannot push a site up. Lower is better: #1 is the most visited domain. The ranking is by registrable domain, so <em>www.example.com</em> and <em>blog.example.com</em> share the rank of <em>example.com</em>.</p>
+			<h3>Questions</h3>
+			<h4>Does this show how many visitors a site gets?</h4>
+			<p>No, and no free tool can. Visits are only known to the site's owner (through their analytics) or estimated by paid services from private panels of users. A rank tells you roughly how a site compares with others, not how many people visit. A site at #100,000 is typically far bigger than one at #2,000,000, but the rank cannot be turned into an exact number of visits.</p>
+			<h4>Why does my site not appear?</h4>
+			<p>The list covers the few million most visited domains. New, small or niche sites, and sites with mostly direct or app traffic, are often missing. Being absent says "small", not "bad".</p>
+			<h4>Why does a github.io or blogspot.com site show a huge rank?</h4>
+			<p>Because the rank belongs to the whole platform. All the sites under it are counted together, so the page warns you when that happens.</p>
+			<h4>Can the rank be faked?</h4>
+			<p>It is hard. The list needs the same domain to appear in several independent sources over 30 days, which is why it is used in security research. It is still a signal, not a proof of quality.</p>
+			<p class="tu-note">See also the <a href="/domain-lookup">Domain Lookup</a> for ownership and DNS records, the <a href="/archive">Archive</a> tool for saved copies and <a href="/search-engines">Search Engines</a> to search many engines at once.</p>
+		</div>
+	</div>
