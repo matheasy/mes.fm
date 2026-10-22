@@ -3,6 +3,8 @@
   // Ad-click / campaign tags are unique per visitor (?gclid=...), so left in the path every paid click would become
   // its own leaderboard member across ~14 Upstash sorted sets. Strip them; real params (shared-calculation links) stay.
   var q = new URLSearchParams(location.search);
+  // a Google Ads click carries one of these tags; the stats then count the view as 'Google Ads' instead of plain Google search
+  var paid = /(^|[?&])(gclid|gbraid|wbraid|gad_source|gad_campaignid)=/i.test(location.search) ? 'g' : '';
   Array.from(q.keys()).forEach(function (k) {
     if (/^(gclid|gbraid|wbraid|gad_source|gad_campaignid|msclkid|fbclid)$/i.test(k) || /^utm_/i.test(k)) q.delete(k);
   });
@@ -14,7 +16,8 @@
   var data = new URLSearchParams({
     site: location.hostname,
     path: (/^\/f\/[a-z0-9]+$/.test(location.pathname) ? '/fav' : location.pathname) + (qs ? '?' + qs : ''),
-    referrer: document.referrer || ''
+    referrer: document.referrer || '',
+    ad: paid
   });
   navigator.sendBeacon('https://mes.fm/api/track', data);
 })();

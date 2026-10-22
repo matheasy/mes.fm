@@ -40,7 +40,10 @@ function detectDevice(userAgent) {
 // An empty referrer covers typed URLs, bookmarks, and browsers/extensions
 // that strip it -- lumped into "direct" the way most simple analytics do.
 const REFERRAL_MAX_LEN = 500;
-function detectSource(referrerRaw, site) {
+function detectSource(referrerRaw, site, ad) {
+  // track.js sends ad=g when the page URL had a Google Ads click tag (gclid, gbraid, wbraid, gad_source):
+  // a paid click from Google search, YouTube or the display network, whatever the referrer says
+  if (ad === 'g') return 'googleads';
   const ref = String(referrerRaw || '').trim().slice(0, REFERRAL_MAX_LEN);
   if (!ref) return 'direct';
   let host;
@@ -89,7 +92,7 @@ module.exports = async (req, res) => {
   }
 
   const member = `${site}|${path}`;
-  const source = detectSource(body.referrer, site);
+  const source = detectSource(body.referrer, site, body.ad);
   // Composite members so a single sorted set can hold a per-page breakdown --
   // same "|"-joined-member trick the plain leaderboard already uses, just
   // one level deeper. (No more per-SITE breakdown: every property lives

@@ -4,7 +4,7 @@ const TOP_N = 50;
 
 // Must match the categories api/track.js's detectDevice() / detectSource() can produce.
 const DEVICES = ['desktop', 'mobile', 'tablet', 'tv', 'bot', 'unknown'];
-const SOURCES = ['direct', 'internal', 'google', 'search', 'social', 'referral'];
+const SOURCES = ['direct', 'internal', 'google', 'googleads', 'search', 'social', 'referral'];
 
 const RANGES = {
   '24h': { unit: 'hourly', count: 24 },

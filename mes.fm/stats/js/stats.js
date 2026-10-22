@@ -15,7 +15,7 @@ function escapeHtml(str) {
 const RANGE_LABELS = { '24h': '24 hours', '7d': '7 days', '30d': '30 days', '365d': '365 days', all: 'all time' };
 const DEVICE_LABELS = { desktop: 'Desktop', mobile: 'Mobile', tablet: 'Tablet', tv: 'TV', bot: 'Bot', unknown: 'Unknown' };
 const DEFAULT_DEVICES = Object.keys(DEVICE_LABELS);
-const SOURCE_LABELS = { direct: 'Direct', internal: 'Internal', google: 'Google', search: 'Other Search', social: 'Social', referral: 'Referral' };
+const SOURCE_LABELS = { direct: 'Direct', internal: 'Internal', google: 'Google', googleads: 'Google Ads', search: 'Other Search', social: 'Social', referral: 'Referral' };
 const DEFAULT_SOURCES = Object.keys(SOURCE_LABELS);
 let savedRange;
 try { savedRange = localStorage.getItem('statsRange'); } catch (e) { savedRange = null; }
@@ -354,7 +354,7 @@ function renderTopPages() {
 }
 
 const DEVICE_COLORS = { desktop: '#2f80ed', mobile: '#27ae60', tablet: '#f2994a', tv: '#9b51e0', bot: '#8e99a8', unknown: '#c4c9d1' };
-const SOURCE_COLORS = { direct: '#2f80ed', internal: '#8e99a8', google: '#eb5757', search: '#f2994a', social: '#9b51e0', referral: '#27ae60' };
+const SOURCE_COLORS = { direct: '#2f80ed', internal: '#8e99a8', google: '#eb5757', googleads: '#f2c94c', search: '#f2994a', social: '#9b51e0', referral: '#27ae60' };
 
 function compactNum(n) {
   if (n >= 1e6) return (n / 1e6).toFixed(n >= 1e7 ? 0 : 1).replace(/\.0$/, '') + 'M';
