@@ -18,7 +18,7 @@ const svg = (d) =>
 
 // Site order = button order. Icons are simple 24x24 single-colour marks (filled by currentColor through a mask).
 export const LP_SITES = [
-  { id: "mes", label: "MES.fm", host: /^https?:\/\/(?:www\.)?mes\.fm\//, d: "M2 20V4h3.6L12 12.6 18.4 4H22v16h-3.4V9.6L12 18.2 5.4 9.6V20z" },
+  { id: "mes", label: "MES.fm", host: /^https?:\/\/(?:www\.)?mes\.fm\//, d: "M1 12.6 4.6 10.6 8.6 17.4 14.6 1.8H23.2V4.8H16.6L10 22.4H7.4z" },
   {
     id: "youtube", label: "YouTube", host: /^https?:\/\/(?:(?:www|m)\.)?(?:youtube\.com\/(?:watch|live|shorts)|youtu\.be\/)/,
     d: "M23 7.2a3 3 0 0 0-2.1-2.1C19 4.6 12 4.6 12 4.6s-7 0-8.9.5A3 3 0 0 0 1 7.2C.5 9.1.5 12 .5 12s0 2.9.5 4.8a3 3 0 0 0 2.1 2.1c1.9.5 8.9.5 8.9.5s7 0 8.9-.5a3 3 0 0 0 2.1-2.1c.5-1.9.5-4.8.5-4.8s0-2.9-.5-4.8zM9.7 15.4V8.6l5.9 3.4z",
