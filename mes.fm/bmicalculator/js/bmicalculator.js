@@ -88,7 +88,87 @@
 		return { kg: String(Math.round(d.weight * 100) / 100), cm: String(Math.round(d.height * 10) / 10) };
 	}
 
-	var BM = { num: num, numLoc: numLoc, fix: fix, trim: trim, lbToKg: lbToKg, kgToLb: kgToLb, ftInToCm: ftInToCm, cmToFtIn: cmToFtIn, bmi: bmi, weightAt: weightAt, SCALES: SCALES, category: category, healthyRange: healthyRange, toNormal: toNormal,
+	/* ---------- weight-for-height chart (the classic "BMI chart"): returns an SVG string ----------
+	 * o = { kg, cm, scale, imperial, w, h, labels: { weight, height, under, normal, over, obese }, fmt(n, d) }
+	 * x = height, y = weight; the four coloured regions are bounded by the curves weight = BMI x height^2 at the scale's group edges. */
+	function groupEdges(scale) {
+		var S = SCALES[scale] || SCALES.who, out = [], g = S.cuts[0][2];
+		S.cuts.forEach(function (c, i) { if (i && c[2] !== S.cuts[i - 1][2]) out.push([S.cuts[i - 1][0], S.cuts[i - 1][2]]); });
+		out.push([Infinity, S.cuts[S.cuts.length - 1][2]]);
+		return out;      // [[upper BMI, group], ...] e.g. WHO: [[18.5,"under"],[25,"normal"],[30,"over"],[Inf,"obese"]]
+	}
+	function chartRange(kg, cm) {
+		var r = { h0: 145, h1: 200, w0: 35, w1: 130 };
+		if (cm > 0) { r.h0 = Math.min(r.h0, Math.floor((cm - 8) / 5) * 5); r.h1 = Math.max(r.h1, Math.ceil((cm + 8) / 5) * 5); }
+		if (kg > 0) { r.w0 = Math.min(r.w0, Math.floor((kg - 10) / 5) * 5); r.w1 = Math.max(r.w1, Math.ceil((kg + 12) / 5) * 5); }
+		r.h0 = Math.max(50, r.h0); r.w0 = Math.max(2, r.w0); r.h1 = Math.min(260, r.h1); r.w1 = Math.min(400, r.w1);
+		return r;
+	}
+	function chartSvg(o) {
+		o = o || {}; var L = o.labels || {}, fmt = o.fmt || function (n, d) { return n.toFixed(d || 0); };
+		var W = o.w || 640, H = o.h || 400, ml = 56, mr = 14, mt = 12, mb = 46, pw = W - ml - mr, ph = H - mt - mb;
+		var kg = +o.kg || 0, cm = +o.cm || 0, R = chartRange(kg, cm), imp = !!o.imperial;
+		var X = function (h) { return ml + (h - R.h0) / (R.h1 - R.h0) * pw; }, Y = function (w) { return mt + ph - (w - R.w0) / (R.w1 - R.w0) * ph; };
+		var r1 = function (v) { return Math.round(v * 10) / 10; };
+		var s = '<svg class="bm-chart" viewBox="0 0 ' + W + " " + H + '" xmlns="http://www.w3.org/2000/svg" role="img"' + (o.aria ? ' aria-label="' + o.aria + '"' : "") + '><defs><clipPath id="bmc-clip"><rect x="' + ml + '" y="' + mt + '" width="' + pw + '" height="' + ph + '"/></clipPath></defs><g clip-path="url(#bmc-clip)">';
+		var edges = groupEdges(o.scale), lo = 0, N = 40;
+		edges.forEach(function (e) {
+			var hi = e[0], pts = [], i, h;
+			for (i = 0; i <= N; i++) { h = R.h0 + (R.h1 - R.h0) * i / N; pts.push(r1(X(h)) + "," + r1(Y(lo ? lo * h * h / 1e4 : R.w0 - 50))); }
+			for (i = N; i >= 0; i--) { h = R.h0 + (R.h1 - R.h0) * i / N; pts.push(r1(X(h)) + "," + r1(Y(hi === Infinity ? R.w1 + 50 : hi * h * h / 1e4))); }
+			s += '<polygon class="bm-reg bm-reg--' + e[1] + '" points="' + pts.join(" ") + '"/>';
+			lo = hi;
+		});
+		// BMI curves every 5 (thin) for reading off values
+		for (var b = 15; b <= 60; b += 5) {
+			var hA = R.h0, hB = R.h1, p = [], j;
+			for (j = 0; j <= N; j++) { var hh = hA + (hB - hA) * j / N; p.push(r1(X(hh)) + "," + r1(Y(b * hh * hh / 1e4))); }
+			s += '<polyline class="bm-iso" points="' + p.join(" ") + '"/>';
+			var wEnd = b * R.h1 * R.h1 / 1e4;
+			if (wEnd < R.w1 - 2 && wEnd > R.w0 + 2) s += '<text class="bm-isot" x="' + (ml + pw - 4) + '" y="' + r1(Y(wEnd) - 3) + '" text-anchor="end">' + b + "</text>";
+			else { var hTop = Math.sqrt(R.w1 * 1e4 / b); if (hTop > R.h0 + 3 && hTop < R.h1) s += '<text class="bm-isot" x="' + r1(X(hTop) + 3) + '" y="' + (mt + 11) + '">' + b + "</text>"; }
+		}
+		s += "</g>";
+		// region names at the left edge, half way between their curves
+		var lo2 = 0;
+		edges.forEach(function (e) {
+			var hx = R.h0 + (R.h1 - R.h0) * 0.12, a = lo2 ? lo2 * hx * hx / 1e4 : R.w0, c = e[0] === Infinity ? R.w1 : e[0] * hx * hx / 1e4;
+			a = Math.max(a, R.w0); c = Math.min(c, R.w1);
+			if (L[e[1]] && c - a > (R.w1 - R.w0) * 0.07) s += '<text class="bm-regt" x="' + r1(X(hx)) + '" y="' + r1(Y((a + c) / 2) + 4) + '">' + L[e[1]] + "</text>";
+			lo2 = e[0];
+		});
+		// axes
+		s += '<rect class="bm-frame" x="' + ml + '" y="' + mt + '" width="' + pw + '" height="' + ph + '" fill="none"/>';
+		var t, v;
+		if (imp) {
+			var i0 = Math.ceil(R.h0 / 2.54 / 4) * 4;
+			for (t = i0; t * 2.54 <= R.h1; t += 4) s += '<text class="bm-ct" x="' + r1(X(t * 2.54)) + '" y="' + (mt + ph + 16) + '" text-anchor="middle">' + Math.floor(t / 12) + "\u2032" + (t % 12) + "\u2033</text>";
+			var l0 = Math.ceil(R.w0 / 0.45359237 / 20) * 20, stepL = R.w1 - R.w0 > 200 ? 40 : 20;
+			for (t = l0; t * 0.45359237 <= R.w1; t += stepL) { v = t * 0.45359237; s += '<line class="bm-gl" x1="' + ml + '" x2="' + (ml + pw) + '" y1="' + r1(Y(v)) + '" y2="' + r1(Y(v)) + '"/><text class="bm-ct" x="' + (ml - 5) + '" y="' + r1(Y(v) + 4) + '" text-anchor="end">' + t + "</text>"; }
+		} else {
+			for (t = Math.ceil(R.h0 / 10) * 10; t <= R.h1; t += 10) s += '<text class="bm-ct" x="' + r1(X(t)) + '" y="' + (mt + ph + 16) + '" text-anchor="middle">' + t + "</text>";
+			var stepK = R.w1 - R.w0 > 150 ? 20 : 10;
+			for (t = Math.ceil(R.w0 / stepK) * stepK; t <= R.w1; t += stepK) s += '<line class="bm-gl" x1="' + ml + '" x2="' + (ml + pw) + '" y1="' + r1(Y(t)) + '" y2="' + r1(Y(t)) + '"/><text class="bm-ct" x="' + (ml - 5) + '" y="' + r1(Y(t) + 4) + '" text-anchor="end">' + t + "</text>";
+		}
+		s += '<text class="bm-ct bm-axt" x="' + (ml + pw / 2) + '" y="' + (H - 6) + '" text-anchor="middle">' + (L.height || "Height") + (imp ? " (ft, in)" : " (cm)") + "</text>";
+		s += '<text class="bm-ct bm-axt" transform="translate(13 ' + (mt + ph / 2) + ') rotate(-90)" text-anchor="middle">' + (L.weight || "Weight") + (imp ? " (lb)" : " (kg)") + "</text>";
+		// you
+		if (kg > 0 && cm > 0) {
+			var px = r1(X(cm)), py = r1(Y(kg)), bv = bmi(kg, cm);
+			s += '<line class="bm-you-l" x1="' + px + '" x2="' + px + '" y1="' + py + '" y2="' + (mt + ph) + '"/><line class="bm-you-l" x1="' + ml + '" x2="' + px + '" y1="' + py + '" y2="' + py + '"/>';
+			s += '<circle class="bm-you" cx="' + px + '" cy="' + py + '" r="7"/>';
+			var right = px < ml + pw - 120;
+			s += '<text class="bm-yout" x="' + (right ? px + 11 : px - 11) + '" y="' + (py - 9) + '" text-anchor="' + (right ? "start" : "end") + '">' + (L.you ? L.you + " " : "") + fmt(bv, 1) + "</text>";
+		}
+		return s + "</svg>";
+	}
+	function chartPoint(o, sx, sy) {      // inverse of chartSvg's mapping (viewBox units) -> { cm, kg } or null outside the plot
+		var W = o.w || 640, H = o.h || 400, ml = 56, mr = 14, mt = 12, mb = 46, pw = W - ml - mr, ph = H - mt - mb, R = chartRange(+o.kg || 0, +o.cm || 0);
+		if (sx < ml || sx > ml + pw || sy < mt || sy > mt + ph) return null;
+		return { cm: R.h0 + (sx - ml) / pw * (R.h1 - R.h0), kg: R.w0 + (mt + ph - sy) / ph * (R.w1 - R.w0) };
+	}
+
+	var BM = { chartSvg: chartSvg, chartPoint: chartPoint, chartRange: chartRange, groupEdges: groupEdges, num: num, numLoc: numLoc, fix: fix, trim: trim, lbToKg: lbToKg, kgToLb: kgToLb, ftInToCm: ftInToCm, cmToFtIn: cmToFtIn, bmi: bmi, weightAt: weightAt, SCALES: SCALES, category: category, healthyRange: healthyRange, toNormal: toNormal,
 		prime: prime, ponderal: ponderal, sortEntries: sortEntries, cleanEntry: cleanEntry, encode: encode, decode: decode, fromOldShare: fromOldShare };
 	if (typeof module !== "undefined" && module.exports) module.exports = BM; else root.BM = BM;
 })(typeof window !== "undefined" ? window : globalThis);
@@ -689,7 +769,17 @@
 		var cats = BM.SCALES[S].cuts, lo = 0, items = "";
 		cats.forEach(function (c, i) { var from = i === 0 ? null : cats[i - 1][0], to = c[0]; items += '<li class="bm-cat bm-cat--' + c[2] + (i === cat.index ? " is-on" : "") + '"><span>' + esc(catName(c[1])) + "</span><span>" + (from == null ? "&lt; " + tr(to, 1) : to === Infinity ? "&ge; " + tr(from, 1) : tr(from, 1) + " &ndash; " + tr(Math.round((to - 0.1) * 10) / 10, 1)) + "</span></li>"; });
 		$("bm-cats").innerHTML = items;
+		drawChart();
 	}
+	// weight-for-height chart: the classic BMI chart with your own point on it (BM.chartSvg in lib.js)
+	function chartLabels() { return { weight: t("weight"), height: t("height"), you: t("yourBmi"), under: esc(catName("Underweight")), normal: esc(catName("Normal weight")), over: esc(catName("Overweight")), obese: esc(catName("Obese")) }; }
+	function drawChart() {
+		var box = $("bm-chart"); if (!box || !cur) return;
+		var narrow = box.clientWidth && box.clientWidth < 480;
+		box.innerHTML = BM.chartSvg({ kg: cur.kg, cm: cur.cm, scale: st.scale, imperial: st.units === "i", w: 640, h: narrow ? 520 : 400, labels: chartLabels(), fmt: fx }) +
+			(EN_PAGE ? '<p class="bm-chartlink">&#128200; <a href="/bmicalculator/bmi-chart?kg=' + BM.trim(cur.kg, 2) + "&cm=" + BM.trim(cur.cm, 1) + '">Open the full BMI chart with your point on it &rarr;</a></p>' : "");
+	}
+	if (window.ResizeObserver && $("bm-chart")) { var chW = 0; new ResizeObserver(function () { var w = $("bm-chart").clientWidth; if ((w < 480) !== (chW < 480)) { chW = w; drawChart(); } chW = w; }).observe($("bm-chart")); }
 
 	/* ---------- history ---------- */
 	function today() { var d = new Date(), p = function (n) { return (n < 10 ? "0" : "") + n; }; return d.getFullYear() + "-" + p(d.getMonth() + 1) + "-" + p(d.getDate()); }

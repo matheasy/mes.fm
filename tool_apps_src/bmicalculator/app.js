@@ -132,7 +132,17 @@
 		var cats = BM.SCALES[S].cuts, lo = 0, items = "";
 		cats.forEach(function (c, i) { var from = i === 0 ? null : cats[i - 1][0], to = c[0]; items += '<li class="bm-cat bm-cat--' + c[2] + (i === cat.index ? " is-on" : "") + '"><span>' + esc(catName(c[1])) + "</span><span>" + (from == null ? "&lt; " + tr(to, 1) : to === Infinity ? "&ge; " + tr(from, 1) : tr(from, 1) + " &ndash; " + tr(Math.round((to - 0.1) * 10) / 10, 1)) + "</span></li>"; });
 		$("bm-cats").innerHTML = items;
+		drawChart();
 	}
+	// weight-for-height chart: the classic BMI chart with your own point on it (BM.chartSvg in lib.js)
+	function chartLabels() { return { weight: t("weight"), height: t("height"), you: t("yourBmi"), under: esc(catName("Underweight")), normal: esc(catName("Normal weight")), over: esc(catName("Overweight")), obese: esc(catName("Obese")) }; }
+	function drawChart() {
+		var box = $("bm-chart"); if (!box || !cur) return;
+		var narrow = box.clientWidth && box.clientWidth < 480;
+		box.innerHTML = BM.chartSvg({ kg: cur.kg, cm: cur.cm, scale: st.scale, imperial: st.units === "i", w: 640, h: narrow ? 520 : 400, labels: chartLabels(), fmt: fx }) +
+			(EN_PAGE ? '<p class="bm-chartlink">&#128200; <a href="/bmicalculator/bmi-chart?kg=' + BM.trim(cur.kg, 2) + "&cm=" + BM.trim(cur.cm, 1) + '">Open the full BMI chart with your point on it &rarr;</a></p>' : "");
+	}
+	if (window.ResizeObserver && $("bm-chart")) { var chW = 0; new ResizeObserver(function () { var w = $("bm-chart").clientWidth; if ((w < 480) !== (chW < 480)) { chW = w; drawChart(); } chW = w; }).observe($("bm-chart")); }
 
 	/* ---------- history ---------- */
 	function today() { var d = new Date(), p = function (n) { return (n < 10 ? "0" : "") + n; }; return d.getFullYear() + "-" + p(d.getMonth() + 1) + "-" + p(d.getDate()); }

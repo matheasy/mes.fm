@@ -1417,7 +1417,9 @@ body.dark-mode .sub-heading,
 body.dark-mode .arrow-icon,
 body.dark-mode .list-row h3,
 body.dark-mode .list-row p,
-body.dark-mode .link-card-title {
+body.dark-mode .link-card-title,
+body.dark-mode .link-card-note,
+body.dark-mode .list-note {
   color: #eeeeee;
 }
 

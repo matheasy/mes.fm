@@ -456,6 +456,113 @@ sub {vertical-align:sub;}        .warning-message {font-size:1em;text-align:cent
                             <div class="page-content" role="main">                                    <div class="color-box"></div>
                                     <h1 class="page-title">BMI Chart</h1>                                        <p class="page-description">This BMI Chart or BMI Table displays what category each BMI falls under and shows it in Table format.<br><br>
             The formula used to calculate BMI can be found here: <a class="link" href="/bmicalculator/bmi-formula">BMI Formula</a>.</p>                                    <div id="main-content">
+	<!-- BMI-CHART-INTERACTIVE -->
+	<style id="bmc-css">
+	#bmc {border:1px solid #e3c9d8;border-radius:12px;padding:1em;margin:0 0 1.5em;background:#fdf6fa;}
+	#bmc h2 {margin:0 0 0.5em;font-size:1.25em;}
+	#bmc .bmc-row {display:flex;flex-wrap:wrap;gap:0.6em 1em;align-items:flex-end;margin-bottom:0.6em;}
+	#bmc label {display:flex;flex-direction:column;font-size:0.85em;font-weight:700;color:#5a4554;gap:0.2em;}
+	#bmc input, #bmc select {font:inherit;font-size:1.05em;padding:0.35em 0.5em;border:1px solid #c9aebd;border-radius:6px;background:#fff;color:#222;width:6.5em;}
+	#bmc select {width:auto;}
+	#bmc .bmc-seg {display:inline-flex;border:1px solid #b3529d;border-radius:6px;overflow:hidden;}
+	#bmc .bmc-seg button {font:inherit;border:0;background:#fff;color:#8a3d79;padding:0.4em 0.8em;cursor:pointer;}
+	#bmc .bmc-seg button[aria-pressed="true"] {background:#b3529d;color:#fff;}
+	#bmc .bmc-out {font-size:1.05em;margin:0.4em 0;min-height:1.4em;color:#222;}
+	#bmc .bmc-read {font-size:0.9em;color:#555;min-height:1.3em;}
+	#bmc .bm-chart {display:block;width:100%;height:auto;font-size:13px;cursor:crosshair;touch-action:pan-y;}
+	#bmc .bm-reg--under {fill:#f6dd9a;} #bmc .bm-reg--normal {fill:#a7dcb7;} #bmc .bm-reg--over {fill:#f5c597;} #bmc .bm-reg--obese {fill:#efa7a3;}
+	#bmc .bm-iso {fill:none;stroke:rgba(0,0,0,0.18);stroke-width:1;stroke-dasharray:3 3;}
+	#bmc .bm-isot {fill:rgba(0,0,0,0.5);font-size:11px;}
+	#bmc .bm-regt {fill:#2b2b2b;font-weight:700;font-size:14px;}
+	#bmc .bm-frame {stroke:#9aa3ad;} #bmc .bm-gl {stroke:rgba(0,0,0,0.08);}
+	#bmc .bm-ct {fill:#5b6570;font-size:12px;} #bmc .bm-axt {font-weight:700;}
+	#bmc .bm-you {fill:#1e2733;stroke:#fff;stroke-width:2.5;} #bmc .bm-you-l {stroke:#1e2733;stroke-width:1.2;stroke-dasharray:4 3;}
+	#bmc .bm-yout {fill:#1e2733;font-weight:800;font-size:15px;paint-order:stroke;stroke:#fff;stroke-width:4px;}
+	#bmc .bmc-hov {fill:none;stroke:#8a3d79;stroke-width:2;}
+	#bmc [hidden] {display:none !important;}
+	#bmc .bmc-note {font-size:0.85em;color:#555;margin:0.5em 0 0;}
+	body.dark-mode #bmc {background:#2a2228;border-color:#5a4554;}
+	body.dark-mode #bmc h2, body.dark-mode #bmc .bmc-out {color:#f0f0f0;}
+	body.dark-mode #bmc label {color:#e6c3da;}
+	body.dark-mode #bmc input, body.dark-mode #bmc select {background:#1e1e1e;color:#eee;border-color:#6a5262;}
+	body.dark-mode #bmc .bmc-seg button {background:#1e1e1e;color:#f0a6d8;}
+	body.dark-mode #bmc .bmc-seg button[aria-pressed="true"] {background:#b3529d;color:#fff;}
+	body.dark-mode #bmc .bmc-read, body.dark-mode #bmc .bmc-note {color:#c8c8c8;}
+	body.dark-mode #bmc .bm-reg--under {fill:#6b5a24;} body.dark-mode #bmc .bm-reg--normal {fill:#2f6040;} body.dark-mode #bmc .bm-reg--over {fill:#6e4423;} body.dark-mode #bmc .bm-reg--obese {fill:#6c2c29;}
+	body.dark-mode #bmc .bm-iso {stroke:rgba(255,255,255,0.22);} body.dark-mode #bmc .bm-isot {fill:rgba(255,255,255,0.6);}
+	body.dark-mode #bmc .bm-regt {fill:#f2f2f2;} body.dark-mode #bmc .bm-gl {stroke:rgba(255,255,255,0.08);} body.dark-mode #bmc .bm-ct {fill:#b8c0c8;}
+	body.dark-mode #bmc .bm-you {fill:#fff;stroke:#1a1a1a;} body.dark-mode #bmc .bm-you-l {stroke:#e8e8e8;} body.dark-mode #bmc .bm-yout {fill:#fff;stroke:#1a1a1a;}
+	body.dark-mode #bmc .bmc-hov {stroke:#f0a6d8;}
+	</style>
+	<section id="bmc" aria-labelledby="bmc-h">
+		<h2 id="bmc-h">Interactive BMI chart: find your point</h2>
+		<div class="bmc-row">
+			<span class="bmc-seg" role="group" aria-label="Units"><button type="button" data-u="i" aria-pressed="true">lb, ft, in</button><button type="button" data-u="m" aria-pressed="false">kg, cm</button></span>
+			<label>Scale <select id="bmc-scale"><option value="who">WHO</option><option value="asia">Asian</option></select></label>
+		</div>
+		<div class="bmc-row" id="bmc-imp">
+			<label>Height (ft) <input id="bmc-ft" inputmode="decimal" placeholder="5"></label>
+			<label>(in) <input id="bmc-in" inputmode="decimal" placeholder="9"></label>
+			<label>Weight (lb) <input id="bmc-lb" inputmode="decimal" placeholder="160"></label>
+		</div>
+		<div class="bmc-row" id="bmc-met" hidden>
+			<label>Height (cm) <input id="bmc-cm" inputmode="decimal" placeholder="175"></label>
+			<label>Weight (kg) <input id="bmc-kg" inputmode="decimal" placeholder="72"></label>
+		</div>
+		<div class="bmc-out" id="bmc-out" aria-live="polite">Type your height and weight, or tap the chart.</div>
+		<div id="bmc-chart"></div>
+		<div class="bmc-read" id="bmc-read">&nbsp;</div>
+		<p class="bmc-note">Each dashed line is one BMI value (15, 20, 25 ...). Tap or click anywhere on the chart to put your point there. Your numbers stay in this browser. For your healthy weight range and how much to gain or lose, use the <a class="link" href="/bmicalculator">BMI Calculator</a>.</p>
+	</section>
+	<script src="/bmicalculator/js/bmicalculator.js?v=11" defer></script>
+	<script>
+	document.addEventListener("DOMContentLoaded", function () {
+		var BM = window.BM; if (!BM || !BM.chartSvg) return;
+		var $ = function (id) { return document.getElementById(id); }, KEY = "mes-bmicalculator:v1";
+		var st = { kg: null, cm: null, u: "i", scale: "who" }, W = 640, H = 400;
+		try { var s = JSON.parse(localStorage.getItem(KEY) || "null"); if (s) { st.kg = BM.num(s.kg); st.cm = BM.num(s.cm); if (s.ru === "m") st.u = "m"; if (s.scale === "asia") st.scale = "asia"; } } catch (e) {}
+		try { if (!/^en-US/.test(navigator.language || "") && !(localStorage.getItem(KEY))) st.u = "m"; } catch (e) {}
+		var q = new URLSearchParams(location.search);
+		if (q.get("kg") && q.get("cm")) { st.kg = BM.num(q.get("kg")); st.cm = BM.num(q.get("cm")); }
+		if (q.get("scale") === "asia") st.scale = "asia";
+		var r1 = function (v, d) { return BM.trim(v, d); };
+		function fill() {
+			if (st.cm) { var fi = BM.cmToFtIn(st.cm); $("bmc-ft").value = fi.ft; $("bmc-in").value = r1(fi.inch, 1); $("bmc-cm").value = r1(st.cm, 1); }
+			if (st.kg) { $("bmc-kg").value = r1(st.kg, 1); $("bmc-lb").value = r1(BM.kgToLb(st.kg), 1); }
+		}
+		var LBL = { weight: "Weight", height: "Height", you: "You:", under: "Underweight", normal: "Normal", over: "Overweight", obese: "Obese" };
+		function draw() {
+			W = 640; H = $("bmc-chart").clientWidth < 480 ? 520 : 400;
+			$("bmc-chart").innerHTML = BM.chartSvg({ kg: st.kg, cm: st.cm, scale: st.scale, imperial: st.u === "i", w: W, h: H, labels: LBL, aria: "BMI chart of weight against height" });
+			var b = BM.bmi(st.kg, st.cm);
+			$("bmc-out").innerHTML = b == null ? "Type your height and weight, or tap the chart." : "Your BMI is <b>" + r1(b, 1) + "</b>: <b>" + BM.category(b, st.scale).name + "</b> (" + (st.scale === "asia" ? "Asian" : "WHO") + " scale).";
+		}
+		function readInputs() {
+			if (st.u === "i") { var ft = BM.num($("bmc-ft").value) || 0, inch = BM.num($("bmc-in").value) || 0, lb = BM.num($("bmc-lb").value); st.cm = ft || inch ? BM.ftInToCm(ft, inch) : null; st.kg = lb ? BM.lbToKg(lb) : null; }
+			else { st.cm = BM.num($("bmc-cm").value); st.kg = BM.num($("bmc-kg").value); }
+			draw();
+		}
+		function units() {
+			document.querySelectorAll("#bmc .bmc-seg button").forEach(function (b) { b.setAttribute("aria-pressed", String(b.dataset.u === st.u)); });
+			$("bmc-imp").hidden = st.u !== "i"; $("bmc-met").hidden = st.u === "i";
+		}
+		document.querySelector("#bmc .bmc-seg").addEventListener("click", function (e) { var b = e.target.closest("button"); if (!b) return; st.u = b.dataset.u; units(); fill(); draw(); });
+		$("bmc-scale").value = st.scale; $("bmc-scale").onchange = function () { st.scale = this.value; draw(); };
+		["bmc-ft", "bmc-in", "bmc-lb", "bmc-cm", "bmc-kg"].forEach(function (id) { $(id).addEventListener("input", function () { readInputs(); var o = st.u === "i"; if (o) { if (st.cm) $("bmc-cm").value = r1(st.cm, 1); if (st.kg) $("bmc-kg").value = r1(st.kg, 1); } else fill2(); }); });
+		function fill2() { if (st.cm) { var fi = BM.cmToFtIn(st.cm); $("bmc-ft").value = fi.ft; $("bmc-in").value = r1(fi.inch, 1); } if (st.kg) $("bmc-lb").value = r1(BM.kgToLb(st.kg), 1); }
+		function pt(e) {
+			var svg = $("bmc-chart").querySelector("svg"); if (!svg) return null;
+			var r = svg.getBoundingClientRect(); return BM.chartPoint({ kg: st.kg, cm: st.cm, w: W, h: H }, (e.clientX - r.left) / r.width * W, (e.clientY - r.top) / r.height * H);
+		}
+		function desc(p) { var h = st.u === "i" ? (function (f) { return f.ft + "′ " + Math.round(f.inch) + "″"; })(BM.cmToFtIn(p.cm)) : Math.round(p.cm) + " cm", w = st.u === "i" ? Math.round(BM.kgToLb(p.kg)) + " lb" : Math.round(p.kg) + " kg", b = BM.bmi(p.kg, p.cm); return h + ", " + w + " → BMI " + r1(b, 1) + " (" + BM.category(b, st.scale).name + ")"; }
+		$("bmc-chart").addEventListener("pointermove", function (e) { var p = pt(e); $("bmc-read").textContent = p ? desc(p) : " "; });
+		$("bmc-chart").addEventListener("pointerleave", function () { $("bmc-read").textContent = " "; });
+		$("bmc-chart").addEventListener("click", function (e) { var p = pt(e); if (!p) return; st.cm = Math.round(p.cm * 10) / 10; st.kg = Math.round(p.kg * 10) / 10; fill(); draw(); $("bmc-read").textContent = desc(p); });
+		if (window.ResizeObserver) { var lw = 0; new ResizeObserver(function () { var w = $("bmc-chart").clientWidth; if ((w < 480) !== (lw < 480)) draw(); lw = w; }).observe($("bmc-chart")); }
+		units(); fill(); draw();
+	});
+	</script>
+	<!-- /BMI-CHART-INTERACTIVE -->
 	<a href="/bmicalculator/img/bmi-chart.png"><img src="/bmicalculator/img/bmi-chart.png" alt="bmi chart" width="100%" height="auto"></a>
 
 	<h2 class="header2">How to view your BMI from the Chart</h2>
