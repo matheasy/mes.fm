@@ -739,12 +739,13 @@
 	var SHD = { lock: false, k: 1 };
 	function shSliders(md, res, v, tauUlt, tauY) {
 		var big = S.sys === "us", specs = [];
-		function lenS(id, label, val, fb) { return { key: id, label: label, keep: true, min: 0, max: isFinite(val) && val > 0 ? 3 * val : fb, v: val, show: function (x) { return fmt(x, "small"); }, set: function (x) { setFieldSI(id, Math.max(x, 1e-6)); shCompute(); } }; }
+		/* lengths: the range never shrinks below a normal size (fb), and a drag to the left end stops at fb / 100 instead of ~0, so a slider can always be dragged back up */
+		function lenS(id, label, val, fb) { return { key: id, label: label, keep: true, min: 0, max: Math.max(isFinite(val) && val > 0 ? 3 * val : 0, fb), v: val, show: function (x) { return fmt(x, "small"); }, set: function (x) { setFieldSI(id, Math.max(x, fb / 100)); shCompute(); } }; }
 		if (md !== "punch") {
 			var cap = res.A > 0 && res.planes ? 1.15 * (md === "pin" ? tauUlt : (tauY || tauUlt)) * res.A * res.planes : NaN;
-			specs.push({ key: "sh-V", label: "Shear force V", min: 0, max: md === "pin" && isFinite(cap) ? cap : Math.max(isFinite(v.V) ? 2.5 * v.V : 0, big ? 17.8e3 : 20e3), v: v.V, show: function (x) { return fmt(x, "force"); }, set: function (x) { setFieldSI("sh-V", x); shCompute(); } });
+			specs.push({ key: "sh-V", label: "Shear force V", min: 0, max: md === "pin" && isFinite(cap) && cap > (big ? 4.4e3 : 5e3) ? cap : Math.max(isFinite(v.V) ? 2.5 * v.V : 0, big ? 17.8e3 : 20e3), v: v.V, show: function (x) { return fmt(x, "force"); }, set: function (x) { setFieldSI("sh-V", x); shCompute(); } });
 			if (md === "pin") specs.push(lenS("sh-d", "Pin / bolt diameter d", v.d, 0.04), lenS("sh-t", "Plate thickness t", v.t, 0.03));
-			else specs.push({ key: "sh-A", label: "Area in shear A", keep: true, min: 0, max: isFinite(v.A) && v.A > 0 ? 3 * v.A : 2e-3, v: v.A, show: function (x) { return fmt(x, "area"); }, set: function (x) { setFieldSI("sh-A", Math.max(x, 1e-9)); shCompute(); } });
+			else specs.push({ key: "sh-A", label: "Area in shear A", keep: true, min: 0, max: Math.max(isFinite(v.A) && v.A > 0 ? 3 * v.A : 0, 2e-4), v: v.A, show: function (x) { return fmt(x, "area"); }, set: function (x) { setFieldSI("sh-A", Math.max(x, 2e-6)); shCompute(); } });
 		} else specs.push(lenS("sh-hd", "Hole diameter d", v.hd, 0.05), lenS("sh-t", "Plate thickness t", v.t, 0.03));
 		sliders("mt-sh-sl", specs, { lock: function (on) { SHD.lock = on; }, done: shCompute });
 	}
@@ -968,7 +969,8 @@
 			box.innerHTML = specs.map(function (o, i) { return "<div class='mt-slide'><label for='" + boxId + "-" + i + "'>" + sym(subH(esc(o.label))) + "</label><input type='range' id='" + boxId + "-" + i + "' min='0' max='1000' step='1'><output for='" + boxId + "-" + i + "'></output></div>"; }).join("");
 			[].forEach.call(box.querySelectorAll("input"), function (inp, i) {
 				inp.addEventListener("input", function () { if (!box._lock) { box._lock = box._specs.map(function (o) { return [o.min, o.max]; }); box._opt.lock(true); } var o = box._specs[i], r = box._lock[i]; o.set(r[0] + (r[1] - r[0]) * (+inp.value) / 1000); });
-				inp.addEventListener("change", function () { box._lock = null; box._opt.lock(false); box._opt.done(); });
+				function rel() { if (!box._lock) return; box._lock = null; box._opt.lock(false); box._opt.done(); }
+				inp.addEventListener("change", rel); inp.addEventListener("pointerup", function () { setTimeout(rel, 0); }); inp.addEventListener("touchend", function () { setTimeout(rel, 0); }); inp.addEventListener("blur", rel);
 			});
 		}
 		box._specs = specs;

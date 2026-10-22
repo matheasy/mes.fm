@@ -249,6 +249,14 @@
 		{ id: "hdpe", name: "HDPE (high-density polyethylene)", fam: "polymer", E: 1.0, G: 0.35, nu: 0.42, sy: 26, su: 30, el: 600, ra: null, rho: 955, a: 150, c: "polymer", x: { ey: 0.1, dr: 0.7, ed: 4.0, brk: 30 }, note: "After yield a neck forms and travels along the bar (cold drawing) until the whole piece is drawn out." },
 		{ id: "rubber", name: "Natural rubber (vulcanised)", fam: "elastomer", E: 0.002, G: 0.00067, nu: 0.4998, sy: null, su: 20, el: 600, ra: null, rho: 930, a: 220, c: "rubber", note: "E here is the starting slope (2 MPa); rubber stiffens a lot as it stretches. Almost incompressible: ν is very close to 0.5." },
 		{ id: "cfrp", name: "Carbon fibre / epoxy, along the fibres", fam: "composite", aniso: true, E: 135, G: 5.0, nu: 0.3, sy: null, su: 1500, sc: 1200, el: null, ra: 0, rho: 1600, a: -0.3, c: "brittle", note: "One-direction (unidirectional) laminate, about 60% fibre. Across the fibres it is only about 10 GPa and 50 MPa; woven or quasi-isotropic laminates are about 50 to 70 GPa." },
+		{ id: "cfrpqi", name: "Carbon fibre / epoxy, quasi-isotropic laminate", fam: "composite", E: 55, G: 21, nu: 0.3, sy: null, su: 600, sc: 550, el: null, ra: 0, rho: 1600, a: 2.0, c: "brittle", note: "Plies laid at 0, 45, 90 and -45 degrees, so the panel is about equally stiff in every direction of its plane (bike frames, aircraft skins). Much weaker through the thickness." },
+		{ id: "cfrpw", name: "Carbon fibre / epoxy, woven fabric (0/90)", fam: "composite", aniso: true, E: 70, G: 5.0, nu: 0.05, sy: null, su: 600, sc: 570, el: null, ra: 0, rho: 1550, a: 2.1, c: "brittle", note: "Plain or twill weave, along either fibre direction. At 45 degrees to the fibres it is only about 20 GPa." },
+		{ id: "cfrphm", name: "Carbon fibre / epoxy, high-modulus fibre, along the fibres", fam: "composite", aniso: true, E: 230, G: 5.0, nu: 0.3, sy: null, su: 2000, sc: 1100, el: null, ra: 0, rho: 1650, a: -0.5, c: "brittle", note: "High-modulus fibre (M40J type), unidirectional, about 60% fibre: stiffer than steel at a fifth of the weight. Satellite and racing parts." },
+		{ id: "gfrp", name: "Glass fibre / epoxy, along the fibres", fam: "composite", aniso: true, E: 40, G: 4.0, nu: 0.28, sy: null, su: 1000, sc: 600, el: null, ra: 0, rho: 2000, a: 6.0, c: "brittle", note: "E-glass, unidirectional, about 55% fibre (wind turbine spar caps, leaf springs). Across the fibres about 10 GPa and 40 MPa." },
+		{ id: "grp", name: "Fibreglass (chopped strand mat / polyester)", fam: "composite", E: 8, G: 3.0, nu: 0.3, sy: null, su: 100, sc: 150, el: null, ra: 0, rho: 1500, a: 25, c: "brittle", note: "Hand-laid GRP as in boat hulls, tanks and car panels: random short fibres, about 30% glass, so the same in every direction of the sheet. 7 to 10 GPa." },
+		{ id: "kevlar", name: "Aramid (Kevlar 49) / epoxy, along the fibres", fam: "composite", aniso: true, E: 76, G: 2.1, nu: 0.34, sy: null, su: 1380, sc: 280, el: null, ra: 0, rho: 1380, a: -2.0, c: "brittle", note: "Very strong in tension but weak in compression (the fibres kink): good for pressure vessels and impact protection, poor for columns." },
+		{ id: "basalt", name: "Basalt fibre / epoxy, along the fibres", fam: "composite", aniso: true, E: 45, G: 4.5, nu: 0.3, sy: null, su: 1100, sc: 600, el: null, ra: 0, rho: 2000, a: 6.0, c: "brittle", note: "Similar to glass fibre, a little stiffer; also used as rebar that does not rust." },
+		{ id: "pagf", name: "Glass-filled nylon (PA66, 30% glass), dry", fam: "composite", E: 9.5, G: 3.5, nu: 0.35, sy: null, su: 190, sc: 230, el: null, ra: 0, rho: 1370, a: 25, c: "brittle", note: "Injection-moulded short-fibre composite (power-tool housings, car engine parts). Breaks at about 3% strain; when it has absorbed water about 7 GPa and 130 MPa. Stiffer along the flow direction." },
 		{ id: "bone", name: "Bone, cortical, along the axis", fam: "bio", aniso: true, E: 18, G: 3.3, nu: 0.3, sy: 105, su: 130, sc: 190, el: 2.5, ra: 0, rho: 1900, a: null, c: "duct", note: "Human thigh bone (femur) from healthy adults; values spread widely between people and with age." }
 	];
 	function mat(id) { for (var i = 0; i < MATS.length; i++) if (MATS[i].id === id) return MATS[i]; return null; }
@@ -1151,12 +1159,13 @@
 	var SHD = { lock: false, k: 1 };
 	function shSliders(md, res, v, tauUlt, tauY) {
 		var big = S.sys === "us", specs = [];
-		function lenS(id, label, val, fb) { return { key: id, label: label, keep: true, min: 0, max: isFinite(val) && val > 0 ? 3 * val : fb, v: val, show: function (x) { return fmt(x, "small"); }, set: function (x) { setFieldSI(id, Math.max(x, 1e-6)); shCompute(); } }; }
+		/* lengths: the range never shrinks below a normal size (fb), and a drag to the left end stops at fb / 100 instead of ~0, so a slider can always be dragged back up */
+		function lenS(id, label, val, fb) { return { key: id, label: label, keep: true, min: 0, max: Math.max(isFinite(val) && val > 0 ? 3 * val : 0, fb), v: val, show: function (x) { return fmt(x, "small"); }, set: function (x) { setFieldSI(id, Math.max(x, fb / 100)); shCompute(); } }; }
 		if (md !== "punch") {
 			var cap = res.A > 0 && res.planes ? 1.15 * (md === "pin" ? tauUlt : (tauY || tauUlt)) * res.A * res.planes : NaN;
-			specs.push({ key: "sh-V", label: "Shear force V", min: 0, max: md === "pin" && isFinite(cap) ? cap : Math.max(isFinite(v.V) ? 2.5 * v.V : 0, big ? 17.8e3 : 20e3), v: v.V, show: function (x) { return fmt(x, "force"); }, set: function (x) { setFieldSI("sh-V", x); shCompute(); } });
+			specs.push({ key: "sh-V", label: "Shear force V", min: 0, max: md === "pin" && isFinite(cap) && cap > (big ? 4.4e3 : 5e3) ? cap : Math.max(isFinite(v.V) ? 2.5 * v.V : 0, big ? 17.8e3 : 20e3), v: v.V, show: function (x) { return fmt(x, "force"); }, set: function (x) { setFieldSI("sh-V", x); shCompute(); } });
 			if (md === "pin") specs.push(lenS("sh-d", "Pin / bolt diameter d", v.d, 0.04), lenS("sh-t", "Plate thickness t", v.t, 0.03));
-			else specs.push({ key: "sh-A", label: "Area in shear A", keep: true, min: 0, max: isFinite(v.A) && v.A > 0 ? 3 * v.A : 2e-3, v: v.A, show: function (x) { return fmt(x, "area"); }, set: function (x) { setFieldSI("sh-A", Math.max(x, 1e-9)); shCompute(); } });
+			else specs.push({ key: "sh-A", label: "Area in shear A", keep: true, min: 0, max: Math.max(isFinite(v.A) && v.A > 0 ? 3 * v.A : 0, 2e-4), v: v.A, show: function (x) { return fmt(x, "area"); }, set: function (x) { setFieldSI("sh-A", Math.max(x, 2e-6)); shCompute(); } });
 		} else specs.push(lenS("sh-hd", "Hole diameter d", v.hd, 0.05), lenS("sh-t", "Plate thickness t", v.t, 0.03));
 		sliders("mt-sh-sl", specs, { lock: function (on) { SHD.lock = on; }, done: shCompute });
 	}
@@ -1380,7 +1389,8 @@
 			box.innerHTML = specs.map(function (o, i) { return "<div class='mt-slide'><label for='" + boxId + "-" + i + "'>" + sym(subH(esc(o.label))) + "</label><input type='range' id='" + boxId + "-" + i + "' min='0' max='1000' step='1'><output for='" + boxId + "-" + i + "'></output></div>"; }).join("");
 			[].forEach.call(box.querySelectorAll("input"), function (inp, i) {
 				inp.addEventListener("input", function () { if (!box._lock) { box._lock = box._specs.map(function (o) { return [o.min, o.max]; }); box._opt.lock(true); } var o = box._specs[i], r = box._lock[i]; o.set(r[0] + (r[1] - r[0]) * (+inp.value) / 1000); });
-				inp.addEventListener("change", function () { box._lock = null; box._opt.lock(false); box._opt.done(); });
+				function rel() { if (!box._lock) return; box._lock = null; box._opt.lock(false); box._opt.done(); }
+				inp.addEventListener("change", rel); inp.addEventListener("pointerup", function () { setTimeout(rel, 0); }); inp.addEventListener("touchend", function () { setTimeout(rel, 0); }); inp.addEventListener("blur", rel);
 			});
 		}
 		box._specs = specs;
