@@ -558,7 +558,7 @@ function buildSection(section, meta) {
   // "Open in:" preferred-site switch (shared/link-pref.mjs) when most items have links on several sites.
   const lpMaps = cardItems.filter((i) => !i.standalone).map((i) => lpMap(buildLinksForItem(i, meta)));
   // lpAlways (the "All Content" page, shared/hub-filter.mjs addAllPage): site icons on every card even when few items have several sites.
-  const lpHtml = lpWanted(lpMaps) || section.lpAlways ? lpSwitch(lpMaps) : "";
+  const lpHtml = lpWanted(lpMaps) || section.lpAlways ? lpSwitch(lpMaps, section.lpAlways ? { min: 1 } : undefined) : "";   // All Content: offer every site any item has
   if (lpHtml || section.lpAlways) { section.linkPref = true; cardItems.forEach((i) => { if (!i.standalone) i.lp = true; }); }
   const standaloneHtml = standaloneItems
     .map((item) => `<p class="section-standalone-link"><a href="${escapeHtml(item.href)}">&#9654;&#65039; ${escapeHtml(item.title)}</a></p>`)
