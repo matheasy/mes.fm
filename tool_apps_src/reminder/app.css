@@ -56,16 +56,8 @@
 	.tu .rm-event:fullscreen {background:#fff;}
 	html.rm-noscroll, html.rm-noscroll body {overflow:hidden;}
 	@media (max-width: 600px) { .tu .rm-view {justify-content:center;} .tu .rm-event.rm-fill .rm-count {flex-wrap:wrap;font-size:min(6vw, 5vh);} .tu .rm-event.rm-fill .rm-title {font-size:min(6vw, 4.4vh);} .tu .rm-event.rm-sz-3 .rm-count {font-size:1.8em;} .tu .rm-event.rm-sz-2 .rm-count {font-size:1.3em;} }
-	/* next scheduled MES streams (mes.fm/reminder/upcoming.json, written by update_upcoming_streams.py) */
-	.tu .rm-nextcard {display:flex;flex-wrap:wrap;gap:0.5em 1em;align-items:center;border-left:4px solid var(--accent);}
-	.tu .rm-nextcard .rm-nx-main {flex:1 1 18em;min-width:0;}
-	.tu .rm-nx-k {font-size:0.8em;text-transform:uppercase;letter-spacing:0.1em;color:#6a7280;}
-	.tu .rm-nx-t {font-weight:700;font-size:1.1em;overflow-wrap:anywhere;}
-	.tu .rm-nx-w {color:#555;font-size:0.92em;}
-	.tu .rm-nextrow {display:flex;flex-wrap:wrap;gap:0.4em;align-items:center;margin-bottom:0.6em;}
-	.tu .rm-nextrow b {font-size:0.9em;margin-right:0.2em;}
+	.tu .rm-nextrow {display:flex;flex-wrap:wrap;gap:0.4em;margin-bottom:0.6em;}
 	body.dark-mode #rm .rm-seg, body.dark-mode #rm .rm-vbtn, body.dark-mode #rm .rm-seg button + button {border-color:#555;}
 	body.dark-mode #rm .rm-seg button, body.dark-mode #rm .rm-vbtn {color:#e6e6e6;}
 	body.dark-mode #rm .rm-seg button[aria-pressed="true"] {color:#fff;}
 	body.dark-mode #rm .rm-event:fullscreen {background:#1e1e1e;}
-	body.dark-mode #rm .rm-nx-k, body.dark-mode #rm .rm-nx-w {color:#b8c0c8;}

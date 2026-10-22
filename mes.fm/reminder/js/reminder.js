@@ -458,22 +458,15 @@
 		["rm-date", "rm-time"].forEach(function (id) { $(id).dispatchEvent(new Event("input", { bubbles: true })); $(id).dispatchEvent(new Event("change", { bubbles: true })); });
 		upd(); toast("Filled in: " + x.title);
 	}
-	// MES's own next streams: off for ordinary visitors (the page is a neutral tool); ?mes=1 turns them on in this browser, ?mes=0 off
-	var MES_ON = (function () { var q = new URLSearchParams(location.search).get("mes"); try { if (q === "1" || q === "0") localStorage.setItem("mes-reminder:mes", q); return localStorage.getItem("mes-reminder:mes") === "1"; } catch (e) { return q === "1"; } })();
-	if (MES_ON) fetch("/reminder/upcoming.json", { cache: "no-cache" }).then(function (r) { return r.ok ? r.json() : null; }).then(function (data) {
+	// one plain "Next MES Stream" button: fills the form with the next stream from /reminder/upcoming.json (build_upcoming_streams.py); the visitor adjusts the rest
+	fetch("/reminder/upcoming.json", { cache: "no-cache" }).then(function (r) { return r.ok ? r.json() : null; }).then(function (data) {
 		if (!data || !Array.isArray(data.streams)) return;
 		var now = Date.now(), list = data.streams.map(function (x) { return { title: String(x.title || ""), url: RM.safeUrl(x.url), ms: Date.parse(x.start) }; })
-			.filter(function (x) { return x.title && x.url && x.ms > now - 2 * 3600000; }).slice(0, 4);    // keep a stream for 2 h after its start (it is live then)
+			.filter(function (x) { return x.title && x.url && x.ms > now - 2 * 3600000; });    // a stream stays 2 h after its start (it is live then)
 		if (!list.length) return;
 		var row = $("rm-nextrow");
-		row.innerHTML = "<b>Next MES streams:</b>" + list.map(function (x, i) { return '<button type="button" class="tu-chip" data-nx="' + i + '" title="Fill in this stream">▶ ' + esc(x.title.split(":")[0]) + " · " + esc(new Intl.DateTimeFormat(undefined, { weekday: "short", month: "short", day: "numeric" }).format(new Date(x.ms))) + "</button>"; }).join("");
+		row.innerHTML = '<button type="button" class="tu-chip" id="rm-nextbtn">Next MES Stream</button>';
 		row.hidden = false;
-		row.addEventListener("click", function (e) { var b = e.target.closest("[data-nx]"); if (b) fillForm(list[+b.getAttribute("data-nx")]); });
-		var first = list[0], ev = streamEv(first);
-		if (EV && (EV.u === first.url || EV.title === first.title)) return;    // this page already is its reminder
-		var card = $("rm-nextcard"), c = RM.countdown(first.ms - now);
-		card.innerHTML = '<div class="rm-nx-main"><div class="rm-nx-k">' + (first.ms <= now ? "🔴 Live now" : "Next MES stream") + '</div><div class="rm-nx-t">' + esc(first.title) + '</div><div class="rm-nx-w">' + esc(fmtWhen(first.ms, "", true)) + (first.ms > now ? " · in " + (c.d ? c.d + (c.d === 1 ? " day " : " days ") : "") + c.h + " h " + c.m + " min" : "") + "</div></div>" +
-			'<a class="tu-btn tu-btn--primary" href="/reminder?' + esc(RM.toQuery(ev)) + '">⏰ Get a reminder</a>';
-		card.hidden = false;
+		$("rm-nextbtn").addEventListener("click", function () { fillForm(list[0]); });
 	}).catch(function () {});
 })();
