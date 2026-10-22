@@ -957,6 +957,7 @@ if (typeof module !== "undefined" && module.exports) module.exports = SRLib;
     closePip();
     if (ui) { ui.host.remove(); ui = null; }
     if (styleEl) { styleEl.remove(); styleEl = null; }
+    if (darkOn) setDark(false, false);   // the dark page only lasts while the player is open (the site choice is kept for next time); left behind, it stacked with the Dark Mode extension's invert and the two cancelled out
   }
 
   // ---- the player -----------------------------------------------------------------------------------------------------
@@ -1201,10 +1202,19 @@ if (typeof module !== "undefined" && module.exports) module.exports = SRLib;
   window.addEventListener('resize', function () { if (ui && uiPos) place(uiPos, true); });
   function fillMini() { if (ui) { ui.mini.innerHTML = uiMin ? '&#9652;' : '&#9662;'; ui.mini.title = uiMin ? 'Show the full player (M)' : 'Minimise to a small bar (M)'; } }
   function toggleMini() { uiMin = !uiMin; if (ui) { ui.p.classList.toggle('min', uiMin); fillMini(); if (uiPos) place(uiPos, true); } saveUi(); }
-  // dark / light page: one stylesheet that inverts the page (hue kept) and flips pictures, video and our own player back; it stays on the page after the player closes
-  var darkOn = false;
+  // dark / light page: one stylesheet that inverts the page (hue kept) and flips pictures, video and our own player back, while the player is open.
+  // It steps aside for the MES Dark Mode extension: two inverts cancel out, so it is never added while that one darkens the page, and that one
+  // removes ours (and fires 'mesra-dark-yield') when it switches on.
+  var darkOn = false, DK_TITLE = 'Dark / light page: inverts the page colours (pictures and video keep theirs). Remembered for this site.';
+  function dmDark() { var l = document.querySelectorAll('style#mesdm-style'); for (var i = 0; i < l.length; i++) if (l[i].isConnected && /invert\(/.test(l[i].textContent)) return true; return false; }
+  document.addEventListener('mesra-dark-yield', function () { if (darkOn) setDark(false, false); });
   function setDark(on, save) {
     if (window.__mesraSite) return;
+    if (on && dmDark()) {
+      if (ui && ui.dk) ui.dk.title = 'The MES Dark Mode extension is already darkening this page';
+      if (save) setStatus('MES Dark Mode is already darkening this page');
+      on = false; save = false;
+    } else if (ui && ui.dk) ui.dk.title = DK_TITLE;
     darkOn = !!on;
     var el = document.getElementById('mesra-dark-style');
     if (darkOn && !el) {

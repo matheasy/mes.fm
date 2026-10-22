@@ -120,6 +120,14 @@
     if (!styleEl) { styleEl = document.createElement('style'); styleEl.id = 'mesdm-style'; }
     styleEl.textContent = css;
     attach();
+    if (/invert\(/.test(css)) yieldReader();
+  }
+  // MES Read Aloud's page-dark button uses the same invert: two cancel out, so remove its stylesheet and tell its player (it then stays off while ours is on)
+  function yieldReader() {
+    var r = document.getElementById('mesra-dark-style');
+    if (!r) return;
+    r.remove();
+    try { document.dispatchEvent(new Event('mesra-dark-yield')); } catch (e) { /* ignore */ }
   }
   // some apps (Gmail) rewrite <html> / <head> while they load and drop a style that is not theirs, so put ours back (in <head> once there is one)
   function attach() {
@@ -173,10 +181,12 @@
     if (!w || !h) return;
     // a grid over the whole window: a page that mixes a dark frame with a big white reading pane (Gmail) is judged by what covers most of it.
     // Our own stylesheet is switched off while looking, so its white page background is not taken for the page's.
-    var vals = [], sh = styleEl && styleEl.sheet;
+    // Read Aloud's page-dark stylesheet is switched off too, so a light page it inverted is not remembered as a dark site.
+    var vals = [], sh = styleEl && styleEl.sheet, ra = document.getElementById('mesra-dark-style'), rs = ra && ra.sheet;
     if (sh) sh.disabled = true;
+    if (rs) rs.disabled = true;
     try { for (var gx = 1; gx <= 8; gx++) for (var gy = 1; gy <= 6; gy++) vals.push(sampleAt(Math.floor(w * gx / 9), Math.floor(h * gy / 7))); }
-    finally { if (sh) sh.disabled = false; }
+    finally { if (sh) sh.disabled = false; if (rs) rs.disabled = false; }
     var d = V.isDarkPage(vals);
     if (d == null || d === pageDark) return;
     pageDark = d;
