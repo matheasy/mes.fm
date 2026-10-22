@@ -37,3 +37,4 @@
 	#rm a.tu-btn--primary, #rm a.tu-btn--primary:hover, #rm a.tu-btn--primary:visited {color:#fff;}
 	#rm a.tu-btn:not(.tu-btn--primary) {color:var(--accent-dark);}
 	body.dark-mode #rm a.tu-btn--primary {color:#fff;} body.dark-mode #rm a.tu-btn:not(.tu-btn--primary) {color:#f3a5c3;}
+	.tu .rm-tzlink {color:var(--accent);white-space:nowrap;font-weight:600;}

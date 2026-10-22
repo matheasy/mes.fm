@@ -423,7 +423,7 @@
 	root.MESWhen = API;
 
 	/* ---------- the widget ---------- */
-	var CSS = ".mes-when{margin:0 0 0.8em}.mes-when__lab{display:block;font-weight:600;font-size:0.92em;margin:0 0 0.3em;color:#333}.mes-when__lab span{font-weight:400;color:#555}" +
+	var CSS = ".mes-when{margin:1.1em 0 0.9em}.mes-when__lab{display:block;font-weight:600;font-size:0.92em;margin:0 0 0.3em;color:#333}.mes-when__lab span{font-weight:400;color:#555}" +
 		".mes-when__row{display:flex;gap:0.5em;align-items:stretch}.mes-when .mes-when__in{flex:1 1 auto;min-width:0;font:inherit;font-size:1em;padding:0.55em 0.7em;border:1px solid #b8c0cc;border-radius:0.45em;background:#fff;color:#222;box-sizing:border-box}" +
 		".mes-when .mes-when__in:focus{outline:2px solid #277bb6;outline-offset:1px;border-color:#277bb6}.mes-when .mes-when__use{font:inherit;font-weight:600;padding:0.5em 1em;border-radius:0.45em;border:1px solid #1f6aa0;background:#1f6aa0;color:#fff;cursor:pointer;white-space:nowrap}" +
 		".mes-when .mes-when__use:disabled{opacity:0.5;cursor:default}.mes-when__out{margin:0.4em 0 0;font-size:0.95em;color:#333;min-height:1.3em}.mes-when__out strong{color:#1a1a1a}.mes-when__key{color:#555}" +

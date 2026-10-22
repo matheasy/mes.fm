@@ -3,7 +3,7 @@
  * written by build_birthdays.py from Wikidata (CC0). Used by mes.fm/birthday and mes.fm/zodiac. Tests: node tool_apps_src/birthday-tests.js */
 (function (root) {
 	"use strict";
-	var DATA_V = "2026-10-21.2";    // date of the data files: build_birthdays.py --apply updates it (then rebuild both pages so browsers fetch the new files)
+	var DATA_V = "2026-10-21.3";    // date of the data files: build_birthdays.py --apply updates it (then rebuild both pages so browsers fetch the new files)
 	var MONTHS = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"];
 	var FIELDS = { music: "Music", film: "Film, TV & internet", sports: "Sports", politics: "Politics & law", science: "Science & ideas", writing: "Writing",
 		art: "Art & design", business: "Business", religion: "Religion", royalty: "Royalty", military: "Military & exploration", other: "Other" };

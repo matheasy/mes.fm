@@ -92,6 +92,23 @@
 		$("bd-era").innerHTML = '<option value="">Any year</option>' + BD.ERAS.map(function (e) { return '<option value="' + e[0] + '">' + e[1] + " (" + (ec[e[0]] || 0) + ")</option>"; }).join("");
 		$("bd-era").value = S.era; $("bd-sort").value = S.sort; $("bd-alive").checked = S.alive;
 	}
+	// Share bar under the day title: the day's link (month + day only, never the visitor's birth year) and the best-known names.
+	function shareInfo(list) {
+		var u = location.origin + "/birthday?" + BD.toQuery({ mo: S.mo, d: S.d, field: S.field });
+		var top = BD.sortBy(list || filtered(), "fame").slice(0, 3).map(function (p) { return p.name; });
+		var t = "Famous birthdays on " + BD.dateText(S.mo, S.d) + (top.length ? ": " + top.join(", ") + (DAY.length > top.length ? " and " + (DAY.length - top.length) + " more" : "") : "");
+		return { url: u, text: t };
+	}
+	function renderShare(list) {
+		var s = shareInfo(list), e = encodeURIComponent;
+		$("bd-shx").href = "https://x.com/intent/post?text=" + e(s.text) + "&url=" + e(s.url);
+		$("bd-shfb").href = "https://www.facebook.com/sharer/sharer.php?u=" + e(s.url);
+		$("bd-shtg").href = "https://t.me/share/url?url=" + e(s.url) + "&text=" + e(s.text);
+		$("bd-shwa").href = "https://wa.me/?text=" + e(s.text + " " + s.url);
+		$("bd-share").textContent = navigator.share ? "Share this day" : "Copy link to share";
+		$("bd-shcopy").style.display = navigator.share ? "" : "none";   // without the share sheet the main button already copies
+	}
+	function copyText(u, msg) { (navigator.clipboard ? navigator.clipboard.writeText(u) : Promise.reject()).then(function () { toast(msg); }, function () { prompt("Copy this link:", u); }); }
 	function render() {
 		var isToday = S.mo === TODAY.mo && S.d === TODAY.d;
 		$("bd-title").textContent = (isToday ? "Born today, " : "Born on ") + BD.dateText(S.mo, S.d);
@@ -105,6 +122,7 @@
 		$("bd-moreb").textContent = "Show more (" + (list.length - S.shown) + " left)";
 		$("bd-zlink").href = "/zodiac?d=" + (S.y ? S.y + "-" : "") + BD.pad(S.mo) + "-" + BD.pad(S.d);
 		$("bd-zlink").textContent = S.y ? "Your birth chart" : "Zodiac sign for this date";
+		renderShare(list);
 		renderYou(); renderNext(); renderExtra(); renderLine(); otdReset();
 		history.replaceState(null, "", location.pathname + (function () { var q = BD.toQuery({ mo: S.mo, d: S.d, y: S.y, field: S.field, country: S.country, era: S.era, alive: S.alive, sort: S.sort }); return q && !(isToday && !S.y && q === BD.toQuery({ mo: S.mo, d: S.d })) ? "?" + q : ""; })());
 		if (S.hl) { var el = $("p-" + S.hl); if (el) el.scrollIntoView({ block: "center", behavior: "smooth" }); }
@@ -207,6 +225,12 @@
 	$("bd-q").addEventListener("input", function () { clearTimeout(searchT); searchT = setTimeout(doSearch, 160); });
 	$("bd-q").addEventListener("keydown", function (e) { if (e.key === "Enter") { var b = $("bd-results").querySelector("[data-go]"); if (b) b.click(); } if (e.key === "Escape") { this.value = ""; doSearch(); } });
 	root.addEventListener("click", function (e) { var b = e.target.closest("[data-go]"); if (b) goTo(b.getAttribute("data-go"), b.getAttribute("data-id")); });
+	$("bd-share").addEventListener("click", function () {
+		var s = shareInfo();
+		if (navigator.share) navigator.share({ title: s.text, text: s.text, url: s.url }).catch(function () {});
+		else copyText(s.url, "Link copied");
+	});
+	$("bd-shcopy").addEventListener("click", function () { copyText(shareInfo().url, "Link copied"); });
 	$("bd-copy").addEventListener("click", function () {
 		var u = location.origin + "/birthday?" + BD.toQuery({ mo: S.mo, d: S.d, y: S.y, field: S.field, country: S.country, era: S.era, alive: S.alive, sort: S.sort });
 		(navigator.clipboard ? navigator.clipboard.writeText(u) : Promise.reject()).then(function () { toast("Link copied"); }, function () { prompt("Copy this link:", u); });

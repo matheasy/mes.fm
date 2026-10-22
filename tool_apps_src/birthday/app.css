@@ -101,3 +101,5 @@
 		.tu .bd-btns {flex:1 1 100%;} .tu .bd-btns .tu-btn {flex:1 1 auto;min-height:44px;}
 		.tu .bd-mini {flex:1 1 100%;}
 	}
+	.tu .bd-sharebar {display:flex;flex-wrap:wrap;justify-content:center;gap:0.35em;margin:0.6em 0 0;}
+	.tu .bd-sharebar .bd-sh {font-size:0.85em;padding:0.35em 0.8em;margin:0;}

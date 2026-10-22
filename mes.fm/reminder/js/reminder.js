@@ -238,6 +238,13 @@
 		$("rm-gcal").href = RM.googleUrl(EV, pageUrl(EV));
 		$("rm-ocal").href = RM.outlookUrl(EV, pageUrl(EV));
 	}
+	// Link to the Time Zone Converter for the same moment, written in the event's own zone (its #d=&t=&f= hash form).
+	function tzLink(ms, zone) {
+		zone = zone || LOCAL;
+		var p = {}; new Intl.DateTimeFormat("en-CA", { timeZone: zone, year: "numeric", month: "2-digit", day: "2-digit", hour: "2-digit", minute: "2-digit", hourCycle: "h23" }).formatToParts(new Date(ms)).forEach(function (x) { p[x.type] = x.value; });
+		return "/timezone#d=" + p.year + "-" + p.month + "-" + p.day + "&t=" + p.hour + ":" + p.minute + "&f=" + encodeURIComponent(zone);
+	}
+	function tzA(ms, zone) { return ' <a class="rm-tzlink" href="' + esc(tzLink(ms, zone)) + '" target="_blank" rel="noopener">See it in other time zones →</a>'; }
 	function renderCount() {
 		if (!EV) return;
 		var now = Date.now(), st = state(EV, now), box = $("rm-count");
@@ -252,7 +259,7 @@
 		if (renderCount._k !== key) {
 			renderCount._k = key;
 			$("rm-when").innerHTML = "<strong>" + esc(fmtWhen(st.start, "", true)) + "</strong>" + (EV.r === "weekly" ? " · every week" : "");
-			$("rm-host").textContent = EV.tz && EV.tz !== LOCAL ? "That is " + fmtWhen(st.start, EV.tz, true) + " in " + CK.city(EV.tz) + "." : "Shown in your time zone (" + CK.city(LOCAL) + ").";
+			$("rm-host").innerHTML = esc(EV.tz && EV.tz !== LOCAL ? "That is " + fmtWhen(st.start, EV.tz, true) + " in " + CK.city(EV.tz) + "." : "Shown in your time zone (" + CK.city(LOCAL) + ").") + tzA(st.start, EV.tz);
 		}
 	}
 	if (EV) {
@@ -380,7 +387,7 @@
 		if (d.u && !RM.safeUrl(d.u)) { prev.textContent = "That link does not look like a web address (it should start with https://)."; }
 		else {
 			var s = RM.startOf(d);
-			prev.innerHTML = "Starts <strong>" + esc(fmtWhen(s, d.tz, true)) + "</strong>" + (d.tz !== LOCAL ? " (" + esc(fmtWhen(s, "", true)) + " for you)" : "") + (d.r ? ", every week" : "") + (s < Date.now() && !d.r ? '. <span style="color:#c0262d">That time has already passed.</span>' : ".");
+			prev.innerHTML = "Starts <strong>" + esc(fmtWhen(s, d.tz, true)) + "</strong>" + (d.tz !== LOCAL ? " (" + esc(fmtWhen(s, "", true)) + " for you)" : "") + (d.r ? ", every week" : "") + (s < Date.now() && !d.r ? '. <span style="color:#c0262d">That time has already passed.</span>' : ".") + tzA(s, d.tz);
 		}
 		if (!d.title.trim()) d.title = "Reminder";
 		$("rm-link").value = pageUrl(d); $("rm-open").href = "/reminder?" + RM.toQuery(d);

@@ -408,6 +408,8 @@ body.dark-mode .tu .rw-head {color:#a0a8b3;border-bottom-color:#555;} body.dark-
 		.tu .bd-btns {flex:1 1 100%;} .tu .bd-btns .tu-btn {flex:1 1 auto;min-height:44px;}
 		.tu .bd-mini {flex:1 1 100%;}
 	}
+	.tu .bd-sharebar {display:flex;flex-wrap:wrap;justify-content:center;gap:0.35em;margin:0.6em 0 0;}
+	.tu .bd-sharebar .bd-sh {font-size:0.85em;padding:0.35em 0.8em;margin:0;}
 
 
 	@media print {
@@ -756,7 +758,7 @@ body.is-stuck #navbar.hide { position: fixed; top: 56px; right: 8px; }
 
 		<div class="bd-dayhead">
 			<button type="button" class="tu-btn bd-arrow" id="bd-prev" aria-label="Previous day"><span class="bd-arr">‹</span><span class="bd-nb"><span class="bd-nbd" id="bd-prevd"></span><span class="bd-nbn" id="bd-prevn"></span></span></button>
-			<div class="bd-daytitle"><h2 id="bd-title">Born today</h2><p id="bd-sub" class="bd-sub"></p></div>
+			<div class="bd-daytitle"><h2 id="bd-title">Born today</h2><p id="bd-sub" class="bd-sub"></p><div class="bd-sharebar" id="bd-sharebar"><button type="button" class="tu-btn tu-btn--primary bd-sh" id="bd-share">Share this day</button><button type="button" class="tu-btn bd-sh" id="bd-shcopy">Copy link</button><a class="tu-btn bd-sh" id="bd-shx" target="_blank" rel="noopener">X</a><a class="tu-btn bd-sh" id="bd-shfb" target="_blank" rel="noopener">Facebook</a><a class="tu-btn bd-sh" id="bd-shtg" target="_blank" rel="noopener">Telegram</a><a class="tu-btn bd-sh" id="bd-shwa" target="_blank" rel="noopener">WhatsApp</a></div></div>
 			<button type="button" class="tu-btn bd-arrow bd-arrow--next" id="bd-next" aria-label="Next day"><span class="bd-nb"><span class="bd-nbd" id="bd-nextd"></span><span class="bd-nbn" id="bd-nextn2"></span></span><span class="bd-arr">›</span></button>
 		</div>
 
@@ -798,7 +800,7 @@ body.is-stuck #navbar.hide { position: fixed; top: 56px; right: 8px; }
 		</div>
 
 		<div class="bd-share">
-			<button type="button" class="tu-btn" id="bd-copy">Copy link to this day</button>
+			<button type="button" class="tu-btn" id="bd-copy">Copy link (with my filters)</button>
 			<a class="tu-btn" id="bd-zlink" href="/zodiac">Birth chart for this date</a>
 		</div>
 		<p class="tu-note bd-src">People: the ~10,000 best-known people with an exact birth date on <a href="https://www.wikidata.org/" target="_blank" rel="noopener">Wikidata</a> (CC0), ranked by how many Wikipedia language editions have an article about them, plus a few hand-picked ones. Data updated <span id="bd-gen">recently</span>. A wrong date? Wikidata can be corrected by anyone.<br>Portraits: <a href="https://commons.wikimedia.org/" target="_blank" rel="noopener">Wikimedia Commons</a> (various licences; click a picture for its author and licence). They load from upload.wikimedia.org in your browser: untick <em>Pictures</em> to avoid that.</p>
@@ -880,7 +882,7 @@ body.is-stuck #navbar.hide { position: fixed; top: 56px; right: 8px; }
             hide_search:false,
             current_tab:0
         }        </script><!-- FASTCOMMENTS-LAZY: widget init moved to main_js/main.js -- it pulls embed.min.js only when #fastcomments-widget nears the viewport or on the first Comments-toggle click, so it no longer blocks first render -->                <script src="https://mes.fm/main_js/lazysizes.min.js?v=1.0.3" async></script>
-	<script src="/moon/js/astronomy.browser.min.js" defer></script><script src="/birthday/js/birthday.js?v=2" defer></script>
+	<script src="/moon/js/astronomy.browser.min.js" defer></script><script src="/birthday/js/birthday.js?v=3" defer></script>
             <script src="https://mes.fm/main_js/main.js?v=1.0.5"></script>    <!-- PAGEVIEW-TRACKING-INSERTED --><script src="https://mes.fm/main_js/track.js" defer></script><script>document.getElementById('copyright-year').textContent = new Date().getFullYear();</script><script src="/main_js/info-bar-fit.js" defer></script><script>
   // Floating compact header bar (see #compact-nav CSS): appears once the
   // header + nav bar have scrolled off the top; nav links that don't fit
