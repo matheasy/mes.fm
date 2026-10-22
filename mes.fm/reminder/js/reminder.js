@@ -172,7 +172,28 @@
 		return out;
 	}
 	function leadText(m) { return m === 0 ? "at the start" : m < 60 ? m + " min before" : m < 1440 ? (m / 60) + " hour" + (m === 60 ? "" : "s") + " before" : (m / 1440) + " day" + (m === 1440 ? "" : "s") + " before"; }
-	var RM = { parseWall: parseWall, wallText: wallText, wallToUtc: wallToUtc, startOf: startOf, nextStart: nextStart, countdown: countdown, safeUrl: safeUrl, host: host, clean: clean,
+	/* ---------- holidays for the quick buttons ---------- */
+	function easter(y) {     // Western (Gregorian) Easter Sunday, anonymous Gregorian algorithm -> {mo, d}
+		var a = y % 19, b = Math.floor(y / 100), c = y % 100, d = Math.floor(b / 4), e = b % 4, f = Math.floor((b + 8) / 25), g = Math.floor((b - f + 1) / 3);
+		var h = (19 * a + b - d - g + 15) % 30, i = Math.floor(c / 4), k = c % 4, l = (32 + 2 * e + 2 * i - h - k) % 7, m = Math.floor((a + 11 * h + 22 * l) / 451);
+		return { mo: Math.floor((h + l - 7 * m + 114) / 31), d: ((h + l - 7 * m + 114) % 31) + 1 };
+	}
+	function nthWeekday(y, mo, wd, n) { var first = new Date(Date.UTC(y, mo - 1, 1)).getUTCDay(); return { mo: mo, d: 1 + ((wd - first + 7) % 7) + (n - 1) * 7 }; }   // wd 0 = Sunday
+	var HOLIDAYS = {
+		newyear: { title: "New Year", time: "00:00", on: function () { return { mo: 1, d: 1 }; } },
+		valentine: { title: "Valentine's Day", on: function () { return { mo: 2, d: 14 }; } },
+		easter: { title: "Easter", on: easter },
+		halloween: { title: "Halloween", time: "18:00", on: function () { return { mo: 10, d: 31 }; } },
+		thanksgiving: { title: "Thanksgiving", time: "17:00", on: function (y, ca) { return ca ? nthWeekday(y, 10, 1, 2) : nthWeekday(y, 11, 4, 4); } },   // Canada: 2nd Monday of October; US: 4th Thursday of November
+		christmas: { title: "Christmas", on: function () { return { mo: 12, d: 25 }; } }
+	};
+	// the next date of holiday id on or after today {y, mo, d} -> {y, mo, d} (today itself counts)
+	function nextHoliday(id, today, ca) {
+		var H = HOLIDAYS[id]; if (!H) return null;
+		for (var y = today.y; y <= today.y + 1; y++) { var p = H.on(y, ca); if (p.mo > today.mo || (p.mo === today.mo && p.d >= today.d) || y > today.y) return { y: y, mo: p.mo, d: p.d }; }
+		return null;
+	}
+	var RM = { easter: easter, nthWeekday: nthWeekday, HOLIDAYS: HOLIDAYS, nextHoliday: nextHoliday, parseWall: parseWall, wallText: wallText, wallToUtc: wallToUtc, startOf: startOf, nextStart: nextStart, countdown: countdown, safeUrl: safeUrl, host: host, clean: clean,
 		toQuery: toQuery, fromQuery: fromQuery, ics: ics, googleUrl: googleUrl, outlookUrl: outlookUrl, dueAlerts: dueAlerts, leadText: leadText, utcStamp: utcStamp };
 	if (typeof module !== "undefined" && module.exports) module.exports = RM; else root.RM = RM;
 })(typeof window !== "undefined" ? window : globalThis);
@@ -453,7 +474,8 @@
 	function streamEv(x) { var p = CK.partsIn(new Date(x.ms), HOSTZ); return { title: x.title, t: p.y + "-" + CK.pad(p.mo) + "-" + CK.pad(p.d) + "T" + CK.pad(p.h) + ":" + CK.pad(p.m), tz: HOSTZ, u: x.url, len: 120 }; }
 	function fillForm(x) {
 		var e = streamEv(x), p = CK.partsIn(new Date(x.ms), HOSTZ);
-		$("rm-title").value = x.title; $("rm-url").value = x.url; $("rm-tz").value = HOSTZ; $("rm-rep").value = ""; $("rm-len").value = "120";
+		$("rm-title").value = x.title; $("rm-url").value = x.url; $("rm-tz").value = HOSTZ; $("rm-rep").value = ""; $("rm-desc").value = x.notes || "";
+		$("rm-len").value = [30, 60, 90, 120, 180, 240].indexOf(x.len) >= 0 ? String(x.len) : "120";
 		$("rm-date").value = e.t.slice(0, 10); $("rm-time").value = CK.pad(p.h) + ":" + CK.pad(p.m);
 		["rm-date", "rm-time"].forEach(function (id) { $(id).dispatchEvent(new Event("input", { bubbles: true })); $(id).dispatchEvent(new Event("change", { bubbles: true })); });
 		upd(); toast("Filled in: " + x.title);
@@ -469,7 +491,21 @@
 	var midSet = "";
 	function ymd(p) { return p.y + "-" + CK.pad(p.mo) + "-" + CK.pad(p.d); }
 	function plusDays(dateStr, n) { var a = dateStr.split("-"), x = new Date(Date.UTC(+a[0], +a[1] - 1, +a[2] + n)); return x.getUTCFullYear() + "-" + CK.pad(x.getUTCMonth() + 1) + "-" + CK.pad(x.getUTCDate()); }
+	// Holiday buttons: the next one (this year or next) at the holiday's usual time (New Year 00:00, Halloween 6 PM, Thanksgiving 5 PM)
+	// or the time already filled in (9 AM if none). The title is set only when the box is empty or still holds another holiday's name.
+	// Thanksgiving: Canada's (2nd Monday of October) when the zone is a Canadian one, else the US date.
+	var CA_ZONE = /^America\/(Vancouver|Edmonton|Calgary|Regina|Winnipeg|Toronto|Montreal|Halifax|St_Johns|Moncton|Whitehorse|Yellowknife|Iqaluit|Dawson_Creek|Fort_Nelson|Glace_Bay|Goose_Bay|Swift_Current|Rankin_Inlet|Cambridge_Bay|Inuvik|Atikokan|Blanc-Sablon|Creston|Dawson|Resolute)$/;
+	function holiday(id) {
+		var H = RM.HOLIDAYS[id], tz = resolveZone($("rm-tz").value) || LOCAL, now = CK.partsIn(new Date(), tz), ca = CA_ZONE.test(tz);
+		var p = RM.nextHoliday(id, now, ca), cur = $("rm-title").value.trim();
+		if (!cur || Object.keys(RM.HOLIDAYS).some(function (k) { return cur === RM.HOLIDAYS[k].title || cur === RM.HOLIDAYS[k].title + " (Canada)"; })) $("rm-title").value = H.title + (id === "thanksgiving" && ca ? " (Canada)" : "");
+		var t0 = $("rm-time").value.slice(0, 5), keepT = /^\d\d:\d\d$/.test(t0) && t0 !== holT ? t0 : "09:00";    // a time left by another holiday button is not "yours"
+		holT = H.time || keepT;
+		setDT(p.y + "-" + CK.pad(p.mo) + "-" + CK.pad(p.d), holT);
+	}
+	var holT = "";
 	$("rm-quick").addEventListener("click", function (e) {
+		var hb = e.target.closest("[data-h]"); if (hb) { holiday(hb.getAttribute("data-h")); return; }
 		var b = e.target.closest("[data-q]"); if (!b) return;
 		var q = b.getAttribute("data-q"), tz = resolveZone($("rm-tz").value) || LOCAL, now = CK.partsIn(new Date(), tz), today = ymd(now);
 		var keepT = /^\d\d:\d\d/.test($("rm-time").value) ? $("rm-time").value.slice(0, 5) : "09:00";
@@ -494,7 +530,7 @@
 	// one plain "Next MES Stream" button: fills the form with the next stream from /reminder/upcoming.json (build_upcoming_streams.py); the visitor adjusts the rest
 	fetch("/reminder/upcoming.json", { cache: "no-cache" }).then(function (r) { return r.ok ? r.json() : null; }).then(function (data) {
 		if (!data || !Array.isArray(data.streams)) return;
-		var now = Date.now(), list = data.streams.map(function (x) { return { title: String(x.title || ""), url: RM.safeUrl(x.url), ms: Date.parse(x.start) }; })
+		var now = Date.now(), list = data.streams.map(function (x) { return { title: String(x.title || ""), url: RM.safeUrl(x.url), ms: Date.parse(x.start), notes: String(x.notes || "").slice(0, 600), len: +x.len || 120 }; })
 			.filter(function (x) { return x.title && x.url && x.ms > now - 2 * 3600000; });    // a stream stays 2 h after its start (it is live then)
 		if (!list.length) return;
 		var row = $("rm-nextrow");

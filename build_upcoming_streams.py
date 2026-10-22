@@ -4,7 +4,8 @@
 No YouTube: the source is the pre-stream mes.fm pages themselves. A page for an upcoming stream
 (mes.fm/math-qa-<N>-<slug>/ or mes.fm/livestream-<N>-<slug>/, e.g. math-qa-73-thermal-expansion) carries a
 "Get a reminder" link  https://mes.fm/reminder?title=...&t=2026-10-28T10:00&tz=America/Vancouver&u=...
-and that link is read here: title, start (wall time + zone -> UTC) and the watch link (u, else the page).
+and that link is read here: title, start (wall time + zone -> UTC) the watch link (u, else the page),
+length (len) and notes (d, else the page's meta description).
 Streams that started more than 2 h ago are dropped (the page also hides them once they have passed).
 
 Runs by itself: .githooks/pre-commit re-runs it and stages the JSON whenever a commit touches one of those
@@ -26,7 +27,8 @@ def streams(now):
     out = []
     for pat in PAGES:
         for f in sorted(SITE.glob(pat)):
-            m = LINK.search(f.read_text(errors="ignore"))
+            text = f.read_text(errors="ignore")
+            m = LINK.search(text)
             if not m:
                 continue
             q = {k: v[0] for k, v in parse_qs(html.unescape(m.group(1))).items()}
@@ -42,8 +44,14 @@ def streams(now):
             url = q.get("u") or page
             if urlsplit(url).scheme not in ("http", "https"):
                 url = page
-            out.append({"title": q.get("title") or f.parent.name, "url": url, "page": page,
-                        "start": start.astimezone(datetime.timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ")})
+            # notes for the Notes box: the reminder link's own d=, else the page's meta description
+            desc = re.search(r'<meta name="description" content="([^"]*)"', text)
+            notes = q.get("d") or (html.unescape(desc.group(1)) if desc else "")
+            item = {"title": q.get("title") or f.parent.name, "url": url, "page": page,
+                    "start": start.astimezone(datetime.timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ"), "notes": notes[:600]}
+            if q.get("len", "").isdigit():
+                item["len"] = int(q["len"])
+            out.append(item)
     out.sort(key=lambda s: s["start"])
     return out
 

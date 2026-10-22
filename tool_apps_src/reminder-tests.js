@@ -43,5 +43,15 @@ ok(RM.dueAlerts({ ...ev, r: "" }, [15, 0], { [d15[0].key]: 1 }, s - 10 * 60000).
 ok(RM.dueAlerts({ ...ev, r: "" }, [15, 0], {}, s + 7 * 3600000).length === 0, "too late");
 ok(RM.dueAlerts(ev, [0], {}, Date.UTC(2026, 10, 1, 19, 0, 5)).some((a) => a.start === Date.UTC(2026, 10, 1, 19, 0)), "weekly 2nd week due");
 ok(RM.countdown(90061000).text === "1 d 1 h 1 min 1 s", "countdown");
+// holidays for the quick buttons
+[[2024, 3, 31], [2025, 4, 20], [2026, 4, 5], [2027, 3, 28], [2038, 4, 25], [2285, 3, 22]].forEach(([y, mo, d]) => { const p = RM.easter(y); ok(p.mo === mo && p.d === d, "easter " + y); });
+const nh = (id, y, mo, d, ca) => { const p = RM.nextHoliday(id, { y, mo, d }, ca); return p.y + "-" + p.mo + "-" + p.d; };
+ok(nh("thanksgiving", 2026, 10, 22, false) === "2026-11-26", "US thanksgiving 2026");
+ok(nh("thanksgiving", 2026, 10, 1, true) === "2026-10-12", "CA thanksgiving 2026");
+ok(nh("thanksgiving", 2026, 10, 22, true) === "2027-10-11", "CA thanksgiving passed -> 2027");
+ok(nh("christmas", 2026, 12, 25) === "2026-12-25", "christmas today counts");
+ok(nh("christmas", 2026, 12, 26) === "2027-12-25", "christmas passed");
+ok(nh("newyear", 2026, 10, 22) === "2027-1-1", "new year");
+ok(nh("easter", 2026, 10, 22) === "2027-3-28", "easter next year");
 console.log(bad ? bad + " of " + n + " failed" : "all " + n + " passed");
 process.exit(bad ? 1 : 0);

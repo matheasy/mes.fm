@@ -119,7 +119,28 @@
 		return out;
 	}
 	function leadText(m) { return m === 0 ? "at the start" : m < 60 ? m + " min before" : m < 1440 ? (m / 60) + " hour" + (m === 60 ? "" : "s") + " before" : (m / 1440) + " day" + (m === 1440 ? "" : "s") + " before"; }
-	var RM = { parseWall: parseWall, wallText: wallText, wallToUtc: wallToUtc, startOf: startOf, nextStart: nextStart, countdown: countdown, safeUrl: safeUrl, host: host, clean: clean,
+	/* ---------- holidays for the quick buttons ---------- */
+	function easter(y) {     // Western (Gregorian) Easter Sunday, anonymous Gregorian algorithm -> {mo, d}
+		var a = y % 19, b = Math.floor(y / 100), c = y % 100, d = Math.floor(b / 4), e = b % 4, f = Math.floor((b + 8) / 25), g = Math.floor((b - f + 1) / 3);
+		var h = (19 * a + b - d - g + 15) % 30, i = Math.floor(c / 4), k = c % 4, l = (32 + 2 * e + 2 * i - h - k) % 7, m = Math.floor((a + 11 * h + 22 * l) / 451);
+		return { mo: Math.floor((h + l - 7 * m + 114) / 31), d: ((h + l - 7 * m + 114) % 31) + 1 };
+	}
+	function nthWeekday(y, mo, wd, n) { var first = new Date(Date.UTC(y, mo - 1, 1)).getUTCDay(); return { mo: mo, d: 1 + ((wd - first + 7) % 7) + (n - 1) * 7 }; }   // wd 0 = Sunday
+	var HOLIDAYS = {
+		newyear: { title: "New Year", time: "00:00", on: function () { return { mo: 1, d: 1 }; } },
+		valentine: { title: "Valentine's Day", on: function () { return { mo: 2, d: 14 }; } },
+		easter: { title: "Easter", on: easter },
+		halloween: { title: "Halloween", time: "18:00", on: function () { return { mo: 10, d: 31 }; } },
+		thanksgiving: { title: "Thanksgiving", time: "17:00", on: function (y, ca) { return ca ? nthWeekday(y, 10, 1, 2) : nthWeekday(y, 11, 4, 4); } },   // Canada: 2nd Monday of October; US: 4th Thursday of November
+		christmas: { title: "Christmas", on: function () { return { mo: 12, d: 25 }; } }
+	};
+	// the next date of holiday id on or after today {y, mo, d} -> {y, mo, d} (today itself counts)
+	function nextHoliday(id, today, ca) {
+		var H = HOLIDAYS[id]; if (!H) return null;
+		for (var y = today.y; y <= today.y + 1; y++) { var p = H.on(y, ca); if (p.mo > today.mo || (p.mo === today.mo && p.d >= today.d) || y > today.y) return { y: y, mo: p.mo, d: p.d }; }
+		return null;
+	}
+	var RM = { easter: easter, nthWeekday: nthWeekday, HOLIDAYS: HOLIDAYS, nextHoliday: nextHoliday, parseWall: parseWall, wallText: wallText, wallToUtc: wallToUtc, startOf: startOf, nextStart: nextStart, countdown: countdown, safeUrl: safeUrl, host: host, clean: clean,
 		toQuery: toQuery, fromQuery: fromQuery, ics: ics, googleUrl: googleUrl, outlookUrl: outlookUrl, dueAlerts: dueAlerts, leadText: leadText, utcStamp: utcStamp };
 	if (typeof module !== "undefined" && module.exports) module.exports = RM; else root.RM = RM;
 })(typeof window !== "undefined" ? window : globalThis);
