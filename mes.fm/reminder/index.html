@@ -368,6 +368,12 @@ body.dark-mode .tu .rw-head {color:#a0a8b3;border-bottom-color:#555;} body.dark-
 	body.dark-mode #rm .rm-seg button, body.dark-mode #rm .rm-vbtn {color:#e6e6e6;}
 	body.dark-mode #rm .rm-seg button[aria-pressed="true"] {color:#fff;}
 	body.dark-mode #rm .rm-event:fullscreen {background:#1e1e1e;}
+	/* quick day / time buttons in the maker card */
+	.tu .rm-quick {margin-top:0.6em;display:flex;flex-direction:column;gap:0.35em;}
+	.tu .rm-qrow {display:flex;flex-wrap:wrap;align-items:center;gap:0.35em;}
+	.tu .rm-ql {font-size:0.78em;font-weight:700;text-transform:uppercase;letter-spacing:0.05em;color:#6a7280;min-width:3.4em;}
+	.tu .rm-quick .tu-chip {font-size:0.88em;}
+	body.dark-mode #rm .rm-ql {color:#b8c0c8;}
 
 
 	@media print {
@@ -464,6 +470,7 @@ body.dark-mode .tu .rw-head {color:#a0a8b3;border-bottom-color:#555;} body.dark-
 	body.dark-mode .tu .rm-vbtn{border:1px solid #363d47}
 	body.dark-mode .tu .rm-seg button + button{border-left:1px solid #363d47}
 	body.dark-mode .tu .rm-event:fullscreen{background:#1a1a1a}
+	body.dark-mode .tu .rm-ql{color:#9a9da3}
 	/* TOOL-DARK:END */
 /* Floating compact header bar: once the full header + nav scroll out of
    view, a slim fixed bar (small logo, title, as many nav links as fit)
@@ -765,6 +772,10 @@ body.is-stuck #navbar.hide { position: fixed; top: 56px; right: 8px; }
 				<div class="tu-field" style="flex:1 1 10em;"><label for="rm-time">Time</label><input id="rm-time" class="tu-input" type="time"></div>
 				<div class="tu-field" style="flex:2 1 14em;"><label for="rm-tz">Time zone of that time</label><input id="rm-tz" class="tu-input" list="rm-zones" type="text" autocomplete="off" placeholder="Type a city: Vancouver, London…"><datalist id="rm-zones"></datalist></div>
 			</div>
+			<div class="rm-quick" id="rm-quick" role="group" aria-label="Quick dates and times">
+				<div class="rm-qrow"><span class="rm-ql">Day</span><button type="button" class="tu-chip" data-q="m15">In 15 min</button><button type="button" class="tu-chip" data-q="h1">In 1 hour</button><button type="button" class="tu-chip" data-q="d1">Tomorrow</button><button type="button" class="tu-chip" data-q="d3">In 3 days</button><button type="button" class="tu-chip" data-q="d7">In 1 week</button><button type="button" class="tu-chip" data-q="mo1">In 1 month</button></div>
+				<div class="rm-qrow"><span class="rm-ql">Time</span><button type="button" class="tu-chip" data-q="t09">9 AM</button><button type="button" class="tu-chip" data-q="t12">Noon</button><button type="button" class="tu-chip" data-q="t18">6 PM</button><button type="button" class="tu-chip" data-q="t21">9 PM</button><button type="button" class="tu-chip" data-q="t24">Midnight</button></div>
+			</div>
 			<div class="tu-row" style="align-items:flex-end;margin-top:0.7em;">
 				<div class="tu-field" style="flex:3 1 18em;"><label for="rm-url">Link to watch or join (optional)</label><input id="rm-url" class="tu-input" type="url" autocomplete="off" placeholder="https://youtube.com/live/..."></div>
 				<div class="tu-field" style="flex:1 1 8em;"><label for="rm-len">Length</label><select id="rm-len" class="tu-input"><option value="30">30 min</option><option value="60" selected>1 hour</option><option value="90">1.5 hours</option><option value="120">2 hours</option><option value="180">3 hours</option><option value="240">4 hours</option></select></div>
@@ -862,7 +873,7 @@ body.is-stuck #navbar.hide { position: fixed; top: 56px; right: 8px; }
             hide_search:false,
             current_tab:0
         }        </script><!-- FASTCOMMENTS-LAZY: widget init moved to main_js/main.js -- it pulls embed.min.js only when #fastcomments-widget nears the viewport or on the first Comments-toggle click, so it no longer blocks first render -->                <script src="https://mes.fm/main_js/lazysizes.min.js?v=1.0.3" async></script>
-	<script src="/reminder/js/reminder.js?v=7" defer></script>
+	<script src="/reminder/js/reminder.js?v=8" defer></script>
             <script src="https://mes.fm/main_js/main.js?v=1.0.5"></script>    <!-- PAGEVIEW-TRACKING-INSERTED --><script src="https://mes.fm/main_js/track.js" defer></script><script>document.getElementById('copyright-year').textContent = new Date().getFullYear();</script><script src="/main_js/info-bar-fit.js" defer></script><script>
   // Floating compact header bar (see #compact-nav CSS): appears once the
   // header + nav bar have scrolled off the top; nav links that don't fit

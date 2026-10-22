@@ -458,6 +458,39 @@
 		["rm-date", "rm-time"].forEach(function (id) { $(id).dispatchEvent(new Event("input", { bubbles: true })); $(id).dispatchEvent(new Event("change", { bubbles: true })); });
 		upd(); toast("Filled in: " + x.title);
 	}
+	/* quick day / time buttons: worked out in the zone in the "Time zone" box (else this browser's).
+	   Day buttons keep the time already typed (9 AM when none); In 15 min / In 1 hour set both; time buttons keep the date,
+	   and Midnight means the midnight at the end of the chosen day (00:00 of the next day). */
+	function setDT(date, time) {
+		if (date) $("rm-date").value = date; if (time) $("rm-time").value = time;
+		["rm-date", "rm-time"].forEach(function (id) { $(id).dispatchEvent(new Event("input", { bubbles: true })); $(id).dispatchEvent(new Event("change", { bubbles: true })); });
+		upd();
+	}
+	var midSet = "";
+	function ymd(p) { return p.y + "-" + CK.pad(p.mo) + "-" + CK.pad(p.d); }
+	function plusDays(dateStr, n) { var a = dateStr.split("-"), x = new Date(Date.UTC(+a[0], +a[1] - 1, +a[2] + n)); return x.getUTCFullYear() + "-" + CK.pad(x.getUTCMonth() + 1) + "-" + CK.pad(x.getUTCDate()); }
+	$("rm-quick").addEventListener("click", function (e) {
+		var b = e.target.closest("[data-q]"); if (!b) return;
+		var q = b.getAttribute("data-q"), tz = resolveZone($("rm-tz").value) || LOCAL, now = CK.partsIn(new Date(), tz), today = ymd(now);
+		var keepT = /^\d\d:\d\d/.test($("rm-time").value) ? $("rm-time").value.slice(0, 5) : "09:00";
+		if (q === "m15" || q === "h1") {
+			var p = CK.partsIn(new Date(Date.now() + (q === "m15" ? 15 : 60) * 60000), tz);
+			setDT(ymd(p), CK.pad(p.h) + ":" + CK.pad(p.m));
+		} else if (q.charAt(0) === "d") setDT(plusDays(today, +q.slice(1)), keepT);
+		else if (q === "mo1") {
+			var x = new Date(Date.UTC(now.y, now.mo, 1)), last = new Date(Date.UTC(now.y, now.mo + 1, 0)).getUTCDate();    // same day next month, clamped (Jan 31 -> Feb 28)
+			setDT(x.getUTCFullYear() + "-" + CK.pad(x.getUTCMonth() + 1) + "-" + CK.pad(Math.min(now.d, last)), keepT);
+		} else {
+			var d = $("rm-date").value || today;
+			if (q === "t24") { if (d !== midSet) { midSet = plusDays(d, 1); setDT(midSet, "00:00"); } }    // a second click does not move it on again
+			else {
+				var t = q.slice(1) + ":00";
+				if (d === today && t <= CK.pad(now.h) + ":" + CK.pad(now.m)) d = plusDays(d, 1);    // that time has passed today: the next one
+				setDT(d, t);
+			}
+		}
+	});
+
 	// one plain "Next MES Stream" button: fills the form with the next stream from /reminder/upcoming.json (build_upcoming_streams.py); the visitor adjusts the rest
 	fetch("/reminder/upcoming.json", { cache: "no-cache" }).then(function (r) { return r.ok ? r.json() : null; }).then(function (data) {
 		if (!data || !Array.isArray(data.streams)) return;

@@ -47,6 +47,10 @@
 				<div class="tu-field" style="flex:1 1 10em;"><label for="rm-time">Time</label><input id="rm-time" class="tu-input" type="time"></div>
 				<div class="tu-field" style="flex:2 1 14em;"><label for="rm-tz">Time zone of that time</label><input id="rm-tz" class="tu-input" list="rm-zones" type="text" autocomplete="off" placeholder="Type a city: Vancouver, London…"><datalist id="rm-zones"></datalist></div>
 			</div>
+			<div class="rm-quick" id="rm-quick" role="group" aria-label="Quick dates and times">
+				<div class="rm-qrow"><span class="rm-ql">Day</span><button type="button" class="tu-chip" data-q="m15">In 15 min</button><button type="button" class="tu-chip" data-q="h1">In 1 hour</button><button type="button" class="tu-chip" data-q="d1">Tomorrow</button><button type="button" class="tu-chip" data-q="d3">In 3 days</button><button type="button" class="tu-chip" data-q="d7">In 1 week</button><button type="button" class="tu-chip" data-q="mo1">In 1 month</button></div>
+				<div class="rm-qrow"><span class="rm-ql">Time</span><button type="button" class="tu-chip" data-q="t09">9 AM</button><button type="button" class="tu-chip" data-q="t12">Noon</button><button type="button" class="tu-chip" data-q="t18">6 PM</button><button type="button" class="tu-chip" data-q="t21">9 PM</button><button type="button" class="tu-chip" data-q="t24">Midnight</button></div>
+			</div>
 			<div class="tu-row" style="align-items:flex-end;margin-top:0.7em;">
 				<div class="tu-field" style="flex:3 1 18em;"><label for="rm-url">Link to watch or join (optional)</label><input id="rm-url" class="tu-input" type="url" autocomplete="off" placeholder="https://youtube.com/live/..."></div>
 				<div class="tu-field" style="flex:1 1 8em;"><label for="rm-len">Length</label><select id="rm-len" class="tu-input"><option value="30">30 min</option><option value="60" selected>1 hour</option><option value="90">1.5 hours</option><option value="120">2 hours</option><option value="180">3 hours</option><option value="240">4 hours</option></select></div>
