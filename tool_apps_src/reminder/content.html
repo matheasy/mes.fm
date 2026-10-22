@@ -1,5 +1,12 @@
 	<div class="tu" id="rm">
+		<div class="tu-card rm-nextcard" id="rm-nextcard" hidden></div>
 		<div class="tu-card rm-event" id="rm-event" hidden>
+			<div class="rm-view" id="rm-view" role="group" aria-label="Countdown size">
+				<span class="rm-seg"><button type="button" data-sz="1" aria-pressed="true">Normal</button><button type="button" data-sz="2" aria-pressed="false">Big</button><button type="button" data-sz="3" aria-pressed="false">Huge</button></span>
+				<button type="button" class="rm-vbtn" id="rm-fillbtn" title="The countdown fills the browser window (key W)">⤢ Fill window</button>
+				<button type="button" class="rm-vbtn" id="rm-fsbtn" title="The countdown fills the whole screen (key F)">⛶ Full screen</button>
+				<button type="button" class="rm-vbtn" id="rm-closebtn" hidden>✕ Close (Esc)</button>
+			</div>
 			<p class="rm-kicker">Reminder</p>
 			<h2 class="rm-title" id="rm-ev-title"></h2>
 			<div class="rm-count" id="rm-count" aria-live="off"></div>
@@ -8,7 +15,7 @@
 			<p class="rm-notes" id="rm-notes" hidden></p>
 			<p class="rm-golink" id="rm-golink" hidden></p>
 
-			<h3>Get reminded</h3>
+			<h3 class="rm-extra">Get reminded</h3>
 			<div class="rm-leads" id="rm-leads" role="group" aria-label="When to remind you"></div>
 			<div class="rm-actions">
 				<a class="tu-btn tu-btn--primary" id="rm-gcal" target="_blank" rel="noopener">Google Calendar</a>
@@ -32,6 +39,7 @@
 
 		<h2 id="rm-make-h">Make a reminder link</h2>
 		<div class="tu-card" id="rm-make">
+			<div class="rm-nextrow" id="rm-nextrow" hidden></div>
 			<div class="tu-chips" id="rm-presets" role="group" aria-label="Quick start" style="margin-bottom:0.7em;"></div>
 			<div class="tu-row" style="align-items:flex-end;">
 				<div class="tu-field" style="flex:3 1 18em;"><label for="rm-title">What is it?</label><input id="rm-title" class="tu-input" type="text" maxlength="120" autocomplete="off" placeholder="e.g. MES Livestream 150: Hutchison Effect"></div>

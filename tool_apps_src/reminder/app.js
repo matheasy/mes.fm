@@ -246,4 +246,63 @@
 		MESWhen.attach({ anchor: $("rm-date").closest(".tu-row"), date: "rm-date", time: "rm-time", zone: "rm-tz", label: "Type the date and time in words", placeholder: "Oct 28 2026, Wed 10 am PT" });
 	}
 	if (window.MESWhen) wireWhen(); else document.addEventListener("DOMContentLoaded", wireWhen);
+
+	/* ---------- countdown size, Fill window (the browser window) and Full screen ---------- */
+	var VK = "mes-reminder:view", V = { sz: 1, fill: false };
+	try { var vv = JSON.parse(localStorage.getItem(VK) || "null"); if (vv) { V.sz = [1, 2, 3].indexOf(+vv.sz) >= 0 ? +vv.sz : 1; V.fill = vv.fill === true; } } catch (e) {}
+	function saveView() { try { localStorage.setItem(VK, JSON.stringify(V)); } catch (e) {} }
+	function paintView() {
+		var ev = $("rm-event"), fs = document.fullscreenElement === ev;
+		ev.classList.remove("rm-sz-1", "rm-sz-2", "rm-sz-3"); ev.classList.add("rm-sz-" + V.sz);
+		[].forEach.call(document.querySelectorAll("#rm-view [data-sz]"), function (b) { b.setAttribute("aria-pressed", String(+b.getAttribute("data-sz") === V.sz)); });
+		var on = V.fill || fs; ev.classList.toggle("rm-fill", on); document.documentElement.classList.toggle("rm-noscroll", on && !fs);
+		$("rm-fillbtn").hidden = on; $("rm-closebtn").hidden = !on; $("rm-fsbtn").textContent = fs ? "⛶ Leave full screen" : "⛶ Full screen";
+	}
+	function setFill(on) { V.fill = on; saveView(); paintView(); }
+	function toggleFs() {
+		var ev = $("rm-event");
+		if (document.fullscreenElement) { document.exitFullscreen(); return; }
+		if (ev.requestFullscreen) ev.requestFullscreen().catch(function () { setFill(true); }); else setFill(true);    // no Fullscreen API (iPhone): fill the window instead
+	}
+	if (EV) {
+		$("rm-view").addEventListener("click", function (e) { var b = e.target.closest("[data-sz]"); if (!b) return; V.sz = +b.getAttribute("data-sz"); saveView(); paintView(); });
+		$("rm-fillbtn").addEventListener("click", function () { setFill(true); });
+		$("rm-fsbtn").addEventListener("click", toggleFs);
+		$("rm-closebtn").addEventListener("click", function () { if (document.fullscreenElement) document.exitFullscreen(); setFill(false); });
+		document.addEventListener("fullscreenchange", paintView);
+		document.addEventListener("keydown", function (e) {
+			if (e.ctrlKey || e.metaKey || e.altKey || /^(INPUT|TEXTAREA|SELECT)$/.test((e.target || {}).tagName || "")) return;
+			if (e.key === "Escape" && V.fill && !document.fullscreenElement) setFill(false);
+			else if (e.key === "w" || e.key === "W") setFill(!V.fill);
+			else if (e.key === "f" || e.key === "F") toggleFs();
+		});
+		paintView();
+	}
+
+	/* ---------- next scheduled MES streams: /reminder/upcoming.json (update_upcoming_streams.py) ---------- */
+	var HOSTZ = "America/Vancouver";
+	function streamEv(x) { var p = CK.partsIn(new Date(x.ms), HOSTZ); return { title: x.title, t: p.y + "-" + CK.pad(p.mo) + "-" + CK.pad(p.d) + "T" + CK.pad(p.h) + ":" + CK.pad(p.m), tz: HOSTZ, u: x.url, len: 120 }; }
+	function fillForm(x) {
+		var e = streamEv(x), p = CK.partsIn(new Date(x.ms), HOSTZ);
+		$("rm-title").value = x.title; $("rm-url").value = x.url; $("rm-tz").value = HOSTZ; $("rm-rep").value = ""; $("rm-len").value = "120";
+		$("rm-date").value = e.t.slice(0, 10); $("rm-time").value = CK.pad(p.h) + ":" + CK.pad(p.m);
+		["rm-date", "rm-time"].forEach(function (id) { $(id).dispatchEvent(new Event("input", { bubbles: true })); $(id).dispatchEvent(new Event("change", { bubbles: true })); });
+		upd(); toast("Filled in: " + x.title);
+	}
+	fetch("/reminder/upcoming.json", { cache: "no-cache" }).then(function (r) { return r.ok ? r.json() : null; }).then(function (data) {
+		if (!data || !Array.isArray(data.streams)) return;
+		var now = Date.now(), list = data.streams.map(function (x) { return { title: String(x.title || ""), url: RM.safeUrl(x.url), ms: Date.parse(x.start) }; })
+			.filter(function (x) { return x.title && x.url && x.ms > now - 2 * 3600000; }).slice(0, 4);    // keep a stream for 2 h after its start (it is live then)
+		if (!list.length) return;
+		var row = $("rm-nextrow");
+		row.innerHTML = "<b>Next MES streams:</b>" + list.map(function (x, i) { return '<button type="button" class="tu-chip" data-nx="' + i + '" title="Fill in this stream">▶ ' + esc(x.title.split(":")[0]) + " · " + esc(new Intl.DateTimeFormat(undefined, { weekday: "short", month: "short", day: "numeric" }).format(new Date(x.ms))) + "</button>"; }).join("");
+		row.hidden = false;
+		row.addEventListener("click", function (e) { var b = e.target.closest("[data-nx]"); if (b) fillForm(list[+b.getAttribute("data-nx")]); });
+		var first = list[0], ev = streamEv(first);
+		if (EV && (EV.u === first.url || EV.title === first.title)) return;    // this page already is its reminder
+		var card = $("rm-nextcard"), c = RM.countdown(first.ms - now);
+		card.innerHTML = '<div class="rm-nx-main"><div class="rm-nx-k">' + (first.ms <= now ? "🔴 Live now" : "Next MES stream") + '</div><div class="rm-nx-t">' + esc(first.title) + '</div><div class="rm-nx-w">' + esc(fmtWhen(first.ms, "", true)) + (first.ms > now ? " · in " + (c.d ? c.d + (c.d === 1 ? " day " : " days ") : "") + c.h + " h " + c.m + " min" : "") + "</div></div>" +
+			'<a class="tu-btn tu-btn--primary" href="/reminder?' + esc(RM.toQuery(ev)) + '">⏰ Get a reminder</a>';
+		card.hidden = false;
+	}).catch(function () {});
 })();
