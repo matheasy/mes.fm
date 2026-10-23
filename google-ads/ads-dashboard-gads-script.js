@@ -59,7 +59,7 @@ var ACCOUNTS = ['MES (VND)'];   // client accounts to count, by name (MF (VND) i
 // currencies add up; the page then shows them as they are.
 
 function send(n) {
-  var days = {}, tz = null;
+  var days = {}, tz = null, read = 0;
   var at = function (d) { return days[d] || (days[d] = { camps: [], geo: [], lp: [] }); };
   var rates = null;
   try { rates = JSON.parse(UrlFetchApp.fetch('https://open.er-api.com/v6/latest/CAD').getContentText()).rates; } catch (e) { Logger.log('no exchange rates: ' + e); }
@@ -74,9 +74,11 @@ function send(n) {
     var k = cur === 'CAD' ? 1 : (rates && rates[cur] ? 1 / rates[cur] : null);   // account currency -> CAD
     if (!k) { Logger.log('skipped ' + acct.getName() + ': no exchange rate for ' + cur); return; }
     tz = tz || acct.getTimeZone();
-    try { var spent = collect(acct, n, at, k); Logger.log('read ' + acct.getName() + ': ' + spent.toFixed(2) + ' CAD (' + (spent / k).toFixed(0) + ' ' + cur + ') in ' + n + ' days'); }
+    try { var spent = collect(acct, n, at, k); read++; Logger.log('read ' + acct.getName() + ': ' + spent.toFixed(2) + ' CAD (' + (spent / k).toFixed(0) + ' ' + cur + ') in ' + n + ' days'); }
     catch (e) { Logger.log('could not read ' + acct.getName() + ': ' + e); }   // e.g. a sub-manager account
   });
+  // nothing read (no exchange rate, an API error...): send nothing, or the empty days would overwrite good ones
+  if (!read) throw new Error('no account was read, nothing sent');
   tz = tz || AdsApp.currentAccount().getTimeZone();
   var day = function (back) { return Utilities.formatDate(new Date(Date.now() - back * 864e5), tz, 'yyyy-MM-dd'); };
   // every day in the range is sent, so a day with no spend replaces an older copy
