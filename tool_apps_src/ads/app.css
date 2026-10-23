@@ -16,7 +16,7 @@
 	#ad .rv {color:var(--ad-rev);}
 	#ad .cs {color:var(--ad-cost);}
 	#ad .ad-tip .rv {color:#8cc4ff;}
-	#ad .ad-tip .cs {color:#ff9b93;}
+	#ad .ad-tip .cs {color:#ff6a6a;}
 	.ad-sec {margin:0 0 1.2em;}
 	.ad-sec h2 {font-size:1.1em;margin:0 0 0.3em;}
 	.ad-sec > .tu-note {margin:0 0 0.7em;}
@@ -67,4 +67,4 @@
 		.ad-chart {height:180px;}
 	}
 	body.dark-mode #ad.tu .ad-tip {background:#2e343b;color:#f2f4f6;border:1px solid #4a525c;}
-	body.dark-mode #ad.tu {--ad-rev:#58a6ff;--ad-cost:#ff6b6b;--ad-good:#4cc472;--ad-bad:#ff6b6b;--ad-line:#33393f;--ad-muted:#a3adb9;--ad-card:#1a1a1a;--ad-ink:#e3e7ec;}
+	body.dark-mode #ad.tu {--ad-rev:#58a6ff;--ad-cost:#ff4040;--ad-good:#4cc472;--ad-bad:#ff4040;--ad-line:#33393f;--ad-muted:#a3adb9;--ad-card:#1a1a1a;--ad-ink:#e3e7ec;}

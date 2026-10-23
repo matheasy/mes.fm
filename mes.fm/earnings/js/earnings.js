@@ -328,8 +328,8 @@
     var pts = days.map(function (x, i) { return (padL + i * bw + bw / 2).toFixed(1) + ',' + y(x.spend).toFixed(1); });
     var lastToday = days.length > 1 && days[days.length - 1].d === DATA.today;
     var solid = lastToday ? pts.slice(0, -1) : pts;
-    if (solid.length > 1) s += '<polyline points="' + solid.join(' ') + '" fill="none" stroke="' + cSp + '" stroke-width="2.2" stroke-linejoin="round"/>';
-    if (lastToday) s += '<polyline points="' + pts.slice(-2).join(' ') + '" fill="none" stroke="' + cSp + '" stroke-width="2.2" stroke-dasharray="5 4"/>';
+    if (solid.length > 1) s += '<polyline points="' + solid.join(' ') + '" fill="none" stroke="' + cSp + '" stroke-width="2.8" stroke-linejoin="round"/>';
+    if (lastToday) s += '<polyline points="' + pts.slice(-2).join(' ') + '" fill="none" stroke="' + cSp + '" stroke-width="2.8" stroke-dasharray="5 4"/>';
     if (days.length === 1) s += '<circle cx="' + pts[0].split(',')[0] + '" cy="' + pts[0].split(',')[1] + '" r="4" fill="' + cSp + '"/>';
     var every = Math.ceil(days.length / Math.max(2, Math.floor(iw / 60)));
     days.forEach(function (x, i) { if (i % every === 0) s += '<text x="' + (padL + i * bw + bw / 2) + '" y="' + (H - 6) + '" text-anchor="middle" font-size="11" fill="' + cMuted + '">' + x.d.slice(5) + '</text>'; });
