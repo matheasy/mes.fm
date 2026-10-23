@@ -1,6 +1,6 @@
 // Google Ads Script for the private mes.fm/ads page (installed in the MES.fm MANAGER account: Tools -> Bulk actions ->
 // Scripts, name "MES ads page", schedule Daily). A manager account has no metrics of its own, so the script steps into
-// each client account (AdsManagerApp.select) and sums those in CURRENCY (VND); accounts in another currency are skipped and logged.
+// each client account (AdsManagerApp.select) and sums the ones named in ACCOUNTS (only MES (VND)); other accounts are skipped and logged.
 // Sends spend per campaign x device, per country and per landing page for the last few days to
 // https://mes.fm/api/earnings-ingest. Costs stay in micros of the account currency; the site converts to CAD.
 // Paste the real key into INGEST_KEY when installing (Vercel env EARNINGS_INGEST_KEY); this repo copy has a placeholder.
@@ -50,6 +50,7 @@ function collect(acct, n, at) {
 }
 
 var CURRENCY = 'VND';
+var ACCOUNTS = ['MES (VND)'];   // client accounts to count, by name (MF (VND) is a client's account, not MES spend)
 
 function send(n) {
   var days = {}, tz = null;
@@ -60,6 +61,7 @@ function send(n) {
   list.forEach(function (child) {
     if (child) AdsManagerApp.select(child);
     var acct = AdsApp.currentAccount();
+    if (child && ACCOUNTS.indexOf(acct.getName()) === -1) { Logger.log('skipped ' + acct.getName()); return; }
     if (acct.getCurrencyCode() !== CURRENCY) { Logger.log('skipped ' + acct.getName() + ' (' + acct.getCurrencyCode() + ')'); return; }
     tz = tz || acct.getTimeZone();
     try { collect(acct, n, at); Logger.log('read ' + acct.getName()); }
