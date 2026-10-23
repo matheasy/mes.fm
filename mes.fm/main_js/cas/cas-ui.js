@@ -202,7 +202,7 @@
 		function preview() {
 			var text = input.value.trim();
 			if (!text) { prev.innerHTML = '<span class="cs-preview__hint">' + esc(cfg.hint || 'Your input will be shown here as maths.') + '</span>'; prev.className = 'cs-preview is-dim'; return; }
-			if (MESCAS.state() !== 'ready' || MESCAS.busy()) {
+			if (MESCAS.state() !== 'ready' || MESCAS.busy() || (cfg.previewSkip && cfg.previewSkip(text))) {
 				prev.className = 'cs-preview is-echo'; prev.innerHTML = '<span class="cs-preview__lbl">You typed</span> <code>' + esc(text) + '</code>';
 				return;
 			}

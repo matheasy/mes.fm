@@ -14,11 +14,14 @@
 		series: [['e^x', 'eˣ (Maclaurin)'], ['cos x', 'cos x about π', { at: 'pi', n: '6' }], ['ln(1 + x)', 'ln(1 + x)'], ['1/(1 - x)', '1/(1 − x)']],
 		sum: [['1/k^2', 'Σ 1/k² (Basel problem)'], ['k', 'Σ k from 1 to n', { from: '1', to: 'n' }], ['k^2', 'Σ k² from 1 to n', { from: '1', to: 'n' }], ['1/2^k', 'Σ 1/2ᵏ', { from: '0' }], ['k', '5! as a product', { kind: 'product', from: '1', to: '5' }]],
 		matrix: [['[[1, 2], [3, 4]]', '2×2 matrix'], ['2 1; 1 2', 'symmetric 2×2 (rows with ;)'], ['[[2, 0, 0], [0, 3, 4], [0, 4, 9]]', '3×3 matrix']],
+		units: [['5 km to mi', '5 km in miles'], ['60 mph to km/h', '60 mph in km/h'], ['100 degF to degC', '100 °F in °C'], ['5 kg * 9.81 m/s^2', 'weight force of 5 kg (newtons)'],
+			['1/(2 pi 1 kohm 100 nF) to Hz', 'RC cut-off frequency (1 kΩ, 100 nF)'], ['12 V / 4 kohm to mA', 'Ohm\'s law: 12 V across 4 kΩ'], ['100 W * 2 h to kWh', 'energy: 100 W for 2 hours'], ['3 ft 2 in to cm', '3 ft 2 in in cm'],
+			['1 atm to psi', '1 atmosphere in psi'], ['2 kg * (3 m/s)^2 / 2', 'kinetic energy ½mv²'], ['1 lightyear to km', '1 light-year in km'], ['50 L to gal', '50 litres in US gallons']],
 		evaluate: [['sqrt(2) * pi', '√2 · π', { digits: '30' }], ['e^(pi sqrt(163))', 'Ramanujan\'s constant', { digits: '40' }], ['sin(30°)', 'sin 30°'], ['(1 + sqrt 5)/2', 'golden ratio']]
 	};
-	var LABEL = { solve: 'Equation, inequality or system', simplify: 'Expression', limit: 'Function', series: 'Function', sum: 'Term (in k or n)', matrix: 'Matrix: [[1, 2], [3, 4]] or rows separated by ;', evaluate: 'Expression', calculus: 'Function' };
-	var GO = { solve: 'Solve', simplify: 'Simplify', limit: 'Find the limit', series: 'Expand in a series', sum: 'Evaluate', matrix: 'Analyse matrix', evaluate: 'Evaluate' };
-	var PH = { solve: 'e.g. x^2 - 5x + 6 = 0', simplify: 'e.g. (x^2 - 1)/(x - 1)', limit: 'e.g. sin(x)/x', series: 'e.g. e^x', sum: 'e.g. 1/k^2', matrix: 'e.g. [[1, 2], [3, 4]]', evaluate: 'e.g. sqrt(2)*pi', calculus: 'e.g. x^2 sin x' };
+	var LABEL = { units: 'Amount with units (add “to unit” to convert)', solve: 'Equation, inequality or system', simplify: 'Expression', limit: 'Function', series: 'Function', sum: 'Term (in k or n)', matrix: 'Matrix: [[1, 2], [3, 4]] or rows separated by ;', evaluate: 'Expression', calculus: 'Function' };
+	var GO = { units: 'Calculate', solve: 'Solve', simplify: 'Simplify', limit: 'Find the limit', series: 'Expand in a series', sum: 'Evaluate', matrix: 'Analyse matrix', evaluate: 'Evaluate' };
+	var PH = { units: 'e.g. 60 mph to km/h, 5 kg * 9.81 m/s^2, 4.7 kohm * 2 mA', solve: 'e.g. x^2 - 5x + 6 = 0 (or: solve x squared minus 4 = 0)', simplify: 'e.g. (x^2 - 1)/(x - 1)', limit: 'e.g. sin(x)/x', series: 'e.g. e^x', sum: 'e.g. 1/k^2', matrix: 'e.g. [[1, 2], [3, 4]]', evaluate: 'e.g. sqrt(2)*pi', calculus: 'e.g. x^2 sin x' };
 
 	function setMode(md, keepInput) {
 		mode = EX[md] || md === 'calculus' ? md : 'solve';
@@ -122,6 +125,7 @@
 		chips: $('cs-chips'), examples: $('cs-ex'), key: 'mes-cas:v1',
 		histList: $('cs-hist'), histCard: $('cs-hist-card'), histClear: $('cs-hist-clear'),
 		hint: 'Your input will be shown here as maths.', emptyMsg: 'Type an equation or expression first.',
+		previewSkip: function (t) { return mode === 'units' || (/[a-z]{3,}\s/i.test(t) && window.MESAsk && !!MESAsk.cas(t)); },
 		previewMode: function () { return mode === 'solve' ? 'solve' : mode === 'matrix' ? 'matrix' : ''; },
 		params: function () {
 			var p = { m: mode === 'solve' ? '' : mode };
@@ -152,6 +156,18 @@
 		},
 		request: function (text, p) {
 			if (mode === 'calculus') return null;
+			if (mode === 'units') return { op: 'units', expr: text };
+			// plain English (main_js/mes-ask.js): "convert 5 km to miles", "factor x^2 - 1", "derivative of x^2 sin x"
+			var w = /[a-z]{3,}\s/i.test(text) && window.MESAsk ? MESAsk.cas(text) : null;
+			if (w) {
+				if (w.op === 'units') { setMode('units', true); return { op: 'units', expr: w.q }; }
+				if (w.op === 'diff') { location.href = '/derivative-calculator?q=' + encodeURIComponent(w.q); return null; }
+				if (w.op === 'integrate') { location.href = '/integral-calculator?q=' + encodeURIComponent(w.q) + (w.a != null ? '&a=' + encodeURIComponent(w.a) + '&b=' + encodeURIComponent(w.b) : ''); return null; }
+				if (w.op === 'solve') { setMode('solve', true); return { op: 'solve', expr: w.q, var: p.var, lo: p.lo, hi: p.hi }; }
+				if (w.op === 'cas' && w.fn === 'evaluate') { setMode('evaluate', true); return { op: 'cas', mode: 'evaluate', expr: w.q, digits: 15 }; }
+				if (w.op === 'cas' && w.fn === 'limit') { var lm = /^limit\((.+), ([a-z]), (.+)\)$/.exec(w.q); if (lm) { setMode('limit', true); return { op: 'cas', mode: 'limit', expr: lm[1], var: lm[2], at: lm[3], dir: '+-' }; } }
+				if (w.op === 'cas') { setMode('simplify', true); return { op: 'cas', mode: w.fn, expr: w.q, var: p.var }; }
+			}
 			if (mode === 'solve') return { op: 'solve', expr: text, var: p.var, lo: p.lo, hi: p.hi };
 			var r = { op: 'cas', mode: mode, expr: text, var: p.var };
 			if (mode === 'simplify') r.mode = p.op || 'simplify';

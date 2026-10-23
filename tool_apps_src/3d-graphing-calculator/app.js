@@ -26,7 +26,10 @@
 		['Plane and a point', ['z = 2 - x/2 - y/3', '(2, 3, 0)']],
 		['Tangent (breaks at asymptotes)', ['z = tan(x)']],
 		['Heart', [['(2.25x^2 + y^2 + z^2 - 1)^3 = y^2 z^3 + 0.1125x^2 z^3', 's']], [-1.5, 1.5, -1.5, 1.5, -1.5, 1.5]],
-		['Your own function', ['f(x, y) = sin(x) cos(y)', 'z = f(x/2, y/2) - 3']]
+		['Your own function', ['f(x, y) = sin(x) cos(y)', 'z = f(x/2, y/2) - 3']],
+		['Spherical harmonic (sliders l, m)', ['l = 2', 'm = 1', ['(6 abs(ylm(l, m, v, u)) sin(v) cos(u), 6 abs(ylm(l, m, v, u)) sin(v) sin(u), 6 abs(ylm(l, m, v, u)) cos(v)) {0<=u<=2π, 0<=v<=π}', 'h']], [-3, 3, -3, 3, -3, 3], { l: [0, 6, 1], m: [-6, 6, 1] }],
+		['Spherical harmonic on a sphere (l = 3, m = 2)', ['l = 3', 'm = 2', ['((2 + 3 ylm(l, m, v, u)) sin(v) cos(u), (2 + 3 ylm(l, m, v, u)) sin(v) sin(u), (2 + 3 ylm(l, m, v, u)) cos(v)) {0<=u<=2π, 0<=v<=π}', 'h']], [-4, 4, -4, 4, -4, 4], { l: [0, 6, 1], m: [-6, 6, 1] }],
+		['Orbital shape |Y|² (l = 2, m = 0)', [['((5 ylm(2, 0, v, u))^2 sin(v) cos(u), (5 ylm(2, 0, v, u))^2 sin(v) sin(u), (5 ylm(2, 0, v, u))^2 cos(v)) {0<=u<=2π, 0<=v<=π}', 'h']], [-2, 2, -2, 2, -2, 2]]
 	];
 	var DEFAULT_ROWS = ['a = 1', 'z = a sin(x) cos(y)'];
 
@@ -52,7 +55,7 @@
 		rows.push(r); return r;
 	}
 	function snapshot() {
-		var pm = {}; Object.keys(pmeta).forEach(function (k) { pm[k] = [P[k], pmeta[k].min, pmeta[k].max]; });
+		var pm = {}; Object.keys(pmeta).forEach(function (k) { pm[k] = pmeta[k].step ? [P[k], pmeta[k].min, pmeta[k].max, pmeta[k].step] : [P[k], pmeta[k].min, pmeta[k].max]; });
 		return { r: rows.map(function (r) { return [r.text, r.color, r.show ? 1 : 0, r.style, r.wire, r.op]; }), d: deg ? 1 : 0, p: pm,
 			b: [dom.x[0], dom.x[1], dom.y[0], dom.y[1], dom.z[0], dom.z[1]], c: [cam.theta, cam.phi, cam.dist, cam.tx, cam.ty, cam.tz].map(function (v) { return +(+v).toFixed(4); }),
 			o: [opts.box ? 1 : 0, opts.grid ? 1 : 0] };
@@ -61,7 +64,7 @@
 	function restore(s) {
 		rows = []; (s.r || []).forEach(function (a) { if (typeof a === 'string') a = [a]; addRow(String(a[0] || '').slice(0, 500), /^#[0-9a-f]{6}$/i.test(a[1]) ? a[1] : null, a[2] !== 0, a[3], a[4], +a[5]); });
 		deg = !!s.d; M.deg = deg;
-		Object.keys(s.p || {}).forEach(function (k) { if (/^[A-Za-z]$/.test(k) && Array.isArray(s.p[k]) && s.p[k].every(isFinite)) { P[k] = s.p[k][0]; pmeta[k] = { min: s.p[k][1], max: s.p[k][2], play: false }; } });
+		Object.keys(s.p || {}).forEach(function (k) { if (/^[A-Za-z]$/.test(k) && Array.isArray(s.p[k]) && s.p[k].every(isFinite)) { P[k] = s.p[k][0]; pmeta[k] = { min: s.p[k][1], max: s.p[k][2], step: s.p[k][3] > 0 ? s.p[k][3] : undefined, play: false }; } });
 		setDomArr(s.b);
 		if (s.c && s.c.length === 6 && s.c.every(isFinite)) cam = { theta: s.c[0], phi: s.c[1], dist: s.c[2], tx: s.c[3], ty: s.c[4], tz: s.c[5] };
 		if (s.o) { opts.box = s.o[0] !== 0; opts.grid = s.o[1] !== 0; }
@@ -132,7 +135,7 @@
 		rows.forEach(function (r) {
 			var el = document.createElement('div'); el.className = 'g3-row' + (r.id === activeId ? ' is-active' : ''); el.dataset.id = r.id;
 			el.innerHTML = '<input type="color" class="g3-color" aria-label="Colour" value="' + r.color + '">' +
-				'<div class="g3-rowmain"><textarea class="g3-in" rows="1" wrap="soft" spellcheck="false" autocomplete="off" autocapitalize="off" autocorrect="off" placeholder="z = x^2 - y^2" aria-label="Expression"></textarea><div class="g3-msg"></div></div>' +
+				'<div class="g3-rowmain"><textarea class="g3-in" rows="1" wrap="soft" spellcheck="false" autocomplete="off" autocapitalize="off" autocorrect="off" placeholder="z = x^2 - y^2  or: graph a sphere with radius 7" aria-label="Expression"></textarea><div class="g3-msg"></div></div>' +
 				'<button type="button" class="g3-ibtn g3-eye" aria-label="Show or hide" aria-pressed="' + r.show + '" title="Show / hide">◉</button>' +
 				'<button type="button" class="g3-ibtn g3-gear" aria-label="Style options" aria-expanded="' + r.open + '" title="Colour, grid lines, opacity">⚙</button>' +
 				'<button type="button" class="g3-ibtn g3-del" aria-label="Delete" title="Delete">✕</button>' +
@@ -148,11 +151,12 @@
 	}
 	function rowEl(r) { return $('g3-rows').querySelector('[data-id="' + r.id + '"]'); }
 	function updateMsg(r) {
-		var el = rowEl(r); if (!el) return; var m = el.querySelector('.g3-msg'); m.textContent = describe(r); m.className = 'g3-msg' + (r.err ? ' is-err' : '');
+		var el = rowEl(r); if (!el) return; var m = el.querySelector('.g3-msg'), w = r.err && askRow(r); m.textContent = w ? 'Press Enter to graph: ' + w.said + ' (' + w.rows[w.rows.length - 1] + ')' : describe(r); m.className = 'g3-msg' + (r.err && !w ? ' is-err' : '');
 		el.querySelector('.g3-wire').checked = wireOn(r);
 	}
 	function rowById(id) { for (var i = 0; i < rows.length; i++) if (rows[i].id === +id) return rows[i]; return null; }
 	function setActive(id) { activeId = id; Array.prototype.forEach.call($('g3-rows').children, function (el) { el.classList.toggle('is-active', +el.dataset.id === id); }); }
+	function askRow(r) { try { return window.MESAsk && /[a-z]{3,}/i.test(r.text) ? MESAsk.graph(/^(graph|plot|draw|sketch|show)\b/i.test(r.text) ? r.text : 'graph ' + r.text, 3) : null; } catch (e) { return null; } }
 	var boxRows = $('g3-rows');
 	boxRows.addEventListener('input', function (e) {
 		var el = e.target.closest('.g3-row'); if (!el) return; var r = rowById(el.dataset.id), c = e.target.classList;
@@ -179,6 +183,13 @@
 	boxRows.addEventListener('keydown', function (e) {
 		if (e.key === 'Enter' && e.target.classList.contains('g3-in')) {
 			e.preventDefault(); var el = e.target.closest('.g3-row'), r = rowById(el.dataset.id), idx = rows.indexOf(r);
+			var w = r.err && askRow(r);
+			if (w) {   // words -> equation rows (main_js/mes-ask.js): "graph a sphere with radius 7"
+				r.text = w.rows[w.rows.length - 1];
+				w.rows.slice(0, -1).forEach(function (t, k) { var pr = addRow(t); rows.splice(rows.length - 1, 1); rows.splice(idx + k, 0, pr); });
+				if (w.meta) { Object.keys(w.meta).forEach(function (n) { var q = w.meta[n]; pmeta[n] = { min: q[0], max: q[1], step: q[2], play: false }; }); shownParams = ''; }
+				if (w.dom && setDomArr(w.dom)) { renderDom(); domChanged(); } renderRows(); changed(); toast('Read as: ' + w.said); var ie = rowEl(r) && rowEl(r).querySelector('.g3-in'); if (ie) ie.focus(); return;
+			}
 			var nr = addRow(''); rows.splice(rows.length - 1, 1); rows.splice(idx + 1, 0, nr); renderRows(); changed();
 			rowEl(nr).querySelector('.g3-in').focus();
 		}
@@ -195,6 +206,8 @@
 		rows = []; resetParams();
 		e[1].forEach(function (t) { if (Array.isArray(t)) addRow(t[0], null, true, t[1]); else addRow(t); });
 		dom = cloneDom(DEF_DOM); if (e[2]) setDomArr(e[2]);
+		if (e[3]) Object.keys(e[3]).forEach(function (n) { var q = e[3][n]; pmeta[n] = { min: q[0], max: q[1], step: q[2], play: false }; });
+		shownParams = '';
 		deg = false; setDeg();   // the examples are written in radians (π ranges)
 		activeId = rows[rows.length - 1].id; renderRows(); renderDom(); domChanged(); homeView(); changed();
 	}
@@ -217,7 +230,7 @@
 		if (!paramOrder.length) { box.innerHTML = ''; return; }
 		box.innerHTML = '<h3>Sliders</h3>' + paramOrder.map(function (n) {
 			var m = pmeta[n];
-			return '<div class="g3-param" data-n="' + n + '"><b>' + n + '</b><input type="range" min="' + m.min + '" max="' + m.max + '" step="any" value="' + P[n] + '" aria-label="Value of ' + n + '">' +
+			return '<div class="g3-param" data-n="' + n + '"><b>' + n + '</b><input type="range" min="' + m.min + '" max="' + m.max + '" step="' + (m.step || 'any') + '" value="' + P[n] + '" aria-label="Value of ' + n + '">' +
 				'<input class="g3-num" type="text" inputmode="decimal" value="' + G3.fmtn(P[n]) + '" aria-label="' + n + ' value"><button type="button" class="g3-ibtn g3-play" aria-pressed="' + !!m.play + '" title="Animate" aria-label="Animate ' + n + '">' + (m.play ? '❚❚' : '▶') + '</button>' +
 				'<div class="g3-lim"><span>min <input class="g3-min" type="text" inputmode="decimal" value="' + m.min + '"></span><span>max <input class="g3-max" type="text" inputmode="decimal" value="' + m.max + '"></span></div></div>';
 		}).join('');
@@ -740,6 +753,8 @@
 	if (s && s.r && s.r.length) restore(s); else DEFAULT_ROWS.forEach(function (t) { addRow(t); });
 	activeId = rows[0].id; setDeg(); paintToggles(); layout(); renderDom();
 	renderRows(); compileAll(); rows.forEach(updateMsg); renderParams(true);
+	// ?ex=spherical-harmonic opens a built-in example by (part of) its name
+	if (q.get('ex')) { var exk = q.get('ex').toLowerCase().replace(/[^a-z0-9]+/g, ' ').trim(), exm = EXAMPLES.filter(function (e) { return e[0].toLowerCase().replace(/[^a-z0-9]+/g, ' ').indexOf(exk) >= 0; })[0]; if (exm) loadExample(exm); }
 	// three.js is only fetched once the page is interactive
 	(window.requestIdleCallback || function (f) { return setTimeout(f, 1); })(boot, { timeout: 700 });
 })();

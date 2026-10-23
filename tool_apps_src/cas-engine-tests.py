@@ -490,3 +490,25 @@ print("%d / %d passed" % (COUNT - len(FAILS), COUNT))
 if FAILS:
     print("FAILED:", ", ".join(FAILS))
     sys.exit(1)
+
+
+# ---- units (op "units", 2026-10-23) ----
+def _units_tests():
+    import engine as E
+    cases = [("5 km to mi", "3.106855961 mi"), ("60 mph to km/h", "96.56064 km/h"), ("100 degF to degC", "37.77777778 °C"), ("-40 C to F", "-40 °F"),
+             ("12 in to cm", "30.48 cm"), ("1 kWh to J", "3600000 J"), ("2 A * 3 ohm", "6 V"), ("100 W * 2 h to kWh", "0.2 kWh"), ("5 kg * 9.81 m/s^2", "49.05 N"),
+             ("100 m / 9.58 s", "10.43841336 m/s"), ("3 ft 2 in to cm", "96.52 cm"), ("1/(2 pi 1 kohm 100 nF) to Hz", "1591.549431 Hz")]
+    bad = 0
+    for q, want in cases:
+        got = E.call("units", expr=q).get("plain")
+        if got != want:
+            bad += 1; print("FAIL units", q, got, "want", want)
+    for q in ("5 kg to s", "5 foo to m", "__import__ to m"):
+        if E.call("units", expr=q).get("ok"):
+            bad += 1; print("FAIL units should refuse", q)
+    print("units:", len(cases) + 3 - bad, "passed,", bad, "failed")
+    return bad
+if __name__ == "__main__":
+    import sys as _s
+    if _units_tests():
+        _s.exit(1)

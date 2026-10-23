@@ -391,6 +391,21 @@ sub {vertical-align:sub;}        .warning-message {font-size:1em;text-align:cent
 	#beta-tester-submit:hover, #app-store-link:hover { background-color: #0f5ea3; border-color: #0f5ea3; }
 	body.dark-mode #beta-tester-submit, body.dark-mode #app-store-link { background-color: #5aa9e6; border-color: #5aa9e6; color: #0f1113; }
 	body.dark-mode #beta-tester-submit:hover, body.dark-mode #app-store-link:hover { background-color: #7cbdf0; border-color: #7cbdf0; }
+
+	/* PC-ASK */
+	.pc-ask {margin:0.4em 0 0.9em;padding:0.7em 0.8em;border:2px solid #3b82c4;border-radius:0.6em;background:#f3f8fd;}
+	.pc-ask__l {display:block;font-weight:700;margin-bottom:0.35em;color:#1d4f7e;}
+	.pc-ask__row {display:flex;gap:0.5em;}
+	.pc-ask__in {flex:1 1 auto;min-width:0;font-size:1.05em;padding:0.5em 0.6em;border:1px solid #9bb6cf;border-radius:0.4em;background:#fff;color:#1e2733;}
+	.pc-ask__go {flex:0 0 auto;cursor:pointer;border:0;border-radius:0.4em;background:#2a6db0;color:#fff;font:inherit;font-weight:700;padding:0.5em 1em;min-height:42px;}
+	.pc-ask__out {margin-top:0.4em;font-size:0.92em;color:#3a4552;min-height:1.2em;}
+	.pc-ask__out b {color:#1e2733;}
+	.equation.pc-flash {animation:pcflash 1.6s ease-out;}
+	@keyframes pcflash {0%,40% {box-shadow:0 0 0 3px #2a6db0;border-radius:6px;} 100% {box-shadow:0 0 0 3px transparent;}}
+	body.dark-mode .pc-ask {background:#16222e;border-color:#3b6f9e;} body.dark-mode .pc-ask__l {color:#9cc8f0;}
+	body.dark-mode .pc-ask__in {background:#0f1720;color:#eef2f6;border-color:#3f5568;} body.dark-mode .pc-ask__out {color:#b8c4d0;} body.dark-mode .pc-ask__out b {color:#f1f3f5;}
+	@media (prefers-reduced-motion: reduce) {.equation.pc-flash {animation:none;}}
+	/* /PC-ASK */
 </style>
         <meta property="fb:app_id" content="1398196443773284" />
         <meta name="author" content="Percentage Calculator Staff">
@@ -623,6 +638,13 @@ sub {vertical-align:sub;}        .warning-message {font-size:1em;text-align:cent
 		})();
 		</script>
 		<!-- /ANDROID-TESTERS-BANNER -->
+		<!-- PC-ASK: type a question in words, it fills the matching calculation (main_js/mes-ask.js; hidden where that script is missing, e.g. the app) -->
+		<div class="pc-ask" id="pc-ask" hidden>
+			<label for="pc-ask-in" class="pc-ask__l">Type it in words</label>
+			<div class="pc-ask__row"><input id="pc-ask-in" class="pc-ask__in" type="text" autocomplete="off" spellcheck="false" placeholder="e.g. what is 38 percent of 75, 20 is what % of 80, increase 80 by 15%" aria-describedby="pc-ask-out"><button type="button" class="pc-ask__go" id="pc-ask-go">Fill in</button></div>
+			<div class="pc-ask__out" id="pc-ask-out" aria-live="polite"></div>
+		</div>
+		<!-- /PC-ASK -->
 		<div id="share-calc-button" class="button button--share-calc">Share Calculations</div>
 		<div id="share-calc-url-container" class="share-calc-url-container hide">
 			<span class="right-arrow">&#9654;</span>
@@ -792,7 +814,30 @@ sub {vertical-align:sub;}        .warning-message {font-size:1em;text-align:cent
             hide_search:true,
             current_tab:0
         }        </script><!-- FASTCOMMENTS-LAZY: widget init moved to main_js/main.js -- it pulls embed.min.js only when #fastcomments-widget nears the viewport or on the first Comments-toggle click, so it no longer blocks first render -->                <script src="https://mes.fm/main_js/lazysizes.min.js?v=1.0.3" async></script>
-	<script>$.getScript("/percentagecalculator/js/percentagecalculator.js?v=3.2");</script>            <script src="https://mes.fm/main_js/main.js?v=1.0.5"></script>    <!-- PAGEVIEW-TRACKING-INSERTED --><script src="https://mes.fm/main_js/track.js" defer></script><script>document.getElementById('copyright-year').textContent = new Date().getFullYear();</script><script src="/main_js/info-bar-fit.js" defer></script><script src="/main_js/display-controls.js?v=1.7" data-scale="main" data-dark="derive" defer></script><!-- MES-ASIDE-JS --><script src="/main_js/aside.js?v=2" defer></script><!-- /MES-ASIDE-JS --><!-- MES-BOTTOM-AD-JS --><script src="/main_js/bottom-ad.js?v=1" defer></script><!-- /MES-BOTTOM-AD-JS --></body>
+	<script>$.getScript("/percentagecalculator/js/percentagecalculator.js?v=3.2");</script>            <script src="https://mes.fm/main_js/main.js?v=1.0.5"></script>    <!-- PAGEVIEW-TRACKING-INSERTED --><script src="https://mes.fm/main_js/track.js" defer></script><script>document.getElementById('copyright-year').textContent = new Date().getFullYear();</script><script src="/main_js/info-bar-fit.js" defer></script><script src="/main_js/display-controls.js?v=1.7" data-scale="main" data-dark="derive" defer></script><!-- PC-ASK-JS --><script src="/main_js/mes-ask.js?v=1" defer></script><script>
+(function () {
+	function go() {
+		var box = document.getElementById('pc-ask'); if (!box || !window.MESAsk) return; box.hidden = false;
+		var inp = document.getElementById('pc-ask-in'), out = document.getElementById('pc-ask-out');
+		var NAMES = {1: 'A is what % of B', 2: 'What is A % of B', 3: 'A is B % of what', 4: 'Increase / decrease from A to B', 5: 'Percentage difference between A and B', 7: 'A x B %', 8: 'A / B %', 9: 'Increase A by B %', 10: 'Decrease A by B %'};
+		function fill() {
+			var t = inp.value.trim(); if (!t) { out.textContent = ''; return; }
+			var r = MESAsk.percent(t);
+			if (!r) { out.innerHTML = 'Not sure which calculation that is. Try: <b>what is 38 percent of 75</b>, <b>20 is what % of 80</b>, <b>15 is 30% of what</b>, <b>percent change from 50 to 75</b>, <b>increase 80 by 15%</b>, <b>20% off 60</b>.'; return; }
+			var eq = document.getElementById('equation-' + r.eq); if (!eq) return;
+			var ins = eq.querySelectorAll('.eq-text input.input'); if (ins.length < 2) return;
+			[r.a, r.b].forEach(function (v, i) { ins[i].value = String(v); ins[i].dispatchEvent(new Event('input', {bubbles: true})); ins[i].dispatchEvent(new Event('keyup', {bubbles: true})); ins[i].dispatchEvent(new Event('change', {bubbles: true})); });
+			var body = eq.closest('.pc-item') || eq; if (body.classList.contains('pc-collapsed')) { var tg = body.querySelector('.pc-toggle'); if (tg) tg.click(); }
+			eq.classList.remove('pc-flash'); void eq.offsetWidth; eq.classList.add('pc-flash');
+			try { eq.scrollIntoView({behavior: 'smooth', block: 'center'}); } catch (e) {}
+			setTimeout(function () { var a = eq.querySelector('.answer'); out.innerHTML = 'Filled in <b>' + NAMES[r.eq] + '</b> with ' + r.a + ' and ' + r.b + (a && a.textContent.trim() ? ': answer <b>' + a.textContent.trim() + '</b>' : '') + '.'; }, 120);
+		}
+		document.getElementById('pc-ask-go').addEventListener('click', fill);
+		inp.addEventListener('keydown', function (e) { if (e.key === 'Enter') { e.preventDefault(); fill(); } });
+	}
+	if (document.readyState === 'complete') go(); else window.addEventListener('load', go);
+})();
+</script><!-- /PC-ASK-JS --><!-- MES-ASIDE-JS --><script src="/main_js/aside.js?v=2" defer></script><!-- /MES-ASIDE-JS --><!-- MES-BOTTOM-AD-JS --><script src="/main_js/bottom-ad.js?v=1" defer></script><!-- /MES-BOTTOM-AD-JS --></body>
 
 <!-- Mirrored from percentagecalculator.mes.fm/ by HTTrack Website Copier/3.x [XR&CO'2014], Fri, 19 Jun 2026 16:43:44 GMT -->
 </html>

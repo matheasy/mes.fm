@@ -100,6 +100,8 @@ PAGE_TAGS = {
 }
 EQ = "0 = 2 - sin(alpha)*ln((1+sin(alpha))/(1-sin(alpha)))"
 CTX = {   # page path regex -> [(target, title, kind-label, logo path)]
+    r"^/spherical-harmonics": [("/3d-graphing-calculator?ex=spherical-harmonic-sliders", "Spin a spherical harmonic in 3D: drag the l and m sliders", "/3d-graphing-calculator"),
+                               ("/3d-graphing-calculator?ex=orbital-shape", "See an atomic orbital shape, |Y|² for l = 2", "/3d-graphing-calculator")],
     r"^/2d-graphing-calculator": [("/derivative-calculator?q=" + quote("x^2*sin(x)"), "Find the slope of x² sin x, step by step", "/derivative-calculator"),
                                   ("/integral-calculator?q=" + quote("x^2*sin(x)"), "Find the area under it with an integral", "/integral-calculator"),
                                   ("/cas-calculator?q=" + quote("x^2 - 4 = 0"), "Solve the equation you graphed in the CAS", "/cas-calculator")],

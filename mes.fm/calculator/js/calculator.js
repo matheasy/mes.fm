@@ -55,6 +55,29 @@ var MC = (function () {
 	};
 	var ALIAS = { arcsin: 'asin', arccos: 'acos', arctan: 'atan', squareroot: 'sqrt', factorial: 'fact', ln: 'ln', lg: 'log', mean: 'avg', cuberoot: 'cbrt' };
 
+	/* ---------- engineering (SI) prefixes ---------- */
+	var PREFIX = { Q: 1e30, R: 1e27, Y: 1e24, Z: 1e21, E: 1e18, P: 1e15, T: 1e12, G: 1e9, M: 1e6, k: 1e3, K: 1e3, m: 1e-3, u: 1e-6, 'µ': 1e-6, 'μ': 1e-6, n: 1e-9, p: 1e-12, f: 1e-15, a: 1e-18, z: 1e-21, y: 1e-24 };
+	// a prefix letter is only read as a prefix when it is NOT followed by more letters (so 2pi, 3sin(30), 2mod 3 keep working);
+	// a unit symbol may follow (Ω, ohm, V, A, F, H, Hz, W, J, C, S, s, g, B, b, Wh, eV, m for metres after a prefix: 5km)
+	var PREFIX_RE = /^(?:([QRYZEPTGMkKmuµμnpfazy])(?![A-Za-z(]|[ΩµμÅ])|([QRYZEPTGMkKmuµμnpfazy])?(Ω|ohms?|Hz|Wh|eV|V|A|F|H|W|J|C|S|s|g|B|b|m)(?![A-Za-z(]))/;
+	(function () {                                    // second alternative: prefix + unit, shift the captures so [1] = prefix, [2] = unit
+		var inner = PREFIX_RE;
+		PREFIX_RE = { exec: function (str) { var r = inner.exec(str); if (!r) return null; if (r[1]) return [r[0], r[1], null]; if (r[3] && !r[2] && r[3] === 'm' ) return [r[0], null, 'm']; return [r[0], r[2] || null, r[3]]; } };
+	})();
+	var ENG = [[1e24, 'Y'], [1e21, 'Z'], [1e18, 'E'], [1e15, 'P'], [1e12, 'T'], [1e9, 'G'], [1e6, 'M'], [1e3, 'k'], [1, ''], [1e-3, 'm'], [1e-6, 'µ'], [1e-9, 'n'], [1e-12, 'p'], [1e-15, 'f'], [1e-18, 'a'], [1e-21, 'z'], [1e-24, 'y']];
+	function engFmt(x, digits) {                       // 4700 -> "4.7k", 0.000047 -> "47µ"; null when no prefix applies (0, huge, NaN)
+		if (typeof x !== 'number' || !isFinite(x) || x === 0) return null;
+		var ax = Math.abs(x);
+		for (var i = 0; i < ENG.length; i++) {
+			if (ax >= ENG[i][0] * 0.9999999999) {
+				var m = x / ENG[i][0], t = parseFloat(m.toPrecision(digits || 6));
+				if (Math.abs(t) >= 1000 && i > 0) { i--; m = x / ENG[i][0]; t = parseFloat(m.toPrecision(digits || 6)); }
+				return String(t) + ENG[i][1];
+			}
+		}
+		return null;
+	}
+
 	function tokenize(src) {
 		var s = String(src).replace(/[×·⋅]/g, '*').replace(/÷/g, '/').replace(/[−–—]/g, '-').replace(/π/g, 'pi').replace(/√/g, 'sqrt ').replace(/∛/g, 'cbrt ')
 			.replace(/\bof\b/gi, '*').replace(/\*\*/g, '^').replace(/²/g, '^2').replace(/³/g, '^3').replace(/\s+/g, ' ');
@@ -62,7 +85,13 @@ var MC = (function () {
 		while (i < s.length) {
 			var c = s[i];
 			if (c === ' ') { i++; continue; }
-			if ((m = /^(?:\d+\.?\d*|\.\d+)(?:e[+-]?\d+)?/i.exec(s.slice(i)))) { out.push({ k: 'num', v: parseFloat(m[0]) }); i += m[0].length; continue; }
+			if ((m = /^(?:\d+\.?\d*|\.\d+)(?:e[+-]?\d+)?/i.exec(s.slice(i)))) {
+				var nv = parseFloat(m[0]); i += m[0].length;
+				// engineering prefix straight after a number: 4.7k, 10u / 10µ, 3n, 2M, 5m (milli), optionally followed by a unit symbol (4.7kΩ, 10uF, 5ms)
+				var pm = PREFIX_RE.exec(s.slice(i));
+				if (pm && (pm[1] || pm[2])) { if (pm[1]) nv *= PREFIX[pm[1]]; if (pm[2]) out.units = (out.units || []).concat(pm[2]); i += pm[0].length; }
+				out.push({ k: 'num', v: nv }); continue;
+			}
 			if ((m = /^[a-z_][a-z0-9_]*/i.exec(s.slice(i)))) { out.push({ k: 'id', v: m[0].toLowerCase() }); i += m[0].length; continue; }
 			if ('+-*/^!%(),'.indexOf(c) >= 0) { out.push({ k: 'op', v: c }); i++; continue; }
 			throw new Error('Unexpected “' + c + '”');
@@ -285,7 +314,7 @@ var MC = (function () {
 		parseDec: parseDec, decToString: decToString, mulExact: mulExact, addExact: addExact, divExact: divExact,
 		factorize: factorize, divisors: divisors, radical: radical, frac: frac, fracToString: fracToString, fracMixed: fracMixed,
 		decToFrac: decToFrac, approxFrac: approxFrac, parseBase: parseBase, toBase: toBase, toRoman: toRoman, fromRoman: fromRoman,
-		parseList: parseList, stats: stats };
+		parseList: parseList, stats: stats, engFmt: engFmt, PREFIX: PREFIX, units: function (src) { try { return tokenize(src).units || []; } catch (e) { return []; } } };
 })();
 if (typeof module !== 'undefined' && module.exports) module.exports = MC;
 
@@ -294,7 +323,7 @@ if (typeof module !== 'undefined' && module.exports) module.exports = MC;
 	'use strict';
 	var $ = function (id) { return document.getElementById(id); };
 	var KEY = 'mes-calculator:v1';
-	var state = { deg: true, both: false, hist: [], tab: 'muldiv', sci: true, sciPick: false };
+	var state = { deg: true, both: false, hist: [], tab: 'muldiv', sci: true, sciPick: false, eng: false };
 	try { var saved = JSON.parse(localStorage.getItem(KEY) || 'null'); if (saved) { for (var k in saved) if (k in state) state[k] = saved[k]; } } catch (e) {}
 	function save() { try { localStorage.setItem(KEY, JSON.stringify(state)); } catch (e) {} }
 
@@ -320,7 +349,22 @@ if (typeof module !== 'undefined' && module.exports) module.exports = MC;
 
 	/* ---------- main calculator ---------- */
 	function compute(text) {
-		try { return { v: MC.evaluate(text, { deg: state.both ? true : state.deg, ans: ans }) }; } catch (e) { return { err: e.message }; }
+		try { return { v: MC.evaluate(text, { deg: state.both ? true : state.deg, ans: ans }) }; } catch (e) {
+			// plain English ("what is 38 percent of 75", "100 multiplied by 84"): main_js/mes-ask.js
+			var w = window.MESAsk && MESAsk.calc(text);
+			if (w) { try { return { v: MC.evaluate(w.expr, { deg: state.both ? true : state.deg, ans: ans }), read: w.said, unit: w.unit, src: w.expr }; } catch (e2) {} }
+			return { err: e.message };
+		}
+	}
+	// the small line under the answer: how words were read, SI prefixes used, the answer with a prefix
+	function noteFor(text, r) {
+		var bits = [];
+		if (r.read) bits.push('Read as <b>' + esc(r.read) + '</b>');
+		var src = r.src || text, used = /\d\s?[QRYZEPTGMkKmuµμnpfazy](?![A-Za-z(])|\d\s?[QRYZEPTGMkKmuµμnpfazy]?(?:Ω|ohms?|Hz|V|A|F|H|W|J|C|S|s|g)\b/.test(src.replace(/\s+/g, '')), un = MC.units(src);
+		if (used) bits.push('SI prefixes: k = 10³, M = 10⁶, m = 10⁻³, µ or u = 10⁻⁶, n = 10⁻⁹, p = 10⁻¹²');
+		if (un.length) bits.push('units are only labels here (' + esc(un.filter(function (u, i) { return un.indexOf(u) === i; }).join(', ')) + '): for real unit maths use the <a href="/cas-calculator">CAS</a>');
+		var e = MC.engFmt(r.v); if (e && (state.eng || used) && e !== MC.fmt(r.v)) bits.unshift('= <b>' + esc(e) + '</b>');
+		return bits.join(' · ');
 	}
 	// "Both": the same expression in radians too; null when it gives the same number (no angle in it)
 	function computeRad(text) {
@@ -335,15 +379,18 @@ if (typeof module !== 'undefined' && module.exports) module.exports = MC;
 	function showLive() {
 		var text = expr.value.trim();
 		live.className = 'mc-live';
+		$('mc-note').innerHTML = '';
 		if (!text) { live.innerHTML = '&nbsp;'; lastText = ''; return; }
 		var r = compute(text);
 		if (r.err) {
 			// stay quiet while the person is still typing something unfinished
 			if (/^(Unfinished|Unexpected “[)]”|Type an)/.test(r.err) || /[-+*/^×÷−(,]$/.test(text)) { live.className = 'mc-live is-dim'; live.innerHTML = '&nbsp;'; }
+			else if (/^Unknown/.test(r.err) && /[a-z]{3,}\s/i.test(text)) { live.className = 'mc-live is-err'; live.textContent = 'Not sure what that means yet. Try: “38 percent of 75”, “100 multiplied by 84”, “square root of 144”.'; }
 			else { live.className = 'mc-live is-err'; live.textContent = r.err; }
 			lastText = ''; return;
 		}
-		lastText = G(r.v); live.innerHTML = liveText(text, r.v);
+		lastText = G(r.v); live.innerHTML = liveText(text, r.v) + (r.unit === '%' ? '<span class="mc-u">%</span>' : '');
+		$('mc-note').innerHTML = noteFor(text, r);
 	}
 	function addHistory(e, r) {
 		state.hist = state.hist.filter(function (h) { return h[0] !== e; });
@@ -357,9 +404,9 @@ if (typeof module !== 'undefined' && module.exports) module.exports = MC;
 		var text = expr.value.trim(); if (!text) return;
 		var r = compute(text);
 		if (r.err) { showLive(); return; }
-		var bothTxt = liveText(text, r.v);
+		var bothTxt = liveText(text, r.v) + (r.unit === '%' ? '<span class="mc-u">%</span>' : ''), noteTxt = noteFor(text, r);
 		ans = r.v; addHistory(text, r.v);
-		expr.value = MC.fmt(r.v); live.className = 'mc-live'; live.innerHTML = bothTxt; lastText = G(r.v);
+		expr.value = MC.fmt(r.v); live.className = 'mc-live'; live.innerHTML = bothTxt; lastText = G(r.v); $('mc-note').innerHTML = noteTxt;
 		expr.dataset.fresh = '1'; expr.scrollLeft = 0;
 	}
 	function toEnd(p) { if (p >= expr.value.length) expr.scrollLeft = expr.scrollWidth; }
@@ -408,6 +455,9 @@ if (typeof module !== 'undefined' && module.exports) module.exports = MC;
 		}
 		applySci();
 	}
+	function applyEng() { $('mc-eng').setAttribute('aria-pressed', String(!!state.eng)); }
+	applyEng();
+	$('mc-eng').addEventListener('click', function () { state.eng = !state.eng; save(); applyEng(); showLive(); });
 	$('mc-sci-toggle').addEventListener('click', function () { sciOn = !sciOn; state.sci = sciOn; state.sciPick = true; save(); applySci(); });
 
 	/* on touch screens the field is read-only while the keypad is used (no system keyboard popping up); the Keyboard chip / tapping the field turns it on */

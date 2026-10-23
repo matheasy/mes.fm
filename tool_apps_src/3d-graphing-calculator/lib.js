@@ -34,13 +34,32 @@ var G3 = (function () {
 			return Math.pow(b, e);
 		};
 		M.root = function (n, x) { return M.pow(x, 1 / n); };
+		// associated Legendre P_l^m(x) (Condon-Shortley phase), and the REAL spherical harmonic Y_lm(theta polar, phi azimuth):
+		// m > 0 -> sqrt2 N P_l^m cos(m phi), m < 0 -> sqrt2 N P_l^|m| sin(|m| phi), m = 0 -> N P_l. l and m are rounded, |m| <= l.
+		M.legendre = function (l, m, x) {
+			l = Math.round(l); m = Math.round(Math.abs(m)); if (l < 0 || m > l || !(Math.abs(x) <= 1)) return NaN;
+			var pmm = 1, sx = Math.sqrt((1 - x) * (1 + x)), f = 1;
+			for (var i = 1; i <= m; i++) { pmm *= -f * sx; f += 2; }
+			if (l === m) return pmm;
+			var pm1 = x * (2 * m + 1) * pmm; if (l === m + 1) return pm1;
+			var pl = 0; for (var ll = m + 2; ll <= l; ll++) { pl = (x * (2 * ll - 1) * pm1 - (ll + m - 1) * pmm) / (ll - m); pmm = pm1; pm1 = pl; }
+			return pl;
+		};
+		M.ylm = function (l, m, th, ph) {
+			l = Math.max(0, Math.min(30, Math.round(l))); m = Math.round(m); if (Math.abs(m) > l) m = m < 0 ? -l : l;
+			th = a(th); ph = a(ph); var am = Math.abs(m), r = 1;
+			for (var k = l - am + 1; k <= l + am; k++) r *= k;                 // (l+|m|)! / (l-|m|)!
+			var N = Math.sqrt((2 * l + 1) / (4 * Math.PI) / r), P0 = M.legendre(l, am, Math.cos(th));
+			if (m === 0) return N * P0;
+			return Math.SQRT2 * N * P0 * (m > 0 ? Math.cos(m * ph) : Math.sin(am * ph));
+		};
 		M.fact = function (n) { if (n < 0 || n !== Math.floor(n) || n > 170) return NaN; var r = 1; for (var i = 2; i <= n; i++) r *= i; return r; };
 		return M;
 	}
 	var FNAMES = {
 		sin: 'sin', cos: 'cos', tan: 'tan', sec: 'sec', csc: 'csc', cot: 'cot', asin: 'asin', arcsin: 'asin', acos: 'acos', arccos: 'acos', atan: 'atan', arctan: 'atan', atan2: 'atan2',
 		sinh: 'sinh', cosh: 'cosh', tanh: 'tanh', sqrt: 'sqrt', cbrt: 'cbrt', abs: 'abs', ln: 'ln', log: 'log', log2: 'log2', log10: 'log10', exp: 'exp',
-		floor: 'floor', ceil: 'ceil', ceiling: 'ceil', round: 'round', trunc: 'trunc', sign: 'sign', sgn: 'sign', min: 'min', max: 'max', mod: 'mod', root: 'root', nthroot: 'root', fact: 'fact'
+		floor: 'floor', ceil: 'ceil', ceiling: 'ceil', round: 'round', trunc: 'trunc', sign: 'sign', sgn: 'sign', min: 'min', max: 'max', mod: 'mod', root: 'root', nthroot: 'root', fact: 'fact', ylm: 'ylm', legendre: 'legendre'
 	};
 	var CONSTS = { pi: Math.PI, 'π': Math.PI, tau: 2 * Math.PI, phi: (1 + Math.sqrt(5)) / 2 };
 	var BYLEN = Object.keys(FNAMES).concat(['theta', 'tau', 'phi', 'pi', 'π', 'θ']).sort(function (p, q) { return q.length - p.length; });

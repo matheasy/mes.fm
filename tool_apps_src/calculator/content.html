@@ -8,11 +8,13 @@
 				</div>
 			</div>
 			<div class="mc-display" id="mc-display">
-			<input id="mc-expr" class="tu-input tu-input--big mc-expr" type="text" autocomplete="off" autocapitalize="off" autocorrect="off" spellcheck="false" placeholder="e.g. 12 × 34 + 5², sqrt(144), 15% of 80" aria-describedby="mc-live">
+			<input id="mc-expr" class="tu-input tu-input--big mc-expr" type="text" autocomplete="off" autocapitalize="off" autocorrect="off" spellcheck="false" placeholder="e.g. 12 × 34 + 5², 4.7k × 10µ, or: what is 38 percent of 75" aria-describedby="mc-live">
 			<div class="mc-live" id="mc-live" aria-live="polite">&nbsp;</div>
+			<div class="mc-note" id="mc-note" aria-live="polite"></div>
 			</div>
 			<div class="mc-tools">
 				<button type="button" class="mc-chip" id="mc-sci-toggle" aria-pressed="true">Scientific keys</button>
+				<button type="button" class="mc-chip" id="mc-eng" aria-pressed="false" title="Also show answers with an SI prefix (4.7k, 22µ). You can always type prefixes: 4.7k, 10u, 3n, 2M">SI prefixes</button>
 				<button type="button" class="mc-chip" id="mc-kbd" aria-pressed="false" hidden title="Use your device keyboard instead of the keypad">&#9000; Keyboard</button>
 			</div>
 
@@ -173,6 +175,8 @@
 			<h2>About this calculator</h2>
 			<p>This free online calculator covers everyday arithmetic and the maths you need for school: addition, subtraction, multiplication and division, squares and square roots, cubes and cube roots, powers, percentages, factorials, logarithms and trigonometry in degrees or radians. Type a whole expression such as <code>(12 + 8) × 3²</code> and the answer appears as you type, following the correct order of operations.</p>
 			<ul>
+				<li><strong>Type it in words</strong>: &ldquo;what is 38 percent of 75&rdquo;, &ldquo;100 multiplied by 84&rdquo;, &ldquo;20 is what percent of 80&rdquo;, &ldquo;increase 80 by 15%&rdquo;, &ldquo;square root of 144&rdquo;, &ldquo;average of 2, 4 and 9&rdquo;. The line under the answer shows how your words were read. It runs in your browser, no AI service.</li>
+				<li><strong>Engineering (SI) prefixes</strong> right after a number: <code>4.7k</code> = 4,700, <code>2M</code> = 2,000,000, <code>5m</code> = 0.005, <code>10u</code> or <code>10µ</code> = 0.00001, <code>3n</code>, <code>22p</code>, also with a unit label (<code>4.7kΩ</code>, <code>100nF</code>, <code>5ms</code>: the unit is ignored). <code>1/(2pi*1k*100n)</code> gives 1,591.55 = 1.59155k. Tick <em>SI prefixes</em> to see every answer that way.</li>
 				<li><strong>Exact big-number multiplication and division</strong> with quotient, remainder and repeating decimals.</li>
 				<li><strong>Squares, cubes and roots</strong> with simplified radicals (√72 = 6√2) and a perfect-square check.</li>
 				<li><strong>Fractions</strong> added, subtracted, multiplied and divided and always reduced, plus decimal-to-fraction conversion.</li>

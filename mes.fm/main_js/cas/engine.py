@@ -27,7 +27,7 @@ from sympy.integrals import manualintegrate as MI
 from sympy.functions.elementary.trigonometric import TrigonometricFunction
 from sympy.functions.elementary.hyperbolic import HyperbolicFunction
 
-VERSION = "2"
+VERSION = "3"
 MAX_LEN = 600
 EMIT = None
 
@@ -2549,7 +2549,194 @@ def op_geodesics(req):
     return {"ok": True, "paths": res}
 
 
-OPS = {"parse": op_parse, "diff": op_diff, "integrate": op_integrate, "solve": op_solve, "cas": op_cas, "plot": op_plot, "metric": op_metric, "geodesics": op_geodesics,
+
+# ---------------------------------------------------------------- units -------------------------------------------
+# "5 km to mi", "60 mph in km/h", "9.81 m/s^2 * 3 s", "1/(2 pi 1 kohm 100 nF) to Hz", "100 degF to degC".
+# sympy.physics.units does the dimension algebra; our own whitelist decides which names exist (no raw text reaches eval).
+_UNITS = None
+
+
+def _unit_table():
+    global _UNITS
+    if _UNITS is not None:
+        return _UNITS
+    from sympy.physics import units as u
+    T = {}
+
+    def add(names, q):
+        for nm in names.split():
+            T[nm] = q
+    add("m meter meters metre metres", u.meter); add("km kilometer kilometers kilometre kilometres", u.kilometer)
+    add("cm centimeter centimeters centimetre centimetres", u.centimeter); add("mm millimeter millimeters millimetre millimetres", u.millimeter)
+    add("um micrometer micrometers micron microns", u.micrometer); add("nm nanometer nanometers", u.nanometer); add("pm picometer", u.picometer)
+    add("mi mile miles", u.mile); add("ft foot feet", u.foot); add("inch inches", u.inch); add("yd yard yards", u.yard)
+    add("nmi nauticalmile", 1852 * u.meter); add("au AU", u.astronomical_unit); add("ly lightyear lightyears", u.lightyear); add("pc parsec parsecs", u.planck_length * 0 + 3.0856775814913673e16 * u.meter)
+    add("s sec second seconds", u.second); add("ms millisecond milliseconds", u.millisecond); add("us microsecond microseconds", u.microsecond)
+    add("ns nanosecond nanoseconds", u.nanosecond); add("min minute minutes", u.minute); add("h hr hour hours", u.hour); add("day days d", u.day)
+    add("week weeks wk", 7 * u.day); add("yr year years", u.year)
+    add("kg kilogram kilograms", u.kilogram); add("g gram grams", u.gram); add("mg milligram milligrams", u.milligram); add("ug microgram micrograms", u.microgram)
+    add("t tonne tonnes", u.metric_ton); add("lb lbs pound pounds", u.pound); add("oz ounce ounces", u.pound / 16); add("st stone", 14 * u.pound)
+    add("N newton newtons", u.newton); add("kN kilonewton", 1000 * u.newton); add("lbf", 4.4482216152605 * u.newton); add("dyn dyne", u.newton / 10**5)
+    add("J joule joules", u.joule); add("kJ kilojoule kilojoules", 1000 * u.joule); add("MJ", 10**6 * u.joule); add("cal calorie calories", u.planck * 0 + 4.184 * u.joule)
+    add("kcal Cal kilocalorie kilocalories", 4184 * u.joule); add("eV electronvolt", u.electronvolt); add("keV", 1000 * u.electronvolt); add("MeV", 10**6 * u.electronvolt)
+    add("Wh", u.watt * u.hour); add("kWh", 1000 * u.watt * u.hour); add("BTU btu", 1055.05585262 * u.joule); add("erg", u.joule / 10**7)
+    add("W watt watts", u.watt); add("kW kilowatt kilowatts", 1000 * u.watt); add("MW megawatt", 10**6 * u.watt); add("mW milliwatt", u.watt / 1000); add("hp horsepower", 745.69987158227022 * u.watt)
+    add("Pa pascal pascals", u.pascal); add("kPa", 1000 * u.pascal); add("MPa", 10**6 * u.pascal); add("GPa", 10**9 * u.pascal); add("hPa mbar", 100 * u.pascal)
+    add("bar", u.bar); add("atm atmosphere atmospheres", u.atmosphere); add("psi", u.psi); add("mmHg torr Torr", u.mmHg); add("ksi", 1000 * u.psi)
+    add("V volt volts", u.volt); add("mV millivolt", u.volt / 1000); add("kV kilovolt", 1000 * u.volt); add("uV", u.volt / 10**6)
+    add("A amp amps ampere amperes", u.ampere); add("mA milliamp milliamps", (u.ampere / 1000)); add("uA", u.ampere / 10**6); add("kA", 1000 * u.ampere)
+    add("ohm ohms Ω", u.ohm); add("kohm kΩ kilohm", 1000 * u.ohm); add("Mohm MΩ megohm", 10**6 * u.ohm); add("mohm", u.ohm / 1000)
+    add("F farad farads", u.farad); add("mF", u.farad / 1000); add("uF microfarad", u.farad / 10**6); add("nF nanofarad", u.farad / 10**9); add("pF picofarad", u.farad / 10**12)
+    add("H henry henrys", u.henry); add("mH", u.henry / 1000); add("uH", u.henry / 10**6); add("nH", u.henry / 10**9)
+    add("C coulomb coulombs", u.coulomb); add("mAh", (u.ampere / 1000) * u.hour); add("Ah", u.ampere * u.hour)
+    add("S siemens", u.siemens); add("T tesla", u.tesla); add("mT", u.tesla / 1000); add("Gs gauss", u.tesla / 10**4); add("Wb weber", u.weber)
+    add("Hz hertz", u.hertz); add("kHz", 1000 * u.hertz); add("MHz", 10**6 * u.hertz); add("GHz", 10**9 * u.hertz); add("rpm", u.hertz / 60)
+    add("L l liter liters litre litres", u.liter); add("mL ml milliliter milliliters millilitre", u.milliliter); add("cl cL", u.liter / 100); add("dl dL", u.liter / 10)
+    add("gal gallon gallons", 3.785411784 * u.liter); add("qt quart quarts", 3.785411784 / 4 * u.liter); add("pt pint pints", 3.785411784 / 8 * u.liter)
+    add("cup cups", 3.785411784 / 16 * u.liter); add("floz", 3.785411784 / 128 * u.liter); add("tbsp", 3.785411784 / 256 * u.liter); add("tsp", 3.785411784 / 768 * u.liter)
+    add("impgal", 4.54609 * u.liter); add("acre acres", 4046.8564224 * u.meter**2); add("ha hectare hectares", 10**4 * u.meter**2)
+    add("mph", u.mile / u.hour); add("kph kmh", u.kilometer / u.hour); add("kn knot knots", 1852 * u.meter / u.hour); add("fps", u.foot / u.second)
+    add("K kelvin", u.kelvin); add("mol mole moles", u.mole); add("mmol", u.mole / 1000); add("cd candela", u.candela)
+    add("rad radian radians", u.radian); add("deg degree degrees °", u.degree); add("c lightspeed", u.speed_of_light); add("gee gravity", u.acceleration_due_to_gravity)
+    add("B byte bytes", u.byte); add("bit bits", u.byte / 8); add("kB KB", 1000 * u.byte); add("MB", 10**6 * u.byte); add("GB", 10**9 * u.byte); add("TB", 10**12 * u.byte)
+    add("KiB", 1024 * u.byte); add("MiB", 1024**2 * u.byte); add("GiB", 1024**3 * u.byte)
+    _UNITS = T
+    return T
+
+
+_TEMP = {"degc": ("C", "°C"), "celsius": ("C", "°C"), "c": ("C", "°C"), "degf": ("F", "°F"), "fahrenheit": ("F", "°F"), "f": ("F", "°F"), "k": ("K", "K"), "kelvin": ("K", "K"), "degr": ("R", "°R"), "rankine": ("R", "°R")}
+
+
+def _units_norm(t):
+    t = t.replace("°C", " degC").replace("°F", " degF").replace("℃", " degC").replace("℉", " degF").replace("µ", "u").replace("μ", "u")
+    t = t.replace("²", "^2").replace("³", "^3").replace("·", "*").replace("×", "*").replace("−", "-").replace("÷", "/")
+    t = re.sub(r"\bkm/h\b", "kph", t)
+    t = re.sub(r"\bper\b", "/", t)
+    t = re.sub(r"\b(sq|square)\s+([A-Za-z]+)", r"\2^2", t)
+    t = re.sub(r"\b(cubic|cu)\s+([A-Za-z]+)", r"\2^3", t)
+    t = re.sub(r"([A-Za-z]+)\s+(squared)\b", r"\1^2", t)
+    t = re.sub(r"([A-Za-z]+)\s+(cubed)\b", r"\1^3", t)
+    t = re.sub(r"\bfl\s*oz\b", "floz", t)
+    t = re.sub(r"(\d),(\d{3})\b", r"\1\2", t)
+    return t.strip()
+
+
+def _units_parse(t, T):
+    t = re.sub(r"(?<![A-Za-z_])in(?![A-Za-z_])", "inch", t)
+    if len(t) > 200 or not re.fullmatch(r"[0-9A-Za-z_\s.+\-*/^()Ωµ°]*", t):
+        raise CasError("Use numbers, unit names and + - * / ^ ( ) only.")
+    for w in re.findall(r"[A-Za-zΩ°_][A-Za-z0-9_Ω°]*", t):
+        if w not in T and w not in ("pi", "e", "sqrt") and not re.fullmatch(r"e\d+", w):
+            raise CasError("I don't know the unit “%s”. Try m, km, mi, ft, in, s, h, kg, lb, N, J, W, Pa, V, A, ohm, F, Hz, L, gal, mph, kph ..." % w)
+    t = re.sub(r"(?<![A-Za-z_\d.])(\d[\d.]*(?:e-?\d+)?)\s*([A-Za-zΩ°_][A-Za-z0-9_Ω°]*(?:\^-?\d+)?)", r"(\1*\2)", t)   # 9.58 s -> (9.58*s), so 100 m / 9.58 s divides by the whole amount
+    loc = dict(T); loc.update({"pi": pi, "sqrt": sqrt})
+    glob = {"Integer": Integer, "Float": sp.Float, "Rational": Rational, "Symbol": Symbol, "__builtins__": {}}
+    try:
+        return parse_expr(t, local_dict=loc, global_dict=glob, transformations=standard_transformations + (convert_xor, implicit_multiplication), evaluate=True)
+    except Exception as err:
+        raise CasError(_friendly(err, t))
+
+
+def _num(x, sig=10):
+    x = sp.N(x, 15)
+    try:
+        v = float(x)
+    except Exception:
+        return plain(x)
+    if v == 0:
+        return "0"
+    a = abs(v)
+    if 1e-4 <= a < 1e15:
+        dg = sig - 1 - int(math.floor(math.log10(a)))
+        if dg > 0:
+            return ("%.*f" % (dg, v)).rstrip("0").rstrip(".")
+        return "%.0f" % round(v, dg)
+    m, ex = ("%." + str(sig - 1) + "e") % v, None
+    m, ex = m.split("e")
+    return m.rstrip("0").rstrip(".") + " × 10^" + str(int(ex))
+
+
+def _uplain(e):
+    t = plain(e)
+    for a, b in (("kilogram", "kg"), ("meter", "m"), ("second", "s"), ("ampere", "A"), ("kelvin", "K"), ("mole", "mol"), ("candela", "cd")):
+        t = re.sub(r"\b%s\b" % a, b, t)
+    return t.replace("*", "·")
+
+
+def op_units(req):
+    from sympy.physics.units import convert_to
+    from sympy.physics.units.quantities import Quantity
+    from sympy.physics import units as u
+    T = _unit_table()
+    raw = str(req.get("expr", "")).strip()
+    if not raw:
+        raise CasError("Type something like: 5 km to miles, 60 mph in km/h, 9.81 m/s^2 * 3 s.")
+    text = _units_norm(re.sub(r"^\s*(convert|how many|what is|whats)\s+", "", raw, flags=re.I))
+    m = re.match(r"^(.*\S)\s+(?:to|into|as|->|→|=)\s+(.+)$", text) or re.match(r"^(.*\S)\s+in\s+([A-Za-z].*)$", text)
+    left, right = (m.group(1), m.group(2)) if m else (text, "")
+    # "3 ft 2 in", "5 lb 4 oz", "1 h 30 min": several amounts of one kind are added
+    if re.fullmatch(r"\s*-?[\d.]+\s*[A-Za-z]+(\s+[\d.]+\s*[A-Za-z]+)+\s*", left):
+        left = re.sub(r"\s+(?=[\d.])", " + ", left.strip())
+    shown = re.sub(r"\bkph\b", "km/h", right)
+    # temperatures: an offset scale, not a factor
+    tm = re.match(r"^(-?[\d.]+(?:e-?\d+)?)\s*(?:deg\s*)?(degC|degF|degR|C|F|K|celsius|fahrenheit|kelvin|rankine)$", left.strip(), re.I)
+    tt = re.match(r"^(?:deg\s*)?(degC|degF|degR|C|F|K|celsius|fahrenheit|kelvin|rankine)$", right.strip(), re.I) if right else None
+    if tm and tt:
+        v = sp.nsimplify(tm.group(1)) if len(tm.group(1)) < 16 else sp.Float(tm.group(1))
+        a, b = _TEMP[tm.group(2).lower()], _TEMP[tt.group(1).lower()]
+        k = {"C": lambda x: x + Rational(27315, 100), "F": lambda x: (x - 32) * Rational(5, 9) + Rational(27315, 100), "K": lambda x: x, "R": lambda x: x * Rational(5, 9)}[a[0]](v)
+        r = {"C": lambda x: x - Rational(27315, 100), "F": lambda x: (x - Rational(27315, 100)) * Rational(9, 5) + 32, "K": lambda x: x, "R": lambda x: x * Rational(9, 5)}[b[0]](k)
+        out = _num(r)
+        return {"ok": True, "mode": "units", "op": "Temperature", "op_text": True, "input": tex(v) + r"\,\text{" + a[1] + "}",
+                "result": tex(v) + r"\,\text{" + a[1] + r"} = " + out.replace(" × 10^", r" \times 10^{") + ("}" if " × 10^" in out else "") + r"\,\text{" + b[1] + "}",
+                "plain": out + " " + b[1], "note": "Temperature scales have different zero points, so this is an offset conversion (for a temperature difference use K: a change of 1 °C = 1 K = 1.8 °F)."}
+    q = _units_parse(left, T)
+    if q.free_symbols:
+        raise CasError("That has letters that are not units.")
+    has_q = bool(q.atoms(Quantity))
+    if right:
+        tgt = _units_parse(right, T)
+        if not tgt.atoms(Quantity):
+            raise CasError("After “to” put the unit you want, e.g. 5 km to mi.")
+        r = convert_to(q, tgt)
+        ratio = sp.simplify(r / tgt)
+        if ratio.atoms(Quantity):
+            si_q = convert_to(q, [u.meter, u.kilogram, u.second, u.ampere, u.kelvin, u.mole, u.candela])
+            si_t = convert_to(tgt, [u.meter, u.kilogram, u.second, u.ampere, u.kelvin, u.mole, u.candela])
+            raise CasError("Those don't measure the same thing: %s is in %s but %s is in %s, so they can't be converted." % (left, _uplain(si_q.as_coeff_Mul()[1]), shown, _uplain(si_t.as_coeff_Mul()[1])))
+        val = _num(ratio)
+        return {"ok": True, "mode": "units", "op": "Unit conversion", "op_text": True, "input": tex(q),
+                "result": tex(q) + " = " + val.replace(" × 10^", r" \times 10^{") + ("}" if " × 10^" in val else "") + r"\;" + r"\text{" + shown.replace("^2", "²").replace("^3", "³") + "}",
+                "plain": val + " " + shown}
+    # no target: give the SI answer and the best named derived unit
+    base = convert_to(q, [u.meter, u.kilogram, u.second, u.ampere, u.kelvin, u.mole, u.candela])
+    coeff, dims = base.as_coeff_Mul() if base.is_Mul or base.is_Atom or base.is_Pow else (base, Integer(1))
+    if not has_q:
+        val = _num(q)
+        return {"ok": True, "mode": "units", "op": "Result", "op_text": True, "input": tex(q), "result": tex(q) + " = " + val, "plain": val, "decimal": val}
+    named = []
+    T2 = dict(T); T2.update({"m/s": u.meter / u.second, "m/s²": u.meter / u.second**2, "m²": u.meter**2, "m³": u.meter**3, "kg/m³": u.kilogram / u.meter**3})
+    for nm in ("N", "J", "W", "Pa", "V", "ohm", "C", "F", "H", "Hz", "T", "Wb", "S", "m/s", "m/s²", "m²", "m³", "kg/m³"):
+        try:
+            rr = sp.simplify(convert_to(base, T2[nm]) / T2[nm])
+            if not rr.atoms(Quantity) and rr.is_number and len(base.atoms(Quantity)) > 1:
+                named.append((nm, rr))
+        except Exception:
+            pass
+    items = []
+    best = named[0] if named else None
+    plain_res = _num(coeff) + " " + _uplain(dims) if dims != 1 else _num(coeff)
+    res_tex = plain_res.replace("·", r"\cdot ").replace(" × 10^", r" \times 10^")
+    if best:
+        bv = _num(best[1])
+        res_tex = bv.replace(" × 10^", r" \times 10^{") + ("}" if " × 10^" in bv else "") + r"\;\text{" + best[0] + "}"
+        plain_res = bv + " " + best[0]
+        items.append("In SI base units: " + _num(coeff) + " " + _uplain(dims))
+    return {"ok": True, "mode": "units", "op": "Result with units", "op_text": True, "input": tex(q), "result": tex(q) + " = " + res_tex,
+            "plain": plain_res, "note": " · ".join(items + ["Add “to <unit>” to choose the unit, e.g. … to kWh."])}
+
+
+OPS = {"units": op_units, "parse": op_parse, "diff": op_diff, "integrate": op_integrate, "solve": op_solve, "cas": op_cas, "plot": op_plot, "metric": op_metric, "geodesics": op_geodesics,
        "ping": lambda r: {"ok": True, "version": VERSION, "sympy": sp.__version__}}
 
 

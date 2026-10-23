@@ -450,7 +450,7 @@ if (typeof module !== 'undefined' && module.exports) module.exports = GC;
 		rows.forEach(function (r) {
 			var el = document.createElement('div'); el.className = 'gc-row' + (r.id === activeId ? ' is-active' : ''); el.dataset.id = r.id;
 			el.innerHTML = '<input type="color" class="gc-color" aria-label="Colour" value="' + r.color + '">' +
-				'<div class="gc-rowmain"><textarea class="gc-in" rows="1" wrap="soft" spellcheck="false" autocomplete="off" autocapitalize="off" autocorrect="off" placeholder="y = x^2" aria-label="Expression"></textarea><div class="gc-msg"></div></div>' +
+				'<div class="gc-rowmain"><textarea class="gc-in" rows="1" wrap="soft" spellcheck="false" autocomplete="off" autocapitalize="off" autocorrect="off" placeholder="y = x^2  or: graph a circle with radius 3" aria-label="Expression"></textarea><div class="gc-msg"></div></div>' +
 				'<button type="button" class="gc-ibtn gc-eye" aria-label="Show or hide" aria-pressed="' + r.show + '" title="Show / hide">◉</button>' +
 				'<button type="button" class="gc-ibtn gc-del" aria-label="Delete" title="Delete">✕</button>';
 			el.querySelector('.gc-in').value = r.text;
@@ -458,9 +458,10 @@ if (typeof module !== 'undefined' && module.exports) module.exports = GC;
 		});
 	}
 	function rowEl(r) { return $('gc-rows').querySelector('[data-id="' + r.id + '"]'); }
-	function updateMsg(r) { var el = rowEl(r); if (!el) return; var m = el.querySelector('.gc-msg'); m.textContent = describe(r); m.className = 'gc-msg' + (r.err ? ' is-err' : ''); }
+	function updateMsg(r) { var el = rowEl(r); if (!el) return; var m = el.querySelector('.gc-msg'), w = r.err && askRow(r); m.textContent = w ? 'Press Enter to graph: ' + w.said + ' (' + w.rows[w.rows.length - 1] + ')' : describe(r); m.className = 'gc-msg' + (r.err && !w ? ' is-err' : ''); }
 	function rowById(id) { for (var i = 0; i < rows.length; i++) if (rows[i].id === +id) return rows[i]; return null; }
 	function setActive(id) { activeId = id; Array.prototype.forEach.call($('gc-rows').children, function (el) { el.classList.toggle('is-active', +el.dataset.id === id); }); scheduleKeys(); }
+	function askRow(r) { try { return window.MESAsk && /[a-z]{3,}/i.test(r.text) ? MESAsk.graph(/^(graph|plot|draw|sketch|show)\b/i.test(r.text) ? r.text : 'graph ' + r.text, 2) : null; } catch (e) { return null; } }
 	var boxRows = $('gc-rows');
 	boxRows.addEventListener('input', function (e) {
 		var el = e.target.closest('.gc-row'); if (!el) return; var r = rowById(el.dataset.id);
@@ -480,6 +481,12 @@ if (typeof module !== 'undefined' && module.exports) module.exports = GC;
 	boxRows.addEventListener('keydown', function (e) {
 		if (e.key === 'Enter' && e.target.classList.contains('gc-in')) {
 			e.preventDefault(); var el = e.target.closest('.gc-row'), r = rowById(el.dataset.id), idx = rows.indexOf(r);
+			var w = r.err && askRow(r);
+			if (w) {   // words -> equation rows (main_js/mes-ask.js): "graph a sphere with radius 7"
+				r.text = w.rows[w.rows.length - 1];
+				w.rows.slice(0, -1).forEach(function (t, k) { var pr = addRow(t); rows.splice(rows.length - 1, 1); rows.splice(idx + k, 0, pr); });
+				renderRows(); changed(true); toast('Read as: ' + w.said); var ie = rowEl(r) && rowEl(r).querySelector('.gc-in'); if (ie) ie.focus(); return;
+			}
 			var nr = addRow(''); rows.splice(rows.length - 1, 1); rows.splice(idx + 1, 0, nr); renderRows(); changed(true);
 			var inp = rowEl(nr).querySelector('.gc-in'); inp.focus();
 		}

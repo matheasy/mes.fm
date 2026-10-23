@@ -55,6 +55,29 @@ var MC = (function () {
 	};
 	var ALIAS = { arcsin: 'asin', arccos: 'acos', arctan: 'atan', squareroot: 'sqrt', factorial: 'fact', ln: 'ln', lg: 'log', mean: 'avg', cuberoot: 'cbrt' };
 
+	/* ---------- engineering (SI) prefixes ---------- */
+	var PREFIX = { Q: 1e30, R: 1e27, Y: 1e24, Z: 1e21, E: 1e18, P: 1e15, T: 1e12, G: 1e9, M: 1e6, k: 1e3, K: 1e3, m: 1e-3, u: 1e-6, 'µ': 1e-6, 'μ': 1e-6, n: 1e-9, p: 1e-12, f: 1e-15, a: 1e-18, z: 1e-21, y: 1e-24 };
+	// a prefix letter is only read as a prefix when it is NOT followed by more letters (so 2pi, 3sin(30), 2mod 3 keep working);
+	// a unit symbol may follow (Ω, ohm, V, A, F, H, Hz, W, J, C, S, s, g, B, b, Wh, eV, m for metres after a prefix: 5km)
+	var PREFIX_RE = /^(?:([QRYZEPTGMkKmuµμnpfazy])(?![A-Za-z(]|[ΩµμÅ])|([QRYZEPTGMkKmuµμnpfazy])?(Ω|ohms?|Hz|Wh|eV|V|A|F|H|W|J|C|S|s|g|B|b|m)(?![A-Za-z(]))/;
+	(function () {                                    // second alternative: prefix + unit, shift the captures so [1] = prefix, [2] = unit
+		var inner = PREFIX_RE;
+		PREFIX_RE = { exec: function (str) { var r = inner.exec(str); if (!r) return null; if (r[1]) return [r[0], r[1], null]; if (r[3] && !r[2] && r[3] === 'm' ) return [r[0], null, 'm']; return [r[0], r[2] || null, r[3]]; } };
+	})();
+	var ENG = [[1e24, 'Y'], [1e21, 'Z'], [1e18, 'E'], [1e15, 'P'], [1e12, 'T'], [1e9, 'G'], [1e6, 'M'], [1e3, 'k'], [1, ''], [1e-3, 'm'], [1e-6, 'µ'], [1e-9, 'n'], [1e-12, 'p'], [1e-15, 'f'], [1e-18, 'a'], [1e-21, 'z'], [1e-24, 'y']];
+	function engFmt(x, digits) {                       // 4700 -> "4.7k", 0.000047 -> "47µ"; null when no prefix applies (0, huge, NaN)
+		if (typeof x !== 'number' || !isFinite(x) || x === 0) return null;
+		var ax = Math.abs(x);
+		for (var i = 0; i < ENG.length; i++) {
+			if (ax >= ENG[i][0] * 0.9999999999) {
+				var m = x / ENG[i][0], t = parseFloat(m.toPrecision(digits || 6));
+				if (Math.abs(t) >= 1000 && i > 0) { i--; m = x / ENG[i][0]; t = parseFloat(m.toPrecision(digits || 6)); }
+				return String(t) + ENG[i][1];
+			}
+		}
+		return null;
+	}
+
 	function tokenize(src) {
 		var s = String(src).replace(/[×·⋅]/g, '*').replace(/÷/g, '/').replace(/[−–—]/g, '-').replace(/π/g, 'pi').replace(/√/g, 'sqrt ').replace(/∛/g, 'cbrt ')
 			.replace(/\bof\b/gi, '*').replace(/\*\*/g, '^').replace(/²/g, '^2').replace(/³/g, '^3').replace(/\s+/g, ' ');
@@ -62,7 +85,13 @@ var MC = (function () {
 		while (i < s.length) {
 			var c = s[i];
 			if (c === ' ') { i++; continue; }
-			if ((m = /^(?:\d+\.?\d*|\.\d+)(?:e[+-]?\d+)?/i.exec(s.slice(i)))) { out.push({ k: 'num', v: parseFloat(m[0]) }); i += m[0].length; continue; }
+			if ((m = /^(?:\d+\.?\d*|\.\d+)(?:e[+-]?\d+)?/i.exec(s.slice(i)))) {
+				var nv = parseFloat(m[0]); i += m[0].length;
+				// engineering prefix straight after a number: 4.7k, 10u / 10µ, 3n, 2M, 5m (milli), optionally followed by a unit symbol (4.7kΩ, 10uF, 5ms)
+				var pm = PREFIX_RE.exec(s.slice(i));
+				if (pm && (pm[1] || pm[2])) { if (pm[1]) nv *= PREFIX[pm[1]]; if (pm[2]) out.units = (out.units || []).concat(pm[2]); i += pm[0].length; }
+				out.push({ k: 'num', v: nv }); continue;
+			}
 			if ((m = /^[a-z_][a-z0-9_]*/i.exec(s.slice(i)))) { out.push({ k: 'id', v: m[0].toLowerCase() }); i += m[0].length; continue; }
 			if ('+-*/^!%(),'.indexOf(c) >= 0) { out.push({ k: 'op', v: c }); i++; continue; }
 			throw new Error('Unexpected “' + c + '”');
@@ -285,6 +314,6 @@ var MC = (function () {
 		parseDec: parseDec, decToString: decToString, mulExact: mulExact, addExact: addExact, divExact: divExact,
 		factorize: factorize, divisors: divisors, radical: radical, frac: frac, fracToString: fracToString, fracMixed: fracMixed,
 		decToFrac: decToFrac, approxFrac: approxFrac, parseBase: parseBase, toBase: toBase, toRoman: toRoman, fromRoman: fromRoman,
-		parseList: parseList, stats: stats };
+		parseList: parseList, stats: stats, engFmt: engFmt, PREFIX: PREFIX, units: function (src) { try { return tokenize(src).units || []; } catch (e) { return []; } } };
 })();
 if (typeof module !== 'undefined' && module.exports) module.exports = MC;

@@ -30,7 +30,7 @@ TEMPLATE = ROOT / "tool_page_template.html"
 APPLY = "--apply" in sys.argv
 
 SRC = ROOT / "tool_apps_src"
-CAS_JS = ["/main_js/cas/cas-client.js?v=1", "/main_js/cas/cas-ui.js?v=1"]
+CAS_JS = ["/main_js/cas/cas-client.js?v=2", "/main_js/cas/cas-ui.js?v=2"]
 # the browser-extension pages (download pages of our extensions + the /browser hub) carry an "Extensions" tab right after Tools in the info bar (the burger menu has Browser Extensions on every page)
 EXT_TAB = "<li class=\"info-bar__item\"><a class=\"info-bar__item__text\" href='/browser'>Extensions</a></li>"
 
@@ -81,19 +81,19 @@ APPS = {
     "calculator": dict(title="MES Calculator", page_title="Calculator",
                        tag="Multiply, divide, squares, roots and more.", accent="#c2255c", dark="#8f1a43", tint="#fbe6ee",
                        desc="Free online calculator: type any expression or use the keypad for multiplication, division, squares, square roots, powers, percentages, fractions, factorials, logarithms and trigonometry, plus exact big-number maths, prime factors, GCD, LCM and more.",
-                       js_v="3"),
+                       js_v="4", pre_js=["/main_js/mes-ask.js?v=1"]),
     # 2D graphing calculator (Desmos-style): lib.js = tokenizer/parser -> compiled JS functions + key-point numerics (node-testable), app.js = canvas UI.
     # Slug keeps the capital D as requested (Vercel is case-sensitive on static paths).
     "2d-graphing-calculator": dict(title="MES 2D Graphing Calculator", page_title="2D Graphing Calculator",
                                    tag="Plot functions, equations and inequalities.", accent="#2160d0", dark="#1646a0", tint="#e3ecfb",
                                    desc="Free online 2D graphing calculator: plot functions, equations, inequalities, parametric and polar curves, use sliders, and find zeros, maximums, minimums and intersections. Zoom, pan, share a link or save a PNG.",
-                                   js_v="1"),
+                                   js_v="2", pre_js=["/main_js/mes-ask.js?v=1"]),
     # 3D graphing calculator: lib.js = the 2D page's whitelist compiler extended to x,y,z,u,v,t + meshing (grid surfaces with jump detection,
     # surface nets for implicit F(x,y,z)=G, curve pieces; node-testable), app.js = UI + three.js renderer (core module imported lazily from jsDelivr).
     "3d-graphing-calculator": dict(title="MES 3D Graphing Calculator", page_title="3D Graphing Calculator",
                                    tag="Plot surfaces in 3D and rotate them", accent="#6a3fc4", dark="#4c2a94", tint="#ece6fa",
                                    desc="Free online 3D graphing calculator: plot surfaces z = f(x, y), equations in x, y and z like spheres and tori, parametric curves and surfaces, with sliders. Rotate, zoom, colour by height, share a link or save a PNG.",
-                                   js_v="1"),
+                                   js_v="2", pre_js=["/main_js/mes-ask.js?v=1"]),
     # days between two dates: own lib.js (DC, date maths) + the calendar's holiday engine (MESCal) via lib_from. Real page at the keyword URL; /days etc. redirect (mes.fm/vercel.json).
     # Ovulation / period / due date: one source (tool_apps_src/ovulation-calculator: lib.js = MESCycle, app.js, app.css, content.html with {{VIEWS}} / {{SEO}}),
     # three pages; tests: node tool_apps_src/ovulation-calculator-tests.js. Dates live only in localStorage mes-cycle:v1 (shared by the three pages).
@@ -171,7 +171,7 @@ APPS = {
     "cas-calculator": dict(title="MES CAS Calculator", page_title="CAS Calculator",
                            tag="Solve, simplify, factor, limits and series.", accent="#334155", dark="#1e293b", tint="#e8ecf1",
                            desc="Free online CAS calculator (computer algebra system): solve equations, systems and inequalities with steps, find every real root of hard equations numerically, simplify, factor, expand, partial fractions, limits, series, sums and matrices.",
-                           js_v="1", pre_js=CAS_JS, css_extra=["_cas.css"]),
+                           js_v="2", pre_js=CAS_JS + ["/main_js/mes-ask.js?v=1"], css_extra=["_cas.css"]),
     "derivative-calculator": dict(title="MES Derivative Calculator", page_title="Derivative Calculator",
                                   tag="Derivatives with every step explained.", accent="#c026d3", dark="#86198f", tint="#fae8ff",
                                   desc="Free derivative calculator with steps: differentiate any function using the power, product, quotient and chain rules, get higher-order, partial and implicit derivatives, evaluate at a point and plot f and f′.",
@@ -783,14 +783,14 @@ APPS = {
                 desc="Free random number generator: pick numbers in any range with or without repeats, roll any dice (2d6, 4d6 drop lowest, d20 with advantage), flip coins, draw cards, shuffle or pick from a list, with history and statistics. Uses your browser's secure random generator.",
                 nav_extra="<li class=\"info-bar__item\"><a class=\"info-bar__item__text\" href='/dice-roller'>Dice</a></li><li class=\"info-bar__item\"><a class=\"info-bar__item__text\" href='/statistics-calculator'>Statistics</a></li>",
                 menu_extra="<li class=\"navbar__item\"><a class=\"navbar__link\" href=\"/dice-roller\">Dice Roller</a></li><li class=\"navbar__item\"><a class=\"navbar__link\" href=\"/statistics-calculator\">Statistics Calculator</a></li>",
-                content="content.html", js_v="1", vars={"MODE": "numbers"}),
+                content="content.html", js_v="1", vars={"MODE": "numbers", "SEO": "@seo/numbers.html"}),
     "dice-roller": dict(title="MES Dice Roller", page_title="Dice Roller: Roll Any Dice Online (d4, d6, d20, 2d6+3)",
                 tag="Roll any dice, see the odds.", accent="#be185d", dark="#9d174d", tint="#fde4ef", src="random", js_path="random-number-generator/js/random-number-generator.js",
                 brand=dict(slug="random-number-generator", title="MES Random Number Generator", tag="Fair random numbers, dice, coins, cards and picks."), tab=1,
                 desc="Free online dice roller: roll d4, d6, d8, d10, d12, d20 and d100 or type dice notation like 2d6+3, 4d6 drop lowest or d20 with advantage, see every roll, totals, the exact probability of each total and a chart of your rolls.",
                 nav_extra="<li class=\"info-bar__item\"><a class=\"info-bar__item__text\" href='/dice-roller'>Dice</a></li><li class=\"info-bar__item\"><a class=\"info-bar__item__text\" href='/statistics-calculator'>Statistics</a></li>",
                 menu_extra="<li class=\"navbar__item\"><a class=\"navbar__link\" href=\"/dice-roller\">Dice Roller</a></li><li class=\"navbar__item\"><a class=\"navbar__link\" href=\"/statistics-calculator\">Statistics Calculator</a></li>",
-                content="content.html", js_v="1", vars={"MODE": "dice"}),
+                content="content.html", js_v="1", vars={"MODE": "dice", "SEO": "@seo/dice.html"}),
     "statistics-calculator": dict(title="MES Statistics Calculator", page_title="Statistics Calculator: Mean, Median, Standard Deviation, Regression",
                 tag="Paste numbers, get every statistic.", accent="#4f46e5", dark="#3730a3", tint="#e7e7fd",
                 desc="Free statistics calculator: paste a list of numbers to get the mean, median, mode, standard deviation, variance, quartiles, box plot, histogram and z-scores, with the working shown; linear regression and correlation for x-y data, and normal, binomial and Poisson probabilities.",

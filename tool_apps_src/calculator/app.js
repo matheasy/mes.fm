@@ -3,7 +3,7 @@
 	'use strict';
 	var $ = function (id) { return document.getElementById(id); };
 	var KEY = 'mes-calculator:v1';
-	var state = { deg: true, both: false, hist: [], tab: 'muldiv', sci: true, sciPick: false };
+	var state = { deg: true, both: false, hist: [], tab: 'muldiv', sci: true, sciPick: false, eng: false };
 	try { var saved = JSON.parse(localStorage.getItem(KEY) || 'null'); if (saved) { for (var k in saved) if (k in state) state[k] = saved[k]; } } catch (e) {}
 	function save() { try { localStorage.setItem(KEY, JSON.stringify(state)); } catch (e) {} }
 
@@ -29,7 +29,22 @@
 
 	/* ---------- main calculator ---------- */
 	function compute(text) {
-		try { return { v: MC.evaluate(text, { deg: state.both ? true : state.deg, ans: ans }) }; } catch (e) { return { err: e.message }; }
+		try { return { v: MC.evaluate(text, { deg: state.both ? true : state.deg, ans: ans }) }; } catch (e) {
+			// plain English ("what is 38 percent of 75", "100 multiplied by 84"): main_js/mes-ask.js
+			var w = window.MESAsk && MESAsk.calc(text);
+			if (w) { try { return { v: MC.evaluate(w.expr, { deg: state.both ? true : state.deg, ans: ans }), read: w.said, unit: w.unit, src: w.expr }; } catch (e2) {} }
+			return { err: e.message };
+		}
+	}
+	// the small line under the answer: how words were read, SI prefixes used, the answer with a prefix
+	function noteFor(text, r) {
+		var bits = [];
+		if (r.read) bits.push('Read as <b>' + esc(r.read) + '</b>');
+		var src = r.src || text, used = /\d\s?[QRYZEPTGMkKmuµμnpfazy](?![A-Za-z(])|\d\s?[QRYZEPTGMkKmuµμnpfazy]?(?:Ω|ohms?|Hz|V|A|F|H|W|J|C|S|s|g)\b/.test(src.replace(/\s+/g, '')), un = MC.units(src);
+		if (used) bits.push('SI prefixes: k = 10³, M = 10⁶, m = 10⁻³, µ or u = 10⁻⁶, n = 10⁻⁹, p = 10⁻¹²');
+		if (un.length) bits.push('units are only labels here (' + esc(un.filter(function (u, i) { return un.indexOf(u) === i; }).join(', ')) + '): for real unit maths use the <a href="/cas-calculator">CAS</a>');
+		var e = MC.engFmt(r.v); if (e && (state.eng || used) && e !== MC.fmt(r.v)) bits.unshift('= <b>' + esc(e) + '</b>');
+		return bits.join(' · ');
 	}
 	// "Both": the same expression in radians too; null when it gives the same number (no angle in it)
 	function computeRad(text) {
@@ -44,15 +59,18 @@
 	function showLive() {
 		var text = expr.value.trim();
 		live.className = 'mc-live';
+		$('mc-note').innerHTML = '';
 		if (!text) { live.innerHTML = '&nbsp;'; lastText = ''; return; }
 		var r = compute(text);
 		if (r.err) {
 			// stay quiet while the person is still typing something unfinished
 			if (/^(Unfinished|Unexpected “[)]”|Type an)/.test(r.err) || /[-+*/^×÷−(,]$/.test(text)) { live.className = 'mc-live is-dim'; live.innerHTML = '&nbsp;'; }
+			else if (/^Unknown/.test(r.err) && /[a-z]{3,}\s/i.test(text)) { live.className = 'mc-live is-err'; live.textContent = 'Not sure what that means yet. Try: “38 percent of 75”, “100 multiplied by 84”, “square root of 144”.'; }
 			else { live.className = 'mc-live is-err'; live.textContent = r.err; }
 			lastText = ''; return;
 		}
-		lastText = G(r.v); live.innerHTML = liveText(text, r.v);
+		lastText = G(r.v); live.innerHTML = liveText(text, r.v) + (r.unit === '%' ? '<span class="mc-u">%</span>' : '');
+		$('mc-note').innerHTML = noteFor(text, r);
 	}
 	function addHistory(e, r) {
 		state.hist = state.hist.filter(function (h) { return h[0] !== e; });
@@ -66,9 +84,9 @@
 		var text = expr.value.trim(); if (!text) return;
 		var r = compute(text);
 		if (r.err) { showLive(); return; }
-		var bothTxt = liveText(text, r.v);
+		var bothTxt = liveText(text, r.v) + (r.unit === '%' ? '<span class="mc-u">%</span>' : ''), noteTxt = noteFor(text, r);
 		ans = r.v; addHistory(text, r.v);
-		expr.value = MC.fmt(r.v); live.className = 'mc-live'; live.innerHTML = bothTxt; lastText = G(r.v);
+		expr.value = MC.fmt(r.v); live.className = 'mc-live'; live.innerHTML = bothTxt; lastText = G(r.v); $('mc-note').innerHTML = noteTxt;
 		expr.dataset.fresh = '1'; expr.scrollLeft = 0;
 	}
 	function toEnd(p) { if (p >= expr.value.length) expr.scrollLeft = expr.scrollWidth; }
@@ -117,6 +135,9 @@
 		}
 		applySci();
 	}
+	function applyEng() { $('mc-eng').setAttribute('aria-pressed', String(!!state.eng)); }
+	applyEng();
+	$('mc-eng').addEventListener('click', function () { state.eng = !state.eng; save(); applyEng(); showLive(); });
 	$('mc-sci-toggle').addEventListener('click', function () { sciOn = !sciOn; state.sci = sciOn; state.sciPick = true; save(); applySci(); });
 
 	/* on touch screens the field is read-only while the keypad is used (no system keyboard popping up); the Keyboard chip / tapping the field turns it on */

@@ -70,3 +70,8 @@
 	body.dark-mode #mc .mc-display {background:#1a1a1a;border-bottom-color:#333;}
 	body.dark-mode #mc .mc-chip {background:transparent;color:#ddd;border-color:#666;}
 	body.dark-mode #mc .mc-chip[aria-pressed="true"] {background:var(--accent);border-color:var(--accent);color:#0b1416;}
+
+	.mc-note {text-align:right;font-size:0.88em;color:#4a5462;margin:-0.45em 0 0.6em;min-height:0;line-height:1.4;}
+	.mc-note:empty {display:none;}
+	.mc-note b {color:#1e2733;}
+	body.dark-mode #mc .mc-note {color:#b8c0cc;} body.dark-mode #mc .mc-note b {color:#f1f3f5;} body.dark-mode #mc .mc-note a {color:#f783ac;}
