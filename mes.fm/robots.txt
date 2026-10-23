@@ -1,4 +1,10 @@
 User-agent: *
 Allow: /
+# Serverless functions (stats, share links, uploads), not pages
+Disallow: /api/
+# Reverse Image Search pictures, deleted after an hour
+Disallow: /ri/
+# MES Favourites short links (each one is a person's own list)
+Disallow: /f/
 
 Sitemap: https://mes.fm/sitemap.xml
