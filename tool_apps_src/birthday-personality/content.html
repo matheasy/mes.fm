@@ -1,0 +1,83 @@
+	<div class="tu" id="bp">
+		<div class="tu-card bp-pick">
+			<div class="tu-row bp-inrow">
+				<div class="tu-field" style="flex:1 1 9em;"><label for="bp-month">Month</label><select id="bp-month" class="tu-input"></select></div>
+				<div class="tu-field" style="flex:0 1 5.5em;"><label for="bp-day">Day</label><select id="bp-day" class="tu-input"></select></div>
+				<div class="tu-field" style="flex:0 1 7.5em;"><label for="bp-year">Year <span class="bp-opt">(optional)</span></label><input id="bp-year" class="tu-input" type="text" inputmode="numeric" maxlength="4" autocomplete="off" placeholder="e.g. 1990"></div>
+				<div class="bp-btns"><button type="button" class="tu-btn tu-btn--primary" id="bp-go">Show</button><button type="button" class="tu-btn" id="bp-today">Today</button></div>
+			</div>
+			<p class="tu-note bp-hint">Add your birth year for your life path number, your Chinese zodiac animal and a forecast for the year you are in now. Nothing you type leaves this browser.</p>
+			<div class="tu-field bp-searchf"><label for="bp-q">Or search the 366 titles</label><input id="bp-q" class="tu-input" type="search" autocomplete="off" placeholder="e.g. hero, dreamer, explorer, Leo"></div>
+			<div class="bp-results" id="bp-results" aria-live="polite" hidden></div>
+		</div>
+
+		<div class="bp-dayhead">
+			<button type="button" class="tu-btn bp-arrow" id="bp-prev" aria-label="Previous day">‹</button>
+			<div class="bp-daytitle"><p class="bp-date" id="bp-date"></p><h2 id="bp-title" class="bp-title"></h2><p class="bp-motto" id="bp-motto"></p></div>
+			<button type="button" class="tu-btn bp-arrow" id="bp-next" aria-label="Next day">›</button>
+		</div>
+		<div class="bp-chips" id="bp-chips"></div>
+		<p class="bp-fun">For fun only: a playful character sketch, not a prediction and not science.</p>
+
+		<div id="bp-out" aria-live="polite">
+			<div class="tu-card bp-sum"><h3>Your day in a nutshell</h3><p id="bp-summary"></p><p class="bp-advice" id="bp-advice"></p></div>
+			<div class="bp-grid">
+				<div class="tu-card"><h3>Strengths</h3><ul class="bp-list bp-plus" id="bp-str"></ul></div>
+				<div class="tu-card"><h3>Challenges</h3><ul class="bp-list bp-minus" id="bp-chal"></ul></div>
+				<div class="tu-card"><h3>Love &amp; friendship</h3><p id="bp-love"></p></div>
+				<div class="tu-card"><h3>Work &amp; money</h3><p id="bp-work"></p></div>
+			</div>
+			<div class="tu-card bp-year" id="bp-yearc"><h3 id="bp-yearh">The year ahead</h3><p id="bp-yeart"></p></div>
+			<div class="bp-grid">
+				<div class="tu-card"><h3>Lucky things</h3><dl class="bp-dl" id="bp-lucky"></dl></div>
+				<div class="tu-card"><h3>Your numbers</h3><dl class="bp-dl" id="bp-nums"></dl></div>
+			</div>
+			<div class="tu-card"><h3>Best matches</h3><div class="bp-matches" id="bp-matches"></div></div>
+			<div class="tu-card bp-famous"><h3 id="bp-famh">Famous people born on this day</h3><div id="bp-famous" class="bp-fam"></div><a id="bp-famlink" class="bp-more" href="/birthday">Everyone born on this day →</a></div>
+		</div>
+
+		<div class="bp-share">
+			<button type="button" class="tu-btn tu-btn--primary" id="bp-share">Share this day</button>
+			<button type="button" class="tu-btn" id="bp-copy">Copy link</button>
+			<button type="button" class="tu-btn" id="bp-mine">Remember as my birthday</button>
+			<button type="button" class="tu-btn" id="bp-print">Print</button>
+			<a class="tu-btn" id="bp-zlink" href="/zodiac">Birth chart</a>
+		</div>
+
+		<div class="tu-card bp-calc">
+			<h3>Browse every day of the year</h3>
+			<p class="tu-note" style="margin-top:0;">Each day has its own title. Hover or focus a day to read it, click to open it. Colours show the element of the sign: <span class="bp-key bp-Fire">Fire</span> <span class="bp-key bp-Earth">Earth</span> <span class="bp-key bp-Air">Air</span> <span class="bp-key bp-Water">Water</span></p>
+			<div class="bp-hovert" id="bp-hovert" aria-live="polite">&nbsp;</div>
+			<div class="bp-cal" id="bp-cal"></div>
+		</div>
+
+		<div class="tu-seo">
+			<h2>What does your birthday say about you?</h2>
+			<p>Pick any day of the year and read a playful character sketch written for that exact birthday: an archetype title of its own (366 of them, one for every day including 29 February), a short portrait, strengths and challenges, how you love and work, a forecast for the year you are in, lucky numbers, colour and day, and the birthdays that suit you best. Add your birth year for your life path number and your Chinese zodiac animal.</p>
+			<h3>How a profile is put together</h3>
+			<ul>
+				<li><strong>Sun sign.</strong> The usual fixed date ranges (Aries from 21 March, Taurus from 20 April and so on). The real Sun changes sign on slightly different days each year, so if you were born on a cusp day, check your exact sign with the <a href="/zodiac">Zodiac &amp; Birth Chart</a>.</li>
+				<li><strong>Decan.</strong> Each sign is split into three parts of about ten days. The first is the sign at its purest; the second and third are coloured by the other two signs of the same element (for Aries, Leo and Sagittarius).</li>
+				<li><strong>Cusp.</strong> The first three and last three days of a sign blend in the neighbouring sign.</li>
+				<li><strong>Day number.</strong> The day of the month reduced to one digit (29 becomes 2 + 9 = 11, then 1 + 1 = 2). 11 and 22 are shown as master numbers.</li>
+				<li><strong>Life path number.</strong> Month, day and year are each reduced, then added and reduced again, keeping the master numbers 11, 22 and 33.</li>
+				<li><strong>Year ahead.</strong> Your &ldquo;personal year&rdquo;: birth month + birth day + the year of your latest birthday, reduced to 1 to 9. It changes every birthday.</li>
+				<li><strong>Chinese zodiac.</strong> The year starts at Lunar New Year (late January or February), so people born in January or early February usually belong to the previous year's animal.</li>
+			</ul>
+			<h3>Questions</h3>
+			<dl>
+				<dt>Is any of this true?</dt>
+				<dd>No more than a fortune cookie. Astrology and numerology have no scientific support; careful studies have found no link between birth date and personality. Read it the way you would read a horoscope in a magazine: for fun, for conversation, and maybe for a small nudge to reflect.</dd>
+				<dt>Where does the text come from?</dt>
+				<dd>Every sentence was written for mes.fm. A profile combines short texts for the sign, the decan, the cusp and the day number, chosen so that every day reads differently. It is not taken from any book.</dd>
+				<dt>Why does my title not match a book I have read?</dt>
+				<dd>These titles are our own. Books about birthdays each use their own system and their own names.</dd>
+				<dt>I was born on 29 February. What then?</dt>
+				<dd>You get your own entry, the rarest one on the page. In other years most leap-day people celebrate on 28 February or 1 March.</dd>
+				<dt>Is my birthday sent anywhere?</dt>
+				<dd>No. Everything is worked out in your browser. The only thing loaded is the list of famous people for the month you choose, from mes.fm itself. &ldquo;Remember as my birthday&rdquo; keeps it in this browser only.</dd>
+			</dl>
+			<h4>Related</h4>
+			<p>See who shares your birthday on <a href="/birthday">Famous Birthdays</a>, get your Sun, Moon and rising sign from the <a href="/zodiac">Zodiac &amp; Birth Chart</a>, and count the days to your next birthday with <a href="/days-between-dates-calculator">Days Between Dates</a>.</p>
+		</div>
+	</div>

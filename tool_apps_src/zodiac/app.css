@@ -90,3 +90,13 @@
 		.tu .zd-head {font-size:1.15em;}
 		.tu .zd-table td, .tu .zd-table th {white-space:normal;}
 	}
+	/* compact birthday-personality card (mes.fm/birthday-personality) */
+	.tu .bp-mini {border-left:4px solid #9d174d;margin:0.8em 0;}
+	.tu .bp-mini-k {margin:0;font-size:0.8em;font-weight:700;text-transform:uppercase;letter-spacing:0.05em;color:#9d174d;}
+	.tu .bp-mini-k span {font-weight:400;text-transform:none;letter-spacing:0;color:#5b6472;}
+	.tu .bp-mini-t {margin:0.15em 0 0.3em;font-size:1.3em;color:#831843;}
+	.tu .bp-mini-p {margin:0 0 0.4em;line-height:1.5;}
+	.tu a.bp-mini-a {font-weight:600;color:#9d174d;}
+	body.dark-mode #zd.tu .bp-mini {border-left-color:#f7a8c9;}
+	body.dark-mode #zd.tu .bp-mini-k, body.dark-mode #zd.tu .bp-mini-t, body.dark-mode #zd.tu a.bp-mini-a {color:#f7a8c9;}
+	body.dark-mode #zd.tu .bp-mini-k span {color:#b3bbc6;}

@@ -1,0 +1,17 @@
+		<div class="tu-seo">
+			<h2>A fair random number generator</h2>
+			<p>Type the lowest and highest number, choose how many you want and press <b>Generate</b>. Tick <b>No repeats</b> to draw different numbers every time (like pulling numbered balls out of a bag), add <b>decimal places</b> for numbers like 3.72, sort them, or leave some numbers out (for example <code>7, 13, 20-25</code>). The same page also rolls dice, flips coins, shuffles and deals cards and picks names from a list, and the Statistics tab keeps a history so you can test whether results look fair.</p>
+			<h3>How the numbers are chosen</h3>
+			<p>Every result comes from your browser's built-in secure random generator, <code>crypto.getRandomValues</code>, the same source used for passwords and encryption keys. A common mistake when turning a random 32-bit number into, say, 1 to 6 is to take the remainder after dividing by 6: because 4,294,967,296 does not divide evenly by 6, a few numbers then come up slightly more often. This page avoids that "modulo bias" with <b>rejection sampling</b>: random values from the uneven leftover part are thrown away and drawn again, so every number in your range has exactly the same chance.</p>
+			<h3>Reproducible results with a seed</h3>
+			<p>Teachers and puzzle makers sometimes need the same "random" results twice. Open <b>Reproducible (seeded) mode</b> at the bottom and type a seed, or add <code>?seed=class7</code> to the address. The same seed always gives the same sequence from the moment the page loads. Seeded results are predictable by design, so never use them for prizes, passwords or anything that must be secret.</p>
+			<h3>Questions</h3>
+			<dl>
+				<dt>Is this truly random?</dt><dd>It is cryptographically secure pseudo-randomness, seeded by your operating system from hardware noise. Nobody (including us) can predict or influence the next result, and nothing is sent to a server.</dd>
+				<dt>Can I pick lottery numbers with it?</dt><dd>Yes, the lottery buttons give quick picks in the format of common games, but no picker can improve your odds: every combination is equally likely. A 6/49 ticket has a 1 in 13,983,816 chance of the jackpot.</dd>
+				<dt>How do I pick several different numbers?</dt><dd>Set How many and tick No repeats. If you ask for more different numbers than the range holds (say 11 from 1 to 10) the page tells you instead of looping forever.</dd>
+				<dt>How do I pick a random winner from names?</dt><dd>Use the List picker tab: paste the names, one per line, and press Pick a winner. It can also pick several, shuffle the list or split it into teams.</dd>
+				<dt>Is my data private?</dt><dd>Yes. Everything runs in your browser. Your settings and history are saved only in this browser; the list of names is never put into a link.</dd>
+			</dl>
+			<p>Related: <a href="/dice-roller">Dice Roller</a> &middot; <a href="/statistics-calculator">Statistics Calculator</a> &middot; <a href="/percentagecalculator">Percentage Calculator</a></p>
+		</div>

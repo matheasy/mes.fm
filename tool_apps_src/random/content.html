@@ -1,0 +1,192 @@
+	<div class="tu rn" id="rn" data-mode="{{MODE}}">
+		<svg width="0" height="0" style="position:absolute" aria-hidden="true" focusable="false"><defs>
+			<linearGradient id="rn-g" x1="0" y1="0" x2="0.6" y2="1"><stop offset="0" style="stop-color:var(--rn-die-hi)"/><stop offset="1" style="stop-color:var(--rn-die)"/></linearGradient>
+			<radialGradient id="rn-cg" cx="0.35" cy="0.3" r="0.8"><stop offset="0" style="stop-color:var(--rn-coin-hi)"/><stop offset="1" style="stop-color:var(--rn-coin)"/></radialGradient>
+			<radialGradient id="rn-cg2" cx="0.35" cy="0.3" r="0.8"><stop offset="0" style="stop-color:var(--rn-coin2-hi)"/><stop offset="1" style="stop-color:var(--rn-coin2)"/></radialGradient>
+		</defs></svg>
+		<div class="rn-seedbar" id="rn-seedbar" role="status" hidden></div>
+		<div class="rn-tabs" role="tablist" aria-label="Choose what to randomise">
+			<button type="button" role="tab" id="rn-t-num" data-tab="num" aria-controls="rn-p-num" aria-selected="false">🔢 Numbers</button>
+			<button type="button" role="tab" id="rn-t-dice" data-tab="dice" aria-controls="rn-p-dice" aria-selected="false">🎲 Dice</button>
+			<button type="button" role="tab" id="rn-t-coin" data-tab="coin" aria-controls="rn-p-coin" aria-selected="false">🪙 Coin</button>
+			<button type="button" role="tab" id="rn-t-cards" data-tab="cards" aria-controls="rn-p-cards" aria-selected="false">🃏 Cards</button>
+			<button type="button" role="tab" id="rn-t-list" data-tab="list" aria-controls="rn-p-list" aria-selected="false">📋 List picker</button>
+			<button type="button" role="tab" id="rn-t-stats" data-tab="stats" aria-controls="rn-p-stats" aria-selected="false">📊 Statistics</button>
+		</div>
+
+		<!-- ============ NUMBERS ============ -->
+		<section class="rn-panel" id="rn-p-num" role="tabpanel" aria-labelledby="rn-t-num" hidden>
+			<div class="tu-card">
+				<div class="tu-row">
+					<div class="tu-field tu-field--sm rn-f"><label for="rn-min">From</label><input id="rn-min" class="tu-input tu-input--big" type="text" inputmode="decimal" autocomplete="off" value="1"></div>
+					<div class="tu-field tu-field--sm rn-f"><label for="rn-max">To</label><input id="rn-max" class="tu-input tu-input--big" type="text" inputmode="decimal" autocomplete="off" value="100"></div>
+					<div class="tu-field tu-field--sm rn-f"><label for="rn-count">How many</label><input id="rn-count" class="tu-input tu-input--big" type="text" inputmode="numeric" autocomplete="off" value="1"></div>
+					<div class="tu-field tu-field--sm rn-f"><label for="rn-places">Decimals</label><select id="rn-places" class="tu-select"><option value="0">Whole numbers</option><option value="1">1 place</option><option value="2">2 places</option><option value="3">3 places</option><option value="4">4 places</option><option value="6">6 places</option></select></div>
+				</div>
+				<div class="tu-row rn-opts">
+					<label class="rn-check"><input type="checkbox" id="rn-uniq"> No repeats</label>
+					<div class="tu-field tu-field--sm rn-f"><label for="rn-sort">Order</label><select id="rn-sort" class="tu-select"><option value="">As drawn</option><option value="asc">Smallest first</option><option value="desc">Largest first</option></select></div>
+					<div class="tu-field rn-fx"><label for="rn-ex">Leave out (optional)</label><input id="rn-ex" class="tu-input" type="text" autocomplete="off" placeholder="e.g. 7, 13, 20-25"></div>
+				</div>
+				<div class="tu-chips" id="rn-num-quick" aria-label="Quick ranges">
+					<button type="button" class="tu-chip" data-q="1,10">1 to 10</button><button type="button" class="tu-chip" data-q="1,100">1 to 100</button><button type="button" class="tu-chip" data-q="1,1000">1 to 1,000</button><button type="button" class="tu-chip" data-q="0,1,2">0 to 1 (2 decimals)</button><button type="button" class="tu-chip" data-q="1,6">1 to 6</button><button type="button" class="tu-chip" data-q="0,9,0,4">4-digit PIN-style (0-9 x 4)</button><button type="button" class="tu-chip" data-q="1,50,0,10,1">10 different from 1-50</button>
+				</div>
+				<div class="rn-actions">
+					<button type="button" class="tu-btn tu-btn--primary rn-go" id="rn-num-go">Generate</button>
+					<button type="button" class="tu-btn tu-btn--ghost" id="rn-num-copy">Copy</button>
+					<button type="button" class="tu-btn tu-btn--ghost" id="rn-num-link">Copy link to these settings</button>
+				</div>
+				<div class="rn-out" id="rn-num-out" aria-live="polite"></div>
+				<p class="tu-note rn-err" id="rn-num-err" role="alert" hidden></p>
+			</div>
+			<div class="tu-card">
+				<h3 class="rn-h">Pick lottery numbers for fun</h3>
+				<p class="tu-note">Every combination is exactly as likely as any other, so no picker (this one included) can improve your chances. These are just quick picks in each game's format.</p>
+				<div class="tu-chips" id="rn-lotto"></div>
+				<div class="rn-out" id="rn-lotto-out" aria-live="polite"></div>
+			</div>
+		</section>
+
+		<!-- ============ DICE ============ -->
+		<section class="rn-panel" id="rn-p-dice" role="tabpanel" aria-labelledby="rn-t-dice" hidden>
+			<div class="tu-card">
+				<div class="rn-dicebtns" id="rn-dicebtns" aria-label="Add a die">
+					<button type="button" class="rn-db" data-d="4">d4</button><button type="button" class="rn-db" data-d="6">d6</button><button type="button" class="rn-db" data-d="8">d8</button><button type="button" class="rn-db" data-d="10">d10</button><button type="button" class="rn-db" data-d="12">d12</button><button type="button" class="rn-db" data-d="20">d20</button><button type="button" class="rn-db" data-d="100">d100</button>
+				</div>
+				<div class="rn-dnrow">
+					<div class="tu-field rn-dnf"><label for="rn-dn">Dice to roll (tap a die above, or type)</label><input id="rn-dn" class="tu-input tu-input--big rn-mono" type="text" autocomplete="off" autocapitalize="off" spellcheck="false" value="2d6" aria-describedby="rn-dn-msg"></div>
+					<button type="button" class="tu-btn tu-btn--primary rn-go" id="rn-roll">Roll</button>
+					<button type="button" class="tu-btn tu-btn--ghost" id="rn-dclear">Clear</button>
+				</div>
+				<p class="tu-note" id="rn-dn-msg" aria-live="polite"></p>
+				<div class="tu-chips" id="rn-dex" aria-label="Examples">
+					<button type="button" class="tu-chip" data-n="2d6">2d6</button><button type="button" class="tu-chip" data-n="3d6">3d6</button><button type="button" class="tu-chip" data-n="d20+5">d20+5</button><button type="button" class="tu-chip" data-n="d20 adv">d20 advantage</button><button type="button" class="tu-chip" data-n="d20 dis">d20 disadvantage</button><button type="button" class="tu-chip" data-n="4d6 drop lowest">4d6 drop lowest</button><button type="button" class="tu-chip" data-n="8d6">8d6 fireball</button><button type="button" class="tu-chip" data-n="3d6!">3d6 exploding</button><button type="button" class="tu-chip" data-n="d%">d% (1-100)</button><button type="button" class="tu-chip" data-n="4dF">4dF fudge</button><button type="button" class="tu-chip" data-n="2d10+1d8-1">2d10+1d8-1</button>
+				</div>
+				<div class="rn-tray" id="rn-tray" aria-hidden="true"></div>
+				<div class="rn-total" id="rn-dice-out" aria-live="polite"></div>
+				<details class="rn-help"><summary>How to write dice</summary>
+					<table class="tu-table rn-cheat"><tbody>
+						<tr><th scope="row"><code>2d6</code></th><td>two six-sided dice, added</td></tr>
+						<tr><th scope="row"><code>d20+5</code>, <code>3d8-2</code></th><td>add or take away a fixed number</td></tr>
+						<tr><th scope="row"><code>d6+d8</code></th><td>mix different dice</td></tr>
+						<tr><th scope="row"><code>4d6kh3</code> or <code>4d6 drop lowest</code></th><td>roll 4, keep the highest 3 (<code>kl</code> keeps the lowest, <code>dh</code> / <code>dl</code> drop)</td></tr>
+						<tr><th scope="row"><code>d20 adv</code> / <code>d20 dis</code></th><td>roll two d20s, keep the higher / lower</td></tr>
+						<tr><th scope="row"><code>3d6!</code></th><td>exploding: a die that shows its top number is rolled again and added</td></tr>
+						<tr><th scope="row"><code>d%</code></th><td>percentile die, 1 to 100</td></tr>
+						<tr><th scope="row"><code>4dF</code></th><td>Fudge / Fate dice: each shows -1, 0 or +1</td></tr>
+					</tbody></table>
+				</details>
+			</div>
+			<div class="tu-card" id="rn-odds-card">
+				<h3 class="rn-h">The odds for <span id="rn-odds-name" class="rn-mono">2d6</span></h3>
+				<div class="tu-stats" id="rn-odds-stats"></div>
+				<div class="rn-xrow">
+					<label for="rn-x">Chance of a total of</label>
+					<input id="rn-x" class="tu-input rn-xin" type="text" inputmode="decimal" autocomplete="off">
+					<div class="tu-seg" id="rn-xhow" role="group" aria-label="Compare"><button type="button" data-h="ge" aria-pressed="true">or more</button><button type="button" data-h="eq" aria-pressed="false">exactly</button><button type="button" data-h="le" aria-pressed="false">or less</button></div>
+					<b class="rn-xans" id="rn-xans" aria-live="polite"></b>
+				</div>
+				<div class="rn-chartwrap"><svg class="rn-chart" id="rn-chart" viewBox="0 0 640 240" role="img" aria-label="Chance of each total"></svg></div>
+				<p class="tu-note" id="rn-odds-note"></p>
+				<details class="rn-help"><summary>Every total as a table</summary><div class="tu-table-wrap rn-tblwrap"><table class="tu-table" id="rn-odds-tbl"></table></div></details>
+			</div>
+		</section>
+
+		<!-- ============ COIN ============ -->
+		<section class="rn-panel" id="rn-p-coin" role="tabpanel" aria-labelledby="rn-t-coin" hidden>
+			<div class="tu-card">
+				<div class="rn-dnrow">
+					<div class="tu-field tu-field--sm rn-f"><label for="rn-coins">How many coins</label><input id="rn-coins" class="tu-input tu-input--big" type="text" inputmode="numeric" autocomplete="off" value="1"></div>
+					<button type="button" class="tu-btn tu-btn--primary rn-go" id="rn-flip">Flip</button>
+				</div>
+				<div class="tu-chips" id="rn-coinq"><button type="button" class="tu-chip" data-c="1">1</button><button type="button" class="tu-chip" data-c="10">10</button><button type="button" class="tu-chip" data-c="100">100</button><button type="button" class="tu-chip" data-c="1000">1,000</button></div>
+				<div class="rn-coins" id="rn-coin-tray" aria-hidden="true"></div>
+				<div class="rn-total" id="rn-coin-out" aria-live="polite"></div>
+				<div class="rn-seq rn-mono" id="rn-coin-seq" hidden></div>
+			</div>
+			<div class="tu-card">
+				<h3 class="rn-h">Heads so far this session</h3>
+				<div class="tu-stats" id="rn-coin-stats"></div>
+				<div class="rn-chartwrap"><svg class="rn-chart" id="rn-coin-chart" viewBox="0 0 640 200" role="img" aria-label="Share of heads as you keep flipping"></svg></div>
+				<p class="tu-note">The line wobbles a lot at first and settles towards 50% the more you flip: that is the law of large numbers. A long streak is normal: in 100 flips the longest run of heads or tails is usually 6 or 7.</p>
+			</div>
+		</section>
+
+		<!-- ============ CARDS ============ -->
+		<section class="rn-panel" id="rn-p-cards" role="tabpanel" aria-labelledby="rn-t-cards" hidden>
+			<div class="tu-card">
+				<div class="tu-row rn-opts">
+					<label class="rn-check"><input type="checkbox" id="rn-jk"> Include 2 jokers</label>
+					<button type="button" class="tu-btn" id="rn-shuf">Shuffle a new deck</button>
+					<span class="rn-left" id="rn-left" aria-live="polite"></span>
+				</div>
+				<div class="rn-dnrow">
+					<div class="tu-field tu-field--sm rn-f"><label for="rn-drawn">Cards to draw</label><input id="rn-drawn" class="tu-input" type="text" inputmode="numeric" autocomplete="off" value="1"></div>
+					<button type="button" class="tu-btn tu-btn--primary rn-go" id="rn-draw">Draw</button>
+					<div class="tu-field tu-field--sm rn-f"><label for="rn-players">Players</label><input id="rn-players" class="tu-input" type="text" inputmode="numeric" autocomplete="off" value="4"></div>
+					<div class="tu-field tu-field--sm rn-f"><label for="rn-each">Cards each</label><input id="rn-each" class="tu-input" type="text" inputmode="numeric" autocomplete="off" value="5"></div>
+					<button type="button" class="tu-btn" id="rn-deal">Deal hands</button>
+				</div>
+				<p class="tu-note rn-err" id="rn-card-err" role="alert" hidden></p>
+				<div class="rn-cardout" id="rn-card-out" aria-live="polite"></div>
+			</div>
+		</section>
+
+		<!-- ============ LIST ============ -->
+		<section class="rn-panel" id="rn-p-list" role="tabpanel" aria-labelledby="rn-t-list" hidden>
+			<div class="tu-card">
+				<div class="tu-field"><label for="rn-names">Names or items, one per line (commas work too)</label>
+					<textarea id="rn-names" class="tu-input rn-ta" rows="7" spellcheck="false" placeholder="Ann&#10;Bob&#10;Chloe&#10;Dev"></textarea></div>
+				<p class="tu-note" id="rn-ncount"></p>
+				<label class="rn-check"><input type="checkbox" id="rn-rm"> Remove each pick from the list (for drawing one winner after another)</label>
+				<div class="rn-actions">
+					<button type="button" class="tu-btn tu-btn--primary rn-go" id="rn-pick1">Pick a winner</button>
+					<span class="rn-inl"><button type="button" class="tu-btn" id="rn-pickn">Pick</button> <input id="rn-pn" class="tu-input rn-small" type="text" inputmode="numeric" value="3" aria-label="How many to pick"></span>
+					<button type="button" class="tu-btn" id="rn-lshuf">Shuffle the list</button>
+				</div>
+				<div class="rn-actions">
+					<span class="rn-inl"><button type="button" class="tu-btn" id="rn-teams">Make teams</button> <input id="rn-tk" class="tu-input rn-small" type="text" inputmode="numeric" value="2" aria-label="Number"></span>
+					<div class="tu-seg" id="rn-tby" role="group" aria-label="Teams by"><button type="button" data-b="n" aria-pressed="true">teams</button><button type="button" data-b="s" aria-pressed="false">people per team</button></div>
+					<button type="button" class="tu-btn tu-btn--ghost" id="rn-lcopy">Copy result</button>
+				</div>
+				<p class="tu-note rn-err" id="rn-list-err" role="alert" hidden></p>
+				<div class="rn-out" id="rn-list-out" aria-live="polite"></div>
+				<p class="tu-note">Your list stays in this browser only; it is never put in a link or uploaded.</p>
+			</div>
+		</section>
+
+		<!-- ============ STATS ============ -->
+		<section class="rn-panel" id="rn-p-stats" role="tabpanel" aria-labelledby="rn-t-stats" hidden>
+			<div class="tu-card">
+				<div class="tu-row rn-opts">
+					<div class="tu-field rn-fx"><label for="rn-src">What to look at</label><select id="rn-src" class="tu-select"></select></div>
+					<button type="button" class="tu-btn tu-btn--ghost" id="rn-hclear">Clear history</button>
+				</div>
+				<div class="tu-field" id="rn-own" hidden><label for="rn-owntxt">How many times each side came up (in order, e.g. for a d6: 12 9 11 10 8 10)</label>
+					<input id="rn-owntxt" class="tu-input rn-mono" type="text" inputmode="numeric" autocomplete="off" placeholder="12 9 11 10 8 10"></div>
+				<div class="tu-stats" id="rn-st-stats" aria-live="polite"></div>
+				<div class="rn-chartwrap"><svg class="rn-chart" id="rn-hist" viewBox="0 0 640 240" role="img" aria-label="How often each result came up"></svg></div>
+				<p class="rn-verdict" id="rn-verdict" aria-live="polite"></p>
+				<details class="rn-help"><summary>How the fairness test works</summary>
+					<p>The <b>chi-square goodness-of-fit test</b> compares how often each side came up with how often a fair one would show it on average. It adds up (observed - expected)<sup>2</sup> / expected over every side. The <b>p-value</b> is the chance that a perfectly fair die (or coin) would look at least this uneven just by luck. A small p-value (under 0.05, and especially under 0.01) is a sign something is off; a large one means the results are what fair dice normally produce. It can never prove a die is fair, only fail to find a problem, and it needs enough rolls: each side should be expected at least 5 times.</p>
+				</details>
+			</div>
+			<div class="tu-card">
+				<h3 class="rn-h">Recent results</h3>
+				<ol class="rn-log" id="rn-log"></ol>
+				<p class="tu-note">History is kept in this browser (it remembers counts, not every roll) until you clear it.</p>
+			</div>
+		</section>
+
+		<details class="tu-card rn-seedbox" id="rn-seedbox">
+			<summary>Reproducible (seeded) mode</summary>
+			<p class="tu-note">Normally every result comes from your browser's secure random generator (<code>crypto.getRandomValues</code>) and can't be predicted or repeated. With a seed, the same seed always gives the same sequence of results from the moment the page loads, which is handy for classes, puzzles or checking someone's draw. Seeded results are <b>not</b> secure: anyone with the seed can repeat them.</p>
+			<div class="rn-dnrow">
+				<div class="tu-field rn-fx"><label for="rn-seed">Seed (any word or number)</label><input id="rn-seed" class="tu-input" type="text" autocomplete="off"></div>
+				<button type="button" class="tu-btn" id="rn-seedgo">Use this seed</button>
+				<button type="button" class="tu-btn tu-btn--ghost" id="rn-seedoff">Back to secure random</button>
+			</div>
+		</details>
+		<div class="tu-toast" id="rn-toast" role="status"></div>
+{{SEO}}
+	</div>

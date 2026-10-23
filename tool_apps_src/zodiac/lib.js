@@ -102,9 +102,10 @@
 	function phaseEmoji(a) { return ["🌑", "🌒", "🌓", "🌔", "🌕", "🌖", "🌗", "🌘"][Math.floor(wrap(a + 22.5) / 45) % 8]; }
 
 	// Chinese zodiac for a calendar date (the date as lived; China's own new-year date is used)
-	var LNY = {};
+	var LNY = {}, LNY_FIX = { 1916: [2, 3], 1920: [2, 20], 1985: [2, 20] };   // years the 21 Jan - 20 Feb new-moon rule gets wrong (checked against published tables)
 	function lunarNewYear(y) {
 		if (LNY[y]) return LNY[y];
+		if (LNY_FIX[y]) return (LNY[y] = { y: y, mo: LNY_FIX[y][0], d: LNY_FIX[y][1] });
 		var Ast = A(), start = new Date(Date.UTC(y, 0, 20, 16)), r = null;     // 21 Jan 00:00 in UTC+8
 		for (var k = 0; k < 2 && !r; k++) {
 			var nm = Ast.SearchMoonPhase(0, start, 40); if (!nm) break;

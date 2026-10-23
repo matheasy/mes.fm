@@ -77,7 +77,7 @@
 		if (f.t) { o.h = f.t.h; o.m = f.t.m; }
 		if (f.ll) { o.lat = f.ll.lat; o.lon = f.ll.lon; }
 		CHART = ZD.chart(o);
-		render(f); updOffset(); renderFamous(); renderCmp(); setUrl(f);
+		render(f); renderBP(); updOffset(); renderFamous(); renderCmp(); setUrl(f);
 	}
 	function setUrl(f) {
 		var q = new URLSearchParams();
@@ -145,7 +145,14 @@
 		["zd-wheel", "zd-table", "zd-balance", "zd-moonc"].forEach(function (id) { $(id).innerHTML = ""; });
 		$("zd-wheelnote").textContent = ""; $("zd-bdlink").href = "/birthday?d=" + BD.pad(dt.mo) + "-" + BD.pad(dt.d);
 		$("zd-out").hidden = false; root.querySelector(".zd-chartrow").hidden = true; $("zd-moonc").hidden = true;
-		renderFamous(); renderCmp(); setUrl(readForm());
+		renderBP(); renderFamous(); renderCmp(); setUrl(readForm());
+	}
+	// compact "Your birthday personality" card (BP = mes.fm/birthday-personality's lib, loaded through lib_from)
+	function renderBP() {
+		var box = $("zd-bp"), s = ME && window.BP && BP.short(ME.mo, ME.d);
+		if (!s) { box.hidden = true; return; }
+		box.innerHTML = '<p class="bp-mini-k">Your birthday personality <span>for fun</span></p><h3 class="bp-mini-t">' + esc(s.title) + '</h3><p class="bp-mini-p">' + esc(s.text) + '</p><a class="bp-mini-a" href="' + esc(s.url) + (ME.y ? "&amp;y=" + ME.y : "") + '">Read the full profile →</a>';
+		box.hidden = false;
 	}
 
 	/* ---------- SVG wheel ---------- */

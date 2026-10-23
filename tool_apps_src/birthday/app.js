@@ -123,7 +123,7 @@
 		$("bd-zlink").href = "/zodiac?d=" + (S.y ? S.y + "-" : "") + BD.pad(S.mo) + "-" + BD.pad(S.d);
 		$("bd-zlink").textContent = S.y ? "Your birth chart" : "Zodiac sign for this date";
 		renderShare(list);
-		renderYou(); renderNext(); renderExtra(); renderLine(); otdReset();
+		renderYou(); renderNext(); renderBP(); renderExtra(); renderLine(); otdReset();
 		history.replaceState(null, "", location.pathname + (function () { var q = BD.toQuery({ mo: S.mo, d: S.d, y: S.y, field: S.field, country: S.country, era: S.era, alive: S.alive, sort: S.sort }); return q && !(isToday && !S.y && q === BD.toQuery({ mo: S.mo, d: S.d })) ? "?" + q : ""; })());
 		if (S.hl) { var el = $("p-" + S.hl); if (el) el.scrollIntoView({ block: "center", behavior: "smooth" }); }
 	}
@@ -155,6 +155,13 @@
 		if (turning.length) h += '<p class="bd-turns">' + turning.map(function (p) { return esc(p.name) + " turns " + (nb.y - p.y); }).join(" · ") + " that day.</p>";
 		if (S.mo === 2 && S.d === 29 && nb.d === 28) h += '<p class="bd-turns">Not a leap year, so most people born on 29 February celebrate on 28 February.</p>';
 		box.innerHTML = h + "</div>"; box.hidden = false;
+	}
+	// compact "Your birthday personality" card (BP = mes.fm/birthday-personality's lib, loaded through lib_from)
+	function renderBP() {
+		var box = $("bd-bp"), s = window.BP && BP.short(S.mo, S.d);
+		if (!s) { box.hidden = true; return; }
+		box.innerHTML = '<p class="bp-mini-k">' + (S.y ? "Your birthday personality" : "Birthday personality for " + esc(BD.dateText(S.mo, S.d))) + ' <span>for fun</span></p><h3 class="bp-mini-t">' + esc(s.title) + '</h3><p class="bp-mini-p">' + esc(s.text) + '</p><a class="bp-mini-a" href="' + esc(s.url) + (S.y ? "&amp;y=" + S.y : "") + '">Read the full profile →</a>';
+		box.hidden = false;
 	}
 	function renderExtra() {
 		var box = $("bd-extra"), want = S.mo + "-" + S.d + "-" + (S.y || ""), near = [-2, -1, 1, 2].map(function (n) { var t = BD.shift(S.mo, S.d, n); t.gap = Math.abs(n); return t; });

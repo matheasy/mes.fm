@@ -1,0 +1,98 @@
+	<script>try{if(!localStorage.getItem('pageMode')){document.documentElement.classList.add('page-wide')}}catch(e){}</script>
+	<div class="tu sx" id="sx">
+		<div class="sx-tabs" role="tablist" aria-label="SEO checker">
+			<button type="button" role="tab" id="sx-t-check" aria-controls="sx-p-check" data-tab="check" aria-selected="true">Check a page</button>
+			<button type="button" role="tab" id="sx-t-site" aria-controls="sx-p-site" data-tab="site" aria-selected="false" tabindex="-1">mes.fm site report</button>
+		</div>
+
+		<section id="sx-p-check" role="tabpanel" aria-labelledby="sx-t-check">
+			<div class="tu-card">
+				<label class="tu-label" for="sx-q">Page address</label>
+				<div class="sx-row"><input id="sx-q" class="tu-input tu-input--big" type="text" inputmode="url" autocomplete="off" autocapitalize="off" spellcheck="false" placeholder="example.com/page or https://www.example.com/page"><button type="button" class="tu-btn tu-btn--primary sx-go" id="sx-go">Check page</button></div>
+				<div class="tu-chips sx-recent" id="sx-recent" aria-label="Recent checks"></div>
+				<p class="tu-note">Our server fetches the page once, together with the site&rsquo;s <code>robots.txt</code> and sitemap, the way a search engine would, and sends back only what it found (titles, tags, counts), never a copy of the page. Public websites only. Nothing is stored. <button type="button" class="sx-linkbtn" id="sx-demo">See an example report</button></p>
+			</div>
+			<div class="sx-status" id="sx-status" role="status" aria-live="polite" hidden></div>
+
+			<div id="sx-out" hidden>
+				<div class="tu-card tu-card--tint sx-hero">
+					<div class="sx-ring" id="sx-ring" aria-hidden="true"></div>
+					<div class="sx-hero__txt">
+						<div class="sx-hero__lab">SEO score</div>
+						<div class="sx-hero__big" aria-live="polite"><span id="sx-score">0</span><small>/100</small> <span class="sx-grade" id="sx-grade"></span></div>
+						<div class="sx-counts" id="sx-counts"></div>
+						<div class="sx-hero__url" id="sx-url"></div>
+						<div class="sx-cap" id="sx-cap" hidden></div>
+						<div class="tu-row sx-hero__btns"><button type="button" class="tu-btn tu-btn--ghost" id="sx-copy">Copy report</button><button type="button" class="tu-btn tu-btn--ghost" id="sx-link">Copy link</button><button type="button" class="tu-btn tu-btn--ghost" id="sx-again">Check again</button></div>
+					</div>
+				</div>
+
+				<div class="sx-previews">
+					<div class="tu-card">
+						<h3 class="sx-h">How it may look on Google</h3>
+						<div class="sx-serp" id="sx-serp"></div>
+						<p class="tu-note" id="sx-serpnote"></p>
+					</div>
+					<div class="tu-card">
+						<h3 class="sx-h">How it looks when shared</h3>
+						<div class="sx-social" id="sx-social"></div>
+						<p class="tu-note" id="sx-socialnote"></p>
+					</div>
+				</div>
+
+				<div class="sx-checkhead"><h2>The checks</h2><div class="tu-seg" role="group" aria-label="Which checks to show"><button type="button" data-show="all" aria-pressed="true">All</button><button type="button" data-show="prob" aria-pressed="false">Problems only</button></div></div>
+				<div id="sx-checks"></div>
+
+				<h2>Headings outline</h2>
+				<div class="tu-card"><ol class="sx-tree" id="sx-tree"></ol></div>
+
+				<h2>Is my page indexed? Check it with the search engines</h2>
+				<div class="tu-card"><p class="tu-note" style="margin-top:0">A <code>site:</code> search shows whether Google or Bing have the page. The webmaster tools only work for sites you have added to them. Each opens in a new tab.</p><ul class="sx-tools" id="sx-tools"></ul></div>
+
+				<h2>Everything we found</h2>
+				<div class="tu-card sx-facts" id="sx-facts"></div>
+			</div>
+		</section>
+
+		<section id="sx-p-site" role="tabpanel" aria-labelledby="sx-t-site" hidden>
+			<div class="tu-card tu-card--tint">
+				<p style="margin-top:0">Every page of <b>mes.fm</b> with something a search engine may not like, from the <a href="/site-index">Site Index</a> data (made from the site&rsquo;s own files, so it is a little behind the live site: <span id="sx-sgen">loading&hellip;</span>). Click an issue to list its pages, or <b>Check</b> to run the live check on one page.</p>
+			</div>
+			<div class="tu-stats" id="sx-sstats"></div>
+			<div class="tu-chips sx-ichips" id="sx-ichips" aria-label="Filter by issue"></div>
+			<div class="tu-row sx-sbar">
+				<div class="tu-field"><label for="sx-sq">Search pages</label><input id="sx-sq" class="tu-input" type="search" placeholder="Title or address" autocomplete="off"></div>
+				<div class="tu-field tu-field--sm"><label for="sx-ssec">Section</label><select id="sx-ssec" class="tu-select"></select></div>
+				<div class="tu-field tu-field--sm"><label for="sx-ssort">Sort by</label><select id="sx-ssort" class="tu-select"><option value="iss">Most issues first</option><option value="url">Address A-Z</option><option value="desc">Description length</option><option value="words">Fewest words</option><option value="tlen">Longest title</option></select></div>
+				<button type="button" class="tu-btn tu-btn--ghost" id="sx-scopy">Copy this list</button>
+			</div>
+			<div class="sx-scount" id="sx-scount" role="status" aria-live="polite"></div>
+			<div id="sx-slist"></div>
+			<div class="sx-pager" id="sx-pager"></div>
+		</section>
+
+		<div class="tu-toast" id="sx-toast" role="status" aria-live="polite"></div>
+
+		<div class="tu-seo">
+			<h2>Free SEO checker: see your page the way a search engine does</h2>
+			<p>Type the address of any web page and get an <strong>on-page SEO audit</strong> in plain English: the title and meta description (with a Google-style preview that cuts them where Google would), the headings, canonical tag, robots rules in the page and in <code>robots.txt</code>, whether the page is in the sitemap, Open Graph and X (Twitter) cards, structured data (JSON-LD), image alt text, internal and external links, the mobile viewport, HTTPS, compression and how fast the server answers. Each check says why it matters and how to fix it.</p>
+			<h3>How the score works</h3>
+			<p>Every check has a weight: the ones that decide whether a page can be found at all (it loads, it is allowed to be indexed, robots.txt lets Google in, it has a title) count the most; nice-to-haves such as a favicon or HSTS count a little. A pass earns the full weight, a warning half, a fail nothing. If the page cannot be indexed at all (an error status, <code>noindex</code>, or blocked by robots.txt) the score is capped at 30, because nothing else matters until that is fixed.</p>
+			<h3>Questions</h3>
+			<dl>
+				<dt>Will a high score put my page first on Google?</dt>
+				<dd>No. These are the technical basics that let search engines read and show the page well. Ranking mostly depends on whether the page answers what people search for, and on other sites linking to it.</dd>
+				<dt>Why does my title look cut off in the preview?</dt>
+				<dd>Google cuts titles by width in pixels (about 580 on a computer), not by a fixed number of letters, so "WWW" uses more room than "iii". The preview measures the text the same way. Google also rewrites titles and descriptions it thinks do not match the page, so the real result can differ.</dd>
+				<dt>Is the speed number a full speed test?</dt>
+				<dd>No: it is only how long the server took to start sending the HTML to our checker. Use the PageSpeed Insights link for the real loading speed and Core Web Vitals on phones.</dd>
+				<dt>Why does it say "Not found in the sitemap"?</dt>
+				<dd>The checker reads the sitemaps named in robots.txt (or /sitemap.xml) and up to three of the sitemap files a sitemap index points to, and looks for this exact address or its canonical. On very big sites the page may be in a sitemap file it did not open; the result then says how many were checked.</dd>
+				<dt>Does it see content added by JavaScript?</dt>
+				<dd>No. It reads the HTML the server sends, like the first pass of a search engine. Google runs JavaScript later, but text that only appears after scripts run is found more slowly, and other search engines and social sites may never see it.</dd>
+				<dt>What is sent and stored?</dt>
+				<dd>The address you type goes to mes.fm's server, which fetches that one page plus robots.txt and the sitemap, and returns the findings to your browser. Results may be cached for ten minutes so a repeated check is fast; nothing is saved with your name. Your recent checks are kept only in this browser. Private addresses, IP numbers and local names are refused.</dd>
+			</dl>
+			<p class="tu-note">See also the <a href="/site-traffic">Site Traffic &amp; Rank</a> checker, the <a href="/domain-lookup">Domain Lookup</a> for DNS and ownership, the <a href="/archive">Archive</a> tool and the <a href="/site-index">Site Index</a> of every mes.fm page.</p>
+		</div>
+	</div>

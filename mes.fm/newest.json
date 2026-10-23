@@ -1,5 +1,5 @@
 {
- "generated": "2026-10-22",
+ "generated": "2026-10-23",
  "calculators": [
   {
    "href": "/materials",
@@ -100,6 +100,38 @@
  ],
  "tools": [
   {
+   "href": "/dice-roller",
+   "title": "Dice Roller",
+   "icon": "/img/dice-roller-logo.png",
+   "desc": "Roll any dice (2d6+3, 4d6 drop lowest, d20 advantage) and see the exact odds of every total.",
+   "added": "2026-10-23",
+   "kind": "tool"
+  },
+  {
+   "href": "/random-number-generator",
+   "title": "Random Number Generator",
+   "icon": "/img/random-number-generator-logo.png",
+   "desc": "Random numbers, dice, coin flips, cards and a list picker, with the odds and a fairness test.",
+   "added": "2026-10-23",
+   "kind": "tool"
+  },
+  {
+   "href": "/seo",
+   "title": "SEO Checker",
+   "icon": "/img/seo-logo.png",
+   "desc": "Check any page's SEO: title, description, headings, canonical, robots, social cards and a report of every mes.fm page.",
+   "added": "2026-10-23",
+   "kind": "tool"
+  },
+  {
+   "href": "/birthday-personality",
+   "title": "Birthday Personality",
+   "icon": "/img/birthday-personality-logo.png",
+   "desc": "A playful character sketch for every day of the year: your day's archetype, strengths and lucky numbers.",
+   "added": "2026-10-23",
+   "kind": "tool"
+  },
+  {
    "href": "/site-traffic",
    "title": "Site Traffic & Rank",
    "icon": "/img/site-traffic-logo.png",
@@ -162,41 +194,41 @@
    "desc": "Type your text and see it in every font, with shadow, outline, gradient and glow. Download a transparent PNG, copy the CSS, or find a font from a picture.",
    "added": "2026-10-19",
    "kind": "tool"
-  },
-  {
-   "href": "/compress-video",
-   "title": "Video Compressor",
-   "icon": "/img/compress-video-logo.png",
-   "desc": "Make MP4 and MOV videos smaller: aim for a file size like 25 MB, lower the resolution, save as MP4 or WebM. Fast, and nothing is uploaded.",
-   "added": "2026-10-18",
-   "kind": "tool"
-  },
-  {
-   "href": "/photo",
-   "title": "Photo Editor",
-   "icon": "/img/photo-editor-logo.png",
-   "desc": "Free online editor with layers, selections, clone stamp, levels and curves. Add labels, arrows and callouts, combine images, keep transparency, open PSD. Nothing is uploaded.",
-   "added": "2026-10-16",
-   "kind": "tool"
-  },
-  {
-   "href": "/redshift-simulator",
-   "title": "Redshift & Blueshift Simulator",
-   "icon": "/img/redshift-simulator-logo.png",
-   "desc": "Why light changes colour: near and far from a heavy mass, moving sources, a spectrum shifter and the expanding universe, with real numbers.",
-   "added": "2026-10-16",
-   "kind": "tool"
-  },
-  {
-   "href": "/compress",
-   "title": "Compressor: Pictures, PDFs, Audio",
-   "icon": "/img/compress-logo.png",
-   "desc": "Make JPG, PNG, WebP, PDF and audio files smaller with a before and after preview. Private: nothing is uploaded.",
-   "added": "2026-10-16",
-   "kind": "tool"
   }
  ],
  "latest": [
+  {
+   "href": "/dice-roller",
+   "title": "Dice Roller",
+   "icon": "/img/dice-roller-logo.png",
+   "desc": "Roll any dice (2d6+3, 4d6 drop lowest, d20 advantage) and see the exact odds of every total.",
+   "added": "2026-10-23",
+   "kind": "tool"
+  },
+  {
+   "href": "/random-number-generator",
+   "title": "Random Number Generator",
+   "icon": "/img/random-number-generator-logo.png",
+   "desc": "Random numbers, dice, coin flips, cards and a list picker, with the odds and a fairness test.",
+   "added": "2026-10-23",
+   "kind": "tool"
+  },
+  {
+   "href": "/seo",
+   "title": "SEO Checker",
+   "icon": "/img/seo-logo.png",
+   "desc": "Check any page's SEO: title, description, headings, canonical, robots, social cards and a report of every mes.fm page.",
+   "added": "2026-10-23",
+   "kind": "tool"
+  },
+  {
+   "href": "/birthday-personality",
+   "title": "Birthday Personality",
+   "icon": "/img/birthday-personality-logo.png",
+   "desc": "A playful character sketch for every day of the year: your day's archetype, strengths and lucky numbers.",
+   "added": "2026-10-23",
+   "kind": "tool"
+  },
   {
    "href": "/site-traffic",
    "title": "Site Traffic & Rank",
@@ -228,38 +260,6 @@
    "desc": "Make one link for a livestream or event: a countdown in everyone's time zone and one-click calendar reminders.",
    "added": "2026-10-21",
    "kind": "tool"
-  },
-  {
-   "href": "/materials",
-   "title": "Mechanics of Materials",
-   "icon": "/img/materials-logo.png",
-   "desc": "Stress, strain, shear, torsion, Poisson's ratio, thermal stress and 30 materials.",
-   "added": "2026-10-20",
-   "kind": "calculator"
-  },
-  {
-   "href": "/shear-stress-calculator",
-   "title": "Shear Stress Calculator",
-   "icon": "/img/shear-stress-calculator-logo.png",
-   "desc": "Bolts and pins in single or double shear, punching, and twisted shafts.",
-   "added": "2026-10-20",
-   "kind": "calculator"
-  },
-  {
-   "href": "/tensile-test-simulator",
-   "title": "Tensile Test Simulator",
-   "icon": "/img/tensile-test-simulator-logo.png",
-   "desc": "Pull a bar until it breaks and watch the stress-strain curve, necking and toughness.",
-   "added": "2026-10-20",
-   "kind": "calculator"
-  },
-  {
-   "href": "/youngs-modulus-calculator",
-   "title": "Young's Modulus Calculator",
-   "icon": "/img/youngs-modulus-calculator-logo.png",
-   "desc": "Stress, strain and stretch of a bar from any four values, with a live picture.",
-   "added": "2026-10-20",
-   "kind": "calculator"
   }
  ]
 }

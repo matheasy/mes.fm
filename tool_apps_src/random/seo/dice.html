@@ -1,0 +1,17 @@
+		<div class="tu-seo">
+			<h2>Online dice roller with the exact odds</h2>
+			<p>Tap a die (d4, d6, d8, d10, d12, d20 or d100) to add it, tap it again for more of the same, or type any dice in standard notation and press <b>Roll</b> (or Enter). Every die is drawn, kept and dropped dice are marked, and the total is shown. Under the roll you get the <b>exact chance of every possible total</b>, a chart with your roll highlighted, and a box that answers "what is the chance of rolling 15 or more?".</p>
+			<h3>Dice notation</h3>
+			<p><code>NdS</code> means roll N dice with S sides and add them: <code>2d6</code> is two ordinary dice. Add or take away a number with <code>d20+5</code>, mix dice with <code>2d8+1d6</code>. <code>4d6kh3</code> (or <code>4d6 drop lowest</code>) rolls four dice and keeps the highest three, the classic way to roll a role-playing character's ability score. <code>d20 adv</code> and <code>d20 dis</code> roll two d20s and keep the higher or lower, as in Dungeons &amp; Dragons 5th edition. <code>3d6!</code> explodes: whenever a die shows its top number it is rolled again and added. <code>d%</code> is a percentile die from 1 to 100 and <code>4dF</code> rolls Fudge / Fate dice, which show -1, 0 or +1.</p>
+			<h3>How the odds are worked out</h3>
+			<p>For plain dice the page combines the chances of each die exactly (a convolution: for two dice it lists every pair of faces). For keep-highest and keep-lowest rolls it walks through every combination of faces and counts how often each total appears, so <code>4d6kh3</code> averages exactly 12.2446 and a d20 with advantage shows a 20 39 times in 400. Exploding dice can in theory roll forever, so chances below one in a trillion are left out. When a roll has too many combinations to count (say 60 d20s keeping 30), the page simulates a large number of rolls instead and says so.</p>
+			<h3>Questions</h3>
+			<dl>
+				<dt>Are these dice fair?</dt><dd>Yes. Each face comes from your browser's secure random generator with rejection sampling, so every face has exactly the same chance. You can check it yourself: the Statistics tab keeps a count of every face rolled and runs a chi-square test.</dd>
+				<dt>Can I test my own physical dice?</dt><dd>Yes. Roll your die many times (at least 30 for a d6, more is better), then in Statistics choose "Test my own die" and type how many times each face came up. The p-value tells you how often a perfectly fair die would look that uneven.</dd>
+				<dt>What does 2d6 most often roll?</dt><dd>7, with a chance of 6 in 36 (16.7%), because six pairs add up to 7 and only one pair makes 2 or 12.</dd>
+				<dt>How much does advantage help?</dt><dd>A d20 averages 10.5; with advantage it averages 13.825, roughly like adding 3 to 5 near the middle of the range.</dd>
+				<dt>Is anything uploaded?</dt><dd>No. Rolls, odds and history are all worked out in your browser.</dd>
+			</dl>
+			<p>Related: <a href="/random-number-generator">Random Number Generator</a> &middot; <a href="/statistics-calculator">Statistics Calculator</a></p>
+		</div>

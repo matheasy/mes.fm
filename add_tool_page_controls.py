@@ -65,6 +65,10 @@ TOOLS = [  # (directory, compact-bar title[, home path of the site the page belo
     ("baby-feeding-log", "Baby Feeding Log"),
     ("domain-lookup", "Domain Lookup"),
     ("site-traffic", "Site Traffic"),
+    ("birthday-personality", "Birthday Personality"),   # 2026-10-23
+    ("seo", "SEO Checker"),   # 2026-10-23
+    ("random-number-generator", "Random Number Generator"),   # 2026-10-23
+    ("dice-roller", "Dice Roller"),   # 2026-10-23
     ("exif-viewer", "EXIF Viewer"),
     ("contraction-timer", "Contraction Timer"),
     ("bmr-calculator", "BMR Calculator"),

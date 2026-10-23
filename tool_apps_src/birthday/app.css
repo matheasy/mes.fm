@@ -103,3 +103,13 @@
 	}
 	.tu .bd-sharebar {display:flex;flex-wrap:wrap;justify-content:center;gap:0.35em;margin:0.6em 0 0;}
 	.tu .bd-sharebar .bd-sh {font-size:0.85em;padding:0.35em 0.8em;margin:0;}
+	/* compact birthday-personality card (mes.fm/birthday-personality) */
+	.tu .bp-mini {border-left:4px solid #9d174d;margin:0.8em 0;}
+	.tu .bp-mini-k {margin:0;font-size:0.8em;font-weight:700;text-transform:uppercase;letter-spacing:0.05em;color:#9d174d;}
+	.tu .bp-mini-k span {font-weight:400;text-transform:none;letter-spacing:0;color:#5b6472;}
+	.tu .bp-mini-t {margin:0.15em 0 0.3em;font-size:1.3em;color:#831843;}
+	.tu .bp-mini-p {margin:0 0 0.4em;line-height:1.5;}
+	.tu a.bp-mini-a {font-weight:600;color:#9d174d;}
+	body.dark-mode #bd.tu .bp-mini {border-left-color:#f7a8c9;}
+	body.dark-mode #bd.tu .bp-mini-k, body.dark-mode #bd.tu .bp-mini-t, body.dark-mode #bd.tu a.bp-mini-a {color:#f7a8c9;}
+	body.dark-mode #bd.tu .bp-mini-k span {color:#b3bbc6;}
