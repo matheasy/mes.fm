@@ -697,6 +697,15 @@ APPS = {
                        tag="Every page on mes.fm, by template.", accent="#1d6fa5", dark="#14507a", tint="#e3f0f8",
                        desc="Complete index of every page on mes.fm, classified by the template, shell and generator it uses, with feature flags and an audit of missing descriptions, share images, canonical tags and broken references. Search, filter, group, browse the URL tree and export to CSV.",
                        js_v="2", no_ads=True),
+    # MES Ads: private money page (mes.fm/ads, behind the middleware.js password like /portfolio, noindex, no card anywhere): AdSense earnings vs
+    # Google Ads spend per day / page / country / device / campaign + the "do ad visitors come back?" table (moved from /stats). Data = /api/earnings
+    # (pushed daily by google-ads/ads-dashboard-gads-script.js and ads-dashboard-adsense-script.js) + /api/ads-returns. Script and logos live under
+    # /earnings/ (js_path, logo_from): ad blockers block anything under /ads/. Wide, ad-free, no sidebar. Tests: tool_apps_src/earnings-tests.js.
+    "ads": dict(title="MES Ads", page_title="Ads: Earnings vs Spend",
+                tag="AdSense earnings vs Google Ads spend.", accent="#2e7d32", dark="#1b5e20", tint="#e8f5e9",
+                desc="AdSense earnings against Google Ads spend per day, landing page, country, device and campaign, and whether ad visitors come back.",
+                js_v="1", no_ads=True, js_path="earnings/js/earnings.js", logo_from="earnings",
+                head_extra='<meta name="robots" content="noindex, nofollow">'),
     # How much do YouTubers make?: leaderboard of big channels with ESTIMATED ad revenue (companion of /youtubemoney, ad-free like it). Data = mes.fm/how-much-do-youtubers-make/data/channels.json
     # (update_youtuber_snapshot.py), live refresh = mes.fm/api/youtuber-stats.js; lib.js = maths + a copy of the calculator's RPM tables (node-testable:
     # tool_apps_src/how-much-do-youtubers-make-tests.js), app.js = UI. Wide page, no sidebar.

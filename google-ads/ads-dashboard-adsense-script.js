@@ -7,7 +7,7 @@
 
 var INGEST_URL = 'https://mes.fm/api/earnings-ingest';
 var ACCOUNT = 'accounts/pub-1461238060884369';
-var DAYS = 5;
+var DAYS = 35;
 
 function main() { send(DAYS); }
 function backfill() { send(120); }

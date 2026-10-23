@@ -3,14 +3,13 @@
 // Sends spend per campaign x device, per country and per landing page for the last few days to
 // https://mes.fm/api/earnings-ingest. Costs stay in micros of the account currency; the site converts to CAD.
 // Paste the real key into INGEST_KEY when installing (Vercel env EARNINGS_INGEST_KEY); this repo copy has a placeholder.
-// main() sends the last DAYS days (a re-send replaces those days); backfill() sends the last 120 days once.
+// main() (the only function a scheduled Ads script runs) sends the last DAYS days; a re-send replaces those days.
 
 var INGEST_URL = 'https://mes.fm/api/earnings-ingest';
 var INGEST_KEY = 'PASTE-THE-KEY-HERE';
-var DAYS = 5;
+var DAYS = 35; // daily re-send covers late conversions / corrections; set 120 once for a longer history
 
 function main() { send(DAYS); }
-function backfill() { send(120); }
 
 function send(n) {
   var acct = AdsApp.currentAccount();

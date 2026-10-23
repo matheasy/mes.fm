@@ -1,0 +1,59 @@
+	<div class="tu ad" id="ad">
+		<div class="ad-top">
+			<div class="ad-tabs" id="ad-tabs" role="group" aria-label="Range">
+				<button type="button" class="tu-chip" data-r="7d" aria-pressed="false">7 days</button>
+				<button type="button" class="tu-chip" data-r="30d" aria-pressed="true">30 days</button>
+				<button type="button" class="tu-chip" data-r="90d" aria-pressed="false">90 days</button>
+				<button type="button" class="tu-chip" data-r="365d" aria-pressed="false">365 days</button>
+			</div>
+			<span class="ad-links"><a href="/stats">Page views</a> · <a href="https://adsense.google.com/" target="_blank" rel="noopener">AdSense</a> · <a href="https://ads.google.com/" target="_blank" rel="noopener">Google Ads</a></span>
+		</div>
+		<p class="tu-note ad-meta" id="ad-meta" role="status">Loading…</p>
+		<noscript><p class="tu-note">This page needs JavaScript.</p></noscript>
+		<div class="tu-card ad-setup" id="ad-setup" hidden></div>
+		<div class="tu-stats ad-tiles" id="ad-tiles"></div>
+
+		<section class="tu-card ad-sec">
+			<h2>Day by day</h2>
+			<p class="tu-note">AdSense earnings (bars) and Google Ads spend (line), both in CAD. Hover or tap a day for its numbers.</p>
+			<div class="ad-chart" id="ad-chart"><svg id="ad-svg" preserveAspectRatio="none" role="img" aria-label="Daily earnings and spend"></svg><div class="ad-tip" id="ad-tip"></div></div>
+			<div class="ad-legend"><span><i class="ad-key ad-key--rev"></i>AdSense earnings</span><span><i class="ad-key ad-key--spend"></i>Google Ads spend</span></div>
+		</section>
+
+		<section class="tu-card ad-sec">
+			<h2>Landing pages</h2>
+			<p class="tu-note">Every page that earned or that ads point to. Spend and ad clicks are Google Ads' (the page the ad sends people to); earnings and page views are AdSense's for all visitors to that page, not only the ones from ads. "Came back" = ad visitors who returned later on their own.</p>
+			<div class="ad-wrap"><table class="ad-t" id="t-pages"></table></div><button type="button" class="tu-btn tu-btn--ghost ad-more" id="m-pages" hidden></button>
+		</section>
+
+		<section class="tu-card ad-sec">
+			<h2>Countries</h2>
+			<p class="tu-note">Where ad clicks were bought and where AdSense earned. Earned per 1,000 views (RPM) is what a visitor from that country is worth.</p>
+			<div class="ad-wrap"><table class="ad-t" id="t-countries"></table></div><button type="button" class="tu-btn tu-btn--ghost ad-more" id="m-countries" hidden></button>
+		</section>
+
+		<section class="tu-card ad-sec">
+			<h2>Campaigns</h2>
+			<p class="tu-note">Spend per Google Ads campaign, with clicks by device.</p>
+			<div class="ad-wrap"><table class="ad-t" id="t-campaigns"></table></div><button type="button" class="tu-btn tu-btn--ghost ad-more" id="m-campaigns" hidden></button>
+		</section>
+
+		<section class="tu-card ad-sec">
+			<h2>Devices</h2>
+			<div class="ad-wrap"><table class="ad-t" id="t-devices"></table></div>
+		</section>
+
+		<section class="tu-card ad-sec">
+			<h2>Sites in AdSense</h2>
+			<p class="tu-note">Domains that showed your ad code. Only mes.fm is approved, so other sites earn nothing.</p>
+			<div class="ad-wrap"><table class="ad-t" id="t-domains"></table></div>
+		</section>
+
+		<section class="tu-card ad-sec">
+			<h2>Do Google Ads visitors come back?</h2>
+			<p class="tu-note">Visitors whose first visit was a Google Ads click, by landing page, and whether they came back later on their own (not through another ad). A day counts once however many pages are opened. Counted per browser, so a return on another device counts as not returning.</p>
+			<div class="tu-stats ad-tiles" id="r-tiles"></div>
+			<div class="ad-wrap"><table class="ad-t" id="t-returns"></table></div><button type="button" class="tu-btn tu-btn--ghost ad-more" id="m-returns" hidden></button>
+			<p class="tu-note" id="r-young"></p>
+		</section>
+	</div>
