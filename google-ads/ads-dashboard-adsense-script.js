@@ -21,8 +21,8 @@ function report(n, dims) {
   var end = new Date(), start = new Date(Date.now() - (n - 1) * 864e5);
   var res = AdSense.Accounts.Reports.generate(ACCOUNT, {
     dateRange: 'CUSTOM',
-    startDate_year: start.getFullYear(), startDate_month: start.getMonth() + 1, startDate_day: start.getDate(),
-    endDate_year: end.getFullYear(), endDate_month: end.getMonth() + 1, endDate_day: end.getDate(),
+    'startDate.year': start.getFullYear(), 'startDate.month': start.getMonth() + 1, 'startDate.day': start.getDate(),
+    'endDate.year': end.getFullYear(), 'endDate.month': end.getMonth() + 1, 'endDate.day': end.getDate(),
     dimensions: ['DATE'].concat(dims),
     metrics: ['ESTIMATED_EARNINGS', 'PAGE_VIEWS', 'IMPRESSIONS', 'CLICKS'],
     currencyCode: 'CAD',

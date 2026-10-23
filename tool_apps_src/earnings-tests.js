@@ -41,12 +41,18 @@ const blobs = {
   },
   adsense: {
     [d1]: { pages: [['https://mes.fm/calculadora-imc', 0.5, 20, 40, 1], ['mes.fm/timer', 1, 100, 200, 2]], geo: [['AR', 'Argentina', 0.5, 20], ['US', 'United States', 1, 100]], dev: [['Desktop', 1.5, 120]], dom: [['mes.fm', 1.5, 120]] },
+    [ago(3)]: { pages: [['mes.fm/timer', 1, 10, 10, 0]], geo: [], dev: [['Desktop', 3, 50], ['High-end mobile devices', 1, 30]], dom: [] },
     [d2]: { pages: [['mes.fm/timer/', 2, 50, 100, 1]], geo: [], dev: [], dom: [] },
   },
 };
 const a = earnings.aggregate([d1, d2], blobs, 18396.41);
+const a3 = earnings.aggregate([d1, d2, ago(3)], blobs, 18396.41);
+ok(Math.abs(a3.totals.rev - 7.5) < 1e-9 && a3.totals.pv === 250, 'platform report wins when pages under-count');
+const un = a3.pages.find((x) => x.path === '(pages AdSense did not list)');
+ok(un && Math.abs(un.rev - 3) < 1e-9 && un.pv === 70, 'the gap is one unlisted row');
+ok(Math.abs(a3.pages.reduce((t, x) => t + x.rev, 0) - a3.totals.rev) < 1e-9, 'pages add up to the total');
 ok(Math.abs(a.totals.spend - 0.2) < 1e-4, 'spend converted to CAD: ' + a.totals.spend);
-ok(Math.abs(a.totals.rev - 3.5) < 1e-9 && a.totals.pv === 170, 'revenue + page views summed');
+ok(Math.abs(a.totals.rev - 3.5) < 1e-9 && a.totals.pv === 170, 'revenue + page views summed (day 1 from the platform report, day 2 from pages)');
 const imc = a.pages.find((x) => x.path === '/calculadora-imc');
 ok(imc && imc.rev === 0.5 && Math.abs(imc.spend - 0.2) < 1e-4 && imc.clicks === 10, 'landing page joins AdSense and Ads');
 ok(a.pages.find((x) => x.path === '/timer').rev === 3, 'same page across days and URL forms merges');
@@ -83,9 +89,9 @@ function res() { return { code: 0, headers: {}, setHeader(k, v) { this.headers[k
   r = res(); await ingest({ method: 'POST', headers: { 'x-ingest-key': 'secret-123' }, body: JSON.stringify({ source: 'gads', meta: { currency: 'VND', tz: 'America/Vancouver' }, days: blobs.gads }) }, r);
   ok(r.code === 200 && store['adsdash:gads:' + d1] && JSON.parse(store['adsdash:meta:gads']).currency === 'VND', 'gads stored');
   r = res(); await ingest({ method: 'POST', headers: { 'x-ingest-key': 'secret-123' }, body: { source: 'adsense', meta: { currency: 'CAD' }, days: blobs.adsense } }, r);
-  ok(r.code === 200 && r.body.days === 2, 'adsense stored');
+  ok(r.code === 200 && r.body.days === 3, 'adsense stored');
   r = res(); await earnings({ query: { range: '7d' } }, r);
-  ok(r.code === 200 && Math.abs(r.body.totals.spend - 3679.282 / 18000) < 1e-4 && r.body.totals.rev === 3.5, 'read back with live fx');
+  ok(r.code === 200 && Math.abs(r.body.totals.spend - 3679.282 / 18000) < 1e-4 && r.body.totals.rev === 7.5, 'read back with live fx');
   ok(r.body.fx.perCad === 18000 && r.body.adsCurrency === 'VND' && r.headers['Cache-Control'] === 'private, no-store', 'fx + private cache header');
   r = res(); await earnings({ query: { range: 'all' } }, r);
   ok(r.body.range === '30d', 'unknown range -> 30d');

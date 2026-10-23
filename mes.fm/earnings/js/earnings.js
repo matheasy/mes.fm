@@ -114,7 +114,7 @@
     ((RET && RET.rows) || []).forEach(function (r) { ret[r.path] = r; });
     var maxRev = Math.max.apply(null, d.pages.map(function (p) { return p.rev; }).concat([0]));
     table('t-pages', 'm-pages', [
-      { k: 'path', t: 'Page', v: function (r) { return r.path; }, h: function (r) { var u = r.path.charAt(0) === '/' ? r.path : 'https://' + r.path; return '<a href="' + esc(u) + '" target="_blank" rel="noopener">' + esc(r.path) + '</a>'; } },
+      { k: 'path', t: 'Page', v: function (r) { return r.path; }, h: function (r) { if (r.path.charAt(0) === '(') return '<i>' + esc(r.path) + '</i>'; var u = r.path.charAt(0) === '/' ? r.path : 'https://' + r.path; return '<a href="' + esc(u) + '" target="_blank" rel="noopener">' + esc(r.path) + '</a>'; } },
       { k: 'clicks', t: 'Ad clicks', v: function (r) { return r.clicks; }, h: function (r) { return r.clicks ? int(r.clicks) : '–'; } },
       { k: 'spend', t: 'Spend', v: function (r) { return r.spend; }, h: function (r) { return r.spend ? money(r.spend) : '–'; } },
       { k: 'cpc', t: 'Cost/click', v: function (r) { return r.clicks ? r.spend / r.clicks : 0; }, h: function (r) { return cpc(r.spend, r.clicks); } },

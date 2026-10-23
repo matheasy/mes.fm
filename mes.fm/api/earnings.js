@@ -7,6 +7,7 @@ const { lastNDayKeys } = require('./_bucket-keys');
 
 const RANGES = { '7d': 7, '30d': 30, '90d': 90, '365d': 365 };
 const FX_FALLBACK = { VND: 18396.41, USD: 0.72, CAD: 1 };
+const UNLISTED = '(pages AdSense did not list)';
 
 // "https://mes.fm/bmicalculator/index.html?x=1" -> "/bmicalculator"; other sites keep their host in front.
 function normPage(url) {
@@ -47,11 +48,22 @@ function aggregate(dates, blobs, perCad) {
     const a = blobs.adsense[d];
     const day = { d, rev: 0, pv: 0, spend: 0, clicks: 0, has: { gads: !!g, adsense: !!a } };
     if (a) {
+      let pageRev = 0, pagePv = 0;
       for (const [url, earn, pv, imp, clk] of a.pages || []) {
         const p = get(pages, normPage(url), () => ({ rev: 0, pv: 0, adClicks: 0, spend: 0, clicks: 0 }));
         p.rev += earn; p.pv += pv; p.adClicks += clk;
-        day.rev += earn; day.pv += pv;
+        pageRev += earn; pagePv += pv;
         totals.adImp += imp; totals.adClicks += clk;
+      }
+      // AdSense's PAGE_URL report leaves part of the traffic unnamed; the platform report covers all of it, so the
+      // day's totals come from there and the difference is one '(pages AdSense did not list)' row.
+      const devRev = (a.dev || []).reduce((t, r) => t + r[1], 0);
+      const devPv = (a.dev || []).reduce((t, r) => t + r[2], 0);
+      day.rev = (a.dev || []).length ? devRev : pageRev;
+      day.pv = (a.dev || []).length ? devPv : pagePv;
+      if (day.rev - pageRev > 0.005 || day.pv - pagePv > 0) {
+        const o = get(pages, UNLISTED, () => ({ rev: 0, pv: 0, adClicks: 0, spend: 0, clicks: 0 }));
+        o.rev += Math.max(0, day.rev - pageRev); o.pv += Math.max(0, day.pv - pagePv);
       }
       for (const [cc, name, earn, pv] of a.geo || []) {
         const c = get(countries, cc || name, () => ({ name, rev: 0, pv: 0, spend: 0, clicks: 0, imp: 0 }));
