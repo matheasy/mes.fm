@@ -481,15 +481,11 @@ body.is-stuck #navbar.hide { position: fixed; top: 56px; right: 8px; }
 	.st .adr-tile {border:1px solid var(--line);border-radius:0.5em;padding:0.6em 0.75em;background:#fff;}
 	.st .adr-tile b {display:block;font-size:1.45em;color:#1e2733;line-height:1.2;}
 	.st .adr-tile span {font-size:0.8em;color:var(--muted);}
-	/* the phone rule above fixes number columns at 3.5em with no wrapping, so these long headers overlapped */
-	.st #adReturns th.views {white-space:normal;width:auto;line-height:1.25;vertical-align:bottom;}
-	.st #adReturns td.views {width:auto;}
-	.st #adReturns th {overflow-wrap:normal;word-break:normal;hyphens:none;}
-	.st #adReturns td.views small {color:var(--muted);}
-	@media (max-width: 600px) {
-		.st #adReturns td.views small {display:block;}
-		.st #adReturns td:first-child {overflow-wrap:anywhere;}
-	}
+	/* the ad-returns table reuses Most Viewed Pages' layout (wide-table, sticky Page column, sortable headers, share bars) */
+	.st #adrTable td.rate {white-space:nowrap;}
+	.st #adrTable td.rate .share-bar {width:4em;}
+	.st #adrTable td.rate b {font-weight:400;display:inline-block;min-width:2.2em;}
+	.st #adrTable td.rate small {color:var(--muted);margin-left:0.25em;}
 	body.dark-mode .st .adr-tile {background:#1f2327;border-color:#3a4047;}
 	body.dark-mode .st .adr-tile b {color:#e3e7ec;}
 	body.dark-mode .st .adr-note, body.dark-mode .st .adr-tile span {color:#aab2bd;}
@@ -802,16 +798,15 @@ body.is-stuck #navbar.hide { position: fixed; top: 56px; right: 8px; }
 			</div>
 			<div class="adr-tiles" id="adrTiles"></div>
 			<div class="table-wrap">
-				<table>
-					<thead>
-						<tr><th>Landing page</th><th class="views">Ad visitors</th><th class="views">Came back</th><th class="views">Back 5+ days</th><th class="views">Days back each</th></tr>
-					</thead>
+				<table class="wide-table" id="adrTable">
+					<thead id="adrHead"></thead>
 					<tbody id="adrBody">
 						<tr><td colspan="99" class="empty-state">Loading&hellip;</td></tr>
 					</tbody>
 					<tfoot id="adrFoot"></tfoot>
 				</table>
 			</div>
+			<button type="button" class="show-more-btn" id="adrMore" style="display:none"></button>
 			<p class="adr-note" id="adrYoung"></p>
 		</section>
 
@@ -886,7 +881,7 @@ body.is-stuck #navbar.hide { position: fixed; top: 56px; right: 8px; }
             hide_search:false,
             current_tab:0
         }        </script><!-- FASTCOMMENTS-LAZY: widget init moved to main_js/main.js -- it pulls embed.min.js only when #fastcomments-widget nears the viewport or on the first Comments-toggle click, so it no longer blocks first render -->                <script src="https://mes.fm/main_js/lazysizes.min.js?v=1.0.3" async></script>
-	<script src="/stats/js/stats.js?v=12" defer></script>
+	<script src="/stats/js/stats.js?v=13" defer></script>
             <script src="https://mes.fm/main_js/main.js?v=1.0.5"></script>    <!-- PAGEVIEW-TRACKING-INSERTED --><script src="https://mes.fm/main_js/track.js" defer></script><script>document.getElementById('copyright-year').textContent = new Date().getFullYear();</script><script src="/main_js/info-bar-fit.js" defer></script><script>
   // Floating compact header bar (see #compact-nav CSS): appears once the
   // header + nav bar have scrolled off the top; nav links that don't fit

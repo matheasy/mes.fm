@@ -1074,48 +1074,104 @@ function adrTile(value, label) {
   return '<div class="adr-tile"><b>' + value + '</b><span>' + label + '</span></div>';
 }
 
+// Ad table state: same sortable-header / sticky-Page-column layout as Most Viewed Pages (thCell, sortArrow, .wide-table).
+let adrRows = [];
+let adrTotals = { arrivals: 0, returned: 0, loyal: 0, returnDays: 0 };
+let adrAll = false;
+const adrSort = { key: 'arrivals', dir: 'desc' };
+const ADR_PREVIEW = 10;
+function adrPer(r) { return r.arrivals ? r.returnDays / r.arrivals : 0; }
+function adrValue(r, key) {
+  if (key === 'retRate') return r.arrivals ? r.returned / r.arrivals : 0;
+  if (key === 'loyalRate') return r.arrivals ? r.loyal / r.arrivals : 0;
+  if (key === 'per') return adrPer(r);
+  return r[key] || 0;
+}
+function adrRateCell(n, total, color) {
+  const pct = total ? n / total * 100 : 0;
+  return '<td class="views rate"><span class="share-bar"><i style="width:' + Math.min(100, pct).toFixed(1) + '%;background:' + color + '"></i></span>' +
+    '<b>' + n.toLocaleString() + '</b><small>(' + pctText(n, total) + ')</small></td>';
+}
+
+function renderAdReturns() {
+  const head = document.getElementById('adrHead');
+  const body = document.getElementById('adrBody');
+  const foot = document.getElementById('adrFoot');
+  const more = document.getElementById('adrMore');
+  head.innerHTML = '<tr>' + thCell('Landing page', 'path', adrSort, 'sticky-col sticky-left') +
+    thCell('Ad visitors', 'arrivals', adrSort, 'views') +
+    thCell('Came back', 'retRate', adrSort, 'views') +
+    thCell('Back 5+ days', 'loyalRate', adrSort, 'views') +
+    thCell('Days back each', 'per', adrSort, 'views') + '</tr>';
+  if (!adrRows.length) {
+    body.innerHTML = '<tr><td colspan="99" class="empty-state">No ad visitors recorded yet for this range (counting started Oct 22, 2026).</td></tr>';
+    foot.innerHTML = '';
+    more.style.display = 'none';
+    return;
+  }
+  const sign = adrSort.dir === 'desc' ? -1 : 1;
+  const sorted = adrRows.slice().sort(function (a, b) {
+    if (adrSort.key === 'path') return sign * a.path.localeCompare(b.path);
+    return sign * (adrValue(a, adrSort.key) - adrValue(b, adrSort.key)) || b.arrivals - a.arrivals;
+  });
+  const shown = adrAll ? sorted : sorted.slice(0, ADR_PREVIEW);
+  body.innerHTML = shown.map(function (r) {
+    return '<tr><td class="page-cell sticky-col sticky-left"><a href="' + escapeHtml(r.path) + '" title="' + escapeHtml(r.path) + '" target="_blank" rel="noopener"><span class="page-path">' + escapeHtml(r.path) + '</span></a></td>' +
+      '<td class="views">' + r.arrivals.toLocaleString() + '</td>' +
+      adrRateCell(r.returned, r.arrivals, '#27ae60') +
+      adrRateCell(r.loyal, r.arrivals, '#2f80ed') +
+      '<td class="views">' + adrPer(r).toFixed(2) + '</td></tr>';
+  }).join('');
+  const t = adrTotals;
+  foot.innerHTML = '<tr><td class="sticky-col sticky-left">Total</td><td class="views">' + t.arrivals.toLocaleString() + '</td>' +
+    adrRateCell(t.returned, t.arrivals, '#27ae60') + adrRateCell(t.loyal, t.arrivals, '#2f80ed') +
+    '<td class="views">' + adrPer(t).toFixed(2) + '</td></tr>';
+  if (adrRows.length > ADR_PREVIEW) {
+    more.style.display = 'block';
+    more.textContent = adrAll ? 'Show top ' + ADR_PREVIEW : 'Show all (' + adrRows.length + ')';
+  } else more.style.display = 'none';
+}
+
 async function loadAdReturns() {
   document.querySelectorAll('#adrTabs .range-tab').forEach(function (btn) {
     btn.classList.toggle('active', btn.dataset.adr === adrRange);
   });
-  const body = document.getElementById('adrBody');
-  const foot = document.getElementById('adrFoot');
   const tiles = document.getElementById('adrTiles');
   const young = document.getElementById('adrYoung');
-  body.innerHTML = '<tr><td colspan="99" class="empty-state">Loading&hellip;</td></tr>';
-  foot.innerHTML = '';
+  document.getElementById('adrBody').innerHTML = '<tr><td colspan="99" class="empty-state">Loading&hellip;</td></tr>';
+  document.getElementById('adrFoot').innerHTML = '';
   try {
     const res = await fetch('/api/ads-returns?range=' + adrRange);
     if (!res.ok) throw new Error('bad response');
     const data = await res.json();
-    const t = data.totals || { arrivals: 0, returned: 0, loyal: 0, returnDays: 0 };
-    const perVisitor = function (r) { return r.arrivals ? (r.returnDays / r.arrivals).toFixed(2) : '0'; };
+    adrTotals = data.totals || { arrivals: 0, returned: 0, loyal: 0, returnDays: 0 };
+    adrRows = data.rows || [];
+    adrAll = false;
+    const t = adrTotals;
     tiles.innerHTML = adrTile(t.arrivals.toLocaleString(), 'ad visitors (first click)') +
       adrTile(pctText(t.returned, t.arrivals), 'came back at least once') +
       adrTile(pctText(t.loyal, t.arrivals), 'came back on 5+ days') +
-      adrTile(perVisitor(t), 'days back per ad visitor');
-    const rows = data.rows || [];
-    if (!rows.length) {
-      body.innerHTML = '<tr><td colspan="99" class="empty-state">No ad visitors recorded yet for this range (counting started Oct 22, 2026).</td></tr>';
-    } else {
-      body.innerHTML = rows.map(function (r) {
-        return '<tr><td><a href="' + escapeHtml(r.path) + '">' + escapeHtml(r.path) + '</a></td>' +
-          '<td class="views">' + r.arrivals.toLocaleString() + '</td>' +
-          '<td class="views">' + r.returned.toLocaleString() + ' <small>(' + pctText(r.returned, r.arrivals) + ')</small></td>' +
-          '<td class="views">' + r.loyal.toLocaleString() + ' <small>(' + pctText(r.loyal, r.arrivals) + ')</small></td>' +
-          '<td class="views">' + perVisitor(r) + '</td></tr>';
-      }).join('');
-      foot.innerHTML = '<tr><td>Total</td><td class="views">' + t.arrivals.toLocaleString() + '</td><td class="views">' + t.returned.toLocaleString() +
-        '</td><td class="views">' + t.loyal.toLocaleString() + '</td><td class="views">' + perVisitor(t) + '</td></tr>';
-    }
+      adrTile(adrPer(t).toFixed(2), 'days back per ad visitor');
+    renderAdReturns();
     young.textContent = data.recentArrivals
       ? data.recentArrivals.toLocaleString() + ' of these ad visitors arrived in the last 7 days and have had little time to come back, so the newest numbers rise over the following weeks. Counted per browser: someone who comes back on another device counts as not returning.'
       : 'Counted per browser: someone who comes back on another device counts as not returning.';
   } catch (e) {
-    body.innerHTML = '<tr><td colspan="99" class="empty-state">Ad return stats are temporarily unavailable.</td></tr>';
+    document.getElementById('adrBody').innerHTML = '<tr><td colspan="99" class="empty-state">Ad return stats are temporarily unavailable.</td></tr>';
     tiles.innerHTML = '';
   }
 }
+
+document.getElementById('adrHead').addEventListener('click', function (e) {
+  const th = e.target.closest('th[data-sort-key]');
+  if (!th) return;
+  toggleSort(adrSort, th.dataset.sortKey);
+  renderAdReturns();
+});
+document.getElementById('adrMore').addEventListener('click', function () {
+  adrAll = !adrAll;
+  renderAdReturns();
+});
 
 document.getElementById('adrTabs').addEventListener('click', function (e) {
   const btn = e.target.closest('.range-tab');
