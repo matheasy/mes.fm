@@ -562,6 +562,11 @@ body.is-stuck #navbar.hide { position: fixed; top: 56px; right: 8px; }
 				<button type="button" class="tu-chip" data-r="90d" aria-pressed="false">90 days</button>
 				<button type="button" class="tu-chip" data-r="365d" aria-pressed="false">365 days</button>
 			</div>
+			<div class="ad-tabs" id="ad-mode" role="group" aria-label="Show">
+				<button type="button" class="tu-chip" data-m="tot" aria-pressed="true">Totals</button>
+				<button type="button" class="tu-chip" data-m="pk" aria-pressed="false" title="Earned, ad spend and net for each 1,000 page views">Per 1,000 views</button>
+				<button type="button" class="tu-chip" data-m="both" aria-pressed="false">Both</button>
+			</div>
 			<div class="ad-tabs" id="ad-cur" role="group" aria-label="Currency">
 				<button type="button" class="tu-chip" data-c="CAD" aria-pressed="true">CAD</button>
 				<button type="button" class="tu-chip" data-c="VND" aria-pressed="false">VND</button>
@@ -584,7 +589,7 @@ body.is-stuck #navbar.hide { position: fixed; top: 56px; right: 8px; }
 
 		<section class="tu-card ad-sec">
 			<h2>Landing pages</h2>
-			<p class="tu-note">Every page that earned or that ads point to. Spend and ad clicks are Google Ads' (the page the ad sends people to); earnings and page views are AdSense's for all visitors to that page, not only the ones from ads. "Came back" = ad visitors who returned later on their own.</p>
+			<p class="tu-note">Every page that earned or that ads point to. Spend and ad clicks are Google Ads' (the page the ad sends people to); earnings and page views are AdSense's for all visitors to that page, not only the ones from ads. "Came back" = ad visitors who returned later on their own. Per 1,000 views divides by all of a page's views, not only the ones ads brought: it shows whether the ads for a page pay for themselves.</p>
 			<div class="ad-wrap"><table class="ad-t" id="t-pages"></table></div><button type="button" class="tu-btn tu-btn--ghost ad-more" id="m-pages" hidden></button>
 		</section>
 
@@ -671,7 +676,7 @@ body.is-stuck #navbar.hide { position: fixed; top: 56px; right: 8px; }
             hide_search:false,
             current_tab:0
         }        </script><!-- FASTCOMMENTS-LAZY: widget init moved to main_js/main.js -- it pulls embed.min.js only when #fastcomments-widget nears the viewport or on the first Comments-toggle click, so it no longer blocks first render -->                <script src="https://mes.fm/main_js/lazysizes.min.js?v=1.0.3" async></script>
-	<script src="/earnings/js/earnings.js?v=7" defer></script>
+	<script src="/earnings/js/earnings.js?v=8" defer></script>
             <script src="https://mes.fm/main_js/main.js?v=1.0.5"></script>    <!-- PAGEVIEW-TRACKING-INSERTED --><script src="https://mes.fm/main_js/track.js" defer></script><script>document.getElementById('copyright-year').textContent = new Date().getFullYear();</script><script src="/main_js/info-bar-fit.js" defer></script><script>
   // Floating compact header bar (see #compact-nav CSS): appears once the
   // header + nav bar have scrolled off the top; nav links that don't fit
