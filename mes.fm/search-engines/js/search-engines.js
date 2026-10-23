@@ -263,7 +263,7 @@
 		if (e.types) {
 			var ex = S.extra[e.id] || [];
 			h += '<div class="se-also" role="group" aria-label="Also search ' + esc(e.name) + ' for"><span>Also:</span>' + ["images", "news", "videos"].filter(function (t) { return e.types[t]; }).map(function (t) {
-				return '<button type="button" data-x="' + t + '" aria-pressed="' + (ex.indexOf(t) >= 0) + '" title="Open the ' + esc(e.name) + " " + t + ' search too">' + t.charAt(0).toUpperCase() + t.slice(1) + "</button>";
+				return '<button type="button" data-x="' + t + '" aria-pressed="' + (ex.indexOf(t) >= 0) + '"' + (t === S.type ? ' class="is-same"' : "") + ' title="' + (t === S.type ? "Already the main search type above" : "Open the " + esc(e.name) + " " + t + " search too") + '">' + t.charAt(0).toUpperCase() + t.slice(1) + "</button>";
 			}).join("") + "</div>";
 		}
 		if (na) h += '<div class="se-na">No ' + S.type + " search here</div>";
@@ -277,6 +277,8 @@
 	}
 	function render() {
 		var t = tg(), html = "", list = all(), ft = filterText.toLowerCase();
+		var nx = 0; Object.keys(S.extra).forEach(function (id) { nx += (S.extra[id] || []).length; });
+		var cx = $("se-clearx"); if (cx) { cx.hidden = !nx; cx.textContent = 'Clear "Also" extras (' + nx + ")"; }
 		groups().forEach(function (g) {
 			var items = list.filter(function (e) { return e.g === g[0] && (!ft || e.name.toLowerCase().indexOf(ft) >= 0 || e.id.indexOf(ft) >= 0); });
 			if (!items.length) return;
@@ -434,7 +436,8 @@
 		var ft = filterText.toLowerCase(), ids = all().filter(function (e) { return !ft || e.name.toLowerCase().indexOf(ft) >= 0; }).map(function (e) { return e.id; });
 		ids.forEach(function (id) { if (S.sel.indexOf(id) < 0) S.sel.push(id); }); persist(); render();
 	};
-	$("se-none").onclick = function () { S.sel = []; persist(); render(); };
+	$("se-none").onclick = function () { S.sel = []; S.extra = {}; persist(); render(); };
+	$("se-clearx").onclick = function () { S.extra = {}; persist(); render(); };
 	$("se-saveset").onclick = function () {
 		if (!S.sel.length) { toast("Tick some engines first"); return; }
 		var name = prompt("Name for this set of " + S.sel.length + " engines:\n(Shift-click a saved set later to delete it.)", ""); if (!name || !name.trim()) return;

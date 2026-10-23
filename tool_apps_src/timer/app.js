@@ -35,6 +35,7 @@
 		try {
 			var s = JSON.parse(localStorage.getItem(KEY) || "null"); if (!s) return;
 			if (typeof s.sound === "string") S.sound = s.sound;
+			if (typeof s.soundPrev === "string") S.soundPrev = s.soundPrev;
 			S.vol = num(s.vol, 80, 0, 100); if (s.repeat === 0 || s.repeat === 1 || s.repeat === 3) S.repeat = s.repeat;
 			["optTitle", "optAwake", "optNotify", "optTenths", "compact"].forEach(function (k) { if (typeof s[k] === "boolean") S[k] = s[k]; });
 			if (Array.isArray(s.show)) S.show = s.show.filter(function (v) { return PANELS[v]; });
@@ -121,6 +122,7 @@
 	var MUTE_OFF = '<svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M11 5 6 9H3v6h3l5 4z"/><path d="m22 9-6 6M16 9l6 6"/></svg>';
 	function muteBtn(keys) { return '<button type="button" class="tm-icon tm-mute" data-mute="' + esc(keys) + '" aria-pressed="false" title="Mute the sound of this one" aria-label="Mute sound">' + MUTE_ON + "</button>"; }
 	function paintMute() {
+		var gb = document.querySelector(".tm-dp__snd"); if (gb) { var off = S.sound === "off"; gb.setAttribute("aria-pressed", String(off)); gb.innerHTML = (off ? MUTE_OFF : MUTE_ON) + (off ? " Sound off" : " Sound on"); gb.title = off ? "All sounds are off: click to turn them back on" : "Turn every sound off"; }
 		[].forEach.call(document.querySelectorAll("[data-mute]"), function (b) {
 			var ks = b.dataset.mute.split(",").filter(Boolean), on = ks.length && ks.every(isMuted);
 			b.setAttribute("aria-pressed", String(!!on)); var t = on ? "Muted: click to turn the sound back on" : "Mute the sound of this one"; if (b.title !== t) { b.title = t; b.innerHTML = on ? MUTE_OFF : MUTE_ON; }
@@ -131,6 +133,11 @@
 		S.muted = S.muted.filter(function (k) { return ks.indexOf(k) < 0; }); if (!all) S.muted = S.muted.concat(ks);
 		if (ringing.length && ringing.every(function (r) { return isMuted(itemKey(r)); })) stopSound();
 		save(); paintMute(); toast(all ? "Sound on" : "Muted: still shows, no sound");
+	}
+	function toggleAllSound() {
+		if (S.sound === "off") { S.sound = S.soundPrev && S.soundPrev !== "off" ? S.soundPrev : "friendly"; toast("Sound on"); }
+		else { S.soundPrev = S.sound; S.sound = "off"; stopSound(); toast("All sounds off: timers still show when they finish"); }
+		var sel = $("tm-sound"); if (sel) sel.value = S.sound; save(); paintMute();
 	}
 	function ring(item, msg) {
 		ringing.push(item); item.msg = msg; notify("⏰ " + msg); if (!isMuted(itemKey(item))) startRing(S.repeat); drawRing();
@@ -606,14 +613,14 @@
 	function ensureDisplay() {
 		var el = $("tm-dp"); if (el) return el;
 		el = document.createElement("div"); el.id = "tm-dp"; el.className = "tm-dp"; el.hidden = true; el.setAttribute("role", "dialog"); el.setAttribute("aria-label", "Timer display");
-		el.innerHTML = '<div class="tm-dp__bar"><span class="tm-dp__hint" id="tm-dp-hint"></span><button type="button" class="tm-dp__btn" data-d="pick">Choose timers</button><button type="button" class="tm-dp__btn" data-d="fs">⛶ Full screen</button><button type="button" class="tm-dp__btn" data-d="close">✕ Close</button></div><div class="tm-dp__ring" id="tm-dp-ring" hidden><span></span><span class="tm-dp__rb"></span></div><div class="tm-dp__pick" id="tm-dp-pick" hidden></div><div class="tm-dp__grid" id="tm-dp-grid"></div>';
+		el.innerHTML = '<div class="tm-dp__bar"><span class="tm-dp__hint" id="tm-dp-hint"></span><button type="button" class="tm-dp__btn tm-dp__snd" data-d="snd" aria-pressed="false"></button><button type="button" class="tm-dp__btn" data-d="pick">Choose timers</button><button type="button" class="tm-dp__btn" data-d="fs">⛶ Full screen</button><button type="button" class="tm-dp__btn" data-d="close">✕ Close</button></div><div class="tm-dp__ring" id="tm-dp-ring" hidden><span></span><span class="tm-dp__rb"></span></div><div class="tm-dp__pick" id="tm-dp-pick" hidden></div><div class="tm-dp__grid" id="tm-dp-grid"></div>';
 		document.body.appendChild(el);
 		sortable($("tm-dp-grid"), ".tm-dp__tile", function (els) { var ks = []; els.forEach(function (x) { if (x.dataset.k === "alarms") ks = ks.concat((x.dataset.members || "").split(",").filter(Boolean)); else ks.push(x.dataset.k); }); S.display = ks.concat((S.display || []).filter(function (k) { return ks.indexOf(k) < 0; })); dpKeys = ""; save(); renderDisplay(); });
 		el.addEventListener("click", function (e) {
 			var rb = e.target.closest("#tm-dp-ring [data-r]"); if (rb) { ringAct(rb.dataset.r); return; }
 			var mu = e.target.closest("[data-mute]"); if (mu) { toggleMute(mu.dataset.mute); return; }
 			var ab = e.target.closest("[data-act]"); if (ab) { var tl = ab.closest(".tm-dp__tile"); if (tl) dpAct(ab.dataset.ak || tl.dataset.k, ab.dataset.act); return; }
-			var b = e.target.closest("[data-d]"); if (b) { if (b.dataset.d === "close") closeDisplay(); else if (b.dataset.d === "fs") toggleScreen(); else if (b.dataset.d === "pick") { var pk = $("tm-dp-pick"); pk.hidden = !pk.hidden; if (!pk.hidden) drawPick(); } return; }
+			var b = e.target.closest("[data-d]"); if (b) { if (b.dataset.d === "close") closeDisplay(); else if (b.dataset.d === "snd") toggleAllSound(); else if (b.dataset.d === "fs") toggleScreen(); else if (b.dataset.d === "pick") { var pk = $("tm-dp-pick"); pk.hidden = !pk.hidden; if (!pk.hidden) drawPick(); } return; }
 			if (e.target.matches("#tm-dp-pick input[type=checkbox]")) {
 				var cur = S.display || dpSelected(dpItems()), k = e.target.dataset.k, i = cur.indexOf(k); cur = cur.slice(); if (e.target.checked && i < 0) cur.push(k); else if (!e.target.checked && i >= 0) cur.splice(i, 1);
 				S.display = cur; save(); dpKeys = ""; renderDisplay();
@@ -657,7 +664,7 @@
 			dpKeys = keys; grid.className = "tm-dp__grid tm-dp__n" + Math.min(shown.length, 9);
 			grid.innerHTML = shown.map(function (i) { var grip = shown.length > 1 ? '<button type="button" class="tm-grip" title="Drag to rearrange (or focus and use the arrow keys)" aria-label="Move ' + esc(i.label || "alarms") + ': drag, or use the arrow keys">\u283f</button>' : "";
 				if (i.kind === "AlarmGroup") return '<div class="tm-dp__tile tm-dp__group" data-k="alarms" data-members="' + esc(i.alarms.map(function (a) { return a.key; }).join(",")) + '">' + grip + muteBtn(i.alarms.map(function (a) { return a.key; }).join(",")) + '<div data-g></div></div>';
-				return '<div class="tm-dp__tile" data-k="' + esc(i.key) + '">' + grip + pinBtn(i.key, "tm-tabpin--dp") + muteBtn(i.key) + '<div class="tm-dp__l">' + esc(i.label) + '</div><div class="tm-dp__t" data-t></div><div class="tm-dp__t2" data-t2></div><div class="tm-dp__s" data-s></div><div class="tm-dp__b"><i data-b></i></div><div class="tm-dp__ctl" data-ctl></div></div>'; }).join("");
+				return '<div class="tm-dp__tile" data-k="' + esc(i.key) + '">' + grip + pinBtn(i.key, "tm-tabpin--dp") + (i.kind === "Stopwatch" ? "" : muteBtn(i.key)) + '<div class="tm-dp__l">' + esc(i.label) + '</div><div class="tm-dp__t" data-t></div><div class="tm-dp__t2" data-t2></div><div class="tm-dp__s" data-s></div><div class="tm-dp__b"><i data-b></i></div><div class="tm-dp__ctl" data-ctl></div></div>'; }).join("");
 		}
 		shown.forEach(function (i) {
 			var tile = grid.querySelector('.tm-dp__tile[data-k="' + i.key.replace(/"/g, "") + '"]'); if (!tile) return;

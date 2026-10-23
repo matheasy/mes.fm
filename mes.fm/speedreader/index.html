@@ -215,7 +215,7 @@ sub {vertical-align:sub;}        .warning-message {font-size:1em;text-align:cent
 	.tu-input--big {font-size:1.35em;padding:0.55em 0.7em;}
 	.tu-suffix {position:relative;}
 	.tu-suffix .tu-input {padding-right:3.2em;}
-	.tu-suffix span {position:absolute;right:0.7em;top:50%;transform:translateY(-50%);font-size:0.85em;color:#8a93a0;pointer-events:none;}
+	.tu-suffix span {position:absolute;right:0.7em;top:50%;transform:translateY(-50%);font-size:0.85em;color:#667085;pointer-events:none;}
 	.tu-btn {cursor:pointer;padding:0.5em 0.95em;border-radius:0.35em;border:0.125em solid var(--accent);background:#fff;color:var(--accent);font-size:0.9em;line-height:1.1;}
 	.tu-btn:hover {background:var(--accent);color:#fff;}
 	.tu-btn--primary {background:var(--accent);color:#fff;}
@@ -236,7 +236,7 @@ sub {vertical-align:sub;}        .warning-message {font-size:1em;text-align:cent
 	.tu-stat--hero {background:#fdeceb;border-color:#fdeceb;}
 	.tu-stat__label {font-size:0.72em;font-weight:700;text-transform:uppercase;letter-spacing:0.05em;color:#667;}
 	.tu-stat__value {font-size:1.7em;font-weight:700;color:#1e2733;line-height:1.2;margin:0.15em 0;word-break:break-word;}
-	.tu-stat__sub {font-size:0.85em;color:#6a7280;line-height:1.35;}
+	.tu-stat__sub {font-size:0.85em;color:#555d6b;line-height:1.35;}
 	.tu-pos {color:#1f7a3d !important;}
 	.tu-neg {color:#b3261e !important;}
 	.tu-table-wrap {overflow-x:auto;}
@@ -249,7 +249,15 @@ sub {vertical-align:sub;}        .warning-message {font-size:1em;text-align:cent
 	.tu-toast {position:fixed;left:50%;bottom:2em;transform:translateX(-50%) translateY(0.5em);background:#1e2733;color:#fff;padding:0.6em 1.1em;border-radius:2em;font-size:0.9em;box-shadow:0 0.4em 1.2em rgba(0,0,0,0.25);opacity:0;pointer-events:none;transition:opacity 0.15s, transform 0.15s;z-index:60;}
 	.tu-toast--show {opacity:1;transform:translateX(-50%) translateY(0);}
 	.tu-seo {margin-top:2em;border-top:1px solid #e3e3e3;padding-top:1.2em;}
-	.tu-seo h2 {border-bottom:0;padding-bottom:0;font-size:1.2em;}
+	/* SEO-HEADINGS: headlines and questions stand out from the body text (also added to built pages by add_seo_heading_style.py) */
+	body .tu-seo {font-size:1.04em;line-height:1.65;}
+	body .tu-seo h2 {font-size:1.45em;font-weight:800;line-height:1.25;margin:0 0 0.6em;color:#1e2733;border-bottom:0;padding-bottom:0;}
+	body .tu-seo h3 {font-size:1.2em;font-weight:800;line-height:1.3;margin:1.6em 0 0.5em;padding:0.15em 0 0.15em 0.65em;border-left:5px solid var(--accent,#4a6fa5);color:#1e2733;}
+	body .tu-seo h4, body .tu-seo dt {font-size:1.08em;font-weight:700;font-style:normal;line-height:1.35;margin:1.3em 0 0.3em;color:#1e2733;}
+	body .tu-seo dd {margin:0 0 0.6em;} body .tu-seo p, body .tu-seo li, body .tu-seo dd {line-height:1.65;}
+	body.dark-mode .tu-seo h2, body.dark-mode .tu-seo h3, body.dark-mode .tu-seo h4, body.dark-mode .tu-seo dt {color:#f2f2f2;}
+	.tu sup, .tu sub {font-size:0.72em !important;line-height:0;vertical-align:baseline;position:relative;} .tu sup {top:-0.5em;} .tu sub {top:0.3em;}
+	.tu div[class$="-eq"] {overflow-y:hidden;}
 	.tu-seo ul {list-style:disc;margin:0.5em 0 0.5em 1.5em;line-height:1.5;}
 	.tu-svg-line {fill:none;stroke:#1e2733;stroke-width:2;}
 	.tu-svg-accent {fill:none;stroke:var(--accent);stroke-width:3;}
@@ -274,6 +282,28 @@ sub {vertical-align:sub;}        .warning-message {font-size:1em;text-align:cent
 	@media print {
 		.tu-btn, .tu-chips, .tu-seg {display:none !important;}
 	}
+
+/* row layout options on the grade / GPA / weighted-average calculators (names on-off, table layout) */
+.tu .rw-bar {display:flex;gap:0.4em;flex-wrap:wrap;margin:0.5em 0 0.1em;}
+.tu .gc-n {display:none;}
+.tu [data-names="0"] .rw-name {display:none !important;}
+.tu [data-names="0"] .rw-num, .tu [data-table="1"] .rw-num {display:block !important;flex:0 0 1.7em;text-align:right;color:#8a93a0;font-size:0.85em;padding-bottom:0.7em;}
+.tu [data-table="1"] .rw-head, .tu [data-table="1"] .rw-row {display:grid !important;grid-template-columns:var(--rw-cols);gap:0.3em;align-items:center;}
+.tu [data-table="1"] .rw-head {font-size:0.68em;font-weight:700;text-transform:uppercase;letter-spacing:0.03em;color:#667;padding:0.4em 0 0.2em;border-bottom:2px solid #d5dae1;} .tu [data-table="1"] .rw-head span {text-align:center;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;} .tu [data-table="1"] .rw-head span:first-child {text-align:right;}
+.tu [data-table="1"] .rw-row {padding:0.22em 0;border-bottom:1px solid #eceff3;}
+.tu [data-table="1"] .rw-row > * {order:0 !important;flex:none !important;margin:0 !important;min-width:0 !important;width:auto !important;}
+.tu [data-table="1"] .rw-row .rw-num {padding:0;}
+.tu [data-table="1"] .rw-f label {display:none;}
+.tu [data-table="1"] .rw-row .tu-input, .tu [data-table="1"] .rw-row .tu-select {padding:0.35em 0.2em;width:100%;min-width:0;text-align:center;}
+.tu [data-table="1"] .rw-row .rw-name .tu-input {text-align:left;padding-left:0.4em;}
+.tu [data-table="1"] .rw-del {padding:0.25em 0 !important;font-size:0.95em !important;}
+.tu [data-table="1"] .rw-pts {padding:0 !important;font-size:0.78em;text-align:center;}
+body.dark-mode .tu .rw-head {color:#a0a8b3;border-bottom-color:#555;} body.dark-mode .tu [data-table="1"] .rw-row {border-bottom-color:#333;}
+/* equation boxes typeset by main_js/mes-math.js (MathJax) */
+.tu [class$="-eq__f"].mes-tex {font-family:inherit;white-space:normal;display:inline-block;vertical-align:middle;max-width:100%;overflow-x:auto;overflow-y:hidden;}
+.tu [class$="-eq"] mjx-container {margin:0.15em 0 !important;}
+.tu [class$="-eq"] > div {margin:0.25em 0;}
+.tu [class$="-eq__n"] {vertical-align:middle;}
 
 	/* MES Speed Reader -- mes.fm/speedreader. Stage colours are literal (the derived dark theme can't see through var()), restated under body.dark-mode below. */
 	.tu .sr-reader {display:flex;flex-direction:column;padding:0.9em;position:relative;}
@@ -392,6 +422,8 @@ sub {vertical-align:sub;}        .warning-message {font-size:1em;text-align:cent
 	.tu .sr-grip::before {content:"";width:3.2em;height:0.35em;border-radius:1em;background:currentColor;opacity:0.6;margin-right:0.6em;}
 	.tu .sr-reader[data-mode="aloud"] .sr-grip {display:flex;}
 	.tu .sr-reader.is-focus .sr-grip {display:none !important;}
+	.tu .sr-reader.is-focus[data-mode="aloud"] .sr-grip {display:flex !important;flex:0 0 auto;}
+	.tu .sr-reader.is-focus[data-mode="aloud"] .sr-pane.is-sized {flex:0 0 auto;height:var(--sr-ph);}
 	.tu .sr-sr {position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap;}
 
 	/* focus mode (also the fallback where the Fullscreen API is missing, e.g. iPhone Safari) */
@@ -478,6 +510,25 @@ sub {vertical-align:sub;}        .warning-message {font-size:1em;text-align:cent
 	@media print {
 		.tu .sr-reader {display:none !important;}
 	}
+
+	/* saved texts */
+	.tu .sr-lib {margin:0.9em 0 0.4em;padding:0.7em 0.8em;border:1px solid #d6dbe1;border-radius:0.6em;}
+	.tu .sr-libhead {display:flex;justify-content:space-between;align-items:center;gap:0.6em;flex-wrap:wrap;margin-bottom:0.5em;}
+	.tu .sr-libhead .tu-label {margin:0;}
+	.tu .sr-liblist {display:flex;flex-direction:column;gap:0.35em;max-height:16em;overflow:auto;}
+	.tu .sr-libitem {display:flex;align-items:stretch;border:1px solid #d6dbe1;border-radius:0.5em;overflow:hidden;}
+	.tu .sr-libitem.is-cur {border-color:var(--accent);box-shadow:inset 3px 0 0 var(--accent);}
+	.tu .sr-libitem button {border:0;background:transparent;color:inherit;font:inherit;cursor:pointer;min-height:44px;}
+	.tu .sr-libopen {flex:1 1 auto;text-align:left;padding:0.4em 0.7em;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+	.tu .sr-libopen small {color:#6a7280;margin-left:0.3em;}
+	.tu .sr-librn, .tu .sr-libdel {flex:0 0 auto;width:2.6em;color:#6a7280;font-size:1.1em;}
+	.tu .sr-libitem button:hover {background:rgba(0,0,0,0.05);}
+	.tu .sr-libempty {color:#6a7280;font-style:italic;font-size:0.92em;}
+	.tu .sr-libnote {margin:0.5em 0 0;font-size:0.85em;}
+	.sr-undo {margin-left:0.6em;border:1px solid currentColor;border-radius:0.4em;background:transparent;color:inherit;font:inherit;font-weight:700;padding:0.15em 0.6em;cursor:pointer;}
+	body.dark-mode #sr .sr-lib, body.dark-mode #sr .sr-libitem {border-color:#3a4048;}
+	body.dark-mode #sr .sr-libopen small, body.dark-mode #sr .sr-librn, body.dark-mode #sr .sr-libdel, body.dark-mode #sr .sr-libempty {color:#a8b0bb;}
+	body.dark-mode #sr .sr-libitem button:hover {background:rgba(255,255,255,0.07);}
 
 
 	@media print {
@@ -571,7 +622,7 @@ body.is-stuck #navbar.hide { position: fixed; top: 56px; right: 8px; }
 	body.dark-mode .tu-card--tint{background:#241211;border-color:#420a07}
 	body.dark-mode .tu-field > label,body.dark-mode .tu-label{color:#9a9aa2}
 	body.dark-mode .tu-input,body.dark-mode .tu-select{border:1px solid #404a58;background:#1a1a1a;color:#dddddd}
-	body.dark-mode .tu-suffix span{color:#999da3}
+	body.dark-mode .tu-suffix span{color:#989ca4}
 	body.dark-mode .tu-btn{background:#1a1a1a}
 	body.dark-mode .tu-btn--ghost{border-color:#3a424d;color:#aaaaaa}
 	body.dark-mode .tu-btn--ghost:hover{background:#191c20;color:#dddddd;border-color:#3a424d}
@@ -583,7 +634,7 @@ body.is-stuck #navbar.hide { position: fixed; top: 56px; right: 8px; }
 	body.dark-mode .tu-stat--hero{background:#241211;border-color:#420a07}
 	body.dark-mode .tu-stat__label{color:#9a9aa2}
 	body.dark-mode .tu-stat__value{color:#d1d6dc}
-	body.dark-mode .tu-stat__sub{color:#9a9da3}
+	body.dark-mode .tu-stat__sub{color:#9a9ea4}
 	body.dark-mode .tu-pos{color:#7dde9d !important}
 	body.dark-mode .tu-neg{color:#e87973 !important}
 	body.dark-mode .tu-table th,body.dark-mode .tu-table td{border-bottom:1px solid #29323d;color:#cccccc}
@@ -595,6 +646,9 @@ body.is-stuck #navbar.hide { position: fixed; top: 56px; right: 8px; }
 	body.dark-mode .tu-svg-line{stroke:#394a60}
 	body.dark-mode .tu-svg-text{fill:#cccccc}
 	body.dark-mode .tu-svg-grid{stroke:#28323e}
+	body.dark-mode .tu [data-names="0"] .rw-num,body.dark-mode .tu [data-table="1"] .rw-num{color:#999da3}
+	body.dark-mode .tu [data-table="1"] .rw-head{color:#9a9aa2;border-bottom:2px solid #2b323c}
+	body.dark-mode .tu [data-table="1"] .rw-row{border-bottom:1px solid #27313f}
 	body.dark-mode .tu .sr-stage[data-th="light"]{--sr-orp:#fc310d}
 	body.dark-mode .tu .sr-stage[data-th="sepia"]{--sr-orp:#dc372d}
 	body.dark-mode .tu .sr-stage[data-th="night"]{--sr-dim:#be964b;--sr-guide:#be984b}
@@ -629,6 +683,12 @@ body.is-stuck #navbar.hide { position: fixed; top: 56px; right: 8px; }
 	body.dark-mode .tu .sr-measure{background:#241211;border:1px solid #420a07}
 	body.dark-mode .tu .sr-mtext{background:#1a1a1a;color:#c6ccd4}
 	body.dark-mode .tu kbd{border:1px solid #3a424d;background:#16191d;color:#cccccc}
+	body.dark-mode .tu .sr-lib{border:1px solid #2b323b}
+	body.dark-mode .tu .sr-libitem{border:1px solid #2b323b}
+	body.dark-mode .tu .sr-libopen small{color:#9a9da3}
+	body.dark-mode .tu .sr-librn,body.dark-mode .tu .sr-libdel{color:#9a9da3}
+	body.dark-mode .tu .sr-libitem button:hover{background:rgba(82,82,82,0.05)}
+	body.dark-mode .tu .sr-libempty{color:#9a9da3}
 	/* TOOL-DARK:END */
 </style>
         <meta property="fb:app_id" content="" />
@@ -803,18 +863,7 @@ body.is-stuck #navbar.hide { position: fixed; top: 56px; right: 8px; }
     }).observe(document.documentElement, {childList: true, subtree: true});
 })();
 </script>
-    <style id="seo-headings">
-/* SEO-HEADINGS */
-body .tu-seo {font-size:1.04em;line-height:1.65;}
-body .tu-seo h2 {font-size:1.45em;font-weight:800;line-height:1.25;margin:0 0 0.6em;color:#1e2733;border-bottom:0;padding-bottom:0;}
-body .tu-seo h3 {font-size:1.2em;font-weight:800;line-height:1.3;margin:1.6em 0 0.5em;padding:0.15em 0 0.15em 0.65em;border-left:5px solid var(--accent,#4a6fa5);color:#1e2733;}
-body .tu-seo h4, body .tu-seo dt {font-size:1.08em;font-weight:700;font-style:normal;line-height:1.35;margin:1.3em 0 0.3em;color:#1e2733;}
-body .tu-seo dd {margin:0 0 0.6em;} body .tu-seo p, body .tu-seo li, body .tu-seo dd {line-height:1.65;}
-body.dark-mode .tu-seo h2, body.dark-mode .tu-seo h3, body.dark-mode .tu-seo h4, body.dark-mode .tu-seo dt {color:#f2f2f2;}
-.tu sup, .tu sub {font-size:0.72em !important;line-height:0;vertical-align:baseline;position:relative;} .tu sup {top:-0.5em;} .tu sub {top:0.3em;}   /* the page reset made superscripts as big as the text, e.g. 10^-13 */
-.tu div[class$="-eq"] {overflow-y:hidden;}   /* equation boxes: overflow-x:auto made overflow-y auto too, so a tall formula showed a vertical scrollbar */
-</style>
-<!-- MES-ASIDE-HEAD --><link rel="stylesheet" href="/main_js/aside.css?v=2"><script>try{if(localStorage.getItem('asideSide')==='left')document.documentElement.classList.add('aside-left')}catch(e){}try{if(localStorage.getItem('pageWide')==='1')document.documentElement.classList.add('page-wide')}catch(e){}try{if(localStorage.getItem('pageMode')==='theatre')document.documentElement.classList.add('page-theatre')}catch(e){}try{if(localStorage.getItem('asideHidden')==='1')document.documentElement.classList.add('aside-hidden')}catch(e){}</script><!-- /MES-ASIDE-HEAD --></head>
+    <!-- MES-ASIDE-HEAD --><link rel="stylesheet" href="/main_js/aside.css?v=2"><script>try{if(localStorage.getItem('asideSide')==='left')document.documentElement.classList.add('aside-left')}catch(e){}try{if(localStorage.getItem('pageWide')==='1')document.documentElement.classList.add('page-wide')}catch(e){}try{if(localStorage.getItem('pageMode')==='theatre')document.documentElement.classList.add('page-theatre')}catch(e){}try{if(localStorage.getItem('asideHidden')==='1')document.documentElement.classList.add('aside-hidden')}catch(e){}</script><!-- /MES-ASIDE-HEAD --></head>
     <body>            <!-- Google Tag Manager (noscript) -->
             <noscript><iframe src="https://www.googletagmanager.com/ns.html?id=GTM-PL6QNQR"
             height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
@@ -968,6 +1017,11 @@ body.dark-mode .tu-seo h2, body.dark-mode .tu-seo h3, body.dark-mode .tu-seo h4,
 				<button type="button" class="tu-chip" id="sr-measure-btn">Measure my reading speed</button>
 				<button type="button" class="tu-chip" id="sr-clear">Clear</button>
 			</div>
+			<div class="sr-lib" id="sr-lib">
+				<div class="sr-libhead"><span class="tu-label">My saved texts</span><button type="button" class="tu-btn tu-btn--ghost sr-libsave" id="sr-libsave" title="Keep this text in this browser, with your place in it">&#128190; Save this text</button></div>
+				<div class="sr-liblist" id="sr-liblist" role="list"></div>
+				<p class="tu-note sr-libnote">Saved in this browser only (nothing is uploaded). Each saved text remembers where you stopped.</p>
+			</div>
 			<div class="tu-chips sr-samples" role="group" aria-label="Sample texts">
 				<span class="tu-label sr-samplelabel">Samples</span>
 				<button type="button" class="tu-chip" data-s="alice">Alice in Wonderland</button>
@@ -1119,7 +1173,7 @@ body.dark-mode .tu-seo h2, body.dark-mode .tu-seo h3, body.dark-mode .tu-seo h4,
             hide_search:false,
             current_tab:0
         }        </script><!-- FASTCOMMENTS-LAZY: widget init moved to main_js/main.js -- it pulls embed.min.js only when #fastcomments-widget nears the viewport or on the first Comments-toggle click, so it no longer blocks first render -->                <script src="https://mes.fm/main_js/lazysizes.min.js?v=1.0.3" async></script>
-	<script src="/main_js/voice-picker.js?v=1" defer></script><script src="/speedreader/js/speedreader.js?v=2" defer></script>
+	<script src="/main_js/voice-picker.js?v=1" defer></script><script src="/speedreader/js/speedreader.js?v=3" defer></script>
             <script src="https://mes.fm/main_js/main.js?v=1.0.5"></script>    <!-- PAGEVIEW-TRACKING-INSERTED --><script src="https://mes.fm/main_js/track.js" defer></script><script>document.getElementById('copyright-year').textContent = new Date().getFullYear();</script><script src="/main_js/info-bar-fit.js" defer></script><script>
   // Floating compact header bar (see #compact-nav CSS): appears once the
   // header + nav bar have scrolled off the top; nav links that don't fit

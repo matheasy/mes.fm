@@ -241,3 +241,12 @@
 	#tm-dp .tm-dpg__rl {color:var(--dp11);} #tm-dp .tm-dpg__rt {color:var(--dp0);} #tm-dp .tm-dpg__rc {color:var(--dp14);} #tm-dp .tm-dpg__nl {color:var(--dp9);} #tm-dp .tm-dpg__now span:last-child {color:var(--dp17);}
 	.tm-dp__group [data-g] {padding-top:2.4vmin;}
 	.tm-dp .tm-mute {position:absolute;top:0.6vmin;right:7.6vmin;display:inline-flex;align-items:center;cursor:pointer;border:1px solid transparent;border-radius:0.5em;background:transparent;color:var(--dp9);padding:0.7vmin 0.9vmin;font:inherit;font-size:2.2vmin;opacity:0.75;} .tm-dp .tm-mute:hover {opacity:1;color:var(--dp17);border-color:var(--dp4);} .tm-dp .tm-mute svg {width:1em;height:1em;} .tm-dp .tm-mute[aria-pressed="true"] {opacity:1;color:var(--dp8);border-color:var(--dp8);}
+
+	/* Display: bigger, clearer icon buttons (they were ~2.2vmin, near invisible on a small window) + the bar's Sound on / off */
+	.tm-dp .tm-mute, .tm-dp .tm-tabpin {font-size:max(2.6vmin, 17px);padding:max(0.7vmin, 5px) max(0.9vmin, 7px);opacity:0.9;}
+	.tm-dp .tm-mute {right:max(8.4vmin, 46px);}
+	.tm-dp .tm-mute[aria-pressed="true"] {background:var(--dp16);}
+	.tm-dp__snd {display:inline-flex;align-items:center;gap:0.35em;} .tm-dp__snd svg {width:1.1em;height:1.1em;}
+	.tm-dp__snd[aria-pressed="true"] {border-color:var(--dp8);color:var(--dp8);}
+	.tm-dp__bar {flex-wrap:wrap;row-gap:0.4em;} .tm-dp__btn {white-space:nowrap;}
+	@media (max-width:560px) {.tm-dp__btn {padding:0.45em 0.7em;font-size:0.92em;}}

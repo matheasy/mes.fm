@@ -108,3 +108,5 @@
 	.se-def-mini[hidden], .se-def[hidden] {display:none;}
 	.se-sc-chips {display:flex;flex-wrap:wrap;gap:0.4em;align-items:center;margin:0.4em 0;}
 	.se-sc-in {width:6em;}
+
+.se-also button.is-same {opacity:0.45;text-decoration:line-through;}

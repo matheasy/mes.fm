@@ -115,6 +115,8 @@
 	.tu .sr-grip::before {content:"";width:3.2em;height:0.35em;border-radius:1em;background:currentColor;opacity:0.6;margin-right:0.6em;}
 	.tu .sr-reader[data-mode="aloud"] .sr-grip {display:flex;}
 	.tu .sr-reader.is-focus .sr-grip {display:none !important;}
+	.tu .sr-reader.is-focus[data-mode="aloud"] .sr-grip {display:flex !important;flex:0 0 auto;}
+	.tu .sr-reader.is-focus[data-mode="aloud"] .sr-pane.is-sized {flex:0 0 auto;height:var(--sr-ph);}
 	.tu .sr-sr {position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap;}
 
 	/* focus mode (also the fallback where the Fullscreen API is missing, e.g. iPhone Safari) */
@@ -201,3 +203,22 @@
 	@media print {
 		.tu .sr-reader {display:none !important;}
 	}
+
+	/* saved texts */
+	.tu .sr-lib {margin:0.9em 0 0.4em;padding:0.7em 0.8em;border:1px solid #d6dbe1;border-radius:0.6em;}
+	.tu .sr-libhead {display:flex;justify-content:space-between;align-items:center;gap:0.6em;flex-wrap:wrap;margin-bottom:0.5em;}
+	.tu .sr-libhead .tu-label {margin:0;}
+	.tu .sr-liblist {display:flex;flex-direction:column;gap:0.35em;max-height:16em;overflow:auto;}
+	.tu .sr-libitem {display:flex;align-items:stretch;border:1px solid #d6dbe1;border-radius:0.5em;overflow:hidden;}
+	.tu .sr-libitem.is-cur {border-color:var(--accent);box-shadow:inset 3px 0 0 var(--accent);}
+	.tu .sr-libitem button {border:0;background:transparent;color:inherit;font:inherit;cursor:pointer;min-height:44px;}
+	.tu .sr-libopen {flex:1 1 auto;text-align:left;padding:0.4em 0.7em;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+	.tu .sr-libopen small {color:#6a7280;margin-left:0.3em;}
+	.tu .sr-librn, .tu .sr-libdel {flex:0 0 auto;width:2.6em;color:#6a7280;font-size:1.1em;}
+	.tu .sr-libitem button:hover {background:rgba(0,0,0,0.05);}
+	.tu .sr-libempty {color:#6a7280;font-style:italic;font-size:0.92em;}
+	.tu .sr-libnote {margin:0.5em 0 0;font-size:0.85em;}
+	.sr-undo {margin-left:0.6em;border:1px solid currentColor;border-radius:0.4em;background:transparent;color:inherit;font:inherit;font-weight:700;padding:0.15em 0.6em;cursor:pointer;}
+	body.dark-mode #sr .sr-lib, body.dark-mode #sr .sr-libitem {border-color:#3a4048;}
+	body.dark-mode #sr .sr-libopen small, body.dark-mode #sr .sr-librn, body.dark-mode #sr .sr-libdel, body.dark-mode #sr .sr-libempty {color:#a8b0bb;}
+	body.dark-mode #sr .sr-libitem button:hover {background:rgba(255,255,255,0.07);}

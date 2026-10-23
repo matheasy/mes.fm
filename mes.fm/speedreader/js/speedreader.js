@@ -439,7 +439,7 @@ if (typeof module !== "undefined" && module.exports) module.exports = SRLib;
 	["reader", "stage", "word", "pre", "orp", "post", "ctx", "ctxl", "ctxr", "msg", "progress", "seek", "pos", "eta", "play", "restart", "prevs", "prevw", "nextw", "nexts",
 	 "speedrow", "wpm", "wpmr", "wpmminus", "wpmplus", "presets", "voicerow", "voice", "rate", "rateo", "pitch", "pitcho", "vol", "volo", "note", "settings", "chunk", "smart", "ramp", "rewind",
 	 "font", "size", "sizeo", "th", "orpon", "guideon", "ctxon", "progon", "link", "reset", "tv", "tvtoggle", "tvbody", "tvnav", "tvprev", "tvnext", "tvpage", "pane", "grip", "live", "modes", "focus",
-	 "input", "text", "count", "drop", "paste", "open", "here", "measurebtn", "clear", "file", "warn", "stw", "stc", "stl1", "stt1", "sts1", "stt2", "stt3", "measure", "mtext", "mstart", "mdone", "mclose", "mtime", "mresult", "toast"].forEach(function (id) {
+	 "input", "text", "count", "libsave", "liblist", "drop", "paste", "open", "here", "measurebtn", "clear", "file", "warn", "stw", "stc", "stl1", "stt1", "sts1", "stt2", "stt3", "measure", "mtext", "mstart", "mdone", "mclose", "mtime", "mresult", "toast"].forEach(function (id) {
 		var map = { wpmr: "wpm-r", wpmminus: "wpm-minus", wpmplus: "wpm-plus", rateo: "rate-o", pitcho: "pitch-o", volo: "vol-o", sizeo: "size-o", orpon: "orpon", measurebtn: "measure-btn",
 			stw: "st-w", stc: "st-c", stl1: "st-l1", stt1: "st-t1", sts1: "st-s1", stt2: "st-t2", stt3: "st-t3", mstart: "m-start", mdone: "m-done", mclose: "m-close", mtime: "m-time", mresult: "m-result", mtext: "mtext",
 			ctxl: "ctx-l", ctxr: "ctx-r", tvtoggle: "tvtoggle", tvbody: "tvbody", tvnav: "tvnav", tvprev: "tvprev", tvnext: "tvnext", tvpage: "tvpage", orp: "orp" };
@@ -449,11 +449,16 @@ if (typeof module !== "undefined" && module.exports) module.exports = SRLib;
 
 	function fmt(n) { return Number(n).toLocaleString(); }
 	function esc(s) { return s.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;"); }
-	function toast(msg) {
+	function toast(msg, undo) {
 		el.toast.textContent = msg;
+		if (undo) {
+			var b = document.createElement("button"); b.type = "button"; b.className = "sr-undo"; b.textContent = "Undo";
+			b.addEventListener("click", function () { undo(); el.toast.classList.remove("tu-toast--show"); });
+			el.toast.appendChild(document.createTextNode(" ")); el.toast.appendChild(b);
+		}
 		el.toast.classList.add("tu-toast--show");
 		clearTimeout(toast.t);
-		toast.t = setTimeout(function () { el.toast.classList.remove("tu-toast--show"); }, 1800);
+		toast.t = setTimeout(function () { el.toast.classList.remove("tu-toast--show"); }, undo ? 6000 : 1800);
 	}
 	function announce(msg) {            // screen readers: status changes only, never the flashing words
 		clearTimeout(liveTimer);
@@ -1041,6 +1046,7 @@ if (typeof module !== "undefined" && module.exports) module.exports = SRLib;
 		if (on === P.focus) return;
 		P.focus = on;
 		el.reader.classList.toggle("is-focus", on);
+		el.pane.classList.remove("is-sized");
 		el.focus.setAttribute("aria-pressed", on ? "true" : "false");
 		el.focus.setAttribute("aria-label", on ? "Exit focus mode" : "Focus mode (full screen)");
 		document.documentElement.classList.toggle("sr-lock", on);
@@ -1279,6 +1285,7 @@ if (typeof module !== "undefined" && module.exports) module.exports = SRLib;
 				if (!drag) return;
 				var h = Math.max(96, Math.min(window.innerHeight * 0.9, h0 + e.clientY - y0));
 				el.pane.style.setProperty("--sr-ph", Math.round(h) + "px");
+				if (P.focus) el.pane.classList.add("is-sized");
 			});
 			function end() { drag = false; }
 			g.addEventListener("pointerup", end); g.addEventListener("pointercancel", end);
@@ -1302,6 +1309,50 @@ if (typeof module !== "undefined" && module.exports) module.exports = SRLib;
 		return r.bottom > 80 && r.top < (window.innerHeight || 800) - 80;
 	}
 
+
+	/* ================================================ saved texts ===== */
+	var LIBKEY = "mes-speedreader:lib", libCur = null, libUndo = null;
+	function libGet() { try { var a = JSON.parse(localStorage.getItem(LIBKEY) || "[]"); return Array.isArray(a) ? a.filter(function (x) { return x && typeof x.t === "string" && typeof x.n === "string"; }) : []; } catch (e) { return []; } }
+	function libSet(a) { try { localStorage.setItem(LIBKEY, JSON.stringify(a)); return true; } catch (e) { toast("Could not save: this browser's storage is full"); return false; } }
+	function libName(t) { var w = t.replace(/\s+/g, " ").trim().split(" ").slice(0, 7).join(" "); return (w.length > 48 ? w.slice(0, 48) : w) || "Untitled"; }
+	function libRemember() {   // keep the place in the open saved text
+		if (!libCur) return; var a = libGet(), it = a.filter(function (x) { return x.id === libCur; })[0];
+		if (it && it.t === T.raw) { it.p = P.idx; it.d = Date.now(); libSet(a); }
+	}
+	function libDraw() {
+		var a = libGet().sort(function (x, y) { return (y.d || 0) - (x.d || 0); }), box = el.liblist;
+		if (!a.length) { box.innerHTML = '<span class="sr-libempty">Nothing saved yet.</span>'; return; }
+		box.innerHTML = a.map(function (x) {
+			var n = L.countWords(x.t), pct = n ? Math.min(100, Math.round(((x.p || 0) + 1) / n * 100)) : 0;
+			return '<div class="sr-libitem' + (x.id === libCur ? " is-cur" : "") + '" role="listitem" data-id="' + x.id + '"><button type="button" class="sr-libopen" title="Open this text">' + esc(x.n) + ' <small>' + n.toLocaleString() + " words" + (x.p ? " · " + pct + "% read" : "") + '</small></button><button type="button" class="sr-librn" title="Rename" aria-label="Rename ' + esc(x.n) + '">&#9998;</button><button type="button" class="sr-libdel" title="Delete" aria-label="Delete ' + esc(x.n) + '">&times;</button></div>';
+		}).join("");
+	}
+	function libSave() {
+		var t = T.raw; if (!t.trim()) { toast("Add some text first"); return; }
+		var a = libGet(), same = a.filter(function (x) { return x.t === t; })[0];
+		if (same) { same.p = P.idx; same.d = Date.now(); libCur = same.id; if (libSet(a)) toast("Updated “" + same.n + "”"); libDraw(); return; }
+		var n = window.prompt("Name for this text:", libName(t)); if (n === null) return;
+		n = n.trim().slice(0, 80) || libName(t);
+		var it = { id: Date.now().toString(36) + Math.random().toString(36).slice(2, 6), n: n, t: t, p: P.idx, d: Date.now() };
+		a.push(it); if (libSet(a)) { libCur = it.id; toast("Saved “" + n + "”"); } libDraw();
+	}
+	function libOpen(id) {
+		libRemember();
+		var it = libGet().filter(function (x) { return x.id === id; })[0]; if (!it) return;
+		stopAll(); libCur = id; el.text.value = it.t; setText(it.t, { pos: it.p || 0 }); show(); libDraw();
+		toast("Opened “" + it.n + "”" + (it.p ? ", at word " + (it.p + 1) : ""));
+		try { el.reader.scrollIntoView({ behavior: "smooth", block: "start" }); } catch (e) {}
+	}
+	function libClick(e) {
+		var row = e.target.closest(".sr-libitem"); if (!row) return; var id = row.getAttribute("data-id"), a = libGet(), it = a.filter(function (x) { return x.id === id; })[0]; if (!it) return;
+		if (e.target.closest(".sr-libdel")) {
+			libUndo = it; libSet(a.filter(function (x) { return x.id !== id; })); if (libCur === id) libCur = null; libDraw();
+			toast("Deleted “" + it.n + "” — press Undo to bring it back", function () { if (libUndo) { var b = libGet(); b.push(libUndo); libSet(b); libUndo = null; libDraw(); } });
+		} else if (e.target.closest(".sr-librn")) {
+			var n = window.prompt("Rename:", it.n); if (n === null || !n.trim()) return; it.n = n.trim().slice(0, 80); libSet(a); libDraw();
+		} else libOpen(id);
+	}
+
 	/* ======================================================== init ===== */
 	function init() {
 		var saved = store.get();
@@ -1320,6 +1371,11 @@ if (typeof module !== "undefined" && module.exports) module.exports = SRLib;
 		el.speedrow.hidden = S.mode !== "speed"; el.voicerow.hidden = S.mode === "speed";
 		syncTv();
 		show();
+		libDraw();
+		el.libsave.addEventListener("click", libSave);
+		el.liblist.addEventListener("click", libClick);
+		window.addEventListener("pagehide", libRemember);
+		document.addEventListener("visibilitychange", function () { if (document.hidden) libRemember(); });
 		ready = true;
 		persist();
 	}
