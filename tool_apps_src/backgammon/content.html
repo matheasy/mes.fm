@@ -1,0 +1,93 @@
+	<div class="tu" id="bgm">
+		<div class="bgm-tabs" id="bgm-tabs" role="tablist" aria-label="Backgammon sections">
+			<button type="button" class="bgm-tab" role="tab" data-t="play" aria-selected="true" aria-controls="bgm-p-play">Play</button><button type="button" class="bgm-tab" role="tab" data-t="stats" aria-selected="false" aria-controls="bgm-p-stats" tabindex="-1">Statistics</button><button type="button" class="bgm-tab" role="tab" data-t="rules" aria-selected="false" aria-controls="bgm-p-rules" tabindex="-1">Rules</button><button type="button" class="bgm-tab" role="tab" data-t="odds" aria-selected="false" aria-controls="bgm-p-odds" tabindex="-1">Odds</button>
+		</div>
+
+		<section id="bgm-p-play" role="tabpanel" aria-label="Play">
+			<div class="bgm-top" id="bgm-top"></div>
+			<div class="bgm-board" id="bgm-board"></div>
+			<p class="bgm-msg" id="bgm-msg" role="status" aria-live="polite"></p>
+			<div class="bgm-act" id="bgm-act"></div>
+			<div id="bgm-info"></div>
+			<details class="tu-card bgm-set" id="bgm-set">
+				<summary>Game settings</summary>
+				<div class="tu-row" style="margin-top:0.8em;">
+					<div class="tu-field" style="flex:0 1 auto;"><span class="tu-label" id="bgm-level-l">Computer level</span>
+						<div class="tu-seg" id="bgm-level" role="group" aria-labelledby="bgm-level-l"><button type="button" data-v="easy" aria-pressed="false">Easy</button><button type="button" data-v="medium" aria-pressed="false">Medium</button><button type="button" data-v="hard" aria-pressed="false">Hard</button></div></div>
+					<div class="tu-field" style="flex:1 1 12em;"><label for="bgm-type">Game type</label>
+						<select id="bgm-type" class="tu-select"><option value="0">Money game (keep playing)</option><option value="1">Match to 1 point</option><option value="3">Match to 3 points</option><option value="5">Match to 5 points</option><option value="7">Match to 7 points</option><option value="11">Match to 11 points</option></select></div>
+					<div class="tu-field" style="flex:1 1 10em;"><label for="bgm-speed">Computer speed</label>
+						<select id="bgm-speed" class="tu-select"><option value="slow">Slow</option><option value="normal">Normal</option><option value="fast">Fast</option><option value="instant">Instant</option></select></div>
+				</div>
+				<p class="tu-note" id="bgm-lvnote" hidden>The new level starts with your next new game.</p>
+				<div class="bgm-checks">
+					<label><input type="checkbox" id="bgm-o-cube"> Use the doubling cube</label>
+					<label><input type="checkbox" id="bgm-o-jacoby"> Jacoby rule (money games: gammons count only after a double)</label>
+					<label><input type="checkbox" id="bgm-o-autoRoll"> Roll for me automatically (you cannot double then)</label>
+					<label><input type="checkbox" id="bgm-o-autoConfirm"> Confirm my move automatically</label>
+					<label><input type="checkbox" id="bgm-o-oneClick"> One click moves a checker by the higher die</label>
+					<label><input type="checkbox" id="bgm-o-flip"> Home board on the left</label>
+					<label><input type="checkbox" id="bgm-o-nums"> Show point numbers</label>
+					<label><input type="checkbox" id="bgm-o-odds"> Show the odds of the next roll</label>
+				</div>
+				<p style="margin:1em 0 0;"><button type="button" class="tu-btn tu-btn--primary" id="bgm-new">New game</button></p>
+				<p class="tu-note"><b>How to move:</b> click (or tap) one of your lit checkers, then a lit point; or drag it. Double-click a checker to move it by the higher die. Keys: <kbd>R</kbd> roll, <kbd>D</kbd> double, <kbd>Enter</kbd> confirm, <kbd>U</kbd> undo, <kbd>H</kbd> hint, <kbd>T</kbd> / <kbd>P</kbd> take / drop, <kbd>N</kbd> next game, <kbd>Tab</kbd> + <kbd>Enter</kbd> to pick points.</p>
+			</details>
+		</section>
+
+		<section id="bgm-p-stats" role="tabpanel" aria-label="Statistics" hidden>
+			<p class="tu-note">Kept in this browser only (nothing is uploaded). Abandoned games are not counted.</p>
+			<div id="bgm-stats"></div>
+		</section>
+
+		<section id="bgm-p-rules" role="tabpanel" aria-label="Rules" hidden>
+			<h2>The rules in two minutes</h2>
+			<p>Each player has 15 checkers. You (white) move from point 24 down to point 1, round the board to your <b>home board</b> (points 1 to 6, bottom right), and then take your checkers off. The computer moves the other way. The first to take all 15 off wins.</p>
+			<div class="bgm-dia" data-dia="start"></div>
+			<h3>Moving</h3>
+			<p>Roll two dice; each die is a separate move. You can move two checkers, or one checker twice (each step has to land on an open point). A <b>double</b> (say 4-4) is played four times. You may not land on a point with two or more of the other side's checkers: it is <b>blocked</b>.</p>
+			<div class="bgm-dia" data-dia="move"></div>
+			<h3>You must play as much of the roll as you can</h3>
+			<p>If both dice can be played, you must play both. If only one of them can be played, you must play the <b>larger</b> one if that is possible. If nothing can be played, the turn passes. This board only lets you make legal moves, so you will see it happen.</p>
+			<h3>Hitting and the bar</h3>
+			<p>A single checker on a point is a <b>blot</b>. Landing on the other side's blot <b>hits</b> it: it goes to the <b>bar</b> in the middle and has to start again. A player with a checker on the bar must bring it back in first (into the other side's home board) before moving anything else.</p>
+			<div class="bgm-dia" data-dia="hit"></div>
+			<div class="bgm-dia" data-dia="bar"></div>
+			<h3>Bearing off</h3>
+			<p>Once all 15 of your checkers are in your home board, you can take them off: a 3 takes a checker off point 3. A die larger than your highest point can take off a checker from the highest point (a 6 with nothing above point 4 takes one off point 4). If a checker is hit while you are bearing off, it has to come all the way round again before you continue.</p>
+			<div class="bgm-dia" data-dia="off"></div>
+			<h3>Gammons and backgammons</h3>
+			<p>Win before the loser has taken off any checker and you win a <b>gammon</b> (2 points). If the loser still has a checker on the bar or in your home board too, it is a <b>backgammon</b> (3 points).</p>
+			<h3>The doubling cube</h3>
+			<p>Before rolling, a player may offer to double the stakes. The other player either <b>takes</b> (plays on for twice the points and now owns the cube, so only they can double next) or <b>drops</b> (gives up and loses the current value). A take is correct when you still win about a quarter of the time. In a match, the <b>Crawford rule</b> says nobody may double in the one game right after a player first gets within one point of winning the match.</p>
+			<h3>Pip count</h3>
+			<p>Your <b>pip count</b> is the total number of points your checkers still have to travel: a checker on point 13 counts 13, one on the bar 25. Both sides start at 167. Lower is better; it tells you who is ahead in a race.</p>
+		</section>
+
+		<section id="bgm-p-odds" role="tabpanel" aria-label="Odds" hidden>
+			<div id="bgm-odds"></div>
+		</section>
+
+		<div class="tu-toast" id="bgm-toast" role="status" aria-live="polite"></div>
+
+		<div class="tu-seo">
+			<h2>Play backgammon online against the computer</h2>
+			<p>This is a complete game of backgammon in your browser: the real rules (including the ones people often get wrong, like having to use the larger die), the doubling cube, money games or matches with the Crawford rule, and a computer opponent at three levels. Nothing to install, no account, and it works on a phone.</p>
+			<h3>The three levels</h3>
+			<dl>
+				<dt>Easy</dt><dd>Plays sensible moves most of the time but often misses the best one, and sometimes plays a move at random. Good for learning the rules.</dd>
+				<dt>Medium</dt><dd>Judges each possible move by the pip count, how many of its blots could be hit (weighted by the actual chance of being hit), the points it holds, primes, anchors and the strength of its home board.</dd>
+				<dt>Hard</dt><dd>Looks one roll ahead: for its best candidate moves it tries all 21 rolls you might get and your best reply to each, and picks the move that leaves you the least. It also uses that look-ahead for its doubling decisions. The thinking runs in the background, so the page never freezes.</dd>
+			</dl>
+			<h3>Questions</h3>
+			<dl>
+				<dt>Are the dice fair?</dt><dd>Yes. Every roll comes from your browser's cryptographic random number generator, the same one used for passwords; the computer gets no special rolls and cannot see yours in advance. The Statistics tab compares your doubles and pips rolled with what to expect, so you can check for yourself.</dd>
+				<dt>How are the odds under the board worked out?</dt><dd>Exactly: before you roll, the page tries all 36 rolls and counts the ones where you have a legal move that hits each of the computer's blots, taking blocked points and the bar into account. After your move it does the same for the computer's next roll, so you can see how risky your move is before confirming it.</dd>
+				<dt>What is the hint?</dt><dd>The Hard engine's choice for your roll, shown as arrows. Before rolling it tells you whether it would double; when the computer doubles it tells you whether it would take.</dd>
+				<dt>Why was I not allowed to make a move?</dt><dd>Probably one of the "must play" rules: you have to use both dice when you can, the larger die when only one can be played, and bring checkers in from the bar before anything else. Bearing off needs all 15 checkers in your home board.</dd>
+				<dt>Will my game be lost if I close the page?</dt><dd>No. The game in progress and your statistics are saved in this browser and the game carries on when you come back.</dd>
+				<dt>Is it the same as tavla or tavli?</dt><dd>Tavla (Turkey) and Portes, the first game of Greek tavli, are backgammon with small differences (often no doubling cube and no gammon for a backgammon). Untick the doubling cube to play that way.</dd>
+			</dl>
+			<p>Related: <a href="/calculator">Calculator</a> &middot; <a href="/tools">All MES tools</a></p>
+		</div>
+	</div>

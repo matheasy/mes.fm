@@ -2,6 +2,14 @@
  "generated": "2026-10-23",
  "calculators": [
   {
+   "href": "/statistics-calculator",
+   "title": "Statistics Calculator",
+   "icon": "/img/statistics-calculator-logo.png",
+   "desc": "Mean, median, standard deviation, quartiles, regression, distributions and hypothesis tests, with the working shown.",
+   "added": "2026-10-23",
+   "kind": "calculator"
+  },
+  {
    "href": "/materials",
    "title": "Mechanics of Materials",
    "icon": "/img/materials-logo.png",
@@ -88,17 +96,33 @@
    "desc": "Extra calories by trimester or breastfeeding, and healthy weight gain by week.",
    "added": "2026-10-15",
    "kind": "calculator"
-  },
-  {
-   "href": "/calories-burned-calculator",
-   "title": "Calories Burned Calculator",
-   "icon": "/img/calories-burned-calculator-logo.png",
-   "desc": "Calories burned by 80+ activities for your weight, with a weekly plan.",
-   "added": "2026-10-14",
-   "kind": "calculator"
   }
  ],
  "tools": [
+  {
+   "href": "/backgammon",
+   "title": "Backgammon",
+   "icon": "/img/backgammon-logo.png",
+   "desc": "Play backgammon against the computer at three levels, with hints, the doubling cube and your statistics.",
+   "added": "2026-10-23",
+   "kind": "tool"
+  },
+  {
+   "href": "/birthday-personality",
+   "title": "Birthday Personality",
+   "icon": "/img/birthday-personality-logo.png",
+   "desc": "A playful character sketch for every day of the year: your day's archetype, strengths and lucky numbers.",
+   "added": "2026-10-23",
+   "kind": "tool"
+  },
+  {
+   "href": "/seo",
+   "title": "SEO Checker",
+   "icon": "/img/seo-logo.png",
+   "desc": "Check any page's SEO: title, description, headings, canonical, robots, social cards and a report of every mes.fm page.",
+   "added": "2026-10-23",
+   "kind": "tool"
+  },
   {
    "href": "/dice-roller",
    "title": "Dice Roller",
@@ -112,22 +136,6 @@
    "title": "Random Number Generator",
    "icon": "/img/random-number-generator-logo.png",
    "desc": "Random numbers, dice, coin flips, cards and a list picker, with the odds and a fairness test.",
-   "added": "2026-10-23",
-   "kind": "tool"
-  },
-  {
-   "href": "/seo",
-   "title": "SEO Checker",
-   "icon": "/img/seo-logo.png",
-   "desc": "Check any page's SEO: title, description, headings, canonical, robots, social cards and a report of every mes.fm page.",
-   "added": "2026-10-23",
-   "kind": "tool"
-  },
-  {
-   "href": "/birthday-personality",
-   "title": "Birthday Personality",
-   "icon": "/img/birthday-personality-logo.png",
-   "desc": "A playful character sketch for every day of the year: your day's archetype, strengths and lucky numbers.",
    "added": "2026-10-23",
    "kind": "tool"
   },
@@ -186,17 +194,41 @@
    "desc": "See how a language model works in miniature: tokens, next-word probabilities, temperature, word vectors and attention.",
    "added": "2026-10-19",
    "kind": "tool"
-  },
-  {
-   "href": "/fonts",
-   "title": "Font Preview and Finder",
-   "icon": "/img/fonts-logo.png",
-   "desc": "Type your text and see it in every font, with shadow, outline, gradient and glow. Download a transparent PNG, copy the CSS, or find a font from a picture.",
-   "added": "2026-10-19",
-   "kind": "tool"
   }
  ],
  "latest": [
+  {
+   "href": "/backgammon",
+   "title": "Backgammon",
+   "icon": "/img/backgammon-logo.png",
+   "desc": "Play backgammon against the computer at three levels, with hints, the doubling cube and your statistics.",
+   "added": "2026-10-23",
+   "kind": "tool"
+  },
+  {
+   "href": "/statistics-calculator",
+   "title": "Statistics Calculator",
+   "icon": "/img/statistics-calculator-logo.png",
+   "desc": "Mean, median, standard deviation, quartiles, regression, distributions and hypothesis tests, with the working shown.",
+   "added": "2026-10-23",
+   "kind": "calculator"
+  },
+  {
+   "href": "/birthday-personality",
+   "title": "Birthday Personality",
+   "icon": "/img/birthday-personality-logo.png",
+   "desc": "A playful character sketch for every day of the year: your day's archetype, strengths and lucky numbers.",
+   "added": "2026-10-23",
+   "kind": "tool"
+  },
+  {
+   "href": "/seo",
+   "title": "SEO Checker",
+   "icon": "/img/seo-logo.png",
+   "desc": "Check any page's SEO: title, description, headings, canonical, robots, social cards and a report of every mes.fm page.",
+   "added": "2026-10-23",
+   "kind": "tool"
+  },
   {
    "href": "/dice-roller",
    "title": "Dice Roller",
@@ -214,22 +246,6 @@
    "kind": "tool"
   },
   {
-   "href": "/seo",
-   "title": "SEO Checker",
-   "icon": "/img/seo-logo.png",
-   "desc": "Check any page's SEO: title, description, headings, canonical, robots, social cards and a report of every mes.fm page.",
-   "added": "2026-10-23",
-   "kind": "tool"
-  },
-  {
-   "href": "/birthday-personality",
-   "title": "Birthday Personality",
-   "icon": "/img/birthday-personality-logo.png",
-   "desc": "A playful character sketch for every day of the year: your day's archetype, strengths and lucky numbers.",
-   "added": "2026-10-23",
-   "kind": "tool"
-  },
-  {
    "href": "/site-traffic",
    "title": "Site Traffic & Rank",
    "icon": "/img/site-traffic-logo.png",
@@ -242,22 +258,6 @@
    "title": "Famous Birthdays",
    "icon": "/img/birthday-logo.png",
    "desc": "See which famous people were born today or on your birthday, who shares your exact date, and their zodiac signs.",
-   "added": "2026-10-21",
-   "kind": "tool"
-  },
-  {
-   "href": "/zodiac",
-   "title": "Zodiac & Birth Chart",
-   "icon": "/img/zodiac-logo.png",
-   "desc": "Your Sun, Moon and rising sign, planets, Moon phase and Chinese zodiac, with a chart wheel. For fun.",
-   "added": "2026-10-21",
-   "kind": "tool"
-  },
-  {
-   "href": "/reminder",
-   "title": "Reminder",
-   "icon": "/img/reminder-logo.png",
-   "desc": "Make one link for a livestream or event: a countdown in everyone's time zone and one-click calendar reminders.",
    "added": "2026-10-21",
    "kind": "tool"
   }

@@ -1,0 +1,118 @@
+	<div class="tu sc" id="sc">
+		<div class="sc-tabs" role="tablist" aria-label="Statistics tools">
+			<button type="button" role="tab" id="sc-t-describe" data-tab="describe" aria-controls="sc-p-describe" aria-selected="true">Describe data</button>
+			<button type="button" role="tab" id="sc-t-regress" data-tab="regress" aria-controls="sc-p-regress" aria-selected="false">Regression</button>
+			<button type="button" role="tab" id="sc-t-dist" data-tab="dist" aria-controls="sc-p-dist" aria-selected="false">Probability</button>
+			<button type="button" role="tab" id="sc-t-tests" data-tab="tests" aria-controls="sc-p-tests" aria-selected="false">Tests &amp; intervals</button>
+			<button type="button" role="tab" id="sc-t-size" data-tab="size" aria-controls="sc-p-size" aria-selected="false">Sample size</button>
+		</div>
+
+		<!-- ============ 1. describe ============ -->
+		<section class="sc-panel" id="sc-p-describe" role="tabpanel" aria-labelledby="sc-t-describe">
+			<div class="tu-card">
+				<div class="sc-bar">
+					<div class="tu-seg" id="sc-dm" role="group" aria-label="How the data is typed"><button type="button" data-v="list" aria-pressed="true">List of numbers</button><button type="button" data-v="freq" aria-pressed="false">Value, count table</button></div>
+					<div class="tu-seg" id="sc-pop" role="group" aria-label="Sample or population"><button type="button" data-v="0" aria-pressed="true">Sample</button><button type="button" data-v="1" aria-pressed="false">Population</button></div>
+				</div>
+				<div class="tu-field" id="sc-dw"><label for="sc-d">Your numbers</label><textarea id="sc-d" class="tu-input sc-ta" rows="4" spellcheck="false" autocomplete="off" placeholder="e.g. 12, 15, 11, 18, 20 or paste a column from a spreadsheet"></textarea></div>
+				<div class="tu-field" id="sc-fw" hidden><label for="sc-f">Value, count (one pair per line)</label><textarea id="sc-f" class="tu-input sc-ta" rows="4" spellcheck="false" autocomplete="off" placeholder="e.g.&#10;1, 4&#10;2, 7&#10;3, 2"></textarea></div>
+				<div class="tu-field" id="sc-colw" hidden><label for="sc-col">Use the column</label><select id="sc-col" class="tu-select"></select></div>
+				<p class="tu-note sc-hint" id="sc-dnote" aria-live="polite"></p>
+				<div class="tu-chips" id="sc-dex"><span class="tu-note">Examples:</span></div>
+				<details class="sc-more"><summary>Options</summary>
+					<div class="tu-row">
+						<div class="tu-field" style="flex-basis:20em;"><label for="sc-qm">Quartile method</label><select id="sc-qm" class="tu-select"></select></div>
+						<div class="tu-field tu-field--sm"><label for="sc-dp">Decimals</label><select id="sc-dp" class="tu-select"><option>2</option><option>3</option><option selected>4</option><option>6</option></select></div>
+						<div class="tu-field tu-field--sm"><label for="sc-dec">Decimal mark</label><select id="sc-dec" class="tu-select"><option value="auto">Auto</option><option value="dot">1.5</option><option value="comma">1,5</option></select></div>
+					</div>
+				</details>
+			</div>
+			<div id="sc-dout" aria-live="polite"></div>
+		</section>
+
+		<!-- ============ 2. regression ============ -->
+		<section class="sc-panel" id="sc-p-regress" role="tabpanel" aria-labelledby="sc-t-regress" hidden>
+			<div class="tu-card">
+				<div class="tu-field"><label for="sc-r">x and y pairs</label><textarea id="sc-r" class="tu-input sc-ta" rows="5" spellcheck="false" autocomplete="off" placeholder="One pair per line: x, y&#10;or two spreadsheet columns, or two lines (x values, then y values)"></textarea></div>
+				<p class="tu-note sc-hint" id="sc-rnote" aria-live="polite"></p>
+				<div class="tu-chips" id="sc-rex"><span class="tu-note">Examples:</span></div>
+			</div>
+			<div id="sc-rout" aria-live="polite"></div>
+		</section>
+
+		<!-- ============ 3. distributions ============ -->
+		<section class="sc-panel" id="sc-p-dist" role="tabpanel" aria-labelledby="sc-t-dist" hidden>
+			<div class="tu-card">
+				<div class="tu-row">
+					<div class="tu-field" style="flex-basis:14em;"><label for="sc-dist">Distribution</label><select id="sc-dist" class="tu-select"></select></div>
+					<div class="tu-field" style="flex-basis:14em;"><label for="sc-dq">Find</label><select id="sc-dq" class="tu-select"></select></div>
+				</div>
+				<div class="tu-row sc-fields" id="sc-dpar"></div>
+				<p class="tu-note sc-hint" id="sc-ddesc"></p>
+			</div>
+			<div id="sc-pout" aria-live="polite"></div>
+		</section>
+
+		<!-- ============ 4. tests ============ -->
+		<section class="sc-panel" id="sc-p-tests" role="tabpanel" aria-labelledby="sc-t-tests" hidden>
+			<div class="tu-card">
+				<div class="tu-row">
+					<div class="tu-field" style="flex-basis:20em;"><label for="sc-test">Test</label><select id="sc-test" class="tu-select"></select></div>
+					<div class="tu-field tu-field--sm" id="sc-altw" style="flex-basis:12em;"><label for="sc-alt">Alternative</label><select id="sc-alt" class="tu-select"><option value="two">≠ (two-sided)</option><option value="less">&lt; (left-tailed)</option><option value="greater">&gt; (right-tailed)</option></select></div>
+					<div class="tu-field tu-field--sm"><label for="sc-alpha">Significance α</label><select id="sc-alpha" class="tu-select"><option value="0.1">0.10 (90%)</option><option value="0.05" selected>0.05 (95%)</option><option value="0.01">0.01 (99%)</option><option value="0.001">0.001 (99.9%)</option></select></div>
+				</div>
+				<p class="tu-note sc-hint" id="sc-tdesc"></p>
+				<div class="sc-bar" id="sc-tmw"><div class="tu-seg" id="sc-tm" role="group" aria-label="Type the data or a summary"><button type="button" data-v="data" aria-pressed="true">Raw data</button><button type="button" data-v="sum" aria-pressed="false">Summary (mean, SD, n)</button></div></div>
+				<div class="tu-row sc-fields" id="sc-tpar"></div>
+				<div class="tu-chips"><button type="button" class="tu-chip" id="sc-tex">Fill in an example</button></div>
+			</div>
+			<div id="sc-tout" aria-live="polite"></div>
+		</section>
+
+		<!-- ============ 5. sample size ============ -->
+		<section class="sc-panel" id="sc-p-size" role="tabpanel" aria-labelledby="sc-t-size" hidden>
+			<div class="tu-card">
+				<div class="tu-row">
+					<div class="tu-field" style="flex-basis:22em;"><label for="sc-sz">Work out</label><select id="sc-sz" class="tu-select"></select></div>
+				</div>
+				<div class="tu-row sc-fields" id="sc-spar"></div>
+				<p class="tu-note sc-hint" id="sc-sdesc"></p>
+			</div>
+			<div id="sc-sout" aria-live="polite"></div>
+		</section>
+
+		<div class="tu-chips sc-share"><button type="button" class="tu-chip" id="sc-link">🔗 Copy a link to this</button><button type="button" class="tu-chip" id="sc-clear">Clear this tab</button></div>
+		<div class="tu-toast" id="sc-toast" role="status" aria-live="polite"></div>
+
+		<div class="tu-seo">
+			<h2>A statistics calculator that shows the working</h2>
+			<p>Paste a list of numbers and get every common statistic at once: the mean, median and mode, the range and quartiles, the variance and standard deviation, the standard error, skewness, outliers, a box plot and a histogram. Paste x and y pairs to fit a line and see the correlation. Look up normal, t, chi-square, binomial and Poisson probabilities, run the usual hypothesis tests and work out how big a survey needs to be. Everything is worked out in your browser; your numbers are not sent anywhere.</p>
+			<h3>Typing or pasting your numbers</h3>
+			<p>Separate the numbers with commas, spaces, semicolons or new lines, or paste a column (or several) straight from Excel, Google Sheets or Numbers. A header such as "Score" is skipped and the page says what it skipped. Decimal commas (<code>3,5; 4,25</code>) are understood, and so are thousands separators (<code>1,250</code>), dollar signs and percent signs. If you have counts rather than a list, switch to <b>Value, count table</b> and type each value with how many times it occurs.</p>
+			<h3>Sample or population?</h3>
+			<p>If your numbers are <b>all</b> of the group you care about (every student in the class), they are a population: the variance divides by n. If they are a <b>sample</b> from a bigger group (50 people out of a city), the variance divides by n − 1 instead, which makes it a fair estimate of the bigger group's spread. Both are always shown; the one you choose is highlighted and used for the z-scores and the coefficient of variation.</p>
+			<h3>Questions</h3>
+			<dl>
+				<dt>How do I calculate the standard deviation by hand?</dt>
+				<dd>Find the mean, subtract it from every value, square each difference, add the squares, divide by n − 1 (a sample) or n (a population), and take the square root. Open <b>Show the working</b> under the results to see this table for your own numbers. For 2, 4, 4, 4, 5, 5, 7, 9 the mean is 5, the squares add up to 32, and the population standard deviation is √(32 / 8) = 2.</dd>
+				<dt>Why do calculators give different quartiles?</dt>
+				<dd>There is no single agreed rule for Q1 and Q3. This page uses the method in most school textbooks and on the TI-84 by default: split the sorted data into a lower and an upper half (leaving out the median when n is odd) and take the median of each half. Excel's QUARTILE.INC (also Google Sheets and R), QUARTILE.EXC (Minitab, SPSS) and Tukey's hinges are under Options. They differ most for small data sets and agree as n grows.</dd>
+				<dt>What counts as an outlier?</dt>
+				<dd>The usual 1.5 × IQR rule: a value more than 1.5 interquartile ranges below Q1 or above Q3. These are drawn as separate dots on the box plot, and the whiskers stop at the most extreme values that are not outliers.</dd>
+				<dt>What is the standard error?</dt>
+				<dd>The standard error of the mean, s / √n, says how much the mean of a sample of this size would usually vary from sample to sample. It shrinks as the sample gets bigger, while the standard deviation (the spread of the individual values) does not.</dd>
+				<dt>What do r and r² mean in regression?</dt>
+				<dd>r, the correlation, runs from −1 to 1 and says how closely the points follow a straight line and in which direction. r² is the share of the variation in y that the line explains: r² = 0.81 means 81%. A high r² does not prove that x causes y. The p-value for the slope tests whether the slope could really be 0.</dd>
+				<dt>How are the curve fits compared?</dt>
+				<dd>The exponential, power and logarithmic fits are found the usual way, by fitting a straight line to the logarithms, the same as a TI-84 or Excel trendline. Their r² values in the comparison table are worked out on your original y values, so all five models are compared fairly; the r² of the transformed line (what a TI-84 shows) is listed too.</dd>
+				<dt>What is a p-value?</dt>
+				<dd>The p-value is the chance of getting a result at least as extreme as yours if the null hypothesis (no difference, no effect) were true. A small p-value, below your significance level α (often 0.05), means the data would be surprising under the null hypothesis, so you reject it. It is not the probability that the null hypothesis is true.</dd>
+				<dt>Welch or pooled two-sample t-test?</dt>
+				<dd>Welch's t-test does not assume the two groups have the same spread, and is the safer default (it is what R uses). The pooled test assumes equal variances and gives a whole-number degrees of freedom, as in many older textbooks.</dd>
+				<dt>How accurate are the probabilities?</dt>
+				<dd>The normal, t, chi-square, F, binomial and Poisson probabilities use the regularized incomplete gamma and beta functions (continued fractions) and are accurate to about 10 decimal places, far into the tails. They are checked against published tables, for example P(Z &lt; 1.96) = 0.9750021 and the t value 2.2281 for 10 degrees of freedom.</dd>
+				<dt>How big a sample do I need for a survey?</dt>
+				<dd>For a margin of error of ±5% at 95% confidence you need 385 people (assuming 50%, the worst case); for ±3% you need 1,068. If the whole population is small, the finite population correction lowers this: for a population of 1,000 people, ±5% needs 278. The Sample size tab works these out for any margin and confidence.</dd>
+			</dl>
+		</div>
+	</div>

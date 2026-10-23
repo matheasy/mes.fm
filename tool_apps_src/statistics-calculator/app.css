@@ -1,0 +1,82 @@
+	/* MES Statistics Calculator */
+	#sc [hidden] {display:none !important;}
+	#sc .sc-tabs {display:flex;flex-wrap:wrap;gap:0.3em;margin-bottom:0.9em;border-bottom:2px solid #d5dbe3;}
+	#sc .sc-tabs button {cursor:pointer;font:inherit;font-weight:600;min-height:42px;padding:0.5em 1em;border:0;border-radius:0.5em 0.5em 0 0;background:transparent;color:#3d4654;border-bottom:3px solid transparent;margin-bottom:-2px;}
+	#sc .sc-tabs button:hover {background:#eef1f5;}
+	#sc .sc-tabs button[aria-selected="true"] {color:var(--accent);border-bottom-color:var(--accent);background:#f2f2fd;}
+	#sc .sc-tabs button:focus-visible, #sc .tu-chip:focus-visible, #sc .tu-seg button:focus-visible, #sc .sc-click:focus-visible {outline:2px solid var(--accent);outline-offset:2px;}
+	#sc .sc-bar {display:flex;flex-wrap:wrap;gap:0.6em 1em;margin-bottom:0.8em;}
+	#sc .tu-seg button {min-height:40px;}
+	#sc .tu-field > label, #sc .tu-label {text-transform:none;letter-spacing:0;font-size:0.85em;color:#4b5563;}
+	#sc .tu-stats {grid-template-columns:repeat(auto-fit,minmax(10.5em,1fr));}
+	#sc .tu-stat__label {text-transform:none;letter-spacing:0;font-size:0.8em;} #sc .tu-stat__value {font-size:1.5em;}
+	#sc .sc-fields .tu-field--sm {flex:1 1 11em;max-width:16em;}
+	#sc .tu-table th[scope=row] {text-transform:none;letter-spacing:0;font-size:0.92em;color:#1e2733;font-weight:600;}
+	#sc .sc-ta {width:100%;font-family:ui-monospace,Menlo,Consolas,monospace;font-size:1em;line-height:1.45;resize:vertical;min-height:4.8em;}
+	#sc .sc-hint {margin:0.4em 0 0;min-height:1.2em;}
+	#sc .tu-chip {min-height:36px;}
+	#sc .sc-more {margin-top:0.8em;} #sc .sc-more summary {cursor:pointer;font-weight:700;color:#3d4654;padding:0.4em 0;min-height:36px;}
+	#sc .sc-more .tu-row {margin-top:0.5em;}
+	#sc .sc-fields {margin-top:0.8em;} #sc .sc-wide {flex:1 1 100%;}
+	#sc .tu-card {margin-top:0.9em;} #sc .tu-card h3 {margin:0 0 0.6em;font-size:1.05em;}
+	#sc .sc-empty {color:#4b5563;}
+	#sc .sc-h {display:flex;flex-wrap:wrap;gap:0.4em 1em;align-items:center;justify-content:space-between;margin-bottom:0.4em;} #sc .sc-h h3 {margin:0;}
+	#sc .sc-hctl {display:flex;flex-wrap:wrap;gap:0.4em;align-items:center;} #sc .sc-hctl .tu-select {width:auto;font-size:0.92em;padding:0.4em 0.5em;min-height:40px;} #sc .sc-hctl .tu-input {width:5em;font-size:0.92em;padding:0.4em 0.5em;min-height:40px;}
+	#sc .sc-hctl .tu-label {text-transform:none;letter-spacing:0;font-size:0.85em;}
+	#sc .sc-kv th {text-align:left;font-size:0.92em;text-transform:none;letter-spacing:0;color:#1e2733;font-weight:600;white-space:normal;}
+	#sc .sc-kv td {text-align:left;white-space:normal;font-variant-numeric:tabular-nums;}
+	#sc .tu-table td {font-variant-numeric:tabular-nums;}
+	#sc .sc-why {color:#566070;font-size:0.88em;}
+	#sc .sc-five th, #sc .sc-five td {text-align:center;}
+	#sc .sc-chart {margin:0.6em 0 0.2em;}
+	#sc .sc-svg {display:block;width:100%;height:auto;max-width:900px;overflow:visible;}
+	#sc .sc-svg text {font-family:inherit;}
+	#sc .sc-ax {stroke:#6b7280;stroke-width:1;} #sc .sc-grid {stroke:#e3e7ec;stroke-width:1;}
+	#sc .sc-tx {fill:#374151;font-size:12px;} #sc .sc-tx--s {font-size:11px;fill:#4b5563;} #sc .sc-tx--b {font-weight:700;fill:#1e2733;}
+	#sc .sc-box {fill:#e0e0fb;stroke:#4f46e5;stroke-width:2;} #sc .sc-med {stroke:#1e1b4b;stroke-width:3;} #sc .sc-wh {stroke:#374151;stroke-width:2;}
+	#sc .sc-mean {fill:#f59e0b;stroke:#92400e;stroke-width:1;} #sc .sc-out {fill:#fff;stroke:#c2410c;stroke-width:2;}
+	#sc .sc-bar {fill:#6366f1;} #sc .sc-bar:hover {fill:#4338ca;} #sc .sc-bar--off {fill:#c7cbe8;} #sc .sc-bar--off:hover {fill:#a5abd6;}
+	#sc .sc-dot {fill:#4f46e5;}
+	#sc .sc-curve {fill:none;stroke:#4f46e5;stroke-width:2.5;} #sc .sc-shade {fill:#818cf8;fill-opacity:0.45;}
+	#sc .sc-mark {stroke:#c2410c;stroke-width:1.5;stroke-dasharray:4 3;}
+	#sc .sc-pt {fill:#4f46e5;fill-opacity:0.8;stroke:#fff;stroke-width:1;} #sc .sc-pt--on {fill:none;stroke:#c2410c;stroke-width:2.5;}
+	#sc .sc-fit {fill:none;stroke:#c2410c;stroke-width:2.5;}
+	#sc .sc-hov {cursor:crosshair;}
+	#sc .sc-eqn {font-size:1.15em;margin:0.2em 0 0.4em;}
+	#sc .sc-click {cursor:pointer;} #sc .sc-click:hover td, #sc .sc-click:hover th {background:#f2f2fd;}
+	#sc .sc-seg {flex-wrap:wrap;} #sc .sc-seg button {font-size:0.85em;padding:0.4em 0.7em;}
+	#sc .sc-seg button:disabled {opacity:0.45;cursor:not-allowed;}
+	#sc .sc-look p {margin:0.5em 0 0;}
+	#sc .sc-bad {color:#b42318;} #sc .sc-warn {margin:0.6em 0 0;padding:0.5em 0.75em;border-left:4px solid #d97706;background:#fff7e6;color:#5c3b00;border-radius:0.3em;}
+	#sc .sc-work summary {cursor:pointer;font-weight:700;min-height:36px;padding:0.2em 0;}
+	#sc .sc-steps {padding-left:1.4em;} #sc .sc-steps li {margin:0.35em 0;line-height:1.5;}
+	#sc .sc-sorted {font-family:ui-monospace,Menlo,Consolas,monospace;font-size:0.9em;overflow-wrap:anywhere;line-height:1.6;}
+	#sc .sc-hyp {font-family:ui-monospace,Menlo,Consolas,monospace;margin:0 0 0.6em;line-height:1.6;}
+	#sc .sc-concl {margin:0.4em 0;padding:0.6em 0.8em;border-radius:0.4em;line-height:1.5;}
+	#sc .sc-yes {background:#ecfdf3;color:#14532d;border-left:4px solid #16a34a;} #sc .sc-no {background:#f3f4f6;color:#1f2937;border-left:4px solid #6b7280;}
+	#sc .sc-share {margin-top:1em;}
+	@media (max-width:600px) {
+		#sc .sc-tabs button {flex:1 1 auto;padding:0.45em 0.6em;font-size:0.92em;}
+		#sc .sc-ta, #sc .tu-input, #sc .tu-select {font-size:16px;}
+		#sc .sc-tx {font-size:15px;} #sc .sc-tx--s {font-size:13px;}
+		#sc .sc-kv td.sc-why {display:none;}
+		#sc .sc-seg {width:100%;} #sc .sc-seg button {flex:1 1 30%;}
+	}
+	/* dark mode: "#sc.tu" so these win over the generated TOOL-DARK twins of the rules above */
+	body.dark-mode #sc.tu .sc-tabs {border-bottom-color:#3a3f48;} body.dark-mode #sc.tu .sc-tabs button {color:#c9ced6;} body.dark-mode #sc.tu .sc-tabs button:hover {background:#2a2d33;}
+	body.dark-mode #sc.tu .sc-tabs button[aria-selected="true"] {background:#23262b;color:var(--accent);border-bottom-color:var(--accent);}
+	body.dark-mode #sc.tu .sc-more summary, body.dark-mode #sc.tu .sc-empty {color:#c9ced6;}
+	body.dark-mode #sc.tu .sc-kv th, body.dark-mode #sc.tu .tu-table th[scope=row] {color:#e5e7eb;} body.dark-mode #sc.tu .tu-field > label, body.dark-mode #sc.tu .tu-label {color:#c3c9d2;} body.dark-mode #sc.tu .sc-why {color:#aab2bd;}
+	body.dark-mode #sc.tu .sc-ax {stroke:#9ca3af;} body.dark-mode #sc.tu .sc-grid {stroke:#33373e;}
+	body.dark-mode #sc.tu .sc-tx {fill:#d1d5db;} body.dark-mode #sc.tu .sc-tx--s {fill:#b6bcc6;} body.dark-mode #sc.tu .sc-tx--b {fill:#f3f4f6;}
+	body.dark-mode #sc.tu .sc-box {fill:#312e81;stroke:#a5b4fc;} body.dark-mode #sc.tu .sc-med {stroke:#eef2ff;} body.dark-mode #sc.tu .sc-wh {stroke:#d1d5db;}
+	body.dark-mode #sc.tu .sc-mean {fill:#fbbf24;stroke:#fde68a;} body.dark-mode #sc.tu .sc-out {fill:#1a1a1a;stroke:#fb923c;}
+	body.dark-mode #sc.tu .sc-bar {fill:#818cf8;} body.dark-mode #sc.tu .sc-bar:hover {fill:#a5b4fc;} body.dark-mode #sc.tu .sc-bar--off {fill:#3b3f63;} body.dark-mode #sc.tu .sc-bar--off:hover {fill:#4b5080;}
+	body.dark-mode #sc.tu .sc-dot {fill:#a5b4fc;}
+	body.dark-mode #sc.tu .sc-curve {stroke:#a5b4fc;} body.dark-mode #sc.tu .sc-shade {fill:#6366f1;fill-opacity:0.5;}
+	body.dark-mode #sc.tu .sc-mark {stroke:#fb923c;} body.dark-mode #sc.tu .sc-pt {fill:#a5b4fc;stroke:#1a1a1a;} body.dark-mode #sc.tu .sc-pt--on {fill:none;stroke:#fb923c;} body.dark-mode #sc.tu .sc-fit {stroke:#fb923c;}
+	body.dark-mode #sc.tu .sc-click:hover td, body.dark-mode #sc.tu .sc-click:hover th {background:#26283a;}
+	body.dark-mode #sc.tu .sc-bad {color:#ff9d93;} body.dark-mode #sc.tu .sc-warn {background:#3a2a0c;color:#fde7b0;border-left-color:#f59e0b;}
+	body.dark-mode #sc.tu .sc-yes {background:#0f2e1c;color:#c6f6d5;border-left-color:#4ade80;} body.dark-mode #sc.tu .sc-no {background:#26292e;color:#e5e7eb;border-left-color:#9ca3af;}
+	body.dark-mode #sc.tu .tu-table tr.is-active td, body.dark-mode #sc.tu .tu-table tr.is-active th {background:#2b2a5c;color:#eef0ff;}
+	body.dark-mode #sc.tu .tu-stat--hero {background:#2b2a5c;border-color:#3f3d80;} body.dark-mode #sc.tu .tu-stat--hero .tu-stat__value, body.dark-mode #sc.tu .tu-stat--hero .tu-stat__label, body.dark-mode #sc.tu .tu-stat--hero .tu-stat__sub {color:#eef0ff;}
