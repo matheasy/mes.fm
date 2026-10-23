@@ -704,6 +704,21 @@ body.is-stuck #navbar.hide { position: fixed; top: 56px; right: 8px; }
 			<h2>Look deeper</h2>
 			<div class="tu-card"><ul class="st-links" id="st-links"></ul></div>
 		</div>
+		<h2 id="extension">Rank badge in your browser: the MES Site Rank extension</h2>
+		<div class="tu-card tu-card--tint">
+			<p style="margin-top:0">If you use a traffic extension such as Similarweb, <b>MES Site Rank</b> is the honest version for Chrome, Brave and Edge: click its button on any website to see that site's public <b>Tranco rank</b>, its tier (Top 1,000, Top 10,000 &hellip;), and the 30-day rank line, then open the full report here. Tick one box and the rank also shows as a small badge on the toolbar icon for every site you visit. Rank only: it never shows or invents visit counts.</p>
+			<div class="tu-row" style="gap:0.5em"><a class="tu-btn tu-btn--primary" href="/site-traffic/mes-site-traffic.zip" download>Download <span id="st-ver">v1.0.0</span> (zip)</a><a class="tu-btn tu-btn--ghost" href="#st-install">How to install</a><a class="tu-btn tu-btn--ghost" href="/site-traffic/extension/popup.js">View the source</a></div>
+			<p class="tu-note" style="margin-bottom:0"><b>Privacy:</b> it asks only for the page you click it on. When you click, the site's <em>domain name</em> (never the full address) is sent to mes.fm, which asks Tranco for the rank. The automatic badge is off until you tick it and allow the extra &ldquo;tabs&rdquo; permission, and then every domain you visit is looked up the same way, so leave it off if that bothers you. No accounts, no tracking.</p>
+		</div>
+		<h3 id="st-install">Install it (about a minute)</h3>
+		<div class="tu-card">
+			<ol>
+				<li><b>Download</b> the zip and unzip it. Keep the folder <code>mes-site-rank</code> somewhere permanent.</li>
+				<li>Open the extensions page (copy the address, then paste it in the address bar): <code>chrome://extensions</code> in Chrome, <code>brave://extensions</code> in Brave, <code>edge://extensions</code> in Edge.</li>
+				<li>Turn on <b>Developer mode</b>, click <b>Load unpacked</b> and choose the <code>mes-site-rank</code> folder.</li>
+				<li>Pin <b>MES Site Rank</b> from the puzzle-piece menu, then click it on any website.</li>
+			</ol>
+		</div>
 		<div class="tu-toast" id="st-toast" role="status" aria-live="polite"></div>
 		<div class="tu-seo">
 			<h2>Website traffic checker: how popular is a site, and how old?</h2>
@@ -781,7 +796,7 @@ body.is-stuck #navbar.hide { position: fixed; top: 56px; right: 8px; }
             hide_search:false,
             current_tab:0
         }        </script><!-- FASTCOMMENTS-LAZY: widget init moved to main_js/main.js -- it pulls embed.min.js only when #fastcomments-widget nears the viewport or on the first Comments-toggle click, so it no longer blocks first render -->                <script src="https://mes.fm/main_js/lazysizes.min.js?v=1.0.3" async></script>
-	<script src="/site-traffic/js/site-traffic.js?v=1" defer></script>
+	<script src="/site-traffic/js/site-traffic.js?v=2" defer></script>
             <script src="https://mes.fm/main_js/main.js?v=1.0.5"></script>    <!-- PAGEVIEW-TRACKING-INSERTED --><script src="https://mes.fm/main_js/track.js" defer></script><script>document.getElementById('copyright-year').textContent = new Date().getFullYear();</script><script src="/main_js/info-bar-fit.js" defer></script><script>
   // Floating compact header bar (see #compact-nav CSS): appears once the
   // header + nav bar have scrolled off the top; nav links that don't fit

@@ -1,0 +1,17 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="robots" content="noindex"><title>MES Site Rank</title><link rel="stylesheet" href="popup.css"></head>
+<body>
+<header><b>MES Site Rank</b><a href="https://mes.fm/site-traffic" target="_blank" rel="noopener">mes.fm</a></header>
+<div class="host" id="host">Reading this page…</div>
+<div id="out" hidden>
+	<div class="rank" id="rank"></div>
+	<div class="tier" id="tier"></div>
+	<svg id="chart" viewBox="0 0 300 70" preserveAspectRatio="none" hidden><path id="line" fill="none" stroke-width="2.5" vector-effect="non-scaling-stroke"/></svg>
+	<div class="trend" id="trend"></div>
+</div>
+<div class="note" id="note"></div>
+<a class="go" id="full" href="#" target="_blank" rel="noopener" hidden>Full report: age, hosting, history &rsaquo;</a>
+<label class="auto"><input type="checkbox" id="auto"> Show the rank on the toolbar icon for every site I visit</label>
+<div class="fine">Rank is a position in the public Tranco list, <b>not</b> a visit count. Only the site's domain name is sent to mes.fm; never the full address.</div>
+<script src="shared.js"></script><script src="popup.js"></script>
+</body></html>

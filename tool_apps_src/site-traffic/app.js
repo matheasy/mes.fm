@@ -75,6 +75,7 @@
 	$('st-tech').setAttribute('data-orig', $('st-tech').innerHTML); bindTech();
 	$('st-copy').onclick = function () { if (!cur) return; var a = cur.api, r = a.rank, lk = cur.lookup, an = lk ? D.analyze(lk, Date.now()) : null; copy([a.domain, r.ranked ? 'Rank: #' + T.fmt(r.rank) + ' (' + T.tier(r.rank).label + ', Tranco ' + r.date + ')' : 'Rank: not in the Tranco list', an && an.age ? 'Domain age: ' + an.age : '', an && an.hosting.length ? 'Hosted by: ' + an.hosting.map(function (x) { return x.name; }).join(', ') : '', cur.wayback && cur.wayback.first ? 'First archived: ' + cur.wayback.first : '', '(mes.fm/site-traffic)'].filter(Boolean).join('\n'), 'Summary copied'); };
 	$('st-link').onclick = function () { if (cur) copy(location.origin + location.pathname + '?d=' + encodeURIComponent(cur.api.domain), 'Link copied'); };
+	if (window.fetch) fetch('/site-traffic/extension/manifest.json').then(function (r) { return r.ok ? r.json() : null; }).then(function (m) { if (m && m.version && $('st-ver')) $('st-ver').textContent = 'v' + m.version; }).catch(function () {});
 	drawRecent();
 	var q0 = new URLSearchParams(location.search).get('d'); if (q0) { $('st-q').value = q0; go(); }
 })();

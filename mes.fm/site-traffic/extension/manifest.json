@@ -1,0 +1,17 @@
+{
+  "manifest_version": 3,
+  "name": "MES Site Rank",
+  "version": "1.0.0",
+  "description": "See how popular the website you are on is: its public Tranco rank and 30-day trend, with an optional rank badge on the toolbar icon. Rank only, never made-up visit counts. Free. By MES (mes.fm).",
+  "homepage_url": "https://mes.fm/site-traffic",
+  "icons": { "16": "icons/icon16.png", "32": "icons/icon32.png", "48": "icons/icon48.png", "128": "icons/icon128.png" },
+  "action": {
+    "default_title": "Site rank",
+    "default_popup": "popup.html",
+    "default_icon": { "16": "icons/icon16.png", "32": "icons/icon32.png" }
+  },
+  "background": { "service_worker": "background.js" },
+  "permissions": ["storage", "activeTab"],
+  "optional_permissions": ["tabs"],
+  "host_permissions": ["https://mes.fm/*"]
+}

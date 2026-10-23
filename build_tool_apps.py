@@ -139,7 +139,7 @@ APPS = {
     "site-traffic": dict(title="MES Site Traffic & Rank", page_title="Website Traffic Checker: Site Rank, Popularity and Age",
                          tag="How popular is a website, and for how long?", accent="#0f766e", dark="#134e4a", tint="#d9f2ee",
                          desc="Free website traffic checker: see a site's public popularity rank and its 30-day trend, how old the domain is, who hosts it, when the Internet Archive first saved it and what technology it uses. Rank data, never made-up visit numbers.",
-                         js_v="1", lib_from=["domain-lookup"]),
+                         js_v="2", lib_from=["domain-lookup"]),
     "baby-growth-percentile-calculator": dict(title="MES Baby Growth Percentile Calculator", page_title="Baby Growth Percentile Calculator (WHO Weight, Length, Head)",
                           tag="Weight, length and head percentiles on the WHO chart.", accent="#15803d", dark="#0f5f2c", tint="#dcf3e3", src="baby-growth", js_path="baby-growth/js/baby-growth.js", js_parts=["data.js"],
                           desc="Free baby growth percentile calculator using the WHO Child Growth Standards: enter age, weight, length and head circumference to see the percentile and z-score on the growth chart, corrected age for premature babies, and a private growth log that shows your baby's trend.",
