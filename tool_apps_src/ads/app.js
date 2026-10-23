@@ -5,16 +5,31 @@
   'use strict';
   var RANGE = '30d';
   try { RANGE = localStorage.getItem('mes-ads:range') || '30d'; } catch (e) {}
-  if (!/^(7d|30d|90d|365d)$/.test(RANGE)) RANGE = '30d';
+  if (!/^(today|yesterday|7d|30d|90d|365d)$/.test(RANGE)) RANGE = '30d';
   var DATA = null, RET = null;
   var esc = function (s) { var d = document.createElement('div'); d.textContent = String(s); return d.innerHTML; };
   var $ = function (id) { return document.getElementById(id); };
-  var money = function (v) { return 'CA$' + (Math.abs(v) < 10 ? v.toFixed(2) : v.toFixed(Math.abs(v) < 1000 ? 1 : 0)); };
+  // Currency switch: everything arrives in CAD; the chosen currency (CAD / VND / USD, localStorage) is applied when drawing.
+  var CUR = 'CAD';
+  try { CUR = localStorage.getItem('mes-ads:cur') || 'CAD'; } catch (e) {}
+  if (!/^(CAD|VND|USD)$/.test(CUR)) CUR = 'CAD';
+  var rate = function () { return (DATA && DATA.fx && DATA.fx.rates && DATA.fx.rates[CUR]) || 1; };
+  var SYM = { CAD: 'CA$', USD: 'US$', VND: '₫' };
+  var money = function (v) {
+    var x = v * rate();
+    if (CUR === 'VND') return '₫' + Math.round(x).toLocaleString();
+    return SYM[CUR] + (Math.abs(x) < 10 ? x.toFixed(2) : x.toFixed(Math.abs(x) < 1000 ? 1 : 0));
+  };
+  var axisMoney = function (v) {
+    var x = v * rate();
+    if (CUR === 'VND') return '₫' + (x >= 1e6 ? +(x / 1e6).toFixed(1) + 'M' : x >= 1e3 ? Math.round(x / 1e3) + 'k' : Math.round(x));
+    return '$' + (x < 10 ? x.toFixed(x % 1 ? 2 : 0) : x.toFixed(0));
+  };
   var signed = function (v) { return '<span class="' + (v >= 0 ? 'pos' : 'neg') + '">' + (v < 0 ? '−' : '') + money(Math.abs(v)) + '</span>'; };
   var int = function (v) { return Math.round(v).toLocaleString(); };
   var pct = function (n, d) { if (!d) return '–'; var p = n / d * 100; return (p >= 10 || p === 0 ? p.toFixed(0) : p.toFixed(1)) + '%'; };
   var rpm = function (rev, pv) { return pv ? money(rev / pv * 1000) : '–'; };
-  var cpc = function (spend, clicks) { return clicks ? 'CA$' + (spend / clicks).toFixed(3) : '–'; };
+  var cpc = function (spend, clicks) { if (!clicks) return '–'; var x = spend / clicks * rate(); return CUR === 'VND' ? '₫' + Math.round(x).toLocaleString() : SYM[CUR] + x.toFixed(3); };
   var DEV = { desktop: 'Desktop', mobile: 'Mobile', tablet: 'Tablet', tv: 'TV', other: 'Other' };
 
   // the shell's moon button toggles body.dark-mode: redraw the chart in the other colours
@@ -32,7 +47,7 @@
     el.innerHTML = '<thead><tr>' + cols.map(function (c) {
       return '<th data-k="' + c.k + '" class="' + (st.key === c.k ? 'on' : '') + '">' + esc(c.t) + (st.key === c.k ? (st.dir === 'desc' ? ' ▼' : ' ▲') : '') + '</th>';
     }).join('') + '</tr></thead>';
-    if (!st.rows.length) { el.innerHTML += '<tbody><tr><td colspan="99" class="empty">' + esc(st.opts.empty || 'No data yet.') + '</td></tr></tbody>'; if (st.moreId) $(st.moreId).hidden = true; return; }
+    if (!st.rows.length) { el.innerHTML += '<tbody><tr><td colspan="99" class="empty">' + esc(st.opts.empty || 'No data yet.') + '</td></tr></tbody>'; if (st.moreId) $(st.moreId).hidden = true; attachResizer(el); return; }
     var col = cols.filter(function (c) { return c.k === st.key; })[0] || cols[0];
     var sign = st.dir === 'desc' ? -1 : 1;
     var sorted = st.rows.slice().sort(function (a, b) {
@@ -44,6 +59,7 @@
     var shown = st.all ? sorted : sorted.slice(0, n);
     el.innerHTML += '<tbody>' + shown.map(function (r) { return '<tr>' + cols.map(function (c, i) { return '<td' + (i === 0 ? ' class="ad-path" title="' + esc(c.v(r)) + '"' : '') + '>' + (c.h ? c.h(r) : esc(c.v(r))) + '</td>'; }).join('') + '</tr>'; }).join('') + '</tbody>';
     if (st.opts.foot) el.innerHTML += '<tfoot><tr>' + st.opts.foot.map(function (h) { return '<td>' + h + '</td>'; }).join('') + '</tr></tfoot>';
+    attachResizer(el);
     if (st.moreId) {
       var m = $(st.moreId);
       m.hidden = st.rows.length <= n;
@@ -58,6 +74,60 @@
     else { st.key = th.dataset.k; st.dir = th.dataset.k === st.cols[0].k ? 'asc' : 'desc'; }
     renderTable(id);
   });
+  // First column resize (same behaviour as the Page column on /stats): drag the handle on the header's right edge
+  // (mouse / touch / pen), arrow keys when focused, double-click or double-tap resets. Width per table in localStorage.
+  var lastTap = 0;
+  function setColW(el, px, save) {
+    var key = 'mes-ads:colw:' + el.id;
+    if (px == null) {
+      el.classList.remove('w-set'); el.style.removeProperty('--ad-col-w');
+      if (save) { try { localStorage.removeItem(key); } catch (e) {} }
+      return;
+    }
+    var max = Math.max(130, el.parentElement.clientWidth - 120);
+    var w = Math.round(Math.min(max, Math.max(80, px)));
+    el.style.setProperty('--ad-col-w', w + 'px'); el.classList.add('w-set');
+    if (save) { try { localStorage.setItem(key, String(w)); } catch (e) {} }
+  }
+  function attachResizer(el) {
+    var th = el.querySelector('thead th'); if (!th) return;
+    if (!el.dataset.wRestored) {
+      el.dataset.wRestored = '1';
+      try { var saved = parseInt(localStorage.getItem('mes-ads:colw:' + el.id), 10); if (saved > 0) setColW(el, saved, false); } catch (e) {}
+    }
+    var h = document.createElement('span');
+    h.className = 'ad-resizer'; h.tabIndex = 0;
+    h.setAttribute('role', 'separator'); h.setAttribute('aria-orientation', 'vertical');
+    h.setAttribute('aria-label', 'Resize the first column (double-click to reset)');
+    h.title = 'Drag to resize this column. Double-click to reset.';
+    th.appendChild(h);
+    h.addEventListener('click', function (e) { e.stopPropagation(); });
+    h.addEventListener('keydown', function (e) {
+      if (e.key !== 'ArrowLeft' && e.key !== 'ArrowRight') return;
+      e.preventDefault(); e.stopPropagation();
+      setColW(el, th.getBoundingClientRect().width + (e.key === 'ArrowRight' ? 16 : -16), true);
+    });
+    h.addEventListener('pointerdown', function (e) {
+      if (e.button !== undefined && e.button !== 0) return;
+      e.preventDefault(); e.stopPropagation();
+      var startX = e.clientX, startW = th.getBoundingClientRect().width;
+      try { h.setPointerCapture(e.pointerId); } catch (err) {}
+      document.body.classList.add('ad-col-resizing'); h.classList.add('dragging');
+      function move(ev) { setColW(el, startW + ev.clientX - startX, false); }
+      function up(ev) {
+        h.removeEventListener('pointermove', move); h.removeEventListener('pointerup', up); h.removeEventListener('pointercancel', up);
+        try { h.releasePointerCapture(ev.pointerId); } catch (err) {}
+        document.body.classList.remove('ad-col-resizing'); h.classList.remove('dragging');
+        if (Math.abs(ev.clientX - startX) < 4) {
+          var now = Date.now();
+          if (now - lastTap < 400) { lastTap = 0; setColW(el, null, true); } else lastTap = now;
+          return;
+        }
+        setColW(el, th.getBoundingClientRect().width, true);
+      }
+      h.addEventListener('pointermove', move); h.addEventListener('pointerup', up); h.addEventListener('pointercancel', up);
+    });
+  }
   function bar(v, max, color) { var w = max ? Math.min(100, v / max * 100) : 0; return '<span class="ad-bar"><i style="width:' + w.toFixed(1) + '%;background:' + color + '"></i></span>'; }
 
   // ---- data
@@ -67,10 +137,17 @@
     RANGE = b.dataset.r; try { localStorage.setItem('mes-ads:range', RANGE); } catch (x) {}
     load();
   };
+  function setCur() { document.querySelectorAll('#ad-cur button').forEach(function (b) { b.setAttribute('aria-pressed', b.dataset.c === CUR ? 'true' : 'false'); }); }
+  setCur();
+  $('ad-cur').onclick = function (e) {
+    var b = e.target.closest('button[data-c]'); if (!b || b.dataset.c === CUR) return;
+    CUR = b.dataset.c; try { localStorage.setItem('mes-ads:cur', CUR); } catch (x) {}
+    setCur(); if (DATA) render();
+  };
   function load() {
     setTabs();
     $('ad-meta').textContent = 'Loading…';
-    var retRange = RANGE === '7d' ? '7d' : RANGE === '30d' ? '30d' : '90d';
+    var retRange = RANGE === 'today' || RANGE === 'yesterday' || RANGE === '7d' ? '7d' : RANGE === '30d' ? '30d' : '90d';
     Promise.all([
       fetch('/api/earnings?range=' + RANGE, { cache: 'no-store' }).then(function (r) { if (!r.ok) throw new Error(r.status); return r.json(); }),
       fetch('/api/ads-returns?range=' + retRange).then(function (r) { return r.ok ? r.json() : null; }).catch(function () { return null; }),
@@ -88,15 +165,37 @@
     if (m < 60) return m + ' min ago'; if (m < 48 * 60) return Math.round(m / 60) + ' h ago'; return Math.round(m / 1440) + ' days ago';
   }
 
+  // When the accounts' day (Pacific time) ends, like the "today is complete in ..." note on /stats. Redrawn every minute.
+  function pacificNow() {
+    var p = {};
+    new Intl.DateTimeFormat('en-US', { timeZone: 'America/Vancouver', hourCycle: 'h23', year: 'numeric', month: 'numeric', day: 'numeric', hour: 'numeric', minute: 'numeric', second: 'numeric' })
+      .formatToParts(new Date()).forEach(function (x) { p[x.type] = +x.value; });
+    return p;
+  }
+  function endsNote() {
+    var el = $('ad-ends'); if (!el) return;
+    var p = pacificNow();
+    var mins = Math.max(1, Math.ceil(((23 - p.hour) * 3600 + (59 - p.minute) * 60 + (60 - p.second)) / 60));
+    var end = new Date(Date.now() + mins * 60000);
+    var at = ''; try { at = end.toLocaleTimeString([], { hour: 'numeric', minute: '2-digit' }); } catch (e) {}
+    var left = mins >= 60 ? Math.floor(mins / 60) + ' h ' + (mins % 60) + ' min' : mins + ' min';
+    var nextRun = 60 - new Date().getMinutes();
+    el.textContent = 'The faded bar and dashed line are today, still filling in: the accounts\' day (midnight to midnight Pacific time) is complete in ' + left +
+      (at ? ' (' + at + ' your time)' : '') + '. New numbers arrive every hour (next in about ' + nextRun + ' min); Google itself can lag a few hours.';
+  }
+  setInterval(endsNote, 60000);
+
   function render() {
     var d = DATA, t = d.totals, m = d.meta || {};
-    $('ad-meta').innerHTML = 'Google Ads data: <b>' + ago(m.gads && m.gads.at) + '</b> · AdSense data: <b>' + ago(m.adsense && m.adsense.at) + '</b> · Spend converted at ' +
-      (d.fx ? Math.round(d.fx.perCad).toLocaleString() + ' ' + esc(d.adsCurrency) + ' per CAD' + (d.fx.live ? '' : ' (fallback rate)') : '?') + '. AdSense numbers are estimates until the month closes.';
+    $('ad-meta').innerHTML = 'Google Ads data: <b>' + ago(m.gads && m.gads.at) + '</b> · AdSense data: <b>' + ago(m.adsense && m.adsense.at) + '</b> · ' +
+      (d.fx && d.fx.rates ? '1 CAD = ' + Math.round(d.fx.rates.VND).toLocaleString() + ' VND = ' + d.fx.rates.USD.toFixed(3) + ' USD' + (d.fx.live ? '' : ' (fallback rate)') : '') +
+      '. Both update every hour. AdSense numbers are estimates until the month closes.';
+    endsNote();
     var missing = [];
     if (!m.gads) missing.push('<li><b>Google Ads Script</b> has not sent data yet (Google Ads → Tools → Bulk actions → Scripts, script "MES ads page").</li>');
     if (!m.adsense) missing.push('<li><b>AdSense Apps Script</b> has not sent data yet (script.google.com: run backfill() once, then installTrigger()).</li>');
     $('ad-setup').hidden = !missing.length;
-    $('ad-setup').innerHTML = missing.length ? '<h2>Waiting for data</h2><ul>' + missing.join('') + '</ul><p class="tu-note">Both run once a day and resend the last 35 days, so a day is filled in or corrected on the next run.</p>' : '';
+    $('ad-setup').innerHTML = missing.length ? '<h2>Waiting for data</h2><ul>' + missing.join('') + '</ul><p class="tu-note">Both run every hour (resending the last 3 days) and once a day at 6 am (the last 35 days), so a day is filled in or corrected on the next run.</p>' : '';
 
     var net = t.rev - t.spend;
     $('ad-tiles').innerHTML =
@@ -192,15 +291,21 @@
     var css = getComputedStyle($('ad'));
     var cRev = css.getPropertyValue('--ad-rev').trim(), cSp = css.getPropertyValue('--ad-spend').trim(), cLine = css.getPropertyValue('--ad-line').trim(), cMuted = css.getPropertyValue('--ad-muted').trim();
     var s = '';
-    for (var g = 0; g <= 4; g++) { var gv = nice * g / 4, gy = y(gv); s += '<line x1="' + padL + '" x2="' + (W - padR) + '" y1="' + gy + '" y2="' + gy + '" stroke="' + cLine + '"/><text x="' + (padL - 6) + '" y="' + (gy + 4) + '" text-anchor="end" font-size="10" fill="' + cMuted + '">$' + (gv < 10 ? gv.toFixed(gv % 1 ? 2 : 0) : gv.toFixed(0)) + '</text>'; }
+    for (var g = 0; g <= 4; g++) { var gv = nice * g / 4, gy = y(gv); s += '<line x1="' + padL + '" x2="' + (W - padR) + '" y1="' + gy + '" y2="' + gy + '" stroke="' + cLine + '"/><text x="' + (padL - 6) + '" y="' + (gy + 4) + '" text-anchor="end" font-size="11" fill="' + cMuted + '">' + axisMoney(gv) + '</text>'; }
     days.forEach(function (x, i) {
       var bx = padL + i * bw + bw * 0.15, bh = Math.max(0, padT + ih - y(x.rev));
-      s += '<rect x="' + bx.toFixed(1) + '" y="' + y(x.rev).toFixed(1) + '" width="' + Math.max(1, bw * 0.7).toFixed(1) + '" height="' + bh.toFixed(1) + '" fill="' + cRev + '" rx="1.5"/>';
+      var isToday = x.d === DATA.today;
+      s += '<rect x="' + bx.toFixed(1) + '" y="' + y(x.rev).toFixed(1) + '" width="' + Math.max(1, bw * 0.7).toFixed(1) + '" height="' + bh.toFixed(1) + '" fill="' + cRev + '" rx="1.5"' +
+        (isToday ? ' fill-opacity="0.45" stroke="' + cRev + '" stroke-dasharray="3 2"' : '') + '/>';
     });
     var pts = days.map(function (x, i) { return (padL + i * bw + bw / 2).toFixed(1) + ',' + y(x.spend).toFixed(1); });
-    s += '<polyline points="' + pts.join(' ') + '" fill="none" stroke="' + cSp + '" stroke-width="2.2" stroke-linejoin="round"/>';
+    var lastToday = days.length > 1 && days[days.length - 1].d === DATA.today;
+    var solid = lastToday ? pts.slice(0, -1) : pts;
+    if (solid.length > 1) s += '<polyline points="' + solid.join(' ') + '" fill="none" stroke="' + cSp + '" stroke-width="2.2" stroke-linejoin="round"/>';
+    if (lastToday) s += '<polyline points="' + pts.slice(-2).join(' ') + '" fill="none" stroke="' + cSp + '" stroke-width="2.2" stroke-dasharray="5 4"/>';
+    if (days.length === 1) s += '<circle cx="' + pts[0].split(',')[0] + '" cy="' + pts[0].split(',')[1] + '" r="4" fill="' + cSp + '"/>';
     var every = Math.ceil(days.length / Math.max(2, Math.floor(iw / 60)));
-    days.forEach(function (x, i) { if (i % every === 0) s += '<text x="' + (padL + i * bw + bw / 2) + '" y="' + (H - 6) + '" text-anchor="middle" font-size="10" fill="' + cMuted + '">' + x.d.slice(5) + '</text>'; });
+    days.forEach(function (x, i) { if (i % every === 0) s += '<text x="' + (padL + i * bw + bw / 2) + '" y="' + (H - 6) + '" text-anchor="middle" font-size="11" fill="' + cMuted + '">' + x.d.slice(5) + '</text>'; });
     svg.innerHTML = s;
     box.onmousemove = box.ontouchstart = function (e) {
       var pt = e.touches ? e.touches[0] : e, r = box.getBoundingClientRect();

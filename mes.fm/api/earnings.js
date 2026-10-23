@@ -2,10 +2,14 @@
 // Reads the daily blobs written by api/earnings-ingest.js and joins AdSense earnings with Google Ads spend
 // by day, landing page, country, device and campaign. Spend is converted to CAD (AdSense's currency) with a
 // daily rate from open.er-api.com, cached in Redis for 12 h, fallback 18,396.41 VND per CAD (Oct 21, 2026).
-// ?range=7d|30d|90d|365d (days end today, Pacific-ish: the scripts send each account's own dates).
+// ?range=today|yesterday|7d|30d|90d|365d (days end today; the scripts send each account's own Pacific dates).
 const { lastNDayKeys } = require('./_bucket-keys');
 
-const RANGES = { '7d': 7, '30d': 30, '90d': 90, '365d': 365 };
+const RANGES = { today: 1, yesterday: 1, '7d': 7, '30d': 30, '90d': 90, '365d': 365 };
+// Both Google accounts report in Pacific time (America/Vancouver), so "today" is the Pacific date. AdSense has no
+// hourly report, so 'today' (so far) is the shortest range there is.
+const TZ = 'America/Vancouver';
+function pacificDay(d) { return new Intl.DateTimeFormat('en-CA', { timeZone: TZ, year: 'numeric', month: '2-digit', day: '2-digit' }).format(d); }
 const FX_FALLBACK = { VND: 18396.41, USD: 0.72, CAD: 1 };
 const UNLISTED = '(pages AdSense did not list)';
 
@@ -126,28 +130,36 @@ async function redis(commands) {
   return r.json();
 }
 
+// Rates per 1 CAD (the page's currency switch shows CAD, VND or USD): live from open.er-api.com, cached in Redis for 12 h,
+// else the last cached copy, else FX_FALLBACK. perCad = the Ads account currency's rate (1 when the script already sent CAD).
+const SHOWN = ['VND', 'USD'];
 async function fxRate(currency, cached) {
-  if (!currency || currency === 'CAD') return { perCad: 1, at: null, live: true };
-  if (cached && cached.rates && cached.rates[currency] && Date.now() - Date.parse(cached.at) < 12 * 3600e3) {
-    return { perCad: cached.rates[currency], at: cached.at, live: true, cached: true };
-  }
+  const pick = (rates, at, live) => {
+    const out = { CAD: 1 };
+    for (const c of SHOWN) out[c] = (rates && rates[c]) || FX_FALLBACK[c];
+    const perCad = !currency || currency === 'CAD' ? 1 : (rates && rates[currency]) || FX_FALLBACK[currency] || 1;
+    return { perCad, rates: out, at, live };
+  };
+  if (cached && cached.rates && Date.now() - Date.parse(cached.at) < 12 * 3600e3) return Object.assign(pick(cached.rates, cached.at, true), { cached: true });
   try {
     const r = await fetch('https://open.er-api.com/v6/latest/CAD');
     const j = await r.json();
-    if (j && j.rates && j.rates[currency]) {
+    if (j && j.rates && j.rates.VND) {
       const at = new Date().toISOString();
       await redis([['SET', 'adsdash:fx', JSON.stringify({ at, rates: j.rates }), 'EX', String(7 * 86400)]]).catch(() => {});
-      return { perCad: j.rates[currency], at, live: true };
+      return pick(j.rates, at, true);
     }
   } catch (e) { /* fall through */ }
-  if (cached && cached.rates && cached.rates[currency]) return { perCad: cached.rates[currency], at: cached.at, live: false };
-  return { perCad: FX_FALLBACK[currency] || 1, at: null, live: false };
+  if (cached && cached.rates) return pick(cached.rates, cached.at, false);
+  return pick(null, null, false);
 }
 
 async function handler(req, res) {
   res.setHeader('Cache-Control', 'private, no-store');
   const range = RANGES[req.query.range] ? req.query.range : '30d';
-  const dates = lastNDayKeys(RANGES[range] + 1, new Date(Date.now() + 86400000)); // one extra (tomorrow UTC) so the accounts' own "today" is never missed
+  const today = pacificDay(new Date());
+  const yesterday = new Date(Date.parse(today + 'T12:00:00Z') - 864e5).toISOString().slice(0, 10);
+  const dates = range === 'today' ? [today] : range === 'yesterday' ? [yesterday] : lastNDayKeys(RANGES[range] + 1, new Date(Date.now() + 86400000)); // one extra (tomorrow UTC) so the accounts' own "today" is never missed
   try {
     const keys = [];
     for (const d of dates) keys.push(`adsdash:gads:${d}`, `adsdash:adsense:${d}`);
@@ -165,7 +177,7 @@ async function handler(req, res) {
     const meta = { gads: parse(out[1]), adsense: parse(out[2]) };
     const fx = await fxRate((meta.gads && meta.gads.currency) || 'VND', parse(out[3]));
     const agg = aggregate(have, blobs, fx.perCad);
-    res.status(200).json(Object.assign({ range, currency: 'CAD', adsCurrency: (meta.gads && meta.gads.currency) || 'VND', fx, meta }, agg));
+    res.status(200).json(Object.assign({ range, today, tz: TZ, currency: 'CAD', adsCurrency: (meta.gads && meta.gads.currency) || 'VND', fx, meta }, agg));
   } catch (e) {
     res.status(502).json({ error: 'data unavailable' });
   }
@@ -175,3 +187,4 @@ module.exports = handler;
 module.exports.aggregate = aggregate;
 module.exports.normPage = normPage;
 module.exports.normDevice = normDevice;
+module.exports.pacificDay = pacificDay;

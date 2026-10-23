@@ -92,7 +92,9 @@ function res() { return { code: 0, headers: {}, setHeader(k, v) { this.headers[k
   ok(r.code === 200 && r.body.days === 3, 'adsense stored');
   r = res(); await earnings({ query: { range: '7d' } }, r);
   ok(r.code === 200 && Math.abs(r.body.totals.spend - 3679.282 / 18000) < 1e-4 && r.body.totals.rev === 7.5, 'read back with live fx');
-  ok(r.body.fx.perCad === 18000 && r.body.adsCurrency === 'VND' && r.headers['Cache-Control'] === 'private, no-store', 'fx + private cache header');
+  ok(r.body.fx.perCad === 18000 && r.body.fx.rates.VND === 18000 && r.body.fx.rates.CAD === 1 && r.body.fx.rates.USD === 0.72 && r.body.adsCurrency === 'VND' && r.headers['Cache-Control'] === 'private, no-store', 'fx rates for the currency switch (USD from the fallback) + private cache header');
+  r = res(); await earnings({ query: { range: 'yesterday' } }, r);
+  ok(r.code === 200 && r.body.range === 'yesterday' && r.body.daily.length <= 1, 'yesterday = one day');
   r = res(); await earnings({ query: { range: 'all' } }, r);
   ok(r.body.range === '30d', 'unknown range -> 30d');
   console.log(`${passes} passed, ${fails} failed`);

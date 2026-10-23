@@ -328,7 +328,8 @@ body.dark-mode .tu .rw-head {color:#a0a8b3;border-bottom-color:#555;} body.dark-
 	.ad-key {display:inline-block;width:0.9em;height:0.6em;border-radius:2px;margin-right:0.35em;vertical-align:middle;}
 	.ad-key--rev {background:var(--ad-rev);}
 	.ad-key--spend {background:var(--ad-spend);}
-	.ad-tip {position:absolute;pointer-events:none;background:var(--ad-ink);color:var(--ad-card);font-size:0.8em;padding:0.35em 0.55em;border-radius:0.35em;white-space:nowrap;display:none;z-index:2;top:6px;}
+	.ad-ends {margin:0.5em 0 0;}
+	#ad .ad-tip {position:absolute;pointer-events:none;background:#1e2733;color:#ffffff;font-size:0.85em;line-height:1.45;padding:0.4em 0.6em;border-radius:0.35em;white-space:nowrap;display:none;z-index:2;top:6px;box-shadow:0 2px 8px rgba(0,0,0,0.25);}
 	.ad-wrap {overflow-x:auto;}
 	.ad-t {width:100%;border-collapse:collapse;font-size:0.9em;}
 	.ad-t th, .ad-t td {padding:0.45em 0.6em;border-bottom:1px solid var(--ad-line);text-align:right;white-space:nowrap;color:var(--ad-ink);}
@@ -345,11 +346,29 @@ body.dark-mode .tu .rw-head {color:#a0a8b3;border-bottom-color:#555;} body.dark-
 	.ad-bar i {display:block;height:100%;}
 	.ad-more {display:block;margin:0.7em auto 0;}
 	.ad-more[hidden] {display:none;}
+	/* first column: drag its right edge to resize (same handle as /stats); app.js sets --ad-col-w on the table */
+	.ad-t th:first-child {overflow:visible;}
+	.ad-resizer {position:absolute;top:0;right:-1px;bottom:0;width:10px;cursor:col-resize;touch-action:none;user-select:none;-webkit-user-select:none;z-index:2;}
+	.ad-resizer::after {content:"";position:absolute;top:22%;bottom:22%;right:3px;width:3px;border-radius:2px;background:currentColor;opacity:0.28;}
+	.ad-resizer:hover::after, .ad-resizer:focus-visible::after, .ad-resizer.dragging::after {background:var(--accent);opacity:1;}
+	.ad-resizer:focus {outline:none;}
+	body.ad-col-resizing {cursor:col-resize;user-select:none;-webkit-user-select:none;}
+	.ad-t.w-set th:first-child, .ad-t.w-set td:first-child {width:var(--ad-col-w);min-width:var(--ad-col-w);max-width:var(--ad-col-w);box-sizing:border-box;}
+	.ad-t.w-set td.ad-path {max-width:var(--ad-col-w);}
+	@media (pointer:coarse) {
+		.ad-resizer {width:24px;right:-9px;}
+		.ad-resizer::after {right:10px;width:4px;}
+	}
 	@media (max-width: 600px) {
+		/* phones: sections are plain blocks like /stats (no card padding / border), so the tables get the full width */
+		#ad .ad-sec {padding:0;border:none;background:none;border-radius:0;margin:0 0 1.6em;}
+		#ad .ad-sec h2 {padding-bottom:0.3em;border-bottom:2px solid var(--ad-line);}
 		.ad-t td.ad-path {max-width:9em;}
-		.ad-t th, .ad-t td {padding:0.4em 0.45em;}
+		.ad-t th, .ad-t td {padding:0.4em 0.4em;font-size:0.92em;}
+		.ad-t th {font-size:0.72em;}
 		.ad-chart {height:180px;}
 	}
+	body.dark-mode #ad.tu .ad-tip {background:#2e343b;color:#f2f4f6;border:1px solid #4a525c;}
 	body.dark-mode #ad.tu {--ad-rev:#4cc472;--ad-spend:#f5ab6a;--ad-good:#4cc472;--ad-bad:#ff7b72;--ad-line:#33393f;--ad-muted:#a3adb9;--ad-card:#1a1a1a;--ad-ink:#e3e7ec;}
 
 
@@ -430,6 +449,7 @@ body.dark-mode .tu .rw-head {color:#a0a8b3;border-bottom-color:#555;} body.dark-
 	body.dark-mode .tu [data-table="1"] .rw-head{color:#9a9aa2;border-bottom:2px solid #2b323c}
 	body.dark-mode .tu [data-table="1"] .rw-row{border-bottom:1px solid #27313f}
 	body.dark-mode #ad{--ad-rev:#37d279;--ad-spend:#e67f23;--ad-good:#35d462;--ad-bad:#d63333}
+	body.dark-mode #ad .ad-tip{background:#3c4f67}
 	body.dark-mode .ad-bar{background:rgba(82,82,82,0.20)}
 	/* TOOL-DARK:END */
 /* Floating compact header bar: once the full header + nav scroll out of
@@ -535,10 +555,17 @@ body.is-stuck #navbar.hide { position: fixed; top: 56px; right: 8px; }
 	<div class="tu ad" id="ad">
 		<div class="ad-top">
 			<div class="ad-tabs" id="ad-tabs" role="group" aria-label="Range">
+				<button type="button" class="tu-chip" data-r="today" aria-pressed="false">Today</button>
+				<button type="button" class="tu-chip" data-r="yesterday" aria-pressed="false">Yesterday</button>
 				<button type="button" class="tu-chip" data-r="7d" aria-pressed="false">7 days</button>
 				<button type="button" class="tu-chip" data-r="30d" aria-pressed="true">30 days</button>
 				<button type="button" class="tu-chip" data-r="90d" aria-pressed="false">90 days</button>
 				<button type="button" class="tu-chip" data-r="365d" aria-pressed="false">365 days</button>
+			</div>
+			<div class="ad-tabs" id="ad-cur" role="group" aria-label="Currency">
+				<button type="button" class="tu-chip" data-c="CAD" aria-pressed="true">CAD</button>
+				<button type="button" class="tu-chip" data-c="VND" aria-pressed="false">VND</button>
+				<button type="button" class="tu-chip" data-c="USD" aria-pressed="false">USD</button>
 			</div>
 			<span class="ad-links"><a href="/stats">Page views</a> · <a href="https://adsense.google.com/" target="_blank" rel="noopener">AdSense</a> · <a href="https://ads.google.com/" target="_blank" rel="noopener">Google Ads</a></span>
 		</div>
@@ -549,9 +576,10 @@ body.is-stuck #navbar.hide { position: fixed; top: 56px; right: 8px; }
 
 		<section class="tu-card ad-sec">
 			<h2>Day by day</h2>
-			<p class="tu-note">AdSense earnings (bars) and Google Ads spend (line), both in CAD. Hover or tap a day for its numbers.</p>
+			<p class="tu-note">AdSense earnings (bars) and Google Ads spend (line), in the currency chosen at the top. Hover or tap a day for its numbers.</p>
 			<div class="ad-chart" id="ad-chart"><svg id="ad-svg" preserveAspectRatio="none" role="img" aria-label="Daily earnings and spend"></svg><div class="ad-tip" id="ad-tip"></div></div>
 			<div class="ad-legend"><span><i class="ad-key ad-key--rev"></i>AdSense earnings</span><span><i class="ad-key ad-key--spend"></i>Google Ads spend</span></div>
+			<p class="tu-note ad-ends" id="ad-ends"></p>
 		</section>
 
 		<section class="tu-card ad-sec">
@@ -643,7 +671,7 @@ body.is-stuck #navbar.hide { position: fixed; top: 56px; right: 8px; }
             hide_search:false,
             current_tab:0
         }        </script><!-- FASTCOMMENTS-LAZY: widget init moved to main_js/main.js -- it pulls embed.min.js only when #fastcomments-widget nears the viewport or on the first Comments-toggle click, so it no longer blocks first render -->                <script src="https://mes.fm/main_js/lazysizes.min.js?v=1.0.3" async></script>
-	<script src="/earnings/js/earnings.js?v=2" defer></script>
+	<script src="/earnings/js/earnings.js?v=6" defer></script>
             <script src="https://mes.fm/main_js/main.js?v=1.0.5"></script>    <!-- PAGEVIEW-TRACKING-INSERTED --><script src="https://mes.fm/main_js/track.js" defer></script><script>document.getElementById('copyright-year').textContent = new Date().getFullYear();</script><script src="/main_js/info-bar-fit.js" defer></script><script>
   // Floating compact header bar (see #compact-nav CSS): appears once the
   // header + nav bar have scrolled off the top; nav links that don't fit

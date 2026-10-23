@@ -2,19 +2,20 @@
 // Install: script.google.com -> New project "MES ads page - AdSense" -> paste this file -> Services (+) ->
 // "AdSense Management API" (identifier AdSense, v2) -> Project Settings -> Script properties: INGEST_KEY = the key
 // (Vercel env EARNINGS_INGEST_KEY) -> run backfill() once (authorise with the AdSense Google account) ->
-// run installTrigger() once (daily run around 6-7 am).
+// run installTrigger() once (hourly runs).
 // main() sends the last DAYS days (a re-send replaces those days); backfill() sends the last 120 days.
 
 var INGEST_URL = 'https://mes.fm/api/earnings-ingest';
 var ACCOUNT = 'accounts/pub-1461238060884369';
 var DAYS = 35;
 
-function main() { send(DAYS); }
+// Runs hourly (installTrigger): each run resends the last 3 days so today stays current; the 6 am run resends DAYS.
+function main() { send(+Utilities.formatDate(new Date(), Session.getScriptTimeZone(), 'H') === 6 ? DAYS : 3); }
 function backfill() { send(120); }
 
 function installTrigger() {
   ScriptApp.getProjectTriggers().forEach(function (t) { if (t.getHandlerFunction() === 'main') ScriptApp.deleteTrigger(t); });
-  ScriptApp.newTrigger('main').timeBased().everyDays(1).atHour(6).create();
+  ScriptApp.newTrigger('main').timeBased().everyHours(1).create();
 }
 
 function report(n, dims) {

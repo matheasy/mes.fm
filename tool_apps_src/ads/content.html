@@ -1,10 +1,17 @@
 	<div class="tu ad" id="ad">
 		<div class="ad-top">
 			<div class="ad-tabs" id="ad-tabs" role="group" aria-label="Range">
+				<button type="button" class="tu-chip" data-r="today" aria-pressed="false">Today</button>
+				<button type="button" class="tu-chip" data-r="yesterday" aria-pressed="false">Yesterday</button>
 				<button type="button" class="tu-chip" data-r="7d" aria-pressed="false">7 days</button>
 				<button type="button" class="tu-chip" data-r="30d" aria-pressed="true">30 days</button>
 				<button type="button" class="tu-chip" data-r="90d" aria-pressed="false">90 days</button>
 				<button type="button" class="tu-chip" data-r="365d" aria-pressed="false">365 days</button>
+			</div>
+			<div class="ad-tabs" id="ad-cur" role="group" aria-label="Currency">
+				<button type="button" class="tu-chip" data-c="CAD" aria-pressed="true">CAD</button>
+				<button type="button" class="tu-chip" data-c="VND" aria-pressed="false">VND</button>
+				<button type="button" class="tu-chip" data-c="USD" aria-pressed="false">USD</button>
 			</div>
 			<span class="ad-links"><a href="/stats">Page views</a> · <a href="https://adsense.google.com/" target="_blank" rel="noopener">AdSense</a> · <a href="https://ads.google.com/" target="_blank" rel="noopener">Google Ads</a></span>
 		</div>
@@ -15,9 +22,10 @@
 
 		<section class="tu-card ad-sec">
 			<h2>Day by day</h2>
-			<p class="tu-note">AdSense earnings (bars) and Google Ads spend (line), both in CAD. Hover or tap a day for its numbers.</p>
+			<p class="tu-note">AdSense earnings (bars) and Google Ads spend (line), in the currency chosen at the top. Hover or tap a day for its numbers.</p>
 			<div class="ad-chart" id="ad-chart"><svg id="ad-svg" preserveAspectRatio="none" role="img" aria-label="Daily earnings and spend"></svg><div class="ad-tip" id="ad-tip"></div></div>
 			<div class="ad-legend"><span><i class="ad-key ad-key--rev"></i>AdSense earnings</span><span><i class="ad-key ad-key--spend"></i>Google Ads spend</span></div>
+			<p class="tu-note ad-ends" id="ad-ends"></p>
 		</section>
 
 		<section class="tu-card ad-sec">
