@@ -1,0 +1,112 @@
+	/* MES Compound Interest + Loan Calculators (tool_apps_src/money-growth). Colours are --mg-* custom properties, restated for dark mode under body.dark-mode #mg.tu */
+	#mg.tu {--mg-ink:#1e2733;--mg-mut:#5b6573;--mg-line:#d5dbe2;--mg-card:#ffffff;--mg-soft:#f3f6f9;--mg-grid:#e3e7ec;--mg-axis:#8a94a3;--mg-tx:#5f6b7a;
+		--mg-dep:#047857;--mg-dep-a:#04785740;--mg-int:#d97706;--mg-int-a:#d9770659;--mg-start:#0f3d2e;--mg-real:#7c3aed;--mg-sa:#047857;--mg-sb:#2563eb;--mg-base:#8a94a3;
+		--mg-good:#047857;--mg-bad:#b42318;--mg-solve:#fff7e6;--mg-solve-line:#f1c58f;--mg-hl:#eaf7f1;}
+	#mg [hidden] {display:none !important;}
+	#mg :where(div, span, p, li, td, th, dt, dd, label, summary, h3, b) {color:inherit;}
+	#mg.tu {color:var(--mg-ink);}
+	#mg .mg-tabs {display:flex;gap:0.35em;flex-wrap:wrap;margin:0 0 0.8em;}
+	#mg .mg-tabs button {border:1px solid var(--mg-line);background:var(--mg-card);color:var(--mg-ink);padding:0.55em 1em;border-radius:2em;cursor:pointer;font:inherit;font-size:0.95em;min-height:42px;}
+	#mg .mg-tabs button:hover {border-color:var(--accent);}
+	#mg .mg-tabs button[aria-selected="true"] {background:var(--accent);border-color:var(--accent);color:#ffffff;font-weight:700;}
+	#mg button:focus-visible, #mg input:focus-visible, #mg select:focus-visible, #mg summary:focus-visible, #mg [tabindex]:focus-visible {outline:3px solid var(--accent);outline-offset:2px;}
+	#mg .tu-btn, #mg .tu-chip, #mg .tu-seg button {min-height:40px;}
+	#mg .tu-card {margin-bottom:1em;}
+	#mg .mg-h {font-size:1.08em;margin:0 0 0.5em;padding:0;border:0;color:var(--mg-ink);}
+	#mg .mg-f {flex:1 1 10em;}
+	#mg .mg-f--sm {flex:1 1 6em;}
+	#mg .tu-row {margin-bottom:0.6em;}
+	#mg .mg-seg {display:flex;flex-wrap:wrap;max-width:100%;}
+	#mg .mg-seg button {flex:1 1 auto;}
+	#mg .mg-det {margin-top:0.4em;}
+	#mg .mg-det > summary {cursor:pointer;font-weight:700;color:var(--mg-ink);list-style:none;display:block;padding:0.4em 0;min-height:32px;}
+	#mg .mg-det > summary::-webkit-details-marker {display:none;}
+	#mg .mg-det > summary::before {content:"\25B8";color:var(--accent);display:inline-block;width:1.1em;}
+	#mg .mg-det[open] > summary::before {content:"\25BE";}
+	#mg .mg-sum {margin-left:0.3em;font-weight:400;font-size:0.85em;color:var(--mg-mut);}
+	#mg .mg-err {color:var(--mg-bad);font-weight:700;}
+	#mg .mg-hint {margin:0.2em 0 0;min-height:1.2em;font-size:0.85em;}
+	#mg .mg-solving input {background:var(--mg-solve);border-color:var(--mg-solve-line);}
+	#mg .mg-solving label::after {content:" (solved)";font-weight:400;color:var(--mg-mut);}
+	#mg .mg-hero {grid-template-columns:repeat(auto-fit,minmax(11em,1fr));margin-bottom:0.6em;}
+	#mg .mg-hero .tu-stat__value {font-variant-numeric:tabular-nums;font-size:1.4em;}
+	#mg .mg-hero .tu-stat--hero .tu-stat__value {font-size:1.7em;}
+	#mg .mg-tile {cursor:pointer;}
+	#mg .mg-tile:hover {border-color:var(--accent);}
+	#mg .tu-pos {color:var(--mg-good);}
+	#mg .tu-neg {color:var(--mg-bad);}
+	#mg .mg-sentence {line-height:1.55;margin:0.4em 0 0.6em;}
+	#mg .mg-bar {display:flex;height:1.6em;border-radius:0.4em;overflow:hidden;background:var(--mg-grid);}
+	#mg .mg-bar span {display:block;height:100%;}
+	#mg .mg-s--start {background:var(--mg-start);} #mg .mg-s--dep {background:var(--mg-dep);} #mg .mg-s--int {background:var(--mg-int);}
+	#mg .mg-legend {display:flex;flex-wrap:wrap;gap:0.3em 1.2em;margin:0.5em 0;font-size:0.88em;color:var(--mg-mut);}
+	#mg .mg-legend b {color:var(--mg-ink);font-variant-numeric:tabular-nums;}
+	#mg .mg-k {display:inline-block;width:0.85em;height:0.85em;border-radius:0.15em;margin-right:0.35em;vertical-align:-0.06em;}
+	#mg .mg-k--start {background:var(--mg-start);} #mg .mg-k--dep {background:var(--mg-dep);} #mg .mg-k--int {background:var(--mg-int);}
+	#mg .mg-k--real {background:none;border-top:2px dashed var(--mg-real);height:0;border-radius:0;vertical-align:0.3em;}
+	#mg .mg-k--a {background:var(--mg-sa);} #mg .mg-k--b {background:var(--mg-sb);}
+	#mg .mg-k--base {background:none;border-top:2px dashed var(--mg-base);height:0;border-radius:0;vertical-align:0.3em;}
+	#mg .mg-chartwrap {position:relative;width:100%;}
+	#mg .mg-svg {width:100%;height:auto;display:block;touch-action:pan-y;}
+	#mg .mg-grid {stroke:var(--mg-grid);stroke-width:1;}
+	#mg .mg-axis {stroke:var(--mg-axis);stroke-width:1;}
+	#mg .mg-tx {font-size:11px;fill:var(--mg-tx);}
+	#mg .mg-hov {stroke:var(--mg-mut);stroke-width:1;stroke-dasharray:3 3;}
+	#mg .mg-a-dep {fill:var(--mg-dep-a);stroke:var(--mg-dep);stroke-width:1.5;}
+	#mg .mg-a-int {fill:var(--mg-int-a);stroke:var(--mg-int);stroke-width:1.5;}
+	#mg .mg-a-bal {fill:var(--mg-dep-a);stroke:none;}
+	#mg .mg-l-real {fill:none;stroke:var(--mg-real);stroke-width:2;stroke-dasharray:6 4;}
+	#mg .mg-l-a {fill:none;stroke:var(--mg-sa);stroke-width:2.4;}
+	#mg .mg-l-b {fill:none;stroke:var(--mg-sb);stroke-width:2.4;}
+	#mg .mg-l-base {fill:none;stroke:var(--mg-base);stroke-width:1.8;stroke-dasharray:5 4;}
+	#mg .mg-b-prin {fill:var(--mg-dep);}
+	#mg .mg-b-int {fill:var(--mg-int);}
+	#mg .mg-readout {font-size:0.88em;color:var(--mg-mut);min-height:2.6em;line-height:1.45;}
+	#mg .mg-readout b {color:var(--mg-ink);font-variant-numeric:tabular-nums;}
+	#mg .mg-sched-wrap {max-height:34em;overflow:auto;}
+	#mg .mg-sched th[scope=col] {position:sticky;top:0;z-index:1;background:var(--mg-soft);}
+	#mg .mg-sched tr.mg-year {cursor:pointer;}
+	#mg .mg-sched tr.mg-year:hover td, #mg .mg-sched tr.mg-year:hover th {background:var(--mg-soft);}
+	#mg .mg-sched tr.mg-sub td {font-size:0.9em;background:var(--mg-soft);color:var(--mg-mut);}
+	#mg .mg-sched th[scope=row] {white-space:nowrap;text-align:left;}
+	#mg .mg-tw {color:var(--accent);display:inline-block;width:1em;}
+	#mg .mg-yd {color:var(--mg-mut);font-weight:400;font-size:0.85em;}
+	#mg .tu-table td, #mg .tu-table th {font-variant-numeric:tabular-nums;}
+	#mg .mg-sched tfoot td {font-weight:700;border-top:2px solid var(--mg-line);position:sticky;bottom:0;background:var(--mg-card);}
+	#mg .mg-hl td, #mg .mg-hl th {background:var(--mg-hl);font-weight:700;}
+	#mg .mg-btns {display:flex;gap:0.5em;flex-wrap:wrap;margin-top:0.8em;}
+	#mg .mg-eq {display:grid;gap:0.4em;}
+	#mg .mg-eq > div {display:flex;flex-wrap:wrap;align-items:center;gap:0.3em 0.8em;padding:0.35em 0;border-bottom:1px solid var(--mg-grid);}
+	#mg .mg-eq__n {min-width:9.5em;color:var(--mg-mut);font-size:0.9em;}
+	#mg #mg-notice {margin-bottom:1em;}
+	@media (max-width:600px) {
+		#mg .mg-tabs button {padding:0.5em 0.75em;font-size:0.9em;flex:1 1 auto;}
+		#mg .mg-hero {grid-template-columns:1fr 1fr;}
+		#mg .mg-hero .tu-stat--hero {grid-column:1 / -1;}
+		#mg .mg-hero .tu-stat__value {font-size:1.2em;}
+		#mg .mg-btns .tu-btn {flex:1 1 auto;}
+		#mg .mg-tx {font-size:10px;}
+		#mg .mg-eq__n {min-width:0;width:100%;}
+	}
+	/* dark mode */
+	body.dark-mode #mg.tu {--mg-ink:#e8ebef;--mg-mut:#aab3bf;--mg-line:#4a5260;--mg-card:#22262c;--mg-soft:#2a2f36;--mg-grid:#363c45;--mg-axis:#8a94a3;--mg-tx:#aab3bf;
+		--mg-dep:#34d399;--mg-dep-a:#34d39947;--mg-int:#fbbf24;--mg-int-a:#fbbf2452;--mg-start:#a7f3d0;--mg-real:#c4b5fd;--mg-sa:#34d399;--mg-sb:#93c5fd;--mg-base:#9aa4b2;
+		--mg-good:#6fd28f;--mg-bad:#ff8a80;--mg-solve:#3a3220;--mg-solve-line:#7a6526;--mg-hl:#1f3a30;}
+	body.dark-mode #mg.tu .mg-tabs button {background:var(--mg-card);color:var(--mg-ink);border-color:var(--mg-line);}
+	body.dark-mode #mg.tu .mg-tabs button[aria-selected="true"] {background:var(--accent);border-color:var(--accent);color:#0b1416;}
+	body.dark-mode #mg.tu .mg-sched tfoot td {background:var(--mg-card);}
+	body.dark-mode #mg.tu .mg-sched th[scope=col] {background:var(--mg-soft);color:var(--mg-ink);}
+	body.dark-mode #mg.tu .tu-pos {color:var(--mg-good) !important;}
+	body.dark-mode #mg.tu .tu-neg {color:var(--mg-bad) !important;}
+	body.dark-mode #mg.tu .mg-solving input {background:var(--mg-solve);border-color:var(--mg-solve-line);color:var(--mg-ink);}
+	body.dark-mode #mg.tu .tu-card--tint {background:#1f2a2e;border-color:#2c3c42;color:#ddd;}
+	#mg #mg-p-extra .tu-row {align-items:flex-start;}
+	#mg #mg-presets {margin-bottom:0.7em;}
+
+/* the shared shell paints every div / span / p #333; inherit the page colour instead so dark mode reads */
+:where(#mg) :is(div, span, p, section, label, li, td, th, small, b, strong, em, h2, h3, h4, dt, dd, summary, output) {color:inherit;}
+#mg :is(div, span, p, section, label, li, table, thead, tbody, tfoot, tr, td, th, small, b, strong, em, h2, h3, h4, dt, dd, summary, output):not([class]) {color:inherit;}
+#mg .tu-table :is(tr, td, th) {color:inherit;}
+#mg :is(details, fieldset, figure, figcaption, caption, ul, ol, dl, nav, article, header, footer) {color:inherit;}
+#mg .tu-table, #mg table {color:inherit;}
+#mg :is(sup, sub, i, u, code, abbr, mark) {color:inherit;}

@@ -1,0 +1,188 @@
+		<div id="mg-notice" class="tu-card tu-card--tint" role="status" hidden></div>
+		<div class="mg-tabs" role="tablist" aria-label="What do you want to work out?">
+			<button type="button" role="tab" id="mg-t-grow" data-tab="grow" aria-controls="mg-p-grow" aria-selected="true">📈 Grow</button>
+			<button type="button" role="tab" id="mg-t-goal" data-tab="goal" aria-controls="mg-p-goal" aria-selected="false">🎯 Goal</button>
+			<button type="button" role="tab" id="mg-t-cmp" data-tab="cmp" aria-controls="mg-p-cmp" aria-selected="false">⚖️ Compare</button>
+			<button type="button" role="tab" id="mg-t-r72" data-tab="r72" aria-controls="mg-p-r72" aria-selected="false">⏱ Rule of 72</button>
+		</div>
+
+		<!-- shared inputs (Grow, Goal, Compare = scenario A) -->
+		<div class="tu-card" id="mg-inputs">
+			<div class="tu-row">
+				<div class="tu-field mg-f" data-solve="start">
+					<label for="mg-start">Starting amount</label>
+					<div class="tu-suffix"><input id="mg-start" class="tu-input tu-input--big" type="text" inputmode="decimal" autocomplete="off" value="10,000"><span class="mg-cur"></span></div>
+				</div>
+				<div class="tu-field mg-f" data-solve="dep">
+					<label for="mg-dep">Regular deposit</label>
+					<div class="tu-suffix"><input id="mg-dep" class="tu-input tu-input--big" type="text" inputmode="decimal" autocomplete="off" value="200"><span class="mg-cur"></span></div>
+				</div>
+				<div class="tu-field mg-f">
+					<label for="mg-df">How often</label>
+					<select id="mg-df" class="tu-select">
+						<option value="none">No deposits</option><option value="weekly">Weekly</option><option value="biweekly">Every 2 weeks</option>
+						<option value="monthly" selected>Monthly</option><option value="quarterly">Quarterly</option><option value="yearly">Yearly</option>
+					</select>
+				</div>
+				<div class="tu-field mg-f">
+					<label for="mg-timing">Deposit at the</label>
+					<select id="mg-timing" class="tu-select"><option value="e" selected>End of period</option><option value="s">Start of period</option></select>
+				</div>
+			</div>
+			<div class="tu-row">
+				<div class="tu-field mg-f" data-solve="rate">
+					<label for="mg-rate">Interest rate (per year)</label>
+					<div class="tu-suffix"><input id="mg-rate" class="tu-input tu-input--big" type="text" inputmode="decimal" autocomplete="off" value="5"><span>%</span></div>
+				</div>
+				<div class="tu-field mg-f">
+					<label for="mg-comp">Compounded</label>
+					<select id="mg-comp" class="tu-select">
+						<option value="daily">Daily</option><option value="monthly" selected>Monthly</option><option value="quarterly">Quarterly</option>
+						<option value="semiannual">Semi-annually</option><option value="annual">Annually</option><option value="continuous">Continuously</option>
+					</select>
+				</div>
+				<div class="tu-field mg-f mg-f--sm" data-solve="time">
+					<label for="mg-years">Years</label>
+					<input id="mg-years" class="tu-input tu-input--big" type="text" inputmode="numeric" autocomplete="off" value="10">
+				</div>
+				<div class="tu-field mg-f mg-f--sm" data-solve="time">
+					<label for="mg-months">+ Months</label>
+					<input id="mg-months" class="tu-input tu-input--big" type="text" inputmode="numeric" autocomplete="off" value="0">
+				</div>
+			</div>
+			<details class="mg-det" id="mg-more">
+				<summary>More options <span class="mg-sum" id="mg-more-sum"></span></summary>
+				<div class="tu-row">
+					<div class="tu-field mg-f">
+						<label for="mg-inc">Raise the deposit each year by</label>
+						<div class="tu-suffix"><input id="mg-inc" class="tu-input" type="text" inputmode="decimal" autocomplete="off" value="0"><span>%</span></div>
+					</div>
+					<div class="tu-field mg-f">
+						<label for="mg-inf">Inflation (to show today's money)</label>
+						<div class="tu-suffix"><input id="mg-inf" class="tu-input" type="text" inputmode="decimal" autocomplete="off" value="0"><span>%</span></div>
+					</div>
+					<div class="tu-field mg-f">
+						<label for="mg-tax">Tax on interest</label>
+						<div class="tu-suffix"><input id="mg-tax" class="tu-input" type="text" inputmode="decimal" autocomplete="off" value="0"><span>%</span></div>
+					</div>
+					<div class="tu-field mg-f">
+						<label for="mg-cursel">Currency</label>
+						<select id="mg-cursel" class="tu-select mg-cursel"></select>
+					</div>
+				</div>
+				<p class="tu-note">Tax is taken from the interest as it is earned (like a normal taxable savings account). Inflation does not change the balance; it shows what the money would buy in today's prices.</p>
+			</details>
+			<p class="tu-note mg-err" id="mg-err" role="alert" hidden></p>
+		</div>
+
+		<!-- GROW -->
+		<section class="mg-panel" id="mg-p-grow" role="tabpanel" aria-labelledby="mg-t-grow">
+			<div class="tu-card">
+				<div class="tu-stats mg-hero" id="mg-hero" aria-live="polite"></div>
+				<p class="mg-sentence" id="mg-sentence"></p>
+				<div class="mg-bar" id="mg-split" aria-hidden="true"></div>
+				<div class="mg-legend" id="mg-split-legend"></div>
+			</div>
+			<div class="tu-card">
+				<h3 class="mg-h">Growth over time</h3>
+				<div class="mg-legend"><span><i class="mg-k mg-k--dep"></i>Money you put in</span><span><i class="mg-k mg-k--int"></i>Interest earned</span><span id="mg-leg-real" hidden><i class="mg-k mg-k--real"></i>Value in today's money</span></div>
+				<div class="mg-chartwrap"><svg class="mg-svg" id="mg-chart" role="img" aria-label="Chart of the balance over time"></svg></div>
+				<div class="mg-readout" id="mg-readout" aria-live="polite">Move over the chart to see any year.</div>
+			</div>
+			<div class="tu-card">
+				<h3 class="mg-h">Year by year</h3>
+				<p class="tu-note" style="margin-top:0;">Click a year to see each <span id="mg-subname">month</span>.</p>
+				<div class="tu-table-wrap mg-sched-wrap"><table class="tu-table mg-sched" id="mg-table"></table></div>
+				<div class="mg-btns">
+					<button type="button" class="tu-btn tu-btn--ghost" id="mg-copy-csv">Copy table (spreadsheet)</button>
+					<button type="button" class="tu-btn tu-btn--ghost" id="mg-dl-csv">Download CSV</button>
+					<button type="button" class="tu-btn tu-btn--ghost" id="mg-copy-sum">Copy summary</button>
+					<button type="button" class="tu-btn tu-btn--ghost" id="mg-copy-link">Copy link to this calculation</button>
+				</div>
+			</div>
+		</section>
+
+		<!-- GOAL -->
+		<section class="mg-panel" id="mg-p-goal" role="tabpanel" aria-labelledby="mg-t-goal" hidden>
+			<div class="tu-card">
+				<div class="tu-row">
+					<div class="tu-field mg-f">
+						<label for="mg-target">My goal</label>
+						<div class="tu-suffix"><input id="mg-target" class="tu-input tu-input--big" type="text" inputmode="decimal" autocomplete="off" value="100,000"><span class="mg-cur"></span></div>
+					</div>
+					<div class="tu-field" style="flex:2 1 22em;">
+						<span class="tu-label" id="mg-gk-label">Work out</span>
+						<div class="tu-seg mg-seg" id="mg-gk" role="group" aria-labelledby="mg-gk-label">
+							<button type="button" data-v="dep" aria-pressed="true">How much to deposit</button>
+							<button type="button" data-v="time" aria-pressed="false">How long it takes</button>
+							<button type="button" data-v="rate" aria-pressed="false">The rate I need</button>
+						</div>
+					</div>
+				</div>
+				<p class="tu-note" id="mg-goal-hint"></p>
+				<div class="tu-stats mg-hero" id="mg-goal-out" aria-live="polite"></div>
+				<p class="mg-sentence" id="mg-goal-sentence"></p>
+				<div class="mg-btns"><button type="button" class="tu-btn tu-btn--primary" id="mg-goal-use">Use this in the calculator</button></div>
+			</div>
+		</section>
+
+		<!-- COMPARE -->
+		<section class="mg-panel" id="mg-p-cmp" role="tabpanel" aria-labelledby="mg-t-cmp" hidden>
+			<div class="tu-card">
+				<h3 class="mg-h">Scenario B <span class="mg-sum">(scenario A is the form above)</span></h3>
+				<div class="tu-row">
+					<div class="tu-field mg-f"><label for="mg-b-start">Starting amount</label><div class="tu-suffix"><input id="mg-b-start" class="tu-input" type="text" inputmode="decimal" autocomplete="off"><span class="mg-cur"></span></div></div>
+					<div class="tu-field mg-f"><label for="mg-b-dep">Regular deposit</label><div class="tu-suffix"><input id="mg-b-dep" class="tu-input" type="text" inputmode="decimal" autocomplete="off"><span class="mg-cur"></span></div></div>
+					<div class="tu-field mg-f"><label for="mg-b-df">How often</label><select id="mg-b-df" class="tu-select"><option value="none">No deposits</option><option value="weekly">Weekly</option><option value="biweekly">Every 2 weeks</option><option value="monthly">Monthly</option><option value="quarterly">Quarterly</option><option value="yearly">Yearly</option></select></div>
+				</div>
+				<div class="tu-row">
+					<div class="tu-field mg-f"><label for="mg-b-rate">Interest rate</label><div class="tu-suffix"><input id="mg-b-rate" class="tu-input" type="text" inputmode="decimal" autocomplete="off"><span>%</span></div></div>
+					<div class="tu-field mg-f"><label for="mg-b-comp">Compounded</label><select id="mg-b-comp" class="tu-select"><option value="daily">Daily</option><option value="monthly">Monthly</option><option value="quarterly">Quarterly</option><option value="semiannual">Semi-annually</option><option value="annual">Annually</option><option value="continuous">Continuously</option></select></div>
+					<div class="tu-field mg-f mg-f--sm"><label for="mg-b-years">Years</label><input id="mg-b-years" class="tu-input" type="text" inputmode="numeric" autocomplete="off"></div>
+				</div>
+				<div class="tu-chips" aria-label="Quick scenario B">
+					<button type="button" class="tu-chip" id="mg-b-copy">Same as A</button>
+					<button type="button" class="tu-chip" data-b="rate+1">A with 1% more interest</button>
+					<button type="button" class="tu-chip" data-b="dep2">A with double the deposit</button>
+					<button type="button" class="tu-chip" data-b="years5">A 5 years longer</button>
+					<button type="button" class="tu-chip" data-b="late">A starting 10 years later</button>
+				</div>
+			</div>
+			<div class="tu-card">
+				<div class="tu-table-wrap"><table class="tu-table mg-cmp" id="mg-cmp-table" aria-live="polite"></table></div>
+				<p class="mg-sentence" id="mg-cmp-sentence"></p>
+				<div class="mg-legend"><span><i class="mg-k mg-k--a"></i>Scenario A</span><span><i class="mg-k mg-k--b"></i>Scenario B</span></div>
+				<div class="mg-chartwrap"><svg class="mg-svg" id="mg-cmp-chart" role="img" aria-label="Balance of scenario A and B over time"></svg></div>
+				<div class="mg-readout" id="mg-cmp-readout" aria-live="polite">Move over the chart to compare any year.</div>
+			</div>
+		</section>
+
+		<!-- RULE OF 72 -->
+		<section class="mg-panel" id="mg-p-r72" role="tabpanel" aria-labelledby="mg-t-r72" hidden>
+			<div class="tu-card">
+				<div class="tu-row">
+					<div class="tu-field mg-f"><label for="mg-r72-rate">Interest rate (per year)</label><div class="tu-suffix"><input id="mg-r72-rate" class="tu-input tu-input--big" type="text" inputmode="decimal" autocomplete="off" value="8"><span>%</span></div></div>
+					<div class="tu-field mg-f"><label for="mg-r72-comp">Compounded</label><select id="mg-r72-comp" class="tu-select"><option value="daily">Daily</option><option value="monthly">Monthly</option><option value="quarterly">Quarterly</option><option value="semiannual">Semi-annually</option><option value="annual" selected>Annually</option><option value="continuous">Continuously</option></select></div>
+					<div class="tu-field mg-f"><label for="mg-r72-years">Or: double my money in (years)</label><input id="mg-r72-years" class="tu-input tu-input--big" type="text" inputmode="decimal" autocomplete="off" placeholder="e.g. 10"></div>
+				</div>
+				<div class="tu-stats mg-hero" id="mg-r72-out" aria-live="polite"></div>
+				<p class="mg-sentence" id="mg-r72-sentence"></p>
+			</div>
+			<div class="tu-card">
+				<h3 class="mg-h">Rule of 72 vs the exact doubling time</h3>
+				<p class="tu-note" style="margin-top:0;">Exact = ln 2 &divide; ln(1 + yearly growth), with the compounding chosen above. The rule of 72 is a mental shortcut; it is best between about 6% and 10%.</p>
+				<div class="tu-table-wrap"><table class="tu-table mg-r72t" id="mg-r72-table"></table></div>
+			</div>
+		</section>
+
+		<div class="tu-card mg-formulas">
+			<h3 class="mg-h">The formulas</h3>
+			<div class="mg-eq">
+				<div><span class="mg-eq__n">one amount</span> <span class="mg-eq__f mes-tex">\( \displaystyle A = P\left(1+\frac{r}{n}\right)^{nt} \)</span></div>
+				<div><span class="mg-eq__n">continuous</span> <span class="mg-eq__f mes-tex">\( \displaystyle A = P\,e^{rt} \)</span></div>
+				<div><span class="mg-eq__n">regular deposits</span> <span class="mg-eq__f mes-tex">\( \displaystyle A = P(1+i)^{N} + D\,\frac{(1+i)^{N}-1}{i} \)</span></div>
+				<div><span class="mg-eq__n">yearly growth (APY)</span> <span class="mg-eq__f mes-tex">\( \displaystyle \text{APY} = \left(1+\frac{r}{n}\right)^{n}-1 \)</span></div>
+				<div><span class="mg-eq__n">doubling time</span> <span class="mg-eq__f mes-tex">\( \displaystyle t_2 = \frac{\ln 2}{\ln(1+\text{APY})} \approx \frac{72}{100\,r} \)</span></div>
+			</div>
+			<p class="tu-note">P = starting amount, r = yearly rate as a decimal (5% = 0.05), n = compounding periods per year, t = years, D = deposit per period, i = growth per deposit period (with monthly compounding and monthly deposits i = r/12), N = number of deposits. Deposits at the start of each period earn one more period: multiply the deposit part by (1 + i).</p>
+		</div>

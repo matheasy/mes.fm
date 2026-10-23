@@ -2,6 +2,54 @@
  "generated": "2026-10-23",
  "calculators": [
   {
+   "href": "/time-calculator",
+   "title": "Time Calculator",
+   "icon": "/img/time-calculator-logo.png",
+   "desc": "Hours between two times, add and subtract time, a timesheet with breaks and decimal hours for payroll.",
+   "added": "2026-10-23",
+   "kind": "calculator"
+  },
+  {
+   "href": "/tip-calculator",
+   "title": "Tip Calculator",
+   "icon": "/img/tip-calculator-logo.png",
+   "desc": "Tip and split the bill: evenly or by what each person ordered, rounding, and tipping customs by country.",
+   "added": "2026-10-23",
+   "kind": "calculator"
+  },
+  {
+   "href": "/fuel-cost-calculator",
+   "title": "Fuel Cost Calculator",
+   "icon": "/img/fuel-cost-calculator-logo.png",
+   "desc": "What a trip costs in fuel, from distance, L/100 km or mpg and price, split per person, plus EV comparison.",
+   "added": "2026-10-23",
+   "kind": "calculator"
+  },
+  {
+   "href": "/age-calculator",
+   "title": "Age Calculator",
+   "icon": "/img/age-calculator-logo.png",
+   "desc": "Exact age in years, months and days, days lived, next birthday, milestones and the age gap between two people.",
+   "added": "2026-10-23",
+   "kind": "calculator"
+  },
+  {
+   "href": "/loan-calculator",
+   "title": "Loan Calculator",
+   "icon": "/img/loan-calculator-logo.png",
+   "desc": "Monthly payment, total interest, payoff date and schedule for car, personal and student loans, with extra payments and APR.",
+   "added": "2026-10-23",
+   "kind": "calculator"
+  },
+  {
+   "href": "/compound-interest-calculator",
+   "title": "Compound Interest Calculator",
+   "icon": "/img/compound-interest-calculator-logo.png",
+   "desc": "Grow savings with monthly deposits: year-by-year table and chart, goals, APY and the rule of 72.",
+   "added": "2026-10-23",
+   "kind": "calculator"
+  },
+  {
    "href": "/statistics-calculator",
    "title": "Statistics Calculator",
    "icon": "/img/statistics-calculator-logo.png",
@@ -47,54 +95,6 @@
    "icon": "/img/matrix-calculator-logo.png",
    "desc": "Type or paste matrices into a grid: multiply, invert, determinants, eigenvalues and SVD with the working shown, plus softmax, a neural-network layer and attention.",
    "added": "2026-10-19",
-   "kind": "calculator"
-  },
-  {
-   "href": "/geometry",
-   "title": "Geometry & Angle Lab",
-   "icon": "/img/geometry-logo.png",
-   "desc": "Drag triangles, lines and circles and watch the angles update.",
-   "added": "2026-10-18",
-   "kind": "calculator"
-  },
-  {
-   "href": "/trigonometry",
-   "title": "Trigonometry Calculator",
-   "icon": "/img/trigonometry-logo.png",
-   "desc": "Unit circle, triangle solver, graphs, tables and identities.",
-   "added": "2026-10-18",
-   "kind": "calculator"
-  },
-  {
-   "href": "/shapes-calculator",
-   "title": "Volume, Area & Surface Area Calculator",
-   "icon": "/img/shapes-calculator-logo.png",
-   "desc": "Volume, area and surface area of 27 shapes, with every formula.",
-   "added": "2026-10-18",
-   "kind": "calculator"
-  },
-  {
-   "href": "/body-surface-area-calculator",
-   "title": "Body Surface Area Calculator",
-   "icon": "/img/body-surface-area-calculator-logo.png",
-   "desc": "BSA by ten formulas for adults and children, plus clinical helpers.",
-   "added": "2026-10-15",
-   "kind": "calculator"
-  },
-  {
-   "href": "/one-rep-max-calculator",
-   "title": "One-Rep Max Calculator",
-   "icon": "/img/one-rep-max-calculator-logo.png",
-   "desc": "Estimate your 1RM from a set, with a rep chart, plate loader and strength level.",
-   "added": "2026-10-15",
-   "kind": "calculator"
-  },
-  {
-   "href": "/pregnancy-calorie-calculator",
-   "title": "Pregnancy Calorie Calculator",
-   "icon": "/img/pregnancy-calorie-calculator-logo.png",
-   "desc": "Extra calories by trimester or breastfeeding, and healthy weight gain by week.",
-   "added": "2026-10-15",
    "kind": "calculator"
   }
  ],
@@ -198,6 +198,54 @@
  ],
  "latest": [
   {
+   "href": "/time-calculator",
+   "title": "Time Calculator",
+   "icon": "/img/time-calculator-logo.png",
+   "desc": "Hours between two times, add and subtract time, a timesheet with breaks and decimal hours for payroll.",
+   "added": "2026-10-23",
+   "kind": "calculator"
+  },
+  {
+   "href": "/tip-calculator",
+   "title": "Tip Calculator",
+   "icon": "/img/tip-calculator-logo.png",
+   "desc": "Tip and split the bill: evenly or by what each person ordered, rounding, and tipping customs by country.",
+   "added": "2026-10-23",
+   "kind": "calculator"
+  },
+  {
+   "href": "/fuel-cost-calculator",
+   "title": "Fuel Cost Calculator",
+   "icon": "/img/fuel-cost-calculator-logo.png",
+   "desc": "What a trip costs in fuel, from distance, L/100 km or mpg and price, split per person, plus EV comparison.",
+   "added": "2026-10-23",
+   "kind": "calculator"
+  },
+  {
+   "href": "/age-calculator",
+   "title": "Age Calculator",
+   "icon": "/img/age-calculator-logo.png",
+   "desc": "Exact age in years, months and days, days lived, next birthday, milestones and the age gap between two people.",
+   "added": "2026-10-23",
+   "kind": "calculator"
+  },
+  {
+   "href": "/loan-calculator",
+   "title": "Loan Calculator",
+   "icon": "/img/loan-calculator-logo.png",
+   "desc": "Monthly payment, total interest, payoff date and schedule for car, personal and student loans, with extra payments and APR.",
+   "added": "2026-10-23",
+   "kind": "calculator"
+  },
+  {
+   "href": "/compound-interest-calculator",
+   "title": "Compound Interest Calculator",
+   "icon": "/img/compound-interest-calculator-logo.png",
+   "desc": "Grow savings with monthly deposits: year-by-year table and chart, goals, APY and the rule of 72.",
+   "added": "2026-10-23",
+   "kind": "calculator"
+  },
+  {
    "href": "/poker",
    "title": "Poker",
    "icon": "/img/poker-logo.png",
@@ -212,54 +260,6 @@
    "desc": "Mean, median, standard deviation, quartiles, regression, distributions and hypothesis tests, with the working shown.",
    "added": "2026-10-23",
    "kind": "calculator"
-  },
-  {
-   "href": "/backgammon",
-   "title": "Backgammon",
-   "icon": "/img/backgammon-logo.png",
-   "desc": "Play backgammon against the computer at three levels, with hints, the doubling cube and your statistics.",
-   "added": "2026-10-23",
-   "kind": "tool"
-  },
-  {
-   "href": "/birthday-personality",
-   "title": "Birthday Personality",
-   "icon": "/img/birthday-personality-logo.png",
-   "desc": "A playful character sketch for every day of the year: your day's archetype, strengths and lucky numbers.",
-   "added": "2026-10-23",
-   "kind": "tool"
-  },
-  {
-   "href": "/seo",
-   "title": "SEO Checker",
-   "icon": "/img/seo-logo.png",
-   "desc": "Check any page's SEO: title, description, headings, canonical, robots, social cards and a report of every mes.fm page.",
-   "added": "2026-10-23",
-   "kind": "tool"
-  },
-  {
-   "href": "/dice-roller",
-   "title": "Dice Roller",
-   "icon": "/img/dice-roller-logo.png",
-   "desc": "Roll any dice (2d6+3, 4d6 drop lowest, d20 advantage) and see the exact odds of every total.",
-   "added": "2026-10-23",
-   "kind": "tool"
-  },
-  {
-   "href": "/random-number-generator",
-   "title": "Random Number Generator",
-   "icon": "/img/random-number-generator-logo.png",
-   "desc": "Random numbers, dice, coin flips, cards and a list picker, with the odds and a fairness test.",
-   "added": "2026-10-23",
-   "kind": "tool"
-  },
-  {
-   "href": "/site-traffic",
-   "title": "Site Traffic & Rank",
-   "icon": "/img/site-traffic-logo.png",
-   "desc": "How popular is a website? Public popularity rank and 30-day trend, domain age, hosting and Internet Archive history. An honest alternative to traffic-estimate extensions.",
-   "added": "2026-10-22",
-   "kind": "tool"
   }
  ]
 }

@@ -1,0 +1,52 @@
+	/* MES Time Calculator */
+	#tc [hidden] {display:none !important;}
+	#tc .tc-tabs {display:flex;flex-wrap:wrap;width:100%;margin:0 0 1em;}
+	#tc .tc-tabs button {flex:1 1 auto;min-height:44px;font-weight:600;padding:0.6em 0.9em;}
+	#tc .tc-pane > h2:first-child {margin-top:0.4em;}
+	#tc .tc-more {margin-top:0.9em;}
+	#tc .tc-more summary {cursor:pointer;color:var(--accent);font-weight:600;min-height:32px;padding:0.3em 0;}
+	#tc .tc-check {display:inline-flex;align-items:center;gap:0.45em;margin:0.7em 1em 0 0;min-height:40px;cursor:pointer;}
+	#tc .tc-check input {width:1.15em;height:1.15em;accent-color:var(--accent);}
+	#tc .tc-btns {display:flex;gap:0.5em;flex-wrap:wrap;margin:0.9em 0;}
+	#tc .tc-btns .tu-btn, #tc .tu-chip {min-height:40px;}
+	#tc .tc-sentence {font-size:1.05em;line-height:1.55;margin:0.2em 0 0.4em;}
+	#tc .tc-op button {min-width:3em;font-size:1.25em;font-weight:700;min-height:2.6em;}
+	#tc .tc-opsel {min-width:10em;}
+	#tc .tc-list {font-family:ui-monospace, Menlo, Consolas, monospace;resize:vertical;min-height:8em;}
+	#tc .tc-bad, #tc .tc-bad + .mes-time__pick {border-color:#c0262d !important;}
+	#tc .tc-mini {flex:0 0 7.5em;} #tc .tc-mini .tu-input {padding-right:3.6em;}
+	#tc .tc-sheet th, #tc .tc-sheet td {padding:0.35em 0.3em;vertical-align:middle;}
+	#tc .tc-sheet td:nth-child(5) {text-align:left;white-space:nowrap;min-width:8em;}
+	#tc .tc-sheet .tc-day {width:6.5em;} #tc .tc-sheet .tc-tcell {min-width:9.5em;} #tc .tc-sheet .tc-brk {width:5.5em;}
+	#tc .tc-sheet .tu-input {padding:0.45em 0.5em;font-size:1em;}
+	#tc .tc-del {cursor:pointer;width:40px;height:40px;border-radius:0.4em;border:1px solid #c3c9d2;background:#fff;color:#555;font-size:1.2em;line-height:1;}
+	#tc .tc-del:hover {border-color:#c0262d;color:#c0262d;}
+	#tc .tc-dim {color:#6a7280;font-size:0.85em;}
+	#tc .tc-err {color:#b3261e;font-size:0.85em;}
+	#tc .tc-ot {display:inline-block;background:#fdecc8;color:#7a4a00;border-radius:0.6em;padding:0 0.45em;font-size:0.8em;font-weight:700;}
+	#tc .tc-sr {position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap;}
+	#tc .tc-grid {display:grid;grid-template-columns:repeat(auto-fill,minmax(7.5em,1fr));gap:0.5em;}
+	#tc .tc-gi {display:flex;justify-content:space-between;gap:0.5em;padding:0.45em 0.7em;border:1px solid #dfe4ea;border-radius:0.4em;font-variant-numeric:tabular-nums;}
+	#tc .tc-gi span {color:#3a4250;}
+	.tc-undo {margin-left:0.6em;background:transparent;border:1px solid #fff;color:#fff;border-radius:1em;padding:0.15em 0.8em;cursor:pointer;font:inherit;}
+	@media (max-width:640px) {
+		#tc .tc-tabs button {flex:1 1 45%;}
+		#tc .tc-sheet thead {display:none;}
+		#tc .tc-sheet, #tc .tc-sheet tbody {display:block;}
+		#tc .tc-sheet tr {display:grid;grid-template-columns:1fr 1fr;grid-template-areas:"day del" "in out" "brk hrs";gap:0.45em 0.5em;padding:0.7em 0;border-bottom:1px solid #e3e7ec;align-items:center;}
+		#tc .tc-sheet td {display:block;border:0;padding:0;min-width:0 !important;}
+		#tc .tc-sheet td:nth-child(1) {grid-area:day;} #tc .tc-sheet td:nth-child(2) {grid-area:in;} #tc .tc-sheet td:nth-child(3) {grid-area:out;}
+		#tc .tc-sheet td:nth-child(4) {grid-area:brk;} #tc .tc-sheet td:nth-child(5) {grid-area:hrs;white-space:normal;} #tc .tc-sheet td:nth-child(6) {grid-area:del;justify-self:end;}
+		#tc .tc-sheet .tc-day, #tc .tc-sheet .tc-brk {width:100%;}
+	}
+	@media print {#tc .tc-tabs, #tc .tc-btns, #tc .tc-del, #tc .tu-chips {display:none !important;}}
+	/* dark mode (hand-written: the derived TOOL-DARK block does not know these) */
+	body.dark-mode #tc .tc-del {background:#262626;border-color:#555;color:#ddd;}
+	body.dark-mode #tc .tc-del:hover {border-color:#ff8a80;color:#ff8a80;}
+	body.dark-mode #tc .tc-dim {color:#a0a8b3;}
+	body.dark-mode #tc .tc-err {color:#ff8a80;}
+	body.dark-mode #tc .tc-ot {background:#4a3510;color:#ffd58a;}
+	body.dark-mode #tc .tc-gi {border-color:#3f464f;} body.dark-mode #tc .tc-gi span {color:#c9d0d9;}
+	body.dark-mode #tc .tc-bad, body.dark-mode #tc .tc-bad + .mes-time__pick {border-color:#ff8a80 !important;}
+	body.dark-mode #tc .tc-sheet tr {border-bottom-color:#3a3f45;}
+	body.dark-mode #tc .tc-more summary {color:var(--accent);}

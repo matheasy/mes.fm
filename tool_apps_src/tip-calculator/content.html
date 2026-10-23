@@ -1,0 +1,126 @@
+	<div class="tu" id="tp">
+		<div class="tp-top">
+			<div class="tu-seg tp-mode" id="tp-mode" role="group" aria-label="How to split"><button type="button" data-m="even" aria-pressed="true">Split evenly</button><button type="button" data-m="uneven" aria-pressed="false">Uneven split</button></div>
+			<label class="tp-curlab" for="tp-cur">Currency <select id="tp-cur" class="tu-select"></select></label>
+		</div>
+
+		<!-- even split: the bill -->
+		<div class="tu-card tp-card" data-only="even">
+			<label class="tp-biglab" for="tp-bill">Bill amount</label>
+			<div class="tp-money"><span class="tp-sym" aria-hidden="true"></span><input id="tp-bill" class="tu-input tp-billin" type="text" inputmode="decimal" autocomplete="off" placeholder="0.00" aria-describedby="tp-billhint"></div>
+			<p class="tu-note" id="tp-billhint" style="margin:0.4em 0 0;">The total on the receipt. Type 45.60 or 45,60.</p>
+		</div>
+
+		<!-- uneven split: who had what -->
+		<div class="tu-card tp-card" data-only="uneven" hidden>
+			<h3 style="margin-top:0;">Who had what</h3>
+			<p class="tu-note" style="margin-top:0;">Menu prices before tax. Several items? Separate them with <b>+</b>, e.g. <i>12.50 + 4 + 3.25</i>.</p>
+			<div id="tp-people"></div>
+			<button type="button" class="tu-btn tp-add" id="tp-addp">+ Add a person</button>
+			<h3>Shared items <span class="tp-light">(optional)</span></h3>
+			<p class="tu-note" style="margin-top:0;">A pizza, a bottle of wine, appetizers: split equally between the people you tick.</p>
+			<div id="tp-shared"></div>
+			<button type="button" class="tu-btn tp-add" id="tp-adds">+ Add a shared item</button>
+			<h3>Tax</h3>
+			<div class="tu-row">
+				<div class="tu-seg" id="tp-utaxm" role="group" aria-label="Tax as"><button type="button" data-v="pct" aria-pressed="true">%</button><button type="button" data-v="amt" aria-pressed="false">Amount</button></div>
+				<div class="tu-field tu-field--sm" style="flex-basis:9em;"><label for="tp-utax" id="tp-utaxlab">Tax rate</label><input id="tp-utax" class="tu-input tp-mid" type="text" inputmode="decimal" autocomplete="off" placeholder="0"></div>
+			</div>
+		</div>
+
+		<!-- tip -->
+		<div class="tu-card tp-card">
+			<div class="tp-head"><span class="tp-biglab" id="tp-tiplab">Tip</span>
+				<div class="tu-seg" id="tp-tipm" role="group" aria-label="Tip as"><button type="button" data-v="pct" aria-pressed="true">Percent</button><button type="button" data-v="amt" aria-pressed="false">Amount</button></div></div>
+			<div id="tp-pctbox">
+				<div class="tp-chips" id="tp-chips" role="group" aria-labelledby="tp-tiplab"></div>
+				<div class="tp-custom"><label for="tp-pct">Custom</label><div class="tu-suffix"><input id="tp-pct" class="tu-input tp-mid" type="text" inputmode="decimal" autocomplete="off" placeholder="e.g. 17.5"><span>%</span></div></div>
+			</div>
+			<div id="tp-amtbox" hidden>
+				<label class="tu-label" for="tp-tipamt">Tip amount</label>
+				<div class="tp-money tp-money--mid"><span class="tp-sym" aria-hidden="true"></span><input id="tp-tipamt" class="tu-input tp-mid" type="text" inputmode="decimal" autocomplete="off" placeholder="0.00"></div>
+			</div>
+			<div data-only="even">
+				<label class="tp-check"><input type="checkbox" id="tp-pre"> Tip on the amount before tax</label>
+				<div class="tu-row" id="tp-taxrow" hidden>
+					<div class="tu-seg" id="tp-taxm" role="group" aria-label="Tax as"><button type="button" data-v="pct" aria-pressed="true">%</button><button type="button" data-v="amt" aria-pressed="false">Amount</button></div>
+					<div class="tu-field tu-field--sm" style="flex-basis:9em;"><label for="tp-tax" id="tp-taxlab">Tax rate</label><input id="tp-tax" class="tu-input tp-mid" type="text" inputmode="decimal" autocomplete="off" placeholder="e.g. 13"></div>
+					<p class="tu-note" id="tp-taxnote" style="flex:1 1 100%;margin:0;">The rate is worked out from the total: 13% tax inside $113.00 is $13.00.</p>
+				</div>
+			</div>
+			<div data-only="uneven" hidden>
+				<label class="tp-check"><input type="checkbox" id="tp-tipontax"> Tip on the amount after tax (usual: before tax)</label>
+			</div>
+		</div>
+
+		<!-- people + rounding -->
+		<div class="tu-card tp-card">
+			<div data-only="even">
+				<span class="tp-biglab" id="tp-plab">Number of people</span>
+				<div class="tp-stepper" role="group" aria-labelledby="tp-plab">
+					<button type="button" id="tp-pminus" aria-label="One person fewer">&minus;</button>
+					<input id="tp-people-n" class="tu-input" type="text" inputmode="numeric" autocomplete="off" aria-label="Number of people" value="1">
+					<button type="button" id="tp-pplus" aria-label="One person more">+</button>
+				</div>
+			</div>
+			<div class="tp-roundbox">
+				<label class="tu-label" for="tp-round">Rounding</label>
+				<select id="tp-round" class="tu-select"></select>
+				<div class="tp-steps" id="tp-stepbox" hidden><span class="tu-label" id="tp-steplab">Up to the next</span><div class="tu-seg" id="tp-step" role="group" aria-labelledby="tp-steplab"></div></div>
+			</div>
+		</div>
+
+		<!-- results -->
+		<div id="tp-out" aria-live="polite">
+			<div class="tp-results" id="tp-res"></div>
+			<p class="tp-msg" id="tp-msg"></p>
+			<div class="tu-card" id="tp-utable" data-only="uneven" hidden><div class="tu-table-wrap"><table class="tu-table" id="tp-utab"></table></div></div>
+		</div>
+		<div class="tp-btns">
+			<button type="button" class="tu-btn tu-btn--primary" id="tp-link">Copy link</button>
+			<button type="button" class="tu-btn tu-btn--ghost" id="tp-copy">Copy summary</button>
+			<button type="button" class="tu-btn tu-btn--ghost" id="tp-reset">Start over</button>
+		</div>
+
+		<div data-only="even">
+			<h2>Tips from 10% to 25% on this bill</h2>
+			<div class="tu-card"><p class="tu-note" style="margin-top:0;">Tap a row to use it.</p><div class="tu-table-wrap"><table class="tu-table tp-qt" id="tp-qt"></table></div></div>
+		</div>
+
+		<h2>How much to tip around the world</h2>
+		<div class="tu-card">
+			<label class="tu-label" for="tp-country">Where are you?</label>
+			<select id="tp-country" class="tu-select" style="max-width:24em;"></select>
+			<div id="tp-custom" class="tp-country" aria-live="polite"></div>
+			<details class="tp-all"><summary>All countries at a glance</summary><div class="tu-table-wrap"><table class="tu-table tp-wrap" id="tp-ctab"></table></div></details>
+			<p class="tu-note" style="margin-bottom:0;">General guidance only: customs differ between cities, venues and kinds of service, and they change over time. When a menu or receipt says service is included, you usually do not need to add more.</p>
+		</div>
+
+		<h2>Tipping by kind of service</h2>
+		<div class="tu-card"><div class="tu-table-wrap"><table class="tu-table tp-wrap" id="tp-stab"></table></div></div>
+
+		<div class="tu-seo">
+			<h2>How this tip calculator works</h2>
+			<p>Type the bill, pick a tip percentage and the number of people. You get the tip, the total and what each person pays. Everything is worked out in whole cents, so the shares always add up to the exact total.</p>
+			<ul>
+				<li><b>Tip</b> = bill &times; tip % (rounded to the nearest cent). Example: 18% of $45.67 is $8.22, so the total is $53.89.</li>
+				<li><b>Tip before tax:</b> tick &ldquo;Tip on the amount before tax&rdquo; and enter the tax as an amount or a rate. The tip is then worked out on the bill minus the tax. With 13% tax, a $113.00 bill has $13.00 of tax inside it, so an 18% tip is $18.00, not $20.34.</li>
+				<li><b>Splitting:</b> the total is divided by the number of people. When it does not divide evenly (for example $115.00 between 3 people is $38.333...), the leftover cents go one each to the first people, so the shares are $38.34, $38.33 and $38.33. The page says when this happens.</li>
+				<li><b>Rounding:</b> round the total up to a whole amount, or round each person's share up to a whole amount, 0.50 or 0.25 so nobody needs coins. The extra goes to the tip, and the page shows the tip percentage you really end up giving.</li>
+			</ul>
+			<h3>Uneven split: paying for what you had</h3>
+			<p>Choose <b>Uneven split</b>, add each person and what they ordered, and add any shared dishes with the people who shared them. Tax and tip are then shared in proportion to what each person had, so someone who ordered a $40 steak pays more of the tip than someone who had a $12 salad. Shared items and the tax and tip are split with exact cents: any leftover cent goes to the person whose share was closest to the next cent.</p>
+			<h3>Should I tip on the amount before or after tax?</h3>
+			<p>Etiquette guides in the US and Canada usually say the tip is based on the price of the food and drink before tax, but many people simply tip on the total and card machines often suggest percentages of the total after tax. Both are common; the difference is small (on a $100 meal with 13% tax, 18% before tax is $18.00 and after tax is $20.34).</p>
+			<h3>Questions</h3>
+			<dl>
+				<dt>How much should I tip?</dt><dd>In the US 18-22% at a sit-down restaurant is usual today, and 15-20% in Canada. In the UK and Ireland 10-12.5% if no service charge is on the bill. In much of Europe, Australia, New Zealand and Asia, tipping is optional and rounding up is plenty; in Japan and South Korea it is not expected. See the country guide above.</dd>
+				<dt>What is an automatic gratuity or service charge?</dt><dd>Some restaurants add a fixed service charge (often 15-20% in the US for large groups, 12.5% in the UK). If it is on the bill, it is the tip: you do not need to add another one unless you want to.</dd>
+				<dt>How do I split a bill when someone did not drink?</dt><dd>Use the Uneven split: put the drinks in a shared item and tick only the people who drank.</dd>
+				<dt>Why does one person pay one cent more?</dt><dd>A total in cents cannot always be divided evenly. Rather than lose or invent a cent, the calculator gives the leftover cents to the first people in the list, and says so. Round each share up if you prefer equal amounts.</dd>
+				<dt>Can I use another currency?</dt><dd>Yes. Pick it from the currency list (it starts with the one for your browser's region). For currencies without coins such as the yen, dong or won, amounts are whole units and the rounding steps are bigger.</dd>
+				<dt>Is my data private?</dt><dd>Yes. Everything is worked out in your browser and saved only on this device. A link you copy contains just the bill, tip and number of people.</dd>
+			</dl>
+			<p>Related: <a href="/percentagecalculator">Percentage Calculator</a> &middot; <a href="/vatcalculator">VAT Calculator</a> &middot; <a href="/calculator">Calculator</a></p>
+		</div>
+	</div>

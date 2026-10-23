@@ -529,7 +529,7 @@ body.is-stuck #navbar.hide { position: fixed; top: 56px; right: 8px; }
                                     <h1 class="page-title">Calculators</h1>                                        <p class="page-description">Free online calculators for all your needs.</p>	<div id="main-content">
 		<div class="hub-filter">
 			<input type="search" id="hub-search" placeholder="Search calculators&hellip;" aria-label="Search calculators" autocomplete="off">
-			<div class="hub-chips" id="hub-chips"><button type="button" data-c="all" aria-pressed="true">All (62)</button><button type="button" data-c="popular" aria-pressed="false">&#9733; Popular (8)</button><button type="button" data-c="school" aria-pressed="false">School &amp; Grades (4)</button><button type="button" data-c="money" aria-pressed="false">Money &amp; Finance (5)</button><button type="button" data-c="algebra" aria-pressed="false">Algebra &amp; Calculus (9)</button><button type="button" data-c="everyday" aria-pressed="false">Everyday Math &amp; Health (31)</button><button type="button" data-c="physics" aria-pressed="false">Physics &amp; Science (11)</button><button type="button" data-c="fun" aria-pressed="false">Fun (2)</button></div>
+			<div class="hub-chips" id="hub-chips"><button type="button" data-c="all" aria-pressed="true">All (68)</button><button type="button" data-c="popular" aria-pressed="false">&#9733; Popular (8)</button><button type="button" data-c="school" aria-pressed="false">School &amp; Grades (4)</button><button type="button" data-c="money" aria-pressed="false">Money &amp; Finance (7)</button><button type="button" data-c="algebra" aria-pressed="false">Algebra &amp; Calculus (9)</button><button type="button" data-c="everyday" aria-pressed="false">Everyday Math &amp; Health (35)</button><button type="button" data-c="physics" aria-pressed="false">Physics &amp; Science (11)</button><button type="button" data-c="fun" aria-pressed="false">Fun (2)</button></div>
 		</div>
 		<section class="hub-cat hub-cat--mini hub-cat--newest" data-cat="newest" id="newest">
 			<h2 class="hub-cat__title">New calculators</h2>
@@ -589,19 +589,35 @@ body.is-stuck #navbar.hide { position: fixed; top: 56px; right: 8px; }
 			<h2 class="hub-cat__title">Money &amp; Finance</h2>
 		<table class="tbl tbl--stack">
 			<tr class="calc-row">
-				<td class="calc-container"><a class="calc-link" href="https://mes.fm/impermanent-loss-calculator">
+				<td class="calc-container"><a class="calc-link" href="https://mes.fm/compound-interest-calculator">
+					<div class="calc__img-container"><img class="calc__img" src="img/compound-interest-calculator-logo.png?v=1" alt="MES Compound Interest Calculator logo" width="88" height="88"></div>
+					<div class="calc__text">
+						<span class="calc__text--title">Compound Interest Calculator</span>
+						<span class="calc__text--desc">Grow savings with monthly deposits: year-by-year table and chart, goals, APY and the rule of 72.</span>
+					</div></a>
+		        </td>
+				<td class="calc-container calc-container--last"><a class="calc-link" href="https://mes.fm/impermanent-loss-calculator">
 					<div class="calc__img-container"><img class="calc__img" src="img/impermanent-loss-logo.png?v=2" alt="MES Impermanent Loss Calculator logo" width="88" height="88"></div>
 					<div class="calc__text">
 						<span class="calc__text--title">Impermanent Loss Calculator</span>
 						<span class="calc__text--desc">Work out impermanent loss in a liquidity pool and compare it with simply holding the assets.</span>
 					</div></a>
 		        </td>
-		      	<td class="calc-container calc-container--last"><a class="calc-link" href="https://mes.fm/inflationcalculator">
+			</tr>
+			<tr class="calc-row">
+		      	<td class="calc-container"><a class="calc-link" href="https://mes.fm/inflationcalculator">
 		            <div class="calc__img-container"><img class="calc__img" src="img/ic-logo.png" alt="inflation calculator logo" width="88" height="88"></div>
 		            <div class="calc__text">
 			            <span class="calc__text--title">Inflation Calculator</span>
 			              <span class="calc__text--desc">Calculate a country's inflation rate within two different years.</span>
 			          </div></a>
+		        </td>
+				<td class="calc-container calc-container--last"><a class="calc-link" href="https://mes.fm/loan-calculator">
+					<div class="calc__img-container"><img class="calc__img" src="img/loan-calculator-logo.png?v=1" alt="MES Loan Calculator logo" width="88" height="88"></div>
+					<div class="calc__text">
+						<span class="calc__text--title">Loan Calculator</span>
+						<span class="calc__text--desc">Monthly payment, total interest, payoff date and schedule for car, personal and student loans, with extra payments and APR.</span>
+					</div></a>
 		        </td>
 			</tr>
 			<tr class="calc-row">
@@ -713,82 +729,98 @@ body.is-stuck #navbar.hide { position: fixed; top: 56px; right: 8px; }
 			<h2 class="hub-cat__title">Everyday Math &amp; Health</h2>
 		<table class="tbl tbl--stack">
 			<tr class="calc-row">
-				<td class="calc-container"><a class="calc-link" href="https://mes.fm/baby-feeding-log">
+				<td class="calc-container"><a class="calc-link" href="https://mes.fm/age-calculator">
+					<div class="calc__img-container"><img class="calc__img" src="img/age-calculator-logo.png?v=1" alt="MES Age Calculator logo" width="88" height="88"></div>
+					<div class="calc__text">
+						<span class="calc__text--title">Age Calculator</span>
+						<span class="calc__text--desc">Exact age in years, months and days, days lived, next birthday, milestones and the age gap between two people.</span>
+					</div></a>
+		        </td>
+				<td class="calc-container calc-container--last"><a class="calc-link" href="https://mes.fm/baby-feeding-log">
 					<div class="calc__img-container"><img class="calc__img" src="img/baby-feeding-log-logo.png?v=3" alt="MES Baby Feeding Log logo" width="88" height="88"></div>
 					<div class="calc__text">
 						<span class="calc__text--title">Baby Feeding Log</span>
 						<span class="calc__text--desc">One-tap breastfeeding timer, bottles, pumping and diapers, with today's totals.</span>
 					</div></a>
 		        </td>
-				<td class="calc-container calc-container--last"><a class="calc-link" href="https://mes.fm/baby-growth-percentile-calculator">
+			</tr>
+			<tr class="calc-row">
+				<td class="calc-container"><a class="calc-link" href="https://mes.fm/baby-growth-percentile-calculator">
 					<div class="calc__img-container"><img class="calc__img" src="img/baby-growth-percentile-calculator-logo.png?v=3" alt="MES Baby Growth Percentile Calculator logo" width="88" height="88"></div>
 					<div class="calc__text">
 						<span class="calc__text--title">Baby Growth Percentile Calculator</span>
 						<span class="calc__text--desc">Weight, length and head circumference percentiles on the WHO growth chart, with a private growth log.</span>
 					</div></a>
 		        </td>
-			</tr>
-			<tr class="calc-row">
-				<td class="calc-container"><a class="calc-link" href="https://mes.fm/bmicalculator">
+				<td class="calc-container calc-container--last"><a class="calc-link" href="https://mes.fm/bmicalculator">
 					<div class="calc__img-container"><img class="calc__img" src="img/bmi-logo.png" alt="bmi calculator logo" width="88" height="88"></div>
 					<div class="calc__text">
 						<span class="calc__text--title">BMI Calculator</span>
 						<span class="calc__text--desc">Calculate your BMI (Body Mass Index) using your height and weight.</span>
 					</div></a>
 		        </td>
-				<td class="calc-container calc-container--last"><a class="calc-link" href="https://mes.fm/bmr-calculator">
+			</tr>
+			<tr class="calc-row">
+				<td class="calc-container"><a class="calc-link" href="https://mes.fm/bmr-calculator">
 					<div class="calc__img-container"><img class="calc__img" src="img/bmr-calculator-logo.png?v=2" alt="MES BMR Calculator logo" width="88" height="88"></div>
 					<div class="calc__text">
 						<span class="calc__text--title">BMR Calculator</span>
 						<span class="calc__text--desc">Basal metabolic rate and daily calories for your age, weight and height, plus calories to lose or gain.</span>
 					</div></a>
 		        </td>
-			</tr>
-			<tr class="calc-row">
-				<td class="calc-container"><a class="calc-link" href="https://mes.fm/body-fat-calculator">
+				<td class="calc-container calc-container--last"><a class="calc-link" href="https://mes.fm/body-fat-calculator">
 					<div class="calc__img-container"><img class="calc__img" src="img/body-fat-calculator-logo.png?v=2" alt="MES Body Fat Calculator logo" width="88" height="88"></div>
 					<div class="calc__text">
 						<span class="calc__text--title">Body Fat Calculator</span>
 						<span class="calc__text--desc">Estimate your body fat percentage with a tape measure (U.S. Navy method), then set a body-fat goal.</span>
 					</div></a>
 		        </td>
-				<td class="calc-container calc-container--last"><a class="calc-link" href="https://mes.fm/body-surface-area-calculator">
+			</tr>
+			<tr class="calc-row">
+				<td class="calc-container"><a class="calc-link" href="https://mes.fm/body-surface-area-calculator">
 					<div class="calc__img-container"><img class="calc__img" src="img/body-surface-area-calculator-logo.png?v=1" alt="MES Body Surface Area Calculator logo" width="88" height="88"></div>
 					<div class="calc__text">
 						<span class="calc__text--title">Body Surface Area Calculator</span>
 						<span class="calc__text--desc">BSA by ten formulas for adults and children, plus clinical helpers.</span>
 					</div></a>
 		        </td>
-			</tr>
-			<tr class="calc-row">
-				<td class="calc-container"><a class="calc-link" href="https://mes.fm/calories-burned-calculator">
+				<td class="calc-container calc-container--last"><a class="calc-link" href="https://mes.fm/calories-burned-calculator">
 					<div class="calc__img-container"><img class="calc__img" src="img/calories-burned-calculator-logo.png?v=4" alt="MES Calories Burned Calculator logo" width="88" height="88"></div>
 					<div class="calc__text">
 						<span class="calc__text--title">Calories Burned Calculator</span>
 						<span class="calc__text--desc">Calories burned by 80+ activities for your weight, with a weekly plan.</span>
 					</div></a>
 		        </td>
-				<td class="calc-container calc-container--last"><a class="calc-link" href="https://mes.fm/conception-date-calculator">
+			</tr>
+			<tr class="calc-row">
+				<td class="calc-container"><a class="calc-link" href="https://mes.fm/conception-date-calculator">
 					<div class="calc__img-container"><img class="calc__img" src="img/conception-date-calculator-logo.png?v=3" alt="MES Conception Date Calculator logo" width="88" height="88"></div>
 					<div class="calc__text">
 						<span class="calc__text--title">Conception Date Calculator</span>
 						<span class="calc__text--desc">Work out when you conceived from your due date, last period or IVF transfer.</span>
 					</div></a>
 		        </td>
-			</tr>
-			<tr class="calc-row">
-				<td class="calc-container"><a class="calc-link" href="https://mes.fm/contraction-timer">
+				<td class="calc-container calc-container--last"><a class="calc-link" href="https://mes.fm/contraction-timer">
 					<div class="calc__img-container"><img class="calc__img" src="img/contraction-timer-logo.png?v=3" alt="MES Contraction Timer logo" width="88" height="88"></div>
 					<div class="calc__text">
 						<span class="calc__text--title">Contraction Timer</span>
 						<span class="calc__text--desc">One big button to time labour contractions: length, gaps, hourly average and a 5-1-1 rule alert.</span>
 					</div></a>
 		        </td>
-				<td class="calc-container calc-container--last"><a class="calc-link" href="https://mes.fm/days-between-dates-calculator">
+			</tr>
+			<tr class="calc-row">
+				<td class="calc-container"><a class="calc-link" href="https://mes.fm/days-between-dates-calculator">
 					<div class="calc__img-container"><img class="calc__img" src="img/days-between-dates-calculator-logo.png?v=3" alt="MES Days Between Dates Calculator logo" width="88" height="88"></div>
 					<div class="calc__text">
 						<span class="calc__text--title">Days Between Dates Calculator</span>
 						<span class="calc__text--desc">Days, weeks, months, hours and business days between two dates, with end-date inclusion and holidays.</span>
+					</div></a>
+		        </td>
+				<td class="calc-container calc-container--last"><a class="calc-link" href="https://mes.fm/fuel-cost-calculator">
+					<div class="calc__img-container"><img class="calc__img" src="img/fuel-cost-calculator-logo.png?v=1" alt="MES Fuel Cost Calculator logo" width="88" height="88"></div>
+					<div class="calc__text">
+						<span class="calc__text--title">Fuel Cost Calculator</span>
+						<span class="calc__text--desc">What a trip costs in fuel, from distance, L/100 km or mpg and price, split per person, plus EV comparison.</span>
 					</div></a>
 		        </td>
 			</tr>
@@ -910,6 +942,22 @@ body.is-stuck #navbar.hide { position: fixed; top: 56px; right: 8px; }
 					<div class="calc__text">
 						<span class="calc__text--title">TDEE Calculator</span>
 						<span class="calc__text--desc">Your maintenance calories, plus calories to lose or gain weight.</span>
+					</div></a>
+		        </td>
+				<td class="calc-container calc-container--last"><a class="calc-link" href="https://mes.fm/time-calculator">
+					<div class="calc__img-container"><img class="calc__img" src="img/time-calculator-logo.png?v=1" alt="MES Time Calculator logo" width="88" height="88"></div>
+					<div class="calc__text">
+						<span class="calc__text--title">Time Calculator</span>
+						<span class="calc__text--desc">Hours between two times, add and subtract time, a timesheet with breaks and decimal hours for payroll.</span>
+					</div></a>
+		        </td>
+			</tr>
+			<tr class="calc-row">
+				<td class="calc-container"><a class="calc-link" href="https://mes.fm/tip-calculator">
+					<div class="calc__img-container"><img class="calc__img" src="img/tip-calculator-logo.png?v=1" alt="MES Tip Calculator logo" width="88" height="88"></div>
+					<div class="calc__text">
+						<span class="calc__text--title">Tip Calculator</span>
+						<span class="calc__text--desc">Tip and split the bill: evenly or by what each person ordered, rounding, and tipping customs by country.</span>
 					</div></a>
 		        </td>
 				<td class="calc-container calc-container--last"><a class="calc-link" href="https://mes.fm/trigonometry">

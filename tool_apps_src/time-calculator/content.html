@@ -1,0 +1,129 @@
+	<div class="tu" id="tc">
+		<div class="tc-tabs tu-seg" id="tc-tabs" role="tablist" aria-label="What to work out">
+			<button type="button" role="tab" data-tab="between" aria-pressed="true" aria-selected="true">Between two times</button><button type="button" role="tab" data-tab="add" aria-pressed="false" aria-selected="false">Add / subtract</button><button type="button" role="tab" data-tab="sheet" aria-pressed="false" aria-selected="false">Timesheet</button><button type="button" role="tab" data-tab="convert" aria-pressed="false" aria-selected="false">Convert</button>
+		</div>
+
+		<!-- between two times -->
+		<section class="tc-pane" id="tc-p-between" role="tabpanel" aria-label="Between two times">
+			<div class="tu-card">
+				<div class="tu-row">
+					<div class="tu-field" style="flex:1 1 11em;"><label for="tc-bs">Start time</label><input id="tc-bs" class="tu-input tu-input--big" type="time"></div>
+					<div class="tu-field" style="flex:1 1 11em;"><label for="tc-be">End time</label><input id="tc-be" class="tu-input tu-input--big" type="time"></div>
+					<div class="tu-field" style="flex:1 1 9em;"><label for="tc-bb">Unpaid break</label><input id="tc-bb" class="tu-input tu-input--big" type="text" autocomplete="off" placeholder="e.g. 30 min"></div>
+				</div>
+				<p class="tu-note" style="margin:0.6em 0 0;">An end time earlier than the start counts as the next day (a night shift). A break typed as a plain number is in minutes; <i>1h 15m</i> or <i>1:15</i> work too.</p>
+				<details class="tc-more" id="tc-bdates"><summary>Different days? Add dates</summary>
+					<div class="tu-row" style="margin-top:0.6em;">
+						<div class="tu-field" style="flex:1 1 11em;"><label for="tc-bsd">Start date</label><input id="tc-bsd" class="tu-input" type="date"></div>
+						<div class="tu-field" style="flex:1 1 11em;"><label for="tc-bed">End date</label><input id="tc-bed" class="tu-input" type="date"></div>
+						<div class="tu-field" style="flex:0 0 auto;"><span class="tu-label">&nbsp;</span><button type="button" class="tu-btn tu-btn--ghost" id="tc-bclr">Clear dates</button></div>
+					</div>
+					<p class="tu-note" style="margin-bottom:0;">Dates are counted as calendar days; a daylight-saving clock change in between is not added or taken off.</p>
+				</details>
+				<label class="tc-check"><input type="checkbox" id="tc-bfull"> Same start and end time means a full 24 hours</label>
+				<div class="tu-chips" id="tc-bex" aria-label="Examples"></div>
+			</div>
+			<div class="tu-stats" id="tc-bout" aria-live="polite"></div>
+			<p class="tc-sentence" id="tc-bsent" aria-live="polite"></p>
+			<div class="tc-btns"><button type="button" class="tu-btn tu-btn--primary" id="tc-blink">Copy link</button><button type="button" class="tu-btn tu-btn--ghost" id="tc-bcopy">Copy result</button><button type="button" class="tu-btn tu-btn--ghost" id="tc-bsheet">Add to timesheet</button></div>
+		</section>
+
+		<!-- add / subtract -->
+		<section class="tc-pane" id="tc-p-add" role="tabpanel" aria-label="Add or subtract time" hidden>
+			<h2>A time of day plus or minus a duration</h2>
+			<div class="tu-card">
+				<div class="tu-row">
+					<div class="tu-field" style="flex:1 1 11em;"><label for="tc-at">Time</label><input id="tc-at" class="tu-input tu-input--big" type="time" step="1"></div>
+					<div class="tu-field" style="flex:0 0 auto;"><span class="tu-label" id="tc-aop-l">Add or take away</span><div class="tu-seg tc-op" id="tc-aop" role="group" aria-labelledby="tc-aop-l"><button type="button" data-op="+" aria-pressed="true" aria-label="Add">+</button><button type="button" data-op="-" aria-pressed="false" aria-label="Subtract">&minus;</button></div></div>
+					<div class="tu-field" style="flex:1 1 11em;"><label for="tc-ad">Duration</label><input id="tc-ad" class="tu-input tu-input--big" type="text" autocomplete="off" placeholder="e.g. 3h 45m"></div>
+				</div>
+				<div class="tu-chips" id="tc-aex"></div>
+				<div class="tu-stats" id="tc-aout" aria-live="polite"></div>
+			</div>
+
+			<h2>A duration with another duration</h2>
+			<div class="tu-card">
+				<div class="tu-row">
+					<div class="tu-field" style="flex:1 1 11em;"><label for="tc-d1">First duration</label><input id="tc-d1" class="tu-input tu-input--big" type="text" autocomplete="off" placeholder="e.g. 2:45:30"></div>
+					<div class="tu-field" style="flex:0 0 auto;"><label for="tc-dop">Operation</label><select id="tc-dop" class="tu-select tc-opsel"><option value="+">+ add</option><option value="-">&minus; subtract</option><option value="*">&times; multiply by</option><option value="/">&divide; divide by</option></select></div>
+					<div class="tu-field" style="flex:1 1 11em;"><label for="tc-d2" id="tc-d2l">Second duration</label><input id="tc-d2" class="tu-input tu-input--big" type="text" autocomplete="off" placeholder="e.g. 1:20:45"></div>
+				</div>
+				<p class="tu-note" style="margin:0.6em 0 0;">Type <i>1:30</i> (hours:minutes), <i>2:45:30</i>, <i>1h 30m</i>, <i>90 min</i> or <i>1.5 h</i>. A plain number is hours. To multiply or divide, the second box takes a plain number such as <i>3</i>.</p>
+				<div class="tu-stats" id="tc-dout" aria-live="polite"></div>
+			</div>
+
+			<h2>Add up a list of times</h2>
+			<div class="tu-card">
+				<label for="tc-list" class="tu-label">One duration per line (start a line with &minus; to take it away)</label>
+				<textarea id="tc-list" class="tu-input tc-list" rows="6" spellcheck="false" placeholder="1:15&#10;45 min&#10;2h 10m&#10;-0:20"></textarea>
+				<div class="tu-stats" id="tc-lout" aria-live="polite"></div>
+				<p class="tu-note" id="tc-lnote" style="margin-bottom:0;"></p>
+			</div>
+		</section>
+
+		<!-- timesheet -->
+		<section class="tc-pane" id="tc-p-sheet" role="tabpanel" aria-label="Timesheet" hidden>
+			<div class="tu-card tc-sheetcard">
+				<div class="tu-table-wrap">
+					<table class="tu-table tc-sheet" id="tc-sheet">
+						<thead><tr><th scope="col">Day</th><th scope="col">In</th><th scope="col">Out</th><th scope="col">Break</th><th scope="col">Hours</th><th scope="col"><span class="tc-sr">Remove</span></th></tr></thead>
+						<tbody id="tc-rows"></tbody>
+					</table>
+				</div>
+				<div class="tc-btns"><button type="button" class="tu-btn" id="tc-addrow">+ Add a row</button><button type="button" class="tu-btn tu-btn--ghost" id="tc-fill">Copy Monday to empty days</button><button type="button" class="tu-btn tu-btn--ghost" id="tc-clear">Clear times</button><button type="button" class="tu-btn tu-btn--ghost" id="tc-week">Reset to Mon-Sun</button></div>
+				<p class="tu-note" style="margin:0.3em 0 0;">Break is unpaid time taken off the row (a plain number = minutes). A row whose Out is earlier than In ends the next morning. Everything is saved in this browser only.</p>
+			</div>
+
+			<h2>Pay and overtime (optional)</h2>
+			<div class="tu-card">
+				<div class="tu-row">
+					<div class="tu-field tu-field--sm" style="flex-basis:9em;"><label for="tc-rate">Hourly rate</label><input id="tc-rate" class="tu-input" type="text" inputmode="decimal" autocomplete="off" placeholder="e.g. 22.50"></div>
+					<div class="tu-field tu-field--sm" style="flex-basis:7em;"><label for="tc-cur">Currency</label><input id="tc-cur" class="tu-input" type="text" autocomplete="off" maxlength="4" placeholder="$"></div>
+					<div class="tu-field tu-field--sm" style="flex-basis:10em;"><label for="tc-round">Round each day to</label><select id="tc-round" class="tu-select"><option value="0">No rounding</option><option value="5">Nearest 5 min</option><option value="6">Nearest 6 min (0.1 h)</option><option value="15">Nearest 15 min</option></select></div>
+				</div>
+				<div class="tu-row" style="margin-top:0.8em;align-items:center;">
+					<label class="tc-check"><input type="checkbox" id="tc-dot"> Overtime after</label><div class="tu-suffix tc-mini"><input id="tc-doth" class="tu-input" type="text" inputmode="decimal" value="8" aria-label="Hours a day before overtime"><span>h/day</span></div>
+					<label class="tc-check"><input type="checkbox" id="tc-wot"> Overtime after</label><div class="tu-suffix tc-mini"><input id="tc-woth" class="tu-input" type="text" inputmode="decimal" value="40" aria-label="Hours a week before overtime"><span>h/week</span></div>
+					<div class="tu-suffix tc-mini"><input id="tc-mult" class="tu-input" type="text" inputmode="decimal" value="1.5" aria-label="Overtime pay multiplier"><span>&times; pay</span></div>
+				</div>
+				<p class="tu-note" style="margin-bottom:0;">Daily overtime is counted first, then hours past the weekly limit (in row order), so no hour is counted twice. Overtime rules differ by country, state and contract: check yours.</p>
+			</div>
+			<div class="tu-stats" id="tc-sout" aria-live="polite"></div>
+			<div class="tc-btns"><button type="button" class="tu-btn tu-btn--primary" id="tc-scopy">Copy as a table</button><button type="button" class="tu-btn tu-btn--ghost" id="tc-stext">Copy as text</button><button type="button" class="tu-btn tu-btn--ghost" id="tc-sprint">Print</button></div>
+		</section>
+
+		<!-- convert -->
+		<section class="tc-pane" id="tc-p-convert" role="tabpanel" aria-label="Convert" hidden>
+			<div class="tu-card">
+				<div class="tu-row">
+					<div class="tu-field" style="flex:2 1 14em;"><label for="tc-cv">Time amount</label><input id="tc-cv" class="tu-input tu-input--big" type="text" autocomplete="off" placeholder="e.g. 7.75 or 7:45 or 465 min"></div>
+					<div class="tu-field" style="flex:1 1 10em;"><label for="tc-cvu">A plain number is in</label><select id="tc-cvu" class="tu-select"><option value="h">hours</option><option value="m">minutes</option><option value="s">seconds</option></select></div>
+				</div>
+				<div class="tu-chips" id="tc-cex"></div>
+			</div>
+			<div class="tu-stats" id="tc-cout" aria-live="polite"></div>
+			<h2>Minutes to decimal hours (for payroll)</h2>
+			<div class="tu-card"><div class="tc-grid" id="tc-mintab"></div></div>
+		</section>
+
+		<div class="tu-seo">
+			<h2>How to calculate the hours between two times</h2>
+			<p>Take the end time minus the start time. If the end is earlier than the start, the shift runs past midnight, so add 24 hours. Then take off any unpaid break. Example: <b>9:00 AM to 5:30 PM</b> is 8 hours 30 minutes; minus a 30-minute lunch that is <b>8:00</b>, or <b>8.00 decimal hours</b>. A night shift from <b>10:00 PM to 6:30 AM</b> is 8 hours 30 minutes.</p>
+			<h2>Hours and minutes vs decimal hours</h2>
+			<p>Payroll systems usually want <b>decimal hours</b>: minutes divided by 60. So 7 hours 45 minutes is 7 + 45/60 = <b>7.75 hours</b>, and 7.75 hours back to clock form is 7:45, not 7:75. Common values: 15 min = 0.25 h, 20 min = 0.33 h, 30 min = 0.5 h, 45 min = 0.75 h. Multiply decimal hours by the hourly rate to get pay: 7.75 &times; $20 = $155.</p>
+			<h3>Adding and subtracting durations</h3>
+			<p>Add seconds to seconds, minutes to minutes and hours to hours, then carry every 60 seconds into a minute and every 60 minutes into an hour. 2:45:30 + 1:20:45: 30 + 45 = 75 s = 1 min 15 s; 45 + 20 + 1 = 66 min = 1 h 6 min; 2 + 1 + 1 = 4 h, so the answer is <b>4:06:15</b>.</p>
+			<h3>Overtime</h3>
+			<p>In the US the federal rule is overtime after 40 hours in a work week, at 1.5 times the regular rate; a few states (California, for one) also count overtime after 8 hours in a day. Canadian provinces typically use 8 hours a day or 40-44 a week. This page lets you switch each rule on and change the numbers, and never counts the same hour twice.</p>
+			<h3>Questions</h3>
+			<dl>
+				<dt>How many hours is 8 AM to 5 PM?</dt><dd>9 hours; with a 1-hour unpaid lunch, 8 hours.</dd>
+				<dt>How do I convert minutes to decimal hours?</dt><dd>Divide by 60. 40 minutes = 40 &divide; 60 = 0.67 hours. The table on the Convert tab lists every 5 minutes.</dd>
+				<dt>Can I enter times in 24-hour format?</dt><dd>Yes. Every time box takes either style (18:30 or 6:30 pm); the small 12h / 24h switch inside the box changes how times are shown on every MES page.</dd>
+				<dt>What does "round to the nearest 15 minutes" do?</dt><dd>It rounds each day's worked time, so 7:53 becomes 8:00 and 7:52 becomes 7:45. Some employers round punches this way; others pay to the minute.</dd>
+				<dt>Is my timesheet stored anywhere?</dt><dd>Only in this browser (localStorage). Nothing is uploaded. Copy it as a table to paste into a spreadsheet or email.</dd>
+			</dl>
+			<p>Related: <a href="/days-between-dates-calculator">Days Between Dates</a> &middot; <a href="/timezone">Time Zone Converter</a> &middot; <a href="/timer">Timer &amp; Stopwatch</a> &middot; <a href="/calculator">Calculator</a></p>
+		</div>
+	</div>
+<script src="/main_js/time-input.js?v=3" defer></script>

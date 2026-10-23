@@ -1,0 +1,1024 @@
+<!DOCTYPE html>    <html lang="en">
+<!-- MES Tip Calculator -- mes.fm/tip-calculator -->
+<!-- Added by HTTrack --><meta http-equiv="content-type" content="text/html;charset=UTF-8" /><!-- /Added by HTTrack -->
+<head>                    <link rel="icon" href="/tip-calculator/img/logo.png?v=2" type="image/png" /><link rel="canonical" href="https://mes.fm/tip-calculator" />                    <title>MES Tip Calculator | Math Easy Solutions</title>
+        <meta name="viewport" content="width=device-width, initial-scale=1">	<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css" integrity="sha384-BVYiiSIFeK1dGmJRAkycuHAHRg32OmUcww7on3RYdg4Va+PmSTsz/K68vbdEjh4u" crossorigin="anonymous">
+        <style>html, body, div, span, applet, object, iframe, h1, h2, h3, h4, h5, h6, p, blockquote, pre, a, abbr, acronym, address, big, cite, code,del, dfn, em, img,
+ins, kbd, q, s, samp, small, strike, strong, sub, tt, var, u, i, center, dl, dt, dd, ol, ul, li, fieldset, form, label, legend, table, caption, tbody,
+tfoot, thead, tr, th, td, article, aside, canvas, details, embed, figure, figcaption, footer, header, hgroup, menu, nav, output, ruby, section, summary,
+time, mark, audio, video {margin:0;padding:0;border:0;font-size:100%;font-family:Helvetica,Arial,Optima,Sans Pro;vertical-align:baseline;color:#333333;}
+sup {margin:0;padding:0;border:0;font-size:100%;font-family:Helvetica,Arial,Optima,Sans Pro;vertical-align:super;color:black;}
+b {margin:0;padding:0;border:0;font-size:100%;font-family:Helvetica,Arial,Optima,Sans Pro;vertical-align:baseline;}
+/* HTML5 display-role reset for older browsers */
+article, aside, details, figcaption, figure, footer, header, hgroup, menu, nav, section {display:block;}
+body {background-color:#e2e2e2;line-height:1;}
+ol, ul {list-style:none;}
+blockquote, q {quotes:none;}
+blockquote:before, blockquote:after,
+q:before, q:after {content:'';content:none;}
+table {border-collapse:collapse;border-spacing:0;}
+a {text-decoration:none;}
+sub {vertical-align:sub;}        .warning-message {font-size:1em;text-align:center;padding:0.5em;background-color:#0e7490;color:white;}
+        .button {color:#0e7490;border:0.125em solid#0e7490;margin:0.7em 0;padding:0.5em 0.2em;text-align:center;-moz-user-select:none; -webkit-user-select:none; -ms-user-select:none; user-select:none; cursor:pointer;}
+        .button--subscribe {line-height:1.2;}
+        .button--share-calc {display: inline-block;padding-left: 1em;padding-right: 1em;margin-top: 0.5em;margin-bottom: 0.5em;}
+        .italic {font-style:italic;}
+        .bold {font-weight:700;}
+        .list {list-style-type:disc;}
+        .list__indent {line-height:1.2;margin-left:2em;margin-top:0.4em;margin-bottom:0.2em;font-size: 0.95em;}
+        .time {font-style:italic;font-weight:100;color:#939393;}
+        .small-text {font-size:0.9em;}
+        .big-text {font-size:1.1em;}
+        .link {color:#0e7490; font-weight:700;}
+        .link--dark {color: blue; font-weight: 700;}
+        .link--dark:hover {text-decoration: underline;}
+        .basic-table {margin:1em auto;}
+        .basic-table td, .basic-table th {border: 1px solid black; padding:0.5em 1em; text-align: center;}
+        .basic-table th {background-color: #ededed}
+        .basic-table--full {width:100%;}
+        .sponsored-ad {text-align:right;display:block;font-size:0.7em;margin-bottom:0.3em;font-style:italic;}
+        .box-border {border:0.1em solid#0e7490; padding:1em;margin-bottom: 1.2em;}
+        .selected {background-color:#0e7490;color:white;}
+        .right-arrow {font-size:2em;vertical-align:middle;margin:0 0.2em;display:inline-block;color:#0e7490;}
+        .share-calc-url {border: 2px solid black;font-size:0.9em;display:inline-block;width:15.5em;padding:0.45em 0.8em;font-weight:700;vertical-align:middle;color:#0e7490;background-color:#fdc010;}
+        .share-calc-url-container {margin-bottom: 0.5em;display: inline-block;}
+        .scissors-icon {vertical-align:middle;cursor: pointer;}
+        .hide {display:none;}
+        .crypto-container {background-color: #257bb6; padding: 10px; border-radius: 5px;}
+        .crypto-text {color: white; line-height: 1.4; padding: 5px;}.header2 {font-size:1.1em; margin-top:1.3em;margin-bottom:0.5em;}
+.header3 {font-size:1.0em; margin-top:1.0em;margin-bottom:0.3em;}
+.sentence {margin-top:0.5em; margin-bottom:0.5em;line-height:1.5}
+.sentence--indent {margin-left:1.5em;}
+
+.shadow {box-shadow:0.2em 0.2em 0.5em #999999;}
+.link:hover {color:#155e75;text-decoration:underline; cursor:pointer;}
+
+.outer-container {width:68.25em;margin:0 auto;}
+.inner-container {padding:1em 2em 1em 2em;overflow:hidden;background-color:white;box-shadow:0 0 1em #BBBBBB;}
+.header {position:relative;margin-bottom: 0.7em;}
+.logo-image-container {display:table-cell;}
+.logo {display:block;}
+.logo-text-container {display:table-cell;vertical-align:middle;padding-left:1.5em;}
+.calculator-title-link {display: block;}
+.calculator-title {margin-bottom:0.3em;font-size:1.8em;}
+.tag-line {font-size:1.2em;}
+
+.social-container {position:absolute;right:0;top:0;}
+.social-container--bottom {position:absolute;right:0;bottom:0;}
+.social {display: table-cell;}
+.social__text {display:table-cell;font-size:1.2em;vertical-align:middle;padding-right:0.6em;font-style:italic;color:#0e7490;}.social__logo {float:left;}
+.social__logo:not(:last-child) {margin-right:0.5em;}
+.social__link {height:2em;width:2em;display:block;}
+.social__fb {background: url(https://mes.fm/main_img/social-sprites.png) 0 0;}
+.social__gplus {background: url(https://mes.fm/main_img/social-sprites.png) -2em 0;}
+.social__insta {background: url(https://mes.fm/main_img/social-sprites.png) -4em 0;}
+.social__pin {background: url(https://mes.fm/main_img/social-sprites.png) -6em 0;}
+.social__twitter {background: url(https://mes.fm/main_img/social-sprites.png) -8em 0;}
+.social__yt {background: url(https://mes.fm/main_img/social-sprites.png) -10em 0;}
+.social__patreon {background: url(https://mes.fm/main_img/social-sprites.png) -12em 0;}
+.social__steemit {background: url(https://mes.fm/main_img/social-sprites.png) -14em 0;}
+.social__hive {background: url(https://mes.fm/main_img/social-sprites.png) -16em 0;}
+.social__telegram {background: url(https://mes.fm/main_img/social-sprites.png) -18em 0;}
+
+.info-bar-container {display: table-cell;}
+.info-bar {display:inline-block;margin-left:-2em;padding-left:1.1em;overflow:hidden;}
+.info-bar__item {float:left;}
+.info-bar__item__text {display:block;text-align:center;padding:0.7em 1em 0.7em 1em;font-size:0.9em;color:white}
+.info-bar__logo-container {display: table-cell;vertical-align: middle;}
+.info-bar__logo {display: block; margin-left: 0.8em;}
+
+.outer-page-content {width:45.5em;display:inline-block;}
+.page-content {padding:1.2em 2.25em 0 0;}
+.color-box {width:1.2em;height:1.2em;display:inline-block;margin-right:0.5em;}
+.page-title {display:inline-block;font-size:1.5em;font-weight:400;margin-bottom:0.3em;}
+.page-description {line-height:1.3;}
+#main-content {margin:1.5em 0;position:relative;}
+
+.side-bar {width:18.75em;float:right;}
+.navbar-container {margin:2.1em 0.8em;}
+.navbar {margin-bottom:-1em;}
+.button--navbar {padding:0.7em 0.2em;font-size:1.2em;margin-bottom:0;color:#0e7490;border:0.125em solid#0e7490;}
+
+.navbar__item:hover {cursor:pointer;}
+.navbar__link  {display:block;color:white;padding:0.7em 1em 0.7em 1.4em;}
+.navbar__link--first {padding-top:0.8em;}
+.navbar__dropdown-item {color:#222222;}
+.navbar__dropdown-item:hover {text-decoration:underline;}
+.dropdown-symbol {margin-left:1em;color:white;}
+
+.latest-article {margin-top:1em;padding:0.5em;text-align:center;box-shadow:0 0 1em #BBBBBB;}
+.latest-article__tag:first-child {margin-bottom:0.5em;line-height:normal;}
+.latest-article__title:last-child {text-align:left;font-weight:700;}
+.latest-article__logo {vertical-align:bottom;margin-bottom:0.5em;}
+
+.footer {padding:2em;}
+.footer__item-container {display:table;width:100%;margin-bottom:1.6em;}
+.footer__item {display:table-cell;}
+.footer__item--extra-padding {padding-left:2.5em;}
+.footer__text {color:white;line-height:1.5;}
+.footer__text--title {display:inline-block;margin-bottom:1.6em;font-size:1.3em;font-style:italic;}
+.footer__text--extra-info {float:right;}
+.footer__text:not(.footer__text--copyright):hover {text-decoration:underline; cursor:pointer;}
+.footer__text--black {color:#000;}
+.footer__separator {color:white;}
+#copyright-year {color:white;}
+
+.active-tab {background-color:#fdc010;color: #222222;}
+.navbar__link:hover:not(.navbar__dropdown-item):not(.active-tab),.info-bar__item__text:hover:not(.active-tab) {background-color:#155e75;}
+        .info-bar,.color-box,.navbar,.footer {background-color:#0e7490;}
+        .dropdown-symbol--dark {color:#0e7490;}
+        .button--active {background-color:#0e7490;color:white;}
+        .navbar__dropdown-container {color: #222222;background-color:#fdc010;}
+        .header2--top {margin-top: 0.5em;}
+        .basic-table td, .basic-table th {border: 1px solid black; padding:0.3em 0.5em; text-align: center;}
+        /* RESPONSIVE-FIX-INSERTED */
+@media (max-width: 768px) {
+  .outer-container { width: 100% !important; margin: 0 !important; }
+  .outer-page-content { width: 100% !important; display: block !important; }
+  .side-bar { width: 100% !important; float: none !important; }
+  .page-box { width: auto !important; display: block !important; margin: 0 auto 0.5em auto !important; }
+  img { max-width: 100% !important; height: auto !important; }
+  table { max-width: 100% !important; }
+
+  #info-bar > .info-bar__item:has(a[href$="index.html"]),
+  #info-bar > .info-bar__item:has(a[href*="donate"]),
+  #info-bar > .info-bar__item:has(a[href*="substack.com"]),
+  #info-bar > .info-bar__item:has(a[href*="mes.fm/links"]) { display: none !important; }
+}
+
+.inner-container { position: relative !important; }
+.header .social-container { display: none !important; }
+.side-bar { width: auto !important; float: none !important; }
+.navbar-container { margin: 0 !important; box-shadow: none !important; }
+.navbar__item--social { display: list-item; padding: 1em 1.6em 1em 1.4em; border-bottom: 1px solid rgba(255,255,255,0.25); }
+.navbar__item--social .social-container--navbar { position: static !important; display: flex; flex-wrap: wrap; align-items: center; gap: 0.6em; }
+.navbar__item--social .social__text { color: white; margin: 0; }
+.navbar__item--social .social { display: flex; flex-wrap: wrap; gap: 0.5em; margin: 0; padding: 0; }
+.navbar__item--social .info-bar__logo-container { display: block; margin-top: 0.4em; }
+#navbar-button {
+  position: absolute !important; top: 16px !important; right: 16px !important; z-index: 20;
+  width: 44px; height: 44px; padding: 0; margin: 0 !important;
+  background: transparent !important; border: none !important;
+  font-size: 0;
+}
+
+@media (max-width: 768px) {
+  .header { padding-right: 4em !important; box-sizing: border-box; }
+}
+#navbar-button::before {
+  content: ""; display: block; margin: 0 auto;
+  width: 26px; height: 4px; background: currentColor; border-radius: 1px;
+  box-shadow: 0 7px 0 currentColor, 0 -7px 0 currentColor;
+}
+#navbar { display: none; }
+#navbar.hide {
+  display: block !important; box-sizing: border-box;
+  position: absolute; top: 76px; right: 16px; z-index: 19;
+  width: 16em; max-width: 90vw; max-height: 75vh; overflow-y: auto;
+  scrollbar-gutter: stable;
+  box-shadow: 0 0.25em 1em rgba(0,0,0,0.3);
+  border-radius: 0.25em;
+}
+
+#navbar.hide { display: flex !important; flex-direction: column; }
+.navbar__item--social { order: 999; }
+.navbar__item--social .info-bar__logo-container { display: block !important; }
+
+.outer-container { width: auto !important; max-width: 50em; margin: 0 auto !important; }
+.outer-page-content { width: 100% !important; display: block !important; }
+.page-content { padding-right: 0 !important; }
+
+</style>	<style>
+	.hide {display:none;}
+	a,a:hover {text-decoration: none !important;color:white;}
+	a.active-tab:hover {color:#222222;}
+	.navbar {border:none;}
+
+	/* the tool itself (scoped to #main-content) */
+	/* shared widget kit for the calculator tool pages (build_tool_apps.py prepends this to each app's own CSS) */
+	.tu {margin:1em 0;--accent:#0e7490;--accent-dark:#155e75;--tint:#dcf2f7;}
+	.tu *, .tu *::before, .tu *::after {box-sizing:border-box;}
+	.tu a {color:var(--accent);text-decoration:underline !important;}
+	.tu a:hover {color:var(--accent-dark);}
+	.tu button, .tu input, .tu select {font:inherit;}
+	.tu h2 {font-size:1.05em;color:#1e2733;margin:1.4em 0 0.6em;padding-bottom:0.3em;border-bottom:2px solid #dcf2f7;}
+	.tu h3 {font-size:0.98em;color:#1e2733;margin:1em 0 0.4em;}
+	.tu p {line-height:1.5;margin:0.5em 0;}
+	.tu-card {background:#fff;border:1px solid #dfe4ea;border-radius:0.55em;padding:1em 1.1em;}
+	.tu-card--tint {background:#dcf2f7;border-color:#dcf2f7;}
+	.tu-row {display:flex;flex-wrap:wrap;gap:0.9em 1.1em;align-items:flex-end;}
+	.tu-field {display:flex;flex-direction:column;gap:0.3em;flex:1 1 11em;min-width:0;}
+	.tu-field--sm {flex:0 1 8em;}
+	.tu-field > label, .tu-label {font-size:0.75em;font-weight:700;text-transform:uppercase;letter-spacing:0.04em;color:#667;}
+	.tu-input, .tu-select {width:100%;font-size:1.05em;padding:0.55em 0.65em;border:1px solid #b9c1cc;border-radius:0.4em;background:#fff;color:#222;}
+	.tu-input:focus, .tu-select:focus {outline:none;border-color:var(--accent);box-shadow:0 0 0 2px #dcf2f7;}
+	.tu-input--big {font-size:1.35em;padding:0.55em 0.7em;}
+	.tu-suffix {position:relative;}
+	.tu-suffix .tu-input {padding-right:3.2em;}
+	.tu-suffix span {position:absolute;right:0.7em;top:50%;transform:translateY(-50%);font-size:0.85em;color:#667085;pointer-events:none;}
+	.tu-btn {cursor:pointer;padding:0.5em 0.95em;border-radius:0.35em;border:0.125em solid var(--accent);background:#fff;color:var(--accent);font-size:0.9em;line-height:1.1;}
+	.tu-btn:hover {background:var(--accent);color:#fff;}
+	.tu-btn--primary {background:var(--accent);color:#fff;}
+	.tu-btn--primary:hover {background:var(--accent-dark);border-color:var(--accent-dark);}
+	.tu-btn--ghost {border-color:#c3c9d2;color:#555;}
+	.tu-btn--ghost:hover {background:#eef1f5;color:#222;border-color:#c3c9d2;}
+	.tu-seg {display:inline-flex;border:1px solid #b9c1cc;border-radius:0.4em;overflow:hidden;background:#fff;}
+	.tu-seg button {cursor:pointer;border:0;background:transparent;padding:0.55em 0.9em;color:#555;font-size:0.95em;border-right:1px solid #dfe4ea;}
+	.tu-seg button:last-child {border-right:0;}
+	.tu-seg button:hover {background:#f4f6f9;}
+	.tu-seg button[aria-pressed="true"] {background:var(--accent);color:#fff;}
+	.tu-chips {display:flex;flex-wrap:wrap;gap:0.4em;margin:0.6em 0 0;}
+	.tu-chip {cursor:pointer;font-size:0.82em;padding:0.35em 0.8em;border-radius:1.2em;border:1px solid #c3c9d2;background:#fff;color:#555;}
+	.tu-chip:hover {border-color:var(--accent);color:var(--accent);}
+	.tu-chip[aria-pressed="true"] {background:var(--accent);border-color:var(--accent);color:#fff;}
+	.tu-stats {display:grid;grid-template-columns:repeat(auto-fit,minmax(13em,1fr));gap:0.8em;margin:1em 0;}
+	.tu-stat {background:#fff;border:1px solid #dfe4ea;border-radius:0.55em;padding:0.8em 1em;}
+	.tu-stat--hero {background:#dcf2f7;border-color:#dcf2f7;}
+	.tu-stat__label {font-size:0.72em;font-weight:700;text-transform:uppercase;letter-spacing:0.05em;color:#667;}
+	.tu-stat__value {font-size:1.7em;font-weight:700;color:#1e2733;line-height:1.2;margin:0.15em 0;word-break:break-word;}
+	.tu-stat__sub {font-size:0.85em;color:#555d6b;line-height:1.35;}
+	.tu-pos {color:#1f7a3d !important;}
+	.tu-neg {color:#b3261e !important;}
+	.tu-table-wrap {overflow-x:auto;}
+	.tu-table {width:100%;border-collapse:collapse;font-size:0.95em;}
+	.tu-table th, .tu-table td {text-align:right;padding:0.5em 0.7em;border-bottom:1px solid #e3e7ec;color:#333;white-space:nowrap;}
+	.tu-table th:first-child, .tu-table td:first-child {text-align:left;}
+	.tu-table th {font-size:0.75em;text-transform:uppercase;letter-spacing:0.03em;color:#6a7280;background:#fff;}
+	.tu-table tr.is-active td {background:#dcf2f7;font-weight:700;}
+	.tu-note {font-size:0.85em;color:#6a7280;line-height:1.45;}
+	.tu-toast {position:fixed;left:50%;bottom:2em;transform:translateX(-50%) translateY(0.5em);background:#1e2733;color:#fff;padding:0.6em 1.1em;border-radius:2em;font-size:0.9em;box-shadow:0 0.4em 1.2em rgba(0,0,0,0.25);opacity:0;pointer-events:none;transition:opacity 0.15s, transform 0.15s;z-index:60;}
+	.tu-toast--show {opacity:1;transform:translateX(-50%) translateY(0);}
+	.tu-seo {margin-top:2em;border-top:1px solid #e3e3e3;padding-top:1.2em;}
+	/* SEO-HEADINGS: headlines and questions stand out from the body text (also added to built pages by add_seo_heading_style.py) */
+	body .tu-seo {font-size:1.04em;line-height:1.65;}
+	body .tu-seo h2 {font-size:1.45em;font-weight:800;line-height:1.25;margin:0 0 0.6em;color:#1e2733;border-bottom:0;padding-bottom:0;}
+	body .tu-seo h3 {font-size:1.2em;font-weight:800;line-height:1.3;margin:1.6em 0 0.5em;padding:0.15em 0 0.15em 0.65em;border-left:5px solid var(--accent,#4a6fa5);color:#1e2733;}
+	body .tu-seo h4, body .tu-seo dt {font-size:1.08em;font-weight:700;font-style:normal;line-height:1.35;margin:1.3em 0 0.3em;color:#1e2733;}
+	body .tu-seo dd {margin:0 0 0.6em;} body .tu-seo p, body .tu-seo li, body .tu-seo dd {line-height:1.65;}
+	body.dark-mode .tu-seo h2, body.dark-mode .tu-seo h3, body.dark-mode .tu-seo h4, body.dark-mode .tu-seo dt {color:#f2f2f2;}
+	.tu sup, .tu sub {font-size:0.72em !important;line-height:0;vertical-align:baseline;position:relative;} .tu sup {top:-0.5em;} .tu sub {top:0.3em;}
+	.tu div[class$="-eq"] {overflow-y:hidden;}
+	.tu-seo ul {list-style:disc;margin:0.5em 0 0.5em 1.5em;line-height:1.5;}
+	.tu-svg-line {fill:none;stroke:#1e2733;stroke-width:2;}
+	.tu-svg-accent {fill:none;stroke:var(--accent);stroke-width:3;}
+	.tu-svg-fill {fill:var(--accent);}
+	.tu-svg-tint {fill:#dcf2f7;}
+	.tu-svg-text {font-size:13px;fill:#333;}
+	.tu-svg-grid {stroke:#dfe4ea;stroke-width:1;fill:none;}
+	/* selected states: the derived dark theme would darken these, so restate them for dark mode */
+	/* the dark theme lightens --accent so it reads on dark; text on filled accent surfaces then has to be dark */
+	body.dark-mode .tu .tu-seg button[aria-pressed="true"], body.dark-mode .tu .tu-chip[aria-pressed="true"], body.dark-mode .tu .uc-cat[aria-selected="true"],
+	body.dark-mode .tu .tu-btn:hover, body.dark-mode .tu .tu-btn--primary, body.dark-mode .tu .tu-btn--primary:hover {background:var(--accent);border-color:var(--accent);color:#0b1416;}
+	body.dark-mode .tu .tu-btn--ghost:hover {background:#2e2e2e;border-color:#666;color:#eee;}
+	body.dark-mode .tu .uc-cat[aria-selected="true"] span {color:#0b1416;}
+	body.dark-mode .tu .tu-svg-tint {fill:rgba(255,255,255,0.09);}
+	body.dark-mode .tu .gm-card[aria-pressed="true"] {border-color:var(--accent);background:rgba(255,255,255,0.08);}
+	/* dark mode: the tool's accent lightened (same hue) so links, outlines and the text on filled buttons keep their contrast on the dark page */
+	body.dark-mode .tu {--accent:#14a5cc !important;--accent-dark:#14a5cc !important;}
+	@media (max-width:600px) {
+		.tu-stat__value {font-size:1.45em;}
+		.tu-field--sm {flex:1 1 7em;}
+	}
+	@media print {
+		.tu-btn, .tu-chips, .tu-seg {display:none !important;}
+	}
+
+/* row layout options on the grade / GPA / weighted-average calculators (names on-off, table layout) */
+.tu .rw-bar {display:flex;gap:0.4em;flex-wrap:wrap;margin:0.5em 0 0.1em;}
+.tu .gc-n {display:none;}
+.tu [data-names="0"] .rw-name {display:none !important;}
+.tu [data-names="0"] .rw-num, .tu [data-table="1"] .rw-num {display:block !important;flex:0 0 1.7em;text-align:right;color:#8a93a0;font-size:0.85em;padding-bottom:0.7em;}
+.tu [data-table="1"] .rw-head, .tu [data-table="1"] .rw-row {display:grid !important;grid-template-columns:var(--rw-cols);gap:0.3em;align-items:center;}
+.tu [data-table="1"] .rw-head {font-size:0.68em;font-weight:700;text-transform:uppercase;letter-spacing:0.03em;color:#667;padding:0.4em 0 0.2em;border-bottom:2px solid #d5dae1;} .tu [data-table="1"] .rw-head span {text-align:center;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;} .tu [data-table="1"] .rw-head span:first-child {text-align:right;}
+.tu [data-table="1"] .rw-row {padding:0.22em 0;border-bottom:1px solid #eceff3;}
+.tu [data-table="1"] .rw-row > * {order:0 !important;flex:none !important;margin:0 !important;min-width:0 !important;width:auto !important;}
+.tu [data-table="1"] .rw-row .rw-num {padding:0;}
+.tu [data-table="1"] .rw-f label {display:none;}
+.tu [data-table="1"] .rw-row .tu-input, .tu [data-table="1"] .rw-row .tu-select {padding:0.35em 0.2em;width:100%;min-width:0;text-align:center;}
+.tu [data-table="1"] .rw-row .rw-name .tu-input {text-align:left;padding-left:0.4em;}
+.tu [data-table="1"] .rw-del {padding:0.25em 0 !important;font-size:0.95em !important;}
+.tu [data-table="1"] .rw-pts {padding:0 !important;font-size:0.78em;text-align:center;}
+body.dark-mode .tu .rw-head {color:#a0a8b3;border-bottom-color:#555;} body.dark-mode .tu [data-table="1"] .rw-row {border-bottom-color:#333;}
+/* equation boxes typeset by main_js/mes-math.js (MathJax) */
+.tu [class$="-eq__f"].mes-tex {font-family:inherit;white-space:normal;display:inline-block;vertical-align:middle;max-width:100%;overflow-x:auto;overflow-y:hidden;}
+.tu [class$="-eq"] mjx-container {margin:0.15em 0 !important;}
+.tu [class$="-eq"] > div {margin:0.25em 0;}
+.tu [class$="-eq__n"] {vertical-align:middle;}
+
+	/* MES Tip Calculator */
+	#tp [hidden] {display:none !important;}
+	.tu .tp-top {display:flex;flex-wrap:wrap;gap:0.7em 1em;align-items:center;justify-content:space-between;margin-bottom:0.9em;}
+	.tu .tp-mode button {min-height:44px;padding:0.5em 1.1em;font-weight:600;font-size:1em;}
+	.tu .tp-curlab {display:flex;align-items:center;gap:0.5em;font-size:0.85em;font-weight:700;color:#555d6b;}
+	.tu .tp-curlab select {width:auto;min-height:40px;padding:0.35em 0.5em;font-size:0.95em;}
+	.tu .tp-card {margin-bottom:0.9em;}
+	.tu .tp-biglab {display:block;font-size:0.82em;font-weight:700;text-transform:uppercase;letter-spacing:0.05em;color:#555d6b;margin-bottom:0.45em;}
+	.tu .tp-head {display:flex;justify-content:space-between;align-items:center;gap:0.6em;flex-wrap:wrap;margin-bottom:0.5em;}
+	.tu .tp-head .tp-biglab {margin:0;}
+	.tu .tp-head .tu-seg button {min-height:40px;}
+	.tu .tp-money {position:relative;}
+	.tu .tp-money .tp-sym {position:absolute;left:0.55em;top:50%;transform:translateY(-50%);color:#555d6b;font-weight:700;pointer-events:none;font-size:1.6em;}
+	.tu .tp-money .tu-input {padding-left:1.6em;}
+	.tu .tp-money--long .tu-input {padding-left:2.6em;}
+	.tu .tp-money--nosym .tu-input {padding-left:0.6em;}
+	.tu .tp-billin {font-size:2.3em;font-weight:700;padding:0.3em 0.5em 0.3em 1.1em;font-variant-numeric:tabular-nums;}
+	.tu .tp-money .tp-billin {padding-left:1.15em;}
+	.tu .tp-money--long .tp-billin {padding-left:1.8em;}
+	.tu .tp-money--mid .tp-sym {font-size:1.05em;}
+	.tu .tp-money--mid .tu-input {padding-left:1.5em;}
+	.tu .tp-money--mid.tp-money--long .tu-input {padding-left:2.7em;}
+	.tu .tp-mid {font-size:1.2em;min-height:46px;}
+	.tu .tp-bad {border-color:#c0392b !important;box-shadow:0 0 0 2px rgba(192,57,43,0.2);}
+	.tu .tp-chips {display:grid;grid-template-columns:repeat(6,1fr);gap:0.45em;}
+	.tu .tp-chip {cursor:pointer;min-height:52px;font-size:1.2em;font-weight:700;border-radius:0.5em;border:2px solid #c3c9d2;background:#fff;color:#333;font-variant-numeric:tabular-nums;}
+	.tu .tp-chip:hover {border-color:var(--accent);color:var(--accent);}
+	.tu .tp-chip[aria-pressed="true"] {background:var(--accent);border-color:var(--accent);color:#fff;}
+	.tu .tp-custom {display:flex;align-items:center;gap:0.7em;margin-top:0.6em;}
+	.tu .tp-custom label {font-size:0.82em;font-weight:700;text-transform:uppercase;letter-spacing:0.04em;color:#555d6b;}
+	.tu .tp-custom .tu-suffix {flex:0 1 10em;}
+	.tu .tp-check {display:flex;align-items:center;gap:0.6em;min-height:44px;margin-top:0.6em;cursor:pointer;font-size:1em;}
+	.tu .tp-check input {width:1.35em;height:1.35em;accent-color:var(--accent);flex:0 0 auto;}
+	.tu .tp-stepper {display:flex;align-items:stretch;gap:0.5em;max-width:17em;}
+	.tu .tp-stepper button {flex:0 0 3.4em;min-height:56px;font-size:1.7em;font-weight:700;line-height:1;cursor:pointer;border-radius:0.4em;border:2px solid var(--accent);background:#fff;color:var(--accent);}
+	.tu .tp-stepper button:hover {background:var(--accent);color:#fff;}
+	.tu .tp-stepper input {flex:1 1 auto;min-width:0;text-align:center;font-size:1.9em;font-weight:700;font-variant-numeric:tabular-nums;padding:0.2em;}
+	.tu .tp-roundbox {margin-top:1em;display:flex;flex-direction:column;gap:0.4em;}
+	.tu .tp-roundbox select {max-width:24em;min-height:44px;}
+	.tu .tp-steps {display:flex;align-items:center;gap:0.6em;flex-wrap:wrap;margin-top:0.3em;}
+	.tu .tp-steps .tu-seg button {min-height:42px;min-width:3.6em;font-weight:600;}
+	.tu .tp-results {display:grid;grid-template-columns:repeat(3,1fr);gap:0.7em;margin:0.4em 0 0.6em;}
+	.tu .tp-tile {background:#fff;border:1px solid #dfe4ea;border-radius:0.6em;padding:0.8em 1em;min-width:0;}
+	.tu .tp-tile--hero {background:var(--accent);border-color:var(--accent);}
+	.tu .tp-tlab {font-size:0.78em;font-weight:700;text-transform:uppercase;letter-spacing:0.05em;color:#555d6b;}
+	.tu .tp-tval {font-size:2.2em;font-weight:800;line-height:1.15;margin:0.1em 0;color:#1e2733;font-variant-numeric:tabular-nums;overflow-wrap:anywhere;}
+	.tu .tp-tsub {font-size:0.88em;color:#4a5260;line-height:1.35;}
+	.tu .tp-tile--hero .tp-tlab, .tu .tp-tile--hero .tp-tval, .tu .tp-tile--hero .tp-tsub {color:#fff;}
+	.tu .tp-msg {font-size:0.92em;color:#4a5260;line-height:1.5;margin:0 0 0.8em;min-height:1.4em;}
+	.tu .tp-btns {display:flex;gap:0.5em;flex-wrap:wrap;margin:0.4em 0 0.6em;}
+	.tu .tp-btns .tu-btn {min-height:44px;}
+	.tu .tp-add {min-height:44px;margin-top:0.3em;}
+	.tu .tp-light {font-weight:400;color:#5d6573;font-size:0.9em;}
+	.tu .tp-prow {display:grid;grid-template-columns:minmax(6em,1fr) minmax(7em,1.6fr) auto 44px;gap:0.45em;align-items:center;margin-bottom:0.5em;}
+	.tu .tp-prow .tu-input {min-height:46px;}
+	.tu .tp-psum {font-weight:700;font-variant-numeric:tabular-nums;min-width:4.5em;text-align:right;color:#1e2733;}
+	.tu .tp-x {min-height:44px;width:100%;min-width:44px;padding:0;cursor:pointer;font-size:1.4em;line-height:1;border:1px solid #c3c9d2;border-radius:0.4em;background:#fff;color:#555;}
+	.tu .tp-x:hover {border-color:#c0392b;color:#c0392b;}
+	.tu .tp-x[disabled] {opacity:0.35;cursor:default;}
+	.tu .tp-srow {border:1px solid #e3e7ec;border-radius:0.5em;padding:0.55em;margin-bottom:0.55em;}
+	.tu .tp-sline {display:grid;grid-template-columns:minmax(6em,1.4fr) minmax(6em,1fr) 44px;gap:0.45em;align-items:center;}
+	.tu .tp-sline .tu-input {min-height:46px;}
+	.tu .tp-whos {display:flex;flex-wrap:wrap;gap:0.35em;align-items:center;margin-top:0.5em;}
+	.tu .tp-who {cursor:pointer;min-height:40px;padding:0.3em 0.8em;border-radius:1.4em;border:1px solid #c3c9d2;background:#fff;color:#555;font-size:0.92em;}
+	.tu .tp-who[aria-pressed="true"] {background:#dcf2f7;border-color:var(--accent);color:#123c47;font-weight:700;}
+	.tu .tp-qt tbody tr {cursor:pointer;}
+	.tu .tp-qt tbody tr:hover td, .tu .tp-qt tbody tr:focus td {background:#f1f8fa;}
+	.tu .tp-qt tbody tr:focus {outline:2px solid var(--accent);outline-offset:-2px;}
+	.tu .tp-qt td, .tu #tp-utab td {font-variant-numeric:tabular-nums;font-size:1.05em;}
+	.tu #tp-utab td.tp-pay {font-weight:800;}
+	.tu #tp-utab tfoot td {font-weight:700;border-top:2px solid #c3c9d2;}
+	.tu .tp-wrap td, .tu .tp-wrap th {white-space:normal;text-align:left;vertical-align:top;}
+	.tu .tp-wrap td:first-child {font-weight:700;white-space:nowrap;}
+	.tu .tp-country {margin:0.8em 0;padding:0.8em 1em;border-left:5px solid var(--accent);background:#dcf2f7;border-radius:0 0.5em 0.5em 0;}
+	.tu .tp-country p {margin:0 0 0.5em;color:#1e2733;}
+	.tu .tp-country .tu-btn {min-height:42px;}
+	.tu .tp-all summary {cursor:pointer;min-height:40px;display:flex;align-items:center;color:var(--accent);font-weight:700;}
+	@media (max-width:640px) {
+		.tu .tp-chips {grid-template-columns:repeat(3,1fr);}
+		.tu .tp-results {grid-template-columns:1fr 1fr;}
+		.tu .tp-tile--hero {grid-column:1 / -1;} .tu .tp-results--3 .tp-tile--hero {order:-1;}
+		.tu .tp-tile--hero .tp-tval {font-size:2.7em;}
+		.tu .tp-tval {font-size:1.75em;}
+		.tu .tp-billin {font-size:2em;}
+		.tu .tp-prow {grid-template-columns:1fr minmax(44px,auto);}
+		.tu .tp-prow .tp-pname {grid-column:1;}
+		.tu .tp-prow .tp-x {grid-column:2;grid-row:1;}
+		.tu .tp-prow .tp-pitems {grid-column:1;}
+		.tu .tp-prow .tp-psum {grid-column:2;grid-row:2;min-width:0;font-size:0.85em;}
+		.tu .tp-prow {padding-bottom:0.5em;border-bottom:1px solid #e3e7ec;}
+		.tu .tp-sline {grid-template-columns:1fr minmax(44px,auto);}
+		.tu .tp-sline .tp-money {grid-column:1;}
+		.tu .tp-sline .tp-x {grid-column:2;grid-row:1;}
+		.tu .tp-stepper {max-width:none;}
+		.tu #tp-utab th, .tu #tp-utab td {padding:0.45em 0.4em;}
+	}
+	@media print {.tu .tp-btns, .tu .tp-top {display:none;}}
+	/* dark mode (hand-written: the derived TOOL-DARK block is emitted later; the #tp id keeps these ahead) */
+	body.dark-mode #tp.tu .tp-curlab, body.dark-mode #tp.tu .tp-biglab, body.dark-mode #tp.tu .tp-custom label, body.dark-mode #tp.tu .tp-tlab {color:#b8c0cb;}
+	body.dark-mode #tp.tu .tp-money .tp-sym {color:#b8c0cb;}
+	body.dark-mode #tp.tu .tp-chip, body.dark-mode #tp.tu .tp-stepper button, body.dark-mode #tp.tu .tp-x, body.dark-mode #tp.tu .tp-who {background:#262a2f;border-color:#555c66;color:#e8eaed;}
+	body.dark-mode #tp.tu .tp-stepper button {border-color:var(--accent);color:var(--accent);}
+	body.dark-mode #tp.tu .tp-chip:hover, body.dark-mode #tp.tu .tp-who:hover {border-color:var(--accent);color:var(--accent);}
+	body.dark-mode #tp.tu .tp-stepper button:hover {background:var(--accent);color:#0b1416;}
+	body.dark-mode #tp.tu .tp-x:hover {border-color:#ff8a80;color:#ff8a80;}
+	body.dark-mode #tp.tu .tp-chip[aria-pressed="true"] {background:var(--accent);border-color:var(--accent);color:#0b1416;}
+	body.dark-mode #tp.tu .tp-who[aria-pressed="true"] {background:rgba(255,255,255,0.12);border-color:var(--accent);color:#fff;}
+	body.dark-mode #tp.tu .tp-tile {background:#232629;border-color:#3a3f45;}
+	body.dark-mode #tp.tu .tp-tval, body.dark-mode #tp.tu .tp-psum {color:#f2f2f2;}
+	body.dark-mode #tp.tu .tp-tsub, body.dark-mode #tp.tu .tp-msg, body.dark-mode #tp.tu .tp-light {color:#b8c0cb;}
+	body.dark-mode #tp.tu .tp-tile--hero {background:var(--accent);border-color:var(--accent);}
+	body.dark-mode #tp.tu .tp-tile--hero .tp-tlab, body.dark-mode #tp.tu .tp-tile--hero .tp-tval, body.dark-mode #tp.tu .tp-tile--hero .tp-tsub {color:#0b1416;}
+	body.dark-mode #tp.tu .tp-srow, body.dark-mode #tp.tu .tp-prow {border-color:#3a3f45;}
+	body.dark-mode #tp.tu .tp-qt tbody tr:hover td, body.dark-mode #tp.tu .tp-qt tbody tr:focus td {background:rgba(255,255,255,0.08);}
+	body.dark-mode #tp.tu #tp-utab tfoot td {border-top-color:#555c66;}
+	body.dark-mode #tp.tu .tp-country {background:rgba(255,255,255,0.07);}
+	body.dark-mode #tp.tu .tp-country p {color:#e8eaed;}
+	body.dark-mode #tp.tu .tp-all summary {color:var(--accent);}
+	body.dark-mode #tp.tu .tp-bad {border-color:#ff8a80 !important;box-shadow:0 0 0 2px rgba(255,138,128,0.25);}
+	body.dark-mode #tp.tu .tp-qt tr.is-active td {background:rgba(255,255,255,0.13);color:#fff;}
+
+
+	@media print {
+		.header, .info-bar-container, .side-bar, #footer, #comments-button, #comments-box, .color-box { display:none !important; }
+		.outer-container, .inner-container, .outer-page-content, .page-content { width:auto !important; box-shadow:none !important; padding:0 !important; margin:0 !important; }
+	}
+	/* Mobile layout: stack header/nav/footer, full-width calculator inputs */
+	@media (max-width: 600px) {
+		.inner-container { padding: 1em 0.75em; }
+
+		.header { display: flex; flex-wrap: wrap; align-items: center; }
+		.logo-image-container { flex: 0 0 auto; }
+		.logo-text-container { display: block; flex: 1 1 0; min-width: 0; padding-left: 0.75em; vertical-align: initial; }
+		.calculator-title { font-size: 1.3em; }
+		.tag-line { font-size: 1em; }
+		.social-container, .social-container--bottom { position: static; flex: 0 0 100%; margin-top: 0.5em; }
+		.social-container { display: flex; align-items: center; flex-wrap: wrap; gap: 0.5em; }
+		.social-container .social__text { margin: 0; font-size: 0.9em; }
+		.social { display: flex; gap: 0.4em; }
+		.social-container .info-bar__logo-container { margin-left: auto; }
+		#mes-logo { width: 110px; height: auto; }
+
+		.info-bar-container { display: block; width: 100%; }
+		.info-bar { display: flex; flex-wrap: wrap; margin-left: 0; padding-left: 0; width: 100%; }
+		.info-bar__item { float: none; flex: 1 1 33%; min-width: 0; }
+		.info-bar__item__text { padding: 0.5em 0.2em; font-size: 0.75em; text-align: center; white-space: normal; line-height: 1.2; }
+		.navbar-container { margin: 1em 0; width: 100%; box-sizing: border-box; }
+		.button--navbar { box-sizing: border-box; width: 100%; }
+		.navbar { width: 100%; }
+		.navbar__link { box-sizing: border-box; }
+
+		.page-content { padding: 1.2em 0 0 0; }
+
+		.footer { padding: 1.25em 0.75em; }
+		.footer__item-container { display: block; }
+		.footer__item { display: block; margin-bottom: 0.75em; }
+		.footer__item--extra-padding { padding-left: 0; }
+		.footer__text--extra-info { float: none; display: block; margin-top: 0.5em; }
+	}
+/* Floating compact header bar: once the full header + nav scroll out of
+   view, a slim fixed bar (small logo, title, as many nav links as fit)
+   slides in, and the hamburger is pinned into its right end. Toggled by
+   the compact-nav script below. Ported from mes.fm/math's version (see
+   its build.mjs) -- display-controls.js pins the A-/A+/moon buttons into its right end.
+
+   Hidden by default via the inline style="display:none" on the element
+   itself (not just this stylesheet's "display: none" below) -- some
+   browser extensions strip or neutralize cosmetic-looking CSS for
+   elements named "sticky-*"/"*-bar" (a common ad/cookie-bar filter
+   pattern), which left an earlier version's raw unstyled markup visible
+   above the real header on mes.fm/math. The inline attribute is a
+   fallback the JS clears itself, independent of this stylesheet
+   surviving intact. */
+#compact-nav {
+  position: fixed; top: 0; left: 0; right: 0; height: 52px; z-index: 15;
+  display: none; align-items: center; gap: 12px;
+  padding: 0 80px 0 12px; box-sizing: border-box;
+  background: #ffffff; border-bottom: 3px solid #0e7490;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.18);
+  transform: translateY(-110%); transition: transform 0.2s ease;
+}
+#compact-nav.is-visible { display: flex; }
+body.is-stuck #compact-nav { transform: none; }
+#compact-nav .compact-nav-logo { display: block; width: 32px; height: 32px; border-radius: 6px; flex: 0 0 auto; }
+#compact-nav .compact-nav-title {
+  flex: 0 1 auto; min-width: 0; font-weight: 700; font-size: 1.05em; color: #1a1a1a;
+  text-decoration: none; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+}
+#compact-nav .compact-nav-links { display: flex; flex: 1 1 0; min-width: 0; overflow: hidden; margin: 0 0 0 8px; padding: 0; list-style: none; }
+#compact-nav .compact-nav-links li { flex: 0 0 auto; }
+#compact-nav .compact-nav-links a { display: block; padding: 0 10px; line-height: 52px; font-size: 0.9em; color: #0e7490; text-decoration: none; white-space: nowrap; }
+#compact-nav .compact-nav-links a:hover { background: rgba(14,116,144,0.12); }
+body.is-stuck #navbar-button { position: fixed !important; top: 4px !important; right: 8px !important; display: flex; align-items: center; }
+body.is-stuck #navbar.hide { position: fixed; top: 56px; right: 8px; }
+@media (max-width: 700px) {
+  #compact-nav .compact-nav-title { display: none; }
+  #compact-nav .compact-nav-logo { width: 36px; height: 36px; }
+}
+@media (max-width: 480px) {
+  #compact-nav { padding-right: 70px; gap: 8px; }
+}
+
+	/* TOOL-DARK:START -- generated by add_tool_page_controls.py, do not edit */
+	body.dark-mode .page-content :where(div,span,p,li,ul,ol,h1,h2,h3,h4,h5,h6,td,th,label,summary,small,strong,b,em,i,code,pre,legend,figcaption,dl,dt,dd,blockquote,caption,cite,button,input,select,textarea){color:#d8d8d8}
+	body.dark-mode .page-content code{background-color:#33363d;color:#f0a8bd}
+	body.dark-mode .page-content .btn-default{background-color:#2e2e2e;background-image:none;color:#ddd;border-color:#555}
+	body.dark-mode .tu{--accent:#20bee9;--accent-dark:#2fb1da}
+	body.dark-mode .tu h2{color:#d1d6dc;border-bottom:2px solid #11424d}
+	body.dark-mode .tu h3{color:#d1d6dc}
+	body.dark-mode .tu-card{background:#1a1a1a;border:1px solid #28323e}
+	body.dark-mode .tu-card--tint{background:#1a2b2f;border-color:#11424d}
+	body.dark-mode .tu-field > label,body.dark-mode .tu-label{color:#9a9aa2}
+	body.dark-mode .tu-input,body.dark-mode .tu-select{border:1px solid #404a58;background:#1a1a1a;color:#dddddd}
+	body.dark-mode .tu-suffix span{color:#989ca4}
+	body.dark-mode .tu-btn{background:#1a1a1a}
+	body.dark-mode .tu-btn--ghost{border-color:#3a424d;color:#aaaaaa}
+	body.dark-mode .tu-btn--ghost:hover{background:#191c20;color:#dddddd;border-color:#3a424d}
+	body.dark-mode .tu-seg{border:1px solid #404a58;background:#1a1a1a}
+	body.dark-mode .tu-seg button{color:#aaaaaa;border-right:1px solid #28323e}
+	body.dark-mode .tu-seg button:hover{background:#16191d}
+	body.dark-mode .tu-chip{border:1px solid #3a424d;background:#1a1a1a;color:#aaaaaa}
+	body.dark-mode .tu-stat{background:#1a1a1a;border:1px solid #28323e}
+	body.dark-mode .tu-stat--hero{background:#1a2b2f;border-color:#11424d}
+	body.dark-mode .tu-stat__label{color:#9a9aa2}
+	body.dark-mode .tu-stat__value{color:#d1d6dc}
+	body.dark-mode .tu-stat__sub{color:#9a9ea4}
+	body.dark-mode .tu-pos{color:#7dde9d !important}
+	body.dark-mode .tu-neg{color:#e87973 !important}
+	body.dark-mode .tu-table th,body.dark-mode .tu-table td{border-bottom:1px solid #29323d;color:#cccccc}
+	body.dark-mode .tu-table th{color:#9a9da3;background:#1a1a1a}
+	body.dark-mode .tu-table tr.is-active td{background:#1a2b2f}
+	body.dark-mode .tu-note{color:#9a9da3}
+	body.dark-mode .tu-toast{background:#3c4f67}
+	body.dark-mode .tu-seo{border-top:1px solid #333333}
+	body.dark-mode .tu-svg-line{stroke:#394a60}
+	body.dark-mode .tu-svg-text{fill:#cccccc}
+	body.dark-mode .tu-svg-grid{stroke:#28323e}
+	body.dark-mode .tu [data-names="0"] .rw-num,body.dark-mode .tu [data-table="1"] .rw-num{color:#999da3}
+	body.dark-mode .tu [data-table="1"] .rw-head{color:#9a9aa2;border-bottom:2px solid #2b323c}
+	body.dark-mode .tu [data-table="1"] .rw-row{border-bottom:1px solid #27313f}
+	body.dark-mode .tu .tp-curlab{color:#9a9ea4}
+	body.dark-mode .tu .tp-biglab{color:#9a9ea4}
+	body.dark-mode .tu .tp-money .tp-sym{color:#9a9ea4}
+	body.dark-mode .tu .tp-bad{border-color:#d03e2f !important}
+	body.dark-mode .tu .tp-chip{border:2px solid #3a424d;background:#1a1a1a;color:#cccccc}
+	body.dark-mode .tu .tp-custom label{color:#9a9ea4}
+	body.dark-mode .tu .tp-stepper button{background:#1a1a1a}
+	body.dark-mode .tu .tp-tile{background:#1a1a1a;border:1px solid #28323e}
+	body.dark-mode .tu .tp-tlab{color:#9a9ea4}
+	body.dark-mode .tu .tp-tval{color:#d1d6dc}
+	body.dark-mode .tu .tp-tsub{color:#a4a8b0}
+	body.dark-mode .tu .tp-msg{color:#a4a8b0}
+	body.dark-mode .tu .tp-light{color:#999da3}
+	body.dark-mode .tu .tp-psum{color:#d1d6dc}
+	body.dark-mode .tu .tp-x{border:1px solid #3a424d;background:#1a1a1a;color:#aaaaaa}
+	body.dark-mode .tu .tp-x:hover{border-color:#d03e2f;color:#e1837a}
+	body.dark-mode .tu .tp-srow{border:1px solid #29323d}
+	body.dark-mode .tu .tp-who{border:1px solid #3a424d;background:#1a1a1a;color:#aaaaaa}
+	body.dark-mode .tu .tp-who[aria-pressed="true"]{background:#1a2b2f;color:#7dcade}
+	body.dark-mode .tu .tp-qt tbody tr:hover td,body.dark-mode .tu .tp-qt tbody tr:focus td{background:#141d1f}
+	body.dark-mode .tu #tp-utab tfoot td{border-top:2px solid #3a424d}
+	body.dark-mode .tu .tp-country{background:#1a2b2f}
+	body.dark-mode .tu .tp-country p{color:#d1d6dc}
+	body.dark-mode .tu .tp-prow{border-bottom:1px solid #29323d}
+	/* TOOL-DARK:END */
+</style>
+        <meta property="fb:app_id" content="" />
+        <meta name="author" content="Math Easy Solutions Staff">
+        <meta property="og:type" content="website" />
+        <meta property="og:url" content="https://mes.fm/tip-calculator" />            <meta property="og:title" content="MES Tip Calculator | Math Easy Solutions" />        <meta property="og:image" content="https://mes.fm/tip-calculator/img/logo-big.png" />
+        <meta property="og:description" content="Free tip calculator and bill splitter: tip by percent or amount, before or after tax, split evenly or by what each person ordered, round up to whole amounts, and tipping customs for the US, Canada, UK, Europe, Australia and more." />
+
+        <meta name="description" content="Free tip calculator and bill splitter: tip by percent or amount, before or after tax, split evenly or by what each person ordered, round up to whole amounts, and tipping customs for the US, Canada, UK, Europe, Australia and more.">            <meta name="twitter:card" content="summary">        <meta name="twitter:site" content="@MathEasySolns">
+        <meta name="twitter:title" content="MES Tip Calculator">
+        <meta name="twitter:description" content="Free tip calculator and bill splitter: tip by percent or amount, before or after tax, split evenly or by what each person ordered, round up to whole amounts, and tipping customs for the US, Canada, UK, Europe, Australia and more.">
+        <meta name="twitter:image" content="https://mes.fm/tip-calculator/img/logo-big.png">
+        <meta name="twitter:image:alt" content="MES Tip Calculator">
+        <script type="application/ld+json">
+        {"@context": "https://schema.org", "@type": "WebApplication", "name": "MES Tip Calculator", "url": "https://mes.fm/tip-calculator", "applicationCategory": "UtilitiesApplication", "operatingSystem": "Any", "offers": {"@type": "Offer", "price": "0", "priceCurrency": "USD"}, "description": "Free tip calculator and bill splitter: tip by percent or amount, before or after tax, split evenly or by what each person ordered, round up to whole amounts, and tipping customs for the US, Canada, UK, Europe, Australia and more."}
+        </script>            <!-- Google Tag Manager -->
+            <script>(function(w,d,s,l,i){w[l]=w[l]||[];w[l].push({'gtm.start':
+            new Date().getTime(),event:'gtm.js'});var f=d.getElementsByTagName(s)[0],
+            j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
+            'https://www.googletagmanager.com/gtm.js?id='+i+dl;f.parentNode.insertBefore(j,f);
+            })(window,document,'script','dataLayer','GTM-PL6QNQR');</script>
+            <!-- End Google Tag Manager -->
+<!-- Legacy Universal Analytics removed: every UA property stopped processing data in 2023; pageviews are tracked via main_js/track.js (+ GTM) -->
+    <!-- ADSENSE-DEFERRED: load adsbygoogle.js (auto ads + consent) on the first
+     real interaction (scroll / pointer / key), or after a 15s idle fallback,
+     so its ad + consent JS (doubleclick ads ~100KB, Funding Choices ~70KB,
+     sodar, osd) never runs during the page-load / Lighthouse trace window. -->
+    <script>
+    (function () {
+      var EVT = ['scroll', 'pointerdown', 'keydown', 'touchstart'];
+      var done = false;
+      function go() {
+        if (done) return;
+        done = true;
+        EVT.forEach(function (e) { removeEventListener(e, go); });
+        var s = document.createElement('script');
+        s.async = true;
+        s.crossOrigin = 'anonymous';
+        s.src = 'https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-1461238060884369';
+        document.head.appendChild(s);
+      }
+      EVT.forEach(function (e) { addEventListener(e, go, { passive: true }); });
+      setTimeout(go, 15000);
+    })();
+    </script>
+    <script>
+/* autoads-header-gap-guard: guards two gaps against Google Auto ads (in-page ad blocks,
+   class `google-auto-placed`), plus Google's separate "annotation" text-ad
+   formats, which are a different Auto ads mechanism than the in-page blocks
+   above. 1) Logo header <-> nav bar: on desktop, any in-page ad caught here
+   is relocated to just below the whole header+nav+logo-badge complex
+   (before .outer-page-content) and allowed to show if it fills; on mobile
+   (max-width: 768px, this repo's existing responsive breakpoint) it is
+   hidden outright instead -- no ad shows below the nav bar on mobile at
+   all. 2) Comments toggle (#comments-button) <-> comments widget
+   (#comments-box): on every device, any in-page ad caught here is relocated
+   to just after the comments box and allowed to show if it fills.
+   3) Annotation/related-entry chips -- any element carrying the
+   `google-anno-skip` class, which covers every chip variant Google serves
+   (`google-anno-sc` pill/badge tooltips, `goog-rentry` related-entry
+   tooltips, `google-anno-sa-qtx` tooltip text) -- and 4) in-text link ads
+   (`<a class="google-anno">` wrapping a `<span class="google-anno-t">`
+   around an ordinary word, e.g. turning "Calculate" into a
+   double-underlined, clickable ad): both are only guarded inside #header,
+   #footer, the top .info-bar-container nav, or the .side-bar "Site
+   Navigation" widget -- chips are hidden outright there, and in-text links
+   are unwrapped back to plain text there, so the word stays readable
+   without the ad behavior. Elsewhere in the actual page content both are
+   left alone on purpose. Unlike the in-page ad blocks, Google serves many
+   of these chips/links per page load, so removing the guarded-zone ones
+   doesn't cost the page its one shot at an ad the way deleting the in-page
+   block did -- no relocate/poll needed, just hide/unwrap on sight.
+   In the first two cases Google's own placeholder-collapse doesn't reliably
+   fire once we've moved the node, so we poll it: if no real ad iframe shows
+   up within ~2s, we force the reserved space to 0 ourselves, so an unfilled
+   slot never leaves a blank gap. */
+(function () {
+    function isMobile() {
+        return window.matchMedia('(max-width: 768px)').matches;
+    }
+    function isBetween(before, after, el) {
+        if (!before || !after) return false;
+        return !!(before.compareDocumentPosition(el) & Node.DOCUMENT_POSITION_FOLLOWING) &&
+               !!(after.compareDocumentPosition(el) & Node.DOCUMENT_POSITION_PRECEDING);
+    }
+    function collapseIfUnfilled(node) {
+        var attempts = 0;
+        var poll = setInterval(function () {
+            attempts++;
+            if (!node.isConnected) {
+                clearInterval(poll);
+                return;
+            }
+            if (node.querySelector('iframe')) {
+                clearInterval(poll);
+                return;
+            }
+            if (attempts >= 10) {
+                node.style.setProperty('display', 'none', 'important');
+                clearInterval(poll);
+            }
+        }, 200);
+    }
+    function handleHeaderNavZone(node) {
+        var header = document.getElementById('header');
+        var nav = document.querySelector('.info-bar-container');
+        if (!isBetween(header, nav, node)) return false;
+        if (isMobile()) {
+            node.style.setProperty('display', 'none', 'important');
+            return true;
+        }
+        var target = document.querySelector('.outer-page-content');
+        if (target) {
+            target.before(node);
+        } else if (nav) {
+            nav.after(node);
+        }
+        collapseIfUnfilled(node);
+        return true;
+    }
+    function handleCommentsZone(node) {
+        var button = document.getElementById('comments-button');
+        var box = document.getElementById('comments-box');
+        if (!isBetween(button, box, node)) return false;
+        box.after(node);
+        collapseIfUnfilled(node);
+        return true;
+    }
+    function inAnnotationGuardedZone(el) {
+        return !!(el.closest('#header') || el.closest('#footer') || el.closest('.side-bar') || el.closest('.info-bar-container'));
+    }
+    function handleAnnotationChip(node) {
+        if (node.classList && node.classList.contains('google-anno-skip') && inAnnotationGuardedZone(node)) {
+            node.style.setProperty('display', 'none', 'important');
+            return true;
+        }
+        return false;
+    }
+    function handleInTextLinkAd(node) {
+        if (node.classList && node.classList.contains('google-anno') && node.parentNode && inAnnotationGuardedZone(node)) {
+            node.replaceWith(document.createTextNode(node.textContent));
+            return true;
+        }
+        return false;
+    }
+    function handle(node) {
+        if (node.nodeType !== 1) return;
+        if (node.classList && node.classList.contains('google-auto-placed')) {
+            if (handleHeaderNavZone(node)) return;
+            handleCommentsZone(node);
+            return;
+        }
+        if (handleAnnotationChip(node)) return;
+        if (handleInTextLinkAd(node)) return;
+        if (node.querySelectorAll) {
+            node.querySelectorAll('.google-auto-placed').forEach(function (n) {
+                if (handleHeaderNavZone(n)) return;
+                handleCommentsZone(n);
+            });
+            node.querySelectorAll('.google-anno-skip').forEach(function (n) {
+                handleAnnotationChip(n);
+            });
+            node.querySelectorAll('.google-anno').forEach(function (n) {
+                handleInTextLinkAd(n);
+            });
+        }
+    }
+    new MutationObserver(function (mutations) {
+        mutations.forEach(function (m) {
+            m.addedNodes.forEach(handle);
+        });
+    }).observe(document.documentElement, {childList: true, subtree: true});
+})();
+</script>
+    <!-- MES-ASIDE-HEAD --><link rel="stylesheet" href="/main_js/aside.css?v=2"><script>try{if(localStorage.getItem('asideSide')==='left')document.documentElement.classList.add('aside-left')}catch(e){}try{if(localStorage.getItem('pageWide')==='1')document.documentElement.classList.add('page-wide')}catch(e){}try{if(localStorage.getItem('pageMode')==='theatre')document.documentElement.classList.add('page-theatre')}catch(e){}try{if(localStorage.getItem('asideHidden')==='1')document.documentElement.classList.add('aside-hidden')}catch(e){}</script><!-- /MES-ASIDE-HEAD --></head>
+    <body>            <!-- Google Tag Manager (noscript) -->
+            <noscript><iframe src="https://www.googletagmanager.com/ns.html?id=GTM-PL6QNQR"
+            height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
+            <!-- End Google Tag Manager (noscript) -->        <div id="compact-nav" aria-hidden="true" style="display:none">
+  <a href="/tip-calculator" tabindex="-1"><img class="compact-nav-logo" alt="" width="32" height="32" src="/tip-calculator/img/logo.png?v=2"></a>
+  <a class="compact-nav-title" href="/tip-calculator" tabindex="-1">Tip Calculator</a>
+  <ul class="compact-nav-links">
+    <li><a href="/math" tabindex="-1">Math Tutorials</a></li>
+    <li><a href="/calculators" tabindex="-1">Calculators</a></li>
+    <li><a href="/tools" tabindex="-1">Tools</a></li>
+    <li><a href="/mobile-apps" tabindex="-1">Mobile Apps</a></li>
+    <li><a href="/puzzles" tabindex="-1">Puzzles</a></li>
+    <li><a href="/memes" tabindex="-1">Memes</a></li>
+    <li><a href="/" tabindex="-1"><b>MES.fm</b></a></li>
+  </ul>
+</div>
+<div id="outer-container" class="outer-container has-aside">                <div class = "inner-container">                        <div id="header" class="header" role="banner">                                <a class="logo-image-container" href='/tip-calculator'><img height="88" width="88" id="logo" class="logo lazyload" alt="MES Tip Calculator logo" data-src="/tip-calculator/img/logo.png?v=2"></a>
+                            <div class="logo-text-container">
+                                <a class="calculator-title-link" href='/tip-calculator'>
+                                    <p class="calculator-title">MES Tip Calculator</p>
+                                </a>
+                                <p class="tag-line">Tip, tax and who pays what.</p>                            </div>
+
+                            <div class="social-container"><ul class="social">	<li class="social__logo social__hive"><a class="social__link" href="https://peakd.com/@mes" target="_blank"></a></li></a></li>
+    <li class="social__logo social__telegram"><a class="social__link" href="https://t.me/meslinks" target="_blank"></a></li></a></li></ul><a class="info-bar__logo-container" href="https://mes.fm/" title="Math Easy Solutions"><img id="mes-logo" class="info-bar__logo lazyload" alt="math easy solutions logo" height="29" width="126" data-src="https://mes.fm/main_img/mes-logo-small.png"></a>                            </div>                                                        </div>
+                        <div class="info-bar-container" role="navigation" aria-label="Primary">
+                            <ul id="info-bar" class="info-bar shadow">
+                                <li class="info-bar__item"><a class="info-bar__item__text" href='/tip-calculator'>Home</a></li>                                    <li class="info-bar__item"><a class="info-bar__item__text" href='https://mes.fm/calculators'>Calculators</a></li><li class="info-bar__item"><a class="info-bar__item__text" href='https://mes.fm/tools'>Tools</a></li>                                    <li class="info-bar__item info-bar__item--utility" style="display:none !important;"><a class="info-bar__item__text" href='/contact'>Contact Us</a></li>
+                                    <li class="info-bar__item info-bar__item--utility" style="display:none !important;"><a class="info-bar__item__text" target='_blank' href='https://mes.fm/donate.html'>Donate</a></li><li class="info-bar__item info-bar__item--utility" style="display:none !important;"><a class="info-bar__item__text" target='_blank' rel="nofollow" href='https://matheasy.substack.com/'>Subscribe</a></li>
+                                    <li class="info-bar__item info-bar__item--mes"><a class="info-bar__item__text" href="/" style="font-weight:bold;">MES.fm</a></li></ul>
+                        </div>
+                                                        <!-- (Responsive) Horizontal -->
+                                                        <div class="outer-page-content">
+                            <div class="page-content" role="main">                                    <div class="color-box"></div>
+                                    <h1 class="page-title">Tip Calculator and Bill Splitter</h1>                                        <p class="page-description">Free tip calculator and bill splitter: tip by percent or amount, before or after tax, split evenly or by what each person ordered, round up to whole amounts, and tipping customs for the US, Canada, UK, Europe, Australia and more.</p>                                    	<div id="main-content" data-tool data-text-scale>
+	<div class="tu" id="tp">
+		<div class="tp-top">
+			<div class="tu-seg tp-mode" id="tp-mode" role="group" aria-label="How to split"><button type="button" data-m="even" aria-pressed="true">Split evenly</button><button type="button" data-m="uneven" aria-pressed="false">Uneven split</button></div>
+			<label class="tp-curlab" for="tp-cur">Currency <select id="tp-cur" class="tu-select"></select></label>
+		</div>
+
+		<!-- even split: the bill -->
+		<div class="tu-card tp-card" data-only="even">
+			<label class="tp-biglab" for="tp-bill">Bill amount</label>
+			<div class="tp-money"><span class="tp-sym" aria-hidden="true"></span><input id="tp-bill" class="tu-input tp-billin" type="text" inputmode="decimal" autocomplete="off" placeholder="0.00" aria-describedby="tp-billhint"></div>
+			<p class="tu-note" id="tp-billhint" style="margin:0.4em 0 0;">The total on the receipt. Type 45.60 or 45,60.</p>
+		</div>
+
+		<!-- uneven split: who had what -->
+		<div class="tu-card tp-card" data-only="uneven" hidden>
+			<h3 style="margin-top:0;">Who had what</h3>
+			<p class="tu-note" style="margin-top:0;">Menu prices before tax. Several items? Separate them with <b>+</b>, e.g. <i>12.50 + 4 + 3.25</i>.</p>
+			<div id="tp-people"></div>
+			<button type="button" class="tu-btn tp-add" id="tp-addp">+ Add a person</button>
+			<h3>Shared items <span class="tp-light">(optional)</span></h3>
+			<p class="tu-note" style="margin-top:0;">A pizza, a bottle of wine, appetizers: split equally between the people you tick.</p>
+			<div id="tp-shared"></div>
+			<button type="button" class="tu-btn tp-add" id="tp-adds">+ Add a shared item</button>
+			<h3>Tax</h3>
+			<div class="tu-row">
+				<div class="tu-seg" id="tp-utaxm" role="group" aria-label="Tax as"><button type="button" data-v="pct" aria-pressed="true">%</button><button type="button" data-v="amt" aria-pressed="false">Amount</button></div>
+				<div class="tu-field tu-field--sm" style="flex-basis:9em;"><label for="tp-utax" id="tp-utaxlab">Tax rate</label><input id="tp-utax" class="tu-input tp-mid" type="text" inputmode="decimal" autocomplete="off" placeholder="0"></div>
+			</div>
+		</div>
+
+		<!-- tip -->
+		<div class="tu-card tp-card">
+			<div class="tp-head"><span class="tp-biglab" id="tp-tiplab">Tip</span>
+				<div class="tu-seg" id="tp-tipm" role="group" aria-label="Tip as"><button type="button" data-v="pct" aria-pressed="true">Percent</button><button type="button" data-v="amt" aria-pressed="false">Amount</button></div></div>
+			<div id="tp-pctbox">
+				<div class="tp-chips" id="tp-chips" role="group" aria-labelledby="tp-tiplab"></div>
+				<div class="tp-custom"><label for="tp-pct">Custom</label><div class="tu-suffix"><input id="tp-pct" class="tu-input tp-mid" type="text" inputmode="decimal" autocomplete="off" placeholder="e.g. 17.5"><span>%</span></div></div>
+			</div>
+			<div id="tp-amtbox" hidden>
+				<label class="tu-label" for="tp-tipamt">Tip amount</label>
+				<div class="tp-money tp-money--mid"><span class="tp-sym" aria-hidden="true"></span><input id="tp-tipamt" class="tu-input tp-mid" type="text" inputmode="decimal" autocomplete="off" placeholder="0.00"></div>
+			</div>
+			<div data-only="even">
+				<label class="tp-check"><input type="checkbox" id="tp-pre"> Tip on the amount before tax</label>
+				<div class="tu-row" id="tp-taxrow" hidden>
+					<div class="tu-seg" id="tp-taxm" role="group" aria-label="Tax as"><button type="button" data-v="pct" aria-pressed="true">%</button><button type="button" data-v="amt" aria-pressed="false">Amount</button></div>
+					<div class="tu-field tu-field--sm" style="flex-basis:9em;"><label for="tp-tax" id="tp-taxlab">Tax rate</label><input id="tp-tax" class="tu-input tp-mid" type="text" inputmode="decimal" autocomplete="off" placeholder="e.g. 13"></div>
+					<p class="tu-note" id="tp-taxnote" style="flex:1 1 100%;margin:0;">The rate is worked out from the total: 13% tax inside $113.00 is $13.00.</p>
+				</div>
+			</div>
+			<div data-only="uneven" hidden>
+				<label class="tp-check"><input type="checkbox" id="tp-tipontax"> Tip on the amount after tax (usual: before tax)</label>
+			</div>
+		</div>
+
+		<!-- people + rounding -->
+		<div class="tu-card tp-card">
+			<div data-only="even">
+				<span class="tp-biglab" id="tp-plab">Number of people</span>
+				<div class="tp-stepper" role="group" aria-labelledby="tp-plab">
+					<button type="button" id="tp-pminus" aria-label="One person fewer">&minus;</button>
+					<input id="tp-people-n" class="tu-input" type="text" inputmode="numeric" autocomplete="off" aria-label="Number of people" value="1">
+					<button type="button" id="tp-pplus" aria-label="One person more">+</button>
+				</div>
+			</div>
+			<div class="tp-roundbox">
+				<label class="tu-label" for="tp-round">Rounding</label>
+				<select id="tp-round" class="tu-select"></select>
+				<div class="tp-steps" id="tp-stepbox" hidden><span class="tu-label" id="tp-steplab">Up to the next</span><div class="tu-seg" id="tp-step" role="group" aria-labelledby="tp-steplab"></div></div>
+			</div>
+		</div>
+
+		<!-- results -->
+		<div id="tp-out" aria-live="polite">
+			<div class="tp-results" id="tp-res"></div>
+			<p class="tp-msg" id="tp-msg"></p>
+			<div class="tu-card" id="tp-utable" data-only="uneven" hidden><div class="tu-table-wrap"><table class="tu-table" id="tp-utab"></table></div></div>
+		</div>
+		<div class="tp-btns">
+			<button type="button" class="tu-btn tu-btn--primary" id="tp-link">Copy link</button>
+			<button type="button" class="tu-btn tu-btn--ghost" id="tp-copy">Copy summary</button>
+			<button type="button" class="tu-btn tu-btn--ghost" id="tp-reset">Start over</button>
+		</div>
+
+		<div data-only="even">
+			<h2>Tips from 10% to 25% on this bill</h2>
+			<div class="tu-card"><p class="tu-note" style="margin-top:0;">Tap a row to use it.</p><div class="tu-table-wrap"><table class="tu-table tp-qt" id="tp-qt"></table></div></div>
+		</div>
+
+		<h2>How much to tip around the world</h2>
+		<div class="tu-card">
+			<label class="tu-label" for="tp-country">Where are you?</label>
+			<select id="tp-country" class="tu-select" style="max-width:24em;"></select>
+			<div id="tp-custom" class="tp-country" aria-live="polite"></div>
+			<details class="tp-all"><summary>All countries at a glance</summary><div class="tu-table-wrap"><table class="tu-table tp-wrap" id="tp-ctab"></table></div></details>
+			<p class="tu-note" style="margin-bottom:0;">General guidance only: customs differ between cities, venues and kinds of service, and they change over time. When a menu or receipt says service is included, you usually do not need to add more.</p>
+		</div>
+
+		<h2>Tipping by kind of service</h2>
+		<div class="tu-card"><div class="tu-table-wrap"><table class="tu-table tp-wrap" id="tp-stab"></table></div></div>
+
+		<div class="tu-seo">
+			<h2>How this tip calculator works</h2>
+			<p>Type the bill, pick a tip percentage and the number of people. You get the tip, the total and what each person pays. Everything is worked out in whole cents, so the shares always add up to the exact total.</p>
+			<ul>
+				<li><b>Tip</b> = bill &times; tip % (rounded to the nearest cent). Example: 18% of $45.67 is $8.22, so the total is $53.89.</li>
+				<li><b>Tip before tax:</b> tick &ldquo;Tip on the amount before tax&rdquo; and enter the tax as an amount or a rate. The tip is then worked out on the bill minus the tax. With 13% tax, a $113.00 bill has $13.00 of tax inside it, so an 18% tip is $18.00, not $20.34.</li>
+				<li><b>Splitting:</b> the total is divided by the number of people. When it does not divide evenly (for example $115.00 between 3 people is $38.333...), the leftover cents go one each to the first people, so the shares are $38.34, $38.33 and $38.33. The page says when this happens.</li>
+				<li><b>Rounding:</b> round the total up to a whole amount, or round each person's share up to a whole amount, 0.50 or 0.25 so nobody needs coins. The extra goes to the tip, and the page shows the tip percentage you really end up giving.</li>
+			</ul>
+			<h3>Uneven split: paying for what you had</h3>
+			<p>Choose <b>Uneven split</b>, add each person and what they ordered, and add any shared dishes with the people who shared them. Tax and tip are then shared in proportion to what each person had, so someone who ordered a $40 steak pays more of the tip than someone who had a $12 salad. Shared items and the tax and tip are split with exact cents: any leftover cent goes to the person whose share was closest to the next cent.</p>
+			<h3>Should I tip on the amount before or after tax?</h3>
+			<p>Etiquette guides in the US and Canada usually say the tip is based on the price of the food and drink before tax, but many people simply tip on the total and card machines often suggest percentages of the total after tax. Both are common; the difference is small (on a $100 meal with 13% tax, 18% before tax is $18.00 and after tax is $20.34).</p>
+			<h3>Questions</h3>
+			<dl>
+				<dt>How much should I tip?</dt><dd>In the US 18-22% at a sit-down restaurant is usual today, and 15-20% in Canada. In the UK and Ireland 10-12.5% if no service charge is on the bill. In much of Europe, Australia, New Zealand and Asia, tipping is optional and rounding up is plenty; in Japan and South Korea it is not expected. See the country guide above.</dd>
+				<dt>What is an automatic gratuity or service charge?</dt><dd>Some restaurants add a fixed service charge (often 15-20% in the US for large groups, 12.5% in the UK). If it is on the bill, it is the tip: you do not need to add another one unless you want to.</dd>
+				<dt>How do I split a bill when someone did not drink?</dt><dd>Use the Uneven split: put the drinks in a shared item and tick only the people who drank.</dd>
+				<dt>Why does one person pay one cent more?</dt><dd>A total in cents cannot always be divided evenly. Rather than lose or invent a cent, the calculator gives the leftover cents to the first people in the list, and says so. Round each share up if you prefer equal amounts.</dd>
+				<dt>Can I use another currency?</dt><dd>Yes. Pick it from the currency list (it starts with the one for your browser's region). For currencies without coins such as the yen, dong or won, amounts are whole units and the rounding steps are bigger.</dd>
+				<dt>Is my data private?</dt><dd>Yes. Everything is worked out in your browser and saved only on this device. A link you copy contains just the bill, tip and number of people.</dd>
+			</dl>
+			<p>Related: <a href="/percentagecalculator">Percentage Calculator</a> &middot; <a href="/vatcalculator">VAT Calculator</a> &middot; <a href="/calculator">Calculator</a></p>
+		</div>
+	</div>
+	</div>                                    <!-- PC (Responsive/Rectangle) Matched Content -->
+                                                                        <div id="comments-button" class="hide-div-button button">Comments</div>
+                                    <div id="comments-box" class="hide">
+                                        <div id="fastcomments-widget"></div>                                    </div>
+<!-- MES-BOTTOM-AD -->
+<div class="mes-bottom-ad" data-ad-slot="1532113018" data-ad-mode="rect" style="clear:both;text-align:center;margin:1.5em auto 1.75em;min-height:330px;"><span style="display:block;font-size:11px;line-height:16px;color:#595959;margin-bottom:4px;">Advertisement</span><div class="mes-bottom-ad__slot" style="width:100%;min-height:310px;margin:0 auto;"></div></div>
+<!-- /MES-BOTTOM-AD -->
+                            </div>
+                        <!-- MES-ASIDE -->
+<aside id="mes-aside" class="mes-aside" data-aside-family="tools" aria-label="More from MES Tools"><div class="mes-aside__sticky"><div class="mes-aside__ad" data-ad-slot="8429975111"></div><div class="mes-aside__head"><h2 class="mes-aside__title-h">More like this</h2><button type="button" class="mes-aside__flip" aria-label="Move this sidebar to the other side" title="Move sidebar to the other side">&#8644;</button></div><ul class="mes-aside__list"><li><a class="mes-aside__card" href="/age-calculator"><img class="mes-aside__img mes-aside__img--logo" src="/age-calculator/img/logo.png" width="56" height="56" loading="lazy" alt=""><span class="mes-aside__text"><span class="mes-aside__name">Age Calculator: Exact Age in Years, Months and Days</span><span class="mes-aside__tag">Calculator</span></span></a></li><li><a class="mes-aside__card" href="/fluid-simulator"><img class="mes-aside__img mes-aside__img--logo" src="/fluid-simulator/img/logo.png" width="56" height="56" loading="lazy" alt=""><span class="mes-aside__text"><span class="mes-aside__name">Fluid Simulator: Navier-Stokes in 2D</span><span class="mes-aside__tag">Tool</span></span></a></li><li><a class="mes-aside__card" href="/tools"><img class="mes-aside__img" src="/img/tools-icon.jpg" width="56" height="56" loading="lazy" alt=""><span class="mes-aside__text"><span class="mes-aside__name">All MES Tools</span><span class="mes-aside__tag">Gallery</span></span></a></li><li><a class="mes-aside__card" href="/gpacalculator"><img class="mes-aside__img mes-aside__img--logo" src="/gpacalculator/img/logo.png" width="56" height="56" loading="lazy" alt=""><span class="mes-aside__text"><span class="mes-aside__name">GPA Calculator</span><span class="mes-aside__tag">Calculator</span></span></a></li></ul></div></aside>
+<!-- /MES-ASIDE -->
+</div>
+
+                        <!-- side bar -->                            <div class="side-bar">                                    <div class="navbar-container shadow" role="navigation" aria-label="Site menu">
+                                        <div class="button button--navbar" id="navbar-button" style="position:relative;">Site Navigation<span class="dropdown-symbol dropdown-symbol--dark" style="position:absolute;right:0.75em;top:50%;transform:translateY(-50%);margin-left:0;">&#9660;</span></div>    <ul id="navbar" class="navbar">
+    <li class="navbar__item navbar__item--social"><div class="social-container social-container--navbar"><ul class="social">	<li class="social__logo social__hive"><a class="social__link" href="https://peakd.com/@mes" target="_blank"></a></li>
+    <li class="social__logo social__telegram"><a class="social__link" href="https://t.me/meslinks" target="_blank"></a></li></ul><a class="info-bar__logo-container" href="https://mes.fm/" title="Math Easy Solutions"><img id="mes-logo" class="info-bar__logo lazyload" alt="math easy solutions logo" height="29" width="126" data-src="https://mes.fm/main_img/mes-logo-small.png"></a></div></li>
+        <li class="navbar__item"><a class="navbar__link navbar__link--first" href="/tip-calculator">Home</a></li>    <li class="navbar__item"><a class="navbar__link" href="/calculators">Calculators</a></li>
+    <li class="navbar__item"><a class="navbar__link" href="/tools">Tools</a></li>
+    <li class="navbar__item"><a class="navbar__link" href="/browser">Browser Extensions</a></li>
+    <!-- MOBILE-APPS-DROPDOWN-REMOVED: every linked app was a dead App Store / Play Store listing (lapsed developer account) -- add an entry back here for each app once it is relaunched -->
+    <li class="navbar__item"><a target="_blank" class="navbar__link" target='_blank' href="https://teespring.com/stores/mes-store">Store</a></li><li class="navbar__item"><a class="navbar__link" target="_blank" rel="nofollow" href="https://matheasy.substack.com/">Subscribe</a></li></ul>
+                                    </div>                                        <!-- (Responsive) Vertical -->
+
+                            </div>                            <!-- (Responsive) Horizontal -->
+                                            </div><div id="footer" class="footer" role="contentinfo">
+            <div class="footer__item-container">
+            <div class="footer__item">
+                <a class="footer__text footer__text--title" href="https://mes.fm/calculators.html">Calculators</a>
+            </div>
+
+            <div class="footer__item">
+                <a class="footer__text footer__text--title" href="https://mes.fm/tools">Tools</a>
+            </div>
+
+            <div class="footer__item footer__item--extra-padding">
+                <a class="footer__text footer__text--title" href="https://mes.fm/mobile-apps">Mobile Apps</a>
+            </div>
+
+            <div class="footer__item">
+                <a class="footer__text footer__text--title" href="https://mes.fm">MES.fm</a>
+            </div>
+        </div>
+        <a class="footer__text" href="/contact">Contact Us</a><span class="footer__separator"> | </span>
+        <a class="footer__text" href="/privacy-policy">Privacy Policy</a><span class="footer__separator"> | </span>
+        <a class="footer__text" target='_blank' href="https://mes.fm/donate.html">Donate</a><span class="footer__separator"> | </span><a class="footer__text" target='_blank' rel="nofollow" href="https://matheasy.substack.com/">Subscribe</a>
+        <div class="footer__text--extra-info"><span class="footer__text footer__text--copyright">Copyright &copy; <span id="copyright-year">2013</span>&nbsp;Math Easy Solutions</span></div>
+    </div>
+
+
+        </div>
+
+        <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.11.3/jquery.min.js"></script>
+        <script>
+        var MES_Vars = {
+            mobile:false,
+            hide_search:false,
+            current_tab:0
+        }        </script><!-- FASTCOMMENTS-LAZY: widget init moved to main_js/main.js -- it pulls embed.min.js only when #fastcomments-widget nears the viewport or on the first Comments-toggle click, so it no longer blocks first render -->                <script src="https://mes.fm/main_js/lazysizes.min.js?v=1.0.3" async></script>
+	<script src="/tip-calculator/js/tip-calculator.js?v=1" defer></script>
+            <script src="https://mes.fm/main_js/main.js?v=1.0.5"></script>    <!-- PAGEVIEW-TRACKING-INSERTED --><script src="https://mes.fm/main_js/track.js" defer></script><script>document.getElementById('copyright-year').textContent = new Date().getFullYear();</script><script src="/main_js/info-bar-fit.js" defer></script><script>
+  // Floating compact header bar (see #compact-nav CSS): appears once the
+  // header + nav bar have scrolled off the top; nav links that don't fit
+  // are dropped from the right, least important first, rather than
+  // wrapping. The last link is kept longest, so drop from the one before
+  // it first. Visibility is driven from here via the inline style
+  // attribute (not just a CSS class) so the bar stays hidden even if the
+  // stylesheet rules for it get stripped -- see the CSS comment above
+  // #compact-nav. Identical across every page that has this bar.
+  (function () {
+    var bar = document.getElementById('compact-nav');
+    var nav = document.querySelector('.info-bar-container');
+    var links = bar && bar.querySelector('.compact-nav-links');
+    if (!bar || !nav || !links) return;
+    var items = Array.prototype.slice.call(links.children);
+    var stuck = false, ticking = false, hideTimer;
+
+    function fit() {
+      items.forEach(function (li) { li.style.display = ''; });
+      var order = items.slice(0, -1).reverse();
+      for (var i = 0; i < order.length && links.scrollWidth > links.clientWidth; i++) {
+        order[i].style.display = 'none';
+      }
+      if (links.scrollWidth > links.clientWidth) items[items.length - 1].style.display = 'none';
+    }
+
+    function update() {
+      ticking = false;
+      var now = nav.getBoundingClientRect().bottom < 0;
+      if (now === stuck) return;
+      stuck = now;
+      bar.setAttribute('aria-hidden', stuck ? 'false' : 'true');
+      Array.prototype.forEach.call(bar.querySelectorAll('a'), function (a) {
+        a.tabIndex = stuck ? 0 : -1;
+      });
+      if (stuck) {
+        clearTimeout(hideTimer);
+        bar.style.display = 'flex';
+        fit();
+        requestAnimationFrame(function () {
+          requestAnimationFrame(function () { document.body.classList.add('is-stuck'); });
+        });
+      } else {
+        document.body.classList.remove('is-stuck');
+        hideTimer = setTimeout(function () { bar.style.display = 'none'; }, 220);
+      }
+    }
+
+    window.addEventListener('scroll', function () {
+      if (!ticking) { ticking = true; requestAnimationFrame(update); }
+    }, { passive: true });
+    window.addEventListener('resize', function () { if (stuck) fit(); });
+    update();
+  })();
+</script><script src="/main_js/display-controls.js?v=1.7" defer></script><!-- MES-ASIDE-JS --><script src="/main_js/aside.js?v=2" defer></script><!-- /MES-ASIDE-JS --><!-- MES-BOTTOM-AD-JS --><script src="/main_js/bottom-ad.js?v=1" defer></script><!-- /MES-BOTTOM-AD-JS --></body>
+
+</html>

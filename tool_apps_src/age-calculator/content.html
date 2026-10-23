@@ -1,0 +1,164 @@
+	<div class="tu" id="ag">
+		<div class="tu-card" id="ag-setup">
+			<div class="ag-dates">
+				<div class="ag-date">
+					<label class="tu-label" for="ag-dob">Date of birth</label>
+					<div class="ag-inrow">
+						<input id="ag-dob" class="tu-input tu-input--big" type="text" autocomplete="bday" spellcheck="false" enterkeyhint="done" placeholder="e.g. March 15, 1990" aria-describedby="ag-dob-out">
+						<span class="ag-pick"><button type="button" class="tu-btn tu-btn--ghost" tabindex="-1" aria-hidden="true">&#128197;</button><input type="date" id="ag-dob-pick" aria-label="Pick the date of birth from a calendar"></span>
+					</div>
+					<div class="ag-out" id="ag-dob-out" aria-live="polite"></div>
+				</div>
+				<div class="ag-date">
+					<label class="tu-label" for="ag-on">Age on</label>
+					<div class="ag-inrow">
+						<input id="ag-on" class="tu-input tu-input--big" type="text" spellcheck="false" enterkeyhint="done" placeholder="today" aria-describedby="ag-on-out">
+						<span class="ag-pick"><button type="button" class="tu-btn tu-btn--ghost" tabindex="-1" aria-hidden="true">&#128197;</button><input type="date" id="ag-on-pick" aria-label="Pick the 'age on' date from a calendar"></span>
+					</div>
+					<div class="ag-out" id="ag-on-out" aria-live="polite"></div>
+					<button type="button" class="tu-chip" id="ag-today">Today</button>
+				</div>
+			</div>
+			<div class="tu-row ag-opts">
+				<div class="tu-field" style="flex:1 1 15em;"><label for="ag-order">Dates typed with numbers, like 03/04/1990</label>
+					<select id="ag-order" class="tu-select"><option value="mdy">Month first (US): 03/04 = March 4</option><option value="dmy">Day first: 03/04 = 3 April</option></select></div>
+			</div>
+			<details class="ag-more" id="ag-timebox">
+				<summary>Exact time of birth (optional, for exact hours, minutes and seconds)</summary>
+				<div class="tu-row" style="margin-top:0.7em;">
+					<div class="tu-field tu-field--sm" style="flex-basis:10em;"><label for="ag-time">Time of birth</label><input id="ag-time" class="tu-input" type="time"></div>
+					<div class="tu-field" style="flex:2 1 16em;"><label for="ag-tz">Time zone where you were born</label><select id="ag-tz" class="tu-select"></select></div>
+					<button type="button" class="tu-btn tu-btn--ghost" id="ag-time-clear">Clear time</button>
+				</div>
+			</details>
+			<div class="ag-rule" id="ag-rulebox" hidden>
+				<span class="tu-label" id="ag-rule-label">In months that are too short for this birthday, count it on</span>
+				<div class="tu-seg" id="ag-rule" role="group" aria-labelledby="ag-rule-label"><button type="button" data-r="end" aria-pressed="true">The last day (Feb 28)</button><button type="button" data-r="next" aria-pressed="false">The next day (Mar 1)</button></div>
+			</div>
+		</div>
+
+		<div class="tu-card tu-card--tint" id="ag-empty" style="margin-top:1em;"><span>Type a date of birth in almost any format, or try: </span><span class="tu-chips" id="ag-examples" style="display:inline-flex;margin:0;vertical-align:middle;"></span></div>
+
+		<div id="ag-res" hidden>
+			<div class="tu-card tu-card--tint ag-hero" aria-live="polite">
+				<div class="ag-hero__lead" id="ag-lead">You are</div>
+				<div class="ag-hero__big" id="ag-big"></div>
+				<div class="ag-hero__sub" id="ag-sub"></div>
+				<div class="ag-btns">
+					<button type="button" class="tu-btn tu-btn--primary" id="ag-copy">Copy result</button>
+					<button type="button" class="tu-btn tu-btn--ghost" id="ag-link">Copy link</button>
+					<button type="button" class="tu-btn tu-btn--ghost" id="ag-save">Save to my people</button>
+				</div>
+			</div>
+			<div class="tu-card ag-leap" id="ag-leap" hidden></div>
+
+			<h2>Your age in total</h2>
+			<div class="tu-stats" id="ag-totals"></div>
+			<label class="ag-check"><input type="checkbox" id="ag-live"> Keep the seconds ticking</label>
+			<p class="tu-note" id="ag-tnote"></p>
+
+			<h2>Birthdays</h2>
+			<div class="tu-stats" id="ag-bdays"></div>
+			<div class="ag-bar" id="ag-bar" role="img"><div class="ag-bar__fill" id="ag-barfill"></div></div>
+			<p class="tu-note" id="ag-barnote"></p>
+
+			<h2>The day you were born</h2>
+			<div class="tu-stats" id="ag-born"></div>
+			<div class="ag-links" id="ag-bornlinks"></div>
+
+			<h2>Milestones</h2>
+			<div class="tu-card">
+				<div class="tu-table-wrap"><table class="tu-table" id="ag-miles"><thead><tr><th>Milestone</th><th>Date</th><th>When</th></tr></thead><tbody></tbody></table></div>
+				<button type="button" class="tu-chip" id="ag-miles-all" aria-expanded="false">Show all milestones</button>
+			</div>
+
+			<h2>How old will I be in&hellip;</h2>
+			<div class="tu-card">
+				<div class="tu-row">
+					<div class="tu-field tu-field--sm" style="flex-basis:9em;"><label for="ag-year">Year</label><input id="ag-year" class="tu-input" type="text" inputmode="numeric" autocomplete="off" maxlength="4"></div>
+					<div class="ag-yearout" id="ag-yearout" aria-live="polite"></div>
+				</div>
+				<div class="tu-chips" id="ag-years"></div>
+			</div>
+
+			<h2>Your age in other units</h2>
+			<div class="tu-card">
+				<h3 style="margin-top:0;">Planet years</h3>
+				<div class="tu-table-wrap"><table class="tu-table" id="ag-planets"><thead><tr><th>Planet</th><th>One year is</th><th>Your age there</th><th>Next birthday there</th></tr></thead><tbody></tbody></table></div>
+				<h3>Dog years</h3>
+				<div id="ag-dog"></div>
+				<div class="tu-row" style="margin-top:0.6em;">
+					<div class="tu-field tu-field--sm" style="flex-basis:11em;"><label for="ag-dogage">Your dog's age</label><div class="tu-suffix"><input id="ag-dogage" class="tu-input" type="text" inputmode="decimal" autocomplete="off" placeholder="e.g. 4"><span>years</span></div></div>
+					<div class="ag-yearout" id="ag-dogout" aria-live="polite"></div>
+				</div>
+			</div>
+		</div>
+
+		<h2>Age difference between two people</h2>
+		<div class="tu-card" id="ag-diff">
+			<div class="ag-dates">
+				<div class="ag-date">
+					<label class="tu-label" for="ag-pa">First person</label>
+					<input id="ag-pa" class="tu-input" type="text" spellcheck="false" placeholder="Date of birth">
+					<div class="ag-out" id="ag-pa-out"></div>
+				</div>
+				<div class="ag-date">
+					<label class="tu-label" for="ag-pb">Second person</label>
+					<input id="ag-pb" class="tu-input" type="text" spellcheck="false" placeholder="Date of birth">
+					<div class="ag-out" id="ag-pb-out"></div>
+				</div>
+			</div>
+			<div class="ag-diffout" id="ag-diffout" aria-live="polite"></div>
+		</div>
+
+		<h2>My people</h2>
+		<div class="tu-card" id="ag-people">
+			<p class="tu-note" style="margin-top:0;">Keep the birthdays of your family and friends here. They are saved in this browser only and never leave it (and they are not in share links).</p>
+			<div class="tu-row">
+				<div class="tu-field" style="flex:1 1 11em;"><label for="ag-pname">Name</label><input id="ag-pname" class="tu-input" type="text" maxlength="40" autocomplete="off" placeholder="e.g. Grandma"></div>
+				<div class="tu-field" style="flex:1 1 12em;"><label for="ag-pdob">Date of birth</label><input id="ag-pdob" class="tu-input" type="text" spellcheck="false" placeholder="e.g. 12 June 1948"></div>
+				<button type="button" class="tu-btn tu-btn--primary" id="ag-padd">Add</button>
+			</div>
+			<div class="ag-out" id="ag-pdob-out"></div>
+			<div class="tu-table-wrap"><table class="tu-table ag-ptable" id="ag-ptable"><thead><tr><th>Name</th><th>Born</th><th>Age</th><th>Next birthday</th><th><span class="ag-sr">Actions</span></th></tr></thead><tbody></tbody></table></div>
+			<p class="tu-note" id="ag-pempty">Nobody saved yet.</p>
+		</div>
+
+		<div class="tu-toast" id="ag-toast" role="status"></div>
+
+		<section class="tu-seo">
+			<h2>How the Age Calculator works</h2>
+			<p>Type a date of birth and the calculator shows your exact age in years, months and days, your age in total months, weeks, days, hours, minutes and seconds, how long until your next birthday and which weekday it falls on, the weekday you were born, upcoming milestones and your age on other planets. Change <strong>Age on</strong> to see how old someone was (or will be) on any other date. Everything is worked out in your browser; nothing you type is sent anywhere.</p>
+			<h3>Dates in almost any format</h3>
+			<p>You can type <em>1990-03-15</em>, <em>March 15, 1990</em>, <em>15 March 1990</em>, <em>15-Mar-1990</em>, <em>15.03.1990</em>, <em>19900315</em> or <em>3/15/90</em>. When a date written only with numbers could be read two ways (03/04/1990), the calculator follows the choice under <strong>Dates typed with numbers</strong>: month first, as in the US, or day first, as in most other countries. A two-digit year is never put in the future, so <em>90</em> means 1990.</p>
+			<h3>How years, months and days are counted</h3>
+			<p>Your age goes up by one month on the same day number each month, and by one year on your birthday. The days are what is left since the last month-anniversary. Born on 31 January? There is no 31 February, so the calculator counts that month on the last day of February (or, if you pick the other rule, on 1 March). Weeks, days and months are calendar counts, so daylight-saving changes never change them. Hours, minutes and seconds are real elapsed time: add your time of birth and its time zone for exact numbers; without a time, the count starts at midnight at the start of your birth day in your own time zone.</p>
+			<h3>Born on 29 February?</h3>
+			<p>A leap-day birthday only exists in leap years. In other years most people celebrate on 28 February or 1 March, and the law, where it says anything at all, differs from place to place: Hong Kong law, for example, says a person born on 29 February reaches a given age on 1 March in a common year, while rules that count to "the last day of the month" give 28 February. The calculator lets you choose, shows both dates, and counts how many real 29 Februaries you have had. Remember that 1900 was not a leap year but 2000 was: century years are only leap years when they can be divided by 400.</p>
+			<h3>Questions</h3>
+			<dl>
+				<dt>How do I calculate my age by hand?</dt>
+				<dd>Subtract your birth year from the current year, then take one off if your birthday has not happened yet this year. For months and days, count whole months from your last birthday to today, then the days left over.</dd>
+				<dt>How many days old am I?</dt>
+				<dd>The "days" tile in <strong>Your age in total</strong> counts every day from your birth date to the Age on date (the birth day itself is day 0). 10,000 days is about 27 years and 4 months, a popular milestone to celebrate.</dd>
+				<dt>When will I be one billion seconds old?</dt>
+				<dd>A billion seconds is about 31 years and 8 months. The Milestones table shows the exact date (and the time, if you added your time of birth), together with 10,000 days, 500 months, 1,000 weeks and more.</dd>
+				<dt>How are dog years worked out?</dt>
+				<dd>The old rule of thumb is "one dog year = seven human years". A 2019 study of Labrador retrievers (Wang et al.) suggested <strong>human age = 16 &times; ln(dog age) + 31</strong> instead, because dogs grow up fast and then age more slowly. It is only an approximation, fitted on one breed, and not meant for puppies under one year. The page shows both the formula and the old rule.</dd>
+				<dt>What is my age on other planets?</dt>
+				<dd>Your age in days divided by how long that planet takes to go round the Sun once (its sidereal year). On Mercury a year is 88 Earth days, so you are about four times older there; on Neptune a year is almost 165 Earth years.</dd>
+				<dt>Which zodiac sign and Chinese animal am I?</dt>
+				<dd>The sign uses the usual newspaper dates; a birthday right at the change between two signs can belong to either, depending on the year and the time of birth, so use the <a href="/zodiac">Zodiac &amp; Birth Chart</a> page for an exact answer. The Chinese animal follows the Chinese New Year, which falls between 21 January and 20 February, so someone born in January or early February belongs to the previous year's animal.</dd>
+				<dt>How do I find when one person is twice as old as another?</dt>
+				<dd>Use <strong>Age difference between two people</strong>. The older person is twice the younger's age when the younger one is exactly as old as the gap between them, so for a 30-year gap that is when the younger turns 30.</dd>
+				<dt>Is my data saved?</dt>
+				<dd>Your last date and the names in My people are kept in this browser's local storage only. Share links contain just the birth date and the Age on date, nothing else.</dd>
+			</dl>
+			<h2>More from MES</h2>
+			<div class="ag-links">
+				<a href="/days-between-dates-calculator">Days Between Dates</a><a href="/birthday">Famous Birthdays</a><a href="/birthday-personality">Birthday Personality</a><a href="/zodiac">Zodiac &amp; Birth Chart</a><a href="/calendar">Calendar</a><a href="/timer">Timer &amp; Countdown</a>
+			</div>
+		</section>
+	</div>
+<script src="/main_js/time-input.js?v=3" defer></script>
+<script src="/main_js/when-parse.js?v=1" defer></script>

@@ -1,0 +1,100 @@
+	<div class="tu" id="fc">
+		<div class="tu-card">
+			<div class="tu-row">
+				<div class="tu-field" style="flex:2 1 12em;"><label for="fc-d">Trip distance</label><input id="fc-d" class="tu-input tu-input--big" type="text" inputmode="decimal" autocomplete="off" placeholder="e.g. 350"></div>
+				<div class="tu-field" style="flex:0 0 auto;"><span class="tu-label" id="fc-du-l">Distance in</span><div class="tu-seg" id="fc-du" role="group" aria-labelledby="fc-du-l"><button type="button" data-u="km" aria-pressed="true">km</button><button type="button" data-u="mi" aria-pressed="false">miles</button></div></div>
+				<div class="tu-field" style="flex:0 0 auto;"><span class="tu-label" id="fc-rt-l">Trip</span><div class="tu-seg" id="fc-rt" role="group" aria-labelledby="fc-rt-l"><button type="button" data-rt="0" aria-pressed="true">One way</button><button type="button" data-rt="1" aria-pressed="false">Round trip</button></div></div>
+			</div>
+
+			<div class="tu-label fc-lbl">Fuel economy &mdash; type it in any unit, the others fill in</div>
+			<div class="tu-row fc-econ">
+				<div class="tu-field"><label for="fc-e-l100">L/100 km</label><input id="fc-e-l100" data-u="l100" class="tu-input tu-input--big" type="text" inputmode="decimal" autocomplete="off" placeholder="e.g. 7.8"></div>
+				<div class="tu-field"><label for="fc-e-kml">km/L</label><input id="fc-e-kml" data-u="kml" class="tu-input tu-input--big" type="text" inputmode="decimal" autocomplete="off" placeholder="e.g. 12.8"></div>
+				<div class="tu-field"><label for="fc-e-mpgus">mpg (US)</label><input id="fc-e-mpgus" data-u="mpgus" class="tu-input tu-input--big" type="text" inputmode="decimal" autocomplete="off" placeholder="e.g. 30"></div>
+				<div class="tu-field"><label for="fc-e-mpguk">mpg (UK)</label><input id="fc-e-mpguk" data-u="mpguk" class="tu-input tu-input--big" type="text" inputmode="decimal" autocomplete="off" placeholder="e.g. 36"></div>
+			</div>
+
+			<div class="tu-row" style="margin-top:0.9em;">
+				<div class="tu-field" style="flex:1 1 9em;"><label for="fc-p">Fuel price</label><input id="fc-p" class="tu-input tu-input--big" type="text" inputmode="decimal" autocomplete="off" placeholder="e.g. 1.65"></div>
+				<div class="tu-field" style="flex:1 1 10em;"><label for="fc-pu">Price is per</label><select id="fc-pu" class="tu-select"><option value="l">litre</option><option value="galus">US gallon</option><option value="galuk">UK (imperial) gallon</option></select></div>
+				<div class="tu-field tu-field--sm" style="flex-basis:6em;"><label for="fc-cur">Currency</label><input id="fc-cur" class="tu-input" type="text" autocomplete="off" maxlength="4" placeholder="$"></div>
+				<div class="tu-field tu-field--sm" style="flex-basis:7em;"><label for="fc-n">People sharing</label><input id="fc-n" class="tu-input" type="text" inputmode="numeric" autocomplete="off" placeholder="1"></div>
+				<div class="tu-field" style="flex:1 1 9em;"><label for="fc-fuel">Fuel</label><select id="fc-fuel" class="tu-select"><option value="gasoline">Gasoline / petrol</option><option value="diesel">Diesel</option></select></div>
+			</div>
+			<div class="tu-chips" id="fc-ex" aria-label="Examples"></div>
+		</div>
+
+		<div class="tu-stats" id="fc-out" aria-live="polite"></div>
+		<p class="fc-sentence" id="fc-sent" aria-live="polite"></p>
+		<div class="fc-btns"><button type="button" class="tu-btn tu-btn--primary" id="fc-link">Copy link</button><button type="button" class="tu-btn tu-btn--ghost" id="fc-copy">Copy summary</button><button type="button" class="tu-btn tu-btn--ghost" id="fc-reset">Start over</button></div>
+
+		<h2>Plan with a map</h2>
+		<div class="tu-card">
+			<div class="tu-row">
+				<div class="tu-field" style="flex:1 1 12em;"><label for="fc-from">From</label><input id="fc-from" class="tu-input" type="text" autocomplete="off" placeholder="e.g. Vancouver, BC"></div>
+				<div class="tu-field" style="flex:1 1 12em;"><label for="fc-to">To</label><input id="fc-to" class="tu-input" type="text" autocomplete="off" placeholder="e.g. Seattle, WA"></div>
+				<div class="tu-field" style="flex:0 0 auto;"><span class="tu-label">&nbsp;</span><a class="tu-btn fc-mapbtn" id="fc-map" href="https://www.google.com/maps/dir/" target="_blank" rel="noopener">Open directions in Google Maps</a></div>
+			</div>
+			<p class="tu-note" style="margin-bottom:0;">Google Maps opens in a new tab with the route; type the distance it shows into <i>Trip distance</i> above. This page does not look up the distance itself, so the places you type go only to Google, and only when you press the button.</p>
+		</div>
+
+		<h2>Fuel economy from a fill-up</h2>
+		<div class="tu-card">
+			<p class="tu-note" style="margin-top:0;">Fill the tank, reset the trip meter, drive, fill it again: the distance driven and the fuel the second fill took give your real economy.</p>
+			<div class="tu-row">
+				<div class="tu-field" style="flex:1 1 10em;"><label for="fc-fd">Distance since the last fill</label><div class="tu-suffix"><input id="fc-fd" class="tu-input" type="text" inputmode="decimal" autocomplete="off" placeholder="e.g. 612"><span id="fc-fdu">km</span></div></div>
+				<div class="tu-field" style="flex:1 1 9em;"><label for="fc-fv">Fuel put in</label><input id="fc-fv" class="tu-input" type="text" inputmode="decimal" autocomplete="off" placeholder="e.g. 45.3"></div>
+				<div class="tu-field" style="flex:1 1 9em;"><label for="fc-fvu">In</label><select id="fc-fvu" class="tu-select"><option value="l">litres</option><option value="galus">US gallons</option><option value="galuk">UK gallons</option></select></div>
+			</div>
+			<div class="tu-stats" id="fc-fout" aria-live="polite"></div>
+			<button type="button" class="tu-btn" id="fc-fuse" hidden>Use this economy for the trip</button>
+		</div>
+
+		<h2>Compare two cars</h2>
+		<div class="tu-card">
+			<div class="tu-row">
+				<div class="tu-field" style="flex:1 1 9em;"><label for="fc-b">Second car's economy</label><input id="fc-b" class="tu-input" type="text" inputmode="decimal" autocomplete="off" placeholder="e.g. 5.5"></div>
+				<div class="tu-field" style="flex:1 1 9em;"><label for="fc-bu">In</label><select id="fc-bu" class="tu-select"><option value="l100">L/100 km</option><option value="kml">km/L</option><option value="mpgus">mpg (US)</option><option value="mpguk">mpg (UK)</option></select></div>
+				<div class="tu-field" style="flex:1 1 9em;"><label for="fc-bp">Its fuel price (blank = same)</label><input id="fc-bp" class="tu-input" type="text" inputmode="decimal" autocomplete="off" placeholder="same"></div>
+				<div class="tu-field" style="flex:1 1 9em;"><label for="fc-yr">Distance a year</label><div class="tu-suffix"><input id="fc-yr" class="tu-input" type="text" inputmode="decimal" autocomplete="off" placeholder="e.g. 15000"><span class="fc-du-sfx">km</span></div></div>
+			</div>
+			<div class="tu-table-wrap"><table class="tu-table" id="fc-cmp"></table></div>
+			<p class="tu-note" id="fc-cmpnote" style="margin-bottom:0;"></p>
+		</div>
+
+		<h2>Electric car comparison</h2>
+		<div class="tu-card">
+			<div class="tu-row">
+				<div class="tu-field" style="flex:1 1 8em;"><label for="fc-ev">Electric car uses</label><input id="fc-ev" class="tu-input" type="text" inputmode="decimal" autocomplete="off" placeholder="e.g. 17"></div>
+				<div class="tu-field" style="flex:1 1 9em;"><label for="fc-evu">In</label><select id="fc-evu" class="tu-select"><option value="kwh100">kWh/100 km</option><option value="kwh100mi">kWh/100 miles</option><option value="mikwh">miles/kWh</option><option value="kmkwh">km/kWh</option><option value="whkm">Wh/km</option><option value="whmi">Wh/mile</option></select></div>
+				<div class="tu-field" style="flex:1 1 8em;"><label for="fc-ep">Electricity price per kWh</label><input id="fc-ep" class="tu-input" type="text" inputmode="decimal" autocomplete="off" placeholder="e.g. 0.14"></div>
+			</div>
+			<div class="tu-row" style="margin-top:0.8em;">
+				<div class="tu-field tu-field--sm" style="flex-basis:8em;"><label for="fc-loss">Charging loss</label><div class="tu-suffix"><input id="fc-loss" class="tu-input" type="text" inputmode="decimal" autocomplete="off" value="10"><span>%</span></div></div>
+				<div class="tu-field tu-field--sm" style="flex-basis:10em;"><label for="fc-grid">Grid CO&#8322; (g per kWh)</label><input id="fc-grid" class="tu-input" type="text" inputmode="decimal" autocomplete="off" value="400"></div>
+				<div class="tu-field" style="flex:1 1 10em;"><label for="fc-extra">Electric car costs more by</label><input id="fc-extra" class="tu-input" type="text" inputmode="decimal" autocomplete="off" placeholder="e.g. 8000"></div>
+			</div>
+			<div class="tu-table-wrap"><table class="tu-table" id="fc-evt"></table></div>
+			<p class="tu-note" id="fc-evnote" style="margin-bottom:0;"></p>
+		</div>
+
+		<div class="tu-seo">
+			<h2>How to calculate the fuel cost of a trip</h2>
+			<p>Fuel needed = distance &times; fuel use per distance; cost = fuel needed &times; price. With metric units that is <b>litres = km &times; (L/100 km) &divide; 100</b>. Example: 350 km in a car using 7.8 L/100 km needs 350 &times; 7.8 &divide; 100 = 27.3 L; at $1.65 a litre that is <b>$45.05</b>, or $11.26 each for four people. With miles and mpg it is <b>gallons = miles &divide; mpg</b>: 300 miles at 25 mpg = 12 gallons, at $3.50 a gallon $42.00.</p>
+			<h2>Converting fuel economy units</h2>
+			<p>L/100 km is fuel per distance (lower is better); km/L and mpg are distance per fuel (higher is better), so converting between them means dividing a constant by the value. This page uses the exact definitions: 1 mile = 1.609344 km, 1 US gallon = 3.785411784 L, 1 UK (imperial) gallon = 4.54609 L. That gives <b>L/100 km = 235.215 &divide; mpg (US)</b> and <b>282.481 &divide; mpg (UK)</b>, and <b>L/100 km = 100 &divide; km/L</b>. So 30 mpg US = 7.84 L/100 km, while 30 mpg UK = 9.42 L/100 km: a UK gallon is bigger, so the same car shows a higher mpg in Britain.</p>
+			<h3>Common values</h3>
+			<div class="tu-table-wrap"><table class="tu-table" id="fc-ref"></table></div>
+			<h3>CO&#8322; from burning fuel</h3>
+			<p>Burning a litre of gasoline gives off about <b>2.31 kg of CO&#8322;</b>, a litre of diesel about <b>2.68 kg</b> (approximate tailpipe figures; making and moving the fuel adds roughly 15-25% more). For an electric car the page multiplies the electricity from the wall by the grid's carbon intensity, which ranges from under 50 g/kWh (hydro, nuclear: Quebec, Norway, France) to 700+ g/kWh (mostly coal); 400 g/kWh is a rough world average, so change it to your own grid's figure.</p>
+			<h3>Questions</h3>
+			<dl>
+				<dt>Why does my real economy differ from the sticker?</dt><dd>Official figures come from standard test cycles. Speed (drag rises with the square of speed), cold weather, short trips, air conditioning, roof boxes, tyre pressure and load all change it. The fill-up method above measures your own.</dd>
+				<dt>Should I split the cost with passengers?</dt><dd>Splitting fuel is common for car pools and road trips. Put the number of people in <i>People sharing</i>, the driver included. Wear, insurance and parking are not counted here.</dd>
+				<dt>Does a round trip just double it?</dt><dd>Yes: <i>Round trip</i> doubles the distance. If the way back is different, add both distances yourself.</dd>
+				<dt>How is the electric car break-even worked out?</dt><dd>Yearly fuel cost of the fuel car minus yearly electricity cost of the electric car is the saving per year; the extra purchase price divided by that saving is the years to pay it back. Maintenance, insurance, incentives and resale value are not included.</dd>
+				<dt>Is anything I type stored?</dt><dd>Only in this browser (localStorage). Nothing is uploaded; a copied link carries the numbers in the address itself.</dd>
+			</dl>
+			<p>Related: <a href="/unit-conversion">Unit Conversion</a> &middot; <a href="/percentagecalculator">Percentage Calculator</a> &middot; <a href="/time-calculator">Time Calculator</a> &middot; <a href="/calculator">Calculator</a></p>
+		</div>
+	</div>

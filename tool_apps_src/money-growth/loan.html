@@ -1,0 +1,143 @@
+		<div id="mg-notice" class="tu-card tu-card--tint" role="status" hidden></div>
+		<div class="mg-tabs" role="tablist" aria-label="What do you want to work out?">
+			<button type="button" role="tab" id="mg-t-pay" data-tab="pay" aria-controls="mg-p-pay" aria-selected="true">💳 Payment</button>
+			<button type="button" role="tab" id="mg-t-borrow" data-tab="borrow" aria-controls="mg-p-borrow" aria-selected="false">🏦 How much can I borrow</button>
+			<button type="button" role="tab" id="mg-t-extra" data-tab="extra" aria-controls="mg-p-extra" aria-selected="false">⏩ Extra payments</button>
+			<button type="button" role="tab" id="mg-t-apr" data-tab="apr" aria-controls="mg-p-apr" aria-selected="false">🧾 APR with fees</button>
+		</div>
+
+		<div class="tu-card" id="mg-inputs">
+			<div class="tu-chips" id="mg-presets" aria-label="Examples">
+				<button type="button" class="tu-chip" data-p="car">🚗 Car loan</button>
+				<button type="button" class="tu-chip" data-p="personal">👤 Personal loan</button>
+				<button type="button" class="tu-chip" data-p="student">🎓 Student loan</button>
+				<button type="button" class="tu-chip" data-p="small">💵 Small loan</button>
+			</div>
+			<div class="tu-row">
+				<div class="tu-field mg-f" id="mg-amount-wrap">
+					<label for="mg-amount">Loan amount</label>
+					<div class="tu-suffix"><input id="mg-amount" class="tu-input tu-input--big" type="text" inputmode="decimal" autocomplete="off" value="20,000"><span class="mg-cur"></span></div>
+				</div>
+				<div class="tu-field mg-f" id="mg-afford-wrap" hidden>
+					<label for="mg-afford">Payment I can afford</label>
+					<div class="tu-suffix"><input id="mg-afford" class="tu-input tu-input--big" type="text" inputmode="decimal" autocomplete="off" value="400"><span class="mg-cur"></span></div>
+				</div>
+				<div class="tu-field mg-f">
+					<label for="mg-rate">Interest rate (per year)</label>
+					<div class="tu-suffix"><input id="mg-rate" class="tu-input tu-input--big" type="text" inputmode="decimal" autocomplete="off" value="6"><span>%</span></div>
+				</div>
+				<div class="tu-field mg-f mg-f--sm">
+					<label for="mg-years">Years</label>
+					<input id="mg-years" class="tu-input tu-input--big" type="text" inputmode="numeric" autocomplete="off" value="5">
+				</div>
+				<div class="tu-field mg-f mg-f--sm">
+					<label for="mg-months">+ Months</label>
+					<input id="mg-months" class="tu-input tu-input--big" type="text" inputmode="numeric" autocomplete="off" value="0">
+				</div>
+			</div>
+			<div class="tu-row">
+				<div class="tu-field mg-f">
+					<label for="mg-freq">Payments</label>
+					<select id="mg-freq" class="tu-select">
+						<option value="weekly">Weekly</option><option value="biweekly">Every 2 weeks</option><option value="semimonthly">Twice a month</option>
+						<option value="monthly" selected>Monthly</option><option value="quarterly">Quarterly</option><option value="annual">Yearly</option>
+					</select>
+				</div>
+				<div class="tu-field mg-f">
+					<label for="mg-sd">Loan start date</label>
+					<input id="mg-sd" class="tu-input" type="date">
+				</div>
+				<div class="tu-field mg-f">
+					<label for="mg-cursel">Currency</label>
+					<select id="mg-cursel" class="tu-select mg-cursel"></select>
+				</div>
+			</div>
+			<p class="tu-note mg-err" id="mg-err" role="alert" hidden></p>
+		</div>
+
+		<!-- PAYMENT -->
+		<section class="mg-panel" id="mg-p-pay" role="tabpanel" aria-labelledby="mg-t-pay">
+			<div class="tu-card">
+				<div class="tu-stats mg-hero" id="mg-hero" aria-live="polite"></div>
+				<p class="mg-sentence" id="mg-sentence"></p>
+				<div class="mg-bar" id="mg-split" aria-hidden="true"></div>
+				<div class="mg-legend" id="mg-split-legend"></div>
+			</div>
+		</section>
+
+		<!-- BORROW -->
+		<section class="mg-panel" id="mg-p-borrow" role="tabpanel" aria-labelledby="mg-t-borrow" hidden>
+			<div class="tu-card">
+				<p class="tu-note" style="margin-top:0;">Type the payment you can afford above (instead of the loan amount). This works backwards to the biggest loan that payment repays over the term.</p>
+				<div class="tu-stats mg-hero" id="mg-borrow-out" aria-live="polite"></div>
+				<p class="mg-sentence" id="mg-borrow-sentence"></p>
+				<div class="tu-table-wrap"><table class="tu-table mg-cmp" id="mg-borrow-table"></table></div>
+				<div class="mg-btns"><button type="button" class="tu-btn tu-btn--primary" id="mg-borrow-use">Use this loan amount</button></div>
+			</div>
+		</section>
+
+		<!-- EXTRA -->
+		<section class="mg-panel" id="mg-p-extra" role="tabpanel" aria-labelledby="mg-t-extra" hidden>
+			<div class="tu-card">
+				<div class="tu-row">
+					<div class="tu-field mg-f"><label for="mg-x">Extra with every payment</label><div class="tu-suffix"><input id="mg-x" class="tu-input tu-input--big" type="text" inputmode="decimal" autocomplete="off" value="50"><span class="mg-cur"></span></div></div>
+					<div class="tu-field mg-f"><label for="mg-l">One-time extra payment</label><div class="tu-suffix"><input id="mg-l" class="tu-input tu-input--big" type="text" inputmode="decimal" autocomplete="off" value="0"><span class="mg-cur"></span></div></div>
+					<div class="tu-field mg-f mg-f--sm"><label for="mg-lk">With payment number</label><input id="mg-lk" class="tu-input tu-input--big" type="text" inputmode="numeric" autocomplete="off" value="12"><span class="tu-note mg-hint" id="mg-lk-date"></span></div>
+				</div>
+				<div class="tu-stats mg-hero" id="mg-extra-out" aria-live="polite"></div>
+				<p class="mg-sentence" id="mg-extra-sentence"></p>
+			</div>
+		</section>
+
+		<!-- APR -->
+		<section class="mg-panel" id="mg-p-apr" role="tabpanel" aria-labelledby="mg-t-apr" hidden>
+			<div class="tu-card">
+				<div class="tu-row">
+					<div class="tu-field mg-f"><label for="mg-fee">Fees (origination, admin, documents)</label><div class="tu-suffix"><input id="mg-fee" class="tu-input tu-input--big" type="text" inputmode="decimal" autocomplete="off" value="500"><span class="mg-cur"></span></div></div>
+					<div class="tu-field" style="flex:2 1 22em;">
+						<span class="tu-label" id="mg-ff-label">The fees are</span>
+						<div class="tu-seg mg-seg" id="mg-ff" role="group" aria-labelledby="mg-ff-label">
+							<button type="button" data-v="0" aria-pressed="true">Taken from the loan / paid up front</button>
+							<button type="button" data-v="1" aria-pressed="false">Added to the loan</button>
+						</div>
+					</div>
+				</div>
+				<div class="tu-stats mg-hero" id="mg-apr-out" aria-live="polite"></div>
+				<p class="mg-sentence" id="mg-apr-sentence"></p>
+				<p class="tu-note">APR (annual percentage rate) is the yearly rate that makes the payments worth exactly the money you really got. Fees make it higher than the interest rate, more so on short loans. Some fees (late fees, optional insurance) are not part of the official APR.</p>
+			</div>
+		</section>
+
+		<!-- shared results: charts + schedule of the scenario the tab shows -->
+		<div class="tu-card" id="mg-charts">
+			<h3 class="mg-h" id="mg-chart-h">Where your money goes each year</h3>
+			<div class="mg-legend"><span><i class="mg-k mg-k--dep"></i>Principal (pays the loan down)</span><span><i class="mg-k mg-k--int"></i>Interest</span></div>
+			<div class="mg-chartwrap"><svg class="mg-svg" id="mg-bars" role="img" aria-label="Principal and interest paid each year"></svg></div>
+			<div class="mg-readout" id="mg-bars-readout" aria-live="polite">Move over a bar to see that year.</div>
+			<h3 class="mg-h" style="margin-top:1em;">Balance left</h3>
+			<div class="mg-legend" id="mg-bal-legend"><span><i class="mg-k mg-k--a"></i>Balance</span><span id="mg-bal-leg-b" hidden><i class="mg-k mg-k--base"></i>Without extra payments</span></div>
+			<div class="mg-chartwrap"><svg class="mg-svg" id="mg-bal" role="img" aria-label="Balance left over time"></svg></div>
+			<div class="mg-readout" id="mg-bal-readout" aria-live="polite">Move over the chart to see the balance.</div>
+		</div>
+		<div class="tu-card">
+			<h3 class="mg-h">Amortization schedule</h3>
+			<p class="tu-note" style="margin-top:0;">One row per year of the loan; click a year to see every payment.</p>
+			<div class="tu-table-wrap mg-sched-wrap"><table class="tu-table mg-sched" id="mg-table"></table></div>
+			<div class="mg-btns">
+				<button type="button" class="tu-btn tu-btn--ghost" id="mg-copy-csv">Copy schedule (spreadsheet)</button>
+				<button type="button" class="tu-btn tu-btn--ghost" id="mg-dl-csv">Download CSV</button>
+				<button type="button" class="tu-btn tu-btn--ghost" id="mg-copy-sum">Copy summary</button>
+				<button type="button" class="tu-btn tu-btn--ghost" id="mg-copy-link">Copy link to this calculation</button>
+			</div>
+		</div>
+
+		<div class="tu-card mg-formulas">
+			<h3 class="mg-h">The formulas</h3>
+			<div class="mg-eq">
+				<div><span class="mg-eq__n">payment</span> <span class="mg-eq__f mes-tex">\( \displaystyle M = L\,\frac{i}{1-(1+i)^{-n}} \)</span></div>
+				<div><span class="mg-eq__n">loan from a payment</span> <span class="mg-eq__f mes-tex">\( \displaystyle L = M\,\frac{1-(1+i)^{-n}}{i} \)</span></div>
+				<div><span class="mg-eq__n">each payment</span> <span class="mg-eq__f mes-tex">\( \displaystyle \text{interest}_k = i\,B_{k-1},\quad B_k = B_{k-1} - (M - \text{interest}_k) \)</span></div>
+				<div><span class="mg-eq__n">APR</span> <span class="mg-eq__f mes-tex">\( \displaystyle \text{received} = \sum_{k=1}^{n} \frac{M_k}{(1+j)^k},\quad \text{APR} = j \times \text{payments per year} \)</span></div>
+			</div>
+			<p class="tu-note">L = loan amount, i = yearly rate &divide; payments per year (6% monthly: i = 0.005), n = number of payments, B = balance. The payment is rounded to the cent and interest is rounded to the cent every payment, so the last payment is a few cents different and clears the balance to exactly 0.00.</p>
+		</div>

@@ -164,7 +164,7 @@ APPS = {
     "days-between-dates-calculator": dict(title="MES Days Between Dates Calculator", page_title="Days Between Dates Calculator",
                                           tag="Days, weeks, months, hours and business days between two dates.", accent="#2f7d32", dark="#1f5a23", tint="#e4f2e4",
                                           desc="Free days between dates calculator: count the days, weeks, months, years, hours, minutes and seconds between any two dates, with optional end-date inclusion, business days (custom weekends and holidays), time of day and shareable links.",
-                                          js_v="2", lib_from=["calendar"]),
+                                          js_v="3", lib_from=["calendar"]),
     # the three CAS pages: SymPy running in the browser (Pyodide in a Web Worker), shared engine + UI in mes.fm/main_js/cas/ (engine.py,
     # cas-worker.js, cas-client.js, cas-ui.js; loaded via pre_js) and the shared CSS tool_apps_src/_cas.css (css_extra, inlined so the
     # derived dark theme covers it). Each page's own app.js only builds requests and renders results. Tests: tool_apps_src/cas-engine-tests.py.
@@ -191,7 +191,7 @@ APPS = {
     "calendar": dict(title="MES Calendar", page_title="Calendar",
                      tag="Moon phases, holidays and more, month by month.", accent="#2f5fd0", dark="#1f44a0", tint="#e6edfb",
                      desc="Free online calendar for any year: month and year views with today highlighted, new and full moon times, Canada, USA, UK, Australia and Vietnam holidays, Christian, Jewish and Islamic dates, seasons, eclipses, daylight-saving changes and a days-between calculator.",
-                     js_v="2"),
+                     js_v="3"),
     # VAT Calculator 2.0 (rewritten 2026-10-03 from the 2013 jQuery page): lib.js = exact-rational maths + the country rate table (node-testable:
     # tool_apps_src/vatcalculator-tests.js), app.js = UI. Keeps ads (not an ad-free page); old /vatcalculator/s/<id> links still resolve via /api/share?calc=vat.
     "vatcalculator": dict(title="VAT Calculator", page_title="VAT Calculator",
@@ -802,6 +802,37 @@ APPS = {
     "poker": dict(title="MES Poker", page_title="Texas Hold'em Poker: Play Free and Calculate Your Odds",
                 tag="Play Hold'em, see your odds.", accent="#166534", dark="#14532d", tint="#dcf3e3",
                 desc="Play Texas Hold'em poker free against computer players with play money, plus a poker odds calculator: your chance to win against random hands, outs, pot odds and hand rankings, and your session statistics kept on your device.",
+                js_v="1"),
+
+    # Round 2026-10-23 (b): everyday calculators. compound-interest + loan share tool_apps_src/money-growth/ (data-mode), the others are standalone.
+    "compound-interest-calculator": dict(title="MES Compound Interest Calculator", page_title="Compound Interest Calculator with Monthly Deposits",
+                tag="Watch money grow, year by year.", accent="#047857", dark="#065f46", tint="#d9f5ea", src="money-growth",
+                desc="Free compound interest calculator: starting amount, monthly or yearly deposits, any interest rate and compounding, inflation and tax, with a year-by-year table and growth chart, the rule of 72, and how much to save to reach a goal.",
+                nav_extra="<li class=\"info-bar__item\"><a class=\"info-bar__item__text\" href='/loan-calculator'>Loan</a></li><li class=\"info-bar__item\"><a class=\"info-bar__item__text\" href='/mortgagecalculator'>Mortgage</a></li>",
+                menu_extra="<li class=\"navbar__item\"><a class=\"navbar__link\" href=\"/loan-calculator\">Loan Calculator</a></li><li class=\"navbar__item\"><a class=\"navbar__link\" href=\"/mortgagecalculator\">Mortgage Calculator</a></li>",
+                content="content.html", js_v="1", vars={"MODE": "grow", "BODY": "@grow.html", "SEO": "@seo/grow.html"}),
+    "loan-calculator": dict(title="MES Loan Calculator", page_title="Loan Calculator: Monthly Payment, Interest and Payoff Schedule",
+                tag="Payments, interest and payoff date.", accent="#047857", dark="#065f46", tint="#d9f5ea", src="money-growth", js_path="compound-interest-calculator/js/compound-interest-calculator.js",
+                tab=1,
+                desc="Free loan calculator for car loans, personal loans and student loans: monthly payment, total interest, payoff date and full amortization schedule, extra payments, how much you can borrow, and the APR of a loan with fees.",
+                nav_extra="<li class=\"info-bar__item\"><a class=\"info-bar__item__text\" href='/loan-calculator'>Loan</a></li><li class=\"info-bar__item\"><a class=\"info-bar__item__text\" href='/mortgagecalculator'>Mortgage</a></li>",
+                menu_extra="<li class=\"navbar__item\"><a class=\"navbar__link\" href=\"/loan-calculator\">Loan Calculator</a></li><li class=\"navbar__item\"><a class=\"navbar__link\" href=\"/mortgagecalculator\">Mortgage Calculator</a></li>",
+                content="content.html", js_v="1", vars={"MODE": "loan", "BODY": "@loan.html", "SEO": "@seo/loan.html"}),
+    "age-calculator": dict(title="MES Age Calculator", page_title="Age Calculator: Exact Age in Years, Months and Days",
+                tag="How old, exactly?", accent="#b45309", dark="#8a3f06", tint="#fdf0e1",
+                desc="Free age calculator: exact age in years, months and days from a date of birth, total months, weeks, days, hours and seconds lived, next birthday countdown, the weekday you were born, age on any date and the age difference between two people.",
+                js_v="1", lib_from=["days-between-dates-calculator"]),
+    "tip-calculator": dict(title="MES Tip Calculator", page_title="Tip Calculator and Bill Splitter",
+                tag="Tip, tax and who pays what.", accent="#0e7490", dark="#155e75", tint="#dcf2f7",
+                desc="Free tip calculator and bill splitter: tip by percent or amount, before or after tax, split evenly or by what each person ordered, round up to whole amounts, and tipping customs for the US, Canada, UK, Europe, Australia and more.",
+                js_v="1"),
+    "time-calculator": dict(title="MES Time Calculator", page_title="Time Calculator: Hours Between Times, Add and Subtract Time",
+                tag="Hours and minutes, added up.", accent="#4338ca", dark="#3730a3", tint="#e6e6fb",
+                desc="Free time calculator: the hours and minutes between two times (overnight shifts included), add and subtract hours, minutes and seconds, total a list of times like a timesheet with breaks, and convert to decimal hours for payroll.",
+                js_v="1"),
+    "fuel-cost-calculator": dict(title="MES Fuel Cost Calculator", page_title="Fuel Cost Calculator: Trip Gas Cost and Fuel Economy",
+                tag="What will the trip cost?", accent="#b91c1c", dark="#991b1b", tint="#fde2e2",
+                desc="Free fuel cost calculator: the gas cost of a trip from distance, fuel economy (L/100 km, mpg US or UK, km/L) and price per litre or gallon, round trips and cost per person, fuel economy from a fill-up, and an electric car comparison.",
                 js_v="1"),
 
 }

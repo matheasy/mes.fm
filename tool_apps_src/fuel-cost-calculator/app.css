@@ -1,0 +1,15 @@
+	/* MES Fuel Cost Calculator */
+	#fc [hidden] {display:none !important;}
+	#fc .fc-lbl {display:block;margin:1.1em 0 0.5em;}
+	#fc .fc-econ .tu-field {flex:1 1 8.5em;}
+	#fc .tu-seg {flex-wrap:wrap;} #fc .tu-seg button {min-height:44px;min-width:4em;}
+	#fc .tu-chip, #fc .tu-btn {min-height:40px;}
+	#fc .fc-btns {display:flex;gap:0.5em;flex-wrap:wrap;margin:0.9em 0;}
+	#fc .fc-sentence {font-size:1.05em;line-height:1.55;margin:0.2em 0 0.4em;}
+	#fc .fc-mapbtn {display:inline-flex;align-items:center;text-decoration:none !important;min-height:2.75em;}
+	#fc #fc-fuse {margin-top:0.2em;}
+	#fc #fc-cmp td, #fc #fc-evt td {font-variant-numeric:tabular-nums;}
+	#fc #fc-cmp td:last-child {font-weight:700;}
+	.fc-undo {margin-left:0.6em;background:transparent;border:1px solid #fff;color:#fff;border-radius:1em;padding:0.15em 0.8em;cursor:pointer;font:inherit;}
+	@media (max-width:600px) {#fc .tu-seg {width:100%;} #fc .tu-seg button {flex:1 1 auto;} #fc .fc-econ .tu-field {flex:1 1 40%;}}
+	@media print {#fc .fc-btns, #fc .tu-chips {display:none !important;}}

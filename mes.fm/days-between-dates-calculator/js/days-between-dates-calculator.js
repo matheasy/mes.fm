@@ -123,7 +123,9 @@
         if (shift) add(map, g, addDays(y, m, d, shift), title + " (observed)", "holiday");
     }
 
+    var LNY_CN_FIX = { 1916: [1, 3], 1920: [1, 20], 1985: [1, 20] };   // China (UTC+8): years the Jan 21 - Feb 20 new-moon rule gets wrong (same table as zodiac/lib.js LNY_FIX; Vietnam's 1985 Tet really was Jan 21)
     function lunarNewYear(y, tzHours) {       // the new moon falling on Jan 21 - Feb 20 (in the given UTC offset) -> Date (UTC midnight of that day)
+        if (tzHours === 8 && LNY_CN_FIX[y]) return utc(y, LNY_CN_FIX[y][0], LNY_CN_FIX[y][1]);
         var ph = moonPhases(y, y);
         for (var i = 0; i < ph.length; i++) {
             if (ph[i].ph !== 0) continue;
