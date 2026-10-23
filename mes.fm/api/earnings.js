@@ -176,8 +176,13 @@ async function handler(req, res) {
     const parse = (x) => { try { return x && x.result ? JSON.parse(x.result) : null; } catch { return null; } };
     const meta = { gads: parse(out[1]), adsense: parse(out[2]) };
     const fx = await fxRate((meta.gads && meta.gads.currency) || 'VND', parse(out[3]));
-    const agg = aggregate(have, blobs, fx.perCad);
-    res.status(200).json(Object.assign({ range, today, tz: TZ, currency: 'CAD', adsCurrency: (meta.gads && meta.gads.currency) || 'VND', fx, meta }, agg));
+    // Ignore Google Ads days before the first day with AdSense earnings (old campaigns from before the site earned
+    // anything would only make the comparison meaningless).
+    const earned = have.filter((d) => blobs.adsense[d] && (blobs.adsense[d].dev || []).concat(blobs.adsense[d].pages || []).some((r) => r[1] > 0)).sort();
+    const from = earned[0];
+    const shown = from ? have.filter((d) => d >= from) : have;
+    const agg = aggregate(shown, blobs, fx.perCad);
+    res.status(200).json(Object.assign({ range, today, tz: TZ, from: from || null, currency: 'CAD', adsCurrency: (meta.gads && meta.gads.currency) || 'VND', fx, meta }, agg));
   } catch (e) {
     res.status(502).json({ error: 'data unavailable' });
   }

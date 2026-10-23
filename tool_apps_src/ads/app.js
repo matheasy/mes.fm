@@ -189,7 +189,8 @@
     var d = DATA, t = d.totals, m = d.meta || {};
     $('ad-meta').innerHTML = 'Google Ads data: <b>' + ago(m.gads && m.gads.at) + '</b> · AdSense data: <b>' + ago(m.adsense && m.adsense.at) + '</b> · ' +
       (d.fx && d.fx.rates ? '1 CAD = ' + Math.round(d.fx.rates.VND).toLocaleString() + ' VND = ' + d.fx.rates.USD.toFixed(3) + ' USD' + (d.fx.live ? '' : ' (fallback rate)') : '') +
-      '. Both update every hour. AdSense numbers are estimates until the month closes.';
+      '. Both update every hour. AdSense numbers are estimates until the month closes.' +
+      (d.from && d.daily.length && d.daily[0].d === d.from && /d$/.test(d.range) ? ' Counting from ' + esc(d.from) + ', the first day with AdSense earnings (older ad spend is left out).' : '');
     endsNote();
     var missing = [];
     if (!m.gads) missing.push('<li><b>Google Ads Script</b> has not sent data yet (Google Ads → Tools → Bulk actions → Scripts, script "MES ads page").</li>');

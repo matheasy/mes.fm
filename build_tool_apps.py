@@ -704,7 +704,7 @@ APPS = {
     "ads": dict(title="MES Ads", page_title="Ads: Earnings vs Spend",
                 tag="AdSense earnings vs Google Ads spend.", accent="#2e7d32", dark="#1b5e20", tint="#e8f5e9",
                 desc="AdSense earnings against Google Ads spend per day, landing page, country, device and campaign, and whether ad visitors come back.",
-                js_v="6", no_ads=True, js_path="earnings/js/earnings.js", logo_from="earnings",
+                js_v="7", no_ads=True, js_path="earnings/js/earnings.js", logo_from="earnings",
                 head_extra='<meta name="robots" content="noindex, nofollow">'),
     # How much do YouTubers make?: leaderboard of big channels with ESTIMATED ad revenue (companion of /youtubemoney, ad-free like it). Data = mes.fm/how-much-do-youtubers-make/data/channels.json
     # (update_youtuber_snapshot.py), live refresh = mes.fm/api/youtuber-stats.js; lib.js = maths + a copy of the calculator's RPM tables (node-testable:
