@@ -35,8 +35,10 @@ for a in [x for x in sys.argv[1:] if not x.startswith("--")]:
     elif abs(w0 - h0) > 0.04 * max(w0, h0):
         side = min(w0, h0); l = (w0 - side) // 2; t = (h0 - side) // 2; c = c.crop((l, t, l + side, t + side))
     rounded(c, 512).save(f"{R}/mes.fm/{slug}/img/logo.png"); rounded(c, 352).save(f"{R}/mes.fm/img/{slug}-logo.png")
-    s = Image.open(src(name + "-share")).convert("RGB"); w, h = s.size; ch = round(w * 630 / 1200); t = (h - ch) // 2
-    s.crop((0, t, w, t + ch)).resize((1200, 630), Image.LANCZOS).save(f"{R}/mes.fm/{slug}/img/logo-big.png")
+    if os.path.exists(src(name + "-share")):
+        s = Image.open(src(name + "-share")).convert("RGB"); w, h = s.size; ch = round(w * 630 / 1200); t = (h - ch) // 2
+        s.crop((0, t, w, t + ch)).resize((1200, 630), Image.LANCZOS).save(f"{R}/mes.fm/{slug}/img/logo-big.png")
+    else: print("  (no -share.jpg: share image left as is)")
     if not os.path.exists(src(name + "-tile")): print("  (no -tile.jpg: tile left as is)"); continue
     tl = Image.open(src(name + "-tile")).convert("RGB"); w, h = tl.size; ch = round(w * 2 / 3); t = (h - ch) // 2
     tl.crop((0, t, w, t + ch)).resize((900, 600), Image.LANCZOS).save(f"{R}/mes.fm/img/{slug}-icon.jpg", quality=88)

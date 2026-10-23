@@ -616,7 +616,7 @@ def build():
     s = shell
     # head
     s = s.replace('<link rel="icon" href="https://mes.fm/img/conspiracy-logo.jpg?v=1.0" type="image/jpeg" />',
-                  '<link rel="icon" href="https://mes.fm/img/links-logo.png?v=1" type="image/png" />')
+                  '<link rel="icon" href="https://mes.fm/img/links-logo.png?v=2" type="image/png" />')
     s = s.replace('<link rel="canonical" href="https://mes.fm/conspiracy" />', '<link rel="canonical" href="https://mes.fm/links" />')
     s = s.replace('<title>MES Conspiracy | Math Easy Solutions</title>', '<title>MES Links | Math Easy Solutions</title>')
     s = re.sub(r'<meta property="og:site_name" content="[^"]*" />', '<meta property="og:site_name" content="Math Easy Solutions" />', s)
