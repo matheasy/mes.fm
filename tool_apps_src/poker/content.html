@@ -1,0 +1,151 @@
+	<div class="tu pk" id="pk">
+		<p class="pk-pm"><b>Play money only.</b> No real money, no betting, no prizes: the chips here are worth nothing and nothing is uploaded. It is a game and a learning tool for the maths of poker.</p>
+		<div class="pk-tabs" role="tablist" aria-label="Poker tools">
+			<button type="button" role="tab" data-tab="play" aria-selected="false">Play</button>
+			<button type="button" role="tab" data-tab="odds" aria-selected="false">Odds calculator</button>
+			<button type="button" role="tab" data-tab="ranks" aria-selected="false">Hand rankings</button>
+			<button type="button" role="tab" data-tab="stats" aria-selected="false">My stats</button>
+		</div>
+
+		<section data-panel="play" role="tabpanel" hidden>
+			<div class="tu-card" id="pk-setup">
+				<h2 class="pk-h">New game of No-Limit Texas Hold'em</h2>
+				<div id="pk-resume" class="pk-resume" hidden><p id="pk-resume-text"></p><button type="button" class="tu-btn tu-btn--primary pk-big" id="pk-continue">Continue my game</button></div>
+				<div class="tu-row">
+					<div class="tu-field tu-field--sm" style="flex-basis:11em;"><label for="pk-opps">Computer players</label>
+						<select id="pk-opps" class="tu-select"><option value="1">1 (heads-up)</option><option value="2">2</option><option value="3">3</option><option value="4">4</option><option value="5" selected>5</option><option value="6">6</option><option value="7">7</option><option value="8">8 (full table)</option></select></div>
+					<div class="tu-field tu-field--sm" style="flex-basis:12em;"><label for="pk-mix">Their playing styles</label>
+						<select id="pk-mix" class="tu-select"><option value="mixed" selected>Mixed</option><option value="tag">All tight-aggressive</option><option value="lag">All loose-aggressive</option><option value="lp">All loose-passive</option><option value="tp">All tight-passive</option></select></div>
+					<div class="tu-field tu-field--sm" style="flex-basis:12em;"><label for="pk-stack">Starting chips</label>
+						<select id="pk-stack" class="tu-select"><option value="50">1,000 (50 big blinds)</option><option value="100" selected>2,000 (100 big blinds)</option><option value="200">4,000 (200 big blinds)</option></select></div>
+					<div class="tu-field tu-field--sm" style="flex-basis:12em;"><label for="pk-rise">Blinds go up</label>
+						<select id="pk-rise" class="tu-select"><option value="0">Never (10 / 20)</option><option value="8">Every 8 hands</option><option value="12" selected>Every 12 hands</option><option value="20">Every 20 hands</option></select></div>
+				</div>
+				<div class="tu-row" style="margin-top:0.9em;">
+					<div class="tu-field tu-field--sm" style="flex-basis:20em;"><span class="tu-label" id="pk-mode-l">Game</span>
+						<div class="tu-seg" id="pk-mode" role="group" aria-labelledby="pk-mode-l"><button type="button" data-v="tour" aria-pressed="true">Tournament (until one is left)</button><button type="button" data-v="cash" aria-pressed="false">Cash game (rebuy when out)</button></div></div>
+				</div>
+				<p class="tu-note">Computer players think about their hand strength (they simulate hundreds of run-outs against the hands your betting suggests), the pot odds and their position, and they bluff now and then. Tight players play few hands, loose ones many; aggressive ones bet and raise, passive ones mostly call.</p>
+				<button type="button" class="tu-btn tu-btn--primary pk-big" id="pk-start">Deal me in</button>
+			</div>
+
+			<div id="pk-game" hidden>
+				<div class="pk-top">
+					<span id="pk-info" aria-live="polite"></span>
+					<span class="pk-topb"><button type="button" class="tu-btn tu-btn--ghost pk-sm" id="pk-quit">New game</button></span>
+				</div>
+				<div class="pk-table" id="pk-table" aria-label="Poker table">
+					<div class="pk-felt"></div>
+					<div class="pk-center">
+						<div class="pk-pot" id="pk-pot"></div>
+						<div class="pk-board" id="pk-board" aria-label="Board cards"></div>
+						<div class="pk-msg" id="pk-msg" aria-live="polite"></div>
+					</div>
+					<div id="pk-seats"></div>
+				</div>
+				<div class="pk-ctl" id="pk-ctl">
+					<div class="pk-btns">
+						<button type="button" class="pk-b pk-b--fold" id="pk-fold" disabled>Fold <kbd>F</kbd></button>
+						<button type="button" class="pk-b pk-b--call" id="pk-call" disabled>Check <kbd>C</kbd></button>
+						<button type="button" class="pk-b pk-b--raise" id="pk-raise" disabled>Raise <kbd>R</kbd></button>
+					</div>
+					<div class="pk-raisebox" id="pk-raisebox">
+						<div class="pk-presets" id="pk-presets">
+							<button type="button" data-p="min">Min</button><button type="button" data-p="0.5">&frac12; pot</button><button type="button" data-p="0.75">&frac34; pot</button><button type="button" data-p="1">Pot</button><button type="button" data-p="all">All-in</button>
+						</div>
+						<div class="pk-amtrow">
+							<label for="pk-amt-r" class="pk-vh">Raise amount slider</label><input type="range" id="pk-amt-r" min="0" max="100" step="1" value="0">
+							<label for="pk-amt" class="pk-vh">Raise to (chips)</label><input type="text" inputmode="numeric" id="pk-amt" class="tu-input pk-amt" autocomplete="off">
+						</div>
+					</div>
+					<div class="pk-next" id="pk-nextbox" hidden><button type="button" class="tu-btn tu-btn--primary pk-big" id="pk-next">Deal next hand <kbd>N</kbd></button><button type="button" class="tu-btn pk-big" id="pk-rebuy" hidden>Rebuy</button></div>
+				</div>
+				<div class="tu-card pk-odds" id="pk-odds" hidden aria-live="polite"></div>
+				<div class="pk-opts">
+					<div class="pk-opt"><span class="tu-label" id="pk-speed-l">Speed</span>
+						<div class="tu-seg" id="pk-speed" role="group" aria-labelledby="pk-speed-l"><button type="button" data-v="slow">Slow</button><button type="button" data-v="normal">Normal</button><button type="button" data-v="fast">Fast</button><button type="button" data-v="instant">Instant</button></div></div>
+					<label class="pk-check"><input type="checkbox" id="pk-showodds"> Show my odds</label>
+					<label class="pk-check"><input type="checkbox" id="pk-four"> 4-colour deck</label>
+					<label class="pk-check"><input type="checkbox" id="pk-auto"> Deal the next hand by itself</label>
+				</div>
+				<div class="tu-card pk-logc"><h2 class="pk-h">What happened</h2><ol class="pk-log" id="pk-log" aria-live="off"></ol></div>
+			</div>
+		</section>
+
+		<section data-panel="odds" role="tabpanel" hidden>
+			<div class="tu-card">
+				<h2 class="pk-h">Poker odds calculator</h2>
+				<p class="tu-note" style="margin-top:0;">Tap a slot, then a card below. Leave a player on <b>Random</b> to give them any two cards. With every hand known the answer is exact (every possible board is dealt); otherwise it is simulated, with the margin of error shown.</p>
+				<div id="pk-oc-players" class="pk-oc-players"></div>
+				<div class="pk-oc-tools"><button type="button" class="tu-btn tu-btn--ghost pk-sm" id="pk-oc-add">+ Add player</button><button type="button" class="tu-btn tu-btn--ghost pk-sm" id="pk-oc-clear">Clear all</button><button type="button" class="tu-btn tu-btn--ghost pk-sm" id="pk-oc-copy">Copy link</button></div>
+				<div class="pk-oc-row"><span class="pk-oc-lab">Board</span><span id="pk-oc-board" class="pk-slots"></span></div>
+				<div class="pk-oc-row"><span class="pk-oc-lab">Dead cards <small>(folded / seen)</small></span><span id="pk-oc-dead" class="pk-slots"></span></div>
+				<div class="pk-grid" id="pk-grid" role="group" aria-label="Pick a card"></div>
+			</div>
+			<div class="tu-card pk-oc-res" id="pk-oc-res" aria-live="polite">
+				<div class="pk-oc-status" id="pk-oc-status">Pick at least one hand.</div>
+				<div class="pk-prog" id="pk-oc-prog" hidden><span></span></div>
+				<div class="tu-table-wrap"><table class="tu-table pk-oc-table" id="pk-oc-table"></table></div>
+				<div id="pk-oc-outs"></div>
+				<h3 class="pk-h3">Hands they end up with</h3>
+				<div class="tu-table-wrap"><table class="tu-table pk-oc-cats" id="pk-oc-cats"></table></div>
+			</div>
+		</section>
+
+		<section data-panel="ranks" role="tabpanel" hidden>
+			<div class="tu-card">
+				<h2 class="pk-h">Poker hand rankings, best to worst</h2>
+				<div class="tu-table-wrap"><table class="tu-table pk-rk" id="pk-rk"></table></div>
+				<p class="tu-note">"5 cards" counts the 2,598,960 possible five-card hands. "With 7 cards" is the chance that your best five out of seven cards (your two plus the five on the board, by the river) is that hand. Suits never rank: two equal hands split the pot. An ace can be high (A-K-Q-J-10) or low (5-4-3-2-A, the "wheel") in a straight, but a straight cannot wrap around (Q-K-A-2-3 is not a straight).</p>
+			</div>
+			<div class="tu-card">
+				<h2 class="pk-h">Starting hands chart</h2>
+				<p class="tu-note" style="margin-top:0;">Each square is a two-card starting hand: pairs on the diagonal, <b>suited</b> hands (both cards the same suit) above it, <b>offsuit</b> below. The number is its chance of winning against one random hand if both go all-in before the flop (ties count half). Tap a square for details.</p>
+				<div class="pk-seg2"><div class="tu-seg" id="pk-hm-mode" role="group" aria-label="Show"><button type="button" data-v="eq" aria-pressed="true">Win %</button><button type="button" data-v="top" aria-pressed="false">Top % of hands</button></div></div>
+				<div class="pk-hm" id="pk-hm" role="grid" aria-label="Starting hands chart"></div>
+				<div class="pk-hm-info" id="pk-hm-info" aria-live="polite">Tap a hand.</div>
+			</div>
+		</section>
+
+		<section data-panel="stats" role="tabpanel" hidden>
+			<div class="tu-card">
+				<h2 class="pk-h">My poker stats</h2>
+				<p class="tu-note" style="margin-top:0;">Kept only in this browser, from the hands you play on the Play tab.</p>
+				<div class="tu-stats" id="pk-st-tiles"></div>
+				<h3 class="pk-h3">Profit over time (in big blinds)</h3>
+				<div class="pk-graph" id="pk-st-graph"></div>
+				<h3 class="pk-h3">By position</h3>
+				<div class="tu-table-wrap"><table class="tu-table" id="pk-st-pos"></table></div>
+				<p><button type="button" class="tu-btn tu-btn--ghost" id="pk-st-reset">Reset my stats</button></p>
+			</div>
+		</section>
+
+		<div class="tu-toast" id="pk-toast" role="status"></div>
+
+		<div class="tu-seo">
+			<h2>How to play Texas Hold'em</h2>
+			<p>Each player gets two private cards (the <b>hole cards</b>). Five shared cards are dealt face up in the middle: three at once (the <b>flop</b>), then one (the <b>turn</b>), then one more (the <b>river</b>). There is a round of betting before the flop and after each of those deals. At the end, every player still in shows their cards and the best five-card hand made from their two cards and the five on the board wins the pot. You can use both, one or none of your own cards.</p>
+			<p>Before the cards are dealt the two players left of the dealer button post the <b>blinds</b> (a small and a big forced bet) so there is always something to play for. In a betting round you can <b>fold</b> (give up), <b>check</b> (pass, when nobody has bet), <b>call</b> (match the bet) or <b>bet / raise</b>. In <b>No-Limit</b> you can bet all your chips at any time (<b>all-in</b>). The button moves one seat to the left after every hand.</p>
+			<h3>Betting rules used here</h3>
+			<ul>
+				<li>The smallest bet is the big blind. A raise must be at least as big as the last bet or raise in that round: if someone bets 100, the next raise is to at least 200; if they raise from 100 to 300, the next is to at least 500.</li>
+				<li>You may go all-in for less than that. An all-in that is smaller than a full raise does <b>not</b> reopen the betting: players who already acted can only call or fold.</li>
+				<li>If a player is all-in and others keep betting, the extra chips go into a <b>side pot</b> that only the players who put them in can win. Pots that tie are split; an odd chip goes to the first winner to the left of the button.</li>
+				<li>Heads-up (two players) the button posts the small blind and acts first before the flop, last after it.</li>
+			</ul>
+			<h3>Pot odds, outs and equity</h3>
+			<p><b>Equity</b> is your share of the pot on average: your chance of winning plus your share of ties. <b>Pot odds</b> compare the price of a call with what you can win: calling 50 into a pot that will then hold 200 needs at least 50 / 200 = 25% equity to break even. <b>Outs</b> are the unseen cards that improve your hand to a likely winner; with 9 outs on the flop (a flush draw) you hit by the river about 35% of the time (the quick rule: outs x 4 on the flop, x 2 on the turn).</p>
+			<h3>How the odds calculator works</h3>
+			<p>When every player's cards are known it deals <b>every</b> possible remaining board and counts who wins: before the flop with two known hands that is all 1,712,304 boards, which runs in about a second in the background. When some hands are random it is a <b>Monte Carlo</b> simulation: hundreds of thousands of random deals, with the margin of error (one standard error) shown next to the result. AA against KK, for example, wins about 82% of the time (81.9% averaged over the suits; a bit less when the kings share no suit with the aces, because of their extra flush chances).</p>
+			<h3>How the starting hands chart was made</h3>
+			<p>For each of the 169 starting hands one representative was played against all 1,225 possible opponent hands, each on 1,000 random boards: about 1.2 million showdowns per hand, so every number is good to about 0.1%. Pocket aces win 85.2% against a random hand, the worst hand (3-2 offsuit) about 32%. Against several opponents every hand's chances drop, and big pairs suffer the most.</p>
+			<h3>Questions</h3>
+			<dl>
+				<dt>Is this real-money poker or gambling?</dt><dd>No. Only play chips with no value; there is nothing to buy, win or cash out, and no links to gambling sites.</dd>
+				<dt>Do the computer players cheat?</dt><dd>No. They only see their own two cards and what everyone did. They estimate their chances by simulating run-outs against the kinds of hands your bets suggest. The deck is shuffled fairly with your browser's random numbers.</dd>
+				<dt>What do VPIP and PFR mean?</dt><dd>VPIP ("voluntarily put money in pot") is the share of hands where you called or raised before the flop (posting a blind doesn't count). PFR is the share where you raised before the flop. Good players are usually around 20-25% VPIP at a full table.</dd>
+				<dt>Which is better, a flush or a straight?</dt><dd>A flush. It is rarer: with five cards there are 5,108 flushes against 10,200 straights.</dd>
+				<dt>Is my game saved?</dt><dd>Yes, in this browser: close the page in the middle of a hand and continue later. Your stats stay here too; nothing is sent anywhere.</dd>
+			</dl>
+		</div>
+	</div>

@@ -100,6 +100,14 @@
  ],
  "tools": [
   {
+   "href": "/poker",
+   "title": "Poker",
+   "icon": "/img/poker-logo.png",
+   "desc": "Play Texas Hold'em against computer players with play money, and calculate your odds for any hand.",
+   "added": "2026-10-23",
+   "kind": "tool"
+  },
+  {
    "href": "/backgammon",
    "title": "Backgammon",
    "icon": "/img/backgammon-logo.png",
@@ -186,22 +194,14 @@
    "desc": "Train a real neural network in your browser: pick the data, layers and activation, and watch the decision boundary, the loss and every hidden neuron.",
    "added": "2026-10-19",
    "kind": "tool"
-  },
-  {
-   "href": "/llm-simulator",
-   "title": "Toy Language Model Simulator",
-   "icon": "/img/llm-simulator-logo.png",
-   "desc": "See how a language model works in miniature: tokens, next-word probabilities, temperature, word vectors and attention.",
-   "added": "2026-10-19",
-   "kind": "tool"
   }
  ],
  "latest": [
   {
-   "href": "/backgammon",
-   "title": "Backgammon",
-   "icon": "/img/backgammon-logo.png",
-   "desc": "Play backgammon against the computer at three levels, with hints, the doubling cube and your statistics.",
+   "href": "/poker",
+   "title": "Poker",
+   "icon": "/img/poker-logo.png",
+   "desc": "Play Texas Hold'em against computer players with play money, and calculate your odds for any hand.",
    "added": "2026-10-23",
    "kind": "tool"
   },
@@ -212,6 +212,14 @@
    "desc": "Mean, median, standard deviation, quartiles, regression, distributions and hypothesis tests, with the working shown.",
    "added": "2026-10-23",
    "kind": "calculator"
+  },
+  {
+   "href": "/backgammon",
+   "title": "Backgammon",
+   "icon": "/img/backgammon-logo.png",
+   "desc": "Play backgammon against the computer at three levels, with hints, the doubling cube and your statistics.",
+   "added": "2026-10-23",
+   "kind": "tool"
   },
   {
    "href": "/birthday-personality",
@@ -251,14 +259,6 @@
    "icon": "/img/site-traffic-logo.png",
    "desc": "How popular is a website? Public popularity rank and 30-day trend, domain age, hosting and Internet Archive history. An honest alternative to traffic-estimate extensions.",
    "added": "2026-10-22",
-   "kind": "tool"
-  },
-  {
-   "href": "/birthday",
-   "title": "Famous Birthdays",
-   "icon": "/img/birthday-logo.png",
-   "desc": "See which famous people were born today or on your birthday, who shares your exact date, and their zodiac signs.",
-   "added": "2026-10-21",
    "kind": "tool"
   }
  ]

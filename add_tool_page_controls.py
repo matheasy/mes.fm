@@ -65,6 +65,7 @@ TOOLS = [  # (directory, compact-bar title[, home path of the site the page belo
     ("baby-feeding-log", "Baby Feeding Log"),
     ("domain-lookup", "Domain Lookup"),
     ("site-traffic", "Site Traffic"),
+    ("poker", "Poker"),   # 2026-10-23
     ("backgammon", "Backgammon"),   # 2026-10-23
     ("statistics-calculator", "Statistics Calculator"),   # 2026-10-23
     ("birthday-personality", "Birthday Personality"),   # 2026-10-23
