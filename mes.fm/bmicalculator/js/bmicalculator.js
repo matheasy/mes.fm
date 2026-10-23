@@ -107,7 +107,7 @@
 	function chartSvg(o) {
 		o = o || {}; var L = o.labels || {}, fmt = o.fmt || function (n, d) { return n.toFixed(d || 0); };
 		var W = o.w || 640, H = o.h || 400, ml = 56, mr = 14, mt = 12, mb = 46, pw = W - ml - mr, ph = H - mt - mb;
-		var kg = +o.kg || 0, cm = +o.cm || 0, R = chartRange(kg, cm), imp = !!o.imperial;
+		var kg = +o.kg || 0, cm = +o.cm || 0, R = o.range || chartRange(kg, cm), imp = !!o.imperial;
 		var X = function (h) { return ml + (h - R.h0) / (R.h1 - R.h0) * pw; }, Y = function (w) { return mt + ph - (w - R.w0) / (R.w1 - R.w0) * ph; };
 		var r1 = function (v) { return Math.round(v * 10) / 10; };
 		var s = '<svg class="bm-chart" viewBox="0 0 ' + W + " " + H + '" xmlns="http://www.w3.org/2000/svg" role="img"' + (o.aria ? ' aria-label="' + o.aria + '"' : "") + '><defs><clipPath id="bmc-clip"><rect x="' + ml + '" y="' + mt + '" width="' + pw + '" height="' + ph + '"/></clipPath></defs><g clip-path="url(#bmc-clip)">';
@@ -163,7 +163,7 @@
 		return s + "</svg>";
 	}
 	function chartPoint(o, sx, sy) {      // inverse of chartSvg's mapping (viewBox units) -> { cm, kg } or null outside the plot
-		var W = o.w || 640, H = o.h || 400, ml = 56, mr = 14, mt = 12, mb = 46, pw = W - ml - mr, ph = H - mt - mb, R = chartRange(+o.kg || 0, +o.cm || 0);
+		var W = o.w || 640, H = o.h || 400, ml = 56, mr = 14, mt = 12, mb = 46, pw = W - ml - mr, ph = H - mt - mb, R = o.range || chartRange(+o.kg || 0, +o.cm || 0);
 		if (sx < ml || sx > ml + pw || sy < mt || sy > mt + ph) return null;
 		return { cm: R.h0 + (sx - ml) / pw * (R.h1 - R.h0), kg: R.w0 + (mt + ph - sy) / ph * (R.w1 - R.w0) };
 	}
@@ -210,7 +210,7 @@
 			verdictSmall: "BMI is a screening guide, not a diagnosis. It does not account for muscle, build, age or ethnicity.",
 			enterFirst: "Enter your weight and height first", pickDate: "Pick a date", savedOn: "Saved {d}",
 			thDate: "Date", thWeight: "Weight", thBmi: "BMI", thCategory: "Category", thNote: "Note", deleteAria: "Delete the entry of {d}",
-			chartMore: "Save another measurement to see your BMI over time.", entryDeleted: "Entry deleted.", undo: "Undo",
+			chartMore: "Save another measurement to see your BMI over time.", entryDeleted: "Entry deleted.", undo: "Undo", chartTry: "Try other numbers on the chart", chartTryHint: "Drag or tap anywhere on the chart.", chartUse: "Use these numbers", chartBack: "Back to my numbers",
 			csvHeader: "Date\tWeight (kg)\tHeight (cm)\tBMI\tNote", csvCopied: "Copied: paste it into a spreadsheet",
 			linkCopied: "Link copied", linkCopiedAll: "Link copied: it holds your whole history",
 			loadingOld: "Loading the calculation from your shared link…", oldFailed: "That old shared link could not be loaded (it may have expired). Enter your weight and height above.",
@@ -247,7 +247,7 @@
 			verdictSmall: "El IMC es una herramienta de cribado, no un diagnóstico. No tiene en cuenta la masa muscular, la complexión, la edad ni el origen étnico.",
 			enterFirst: "Primero escribe tu peso y tu altura", pickDate: "Elige una fecha", savedOn: "Guardado: {d}",
 			thDate: "Fecha", thWeight: "Peso", thBmi: "IMC", thCategory: "Categoría", thNote: "Nota", deleteAria: "Borrar la medición del {d}",
-			chartMore: "Guarda otra medición para ver la evolución de tu IMC.", entryDeleted: "Medición borrada.", undo: "Deshacer",
+			chartMore: "Guarda otra medición para ver la evolución de tu IMC.", entryDeleted: "Medición borrada.", undo: "Deshacer", chartTry: "Probar otros valores en la gráfica", chartTryHint: "Arrastra o toca la gráfica.", chartUse: "Usar estos valores", chartBack: "Volver a mis datos",
 			csvHeader: "Fecha\tPeso (kg)\tAltura (cm)\tIMC\tNota", csvCopied: "Copiado: pégalo en una hoja de cálculo",
 			linkCopied: "Enlace copiado", linkCopiedAll: "Enlace copiado: incluye todo tu historial",
 			loadingOld: "Cargando el cálculo de tu enlace…", oldFailed: "No se pudo cargar ese enlace antiguo (puede haber caducado). Escribe tu peso y tu altura arriba.",
@@ -284,7 +284,7 @@
 			verdictSmall: "O IMC é uma ferramenta de triagem, não um diagnóstico. Ele não considera massa muscular, estrutura corporal, idade nem etnia.",
 			enterFirst: "Informe primeiro seu peso e sua altura", pickDate: "Escolha uma data", savedOn: "Salvo: {d}",
 			thDate: "Data", thWeight: "Peso", thBmi: "IMC", thCategory: "Classificação", thNote: "Observação", deleteAria: "Excluir a medição de {d}",
-			chartMore: "Salve outra medição para ver a evolução do seu IMC.", entryDeleted: "Medição excluída.", undo: "Desfazer",
+			chartMore: "Salve outra medição para ver a evolução do seu IMC.", entryDeleted: "Medição excluída.", undo: "Desfazer", chartTry: "Testar outros valores no gráfico", chartTryHint: "Arraste ou toque no gráfico.", chartUse: "Usar estes valores", chartBack: "Voltar aos meus dados",
 			csvHeader: "Data\tPeso (kg)\tAltura (cm)\tIMC\tObservação", csvCopied: "Copiado: cole em uma planilha",
 			linkCopied: "Link copiado", linkCopiedAll: "Link copiado: ele contém todo o seu histórico",
 			loadingOld: "Carregando o cálculo do link compartilhado…", oldFailed: "Não foi possível carregar esse link antigo (talvez tenha expirado). Informe seu peso e sua altura acima.",
@@ -322,7 +322,7 @@
 			verdictSmall: "BMI adalah alat skrining, bukan diagnosis. BMI tidak memperhitungkan otot, bentuk tubuh, usia, atau etnis.",
 			enterFirst: "Masukkan berat dan tinggi badan dulu", pickDate: "Pilih tanggal", savedOn: "Tersimpan: {d}",
 			thDate: "Tanggal", thWeight: "Berat", thBmi: "BMI", thCategory: "Kategori", thNote: "Catatan", deleteAria: "Hapus pengukuran tanggal {d}",
-			chartMore: "Simpan satu pengukuran lagi untuk melihat perkembangan BMI Anda.", entryDeleted: "Pengukuran dihapus.", undo: "Urungkan",
+			chartMore: "Simpan satu pengukuran lagi untuk melihat perkembangan BMI Anda.", entryDeleted: "Pengukuran dihapus.", undo: "Urungkan", chartTry: "Coba angka lain di grafik", chartTryHint: "Geser atau ketuk grafik.", chartUse: "Pakai angka ini", chartBack: "Kembali ke angka saya",
 			csvHeader: "Tanggal\tBerat (kg)\tTinggi (cm)\tBMI\tCatatan", csvCopied: "Tersalin: tempel di spreadsheet",
 			linkCopied: "Tautan tersalin", linkCopiedAll: "Tautan tersalin: berisi seluruh riwayat Anda",
 			loadingOld: "Memuat perhitungan dari tautan Anda…", oldFailed: "Tautan lama itu tidak bisa dimuat (mungkin sudah kedaluwarsa). Masukkan berat dan tinggi badan di atas.",
@@ -359,7 +359,7 @@
 			verdictSmall: "L’IMC est un outil de dépistage, pas un diagnostic. Il ne tient compte ni de la masse musculaire, ni de la morphologie, ni de l’âge, ni de l’origine.",
 			enterFirst: "Entrez d’abord votre poids et votre taille", pickDate: "Choisissez une date", savedOn: "Enregistré : {d}",
 			thDate: "Date", thWeight: "Poids", thBmi: "IMC", thCategory: "Catégorie", thNote: "Note", deleteAria: "Supprimer la mesure du {d}",
-			chartMore: "Enregistrez une autre mesure pour voir l’évolution de votre IMC.", entryDeleted: "Mesure supprimée.", undo: "Annuler",
+			chartMore: "Enregistrez une autre mesure pour voir l’évolution de votre IMC.", entryDeleted: "Mesure supprimée.", undo: "Annuler", chartTry: "Essayer d’autres valeurs sur le graphique", chartTryHint: "Faites glisser ou touchez le graphique.", chartUse: "Utiliser ces valeurs", chartBack: "Revenir à mes valeurs",
 			csvHeader: "Date\tPoids (kg)\tTaille (cm)\tIMC\tNote", csvCopied: "Copié : collez-le dans un tableur",
 			linkCopied: "Lien copié", linkCopiedAll: "Lien copié : il contient tout votre historique",
 			loadingOld: "Chargement du calcul depuis votre lien…", oldFailed: "Ce lien ancien n’a pas pu être chargé (il a peut-être expiré). Entrez votre poids et votre taille ci-dessus.",
@@ -396,7 +396,7 @@
 			verdictSmall: "Der BMI ist ein grober Richtwert, keine Diagnose. Muskelmasse, Körperbau, Alter und Herkunft berücksichtigt er nicht.",
 			enterFirst: "Geben Sie zuerst Gewicht und Größe ein", pickDate: "Wählen Sie ein Datum", savedOn: "Gespeichert: {d}",
 			thDate: "Datum", thWeight: "Gewicht", thBmi: "BMI", thCategory: "Kategorie", thNote: "Notiz", deleteAria: "Messung vom {d} löschen",
-			chartMore: "Speichern Sie eine weitere Messung, um Ihren BMI-Verlauf zu sehen.", entryDeleted: "Messung gelöscht.", undo: "Rückgängig",
+			chartMore: "Speichern Sie eine weitere Messung, um Ihren BMI-Verlauf zu sehen.", entryDeleted: "Messung gelöscht.", undo: "Rückgängig", chartTry: "Andere Werte im Diagramm ausprobieren", chartTryHint: "Ziehen oder tippen Sie ins Diagramm.", chartUse: "Diese Werte übernehmen", chartBack: "Zurück zu meinen Werten",
 			csvHeader: "Datum\tGewicht (kg)\tGröße (cm)\tBMI\tNotiz", csvCopied: "Kopiert: in eine Tabelle einfügen",
 			linkCopied: "Link kopiert", linkCopiedAll: "Link kopiert: Er enthält Ihren gesamten Verlauf",
 			loadingOld: "Die Berechnung aus Ihrem Link wird geladen…", oldFailed: "Dieser alte Link konnte nicht geladen werden (vielleicht ist er abgelaufen). Geben Sie oben Gewicht und Größe ein.",
@@ -433,7 +433,7 @@
 			verdictSmall: "Il BMI è uno strumento di screening, non una diagnosi. Non tiene conto di muscoli, corporatura, età né etnia.",
 			enterFirst: "Inserisci prima peso e altezza", pickDate: "Scegli una data", savedOn: "Salvato: {d}",
 			thDate: "Data", thWeight: "Peso", thBmi: "BMI", thCategory: "Categoria", thNote: "Nota", deleteAria: "Elimina la misurazione del {d}",
-			chartMore: "Salva un’altra misurazione per vedere l’andamento del tuo BMI.", entryDeleted: "Misurazione eliminata.", undo: "Annulla",
+			chartMore: "Salva un’altra misurazione per vedere l’andamento del tuo BMI.", entryDeleted: "Misurazione eliminata.", undo: "Annulla", chartTry: "Prova altri valori sul grafico", chartTryHint: "Trascina o tocca il grafico.", chartUse: "Usa questi valori", chartBack: "Torna ai miei valori",
 			csvHeader: "Data\tPeso (kg)\tAltezza (cm)\tBMI\tNota", csvCopied: "Copiato: incollalo in un foglio di calcolo",
 			linkCopied: "Link copiato", linkCopiedAll: "Link copiato: contiene tutto il tuo storico",
 			loadingOld: "Caricamento del calcolo dal link condiviso…", oldFailed: "Non è stato possibile caricare quel vecchio link (forse è scaduto). Inserisci peso e altezza qui sopra.",
@@ -470,7 +470,7 @@
 			verdictSmall: "VKİ bir tarama aracıdır, tanı değildir. Kas kütlesini, vücut yapısını, yaşı ve etnik kökeni hesaba katmaz.",
 			enterFirst: "Önce kilonuzu ve boyunuzu girin", pickDate: "Bir tarih seçin", savedOn: "Kaydedildi: {d}",
 			thDate: "Tarih", thWeight: "Kilo", thBmi: "VKİ", thCategory: "Sınıf", thNote: "Not", deleteAria: "{d} tarihli ölçümü sil",
-			chartMore: "VKİ değişiminizi görmek için bir ölçüm daha kaydedin.", entryDeleted: "Ölçüm silindi.", undo: "Geri al",
+			chartMore: "VKİ değişiminizi görmek için bir ölçüm daha kaydedin.", entryDeleted: "Ölçüm silindi.", undo: "Geri al", chartTry: "Grafikte başka değerler deneyin", chartTryHint: "Grafiği sürükleyin veya dokunun.", chartUse: "Bu değerleri kullan", chartBack: "Kendi değerlerime dön",
 			csvHeader: "Tarih\tKilo (kg)\tBoy (cm)\tVKİ\tNot", csvCopied: "Kopyalandı: bir tabloya yapıştırın",
 			linkCopied: "Bağlantı kopyalandı", linkCopiedAll: "Bağlantı kopyalandı: tüm geçmişinizi içerir",
 			loadingOld: "Paylaşılan bağlantıdaki hesap yükleniyor…", oldFailed: "Bu eski bağlantı yüklenemedi (süresi dolmuş olabilir). Kilonuzu ve boyunuzu yukarıya girin.",
@@ -508,7 +508,7 @@
 			verdictSmall: "BMI là công cụ sàng lọc, không phải chẩn đoán. Chỉ số này không tính đến cơ bắp, vóc dáng, tuổi hay chủng tộc.",
 			enterFirst: "Hãy nhập cân nặng và chiều cao trước", pickDate: "Chọn một ngày", savedOn: "Đã lưu {d}",
 			thDate: "Ngày", thWeight: "Cân nặng", thBmi: "BMI", thCategory: "Phân loại", thNote: "Ghi chú", deleteAria: "Xóa lần đo ngày {d}",
-			chartMore: "Lưu thêm một lần đo để xem BMI thay đổi theo thời gian.", entryDeleted: "Đã xóa lần đo.", undo: "Hoàn tác",
+			chartMore: "Lưu thêm một lần đo để xem BMI thay đổi theo thời gian.", entryDeleted: "Đã xóa lần đo.", undo: "Hoàn tác", chartTry: "Thử số khác trên biểu đồ", chartTryHint: "Kéo hoặc chạm vào biểu đồ.", chartUse: "Dùng các số này", chartBack: "Quay lại số của tôi",
 			csvHeader: "Ngày\tCân nặng (kg)\tChiều cao (cm)\tBMI\tGhi chú", csvCopied: "Đã sao chép: dán vào bảng tính",
 			linkCopied: "Đã sao chép liên kết", linkCopiedAll: "Đã sao chép liên kết: chứa toàn bộ lịch sử của bạn",
 			loadingOld: "Đang tải phép tính từ liên kết…", oldFailed: "Không tải được liên kết cũ đó (có thể đã hết hạn). Hãy nhập cân nặng và chiều cao ở trên.",
@@ -545,7 +545,7 @@
 			verdictSmall: "BMI to narzędzie przesiewowe, a nie diagnoza. Nie uwzględnia mięśni, budowy ciała, wieku ani pochodzenia etnicznego.",
 			enterFirst: "Najpierw wpisz wagę i wzrost", pickDate: "Wybierz datę", savedOn: "Zapisano: {d}",
 			thDate: "Data", thWeight: "Waga", thBmi: "BMI", thCategory: "Kategoria", thNote: "Notatka", deleteAria: "Usuń pomiar z dnia {d}",
-			chartMore: "Zapisz kolejny pomiar, aby zobaczyć, jak zmienia się Twoje BMI.", entryDeleted: "Pomiar usunięty.", undo: "Cofnij",
+			chartMore: "Zapisz kolejny pomiar, aby zobaczyć, jak zmienia się Twoje BMI.", entryDeleted: "Pomiar usunięty.", undo: "Cofnij", chartTry: "Sprawdź inne wartości na wykresie", chartTryHint: "Przeciągnij lub dotknij wykresu.", chartUse: "Użyj tych wartości", chartBack: "Wróć do moich danych",
 			csvHeader: "Data\tWaga (kg)\tWzrost (cm)\tBMI\tNotatka", csvCopied: "Skopiowano: wklej do arkusza",
 			linkCopied: "Link skopiowany", linkCopiedAll: "Link skopiowany: zawiera całą Twoją historię",
 			loadingOld: "Wczytywanie obliczeń z udostępnionego linku…", oldFailed: "Nie udało się wczytać tego starego linku (mógł wygasnąć). Wpisz wagę i wzrost powyżej.",
@@ -582,7 +582,7 @@
 			verdictSmall: "مؤشر كتلة الجسم أداة فحص أولي وليس تشخيصًا، ولا يأخذ في الحسبان العضلات أو بنية الجسم أو العمر أو الأصل العرقي.",
 			enterFirst: "أدخل وزنك وطولك أولًا", pickDate: "اختر تاريخًا", savedOn: "تم الحفظ: {d}",
 			thDate: "التاريخ", thWeight: "الوزن", thBmi: "المؤشر", thCategory: "التصنيف", thNote: "ملاحظة", deleteAria: "حذف قياس {d}",
-			chartMore: "احفظ قياسًا آخر لترى تغيّر مؤشرك مع الوقت.", entryDeleted: "تم حذف القياس.", undo: "تراجع",
+			chartMore: "احفظ قياسًا آخر لترى تغيّر مؤشرك مع الوقت.", entryDeleted: "تم حذف القياس.", undo: "تراجع", chartTry: "جرّب قيمًا أخرى على الرسم", chartTryHint: "اسحب أو انقر على الرسم.", chartUse: "استخدم هذه القيم", chartBack: "العودة إلى قيمي",
 			csvHeader: "التاريخ\tالوزن (kg)\tالطول (cm)\tالمؤشر\tملاحظة", csvCopied: "تم النسخ: الصقه في جدول بيانات",
 			linkCopied: "تم نسخ الرابط", linkCopiedAll: "تم نسخ الرابط: يحتوي على سجلّك كاملًا",
 			loadingOld: "جارٍ تحميل الحساب من الرابط…", oldFailed: "تعذّر تحميل ذلك الرابط القديم (ربما انتهت صلاحيته). أدخل وزنك وطولك في الأعلى.",
@@ -620,7 +620,7 @@
 			verdictSmall: "बीएमआई शुरुआती जाँच का एक पैमाना है, बीमारी का निदान नहीं। यह मांसपेशियों, शरीर की बनावट, उम्र या नस्ल को नहीं देखता।",
 			enterFirst: "पहले अपना वज़न और लंबाई डालें", pickDate: "कोई तारीख़ चुनें", savedOn: "सेव हुआ: {d}",
 			thDate: "तारीख़", thWeight: "वज़न", thBmi: "बीएमआई", thCategory: "श्रेणी", thNote: "नोट", deleteAria: "{d} का माप हटाएँ",
-			chartMore: "समय के साथ अपना बीएमआई देखने के लिए एक और माप सेव करें।", entryDeleted: "माप हटा दिया गया।", undo: "वापस लाएँ",
+			chartMore: "समय के साथ अपना बीएमआई देखने के लिए एक और माप सेव करें।", entryDeleted: "माप हटा दिया गया।", undo: "वापस लाएँ", chartTry: "चार्ट पर दूसरे मान आज़माएँ", chartTryHint: "चार्ट पर खींचें या टैप करें।", chartUse: "ये मान इस्तेमाल करें", chartBack: "मेरे मानों पर वापस जाएँ",
 			csvHeader: "तारीख़\tवज़न (kg)\tलंबाई (cm)\tबीएमआई\tनोट", csvCopied: "कॉपी हो गया: इसे स्प्रेडशीट में पेस्ट करें",
 			linkCopied: "लिंक कॉपी हो गया", linkCopiedAll: "लिंक कॉपी हो गया: इसमें आपका पूरा इतिहास है",
 			loadingOld: "शेयर किए गए लिंक से हिसाब लोड हो रहा है…", oldFailed: "वह पुराना लिंक लोड नहीं हो सका (शायद उसकी अवधि ख़त्म हो गई)। ऊपर अपना वज़न और लंबाई डालें।",
@@ -773,13 +773,42 @@
 	}
 	// weight-for-height chart: the classic BMI chart with your own point on it (BM.chartSvg in lib.js)
 	function chartLabels() { return { weight: t("weight"), height: t("height"), you: t("yourBmi"), under: esc(catName("Underweight")), normal: esc(catName("Normal weight")), over: esc(catName("Overweight")), obese: esc(catName("Obese")) }; }
+	// "Try other numbers": drag / tap the chart to move the point (the axes stay put), read height, weight and BMI; Use these numbers or Back to my numbers
+	var exp = null;
+	function ht(cm) { var f = BM.cmToFtIn(cm), a = tr(cm, 0) + " cm", b = f.ft + "\u2032 " + Math.round(f.inch) + "\u2033", h = st.units === "i" ? b : st.units === "m" ? a : a + " (" + b + ")"; return RTL ? "\u2066" + h + "\u2069" : h; }
 	function drawChart() {
-		var box = $("bm-chart"); if (!box || !cur) return;
-		var narrow = box.clientWidth && box.clientWidth < 480;
-		box.innerHTML = BM.chartSvg({ kg: cur.kg, cm: cur.cm, scale: st.scale, imperial: st.units === "i", w: 640, h: narrow ? 520 : 400, labels: chartLabels(), fmt: fx }) +
+		var box = $("bm-wchart"); if (!box || !cur) return;
+		var narrow = box.clientWidth && box.clientWidth < 480, o = { kg: exp ? exp.kg : cur.kg, cm: exp ? exp.cm : cur.cm, scale: st.scale, imperial: st.units === "i", w: 640, h: narrow ? 520 : 400, labels: chartLabels(), fmt: fx };
+		if (exp) o.range = exp.R;
+		var bar = '<div class="bm-chartbar"><button type="button" class="tu-chip bm-try" aria-pressed="' + !!exp + '">&#9995; ' + t("chartTry") + "</button>";
+		if (exp) {
+			var b = BM.bmi(exp.kg, exp.cm), c = BM.category(b, st.scale), moved = Math.abs(exp.kg - cur.kg) > 0.05 || Math.abs(exp.cm - cur.cm) > 0.05;
+			bar += '<span class="bm-chartread" aria-live="polite"><b>' + t("height") + ":</b> " + ht(exp.cm) + " &middot; <b>" + t("weight") + ":</b> " + wt(exp.kg) + " &middot; <b>BMI " + fx(b, 1) + "</b> " + esc(catName(c.name)) + "</span>";
+			if (moved) bar += '<button type="button" class="tu-chip bm-use">' + t("chartUse") + '</button><button type="button" class="tu-chip bm-back">&#8634; ' + t("chartBack") + "</button>";
+			else bar += '<span class="bm-charthint">' + t("chartTryHint") + "</span>";
+		}
+		box.innerHTML = bar + "</div>" + BM.chartSvg(o).replace('<svg class="bm-chart"', '<svg class="bm-chart' + (exp ? " is-live" : "") + '"') +
 			(EN_PAGE ? '<p class="bm-chartlink">&#128200; <a href="/bmicalculator/bmi-chart?kg=' + BM.trim(cur.kg, 2) + "&cm=" + BM.trim(cur.cm, 1) + '">Open the full BMI chart with your point on it &rarr;</a></p>' : "");
+		box._o = o;
 	}
-	if (window.ResizeObserver && $("bm-chart")) { var chW = 0; new ResizeObserver(function () { var w = $("bm-chart").clientWidth; if ((w < 480) !== (chW < 480)) { chW = w; drawChart(); } chW = w; }).observe($("bm-chart")); }
+	(function () {
+		var box = $("bm-wchart"); if (!box) return; var drag = false;
+		function at(e) {
+			var svg = box.querySelector("svg"); if (!svg || !box._o) return;
+			var r = svg.getBoundingClientRect(), vb = svg.viewBox.baseVal, sx = (e.clientX - r.left) / r.width * vb.width, sy = (e.clientY - r.top) / r.height * vb.height;
+			var p = BM.chartPoint(box._o, sx, sy); if (!p) return;
+			exp.cm = Math.round(p.cm * 2) / 2; exp.kg = Math.round(p.kg * 2) / 2; drawChart();
+		}
+		box.addEventListener("click", function (e) {
+			if (e.target.closest(".bm-try")) { exp = exp ? null : { kg: cur.kg, cm: cur.cm, R: BM.chartRange(cur.kg, cur.cm) }; drawChart(); return; }
+			if (e.target.closest(".bm-back")) { exp.kg = cur.kg; exp.cm = cur.cm; drawChart(); return; }
+			if (e.target.closest(".bm-use")) { st.kg = String(exp.kg); st.cm = String(exp.cm); var k = exp; fillOthers(); save(); update(); exp = { kg: k.kg, cm: k.cm, R: k.R }; drawChart(); return; }
+		});
+		box.addEventListener("pointerdown", function (e) { if (!exp || !e.target.closest("svg")) return; drag = true; try { box.setPointerCapture(e.pointerId); } catch (x) {} at(e); e.preventDefault(); });
+		box.addEventListener("pointermove", function (e) { if (drag) at(e); });
+		function end() { drag = false; } box.addEventListener("pointerup", end); box.addEventListener("pointercancel", end);
+	})();
+	if (window.ResizeObserver && $("bm-wchart")) { var chW = 0; new ResizeObserver(function () { var w = $("bm-wchart").clientWidth; if ((w < 480) !== (chW < 480)) { chW = w; drawChart(); } chW = w; }).observe($("bm-wchart")); }
 
 	/* ---------- history ---------- */
 	function today() { var d = new Date(), p = function (n) { return (n < 10 ? "0" : "") + n; }; return d.getFullYear() + "-" + p(d.getMonth() + 1) + "-" + p(d.getDate()); }

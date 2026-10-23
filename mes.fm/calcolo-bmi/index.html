@@ -399,6 +399,13 @@ body.dark-mode #bm .bm-regt {fill:#f2f2f2;} body.dark-mode #bm .bm-chart .bm-gl 
 body.dark-mode #bm .bm-you {fill:#fff;stroke:#1a1a1a;} body.dark-mode #bm .bm-you-l {stroke:#e8e8e8;}
 body.dark-mode #bm .bm-yout {fill:#fff;stroke:#1a1a1a;}
 
+	/* interactive weight-for-height chart */
+	.bm-chartbar {display:flex;flex-wrap:wrap;gap:0.4em 0.6em;align-items:center;margin:0.8em 0 0.4em;}
+	.bm-chartread {font-size:0.95em;} .bm-charthint {font-size:0.88em;color:#5d6673;}
+	#bm-wchart svg.is-live {cursor:crosshair;touch-action:none;}
+	#bm-wchart svg.is-live .bm-you {r:9px;}
+	body.dark-mode #bm .bm-charthint {color:#aab3bf;}
+
 
 	@media print {
 		.header, .info-bar-container, .side-bar, #footer, #comments-button, #comments-box, .color-box { display:none !important; }
@@ -516,6 +523,7 @@ body.dark-mode #bm .bm-yout {fill:#fff;stroke:#1a1a1a;}
 	body.dark-mode .tu .bm-you{fill:#d1d6dc;stroke:#333333}
 	body.dark-mode .tu .bm-you-l{stroke:#394a60}
 	body.dark-mode .tu .bm-yout{fill:#d1d6dc;stroke:#333333}
+	body.dark-mode .bm-charthint{color:#999da3}
 	/* TOOL-DARK:END */
 /* Floating compact header bar: once the full header + nav scroll out of
    view, a slim fixed bar (small logo, title, as many nav links as fit)
@@ -808,7 +816,7 @@ body.is-stuck #navbar.hide { position: fixed; top: 56px; right: 8px; }
 				<div class="tu-label">Dove ti trovi sulla scala</div>
 				<div class="bm-gauge" id="bm-gauge" aria-hidden="true"></div>
 				<ul class="bm-cats" id="bm-cats"></ul>
-				<div class="bm-chartbox" id="bm-chart"></div>
+				<div class="bm-chartbox" id="bm-wchart"></div>
 			</div>
 			<div class="bm-btns">
 				<button type="button" class="tu-btn tu-btn--primary" id="bm-link">Copia il link a questo risultato</button>
@@ -924,7 +932,7 @@ body.is-stuck #navbar.hide { position: fixed; top: 56px; right: 8px; }
             hide_search:false,
             current_tab:0
         }        </script><!-- FASTCOMMENTS-LAZY: widget init moved to main_js/main.js -- it pulls embed.min.js only when #fastcomments-widget nears the viewport or on the first Comments-toggle click, so it no longer blocks first render -->                <script src="https://mes.fm/main_js/lazysizes.min.js?v=1.0.3" async></script>
-	<script src="/bmicalculator/js/bmicalculator.js?v=11" defer></script>
+	<script src="/bmicalculator/js/bmicalculator.js?v=12" defer></script>
             <script src="https://mes.fm/main_js/main.js?v=1.0.5"></script>    <!-- PAGEVIEW-TRACKING-INSERTED --><script src="https://mes.fm/main_js/track.js" defer></script><script>document.getElementById('copyright-year').textContent = new Date().getFullYear();</script><script src="/main_js/info-bar-fit.js" defer></script><script>
   // Floating compact header bar (see #compact-nav CSS): appears once the
   // header + nav bar have scrolled off the top; nav links that don't fit

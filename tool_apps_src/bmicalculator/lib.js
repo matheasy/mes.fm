@@ -107,7 +107,7 @@
 	function chartSvg(o) {
 		o = o || {}; var L = o.labels || {}, fmt = o.fmt || function (n, d) { return n.toFixed(d || 0); };
 		var W = o.w || 640, H = o.h || 400, ml = 56, mr = 14, mt = 12, mb = 46, pw = W - ml - mr, ph = H - mt - mb;
-		var kg = +o.kg || 0, cm = +o.cm || 0, R = chartRange(kg, cm), imp = !!o.imperial;
+		var kg = +o.kg || 0, cm = +o.cm || 0, R = o.range || chartRange(kg, cm), imp = !!o.imperial;
 		var X = function (h) { return ml + (h - R.h0) / (R.h1 - R.h0) * pw; }, Y = function (w) { return mt + ph - (w - R.w0) / (R.w1 - R.w0) * ph; };
 		var r1 = function (v) { return Math.round(v * 10) / 10; };
 		var s = '<svg class="bm-chart" viewBox="0 0 ' + W + " " + H + '" xmlns="http://www.w3.org/2000/svg" role="img"' + (o.aria ? ' aria-label="' + o.aria + '"' : "") + '><defs><clipPath id="bmc-clip"><rect x="' + ml + '" y="' + mt + '" width="' + pw + '" height="' + ph + '"/></clipPath></defs><g clip-path="url(#bmc-clip)">';
@@ -163,7 +163,7 @@
 		return s + "</svg>";
 	}
 	function chartPoint(o, sx, sy) {      // inverse of chartSvg's mapping (viewBox units) -> { cm, kg } or null outside the plot
-		var W = o.w || 640, H = o.h || 400, ml = 56, mr = 14, mt = 12, mb = 46, pw = W - ml - mr, ph = H - mt - mb, R = chartRange(+o.kg || 0, +o.cm || 0);
+		var W = o.w || 640, H = o.h || 400, ml = 56, mr = 14, mt = 12, mb = 46, pw = W - ml - mr, ph = H - mt - mb, R = o.range || chartRange(+o.kg || 0, +o.cm || 0);
 		if (sx < ml || sx > ml + pw || sy < mt || sy > mt + ph) return null;
 		return { cm: R.h0 + (sx - ml) / pw * (R.h1 - R.h0), kg: R.w0 + (mt + ph - sy) / ph * (R.w1 - R.w0) };
 	}

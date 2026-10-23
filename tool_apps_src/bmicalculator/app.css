@@ -91,3 +91,10 @@ body.dark-mode #bm .bm-iso {stroke:rgba(255,255,255,0.22);} body.dark-mode #bm .
 body.dark-mode #bm .bm-regt {fill:#f2f2f2;} body.dark-mode #bm .bm-chart .bm-gl {stroke:rgba(255,255,255,0.08);} body.dark-mode #bm .bm-ct {fill:#b8c0c8;}
 body.dark-mode #bm .bm-you {fill:#fff;stroke:#1a1a1a;} body.dark-mode #bm .bm-you-l {stroke:#e8e8e8;}
 body.dark-mode #bm .bm-yout {fill:#fff;stroke:#1a1a1a;}
+
+	/* interactive weight-for-height chart */
+	.bm-chartbar {display:flex;flex-wrap:wrap;gap:0.4em 0.6em;align-items:center;margin:0.8em 0 0.4em;}
+	.bm-chartread {font-size:0.95em;} .bm-charthint {font-size:0.88em;color:#5d6673;}
+	#bm-wchart svg.is-live {cursor:crosshair;touch-action:none;}
+	#bm-wchart svg.is-live .bm-you {r:9px;}
+	body.dark-mode #bm .bm-charthint {color:#aab3bf;}

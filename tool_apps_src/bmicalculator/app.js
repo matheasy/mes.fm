@@ -136,13 +136,42 @@
 	}
 	// weight-for-height chart: the classic BMI chart with your own point on it (BM.chartSvg in lib.js)
 	function chartLabels() { return { weight: t("weight"), height: t("height"), you: t("yourBmi"), under: esc(catName("Underweight")), normal: esc(catName("Normal weight")), over: esc(catName("Overweight")), obese: esc(catName("Obese")) }; }
+	// "Try other numbers": drag / tap the chart to move the point (the axes stay put), read height, weight and BMI; Use these numbers or Back to my numbers
+	var exp = null;
+	function ht(cm) { var f = BM.cmToFtIn(cm), a = tr(cm, 0) + " cm", b = f.ft + "\u2032 " + Math.round(f.inch) + "\u2033", h = st.units === "i" ? b : st.units === "m" ? a : a + " (" + b + ")"; return RTL ? "\u2066" + h + "\u2069" : h; }
 	function drawChart() {
-		var box = $("bm-chart"); if (!box || !cur) return;
-		var narrow = box.clientWidth && box.clientWidth < 480;
-		box.innerHTML = BM.chartSvg({ kg: cur.kg, cm: cur.cm, scale: st.scale, imperial: st.units === "i", w: 640, h: narrow ? 520 : 400, labels: chartLabels(), fmt: fx }) +
+		var box = $("bm-wchart"); if (!box || !cur) return;
+		var narrow = box.clientWidth && box.clientWidth < 480, o = { kg: exp ? exp.kg : cur.kg, cm: exp ? exp.cm : cur.cm, scale: st.scale, imperial: st.units === "i", w: 640, h: narrow ? 520 : 400, labels: chartLabels(), fmt: fx };
+		if (exp) o.range = exp.R;
+		var bar = '<div class="bm-chartbar"><button type="button" class="tu-chip bm-try" aria-pressed="' + !!exp + '">&#9995; ' + t("chartTry") + "</button>";
+		if (exp) {
+			var b = BM.bmi(exp.kg, exp.cm), c = BM.category(b, st.scale), moved = Math.abs(exp.kg - cur.kg) > 0.05 || Math.abs(exp.cm - cur.cm) > 0.05;
+			bar += '<span class="bm-chartread" aria-live="polite"><b>' + t("height") + ":</b> " + ht(exp.cm) + " &middot; <b>" + t("weight") + ":</b> " + wt(exp.kg) + " &middot; <b>BMI " + fx(b, 1) + "</b> " + esc(catName(c.name)) + "</span>";
+			if (moved) bar += '<button type="button" class="tu-chip bm-use">' + t("chartUse") + '</button><button type="button" class="tu-chip bm-back">&#8634; ' + t("chartBack") + "</button>";
+			else bar += '<span class="bm-charthint">' + t("chartTryHint") + "</span>";
+		}
+		box.innerHTML = bar + "</div>" + BM.chartSvg(o).replace('<svg class="bm-chart"', '<svg class="bm-chart' + (exp ? " is-live" : "") + '"') +
 			(EN_PAGE ? '<p class="bm-chartlink">&#128200; <a href="/bmicalculator/bmi-chart?kg=' + BM.trim(cur.kg, 2) + "&cm=" + BM.trim(cur.cm, 1) + '">Open the full BMI chart with your point on it &rarr;</a></p>' : "");
+		box._o = o;
 	}
-	if (window.ResizeObserver && $("bm-chart")) { var chW = 0; new ResizeObserver(function () { var w = $("bm-chart").clientWidth; if ((w < 480) !== (chW < 480)) { chW = w; drawChart(); } chW = w; }).observe($("bm-chart")); }
+	(function () {
+		var box = $("bm-wchart"); if (!box) return; var drag = false;
+		function at(e) {
+			var svg = box.querySelector("svg"); if (!svg || !box._o) return;
+			var r = svg.getBoundingClientRect(), vb = svg.viewBox.baseVal, sx = (e.clientX - r.left) / r.width * vb.width, sy = (e.clientY - r.top) / r.height * vb.height;
+			var p = BM.chartPoint(box._o, sx, sy); if (!p) return;
+			exp.cm = Math.round(p.cm * 2) / 2; exp.kg = Math.round(p.kg * 2) / 2; drawChart();
+		}
+		box.addEventListener("click", function (e) {
+			if (e.target.closest(".bm-try")) { exp = exp ? null : { kg: cur.kg, cm: cur.cm, R: BM.chartRange(cur.kg, cur.cm) }; drawChart(); return; }
+			if (e.target.closest(".bm-back")) { exp.kg = cur.kg; exp.cm = cur.cm; drawChart(); return; }
+			if (e.target.closest(".bm-use")) { st.kg = String(exp.kg); st.cm = String(exp.cm); var k = exp; fillOthers(); save(); update(); exp = { kg: k.kg, cm: k.cm, R: k.R }; drawChart(); return; }
+		});
+		box.addEventListener("pointerdown", function (e) { if (!exp || !e.target.closest("svg")) return; drag = true; try { box.setPointerCapture(e.pointerId); } catch (x) {} at(e); e.preventDefault(); });
+		box.addEventListener("pointermove", function (e) { if (drag) at(e); });
+		function end() { drag = false; } box.addEventListener("pointerup", end); box.addEventListener("pointercancel", end);
+	})();
+	if (window.ResizeObserver && $("bm-wchart")) { var chW = 0; new ResizeObserver(function () { var w = $("bm-wchart").clientWidth; if ((w < 480) !== (chW < 480)) { chW = w; drawChart(); } chW = w; }).observe($("bm-wchart")); }
 
 	/* ---------- history ---------- */
 	function today() { var d = new Date(), p = function (n) { return (n < 10 ? "0" : "") + n; }; return d.getFullYear() + "-" + p(d.getMonth() + 1) + "-" + p(d.getDate()); }
