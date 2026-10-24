@@ -38,6 +38,8 @@ BOILER_RE = re.compile(r"\s[–-]\s.+\s[–-]\s")  # "Title - Category - Site."
 
 # Directories that are generated (edit the generator, not the output) -- see CLAUDE.md.
 GENERATED = {
+    # build_percentage_translations.py (the Percentage Calculator in es / pt / id / fr / de)
+    "calculadora-de-porcentaje", "calculadora-de-porcentagem", "kalkulator-persen", "calcul-pourcentage", "prozentrechner",
     "911", "911-alchemy", "conspiracy", "mh370", "bg", "ama", "pg", "experiments", "antigravity", "free-energy", "occult", "cubic-formula", "djw", "ferrocell-specular-reflection", "hutchison",
     "hutchison-tom-sky", "math", "mathiew", "norman-patricia-ai-email", "science", "vector-functions-problems-plus",
     "spherical-harmonics", "math-qa", "sequences-series", "vectors", "vector-functions",
