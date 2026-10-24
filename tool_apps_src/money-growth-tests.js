@@ -145,5 +145,23 @@ near(MG.aprOf(payments, 1950000, 12).ear, Math.pow(1 + MG.aprOf(payments, 195000
 ok(MG.durationText(54, 12) === "4 years 6 months", "durationText");
 ok(MG.yearRows(s1).length === 5 && MG.yearRows(s1)[0].int + MG.yearRows(s1)[1].int + MG.yearRows(s1)[2].int + MG.yearRows(s1)[3].int + MG.yearRows(s1)[4].int === s1.interest, "year rollup adds up");
 
+// chart sliders
+ok(MG.niceCeil(37000) === 50000 && MG.niceCeil(120000) === 200000 && MG.niceCeil(2400) === 2500 && MG.niceCeil(1000) === 1000, "niceCeil");
+(function () {
+	var r = MG.sliderRange("start", 10000); ok(r.min === 0 && r.max === 50000 && r.step === 100, "start range for 10,000");
+	r = MG.sliderRange("start", 400000); ok(r.max === 2000000 && r.max >= 400000, "start range grows with the typed amount");
+	r = MG.sliderRange("dep", 200); ok(r.max === 1000, "deposit range 0-1,000");
+	r = MG.sliderRange("rate", 5); ok(r.max === 15 && r.step === 0.05, "rate range 0-15%");
+	r = MG.sliderRange("rate", 30); ok(r.max === 60, "rate range 0-60% for 30%");
+	r = MG.sliderRange("rate", 90); ok(r.max === 100, "rate range capped at 100%");
+	r = MG.sliderRange("years", 10); ok(r.min === 1 && r.max === 40, "years range");
+	r = MG.sliderRange("years", 70); ok(r.max === 100, "years range capped at 100");
+	ok(MG.snapSlider("rate", 5.0300001, MG.sliderRange("rate", 5)) === 5.05 || MG.snapSlider("rate", 5.0300001, MG.sliderRange("rate", 5)) === 5, "rate snaps to 0.05");
+	ok(MG.snapSlider("rate", 7.26, MG.sliderRange("rate", 5)) === 7.25, "rate 7.26 -> 7.25");
+	ok(MG.snapSlider("start", 12345, MG.sliderRange("start", 10000)) === 12300, "start snaps to 100");
+	ok(MG.snapSlider("years", 99, MG.sliderRange("years", 10)) === 40, "years clamped to the range");
+	["start", "dep", "rate", "years"].forEach(function (k) { [0, 1, 7.5, 333, 25000, 1e6].forEach(function (v) { var g = MG.sliderRange(k, v); ok(g.max >= Math.min(v, 100) || k === "start" || k === "dep", k + " range holds " + v); if (k === "start" || k === "dep") ok(g.max >= v, k + " range holds " + v); }); });
+})();
+
 console.log(pass + " passed, " + fail + " failed");
 process.exit(fail ? 1 : 0);

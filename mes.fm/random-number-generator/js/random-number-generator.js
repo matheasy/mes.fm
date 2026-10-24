@@ -534,6 +534,9 @@
 	dn.addEventListener("input", onDn);
 	dn.addEventListener("keydown", function (e) { if (e.key === "Enter") { e.preventDefault(); roll(); } });
 	$("rn-roll").onclick = roll;
+	$("rn-roll2").onclick = roll;
+	$("rn-tray").addEventListener("click", function () { if ($("rn-tray").children.length) roll(); });
+	$("rn-tray").addEventListener("keydown", function (e) { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); roll(); } });
 
 	function dieShape(sides, fudge) {
 		if (fudge) return "<rect x='6' y='6' width='88' height='88' rx='16' class='rn-dbody'/>";
@@ -591,6 +594,7 @@
 		} else finish();
 		function finish() {
 			renderTray(res, false);
+			$("rn-again").hidden = false;
 			var parts = res.groups.map(function (g) {
 				if (!g.dice) return (g.sum < 0 ? "− " : "+ ") + Math.abs(g.sum);
 				var list = g.dice.length > 40 ? "" : " [" + g.dice.map(function (d) { var s = g.term.fudge ? (d.v > 0 ? "+" : d.v < 0 ? "−" : "0") : String(d.v); return d.kept ? s : "<s>" + s + "</s>"; }).join(", ") + "]";

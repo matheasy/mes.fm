@@ -22,6 +22,7 @@ import { writeFileSync, readFileSync, existsSync, mkdirSync } from "node:fs";
 import { fileURLToPath } from "node:url";
 import { dirname, join } from "node:path";
 import { lpMap, lpAttrs, lpCaption, lpIcon, lpSite, lpSwitch, LP_CSS, LP_SCRIPT } from "../shared/link-pref.mjs";
+import { catSpec, checkCats, topupScripts } from "../shared/list-topup.mjs";
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 
@@ -385,6 +386,18 @@ SECTIONS.push({
       };
     }),
   ],
+});
+
+// Runtime top-up for mes.fm/youtube (main_js/list-topup.js + api/yt-latest.js, which reads the channel's RSS feed): after load the page puts videos
+// uploaded since youtube-videos.json was written at the top (same markup, chips from YT_CATEGORIES, a "New" badge, a "Check for new videos"
+// button). Shorts and livestream replays are left out because the snapshot (the channel's Videos tab) has neither. checkCats() fails the build if
+// the browser would classify a video differently. The snapshot itself: `python3 update_youtube_lists.py --apply`, then this build.
+const YT_TOPUP_CATS = catSpec(YT_CATEGORIES);
+checkCats(SECTIONS.find((s) => s.id === "mathYoutube").items.filter((i) => !i.standalone), YT_TOPUP_CATS);
+const YT_TOPUP_HTML = topupScripts({
+  section: "mathYoutube", source: "yt", ch: "mes", noun: "video", nouns: "videos", count: YT_VIDEOS.length,
+  known: YT_VIDEOS.slice(0, 60).map((v) => v.id), cats: YT_TOPUP_CATS,
+  skip: { re: "^(?:MES Livestream \\d|MES Math Q\\/A \\d)", fl: "i" },
 });
 
 const FILTER_CSS = `/* Search box + category chips (same look as the chips on mes.fm/calculators). */
@@ -2595,7 +2608,7 @@ var MES_Vars = {
 <script src="/main_js/main.js?v=1.0.3"></script>
 <script>document.getElementById('copyright-year').textContent = new Date().getFullYear();</script>
 <!-- PAGEVIEW-TRACKING-INSERTED --><script src="/main_js/track.js" defer></script><script src="/main_js/info-bar-fit.js" defer></script>
-<script src="/main_js/site-search.js?v=1" defer></script><!-- HUB-THEATRE-JS --><script src="/main_js/hub-theatre.js?v=1" defer></script><!-- /HUB-THEATRE-JS -->${hasLinkPref ? LP_SCRIPT : ""}</body>
+${page.sectionId === "mathYoutube" ? YT_TOPUP_HTML + "\n" : ""}<script src="/main_js/site-search.js?v=1" defer></script><!-- HUB-THEATRE-JS --><script src="/main_js/hub-theatre.js?v=1" defer></script><!-- /HUB-THEATRE-JS -->${hasLinkPref ? LP_SCRIPT : ""}</body>
 </html>
 `;
 }

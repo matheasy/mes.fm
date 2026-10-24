@@ -1,0 +1,106 @@
+	<div class="tu sg" id="sg">
+		<div class="sg-strip" id="sg-strip" aria-label="Summary"><span class="sg-loading">Loading the latest numbers&hellip;</span></div>
+		<p class="sg-disc"><b>Information, not advice.</b> These are public market readings put in one place with plain-English explanations. Nothing here tells you to buy or sell anything, and none of it predicts prices. Data can be late or wrong: check the source before you rely on a number.</p>
+		<div class="sg-changes" id="sg-changes" hidden></div>
+		<div class="sg-status" id="sg-status" role="status" aria-live="polite" hidden></div>
+		<div class="sg-tabs" role="tablist" id="sg-tabs">
+			<button type="button" role="tab" data-tab="sent" aria-selected="true">Sentiment</button>
+			<button type="button" role="tab" data-tab="crypto" aria-selected="false">Crypto</button>
+			<button type="button" role="tab" data-tab="mkts" aria-selected="false">Stocks &amp; commodities</button>
+			<button type="button" role="tab" data-tab="rates" aria-selected="false">Rates &amp; the Fed</button>
+			<button type="button" role="tab" data-tab="pred" aria-selected="false">Prediction markets</button>
+			<button type="button" role="tab" data-tab="news" aria-selected="false">News</button>
+		</div>
+
+		<section class="sg-panel" id="sg-p-sent" role="tabpanel">
+			<div class="sg-two">
+				<div class="tu-card sg-gcard" id="sg-cfg"></div>
+				<div class="tu-card sg-gcard" id="sg-sfg"></div>
+			</div>
+			<div class="tu-card">
+				<div class="sg-chead"><b>Fear &amp; Greed over time <button type="button" class="sg-q" data-g="fgscale" aria-label="How to read the scale">?</button></b><div class="tu-seg sg-range" data-chart="fg"><button type="button" data-r="30">30 days</button><button type="button" data-r="90" aria-pressed="true">90 days</button><button type="button" data-r="365">1 year</button></div></div>
+				<div class="sg-legend" id="sg-fg-legend"></div>
+				<div class="sg-chart" id="sg-fg-chart"></div>
+			</div>
+		</section>
+
+		<section class="sg-panel" id="sg-p-crypto" role="tabpanel" hidden>
+			<div class="sg-coins" id="sg-coins"></div>
+			<div class="tu-stats" id="sg-cstats"></div>
+			<div class="tu-card sg-halving" id="sg-halving"></div>
+		</section>
+
+		<section class="sg-panel" id="sg-p-mkts" role="tabpanel" hidden>
+			<div class="sg-quotes" id="sg-quotes"></div>
+			<div class="tu-card">
+				<div class="sg-chead"><b id="sg-qtitle">S&amp;P 500, last 3 months</b><span class="tu-note">Click a card to chart it</span></div>
+				<div class="sg-chart" id="sg-q-chart"></div>
+				<p class="tu-note" id="sg-qsrc"></p>
+			</div>
+		</section>
+
+		<section class="sg-panel" id="sg-p-rates" role="tabpanel" hidden>
+			<div class="tu-card tu-card--tint sg-fomc" id="sg-fomc"></div>
+			<div class="tu-stats" id="sg-rstats"></div>
+			<div class="tu-card">
+				<div class="sg-chead"><b>US interest rates <button type="button" class="sg-q" data-g="treasury" aria-label="What are Treasury yields?">?</button></b><div class="tu-seg sg-range" data-chart="rates"><button type="button" data-r="365">1 year</button><button type="button" data-r="1100" aria-pressed="true">3 years</button></div></div>
+				<div class="sg-legend" id="sg-rates-legend"></div>
+				<div class="sg-chart" id="sg-rates-chart"></div>
+			</div>
+			<div class="tu-card">
+				<div class="sg-chead"><b>The yield curve: 10-year minus 2-year <button type="button" class="sg-q" data-g="yieldcurve" aria-label="What is the yield curve?">?</button> <button type="button" class="sg-q" data-g="inversion" aria-label="What is an inversion?">?</button></b><div class="tu-seg sg-range" data-chart="curve"><button type="button" data-r="120">10 years</button><button type="button" data-r="9999" aria-pressed="true">Since 1976</button></div></div>
+				<div class="sg-legend"><span><i class="sg-sw sg-sw--inv"></i>Inverted (below zero)</span><span><i class="sg-sw sg-sw--rec"></i>US recession <button type="button" class="sg-q" data-g="recession" aria-label="Recession bands">?</button></span></div>
+				<div class="sg-chart" id="sg-curve-chart"></div>
+				<p class="tu-note" id="sg-curve-note"></p>
+			</div>
+			<div class="tu-card">
+				<div class="sg-chead"><b>US inflation (CPI, year over year) <button type="button" class="sg-q" data-g="cpi" aria-label="What is CPI?">?</button></b><a class="tu-note" href="/inflationcalculator">Inflation Calculator &rarr;</a></div>
+				<div class="sg-chart" id="sg-cpi-chart"></div>
+			</div>
+			<h2>Other central banks <button type="button" class="sg-q" data-g="policyrate" aria-label="What is a policy rate?">?</button></h2>
+			<div class="tu-stats" id="sg-cbanks"></div>
+			<h2>Latest from the Fed</h2>
+			<ul class="sg-news" id="sg-fed"></ul>
+		</section>
+
+		<section class="sg-panel" id="sg-p-pred" role="tabpanel" hidden>
+			<p class="tu-note">What traders on <b>Polymarket</b> and <b>Kalshi</b> are paying for &ldquo;Yes&rdquo;, read as a chance <button type="button" class="sg-q" data-g="pred" aria-label="What are prediction markets?">?</button> <button type="button" class="sg-q" data-g="odds" aria-label="How to read the odds">?</button>. Crowd odds, not facts, and these sites are not open to everyone in every country.</p>
+			<div class="tu-chips" id="sg-pcats"></div>
+			<div class="sg-markets" id="sg-markets"></div>
+		</section>
+
+		<section class="sg-panel" id="sg-p-news" role="tabpanel" hidden>
+			<p class="tu-note">Headlines only, linked to the publisher. MES does not pick, rewrite or endorse them.</p>
+			<h2>Crypto</h2>
+			<ul class="sg-news" id="sg-cnews"></ul>
+			<h2>Federal Reserve press releases (monetary policy)</h2>
+			<ul class="sg-news" id="sg-fed2"></ul>
+		</section>
+
+		<div class="tu-card sg-foot">
+			<div class="tu-row" style="justify-content:space-between;gap:0.5em;align-items:center"><span id="sg-updated" class="tu-note"></span><button type="button" class="tu-btn tu-btn--ghost" id="sg-refresh">Refresh</button></div>
+			<details><summary>Sources and their status</summary><ul class="sg-srcs" id="sg-srcs"></ul></details>
+		</div>
+		<div class="sg-pop" id="sg-pop" role="dialog" aria-modal="false" hidden><button type="button" class="sg-pop__x" aria-label="Close">&times;</button><b class="sg-pop__t"></b><p class="sg-pop__p"></p></div>
+		<div class="sg-tip" id="sg-tip" hidden></div>
+
+		<div class="tu-seo">
+			<h2>Free market signals dashboard: fear &amp; greed, rates, the Fed and the odds</h2>
+			<p>MES Market Signals puts the numbers people check every morning on one free page with no sign-up: the <strong>Crypto Fear &amp; Greed Index</strong>, a <strong>stock-market fear &amp; greed</strong> reading you can verify, Bitcoin, Ether, XRP, Solana and HIVE prices, Bitcoin dominance and the halving countdown, the S&amp;P 500, Nasdaq, Dow, gold, oil and the dollar, the <strong>fed funds rate</strong>, Treasury yields and the yield curve, inflation, the <strong>next FOMC meeting</strong>, and what <strong>prediction markets</strong> say about the Fed, inflation and recession. Every technical word has a &ldquo;?&rdquo; button with a plain-English explanation.</p>
+			<h3>Where the numbers come from</h3>
+			<p>Crypto Fear &amp; Greed: alternative.me. Crypto prices, market cap and stablecoins: CoinGecko. Bitcoin block height: mempool.space. Stock indexes, gold, oil and the dollar: Yahoo Finance (with FRED closing prices as a backup). Interest rates, VIX, junk-bond spreads, inflation and recession dates: FRED, the database of the Federal Reserve Bank of St. Louis. Bank of Canada: its Valet API. ECB and Bank of England: their own statistics sites. Prediction markets: Polymarket and Kalshi public data. Headlines: the Federal Reserve, CoinDesk and Cointelegraph feeds. The page refreshes about every five minutes; markets that are closed show their last price.</p>
+			<h3>How is the stock fear &amp; greed number made?</h3>
+			<p>It is MES&rsquo;s own composite, not CNN&rsquo;s index (that one uses data we cannot get for free). It averages three readings, each ranked against its own last year so they share a 0-100 scale: how far the S&amp;P 500 is above or below its 125-day average, the VIX (flipped, since a high VIX means fear) and the extra interest junk-rated companies pay over the US government (flipped too). The method is written out next to the gauge so anyone can check it.</p>
+			<h3>Questions</h3>
+			<h4>Is this financial advice?</h4>
+			<p>No. It is a summary of public data with explanations. Mood indexes, yield curves and betting odds describe what is happening or what people expect; none of them reliably predicts what prices will do. Talk to a licensed adviser about your own money.</p>
+			<h4>Does the yield curve predict recessions?</h4>
+			<p>A negative 10-year minus 2-year spread came before every US recession since the 1970s, usually by 6 to 24 months, which is why people watch it. But the gap varies a lot, and the 2022-2024 inversion, the longest on record, had not been followed by an official recession as of late 2026. It is a warning light, not a calendar.</p>
+			<h4>What does &ldquo;72% on Polymarket&rdquo; mean?</h4>
+			<p>A &ldquo;Yes&rdquo; share pays $1 if the event happens. If it trades at 72 cents, traders as a group are acting as if the chance is about 72%. Prices move with news and with the money in each market, so treat them as the crowd&rsquo;s current guess.</p>
+			<h4>Why is the Fed meeting countdown useful?</h4>
+			<p>Interest-rate decisions move mortgage rates, savings rates, stocks, the dollar and crypto. The Fed announces at 2:00 pm Eastern on the second day of each meeting; four meetings a year also publish the &ldquo;dot plot&rdquo; of where officials expect rates to go.</p>
+			<h4>Is anything stored or tracked?</h4>
+			<p>No account and no personal data. To show &ldquo;what changed since your last visit&rdquo; your browser keeps the last numbers it saw in its own local storage; they never leave your device.</p>
+		</div>
+	</div>

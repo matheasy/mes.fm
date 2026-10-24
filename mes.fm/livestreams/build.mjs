@@ -58,6 +58,8 @@ const MIRRORS = {
     href: "https://mes.fm/livestream-141-hutchison-tom-sky",
     extra: [["Hive", "https://peakd.com/hive-128780/@mes/-livestream-141-hutchison-tom-sky--cjj"]],
   },
+  // Hive + Trailer links for 112 already come from extra-links.json, so no `extra` here.
+  Fg8iCfZ5AzQ: { href: "https://mes.fm/livestream-112-911-spooks" },
   er5y2M8SRr4: {
     href: "https://mes.fm/livestream-142-amaterasu-solar-money",
     extra: [["Hive", "https://peakd.com/hive-106474/@mestruth/mes-livestream-142-amaterasu-solar-money-epb"]],

@@ -2,7 +2,9 @@
 """Import Grok art for a tool: ~/Downloads/<name>-icon.jpg / -share.jpg / -tile.jpg -> mes.fm/<slug>/img/logo.png (512, rounded, transparent corners),
 mes.fm/img/<slug>-logo.png (352), mes.fm/<slug>/img/logo-big.png (1200x630 centre crop of the share image), mes.fm/img/<slug>-icon.jpg (900x600 tile).
 The icon JPGs often have a checkerboard 'transparency' baked in: the coloured rounded square is found by saturation / darkness and cropped out, then re-rounded.
-  python3 import_grok_art.py body-fat=body-fat-calculator macro=macro-calculator ...      (download-name=slug; slug alone if they match)   Dry-runs by default, --apply writes."""
+  python3 import_grok_art.py body-fat=body-fat-calculator macro=macro-calculator ...      (download-name=slug; slug alone if they match)   Dry-runs by default, --apply writes.
+--share-only: import ONLY ~/Downloads/<name>-share.jpg -> mes.fm/<slug>/img/share.jpg (centre-crop to 1200x630, JPEG under ~150 KB); logo.png / logo-big.png
+  are not touched. For the old calculator sites whose og:image is share.jpg (set_share_images.py), e.g. python3 import_grok_art.py --share-only percentagecalculator --apply"""
 import sys, os
 from PIL import Image, ImageDraw
 R = os.path.dirname(os.path.abspath(__file__)); D = os.path.expanduser("~/Downloads/")
@@ -20,8 +22,25 @@ def square_box(im):
 def rounded(c, n):
     im = c.resize((n, n), Image.LANCZOS).convert("RGBA"); m = Image.new("L", (n * 4, n * 4), 0)
     ImageDraw.Draw(m).rounded_rectangle([0, 0, n * 4 - 1, n * 4 - 1], radius=int(n * 4 * 0.2), fill=255); im.putalpha(m.resize((n, n), Image.LANCZOS)); return im
+def crop_1200x630(s):   # centre-crop to 1200:630 whichever side is too long, then resize
+    w, h = s.size
+    if w * 630 > h * 1200: cw = round(h * 1200 / 630); l = (w - cw) // 2; s = s.crop((l, 0, l + cw, h))
+    else: ch = round(w * 630 / 1200); t = (h - ch) // 2; s = s.crop((0, t, w, t + ch))
+    return s.resize((1200, 630), Image.LANCZOS)
+share_only = "--share-only" in sys.argv
 for a in [x for x in sys.argv[1:] if not x.startswith("--")]:
     name, _, slug = a.partition("="); slug = slug or name
+    if share_only:
+        f = src(name + "-share")
+        if not os.path.exists(f): print(slug, "missing", f); continue
+        print(slug, f, "->", f"mes.fm/{slug}/img/share.jpg")
+        if not apply: continue
+        out = f"{R}/mes.fm/{slug}/img/share.jpg"; im = crop_1200x630(Image.open(f).convert("RGB")); q = 90
+        while True:
+            im.save(out, "JPEG", quality=q, optimize=True, progressive=True)
+            if os.path.getsize(out) <= 150000 or q <= 60: break
+            q -= 5
+        print("  ", os.path.getsize(out), "bytes at quality", q); continue
     ic = Image.open(src(name + "-icon")).convert("RGB"); box = square_box(ic); print(slug, "icon box", box, "size", (box[2] - box[0], box[3] - box[1]))
     if not apply: continue
     os.makedirs(f"{R}/mes.fm/{slug}/img", exist_ok=True); c = ic.crop(box); w0, h0 = c.size

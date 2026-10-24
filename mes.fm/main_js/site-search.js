@@ -231,6 +231,30 @@
     }
     if (document.readyState === "loading") document.addEventListener("DOMContentLoaded", favMenu); else favMenu();
 
+    /* burger / side menu: the wide "MES.fm ✓" wordmark under the Hive / Telegram icons (main_img/mes-logo-small.png, 126x29, which wrapped onto its
+       own row and sat off-centre) becomes the small square MES mark + "MES.fm", on the same row as the icons and the same 2em height. One place for
+       the ~1,000 classic pages that carry it (the markup stays as it is; the menu is closed while this runs, so nothing jumps). */
+    function navLogo() {
+        var links = document.querySelectorAll(".navbar__item--social a.info-bar__logo-container:not(.mes-navlogo)");
+        if (!links.length) return;
+        if (!document.getElementById("mes-navlogo-css")) {
+            var st = document.createElement("style"); st.id = "mes-navlogo-css";
+            st.textContent = ".navbar__item--social .social-container--navbar{align-items:center!important;column-gap:1em!important}" +
+                ".navbar__item--social a.info-bar__logo-container.mes-navlogo{display:inline-flex!important;align-items:center;gap:.45em;height:2em;margin:0!important;padding:0;" +
+                "color:#fff!important;text-decoration:none;font-weight:700;font-size:1em;line-height:1;white-space:nowrap;vertical-align:middle}" +
+                ".navbar__item--social a.mes-navlogo:hover .mes-navlogo__t,.navbar__item--social a.mes-navlogo:focus-visible .mes-navlogo__t{text-decoration:underline}" +
+                ".navbar__item--social .mes-navlogo img.mes-navlogo__mark{display:block;width:2em;height:2em;margin:0;border-radius:.3em;box-shadow:0 0 0 1px rgba(255,255,255,.55)}" +
+                ".navbar__item--social .mes-navlogo .mes-navlogo__t{color:#fff!important;letter-spacing:.01em}";
+            document.head.appendChild(st);
+        }
+        Array.prototype.forEach.call(links, function (a) {
+            a.classList.add("mes-navlogo");
+            a.setAttribute("aria-label", "MES.fm home");
+            a.innerHTML = '<img class="mes-navlogo__mark" src="/img/logo-mark-64.png" width="32" height="32" alt=""><span class="mes-navlogo__t">MES.fm</span>';
+        });
+    }
+    if (document.readyState === "loading") document.addEventListener("DOMContentLoaded", navLogo); else navLogo();
+
     /* on pages where this script runs before display-controls.js has built the controls (e.g. /search, which loads
        it up front), try again once every deferred script has run */
     function attach() {

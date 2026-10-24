@@ -2,6 +2,9 @@
 	.sx-tabs {display:flex;flex-wrap:wrap;gap:0.3em;margin-bottom:0.9em;border-bottom:2px solid #d5dbe3;}
 	.sx-tabs button {cursor:pointer;font:inherit;font-weight:700;min-height:44px;padding:0.5em 1.1em;border:0;border-radius:0.5em 0.5em 0 0;background:transparent;color:#3d4654;border-bottom:3px solid transparent;margin-bottom:-2px;}
 	.sx-tabs button:hover {background:#eef1f5;}
+	#sx .sx-xlinks {margin:-0.4em 0 0.8em;font-size:0.88em;}
+	#sx .sx-xlinks b {color:#1e2733;}
+	body.dark-mode #sx .sx-xlinks b {color:#e3e7ec;}
 	.sx-tabs button[aria-selected="true"] {color:var(--accent);border-bottom-color:var(--accent);background:#f2f5fb;}
 	.sx-row {display:flex;gap:0.5em;flex-wrap:wrap;} .sx-row .tu-input {flex:1 1 14em;min-width:0;} .sx-go {font-size:1.05em;padding:0.6em 1.5em;min-height:44px;}
 	.sx-recent {margin-top:0.6em;} .sx-recent .tu-chip {min-height:36px;max-width:100%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}

@@ -5,6 +5,7 @@
 	.ad-top {display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:0.5em 1em;margin:0 0 0.5em;}
 	.ad-tabs {display:flex;flex-wrap:wrap;gap:0.4em;}
 	.ad-links {font-size:0.88em;}
+	#ad .ad-links b {color:var(--ad-ink);}
 	.ad-meta {margin:0 0 1em;}
 	.ad-meta b {color:var(--ad-ink);}
 	.ad-setup {border-left:4px solid #e67e22;margin:0 0 1em;}

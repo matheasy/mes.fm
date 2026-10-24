@@ -353,6 +353,28 @@
       }
     ]
   },
+  "https://mes.fm/stephen-smith-trump-dinner": {
+    "image": "https://mes.fm/stephen-smith-trump-dinner/img/stephen-a-smith-trump-dinner-cnn.jpg",
+    "watchLinks": [],
+    "namedLinks": [
+      {
+        "label": "Hive",
+        "href": "https://inleo.io/threads/view/mestruth/re-leothreads-2n6r87ja7"
+      },
+      {
+        "label": "Telegram",
+        "href": "https://t.me/meslinks/35658"
+      },
+      {
+        "label": "CNN",
+        "href": "https://www.cnn.com/2026/10/16/politics/video/stephen-a-smith-on-his-dinner-with-trump-he-didnt-run-from-any-questions-lcl"
+      },
+      {
+        "label": "MES Conspiracy",
+        "href": "https://mes.fm/conspiracy"
+      }
+    ]
+  },
   "https://mes.fm/stock-market-vs-oil": {
     "image": "https://img.leopedia.io/DQmdvuyozcMSZ2zM1rVXEqXz7Q2YosiM3Gq5Dog4FQGsdSc/telegram-cloud-photo-size-1-4999448963589020306-y.jpg",
     "watchLinks": [],

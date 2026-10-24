@@ -69,6 +69,15 @@ const PAGES = [
       "MES blockchain tutorials: Hive overview and sign-up, Blockchain: The Big Picture (what do you own, tokenization), Bitcoin and cryptography overview, Steemit tutorials and an AI YouTube-summary agent on Hive.",
   },
   {
+    // Tile only: no page is written. MES Market Signals (mes.fm/signals, a build_tool_apps.py tool page); icon = img/signals-icon.jpg (placeholder until Grok art).
+    slug: "signals",
+    href: "/signals",
+    icon: "signals",
+    tileLabel: "Market Signals",
+    iconVersion: 1,
+    tileOnly: true,
+  },
+  {
     // Tile only: no page is written. Links to the Blockchain chip of mes.fm/livestreams (MES Livestream 72); icon = its thumbnail, img/crypto-livestreams-icon.jpg.
     slug: "livestreams",
     href: "/livestreams#blockchain",

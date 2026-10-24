@@ -1,7 +1,7 @@
 	/* MES Compound Interest + Loan Calculators (tool_apps_src/money-growth). Colours are --mg-* custom properties, restated for dark mode under body.dark-mode #mg.tu */
 	#mg.tu {--mg-ink:#1e2733;--mg-mut:#5b6573;--mg-line:#d5dbe2;--mg-card:#ffffff;--mg-soft:#f3f6f9;--mg-grid:#e3e7ec;--mg-axis:#8a94a3;--mg-tx:#5f6b7a;
 		--mg-dep:#047857;--mg-dep-a:#04785740;--mg-int:#d97706;--mg-int-a:#d9770659;--mg-start:#0f3d2e;--mg-real:#7c3aed;--mg-sa:#047857;--mg-sb:#2563eb;--mg-base:#8a94a3;
-		--mg-good:#047857;--mg-bad:#b42318;--mg-solve:#fff7e6;--mg-solve-line:#f1c58f;--mg-hl:#eaf7f1;}
+		--mg-good:#047857;--mg-bad:#b42318;--mg-link:#046c4e;--mg-solve:#fff7e6;--mg-solve-line:#f1c58f;--mg-hl:#eaf7f1;}
 	#mg [hidden] {display:none !important;}
 	#mg :where(div, span, p, li, td, th, dt, dd, label, summary, h3, b) {color:inherit;}
 	#mg.tu {color:var(--mg-ink);}
@@ -75,9 +75,30 @@
 	#mg .mg-sched tfoot td {font-weight:700;border-top:2px solid var(--mg-line);position:sticky;bottom:0;background:var(--mg-card);}
 	#mg .mg-hl td, #mg .mg-hl th {background:var(--mg-hl);font-weight:700;}
 	#mg .mg-btns {display:flex;gap:0.5em;flex-wrap:wrap;margin-top:0.8em;}
-	#mg .mg-eq {display:grid;gap:0.4em;}
-	#mg .mg-eq > div {display:flex;flex-wrap:wrap;align-items:center;gap:0.3em 0.8em;padding:0.35em 0;border-bottom:1px solid var(--mg-grid);}
+	#mg .mg-eq {display:grid;gap:0.4em;grid-template-columns:minmax(0,1fr);}
+	#mg .mg-eq > div {min-width:0;display:flex;flex-wrap:wrap;align-items:center;gap:0.3em 0.8em;padding:0.35em 0;border-bottom:1px solid var(--mg-grid);}
 	#mg .mg-eq__n {min-width:9.5em;color:var(--mg-mut);font-size:0.9em;}
+	/* equation boxes: each formula scales down to fit its box (fitEqs() in app.js, never below 78%) and then scrolls inside the box, never the page */
+	#mg .mg-eq__f {flex:1 1 auto;min-width:0;max-width:100%;overflow-x:auto;overflow-y:hidden;padding:0.15em 0;-webkit-overflow-scrolling:touch;}
+	#mg .mg-eq__f mjx-container {margin:0 !important;}
+	/* "Try other numbers on the chart" sliders */
+	#mg .mg-try {margin-top:0.8em;padding:0.8em 0.9em;border:1px solid var(--mg-line);border-radius:0.6em;background:var(--mg-soft);}
+	#mg .mg-try.mg-trying {border-color:var(--accent);box-shadow:0 0 0 1px var(--accent) inset;}
+	#mg .mg-try__head {margin-bottom:0.5em;line-height:1.45;}
+	#mg .mg-try__head .mg-sum {display:block;margin:0.15em 0 0;}
+	#mg .mg-sls {display:grid;grid-template-columns:repeat(auto-fit,minmax(14em,1fr));gap:0.5em 1.4em;}
+	#mg .mg-sl label {display:flex;justify-content:space-between;gap:0.6em;font-size:0.9em;color:var(--mg-mut);}
+	#mg .mg-sl output {color:var(--mg-ink);font-weight:700;font-variant-numeric:tabular-nums;}
+	#mg .mg-sl output.mg-chg {color:var(--accent);}
+	#mg .mg-slin {width:100%;margin:0.25em 0 0;accent-color:var(--accent);min-height:32px;cursor:pointer;touch-action:pan-y;}
+	#mg .mg-sl-comp {margin-top:0.6em;display:flex;flex-wrap:wrap;align-items:center;gap:0.4em 0.8em;}
+	#mg .mg-sl-comp .tu-label {margin:0;font-size:0.9em;color:var(--mg-mut);}
+	#mg .mg-sl-comp .tu-chips {margin:0;}
+	#mg .mg-ghostck {display:inline-flex;align-items:center;gap:0.45em;margin-top:0.6em;font-size:0.9em;cursor:pointer;min-height:32px;}
+	#mg .mg-ghostck input {width:1.1em;height:1.1em;accent-color:var(--accent);}
+	#mg .mg-try .mg-btns {margin-top:0.6em;}
+	#mg .mg-exp-link {margin:0.6em 0 0;}
+	#mg .mg-exp-link a, #mg .mg-formulas a {color:var(--mg-link);font-weight:700;}
 	#mg #mg-notice {margin-bottom:1em;}
 	@media (max-width:600px) {
 		#mg .mg-tabs button {padding:0.5em 0.75em;font-size:0.9em;flex:1 1 auto;}
@@ -87,11 +108,12 @@
 		#mg .mg-btns .tu-btn {flex:1 1 auto;}
 		#mg .mg-tx {font-size:10px;}
 		#mg .mg-eq__n {min-width:0;width:100%;}
+		#mg .mg-sls {grid-template-columns:1fr;}
 	}
 	/* dark mode */
 	body.dark-mode #mg.tu {--mg-ink:#e8ebef;--mg-mut:#aab3bf;--mg-line:#4a5260;--mg-card:#22262c;--mg-soft:#2a2f36;--mg-grid:#363c45;--mg-axis:#8a94a3;--mg-tx:#aab3bf;
 		--mg-dep:#34d399;--mg-dep-a:#34d39947;--mg-int:#fbbf24;--mg-int-a:#fbbf2452;--mg-start:#a7f3d0;--mg-real:#c4b5fd;--mg-sa:#34d399;--mg-sb:#93c5fd;--mg-base:#9aa4b2;
-		--mg-good:#6fd28f;--mg-bad:#ff8a80;--mg-solve:#3a3220;--mg-solve-line:#7a6526;--mg-hl:#1f3a30;}
+		--mg-good:#6fd28f;--mg-bad:#ff8a80;--mg-link:#6ee7b7;--mg-solve:#3a3220;--mg-solve-line:#7a6526;--mg-hl:#1f3a30;}
 	body.dark-mode #mg.tu .mg-tabs button {background:var(--mg-card);color:var(--mg-ink);border-color:var(--mg-line);}
 	body.dark-mode #mg.tu .mg-tabs button[aria-selected="true"] {background:var(--accent);border-color:var(--accent);color:#0b1416;}
 	body.dark-mode #mg.tu .mg-sched tfoot td {background:var(--mg-card);}

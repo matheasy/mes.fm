@@ -1,5 +1,5 @@
 {
- "generated": "2026-10-23",
+ "generated": "2026-10-24",
  "calculators": [
   {
    "href": "/compound-interest-calculator",
@@ -100,6 +100,14 @@
  ],
  "tools": [
   {
+   "href": "/signals",
+   "title": "Market Signals",
+   "icon": "/img/signals-logo.png",
+   "desc": "Crypto and stock fear & greed, Bitcoin and market prices, the fed funds rate, the yield curve, the next Fed meeting and prediction-market odds, explained in plain English. Not advice.",
+   "added": "2026-10-24",
+   "kind": "tool"
+  },
+  {
    "href": "/poker",
    "title": "Poker",
    "icon": "/img/poker-logo.png",
@@ -186,17 +194,17 @@
    "desc": "Train a small network to read digits and letters, draw a character and see what it thinks, test it on unseen fonts, and teach it your handwriting.",
    "added": "2026-10-19",
    "kind": "tool"
-  },
-  {
-   "href": "/neural-network-playground",
-   "title": "Neural Network Playground",
-   "icon": "/img/neural-network-playground-logo.png",
-   "desc": "Train a real neural network in your browser: pick the data, layers and activation, and watch the decision boundary, the loss and every hidden neuron.",
-   "added": "2026-10-19",
-   "kind": "tool"
   }
  ],
  "latest": [
+  {
+   "href": "/signals",
+   "title": "Market Signals",
+   "icon": "/img/signals-logo.png",
+   "desc": "Crypto and stock fear & greed, Bitcoin and market prices, the fed funds rate, the yield curve, the next Fed meeting and prediction-market odds, explained in plain English. Not advice.",
+   "added": "2026-10-24",
+   "kind": "tool"
+  },
   {
    "href": "/compound-interest-calculator",
    "title": "Compound Interest Calculator",
@@ -252,14 +260,6 @@
    "desc": "Play Texas Hold'em against computer players with play money, and calculate your odds for any hand.",
    "added": "2026-10-23",
    "kind": "tool"
-  },
-  {
-   "href": "/statistics-calculator",
-   "title": "Statistics Calculator",
-   "icon": "/img/statistics-calculator-logo.png",
-   "desc": "Mean, median, standard deviation, quartiles, regression, distributions and hypothesis tests, with the working shown.",
-   "added": "2026-10-23",
-   "kind": "calculator"
   }
  ]
 }

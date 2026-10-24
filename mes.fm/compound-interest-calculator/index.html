@@ -308,7 +308,7 @@ body.dark-mode .tu .rw-head {color:#a0a8b3;border-bottom-color:#555;} body.dark-
 	/* MES Compound Interest + Loan Calculators (tool_apps_src/money-growth). Colours are --mg-* custom properties, restated for dark mode under body.dark-mode #mg.tu */
 	#mg.tu {--mg-ink:#1e2733;--mg-mut:#5b6573;--mg-line:#d5dbe2;--mg-card:#ffffff;--mg-soft:#f3f6f9;--mg-grid:#e3e7ec;--mg-axis:#8a94a3;--mg-tx:#5f6b7a;
 		--mg-dep:#047857;--mg-dep-a:#04785740;--mg-int:#d97706;--mg-int-a:#d9770659;--mg-start:#0f3d2e;--mg-real:#7c3aed;--mg-sa:#047857;--mg-sb:#2563eb;--mg-base:#8a94a3;
-		--mg-good:#047857;--mg-bad:#b42318;--mg-solve:#fff7e6;--mg-solve-line:#f1c58f;--mg-hl:#eaf7f1;}
+		--mg-good:#047857;--mg-bad:#b42318;--mg-link:#046c4e;--mg-solve:#fff7e6;--mg-solve-line:#f1c58f;--mg-hl:#eaf7f1;}
 	#mg [hidden] {display:none !important;}
 	#mg :where(div, span, p, li, td, th, dt, dd, label, summary, h3, b) {color:inherit;}
 	#mg.tu {color:var(--mg-ink);}
@@ -382,9 +382,30 @@ body.dark-mode .tu .rw-head {color:#a0a8b3;border-bottom-color:#555;} body.dark-
 	#mg .mg-sched tfoot td {font-weight:700;border-top:2px solid var(--mg-line);position:sticky;bottom:0;background:var(--mg-card);}
 	#mg .mg-hl td, #mg .mg-hl th {background:var(--mg-hl);font-weight:700;}
 	#mg .mg-btns {display:flex;gap:0.5em;flex-wrap:wrap;margin-top:0.8em;}
-	#mg .mg-eq {display:grid;gap:0.4em;}
-	#mg .mg-eq > div {display:flex;flex-wrap:wrap;align-items:center;gap:0.3em 0.8em;padding:0.35em 0;border-bottom:1px solid var(--mg-grid);}
+	#mg .mg-eq {display:grid;gap:0.4em;grid-template-columns:minmax(0,1fr);}
+	#mg .mg-eq > div {min-width:0;display:flex;flex-wrap:wrap;align-items:center;gap:0.3em 0.8em;padding:0.35em 0;border-bottom:1px solid var(--mg-grid);}
 	#mg .mg-eq__n {min-width:9.5em;color:var(--mg-mut);font-size:0.9em;}
+	/* equation boxes: each formula scales down to fit its box (fitEqs() in app.js, never below 78%) and then scrolls inside the box, never the page */
+	#mg .mg-eq__f {flex:1 1 auto;min-width:0;max-width:100%;overflow-x:auto;overflow-y:hidden;padding:0.15em 0;-webkit-overflow-scrolling:touch;}
+	#mg .mg-eq__f mjx-container {margin:0 !important;}
+	/* "Try other numbers on the chart" sliders */
+	#mg .mg-try {margin-top:0.8em;padding:0.8em 0.9em;border:1px solid var(--mg-line);border-radius:0.6em;background:var(--mg-soft);}
+	#mg .mg-try.mg-trying {border-color:var(--accent);box-shadow:0 0 0 1px var(--accent) inset;}
+	#mg .mg-try__head {margin-bottom:0.5em;line-height:1.45;}
+	#mg .mg-try__head .mg-sum {display:block;margin:0.15em 0 0;}
+	#mg .mg-sls {display:grid;grid-template-columns:repeat(auto-fit,minmax(14em,1fr));gap:0.5em 1.4em;}
+	#mg .mg-sl label {display:flex;justify-content:space-between;gap:0.6em;font-size:0.9em;color:var(--mg-mut);}
+	#mg .mg-sl output {color:var(--mg-ink);font-weight:700;font-variant-numeric:tabular-nums;}
+	#mg .mg-sl output.mg-chg {color:var(--accent);}
+	#mg .mg-slin {width:100%;margin:0.25em 0 0;accent-color:var(--accent);min-height:32px;cursor:pointer;touch-action:pan-y;}
+	#mg .mg-sl-comp {margin-top:0.6em;display:flex;flex-wrap:wrap;align-items:center;gap:0.4em 0.8em;}
+	#mg .mg-sl-comp .tu-label {margin:0;font-size:0.9em;color:var(--mg-mut);}
+	#mg .mg-sl-comp .tu-chips {margin:0;}
+	#mg .mg-ghostck {display:inline-flex;align-items:center;gap:0.45em;margin-top:0.6em;font-size:0.9em;cursor:pointer;min-height:32px;}
+	#mg .mg-ghostck input {width:1.1em;height:1.1em;accent-color:var(--accent);}
+	#mg .mg-try .mg-btns {margin-top:0.6em;}
+	#mg .mg-exp-link {margin:0.6em 0 0;}
+	#mg .mg-exp-link a, #mg .mg-formulas a {color:var(--mg-link);font-weight:700;}
 	#mg #mg-notice {margin-bottom:1em;}
 	@media (max-width:600px) {
 		#mg .mg-tabs button {padding:0.5em 0.75em;font-size:0.9em;flex:1 1 auto;}
@@ -394,11 +415,12 @@ body.dark-mode .tu .rw-head {color:#a0a8b3;border-bottom-color:#555;} body.dark-
 		#mg .mg-btns .tu-btn {flex:1 1 auto;}
 		#mg .mg-tx {font-size:10px;}
 		#mg .mg-eq__n {min-width:0;width:100%;}
+		#mg .mg-sls {grid-template-columns:1fr;}
 	}
 	/* dark mode */
 	body.dark-mode #mg.tu {--mg-ink:#e8ebef;--mg-mut:#aab3bf;--mg-line:#4a5260;--mg-card:#22262c;--mg-soft:#2a2f36;--mg-grid:#363c45;--mg-axis:#8a94a3;--mg-tx:#aab3bf;
 		--mg-dep:#34d399;--mg-dep-a:#34d39947;--mg-int:#fbbf24;--mg-int-a:#fbbf2452;--mg-start:#a7f3d0;--mg-real:#c4b5fd;--mg-sa:#34d399;--mg-sb:#93c5fd;--mg-base:#9aa4b2;
-		--mg-good:#6fd28f;--mg-bad:#ff8a80;--mg-solve:#3a3220;--mg-solve-line:#7a6526;--mg-hl:#1f3a30;}
+		--mg-good:#6fd28f;--mg-bad:#ff8a80;--mg-link:#6ee7b7;--mg-solve:#3a3220;--mg-solve-line:#7a6526;--mg-hl:#1f3a30;}
 	body.dark-mode #mg.tu .mg-tabs button {background:var(--mg-card);color:var(--mg-ink);border-color:var(--mg-line);}
 	body.dark-mode #mg.tu .mg-tabs button[aria-selected="true"] {background:var(--accent);border-color:var(--accent);color:#0b1416;}
 	body.dark-mode #mg.tu .mg-sched tfoot td {background:var(--mg-card);}
@@ -456,47 +478,6 @@ body.dark-mode .tu .rw-head {color:#a0a8b3;border-bottom-color:#555;} body.dark-
 		.footer__item--extra-padding { padding-left: 0; }
 		.footer__text--extra-info { float: none; display: block; margin-top: 0.5em; }
 	}
-
-	/* TOOL-DARK:START -- generated by add_tool_page_controls.py, do not edit */
-	body.dark-mode .page-content :where(div,span,p,li,ul,ol,h1,h2,h3,h4,h5,h6,td,th,label,summary,small,strong,b,em,i,code,pre,legend,figcaption,dl,dt,dd,blockquote,caption,cite,button,input,select,textarea){color:#d8d8d8}
-	body.dark-mode .page-content code{background-color:#33363d;color:#f0a8bd}
-	body.dark-mode .page-content .btn-default{background-color:#2e2e2e;background-image:none;color:#ddd;border-color:#555}
-	body.dark-mode .tu{--accent:#12f7b6;--accent-dark:#19f0b4}
-	body.dark-mode .tu h2{color:#d1d6dc;border-bottom:2px solid #154e38}
-	body.dark-mode .tu h3{color:#d1d6dc}
-	body.dark-mode .tu-card{background:#1a1a1a;border:1px solid #28323e}
-	body.dark-mode .tu-card--tint{background:#1d322a;border-color:#154e38}
-	body.dark-mode .tu-field > label,body.dark-mode .tu-label{color:#9a9aa2}
-	body.dark-mode .tu-input,body.dark-mode .tu-select{border:1px solid #404a58;background:#1a1a1a;color:#dddddd}
-	body.dark-mode .tu-suffix span{color:#989ca4}
-	body.dark-mode .tu-btn{background:#1a1a1a}
-	body.dark-mode .tu-btn--ghost{border-color:#3a424d;color:#aaaaaa}
-	body.dark-mode .tu-btn--ghost:hover{background:#191c20;color:#dddddd;border-color:#3a424d}
-	body.dark-mode .tu-seg{border:1px solid #404a58;background:#1a1a1a}
-	body.dark-mode .tu-seg button{color:#aaaaaa;border-right:1px solid #28323e}
-	body.dark-mode .tu-seg button:hover{background:#16191d}
-	body.dark-mode .tu-chip{border:1px solid #3a424d;background:#1a1a1a;color:#aaaaaa}
-	body.dark-mode .tu-stat{background:#1a1a1a;border:1px solid #28323e}
-	body.dark-mode .tu-stat--hero{background:#1d322a;border-color:#154e38}
-	body.dark-mode .tu-stat__label{color:#9a9aa2}
-	body.dark-mode .tu-stat__value{color:#d1d6dc}
-	body.dark-mode .tu-stat__sub{color:#9a9ea4}
-	body.dark-mode .tu-pos{color:#7dde9d !important}
-	body.dark-mode .tu-neg{color:#e87973 !important}
-	body.dark-mode .tu-table th,body.dark-mode .tu-table td{border-bottom:1px solid #29323d;color:#cccccc}
-	body.dark-mode .tu-table th{color:#9a9da3;background:#1a1a1a}
-	body.dark-mode .tu-table tr.is-active td{background:#1d322a}
-	body.dark-mode .tu-note{color:#9a9da3}
-	body.dark-mode .tu-toast{background:#3c4f67}
-	body.dark-mode .tu-seo{border-top:1px solid #333333}
-	body.dark-mode .tu-svg-line{stroke:#394a60}
-	body.dark-mode .tu-svg-text{fill:#cccccc}
-	body.dark-mode .tu-svg-grid{stroke:#28323e}
-	body.dark-mode .tu [data-names="0"] .rw-num,body.dark-mode .tu [data-table="1"] .rw-num{color:#999da3}
-	body.dark-mode .tu [data-table="1"] .rw-head{color:#9a9aa2;border-bottom:2px solid #2b323c}
-	body.dark-mode .tu [data-table="1"] .rw-row{border-bottom:1px solid #27313f}
-	body.dark-mode #mg.tu{--mg-dep:#12f7b6;--mg-dep-a:rgba(18,247,182,0.25);--mg-int:#f88d11;--mg-int-a:rgba(248,141,17,0.35);--mg-start:#3bcf9e;--mg-sa:#12f7b6;--mg-good:#12f7b6;--mg-bad:#e23427}
-	/* TOOL-DARK:END */
 /* Floating compact header bar: once the full header + nav scroll out of
    view, a slim fixed bar (small logo, title, as many nav links as fit)
    slides in, and the hamburger is pinned into its right end. Toggled by
@@ -539,6 +520,47 @@ body.is-stuck #navbar.hide { position: fixed; top: 56px; right: 8px; }
 @media (max-width: 480px) {
   #compact-nav { padding-right: 70px; gap: 8px; }
 }
+
+	/* TOOL-DARK:START -- generated by add_tool_page_controls.py, do not edit */
+	body.dark-mode .page-content :where(div,span,p,li,ul,ol,h1,h2,h3,h4,h5,h6,td,th,label,summary,small,strong,b,em,i,code,pre,legend,figcaption,dl,dt,dd,blockquote,caption,cite,button,input,select,textarea){color:#d8d8d8}
+	body.dark-mode .page-content code{background-color:#33363d;color:#f0a8bd}
+	body.dark-mode .page-content .btn-default{background-color:#2e2e2e;background-image:none;color:#ddd;border-color:#555}
+	body.dark-mode .tu{--accent:#12f7b6;--accent-dark:#19f0b4}
+	body.dark-mode .tu h2{color:#d1d6dc;border-bottom:2px solid #154e38}
+	body.dark-mode .tu h3{color:#d1d6dc}
+	body.dark-mode .tu-card{background:#1a1a1a;border:1px solid #28323e}
+	body.dark-mode .tu-card--tint{background:#1d322a;border-color:#154e38}
+	body.dark-mode .tu-field > label,body.dark-mode .tu-label{color:#9a9aa2}
+	body.dark-mode .tu-input,body.dark-mode .tu-select{border:1px solid #404a58;background:#1a1a1a;color:#dddddd}
+	body.dark-mode .tu-suffix span{color:#989ca4}
+	body.dark-mode .tu-btn{background:#1a1a1a}
+	body.dark-mode .tu-btn--ghost{border-color:#3a424d;color:#aaaaaa}
+	body.dark-mode .tu-btn--ghost:hover{background:#191c20;color:#dddddd;border-color:#3a424d}
+	body.dark-mode .tu-seg{border:1px solid #404a58;background:#1a1a1a}
+	body.dark-mode .tu-seg button{color:#aaaaaa;border-right:1px solid #28323e}
+	body.dark-mode .tu-seg button:hover{background:#16191d}
+	body.dark-mode .tu-chip{border:1px solid #3a424d;background:#1a1a1a;color:#aaaaaa}
+	body.dark-mode .tu-stat{background:#1a1a1a;border:1px solid #28323e}
+	body.dark-mode .tu-stat--hero{background:#1d322a;border-color:#154e38}
+	body.dark-mode .tu-stat__label{color:#9a9aa2}
+	body.dark-mode .tu-stat__value{color:#d1d6dc}
+	body.dark-mode .tu-stat__sub{color:#9a9ea4}
+	body.dark-mode .tu-pos{color:#7dde9d !important}
+	body.dark-mode .tu-neg{color:#e87973 !important}
+	body.dark-mode .tu-table th,body.dark-mode .tu-table td{border-bottom:1px solid #29323d;color:#cccccc}
+	body.dark-mode .tu-table th{color:#9a9da3;background:#1a1a1a}
+	body.dark-mode .tu-table tr.is-active td{background:#1d322a}
+	body.dark-mode .tu-note{color:#9a9da3}
+	body.dark-mode .tu-toast{background:#3c4f67}
+	body.dark-mode .tu-seo{border-top:1px solid #333333}
+	body.dark-mode .tu-svg-line{stroke:#394a60}
+	body.dark-mode .tu-svg-text{fill:#cccccc}
+	body.dark-mode .tu-svg-grid{stroke:#28323e}
+	body.dark-mode .tu [data-names="0"] .rw-num,body.dark-mode .tu [data-table="1"] .rw-num{color:#999da3}
+	body.dark-mode .tu [data-table="1"] .rw-head{color:#9a9aa2;border-bottom:2px solid #2b323c}
+	body.dark-mode .tu [data-table="1"] .rw-row{border-bottom:1px solid #27313f}
+	body.dark-mode #mg.tu{--mg-dep:#12f7b6;--mg-dep-a:rgba(18,247,182,0.25);--mg-int:#f88d11;--mg-int-a:rgba(248,141,17,0.35);--mg-start:#3bcf9e;--mg-sa:#12f7b6;--mg-good:#12f7b6;--mg-bad:#e23427;--mg-link:#13f6b5}
+	/* TOOL-DARK:END */
 </style>
         <meta property="fb:app_id" content="" />
         <meta name="author" content="Math Easy Solutions Staff">
@@ -740,7 +762,7 @@ body.is-stuck #navbar.hide { position: fixed; top: 56px; right: 8px; }
     <li class="social__logo social__telegram"><a class="social__link" href="https://t.me/meslinks" target="_blank"></a></li></a></li></ul><a class="info-bar__logo-container" href="https://mes.fm/" title="Math Easy Solutions"><img id="mes-logo" class="info-bar__logo lazyload" alt="math easy solutions logo" height="29" width="126" data-src="https://mes.fm/main_img/mes-logo-small.png"></a>                            </div>                                                        </div>
                         <div class="info-bar-container" role="navigation" aria-label="Primary">
                             <ul id="info-bar" class="info-bar shadow">
-                                <li class="info-bar__item"><a class="info-bar__item__text" href='/compound-interest-calculator'>Home</a></li><li class="info-bar__item"><a class="info-bar__item__text" href='/loan-calculator'>Loan</a></li><li class="info-bar__item"><a class="info-bar__item__text" href='/mortgagecalculator'>Mortgage</a></li>                                    <li class="info-bar__item"><a class="info-bar__item__text" href='https://mes.fm/calculators'>Calculators</a></li><li class="info-bar__item"><a class="info-bar__item__text" href='https://mes.fm/tools'>Tools</a></li>                                    <li class="info-bar__item info-bar__item--utility" style="display:none !important;"><a class="info-bar__item__text" href='/contact'>Contact Us</a></li>
+                                <li class="info-bar__item"><a class="info-bar__item__text" href='/compound-interest-calculator'>Home</a></li><li class="info-bar__item"><a class="info-bar__item__text" href='/compound-interest-explained'>Explained</a></li><li class="info-bar__item"><a class="info-bar__item__text" href='/loan-calculator'>Loan</a></li><li class="info-bar__item"><a class="info-bar__item__text" href='/mortgagecalculator'>Mortgage</a></li>                                    <li class="info-bar__item"><a class="info-bar__item__text" href='https://mes.fm/calculators'>Calculators</a></li><li class="info-bar__item"><a class="info-bar__item__text" href='https://mes.fm/tools'>Tools</a></li>                                    <li class="info-bar__item info-bar__item--utility" style="display:none !important;"><a class="info-bar__item__text" href='/contact'>Contact Us</a></li>
                                     <li class="info-bar__item info-bar__item--utility" style="display:none !important;"><a class="info-bar__item__text" target='_blank' href='https://mes.fm/donate.html'>Donate</a></li><li class="info-bar__item info-bar__item--utility" style="display:none !important;"><a class="info-bar__item__text" target='_blank' rel="nofollow" href='https://matheasy.substack.com/'>Subscribe</a></li>
                                     <li class="info-bar__item info-bar__item--mes"><a class="info-bar__item__text" href="/" style="font-weight:bold;">MES.fm</a></li></ul>
                         </div>
@@ -833,12 +855,32 @@ body.is-stuck #navbar.hide { position: fixed; top: 56px; right: 8px; }
 				<p class="mg-sentence" id="mg-sentence"></p>
 				<div class="mg-bar" id="mg-split" aria-hidden="true"></div>
 				<div class="mg-legend" id="mg-split-legend"></div>
+				<p class="tu-note mg-exp-link">New to this? <a href="/compound-interest-explained">How compound interest works, step by step</a></p>
 			</div>
 			<div class="tu-card">
 				<h3 class="mg-h">Growth over time</h3>
-				<div class="mg-legend"><span><i class="mg-k mg-k--dep"></i>Money you put in</span><span><i class="mg-k mg-k--int"></i>Interest earned</span><span id="mg-leg-real" hidden><i class="mg-k mg-k--real"></i>Value in today's money</span></div>
+				<div class="mg-legend"><span><i class="mg-k mg-k--dep"></i>Money you put in</span><span><i class="mg-k mg-k--int"></i>Interest earned</span><span id="mg-leg-real" hidden><i class="mg-k mg-k--real"></i>Value in today's money</span><span id="mg-leg-ghost" hidden><i class="mg-k mg-k--base"></i>Your own numbers</span></div>
 				<div class="mg-chartwrap"><svg class="mg-svg" id="mg-chart" role="img" aria-label="Chart of the balance over time"></svg></div>
 				<div class="mg-readout" id="mg-readout" aria-live="polite">Move over the chart to see any year.</div>
+				<div class="mg-try" id="mg-try">
+					<div class="mg-try__head"><b>Try other numbers on the chart</b> <span class="mg-sum" id="mg-try-state">Drag a slider: the chart and the results follow. The form keeps your own numbers.</span></div>
+					<div class="mg-sls">
+						<div class="mg-sl"><label for="mg-sl-start"><span>Starting amount</span> <output id="mg-sl-start-v" for="mg-sl-start"></output></label><input type="range" class="mg-slin" id="mg-sl-start" data-k="start" min="0" max="50000" step="100"></div>
+						<div class="mg-sl"><label for="mg-sl-dep"><span>Deposit <span id="mg-sl-dep-per">each month</span></span> <output id="mg-sl-dep-v" for="mg-sl-dep"></output></label><input type="range" class="mg-slin" id="mg-sl-dep" data-k="dep" min="0" max="1000" step="2"></div>
+						<div class="mg-sl"><label for="mg-sl-rate"><span>Interest rate</span> <output id="mg-sl-rate-v" for="mg-sl-rate"></output></label><input type="range" class="mg-slin" id="mg-sl-rate" data-k="rate" min="0" max="15" step="0.05"></div>
+						<div class="mg-sl"><label for="mg-sl-years"><span>Years</span> <output id="mg-sl-years-v" for="mg-sl-years"></output></label><input type="range" class="mg-slin" id="mg-sl-years" data-k="years" min="1" max="40" step="1"></div>
+					</div>
+					<div class="mg-sl-comp"><span class="tu-label" id="mg-sl-comp-l">Compounded</span>
+						<div class="tu-chips" id="mg-sl-comp" role="group" aria-labelledby="mg-sl-comp-l">
+							<button type="button" class="tu-chip" data-v="daily" aria-pressed="false">Daily</button><button type="button" class="tu-chip" data-v="monthly" aria-pressed="false">Monthly</button><button type="button" class="tu-chip" data-v="quarterly" aria-pressed="false">Quarterly</button><button type="button" class="tu-chip" data-v="annual" aria-pressed="false">Yearly</button><button type="button" class="tu-chip" data-v="continuous" aria-pressed="false">Continuously</button>
+						</div>
+					</div>
+					<label class="mg-ghostck"><input type="checkbox" id="mg-sl-ghost" checked> Show my own numbers as a dashed line</label>
+					<div class="mg-btns" id="mg-try-btns" hidden>
+						<button type="button" class="tu-btn tu-btn--primary" id="mg-try-use">Use these numbers</button>
+						<button type="button" class="tu-btn tu-btn--ghost" id="mg-try-back">Back to my numbers</button>
+					</div>
+				</div>
 			</div>
 			<div class="tu-card">
 				<h3 class="mg-h">Year by year</h3>
@@ -928,6 +970,7 @@ body.is-stuck #navbar.hide { position: fixed; top: 56px; right: 8px; }
 
 		<div class="tu-card mg-formulas">
 			<h3 class="mg-h">The formulas</h3>
+			<p class="tu-note" style="margin-top:0;">Where they come from, step by step, with worked examples and practice questions: <a href="/compound-interest-explained">Compound Interest Explained</a>.</p>
 			<div class="mg-eq">
 				<div><span class="mg-eq__n">one amount</span> <span class="mg-eq__f mes-tex">\( \displaystyle A = P\left(1+\frac{r}{n}\right)^{nt} \)</span></div>
 				<div><span class="mg-eq__n">continuous</span> <span class="mg-eq__f mes-tex">\( \displaystyle A = P\,e^{rt} \)</span></div>
@@ -983,7 +1026,7 @@ body.is-stuck #navbar.hide { position: fixed; top: 56px; right: 8px; }
 <!-- /MES-BOTTOM-AD -->
                             </div>
                         <!-- MES-ASIDE -->
-<aside id="mes-aside" class="mes-aside" data-aside-family="tools" aria-label="More from MES Tools"><div class="mes-aside__sticky"><div class="mes-aside__ad" data-ad-slot="8429975111"></div><div class="mes-aside__head"><h2 class="mes-aside__title-h">More like this</h2><button type="button" class="mes-aside__flip" aria-label="Move this sidebar to the other side" title="Move sidebar to the other side">&#8644;</button></div><ul class="mes-aside__list"><li><a class="mes-aside__card" href="/loan-calculator"><img class="mes-aside__img mes-aside__img--logo" src="/loan-calculator/img/logo.png" width="56" height="56" loading="lazy" alt=""><span class="mes-aside__text"><span class="mes-aside__name">Loan Calculator: Monthly Payment, Interest and Payoff Schedule</span><span class="mes-aside__tag">Calculator</span></span></a></li><li><a class="mes-aside__card" href="/read-aloud"><img class="mes-aside__img mes-aside__img--logo" src="/read-aloud/img/logo.png" width="56" height="56" loading="lazy" alt=""><span class="mes-aside__text"><span class="mes-aside__name">Read Aloud</span><span class="mes-aside__tag">Tool</span></span></a></li><li><a class="mes-aside__card" href="/tools"><img class="mes-aside__img" src="/img/tools-icon.jpg" width="56" height="56" loading="lazy" alt=""><span class="mes-aside__text"><span class="mes-aside__name">All MES Tools</span><span class="mes-aside__tag">Gallery</span></span></a></li><li><a class="mes-aside__card" href="/bmicalculator"><img class="mes-aside__img mes-aside__img--logo" src="/bmicalculator/img/logo.png" width="56" height="56" loading="lazy" alt=""><span class="mes-aside__text"><span class="mes-aside__name">BMI Calculator</span><span class="mes-aside__tag">Calculator</span></span></a></li></ul></div></aside>
+<aside id="mes-aside" class="mes-aside" data-aside-family="tools" aria-label="More from MES Tools"><div class="mes-aside__sticky"><div class="mes-aside__ad" data-ad-slot="8429975111"></div><div class="mes-aside__head"><h2 class="mes-aside__title-h">More like this</h2><button type="button" class="mes-aside__flip" aria-label="Move this sidebar to the other side" title="Move sidebar to the other side">&#8644;</button></div><ul class="mes-aside__list"><li><a class="mes-aside__card" href="/compound-interest-explained"><img class="mes-aside__img mes-aside__img--logo" src="/compound-interest-explained/img/logo.png" width="56" height="56" loading="lazy" alt=""><span class="mes-aside__text"><span class="mes-aside__name">Compound Interest Explained: The Formula and Its Derivation</span><span class="mes-aside__tag">Tutorial</span></span></a></li><li><a class="mes-aside__card" href="/videospeed"><img class="mes-aside__img mes-aside__img--logo" src="/videospeed/img/logo.png" width="56" height="56" loading="lazy" alt=""><span class="mes-aside__text"><span class="mes-aside__name">Video Speed Controller</span><span class="mes-aside__tag">Tool</span></span></a></li><li><a class="mes-aside__card" href="/tools"><img class="mes-aside__img" src="/img/tools-icon.jpg" width="56" height="56" loading="lazy" alt=""><span class="mes-aside__text"><span class="mes-aside__name">All MES Tools</span><span class="mes-aside__tag">Gallery</span></span></a></li><li><a class="mes-aside__card" href="/mortgagecalculator"><img class="mes-aside__img mes-aside__img--logo" src="/mortgagecalculator/img/logo.png" width="56" height="56" loading="lazy" alt=""><span class="mes-aside__text"><span class="mes-aside__name">Mortgage Calculator</span><span class="mes-aside__tag">Calculator</span></span></a></li></ul></div></aside>
 <!-- /MES-ASIDE -->
 </div>
 
@@ -991,7 +1034,7 @@ body.is-stuck #navbar.hide { position: fixed; top: 56px; right: 8px; }
                                         <div class="button button--navbar" id="navbar-button" style="position:relative;">Site Navigation<span class="dropdown-symbol dropdown-symbol--dark" style="position:absolute;right:0.75em;top:50%;transform:translateY(-50%);margin-left:0;">&#9660;</span></div>    <ul id="navbar" class="navbar">
     <li class="navbar__item navbar__item--social"><div class="social-container social-container--navbar"><ul class="social">	<li class="social__logo social__hive"><a class="social__link" href="https://peakd.com/@mes" target="_blank"></a></li>
     <li class="social__logo social__telegram"><a class="social__link" href="https://t.me/meslinks" target="_blank"></a></li></ul><a class="info-bar__logo-container" href="https://mes.fm/" title="Math Easy Solutions"><img id="mes-logo" class="info-bar__logo lazyload" alt="math easy solutions logo" height="29" width="126" data-src="https://mes.fm/main_img/mes-logo-small.png"></a></div></li>
-        <li class="navbar__item"><a class="navbar__link navbar__link--first" href="/compound-interest-calculator">Home</a></li><li class="navbar__item"><a class="navbar__link" href="/loan-calculator">Loan Calculator</a></li><li class="navbar__item"><a class="navbar__link" href="/mortgagecalculator">Mortgage Calculator</a></li>    <li class="navbar__item"><a class="navbar__link" href="/calculators">Calculators</a></li>
+        <li class="navbar__item"><a class="navbar__link navbar__link--first" href="/compound-interest-calculator">Home</a></li><li class="navbar__item"><a class="navbar__link" href="/compound-interest-explained">Compound Interest Explained</a></li><li class="navbar__item"><a class="navbar__link" href="/loan-calculator">Loan Calculator</a></li><li class="navbar__item"><a class="navbar__link" href="/mortgagecalculator">Mortgage Calculator</a></li>    <li class="navbar__item"><a class="navbar__link" href="/calculators">Calculators</a></li>
     <li class="navbar__item"><a class="navbar__link" href="/tools">Tools</a></li>
     <li class="navbar__item"><a class="navbar__link" href="/browser">Browser Extensions</a></li>
     <!-- MOBILE-APPS-DROPDOWN-REMOVED: every linked app was a dead App Store / Play Store listing (lapsed developer account) -- add an entry back here for each app once it is relaunched -->
@@ -1033,7 +1076,7 @@ body.is-stuck #navbar.hide { position: fixed; top: 56px; right: 8px; }
             hide_search:false,
             current_tab:0
         }        </script><!-- FASTCOMMENTS-LAZY: widget init moved to main_js/main.js -- it pulls embed.min.js only when #fastcomments-widget nears the viewport or on the first Comments-toggle click, so it no longer blocks first render -->                <script src="https://mes.fm/main_js/lazysizes.min.js?v=1.0.3" async></script>
-	<script src="/compound-interest-calculator/js/compound-interest-calculator.js?v=1" defer></script>
+	<script src="/compound-interest-calculator/js/compound-interest-calculator.js?v=2" defer></script>
             <script src="https://mes.fm/main_js/main.js?v=1.0.5"></script>    <!-- PAGEVIEW-TRACKING-INSERTED --><script src="https://mes.fm/main_js/track.js" defer></script><script>document.getElementById('copyright-year').textContent = new Date().getFullYear();</script><script src="/main_js/info-bar-fit.js" defer></script><script>
   // Floating compact header bar (see #compact-nav CSS): appears once the
   // header + nav bar have scrolled off the top; nav links that don't fit

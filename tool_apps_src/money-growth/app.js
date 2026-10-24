@@ -250,6 +250,27 @@
 	}
 	function notice(msg) { var n = $("mg-notice"); if (n) { n.textContent = msg; n.hidden = !msg; } }
 
+	/* equation boxes: shrink each typeset formula to fit its box (down to MIN), past that it scrolls inside the box. MathJax (mes-math.js)
+	   marks each element .mes-tex--done when it is typeset; re-fit then and whenever the page width changes. */
+	function fitEqs(sel, MIN) {
+		var els = Array.prototype.slice.call(root.querySelectorAll(sel)); if (!els.length) return;
+		function fit() {
+			els.forEach(function (e) {
+				var c = e.querySelector("mjx-container"); if (!c) return;
+				e.style.fontSize = "";
+				var avail = e.clientWidth - 2, w = c.getBoundingClientRect().width;
+				if (avail > 0 && w > avail) e.style.fontSize = (Math.max(MIN, avail / w) * 100).toFixed(1) + "%";
+			});
+		}
+		if (typeof MutationObserver !== "undefined") els.forEach(function (e) { new MutationObserver(fit).observe(e, { attributes: true, attributeFilter: ["class"], childList: true }); });
+		if (typeof ResizeObserver !== "undefined") { var lw = 0; new ResizeObserver(function () { var w = root.clientWidth; if (Math.abs(w - lw) > 4) { lw = w; fit(); } }).observe(root); }
+		else window.addEventListener("resize", fit);
+		var mc = document.getElementById("main-content");   // A- / A+ change the text size without changing the width
+		if (mc && typeof MutationObserver !== "undefined") new MutationObserver(function () { setTimeout(fit, 30); }).observe(mc, { attributes: true, attributeFilter: ["style", "class"] });
+		fit();
+	}
+	fitEqs(".mg-eq__f", 0.78);
+
 	var render = function () {};
 	var tm = 0;
 	function soon() { clearTimeout(tm); tm = setTimeout(function () { render(); }, 140); }
@@ -273,7 +294,7 @@
 		if (+val("mg-inc") || +val("mg-inf") || +val("mg-tax")) $("mg-more").open = true;
 		function save() {
 			var s = {}; Object.keys(FIELDS).forEach(function (k) { s[k] = val(FIELDS[k]); });
-			s.gk = gk.get(); s.tab = tab; store.grow = s; saveStore();
+			s.gk = gk.get(); s.tab = tab; if (typeof ghostOn !== "undefined" && !ghostOn) s.ghost = false; store.grow = s; saveStore();
 		}
 		function link() {
 			var p = [["s", val("mg-start")], ["d", val("mg-dep")], ["f", val("mg-df")], ["w", val("mg-timing")], ["r", val("mg-rate")], ["c", val("mg-comp")], ["y", val("mg-years")], ["m", val("mg-months")]];
@@ -318,8 +339,62 @@
 		onTab = function (t) { $("mg-inputs").hidden = t === "r72"; Array.prototype.forEach.call(root.querySelectorAll("[data-solve]"), function (f) { f.classList.remove("mg-solving"); }); };
 		var unitName = function (r) { return r.spy === 12 ? "Month" : "Week"; };
 
+		/* "Try other numbers on the chart": the sliders hold a trial copy of the main inputs; the form is untouched until "Use these numbers" */
+		var trial = null, slR = {}, SLK = ["start", "dep", "rate", "years"];
+		var ghostOn = S.ghost !== false;
+		$("mg-sl-ghost").checked = ghostOn;
+		function trialOf(o) {
+			if (!trial) return o;
+			var t = Object.assign({}, o, { start: trial.start, dep: trial.dep, rate: trial.rate / 100, years: trial.years, comp: trial.comp });
+			if (trial.years !== o.years) t.months = 0;
+			if (t.df === "none" && t.dep > 0) t.df = "monthly";
+			return t;
+		}
+		function slFmt(k, v) { return k === "rate" ? plain(v, 2).replace(/\.?0+$/, "") + "%" : k === "years" ? v + (v === 1 ? " year" : " years") : money(v, v >= 1000 || zeroDp() ? 0 : 2); }
+		function syncSliders(o, keepRanges) {   // set ranges + positions (from the trial if one is active, else from the form)
+			var cv = trial || { start: o.start, dep: o.dep, rate: o.rate * 100, years: o.years + (o.months ? Math.round(o.months / 12 * 10) / 10 : 0), comp: o.comp };
+			SLK.forEach(function (k) {
+				var inp = $("mg-sl-" + k), typed = k === "rate" ? o.rate * 100 : k === "years" ? o.years + o.months / 12 : o[k];
+				if (!keepRanges || !slR[k]) { slR[k] = MG.sliderRange(k, typed); inp.min = slR[k].min; inp.max = slR[k].max; inp.step = slR[k].step; }
+				if (document.activeElement !== inp || !trial) inp.value = cv[k];
+				var out = $("mg-sl-" + k + "-v"); out.textContent = slFmt(k, k === "years" && !trial ? Math.round(typed * 10) / 10 : cv[k]);
+				out.classList.toggle("mg-chg", !!trial && Math.abs(cv[k] - typed) > 1e-9);
+			});
+			$("mg-sl-dep-per").textContent = "each " + perText(o.df === "none" ? "monthly" : o.df);
+			Array.prototype.forEach.call($("mg-sl-comp").querySelectorAll("button"), function (b) { b.setAttribute("aria-pressed", b.getAttribute("data-v") === cv.comp ? "true" : "false"); });
+			$("mg-try-btns").hidden = !trial;
+			$("mg-try").classList.toggle("mg-trying", !!trial);
+			$("mg-try-state").textContent = trial ? "Showing the slider numbers. Use them, or go back to the numbers in the form." : "Drag a slider: the chart and the results follow. The form keeps your own numbers.";
+		}
+		function startTrial(o) { if (!trial) trial = { start: o.start, dep: o.dep, rate: Math.round(o.rate * 1e6) / 1e4, years: o.years, comp: o.comp === "semiannual" ? "semiannual" : o.comp }; }
+		SLK.forEach(function (k) {
+			on($("mg-sl-" + k), "input", function () {
+				var A = readA(); if (A.err) return;
+				startTrial(A.o);
+				trial[k] = MG.snapSlider(k, this.value, slR[k]);
+				render();
+			});
+		});
+		on($("mg-sl-comp"), "click", function (e) {
+			var b = e.target.closest("button"); if (!b) return;
+			var A = readA(); if (A.err) return;
+			startTrial(A.o); trial.comp = b.getAttribute("data-v"); render();
+		});
+		on($("mg-sl-ghost"), "change", function () { ghostOn = this.checked; save(); render(); });
+		on($("mg-try-back"), "click", function () { trial = null; render(); toast("Back to your numbers"); });
+		on($("mg-try-use"), "click", function () {
+			if (!trial) return;
+			var o = readA().o, t = trialOf(o);
+			setVal("mg-start", plain(t.start, t.start % 1 ? 2 : 0)); setVal("mg-dep", plain(t.dep, t.dep % 1 ? 2 : 0));
+			setVal("mg-rate", String(Math.round(t.rate * 1e6) / 1e4)); setVal("mg-years", t.years); setVal("mg-months", t.months);
+			setVal("mg-comp", t.comp); if (o.df !== t.df) setVal("mg-df", t.df);
+			trial = null; render(); toast("Copied into the form");
+		});
+
 		function renderGrow(A) {
-			var o = A.o, r = MG.grow(o); lastR = r;
+			var base = A.o, o = trialOf(base), r = MG.grow(o); lastR = r;
+			var rg = trial && ghostOn ? MG.grow(base) : null;
+			syncSliders(base, !!trial);
 			var hero = stat("Final balance", money(r.final), { hero: true, sub: "after " + ym(r.T) }) +
 				stat("Total put in", money(r.deposits), { sub: money(r.start) + " start + " + money(r.deposits - r.start) + " deposits" }) +
 				stat("Total interest", money(r.interest), { cls: "tu-pos", sub: r.deposits > 0 ? (r.interest / r.deposits * 100).toFixed(1) + "% of what you put in" : "" }) +
@@ -329,14 +404,21 @@
 			$("mg-hero").innerHTML = hero;
 			var dtext = o.df !== "none" && o.dep > 0 ? " and add " + money(o.dep) + " every " + perText(o.df) + (o.timing === "s" ? " (at the start)" : "") + (o.inc ? ", raised " + pct(o.inc, 2) + " each year" : "") : "";
 			$("mg-sentence").textContent = r.N ? "If you start with " + money(o.start) + dtext + " at " + pct(o.rate, 3) + " a year compounded " + MG.COMP_LABEL[o.comp].toLowerCase() +
-				", after " + ym(r.T) + " you will have " + money(r.final) + ", of which " + money(r.interest) + " is interest." : "Choose how long to save.";
+				", after " + ym(r.T) + " you will have " + money(r.final) + ", of which " + money(r.interest) + " is interest." +
+				(trial ? (function () { var f0 = MG.grow(base).final, d = r.final - f0; return Math.abs(d) < 0.005 ? " (Same as your own numbers.)" : " (" + money(Math.abs(d)) + (d > 0 ? " more" : " less") + " than your own numbers.)"; })() : "") : "Choose how long to save.";
 			bar("mg-split", "mg-split-legend", [["Starting amount", r.start, "mg-s--start"], ["Deposits", r.deposits - r.start, "mg-s--dep"], ["Interest", r.interest, "mg-s--int"]]);
 			var pts = steps2points(r);
 			$("mg-leg-real").hidden = !o.inf;
+			$("mg-leg-ghost").hidden = !rg;
+			function at(rr, t) { if (t > rr.T + 1e-9) return null; if (t <= 0) return rr.start; var k = Math.round(t * rr.spy) - 1; return rr.steps[Math.max(0, Math.min(rr.N - 1, k))].bal; }
+			var ghost = rg ? pts.map(function (p) { return at(rg, p.t); }) : null;
+			var lines = o.inf ? [{ v: pts.map(function (p) { return p.bal / Math.pow(1 + o.inf, p.t); }), cls: "mg-l-real" }] : [];
+			if (ghost) lines.push({ v: ghost, cls: "mg-l-base" });
 			chart($("mg-chart"), { x: pts.map(function (p) { return p.t; }), stacks: [{ v: pts.map(function (p) { return p.deps; }), cls: "mg-a-dep" }, { v: pts.map(function (p) { return p.intr; }), cls: "mg-a-int" }],
-				lines: o.inf ? [{ v: pts.map(function (p) { return p.bal / Math.pow(1 + o.inf, p.t); }), cls: "mg-l-real" }] : [],
+				lines: lines,
 				xLabel: function (t) { return "Yr " + t; }, readEl: $("mg-readout"),
-				read: function (i) { var p = pts[i]; return "<b>" + esc(p.t ? ym(p.t) : "Start") + "</b>: balance <b>" + esc(money(p.bal)) + "</b> = put in " + esc(money(p.deps)) + " + interest " + esc(money(p.intr)) + (o.inf ? " · today's money " + esc(money(p.bal / Math.pow(1 + o.inf, p.t))) : ""); } });
+				read: function (i) { var p = pts[i]; return "<b>" + esc(p.t ? ym(p.t) : "Start") + "</b>: balance <b>" + esc(money(p.bal)) + "</b> = put in " + esc(money(p.deps)) + " + interest " + esc(money(p.intr)) + (o.inf ? " · today's money " + esc(money(p.bal / Math.pow(1 + o.inf, p.t))) : "") +
+					(ghost ? " · your numbers " + (ghost[i] == null ? "ended at " + esc(money(rg.final)) : "<b>" + esc(money(ghost[i])) + "</b>") : ""); } });
 			// table
 			$("mg-subname").textContent = r.spy === 12 ? "month" : (o.df === "weekly" ? "week" : "2 weeks");
 			var head = ["Year", "Deposits", "Interest"]; if (o.tax) head.push("Tax"); head.push("Balance"); if (o.inf) head.push("Today's money");
@@ -471,7 +553,10 @@
 				render();
 			});
 		});
-		Array.prototype.forEach.call(root.querySelectorAll("input, select"), function (e) { on(e, e.tagName === "SELECT" ? "change" : "input", soon); });
+		Array.prototype.forEach.call(root.querySelectorAll("input, select"), function (e) {
+			if (e.closest("#mg-try")) return;
+			on(e, e.tagName === "SELECT" ? "change" : "input", function () { if (/^mg-(start|dep|df|rate|comp|years|months|inc|inf|tax|timing)$/.test(e.id)) trial = null; soon(); });
+		});
 		// scenario B defaults
 		if (!val("mg-b-rate")) { var a0 = readA().o; setVal("mg-b-start", val("mg-start")); setVal("mg-b-dep", val("mg-dep")); setVal("mg-b-df", a0.df); setVal("mg-b-rate", String(Math.round((a0.rate * 100 + 1) * 1e6) / 1e6)); setVal("mg-b-comp", a0.comp); setVal("mg-b-years", a0.years); }
 		fillCurSelect(); curTags();

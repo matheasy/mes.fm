@@ -65,7 +65,9 @@ TOOLS = [  # (directory, compact-bar title[, home path of the site the page belo
     ("baby-feeding-log", "Baby Feeding Log"),
     ("domain-lookup", "Domain Lookup"),
     ("site-traffic", "Site Traffic"),
+    ("signals", "Market Signals"),
     ("compound-interest-calculator", "Compound Interest Calculator"),   # 2026-10-23
+    ("compound-interest-explained", "Compound Interest Calculator", "/compound-interest-calculator"),   # 2026-10-24 tutorial sub-page (brand option)
     ("loan-calculator", "Loan Calculator"),   # 2026-10-23
     ("time-calculator", "Time Calculator"),   # 2026-10-23
     ("fuel-cost-calculator", "Fuel Cost Calculator"),   # 2026-10-23
@@ -129,6 +131,7 @@ TOOLS = [  # (directory, compact-bar title[, home path of the site the page belo
     ("reverse-image-search", "Reverse Image Search"),   # also built by build_tool_apps.py   # also built by build_tool_apps.py (wide page)
     ("site-index", "Site Index"),
     ("ads", "MES Ads"),
+    ("search-console", "MES Search Console"),
     ("fav", "MES Favourites"),
     ("compress", "MES Compressor"),
     ("compress-video", "MES Video Compressor"),

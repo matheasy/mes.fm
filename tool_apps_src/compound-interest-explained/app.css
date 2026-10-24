@@ -1,0 +1,52 @@
+	/* Compound Interest Explained (article; same look as time-dilation-explained). Hand-written dark rules use the #ce prefix. */
+	#ce .ce-body h2 {margin:1.8em 0 0.5em;font-size:1.45em;font-weight:800;line-height:1.25;border-bottom:2px solid var(--tint);padding-bottom:0.2em;}
+	#ce .ce-body p, #ce .ce-body li {line-height:1.7;font-size:1.03em;}
+	#ce ul.ce-list {list-style:disc;margin:0.5em 0 0.8em 1.4em;} #ce .ce-list li {margin-bottom:0.35em;}
+	#ce .ce-eq {margin:0.9em 0;padding:1em;background:#f4f6f9;border:1px solid #dfe4ea;border-left:5px solid var(--accent);border-radius:0.4em;overflow-x:auto;overflow-y:hidden;font-size:1.1em;-webkit-overflow-scrolling:touch;}
+	#ce .ce-eq--key {border-left-width:8px;background:#ecf8f3;}
+	#ce .ce-eq .mes-tex {display:inline-block;max-width:none;}
+	#ce .ce-eq mjx-container {margin:0 !important;}
+	#ce .ce-note {font-size:0.9em;color:#5b6573;}
+	#ce .ce-q {margin:0.5em 0;border:1px solid #dfe4ea;border-radius:0.5em;padding:0.6em 0.9em;background:#fff;}
+	#ce .ce-q summary {cursor:pointer;font-weight:700;line-height:1.5;min-height:28px;} #ce .ce-q[open] summary {margin-bottom:0.4em;}
+	#ce [hidden] {display:none !important;}
+	#ce .ce-widget {margin:1em 0 1.2em;padding:0.9em 1em;border:1px solid #d5dbe2;border-radius:0.6em;background:#fafbfc;}
+	#ce .ce-wrow {display:flex;flex-wrap:wrap;gap:0.6em 1em;}
+	#ce .ce-wrow label {display:flex;flex-direction:column;gap:0.2em;font-size:0.9em;color:#5b6573;flex:1 1 8em;}
+	#ce .ce-in {min-height:40px;}
+	#ce .ce-btns {display:flex;flex-wrap:wrap;gap:0.5em;margin:0.7em 0;}
+	#ce .ce-btns .tu-btn {min-height:40px;}
+	#ce .ce-tbl td, #ce .ce-tbl th {font-variant-numeric:tabular-nums;}
+	#ce .ce-tbl th[scope=row] {text-align:left;text-transform:none;letter-spacing:0;font-size:inherit;color:#1e2733;}
+	body.dark-mode #ce .ce-tbl th[scope=row] {color:#e6e8ec;}
+	#ce .ce-best td, #ce .ce-best th {background:#eaf7f1;font-weight:700;}
+	#ce .ce-tag {font-size:0.75em;font-weight:700;color:#fff;background:var(--accent);border-radius:1em;padding:0.1em 0.55em;margin-left:0.3em;vertical-align:0.1em;}
+	#ce .ce-stepbars {display:flex;align-items:flex-end;gap:2px;height:7em;margin:0.6em 0;border-bottom:1px solid #b7c0cb;}
+	#ce .ce-sb {position:relative;flex:1 1 0;height:100%;max-width:2.4em;}
+	#ce .ce-sb__c {position:absolute;left:0;right:0;bottom:0;background:#047857;border-radius:3px 3px 0 0;}
+	#ce .ce-sb__s {position:absolute;left:-1px;right:-1px;height:0;border-top:2px solid #d97706;}
+	#ce .ce-slab {display:block;font-weight:700;margin-bottom:0.3em;}
+	#ce .ce-slab output {color:var(--accent);display:inline;}
+	#ce .ce-range {width:100%;accent-color:var(--accent);min-height:32px;cursor:pointer;}
+	#ce .ce-chips {margin:0.5em 0;}
+	#ce .ce-chips .tu-chip {min-height:36px;}
+	#ce .ce-big {font-size:1.15em;margin:0.5em 0;line-height:1.5;font-variant-numeric:tabular-nums;}
+	#ce .ce-big .ce-note {display:block;}
+	#ce .ce-esvg {width:100%;height:auto;display:block;}
+	#ce .ce-grid {stroke:#e3e7ec;stroke-width:1;} #ce .ce-tx {font-size:12px;fill:#5f6b7a;} #ce .ce-tx--e {fill:#b45309;font-weight:700;}
+	#ce .ce-eline {stroke:#d97706;stroke-width:1.5;stroke-dasharray:6 4;} #ce .ce-curve {fill:none;stroke:#047857;stroke-width:2.5;} #ce .ce-dot {fill:#047857;stroke:#fff;stroke-width:2;}
+	#ce a {font-weight:700;}
+	@media (max-width:560px) {#ce .ce-tbl {font-size:0.86em;} #ce .ce-tbl td, #ce .ce-tbl th {padding-left:0.35em;padding-right:0.35em;} #ce .ce-eq {font-size:0.95em;padding:0.8em 0.6em;} #ce .ce-widget {padding:0.7em 0.6em;} #ce .ce-tx {font-size:15px;}}
+	/* the shared shell paints every div / span / p #333: inherit instead so dark mode reads */
+	:where(#ce) :is(div, span, p, section, label, li, td, th, small, b, strong, em, h2, h3, h4, dt, dd, summary, output, details, table, tr, sup, sub, i) {color:inherit;}
+	/* dark mode */
+	body.dark-mode #ce .ce-eq, body.dark-mode #ce .ce-q, body.dark-mode #ce .ce-widget {background:#23262b;border-color:#3a3f48;}
+	body.dark-mode #ce .ce-eq--key {background:#1d302a;}
+	body.dark-mode #ce .ce-eq, body.dark-mode #ce .ce-eq--key {border-left-color:var(--accent);}
+	body.dark-mode #ce .ce-note, body.dark-mode #ce .ce-wrow label {color:#a0a8b3;}
+	body.dark-mode #ce .ce-body h2 {border-bottom-color:#3a3f48;}
+	body.dark-mode #ce .ce-best td, body.dark-mode #ce .ce-best th {background:#1f3a30;}
+	body.dark-mode #ce .ce-tag {color:#0b1416;}
+	body.dark-mode #ce .ce-sb__c {background:#34d399;} body.dark-mode #ce .ce-sb__s {border-top-color:#fbbf24;} body.dark-mode #ce .ce-stepbars {border-bottom-color:#4a5260;}
+	body.dark-mode #ce .ce-grid {stroke:#363c45;} body.dark-mode #ce .ce-tx {fill:#aab3bf;} body.dark-mode #ce .ce-tx--e {fill:#fbbf24;}
+	body.dark-mode #ce .ce-eline {stroke:#fbbf24;} body.dark-mode #ce .ce-curve {stroke:#34d399;} body.dark-mode #ce .ce-dot {fill:#34d399;stroke:#22262c;}

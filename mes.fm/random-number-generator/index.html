@@ -352,6 +352,14 @@ body.dark-mode .tu .rw-head {color:#a0a8b3;border-bottom-color:#555;} body.dark-
 	#rn .rn-dnf {flex:1 1 16em;}
 	#rn .tu-input.rn-bad {border-color:var(--rn-bad);}
 	#rn .rn-tray {display:flex;flex-wrap:wrap;gap:0.5em;justify-content:center;margin:1em 0 0.4em;min-height:4.6em;perspective:600px;}
+	#rn .rn-tray {cursor:pointer;border-radius:0.6em;-webkit-tap-highlight-color:transparent;}
+	#rn .rn-tray:empty {cursor:default;}
+	#rn .rn-tray:focus-visible {outline:3px solid var(--accent);outline-offset:3px;}
+	#rn .rn-again[hidden] {display:none;}
+	#rn .rn-again {display:flex;flex-wrap:wrap;gap:0.6em;align-items:center;justify-content:center;margin:0.6em 0 0.4em;}
+	#rn .rn-again .tu-btn {min-height:44px;min-width:9em;}
+	#rn .rn-tip {margin:0;}
+	#rn .rn-exh {margin:0.9em 0 0.4em;font-size:1em;}
 	#rn .rn-dw {display:inline-flex;flex-direction:column;align-items:center;gap:0.1em;}
 	#rn .rn-die {width:4.2em;height:4.2em;filter:drop-shadow(0 3px 3px rgba(0,0,0,0.25));}
 	#rn .rn-dbody {fill:url(#rn-g);stroke:var(--rn-die-edge);stroke-width:2.5;}
@@ -855,11 +863,13 @@ body.is-stuck #navbar.hide { position: fixed; top: 56px; right: 8px; }
 					<button type="button" class="tu-btn tu-btn--ghost" id="rn-dclear">Clear</button>
 				</div>
 				<p class="tu-note" id="rn-dn-msg" aria-live="polite"></p>
+				<div class="rn-tray" id="rn-tray" role="button" tabindex="0" aria-label="Roll the dice again" title="Tap the dice to roll again"></div>
+				<div class="rn-total" id="rn-dice-out" aria-live="polite"></div>
+				<div class="rn-again" id="rn-again" hidden><button type="button" class="tu-btn tu-btn--primary" id="rn-roll2">🎲 Roll again</button><span class="tu-note rn-tip">or tap the dice</span></div>
+				<h3 class="rn-h rn-exh">Quick rolls</h3>
 				<div class="tu-chips" id="rn-dex" aria-label="Examples">
 					<button type="button" class="tu-chip" data-n="2d6">2d6</button><button type="button" class="tu-chip" data-n="3d6">3d6</button><button type="button" class="tu-chip" data-n="d20+5">d20+5</button><button type="button" class="tu-chip" data-n="d20 adv">d20 advantage</button><button type="button" class="tu-chip" data-n="d20 dis">d20 disadvantage</button><button type="button" class="tu-chip" data-n="4d6 drop lowest">4d6 drop lowest</button><button type="button" class="tu-chip" data-n="8d6">8d6 fireball</button><button type="button" class="tu-chip" data-n="3d6!">3d6 exploding</button><button type="button" class="tu-chip" data-n="d%">d% (1-100)</button><button type="button" class="tu-chip" data-n="4dF">4dF fudge</button><button type="button" class="tu-chip" data-n="2d10+1d8-1">2d10+1d8-1</button>
 				</div>
-				<div class="rn-tray" id="rn-tray" aria-hidden="true"></div>
-				<div class="rn-total" id="rn-dice-out" aria-live="polite"></div>
 				<details class="rn-help"><summary>How to write dice</summary>
 					<table class="tu-table rn-cheat"><tbody>
 						<tr><th scope="row"><code>2d6</code></th><td>two six-sided dice, added</td></tr>
@@ -1011,7 +1021,7 @@ body.is-stuck #navbar.hide { position: fixed; top: 56px; right: 8px; }
 <!-- /MES-BOTTOM-AD -->
                             </div>
                         <!-- MES-ASIDE -->
-<aside id="mes-aside" class="mes-aside" data-aside-family="tools" aria-label="More from MES Tools"><div class="mes-aside__sticky"><div class="mes-aside__ad" data-ad-slot="8429975111"></div><div class="mes-aside__head"><h2 class="mes-aside__title-h">More like this</h2><button type="button" class="mes-aside__flip" aria-label="Move this sidebar to the other side" title="Move sidebar to the other side">&#8644;</button></div><ul class="mes-aside__list"><li><a class="mes-aside__card" href="/dice-roller"><img class="mes-aside__img mes-aside__img--logo" src="/img/dice-roller-logo.png" width="56" height="56" loading="lazy" alt=""><span class="mes-aside__text"><span class="mes-aside__name">Dice Roller: Roll Any Dice Online (d4, d6, d20, 2d6+3)</span><span class="mes-aside__tag">Tool</span></span></a></li><li><a class="mes-aside__card" href="/metric-tensor"><img class="mes-aside__img mes-aside__img--logo" src="/metric-tensor/img/logo.png" width="56" height="56" loading="lazy" alt=""><span class="mes-aside__text"><span class="mes-aside__name">Metric Tensor Calculator: Christoffel, Riemann and Einstein Tensors</span><span class="mes-aside__tag">Tool</span></span></a></li><li><a class="mes-aside__card" href="/tools"><img class="mes-aside__img" src="/img/tools-icon.jpg" width="56" height="56" loading="lazy" alt=""><span class="mes-aside__text"><span class="mes-aside__name">All MES Tools</span><span class="mes-aside__tag">Gallery</span></span></a></li><li><a class="mes-aside__card" href="/percentagecalculator"><img class="mes-aside__img mes-aside__img--logo" src="/percentagecalculator/img/logo.png" width="56" height="56" loading="lazy" alt=""><span class="mes-aside__text"><span class="mes-aside__name">Percentage Calculator</span><span class="mes-aside__tag">Calculator</span></span></a></li></ul></div></aside>
+<aside id="mes-aside" class="mes-aside" data-aside-family="tools" aria-label="More from MES Tools"><div class="mes-aside__sticky"><div class="mes-aside__ad" data-ad-slot="8429975111"></div><div class="mes-aside__head"><h2 class="mes-aside__title-h">More like this</h2><button type="button" class="mes-aside__flip" aria-label="Move this sidebar to the other side" title="Move sidebar to the other side">&#8644;</button></div><ul class="mes-aside__list"><li><a class="mes-aside__card" href="/dice-roller"><img class="mes-aside__img mes-aside__img--logo" src="/dice-roller/img/logo.png" width="56" height="56" loading="lazy" alt=""><span class="mes-aside__text"><span class="mes-aside__name">Dice Roller: Roll Any Dice Online (d4, d6, d20, 2d6+3)</span><span class="mes-aside__tag">Tool</span></span></a></li><li><a class="mes-aside__card" href="/orbit-simulator"><img class="mes-aside__img mes-aside__img--logo" src="/orbit-simulator/img/logo.png" width="56" height="56" loading="lazy" alt=""><span class="mes-aside__text"><span class="mes-aside__name">Orbit Simulator: Planets, Gravity and Kepler's Laws</span><span class="mes-aside__tag">Tool</span></span></a></li><li><a class="mes-aside__card" href="/tools"><img class="mes-aside__img" src="/img/tools-icon.jpg" width="56" height="56" loading="lazy" alt=""><span class="mes-aside__text"><span class="mes-aside__name">All MES Tools</span><span class="mes-aside__tag">Gallery</span></span></a></li><li><a class="mes-aside__card" href="/gradecalculator"><img class="mes-aside__img mes-aside__img--logo" src="/gradecalculator/img/logo.png" width="56" height="56" loading="lazy" alt=""><span class="mes-aside__text"><span class="mes-aside__name">Grade Calculator</span><span class="mes-aside__tag">Calculator</span></span></a></li></ul></div></aside>
 <!-- /MES-ASIDE -->
 </div>
 
@@ -1061,7 +1071,7 @@ body.is-stuck #navbar.hide { position: fixed; top: 56px; right: 8px; }
             hide_search:false,
             current_tab:0
         }        </script><!-- FASTCOMMENTS-LAZY: widget init moved to main_js/main.js -- it pulls embed.min.js only when #fastcomments-widget nears the viewport or on the first Comments-toggle click, so it no longer blocks first render -->                <script src="https://mes.fm/main_js/lazysizes.min.js?v=1.0.3" async></script>
-	<script src="/random-number-generator/js/random-number-generator.js?v=1" defer></script>
+	<script src="/random-number-generator/js/random-number-generator.js?v=2" defer></script>
             <script src="https://mes.fm/main_js/main.js?v=1.0.5"></script>    <!-- PAGEVIEW-TRACKING-INSERTED --><script src="https://mes.fm/main_js/track.js" defer></script><script>document.getElementById('copyright-year').textContent = new Date().getFullYear();</script><script src="/main_js/info-bar-fit.js" defer></script><script>
   // Floating compact header bar (see #compact-nav CSS): appears once the
   // header + nav bar have scrolled off the top; nav links that don't fit

@@ -5,7 +5,10 @@
 
 		<section id="bgm-p-play" role="tabpanel" aria-label="Play">
 			<div class="bgm-top" id="bgm-top"></div>
-			<div class="bgm-board" id="bgm-board"></div>
+			<div class="bgm-stage" id="bgm-stage">
+				<div class="bgm-board" id="bgm-board"></div>
+				<div class="bgm-ovl" id="bgm-ovl" role="group" aria-label="Turn controls"></div>
+			</div>
 			<p class="bgm-msg" id="bgm-msg" role="status" aria-live="polite"></p>
 			<div class="bgm-act" id="bgm-act"></div>
 			<div id="bgm-info"></div>
@@ -19,6 +22,12 @@
 					<div class="tu-field" style="flex:1 1 10em;"><label for="bgm-speed">Computer speed</label>
 						<select id="bgm-speed" class="tu-select"><option value="slow">Slow</option><option value="normal">Normal</option><option value="fast">Fast</option><option value="instant">Instant</option></select></div>
 				</div>
+				<div class="tu-row">
+					<div class="tu-field" style="flex:0 1 auto;"><span class="tu-label" id="bgm-color-l">Your checkers</span>
+						<div class="tu-seg" id="bgm-color" role="group" aria-labelledby="bgm-color-l"><button type="button" data-v="w" aria-pressed="true">White</button><button type="button" data-v="b" aria-pressed="false">Black</button></div></div>
+					<div class="tu-field" style="flex:1 1 16em;"><label for="bgm-dir">Direction you move</label>
+						<select id="bgm-dir" class="tu-select"><option value="ccw">Counter-clockwise: home board bottom right</option><option value="cw">Clockwise: home board bottom left</option></select></div>
+				</div>
 				<p class="tu-note" id="bgm-lvnote" hidden>The new level starts with your next new game.</p>
 				<div class="bgm-checks">
 					<label><input type="checkbox" id="bgm-o-cube"> Use the doubling cube</label>
@@ -26,12 +35,11 @@
 					<label><input type="checkbox" id="bgm-o-autoRoll"> Roll for me automatically (you cannot double then)</label>
 					<label><input type="checkbox" id="bgm-o-autoConfirm"> Confirm my move automatically</label>
 					<label><input type="checkbox" id="bgm-o-oneClick"> One click moves a checker by the higher die</label>
-					<label><input type="checkbox" id="bgm-o-flip"> Home board on the left</label>
 					<label><input type="checkbox" id="bgm-o-nums"> Show point numbers</label>
 					<label><input type="checkbox" id="bgm-o-odds"> Show the odds of the next roll</label>
 				</div>
 				<p style="margin:1em 0 0;"><button type="button" class="tu-btn tu-btn--primary" id="bgm-new">New game</button></p>
-				<p class="tu-note"><b>How to move:</b> click (or tap) one of your lit checkers, then a lit point; or drag it. Double-click a checker to move it by the higher die. Keys: <kbd>R</kbd> roll, <kbd>D</kbd> double, <kbd>Enter</kbd> confirm, <kbd>U</kbd> undo, <kbd>H</kbd> hint, <kbd>T</kbd> / <kbd>P</kbd> take / drop, <kbd>N</kbd> next game, <kbd>Tab</kbd> + <kbd>Enter</kbd> to pick points.</p>
+				<p class="tu-note"><b>How to move:</b> roll with the button on the board or by tapping the middle of the board; then click (or tap) one of your lit checkers, then a lit point; or drag it. Double-click a checker to move it by the higher die. Keys: <kbd>R</kbd> roll, <kbd>D</kbd> double, <kbd>Enter</kbd> confirm, <kbd>U</kbd> undo, <kbd>H</kbd> hint, <kbd>T</kbd> / <kbd>P</kbd> take / drop, <kbd>N</kbd> next game, <kbd>Tab</kbd> + <kbd>Enter</kbd> to pick points.</p>
 			</details>
 		</section>
 
@@ -42,7 +50,7 @@
 
 		<section id="bgm-p-rules" role="tabpanel" aria-label="Rules" hidden>
 			<h2>The rules in two minutes</h2>
-			<p>Each player has 15 checkers. You (white) move from point 24 down to point 1, round the board to your <b>home board</b> (points 1 to 6, bottom right), and then take your checkers off. The computer moves the other way. The first to take all 15 off wins.</p>
+			<p>Each player has 15 checkers. You (<span class="bgm-mycol">white</span>) move from point 24 down to point 1, round the board <span class="bgm-mydir">counter-clockwise</span> to your <b>home board</b> (points 1 to 6, <span class="bgm-myhome">bottom right</span>), and then take your checkers off. The computer moves the other way. The first to take all 15 off wins.</p>
 			<div class="bgm-dia" data-dia="start"></div>
 			<h3>Moving</h3>
 			<p>Roll two dice; each die is a separate move. You can move two checkers, or one checker twice (each step has to land on an open point). A <b>double</b> (say 4-4) is played four times. You may not land on a point with two or more of the other side's checkers: it is <b>blocked</b>.</p>

@@ -224,6 +224,54 @@
         };
         if (window.requestIdleCallback) requestIdleCallback(start, { timeout: 3000 }); else setTimeout(start, 1500);
     }
+    /* 3b. "Newest calculators & tools": the 3 newest items of /newest.json (build_newest.py, the same file as the homepage's Newest strip), right after the
+       "More like this" cards. Same families as the calculator recommendations below: not on the 9/11 / Hutchison / conspiracy cluster, livestreams or mathiew.
+       The page itself and cards already in the column are skipped (the next newest fills in). Fetched once, after load, from the HTTP cache like newest.js. */
+    (function () {
+        var SKIP = { "911": 1, "hutchison": 1, "conspiracy": 1, "livestreams": 1, "mathiew": 1 };
+        if (!family || SKIP[family] || !window.fetch) return;
+        var host3 = aside.querySelector(".mes-aside__sticky") || aside;
+        function norm(p) { return String(p || "").replace(/\/index\.html$/, "").replace(/\.html$/, "").replace(/\/$/, "") || "/"; }
+        var run = function () {
+            fetch("/newest.json", { cache: "no-cache" }).then(function (r) { if (!r.ok) throw 0; return r.json(); }).then(function (d) {
+                if (aside.querySelector(".mes-aside__newest")) return;
+                var have = {}; have[norm(location.pathname)] = true;
+                aside.querySelectorAll("a.mes-aside__card").forEach(function (a) { have[norm(a.getAttribute("href"))] = true; });
+                var pool = (d.latest || []).concat(d.calculators || [], d.tools || []).filter(function (it) { return it && it.href && it.title; });
+                pool.sort(function (a, b) { return String(b.added || "").localeCompare(String(a.added || "")); });   /* stable: keeps "latest" order within a day */
+                var items = [];
+                pool.forEach(function (it) { var u = norm(it.href); if (items.length < 3 && !have[u]) { have[u] = true; items.push(it); } });
+                if (!items.length) return;
+                var box = document.createElement("div"), h = document.createElement("h2"), ul = document.createElement("ul");
+                box.className = "mes-aside__more mes-aside__newest"; h.className = "mes-aside__title-h"; h.textContent = "Newest calculators & tools"; ul.className = "mes-aside__list";
+                items.forEach(function (it) {
+                    var li = document.createElement("li"), a = document.createElement("a");
+                    a.className = "mes-aside__card"; a.href = it.href;
+                    if (it.icon) {
+                        var img = document.createElement("img");
+                        img.className = "mes-aside__img mes-aside__img--logo"; img.width = 56; img.height = 56; img.loading = "lazy"; img.alt = ""; img.src = it.icon;
+                        a.appendChild(img);
+                    }
+                    var text = document.createElement("span"), name = document.createElement("span"), tag = document.createElement("span");
+                    text.className = "mes-aside__text"; name.className = "mes-aside__name"; tag.className = "mes-aside__tag";
+                    name.textContent = it.title; tag.textContent = it.kind === "tool" ? "New tool" : "New calculator";
+                    text.appendChild(name); text.appendChild(tag); a.appendChild(text); li.appendChild(a); ul.appendChild(li);
+                });
+                box.appendChild(h); box.appendChild(ul);
+                /* right after the "More like this" cards: the page's own static list, or, on the asides that have none (hub pages, Jump-to rail, graphing
+                   calculators' inline grid), the first block section 4 adds under the heading (waited for up to ~4 s, else right under the heading) */
+                var tries = 0;
+                (function place() {
+                    var list0 = aside.querySelector(".mes-aside__list"), first = host3.querySelector(".mes-aside__more:not(.mes-aside__newest)");
+                    var after = list0 && list0.parentNode === host3 ? list0 : first;
+                    if (!after && tries++ < 16) { setTimeout(place, 250); return; }
+                    if (!after) after = aside.querySelector(".mes-aside__head");
+                    if (after && after.parentNode === host3) host3.insertBefore(box, after.nextSibling); else host3.appendChild(box);
+                })();
+            }).catch(function () {});
+        };
+        if (document.readyState === "complete") run(); else window.addEventListener("load", run);
+    })();
     /* 4. recommendations all the way down -- the column keeps adding cards until it is as tall as the content next to it, so it ends at the footer however long
        the page is (like YouTube's endless list, but finite). Two blocks: (a) the cross-family block -- calculator / meme / puzzle / tool / timer pages send people
        to the math video tutorials, the math-hub article pages send them to the calculators (pool: aside-recs.json, built by build_aside_recs.py); (b) the filler
@@ -325,10 +373,11 @@
             function need() { return host2.getBoundingClientRect().height < content.getBoundingClientRect().height - 100; }
             var ads2 = [], AD2_AFTER = 7, AD2_EVERY = 12, AD2_MAX = 3;      /* first tall ad after the 7th card, then one every 12 cards, at most 3 per page; counted over ALL cards in the column (the related cards the page already carries + ours) */
             function ad2Pos(k) { return AD2_AFTER + AD2_EVERY * k; }
+            function adCards() { return Array.prototype.filter.call(aside.querySelectorAll("li > a.mes-aside__card"), function (a) { return !a.closest(".mes-aside__newest"); }); }   /* the 3-card Newest block (3b) is never split by the tall ad */
             var debug2 = /[?&]aside-debug\b/.test(location.search);
             function placeAd2() {                       /* the 600px ad goes right after the 7th card, only if the column has room for it and some cards below it */
                 if (ads2.length >= AD2_MAX || !(AD2_SLOT || debug2) || aside.hasAttribute("data-no-ads") || rail || !content || !beside()) return;
-                var cards = aside.querySelectorAll("li > a.mes-aside__card");
+                var cards = adCards();
                 var k = ads2.length;
                 if (cards.length < ad2Pos(k) + (k ? 1 : 0)) return;       /* later units only once there is a card below them */
                 var seventh = cards[ad2Pos(k) - 1].parentNode;
@@ -361,7 +410,7 @@
                 } else request();
             }
             function keepAd2() {                        /* cards keep arriving after the ad was placed: hold it right after the 7th card in column order */
-                var cards = aside.querySelectorAll("li > a.mes-aside__card");
+                var cards = adCards();
                 for (var k = 0; k < ads2.length; k++) {
                     if (cards.length < ad2Pos(k)) return;
                     var prev = cards[ad2Pos(k) - 1].parentNode;
@@ -371,6 +420,7 @@
             function add(b) {
                 var it = b.items.shift();
                 if (!it || have[it.u]) return;
+                if (aside.querySelector('.mes-aside__newest a[href="' + String(it.u).replace(/["\\]/g, "") + '"]')) { have[it.u] = true; return; }   /* already in the Newest block (3b) */
                 have[it.u] = true;
                 if (!b.ul) b.ul = block(b.h);
                 var li = card(it, b.logo);

@@ -1,5 +1,6 @@
 #!/usr/bin/env python3
-"""Set the "Posts" tile image on mes.fm/911 and mes.fm/bg (img/911-posts-icon.jpg, img/bg-posts-icon.jpg).
+"""Set the "Posts" tile image of a hub: mes.fm/911, mes.fm/bg, mes.fm/conspiracy, mes.fm/mh370
+(img/<hub>-posts-icon.jpg, 900x600).
 
 Run it whenever a new post is mirrored into those Posts lists. Default = the FIRST IMAGE of the mirrored page,
 centre-cropped to the 900x600 tile; override with --image / --index / --anchor / --box when a different
@@ -11,19 +12,50 @@ picture or crop reads better (e.g. a screenshot where the punchline sits at the 
   python3 set_posts_tile.py --image https://.../pic.jpg --anchor bottom --apply
   python3 set_posts_tile.py --image ~/Downloads/a.png --box 28,782,680,840 --apply   # red box (source pixels), crop follows it
 
---hubs 911,bg (default both). With --apply: writes the icon(s), bumps `iconVersion` of the posts page in each hub's
-build.mjs (so cached tiles refresh) and runs `npm run build` there. Dry-runs by default.
+--hubs 911,bg (default both; also conspiracy, mh370). With --apply: writes the icon(s), bumps `iconVersion` of the posts
+page in each hub's build.mjs (so cached tiles refresh) and runs `npm run build` there. Dry-runs by default.
+
+Automatic mode (used by mes.fm/conspiracy/build.mjs on every build):
+  python3 set_posts_tile.py --auto --hubs conspiracy --key <newest item url> (--slug S | --image URL) --apply
+remakes the tile only when <key> differs from the one recorded in mes.fm/img/posts-tiles.json ({hub: {key, src, v}}),
+records the new key and a bumped version `v` there, and does NOT edit build.mjs or rebuild (the build reads `v` itself
+and uses max(iconVersion, v)). A manual run with --slug also records that page as the key, so a hand-picked crop of the
+newest post is kept until a newer post arrives.
 """
-import argparse, io, os, re, subprocess, sys, urllib.request
+import argparse, io, json, os, re, subprocess, sys, urllib.request
 from PIL import Image, ImageDraw
 
 ROOT = os.path.dirname(os.path.abspath(__file__))
 SITE = os.path.join(ROOT, "mes.fm")
-HUBS = {"911": "911-posts", "bg": "bg-posts"}
+HUBS = {"911": "911-posts", "bg": "bg-posts", "conspiracy": "conspiracy-posts", "mh370": "mh370-posts"}
+STAMP = os.path.join(SITE, "img", "posts-tiles.json")
+
+
+def load_stamp():
+    try:
+        return json.load(open(STAMP, encoding="utf-8"))
+    except (OSError, ValueError):
+        return {}
+
+
+def save_stamp(d):
+    with open(STAMP, "w", encoding="utf-8") as f:
+        json.dump(dict(sorted(d.items())), f, indent=2)
+        f.write("\n")
+
+
+def icon_version(build, slug):
+    m = re.search(r'slug:\s*"%s".*?iconVersion:\s*(\d+)' % re.escape(slug), open(build, encoding="utf-8").read(), re.S)
+    return int(m.group(1)) if m else 0
 W, H = 900, 600
 
 
 def fetch(src):
+    # mes.fm images (root-relative or https://mes.fm/...) are read from the working tree, so a page that is not
+    # deployed yet works too
+    local = re.sub(r"^https?://(www\.)?mes\.fm(?=/)", "", src.split("?")[0])
+    if local.startswith("/") and os.path.isfile(os.path.join(SITE, local.lstrip("/"))):
+        return open(os.path.join(SITE, local.lstrip("/")), "rb").read()
     if re.match(r"https?://", src):
         req = urllib.request.Request(src, headers={"User-Agent": "Mozilla/5.0"})
         return urllib.request.urlopen(req, timeout=30).read()
@@ -78,8 +110,20 @@ def main():
     ap.add_argument("--anchor", choices=["top", "center", "bottom"], default="center")
     ap.add_argument("--box", help="x0,y0,x1,y1 in source pixels: draw a red highlight box and centre the crop on it")
     ap.add_argument("--hubs", default="911,bg")
+    ap.add_argument("--auto", action="store_true", help="only when --key changed since the last run (see posts-tiles.json); no build.mjs edit, no rebuild")
+    ap.add_argument("--key", help="id of the newest Posts item (its URL); default https://mes.fm/<slug>")
     ap.add_argument("--apply", action="store_true")
     a = ap.parse_args()
+    key = a.key or (f"https://mes.fm/{a.slug}" if a.slug else None)
+    stamp = load_stamp()
+    if a.auto:
+        if not key:
+            ap.error("--auto needs --key or --slug")
+        todo = [h.strip() for h in a.hubs.split(",") if stamp.get(HUBS.get(h.strip(), ""), {}).get("key") != key]
+        if not todo:
+            print(f"posts tile up to date ({key})")
+            return
+        a.hubs = ",".join(todo)
     if not (a.slug or a.image):
         ap.error("give --slug (first image of a mirrored page) or --image")
     if a.image:
@@ -101,9 +145,18 @@ def main():
         print(("write " if a.apply else "would write ") + os.path.relpath(out, ROOT))
         if a.apply:
             tile.save(out, quality=88)
-            v = bump(os.path.join(SITE, h, "build.mjs"), HUBS[h])
-            print(f"  {h}/build.mjs iconVersion -> {v}")
-            subprocess.run(["npm", "run", "build"], cwd=os.path.join(SITE, h), check=True, stdout=subprocess.DEVNULL)
+            build = os.path.join(SITE, h, "build.mjs")
+            if a.auto:
+                v = max(icon_version(build, HUBS[h]), stamp.get(HUBS[h], {}).get("v", 0)) + 1
+                print(f"  {HUBS[h]} tile version -> {v} (posts-tiles.json)")
+            else:
+                v = bump(build, HUBS[h])
+                print(f"  {h}/build.mjs iconVersion -> {v}")
+            if key:
+                stamp[HUBS[h]] = {"key": key, "src": src, "v": v}
+                save_stamp(stamp)
+            if not a.auto:
+                subprocess.run(["npm", "run", "build"], cwd=os.path.join(SITE, h), check=True, stdout=subprocess.DEVNULL)
     if not a.apply:
         print("dry run: pass --apply to write")
     else:

@@ -1,0 +1,76 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<rss xmlns:content="http://purl.org/rss/1.0/modules/content/" xmlns:wfw="http://wellformedweb.org/CommentAPI/" xmlns:dc="http://purl.org/dc/elements/1.1/" xmlns:atom="http://www.w3.org/2005/Atom" xmlns:sy="http://purl.org/rss/1.0/modules/syndication/" xmlns:slash="http://purl.org/rss/1.0/modules/slash/" xmlns:media="http://search.yahoo.com/mrss/" version="2.0">
+  <channel>
+    <title>CoinDesk: Bitcoin, Ethereum, Crypto News and Price Data</title>
+    <link>https://www.coindesk.com/</link>
+    <atom:link rel="self" type="application/rss+xml" href="https://www.coindesk.com/arc/outboundfeeds/rss"/>
+    <atom:link rel="hub" href="true"/>
+    <description>Leader in cryptocurrency, Bitcoin, Ethereum, XRP, blockchain, DeFi, digital finance and Web 3.0 news with analysis, video and live price updates.</description>
+    <lastBuildDate>Sat, 24 Oct 2026 18:11:25 +0000</lastBuildDate>
+    <language>en-US</language>
+    <copyright>© 2026 CoinDesk, Inc.</copyright>
+    <generator>CoinDesk</generator>
+    <ttl>5</ttl>
+    <sy:updatePeriod>hourly</sy:updatePeriod>
+    <sy:updateFrequency>1</sy:updateFrequency>
+    <image>
+      <url>https://downloads.coindesk.com/arc/failsafe/feeds/coindesk-feed-logo.png</url>
+      <title>CoinDesk: Bitcoin, Ethereum, Crypto News and Price Data</title>
+      <link>https://www.coindesk.com/</link>
+    </image>
+    <item>
+      <title><![CDATA[Strategy, Strive face balancing act between bitcoin buying and preferred stock dividends]]></title>
+      <link>https://www.coindesk.com/business/2026/10/24/strategy-strive-face-balancing-act-between-bitcoin-buying-and-preferred-stock-dividends</link>
+      <media:content url="https://cdn.sanity.io/images/s3y3vcno/production/dc1a0236f5c1c10010c2b1e42f39c41736508170-6000x3375.jpg?fm=jpg&amp;w=800&amp;h=450&amp;crop=focalpoint&amp;fit=clip" type="image/*" medium="image"/>
+      <guid isPermaLink="false">637b0f79-4903-4e1d-938b-c97c3144a249</guid>
+      <pubDate>Sat, 24 Oct 2026 16:00:00 +0000</pubDate>
+      <description><![CDATA[The securities have financed purchases of nearly 136,000 bitcoin, opening a funding channel that analysts expect to complement the larger ETF market.]]></description>
+      <dc:creator>Will Canny</dc:creator>
+      <dc:creator>AI Boost</dc:creator>
+      <content:encoded/>
+      <dc:description/>
+      <category domain="https://www.coindesk.com/business"><![CDATA[Finance]]></category>
+      <category domain="tag"><![CDATA[Bitcoin News]]></category>
+      <category domain="tag"><![CDATA[MicroStrategy]]></category>
+      <category domain="tag"><![CDATA[Exclusive]]></category>
+      <category domain="https://www.coindesk.com/">News</category>
+    </item><item>
+      <title><![CDATA[Block's new voice AI sounds eerily human, sparking awe and scam fears]]></title>
+      <link>https://www.coindesk.com/tech/2026/10/24/block-s-new-voice-ai-sounds-eerily-human-sparking-awe-and-scam-fears</link>
+      <media:content url="https://cdn.sanity.io/images/s3y3vcno/production/7aad17172474a7876af59da08b2b538535468c12-2048x1365.jpg?fm=jpg&amp;w=800&amp;h=450&amp;crop=focalpoint&amp;fit=clip" type="image/*" medium="image"/>
+      <guid isPermaLink="false">5af462cd-b6e7-42c7-b4e6-c0f3ac40e9a2</guid>
+      <pubDate>Sat, 24 Oct 2026 15:21:06 +0000</pubDate>
+      <description><![CDATA[Reactions split between amazement at how human it sounds and fears it could fuel scams and deception, with CZ eyeing uses in children’s education.]]></description>
+      <dc:creator>Francisco Rodrigues</dc:creator>
+      <content:encoded/>
+      <dc:description/>
+      <category domain="https://www.coindesk.com/tech"><![CDATA[Tech]]></category>
+      <category domain="tag"><![CDATA[Artificial Intelligence]]></category>
+      <category domain="https://www.coindesk.com/">News</category>
+    </item><item>
+      <title><![CDATA[Crypto under weekend pressure, bitcoin slides below $80,000 on U.S. Middle East evacuations]]></title>
+      <link>https://www.coindesk.com/markets/2026/10/24/crypto-under-weekend-pressure-bitcoin-slides-below-usd80-000-on-u-s-middle-east-evacuations</link>
+      <guid isPermaLink="false">621f562c-804f-4ab4-ab24-c4f968932256</guid>
+      <pubDate>Sat, 24 Oct 2026 15:11:24 +0000</pubDate>
+      <description><![CDATA[Bitcoin has sunk to its weakest level in more than one month.]]></description>
+      <dc:creator>Stephen Alpher</dc:creator>
+      <content:encoded/>
+      <dc:description/>
+      <category domain="https://www.coindesk.com/markets"><![CDATA[Markets]]></category>
+      <category domain="https://www.coindesk.com/">News</category>
+    </item><item>
+      <title><![CDATA[Why McDonalds, Microsoft and Google saying no to tokenized stocks isn't a dealbreaker]]></title>
+      <link>https://www.coindesk.com/business/2026/10/23/why-mcdonalds-microsoft-and-google-saying-no-to-tokenized-stocks-isn-t-a-dealbreaker</link>
+      <media:content url="https://cdn.sanity.io/images/s3y3vcno/production/5f5b4bcc5ab7ba1437f88bb9961bbd70e3bbb448-5624x3749.jpg?fm=jpg&amp;w=800&amp;h=450&amp;crop=focalpoint&amp;fit=clip" type="image/*" medium="image"/>
+      <guid isPermaLink="false">10eb526a-067f-4fe9-a6ed-f346259d7ce2</guid>
+      <pubDate>Sat, 24 Oct 2026 15:00:00 +0000</pubDate>
+      <description><![CDATA[Some of the world's biggest companies objected to being listed on the first tokenized securities trading venue under the SEC's innovation exemption. But the early pushback may say more about issuer caution than about rejection of tokenization itself.]]></description>
+      <dc:creator>Krisztian Sandor</dc:creator>
+      <content:encoded/>
+      <dc:description/>
+      <category domain="https://www.coindesk.com/business"><![CDATA[Finance]]></category>
+      <category domain="tag"><![CDATA[Tokenization Weekly]]></category>
+      <category domain="tag"><![CDATA[Tokenization]]></category>
+      <category domain="tag"><![CDATA[Exclusive]]></category>
+      <category domain="https://www.coindesk.com/">News</category>
+    </item></channel></rss>

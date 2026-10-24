@@ -336,14 +336,48 @@ var SRLib = (function () {
 		if (/novelty|whisper|bubbles|bells|boing|cellos|jester|organ|trinoids|zarvox|bad news|good news|albert|fred|junior|ralph|superstar/i.test(v.name)) s -= 40;
 		return s;
 	}
-	// best voice for a text language (falls back to the browser's language, then the default voice); returns the voice or null
-	function pickVoice(voices, lang, browserLang) {
+	// the key a voice is remembered by (same as the speed reader's <option> values)
+	function voiceKey(v) { return v ? (v.voiceURI || v.name) + "|" + v.lang : ""; }
+	// best voice for a text language (falls back to the browser's language, then the default voice); returns the voice or null.
+	// `avoid` (optional) = { voiceKey: anything } of voices known not to work: they are skipped.
+	function pickVoice(voices, lang, browserLang, avoid) {
 		var best = null, bs = -1e9;
 		for (var i = 0; i < voices.length; i++) {
+			if (avoid && avoid[voiceKey(voices[i])]) continue;
 			var sc = voiceScore(voices[i], lang, browserLang);
 			if (sc > bs) { bs = sc; best = voices[i]; }
 		}
 		return best;
+	}
+	// 0 = the voice speaks the text's language, 1 = the browser's language (or there is no text language yet), 2 = another language
+	function voiceLangRank(voiceLang, textLang, browserLang) {
+		var vl = String(voiceLang || "").replace("_", "-").toLowerCase().split("-")[0];
+		var tl = String(textLang || "").toLowerCase().split("-")[0], bl = String(browserLang || "").replace("_", "-").toLowerCase().split("-")[0];
+		if (tl) return vl === tl ? 0 : vl === bl ? 1 : 2;
+		return vl === bl ? 0 : 2;
+	}
+	/* Did an utterance really speak? Android (and some desktop engines) list voices whose voice data is not installed, or that cannot
+	   read the text's script (e.g. "Bodo India" for English): speak() then ends at once in silence, never starts, or errors.
+	   o = { error, started, ms (time from onstart to onend), expectMs (speechEstimateMs of the chunk), words (count), boundary }.
+	   Returns "" (it worked, or no verdict) or a reason: "error", "nostart", "silent". */
+	var VOICE_ERRORS = { "synthesis-unavailable": 1, "synthesis-failed": 1, "voice-unavailable": 1, "language-unavailable": 1, "audio-hardware": 1 };
+	function speechFailure(o) {
+		o = o || {};
+		if (o.error) {
+			if (o.error === "interrupted" || o.error === "canceled" || o.error === "not-allowed") return "";
+			return VOICE_ERRORS[o.error] || !o.started ? "error" : "";
+		}
+		if (!o.started) return "nostart";
+		if (o.boundary) return "";
+		if ((o.words || 0) >= 3 && o.ms < Math.max(300, 0.2 * (o.expectMs || 0))) return "silent";
+		return "";
+	}
+	// voices remembered as not working: { key: { t: ms, lang } }; entries older than `days` (default 30) are dropped (voice data may get installed later)
+	function pruneBadVoices(map, now, days) {
+		var out = {}, max = (days || 30) * 864e5;
+		if (!map || typeof map !== "object") return out;
+		for (var k in map) if (map[k] && typeof map[k].t === "number" && now - map[k].t < max && now >= map[k].t - 6e4) out[k] = { t: map[k].t, lang: String(map[k].lang || "") };
+		return out;
 	}
 
 	/* ---------- settings / URL ---------- */
@@ -373,7 +407,8 @@ var SRLib = (function () {
 		pauseFactor: pauseFactor, rampFactor: rampFactor, chunkFactors: chunkFactors, timelineFrom: timelineFrom, buildTimeline: buildTimeline, delayOf: delayOf,
 		formatDuration: formatDuration, clock: clock, readingMs: readingMs, wpmFromTime: wpmFromTime,
 		speechChunk: speechChunk, wordAtChar: wordAtChar, speechDelay: speechDelay, speechEstimateMs: speechEstimateMs,
-		detectLang: detectLang, voiceScore: voiceScore, pickVoice: pickVoice, parseParams: parseParams, buildParams: buildParams
+		detectLang: detectLang, voiceScore: voiceScore, pickVoice: pickVoice, voiceKey: voiceKey, voiceLangRank: voiceLangRank,
+		speechFailure: speechFailure, pruneBadVoices: pruneBadVoices, parseParams: parseParams, buildParams: buildParams
 	};
 })();
 if (typeof module !== "undefined" && module.exports) module.exports = SRLib;

@@ -2207,9 +2207,38 @@ var MES_Vars = {
 `;
 }
 
+// Posts tile = the newest post, automatically: set_posts_tile.py --auto remakes img/conspiracy-posts-icon.jpg (first
+// image of the newest Posts item, centre-cropped to 900x600) only when the newest item changed since the last build
+// (recorded in mes.fm/img/posts-tiles.json, with a version number used as the tile's ?v=). A hand-made crop
+// (set_posts_tile.py --slug <newest> --hubs conspiracy --box/--anchor ... --apply) records the same key, so it is kept
+// until a newer post arrives. Never fatal: without python3 / Pillow the old tile stays.
+function syncPostsTile(meta) {
+  const page = PAGES.find((p) => p.slug === "conspiracy-posts");
+  const newest = (SECTIONS.find((s) => s.id === page.sectionId)?.items || []).find((i) => !i.standalone);
+  if (!newest) return;
+  const key = newest.href || (newest.links && newest.links[0] && newest.links[0][1]);
+  if (!key) return;
+  const args = [join(__dirname, "..", "..", "set_posts_tile.py"), "--auto", "--hubs", "conspiracy", "--key", key, "--apply"];
+  const slug = (key.match(/^https:\/\/mes\.fm\/([\w-]+)\/?$/) || [])[1];
+  const image = newest.image || (meta[key] && meta[key].image);
+  if (slug && existsSync(join(__dirname, "..", slug, "index.html"))) args.push("--slug", slug);
+  else if (image) args.push("--image", image);
+  else return;
+  try {
+    execFileSync("python3", args, { stdio: "inherit" });
+  } catch (err) {
+    console.warn(`Posts tile not refreshed: ${err.message}`);
+  }
+  try {
+    const v = JSON.parse(readFileSync(join(__dirname, "..", "img", "posts-tiles.json"), "utf8"))[page.slug]?.v;
+    if (v > (page.iconVersion || 0)) page.iconVersion = v;
+  } catch {}
+}
+
 async function main() {
   console.log(`Resolving link metadata for ${SECTIONS.flatMap((s) => s.items).filter((i) => !i.links && !i.standalone).length} scraped items ...`);
   const meta = await resolveAllMeta(SECTIONS);
+  syncPostsTile(meta);
 
   const pages = [{ hub: true, slug: "conspiracy", outDir: __dirname }].concat(
     PAGES.filter((p) => !p.tileOnly).map((p) => ({ ...p, outDir: join(__dirname, "..", p.slug) }))

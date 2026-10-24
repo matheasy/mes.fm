@@ -477,7 +477,7 @@
 	}
 
 	/* ---------- saved state ---------- */
-	var DEF = { level: "medium", type: "0", cube: true, jacoby: false, autoRoll: false, autoConfirm: false, oneClick: false, speed: "normal", flip: false, nums: true, odds: true };
+	var DEF = { level: "medium", type: "0", cube: true, jacoby: false, autoRoll: false, autoConfirm: false, oneClick: false, speed: "normal", flip: false, nums: true, odds: true, color: "w" };
 	function blankLv() { return { g: 0, w: 0, l: 0, gw: 0, gl: 0, bw: 0, bl: 0, pw: 0, pl: 0 }; }
 	function blankStats() {
 		return { lv: { easy: blankLv(), medium: blankLv(), hard: blankLv() },
@@ -943,10 +943,10 @@
 		if (o.hits) {
 			for (k = 1; k <= 24; k++) {
 				var hx = mx(ptX(k)) - 25, hy = k >= 13 ? 20 : 260, act = o.hits[k];
-				s += '<rect class="bgm-hit" data-pt="' + k + '" x="' + hx + '" y="' + hy + '" width="50" height="240"' + (act ? ' tabindex="0" role="button" aria-label="' + esc(act) + '"' : "") + "/>";
+				s += '<rect class="bgm-hit' + (act ? " is-live" : "") + '" data-pt="' + k + '" x="' + hx + '" y="' + hy + '" width="50" height="240"' + (act ? ' tabindex="0" role="button" aria-label="' + esc(act) + '"' : "") + "/>";
 			}
-			s += '<rect class="bgm-hit" data-pt="25" x="' + (mx(340) - 20) + '" y="10" width="40" height="500"' + (o.hits[25] ? ' tabindex="0" role="button" aria-label="' + esc(o.hits[25]) + '"' : "") + "/>";
-			s += '<rect class="bgm-hit" data-pt="0" x="' + Math.min(mx(672), mx(760)) + '" y="0" width="88" height="520"' + (o.hits[0] ? ' tabindex="0" role="button" aria-label="' + esc(o.hits[0]) + '"' : "") + "/>";
+			s += '<rect class="bgm-hit' + (o.hits[25] ? " is-live" : "") + '" data-pt="25" x="' + (mx(340) - 20) + '" y="10" width="40" height="500"' + (o.hits[25] ? ' tabindex="0" role="button" aria-label="' + esc(o.hits[25]) + '"' : "") + "/>";
+			s += '<rect class="bgm-hit' + (o.hits[0] ? " is-live" : "") + '" data-pt="0" x="' + Math.min(mx(672), mx(760)) + '" y="0" width="88" height="520"' + (o.hits[0] ? ' tabindex="0" role="button" aria-label="' + esc(o.hits[0]) + '"' : "") + "/>";
 			s += '<circle id="bgm-float" class="bgm-ck bgm-ck0 is-float" cx="-100" cy="-100" r="' + R + '"/>';
 		}
 		return s + "</svg>";
@@ -981,7 +981,29 @@
 		o.hits = hits;
 		$("bgm-board").innerHTML = boardSvg(b, o);
 		$("bgm-msg").textContent = G.msg || "";
-		renderTop(); renderActions(); renderInfo();
+		renderTop(); renderActions(); renderOverlay(); renderInfo();
+	}
+	/* the main turn buttons, drawn over the middle of the board so a phone never has to scroll between rolling and moving */
+	function canRollNow() { return G && (G.phase === "roll" || (G.phase === "opening" && !G.opening)); }
+	function renderOverlay() {
+		var p = G.phase, h = "", cx = 510;
+		var ob = function (a, label, cls, dis, title) { return '<button type="button" class="bgm-ob' + (cls ? " " + cls : "") + '" data-a="' + a + '"' + (dis ? " disabled" : "") + (title ? ' title="' + esc(title) + '"' : "") + ">" + label + "</button>"; };
+		if (p === "opening" && !G.opening) h = ob("open", "🎲 Roll to start", "is-main", false, "R");
+		else if (p === "roll") { h = ob("roll", "🎲 Roll", "is-main", false, "R"); if (BG.canDouble(0, ctx())) h += ob("double", "Double", "", false, "D: offer a double to " + G.cube.v * 2); }
+		else if (p === "move") { cx = 170; var done = !nextSteps().length; h = ob("undo", "↶ Undo", "", !G.steps.length, "U") + ob("confirm", "✓ Done", done ? "is-main" : "", !done, "Enter: confirm the move"); }
+		else if (p === "offer") h = ob("take", "Take", "is-main", false, "T") + ob("drop", "Drop", "", false, "P");
+		else if (p === "over") h = ob("next", "Next game", "is-main", false, "N");
+		else if (p === "matchOver") h = ob("next", "New match", "is-main", false, "N");
+		var el = $("bgm-ovl");
+		el.innerHTML = h; el.hidden = !h;
+		el.style.left = (100 * mx(cx) / W) + "%";
+		$("bgm-stage").classList.toggle("is-rollable", canRollNow());
+	}
+	function applyLook() {
+		root.classList.toggle("bgm-black", S.set.color === "b");
+		root.querySelectorAll(".bgm-mycol").forEach(function (e) { e.textContent = S.set.color === "b" ? "black" : "white"; });
+		root.querySelectorAll(".bgm-mydir").forEach(function (e) { e.textContent = S.set.flip ? "clockwise" : "counter-clockwise"; });
+		root.querySelectorAll(".bgm-myhome").forEach(function (e) { e.textContent = S.set.flip ? "bottom left" : "bottom right"; });
 	}
 	function boardText(b) {
 		var parts = [];
@@ -1105,6 +1127,20 @@
 		}
 		tap(d.pt === pt ? pt : pt);
 	});
+	// tap the middle of the board (where the dice land) to roll
+	boardEl.addEventListener("click", function (e) {
+		if (!canRollNow()) return;
+		var p = svgPoint(e); if (!p) return;
+		var x = S.set.flip ? W - p.x : p.x;
+		if (p.y < 190 || p.y > 330 || x < 20 || x >= 660 || (x >= 320 && x < 360)) return;
+		action(G.phase === "opening" ? "open" : "roll");
+	});
+	// iOS: stop the page scrolling only while a checker is really being dragged (touch-action does the rest)
+	boardEl.addEventListener("touchmove", function (e) { if (drag && drag.on && e.cancelable) e.preventDefault(); }, { passive: false });
+	$("bgm-ovl").addEventListener("click", function (e) {
+		var b = e.target.closest("button[data-a]"); if (!b || b.disabled) return;
+		action(b.getAttribute("data-a"));
+	});
 	boardEl.addEventListener("pointercancel", function () { if (drag && drag.on) { sel = null; render(); } drag = null; });
 	boardEl.addEventListener("keydown", function (e) {
 		var t = e.target;
@@ -1144,7 +1180,10 @@
 		root.querySelectorAll("#bgm-level button").forEach(function (b) { b.setAttribute("aria-pressed", b.getAttribute("data-v") === S.set.level ? "true" : "false"); });
 		$("bgm-type").value = S.set.type;
 		$("bgm-speed").value = S.set.speed;
-		["cube", "jacoby", "autoRoll", "autoConfirm", "oneClick", "flip", "nums", "odds"].forEach(function (k) { var el = $("bgm-o-" + k); if (el) el.checked = !!S.set[k]; });
+		["cube", "jacoby", "autoRoll", "autoConfirm", "oneClick", "nums", "odds"].forEach(function (k) { var el = $("bgm-o-" + k); if (el) el.checked = !!S.set[k]; });
+		root.querySelectorAll("#bgm-color button").forEach(function (b) { b.setAttribute("aria-pressed", b.getAttribute("data-v") === S.set.color ? "true" : "false"); });
+		$("bgm-dir").value = S.set.flip ? "cw" : "ccw";
+		applyLook();
 		$("bgm-lvnote").hidden = !G || G.level === S.set.level;
 	}
 	$("bgm-level").addEventListener("click", function (e) {
@@ -1154,7 +1193,12 @@
 	});
 	$("bgm-type").addEventListener("change", function () { S.set.type = this.value; save(); toast("Starts with your next new game."); });
 	$("bgm-speed").addEventListener("change", function () { S.set.speed = this.value; save(); });
-	["cube", "jacoby", "autoRoll", "autoConfirm", "oneClick", "flip", "nums", "odds"].forEach(function (k) {
+	$("bgm-color").addEventListener("click", function (e) {
+		var b = e.target.closest("button[data-v]"); if (!b) return;
+		S.set.color = b.getAttribute("data-v") === "b" ? "b" : "w"; save(); syncSettings();
+	});
+	$("bgm-dir").addEventListener("change", function () { S.set.flip = this.value === "cw"; save(); syncSettings(); if (G) render(); renderRules(); });
+	["cube", "jacoby", "autoRoll", "autoConfirm", "oneClick", "nums", "odds"].forEach(function (k) {
 		var el = $("bgm-o-" + k); if (!el) return;
 		el.addEventListener("change", function () {
 			S.set[k] = el.checked; save();

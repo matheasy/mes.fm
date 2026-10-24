@@ -1,0 +1,955 @@
+<!DOCTYPE html>    <html lang="en">
+<!-- Compound Interest Explained -- mes.fm/compound-interest-explained -->
+<!-- Added by HTTrack --><meta http-equiv="content-type" content="text/html;charset=UTF-8" /><!-- /Added by HTTrack -->
+<head>                    <link rel="icon" href="/compound-interest-calculator/img/logo.png?v=2" type="image/png" /><link rel="canonical" href="https://mes.fm/compound-interest-explained" />                    <title>Compound Interest Explained | Math Easy Solutions</title>
+        <meta name="viewport" content="width=device-width, initial-scale=1">	<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css" integrity="sha384-BVYiiSIFeK1dGmJRAkycuHAHRg32OmUcww7on3RYdg4Va+PmSTsz/K68vbdEjh4u" crossorigin="anonymous">
+        <style>html, body, div, span, applet, object, iframe, h1, h2, h3, h4, h5, h6, p, blockquote, pre, a, abbr, acronym, address, big, cite, code,del, dfn, em, img,
+ins, kbd, q, s, samp, small, strike, strong, sub, tt, var, u, i, center, dl, dt, dd, ol, ul, li, fieldset, form, label, legend, table, caption, tbody,
+tfoot, thead, tr, th, td, article, aside, canvas, details, embed, figure, figcaption, footer, header, hgroup, menu, nav, output, ruby, section, summary,
+time, mark, audio, video {margin:0;padding:0;border:0;font-size:100%;font-family:Helvetica,Arial,Optima,Sans Pro;vertical-align:baseline;color:#333333;}
+sup {margin:0;padding:0;border:0;font-size:100%;font-family:Helvetica,Arial,Optima,Sans Pro;vertical-align:super;color:black;}
+b {margin:0;padding:0;border:0;font-size:100%;font-family:Helvetica,Arial,Optima,Sans Pro;vertical-align:baseline;}
+/* HTML5 display-role reset for older browsers */
+article, aside, details, figcaption, figure, footer, header, hgroup, menu, nav, section {display:block;}
+body {background-color:#e2e2e2;line-height:1;}
+ol, ul {list-style:none;}
+blockquote, q {quotes:none;}
+blockquote:before, blockquote:after,
+q:before, q:after {content:'';content:none;}
+table {border-collapse:collapse;border-spacing:0;}
+a {text-decoration:none;}
+sub {vertical-align:sub;}        .warning-message {font-size:1em;text-align:center;padding:0.5em;background-color:#047857;color:white;}
+        .button {color:#047857;border:0.125em solid#047857;margin:0.7em 0;padding:0.5em 0.2em;text-align:center;-moz-user-select:none; -webkit-user-select:none; -ms-user-select:none; user-select:none; cursor:pointer;}
+        .button--subscribe {line-height:1.2;}
+        .button--share-calc {display: inline-block;padding-left: 1em;padding-right: 1em;margin-top: 0.5em;margin-bottom: 0.5em;}
+        .italic {font-style:italic;}
+        .bold {font-weight:700;}
+        .list {list-style-type:disc;}
+        .list__indent {line-height:1.2;margin-left:2em;margin-top:0.4em;margin-bottom:0.2em;font-size: 0.95em;}
+        .time {font-style:italic;font-weight:100;color:#939393;}
+        .small-text {font-size:0.9em;}
+        .big-text {font-size:1.1em;}
+        .link {color:#047857; font-weight:700;}
+        .link--dark {color: blue; font-weight: 700;}
+        .link--dark:hover {text-decoration: underline;}
+        .basic-table {margin:1em auto;}
+        .basic-table td, .basic-table th {border: 1px solid black; padding:0.5em 1em; text-align: center;}
+        .basic-table th {background-color: #ededed}
+        .basic-table--full {width:100%;}
+        .sponsored-ad {text-align:right;display:block;font-size:0.7em;margin-bottom:0.3em;font-style:italic;}
+        .box-border {border:0.1em solid#047857; padding:1em;margin-bottom: 1.2em;}
+        .selected {background-color:#047857;color:white;}
+        .right-arrow {font-size:2em;vertical-align:middle;margin:0 0.2em;display:inline-block;color:#047857;}
+        .share-calc-url {border: 2px solid black;font-size:0.9em;display:inline-block;width:15.5em;padding:0.45em 0.8em;font-weight:700;vertical-align:middle;color:#047857;background-color:#fdc010;}
+        .share-calc-url-container {margin-bottom: 0.5em;display: inline-block;}
+        .scissors-icon {vertical-align:middle;cursor: pointer;}
+        .hide {display:none;}
+        .crypto-container {background-color: #257bb6; padding: 10px; border-radius: 5px;}
+        .crypto-text {color: white; line-height: 1.4; padding: 5px;}.header2 {font-size:1.1em; margin-top:1.3em;margin-bottom:0.5em;}
+.header3 {font-size:1.0em; margin-top:1.0em;margin-bottom:0.3em;}
+.sentence {margin-top:0.5em; margin-bottom:0.5em;line-height:1.5}
+.sentence--indent {margin-left:1.5em;}
+
+.shadow {box-shadow:0.2em 0.2em 0.5em #999999;}
+.link:hover {color:#065f46;text-decoration:underline; cursor:pointer;}
+
+.outer-container {width:68.25em;margin:0 auto;}
+.inner-container {padding:1em 2em 1em 2em;overflow:hidden;background-color:white;box-shadow:0 0 1em #BBBBBB;}
+.header {position:relative;margin-bottom: 0.7em;}
+.logo-image-container {display:table-cell;}
+.logo {display:block;}
+.logo-text-container {display:table-cell;vertical-align:middle;padding-left:1.5em;}
+.calculator-title-link {display: block;}
+.calculator-title {margin-bottom:0.3em;font-size:1.8em;}
+.tag-line {font-size:1.2em;}
+
+.social-container {position:absolute;right:0;top:0;}
+.social-container--bottom {position:absolute;right:0;bottom:0;}
+.social {display: table-cell;}
+.social__text {display:table-cell;font-size:1.2em;vertical-align:middle;padding-right:0.6em;font-style:italic;color:#047857;}.social__logo {float:left;}
+.social__logo:not(:last-child) {margin-right:0.5em;}
+.social__link {height:2em;width:2em;display:block;}
+.social__fb {background: url(https://mes.fm/main_img/social-sprites.png) 0 0;}
+.social__gplus {background: url(https://mes.fm/main_img/social-sprites.png) -2em 0;}
+.social__insta {background: url(https://mes.fm/main_img/social-sprites.png) -4em 0;}
+.social__pin {background: url(https://mes.fm/main_img/social-sprites.png) -6em 0;}
+.social__twitter {background: url(https://mes.fm/main_img/social-sprites.png) -8em 0;}
+.social__yt {background: url(https://mes.fm/main_img/social-sprites.png) -10em 0;}
+.social__patreon {background: url(https://mes.fm/main_img/social-sprites.png) -12em 0;}
+.social__steemit {background: url(https://mes.fm/main_img/social-sprites.png) -14em 0;}
+.social__hive {background: url(https://mes.fm/main_img/social-sprites.png) -16em 0;}
+.social__telegram {background: url(https://mes.fm/main_img/social-sprites.png) -18em 0;}
+
+.info-bar-container {display: table-cell;}
+.info-bar {display:inline-block;margin-left:-2em;padding-left:1.1em;overflow:hidden;}
+.info-bar__item {float:left;}
+.info-bar__item__text {display:block;text-align:center;padding:0.7em 1em 0.7em 1em;font-size:0.9em;color:white}
+.info-bar__logo-container {display: table-cell;vertical-align: middle;}
+.info-bar__logo {display: block; margin-left: 0.8em;}
+
+.outer-page-content {width:45.5em;display:inline-block;}
+.page-content {padding:1.2em 2.25em 0 0;}
+.color-box {width:1.2em;height:1.2em;display:inline-block;margin-right:0.5em;}
+.page-title {display:inline-block;font-size:1.5em;font-weight:400;margin-bottom:0.3em;}
+.page-description {line-height:1.3;}
+#main-content {margin:1.5em 0;position:relative;}
+
+.side-bar {width:18.75em;float:right;}
+.navbar-container {margin:2.1em 0.8em;}
+.navbar {margin-bottom:-1em;}
+.button--navbar {padding:0.7em 0.2em;font-size:1.2em;margin-bottom:0;color:#047857;border:0.125em solid#047857;}
+
+.navbar__item:hover {cursor:pointer;}
+.navbar__link  {display:block;color:white;padding:0.7em 1em 0.7em 1.4em;}
+.navbar__link--first {padding-top:0.8em;}
+.navbar__dropdown-item {color:#222222;}
+.navbar__dropdown-item:hover {text-decoration:underline;}
+.dropdown-symbol {margin-left:1em;color:white;}
+
+.latest-article {margin-top:1em;padding:0.5em;text-align:center;box-shadow:0 0 1em #BBBBBB;}
+.latest-article__tag:first-child {margin-bottom:0.5em;line-height:normal;}
+.latest-article__title:last-child {text-align:left;font-weight:700;}
+.latest-article__logo {vertical-align:bottom;margin-bottom:0.5em;}
+
+.footer {padding:2em;}
+.footer__item-container {display:table;width:100%;margin-bottom:1.6em;}
+.footer__item {display:table-cell;}
+.footer__item--extra-padding {padding-left:2.5em;}
+.footer__text {color:white;line-height:1.5;}
+.footer__text--title {display:inline-block;margin-bottom:1.6em;font-size:1.3em;font-style:italic;}
+.footer__text--extra-info {float:right;}
+.footer__text:not(.footer__text--copyright):hover {text-decoration:underline; cursor:pointer;}
+.footer__text--black {color:#000;}
+.footer__separator {color:white;}
+#copyright-year {color:white;}
+
+.active-tab {background-color:#fdc010;color: #222222;}
+.navbar__link:hover:not(.navbar__dropdown-item):not(.active-tab),.info-bar__item__text:hover:not(.active-tab) {background-color:#065f46;}
+        .info-bar,.color-box,.navbar,.footer {background-color:#047857;}
+        .dropdown-symbol--dark {color:#047857;}
+        .button--active {background-color:#047857;color:white;}
+        .navbar__dropdown-container {color: #222222;background-color:#fdc010;}
+        .header2--top {margin-top: 0.5em;}
+        .basic-table td, .basic-table th {border: 1px solid black; padding:0.3em 0.5em; text-align: center;}
+        /* RESPONSIVE-FIX-INSERTED */
+@media (max-width: 768px) {
+  .outer-container { width: 100% !important; margin: 0 !important; }
+  .outer-page-content { width: 100% !important; display: block !important; }
+  .side-bar { width: 100% !important; float: none !important; }
+  .page-box { width: auto !important; display: block !important; margin: 0 auto 0.5em auto !important; }
+  img { max-width: 100% !important; height: auto !important; }
+  table { max-width: 100% !important; }
+
+  #info-bar > .info-bar__item:has(a[href$="index.html"]),
+  #info-bar > .info-bar__item:has(a[href*="donate"]),
+  #info-bar > .info-bar__item:has(a[href*="substack.com"]),
+  #info-bar > .info-bar__item:has(a[href*="mes.fm/links"]) { display: none !important; }
+}
+
+.inner-container { position: relative !important; }
+.header .social-container { display: none !important; }
+.side-bar { width: auto !important; float: none !important; }
+.navbar-container { margin: 0 !important; box-shadow: none !important; }
+.navbar__item--social { display: list-item; padding: 1em 1.6em 1em 1.4em; border-bottom: 1px solid rgba(255,255,255,0.25); }
+.navbar__item--social .social-container--navbar { position: static !important; display: flex; flex-wrap: wrap; align-items: center; gap: 0.6em; }
+.navbar__item--social .social__text { color: white; margin: 0; }
+.navbar__item--social .social { display: flex; flex-wrap: wrap; gap: 0.5em; margin: 0; padding: 0; }
+.navbar__item--social .info-bar__logo-container { display: block; margin-top: 0.4em; }
+#navbar-button {
+  position: absolute !important; top: 16px !important; right: 16px !important; z-index: 20;
+  width: 44px; height: 44px; padding: 0; margin: 0 !important;
+  background: transparent !important; border: none !important;
+  font-size: 0;
+}
+
+@media (max-width: 768px) {
+  .header { padding-right: 4em !important; box-sizing: border-box; }
+}
+#navbar-button::before {
+  content: ""; display: block; margin: 0 auto;
+  width: 26px; height: 4px; background: currentColor; border-radius: 1px;
+  box-shadow: 0 7px 0 currentColor, 0 -7px 0 currentColor;
+}
+#navbar { display: none; }
+#navbar.hide {
+  display: block !important; box-sizing: border-box;
+  position: absolute; top: 76px; right: 16px; z-index: 19;
+  width: 16em; max-width: 90vw; max-height: 75vh; overflow-y: auto;
+  scrollbar-gutter: stable;
+  box-shadow: 0 0.25em 1em rgba(0,0,0,0.3);
+  border-radius: 0.25em;
+}
+
+#navbar.hide { display: flex !important; flex-direction: column; }
+.navbar__item--social { order: 999; }
+.navbar__item--social .info-bar__logo-container { display: block !important; }
+
+.outer-container { width: auto !important; max-width: 50em; margin: 0 auto !important; }
+.outer-page-content { width: 100% !important; display: block !important; }
+.page-content { padding-right: 0 !important; }
+
+</style>	<style>
+	.hide {display:none;}
+	a,a:hover {text-decoration: none !important;color:white;}
+	a.active-tab:hover {color:#222222;}
+	.navbar {border:none;}
+
+	/* the tool itself (scoped to #main-content) */
+	/* shared widget kit for the calculator tool pages (build_tool_apps.py prepends this to each app's own CSS) */
+	.tu {margin:1em 0;--accent:#047857;--accent-dark:#065f46;--tint:#d9f5ea;}
+	.tu *, .tu *::before, .tu *::after {box-sizing:border-box;}
+	.tu a {color:var(--accent);text-decoration:underline !important;}
+	.tu a:hover {color:var(--accent-dark);}
+	.tu button, .tu input, .tu select {font:inherit;}
+	.tu h2 {font-size:1.05em;color:#1e2733;margin:1.4em 0 0.6em;padding-bottom:0.3em;border-bottom:2px solid #d9f5ea;}
+	.tu h3 {font-size:0.98em;color:#1e2733;margin:1em 0 0.4em;}
+	.tu p {line-height:1.5;margin:0.5em 0;}
+	.tu-card {background:#fff;border:1px solid #dfe4ea;border-radius:0.55em;padding:1em 1.1em;}
+	.tu-card--tint {background:#d9f5ea;border-color:#d9f5ea;}
+	.tu-row {display:flex;flex-wrap:wrap;gap:0.9em 1.1em;align-items:flex-end;}
+	.tu-field {display:flex;flex-direction:column;gap:0.3em;flex:1 1 11em;min-width:0;}
+	.tu-field--sm {flex:0 1 8em;}
+	.tu-field > label, .tu-label {font-size:0.75em;font-weight:700;text-transform:uppercase;letter-spacing:0.04em;color:#667;}
+	.tu-input, .tu-select {width:100%;font-size:1.05em;padding:0.55em 0.65em;border:1px solid #b9c1cc;border-radius:0.4em;background:#fff;color:#222;}
+	.tu-input:focus, .tu-select:focus {outline:none;border-color:var(--accent);box-shadow:0 0 0 2px #d9f5ea;}
+	.tu-input--big {font-size:1.35em;padding:0.55em 0.7em;}
+	.tu-suffix {position:relative;}
+	.tu-suffix .tu-input {padding-right:3.2em;}
+	.tu-suffix span {position:absolute;right:0.7em;top:50%;transform:translateY(-50%);font-size:0.85em;color:#667085;pointer-events:none;}
+	.tu-btn {cursor:pointer;padding:0.5em 0.95em;border-radius:0.35em;border:0.125em solid var(--accent);background:#fff;color:var(--accent);font-size:0.9em;line-height:1.1;}
+	.tu-btn:hover {background:var(--accent);color:#fff;}
+	.tu-btn--primary {background:var(--accent);color:#fff;}
+	.tu-btn--primary:hover {background:var(--accent-dark);border-color:var(--accent-dark);}
+	.tu-btn--ghost {border-color:#c3c9d2;color:#555;}
+	.tu-btn--ghost:hover {background:#eef1f5;color:#222;border-color:#c3c9d2;}
+	.tu-seg {display:inline-flex;border:1px solid #b9c1cc;border-radius:0.4em;overflow:hidden;background:#fff;}
+	.tu-seg button {cursor:pointer;border:0;background:transparent;padding:0.55em 0.9em;color:#555;font-size:0.95em;border-right:1px solid #dfe4ea;}
+	.tu-seg button:last-child {border-right:0;}
+	.tu-seg button:hover {background:#f4f6f9;}
+	.tu-seg button[aria-pressed="true"] {background:var(--accent);color:#fff;}
+	.tu-chips {display:flex;flex-wrap:wrap;gap:0.4em;margin:0.6em 0 0;}
+	.tu-chip {cursor:pointer;font-size:0.82em;padding:0.35em 0.8em;border-radius:1.2em;border:1px solid #c3c9d2;background:#fff;color:#555;}
+	.tu-chip:hover {border-color:var(--accent);color:var(--accent);}
+	.tu-chip[aria-pressed="true"] {background:var(--accent);border-color:var(--accent);color:#fff;}
+	.tu-stats {display:grid;grid-template-columns:repeat(auto-fit,minmax(13em,1fr));gap:0.8em;margin:1em 0;}
+	.tu-stat {background:#fff;border:1px solid #dfe4ea;border-radius:0.55em;padding:0.8em 1em;}
+	.tu-stat--hero {background:#d9f5ea;border-color:#d9f5ea;}
+	.tu-stat__label {font-size:0.72em;font-weight:700;text-transform:uppercase;letter-spacing:0.05em;color:#667;}
+	.tu-stat__value {font-size:1.7em;font-weight:700;color:#1e2733;line-height:1.2;margin:0.15em 0;word-break:break-word;}
+	.tu-stat__sub {font-size:0.85em;color:#555d6b;line-height:1.35;}
+	.tu-pos {color:#1f7a3d !important;}
+	.tu-neg {color:#b3261e !important;}
+	.tu-table-wrap {overflow-x:auto;}
+	.tu-table {width:100%;border-collapse:collapse;font-size:0.95em;}
+	.tu-table th, .tu-table td {text-align:right;padding:0.5em 0.7em;border-bottom:1px solid #e3e7ec;color:#333;white-space:nowrap;}
+	.tu-table th:first-child, .tu-table td:first-child {text-align:left;}
+	.tu-table th {font-size:0.75em;text-transform:uppercase;letter-spacing:0.03em;color:#6a7280;background:#fff;}
+	.tu-table tr.is-active td {background:#d9f5ea;font-weight:700;}
+	.tu-note {font-size:0.85em;color:#6a7280;line-height:1.45;}
+	.tu-toast {position:fixed;left:50%;bottom:2em;transform:translateX(-50%) translateY(0.5em);background:#1e2733;color:#fff;padding:0.6em 1.1em;border-radius:2em;font-size:0.9em;box-shadow:0 0.4em 1.2em rgba(0,0,0,0.25);opacity:0;pointer-events:none;transition:opacity 0.15s, transform 0.15s;z-index:60;}
+	.tu-toast--show {opacity:1;transform:translateX(-50%) translateY(0);}
+	.tu-seo {margin-top:2em;border-top:1px solid #e3e3e3;padding-top:1.2em;}
+	/* SEO-HEADINGS: headlines and questions stand out from the body text (also added to built pages by add_seo_heading_style.py) */
+	body .tu-seo {font-size:1.04em;line-height:1.65;}
+	body .tu-seo h2 {font-size:1.45em;font-weight:800;line-height:1.25;margin:0 0 0.6em;color:#1e2733;border-bottom:0;padding-bottom:0;}
+	body .tu-seo h3 {font-size:1.2em;font-weight:800;line-height:1.3;margin:1.6em 0 0.5em;padding:0.15em 0 0.15em 0.65em;border-left:5px solid var(--accent,#4a6fa5);color:#1e2733;}
+	body .tu-seo h4, body .tu-seo dt {font-size:1.08em;font-weight:700;font-style:normal;line-height:1.35;margin:1.3em 0 0.3em;color:#1e2733;}
+	body .tu-seo dd {margin:0 0 0.6em;} body .tu-seo p, body .tu-seo li, body .tu-seo dd {line-height:1.65;}
+	body.dark-mode .tu-seo h2, body.dark-mode .tu-seo h3, body.dark-mode .tu-seo h4, body.dark-mode .tu-seo dt {color:#f2f2f2;}
+	.tu sup, .tu sub {font-size:0.72em !important;line-height:0;vertical-align:baseline;position:relative;} .tu sup {top:-0.5em;} .tu sub {top:0.3em;}
+	.tu div[class$="-eq"] {overflow-y:hidden;}
+	.tu-seo ul {list-style:disc;margin:0.5em 0 0.5em 1.5em;line-height:1.5;}
+	.tu-svg-line {fill:none;stroke:#1e2733;stroke-width:2;}
+	.tu-svg-accent {fill:none;stroke:var(--accent);stroke-width:3;}
+	.tu-svg-fill {fill:var(--accent);}
+	.tu-svg-tint {fill:#d9f5ea;}
+	.tu-svg-text {font-size:13px;fill:#333;}
+	.tu-svg-grid {stroke:#dfe4ea;stroke-width:1;fill:none;}
+	/* selected states: the derived dark theme would darken these, so restate them for dark mode */
+	/* the dark theme lightens --accent so it reads on dark; text on filled accent surfaces then has to be dark */
+	body.dark-mode .tu .tu-seg button[aria-pressed="true"], body.dark-mode .tu .tu-chip[aria-pressed="true"], body.dark-mode .tu .uc-cat[aria-selected="true"],
+	body.dark-mode .tu .tu-btn:hover, body.dark-mode .tu .tu-btn--primary, body.dark-mode .tu .tu-btn--primary:hover {background:var(--accent);border-color:var(--accent);color:#0b1416;}
+	body.dark-mode .tu .tu-btn--ghost:hover {background:#2e2e2e;border-color:#666;color:#eee;}
+	body.dark-mode .tu .uc-cat[aria-selected="true"] span {color:#0b1416;}
+	body.dark-mode .tu .tu-svg-tint {fill:rgba(255,255,255,0.09);}
+	body.dark-mode .tu .gm-card[aria-pressed="true"] {border-color:var(--accent);background:rgba(255,255,255,0.08);}
+	/* dark mode: the tool's accent lightened (same hue) so links, outlines and the text on filled buttons keep their contrast on the dark page */
+	body.dark-mode .tu {--accent:#06ae7e !important;--accent-dark:#06ae7e !important;}
+	@media (max-width:600px) {
+		.tu-stat__value {font-size:1.45em;}
+		.tu-field--sm {flex:1 1 7em;}
+	}
+	@media print {
+		.tu-btn, .tu-chips, .tu-seg {display:none !important;}
+	}
+
+/* row layout options on the grade / GPA / weighted-average calculators (names on-off, table layout) */
+.tu .rw-bar {display:flex;gap:0.4em;flex-wrap:wrap;margin:0.5em 0 0.1em;}
+.tu .gc-n {display:none;}
+.tu [data-names="0"] .rw-name {display:none !important;}
+.tu [data-names="0"] .rw-num, .tu [data-table="1"] .rw-num {display:block !important;flex:0 0 1.7em;text-align:right;color:#8a93a0;font-size:0.85em;padding-bottom:0.7em;}
+.tu [data-table="1"] .rw-head, .tu [data-table="1"] .rw-row {display:grid !important;grid-template-columns:var(--rw-cols);gap:0.3em;align-items:center;}
+.tu [data-table="1"] .rw-head {font-size:0.68em;font-weight:700;text-transform:uppercase;letter-spacing:0.03em;color:#667;padding:0.4em 0 0.2em;border-bottom:2px solid #d5dae1;} .tu [data-table="1"] .rw-head span {text-align:center;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;} .tu [data-table="1"] .rw-head span:first-child {text-align:right;}
+.tu [data-table="1"] .rw-row {padding:0.22em 0;border-bottom:1px solid #eceff3;}
+.tu [data-table="1"] .rw-row > * {order:0 !important;flex:none !important;margin:0 !important;min-width:0 !important;width:auto !important;}
+.tu [data-table="1"] .rw-row .rw-num {padding:0;}
+.tu [data-table="1"] .rw-f label {display:none;}
+.tu [data-table="1"] .rw-row .tu-input, .tu [data-table="1"] .rw-row .tu-select {padding:0.35em 0.2em;width:100%;min-width:0;text-align:center;}
+.tu [data-table="1"] .rw-row .rw-name .tu-input {text-align:left;padding-left:0.4em;}
+.tu [data-table="1"] .rw-del {padding:0.25em 0 !important;font-size:0.95em !important;}
+.tu [data-table="1"] .rw-pts {padding:0 !important;font-size:0.78em;text-align:center;}
+body.dark-mode .tu .rw-head {color:#a0a8b3;border-bottom-color:#555;} body.dark-mode .tu [data-table="1"] .rw-row {border-bottom-color:#333;}
+/* equation boxes typeset by main_js/mes-math.js (MathJax) */
+.tu [class$="-eq__f"].mes-tex {font-family:inherit;white-space:normal;display:inline-block;vertical-align:middle;max-width:100%;overflow-x:auto;overflow-y:hidden;}
+.tu [class$="-eq"] mjx-container {margin:0.15em 0 !important;}
+.tu [class$="-eq"] > div {margin:0.25em 0;}
+.tu [class$="-eq__n"] {vertical-align:middle;}
+
+	/* Compound Interest Explained (article; same look as time-dilation-explained). Hand-written dark rules use the #ce prefix. */
+	#ce .ce-body h2 {margin:1.8em 0 0.5em;font-size:1.45em;font-weight:800;line-height:1.25;border-bottom:2px solid #d9f5ea;padding-bottom:0.2em;}
+	#ce .ce-body p, #ce .ce-body li {line-height:1.7;font-size:1.03em;}
+	#ce ul.ce-list {list-style:disc;margin:0.5em 0 0.8em 1.4em;} #ce .ce-list li {margin-bottom:0.35em;}
+	#ce .ce-eq {margin:0.9em 0;padding:1em;background:#f4f6f9;border:1px solid #dfe4ea;border-left:5px solid var(--accent);border-radius:0.4em;overflow-x:auto;overflow-y:hidden;font-size:1.1em;-webkit-overflow-scrolling:touch;}
+	#ce .ce-eq--key {border-left-width:8px;background:#ecf8f3;}
+	#ce .ce-eq .mes-tex {display:inline-block;max-width:none;}
+	#ce .ce-eq mjx-container {margin:0 !important;}
+	#ce .ce-note {font-size:0.9em;color:#5b6573;}
+	#ce .ce-q {margin:0.5em 0;border:1px solid #dfe4ea;border-radius:0.5em;padding:0.6em 0.9em;background:#fff;}
+	#ce .ce-q summary {cursor:pointer;font-weight:700;line-height:1.5;min-height:28px;} #ce .ce-q[open] summary {margin-bottom:0.4em;}
+	#ce [hidden] {display:none !important;}
+	#ce .ce-widget {margin:1em 0 1.2em;padding:0.9em 1em;border:1px solid #d5dbe2;border-radius:0.6em;background:#fafbfc;}
+	#ce .ce-wrow {display:flex;flex-wrap:wrap;gap:0.6em 1em;}
+	#ce .ce-wrow label {display:flex;flex-direction:column;gap:0.2em;font-size:0.9em;color:#5b6573;flex:1 1 8em;}
+	#ce .ce-in {min-height:40px;}
+	#ce .ce-btns {display:flex;flex-wrap:wrap;gap:0.5em;margin:0.7em 0;}
+	#ce .ce-btns .tu-btn {min-height:40px;}
+	#ce .ce-tbl td, #ce .ce-tbl th {font-variant-numeric:tabular-nums;}
+	#ce .ce-tbl th[scope=row] {text-align:left;text-transform:none;letter-spacing:0;font-size:inherit;color:#1e2733;}
+	body.dark-mode #ce .ce-tbl th[scope=row] {color:#e6e8ec;}
+	#ce .ce-best td, #ce .ce-best th {background:#eaf7f1;font-weight:700;}
+	#ce .ce-tag {font-size:0.75em;font-weight:700;color:#fff;background:var(--accent);border-radius:1em;padding:0.1em 0.55em;margin-left:0.3em;vertical-align:0.1em;}
+	#ce .ce-stepbars {display:flex;align-items:flex-end;gap:2px;height:7em;margin:0.6em 0;border-bottom:1px solid #b7c0cb;}
+	#ce .ce-sb {position:relative;flex:1 1 0;height:100%;max-width:2.4em;}
+	#ce .ce-sb__c {position:absolute;left:0;right:0;bottom:0;background:#047857;border-radius:3px 3px 0 0;}
+	#ce .ce-sb__s {position:absolute;left:-1px;right:-1px;height:0;border-top:2px solid #d97706;}
+	#ce .ce-slab {display:block;font-weight:700;margin-bottom:0.3em;}
+	#ce .ce-slab output {color:var(--accent);display:inline;}
+	#ce .ce-range {width:100%;accent-color:var(--accent);min-height:32px;cursor:pointer;}
+	#ce .ce-chips {margin:0.5em 0;}
+	#ce .ce-chips .tu-chip {min-height:36px;}
+	#ce .ce-big {font-size:1.15em;margin:0.5em 0;line-height:1.5;font-variant-numeric:tabular-nums;}
+	#ce .ce-big .ce-note {display:block;}
+	#ce .ce-esvg {width:100%;height:auto;display:block;}
+	#ce .ce-grid {stroke:#e3e7ec;stroke-width:1;} #ce .ce-tx {font-size:12px;fill:#5f6b7a;} #ce .ce-tx--e {fill:#b45309;font-weight:700;}
+	#ce .ce-eline {stroke:#d97706;stroke-width:1.5;stroke-dasharray:6 4;} #ce .ce-curve {fill:none;stroke:#047857;stroke-width:2.5;} #ce .ce-dot {fill:#047857;stroke:#fff;stroke-width:2;}
+	#ce a {font-weight:700;}
+	@media (max-width:560px) {#ce .ce-tbl {font-size:0.86em;} #ce .ce-tbl td, #ce .ce-tbl th {padding-left:0.35em;padding-right:0.35em;} #ce .ce-eq {font-size:0.95em;padding:0.8em 0.6em;} #ce .ce-widget {padding:0.7em 0.6em;} #ce .ce-tx {font-size:15px;}}
+	/* the shared shell paints every div / span / p #333: inherit instead so dark mode reads */
+	:where(#ce) :is(div, span, p, section, label, li, td, th, small, b, strong, em, h2, h3, h4, dt, dd, summary, output, details, table, tr, sup, sub, i) {color:inherit;}
+	/* dark mode */
+	body.dark-mode #ce .ce-eq, body.dark-mode #ce .ce-q, body.dark-mode #ce .ce-widget {background:#23262b;border-color:#3a3f48;}
+	body.dark-mode #ce .ce-eq--key {background:#1d302a;}
+	body.dark-mode #ce .ce-eq, body.dark-mode #ce .ce-eq--key {border-left-color:var(--accent);}
+	body.dark-mode #ce .ce-note, body.dark-mode #ce .ce-wrow label {color:#a0a8b3;}
+	body.dark-mode #ce .ce-body h2 {border-bottom-color:#3a3f48;}
+	body.dark-mode #ce .ce-best td, body.dark-mode #ce .ce-best th {background:#1f3a30;}
+	body.dark-mode #ce .ce-tag {color:#0b1416;}
+	body.dark-mode #ce .ce-sb__c {background:#34d399;} body.dark-mode #ce .ce-sb__s {border-top-color:#fbbf24;} body.dark-mode #ce .ce-stepbars {border-bottom-color:#4a5260;}
+	body.dark-mode #ce .ce-grid {stroke:#363c45;} body.dark-mode #ce .ce-tx {fill:#aab3bf;} body.dark-mode #ce .ce-tx--e {fill:#fbbf24;}
+	body.dark-mode #ce .ce-eline {stroke:#fbbf24;} body.dark-mode #ce .ce-curve {stroke:#34d399;} body.dark-mode #ce .ce-dot {fill:#34d399;stroke:#22262c;}
+
+
+	@media print {
+		.header, .info-bar-container, .side-bar, #footer, #comments-button, #comments-box, .color-box { display:none !important; }
+		.outer-container, .inner-container, .outer-page-content, .page-content { width:auto !important; box-shadow:none !important; padding:0 !important; margin:0 !important; }
+	}
+	/* Mobile layout: stack header/nav/footer, full-width calculator inputs */
+	@media (max-width: 600px) {
+		.inner-container { padding: 1em 0.75em; }
+
+		.header { display: flex; flex-wrap: wrap; align-items: center; }
+		.logo-image-container { flex: 0 0 auto; }
+		.logo-text-container { display: block; flex: 1 1 0; min-width: 0; padding-left: 0.75em; vertical-align: initial; }
+		.calculator-title { font-size: 1.3em; }
+		.tag-line { font-size: 1em; }
+		.social-container, .social-container--bottom { position: static; flex: 0 0 100%; margin-top: 0.5em; }
+		.social-container { display: flex; align-items: center; flex-wrap: wrap; gap: 0.5em; }
+		.social-container .social__text { margin: 0; font-size: 0.9em; }
+		.social { display: flex; gap: 0.4em; }
+		.social-container .info-bar__logo-container { margin-left: auto; }
+		#mes-logo { width: 110px; height: auto; }
+
+		.info-bar-container { display: block; width: 100%; }
+		.info-bar { display: flex; flex-wrap: wrap; margin-left: 0; padding-left: 0; width: 100%; }
+		.info-bar__item { float: none; flex: 1 1 33%; min-width: 0; }
+		.info-bar__item__text { padding: 0.5em 0.2em; font-size: 0.75em; text-align: center; white-space: normal; line-height: 1.2; }
+		.navbar-container { margin: 1em 0; width: 100%; box-sizing: border-box; }
+		.button--navbar { box-sizing: border-box; width: 100%; }
+		.navbar { width: 100%; }
+		.navbar__link { box-sizing: border-box; }
+
+		.page-content { padding: 1.2em 0 0 0; }
+
+		.footer { padding: 1.25em 0.75em; }
+		.footer__item-container { display: block; }
+		.footer__item { display: block; margin-bottom: 0.75em; }
+		.footer__item--extra-padding { padding-left: 0; }
+		.footer__text--extra-info { float: none; display: block; margin-top: 0.5em; }
+	}
+/* Floating compact header bar: once the full header + nav scroll out of
+   view, a slim fixed bar (small logo, title, as many nav links as fit)
+   slides in, and the hamburger is pinned into its right end. Toggled by
+   the compact-nav script below. Ported from mes.fm/math's version (see
+   its build.mjs) -- display-controls.js pins the A-/A+/moon buttons into its right end.
+
+   Hidden by default via the inline style="display:none" on the element
+   itself (not just this stylesheet's "display: none" below) -- some
+   browser extensions strip or neutralize cosmetic-looking CSS for
+   elements named "sticky-*"/"*-bar" (a common ad/cookie-bar filter
+   pattern), which left an earlier version's raw unstyled markup visible
+   above the real header on mes.fm/math. The inline attribute is a
+   fallback the JS clears itself, independent of this stylesheet
+   surviving intact. */
+#compact-nav {
+  position: fixed; top: 0; left: 0; right: 0; height: 52px; z-index: 15;
+  display: none; align-items: center; gap: 12px;
+  padding: 0 80px 0 12px; box-sizing: border-box;
+  background: #ffffff; border-bottom: 3px solid #047857;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.18);
+  transform: translateY(-110%); transition: transform 0.2s ease;
+}
+#compact-nav.is-visible { display: flex; }
+body.is-stuck #compact-nav { transform: none; }
+#compact-nav .compact-nav-logo { display: block; width: 32px; height: 32px; border-radius: 6px; flex: 0 0 auto; }
+#compact-nav .compact-nav-title {
+  flex: 0 1 auto; min-width: 0; font-weight: 700; font-size: 1.05em; color: #1a1a1a;
+  text-decoration: none; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+}
+#compact-nav .compact-nav-links { display: flex; flex: 1 1 0; min-width: 0; overflow: hidden; margin: 0 0 0 8px; padding: 0; list-style: none; }
+#compact-nav .compact-nav-links li { flex: 0 0 auto; }
+#compact-nav .compact-nav-links a { display: block; padding: 0 10px; line-height: 52px; font-size: 0.9em; color: #047857; text-decoration: none; white-space: nowrap; }
+#compact-nav .compact-nav-links a:hover { background: rgba(4,120,87,0.12); }
+body.is-stuck #navbar-button { position: fixed !important; top: 4px !important; right: 8px !important; display: flex; align-items: center; }
+body.is-stuck #navbar.hide { position: fixed; top: 56px; right: 8px; }
+@media (max-width: 700px) {
+  #compact-nav .compact-nav-title { display: none; }
+  #compact-nav .compact-nav-logo { width: 36px; height: 36px; }
+}
+@media (max-width: 480px) {
+  #compact-nav { padding-right: 70px; gap: 8px; }
+}
+
+	/* TOOL-DARK:START -- generated by add_tool_page_controls.py, do not edit */
+	body.dark-mode .page-content :where(div,span,p,li,ul,ol,h1,h2,h3,h4,h5,h6,td,th,label,summary,small,strong,b,em,i,code,pre,legend,figcaption,dl,dt,dd,blockquote,caption,cite,button,input,select,textarea){color:#d8d8d8}
+	body.dark-mode .page-content code{background-color:#33363d;color:#f0a8bd}
+	body.dark-mode .page-content .btn-default{background-color:#2e2e2e;background-image:none;color:#ddd;border-color:#555}
+	body.dark-mode .tu{--accent:#12f7b6;--accent-dark:#19f0b4}
+	body.dark-mode .tu h2{color:#d1d6dc;border-bottom:2px solid #154e38}
+	body.dark-mode .tu h3{color:#d1d6dc}
+	body.dark-mode .tu-card{background:#1a1a1a;border:1px solid #28323e}
+	body.dark-mode .tu-card--tint{background:#1d322a;border-color:#154e38}
+	body.dark-mode .tu-field > label,body.dark-mode .tu-label{color:#9a9aa2}
+	body.dark-mode .tu-input,body.dark-mode .tu-select{border:1px solid #404a58;background:#1a1a1a;color:#dddddd}
+	body.dark-mode .tu-suffix span{color:#989ca4}
+	body.dark-mode .tu-btn{background:#1a1a1a}
+	body.dark-mode .tu-btn--ghost{border-color:#3a424d;color:#aaaaaa}
+	body.dark-mode .tu-btn--ghost:hover{background:#191c20;color:#dddddd;border-color:#3a424d}
+	body.dark-mode .tu-seg{border:1px solid #404a58;background:#1a1a1a}
+	body.dark-mode .tu-seg button{color:#aaaaaa;border-right:1px solid #28323e}
+	body.dark-mode .tu-seg button:hover{background:#16191d}
+	body.dark-mode .tu-chip{border:1px solid #3a424d;background:#1a1a1a;color:#aaaaaa}
+	body.dark-mode .tu-stat{background:#1a1a1a;border:1px solid #28323e}
+	body.dark-mode .tu-stat--hero{background:#1d322a;border-color:#154e38}
+	body.dark-mode .tu-stat__label{color:#9a9aa2}
+	body.dark-mode .tu-stat__value{color:#d1d6dc}
+	body.dark-mode .tu-stat__sub{color:#9a9ea4}
+	body.dark-mode .tu-pos{color:#7dde9d !important}
+	body.dark-mode .tu-neg{color:#e87973 !important}
+	body.dark-mode .tu-table th,body.dark-mode .tu-table td{border-bottom:1px solid #29323d;color:#cccccc}
+	body.dark-mode .tu-table th{color:#9a9da3;background:#1a1a1a}
+	body.dark-mode .tu-table tr.is-active td{background:#1d322a}
+	body.dark-mode .tu-note{color:#9a9da3}
+	body.dark-mode .tu-toast{background:#3c4f67}
+	body.dark-mode .tu-seo{border-top:1px solid #333333}
+	body.dark-mode .tu-svg-line{stroke:#394a60}
+	body.dark-mode .tu-svg-text{fill:#cccccc}
+	body.dark-mode .tu-svg-grid{stroke:#28323e}
+	body.dark-mode .tu [data-names="0"] .rw-num,body.dark-mode .tu [data-table="1"] .rw-num{color:#999da3}
+	body.dark-mode .tu [data-table="1"] .rw-head{color:#9a9aa2;border-bottom:2px solid #2b323c}
+	body.dark-mode .tu [data-table="1"] .rw-row{border-bottom:1px solid #27313f}
+	body.dark-mode #ce .ce-body h2{border-bottom:2px solid #154e38}
+	body.dark-mode #ce .ce-eq{background:#16191d;border:1px solid #28323e}
+	body.dark-mode #ce .ce-eq--key{background:#16221d}
+	body.dark-mode #ce .ce-note{color:#989da4}
+	body.dark-mode #ce .ce-q{border:1px solid #28323e;background:#1a1a1a}
+	body.dark-mode #ce .ce-widget{border:1px solid #2a323c;background:#17191c}
+	body.dark-mode #ce .ce-wrow label{color:#989da4}
+	body.dark-mode #ce .ce-tbl th[scope=row]{color:#d1d6dc}
+	body.dark-mode #ce .ce-best td,body.dark-mode #ce .ce-best th{background:#18241e}
+	body.dark-mode #ce .ce-stepbars{border-bottom:1px solid #414c5a}
+	body.dark-mode #ce .ce-sb__s{border-top:2px solid #f88807}
+	body.dark-mode #ce .ce-grid{stroke:#29323d}
+	body.dark-mode #ce .ce-tx{fill:#989da4}
+	body.dark-mode #ce .ce-tx--e{fill:#f7a364}
+	body.dark-mode #ce .ce-eline{stroke:#f88807}
+	body.dark-mode #ce .ce-curve{stroke:#08f7b3}
+	body.dark-mode #ce .ce-dot{fill:#61face;stroke:#333333}
+	/* TOOL-DARK:END */
+</style>
+        <meta property="fb:app_id" content="" />
+        <meta name="author" content="Math Easy Solutions Staff">
+        <meta property="og:type" content="website" />
+        <meta property="og:url" content="https://mes.fm/compound-interest-explained" />            <meta property="og:title" content="Compound Interest Explained | Math Easy Solutions" />        <meta property="og:image" content="https://mes.fm/compound-interest-calculator/img/logo-big.png" />
+        <meta property="og:description" content="Compound interest explained step by step: simple vs compound interest, deriving A = P(1 + r/n)^(nt), continuous compounding and e, APY, the future value of regular deposits, solving for time with logarithms, the rule of 72, real returns after inflation, worked examples and practice questions." />
+
+        <meta name="description" content="Compound interest explained step by step: simple vs compound interest, deriving A = P(1 + r/n)^(nt), continuous compounding and e, APY, the future value of regular deposits, solving for time with logarithms, the rule of 72, real returns after inflation, worked examples and practice questions.">            <meta name="twitter:card" content="summary">        <meta name="twitter:site" content="@MathEasySolns">
+        <meta name="twitter:title" content="Compound Interest Explained">
+        <meta name="twitter:description" content="Compound interest explained step by step: simple vs compound interest, deriving A = P(1 + r/n)^(nt), continuous compounding and e, APY, the future value of regular deposits, solving for time with logarithms, the rule of 72, real returns after inflation, worked examples and practice questions.">
+        <meta name="twitter:image" content="https://mes.fm/compound-interest-calculator/img/logo-big.png">
+        <meta name="twitter:image:alt" content="Compound Interest Explained">
+        <script type="application/ld+json">
+        {"@context": "https://schema.org", "@type": "WebApplication", "name": "Compound Interest Explained", "url": "https://mes.fm/compound-interest-explained", "applicationCategory": "UtilitiesApplication", "operatingSystem": "Any", "offers": {"@type": "Offer", "price": "0", "priceCurrency": "USD"}, "description": "Compound interest explained step by step: simple vs compound interest, deriving A = P(1 + r/n)^(nt), continuous compounding and e, APY, the future value of regular deposits, solving for time with logarithms, the rule of 72, real returns after inflation, worked examples and practice questions."}
+        </script>            <!-- Google Tag Manager -->
+            <script>(function(w,d,s,l,i){w[l]=w[l]||[];w[l].push({'gtm.start':
+            new Date().getTime(),event:'gtm.js'});var f=d.getElementsByTagName(s)[0],
+            j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
+            'https://www.googletagmanager.com/gtm.js?id='+i+dl;f.parentNode.insertBefore(j,f);
+            })(window,document,'script','dataLayer','GTM-PL6QNQR');</script>
+            <!-- End Google Tag Manager -->
+<!-- Legacy Universal Analytics removed: every UA property stopped processing data in 2023; pageviews are tracked via main_js/track.js (+ GTM) -->
+    <!-- ADSENSE-DEFERRED: load adsbygoogle.js (auto ads + consent) on the first
+     real interaction (scroll / pointer / key), or after a 15s idle fallback,
+     so its ad + consent JS (doubleclick ads ~100KB, Funding Choices ~70KB,
+     sodar, osd) never runs during the page-load / Lighthouse trace window. -->
+    <script>
+    (function () {
+      var EVT = ['scroll', 'pointerdown', 'keydown', 'touchstart'];
+      var done = false;
+      function go() {
+        if (done) return;
+        done = true;
+        EVT.forEach(function (e) { removeEventListener(e, go); });
+        var s = document.createElement('script');
+        s.async = true;
+        s.crossOrigin = 'anonymous';
+        s.src = 'https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-1461238060884369';
+        document.head.appendChild(s);
+      }
+      EVT.forEach(function (e) { addEventListener(e, go, { passive: true }); });
+      setTimeout(go, 15000);
+    })();
+    </script>
+    <script>
+/* autoads-header-gap-guard: guards two gaps against Google Auto ads (in-page ad blocks,
+   class `google-auto-placed`), plus Google's separate "annotation" text-ad
+   formats, which are a different Auto ads mechanism than the in-page blocks
+   above. 1) Logo header <-> nav bar: on desktop, any in-page ad caught here
+   is relocated to just below the whole header+nav+logo-badge complex
+   (before .outer-page-content) and allowed to show if it fills; on mobile
+   (max-width: 768px, this repo's existing responsive breakpoint) it is
+   hidden outright instead -- no ad shows below the nav bar on mobile at
+   all. 2) Comments toggle (#comments-button) <-> comments widget
+   (#comments-box): on every device, any in-page ad caught here is relocated
+   to just after the comments box and allowed to show if it fills.
+   3) Annotation/related-entry chips -- any element carrying the
+   `google-anno-skip` class, which covers every chip variant Google serves
+   (`google-anno-sc` pill/badge tooltips, `goog-rentry` related-entry
+   tooltips, `google-anno-sa-qtx` tooltip text) -- and 4) in-text link ads
+   (`<a class="google-anno">` wrapping a `<span class="google-anno-t">`
+   around an ordinary word, e.g. turning "Calculate" into a
+   double-underlined, clickable ad): both are only guarded inside #header,
+   #footer, the top .info-bar-container nav, or the .side-bar "Site
+   Navigation" widget -- chips are hidden outright there, and in-text links
+   are unwrapped back to plain text there, so the word stays readable
+   without the ad behavior. Elsewhere in the actual page content both are
+   left alone on purpose. Unlike the in-page ad blocks, Google serves many
+   of these chips/links per page load, so removing the guarded-zone ones
+   doesn't cost the page its one shot at an ad the way deleting the in-page
+   block did -- no relocate/poll needed, just hide/unwrap on sight.
+   In the first two cases Google's own placeholder-collapse doesn't reliably
+   fire once we've moved the node, so we poll it: if no real ad iframe shows
+   up within ~2s, we force the reserved space to 0 ourselves, so an unfilled
+   slot never leaves a blank gap. */
+(function () {
+    function isMobile() {
+        return window.matchMedia('(max-width: 768px)').matches;
+    }
+    function isBetween(before, after, el) {
+        if (!before || !after) return false;
+        return !!(before.compareDocumentPosition(el) & Node.DOCUMENT_POSITION_FOLLOWING) &&
+               !!(after.compareDocumentPosition(el) & Node.DOCUMENT_POSITION_PRECEDING);
+    }
+    function collapseIfUnfilled(node) {
+        var attempts = 0;
+        var poll = setInterval(function () {
+            attempts++;
+            if (!node.isConnected) {
+                clearInterval(poll);
+                return;
+            }
+            if (node.querySelector('iframe')) {
+                clearInterval(poll);
+                return;
+            }
+            if (attempts >= 10) {
+                node.style.setProperty('display', 'none', 'important');
+                clearInterval(poll);
+            }
+        }, 200);
+    }
+    function handleHeaderNavZone(node) {
+        var header = document.getElementById('header');
+        var nav = document.querySelector('.info-bar-container');
+        if (!isBetween(header, nav, node)) return false;
+        if (isMobile()) {
+            node.style.setProperty('display', 'none', 'important');
+            return true;
+        }
+        var target = document.querySelector('.outer-page-content');
+        if (target) {
+            target.before(node);
+        } else if (nav) {
+            nav.after(node);
+        }
+        collapseIfUnfilled(node);
+        return true;
+    }
+    function handleCommentsZone(node) {
+        var button = document.getElementById('comments-button');
+        var box = document.getElementById('comments-box');
+        if (!isBetween(button, box, node)) return false;
+        box.after(node);
+        collapseIfUnfilled(node);
+        return true;
+    }
+    function inAnnotationGuardedZone(el) {
+        return !!(el.closest('#header') || el.closest('#footer') || el.closest('.side-bar') || el.closest('.info-bar-container'));
+    }
+    function handleAnnotationChip(node) {
+        if (node.classList && node.classList.contains('google-anno-skip') && inAnnotationGuardedZone(node)) {
+            node.style.setProperty('display', 'none', 'important');
+            return true;
+        }
+        return false;
+    }
+    function handleInTextLinkAd(node) {
+        if (node.classList && node.classList.contains('google-anno') && node.parentNode && inAnnotationGuardedZone(node)) {
+            node.replaceWith(document.createTextNode(node.textContent));
+            return true;
+        }
+        return false;
+    }
+    function handle(node) {
+        if (node.nodeType !== 1) return;
+        if (node.classList && node.classList.contains('google-auto-placed')) {
+            if (handleHeaderNavZone(node)) return;
+            handleCommentsZone(node);
+            return;
+        }
+        if (handleAnnotationChip(node)) return;
+        if (handleInTextLinkAd(node)) return;
+        if (node.querySelectorAll) {
+            node.querySelectorAll('.google-auto-placed').forEach(function (n) {
+                if (handleHeaderNavZone(n)) return;
+                handleCommentsZone(n);
+            });
+            node.querySelectorAll('.google-anno-skip').forEach(function (n) {
+                handleAnnotationChip(n);
+            });
+            node.querySelectorAll('.google-anno').forEach(function (n) {
+                handleInTextLinkAd(n);
+            });
+        }
+    }
+    new MutationObserver(function (mutations) {
+        mutations.forEach(function (m) {
+            m.addedNodes.forEach(handle);
+        });
+    }).observe(document.documentElement, {childList: true, subtree: true});
+})();
+</script>
+    <!-- MES-ASIDE-HEAD --><link rel="stylesheet" href="/main_js/aside.css?v=2"><script>try{if(localStorage.getItem('asideSide')==='left')document.documentElement.classList.add('aside-left')}catch(e){}try{if(localStorage.getItem('pageWide')==='1')document.documentElement.classList.add('page-wide')}catch(e){}try{if(localStorage.getItem('pageMode')==='theatre')document.documentElement.classList.add('page-theatre')}catch(e){}try{if(localStorage.getItem('asideHidden')==='1')document.documentElement.classList.add('aside-hidden')}catch(e){}</script><!-- /MES-ASIDE-HEAD --></head>
+    <body>            <!-- Google Tag Manager (noscript) -->
+            <noscript><iframe src="https://www.googletagmanager.com/ns.html?id=GTM-PL6QNQR"
+            height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
+            <!-- End Google Tag Manager (noscript) -->        <div id="compact-nav" aria-hidden="true" style="display:none">
+  <a href="/compound-interest-calculator" tabindex="-1"><img class="compact-nav-logo" alt="" width="32" height="32" src="/compound-interest-calculator/img/logo.png?v=2"></a>
+  <a class="compact-nav-title" href="/compound-interest-calculator" tabindex="-1">Compound Interest Calculator</a>
+  <ul class="compact-nav-links">
+    <li><a href="/math" tabindex="-1">Math Tutorials</a></li>
+    <li><a href="/calculators" tabindex="-1">Calculators</a></li>
+    <li><a href="/tools" tabindex="-1">Tools</a></li>
+    <li><a href="/mobile-apps" tabindex="-1">Mobile Apps</a></li>
+    <li><a href="/puzzles" tabindex="-1">Puzzles</a></li>
+    <li><a href="/memes" tabindex="-1">Memes</a></li>
+    <li><a href="/" tabindex="-1"><b>MES.fm</b></a></li>
+  </ul>
+</div>
+<div id="outer-container" class="outer-container has-aside">                <div class = "inner-container">                        <div id="header" class="header" role="banner">                                <a class="logo-image-container" href='/compound-interest-calculator'><img height="88" width="88" id="logo" class="logo lazyload" alt="Compound Interest Explained logo" data-src="/compound-interest-calculator/img/logo.png?v=2"></a>
+                            <div class="logo-text-container">
+                                <a class="calculator-title-link" href='/compound-interest-calculator'>
+                                    <p class="calculator-title">MES Compound Interest Calculator</p>
+                                </a>
+                                <p class="tag-line">Watch money grow, year by year.</p>                            </div>
+
+                            <div class="social-container"><ul class="social">	<li class="social__logo social__hive"><a class="social__link" href="https://peakd.com/@mes" target="_blank"></a></li></a></li>
+    <li class="social__logo social__telegram"><a class="social__link" href="https://t.me/meslinks" target="_blank"></a></li></a></li></ul><a class="info-bar__logo-container" href="https://mes.fm/" title="Math Easy Solutions"><img id="mes-logo" class="info-bar__logo lazyload" alt="math easy solutions logo" height="29" width="126" data-src="https://mes.fm/main_img/mes-logo-small.png"></a>                            </div>                                                        </div>
+                        <div class="info-bar-container" role="navigation" aria-label="Primary">
+                            <ul id="info-bar" class="info-bar shadow">
+                                <li class="info-bar__item"><a class="info-bar__item__text" href='/compound-interest-calculator'>Home</a></li><li class="info-bar__item"><a class="info-bar__item__text" href='/compound-interest-explained'>Explained</a></li><li class="info-bar__item"><a class="info-bar__item__text" href='/loan-calculator'>Loan</a></li><li class="info-bar__item"><a class="info-bar__item__text" href='/mortgagecalculator'>Mortgage</a></li>                                    <li class="info-bar__item"><a class="info-bar__item__text" href='https://mes.fm/calculators'>Calculators</a></li><li class="info-bar__item"><a class="info-bar__item__text" href='https://mes.fm/tools'>Tools</a></li>                                    <li class="info-bar__item info-bar__item--utility" style="display:none !important;"><a class="info-bar__item__text" href='/contact'>Contact Us</a></li>
+                                    <li class="info-bar__item info-bar__item--utility" style="display:none !important;"><a class="info-bar__item__text" target='_blank' href='https://mes.fm/donate.html'>Donate</a></li><li class="info-bar__item info-bar__item--utility" style="display:none !important;"><a class="info-bar__item__text" target='_blank' rel="nofollow" href='https://matheasy.substack.com/'>Subscribe</a></li>
+                                    <li class="info-bar__item info-bar__item--mes"><a class="info-bar__item__text" href="/" style="font-weight:bold;">MES.fm</a></li></ul>
+                        </div>
+                                                        <!-- (Responsive) Horizontal -->
+                                                        <div class="outer-page-content">
+                            <div class="page-content" role="main">                                    <div class="color-box"></div>
+                                    <h1 class="page-title">Compound Interest Explained: The Formula and Its Derivation</h1>                                        <p class="page-description">Compound interest explained step by step: simple vs compound interest, deriving A = P(1 + r/n)^(nt), continuous compounding and e, APY, the future value of regular deposits, solving for time with logarithms, the rule of 72, real returns after inflation, worked examples and practice questions.</p>                                    	<div id="main-content" data-tool data-text-scale>
+	<div class="tu ce" id="ce">
+		<div class="tu-card tu-card--tint ce-intro">
+			<p style="margin:0">Compound interest means you earn interest on your interest. This page builds the formula <span class="mes-tex">\(A = P\left(1+\frac{r}{n}\right)^{nt}\)</span> from a single period, then follows it to continuous compounding and the number <span class="mes-tex">\(e\)</span>, the yearly rate (APY), regular deposits, how long a goal takes, the rule of 72 and inflation. There are worked examples and practice questions at the end. To run your own numbers, use the <a href="/compound-interest-calculator">Compound Interest Calculator</a>.</p>
+		</div>
+		<div class="ce-body">
+
+<h2 id="symbols">The letters used on this page</h2>
+<ul class="ce-list">
+<li><span class="mes-tex">\(P\)</span>: the <b>principal</b>, the amount you start with.</li>
+<li><span class="mes-tex">\(r\)</span>: the <b>yearly interest rate as a decimal</b> (5% is 0.05).</li>
+<li><span class="mes-tex">\(n\)</span>: how many times a year interest is <b>compounded</b> (added to the balance): 1 yearly, 4 quarterly, 12 monthly, 365 daily.</li>
+<li><span class="mes-tex">\(t\)</span>: the time in <b>years</b>.</li>
+<li><span class="mes-tex">\(A\)</span>: the <b>amount</b> at the end, principal plus interest.</li>
+</ul>
+
+<h2 id="simple">Simple interest vs compound interest</h2>
+<p>With <b>simple interest</b> you are paid interest only on the money you first put in. Every year adds the same amount, <span class="mes-tex">\(Pr\)</span>, so after <span class="mes-tex">\(t\)</span> years</p>
+<div class="ce-eq"><span class="mes-tex">\(\displaystyle A_{\text{simple}} = P + Prt = P(1 + rt)\)</span></div>
+<p>The balance grows in a straight line. With <b>compound interest</b> each year's interest is added to the balance, and next year's interest is worked out on that bigger balance. The amount added keeps growing, so the balance curves upward.</p>
+<p>Take <span class="mes-tex">\(P = 1000\)</span> at 5% a year. Simple interest pays 50 every year. Compound interest pays 50 in year 1, 52.50 in year 2 (5% of 1,050) and 55.13 in year 3 (5% of 1,102.50). Step through it yourself:</p>
+
+<div class="ce-widget" id="ce-step">
+	<div class="ce-wrow">
+		<label>Start <input type="text" inputmode="decimal" id="ce-st-p" value="1000" class="tu-input ce-in"></label>
+		<label>Rate % a year <input type="text" inputmode="decimal" id="ce-st-r" value="5" class="tu-input ce-in"></label>
+		<label>Compounded <select id="ce-st-n" class="tu-select ce-in"><option value="1" selected>Yearly</option><option value="4">Quarterly</option><option value="12">Monthly</option></select></label>
+	</div>
+	<div class="ce-btns"><button type="button" class="tu-btn tu-btn--primary" id="ce-st-next">Next period</button><button type="button" class="tu-btn tu-btn--ghost" id="ce-st-10">+10 periods</button><button type="button" class="tu-btn tu-btn--ghost" id="ce-st-reset">Start again</button></div>
+	<div class="ce-stepbars" id="ce-st-bars" aria-hidden="true"></div>
+	<div class="tu-table-wrap"><table class="tu-table ce-tbl" id="ce-st-table" aria-live="polite"></table></div>
+	<p class="ce-note" id="ce-st-sum"></p>
+</div>
+
+<h2 id="derivation">Deriving the compound interest formula</h2>
+<p><b>Step 1: one period.</b> Interest is paid <span class="mes-tex">\(n\)</span> times a year, so each time you are paid the yearly rate divided by <span class="mes-tex">\(n\)</span>. A balance <span class="mes-tex">\(B\)</span> earns <span class="mes-tex">\(B\cdot\frac{r}{n}\)</span> and becomes</p>
+<div class="ce-eq"><span class="mes-tex">\(\displaystyle B + B\,\frac{r}{n} = B\left(1+\frac{r}{n}\right)\)</span></div>
+<p>So one period <b>multiplies</b> the balance by the same number, the growth factor <span class="mes-tex">\(1 + \frac{r}{n}\)</span>. That is the whole idea: adding a percentage is the same as multiplying.</p>
+<p><b>Step 2: several periods.</b> Each period multiplies again by the same factor:</p>
+<div class="ce-eq"><span class="mes-tex">\(\displaystyle \begin{aligned} B_1 &= P\left(1+\tfrac{r}{n}\right) \\ B_2 &= B_1\left(1+\tfrac{r}{n}\right) = P\left(1+\tfrac{r}{n}\right)^{2} \\ B_3 &= P\left(1+\tfrac{r}{n}\right)^{3} \\ B_k &= P\left(1+\tfrac{r}{n}\right)^{k} \end{aligned}\)</span></div>
+<p><b>Step 3: count the periods.</b> In <span class="mes-tex">\(t\)</span> years there are <span class="mes-tex">\(k = nt\)</span> periods, which gives the compound interest formula:</p>
+<div class="ce-eq ce-eq--key"><span class="mes-tex">\(\displaystyle A = P\left(1+\frac{r}{n}\right)^{nt}\)</span></div>
+<p>The interest earned is <span class="mes-tex">\(A - P\)</span>. With <span class="mes-tex">\(n = 1\)</span> (yearly) it is simply <span class="mes-tex">\(A = P(1+r)^t\)</span>.</p>
+
+<h2 id="continuous">More often: continuous compounding and the number e</h2>
+<p>Compounding more often helps, but less and less. To see the limit, take a rate of 100% (<span class="mes-tex">\(r = 1\)</span>) for one year and let <span class="mes-tex">\(n\)</span> grow. The growth factor is <span class="mes-tex">\(\left(1+\frac{1}{n}\right)^{n}\)</span>:</p>
+
+<div class="ce-widget" id="ce-e">
+	<label class="ce-slab" for="ce-e-n">Compound <output id="ce-e-nv"></output> a year</label>
+	<input type="range" id="ce-e-n" min="0" max="60" step="1" value="12" class="ce-range">
+	<div class="ce-chips tu-chips" id="ce-e-chips"><button type="button" class="tu-chip" data-n="1">Yearly</button><button type="button" class="tu-chip" data-n="4">Quarterly</button><button type="button" class="tu-chip" data-n="12">Monthly</button><button type="button" class="tu-chip" data-n="365">Daily</button><button type="button" class="tu-chip" data-n="8760">Hourly</button><button type="button" class="tu-chip" data-n="31536000">Every second</button></div>
+	<div class="ce-big" id="ce-e-out" aria-live="polite"></div>
+	<svg class="ce-esvg" id="ce-e-svg" viewBox="0 0 600 170" role="img" aria-label="(1 + 1/n) to the power n against n, approaching e"></svg>
+</div>
+
+<p>The values climb toward 2.71828... and never pass it. That limit is the number <span class="mes-tex">\(e\)</span>:</p>
+<div class="ce-eq"><span class="mes-tex">\(\displaystyle e = \lim_{n\to\infty}\left(1+\frac{1}{n}\right)^{n} \approx 2.718281828\)</span></div>
+<p>For any rate <span class="mes-tex">\(r\)</span>, write <span class="mes-tex">\(m = \frac{n}{r}\)</span>, so <span class="mes-tex">\(\frac{r}{n} = \frac{1}{m}\)</span> and <span class="mes-tex">\(nt = m\,rt\)</span>:</p>
+<div class="ce-eq"><span class="mes-tex">\(\displaystyle \begin{aligned} P\left(1+\frac{r}{n}\right)^{nt} &= P\left[\left(1+\frac{1}{m}\right)^{m}\right]^{rt} \\ &\longrightarrow P\,e^{rt} \quad (n\to\infty) \end{aligned}\)</span></div>
+<p>since <span class="mes-tex">\(m\)</span> grows without limit when <span class="mes-tex">\(n\)</span> does. This is <b>continuous compounding</b>:</p>
+<div class="ce-eq ce-eq--key"><span class="mes-tex">\(\displaystyle A = P\,e^{rt}\)</span></div>
+<p>It is the most a given yearly rate can ever give. In practice daily compounding is already within a few cents of it: 5,000 at 4% for 10 years grows to 7,401.22 compounded yearly, 7,454.16 monthly and 7,459.12 continuously.</p>
+
+<h2 id="apy">The yearly rate you really get: APY (effective rate)</h2>
+<p>A rate of "5% compounded monthly" grows by more than 5% in a year. The real yearly growth, called the <b>APY</b> (annual percentage yield), the <b>effective annual rate</b> or AER, is what one year of the formula gives, minus the 1 you started with:</p>
+<div class="ce-eq"><span class="mes-tex">\(\displaystyle \text{APY} = \left(1+\frac{r}{n}\right)^{n} - 1\)</span></div>
+<div class="ce-eq"><span class="mes-tex">\(\displaystyle \text{APY}_{\text{continuous}} = e^{r} - 1\)</span></div>
+<p>5% compounded daily is an APY of 5.1267%; continuously 5.1271%. Comparing two savings accounts? Compare their APYs, not their headline rates. (A loan's APR is usually the plain <span class="mes-tex">\(r\)</span>, before compounding.)</p>
+
+<h2 id="deposits">Regular deposits: the future value of a series</h2>
+<p>Now add a deposit <span class="mes-tex">\(D\)</span> at the end of every period, with growth <span class="mes-tex">\(i\)</span> per period (<span class="mes-tex">\(i = \frac{r}{n}\)</span> when deposits and compounding match, e.g. both monthly) for <span class="mes-tex">\(N\)</span> periods. Follow each deposit to the end. The last one has no time to grow, the one before grows for one period, and the first one for <span class="mes-tex">\(N-1\)</span> periods:</p>
+<div class="ce-eq"><span class="mes-tex">\(\displaystyle \begin{aligned} S &= D + D(1+i) + D(1+i)^2 \\ &\quad + \dots + D(1+i)^{N-1} \end{aligned}\)</span></div>
+<p>This is a <b>geometric series</b>: each term is the one before times <span class="mes-tex">\(x = 1+i\)</span>. Multiply the whole sum by <span class="mes-tex">\(x\)</span> and subtract the original; everything in the middle cancels:</p>
+<div class="ce-eq"><span class="mes-tex">\(\displaystyle \begin{aligned} xS &= Dx + Dx^2 + \dots + Dx^{N} \\ xS - S &= Dx^{N} - D \\ S &= D\,\frac{x^{N}-1}{x-1} \end{aligned}\)</span></div>
+<p>With <span class="mes-tex">\(x - 1 = i\)</span> this is the <b>future value of an ordinary annuity</b>:</p>
+<div class="ce-eq ce-eq--key"><span class="mes-tex">\(\displaystyle S = D\,\frac{(1+i)^{N}-1}{i}\)</span></div>
+<p><b>Deposits at the start of each period</b> (an "annuity due") have one more period to grow, so every term, and the total, is multiplied by <span class="mes-tex">\((1+i)\)</span>:</p>
+<div class="ce-eq"><span class="mes-tex">\(\displaystyle S_{\text{start}} = D\,\frac{(1+i)^{N}-1}{i}\,(1+i)\)</span></div>
+<p>The starting amount grows on its own as before, so the balance with both is the sum of the two parts:</p>
+<div class="ce-eq"><span class="mes-tex">\(\displaystyle \begin{aligned} A &= P(1+i)^{N} \\ &\quad + D\,\frac{(1+i)^{N}-1}{i} \end{aligned}\)</span></div>
+<p>(If <span class="mes-tex">\(i = 0\)</span> the fraction is undefined, but the answer is just <span class="mes-tex">\(DN\)</span>: no interest, only deposits.)</p>
+
+<h2 id="time">How long does it take? Solving for t with logarithms</h2>
+<p>To find when <span class="mes-tex">\(P\)</span> grows to a goal <span class="mes-tex">\(A\)</span>, divide by <span class="mes-tex">\(P\)</span> and take the natural log of both sides; the log brings the exponent down:</p>
+<div class="ce-eq"><span class="mes-tex">\(\displaystyle \begin{aligned} \frac{A}{P} &= \left(1+\frac{r}{n}\right)^{nt} \\ \ln\frac{A}{P} &= nt\,\ln\!\left(1+\frac{r}{n}\right) \\ t &= \frac{\ln(A/P)}{n\,\ln(1+r/n)} \end{aligned}\)</span></div>
+<p>With continuous compounding it is simpler: <span class="mes-tex">\(t = \frac{\ln(A/P)}{r}\)</span>. Any log base works, as long as you use the same one on top and bottom.</p>
+
+<h2 id="rule72">The rule of 72, and why it works</h2>
+<p>For doubling, <span class="mes-tex">\(A/P = 2\)</span>. With yearly compounding</p>
+<div class="ce-eq"><span class="mes-tex">\(\displaystyle t_2 = \frac{\ln 2}{\ln(1+r)}\)</span></div>
+<p>For small <span class="mes-tex">\(r\)</span>, <span class="mes-tex">\(\ln(1+r) \approx r\)</span>, and <span class="mes-tex">\(\ln 2 \approx 0.693\)</span>. Writing the rate in percent, <span class="mes-tex">\(R = 100r\)</span>:</p>
+<div class="ce-eq"><span class="mes-tex">\(\displaystyle t_2 \approx \frac{0.693}{r} = \frac{69.3}{R}\)</span></div>
+<p>That "rule of 69.3" is exact for continuous compounding. For yearly compounding, <span class="mes-tex">\(\ln(1+r)\)</span> is a bit <em>smaller</em> than <span class="mes-tex">\(r\)</span> (<span class="mes-tex">\(\ln(1+r) \approx r - \frac{r^2}{2}\)</span>), so the true time is a bit longer. Pushing the top number up to 72 makes up for it near 8%, and 72 is easy to divide by 2, 3, 4, 6, 8, 9 and 12. Another fix keeps 69.3 and adds 0.35 years:</p>
+<div class="ce-eq"><span class="mes-tex">\(\displaystyle t_2 \approx \frac{72}{R} \quad\text{or}\quad t_2 \approx \frac{69.3}{R} + 0.35\)</span></div>
+
+<div class="ce-widget" id="ce-72">
+	<label class="ce-slab" for="ce-72-r">Rate <output id="ce-72-rv"></output> a year, compounded yearly</label>
+	<input type="range" id="ce-72-r" min="1" max="30" step="0.5" value="8" class="ce-range">
+	<div class="tu-table-wrap"><table class="tu-table ce-tbl" id="ce-72-table" aria-live="polite"></table></div>
+</div>
+
+<h2 id="inflation">After inflation: the real rate</h2>
+<p>If prices rise by <span class="mes-tex">\(f\)</span> a year, a balance that grows by <span class="mes-tex">\(r\)</span> buys only <span class="mes-tex">\(\frac{1+r}{1+f}\)</span> times as much each year. The <b>real rate</b> is</p>
+<div class="ce-eq"><span class="mes-tex">\(\displaystyle r_{\text{real}} = \frac{1+r}{1+f} - 1 \approx r - f\)</span></div>
+<p>6% interest with 3% inflation is a real rate of 2.91% (the quick <span class="mes-tex">\(r - f\)</span> says 3%). To see a future balance in today's money, divide it by <span class="mes-tex">\((1+f)^t\)</span>.</p>
+
+<h2 id="examples">Worked examples</h2>
+<p><b>1. A single deposit.</b> 5,000 at 4% compounded monthly for 10 years:</p>
+<div class="ce-eq"><span class="mes-tex">\(\displaystyle \begin{aligned} A &= 5000\left(1+\frac{0.04}{12}\right)^{120} \\ &= 5000 \times 1.490833 \\ &\approx 7454.16 \end{aligned}\)</span></div>
+<p>Interest: 2,454.16. Simple interest would have paid 2,000. <a href="/compound-interest-calculator?s=5000&amp;d=0&amp;f=none&amp;w=e&amp;r=4&amp;c=monthly&amp;y=10&amp;m=0">Try it in the calculator</a>.</p>
+<p><b>2. Saving every month.</b> 200 at the end of every month for 30 years at 6% compounded monthly, so <span class="mes-tex">\(i = 0.005\)</span> and <span class="mes-tex">\(N = 360\)</span>:</p>
+<div class="ce-eq"><span class="mes-tex">\(\displaystyle S = 200\cdot\frac{1.005^{360}-1}{0.005} \approx 200{,}903.01\)</span></div>
+<p>You put in 72,000; the other 128,903 is interest. Paying at the start of each month instead multiplies that by 1.005, giving about 201,907.52. <a href="/compound-interest-calculator?s=0&amp;d=200&amp;f=monthly&amp;w=e&amp;r=6&amp;c=monthly&amp;y=30&amp;m=0">Try it in the calculator</a>.</p>
+<p><b>3. How long?</b> 10,000 to 25,000 at 7% compounded yearly:</p>
+<div class="ce-eq"><span class="mes-tex">\(\displaystyle t = \frac{\ln 2.5}{\ln 1.07} = \frac{0.91629}{0.06766} \approx 13.54 \text{ years}\)</span></div>
+<p><b>4. APY.</b> 5% compounded daily:</p>
+<div class="ce-eq"><span class="mes-tex">\(\displaystyle \left(1+\frac{0.05}{365}\right)^{365} - 1 \approx 0.051267\)</span></div>
+<p>an APY of 5.13%.</p>
+
+<h2 id="practice">Practice questions</h2>
+<p>Try each one, then open it to check your answer.</p>
+<details class="ce-q"><summary>1. 1,000 at 8% compounded quarterly for 5 years. What is the balance?</summary><p><span class="mes-tex">\(i = 0.08/4 = 0.02\)</span> and <span class="mes-tex">\(N = 20\)</span>, so</p><div class="ce-eq"><span class="mes-tex">\(\displaystyle A = 1000 \times 1.02^{20} \approx 1485.95\)</span></div></details>
+<details class="ce-q"><summary>2. What is the APY of 12% compounded monthly?</summary><p><span class="mes-tex">\(i = 0.01\)</span>: <span class="mes-tex">\(1.01^{12} - 1 \approx 0.1268\)</span>, so 12.68%.</p></details>
+<details class="ce-q"><summary>3. At 9% a year (compounded yearly), about how long does money take to double? How close is the rule of 72?</summary><p>Rule of 72: <span class="mes-tex">\(72/9 = 8\)</span> years. Exact: <span class="mes-tex">\(\ln 2 / \ln 1.09 \approx 8.04\)</span> years, so the rule is about two weeks short.</p></details>
+<details class="ce-q"><summary>4. You save 100 a month for 20 years at 5% compounded monthly. How much more do you have if you pay at the start of each month instead of the end?</summary><p>End of each month:</p><div class="ce-eq"><span class="mes-tex">\(\displaystyle 100\cdot\frac{(1+0.05/12)^{240}-1}{0.05/12} \approx 41{,}103.37\)</span></div><p>Start of each month: multiply by <span class="mes-tex">\(1 + 0.05/12\)</span> to get about 41,274.63, which is 171.26 more.</p></details>
+<details class="ce-q"><summary>5. What yearly rate (compounded yearly) doubles money in exactly 8 years?</summary><p><span class="mes-tex">\((1+r)^8 = 2\)</span>, so <span class="mes-tex">\(r = 2^{1/8} - 1 \approx 0.0905\)</span>: 9.05%. The rule of 72 says 9%.</p></details>
+<details class="ce-q"><summary>6. 2,000 at 3% compounded continuously for 15 years?</summary><div class="ce-eq"><span class="mes-tex">\(\displaystyle \begin{aligned} A &= 2000\,e^{0.03 \times 15} \\ &= 2000\,e^{0.45} \approx 3136.62 \end{aligned}\)</span></div></details>
+
+<h2 id="next">Try it yourself</h2>
+<p>The <a href="/compound-interest-calculator">Compound Interest Calculator</a> uses exactly these formulas, with deposits weekly to yearly, raises, tax, inflation, a year-by-year table and a growth chart with sliders. Its Goal tab solves for the deposit, the time or the rate, and the Rule of 72 tab compares the shortcut with the exact doubling time.</p>
+		</div>
+	</div>
+	<script src="/main_js/mes-math.js" defer></script>
+	</div>                                    <!-- PC (Responsive/Rectangle) Matched Content -->
+                                                                        <div id="comments-button" class="hide-div-button button">Comments</div>
+                                    <div id="comments-box" class="hide">
+                                        <div id="fastcomments-widget"></div>                                    </div>
+<!-- MES-BOTTOM-AD -->
+<div class="mes-bottom-ad" data-ad-slot="1532113018" data-ad-mode="rect" style="clear:both;text-align:center;margin:1.5em auto 1.75em;min-height:330px;"><span style="display:block;font-size:11px;line-height:16px;color:#595959;margin-bottom:4px;">Advertisement</span><div class="mes-bottom-ad__slot" style="width:100%;min-height:310px;margin:0 auto;"></div></div>
+<!-- /MES-BOTTOM-AD -->
+                            </div>
+                        <!-- MES-ASIDE -->
+<aside id="mes-aside" class="mes-aside" data-aside-family="tools" aria-label="More from MES Tools"><div class="mes-aside__sticky"><div class="mes-aside__ad" data-ad-slot="8429975111"></div><div class="mes-aside__head"><h2 class="mes-aside__title-h">More like this</h2><button type="button" class="mes-aside__flip" aria-label="Move this sidebar to the other side" title="Move sidebar to the other side">&#8644;</button></div><ul class="mes-aside__list"><li><a class="mes-aside__card" href="/loan-calculator"><img class="mes-aside__img mes-aside__img--logo" src="/loan-calculator/img/logo.png" width="56" height="56" loading="lazy" alt=""><span class="mes-aside__text"><span class="mes-aside__name">Loan Calculator: Monthly Payment, Interest and Payoff Schedule</span><span class="mes-aside__tag">Calculator</span></span></a></li><li><a class="mes-aside__card" href="/read-aloud"><img class="mes-aside__img mes-aside__img--logo" src="/read-aloud/img/logo.png" width="56" height="56" loading="lazy" alt=""><span class="mes-aside__text"><span class="mes-aside__name">Read Aloud</span><span class="mes-aside__tag">Tool</span></span></a></li><li><a class="mes-aside__card" href="/tools"><img class="mes-aside__img" src="/img/tools-icon.jpg" width="56" height="56" loading="lazy" alt=""><span class="mes-aside__text"><span class="mes-aside__name">All MES Tools</span><span class="mes-aside__tag">Gallery</span></span></a></li><li><a class="mes-aside__card" href="/percentagecalculator"><img class="mes-aside__img mes-aside__img--logo" src="/percentagecalculator/img/logo.png" width="56" height="56" loading="lazy" alt=""><span class="mes-aside__text"><span class="mes-aside__name">Percentage Calculator</span><span class="mes-aside__tag">Calculator</span></span></a></li></ul></div></aside>
+<!-- /MES-ASIDE -->
+</div>
+
+                        <!-- side bar -->                            <div class="side-bar">                                    <div class="navbar-container shadow" role="navigation" aria-label="Site menu">
+                                        <div class="button button--navbar" id="navbar-button" style="position:relative;">Site Navigation<span class="dropdown-symbol dropdown-symbol--dark" style="position:absolute;right:0.75em;top:50%;transform:translateY(-50%);margin-left:0;">&#9660;</span></div>    <ul id="navbar" class="navbar">
+    <li class="navbar__item navbar__item--social"><div class="social-container social-container--navbar"><ul class="social">	<li class="social__logo social__hive"><a class="social__link" href="https://peakd.com/@mes" target="_blank"></a></li>
+    <li class="social__logo social__telegram"><a class="social__link" href="https://t.me/meslinks" target="_blank"></a></li></ul><a class="info-bar__logo-container" href="https://mes.fm/" title="Math Easy Solutions"><img id="mes-logo" class="info-bar__logo lazyload" alt="math easy solutions logo" height="29" width="126" data-src="https://mes.fm/main_img/mes-logo-small.png"></a></div></li>
+        <li class="navbar__item"><a class="navbar__link navbar__link--first" href="/compound-interest-calculator">Home</a></li><li class="navbar__item"><a class="navbar__link" href="/compound-interest-explained">Compound Interest Explained</a></li><li class="navbar__item"><a class="navbar__link" href="/loan-calculator">Loan Calculator</a></li><li class="navbar__item"><a class="navbar__link" href="/mortgagecalculator">Mortgage Calculator</a></li>    <li class="navbar__item"><a class="navbar__link" href="/calculators">Calculators</a></li>
+    <li class="navbar__item"><a class="navbar__link" href="/tools">Tools</a></li>
+    <li class="navbar__item"><a class="navbar__link" href="/browser">Browser Extensions</a></li>
+    <!-- MOBILE-APPS-DROPDOWN-REMOVED: every linked app was a dead App Store / Play Store listing (lapsed developer account) -- add an entry back here for each app once it is relaunched -->
+    <li class="navbar__item"><a target="_blank" class="navbar__link" target='_blank' href="https://teespring.com/stores/mes-store">Store</a></li><li class="navbar__item"><a class="navbar__link" target="_blank" rel="nofollow" href="https://matheasy.substack.com/">Subscribe</a></li></ul>
+                                    </div>                                        <!-- (Responsive) Vertical -->
+
+                            </div>                            <!-- (Responsive) Horizontal -->
+                                            </div><div id="footer" class="footer" role="contentinfo">
+            <div class="footer__item-container">
+            <div class="footer__item">
+                <a class="footer__text footer__text--title" href="https://mes.fm/calculators.html">Calculators</a>
+            </div>
+
+            <div class="footer__item">
+                <a class="footer__text footer__text--title" href="https://mes.fm/tools">Tools</a>
+            </div>
+
+            <div class="footer__item footer__item--extra-padding">
+                <a class="footer__text footer__text--title" href="https://mes.fm/mobile-apps">Mobile Apps</a>
+            </div>
+
+            <div class="footer__item">
+                <a class="footer__text footer__text--title" href="https://mes.fm">MES.fm</a>
+            </div>
+        </div>
+        <a class="footer__text" href="/contact">Contact Us</a><span class="footer__separator"> | </span>
+        <a class="footer__text" href="/privacy-policy">Privacy Policy</a><span class="footer__separator"> | </span>
+        <a class="footer__text" target='_blank' href="https://mes.fm/donate.html">Donate</a><span class="footer__separator"> | </span><a class="footer__text" target='_blank' rel="nofollow" href="https://matheasy.substack.com/">Subscribe</a>
+        <div class="footer__text--extra-info"><span class="footer__text footer__text--copyright">Copyright &copy; <span id="copyright-year">2013</span>&nbsp;Math Easy Solutions</span></div>
+    </div>
+
+
+        </div>
+
+        <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.11.3/jquery.min.js"></script>
+        <script>
+        var MES_Vars = {
+            mobile:false,
+            hide_search:false,
+            current_tab:1
+        }        </script><!-- FASTCOMMENTS-LAZY: widget init moved to main_js/main.js -- it pulls embed.min.js only when #fastcomments-widget nears the viewport or on the first Comments-toggle click, so it no longer blocks first render -->                <script src="https://mes.fm/main_js/lazysizes.min.js?v=1.0.3" async></script>
+	<script src="/compound-interest-explained/js/compound-interest-explained.js?v=1" defer></script>
+            <script src="https://mes.fm/main_js/main.js?v=1.0.5"></script>    <!-- PAGEVIEW-TRACKING-INSERTED --><script src="https://mes.fm/main_js/track.js" defer></script><script>document.getElementById('copyright-year').textContent = new Date().getFullYear();</script><script src="/main_js/info-bar-fit.js" defer></script><script>
+  // Floating compact header bar (see #compact-nav CSS): appears once the
+  // header + nav bar have scrolled off the top; nav links that don't fit
+  // are dropped from the right, least important first, rather than
+  // wrapping. The last link is kept longest, so drop from the one before
+  // it first. Visibility is driven from here via the inline style
+  // attribute (not just a CSS class) so the bar stays hidden even if the
+  // stylesheet rules for it get stripped -- see the CSS comment above
+  // #compact-nav. Identical across every page that has this bar.
+  (function () {
+    var bar = document.getElementById('compact-nav');
+    var nav = document.querySelector('.info-bar-container');
+    var links = bar && bar.querySelector('.compact-nav-links');
+    if (!bar || !nav || !links) return;
+    var items = Array.prototype.slice.call(links.children);
+    var stuck = false, ticking = false, hideTimer;
+
+    function fit() {
+      items.forEach(function (li) { li.style.display = ''; });
+      var order = items.slice(0, -1).reverse();
+      for (var i = 0; i < order.length && links.scrollWidth > links.clientWidth; i++) {
+        order[i].style.display = 'none';
+      }
+      if (links.scrollWidth > links.clientWidth) items[items.length - 1].style.display = 'none';
+    }
+
+    function update() {
+      ticking = false;
+      var now = nav.getBoundingClientRect().bottom < 0;
+      if (now === stuck) return;
+      stuck = now;
+      bar.setAttribute('aria-hidden', stuck ? 'false' : 'true');
+      Array.prototype.forEach.call(bar.querySelectorAll('a'), function (a) {
+        a.tabIndex = stuck ? 0 : -1;
+      });
+      if (stuck) {
+        clearTimeout(hideTimer);
+        bar.style.display = 'flex';
+        fit();
+        requestAnimationFrame(function () {
+          requestAnimationFrame(function () { document.body.classList.add('is-stuck'); });
+        });
+      } else {
+        document.body.classList.remove('is-stuck');
+        hideTimer = setTimeout(function () { bar.style.display = 'none'; }, 220);
+      }
+    }
+
+    window.addEventListener('scroll', function () {
+      if (!ticking) { ticking = true; requestAnimationFrame(update); }
+    }, { passive: true });
+    window.addEventListener('resize', function () { if (stuck) fit(); });
+    update();
+  })();
+</script><script src="/main_js/display-controls.js?v=1.7" defer></script><!-- MES-ASIDE-JS --><script src="/main_js/aside.js?v=2" defer></script><!-- /MES-ASIDE-JS --><!-- MES-BOTTOM-AD-JS --><script src="/main_js/bottom-ad.js?v=1" defer></script><!-- /MES-BOTTOM-AD-JS --></body>
+
+</html>

@@ -1,6 +1,7 @@
 // Build-time generator for mes.fm/ama: every article of Amaterasu Solar (https://peakd.com/@amaterasusolar) as a searchable Grid / List page with topic chips and a
 // sort select (the same widget as mes.fm/math-youtube and mes.fm/livestreams). Cloned from experiments/build.mjs; ONE page (mes.fm/ama/index.html), no tiles.
-// Content: sections.mjs (ARTICLES, newest first, fetched from the Hive API). Cards open the article on PeakD. AdSense is kept like the other hubs.
+// Content: sections.mjs (ARTICLES, newest first, fetched from the Hive API by `npm run update` = update-articles.mjs), topped up at runtime by
+// main_js/list-topup.js with anything posted since (see TOPUP_HTML). Cards open the article on PeakD. AdSense is kept like the other hubs.
 // Never hand-edit the generated index.html.
 //
 // Usage:
@@ -11,6 +12,7 @@ import { execFileSync } from "node:child_process";
 import { fileURLToPath } from "node:url";
 import { dirname, join } from "node:path";
 import { ARTICLES } from "./sections.mjs";
+import { catSpec, checkCats, topupScripts } from "../shared/list-topup.mjs";
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 
@@ -73,6 +75,15 @@ const articleItems = ARTICLES.map((a, i) => ({
   sortKeys: { i, v: a.words, d: a.words },
 }));
 withCats(articleItems, CATEGORIES);
+// Runtime top-up (main_js/list-topup.js): after load the page asks the Hive API for the newest posts of @amaterasusolar and puts any article newer than
+// this snapshot at the top (same markup, chips from CATEGORIES, a "New" badge, a "Check for new articles" button). checkCats() fails the build if the
+// browser would classify an article differently from withCats() above. The snapshot itself: `npm run update` (update-articles.mjs).
+const TOPUP_CATS = catSpec(CATEGORIES);
+checkCats(articleItems, TOPUP_CATS);
+const TOPUP_HTML = topupScripts({
+  section: "ama", source: "hive", author: "amaterasusolar", noun: "article", nouns: "articles", count: ARTICLES.length,
+  known: ARTICLES.slice(0, 40).map((a) => a.permlink), cats: TOPUP_CATS,
+});
 const SECTIONS = [
   {
     id: "ama",
@@ -2282,6 +2293,7 @@ var MES_Vars = {
 <script src="/main_js/main.js?v=1.0.3"></script>
 <script>document.getElementById('copyright-year').textContent = new Date().getFullYear();</script>
 <!-- PAGEVIEW-TRACKING-INSERTED --><script src="/main_js/track.js" defer></script><script src="/main_js/info-bar-fit.js" defer></script>
+${TOPUP_HTML}
 <script src="/main_js/site-search.js?v=1" defer></script><!-- HUB-THEATRE-JS --><script src="/main_js/hub-theatre.js?v=1" defer></script><!-- /HUB-THEATRE-JS --></body>
 </html>
 `;

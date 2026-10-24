@@ -214,6 +214,50 @@ t("pickVoice prefers the text language, then quality, then the browser language"
 	assert.ok(L.voiceScore({ name: "Bad News", lang: "en-US" }, "en") < L.voiceScore({ name: "Alex", lang: "en-US" }, "en"));
 });
 
+t("pickVoice skips voices that did not work, voiceLangRank groups by language", function () {
+	var v = [
+		{ name: "Bodo India", voiceURI: "brx-in-x", lang: "brx-IN", localService: true },
+		{ name: "English India", voiceURI: "en-in-x", lang: "en-IN", localService: true },
+		{ name: "English US", voiceURI: "en-us-x", lang: "en-US", localService: true }
+	];
+	assert.strictEqual(L.voiceKey(v[0]), "brx-in-x|brx-IN");
+	assert.strictEqual(L.voiceKey(null), "");
+	var avoid = {}; avoid[L.voiceKey(v[1])] = { t: 1 };
+	assert.strictEqual(L.pickVoice(v, "en", "en-IN").name, "English India");
+	assert.strictEqual(L.pickVoice(v, "en", "en-IN", avoid).name, "English US");
+	var all = {}; v.forEach(function (x) { all[L.voiceKey(x)] = 1; });
+	assert.strictEqual(L.pickVoice(v, "en", "en-IN", all), null);
+	assert.strictEqual(L.voiceLangRank("en-US", "en", "fr-FR"), 0);
+	assert.strictEqual(L.voiceLangRank("fr_FR", "en", "fr-FR"), 1);
+	assert.strictEqual(L.voiceLangRank("brx-IN", "en", "en-IN"), 2);
+	assert.strictEqual(L.voiceLangRank("en-IN", "", "en-US"), 0);          // no text language yet: the browser's comes first
+	assert.strictEqual(L.voiceLangRank("brx-IN", "", "en-US"), 2);
+});
+
+t("speechFailure spots voices that end in silence, never start or error", function () {
+	assert.strictEqual(L.speechFailure({ started: true, ms: 40, expectMs: 4000, words: 12 }), "silent");     // Bodo India reading English
+	assert.strictEqual(L.speechFailure({ started: true, ms: 3600, expectMs: 4000, words: 12 }), "");
+	assert.strictEqual(L.speechFailure({ started: true, ms: 1200, expectMs: 4000, words: 12 }), "");         // a fast voice is fine
+	assert.strictEqual(L.speechFailure({ started: true, ms: 40, expectMs: 4000, words: 12, boundary: true }), "");
+	assert.strictEqual(L.speechFailure({ started: true, ms: 50, expectMs: 500, words: 2 }), "");             // too short to judge
+	assert.strictEqual(L.speechFailure({ started: false, ms: 0, words: 12 }), "nostart");
+	assert.strictEqual(L.speechFailure({ error: "language-unavailable", started: true }), "error");
+	assert.strictEqual(L.speechFailure({ error: "synthesis-failed", started: false }), "error");
+	assert.strictEqual(L.speechFailure({ error: "network", started: false }), "error");
+	assert.strictEqual(L.speechFailure({ error: "network", started: true }), "");
+	assert.strictEqual(L.speechFailure({ error: "interrupted", started: false }), "");
+	assert.strictEqual(L.speechFailure({ error: "not-allowed", started: false }), "");
+});
+
+t("pruneBadVoices keeps recent entries only and drops junk", function () {
+	var now = 100 * 864e5;
+	var m = L.pruneBadVoices({ a: { t: now - 864e5, lang: "en" }, old: { t: now - 40 * 864e5 }, junk: "x", future: { t: now + 864e5 } }, now);
+	assert.deepStrictEqual(Object.keys(m), ["a"]);
+	assert.strictEqual(m.a.lang, "en");
+	assert.deepStrictEqual(L.pruneBadVoices(null, now), {});
+	assert.deepStrictEqual(L.pruneBadVoices("[1]", now), {});
+});
+
 t("params round-trip and reject junk", function () {
 	var q = L.buildParams({ wpm: 450, chunk: 2, mode: "both" });
 	assert.deepStrictEqual(L.parseParams("?" + q), { wpm: 450, chunk: 2, mode: "both" });

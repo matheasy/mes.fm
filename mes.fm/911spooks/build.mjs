@@ -109,6 +109,15 @@ const PAGES = [
       "MES videos on 9/11 spooks: Richard Gage on whether the Earth is round or flat, and highlights from the letter Ashton Forbes totally didn't write to himself.",
   },
   {
+    // Tile only: links to the mirror of MES Livestream 112 (9/11 Spooks Database, hand-made page, not generated here).
+    // Icon = img/livestream-112-911-spooks-icon.jpg, a 900x600 crop of the stream thumbnail; bump iconVersion if replaced.
+    slug: "livestream-112-911-spooks",
+    href: "/livestream-112-911-spooks",
+    iconVersion: 1,
+    tileOnly: true,
+    tileLabel: "Livestream 112: 9/11 Spooks Database",
+  },
+  {
     // Tile only: links to the Bob Greenyer hub (mes.fm/bg). Moved here from mes.fm/911. Icon = img/bg-icon.jpg, a 900x600 crop of
     // img/bg-logo-big.jpg.
     slug: "bg",

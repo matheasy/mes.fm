@@ -1,0 +1,76 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<rss version="2.0" xmlns:content="http://purl.org/rss/1.0/modules/content/" xmlns:media="http://search.yahoo.com/mrss/" xmlns:dc="http://purl.org/dc/elements/1.1/" xmlns:wfw="http://wellformedweb.org/CommentAPI/" xmlns:atom="http://www.w3.org/2005/Atom" xmlns:sy="http://purl.org/rss/1.0/modules/syndication/" xmlns:slash="http://purl.org/rss/1.0/modules/slash/">
+  <channel>
+    <title>Cointelegraph.com News</title>
+    <link>https://cointelegraph.com</link>
+    <atom:link href="https://cointelegraph.com/rss" rel="self" type="application/rss+xml"/>
+    <description>Cointelegraph covers fintech, blockchain and Bitcoin bringing you the latest crypto news and analyses on the future of money.</description>
+    <generator>cointelegraph.com</generator>
+    <lastBuildDate>Sat, 24 Oct 2026 18:01:46 +0000</lastBuildDate>
+    <language>en</language>
+    <sy:updatePeriod>hourly</sy:updatePeriod>
+    <sy:updateFrequency>1</sy:updateFrequency>
+    <image>
+      <title>Cointelegraph.com News</title>
+      <link>https://cointelegraph.com</link>
+      <url>https://s3.cointelegraph.com/storage/uploads/view/b9ea15d46738b4df64e6e100ab59b373.png</url>
+      <description>Cointelegraph covers fintech, blockchain and Bitcoin bringing you the latest crypto news and analyses on the future of money.</description>
+    </image>
+    <item>
+      <title>Wells Fargo and five others object to OKX-ICE tokenized stock listings: Report</title>
+      <pubDate>Fri, 23 Oct 2026 21:32:16 +0000</pubDate>
+      <atom:updated>Fri, 23 Oct 2026 21:36:04 +0000</atom:updated>
+      <guid isPermaLink="true">https://cointelegraph.com/news/nasdaq-companies-object-tokenized-stock-listings-okx-ice</guid>
+      <link><![CDATA[https://cointelegraph.com/news/nasdaq-companies-object-tokenized-stock-listings-okx-ice?utm_source=rss_feed&utm_medium=rss&utm_campaign=rss_partner_inbound]]></link>
+      <description><![CDATA[<p style="float:right; margin:0 0 10px 15px; width:240px;"><img src="https://s3-images.ctmedia.io/media/article-covers/2026/10/01M5N19TPWN37A162FFHMQDBR2/hi-cover-imagereview-of-us-stocks.jpg" alt="Wells Fargo and five others object to OKX-ICE tokenized stock listings: Report" class="type:primaryImage"></p><p>As of Friday, 22 companies had filed objections as part of the joint venture’s proposed tokenized stock platform under the SEC’s innovation exemption.</p>]]></description>
+      <dc:creator>Cointelegraph by Turner Wright</dc:creator>
+      <media:content url="https://s3-images.ctmedia.io/media/article-covers/2026/10/01M5N19TPWN37A162FFHMQDBR2/hi-cover-imagereview-of-us-stocks.jpg" fileSize="747934" type="image/jpeg" medium="image" height="966" width="1450">
+        <credit>Cointelegraph</credit>
+        <media:credit role="publishing company">Cointelegraph</media:credit>
+      </media:content>
+      <enclosure url="https://s3-images.ctmedia.io/media/article-covers/2026/10/01M5N19TPWN37A162FFHMQDBR2/hi-cover-imagereview-of-us-stocks.jpg" length="747934" type="image/jpeg"/>
+      <category>Latest News</category>
+    </item><item>
+      <title>IRS plans lower tax disclosure penalties, including for crypto: Forbes</title>
+      <pubDate>Fri, 23 Oct 2026 20:54:17 +0000</pubDate>
+      <atom:updated>Fri, 23 Oct 2026 20:57:16 +0000</atom:updated>
+      <guid isPermaLink="true">https://cointelegraph.com/news/irs-plans-lower-penalties-for-crypto-tax-disclosures-forbes-reports</guid>
+      <link><![CDATA[https://cointelegraph.com/news/irs-plans-lower-penalties-for-crypto-tax-disclosures-forbes-reports?utm_source=rss_feed&utm_medium=rss&utm_campaign=rss_partner_inbound]]></link>
+      <description><![CDATA[<p style="float:right; margin:0 0 10px 15px; width:240px;"><img src="https://s3-images.ctmedia.io/media/article-covers/2026/10/01M5N6SNMRK1BS8PGZSR5F8GRG/hi-taxes-on-crypto-kraken.png" alt="IRS plans lower tax disclosure penalties, including for crypto: Forbes" class="type:primaryImage"></p><p>The US tax agency is targeting faster resolutions and more flexible payment options for taxpayers voluntarily disclosing past tax violations under a planned program overhaul.</p>]]></description>
+      <dc:creator>Cointelegraph by Nate Kostar</dc:creator>
+      <media:content url="https://s3-images.ctmedia.io/media/article-covers/2026/10/01M5N6SNMRK1BS8PGZSR5F8GRG/hi-taxes-on-crypto-kraken.png" fileSize="1872256" type="image/png" medium="image" height="848" width="1264">
+        <credit>Cointelegraph</credit>
+        <media:credit role="publishing company">Cointelegraph</media:credit>
+      </media:content>
+      <enclosure url="https://s3-images.ctmedia.io/media/article-covers/2026/10/01M5N6SNMRK1BS8PGZSR5F8GRG/hi-taxes-on-crypto-kraken.png" length="1872256" type="image/png"/>
+      <category>Latest News</category>
+    </item><item>
+      <title>Initia halts blockchain after exploit reportedly drains over $2.6M</title>
+      <pubDate>Fri, 23 Oct 2026 18:39:02 +0000</pubDate>
+      <atom:updated>Fri, 23 Oct 2026 18:43:17 +0000</atom:updated>
+      <guid isPermaLink="true">https://cointelegraph.com/news/initia-halts-blockchain-exploit-drained</guid>
+      <link><![CDATA[https://cointelegraph.com/news/initia-halts-blockchain-exploit-drained?utm_source=rss_feed&utm_medium=rss&utm_campaign=rss_partner_inbound]]></link>
+      <description><![CDATA[<p style="float:right; margin:0 0 10px 15px; width:240px;"><img src="https://s3-images.ctmedia.io/media/article-covers/2026/10/01M5MZKF3C8AJPVBYK5JQWCAWW/hi-got-crypto-losses-wallet.png" alt="Initia halts blockchain after exploit reportedly drains over $2.6M" class="type:primaryImage"></p><p>The blockchain suspended its layer-1 network and rollups after security researchers identified unauthorized token minting and millions in assets transferred to Ethereum.
+</p>]]></description>
+      <dc:creator>Cointelegraph by Nate Kostar</dc:creator>
+      <media:content url="https://s3-images.ctmedia.io/media/article-covers/2026/10/01M5MZKF3C8AJPVBYK5JQWCAWW/hi-got-crypto-losses-wallet.png" fileSize="1735558" type="image/png" medium="image" height="848" width="1264">
+        <credit>Cointelegraph</credit>
+        <media:credit role="publishing company">Cointelegraph</media:credit>
+      </media:content>
+      <enclosure url="https://s3-images.ctmedia.io/media/article-covers/2026/10/01M5MZKF3C8AJPVBYK5JQWCAWW/hi-got-crypto-losses-wallet.png" length="1735558" type="image/png"/>
+      <category>Latest News</category>
+    </item><item>
+      <title>US senator probes Tether after reported deal with ex-Trump crypto adviser</title>
+      <pubDate>Fri, 23 Oct 2026 17:42:12 +0000</pubDate>
+      <atom:updated>Fri, 23 Oct 2026 18:31:53 +0000</atom:updated>
+      <guid isPermaLink="true">https://cointelegraph.com/news/us-senator-probe-bo-hines-trump-crypto-adviser-tether-deal</guid>
+      <link><![CDATA[https://cointelegraph.com/news/us-senator-probe-bo-hines-trump-crypto-adviser-tether-deal?utm_source=rss_feed&utm_medium=rss&utm_campaign=rss_partner_inbound]]></link>
+      <description><![CDATA[<p style="float:right; margin:0 0 10px 15px; width:240px;"><img src="https://s3-images.ctmedia.io/media/article-covers/2026/10/01M5MWKYVWPGFNQZJ4EMBSGH91/hi-probe-crypto-senator.jpg" alt="US senator probes Tether after reported deal with ex-Trump crypto adviser" class="type:primaryImage"></p><p>The Democratic ranking member of the Senate Permanent Subcommittee on Investigations asked Paolo Ardoino for records related to a reported deal between Tether and Nxum.</p>]]></description>
+      <dc:creator>Cointelegraph by Turner Wright</dc:creator>
+      <media:content url="https://s3-images.ctmedia.io/media/article-covers/2026/10/01M5MWKYVWPGFNQZJ4EMBSGH91/hi-probe-crypto-senator.jpg" fileSize="2980428" type="image/png" medium="image" height="966" width="1450">
+        <credit>Cointelegraph</credit>
+        <media:credit role="publishing company">Cointelegraph</media:credit>
+      </media:content>
+      <enclosure url="https://s3-images.ctmedia.io/media/article-covers/2026/10/01M5MWKYVWPGFNQZJ4EMBSGH91/hi-probe-crypto-senator.jpg" length="2980428" type="image/png"/>
+      <category>Latest News</category>
+    </item></channel></rss>

@@ -1,0 +1,132 @@
+	<div class="tu ce" id="ce">
+		<div class="tu-card tu-card--tint ce-intro">
+			<p style="margin:0">Compound interest means you earn interest on your interest. This page builds the formula <span class="mes-tex">\(A = P\left(1+\frac{r}{n}\right)^{nt}\)</span> from a single period, then follows it to continuous compounding and the number <span class="mes-tex">\(e\)</span>, the yearly rate (APY), regular deposits, how long a goal takes, the rule of 72 and inflation. There are worked examples and practice questions at the end. To run your own numbers, use the <a href="/compound-interest-calculator">Compound Interest Calculator</a>.</p>
+		</div>
+		<div class="ce-body">
+
+<h2 id="symbols">The letters used on this page</h2>
+<ul class="ce-list">
+<li><span class="mes-tex">\(P\)</span>: the <b>principal</b>, the amount you start with.</li>
+<li><span class="mes-tex">\(r\)</span>: the <b>yearly interest rate as a decimal</b> (5% is 0.05).</li>
+<li><span class="mes-tex">\(n\)</span>: how many times a year interest is <b>compounded</b> (added to the balance): 1 yearly, 4 quarterly, 12 monthly, 365 daily.</li>
+<li><span class="mes-tex">\(t\)</span>: the time in <b>years</b>.</li>
+<li><span class="mes-tex">\(A\)</span>: the <b>amount</b> at the end, principal plus interest.</li>
+</ul>
+
+<h2 id="simple">Simple interest vs compound interest</h2>
+<p>With <b>simple interest</b> you are paid interest only on the money you first put in. Every year adds the same amount, <span class="mes-tex">\(Pr\)</span>, so after <span class="mes-tex">\(t\)</span> years</p>
+<div class="ce-eq"><span class="mes-tex">\(\displaystyle A_{\text{simple}} = P + Prt = P(1 + rt)\)</span></div>
+<p>The balance grows in a straight line. With <b>compound interest</b> each year's interest is added to the balance, and next year's interest is worked out on that bigger balance. The amount added keeps growing, so the balance curves upward.</p>
+<p>Take <span class="mes-tex">\(P = 1000\)</span> at 5% a year. Simple interest pays 50 every year. Compound interest pays 50 in year 1, 52.50 in year 2 (5% of 1,050) and 55.13 in year 3 (5% of 1,102.50). Step through it yourself:</p>
+
+<div class="ce-widget" id="ce-step">
+	<div class="ce-wrow">
+		<label>Start <input type="text" inputmode="decimal" id="ce-st-p" value="1000" class="tu-input ce-in"></label>
+		<label>Rate % a year <input type="text" inputmode="decimal" id="ce-st-r" value="5" class="tu-input ce-in"></label>
+		<label>Compounded <select id="ce-st-n" class="tu-select ce-in"><option value="1" selected>Yearly</option><option value="4">Quarterly</option><option value="12">Monthly</option></select></label>
+	</div>
+	<div class="ce-btns"><button type="button" class="tu-btn tu-btn--primary" id="ce-st-next">Next period</button><button type="button" class="tu-btn tu-btn--ghost" id="ce-st-10">+10 periods</button><button type="button" class="tu-btn tu-btn--ghost" id="ce-st-reset">Start again</button></div>
+	<div class="ce-stepbars" id="ce-st-bars" aria-hidden="true"></div>
+	<div class="tu-table-wrap"><table class="tu-table ce-tbl" id="ce-st-table" aria-live="polite"></table></div>
+	<p class="ce-note" id="ce-st-sum"></p>
+</div>
+
+<h2 id="derivation">Deriving the compound interest formula</h2>
+<p><b>Step 1: one period.</b> Interest is paid <span class="mes-tex">\(n\)</span> times a year, so each time you are paid the yearly rate divided by <span class="mes-tex">\(n\)</span>. A balance <span class="mes-tex">\(B\)</span> earns <span class="mes-tex">\(B\cdot\frac{r}{n}\)</span> and becomes</p>
+<div class="ce-eq"><span class="mes-tex">\(\displaystyle B + B\,\frac{r}{n} = B\left(1+\frac{r}{n}\right)\)</span></div>
+<p>So one period <b>multiplies</b> the balance by the same number, the growth factor <span class="mes-tex">\(1 + \frac{r}{n}\)</span>. That is the whole idea: adding a percentage is the same as multiplying.</p>
+<p><b>Step 2: several periods.</b> Each period multiplies again by the same factor:</p>
+<div class="ce-eq"><span class="mes-tex">\(\displaystyle \begin{aligned} B_1 &= P\left(1+\tfrac{r}{n}\right) \\ B_2 &= B_1\left(1+\tfrac{r}{n}\right) = P\left(1+\tfrac{r}{n}\right)^{2} \\ B_3 &= P\left(1+\tfrac{r}{n}\right)^{3} \\ B_k &= P\left(1+\tfrac{r}{n}\right)^{k} \end{aligned}\)</span></div>
+<p><b>Step 3: count the periods.</b> In <span class="mes-tex">\(t\)</span> years there are <span class="mes-tex">\(k = nt\)</span> periods, which gives the compound interest formula:</p>
+<div class="ce-eq ce-eq--key"><span class="mes-tex">\(\displaystyle A = P\left(1+\frac{r}{n}\right)^{nt}\)</span></div>
+<p>The interest earned is <span class="mes-tex">\(A - P\)</span>. With <span class="mes-tex">\(n = 1\)</span> (yearly) it is simply <span class="mes-tex">\(A = P(1+r)^t\)</span>.</p>
+
+<h2 id="continuous">More often: continuous compounding and the number e</h2>
+<p>Compounding more often helps, but less and less. To see the limit, take a rate of 100% (<span class="mes-tex">\(r = 1\)</span>) for one year and let <span class="mes-tex">\(n\)</span> grow. The growth factor is <span class="mes-tex">\(\left(1+\frac{1}{n}\right)^{n}\)</span>:</p>
+
+<div class="ce-widget" id="ce-e">
+	<label class="ce-slab" for="ce-e-n">Compound <output id="ce-e-nv"></output> a year</label>
+	<input type="range" id="ce-e-n" min="0" max="60" step="1" value="12" class="ce-range">
+	<div class="ce-chips tu-chips" id="ce-e-chips"><button type="button" class="tu-chip" data-n="1">Yearly</button><button type="button" class="tu-chip" data-n="4">Quarterly</button><button type="button" class="tu-chip" data-n="12">Monthly</button><button type="button" class="tu-chip" data-n="365">Daily</button><button type="button" class="tu-chip" data-n="8760">Hourly</button><button type="button" class="tu-chip" data-n="31536000">Every second</button></div>
+	<div class="ce-big" id="ce-e-out" aria-live="polite"></div>
+	<svg class="ce-esvg" id="ce-e-svg" viewBox="0 0 600 170" role="img" aria-label="(1 + 1/n) to the power n against n, approaching e"></svg>
+</div>
+
+<p>The values climb toward 2.71828... and never pass it. That limit is the number <span class="mes-tex">\(e\)</span>:</p>
+<div class="ce-eq"><span class="mes-tex">\(\displaystyle e = \lim_{n\to\infty}\left(1+\frac{1}{n}\right)^{n} \approx 2.718281828\)</span></div>
+<p>For any rate <span class="mes-tex">\(r\)</span>, write <span class="mes-tex">\(m = \frac{n}{r}\)</span>, so <span class="mes-tex">\(\frac{r}{n} = \frac{1}{m}\)</span> and <span class="mes-tex">\(nt = m\,rt\)</span>:</p>
+<div class="ce-eq"><span class="mes-tex">\(\displaystyle \begin{aligned} P\left(1+\frac{r}{n}\right)^{nt} &= P\left[\left(1+\frac{1}{m}\right)^{m}\right]^{rt} \\ &\longrightarrow P\,e^{rt} \quad (n\to\infty) \end{aligned}\)</span></div>
+<p>since <span class="mes-tex">\(m\)</span> grows without limit when <span class="mes-tex">\(n\)</span> does. This is <b>continuous compounding</b>:</p>
+<div class="ce-eq ce-eq--key"><span class="mes-tex">\(\displaystyle A = P\,e^{rt}\)</span></div>
+<p>It is the most a given yearly rate can ever give. In practice daily compounding is already within a few cents of it: 5,000 at 4% for 10 years grows to 7,401.22 compounded yearly, 7,454.16 monthly and 7,459.12 continuously.</p>
+
+<h2 id="apy">The yearly rate you really get: APY (effective rate)</h2>
+<p>A rate of "5% compounded monthly" grows by more than 5% in a year. The real yearly growth, called the <b>APY</b> (annual percentage yield), the <b>effective annual rate</b> or AER, is what one year of the formula gives, minus the 1 you started with:</p>
+<div class="ce-eq"><span class="mes-tex">\(\displaystyle \text{APY} = \left(1+\frac{r}{n}\right)^{n} - 1\)</span></div>
+<div class="ce-eq"><span class="mes-tex">\(\displaystyle \text{APY}_{\text{continuous}} = e^{r} - 1\)</span></div>
+<p>5% compounded daily is an APY of 5.1267%; continuously 5.1271%. Comparing two savings accounts? Compare their APYs, not their headline rates. (A loan's APR is usually the plain <span class="mes-tex">\(r\)</span>, before compounding.)</p>
+
+<h2 id="deposits">Regular deposits: the future value of a series</h2>
+<p>Now add a deposit <span class="mes-tex">\(D\)</span> at the end of every period, with growth <span class="mes-tex">\(i\)</span> per period (<span class="mes-tex">\(i = \frac{r}{n}\)</span> when deposits and compounding match, e.g. both monthly) for <span class="mes-tex">\(N\)</span> periods. Follow each deposit to the end. The last one has no time to grow, the one before grows for one period, and the first one for <span class="mes-tex">\(N-1\)</span> periods:</p>
+<div class="ce-eq"><span class="mes-tex">\(\displaystyle \begin{aligned} S &= D + D(1+i) + D(1+i)^2 \\ &\quad + \dots + D(1+i)^{N-1} \end{aligned}\)</span></div>
+<p>This is a <b>geometric series</b>: each term is the one before times <span class="mes-tex">\(x = 1+i\)</span>. Multiply the whole sum by <span class="mes-tex">\(x\)</span> and subtract the original; everything in the middle cancels:</p>
+<div class="ce-eq"><span class="mes-tex">\(\displaystyle \begin{aligned} xS &= Dx + Dx^2 + \dots + Dx^{N} \\ xS - S &= Dx^{N} - D \\ S &= D\,\frac{x^{N}-1}{x-1} \end{aligned}\)</span></div>
+<p>With <span class="mes-tex">\(x - 1 = i\)</span> this is the <b>future value of an ordinary annuity</b>:</p>
+<div class="ce-eq ce-eq--key"><span class="mes-tex">\(\displaystyle S = D\,\frac{(1+i)^{N}-1}{i}\)</span></div>
+<p><b>Deposits at the start of each period</b> (an "annuity due") have one more period to grow, so every term, and the total, is multiplied by <span class="mes-tex">\((1+i)\)</span>:</p>
+<div class="ce-eq"><span class="mes-tex">\(\displaystyle S_{\text{start}} = D\,\frac{(1+i)^{N}-1}{i}\,(1+i)\)</span></div>
+<p>The starting amount grows on its own as before, so the balance with both is the sum of the two parts:</p>
+<div class="ce-eq"><span class="mes-tex">\(\displaystyle \begin{aligned} A &= P(1+i)^{N} \\ &\quad + D\,\frac{(1+i)^{N}-1}{i} \end{aligned}\)</span></div>
+<p>(If <span class="mes-tex">\(i = 0\)</span> the fraction is undefined, but the answer is just <span class="mes-tex">\(DN\)</span>: no interest, only deposits.)</p>
+
+<h2 id="time">How long does it take? Solving for t with logarithms</h2>
+<p>To find when <span class="mes-tex">\(P\)</span> grows to a goal <span class="mes-tex">\(A\)</span>, divide by <span class="mes-tex">\(P\)</span> and take the natural log of both sides; the log brings the exponent down:</p>
+<div class="ce-eq"><span class="mes-tex">\(\displaystyle \begin{aligned} \frac{A}{P} &= \left(1+\frac{r}{n}\right)^{nt} \\ \ln\frac{A}{P} &= nt\,\ln\!\left(1+\frac{r}{n}\right) \\ t &= \frac{\ln(A/P)}{n\,\ln(1+r/n)} \end{aligned}\)</span></div>
+<p>With continuous compounding it is simpler: <span class="mes-tex">\(t = \frac{\ln(A/P)}{r}\)</span>. Any log base works, as long as you use the same one on top and bottom.</p>
+
+<h2 id="rule72">The rule of 72, and why it works</h2>
+<p>For doubling, <span class="mes-tex">\(A/P = 2\)</span>. With yearly compounding</p>
+<div class="ce-eq"><span class="mes-tex">\(\displaystyle t_2 = \frac{\ln 2}{\ln(1+r)}\)</span></div>
+<p>For small <span class="mes-tex">\(r\)</span>, <span class="mes-tex">\(\ln(1+r) \approx r\)</span>, and <span class="mes-tex">\(\ln 2 \approx 0.693\)</span>. Writing the rate in percent, <span class="mes-tex">\(R = 100r\)</span>:</p>
+<div class="ce-eq"><span class="mes-tex">\(\displaystyle t_2 \approx \frac{0.693}{r} = \frac{69.3}{R}\)</span></div>
+<p>That "rule of 69.3" is exact for continuous compounding. For yearly compounding, <span class="mes-tex">\(\ln(1+r)\)</span> is a bit <em>smaller</em> than <span class="mes-tex">\(r\)</span> (<span class="mes-tex">\(\ln(1+r) \approx r - \frac{r^2}{2}\)</span>), so the true time is a bit longer. Pushing the top number up to 72 makes up for it near 8%, and 72 is easy to divide by 2, 3, 4, 6, 8, 9 and 12. Another fix keeps 69.3 and adds 0.35 years:</p>
+<div class="ce-eq"><span class="mes-tex">\(\displaystyle t_2 \approx \frac{72}{R} \quad\text{or}\quad t_2 \approx \frac{69.3}{R} + 0.35\)</span></div>
+
+<div class="ce-widget" id="ce-72">
+	<label class="ce-slab" for="ce-72-r">Rate <output id="ce-72-rv"></output> a year, compounded yearly</label>
+	<input type="range" id="ce-72-r" min="1" max="30" step="0.5" value="8" class="ce-range">
+	<div class="tu-table-wrap"><table class="tu-table ce-tbl" id="ce-72-table" aria-live="polite"></table></div>
+</div>
+
+<h2 id="inflation">After inflation: the real rate</h2>
+<p>If prices rise by <span class="mes-tex">\(f\)</span> a year, a balance that grows by <span class="mes-tex">\(r\)</span> buys only <span class="mes-tex">\(\frac{1+r}{1+f}\)</span> times as much each year. The <b>real rate</b> is</p>
+<div class="ce-eq"><span class="mes-tex">\(\displaystyle r_{\text{real}} = \frac{1+r}{1+f} - 1 \approx r - f\)</span></div>
+<p>6% interest with 3% inflation is a real rate of 2.91% (the quick <span class="mes-tex">\(r - f\)</span> says 3%). To see a future balance in today's money, divide it by <span class="mes-tex">\((1+f)^t\)</span>.</p>
+
+<h2 id="examples">Worked examples</h2>
+<p><b>1. A single deposit.</b> 5,000 at 4% compounded monthly for 10 years:</p>
+<div class="ce-eq"><span class="mes-tex">\(\displaystyle \begin{aligned} A &= 5000\left(1+\frac{0.04}{12}\right)^{120} \\ &= 5000 \times 1.490833 \\ &\approx 7454.16 \end{aligned}\)</span></div>
+<p>Interest: 2,454.16. Simple interest would have paid 2,000. <a href="/compound-interest-calculator?s=5000&amp;d=0&amp;f=none&amp;w=e&amp;r=4&amp;c=monthly&amp;y=10&amp;m=0">Try it in the calculator</a>.</p>
+<p><b>2. Saving every month.</b> 200 at the end of every month for 30 years at 6% compounded monthly, so <span class="mes-tex">\(i = 0.005\)</span> and <span class="mes-tex">\(N = 360\)</span>:</p>
+<div class="ce-eq"><span class="mes-tex">\(\displaystyle S = 200\cdot\frac{1.005^{360}-1}{0.005} \approx 200{,}903.01\)</span></div>
+<p>You put in 72,000; the other 128,903 is interest. Paying at the start of each month instead multiplies that by 1.005, giving about 201,907.52. <a href="/compound-interest-calculator?s=0&amp;d=200&amp;f=monthly&amp;w=e&amp;r=6&amp;c=monthly&amp;y=30&amp;m=0">Try it in the calculator</a>.</p>
+<p><b>3. How long?</b> 10,000 to 25,000 at 7% compounded yearly:</p>
+<div class="ce-eq"><span class="mes-tex">\(\displaystyle t = \frac{\ln 2.5}{\ln 1.07} = \frac{0.91629}{0.06766} \approx 13.54 \text{ years}\)</span></div>
+<p><b>4. APY.</b> 5% compounded daily:</p>
+<div class="ce-eq"><span class="mes-tex">\(\displaystyle \left(1+\frac{0.05}{365}\right)^{365} - 1 \approx 0.051267\)</span></div>
+<p>an APY of 5.13%.</p>
+
+<h2 id="practice">Practice questions</h2>
+<p>Try each one, then open it to check your answer.</p>
+<details class="ce-q"><summary>1. 1,000 at 8% compounded quarterly for 5 years. What is the balance?</summary><p><span class="mes-tex">\(i = 0.08/4 = 0.02\)</span> and <span class="mes-tex">\(N = 20\)</span>, so</p><div class="ce-eq"><span class="mes-tex">\(\displaystyle A = 1000 \times 1.02^{20} \approx 1485.95\)</span></div></details>
+<details class="ce-q"><summary>2. What is the APY of 12% compounded monthly?</summary><p><span class="mes-tex">\(i = 0.01\)</span>: <span class="mes-tex">\(1.01^{12} - 1 \approx 0.1268\)</span>, so 12.68%.</p></details>
+<details class="ce-q"><summary>3. At 9% a year (compounded yearly), about how long does money take to double? How close is the rule of 72?</summary><p>Rule of 72: <span class="mes-tex">\(72/9 = 8\)</span> years. Exact: <span class="mes-tex">\(\ln 2 / \ln 1.09 \approx 8.04\)</span> years, so the rule is about two weeks short.</p></details>
+<details class="ce-q"><summary>4. You save 100 a month for 20 years at 5% compounded monthly. How much more do you have if you pay at the start of each month instead of the end?</summary><p>End of each month:</p><div class="ce-eq"><span class="mes-tex">\(\displaystyle 100\cdot\frac{(1+0.05/12)^{240}-1}{0.05/12} \approx 41{,}103.37\)</span></div><p>Start of each month: multiply by <span class="mes-tex">\(1 + 0.05/12\)</span> to get about 41,274.63, which is 171.26 more.</p></details>
+<details class="ce-q"><summary>5. What yearly rate (compounded yearly) doubles money in exactly 8 years?</summary><p><span class="mes-tex">\((1+r)^8 = 2\)</span>, so <span class="mes-tex">\(r = 2^{1/8} - 1 \approx 0.0905\)</span>: 9.05%. The rule of 72 says 9%.</p></details>
+<details class="ce-q"><summary>6. 2,000 at 3% compounded continuously for 15 years?</summary><div class="ce-eq"><span class="mes-tex">\(\displaystyle \begin{aligned} A &= 2000\,e^{0.03 \times 15} \\ &= 2000\,e^{0.45} \approx 3136.62 \end{aligned}\)</span></div></details>
+
+<h2 id="next">Try it yourself</h2>
+<p>The <a href="/compound-interest-calculator">Compound Interest Calculator</a> uses exactly these formulas, with deposits weekly to yearly, raises, tax, inflation, a year-by-year table and a growth chart with sliders. Its Goal tab solves for the deposit, the time or the rate, and the Rule of 72 tab compares the shortcut with the exact doubling time.</p>
+		</div>
+	</div>
+	<script src="/main_js/mes-math.js" defer></script>

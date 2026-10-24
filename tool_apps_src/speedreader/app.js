@@ -102,6 +102,7 @@
 		T.raw = raw;
 		var tk = L.tokenize(raw);
 		T.text = tk.text; T.words = tk.words; T.starts = tk.sentStarts;
+		var oldLang = T.lang;
 		T.lang = L.detectLang(T.text);
 		spCumKey = "";
 		rebuild();
@@ -111,7 +112,7 @@
 		paneStart = -1;
 		renderStats();
 		renderPane(true);
-		refreshVoiceLabel();
+		if (SP.ok && SP.voices.length && T.lang !== oldLang) loadVoices(); else refreshVoiceLabel();   // regroup the voice list by the new language
 		show();
 		persist();
 	}
@@ -405,7 +406,39 @@
 		if (!msg) { el.note.hidden = true; el.note.textContent = ""; return; }
 		el.note.textContent = msg; el.note.hidden = false;
 	}
-	function voiceKey(v) { return (v.voiceURI || v.name) + "|" + v.lang; }
+	function voiceKey(v) { return L.voiceKey(v); }
+	/* voices that did not speak on this device (Android lists voices whose data is not installed, or that cannot read the text):
+	   remembered in localStorage, skipped by Automatic, shown last with a mark in the voice list */
+	var BADKEY = "mes-speedreader:badvoices";
+	function badGet() { try { return L.pruneBadVoices(JSON.parse(localStorage.getItem(BADKEY) || "{}"), Date.now()); } catch (e) { return {}; } }
+	function badSet(m) { try { if (Object.keys(m).length) localStorage.setItem(BADKEY, JSON.stringify(m)); else localStorage.removeItem(BADKEY); } catch (e) {} }
+	SP.bad = badGet();
+	function markBad(v) { if (!v) return; SP.bad[voiceKey(v)] = { t: Date.now(), lang: T.lang || "" }; badSet(SP.bad); }
+	function markGood(v) { if (!v || !SP.bad[voiceKey(v)]) return; delete SP.bad[voiceKey(v)]; badSet(SP.bad); loadVoices(); }
+	// the voice in use did not speak: flag it, switch to the best other voice for the text and carry on from the same sentence
+	function voiceFailed(ch, why, errMsg) {
+		var v = SP.voice;
+		SP.fails = (SP.fails || 0) + 1;
+		if (!v || SP.fails > 4) {
+			stopAll(true); show();
+			note(errMsg || "Speech did not start on this device. Check that the phone or computer has a text-to-speech voice installed for this language (Android: Settings > Text-to-speech), or try another browser.");
+			return;
+		}
+		markBad(v);
+		S.voice = "auto";
+		loadVoices();                              // rebuilds the list (the voice is now marked) and picks the fallback
+		var nv = SP.voice;
+		if (!nv) {
+			stopAll(true); show();
+			note("The voice \u201c" + v.name + "\u201d didn't speak on your device, and no other voice is left to try. Install a text-to-speech voice for this language (Android: Settings > Text-to-speech) and reload the page.");
+			persist();
+			return;
+		}
+		note("The voice \u201c" + v.name + "\u201d didn't speak on your device" + (why === "error" ? "" : " (its voice data is probably not installed, or it can't read this language)") + ", so it was switched to \u201c" + nv.name + "\u201d (" + nv.lang + "). It is marked in the voice list; you can still pick it again.");
+		SP.switchNote = true;
+		persist();
+		speakFrom(ch.a);
+	}
 	function loadVoices() {
 		var list = [];
 		try { list = speechSynthesis.getVoices() || []; } catch (e) {}
@@ -426,23 +459,21 @@
 			none.disabled = true; none.textContent = voicesGaveUp ? "No voices found on this device" : "Loading voices…";
 			sel.appendChild(none);
 		}
+		// groups: the text's language first, then the browser's, then every other language under "Other languages: ..."
 		list.forEach(function (v) {
 			var key = langName(v.lang);
-			if (!groups[key]) { groups[key] = []; order.push({ name: key, lang: String(v.lang || "").toLowerCase() }); }
+			if (!groups[key]) { groups[key] = []; order.push({ name: key, rank: L.voiceLangRank(v.lang, T.lang, navigator.language) }); }
 			groups[key].push(v);
 		});
-		var ul = String(navigator.language || "en").toLowerCase().split("-")[0], tl = (T.lang || "").toLowerCase();
-		order.sort(function (a, b) {
-			function r(g) { var l = g.lang.split("-")[0]; return l === tl ? 0 : l === ul ? 1 : 2; }
-			return r(a) - r(b) || a.name.localeCompare(b.name);
-		});
+		order.forEach(function (g) { groups[g.name].forEach(function (v) { if (L.voiceLangRank(v.lang, T.lang, navigator.language) < g.rank) g.rank = L.voiceLangRank(v.lang, T.lang, navigator.language); }); });
+		order.sort(function (a, b) { return a.rank - b.rank || a.name.localeCompare(b.name); });
 		order.forEach(function (g) {
 			var og = document.createElement("optgroup");
-			og.label = g.name;
-			groups[g.name].sort(function (a, b) { return a.name.localeCompare(b.name); }).forEach(function (v) {
+			og.label = (g.rank === 2 ? "Other languages: " : "") + g.name;
+			groups[g.name].sort(function (a, b) { return (SP.bad[voiceKey(a)] ? 1 : 0) - (SP.bad[voiceKey(b)] ? 1 : 0) || a.name.localeCompare(b.name); }).forEach(function (v) {
 				var o = document.createElement("option");
 				o.value = voiceKey(v);
-				o.textContent = v.name + (v.localService === false ? " · online" : "");
+				o.textContent = (SP.bad[voiceKey(v)] ? "\u26a0 " : "") + v.name + (v.localService === false ? " · online" : "") + (SP.bad[voiceKey(v)] ? " · didn't speak here" : "");
 				og.appendChild(o);
 			});
 			sel.appendChild(og);
@@ -456,7 +487,7 @@
 	function resolveVoice() {
 		var v = null;
 		if (S.voice !== "auto") for (var i = 0; i < SP.voices.length; i++) if (voiceKey(SP.voices[i]) === S.voice) { v = SP.voices[i]; break; }
-		if (!v) v = L.pickVoice(SP.voices, T.lang, navigator.language);
+		if (!v) v = L.pickVoice(SP.voices, T.lang, navigator.language, SP.bad);
 		SP.voice = v;
 		return v;
 	}
@@ -509,10 +540,10 @@
 		var v = SP.voice;
 		if (v) { u.voice = v; u.lang = v.lang; } else if (T.lang) u.lang = T.lang;
 		u.rate = S.rate; u.pitch = S.pitch; u.volume = S.vol;
-		var started = false;
+		var started = false, t0 = 0;
 		u.onstart = function () {
 			if (gen !== SP.gen) return;
-			started = true; clearTimeout(SP.wd);
+			started = true; t0 = performance.now(); clearTimeout(SP.wd);
 			setSpeechWord(ch.a);
 			if (!ch.next) {                              // queue the next sentence right away so there is no gap between utterances
 				ch.next = L.speechChunk(T.words, T.text, ch.b, 200);
@@ -532,10 +563,13 @@
 		};
 		u.onend = function () {
 			if (gen !== SP.gen) return;
-			clearTimeout(SP.est);
+			clearTimeout(SP.est); clearTimeout(SP.wd);
+			var why = L.speechFailure({ started: started, ms: started ? performance.now() - t0 : 0, expectMs: L.speechEstimateMs(T.words, ch.a, ch.b, S.rate), words: ch.b - ch.a, boundary: ch.gotB });
+			if (why) { voiceFailed(ch, why); return; }
+			if (ch.b - ch.a >= 3 || ch.gotB) { SP.fails = 0; markGood(SP.voice); }
 			if (!ch.gotB && ch.b - ch.a > 3 && !SP.warned) {
 				SP.warned = true;
-				note(S.mode === "both" ? "This voice does not report which word it is saying, so the word display is timed to an estimate of its speed. Pick another voice (a local one, not marked online) for exact sync." : "This voice does not report which word it is saying, so the highlight follows an estimate of its speed. Pick another voice (a local one, not marked online) for exact sync.");
+				note((SP.switchNote ? el.note.textContent + " " : "") + (S.mode === "both" ? "This voice does not report which word it is saying, so the word display is timed to an estimate of its speed. Pick another voice (a local one, not marked online) for exact sync." : "This voice does not report which word it is saying, so the highlight follows an estimate of its speed. Pick another voice (a local one, not marked online) for exact sync."));
 			}
 			if (ch.b >= T.words.length) { P.idx = T.words.length - 1; finish(); }
 		};
@@ -545,6 +579,8 @@
 			if (err === "interrupted" || err === "canceled") return;
 			clearTimeout(SP.est);
 			if (!started && attempt < 1) { try { speechSynthesis.cancel(); } catch (x) {} setTimeout(function () { if (gen === SP.gen) queueChunk(ch, gen, attempt + 1); }, 150); return; }
+			clearTimeout(SP.wd);
+			if (L.speechFailure({ error: err, started: started })) { voiceFailed(ch, "error", "The voice stopped (" + (err || "unknown error") + "). Try another voice."); return; }
 			var msg = err === "not-allowed" ? "The browser blocked speech until you interact with the page. Press play again."
 				: err === "synthesis-unavailable" || err === "voice-unavailable" || err === "language-unavailable" ? "That voice is not available on this device. Pick another voice."
 				: "The voice stopped (" + (err || "unknown error") + "). Try another voice.";
@@ -552,13 +588,14 @@
 		};
 		SP.keep.push(u);
 		if (SP.keep.length > 6) SP.keep.shift();          // Chrome can garbage-collect a playing utterance and lose its events: hold a few
-		if (attempt === 0 && !ch.isNext) {                // watchdog for a speak() that silently never starts
+		if (!ch.isNext) {                                 // watchdog for a speak() that silently never starts: retry once, then treat the voice as broken
 			clearTimeout(SP.wd);
 			SP.wd = setTimeout(function () {
 				if (gen !== SP.gen || started) return;
 				try { speechSynthesis.cancel(); } catch (x) {}
-				setTimeout(function () { if (gen === SP.gen) queueChunk(ch, gen, 1); }, 120);
-			}, 3500);
+				if (attempt === 0) setTimeout(function () { if (gen === SP.gen) queueChunk(ch, gen, 1); }, 120);
+				else voiceFailed(ch, "nostart");
+			}, attempt === 0 ? 3500 : 4500);
 		}
 		try { speechSynthesis.speak(u); } catch (x) { note("Speech failed to start: " + x.message); stopAll(true); }
 	}
@@ -786,7 +823,7 @@
 		el.presets.addEventListener("click", function (e) { var b = e.target.closest("button[data-w]"); if (b) setWpm(+b.getAttribute("data-w")); });
 
 		if (window.MESVoicePicker) MESVoicePicker.enhance(el.voice, { sample: "Hello, this is how I will read your text aloud." });   // searchable list with a preview button per voice
-		el.voice.addEventListener("change", function () { S.voice = el.voice.value; resolveVoice(); refreshVoiceLabel(); persist(); restartSpeechSoon(); });
+		el.voice.addEventListener("change", function () { S.voice = el.voice.value; SP.fails = 0; if (SP.switchNote) { SP.switchNote = false; note(""); } resolveVoice(); refreshVoiceLabel(); persist(); restartSpeechSoon(); });
 		el.rate.addEventListener("input", function () { setRate(+el.rate.value); });
 		el.pitch.addEventListener("input", function () { S.pitch = +el.pitch.value; el.pitcho.textContent = S.pitch.toFixed(1); persist(); restartSpeechSoon(); });
 		el.vol.addEventListener("input", function () { S.vol = +el.vol.value; el.volo.textContent = Math.round(S.vol * 100) + "%"; persist(); restartSpeechSoon(); });

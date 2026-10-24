@@ -40,7 +40,22 @@
   function chooseVoice() {
     var v = null;
     if (P.voice) for (var i = 0; i < voices.length; i++) if (voices[i].voiceURI === P.voice) { v = voices[i]; break; }
-    return v || SR.pickVoice(voices, st.lang || '', navigator.language || '');
+    return v || SR.pickVoice(voices, st.lang || '', navigator.language || '', badVoices);
+  }
+  // voices that did not speak here (Android lists voices whose data is not installed, or that cannot read the text, e.g. "Bodo India"
+  // for English): skipped by the automatic choice and marked in the player's list for the rest of this page's life
+  var badVoices = {}, voiceFails = 0;
+  function voiceFailed(from, why) {
+    var v = chooseVoice();
+    voiceFails++;
+    if (!v || voiceFails > 4) return fail('Speech did not start on this device. Check that a text-to-speech voice for this language is installed (Android: Settings > Text-to-speech).');
+    badVoices[SR.voiceKey(v)] = { t: Date.now(), lang: st.lang || '' };
+    P.voice = ''; saveSettings();                 // back to the automatic choice, which now skips this voice
+    var nv = chooseVoice();
+    if (!nv) return fail('The voice "' + v.name + '" did not speak on this device, and no other voice is left to try.');
+    setStatus('The voice "' + v.name + '" did not speak on this device' + (why === 'error' ? '' : ' (its voice data is probably not installed, or it cannot read this language)') + ', so it was switched to "' + nv.name + '".');
+    st.noticeUntil = Date.now() + 10000;
+    speakFrom(from);
   }
 
   // ---- finding the text -----------------------------------------------------------------------------------------------
@@ -266,19 +281,23 @@
     u.onboundary = function (e) {
       if (gen !== st.gen) return;
       if (e.name && e.name !== 'word') return;
-      st.gotBoundary = true; st.estimated = false; clearTimeout(timers.est); clearTimeout(timers.estStep);
+      st.gotBoundary = true; chunk.gotB = true; st.estimated = false; clearTimeout(timers.est); clearTimeout(timers.estStep);
       var i = SR.wordAtChar(st.words, chunk.start + e.charIndex);
       if (i < chunk.a) i = chunk.a; if (i >= chunk.b) i = chunk.b - 1;
       st.idx = i; highlight(i); fillProgress();
     };
     u.onend = function () {
       if (gen !== st.gen) return;
-      clearTimeout(timers.estStep);
+      clearTimeout(timers.estStep); clearTimeout(timers.watch);
+      var why = SR.speechFailure({ started: heard, ms: heard ? Date.now() - startedAt : 0, expectMs: SR.speechEstimateMs(st.words, chunk.a, chunk.b, P.rate), words: chunk.b - chunk.a, boundary: !!chunk.gotB });
+      if (why) return voiceFailed(chunk.a, why);
+      if (chunk.b - chunk.a >= 3) voiceFails = 0;
       if (chunk.b >= st.words.length) done();
     };
     u.onerror = function (e) {
       if (gen !== st.gen) return;
       if (e && (e.error === 'interrupted' || e.error === 'canceled')) return;
+      if (SR.speechFailure({ error: e && e.error, started: heard })) return voiceFailed(chunk.a, 'error');
       fail('The voice stopped (' + (e && e.error || 'error') + '). Try another voice in the player.');
     };
     try { synth.speak(u); } catch (x) { fail('Could not start speaking.'); return; }
@@ -286,7 +305,7 @@
       timers.watch = setTimeout(function () {
         if (gen !== st.gen || heard) return;
         if (retry < 1) speakFrom(from, retry + 1);
-        else fail('The voice did not start. Pick another voice in the player.');
+        else voiceFailed(from, 'nostart');
       }, 3500);
     }
   }
@@ -468,7 +487,7 @@
       var i = st.starts[Math.min(st.starts.length - 1, Math.floor(f * st.starts.length))];
       st.idx = i; sentIdx = -1; if (st.playing) speakFrom(i); else { highlight(i); fillUi(); }
     };
-    ui.voice.onchange = function () { P.voice = ui.voice.value; saveSettings(); if (st.playing) restartSoon(); };
+    ui.voice.onchange = function () { P.voice = ui.voice.value; voiceFails = 0; st.noticeUntil = 0; saveSettings(); if (st.playing) restartSoon(); };
     ui.setup.onchange = function () { S.active = ui.setup.value; saveSettings(); P = RA.resolveProfile(S, host).config; applyStyle(); fillUi(); if (st.playing) restartSoon(); };
     ui.hl.onclick = toggleHighlight;
     ui.rs.addEventListener('mousedown', function (e) { e.preventDefault(); });   // keep the page selection alive until the click reads it
@@ -683,7 +702,7 @@
   function fillProgress() {
     if (!ui || !st.words) return;
     ui.fill.style.width = Math.round(100 * (st.idx + 1) / st.words.length) + '%';
-    if (!ui.st.classList.contains('err')) {
+    if (!ui.st.classList.contains('err') && !(st.noticeUntil > Date.now())) {
       var left = SR.speechEstimateMs(st.words, st.idx, st.words.length, P.rate);
       var si = SR.sentenceStartAt(st.starts, st.idx) + 1;
       ui.st.textContent = si + ' / ' + st.starts.length + ' · ' + SR.formatDuration(left) + ' left' + (st.estimated ? ' (estimated)' : '');
@@ -700,12 +719,14 @@
     ui.pl.title = st.playing ? 'Pause (Space)' : 'Resume (Space)';
     ui.rate.innerHTML = (Math.round(P.rate * 100) / 100).toFixed(P.rate * 100 % 10 ? 2 : 1).replace(/0$/, '') + '&times;';
     // voices: best matches for the page language first
-    var list = voices.slice().sort(function (a, b) { return SR.voiceScore(b, st.lang, navigator.language) - SR.voiceScore(a, st.lang, navigator.language); });
-    var cur = chooseVoice(), curId = P.voice || (cur && cur.voiceURI) || '';
-    if (ui.voice.getAttribute('data-n') !== String(list.length) + '|' + curId) {
+    // (voices for another language than the page's go last, voices that did not speak here last of all, marked)
+    function rk(v) { return (badVoices[SR.voiceKey(v)] ? 10 : 0) + SR.voiceLangRank(v.lang, st.lang, navigator.language); }
+    var list = voices.slice().sort(function (a, b) { return rk(a) - rk(b) || SR.voiceScore(b, st.lang, navigator.language) - SR.voiceScore(a, st.lang, navigator.language); });
+    var cur = chooseVoice(), curId = P.voice || (cur && cur.voiceURI) || '', sig = String(list.length) + '|' + curId + '|' + Object.keys(badVoices).length;
+    if (ui.voice.getAttribute('data-n') !== sig) {
       ui.voice.innerHTML = '';
-      list.forEach(function (v) { var o = document.createElement('option'); o.value = v.voiceURI; o.textContent = v.name + ' (' + v.lang + ')'; ui.voice.appendChild(o); });
-      ui.voice.value = curId; ui.voice.setAttribute('data-n', String(list.length) + '|' + curId);
+      list.forEach(function (v) { var o = document.createElement('option'); o.value = v.voiceURI; o.textContent = (badVoices[SR.voiceKey(v)] ? '\u26a0 ' : '') + v.name + ' (' + v.lang + ')' + (badVoices[SR.voiceKey(v)] ? ' - did not speak here' : ''); ui.voice.appendChild(o); });
+      ui.voice.value = curId; ui.voice.setAttribute('data-n', sig);
     }
     ui.setup.innerHTML = '';
     S.profiles.forEach(function (p) { var o = document.createElement('option'); o.value = p.id; o.textContent = p.name; ui.setup.appendChild(o); });

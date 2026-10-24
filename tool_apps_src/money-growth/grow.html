@@ -82,12 +82,32 @@
 				<p class="mg-sentence" id="mg-sentence"></p>
 				<div class="mg-bar" id="mg-split" aria-hidden="true"></div>
 				<div class="mg-legend" id="mg-split-legend"></div>
+				<p class="tu-note mg-exp-link">New to this? <a href="/compound-interest-explained">How compound interest works, step by step</a></p>
 			</div>
 			<div class="tu-card">
 				<h3 class="mg-h">Growth over time</h3>
-				<div class="mg-legend"><span><i class="mg-k mg-k--dep"></i>Money you put in</span><span><i class="mg-k mg-k--int"></i>Interest earned</span><span id="mg-leg-real" hidden><i class="mg-k mg-k--real"></i>Value in today's money</span></div>
+				<div class="mg-legend"><span><i class="mg-k mg-k--dep"></i>Money you put in</span><span><i class="mg-k mg-k--int"></i>Interest earned</span><span id="mg-leg-real" hidden><i class="mg-k mg-k--real"></i>Value in today's money</span><span id="mg-leg-ghost" hidden><i class="mg-k mg-k--base"></i>Your own numbers</span></div>
 				<div class="mg-chartwrap"><svg class="mg-svg" id="mg-chart" role="img" aria-label="Chart of the balance over time"></svg></div>
 				<div class="mg-readout" id="mg-readout" aria-live="polite">Move over the chart to see any year.</div>
+				<div class="mg-try" id="mg-try">
+					<div class="mg-try__head"><b>Try other numbers on the chart</b> <span class="mg-sum" id="mg-try-state">Drag a slider: the chart and the results follow. The form keeps your own numbers.</span></div>
+					<div class="mg-sls">
+						<div class="mg-sl"><label for="mg-sl-start"><span>Starting amount</span> <output id="mg-sl-start-v" for="mg-sl-start"></output></label><input type="range" class="mg-slin" id="mg-sl-start" data-k="start" min="0" max="50000" step="100"></div>
+						<div class="mg-sl"><label for="mg-sl-dep"><span>Deposit <span id="mg-sl-dep-per">each month</span></span> <output id="mg-sl-dep-v" for="mg-sl-dep"></output></label><input type="range" class="mg-slin" id="mg-sl-dep" data-k="dep" min="0" max="1000" step="2"></div>
+						<div class="mg-sl"><label for="mg-sl-rate"><span>Interest rate</span> <output id="mg-sl-rate-v" for="mg-sl-rate"></output></label><input type="range" class="mg-slin" id="mg-sl-rate" data-k="rate" min="0" max="15" step="0.05"></div>
+						<div class="mg-sl"><label for="mg-sl-years"><span>Years</span> <output id="mg-sl-years-v" for="mg-sl-years"></output></label><input type="range" class="mg-slin" id="mg-sl-years" data-k="years" min="1" max="40" step="1"></div>
+					</div>
+					<div class="mg-sl-comp"><span class="tu-label" id="mg-sl-comp-l">Compounded</span>
+						<div class="tu-chips" id="mg-sl-comp" role="group" aria-labelledby="mg-sl-comp-l">
+							<button type="button" class="tu-chip" data-v="daily" aria-pressed="false">Daily</button><button type="button" class="tu-chip" data-v="monthly" aria-pressed="false">Monthly</button><button type="button" class="tu-chip" data-v="quarterly" aria-pressed="false">Quarterly</button><button type="button" class="tu-chip" data-v="annual" aria-pressed="false">Yearly</button><button type="button" class="tu-chip" data-v="continuous" aria-pressed="false">Continuously</button>
+						</div>
+					</div>
+					<label class="mg-ghostck"><input type="checkbox" id="mg-sl-ghost" checked> Show my own numbers as a dashed line</label>
+					<div class="mg-btns" id="mg-try-btns" hidden>
+						<button type="button" class="tu-btn tu-btn--primary" id="mg-try-use">Use these numbers</button>
+						<button type="button" class="tu-btn tu-btn--ghost" id="mg-try-back">Back to my numbers</button>
+					</div>
+				</div>
 			</div>
 			<div class="tu-card">
 				<h3 class="mg-h">Year by year</h3>
@@ -177,6 +197,7 @@
 
 		<div class="tu-card mg-formulas">
 			<h3 class="mg-h">The formulas</h3>
+			<p class="tu-note" style="margin-top:0;">Where they come from, step by step, with worked examples and practice questions: <a href="/compound-interest-explained">Compound Interest Explained</a>.</p>
 			<div class="mg-eq">
 				<div><span class="mg-eq__n">one amount</span> <span class="mg-eq__f mes-tex">\( \displaystyle A = P\left(1+\frac{r}{n}\right)^{nt} \)</span></div>
 				<div><span class="mg-eq__n">continuous</span> <span class="mg-eq__f mes-tex">\( \displaystyle A = P\,e^{rt} \)</span></div>

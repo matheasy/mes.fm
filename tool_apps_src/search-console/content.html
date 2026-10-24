@@ -1,0 +1,60 @@
+	<div class="tu gs" id="gs">
+		<div class="gs-top">
+			<div class="gs-tabs" id="gs-range" role="group" aria-label="Range">
+				<button type="button" class="tu-chip" data-r="7" aria-pressed="false">7 days</button>
+				<button type="button" class="tu-chip" data-r="28" aria-pressed="true">28 days</button>
+				<button type="button" class="tu-chip" data-r="90" aria-pressed="false">90 days</button>
+				<button type="button" class="tu-chip" data-r="365" aria-pressed="false">365 days</button>
+			</div>
+			<div class="gs-tabs" role="group" aria-label="Compare">
+				<button type="button" class="tu-chip" id="gs-cmp" aria-pressed="true" title="Show the period just before the chosen one as dashed lines and changes">Compare with previous period</button>
+			</div>
+			<span class="gs-links"><a href="/stats">Site stats</a> · <a href="/ads">Ad money</a> · <b>Search Console</b> · <a href="/seo">SEO Checker</a> · <a href="https://search.google.com/search-console" target="_blank" rel="noopener">Google</a> · <a href="https://www.bing.com/webmasters" target="_blank" rel="noopener">Bing</a></span>
+		</div>
+		<p class="tu-note gs-meta" id="gs-meta" role="status">Loading…</p>
+		<noscript><p class="tu-note">This page needs JavaScript.</p></noscript>
+		<div id="gs-setup"></div>
+
+		<div class="gs-tilerow"><h2 class="gs-src gs-src--g"><i class="gs-dot gs-dot--g"></i>Google</h2><div class="tu-stats gs-tiles" id="gs-tiles-g"></div></div>
+		<div class="gs-tilerow"><h2 class="gs-src gs-src--b"><i class="gs-dot gs-dot--b"></i>Bing</h2><div class="tu-stats gs-tiles" id="gs-tiles-b"></div></div>
+
+		<section class="tu-card gs-sec">
+			<div class="gs-head">
+				<h2>Day by day</h2>
+				<div class="gs-tabs" id="gs-metric" role="group" aria-label="Chart shows">
+					<button type="button" class="tu-chip" data-m="c" aria-pressed="true">Clicks</button>
+					<button type="button" class="tu-chip" data-m="i" aria-pressed="false">Impressions</button>
+					<button type="button" class="tu-chip" data-m="ctr" aria-pressed="false">CTR</button>
+					<button type="button" class="tu-chip" data-m="p" aria-pressed="false">Position</button>
+				</div>
+			</div>
+			<div class="gs-chart" id="gs-chart"><svg id="gs-svg" preserveAspectRatio="none" role="img" aria-label="Search clicks and impressions per day"></svg><div class="gs-tip" id="gs-tip"></div></div>
+			<div class="gs-legend" id="gs-legend"></div>
+			<p class="tu-note gs-cnote" id="gs-cnote"></p>
+		</section>
+
+		<section class="tu-card gs-sec">
+			<div class="gs-head">
+				<div class="gs-tabs" id="gs-ttab" role="tablist" aria-label="Table">
+					<button type="button" class="tu-chip" data-t="queries" aria-pressed="true">Queries</button>
+					<button type="button" class="tu-chip" data-t="pages" aria-pressed="false">Pages</button>
+					<button type="button" class="tu-chip" data-t="countries" aria-pressed="false">Countries</button>
+					<button type="button" class="tu-chip" data-t="devices" aria-pressed="false">Devices</button>
+				</div>
+				<div class="gs-tabs" id="gs-tsrc" role="group" aria-label="Source">
+					<button type="button" class="tu-chip" data-s="google" aria-pressed="true">Google</button>
+					<button type="button" class="tu-chip" data-s="bing" aria-pressed="false">Bing</button>
+				</div>
+			</div>
+			<div class="gs-filter"><label class="gs-sr" for="gs-q">Filter</label><input id="gs-q" class="tu-input" type="search" placeholder="Filter (e.g. bmi, /timer, canada)" autocomplete="off" spellcheck="false"><span class="tu-note" id="gs-count"></span></div>
+			<p class="tu-note gs-tnote" id="gs-tnote"></p>
+			<div class="gs-wrap"><table class="gs-t" id="gs-t"></table></div><button type="button" class="tu-btn tu-btn--ghost gs-more" id="gs-more" hidden></button>
+		</section>
+
+		<section class="tu-card gs-sec" id="gs-drill" hidden>
+			<div class="gs-head"><h2 id="gs-drill-h">Queries for this page</h2><button type="button" class="tu-btn tu-btn--ghost" id="gs-drill-x">Close</button></div>
+			<p class="tu-note" id="gs-drill-note"></p>
+			<div class="gs-drillbars" id="gs-drill-bars"></div>
+			<div class="gs-wrap"><table class="gs-t" id="gs-dt"></table></div><button type="button" class="tu-btn tu-btn--ghost gs-more" id="gs-dmore" hidden></button>
+		</section>
+	</div>

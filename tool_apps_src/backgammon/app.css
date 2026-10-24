@@ -13,9 +13,25 @@
 	#bgm .bgm-tab:focus-visible {outline:2px solid var(--accent);outline-offset:-2px;}
 	#bgm .bgm-top {font-size:0.92em;color:var(--bgm-sub);margin:0 0 0.5em;line-height:1.5;}
 	#bgm .bgm-top b {color:var(--bgm-ink);}
-	#bgm .bgm-board {max-width:100%;margin:0 auto;touch-action:manipulation;user-select:none;-webkit-user-select:none;}
+	/* the stage is exactly as wide as the board picture, so the space beside it is plain page (a swipe there scrolls) */
+	#bgm .bgm-stage {position:relative;width:100%;max-width:calc(82vh * 760 / 520);margin:0 auto;}
+	#bgm .bgm-board {width:100%;touch-action:manipulation;user-select:none;-webkit-user-select:none;}
 	#bgm .bgm-svg {display:block;width:100%;height:auto;max-height:82vh;}
-	#bgm .bgm-board .bgm-svg {touch-action:none;}
+	#bgm .bgm-board .bgm-svg {max-height:none;touch-action:manipulation;}
+	#bgm .bgm-board .bgm-hit.is-live {touch-action:none;}
+	#bgm .bgm-stage.is-rollable .bgm-svg {cursor:pointer;}
+	#bgm .bgm-ovl {position:absolute;top:50%;transform:translate(-50%,-50%);display:flex;gap:0.4em;align-items:center;justify-content:center;pointer-events:none;z-index:2;white-space:nowrap;}
+	#bgm .bgm-ob {pointer-events:auto;cursor:pointer;font:inherit;font-weight:800;font-size:0.95em;min-height:40px;padding:0.35em 0.85em;border-radius:999px;
+		border:2px solid #fff3d6;background:rgba(40,24,10,0.82);color:#fff3d6;box-shadow:0 2px 8px rgba(0,0,0,0.35);-webkit-tap-highlight-color:transparent;touch-action:manipulation;}
+	#bgm .bgm-ob.is-main {background:var(--bgm-hi);border-color:#3b2a06;color:#2a1d05;}
+	#bgm .bgm-ob[disabled] {opacity:0.45;cursor:default;}
+	#bgm .bgm-ob:focus-visible {outline:3px solid #7fd3ff;outline-offset:2px;}
+	body.dark-mode #bgm.tu .bgm-ob {background:rgba(40,24,10,0.85);color:#fff3d6;border-color:#fff3d6;}
+	body.dark-mode #bgm.tu .bgm-ob.is-main {background:#ffd54a;color:#2a1d05;border-color:#3b2a06;}
+	@media (max-width:520px) {#bgm .bgm-ob {font-size:0.82em;padding:0.3em 0.65em;min-height:38px;}}
+	/* playing black: the two checker colours swap (the computer gets white) */
+	#bgm.bgm-black .bgm-svg {--bgm-w:#29211c;--bgm-wline:#b9a58a;--bgm-k:#f6f0e4;--bgm-kline:#8a7a62;}
+	body.dark-mode #bgm.tu.bgm-black .bgm-svg {--bgm-w:#1d1713;--bgm-wline:#cdb796;--bgm-k:#f3ece0;--bgm-kline:#8a7a62;}
 	#bgm .bgm-frame {fill:var(--bgm-frame);}
 	#bgm .bgm-felt {fill:var(--bgm-felt);}
 	#bgm .bgm-bar {fill:var(--bgm-barc);}

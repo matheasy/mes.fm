@@ -253,10 +253,33 @@
 		small: { name: "Small loan", amount: "2000", rate: "18", years: "1", months: "0", freq: "monthly", fee: "50" }
 	};
 
+	/* ------------------------------------------------------------------ chart sliders ("Try other numbers on the chart") */
+	function niceCeil(x) {      // smallest 1 / 2 / 2.5 / 5 x 10^k that is >= x
+		if (!(x > 0)) return 1;
+		var mag = Math.pow(10, Math.floor(Math.log10(x))), m = [1, 2, 2.5, 5, 10];
+		for (var i = 0; i < m.length; i++) if (m[i] * mag >= x * (1 - 1e-12)) return m[i] * mag;
+		return 10 * mag;
+	}
+	// slider range for one input, given the number typed in the form; the typed value always fits with room to spare
+	function sliderRange(kind, typed) {
+		var v = typed > 0 ? typed : 0, max;
+		if (kind === "start") { max = niceCeil(Math.max(50000, v * 3)); return { min: 0, max: max, step: max / 500 }; }
+		if (kind === "dep") { max = niceCeil(Math.max(1000, v * 3)); return { min: 0, max: max, step: max / 500 }; }
+		if (kind === "rate") { max = Math.min(100, Math.max(15, Math.ceil(v * 2))); return { min: 0, max: max, step: 0.05 }; }
+		if (kind === "years") { max = Math.min(100, Math.max(40, Math.ceil(v * 2))); return { min: 1, max: max, step: 1 }; }
+		return null;
+	}
+	// a slider position snapped to its step (and range); money to the cent, the rate to 2 decimals
+	function snapSlider(kind, x, rg) {
+		var v = Math.min(rg.max, Math.max(rg.min, +x || 0));
+		v = Math.round(v / rg.step) * rg.step;
+		return kind === "rate" ? Math.round(v * 100) / 100 : kind === "years" ? Math.round(v) : Math.round(v * 100) / 100;
+	}
+
 	var MG = { parseDec: parseDec, toNum: toNum, toCents: toCents, parseRate: parseRate, rateOf: rateOf,
 		COMP: COMP, COMP_LABEL: COMP_LABEL, DFREQ: DFREQ, DFREQ_LABEL: DFREQ_LABEL, DFREQ_PER: DFREQ_PER,
 		apy: apy, stepGrowth: stepGrowth, grow: grow, fvClosed: fvClosed, solveDeposit: solveDeposit, solveTime: solveTime, solveRate: solveRate,
-		doubling: doubling, rule72: rule72, rule69: rule69,
+		doubling: doubling, rule72: rule72, rule69: rule69, niceCeil: niceCeil, sliderRange: sliderRange, snapSlider: snapSlider,
 		FREQ: FREQ, periodic: periodic, pmt: pmt, pv: pv, addMonths: addMonths, addDays: addDays, dateAt: dateAt, parseDate: parseDate, isoDate: isoDate,
 		nPayments: nPayments, schedule: schedule, yearRows: yearRows, durationText: durationText, aprOf: aprOf, LOAN_PRESETS: LOAN_PRESETS };
 	if (typeof module !== "undefined" && module.exports) module.exports = MG;
