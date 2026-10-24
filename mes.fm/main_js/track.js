@@ -3,11 +3,22 @@
   // Ad-click / campaign tags are unique per visitor (?gclid=...), so left in the path every paid click would become
   // its own leaderboard member across ~14 Upstash sorted sets. Strip them; real params (shared-calculation links) stay.
   var q = new URLSearchParams(location.search);
-  // a Google Ads click carries one of these tags; the stats then count the view as 'Google Ads' instead of plain Google search
-  var paid = /(^|[?&])(gclid|gbraid|wbraid|gad_source|gad_campaignid)=/i.test(location.search) ? 'g' : '';
-  Array.from(q.keys()).forEach(function (k) {
-    if (/^(gclid|gbraid|wbraid|gad_source|gad_campaignid|msclkid|fbclid)$/i.test(k) || /^utm_/i.test(k)) q.delete(k);
-  });
+  var isTag = function (k) { return /^(gclid|gbraid|wbraid|gad_source|gad_campaignid|msclkid|fbclid)$/i.test(k) || /^utm_/i.test(k); };
+  // A Google Ads click carries one of these tags; the stats then count the view as 'Google Ads' instead of plain Google search.
+  // Only when the visit comes from another site, though: a bookmark, a restored tab or a reload of a page first reached through an
+  // ad still has the tags (and no referrer, or this site's), and was being counted as a new ad click on every visit, which also
+  // hid those visitors from the 'came back' numbers.
+  var ref = document.referrer || '';
+  var fromElsewhere = ref && !/^https?:\/\/([^\/]*\.)?mes\.fm(\/|$)/i.test(ref);
+  var paid = fromElsewhere && /(^|[?&])(gclid|gbraid|wbraid|gad_source|gad_campaignid)=/i.test(location.search) ? 'g' : '';
+  Array.from(q.keys()).forEach(function (k) { if (isTag(k)) q.delete(k); });
+  // ...and take the tags out of the address bar, so bookmarks, shared links and saved tabs made from now on are clean
+  // (every other query parameter stays: shared calculations need theirs).
+  try {
+    var clean = new URLSearchParams(location.search), had = false;
+    Array.from(clean.keys()).forEach(function (k) { if (isTag(k)) { clean.delete(k); had = true; } });
+    if (had && history.replaceState) { var cs = clean.toString(); history.replaceState(history.state, '', location.pathname + (cs ? '?' + cs : '') + location.hash); }
+  } catch (e) {}
   // /search-engines is meant to be a browser's default search: the words people type arrive as ?q=, which must never reach the stats
   // the same for pages whose links carry private input: the health calculators' dates, domains looked up, image links
   if (/^\/(fav|time-calculator|tip-calculator|age-calculator|statistics-calculator|birthday-personality|seo|reminder|birthday|zodiac|ovulation-calculator|period-calculator|due-date-calculator|pregnancy-test-calculator|conception-date-calculator|weeks-pregnant-calculator|domain-lookup|site-traffic|reverse-image-search|baby-growth-percentile-calculator|bmr-calculator|body-fat-calculator|macro-calculator|water-intake-calculator|tdee-calculator|heart-rate-zone-calculator|waist-to-hip-ratio-calculator|protein-intake-calculator|sleep-calculator|body-surface-area-calculator|pregnancy-calorie-calculator)\/?$/.test(location.pathname)) Array.from(q.keys()).forEach(function (k) { q.delete(k); });
