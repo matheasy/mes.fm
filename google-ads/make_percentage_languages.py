@@ -2,12 +2,16 @@
 Run: python3 google-ads/make_percentage_languages.py  -> google-ads/percentage-languages-upload.csv
 Campaign "Percentage Languages (World) Desktop" = a copy of "BMI Languages (World) Desktop" (desktop only, all languages,
 all countries except Argentina, Manual CPC, ₫25,000/day) with these 5 ad groups at ₫500 instead of the BMI ones.
+Also writes percentage-argentina-upload.csv: "Percentage Spanish - Argentina Desktop" (a copy of "BMI Spanish - Argentina Desktop":
+Argentina only, location option Presence) with the Spanish ad group at ARG_BID = the BMI Argentina bid (₫329 on 2026-10-24).
 """
 import csv, pathlib
 
 CAMP = "Percentage Languages (World) Desktop"
 BID = 500
 OUT = pathlib.Path(__file__).with_name("percentage-languages-upload.csv")
+ARG_CAMP, ARG_BID = "Percentage Spanish - Argentina Desktop", 329
+ARG_OUT = pathlib.Path(__file__).with_name("percentage-argentina-upload.csv")
 
 # lang: (ad group, final url, path1, path2, keywords [(text, match)], headlines (<= 30 chars), descriptions (<= 90 chars))
 L = {
@@ -77,4 +81,12 @@ for k, (ag, url, p1, p2, kws, hs, ds) in L.items():
     rows.append(row(**ad))
 with open(OUT, "w", newline="", encoding="utf-8-sig") as f:
     w = csv.DictWriter(f, H); w.writeheader(); w.writerows(rows)
-print(f"ok: {len(L)} ad groups, {sum(len(v[4]) for v in L.values())} keywords, {len(rows)} rows -> {OUT.name}")
+arg = []
+for r in rows:
+    if r["Ad group"] == L["es"][0]:
+        r2 = dict(r); r2["Campaign"] = ARG_CAMP
+        if r2["Max CPC"]: r2["Max CPC"] = ARG_BID
+        arg.append(r2)
+with open(ARG_OUT, "w", newline="", encoding="utf-8-sig") as f:
+    w = csv.DictWriter(f, H); w.writeheader(); w.writerows(arg)
+print(f"ok: {len(L)} ad groups, {sum(len(v[4]) for v in L.values())} keywords, {len(rows)} rows -> {OUT.name}; Argentina: {len(arg)} rows -> {ARG_OUT.name}")
