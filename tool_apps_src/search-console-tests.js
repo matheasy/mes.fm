@@ -153,7 +153,9 @@ const sum = (start, end, extra) => Object.assign({ start, end,
   eq(b.daily.length, 28, '28 Bing days');
   eq(b.totals.c, 56, 'Bing clicks');
   eq(b.queries.map((r) => r.k), ['bmi calculator', 'timer'], 'weekly query buckets in range');
-  eq(b.queries[0].pc, 3, 'Bing previous-period bucket joined');
+  // the mocked Bing query data starts 2026-09-19, inside the previous period (2026-08-26 .. 09-22): not covered -> no previous numbers
+  ok(b.prevPartial && !b.tablesPrevOk, 'Bing previous period not covered by its query data');
+  eq(b.queries[0].pc, undefined, 'no previous numbers joined when Bing does not cover the previous period');
   eq(b.totals.p, 7, 'Bing position = impressions-weighted query position');
   eq(b.pages[0].k, '/bmicalculator', 'Bing page normalised');
   ok(!JSON.stringify(res.body).includes(BING_KEY), 'key not in the response');
@@ -171,6 +173,116 @@ const sum = (start, end, extra) => Object.assign({ start, end,
   ok(res.body.bing.error && !JSON.stringify(res.body).includes(BING_KEY), 'Bing error reported without the key: ' + JSON.stringify(res.body.bing));
   eq(sc.scrub('x apikey=abc&y', ''), 'x apikey=***&y', 'apikey= scrubbed');
   bingFail = null;
+
+  // ---- Bing compare guard (pure)
+  {
+    const tr = [], q = [];
+    for (let k = 0; k < 200; k++) tr.push([new Date(Date.parse('2026-10-20T12:00:00Z') - (199 - k) * 864e5).toISOString().slice(0, 10), 2, 10]);
+    for (let w = 0; w < 26; w++) { const d = new Date(Date.parse('2026-10-17T12:00:00Z') - w * 7 * 864e5).toISOString().slice(0, 10); q.push([d, '25%, 30%', w === 25 ? 0 : 3, w === 25 ? 1 : 40, 5]); }
+    const b90 = sc.bingPart(tr, q, [], '90', '2026-10-24');
+    ok(!b90.prevPartial && b90.tablesPrevOk, '90 days: Bing covers the previous 90 days');
+    ok(b90.queries[0].pc > 0, '90 days: previous numbers joined');
+    const b365 = sc.bingPart(tr, q, [], '365', '2026-10-24');
+    ok(b365.prevPartial && b365.curPartial, '365 days: previous period not covered, current only partly');
+    eq(b365.queries[0].pc, undefined, '365 days: no previous numbers, so no +11,618%');
+    eq(b365.since.tables, q[q.length - 1][0], 'Bing data start reported');
+    const bt = sc.bingPart(tr, q, [], 'today', '2026-10-24');
+    ok(bt.empty && bt.lag && bt.newest === '2026-10-20', 'today: Bing lags, says so with its newest day');
+    const bf = sc.bingPart(tr, q, [], '90', '2026-10-24', [{ dim: 'query', op: 'contains', v: '25%' }]);
+    ok(bf.filtered && bf.queries.length === 1 && bf.daily.length === 0, 'Bing query filter: query table filtered, day line dropped');
+    ok(bf.blocked.pages, 'Bing page table cannot apply a query filter');
+    const bc = sc.bingPart(tr, q, [], '90', '2026-10-24', [{ dim: 'country', op: 'exact', v: 'usa' }]);
+    ok(bc.blocked.queries && !bc.queries.length, 'Bing has no country split');
+  }
+
+  // ---- ingest: fresh days, hours, breakdowns
+  {
+    const tday = new Date().toISOString().slice(0, 10);
+    const pp = ingest.parse({ source: 'gsc', meta: { fresh: tday }, days: { [tday]: { t: [5, 50, 4], f: 1, h: [[13, 1, 10, 3], [25, 1, 1, 1], [2, 1, 5, 4]] } },
+      dims: { [tday]: { a: { s: ['usa', 'MOBILE'], r: [[0, 1, 5, 50, 4]] }, q: { s: ['bmi', 'https://mes.fm/bmicalculator', 'usa', 'MOBILE'], r: [[0, 1, 2, 3, 2, 20, 3]] } } } }, tday);
+    ok(!pp.error, 'fresh day + hours + breakdowns accepted ' + (pp.error || ''));
+    const blob = JSON.parse(pp.days[0][1]);
+    ok(blob.f === 1 && blob.h.length === 2 && blob.h[0][0] === 2, 'fresh flag kept, bad hour dropped, hours sorted');
+    eq(pp.meta.fresh, tday, 'firstIncompleteDate kept');
+    eq(pp.dims.map((x) => x[0]).sort(), ['da:' + tday, 'dq:' + tday], 'breakdown keys');
+    ok(ingest.parse({ source: 'gsc', dims: { [tday]: { a: { s: ['usa'], r: [[0, 1, 5, 50, 4]] } } } }, tday).error, 'string index out of range refused');
+    ok(ingest.parse({ source: 'gsc', dims: { [tday]: { z: { s: [], r: [] } } } }, tday).error, 'unknown breakdown refused');
+    ok(ingest.parse({ source: 'gsc', dims: { [tday]: { a: { s: ['usa', 'm'], r: [[0, 1, -5, 50, 4]] } } } }, tday).error, 'negative numbers refused');
+    ok(ingest.parse({ source: 'gsc', dims: { [tday]: { q: { s: ['x'], r: Array(8001).fill([0, 0, 0, 0, 1, 1, 1]) } } } }, tday).error, 'too many breakdown rows refused');
+    ok(ingest.parse({ source: 'gsc', dims: { '2025-01-01': { a: { s: [], r: [] } } } }, tday).error, 'breakdown older than 200 days refused');
+    const before = STORE.get('gscdash:meta');
+    const r3 = await call(ingest, { method: 'POST', headers: { 'x-ingest-key': 'ingest-key' }, body: { source: 'gsc', dims: { [tday]: { a: { s: ['usa', 'MOBILE'], r: [[0, 1, 5, 50, 4]] } } } } });
+    eq(r3.code, 200, 'breakdown-only POST stored');
+    ok(STORE.has('gscdash:da:' + tday), 'breakdown key written');
+    eq(STORE.get('gscdash:meta'), before, 'a POST without day rows leaves meta (newest day) alone');
+  }
+
+  // ---- filters: parsing + aggregation through respond()
+  eq(sc.parseFilters('').filters, [], 'no filters');
+  ok(sc.parseFilters('[{"dim":"hack","op":"contains","v":"x"}]').error, 'unknown filter dimension refused');
+  ok(sc.parseFilters('[{"dim":"query","op":"regex","v":"x"}]').error, 'unknown operator refused');
+  ok(sc.parseFilters('{bad').error, 'bad JSON refused');
+  ok(sc.parseFilters(JSON.stringify(Array(9).fill({ dim: 'query', op: 'contains', v: 'a' }))).error, 'at most 8 filters');
+  ok(sc.passes({ page: 'https://mes.fm/bmicalculator/' }, [{ dim: 'page', op: 'exact', v: '/bmicalculator' }]), 'page exact matches the normalised path');
+  ok(!sc.passes({ query: 'bmi chart' }, [{ dim: 'query', op: 'not', v: 'BMI' }]), 'not contains, case-insensitive');
+  {
+    // a fake store: 180 days ending today (Pacific), every day: 2 queries x 2 countries x 1 device, plus hidden traffic in a / b
+    const S = new Map(), set = (k, v) => S.set(k, JSON.stringify(v));
+    const now = Date.parse('2026-10-24T20:00:00Z'), today = sc.ptDate(now);
+    const ad = (s, n) => new Date(Date.parse(s + 'T12:00:00Z') + n * 864e5).toISOString().slice(0, 10);
+    for (let k = 0; k < 180; k++) {
+      const d = ad(today, -k);
+      const q = { s: ['bmi calculator', 'https://mes.fm/bmicalculator', 'usa', 'MOBILE', 'timer', 'https://mes.fm/timer', 'can'],
+        r: [[0, 1, 2, 3, 4, 100, 3], [0, 1, 6, 3, 1, 50, 5], [4, 5, 2, 3, 2, 40, 8], [4, 5, 6, 3, 1, 10, 6]] };
+      const b = { s: ['https://mes.fm/bmicalculator', 'usa', 'MOBILE', 'can', 'https://mes.fm/timer'], r: [[0, 1, 2, 6, 120, 3], [0, 3, 2, 2, 60, 5], [4, 1, 2, 3, 50, 8], [4, 3, 2, 1, 10, 6]] };
+      const a = { s: ['usa', 'MOBILE', 'can'], r: [[0, 1, 9, 170, 4], [2, 1, 3, 70, 5]] };
+      set('gscdash:dq:' + d, q); set('gscdash:db:' + d, b); set('gscdash:da:' + d, a);
+      const blob = { t: [12, 240, 4.3], dev: [['MOBILE', 12, 240, 4.3]] };
+      if (k < 2) blob.f = 1;
+      if (k < 2) blob.h = [[9, 1, 20, 4], [10, 2, 30, 4]];
+      set('gscdash:day:' + d, blob);
+    }
+    set('gscdash:meta', { at: '2026-10-24T19:00:00Z', lastDay: today, property: 'sc-domain:mes.fm' });
+    const deps = { now, mget: async (keys) => keys.map((k) => (S.has(k) ? S.get(k) : null)), bing: null };
+    let r = await sc.respond({ range: '28', f: JSON.stringify([{ dim: 'query', op: 'contains', v: 'BMI' }]) }, deps);
+    let g = r.body.google;
+    ok(g.filtered && g.basis === 'q', 'query filter uses the query breakdown');
+    eq(g.daily.length, 28, '28 filtered days');
+    eq(g.totals.c, 28 * 5, 'query filter: clicks of the matching rows only');
+    eq(g.totals.i, 28 * 150, 'query filter: impressions of the matching rows');
+    eq(g.queries.map((x) => x.k), ['bmi calculator'], 'query table filtered');
+    eq(g.pages.map((x) => x.k), ['/bmicalculator'], 'pages under a query filter come from the query breakdown');
+    eq(g.countries.map((x) => x.k), ['usa', 'can'], 'countries under a query filter');
+    ok(!g.prevPartial && g.queries[0].pc === 28 * 5, 'previous 28 days filtered too');
+    ok(g.daily[g.daily.length - 1].f === 1, 'fresh flag carried into filtered days');
+    r = await sc.respond({ range: '7', f: JSON.stringify([{ dim: 'query', op: 'contains', v: 'bmi' }, { dim: 'country', op: 'exact', v: 'CAN' }]) }, deps);
+    eq(r.body.google.totals.c, 7, 'two filters ANDed (bmi in Canada: 1 click a day)');
+    r = await sc.respond({ range: '7', f: JSON.stringify([{ dim: 'country', op: 'exact', v: 'can' }]) }, deps);
+    g = r.body.google;
+    ok(g.basis === 'a' && g.totals.c === 21 && g.totals.i === 490, 'country filter uses the complete country x device breakdown (hidden queries included)');
+    eq(g.pages.map((x) => x.k), ['/bmicalculator', '/timer'], 'pages for a country filter come from the page breakdown');
+    r = await sc.respond({ range: '7', f: JSON.stringify([{ dim: 'page', op: 'not', v: '/timer' }]) }, deps);
+    ok(r.body.google.basis === 'b' && r.body.google.totals.c === 56, 'page "not contains" filter on the page breakdown');
+    r = await sc.respond({ range: '365', f: JSON.stringify([{ dim: 'device', op: 'exact', v: 'mobile' }]) }, deps);
+    ok(r.body.google.clamped && r.body.rangeUsed === '90' && r.body.google.daily.length === 90, '365 days with a filter answered for 90 days');
+    ok(!r.body.google.prevPartial, '...with its previous 90 days (180 days of breakdowns kept)');
+    r = await sc.respond({ range: '90', f: JSON.stringify([{ dim: 'device', op: 'exact', v: 'mobile' }]) }, Object.assign({}, deps, { mget: async (keys) => keys.map((k) => (S.has(k) && !(k > 'gscdash:da:' && k < 'gscdash:da:' + ad(today, -120)) ? S.get(k) : null)) }));
+    ok(r.body.google.prevPartial && r.body.google.countries[0].pc === undefined, 'previous period only partly stored -> no changes');
+    r = await sc.respond({ range: 'today' }, deps);
+    g = r.body.google;
+    ok(g.day && g.daily.length === 1 && g.daily[0].d === today && g.daily[0].c === 12, 'today: the day totals');
+    eq(g.hourly.map((x) => x.h), [9, 10], 'today: hourly numbers');
+    eq(g.prevDaily[0].d, ad(today, -1), 'today compares with yesterday');
+    eq(g.queries.map((x) => x.k), ['bmi calculator', 'timer'], 'today: tables from the breakdowns');
+    r = await sc.respond({ range: 'yesterday', f: JSON.stringify([{ dim: 'query', op: 'exact', v: 'timer' }]) }, deps);
+    ok(r.body.google.daily[0].d === ad(today, -1) && r.body.google.totals.c === 3 && !r.body.google.hourly, 'yesterday + filter: one filtered day, no hours');
+    r = await sc.respond({ range: '28', f: '[{"dim":"x"}]' }, deps);
+    eq(r.status, 400, 'bad filter -> 400');
+    // missing breakdowns are reported
+    for (const k of [...S.keys()]) if (k.startsWith('gscdash:dq:') && k < 'gscdash:dq:' + ad(today, -3)) S.delete(k);
+    r = await sc.respond({ range: '7', f: JSON.stringify([{ dim: 'query', op: 'contains', v: 'bmi' }]) }, deps);
+    eq(r.body.google.dimDays, { have: 4, want: 7 }, 'days without breakdowns counted');
+  }
 
   // ---- Google not set up
   for (const k of [...STORE.keys()]) if (k.startsWith('gscdash:') && !k.startsWith('gscdash:bing')) STORE.delete(k);
@@ -197,6 +309,17 @@ const sum = (start, end, extra) => Object.assign({ start, end,
     const html = fs.readFileSync(page, 'utf8');
     ok(/<meta name="robots" content="noindex/.test(html), 'page is noindex');
     ok(!/adsbygoogle|googlesyndication/.test(html), 'page has no ads');
+  }
+  for (const slug of ['search-console', 'ads']) {
+    const f = path.join(__dirname, '..', 'mes.fm', slug, 'index.html');
+    if (!fs.existsSync(f)) continue;
+    const html = fs.readFileSync(f, 'utf8');
+    ok(/data-page-modes="3"/.test(html) && /HUB-THEATRE-HEAD/.test(html) && /hub-theatre\.js/.test(html), slug + ': Standard | Wide | Theatre switch (Wide by default)');
+    ok(/panel-view\.js/.test(html), slug + ': Fill window / Full screen buttons');
+  }
+  for (const f of ['stats/index.html', 'seo/index.html']) {
+    const html = fs.readFileSync(path.join(__dirname, '..', 'mes.fm', f), 'utf8');
+    ok(/class="mes-owner-links" hidden/.test(html) && !/Search Console \(private\)/.test(html), f + ': private links hidden unless the owner flag is set');
   }
 
   console.log(pass + ' passed, ' + fail + ' failed');

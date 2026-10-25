@@ -1,15 +1,27 @@
 // Data for the private mes.fm/search-console page (behind the middleware.js password, like /ads and /api/earnings).
 //
-// Google: reads what google-ads/search-console-gsc-script.js pushed through api/search-console-ingest.js
-//   (gscdash:day:<date> totals + devices per day, gscdash:sum:<range>:<cur|prev> top lists worked out by Search Console).
+// Google: reads what google-ads/search-console-gsc-script.js pushed through api/search-console-ingest.js:
+//   gscdash:day:<date>   totals + devices per day (+ f = fresh / incomplete day, h = hourly rows for the last few days)
+//   gscdash:sum:<range>:<cur|prev>   top lists worked out by Search Console over 7 / 28 / 90 / 365 days (unfiltered views)
+//   gscdash:da|db|dq:<date>   day-by-day breakdowns for the last ~180 days (filters, Today / Yesterday):
+//       a = [country, device] (complete), b = [page, country, device], q = [query, page, country, device] (Google hides rare queries)
 // Bing: calls the Bing Webmaster API server-side with the key in Vercel env BING_WEBMASTER_KEY (plain project-level
 //   variable; never sent to the browser or echoed in errors). GetRankAndTrafficStats = clicks / impressions per day,
 //   GetQueryStats / GetPageStats = weekly buckets (one row per query or page per week) with AvgImpressionPosition,
 //   GetPageQueryStats = the queries of one page (drill-down). Bing has no country or device split.
 //   Answers are cached in Redis for 6 h (gscdash:bing:*) and in memory, so a page load costs Bing nothing most of the time.
-// ?range=7|28|90|365 (default 28). Each source's range ends on its own newest day, the previous period is the same length before it.
-// ?page=<full page URL>&src=google|bing -> the queries of that page (cur + prev).
-const RANGES = ['7', '28', '90', '365'];
+// ?range=today|yesterday|7|28|90|365 (default 28). Each source's range ends on its own newest day (Today / Yesterday = that
+//   Pacific-time day), the previous period is the same length before it.
+// ?f=<JSON [{dim: query|page|country|device, op: contains|exact|not, v}]> filters (ANDed). Filters use the day-by-day
+//   breakdowns, so they cover at most 90 days (+ 90 before for the comparison): a 365-day request with filters is answered
+//   for 90 days (google.clamped, rangeUsed: "90").
+// ?page=<full page URL>&src=google|bing -> the queries of that page (cur + prev), kept for older page versions.
+const RANGES = ['today', 'yesterday', '7', '28', '90', '365'];
+const SUM_RANGES = ['7', '28', '90', '365'];
+const FDIMS = ['query', 'page', 'country', 'device'];
+const FOPS = ['contains', 'exact', 'not'];
+const SETDIMS = { a: ['country', 'device'], b: ['page', 'country', 'device'], q: ['query', 'page', 'country', 'device'] };
+const MAX_FILTER_DAYS = 90;
 const BING_BASE = 'https://ssl.bing.com/webmaster/api.svc/json/';
 const BING_TTL = 6 * 3600;
 const MEM = new Map(); // method+arg -> { at, data }
@@ -24,6 +36,7 @@ async function redis(commands) {
   return r.json();
 }
 const jparse = (x) => { try { return x && x.result ? JSON.parse(x.result) : null; } catch { return null; } };
+const pj = (v) => { if (!v) return null; try { return JSON.parse(v); } catch (e) { return null; } };
 
 function addDays(s, n) { return new Date(Date.parse(s + 'T12:00:00Z') + n * 864e5).toISOString().slice(0, 10); }
 function datesBetween(a, b) { const out = []; for (let d = a; d <= b && out.length < 800; d = addDays(d, 1)) out.push(d); return out; }
@@ -54,8 +67,10 @@ function fin(o) {
   return out;
 }
 
-// Join current and previous rows by key: { k, c, i, p, pc, pi, pp }.
-function joinPrev(cur, prev) {
+// Join current and previous rows by key: { k, c, i, p, pc, pi, pp }. noPrev: the previous period is not (fully) covered by
+// the data, so no previous numbers are attached at all (the page then shows no change instead of an absurd +11,618%).
+function joinPrev(cur, prev, noPrev) {
+  if (noPrev) return cur.map((r) => Object.assign({}, r));
   const pm = new Map(prev.map((r) => [r.k, r]));
   return cur.map((r) => {
     const x = pm.get(r.k);
@@ -76,29 +91,152 @@ function gscRows(rows, kind) {
 
 function totalsOf(days) {
   let c = 0, i = 0, pw = 0;
-  for (const d of days) { c += d.c; i += d.i; pw += d.p * d.i; }
+  for (const d of days) { c += d.c; i += d.i; pw += (d.p || 0) * d.i; }
   return { c, i, p: i ? Math.round(pw / i * 100) / 100 : 0, days: days.length };
 }
+// A previous period counts only when the data covers (almost) all of it: Search Console keeps 16 months, so the period
+// before a 365-day range has ~120 days at most, and a change against that would be meaningless.
+const covered = (have, want) => want > 0 && have >= Math.ceil(want * 0.9);
 
-// Pure: build the Google part from stored blobs.
+function dayRow(d, b) {
+  const o = { d, c: b.t[0], i: b.t[1], p: b.t[2] };
+  if (b.f) o.f = 1;
+  return o;
+}
+
+// Pure: build the Google part from stored blobs (unfiltered 7 / 28 / 90 / 365 days).
 function googlePart(meta, sumCur, sumPrev, dayBlobs, curDates, prevDates) {
   if (!meta && !sumCur && !Object.keys(dayBlobs).length) return { setup: false };
-  const day = (d) => {
-    const b = dayBlobs[d];
-    return b ? { d, c: b.t[0], i: b.t[1], p: b.t[2], dev: b.dev || [] } : null;
-  };
-  const daily = curDates.map(day).filter(Boolean);
-  const prevDaily = prevDates.map(day).filter(Boolean);
+  const daily = curDates.filter((d) => dayBlobs[d]).map((d) => dayRow(d, dayBlobs[d]));
+  const prevDaily = prevDates.filter((d) => dayBlobs[d]).map((d) => dayRow(d, dayBlobs[d]));
+  const prevPartial = !covered(prevDaily.length, prevDates.length) || !sumPrev;
   const out = {
     setup: true, meta: meta || null,
     cur: sumCur ? { start: sumCur.start, end: sumCur.end } : curDates.length ? { start: curDates[0], end: curDates[curDates.length - 1] } : null,
-    prev: sumPrev ? { start: sumPrev.start, end: sumPrev.end } : null,
-    daily: daily.map((x) => ({ d: x.d, c: x.c, i: x.i, p: x.p })),
-    prevDaily: prevDaily.map((x) => ({ d: x.d, c: x.c, i: x.i, p: x.p })),
-    totals: totalsOf(daily), prevTotals: totalsOf(prevDaily),
+    prev: prevDates.length ? { start: prevDates[0], end: prevDates[prevDates.length - 1] } : null,
+    daily, prevDaily, totals: totalsOf(daily), prevTotals: totalsOf(prevDaily), prevPartial,
+    fresh: daily.some((x) => x.f),
   };
   for (const t of ['pages', 'queries', 'countries', 'devices']) {
-    out[t] = joinPrev(gscRows(sumCur && sumCur[t], t), gscRows(sumPrev && sumPrev[t], t)).slice(0, t === 'queries' ? 1000 : 500);
+    out[t] = joinPrev(gscRows(sumCur && sumCur[t], t), gscRows(sumPrev && sumPrev[t], t), prevPartial).slice(0, t === 'queries' ? 1000 : 500);
+  }
+  return out;
+}
+
+// ---- filters
+// Pure: validate ?f=. Returns { filters } or { error }.
+function parseFilters(raw) {
+  if (raw == null || raw === '') return { filters: [] };
+  let arr;
+  try { arr = JSON.parse(String(raw).slice(0, 3000)); } catch (e) { return { error: 'bad filters' }; }
+  if (!Array.isArray(arr) || arr.length > 8) return { error: 'bad filters' };
+  const filters = [];
+  for (const f of arr) {
+    if (!f || !FDIMS.includes(f.dim) || !FOPS.includes(f.op) || typeof f.v !== 'string') return { error: 'bad filter' };
+    const v = f.v.trim().slice(0, 200);
+    if (v) filters.push({ dim: f.dim, op: f.op, v });
+  }
+  return { filters };
+}
+
+// Pure: does one decoded row pass every filter? Case-insensitive; pages compare as normalised paths and as full URLs.
+function passes(row, filters) {
+  for (const f of filters) {
+    const raw = row[f.dim];
+    if (raw == null) return false;
+    const want = f.v.toLowerCase();
+    let hit;
+    if (f.dim === 'page') {
+      const a = String(raw).toLowerCase(), n = normPage(raw).toLowerCase();
+      hit = f.op === 'exact' ? n === normPage(f.v).toLowerCase() : a.includes(want) || n.includes(want);
+    } else {
+      const a = String(raw).toLowerCase();
+      hit = f.op === 'exact' ? a === want : a.includes(want);
+    }
+    if (f.op === 'not' ? hit : !hit) return false;
+  }
+  return true;
+}
+
+// Pure: dictionary-encoded day set -> row objects { query?, page?, country, device, c, i, p }.
+function decodeSet(set, kind) {
+  const dims = SETDIMS[kind], n = dims.length, out = [];
+  if (!set || !Array.isArray(set.r) || !Array.isArray(set.s)) return out;
+  for (const r of set.r) {
+    const o = { c: r[n], i: r[n + 1], p: r[n + 2] };
+    for (let k = 0; k < n; k++) o[dims[k]] = set.s[r[k]];
+    out.push(o);
+  }
+  return out;
+}
+
+// Which breakdown answers a filter set: any query filter needs the query table, a page filter the page table, else the
+// complete country x device table (the same totals Search Console shows).
+function basisOf(filters) {
+  if (filters.some((f) => f.dim === 'query')) return 'q';
+  if (filters.some((f) => f.dim === 'page')) return 'b';
+  return 'a';
+}
+const kindsFor = (filters) => { const b = basisOf(filters); return b === 'q' ? ['q'] : b === 'b' ? ['b', 'q'] : ['a', 'b', 'q']; };
+
+// Pure: the Google part from day-by-day breakdowns (filters, or Today / Yesterday).
+// sets = { date: { a, b, q } } (parsed), dayBlobs = { date: day blob } (unfiltered day totals + hours).
+function filteredPart(meta, dayBlobs, sets, curDates, prevDates, filters, opts) {
+  opts = opts || {};
+  const basis = basisOf(filters);
+  const unfiltered = !filters.length;
+  const cache = {};
+  const rowsOf = (d, kind) => {
+    const key = d + kind;
+    if (!(key in cache)) cache[key] = sets[d] && sets[d][kind] ? decodeSet(sets[d][kind], kind).filter((r) => passes(r, filters)) : null;
+    return cache[key];
+  };
+  const series = (dates) => {
+    const out = [];
+    for (const d of dates) {
+      if (unfiltered && dayBlobs[d]) { out.push(dayRow(d, dayBlobs[d])); continue; }
+      const rows = rowsOf(d, basis);
+      if (!rows) continue;
+      let c = 0, i = 0, pw = 0;
+      for (const r of rows) { c += r.c; i += r.i; pw += r.p * r.i; }
+      const o = { d, c, i, p: i ? Math.round(pw / i * 100) / 100 : 0 };
+      if (dayBlobs[d] && dayBlobs[d].f) o.f = 1;
+      out.push(o);
+    }
+    return out;
+  };
+  const daily = series(curDates), prevDaily = series(prevDates);
+  const have = (dates, kind) => dates.filter((d) => sets[d] && sets[d][kind]).length;
+  const prevPartial = !covered(prevDaily.length, prevDates.length) || !covered(have(prevDates, 'q'), prevDates.length);
+  const table = (dates, kind, dim) => {
+    const m = new Map();
+    for (const d of dates) {
+      const rows = rowsOf(d, kind);
+      if (!rows) continue;
+      for (const r of rows) {
+        if (dim === 'page') acc(m, normPage(r.page), r.c, r.i, r.p, { u: r.page });
+        else acc(m, dim === 'query' ? r.query : String(r[dim]).toLowerCase(), r.c, r.i, r.p);
+      }
+    }
+    return [...m.values()].map(fin).sort((a, b) => b.c - a.c || b.i - a.i);
+  };
+  const tkind = { queries: 'q', pages: basis === 'q' ? 'q' : 'b', countries: basis, devices: basis };
+  const tdim = { queries: 'query', pages: 'page', countries: 'country', devices: 'device' };
+  const out = {
+    setup: true, meta: meta || null, filtered: !unfiltered, basis,
+    cur: curDates.length ? { start: curDates[0], end: curDates[curDates.length - 1] } : null,
+    prev: prevDates.length ? { start: prevDates[0], end: prevDates[prevDates.length - 1] } : null,
+    daily, prevDaily, totals: totalsOf(daily), prevTotals: totalsOf(prevDaily), prevPartial,
+    fresh: daily.some((x) => x.f),
+    dimDays: { have: have(curDates, unfiltered ? 'q' : basis), want: curDates.length },
+  };
+  for (const t of Object.keys(tkind)) {
+    out[t] = joinPrev(table(curDates, tkind[t], tdim[t]), table(prevDates, tkind[t], tdim[t]), prevPartial).slice(0, t === 'queries' ? 1000 : 500);
+  }
+  if (opts.hourly && unfiltered) {
+    const hrs = (d) => ((dayBlobs[d] && dayBlobs[d].h) || []).map((h) => ({ h: h[0], c: h[1], i: h[2], p: h[3] }));
+    out.hourly = hrs(curDates[0]);
+    out.prevHourly = hrs(prevDates[0]);
   }
   return out;
 }
@@ -122,7 +260,7 @@ function bingDate(v) {
     const off = sign * (Number(m[2].slice(1, 3)) * 60 + Number(m[2].slice(3, 5))) * 60000;
     return new Date(ms + off).toISOString().slice(0, 10);
   }
-  return new Intl.DateTimeFormat('en-CA', { timeZone: 'America/Los_Angeles', year: 'numeric', month: '2-digit', day: '2-digit' }).format(new Date(ms));
+  return ptDate(ms);
 }
 
 // Pure: slim a Bing answer: traffic -> [[date, c, i]]; queries / pages / page queries -> [[date, key, c, i, pos]].
@@ -182,39 +320,174 @@ function bingAgg(rows, start, end, isPage) {
   return [...m.values()].map(fin).sort((a, b) => b.c - a.c || b.i - a.i);
 }
 
-// Pure: the Bing part from slim rows.
-function bingPart(traffic, queries, pages, n) {
-  if (!traffic.length && !queries.length) return { setup: true, empty: true, daily: [], prevDaily: [], totals: totalsOf([]), prevTotals: totalsOf([]), pages: [], queries: [] };
-  const end = traffic.length ? traffic[traffic.length - 1][0] : queries.map((r) => r[0]).sort().pop();
+const minDate = (rows) => { let m = null; for (const r of rows || []) if (r[0] && (!m || r[0] < m)) m = r[0]; return m; };
+const maxDate = (rows) => { let m = null; for (const r of rows || []) if (r[0] && (!m || r[0] > m)) m = r[0]; return m; };
+
+// Pure: apply page filters to Bing's page table and query filters to its query table. Bing has no cross dimensions,
+// so a table whose filters it cannot honour comes back empty and "blocked".
+function bingFilter(rows, kind, filters) {
+  const own = kind === 'queries' ? 'query' : 'page';
+  if (filters.some((f) => f.dim !== own)) return { rows: [], blocked: true };
+  return { rows: rows.filter((r) => passes(kind === 'queries' ? { query: r.k } : { page: r.u || r.k }, filters)), blocked: false };
+}
+
+// Pure: the Bing part from slim rows. range = days ('7'...) or 'today' / 'yesterday' (today = Pacific date).
+// Coverage guard: Bing keeps a limited history (query / page buckets ~6 months), so the previous period (and, for long
+// ranges, the current one) can lie partly outside it. prevPartial then means "show no changes", since a change against a
+// period that only has its last week or two of data reads as +11,618%.
+function bingPart(traffic, queries, pages, range, today, filters) {
+  filters = filters || [];
+  const empty = (extra) => Object.assign({ setup: true, empty: true, daily: [], prevDaily: [], totals: totalsOf([]), prevTotals: totalsOf([]), pages: [], queries: [], newest: maxDate(traffic) }, extra || {});
+  if (!traffic.length && !queries.length) return empty();
+  const day = (r) => ({ d: r[0], c: r[1], i: r[2] });
+  const tot = (ds, pos) => { const t = { c: 0, i: 0, days: ds.length }; ds.forEach((x) => { t.c += x.c; t.i += x.i; }); t.p = pos; return t; };
+  if (range === 'today' || range === 'yesterday') {
+    const D = range === 'today' ? today : addDays(today, -1), P = addDays(D, -1);
+    const daily = traffic.filter((r) => r[0] === D).map(day), prevDaily = traffic.filter((r) => r[0] === P).map(day);
+    const base = { cur: { start: D, end: D }, prev: { start: P, end: P }, newest: maxDate(traffic), weeklyOnly: true, filtered: filters.length > 0 };
+    if (!daily.length) return empty(Object.assign(base, { lag: true }));
+    return Object.assign({ setup: true, daily: filters.length ? [] : daily, prevDaily: filters.length ? [] : prevDaily,
+      totals: tot(daily, 0), prevTotals: tot(prevDaily, 0), prevPartial: !prevDaily.length, queries: [], pages: [] }, base);
+  }
+  const n = Number(range);
+  const end = traffic.length ? traffic[traffic.length - 1][0] : maxDate(queries);
   const start = addDays(end, -(n - 1));
   const pEnd = addDays(start, -1), pStart = addDays(start, -n);
-  // weekly buckets: a bucket dated inside the range counts for it (Bing's buckets are a week each)
+  // weekly buckets: a bucket dated inside the range counts for it (Bing's buckets are a week each), and a first bucket
+  // dated up to 6 days after a period's start still covers that start
+  const qMin = minDate(queries.concat(pages)), tMin = minDate(traffic);
+  const tablesPrevOk = !!qMin && qMin <= addDays(pStart, 6);
   const qCur = bingAgg(queries, start, end), qPrev = bingAgg(queries, pStart, pEnd);
   const pgCur = bingAgg(pages, start, end, true), pgPrev = bingAgg(pages, pStart, pEnd, true);
   const posOf = (rows) => { let i = 0, pw = 0; for (const r of rows) { i += r.i; pw += r.p * r.i; } return i ? Math.round(pw / i * 100) / 100 : 0; };
-  const day = (r) => ({ d: r[0], c: r[1], i: r[2] });
   const daily = traffic.filter((r) => r[0] >= start && r[0] <= end).map(day);
   const prevDaily = traffic.filter((r) => r[0] >= pStart && r[0] <= pEnd).map(day);
-  const tot = (ds, pos) => { const t = { c: 0, i: 0, days: ds.length }; ds.forEach((x) => { t.c += x.c; t.i += x.i; }); t.p = pos; return t; };
-  return {
+  const prevDaysOk = covered(prevDaily.length, n);
+  let qs = joinPrev(qCur, qPrev, !tablesPrevOk), ps = joinPrev(pgCur, pgPrev, !tablesPrevOk);
+  const out = {
     setup: true, cur: { start, end }, prev: { start: pStart, end: pEnd },
     daily, prevDaily, totals: tot(daily, posOf(qCur)), prevTotals: tot(prevDaily, posOf(qPrev)),
-    queries: joinPrev(qCur, qPrev).slice(0, 1000), pages: joinPrev(pgCur, pgPrev).slice(0, 500),
-    weekly: true,
+    prevPartial: !prevDaysOk || !tablesPrevOk, prevDaysOk, tablesPrevOk,
+    since: { traffic: tMin, tables: qMin }, curPartial: !!(qMin && qMin > addDays(start, 6)) || !!(tMin && tMin > start),
+    weekly: true, newest: end,
   };
+  if (filters.length) {
+    const fq = bingFilter(qs, 'queries', filters), fp = bingFilter(ps, 'pages', filters);
+    qs = fq.rows; ps = fp.rows;
+    out.filtered = true; out.blocked = { queries: fq.blocked, pages: fp.blocked };
+    out.daily = []; out.prevDaily = []; // Bing's day totals cannot be split by query / page / country / device
+  }
+  out.queries = qs.slice(0, 1000); out.pages = ps.slice(0, 500);
+  return out;
+}
+
+// Pacific date (Search Console's day) of a time.
+function ptDate(ms) {
+  return new Intl.DateTimeFormat('en-CA', { timeZone: 'America/Los_Angeles', year: 'numeric', month: '2-digit', day: '2-digit' }).format(new Date(ms));
+}
+
+// Reads Redis keys in chunks of 30 (each Upstash answer stays well under its size limit).
+async function mgetChunked(keys) {
+  const parts = [];
+  for (let k = 0; k < keys.length; k += 30) parts.push(keys.slice(k, k + 30));
+  const got = await Promise.all(parts.map((part) => redis([['MGET', ...part]])));
+  const out = [];
+  got.forEach((g, j) => { const vals = (g[0] && g[0].result) || []; parts[j].forEach((_, x) => out.push(vals[x] == null ? null : vals[x])); });
+  return out;
+}
+
+// The Google answer. deps.mget(keys) -> values (strings or null); split out so the browser mock (sc-mock.js) runs this same code.
+async function googleAnswer(range, filters, today, deps) {
+  const [metaS, atS] = await deps.mget(['gscdash:meta', 'gscdash:at']);
+  const meta = pj(metaS);
+  if (meta && atS) meta.at = atS;
+  const readDays = async (dates, kinds) => {
+    const keys = dates.map((d) => 'gscdash:day:' + d);
+    kinds.forEach((k) => dates.forEach((d) => keys.push('gscdash:d' + k + ':' + d)));
+    const vals = await deps.mget(keys);
+    const blobs = {}, sets = {};
+    dates.forEach((d, j) => { const b = pj(vals[j]); if (b) blobs[d] = b; });
+    kinds.forEach((k, ki) => dates.forEach((d, j) => {
+      const v = pj(vals[dates.length * (ki + 1) + j]);
+      if (v) (sets[d] || (sets[d] = {}))[k] = v;
+    }));
+    return { blobs, sets };
+  };
+  if (range === 'today' || range === 'yesterday') {
+    const D = range === 'today' ? today : addDays(today, -1), P = addDays(D, -1);
+    const { blobs, sets } = await readDays([P, D], kindsFor(filters));
+    if (!meta && !Object.keys(blobs).length) return { setup: false };
+    const g = filteredPart(meta, blobs, sets, [D], [P], filters, { hourly: true });
+    g.day = true;
+    if (!blobs[D] && !sets[D]) g.noDay = true;
+    return g;
+  }
+  let n = Number(range);
+  if (!filters.length) {
+    const [cS, pS] = await deps.mget([`gscdash:sum:${range}:cur`, `gscdash:sum:${range}:prev`]);
+    const sumCur = pj(cS), sumPrev = pj(pS);
+    const end = (sumCur && sumCur.end) || (meta && meta.lastDay) || null;
+    let curDates = [], prevDates = [], blobs = {};
+    if (end) {
+      const start = (sumCur && sumCur.start) || addDays(end, -(n - 1));
+      curDates = datesBetween(start, end);
+      prevDates = datesBetween(addDays(start, -n), addDays(start, -1));
+      blobs = (await readDays(prevDates.concat(curDates), [])).blobs;
+    }
+    return googlePart(meta, sumCur, sumPrev, blobs, curDates, prevDates);
+  }
+  let clamped = false;
+  if (n > MAX_FILTER_DAYS) { n = MAX_FILTER_DAYS; clamped = true; }
+  const end = (meta && meta.lastDay) || today;
+  const curDates = datesBetween(addDays(end, -(n - 1)), end);
+  const prevDates = datesBetween(addDays(end, -(2 * n - 1)), addDays(end, -n));
+  const { blobs, sets } = await readDays(prevDates.concat(curDates), kindsFor(filters));
+  if (!meta && !Object.keys(blobs).length) return { setup: false };
+  const g = filteredPart(meta, blobs, sets, curDates, prevDates, filters);
+  if (clamped) g.clamped = true;
+  return g;
+}
+
+// The whole answer. deps = { mget, bing(method, extra) -> slim rows (throws on error), or null when Bing is not set up, now }.
+async function respond(q, deps) {
+  q = q || {};
+  const range = RANGES.includes(String(q.range)) ? String(q.range) : '28';
+  const pf = parseFilters(q.f);
+  if (pf.error) return { status: 400, body: { error: pf.error } };
+  const filters = pf.filters;
+  const today = ptDate(deps.now || Date.now());
+  const result = { range, today, filters };
+  try {
+    result.google = await googleAnswer(range, filters, today, deps);
+    if (result.google.clamped) result.rangeUsed = '90';
+  } catch (e) {
+    result.google = { setup: true, error: 'Stored data could not be read.' };
+  }
+  if (!deps.bing) result.bing = { setup: false };
+  else {
+    try {
+      const [traffic, queries, pages] = await Promise.all([
+        deps.bing('GetRankAndTrafficStats', ''), deps.bing('GetQueryStats', ''), deps.bing('GetPageStats', ''),
+      ]);
+      result.bing = bingPart(traffic, queries, pages, result.rangeUsed || range, today, filters);
+    } catch (e) {
+      result.bing = { setup: true, error: String(e.message || e) };
+    }
+  }
+  return { status: 200, body: result };
 }
 
 async function handler(req, res) {
   res.setHeader('Cache-Control', 'private, no-store');
   res.setHeader('X-Robots-Tag', 'noindex, nofollow');
   const q = req.query || {};
-  const range = RANGES.includes(String(q.range)) ? String(q.range) : '28';
-  const n = Number(range);
   const key = process.env.BING_WEBMASTER_KEY || '';
   const siteUrl = process.env.BING_SITE_URL || 'https://mes.fm/';
 
-  // drill-down: the queries of one page
+  // drill-down: the queries of one page (older page versions)
   if (q.page) {
+    const range = SUM_RANGES.includes(String(q.range)) ? String(q.range) : '28';
+    const n = Number(range);
     const page = String(q.page).slice(0, 500);
     if (q.src === 'bing') {
       if (!key) return res.status(200).json({ rows: [], setup: false });
@@ -232,42 +505,12 @@ async function handler(req, res) {
     } catch (e) { return res.status(502).json({ error: 'data unavailable' }); }
   }
 
-  const result = { range };
-  // Google
-  try {
-    const out = await redis([['GET', 'gscdash:meta'], ['GET', `gscdash:sum:${range}:cur`], ['GET', `gscdash:sum:${range}:prev`]]);
-    const meta = jparse(out[0]), sumCur = jparse(out[1]), sumPrev = jparse(out[2]);
-    const end = (sumCur && sumCur.end) || (meta && meta.lastDay) || null;
-    let curDates = [], prevDates = [], blobs = {};
-    if (end) {
-      const start = (sumCur && sumCur.start) || addDays(end, -(n - 1));
-      curDates = datesBetween(start, end);
-      prevDates = datesBetween(addDays(start, -n), addDays(start, -1));
-      const all = prevDates.concat(curDates);
-      const got = await redis([['MGET', ...all.map((d) => `gscdash:day:${d}`)]]);
-      const vals = (got[0] && got[0].result) || [];
-      all.forEach((d, i) => { if (vals[i]) { try { blobs[d] = JSON.parse(vals[i]); } catch (e) { /* skip */ } } });
-    }
-    result.google = googlePart(meta, sumCur, sumPrev, blobs, curDates, prevDates);
-  } catch (e) {
-    result.google = { setup: true, error: 'Stored data could not be read.' };
-  }
-  // Bing
-  if (!key) result.bing = { setup: false };
-  else {
-    try {
-      const [traffic, queries, pages] = await Promise.all([
-        bingCall('GetRankAndTrafficStats', '', key, siteUrl),
-        bingCall('GetQueryStats', '', key, siteUrl),
-        bingCall('GetPageStats', '', key, siteUrl),
-      ]);
-      result.bing = bingPart(traffic, queries, pages, n);
-    } catch (e) {
-      result.bing = { setup: true, error: scrub(e.message, key) };
-    }
-  }
-  return res.status(200).json(result);
+  const out = await respond(q, {
+    mget: mgetChunked,
+    bing: key ? (method, extra) => bingCall(method, extra, key, siteUrl).catch((e) => { throw new Error(scrub(e.message, key)); }) : null,
+  });
+  return res.status(out.status).json(out.body);
 }
 
 module.exports = handler;
-Object.assign(module.exports, { normPage, gscRows, googlePart, pageQueries, bingDate, slimBing, bingAgg, bingPart, joinPrev, scrub, _mem: MEM });
+Object.assign(module.exports, { normPage, gscRows, googlePart, filteredPart, parseFilters, passes, decodeSet, basisOf, pageQueries, bingDate, slimBing, bingAgg, bingPart, bingFilter, joinPrev, scrub, respond, ptDate, _mem: MEM });

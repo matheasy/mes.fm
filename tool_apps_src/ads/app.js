@@ -3,6 +3,7 @@
 // earnings/js/earnings.js, not under /ads/, so ad blockers don't block the page's own script.
 (function () {
   'use strict';
+  try { localStorage.setItem('mes-owner', '1'); } catch (e) {} // this page is behind the password: /stats and /seo then show the private links
   var RANGE = '30d';
   try { RANGE = localStorage.getItem('mes-ads:range') || '30d'; } catch (e) {}
   if (!/^(today|yesterday|7d|30d|90d|365d)$/.test(RANGE)) RANGE = '30d';
@@ -345,5 +346,13 @@
     box.onmouseleave = function () { $('ad-tip').style.display = 'none'; };
   }
   window.addEventListener('resize', function () { if (DATA) drawChart(); });
+  // Fill window / Full screen for the chart and every table (main_js/panel-view.js)
+  (function panels() {
+    if (!window.MESPanel) { setTimeout(panels, 60); return; }
+    document.querySelectorAll('#ad .ad-sec').forEach(function (sec) {
+      var head = sec.querySelector('.ad-head');
+      if (head) window.MESPanel.add(sec, { bar: head, onChange: function () { if (DATA && sec.contains($('ad-chart'))) drawChart(); } });
+    });
+  })();
   load();
 })();
