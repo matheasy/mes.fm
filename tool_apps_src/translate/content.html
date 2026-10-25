@@ -1,0 +1,92 @@
+	<div class="tu tr" id="tr" data-mode="{{MODE}}">
+		<section class="tu-card tr-tx" id="tr-tx" aria-labelledby="tr-tx-h">
+			<h2 class="tr-h" id="tr-tx-h">Translate text</h2>
+			<div class="tr-langs">
+				<div class="tu-field tr-lf"><label for="tr-from">From</label><select id="tr-from" class="tu-select"></select></div>
+				<button type="button" class="tu-btn tu-btn--ghost tr-swap" id="tr-swap" title="Swap the languages (and the texts)" aria-label="Swap languages">&#8644;</button>
+				<div class="tu-field tr-lf"><label for="tr-to">To</label><select id="tr-to" class="tu-select"></select></div>
+				<div class="tu-field tr-ef"><label for="tr-engine">Engine</label><select id="tr-engine" class="tu-select">
+					<option value="auto">Auto (on this device when possible)</option>
+					<option value="device">On this device only</option>
+					<option value="online">Online service (MyMemory)</option>
+				</select></div>
+			</div>
+			<div class="tr-panes">
+				<div class="tr-pane">
+					<textarea id="tr-in" class="tr-text" dir="auto" rows="7" spellcheck="true" placeholder="Type or paste text here" aria-label="Text to translate"></textarea>
+					<div class="tr-tools">
+						<span class="tr-count" id="tr-count">0 characters</span>
+						<span class="tr-det" id="tr-det"></span>
+						<span class="tr-sp"></span>
+						<button type="button" class="tr-ib" id="tr-say-in" title="Read the text aloud" aria-label="Read the text aloud">&#128266;</button>
+						<button type="button" class="tr-ib" id="tr-paste" title="Paste from the clipboard" aria-label="Paste">&#128203;</button>
+						<button type="button" class="tr-ib" id="tr-clear" title="Clear" aria-label="Clear the text">&#10005;</button>
+					</div>
+				</div>
+				<div class="tr-pane tr-pane--out">
+					<div id="tr-out" class="tr-text tr-out" role="region" aria-live="polite" aria-label="Translation"><span class="tr-ph">The translation appears here</span></div>
+					<div class="tr-tools">
+						<span class="tr-count" id="tr-ocount"></span>
+						<span class="tr-sp"></span>
+						<button type="button" class="tr-ib" id="tr-say-out" title="Read the translation aloud" aria-label="Read the translation aloud">&#128266;</button>
+						<button type="button" class="tr-ib" id="tr-copy" title="Copy the translation" aria-label="Copy the translation">&#10697;</button>
+					</div>
+				</div>
+			</div>
+			<div class="tr-act">
+				<button type="button" class="tu-btn tu-btn--primary tr-go" id="tr-go">Translate</button>
+				<span class="tr-badge" id="tr-badge" role="status"></span>
+				<label class="tr-live" id="tr-livebox"><input type="checkbox" id="tr-live" checked> Translate as I type <span class="tr-dim">(on this device only)</span></label>
+				<span class="tr-sp"></span>
+				<button type="button" class="tu-btn tu-btn--ghost" id="tr-link">&#128279; Copy link</button>
+			</div>
+			<div class="tr-prog" id="tr-prog" hidden><div class="tr-prog__bar"><i id="tr-prog-i"></i></div><span id="tr-prog-t"></span></div>
+			<p class="tu-note tr-msg" id="tr-msg" hidden></p>
+		</section>
+
+		<section class="tu-card tr-ocr" id="tr-ocr" aria-labelledby="tr-ocr-h">
+			<h2 class="tr-h" id="tr-ocr-h">Text from a picture</h2>
+			<p class="tu-note tr-ocr-intro" id="tr-ocr-intro">Add a photo, screenshot or PDF: its text is read right here in your browser (nothing is uploaded), then you can fix it and translate it.</p>
+			<div class="tr-drop" id="tr-drop" tabindex="0" role="button" aria-label="Choose, drop or paste a picture or PDF">
+				<div class="tr-drop__big">Drop a picture or PDF here</div>
+				<div class="tr-drop__sub">or <b>click to choose</b> a file, or press <kbd>Ctrl</kbd>/<kbd>&#8984;</kbd> + <kbd>V</kbd> to paste a screenshot</div>
+				<input type="file" id="tr-file" accept="image/*,application/pdf,.pdf" hidden>
+			</div>
+			<div class="tr-ocrbar">
+				<div class="tu-field tr-lf"><label for="tr-olang">Language in the picture</label><select id="tr-olang" class="tu-select"></select></div>
+				<label class="tr-live"><input type="checkbox" id="tr-oeng" checked> Also read English words</label>
+				<button type="button" class="tu-btn tu-btn--primary" id="tr-oread" disabled>Read the text</button>
+			</div>
+			<div class="tr-prog" id="tr-oprog" hidden><div class="tr-prog__bar"><i id="tr-oprog-i"></i></div><span id="tr-oprog-t"></span><button type="button" class="tr-cancel" id="tr-ocancel">Cancel</button></div>
+			<div class="tr-pages" id="tr-pages" hidden></div>
+			<div class="tr-ores" id="tr-ores" hidden>
+				<div class="tr-stagewrap">
+					<div class="tr-stagebar">
+						<div class="tu-seg" id="tr-level" role="group" aria-label="Boxes around"><button type="button" data-v="line" aria-pressed="true">Lines</button><button type="button" data-v="word" aria-pressed="false">Words</button></div>
+						<button type="button" class="tu-btn tu-btn--ghost tr-small" id="tr-selall">Select all</button>
+						<button type="button" class="tu-btn tu-btn--ghost tr-small" id="tr-selnone">Select none</button>
+					</div>
+					<div class="tr-stage" id="tr-stage"><canvas id="tr-cv" aria-label="Your picture with the text that was found boxed"></canvas><div class="tr-boxes" id="tr-boxes"></div></div>
+					<p class="tu-note">Click a box to select that text (click again to unselect). Boxes are coloured by how sure the reader is: green sure, amber unsure, red guessing.</p>
+				</div>
+				<div class="tr-oside">
+					<label class="tu-label" for="tr-otext">Text found (you can edit it)</label>
+					<textarea id="tr-otext" class="tr-text" dir="auto" rows="10" spellcheck="true"></textarea>
+					<div class="tr-tools"><span class="tr-count" id="tr-ostat"></span><span class="tr-sp"></span><button type="button" class="tr-ib" id="tr-ocopy" title="Copy the text found" aria-label="Copy the text found">&#10697;</button></div>
+					<div class="tr-obtns">
+						<button type="button" class="tu-btn tu-btn--primary" id="tr-ouse">Translate this text</button>
+						<button type="button" class="tu-btn tu-btn--ghost" id="tr-ousesel" disabled>Translate only the selected boxes</button>
+						<button type="button" class="tu-btn tu-btn--ghost" id="tr-otxt">Download .txt</button>
+					</div>
+				</div>
+			</div>
+		</section>
+
+		<details class="tu-card tr-hist" id="tr-histbox">
+			<summary><b>History</b> <span class="tr-dim" id="tr-hcount"></span></summary>
+			<p class="tu-note">Kept in this browser only. <button type="button" class="tr-linkb" id="tr-hclear">Clear history</button> · <label><input type="checkbox" id="tr-hkeep" checked> Keep a history</label></p>
+			<ul class="tr-hlist" id="tr-hlist"></ul>
+		</details>
+		<div class="tu-toast" id="tr-toast" role="status" aria-live="polite"></div>
+		{{SEO}}
+	</div>

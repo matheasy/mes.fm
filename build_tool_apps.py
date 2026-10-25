@@ -43,6 +43,9 @@ PDF_NAV_INFO = '<li class="info-bar__item"><a class="info-bar__item__text" href=
 PDF_NAV_MENU = '<li class="navbar__item"><a class="navbar__link" href="/pdf">Editor</a></li><li class="navbar__item"><a class="navbar__link" href="/merge-pdf">Merge</a></li><li class="navbar__item"><a class="navbar__link" href="/split-pdf">Split</a></li><li class="navbar__item"><a class="navbar__link" href="/organize-pdf">Organize</a></li><li class="navbar__item"><a class="navbar__link" href="/jpg-to-pdf">Images to PDF</a></li><li class="navbar__item"><a class="navbar__link" href="/pdf-to-jpg">PDF to images</a></li><li class="navbar__item"><a class="navbar__link" href="/compress-pdf">Compress</a></li>'
 
 # MES Mechanics of Materials family nav (2026-10-20): Home = /materials (all tools as tabs), then the three single-topic pages and the materials table
+TR_BRAND = dict(slug="translate", title="MES Translate", tag="Translate text, photos and PDFs, on your device when it can.")
+TR_NAV_INFO = "<li class=\"info-bar__item\"><a class=\"info-bar__item__text\" href='/image-to-text'>Image to Text</a></li>"
+TR_NAV_MENU = "<li class=\"navbar__item\"><a class=\"navbar__link\" href=\"/image-to-text\">Image to Text (OCR)</a></li>"
 MAT_BRAND = dict(slug="materials", title="MES Mechanics of Materials", tag="Stress, strain, shear and torsion, with the pictures.")
 CI_NAV_INFO = "<li class=\"info-bar__item\"><a class=\"info-bar__item__text\" href='/compound-interest-explained'>Explained</a></li><li class=\"info-bar__item\"><a class=\"info-bar__item__text\" href='/loan-calculator'>Loan</a></li><li class=\"info-bar__item\"><a class=\"info-bar__item__text\" href='/mortgagecalculator'>Mortgage</a></li>"
 CI_NAV_MENU = "<li class=\"navbar__item\"><a class=\"navbar__link\" href=\"/compound-interest-explained\">Compound Interest Explained</a></li><li class=\"navbar__item\"><a class=\"navbar__link\" href=\"/loan-calculator\">Loan Calculator</a></li><li class=\"navbar__item\"><a class=\"navbar__link\" href=\"/mortgagecalculator\">Mortgage Calculator</a></li>"
@@ -656,6 +659,21 @@ APPS = {
     # Reminder (new 2026-10-21, mes.fm/reminder; aliases /remind /remindme /reminders /notify): share link for a livestream / event (the whole event is in the query string,
     # nothing stored on a server): countdown in the viewer's zone, Google / .ics (with alarms, weekly events keep the host's TZID) / Outlook.com buttons, and in-browser alerts
     # (notification + chime while a tab is open). lib.js = RM on top of the Clock's CK (lib_from); tests: tool_apps_src/reminder-tests.js. PIL placeholder logos until Grok art.
+    # MES Translate + Image to Text (new 2026-10-24, mes.fm/translate and mes.fm/image-to-text; one source tool_apps_src/translate, one served script translate/js/translate.js;
+    # data-mode on #tr: "translate" = text first, "ocr" = picture first). Engines: the browser's on-device Translator / LanguageDetector APIs (Chrome 138+), else MyMemory (online, keyless).
+    # OCR = Tesseract.js 6.0.1 (jsDelivr) in the browser, PDFs via pdf.js 3.11.174. lib.js = MESTr (tests: node tool_apps_src/translate-tests.js). PIL placeholder logos until Grok art.
+    "translate": dict(title="MES Translate", page_title="Translate Text and Pictures",
+                      tag="Translate text, photos and PDFs, on your device when it can.", accent="#0b7285", dark="#085563", tint="#e0f3f6",
+                      desc="Free translator for text, photos, screenshots and PDFs in about 85 languages. Chrome and Edge translate on your own device, so nothing is sent anywhere; other browsers use a free online service. Reads the text in pictures right in your browser.",
+                      meta_desc="Free translator for text, photos and PDFs in 85 languages. Chrome and Edge translate on your device; pictures are read in your browser, never uploaded.",
+                      js_v="1", vars={"MODE": "translate", "SEO": "@seo/translate.html"},
+                      nav_extra=TR_NAV_INFO, menu_extra=TR_NAV_MENU),
+    "image-to-text": dict(title="Image to Text (OCR)", page_title="Image to Text: Free OCR in Your Browser",
+                          tag="Copy the text out of photos, screenshots and PDFs.", accent="#0b7285", dark="#085563", tint="#e0f3f6", src="translate", js_path="translate/js/translate.js",
+                          desc="Free image to text converter (OCR): drop a photo, screenshot, scan or PDF and copy its text, in about 80 languages. The picture is read right in your browser and never uploaded. Fix the text, save it as .txt or translate it.",
+                          meta_desc="Free image to text (OCR): copy the text from photos, screenshots and scanned PDFs in 80 languages. Runs in your browser, nothing is uploaded.",
+                          js_v="1", vars={"MODE": "ocr", "SEO": "@seo/image-to-text.html"}, brand=TR_BRAND, tab=1,
+                          nav_extra=TR_NAV_INFO, menu_extra=TR_NAV_MENU),
     "reminder": dict(title="Event Reminder", page_title="Livestream and Event Reminder",
                      tag="One link: a countdown and a calendar reminder in everyone's time zone.", accent="#b4235a", dark="#86183f", tint="#fbe6ee",
                      desc="Free event reminder link: make one link for a livestream, class or meeting and share it. Everyone who opens it sees a countdown and the time in their own time zone, and can add it to Google Calendar, Apple Calendar, Outlook or their phone with alerts, or get a browser notification.",

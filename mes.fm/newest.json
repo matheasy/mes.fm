@@ -100,6 +100,14 @@
  ],
  "tools": [
   {
+   "href": "/translate",
+   "title": "Translate & Image to Text",
+   "icon": "/img/translate-logo.png",
+   "desc": "Translate text, photos, screenshots and PDFs in 85 languages, and copy the text out of pictures (OCR). On your device in Chrome and Edge.",
+   "added": "2026-10-24",
+   "kind": "tool"
+  },
+  {
    "href": "/signals",
    "title": "Market Signals",
    "icon": "/img/signals-logo.png",
@@ -186,17 +194,17 @@
    "desc": "Make one link for a livestream or event: a countdown in everyone's time zone and one-click calendar reminders.",
    "added": "2026-10-21",
    "kind": "tool"
-  },
-  {
-   "href": "/letter-recognition",
-   "title": "Letter and Digit Recognition",
-   "icon": "/img/letter-recognition-logo.png",
-   "desc": "Train a small network to read digits and letters, draw a character and see what it thinks, test it on unseen fonts, and teach it your handwriting.",
-   "added": "2026-10-19",
-   "kind": "tool"
   }
  ],
  "latest": [
+  {
+   "href": "/translate",
+   "title": "Translate & Image to Text",
+   "icon": "/img/translate-logo.png",
+   "desc": "Translate text, photos, screenshots and PDFs in 85 languages, and copy the text out of pictures (OCR). On your device in Chrome and Edge.",
+   "added": "2026-10-24",
+   "kind": "tool"
+  },
   {
    "href": "/signals",
    "title": "Market Signals",
@@ -252,14 +260,6 @@
    "desc": "Tip and split the bill: evenly or by what each person ordered, rounding, and tipping customs by country.",
    "added": "2026-10-23",
    "kind": "calculator"
-  },
-  {
-   "href": "/poker",
-   "title": "Poker",
-   "icon": "/img/poker-logo.png",
-   "desc": "Play Texas Hold'em against computer players with play money, and calculate your odds for any hand.",
-   "added": "2026-10-23",
-   "kind": "tool"
   }
  ]
 }
