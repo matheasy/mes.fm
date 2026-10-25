@@ -7,8 +7,9 @@ generated pages, re-run this after changing the English one). Per language it sw
 og:url, og:locale, JSON-LD), the header title + tagline, h1 + intro, the 10 calculation sentences (input order is never changed,
 so A and B stay what the script expects), "Answer:" / "Formula:", Share Calculations and the Important Notes box, and sets
 window.PC_I18N (toolbar / toast strings + decimal comma + share path) for js/percentagecalculator.js, which looks every visible
-string up there. The English-only Android-tester banner and "Type it in words" box (main_js/mes-ask.js parses English) are
-dropped. The site shell (info bar, menu, sidebar, footer, Comments) stays English, as on the translated BMI pages.
+string up there. The English-only Android-tester banner is dropped; the "Type it in words" box gets this language's label,
+placeholder, examples and messages (ASK table) and calls MESAsk.percent(text, code) (main_js/mes-ask.js reads es / pt / id /
+fr / de phrasings, and English too). The site shell (info bar, menu, sidebar, footer, Comments) stays English, as on the translated BMI pages.
 All six pages get hreflang links (x-default = English) and a language switcher under the intro (marker PC-LANGS).
 The page keeps <base href="/percentagecalculator/">, so its images / script / css load from the English folder.
 
@@ -221,6 +222,31 @@ LANGS = {
         "Save": "Speichern", "Saved calculations": "Gespeicherte Rechnungen"},
 ),
 }
+# "Type it in words" box per language (2026-10-24): main_js/mes-ask.js reads these phrasings with MESAsk.percent(text, code)
+# (English phrasings work too). Every example here is checked in tool_apps_src/mes-ask-tests.js: keep the two in step.
+ASK = {
+"es": dict(label="Escríbelo con palabras", button="Rellenar",
+    placeholder="p. ej. cuánto es el 15 % de 80, 20 es qué porcentaje de 80, aumentar 80 en un 15 %",
+    examples=["cuánto es el 15 % de 80", "20 es qué porcentaje de 80", "15 es el 30 % de qué número", "variación porcentual de 50 a 75", "aumentar 80 en un 15 %", "20 % de descuento en 60"],
+    unsure="No sé qué cálculo es. Prueba:", filled="Rellenado <b>{name}</b> con {a} y {b}", answer=": resultado <b>{ans}</b>"),
+"pt": dict(label="Escreva com palavras", button="Preencher",
+    placeholder="ex. quanto é 15% de 80, 20 é quantos por cento de 80, aumentar 80 em 15%",
+    examples=["quanto é 15% de 80", "20 é quantos por cento de 80", "15 é 30% de quanto", "variação percentual de 50 para 75", "aumentar 80 em 15%", "20% de desconto em 60"],
+    unsure="Não sei qual é esse cálculo. Tente:", filled="Preenchido <b>{name}</b> com {a} e {b}", answer=": resultado <b>{ans}</b>"),
+"id": dict(label="Ketik dengan kata-kata", button="Isi",
+    placeholder="mis. berapa 15% dari 80, 20 adalah berapa persen dari 80, naikkan 80 sebesar 15%",
+    examples=["berapa 15% dari 80", "20 adalah berapa persen dari 80", "15 adalah 30% dari berapa", "kenaikan dari 50 menjadi 75", "naikkan 80 sebesar 15%", "diskon 20% dari 60"],
+    unsure="Belum jelas perhitungan yang mana. Coba:", filled="Terisi <b>{name}</b> dengan {a} dan {b}", answer=": hasil <b>{ans}</b>"),
+"fr": dict(label="Écrivez votre calcul en mots", button="Remplir",
+    placeholder="ex. combien font 15 % de 80, 20 représente quel pourcentage de 80, augmenter 80 de 15 %",
+    examples=["combien font 15 % de 80", "20 représente quel pourcentage de 80", "15 représente 30 % de quel nombre", "évolution de 50 à 75", "augmenter 80 de 15 %", "remise de 20 % sur 60"],
+    unsure="Je ne reconnais pas ce calcul. Essayez :", filled="Calcul rempli : <b>{name}</b> avec {a} et {b}", answer=" : résultat <b>{ans}</b>"),
+"de": dict(label="In Worten eingeben", button="Ausfüllen",
+    placeholder="z. B. wie viel sind 15 % von 80, 20 sind wie viel Prozent von 80, 80 um 15 % erhöhen",
+    examples=["wie viel sind 15 % von 80", "20 sind wie viel Prozent von 80", "15 sind 30 % von wie viel", "Veränderung von 50 auf 75", "80 um 15 % erhöhen", "20 % Rabatt auf 60"],
+    unsure="Diese Rechnung kenne ich nicht. Versuchen Sie:", filled="Ausgefüllt: <b>{name}</b> mit {a} und {b}", answer=": Ergebnis <b>{ans}</b>"),
+}
+
 EN = dict(slug="percentagecalculator", lang="en", label="English")
 ORDER = ["en", "es", "pt", "id", "fr", "de"]
 
@@ -271,6 +297,52 @@ def sentence(tpl, inputs):
     return "".join(out)
 
 
+def ask_html(code):
+    A = ASK[code]
+    return ('<!-- PC-ASK: type a question in words, it fills the matching calculation (main_js/mes-ask.js, MESAsk.percent(text, "%s"); hidden where that script is missing) -->\n'
+            '\t\t<div class="pc-ask" id="pc-ask" hidden>\n'
+            '\t\t\t<label for="pc-ask-in" class="pc-ask__l">%s</label>\n'
+            '\t\t\t<div class="pc-ask__row"><input id="pc-ask-in" class="pc-ask__in" type="text" autocomplete="off" spellcheck="false" placeholder="%s" aria-describedby="pc-ask-out"><button type="button" class="pc-ask__go" id="pc-ask-go">%s</button></div>\n'
+            '\t\t\t<div class="pc-ask__out" id="pc-ask-out" aria-live="polite"></div>\n'
+            '\t\t</div>\n'
+            '\t\t<!-- /PC-ASK -->') % (code, esc(A["label"]), esc(A["placeholder"]), esc(A["button"]))
+
+
+def ask_js(code):
+    """The English page's PC-ASK-JS block, with this language's words (and its decimal mark) passed in as data."""
+    A, L = ASK[code], LANGS[code]
+    names = {n: re.sub(r"^[¿]|\s*[?]$", "", t.replace("{A}", "A").replace("{B}", "B")) for n, t in L["eq"].items() if n != 6}
+    cfg = dict(lang=code, dec=L["dec"], names=names, unsure=esc(A["unsure"]) + " " + ", ".join("<b>%s</b>" % esc(e) for e in A["examples"]) + ".",
+               filled=A["filled"], answer=A["answer"])
+    return ('<!-- PC-ASK-JS --><script src="/main_js/mes-ask.js?v=1" defer></script><script>\n'
+            '(function () {\n'
+            '\tvar C = %s;\n'
+            '\tfunction go() {\n'
+            "\t\tvar box = document.getElementById('pc-ask'); if (!box || !window.MESAsk) return; box.hidden = false;\n"
+            "\t\tvar inp = document.getElementById('pc-ask-in'), out = document.getElementById('pc-ask-out');\n"
+            "\t\tfunction num(v) { return String(v).replace('.', C.dec); }\n"
+            "\t\tfunction esc(s) { return String(s).replace(/[&<>]/g, function (c) { return {'&': '&amp;', '<': '&lt;', '>': '&gt;'}[c]; }); }\n"
+            '\t\tfunction fill() {\n'
+            "\t\t\tvar t = inp.value.trim(); if (!t) { out.textContent = ''; return; }\n"
+            '\t\t\tvar r = MESAsk.percent(t, C.lang);\n'
+            '\t\t\tif (!r) { out.innerHTML = C.unsure; return; }\n'
+            "\t\t\tvar eq = document.getElementById('equation-' + r.eq); if (!eq) return;\n"
+            "\t\t\tvar ins = eq.querySelectorAll('.eq-text input.input'); if (ins.length < 2) return;\n"
+            "\t\t\t[r.a, r.b].forEach(function (v, i) { ins[i].value = num(v); ins[i].dispatchEvent(new Event('input', {bubbles: true})); ins[i].dispatchEvent(new Event('keyup', {bubbles: true})); ins[i].dispatchEvent(new Event('change', {bubbles: true})); });\n"
+            "\t\t\tvar body = eq.closest('.pc-item') || eq; if (body.classList.contains('pc-collapsed')) { var tg = body.querySelector('.pc-toggle'); if (tg) tg.click(); }\n"
+            "\t\t\teq.classList.remove('pc-flash'); void eq.offsetWidth; eq.classList.add('pc-flash');\n"
+            "\t\t\ttry { eq.scrollIntoView({behavior: 'smooth', block: 'center'}); } catch (e) {}\n"
+            "\t\t\tsetTimeout(function () { var a = eq.querySelector('.answer'), ans = a ? a.textContent.trim() : '';\n"
+            "\t\t\t\tout.innerHTML = C.filled.replace('{name}', esc(C.names[r.eq])).replace('{a}', num(r.a)).replace('{b}', num(r.b)) + (ans ? C.answer.replace('{ans}', esc(ans)) : '') + '.'; }, 120);\n"
+            '\t\t}\n'
+            "\t\tdocument.getElementById('pc-ask-go').addEventListener('click', fill);\n"
+            "\t\tinp.addEventListener('keydown', function (e) { if (e.key === 'Enter') { e.preventDefault(); fill(); } });\n"
+            '\t}\n'
+            "\tif (document.readyState === 'complete') go(); else window.addEventListener('load', go);\n"
+            '})();\n'
+            '</script><!-- /PC-ASK-JS -->') % json.dumps(cfg, ensure_ascii=False)
+
+
 def translate(src, code):
     L = LANGS[code]
     h = src
@@ -301,7 +373,11 @@ def translate(src, code):
     h = h[:i] + '<p class="page-description">%s<br><br>\n\t\t\t%s<br><br>%s</p>' % (L["intro"], L["intro2"], L["learn"]) + h[j:]
     # English-only blocks
     h = re.sub(r"\s*<!-- ANDROID-TESTERS-BANNER -->.*?<!-- /ANDROID-TESTERS-BANNER -->", "", h, flags=re.S)
-    h = re.sub(r"\s*<!-- PC-ASK:.*?<!-- /PC-ASK -->", "", h, flags=re.S)
+    # "Type it in words": this language's box and script in place of the English ones
+    a = h.index("<!-- PC-ASK:"); b = h.index("<!-- /PC-ASK -->", a) + len("<!-- /PC-ASK -->")
+    h = h[:a] + ask_html(code) + h[b:]
+    a = h.index("<!-- PC-ASK-JS -->"); b = h.index("<!-- /PC-ASK-JS -->", a) + len("<!-- /PC-ASK-JS -->")
+    h = h[:a] + ask_js(code) + h[b:]
     rep('<div id="share-calc-button" class="button button--share-calc">Share Calculations</div>',
         '<div id="share-calc-button" class="button button--share-calc">%s</div>' % L["share"])
     # the 10 calculations

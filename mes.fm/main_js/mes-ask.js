@@ -1,7 +1,8 @@
 /* MES Ask -- "type it in words" for the calculators (no AI service, nothing leaves the browser).
  * Turns plain-English requests into what each MES calculator understands:
  *   MESAsk.calc("what is 38 percent of 75")        -> {expr: "38% of 75", said: "38% of 75"}
- *   MESAsk.percent("what percent of 80 is 20")      -> {eq: 1, a: 20, b: 80, said: ...}   (rows of mes.fm/percentagecalculator)
+ *   MESAsk.percent("what percent of 80 is 20")      -> {eq: 1, a: 20, b: 80}   (rows of mes.fm/percentagecalculator)
+ *   MESAsk.percent("cuánto es el 15 % de 80", "es") -> {eq: 2, a: 15, b: 80}   (es, pt, id, fr, de: the translated pages; English also works there)
  *   MESAsk.graph("graph a sphere with radius 7", 3) -> {rows: ["x^2 + y^2 + z^2 = 49"], dom: [...], said: ...}
  *   MESAsk.cas("derivative of x^2 sin x")           -> {op: "diff", q: "x^2 sin x", said: ...}
  * Each returns null when the text doesn't look like a request it knows, so the page can fall back to its normal parser.
@@ -107,7 +108,8 @@
 	/* ---------- the ten rows of mes.fm/percentagecalculator ---------- */
 	// eq 1: A is what % of B | 2: what is A % of B | 3: A is B % of what | 4: % change from A to B | 5: % difference between A and B
 	// eq 7: A x B % | 8: A / B % | 9: increase A by B % | 10: decrease A by B %
-	function percent(text) {
+	function percent(text, lang) {
+		if (lang && lang !== 'en') { var rl = percentLang(text, lang); if (rl) return rl; }    // then the English phrasings, which work on every page
 		var s = lead(clean(text)).toLowerCase().replace(/\bper cent\b|\bpercentage\b/g, 'percent').replace(/\s*%/g, ' percent').replace(/\s+/g, ' '), m;
 		var P = ' ?percent';
 		function r(eq, a, b) { return { eq: eq, a: n(a), b: n(b) }; }
@@ -124,6 +126,179 @@
 		if ((m = new RegExp('^' + NUM + P + ' off(?: of)? ' + NUM + '$').exec(s))) return r(10, m[2], m[1]);
 		if ((m = new RegExp('^' + NUM + ' (?:times|x|\\*) ' + NUM + P + '$').exec(s))) return r(7, m[1], m[2]);
 		if ((m = new RegExp('^' + NUM + ' (?:divided by|/) ' + NUM + P + '$').exec(s))) return r(8, m[1], m[2]);
+		return null;
+	}
+
+	/* ---------- the same ten rows in Spanish, Portuguese, Indonesian, French and German (the translated Percentage Calculator pages) ---------- */
+	// MESAsk.percent(text, 'es' | 'pt' | 'id' | 'fr' | 'de'). Accents are ignored (cuanto = cuánto), decimal commas are read (12,5 = 12.5;
+	// 1.234,5 and 1 234 = thousands), "por ciento", "por cento", "persen", "pour cent", "Prozent" mean %. Numbers must be written in digits.
+	// Each rule = [row, 'ab' | 'ba' (which number is A), pattern]; in a pattern # = a number and % = an optional space + "%". First match wins.
+	var LRULES = {
+		es: [
+			[1, 'ab', '# (?:es|son|representa|representan|supone) (?:que|cual|cuanto|cuantos) (?:%|porcentaje|tanto ?%) (?:de|del|sobre|respecto a|respecto de) #'],
+			[1, 'ab', '(?:que|cual es el|cual|cuanto|cuantos) (?:%|porcentaje|tanto ?%) (?:es|son|representa|representan|supone) # (?:de|del|sobre|respecto a|en) #'],
+			[1, 'ba', '(?:que|cual es el|cual|cuanto|cuantos) (?:%|porcentaje) de # (?:es|son|representa|representan) #'],
+			[1, 'ab', '(?:el )?porcentaje de # (?:sobre|en|respecto a|respecto de) #'],
+			[1, 'ab', '# (?:de|sobre) # en (?:%|porcentaje)'],
+			[3, 'ab', '# (?:es|son|representa|representan) (?:el |un )?#% (?:de|del) (?:que numero|que cantidad|que|cual numero|cual|cuanto)'],
+			[3, 'ba', '(?:el |un )?#% (?:de|del) (?:que numero|que cantidad|que|cual numero|cuanto) (?:es|son|da|seria) #'],
+			[5, 'ab', '(?:la )?diferencia (?:porcentual|en %|en porcentaje|%) entre # y #'],
+			[5, 'ab', '(?:el )?(?:%|porcentaje) de diferencia entre # y #'],
+			[2, 'ab', '(?:(?:cuanto|cual|que) (?:es|son|seria|serian|da) )?(?:el |un )?#% (?:de|del) #'],
+			[4, 'ab', '(?:la |el |una? )?(?:variacion|cambio|aumento|disminucion|incremento|descenso|reduccion|subida|bajada|crecimiento)(?: porcentual| en %| en porcentaje| %)? (?:de|desde|del) # (?:a|al|hasta) #'],
+			[4, 'ab', '(?:el |la )?(?:%|porcentaje|tasa) de (?:variacion|cambio|aumento|disminucion|incremento|descenso|reduccion|crecimiento) (?:de|desde|del) # (?:a|al|hasta) #'],
+			[4, 'ab', '(?:de|desde) # (?:a|hasta) #'],
+			[9, 'ab', '(?:aumentar|aumenta|aumente|aumentale|incrementar|incrementa|incremente|subir|sube|suba|sumar|suma|sumale|anadir) (?:a )?# (?:en )?(?:un |el )?#%'],
+			[9, 'ab', '# (?:\\+|mas) (?:un |el )?#%'],
+			[9, 'ba', '(?:sumar|suma|sumale|anadir|anade|agregar|agrega|aplicar|aplica) (?:un |el )?#% (?:a|al) #'],
+			[9, 'ab', '# con (?:un )?(?:aumento|incremento|recargo) (?:del|de un|de) #%'],
+			[10, 'ab', '(?:disminuir|disminuye|disminuya|reducir|reduce|reduzca|rebajar|rebaja|bajar|baja|descontar|descuenta) (?:a )?# (?:en )?(?:un |el )?#%'],
+			[10, 'ab', '# (?:-|menos) (?:un |el )?#%'],
+			[10, 'ba', '(?:restar|resta|restale|quitar|quita|quitale|descontar|descuenta) (?:un |el )?#% (?:a|al|de|del) #'],
+			[10, 'ba', '(?:un |el )?(?:descuento|rebaja) (?:del|de un|de) #% (?:a|al|en|sobre|de) #'],
+			[10, 'ba', '(?:un |el )?#% de (?:descuento|rebaja) (?:a|al|en|sobre|de) #'],
+			[10, 'ab', '# con (?:un )?(?:descuento|rebaja) (?:del|de un|de) #%'],
+			[7, 'ab', '# (?:x|\\*|por|veces) #%'],
+			[8, 'ab', '# (?:/|entre|dividido (?:por|entre)) #%']
+		],
+		pt: [
+			[1, 'ab', '# (?:e|sao|representa|representam) (?:quantos|qual|que|quanto) (?:%|porcentagem|percentagem|porcento) (?:de|do|da|sobre|em relacao a) #'],
+			[1, 'ab', '(?:quantos|qual (?:e )?(?:a )?|que|quanto) (?:%|porcentagem|percentagem) (?:e|sao|representa|representam) # (?:de|do|da|sobre|em) #'],
+			[1, 'ab', '(?:qual (?:e )?)?(?:a )?(?:%|porcentagem|percentagem) de # (?:em|sobre|no total de|em relacao a) #'],
+			[1, 'ba', '(?:quantos|qual (?:e )?(?:a )?|que|quanto) (?:%|porcentagem|percentagem) de # (?:e|sao|representa|representam|da) #'],
+			[1, 'ab', '# (?:de|em|sobre) # em (?:%|porcentagem|percentagem)'],
+			[3, 'ab', '# (?:e|sao|representa|representam) (?:o |a )?#% de (?:quanto|que numero|qual numero|qual valor|que valor)'],
+			[3, 'ba', '(?:o |a )?#% de (?:quanto|que numero|qual numero|qual valor|que valor) (?:e|sao|da|dao) #'],
+			[5, 'ab', '(?:a )?diferenca (?:percentual|em %|em porcentagem|%) entre # e #'],
+			[5, 'ab', '(?:a )?(?:%|porcentagem|percentagem) de diferenca entre # e #'],
+			[2, 'ab', '(?:(?:quanto|qual|quantos) (?:e|sao|da|dao|sera|seria) )?(?:o |a )?#% (?:de|do|da|sobre) #'],
+			[4, 'ab', '(?:a |o |uma? )?(?:variacao|mudanca|aumento|reducao|diminuicao|queda|crescimento|alta|subida|baixa)(?: percentual| em %| em porcentagem| %)? (?:de|desde|do) # (?:para|a|ate|pra) #'],
+			[4, 'ab', '(?:a |o )?(?:%|porcentagem|percentagem|taxa) de (?:variacao|mudanca|aumento|reducao|diminuicao|crescimento|queda) (?:de|desde|do) # (?:para|a|ate|pra) #'],
+			[4, 'ab', '(?:de|desde) # (?:para|ate|pra) #'],
+			[9, 'ab', '(?:aumentar|aumente|aumenta|acrescentar|acrescente|acrescenta|subir|suba|somar|some|soma|reajustar|reajuste) # (?:em )?(?:mais )?#%'],
+			[9, 'ab', '# (?:\\+|mais) #%'],
+			[9, 'ba', '(?:acrescentar|acrescente|acrescenta|somar|some|soma|adicionar|adicione|adiciona|aplicar|aplique) #% (?:a|ao|em|sobre|de) #'],
+			[9, 'ab', '# com (?:um )?(?:aumento|acrescimo|reajuste) de #%'],
+			[10, 'ab', '(?:diminuir|diminua|diminui|reduzir|reduza|reduz|baixar|baixe|descontar|desconte|desconta|abater|abata) # (?:em )?#%'],
+			[10, 'ab', '# (?:-|menos) #%'],
+			[10, 'ba', '(?:tirar|tire|tira|subtrair|subtraia|descontar|desconte|desconta|abater|abata) #% (?:de|do|da|em|sobre) #'],
+			[10, 'ba', '(?:um |o )?desconto de #% (?:em|sobre|de|no|na) #'],
+			[10, 'ba', '#% de desconto (?:em|sobre|de|no|na) #'],
+			[10, 'ab', '# com (?:um )?desconto de #%'],
+			[7, 'ab', '# (?:x|\\*|vezes) #%'],
+			[8, 'ab', '# (?:/|dividido por) #%']
+		],
+		id: [
+			[1, 'ab', '# (?:adalah |itu |merupakan |sama dengan )?berapa ?% (?:dari|terhadap) #'],
+			[1, 'ab', 'berapa ?% (?:dari )?# (?:dari|terhadap) #'],
+			[1, 'ba', 'berapa ?% dari # (?:adalah|itu|yaitu) #'],
+			[1, 'ab', '(?:persentase|prosentase) # (?:dari|terhadap) #'],
+			[1, 'ab', '# (?:dari|per) # (?:dalam|jadi|dalam bentuk|ke) (?:%|persentase)'],
+			[3, 'ab', '# (?:adalah |itu |merupakan |sama dengan )?#% dari (?:angka |bilangan |nilai )?berapa'],
+			[3, 'ba', '#% dari (?:angka |bilangan |nilai )?berapa (?:adalah |itu |sama dengan )?#'],
+			[5, 'ab', '(?:selisih|perbedaan|beda)(?: persen| persentase| %| dalam %)? (?:antara )?# dan #'],
+			[2, 'ab', '(?:berapa |berapa nilai |nilai |hasil )?#% dari #(?: (?:adalah |itu |sama dengan )?berapa)?'],
+			[4, 'ab', '(?:perubahan|kenaikan|penurunan|peningkatan|pertumbuhan|naik|turun)(?: persen| persentase| %| dalam %)? (?:dari )?# (?:ke|menjadi|jadi|hingga|sampai) #'],
+			[4, 'ab', '(?:persentase|prosentase|%) (?:perubahan|kenaikan|penurunan|peningkatan|pertumbuhan) (?:dari )?# (?:ke|menjadi|jadi|hingga|sampai) #'],
+			[4, 'ab', 'dari # (?:ke|menjadi|jadi) #'],
+			[9, 'ab', '(?:naikkan|naikan|tambah|tambahkan|tingkatkan) # (?:sebesar |dengan |sebanyak )?#%'],
+			[9, 'ab', '# (?:\\+|tambah|ditambah|plus|naik) #%'],
+			[9, 'ba', '(?:tambahkan|tambah) #% (?:ke|pada|untuk|dari) #'],
+			[10, 'ab', '(?:turunkan|kurangi|kurangkan|potong) # (?:sebesar |dengan |sebanyak )?#%'],
+			[10, 'ab', '# (?:-|kurang|dikurangi|minus|turun|diskon|potongan|potong) #%'],
+			[10, 'ba', '(?:diskon|potongan|potong) #% (?:dari|untuk|pada|atas|harga) #'],
+			[7, 'ab', '# (?:x|\\*|kali|dikali|dikalikan) #%'],
+			[8, 'ab', '# (?:/|bagi|dibagi|dibagi dengan) #%']
+		],
+		fr: [
+			[1, 'ab', '# (?:represente|representent|est|fait|font|sont|correspond a|correspondent a) (?:quel ?%|quel pourcentage|combien de ?%|combien de pourcentage|quelle proportion|quelle part) (?:de|du|des|sur|par rapport a) #'],
+			[1, 'ab', '(?:quel ?%|quel pourcentage|combien de ?%|combien de pourcentage)(?: de)? (?:represente|representent|est|fait|font|sont) # (?:de|du|sur|par rapport a) #'],
+			[1, 'ba', '(?:quel ?%|quel pourcentage|combien de ?%) (?:de|du) # (?:est|font|fait|sont|represente|representent) #'],
+			[1, 'ab', '(?:le )?pourcentage de # (?:sur|par rapport a|dans) #'],
+			[1, 'ab', '# sur # en (?:%|pourcentage)'],
+			[3, 'ab', '# (?:est|sont|represente|representent|font|fait|correspond a) (?:les |le )?#% (?:de|du) (?:combien|quel nombre|quoi|quelle valeur|quelle somme)'],
+			[3, 'ba', '(?:les |le )?#% (?:de|du) (?:combien|quel nombre|quoi|quelle valeur|quelle somme) (?:font|fait|est|sont|donnent|donne|valent|vaut) #'],
+			[5, 'ab', '(?:le |la )?(?:ecart|difference)(?: relatif| relative)?(?: en %| en pourcentage| %)? entre # et #'],
+			[5, 'ab', '(?:le )?pourcentage de (?:difference|ecart) entre # et #'],
+			[2, 'ab', '(?:(?:combien|que|quel|quels|quelle|ca) (?:font|fait|vaut|valent|est|sont|donne|donnent|represente) )?(?:les |le )?#% (?:de|du|des) #'],
+			[4, 'ab', '(?:le |la |une? )?(?:evolution|variation|augmentation|diminution|baisse|hausse|changement|progression|croissance)(?: en %| en pourcentage| %)? (?:de|depuis|du) # (?:a|jusqu a|vers) #'],
+			[4, 'ab', '(?:le )?(?:taux|pourcentage) de (?:evolution|variation|augmentation|diminution|baisse|hausse|progression|croissance) (?:de|du|depuis) # (?:a|jusqu a) #'],
+			[4, 'ab', '(?:de|depuis) # (?:a|jusqu a) #'],
+			[9, 'ab', '(?:augmenter|augmente|augmentez|majorer|majore|majorez|hausser|rehausser) # de #%'],
+			[9, 'ab', '# (?:\\+|plus) #%'],
+			[9, 'ba', '(?:ajouter|ajoute|ajoutez|appliquer|applique) #% (?:a|au|sur) #'],
+			[9, 'ab', '# (?:avec une |apres une )?(?:augmentation|hausse|majoration) de #%'],
+			[10, 'ab', '(?:diminuer|diminue|diminuez|reduire|reduis|reduisez|baisser|baisse|baissez|minorer|minore) # de #%'],
+			[10, 'ab', '# (?:-|moins) #%'],
+			[10, 'ba', '(?:enlever|enleve|enlevez|retirer|retire|retirez|soustraire|soustrais|deduire|deduis) #% (?:a|au|de|du|sur) #'],
+			[10, 'ba', '(?:une |la )?(?:remise|reduction|rabais|ristourne|promo|promotion|solde) de #% (?:sur|a|de|au) #'],
+			[10, 'ba', '#% de (?:remise|reduction|rabais|ristourne) (?:sur|a|de|au) #'],
+			[10, 'ab', '# (?:avec une |apres une )?(?:remise|reduction|baisse|rabais|diminution) de #%'],
+			[7, 'ab', '# (?:x|\\*|fois) #%'],
+			[8, 'ab', '# (?:/|divise par) #%']
+		],
+		de: [
+			[1, 'ab', '# (?:sind|ist|macht|machen|entspricht|entsprechen|ergibt|ergeben) wie viel ?% (?:von|aus|an) #'],
+			[1, 'ab', 'wie viel ?% (?:sind|ist|macht|machen|ergibt|ergeben) # (?:von|aus|an) #'],
+			[1, 'ba', 'wie viel ?% von # (?:sind|ist|macht|machen|ergibt|ergeben) #'],
+			[1, 'ab', '(?:welcher|der) (?:prozentsatz|anteil)(?: in %)? (?:ist|sind|von|entspricht) # (?:von|aus|an) #'],
+			[1, 'ab', '# (?:sind|ist) welcher (?:prozentsatz|anteil) von #'],
+			[1, 'ab', '# von # in (?:%|prozentsatz)'],
+			[3, 'ab', '# (?:sind|ist|entspricht|entsprechen|ergibt|ergeben) #% von (?:wie viel|was|welcher zahl|welchem wert|welchem betrag)'],
+			[3, 'ba', '#% von (?:wie viel|was|welcher zahl|welchem wert|welchem betrag) (?:sind|ist|ergeben|ergibt|machen|macht) #'],
+			[5, 'ab', '(?:der |die )?(?:prozentuale[rns]? |relative[rns]? )?(?:unterschied|differenz|abweichung)(?: in %| %)? zwischen # und #'],
+			[2, 'ab', '(?:(?:wie viel|was|wieviel) (?:sind|ist|macht|machen|ergeben|ergibt|sind denn) )?#% (?:von|aus) #'],
+			[4, 'ab', '(?:die |der |das )?(?:prozentuale[rns]? |relative[rns]? )?(?:veranderung|anderung|steigerung|zunahme|abnahme|anstieg|ruckgang|wachstum|senkung|erhohung|verringerung)(?: in %| %)? von # (?:auf|zu|nach|bis) #'],
+			[4, 'ab', 'von # (?:auf|zu|nach) #'],
+			[9, 'ab', '# um #% (?:erhohen|erhoht|steigern|gesteigert|vergrossern|anheben|angehoben|erhoht werden)'],
+			[9, 'ab', '(?:erhohe|erhohen|steigere|steigern|hebe) # um #%(?: an)?'],
+			[9, 'ab', '# (?:\\+|plus|zuzuglich|zzgl\\.?) #%'],
+			[9, 'ba', '#% (?:auf|zu) # (?:aufschlagen|addieren|dazurechnen|dazu|hinzufugen|draufrechnen)'],
+			[9, 'ab', '# (?:mit|plus) #% aufschlag'],
+			[10, 'ab', '# um #% (?:verringern|verringert|reduzieren|reduziert|senken|gesenkt|vermindern|vermindert|kurzen|gekurzt|mindern|gemindert)'],
+			[10, 'ab', '(?:verringere|verringern|reduziere|reduzieren|senke|senken|vermindere|vermindern|kurze|kurzen) # um #%'],
+			[10, 'ab', '# (?:-|minus|abzuglich|abzgl\\.?|weniger) #%'],
+			[10, 'ba', '#% (?:rabatt|nachlass|skonto|abzug|ermassigung) (?:auf|von|bei) #'],
+			[10, 'ab', '# (?:mit|abzuglich|nach) #% (?:rabatt|nachlass|skonto|ermassigung)'],
+			[10, 'ba', '#% von # (?:abziehen|abgezogen)'],
+			[7, 'ab', '# (?:x|\\*|mal) #%'],
+			[8, 'ab', '# (?:/|durch|geteilt durch|dividiert durch) #%']
+		]
+	};
+	// words that only make the request polite, per language (removed from the start / end)
+	var LOPEN = {
+		es: /^(?:hola |oye |por favor |porfa |calcula(?:r|me)? |calcule |dime |digame |quiero saber |necesito saber |me puedes decir |puedes calcular |ayudame a calcular )+|(?: por favor| gracias)$/,
+		pt: /^(?:ola |oi |por favor |calcule |calcular |calcula |me diga |me fala |quero saber |preciso saber |pode calcular |voce pode calcular )+|(?: por favor| obrigad[oa])$/,
+		id: /^(?:halo |tolong |mohon |hitunglah |hitung |coba hitung |coba |saya ingin tahu |saya mau tahu )+|(?: ya| dong| tolong| terima kasih)$/,
+		fr: /^(?:bonjour |salut |s il (?:te|vous) plait |calcule(?:r|z)? |dis-moi |dites-moi |je veux savoir |je voudrais savoir |peux-tu calculer |pouvez-vous calculer )+|(?: s il (?:te|vous) plait| merci)$/,
+		de: /^(?:hallo |hi |bitte |berechne(?:n)? |rechne |rechnen sie |sag mir |sagen sie mir |ich mochte wissen |ich will wissen |kannst du ausrechnen |kannst du berechnen )+|(?: bitte| danke| aus| ausrechnen| berechnen)$/
+	};
+	// text -> one form: lower case, no accents, digits with a decimal point, every way of saying "percent" as %, no punctuation
+	function normLang(text, lang) {
+		var s = String(text || '').toLowerCase();
+		if (s.normalize) s = s.normalize('NFD').replace(/[̀-ͯ]/g, '');
+		s = s.replace(/ß/g, 'ss').replace(/[‘’´`ʼ]/g, "'").replace(/[−–—]/g, '-').replace(/×/g, 'x').replace(/÷/g, '/').replace(/[  ]/g, ' ');
+		s = s.replace(/\b(d|l|qu|j)'\s*/g, '$1e ').replace(/\b(s|jusqu)'\s*/g, '$1 ');     // d'augmentation -> de augmentation, s'il, jusqu'à
+		s = s.replace(/(?:r\$|us\$|rp\.?|\$|€|£)\s*(?=\d)/g, '').replace(/(\d)\s*(?:€|\$|£|eur|euros?|reais|real|rupiah|dolares|dolars?|dollars?)(?![a-z])/g, '$1');
+		// thousands: 1.234 / 1.234.567 / 1'234, and 1 234 in French and German (a dot with exactly three digits after it; 0.125 stays a decimal)
+		for (var i = 0; i < 3; i++) s = s.replace(/(^|[^\d.,])([1-9]\d{0,2}(?:\d{3})*)[.'](\d{3})(?!\d)/g, '$1$2$3').replace(/(^|[^\d.,])(\d{1,3}) (\d{3})(?!\d)/g, function (m, p, a, b) { return lang === 'fr' || lang === 'de' ? p + a + b : m; });
+		s = s.replace(/(\d),(\d)/g, '$1.$2');                                              // 12,5 -> 12.5
+		s = s.replace(/\bpor ?cientos?\b|\bpor ?cento\b|\bporcentos?\b|\bpour ?cents?\b|\bprozent\b|\bpersen\b|\bpct\b/g, '%');
+		s = s.replace(/\bwieviel\b/g, 'wie viel').replace(/\bberapakah\b/g, 'berapa').replace(/\bque est-ce que\b/g, '').replace(/\bcombien de pour\b/g, 'combien de %');
+		s = s.replace(/[¿¡?!;:"«»“”„()]/g, ' ').replace(/(\D)\.(?=\s|$)/g, '$1 ').replace(/\.$/, '').replace(/,(?=\s|$)/g, ' ');
+		s = s.replace(/(\d)\s+%/g, '$1%').replace(/([^\d\s])%/g, '$1 %').replace(/%(?=[^\s])/g, '% ').replace(/\s+/g, ' ').trim();   // 15 % -> 15%, but "quel %" keeps its space
+		var o = LOPEN[lang]; if (o) for (var k = 0; k < 3; k++) s = s.replace(o, '').trim();
+		return s;
+	}
+	var LRX = {};
+	function percentLang(text, lang) {
+		var rules = LRULES[lang]; if (!rules) return null;
+		var s = normLang(text, lang);
+		if (!LRX[lang]) LRX[lang] = rules.map(function (r) { return [r[0], r[1], new RegExp('^' + r[2].replace(/#/g, '(-?\\d+(?:\\.\\d+)?)').replace(/%/g, '\\s?%') + '$')]; });
+		for (var i = 0; i < LRX[lang].length; i++) {
+			var R = LRX[lang][i], m = R[2].exec(s);
+			if (m) return R[1] === 'ab' ? { eq: R[0], a: n(m[1]), b: n(m[2]) } : { eq: R[0], a: n(m[2]), b: n(m[1]) };
+		}
 		return null;
 	}
 
@@ -213,6 +388,6 @@
 		return null;
 	}
 
-	var API = { clean: clean, wordsToNumbers: wordsToNumbers, calc: calc, percent: percent, graph: graph, cas: cas };
+	var API = { clean: clean, wordsToNumbers: wordsToNumbers, calc: calc, percent: percent, normLang: normLang, LANGS: Object.keys(LRULES), graph: graph, cas: cas };
 	if (typeof module !== 'undefined' && module.exports) module.exports = API; else root.MESAsk = API;
 })(this);
