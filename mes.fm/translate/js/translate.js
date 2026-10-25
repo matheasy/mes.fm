@@ -348,11 +348,13 @@
   var hasDet = typeof self.LanguageDetector !== "undefined" && self.LanguageDetector && typeof self.LanguageDetector.create === "function";
   var availCache = {}, translators = {}, detector = null, detAvail = "";
   function pairKey(a, b) { return a + ">" + b; }
+  // Some Chromium builds expose the APIs but never answer availability(): give up after a few seconds and use the other engine
+  function within(p, ms, fallback) { return Promise.race([Promise.resolve(p), new Promise(function (res) { setTimeout(function () { res(fallback); }, ms); })]); }
   function availability(a, b) {
     if (!hasApi) return Promise.resolve("");
     var k = pairKey(a, b);
     if (availCache[k] === "available") return Promise.resolve("available");
-    return Promise.resolve(self.Translator.availability({ sourceLanguage: T.apiCode(a), targetLanguage: T.apiCode(b) }))
+    return within(self.Translator.availability({ sourceLanguage: T.apiCode(a), targetLanguage: T.apiCode(b) }), 4000, "unavailable")
       .then(function (v) { availCache[k] = v; return v; }, function () { availCache[k] = "unavailable"; return "unavailable"; });
   }
   function getTranslator(a, b) {
@@ -367,7 +369,7 @@
   function detectAvail() {
     if (!hasDet) return Promise.resolve("unavailable");
     if (detAvail === "available") return Promise.resolve(detAvail);
-    return Promise.resolve(self.LanguageDetector.availability ? self.LanguageDetector.availability() : "available").then(function (v) { detAvail = v; return v; }, function () { return "unavailable"; });
+    return within(self.LanguageDetector.availability ? self.LanguageDetector.availability() : "available", 4000, "unavailable").then(function (v) { detAvail = v; return v; }, function () { return "unavailable"; });
   }
   function detectOnDevice(text) {
     if (!detector) detector = self.LanguageDetector.create({ monitor: function (m) { m.addEventListener("downloadprogress", function (e) { prog("tr-prog", e.loaded, "Downloading the language detector (one time): " + Math.round(e.loaded * 100) + "%"); }); } })
@@ -417,7 +419,7 @@
     if (from === "auto" && S.engine !== "online") {
       step = detectAvail().then(function (a) {
         if (a === "unavailable" || (!gesture && a !== "available")) return "";
-        return detectOnDevice(text).catch(function () { return ""; });
+        return within(detectOnDevice(text), a === "available" ? 6000 : 120000, "").catch(function () { return ""; });
       });
     }
     return step.then(function (src) {
@@ -428,7 +430,7 @@
       return deviceTry.then(function (a) {
         if (my !== gen) return;
         var choice = S.engine === "online" ? { engine: "online" } : (src ? T.chooseEngine(S.engine, hasApi, a) : (S.engine === "device" ? { engine: null, reason: hasApi ? "detect" : "noapi" } : { engine: "online", reason: "detect" }));
-        if (auto && !T.liveOk(choice)) { previewBadge(); return; }   // typing: only translate when nothing leaves the device
+        if (auto && choice.engine !== "device") { previewBadge(); return; }   // typing: only translate when nothing leaves the device (a pending download says "press Translate" below)
         if (!choice.engine) {
           msg(choice.reason === "noapi" ? "This browser has no on-device translator (Chrome and Edge on a computer have one). Choose <b>Auto</b> or <b>Online</b> as the engine." :
             choice.reason === "detect" ? "Choose the <b>From</b> language: this browser can't detect it on-device." :
@@ -842,6 +844,7 @@
   if (!hasApi) $("tr-livebox").title = "This browser can't translate on-device, so nothing is translated while you type (that would send every keystroke online)";
   if (q.q) {
     inp.value = q.q; counts();
-    translate(false, true).then(function () { if (!outText) msg("Press <b>Translate</b> to translate the text from the link.", "info"); });
+    var g0 = gen + 1;
+    translate(false, true).then(function () { if (!outText && gen === g0 && $("tr-msg").hidden) msg("Press <b>Translate</b> to translate the text from the link.", "info"); });
   }
 })();

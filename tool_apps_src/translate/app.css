@@ -3,6 +3,7 @@
 		--tr-dev:#0f6b3a;--tr-devbg:#e3f5ea;--tr-net:#8a4b00;--tr-netbg:#fff1dc;--tr-warn:#9a3b00;--tr-warnbg:#fff3e6;--tr-info:#14506b;--tr-infobg:#e6f3f9;
 		--tr-ok:#16a34a;--tr-mid:#d97706;--tr-low:#dc2626;--tr-sel:#2563eb;display:flex;flex-direction:column;color:var(--tr-ink);}
 	:where(#tr) :is(div, span, p, li, label, b, strong, em, i, small, code, h2, h3, summary, output) {color:inherit;}
+	#tr [hidden] {display:none !important;}   /* .tr-prog / .tr-ores are display:flex/grid, which beats the hidden attribute */
 	#tr .tr-tx {order:1;} #tr .tr-ocr {order:2;} #tr .tr-hist {order:3;} #tr .tu-seo {order:4;}
 	#tr[data-mode="ocr"] .tr-ocr {order:0;}
 	#tr .tr-h {font-size:1.25em;font-weight:800;margin:0 0 0.6em;color:var(--tr-ink);}
