@@ -24,6 +24,26 @@ ok(back && back.title === ev.title && back.tz === V && back.u === "https://youtu
 ok(RM.fromQuery("?title=x") === null, "no time -> null");
 ok(RM.fromQuery("?t=garbage") === null, "bad time -> null");
 ok(RM.safeUrl("javascript:alert(1)") === "" && RM.safeUrl("data:text/html,x") === "" && RM.safeUrl("localhost") === "", "unsafe urls dropped");
+// shorter long links (2026-10-24): mes.fm targets as a path, readable : / and +, defaults left out; old links still read
+const ls = { title: "MES Livestream 143: 9/11 Spooky + AI", t: "2026-10-28T10:00", tz: V, u: "https://mes.fm/livestream-143-911-spooks", len: 180 };
+const lq = RM.toQuery(ls);
+ok(lq === "title=MES+Livestream+143:+9/11+Spooky+%2B+AI&t=2026-10-28T10:00&tz=America/Vancouver&u=/livestream-143-911-spooks&len=180", "short long-link form: " + lq);
+const lb = RM.fromQuery("?" + lq);
+ok(lb && lb.title === ls.title && lb.u === ls.u && lb.len === 180, "short form reads back (u absolute again)");
+ok(RM.toQuery({ t: "2026-10-28T10:00", tz: V }) === "t=2026-10-28T10:00&tz=America/Vancouver", "default title / len / once left out");
+ok(RM.fromQuery("?t=2026-10-28T10:00&tz=America/Vancouver").title === "Reminder", "missing title = Reminder");
+const old = RM.fromQuery("?title=MES+Livestream+143%3A+9%2F11+Spooky+%2B+AI&t=2026-10-28T10%3A00&tz=America%2FVancouver&u=https%3A%2F%2Fmes.fm%2Flivestream-143-911-spooks&len=180");
+ok(old && old.title === ls.title && old.u === ls.u, "old fully-encoded link still works");
+ok(RM.safeUrl("/x") === "https://mes.fm/x" && RM.safeUrl("/a/../b") === "" && RM.sitePath("https://mes.fm/x?y=1") === "/x?y=1" && RM.sitePath("https://youtube.com/x") === "https://youtube.com/x", "site paths");
+ok(RM.toQuery({ title: "W", t: "2026-10-25T18:00Z" }).indexOf("tz=") < 0, "absolute time: no tz");
+// short links
+ok(RM.shortId("/r/abc1234", "") === "abc1234" && RM.shortId("/reminder", "?r=abc1234") === "abc1234", "short id from path or ?r=");
+ok(RM.shortId("/reminder", "?r=weekly&t=2026-10-28T10:00") === "" && RM.shortId("/r/ABC", "") === "" && RM.shortId("/reminder", "?r=abc1234&t=x") === "", "r= of a long link is not an id");
+const body = RM.apiBody(ls);
+ok(JSON.stringify(body) === JSON.stringify({ title: ls.title, t: ls.t, tz: V, u: "/livestream-143-911-spooks", len: 180 }), "api body");
+const fa = RM.fromApi({ title: ls.title, t: ls.t, tz: V, u: "/livestream-143-911-spooks", d: "", r: "", len: 180 });
+ok(fa && fa.u === ls.u && fa.len === 180, "event from the api answer");
+ok(RM.fromApi({ t: "nope" }) === null && RM.fromApi(null) === null, "bad api answer -> null");
 // calendars
 const ics = RM.ics(ev, { now: Date.UTC(2026, 9, 1), leads: [60, 0], pageUrl: "https://mes.fm/reminder?x" });
 ok(/DTSTART;TZID=America\/Vancouver:20261025T110000/.test(ics) && /DTEND;TZID=America\/Vancouver:20261025T123000/.test(ics), "ics weekly local");
