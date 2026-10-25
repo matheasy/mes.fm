@@ -44,6 +44,7 @@
 			PE.invalidateOverlay();
 		}
 		el.addEventListener("pointerup", end); el.addEventListener("pointercancel", end);
+		el.addEventListener("mousedown", function (e) { if (PE.textEditing && PE.textEditing()) e.preventDefault(); });   // keep the keyboard on the text being edited (no blur, no end of the edit)
 		el.addEventListener("pointerleave", function () { PE.ptr.inside = false; PE.invalidateOverlay(); });
 		el.addEventListener("dblclick", function (e) { var t = PE.tool(); if (t.dbl && PE.doc) t.dbl(ev2(e)); });
 		el.addEventListener("contextmenu", function (e) { e.preventDefault(); });
@@ -83,7 +84,9 @@
 		if (PE.sel) { var a = buildAnts(); if (a) x.drawImage(phase ? a.b : a.a, 0, 0); }
 		x.setTransform(v.dpr, 0, 0, v.dpr, 0, 0);
 		var t = PE.tool(); if (t && t.overlay) t.overlay(x, v);
-		if (PE.guides && PE.guides.length) { x.strokeStyle = "#ff3df0"; x.lineWidth = 1; x.beginPath(); PE.guides.forEach(function (g) { if (g.v != null) { var sx = Math.round(g.v * v.zoom + v.px) + 0.5; x.moveTo(sx, 0); x.lineTo(sx, v.h); } else { var sy = Math.round(g.h * v.zoom + v.py) + 0.5; x.moveTo(0, sy); x.lineTo(v.w, sy); } }); x.stroke(); }
+		if (PE.guides && PE.guides.length) {   // snap guides: magenta = the canvas (edges, centre), cyan = another layer
+			x.lineWidth = 1; ["c", "l"].forEach(function (kind) { x.strokeStyle = kind === "c" ? "#ff3df0" : "#22d3ee"; x.beginPath(); PE.guides.forEach(function (g) { if ((g.k || "c") !== kind) return; if (g.v != null) { var sx = Math.round(g.v * v.zoom + v.px) + 0.5; x.moveTo(sx, 0); x.lineTo(sx, v.h); } else { var sy = Math.round(g.h * v.zoom + v.py) + 0.5; x.moveTo(0, sy); x.lineTo(v.w, sy); } }); x.stroke(); });
+		}
 		if (PE.ptr.inside && t && t.cursorSize && !PE.spaceHeld) {
 			var r = t.cursorSize() * v.zoom / 2; if (r > 1) { x.lineWidth = 1; x.strokeStyle = "rgba(0,0,0,0.85)"; x.beginPath(); x.arc(PE.ptr.x, PE.ptr.y, r, 0, 6.2832); x.stroke(); x.strokeStyle = "rgba(255,255,255,0.9)"; x.beginPath(); x.arc(PE.ptr.x, PE.ptr.y, r + 1, 0, 6.2832); x.stroke(); }
 		}
@@ -106,70 +109,211 @@
 		x.save(); x.globalAlpha = o.alpha == null ? 1 : o.alpha; x.globalCompositeOperation = o.erase ? "destination-out" : "source-over"; x.drawImage(s, Math.round(dx) - og.x, Math.round(dy) - og.y); x.restore(); L.rev++;
 	};
 
-	/* ---------- Move + free transform ---------- */
+	/* ---------- Move + free transform: one layer, a group, or several layers at once ----------
+	 * The Move tool acts on PE.moveSet(): the layers picked in the Layers panel (Ctrl / Shift-click) or with a rubber band on the canvas, else the active layer.
+	 * Snapping (MESPixel.snapBox / snapAxis): the canvas edges + centre lines and, with "Snap to other layers", every other visible layer's visible box
+	 * (its non-transparent pixels, so a text snaps by its letters, not by the padding around them). 6 screen px; Ctrl (or Alt while moving) = no snapping. */
 	var HANDLES = [[-1, -1], [0, -1], [1, -1], [1, 0], [1, 1], [0, 1], [-1, 1], [-1, 0]];
 	function handleScreen(L, hd) {
 		var c = Math.cos(L.rot), s = Math.sin(L.rot), hw = L.canvas.width * L.sx / 2, hh = L.canvas.height * L.sy / 2, lx = hd[0] * hw, ly = hd[1] * hh;
 		return PE.toScreen(L.cx + c * lx - s * ly, L.cy + s * lx + c * ly);
 	}
+	function boxHandle(b, hd) { return PE.toScreen(b.x + (hd[0] + 1) / 2 * b.w, b.y + (hd[1] + 1) / 2 * b.h); }
+	function scr(e) { var r = PE.els.over.getBoundingClientRect(); return { x: e.sx - r.left, y: e.sy - r.top }; }
 	var mv = null;
 	function pickTarget(hit, L, groupsOn) {
 		if (!groupsOn) return hit; var anc = PE.ancestorsOf(hit); if (!anc.length) return hit; if (L === hit) return hit; if (L && anc.indexOf(L) >= 0) return L;
 		if (L && PE.topGroupOf(L) === PE.topGroupOf(hit)) return hit; return PE.topGroupOf(hit);
 	}
-	PE.defTool({ id: "move", name: "Move / Transform", key: "v", icon: "✥", opts: { auto: true, handles: true, snap: true, groups: true },
-		ui: [{ k: "auto", label: "Pick layer on click", type: "check" }, { k: "groups", label: "Pick the whole group", type: "check" }, { k: "handles", label: "Transform handles", type: "check" }, { k: "snap", label: "Snap to canvas edges", type: "check" }, { type: "button", label: "✎ Edit text / equation", act: function () { var L = PE.active(); if (L && L.type === "text") PE.editActiveText(); else if (L && L.eq) PE.dlgEquation(L); else PE.toast("Select a text or equation layer first (click it on the picture)"); } }, { type: "button", label: "✂ Remove background (AI)", act: function () { PE.aiRemoveBackground(); } }],
-		hint: "Drag to move. Drag a square handle to resize, just outside a corner to rotate (Shift = snap / keep proportions). Arrow keys nudge.",
+	/* the layers the Move tool works on (a group in the list stands for its members, so a member listed as well is dropped) */
+	PE.moveSet = function () {
+		if (!PE.doc) return []; var m = PE.multi ? PE.multi() : [], A = PE.active(), list = m.length > 1 ? m : (A ? [A] : []);
+		return list.filter(function (L) { return !PE.ancestorsOf(L).some(function (g) { return list.indexOf(g) >= 0; }); });
+	};
+	function leaves(set) { var out = []; set.forEach(function (L) { (PE.isGroup(L) ? PE.descendants(L) : [L]).forEach(function (k) { if (!PE.isGroup(k) && out.indexOf(k) < 0) out.push(k); }); }); return out; }
+	/* visible box: the non-transparent part of a layer, in document coordinates (cached per pixel revision); null = nothing visible */
+	function visLocal(L) {
+		var c = L.canvas, v = L._vb; if (v && v.rev === L.rev && v.c === c) return v.r;
+		var r = { x: 0, y: 0, w: c.width, h: c.height };
+		if (c.width * c.height <= 16e6) { try { r = P.opaqueBounds(c.getContext("2d").getImageData(0, 0, c.width, c.height).data, c.width, c.height, 8); } catch (x) { } }
+		L._vb = { rev: L.rev, c: c, r: r }; return r;
+	}
+	function locToDoc(L, u, v) { var c = Math.cos(L.rot), s = Math.sin(L.rot), lx = (u - L.canvas.width / 2) * L.sx, ly = (v - L.canvas.height / 2) * L.sy; return { x: L.cx + c * lx - s * ly, y: L.cy + s * lx + c * ly }; }
+	PE.visBox = function (L) {
+		if (PE.isGroup(L)) return P.unionBox(PE.descendants(L).filter(function (k) { return !PE.isGroup(k) && PE.effVisible(k); }).map(PE.visBox));
+		var r = visLocal(L); if (!r) return null; var pts = [[r.x, r.y], [r.x + r.w, r.y], [r.x + r.w, r.y + r.h], [r.x, r.y + r.h]].map(function (q) { return locToDoc(L, q[0], q[1]); });
+		var xs = pts.map(function (p) { return p.x; }), ys = pts.map(function (p) { return p.y; }), x0 = Math.min.apply(null, xs), y0 = Math.min.apply(null, ys); return { x: x0, y: y0, w: Math.max.apply(null, xs) - x0, h: Math.max.apply(null, ys) - y0 };
+	};
+	function setBox(set) { return P.unionBox(set.map(function (L) { return PE.bounds(L); })); }
+	function targetsFor(moving) {
+		var o = PE.opt.move, d = PE.doc, boxes = [];
+		if (o.snapLayers) d.layers.forEach(function (L) { if (PE.isGroup(L) || moving.indexOf(L) >= 0 || !PE.effVisible(L) || L.opacity <= 0) return; var b = PE.visBox(L); if (b && b.w > 0 && b.h > 0) boxes.push(b); });
+		return P.snapTargets(o.snap ? d.w : null, o.snap ? d.h : null, boxes);
+	}
+	function snapOn(e) { var o = PE.opt.move; return (o.snap || o.snapLayers) && !e.ctrl; }
+	function guidesFrom(gx, gy) { PE.guides = gx.map(function (g) { return { v: g.p, k: g.k }; }).concat(gy.map(function (g) { return { h: g.p, k: g.k }; })); }
+	function th() { return 6 / PE.view.zoom; }
+	function startMove(set, e) {
+		set = set.filter(function (L) { return !L.locked; }); if (!set.length) { PE.toast("This layer is locked"); mv = null; return; }
+		var items = leaves(set).filter(function (k) { return !k.locked; });
+		mv = { kind: "move", set: set, items: items.map(function (k) { return [k, k.cx, k.cy]; }), p0: e, moved: false, box0: P.unionBox(items.filter(PE.effVisible).map(PE.visBox)), tg: targetsFor(items) };
+	}
+	/* one layer's resize, as before: from the dragged handle (Shift = the other proportion rule, Alt = from the centre) */
+	function scaleDims(m, e) {
+		var L = m.L, c = Math.cos(m.rot), s = Math.sin(m.rot), dx2 = e.x - m.cx0, dy2 = e.y - m.cy0, lx = c * dx2 + s * dy2, ly = -s * dx2 + c * dy2, hd = m.h, W0 = L.canvas.width * Math.abs(m.sx0), H0 = L.canvas.height * Math.abs(m.sy0);
+		var ax = e.alt ? 0 : -hd[0] * W0 / 2, ay = e.alt ? 0 : -hd[1] * H0 / 2, nw = hd[0] ? Math.max(2, (lx - ax) * hd[0] * (e.alt ? 2 : 1)) : W0, nh = hd[1] ? Math.max(2, (ly - ay) * hd[1] * (e.alt ? 2 : 1)) : H0;
+		var uniform = (hd[0] && hd[1]) ? !e.shift : e.shift;
+		if (uniform && hd[0] && hd[1]) { var f = Math.max(nw / W0, nh / H0); nw = W0 * f; nh = H0 * f; } else if (uniform) { var f2 = hd[0] ? nw / W0 : nh / H0; nw = W0 * f2; nh = H0 * f2; }
+		return { nw: nw, nh: nh, uniform: uniform, W0: W0, H0: H0, ax: ax, ay: ay };
+	}
+	function applyDims(m, d, nw, nh, alt) {
+		var L = m.L, c = Math.cos(m.rot), s = Math.sin(m.rot), hd = m.h, ncx = alt ? 0 : d.ax + hd[0] * nw / 2, ncy = alt ? 0 : d.ay + hd[1] * nh / 2;
+		L.sx = Math.sign(m.sx0 || 1) * nw / L.canvas.width; L.sy = Math.sign(m.sy0 || 1) * nh / L.canvas.height; L.cx = m.cx0 + c * ncx - s * ncy; L.cy = m.cy0 + s * ncx + c * ncy;
+	}
+	function uprightish(r) { var q = ((r % (2 * Math.PI)) + 2 * Math.PI) % (2 * Math.PI); return q < 1e-6 || Math.abs(q - 2 * Math.PI) < 1e-6; }
+	/* snap the moving edges of a box that depends linearly on one size parameter per axis. edgesAt(p, axis) -> [positions]; returns the snapped parameters */
+	function snapSizes(e, m, px, py, edgesAt, uniform) {
+		var t = m.tg, T = th(), best = { x: null, y: null };
+		[["x", px], ["y", py]].forEach(function (q) {
+			var ax = q[0], p = q[1]; if (p == null) return; var e0 = edgesAt(p, ax), e1 = edgesAt(p + 1, ax);
+			e0.forEach(function (v, i) { var s = P.snapAxis([v], ax === "x" ? t.x : t.y, T); if (!s) return; var np = P.linSolve(p, v, p + 1, e1[i], s.p); if (np == null || !(np > 0)) return; if (!best[ax] || Math.abs(s.d) < Math.abs(best[ax].d)) best[ax] = { d: s.d, p: np, t: s }; });
+		});
+		if (uniform && best.x && best.y) { if (Math.abs(best.x.d) <= Math.abs(best.y.d)) best.y = null; else best.x = null; }
+		return best;
+	}
+	PE.defTool({ id: "move", name: "Move / Transform", key: "v", icon: "✥", opts: { auto: true, handles: true, snap: true, snapLayers: true, groups: true },
+		ui: [{ k: "auto", label: "Pick layer on click", type: "check" }, { k: "groups", label: "Pick the whole group", type: "check" }, { k: "handles", label: "Transform handles", type: "check" }, { k: "snap", label: "Snap to canvas edges", type: "check" }, { k: "snapLayers", label: "Snap to other layers", type: "check" }, { type: "button", label: "✎ Edit text / equation", act: function () { var L = PE.active(); if (L && L.type === "text") PE.editActiveText(); else if (L && L.eq) PE.dlgEquation(L); else PE.toast("Select a text or equation layer first (click it on the picture)"); } }, { type: "button", label: "✂ Remove background (AI)", act: function () { PE.aiRemoveBackground(); } }],
+		hint: "Drag to move. Shift / Ctrl-click adds or removes layers; drag on empty canvas to box-select several. Handles resize (Shift = other proportions), just outside a corner rotates. Hold Ctrl (or Alt) while dragging = no snapping. Arrows nudge.",
 		down: function (e) {
-			var L = PE.active(), o = PE.opt.move, z = PE.view.zoom;
-			if (L && o.handles && L.visible && !PE.isGroup(L)) {
-				for (var i = 0; i < 8; i++) { var s = handleScreen(L, HANDLES[i]); if (Math.hypot(s.x - (e.sx - PE.els.over.getBoundingClientRect().left), s.y - (e.sy - PE.els.over.getBoundingClientRect().top)) < 9) { mv = { kind: "scale", L: L, h: HANDLES[i], sx0: L.sx, sy0: L.sy, cx0: L.cx, cy0: L.cy, rot: L.rot, p0: e }; return; } }
-				var rect = PE.els.over.getBoundingClientRect(), px = e.sx - rect.left, py = e.sy - rect.top;
-				var corners = [0, 2, 4, 6].map(function (k) { return handleScreen(L, HANDLES[k]); });
-				for (i = 0; i < 4; i++) { var dd = Math.hypot(corners[i].x - px, corners[i].y - py); if (dd >= 9 && dd < 30 && !PE.layerAtPoint(L, e.x, e.y)) { mv = { kind: "rot", L: L, a0: Math.atan2(e.y - L.cy, e.x - L.cx), rot0: L.rot }; return; } }
+			var o = PE.opt.move, A = PE.active(), set = PE.moveSet(), multi = set.length > 1, sp = scr(e), i;
+			mv = null; PE.guides = [];
+			if (o.handles && !e.shift && !e.ctrl) {
+				if (multi) {
+					var b = setBox(set); if (b) for (i = 0; i < 8; i++) { var hs = boxHandle(b, HANDLES[i]); if (Math.hypot(hs.x - sp.x, hs.y - sp.y) < 9) {
+						var its = leaves(set).filter(function (k) { return !k.locked; }); if (its.length !== leaves(set).length) { PE.toast("A locked layer is in the selection"); return; }
+						mv = { kind: "mscale", set: set, b0: b, vb0: P.unionBox(its.filter(PE.effVisible).map(PE.visBox)) || b, h: HANDLES[i], items: its.map(function (k) { return [k, k.cx, k.cy, k.sx, k.sy, k.rot]; }), tg: targetsFor(its) }; return; } }
+				} else if (A && A.visible && !PE.isGroup(A) && !A.locked) {
+					for (i = 0; i < 8; i++) { var s = handleScreen(A, HANDLES[i]); if (Math.hypot(s.x - sp.x, s.y - sp.y) < 9) { mv = { kind: "scale", L: A, h: HANDLES[i], sx0: A.sx, sy0: A.sy, cx0: A.cx, cy0: A.cy, rot: A.rot, p0: e, tg: targetsFor([A]) }; return; } }
+					var corners = [0, 2, 4, 6].map(function (k) { return handleScreen(A, HANDLES[k]); });
+					for (i = 0; i < 4; i++) { var dd = Math.hypot(corners[i].x - sp.x, corners[i].y - sp.y); if (dd >= 9 && dd < 30 && !PE.layerAtPoint(A, e.x, e.y)) { mv = { kind: "rot", L: A, a0: Math.atan2(e.y - A.cy, e.x - A.cx), rot0: A.rot }; return; } }
+				}
 			}
-			var hit = o.auto ? PE.layerAt(e.x, e.y) : null;
-			if (hit && hit !== L && PE.isBackdrop(hit)) hit = null;
-			if (hit) hit = pickTarget(hit, L, o.groups);
-			if (o.auto && hit && hit !== L) { PE.setActive(hit.id); L = hit; }
-			else if (o.auto && !hit && !(L && PE.layerAtPoint(L, e.x, e.y))) { mv = null; return; }
-			if (!L || L.locked) { if (L && L.locked) PE.toast("This layer is locked"); return; }
-			mv = { kind: "move", L: L, cx0: L.cx, cy0: L.cy, p0: e, moved: false, grp: PE.isGroup(L) ? PE.descendants(L).filter(function (k) { return !PE.isGroup(k); }).map(function (k) { return [k, k.cx, k.cy]; }) : null };
+			var raw = o.auto ? PE.layerAt(e.x, e.y) : null; if (raw && raw !== A && PE.isBackdrop(raw)) raw = null;
+			var hit = raw ? pickTarget(raw, multi ? null : A, o.groups) : null;
+			if (e.shift || e.ctrl) {   // add to / take out of the selection; on empty canvas a rubber band adds
+				if (hit) { var now = PE.toggleMove(hit); if (now) startMove(PE.moveSet(), e); return; }
+				mv = { kind: "band", a: e, b: e, add: true }; return;
+			}
+			if (hit && multi && set.indexOf(hit) >= 0) { startMove(set, e); return; }   // dragging one of the selected layers moves them all
+			if (multi && hit && PE.ancestorsOf(hit).some(function (g) { return set.indexOf(g) >= 0; })) { startMove(set, e); return; }
+			if (hit) { if (hit !== A || multi) { if (PE.setMulti) PE.setMulti([]); PE.setActive(hit.id); } startMove([hit], e); return; }
+			if (!o.auto) { if (set.length) startMove(set, e); return; }
+			if (multi) { var mb = setBox(set); if (mb && e.x >= mb.x && e.y >= mb.y && e.x <= mb.x + mb.w && e.y <= mb.y + mb.h) { startMove(set, e); return; } }
+			else if (A && PE.layerAtPoint(A, e.x, e.y) && PE.effVisible(A)) { startMove([A], e); return; }   // e.g. dragging the active background picture
+			mv = { kind: "band", a: e, b: e, add: false };   // empty canvas (or outside the picture): rubber-band select
 		},
 		move: function (e) {
-			if (!mv) return; var L = mv.L;
+			if (!mv) return; var L = mv.L, T = th();
+			if (mv.kind === "band") { mv.b = e; PE.invalidateOverlay(); return; }
 			if (mv.kind === "move") {
 				var dx = Math.round(e.x - mv.p0.x), dy = Math.round(e.y - mv.p0.y); if (e.shift) { if (Math.abs(dx) > Math.abs(dy)) dy = 0; else dx = 0; }
-				if (mv.grp) { mv.grp.forEach(function (g) { g[0].cx = g[1] + dx; g[0].cy = g[2] + dy; }); PE.guides = []; mv.moved = true; PE.invalidate(); return; }
-				L.cx = mv.cx0 + dx; L.cy = mv.cy0 + dy; PE.guides = [];
-				if (PE.opt.move.snap && !e.ctrl) {
-					var b = PE.bounds(L), th = 6 / PE.view.zoom, d = PE.doc, ax = [[b.x, 0], [b.x + b.w, d.w], [b.x + b.w / 2, d.w / 2], [b.x, d.w / 2 - b.w / 2 + b.x - b.x]];
-					[[b.x, 0, "l"], [b.x + b.w, d.w, "r"], [b.x + b.w / 2, d.w / 2, "c"]].forEach(function (q) { if (Math.abs(q[0] - q[1]) < th) { L.cx += q[1] - q[0]; PE.guides.push({ v: q[1] }); } });
-					b = PE.bounds(L); [[b.y, 0], [b.y + b.h, d.h], [b.y + b.h / 2, d.h / 2]].forEach(function (q) { if (Math.abs(q[0] - q[1]) < th) { L.cy += q[1] - q[0]; PE.guides.push({ h: q[1] }); } });
+				PE.guides = [];
+				if (snapOn(e) && !e.alt && mv.box0) {
+					var lockX = e.shift && dx === 0, lockY = e.shift && dy === 0, r = P.snapBox({ x: mv.box0.x + dx, y: mv.box0.y + dy, w: mv.box0.w, h: mv.box0.h }, mv.tg, T);   // Shift keeps the drag on one axis: only that axis snaps
+					if (!lockX) dx += r.dx; else r.gx = []; if (!lockY) dy += r.dy; else r.gy = []; guidesFrom(r.gx, r.gy);
 				}
+				mv.items.forEach(function (g) { g[0].cx = g[1] + dx; g[0].cy = g[2] + dy; }); mv.moved = mv.moved || dx !== 0 || dy !== 0; PE.invalidate(); return;
+			}
+			if (mv.kind === "rot") { var a = Math.atan2(e.y - L.cy, e.x - L.cx), rr = mv.rot0 + (a - mv.a0); if (e.shift) rr = Math.round(rr / (Math.PI / 12)) * (Math.PI / 12); L.rot = rr; mv.moved = true; PE.invalidate(); return; }
+			if (mv.kind === "scale") {
+				var d = scaleDims(mv, e), nw = d.nw, nh = d.nh; applyDims(mv, d, nw, nh, e.alt); PE.guides = [];
+				var vr = visLocal(L);
+				if (snapOn(e) && vr && uprightish(mv.rot) && mv.sx0 > 0 && mv.sy0 > 0) {
+					var hd = mv.h, W = L.canvas.width, H = L.canvas.height;
+					var edgesAt = function (p, ax) { var keep = [L.sx, L.sy, L.cx, L.cy]; if (ax === "x") applyDims(mv, d, p, nh, e.alt); else applyDims(mv, d, nw, p, e.alt); var out = ax === "x" ? [L.cx + (vr.x - W / 2) * L.sx, L.cx + (vr.x + vr.w - W / 2) * L.sx] : [L.cy + (vr.y - H / 2) * L.sy, L.cy + (vr.y + vr.h - H / 2) * L.sy]; L.sx = keep[0]; L.sy = keep[1]; L.cx = keep[2]; L.cy = keep[3]; var side = ax === "x" ? hd[0] : hd[1]; return e.alt ? out : side < 0 ? [out[0], NaN] : [NaN, out[1]]; };
+					var bs = snapSizes(e, mv, hd[0] ? nw : null, hd[1] ? nh : null, edgesAt, d.uniform);
+					if (bs.x || bs.y) {
+						if (d.uniform) { var f = bs.x ? bs.x.p / nw : bs.y.p / nh; nw *= f; nh *= f; } else { if (bs.x) nw = bs.x.p; if (bs.y) nh = bs.y.p; }
+						applyDims(mv, d, Math.max(2, nw), Math.max(2, nh), e.alt); guidesFrom(bs.x ? [bs.x.t] : [], bs.y ? [bs.y.t] : []);
+					}
+				}
+				mv.moved = true; PE.invalidate(); return;
+			}
+			if (mv.kind === "mscale") {
+				var b0 = mv.b0, h2 = mv.h, ux = e.alt ? b0.x + b0.w / 2 : h2[0] < 0 ? b0.x + b0.w : b0.x, uy = e.alt ? b0.y + b0.h / 2 : h2[1] < 0 ? b0.y + b0.h : b0.y;
+				var ex = h2[0] > 0 ? b0.x + b0.w : b0.x, ey = h2[1] > 0 ? b0.y + b0.h : b0.y, fx = h2[0] ? Math.max(0.02, (e.x - ux) / ((ex - ux) || 1)) : 1, fy = h2[1] ? Math.max(0.02, (e.y - uy) / ((ey - uy) || 1)) : 1;
+				var uni = (h2[0] && h2[1]) ? !e.shift : e.shift;
+				if (uni && h2[0] && h2[1]) fx = fy = Math.max(fx, fy); else if (uni) { if (h2[0]) fy = fx; else fx = fy; }
+				PE.guides = [];
+				if (snapOn(e)) {
+					var vb = mv.vb0, edgesAt2 = function (f, ax) { var o0 = ax === "x" ? [vb.x, vb.x + vb.w] : [vb.y, vb.y + vb.h], a0 = ax === "x" ? ux : uy, side = ax === "x" ? h2[0] : h2[1], out = o0.map(function (v) { return P.scaleAbout(v, a0, f); }); return e.alt ? out : side < 0 ? [out[0], NaN] : [NaN, out[1]]; };
+					var bs2 = snapSizes(e, mv, h2[0] ? fx : null, h2[1] ? fy : null, edgesAt2, uni);
+					if (bs2.x || bs2.y) { if (uni) { var g2 = bs2.x ? bs2.x.p : bs2.y.p; if (h2[0] && h2[1]) fx = fy = g2; else fx = fy = g2; } else { if (bs2.x) fx = bs2.x.p; if (bs2.y) fy = bs2.y.p; } guidesFrom(bs2.x ? [bs2.x.t] : [], bs2.y ? [bs2.y.t] : []); }
+				}
+				mv.items.forEach(function (it) {
+					var k = it[0]; k.cx = P.scaleAbout(it[1], ux, fx); k.cy = P.scaleAbout(it[2], uy, fy);
+					var q = ((it[5] % Math.PI) + Math.PI) % Math.PI, sxF, syF;
+					if (Math.abs(fx - fy) < 1e-9 || q < 1e-6 || Math.PI - q < 1e-6) { sxF = fx; syF = fy; } else if (Math.abs(q - Math.PI / 2) < 1e-6) { sxF = fy; syF = fx; } else { sxF = syF = Math.sqrt(fx * fy); }   // a layer at an odd angle cannot be stretched without skewing: it scales evenly
+					k.sx = it[3] * sxF; k.sy = it[4] * syF;
+				});
 				mv.moved = true; PE.invalidate();
-			} else if (mv.kind === "rot") {
-				var a = Math.atan2(e.y - L.cy, e.x - L.cx), r = mv.rot0 + (a - mv.a0); if (e.shift) r = Math.round(r / (Math.PI / 12)) * (Math.PI / 12); L.rot = r; mv.moved = true; PE.invalidate();
-			} else {
-				var c = Math.cos(mv.rot), s = Math.sin(mv.rot), dx2 = e.x - mv.cx0, dy2 = e.y - mv.cy0, lx = c * dx2 + s * dy2, ly = -s * dx2 + c * dy2, hd = mv.h, W0 = L.canvas.width * Math.abs(mv.sx0), H0 = L.canvas.height * Math.abs(mv.sy0);
-				var ax = e.alt ? 0 : -hd[0] * W0 / 2, ay = e.alt ? 0 : -hd[1] * H0 / 2, nw = hd[0] ? Math.max(2, (lx - ax) * hd[0] * (e.alt ? 2 : 1)) : W0, nh = hd[1] ? Math.max(2, (ly - ay) * hd[1] * (e.alt ? 2 : 1)) : H0;
-				var uniform = (hd[0] && hd[1]) ? !e.shift : e.shift;
-				if (uniform && hd[0] && hd[1]) { var f = Math.max(nw / W0, nh / H0); nw = W0 * f; nh = H0 * f; } else if (uniform) { var f2 = hd[0] ? nw / W0 : nh / H0; nw = W0 * f2; nh = H0 * f2; }
-				var ncx = e.alt ? 0 : ax + hd[0] * nw / 2, ncy = e.alt ? 0 : ay + hd[1] * nh / 2;
-				L.sx = Math.sign(mv.sx0 || 1) * nw / L.canvas.width; L.sy = Math.sign(mv.sy0 || 1) * nh / L.canvas.height; L.cx = mv.cx0 + c * ncx - s * ncy; L.cy = mv.cy0 + s * ncx + c * ncy; mv.moved = true; PE.invalidate();
 			}
 		},
-		up: function () { var m = mv; mv = null; PE.guides = []; if (m && m.moved) { PE.touch(m.L); PE.commit(m.kind === "move" ? (m.grp ? "Move group" : "Move layer") : m.kind === "rot" ? "Rotate layer" : "Resize layer"); } PE.invalidateOverlay(); },
-		abort: function () { if (mv) { var m = mv; m.L.cx = m.cx0 || m.L.cx; mv = null; } },
+		up: function (e) {
+			var m = mv; mv = null; PE.guides = [];
+			if (m && m.kind === "band") { bandSelect(m, e); PE.invalidateOverlay(); return; }
+			if (m && m.moved) {
+				var n = m.set ? m.set.length : 1, grp = m.set && n === 1 && PE.isGroup(m.set[0]);
+				PE.commit(m.kind === "move" ? (n > 1 ? "Move " + n + " layers" : grp ? "Move group" : "Move layer") : m.kind === "rot" ? "Rotate layer" : m.kind === "mscale" ? "Resize " + n + " layers" : "Resize layer");
+			}
+			PE.invalidateOverlay();
+		},
+		abort: function () {
+			var m = mv; mv = null; PE.guides = []; if (!m) return;
+			if (m.kind === "move") m.items.forEach(function (g) { g[0].cx = g[1]; g[0].cy = g[2]; });
+			else if (m.kind === "mscale") m.items.forEach(function (it) { var k = it[0]; k.cx = it[1]; k.cy = it[2]; k.sx = it[3]; k.sy = it[4]; });
+			else if (m.kind === "scale") { m.L.cx = m.cx0; m.L.cy = m.cy0; m.L.sx = m.sx0; m.L.sy = m.sy0; } else if (m.kind === "rot") m.L.rot = m.rot0;
+			PE.invalidate();
+		},
+		cancel: function () { if (mv && mv.kind !== "band") this.abort(); mv = null; },
 		overlay: function (x, v) {
-			var L = PE.active(); if (!L || !PE.opt.move.handles || !L.visible) return;
+			if (mv && mv.kind === "band") { var a = PE.toScreen(mv.a.x, mv.a.y), b = PE.toScreen(mv.b.x, mv.b.y), r = P.rectFrom(a.x, a.y, b.x, b.y); x.fillStyle = "rgba(26,115,232,0.12)"; x.fillRect(r.x, r.y, r.w, r.h); x.lineWidth = 1; [["#000", 0], ["#fff", 4]].forEach(function (p) { x.setLineDash([4, 4]); x.lineDashOffset = p[1]; x.strokeStyle = p[0]; x.strokeRect(r.x + 0.5, r.y + 0.5, r.w, r.h); }); x.setLineDash([]); x.lineDashOffset = 0; }
+			var set = PE.moveSet(), o = PE.opt.move; if (!set.length) return;
+			if (set.length > 1) {
+				x.strokeStyle = "rgba(26,115,232,0.75)"; x.lineWidth = 1;
+				set.forEach(function (L) { var pts = PE.corners(L).map(function (p) { return PE.toScreen(p[0], p[1]); }); x.beginPath(); pts.forEach(function (p, i) { i ? x.lineTo(p.x, p.y) : x.moveTo(p.x, p.y); }); x.closePath(); x.stroke(); });
+				var bb = setBox(set); if (!bb) return; var s0 = PE.toScreen(bb.x, bb.y), s1 = PE.toScreen(bb.x + bb.w, bb.y + bb.h); x.strokeStyle = "#1a73e8"; x.lineWidth = 1.5; x.setLineDash([6, 4]); x.strokeRect(s0.x, s0.y, s1.x - s0.x, s1.y - s0.y); x.setLineDash([]);
+				if (o.handles) for (var k = 0; k < 8; k++) { var hs = boxHandle(bb, HANDLES[k]); PE.handleBox(x, hs.x, hs.y, 4.5); }
+				x.font = "11px system-ui,sans-serif"; var lbl = set.length + " layers"; x.fillStyle = "rgba(26,115,232,0.9)"; x.fillRect(s0.x, s0.y - 18, x.measureText(lbl).width + 10, 16); x.fillStyle = "#fff"; x.fillText(lbl, s0.x + 5, s0.y - 6);
+				return;
+			}
+			var L = set[0]; if (!o.handles || !L.visible) return;
 			if (PE.isGroup(L)) { var gb = PE.groupBounds(L), g0 = PE.toScreen(gb.x, gb.y), g1 = PE.toScreen(gb.x + gb.w, gb.y + gb.h); x.setLineDash([6, 4]); x.strokeStyle = "#1a73e8"; x.lineWidth = 1.5; x.strokeRect(g0.x, g0.y, g1.x - g0.x, g1.y - g0.y); x.setLineDash([]); return; }
 			var pts = PE.corners(L).map(function (p) { return PE.toScreen(p[0], p[1]); }); x.strokeStyle = "#1a73e8"; x.lineWidth = 1.5; x.beginPath(); pts.forEach(function (p, i) { i ? x.lineTo(p.x, p.y) : x.moveTo(p.x, p.y); }); x.closePath(); x.stroke();
 			for (var i = 0; i < 8; i++) { var s = handleScreen(L, HANDLES[i]); PE.handleBox(x, s.x, s.y, 4.5); }
 		} });
+	/* rubber band: every visible, unlocked layer whose visible box the band touches (not the full-canvas background picture); "Pick the whole group" picks groups */
+	function bandSelect(m, e) {
+		var a = PE.toScreen(m.a.x, m.a.y), b = PE.toScreen(e.x, e.y), o = PE.opt.move, cur = m.add ? PE.moveSet() : [];
+		if (Math.hypot(a.x - b.x, a.y - b.y) < 4) { if (!m.add && PE.setMulti) { PE.setMulti([]); } return; }   // a plain click on empty canvas: back to one layer
+		var r = P.rectFrom(m.a.x, m.a.y, e.x, e.y), picked = cur.slice();
+		PE.doc.layers.forEach(function (L) {
+			if (PE.isGroup(L) || !PE.effVisible(L) || L.locked || PE.isBackdrop(L)) return; var vb = PE.visBox(L); if (!P.boxesTouch(vb, r)) return;
+			var tgt = o.groups ? PE.topGroupOf(L) : L; if (tgt.locked) return; if (picked.indexOf(tgt) < 0) picked.push(tgt);
+		});
+		picked = picked.filter(function (L) { return !PE.ancestorsOf(L).some(function (g) { return picked.indexOf(g) >= 0; }); });
+		if (!picked.length) { if (!m.add && PE.setMulti) PE.setMulti([]); PE.toast("No layer in that box"); return; }
+		var top = picked.slice().sort(function (p, q) { return PE.indexOf(p) - PE.indexOf(q); }).pop();
+		if (picked.length === 1) { PE.setMulti([]); PE.setActive(picked[0].id); } else { PE.setActive(top.id); PE.setMulti(picked.map(function (L) { return L.id; })); PE.toast(picked.length + " layers selected: drag one to move them all"); }
+	}
 	PE.isBackdrop = function (L) { var d = PE.doc, b = PE.bounds(L); return PE.indexOf(L) === 0 && PE.isIdentity(L) && b.x <= 1 && b.y <= 1 && b.x + b.w >= d.w - 1 && b.y + b.h >= d.h - 1; };
 	PE.layerAtPoint = function (L, x, y) { if (PE.isGroup(L)) { var gb = PE.groupBounds(L); return x >= gb.x && y >= gb.y && x <= gb.x + gb.w && y <= gb.y + gb.h; } var p = PE.toLayerPt(L, x, y); return p.x >= 0 && p.y >= 0 && p.x < L.canvas.width && p.y < L.canvas.height; };
-	PE.nudge = function (dx, dy) { var L = PE.active(); if (!L || L.locked) return; PE.translate(L, dx, dy); PE.touch(L); clearTimeout(PE._nt); PE._nt = setTimeout(function () { PE.commit("Move layer"); }, 350); };
+	/* arrow keys: the whole selection moves (Shift = 10 px); the keys pressed within 0.35 s make one undo step */
+	PE.nudge = function (dx, dy) {
+		var set = PE.moveSet().filter(function (L) { return !L.locked; }); if (!set.length) { if (PE.active() && PE.active().locked) PE.toast("This layer is locked"); return; }
+		set.forEach(function (L) { PE.translate(L, dx, dy); }); PE.invalidate(); var n = set.length;
+		clearTimeout(PE._nt); PE._nt = setTimeout(function () { PE.commit(n > 1 ? "Move " + n + " layers" : "Move layer"); }, 350);
+	};
 
 	/* ---------- selection tools ---------- */
 	function selMode(e) { var o = PE.opt[PE.toolId].mode || "new"; return e.shift && e.alt ? "int" : e.shift ? "add" : e.alt ? "sub" : o; }
@@ -408,10 +552,68 @@
 		},
 		overlay: function (x) { if (!grad) return; var a = PE.toScreen(grad.a.x, grad.a.y), b = PE.toScreen(grad.b.x, grad.b.y); x.strokeStyle = "#000"; x.lineWidth = 3; x.beginPath(); x.moveTo(a.x, a.y); x.lineTo(b.x, b.y); x.stroke(); x.strokeStyle = "#fff"; x.lineWidth = 1.5; x.stroke(); x.fillStyle = "#fff"; x.beginPath(); x.arc(a.x, a.y, 4, 0, 6.2832); x.fill(); } });
 
-	/* ---------- eyedropper, hand, zoom ---------- */
-	function pick(e) { var o = PE.opt.eyedropper, n = o.size; var c = PE.sample(e.x, e.y, n, o.merged); if (!c) return; var hex = P.rgbToHex(c.r, c.g, c.b); if (e.alt) PE.setBg(hex); else PE.setFg(hex); }
-	PE.defTool({ id: "eyedropper", name: "Eyedropper (pick colour)", key: "i", icon: "💉", opts: { size: 1, merged: true }, ui: [{ k: "size", label: "Sample", type: "select", options: [[1, "Point"], [3, "3 × 3"], [5, "5 × 5"], [11, "11 × 11"]], num: true }, { k: "merged", label: "All layers", type: "check" }],
-		hint: "Click to pick the foreground colour. Alt-click picks the background colour.", down: pick, move: pick });
+	/* ---------- eyedropper: press and drag over the picture with a magnifier; the colour is used on release (or, with "Confirm with a button",
+	 * from a floating Use / Cancel bar, so the sample point can be dragged around first). PE.pickColorFromImage(req) borrows the tool for one pick
+	 * (the 💉 buttons next to the colour wells and the option bar's colour boxes) and goes back to the tool you had. ---------- */
+	var pk = null, pickReq = null, pickBar = null, LOUPE_N = 11, LOUPE_Z = 9;
+	function sampleHex(x, y) { var o = PE.opt.eyedropper, c = PE.sample(x, y, o.size, o.merged); return c ? { hex: P.rgbToHex(c.r, c.g, c.b), a: c.a } : null; }
+	function loupePixels(x, y) {   // the 11 x 11 pixels around the point, drawn like the picture (all layers, or the current layer)
+		var n = LOUPE_N, h = Math.floor(n / 2), c = PE.tmp("loupe", n, n), cx = c.getContext("2d"), o = PE.opt.eyedropper, L = PE.active(), base = [1, 0, 0, 1, -Math.floor(x) + h, -Math.floor(y) + h];
+		cx.setTransform(1, 0, 0, 1, 0, 0); cx.clearRect(0, 0, n, n);
+		if (o.merged || !L) { PE.relink(); PE.doc.layers.forEach(function (l) { PE.drawLayer(cx, l, base, "lpx", n, n); }); } else PE.drawLayer(cx, L, base, "lpx", n, n);
+		return c;
+	}
+	function drawLoupe(x, v, docPt, scrPt, info, note) {
+		var n = LOUPE_N, z = LOUPE_Z, S = n * z, pad = 6, W = S + pad * 2, H = S + pad * 2 + 40, off = 26, bx = scrPt.x + off, by = scrPt.y + off;
+		if (bx + W > v.w - 4) bx = scrPt.x - off - W; if (by + H > v.h - 4) by = scrPt.y - off - H; bx = Math.max(4, bx); by = Math.max(4, by);
+		x.save(); x.shadowColor = "rgba(0,0,0,0.5)"; x.shadowBlur = 10; x.fillStyle = "#1d1d24"; x.beginPath(); if (x.roundRect) x.roundRect(bx, by, W, H, 8); else x.rect(bx, by, W, H); x.fill(); x.restore();
+		var gx = bx + pad, gy = by + pad; x.fillStyle = "#6a6a76"; x.fillRect(gx, gy, S, S); x.fillStyle = "#9a9aa6"; for (var i = 0; i < n * 2; i++) for (var j = 0; j < n * 2; j++) if ((i + j) % 2 === 0) x.fillRect(gx + i * z / 2, gy + j * z / 2, z / 2, z / 2);
+		x.imageSmoothingEnabled = false; x.drawImage(loupePixels(docPt.x, docPt.y), gx, gy, S, S); x.imageSmoothingEnabled = true;
+		x.strokeStyle = "rgba(255,255,255,0.12)"; x.lineWidth = 1; x.beginPath(); for (var k = 1; k < n; k++) { x.moveTo(gx + k * z + 0.5, gy); x.lineTo(gx + k * z + 0.5, gy + S); x.moveTo(gx, gy + k * z + 0.5); x.lineTo(gx + S, gy + k * z + 0.5); } x.stroke();
+		var sz = Math.min(n, PE.opt.eyedropper.size), h = Math.floor(n / 2), q = Math.floor(sz / 2), rx = gx + (h - q) * z, ry = gy + (h - q) * z;
+		x.lineWidth = 2; x.strokeStyle = "#000"; x.strokeRect(rx - 1, ry - 1, sz * z + 2, sz * z + 2); x.lineWidth = 1; x.strokeStyle = "#fff"; x.strokeRect(rx - 0.5, ry - 0.5, sz * z + 1, sz * z + 1);
+		var ty = gy + S + 8; x.fillStyle = info ? info.hex : "#000"; x.fillRect(gx, ty, 26, 26); x.strokeStyle = "#fff"; x.strokeRect(gx + 0.5, ty + 0.5, 25, 25);
+		x.fillStyle = "#f2f2f5"; x.font = "bold 13px ui-monospace,Menlo,Consolas,monospace"; x.textBaseline = "middle"; x.fillText(info ? info.hex.toUpperCase() + (info.a < 0.99 ? " " + Math.round(info.a * 100) + "%" : "") : "transparent", gx + 34, ty + 8);
+		x.font = "11px system-ui,sans-serif"; x.fillStyle = "#b9b9c6"; x.fillText(note, gx + 34, ty + 21); x.textBaseline = "alphabetic";
+	}
+	function marker(x, p) { var s = PE.toScreen(p.x, p.y); x.lineWidth = 3; x.strokeStyle = "#000"; x.beginPath(); x.arc(s.x, s.y, 7, 0, 6.2832); x.stroke(); x.lineWidth = 1.5; x.strokeStyle = "#fff"; x.stroke(); x.beginPath(); x.moveTo(s.x - 11, s.y); x.lineTo(s.x - 4, s.y); x.moveTo(s.x + 4, s.y); x.lineTo(s.x + 11, s.y); x.moveTo(s.x, s.y - 11); x.lineTo(s.x, s.y - 4); x.moveTo(s.x, s.y + 4); x.lineTo(s.x, s.y + 11); x.stroke(); }
+	function hideBar() { if (pickBar) { pickBar.remove(); pickBar = null; } }
+	function placeBar() {
+		if (!pickBar || !pk) return; var s = PE.toScreen(pk.x, pk.y), v = PE.view, w = pickBar.offsetWidth || 260, h = pickBar.offsetHeight || 40, l = Math.max(6, Math.min(v.w - w - 6, s.x - w / 2)), t = s.y + 18; if (t + h > v.h - 6) t = s.y - 18 - h;
+		pickBar.style.left = l + "px"; pickBar.style.top = Math.max(6, t) + "px";
+	}
+	function showBar() {
+		hideBar(); if (!pk || !pk.info) return; var b = PE.el("div", "pe-pickbar"); b.setAttribute("role", "group"); b.setAttribute("aria-label", "Use the picked colour?");
+		b.innerHTML = '<span class="pe-pickbar-sw" style="background:' + pk.info.hex + '"></span><code>' + pk.info.hex.toUpperCase() + '</code><button type="button" class="pe-btn pe-btn--sm pe-btn--primary" data-a="use">Use this colour</button><button type="button" class="pe-btn pe-btn--sm" data-a="no">Cancel</button>';
+		b.addEventListener("mousedown", function (e) { e.preventDefault(); e.stopPropagation(); });
+		b.addEventListener("click", function (e) { var a = e.target.closest && e.target.closest("[data-a]"); if (!a) return; if (a.dataset.a === "use") applyPick(); else PE.tools.eyedropper.cancel(); });
+		PE.els.stage.appendChild(b); pickBar = b; placeBar(); var u = b.querySelector("[data-a=use]"); if (u) u.focus({ preventScroll: true });
+	}
+	PE.on("view", placeBar);
+	function applyPick() {
+		var p = pk, r = pickReq; pk = null; hideBar(); PE.invalidateOverlay(); if (!p || !p.info) return;
+		if (r) { pickReq = null; r.apply(p.info.hex, p.alt); if (r.prev && PE.toolId === "eyedropper") PE.setTool(r.prev); PE.toast("Picked " + p.info.hex.toUpperCase() + (r.label ? " for the " + r.label : "")); }
+		else if (p.alt) PE.setBg(p.info.hex); else PE.setFg(p.info.hex);
+	}
+	PE.pickColorFromImage = function (req) {
+		if (!PE.doc) return; var prev = PE.toolId === "eyedropper" ? (pickReq && pickReq.prev) || null : PE.toolId;
+		PE.setTool("eyedropper"); pickReq = Object.assign({}, req, { prev: prev }); PE.toast("Press and drag over the picture, let go to use the colour" + (req.label ? " (" + req.label + ")" : "") + ". Esc cancels.");
+		PE.els.over.focus({ preventScroll: true });
+	};
+	PE.defTool({ id: "eyedropper", name: "Eyedropper (pick colour)", key: "i", icon: "💉", opts: { size: 1, merged: true, confirm: false },
+		ui: [{ k: "size", label: "Sample", type: "select", options: [[1, "1 pixel"], [3, "3 × 3 average"], [5, "5 × 5 average"], [11, "11 × 11 average"]], num: true }, { k: "merged", label: "All layers", type: "check", help: "On: the colour you see (all layers together). Off: only the selected layer's own pixels." }, { k: "confirm", label: "Confirm with a button", type: "check", help: "Off: the colour is used as soon as you let go. On: letting go leaves a Use this colour / Cancel bar, and you can drag again to move the sample point before you choose." }],
+		hint: "Press and drag over the picture: the magnifier shows the pixels and the colour, let go to use it (Alt = background colour). Esc cancels.",
+		down: function (e) { hideBar(); pk = { x: e.x, y: e.y, alt: e.alt || (pk && pk.alt), live: true, info: sampleHex(e.x, e.y) }; PE.invalidateOverlay(); },
+		move: function (e) { if (!pk || !pk.live) return; pk.x = e.x; pk.y = e.y; pk.info = sampleHex(e.x, e.y); PE.invalidateOverlay(); },
+		hover: function () { if (!pk) PE.invalidateOverlay(); },
+		up: function () { if (!pk) return; pk.live = false; if (!pk.info) { PE.toast("Nothing there to pick (transparent)"); pk = null; PE.invalidateOverlay(); return; } if (PE.opt.eyedropper.confirm) { showBar(); PE.invalidateOverlay(); } else applyPick(); },
+		enter: function () { if (pk && !pk.live) applyPick(); },
+		cancel: function () { var r = pickReq; pk = null; pickReq = null; hideBar(); PE.invalidateOverlay(); if (r && r.prev) setTimeout(function () { if (PE.toolId === "eyedropper") PE.setTool(r.prev); }, 0); },
+		overlay: function (x, v) {
+			if (pk) { marker(x, pk); if (pk.live) drawLoupe(x, v, pk, PE.toScreen(pk.x, pk.y), pk.info, PE.opt.eyedropper.confirm ? "let go, then Use" : "let go to use"); return; }
+			if (PE.ptr.inside && !PE.spaceHeld) { var d = { x: (PE.ptr.x - v.px) / v.zoom, y: (PE.ptr.y - v.py) / v.zoom }; drawLoupe(x, v, d, PE.ptr, sampleHex(d.x, d.y), pickReq ? "press to pick" + (pickReq.label ? ": " + pickReq.label : "") : "press and drag"); }
+		} });
+	/* ---------- hand, zoom ---------- */
 	PE.defTool({ id: "hand", name: "Hand (pan)", key: "h", icon: "✋", opts: {}, ui: [], hint: "Drag to pan. You can also hold Space with any tool, or use the middle mouse button." });
 	PE.defTool({ id: "zoom", name: "Zoom", key: "z", icon: "🔍", opts: {}, ui: [{ type: "button", label: "Fit (Ctrl+0)", act: function () { PE.fit(); } }, { type: "button", label: "100% (Ctrl+1)", act: function () { PE.setZoom(1); } }], hint: "Click to zoom in, Alt-click to zoom out. Ctrl + wheel also zooms.",
 		down: function (e) { var r = PE.els.over.getBoundingClientRect(); PE.setZoom(PE.view.zoom * (e.alt ? 0.5 : 2), e.sx - r.left, e.sy - r.top); } });

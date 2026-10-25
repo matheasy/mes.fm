@@ -252,6 +252,71 @@ var MESPixel = (function () {
 		fontPx = fontPx > 0 ? fontPx : 13; var max = Math.max(12, Math.min(48, ((mainPx || 0) - (otherPx || 0) - 240) / fontPx)); em = +em; if (!isFinite(em)) em = 17.5;
 		return Math.round(clamp(em, 12, max) * 100) / 100;
 	}
+	/* ---------- layout maths: Move tool (multi-selection boxes, snapping) and the text editor (wrapping with string offsets, caret hit-testing) ---------- */
+	function unionBox(list) {
+		var x0 = Infinity, y0 = Infinity, x1 = -Infinity, y1 = -Infinity, any = false;
+		(list || []).forEach(function (b) { if (!b) return; any = true; x0 = Math.min(x0, b.x); y0 = Math.min(y0, b.y); x1 = Math.max(x1, b.x + b.w); y1 = Math.max(y1, b.y + b.h); });
+		return any ? { x: x0, y: y0, w: x1 - x0, h: y1 - y0 } : null;
+	}
+	function boxesTouch(a, b) { return !!a && !!b && a.x <= b.x + b.w && b.x <= a.x + a.w && a.y <= b.y + b.h && b.y <= a.y + a.h; }
+	function rectFrom(x0, y0, x1, y1) { return { x: Math.min(x0, x1), y: Math.min(y0, y1), w: Math.abs(x1 - x0), h: Math.abs(y1 - y0) }; }
+	/* snap lines: the canvas (edges + centre, kind "c") and every other layer's box (edges + centre, kind "l") */
+	function snapTargets(W, H, boxes) {
+		var tx = W == null ? [] : [{ p: 0, k: "c" }, { p: W / 2, k: "c" }, { p: W, k: "c" }], ty = H == null ? [] : [{ p: 0, k: "c" }, { p: H / 2, k: "c" }, { p: H, k: "c" }];
+		(boxes || []).forEach(function (b) { if (!b) return; tx.push({ p: b.x, k: "l" }, { p: b.x + b.w / 2, k: "l" }, { p: b.x + b.w, k: "l" }); ty.push({ p: b.y, k: "l" }, { p: b.y + b.h / 2, k: "l" }, { p: b.y + b.h, k: "l" }); });
+		return { x: tx, y: ty };
+	}
+	/* the closest target to any of the moving positions `vals`, if within `th`: {d (add it to the positions), p, k, i (which position)}; on a tie the canvas wins */
+	function snapAxis(vals, targets, th) {
+		var best = null;
+		vals.forEach(function (v, i) { if (v == null || !isFinite(v)) return; targets.forEach(function (t) { var d = t.p - v, ad = Math.abs(d); if (ad > th) return; if (!best || ad < Math.abs(best.d) - 1e-9 || (Math.abs(ad - Math.abs(best.d)) <= 1e-9 && t.k === "c" && best.k !== "c")) best = { d: d, p: t.p, k: t.k, i: i }; }); });
+		return best;
+	}
+	/* every target that a (snapped) position lies on = the guide lines to draw */
+	function guidesOn(vals, targets) { var out = [], seen = {}; vals.forEach(function (v) { targets.forEach(function (t) { if (Math.abs(t.p - v) < 0.5) { var key = t.p.toFixed(2) + t.k; if (!seen[key]) { seen[key] = 1; out.push({ p: t.p, k: t.k }); } } }); }); return out; }
+	/* moving a box: left / centre / right and top / middle / bottom snap independently. {dx, dy, gx, gy} */
+	function snapBox(box, tg, th) {
+		var vx = [box.x, box.x + box.w / 2, box.x + box.w], vy = [box.y, box.y + box.h / 2, box.y + box.h], sx = snapAxis(vx, tg.x, th), sy = snapAxis(vy, tg.y, th), dx = sx ? sx.d : 0, dy = sy ? sy.d : 0;
+		return { dx: dx, dy: dy, gx: sx ? guidesOn(vx.map(function (v) { return v + dx; }), tg.x) : [], gy: sy ? guidesOn(vy.map(function (v) { return v + dy; }), tg.y) : [] };
+	}
+	/* a quantity that is linear in a parameter (v0 at f0, v1 at f1): the parameter that gives `target`, null when the quantity does not change */
+	function linSolve(f0, v0, f1, v1, target) { var dv = v1 - v0; if (Math.abs(dv) < 1e-12) return null; return f0 + (target - v0) * (f1 - f0) / dv; }
+	function scaleAbout(p, a, f) { return a + (p - a) * f; }
+	/* word wrap that remembers where each line came from in the string: [{text, start, end}] (end = start + text.length; a wrapped line loses its trailing spaces) */
+	function wrapLines(str, lim, measure) {
+		str = String(str == null ? "" : str); var out = [], pos = 0;
+		str.split("\n").forEach(function (para) {
+			var base = pos; pos += para.length + 1;
+			if (measure(para) <= lim) { out.push({ text: para, start: base, end: base + para.length }); return; }
+			var cur = "", cs = base, tp = base;
+			var push = function (s, st, trim) { var tx = trim ? s.replace(/\s+$/, "") : s; out.push({ text: tx, start: st, end: st + tx.length }); };
+			para.split(/(\s+)/).forEach(function (wd) {
+				var ws = tp; tp += wd.length; if (!wd) return;
+				if (cur && measure((cur + wd).replace(/\s+$/, "")) > lim) { push(cur, cs, true); if (/^\s+$/.test(wd)) { cur = ""; cs = tp; } else { cur = wd; cs = ws; } }
+				else { if (!cur) cs = ws; cur += wd; }
+				while (measure(cur.replace(/\s+$/, "")) > lim && cur.length > 1) { var k = cur.length - 1; while (k > 1 && measure(cur.slice(0, k)) > lim) k--; push(cur.slice(0, k), cs, false); cur = cur.slice(k); cs += k; }   // one word longer than the box
+			});
+			push(cur, cs, true);
+		});
+		return out;
+	}
+	/* which line a string index is on, and how far into it: {line, k} */
+	function caretLine(lines, idx) {
+		var li = 0; for (var i = 0; i < lines.length; i++) { if (lines[i].start <= idx) li = i; else break; }
+		var L = lines[li]; return { line: li, k: Math.max(0, Math.min(L.text.length, idx - L.start)) };
+	}
+	/* the string index closest to x (measured from the line's own left edge) */
+	function hitInLine(line, x, measure) { var best = 0, bd = Infinity; for (var k = 0; k <= line.text.length; k++) { var d = Math.abs(measure(line.text.slice(0, k)) - x); if (d < bd) { bd = d; best = k; } } return line.start + best; }
+	/* the word around a string index (double-click): [start, end] */
+	function wordAt(str, idx) {
+		// a run of non-space characters ("2.0", "don't"), without punctuation stuck to its ends ("Fetzer," -> "Fetzer")
+		str = String(str); var sp = function (c) { return !c || /\s/.test(c); }, PU = /[.,;:!?()\[\]{}"“”‘’'«»]/, a = idx;
+		if (sp(str[a]) && !sp(str[a - 1])) a--;
+		if (sp(str[a])) return [idx, idx];
+		while (a > 0 && !sp(str[a - 1])) a--; var b = a; while (b < str.length && !sp(str[b])) b++;
+		var a2 = a, b2 = b; while (a2 < b2 && PU.test(str[a2])) a2++; while (b2 > a2 && PU.test(str[b2 - 1])) b2--;
+		return a2 < b2 && idx >= a2 && idx <= b2 ? [a2, b2] : [a, b];
+	}
 	/* arrow keys on the focused grip: the grip moves with the arrow, so the panels get wider when it moves towards the picture's side */
 	function panelKey(key, shift, sideLeft) {
 		var step = shift ? 4 : 1;
@@ -259,7 +324,7 @@ var MESPixel = (function () {
 		if (key === "Home") return { to: "min" }; if (key === "End") return { to: "max" }; if (key === "Enter") return { to: "reset" };
 		return null;
 	}
-	var api = { describeSource: describeSource, bytesText: bytesText, panelClamp: panelClamp, panelKey: panelKey, clamp: clamp, hexToRgb: hexToRgb, rgbToHex: rgbToHex, rgbToHsl: rgbToHsl, hslToRgb: hslToRgb, histogram: histogram, identityLUT: identityLUT, applyLUT: applyLUT, levelsLUT: levelsLUT, curveLUT: curveLUT,
+	var api = { unionBox: unionBox, boxesTouch: boxesTouch, rectFrom: rectFrom, snapTargets: snapTargets, snapAxis: snapAxis, snapBox: snapBox, guidesOn: guidesOn, linSolve: linSolve, scaleAbout: scaleAbout, wrapLines: wrapLines, caretLine: caretLine, hitInLine: hitInLine, wordAt: wordAt, describeSource: describeSource, bytesText: bytesText, panelClamp: panelClamp, panelKey: panelKey, clamp: clamp, hexToRgb: hexToRgb, rgbToHex: rgbToHex, rgbToHsl: rgbToHsl, hslToRgb: hslToRgb, histogram: histogram, identityLUT: identityLUT, applyLUT: applyLUT, levelsLUT: levelsLUT, curveLUT: curveLUT,
 		brightnessContrast: brightnessContrast, exposure: exposure, hueSat: hueSat, vibrance: vibrance, temperature: temperature, invert: invert, grayscale: grayscale, sepia: sepia, threshold: threshold, posterize: posterize,
 		gaussianBlur: gaussianBlur, boxBlur: boxBlur, unsharp: unsharp, noise: noise, pixelate: pixelate, vignette: vignette, convolve: convolve, floodMask: floodMask, growShrinkMask: growShrinkMask, featherMask: featherMask, invertMask: invertMask,
 		maskBounds: maskBounds, opaqueBounds: opaqueBounds, blendByMask: blendByMask, autoLevels: autoLevels, premultiply: premultiply, unpremultiply: unpremultiply };

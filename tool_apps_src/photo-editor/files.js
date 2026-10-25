@@ -85,6 +85,33 @@
 	function thumbOf(L, n) { var c = PE.mk(n, n), x = c.getContext("2d"), w = L.canvas.width, h = L.canvas.height, s = Math.min(n / w, n / h); x.fillStyle = "#4a4a55"; x.fillRect(0, 0, n, n); x.fillStyle = "#6a6a76"; for (var i = 0; i < n; i += 6) for (var j = 0; j < n; j += 6) if (((i + j) / 6) % 2 === 0) x.fillRect(i, j, 6, 6); x.drawImage(L.canvas, (n - w * s) / 2, (n - h * s) / 2, w * s, h * s); c.className = "pe-fx-th"; return c; }
 	function btn(t, title) { var b = el("button", "pe-btn pe-btn--sm", esc(t)); b.type = "button"; if (title) b.title = title; return b; }
 
+	/* ---------- folder-access reminder: a chip in the status bar while this site can change files in a folder ----------
+	 * The page reaches a folder only through its handle (kept in memory while connected, and in IndexedDB "dir" so Reconnect works next time).
+	 * Disconnect drops both, so the editor can no longer reach the folder at all; the browser's own permission entry is removed in its site settings. */
+	var folderListeners = []; PE.on("folder", function () { folderListeners = folderListeners.filter(function (f) { return f() !== false; }); });
+	var remembered = null, chip = null;   // remembered = the stored handle when the browser still grants write access to it without asking
+	var REVOKE = "In Brave or Chrome you can also remove it there: click the icon left of the address (lock or sliders) › Site settings › File editing (or the folder listed in that pop-up).";
+	function accessName() { return dirHandle ? dirHandle.name : remembered ? remembered.name : ""; }
+	function drawChip() {
+		var st = document.querySelector("#pe .pe-status"); if (!st) return; var nm = accessName();
+		if (!nm) { if (chip) chip.hidden = true; return; }
+		if (!chip) {
+			chip = el("span", "pe-fchip"); chip.setAttribute("role", "status"); st.insertBefore(chip, st.firstChild);
+			chip.addEventListener("click", function (e) { var b = e.target.closest && e.target.closest("button"); if (!b) return; if (b.dataset.a === "off") PE.disconnectFolder(); else PE.dlgFolder("folder"); });
+		}
+		chip.hidden = false; chip.title = "This site can open and change files in “" + nm + "” while folder access is on. " + REVOKE;
+		chip.innerHTML = '<button type="button" class="pe-fchip-n" data-a="open">📁 Folder access: <b>' + esc(nm) + '</b></button><span aria-hidden="true">·</span><button type="button" class="pe-fchip-x" data-a="off">Disconnect</button>';
+	}
+	PE.folderAccess = function () { return accessName(); };
+	PE.disconnectFolder = function () {
+		var nm = accessName(); dirHandle = null; remembered = null; roFiles = null; for (var k in handles) delete handles[k];
+		idb(function (st) { return rq(st.delete("dir")); }).catch(function () {}).then(function () { drawChip(); PE.emit("folder"); PE.toast(nm ? "Disconnected “" + nm + "”: the editor can no longer open or change files there" : "No folder is connected"); });
+	};
+	/* on load: a folder from an earlier visit that the browser still lets the page write to (Chrome's "Allow on every visit") gets the chip too */
+	if (canFS()) setTimeout(function () {
+		idb(function (st) { return rq(st.get("dir")); }).then(function (h) { if (!h || dirHandle) return; return perm(h, true, false).then(function (p) { if (p === "granted" && !dirHandle) { remembered = h; drawChip(); } }); }).catch(function () {});
+	}, 400);
+
 	/* focus: "folder" scrolls to the folder section, anything else opens at the top ("Where your images are") */
 	PE.dlgFolder = function (focus) {
 		var wrap = el("div", "pe-fx"), token = 0, entries = [], stored = null;
@@ -115,6 +142,15 @@
 		/* 2. a folder on this computer */
 		var sF = sec("Folder on this computer", "Connect a folder and the editor lists its pictures. Click one to add it as a layer (or to open it, if nothing is open); Shift-click opens it as a new image. Nothing is uploaded: the editor reads the files straight from your disk, and only with the permission you give in the browser's pop-up.");
 		var stP = el("p", "pe-fx-st"), note = el("div", "pe-fx-note"), bar = el("div", "pe-fold-h"), saveRow = el("div", "pe-fx-save"), search = el("input", "pe-fold-s"), msg = el("p", "pe-hint2"), grid = el("div", "pe-fold-g");
+		var acc = el("div", "pe-fx-acc"); acc.hidden = true; acc.setAttribute("role", "note");
+		function drawAccess(name) {   // the calm reminder of what "connected" allows, and how to switch it off
+			if (!name) { acc.hidden = true; return; } acc.hidden = false;
+			acc.innerHTML = "<b>🔓 Folder access is on for “" + esc(name) + "”.</b> While it is, this site can read and change files in that folder (and its subfolders); the editor only writes when you press Save or Move. "
+				+ "Turn it off with <i>Disconnect</i>, which forgets the folder here. " + esc(REVOKE) + " <span class=\"pe-fx-tip\">Tip: connect a dedicated folder (say, <i>Thumbnails</i>) rather than your whole OneDrive or Documents.</span> ";
+			var off = btn("Disconnect", "Forget this folder: the editor can no longer open or change files in it"); off.addEventListener("click", function () { PE.disconnectFolder(); }); acc.appendChild(off);
+		}
+		var offL = function () { if (!wrap.isConnected) return false; stored = null; entries = []; grid.innerHTML = ""; msg.textContent = canFS() ? "Choose a folder to see its pictures." : ""; drawAccess(""); refreshState(); drawWhere(); };
+		folderListeners.push(offL);
 		search.type = "search"; search.placeholder = "Filter by name…"; search.setAttribute("aria-label", "Filter pictures by name");
 		var bPick = btn("📂 Choose a folder…", "Pick a folder; the browser asks whether the editor may see and save files in it"), bAgain = btn("↺ Reconnect", "Use the folder from last time again (the browser asks for permission once more)"), bRo = btn("📂 Open a folder (read only)…", "List the pictures of a folder. This browser cannot save into it: saving goes to your Downloads folder"), roInp = el("input");
 		roInp.type = "file"; roInp.multiple = true; roInp.setAttribute("webkitdirectory", ""); roInp.hidden = true; roInp.setAttribute("aria-hidden", "true"); bAgain.hidden = true;
@@ -131,14 +167,14 @@
 			if (isBrave()) { var bCopy = btn("Copy the address", "Copies " + BRAVE_FLAG + " so you can paste it into Brave's address bar"); bCopy.addEventListener("click", function () { var fail = function () { window.prompt("Copy this address:", BRAVE_FLAG); }; try { navigator.clipboard.writeText(BRAVE_FLAG).then(function () { PE.toast("Copied. Paste it into the address bar"); }, fail); } catch (x) { fail(); } }); note.appendChild(document.createTextNode(" ")); note.appendChild(bCopy); }
 			bar.appendChild(bRo); bar.appendChild(roInp);
 		}
-		[stP, note, bar, saveRow, saveHint, search, msg, grid].forEach(function (x) { sF.appendChild(x); });
+		[stP, acc, note, bar, saveRow, saveHint, search, msg, grid].forEach(function (x) { sF.appendChild(x); });
 
 		function refreshState() {
 			if (canFS()) {
 				bPick.textContent = dirHandle ? "📂 Choose another folder…" : "📂 Choose a folder…"; bAgain.hidden = !(stored && !dirHandle); if (stored) bAgain.textContent = "↺ Reconnect to “" + stored.name + "”";
 				bSave.textContent = dirHandle ? "⬇ Save into “" + dirHandle.name + "”" : "⬇ Save into a folder…"; saveHint.textContent = dirHandle ? "If a file with that name is already there, you are asked before it is replaced." : "You pick the folder first.";
-				if (dirHandle) { var h = dirHandle; perm(h, true, false).then(function (p) { if (h === dirHandle) stP.innerHTML = "Connected: <b>“" + esc(h.name) + "”</b> · " + esc(permText(p)) + "."; }).catch(function () {}); }
-				else stP.textContent = "No folder is connected." + (stored ? " Last time it was “" + stored.name + "”." : "");
+				if (dirHandle) { var h = dirHandle; perm(h, true, false).then(function (p) { if (h === dirHandle) { stP.innerHTML = "Connected: <b>“" + esc(h.name) + "”</b> · " + esc(permText(p)) + "."; drawAccess(p === "granted" ? h.name : ""); } }).catch(function () {}); }
+				else { stP.textContent = remembered ? "“" + remembered.name + "” from last time is not listed yet (press Reconnect), but the browser still lets this site use it." : "No folder is connected." + (stored ? " Last time it was “" + stored.name + "”." : ""); drawAccess(remembered ? remembered.name : ""); }
 			} else {
 				stP.textContent = roFiles ? "Open read only: “" + roName + "”, " + roFiles.length + " picture" + (roFiles.length === 1 ? "" : "s") + " (subfolders included)." : ""; stP.hidden = !roFiles;
 				bSave.textContent = "⬇ Download"; saveHint.textContent = "This browser cannot write into a folder, so the file goes to your Downloads folder.";
@@ -147,7 +183,7 @@
 		function count(name, n) { msg.textContent = n + " picture" + (n === 1 ? "" : "s") + " in “" + name + "”" + (n > 400 ? " (showing the first 400: use the filter)" : "") + (n ? ". Click: add as a layer · Shift-click: open as a new image." : "."); }
 		function roEntries() { return roFiles.map(function (f) { var rel = (f.webkitRelativePath || f.name).split("/").slice(1).join("/") || f.name; return { name: f.name, label: rel, file: function () { return Promise.resolve(f); } }; }); }
 		function load(h) {
-			dirHandle = h; roFiles = null; var my = ++token; entries = []; grid.innerHTML = ""; msg.textContent = "Reading “" + h.name + "”…"; refreshState();
+			dirHandle = h; remembered = null; drawChip(); roFiles = null; var my = ++token; entries = []; grid.innerHTML = ""; msg.textContent = "Reading “" + h.name + "”…"; refreshState();
 			(async function () { var out = []; try { for await (var e of h.values()) if (e.kind === "file" && IMG.test(e.name)) out.push(e); } catch (x) { if (my === token) msg.textContent = "Could not read the folder: " + errText(x); return; }
 				if (my !== token) return; out.sort(function (a, b) { return a.name.localeCompare(b.name, undefined, { numeric: true }); }); entries = out.map(function (fh) { return { name: fh.name, label: fh.name, fh: fh, file: function () { return fh.getFile(); } }; }); count(h.name, entries.length); render(); })();
 		}

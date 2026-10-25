@@ -27,7 +27,7 @@
 	/* ---------- tool bar ---------- */
 	var ORDER = ["move", "marquee", "lasso", "wand", "crop", "brush", "smudge", "eraser", "clone", "retouch", "objerase", "bucket", "gradient", "eyedropper", "text", "equation", "shape", "hand", "zoom"];
 	var HELP = {
-		move: "Move, resize and rotate the active layer (or a whole group). Drag a layer to move it. Drag a square handle to resize; hold Shift while dragging a corner for free proportions. Drag just outside a corner to rotate. Arrow keys nudge by 1 px (Shift = 10 px). The option bar has Remove background (AI).",
+		move: "Move, resize and rotate layers. Drag a layer to move it. Several at once: Ctrl / Cmd- or Shift-click layers on the picture (or in the Layers panel), or drag a box on empty canvas (or from outside the picture) to pick every layer it touches; Shift-drag a box adds to the selection. Then drag any of them to move them all, or drag the handles of the combined box to resize them together (rotating works on one layer at a time). While moving or resizing, the layer snaps to the canvas edges and centre (magenta guides) and to other layers' edges and centres (cyan guides); hold Ctrl (or Alt while moving) to place freely. Shift while moving keeps to one direction; on a handle, Shift switches between keeping and changing the proportions and Alt resizes from the centre. Drag just outside a corner to rotate. Arrow keys nudge the selection by 1 px (Shift = 10 px). Double-click a text to edit it.",
 		marquee: "Draw a rectangle or ellipse selection. Anything you then do (fill, delete, adjust, copy) only touches the selection. Shift while dragging = square or circle, Shift-drag on an existing selection = add to it, Alt = subtract. Drag inside a selection to move it, click once to deselect. Feather softens the edge.",
 		lasso: "Select any shape. Freehand: drag around the area. Polygon: click each corner, then double-click or press Enter to close. Use the Mode buttons to add to, subtract from or intersect an existing selection.",
 		wand: "Click a colour to select every touching pixel of a similar colour. Raise Tolerance to include more shades. Click the background, press Delete, then export as PNG for a transparent background.",
@@ -40,8 +40,8 @@
 		objerase: "AI object remover. Paint over the thing you want gone (Alt un-paints), then press Enter or the Erase button. The AI fills the area from its surroundings. Works best on small objects against plain or repeating backgrounds. The model downloads once on first use.",
 		bucket: "Click an area to fill it with the foreground colour. Tolerance decides how similar a colour must be to be filled. With a selection active, only the selection is filled.",
 		gradient: "Drag from where the gradient should start to where it should end. It blends the foreground and background colours and respects any selection.",
-		eyedropper: "Click anywhere on the picture to pick that colour as the foreground colour. Alt-click picks the background colour instead.",
-		text: "Click to add text. Click existing text to edit it. Turn on Background for a label or callout look. Esc finishes. Each text is its own layer, so you can move, scale and rotate it later.",
+		eyedropper: "Press and drag over the picture: a magnifier follows the pointer and shows the pixels, the colour and its hex code; let go to use it as the foreground colour (Alt = background). Sample = 1 pixel or the average of a 3 × 3 / 5 × 5 area; All layers = the colour you see, off = only the selected layer. With Confirm with a button, letting go leaves a Use this colour / Cancel bar and you can drag again to move the sample point. The 💉 buttons next to the colour wells and the option bar colours do the same for one pick.",
+		text: "Click empty canvas to add a text; click an existing text to edit it right on the picture. The caret goes where you click; drag to select, double-click selects a word, triple-click a line, Shift-click extends. Enter starts a new line; Ctrl+Enter, Esc or a click outside finishes. The option bar (font, size, colour, outline, box...) changes the selected text layer live, also while you type, and the whole edit is one undo step. Drag the purple handle on the right of the frame to wrap the text to a width. Each text is its own layer, so you can move, scale and rotate it later.",
 		equation: "Insert a maths equation. Click where it goes, type LaTeX (a live preview appears), then Insert. Click an existing equation to edit it. Equations stay sharp when enlarged.",
 		shape: "Draw rectangles, rounded boxes, ellipses, lines, arrows, callouts, numbered step badges, highlights and blur / hide areas. Shift = square or straight line. Outline uses the foreground colour, fill uses the background colour. Each shape lands on its own layer.",
 		hand: "Drag to pan around a zoomed-in picture. You can also hold Space with any tool, or use the middle mouse button.",
@@ -115,10 +115,14 @@
 			if (u.showFor && u.showFor.indexOf(kind) < 0) return; if (u.hideFor && u.hideFor.indexOf(kind) >= 0) return; if (u.show && !PE.optGet(id, u.show)) return;
 			if (u.type === "button") { var b = el("button", "pe-btn pe-btn--sm", esc(u.label)); b.type = "button"; b.addEventListener("mousedown", function (e) { e.preventDefault(); }); b.addEventListener("click", u.act); box.appendChild(b); return; }
 			var w = el("label", "pe-opt"), v = PE.optGet(id, u.k), inp; w.appendChild(el("span", "pe-opt-l", esc(u.label)));
-			if (u.type === "check") { inp = el("input"); inp.type = "checkbox"; inp.checked = !!v; inp.addEventListener("change", function () { PE.optSet(id, u.k, inp.checked); buildOpts(); }); }
-			else if (u.type === "select") { inp = el("select"); var opts = u.options === "fonts" ? PE.FONTS : u.options; opts.forEach(function (o) { var op = el("option", null, esc(o[1])); op.value = o[0]; inp.appendChild(op); }); inp.value = v; inp.addEventListener("change", function () { PE.optSet(id, u.k, u.num ? +inp.value : inp.value); buildOpts(); }); }
-			else if (u.type === "seg") { inp = el("span", "pe-seg"); u.options.forEach(function (o) { var b = el("button", null, esc(o[1])); b.type = "button"; b.setAttribute("aria-pressed", String(v) === String(o[0]) ? "true" : "false"); b.addEventListener("mousedown", function (e) { e.preventDefault(); }); b.addEventListener("click", function () { PE.optSet(id, u.k, o[0]); buildOpts(); }); inp.appendChild(b); }); }
-			else if (u.type === "color") { inp = el("input"); inp.type = "color"; inp.value = v; inp.addEventListener("input", function () { PE.optSet(id, u.k, inp.value); }); }
+			if (u.type === "check") { inp = el("input"); inp.type = "checkbox"; inp.checked = !!v; inp.addEventListener("change", function () { PE.optSet(id, u.k, inp.checked); rebuildOpts(); }); }
+			else if (u.type === "select") { inp = el("select"); var opts = u.options === "fonts" ? PE.FONTS : u.options; opts.forEach(function (o) { var op = el("option", null, esc(o[1])); op.value = o[0]; inp.appendChild(op); }); inp.value = v; inp.addEventListener("change", function () { PE.optSet(id, u.k, u.num ? +inp.value : inp.value); rebuildOpts(); }); }
+			else if (u.type === "seg") { inp = el("span", "pe-seg"); u.options.forEach(function (o) { var b = el("button", null, esc(o[1])); b.type = "button"; b.setAttribute("aria-pressed", String(v) === String(o[0]) ? "true" : "false"); b.addEventListener("mousedown", function (e) { e.preventDefault(); }); b.addEventListener("click", function () { PE.optSet(id, u.k, o[0]); rebuildOpts(); }); inp.appendChild(b); }); }
+			else if (u.type === "color") { inp = el("input"); inp.type = "color"; inp.value = v; inp.addEventListener("input", function () { PE.optSet(id, u.k, inp.value); });
+				// 💉 next to the well: pick this option's colour from the picture (drag with a magnifier, applied on release)
+				var dp = el("button", "pe-mini pe-dropbtn", "💉"); dp.type = "button"; dp.title = "Pick " + u.label.toLowerCase() + " from the picture: press and drag over it, let go to use the colour"; dp.setAttribute("aria-label", dp.title);
+				dp.addEventListener("mousedown", function (e) { e.preventDefault(); }); dp.addEventListener("click", function () { if (!needDoc()) return; PE.pickColorFromImage({ label: u.label, apply: function (hex) { PE.optSet(id, u.k, hex); rebuildOpts(); } }); });
+				w.appendChild(inp); w.appendChild(dp); var hq3 = optHelp(u); if (hq3) w.appendChild(hq3); box.appendChild(w); return; }
 			else if (u.type === "number") { inp = el("input", "pe-num"); inp.type = "number"; inp.value = v; inp.addEventListener("input", function () { PE.optSet(id, u.k, +inp.value); }); }
 			else {
 				inp = el("input"); inp.type = "range"; inp.min = u.min; inp.max = u.max; inp.step = u.step; inp.value = v;
@@ -132,6 +136,7 @@
 		});
 		if (id === "text" || id === "shape") { }
 	}
+	function rebuildOpts() { buildOpts(); if (PE.textEditing && PE.textEditing()) setTimeout(PE.focusText, 0); }   // a change in the option bar while typing: keep typing into the text
 	var OPTHELP = { "Hardness": "How sharp the edge of the brush is. 100% is a crisp hard circle; lower values fade softly towards the edge, like an airbrush.", "Opacity": "How see-through the paint is. 100% covers fully; 30% lets what is underneath show through. Overlapping strokes in one drag do not stack.", "Smoothing": "Steadies a shaky hand: the brush lags a little behind the pointer and draws smoother curves. 0% = follows the pointer exactly.", "Pen pressure": "With a drawing tablet or pen, pressing harder makes the stroke bigger. Has no effect with a mouse.", "Tolerance": "How different a colour can be and still count as the same area. Low = only almost identical colours; high = spreads into similar colours.", "Strength": "How strong the effect is each time you paint over it.", "Aligned": "On: the copy source moves along with your brush. Off: every stroke starts again from the same source point.", "Contiguous": "On: only connected areas are filled. Off: every matching colour in the whole layer.", "Sample all layers": "Look at the merged picture instead of only the selected layer when deciding what is the same colour.", "Pick the layer under the click": "On: clicking a letter or shape picks the layer that is actually showing there, so the selection (and a following Delete) acts on that layer and not on the picture behind it. Off: always use the selected layer.", "Box width (0 = auto)": "How wide the text box is before words wrap onto the next line. 0 = as wide as the text needs (up to the image width). You can also drag the purple handle on the right edge of the text box.", };
 	function optHelp(u) { var t = u.help || OPTHELP[u.label]; return t ? PE.helpBtn(u.label, esc(t)) : null; }
 	function fmtV(v, u) { return (u.step < 1 ? (+v).toFixed(2) : Math.round(v)) + (u.unit || ""); }
@@ -148,7 +153,9 @@
 		fgb.appendChild(fi); bgb.appendChild(bi); sw.appendChild(bgb); sw.appendChild(fgb);
 		var swap = el("button", "pe-mini", "⇄"); swap.type = "button"; swap.title = "Swap colours (X)"; swap.addEventListener("click", swapColors); var def = el("button", "pe-mini", "◐"); def.type = "button"; def.title = "Default colours: black and white (D)"; def.addEventListener("click", function () { PE.fg = "#000000"; PE.bg = "#ffffff"; PE.emit("color"); });
 		var hexIn = el("input", "pe-hex"); hexIn.value = PE.fg; hexIn.maxLength = 7; hexIn.title = "Foreground colour hex"; hexIn.addEventListener("change", function () { var h = hexIn.value.trim(); if (/^#?[0-9a-f]{3}([0-9a-f]{3})?$/i.test(h)) { if (h[0] !== "#") h = "#" + h; if (h.length === 4) h = "#" + h[1] + h[1] + h[2] + h[2] + h[3] + h[3]; PE.setFg(h.toLowerCase()); } else hexIn.value = PE.fg; });
-		var top = el("div", "pe-col-top"); top.appendChild(sw); var bt = el("div", "pe-col-b"); bt.appendChild(swap); bt.appendChild(def); bt.appendChild(hexIn); top.appendChild(bt); box.appendChild(top);
+		var drop = el("button", "pe-mini pe-dropbtn", "💉"); drop.type = "button"; drop.title = "Pick the foreground colour from the picture: press and drag over it (a magnifier shows the pixels), let go to use the colour. Alt = background colour. (I)"; drop.setAttribute("aria-label", "Pick a colour from the picture");
+		drop.addEventListener("click", function (e) { if (!needDoc()) return; var bgPick = e.altKey; PE.pickColorFromImage({ label: bgPick ? "background colour" : "foreground colour", apply: function (hex, alt) { (bgPick || alt) ? PE.setBg(hex) : PE.setFg(hex); } }); });
+		var top = el("div", "pe-col-top"); top.appendChild(sw); var bt = el("div", "pe-col-b"); bt.appendChild(swap); bt.appendChild(def); bt.appendChild(drop); bt.appendChild(hexIn); top.appendChild(bt); box.appendChild(top);
 		var pal = el("div", "pe-pal"); PALETTE.concat(recent.filter(function (c) { return PALETTE.indexOf(c) < 0; }).slice(0, 6)).forEach(function (c) { var b = el("button", "pe-chip"); b.type = "button"; b.style.background = c; b.title = c + " (click: foreground, Shift-click: background)"; b.addEventListener("click", function (e) { e.shiftKey ? PE.setBg(c) : PE.setFg(c); }); pal.appendChild(b); }); box.appendChild(pal);
 	}
 	function swapColors() { var t = PE.fg; PE.fg = PE.bg; PE.bg = t; sset({ fg: PE.fg, bg: PE.bg }); PE.emit("color"); }
@@ -163,6 +170,14 @@
 	}
 	var dragId = null, multi = {}, lfilter = "";
 	PE.multi = function () { return PE.doc ? PE.doc.layers.filter(function (L) { return multi[L.id]; }) : []; };
+	/* the canvas side of a multi-selection (Move tool: rubber band, Shift / Ctrl-click): ids = every picked layer; fewer than two = back to just the active layer */
+	PE.setMulti = function (ids) { multi = {}; if (ids && ids.length > 1) { ids.forEach(function (id) { multi[id] = true; }); var A = PE.active(); if (!A || !multi[A.id]) { PE.setActive(ids[ids.length - 1]); return; } } buildLayers(); PE.invalidateOverlay(); };
+	/* add a layer to the Move tool's selection, or take it out; returns true when it is now picked */
+	PE.toggleMove = function (L) {
+		var cur = PE.moveSet ? PE.moveSet() : PE.multi(), ids = cur.map(function (x) { return x.id; }), i = ids.indexOf(L.id);
+		if (i >= 0) { if (ids.length < 2) return true; ids.splice(i, 1); if (PE.active() === L) PE.doc.activeId = ids[ids.length - 1]; PE.setMulti(ids); if (ids.length === 1) PE.setActive(ids[0]); return false; }
+		ids.push(L.id); PE.doc.activeId = L.id; PE.setMulti(ids); PE.emit("active"); return true;
+	};
 	function rowsTopDown() {
 		var d = PE.doc, q = lfilter.trim().toLowerCase(), out = [];
 		d.layers.slice().reverse().forEach(function (L) {
@@ -176,43 +191,61 @@
 		var nm = $("pe-layers").querySelector('.pe-layer[data-id="' + id + '"] .pe-lname'); if (nm) nm.dispatchEvent(new MouseEvent("dblclick", { bubbles: true }));
 	}
 	root.addEventListener("keydown", function (e) { if (e.key === "F2" && PE.doc && PE.active() && e.target.tagName !== "INPUT" && e.target.tagName !== "TEXTAREA") { e.preventDefault(); renameLayer(PE.active().id); } });
-	function buildLayers() {
-		var list = $("pe-layers"), d = PE.doc; list.innerHTML = ""; if (!d) return; var act = PE.active(), rows = rowsTopDown(); PE.relink();
-		rows.forEach(function (r) {
-			var L = r.L, grp = PE.isGroup(L), on = L === act || multi[L.id], hidden = !PE.effVisible(L) && !grp ? true : !L.visible;
-			var row = el("div", "pe-layer" + (on ? " is-active" : "") + (hidden ? " is-hidden" : "") + (grp ? " is-group" : "")); row.draggable = true; row.dataset.id = L.id; row.style.paddingLeft = (0.3 + r.depth * 1.1) + "em";
-			var eye = el("button", "pe-eye", L.visible ? "👁" : "—"); eye.type = "button"; eye.title = "Show / hide"; eye.addEventListener("click", function (e) { e.stopPropagation(); L.visible = !L.visible; PE.touch(L); PE.commit("Toggle visibility"); });
-			row.appendChild(eye);
-			if (grp) { var ar = el("button", "pe-arrow", L.collapsed ? "▸" : "▾"); ar.type = "button"; ar.title = L.collapsed ? "Expand group" : "Collapse group"; ar.addEventListener("click", function (e) { e.stopPropagation(); L.collapsed = !L.collapsed; buildLayers(); }); row.appendChild(ar); var th0 = el("span", "pe-th pe-th--grp", "📁"); row.appendChild(th0); }
-			else { var th = el("span", "pe-th"); th.appendChild(thumbFor(L)); row.appendChild(th); }
-			var nm = el("span", "pe-lname", esc(L.name) + (L.type === "text" ? " ᵀ" : "") + (grp ? ' <small class="pe-cnt">' + PE.descendants(L).filter(function (k) { return !PE.isGroup(k); }).length + "</small>" : "")); nm.title = L.name + " (double-click to rename)";
-			if (L.mask) { var mt = el("span", "pe-th pe-th--mask" + (L.editMask ? " is-on" : "")); var mc = PE.mk(36, 36), mx = mc.getContext("2d"); mx.fillStyle = "#000"; mx.fillRect(0, 0, 36, 36); var wm = PE.mk(36, 36), wx = wm.getContext("2d"); wx.drawImage(L.mask, 0, 0, 36, 36); wx.globalCompositeOperation = "source-in"; wx.fillStyle = "#fff"; wx.fillRect(0, 0, 36, 36); mx.drawImage(wm, 0, 0); mt.appendChild(mc); mt.title = "Layer mask: click to paint on the mask (white-ish = shown). Click the picture to paint on the layer."; mt.addEventListener("click", function (e) { e.stopPropagation(); PE.setActive(L.id); L.editMask = true; buildLayers(); }); row.querySelector(".pe-th").addEventListener("click", function (e) { e.stopPropagation(); PE.setActive(L.id); L.editMask = false; buildLayers(); }); row.appendChild(mt); }
-			row.appendChild(nm);
-			if (grp) { var xg = el("button", "pe-pen", "⬇"); xg.type = "button"; xg.title = "Export this group as its own image, on a canvas of any size"; xg.addEventListener("click", function (e) { e.stopPropagation(); PE.dlgExportGroup(L); }); row.appendChild(xg); }
-			var pen = el("button", "pe-pen", "✎"); pen.type = "button"; pen.title = "Rename"; pen.addEventListener("click", function (e) { e.stopPropagation(); renameLayer(L.id); }); row.appendChild(pen);
-			if (L.locked) row.appendChild(el("span", "pe-lock", "🔒"));
-			row.addEventListener("click", function (e) {
-				if (e.ctrlKey || e.metaKey) { multi[L.id] = !multi[L.id]; if (!Object.keys(multi).some(function (k) { return multi[k]; })) multi = {}; else multi[act ? act.id : L.id] = true; buildLayers(); return; }
-				if (e.shiftKey && act) { var order = rowsTopDown().map(function (x) { return x.L; }), i0 = order.indexOf(act), i1 = order.indexOf(L); if (i0 >= 0 && i1 >= 0) { multi = {}; order.slice(Math.min(i0, i1), Math.max(i0, i1) + 1).forEach(function (x) { multi[x.id] = true; }); buildLayers(); return; } }
-				multi = {}; PE.setActive(L.id);
-			});
-			nm.addEventListener("dblclick", function (e) {
-				e.stopPropagation(); var inp = el("input", "pe-rename"), fin = false; inp.type = "text"; inp.value = L.name; inp.spellcheck = false; inp.setAttribute("aria-label", "New name for " + (grp ? "the group " : "the layer ") + L.name); row.draggable = false; row.classList.add("is-renaming"); nm.replaceWith(inp); inp.focus(); inp.select();
-				var done = function (ok) { if (fin) return; fin = true; var v = inp.value.trim(); if (ok && v && v !== L.name) { L.name = v; PE.commit(grp ? "Rename group" : "Rename layer"); } else buildLayers(); };
-				// clicks inside the box must not reach the row: its click selects the layer, which rebuilds the list and threw the half-typed name away
-				["click", "mousedown", "pointerdown", "dblclick", "dragstart"].forEach(function (t) { inp.addEventListener(t, function (ev) { ev.stopPropagation(); }); });
-				inp.addEventListener("keydown", function (ev) { ev.stopPropagation(); if (ev.key === "Enter") { ev.preventDefault(); done(true); } if (ev.key === "Escape") { ev.preventDefault(); done(false); } }); inp.addEventListener("blur", function () { done(true); });
-			});
-			row.addEventListener("dragstart", function (e) { dragId = L.id; e.dataTransfer.effectAllowed = "move"; e.dataTransfer.setData("text/x-pe-layer", String(L.id)); });
-			function zoneOf(e) { var rc = row.getBoundingClientRect(), y = (e.clientY - rc.top) / rc.height; return grp ? (y < 0.25 ? "above" : "into") : (y < 0.5 ? "above" : "below"); }
-			row.addEventListener("dragover", function (e) { if (dragId == null) return; e.preventDefault(); row.classList.remove("is-over-above", "is-over-below", "is-over-into"); row.classList.add("is-over-" + zoneOf(e)); });
-			row.addEventListener("dragleave", function () { row.classList.remove("is-over-above", "is-over-below", "is-over-into"); });
-			row.addEventListener("drop", function (e) { if (dragId == null) return; e.preventDefault(); e.stopPropagation(); var src = PE.layerById(dragId), z = zoneOf(e); dragId = null; if (src && src !== L) PE.relocate(src, L, z); });
-			list.appendChild(row);
+	/* The list is reconciled, not rebuilt: a row whose layer did not change (name, visibility, selection, depth, pixels...) keeps its DOM node, so moving a
+	 * layer up / down only moves rows. Rebuilding every row on every step made the list flash, and fought with page-zoom / text-size extensions that
+	 * restyle new elements a moment after they appear. Handlers look the layer up by id at click time (undo / redo replace the layer objects). */
+	var rowCache = {};
+	function rowSig(L, r, on) { return [L.name, L.type, L.visible, PE.effVisible(L), on ? 1 : 0, r.depth, L.collapsed, L.locked, L.mask ? 1 : 0, L.editMask ? 1 : 0, L.rev, L.canvas.width, L.canvas.height, PE.isGroup(L) ? PE.descendants(L).filter(function (k) { return !PE.isGroup(k); }).length : -1].join("|"); }
+	function makeRow(id, depth, on) {
+		var L0 = PE.layerById(id), grp = PE.isGroup(L0), hidden = !PE.effVisible(L0) && !grp ? true : !L0.visible, cur = function () { return PE.layerById(id); };
+		var row = el("div", "pe-layer" + (on ? " is-active" : "") + (hidden ? " is-hidden" : "") + (grp ? " is-group" : "")); row.draggable = true; row.dataset.id = id; row.style.paddingLeft = (0.3 + depth * 1.1) + "em";
+		var eye = el("button", "pe-eye", L0.visible ? "👁" : "—"); eye.type = "button"; eye.title = "Show / hide"; eye.addEventListener("click", function (e) { e.stopPropagation(); var L = cur(); if (!L) return; L.visible = !L.visible; PE.touch(L); PE.commit("Toggle visibility"); });
+		row.appendChild(eye);
+		if (grp) { var ar = el("button", "pe-arrow", L0.collapsed ? "▸" : "▾"); ar.type = "button"; ar.title = L0.collapsed ? "Expand group" : "Collapse group"; ar.addEventListener("click", function (e) { e.stopPropagation(); var L = cur(); if (!L) return; L.collapsed = !L.collapsed; buildLayers(); }); row.appendChild(ar); var th0 = el("span", "pe-th pe-th--grp", "📁"); row.appendChild(th0); }
+		else { var th = el("span", "pe-th"); th.appendChild(thumbFor(L0)); row.appendChild(th); }
+		var nm = el("span", "pe-lname", esc(L0.name) + (L0.type === "text" ? " ᵀ" : "") + (grp ? ' <small class="pe-cnt">' + PE.descendants(L0).filter(function (k) { return !PE.isGroup(k); }).length + "</small>" : "")); nm.title = L0.name + " (double-click to rename)";
+		if (L0.mask) { var mt = el("span", "pe-th pe-th--mask" + (L0.editMask ? " is-on" : "")); var mc = PE.mk(36, 36), mx = mc.getContext("2d"); mx.fillStyle = "#000"; mx.fillRect(0, 0, 36, 36); var wm = PE.mk(36, 36), wx = wm.getContext("2d"); wx.drawImage(L0.mask, 0, 0, 36, 36); wx.globalCompositeOperation = "source-in"; wx.fillStyle = "#fff"; wx.fillRect(0, 0, 36, 36); mx.drawImage(wm, 0, 0); mt.appendChild(mc); mt.title = "Layer mask: click to paint on the mask (white-ish = shown). Click the picture to paint on the layer."; mt.addEventListener("click", function (e) { e.stopPropagation(); var L = cur(); if (!L) return; PE.setActive(id); L.editMask = true; buildLayers(); }); row.querySelector(".pe-th").addEventListener("click", function (e) { e.stopPropagation(); var L = cur(); if (!L) return; PE.setActive(id); L.editMask = false; buildLayers(); }); row.appendChild(mt); }
+		row.appendChild(nm);
+		if (grp) { var xg = el("button", "pe-pen", "⬇"); xg.type = "button"; xg.title = "Export this group as its own image, on a canvas of any size"; xg.addEventListener("click", function (e) { e.stopPropagation(); var L = cur(); if (L) PE.dlgExportGroup(L); }); row.appendChild(xg); }
+		var pen = el("button", "pe-pen", "✎"); pen.type = "button"; pen.title = "Rename"; pen.addEventListener("click", function (e) { e.stopPropagation(); renameLayer(id); }); row.appendChild(pen);
+		if (L0.locked) row.appendChild(el("span", "pe-lock", "🔒"));
+		row.addEventListener("click", function (e) {
+			var L = cur(), act = PE.active(); if (!L) return;
+			if (e.ctrlKey || e.metaKey) { multi[id] = !multi[id]; if (!Object.keys(multi).some(function (k) { return multi[k]; })) multi = {}; else multi[act ? act.id : id] = true; buildLayers(); PE.invalidateOverlay(); return; }
+			if (e.shiftKey && act) { var order = rowsTopDown().map(function (x) { return x.L; }), i0 = order.indexOf(act), i1 = order.indexOf(L); if (i0 >= 0 && i1 >= 0) { multi = {}; order.slice(Math.min(i0, i1), Math.max(i0, i1) + 1).forEach(function (x) { multi[x.id] = true; }); buildLayers(); PE.invalidateOverlay(); return; } }
+			multi = {}; PE.setActive(id); PE.invalidateOverlay();
 		});
+		nm.addEventListener("dblclick", function (e) {
+			e.stopPropagation(); var L = cur(); if (!L) return; var inp = el("input", "pe-rename"), fin = false; inp.type = "text"; inp.value = L.name; inp.spellcheck = false; inp.setAttribute("aria-label", "New name for " + (grp ? "the group " : "the layer ") + L.name); row.draggable = false; row.classList.add("is-renaming"); nm.replaceWith(inp); inp.focus(); inp.select();
+			var done = function (ok) { if (fin) return; fin = true; row.classList.remove("is-renaming"); var v = inp.value.trim(), L2 = cur(); delete rowCache[id]; if (ok && L2 && v && v !== L2.name) { L2.name = v; PE.commit(grp ? "Rename group" : "Rename layer"); } else buildLayers(); };
+			// clicks inside the box must not reach the row: its click selects the layer, which rebuilds the list and threw the half-typed name away
+			["click", "mousedown", "pointerdown", "dblclick", "dragstart"].forEach(function (t) { inp.addEventListener(t, function (ev) { ev.stopPropagation(); }); });
+			inp.addEventListener("keydown", function (ev) { ev.stopPropagation(); if (ev.key === "Enter") { ev.preventDefault(); done(true); } if (ev.key === "Escape") { ev.preventDefault(); done(false); } }); inp.addEventListener("blur", function () { done(true); });
+		});
+		row.addEventListener("dragstart", function (e) { dragId = id; e.dataTransfer.effectAllowed = "move"; e.dataTransfer.setData("text/x-pe-layer", String(id)); });
+		function zoneOf(e) { var rc = row.getBoundingClientRect(), y = (e.clientY - rc.top) / rc.height; return grp ? (y < 0.25 ? "above" : "into") : (y < 0.5 ? "above" : "below"); }
+		row.addEventListener("dragover", function (e) { if (dragId == null) return; e.preventDefault(); row.classList.remove("is-over-above", "is-over-below", "is-over-into"); row.classList.add("is-over-" + zoneOf(e)); });
+		row.addEventListener("dragleave", function () { row.classList.remove("is-over-above", "is-over-below", "is-over-into"); });
+		row.addEventListener("drop", function (e) { if (dragId == null) return; e.preventDefault(); e.stopPropagation(); row.classList.remove("is-over-above", "is-over-below", "is-over-into"); var src = PE.layerById(dragId), z = zoneOf(e), L = cur(); dragId = null; if (src && L && src !== L) PE.relocate(src, L, z); });
+		return row;
+	}
+	function buildLayers() {
+		var list = $("pe-layers"), d = PE.doc; if (!d) { list.innerHTML = ""; rowCache = {}; return; } var act = PE.active(), rows = rowsTopDown(); PE.relink();
+		if (list.querySelector(".is-renaming")) return;   // never pull a half-typed name out from under the keyboard
+		var keep = {}, at = 0;
+		rows.forEach(function (r) {
+			var L = r.L, on = L === act || multi[L.id], sig = rowSig(L, r, on), c = rowCache[L.id];
+			if (!c || c.sig !== sig) { c = rowCache[L.id] = { sig: sig, row: makeRow(L.id, r.depth, on) }; }
+			keep[L.id] = 1; var node = list.children[at];
+			if (node !== c.row) list.insertBefore(c.row, node || null);
+			at++;
+		});
+		while (list.children.length > at) list.removeChild(list.lastChild);
+		for (var k in rowCache) if (!keep[k]) delete rowCache[k];
 		syncLayerProps();
 	}
 	$("pe-layers").addEventListener("dragover", function (e) { if (dragId != null) e.preventDefault(); });
+	$("pe-layers").addEventListener("dragend", function () { dragId = null; Array.prototype.forEach.call($("pe-layers").querySelectorAll(".is-over-above,.is-over-below,.is-over-into"), function (r) { r.classList.remove("is-over-above", "is-over-below", "is-over-into"); }); });
 	$("pe-layers").addEventListener("drop", function (e) { if (dragId == null || !PE.doc) return; e.preventDefault(); var src = PE.layerById(dragId); dragId = null; var tops = PE.doc.layers.filter(function (x) { return x.group == null; }); var top = tops[tops.length - 1]; if (src && top && top !== src) PE.relocate(src, top, "above"); });
 	$("pe-lfilter").addEventListener("input", function () { lfilter = this.value; buildLayers(); });
 	PE.on("layers", function () { if (!PE.doc) return; var ids = {}; PE.doc.layers.forEach(function (L) { ids[L.id] = 1; }); for (var k in multi) if (!ids[k]) delete multi[k]; });
@@ -223,10 +256,16 @@
 		$("pe-lock").setAttribute("aria-pressed", L.locked ? "true" : "false"); $("pe-mask-btn").title = L.mask ? "Delete layer mask" : "Add layer mask (reveal all; with a selection: reveal the selection)"; $("pe-mask-btn").setAttribute("aria-pressed", L.mask ? "true" : "false");
 	}
 	PE.on("layers", buildLayers); PE.on("active", buildLayers);
+	var histRows = new WeakMap();   // one button per history step, kept between updates (only the new step is added, the rest just change class)
 	function buildHistory() {
-		var list = $("pe-history"); list.innerHTML = ""; var H = PE.hist;
-		H.stack.forEach(function (e, i) { var r = el("button", "pe-hrow" + (i === H.idx ? " is-active" : "") + (i > H.idx ? " is-future" : ""), esc(e.label)); r.type = "button"; r.addEventListener("click", function () { PE.gotoHistory(i); }); list.appendChild(r); });
-		var a = list.querySelector(".is-active"); if (a) a.scrollIntoView({ block: "nearest" });
+		var list = $("pe-history"), H = PE.hist, at = 0, act = null;
+		H.stack.forEach(function (e, i) {
+			var r = histRows.get(e); if (!r) { r = el("button", "pe-hrow", esc(e.label)); r.type = "button"; r.addEventListener("click", function () { var j = PE.hist.stack.indexOf(e); if (j >= 0) PE.gotoHistory(j); }); histRows.set(e, r); }
+			var cls = "pe-hrow" + (i === H.idx ? " is-active" : "") + (i > H.idx ? " is-future" : ""); if (r.className !== cls) r.className = cls; if (i === H.idx) act = r;
+			var node = list.children[at]; if (node !== r) list.insertBefore(r, node || null); at++;
+		});
+		while (list.children.length > at) list.removeChild(list.lastChild);
+		if (act) act.scrollIntoView({ block: "nearest" });
 		$("pe-undo").disabled = H.idx <= 0; $("pe-redo").disabled = H.idx >= H.stack.length - 1;
 	}
 	PE.on("history", buildHistory);
@@ -447,6 +486,7 @@ $("pe-share").addEventListener("click", function () { if (needDoc()) PE.dlgShare
 	document.addEventListener("keydown", function (e) {
 		var t = e.target, typing = t && (/INPUT|TEXTAREA|SELECT/.test(t.tagName) && t.type !== "range" && t.type !== "checkbox" && t.type !== "button") || (t && t.isContentEditable);
 		if (typing || PE.modalOpen()) return; var k = e.key, low = k.toLowerCase(), mod = e.ctrlKey || e.metaKey, has = !!PE.doc;
+		if (PE.textKey && PE.textKey(e)) { e.preventDefault(); return; }   // a text is open but its key catcher lost focus: the key goes into the text, not to a tool shortcut
 		if (k === " " ) { if (!e.repeat) { PE.setSpace(true); PE.spaceHeld = true; PE.els.over.style.cursor = "grab"; } if (document.activeElement === document.body || root.contains(document.activeElement)) e.preventDefault(); return; }
 		if (mod) {
 			if (low === "z") { e.preventDefault(); e.shiftKey ? PE.redo() : PE.undo(); return; } if (low === "y") { e.preventDefault(); PE.redo(); return; }
@@ -468,7 +508,7 @@ $("pe-share").addEventListener("click", function () { if (needDoc()) PE.dlgShare
 		for (var id in PE.tools) if (PE.tools[id].key === low) { PE.setTool(id); return; }
 	});
 	document.addEventListener("keyup", function (e) { if (e.key === " ") { PE.setSpace(false); PE.spaceHeld = false; setCursor(); PE.invalidateOverlay(); } });
-	root.addEventListener("dblclick", function (e) { if (e.target === PE.els.over && PE.toolId !== "text") { var L = PE.active(); if (L && L.type === "text" && PE.toolId === "move") PE.editActiveText(); else if (L && L.eq && PE.toolId === "move") PE.dlgEquation(L); } });
+	root.addEventListener("dblclick", function (e) { if (e.target === PE.els.over && PE.toolId !== "text") { var L = PE.active(); if (L && L.type === "text" && PE.toolId === "move") PE.editActiveText(PE.toDoc(e.clientX, e.clientY)); else if (L && L.eq && PE.toolId === "move") PE.dlgEquation(L); } });
 
 	/* ---------- empty state + init ---------- */
 	$("pe-e-open").addEventListener("click", function () { pickFiles("image/*,.psd,.xcf,.mesproj", true, function (fs) { openFiles(fs); }); });
