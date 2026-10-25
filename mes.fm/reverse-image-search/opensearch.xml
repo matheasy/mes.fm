@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<OpenSearchDescription xmlns="http://a9.com/-/spec/opensearch/1.1/">
+  <ShortName>MES Reverse Image Search</ShortName>
+  <Description>Paste a link to a picture and search Google Lens, Bing, TinEye, Yandex and more at once.</Description>
+  <InputEncoding>UTF-8</InputEncoding>
+  <Image width="64" height="64" type="image/png">https://mes.fm/reverse-image-search/img/logo.png</Image>
+  <Url type="text/html" method="get" template="https://mes.fm/reverse-image-search?q={searchTerms}"/>
+  <moz:SearchForm xmlns:moz="http://www.mozilla.org/2006/browser/search/">https://mes.fm/reverse-image-search</moz:SearchForm>
+</OpenSearchDescription>

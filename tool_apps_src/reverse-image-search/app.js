@@ -229,7 +229,53 @@
 	renderCustom();
 
 	/* ---------- start: ?u=<image link> opens it ready to search ---------- */
-	var q = new URLSearchParams(location.search), u = q.get('u') || q.get('url') || q.get('image');
+	/* ?q= is what a browser's site-search shortcut sends (https://mes.fm/reverse-image-search?q=%s): the browser needs a click or key press
+	   before it lets a page open tabs, so Open gets the focus and Enter runs it */
+	var q = new URLSearchParams(location.search), u = (q.get('u') || q.get('url') || q.get('image') || q.get('q') || '').trim();
 	if (u) { $('ri-link').value = u; readLink(); }
 	setMode('link');
+	if (u) setTimeout(function () {
+		if (ok) { try { $('ri-go').focus({ preventScroll: true }); } catch (e) {} toast('Press Enter (or Open) to search every ticked site'); }
+		else toast('That does not look like a link to a picture: paste the image address (it usually ends in .jpg, .png or .webp)');
+	}, 60);
+
+	/* ---------- site search shortcut ("r" + an image link in the address bar) ---------- */
+	(function () {
+		var tpl = 'https://mes.fm/reverse-image-search?q=%s', seg = $('ri-kw-br'), steps = $('ri-kw-steps'), cur = '';
+		function code(txt, label) { return '<span class="ri-kw-copy"><code>' + esc(txt) + '</code><button type="button" class="tu-chip" data-copy="' + esc(txt) + '">Copy' + (label ? ' ' + label : '') + '</button></span>'; }
+		function chromeLike(url, where) {
+			return '<ol><li>Open ' + code(url, 'address') + ' in a new tab (browsers don\'t let a link open their settings).</li>' +
+				'<li>Next to <b>' + where + '</b> press <b>Add</b>.</li>' +
+				'<li><b>Name:</b> ' + code('MES Reverse Image Search', '') + '</li>' +
+				'<li><b>Shortcut:</b> ' + code('r', '') + ' <span class="tu-note">(any short word works; <b>r</b> is quick to type)</span></li>' +
+				'<li><b>URL with %s in place of query:</b> ' + code(tpl, 'URL') + '</li>' +
+				'<li>Save. Now type <kbd>r</kbd> <kbd>Space</kbd>, paste an image link and press Enter.</li></ol>';
+		}
+		var HELP = {
+			brave: function () { return chromeLike('brave://settings/searchEngines', 'Site search'); },
+			chrome: function () { return chromeLike('chrome://settings/searchEngines', 'Site search'); },
+			edge: function () { return chromeLike('edge://settings/searchEngines', 'Search engines'); },
+			firefox: function () {
+				return '<ol><li>On this page, right-click the address bar (or open its <b>&#8942;</b> / magnifier menu) and choose <b>Add "MES Reverse Image Search"</b>: this page offers itself as a search engine.</li>' +
+					'<li>Open <b>Settings &rarr; Search</b>, find <b>MES Reverse Image Search</b> under <i>Search Shortcuts</i>, double-click its <i>Keyword</i> cell and type ' + code('r', '') + '</li>' +
+					'<li>Now type <kbd>r</kbd> <kbd>Space</kbd>, paste an image link and press Enter.</li></ol>' +
+					'<p class="tu-note">No Add option? Recent Firefox versions also let you add one under Settings &rarr; Search &rarr; Search Shortcuts &rarr; <i>Add</i>, with this URL: ' + code(tpl, 'URL') + '</p>';
+			},
+			safari: function () { return '<p>Safari and the iPhone / iPad browsers don\'t support custom search shortcuts. Bookmark this page instead (or add it to your Home Screen), or use Brave, Chrome, Edge or Firefox on a computer or Android phone.</p>'; }
+		};
+		function show(b) { cur = b; Array.prototype.forEach.call(seg.querySelectorAll('button'), function (x) { x.setAttribute('aria-pressed', x.getAttribute('data-b') === b ? 'true' : 'false'); }); steps.innerHTML = HELP[b](); }
+		seg.addEventListener('click', function (e) { var b = e.target.closest('button[data-b]'); if (b) show(b.getAttribute('data-b')); });
+		$('ri-kw').addEventListener('toggle', function () {
+			if (!this.open || cur) return;
+			var ua = navigator.userAgent;
+			show(/Firefox\//.test(ua) ? 'firefox' : /Edg\//.test(ua) ? 'edge' : /iPhone|iPad|Macintosh/.test(ua) && /Safari\//.test(ua) && !/Chrome|Chromium|Edg/.test(ua) ? 'safari' : 'chrome');
+			if (navigator.brave && navigator.brave.isBrave) navigator.brave.isBrave().then(function (y) { if (y) show('brave'); }).catch(function () {});
+		});
+		steps.addEventListener('click', function (e) {
+			var b = e.target.closest('[data-copy]'); if (!b) return;
+			var t = b.getAttribute('data-copy'), done = function () { toast('Copied'); };
+			if (navigator.clipboard && navigator.clipboard.writeText) navigator.clipboard.writeText(t).then(done, function () { toast('Copy failed: select the text and copy it'); });
+			else { var ta = document.createElement('textarea'); ta.value = t; document.body.appendChild(ta); ta.select(); try { document.execCommand('copy'); done(); } catch (er) {} ta.remove(); }
+		});
+	})();
 })();
