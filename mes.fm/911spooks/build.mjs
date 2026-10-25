@@ -47,6 +47,11 @@ const HUB_FILTERS = {
         "hughes"
       ],
       [
+        "fetzer",
+        "Jim Fetzer",
+        "fetzer"
+      ],
+      [
         "ryan",
         "Ryan Bannister",
         "ryan ban+ister"
@@ -94,7 +99,7 @@ const PAGES = [
     slug: "911spooks-posts",
     sectionId: "911spooks-posts",
     tileLabel: "Posts",
-    iconVersion: 2, // icon = crop of the newest post's thumbnail (img/911spooks-posts-icon.jpg); bump when refreshed
+    iconVersion: 3, // icon = crop of the newest post's thumbnail (img/911spooks-posts-icon.jpg); bump when refreshed
     title: "9/11 Spooks: Posts",
     description:
       "9/11 disinfo spooks and spammers exposed by MES: 9/11 Revisionist, Ryan Banister, David Hughes, Bob Greenyer, the OffGuardian account, Andrew Mason and more, newest first.",

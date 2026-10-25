@@ -979,5 +979,19 @@
         "href": "https://mes.fm/curt-weldon-firefighters-911-dustification"
       }
     ]
+  },
+  "https://mes.fm/david-hughes-fetzer-2.0": {
+    "image": "https://mes.fm/david-hughes-fetzer-2.0/img/hurricane-meme.jpg",
+    "watchLinks": [],
+    "namedLinks": [
+      {
+        "label": "Hive",
+        "href": "https://peakd.com/hive-113182/@mes/dear-dr-david-a-fetzer-j1c"
+      },
+      {
+        "label": "Substack",
+        "href": "https://matheasy.substack.com/p/dear-dr-david-a-fetzer"
+      }
+    ]
   }
 }

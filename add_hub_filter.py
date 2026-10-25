@@ -65,6 +65,7 @@ HUB_FILTERS = {
             ("revisionist", "9/11 Revisionist", r"revisionist|norman"),
             ("abby", "Abby Martin", r"abby martin"),
             ("hughes", "David Hughes", r"hughes"),
+            ("fetzer", "Jim Fetzer", r"fetzer"),
             ("ryan", "Ryan Bannister", r"ryan ban+ister"),
             ("mason", "Andrew Mason", r"andrew mason"),
             ("offguardian", "Off Guardian", r"off ?guardian"),
@@ -132,7 +133,7 @@ def patch(hub):
     p = ROOT / hub / "build.mjs"
     s = p.read_text()
     orig = s
-    if IMPORT_LINE not in s:
+    if IMPORT_LINE not in s and "from \"../shared/hub-filter.mjs\"" not in s:  # later builds import more names (addAllPage) on their own line
         m = re.search(r'import \{ SECTIONS[^\n]*\n', s)
         assert m, hub + ": SECTIONS import not found"
         s = s[:m.end()] + IMPORT_LINE + s[m.end():]
@@ -150,7 +151,7 @@ def patch(hub):
         s = s.replace('  return `<a class="link-card" href=', ca + '  return `<a class="link-card"${catsAttr} href=', 1)
         s = s.replace('  return `<div class="list-row">', ca + '  return `<div class="list-row"${catsAttr}>', 1)
     # the filter bar above the view buttons (list branch, i.e. the second ${standaloneHtml})
-    if "buildFilter(section, escapeHtml)" not in s:
+    if "buildFilter(section, escapeHtml" not in s:  # also matches the later (section, escapeHtml, lpHtml) form
         pat = '  ${standaloneHtml}\n    <div class="view-toggle">'
         assert pat in s, hub + ": view-toggle anchor"
         s = s.replace(pat, '  ${standaloneHtml}${section.filter ? `\\n    ${buildFilter(section, escapeHtml)}` : ""}\n    <div class="view-toggle">', 1)

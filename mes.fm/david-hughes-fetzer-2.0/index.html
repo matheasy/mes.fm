@@ -1,0 +1,1599 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description" content="MES answers German Studies professor David A. Hughes, aka Jim Fetzer 2.0: Hurricane Erin is evidence, not a hypothesis; Buildings 3-6, the Hutchison Effect and the magnetometer data. Mirrored from Hive.">
+  <meta name="author" content="MES">
+  <link rel="canonical" href="https://mes.fm/david-hughes-fetzer-2.0" />
+  <!-- OG-TAGS:START -->
+  <meta property="og:type" content="article">
+  <meta property="og:site_name" content="MES Truth">
+  <meta property="og:url" content="https://mes.fm/david-hughes-fetzer-2.0">
+  <meta property="og:title" content="Dear Dr. David A. Fetzer...">
+  <meta property="og:description" content="MES answers German Studies professor David A. Hughes, aka Jim Fetzer 2.0: Hurricane Erin is evidence, not a hypothesis; Buildings 3-6, the Hutchison Effect and the magnetometer data. Mirrored from Hive.">
+  <meta property="og:image" content="https://mes.fm/david-hughes-fetzer-2.0/img/hurricane-meme-og.jpg">
+  <meta property="og:image:width" content="1200">
+  <meta property="og:image:height" content="630">
+  <meta name="twitter:card" content="summary_large_image">
+  <meta name="twitter:site" content="@MathEasySolns">
+  <meta name="twitter:title" content="Dear Dr. David A. Fetzer...">
+  <meta name="twitter:description" content="MES answers German Studies professor David A. Hughes, aka Jim Fetzer 2.0: Hurricane Erin is evidence, not a hypothesis; Buildings 3-6, the Hutchison Effect and the magnetometer data. Mirrored from Hive.">
+  <meta name="twitter:image" content="https://mes.fm/david-hughes-fetzer-2.0/img/hurricane-meme-og.jpg">
+  <!-- OG-TAGS:END -->
+  <link rel="icon" href="https://mes.fm/img/favicon.ico?v=1.0" type="image/x-icon" />
+  <title>Dear Dr. David A. Fetzer... | Math Easy Solutions</title>
+  <style>
+    * { box-sizing: border-box; }
+
+    body {
+      font-family: Arial, Helvetica, sans-serif;
+      line-height: 1.6;
+      margin: 0;
+      padding: 0 20px 60px;
+      transition: background-color 0.3s, color 0.3s;
+    }
+
+    body.light { background-color: #ffffff; color: #222222; }
+    body.light a { color: #1a6fb0; }
+    body.dark { background-color: #1a1a1a; color: #eeeeee; }
+    body.dark a { color: #6cb6f5; }
+
+    .container {
+      max-width: 760px;
+      margin: 0 auto;
+    }
+
+    .ad-slot {
+      max-width: 760px;
+      margin: 0 auto;
+    }
+
+    .top-bar {
+      position: relative;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      padding-top: 16px;
+    }
+
+
+    .site-brand { display: flex; align-items: center; gap: 1.5em; min-width: 0; }
+    .site-brand-logo-link { display: block; flex: 0 0 auto; }
+    .site-brand-logo { display: block; width: 88px; height: 88px; border-radius: 0.35em; flex: 0 0 auto; }
+    .site-brand-text { min-width: 0; }
+    .site-brand-title { display: block; font-size: 1.8em; font-weight: 400; line-height: 1.15; margin-bottom: 0.3em; text-decoration: none; }
+    .site-brand-tag { font-size: 1.2em; margin: 0; line-height: 1.3; }
+    body.light .site-brand-title { color: #222222; }
+    body.dark .site-brand-title { color: #eeeeee; }
+    body.light .site-brand-tag { color: #555555; }
+    body.dark .site-brand-tag { color: #b8b8b8; }
+    .header-controls { display: flex; align-items: center; gap: 6px; flex: 0 0 auto; margin-left: auto; }
+    .header-icon-btn {
+      flex: 0 0 auto; width: 2.2em; height: 2.2em; padding: 0; border-radius: 50%;
+      cursor: pointer; font-family: inherit; font-size: 0.85em; font-weight: 700; line-height: 1;
+      display: flex; align-items: center; justify-content: center;
+      border: 1.5px solid rgba(0, 0, 0, 0.15); box-shadow: 0 1px 3px rgba(0, 0, 0, 0.2);
+    }
+    .header-icon-btn:disabled { opacity: 0.4; cursor: default; }
+    body.light .header-icon-btn { background-color: #3a3d52; color: #ffffff; border-color: rgba(255, 255, 255, 0.35); }
+    body.dark .header-icon-btn { background-color: #2e2e2e; color: #eeeeee; border-color: rgba(255, 255, 255, 0.25); }
+    @media (max-width: 600px) { .site-brand { gap: 0.75em; } .site-brand-logo { width: 64px; height: 64px; } .site-brand-tag { font-size: 0.95em; } .site-brand-title { font-size: 1.3em; } }
+
+    /* Shared mes.fm site navigation: hamburger + dropdown (#navbar-button /
+       #navbar, toggled by /main_js/main.js) and the blue primary nav bar
+       (#info-bar), same markup/behaviour as mes.fm/math. Colors are set on
+       #id selectors so the body.light/body.dark "a" color rules don't win. */
+    .hamburger-btn {
+      flex: 0 0 auto; width: 44px; height: 44px; padding: 0; margin: 0 0 0 4px;
+      background: transparent; border: none; cursor: pointer; font-size: 0;
+    }
+    .hamburger-btn::before {
+      content: ""; display: block; margin: 0 auto;
+      width: 26px; height: 4px; background: currentColor; border-radius: 1px;
+      box-shadow: 0 7px 0 currentColor, 0 -7px 0 currentColor;
+    }
+    body.light .hamburger-btn { color: #277bb6; }
+    body.dark .hamburger-btn { color: #6cb6f5; }
+    #navbar { display: none; }
+    #navbar.hide {
+      display: flex; flex-direction: column; box-sizing: border-box;
+      position: absolute; top: 100%; right: 0; z-index: 30;
+      width: 16em; max-width: 90vw; max-height: 75vh; overflow-y: auto;
+      background-color: #277bb6; border-radius: 0.25em;
+      box-shadow: 0 0.25em 1em rgba(0, 0, 0, 0.3);
+      list-style: none; margin: 0; padding: 0;
+    }
+    #navbar li, #info-bar { list-style: none; margin: 0; padding: 0; }
+    #navbar .navbar__item:hover { cursor: pointer; }
+    #navbar .navbar__link { display: block; color: #ffffff; padding: 0.7em 1em 0.7em 1.4em; text-decoration: none; }
+    #navbar .navbar__link--first { padding-top: 0.8em; }
+    #navbar .navbar__link:hover:not(.navbar__dropdown-item):not(.active-tab) { background-color: #346689; }
+    #navbar .dropdown-symbol { margin-left: 1em; color: #ffffff; }
+    #navbar .navbar__dropdown-container { background-color: #eef0ff; margin: 0; padding: 0; }
+    #navbar .navbar__dropdown-container.hide { display: none; }
+    #navbar .navbar__dropdown-item { color: #222222; }
+    #navbar .navbar__dropdown-item:hover { text-decoration: underline; }
+    #navbar .navbar__item--social { order: 999; padding: 1em 1.6em 1em 1.4em; border-top: 1px solid rgba(255, 255, 255, 0.25); }
+    #navbar .social-container { display: flex; flex-wrap: wrap; align-items: center; gap: 0.6em; }
+    #navbar .social__text { color: #ffffff; margin: 0; font-style: italic; }
+    #navbar .social { display: flex; flex-wrap: wrap; gap: 0.5em; margin: 0; padding: 0; list-style: none; }
+    .social__link { height: 2em; width: 2em; display: block; }
+    .social__fb { background: url(/main_img/social-sprites.png) 0 0; }
+    .social__insta { background: url(/main_img/social-sprites.png) -4em 0; }
+    .social__pin { background: url(/main_img/social-sprites.png) -6em 0; }
+    .social__twitter { background: url(/main_img/social-sprites.png) -8em 0; }
+    .social__yt { background: url(/main_img/social-sprites.png) -10em 0; }
+    .social__patreon { background: url(/main_img/social-sprites.png) -12em 0; }
+    .social__hive { background: url(/main_img/social-sprites.png) -16em 0; }
+    .social__telegram { background: url(/main_img/social-sprites.png) -18em 0; }
+    #navbar .navbar__link.active-tab, #info-bar .info-bar__item__text.active-tab { background-color: #eef0ff; color: #222222; }
+
+    .info-bar-container { margin-top: 12px; }
+    .info-bar { display: flex; flex-wrap: wrap; background-color: #277bb6; box-shadow: 0.2em 0.2em 0.5em rgba(0, 0, 0, 0.35); }
+    #info-bar .info-bar__item__text { display: block; text-align: center; padding: 0.7em 1em; font-size: 0.9em; color: #ffffff; text-decoration: none; }
+    #info-bar .info-bar__item__text:hover:not(.active-tab) { background-color: #346689; }
+    @media (max-width: 600px) {
+      .info-bar { justify-content: center; }
+      #info-bar .info-bar__item__text { min-height: 44px; display: flex; align-items: center; }
+    }
+
+    .site-link {
+      font-size: 0.9em;
+    }
+
+    h1 {
+      font-size: 1.8em;
+      margin: 0.4em 0 0.1em;
+    }
+
+    .page-subtitle {
+      font-size: 0.85em;
+      opacity: 0.75;
+      margin-bottom: 1.4em;
+    }
+
+    article p {
+      margin: 0 0 1em;
+    }
+
+    .source-list {
+      margin: 0 0 1.2em;
+      padding-left: 1.3em;
+    }
+
+    .source-list li {
+      margin: 0 0 0.5em;
+    }
+
+    .source-list li ul {
+      margin: 0.4em 0 0;
+      padding-left: 1.3em;
+    }
+
+    .video-embed {
+      position: relative;
+      width: 100%;
+      padding-top: 56.25%;
+      border-radius: 4px;
+      overflow: hidden;
+      margin: 0.6em 0 1.2em;
+      transition: width 0.25s ease, max-width 0.25s ease, margin 0.25s ease,
+        height 0.25s ease, padding-top 0.25s ease, border-radius 0.25s ease;
+    }
+
+    .video-embed video,
+    .video-embed iframe {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      border: 0;
+      background: #000;
+    }
+
+    .video-embed.theater-mode {
+      width: 100vw;
+      max-width: 100vw;
+      left: 50%;
+      margin-left: -50vw;
+      margin-right: -50vw;
+      padding-top: 0;
+      height: min(85vh, 56.25vw);
+      border-radius: 0;
+      background: #000;
+    }
+
+    .video-embed.theater-mode video {
+      object-fit: contain;
+    }
+
+    .video-badge {
+      position: absolute;
+      top: 10px;
+      right: 10px;
+      display: inline-flex;
+      align-items: center;
+      gap: 5px;
+      background: rgba(0, 0, 0, 0.7);
+      color: #ffffff;
+      font-size: 0.8em;
+      font-weight: bold;
+      text-decoration: none;
+      padding: 5px 10px;
+      border-radius: 999px;
+      z-index: 2;
+    }
+
+    .video-badge:hover {
+      background: rgba(0, 0, 0, 0.85);
+    }
+
+    .theater-toggle-btn {
+      position: absolute;
+      top: 46px;
+      right: 10px;
+      display: inline-flex;
+      align-items: center;
+      gap: 5px;
+      background: rgba(0, 0, 0, 0.7);
+      color: #ffffff;
+      font-size: 0.8em;
+      font-weight: bold;
+      border: 0;
+      cursor: pointer;
+      padding: 5px 10px;
+      border-radius: 999px;
+      z-index: 2;
+    }
+
+    .theater-toggle-btn:hover {
+      background: rgba(0, 0, 0, 0.85);
+    }
+
+    .video-embed .video-badge,
+    .video-embed .theater-toggle-btn {
+      transition: opacity 0.3s ease;
+    }
+
+    .video-embed.controls-hidden .video-badge,
+    .video-embed.controls-hidden .theater-toggle-btn {
+      opacity: 0;
+      pointer-events: none;
+    }
+
+    .source-link {
+      display: inline-block;
+      font-size: 0.9em;
+      font-style: italic;
+    }
+
+    .timestamps {
+      margin: 0 0 1.4em;
+      font-size: 0.92em;
+    }
+
+    .timestamps summary {
+      cursor: pointer;
+      font-weight: bold;
+      margin-bottom: 0.6em;
+    }
+
+    .timestamps ul {
+      margin: 0.3em 0;
+      padding-left: 1.3em;
+    }
+
+    .timestamps li {
+      margin: 0 0 0.35em;
+    }
+
+    .written-solution {
+      margin: 0 0 1.6em;
+    }
+
+    .written-solution > summary {
+      cursor: pointer;
+      font-weight: bold;
+      font-size: 1.15em;
+      margin-bottom: 0.4em;
+    }
+
+    .written-solution .ws-note {
+      font-size: 0.85em;
+      opacity: 0.75;
+      margin: 0.4em 0 1.2em;
+    }
+
+    .written-solution h3 {
+      font-size: 1.05em;
+      margin: 1.4em 0 0.4em;
+    }
+
+    .written-solution p { margin: 0 0 1em; }
+
+    .sol-image {
+      max-width: 100%;
+      height: auto;
+      border-radius: 4px;
+      display: block;
+      margin: 0.6em 0 1.2em;
+      cursor: zoom-in;
+    }
+
+    .lightbox-overlay {
+      display: none;
+      position: fixed;
+      inset: 0;
+      background: rgba(0, 0, 0, 0.96);
+      z-index: 2147483647;
+      align-items: center;
+      justify-content: center;
+      padding-bottom: 120px;
+    }
+
+    .lightbox-overlay.open { display: flex; }
+
+    .lightbox-image {
+      width: 100vw;
+      max-width: 100vw;
+      max-height: calc(100vh - 120px);
+      object-fit: contain;
+      display: block;
+    }
+
+    .lightbox-controls {
+      position: fixed;
+      left: 50%;
+      bottom: 40px;
+      transform: translateX(-50%);
+      display: flex;
+      align-items: center;
+      gap: 16px;
+    }
+
+    .lightbox-counter {
+      background: rgba(0, 0, 0, 0.7);
+      color: #ffffff;
+      font-size: 0.85em;
+      padding: 5px 12px;
+      border-radius: 999px;
+    }
+
+    .lightbox-close,
+    .lightbox-prev,
+    .lightbox-next {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      background: rgba(0, 0, 0, 0.7);
+      color: #ffffff;
+      border: 0;
+      cursor: pointer;
+    }
+
+    .lightbox-close:hover,
+    .lightbox-prev:hover,
+    .lightbox-next:hover { background: rgba(0, 0, 0, 0.85); }
+
+    .lightbox-close {
+      position: fixed;
+      top: 16px;
+      right: 16px;
+      width: 40px;
+      height: 40px;
+      border-radius: 50%;
+      font-size: 1.3em;
+      z-index: 2147483647;
+    }
+
+    .lightbox-prev,
+    .lightbox-next {
+      width: 44px;
+      height: 44px;
+      border-radius: 50%;
+      font-size: 1.4em;
+    }
+
+    @media (max-width: 600px) {
+      .lightbox-overlay { padding-bottom: 100px; }
+      .lightbox-image { max-height: calc(100vh - 100px); }
+      .lightbox-controls { bottom: 32px; }
+      .lightbox-prev, .lightbox-next { width: 38px; height: 38px; font-size: 1.2em; }
+      .lightbox-close { width: 36px; height: 36px; }
+    }
+
+    .retrieved-note {
+      font-size: 0.85em;
+      opacity: 0.7;
+      margin-top: 0.4em;
+    }
+
+    hr {
+      margin: 2em 0;
+      opacity: 0.3;
+    }
+
+    .site-footer-note {
+      font-size: 0.8em;
+      opacity: 0.6;
+      text-align: center;
+    }
+
+    @media (max-width: 600px) {
+      h1 { font-size: 1.4em; }
+      body { padding: 0 12px 40px; }
+    }
+
+    .lightbox-zoom-controls {
+      position: fixed;
+      top: 16px;
+      left: 16px;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      z-index: 2147483647;
+    }
+
+    .lightbox-zoom-btn {
+      width: 40px;
+      height: 40px;
+      border-radius: 50%;
+      background: rgba(0, 0, 0, 0.7);
+      color: #ffffff;
+      border: 0;
+      cursor: pointer;
+      font-size: 1.2em;
+      font-weight: 700;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .lightbox-zoom-btn:hover {
+      background: rgba(0, 0, 0, 0.85);
+    }
+
+    .lightbox-zoom-btn:disabled {
+      opacity: 0.4;
+      cursor: default;
+    }
+
+    .lightbox-zoom-level {
+      min-width: 3.4em;
+      text-align: center;
+      background: rgba(0, 0, 0, 0.7);
+      color: #ffffff;
+      font-size: 0.8em;
+      padding: 5px 8px;
+      border-radius: 999px;
+    }
+
+    #lightboxImage {
+      transition: transform 0.15s ease;
+    }
+
+    #lightboxImage.zoomed {
+      cursor: grab;
+    }
+
+    #lightboxImage.dragging {
+      cursor: grabbing;
+      transition: none;
+    }
+
+    @media (max-width: 600px) {
+      .lightbox-zoom-btn { width: 36px; height: 36px; font-size: 1.05em; }
+    }
+
+    /* "Part of" strip under the nav bar: links back to the full main article
+       page (playlist + written notes) at this problem's section. */
+    .part-of { margin: 14px 0 0; padding: 0.55em 0.9em; border-radius: 6px; font-size: 0.9em; border: 1px solid rgba(128, 128, 128, 0.4); }
+    .part-of a { font-weight: bold; }
+
+    /* Text-size control (--ts, set by the header A-/A+ buttons): only prose,
+       the byline and the video timestamps scale -- headings, buttons and the
+       video stay fixed. rem so nested lists don't compound. */
+    .container article :is(p, li, blockquote):not(.video-embed *) { font-size: calc(1rem * var(--ts, 1)); }
+    .container article .timestamps li { font-size: calc(0.92rem * var(--ts, 1)); }
+    .container article .written-solution .ws-note { font-size: calc(0.85rem * var(--ts, 1)); }
+    .page-subtitle { font-size: calc(0.85rem * var(--ts, 1)); }
+  /* Site footer -- same links/markup as mes.fm/math and mes.fm/911, in
+       this page family's own blue accent (#277bb6, matching .hamburger-btn/
+       .info-bar above) and sized to this family's 760px .container (911
+       uses 1180px for its own wider card-grid page). */
+    .footer { max-width: 760px; margin: 2.5em auto 0; padding: 2em; background-color: #277bb6; border-radius: 0.35em; }
+    .footer__item-container { display: table; width: 100%; margin-bottom: 1.6em; }
+    .footer__item { display: table-cell; }
+    .footer__item--extra-padding { padding-left: 2.5em; }
+    .footer .footer__text { color: #ffffff; line-height: 1.5; text-decoration: none; }
+    .footer .footer__text--title { display: inline-block; margin-bottom: 1.6em; font-size: 1.3em; font-style: italic; }
+    .footer__text--extra-info { float: right; }
+    .footer .footer__text:not(.footer__text--copyright):hover { text-decoration: underline; cursor: pointer; }
+    .footer__separator, #copyright-year { color: #ffffff; }
+    @media (max-width: 600px) {
+      .footer { padding: 1.25em 0.75em; }
+      .footer__item-container { display: block; }
+      .footer__item { display: block; margin-bottom: 0.75em; }
+      .footer__item--extra-padding { padding-left: 0; }
+      .footer__text--extra-info { float: none; display: block; margin-top: 0.5em; }
+    }
+    /* Floating compact header bar: once the real top-bar + nav scroll out of
+       view, a slim fixed bar (small logo, title, as many nav links as fit)
+       slides in, and the header-controls + hamburger are pinned into its
+       right end. Ported from mes.fm/math's version (see its build.mjs) --
+       this template's top-bar is already a clean flex row (no
+       position:absolute/table-cell legacy layout to fight), so no special
+       centering workarounds are needed here.
+
+       Hidden by default via the inline style="display:none" on the element
+       itself (not just this stylesheet's "display: none" below) -- some
+       browser extensions strip or neutralize cosmetic-looking CSS for
+       elements named "sticky-*"/"*-bar" (a common ad/cookie-bar filter
+       pattern), which left an earlier version's raw unstyled markup visible
+       above the real header on mes.fm/math. The inline attribute is a
+       fallback the JS clears itself, independent of this stylesheet
+       surviving intact. */
+    #compact-nav {
+      position: fixed; top: 0; left: 0; right: 0; height: 52px; z-index: 15;
+      display: none; align-items: center; gap: 12px;
+      padding: 0 172px 0 12px; box-sizing: border-box;
+      background: #ffffff; border-bottom: 3px solid #277bb6;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.18);
+      transform: translateY(-110%); transition: transform 0.2s ease;
+    }
+    #compact-nav.is-visible { display: flex; }
+    body.is-stuck #compact-nav { transform: none; }
+    #compact-nav .compact-nav-logo { display: block; width: 32px; height: 32px; border-radius: 6px; flex: 0 0 auto; }
+    #compact-nav .compact-nav-title {
+      flex: 0 1 auto; min-width: 0; font-weight: 700; font-size: 1.05em;
+      text-decoration: none; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+    }
+    #compact-nav .compact-nav-links { display: flex; flex: 1 1 0; min-width: 0; overflow: hidden; margin: 0 0 0 8px; padding: 0; list-style: none; }
+    #compact-nav .compact-nav-links li { flex: 0 0 auto; }
+    #compact-nav .compact-nav-links a { display: block; padding: 0 10px; line-height: 52px; font-size: 0.9em; text-decoration: none; white-space: nowrap; }
+    #compact-nav .compact-nav-links a:hover { background: rgba(39,123,182,0.12); }
+    body.light #compact-nav .compact-nav-title { color: #1a1a1a; }
+    body.dark #compact-nav { background: #1a1a1a; }
+    body.dark #compact-nav .compact-nav-title { color: #eeeeee; }
+    body.light #compact-nav .compact-nav-links a { color: #277bb6; }
+    body.dark #compact-nav .compact-nav-links a { color: #6cb6f5; }
+    body.is-stuck .header-controls { position: fixed !important; top: 13px; right: 60px; margin-left: 0; z-index: 20; }
+    body.is-stuck #navbar-button { position: fixed !important; top: 4px !important; right: 8px !important; margin: 0; z-index: 20; }
+    body.is-stuck #navbar.hide { position: fixed; top: 56px; right: 8px; }
+    @media (max-width: 700px) {
+      #compact-nav .compact-nav-title { display: none; }
+      #compact-nav .compact-nav-logo { width: 36px; height: 36px; }
+    }
+    @media (max-width: 480px) {
+      #compact-nav { padding-right: 160px; gap: 8px; }
+      body.is-stuck .header-controls { right: 56px; }
+    }
+    /* MOBILE-HEADER-CONTROLS-ROW: on phones the A-/A+/moon controls sit on their own row
+       under the brand (absolute, so sticking into the floating bar doesn't reflow), which
+       leaves the title/tagline the full width instead of a ~130px sliver. */
+    /* Also: a long unbroken URL in the article text (e.g. a 70-char grok.com share link on
+       Problems Plus 5) made the whole page wider than a phone, so it scrolled sideways. */
+    article { overflow-wrap: anywhere; }
+    @media (max-width: 480px) {
+      .top-bar { padding-bottom: 44px; }
+      .header-controls { position: absolute; right: 8px; bottom: 0; margin-left: 0; }
+      body.is-stuck .header-controls { bottom: auto; }
+    }
+
+    /* page-specific rules carried over from the previous layout */
+    .post-image {
+      max-width: 100%;
+      height: auto;
+      border-radius: 4px;
+      display: block;
+      margin: 0.6em 0 1.2em;
+      cursor: zoom-in;
+    }
+</style>
+  <!-- ADSENSE-DEFERRED: load adsbygoogle.js (auto ads + consent) on the first
+     real interaction (scroll / pointer / key), or after a 15s idle fallback,
+     so its ad + consent JS (doubleclick ads ~100KB, Funding Choices ~70KB,
+     sodar, osd) never runs during the page-load / Lighthouse trace window. -->
+    <script>
+    (function () {
+      var EVT = ['scroll', 'pointerdown', 'keydown', 'touchstart'];
+      var done = false;
+      function go() {
+        if (done) return;
+        done = true;
+        EVT.forEach(function (e) { removeEventListener(e, go); });
+        var s = document.createElement('script');
+        s.async = true;
+        s.crossOrigin = 'anonymous';
+        s.src = 'https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-1461238060884369';
+        document.head.appendChild(s);
+      }
+      EVT.forEach(function (e) { addEventListener(e, go, { passive: true }); });
+      setTimeout(go, 15000);
+    })();
+    </script>
+<!-- MES-ASIDE-HEAD --><link rel="stylesheet" href="/main_js/aside.css?v=2"><script>try{if(localStorage.getItem('asideSide')==='left')document.documentElement.classList.add('aside-left')}catch(e){}try{if(localStorage.getItem('pageWide')==='1')document.documentElement.classList.add('page-wide')}catch(e){}try{if(localStorage.getItem('pageMode')==='theatre')document.documentElement.classList.add('page-theatre')}catch(e){}try{if(localStorage.getItem('asideHidden')==='1')document.documentElement.classList.add('aside-hidden')}catch(e){}</script><!-- /MES-ASIDE-HEAD -->  <style id="article-extras">
+    /* long-article extras: section headings, quotes, the comparison table */
+    .container article h2 { font-size: calc(1.45rem * var(--ts, 1)); line-height: 1.25; margin: 1.6em 0 0.5em; }
+    .container article h3 { font-size: calc(1.2rem * var(--ts, 1)); line-height: 1.3; margin: 1.4em 0 0.45em; }
+    .container article h4 { font-size: calc(1.05rem * var(--ts, 1)); margin: 1.2em 0 0.4em; }
+    .container article blockquote { margin: 1em 0; padding: 0.4em 1em; border-left: 4px solid #1f6fa8; background: rgba(31, 111, 168, 0.07); border-radius: 0 6px 6px 0; }
+    .container article blockquote blockquote { margin: 0.5em 0; border-left-color: #8a6d00; background: rgba(138, 109, 0, 0.08); }
+    .container article blockquote p { margin: 0.45em 0; }
+    .container article .table-wrap { overflow-x: auto; margin: 1em 0 1.4em; }
+    .container article .post-table { border-collapse: collapse; width: 100%; min-width: 34em; font-size: calc(0.92rem * var(--ts, 1)); }
+    .container article .post-table th, .container article .post-table td { border: 1px solid rgba(128, 128, 128, 0.45); padding: 0.5em 0.65em; vertical-align: top; text-align: left; }
+    .container article .post-table th { background: rgba(31, 111, 168, 0.12); }
+    body.dark .container article blockquote { border-left-color: #5fa8dc; background: rgba(95, 168, 220, 0.1); }
+    body.dark .container article blockquote blockquote { border-left-color: #d9b44a; background: rgba(217, 180, 74, 0.1); }
+    body.dark .container article .post-table th { background: rgba(95, 168, 220, 0.16); }
+  </style>
+</head>
+<body class="dark">
+
+  <div id="compact-nav" aria-hidden="true" style="display:none">
+  <a href="/911" tabindex="-1"><img class="compact-nav-logo" alt="" width="32" height="32" src="https://mes.fm/img/911-truth-logo.jpg"></a>
+  <a class="compact-nav-title" href="/911" tabindex="-1">MES 9/11 Truth</a>
+  <ul class="compact-nav-links">
+    <li><a href="/math" tabindex="-1">Math Tutorials</a></li>
+    <li><a href="/calculators" tabindex="-1">Calculators</a></li>
+    <li><a href="/tools" tabindex="-1">Tools</a></li>
+    <li><a href="/mobile-apps" tabindex="-1">Mobile Apps</a></li>
+    <li><a href="/puzzles" tabindex="-1">Puzzles</a></li>
+    <li><a href="/memes" tabindex="-1">Memes</a></li>
+    <li><a href="/" tabindex="-1"><b>MES.fm</b></a></li>
+  </ul>
+</div>
+
+
+
+  <div class="container has-aside">
+    <div class="top-bar">
+      <div class="site-brand">
+        <a class="site-brand-logo-link" href="/911"><img class="site-brand-logo" src="/img/911-truth-logo.jpg" width="88" height="88" alt="MES 9/11 Truth logo"></a>
+        <div class="site-brand-text"><a class="site-brand-title" href="/911">MES 9/11 Truth</a><p class="site-brand-tag">Videos, livestreams and research on 9/11.</p></div>
+      </div>
+      <div class="header-controls">
+        <button id="textSizeDown" class="header-icon-btn" type="button" aria-label="Decrease text size" title="Decrease text size">A&minus;</button>
+        <button id="textSizeUp" class="header-icon-btn" type="button" aria-label="Increase text size" title="Increase text size">A+</button>
+        <button id="themeToggle" class="header-icon-btn" type="button" aria-label="Toggle dark mode" title="Toggle dark mode">&#127769;</button>
+      </div>
+      <button id="navbar-button" class="hamburger-btn" type="button" aria-label="Site navigation" aria-haspopup="true"></button>
+      <ul id="navbar" class="navbar" role="navigation" aria-label="Site menu">
+        <li class="navbar__item navbar__item--social"><div class="social-container"><p class="social__text">Follow us!</p><ul class="social">
+            <li class="social__logo social__hive"><a class="social__link" href="https://peakd.com/@mes" target="_blank"></a></li>
+            <li class="social__logo social__telegram"><a class="social__link" href="https://t.me/meslinks" target="_blank"></a></li>
+            <li class="social__logo social__fb"><a class="social__link" href="https://www.facebook.com/matheasysolutions" target="_blank"></a></li>
+            <li class="social__logo social__twitter"><a class="social__link" href="https://twitter.com/MathEasySolns" target="_blank"></a></li>
+            <li class="social__logo social__insta"><a class="social__link" href="https://instagram.com/matheasysolutions" target="_blank"></a></li>
+            <li class="social__logo social__pin"><a class="social__link" href="https://www.pinterest.com/matheasysolns" target="_blank"></a></li>
+            <li class="social__logo social__yt"><a class="social__link" href="https://www.youtube.com/user/MathEasySolutions" target="_blank"></a></li>
+            <li class="social__logo social__patreon"><a class="social__link" href="https://www.patreon.com/matheasysolutions" target="_blank"></a></li>
+          </ul></div></li>
+        <li class="navbar__item"><a class="navbar__link navbar__link--first" href="/">Home</a></li>
+        <li class="navbar__item"><a target="_self" class="navbar__link" href="/911">9/11 Truth</a></li>
+        <li class="navbar__item"><a target="_self" class="navbar__link" href="https://mes.fm/math">Math Tutorials</a></li>
+        <li class="navbar__item"><a class="navbar__link" href="/calculators">Calculators</a></li>
+        <li class="navbar__item"><a class="navbar__link" href="/tools">Tools</a></li>
+        <li class="navbar__item"><a class="navbar__link" href="/browser">Browser Extensions</a></li>
+        <li class="navbar__item"><a target="_self" class="navbar__link" href="/puzzles">Puzzles</a></li>
+        <li class="navbar__item"><a target="_self" class="navbar__link" href="/memes">Memes</a></li>
+        <li class="navbar__item"><a target="_blank" class="navbar__link" href="https://teespring.com/stores/mes-store">Store</a></li>
+        <li class="navbar__item"><a target="_blank" rel="nofollow" class="navbar__link" href="https://matheasy.substack.com/">Subscribe</a></li>
+        <li class="navbar__item"><a target="_blank" class="navbar__link" href="/donate">Donate</a></li>
+        <li class="navbar__item"><a class="navbar__link" href="/contact">Contact Us</a></li>
+      </ul>
+    </div>
+    <div class="info-bar-container" role="navigation" aria-label="Primary">
+      <ul id="info-bar" class="info-bar">
+        <li class="info-bar__item"><a target="_self" class="info-bar__item__text" href="/911">9/11 Truth</a></li>
+        <li class="info-bar__item"><a class="info-bar__item__text" href="/conspiracy">Conspiracy</a></li>
+        <li class="info-bar__item"><a class="info-bar__item__text" href="/calculators">Calculators</a></li>
+        <li class="info-bar__item"><a class="info-bar__item__text" href="/tools">Tools</a></li>
+        <li class="info-bar__item"><a class="info-bar__item__text" href="/mobile-apps">Mobile Apps</a></li>
+        <li class="info-bar__item info-bar__item--utility" style="display:none !important;"><a class="info-bar__item__text" href='/browser'>Extensions</a></li>
+        <li class="info-bar__item"><a target="_self" class="info-bar__item__text" href="/puzzles">Puzzles</a></li>
+        <li class="info-bar__item"><a target="_self" class="info-bar__item__text" href="/memes">Memes</a></li>
+        <li class="info-bar__item info-bar__item--utility" style="display:none !important;"><a class="info-bar__item__text" target="_blank" rel="nofollow" href="https://matheasy.substack.com/">Subscribe</a></li>
+        <li class="info-bar__item info-bar__item--utility" style="display:none !important;"><a class="info-bar__item__text" target="_blank" href="https://teespring.com/stores/mes-store">Store</a></li>
+        <li class="info-bar__item info-bar__item--utility" style="display:none !important;"><a class="info-bar__item__text" target="_blank" href="/donate">Donate</a></li>
+        <li class="info-bar__item info-bar__item--utility" style="display:none !important;"><a class="info-bar__item__text" href="/contact">Contact Us</a></li>
+        <li class="info-bar__item info-bar__item--mes"><a class="info-bar__item__text" href="/" style="font-weight:bold;">MES.fm</a></li>
+      </ul>
+    </div>
+    <!-- MES-COLS-START --><div class="mes-cols"><div class="mes-col-main"><div class="part-of">Part of <a href="https://mes.fm/911">MES 9/11 Truth</a> &middot; <a href="https://mes.fm/911-posts">Posts</a> &middot; <a href="https://mes.fm/911spooks">9/11 Spooks</a> &middot; <a href="https://mes.fm/911spooks-posts">Posts</a></div>
+
+    <h1>Dear Dr. David A. Fetzer...</h1>
+    <div class="page-subtitle">Article &middot; March 10, 2026 (updated July 24, 2026) &middot; mirrored from the <a href="https://peakd.com/hive-113182/@mes/dear-dr-david-a-fetzer-j1c" target="_blank" rel="noopener">Hive blockchain</a></div>
+
+    <article>
+      <p>Professor of German Studies David A. Hughes has recently revealed himself to be just another <a href="https://mes.fm/livestream-112-911-spooks">9/11 disinfo spook</a>, this time <a href="https://t.me/meslinks/33512" target="_blank" rel="noopener">modelling himself as Jim Fetzer 2.0</a>.</p>
+
+      <p>In fact, I was made aware of his grift by <a href="https://peakd.com/hive-113182/@mes/911-reality" target="_blank" rel="noopener">Conspiracy Realist</a>, when he informed me that David Hughes had made the bogus claim that Buildings 3, 4, 5, and 6 were merely damaged by "falling steel". Upon which, I made a <a href="https://t.me/meslinks/30101" target="_blank" rel="noopener">Telegram post on June 9, 2025</a> outlining Hughes' huge nonsense, especially in his efforts in downplaying the presence of Hurricane Erin and fluctuations in Earth's magnetic field on 9/11. Around this same time, <a href="https://dhughes.substack.com/p/interview-with-alex-jones-february" target="_blank" rel="noopener">Hughes somehow got interviewed by THE biggest 9/11 spook</a> of the past 2 decades in THE Alex Jones. And not once did they discuss 9/11, and nor did David A. Hughes call out the biggest "Camp 2 Leader" for his decades long 9/11 gatekeeping.</p>
+
+      <img class="post-image" src="https://files.peakd.com/file/peakd-hive/mes/EpQyiLA4949uCQ5bL9S9rcKRGDUh42wT9xPJyjTH9s5791bCJcX721A1gZMtmvWd3kc.jpg" alt="">
+
+      <p>Then in a <a href="https://t.me/meslinks/30108" target="_blank" rel="noopener">June 10, 2025 Telegram post</a>, I outlined how Hughes continues making a clown of himself, this time by saying that he "doesn't understand" how the Liberty Plaza sphere was not crushed by his hypothetical "falling steel", even though it was at the intersection of where the "falling steel" would land from the Twin Towers.</p>
+
+      <img loading="lazy" class="post-image" src="https://files.peakd.com/file/peakd-hive/mes/23zS9dGXZxcc9G1Rhg2zMeCehe8URiDTyGxLKFwCwxSfgV576ukhMf1kLrQos7r1VefK5.jpg" alt="">
+
+      <p>In a <a href="https://t.me/meslinks/30164" target="_blank" rel="noopener">June 13, 2025 Telegram post</a> I further illustrated how the uncrushed Liberty Plaza sphere is a clear example that David Hughes is merely playing a LARP or Live Action Role Play, in other words, he's a disinfo spook.</p>
+
+      <img loading="lazy" class="post-image" src="https://files.peakd.com/file/peakd-hive/mes/23vi1t63tLksGvyTnGoMCqf6vZ2dSTgwZbK8fRQhJhM83U3oBGXL28W2egrzEuKUMSvnw.jpeg" alt="">
+
+      <p>Interestingly, in a <a href="https://t.me/meslinks/30381" target="_blank" rel="noopener">June 24, 2025 Telegram post</a> I theorized that David Hughes' public back story may be merely mirroring my story on purpose.... but that is for a future discussion... 😅</p>
+
+      <p>Anyways, I am stating these Telegram posts I made, because somehow they caught the ear of David Hughes, and whom decided not to join my <a href="https://peakd.com/hive-113182/@mes/livestream-108-911-disinfo-agents-cuq" target="_blank" rel="noopener">MES 9/11 Turning the Tide on 9/11 Disinformation Agents 2025 livestream</a>. And since he was in good terms with 9/11 Revisionist, I held back my bows and arrows (and memes).</p>
+
+      <hr>
+
+      <h2>Hurricane Erin: Evidence Not Hypothesis</h2>
+
+      <p>To <a href="https://davidahughes.net/reply-to-9-11-revisionist/" target="_blank" rel="noopener">quote David Hughes' himself</a>, he states <strong>"it is an extraordinary coincidence that Hurricane Erin reached its closest point to New York and changed direction while the WTC attacks were taking place"</strong>. Besides his assumption that it's all just a "coincidence", Hughes would've been better off not saying anything after that quote.</p>
+
+      <p>Hurricane Erin was literally a giant hurricane off the coast of 9/11, was severely under-reported, and made a sharp turn after the events of 9/11. She did NOT claim it was not reported, this is NOT a “hypothesis”, as Hughes <a href="https://davidahughes.net/reply-to-9-11-revisionist/" target="_blank" rel="noopener">pathetically claims</a>.</p>
+
+      <p>Dr. Judy Wood, and anyone with common sense, has reason to believe that Hurricane Erin being present is more than just an "extraordinary coincidence". And this is mainly because it was <em>under-reported</em>, a key point that Hughes misleadingly ignores.</p>
+
+      <img loading="lazy" class="post-image" src="https://files.peakd.com/file/peakd-hive/mes/23wN2F2aiTBPumjBqeFTrdk6GoMMn6rzpaYmCApqEzvqLN1yAtLFQUCGL35HyKzUNiRd4.png" alt="">
+
+      <p>See the photo below of the fumes of the WTC visible from a satellite in space while a giant Hurricane is off the East Coast! Again, this is not a hypothesis or a theory.</p>
+
+      <img loading="lazy" class="post-image" src="https://files.peakd.com/file/peakd-hive/mes/23wquAZWxMW4nwwq9CpTYtRLJLphhiuvSCzPau6UyuNg7xVw8j8gsiXs66Po6WE23M7SP.jpg" alt="">
+
+      <p>See the video below, taken from my <a href="https://youtu.be/FuN-MIyIpv4?t=1043" target="_blank" rel="noopener">Part 35 video</a>, illustrating that Hurricane Erin was literally heading towards New York City before making a sharp turn to the right after the events of 9/11 unfolded.</p>
+
+      <div class="video-embed"><iframe src="https://www.youtube-nocookie.com/embed/Yz4hhbsWNks" title="YouTube video" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen loading="lazy"></iframe></div>
+
+      <p>Hughes quotes Dr. Judy Wood's final sentence of her chapter on Hurricane Erin in which she makes a <a href="https://en.wikipedia.org/wiki/Tongue-in-cheek" target="_blank" rel="noopener">tongue-in-cheek</a> statement that Hurricane Erin was being treated like a "state secret", and misleadingly insinuates that she is making a literal statement. While knowledge that Erin will make a sharp turn exactly on 9/11 would certainly be a "state secret", Dr. Judy Wood had even written on Page 398 of her book <a href="https://www.wheredidthetowersgo.com/buy/" target="_blank" rel="noopener">Where Did The Towers Go</a>, that Erin was "studied more than any other hurricane had been studied before", while referencing an <a href="https://web.archive.org/web/20051221195244/https://www.sciencedaily.com/releases/2005/10/051007090048.htm" target="_blank" rel="noopener">article from ScienceDaily</a> that states Erin was studied from <strong>August 16</strong> to September 24, 2001 by 10 universities, 5 NASA centers, and the NOAA.</p>
+
+      <img loading="lazy" class="post-image" src="https://files.peakd.com/file/peakd-hive/mes/23xVcDQgee81ZhCc1w3LbRhxE9VNQoR24tAhyVpHzy1RF3tM2YyyeFwcQgKF4Sy1TZrAb.png" alt="">
+
+      <p>Interestingly, Hurricane Erin was just a <a href="https://en.wikipedia.org/wiki/2001_Atlantic_hurricane_season#Hurricane_Erin" target="_blank" rel="noopener">Tropical Wave on August 30</a>, and then a Hurricane on September 1, so <strong>why would researchers be studying it on August 16, 2001?...</strong></p>
+
+      <img loading="lazy" class="post-image" src="https://files.peakd.com/file/peakd-hive/mes/Ep3j6YodzWVNKLaJq6Skfx9s5WQSijjAd9zfW7qqWDRaboPi9DSkf4VtqssNSV1oMAV.png" alt="">
+
+      <p>Furthermore, on Page 399 Dr. Judy Wood quotes CNN on September 10, 2001 as stating they were confident that Hurricane Erin would not strike New York City or the East Coast. So again, for the German Studies professor to claim that Dr. Judy Wood is claiming that Hurricane Erin was "covered up" or a literal "state secret" is just the usual gate-keeping propaganda.</p>
+
+      <p>Interestingly, <a href="https://www.sciencedaily.com/releases/2005/10/051007090048.htm" target="_blank" rel="noopener">twenty (20) instrument packages</a>, called "dropsondes", were dropped into Erin's eye, <a href="https://www.aoml.noaa.gov/hrd/HFP2001/erin.html" target="_blank" rel="noopener">including one on September 10, 2001</a> the day before 9/11!</p>
+
+      <div class="video-embed"><iframe src="https://www.youtube-nocookie.com/embed/GziGXrUyfTw" title="YouTube video" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen loading="lazy"></iframe></div>
+
+      <p>This is also outlined in the video below by the big alt-media channel TruthStream media in 2017, whom also state they had no idea that Hurricane Erin was off the coast during 9/11.</p>
+
+      <div class="video-embed"><iframe src="https://www.youtube-nocookie.com/embed/WybqAvcjE0w" title="YouTube video" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen loading="lazy"></iframe></div>
+
+      <p>Dr. Judy Wood has also stated in interviews multiple times that she states Hurricane Erin was under-reported, not "covered up", such as in her <a href="https://www.richplanet.net/richp_genre.php?ref=78&amp;part=2&amp;gen=99" target="_blank" rel="noopener">2011 interview with Richard Hall on RichPlanetTV</a>. A short clip from that interview is shown below, which includes the various field effects such as levitation and fusion of dissimilar materials encountered during hurricanes.</p>
+
+      <div class="video-embed"><iframe src="https://www.youtube-nocookie.com/embed/Yl6igQgJRMk" title="YouTube video" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen loading="lazy"></iframe></div>
+
+      <p>On page 402 of her book, Dr. Judy Wood shows a table outlining four main news media channels that had a weather report less than 15 minutes before the North Tower got its hole, and she outlines which discussed and didn't discuss Hurricane Erin. But why would she include this table if, according to the German Studies professor David Hughes, she is claiming Erin was "covered up“? This begs the question, has Hughes even read Where Did the Towers Go?</p>
+
+      <img loading="lazy" class="post-image" src="https://files.peakd.com/file/peakd-hive/mes/EoCowJE1oDRLyVLXXZu8bEFwKsi4NMzkr7tzuWghCB2rw5q3RphbHho97eFpXFaXtRU.png" alt="">
+
+      <p>Lastly, it is important to point out that NASA astronaut Frank Culbertson Jr. filmed New York City on 9/11 while he was in space, yet <a href="https://youtu.be/s7HPhlX0TH8?t=3755" target="_blank" rel="noopener">NEVER mentioned the giant Hurricane Erin</a> just off the coast!</p>
+
+      <div class="video-embed"><iframe src="https://www.youtube-nocookie.com/embed/gCIioDQl1Rw" title="YouTube video" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen loading="lazy"></iframe></div>
+
+      <h3>David Hughes Replicates the Ash Conformity Experiment</h3>
+
+      <p>In one of the most blatant examples of the Ash Conformity Experiment being perpetuated on the alternative media public, German Studies Professor David Hughes tells his audience that veteran weather reporter Geraldo Rivera actually means the opposite of what he clearly states.</p>
+
+      <p>The <a href="https://en.wikipedia.org/wiki/Asch_conformity_experiments" target="_blank" rel="noopener">Ash Conformity Experiment</a> were a series of experiments directed by Solomon Asch in the 1950s, and showcased how people will side with the group even when answering basic questions such as the height of a line. See the video below to get up to speed.</p>
+
+      <div class="video-embed"><iframe src="https://www.youtube-nocookie.com/embed/TYIh4MkcfJA" title="YouTube video" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen loading="lazy"></iframe></div>
+
+      <p>In our case, the veteran Weather Reporter Geraldo Rivera on September 3, 2010, while celebrating 40 years covering the weather, stated on Fox News that he hoped a Hurricane was present on 9/11 rather than the "crystal clear September day" so that the alleged hijackers would have trouble steering. He emphasizes this while using the gesture of holding a steering wheel and stating that the alleged hijackers flew by line-of-sight rather than using flight instruments. See the video below, as it is quite clear what he means.</p>
+
+      <div class="video-embed"><iframe src="https://www.youtube-nocookie.com/embed/XQUOK84mUXI" title="YouTube video" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen loading="lazy"></iframe></div>
+
+      <p>The above video is self-evident, and it doesn't take a German Studies PhD to decipher it. But apparently, David Hughes doesn't understand, <a href="https://davidahughes.net/reply-to-9-11-revisionist/" target="_blank" rel="noopener">or is simply pretending not to understand</a>, as he states in his article, that Geraldo Rivera meant that "no flights were grounded as a result of a hurricane on 9/11"...</p>
+
+      <img loading="lazy" class="post-image" src="https://files.peakd.com/file/peakd-hive/mes/23tmjWGNBCd9ogoXMefXJBjXXopNrCekwfZzVLuUHE34yd6ATi5sYkQq8D2Zz28hhPmg3.jpg" alt="">
+
+      <p>Not only is this NOT what Geraldo meant, hence Hughes is merely acting as the lying peers in the Ash Conformity Experiment, but grounded flights would merely mean that the alleged hijackers can hijack a different plane or wait a different day. Or if they were already hijacking a plane, then they simply won't have to listen to any calls to land.</p>
+
+      <p>Note also how Hughes’ ignores the middle of the quote by Geraldo Rivera that discusses the alleged hijackers flying by line of sight. I believe this is intentional by the part of Hughes as it doesn’t give the reader the proper context to judge Rivera’s statement. Compare Hughes’ version of the quote with the full quote:</p>
+
+      <blockquote>
+<p>“If only a hurricane had come on 9/11 […] history would have been rewritten.”</p>
+<p>"If only a hurricane had come on 9/11. Remember, they didn't know how to use instruments, the terrorists, they took off in Boston and they literally, after they took over the aircraft, they steered by line-of-sight <strong>[Geraldo makes steering wheel gesture]</strong>. It was that crystal-clear September day, and if it were only one of these weather days, history would have been rewritten."</p>
+</blockquote>
+
+      <img loading="lazy" class="post-image" src="https://files.peakd.com/file/peakd-hive/mes/23xA1xZKckDMZE9XcJoNoM1NJjFjHw7mMLKx4ShpRikVgAvcADLVQM4wrVb9WiArm4dCH.png" alt="">
+
+      <p>Like Geraldo, I also had not known about Hurricane Erin until 2017 when I read Dr. Judy Wood's book, and there is not a single person that I have told about Hurricane Erin that knew about it prior.</p>
+
+      <p>It is clear Hughes' is trying to downplay the importance of a literal giant hurricane being just off the coast of 9/11. This bizarre gatekeeping by Hughes is actually a strong indication that the weather was indeed being manipulated on 9/11...</p>
+
+      <h3>Path of Hurricane Erin</h3>
+
+      <p>The German Studies Professor David A. Hughes steeps to a new low by making one of the stupidest and bizarre "arguments" I have ever heard. He <a href="https://dhughes.substack.com/p/in-defence-of-judy-wood-0ce" target="_blank" rel="noopener">draws a straight line</a> on top of the <a href="https://substackcdn.com/image/fetch/$s_!KUjO!,w_1456,c_limit,f_webp,q_auto:good,fl_progressive:steep/https%3A%2F%2Fsubstack-post-media.s3.amazonaws.com%2Fpublic%2Fimages%2F82706b1d-3b73-4deb-ae1f-3eaf0b27082f_737x399.gif" target="_blank" rel="noopener">trajectory of the eye of Hurricane Erin</a>, and pretends to be puzzled that the line is aiming closer to Cape Code than Lower Manhattan.</p>
+
+      <img loading="lazy" class="post-image" src="https://files.peakd.com/file/peakd-hive/mes/Eo6D9JrJ4MnhtMwX7CV6d81CRCLxfe2vtN2QBS9JUEbCXoNeqDM2rcVkSKA2B32GeaE.png" alt="">
+
+      <p>Here's the full path of the Eye of Erin without a line.</p>
+
+      <img loading="lazy" class="post-image" src="https://files.peakd.com/file/peakd-hive/mes/Eo8LA7hRW3MPh7uxMnSrPviama2fmuLSwtuUzxnuUdLCvdJ14n1hvBWhjsBgDnKxqcm.png" alt="">
+
+      <p>Here is a higher definition image of the path from <a href="https://en.wikipedia.org/wiki/2001_Atlantic_hurricane_season#/media/File:Erin_2001_path.png" target="_blank" rel="noopener">Wikipedia</a>.</p>
+
+      <img loading="lazy" class="post-image" src="https://files.peakd.com/file/peakd-hive/mes/AK28DhLFEpGm5wpSVaeXoNxAtvZkchMDGmcAYKW5g4dBAR5mgN1awrDJFFrjPWj.png" alt="">
+
+      <p>Here is a zoomed in version with a straight line, and an elliptical line since it fits the most data points. Interestingly, the elliptical line has it pointing literally at Lower Manhattan!</p>
+
+      <img loading="lazy" class="post-image" src="https://files.peakd.com/file/peakd-hive/mes/23tRr8sdCd6Coz4m2nA9hqYfrY7C3DFCE2m5y9V6Hjj5cD921snCD3HUXjDxcTFu5TC2Z.png" alt="">
+
+      <p><strong>But why are we focusing on insignificant lines of the Eye of Hurricane Erin?!</strong> In the <a href="https://youtu.be/8INIH0JfNA8" target="_blank" rel="noopener">words of the former Secretary of State Hillary Clinton</a>, <strong>what difference, at this point, does it make?!</strong></p>
+
+      <p>Erin's Eye was about 40 miles (64 km) wide and the <a href="https://grok.com/share/c2hhcmQtMg_f1abf3bf-d4dc-48ee-807b-6d4b901112a9" target="_blank" rel="noopener">overall hurricane was 350 miles (563 km) in diameter</a>. Placing the GIANT Hurricane on top of his path, rather than just individual points of the Eye's position, it's quite clear Hurricane Erin (not just it's Eye as Hughes' gaslights with) is literally making a beeline to Manhattan!</p>
+
+      <img loading="lazy" class="post-image" src="https://files.peakd.com/file/peakd-hive/mes/EoCgcfFRpZxEaC37VWdFF7Ck92SmUii9nr9RcywoN4w4vQVfCCp8An9EUj1wQtnkKxL.png" alt="">
+
+      <blockquote>
+<p><a href="https://youtu.be/s7HPhlX0TH8?t=3107" target="_blank" rel="noopener">Screenshot from Irrefutable</a></p>
+</blockquote>
+
+      <p><strong>Seriously, what game is Hughes' playing here?!</strong></p>
+
+      <h3>History Revisionist David A. Hughes</h3>
+
+      <p>The German Studies professor David A. Hughes appears to be hiding another degree he has, and this is in History Revision. To see why this may be the case, we can flash back to 16 years ago when Dr. Judy Wood was being hassled for literally 5 minutes on the Power Hour radio show by host Joyce Riley and two callers (George &amp; Steve) about their complete disbelief that there was a giant Hurricane Erin just off the East coast of NYC on 9/11.</p>
+
+      <div class="video-embed"><iframe src="https://www.youtube-nocookie.com/embed/4zTz2X-1mUc" title="YouTube video" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen loading="lazy"></iframe></div>
+
+      <p>Eventually at the end of the radio show, the host Joyce Riley did a Google internet search and realized that Dr. Judy Wood was correct! Joyce was astonished that she never heard about Hurricane Erin and both agreed that Erin was not shown on the TV on the morning of 9/11 — even though the entire world was glued to their televisions on that fateful morning...</p>
+
+      <p>Dr. Judy Wood also included the Steve caller in her 2012 GlobalBEM presentation.</p>
+
+      <div class="video-embed"><iframe src="https://www.youtube-nocookie.com/embed/VlUD33RCzq8" title="YouTube video" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen loading="lazy"></iframe></div>
+
+      <p>It is VERY clear that Hurricane Erin was under-reported regardless of propaganda that History Revisionist David A. Hughes has spun up...</p>
+
+      <p>In 2011, Dr. Judy Wood was on the Theo Chalmers One Step Beyond TV show and he too was baffled as to the presence of Hurricane Erin on 9/11. Theo had previously lived in Manhattan during the <a href="https://en.wikipedia.org/wiki/Hurricane_Gloria" target="_blank" rel="noopener">1985 Hurricane Gloria</a> and remembered wall-to-wall TV coverage during that time and that the WTC was closed off, so he was surprised Erin didn’t get anywhere near that kind of media treatment.</p>
+
+      <div class="video-embed"><iframe src="https://www.youtube-nocookie.com/embed/WsOLCmDMyjg" title="YouTube video" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen loading="lazy"></iframe></div>
+
+      <p>Note also in their above discussion that Dr. Judy Wood emphasizes, as she has done many times, the possible connection the static electric field produced by Hurricane Erin (as confirmed by the 3 major airports surrounding Manhattan reporting thunder on 9/11) is similar to the static electric field that John Hutchison generates before interfering radio frequency waves. So it's no surprised that both Hurricane Erin and the Hutchison Effect is downplayed by the German Studies professor David Hughes...</p>
+
+      <hr>
+
+      <h2>9/11 Orphans: Buildings 3, 4, 5, and 6</h2>
+
+      <p>When the German Studies professor David A. Hughes first stated last year that <a href="https://dhughes.substack.com/p/reflections-on-my-visit-to-the-world" target="_blank" rel="noopener">"falling steel offers a powerful enough explanation"</a> for the destruction of Buildings 3, 4, 5, and 6, I knew right away he was literally just lying.  He further emphasizes this when in his <a href="https://davidahughes.net/reply-to-9-11-revisionist/" target="_blank" rel="noopener">recent article</a>, while acknowledging that Building 3 and 4 could have been affected by exotic weaponry, yet never showing any of their photos, and somehow concluding that the "general damage pattern to adjacent buildings is consistent with falling debris".</p>
+
+      <img loading="lazy" class="post-image" src="https://files.peakd.com/file/peakd-hive/mes/23w3CqoJh4uqw7YF5hCEuqew1gb9BzzuayBrXzsA9bdNJ13ogKmLGQFtK821A6SnGSKJX.png" alt="">
+
+      <img loading="lazy" class="post-image" src="https://files.peakd.com/file/peakd-hive/mes/23u6WzB2wsth1RYjSWmXCKWK5pHPCGdDweo8i8m9pNELyvxBTbiC7zCfQZ5FjKYC1nUc5.png" alt="">
+
+      <p>Here are the photos of Building 3 and 4 which the German Studies Professor leaves out. They are self explanatory. Most of Building 3 and 4 are literally gone. Building 3 has just a tiny stub remaining, which may even be larger than the remaining rubble pile of the South Tower!</p>
+
+      <img loading="lazy" class="post-image" src="https://files.peakd.com/file/peakd-hive/mes/Ep1YGcrwnGtpqL7ZxQfttgLPLxWAS6NCbEJPyk1PDVg7HukLijc6tL7UehUVyDeAooR.jpg" alt="">
+
+      <p>Most of Building 4 is literally sliced off to ground level. This may be due to the <a href="https://t.me/meslinks/33858" target="_blank" rel="noopener">South Tower's "Tipping Top"</a> turning into a giant dust ball falling on and dustifying most of Building 4.</p>
+
+      <img loading="lazy" class="post-image" src="https://files.peakd.com/file/peakd-hive/mes/EoeFQrgasUYjbEvJCLxoeyvW2aN5CpkSHZexwuKDanKNgYwHnsnuA2cu1SdxzY9XmT3.jpg" alt="">
+
+      <img loading="lazy" class="post-image" src="https://files.peakd.com/file/peakd-hive/mes/EpJaZGa51sVbm22wTxzY34HkPqpmQwpAiA94tsnCxq7SexqdZorrNVSJbyX3Aup85Dg.jpg" alt="">
+
+      <p>Thus, a more accurate statement is "falling giant dust ball of  dustifying steel" caused most of Building 4 to literally disappear (turn to dust).</p>
+
+      <p>Hughes continues on his propaganda tour de force, this time by showing a diagram of where this mystical "falling steel" of the Twin Towers would've landed.</p>
+
+      <img loading="lazy" class="post-image" src="https://files.peakd.com/file/peakd-hive/mes/23y94V7ZHEZgV8VR8bCHriUshjSbEJ3fCLNkLGDYLKAQBEZx9XegBwUDaK6jsfz3oKtyd.png" alt="">
+
+      <p>The Liberty Plaza sphere was literally at the intersection of the "falling steel" of both towers, yet it was not crushed. Rather than Hughes realizing that this alone disproves this "falling steel" hypothesis, he makes one of the stupidest statements ever uttered by a human by stating the Sphere wasn't crushed because it was "very low to the ground"...</p>
+
+      <img loading="lazy" class="post-image" src="https://files.peakd.com/file/peakd-hive/mes/245TQNRMGFr6uoLSwCKkf6KKHZ4hrSFaxoU9FuX8hM6xwwPsdzpHt4Kpye6LQPDD37x4z.png" alt="">
+
+      <p>Not only was the Sphere not crushed, it also literally towers over the rubble even though it was at ground level! Even a <a href="https://t.me/meslinks/30357" target="_blank" rel="noopener">lamp post survived</a> uncrushed.</p>
+
+      <img loading="lazy" class="post-image" src="https://files.peakd.com/file/peakd-hive/mes/243WRxhboS3Pje1RhecxX3gW3ykJ25Pq2RGHads6zHcXgfFtfm5hDxUbsttFwGRndWYaf.jpg" alt="">
+
+      <img loading="lazy" class="post-image" src="https://files.peakd.com/file/peakd-hive/mes/23vhyWjiYZndZrEqQhu9LvGUCV37weWMY3qHL9tagqNWjXkfP4nKf6cMqew4fNvhpicZW.jpg" alt="">
+
+      <img loading="lazy" class="post-image" src="https://files.peakd.com/file/peakd-hive/mes/23wqi9KLFDX1LLYxeJfVvEh1udmvGmBojuinCa9bHHaDp57wubAt8RKsNKvveMnR3FvKa.jpg" alt="">
+
+      <img loading="lazy" class="post-image" src="https://files.peakd.com/file/peakd-hive/mes/EoyPbVLRW2SQpPkuzX2T5xKodzYEVdGvTitr1SG5VzpNQfCeRp97ZYpjtKLTeiqkkk4.jpg" alt="">
+
+      <p>The above photos alone are enough to show that David A. Hughes is a pathetic spook. In fact, Firefighters and first responders thought the lamp post was the top of the 300 ft telecommunications mast from the North Tower!</p>
+
+      <div class="video-embed"><iframe src="https://www.youtube-nocookie.com/embed/a5KPPCKQY-g" title="YouTube video" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen loading="lazy"></iframe></div>
+
+      <blockquote>
+<p><strong><em>"110 stories at ground level."</em></strong></p>
+</blockquote>
+
+      <p>And speaking of ground level, Building 6 had a giant hole literally scooped out to ground level. It was 8 floors tall and <a href="https://t.me/meslinks/31903" target="_blank" rel="noopener">each floor is visible</a> from inside the hole. Remember that ground level is lower to the ground than the "very low to the ground" Sphere.</p>
+
+      <img loading="lazy" class="post-image" src="https://files.peakd.com/file/peakd-hive/mes/23w2igFk8YaKrUmkShXsf4k4vVPpNevn36Nx7xMX4QdZBWLMZ3xhEdbutm15BTPQ4JJdZ.jpg" alt="">
+
+      <p>Look at this photo <a href="https://t.me/meslinks/32868" target="_blank" rel="noopener">VERY closely of Building 6</a> and compare it with the GIANT North Tower above it.</p>
+
+      <img loading="lazy" class="post-image" src="https://files.peakd.com/file/peakd-hive/mes/48QRDYLhBesAx4bqeNq7VRzL78V6iwNg7FjTKcaMQf8cWeYKzGYTYYAo3yCE7hLafj.jpg" alt="">
+
+      <img loading="lazy" class="post-image" src="https://files.peakd.com/file/peakd-hive/mes/244obBy61PTtbtQ9U76xGSzhKVHk6q9CB7576wJLu65hDRZewRhCQihaX1MYWtQN7wbUa.jpg" alt="">
+
+      <p>Building 6 has a giant hole in it, yet still towers over the remains of the North Tower! Note the exterior lobby columns of the North Tower are still standing vertically. If "falling steel" didn't crush or even land on top of the lobby columns, they sure won't crush adjacent buildings. See my <a href="https://peakd.com/hive-113182/@mes/qftnfdqq" target="_blank" rel="noopener">compilation of videos and photos</a> of the exterior lobby columns still at ground level!</p>
+
+      <img loading="lazy" class="post-image" src="https://files.peakd.com/file/peakd-hive/mes/23xejyRgRdSYSxBMSuDSW7JuG1XQj6nA6dQghrsnGtneDAHuf2b5Zai1sw4rE6ra5aiHz.png" alt="">
+
+      <div class="video-embed"><iframe src="https://www.youtube-nocookie.com/embed/baYFiYDoIQ8" title="YouTube video" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen loading="lazy"></iframe></div>
+
+      <p>Interestingly, even <a href="https://www.fema.gov/pdf/library/fema403_ch4.pdf?ref=davidahughes.net" target="_blank" rel="noopener">FEMA literally states</a> that Building 6 had a giant hole to ground level!</p>
+
+      <img loading="lazy" class="post-image" src="https://files.peakd.com/file/peakd-hive/mes/23tcCUTDLvE9d7W4J4ty7RCU2Mx1kejFDa3SPWDwdRHXpMmShJKHSHU1uPsbKKFWZGG2Q.jpg" alt="">
+
+      <p>How does Mr. Hughes respond to this irrefutable evidence of exotic damage to adjacent buildings, especially Building 6? He draws a non-sensical line around a "waterfall of steel" to GROUND LEVEL of Building 6, and accuses 9/11 Revisionist of "ignoring evidence"...</p>
+
+      <img loading="lazy" class="post-image" src="https://files.peakd.com/file/peakd-hive/mes/23zvKpU5YXim6s2Cx9SBH7uzctgs4zffs6D88ny5CfS7mkiFy6dUwAmHHy4N65SfJrT4f.png" alt="">
+
+      <blockquote>
+<p><strong>Mr. Hughes is not a serious person…</strong></p>
+</blockquote>
+
+      <p><a href="https://t.me/meslinks/31829" target="_blank" rel="noopener">Building 5</a> had less damage to it then the other orphans, but it still had what appears as <a href="https://youtu.be/CrzNeZUp0tU?t=9510" target="_blank" rel="noopener">circular holes</a> cut out from the top. <a href="https://t.me/meslinks/33586" target="_blank" rel="noopener">Building 6</a> also shows signs of these cylindrical holes too!</p>
+
+      <img loading="lazy" class="post-image" src="https://files.peakd.com/file/peakd-hive/mes/23tc61uaGd5U2SQZQia6kYyA9893MvVthy4w6rYdM2U14Xum8FNjHbA7PppbfBruXHDsJ.jpg" alt="">
+
+      <img loading="lazy" class="post-image" src="https://files.peakd.com/file/peakd-hive/mes/23vi25n2z7JuZfPWg7a6eWmoFMYwKEAW5U4Q2CGMPpXEbM4z4w5HRYQV7aeksDBXqMa77.png" alt="">
+
+      <blockquote>
+<p>Note that just because there appears to be vertical cylindrical holes, it does not <strong>necessarily</strong> mean the "weapon" was from above, especially since there were <a href="https://youtu.be/FuN-MIyIpv4?t=1213" target="_blank" rel="noopener">many holes in glass windows</a>.</p>
+</blockquote>
+
+      <img loading="lazy" class="post-image" src="https://files.peakd.com/file/peakd-hive/mes/EowJ72kQ8ERKyhonHrsFdDGUrbFSf1z3swNUW8LzZEzEWJgN83ijZ5WPPLa8cJKwjSq.jpg" alt="">
+
+      <div class="video-embed"><iframe src="https://www.youtube-nocookie.com/embed/9T4hWCRvUSM?start=120" title="YouTube video" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen loading="lazy"></iframe></div>
+
+      <p>Here are some more photos of Building 5.</p>
+
+      <img loading="lazy" class="post-image" src="https://files.peakd.com/file/peakd-hive/mes/23wMYksP9XfFfGwf5see3K27shn2uAHpYBTKawcs8WAJKzp2126hqsJHKurUJTvh7f3Vr.jpg" alt="">
+
+      <blockquote>
+<p><a href="https://t.me/meslinks/28997" target="_blank" rel="noopener">Telegram</a>: Note the "wheat chex" exterior steel columns inside the left wall of Building 5.</p>
+</blockquote>
+
+      <img loading="lazy" class="post-image" src="https://files.peakd.com/file/peakd-hive/mes/EoAZGJgZ1HcC9KSrAEHSCxcSuwytDtmt6dJaye5jzy2NTJ2UmdwJsLTjhxNShwhtmFV.jpg" alt="">
+
+      <blockquote>
+<p><a href="https://commons.wikimedia.org/wiki/File:FEMA_-_4237_-_Photograph_by_Michael_Rieger_taken_on_09-29-2001_in_New_York.jpg" target="_blank" rel="noopener">Wikimedia</a></p>
+</blockquote>
+
+      <img loading="lazy" class="post-image" src="https://files.peakd.com/file/peakd-hive/mes/23yd8JZPbRDzpdmDNNfND7NCp6uFwn26hvnHnhGLypjHLt1CdQzNCfxrN357T9jQGvRWf.png" alt="">
+
+      <blockquote>
+<p><a href="https://www.fema.gov/pdf/library/fema403_ch4.pdf" target="_blank" rel="noopener">FEMA</a>: Note the apparent cylindrical slicing off of Building 5.</p>
+</blockquote>
+
+      <img loading="lazy" class="post-image" src="https://files.peakd.com/file/peakd-hive/mes/23tc3nfvpsWL8GZfpg6Whfr1ickNSh3WMFzh9GbGAv5ZMTpB5haLmeov71sf7wLxybTfp.png" alt="">
+
+      <blockquote>
+<p><a href="https://en.wikipedia.org/wiki/5_World_Trade_Center_(1972%E2%80%932001)" target="_blank" rel="noopener">Wikipedia</a>: Note the large 3/4 circular dark cutout of the roof of Building 5.</p>
+</blockquote>
+
+      <p><a href="https://www.fema.gov/pdf/library/fema403_ch4.pdf?ref=davidahughes.net" target="_blank" rel="noopener">Inside views of Building 5</a> show similar large voids apparently to ground level, just like in Building 6.</p>
+
+      <img loading="lazy" class="post-image" src="https://files.peakd.com/file/peakd-hive/mes/23y8wp7AGAkSdnzkxT35DUUvfjBfg2fvRBfcRWMhGcV5xXgQFqnJRJy5cVQfTKYAjY9o1.png" alt="">
+
+      <p>The internal damage to Building 5 is also very puzzling, with entire floors seemingly gone.</p>
+
+      <img loading="lazy" class="post-image" src="https://files.peakd.com/file/peakd-hive/mes/23uQrSJDbfBfF3v7gEf2BQzRL2yfdeTEmhLsKzqHLn1eTjLTaW6iibbweqAzmgC1EoPpt.png" alt="">
+
+      <p>Even though much of Building 5 was fuming (dustifying) on 9/11, large portions were left intact and especially unburnt, such as a bookstore within.</p>
+
+      <img loading="lazy" class="post-image" src="https://files.peakd.com/file/peakd-hive/mes/EpvjsCGK9ZFg4eAPp9LvdqVG9MeCDGCNny59KJnRstPiLMGpoHiwN3iSYATJMrvj72Y.png" alt="">
+
+      <img loading="lazy" class="post-image" src="https://files.peakd.com/file/peakd-hive/mes/23xL3A1MMWyYhauJNAaac6e24US273eP6fm8vRaskRS89GMSyG5rZaG1CGUzJoDsWCWs9.png" alt="">
+
+      <p>While the damage to Building 5 isn't as extensive as in Buildings 3, 4, 5, and 6, it nonetheless shows many signs of exotic damage. "Falling steel" on its own does not account for all of the damage, and even the portion with the "wheat chex" being present does not mean the damage was done purely on kinetic means. After all, much of the steel was turning to dust as it fell, so even such falling steel may produce exotic effects (such as the Tipping Top of the South Tower turning to a giant dust ball and falling on Building 4, thus nearly completely dustifying it).</p>
+
+      <p>Interestingly, there are other examples of "falling steel" which didn't do the expected damage. Such as the <a href="https://t.me/meslinks/32923" target="_blank" rel="noopener">wheat chex steel panel falling on the mainly glass roof</a> of the Winter Garden Atrium building, yet hardly even denting it! Was it levitated there?</p>
+
+      <img loading="lazy" class="post-image" src="https://files.peakd.com/file/peakd-hive/mes/23tbqC1vzRyB3DxzakkQxFHPpe7hExccBU3jUwysA6ZHpG96odQ47xXZm1Teee1SuuRFk.jpg" alt="">
+
+      <img loading="lazy" class="post-image" src="https://files.peakd.com/file/peakd-hive/mes/23wX5UVFEHZ98R8KPbxFsT32zFRLea17ZFWramBCRf8epZQktR3JCzY8rKxu4myUp8HTd.jpg" alt="">
+
+      <img loading="lazy" class="post-image" src="https://files.peakd.com/file/peakd-hive/mes/242NjUKaxpyqwph8xTkajHwLxb9hhiaWLEa4w1BbKk2rhYDz3onjnznqf9nmGYzqDDBaY.jpg" alt="">
+
+      <img loading="lazy" class="post-image" src="https://files.peakd.com/file/peakd-hive/mes/EoAaDpTKbksie4NKYFjKviKhQqMRZSJSzkkTQ1nzo8Uvo8Thtv6iPzRYB2YWw2RpNX1.jpg" alt="">
+
+      <p>So much for the German Studies Professor's "falling steel" hypothesis...</p>
+
+      <hr>
+
+      <p>Given that the general damage to Buildings 1, 2, 3, 4, 5, 6, and 7 are all exotic, the question remains as to why the German Studies Professor Hughes is trying to downplay the damage the majority  of the buildings (4 out of 7)? Combined with his cover-up of the under-reported Hurricane Erin, it appears he just wants to make the argument that Dr. Judy Wood is <em>"probably correct about the Twin Towers being destroyed by an exotic weapon, but she is wrong about everything else. So, listen to me, the German Studies professor, as I am the new self-anointed Minister of Truth."</em></p>
+
+      <h4>Hutchison Effect vs 9/11</h4>
+
+      <p>The <a href="https://mes.fm/hutchison">Hutchison Effect</a> is a well documented phenomena named after Canadian experimental scientist John Hutchison, whom I had the pleasure of visiting twice these past few years, which involves the levitation, fracturing, jellification, sparking, fuming, and warping of all kinds of materials while using very little power and generating very little heat. Many such phenomena are present in 9/11 as well!</p>
+
+      <p>Dr. Judy Wood was the first to publicly <a href="https://www.doctorjudywood.com/articles/JJ/" target="_blank" rel="noopener">connect 9/11 to the Hutchison Effect</a>.</p>
+
+      <img loading="lazy" class="post-image" src="https://files.peakd.com/file/peakd-hive/mes/EprWuHoXCDwZ39xK1DBYVU67t74WJTpSfP8BChw4FGhbaVucQnG1uaFFFj4jPg2obZE.png" alt="">
+
+      <img loading="lazy" class="post-image" src="https://files.peakd.com/file/peakd-hive/mes/EqBfZxZ8HHvQVUYcaUA9Q2gTHhoBzGqYoTetHFfYSnUoJiMSdX5pwobhW8YWj3cWZJH.png" alt="">
+
+      <img loading="lazy" class="post-image" src="https://files.peakd.com/file/peakd-hive/mes/Eq5GqFeMqPexngPhTgcnG81jF6gM8ioxLqtyaAasVrFSuqN5R8qdviaRaDSMPvZEJ6A.png" alt="">
+
+      <img loading="lazy" class="post-image" src="https://files.peakd.com/file/peakd-hive/mes/23zbmL1NL24oPokHampCk1xcFN3op65hZjdUZ87MKtYHhPSMfwSL6FbXjtFeX5bCUoYon.png" alt="">
+
+      <p><a href="https://x.com/MathEasySolns/status/1752373927840772263" target="_blank" rel="noopener">John Hutchison even made a sworn affidavit</a> in support of Dr. Judy Wood's legal case against the private contractors hired by NIST to investigate the destruction of 9/11. John Hutchison literally states (under oath) that 9/11 was done by a scaled up Hutchison Effect!</p>
+
+      <img loading="lazy" class="post-image" src="https://files.peakd.com/file/peakd-hive/mes/Eo2AydLGk9ZxWo6MWCkzYYcDqut1Vu6SK8iFMLG1vN6iCFhoJ7Vg9mkYA81LMKH7E8P.png" alt="">
+
+      <img loading="lazy" class="post-image" src="https://files.peakd.com/file/peakd-hive/mes/23viTbagjTa7uwByoRjW6epchy7NTsJNSGsNeLYtSkvaDM8jzw62HAXFSxQEyqNzxtm8g.png" alt="">
+
+      <p>Despite the large body of evidence showing the similarities between the Hutchison Effect and 9/11, the German Studies professor David Hughes says he is "agnostic" about it and points to the smoothly bent 9/11 steel beam as having fractured on the outside.</p>
+
+      <img loading="lazy" class="post-image" src="https://files.peakd.com/file/peakd-hive/mes/244V6QNMjHRnmPd7diSKT8fAQbbnAYYvDZ5Fx4N1WjSLS9mCgry6RoEXB7s1ToKMYw1DV.png" alt="">
+
+      <img loading="lazy" class="post-image" src="https://files.peakd.com/file/peakd-hive/mes/2432SVM42JHdKqUvpFwWuKdPZZL37MgnyE25MH63fgX4GDeZkory6t461mzHAicMgyB9z.png" alt="">
+
+      <p>This, again, shows the German Studies professor is literally trying his best propaganda techniques to downplay the use of exotic technology used on 9/11. The steel beam is smoothly bending on the inside, and does a full 180 degrees. Why is he fixated on the outer fracturing? How would one bend a giant steel beam 180+ degrees without any sign of heat or fracturing at the bend? And more importantly why is he <strong>insinuating</strong> that Dr. Judy Wood is purposely misrepresenting the comparison between 9/11 and the Hutchison Effect by <strong>supposedly</strong> hiding the fractured end of the bent steel beam?! Dr. Judy Wood shows the steel beam from both sides on Page 470 of her book.</p>
+
+      <img loading="lazy" class="post-image" src="https://files.peakd.com/file/peakd-hive/mes/23ydR5FgefkBCusAmbTNpzy26Qkgc1RNGe7G6hB2T5rKo4zYdTSFjaN3a83Xn9G3zJMUL.png" alt="">
+
+      <p>And on the previous page, on Page 469, she shows a comparison between a Hutchison Effect molybdenum rod smoothly bent, alongside two 9/11 steel beams smoothly bent without any fracturing.</p>
+
+      <img loading="lazy" class="post-image" src="https://files.peakd.com/file/peakd-hive/mes/23zSDXGg5TWpZ9e4DjGdabahsphxLRLXhLDjddfBEVCTMu7B9pSM4B5fcPtdGjYK1jiq1.png" alt="">
+
+      <p>Furthermore, there are many <a href="https://peakd.com/hive-113182/@mes/ndloyfuv" target="_blank" rel="noopener">other examples of bent steel on 9/11</a> which have no fracturing. The first 4 photos show steel beams in the uncrushed basement floors literally behave like jelly and swoop downwards!</p>
+
+      <img loading="lazy" class="post-image" src="https://files.peakd.com/file/peakd-hive/mes/23ywpnGoePbw9bU6i1KFDMN5hzgxJHq6NnyDzNRRACykqykEzKdDTMbw5sDpyUTsYbgwo.png" alt="">
+
+      <img loading="lazy" class="post-image" src="https://files.peakd.com/file/peakd-hive/mes/23yJGTXvfpm7e6pffpKkUEaKeHvGx4DRgJmTi2V1UpDzo5s6yviXYFqFwwuuq96uDHZSx.png" alt="">
+
+      <img loading="lazy" class="post-image" src="https://files.peakd.com/file/peakd-hive/mes/EoptRcFgVkvVE9fTPUyS5y5LFkZozQgUgMYa1Jj6QFfawLdaDbPrkx5pzcx9Jp47wPH.png" alt="">
+
+      <img loading="lazy" class="post-image" src="https://files.peakd.com/file/peakd-hive/mes/23ywpnEkWsgdsAffBkpB2vgWMaFiov4UMGd2fQLQ5TG19Fuv5b1yvrJiZ9ekgeVTGqrFb.png" alt="">
+
+      <p>The photo below is my favorite photo, and shows a super-thick steel beam literally bend completely like a horseshoe! Note also the complete <a href="https://t.me/meslinks/31730" target="_blank" rel="noopener">"rustification"</a> present on it.</p>
+
+      <img loading="lazy" class="post-image" src="https://files.peakd.com/file/peakd-hive/mes/EpT5Zf9RwRLfQXGx45raZErcwS6D9S9abDKQSYoxGsy2KnSsWrjUMVYevDRjP7LRyhL.png" alt="">
+
+      <p>Lastly, here is a smoothly twisted 30 foot, 1,900 pound steel beam from the Beverly Hills 9/11 Memorial Garden <a href="https://t.me/meslinks/34049" target="_blank" rel="noopener">compared with a twisted wrench</a> Hutchison Effect sample.</p>
+
+      <img loading="lazy" class="post-image" src="https://files.peakd.com/file/peakd-hive/mes/23xek3qo48QodzuLcvVvgFQwqX2kn1JqZFmgcz4xosP3oMH64wdVkMujxNHkoHQiakFQG.jpg" alt="">
+
+      <p>It's one thing for the German Studies professor to claim to be "agnostic" about the connection between the Hutchison Effect and 9/11, it's another thing entirely to make misleading, and downright pathetic lies, about Dr. Judy Wood and her work.</p>
+
+      <hr>
+
+      <h2>Magnetometer Data</h2>
+
+      <p>Throughout the events of 9/11, there were MANY electromagnetic anomalies, glitches, camera blackouts, and video interference. See my 1.5 hour compilation of such phenomena.</p>
+
+      <div class="video-embed"><iframe src="https://www.youtube-nocookie.com/embed/FuN-MIyIpv4" title="YouTube video" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen loading="lazy"></iframe></div>
+
+      <p>Given that there was a giant Hurricane Erin off the East Coast on NYC on the morning of 9/11, which produces a large electric field, and the fact that most of the WTC was literally turned to dust using advanced cold directed energy technology akin to the Hutchison Effect, then it would not be surprising that Earth's magnetic field may be affected as well.</p>
+
+      <p>The German Studies professor and "coincidence theorist" David A. Hughes even points out that Hurricane Erin's wind speed and pressure was constant for about 24 hours as Erin was closest to NYC on 9/11, yet calls all of this just a "coincidence".</p>
+
+      <img loading="lazy" class="post-image" src="https://files.peakd.com/file/peakd-hive/mes/23yTowu9DJ43aigfYGRUkCkzrJ5GVVFBZxrbswcEMV1PsFEg7ipX7qcDj5YRFhsFsQS8a.png" alt="">
+
+      <p>This constant, controlled environment matches up exactly with the <a href="https://t.me/meslinks/27119" target="_blank" rel="noopener">fluctuations of Earth's magnetic field</a>.</p>
+
+      <img loading="lazy" class="post-image" src="https://files.peakd.com/file/peakd-hive/mes/23tHbFNg2YgSPvJay85TFbiCndqW9EumFVn6PgrbGh9TvwVvRuWH8aiqmenJd6TCDmeMg.jpg" alt="">
+
+      <img loading="lazy" class="post-image" src="https://files.peakd.com/file/peakd-hive/mes/23tmmEVQYTt2HAtqwkbLY6ifzBZXahGM4sGkY9T1HWiTFhPHYzEZCCmiRhovayJ6Dy3Y6.jpg" alt="">
+
+      <p><a href="https://web.archive.org/web/20081001105455/http://www.drjudywood.com/articles/erin/mpics/H5.jpg" target="_blank" rel="noopener">Zooming into 8:46 AM</a>, exactly when the North Tower got its hole, there is a noticable spike in Earth's magnetic field!</p>
+
+      <img loading="lazy" class="post-image" src="https://web.archive.org/web/20081001105455/http://www.drjudywood.com/articles/erin/mpics/H5.jpg" alt="">
+
+      <p>On Page 415 of Dr. Judy Wood's book, she outlines how Earth's magnetic field starts to deviate the most at exactly when the North Tower goes "poof" (i.e. it's final dustification sequence and during the gradual dustification of Building 7 for 7+ hours.  At around the time that Building 7 falls quietly, the magnetic field readings reset back closer to prior readings.</p>
+
+      <img loading="lazy" class="post-image" src="https://files.peakd.com/file/peakd-hive/mes/23tSz3RpQdy1RY8RiGU7VZJAxRS4qFEyvTn4EeryJjK1S5y9KxEXYJadX4SvnBKJknRrH.png" alt="">
+
+      <p>This is also illustrated in my video below.</p>
+
+      <div class="video-embed"><iframe src="https://www.youtube-nocookie.com/embed/Yz4hhbsWNks" title="YouTube video" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen loading="lazy"></iframe></div>
+
+      <p>The dustification of Building 7 is shown my video below as well.</p>
+
+      <div class="video-embed"><iframe src="https://www.youtube-nocookie.com/embed/YCtfQJAepfU" title="YouTube video" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen loading="lazy"></iframe></div>
+
+      <p>Interestingly, on Page 422 and 423 of Dr. Judy Wood's book, she outlines how Hurricane Erin's path coincided with the <a href="https://en.wikipedia.org/wiki/International_Geomagnetic_Reference_Field" target="_blank" rel="noopener">International Geomagnetic Reference Field (IGRF)</a> -15 degrees declination before abruptly turning East on 9/11. The IGRF is a standardized mathematical description of Earth's large-scale varying magnetic field and fitted to measured magnetic field data. A <a href="https://inleo.io/threads/view/askrafiki/re-mes-mmuy8pzq" target="_blank" rel="noopener">-15° declination means</a> that magnetic north is 15° west of geographic north that that specific location on Earth.</p>
+
+      <blockquote>
+<p>For reference, you can view 2025's Declination (D) data in Mercator Projection through this link: <a href="https://wdc.kugi.kyoto-u.ac.jp/igrf/index.html" target="_blank" rel="noopener">International Geomagnetic Reference Field (IGRF-14)</a>.</p>
+</blockquote>
+
+      <img loading="lazy" class="post-image" src="https://files.peakd.com/file/peakd-hive/mes/23tSz8J2EzYHXGKZrGU6y9xT4qHcYFwhCaXmJWdufyNGkqFxs9SnGGneu61iv2Mm5tLeX.png" alt="">
+
+      <img loading="lazy" class="post-image" src="https://files.peakd.com/file/peakd-hive/mes/23tcNs53jjqFjfn5S5uSCYoYz5vNQd6zLWRhEWo6VfvGr4iLL6H2dxSxbsHhBWUajaHC1.png" alt="">
+
+      <p>This data further adds to the possibility that the overall events of 9/11 influenced or were influenced by Earth's magnetic field.</p>
+
+      <p>How does the German Studies professor tackle (spin) all of this data? He accepts that Earth's magnetometer activity on 9/11 was significantly more than the 2 days prior, picks a random day from 2019 showing mid-day magnetic field fluctuations, and points to big spikes on the morning of September 12, 2001. In other words, he is merely handwaving away the fact that 9/11 involved the coinciding of a giant Hurricane, fluctuations in Earth's magnetic field beginning at precisely the time of first "plane" impact, beginning of largest deviation when the North Tower goes "poof", and resets after Building 7 falls quietly.</p>
+
+      <img loading="lazy" class="post-image" src="https://files.peakd.com/file/peakd-hive/mes/23sxovdWzwy4bsYqnnVcSLW5iYMwfTLSCJgfgpyy9UAoRf9SUSgHAKcHUNYQV2L6W5g54.png" alt="">
+
+      <p>The Earth's magnetic field fluctuates according to a variety of factors, including time of day, weather activity, and even interactions with the cosmic / space environment. Pin-pointing the cause of each specific "random" fluctuation for any given day is a difficult task, but to casually dismiss the connection to the extraordinary events of 9/11 (which involved extraordinary advance technology) is ludicrous.</p>
+
+      <p>Interestingly, Hughes points out the electromagnetic glitches captured in 9/11 footage, so it makes his casual hand-waving dismissal of the possible significance of Earth's magnetic field fluctuations more telling.</p>
+
+      <img loading="lazy" class="post-image" src="https://files.peakd.com/file/peakd-hive/mes/23tvaMRqhDKRoxUiV9QBNPJp85q7pFDyNEwigpiP5KQVSjMPnrBVR53uJBb1aWmmusJpY.png" alt="">
+
+      <hr>
+
+      <h3>You Don't Have to Use All the Data You Collect</h3>
+
+      <p>In German Studies professor David Hughes' <a href="https://dhughes.substack.com/p/in-defence-of-judy-wood-0ce" target="_blank" rel="noopener">pathetic "defence"</a> of Dr. Judy Wood he ends his article with a large section titled "Limitations of Wood's Research" in which he downplays the EVIDENCE of Hurricane Erin and the magnetometer data that Dr. Judy Wood throughly compiled.</p>
+
+      <img loading="lazy" class="post-image" src="https://files.peakd.com/file/peakd-hive/mes/Eo4JkxtfdBadAqnb22HcLp3wrUZXP4AFDcz3Pps2cWqfxGVFbSeaDzgLWL1gtnqBwS3.png" alt="">
+
+      <p>Again, to emphasize, the German Studies professor calls collecting data a "limitation". How is collecting data and evidence a limitation?! Would it be better of Dr. Judy Wood simply remove the meticulous evidence she compiled??</p>
+
+      <p>But I (almost) have to give the German Studies professor a pass here because <strong>Hughes is clearly is NOT a scientist</strong>, let alone a good one.</p>
+
+      <p>To quote the actual scientist Dr. Judy Wood:</p>
+
+      <blockquote>
+<p>"Every good scientist knows you can't use data you don't have, and you don't have to use all the data you do have."</p>
+</blockquote>
+
+      <p>Collecting data is NEVER a limitation, and the more one collects the better at getting to the truth of the matter. So even IF the giant under-reported Hurricane Erin and the coinciding fluctuations of Earth's magnetic field turn out to be just giant "coincidences" (which they likely are not), it doesn't take away from the work of a good scientist. Just because data is collected, doesn't mean it has to be used, but one can not use data they don't have (such as Hughes' pathetic claim that Dr. Judy Wood says Erin was a literal state secret).</p>
+
+      <p>The German Studies professor, and anyone reading this, can be reminded of what a good scientist is by buying an MES <a href="https://mes-store.creator-spring.com/listing/data-december-2025?product=1565" target="_blank" rel="noopener">coffee mug</a> or <a href="https://mes-store.creator-spring.com/listing/data-december-2025?product=46&amp;variation=2753" target="_blank" rel="noopener">shirt</a>!</p>
+
+      <img loading="lazy" class="post-image" src="https://files.peakd.com/file/peakd-hive/mes/23vsn7T5W4MzdgmmSVVX7Bxxi3D2FzjXvH3cr7Kzuf3GkjoZ8mK7Ni5uH9HEgb7p1ao43.png" alt="">
+
+      <hr>
+
+      <h2>David Hughes = Jim Fetzer 2.0</h2>
+
+      <p>The character that the German Studies professor David Hughes is portraying is not a new one but appears to be just a modern twist of the same one that James (Jim) Fetzer had played for decades. Jim Fetzer had started off pretending to support Dr. Judy Wood, much like David Hughes' "In Defense of Judy Wood" article, but then later switches up and unfairly criticizes her work.</p>
+
+      <p>Here is a 2007 video clip in which Fetzer speaks positively about Dr. Judy Wood.</p>
+
+      <div class="video-embed"><iframe src="https://www.youtube-nocookie.com/embed/iaxhW_Dyibo" title="YouTube video" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen loading="lazy"></iframe></div>
+
+      <p>Now compare the above clip with his more recent 2022 show on the <a href="https://www.jermwarfare.com/mini-nukes-brought-down-the-twin-towers/" target="_blank" rel="noopener">Jerm Warfare podcast</a>. Below are a <a href="https://t.me/meslinks/23160" target="_blank" rel="noopener">few clips of the podcast</a> in which Fetzer uses Dr. Judy Wood's photos and videos of dustification to instead argue for "mini nukes", while calling her the "mystical leader of a cult", and all while his faces literally appears to be melting. 😅</p>
+
+      <div class="video-embed"><iframe src="https://www.youtube-nocookie.com/embed/N8FNjn3ujao" title="YouTube video" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen loading="lazy"></iframe></div>
+
+      <p>Interestingly, Fetzer has been using the exact same "cult" language <a href="https://t.me/meslinks/33512" target="_blank" rel="noopener">since at least 2013</a>!</p>
+
+      <img loading="lazy" class="post-image" src="https://files.peakd.com/file/peakd-hive/mes/23tcJrFKTpi11TufkmCco3yz3xbUio4mgnaUgzpAP6ZAwbatkR3dofzWYnnZUa5o7rYxX.jpg" alt="">
+
+      <p>Just like Jim Fetzer, the German Studies professor David Hughes starts off by writing an article <a href="https://dhughes.substack.com/p/in-defence-of-judy-wood-0ce?utm_source=publication-search" target="_blank" rel="noopener">"In Defense of Judy Wood"</a>, but then includes a large section titled "Limitations of Wood's Research", which he uses for his bogus article covering up the significance of Hurricane Erin and the magnetometer data (and later downplaying the <a href="https://mes.fm/hutchison">well-documented Hutchison Effect</a>).</p>
+
+      <img loading="lazy" class="post-image" src="https://files.peakd.com/file/peakd-hive/mes/EoAh3TUaNgctVJzr9QZjm5NyWHxZjzQynd4sU4yGa2Hf3JC1cRWZhfkUqd6x7u4r4Lg.png" alt="">
+
+      <p>And then comes the slithering disinfo spook slip-up, as David Hughes copies the Fetzer playbook almost exactly by saying that 9/11 involved the use of "cold fusion mini nukes" because material appeared to "eject upwards and outwards" (according to his "logic", water boiling upwards means the heat source is always below... has he ever heard about the Sun?!). He also suggests that the "Dr. Judy Wood camp" is close-minded to the (disinfo) mini-nukes and thermite "camps".</p>
+
+      <div class="video-embed"><iframe src="https://www.youtube-nocookie.com/embed/0yG66sapVX8" title="YouTube video" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen loading="lazy"></iframe></div>
+
+      <p>Note that Hughes, like Fetzer, references <a href="https://jameshfetzer.org/tag/heinz-pommer/" target="_blank" rel="noopener">Heinz Pommer's mini-nukes</a> (disinfo nonsense – <a href="https://peakd.com/conspiracy/@mes/911truth-part-6-controlled-opposition-mini-nukes-building-7-ae911truth-hoax" target="_blank" rel="noopener">see my 6 hour video</a>) "theory" and states it has positive elements "besides the high temperature". So, Hughes is throwing in the word "cold fusion" in front of Fetzer's position of "mini nukes" essentially makes Hughes the new Fetzer 2.0.</p>
+
+      <p>In case there was any doubt, <a href="https://t.me/meslinks/33512" target="_blank" rel="noopener">Hughes uses the very same "cult" language</a> when describing the Dr. Judy Wood "camp" as does Fetzer!</p>
+
+      <img loading="lazy" class="post-image" src="https://files.peakd.com/file/peakd-hive/mes/23t8Cb16WiAL1A926ne4bd7ReUie65UFBgukkEdLQWJzLpsRevdSV7bzQ8VHYbiq2fHkd.jpg" alt="">
+
+      <img loading="lazy" class="post-image" src="https://files.peakd.com/file/peakd-hive/mes/23tSxBWsETGgk6oguf29fKchdFA8RFHLzA96hizgSC6q3eTBfabcqByj8VCDk8iMwcDf1.jpg" alt="">
+
+      <p>Thus, instead of realizing that the "Dr. Judy Wood camp" disagrees with himself because he is a disinfo spook spewing propaganda nonsense, Hughes plays the victim and only a "cult" can disagree with such a prestigious German Studies professor.</p>
+
+      <p><a href="https://youtu.be/OfT1Kh5S-_A?t=877" target="_blank" rel="noopener">Andrew Johnson accurately makes</a> the Hughes-Fetzer connection!</p>
+
+      <div class="video-embed"><iframe src="https://www.youtube-nocookie.com/embed/Ss791DR12mI" title="YouTube video" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen loading="lazy"></iframe></div>
+
+      <p>In the below clip, Andrew Johnson does a legendary roast of the German Studies professor, especially in his downplaying of the Hutchison Effect, Hurricane Erin, and Earth's magnetic field fluctuations!</p>
+
+      <div class="video-embed"><iframe src="https://www.youtube-nocookie.com/embed/5PiCyg_Ah3s" title="YouTube video" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen loading="lazy"></iframe></div>
+
+      <p>Note that Andrew mentions he (politely) proofread Hughes' article but didn't want to be rude in requesting changes such as asking him to include more about the Hutchison Effect. But why is Hughes reaching out to Andrew Johnson instead of reaching out directly to Dr. Judy Wood?! The article is about Dr. Judy Wood after all...</p>
+
+      <p>And now finally, I have to include a shoutout to an <a href="https://t.me/meslinks/33570" target="_blank" rel="noopener">MES subscriber Attila from Iran aka 29,000 Tons of Thermite</a> whom got notified of <a href="https://youtu.be/OfT1Kh5S-_A?t=877" target="_blank" rel="noopener">Andrew Johnson's video about Hughes</a>, and before he even watched it emailed yours truly to ask if I was right in calling David Hughes a spook as far back as last year!</p>
+
+      <img loading="lazy" class="post-image" src="https://files.peakd.com/file/peakd-hive/mes/Eo4Jo4pzZCwLfQg9wGVc4HP5CmwiNUgU2Ji6w2sGtiephYSncfcTuCcA8jZpucK7toh.jpg" alt="">
+
+      <blockquote>
+<p><strong>MES was right indeed...</strong></p>
+</blockquote>
+
+      <h3>Table Comparing Hughes to Fetzer</h3>
+
+      <p>Recently, <a href="https://www.checktheevidence.com/wordpress/2026/04/01/dr-david-a-hughes-dr-judy-wood-9-11-energy-the-hutchison-effect-and-hurricane-erin/" target="_blank" rel="noopener">Andrew Johnson has made an amazing table</a> comparing the <a href="https://www.datawrapper.de/_/kvZeS/" target="_blank" rel="noopener">similarities between Jim Fetzer and his modern counterpart in David Hughes</a>.</p>
+
+      <div class="table-wrap"><table class="post-table">
+<thead><tr><th>Fetzer</th><th>Hughes</th></tr></thead>
+<tbody>
+<tr><td>Invited me to join the 9/11 Scholars Group.</td><td>Invited me to give an extracurricular talk at his university.</td></tr>
+<tr><td>Referred to my articles in his discussions</td><td>Referred to my books</td></tr>
+<tr><td>Promoted Dr Wood’s research into DEW evidence/explanation for the destruction of the WTC.</td><td>Promoted Dr Wood’s research into DEW evidence/explanation for the destruction of the WTC.</td></tr>
+<tr><td>Disagreed about the use of Hutchison Effect-like technology in the WTC destruction and threatened Dr Wood.</td><td>Remained “agnostic” about use of Hutchison Effect-like technology in the WTC destruction.</td></tr>
+<tr><td>Was reluctant to discuss Hurricane Erin, claimed not to understand it etc (see ch 19 of “9/11 Finding the Truth”)</td><td>Stated he thought Hurricane Erin had “nothing to do” with the events of 9/11.</td></tr>
+<tr><td>Talked about <a href="https://911scholars.ning.com/profiles/blog/show?id=3488444%3ABlogPost%3A4426" target="_blank" rel="noopener">Dr Wood supporters being part of a cult</a></td><td>Responded to my comments about Hurricane Erin and Hutchison Effect under a heading “Evidence of Cult Thinking”</td></tr>
+<tr><td><a href="https://jameshfetzer.org/2013/08/an-open-letter-to-steven-jones-hard-evidence-supports-the-9-11-mini-nuke-hypothesis/" target="_blank" rel="noopener">Suggested micro or mini nuclear devices destroyed the towers.</a></td><td>Suggested one or more cold fusion mini nuke(s) destroyed the towers.</td></tr>
+<tr><td>Written output and number of interviews very high (relative to myself)</td><td>Written output and number of interviews very high (relative to myself)</td></tr>
+<tr><td>Played the victim following criticism for “not understanding” or mischaracterising the Hurricane Erin and Hutchison Effect Evidence.</td><td>Played the victim following criticism relating to Hurricane Erin and Hutchison Effect Evidence (stated we had “resorted to smears, innuendo, and ad hominem.”)</td></tr>
+</tbody></table></div>
+
+      <p>The similarities are striking! Thus, it is fitting that <strong>Hughes be now referred to as David A. Fetzer</strong>.</p>
+
+      <hr>
+
+      <h2>MES Correction</h2>
+
+      <p>After the <a href="https://davidahughes.net/a-guide-to-identifying-camp-2/" target="_blank" rel="noopener">recent bizarre article about Camps</a> (or Camping, or Band Camps??) by David Hughes, a <a href="https://t.me/meslinkschat/50954" target="_blank" rel="noopener">subscriber quoted the part</a> of his article discussing "nanothermite", confused as to whether Hughes is now suggesting "nanothermite" was used on 9/11. <a href="https://t.me/meslinks/33509" target="_blank" rel="noopener">My first impression</a> was that Hughes was indeed promoting "nanothermite", even with <a href="https://grok.com/share/c2hhcmQtMg_4003f1a8-bdef-4dc1-99d4-45c249f16f4c?rid=7efe0522-a41c-447e-8ae1-c7f5261a9bd5" target="_blank" rel="noopener">Grok AI agreeing with me</a>.</p>
+
+      <p>BUT after thinking over his statement, I have realized that is not what he meant, or at least that the meaning was purposely ambiguous (since Hughes is a verifiable spook). Nonetheless, the quote is listed below, with its meaning given by me in closed brackets and using Hughes' previous articles for context.</p>
+
+      <blockquote>
+<p>They <strong>[Camp 3]</strong> are mistrusted, not only by those in Camp 1, but also many in Camp 2, who are not yet ready to process their ideas. For example, to some in Camp 2 it might seem radical to claim that "nanothermite" destroyed the Twin Towers, or that "SARS-Cov-2" was generated in a Wuhan lab rather than being naturally occurring.</p>
+<blockquote>
+<p><strong>[Camp 2 is the general group that doesn't believe the official 9/11 or COVID narrative, but some within this group still question the 9/11 nanothermite or COVID man-made virus claims</strong>.</p>
+</blockquote>
+<p>The idea that classified military technology was used on "9/11" or that the entire "Covid-19 pandemic" was a psychological operation, rather than a genuine public health emergency, is simply a bridge too far in terms of awareness <strong>[for Camp 2]</strong>.</p>
+<blockquote>
+<p><strong>Classified military technology (DEW) or claim that COVID was not a real pandemic or health scare is outside of the scope of Camp 2, whom find the earlier listed narratives already far-fetched.</strong></p>
+</blockquote>
+</blockquote>
+
+      <p>Interestingly, this somewhat ambiguous statement (which I initially thought meant that Hughes was suggesting "Nanothermite" was a classified military technology too radical for Camp 2) might be considered a "linguistic version" of <a href="https://en.wikipedia.org/wiki/The_dress" target="_blank" rel="noopener">The Dress</a>. What color is it? To me it's <strong>gold and white</strong>, but to others its <strong>black and blue</strong>...</p>
+
+      <img loading="lazy" class="post-image" src="https://files.peakd.com/file/peakd-hive/mes/EpnDL1ijuDcgjrBzAsa2F15xkheZ8Adcnumy6SceMUk6VJ9YhEMHvbh5sZspQ7LRBpz.png" alt="">
+
+      <hr>
+
+      <h2>Bonus Material</h2>
+
+      <hr>
+
+      <h2>Hughes 2017 Bathtub Theory</h2>
+
+      <p>It was recently revealed to me that David Hughes had contacted Andrew Johnson as far back as 2017, discussing his plans to talk about "Hiding the Truth" and downplay Dr. Judy Wood's work by referring to a "Bathtub theory".</p>
+
+      <img loading="lazy" class="post-image" src="https://files.peakd.com/file/peakd-hive/mes/23tmmN8tjMqRTjz6fGdt4VNLpvSxeWndoHm96KUsLEwAqBFaJXAQFzP2Wb51zmGAFf1Xx.jpg" alt="">
+
+      <p>Interestingly, Hughes has come to his senses in <a href="https://dhughes.substack.com/p/in-defence-of-judy-wood-0ce" target="_blank" rel="noopener">his 2024 article</a> by acknowledging that the WTC bathtub slurry wall was barely damaged from the giant Twin Towers (since they mainly turned to dust above it).</p>
+
+      <img loading="lazy" class="post-image" src="https://files.peakd.com/file/peakd-hive/mes/EqfKHARBkcXuN3doZR2zZMTpGe53kg9DNvsx3j86o7Vs8h3Fh2oe4N8Xaw2HVAnMudj.jpg" alt="">
+
+      <p>It appears that Hughes' "bathtub theory" was a test run for his future propaganda efforts... 🤯</p>
+
+      <hr>
+
+      <p>I have also published this article on Substack: <a href="https://matheasy.substack.com/p/dear-dr-david-a-fetzer" target="_blank" rel="noopener">https://matheasy.substack.com/p/dear-dr-david-a-fetzer</a></p>
+
+      <hr>
+
+      <ul class="source-list">
+        <li>Hive: <a href="https://peakd.com/hive-113182/@mes/dear-dr-david-a-fetzer-j1c" target="_blank" rel="noopener">peakd.com/@mes</a></li>
+        <li>Substack: <a href="https://matheasy.substack.com/p/dear-dr-david-a-fetzer" target="_blank" rel="noopener">matheasy.substack.com</a></li>
+        <li>More 9/11 spooks: <a href="https://mes.fm/911spooks">mes.fm/911spooks</a></li>
+        <li>More 9/11 links: <a href="https://mes.fm/911">mes.fm/911</a></li>
+      </ul>
+
+      <hr>
+
+      <a class="source-link" href="https://peakd.com/hive-113182/@mes/dear-dr-david-a-fetzer-j1c" target="_blank" rel="noopener">Originally posted on the Hive blockchain &rarr;</a>
+      <div class="retrieved-note">Text and images retrieved from the Hive blockchain on October 24, 2026.</div>
+    </article>
+    <!-- FASTCOMMENTS-BLOCK: Comments toggle + lazy FastComments widget, see main_js/comments.js -->
+    <div id="comments-button" class="mes-comments-toggle">Comments</div>
+    <div id="comments-box" class="hide"><div id="fastcomments-widget"></div></div>
+<!-- MES-BOTTOM-AD -->
+<div class="mes-bottom-ad" data-ad-slot="1532113018" data-ad-mode="rect" style="clear:both;text-align:center;margin:1.5em auto 1.75em;min-height:330px;"><span style="display:block;font-size:11px;line-height:16px;color:#595959;margin-bottom:4px;">Advertisement</span><div class="mes-bottom-ad__slot" style="width:100%;min-height:310px;margin:0 auto;"></div></div>
+<!-- /MES-BOTTOM-AD -->
+<!-- MES-COLS-END --></div><aside id="mes-aside" class="mes-aside" data-aside-family="911" aria-label="More like this"><div class="mes-aside__sticky"><div class="mes-aside__ad" data-ad-slot="8429975111"></div><div class="mes-aside__head"><h2 class="mes-aside__title-h">More like this</h2><button type="button" class="mes-aside__flip" aria-label="Move this sidebar to the other side" title="Move sidebar to the other side">&#8644;</button></div><ul class="mes-aside__list"><li><a class="mes-aside__card" href="/osama-911-plans-parody"><span class="mes-aside__text"><span class="mes-aside__name">BREAKING: CIA Unseals Osama Bin Laden's Writing Pad with His 9/11 Plans</span><span class="mes-aside__tag">9/11 Truth</span></span></a></li><li><a class="mes-aside__card" href="/911-3d-print-pin"><span class="mes-aside__text"><span class="mes-aside__name">Niece Made MES a 9/11 Pin with Her 3D Printing Pen</span><span class="mes-aside__tag">9/11 Truth</span></span></a></li><li><a class="mes-aside__card" href="/911-wtc-vehicle-massacre"><span class="mes-aside__text"><span class="mes-aside__name">#911Truth Part 26: 9/11 WTC Vehicle Massacre by xdesmond</span><span class="mes-aside__tag">9/11 Truth</span></span></a></li><li><a class="mes-aside__card" href="/911"><span class="mes-aside__text"><span class="mes-aside__name">MES 9/11 Truth</span><span class="mes-aside__tag">Collection</span></span></a></li></ul></div></aside></div><!-- /MES-COLS-END -->
+
+    <script src="/main_js/comments.js?v=1.0.1" defer></script>
+
+
+    <hr>
+
+    <div id="footer" class="footer" role="contentinfo">
+      <div class="footer__item-container">
+        <div class="footer__item">
+          <a class="footer__text footer__text--title" href="/calculators">Calculators</a>
+        </div>
+        <div class="footer__item">
+          <a class="footer__text footer__text--title" href="/tools">Tools</a>
+        </div>
+        <div class="footer__item footer__item--extra-padding">
+          <a class="footer__text footer__text--title" href="/mobile-apps">Mobile Apps</a>
+        </div>
+        <div class="footer__item">
+          <a class="footer__text footer__text--title" href="https://mes.fm">MES.fm</a>
+        </div>
+      </div>
+      <a class="footer__text" href="/contact">Contact Us</a><span class="footer__separator"> | </span>
+      <a class="footer__text" href="/privacy-policy">Privacy Policy</a><span class="footer__separator"> | </span>
+      <a class="footer__text" target="_blank" href="/donate">Donate</a><span class="footer__separator"> | </span><a class="footer__text" target="_blank" rel="nofollow" href="https://matheasy.substack.com/">Subscribe</a>
+      <div class="footer__text--extra-info"><span class="footer__text footer__text--copyright">Copyright &copy; <span id="copyright-year">2013</span>&nbsp;Math Easy Solutions</span></div>
+    </div>
+    <script>document.getElementById('copyright-year').textContent = new Date().getFullYear();</script>
+  </div>
+
+  <div class="lightbox-overlay" id="lightboxOverlay" google-side-rail-overlap="false" role="dialog" aria-modal="true" aria-label="Image viewer">
+    <div class="lightbox-zoom-controls" id="lightboxZoomControls">
+      <button class="lightbox-zoom-btn" id="lightboxZoomOut" type="button" aria-label="Zoom out">&minus;</button>
+      <span class="lightbox-zoom-level" id="lightboxZoomLevel">100%</span>
+      <button class="lightbox-zoom-btn" id="lightboxZoomIn" type="button" aria-label="Zoom in">+</button>
+    </div>
+    <button class="lightbox-close" id="lightboxClose" type="button" aria-label="Close image viewer">&times;</button>
+    <img class="lightbox-image" id="lightboxImage" src="" alt="">
+    <div class="lightbox-controls" id="lightboxControls">
+      <button class="lightbox-prev" id="lightboxPrev" type="button" aria-label="Previous image">&#8249;</button>
+      <div class="lightbox-counter" id="lightboxCounter"></div>
+      <button class="lightbox-next" id="lightboxNext" type="button" aria-label="Next image">&#8250;</button>
+    </div>
+  </div>
+
+  <script>
+    const body = document.body;
+    const themeToggle = document.getElementById('themeToggle');
+
+    function setTheme(isDark) {
+      if (isDark) {
+        body.classList.add('dark');
+        body.classList.remove('light');
+        themeToggle.textContent = '☀️';
+        try { localStorage.setItem('theme', 'dark'); } catch (e) {}
+      } else {
+        body.classList.add('light');
+        body.classList.remove('dark');
+        themeToggle.textContent = '🌙';
+        try { localStorage.setItem('theme', 'light'); } catch (e) {}
+      }
+    }
+
+    let saved;
+    try { saved = localStorage.getItem('theme'); } catch (e) { saved = null; }
+    setTheme(saved !== 'light');
+
+    themeToggle.addEventListener('click', () => {
+      setTheme(!body.classList.contains('dark'));
+    });
+  </script>
+
+
+
+
+  <script>
+    // image-lightbox: click any figure in the written solution (or the thumbnail)
+    // to pop it out full-viewport, with prev/next via on-screen arrows and keys.
+    (function () {
+      var images = Array.prototype.slice.call(document.querySelectorAll('article img'));
+      if (!images.length) return;
+
+      var overlay = document.getElementById('lightboxOverlay');
+      var imageEl = document.getElementById('lightboxImage');
+      var controlsEl = document.getElementById('lightboxControls');
+      var counterEl = document.getElementById('lightboxCounter');
+      var closeBtn = document.getElementById('lightboxClose');
+      var prevBtn = document.getElementById('lightboxPrev');
+      var nextBtn = document.getElementById('lightboxNext');
+      var currentIndex = 0;
+
+      if (images.length < 2) { controlsEl.style.display = 'none'; }
+
+      function show(index) {
+        currentIndex = (index + images.length) % images.length;
+        var img = images[currentIndex];
+        imageEl.src = img.currentSrc || img.src;
+        imageEl.alt = img.alt || '';
+        counterEl.textContent = (currentIndex + 1) + ' / ' + images.length;
+      }
+      function open(index) {
+        show(index);
+        overlay.classList.add('open');
+        document.body.style.overflow = 'hidden';
+      }
+      function close() {
+        overlay.classList.remove('open');
+        document.body.style.overflow = '';
+      }
+
+      images.forEach(function (img, index) {
+        img.style.cursor = 'zoom-in';
+        img.addEventListener('click', function () { open(index); });
+      });
+      closeBtn.addEventListener('click', close);
+      prevBtn.addEventListener('click', function () { show(currentIndex - 1); });
+      nextBtn.addEventListener('click', function () { show(currentIndex + 1); });
+      overlay.addEventListener('click', function (e) { if (e.target === overlay) close(); });
+      document.addEventListener('keydown', function (e) {
+        if (!overlay.classList.contains('open')) return;
+        if (e.key === 'Escape') close();
+        else if (e.key === 'ArrowLeft') show(currentIndex - 1);
+        else if (e.key === 'ArrowRight') show(currentIndex + 1);
+      });
+    })();
+  </script>
+
+  <script>
+    // lightbox-zoom: adds +/- zoom and drag-to-pan on top of the existing
+    // image lightbox. Purely additive -- it only touches the #lightboxZoom*
+    // elements it creates itself, resetting whenever #lightboxImage's src
+    // or #lightboxOverlay's open state changes, so it works the same
+    // regardless of how this page's own lightbox open/prev/next logic runs.
+    (function () {
+      var overlay = document.getElementById('lightboxOverlay');
+      var imageEl = document.getElementById('lightboxImage');
+      var zoomOutBtn = document.getElementById('lightboxZoomOut');
+      var zoomInBtn = document.getElementById('lightboxZoomIn');
+      var zoomLevelEl = document.getElementById('lightboxZoomLevel');
+      if (!overlay || !imageEl || !zoomOutBtn || !zoomInBtn || !zoomLevelEl) return;
+
+      var ZOOM_STEPS = [1, 1.5, 2, 2.5, 3, 3.5, 4];
+      var zoomIndex = 0;
+      var panX = 0, panY = 0;
+      var dragging = false, dragStartX = 0, dragStartY = 0, panStartX = 0, panStartY = 0;
+
+      function applyTransform() {
+        imageEl.style.transform = 'translate(' + panX + 'px, ' + panY + 'px) scale(' + ZOOM_STEPS[zoomIndex] + ')';
+        imageEl.classList.toggle('zoomed', zoomIndex > 0);
+        zoomLevelEl.textContent = Math.round(ZOOM_STEPS[zoomIndex] * 100) + '%';
+        zoomOutBtn.disabled = zoomIndex === 0;
+        zoomInBtn.disabled = zoomIndex === ZOOM_STEPS.length - 1;
+      }
+
+      function zoomTo(index) {
+        zoomIndex = Math.max(0, Math.min(ZOOM_STEPS.length - 1, index));
+        if (zoomIndex === 0) { panX = 0; panY = 0; }
+        applyTransform();
+      }
+
+      function resetZoom() {
+        dragging = false;
+        imageEl.classList.remove('dragging');
+        zoomTo(0);
+      }
+
+      zoomOutBtn.addEventListener('click', function () { zoomTo(zoomIndex - 1); });
+      zoomInBtn.addEventListener('click', function () { zoomTo(zoomIndex + 1); });
+
+      imageEl.addEventListener('dblclick', function () {
+        zoomTo(zoomIndex > 0 ? 0 : 2);
+      });
+
+      imageEl.addEventListener('mousedown', function (e) {
+        if (zoomIndex === 0) return;
+        dragging = true;
+        dragStartX = e.clientX;
+        dragStartY = e.clientY;
+        panStartX = panX;
+        panStartY = panY;
+        imageEl.classList.add('dragging');
+        e.preventDefault();
+      });
+
+      window.addEventListener('mousemove', function (e) {
+        if (!dragging) return;
+        panX = panStartX + (e.clientX - dragStartX);
+        panY = panStartY + (e.clientY - dragStartY);
+        applyTransform();
+      });
+
+      window.addEventListener('mouseup', function () {
+        if (!dragging) return;
+        dragging = false;
+        imageEl.classList.remove('dragging');
+      });
+
+      imageEl.addEventListener('touchstart', function (e) {
+        if (zoomIndex === 0 || e.touches.length !== 1) return;
+        dragging = true;
+        dragStartX = e.touches[0].clientX;
+        dragStartY = e.touches[0].clientY;
+        panStartX = panX;
+        panStartY = panY;
+      }, { passive: true });
+
+      imageEl.addEventListener('touchmove', function (e) {
+        if (!dragging || e.touches.length !== 1) return;
+        panX = panStartX + (e.touches[0].clientX - dragStartX);
+        panY = panStartY + (e.touches[0].clientY - dragStartY);
+        applyTransform();
+      }, { passive: true });
+
+      imageEl.addEventListener('touchend', function () { dragging = false; });
+
+      document.addEventListener('keydown', function (e) {
+        if (!overlay.classList.contains('open')) return;
+        if (e.key === '+' || e.key === '=') zoomTo(zoomIndex + 1);
+        else if (e.key === '-' || e.key === '_') zoomTo(zoomIndex - 1);
+      });
+
+      new MutationObserver(resetZoom).observe(imageEl, { attributes: true, attributeFilter: ['src'] });
+      new MutationObserver(function () {
+        if (overlay.classList.contains('open')) resetZoom();
+      }).observe(overlay, { attributes: true, attributeFilter: ['class'] });
+
+      applyTransform();
+    })();
+  </script>
+  <script>
+    // text-size control: same STEPS / 'articleFontScale' key as
+    // add_text_size_control.py and mes.fm/math. Drives the --ts CSS variable,
+    // which only prose (paragraphs/lists/tables), the byline and the Jump To
+    // navigation multiply into their font-size -- headings, chapter titles
+    // ("Playlist"), cards and buttons stay fixed.
+    (function () {
+      var STEPS = [87.5, 100, 112.5, 125, 137.5, 150];
+      var body = document.body;
+      var downBtn = document.getElementById('textSizeDown');
+      var upBtn = document.getElementById('textSizeUp');
+      if (!body || !downBtn || !upBtn) return;
+      var index;
+      try { index = STEPS.indexOf(parseFloat(localStorage.getItem('articleFontScale'))); } catch (e) { index = -1; }
+      if (index === -1) index = STEPS.indexOf(100);
+      function apply() {
+        body.style.setProperty('--ts', String(STEPS[index] / 100));
+        downBtn.disabled = index === 0;
+        upBtn.disabled = index === STEPS.length - 1;
+        try { localStorage.setItem('articleFontScale', String(STEPS[index])); } catch (e) {}
+      }
+      downBtn.addEventListener('click', function () { index = Math.max(0, index - 1); apply(); });
+      upBtn.addEventListener('click', function () { index = Math.min(STEPS.length - 1, index + 1); apply(); });
+      apply();
+    })();
+  </script>
+  <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.11.3/jquery.min.js"></script>
+  <script>var MES_Vars = { mobile: false, hide_search: false, current_tab: 1, info_bar_tab: 0 };</script>
+  <script src="/main_js/main.js?v=1.0.5"></script>
+  <!-- PAGEVIEW-TRACKING-INSERTED --><script src="/main_js/track.js" defer></script><script src="/main_js/info-bar-fit.js" defer></script><script>
+  // Floating compact header bar (see #compact-nav CSS): appears once the
+  // header + nav bar have scrolled off the top; nav links that don't fit
+  // are dropped from the right, least important first, rather than
+  // wrapping. The last link (MES.fm) is kept longest, so drop from the one
+  // before it first. Visibility is driven from here via the inline style
+  // attribute (not just a CSS class) so the bar stays hidden even if the
+  // stylesheet rules for it get stripped -- see the CSS comment above
+  // #compact-nav. Identical to mes.fm/math's version.
+  (function () {
+    var bar = document.getElementById('compact-nav');
+    var nav = document.querySelector('.info-bar-container');
+    var links = bar && bar.querySelector('.compact-nav-links');
+    if (!bar || !nav || !links) return;
+    var items = Array.prototype.slice.call(links.children);
+    var stuck = false, ticking = false, hideTimer;
+
+    function fit() {
+      items.forEach(function (li) { li.style.display = ''; });
+      var order = items.slice(0, -1).reverse();
+      for (var i = 0; i < order.length && links.scrollWidth > links.clientWidth; i++) {
+        order[i].style.display = 'none';
+      }
+      if (links.scrollWidth > links.clientWidth) items[items.length - 1].style.display = 'none';
+    }
+
+    function update() {
+      ticking = false;
+      var now = nav.getBoundingClientRect().bottom < 0;
+      if (now === stuck) return;
+      stuck = now;
+      bar.setAttribute('aria-hidden', stuck ? 'false' : 'true');
+      Array.prototype.forEach.call(bar.querySelectorAll('a'), function (a) {
+        a.tabIndex = stuck ? 0 : -1;
+      });
+      if (stuck) {
+        clearTimeout(hideTimer);
+        bar.style.display = 'flex';
+        fit();
+        requestAnimationFrame(function () {
+          requestAnimationFrame(function () { document.body.classList.add('is-stuck'); });
+        });
+      } else {
+        document.body.classList.remove('is-stuck');
+        hideTimer = setTimeout(function () { bar.style.display = 'none'; }, 220);
+      }
+    }
+
+    window.addEventListener('scroll', function () {
+      if (!ticking) { ticking = true; requestAnimationFrame(update); }
+    }, { passive: true });
+    window.addEventListener('resize', function () { if (stuck) fit(); });
+    update();
+  })();
+</script>
+<!-- MES-ASIDE-JS --><script src="/main_js/aside.js?v=1" defer></script><!-- /MES-ASIDE-JS --><script src="/main_js/site-search.js?v=1" defer></script><!-- MES-BOTTOM-AD-JS --><script src="/main_js/bottom-ad.js?v=1" defer></script><!-- /MES-BOTTOM-AD-JS --></body>
+</html>

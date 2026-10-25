@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Set the "Posts" tile image of a hub: mes.fm/911, mes.fm/bg, mes.fm/conspiracy, mes.fm/mh370
+"""Set the "Posts" tile image of a hub: mes.fm/911, mes.fm/911spooks, mes.fm/bg, mes.fm/conspiracy, mes.fm/mh370
 (img/<hub>-posts-icon.jpg, 900x600).
 
 Run it whenever a new post is mirrored into those Posts lists. Default = the FIRST IMAGE of the mirrored page,
@@ -12,7 +12,8 @@ picture or crop reads better (e.g. a screenshot where the punchline sits at the 
   python3 set_posts_tile.py --image https://.../pic.jpg --anchor bottom --apply
   python3 set_posts_tile.py --image ~/Downloads/a.png --box 28,782,680,840 --apply   # red box (source pixels), crop follows it
 
---hubs 911,bg (default both; also conspiracy, mh370). With --apply: writes the icon(s), bumps `iconVersion` of the posts
+--hubs 911,bg (default both; also 911spooks, conspiracy, mh370). --fit shows the whole picture on a blurred copy of itself
+instead of cropping (for a wide multi-panel meme whose sides would be cut off). With --apply: writes the icon(s), bumps `iconVersion` of the posts
 page in each hub's build.mjs (so cached tiles refresh) and runs `npm run build` there. Dry-runs by default.
 
 Automatic mode (used by mes.fm/conspiracy/build.mjs on every build):
@@ -23,11 +24,11 @@ and uses max(iconVersion, v)). A manual run with --slug also records that page a
 newest post is kept until a newer post arrives.
 """
 import argparse, io, json, os, re, subprocess, sys, urllib.request
-from PIL import Image, ImageDraw
+from PIL import Image, ImageDraw, ImageFilter
 
 ROOT = os.path.dirname(os.path.abspath(__file__))
 SITE = os.path.join(ROOT, "mes.fm")
-HUBS = {"911": "911-posts", "bg": "bg-posts", "conspiracy": "conspiracy-posts", "mh370": "mh370-posts"}
+HUBS = {"911": "911-posts", "911spooks": "911spooks-posts", "bg": "bg-posts", "conspiracy": "conspiracy-posts", "mh370": "mh370-posts"}
 STAMP = os.path.join(SITE, "img", "posts-tiles.json")
 
 
@@ -71,6 +72,16 @@ def article_images(slug):
     return re.findall(r'<img[^>]*\bsrc="([^"]+)"', art)
 
 
+def fit_tile(img):
+    """the whole picture, centred on a blurred, stretched copy of itself (nothing cropped)"""
+    img = img.convert("RGB")
+    bg = img.resize((W, H), Image.LANCZOS).filter(ImageFilter.GaussianBlur(24))
+    s = min(W / img.width, H / img.height)
+    fg = img.resize((round(img.width * s), round(img.height * s)), Image.LANCZOS)
+    bg.paste(fg, ((W - fg.width) // 2, (H - fg.height) // 2))
+    return bg
+
+
 def make_tile(img, anchor, box):
     img = img.convert("RGB")
     w, h = img.size
@@ -109,6 +120,7 @@ def main():
     ap.add_argument("--image", help="URL or local file instead of a page image")
     ap.add_argument("--anchor", choices=["top", "center", "bottom"], default="center")
     ap.add_argument("--box", help="x0,y0,x1,y1 in source pixels: draw a red highlight box and centre the crop on it")
+    ap.add_argument("--fit", action="store_true", help="fit the whole picture on a blurred background instead of cropping")
     ap.add_argument("--hubs", default="911,bg")
     ap.add_argument("--auto", action="store_true", help="only when --key changed since the last run (see posts-tiles.json); no build.mjs edit, no rebuild")
     ap.add_argument("--key", help="id of the newest Posts item (its URL); default https://mes.fm/<slug>")
@@ -135,7 +147,8 @@ def main():
         src = imgs[a.index - 1]
     print("source:", src)
     box = tuple(int(v) for v in a.box.split(",")) if a.box else None
-    tile = make_tile(Image.open(io.BytesIO(fetch(src))), a.anchor, box)
+    pic = Image.open(io.BytesIO(fetch(src)))
+    tile = fit_tile(pic) if a.fit else make_tile(pic, a.anchor, box)
     hubs = [h.strip() for h in a.hubs.split(",")]
     for h in hubs:
         if h not in HUBS:

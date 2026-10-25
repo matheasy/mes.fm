@@ -129,6 +129,20 @@
     "watchLinks": [],
     "namedLinks": []
   },
+  "https://mes.fm/david-hughes-fetzer-2.0": {
+    "image": "https://mes.fm/david-hughes-fetzer-2.0/img/hurricane-meme.jpg",
+    "watchLinks": [],
+    "namedLinks": [
+      {
+        "label": "Hive",
+        "href": "https://peakd.com/hive-113182/@mes/dear-dr-david-a-fetzer-j1c"
+      },
+      {
+        "label": "Substack",
+        "href": "https://matheasy.substack.com/p/dear-dr-david-a-fetzer"
+      }
+    ]
+  },
   "https://mes.fm/energy-vampire": {
     "image": "https://images.3speak.tv/images/1787339256394-2740b425584a0e05.webp",
     "watchLinks": [
