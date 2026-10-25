@@ -12,11 +12,12 @@
   <p class="lead">Settings are saved as you change them. <span id="saved" class="saved" aria-live="polite"></span></p>
   <div class="pref"><div><b>Step</b><span>How much A&minus; / A+ and Alt+Shift+Up / Down change the size.</span></div>
     <select id="step"><option value="5">5%</option><option value="10">10%</option><option value="15">15%</option><option value="25">25%</option></select></div>
-  <div class="pref"><div><b>Remember a new size for</b><span>This site only, or every site that has no size of its own.</span></div>
-    <select id="applyTo"><option value="site">This site</option><option value="all">All sites</option></select></div>
+  <div class="pref"><div><b>A&minus; / A+ change the size for</b><span>This tab only (the default: kept while you reload or follow links on the same site in that tab), this site in every tab, or every site that has no size of its own. The popup can switch this any time.</span></div>
+    <select id="applyTo"><option value="tab">This tab only</option><option value="site">This site (all tabs)</option><option value="all">All sites</option></select></div>
   <div class="pref"><div><b>Size on all sites</b><span>Used wherever a site has no size of its own.</span></div>
     <div class="rng"><input type="range" id="allLevel" min="50" max="300" step="5"><output id="allout"></output></div></div>
   <h2>Sites with their own size</h2>
+  <p class="hint">Sizes saved with &ldquo;This site (all tabs)&rdquo;. Sizes saved by version 1.0 (which remembered every change per site) are kept here too: remove the ones you no longer want.</p>
   <div id="sitemap"></div>
 </main>
 <script src="shared.js"></script>

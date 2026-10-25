@@ -1,9 +1,9 @@
 	<div class="tu" id="ts">
 		<div class="tu-card tu-card--tint">
 			<h2 style="margin-top:0;">Bigger (or smaller) text on any website</h2>
-			<p style="margin-top:0;">A free browser extension by MES for Chrome, Brave, Edge and other Chromium browsers: the <b>A&minus; / A+</b> buttons from the top of mes.fm, for every site. Unlike the browser's zoom, <b>only the text changes</b>: pictures and layout stay where they are. The size is remembered for each site (or for all sites), from 50% to 300%.</p>
+			<p style="margin-top:0;">A free browser extension by MES for Chrome, Brave, Edge and other Chromium browsers: the <b>A&minus; / A+</b> buttons from the top of mes.fm, for every site. Unlike the browser's zoom, <b>only the text changes</b>: pictures and layout stay where they are. A change applies to the tab you are in (and stays while you reload or follow links on the same site there), or, when you choose, to a whole site or to every site, from 50% to 300%.</p>
 			<div class="ts-btns">
-				<a class="tu-btn tu-btn--primary" id="ts-dl" href="/text-size/mes-text-size.zip" download>Download <span id="ts-ver">v1.0.0</span> (zip)</a>
+				<a class="tu-btn tu-btn--primary" id="ts-dl" href="/text-size/mes-text-size.zip" download>Download <span id="ts-ver">v1.1.0</span> (zip)</a>
 				<a class="tu-btn tu-btn--ghost" href="#ts-install">How to install</a>
 				<a class="tu-btn tu-btn--ghost" href="/text-size/extension/content.js">View the source</a>
 			</div>
@@ -25,22 +25,23 @@
 		<h2>How to use it</h2>
 		<div class="tu-card">
 			<ul class="ts-list">
-				<li>Click the toolbar icon and press <b>A+</b> or <b>A&minus;</b>, drag the slider or pick a preset. Every open page of that site follows at once.</li>
+				<li>Click the toolbar icon and press <b>A+</b> or <b>A&minus;</b>, drag the slider or pick a preset. Only that tab changes: other tabs, even of the same site, keep their size.</li>
 				<li><kbd>Alt</kbd>+<kbd>Shift</kbd>+<kbd>Up</kbd> / <kbd>Down</kbd> change the size, <kbd>Alt</kbd>+<kbd>Shift</kbd>+<kbd>0</kbd> goes back to normal. Change the shortcuts at <code>chrome://extensions/shortcuts</code>.</li>
-				<li><b>Remember for this site or all sites.</b> A site you have changed keeps its own size; sites you have not touched use the all-sites size (100% unless you set it).</li>
-				<li>In the settings: the step (5 to 25%), the all-sites size, and the list of sites that have their own size.</li>
+				<li><b>This tab, this site or all sites.</b> The popup's <i>Change the size for</i> menu picks where a change goes: <b>this tab only</b> (the default: it stays for reloads, back / forward and links within the same site in that tab, and is forgotten when the tab goes to another site or closes), <b>this site (all tabs)</b> (remembered, every open page of that site follows at once) or <b>all sites</b> (every site without a size of its own). A tab's own size wins over the site's; <i>Use the site's size in this tab</i> removes it.</li>
+				<li>In the settings: the step (5 to 25%), the default for <i>Change the size for</i>, the all-sites size, and the list of sites that have their own size.</li>
+				<li><b>Updating from 1.0:</b> version 1.0 remembered every change for the whole site. Those site sizes are kept (remove any you no longer want in the settings), and new changes now go to the tab you are in unless you pick <i>this site</i> or <i>all sites</i>. Reload pages that were open while you updated.</li>
 			</ul>
 		</div>
 
 		<h2>How it works, and its limits</h2>
 		<div class="tu-card">
-			<p style="margin-top:0;">Every piece of text on the page gets its own size (and line height) equal to what it had times your percentage. The original values are remembered, so any size, and 100%, is exact, and text that appears later (menus, comments, infinite scroll) is scaled as it arrives. Sizes that depend on each other (em, percentages, inherited text) are never scaled twice.</p>
-			<p style="margin-bottom:0;">Because only text grows, a page built with fixed-height boxes can overflow or overlap at large sizes; if a site looks wrong, press <b>Back to normal</b> for that site. It cannot change browser pages (<code>chrome://</code>), the Web Store or the built-in PDF viewer. Text inside images or canvas is a picture, so it does not change.</p>
+			<p style="margin-top:0;">Every piece of text on the page gets its own size (and line height) equal to what it had times your percentage. The original values are remembered, so any size, and 100%, is exact, and text that appears later (menus, comments, infinite scroll, lists a page re-draws) is scaled before the browser shows it, so it does not flash at the old size. Sizes that depend on each other (em, percentages, inherited text) are never scaled twice.</p>
+			<p style="margin-bottom:0;">Because only text grows, a page built with fixed-height boxes can overflow or overlap at large sizes; if a site looks wrong, press <b>Back to normal</b> in that tab. It cannot change browser pages (<code>chrome://</code>), the Web Store or the built-in PDF viewer. Text inside images or canvas is a picture, so it does not change.</p>
 		</div>
 
 		<h2>Permissions</h2>
 		<div class="tu-card">
-			<p style="margin:0;">It runs on the pages you open (the browser words this as "read and change your data on all websites") because it has to change their text size. It does not read or send any page content. <code>storage</code> keeps your sizes; <code>activeTab</code> lets the popup show the current site.</p>
+			<p style="margin:0;">It runs on the pages you open (the browser words this as "read and change your data on all websites") because it has to change their text size. It does not read or send any page content. <code>storage</code> keeps your sizes (a tab's own size is kept in that tab and in the browser's session storage, cleared when the browser closes); <code>activeTab</code> lets the popup show the current site.</p>
 		</div>
 
 		<div class="tu-seo">
