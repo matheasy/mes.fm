@@ -672,7 +672,7 @@ APPS = {
                           tag="Copy the text out of photos, screenshots and PDFs.", accent="#0b7285", dark="#085563", tint="#e0f3f6", src="translate", js_path="translate/js/translate.js",
                           desc="Free image to text converter (OCR): drop a photo, screenshot, scan or PDF and copy its text, in about 80 languages. The picture is read right in your browser and never uploaded. Fix the text, save it as .txt or translate it.",
                           meta_desc="Free image to text (OCR): copy the text from photos, screenshots and scanned PDFs in 80 languages. Runs in your browser, nothing is uploaded.",
-                          js_v="2", vars={"MODE": "ocr", "SEO": "@seo/image-to-text.html"}, brand=TR_BRAND, tab=1,
+                          js_v="2", vars={"MODE": "ocr", "SEO": "@seo/image-to-text.html"}, brand=TR_BRAND, tab=1, share_img="image-to-text/img/logo-big.png",
                           nav_extra=TR_NAV_INFO, menu_extra=TR_NAV_MENU),
     "reminder": dict(title="Event Reminder", page_title="Livestream and Event Reminder",
                      tag="One link: a countdown and a calendar reminder in everyone's time zone.", accent="#b4235a", dark="#86183f", tint="#fbe6ee",
