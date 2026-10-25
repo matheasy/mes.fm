@@ -761,7 +761,7 @@ APPS = {
     "fav": dict(title="MES Favourites", page_title="MES Favourites: Your Own Calculators and Tools Page",
                 tag="Your favourite MES pages, your way.", accent="#a15c07", dark="#7a4505", tint="#fdf0d8",
                 desc="Make your own start page of favourite mes.fm calculators, tools and tutorials: search to add, drag tiles into groups you name and fold, and take the whole list to another browser or computer with one link. Private: it stays in your browser.",
-                js_v="1", pre_js=["/main_js/site-search.js?v=1"], no_ads=True),
+                js_v="2", pre_js=["/main_js/site-search.js?v=1"], no_ads=True),
     # MES Compressor: pictures (canvas re-encode, target size), PDFs (embedded JPEGs re-saved smaller with pdf-lib; Extreme = rasterise) and audio (decode -> MP3 with lamejs), all in the browser.
     # Decisions in lib.js (MESCmp, node tests tool_apps_src/compress-tests.js); /compress-pdf stays as the PDF-specific landing page. Video is not supported yet.
     "compress": dict(title="MES Compressor", page_title="Compressor: Compress Images, PDFs and Audio Online",

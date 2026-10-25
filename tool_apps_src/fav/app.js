@@ -412,7 +412,7 @@
     }, function () { statusEl.textContent = "The page index could not be loaded, so search is unavailable. Your favourites still work."; });
     if (sp && !imported) { noticeEl.hidden = false; noticeEl.textContent = "That favourites link could not be read. It may have been cut when it was copied."; }
     else if (imported) offerImport(imported, "this link");
-    var fp = new URLSearchParams(location.search).get("f");
+    var fp = new URLSearchParams(location.search).get("f") || ((location.pathname.match(/^\/f\/([A-Za-z0-9_-]+)\/?$/) || [])[1]);
     if (fp) {
         fetch("/api/fav?id=" + encodeURIComponent(fp)).then(function (r) { if (!r.ok) throw new Error("gone"); return r.json(); }).then(function (j) {
             offerImport(clean({ groups: j.g.map(function (r) { return { name: r[0], items: r[1], open: true }; }) }), "this short link");
