@@ -4,13 +4,18 @@
 		</div>
 
 		<section id="bgm-p-play" role="tabpanel" aria-label="Play">
-			<div class="bgm-top" id="bgm-top"></div>
-			<div class="bgm-stage" id="bgm-stage">
-				<div class="bgm-board" id="bgm-board"></div>
-				<div class="bgm-ovl" id="bgm-ovl" role="group" aria-label="Turn controls"></div>
+			<div class="bgm-view" id="bgm-view">
+				<div class="bgm-vbar">
+					<div class="bgm-top" id="bgm-top"></div>
+					<span class="bgm-vbtns" role="group" aria-label="Board view"><button type="button" class="bgm-vb" id="bgm-fill" aria-pressed="false" title="Fill the browser window with the board (W; Esc closes)">⤢ Fill window</button><button type="button" class="bgm-vb" id="bgm-fs" title="Full screen (F; Esc leaves)">⛶ Full screen</button></span>
+				</div>
+				<div class="bgm-stage" id="bgm-stage">
+					<div class="bgm-board" id="bgm-board"></div>
+					<div class="bgm-ovl" id="bgm-ovl" role="group" aria-label="Turn controls"></div>
+				</div>
+				<p class="bgm-msg" id="bgm-msg" role="status" aria-live="polite"></p>
+				<div class="bgm-act" id="bgm-act"></div>
 			</div>
-			<p class="bgm-msg" id="bgm-msg" role="status" aria-live="polite"></p>
-			<div class="bgm-act" id="bgm-act"></div>
 			<div id="bgm-info"></div>
 			<details class="tu-card bgm-set" id="bgm-set">
 				<summary>Game settings</summary>

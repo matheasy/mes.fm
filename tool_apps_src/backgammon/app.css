@@ -11,7 +11,7 @@
 	#bgm .bgm-tab:hover {color:var(--bgm-ink);}
 	#bgm .bgm-tab[aria-selected="true"] {color:var(--accent);border-bottom-color:var(--accent);}
 	#bgm .bgm-tab:focus-visible {outline:2px solid var(--accent);outline-offset:-2px;}
-	#bgm .bgm-top {font-size:0.92em;color:var(--bgm-sub);margin:0 0 0.5em;line-height:1.5;}
+	#bgm .bgm-top {font-size:0.92em;color:var(--bgm-sub);margin:0;line-height:1.5;flex:1 1 14em;min-width:0;}
 	#bgm .bgm-top b {color:var(--bgm-ink);}
 	/* the stage is exactly as wide as the board picture, so the space beside it is plain page (a swipe there scrolls) */
 	#bgm .bgm-stage {position:relative;width:100%;max-width:calc(82vh * 760 / 520);margin:0 auto;}
@@ -107,3 +107,26 @@
 	body.dark-mode #bgm.tu .tu-btn:not([disabled]):hover {background:var(--accent);border-color:var(--accent);color:#0b1416;}
 	body.dark-mode #bgm.tu .tu-btn--primary {background:var(--accent);border-color:var(--accent);color:#0b1416;}
 	body.dark-mode #bgm.tu .tu-select {background:#1f1f1f;color:#eee;border-color:#555;}
+	/* Game settings: the uppercase labels had line-height 1 (12px) and the second .tu-row no top gap, so "YOUR CHECKERS" sat on the row above */
+	#bgm .bgm-set .tu-field > label, #bgm .bgm-set .tu-label {line-height:1.35;}
+	#bgm .bgm-set .tu-row + .tu-row {margin-top:1em;}
+	#bgm .bgm-set .tu-row {row-gap:1em;}
+	/* board view bar: Fill window / Full screen (the board re-fits to the window's height) */
+	#bgm {--bgm-page:#ffffff;}
+	body.dark-mode #bgm.tu {--bgm-page:#1a1a1a;}
+	#bgm .bgm-vbar {display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:0.4em 1em;margin:0 0 0.5em;}
+	#bgm .bgm-vbtns {display:inline-flex;gap:0.35em;margin-left:auto;}
+	#bgm .bgm-vb {cursor:pointer;font:inherit;font-size:0.82em;font-weight:700;min-height:32px;padding:0.25em 0.75em;border-radius:999px;border:1px solid var(--bgm-line);background:var(--bgm-card);color:var(--accent);white-space:nowrap;}
+	#bgm .bgm-vb:hover {border-color:var(--accent);}
+	#bgm .bgm-vb[aria-pressed="true"] {background:var(--accent);border-color:var(--accent);color:#fff;}
+	#bgm .bgm-vb:focus-visible {outline:2px solid var(--accent);outline-offset:2px;}
+	body.dark-mode #bgm.tu .bgm-vb {background:#262626;color:var(--accent);border-color:#4a4f55;}
+	body.dark-mode #bgm.tu .bgm-vb[aria-pressed="true"] {background:var(--accent);color:#0b1416;border-color:var(--accent);}
+	#bgm .bgm-view.is-fill {position:fixed;inset:0;z-index:2147483000;background:var(--bgm-page);padding:0.6em 0.9em 0.4em;overflow:auto;display:flex;flex-direction:column;}
+	#bgm .bgm-view:fullscreen {background:var(--bgm-page);padding:0.6em 0.9em 0.4em;overflow:auto;display:flex;flex-direction:column;}
+	#bgm .bgm-view.is-fill .bgm-stage, #bgm .bgm-view:fullscreen .bgm-stage {flex:0 0 auto;}
+	#bgm .bgm-view.is-fill .bgm-msg, #bgm .bgm-view:fullscreen .bgm-msg {min-height:0;margin:0.4em 0 0.3em;text-align:center;}
+	#bgm .bgm-view.is-fill .bgm-act, #bgm .bgm-view:fullscreen .bgm-act {justify-content:center;margin-bottom:0;}
+	#bgm .bgm-view.is-fill .bgm-svg, #bgm .bgm-view:fullscreen .bgm-svg {max-height:none;}
+	html.bgm-filled, html.bgm-filled body {overflow:hidden;}
+	@media (max-width:420px) {#bgm .bgm-vb {font-size:0.78em;padding:0.25em 0.6em;}}
