@@ -103,5 +103,19 @@ eq(L[0].text, "Hello world", "ocr line text");
 eq(L[0].words.length, 2, "ocr words");
 eq(T.ocrLines({ lines: [{ text: "A", words: [] }] })[0].text, "A", "v5 lines");
 
+// picture links
+eq(T.imageLink(" https://Site.com/a b.png "), null, "space inside refused");
+eq(T.imageLink("https://site.com/a.png#x"), "https://site.com/a.png", "hash dropped");
+eq(T.imageLink("//cdn.site.com/p.jpg"), "https://cdn.site.com/p.jpg", "protocol-relative");
+["data:image/png;base64,AA", "blob:https://mes.fm/1", "file:///a.png", "javascript:alert(1)", "ftp://a.com/x.png", "https://u:p@a.com/x.png", "hello", ""].forEach(function (u) { eq(T.imageLink(u), null, "refuse " + u); });
+eq(T.parseQuery("?img=https%3A%2F%2Fa.com%2Fx.jpg").img, "https://a.com/x.jpg", "?img= link");
+eq(T.parseQuery("?img=data%3Aimage%2Fpng%3Bbase64%2CAA").img, undefined, "?img= data: dropped");
+eq(T.linkName("https://a.com/photos/My%20Sign.JPG?x=1", "image/jpeg"), "My Sign.JPG", "linkName keeps the file name");
+eq(T.linkName("https://a.com/render?id=4", "image/png"), "render.png", "linkName adds an extension");
+eq(T.linkName("https://a.com/", "application/pdf"), "picture.pdf", "linkName fallback");
+eq(T.layoutOf({}), { lay: "side", full: false }, "layout default");
+eq(T.layoutOf({ lay: "stack", full: 1 }), { lay: "stack", full: true }, "layout saved");
+eq(T.layoutOf({ lay: "weird" }).lay, "side", "layout unknown");
+
 console.log((bad ? bad + " of " : "all ") + n + " checks " + (bad ? "FAILED" : "passed"));
 process.exit(bad ? 1 : 0);
