@@ -6,7 +6,11 @@
    pages have (recommendations only, no ad slot unless the page itself loads AdSense: the PizzaGate pages never do), marks #outer-container .has-aside and
    loads aside.css / aside.js, which then provide the switch and the cards. In Wide / Theatre the recommendations drop under the content as a card grid
    ("Show sidebar" in the switch brings the column back). Pages where a sidebar makes no sense (livestreams, the homepage, bare .container shells) keep
-   the old two-state Standard | Theatre switch. */
+   the old two-state Standard | Theatre switch.
+
+   2026-10-24: a page that carries data-page-modes="3" on any element (the private /search-console and /ads dashboards) gets
+   Standard | Wide | Theatre WITHOUT the sidebar: html.page-wide (Wide and Theatre) and html.page-theatre (Theatre), the same
+   classes and saved "pageMode" as everywhere else; the page's own CSS says how wide each one is. */
 (function () {
     "use strict";
     var host = document.querySelector(".outer-page-content .page-content");
@@ -27,7 +31,8 @@
         if (/^(memes|puzzles|timer|percentagecalculator|gradecalculator|gpacalculator|bmicalculator|mortgagecalculator|inflationcalculator|pokemongocalculator)$/.test(top)) return top;
         return "tools";
     }
-    var fam = host.matches(".outer-page-content .page-content") && oc ? familyOf(slug) : null;
+    var three = !!document.querySelector("[data-page-modes='3']");
+    var fam = !three && host.matches(".outer-page-content .page-content") && oc ? familyOf(slug) : null;
     if (fam) {
         root.classList.add("hub-sb");
         var ads = Array.prototype.some.call(document.scripts, function (s) { return /googlesyndication|adsbygoogle/.test((s.textContent || "") + (s.src || "")); });
@@ -52,14 +57,17 @@
     group.setAttribute("role", "group");
     group.setAttribute("aria-label", "Page width");
     var MODES = [["std", "Standard", "Normal page width"], ["theatre", "Theatre", "Use nearly the whole window: more columns on big screens"]], btn = {};
-    function paint() { var t = root.classList.contains("page-theatre"); MODES.forEach(function (x) { btn[x[0]].setAttribute("aria-pressed", String((x[0] === "theatre") === t)); }); }
+    if (three) MODES.splice(1, 0, ["wide", "Wide", "A wider page"]);
+    function cur() { return root.classList.contains("page-theatre") ? "theatre" : three && root.classList.contains("page-wide") ? "wide" : "std"; }
+    function paint() { var c = cur(); MODES.forEach(function (x) { btn[x[0]].setAttribute("aria-pressed", String(x[0] === c)); }); }
     MODES.forEach(function (x) {
         var b = document.createElement("button");
         b.type = "button"; b.textContent = x[1]; b.title = x[2];
         b.addEventListener("click", function () {
             var on = x[0] === "theatre";
             root.classList.toggle("page-theatre", on);
-            try { localStorage.setItem("pageMode", x[0]); localStorage.setItem("pageWide", on ? "1" : "0"); } catch (e) {}
+            if (three) root.classList.toggle("page-wide", x[0] !== "std");
+            try { localStorage.setItem("pageMode", x[0]); localStorage.setItem("pageWide", x[0] !== "std" ? "1" : "0"); } catch (e) {}
             paint();
             try { window.dispatchEvent(new Event("resize")); } catch (e) {}
         });

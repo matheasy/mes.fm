@@ -49,6 +49,10 @@ CI_NAV_MENU = "<li class=\"navbar__item\"><a class=\"navbar__link\" href=\"/comp
 MAT_NAV_INFO = "<li class=\"info-bar__item\"><a class=\"info-bar__item__text\" href='/youngs-modulus-calculator'>Young's Modulus</a></li><li class=\"info-bar__item\"><a class=\"info-bar__item__text\" href='/tensile-test-simulator'>Tensile Test</a></li><li class=\"info-bar__item\"><a class=\"info-bar__item__text\" href='/shear-stress-calculator'>Shear &amp; Torsion</a></li><li class=\"info-bar__item\"><a class=\"info-bar__item__text\" href='/materials?tab=table'>Materials Table</a></li>"
 MAT_NAV_MENU = '<li class="navbar__item"><a class="navbar__link" href="/youngs-modulus-calculator">Young\'s Modulus Calculator</a></li><li class="navbar__item"><a class="navbar__link" href="/tensile-test-simulator">Tensile Test Simulator</a></li><li class="navbar__item"><a class="navbar__link" href="/shear-stress-calculator">Shear &amp; Torsion Calculator</a></li><li class="navbar__item"><a class="navbar__link" href="/materials?tab=table">Materials Table</a></li>'
 
+# Standard | Wide | Theatre without a sidebar (the private /ads and /search-console dashboards): the hub pages' head snippet
+# (Wide by default, same saved "pageMode"), main_js/hub-theatre.js builds the switch when the page has data-page-modes="3".
+PAGE3_HEAD = ('<!-- HUB-THEATRE-HEAD --><link rel="stylesheet" href="/main_js/hub-theatre.css?v=1"><script>try{var m=localStorage.getItem("pageMode")||"wide",'
+              'c=document.documentElement.classList;if(m==="theatre")c.add("page-theatre");if(m!=="std")c.add("page-wide")}catch(e){}</script><!-- /HUB-THEATRE-HEAD -->')
 APPS = {
     "earth-curvature-calculator": dict(title="MES Earth Curvature Calculator", page_title="Earth Curvature Calculator",
                                        tag="How much does the Earth curve over a distance?", accent="#0b6f6d", dark="#075250", tint="#e2f3f2",
@@ -730,16 +734,16 @@ APPS = {
     "ads": dict(title="MES Ads", page_title="Ads: Earnings vs Spend",
                 tag="AdSense earnings vs Google Ads spend.", accent="#2e7d32", dark="#1b5e20", tint="#e8f5e9",
                 desc="AdSense earnings against Google Ads spend per day, landing page, country, device and campaign, and whether ad visitors come back.",
-                js_v="10", no_ads=True, js_path="earnings/js/earnings.js", logo_from="earnings",
-                head_extra='<meta name="robots" content="noindex, nofollow">'),
+                js_v="11", no_ads=True, js_path="earnings/js/earnings.js", logo_from="earnings",
+                head_extra='<meta name="robots" content="noindex, nofollow">' + PAGE3_HEAD),
     # MES Search Console (private, mes.fm/search-console, behind the middleware.js password like /ads): Google Search Console
     # (pushed by google-ads/search-console-gsc-script.js -> api/search-console-ingest.js) + Bing Webmaster API (env BING_WEBMASTER_KEY),
     # read through api/search-console.js. Wide, ad-free, no sidebar, noindex. Tests: tool_apps_src/search-console-tests.js.
     "search-console": dict(title="MES Search Console", page_title="Search Console: Google and Bing Search Performance",
                 tag="Google and Bing search clicks, impressions and positions.", accent="#1a73e8", dark="#1557b0", tint="#e8f0fe",
                 desc="Private dashboard: Google Search Console and Bing Webmaster clicks, impressions, CTR and average position for mes.fm, by day, query, page, country and device.",
-                js_v="1", no_ads=True,
-                head_extra='<meta name="robots" content="noindex, nofollow">'),
+                js_v="2", no_ads=True,
+                head_extra='<meta name="robots" content="noindex, nofollow">' + PAGE3_HEAD),
     # How much do YouTubers make?: leaderboard of big channels with ESTIMATED ad revenue (companion of /youtubemoney, ad-free like it). Data = mes.fm/how-much-do-youtubers-make/data/channels.json
     # (update_youtuber_snapshot.py), live refresh = mes.fm/api/youtuber-stats.js; lib.js = maths + a copy of the calculator's RPM tables (node-testable:
     # tool_apps_src/how-much-do-youtubers-make-tests.js), app.js = UI. Wide page, no sidebar.

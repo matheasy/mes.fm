@@ -1,7 +1,7 @@
 <!DOCTYPE html>    <html lang="en">
 <!-- MES Ads -- mes.fm/ads -->
 <!-- Added by HTTrack --><meta http-equiv="content-type" content="text/html;charset=UTF-8" /><!-- /Added by HTTrack -->
-<head>                    <link rel="icon" href="/earnings/img/logo.png?v=3" type="image/png" /><link rel="canonical" href="https://mes.fm/ads" />                    <title>MES Ads | Math Easy Solutions</title><meta name="robots" content="noindex, nofollow">
+<head>                    <link rel="icon" href="/earnings/img/logo.png?v=2" type="image/png" /><link rel="canonical" href="https://mes.fm/ads" />                    <title>MES Ads | Math Easy Solutions</title><meta name="robots" content="noindex, nofollow"><!-- HUB-THEATRE-HEAD --><link rel="stylesheet" href="/main_js/hub-theatre.css?v=1"><script>try{var m=localStorage.getItem("pageMode")||"wide",c=document.documentElement.classList;if(m==="theatre")c.add("page-theatre");if(m!=="std")c.add("page-wide")}catch(e){}</script><!-- /HUB-THEATRE-HEAD -->
         <meta name="viewport" content="width=device-width, initial-scale=1">	<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css" integrity="sha384-BVYiiSIFeK1dGmJRAkycuHAHRg32OmUcww7on3RYdg4Va+PmSTsz/K68vbdEjh4u" crossorigin="anonymous">
         <style>html, body, div, span, applet, object, iframe, h1, h2, h3, h4, h5, h6, p, blockquote, pre, a, abbr, acronym, address, big, cite, code,del, dfn, em, img,
 ins, kbd, q, s, samp, small, strike, strong, sub, tt, var, u, i, center, dl, dt, dd, ol, ul, li, fieldset, form, label, legend, table, caption, tbody,
@@ -305,7 +305,8 @@ body.dark-mode .tu .rw-head {color:#a0a8b3;border-bottom-color:#555;} body.dark-
 .tu [class$="-eq"] > div {margin:0.25em 0;}
 .tu [class$="-eq__n"] {vertical-align:middle;}
 
-	html body .outer-container {max-width:min(96vw,80em) !important;}
+	/* page width: Standard = the tool shell (50em), Wide (default) and Theatre via main_js/hub-theatre.js (data-page-modes="3") */
+	html.page-wide body .outer-container {max-width:min(96vw,80em) !important;}
 	html.page-theatre body .outer-container {max-width:min(98vw,2400px) !important;}
 	/* colour code: revenue blue, costs red, profit green (red when negative) */
 	#ad {--ad-rev:#1d6fd1;--ad-cost:#d93025;--ad-good:#1e8e3e;--ad-bad:#d93025;--ad-line:#e3e7ec;--ad-muted:#5f6b7a;--ad-card:#ffffff;--ad-ink:#1e2733;}
@@ -376,6 +377,22 @@ body.dark-mode .tu .rw-head {color:#a0a8b3;border-bottom-color:#555;} body.dark-
 	}
 	body.dark-mode #ad.tu .ad-tip {background:#2e343b;color:#f2f4f6;border:1px solid #4a525c;}
 	body.dark-mode #ad.tu {--ad-rev:#58a6ff;--ad-cost:#ff4040;--ad-good:#4cc472;--ad-bad:#ff4040;--ad-line:#33393f;--ad-muted:#a3adb9;--ad-card:#1a1a1a;--ad-ink:#e3e7ec;}
+	#ad .ad-head {display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:0.4em 1em;margin:0 0 0.3em;}
+	#ad .ad-head h2 {margin:0;}
+	/* Fill window / Full screen (main_js/panel-view.js adds .mes-pfill) */
+	#ad .ad-sec.mes-pfill {background:var(--ad-card) !important;border:none;}
+	#ad .ad-sec.mes-pfill .ad-chart {flex:1 1 auto;height:auto;min-height:150px;}
+	#ad .ad-sec.mes-pfill .ad-wrap {flex:1 1 auto;overflow:auto;}
+	#ad .ad-sec.mes-pfill .ad-t th {position:sticky;top:0;z-index:2;}
+	#ad .ad-sec.mes-pfill .ad-t th:first-child {z-index:3;}
+	@media (max-width: 600px) {
+		#ad .ad-sec .ad-head h2 {border-bottom:none;padding-bottom:0;}
+		#ad .ad-sec .ad-head {padding-bottom:0.3em;border-bottom:2px solid var(--ad-line);}
+		#ad .ad-sec.mes-pfill {padding:8px 10px !important;}
+	}
+	@media (max-height: 500px) {
+		#ad .ad-sec.mes-pfill > .tu-note, #ad .ad-sec.mes-pfill .ad-legend, #ad .ad-sec.mes-pfill .ad-ends {display:none;}
+	}
 
 
 	@media print {
@@ -415,48 +432,6 @@ body.dark-mode .tu .rw-head {color:#a0a8b3;border-bottom-color:#555;} body.dark-
 		.footer__item--extra-padding { padding-left: 0; }
 		.footer__text--extra-info { float: none; display: block; margin-top: 0.5em; }
 	}
-/* Floating compact header bar: once the full header + nav scroll out of
-   view, a slim fixed bar (small logo, title, as many nav links as fit)
-   slides in, and the hamburger is pinned into its right end. Toggled by
-   the compact-nav script below. Ported from mes.fm/math's version (see
-   its build.mjs) -- display-controls.js pins the A-/A+/moon buttons into its right end.
-
-   Hidden by default via the inline style="display:none" on the element
-   itself (not just this stylesheet's "display: none" below) -- some
-   browser extensions strip or neutralize cosmetic-looking CSS for
-   elements named "sticky-*"/"*-bar" (a common ad/cookie-bar filter
-   pattern), which left an earlier version's raw unstyled markup visible
-   above the real header on mes.fm/math. The inline attribute is a
-   fallback the JS clears itself, independent of this stylesheet
-   surviving intact. */
-#compact-nav {
-  position: fixed; top: 0; left: 0; right: 0; height: 52px; z-index: 15;
-  display: none; align-items: center; gap: 12px;
-  padding: 0 80px 0 12px; box-sizing: border-box;
-  background: #ffffff; border-bottom: 3px solid #2e7d32;
-  box-shadow: 0 2px 8px rgba(0,0,0,0.18);
-  transform: translateY(-110%); transition: transform 0.2s ease;
-}
-#compact-nav.is-visible { display: flex; }
-body.is-stuck #compact-nav { transform: none; }
-#compact-nav .compact-nav-logo { display: block; width: 32px; height: 32px; border-radius: 6px; flex: 0 0 auto; }
-#compact-nav .compact-nav-title {
-  flex: 0 1 auto; min-width: 0; font-weight: 700; font-size: 1.05em; color: #1a1a1a;
-  text-decoration: none; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
-}
-#compact-nav .compact-nav-links { display: flex; flex: 1 1 0; min-width: 0; overflow: hidden; margin: 0 0 0 8px; padding: 0; list-style: none; }
-#compact-nav .compact-nav-links li { flex: 0 0 auto; }
-#compact-nav .compact-nav-links a { display: block; padding: 0 10px; line-height: 52px; font-size: 0.9em; color: #2e7d32; text-decoration: none; white-space: nowrap; }
-#compact-nav .compact-nav-links a:hover { background: rgba(46,125,50,0.12); }
-body.is-stuck #navbar-button { position: fixed !important; top: 4px !important; right: 8px !important; display: flex; align-items: center; }
-body.is-stuck #navbar.hide { position: fixed; top: 56px; right: 8px; }
-@media (max-width: 700px) {
-  #compact-nav .compact-nav-title { display: none; }
-  #compact-nav .compact-nav-logo { width: 36px; height: 36px; }
-}
-@media (max-width: 480px) {
-  #compact-nav { padding-right: 70px; gap: 8px; }
-}
 
 	/* TOOL-DARK:START -- generated by add_tool_page_controls.py, do not edit */
 	body.dark-mode .page-content :where(div,span,p,li,ul,ol,h1,h2,h3,h4,h5,h6,td,th,label,summary,small,strong,b,em,i,code,pre,legend,figcaption,dl,dt,dd,blockquote,caption,cite,button,input,select,textarea){color:#d8d8d8}
@@ -501,6 +476,48 @@ body.is-stuck #navbar.hide { position: fixed; top: 56px; right: 8px; }
 	body.dark-mode #ad .ad-tip{background:#3c4f67}
 	body.dark-mode .ad-bar{background:rgba(82,82,82,0.20)}
 	/* TOOL-DARK:END */
+/* Floating compact header bar: once the full header + nav scroll out of
+   view, a slim fixed bar (small logo, title, as many nav links as fit)
+   slides in, and the hamburger is pinned into its right end. Toggled by
+   the compact-nav script below. Ported from mes.fm/math's version (see
+   its build.mjs) -- display-controls.js pins the A-/A+/moon buttons into its right end.
+
+   Hidden by default via the inline style="display:none" on the element
+   itself (not just this stylesheet's "display: none" below) -- some
+   browser extensions strip or neutralize cosmetic-looking CSS for
+   elements named "sticky-*"/"*-bar" (a common ad/cookie-bar filter
+   pattern), which left an earlier version's raw unstyled markup visible
+   above the real header on mes.fm/math. The inline attribute is a
+   fallback the JS clears itself, independent of this stylesheet
+   surviving intact. */
+#compact-nav {
+  position: fixed; top: 0; left: 0; right: 0; height: 52px; z-index: 15;
+  display: none; align-items: center; gap: 12px;
+  padding: 0 80px 0 12px; box-sizing: border-box;
+  background: #ffffff; border-bottom: 3px solid #2e7d32;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.18);
+  transform: translateY(-110%); transition: transform 0.2s ease;
+}
+#compact-nav.is-visible { display: flex; }
+body.is-stuck #compact-nav { transform: none; }
+#compact-nav .compact-nav-logo { display: block; width: 32px; height: 32px; border-radius: 6px; flex: 0 0 auto; }
+#compact-nav .compact-nav-title {
+  flex: 0 1 auto; min-width: 0; font-weight: 700; font-size: 1.05em; color: #1a1a1a;
+  text-decoration: none; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+}
+#compact-nav .compact-nav-links { display: flex; flex: 1 1 0; min-width: 0; overflow: hidden; margin: 0 0 0 8px; padding: 0; list-style: none; }
+#compact-nav .compact-nav-links li { flex: 0 0 auto; }
+#compact-nav .compact-nav-links a { display: block; padding: 0 10px; line-height: 52px; font-size: 0.9em; color: #2e7d32; text-decoration: none; white-space: nowrap; }
+#compact-nav .compact-nav-links a:hover { background: rgba(46,125,50,0.12); }
+body.is-stuck #navbar-button { position: fixed !important; top: 4px !important; right: 8px !important; display: flex; align-items: center; }
+body.is-stuck #navbar.hide { position: fixed; top: 56px; right: 8px; }
+@media (max-width: 700px) {
+  #compact-nav .compact-nav-title { display: none; }
+  #compact-nav .compact-nav-logo { width: 36px; height: 36px; }
+}
+@media (max-width: 480px) {
+  #compact-nav { padding-right: 70px; gap: 8px; }
+}
 </style>
         <meta property="fb:app_id" content="" />
         <meta name="author" content="Math Easy Solutions Staff">
@@ -528,7 +545,7 @@ body.is-stuck #navbar.hide { position: fixed; top: 56px; right: 8px; }
             <noscript><iframe src="https://www.googletagmanager.com/ns.html?id=GTM-PL6QNQR"
             height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
             <!-- End Google Tag Manager (noscript) -->        <div id="compact-nav" aria-hidden="true" style="display:none">
-  <a href="/ads" tabindex="-1"><img class="compact-nav-logo" alt="" width="32" height="32" src="/earnings/img/logo.png?v=3"></a>
+  <a href="/ads" tabindex="-1"><img class="compact-nav-logo" alt="" width="32" height="32" src="/earnings/img/logo.png?v=2"></a>
   <a class="compact-nav-title" href="/ads" tabindex="-1">MES Ads</a>
   <ul class="compact-nav-links">
     <li><a href="/math" tabindex="-1">Math Tutorials</a></li>
@@ -540,7 +557,7 @@ body.is-stuck #navbar.hide { position: fixed; top: 56px; right: 8px; }
     <li><a href="/" tabindex="-1"><b>MES.fm</b></a></li>
   </ul>
 </div>
-<div id="outer-container" class="outer-container">                <div class = "inner-container">                        <div id="header" class="header" role="banner">                                <a class="logo-image-container" href='/ads'><img height="88" width="88" id="logo" class="logo lazyload" alt="MES Ads logo" data-src="/earnings/img/logo.png?v=3"></a>
+<div id="outer-container" class="outer-container">                <div class = "inner-container">                        <div id="header" class="header" role="banner">                                <a class="logo-image-container" href='/ads'><img height="88" width="88" id="logo" class="logo lazyload" alt="MES Ads logo" data-src="/earnings/img/logo.png?v=2"></a>
                             <div class="logo-text-container">
                                 <a class="calculator-title-link" href='/ads'>
                                     <p class="calculator-title">MES Ads</p>
@@ -559,7 +576,7 @@ body.is-stuck #navbar.hide { position: fixed; top: 56px; right: 8px; }
                                                         <div class="outer-page-content">
                             <div class="page-content" role="main">                                    <div class="color-box"></div>
                                     <h1 class="page-title">Ads: Earnings vs Spend</h1>                                        <p class="page-description">AdSense earnings against Google Ads spend per day, landing page, country, device and campaign, and whether ad visitors come back.</p>                                    	<div id="main-content" data-tool data-text-scale>
-	<div class="tu ad" id="ad">
+	<div class="tu ad" id="ad" data-page-modes="3">
 		<div class="ad-top">
 			<div class="ad-tabs" id="ad-tabs" role="group" aria-label="Range">
 				<button type="button" class="tu-chip" data-r="today" aria-pressed="false">Today</button>
@@ -587,7 +604,7 @@ body.is-stuck #navbar.hide { position: fixed; top: 56px; right: 8px; }
 		<div class="tu-stats ad-tiles" id="ad-tiles"></div>
 
 		<section class="tu-card ad-sec">
-			<h2>Day by day</h2>
+			<div class="ad-head"><h2>Day by day</h2></div>
 			<p class="tu-note">AdSense earnings (bars) and Google Ads spend (line), in the currency chosen at the top. Hover or tap a day for its numbers.</p>
 			<div class="ad-chart" id="ad-chart"><svg id="ad-svg" preserveAspectRatio="none" role="img" aria-label="Daily earnings and spend"></svg><div class="ad-tip" id="ad-tip"></div></div>
 			<div class="ad-legend"><span><i class="ad-key ad-key--rev"></i>AdSense earnings</span><span><i class="ad-key ad-key--spend"></i>Google Ads spend</span></div>
@@ -595,42 +612,44 @@ body.is-stuck #navbar.hide { position: fixed; top: 56px; right: 8px; }
 		</section>
 
 		<section class="tu-card ad-sec">
-			<h2>Landing pages</h2>
+			<div class="ad-head"><h2>Landing pages</h2></div>
 			<p class="tu-note">Every page that earned or that ads point to. Spend and ad clicks are Google Ads' (the page the ad sends people to); earnings and page views are AdSense's for all visitors to that page, not only the ones from ads. "Came back" = ad visitors who returned later on their own. Per 1,000 views divides by all of a page's views, not only the ones ads brought: it shows whether the ads for a page pay for themselves.</p>
 			<div class="ad-wrap"><table class="ad-t" id="t-pages"></table></div><button type="button" class="tu-btn tu-btn--ghost ad-more" id="m-pages" hidden></button>
 		</section>
 
 		<section class="tu-card ad-sec">
-			<h2>Countries</h2>
+			<div class="ad-head"><h2>Countries</h2></div>
 			<p class="tu-note">Where ad clicks were bought and where AdSense earned. Earned per 1,000 views (RPM) is what a visitor from that country is worth.</p>
 			<div class="ad-wrap"><table class="ad-t" id="t-countries"></table></div><button type="button" class="tu-btn tu-btn--ghost ad-more" id="m-countries" hidden></button>
 		</section>
 
 		<section class="tu-card ad-sec">
-			<h2>Campaigns</h2>
+			<div class="ad-head"><h2>Campaigns</h2></div>
 			<p class="tu-note">Spend per Google Ads campaign, with clicks by device.</p>
 			<div class="ad-wrap"><table class="ad-t" id="t-campaigns"></table></div><button type="button" class="tu-btn tu-btn--ghost ad-more" id="m-campaigns" hidden></button>
 		</section>
 
 		<section class="tu-card ad-sec">
-			<h2>Devices</h2>
+			<div class="ad-head"><h2>Devices</h2></div>
 			<div class="ad-wrap"><table class="ad-t" id="t-devices"></table></div>
 		</section>
 
 		<section class="tu-card ad-sec">
-			<h2>Sites in AdSense</h2>
+			<div class="ad-head"><h2>Sites in AdSense</h2></div>
 			<p class="tu-note">Domains that showed your ad code. Only mes.fm is approved, so other sites earn nothing.</p>
 			<div class="ad-wrap"><table class="ad-t" id="t-domains"></table></div>
 		</section>
 
 		<section class="tu-card ad-sec">
-			<h2>Do Google Ads visitors come back?</h2>
+			<div class="ad-head"><h2>Do Google Ads visitors come back?</h2></div>
 			<p class="tu-note">Visitors whose first visit was a Google Ads click, by landing page, and whether they came back later on their own (not through another ad). A day counts once however many pages are opened. Counted per browser, so a return on another device counts as not returning.</p>
 			<div class="tu-stats ad-tiles" id="r-tiles"></div>
 			<div class="ad-wrap"><table class="ad-t" id="t-returns"></table></div><button type="button" class="tu-btn tu-btn--ghost ad-more" id="m-returns" hidden></button>
 			<p class="tu-note" id="r-young"></p>
 		</section>
 	</div>
+	<script src="/main_js/panel-view.js?v=1" defer></script>
+	<script src="/main_js/hub-theatre.js?v=2" defer></script>
 	</div>                                    <!-- PC (Responsive/Rectangle) Matched Content -->
                                                                         <div id="comments-button" class="hide-div-button button">Comments</div>
                                     <div id="comments-box" class="hide">
@@ -683,7 +702,7 @@ body.is-stuck #navbar.hide { position: fixed; top: 56px; right: 8px; }
             hide_search:false,
             current_tab:0
         }        </script><!-- FASTCOMMENTS-LAZY: widget init moved to main_js/main.js -- it pulls embed.min.js only when #fastcomments-widget nears the viewport or on the first Comments-toggle click, so it no longer blocks first render -->                <script src="https://mes.fm/main_js/lazysizes.min.js?v=1.0.3" async></script>
-	<script src="/earnings/js/earnings.js?v=10" defer></script>
+	<script src="/earnings/js/earnings.js?v=11" defer></script>
             <script src="https://mes.fm/main_js/main.js?v=1.0.5"></script>    <!-- PAGEVIEW-TRACKING-INSERTED --><script src="https://mes.fm/main_js/track.js" defer></script><script>document.getElementById('copyright-year').textContent = new Date().getFullYear();</script><script src="/main_js/info-bar-fit.js" defer></script><script>
   // Floating compact header bar (see #compact-nav CSS): appears once the
   // header + nav bar have scrolled off the top; nav links that don't fit

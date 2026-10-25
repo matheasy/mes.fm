@@ -1,4 +1,5 @@
-	html body .outer-container {max-width:min(96vw,80em) !important;}
+	/* page width: Standard = the tool shell (50em), Wide (default) and Theatre via main_js/hub-theatre.js (data-page-modes="3") */
+	html.page-wide body .outer-container {max-width:min(96vw,80em) !important;}
 	html.page-theatre body .outer-container {max-width:min(98vw,2400px) !important;}
 	/* colour code: revenue blue, costs red, profit green (red when negative) */
 	#ad {--ad-rev:#1d6fd1;--ad-cost:#d93025;--ad-good:#1e8e3e;--ad-bad:#d93025;--ad-line:#e3e7ec;--ad-muted:#5f6b7a;--ad-card:#ffffff;--ad-ink:#1e2733;}
@@ -69,3 +70,19 @@
 	}
 	body.dark-mode #ad.tu .ad-tip {background:#2e343b;color:#f2f4f6;border:1px solid #4a525c;}
 	body.dark-mode #ad.tu {--ad-rev:#58a6ff;--ad-cost:#ff4040;--ad-good:#4cc472;--ad-bad:#ff4040;--ad-line:#33393f;--ad-muted:#a3adb9;--ad-card:#1a1a1a;--ad-ink:#e3e7ec;}
+	#ad .ad-head {display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:0.4em 1em;margin:0 0 0.3em;}
+	#ad .ad-head h2 {margin:0;}
+	/* Fill window / Full screen (main_js/panel-view.js adds .mes-pfill) */
+	#ad .ad-sec.mes-pfill {background:var(--ad-card) !important;border:none;}
+	#ad .ad-sec.mes-pfill .ad-chart {flex:1 1 auto;height:auto;min-height:150px;}
+	#ad .ad-sec.mes-pfill .ad-wrap {flex:1 1 auto;overflow:auto;}
+	#ad .ad-sec.mes-pfill .ad-t th {position:sticky;top:0;z-index:2;}
+	#ad .ad-sec.mes-pfill .ad-t th:first-child {z-index:3;}
+	@media (max-width: 600px) {
+		#ad .ad-sec .ad-head h2 {border-bottom:none;padding-bottom:0;}
+		#ad .ad-sec .ad-head {padding-bottom:0.3em;border-bottom:2px solid var(--ad-line);}
+		#ad .ad-sec.mes-pfill {padding:8px 10px !important;}
+	}
+	@media (max-height: 500px) {
+		#ad .ad-sec.mes-pfill > .tu-note, #ad .ad-sec.mes-pfill .ad-legend, #ad .ad-sec.mes-pfill .ad-ends {display:none;}
+	}

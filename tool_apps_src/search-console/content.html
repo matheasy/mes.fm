@@ -1,40 +1,64 @@
-	<div class="tu gs" id="gs">
+	<div class="tu gs" id="gs" data-page-modes="3">
 		<div class="gs-top">
-			<div class="gs-tabs" id="gs-range" role="group" aria-label="Range">
-				<button type="button" class="tu-chip" data-r="7" aria-pressed="false">7 days</button>
-				<button type="button" class="tu-chip" data-r="28" aria-pressed="true">28 days</button>
-				<button type="button" class="tu-chip" data-r="90" aria-pressed="false">90 days</button>
-				<button type="button" class="tu-chip" data-r="365" aria-pressed="false">365 days</button>
-			</div>
+			<div class="gs-tabs" data-rangebar role="group" aria-label="Range"></div>
 			<div class="gs-tabs" role="group" aria-label="Compare">
-				<button type="button" class="tu-chip" id="gs-cmp" aria-pressed="true" title="Show the period just before the chosen one as dashed lines and changes">Compare with previous period</button>
+				<button type="button" class="tu-chip gs-cmpbtn" aria-pressed="true" title="Show the period just before the chosen one as dashed lines and changes">Compare with previous period</button>
 			</div>
 			<span class="gs-links"><a href="/stats">Site stats</a> · <a href="/ads">Ad money</a> · <b>Search Console</b> · <a href="/seo">SEO Checker</a> · <a href="https://search.google.com/search-console" target="_blank" rel="noopener">Google</a> · <a href="https://www.bing.com/webmasters" target="_blank" rel="noopener">Bing</a></span>
 		</div>
 		<p class="tu-note gs-meta" id="gs-meta" role="status">Loading…</p>
+		<p class="gs-fresh" id="gs-fresh" hidden></p>
 		<noscript><p class="tu-note">This page needs JavaScript.</p></noscript>
+
+		<div class="gs-fbar" id="gs-fbar">
+			<span class="gs-fchips" id="gs-fchips"></span>
+			<button type="button" class="tu-chip gs-fadd" id="gs-fadd" aria-expanded="false" aria-controls="gs-fform">+ Filter</button>
+			<form class="gs-fform" id="gs-fform" hidden>
+				<label class="gs-sr" for="gs-fdim">Filter by</label>
+				<select id="gs-fdim" class="tu-input">
+					<option value="query">Query</option><option value="page">Page</option><option value="country">Country</option><option value="device">Device</option>
+				</select>
+				<label class="gs-sr" for="gs-fop">How</label>
+				<select id="gs-fop" class="tu-input"></select>
+				<label class="gs-sr" for="gs-fv">Value</label>
+				<input id="gs-fv" class="tu-input" type="text" list="gs-flist" autocomplete="off" spellcheck="false" placeholder="e.g. bmi">
+				<select id="gs-fsel" class="tu-input" hidden></select>
+				<datalist id="gs-flist"></datalist>
+				<button type="submit" class="tu-btn">Add filter</button>
+				<button type="button" class="tu-btn tu-btn--ghost" id="gs-fcancel">Cancel</button>
+			</form>
+		</div>
+		<p class="tu-note gs-fnote" id="gs-fnote" hidden></p>
 		<div id="gs-setup"></div>
 
 		<div class="gs-tilerow"><h2 class="gs-src gs-src--g"><i class="gs-dot gs-dot--g"></i>Google</h2><div class="tu-stats gs-tiles" id="gs-tiles-g"></div></div>
-		<div class="gs-tilerow"><h2 class="gs-src gs-src--b"><i class="gs-dot gs-dot--b"></i>Bing</h2><div class="tu-stats gs-tiles" id="gs-tiles-b"></div></div>
+		<div class="gs-tilerow"><h2 class="gs-src gs-src--b"><i class="gs-dot gs-dot--b"></i>Bing</h2><div class="tu-stats gs-tiles" id="gs-tiles-b"></div><p class="tu-note gs-bnote" id="gs-bnote" hidden></p></div>
 
-		<section class="tu-card gs-sec">
-			<div class="gs-head">
-				<h2>Day by day</h2>
-				<div class="gs-tabs" id="gs-metric" role="group" aria-label="Chart shows">
-					<button type="button" class="tu-chip" data-m="c" aria-pressed="true">Clicks</button>
-					<button type="button" class="tu-chip" data-m="i" aria-pressed="false">Impressions</button>
-					<button type="button" class="tu-chip" data-m="ctr" aria-pressed="false">CTR</button>
-					<button type="button" class="tu-chip" data-m="p" aria-pressed="false">Position</button>
-				</div>
+		<section class="tu-card gs-sec" id="gs-chartsec">
+			<div class="gs-head" id="gs-chead">
+				<h2 id="gs-ctitle">Day by day</h2>
+				<span class="gs-hbtns" id="gs-hbtns"><button type="button" class="mes-pbtn" id="gs-hide" aria-expanded="true" aria-controls="gs-cbody">Hide chart</button></span>
 			</div>
-			<div class="gs-chart" id="gs-chart"><svg id="gs-svg" preserveAspectRatio="none" role="img" aria-label="Search clicks and impressions per day"></svg><div class="gs-tip" id="gs-tip"></div></div>
-			<div class="gs-legend" id="gs-legend"></div>
-			<p class="tu-note gs-cnote" id="gs-cnote"></p>
+			<div class="gs-cbar">
+				<div class="gs-tabs" id="gs-src" role="group" aria-label="Chart source">
+					<button type="button" class="tu-chip" data-s="google" aria-pressed="false">Google</button>
+					<button type="button" class="tu-chip" data-s="bing" aria-pressed="false">Bing</button>
+					<button type="button" class="tu-chip" data-s="both" aria-pressed="true">Both</button>
+				</div>
+				<div class="gs-tabs gs-tabs--sm" data-rangebar role="group" aria-label="Range"></div>
+				<button type="button" class="tu-chip gs-cmpbtn" aria-pressed="true" title="Dashed lines: the period just before">Compare</button>
+			</div>
+			<div class="gs-cbody" id="gs-cbody">
+				<div class="gs-mtiles" id="gs-mtiles" role="group" aria-label="Lines to show (several at once)"></div>
+				<div class="gs-read" id="gs-read" aria-live="polite"></div>
+				<div class="gs-chart" id="gs-chart"><svg id="gs-svg" preserveAspectRatio="none" role="img" aria-label="Search clicks and impressions per day"></svg></div>
+				<div class="gs-legend" id="gs-legend"></div>
+				<p class="tu-note gs-cnote" id="gs-cnote"></p>
+			</div>
 		</section>
 
-		<section class="tu-card gs-sec">
-			<div class="gs-head">
+		<section class="tu-card gs-sec" id="gs-tablesec">
+			<div class="gs-head" id="gs-thead">
 				<div class="gs-tabs" id="gs-ttab" role="tablist" aria-label="Table">
 					<button type="button" class="tu-chip" data-t="queries" aria-pressed="true">Queries</button>
 					<button type="button" class="tu-chip" data-t="pages" aria-pressed="false">Pages</button>
@@ -46,15 +70,10 @@
 					<button type="button" class="tu-chip" data-s="bing" aria-pressed="false">Bing</button>
 				</div>
 			</div>
-			<div class="gs-filter"><label class="gs-sr" for="gs-q">Filter</label><input id="gs-q" class="tu-input" type="search" placeholder="Filter (e.g. bmi, /timer, canada)" autocomplete="off" spellcheck="false"><span class="tu-note" id="gs-count"></span></div>
+			<div class="gs-filter"><label class="gs-sr" for="gs-q">Search this table</label><input id="gs-q" class="tu-input" type="search" placeholder="Search this table (e.g. bmi, /timer, canada)" autocomplete="off" spellcheck="false"><span class="tu-note" id="gs-count"></span></div>
 			<p class="tu-note gs-tnote" id="gs-tnote"></p>
 			<div class="gs-wrap"><table class="gs-t" id="gs-t"></table></div><button type="button" class="tu-btn tu-btn--ghost gs-more" id="gs-more" hidden></button>
 		</section>
-
-		<section class="tu-card gs-sec" id="gs-drill" hidden>
-			<div class="gs-head"><h2 id="gs-drill-h">Queries for this page</h2><button type="button" class="tu-btn tu-btn--ghost" id="gs-drill-x">Close</button></div>
-			<p class="tu-note" id="gs-drill-note"></p>
-			<div class="gs-drillbars" id="gs-drill-bars"></div>
-			<div class="gs-wrap"><table class="gs-t" id="gs-dt"></table></div><button type="button" class="tu-btn tu-btn--ghost gs-more" id="gs-dmore" hidden></button>
-		</section>
 	</div>
+	<script src="/main_js/panel-view.js?v=1" defer></script>
+	<script src="/main_js/hub-theatre.js?v=2" defer></script>
