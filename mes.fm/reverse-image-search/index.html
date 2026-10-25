@@ -1,7 +1,7 @@
 <!DOCTYPE html>    <html lang="en">
 <!-- MES Reverse Image Search -- mes.fm/reverse-image-search -->
 <!-- Added by HTTrack --><meta http-equiv="content-type" content="text/html;charset=UTF-8" /><!-- /Added by HTTrack -->
-<head>                    <link rel="icon" href="/reverse-image-search/img/logo.png?v=2" type="image/png" /><link rel="canonical" href="https://mes.fm/reverse-image-search" />                    <title>MES Reverse Image Search | Math Easy Solutions</title>
+<head>                    <link rel="icon" href="/reverse-image-search/img/logo.png?v=2" type="image/png" /><link rel="canonical" href="https://mes.fm/reverse-image-search" />                    <title>MES Reverse Image Search | Math Easy Solutions</title><link rel="search" type="application/opensearchdescription+xml" title="MES Reverse Image Search" href="https://mes.fm/reverse-image-search/opensearch.xml" />
         <meta name="viewport" content="width=device-width, initial-scale=1">	<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css" integrity="sha384-BVYiiSIFeK1dGmJRAkycuHAHRg32OmUcww7on3RYdg4Va+PmSTsz/K68vbdEjh4u" crossorigin="anonymous">
         <style>html, body, div, span, applet, object, iframe, h1, h2, h3, h4, h5, h6, p, blockquote, pre, a, abbr, acronym, address, big, cite, code,del, dfn, em, img,
 ins, kbd, q, s, samp, small, strike, strong, sub, tt, var, u, i, center, dl, dt, dd, ol, ul, li, fieldset, form, label, legend, table, caption, tbody,
@@ -342,6 +342,16 @@ body.dark-mode .tu .rw-head {color:#a0a8b3;border-bottom-color:#555;} body.dark-
 	#ri .ri-two {display:grid;grid-template-columns:1fr 1fr;gap:1em;align-items:start;} #ri .ri-two .ri-box {border:2px solid transparent;border-radius:0.6em;padding:0.4em;} #ri .ri-two .ri-box.ri-active {border-color:var(--accent);} #ri .ri-either {margin:0 0 0.6em;}
 	@media (max-width:760px) {#ri .ri-two {grid-template-columns:1fr;}}
 	#ri input[type=file][hidden] {display:none !important;}
+	/* site search shortcut card */
+	.ri .ri-kw {margin-top:1em;}
+	.ri .ri-kw summary {cursor:pointer;font-weight:700;color:var(--accent);min-height:32px;line-height:1.5;}
+	.ri .ri-kw ol {margin:0.6em 0 0.4em 1.3em;padding:0;line-height:1.7;}
+	.ri .ri-kw-copy {display:inline-flex;flex-wrap:wrap;gap:0.4em;align-items:center;max-width:100%;}
+	.ri .ri-kw code {background:#f4f5f8;border:1px solid #dfe4ea;border-radius:0.3em;padding:0.05em 0.4em;word-break:break-all;}
+	.ri .ri-kw .tu-seg {margin:0.4em 0 0.2em;flex-wrap:wrap;}
+	body.dark-mode #ri.ri .ri-kw summary {color:var(--accent);}
+	body.dark-mode #ri.ri .ri-kw code {background:#1a1a1a;border-color:#444;color:#eee;}
+	body.dark-mode #ri.ri .ri-kw ol, body.dark-mode #ri.ri .ri-kw li, body.dark-mode #ri.ri .ri-kw p {color:#e6e6e6;}
 
 
 	@media print {
@@ -381,48 +391,6 @@ body.dark-mode .tu .rw-head {color:#a0a8b3;border-bottom-color:#555;} body.dark-
 		.footer__item--extra-padding { padding-left: 0; }
 		.footer__text--extra-info { float: none; display: block; margin-top: 0.5em; }
 	}
-/* Floating compact header bar: once the full header + nav scroll out of
-   view, a slim fixed bar (small logo, title, as many nav links as fit)
-   slides in, and the hamburger is pinned into its right end. Toggled by
-   the compact-nav script below. Ported from mes.fm/math's version (see
-   its build.mjs) -- display-controls.js pins the A-/A+/moon buttons into its right end.
-
-   Hidden by default via the inline style="display:none" on the element
-   itself (not just this stylesheet's "display: none" below) -- some
-   browser extensions strip or neutralize cosmetic-looking CSS for
-   elements named "sticky-*"/"*-bar" (a common ad/cookie-bar filter
-   pattern), which left an earlier version's raw unstyled markup visible
-   above the real header on mes.fm/math. The inline attribute is a
-   fallback the JS clears itself, independent of this stylesheet
-   surviving intact. */
-#compact-nav {
-  position: fixed; top: 0; left: 0; right: 0; height: 52px; z-index: 15;
-  display: none; align-items: center; gap: 12px;
-  padding: 0 80px 0 12px; box-sizing: border-box;
-  background: #ffffff; border-bottom: 3px solid #4f46e5;
-  box-shadow: 0 2px 8px rgba(0,0,0,0.18);
-  transform: translateY(-110%); transition: transform 0.2s ease;
-}
-#compact-nav.is-visible { display: flex; }
-body.is-stuck #compact-nav { transform: none; }
-#compact-nav .compact-nav-logo { display: block; width: 32px; height: 32px; border-radius: 6px; flex: 0 0 auto; }
-#compact-nav .compact-nav-title {
-  flex: 0 1 auto; min-width: 0; font-weight: 700; font-size: 1.05em; color: #1a1a1a;
-  text-decoration: none; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
-}
-#compact-nav .compact-nav-links { display: flex; flex: 1 1 0; min-width: 0; overflow: hidden; margin: 0 0 0 8px; padding: 0; list-style: none; }
-#compact-nav .compact-nav-links li { flex: 0 0 auto; }
-#compact-nav .compact-nav-links a { display: block; padding: 0 10px; line-height: 52px; font-size: 0.9em; color: #4f46e5; text-decoration: none; white-space: nowrap; }
-#compact-nav .compact-nav-links a:hover { background: rgba(79,70,229,0.12); }
-body.is-stuck #navbar-button { position: fixed !important; top: 4px !important; right: 8px !important; display: flex; align-items: center; }
-body.is-stuck #navbar.hide { position: fixed; top: 56px; right: 8px; }
-@media (max-width: 700px) {
-  #compact-nav .compact-nav-title { display: none; }
-  #compact-nav .compact-nav-logo { width: 36px; height: 36px; }
-}
-@media (max-width: 480px) {
-  #compact-nav { padding-right: 70px; gap: 8px; }
-}
 
 	/* TOOL-DARK:START -- generated by add_tool_page_controls.py, do not edit */
 	body.dark-mode .page-content :where(div,span,p,li,ul,ol,h1,h2,h3,h4,h5,h6,td,th,label,summary,small,strong,b,em,i,code,pre,legend,figcaption,dl,dt,dd,blockquote,caption,cite,button,input,select,textarea){color:#d8d8d8}
@@ -477,7 +445,50 @@ body.is-stuck #navbar.hide { position: fixed; top: 56px; right: 8px; }
 	body.dark-mode .ri-eng__n{color:#d1d6dc}
 	body.dark-mode .ri-eng__d{color:#9a9da3}
 	body.dark-mode .ri-eng .ri-tag{border:1px solid #3f8752;color:#7dde9d}
+	body.dark-mode .ri .ri-kw code{background:#17181c;border:1px solid #28323e}
 	/* TOOL-DARK:END */
+/* Floating compact header bar: once the full header + nav scroll out of
+   view, a slim fixed bar (small logo, title, as many nav links as fit)
+   slides in, and the hamburger is pinned into its right end. Toggled by
+   the compact-nav script below. Ported from mes.fm/math's version (see
+   its build.mjs) -- display-controls.js pins the A-/A+/moon buttons into its right end.
+
+   Hidden by default via the inline style="display:none" on the element
+   itself (not just this stylesheet's "display: none" below) -- some
+   browser extensions strip or neutralize cosmetic-looking CSS for
+   elements named "sticky-*"/"*-bar" (a common ad/cookie-bar filter
+   pattern), which left an earlier version's raw unstyled markup visible
+   above the real header on mes.fm/math. The inline attribute is a
+   fallback the JS clears itself, independent of this stylesheet
+   surviving intact. */
+#compact-nav {
+  position: fixed; top: 0; left: 0; right: 0; height: 52px; z-index: 15;
+  display: none; align-items: center; gap: 12px;
+  padding: 0 80px 0 12px; box-sizing: border-box;
+  background: #ffffff; border-bottom: 3px solid #4f46e5;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.18);
+  transform: translateY(-110%); transition: transform 0.2s ease;
+}
+#compact-nav.is-visible { display: flex; }
+body.is-stuck #compact-nav { transform: none; }
+#compact-nav .compact-nav-logo { display: block; width: 32px; height: 32px; border-radius: 6px; flex: 0 0 auto; }
+#compact-nav .compact-nav-title {
+  flex: 0 1 auto; min-width: 0; font-weight: 700; font-size: 1.05em; color: #1a1a1a;
+  text-decoration: none; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+}
+#compact-nav .compact-nav-links { display: flex; flex: 1 1 0; min-width: 0; overflow: hidden; margin: 0 0 0 8px; padding: 0; list-style: none; }
+#compact-nav .compact-nav-links li { flex: 0 0 auto; }
+#compact-nav .compact-nav-links a { display: block; padding: 0 10px; line-height: 52px; font-size: 0.9em; color: #4f46e5; text-decoration: none; white-space: nowrap; }
+#compact-nav .compact-nav-links a:hover { background: rgba(79,70,229,0.12); }
+body.is-stuck #navbar-button { position: fixed !important; top: 4px !important; right: 8px !important; display: flex; align-items: center; }
+body.is-stuck #navbar.hide { position: fixed; top: 56px; right: 8px; }
+@media (max-width: 700px) {
+  #compact-nav .compact-nav-title { display: none; }
+  #compact-nav .compact-nav-logo { width: 36px; height: 36px; }
+}
+@media (max-width: 480px) {
+  #compact-nav { padding-right: 70px; gap: 8px; }
+}
 </style>
         <meta property="fb:app_id" content="" />
         <meta name="author" content="Math Easy Solutions Staff">
@@ -736,6 +747,15 @@ body.is-stuck #navbar.hide { position: fixed; top: 56px; right: 8px; }
 				<div id="ri-clist"></div>
 			</details>
 		</div>
+		<details class="tu-card ri-kw" id="ri-kw">
+			<summary>&#9000; Search from your address bar: type <b>r</b>, a space and an image link</summary>
+			<p class="tu-note" style="margin-top:0.6em;">Add this page to your browser as a <b>site search shortcut</b> (it takes about 30 seconds). Then type <kbd>r</kbd>, <kbd>Space</kbd> and paste an image address in the address bar: this page opens with the picture filled in, and Enter (or Open) searches every site you ticked. It is a shortcut only: your normal search engine stays the default.</p>
+			<div class="tu-seg" id="ri-kw-br" role="group" aria-label="Your browser">
+				<button type="button" data-b="brave" aria-pressed="false">Brave</button><button type="button" data-b="chrome" aria-pressed="false">Chrome</button><button type="button" data-b="edge" aria-pressed="false">Edge</button><button type="button" data-b="firefox" aria-pressed="false">Firefox</button><button type="button" data-b="safari" aria-pressed="false">Safari / phone</button>
+			</div>
+			<div id="ri-kw-steps"></div>
+			<p class="tu-note">The image link you type is sent to mes.fm only to fill this page in; mes.fm's visit counter ignores it on this page. Want to search with <b>words</b> the same way? <a href="/search-engines">Search Engines</a> does that (its suggested shortcut is <b>mes</b>).</p>
+		</details>
 		<div class="tu-toast" id="ri-toast" role="status" aria-live="polite"></div>
 		<div class="tu-seo">
 			<h2>Reverse image search on every engine at once</h2>
@@ -820,7 +840,7 @@ body.is-stuck #navbar.hide { position: fixed; top: 56px; right: 8px; }
             hide_search:false,
             current_tab:0
         }        </script><!-- FASTCOMMENTS-LAZY: widget init moved to main_js/main.js -- it pulls embed.min.js only when #fastcomments-widget nears the viewport or on the first Comments-toggle click, so it no longer blocks first render -->                <script src="https://mes.fm/main_js/lazysizes.min.js?v=1.0.3" async></script>
-	<script src="/reverse-image-search/js/reverse-image-search.js?v=3" defer></script>
+	<script src="/reverse-image-search/js/reverse-image-search.js?v=4" defer></script>
             <script src="https://mes.fm/main_js/main.js?v=1.0.5"></script>    <!-- PAGEVIEW-TRACKING-INSERTED --><script src="https://mes.fm/main_js/track.js" defer></script><script>document.getElementById('copyright-year').textContent = new Date().getFullYear();</script><script src="/main_js/info-bar-fit.js" defer></script><script>
   // Floating compact header bar (see #compact-nav CSS): appears once the
   // header + nav bar have scrolled off the top; nav links that don't fit

@@ -92,7 +92,7 @@
     host.insertBefore(box, host.firstChild);
 
     /* text size */
-    var STEPS = [87.5, 100, 112.5, 125, 137.5, 150];
+    var STEPS = [75, 87.5, 100, 112.5, 125, 137.5, 150, 162.5, 175, 200];
     var targets = [];
     var self = document.querySelector('script[src*="display-controls.js"]');
     var scaleMain = !!(self && self.getAttribute("data-scale") === "main");

@@ -1334,4 +1334,57 @@
 	}
 	showTab(S.tab || "play");
 	syncSettings();
+
+	/* ---------- Fill window / Full screen: the board view covers the window and the board is sized from the window's height ---------- */
+	(function () {
+		var view = $("bgm-view"), stage = $("bgm-stage"), fillBtn = $("bgm-fill"), fsBtn = $("bgm-fs"), html = document.documentElement;
+		var fsEl = function () { return document.fullscreenElement || document.webkitFullscreenElement || null; };
+		var canFs = !!(view.requestFullscreen || view.webkitRequestFullscreen);
+		if (!canFs) fsBtn.hidden = true;
+		function big() { return view.classList.contains("is-fill") || fsEl() === view; }
+		function fit() {
+			if (!big()) { stage.style.maxWidth = ""; return; }
+			var other = 0;
+			Array.prototype.forEach.call(view.children, function (c) {
+				if (c === stage || c.hidden) return;
+				var cs = getComputedStyle(c); other += c.offsetHeight + parseFloat(cs.marginTop) + parseFloat(cs.marginBottom);
+			});
+			var vs = getComputedStyle(view), padV = parseFloat(vs.paddingTop) + parseFloat(vs.paddingBottom), padH = parseFloat(vs.paddingLeft) + parseFloat(vs.paddingRight);
+			var h = Math.max(160, view.clientHeight - padV - other - 4), w = Math.max(200, view.clientWidth - padH);
+			stage.style.maxWidth = Math.floor(Math.min(w, h * W / H)) + "px";
+		}
+		function paint() {
+			var fill = view.classList.contains("is-fill"), fs = fsEl() === view;
+			fillBtn.setAttribute("aria-pressed", fill ? "true" : "false");
+			fillBtn.textContent = fill ? "✕ Close" : "⤢ Fill window";
+			fsBtn.textContent = fs ? "✕ Exit full screen" : "⛶ Full screen";
+			html.classList.toggle("bgm-filled", fill);
+			fit();
+		}
+		function setFill(on) { view.classList.toggle("is-fill", !!on); paint(); }
+		function toggleFs() {
+			if (fsEl()) { (document.exitFullscreen || document.webkitExitFullscreen).call(document); return; }
+			setFill(false);
+			var p = (view.requestFullscreen || view.webkitRequestFullscreen).call(view);
+			if (p && p.catch) p.catch(function () {});
+		}
+		fillBtn.addEventListener("click", function () { var on = !view.classList.contains("is-fill"); if (fsEl()) toggleFs(); setFill(on); });
+		fsBtn.addEventListener("click", toggleFs);
+		document.addEventListener("fullscreenchange", paint);
+		document.addEventListener("webkitfullscreenchange", paint);
+		window.addEventListener("resize", fit);
+		if (window.ResizeObserver) {
+			var ro = new ResizeObserver(function () { fit(); });
+			Array.prototype.forEach.call(view.children, function (c) { if (c !== stage) ro.observe(c); });
+		}
+		/* capture phase, so Esc first deselects a checker (the game's own handler) and only then closes Fill window; W / F toggle */
+		document.addEventListener("keydown", function (e) {
+			if (S.tab !== "play" || e.ctrlKey || e.metaKey || e.altKey) return;
+			var tg = e.target; if (tg && /INPUT|SELECT|TEXTAREA/.test(tg.tagName)) return;
+			if (e.key === "Escape" && view.classList.contains("is-fill") && sel === null) { e.preventDefault(); setFill(false); }
+			else if (e.key === "w" || e.key === "W") { e.preventDefault(); setFill(!view.classList.contains("is-fill")); }
+			else if ((e.key === "f" || e.key === "F") && canFs) { e.preventDefault(); toggleFs(); }
+		}, true);
+		paint();
+	})();
 })();

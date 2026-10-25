@@ -1,8 +1,8 @@
 {
   "manifest_version": 3,
   "name": "MES Text Size",
-  "version": "1.0.0",
-  "description": "Make the text on any website bigger or smaller (A- / A+), remembered for each site. Free, private, no tracking. By MES (mes.fm).",
+  "version": "1.1.0",
+  "description": "Make the text on any website bigger or smaller (A- / A+), for this tab, this site or every site. Free, private, no tracking. By MES (mes.fm).",
   "homepage_url": "https://mes.fm/text-size",
   "icons": { "16": "icons/icon16.png", "32": "icons/icon32.png", "48": "icons/icon48.png", "128": "icons/icon128.png" },
   "action": {
@@ -14,9 +14,9 @@
   "background": { "service_worker": "background.js" },
   "permissions": ["storage", "activeTab"],
   "commands": {
-    "larger": { "suggested_key": { "default": "Alt+Shift+Up" }, "description": "Larger text on this site" },
-    "smaller": { "suggested_key": { "default": "Alt+Shift+Down" }, "description": "Smaller text on this site" },
-    "reset": { "suggested_key": { "default": "Alt+Shift+0" }, "description": "Normal text size on this site" }
+    "larger": { "suggested_key": { "default": "Alt+Shift+Up" }, "description": "Larger text (this tab, site or all sites, as set in the popup)" },
+    "smaller": { "suggested_key": { "default": "Alt+Shift+Down" }, "description": "Smaller text (this tab, site or all sites, as set in the popup)" },
+    "reset": { "suggested_key": { "default": "Alt+Shift+0" }, "description": "Normal text size (100%)" }
   },
   "content_scripts": [
     {

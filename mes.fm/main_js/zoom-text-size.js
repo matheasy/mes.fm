@@ -22,7 +22,7 @@
         ".video-embed.theater-mode{width:calc(100vw / var(--ts,1));max-width:calc(100vw / var(--ts,1));margin-left:calc(-50vw / var(--ts,1));margin-right:calc(-50vw / var(--ts,1));height:min(calc(85vh / var(--ts,1)),calc(56.25vw / var(--ts,1)))}";
     document.head.appendChild(css);
 
-    var STEPS = [87.5, 100, 112.5, 125, 137.5, 150];
+    var STEPS = [75, 87.5, 100, 112.5, 125, 137.5, 150, 162.5, 175, 200];
     var index;
     try { index = STEPS.indexOf(parseFloat(localStorage.getItem("articleFontScale"))); } catch (e) { index = -1; }
     if (index === -1) index = STEPS.indexOf(100);

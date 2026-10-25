@@ -93,7 +93,7 @@ function dashboardTabs(wallet?: string) {
 /** Same steps + localStorage key as the static pages' A-/A+ (shared across mes.fm). Scales the root
  * font-size, which is what Tailwind's rem-based text-* sizes follow; ThemeScript applies a saved
  * value before first paint. */
-const SCALE_STEPS = [87.5, 100, 112.5, 125, 137.5, 150];
+const SCALE_STEPS = [75, 87.5, 100, 112.5, 125, 137.5, 150, 162.5, 175, 200];
 const SCALE_KEY = 'articleFontScale';
 
 function useTextScale() {

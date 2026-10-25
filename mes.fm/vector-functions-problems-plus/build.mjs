@@ -1743,7 +1743,7 @@ ${bodyHtml}
     // navigation multiply into their font-size -- headings, chapter titles
     // ("Playlist"), cards and buttons stay fixed.
     (function () {
-      var STEPS = [87.5, 100, 112.5, 125, 137.5, 150];
+      var STEPS = [75, 87.5, 100, 112.5, 125, 137.5, 150, 162.5, 175, 200];
       var body = document.body;
       var downBtn = document.getElementById('textSizeDown');
       var upBtn = document.getElementById('textSizeUp');

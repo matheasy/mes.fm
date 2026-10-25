@@ -89,7 +89,7 @@ JS_BLOCK = """<script>
     // set of font-size scales, remembered per-visitor (shared across every
     // mirror page using this template, same convention as the theme toggle).
     (function () {
-      var STEPS = [87.5, 100, 112.5, 125, 137.5, 150];
+      var STEPS = [75, 87.5, 100, 112.5, 125, 137.5, 150, 162.5, 175, 200];
       var article = document.querySelector('article');
       var downBtn = document.getElementById('textSizeDown');
       var upBtn = document.getElementById('textSizeUp');
