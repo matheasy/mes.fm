@@ -97,7 +97,8 @@
 		p.text = (p.d ? p.d + " d " : "") + (p.d || p.h ? p.h + " h " : "") + p.m + " min " + p.s + " s";
 		return p;
 	}
-	function safeUrl(u) { u = String(u || "").trim(); if (!u) return ""; if (!/^https?:\/\//i.test(u)) u = "https://" + u; try { var x = new URL(u); return /^https?:$/.test(x.protocol) && x.hostname.indexOf(".") > 0 ? x.href : ""; } catch (e) { return ""; } }
+	// a mes.fm page may be given as a site path ("/livestream-143"): it becomes https://mes.fm/livestream-143
+	function safeUrl(u) { u = String(u || "").trim(); if (!u) return ""; if (/^\/(?![\/\\])/.test(u)) { if (u.indexOf("..") >= 0) return ""; u = "https://mes.fm" + u; } else if (!/^https?:\/\//i.test(u)) u = "https://" + u; try { var x = new URL(u); return /^https?:$/.test(x.protocol) && x.hostname.indexOf(".") > 0 ? x.href : ""; } catch (e) { return ""; } }
 	function host(u) { try { return new URL(u).hostname.replace(/^www\./, ""); } catch (e) { return ""; } }
 	var LIMITS = { title: 120, d: 600, u: 600 };
 	function clean(ev) {
@@ -108,13 +109,24 @@
 			r: ev.r === "weekly" ? "weekly" : "", len: Math.min(Math.max(Math.round(+ev.len || 60), 5), 24 * 60)
 		};
 	}
-	// share link query (readable: ?title=..&t=2026-10-25T11:00&tz=America/Vancouver&u=..)
+	// https://mes.fm/x -> /x (shorter links); anything else unchanged
+	function sitePath(u) { var m = /^https:\/\/(www\.)?mes\.fm(\/[^?#]*)?(\?[^#]*)?(#.*)?$/i.exec(u || ""); return m ? (m[2] || "/") + (m[3] || "") + (m[4] || "") : u; }
+	// query-value encoding that keeps : / , @ readable (all legal in a query) and spaces as +
+	function enc(s) { return encodeURIComponent(s).replace(/%20/g, "+").replace(/%3A/gi, ":").replace(/%2F/gi, "/").replace(/%2C/gi, ",").replace(/%40/g, "@"); }
+	// share link query (readable and short: ?title=..&t=2026-10-25T11:00&tz=America/Vancouver&u=/page; title "Reminder", len 60, once are defaults and left out)
 	function toQuery(ev) {
-		var e = clean(ev), q = new URLSearchParams();
-		q.set("title", e.title); q.set("t", e.t); if (e.tz && !/Z$/.test(e.t)) q.set("tz", e.tz);
-		if (e.u) q.set("u", e.u); if (e.r) q.set("r", e.r); if (e.len !== 60) q.set("len", String(e.len)); if (e.d) q.set("d", e.d);
-		return q.toString();
+		var e = clean(ev), q = [];
+		if (e.title && e.title !== "Reminder") q.push("title=" + enc(e.title));
+		q.push("t=" + enc(e.t)); if (e.tz && !/(Z|[+-]\d{2}:?\d{2})$/.test(e.t)) q.push("tz=" + enc(e.tz));
+		if (e.u) q.push("u=" + enc(sitePath(e.u))); if (e.r) q.push("r=" + e.r); if (e.len !== 60) q.push("len=" + e.len); if (e.d) q.push("d=" + enc(e.d));
+		return q.join("&");
 	}
+	// the fields sent to /api/reminder-link (u as a site path where it is a mes.fm page)
+	function apiBody(ev) { var e = clean(ev), b = { title: e.title, t: e.t, tz: e.tz || "UTC" }; if (e.u) b.u = sitePath(e.u); if (e.d) b.d = e.d; if (e.r) b.r = e.r; if (e.len !== 60) b.len = e.len; return b; }
+	// an event from the short-link API answer (same checks as a link)
+	function fromApi(o) { if (!o || typeof o !== "object" || !o.t) return null; var e = clean({ title: o.title || "Reminder", t: o.t, tz: o.tz || "UTC", u: o.u || "", d: o.d || "", r: o.r || "", len: o.len || 60 }); return isNaN(startOf(e)) ? null : e; }
+	// the short id in /r/<id> or ?r=<id> (a link with t= is a long link, whose r= means "repeats"), else ""
+	function shortId(pathname, search) { var m = /^\/r\/([a-z0-9]{7})\/?$/.exec(pathname || ""); if (m) return m[1]; var q = new URLSearchParams(search || ""), r = q.get("r"); return r && !q.get("t") && /^[a-z0-9]{7}$/.test(r) ? r : ""; }
 	function fromQuery(search) {
 		var q = new URLSearchParams(search || ""); if (!q.get("t")) return null;
 		var e = clean({ title: q.get("title") || q.get("e") || "Reminder", t: q.get("t"), tz: q.get("tz") || "UTC", u: q.get("u") || "", d: q.get("d") || "", r: q.get("r") || "", len: q.get("len") || 60 });
@@ -194,12 +206,13 @@
 		return null;
 	}
 	var RM = { easter: easter, nthWeekday: nthWeekday, HOLIDAYS: HOLIDAYS, nextHoliday: nextHoliday, parseWall: parseWall, wallText: wallText, wallToUtc: wallToUtc, startOf: startOf, nextStart: nextStart, countdown: countdown, safeUrl: safeUrl, host: host, clean: clean,
-		toQuery: toQuery, fromQuery: fromQuery, ics: ics, googleUrl: googleUrl, outlookUrl: outlookUrl, dueAlerts: dueAlerts, leadText: leadText, utcStamp: utcStamp };
+		toQuery: toQuery, fromQuery: fromQuery, sitePath: sitePath, apiBody: apiBody, fromApi: fromApi, shortId: shortId, ics: ics, googleUrl: googleUrl, outlookUrl: outlookUrl, dueAlerts: dueAlerts, leadText: leadText, utcStamp: utcStamp };
 	if (typeof module !== "undefined" && module.exports) module.exports = RM; else root.RM = RM;
 })(typeof window !== "undefined" ? window : globalThis);
 
 /* MES Reminder -- mes.fm/reminder (UI; maths in lib.js, global RM, on top of the Clock's CK). A share link holds the whole event
- * (?title=&t=2026-10-25T11:00&tz=America/Vancouver&u=&r=weekly&len=&d=), nothing is stored on a server. Viewers get a countdown in their
+ * (?title=&t=2026-10-25T11:00&tz=America/Vancouver&u=/page&r=weekly&len=&d=); a short link mes.fm/r/<id> (or ?r=<id>) holds the same fields
+ * in api/reminder-link.js (made only when "Copy short link" / "Copy text" is pressed). Viewers get a countdown in their
  * own time zone, calendar buttons (Google, .ics with alarms, Outlook.com) and an optional in-browser reminder (notification + sound while
  * a tab of this page is open). State: localStorage "mes-reminder:v1" = { items: [event + leads + added], leads, sound, fired: {key: ms} }.
  */
@@ -238,7 +251,7 @@
 		try { return new Intl.DateTimeFormat(undefined, o).format(new Date(ms)); } catch (e) { return new Date(ms).toString(); }
 	}
 	function shortWhen(ms) { try { return new Intl.DateTimeFormat(undefined, { weekday: "short", month: "short", day: "numeric", hour: "numeric", minute: "2-digit" }).format(new Date(ms)); } catch (e) { return new Date(ms).toLocaleString(); } }
-	function pageUrl(ev) { return location.origin + "/reminder?" + RM.toQuery(ev); }
+	function pageUrl(ev) { return ev === EV && EV_URL ? EV_URL : location.origin + "/reminder?" + RM.toQuery(ev); }
 	function slug(s) { return String(s).toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "").slice(0, 50) || "reminder"; }
 	function state(ev, now) {
 		var s = RM.nextStart(ev, now), end = s + (ev.len || 60) * 60000;
@@ -246,7 +259,7 @@
 	}
 
 	/* ---------- event view (from a share link) ---------- */
-	var EV = RM.fromQuery(location.search);
+	var EV = RM.fromQuery(location.search), EV_URL = "", RID = EV ? "" : RM.shortId(location.pathname, location.search);
 	function leadBoxes() {
 		$("rm-leads").innerHTML = LEADS.map(function (m) { return '<label class="rm-check"><input type="checkbox" value="' + m + '"' + (S.leads.indexOf(m) >= 0 ? " checked" : "") + "> " + esc(RM.leadText(m).replace(/^at/, "At").replace(/^(\d)/, "$1")) + "</label>"; }).join("");
 		$("rm-leads").addEventListener("change", function () {
@@ -283,8 +296,8 @@
 			$("rm-host").innerHTML = esc(EV.tz && EV.tz !== LOCAL ? "That is " + fmtWhen(st.start, EV.tz, true) + " in " + CK.city(EV.tz) + "." : "Shown in your time zone (" + CK.city(LOCAL) + ").") + tzA(st.start, EV.tz);
 		}
 	}
-	if (EV) {
-		$("rm-event").hidden = false;
+	function showEvent() {
+		$("rm-event").hidden = false; $("rm-ev-msg").hidden = true;
 		$("rm-ev-title").textContent = EV.title;
 		document.title = EV.title + " | Reminder | MES";
 		if (EV.d) { $("rm-notes").hidden = false; $("rm-notes").textContent = EV.d; }
@@ -393,14 +406,15 @@
 	function upd() {
 		var d = draft(), ok = d.t && d.tz && !isNaN(RM.startOf(d)), prev = $("rm-preview");
 		try { localStorage.setItem(MK, JSON.stringify({ title: d.title, date: $("rm-date").value, time: $("rm-time").value, tz: $("rm-tz").value, u: d.u, d: d.d, r: d.r, len: d.len })); } catch (e) {}
-		if (!d.tz) { prev.textContent = "Time zone not found: type a city such as Vancouver or London."; $("rm-link").value = ""; return; }
-		if (!ok) { prev.textContent = "Pick a date and a time to get the link."; $("rm-link").value = ""; return; }
+		if (!d.tz) { prev.textContent = "Time zone not found: type a city such as Vancouver or London."; $("rm-link").value = ""; $("rm-srow").hidden = true; return; }
+		if (!ok) { prev.textContent = "Pick a date and a time to get the link."; $("rm-link").value = ""; $("rm-srow").hidden = true; return; }
 		if (d.u && !RM.safeUrl(d.u)) { prev.textContent = "That link does not look like a web address (it should start with https://)."; }
 		else {
 			var s = RM.startOf(d);
 			prev.innerHTML = "Starts <strong>" + esc(fmtWhen(s, d.tz, true)) + "</strong>" + (d.tz !== LOCAL ? " (" + esc(fmtWhen(s, "", true)) + " for you)" : "") + (d.r ? ", every week" : "") + (s < Date.now() && !d.r ? '. <span style="color:#c0262d">That time has already passed.</span>' : ".") + tzA(s, d.tz);
 		}
 		if (!d.title.trim()) d.title = "Reminder";
+		$("rm-srow").hidden = !shownKey || shownKey !== JSON.stringify(RM.apiBody(d));
 		$("rm-link").value = pageUrl(d); $("rm-open").href = "/reminder?" + RM.toQuery(d);
 	}
 	(function restore() {
@@ -421,11 +435,41 @@
 		if (navigator.clipboard && navigator.clipboard.writeText) navigator.clipboard.writeText(text).then(done, fallback); else fallback();
 		function fallback() { var t = document.createElement("textarea"); t.value = text; document.body.appendChild(t); t.select(); try { document.execCommand("copy"); done(); } catch (e) { toast("Copy failed: select the link and copy it"); } t.remove(); }
 	}
-	$("rm-copy").addEventListener("click", function () { copy($("rm-link").value, "Link copied"); });
+	$("rm-copy").addEventListener("click", function () { copy($("rm-link").value, "Full link copied"); });
+	/* short link: POST the fields to api/reminder-link.js (same event -> same id); remembered per event for this visit */
+	var shorts = {}, shownKey = "";
+	function getShort(d) {
+		var body = RM.apiBody(d), k = JSON.stringify(body);
+		if (!shorts[k]) shorts[k] = fetch("/api/reminder-link", { method: "POST", headers: { "Content-Type": "application/json" }, body: k }).then(function (r) {
+			return r.json().catch(function () { return {}; }).then(function (j) { if (!r.ok || !j.id) throw new Error(r.status === 429 ? "Too many short links made from here in the last hour: try again later, or copy the full link." : "The short link could not be made right now: copy the full link instead."); return "https://mes.fm/r/" + j.id; });
+		}).then(function (u) { showShort(k, u); return u; }, function (e) { delete shorts[k]; throw e; });
+		return shorts[k];
+	}
+	function showShort(k, u) { shownKey = k; $("rm-slink").value = u; $("rm-srow").hidden = false; }
+	// the clipboard write starts inside the click (Safari needs that), with the text arriving when the server answers
+	function copyLater(p, msg, failMsg) {
+		var fail = function (e) { toast((e && e.message) || failMsg); };
+		if (window.ClipboardItem && navigator.clipboard && navigator.clipboard.write) {
+			try {
+				navigator.clipboard.write([new ClipboardItem({ "text/plain": p.then(function (t) { return new Blob([t], { type: "text/plain" }); }) })]).then(function () { toast(msg); }, function () { p.then(function (t) { copy(t, msg); }, fail); });
+				return;
+			} catch (e) {}
+		}
+		p.then(function (t) { copy(t, msg); }, fail);
+	}
+	$("rm-short").addEventListener("click", function () {
+		if (!$("rm-link").value) { copy("", ""); return; }
+		var d = draft(); if (!d.title.trim()) d.title = "Reminder";
+		copyLater(getShort(d), "Short link copied", "The short link could not be made: copy the full link instead.");
+	});
+	$("rm-scopy").addEventListener("click", function () { copy($("rm-slink").value, "Short link copied"); });
+	$("rm-slink").addEventListener("focus", function () { this.select(); });
 	$("rm-link").addEventListener("focus", function () { this.select(); });
 	$("rm-copytext").addEventListener("click", function () {
 		var d = draft(), link = $("rm-link").value; if (!link) { copy("", ""); return; }
-		copy("⏰ Get a reminder for " + (d.title.trim() || "this stream") + " (adds it to your calendar, in your time zone): " + link, "Text copied: paste it into the description");
+		var text = function (l) { return "⏰ Get a reminder for " + (d.title.trim() || "this stream") + " (adds it to your calendar, in your time zone): " + l; };
+		var d2 = draft(); if (!d2.title.trim()) d2.title = "Reminder";
+		copyLater(getShort(d2).then(text, function () { return text(link); }), "Text copied: paste it into the description");
 	});
 	$("rm-clear").addEventListener("click", function () { ["rm-title", "rm-url", "rm-desc", "rm-time"].forEach(function (id) { $(id).value = ""; }); $("rm-rep").value = ""; $("rm-len").value = "60"; $("rm-tz").value = LOCAL; upd(); });
 	upd();
@@ -454,7 +498,7 @@
 		if (document.fullscreenElement) { document.exitFullscreen(); return; }
 		if (ev.requestFullscreen) ev.requestFullscreen().catch(function () { setFill(true); }); else setFill(true);    // no Fullscreen API (iPhone): fill the window instead
 	}
-	if (EV) {
+	function wireView() {
 		$("rm-view").addEventListener("click", function (e) { var b = e.target.closest("[data-sz]"); if (!b) return; V.sz = +b.getAttribute("data-sz"); saveView(); paintView(); });
 		$("rm-fillbtn").addEventListener("click", function () { setFill(true); });
 		$("rm-fsbtn").addEventListener("click", toggleFs);
@@ -468,6 +512,19 @@
 		});
 		paintView();
 	}
+	// a short link (mes.fm/r/<id>): the event comes from api/reminder-link.js
+	function loadShort(id) {
+		var msg = $("rm-ev-msg"); msg.hidden = false; msg.textContent = "Loading the reminder…";
+		fetch("/api/reminder-link?id=" + encodeURIComponent(id)).then(function (r) { if (!r.ok) throw new Error(r.status === 404 ? "gone" : "err"); return r.json(); }).then(function (j) {
+			var e = RM.fromApi(j); if (!e) throw new Error("gone");
+			EV = e; EV_URL = "https://mes.fm/r/" + id; showEvent(); wireView();
+		}).catch(function (err) {
+			msg.innerHTML = err && err.message === "gone" ? "This reminder link was not found. It may have expired (links are kept for a year after the event) or been mistyped. Ask whoever shared it for a new one."
+				: 'The reminder could not be loaded right now. Check your connection and <a href="" id="rm-retry">try again</a>.';
+			var rt = $("rm-retry"); if (rt) rt.addEventListener("click", function (e) { e.preventDefault(); loadShort(id); });
+		});
+	}
+	if (EV) { showEvent(); wireView(); } else if (RID) loadShort(RID);
 
 	/* ---------- next scheduled MES streams: /reminder/upcoming.json (update_upcoming_streams.py) ---------- */
 	var HOSTZ = "America/Vancouver";

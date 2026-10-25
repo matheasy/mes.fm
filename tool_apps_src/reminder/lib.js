@@ -44,7 +44,8 @@
 		p.text = (p.d ? p.d + " d " : "") + (p.d || p.h ? p.h + " h " : "") + p.m + " min " + p.s + " s";
 		return p;
 	}
-	function safeUrl(u) { u = String(u || "").trim(); if (!u) return ""; if (!/^https?:\/\//i.test(u)) u = "https://" + u; try { var x = new URL(u); return /^https?:$/.test(x.protocol) && x.hostname.indexOf(".") > 0 ? x.href : ""; } catch (e) { return ""; } }
+	// a mes.fm page may be given as a site path ("/livestream-143"): it becomes https://mes.fm/livestream-143
+	function safeUrl(u) { u = String(u || "").trim(); if (!u) return ""; if (/^\/(?![\/\\])/.test(u)) { if (u.indexOf("..") >= 0) return ""; u = "https://mes.fm" + u; } else if (!/^https?:\/\//i.test(u)) u = "https://" + u; try { var x = new URL(u); return /^https?:$/.test(x.protocol) && x.hostname.indexOf(".") > 0 ? x.href : ""; } catch (e) { return ""; } }
 	function host(u) { try { return new URL(u).hostname.replace(/^www\./, ""); } catch (e) { return ""; } }
 	var LIMITS = { title: 120, d: 600, u: 600 };
 	function clean(ev) {
@@ -55,13 +56,24 @@
 			r: ev.r === "weekly" ? "weekly" : "", len: Math.min(Math.max(Math.round(+ev.len || 60), 5), 24 * 60)
 		};
 	}
-	// share link query (readable: ?title=..&t=2026-10-25T11:00&tz=America/Vancouver&u=..)
+	// https://mes.fm/x -> /x (shorter links); anything else unchanged
+	function sitePath(u) { var m = /^https:\/\/(www\.)?mes\.fm(\/[^?#]*)?(\?[^#]*)?(#.*)?$/i.exec(u || ""); return m ? (m[2] || "/") + (m[3] || "") + (m[4] || "") : u; }
+	// query-value encoding that keeps : / , @ readable (all legal in a query) and spaces as +
+	function enc(s) { return encodeURIComponent(s).replace(/%20/g, "+").replace(/%3A/gi, ":").replace(/%2F/gi, "/").replace(/%2C/gi, ",").replace(/%40/g, "@"); }
+	// share link query (readable and short: ?title=..&t=2026-10-25T11:00&tz=America/Vancouver&u=/page; title "Reminder", len 60, once are defaults and left out)
 	function toQuery(ev) {
-		var e = clean(ev), q = new URLSearchParams();
-		q.set("title", e.title); q.set("t", e.t); if (e.tz && !/Z$/.test(e.t)) q.set("tz", e.tz);
-		if (e.u) q.set("u", e.u); if (e.r) q.set("r", e.r); if (e.len !== 60) q.set("len", String(e.len)); if (e.d) q.set("d", e.d);
-		return q.toString();
+		var e = clean(ev), q = [];
+		if (e.title && e.title !== "Reminder") q.push("title=" + enc(e.title));
+		q.push("t=" + enc(e.t)); if (e.tz && !/(Z|[+-]\d{2}:?\d{2})$/.test(e.t)) q.push("tz=" + enc(e.tz));
+		if (e.u) q.push("u=" + enc(sitePath(e.u))); if (e.r) q.push("r=" + e.r); if (e.len !== 60) q.push("len=" + e.len); if (e.d) q.push("d=" + enc(e.d));
+		return q.join("&");
 	}
+	// the fields sent to /api/reminder-link (u as a site path where it is a mes.fm page)
+	function apiBody(ev) { var e = clean(ev), b = { title: e.title, t: e.t, tz: e.tz || "UTC" }; if (e.u) b.u = sitePath(e.u); if (e.d) b.d = e.d; if (e.r) b.r = e.r; if (e.len !== 60) b.len = e.len; return b; }
+	// an event from the short-link API answer (same checks as a link)
+	function fromApi(o) { if (!o || typeof o !== "object" || !o.t) return null; var e = clean({ title: o.title || "Reminder", t: o.t, tz: o.tz || "UTC", u: o.u || "", d: o.d || "", r: o.r || "", len: o.len || 60 }); return isNaN(startOf(e)) ? null : e; }
+	// the short id in /r/<id> or ?r=<id> (a link with t= is a long link, whose r= means "repeats"), else ""
+	function shortId(pathname, search) { var m = /^\/r\/([a-z0-9]{7})\/?$/.exec(pathname || ""); if (m) return m[1]; var q = new URLSearchParams(search || ""), r = q.get("r"); return r && !q.get("t") && /^[a-z0-9]{7}$/.test(r) ? r : ""; }
 	function fromQuery(search) {
 		var q = new URLSearchParams(search || ""); if (!q.get("t")) return null;
 		var e = clean({ title: q.get("title") || q.get("e") || "Reminder", t: q.get("t"), tz: q.get("tz") || "UTC", u: q.get("u") || "", d: q.get("d") || "", r: q.get("r") || "", len: q.get("len") || 60 });
@@ -141,6 +153,6 @@
 		return null;
 	}
 	var RM = { easter: easter, nthWeekday: nthWeekday, HOLIDAYS: HOLIDAYS, nextHoliday: nextHoliday, parseWall: parseWall, wallText: wallText, wallToUtc: wallToUtc, startOf: startOf, nextStart: nextStart, countdown: countdown, safeUrl: safeUrl, host: host, clean: clean,
-		toQuery: toQuery, fromQuery: fromQuery, ics: ics, googleUrl: googleUrl, outlookUrl: outlookUrl, dueAlerts: dueAlerts, leadText: leadText, utcStamp: utcStamp };
+		toQuery: toQuery, fromQuery: fromQuery, sitePath: sitePath, apiBody: apiBody, fromApi: fromApi, shortId: shortId, ics: ics, googleUrl: googleUrl, outlookUrl: outlookUrl, dueAlerts: dueAlerts, leadText: leadText, utcStamp: utcStamp };
 	if (typeof module !== "undefined" && module.exports) module.exports = RM; else root.RM = RM;
 })(typeof window !== "undefined" ? window : globalThis);

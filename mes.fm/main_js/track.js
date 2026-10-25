@@ -26,7 +26,7 @@
   var qs = q.toString();
   var data = new URLSearchParams({
     site: location.hostname,
-    path: (/^\/f\/[a-z0-9]+$/.test(location.pathname) ? '/fav' : location.pathname) + (qs ? '?' + qs : ''),
+    path: (/^\/f\/[a-z0-9]+$/.test(location.pathname) ? '/fav' : /^\/r\/[a-z0-9]+\/?$/.test(location.pathname) ? '/reminder' : location.pathname) + (qs ? '?' + qs : ''),   // short links (/f/<id>, /r/<id>) count as their page, never with the id
     referrer: document.referrer || '',
     ad: paid
   });

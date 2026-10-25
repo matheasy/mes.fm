@@ -1,4 +1,5 @@
 	<div class="tu" id="rm">
+		<p class="tu-card rm-evmsg" id="rm-ev-msg" role="status" hidden></p>
 		<div class="tu-card rm-event" id="rm-event" hidden>
 			<div class="rm-view" id="rm-view" role="group" aria-label="Countdown size">
 				<span class="rm-seg"><button type="button" data-sz="1" aria-pressed="true">Normal</button><button type="button" data-sz="2" aria-pressed="false">Big</button><button type="button" data-sz="3" aria-pressed="false">Huge</button></span>
@@ -59,13 +60,14 @@
 			<div class="tu-field" style="margin-top:0.7em;"><label for="rm-desc">Notes (optional)</label><textarea id="rm-desc" class="tu-input" rows="2" maxlength="600" placeholder="What it is about, who is on, ..."></textarea></div>
 			<p class="rm-preview" id="rm-preview"></p>
 			<div class="tu-field" style="margin-top:0.5em;"><label for="rm-link">Share this link</label>
-				<div class="rm-linkrow"><input id="rm-link" class="tu-input" type="text" readonly><button type="button" class="tu-btn tu-btn--primary" id="rm-copy">Copy link</button></div></div>
+				<div class="rm-linkrow"><input id="rm-link" class="tu-input" type="text" readonly aria-label="Full link"><button type="button" class="tu-btn tu-btn--primary" id="rm-short" title="A short mes.fm/r/... link, handy in video descriptions">Copy short link</button><button type="button" class="tu-btn" id="rm-copy">Copy full link</button></div>
+				<div class="rm-linkrow rm-srow" id="rm-srow" hidden><input id="rm-slink" class="tu-input" type="text" readonly aria-label="Short link"><button type="button" class="tu-btn" id="rm-scopy">Copy</button></div></div>
 			<div class="rm-actions" style="margin-top:0.6em;">
 				<button type="button" class="tu-btn" id="rm-copytext">Copy text for a video description</button>
 				<a class="tu-btn" id="rm-open">Open the reminder page</a>
 				<button type="button" class="tu-btn" id="rm-clear">Clear</button>
 			</div>
-			<p class="tu-note" style="margin-bottom:0;">The link holds everything (title, time, time zone, link, notes), so nothing is stored on a server. Everyone who opens it sees the time in their own time zone.</p>
+			<p class="tu-note" style="margin-bottom:0;">The full link holds everything (title, time, time zone, link, notes), so nothing is stored on a server. The short link (mes.fm/r/...) keeps the same details on mes.fm for a year after the event (two years for a weekly one); it is made only when you press Copy short link or Copy text. Everyone who opens either link sees the time in their own time zone.</p>
 		</div>
 
 		<div class="tu-seo">
@@ -82,7 +84,7 @@
 			<h4>Can I get an email?</h4>
 			<p>Not yet: an email reminder needs a server that stores your address and sends the message, and this page deliberately stores nothing. Most calendars can send you an email reminder themselves (in Google Calendar, edit the event and add an &ldquo;Email&rdquo; notification).</p>
 			<h4>What is stored?</h4>
-			<p>Nothing on mes.fm. The event is in the link itself, and the reminders you save with <em>Remind me in this browser</em> stay in this browser only.</p>
+			<p>With the full link, nothing on mes.fm: the event is in the link itself. A short link stores the event&rsquo;s title, time, time zone, link and notes on mes.fm (nothing about you) so the short address can find them; it is kept for a year after the event. The reminders you save with <em>Remind me in this browser</em> stay in this browser only.</p>
 			<h4>Related tools</h4>
 			<p>Convert a time with the <a href="/timezone">Time Zone Converter</a> and count down to any date with the <a href="/countdown-to-date">Date Countdown</a>.</p>
 		</div>

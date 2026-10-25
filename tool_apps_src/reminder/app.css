@@ -19,7 +19,7 @@
 	.tu .rm-actions .tu-btn {text-decoration:none;}
 	.tu .rm-saved {color:#1d7a3a;font-weight:600;}
 	.tu .rm-preview {margin:0.7em 0 0;color:#444;min-height:1.3em;}
-	.tu .rm-linkrow {display:flex;gap:0.5em;} .tu .rm-linkrow input {flex:1 1 auto;min-width:0;font-size:0.9em;}
+	.tu .rm-linkrow {display:flex;gap:0.5em;} .tu .rm-linkrow input {flex:1 1 auto;min-width:0;font-size:0.9em;} .tu .rm-srow {margin-top:0.45em;} .tu .rm-srow input {font-weight:600;} .tu .rm-evmsg {margin:0 0 1em;}
 	.tu .rm-item {display:flex;align-items:center;gap:0.8em;padding:0.6em 0;border-bottom:1px solid #e3e7ec;flex-wrap:wrap;}
 	.tu .rm-item:last-child {border-bottom:0;}
 	.tu .rm-item-main {flex:1 1 16em;min-width:0;}

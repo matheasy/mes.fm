@@ -4,7 +4,8 @@
 No YouTube: the source is the pre-stream mes.fm pages themselves. A page for an upcoming stream
 (mes.fm/math-qa-<N>-<slug>/ or mes.fm/livestream-<N>-<slug>/, e.g. math-qa-73-thermal-expansion) carries a
 "Get a reminder" link  https://mes.fm/reminder?title=...&t=2026-10-28T10:00&tz=America/Vancouver&u=...
-and that link is read here: title, start (wall time + zone -> UTC) the watch link (u, else the page),
+and that link is read here (the shorter form, u=/page and readable : /, works too; keep the FULL
+reminder link on the page, not a mes.fm/r/<id> short link, which only the server can resolve): title, start (wall time + zone -> UTC) the watch link (u, else the page),
 length (len) and notes (d, else the page's meta description).
 Streams that started more than 2 h ago are dropped (the page also hides them once they have passed).
 
@@ -42,6 +43,8 @@ def streams(now):
                 continue
             page = f"https://mes.fm/{f.parent.name}"
             url = q.get("u") or page
+            if url.startswith("/") and not url.startswith("//"):   # the shorter link form: a mes.fm page as a site path (u=/livestream-143-...)
+                url = "https://mes.fm" + url
             if urlsplit(url).scheme not in ("http", "https"):
                 url = page
             # notes for the Notes box: the reminder link's own d=, else the page's meta description
