@@ -1897,7 +1897,7 @@ ${viewToggleWiring}${hasFilter ? `\n${FILTER_JS}${filterWiring}` : ""}
   // only .page-description and the Jump To panel, leaving headings, card
   // titles, and nav untouched.
   (function () {
-    var STEPS = [87.5, 100, 112.5, 125, 137.5, 150];
+    var STEPS = [75, 87.5, 100, 112.5, 125, 137.5, 150, 162.5, 175, 200];
     var TARGETS = [
       { el: document.querySelector('.page-description'), base: 1 },
       { el: document.querySelector('.toc-sidebar'), base: 0.85 },
