@@ -60,7 +60,7 @@
 	};
 
 	/* ---------- files and folders ---------- */
-	var IMG = /\.(png|jpe?g|webp|gif|bmp|avif|psd|xcf|mesproj)$/i, BRAVE_FLAG = "brave://flags/#file-system-access-api", dirHandle = null, roFiles = null, roName = "";
+	var IMG = /\.(png|jpe?g|webp|gif|bmp|avif|psd|xcf|mesproj|zip)$/i, BRAVE_FLAG = "brave://flags/#file-system-access-api", dirHandle = null, roFiles = null, roName = "";
 	var handles = PE.srcHandles = {}, hseq = 0;   // memory only: file handles of pictures added from the connected folder (a handle cannot go into a project file)
 	function canFS() { return typeof window.showDirectoryPicker === "function"; }
 	function isBrave() { return !!(navigator.brave && typeof navigator.brave.isBrave === "function"); }
@@ -103,6 +103,7 @@
 		chip.innerHTML = '<button type="button" class="pe-fchip-n" data-a="open">📁 Folder access: <b>' + esc(nm) + '</b></button><span aria-hidden="true">·</span><button type="button" class="pe-fchip-x" data-a="off">Disconnect</button>';
 	}
 	PE.folderAccess = function () { return accessName(); };
+	PE.folderHandle = function () { return dirHandle || remembered || null; };   // the connected folder (for Save as / Open pickers to start in, and to show a project file's folder)
 	PE.disconnectFolder = function () {
 		var nm = accessName(); dirHandle = null; remembered = null; roFiles = null; for (var k in handles) delete handles[k];
 		idb(function (st) { return rq(st.delete("dir")); }).catch(function () {}).then(function () { drawChip(); PE.emit("folder"); PE.toast(nm ? "Disconnected “" + nm + "”: the editor can no longer open or change files there" : "No folder is connected"); });
@@ -156,7 +157,7 @@
 		roInp.type = "file"; roInp.multiple = true; roInp.setAttribute("webkitdirectory", ""); roInp.hidden = true; roInp.setAttribute("aria-hidden", "true"); bAgain.hidden = true;
 		var nameIn = el("input"), kind = el("select"), bSave = btn("⬇ Save"), saveHint = el("p", "pe-hint2");
 		nameIn.type = "text"; nameIn.value = PE.doc ? PE.doc.name : "image"; nameIn.setAttribute("aria-label", "File name"); nameIn.spellcheck = false; kind.setAttribute("aria-label", "Save as");
-		kind.innerHTML = '<option value="png">PNG picture (flattened)</option><option value="proj">Project .mesproj (keeps layers)</option>';
+		kind.innerHTML = '<option value="png">PNG picture (flattened)</option><option value="proj">Project .mesproj (keeps layers; it is a ZIP)</option>';
 		saveRow.appendChild(el("span", "pe-fx-l", "Save this image as")); saveRow.appendChild(nameIn); saveRow.appendChild(kind); saveRow.appendChild(bSave);
 		if (canFS()) { bar.appendChild(bPick); bar.appendChild(bAgain); note.hidden = true; }
 		else {
@@ -192,10 +193,10 @@
 			var io = "IntersectionObserver" in window ? new IntersectionObserver(function (es) { es.forEach(function (x) { if (x.isIntersecting) { io.unobserve(x.target); x.target._load(); } }); }, { root: grid, rootMargin: "200px" }) : null;
 			shown.forEach(function (e) {
 				var t = el("button", "pe-fold-t"), c = el("canvas"), n = el("span", "pe-fold-n", esc(e.label)); t.type = "button"; c.width = 120; c.height = 90; t.appendChild(c); t.appendChild(n); t.title = e.label + " · click: add as a layer · Shift-click: open as a new image";
-				t._load = function () { if (/\.(psd|xcf|mesproj)$/i.test(e.name)) { var x = c.getContext("2d"); x.fillStyle = "#26262e"; x.fillRect(0, 0, 120, 90); x.fillStyle = "#9b9bab"; x.font = "bold 14px sans-serif"; x.textAlign = "center"; x.fillText(e.name.split(".").pop().toUpperCase(), 60, 50); return; }
+				t._load = function () { if (/\.(psd|xcf|mesproj|zip)$/i.test(e.name)) { var x = c.getContext("2d"); x.fillStyle = "#26262e"; x.fillRect(0, 0, 120, 90); x.fillStyle = "#9b9bab"; x.font = "bold 14px sans-serif"; x.textAlign = "center"; x.fillText(e.name.split(".").pop().toUpperCase(), 60, 50); return; }
 					e.file().then(function (f) { return createImageBitmap(f, { resizeWidth: 120, resizeQuality: "medium" }).catch(function () { return PE.decodeFile(f); }); }).then(function (im) { var x = c.getContext("2d"), w = im.width || im.naturalWidth, h = im.height || im.naturalHeight, s = Math.min(120 / w, 90 / h); x.drawImage(im, (120 - w * s) / 2, (90 - h * s) / 2, w * s, h * s); }).catch(function () { n.textContent = "⚠ " + e.label; }); };
 				if (io) io.observe(t); else t._load();
-				t.addEventListener("click", function (ev) { var o = { place: !!PE.doc && !ev.shiftKey }; if (e.fh) { o.how = "folder"; o.dir = dirHandle ? dirHandle.name : ""; o.hk = regHandle(e.fh, dirHandle); } else { o.how = "folder-ro"; o.dir = roName; }
+				t.addEventListener("click", function (ev) { var o = { place: !!PE.doc && !ev.shiftKey }; if (e.fh) { o.how = "folder"; o.dir = dirHandle ? dirHandle.name : ""; o.hk = regHandle(e.fh, dirHandle); o.fh = e.fh; } else { o.how = "folder-ro"; o.dir = roName; }
 					e.file().then(function (f) { PE.openFiles([f], o); m.close(); }).catch(function (x) { PE.toast("Could not open " + e.name + ": " + errText(x)); }); });
 				grid.appendChild(t);
 			});
@@ -212,7 +213,8 @@
 		function saveTo(dh, k, name) {
 			return perm(dh, true, true).then(function (p) { if (p !== "granted") throw new Error("the browser did not allow saving into “" + dh.name + "”"); return namesIn(dh); })
 				.then(function (used) { if (used[name.toLowerCase()] && !window.confirm("“" + name + "” is already in “" + dh.name + "”. Replace it?")) throw "cancel"; return k === "proj" ? PE.projectBlob() : PE.exportBlob("png", 1, {}); })
-				.then(function (b) { return writeFile(dh, name, b); });
+				.then(function (b) { return writeFile(dh, name, b); })
+				.then(function (fh) { if (k === "proj" && PE.linkProject) return fh.getFile().then(function (f) { PE.doc.name = P.projectBase(name); PE.linkProject(fh, { dir: dh.name, lm: f.lastModified, savedAt: Date.now() }); return fh; }); return fh; });
 		}
 		bSave.addEventListener("click", function () {
 			if (!PE.doc) { PE.toast("Open or create an image first"); return; }
@@ -239,24 +241,31 @@
 				.then(function () { b.disabled = false; });
 		}
 
-		/* 3. the autosave in this browser */
-		var sA = sec("Autosave in this browser"), aP = el("p", "pe-fx-auto"), uP = el("p", "pe-hint2"), ab = el("div", "pe-fold-h"), bClear = btn("🗑 Clear autosave", "Delete the autosaved copy of your project from this browser (you are asked first)");
-		sA.appendChild(el("p", "pe-hint2", "While you work, the editor keeps a copy of your project in this browser's own storage (the IndexedDB database “mes-photo-editor” of mes.fm), 5 seconds after each change, so a reload or a crash does not lose your work. It stays on this computer, in this browser only, and is not a file you can find in a folder."));
-		ab.appendChild(bClear); sA.appendChild(aP); sA.appendChild(ab); sA.appendChild(uP);
-		sA.appendChild(el("p", "pe-hint2", "💾 Save project and Export make a real file: the browser puts it in its Downloads folder (or asks where, if it is set to ask)."));
+		/* 3. the autosaves in this browser (one per recent project) */
+		var sA = sec("Autosave in this browser"), aP = el("p", "pe-fx-auto"), uP = el("p", "pe-hint2"), ab = el("div", "pe-fold-h"), bClear = btn("🗑 Clear all autosaves", "Delete the autosaved copies of your projects from this browser (you are asked first; project files on your disk are not touched)"), bRec = btn("Recent projects…", "Open one of the projects autosaved here or saved to a file");
+		sA.appendChild(el("p", "pe-hint2", "While you work, the editor keeps a copy of each project in this browser's own storage (the IndexedDB database “mes-photo-editor” of mes.fm), 5 seconds after each change, so a reload or a crash does not lose your work. The last " + 8 + " projects are kept (500 MB at most) and listed under File → Open recent. They stay on this computer, in this browser only, and are not files you can find in a folder."));
+		ab.appendChild(bRec); ab.appendChild(bClear); sA.appendChild(aP); sA.appendChild(ab); sA.appendChild(uP);
+		var lk = PE.projectLink && PE.projectLink();
+		sA.appendChild(el("p", "pe-hint2", lk ? "💾 This project is saved in the file <b>" + esc(PE.projectWhere()) + "</b>: " + esc(PE.modKey()) + "S writes it there" + (PE.autoFileOn() ? " (and Auto-save does, 20 s after you stop)" : "") + "." : "💾 Save project makes a real file (a .mesproj, which is an ordinary ZIP): in a folder you choose where the browser allows it, else in your Downloads folder. Export makes a flat picture."));
 		function drawAuto() {
-			idb(function (st) { return rq(st.get("auto")); }).then(function (r) { bClear.disabled = !r; aP.innerHTML = r ? "Last autosave: <b>" + esc(r.name || "Untitled") + "</b>, " + r.w + " × " + r.h + " px, " + esc(P.bytesText(r.blob ? r.blob.size : 0)) + ", " + esc(new Date(r.t).toLocaleString()) + "." : "Nothing is autosaved at the moment."; })
+			(PE.recentReady ? PE.recentReady() : Promise.resolve([])).then(function () { var l = PE.recentList ? PE.recentList() : [], a = l.filter(function (e) { return e.bytes > 0; }), tot = 0; a.forEach(function (e) { tot += e.bytes; });
+				bClear.disabled = !a.length; bRec.disabled = !l.length; aP.innerHTML = a.length ? "<b>" + a.length + "</b> project" + (a.length === 1 ? "" : "s") + " autosaved here (" + esc(P.bytesText(tot)) + "), the newest <b>" + esc(a[0].name || "Untitled") + "</b>, " + esc(new Date(a[0].at || a[0].t).toLocaleString()) + "." : "Nothing is autosaved at the moment."; })
 				.catch(function () { bClear.disabled = true; aP.textContent = "This browser's storage cannot be read here (a private window, or site data is blocked), so nothing is autosaved."; });
 			if (navigator.storage && navigator.storage.estimate) navigator.storage.estimate().then(function (e) { uP.textContent = "All of mes.fm (every tool) uses about " + P.bytesText(e.usage || 0) + " of this browser's storage."; }).catch(function () {});
 		}
-		bClear.addEventListener("click", function () { if (!window.confirm("Delete the autosaved copy of your project from this browser?\n\nThe image that is open now stays open, and it is autosaved again 5 seconds after your next change.")) return; idb(function (st) { return rq(st.delete("auto")); }).then(function () { var rb = document.getElementById("pe-restore"); if (rb) rb.hidden = true; PE.toast("Autosave cleared"); drawAuto(); }).catch(function (x) { PE.toast("Could not clear the autosave: " + errText(x)); }); });
+		bRec.addEventListener("click", function () { m.close(); PE.dlgRecent(); });
+		bClear.addEventListener("click", function () { if (!window.confirm("Delete the autosaved copies of all your projects from this browser?\n\nThe image that is open now stays open, and it is autosaved again 5 seconds after your next change. Project files on your disk are not touched.")) return; PE.clearAutosaves().then(function () { PE.toast("Autosaves cleared"); drawAuto(); }).catch(function (x) { PE.toast("Could not clear the autosaves: " + errText(x)); }); });
+
+		/* 4. keep working on another computer */
+		var sM = sec("Keep working on another computer", "Three ways to carry a project between computers and browsers. Nothing is stored on mes.fm's servers.");
+		if (PE.moveHelpEl) sM.appendChild(PE.moveHelpEl());
 
 		var m = PE.modal({ title: "Files and folders", wide: true, cls: "pe-dlg--files", body: wrap, noFocus: true, buttons: [{ label: "Close", act: function (mm) { mm.close(); } }] });
 		drawWhere(); drawAuto(); refreshState();
 		if (canFS() && dirHandle) load(dirHandle);
 		else if (canFS()) { msg.textContent = "Choose a folder to see its pictures."; idb(function (st) { return rq(st.get("dir")); }).then(function (h) { stored = h || null; refreshState(); }).catch(function () {}); }
 		else if (roFiles) { entries = roEntries(); count(roName, entries.length); render(); }
-		if (focus === "folder") setTimeout(function () { m.body.scrollTop = Math.max(0, sF.offsetTop - wrap.offsetTop - 4); }, 0);
+		if (focus === "folder" || focus === "move") setTimeout(function () { var t = focus === "move" ? sM : sF; m.body.scrollTop += t.getBoundingClientRect().top - m.body.getBoundingClientRect().top - 4; }, 0);
 		return m;
 	};
 })();

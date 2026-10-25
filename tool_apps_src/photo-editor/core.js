@@ -310,7 +310,7 @@
 	/* ---------- documents ---------- */
 	PE.newDoc = function (w, h, bg, name) {
 		w = Math.round(w); h = Math.round(h); if (!(w > 0 && h > 0) || w > PE.MAXPX || h > PE.MAXPX || w * h > PE.MAXAREA) { PE.toast("That size is too large for a browser (max " + PE.MAXPX + " px a side)"); return false; }
-		PE.doc = { w: w, h: h, layers: [], activeId: 0, next: 1, name: name || "Untitled", comps: [] }; PE.sel = null; H.stack = []; H.idx = -1; lastSel = { ver: -1 };
+		PE.doc = { w: w, h: h, layers: [], activeId: 0, next: 1, name: name || "Untitled", comps: [], pid: P.newProjectId() }; PE.sel = null; H.stack = []; H.idx = -1; lastSel = { ver: -1 };
 		var L = PE.makeLayer({ name: bg ? "Background" : "Layer 1" }); if (bg) { var x = L.canvas.getContext("2d"); x.fillStyle = bg; x.fillRect(0, 0, w, h); }
 		PE.doc.layers.push(L); PE.doc.activeId = L.id; PE.commit("New document"); PE.dirty = false; PE.emit("docsize"); PE.emit("sel"); PE.fit(); return true;
 	};
@@ -479,20 +479,35 @@
 			if (L.mask) jobs.push(canvasBytes(L.mask).then(function (u) { files.push({ name: "mask-" + L.id + ".png", data: u }); }));
 		});
 		return Promise.all(jobs).then(function () {
-			files.unshift({ name: "project.json", data: new TextEncoder().encode(JSON.stringify({ app: "MES Photo Editor", v: 2, w: d.w, h: d.h, name: d.name, active: d.activeId, next: d.next, layers: metas, comps: d.comps || [] })) });
+			files.unshift({ name: "project.json", data: new TextEncoder().encode(JSON.stringify({ app: "MES Photo Editor", v: 2, pid: d.pid || (d.pid = P.newProjectId()), w: d.w, h: d.h, name: d.name, active: d.activeId, next: d.next, layers: metas, comps: d.comps || [] })) });
 			return new Blob([I.zipStore(files)], { type: "application/zip" });
 		});
 	};
 	function loadPng(u8) { return new Promise(function (res, rej) { var u = URL.createObjectURL(new Blob([u8], { type: "image/png" })), im = new Image(); im.onload = function () { var c = mk(im.naturalWidth, im.naturalHeight); c.getContext("2d").drawImage(im, 0, 0); URL.revokeObjectURL(u); res(c); }; im.onerror = function () { rej(new Error("bad layer image")); }; im.src = u; }); }
-	PE.loadProject = function (buf, fileName, meta) {
-		var files = I.zipRead(new Uint8Array(buf)); if (!files) return Promise.reject(new Error("Not a MES project file"));
+	/* the files of a ZIP (stored, or deflated as Finder / Explorer / 7-Zip make them) with project.json's folder stripped from the names */
+	PE.readProjectZip = function (u8) {
+		var ents = P.zipEntries(u8); if (!ents) return Promise.reject(new Error("Not a MES project file (not a ZIP this editor can read)"));
+		var pre = P.projectPrefix(ents.map(function (e) { return e.name; })); if (pre === null) return Promise.reject(new Error("Not a MES project file: the ZIP has no project.json"));
+		ents = ents.filter(function (e) { return e.name.indexOf(pre) === 0 && !/(^|\/)__MACOSX\//.test(e.name); });
+		return Promise.all(ents.map(function (e) {
+			var name = e.name.slice(pre.length); if (e.method === 0) return { name: name, data: e.data };
+			if (typeof DecompressionStream !== "function") throw new Error("This browser cannot unpack compressed ZIPs: save the project from the editor (it writes an uncompressed one)");
+			return new Response(new Blob([e.data]).stream().pipeThrough(new DecompressionStream("deflate-raw"))).arrayBuffer().then(function (ab) { return { name: name, data: new Uint8Array(ab) }; });
+		}));
+	};
+	PE.isProjectZip = function (u8) { var e = P.isZipBytes(u8) && P.zipEntries(u8); return !!(e && P.projectPrefix(e.map(function (x) { return x.name; })) !== null); };
+	/* opts: {pid} = the project id to use when project.json has none (an autosave from before round 5) */
+	PE.loadProject = function (buf, fileName, meta, opts) {
+		opts = opts || {}; return PE.readProjectZip(new Uint8Array(buf)).then(function (files) { return loadProjectFiles(files, fileName, meta, opts); });
+	};
+	function loadProjectFiles(files, fileName, meta, opts) {
 		var by = {}; files.forEach(function (f) { by[f.name] = f.data; }); if (!by["project.json"]) return Promise.reject(new Error("Not a MES project file"));
 		var p = JSON.parse(new TextDecoder().decode(by["project.json"])), layers = [];
 		return Promise.all(p.layers.map(function (m, i) {
 			return loadPng(by["layer-" + m.id + ".png"]).then(function (c) { var L = PE.makeLayer({ canvas: c, name: m.name, type: m.type, text: m.text }); L.id = m.id; L.eq = m.eq || null; L.src = m.src || (m.type === "group" ? null : { how: fileName === "autosave" ? "autosave" : "project", file: fileName === "autosave" ? "" : fileName || "" }); ["cx", "cy", "sx", "sy", "rot", "visible", "opacity", "blend", "locked", "group", "collapsed"].forEach(function (k) { if (m[k] !== undefined) L[k] = m[k]; }); layers[i] = L; return m.hasMask ? loadPng(by["mask-" + m.id + ".png"]).then(function (mc) { L.mask = mc; }) : null; });
 		})).then(function () {
-			PE.doc = { w: p.w, h: p.h, layers: layers, activeId: p.active, next: p.next || 1000, name: p.name || "Untitled", comps: p.comps || [], file: PE.mkSrc(fileName === "autosave" ? { how: "autosave" } : Object.assign({ how: "project", file: fileName }, meta || {}, { how: "project" })) }; PE.relink(); PE.sel = null; H.stack = []; H.idx = -1; lastSel = { ver: -1 };
+			PE.doc = { w: p.w, h: p.h, layers: layers, activeId: p.active, next: p.next || 1000, name: p.name || "Untitled", comps: p.comps || [], pid: p.pid || opts.pid || P.newProjectId(), file: PE.mkSrc(fileName === "autosave" ? { how: "autosave" } : Object.assign({ how: "project", file: fileName }, meta || {}, { how: "project" })) }; PE.relink(); PE.sel = null; H.stack = []; H.idx = -1; lastSel = { ver: -1 };
 			PE.commit("Open project"); PE.dirty = false; PE.emit("docsize"); PE.emit("sel"); PE.fit();
 		});
-	};
+	}
 })();

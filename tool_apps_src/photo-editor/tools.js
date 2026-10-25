@@ -14,6 +14,7 @@
 	/* ---------- pointer dispatch ---------- */
 	var down = {}, gesture = null, panning = null, spaceDown = false, current = null;
 	PE.setSpace = function (v) { spaceDown = v; };
+	PE.pointerBusy = function () { return Object.keys(down).length > 0 || !!current; };   // a stroke / drag is going on (auto-save to the project file waits)
 	PE.initPointer = function () {
 		var el = PE.els.over;
 		el.addEventListener("pointerdown", function (e) {

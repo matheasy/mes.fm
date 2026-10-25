@@ -324,7 +324,74 @@ var MESPixel = (function () {
 		if (key === "Home") return { to: "min" }; if (key === "End") return { to: "max" }; if (key === "Enter") return { to: "reset" };
 		return null;
 	}
-	var api = { unionBox: unionBox, boxesTouch: boxesTouch, rectFrom: rectFrom, snapTargets: snapTargets, snapAxis: snapAxis, snapBox: snapBox, guidesOn: guidesOn, linSolve: linSolve, scaleAbout: scaleAbout, wrapLines: wrapLines, caretLine: caretLine, hitInLine: hitInLine, wordAt: wordAt, describeSource: describeSource, bytesText: bytesText, panelClamp: panelClamp, panelKey: panelKey, clamp: clamp, hexToRgb: hexToRgb, rgbToHex: rgbToHex, rgbToHsl: rgbToHsl, hslToRgb: hslToRgb, histogram: histogram, identityLUT: identityLUT, applyLUT: applyLUT, levelsLUT: levelsLUT, curveLUT: curveLUT,
+	/* ---------- project files and recent projects (round 5) ---------- */
+	/* a .mesproj is a ZIP: what kind of project file is this name? */
+	function projectKind(name) { name = String(name || "").toLowerCase(); return /\.mesproj$/.test(name) ? "mesproj" : /\.zip$/.test(name) ? "zip" : null; }
+	/* "Fetzer.mesproj" / "Fetzer.zip" / "Fetzer.mesproj.zip" -> "Fetzer" */
+	function projectBase(name) { var s = String(name || "").replace(/^.*[\\\/]/, "").replace(/(\.mesproj)?(\.zip)?$/i, "").replace(/\.mesproj$/i, "").trim(); return s || "Untitled"; }
+	/* a file name for a project: base cleaned of characters file systems refuse, + .mesproj or .zip */
+	function projectFileName(base, kind) { var b = String(base || "").replace(/[\\\/:*?"<>|\u0000-\u001f]+/g, " ").replace(/\s+/g, " ").trim().replace(/^\.+/, "").slice(0, 120) || "Untitled"; return b + (kind === "zip" ? ".zip" : ".mesproj"); }
+	/* "PK\3\4" (or an empty ZIP's "PK\5\6") at the start */
+	function isZipBytes(u8) { return !!u8 && u8.length >= 4 && u8[0] === 0x50 && u8[1] === 0x4b && ((u8[2] === 3 && u8[3] === 4) || (u8[2] === 5 && u8[3] === 6)); }
+	/* the ZIP's entries from its central directory: [{name, method (0 stored, 8 deflate), data (still compressed), size}], or null when it is not a ZIP we can read */
+	function zipEntries(u8) {
+		if (!u8 || u8.length < 22) return null; var dv = new DataView(u8.buffer, u8.byteOffset, u8.byteLength), i = u8.length - 22, stop = Math.max(0, u8.length - 22 - 65557);
+		while (i >= stop && dv.getUint32(i, true) !== 0x06054b50) i--; if (i < stop) return null;
+		var n = dv.getUint16(i + 10, true), p = dv.getUint32(i + 16, true), out = [], dec = typeof TextDecoder !== "undefined" ? new TextDecoder() : null;
+		for (var k = 0; k < n; k++) {
+			if (p + 46 > u8.length || dv.getUint32(p, true) !== 0x02014b50) return null;
+			var method = dv.getUint16(p + 10, true), csz = dv.getUint32(p + 20, true), usz = dv.getUint32(p + 24, true), nl = dv.getUint16(p + 28, true), xl = dv.getUint16(p + 30, true), cl = dv.getUint16(p + 32, true), lo = dv.getUint32(p + 42, true);
+			var nb = u8.subarray(p + 46, p + 46 + nl), name = dec ? dec.decode(nb) : String.fromCharCode.apply(null, nb);
+			if (lo + 30 > u8.length || dv.getUint32(lo, true) !== 0x04034b50) return null;
+			var st = lo + 30 + dv.getUint16(lo + 26, true) + dv.getUint16(lo + 28, true);
+			if (method !== 0 && method !== 8) return null; if (st + csz > u8.length) return null;
+			if (!/\/$/.test(name)) out.push({ name: name, method: method, data: u8.subarray(st, st + csz), size: usz });
+			p += 46 + nl + xl + cl;
+		}
+		return out;
+	}
+	/* where project.json sits inside the ZIP ("" at the top, "Fetzer/" when someone zipped the folder), ignoring macOS "__MACOSX/" copies; null = no project.json */
+	function projectPrefix(names) {
+		var best = null; (names || []).forEach(function (n) { if (/(^|\/)__MACOSX\//.test(n) || /(^|\/)\._/.test(n)) return; var m = /^(.*\/)?project\.json$/.exec(n); if (m) { var pre = m[1] || ""; if (best === null || pre.length < best.length) best = pre; } });
+		return best;
+	}
+	/* recent projects: entries {id, t (last used), bytes (autosave size, 0 = none), file (a remembered project file)}.
+	 * Newest first; at most max entries; autosaves beyond the byte budget are dropped (the newest autosave is always kept); an entry that loses its
+	 * autosave and has no remembered file is dropped altogether. -> {keep, drop: [ids], dropAuto: [ids that keep their entry but lose the autosave]} */
+	function pruneRecent(list, max, budget) {
+		max = max || 8; budget = budget || 500e6; var seen = {}, sorted = (list || []).filter(function (e) { if (!e || !e.id || seen[e.id]) return false; seen[e.id] = 1; return true; }).slice().sort(function (a, b) { return (b.t || 0) - (a.t || 0); });
+		var keep = [], drop = [], dropAuto = [], used = 0, kept = 0;
+		sorted.forEach(function (e) {
+			if (kept >= max) { drop.push(e.id); return; }
+			var b = e.bytes > 0 ? e.bytes : 0, e2 = e;
+			if (b && used + b > budget && used > 0) { if (!e.file) { drop.push(e.id); return; } e2 = Object.assign({}, e, { bytes: 0 }); dropAuto.push(e.id); b = 0; }
+			used += b; kept++; keep.push(e2);
+		});
+		return { keep: keep, drop: drop, dropAuto: dropAuto };
+	}
+	/* put an entry at the top (merged into the old one with the same id) */
+	function upsertRecent(list, entry) { var old = null, rest = (list || []).filter(function (e) { if (e.id === entry.id) { old = e; return false; } return true; }); return [Object.assign({}, old || {}, entry)].concat(rest); }
+	/* "saved just now" / "saved 2 min ago" / "saved 3 h ago" / "saved on 24 Oct" */
+	function agoText(t, now) {
+		if (!t) return ""; var s = Math.max(0, Math.round(((now || Date.now()) - t) / 1000));
+		if (s < 45) return "just now"; if (s < 90) return "1 min ago"; var m = Math.round(s / 60); if (m < 60) return m + " min ago"; var h = Math.round(m / 60); if (h < 24) return h + " h ago";
+		var d = new Date(t), MON = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"]; return "on " + d.getDate() + " " + MON[d.getMonth()] + (h > 24 * 300 ? " " + d.getFullYear() : "");
+	}
+	/* did the file change on disk since we read / wrote it? (a sync client rewriting the same time stamp is not a change; 1 s of slack for coarse file systems) */
+	function diskChanged(known, current) { return !!(known && current && Math.abs(current - known) > 1000); }
+	/* one PNG name per layer for "Export every layer as PNG": "01 Background.png", unique, safe for any file system */
+	function layerFileNames(names) {
+		var used = {}, w = String((names || []).length).length < 2 ? 2 : String(names.length).length;
+		return (names || []).map(function (nm, i) {
+			var b = String(nm || "Layer").replace(/[\\\/:*?"<>|\u0000-\u001f]+/g, " ").replace(/\s+/g, " ").trim().slice(0, 80) || "Layer", num = String(i + 1); while (num.length < w) num = "0" + num;
+			var f = num + " " + b + ".png", k = 2; while (used[f.toLowerCase()]) f = num + " " + b + " (" + (k++) + ").png"; used[f.toLowerCase()] = 1; return f;
+		});
+	}
+	/* a random id for a project (kept in project.json, so autosaves of the same project from different files and sessions line up) */
+	function newProjectId(rand) { rand = rand || Math.random; var s = "p"; for (var i = 0; i < 12; i++) s += "abcdefghijklmnopqrstuvwxyz0123456789"[Math.floor(rand() * 36)]; return s; }
+
+	var api = { projectKind: projectKind, projectBase: projectBase, projectFileName: projectFileName, isZipBytes: isZipBytes, zipEntries: zipEntries, projectPrefix: projectPrefix, pruneRecent: pruneRecent, upsertRecent: upsertRecent, agoText: agoText, diskChanged: diskChanged, layerFileNames: layerFileNames, newProjectId: newProjectId,
+		unionBox: unionBox, boxesTouch: boxesTouch, rectFrom: rectFrom, snapTargets: snapTargets, snapAxis: snapAxis, snapBox: snapBox, guidesOn: guidesOn, linSolve: linSolve, scaleAbout: scaleAbout, wrapLines: wrapLines, caretLine: caretLine, hitInLine: hitInLine, wordAt: wordAt, describeSource: describeSource, bytesText: bytesText, panelClamp: panelClamp, panelKey: panelKey, clamp: clamp, hexToRgb: hexToRgb, rgbToHex: rgbToHex, rgbToHsl: rgbToHsl, hslToRgb: hslToRgb, histogram: histogram, identityLUT: identityLUT, applyLUT: applyLUT, levelsLUT: levelsLUT, curveLUT: curveLUT,
 		brightnessContrast: brightnessContrast, exposure: exposure, hueSat: hueSat, vibrance: vibrance, temperature: temperature, invert: invert, grayscale: grayscale, sepia: sepia, threshold: threshold, posterize: posterize,
 		gaussianBlur: gaussianBlur, boxBlur: boxBlur, unsharp: unsharp, noise: noise, pixelate: pixelate, vignette: vignette, convolve: convolve, floodMask: floodMask, growShrinkMask: growShrinkMask, featherMask: featherMask, invertMask: invertMask,
 		maskBounds: maskBounds, opaqueBounds: opaqueBounds, blendByMask: blendByMask, autoLevels: autoLevels, premultiply: premultiply, unpremultiply: unpremultiply };

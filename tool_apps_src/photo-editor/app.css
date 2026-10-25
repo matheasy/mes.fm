@@ -179,3 +179,28 @@
 	#pe .pe-pickbar-sw {width:1.5em;height:1.5em;border-radius:0.3em;border:1px solid var(--pe-hi);box-shadow:0 0 0 1px var(--pe-lo);flex:none;}
 	#pe .pe-dropbtn {font-size:0.95em;line-height:1;}
 	#pe .pe-opt .pe-dropbtn {width:1.9em;height:1.9em;margin-left:0.15em;}
+	/* round 5: linked project file in the top bar, recent projects, moving to another computer */
+	#pe .pe-projst {display:inline-flex;align-items:center;gap:0.45em;margin:0 0.35em 0 0.15em;font-size:0.82em;color:var(--pe-dim);max-width:22em;min-width:0;white-space:nowrap;}
+	#pe .pe-projst[hidden] {display:none;}
+	#pe .pe-projst-f {color:var(--pe-text);overflow:hidden;text-overflow:ellipsis;min-width:0;max-width:12em;}
+	#pe .pe-projst-s {color:var(--pe-dim);} #pe .pe-projst.is-dirty .pe-projst-s {color:var(--pe-acc2);} #pe .pe-projst.is-warn .pe-projst-s {color:#f5b942;font-weight:700;}
+	#pe .pe-projst-a {display:inline-flex;align-items:center;gap:0.25em;color:var(--pe-text);cursor:pointer;border:1px solid var(--pe-line);border-radius:999px;padding:0.1em 0.55em 0.1em 0.35em;}
+	#pe .pe-projst-a input {margin:0;width:1em;height:1em;accent-color:var(--pe-acc2);}
+	#pe .pe-recent {width:100%;max-width:40em;} #pe .pe-rec[hidden] {display:none;}
+	#pe .pe-rec-t {font-weight:700;color:var(--pe-text);margin:0.3em 0 0.5em;text-align:left;}
+	#pe .pe-rec-g {display:grid;grid-template-columns:repeat(auto-fill, minmax(15em, 1fr));gap:0.5em;}
+	#pe .pe-rec-i {position:relative;display:flex;}
+	#pe .pe-rec-b {flex:1;display:flex;align-items:center;gap:0.6em;text-align:left;background:var(--pe-panel2);color:var(--pe-text);border:1px solid var(--pe-line);border-radius:0.45em;padding:0.45em 2em 0.45em 0.45em;cursor:pointer;min-width:0;}
+	#pe .pe-rec-b:hover, #pe .pe-rec-b:focus-visible {border-color:var(--pe-on);background:var(--pe-hover);}
+	#pe .pe-rec-th {width:4.2em;height:3.2em;object-fit:contain;flex:none;border-radius:0.25em;background:var(--pe-stage);display:flex;align-items:center;justify-content:center;font-size:1.3em;}
+	#pe .pe-rec-th--none {width:3.2em;height:2.45em;}
+	#pe .pe-rec-m {display:flex;flex-direction:column;gap:0.1em;min-width:0;}
+	#pe .pe-rec-n {color:var(--pe-text);font-weight:700;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+	#pe .pe-rec-s, #pe .pe-rec-f {color:var(--pe-dim);font-size:0.86em;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+	#pe .pe-rec-x {position:absolute;top:0.25em;right:0.25em;background:transparent;border:0;color:var(--pe-dim);cursor:pointer;border-radius:0.25em;padding:0.1em 0.35em;font-size:0.9em;line-height:1.2;}
+	#pe .pe-rec-x:hover, #pe .pe-rec-x:focus-visible {color:var(--pe-text);background:var(--pe-hibg);}
+	#pe .pe-fx-move p {margin:0 0 0.55em;line-height:1.5;color:var(--pe-text);} #pe .pe-fx-move .pe-fx-tip {color:var(--pe-dim);}
+	#pe .pe-fx-move code {font-family:ui-monospace,Menlo,Consolas,monospace;font-size:0.92em;background:var(--pe-field);border:1px solid var(--pe-line);border-radius:0.25em;padding:0 0.3em;overflow-wrap:anywhere;}
+	@media (max-width:820px) {#pe .pe-projst-f {max-width:7em;} #pe .pe-rec-g {grid-template-columns:1fr;}}
+	/* primary buttons on the dark page: the page's lightened accent (dark-mode --accent) under light text was 2:1; keep the editor's own violet */
+	body.dark-mode #pe .pe-btn--primary {background:#6d28d9;border-color:#6d28d9;color:#fff;} body.dark-mode #pe .pe-btn--primary:hover {background:#5b21b6;border-color:#c4b5fd;}

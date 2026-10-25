@@ -212,4 +212,48 @@ t("xcf: header, layer list, tiles", () => {
 		const ef = fx("effect-rgb8-rle.xcf"); assert.strictEqual(ef.version, 22); assert.strictEqual(ef.layers[1].effects, 1); assert.ok(ef.notes.some((s) => /live filters/.test(s)));
 	});
 }
+// ---------- round 5: project files, ZIPs, recent projects ----------
+{
+	const zlib = require("zlib"), I = require("./image-converter/lib.js");
+	t("projectKind / projectBase / projectFileName", () => {
+		assert.strictEqual(P.projectKind("A.MESPROJ"), "mesproj"); assert.strictEqual(P.projectKind("a.zip"), "zip"); assert.strictEqual(P.projectKind("a.png"), null);
+		assert.strictEqual(P.projectBase("Fetzer.mesproj"), "Fetzer"); assert.strictEqual(P.projectBase("Fetzer.zip"), "Fetzer"); assert.strictEqual(P.projectBase("Fetzer.mesproj.zip"), "Fetzer"); assert.strictEqual(P.projectBase("dir/x.zip"), "x"); assert.strictEqual(P.projectBase(""), "Untitled");
+		assert.strictEqual(P.projectFileName("Fetzer: 9/11?", "mesproj"), "Fetzer 9 11.mesproj"); assert.strictEqual(P.projectFileName("  ", "zip"), "Untitled.zip"); assert.strictEqual(P.projectFileName("..hidden"), "hidden.mesproj");
+	});
+	const stored = I.zipStore([{ name: "project.json", data: Buffer.from('{"v":2}') }, { name: "layer-1.png", data: Buffer.from("PNGDATA") }]);
+	t("isZipBytes + zipEntries read a stored ZIP like zipRead", () => {
+		assert.ok(P.isZipBytes(stored)); assert.ok(!P.isZipBytes(Buffer.from("hello"))); const e = P.zipEntries(stored);
+		assert.deepStrictEqual(e.map((x) => [x.name, x.method, Buffer.from(x.data).toString()]), [["project.json", 0, '{"v":2}'], ["layer-1.png", 0, "PNGDATA"]]);
+		assert.strictEqual(P.zipEntries(Buffer.from("not a zip at all, no end record here...")), null);
+	});
+	t("zipEntries reads a deflated ZIP (as Finder / Explorer make), folders skipped", () => {
+		// hand-built ZIP: a folder entry, then a deflated file inside it
+		const files = [{ name: "Fetzer/", data: Buffer.alloc(0), m: 0 }, { name: "Fetzer/project.json", data: Buffer.from('{"app":"MES Photo Editor","v":3}'), m: 8 }];
+		const parts = [], cen = []; let off = 0;
+		for (const f of files) { const comp = f.m ? zlib.deflateRawSync(f.data) : f.data, nm = Buffer.from(f.name), lh = Buffer.alloc(30); lh.writeUInt32LE(0x04034b50, 0); lh.writeUInt16LE(f.m, 8); lh.writeUInt32LE(comp.length, 18); lh.writeUInt32LE(f.data.length, 22); lh.writeUInt16LE(nm.length, 26); parts.push(lh, nm, comp);
+			const ch = Buffer.alloc(46); ch.writeUInt32LE(0x02014b50, 0); ch.writeUInt16LE(f.m, 10); ch.writeUInt32LE(comp.length, 20); ch.writeUInt32LE(f.data.length, 24); ch.writeUInt16LE(nm.length, 28); ch.writeUInt32LE(off, 42); cen.push(ch, nm); off += 30 + nm.length + comp.length; }
+		const cd = Buffer.concat(cen), end = Buffer.alloc(22); end.writeUInt32LE(0x06054b50, 0); end.writeUInt16LE(files.length, 8); end.writeUInt16LE(files.length, 10); end.writeUInt32LE(cd.length, 12); end.writeUInt32LE(off, 16);
+		const z = new Uint8Array(Buffer.concat([...parts, cd, end])), e = P.zipEntries(z); assert.strictEqual(e.length, 1); assert.strictEqual(e[0].method, 8);
+		assert.strictEqual(zlib.inflateRawSync(Buffer.from(e[0].data)).toString(), '{"app":"MES Photo Editor","v":3}'); assert.strictEqual(P.projectPrefix(e.map((x) => x.name)), "Fetzer/");
+	});
+	t("projectPrefix", () => {
+		assert.strictEqual(P.projectPrefix(["project.json", "layer-1.png"]), ""); assert.strictEqual(P.projectPrefix(["a/b/project.json", "a/project.json"]), "a/");
+		assert.strictEqual(P.projectPrefix(["__MACOSX/x/project.json", "x/project.json"]), "x/"); assert.strictEqual(P.projectPrefix(["x/._project.json"]), null); assert.strictEqual(P.projectPrefix(["layer.png"]), null);
+	});
+	t("pruneRecent keeps the newest 8, a byte budget, and remembered files", () => {
+		const L = []; for (let i = 0; i < 10; i++) L.push({ id: "p" + i, t: 1000 + i, bytes: 10 });
+		let r = P.pruneRecent(L, 8, 1e9); assert.deepStrictEqual(r.keep.map((e) => e.id), ["p9", "p8", "p7", "p6", "p5", "p4", "p3", "p2"]); assert.deepStrictEqual(r.drop, ["p1", "p0"]);
+		r = P.pruneRecent([{ id: "a", t: 3, bytes: 300 }, { id: "b", t: 2, bytes: 300, file: { name: "b.mesproj" } }, { id: "c", t: 1, bytes: 100 }], 8, 500);
+		assert.deepStrictEqual(r.keep.map((e) => [e.id, e.bytes]), [["a", 300], ["b", 0], ["c", 100]]); assert.deepStrictEqual(r.dropAuto, ["b"]); assert.deepStrictEqual(r.drop, []);
+		r = P.pruneRecent([{ id: "a", t: 3, bytes: 900 }, { id: "b", t: 2, bytes: 1 }], 8, 500); assert.deepStrictEqual(r.keep.map((e) => e.id), ["a"]); assert.deepStrictEqual(r.drop, ["b"]);   // the newest is kept even over budget
+		r = P.pruneRecent([{ id: "a", t: 1 }, { id: "a", t: 5 }, null], 8, 500); assert.strictEqual(r.keep.length, 1);
+	});
+	t("upsertRecent merges and moves to the top", () => { const l = P.upsertRecent([{ id: "a", name: "A", t: 1 }, { id: "b", t: 2 }], { id: "a", t: 9 }); assert.deepStrictEqual(l, [{ id: "a", name: "A", t: 9 }, { id: "b", t: 2 }]); });
+	t("agoText / diskChanged", () => {
+		const now = Date.UTC(2026, 9, 24, 12); assert.strictEqual(P.agoText(now - 5000, now), "just now"); assert.strictEqual(P.agoText(now - 120000, now), "2 min ago"); assert.strictEqual(P.agoText(now - 3 * 3600e3, now), "3 h ago"); assert.ok(/^on \d+ \w{3}$/.test(P.agoText(now - 3 * 86400e3, now))); assert.strictEqual(P.agoText(0, now), "");
+		assert.ok(!P.diskChanged(1000, 1500)); assert.ok(P.diskChanged(1000, 5000)); assert.ok(!P.diskChanged(0, 5000));
+	});
+	t("layerFileNames are numbered, unique and safe", () => { assert.deepStrictEqual(P.layerFileNames(["Background", "Title: 9/11", "Background", ""]), ["01 Background.png", "02 Title 9 11.png", "03 Background.png", "04 Layer.png"]); });
+	t("newProjectId", () => { assert.ok(/^p[a-z0-9]{12}$/.test(P.newProjectId())); assert.notStrictEqual(P.newProjectId(), P.newProjectId()); });
+}
 console.log(n + " checks ok");

@@ -364,9 +364,9 @@ $("pe-share").addEventListener("click", function () { if (needDoc()) PE.dlgShare
 	}
 	function openFiles(files, opts) {
 		opts = opts || {}; files = Array.prototype.slice.call(files); if (!files.length) return;
-		var proj = files.filter(function (f) { return /\.mesproj$/i.test(f.name); })[0], psd = files.filter(function (f) { return /\.psd$/i.test(f.name); })[0], xcfs = files.filter(function (f) { return /\.xcf$/i.test(f.name); }), imgs = files.filter(function (f) { return /^image\//.test(f.type) || /\.(png|jpe?g|webp|gif|bmp|avif|svg|ico)$/i.test(f.name); });
+		var proj = files.filter(function (f) { return /\.(mesproj|zip)$/i.test(f.name); })[0], psd = files.filter(function (f) { return /\.psd$/i.test(f.name); })[0], xcfs = files.filter(function (f) { return /\.xcf$/i.test(f.name); }), imgs = files.filter(function (f) { return /^image\//.test(f.type) || /\.(png|jpe?g|webp|gif|bmp|avif|svg|ico)$/i.test(f.name); });
 		var meta = function (f) { return { how: opts.how || "open", file: f.name, path: f.webkitRelativePath || "", bytes: f.size || 0, dir: opts.dir || "", hk: opts.hk || "" }; };
-		if (proj) { if (!confirmReplace()) return; proj.arrayBuffer().then(function (b) { return PE.loadProject(b, proj.name, meta(proj)); }).then(function () { PE.setTool("move"); PE.toast("Project opened"); }).catch(function (e) { PE.toast(e.message); }); return; }
+		if (proj) { openProjectFile(proj, opts, meta(proj)); return; }
 		if (psd && !opts.place) { if (!confirmReplace()) return; psd.arrayBuffer().then(function (b) { return loadPsd(b, psd.name, meta(psd)); }).catch(function (e) { PE.toast(e.message); }); return; }
 		if (xcfs.length) {   // GIMP files: open the first as the image (or, when placing into an open image, add each as a group of layers), then any pictures as layers
 			var place = !!(opts.place && PE.doc); if (!place && !confirmReplace()) return;
@@ -379,35 +379,54 @@ $("pe-share").addEventListener("click", function () { if (needDoc()) PE.dlgShare
 		var chain = Promise.resolve(); imgs.forEach(function (f, i) { chain = chain.then(function () { return PE.decodeFile(f).then(function (im) { if (first && i === 0 && (!PE.doc || !opts.place)) { PE.openImageSource(im, f.name, meta(f)); } else PE.placeSource(im, I.baseName(f.name), opts.at, meta(f)); }).catch(function () { PE.toast("Can't read " + f.name); }); }); });
 		chain.then(function () { PE.setTool("move"); if (imgs.length > 1) PE.toast(imgs.length + " images added as layers"); });
 	}
+	/* a .mesproj, or a .zip with a project.json in it. With a file handle (File -> Open picker, a drop in Chrome / Edge / Brave, the connected folder) the
+	 * project is linked to the file, so Save writes back to it */
+	function openProjectFile(f, opts, m) {
+		var hp = opts.fh ? Promise.resolve(opts.fh) : opts.handles ? Promise.resolve(opts.handles).then(function (hs) { return (hs || []).filter(function (h) { return h && h.kind === "file" && h.name === f.name; })[0] || null; }, function () { return null; }) : Promise.resolve(null);
+		f.arrayBuffer().then(function (b) {
+			var u = new Uint8Array(b); if (!PE.isProjectZip(u)) { PE.toast(/\.zip$/i.test(f.name) ? "“" + f.name + "” is a ZIP without a MES project in it (no project.json). To use its pictures, unzip it and drop them here" : "“" + f.name + "” is not a MES project file"); return; }
+			if (!confirmReplace()) return;
+			return PE.loadProject(b, f.name, m).then(function () { return hp; }).then(function (h) {
+				if (h) PE.linkProject(h, { dir: opts.dir || "", lm: f.lastModified }); else PE.rememberProject({});
+				PE.setTool("move"); PE.toast(h ? "Opened " + f.name + ": " + MOD + "S saves back to this file" : "Project opened" + (PE.canOpenPicker() ? " (use File → Open project… so " + MOD + "S can save back to the same file)" : ""));
+			});
+		}).catch(function (e) { PE.toast(e && e.message || String(e)); });
+	}
 	function confirmReplace() { if (!PE.doc || !PE.dirty || PE.hist.stack.length < 2) return true; return window.confirm("Replace the current image? Unsaved changes will be lost (you can still restore the last auto-saved session)."); }
-	PE.openFiles = openFiles;
+	PE.openFiles = openFiles; PE.confirmReplace = confirmReplace;
+	/* File -> Open: the browser's file picker that returns file handles (so a project opened this way can be saved back in place), else the plain file input */
+	var OPEN_ACCEPT = "image/*,.psd,.xcf,.mesproj,.zip";
+	function pickOpen() {
+		if (PE.canOpenPicker()) {
+			var dh = PE.folderHandle && PE.folderHandle(), o = { id: "mes-photo-open", multiple: true, types: [{ description: "Pictures, projects, PSD and GIMP files", accept: { "image/png": [".png"], "image/jpeg": [".jpg", ".jpeg"], "image/webp": [".webp"], "image/gif": [".gif"], "image/bmp": [".bmp"], "image/avif": [".avif"], "image/svg+xml": [".svg"], "application/zip": [".mesproj", ".zip"], "application/octet-stream": [".psd", ".xcf"] } }] }; if (dh) o.startIn = dh;
+			window.showOpenFilePicker(o).then(function (hs) { return Promise.all(hs.map(function (h) { return h.getFile(); })).then(function (fs) { openFiles(fs, { handles: hs }); }); }).catch(function (x) { if (x && x.name === "AbortError") return; pickFiles(OPEN_ACCEPT, true, function (fs) { openFiles(fs); }); });
+			return;
+		}
+		pickFiles(OPEN_ACCEPT, true, function (fs) { openFiles(fs); });
+	}
+	PE.pickOpen = pickOpen;
 	function pickFiles(accept, multiple, cb) { var inp = $("pe-file"); inp.accept = accept; inp.multiple = !!multiple; inp.onchange = function () { var fs = Array.prototype.slice.call(inp.files); inp.value = ""; if (fs.length) cb(fs); }; inp.click(); }
 	PE.pickFontFile = function () { pickFiles(".ttf,.otf,.woff,.woff2", false, function (fs) { PE.loadFontFile(fs[0]).then(function () { PE.toast("Font loaded"); }).catch(function () { PE.toast("Could not load that font"); }); }); };
 	var stage = PE.els.stage;
 	["dragenter", "dragover"].forEach(function (ev) { stage.addEventListener(ev, function (e) { if (e.dataTransfer && Array.prototype.indexOf.call(e.dataTransfer.types || [], "Files") >= 0) { e.preventDefault(); stage.classList.add("is-drop"); } }); });
 	["dragleave", "drop"].forEach(function (ev) { stage.addEventListener(ev, function () { stage.classList.remove("is-drop"); }); });
-	stage.addEventListener("drop", function (e) { if (e.dataTransfer && e.dataTransfer.files && e.dataTransfer.files.length) { e.preventDefault(); var at = PE.doc ? PE.toDoc(e.clientX, e.clientY) : null; openFiles(e.dataTransfer.files, { place: !!PE.doc, at: null, how: "drop" }); } });
-	function saveProject() { if (!needDoc()) return; PE.projectBlob().then(function (b) { PE.download(b, I.cleanFileName(PE.doc.name) + ".mesproj"); PE.dirty = false; saveState(); PE.toast("Project saved to your Downloads (open it again with File → Open)"); }).catch(function (e) { PE.toast("Could not save the project: " + (e && e.message || e)); }); }
-	PE.saveProject = saveProject;
+	stage.addEventListener("drop", function (e) { if (e.dataTransfer && e.dataTransfer.files && e.dataTransfer.files.length) { e.preventDefault(); var at = PE.doc ? PE.toDoc(e.clientX, e.clientY) : null; var hs = null; try { var items = Array.prototype.slice.call(e.dataTransfer.items || []); if (items.length && items[0].getAsFileSystemHandle) hs = Promise.all(items.map(function (it) { return it.kind === "file" ? it.getAsFileSystemHandle().catch(function () { return null; }) : null; })); } catch (x) { hs = null; }
+		openFiles(e.dataTransfer.files, { place: !!PE.doc, at: null, how: "drop", handles: hs }); } });
+	function saveProject() { PE.saveProject(); }   // Save / Save as / download: projects.js
 	/* the top-bar Save button shows a dot while there are changes that are not in a saved project file */
-	function saveState() { setTimeout(function () { var b = $("pe-save"), on = !!(PE.doc && PE.dirty && PE.hist.stack.length > 1); if (!b) return; b.classList.toggle("is-dirty", on); b.title = "Save project: a .mesproj file that keeps every layer, group and comp (" + MOD + "S)" + (on ? ". You have changes that are not saved in a project file yet." : ""); }, 0); }
+	function saveState() { setTimeout(function () { var b = $("pe-save"), on = !!(PE.doc && PE.dirty && PE.hist.stack.length > 1); if (!b) return; b.classList.toggle("is-dirty", on); var L = PE.projectLink && PE.projectLink(); b.title = (L ? "Save project to " + PE.projectWhere() : "Save project: a .mesproj file that keeps every layer, group and comp") + " (" + MOD + "S)" + (on ? ". You have changes that are not saved in a project file yet." : ""); if (PE.drawProjectBar) PE.drawProjectBar(); }, 0); }
 	PE.saveState = saveState; PE.on("history", saveState); PE.on("docsize", saveState);
 
-	/* ---------- autosave (IndexedDB) ---------- */
-	function idb(fn) { return new Promise(function (res, rej) { var r = indexedDB.open("mes-photo-editor", 1); r.onupgradeneeded = function () { r.result.createObjectStore("kv"); }; r.onsuccess = function () { var db = r.result; Promise.resolve(fn(db.transaction("kv", "readwrite").objectStore("kv"))).then(function (v) { res(v); }, rej); }; r.onerror = function () { rej(r.error); }; }); }
-	function req(r) { return new Promise(function (res, rej) { r.onsuccess = function () { res(r.result); }; r.onerror = function () { rej(r.error); }; }); }
-	var asTimer = 0; PE.scheduleAutosave = function () { clearTimeout(asTimer); asTimer = setTimeout(function () { if (!PE.doc || PE.hist.stack.length < 2) return; PE.projectBlob().then(function (b) { return idb(function (st) { return req(st.put({ blob: b, t: Date.now(), name: PE.doc.name, w: PE.doc.w, h: PE.doc.h }, "auto")); }); }).catch(function () {}); }, 5000); };
-	function restoreAuto() { idb(function (st) { return req(st.get("auto")); }).then(function (r) { if (!r) return; return r.blob.arrayBuffer().then(function (b) { return PE.loadProject(b, "autosave"); }).then(function () { PE.setTool("move"); PE.toast("Restored your last session"); }); }).catch(function () { PE.toast("Could not restore"); }); }
-	function checkAuto() { try { idb(function (st) { return req(st.get("auto")); }).then(function (r) { var b = $("pe-restore"); if (r && b) { b.hidden = false; b.textContent = "↺ Restore last session (" + r.name + ", " + r.w + "×" + r.h + ", " + new Date(r.t).toLocaleString() + ")"; } }).catch(function () {}); } catch (e) {} }
+	/* ---------- autosave (IndexedDB, per project, with Recent projects): projects.js ---------- */
 	window.addEventListener("beforeunload", function (e) { if (PE.doc && PE.dirty && PE.hist.stack.length > 1) { e.preventDefault(); e.returnValue = ""; } });
 
 	/* ---------- menus ---------- */
 	var isMac = /Mac|iPhone|iPad/.test(navigator.platform), MOD = isMac ? "⌘" : "Ctrl+";
 	function adj(list) { return list.map(function (a) { return { label: a.title, act: function () { if (needDoc()) PE.runAdjust(a.id); } }; }); }
 	var MENUS = [
-		{ label: "File", items: [{ label: "New image…", act: function () { PE.dlgNew(); } }, { label: "Open image / PSD / GIMP / project…", act: function () { pickFiles("image/*,.psd,.xcf,.mesproj", true, function (fs) { openFiles(fs); }); } }, { label: "Insert equation (LaTeX)…", act: function () { PE.dlgEquation(null, null); } }, { label: "Place image(s) as layers…", act: function () { if (!needDoc()) return; pickFiles("image/*,.xcf", true, function (fs) { openFiles(fs, { place: true }); }); } }, "-",
-			{ label: "Save project", tag: "keeps layers", icon: "💾", hi: true, key: MOD + "S", act: saveProject, title: "A .mesproj file with every layer, group, mask, text and comp: open it again here to keep working" }, { label: "Export as PNG / JPEG / WebP…", key: MOD + "Shift+S", act: function () { if (needDoc()) PE.dlgExport(); } }, { label: "Export the selected group as its own image…", act: function () { if (needDoc()) PE.dlgExportGroup(); } }, { label: "Export all comps as pictures (ZIP)…", act: function () { if (needDoc()) PE.dlgExportComps(); } }, { label: "Save as PSD (Photoshop)", act: savePsd }, { label: "Save as GIMP file (.xcf)", act: function () { PE.saveXcf(); } }, "-",
-			{ label: "Where are my images? (files, folder, autosave)…", act: function () { PE.dlgFolder("where"); } }, { label: "Connect a folder on this computer…", act: function () { PE.dlgFolder("folder"); } }, "-", { label: "Copy merged image to clipboard", act: function () { if (needDoc()) copyMerged(); } }, { label: "Share as a link (temporary upload)…", act: function () { if (needDoc()) PE.dlgShare(); } }, "-", { label: "Bulk convert images…", act: function () { window.open("/image-converter", "_blank"); } }] },
+		{ label: "File", items: [{ label: "New image…", act: function () { PE.dlgNew(); } }, { label: "Open image / PSD / GIMP / project…", key: MOD + "O", act: pickOpen }, { label: "Open project file…", icon: "📂", title: "Open a .mesproj (or a .zip with a project in it) so that Save writes back to the same file", act: function () { PE.openProjectPicker(); } }, { label: "Open recent…", act: function () { PE.dlgRecent(); }, title: "Projects autosaved in this browser and project files opened or saved here" }, { label: "Insert equation (LaTeX)…", act: function () { PE.dlgEquation(null, null); } }, { label: "Place image(s) as layers…", act: function () { if (!needDoc()) return; pickFiles("image/*,.xcf", true, function (fs) { openFiles(fs, { place: true }); }); } }, "-",
+			{ label: "Save project", tag: "keeps layers", icon: "💾", hi: true, key: MOD + "S", act: saveProject, title: "A .mesproj file with every layer, group, mask, text and comp: open it again here to keep working. Once it is in a file, this writes to that same file" }, { label: "Save project as…", key: MOD + "Alt+Shift+S", act: function () { PE.saveProjectAs(); }, title: "Save the project under a new name or in another folder" }, { label: function () { return (PE.autoFileOn() ? "✓ " : "") + "Auto-save to the project file"; }, act: function () { PE.setAutoFile(!PE.autoFileOn()); }, title: "Write changes into the linked project file 20 s after you stop editing, so a synced folder (OneDrive…) always has the latest" }, { label: "Download project as .zip", act: function () { PE.downloadProjectZip(); }, title: "The same project as a normal .zip file (project.json + one PNG per layer): drop it on the editor to keep working" }, "-", { label: "Export as PNG / JPEG / WebP…", key: MOD + "Shift+S", act: function () { if (needDoc()) PE.dlgExport(); } }, { label: "Export the selected group as its own image…", act: function () { if (needDoc()) PE.dlgExportGroup(); } }, { label: "Export all comps as pictures (ZIP)…", act: function () { if (needDoc()) PE.dlgExportComps(); } }, { label: "Export every layer as PNG (ZIP)…", act: function () { PE.dlgExportLayers(); }, title: "One PNG per layer plus layers.json with the positions, for other apps" }, { label: "Save as PSD (Photoshop)", act: savePsd }, { label: "Save as GIMP file (.xcf)", act: function () { PE.saveXcf(); } }, "-",
+			{ label: "Where are my images? (files, folder, autosave)…", act: function () { PE.dlgFolder("where"); } }, { label: "Keep working on another computer…", act: function () { PE.dlgFolder("move"); } }, { label: "Connect a folder on this computer…", act: function () { PE.dlgFolder("folder"); } }, "-", { label: "Copy merged image to clipboard", act: function () { if (needDoc()) copyMerged(); } }, { label: "Share as a link (temporary upload)…", act: function () { if (needDoc()) PE.dlgShare(); } }, "-", { label: "Bulk convert images…", act: function () { window.open("/image-converter", "_blank"); } }] },
 		{ label: "Edit", items: [{ label: "Undo", key: MOD + "Z", act: function () { PE.undo(); } }, { label: "Redo", key: MOD + "Shift+Z", act: function () { PE.redo(); } }, "-", { label: "Cut", key: MOD + "X", act: function () { copySel(true); } }, { label: "Copy", key: MOD + "C", act: function () { copySel(false); } }, { label: "Copy merged", act: function () { if (needDoc()) copyMerged(); } }, { label: "Paste as new layer", key: MOD + "V", act: pasteInternal }, "-",
 			{ label: "Erase selection with AI (remove object)", act: function () { if (needSel()) PE.aiEraseRun(); } }, { label: "Clear selection (transparent)", key: "Del", act: clearSel }, { label: "Fill with foreground colour", key: "Alt+Backspace", act: function () { if (needDoc()) fillSel(PE.fg); } }, { label: "Fill with background colour", key: MOD + "Backspace", act: function () { if (needDoc()) fillSel(PE.bg); } }, "-",
 			{ label: "Select all", key: MOD + "A", act: function () { if (needDoc()) { PE.selAll(); PE.commit("Select all"); } } }, { label: "Deselect", key: MOD + "D", act: function () { if (PE.sel) { PE.selClear(); PE.commit("Deselect"); } } }, { label: "Invert selection", key: MOD + "Shift+I", act: function () { if (needDoc()) { PE.selInvert(); PE.commit("Invert selection"); } } },
@@ -423,12 +442,14 @@ $("pe-share").addEventListener("click", function () { if (needDoc()) PE.dlgShare
 		{ label: "Help", items: [{ label: "Keyboard shortcuts", act: shortcuts }, { label: "Tips for labels, arrows and callouts", act: tips }] }
 	];
 	var openMenu = null;
+	function lab(it) { return typeof it.label === "function" ? it.label() : it.label; }
+	PE.rebuildMenus = function () { buildMenus(); };
 	function buildMenus() {
 		var bar = $("pe-menubar"); bar.innerHTML = "";
 		MENUS.forEach(function (m) {
 			var b = el("button", "pe-menu", esc(m.label)); b.type = "button"; b.setAttribute("aria-haspopup", "true"); b.setAttribute("aria-expanded", "false");
 			var pop = el("div", "pe-pop"); pop.hidden = true; pop.setAttribute("role", "menu");
-			m.items.forEach(function (it) { if (it === "-") { pop.appendChild(el("div", "pe-sep")); return; } var r = el("button", "pe-item" + (it.hi ? " pe-item--hi" : ""), "<span>" + (it.icon ? '<span class="pe-iic" aria-hidden="true">' + esc(it.icon) + "</span>" : "") + esc(it.label) + (it.tag ? ' <small class="pe-itag">' + esc(it.tag) + "</small>" : "") + "</span>" + (it.key ? "<kbd>" + esc(it.key) + "</kbd>" : "")); r.type = "button"; r.setAttribute("role", "menuitem"); if (it.title) r.title = it.title; r.addEventListener("click", function () { closeMenu(); it.act(); }); pop.appendChild(r); });
+			m.items.forEach(function (it) { if (it === "-") { pop.appendChild(el("div", "pe-sep")); return; } var r = el("button", "pe-item" + (it.hi ? " pe-item--hi" : ""), "<span>" + (it.icon ? '<span class="pe-iic" aria-hidden="true">' + esc(it.icon) + "</span>" : "") + esc(lab(it)) + (it.tag ? ' <small class="pe-itag">' + esc(it.tag) + "</small>" : "") + "</span>" + (it.key ? "<kbd>" + esc(it.key) + "</kbd>" : "")); r.type = "button"; r.setAttribute("role", "menuitem"); if (it.title) r.title = it.title; r.addEventListener("click", function () { closeMenu(); it.act(); }); pop.appendChild(r); });
 			var wrap = el("div", "pe-mwrap"); wrap.appendChild(b); wrap.appendChild(pop); bar.appendChild(wrap);
 			b.addEventListener("click", function (e) { e.stopPropagation(); if (openMenu && openMenu.b === b) closeMenu(); else showMenu(b, pop, wrap); }); b.addEventListener("mouseenter", function () { if (openMenu && openMenu.b !== b) showMenu(b, pop, wrap); });
 		});
@@ -450,7 +471,7 @@ $("pe-share").addEventListener("click", function () { if (needDoc()) PE.dlgShare
 		function build() {
 			var list = [];
 			PE.toolOrder.forEach(function (id) { var t = PE.tools[id]; if (t) list.push({ k: "Tool", l: t.name, sub: t.key ? "key " + t.key.toUpperCase() : "", hay: (t.name + " " + (HELP[id] || t.hint || "")).toLowerCase(), run: function () { PE.setTool(id); } }); });
-			MENUS.forEach(function (m) { m.items.forEach(function (it) { if (it !== "-") list.push({ k: m.label, l: it.label.replace(/…$/, "") + (it.tag ? " (" + it.tag + ")" : ""), sub: it.key || "", hay: (it.label + " " + (it.tag || "") + " " + (it.title || "") + " " + m.label).toLowerCase(), run: function () { it.act(); } }); }); });
+			MENUS.forEach(function (m) { m.items.forEach(function (it) { if (it !== "-") list.push({ k: m.label, l: lab(it).replace(/…$/, "") + (it.tag ? " (" + it.tag + ")" : ""), sub: it.key || "", hay: (lab(it) + " " + (it.tag || "") + " " + (it.title || "") + " " + m.label).toLowerCase(), run: function () { it.act(); } }); }); });
 			if (PE.doc) PE.doc.layers.slice().reverse().forEach(function (L) { if (!PE.isGroup(L) || true) list.push({ k: PE.isGroup(L) ? "Group" : "Layer", l: L.name, sub: PE.isGroup(L) ? "group" : (L.type === "text" ? "text layer" : "layer"), hay: L.name.toLowerCase(), run: function () { PE.setActive(L.id); PE.emit("layers"); } }); });
 			return list;
 		}
@@ -493,8 +514,8 @@ $("pe-share").addEventListener("click", function () { if (needDoc()) PE.dlgShare
 			if (!has && low !== "v" && low !== "o") return;
 			if (low === "a") { e.preventDefault(); PE.selAll(); PE.commit("Select all"); } else if (low === "d") { e.preventDefault(); if (PE.sel) { PE.selClear(); PE.commit("Deselect"); } } else if (low === "i" && e.shiftKey) { e.preventDefault(); PE.selInvert(); PE.commit("Invert selection"); }
 			else if (low === "c") { e.preventDefault(); e.shiftKey ? copyMerged() : copySel(false); } else if (low === "x") { e.preventDefault(); copySel(true); } else if (low === "j") { e.preventDefault(); PE.duplicateLayer(); } else if (low === "g") { e.preventDefault(); e.shiftKey ? PE.ungroup() : groupSelected(); } else if (low === "e") { e.preventDefault(); PE.mergeDown(); }
-			else if (low === "n" && e.shiftKey) { e.preventDefault(); PE.newRasterLayer(); } else if (low === "s") { e.preventDefault(); e.shiftKey ? PE.dlgExport() : saveProject(); } else if (k === "0") { e.preventDefault(); PE.fit(); } else if (k === "1") { e.preventDefault(); PE.setZoom(1); } else if (k === "=" || k === "+") { e.preventDefault(); PE.setZoom(PE.view.zoom * 1.25); } else if (k === "-") { e.preventDefault(); PE.setZoom(PE.view.zoom / 1.25); }
-			else if (low === "t") { e.preventDefault(); PE.setTool("move"); PE.opt.move.handles = true; buildOpts(); } else if (low === "o") { e.preventDefault(); pickFiles("image/*,.psd,.xcf,.mesproj", true, function (fs) { openFiles(fs); }); } else if (k === "Backspace") { e.preventDefault(); fillSel(PE.bg); }
+			else if (low === "n" && e.shiftKey) { e.preventDefault(); PE.newRasterLayer(); } else if (low === "s" || e.code === "KeyS") { e.preventDefault(); e.shiftKey && e.altKey ? PE.saveProjectAs() : e.shiftKey ? PE.dlgExport() : saveProject(); } else if (k === "0") { e.preventDefault(); PE.fit(); } else if (k === "1") { e.preventDefault(); PE.setZoom(1); } else if (k === "=" || k === "+") { e.preventDefault(); PE.setZoom(PE.view.zoom * 1.25); } else if (k === "-") { e.preventDefault(); PE.setZoom(PE.view.zoom / 1.25); }
+			else if (low === "t") { e.preventDefault(); PE.setTool("move"); PE.opt.move.handles = true; buildOpts(); } else if (low === "o") { e.preventDefault(); pickOpen(); } else if (k === "Backspace") { e.preventDefault(); fillSel(PE.bg); }
 			return;
 		}
 		if (e.altKey && k === "Backspace") { e.preventDefault(); if (has) fillSel(PE.fg); return; }
@@ -511,12 +532,12 @@ $("pe-share").addEventListener("click", function () { if (needDoc()) PE.dlgShare
 	root.addEventListener("dblclick", function (e) { if (e.target === PE.els.over && PE.toolId !== "text") { var L = PE.active(); if (L && L.type === "text" && PE.toolId === "move") PE.editActiveText(PE.toDoc(e.clientX, e.clientY)); else if (L && L.eq && PE.toolId === "move") PE.dlgEquation(L); } });
 
 	/* ---------- empty state + init ---------- */
-	$("pe-e-open").addEventListener("click", function () { pickFiles("image/*,.psd,.xcf,.mesproj", true, function (fs) { openFiles(fs); }); });
+	$("pe-e-open").addEventListener("click", pickOpen);
 	$("pe-e-new").addEventListener("click", function () { PE.dlgNew(); }); $("pe-e-paste").addEventListener("click", pasteInternal);
-	$("pe-restore").addEventListener("click", restoreAuto);
+	var recBox = $("pe-recent"); if (recBox && PE.recentEl) { var rl = PE.recentEl({ title: "Recent projects", compact: true, keep: true, limit: 6 }); recBox.appendChild(rl); }
 	if (S.opt) for (var k in S.opt) if (PE.opt[k]) for (var kk in S.opt[k]) if (kk in PE.opt[k]) PE.opt[k][kk] = S.opt[k][kk];
 	PE.opt.shape.next = 1; PE.opt.text.str = "Text";
-	showTab(S.tab === "comps" ? "comps" : "hist"); buildMenus(); buildTools(); PE.initPointer(); PE.initTextEditor(); buildColor(); resize(); PE.setTool("move"); status(); checkAuto(); saveState();
+	showTab(S.tab === "comps" ? "comps" : "hist"); buildMenus(); buildTools(); PE.initPointer(); PE.initTextEditor(); buildColor(); resize(); PE.setTool("move"); status(); if (PE.recentReady) PE.recentReady(); saveState();
 	if (S.win) { autoWin = true; toggleWin(true); }
 	var q = new URLSearchParams(location.search); if (q.get("new")) { var wh = (q.get("new") || "").split("x"); if (wh.length === 2) PE.newDoc(+wh[0], +wh[1], "#ffffff"); }
 	window.PEdebug = PE;
