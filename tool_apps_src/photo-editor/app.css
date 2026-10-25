@@ -42,7 +42,9 @@
 	.pe-tool:hover {background:var(--pe-hover);} .pe-tool[aria-pressed="true"] {background:var(--pe-on);color:var(--pe-onfg);}
 	.pe-stage {position:relative;flex:1 1 auto;min-width:0;overflow:hidden;background:var(--pe-stage);touch-action:none;}
 	.pe-stage canvas {position:absolute;left:0;top:0;display:block;outline:none;} #pe-over {touch-action:none;}
-	.pe-textedit {position:absolute;display:none;margin:0;padding:0;border:1px dashed var(--pe-on);background:transparent;color:transparent;resize:none;overflow:hidden;outline:none;white-space:pre;z-index:5;}
+	.pe-textedit {position:absolute;display:none;margin:0;padding:0;border:0;background:transparent;color:transparent;caret-color:transparent;resize:none;overflow:hidden;outline:none;white-space:pre;z-index:5;pointer-events:none;}
+	#pe .pe-textedit, #pe .pe-textedit:focus {color:transparent;caret-color:transparent;background:transparent;border:0;box-shadow:none;}
+	#pe .pe-textedit::selection {background:transparent;color:transparent;}
 	.pe-stage.is-drop::after {content:"";position:absolute;inset:0;border:3px dashed var(--pe-on);background:var(--pe-dropbg);pointer-events:none;z-index:8;}
 	.pe-drop {display:none;}
 	.pe-empty {position:absolute;inset:0;display:flex;align-items:center;justify-content:center;padding:1em;z-index:6;}
@@ -161,3 +163,19 @@
 .pe-xcf-notes p{margin:0 0 .5em}
 .pe-xcf-notes ul{margin:0;padding-left:1.3em;list-style:disc}
 .pe-xcf-notes li{margin:.3em 0;list-style:disc}
+	/* folder-access chip (status bar) + reminder in Files and folders */
+	#pe .pe-fchip {display:inline-flex;align-items:center;gap:0.35em;flex:none;background:var(--pe-notebg);border:1px solid var(--pe-line);border-left:3px solid #f5b942;border-radius:999px;padding:0.05em 0.35em 0.05em 0.5em;color:var(--pe-text);}
+	#pe .pe-fchip[hidden] {display:none;}
+	#pe .pe-fchip button {background:none;border:0;padding:0.1em 0.2em;color:var(--pe-text);font:inherit;cursor:pointer;border-radius:0.3em;}
+	#pe .pe-fchip button:hover, #pe .pe-fchip button:focus-visible {background:var(--pe-hover);outline:none;}
+	#pe .pe-fchip .pe-fchip-x {color:var(--pe-acc2);text-decoration:underline;}
+	#pe .pe-fx-acc {background:var(--pe-notebg);border:1px solid var(--pe-line);border-left:3px solid #f5b942;border-radius:0.4em;padding:0.6em 0.8em;line-height:1.5;color:var(--pe-text);margin:0.4em 0;}
+	#pe .pe-fx-acc[hidden] {display:none;}
+	#pe .pe-fx-acc .pe-fx-tip {color:var(--pe-dim);}
+	#pe .pe-fx-acc button {margin-left:0.2em;}
+	/* eyedropper: the Use / Cancel bar floating over the picture, the 💉 buttons next to the colour wells */
+	#pe .pe-pickbar {position:absolute;z-index:8;display:flex;align-items:center;gap:0.45em;background:var(--pe-panel);border:1px solid var(--pe-line);border-radius:0.5em;padding:0.35em 0.45em;box-shadow:0 4px 16px var(--pe-shadow2);color:var(--pe-text);white-space:nowrap;}
+	#pe .pe-pickbar code {font-family:ui-monospace,Menlo,Consolas,monospace;color:var(--pe-text);background:transparent;border:0;padding:0;font-size:0.95em;}
+	#pe .pe-pickbar-sw {width:1.5em;height:1.5em;border-radius:0.3em;border:1px solid var(--pe-hi);box-shadow:0 0 0 1px var(--pe-lo);flex:none;}
+	#pe .pe-dropbtn {font-size:0.95em;line-height:1;}
+	#pe .pe-opt .pe-dropbtn {width:1.9em;height:1.9em;margin-left:0.15em;}

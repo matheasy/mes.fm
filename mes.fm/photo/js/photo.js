@@ -343,6 +343,71 @@ var MESPixel = (function () {
 		fontPx = fontPx > 0 ? fontPx : 13; var max = Math.max(12, Math.min(48, ((mainPx || 0) - (otherPx || 0) - 240) / fontPx)); em = +em; if (!isFinite(em)) em = 17.5;
 		return Math.round(clamp(em, 12, max) * 100) / 100;
 	}
+	/* ---------- layout maths: Move tool (multi-selection boxes, snapping) and the text editor (wrapping with string offsets, caret hit-testing) ---------- */
+	function unionBox(list) {
+		var x0 = Infinity, y0 = Infinity, x1 = -Infinity, y1 = -Infinity, any = false;
+		(list || []).forEach(function (b) { if (!b) return; any = true; x0 = Math.min(x0, b.x); y0 = Math.min(y0, b.y); x1 = Math.max(x1, b.x + b.w); y1 = Math.max(y1, b.y + b.h); });
+		return any ? { x: x0, y: y0, w: x1 - x0, h: y1 - y0 } : null;
+	}
+	function boxesTouch(a, b) { return !!a && !!b && a.x <= b.x + b.w && b.x <= a.x + a.w && a.y <= b.y + b.h && b.y <= a.y + a.h; }
+	function rectFrom(x0, y0, x1, y1) { return { x: Math.min(x0, x1), y: Math.min(y0, y1), w: Math.abs(x1 - x0), h: Math.abs(y1 - y0) }; }
+	/* snap lines: the canvas (edges + centre, kind "c") and every other layer's box (edges + centre, kind "l") */
+	function snapTargets(W, H, boxes) {
+		var tx = W == null ? [] : [{ p: 0, k: "c" }, { p: W / 2, k: "c" }, { p: W, k: "c" }], ty = H == null ? [] : [{ p: 0, k: "c" }, { p: H / 2, k: "c" }, { p: H, k: "c" }];
+		(boxes || []).forEach(function (b) { if (!b) return; tx.push({ p: b.x, k: "l" }, { p: b.x + b.w / 2, k: "l" }, { p: b.x + b.w, k: "l" }); ty.push({ p: b.y, k: "l" }, { p: b.y + b.h / 2, k: "l" }, { p: b.y + b.h, k: "l" }); });
+		return { x: tx, y: ty };
+	}
+	/* the closest target to any of the moving positions `vals`, if within `th`: {d (add it to the positions), p, k, i (which position)}; on a tie the canvas wins */
+	function snapAxis(vals, targets, th) {
+		var best = null;
+		vals.forEach(function (v, i) { if (v == null || !isFinite(v)) return; targets.forEach(function (t) { var d = t.p - v, ad = Math.abs(d); if (ad > th) return; if (!best || ad < Math.abs(best.d) - 1e-9 || (Math.abs(ad - Math.abs(best.d)) <= 1e-9 && t.k === "c" && best.k !== "c")) best = { d: d, p: t.p, k: t.k, i: i }; }); });
+		return best;
+	}
+	/* every target that a (snapped) position lies on = the guide lines to draw */
+	function guidesOn(vals, targets) { var out = [], seen = {}; vals.forEach(function (v) { targets.forEach(function (t) { if (Math.abs(t.p - v) < 0.5) { var key = t.p.toFixed(2) + t.k; if (!seen[key]) { seen[key] = 1; out.push({ p: t.p, k: t.k }); } } }); }); return out; }
+	/* moving a box: left / centre / right and top / middle / bottom snap independently. {dx, dy, gx, gy} */
+	function snapBox(box, tg, th) {
+		var vx = [box.x, box.x + box.w / 2, box.x + box.w], vy = [box.y, box.y + box.h / 2, box.y + box.h], sx = snapAxis(vx, tg.x, th), sy = snapAxis(vy, tg.y, th), dx = sx ? sx.d : 0, dy = sy ? sy.d : 0;
+		return { dx: dx, dy: dy, gx: sx ? guidesOn(vx.map(function (v) { return v + dx; }), tg.x) : [], gy: sy ? guidesOn(vy.map(function (v) { return v + dy; }), tg.y) : [] };
+	}
+	/* a quantity that is linear in a parameter (v0 at f0, v1 at f1): the parameter that gives `target`, null when the quantity does not change */
+	function linSolve(f0, v0, f1, v1, target) { var dv = v1 - v0; if (Math.abs(dv) < 1e-12) return null; return f0 + (target - v0) * (f1 - f0) / dv; }
+	function scaleAbout(p, a, f) { return a + (p - a) * f; }
+	/* word wrap that remembers where each line came from in the string: [{text, start, end}] (end = start + text.length; a wrapped line loses its trailing spaces) */
+	function wrapLines(str, lim, measure) {
+		str = String(str == null ? "" : str); var out = [], pos = 0;
+		str.split("\n").forEach(function (para) {
+			var base = pos; pos += para.length + 1;
+			if (measure(para) <= lim) { out.push({ text: para, start: base, end: base + para.length }); return; }
+			var cur = "", cs = base, tp = base;
+			var push = function (s, st, trim) { var tx = trim ? s.replace(/\s+$/, "") : s; out.push({ text: tx, start: st, end: st + tx.length }); };
+			para.split(/(\s+)/).forEach(function (wd) {
+				var ws = tp; tp += wd.length; if (!wd) return;
+				if (cur && measure((cur + wd).replace(/\s+$/, "")) > lim) { push(cur, cs, true); if (/^\s+$/.test(wd)) { cur = ""; cs = tp; } else { cur = wd; cs = ws; } }
+				else { if (!cur) cs = ws; cur += wd; }
+				while (measure(cur.replace(/\s+$/, "")) > lim && cur.length > 1) { var k = cur.length - 1; while (k > 1 && measure(cur.slice(0, k)) > lim) k--; push(cur.slice(0, k), cs, false); cur = cur.slice(k); cs += k; }   // one word longer than the box
+			});
+			push(cur, cs, true);
+		});
+		return out;
+	}
+	/* which line a string index is on, and how far into it: {line, k} */
+	function caretLine(lines, idx) {
+		var li = 0; for (var i = 0; i < lines.length; i++) { if (lines[i].start <= idx) li = i; else break; }
+		var L = lines[li]; return { line: li, k: Math.max(0, Math.min(L.text.length, idx - L.start)) };
+	}
+	/* the string index closest to x (measured from the line's own left edge) */
+	function hitInLine(line, x, measure) { var best = 0, bd = Infinity; for (var k = 0; k <= line.text.length; k++) { var d = Math.abs(measure(line.text.slice(0, k)) - x); if (d < bd) { bd = d; best = k; } } return line.start + best; }
+	/* the word around a string index (double-click): [start, end] */
+	function wordAt(str, idx) {
+		// a run of non-space characters ("2.0", "don't"), without punctuation stuck to its ends ("Fetzer," -> "Fetzer")
+		str = String(str); var sp = function (c) { return !c || /\s/.test(c); }, PU = /[.,;:!?()\[\]{}"“”‘’'«»]/, a = idx;
+		if (sp(str[a]) && !sp(str[a - 1])) a--;
+		if (sp(str[a])) return [idx, idx];
+		while (a > 0 && !sp(str[a - 1])) a--; var b = a; while (b < str.length && !sp(str[b])) b++;
+		var a2 = a, b2 = b; while (a2 < b2 && PU.test(str[a2])) a2++; while (b2 > a2 && PU.test(str[b2 - 1])) b2--;
+		return a2 < b2 && idx >= a2 && idx <= b2 ? [a2, b2] : [a, b];
+	}
 	/* arrow keys on the focused grip: the grip moves with the arrow, so the panels get wider when it moves towards the picture's side */
 	function panelKey(key, shift, sideLeft) {
 		var step = shift ? 4 : 1;
@@ -350,7 +415,7 @@ var MESPixel = (function () {
 		if (key === "Home") return { to: "min" }; if (key === "End") return { to: "max" }; if (key === "Enter") return { to: "reset" };
 		return null;
 	}
-	var api = { describeSource: describeSource, bytesText: bytesText, panelClamp: panelClamp, panelKey: panelKey, clamp: clamp, hexToRgb: hexToRgb, rgbToHex: rgbToHex, rgbToHsl: rgbToHsl, hslToRgb: hslToRgb, histogram: histogram, identityLUT: identityLUT, applyLUT: applyLUT, levelsLUT: levelsLUT, curveLUT: curveLUT,
+	var api = { unionBox: unionBox, boxesTouch: boxesTouch, rectFrom: rectFrom, snapTargets: snapTargets, snapAxis: snapAxis, snapBox: snapBox, guidesOn: guidesOn, linSolve: linSolve, scaleAbout: scaleAbout, wrapLines: wrapLines, caretLine: caretLine, hitInLine: hitInLine, wordAt: wordAt, describeSource: describeSource, bytesText: bytesText, panelClamp: panelClamp, panelKey: panelKey, clamp: clamp, hexToRgb: hexToRgb, rgbToHex: rgbToHex, rgbToHsl: rgbToHsl, hslToRgb: hslToRgb, histogram: histogram, identityLUT: identityLUT, applyLUT: applyLUT, levelsLUT: levelsLUT, curveLUT: curveLUT,
 		brightnessContrast: brightnessContrast, exposure: exposure, hueSat: hueSat, vibrance: vibrance, temperature: temperature, invert: invert, grayscale: grayscale, sepia: sepia, threshold: threshold, posterize: posterize,
 		gaussianBlur: gaussianBlur, boxBlur: boxBlur, unsharp: unsharp, noise: noise, pixelate: pixelate, vignette: vignette, convolve: convolve, floodMask: floodMask, growShrinkMask: growShrinkMask, featherMask: featherMask, invertMask: invertMask,
 		maskBounds: maskBounds, opaqueBounds: opaqueBounds, blendByMask: blendByMask, autoLevels: autoLevels, premultiply: premultiply, unpremultiply: unpremultiply };
@@ -476,23 +541,27 @@ var MESPixel = (function () {
 
 	/* ---------- text layers ---------- */
 	PE.TEXTDEF = { str: "Text", font: "Arial, Helvetica, sans-serif", size: 64, bold: false, italic: false, color: "#000000", align: "left", lh: 1.2, bgOn: false, bgColor: "#ffeb3b", bgPad: 12, bgRadius: 8, strokeOn: false, stroke: "#ffffff", strokeW: 4, shadowOn: false, shadow: "#000000", shadowBlur: 8, shadowDx: 4, shadowDy: 4, ls: 0, wrapW: 0 };
-	PE.renderText = function (L) {
-		var t = L.text, f = (t.italic ? "italic " : "") + (t.bold ? "bold " : "") + t.size + "px " + t.font, m = mk(8, 8).getContext("2d");
-		m.font = f; if ("letterSpacing" in m) m.letterSpacing = (t.ls || 0) + "px";
+	/* where every line of a text layer sits in its canvas (shared by the renderer and the on-canvas text editor: caret, selection, click-to-place).
+	 * lines = [{text, start, end}] with string offsets (MESPixel.wrapLines), lx[i] = left edge of line i, base[i] = its baseline, measure(s) = width in px */
+	var lmc = null;
+	PE.textLayout = function (L) {
+		var t = L.text; if (!t) return null; var f = (t.italic ? "italic " : "") + (t.bold ? "bold " : "") + t.size + "px " + t.font, dw = PE.doc ? PE.doc.w : 1200;
+		var key = JSON.stringify([t.str, f, t.ls || 0, t.wrapW, t.lh, t.align, t.bgOn && t.bgPad, t.strokeOn && t.strokeW, t.shadowOn && [t.shadowBlur, t.shadowDx, t.shadowDy], t.wrapW > 0 ? 0 : dw]);
+		if (L._lay && L._lay.key === key) return L._lay;
+		var m = lmc || (lmc = mk(8, 8).getContext("2d")); m.font = f; if ("letterSpacing" in m) m.letterSpacing = (t.ls || 0) + "px";
+		var cache = {}, measure = function (s) { var w = cache[s]; if (w == null) w = cache[s] = m.measureText(s).width; return w; };
 		// word wrap: an explicit box width (Box width option / the handle on the box), else never wider than 90% of the image so pasted text stays reasonable
-		var lim = t.wrapW > 0 ? t.wrapW : Math.max(160, (PE.doc ? PE.doc.w : 1200) * 0.9), lines = [];
-		String(t.str).split("\n").forEach(function (para) {
-			if (m.measureText(para).width <= lim) { lines.push(para); return; }
-			var words = para.split(/(\s+)/), cur = "";
-			words.forEach(function (wd) {
-				var tryS = cur + wd; if (cur && m.measureText(tryS.replace(/\s+$/, "")).width > lim) { lines.push(cur.replace(/\s+$/, "")); cur = /^\s+$/.test(wd) ? "" : wd; } else cur = tryS;
-				while (m.measureText(cur).width > lim && cur.length > 1) { var k = cur.length - 1; while (k > 1 && m.measureText(cur.slice(0, k)).width > lim) k--; lines.push(cur.slice(0, k)); cur = cur.slice(k); }   // a single word longer than the box
-			});
-			lines.push(cur.replace(/\s+$/, ""));
-		});
-		var lw = lines.map(function (s) { return m.measureText(s).width; }), mw = t.wrapW > 0 ? t.wrapW : Math.max.apply(null, lw.concat([1])), lhp = t.size * t.lh;
+		var lim = t.wrapW > 0 ? t.wrapW : Math.max(160, dw * 0.9), lines = P.wrapLines(t.str, lim, measure);
+		var lw = lines.map(function (s) { return measure(s.text); }), mw = t.wrapW > 0 ? t.wrapW : Math.max.apply(null, lw.concat([1])), lhp = t.size * t.lh;
 		var bgp = t.bgOn ? t.bgPad : 0, pad = Math.ceil(bgp + (t.strokeOn ? t.strokeW : 0) + (t.shadowOn ? t.shadowBlur * 2 + Math.max(Math.abs(t.shadowDx), Math.abs(t.shadowDy)) : 0) + t.size * 0.15 + 2);
-		var W = Math.ceil(mw) + pad * 2, H = Math.ceil(lhp * lines.length + t.size * 0.3) + pad * 2; if (W * H > PE.MAXAREA) return;
+		var lx = lw.map(function (w) { return t.align === "center" ? pad + mw / 2 - w / 2 : t.align === "right" ? pad + mw - w : pad; }), base = lines.map(function (s, i) { return pad + lhp * i + t.size * 0.92; });
+		var measureNow = function (s) { m.font = f; if ("letterSpacing" in m) m.letterSpacing = (t.ls || 0) + "px"; return measure(s); };
+		L._lay = { key: key, font: f, lines: lines, lw: lw, lx: lx, base: base, mw: mw, lhp: lhp, pad: pad, bgp: bgp, W: Math.ceil(mw) + pad * 2, H: Math.ceil(lhp * lines.length + t.size * 0.3) + pad * 2, size: t.size, measure: measureNow };
+		return L._lay;
+	};
+	PE.renderText = function (L) {
+		var t = L.text, lay = PE.textLayout(L), f = lay.font, lines = lay.lines.map(function (l) { return l.text; }), mw = lay.mw, lhp = lay.lhp, bgp = lay.bgp, pad = lay.pad;
+		var W = lay.W, H = lay.H; if (W * H > PE.MAXAREA) return;
 		var oldW = L.canvas.width, oldH = L.canvas.height, c = mk(W, H), x = c.getContext("2d");
 		x.font = f; if ("letterSpacing" in x) x.letterSpacing = (t.ls || 0) + "px"; x.textBaseline = "alphabetic"; x.lineJoin = "round"; x.textAlign = t.align;
 		if (t.bgOn) { var bx = pad - bgp, by = pad - bgp, bw = Math.ceil(mw) + bgp * 2, bh = Math.ceil(lhp * lines.length + t.size * 0.3 - t.size * 0.1) + bgp * 2 - Math.round(t.size * 0.05), br = Math.min(t.bgRadius, bw / 2, bh / 2); x.fillStyle = t.bgColor; x.beginPath(); x.moveTo(bx + br, by); x.arcTo(bx + bw, by, bx + bw, by + bh, br); x.arcTo(bx + bw, by + bh, bx, by + bh, br); x.arcTo(bx, by + bh, bx, by, br); x.arcTo(bx, by, bx + bw, by, br); x.closePath(); x.fill(); }
@@ -899,6 +968,7 @@ var MESPixel = (function () {
 			PE.invalidateOverlay();
 		}
 		el.addEventListener("pointerup", end); el.addEventListener("pointercancel", end);
+		el.addEventListener("mousedown", function (e) { if (PE.textEditing && PE.textEditing()) e.preventDefault(); });   // keep the keyboard on the text being edited (no blur, no end of the edit)
 		el.addEventListener("pointerleave", function () { PE.ptr.inside = false; PE.invalidateOverlay(); });
 		el.addEventListener("dblclick", function (e) { var t = PE.tool(); if (t.dbl && PE.doc) t.dbl(ev2(e)); });
 		el.addEventListener("contextmenu", function (e) { e.preventDefault(); });
@@ -938,7 +1008,9 @@ var MESPixel = (function () {
 		if (PE.sel) { var a = buildAnts(); if (a) x.drawImage(phase ? a.b : a.a, 0, 0); }
 		x.setTransform(v.dpr, 0, 0, v.dpr, 0, 0);
 		var t = PE.tool(); if (t && t.overlay) t.overlay(x, v);
-		if (PE.guides && PE.guides.length) { x.strokeStyle = "#ff3df0"; x.lineWidth = 1; x.beginPath(); PE.guides.forEach(function (g) { if (g.v != null) { var sx = Math.round(g.v * v.zoom + v.px) + 0.5; x.moveTo(sx, 0); x.lineTo(sx, v.h); } else { var sy = Math.round(g.h * v.zoom + v.py) + 0.5; x.moveTo(0, sy); x.lineTo(v.w, sy); } }); x.stroke(); }
+		if (PE.guides && PE.guides.length) {   // snap guides: magenta = the canvas (edges, centre), cyan = another layer
+			x.lineWidth = 1; ["c", "l"].forEach(function (kind) { x.strokeStyle = kind === "c" ? "#ff3df0" : "#22d3ee"; x.beginPath(); PE.guides.forEach(function (g) { if ((g.k || "c") !== kind) return; if (g.v != null) { var sx = Math.round(g.v * v.zoom + v.px) + 0.5; x.moveTo(sx, 0); x.lineTo(sx, v.h); } else { var sy = Math.round(g.h * v.zoom + v.py) + 0.5; x.moveTo(0, sy); x.lineTo(v.w, sy); } }); x.stroke(); });
+		}
 		if (PE.ptr.inside && t && t.cursorSize && !PE.spaceHeld) {
 			var r = t.cursorSize() * v.zoom / 2; if (r > 1) { x.lineWidth = 1; x.strokeStyle = "rgba(0,0,0,0.85)"; x.beginPath(); x.arc(PE.ptr.x, PE.ptr.y, r, 0, 6.2832); x.stroke(); x.strokeStyle = "rgba(255,255,255,0.9)"; x.beginPath(); x.arc(PE.ptr.x, PE.ptr.y, r + 1, 0, 6.2832); x.stroke(); }
 		}
@@ -961,70 +1033,211 @@ var MESPixel = (function () {
 		x.save(); x.globalAlpha = o.alpha == null ? 1 : o.alpha; x.globalCompositeOperation = o.erase ? "destination-out" : "source-over"; x.drawImage(s, Math.round(dx) - og.x, Math.round(dy) - og.y); x.restore(); L.rev++;
 	};
 
-	/* ---------- Move + free transform ---------- */
+	/* ---------- Move + free transform: one layer, a group, or several layers at once ----------
+	 * The Move tool acts on PE.moveSet(): the layers picked in the Layers panel (Ctrl / Shift-click) or with a rubber band on the canvas, else the active layer.
+	 * Snapping (MESPixel.snapBox / snapAxis): the canvas edges + centre lines and, with "Snap to other layers", every other visible layer's visible box
+	 * (its non-transparent pixels, so a text snaps by its letters, not by the padding around them). 6 screen px; Ctrl (or Alt while moving) = no snapping. */
 	var HANDLES = [[-1, -1], [0, -1], [1, -1], [1, 0], [1, 1], [0, 1], [-1, 1], [-1, 0]];
 	function handleScreen(L, hd) {
 		var c = Math.cos(L.rot), s = Math.sin(L.rot), hw = L.canvas.width * L.sx / 2, hh = L.canvas.height * L.sy / 2, lx = hd[0] * hw, ly = hd[1] * hh;
 		return PE.toScreen(L.cx + c * lx - s * ly, L.cy + s * lx + c * ly);
 	}
+	function boxHandle(b, hd) { return PE.toScreen(b.x + (hd[0] + 1) / 2 * b.w, b.y + (hd[1] + 1) / 2 * b.h); }
+	function scr(e) { var r = PE.els.over.getBoundingClientRect(); return { x: e.sx - r.left, y: e.sy - r.top }; }
 	var mv = null;
 	function pickTarget(hit, L, groupsOn) {
 		if (!groupsOn) return hit; var anc = PE.ancestorsOf(hit); if (!anc.length) return hit; if (L === hit) return hit; if (L && anc.indexOf(L) >= 0) return L;
 		if (L && PE.topGroupOf(L) === PE.topGroupOf(hit)) return hit; return PE.topGroupOf(hit);
 	}
-	PE.defTool({ id: "move", name: "Move / Transform", key: "v", icon: "✥", opts: { auto: true, handles: true, snap: true, groups: true },
-		ui: [{ k: "auto", label: "Pick layer on click", type: "check" }, { k: "groups", label: "Pick the whole group", type: "check" }, { k: "handles", label: "Transform handles", type: "check" }, { k: "snap", label: "Snap to canvas edges", type: "check" }, { type: "button", label: "✎ Edit text / equation", act: function () { var L = PE.active(); if (L && L.type === "text") PE.editActiveText(); else if (L && L.eq) PE.dlgEquation(L); else PE.toast("Select a text or equation layer first (click it on the picture)"); } }, { type: "button", label: "✂ Remove background (AI)", act: function () { PE.aiRemoveBackground(); } }],
-		hint: "Drag to move. Drag a square handle to resize, just outside a corner to rotate (Shift = snap / keep proportions). Arrow keys nudge.",
+	/* the layers the Move tool works on (a group in the list stands for its members, so a member listed as well is dropped) */
+	PE.moveSet = function () {
+		if (!PE.doc) return []; var m = PE.multi ? PE.multi() : [], A = PE.active(), list = m.length > 1 ? m : (A ? [A] : []);
+		return list.filter(function (L) { return !PE.ancestorsOf(L).some(function (g) { return list.indexOf(g) >= 0; }); });
+	};
+	function leaves(set) { var out = []; set.forEach(function (L) { (PE.isGroup(L) ? PE.descendants(L) : [L]).forEach(function (k) { if (!PE.isGroup(k) && out.indexOf(k) < 0) out.push(k); }); }); return out; }
+	/* visible box: the non-transparent part of a layer, in document coordinates (cached per pixel revision); null = nothing visible */
+	function visLocal(L) {
+		var c = L.canvas, v = L._vb; if (v && v.rev === L.rev && v.c === c) return v.r;
+		var r = { x: 0, y: 0, w: c.width, h: c.height };
+		if (c.width * c.height <= 16e6) { try { r = P.opaqueBounds(c.getContext("2d").getImageData(0, 0, c.width, c.height).data, c.width, c.height, 8); } catch (x) { } }
+		L._vb = { rev: L.rev, c: c, r: r }; return r;
+	}
+	function locToDoc(L, u, v) { var c = Math.cos(L.rot), s = Math.sin(L.rot), lx = (u - L.canvas.width / 2) * L.sx, ly = (v - L.canvas.height / 2) * L.sy; return { x: L.cx + c * lx - s * ly, y: L.cy + s * lx + c * ly }; }
+	PE.visBox = function (L) {
+		if (PE.isGroup(L)) return P.unionBox(PE.descendants(L).filter(function (k) { return !PE.isGroup(k) && PE.effVisible(k); }).map(PE.visBox));
+		var r = visLocal(L); if (!r) return null; var pts = [[r.x, r.y], [r.x + r.w, r.y], [r.x + r.w, r.y + r.h], [r.x, r.y + r.h]].map(function (q) { return locToDoc(L, q[0], q[1]); });
+		var xs = pts.map(function (p) { return p.x; }), ys = pts.map(function (p) { return p.y; }), x0 = Math.min.apply(null, xs), y0 = Math.min.apply(null, ys); return { x: x0, y: y0, w: Math.max.apply(null, xs) - x0, h: Math.max.apply(null, ys) - y0 };
+	};
+	function setBox(set) { return P.unionBox(set.map(function (L) { return PE.bounds(L); })); }
+	function targetsFor(moving) {
+		var o = PE.opt.move, d = PE.doc, boxes = [];
+		if (o.snapLayers) d.layers.forEach(function (L) { if (PE.isGroup(L) || moving.indexOf(L) >= 0 || !PE.effVisible(L) || L.opacity <= 0) return; var b = PE.visBox(L); if (b && b.w > 0 && b.h > 0) boxes.push(b); });
+		return P.snapTargets(o.snap ? d.w : null, o.snap ? d.h : null, boxes);
+	}
+	function snapOn(e) { var o = PE.opt.move; return (o.snap || o.snapLayers) && !e.ctrl; }
+	function guidesFrom(gx, gy) { PE.guides = gx.map(function (g) { return { v: g.p, k: g.k }; }).concat(gy.map(function (g) { return { h: g.p, k: g.k }; })); }
+	function th() { return 6 / PE.view.zoom; }
+	function startMove(set, e) {
+		set = set.filter(function (L) { return !L.locked; }); if (!set.length) { PE.toast("This layer is locked"); mv = null; return; }
+		var items = leaves(set).filter(function (k) { return !k.locked; });
+		mv = { kind: "move", set: set, items: items.map(function (k) { return [k, k.cx, k.cy]; }), p0: e, moved: false, box0: P.unionBox(items.filter(PE.effVisible).map(PE.visBox)), tg: targetsFor(items) };
+	}
+	/* one layer's resize, as before: from the dragged handle (Shift = the other proportion rule, Alt = from the centre) */
+	function scaleDims(m, e) {
+		var L = m.L, c = Math.cos(m.rot), s = Math.sin(m.rot), dx2 = e.x - m.cx0, dy2 = e.y - m.cy0, lx = c * dx2 + s * dy2, ly = -s * dx2 + c * dy2, hd = m.h, W0 = L.canvas.width * Math.abs(m.sx0), H0 = L.canvas.height * Math.abs(m.sy0);
+		var ax = e.alt ? 0 : -hd[0] * W0 / 2, ay = e.alt ? 0 : -hd[1] * H0 / 2, nw = hd[0] ? Math.max(2, (lx - ax) * hd[0] * (e.alt ? 2 : 1)) : W0, nh = hd[1] ? Math.max(2, (ly - ay) * hd[1] * (e.alt ? 2 : 1)) : H0;
+		var uniform = (hd[0] && hd[1]) ? !e.shift : e.shift;
+		if (uniform && hd[0] && hd[1]) { var f = Math.max(nw / W0, nh / H0); nw = W0 * f; nh = H0 * f; } else if (uniform) { var f2 = hd[0] ? nw / W0 : nh / H0; nw = W0 * f2; nh = H0 * f2; }
+		return { nw: nw, nh: nh, uniform: uniform, W0: W0, H0: H0, ax: ax, ay: ay };
+	}
+	function applyDims(m, d, nw, nh, alt) {
+		var L = m.L, c = Math.cos(m.rot), s = Math.sin(m.rot), hd = m.h, ncx = alt ? 0 : d.ax + hd[0] * nw / 2, ncy = alt ? 0 : d.ay + hd[1] * nh / 2;
+		L.sx = Math.sign(m.sx0 || 1) * nw / L.canvas.width; L.sy = Math.sign(m.sy0 || 1) * nh / L.canvas.height; L.cx = m.cx0 + c * ncx - s * ncy; L.cy = m.cy0 + s * ncx + c * ncy;
+	}
+	function uprightish(r) { var q = ((r % (2 * Math.PI)) + 2 * Math.PI) % (2 * Math.PI); return q < 1e-6 || Math.abs(q - 2 * Math.PI) < 1e-6; }
+	/* snap the moving edges of a box that depends linearly on one size parameter per axis. edgesAt(p, axis) -> [positions]; returns the snapped parameters */
+	function snapSizes(e, m, px, py, edgesAt, uniform) {
+		var t = m.tg, T = th(), best = { x: null, y: null };
+		[["x", px], ["y", py]].forEach(function (q) {
+			var ax = q[0], p = q[1]; if (p == null) return; var e0 = edgesAt(p, ax), e1 = edgesAt(p + 1, ax);
+			e0.forEach(function (v, i) { var s = P.snapAxis([v], ax === "x" ? t.x : t.y, T); if (!s) return; var np = P.linSolve(p, v, p + 1, e1[i], s.p); if (np == null || !(np > 0)) return; if (!best[ax] || Math.abs(s.d) < Math.abs(best[ax].d)) best[ax] = { d: s.d, p: np, t: s }; });
+		});
+		if (uniform && best.x && best.y) { if (Math.abs(best.x.d) <= Math.abs(best.y.d)) best.y = null; else best.x = null; }
+		return best;
+	}
+	PE.defTool({ id: "move", name: "Move / Transform", key: "v", icon: "✥", opts: { auto: true, handles: true, snap: true, snapLayers: true, groups: true },
+		ui: [{ k: "auto", label: "Pick layer on click", type: "check" }, { k: "groups", label: "Pick the whole group", type: "check" }, { k: "handles", label: "Transform handles", type: "check" }, { k: "snap", label: "Snap to canvas edges", type: "check" }, { k: "snapLayers", label: "Snap to other layers", type: "check" }, { type: "button", label: "✎ Edit text / equation", act: function () { var L = PE.active(); if (L && L.type === "text") PE.editActiveText(); else if (L && L.eq) PE.dlgEquation(L); else PE.toast("Select a text or equation layer first (click it on the picture)"); } }, { type: "button", label: "✂ Remove background (AI)", act: function () { PE.aiRemoveBackground(); } }],
+		hint: "Drag to move. Shift / Ctrl-click adds or removes layers; drag on empty canvas to box-select several. Handles resize (Shift = other proportions), just outside a corner rotates. Hold Ctrl (or Alt) while dragging = no snapping. Arrows nudge.",
 		down: function (e) {
-			var L = PE.active(), o = PE.opt.move, z = PE.view.zoom;
-			if (L && o.handles && L.visible && !PE.isGroup(L)) {
-				for (var i = 0; i < 8; i++) { var s = handleScreen(L, HANDLES[i]); if (Math.hypot(s.x - (e.sx - PE.els.over.getBoundingClientRect().left), s.y - (e.sy - PE.els.over.getBoundingClientRect().top)) < 9) { mv = { kind: "scale", L: L, h: HANDLES[i], sx0: L.sx, sy0: L.sy, cx0: L.cx, cy0: L.cy, rot: L.rot, p0: e }; return; } }
-				var rect = PE.els.over.getBoundingClientRect(), px = e.sx - rect.left, py = e.sy - rect.top;
-				var corners = [0, 2, 4, 6].map(function (k) { return handleScreen(L, HANDLES[k]); });
-				for (i = 0; i < 4; i++) { var dd = Math.hypot(corners[i].x - px, corners[i].y - py); if (dd >= 9 && dd < 30 && !PE.layerAtPoint(L, e.x, e.y)) { mv = { kind: "rot", L: L, a0: Math.atan2(e.y - L.cy, e.x - L.cx), rot0: L.rot }; return; } }
+			var o = PE.opt.move, A = PE.active(), set = PE.moveSet(), multi = set.length > 1, sp = scr(e), i;
+			mv = null; PE.guides = [];
+			if (o.handles && !e.shift && !e.ctrl) {
+				if (multi) {
+					var b = setBox(set); if (b) for (i = 0; i < 8; i++) { var hs = boxHandle(b, HANDLES[i]); if (Math.hypot(hs.x - sp.x, hs.y - sp.y) < 9) {
+						var its = leaves(set).filter(function (k) { return !k.locked; }); if (its.length !== leaves(set).length) { PE.toast("A locked layer is in the selection"); return; }
+						mv = { kind: "mscale", set: set, b0: b, vb0: P.unionBox(its.filter(PE.effVisible).map(PE.visBox)) || b, h: HANDLES[i], items: its.map(function (k) { return [k, k.cx, k.cy, k.sx, k.sy, k.rot]; }), tg: targetsFor(its) }; return; } }
+				} else if (A && A.visible && !PE.isGroup(A) && !A.locked) {
+					for (i = 0; i < 8; i++) { var s = handleScreen(A, HANDLES[i]); if (Math.hypot(s.x - sp.x, s.y - sp.y) < 9) { mv = { kind: "scale", L: A, h: HANDLES[i], sx0: A.sx, sy0: A.sy, cx0: A.cx, cy0: A.cy, rot: A.rot, p0: e, tg: targetsFor([A]) }; return; } }
+					var corners = [0, 2, 4, 6].map(function (k) { return handleScreen(A, HANDLES[k]); });
+					for (i = 0; i < 4; i++) { var dd = Math.hypot(corners[i].x - sp.x, corners[i].y - sp.y); if (dd >= 9 && dd < 30 && !PE.layerAtPoint(A, e.x, e.y)) { mv = { kind: "rot", L: A, a0: Math.atan2(e.y - A.cy, e.x - A.cx), rot0: A.rot }; return; } }
+				}
 			}
-			var hit = o.auto ? PE.layerAt(e.x, e.y) : null;
-			if (hit && hit !== L && PE.isBackdrop(hit)) hit = null;
-			if (hit) hit = pickTarget(hit, L, o.groups);
-			if (o.auto && hit && hit !== L) { PE.setActive(hit.id); L = hit; }
-			else if (o.auto && !hit && !(L && PE.layerAtPoint(L, e.x, e.y))) { mv = null; return; }
-			if (!L || L.locked) { if (L && L.locked) PE.toast("This layer is locked"); return; }
-			mv = { kind: "move", L: L, cx0: L.cx, cy0: L.cy, p0: e, moved: false, grp: PE.isGroup(L) ? PE.descendants(L).filter(function (k) { return !PE.isGroup(k); }).map(function (k) { return [k, k.cx, k.cy]; }) : null };
+			var raw = o.auto ? PE.layerAt(e.x, e.y) : null; if (raw && raw !== A && PE.isBackdrop(raw)) raw = null;
+			var hit = raw ? pickTarget(raw, multi ? null : A, o.groups) : null;
+			if (e.shift || e.ctrl) {   // add to / take out of the selection; on empty canvas a rubber band adds
+				if (hit) { var now = PE.toggleMove(hit); if (now) startMove(PE.moveSet(), e); return; }
+				mv = { kind: "band", a: e, b: e, add: true }; return;
+			}
+			if (hit && multi && set.indexOf(hit) >= 0) { startMove(set, e); return; }   // dragging one of the selected layers moves them all
+			if (multi && hit && PE.ancestorsOf(hit).some(function (g) { return set.indexOf(g) >= 0; })) { startMove(set, e); return; }
+			if (hit) { if (hit !== A || multi) { if (PE.setMulti) PE.setMulti([]); PE.setActive(hit.id); } startMove([hit], e); return; }
+			if (!o.auto) { if (set.length) startMove(set, e); return; }
+			if (multi) { var mb = setBox(set); if (mb && e.x >= mb.x && e.y >= mb.y && e.x <= mb.x + mb.w && e.y <= mb.y + mb.h) { startMove(set, e); return; } }
+			else if (A && PE.layerAtPoint(A, e.x, e.y) && PE.effVisible(A)) { startMove([A], e); return; }   // e.g. dragging the active background picture
+			mv = { kind: "band", a: e, b: e, add: false };   // empty canvas (or outside the picture): rubber-band select
 		},
 		move: function (e) {
-			if (!mv) return; var L = mv.L;
+			if (!mv) return; var L = mv.L, T = th();
+			if (mv.kind === "band") { mv.b = e; PE.invalidateOverlay(); return; }
 			if (mv.kind === "move") {
 				var dx = Math.round(e.x - mv.p0.x), dy = Math.round(e.y - mv.p0.y); if (e.shift) { if (Math.abs(dx) > Math.abs(dy)) dy = 0; else dx = 0; }
-				if (mv.grp) { mv.grp.forEach(function (g) { g[0].cx = g[1] + dx; g[0].cy = g[2] + dy; }); PE.guides = []; mv.moved = true; PE.invalidate(); return; }
-				L.cx = mv.cx0 + dx; L.cy = mv.cy0 + dy; PE.guides = [];
-				if (PE.opt.move.snap && !e.ctrl) {
-					var b = PE.bounds(L), th = 6 / PE.view.zoom, d = PE.doc, ax = [[b.x, 0], [b.x + b.w, d.w], [b.x + b.w / 2, d.w / 2], [b.x, d.w / 2 - b.w / 2 + b.x - b.x]];
-					[[b.x, 0, "l"], [b.x + b.w, d.w, "r"], [b.x + b.w / 2, d.w / 2, "c"]].forEach(function (q) { if (Math.abs(q[0] - q[1]) < th) { L.cx += q[1] - q[0]; PE.guides.push({ v: q[1] }); } });
-					b = PE.bounds(L); [[b.y, 0], [b.y + b.h, d.h], [b.y + b.h / 2, d.h / 2]].forEach(function (q) { if (Math.abs(q[0] - q[1]) < th) { L.cy += q[1] - q[0]; PE.guides.push({ h: q[1] }); } });
+				PE.guides = [];
+				if (snapOn(e) && !e.alt && mv.box0) {
+					var lockX = e.shift && dx === 0, lockY = e.shift && dy === 0, r = P.snapBox({ x: mv.box0.x + dx, y: mv.box0.y + dy, w: mv.box0.w, h: mv.box0.h }, mv.tg, T);   // Shift keeps the drag on one axis: only that axis snaps
+					if (!lockX) dx += r.dx; else r.gx = []; if (!lockY) dy += r.dy; else r.gy = []; guidesFrom(r.gx, r.gy);
 				}
+				mv.items.forEach(function (g) { g[0].cx = g[1] + dx; g[0].cy = g[2] + dy; }); mv.moved = mv.moved || dx !== 0 || dy !== 0; PE.invalidate(); return;
+			}
+			if (mv.kind === "rot") { var a = Math.atan2(e.y - L.cy, e.x - L.cx), rr = mv.rot0 + (a - mv.a0); if (e.shift) rr = Math.round(rr / (Math.PI / 12)) * (Math.PI / 12); L.rot = rr; mv.moved = true; PE.invalidate(); return; }
+			if (mv.kind === "scale") {
+				var d = scaleDims(mv, e), nw = d.nw, nh = d.nh; applyDims(mv, d, nw, nh, e.alt); PE.guides = [];
+				var vr = visLocal(L);
+				if (snapOn(e) && vr && uprightish(mv.rot) && mv.sx0 > 0 && mv.sy0 > 0) {
+					var hd = mv.h, W = L.canvas.width, H = L.canvas.height;
+					var edgesAt = function (p, ax) { var keep = [L.sx, L.sy, L.cx, L.cy]; if (ax === "x") applyDims(mv, d, p, nh, e.alt); else applyDims(mv, d, nw, p, e.alt); var out = ax === "x" ? [L.cx + (vr.x - W / 2) * L.sx, L.cx + (vr.x + vr.w - W / 2) * L.sx] : [L.cy + (vr.y - H / 2) * L.sy, L.cy + (vr.y + vr.h - H / 2) * L.sy]; L.sx = keep[0]; L.sy = keep[1]; L.cx = keep[2]; L.cy = keep[3]; var side = ax === "x" ? hd[0] : hd[1]; return e.alt ? out : side < 0 ? [out[0], NaN] : [NaN, out[1]]; };
+					var bs = snapSizes(e, mv, hd[0] ? nw : null, hd[1] ? nh : null, edgesAt, d.uniform);
+					if (bs.x || bs.y) {
+						if (d.uniform) { var f = bs.x ? bs.x.p / nw : bs.y.p / nh; nw *= f; nh *= f; } else { if (bs.x) nw = bs.x.p; if (bs.y) nh = bs.y.p; }
+						applyDims(mv, d, Math.max(2, nw), Math.max(2, nh), e.alt); guidesFrom(bs.x ? [bs.x.t] : [], bs.y ? [bs.y.t] : []);
+					}
+				}
+				mv.moved = true; PE.invalidate(); return;
+			}
+			if (mv.kind === "mscale") {
+				var b0 = mv.b0, h2 = mv.h, ux = e.alt ? b0.x + b0.w / 2 : h2[0] < 0 ? b0.x + b0.w : b0.x, uy = e.alt ? b0.y + b0.h / 2 : h2[1] < 0 ? b0.y + b0.h : b0.y;
+				var ex = h2[0] > 0 ? b0.x + b0.w : b0.x, ey = h2[1] > 0 ? b0.y + b0.h : b0.y, fx = h2[0] ? Math.max(0.02, (e.x - ux) / ((ex - ux) || 1)) : 1, fy = h2[1] ? Math.max(0.02, (e.y - uy) / ((ey - uy) || 1)) : 1;
+				var uni = (h2[0] && h2[1]) ? !e.shift : e.shift;
+				if (uni && h2[0] && h2[1]) fx = fy = Math.max(fx, fy); else if (uni) { if (h2[0]) fy = fx; else fx = fy; }
+				PE.guides = [];
+				if (snapOn(e)) {
+					var vb = mv.vb0, edgesAt2 = function (f, ax) { var o0 = ax === "x" ? [vb.x, vb.x + vb.w] : [vb.y, vb.y + vb.h], a0 = ax === "x" ? ux : uy, side = ax === "x" ? h2[0] : h2[1], out = o0.map(function (v) { return P.scaleAbout(v, a0, f); }); return e.alt ? out : side < 0 ? [out[0], NaN] : [NaN, out[1]]; };
+					var bs2 = snapSizes(e, mv, h2[0] ? fx : null, h2[1] ? fy : null, edgesAt2, uni);
+					if (bs2.x || bs2.y) { if (uni) { var g2 = bs2.x ? bs2.x.p : bs2.y.p; if (h2[0] && h2[1]) fx = fy = g2; else fx = fy = g2; } else { if (bs2.x) fx = bs2.x.p; if (bs2.y) fy = bs2.y.p; } guidesFrom(bs2.x ? [bs2.x.t] : [], bs2.y ? [bs2.y.t] : []); }
+				}
+				mv.items.forEach(function (it) {
+					var k = it[0]; k.cx = P.scaleAbout(it[1], ux, fx); k.cy = P.scaleAbout(it[2], uy, fy);
+					var q = ((it[5] % Math.PI) + Math.PI) % Math.PI, sxF, syF;
+					if (Math.abs(fx - fy) < 1e-9 || q < 1e-6 || Math.PI - q < 1e-6) { sxF = fx; syF = fy; } else if (Math.abs(q - Math.PI / 2) < 1e-6) { sxF = fy; syF = fx; } else { sxF = syF = Math.sqrt(fx * fy); }   // a layer at an odd angle cannot be stretched without skewing: it scales evenly
+					k.sx = it[3] * sxF; k.sy = it[4] * syF;
+				});
 				mv.moved = true; PE.invalidate();
-			} else if (mv.kind === "rot") {
-				var a = Math.atan2(e.y - L.cy, e.x - L.cx), r = mv.rot0 + (a - mv.a0); if (e.shift) r = Math.round(r / (Math.PI / 12)) * (Math.PI / 12); L.rot = r; mv.moved = true; PE.invalidate();
-			} else {
-				var c = Math.cos(mv.rot), s = Math.sin(mv.rot), dx2 = e.x - mv.cx0, dy2 = e.y - mv.cy0, lx = c * dx2 + s * dy2, ly = -s * dx2 + c * dy2, hd = mv.h, W0 = L.canvas.width * Math.abs(mv.sx0), H0 = L.canvas.height * Math.abs(mv.sy0);
-				var ax = e.alt ? 0 : -hd[0] * W0 / 2, ay = e.alt ? 0 : -hd[1] * H0 / 2, nw = hd[0] ? Math.max(2, (lx - ax) * hd[0] * (e.alt ? 2 : 1)) : W0, nh = hd[1] ? Math.max(2, (ly - ay) * hd[1] * (e.alt ? 2 : 1)) : H0;
-				var uniform = (hd[0] && hd[1]) ? !e.shift : e.shift;
-				if (uniform && hd[0] && hd[1]) { var f = Math.max(nw / W0, nh / H0); nw = W0 * f; nh = H0 * f; } else if (uniform) { var f2 = hd[0] ? nw / W0 : nh / H0; nw = W0 * f2; nh = H0 * f2; }
-				var ncx = e.alt ? 0 : ax + hd[0] * nw / 2, ncy = e.alt ? 0 : ay + hd[1] * nh / 2;
-				L.sx = Math.sign(mv.sx0 || 1) * nw / L.canvas.width; L.sy = Math.sign(mv.sy0 || 1) * nh / L.canvas.height; L.cx = mv.cx0 + c * ncx - s * ncy; L.cy = mv.cy0 + s * ncx + c * ncy; mv.moved = true; PE.invalidate();
 			}
 		},
-		up: function () { var m = mv; mv = null; PE.guides = []; if (m && m.moved) { PE.touch(m.L); PE.commit(m.kind === "move" ? (m.grp ? "Move group" : "Move layer") : m.kind === "rot" ? "Rotate layer" : "Resize layer"); } PE.invalidateOverlay(); },
-		abort: function () { if (mv) { var m = mv; m.L.cx = m.cx0 || m.L.cx; mv = null; } },
+		up: function (e) {
+			var m = mv; mv = null; PE.guides = [];
+			if (m && m.kind === "band") { bandSelect(m, e); PE.invalidateOverlay(); return; }
+			if (m && m.moved) {
+				var n = m.set ? m.set.length : 1, grp = m.set && n === 1 && PE.isGroup(m.set[0]);
+				PE.commit(m.kind === "move" ? (n > 1 ? "Move " + n + " layers" : grp ? "Move group" : "Move layer") : m.kind === "rot" ? "Rotate layer" : m.kind === "mscale" ? "Resize " + n + " layers" : "Resize layer");
+			}
+			PE.invalidateOverlay();
+		},
+		abort: function () {
+			var m = mv; mv = null; PE.guides = []; if (!m) return;
+			if (m.kind === "move") m.items.forEach(function (g) { g[0].cx = g[1]; g[0].cy = g[2]; });
+			else if (m.kind === "mscale") m.items.forEach(function (it) { var k = it[0]; k.cx = it[1]; k.cy = it[2]; k.sx = it[3]; k.sy = it[4]; });
+			else if (m.kind === "scale") { m.L.cx = m.cx0; m.L.cy = m.cy0; m.L.sx = m.sx0; m.L.sy = m.sy0; } else if (m.kind === "rot") m.L.rot = m.rot0;
+			PE.invalidate();
+		},
+		cancel: function () { if (mv && mv.kind !== "band") this.abort(); mv = null; },
 		overlay: function (x, v) {
-			var L = PE.active(); if (!L || !PE.opt.move.handles || !L.visible) return;
+			if (mv && mv.kind === "band") { var a = PE.toScreen(mv.a.x, mv.a.y), b = PE.toScreen(mv.b.x, mv.b.y), r = P.rectFrom(a.x, a.y, b.x, b.y); x.fillStyle = "rgba(26,115,232,0.12)"; x.fillRect(r.x, r.y, r.w, r.h); x.lineWidth = 1; [["#000", 0], ["#fff", 4]].forEach(function (p) { x.setLineDash([4, 4]); x.lineDashOffset = p[1]; x.strokeStyle = p[0]; x.strokeRect(r.x + 0.5, r.y + 0.5, r.w, r.h); }); x.setLineDash([]); x.lineDashOffset = 0; }
+			var set = PE.moveSet(), o = PE.opt.move; if (!set.length) return;
+			if (set.length > 1) {
+				x.strokeStyle = "rgba(26,115,232,0.75)"; x.lineWidth = 1;
+				set.forEach(function (L) { var pts = PE.corners(L).map(function (p) { return PE.toScreen(p[0], p[1]); }); x.beginPath(); pts.forEach(function (p, i) { i ? x.lineTo(p.x, p.y) : x.moveTo(p.x, p.y); }); x.closePath(); x.stroke(); });
+				var bb = setBox(set); if (!bb) return; var s0 = PE.toScreen(bb.x, bb.y), s1 = PE.toScreen(bb.x + bb.w, bb.y + bb.h); x.strokeStyle = "#1a73e8"; x.lineWidth = 1.5; x.setLineDash([6, 4]); x.strokeRect(s0.x, s0.y, s1.x - s0.x, s1.y - s0.y); x.setLineDash([]);
+				if (o.handles) for (var k = 0; k < 8; k++) { var hs = boxHandle(bb, HANDLES[k]); PE.handleBox(x, hs.x, hs.y, 4.5); }
+				x.font = "11px system-ui,sans-serif"; var lbl = set.length + " layers"; x.fillStyle = "rgba(26,115,232,0.9)"; x.fillRect(s0.x, s0.y - 18, x.measureText(lbl).width + 10, 16); x.fillStyle = "#fff"; x.fillText(lbl, s0.x + 5, s0.y - 6);
+				return;
+			}
+			var L = set[0]; if (!o.handles || !L.visible) return;
 			if (PE.isGroup(L)) { var gb = PE.groupBounds(L), g0 = PE.toScreen(gb.x, gb.y), g1 = PE.toScreen(gb.x + gb.w, gb.y + gb.h); x.setLineDash([6, 4]); x.strokeStyle = "#1a73e8"; x.lineWidth = 1.5; x.strokeRect(g0.x, g0.y, g1.x - g0.x, g1.y - g0.y); x.setLineDash([]); return; }
 			var pts = PE.corners(L).map(function (p) { return PE.toScreen(p[0], p[1]); }); x.strokeStyle = "#1a73e8"; x.lineWidth = 1.5; x.beginPath(); pts.forEach(function (p, i) { i ? x.lineTo(p.x, p.y) : x.moveTo(p.x, p.y); }); x.closePath(); x.stroke();
 			for (var i = 0; i < 8; i++) { var s = handleScreen(L, HANDLES[i]); PE.handleBox(x, s.x, s.y, 4.5); }
 		} });
+	/* rubber band: every visible, unlocked layer whose visible box the band touches (not the full-canvas background picture); "Pick the whole group" picks groups */
+	function bandSelect(m, e) {
+		var a = PE.toScreen(m.a.x, m.a.y), b = PE.toScreen(e.x, e.y), o = PE.opt.move, cur = m.add ? PE.moveSet() : [];
+		if (Math.hypot(a.x - b.x, a.y - b.y) < 4) { if (!m.add && PE.setMulti) { PE.setMulti([]); } return; }   // a plain click on empty canvas: back to one layer
+		var r = P.rectFrom(m.a.x, m.a.y, e.x, e.y), picked = cur.slice();
+		PE.doc.layers.forEach(function (L) {
+			if (PE.isGroup(L) || !PE.effVisible(L) || L.locked || PE.isBackdrop(L)) return; var vb = PE.visBox(L); if (!P.boxesTouch(vb, r)) return;
+			var tgt = o.groups ? PE.topGroupOf(L) : L; if (tgt.locked) return; if (picked.indexOf(tgt) < 0) picked.push(tgt);
+		});
+		picked = picked.filter(function (L) { return !PE.ancestorsOf(L).some(function (g) { return picked.indexOf(g) >= 0; }); });
+		if (!picked.length) { if (!m.add && PE.setMulti) PE.setMulti([]); PE.toast("No layer in that box"); return; }
+		var top = picked.slice().sort(function (p, q) { return PE.indexOf(p) - PE.indexOf(q); }).pop();
+		if (picked.length === 1) { PE.setMulti([]); PE.setActive(picked[0].id); } else { PE.setActive(top.id); PE.setMulti(picked.map(function (L) { return L.id; })); PE.toast(picked.length + " layers selected: drag one to move them all"); }
+	}
 	PE.isBackdrop = function (L) { var d = PE.doc, b = PE.bounds(L); return PE.indexOf(L) === 0 && PE.isIdentity(L) && b.x <= 1 && b.y <= 1 && b.x + b.w >= d.w - 1 && b.y + b.h >= d.h - 1; };
 	PE.layerAtPoint = function (L, x, y) { if (PE.isGroup(L)) { var gb = PE.groupBounds(L); return x >= gb.x && y >= gb.y && x <= gb.x + gb.w && y <= gb.y + gb.h; } var p = PE.toLayerPt(L, x, y); return p.x >= 0 && p.y >= 0 && p.x < L.canvas.width && p.y < L.canvas.height; };
-	PE.nudge = function (dx, dy) { var L = PE.active(); if (!L || L.locked) return; PE.translate(L, dx, dy); PE.touch(L); clearTimeout(PE._nt); PE._nt = setTimeout(function () { PE.commit("Move layer"); }, 350); };
+	/* arrow keys: the whole selection moves (Shift = 10 px); the keys pressed within 0.35 s make one undo step */
+	PE.nudge = function (dx, dy) {
+		var set = PE.moveSet().filter(function (L) { return !L.locked; }); if (!set.length) { if (PE.active() && PE.active().locked) PE.toast("This layer is locked"); return; }
+		set.forEach(function (L) { PE.translate(L, dx, dy); }); PE.invalidate(); var n = set.length;
+		clearTimeout(PE._nt); PE._nt = setTimeout(function () { PE.commit(n > 1 ? "Move " + n + " layers" : "Move layer"); }, 350);
+	};
 
 	/* ---------- selection tools ---------- */
 	function selMode(e) { var o = PE.opt[PE.toolId].mode || "new"; return e.shift && e.alt ? "int" : e.shift ? "add" : e.alt ? "sub" : o; }
@@ -1263,10 +1476,68 @@ var MESPixel = (function () {
 		},
 		overlay: function (x) { if (!grad) return; var a = PE.toScreen(grad.a.x, grad.a.y), b = PE.toScreen(grad.b.x, grad.b.y); x.strokeStyle = "#000"; x.lineWidth = 3; x.beginPath(); x.moveTo(a.x, a.y); x.lineTo(b.x, b.y); x.stroke(); x.strokeStyle = "#fff"; x.lineWidth = 1.5; x.stroke(); x.fillStyle = "#fff"; x.beginPath(); x.arc(a.x, a.y, 4, 0, 6.2832); x.fill(); } });
 
-	/* ---------- eyedropper, hand, zoom ---------- */
-	function pick(e) { var o = PE.opt.eyedropper, n = o.size; var c = PE.sample(e.x, e.y, n, o.merged); if (!c) return; var hex = P.rgbToHex(c.r, c.g, c.b); if (e.alt) PE.setBg(hex); else PE.setFg(hex); }
-	PE.defTool({ id: "eyedropper", name: "Eyedropper (pick colour)", key: "i", icon: "💉", opts: { size: 1, merged: true }, ui: [{ k: "size", label: "Sample", type: "select", options: [[1, "Point"], [3, "3 × 3"], [5, "5 × 5"], [11, "11 × 11"]], num: true }, { k: "merged", label: "All layers", type: "check" }],
-		hint: "Click to pick the foreground colour. Alt-click picks the background colour.", down: pick, move: pick });
+	/* ---------- eyedropper: press and drag over the picture with a magnifier; the colour is used on release (or, with "Confirm with a button",
+	 * from a floating Use / Cancel bar, so the sample point can be dragged around first). PE.pickColorFromImage(req) borrows the tool for one pick
+	 * (the 💉 buttons next to the colour wells and the option bar's colour boxes) and goes back to the tool you had. ---------- */
+	var pk = null, pickReq = null, pickBar = null, LOUPE_N = 11, LOUPE_Z = 9;
+	function sampleHex(x, y) { var o = PE.opt.eyedropper, c = PE.sample(x, y, o.size, o.merged); return c ? { hex: P.rgbToHex(c.r, c.g, c.b), a: c.a } : null; }
+	function loupePixels(x, y) {   // the 11 x 11 pixels around the point, drawn like the picture (all layers, or the current layer)
+		var n = LOUPE_N, h = Math.floor(n / 2), c = PE.tmp("loupe", n, n), cx = c.getContext("2d"), o = PE.opt.eyedropper, L = PE.active(), base = [1, 0, 0, 1, -Math.floor(x) + h, -Math.floor(y) + h];
+		cx.setTransform(1, 0, 0, 1, 0, 0); cx.clearRect(0, 0, n, n);
+		if (o.merged || !L) { PE.relink(); PE.doc.layers.forEach(function (l) { PE.drawLayer(cx, l, base, "lpx", n, n); }); } else PE.drawLayer(cx, L, base, "lpx", n, n);
+		return c;
+	}
+	function drawLoupe(x, v, docPt, scrPt, info, note) {
+		var n = LOUPE_N, z = LOUPE_Z, S = n * z, pad = 6, W = S + pad * 2, H = S + pad * 2 + 40, off = 26, bx = scrPt.x + off, by = scrPt.y + off;
+		if (bx + W > v.w - 4) bx = scrPt.x - off - W; if (by + H > v.h - 4) by = scrPt.y - off - H; bx = Math.max(4, bx); by = Math.max(4, by);
+		x.save(); x.shadowColor = "rgba(0,0,0,0.5)"; x.shadowBlur = 10; x.fillStyle = "#1d1d24"; x.beginPath(); if (x.roundRect) x.roundRect(bx, by, W, H, 8); else x.rect(bx, by, W, H); x.fill(); x.restore();
+		var gx = bx + pad, gy = by + pad; x.fillStyle = "#6a6a76"; x.fillRect(gx, gy, S, S); x.fillStyle = "#9a9aa6"; for (var i = 0; i < n * 2; i++) for (var j = 0; j < n * 2; j++) if ((i + j) % 2 === 0) x.fillRect(gx + i * z / 2, gy + j * z / 2, z / 2, z / 2);
+		x.imageSmoothingEnabled = false; x.drawImage(loupePixels(docPt.x, docPt.y), gx, gy, S, S); x.imageSmoothingEnabled = true;
+		x.strokeStyle = "rgba(255,255,255,0.12)"; x.lineWidth = 1; x.beginPath(); for (var k = 1; k < n; k++) { x.moveTo(gx + k * z + 0.5, gy); x.lineTo(gx + k * z + 0.5, gy + S); x.moveTo(gx, gy + k * z + 0.5); x.lineTo(gx + S, gy + k * z + 0.5); } x.stroke();
+		var sz = Math.min(n, PE.opt.eyedropper.size), h = Math.floor(n / 2), q = Math.floor(sz / 2), rx = gx + (h - q) * z, ry = gy + (h - q) * z;
+		x.lineWidth = 2; x.strokeStyle = "#000"; x.strokeRect(rx - 1, ry - 1, sz * z + 2, sz * z + 2); x.lineWidth = 1; x.strokeStyle = "#fff"; x.strokeRect(rx - 0.5, ry - 0.5, sz * z + 1, sz * z + 1);
+		var ty = gy + S + 8; x.fillStyle = info ? info.hex : "#000"; x.fillRect(gx, ty, 26, 26); x.strokeStyle = "#fff"; x.strokeRect(gx + 0.5, ty + 0.5, 25, 25);
+		x.fillStyle = "#f2f2f5"; x.font = "bold 13px ui-monospace,Menlo,Consolas,monospace"; x.textBaseline = "middle"; x.fillText(info ? info.hex.toUpperCase() + (info.a < 0.99 ? " " + Math.round(info.a * 100) + "%" : "") : "transparent", gx + 34, ty + 8);
+		x.font = "11px system-ui,sans-serif"; x.fillStyle = "#b9b9c6"; x.fillText(note, gx + 34, ty + 21); x.textBaseline = "alphabetic";
+	}
+	function marker(x, p) { var s = PE.toScreen(p.x, p.y); x.lineWidth = 3; x.strokeStyle = "#000"; x.beginPath(); x.arc(s.x, s.y, 7, 0, 6.2832); x.stroke(); x.lineWidth = 1.5; x.strokeStyle = "#fff"; x.stroke(); x.beginPath(); x.moveTo(s.x - 11, s.y); x.lineTo(s.x - 4, s.y); x.moveTo(s.x + 4, s.y); x.lineTo(s.x + 11, s.y); x.moveTo(s.x, s.y - 11); x.lineTo(s.x, s.y - 4); x.moveTo(s.x, s.y + 4); x.lineTo(s.x, s.y + 11); x.stroke(); }
+	function hideBar() { if (pickBar) { pickBar.remove(); pickBar = null; } }
+	function placeBar() {
+		if (!pickBar || !pk) return; var s = PE.toScreen(pk.x, pk.y), v = PE.view, w = pickBar.offsetWidth || 260, h = pickBar.offsetHeight || 40, l = Math.max(6, Math.min(v.w - w - 6, s.x - w / 2)), t = s.y + 18; if (t + h > v.h - 6) t = s.y - 18 - h;
+		pickBar.style.left = l + "px"; pickBar.style.top = Math.max(6, t) + "px";
+	}
+	function showBar() {
+		hideBar(); if (!pk || !pk.info) return; var b = PE.el("div", "pe-pickbar"); b.setAttribute("role", "group"); b.setAttribute("aria-label", "Use the picked colour?");
+		b.innerHTML = '<span class="pe-pickbar-sw" style="background:' + pk.info.hex + '"></span><code>' + pk.info.hex.toUpperCase() + '</code><button type="button" class="pe-btn pe-btn--sm pe-btn--primary" data-a="use">Use this colour</button><button type="button" class="pe-btn pe-btn--sm" data-a="no">Cancel</button>';
+		b.addEventListener("mousedown", function (e) { e.preventDefault(); e.stopPropagation(); });
+		b.addEventListener("click", function (e) { var a = e.target.closest && e.target.closest("[data-a]"); if (!a) return; if (a.dataset.a === "use") applyPick(); else PE.tools.eyedropper.cancel(); });
+		PE.els.stage.appendChild(b); pickBar = b; placeBar(); var u = b.querySelector("[data-a=use]"); if (u) u.focus({ preventScroll: true });
+	}
+	PE.on("view", placeBar);
+	function applyPick() {
+		var p = pk, r = pickReq; pk = null; hideBar(); PE.invalidateOverlay(); if (!p || !p.info) return;
+		if (r) { pickReq = null; r.apply(p.info.hex, p.alt); if (r.prev && PE.toolId === "eyedropper") PE.setTool(r.prev); PE.toast("Picked " + p.info.hex.toUpperCase() + (r.label ? " for the " + r.label : "")); }
+		else if (p.alt) PE.setBg(p.info.hex); else PE.setFg(p.info.hex);
+	}
+	PE.pickColorFromImage = function (req) {
+		if (!PE.doc) return; var prev = PE.toolId === "eyedropper" ? (pickReq && pickReq.prev) || null : PE.toolId;
+		PE.setTool("eyedropper"); pickReq = Object.assign({}, req, { prev: prev }); PE.toast("Press and drag over the picture, let go to use the colour" + (req.label ? " (" + req.label + ")" : "") + ". Esc cancels.");
+		PE.els.over.focus({ preventScroll: true });
+	};
+	PE.defTool({ id: "eyedropper", name: "Eyedropper (pick colour)", key: "i", icon: "💉", opts: { size: 1, merged: true, confirm: false },
+		ui: [{ k: "size", label: "Sample", type: "select", options: [[1, "1 pixel"], [3, "3 × 3 average"], [5, "5 × 5 average"], [11, "11 × 11 average"]], num: true }, { k: "merged", label: "All layers", type: "check", help: "On: the colour you see (all layers together). Off: only the selected layer's own pixels." }, { k: "confirm", label: "Confirm with a button", type: "check", help: "Off: the colour is used as soon as you let go. On: letting go leaves a Use this colour / Cancel bar, and you can drag again to move the sample point before you choose." }],
+		hint: "Press and drag over the picture: the magnifier shows the pixels and the colour, let go to use it (Alt = background colour). Esc cancels.",
+		down: function (e) { hideBar(); pk = { x: e.x, y: e.y, alt: e.alt || (pk && pk.alt), live: true, info: sampleHex(e.x, e.y) }; PE.invalidateOverlay(); },
+		move: function (e) { if (!pk || !pk.live) return; pk.x = e.x; pk.y = e.y; pk.info = sampleHex(e.x, e.y); PE.invalidateOverlay(); },
+		hover: function () { if (!pk) PE.invalidateOverlay(); },
+		up: function () { if (!pk) return; pk.live = false; if (!pk.info) { PE.toast("Nothing there to pick (transparent)"); pk = null; PE.invalidateOverlay(); return; } if (PE.opt.eyedropper.confirm) { showBar(); PE.invalidateOverlay(); } else applyPick(); },
+		enter: function () { if (pk && !pk.live) applyPick(); },
+		cancel: function () { var r = pickReq; pk = null; pickReq = null; hideBar(); PE.invalidateOverlay(); if (r && r.prev) setTimeout(function () { if (PE.toolId === "eyedropper") PE.setTool(r.prev); }, 0); },
+		overlay: function (x, v) {
+			if (pk) { marker(x, pk); if (pk.live) drawLoupe(x, v, pk, PE.toScreen(pk.x, pk.y), pk.info, PE.opt.eyedropper.confirm ? "let go, then Use" : "let go to use"); return; }
+			if (PE.ptr.inside && !PE.spaceHeld) { var d = { x: (PE.ptr.x - v.px) / v.zoom, y: (PE.ptr.y - v.py) / v.zoom }; drawLoupe(x, v, d, PE.ptr, sampleHex(d.x, d.y), pickReq ? "press to pick" + (pickReq.label ? ": " + pickReq.label : "") : "press and drag"); }
+		} });
+	/* ---------- hand, zoom ---------- */
 	PE.defTool({ id: "hand", name: "Hand (pan)", key: "h", icon: "✋", opts: {}, ui: [], hint: "Drag to pan. You can also hold Space with any tool, or use the middle mouse button." });
 	PE.defTool({ id: "zoom", name: "Zoom", key: "z", icon: "🔍", opts: {}, ui: [{ type: "button", label: "Fit (Ctrl+0)", act: function () { PE.fit(); } }, { type: "button", label: "100% (Ctrl+1)", act: function () { PE.setZoom(1); } }], hint: "Click to zoom in, Alt-click to zoom out. Ctrl + wheel also zooms.",
 		down: function (e) { var r = PE.els.over.getBoundingClientRect(); PE.setZoom(PE.view.zoom * (e.alt ? 0.5 : 2), e.sx - r.left, e.sy - r.top); } });
@@ -1287,62 +1558,153 @@ var MESPixel = (function () {
 		return file.arrayBuffer().then(function (ab) { var ff = new FontFace(name, ab); return ff.load().then(function () { document.fonts.add(ff); PE.FONTS.push(["'" + name + "', sans-serif", name + " (yours)"]); PE.emit("fonts"); PE.optSet("text", "font", "'" + name + "', sans-serif"); }); });
 	};
 
-	/* ---------- text ---------- */
-	var te = null;
+	/* ---------- text: edited in place on the canvas, like GIMP ----------
+	 * The rendered layer IS what you see while typing: a hidden <textarea> only collects the keys (typing, IME, clipboard, undo inside the box), and the caret,
+	 * the selection and the frame are drawn on the overlay from PE.textLayout(L), so they always sit exactly on the letters (also on a rotated or scaled layer).
+	 * One edit session = one undo step ("Add text" / "Edit text"), whatever was typed or restyled in between. */
+	var te = null, hoverT = null, blinkOn = true, blinkT = 0, tdrag = null, lastDbl = { t: 0, x: 0, y: 0 };
 	function editor() { return PE.els.textedit; }
-	function placeEditor() {
-		if (!te) return; var L = te.L, ta = editor(), t = L.text, v = PE.view, c = Math.cos(L.rot), s = Math.sin(L.rot), pad = L._pad || 0;
-		var lx = pad - L.canvas.width / 2, ly = pad - L.canvas.height / 2, dx = L.cx + c * L.sx * lx - s * L.sy * ly, dy = L.cy + s * L.sx * lx + c * L.sy * ly, sp = PE.toScreen(dx, dy), z = v.zoom;
-		ta.style.cssText = "display:block;left:0;top:0;transform-origin:0 0;transform:matrix(" + (c * L.sx * z) + "," + (s * L.sx * z) + "," + (-s * L.sy * z) + "," + (c * L.sy * z) + "," + sp.x + "," + sp.y + ");font:" + (t.italic ? "italic " : "") + (t.bold ? "bold " : "") + t.size + "px/" + (t.size * t.lh) + "px " + t.font + ";text-align:" + t.align + ";white-space:pre-wrap;overflow:hidden;width:" + (L.canvas.width - pad * 2 + 4) + "px;height:" + (L.canvas.height - pad * 2 + t.size * 0.2) + "px;letter-spacing:" + (t.ls || 0) + "px;caret-color:" + (t.color) + ";";
+	function locToDoc(L, u, v) { var c = Math.cos(L.rot), s = Math.sin(L.rot), lx = (u - L.canvas.width / 2) * L.sx, ly = (v - L.canvas.height / 2) * L.sy; return { x: L.cx + c * lx - s * ly, y: L.cy + s * lx + c * ly }; }
+	function frameOf(L) { var lay = PE.textLayout(L), p = lay.pad, g = Math.max(2, lay.size * 0.06); return { u0: p - g, v0: p - g, u1: p + lay.mw + g, v1: p + lay.lhp * lay.lines.length + lay.size * 0.25 + g }; }
+	function placeEditor() {   // the (invisible) key catcher sits over the text so an IME pop-up opens next to it
+		if (!te) return; var L = te.L, ta = editor(), t = L.text, v = PE.view, c = Math.cos(L.rot), s = Math.sin(L.rot), lay = PE.textLayout(L), pad = lay.pad;
+		var dp = locToDoc(L, pad, pad), sp = PE.toScreen(dp.x, dp.y), z = v.zoom;
+		ta.style.cssText = "display:block;left:0;top:0;transform-origin:0 0;transform:matrix(" + (c * L.sx * z) + "," + (s * L.sx * z) + "," + (-s * L.sy * z) + "," + (c * L.sy * z) + "," + sp.x + "," + sp.y + ");font:" + (t.italic ? "italic " : "") + (t.bold ? "bold " : "") + t.size + "px/" + (t.size * t.lh) + "px " + t.font + ";text-align:" + t.align + ";white-space:pre-wrap;overflow:hidden;width:" + Math.max(20, lay.mw + 4) + "px;height:" + (lay.lhp * lay.lines.length + t.size * 0.2) + "px;letter-spacing:" + (t.ls || 0) + "px;";
 	}
 	PE.placeTextEditor = placeEditor;
-	function openEdit(L, isNew) {
-		te = { L: L, isNew: isNew, orig: L.text.str }; var ta = editor(); ta.value = L.text.str; placeEditor(); PE.emit("opts", "text");
-		setTimeout(function () { ta.focus(); ta.select(); }, 0); setTimeout(function () { if (te && document.activeElement !== ta) { ta.focus(); ta.select(); } }, 80);
+	function poke() { blinkOn = true; PE.invalidateOverlay(); }
+	function hitText(e, prefer) {   // the text layer under a point: its whole text box counts (clicking between letters edits, it does not start a new text)
+		if (prefer && PE.effVisible(prefer) && PE.layerAtPoint(prefer, e.x, e.y)) return prefer;
+		var ls = PE.doc.layers; for (var i = ls.length - 1; i >= 0; i--) { var L = ls[i]; if (L.type !== "text" || !L.text || !PE.effVisible(L) || L.locked) continue; if (PE.layerAtPoint(L, e.x, e.y)) return L; }
+		return null;
 	}
+	function indexAt(L, x, y) {
+		var lay = PE.textLayout(L), p = PE.toLayerPt(L, x, y), n = lay.lines.length, i = Math.max(0, Math.min(n - 1, Math.floor((p.y - lay.pad) / lay.lhp)));
+		return P.hitInLine(lay.lines[i], p.x - lay.lx[i], lay.measure);
+	}
+	function focusIdx(ta) { return ta.selectionDirection === "backward" ? ta.selectionStart : ta.selectionEnd; }
+	function anchorIdx(ta) { return ta.selectionDirection === "backward" ? ta.selectionEnd : ta.selectionStart; }
+	function setSel(a, b) { var ta = editor(); if (b >= a) ta.setSelectionRange(a, b, "forward"); else ta.setSelectionRange(b, a, "backward"); poke(); }
+	function openEdit(L, isNew, caret) {
+		if (te && te.L === L) { if (caret != null) { var ta0 = editor(); if (caret === "all") ta0.select(); else ta0.setSelectionRange(caret, caret); } poke(); return; }
+		if (te) PE.endTextEdit(false);
+		te = { L: L, isNew: isNew, orig: JSON.stringify(L.text) }; var ta = editor(); ta.value = L.text.str; placeEditor(); PE.emit("opts", "text");
+		var put = function () { if (!te || te.L !== L) return; if (document.activeElement !== ta) ta.focus({ preventScroll: true }); if (caret === "all") ta.select(); else { var k = caret == null ? ta.value.length : caret; ta.setSelectionRange(k, k); } poke(); };
+		put(); setTimeout(function () { if (te && te.L === L && document.activeElement !== ta) put(); }, 60);
+		clearInterval(blinkT); blinkT = setInterval(function () { if (!te) { clearInterval(blinkT); return; } blinkOn = !blinkOn; PE.invalidateOverlay(); }, 530);
+	}
+	function dropLayer(L) { PE.doc.layers.splice(PE.doc.layers.indexOf(L), 1); if (!PE.doc.layers.length) PE.doc.layers.push(PE.makeLayer({ name: "Layer 1" })); PE.doc.activeId = PE.doc.layers[PE.doc.layers.length - 1].id; PE.emit("layers"); PE.invalidate(); }
 	PE.endTextEdit = function (cancel) {
-		if (!te) return; var e = te; te = null; var ta = editor(); ta.style.display = "none"; var L = e.L;
-		if (cancel && e.isNew) { PE.doc.layers.splice(PE.doc.layers.indexOf(L), 1); if (!PE.doc.layers.length) PE.doc.layers.push(PE.makeLayer({ name: "Layer 1" })); PE.doc.activeId = PE.doc.layers[PE.doc.layers.length - 1].id; PE.emit("layers"); PE.invalidate(); return; }
-		if (!L.text.str.trim() && e.isNew) { PE.doc.layers.splice(PE.doc.layers.indexOf(L), 1); if (!PE.doc.layers.length) PE.doc.layers.push(PE.makeLayer({ name: "Layer 1" })); PE.doc.activeId = PE.doc.layers[PE.doc.layers.length - 1].id; PE.emit("layers"); PE.invalidate(); return; }
-		if (e.isNew) { L.name = L.text.str.split("\n")[0].slice(0, 24) || "Text"; PE.commit("Add text"); } else if (L.text.str !== e.orig) { L.name = L.text.str.split("\n")[0].slice(0, 24) || "Text"; PE.commit("Edit text"); }
+		if (!te) return; var e = te; te = null; tdrag = null; clearInterval(blinkT); var ta = editor(); ta.style.display = "none"; if (document.activeElement === ta) ta.blur(); var L = e.L;
+		if (PE.doc.layers.indexOf(L) < 0) { PE.invalidateOverlay(); return; }   // gone meanwhile (undo, delete)
+		if (e.isNew && (cancel || !L.text.str.trim())) { dropLayer(L); return; }
+		var nm = L.text.str.split("\n")[0].slice(0, 24) || "Text";
+		if (e.isNew) { L.name = nm; PE.commit("Add text"); } else if (JSON.stringify(L.text) !== e.orig) { if (L.text.str !== JSON.parse(e.orig).str) L.name = nm; PE.commit("Edit text"); }
 		PE.invalidate();
 	};
 	PE.textEditing = function () { return !!te; };
-	PE.focusText = function () { if (te) { var ta = editor(); if (document.activeElement !== ta) ta.focus(); } };
+	PE.focusText = function () { if (te) { var ta = editor(); if (document.activeElement !== ta) ta.focus({ preventScroll: true }); } };
+	function lineMove(dir, shift, ta) {   // Up / Down / Home / End follow the lines as they are drawn on the canvas (the hidden box wraps differently)
+		var L = te.L, lay = PE.textLayout(L), f = focusIdx(ta), cl = P.caretLine(lay.lines, f), line = lay.lines[cl.line], nIdx;
+		if (dir === "home") nIdx = line.start; else if (dir === "end") nIdx = line.end;
+		else { var x = lay.lx[cl.line] + lay.measure(line.text.slice(0, cl.k)), j = cl.line + dir; if (j < 0) nIdx = 0; else if (j >= lay.lines.length) nIdx = ta.value.length; else nIdx = P.hitInLine(lay.lines[j], x - lay.lx[j], lay.measure); }
+		setSel(shift ? anchorIdx(ta) : nIdx, nIdx);
+	}
 	PE.initTextEditor = function () {
 		var ta = editor();
-		ta.addEventListener("input", function () { if (!te) return; te.L.text.str = ta.value; PE.renderText(te.L); PE.touch(te.L); placeEditor(); });
-		ta.addEventListener("keydown", function (e) { if (e.key === "Escape") { e.preventDefault(); PE.endTextEdit(false); e.stopPropagation(); } e.stopPropagation(); });
-		ta.addEventListener("blur", function () { setTimeout(function () { if (te && document.activeElement !== ta && !PE.keepTextEdit) PE.endTextEdit(false); }, 120); });
+		ta.addEventListener("input", function () { if (!te) return; te.L.text.str = ta.value; PE.renderText(te.L); PE.touch(te.L); placeEditor(); poke(); });
+		ta.addEventListener("keydown", function (e) {
+			e.stopPropagation(); if (!te) return; var mod = e.ctrlKey || e.metaKey;
+			if (e.key === "Escape" || (e.key === "Enter" && mod)) { e.preventDefault(); PE.endTextEdit(false); return; }
+			if ((e.key === "ArrowUp" || e.key === "ArrowDown") && !mod && !e.altKey) { e.preventDefault(); lineMove(e.key === "ArrowUp" ? -1 : 1, e.shiftKey, ta); return; }
+			if ((e.key === "Home" || e.key === "End") && !mod) { e.preventDefault(); lineMove(e.key === "Home" ? "home" : "end", e.shiftKey, ta); return; }
+			setTimeout(poke, 0);
+		});
+		["keyup", "select", "focus"].forEach(function (t) { ta.addEventListener(t, poke); });
+		ta.addEventListener("blur", function () { setTimeout(function () {
+			var a = document.activeElement, opts = document.getElementById("pe-opts");
+			if (!te || a === ta || PE.keepTextEdit) return;
+			if (a && opts && opts.contains(a)) return;   // changing the font / size / colour in the option bar keeps the edit going (one undo step)
+			PE.endTextEdit(false); }, 120); });
 		PE.on("view", function () { if (te) placeEditor(); });
+		var opts = document.getElementById("pe-opts");   // a click on the option bar's background must not take the keyboard away from the text
+		if (opts) opts.addEventListener("mousedown", function (e) { if (te && !(e.target.closest && e.target.closest("input,select,textarea,button,label,a"))) e.preventDefault(); });
+		/* keys that reach the page while a text is open but the key catcher lost focus (a click somewhere neutral): type them into the text instead of
+		 * letting them act as tool shortcuts ("b" would switch to the brush) */
+		PE.textKey = function (e) {
+			if (!te) return false; var k = e.key; if (e.ctrlKey || e.metaKey || e.altKey) return false;
+			if (k === "Escape") { PE.endTextEdit(false); return true; }
+			ta.focus({ preventScroll: true });
+			if (k.length === 1) { var a = ta.selectionStart, b = ta.selectionEnd; ta.setRangeText(k, a, b, "end"); ta.dispatchEvent(new Event("input")); }
+			else if (k === "Enter") { var a2 = ta.selectionStart; ta.setRangeText("\n", a2, ta.selectionEnd, "end"); ta.dispatchEvent(new Event("input")); }
+			return true;
+		};
+		PE.on("history", function () { if (te && PE.doc.layers.indexOf(te.L) < 0) { te = null; clearInterval(blinkT); ta.style.display = "none"; } });   // undo / redo replaced the layer objects
 	};
 	var ctimer = 0;
 	var bw = null;   // dragging the box-width handle of a text layer
-	function boxHandle() {   // the little purple handle on the right edge of the active text box (only for an upright, unscaled text layer)
+	function boxHandle() {   // the purple handle on the right edge of the active text box (only for an upright, unscaled text layer)
 		var L = PE.active(); if (!L || L.type !== "text" || PE.toolId !== "text" || L.rot || Math.abs(L.sx - 1) > 1e-6 || Math.abs(L.sy - 1) > 1e-6) return null;
-		var pad = L._pad || 0, left = L.cx - L.canvas.width / 2 + pad, tw = L.canvas.width - pad * 2, th = L.canvas.height - pad * 2; return { L: L, left: left, x: left + tw, y: L.cy - L.canvas.height / 2 + pad + th / 2 };
+		var lay = PE.textLayout(L), pad = lay.pad, left = L.cx - L.canvas.width / 2 + pad, tw = lay.mw, th = lay.lhp * lay.lines.length; return { L: L, left: left, x: left + tw, y: L.cy - L.canvas.height / 2 + pad + th / 2 };
 	}
-	PE.defTool({ id: "text", name: "Text / Label", key: "t", icon: "T", opts: JSON.parse(JSON.stringify(PE.TEXTDEF)), hint: "Click to add text. Click an existing text to edit it. Drag the purple handle on the right edge of a text to wrap it to a width (or use Box width). Turn on Background for a label or callout look. Esc finishes.",
+	function drawFrame(x, L, solid) {
+		var f = frameOf(L), pts = [[f.u0, f.v0], [f.u1, f.v0], [f.u1, f.v1], [f.u0, f.v1]].map(function (q) { var d = locToDoc(L, q[0], q[1]); return PE.toScreen(d.x, d.y); });
+		x.save(); x.lineWidth = 1; x.setLineDash(solid ? [] : [4, 3]); x.strokeStyle = "rgba(0,0,0,0.65)"; x.beginPath(); pts.forEach(function (p, i) { i ? x.lineTo(p.x + 0.5, p.y + 0.5) : x.moveTo(p.x + 0.5, p.y + 0.5); }); x.closePath(); x.stroke();
+		x.lineDashOffset = solid ? 0 : 3.5; x.strokeStyle = solid ? "#a78bfa" : "rgba(255,255,255,0.85)"; x.lineWidth = solid ? 1.5 : 1; x.stroke(); x.restore();
+	}
+	function drawCaret(x, v) {
+		var L = te.L, ta = editor(), lay = PE.textLayout(L), a = ta.selectionStart, b = ta.selectionEnd, sz = lay.size, sc = v.zoom * Math.max(1e-6, Math.abs(L.sx));
+		x.save(); x.translate(v.px, v.py); x.scale(v.zoom, v.zoom); var c = Math.cos(L.rot), s = Math.sin(L.rot); x.transform(c * L.sx, s * L.sx, -s * L.sy, c * L.sy, L.cx, L.cy); x.translate(-L.canvas.width / 2, -L.canvas.height / 2);
+		if (a !== b) {
+			x.fillStyle = "rgba(59,130,246,0.38)";
+			lay.lines.forEach(function (ln, i) {
+				var s0 = Math.max(a, ln.start), s1 = Math.min(b, ln.end); var past = b > ln.end && a <= ln.end;   // the selection runs on past this line: show the line break as selected too
+				if (s1 < s0 || (s1 === s0 && !past)) return; var x0 = lay.lx[i] + lay.measure(ln.text.slice(0, s0 - ln.start)), x1 = lay.lx[i] + lay.measure(ln.text.slice(0, s1 - ln.start)) + (past ? sz * 0.25 : 0);
+				x.fillRect(x0, lay.base[i] - sz * 0.86, x1 - x0, sz * 1.1);
+			});
+		} else if (blinkOn) {
+			var cl = P.caretLine(lay.lines, focusIdx(ta)), ln = lay.lines[cl.line], cx = lay.lx[cl.line] + lay.measure(ln.text.slice(0, cl.k)), y0 = lay.base[cl.line] - sz * 0.86, y1 = lay.base[cl.line] + sz * 0.24;
+			x.lineCap = "butt"; x.strokeStyle = "rgba(255,255,255,0.95)"; x.lineWidth = 4 / sc; x.beginPath(); x.moveTo(cx, y0); x.lineTo(cx, y1); x.stroke(); x.strokeStyle = "#111"; x.lineWidth = 2 / sc; x.stroke();
+		}
+		x.restore();
+	}
+	PE.defTool({ id: "text", name: "Text / Label", key: "t", icon: "T", opts: JSON.parse(JSON.stringify(PE.TEXTDEF)), hint: "Click empty canvas to add text, click a text to edit it (caret where you click, drag to select, double-click a word, triple-click a line). Enter = new line, Ctrl+Enter or Esc or a click outside = done. The option bar changes the selected text layer live.",
 		ui: [{ k: "font", label: "Font", type: "select", options: "fonts" }, { k: "size", label: "Size", type: "range", min: 6, max: 400, step: 1, unit: "px" }, { k: "wrapW", label: "Box width (0 = auto)", type: "range", min: 0, max: 4000, step: 10, unit: "px" }, { k: "bold", label: "Bold", type: "check" }, { k: "italic", label: "Italic", type: "check" }, { k: "align", label: "Align", type: "seg", options: [["left", "Left"], ["center", "Centre"], ["right", "Right"]] }, { k: "lh", label: "Line height", type: "range", min: 0.8, max: 3, step: 0.05 }, { k: "color", label: "Colour", type: "color" },
 			{ k: "bgOn", label: "Background box", type: "check" }, { k: "bgColor", label: "Box colour", type: "color", show: "bgOn" }, { k: "bgPad", label: "Padding", type: "range", min: 0, max: 80, step: 1, unit: "px", show: "bgOn" }, { k: "bgRadius", label: "Corners", type: "range", min: 0, max: 80, step: 1, unit: "px", show: "bgOn" },
 			{ k: "strokeOn", label: "Outline", type: "check" }, { k: "stroke", label: "Outline colour", type: "color", show: "strokeOn" }, { k: "strokeW", label: "Outline width", type: "range", min: 1, max: 40, step: 1, unit: "px", show: "strokeOn" },
 			{ k: "shadowOn", label: "Shadow", type: "check" }, { k: "shadow", label: "Shadow colour", type: "color", show: "shadowOn" }, { k: "shadowBlur", label: "Blur", type: "range", min: 0, max: 60, step: 1, unit: "px", show: "shadowOn" },
 			{ type: "button", label: "Load font file…", act: function () { PE.pickFontFile(); } }, { type: "button", label: "Yellow label", act: function () { preset({ bgOn: true, bgColor: "#ffeb3b", color: "#111111", bold: true, bgPad: 14, bgRadius: 8 }); } }, { type: "button", label: "Red callout", act: function () { preset({ bgOn: true, bgColor: "#e53935", color: "#ffffff", bold: true, bgPad: 14, bgRadius: 10 }); } }, { type: "button", label: "Meme text", act: function () { preset({ bgOn: false, color: "#ffffff", strokeOn: true, stroke: "#000000", strokeW: 6, bold: true, font: "Impact, 'Arial Black', sans-serif", align: "center" }); } }],
 		optsTarget: function () { var L = PE.active(); return L && L.type === "text" && L.text ? L.text : null; },
-		onopt: function () { var L = PE.active(); if (!L || L.type !== "text") return; PE.renderText(L); PE.touch(L); if (te) placeEditor(); clearTimeout(ctimer); ctimer = setTimeout(function () { PE.commit("Text style"); }, 450); },
-		overlay: function (x) { var h = boxHandle(); if (!h) return; var sp = PE.toScreen(h.x, h.y); x.fillStyle = "#a78bfa"; x.strokeStyle = "#fff"; x.lineWidth = 2; x.beginPath(); x.rect(sp.x - 6, sp.y - 12, 12, 24); x.fill(); x.stroke(); },
-		move: function (e) { if (!bw) return; var L = bw.L, nw = Math.max(40, Math.round(e.x - bw.left)); L.text.wrapW = nw; PE.renderText(L); PE.touch(L); if (te) placeEditor(); PE.emit("opts", "text"); },
-		up: function () { if (bw) { bw = null; PE.commit("Text box width"); } },
+		onopt: function () { var L = PE.active(); if (!L || L.type !== "text") return; PE.renderText(L); PE.touch(L); if (te) { placeEditor(); poke(); return; } clearTimeout(ctimer); ctimer = setTimeout(function () { PE.commit("Text style"); }, 450); },   // while editing, the style change is part of the edit's one undo step
+		overlay: function (x, v) {
+			var A = PE.active();
+			if (hoverT && hoverT !== A && PE.doc.layers.indexOf(hoverT) >= 0 && !te) drawFrame(x, hoverT, false);
+			if (A && A.type === "text" && A.text) { drawFrame(x, A, !!te); if (te && te.L === A) drawCaret(x, v); }
+			var h = boxHandle(); if (!h) return; var sp = PE.toScreen(h.x, h.y); x.fillStyle = "#a78bfa"; x.strokeStyle = "#fff"; x.lineWidth = 2; x.beginPath(); x.rect(sp.x - 6, sp.y - 12, 12, 24); x.fill(); x.stroke();
+		},
+		hover: function (e) { if (!PE.doc) return; var h = hitText(e, null); if (h !== hoverT) { hoverT = h; PE.invalidateOverlay(); } PE.els.over.style.cursor = (function () { var hh = boxHandle(); return hh && Math.abs(e.x - hh.x) * PE.view.zoom < 12 && Math.abs(e.y - hh.y) * PE.view.zoom < 18 ? "ew-resize" : "text"; })(); },
+		move: function (e) {
+			if (bw) { var L = bw.L, nw = Math.max(40, Math.round(e.x - bw.left)); L.text.wrapW = nw; PE.renderText(L); PE.touch(L); if (te) placeEditor(); PE.emit("opts", "text"); return; }
+			if (tdrag && te) { setSel(tdrag.a, indexAt(te.L, e.x, e.y)); }
+		},
+		up: function () { if (bw) { bw = null; if (!te) PE.commit("Text box width"); } tdrag = null; },
+		dbl: function (e) { if (!te || !PE.layerAtPoint(te.L, e.x, e.y)) return; var w = P.wordAt(te.L.text.str, indexAt(te.L, e.x, e.y)); setSel(w[0], w[1]); tdrag = null; lastDbl = { t: Date.now(), x: e.sx, y: e.sy }; },
 		down: function (e) {
 			var hh = boxHandle(); if (hh && Math.abs(e.x - hh.x) * PE.view.zoom < 12 && Math.abs(e.y - hh.y) * PE.view.zoom < 18) { bw = { L: hh.L, left: hh.left }; return; }
-			if (te) { PE.endTextEdit(false); }
-			var hit = PE.layerAt(e.x, e.y); if (hit && hit.type === "text") { PE.setActive(hit.id); openEdit(hit, false); return; }
-			var o = JSON.parse(JSON.stringify(PE.opt.text)); o.str = ""; var L = PE.makeLayer({ type: "text", name: "Text", text: o, w: 4, h: 4 }); PE.renderText(L); L.cx = e.x - (L._pad || 0) + L.canvas.width / 2; L.cy = e.y - (L._pad || 0) + L.canvas.height / 2;
-			PE.addLayer(L); openEdit(L, true);
-		}, cancel: function () { PE.endTextEdit(false); } });
+			var hit = hitText(e, te ? te.L : PE.active());
+			if (te && hit === te.L) {
+				var idx = indexAt(hit, e.x, e.y), ta = editor();
+				if (Date.now() - lastDbl.t < 450 && Math.hypot(e.sx - lastDbl.x, e.sy - lastDbl.y) < 6) { var lay = PE.textLayout(hit), ln = lay.lines[P.caretLine(lay.lines, idx).line]; setSel(ln.start, ln.end); lastDbl.t = 0; return; }   // triple-click = the whole line
+				var a = e.shift ? anchorIdx(ta) : idx; setSel(a, idx); tdrag = { a: a }; PE.focusText(); return;
+			}
+			if (te) { PE.endTextEdit(false); if (!hit) return; }   // a click outside finishes the edit; the next click on empty canvas starts a new text
+			if (hit) { PE.setActive(hit.id); var i2 = indexAt(hit, e.x, e.y); openEdit(hit, false, i2); tdrag = { a: i2 }; return; }
+			var o = JSON.parse(JSON.stringify(PE.opt.text)); o.str = ""; var L = PE.makeLayer({ type: "text", name: "Text", text: o, w: 4, h: 4 }); PE.renderText(L); var pd = PE.textLayout(L).pad; L.cx = e.x - pd + L.canvas.width / 2; L.cy = e.y - pd + L.canvas.height / 2;
+			PE.addLayer(L); openEdit(L, true, 0);
+		}, cancel: function () { PE.endTextEdit(false); hoverT = null; } });
 	function preset(o) { for (var k in o) PE.optSet("text", k, o[k]); PE.emit("opts", "text"); }
-	PE.editActiveText = function () { var L = PE.active(); if (L && L.type === "text") { PE.setTool("text"); openEdit(L, false); } };
-
+	/* open the active text layer for editing: at = a point on the canvas (caret there, from a double-click with the Move tool), else everything selected */
+	PE.editActiveText = function (at) { var L = PE.active(); if (L && L.type === "text") { PE.setTool("text"); openEdit(L, false, at ? indexAt(L, at.x, at.y) : "all"); } };
 	/* ---------- shapes and annotations ---------- */
 	function rr(x, bx, by, bw, bh, r) { r = Math.min(r, bw / 2, bh / 2); x.moveTo(bx + r, by); x.arcTo(bx + bw, by, bx + bw, by + bh, r); x.arcTo(bx + bw, by + bh, bx, by + bh, r); x.arcTo(bx, by + bh, bx, by, r); x.arcTo(bx, by, bx + bw, by, r); x.closePath(); }
 	function contrast(hex) { var c = P.hexToRgb(hex); return (c[0] * 0.299 + c[1] * 0.587 + c[2] * 0.114) > 150 ? "#111111" : "#ffffff"; }
@@ -2500,6 +2862,33 @@ var MESPixel = (function () {
 	function thumbOf(L, n) { var c = PE.mk(n, n), x = c.getContext("2d"), w = L.canvas.width, h = L.canvas.height, s = Math.min(n / w, n / h); x.fillStyle = "#4a4a55"; x.fillRect(0, 0, n, n); x.fillStyle = "#6a6a76"; for (var i = 0; i < n; i += 6) for (var j = 0; j < n; j += 6) if (((i + j) / 6) % 2 === 0) x.fillRect(i, j, 6, 6); x.drawImage(L.canvas, (n - w * s) / 2, (n - h * s) / 2, w * s, h * s); c.className = "pe-fx-th"; return c; }
 	function btn(t, title) { var b = el("button", "pe-btn pe-btn--sm", esc(t)); b.type = "button"; if (title) b.title = title; return b; }
 
+	/* ---------- folder-access reminder: a chip in the status bar while this site can change files in a folder ----------
+	 * The page reaches a folder only through its handle (kept in memory while connected, and in IndexedDB "dir" so Reconnect works next time).
+	 * Disconnect drops both, so the editor can no longer reach the folder at all; the browser's own permission entry is removed in its site settings. */
+	var folderListeners = []; PE.on("folder", function () { folderListeners = folderListeners.filter(function (f) { return f() !== false; }); });
+	var remembered = null, chip = null;   // remembered = the stored handle when the browser still grants write access to it without asking
+	var REVOKE = "In Brave or Chrome you can also remove it there: click the icon left of the address (lock or sliders) › Site settings › File editing (or the folder listed in that pop-up).";
+	function accessName() { return dirHandle ? dirHandle.name : remembered ? remembered.name : ""; }
+	function drawChip() {
+		var st = document.querySelector("#pe .pe-status"); if (!st) return; var nm = accessName();
+		if (!nm) { if (chip) chip.hidden = true; return; }
+		if (!chip) {
+			chip = el("span", "pe-fchip"); chip.setAttribute("role", "status"); st.insertBefore(chip, st.firstChild);
+			chip.addEventListener("click", function (e) { var b = e.target.closest && e.target.closest("button"); if (!b) return; if (b.dataset.a === "off") PE.disconnectFolder(); else PE.dlgFolder("folder"); });
+		}
+		chip.hidden = false; chip.title = "This site can open and change files in “" + nm + "” while folder access is on. " + REVOKE;
+		chip.innerHTML = '<button type="button" class="pe-fchip-n" data-a="open">📁 Folder access: <b>' + esc(nm) + '</b></button><span aria-hidden="true">·</span><button type="button" class="pe-fchip-x" data-a="off">Disconnect</button>';
+	}
+	PE.folderAccess = function () { return accessName(); };
+	PE.disconnectFolder = function () {
+		var nm = accessName(); dirHandle = null; remembered = null; roFiles = null; for (var k in handles) delete handles[k];
+		idb(function (st) { return rq(st.delete("dir")); }).catch(function () {}).then(function () { drawChip(); PE.emit("folder"); PE.toast(nm ? "Disconnected “" + nm + "”: the editor can no longer open or change files there" : "No folder is connected"); });
+	};
+	/* on load: a folder from an earlier visit that the browser still lets the page write to (Chrome's "Allow on every visit") gets the chip too */
+	if (canFS()) setTimeout(function () {
+		idb(function (st) { return rq(st.get("dir")); }).then(function (h) { if (!h || dirHandle) return; return perm(h, true, false).then(function (p) { if (p === "granted" && !dirHandle) { remembered = h; drawChip(); } }); }).catch(function () {});
+	}, 400);
+
 	/* focus: "folder" scrolls to the folder section, anything else opens at the top ("Where your images are") */
 	PE.dlgFolder = function (focus) {
 		var wrap = el("div", "pe-fx"), token = 0, entries = [], stored = null;
@@ -2530,6 +2919,15 @@ var MESPixel = (function () {
 		/* 2. a folder on this computer */
 		var sF = sec("Folder on this computer", "Connect a folder and the editor lists its pictures. Click one to add it as a layer (or to open it, if nothing is open); Shift-click opens it as a new image. Nothing is uploaded: the editor reads the files straight from your disk, and only with the permission you give in the browser's pop-up.");
 		var stP = el("p", "pe-fx-st"), note = el("div", "pe-fx-note"), bar = el("div", "pe-fold-h"), saveRow = el("div", "pe-fx-save"), search = el("input", "pe-fold-s"), msg = el("p", "pe-hint2"), grid = el("div", "pe-fold-g");
+		var acc = el("div", "pe-fx-acc"); acc.hidden = true; acc.setAttribute("role", "note");
+		function drawAccess(name) {   // the calm reminder of what "connected" allows, and how to switch it off
+			if (!name) { acc.hidden = true; return; } acc.hidden = false;
+			acc.innerHTML = "<b>🔓 Folder access is on for “" + esc(name) + "”.</b> While it is, this site can read and change files in that folder (and its subfolders); the editor only writes when you press Save or Move. "
+				+ "Turn it off with <i>Disconnect</i>, which forgets the folder here. " + esc(REVOKE) + " <span class=\"pe-fx-tip\">Tip: connect a dedicated folder (say, <i>Thumbnails</i>) rather than your whole OneDrive or Documents.</span> ";
+			var off = btn("Disconnect", "Forget this folder: the editor can no longer open or change files in it"); off.addEventListener("click", function () { PE.disconnectFolder(); }); acc.appendChild(off);
+		}
+		var offL = function () { if (!wrap.isConnected) return false; stored = null; entries = []; grid.innerHTML = ""; msg.textContent = canFS() ? "Choose a folder to see its pictures." : ""; drawAccess(""); refreshState(); drawWhere(); };
+		folderListeners.push(offL);
 		search.type = "search"; search.placeholder = "Filter by name…"; search.setAttribute("aria-label", "Filter pictures by name");
 		var bPick = btn("📂 Choose a folder…", "Pick a folder; the browser asks whether the editor may see and save files in it"), bAgain = btn("↺ Reconnect", "Use the folder from last time again (the browser asks for permission once more)"), bRo = btn("📂 Open a folder (read only)…", "List the pictures of a folder. This browser cannot save into it: saving goes to your Downloads folder"), roInp = el("input");
 		roInp.type = "file"; roInp.multiple = true; roInp.setAttribute("webkitdirectory", ""); roInp.hidden = true; roInp.setAttribute("aria-hidden", "true"); bAgain.hidden = true;
@@ -2546,14 +2944,14 @@ var MESPixel = (function () {
 			if (isBrave()) { var bCopy = btn("Copy the address", "Copies " + BRAVE_FLAG + " so you can paste it into Brave's address bar"); bCopy.addEventListener("click", function () { var fail = function () { window.prompt("Copy this address:", BRAVE_FLAG); }; try { navigator.clipboard.writeText(BRAVE_FLAG).then(function () { PE.toast("Copied. Paste it into the address bar"); }, fail); } catch (x) { fail(); } }); note.appendChild(document.createTextNode(" ")); note.appendChild(bCopy); }
 			bar.appendChild(bRo); bar.appendChild(roInp);
 		}
-		[stP, note, bar, saveRow, saveHint, search, msg, grid].forEach(function (x) { sF.appendChild(x); });
+		[stP, acc, note, bar, saveRow, saveHint, search, msg, grid].forEach(function (x) { sF.appendChild(x); });
 
 		function refreshState() {
 			if (canFS()) {
 				bPick.textContent = dirHandle ? "📂 Choose another folder…" : "📂 Choose a folder…"; bAgain.hidden = !(stored && !dirHandle); if (stored) bAgain.textContent = "↺ Reconnect to “" + stored.name + "”";
 				bSave.textContent = dirHandle ? "⬇ Save into “" + dirHandle.name + "”" : "⬇ Save into a folder…"; saveHint.textContent = dirHandle ? "If a file with that name is already there, you are asked before it is replaced." : "You pick the folder first.";
-				if (dirHandle) { var h = dirHandle; perm(h, true, false).then(function (p) { if (h === dirHandle) stP.innerHTML = "Connected: <b>“" + esc(h.name) + "”</b> · " + esc(permText(p)) + "."; }).catch(function () {}); }
-				else stP.textContent = "No folder is connected." + (stored ? " Last time it was “" + stored.name + "”." : "");
+				if (dirHandle) { var h = dirHandle; perm(h, true, false).then(function (p) { if (h === dirHandle) { stP.innerHTML = "Connected: <b>“" + esc(h.name) + "”</b> · " + esc(permText(p)) + "."; drawAccess(p === "granted" ? h.name : ""); } }).catch(function () {}); }
+				else { stP.textContent = remembered ? "“" + remembered.name + "” from last time is not listed yet (press Reconnect), but the browser still lets this site use it." : "No folder is connected." + (stored ? " Last time it was “" + stored.name + "”." : ""); drawAccess(remembered ? remembered.name : ""); }
 			} else {
 				stP.textContent = roFiles ? "Open read only: “" + roName + "”, " + roFiles.length + " picture" + (roFiles.length === 1 ? "" : "s") + " (subfolders included)." : ""; stP.hidden = !roFiles;
 				bSave.textContent = "⬇ Download"; saveHint.textContent = "This browser cannot write into a folder, so the file goes to your Downloads folder.";
@@ -2562,7 +2960,7 @@ var MESPixel = (function () {
 		function count(name, n) { msg.textContent = n + " picture" + (n === 1 ? "" : "s") + " in “" + name + "”" + (n > 400 ? " (showing the first 400: use the filter)" : "") + (n ? ". Click: add as a layer · Shift-click: open as a new image." : "."); }
 		function roEntries() { return roFiles.map(function (f) { var rel = (f.webkitRelativePath || f.name).split("/").slice(1).join("/") || f.name; return { name: f.name, label: rel, file: function () { return Promise.resolve(f); } }; }); }
 		function load(h) {
-			dirHandle = h; roFiles = null; var my = ++token; entries = []; grid.innerHTML = ""; msg.textContent = "Reading “" + h.name + "”…"; refreshState();
+			dirHandle = h; remembered = null; drawChip(); roFiles = null; var my = ++token; entries = []; grid.innerHTML = ""; msg.textContent = "Reading “" + h.name + "”…"; refreshState();
 			(async function () { var out = []; try { for await (var e of h.values()) if (e.kind === "file" && IMG.test(e.name)) out.push(e); } catch (x) { if (my === token) msg.textContent = "Could not read the folder: " + errText(x); return; }
 				if (my !== token) return; out.sort(function (a, b) { return a.name.localeCompare(b.name, undefined, { numeric: true }); }); entries = out.map(function (fh) { return { name: fh.name, label: fh.name, fh: fh, file: function () { return fh.getFile(); } }; }); count(h.name, entries.length); render(); })();
 		}
@@ -2669,7 +3067,7 @@ var MESPixel = (function () {
 	/* ---------- tool bar ---------- */
 	var ORDER = ["move", "marquee", "lasso", "wand", "crop", "brush", "smudge", "eraser", "clone", "retouch", "objerase", "bucket", "gradient", "eyedropper", "text", "equation", "shape", "hand", "zoom"];
 	var HELP = {
-		move: "Move, resize and rotate the active layer (or a whole group). Drag a layer to move it. Drag a square handle to resize; hold Shift while dragging a corner for free proportions. Drag just outside a corner to rotate. Arrow keys nudge by 1 px (Shift = 10 px). The option bar has Remove background (AI).",
+		move: "Move, resize and rotate layers. Drag a layer to move it. Several at once: Ctrl / Cmd- or Shift-click layers on the picture (or in the Layers panel), or drag a box on empty canvas (or from outside the picture) to pick every layer it touches; Shift-drag a box adds to the selection. Then drag any of them to move them all, or drag the handles of the combined box to resize them together (rotating works on one layer at a time). While moving or resizing, the layer snaps to the canvas edges and centre (magenta guides) and to other layers' edges and centres (cyan guides); hold Ctrl (or Alt while moving) to place freely. Shift while moving keeps to one direction; on a handle, Shift switches between keeping and changing the proportions and Alt resizes from the centre. Drag just outside a corner to rotate. Arrow keys nudge the selection by 1 px (Shift = 10 px). Double-click a text to edit it.",
 		marquee: "Draw a rectangle or ellipse selection. Anything you then do (fill, delete, adjust, copy) only touches the selection. Shift while dragging = square or circle, Shift-drag on an existing selection = add to it, Alt = subtract. Drag inside a selection to move it, click once to deselect. Feather softens the edge.",
 		lasso: "Select any shape. Freehand: drag around the area. Polygon: click each corner, then double-click or press Enter to close. Use the Mode buttons to add to, subtract from or intersect an existing selection.",
 		wand: "Click a colour to select every touching pixel of a similar colour. Raise Tolerance to include more shades. Click the background, press Delete, then export as PNG for a transparent background.",
@@ -2682,8 +3080,8 @@ var MESPixel = (function () {
 		objerase: "AI object remover. Paint over the thing you want gone (Alt un-paints), then press Enter or the Erase button. The AI fills the area from its surroundings. Works best on small objects against plain or repeating backgrounds. The model downloads once on first use.",
 		bucket: "Click an area to fill it with the foreground colour. Tolerance decides how similar a colour must be to be filled. With a selection active, only the selection is filled.",
 		gradient: "Drag from where the gradient should start to where it should end. It blends the foreground and background colours and respects any selection.",
-		eyedropper: "Click anywhere on the picture to pick that colour as the foreground colour. Alt-click picks the background colour instead.",
-		text: "Click to add text. Click existing text to edit it. Turn on Background for a label or callout look. Esc finishes. Each text is its own layer, so you can move, scale and rotate it later.",
+		eyedropper: "Press and drag over the picture: a magnifier follows the pointer and shows the pixels, the colour and its hex code; let go to use it as the foreground colour (Alt = background). Sample = 1 pixel or the average of a 3 × 3 / 5 × 5 area; All layers = the colour you see, off = only the selected layer. With Confirm with a button, letting go leaves a Use this colour / Cancel bar and you can drag again to move the sample point. The 💉 buttons next to the colour wells and the option bar colours do the same for one pick.",
+		text: "Click empty canvas to add a text; click an existing text to edit it right on the picture. The caret goes where you click; drag to select, double-click selects a word, triple-click a line, Shift-click extends. Enter starts a new line; Ctrl+Enter, Esc or a click outside finishes. The option bar (font, size, colour, outline, box...) changes the selected text layer live, also while you type, and the whole edit is one undo step. Drag the purple handle on the right of the frame to wrap the text to a width. Each text is its own layer, so you can move, scale and rotate it later.",
 		equation: "Insert a maths equation. Click where it goes, type LaTeX (a live preview appears), then Insert. Click an existing equation to edit it. Equations stay sharp when enlarged.",
 		shape: "Draw rectangles, rounded boxes, ellipses, lines, arrows, callouts, numbered step badges, highlights and blur / hide areas. Shift = square or straight line. Outline uses the foreground colour, fill uses the background colour. Each shape lands on its own layer.",
 		hand: "Drag to pan around a zoomed-in picture. You can also hold Space with any tool, or use the middle mouse button.",
@@ -2757,10 +3155,14 @@ var MESPixel = (function () {
 			if (u.showFor && u.showFor.indexOf(kind) < 0) return; if (u.hideFor && u.hideFor.indexOf(kind) >= 0) return; if (u.show && !PE.optGet(id, u.show)) return;
 			if (u.type === "button") { var b = el("button", "pe-btn pe-btn--sm", esc(u.label)); b.type = "button"; b.addEventListener("mousedown", function (e) { e.preventDefault(); }); b.addEventListener("click", u.act); box.appendChild(b); return; }
 			var w = el("label", "pe-opt"), v = PE.optGet(id, u.k), inp; w.appendChild(el("span", "pe-opt-l", esc(u.label)));
-			if (u.type === "check") { inp = el("input"); inp.type = "checkbox"; inp.checked = !!v; inp.addEventListener("change", function () { PE.optSet(id, u.k, inp.checked); buildOpts(); }); }
-			else if (u.type === "select") { inp = el("select"); var opts = u.options === "fonts" ? PE.FONTS : u.options; opts.forEach(function (o) { var op = el("option", null, esc(o[1])); op.value = o[0]; inp.appendChild(op); }); inp.value = v; inp.addEventListener("change", function () { PE.optSet(id, u.k, u.num ? +inp.value : inp.value); buildOpts(); }); }
-			else if (u.type === "seg") { inp = el("span", "pe-seg"); u.options.forEach(function (o) { var b = el("button", null, esc(o[1])); b.type = "button"; b.setAttribute("aria-pressed", String(v) === String(o[0]) ? "true" : "false"); b.addEventListener("mousedown", function (e) { e.preventDefault(); }); b.addEventListener("click", function () { PE.optSet(id, u.k, o[0]); buildOpts(); }); inp.appendChild(b); }); }
-			else if (u.type === "color") { inp = el("input"); inp.type = "color"; inp.value = v; inp.addEventListener("input", function () { PE.optSet(id, u.k, inp.value); }); }
+			if (u.type === "check") { inp = el("input"); inp.type = "checkbox"; inp.checked = !!v; inp.addEventListener("change", function () { PE.optSet(id, u.k, inp.checked); rebuildOpts(); }); }
+			else if (u.type === "select") { inp = el("select"); var opts = u.options === "fonts" ? PE.FONTS : u.options; opts.forEach(function (o) { var op = el("option", null, esc(o[1])); op.value = o[0]; inp.appendChild(op); }); inp.value = v; inp.addEventListener("change", function () { PE.optSet(id, u.k, u.num ? +inp.value : inp.value); rebuildOpts(); }); }
+			else if (u.type === "seg") { inp = el("span", "pe-seg"); u.options.forEach(function (o) { var b = el("button", null, esc(o[1])); b.type = "button"; b.setAttribute("aria-pressed", String(v) === String(o[0]) ? "true" : "false"); b.addEventListener("mousedown", function (e) { e.preventDefault(); }); b.addEventListener("click", function () { PE.optSet(id, u.k, o[0]); rebuildOpts(); }); inp.appendChild(b); }); }
+			else if (u.type === "color") { inp = el("input"); inp.type = "color"; inp.value = v; inp.addEventListener("input", function () { PE.optSet(id, u.k, inp.value); });
+				// 💉 next to the well: pick this option's colour from the picture (drag with a magnifier, applied on release)
+				var dp = el("button", "pe-mini pe-dropbtn", "💉"); dp.type = "button"; dp.title = "Pick " + u.label.toLowerCase() + " from the picture: press and drag over it, let go to use the colour"; dp.setAttribute("aria-label", dp.title);
+				dp.addEventListener("mousedown", function (e) { e.preventDefault(); }); dp.addEventListener("click", function () { if (!needDoc()) return; PE.pickColorFromImage({ label: u.label, apply: function (hex) { PE.optSet(id, u.k, hex); rebuildOpts(); } }); });
+				w.appendChild(inp); w.appendChild(dp); var hq3 = optHelp(u); if (hq3) w.appendChild(hq3); box.appendChild(w); return; }
 			else if (u.type === "number") { inp = el("input", "pe-num"); inp.type = "number"; inp.value = v; inp.addEventListener("input", function () { PE.optSet(id, u.k, +inp.value); }); }
 			else {
 				inp = el("input"); inp.type = "range"; inp.min = u.min; inp.max = u.max; inp.step = u.step; inp.value = v;
@@ -2774,6 +3176,7 @@ var MESPixel = (function () {
 		});
 		if (id === "text" || id === "shape") { }
 	}
+	function rebuildOpts() { buildOpts(); if (PE.textEditing && PE.textEditing()) setTimeout(PE.focusText, 0); }   // a change in the option bar while typing: keep typing into the text
 	var OPTHELP = { "Hardness": "How sharp the edge of the brush is. 100% is a crisp hard circle; lower values fade softly towards the edge, like an airbrush.", "Opacity": "How see-through the paint is. 100% covers fully; 30% lets what is underneath show through. Overlapping strokes in one drag do not stack.", "Smoothing": "Steadies a shaky hand: the brush lags a little behind the pointer and draws smoother curves. 0% = follows the pointer exactly.", "Pen pressure": "With a drawing tablet or pen, pressing harder makes the stroke bigger. Has no effect with a mouse.", "Tolerance": "How different a colour can be and still count as the same area. Low = only almost identical colours; high = spreads into similar colours.", "Strength": "How strong the effect is each time you paint over it.", "Aligned": "On: the copy source moves along with your brush. Off: every stroke starts again from the same source point.", "Contiguous": "On: only connected areas are filled. Off: every matching colour in the whole layer.", "Sample all layers": "Look at the merged picture instead of only the selected layer when deciding what is the same colour.", "Pick the layer under the click": "On: clicking a letter or shape picks the layer that is actually showing there, so the selection (and a following Delete) acts on that layer and not on the picture behind it. Off: always use the selected layer.", "Box width (0 = auto)": "How wide the text box is before words wrap onto the next line. 0 = as wide as the text needs (up to the image width). You can also drag the purple handle on the right edge of the text box.", };
 	function optHelp(u) { var t = u.help || OPTHELP[u.label]; return t ? PE.helpBtn(u.label, esc(t)) : null; }
 	function fmtV(v, u) { return (u.step < 1 ? (+v).toFixed(2) : Math.round(v)) + (u.unit || ""); }
@@ -2790,7 +3193,9 @@ var MESPixel = (function () {
 		fgb.appendChild(fi); bgb.appendChild(bi); sw.appendChild(bgb); sw.appendChild(fgb);
 		var swap = el("button", "pe-mini", "⇄"); swap.type = "button"; swap.title = "Swap colours (X)"; swap.addEventListener("click", swapColors); var def = el("button", "pe-mini", "◐"); def.type = "button"; def.title = "Default colours: black and white (D)"; def.addEventListener("click", function () { PE.fg = "#000000"; PE.bg = "#ffffff"; PE.emit("color"); });
 		var hexIn = el("input", "pe-hex"); hexIn.value = PE.fg; hexIn.maxLength = 7; hexIn.title = "Foreground colour hex"; hexIn.addEventListener("change", function () { var h = hexIn.value.trim(); if (/^#?[0-9a-f]{3}([0-9a-f]{3})?$/i.test(h)) { if (h[0] !== "#") h = "#" + h; if (h.length === 4) h = "#" + h[1] + h[1] + h[2] + h[2] + h[3] + h[3]; PE.setFg(h.toLowerCase()); } else hexIn.value = PE.fg; });
-		var top = el("div", "pe-col-top"); top.appendChild(sw); var bt = el("div", "pe-col-b"); bt.appendChild(swap); bt.appendChild(def); bt.appendChild(hexIn); top.appendChild(bt); box.appendChild(top);
+		var drop = el("button", "pe-mini pe-dropbtn", "💉"); drop.type = "button"; drop.title = "Pick the foreground colour from the picture: press and drag over it (a magnifier shows the pixels), let go to use the colour. Alt = background colour. (I)"; drop.setAttribute("aria-label", "Pick a colour from the picture");
+		drop.addEventListener("click", function (e) { if (!needDoc()) return; var bgPick = e.altKey; PE.pickColorFromImage({ label: bgPick ? "background colour" : "foreground colour", apply: function (hex, alt) { (bgPick || alt) ? PE.setBg(hex) : PE.setFg(hex); } }); });
+		var top = el("div", "pe-col-top"); top.appendChild(sw); var bt = el("div", "pe-col-b"); bt.appendChild(swap); bt.appendChild(def); bt.appendChild(drop); bt.appendChild(hexIn); top.appendChild(bt); box.appendChild(top);
 		var pal = el("div", "pe-pal"); PALETTE.concat(recent.filter(function (c) { return PALETTE.indexOf(c) < 0; }).slice(0, 6)).forEach(function (c) { var b = el("button", "pe-chip"); b.type = "button"; b.style.background = c; b.title = c + " (click: foreground, Shift-click: background)"; b.addEventListener("click", function (e) { e.shiftKey ? PE.setBg(c) : PE.setFg(c); }); pal.appendChild(b); }); box.appendChild(pal);
 	}
 	function swapColors() { var t = PE.fg; PE.fg = PE.bg; PE.bg = t; sset({ fg: PE.fg, bg: PE.bg }); PE.emit("color"); }
@@ -2805,6 +3210,14 @@ var MESPixel = (function () {
 	}
 	var dragId = null, multi = {}, lfilter = "";
 	PE.multi = function () { return PE.doc ? PE.doc.layers.filter(function (L) { return multi[L.id]; }) : []; };
+	/* the canvas side of a multi-selection (Move tool: rubber band, Shift / Ctrl-click): ids = every picked layer; fewer than two = back to just the active layer */
+	PE.setMulti = function (ids) { multi = {}; if (ids && ids.length > 1) { ids.forEach(function (id) { multi[id] = true; }); var A = PE.active(); if (!A || !multi[A.id]) { PE.setActive(ids[ids.length - 1]); return; } } buildLayers(); PE.invalidateOverlay(); };
+	/* add a layer to the Move tool's selection, or take it out; returns true when it is now picked */
+	PE.toggleMove = function (L) {
+		var cur = PE.moveSet ? PE.moveSet() : PE.multi(), ids = cur.map(function (x) { return x.id; }), i = ids.indexOf(L.id);
+		if (i >= 0) { if (ids.length < 2) return true; ids.splice(i, 1); if (PE.active() === L) PE.doc.activeId = ids[ids.length - 1]; PE.setMulti(ids); if (ids.length === 1) PE.setActive(ids[0]); return false; }
+		ids.push(L.id); PE.doc.activeId = L.id; PE.setMulti(ids); PE.emit("active"); return true;
+	};
 	function rowsTopDown() {
 		var d = PE.doc, q = lfilter.trim().toLowerCase(), out = [];
 		d.layers.slice().reverse().forEach(function (L) {
@@ -2818,43 +3231,61 @@ var MESPixel = (function () {
 		var nm = $("pe-layers").querySelector('.pe-layer[data-id="' + id + '"] .pe-lname'); if (nm) nm.dispatchEvent(new MouseEvent("dblclick", { bubbles: true }));
 	}
 	root.addEventListener("keydown", function (e) { if (e.key === "F2" && PE.doc && PE.active() && e.target.tagName !== "INPUT" && e.target.tagName !== "TEXTAREA") { e.preventDefault(); renameLayer(PE.active().id); } });
-	function buildLayers() {
-		var list = $("pe-layers"), d = PE.doc; list.innerHTML = ""; if (!d) return; var act = PE.active(), rows = rowsTopDown(); PE.relink();
-		rows.forEach(function (r) {
-			var L = r.L, grp = PE.isGroup(L), on = L === act || multi[L.id], hidden = !PE.effVisible(L) && !grp ? true : !L.visible;
-			var row = el("div", "pe-layer" + (on ? " is-active" : "") + (hidden ? " is-hidden" : "") + (grp ? " is-group" : "")); row.draggable = true; row.dataset.id = L.id; row.style.paddingLeft = (0.3 + r.depth * 1.1) + "em";
-			var eye = el("button", "pe-eye", L.visible ? "👁" : "—"); eye.type = "button"; eye.title = "Show / hide"; eye.addEventListener("click", function (e) { e.stopPropagation(); L.visible = !L.visible; PE.touch(L); PE.commit("Toggle visibility"); });
-			row.appendChild(eye);
-			if (grp) { var ar = el("button", "pe-arrow", L.collapsed ? "▸" : "▾"); ar.type = "button"; ar.title = L.collapsed ? "Expand group" : "Collapse group"; ar.addEventListener("click", function (e) { e.stopPropagation(); L.collapsed = !L.collapsed; buildLayers(); }); row.appendChild(ar); var th0 = el("span", "pe-th pe-th--grp", "📁"); row.appendChild(th0); }
-			else { var th = el("span", "pe-th"); th.appendChild(thumbFor(L)); row.appendChild(th); }
-			var nm = el("span", "pe-lname", esc(L.name) + (L.type === "text" ? " ᵀ" : "") + (grp ? ' <small class="pe-cnt">' + PE.descendants(L).filter(function (k) { return !PE.isGroup(k); }).length + "</small>" : "")); nm.title = L.name + " (double-click to rename)";
-			if (L.mask) { var mt = el("span", "pe-th pe-th--mask" + (L.editMask ? " is-on" : "")); var mc = PE.mk(36, 36), mx = mc.getContext("2d"); mx.fillStyle = "#000"; mx.fillRect(0, 0, 36, 36); var wm = PE.mk(36, 36), wx = wm.getContext("2d"); wx.drawImage(L.mask, 0, 0, 36, 36); wx.globalCompositeOperation = "source-in"; wx.fillStyle = "#fff"; wx.fillRect(0, 0, 36, 36); mx.drawImage(wm, 0, 0); mt.appendChild(mc); mt.title = "Layer mask: click to paint on the mask (white-ish = shown). Click the picture to paint on the layer."; mt.addEventListener("click", function (e) { e.stopPropagation(); PE.setActive(L.id); L.editMask = true; buildLayers(); }); row.querySelector(".pe-th").addEventListener("click", function (e) { e.stopPropagation(); PE.setActive(L.id); L.editMask = false; buildLayers(); }); row.appendChild(mt); }
-			row.appendChild(nm);
-			if (grp) { var xg = el("button", "pe-pen", "⬇"); xg.type = "button"; xg.title = "Export this group as its own image, on a canvas of any size"; xg.addEventListener("click", function (e) { e.stopPropagation(); PE.dlgExportGroup(L); }); row.appendChild(xg); }
-			var pen = el("button", "pe-pen", "✎"); pen.type = "button"; pen.title = "Rename"; pen.addEventListener("click", function (e) { e.stopPropagation(); renameLayer(L.id); }); row.appendChild(pen);
-			if (L.locked) row.appendChild(el("span", "pe-lock", "🔒"));
-			row.addEventListener("click", function (e) {
-				if (e.ctrlKey || e.metaKey) { multi[L.id] = !multi[L.id]; if (!Object.keys(multi).some(function (k) { return multi[k]; })) multi = {}; else multi[act ? act.id : L.id] = true; buildLayers(); return; }
-				if (e.shiftKey && act) { var order = rowsTopDown().map(function (x) { return x.L; }), i0 = order.indexOf(act), i1 = order.indexOf(L); if (i0 >= 0 && i1 >= 0) { multi = {}; order.slice(Math.min(i0, i1), Math.max(i0, i1) + 1).forEach(function (x) { multi[x.id] = true; }); buildLayers(); return; } }
-				multi = {}; PE.setActive(L.id);
-			});
-			nm.addEventListener("dblclick", function (e) {
-				e.stopPropagation(); var inp = el("input", "pe-rename"), fin = false; inp.type = "text"; inp.value = L.name; inp.spellcheck = false; inp.setAttribute("aria-label", "New name for " + (grp ? "the group " : "the layer ") + L.name); row.draggable = false; row.classList.add("is-renaming"); nm.replaceWith(inp); inp.focus(); inp.select();
-				var done = function (ok) { if (fin) return; fin = true; var v = inp.value.trim(); if (ok && v && v !== L.name) { L.name = v; PE.commit(grp ? "Rename group" : "Rename layer"); } else buildLayers(); };
-				// clicks inside the box must not reach the row: its click selects the layer, which rebuilds the list and threw the half-typed name away
-				["click", "mousedown", "pointerdown", "dblclick", "dragstart"].forEach(function (t) { inp.addEventListener(t, function (ev) { ev.stopPropagation(); }); });
-				inp.addEventListener("keydown", function (ev) { ev.stopPropagation(); if (ev.key === "Enter") { ev.preventDefault(); done(true); } if (ev.key === "Escape") { ev.preventDefault(); done(false); } }); inp.addEventListener("blur", function () { done(true); });
-			});
-			row.addEventListener("dragstart", function (e) { dragId = L.id; e.dataTransfer.effectAllowed = "move"; e.dataTransfer.setData("text/x-pe-layer", String(L.id)); });
-			function zoneOf(e) { var rc = row.getBoundingClientRect(), y = (e.clientY - rc.top) / rc.height; return grp ? (y < 0.25 ? "above" : "into") : (y < 0.5 ? "above" : "below"); }
-			row.addEventListener("dragover", function (e) { if (dragId == null) return; e.preventDefault(); row.classList.remove("is-over-above", "is-over-below", "is-over-into"); row.classList.add("is-over-" + zoneOf(e)); });
-			row.addEventListener("dragleave", function () { row.classList.remove("is-over-above", "is-over-below", "is-over-into"); });
-			row.addEventListener("drop", function (e) { if (dragId == null) return; e.preventDefault(); e.stopPropagation(); var src = PE.layerById(dragId), z = zoneOf(e); dragId = null; if (src && src !== L) PE.relocate(src, L, z); });
-			list.appendChild(row);
+	/* The list is reconciled, not rebuilt: a row whose layer did not change (name, visibility, selection, depth, pixels...) keeps its DOM node, so moving a
+	 * layer up / down only moves rows. Rebuilding every row on every step made the list flash, and fought with page-zoom / text-size extensions that
+	 * restyle new elements a moment after they appear. Handlers look the layer up by id at click time (undo / redo replace the layer objects). */
+	var rowCache = {};
+	function rowSig(L, r, on) { return [L.name, L.type, L.visible, PE.effVisible(L), on ? 1 : 0, r.depth, L.collapsed, L.locked, L.mask ? 1 : 0, L.editMask ? 1 : 0, L.rev, L.canvas.width, L.canvas.height, PE.isGroup(L) ? PE.descendants(L).filter(function (k) { return !PE.isGroup(k); }).length : -1].join("|"); }
+	function makeRow(id, depth, on) {
+		var L0 = PE.layerById(id), grp = PE.isGroup(L0), hidden = !PE.effVisible(L0) && !grp ? true : !L0.visible, cur = function () { return PE.layerById(id); };
+		var row = el("div", "pe-layer" + (on ? " is-active" : "") + (hidden ? " is-hidden" : "") + (grp ? " is-group" : "")); row.draggable = true; row.dataset.id = id; row.style.paddingLeft = (0.3 + depth * 1.1) + "em";
+		var eye = el("button", "pe-eye", L0.visible ? "👁" : "—"); eye.type = "button"; eye.title = "Show / hide"; eye.addEventListener("click", function (e) { e.stopPropagation(); var L = cur(); if (!L) return; L.visible = !L.visible; PE.touch(L); PE.commit("Toggle visibility"); });
+		row.appendChild(eye);
+		if (grp) { var ar = el("button", "pe-arrow", L0.collapsed ? "▸" : "▾"); ar.type = "button"; ar.title = L0.collapsed ? "Expand group" : "Collapse group"; ar.addEventListener("click", function (e) { e.stopPropagation(); var L = cur(); if (!L) return; L.collapsed = !L.collapsed; buildLayers(); }); row.appendChild(ar); var th0 = el("span", "pe-th pe-th--grp", "📁"); row.appendChild(th0); }
+		else { var th = el("span", "pe-th"); th.appendChild(thumbFor(L0)); row.appendChild(th); }
+		var nm = el("span", "pe-lname", esc(L0.name) + (L0.type === "text" ? " ᵀ" : "") + (grp ? ' <small class="pe-cnt">' + PE.descendants(L0).filter(function (k) { return !PE.isGroup(k); }).length + "</small>" : "")); nm.title = L0.name + " (double-click to rename)";
+		if (L0.mask) { var mt = el("span", "pe-th pe-th--mask" + (L0.editMask ? " is-on" : "")); var mc = PE.mk(36, 36), mx = mc.getContext("2d"); mx.fillStyle = "#000"; mx.fillRect(0, 0, 36, 36); var wm = PE.mk(36, 36), wx = wm.getContext("2d"); wx.drawImage(L0.mask, 0, 0, 36, 36); wx.globalCompositeOperation = "source-in"; wx.fillStyle = "#fff"; wx.fillRect(0, 0, 36, 36); mx.drawImage(wm, 0, 0); mt.appendChild(mc); mt.title = "Layer mask: click to paint on the mask (white-ish = shown). Click the picture to paint on the layer."; mt.addEventListener("click", function (e) { e.stopPropagation(); var L = cur(); if (!L) return; PE.setActive(id); L.editMask = true; buildLayers(); }); row.querySelector(".pe-th").addEventListener("click", function (e) { e.stopPropagation(); var L = cur(); if (!L) return; PE.setActive(id); L.editMask = false; buildLayers(); }); row.appendChild(mt); }
+		row.appendChild(nm);
+		if (grp) { var xg = el("button", "pe-pen", "⬇"); xg.type = "button"; xg.title = "Export this group as its own image, on a canvas of any size"; xg.addEventListener("click", function (e) { e.stopPropagation(); var L = cur(); if (L) PE.dlgExportGroup(L); }); row.appendChild(xg); }
+		var pen = el("button", "pe-pen", "✎"); pen.type = "button"; pen.title = "Rename"; pen.addEventListener("click", function (e) { e.stopPropagation(); renameLayer(id); }); row.appendChild(pen);
+		if (L0.locked) row.appendChild(el("span", "pe-lock", "🔒"));
+		row.addEventListener("click", function (e) {
+			var L = cur(), act = PE.active(); if (!L) return;
+			if (e.ctrlKey || e.metaKey) { multi[id] = !multi[id]; if (!Object.keys(multi).some(function (k) { return multi[k]; })) multi = {}; else multi[act ? act.id : id] = true; buildLayers(); PE.invalidateOverlay(); return; }
+			if (e.shiftKey && act) { var order = rowsTopDown().map(function (x) { return x.L; }), i0 = order.indexOf(act), i1 = order.indexOf(L); if (i0 >= 0 && i1 >= 0) { multi = {}; order.slice(Math.min(i0, i1), Math.max(i0, i1) + 1).forEach(function (x) { multi[x.id] = true; }); buildLayers(); PE.invalidateOverlay(); return; } }
+			multi = {}; PE.setActive(id); PE.invalidateOverlay();
 		});
+		nm.addEventListener("dblclick", function (e) {
+			e.stopPropagation(); var L = cur(); if (!L) return; var inp = el("input", "pe-rename"), fin = false; inp.type = "text"; inp.value = L.name; inp.spellcheck = false; inp.setAttribute("aria-label", "New name for " + (grp ? "the group " : "the layer ") + L.name); row.draggable = false; row.classList.add("is-renaming"); nm.replaceWith(inp); inp.focus(); inp.select();
+			var done = function (ok) { if (fin) return; fin = true; row.classList.remove("is-renaming"); var v = inp.value.trim(), L2 = cur(); delete rowCache[id]; if (ok && L2 && v && v !== L2.name) { L2.name = v; PE.commit(grp ? "Rename group" : "Rename layer"); } else buildLayers(); };
+			// clicks inside the box must not reach the row: its click selects the layer, which rebuilds the list and threw the half-typed name away
+			["click", "mousedown", "pointerdown", "dblclick", "dragstart"].forEach(function (t) { inp.addEventListener(t, function (ev) { ev.stopPropagation(); }); });
+			inp.addEventListener("keydown", function (ev) { ev.stopPropagation(); if (ev.key === "Enter") { ev.preventDefault(); done(true); } if (ev.key === "Escape") { ev.preventDefault(); done(false); } }); inp.addEventListener("blur", function () { done(true); });
+		});
+		row.addEventListener("dragstart", function (e) { dragId = id; e.dataTransfer.effectAllowed = "move"; e.dataTransfer.setData("text/x-pe-layer", String(id)); });
+		function zoneOf(e) { var rc = row.getBoundingClientRect(), y = (e.clientY - rc.top) / rc.height; return grp ? (y < 0.25 ? "above" : "into") : (y < 0.5 ? "above" : "below"); }
+		row.addEventListener("dragover", function (e) { if (dragId == null) return; e.preventDefault(); row.classList.remove("is-over-above", "is-over-below", "is-over-into"); row.classList.add("is-over-" + zoneOf(e)); });
+		row.addEventListener("dragleave", function () { row.classList.remove("is-over-above", "is-over-below", "is-over-into"); });
+		row.addEventListener("drop", function (e) { if (dragId == null) return; e.preventDefault(); e.stopPropagation(); row.classList.remove("is-over-above", "is-over-below", "is-over-into"); var src = PE.layerById(dragId), z = zoneOf(e), L = cur(); dragId = null; if (src && L && src !== L) PE.relocate(src, L, z); });
+		return row;
+	}
+	function buildLayers() {
+		var list = $("pe-layers"), d = PE.doc; if (!d) { list.innerHTML = ""; rowCache = {}; return; } var act = PE.active(), rows = rowsTopDown(); PE.relink();
+		if (list.querySelector(".is-renaming")) return;   // never pull a half-typed name out from under the keyboard
+		var keep = {}, at = 0;
+		rows.forEach(function (r) {
+			var L = r.L, on = L === act || multi[L.id], sig = rowSig(L, r, on), c = rowCache[L.id];
+			if (!c || c.sig !== sig) { c = rowCache[L.id] = { sig: sig, row: makeRow(L.id, r.depth, on) }; }
+			keep[L.id] = 1; var node = list.children[at];
+			if (node !== c.row) list.insertBefore(c.row, node || null);
+			at++;
+		});
+		while (list.children.length > at) list.removeChild(list.lastChild);
+		for (var k in rowCache) if (!keep[k]) delete rowCache[k];
 		syncLayerProps();
 	}
 	$("pe-layers").addEventListener("dragover", function (e) { if (dragId != null) e.preventDefault(); });
+	$("pe-layers").addEventListener("dragend", function () { dragId = null; Array.prototype.forEach.call($("pe-layers").querySelectorAll(".is-over-above,.is-over-below,.is-over-into"), function (r) { r.classList.remove("is-over-above", "is-over-below", "is-over-into"); }); });
 	$("pe-layers").addEventListener("drop", function (e) { if (dragId == null || !PE.doc) return; e.preventDefault(); var src = PE.layerById(dragId); dragId = null; var tops = PE.doc.layers.filter(function (x) { return x.group == null; }); var top = tops[tops.length - 1]; if (src && top && top !== src) PE.relocate(src, top, "above"); });
 	$("pe-lfilter").addEventListener("input", function () { lfilter = this.value; buildLayers(); });
 	PE.on("layers", function () { if (!PE.doc) return; var ids = {}; PE.doc.layers.forEach(function (L) { ids[L.id] = 1; }); for (var k in multi) if (!ids[k]) delete multi[k]; });
@@ -2865,10 +3296,16 @@ var MESPixel = (function () {
 		$("pe-lock").setAttribute("aria-pressed", L.locked ? "true" : "false"); $("pe-mask-btn").title = L.mask ? "Delete layer mask" : "Add layer mask (reveal all; with a selection: reveal the selection)"; $("pe-mask-btn").setAttribute("aria-pressed", L.mask ? "true" : "false");
 	}
 	PE.on("layers", buildLayers); PE.on("active", buildLayers);
+	var histRows = new WeakMap();   // one button per history step, kept between updates (only the new step is added, the rest just change class)
 	function buildHistory() {
-		var list = $("pe-history"); list.innerHTML = ""; var H = PE.hist;
-		H.stack.forEach(function (e, i) { var r = el("button", "pe-hrow" + (i === H.idx ? " is-active" : "") + (i > H.idx ? " is-future" : ""), esc(e.label)); r.type = "button"; r.addEventListener("click", function () { PE.gotoHistory(i); }); list.appendChild(r); });
-		var a = list.querySelector(".is-active"); if (a) a.scrollIntoView({ block: "nearest" });
+		var list = $("pe-history"), H = PE.hist, at = 0, act = null;
+		H.stack.forEach(function (e, i) {
+			var r = histRows.get(e); if (!r) { r = el("button", "pe-hrow", esc(e.label)); r.type = "button"; r.addEventListener("click", function () { var j = PE.hist.stack.indexOf(e); if (j >= 0) PE.gotoHistory(j); }); histRows.set(e, r); }
+			var cls = "pe-hrow" + (i === H.idx ? " is-active" : "") + (i > H.idx ? " is-future" : ""); if (r.className !== cls) r.className = cls; if (i === H.idx) act = r;
+			var node = list.children[at]; if (node !== r) list.insertBefore(r, node || null); at++;
+		});
+		while (list.children.length > at) list.removeChild(list.lastChild);
+		if (act) act.scrollIntoView({ block: "nearest" });
 		$("pe-undo").disabled = H.idx <= 0; $("pe-redo").disabled = H.idx >= H.stack.length - 1;
 	}
 	PE.on("history", buildHistory);
@@ -3089,6 +3526,7 @@ $("pe-share").addEventListener("click", function () { if (needDoc()) PE.dlgShare
 	document.addEventListener("keydown", function (e) {
 		var t = e.target, typing = t && (/INPUT|TEXTAREA|SELECT/.test(t.tagName) && t.type !== "range" && t.type !== "checkbox" && t.type !== "button") || (t && t.isContentEditable);
 		if (typing || PE.modalOpen()) return; var k = e.key, low = k.toLowerCase(), mod = e.ctrlKey || e.metaKey, has = !!PE.doc;
+		if (PE.textKey && PE.textKey(e)) { e.preventDefault(); return; }   // a text is open but its key catcher lost focus: the key goes into the text, not to a tool shortcut
 		if (k === " " ) { if (!e.repeat) { PE.setSpace(true); PE.spaceHeld = true; PE.els.over.style.cursor = "grab"; } if (document.activeElement === document.body || root.contains(document.activeElement)) e.preventDefault(); return; }
 		if (mod) {
 			if (low === "z") { e.preventDefault(); e.shiftKey ? PE.redo() : PE.undo(); return; } if (low === "y") { e.preventDefault(); PE.redo(); return; }
@@ -3110,7 +3548,7 @@ $("pe-share").addEventListener("click", function () { if (needDoc()) PE.dlgShare
 		for (var id in PE.tools) if (PE.tools[id].key === low) { PE.setTool(id); return; }
 	});
 	document.addEventListener("keyup", function (e) { if (e.key === " ") { PE.setSpace(false); PE.spaceHeld = false; setCursor(); PE.invalidateOverlay(); } });
-	root.addEventListener("dblclick", function (e) { if (e.target === PE.els.over && PE.toolId !== "text") { var L = PE.active(); if (L && L.type === "text" && PE.toolId === "move") PE.editActiveText(); else if (L && L.eq && PE.toolId === "move") PE.dlgEquation(L); } });
+	root.addEventListener("dblclick", function (e) { if (e.target === PE.els.over && PE.toolId !== "text") { var L = PE.active(); if (L && L.type === "text" && PE.toolId === "move") PE.editActiveText(PE.toDoc(e.clientX, e.clientY)); else if (L && L.eq && PE.toolId === "move") PE.dlgEquation(L); } });
 
 	/* ---------- empty state + init ---------- */
 	$("pe-e-open").addEventListener("click", function () { pickFiles("image/*,.psd,.xcf,.mesproj", true, function (fs) { openFiles(fs); }); });

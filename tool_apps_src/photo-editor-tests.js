@@ -64,6 +64,43 @@ t("panelKey: arrows follow the grip, Shift = 4 em", () => {
 	assert.deepStrictEqual(P.panelKey("Home"), { to: "min" }); assert.deepStrictEqual(P.panelKey("End"), { to: "max" }); assert.deepStrictEqual(P.panelKey("Enter"), { to: "reset" }); assert.strictEqual(P.panelKey("a"), null);
 });
 
+// Move tool: multi-selection box, rubber band, snapping
+t("unionBox / boxesTouch / rectFrom", () => {
+	assert.deepStrictEqual(P.unionBox([{ x: 10, y: 20, w: 30, h: 10 }, null, { x: -5, y: 25, w: 10, h: 40 }]), { x: -5, y: 20, w: 45, h: 45 }); assert.strictEqual(P.unionBox([]), null);
+	assert.ok(P.boxesTouch({ x: 0, y: 0, w: 10, h: 10 }, { x: 10, y: 5, w: 5, h: 5 })); assert.ok(!P.boxesTouch({ x: 0, y: 0, w: 10, h: 10 }, { x: 11, y: 0, w: 5, h: 5 }));
+	assert.deepStrictEqual(P.rectFrom(30, 5, 10, 25), { x: 10, y: 5, w: 20, h: 20 });
+});
+t("snapBox: canvas edges + centre, other layers, threshold, guides", () => {
+	const tg = P.snapTargets(1280, 720, [{ x: 400, y: 100, w: 200, h: 50 }]);
+	let r = P.snapBox({ x: 4, y: 300, w: 100, h: 40 }, tg, 6); assert.strictEqual(r.dx, -4); assert.strictEqual(r.dy, 0); assert.deepStrictEqual(r.gx, [{ p: 0, k: "c" }]); assert.deepStrictEqual(r.gy, []);
+	r = P.snapBox({ x: 587, y: 300, w: 100, h: 40 }, tg, 6); assert.strictEqual(r.dx, 3); assert.ok(r.gx.some((g) => g.p === 640 && g.k === "c"));    // centre 637 -> canvas centre 640 (beats the layer's right edge 600: farther)
+	r = P.snapBox({ x: 603, y: 152, w: 50, h: 30 }, tg, 6); assert.strictEqual(r.dx, -3); assert.strictEqual(r.dy, -2); assert.deepStrictEqual(r.gx, [{ p: 600, k: "l" }]); assert.deepStrictEqual(r.gy, [{ p: 150, k: "l" }]);
+	r = P.snapBox({ x: 620, y: 300, w: 10, h: 10 }, tg, 6); assert.strictEqual(r.dx, 0); assert.strictEqual(r.dy, 0);
+	r = P.snapBox({ x: 1180, y: 690, w: 98, h: 31 }, tg, 6); assert.strictEqual(r.dx, 2); assert.strictEqual(r.dy, -1); assert.deepStrictEqual(r.gy, [{ p: 720, k: "c" }]);
+	const tie = P.snapAxis([100], [{ p: 103, k: "l" }, { p: 97, k: "c" }], 6); assert.strictEqual(tie.k, "c");
+	assert.strictEqual(P.snapTargets(null, null, []).x.length, 0);
+});
+t("linSolve + scaleAbout (resize snapping)", () => {
+	// right edge of a box anchored at x=100: edge = 100 + 50 * f; which f puts it on 300?
+	assert.strictEqual(P.linSolve(1, 150, 2, 200, 300), 4); assert.strictEqual(P.linSolve(1, 5, 2, 5, 9), null);
+	assert.strictEqual(P.scaleAbout(150, 100, 2), 200); assert.strictEqual(P.scaleAbout(50, 100, 0.5), 75);
+});
+// Text editor: wrapping with offsets, caret positions
+const mono = (s) => s.length * 10;
+t("wrapLines: offsets match the string, same lines as the old wrapper", () => {
+	const s = "Fetzer 2.0 is here\nsecond", L = P.wrapLines(s, 100, mono);
+	assert.deepStrictEqual(L.map((l) => l.text), ["Fetzer 2.0", "is here", "second"]); L.forEach((l) => assert.strictEqual(s.slice(l.start, l.end), l.text));
+	const long = P.wrapLines("abcdefghijklmnop", 50, mono); assert.deepStrictEqual(long.map((l) => l.text), ["abcde", "fghij", "klmno", "p"]); assert.deepStrictEqual(long.map((l) => l.start), [0, 5, 10, 15]);
+	assert.deepStrictEqual(P.wrapLines("", 50, mono), [{ text: "", start: 0, end: 0 }]); assert.deepStrictEqual(P.wrapLines("a\n\nb", 50, mono).map((l) => l.start), [0, 2, 3]);
+	const sp = "one two three four", W = P.wrapLines(sp, 85, mono); W.forEach((l) => assert.strictEqual(sp.slice(l.start, l.end), l.text)); assert.deepStrictEqual(W.map((l) => l.text), ["one two", "three", "four"]);
+});
+t("caretLine / hitInLine / wordAt", () => {
+	const L = P.wrapLines("Fetzer 2.0 is here", 100, mono);
+	assert.deepStrictEqual(P.caretLine(L, 0), { line: 0, k: 0 }); assert.deepStrictEqual(P.caretLine(L, 10), { line: 0, k: 10 }); assert.deepStrictEqual(P.caretLine(L, 11), { line: 1, k: 0 }); assert.deepStrictEqual(P.caretLine(L, 18), { line: 1, k: 7 });
+	assert.strictEqual(P.hitInLine(L[0], 34, mono), 3); assert.strictEqual(P.hitInLine(L[0], 999, mono), 10); assert.strictEqual(P.hitInLine(L[1], 26, mono), 14);
+	assert.deepStrictEqual(P.wordAt("Fetzer 2.0 is", 2), [0, 6]); assert.deepStrictEqual(P.wordAt("Fetzer 2.0 is", 6), [0, 6]); assert.deepStrictEqual(P.wordAt("a  b", 2), [2, 2]); assert.deepStrictEqual(P.wordAt("Fetzer 2.0", 8), [7, 10]); assert.deepStrictEqual(P.wordAt("Hi Fetzer, yes", 5), [3, 9]); assert.deepStrictEqual(P.wordAt("Hi Fetzer, yes", 9), [3, 9]);
+});
+
 // GIMP (.xcf) writer: structure checked with a tiny reader (and, once, against the independent Python `gimpformats` reader)
 t("xcf: header, layer list, tiles", () => {
 	const X = require("./photo-editor/xcf.js"), mk = (w, h, c) => { const d = new Uint8Array(w * h * 4); for (let i = 0; i < w * h; i++) d.set(c, i * 4); return d; };

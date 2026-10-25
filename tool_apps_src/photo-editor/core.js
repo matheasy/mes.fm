@@ -116,23 +116,27 @@
 
 	/* ---------- text layers ---------- */
 	PE.TEXTDEF = { str: "Text", font: "Arial, Helvetica, sans-serif", size: 64, bold: false, italic: false, color: "#000000", align: "left", lh: 1.2, bgOn: false, bgColor: "#ffeb3b", bgPad: 12, bgRadius: 8, strokeOn: false, stroke: "#ffffff", strokeW: 4, shadowOn: false, shadow: "#000000", shadowBlur: 8, shadowDx: 4, shadowDy: 4, ls: 0, wrapW: 0 };
-	PE.renderText = function (L) {
-		var t = L.text, f = (t.italic ? "italic " : "") + (t.bold ? "bold " : "") + t.size + "px " + t.font, m = mk(8, 8).getContext("2d");
-		m.font = f; if ("letterSpacing" in m) m.letterSpacing = (t.ls || 0) + "px";
+	/* where every line of a text layer sits in its canvas (shared by the renderer and the on-canvas text editor: caret, selection, click-to-place).
+	 * lines = [{text, start, end}] with string offsets (MESPixel.wrapLines), lx[i] = left edge of line i, base[i] = its baseline, measure(s) = width in px */
+	var lmc = null;
+	PE.textLayout = function (L) {
+		var t = L.text; if (!t) return null; var f = (t.italic ? "italic " : "") + (t.bold ? "bold " : "") + t.size + "px " + t.font, dw = PE.doc ? PE.doc.w : 1200;
+		var key = JSON.stringify([t.str, f, t.ls || 0, t.wrapW, t.lh, t.align, t.bgOn && t.bgPad, t.strokeOn && t.strokeW, t.shadowOn && [t.shadowBlur, t.shadowDx, t.shadowDy], t.wrapW > 0 ? 0 : dw]);
+		if (L._lay && L._lay.key === key) return L._lay;
+		var m = lmc || (lmc = mk(8, 8).getContext("2d")); m.font = f; if ("letterSpacing" in m) m.letterSpacing = (t.ls || 0) + "px";
+		var cache = {}, measure = function (s) { var w = cache[s]; if (w == null) w = cache[s] = m.measureText(s).width; return w; };
 		// word wrap: an explicit box width (Box width option / the handle on the box), else never wider than 90% of the image so pasted text stays reasonable
-		var lim = t.wrapW > 0 ? t.wrapW : Math.max(160, (PE.doc ? PE.doc.w : 1200) * 0.9), lines = [];
-		String(t.str).split("\n").forEach(function (para) {
-			if (m.measureText(para).width <= lim) { lines.push(para); return; }
-			var words = para.split(/(\s+)/), cur = "";
-			words.forEach(function (wd) {
-				var tryS = cur + wd; if (cur && m.measureText(tryS.replace(/\s+$/, "")).width > lim) { lines.push(cur.replace(/\s+$/, "")); cur = /^\s+$/.test(wd) ? "" : wd; } else cur = tryS;
-				while (m.measureText(cur).width > lim && cur.length > 1) { var k = cur.length - 1; while (k > 1 && m.measureText(cur.slice(0, k)).width > lim) k--; lines.push(cur.slice(0, k)); cur = cur.slice(k); }   // a single word longer than the box
-			});
-			lines.push(cur.replace(/\s+$/, ""));
-		});
-		var lw = lines.map(function (s) { return m.measureText(s).width; }), mw = t.wrapW > 0 ? t.wrapW : Math.max.apply(null, lw.concat([1])), lhp = t.size * t.lh;
+		var lim = t.wrapW > 0 ? t.wrapW : Math.max(160, dw * 0.9), lines = P.wrapLines(t.str, lim, measure);
+		var lw = lines.map(function (s) { return measure(s.text); }), mw = t.wrapW > 0 ? t.wrapW : Math.max.apply(null, lw.concat([1])), lhp = t.size * t.lh;
 		var bgp = t.bgOn ? t.bgPad : 0, pad = Math.ceil(bgp + (t.strokeOn ? t.strokeW : 0) + (t.shadowOn ? t.shadowBlur * 2 + Math.max(Math.abs(t.shadowDx), Math.abs(t.shadowDy)) : 0) + t.size * 0.15 + 2);
-		var W = Math.ceil(mw) + pad * 2, H = Math.ceil(lhp * lines.length + t.size * 0.3) + pad * 2; if (W * H > PE.MAXAREA) return;
+		var lx = lw.map(function (w) { return t.align === "center" ? pad + mw / 2 - w / 2 : t.align === "right" ? pad + mw - w : pad; }), base = lines.map(function (s, i) { return pad + lhp * i + t.size * 0.92; });
+		var measureNow = function (s) { m.font = f; if ("letterSpacing" in m) m.letterSpacing = (t.ls || 0) + "px"; return measure(s); };
+		L._lay = { key: key, font: f, lines: lines, lw: lw, lx: lx, base: base, mw: mw, lhp: lhp, pad: pad, bgp: bgp, W: Math.ceil(mw) + pad * 2, H: Math.ceil(lhp * lines.length + t.size * 0.3) + pad * 2, size: t.size, measure: measureNow };
+		return L._lay;
+	};
+	PE.renderText = function (L) {
+		var t = L.text, lay = PE.textLayout(L), f = lay.font, lines = lay.lines.map(function (l) { return l.text; }), mw = lay.mw, lhp = lay.lhp, bgp = lay.bgp, pad = lay.pad;
+		var W = lay.W, H = lay.H; if (W * H > PE.MAXAREA) return;
 		var oldW = L.canvas.width, oldH = L.canvas.height, c = mk(W, H), x = c.getContext("2d");
 		x.font = f; if ("letterSpacing" in x) x.letterSpacing = (t.ls || 0) + "px"; x.textBaseline = "alphabetic"; x.lineJoin = "round"; x.textAlign = t.align;
 		if (t.bgOn) { var bx = pad - bgp, by = pad - bgp, bw = Math.ceil(mw) + bgp * 2, bh = Math.ceil(lhp * lines.length + t.size * 0.3 - t.size * 0.1) + bgp * 2 - Math.round(t.size * 0.05), br = Math.min(t.bgRadius, bw / 2, bh / 2); x.fillStyle = t.bgColor; x.beginPath(); x.moveTo(bx + br, by); x.arcTo(bx + bw, by, bx + bw, by + bh, br); x.arcTo(bx + bw, by + bh, bx, by + bh, br); x.arcTo(bx, by + bh, bx, by, br); x.arcTo(bx, by, bx + bw, by, br); x.closePath(); x.fill(); }
