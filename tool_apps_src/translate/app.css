@@ -93,3 +93,55 @@
 	body.dark-mode #tr.tr .tr-msg--info {color:var(--tr-info);background:var(--tr-infobg);}
 	body.dark-mode #tr.tr kbd {background:var(--tr-card);color:var(--tr-ink);border-color:var(--tr-line);}
 	body.dark-mode #tr.tr .tr-h {color:var(--tr-ink);}
+
+	/* Picture from a link */
+	#tr .tr-urlrow {margin:0.8em 0 0;}
+	#tr .tr-urlrow label {display:block;font-weight:600;font-size:0.95em;margin-bottom:0.3em;}
+	#tr .tr-urlin {display:flex;gap:0.5em;}
+	#tr .tr-urlin input {flex:1 1 auto;min-width:0;min-height:44px;box-sizing:border-box;font-size:1em;background:var(--tr-card);color:var(--tr-ink);border:1px solid var(--tr-line);}
+	#tr .tr-urlin .tu-btn {min-height:44px;flex:0 0 auto;}
+	#tr .tr-urlnote {margin:0.45em 0 0;padding:0.45em 0.75em;border-radius:0.5em;background:var(--tr-infobg);color:var(--tr-info);font-size:0.92em;overflow-wrap:anywhere;}
+	#tr .tr-urlnote--warn {background:var(--tr-warnbg);color:var(--tr-warn);}
+	body.dark-mode #tr.tr .tr-urlin input {background:var(--tr-card);color:var(--tr-ink);border-color:var(--tr-line);}
+	body.dark-mode #tr.tr .tr-urlnote {background:var(--tr-infobg);color:var(--tr-info);}
+	body.dark-mode #tr.tr .tr-urlnote--warn {background:var(--tr-warnbg);color:var(--tr-warn);}
+
+	/* Layout: header row with Side by side | Stacked, Full width, and Close while filling the window */
+	#tr .tr-head {display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:0.4em 0.8em;margin:0 0 0.6em;}
+	#tr .tr-head .tr-h {margin:0;}
+	#tr .tr-view {display:flex;flex-wrap:wrap;align-items:center;gap:0.4em;}
+	#tr .tr-view .tu-seg button {min-height:36px;padding:0.35em 0.8em;}
+	#tr .tr-fullw[aria-pressed="true"] {background:var(--tr-tint);border-color:var(--tr-acc);color:var(--tr-accd);}
+	#tr.tr-stack .tr-panes {grid-template-columns:minmax(0,1fr);}
+	@media (max-width: 1199px) { #tr .tr-fullw {display:none;} }      /* below 1200px the sidebar already sits under the content */
+	/* Full width: the sidebar moves below the content (same shape as aside.css's Wide / Theater video rule), so the boxes get the whole frame of the chosen Standard | Wide | Theatre mode */
+	@media (min-width: 1200px) {
+		body.tr-wide .has-aside .outer-page-content {grid-template-columns:minmax(0,1fr);}
+		body.tr-wide .has-aside .page-content {grid-column:1;grid-row:1;}
+		body.tr-wide .has-aside .mes-aside {grid-column:1;grid-row:2;max-width:none;margin-left:0;margin-right:0;}
+	}
+
+	/* Fill window / full screen: the Translate card (both boxes + buttons) or the "Text found" box covers the browser window */
+	#tr .tr-fillbar {display:none;}
+	html.tr-locked, html.tr-locked body {overflow:hidden;}
+	#tr .tr-fill {position:fixed;inset:0;z-index:2000;margin:0;border-radius:0;max-width:none;width:auto;box-sizing:border-box;background:var(--tr-card);display:flex;flex-direction:column;padding:0.8em 1em 1em;overflow:auto;}
+	#tr .tr-fill:fullscreen {background:var(--tr-card);}
+	#tr .tr-tx.tr-fill .tr-panes {flex:1 1 auto;min-height:0;grid-template-rows:minmax(12em,1fr);}
+	#tr.tr-stack .tr-tx.tr-fill .tr-panes {grid-template-rows:minmax(10em,1fr) minmax(10em,1fr);}
+	#tr .tr-tx.tr-fill .tr-text {flex:1 1 auto;min-height:0;height:auto;resize:none;max-height:none;font-size:1.25em;}
+	#tr .tr-tx.tr-fill .tr-act {flex:0 0 auto;}
+	#tr .tr-tx.tr-fill [data-fillx] {display:inline-flex;}
+	#tr .tr-tx.tr-fill [data-fillx][hidden] {display:inline-flex !important;}
+	@media (max-width: 720px) {
+		#tr .tr-tx.tr-fill .tr-panes {grid-template-columns:minmax(0,1fr);grid-template-rows:minmax(8em,1fr) minmax(8em,1fr);}
+		#tr .tr-fill {padding:0.5em 0.6em 0.7em;}
+	}
+	#tr .tr-oside.tr-fill .tr-fillbar {display:flex;align-items:center;gap:0.5em;margin-bottom:0.5em;font-size:1.1em;}
+	#tr .tr-oside.tr-fill .tr-text {flex:1 1 auto;min-height:0;resize:none;font-size:1.2em;}
+	#tr .tu-toast {z-index:2100;}
+	#tr .tr-fill .tr-fullw {display:none;}
+	@media (max-width: 720px) { #tr #tr-lay {display:none;} }         /* phones always stack the two boxes */
+	@media (max-width: 440px) { #tr .tr-ib {min-width:36px;padding:0;} #tr .tr-tools {gap:0.1em;} #tr .tr-count {margin:0 0.2em;} }
+	#tr .tr-ic {width:1.15em;height:1.15em;vertical-align:-0.2em;fill:none;stroke:currentColor;stroke-width:2;stroke-linecap:round;stroke-linejoin:round;}
+	body.dark-mode #tr.tr .tr-fill {background:var(--tr-card);}
+	body.dark-mode #tr.tr .tr-fullw[aria-pressed="true"] {background:var(--tr-tint);border-color:var(--tr-acc);color:var(--tr-accd);}

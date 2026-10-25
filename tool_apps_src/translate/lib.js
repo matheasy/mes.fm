@@ -178,6 +178,7 @@
       if (k === "from" || k === "sl") o.from = norm(v);
       else if (k === "to" || k === "tl") o.to = norm(v);
       else if (k === "q" || k === "text") o.q = v.slice(0, 5000);
+      else if (k === "img" || k === "image") { var l = imageLink(v); if (l) o.img = l; }
     });
     if (o.from && o.from !== "auto" && !known(o.from)) o.from = "";
     if (o.to && (o.to === "auto" || !known(o.to))) o.to = "";
@@ -229,11 +230,39 @@
     return 1;
   }
 
+  // A link to a picture typed / pasted / dropped on the page: the http(s) URL (hash dropped), or null.
+  // data:, blob:, file:, javascript: and links with user:password@ are refused (the server refuses them too: mes.fm/api/_url-guard.js).
+  function imageLink(text) {
+    var s = String(text == null ? "" : text).trim();
+    if (!s || s.length > 2048 || /\s/.test(s)) return null;
+    if (/^\/\//.test(s)) s = "https:" + s;
+    if (!/^https?:\/\//i.test(s)) return null;
+    var u;
+    try { u = new URL(s); } catch (e) { return null; }
+    if ((u.protocol !== "http:" && u.protocol !== "https:") || u.username || u.password || !u.hostname) return null;
+    u.hash = "";
+    return u.toString();
+  }
+  // File name for a fetched picture: the last part of the link's path, else "picture", plus an extension for the type when it has none.
+  function linkName(url, type) {
+    var ext = { "image/jpeg": ".jpg", "image/png": ".png", "image/gif": ".gif", "image/webp": ".webp", "image/avif": ".avif", "image/bmp": ".bmp", "image/tiff": ".tif", "application/pdf": ".pdf" }[type] || "";
+    var name = "";
+    try { name = decodeURIComponent(new URL(url).pathname.split("/").pop() || ""); } catch (e) {}
+    name = name.replace(/[^\w.\- ()]+/g, "").slice(0, 80);
+    if (!name) name = "picture";
+    if (ext && !/\.[a-z0-9]{2,5}$/i.test(name)) name += ext;
+    return name;
+  }
+  // Fill window / layout choices kept in the page's state: "side" | "stack", full width on / off
+  function layoutOf(set) {
+    return { lay: set && set.lay === "stack" ? "stack" : "side", full: !!(set && set.full) };
+  }
+
   var api = {
     LANGS: LANGS, DAILY: DAILY, norm: norm, isRtl: isRtl, known: known, toTess: toTess, fromTess: fromTess, tessLangs: tessLangs,
     myMemoryCode: myMemoryCode, apiCode: apiCode, utf8Len: utf8Len, sentences: sentences, chunk: chunk, join: join,
     pickMyMemory: pickMyMemory, chooseEngine: chooseEngine, liveOk: liveOk, parseQuery: parseQuery, buildQuery: buildQuery,
-    usage: usage, pickTarget: pickTarget, ocrLines: ocrLines, ocrScale: ocrScale
+    usage: usage, pickTarget: pickTarget, ocrLines: ocrLines, ocrScale: ocrScale, imageLink: imageLink, linkName: linkName, layoutOf: layoutOf
   };
   if (typeof module !== "undefined" && module.exports) module.exports = api;
   root.MESTr = api;

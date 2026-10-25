@@ -372,10 +372,75 @@
   ["dragenter", "dragover"].forEach(function (t) { drop.addEventListener(t, function (e) { e.preventDefault(); drop.classList.add("tr-drop--over"); }); });
   ["dragleave", "drop"].forEach(function (t) { drop.addEventListener(t, function (e) { e.preventDefault(); drop.classList.remove("tr-drop--over"); }); });
   drop.addEventListener("drop", function (e) { var f = e.dataTransfer && e.dataTransfer.files && e.dataTransfer.files[0]; if (f) loadFile(f); });
+  drop.addEventListener("drop", function (e) {   // a picture dragged from another web page arrives as a link, not a file
+    var dt = e.dataTransfer; if (!dt || (dt.files && dt.files.length)) return;
+    var l = T.imageLink((dt.getData("text/uri-list") || "").split(/\r?\n/).filter(function (x) { return x && x[0] !== "#"; })[0] || dt.getData("text/plain"));
+    if (l) loadUrl(l);
+  });
   document.addEventListener("paste", function (e) {
     var items = (e.clipboardData && e.clipboardData.items) || [];
     for (var i = 0; i < items.length; i++) if (items[i].kind === "file" && /^image\//.test(items[i].type)) { e.preventDefault(); loadFile(items[i].getAsFile()); return; }
+    // a pasted link to a picture: only outside the text boxes (there a link is just text), or into the link box itself
+    var t = e.target, inBox = t && (t.tagName === "TEXTAREA" || (t.tagName === "INPUT" && t.id !== "tr-url") || t.isContentEditable);
+    if (inBox) return;
+    var l = T.imageLink(e.clipboardData && e.clipboardData.getData("text/plain"));
+    if (l) { e.preventDefault(); $("tr-url").value = l; loadUrl(l); }
   });
+
+  // ---------- picture from a link ----------
+  // First the browser fetches it itself (works when the other site allows it with CORS headers); if that fails, mes.fm/api/image-fetch
+  // fetches it (public addresses only, 8 s, 4.4 MB) and the note under the box says so.
+  var urlNote = $("tr-urlnote"), urlGen = 0;
+  function urlMsg(html, warn) { if (!html) { urlNote.hidden = true; return; } urlNote.hidden = false; urlNote.className = "tu-note tr-urlnote" + (warn ? " tr-urlnote--warn" : ""); urlNote.innerHTML = html; }
+  function okType(t) { return /^image\//.test(t) && t !== "image/svg+xml" || t === "application/pdf"; }
+  function timed(url, opts, ms) {
+    var ctl = window.AbortController ? new AbortController() : null, tm = ctl && setTimeout(function () { ctl.abort(); }, ms);
+    return fetch(url, Object.assign({ signal: ctl ? ctl.signal : undefined }, opts)).finally(function () { clearTimeout(tm); });
+  }
+  function direct(url) {
+    return timed(url, { mode: "cors", credentials: "omit", referrerPolicy: "no-referrer" }, 9000).then(function (r) {
+      if (!r.ok) throw new Error("HTTP " + r.status);
+      return r.blob();
+    }).then(function (b) {
+      var ty = (b.type || "").split(";")[0].toLowerCase();
+      if (!okType(ty) && !(ty === "" || ty === "application/octet-stream")) throw new Error("not a picture");
+      return b;
+    });
+  }
+  function viaMes(url) {
+    return timed("/api/image-fetch?url=" + encodeURIComponent(url), { credentials: "omit" }, 12000).then(function (r) {
+      if (r.ok) return r.blob();
+      return r.json().then(function (j) { throw new Error(j && j.error || ("mes.fm answered " + r.status)); }, function () { throw new Error(r.status === 404 ? "The mes.fm link fetcher is not available here." : "mes.fm answered " + r.status); });
+    });
+  }
+  function loadUrl(raw) {
+    var url = T.imageLink(raw);
+    if (!url) { urlMsg("That is not a web link to a picture (it should start with https://).", true); return Promise.resolve(); }
+    var my = ++urlGen, how = "direct", host = "";
+    try { host = new URL(url).hostname; } catch (e) {}
+    urlMsg("Opening the picture from " + esc(host) + "…");
+    $("tr-urlgo").disabled = true;
+    return direct(url).catch(function () {
+      if (my !== urlGen) throw new Error("stale");
+      how = "mes";
+      urlMsg(esc(host) + " doesn't let other sites load its pictures directly, so mes.fm is fetching it for you…");
+      return viaMes(url);
+    }).then(function (b) {
+      if (my !== urlGen) return;
+      var ty = (b.type || "").split(";")[0].toLowerCase();
+      if (!okType(ty)) ty = /\.pdf(\?|$)/i.test(url) ? "application/pdf" : (ty || "image/png");
+      var name = T.linkName(url, ty), f;
+      try { f = new File([b], name, { type: ty }); } catch (e) { f = b; f.name = name; }
+      urlMsg(how === "mes"
+        ? "Fetched through mes.fm because " + esc(host) + " doesn't allow pictures to be loaded straight into other sites. mes.fm passed the file on and kept no copy; the picture itself is still read only in your browser."
+        : "Opened straight from " + esc(host) + " in your browser.");
+      return loadFile(f);
+    }).catch(function (e) {
+      if (my !== urlGen || String(e && e.message) === "stale") return;
+      urlMsg("Could not open that link: " + esc(e && e.message || e) + " You can save the picture and drop the file here instead.", true);
+    }).then(function () { if (my === urlGen) $("tr-urlgo").disabled = false; });
+  }
+  $("tr-urlform").addEventListener("submit", function (e) { e.preventDefault(); loadUrl($("tr-url").value); });
   olSel.addEventListener("change", function () { S.olang = olSel.value; S.olangPicked = true; save(); });
   $("tr-oeng").addEventListener("change", function () { S.oeng = this.checked; save(); });
 
@@ -590,6 +655,51 @@
   $("tr-ouse").addEventListener("click", function () { useText($("tr-otext").value); });
   $("tr-ousesel").addEventListener("click", function () { useText(selText()); });
 
+  // ---------- layout: Side by side | Stacked, Full width, Fill window, Full screen ----------
+  function applyLayout() {
+    var L = T.layoutOf(S);
+    root.classList.toggle("tr-stack", L.lay === "stack");
+    document.body.classList.toggle("tr-wide", L.full);
+    Array.prototype.forEach.call($("tr-lay").querySelectorAll("[data-v]"), function (b) { b.setAttribute("aria-pressed", b.getAttribute("data-v") === L.lay); });
+    $("tr-fullw").setAttribute("aria-pressed", L.full);
+    window.dispatchEvent(new Event("resize"));      // the sidebar script re-checks its column / ad slot
+  }
+  $("tr-lay").addEventListener("click", function (e) { var b = e.target.closest("[data-v]"); if (!b) return; S.lay = b.getAttribute("data-v"); save(); applyLayout(); });
+  $("tr-fullw").addEventListener("click", function () { S.full = !T.layoutOf(S).full; save(); applyLayout(); });
+
+  var filled = null, fsOn = false, toastHome = $("tr-toast").parentNode;
+  var FILL = { tx: $("tr-tx"), ocr: $("tr-oside") };
+  function fillOpen(key, focusEl, full) {
+    if (filled && filled !== FILL[key]) fillClose();
+    var el = FILL[key]; if (!el) return;
+    filled = el; el.classList.add("tr-fill"); document.documentElement.classList.add("tr-locked");
+    Array.prototype.forEach.call(el.querySelectorAll("[data-fillx]"), function (b) { b.hidden = false; });
+    if (full && el.requestFullscreen) {
+      el.requestFullscreen().then(function () { fsOn = true; el.appendChild($("tr-toast")); }, function () { toast("Full screen isn't allowed here, so the box fills the window instead"); });
+    } else if (full) toast("This browser has no full screen for page parts, so the box fills the window instead");
+    if (focusEl && focusEl.focus) setTimeout(function () { focusEl.focus({ preventScroll: true }); }, 30);
+  }
+  function fillClose() {
+    if (!filled) return;
+    var el = filled; filled = null;
+    if (document.fullscreenElement === el && document.exitFullscreen) document.exitFullscreen().catch(function () {});
+    fsOn = false; toastHome.appendChild($("tr-toast"));
+    el.classList.remove("tr-fill"); document.documentElement.classList.remove("tr-locked");
+    Array.prototype.forEach.call(el.querySelectorAll("[data-fillx]"), function (b) { b.hidden = true; });
+  }
+  root.addEventListener("click", function (e) {
+    var b = e.target.closest("[data-fill], [data-fs], [data-fillx]"); if (!b) return;
+    if (b.hasAttribute("data-fillx")) { fillClose(); return; }
+    var key = b.getAttribute("data-fill") || b.getAttribute("data-fs"), full = b.hasAttribute("data-fs");
+    var pane = b.closest(".tr-pane, .tr-oside"), box = pane && pane.querySelector("textarea, .tr-out");
+    if (filled === FILL[key] && !full) { fillClose(); return; }
+    fillOpen(key, box, full);
+  });
+  document.addEventListener("fullscreenchange", function () { if (fsOn && !document.fullscreenElement) fillClose(); });
+  document.addEventListener("keydown", function (e) { if (e.key === "Escape" && filled && !document.fullscreenElement) { e.preventDefault(); fillClose(); } });
+  root.addEventListener("click", function (e) { if (filled === FILL.ocr && e.target.closest("#tr-ouse, #tr-ousesel")) fillClose(); }, true);   // capture: closes before the button scrolls up to the translation
+  applyLayout();
+
   // ---------- page mode + start ----------
   if (MODE === "ocr") {
     $("tr-tx-h").textContent = "Translate it (optional)";
@@ -601,6 +711,7 @@
   if (q.to) { S.to = q.to; toSel.value = q.to; }
   applyDirs(); counts(); drawHist(); previewBadge();
   if (!hasApi) $("tr-livebox").title = "This browser can't translate on-device, so nothing is translated while you type (that would send every keystroke online)";
+  if (q.img) { $("tr-url").value = q.img; if (MODE !== "ocr") $("tr-ocr").scrollIntoView({ block: "start" }); loadUrl(q.img); }
   if (q.q) {
     inp.value = q.q; counts();
     var g0 = gen + 1;
