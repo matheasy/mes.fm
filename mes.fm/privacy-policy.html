@@ -358,6 +358,29 @@ sub {vertical-align:sub;}        .warning-message {font-size:1em;text-align:cent
 	policy applies to it. Nothing is uploaded unless you press that button.
 	</p>
 
+	<h2 class="mini-title">Translate and Image to Text</h2>
+
+	<p>
+	On <a href="/translate">MES Translate</a> and <a href="/image-to-text">Image to Text</a>, pictures and PDFs are always read
+	in your own browser (the text reader, Tesseract, and its language data are downloaded from the jsDelivr CDN and run on your
+	device); they are never uploaded. Translation works one of two ways, and the page says which one it used under the
+	<i>Translate</i> button:
+	</p>
+	<ul>
+	<li><b>On this device:</b> in browsers that have a built-in translator (recent Chrome and Edge on a computer), the browser
+	itself translates the text on your computer after a one-time language-pack download. Your text is not sent to us or to
+	anyone else.</li>
+	<li><b>Online:</b> in other browsers, or when you choose the online engine, the text you translate (not the picture) is sent
+	from your browser to the free MyMemory translation service (api.mymemory.translated.net, run by Translated srl), which
+	returns the translation. MyMemory's own terms and privacy policy apply to that text, and it may keep it in its translation
+	memory, so do not translate passwords or confidential documents this way. The page never sends text online while you are
+	still typing: only when you press <i>Translate</i>.</li>
+	</ul>
+	<p>
+	Your recent translations are kept only in your browser's local storage (you can switch this off or clear it on the page),
+	and a share link carries its text in the link itself; nothing is stored on our servers.
+	</p>
+
 	<h2 class="mini-title">Reverse Image Search: a temporary copy of your picture</h2>
 
 	<p>
@@ -485,7 +508,7 @@ sub {vertical-align:sub;}        .warning-message {font-size:1em;text-align:cent
 	</p>
 	
 	<p>
-	This document was last updated on Oct 22, 2026
+	This document was last updated on Oct 24, 2026
 	</p>
 
 	<p class="generated-by">
