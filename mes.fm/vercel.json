@@ -123,6 +123,7 @@
     { "source": "/birthday-astrology", "destination": "/birthday-personality", "permanent": true },
     { "source": "/life-path-number", "destination": "/birthday-personality", "permanent": true },
     { "source": "/gsc", "destination": "/search-console", "permanent": true },
+    { "source": "/sc", "destination": "/search-console", "permanent": true },
     { "source": "/search-performance", "destination": "/search-console", "permanent": true },
     { "source": "/bing-webmaster", "destination": "/search-console", "permanent": true },
     { "source": "/seo-checker", "destination": "/seo", "permanent": true },
