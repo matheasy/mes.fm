@@ -36,7 +36,7 @@ EXT_TAB = "<li class=\"info-bar__item\"><a class=\"info-bar__item__text\" href='
 
 # simulator pages whose boxes (.fl-wrap, .lm-wrap, ...) get the shared View bar from main_js/stage-ctl.js
 STAGE_CTL = {"julia-set-explorer", "fluid-simulator", "light-in-a-medium", "black-hole-simulator", "mandelbrot", "buddhabrot", "time-dilation", "metric-tensor", "orbit-simulator", "double-pendulum", "electromagnetic-fields-simulator", "photoelectric-effect-simulator", "solar-system-today", "atomic-clock-simulator",
-             "michelson-morley-experiment", "faster-than-light-shadow-simulator", "fountain-clock"}
+             "michelson-morley-experiment", "faster-than-light-shadow-simulator", "fountain-clock", "magnetic-isopotentials"}
 
 # PDF family nav (2026-10-16): Home = the PDF Tools hub, then the editor and the six tools, ahead of Calculators / Tools
 PDF_NAV_INFO = '<li class="info-bar__item"><a class="info-bar__item__text" href=\'/pdf\'>Editor</a></li><li class="info-bar__item"><a class="info-bar__item__text" href=\'/merge-pdf\'>Merge</a></li><li class="info-bar__item"><a class="info-bar__item__text" href=\'/split-pdf\'>Split</a></li><li class="info-bar__item"><a class="info-bar__item__text" href=\'/organize-pdf\'>Organize</a></li><li class="info-bar__item"><a class="info-bar__item__text" href=\'/jpg-to-pdf\'>Images to PDF</a></li><li class="info-bar__item"><a class="info-bar__item__text" href=\'/pdf-to-jpg\'>PDF to images</a></li><li class="info-bar__item"><a class="info-bar__item__text" href=\'/compress-pdf\'>Compress</a></li>'
@@ -285,8 +285,15 @@ APPS = {
     # Maxwell waves (2D FDTD Yee solver with glass / metal / absorber, slits, cavity, probe) and a 3D plane wave. (lib.js node-tested: tool_apps_src/electromagnetic-fields-simulator-tests.js.) Normal-width page in the tools sidebar collection.
     "electromagnetic-fields-simulator": dict(title="MES Electromagnetic Fields Simulator", page_title="Electromagnetic Fields Simulator: Electric, Magnetic and Light Waves",
                                              tag="See the fields. Watch the waves.", accent="#c2410c", dark="#9a3412", tint="#ffedd5",
-                                             desc="A free electromagnetism simulator: place charges and see field lines, equipotentials and Gauss's law, add current-carrying wires and check Ampere's law, steer a charged particle through electric and magnetic fields, watch Maxwell's equations make waves reflect, refract and diffract, and explore a 3D electromagnetic plane wave.",
-                                             js_v="12"),
+                                             desc="A free electromagnetism simulator: place charges and see field lines, equipotentials and Gauss's law, add current-carrying wires and check Ampere's law, turn bar magnets and see their flux lines and magnetic isopotentials, steer a charged particle through electric and magnetic fields, watch Maxwell's equations make waves reflect, refract and diffract, and explore a 3D electromagnetic plane wave.",
+                                             js_v="13", vars={"MAGNETS": "@panel-magnets.html"}),
+    # Magnetic Isopotentials (2026-10-25): the Magnets tab of the EM Fields Simulator as its own page (own URL, text, FAQ, logos). Shares that app's source folder (src) and served script (js_path);
+    # content-magnets.html carries only the magnets panel (the same panel-magnets.html, via vars) + its own text; data-only="mg" tells app.js to run just that panel.
+    "magnetic-isopotentials": dict(title="MES Magnetic Isopotentials", page_title="Magnetic Isopotentials and Flux Lines of Bar Magnets",
+                                   tag="Flux lines and isopotentials, live.", accent="#b91c1c", dark="#991b1b", tint="#fee2e2",
+                                   desc="Free magnet simulator: drag and turn bar magnets and see their magnetic flux lines and isopotential lines (equal magnetic scalar potential) at once, with compasses, field strength colours, horseshoe and Halbach examples.",
+                                   src="electromagnetic-fields-simulator", content="content-magnets.html", js_path="electromagnetic-fields-simulator/js/electromagnetic-fields-simulator.js",
+                                   js_v="13", vars={"MAGNETS": "@panel-magnets.html"}),
     # Double Pendulum: live chaotic pendulum (RK4, copies for the butterfly effect, angle and divergence graphs, Lyapunov estimate) + a flip-time chaos map of every starting pair of angles
     # (lib.js node-tested: tool_apps_src/double-pendulum-tests.js). Normal-width page in the tools sidebar collection, Wide by default.
     "double-pendulum": dict(title="MES Double Pendulum", page_title="Double Pendulum Simulator: Chaos and the Butterfly Effect",

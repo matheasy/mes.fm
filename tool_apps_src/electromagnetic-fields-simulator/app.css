@@ -72,3 +72,25 @@
 	.em-ptbar {display:flex;flex-wrap:wrap;gap:0.5em;align-items:center;margin:0 0 0.8em;} .em-ptbar .em-toolrow {margin:0;} .em-ptbar .em-fitbtn {margin:0;}
 
 	body.dark-mode #em .em-chips button.is-on {background:var(--accent);border-color:var(--accent);color:#fff;}
+	/* magnets tab + /magnetic-isopotentials page */
+	.em-legend {position:absolute;right:0.6em;bottom:0.5em;display:flex;flex-wrap:wrap;gap:0.2em 0.8em;justify-content:flex-end;font-size:0.75em;background:rgba(10,13,20,0.72);padding:0.25em 0.6em;border-radius:0.7em;pointer-events:none;max-width:60%;}
+	.em-lg-flux {color:#afd0ff;} .em-lg-iso {color:#ffc454;}
+	@media (max-width:560px) {.em-legend {bottom:auto;top:4.2em;font-size:0.68em;}}
+	.em-k-flux {color:#1d4ed8;} .em-k-iso {color:#a15c00;} .em-k-n {color:#dc2626;} .em-k-s {color:#15803d;}
+	body.dark-mode #em .em-k-flux {color:#93c5fd;} body.dark-mode #em .em-k-iso {color:#fbbf24;} body.dark-mode #em .em-k-n {color:#f87171;} body.dark-mode #em .em-k-s {color:#4ade80;}
+	.em-mg-h {margin-top:1em;}
+	.em-mgx {display:grid;grid-template-columns:repeat(auto-fit,minmax(17em,1fr));gap:0.9em;margin-top:0.9em;align-items:start;}
+	.em-mgx .tu-card {margin:0;}
+	.em-vcard {display:block;border-radius:0.6em;overflow:hidden;border:1px solid #d5dbe3;background:#fff;text-decoration:none;color:#223;}
+	.em-vcard img {display:block;width:100%;height:auto;aspect-ratio:16/9;object-fit:cover;}
+	.em-vcard__t {display:block;padding:0.6em 0.8em 0.7em;font-weight:700;line-height:1.35;}
+	.em-vcard__t small {display:block;font-weight:600;font-size:0.75em;text-transform:uppercase;letter-spacing:0.05em;color:#667;margin-bottom:0.2em;}
+	.em-vcard:hover {border-color:var(--accent);} .em-vcard:hover .em-vcard__t {color:var(--accent);}
+	.em-further p {margin:0 0 0.6em;} .em-apps {margin:0;padding-left:1.2em;} .em-apps li {margin:0.2em 0;}
+	.em-back {margin:0 0 0.8em;font-size:0.92em;}
+	body.dark-mode #em .em-vcard {background:#23262b;border-color:#3a3f48;color:#e6e8ec;} body.dark-mode #em .em-vcard__t small {color:#a0a8b3;} body.dark-mode #em .em-vcard:hover .em-vcard__t {color:var(--accent);}
+	[data-panel="mg"] .em-checks {margin:0 0 1em;} [data-panel="mg"] .em-grid--small {margin-bottom:0.3em;}
+	#em sub, #em sup {color:inherit;}
+	/* in dark mode the accent is lightened for contrast with the page, so a filled (pressed / chosen) button needs dark text on it */
+	body.dark-mode #em .em-toolrow button[aria-pressed="true"], body.dark-mode #em .em-chips button.is-on {color:#111;}
+	@media (max-width:560px) {.em-eq__n {display:block;min-width:0;}}

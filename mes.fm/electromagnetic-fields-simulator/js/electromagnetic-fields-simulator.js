@@ -180,8 +180,75 @@
 	/* wavelength (cells) -> angular frequency per time unit for the grid (c = 1) */
 	function omegaFor(lambdaCells) { return TAU / lambdaCells; }
 
+
+	/* ---------- permanent magnets (2D: long prisms, cross-section in the plane) ----------
+	   A magnet: {x, y, a (angle of its magnetisation, S -> N, radians), L (length along it, m), W (width, m), Br (remanence, T)}; M = Br / mu0 (A/m), uniform.
+	   Gilbert (magnetic charge) picture: pole sheets of density +M on the N end face and -M on the S end face; a sheet is the line-pole kernel integrated along the
+	   face (exact closed forms below), so the field is smooth near the ends. psi = magnetic scalar potential (A), H = -grad psi everywhere, B = mu0 H outside and
+	   mu0 (H + M) inside. Amperian picture: the same magnet is two current sheets K = M on its long sides; their vector potential A_z gives B = curl A exactly,
+	   so the flux lines are the contours of A_z (equal steps of A = equal flux between lines, and the lines close through the magnet). */
+	/* integral over t in [-h, h] of ln sqrt((u - t)^2 + v^2) dt */
+	function logInt(u, v, h) {
+		function F(s) { var r2 = s * s + v * v, t = (s === 0 ? 0 : 0.5 * s * Math.log(r2)) - s; if (v !== 0) t += v * Math.atan(s / v); return t; }
+		return F(h - u) - F(-h - u);
+	}
+	/* integral over t in [-h, h] of (u - t, v) / ((u - t)^2 + v^2) dt = [half log ratio, angle the segment subtends] */
+	function vecInt(u, v, h) { var a2 = (u + h) * (u + h) + v * v, b2 = (u - h) * (u - h) + v * v; return [0.5 * Math.log(Math.max(a2, 1e-300) / Math.max(b2, 1e-300)), Math.atan2(v, u - h) - Math.atan2(v, u + h)]; }
+	function magGeo(m) { var c = Math.cos(m.a), s = Math.sin(m.a); return { mx: c, my: s, px: -s, py: c, hl: m.L / 2, hw: m.W / 2, M: m.Br / MU0 }; }
+	function magInside(m, x, y) { var g = magGeo(m), dx = x - m.x, dy = y - m.y; return Math.abs(dx * g.mx + dy * g.my) < g.hl && Math.abs(dx * g.px + dy * g.py) < g.hw; }
+	function magPsi(mags, x, y) {
+		var psi = 0, i, m, g, sg, fx, fy, dx, dy;
+		for (i = 0; i < mags.length; i++) { m = mags[i]; g = magGeo(m);
+			for (sg = 1; sg >= -1; sg -= 2) { fx = m.x + sg * g.hl * g.mx; fy = m.y + sg * g.hl * g.my; dx = x - fx; dy = y - fy; psi += -sg * g.M / TAU * logInt(dx * g.px + dy * g.py, dx * g.mx + dy * g.my, g.hw); } }
+		return psi;
+	}
+	function magH(mags, x, y) {
+		var hx = 0, hy = 0, i, m, g, sg, dx, dy, G, k;
+		for (i = 0; i < mags.length; i++) { m = mags[i]; g = magGeo(m);
+			for (sg = 1; sg >= -1; sg -= 2) { dx = x - (m.x + sg * g.hl * g.mx); dy = y - (m.y + sg * g.hl * g.my); G = vecInt(dx * g.px + dy * g.py, dx * g.mx + dy * g.my, g.hw); k = sg * g.M / TAU; hx += k * (G[0] * g.px + G[1] * g.mx); hy += k * (G[0] * g.py + G[1] * g.my); } }
+		return [hx, hy];
+	}
+	function magB(mags, x, y) {
+		var h = magH(mags, x, y), bx = MU0 * h[0], by = MU0 * h[1], i, m;
+		for (i = 0; i < mags.length; i++) { m = mags[i]; if (magInside(m, x, y)) { bx += m.Br * Math.cos(m.a); by += m.Br * Math.sin(m.a); } }
+		return [bx, by];
+	}
+	/* vector potential A_z (T m) of the equivalent surface currents: +M out of the page on the +p side, into it on the -p side */
+	function magA(mags, x, y) {
+		var A = 0, i, m, g, sg, dx, dy;
+		for (i = 0; i < mags.length; i++) { m = mags[i]; g = magGeo(m);
+			for (sg = 1; sg >= -1; sg -= 2) { dx = x - (m.x + sg * g.hw * g.px); dy = y - (m.y + sg * g.hw * g.py); A += -sg * MU0 * g.M / TAU * logInt(dx * g.mx + dy * g.my, dx * g.px + dy * g.py, g.hl); } }
+		return A;
+	}
+	/* B from the curl of A (central differences) -- the Amperian route, used to check the Gilbert one */
+	function magBcurl(mags, x, y, h) { h = h || 1e-7; return [(magA(mags, x, y + h) - magA(mags, x, y - h)) / (2 * h), -(magA(mags, x + h, y) - magA(mags, x - h, y)) / (2 * h)]; }
+	/* dipole moment per metre of depth (A m): M L W along the magnet */
+	function magMoment(m) { return m.Br / MU0 * m.L * m.W; }
+	/* follow a vector field fn(x, y) -> [vx, vy] (unit steps, RK4) from (x0, y0) until it leaves box, comes back to its start (closed: true) or maxSteps */
+	function traceField(fn, x0, y0, h, maxSteps, box, closeTol) {
+		var pts = [x0, y0], x = x0, y = y0, n, len = 0;
+		function d(px, py) { var f = fn(px, py), m = Math.hypot(f[0], f[1]); return m > 0 ? [f[0] / m, f[1] / m] : [0, 0]; }
+		for (n = 0; n < maxSteps; n++) {
+			var k1 = d(x, y); if (!k1[0] && !k1[1]) break; var k2 = d(x + 0.5 * h * k1[0], y + 0.5 * h * k1[1]), k3 = d(x + 0.5 * h * k2[0], y + 0.5 * h * k2[1]), k4 = d(x + h * k3[0], y + h * k3[1]);
+			x += h / 6 * (k1[0] + 2 * k2[0] + 2 * k3[0] + k4[0]); y += h / 6 * (k1[1] + 2 * k2[1] + 2 * k3[1] + k4[1]); len += h; pts.push(x, y);
+			if (box && (x < box[0] || x > box[2] || y < box[1] || y > box[3])) return { pts: pts, closed: false, len: len };
+			if (len > 20 * h && Math.hypot(x - x0, y - y0) < (closeTol || h)) return { pts: pts, closed: true, len: len };
+		}
+		return { pts: pts, closed: false, len: len };
+	}
+	/* net outward flux of a field fn through a circle (per metre of depth) */
+	function circleFlux(fn, cx, cy, R, N) { var s = 0, i; N = N || 1440; for (i = 0; i < N; i++) { var a = (i + 0.5) * TAU / N, c = Math.cos(a), sn = Math.sin(a), f = fn(cx + R * c, cy + R * sn); s += (f[0] * c + f[1] * sn) * R * TAU / N; } return s; }
+	/* evenly spaced contour levels covering [lo, hi] with n steps across the larger half-range (levels at (k + 1/2) step, so a symmetric field never sits on a level);
+	   spread > 1 squeezes the levels towards 0 so weak far-field regions get lines too */
+	function evenLevels(lo, hi, n, spread) {
+		var R = Math.max(Math.abs(lo), Math.abs(hi)), out = [], k, t, p = spread || 1; if (!(R > 0) || n < 1) return out;
+		for (k = -n; k < n; k++) { t = (k + 0.5) / n; var v = R * (t < 0 ? -1 : 1) * Math.pow(Math.abs(t), p); if (v > lo && v < hi) out.push(v); }
+		return out;
+	}
+
 	var api = { K: K, EPS0: EPS0, MU0: MU0, C: C, QE: QE, ME: ME, MP: MP, AMU: AMU, fieldAt: fieldAt, potentialAt: potentialAt, forceOn: forceOn, traceLine: traceLine, fieldLines: fieldLines, contour: contour, contours: contours, gauss: gauss, stepFree: stepFree,
-		wireB: wireB, wireA: wireA, ampere: ampere, wireForce: wireForce, borisStep: borisStep, speedOf: speedOf, makeParticle: makeParticle, cyclotron: cyclotron, Yee: Yee, omegaFor: omegaFor };
+		wireB: wireB, wireA: wireA, ampere: ampere, wireForce: wireForce, borisStep: borisStep, speedOf: speedOf, makeParticle: makeParticle, cyclotron: cyclotron, Yee: Yee, omegaFor: omegaFor,
+		logInt: logInt, vecInt: vecInt, magInside: magInside, magPsi: magPsi, magH: magH, magB: magB, magA: magA, magBcurl: magBcurl, magMoment: magMoment, traceField: traceField, circleFlux: circleFlux, evenLevels: evenLevels };
 	if (typeof module !== "undefined" && module.exports) module.exports = api; else root.MESEM = api;
 })(typeof window !== "undefined" ? window : this);
 
@@ -189,8 +256,12 @@
    Maths: MESEM (node-tested: tool_apps_src/electromagnetic-fields-tests.js). State: localStorage mes-electromagnetic-fields:v1; links ?tab=... plus each tab's keys. */
 (function () {
 	"use strict";
-	var $ = function (id) { return document.getElementById(id); };
-	var root = $("em"); if (!root) return;
+	/* A page that carries only one panel (data-only, e.g. /magnetic-isopotentials = "mg") leaves the other tabs' elements out: a lookup of a missing id returns a
+	   detached stand-in (a canvas for the "-c" / "-sc" canvases, else a div; all inside one detached parent) so the rest of the script runs unchanged. */
+	var STAND = {}, STAND_P = document.createElement("div");
+	var $ = function (id) { var el = document.getElementById(id); if (el) return el; if (!STAND[id]) { STAND[id] = document.createElement(/-s?c$/.test(id) ? "canvas" : "div"); STAND_P.appendChild(STAND[id]); } return STAND[id]; };
+	var root = document.getElementById("em"); if (!root) return;
+	var ONLY = root.getAttribute("data-only") || "";
 	var M = window.MESEM, PI = Math.PI, TAU = 2 * PI, KEY = "mes-electromagnetic-fields:v1";
 	function sget() { try { return JSON.parse(localStorage.getItem(KEY) || "{}") || {}; } catch (e) { return {}; } }
 	function sset(o) { try { var c = sget(); for (var k in o) c[k] = o[k]; localStorage.setItem(KEY, JSON.stringify(c)); } catch (e) {} }
@@ -211,13 +282,14 @@
 	function ang(x, y) { return ((Math.atan2(y, x) * 180 / PI) + 360) % 360; }
 
 	/* ---------- tabs ---------- */
-	var TABS = ["es", "ms", "pt", "wv", "pw"], tab = TABS.indexOf(q.get("tab")) >= 0 ? q.get("tab") : (TABS.indexOf(saved.tab) >= 0 ? saved.tab : "es");
+	var TABS = ["es", "ms", "mg", "pt", "wv", "pw"], tab = TABS.indexOf(q.get("tab")) >= 0 ? q.get("tab") : (TABS.indexOf(saved.tab) >= 0 ? saved.tab : "es");
+	if (ONLY) tab = ONLY;
 	var showers = {};
 	function setTab(t, init) {
-		tab = t; sset({ tab: t });
+		tab = t; if (!ONLY) sset({ tab: t });
 		Array.prototype.forEach.call(root.querySelectorAll("[data-tab]"), function (b) { b.setAttribute("aria-selected", b.dataset.tab === t ? "true" : "false"); });
 		Array.prototype.forEach.call(root.querySelectorAll("[data-panel]"), function (p) { p.hidden = p.dataset.panel !== t; });
-		if (!init) try { var u = new URL(location.href); if (t === "es") u.searchParams.delete("tab"); else u.searchParams.set("tab", t); history.replaceState(null, "", u); } catch (e) {}
+		if (!init && !ONLY) try { var u = new URL(location.href); if (t === "es") u.searchParams.delete("tab"); else u.searchParams.set("tab", t); history.replaceState(null, "", u); } catch (e) {}
 		setTimeout(function () { if (showers[t]) showers[t](); }, 0);
 	}
 	Array.prototype.forEach.call(root.querySelectorAll("[data-tab]"), function (b) { b.onclick = function () { setTab(b.dataset.tab); }; });
@@ -457,6 +529,152 @@
 	chips($("em-ms-pre"), MS_PRE, msLoad);
 	chips($("em-es-pre"), ES_PRE, esLoad);
 
+	/* =================== MAGNETS (permanent bar magnets: flux lines = contours of A_z, isopotentials = contours of psi) =================== */
+	var MG = { m: [], tool: "move", sel: -1, VW: 0.2, wk: 0, flux: true, iso: true, arrows: false, needles: false, labels: true, nf: 16, ni: 14, col: "none", sp: 1, comps: [], drag: null, mouse: null, dirty: true, cache: {}, pre: 0, def: { Br: 1.2, L: 0.06, W: 0.02 }, fast: false };
+	var gv = mkView("mg", 1.6), mgHeat = document.createElement("canvas");
+	var MG_COL = { n: "#dc2626", s: "#16a34a", flux: "rgba(175,208,255,0.9)", iso: "rgba(255,196,84,0.8)" };
+	function gT(x, y) { var S = gv.fit() / MG.VW; return [gv.W / 2 + x * S, gv.H / 2 - y * S]; }
+	function gW(px, py) { var S = gv.fit() / MG.VW; return [(px - gv.W / 2) / S, -(py - gv.H / 2) / S]; }
+	function gBox() { var S = gv.fit() / MG.VW, hw = gv.W / 2 / S, hh = gv.H / 2 / S; return [-hw, -hh, hw, hh]; }
+	function deg(a) { var d = Math.round(a * 180 / PI) % 360; if (d > 180) d -= 360; if (d <= -180) d += 360; return d; }
+	function mgMag(x, y, d, L, W, Br) { return { x: x / 100, y: y / 100, a: d * PI / 180, L: L / 100, W: W / 100, Br: Br || 1.2 }; }
+	var MG_PRE = [
+		{ name: "Bar magnet", m: [[0, 0, 0, 6, 2]], VW: 20 },
+		{ name: "Two attracting", m: [[-4.6, 0, 0, 6, 2], [4.6, 0, 0, 6, 2]], VW: 28 },
+		{ name: "Two repelling", m: [[-4.6, 0, 0, 6, 2], [4.6, 0, 180, 6, 2]], VW: 28 },
+		{ name: "Stacked end to end", m: [[-3, 0, 0, 6, 2], [3, 0, 0, 6, 2]], VW: 28 },
+		{ name: "Side by side, opposite", m: [[0, 1.5, 0, 6, 2], [0, -1.5, 180, 6, 2]], VW: 22 },
+		{ name: "Horseshoe (3 pieces)", m: [[-3, 1, -90, 5, 1.6], [3, 1, 90, 5, 1.6], [0, -2.3, 0, 7.6, 1.6]], VW: 22 },
+		{ name: "Halbach row", m: [[-3.2, 0, 0, 1.6, 1.6], [-1.6, 0, 90, 1.6, 1.6], [0, 0, 180, 1.6, 1.6], [1.6, 0, 270, 1.6, 1.6], [3.2, 0, 0, 1.6, 1.6]], VW: 18, note: "a Halbach array: strong field on one side, almost none on the other" },
+		{ name: "Halbach ring", m: (function () { var a = []; for (var k = 0; k < 12; k++) { var p = k * 30; a.push([5 * Math.cos(p * PI / 180), 5 * Math.sin(p * PI / 180), 2 * p, 2, 2]); } return a; })(), VW: 22, note: "each piece turned twice as far as its place round the ring: a nearly uniform field inside, almost none outside" },
+		{ name: "Ring pointing out", m: (function () { var a = []; for (var k = 0; k < 8; k++) { var p = k * 45; a.push([5 * Math.cos(p * PI / 180), 5 * Math.sin(p * PI / 180), p, 2.4, 1.4]); } return a; })(), VW: 22 },
+		{ name: "Compass test", m: [[0, 0, 0, 6, 2]], VW: 22, comps: [[-7, 4], [0, 5], [7, 4], [8, 0], [0, -5]] }
+	];
+	function mgLoad(p) {
+		MG.pre = MG_PRE.indexOf(p); MG.m = p.m.map(function (a) { return mgMag(a[0], a[1], a[2], a[3], a[4], MG.def.Br); }); MG.VW = p.VW / 100; MG.sel = -1;
+		MG.comps = (p.comps || []).map(function (c) { return { x: c[0] / 100, y: c[1] / 100 }; }); MG.dirty = true; mgSync(); if (p.note) toast(p.name + ": " + p.note);
+	}
+	function mgEdit() { return MG.sel >= 0 && MG.m[MG.sel] ? [MG.m[MG.sel]] : MG.m; }
+	function mgSync() {
+		var s = MG.m[MG.sel], ref = s || MG.m[0] || MG.def;
+		$("em-mg-edit-h").textContent = s ? "Selected magnet" : (MG.m.length ? "All magnets (select one to change only it)" : "New magnets");
+		$("em-mg-br").value = ref.Br; $("em-mg-br-v").textContent = ref.Br.toFixed(2) + " T"; $("em-mg-len").value = (ref.L * 100).toFixed(1); $("em-mg-len-v").textContent = sig(ref.L * 100, 3) + " cm"; $("em-mg-wid").value = (ref.W * 100).toFixed(1); $("em-mg-wid-v").textContent = sig(ref.W * 100, 3) + " cm";
+		$("em-mg-ang-f").hidden = !s; $("em-mg-sel").hidden = !s; if (s) { $("em-mg-ang").value = deg(s.a); $("em-mg-ang-v").textContent = deg(s.a); }
+		MG.wk = Math.log10(MG.VW / 0.2); $("em-mg-w").value = MG.wk; $("em-mg-w-v").textContent = sig(MG.VW * 100, 3) + " cm";
+		$("em-mg-nf").value = MG.nf; $("em-mg-nf-v").textContent = MG.nf; $("em-mg-ni").value = MG.ni; $("em-mg-ni-v").textContent = MG.ni;
+	}
+	function grid(fn, box, nx, ny) { var F = new Float64Array((nx + 1) * (ny + 1)), dx = (box[2] - box[0]) / nx, dy = (box[3] - box[1]) / ny, i, j, lo = Infinity, hi = -Infinity, v; for (j = 0; j <= ny; j++) for (i = 0; i <= nx; i++) { v = fn(box[0] + i * dx, box[1] + j * dy); F[j * (nx + 1) + i] = v; if (v < lo) lo = v; if (v > hi) hi = v; } return { F: F, lo: lo, hi: hi }; }
+	function fromGrid(g) { var k = 0; return function () { return g.F[k++]; }; }   /* M.contours samples in the same order, so it can read the grid back instead of evaluating again */
+	function mgRecompute() {
+		var box = gBox(), W = gv.W, H = gv.H, C = MG.cache = {}, st = MG.fast ? 9 : 5, nx = Math.max(30, Math.min(260, Math.round(W / st))), ny = Math.max(20, Math.min(200, Math.round(H / st)));
+		C.flux = []; C.iso = [];
+		if (MG.m.length && MG.flux) { var ga = grid(function (x, y) { return M.magA(MG.m, x, y); }, box, nx, ny), la = M.evenLevels(ga.lo, ga.hi, Math.max(2, Math.round(MG.nf / 2)), MG.sp); C.flux = M.contours(fromGrid(ga), box, nx, ny, la); }
+		if (MG.m.length && MG.iso) { var gp = grid(function (x, y) { return M.magPsi(MG.m, x, y); }, box, nx, ny), lp = M.evenLevels(gp.lo, gp.hi, Math.max(2, Math.round(MG.ni / 2)), MG.sp); var cs = M.contours(fromGrid(gp), box, nx, ny, lp); C.iso = cs.map(function (s, i) { return { s: s, lv: lp[i] }; }); }
+		C.bref = 0; MG.m.forEach(function (m) { C.bref = Math.max(C.bref, m.Br); });
+		C.heat = null; if (MG.col !== "none" && MG.m.length) {
+			var hs = MG.fast ? 7 : 4, hw = Math.max(30, Math.round(W / hs)), hh = Math.max(20, Math.round(H / hs)), i, j; mgHeat.width = hw; mgHeat.height = hh; var hc = mgHeat.getContext("2d"), img = hc.createImageData(hw, hh), pref = 0;
+			if (MG.col === "psi") { MG.m.forEach(function (m) { pref = Math.max(pref, m.Br / M.MU0 * m.W * 0.3); }); }
+			for (j = 0; j < hh; j++) for (i = 0; i < hw; i++) {
+				var x = box[0] + (i + 0.5) / hw * (box[2] - box[0]), y = box[3] - (j + 0.5) / hh * (box[3] - box[1]), o = 4 * (j * hw + i), r, g, b;
+				if (MG.col === "psi") { var v = Math.tanh(M.magPsi(MG.m, x, y) / pref); if (v >= 0) { r = 230 * v; g = 50 * v; b = 50 * v; } else { r = 30 * -v; g = 190 * -v; b = 80 * -v; } }
+				else { var bb = M.magB(MG.m, x, y), u = Math.max(0, Math.min(1, (Math.log10(Math.hypot(bb[0], bb[1]) / C.bref + 1e-12) + 3) / 3)); r = 120 * Math.pow(u, 1.2) + 10; g = 70 * Math.pow(u, 2) + 15 * u; b = 255 * Math.pow(u, 0.7) * 0.85 + 25; }
+				img.data[o] = r; img.data[o + 1] = g; img.data[o + 2] = b; img.data[o + 3] = 210;
+			}
+			hc.putImageData(img, 0, 0); C.heat = true;
+		}
+		MG.dirty = false;
+	}
+	function magCorners(m) { var c = Math.cos(m.a), s = Math.sin(m.a), hl = m.L / 2, hw = m.W / 2; return [[-hl, -hw], [hl, -hw], [hl, hw], [-hl, hw]].map(function (p) { return gT(m.x + p[0] * c - p[1] * s, m.y + p[0] * s + p[1] * c); }); }
+	function handlePos(m) { var c = Math.cos(m.a), s = Math.sin(m.a), e = gT(m.x + m.L / 2 * c, m.y + m.L / 2 * s); return { e: e, h: [e[0] + c * (coarse ? 30 : 24), e[1] - s * (coarse ? 30 : 24)] }; }
+	function needle(cx, x, y, b, half, w) { var m = Math.hypot(b[0], b[1]); if (!(m > 0)) return; var ux = b[0] / m, uy = -b[1] / m; cx.lineWidth = w; cx.strokeStyle = "#ef4444"; cx.beginPath(); cx.moveTo(x, y); cx.lineTo(x + ux * half, y + uy * half); cx.stroke(); cx.strokeStyle = "#d1d5db"; cx.beginPath(); cx.moveTo(x, y); cx.lineTo(x - ux * half, y - uy * half); cx.stroke(); }
+	function mgDraw() {
+		if (tab !== "mg") return; if (MG.dirty) mgRecompute(); gv.begin(); var cx = gv.cx, W = gv.W, H = gv.H, C = MG.cache, S = gv.fit() / MG.VW;
+		cx.fillStyle = "#05070d"; cx.fillRect(0, 0, W, H);
+		if (C.heat) { cx.imageSmoothingEnabled = true; cx.drawImage(mgHeat, 0, 0, W, H); }
+		if (MG.iso) C.iso.forEach(function (o) { if (o.s.length) segs(cx, o.s, gT, MG_COL.iso, 1.15); });
+		if (MG.flux) {
+			C.flux.forEach(function (s) { if (s.length) segs(cx, s, gT, MG_COL.flux, 1.35); });
+			/* direction arrows spread evenly: at most one per ~56 px cell, placed where a flux line crosses it */
+			var used = {}, cell = coarse ? 70 : 56; C.flux.forEach(function (s) { for (var i = 0; i < s.length; i += 4) { var a = gT(s[i], s[i + 1]), b = gT(s[i + 2], s[i + 3]), mx = (a[0] + b[0]) / 2, my = (a[1] + b[1]) / 2, key = Math.floor(mx / cell) + "," + Math.floor(my / cell); if (used[key] || mx < 8 || my < 8 || mx > W - 8 || my > H - 8) continue; if ((Math.floor(mx / cell) + Math.floor(my / cell)) % 2) continue;
+				var w = gW(mx, my), B = M.magB(MG.m, w[0], w[1]), bm = Math.hypot(B[0], B[1]); if (!(bm > 0)) continue; used[key] = 1; arrow(cx, mx - B[0] / bm * 5, my + B[1] / bm * 5, mx + B[0] / bm * 5, my - B[1] / bm * 5, "rgba(205,225,255,0.95)", 0.1, 7); } });
+		}
+		if (MG.arrows && MG.m.length) { var gp = coarse ? 40 : 32, i, j; for (j = gp / 2; j < H; j += gp) for (i = gp / 2; i < W; i += gp) { var w2 = gW(i, j), b2 = M.magB(MG.m, w2[0], w2[1]), m2 = Math.hypot(b2[0], b2[1]); if (!(m2 > 0)) continue; var u = Math.max(0.15, Math.min(1, (Math.log10(m2 / C.bref + 1e-12) + 3) / 3)), L = gp * 0.42 * u; arrow(cx, i - b2[0] / m2 * L * 0.5, j + b2[1] / m2 * L * 0.5, i + b2[0] / m2 * L * 0.5, j - b2[1] / m2 * L * 0.5, "rgba(255,170,200," + (0.35 + 0.6 * u) + ")", 1.3, 5); } }
+		if (MG.needles && MG.m.length) { var np = coarse ? 42 : 34, a, b3; for (b3 = np / 2; b3 < H; b3 += np) for (a = np / 2; a < W; a += np) { var w3 = gW(a, b3); if (MG.m.some(function (m) { return M.magInside(m, w3[0], w3[1]); })) continue; needle(cx, a, b3, M.magB(MG.m, w3[0], w3[1]), np * 0.36, 2.2); cx.fillStyle = "#9ca3af"; cx.beginPath(); cx.arc(a, b3, 1.6, 0, 7); cx.fill(); } }
+		/* magnets: S half green, N half red */
+		MG.m.forEach(function (m, k) {
+			var p = magCorners(m), mid = [(p[0][0] + p[1][0]) / 2, (p[0][1] + p[1][1]) / 2], mid2 = [(p[3][0] + p[2][0]) / 2, (p[3][1] + p[2][1]) / 2];
+			cx.fillStyle = MG_COL.s; cx.beginPath(); cx.moveTo(p[0][0], p[0][1]); cx.lineTo(mid[0], mid[1]); cx.lineTo(mid2[0], mid2[1]); cx.lineTo(p[3][0], p[3][1]); cx.closePath(); cx.fill();
+			cx.fillStyle = MG_COL.n; cx.beginPath(); cx.moveTo(mid[0], mid[1]); cx.lineTo(p[1][0], p[1][1]); cx.lineTo(p[2][0], p[2][1]); cx.lineTo(mid2[0], mid2[1]); cx.closePath(); cx.fill();
+			cx.strokeStyle = k === MG.sel ? "#fff" : "rgba(255,255,255,0.45)"; cx.lineWidth = k === MG.sel ? 2.5 : 1; cx.beginPath(); p.forEach(function (q, i) { if (i) cx.lineTo(q[0], q[1]); else cx.moveTo(q[0], q[1]); }); cx.closePath(); cx.stroke();
+			if (MG.labels) { var fs = Math.max(10, Math.min(20, Math.min(m.L, m.W * 2) * S * 0.32)); cx.font = "bold " + Math.round(fs) + "px sans-serif"; cx.textAlign = "center"; cx.textBaseline = "middle"; cx.fillStyle = "#fff"; var c = Math.cos(m.a), s = Math.sin(m.a), pn = gT(m.x + m.L / 4 * c, m.y + m.L / 4 * s), ps = gT(m.x - m.L / 4 * c, m.y - m.L / 4 * s); if (m.L * S > 2.2 * fs) { cx.fillText("N", pn[0], pn[1] + 1); cx.fillText("S", ps[0], ps[1] + 1); } }
+			if (k === MG.sel) { var hp = handlePos(m); cx.strokeStyle = "#fde047"; cx.lineWidth = 2; cx.beginPath(); cx.moveTo(hp.e[0], hp.e[1]); cx.lineTo(hp.h[0], hp.h[1]); cx.stroke(); cx.fillStyle = "#fde047"; cx.beginPath(); cx.arc(hp.h[0], hp.h[1], coarse ? 10 : 7, 0, 7); cx.fill(); cx.fillStyle = "#1f2937"; cx.font = "bold 11px sans-serif"; cx.fillText("↻", hp.h[0], hp.h[1] + 1); }
+		});
+		cx.textAlign = "start"; cx.textBaseline = "alphabetic";
+		/* compasses */
+		MG.comps.forEach(function (c) { var p = gT(c.x, c.y), r = coarse ? 22 : 18; cx.fillStyle = "rgba(15,23,42,0.85)"; cx.strokeStyle = "#e5e7eb"; cx.lineWidth = 2; cx.beginPath(); cx.arc(p[0], p[1], r, 0, 7); cx.fill(); cx.stroke(); needle(cx, p[0], p[1], M.magB(MG.m, c.x, c.y), r * 0.8, 3.5); cx.fillStyle = "#e5e7eb"; cx.beginPath(); cx.arc(p[0], p[1], 2.5, 0, 7); cx.fill(); });
+		if (MG.mouse && !MG.drag && MG.m.length) { var mw = gW(MG.mouse[0], MG.mouse[1]), bb = M.magB(MG.m, mw[0], mw[1]), bm2 = Math.hypot(bb[0], bb[1]); cx.strokeStyle = "rgba(255,255,255,0.7)"; cx.lineWidth = 1; cx.beginPath(); cx.arc(MG.mouse[0], MG.mouse[1], 4, 0, 7); cx.stroke(); if (bm2 > 0) arrow(cx, MG.mouse[0], MG.mouse[1], MG.mouse[0] + bb[0] / bm2 * 34, MG.mouse[1] - bb[1] / bm2 * 34, "#fff", 2, 7); }
+		var sb = Math.pow(10, Math.floor(Math.log10(MG.VW / 3))), sp = sb * S; cx.strokeStyle = "rgba(255,255,255,0.8)"; cx.lineWidth = 2; cx.beginPath(); cx.moveTo(12, H - 14); cx.lineTo(12 + sp, H - 14); cx.stroke(); cx.fillStyle = "rgba(255,255,255,0.85)"; cx.font = "12px sans-serif"; cx.fillText(si(sb, "m", 2), 12, H - 20);
+		$("em-mg-badge").textContent = MG.drag ? "" : (MG.m.length ? { move: "Drag a magnet to move it · drag the yellow handle or scroll over it to turn it", add: "Click to add a magnet", compass: "Click to put down a compass · drag it around" }[MG.tool] : "Click with “Add a magnet”, or pick an example below");
+		$("em-mg-legend").hidden = !(MG.flux || MG.iso); var lg = $("em-mg-legend").children; if (lg.length) { lg[0].hidden = !MG.flux; lg[1].hidden = !MG.iso; }
+	}
+	function mgReadouts() {
+		var m = MG.mouse; if (m && MG.m.length) { var w = gW(m[0], m[1]), b = M.magB(MG.m, w[0], w[1]), h = M.magH(MG.m, w[0], w[1]), ps = M.magPsi(MG.m, w[0], w[1]), inside = MG.m.some(function (q) { return M.magInside(q, w[0], w[1]); });
+			$("em-mg-p").textContent = sig(w[0] * 100, 3) + ", " + sig(w[1] * 100, 3); $("em-mg-ps").textContent = inside ? "inside a magnet" : "position in centimetres";
+			$("em-mg-b").textContent = si(Math.hypot(b[0], b[1]), "T", 3); $("em-mg-bs").textContent = "pointing " + ang(b[0], b[1]).toFixed(0) + "°" + (inside ? "; H inside points " + ang(h[0], h[1]).toFixed(0) + "° (B = μ₀(H + M))" : " (B = μ₀H out here)");
+			$("em-mg-v").textContent = si(ps, "A", 3); $("em-mg-vs").textContent = "H = " + si(Math.hypot(h[0], h[1]), "A/m", 3) + " = −∇ψ; ψ is 0 far away"; }
+		else { $("em-mg-p").textContent = "–"; $("em-mg-b").textContent = "–"; $("em-mg-v").textContent = "–"; $("em-mg-bs").textContent = "move the pointer over the picture"; $("em-mg-vs").textContent = ""; $("em-mg-ps").textContent = "position in centimetres"; }
+		var s = MG.m[MG.sel]; if (s) { $("em-mg-s").textContent = s.Br.toFixed(2) + " T · N at " + deg(s.a) + "°"; $("em-mg-ss").textContent = sig(s.L * 100, 3) + " × " + sig(s.W * 100, 3) + " cm; dipole moment " + si(M.magMoment(s), "A·m", 3) + " per metre of depth"; }
+		else { $("em-mg-s").textContent = MG.m.length ? MG.m.length + (MG.m.length === 1 ? " magnet" : " magnets") : "–"; $("em-mg-ss").textContent = "click a magnet to select it"; }
+	}
+	function mgHit(p) { var w = gW(p[0], p[1]), tol = (coarse ? 10 : 4) / (gv.fit() / MG.VW), best = -1, i; for (i = MG.m.length - 1; i >= 0; i--) { var m = MG.m[i], c = Math.cos(m.a), s = Math.sin(m.a), dx = w[0] - m.x, dy = w[1] - m.y; if (Math.abs(dx * c + dy * s) < m.L / 2 + tol && Math.abs(-dx * s + dy * c) < m.W / 2 + tol) { best = i; break; } } return best; }
+	function mgCompHit(p) { var r = coarse ? 24 : 19, k; for (k = MG.comps.length - 1; k >= 0; k--) { var q = gT(MG.comps[k].x, MG.comps[k].y); if (Math.hypot(q[0] - p[0], q[1] - p[1]) < r) return k; } return -1; }
+	function mgTurn(m, a, snap) { m.a = snap ? Math.round(a / (5 * PI / 180)) * (5 * PI / 180) : a; MG.dirty = true; }
+	gv.cv.addEventListener("pointerdown", function (e) {
+		gv.cv.setPointerCapture(e.pointerId); var p = gv.pos(e); MG.mouse = p; var s = MG.m[MG.sel];
+		if (s) { var hp = handlePos(s); if (Math.hypot(hp.h[0] - p[0], hp.h[1] - p[1]) < (coarse ? 20 : 12)) { MG.drag = { k: "rot", i: MG.sel }; MG.fast = true; gv.st.classList.add("is-grab"); return; } }
+		var c = mgCompHit(p); if (c >= 0) { MG.drag = { k: "comp", i: c }; gv.st.classList.add("is-grab"); return; }
+		var i = mgHit(p), w = gW(p[0], p[1]);
+		if (i >= 0) { MG.sel = i; MG.drag = { k: "mag", i: i, dx: MG.m[i].x - w[0], dy: MG.m[i].y - w[1] }; MG.fast = true; gv.st.classList.add("is-grab"); mgSync(); return; }
+		if (MG.tool === "add") { if (MG.m.length >= 24) { toast("That is plenty of magnets (24)"); return; } var d = MG.def; MG.m.push({ x: w[0], y: w[1], a: 0, L: d.L, W: d.W, Br: d.Br }); MG.sel = MG.m.length - 1; MG.pre = -1; MG.dirty = true; }
+		else if (MG.tool === "compass") { if (MG.comps.length >= 8) MG.comps.shift(); MG.comps.push({ x: w[0], y: w[1] }); }
+		else MG.sel = -1;
+		mgSync();
+	});
+	gv.cv.addEventListener("pointermove", function (e) {
+		var p = gv.pos(e); MG.mouse = p; if (!MG.drag) return; var w = gW(p[0], p[1]), d = MG.drag;
+		if (d.k === "mag") { var m = MG.m[d.i]; if (m) { m.x = w[0] + d.dx; m.y = w[1] + d.dy; MG.dirty = true; } }
+		else if (d.k === "rot") { var r = MG.m[d.i]; if (r) { mgTurn(r, Math.atan2(w[1] - r.y, w[0] - r.x), !e.shiftKey); mgSync(); } }
+		else if (d.k === "comp") { var c = MG.comps[d.i]; if (c) { c.x = w[0]; c.y = w[1]; } }
+	});
+	function mgUp() { if (MG.drag && MG.drag.k !== "comp") MG.dirty = true; MG.drag = null; MG.fast = false; gv.st.classList.remove("is-grab"); }
+	gv.cv.addEventListener("pointerup", mgUp); gv.cv.addEventListener("pointercancel", mgUp); gv.cv.addEventListener("pointerleave", function () { if (!MG.drag) MG.mouse = null; });
+	gv.cv.addEventListener("wheel", function (e) { var i = mgHit(gv.pos(e)); if (i < 0) return; e.preventDefault(); MG.sel = i; var m = MG.m[i]; mgTurn(m, m.a + (e.deltaY < 0 ? 1 : -1) * (e.shiftKey ? 1 : 15) * PI / 180, !e.shiftKey); mgSync(); }, { passive: false });
+	function mgDel() { if (MG.sel >= 0) { MG.m.splice(MG.sel, 1); MG.sel = -1; MG.pre = -1; MG.dirty = true; mgSync(); } }
+	document.addEventListener("keydown", function (e) {
+		if (e.ctrlKey || e.metaKey || e.altKey || tab !== "mg" || MG.sel < 0) return; var t = e.target, tg = t && t.tagName; if (tg === "INPUT" || tg === "TEXTAREA" || tg === "SELECT" || (t && t.isContentEditable)) return;
+		if (!gv.cv.offsetParent) return;
+		if (e.key === "Delete" || e.key === "Backspace") { e.preventDefault(); mgDel(); } else if (e.key === "r" || e.key === "R") { e.preventDefault(); var m = MG.m[MG.sel]; mgTurn(m, m.a + (e.shiftKey ? -1 : 1) * 15 * PI / 180, true); mgSync(); }
+	});
+	wireTools("em-mg-tools", function (t) { MG.tool = t; });
+	function mgSet(k, v) { mgEdit().forEach(function (m) { m[k] = v; }); if (MG.sel < 0) MG.def[k] = v; MG.dirty = true; mgSync(); }
+	$("em-mg-br").oninput = function () { mgSet("Br", +this.value); };
+	$("em-mg-len").oninput = function () { mgSet("L", +this.value / 100); };
+	$("em-mg-wid").oninput = function () { mgSet("W", +this.value / 100); };
+	$("em-mg-ang").oninput = function () { var m = MG.m[MG.sel]; if (m) { mgTurn(m, +this.value * PI / 180, false); $("em-mg-ang-v").textContent = this.value; } };
+	$("em-mg-rl").onclick = function () { var m = MG.m[MG.sel]; if (m) { mgTurn(m, m.a + 15 * PI / 180, true); mgSync(); } };
+	$("em-mg-rr").onclick = function () { var m = MG.m[MG.sel]; if (m) { mgTurn(m, m.a - 15 * PI / 180, true); mgSync(); } };
+	$("em-mg-flip").onclick = function () { var m = MG.m[MG.sel]; if (m) { mgTurn(m, m.a + PI, false); mgSync(); } };
+	$("em-mg-del").onclick = mgDel; $("em-mg-clear").onclick = function () { MG.m = []; MG.sel = -1; MG.pre = -1; MG.dirty = true; mgSync(); }; $("em-mg-cclear").onclick = function () { MG.comps = []; };
+	$("em-mg-reset").onclick = function () { mgLoad(MG_PRE[MG.pre >= 0 ? MG.pre : 0]); };
+	$("em-mg-w").oninput = function () { MG.VW = 0.2 * Math.pow(10, +this.value); $("em-mg-w-v").textContent = sig(MG.VW * 100, 3) + " cm"; MG.dirty = true; };
+	$("em-mg-nf").oninput = function () { MG.nf = +this.value; $("em-mg-nf-v").textContent = this.value; MG.dirty = true; sset({ mg_nf: MG.nf }); };
+	$("em-mg-ni").oninput = function () { MG.ni = +this.value; $("em-mg-ni-v").textContent = this.value; MG.dirty = true; sset({ mg_ni: MG.ni }); };
+	[["em-mg-flux", "flux"], ["em-mg-iso", "iso"], ["em-mg-arrows", "arrows"], ["em-mg-needles", "needles"], ["em-mg-labels", "labels"]].forEach(function (p) { $(p[0]).onchange = function () { MG[p[1]] = this.checked; MG.dirty = true; var o = {}; o["mg_" + p[1]] = this.checked; sset(o); }; });
+	$("em-mg-col").onchange = function () { MG.col = this.value; MG.dirty = true; sset({ mg_col: MG.col }); };
+	$("em-mg-sp").onchange = function () { MG.sp = +this.value; MG.dirty = true; sset({ mg_sp: MG.sp }); };
+	wirePng("em-mg-png", gv, mgDraw); wireFull("em-mg-full", gv);
+	$("em-mg-link").onclick = function () { copyLink({ g: MG.m.map(function (m) { return [+(m.x * 100).toFixed(2), +(m.y * 100).toFixed(2), deg(m.a), +(m.L * 100).toFixed(2), +(m.W * 100).toFixed(2), +m.Br.toFixed(2)].join(","); }).join(";"), gw: (MG.VW * 100).toFixed(2) }); };
+	chips($("em-mg-pre"), MG_PRE, mgLoad);
 	/* =================== CHARGED PARTICLE =================== */
 	var SPEC = { proton: { n: "proton", q: M.QE, m: M.MP, c: "#ef4444" }, electron: { n: "electron", q: -M.QE, m: M.ME, c: "#60a5fa" }, alpha: { n: "alpha particle", q: 2 * M.QE, m: 4.001506179 * M.AMU * 1 - 2 * M.ME, c: "#fbbf24" }, muon: { n: "muon", q: -M.QE, m: 1.883531627e-28, c: "#a78bfa" }, c12: { n: "C-12 ion", q: M.QE, m: 12 * M.AMU - M.ME, c: "#34d399" }, c13: { n: "C-13 ion", q: M.QE, m: 13.00335484 * M.AMU - M.ME, c: "#fbbf24" }, c14: { n: "C-14 ion", q: M.QE, m: 14.003241989 * M.AMU - M.ME, c: "#f472b6" } };
 	var PT = { sp: "proton", Bk: 0, E: 0, vk: 6, a: 0, spd: -0.3, rel: "auto", follow: false, fields: true, play: true, parts: [], t: 0, view: { VW: 0.1, cx: 0, cy: 0 }, extra: [], note: "", dtLast: 0 };
@@ -697,13 +915,14 @@
 	function pwUp() { PW.drag = null; } pwv.cv.addEventListener("pointerup", pwUp); pwv.cv.addEventListener("pointercancel", pwUp);
 
 	/* =================== loop and start =================== */
-	var last = 0, tick = 0, views = { es: ev, ms: mv, pt: pv, wv: wvv, pw: pwv };
-	function resizeAll() { var v = views[tab]; if (v) { v.resize(); if (tab === "es" || tab === "ms") { if (tab === "es") ES.dirty = true; else MS.dirty = true; } } }
-	showers = { es: function () { resizeAll(); ES.dirty = true; }, ms: function () { resizeAll(); MS.dirty = true; }, pt: function () { resizeAll(); }, wv: function () { resizeAll(); }, pw: function () { resizeAll(); } };
+	var last = 0, tick = 0, views = { es: ev, ms: mv, mg: gv, pt: pv, wv: wvv, pw: pwv };
+	function resizeAll() { var v = views[tab]; if (v) { v.resize(); if (tab === "es") ES.dirty = true; else if (tab === "ms") MS.dirty = true; else if (tab === "mg") MG.dirty = true; } }
+	showers = { es: function () { resizeAll(); ES.dirty = true; }, ms: function () { resizeAll(); MS.dirty = true; }, mg: function () { resizeAll(); MG.dirty = true; }, pt: function () { resizeAll(); }, wv: function () { resizeAll(); }, pw: function () { resizeAll(); } };
 	function frame(now) {
 		requestAnimationFrame(frame); var dt = Math.min(0.05, (now - last) / 1000 || 0); last = now; if (document.hidden) return; tick++;
 		if (tab === "es") { if (ES.play && ES.tests.length) esStepTests(dt); esDraw(); if (tick % 4 === 0) esReadouts(); }
 		else if (tab === "ms") { msDraw(); if (tick % 4 === 0) msReadouts(); }
+		else if (tab === "mg") { mgDraw(); if (tick % 4 === 0) mgReadouts(); }
 		else if (tab === "pt") { if (PT.play) ptStep(dt); ptDraw(); if (tick % 6 === 0) ptReadouts(); }
 		else if (tab === "wv") { wvStep(); wvDraw(); if (tick % 6 === 0) wvReadouts(); }
 		else if (tab === "pw") { if (PW.play) PW.phase += dt * 1.6; pwDraw(); if (tick % 8 === 0) pwReadouts(); }
@@ -716,8 +935,11 @@
 	var qw = q.get("w") && tab === "ms" ? q.get("w") : null; if (qw) { try { MS.w = qw.split(";").slice(0, 40).map(function (s) { var a = s.split(",").map(Number); if (a.length !== 3 || a.some(function (v) { return !isFinite(v); })) throw 0; return { x: a[0] / 100, y: a[1] / 100, I: a[2] }; }); MS.VW = num(q.get("vw"), 0.01, 1e5, 40) / 100; } catch (e) { MS.w = []; } } else msLoad(MS_PRE[1]);
 	$("em-es-lines").checked = ES.lines; $("em-es-arrows").checked = ES.arrows; $("em-es-eq").checked = ES.eq; $("em-es-gauss").checked = ES.gauss; $("em-es-col").value = ES.col; $("em-es-mode").value = ES.mode;
 	if (q.get("sp") && SPEC[q.get("sp")]) { PT.sp = q.get("sp"); PT.Bk = num(q.get("B"), -4, 1, 0); PT.E = num(q.get("E"), -1, 1, 0); PT.vk = num(q.get("v"), 3, 8.46, 6); PT.a = num(q.get("a"), -180, 180, 0); if (/^(auto|no|yes)$/.test(q.get("rel") || "")) PT.rel = q.get("rel"); } else { PT.vk = 6; PT.E = 0; }
-	syncEs(); syncMs(); ptSync(); ptLaunch(); $("em-pt-note").textContent = PT_PRE[0].note; $("em-wv-l").value = WV.lam; $("em-wv-l-v").textContent = WV.lam; $("em-wv-e").value = WV.n; $("em-wv-e-v").textContent = WV.n.toFixed(2); $("em-wv-b").value = WV.brush; $("em-wv-b-v").textContent = WV.brush; $("em-wv-s").value = WV.speed; $("em-wv-s-v").textContent = WV.speed; $("em-wv-scale").value = String(WV.scale);
+	MG.nf = Math.round(num(saved.mg_nf, 4, 40, 16)); MG.ni = Math.round(num(saved.mg_ni, 4, 40, 14)); ["flux", "iso", "arrows", "needles", "labels"].forEach(function (k) { if (typeof saved["mg_" + k] === "boolean") MG[k] = saved["mg_" + k]; }); if (/^(none|b|psi)$/.test(saved.mg_col || "")) MG.col = saved.mg_col; if (saved.mg_sp === 1 || saved.mg_sp === 2) MG.sp = saved.mg_sp;
+	var qg = q.get("g"); if (qg !== null && tab === "mg") { try { MG.m = qg ? qg.split(";").slice(0, 24).map(function (s) { var a = s.split(",").map(Number); if (a.length !== 6 || a.some(function (v) { return !isFinite(v); })) throw 0; return mgMag(a[0], a[1], a[2], Math.max(0.1, Math.min(50, a[3])), Math.max(0.1, Math.min(50, a[4])), Math.max(0.01, Math.min(2, a[5]))); }) : []; MG.VW = num(q.get("gw"), 1, 500, 20) / 100; MG.pre = -1; } catch (e) { mgLoad(MG_PRE[0]); } } else mgLoad(MG_PRE[0]);
+	$("em-mg-flux").checked = MG.flux; $("em-mg-iso").checked = MG.iso; $("em-mg-arrows").checked = MG.arrows; $("em-mg-needles").checked = MG.needles; $("em-mg-labels").checked = MG.labels; $("em-mg-col").value = MG.col; $("em-mg-sp").value = String(MG.sp);
+	syncEs(); syncMs(); mgSync(); ptSync(); ptLaunch(); $("em-pt-note").textContent = PT_PRE[0].note; $("em-wv-l").value = WV.lam; $("em-wv-l-v").textContent = WV.lam; $("em-wv-e").value = WV.n; $("em-wv-e-v").textContent = WV.n.toFixed(2); $("em-wv-b").value = WV.brush; $("em-wv-b-v").textContent = WV.brush; $("em-wv-s").value = WV.speed; $("em-wv-s-v").textContent = WV.speed; $("em-wv-scale").value = String(WV.scale);
 	wvLoad(WV_PRE[0]); pwSync(); pwReadouts();
 	setTab(tab, true); requestAnimationFrame(function (t) { last = t; requestAnimationFrame(frame); });
-	window.__em = { ES: ES, MS: MS, PT: PT, WV: WV, Y: Y, PW: PW };
+	window.__em = { ES: ES, MS: MS, MG: MG, PT: PT, WV: WV, Y: Y, PW: PW, frame: function () { frame(performance.now()); } };
 })();

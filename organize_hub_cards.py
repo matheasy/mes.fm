@@ -40,7 +40,7 @@ PAGES = {
         ("games", "Games &amp; Chance", ["poker", "backgammon", "random-number-generator", "dice-roller"]),
         ("photos", "Photos &amp; Images", ["photo", "compress", "compress-video", "pdf", "pdf-tools", "merge-pdf", "image-converter", "exif-viewer"]),
         ("sky", "Sky &amp; Space", ["moon", "solar-system-today", "zodiac"]),
-        ("sim", "Simulations", ["neural-network-playground", "letter-recognition", "llm-simulator", "redshift-simulator", "grounding-rod-simulator", "fluid-simulator", "light-in-a-medium", "black-hole-simulator", "mandelbrot", "julia-set-explorer", "buddhabrot", "time-dilation", "metric-tensor", "orbit-simulator", "double-pendulum", "electromagnetic-fields-simulator", "3d-fluid-simulator", "photoelectric-effect-simulator", "atomic-clock-simulator", "fountain-clock", "michelson-morley-experiment", "faster-than-light-shadow-simulator"]),
+        ("sim", "Simulations", ["neural-network-playground", "letter-recognition", "llm-simulator", "redshift-simulator", "grounding-rod-simulator", "fluid-simulator", "light-in-a-medium", "black-hole-simulator", "mandelbrot", "julia-set-explorer", "buddhabrot", "time-dilation", "metric-tensor", "orbit-simulator", "double-pendulum", "electromagnetic-fields-simulator", "magnetic-isopotentials", "3d-fluid-simulator", "photoelectric-effect-simulator", "atomic-clock-simulator", "fountain-clock", "michelson-morley-experiment", "faster-than-light-shadow-simulator"]),
     ]),
 }
 TD = re.compile(r'[ \t]*<td class="calc-container[^"]*"><a class="calc-link" href="([^"]*)">.*?</td>\n?', re.S)
