@@ -1,0 +1,67 @@
+		<!-- ===== permanent magnets (also the whole of mes.fm/magnetic-isopotentials, data-only="mg") ===== -->
+		<section data-panel="mg" role="tabpanel" hidden>
+			<p class="tu-note em-lead">Bar magnets and the two families of lines around them. <b class="em-k-flux">Flux lines</b> (the usual “magnetic field lines”) show which way <b>B</b> points; they leave the <b class="em-k-n">N</b> end, curve round and go back in at the <b class="em-k-s">S</b> end, and carry on <i>inside</i> the magnet from S to N, so every line is a closed loop. <b class="em-k-iso">Isopotentials</b> are lines of equal magnetic scalar potential ψ, like the contour lines on a map; outside the magnet they cross the flux lines at right angles. Drag a magnet to move it, grab its round handle (or use the mouse wheel over it) to turn it.</p>
+			<div class="em-toolrow" id="em-mg-tools" role="group" aria-label="Tool">
+				<button type="button" data-t="move" aria-pressed="true">✋ Move / turn</button><button type="button" data-t="add" aria-pressed="false">＋ Add a magnet</button><button type="button" data-t="compass" aria-pressed="false">🧭 Add a compass</button>
+			</div>
+			<div class="em-wrap"><div class="em-stage" id="em-mg-stage">
+				<canvas id="em-mg-c" tabindex="0" role="img" aria-label="Flux lines and isopotential lines of the bar magnets. Drag a magnet to move it, drag its handle to turn it."></canvas>
+				<div class="em-badge" id="em-mg-badge"></div>
+				<div class="em-run"><button type="button" id="em-mg-reset" title="Back to the example you started from">↺ Reset</button><button type="button" id="em-mg-png" title="Save as a picture" aria-label="Save as PNG">📷</button><button type="button" id="em-mg-full" title="Full screen" aria-label="Full screen">⛶</button></div>
+				<div class="em-legend" id="em-mg-legend" aria-hidden="true"><span class="em-lg-flux">— flux line (B)</span><span class="em-lg-iso">— isopotential (ψ)</span></div>
+			</div>
+			<div class="em-readouts">
+				<div class="em-ro"><span>Pointer</span><b id="em-mg-p">–</b><small id="em-mg-ps">position in centimetres</small></div>
+				<div class="em-ro"><span>Magnetic field B there</span><b id="em-mg-b">–</b><small id="em-mg-bs"></small></div>
+				<div class="em-ro"><span>Scalar potential ψ there</span><b id="em-mg-v">–</b><small id="em-mg-vs"></small></div>
+				<div class="em-ro"><span>Selected magnet</span><b id="em-mg-s">–</b><small id="em-mg-ss"></small></div>
+			</div></div>
+			<div class="tu-card em-controls">
+				<div class="em-chips" id="em-mg-pre" role="group" aria-label="Examples"></div>
+				<div class="em-checks">
+					<label class="em-check"><input type="checkbox" id="em-mg-flux" checked> <span class="em-k-flux">Flux lines (B)</span></label>
+					<label class="em-check"><input type="checkbox" id="em-mg-iso" checked> <span class="em-k-iso">Isopotentials (ψ)</span></label>
+					<label class="em-check"><input type="checkbox" id="em-mg-arrows"> Field arrows</label>
+					<label class="em-check"><input type="checkbox" id="em-mg-needles"> Grid of compass needles</label>
+					<label class="em-check"><input type="checkbox" id="em-mg-labels" checked> N / S labels</label>
+				</div>
+				<div class="em-grid">
+					<div class="tu-field"><span class="tu-label" id="em-mg-nf-l">Flux lines: <b id="em-mg-nf-v"></b></span><input type="range" id="em-mg-nf" min="4" max="40" step="1" aria-labelledby="em-mg-nf-l"><span class="tu-note">Each gap between two lines carries the same magnetic flux, so where the lines bunch up the field is strong.</span></div>
+					<div class="tu-field"><span class="tu-label" id="em-mg-ni-l">Isopotentials: <b id="em-mg-ni-v"></b></span><input type="range" id="em-mg-ni" min="4" max="40" step="1" aria-labelledby="em-mg-ni-l"><span class="tu-note">Equal steps of ψ between neighbouring lines.</span></div>
+					<div class="tu-field"><span class="tu-label" id="em-mg-w-l">Picture width: <b id="em-mg-w-v"></b></span><input type="range" id="em-mg-w" min="-0.7" max="0.7" step="0.02" aria-labelledby="em-mg-w-l"></div>
+				</div>
+				<div class="em-grid em-grid--small">
+					<div class="tu-field tu-field--sm"><span class="tu-label">Colour the plane by</span><select id="em-mg-col" class="tu-select" aria-label="Colour map"><option value="none">Nothing</option><option value="b">Field strength |B|</option><option value="psi">Scalar potential ψ</option></select></div>
+					<div class="tu-field tu-field--sm"><span class="tu-label">Line spacing</span><select id="em-mg-sp" class="tu-select" aria-label="Line spacing"><option value="1">Equal steps (true density)</option><option value="2">Spread out (more lines far away)</option></select></div>
+				</div>
+				<h3 class="em-h em-mg-h" id="em-mg-edit-h">All magnets</h3>
+				<div class="em-grid">
+					<div class="tu-field"><span class="tu-label" id="em-mg-br-l">Strength (remanence B<sub>r</sub>): <b id="em-mg-br-v"></b></span><input type="range" id="em-mg-br" min="0.05" max="1.45" step="0.01" aria-labelledby="em-mg-br-l"><span class="tu-note">Fridge magnet ≈ 0.2 T, ferrite ≈ 0.4 T, neodymium ≈ 1.2–1.4 T.</span></div>
+					<div class="tu-field"><span class="tu-label" id="em-mg-len-l">Length: <b id="em-mg-len-v"></b></span><input type="range" id="em-mg-len" min="0.3" max="15" step="0.1" aria-labelledby="em-mg-len-l"></div>
+					<div class="tu-field"><span class="tu-label" id="em-mg-wid-l">Width: <b id="em-mg-wid-v"></b></span><input type="range" id="em-mg-wid" min="0.3" max="8" step="0.1" aria-labelledby="em-mg-wid-l"></div>
+					<div class="tu-field" id="em-mg-ang-f"><span class="tu-label" id="em-mg-ang-l">Direction of N: <b id="em-mg-ang-v"></b>°</span><input type="range" id="em-mg-ang" min="-180" max="180" step="1" aria-labelledby="em-mg-ang-l"></div>
+				</div>
+				<div class="em-sel" id="em-mg-sel">
+					<button type="button" class="tu-btn tu-btn--ghost" id="em-mg-rl" title="Turn 15° anticlockwise">⟲ 15°</button><button type="button" class="tu-btn tu-btn--ghost" id="em-mg-rr" title="Turn 15° clockwise">⟳ 15°</button><button type="button" class="tu-btn tu-btn--ghost" id="em-mg-flip">⇄ Flip N and S</button><button type="button" class="tu-btn tu-btn--ghost" id="em-mg-del">Remove it</button>
+				</div>
+				<p class="tu-note em-tip">Tip: click a magnet to select it (the sliders then change only that one; click empty space to change all of them). <b>R</b> / <b>Shift+R</b> turns the selected magnet, <b>Backspace</b> or <b>Delete</b> removes it. The handle snaps to 5°; hold <b>Shift</b> while turning for any angle. Compasses: drag them around, their red end points the way B does.</p>
+				<div class="em-sel"><button type="button" class="tu-btn tu-btn--ghost" id="em-mg-cclear">Remove compasses</button><button type="button" class="tu-btn tu-btn--ghost" id="em-mg-clear">Remove all magnets</button><button type="button" class="tu-btn tu-btn--ghost" id="em-mg-link">🔗 Copy link</button></div>
+			</div>
+			<div class="em-mgx">
+				<a class="em-vcard" href="https://www.youtube.com/watch?v=NOG9VOBtpY4" target="_blank" rel="noopener">
+					<img src="https://i.ytimg.com/vi/NOG9VOBtpY4/maxresdefault.jpg" alt="" width="1280" height="720" loading="lazy">
+					<span class="em-vcard__t"><small>Video · MES Physics</small>Magnetic Isopotentials Explain the Faraday Paradox, Stern-Gerlach Experiment, and Atomic Orbitals</span>
+				</a>
+				<div class="tu-card em-further">
+					<h3 class="em-h">Further exploration</h3>
+					<p>Watch the video above, and see all of the <a href="https://mes.fm/physics">MES Physics videos</a>.</p>
+					<p><b>Lori Gardi</b> (FractalWoman) and <b>Michael Snyder</b> discuss magnetic isopotentials: why the lines of equal potential, not only the flux lines, are worth drawing and measuring. Lori's channel: <a href="https://www.youtube.com/@FractalWoman" target="_blank" rel="noopener">FractalWoman on YouTube</a>, including her playlist <a href="https://www.youtube.com/playlist?list=PLee4j5MFZE-ybtrzF9uqXumQLYBRjznbO" target="_blank" rel="noopener">On Magnetic Isopotentials</a>.</p>
+					<p><b>PlayMagnet</b>, free apps by Michael Snyder for placing magnets and seeing their isopotentials and field lines:</p>
+					<ul class="em-apps">
+						<li><a href="https://apps.microsoft.com/detail/9p0dnmkb60pt" target="_blank" rel="noopener">PlayMagnet for Windows (Microsoft Store)</a></li>
+						<li><a href="https://play.google.com/store/apps/details?id=us.playmagnet.app" target="_blank" rel="noopener">PlayMagnet for Android (Google Play)</a></li>
+						<li><a href="https://apps.apple.com/us/app/playmagnet/id6761271329" target="_blank" rel="noopener">PlayMagnet for iPhone and iPad (App Store)</a></li>
+					</ul>
+				</div>
+			</div>
+		</section>

@@ -218,6 +218,16 @@ const PAGES = [
     tileLabel: "Electromagnetic Fields Simulator",
   },
   {
+    // Tile only: links to the Magnetic Isopotentials page (the EM simulator's Magnets tab on its own). Icon = img/magnetic-isopotentials-icon.jpg,
+    // a 900x600 crop of the "Magnetic Isopotentials" video thumbnail (placeholder until Grok art lands; bump iconVersion when replaced).
+    slug: "magnetic-isopotentials",
+    section: "tools",
+    href: "/magnetic-isopotentials",
+    iconVersion: 1,
+    tileOnly: true,
+    tileLabel: "Magnetic Isopotentials",
+  },
+  {
     // Tile only: no page is written; links to the tool. Icon = img/double-pendulum-icon.jpg (the real flip-time chaos map, rendered from the tool's own maths).
     slug: "double-pendulum",
     section: "tools",

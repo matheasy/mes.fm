@@ -180,7 +180,74 @@
 	/* wavelength (cells) -> angular frequency per time unit for the grid (c = 1) */
 	function omegaFor(lambdaCells) { return TAU / lambdaCells; }
 
+
+	/* ---------- permanent magnets (2D: long prisms, cross-section in the plane) ----------
+	   A magnet: {x, y, a (angle of its magnetisation, S -> N, radians), L (length along it, m), W (width, m), Br (remanence, T)}; M = Br / mu0 (A/m), uniform.
+	   Gilbert (magnetic charge) picture: pole sheets of density +M on the N end face and -M on the S end face; a sheet is the line-pole kernel integrated along the
+	   face (exact closed forms below), so the field is smooth near the ends. psi = magnetic scalar potential (A), H = -grad psi everywhere, B = mu0 H outside and
+	   mu0 (H + M) inside. Amperian picture: the same magnet is two current sheets K = M on its long sides; their vector potential A_z gives B = curl A exactly,
+	   so the flux lines are the contours of A_z (equal steps of A = equal flux between lines, and the lines close through the magnet). */
+	/* integral over t in [-h, h] of ln sqrt((u - t)^2 + v^2) dt */
+	function logInt(u, v, h) {
+		function F(s) { var r2 = s * s + v * v, t = (s === 0 ? 0 : 0.5 * s * Math.log(r2)) - s; if (v !== 0) t += v * Math.atan(s / v); return t; }
+		return F(h - u) - F(-h - u);
+	}
+	/* integral over t in [-h, h] of (u - t, v) / ((u - t)^2 + v^2) dt = [half log ratio, angle the segment subtends] */
+	function vecInt(u, v, h) { var a2 = (u + h) * (u + h) + v * v, b2 = (u - h) * (u - h) + v * v; return [0.5 * Math.log(Math.max(a2, 1e-300) / Math.max(b2, 1e-300)), Math.atan2(v, u - h) - Math.atan2(v, u + h)]; }
+	function magGeo(m) { var c = Math.cos(m.a), s = Math.sin(m.a); return { mx: c, my: s, px: -s, py: c, hl: m.L / 2, hw: m.W / 2, M: m.Br / MU0 }; }
+	function magInside(m, x, y) { var g = magGeo(m), dx = x - m.x, dy = y - m.y; return Math.abs(dx * g.mx + dy * g.my) < g.hl && Math.abs(dx * g.px + dy * g.py) < g.hw; }
+	function magPsi(mags, x, y) {
+		var psi = 0, i, m, g, sg, fx, fy, dx, dy;
+		for (i = 0; i < mags.length; i++) { m = mags[i]; g = magGeo(m);
+			for (sg = 1; sg >= -1; sg -= 2) { fx = m.x + sg * g.hl * g.mx; fy = m.y + sg * g.hl * g.my; dx = x - fx; dy = y - fy; psi += -sg * g.M / TAU * logInt(dx * g.px + dy * g.py, dx * g.mx + dy * g.my, g.hw); } }
+		return psi;
+	}
+	function magH(mags, x, y) {
+		var hx = 0, hy = 0, i, m, g, sg, dx, dy, G, k;
+		for (i = 0; i < mags.length; i++) { m = mags[i]; g = magGeo(m);
+			for (sg = 1; sg >= -1; sg -= 2) { dx = x - (m.x + sg * g.hl * g.mx); dy = y - (m.y + sg * g.hl * g.my); G = vecInt(dx * g.px + dy * g.py, dx * g.mx + dy * g.my, g.hw); k = sg * g.M / TAU; hx += k * (G[0] * g.px + G[1] * g.mx); hy += k * (G[0] * g.py + G[1] * g.my); } }
+		return [hx, hy];
+	}
+	function magB(mags, x, y) {
+		var h = magH(mags, x, y), bx = MU0 * h[0], by = MU0 * h[1], i, m;
+		for (i = 0; i < mags.length; i++) { m = mags[i]; if (magInside(m, x, y)) { bx += m.Br * Math.cos(m.a); by += m.Br * Math.sin(m.a); } }
+		return [bx, by];
+	}
+	/* vector potential A_z (T m) of the equivalent surface currents: +M out of the page on the +p side, into it on the -p side */
+	function magA(mags, x, y) {
+		var A = 0, i, m, g, sg, dx, dy;
+		for (i = 0; i < mags.length; i++) { m = mags[i]; g = magGeo(m);
+			for (sg = 1; sg >= -1; sg -= 2) { dx = x - (m.x + sg * g.hw * g.px); dy = y - (m.y + sg * g.hw * g.py); A += -sg * MU0 * g.M / TAU * logInt(dx * g.mx + dy * g.my, dx * g.px + dy * g.py, g.hl); } }
+		return A;
+	}
+	/* B from the curl of A (central differences) -- the Amperian route, used to check the Gilbert one */
+	function magBcurl(mags, x, y, h) { h = h || 1e-7; return [(magA(mags, x, y + h) - magA(mags, x, y - h)) / (2 * h), -(magA(mags, x + h, y) - magA(mags, x - h, y)) / (2 * h)]; }
+	/* dipole moment per metre of depth (A m): M L W along the magnet */
+	function magMoment(m) { return m.Br / MU0 * m.L * m.W; }
+	/* follow a vector field fn(x, y) -> [vx, vy] (unit steps, RK4) from (x0, y0) until it leaves box, comes back to its start (closed: true) or maxSteps */
+	function traceField(fn, x0, y0, h, maxSteps, box, closeTol) {
+		var pts = [x0, y0], x = x0, y = y0, n, len = 0;
+		function d(px, py) { var f = fn(px, py), m = Math.hypot(f[0], f[1]); return m > 0 ? [f[0] / m, f[1] / m] : [0, 0]; }
+		for (n = 0; n < maxSteps; n++) {
+			var k1 = d(x, y); if (!k1[0] && !k1[1]) break; var k2 = d(x + 0.5 * h * k1[0], y + 0.5 * h * k1[1]), k3 = d(x + 0.5 * h * k2[0], y + 0.5 * h * k2[1]), k4 = d(x + h * k3[0], y + h * k3[1]);
+			x += h / 6 * (k1[0] + 2 * k2[0] + 2 * k3[0] + k4[0]); y += h / 6 * (k1[1] + 2 * k2[1] + 2 * k3[1] + k4[1]); len += h; pts.push(x, y);
+			if (box && (x < box[0] || x > box[2] || y < box[1] || y > box[3])) return { pts: pts, closed: false, len: len };
+			if (len > 20 * h && Math.hypot(x - x0, y - y0) < (closeTol || h)) return { pts: pts, closed: true, len: len };
+		}
+		return { pts: pts, closed: false, len: len };
+	}
+	/* net outward flux of a field fn through a circle (per metre of depth) */
+	function circleFlux(fn, cx, cy, R, N) { var s = 0, i; N = N || 1440; for (i = 0; i < N; i++) { var a = (i + 0.5) * TAU / N, c = Math.cos(a), sn = Math.sin(a), f = fn(cx + R * c, cy + R * sn); s += (f[0] * c + f[1] * sn) * R * TAU / N; } return s; }
+	/* evenly spaced contour levels covering [lo, hi] with n steps across the larger half-range (levels at (k + 1/2) step, so a symmetric field never sits on a level);
+	   spread > 1 squeezes the levels towards 0 so weak far-field regions get lines too */
+	function evenLevels(lo, hi, n, spread) {
+		var R = Math.max(Math.abs(lo), Math.abs(hi)), out = [], k, t, p = spread || 1; if (!(R > 0) || n < 1) return out;
+		for (k = -n; k < n; k++) { t = (k + 0.5) / n; var v = R * (t < 0 ? -1 : 1) * Math.pow(Math.abs(t), p); if (v > lo && v < hi) out.push(v); }
+		return out;
+	}
+
 	var api = { K: K, EPS0: EPS0, MU0: MU0, C: C, QE: QE, ME: ME, MP: MP, AMU: AMU, fieldAt: fieldAt, potentialAt: potentialAt, forceOn: forceOn, traceLine: traceLine, fieldLines: fieldLines, contour: contour, contours: contours, gauss: gauss, stepFree: stepFree,
-		wireB: wireB, wireA: wireA, ampere: ampere, wireForce: wireForce, borisStep: borisStep, speedOf: speedOf, makeParticle: makeParticle, cyclotron: cyclotron, Yee: Yee, omegaFor: omegaFor };
+		wireB: wireB, wireA: wireA, ampere: ampere, wireForce: wireForce, borisStep: borisStep, speedOf: speedOf, makeParticle: makeParticle, cyclotron: cyclotron, Yee: Yee, omegaFor: omegaFor,
+		logInt: logInt, vecInt: vecInt, magInside: magInside, magPsi: magPsi, magH: magH, magB: magB, magA: magA, magBcurl: magBcurl, magMoment: magMoment, traceField: traceField, circleFlux: circleFlux, evenLevels: evenLevels };
 	if (typeof module !== "undefined" && module.exports) module.exports = api; else root.MESEM = api;
 })(typeof window !== "undefined" ? window : this);

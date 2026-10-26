@@ -1,0 +1,38 @@
+	<script>try{if(!localStorage.getItem('pageMode')){document.documentElement.classList.add('page-wide')}}catch(e){}</script>
+	<div class="tu em" id="em" data-only="mg">
+		<p class="em-back"><a href="/electromagnetic-fields-simulator">⚡ Part of the Electromagnetic Fields Simulator</a> · electric charges, currents, charged particles and light waves are in the other tabs there.</p>
+{{MAGNETS}}
+
+		<div class="tu-seo">
+			<h2>Magnetic isopotentials and flux lines</h2>
+			<p class="tu-note">Short link: <a href="/magnetic-isopotentials"><strong>mes.fm/magnetic-isopotentials</strong></a></p>
+			<p>The usual picture of a magnet shows only its <strong>flux lines</strong> (field lines): curves that follow the direction of the magnetic field <b>B</b>. There is a second set of lines that is drawn far less often: the <strong>isopotentials</strong>, lines along which the <em>magnetic scalar potential</em> ψ has the same value. They are the magnetic version of the equipotentials around electric charges, or the height contours on a map. Where no electric current flows, the field can be written as the slope of ψ, <i>H</i> = −∇ψ, so the isopotentials cross the flux lines at right angles and the field is strongest where they crowd together.</p>
+			<div class="em-eq" role="math" aria-label="Magnetic scalar potential and flux">
+				<div><span class="em-eq__n">potential</span> <span class="em-eq__f mes-tex">\(\displaystyle \mathbf H = -\nabla\psi \quad(\text{no current})\)</span></div>
+				<div><span class="em-eq__n">outside</span> <span class="em-eq__f mes-tex">\(\displaystyle \mathbf B = \mu_0\mathbf H\)</span></div>
+				<div><span class="em-eq__n">inside</span> <span class="em-eq__f mes-tex">\(\displaystyle \mathbf B = \mu_0(\mathbf H + \mathbf M)\)</span></div>
+				<div><span class="em-eq__n">no monopoles</span> <span class="em-eq__f mes-tex">\(\displaystyle \nabla\cdot\mathbf B = 0\)</span></div>
+				<div><span class="em-eq__n">pole sheet</span> <span class="em-eq__f mes-tex">\(\displaystyle \psi = -\frac{\sigma}{2\pi}\int \ln r\,ds,\quad \sigma = \pm M\)</span></div>
+				<div><span class="em-eq__n">flux lines</span> <span class="em-eq__f mes-tex">\(\displaystyle \mathbf B = \nabla\times(A_z\hat{\mathbf z}),\quad A_z = \text{const along a line}\)</span></div>
+			</div>
+			<h3>How the picture is computed</h3>
+			<p>Each magnet is a long, uniformly magnetised block seen end-on (a two-dimensional model). In the <strong>magnetic charge</strong> (Gilbert) picture its N face carries a sheet of “north pole” of strength +<i>M</i> per metre and its S face an equal sheet of −<i>M</i>. Each sheet adds −σ ln <i>r</i> / 2π to ψ, integrated exactly over the face, so the field stays smooth right up to the ends instead of blowing up at two point poles. In the <strong>current</strong> (Ampère) picture the same magnet is two thin current sheets on its long sides; their vector potential <i>A<sub>z</sub></i> is constant along each flux line, so the flux lines are drawn as its contours, with the same magnetic flux between neighbouring lines. The two pictures give the same <b>B</b> everywhere (checked in the tests to 1 part in 100,000).</p>
+			<h3>Why the flux lines go through the magnet</h3>
+			<p>Inside the magnet <b>H</b> points from N back to S (it is the “demagnetising” field of the pole sheets), but <b>B</b> = μ₀(<b>H</b> + <b>M</b>) points from S to N. That is why every flux line is a closed loop: out of the N end, round through the air, in at the S end and on through the magnet. The isopotentials are drawn inside too, but there they are no longer perpendicular to the flux lines, because <b>B</b> and <b>H</b> point different ways inside.</p>
+			<h3>Questions</h3>
+			<dl>
+				<dt>What is a magnetic isopotential?</dt>
+				<dd>A line (or, in 3D, a surface) on which the magnetic scalar potential ψ is constant. Moving along it, a test north pole would feel no push along the line. Outside a magnet the isopotentials cross the flux lines at right angles.</dd>
+				<dt>Is the magnetic scalar potential always defined?</dt>
+				<dd>Only where no current flows. Around a current-carrying wire the field circles round, so going once round the wire changes ψ by the current: it cannot be a single-valued potential there. For permanent magnets in air it works everywhere.</dd>
+				<dt>Why are the poles coloured red and green?</dt>
+				<dd>N is red and S is green, a common colour scheme for magnet diagrams. Compass needles point their red end the way B points.</dd>
+				<dt>How strong are real magnets?</dt>
+				<dd>The strength slider is the remanence B<sub>r</sub>: about 0.2 T for a flexible fridge magnet, 0.4 T for ferrite and 1.2 to 1.45 T for neodymium. A long thin magnet keeps nearly B<sub>r</sub> inside; a short, wide one is demagnetised by its own poles and has less (both checked in the tests).</dd>
+				<dt>Is this exact?</dt>
+				<dd>The formulas are exact for the 2D model: magnets that are long out of the screen, perfectly uniformly magnetised and not affected by each other's fields (a good approximation for neodymium and ferrite, not for soft iron). Real short magnets in 3D have fields that fall off faster far away (1/r³ instead of 1/r²) but look much the same near the magnet.</dd>
+			</dl>
+			<p><a href="/electromagnetic-fields-simulator?tab=mg">Open it in the full Electromagnetic Fields Simulator</a> · <a href="/physics">MES Physics videos</a> · <a href="/science">MES Science</a> · <a href="/tools">More MES tools</a></p>
+		</div>
+		<script src="/main_js/mes-math.js" defer></script>
+	</div>

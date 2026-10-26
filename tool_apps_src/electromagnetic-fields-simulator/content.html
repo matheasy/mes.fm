@@ -3,6 +3,7 @@
 		<div class="em-tabs" role="tablist" aria-label="Electromagnetism tools">
 			<button type="button" role="tab" data-tab="es" aria-selected="true">Electric charges</button>
 			<button type="button" role="tab" data-tab="ms" aria-selected="false">Currents</button>
+			<button type="button" role="tab" data-tab="mg" aria-selected="false">Magnets</button>
 			<button type="button" role="tab" data-tab="pt" aria-selected="false">Charged particle</button>
 			<button type="button" role="tab" data-tab="wv" aria-selected="false">Waves</button>
 			<button type="button" role="tab" data-tab="pw" aria-selected="false">Plane wave</button>
@@ -96,6 +97,8 @@
 				<div class="em-sel"><button type="button" class="tu-btn tu-btn--ghost" id="em-ms-clear">Remove all wires</button><button type="button" class="tu-btn tu-btn--ghost" id="em-ms-link">🔗 Copy link</button></div>
 			</div>
 		</section>
+
+{{MAGNETS}}
 
 		<!-- ===== charged particle ===== -->
 		<section data-panel="pt" role="tabpanel" hidden>
@@ -212,6 +215,7 @@
 			<ul>
 				<li><strong>Electric charges.</strong> Coulomb's law adds up the field of every charge. The field lines are drawn by following the field direction from the positive charges; the closer together they are, the stronger the field. Equipotentials cross field lines at right angles. The Gauss surface adds up <i>E</i>·<i>A</i> over a sphere around the charges with numerical integration and compares it with <i>Q</i>/ε₀: they agree whatever the shape of the charge cloud inside, and charges outside add nothing. Switch to “long line charges” to see the 2D version, where the field falls as 1/<i>r</i> and the surface is a circle.</li>
 				<li><strong>Currents.</strong> Each straight wire makes a field μ₀<i>I</i>/(2π<i>r</i>) circling round it. The field lines are drawn as contours of the vector potential, which is exactly what field lines are. Ampère's law says the loop integral of <b>B</b> equals μ₀ times the current inside; the loop shows it. Try the solenoid (the field inside is uniform, outside it nearly cancels) and the coaxial cable (no field outside at all). The force between two wires is how the ampere is defined: 1 A in each, 1 m apart, makes 2×10⁻⁷ N per metre.</li>
+				<li><strong>Magnets.</strong> Permanent bar magnets, each a uniformly magnetised block. The field is worked out two exact ways that agree: as magnetic “charge” sheets on the two pole faces (which gives the scalar potential ψ and its <b>isopotentials</b>) and as the equivalent currents on the long sides (whose vector potential gives the closed <b>flux lines</b>, with equal flux between neighbouring lines). Turn the magnets, bring poles together, build a horseshoe or a Halbach array, and drop compasses into the field. It has its own page too: <a href="/magnetic-isopotentials">Magnetic Isopotentials</a>.</li>
 				<li><strong>Charged particle.</strong> The Lorentz force makes a charge in a magnetic field go in a circle of radius <i>r</i> = <i>mv</i>/(<i>qB</i>) with a period 2π<i>m</i>/(<i>qB</i>) that does not depend on its speed: that is how a cyclotron works. Add an electric field across it and the circles drift sideways at <i>E</i>/<i>B</i> whatever the charge or mass. Where <i>v</i> = <i>E</i>/<i>B</i> the forces cancel: a velocity selector. Different masses make different circles: a mass spectrometer. At high speed the relativistic mass makes the circles bigger (switch Mechanics between Newtonian and relativistic to compare).</li>
 				<li><strong>Waves.</strong> A two-dimensional finite-difference time-domain (FDTD, Yee) solution of Maxwell's equations with the electric field out of the screen. Glass slows the wave to <i>c</i>/<i>n</i> and bends it (Snell's law); a metal surface forces the field to zero so the wave reflects with a sign flip; a lossy absorber turns the wave into heat; the box with metal walls is a resonant cavity that only rings at certain frequencies; two slits make an interference pattern.</li>
 				<li><strong>Plane wave.</strong> The textbook picture of an electromagnetic wave in three dimensions, for any wavelength from radio waves to gamma rays, with linear, circular and elliptical polarisation. The numbers (frequency, field strength, intensity, photon energy) are exact for the settings.</li>
