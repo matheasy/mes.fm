@@ -102,3 +102,38 @@
 	.tu .cp-sp-text {font:0.88em/1.45 ui-monospace,SFMono-Regular,Menlo,monospace;resize:vertical;}
 	.tu .cp-sp-copy {padding:0.35em 0.7em;font-size:0.85em;margin-top:0.2em;}
 	body.dark-mode #cp .cp-sp-row {border-top-color:#3a3a3a;}
+	/* Show big (fills the window). Colours are set inline by app.js (showBig), so the derived dark theme leaves them alone. */
+	.cp-show {position:fixed;inset:0;z-index:100000;display:flex;flex-direction:column;font-family:system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;}
+	.cp-show[hidden] {display:none;}
+	html.cp-show-open, html.cp-show-open body {overflow:hidden;}
+	.cp-show-bar {display:flex;align-items:center;gap:0.4em;flex-wrap:wrap;padding:max(0.5em, env(safe-area-inset-top)) 0.7em 0.5em;}
+	.cp-show-b {cursor:pointer;min-width:44px;min-height:44px;padding:0 0.8em;border:1px solid;border-radius:0.5em;font:inherit;font-size:1.05em;line-height:1;}
+	.cp-show-b[disabled] {opacity:0.3;cursor:default;}
+	.cp-show-b[hidden] {display:none;}
+	.cp-show-b:focus-visible {outline:3px solid;outline-offset:2px;}
+	.cp-show-b[data-a="prev"], .cp-show-b[data-a="next"] {font-size:1.6em;padding:0 0.5em;}
+	.cp-show-copy {font-weight:700;}
+	.cp-show-pos {font-size:0.95em;font-variant-numeric:tabular-nums;min-width:3.2em;text-align:center;}
+	.cp-show-title {font-size:1.05em;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;flex:0 1 auto;color:inherit;}
+	.cp-show-sp {flex:1 1 0;}
+	.cp-show-box {flex:1 1 auto;min-height:0;display:flex;align-items:center;justify-content:center;padding:2vh 4vw;overflow:hidden;touch-action:pan-y;}
+	.cp-show-box.is-scroll {align-items:flex-start;overflow:auto;}
+	.cp-show-t {display:inline-block;max-width:100%;margin:0;white-space:pre-wrap;overflow-wrap:break-word;word-break:normal;line-height:1.25;font-weight:600;color:inherit;user-select:text;}
+	.cp-show-t.is-nowrap {white-space:pre;}
+	.cp-show-hint {text-align:center;font-size:0.85em;padding:0.3em 0.5em max(0.6em, env(safe-area-inset-bottom));}
+	.cp-show-hint[hidden] {display:none;}
+	@media (max-width:520px) {
+		.cp-show-title {order:9;flex:1 1 100%;font-size:0.95em;}
+		.cp-show-bar {gap:0.25em;padding-left:0.4em;padding-right:0.4em;}
+		.cp-show-b {padding:0 0.55em;min-width:42px;}
+		.cp-show-pos {min-width:2.6em;font-size:0.85em;}
+	}
+	.tu .cp-foot .cp-show-btn {font-size:1.15em;font-weight:700;line-height:1;}
+	/* note buttons: one tidy row on phones, the size line drops below them */
+	@media (max-width:480px) {
+		.tu .cp-foot .cp-sp {display:none;}
+		.tu .cp-foot .cp-count {flex:1 1 100%;}
+	}
+	@media (pointer:coarse) {
+		.tu .cp-foot .tu-btn {min-height:40px;min-width:40px;}
+	}

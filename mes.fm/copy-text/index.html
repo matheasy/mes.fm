@@ -215,7 +215,7 @@ sub {vertical-align:sub;}        .warning-message {font-size:1em;text-align:cent
 	.tu-input--big {font-size:1.35em;padding:0.55em 0.7em;}
 	.tu-suffix {position:relative;}
 	.tu-suffix .tu-input {padding-right:3.2em;}
-	.tu-suffix span {position:absolute;right:0.7em;top:50%;transform:translateY(-50%);font-size:0.85em;color:#8a93a0;pointer-events:none;}
+	.tu-suffix span {position:absolute;right:0.7em;top:50%;transform:translateY(-50%);font-size:0.85em;color:#667085;pointer-events:none;}
 	.tu-btn {cursor:pointer;padding:0.5em 0.95em;border-radius:0.35em;border:0.125em solid var(--accent);background:#fff;color:var(--accent);font-size:0.9em;line-height:1.1;}
 	.tu-btn:hover {background:var(--accent);color:#fff;}
 	.tu-btn--primary {background:var(--accent);color:#fff;}
@@ -236,7 +236,7 @@ sub {vertical-align:sub;}        .warning-message {font-size:1em;text-align:cent
 	.tu-stat--hero {background:#fbf1d9;border-color:#fbf1d9;}
 	.tu-stat__label {font-size:0.72em;font-weight:700;text-transform:uppercase;letter-spacing:0.05em;color:#667;}
 	.tu-stat__value {font-size:1.7em;font-weight:700;color:#1e2733;line-height:1.2;margin:0.15em 0;word-break:break-word;}
-	.tu-stat__sub {font-size:0.85em;color:#6a7280;line-height:1.35;}
+	.tu-stat__sub {font-size:0.85em;color:#555d6b;line-height:1.35;}
 	.tu-pos {color:#1f7a3d !important;}
 	.tu-neg {color:#b3261e !important;}
 	.tu-table-wrap {overflow-x:auto;}
@@ -249,7 +249,15 @@ sub {vertical-align:sub;}        .warning-message {font-size:1em;text-align:cent
 	.tu-toast {position:fixed;left:50%;bottom:2em;transform:translateX(-50%) translateY(0.5em);background:#1e2733;color:#fff;padding:0.6em 1.1em;border-radius:2em;font-size:0.9em;box-shadow:0 0.4em 1.2em rgba(0,0,0,0.25);opacity:0;pointer-events:none;transition:opacity 0.15s, transform 0.15s;z-index:60;}
 	.tu-toast--show {opacity:1;transform:translateX(-50%) translateY(0);}
 	.tu-seo {margin-top:2em;border-top:1px solid #e3e3e3;padding-top:1.2em;}
-	.tu-seo h2 {border-bottom:0;padding-bottom:0;font-size:1.2em;}
+	/* SEO-HEADINGS: headlines and questions stand out from the body text (also added to built pages by add_seo_heading_style.py) */
+	body .tu-seo {font-size:1.04em;line-height:1.65;}
+	body .tu-seo h2 {font-size:1.45em;font-weight:800;line-height:1.25;margin:0 0 0.6em;color:#1e2733;border-bottom:0;padding-bottom:0;}
+	body .tu-seo h3 {font-size:1.2em;font-weight:800;line-height:1.3;margin:1.6em 0 0.5em;padding:0.15em 0 0.15em 0.65em;border-left:5px solid var(--accent,#4a6fa5);color:#1e2733;}
+	body .tu-seo h4, body .tu-seo dt {font-size:1.08em;font-weight:700;font-style:normal;line-height:1.35;margin:1.3em 0 0.3em;color:#1e2733;}
+	body .tu-seo dd {margin:0 0 0.6em;} body .tu-seo p, body .tu-seo li, body .tu-seo dd {line-height:1.65;}
+	body.dark-mode .tu-seo h2, body.dark-mode .tu-seo h3, body.dark-mode .tu-seo h4, body.dark-mode .tu-seo dt {color:#f2f2f2;}
+	.tu sup, .tu sub {font-size:0.72em !important;line-height:0;vertical-align:baseline;position:relative;} .tu sup {top:-0.5em;} .tu sub {top:0.3em;}
+	.tu div[class$="-eq"] {overflow-y:hidden;}
 	.tu-seo ul {list-style:disc;margin:0.5em 0 0.5em 1.5em;line-height:1.5;}
 	.tu-svg-line {fill:none;stroke:#1e2733;stroke-width:2;}
 	.tu-svg-accent {fill:none;stroke:var(--accent);stroke-width:3;}
@@ -274,6 +282,28 @@ sub {vertical-align:sub;}        .warning-message {font-size:1em;text-align:cent
 	@media print {
 		.tu-btn, .tu-chips, .tu-seg {display:none !important;}
 	}
+
+/* row layout options on the grade / GPA / weighted-average calculators (names on-off, table layout) */
+.tu .rw-bar {display:flex;gap:0.4em;flex-wrap:wrap;margin:0.5em 0 0.1em;}
+.tu .gc-n {display:none;}
+.tu [data-names="0"] .rw-name {display:none !important;}
+.tu [data-names="0"] .rw-num, .tu [data-table="1"] .rw-num {display:block !important;flex:0 0 1.7em;text-align:right;color:#8a93a0;font-size:0.85em;padding-bottom:0.7em;}
+.tu [data-table="1"] .rw-head, .tu [data-table="1"] .rw-row {display:grid !important;grid-template-columns:var(--rw-cols);gap:0.3em;align-items:center;}
+.tu [data-table="1"] .rw-head {font-size:0.68em;font-weight:700;text-transform:uppercase;letter-spacing:0.03em;color:#667;padding:0.4em 0 0.2em;border-bottom:2px solid #d5dae1;} .tu [data-table="1"] .rw-head span {text-align:center;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;} .tu [data-table="1"] .rw-head span:first-child {text-align:right;}
+.tu [data-table="1"] .rw-row {padding:0.22em 0;border-bottom:1px solid #eceff3;}
+.tu [data-table="1"] .rw-row > * {order:0 !important;flex:none !important;margin:0 !important;min-width:0 !important;width:auto !important;}
+.tu [data-table="1"] .rw-row .rw-num {padding:0;}
+.tu [data-table="1"] .rw-f label {display:none;}
+.tu [data-table="1"] .rw-row .tu-input, .tu [data-table="1"] .rw-row .tu-select {padding:0.35em 0.2em;width:100%;min-width:0;text-align:center;}
+.tu [data-table="1"] .rw-row .rw-name .tu-input {text-align:left;padding-left:0.4em;}
+.tu [data-table="1"] .rw-del {padding:0.25em 0 !important;font-size:0.95em !important;}
+.tu [data-table="1"] .rw-pts {padding:0 !important;font-size:0.78em;text-align:center;}
+body.dark-mode .tu .rw-head {color:#a0a8b3;border-bottom-color:#555;} body.dark-mode .tu [data-table="1"] .rw-row {border-bottom-color:#333;}
+/* equation boxes typeset by main_js/mes-math.js (MathJax) */
+.tu [class$="-eq__f"].mes-tex {font-family:inherit;white-space:normal;display:inline-block;vertical-align:middle;max-width:100%;overflow-x:auto;overflow-y:hidden;}
+.tu [class$="-eq"] mjx-container {margin:0.15em 0 !important;}
+.tu [class$="-eq"] > div {margin:0.25em 0;}
+.tu [class$="-eq__n"] {vertical-align:middle;}
 
 	/* copy text -- sticky-note palette: the accent is a note yellow-brown; note colours are literals so the dark theme can map them */
 	.tu kbd {font:0.85em ui-monospace,Menlo,monospace;padding:0.1em 0.4em;border:1px solid #c3c9d2;border-bottom-width:2px;border-radius:0.3em;background:#f4f6f9;color:#333;}
@@ -379,6 +409,41 @@ sub {vertical-align:sub;}        .warning-message {font-size:1em;text-align:cent
 	.tu .cp-sp-text {font:0.88em/1.45 ui-monospace,SFMono-Regular,Menlo,monospace;resize:vertical;}
 	.tu .cp-sp-copy {padding:0.35em 0.7em;font-size:0.85em;margin-top:0.2em;}
 	body.dark-mode #cp .cp-sp-row {border-top-color:#3a3a3a;}
+	/* Show big (fills the window). Colours are set inline by app.js (showBig), so the derived dark theme leaves them alone. */
+	.cp-show {position:fixed;inset:0;z-index:100000;display:flex;flex-direction:column;font-family:system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;}
+	.cp-show[hidden] {display:none;}
+	html.cp-show-open, html.cp-show-open body {overflow:hidden;}
+	.cp-show-bar {display:flex;align-items:center;gap:0.4em;flex-wrap:wrap;padding:max(0.5em, env(safe-area-inset-top)) 0.7em 0.5em;}
+	.cp-show-b {cursor:pointer;min-width:44px;min-height:44px;padding:0 0.8em;border:1px solid;border-radius:0.5em;font:inherit;font-size:1.05em;line-height:1;}
+	.cp-show-b[disabled] {opacity:0.3;cursor:default;}
+	.cp-show-b[hidden] {display:none;}
+	.cp-show-b:focus-visible {outline:3px solid;outline-offset:2px;}
+	.cp-show-b[data-a="prev"], .cp-show-b[data-a="next"] {font-size:1.6em;padding:0 0.5em;}
+	.cp-show-copy {font-weight:700;}
+	.cp-show-pos {font-size:0.95em;font-variant-numeric:tabular-nums;min-width:3.2em;text-align:center;}
+	.cp-show-title {font-size:1.05em;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;flex:0 1 auto;color:inherit;}
+	.cp-show-sp {flex:1 1 0;}
+	.cp-show-box {flex:1 1 auto;min-height:0;display:flex;align-items:center;justify-content:center;padding:2vh 4vw;overflow:hidden;touch-action:pan-y;}
+	.cp-show-box.is-scroll {align-items:flex-start;overflow:auto;}
+	.cp-show-t {display:inline-block;max-width:100%;margin:0;white-space:pre-wrap;overflow-wrap:break-word;word-break:normal;line-height:1.25;font-weight:600;color:inherit;user-select:text;}
+	.cp-show-t.is-nowrap {white-space:pre;}
+	.cp-show-hint {text-align:center;font-size:0.85em;padding:0.3em 0.5em max(0.6em, env(safe-area-inset-bottom));}
+	.cp-show-hint[hidden] {display:none;}
+	@media (max-width:520px) {
+		.cp-show-title {order:9;flex:1 1 100%;font-size:0.95em;}
+		.cp-show-bar {gap:0.25em;padding-left:0.4em;padding-right:0.4em;}
+		.cp-show-b {padding:0 0.55em;min-width:42px;}
+		.cp-show-pos {min-width:2.6em;font-size:0.85em;}
+	}
+	.tu .cp-foot .cp-show-btn {font-size:1.15em;font-weight:700;line-height:1;}
+	/* note buttons: one tidy row on phones, the size line drops below them */
+	@media (max-width:480px) {
+		.tu .cp-foot .cp-sp {display:none;}
+		.tu .cp-foot .cp-count {flex:1 1 100%;}
+	}
+	@media (pointer:coarse) {
+		.tu .cp-foot .tu-btn {min-height:40px;min-width:40px;}
+	}
 
 
 	@media print {
@@ -418,6 +483,79 @@ sub {vertical-align:sub;}        .warning-message {font-size:1em;text-align:cent
 		.footer__item--extra-padding { padding-left: 0; }
 		.footer__text--extra-info { float: none; display: block; margin-top: 0.5em; }
 	}
+
+	/* TOOL-DARK:START -- generated by add_tool_page_controls.py, do not edit */
+	body.dark-mode .page-content :where(div,span,p,li,ul,ol,h1,h2,h3,h4,h5,h6,td,th,label,summary,small,strong,b,em,i,code,pre,legend,figcaption,dl,dt,dd,blockquote,caption,cite,button,input,select,textarea){color:#d8d8d8}
+	body.dark-mode .page-content code{background-color:#33363d;color:#f0a8bd}
+	body.dark-mode .page-content .btn-default{background-color:#2e2e2e;background-image:none;color:#ddd;border-color:#555}
+	body.dark-mode .tu{--accent:#f59914;--accent-dark:#f59914}
+	body.dark-mode .tu h2{color:#d1d6dc;border-bottom:2px solid #543e09}
+	body.dark-mode .tu h3{color:#d1d6dc}
+	body.dark-mode .tu-card{background:#1a1a1a;border:1px solid #28323e}
+	body.dark-mode .tu-card--tint{background:#322a17;border-color:#543e09}
+	body.dark-mode .tu-field > label,body.dark-mode .tu-label{color:#9a9aa2}
+	body.dark-mode .tu-input,body.dark-mode .tu-select{border:1px solid #404a58;background:#1a1a1a;color:#dddddd}
+	body.dark-mode .tu-suffix span{color:#989ca4}
+	body.dark-mode .tu-btn{background:#1a1a1a}
+	body.dark-mode .tu-btn--ghost{border-color:#3a424d;color:#aaaaaa}
+	body.dark-mode .tu-btn--ghost:hover{background:#191c20;color:#dddddd;border-color:#3a424d}
+	body.dark-mode .tu-seg{border:1px solid #404a58;background:#1a1a1a}
+	body.dark-mode .tu-seg button{color:#aaaaaa;border-right:1px solid #28323e}
+	body.dark-mode .tu-seg button:hover{background:#16191d}
+	body.dark-mode .tu-chip{border:1px solid #3a424d;background:#1a1a1a;color:#aaaaaa}
+	body.dark-mode .tu-stat{background:#1a1a1a;border:1px solid #28323e}
+	body.dark-mode .tu-stat--hero{background:#322a17;border-color:#543e09}
+	body.dark-mode .tu-stat__label{color:#9a9aa2}
+	body.dark-mode .tu-stat__value{color:#d1d6dc}
+	body.dark-mode .tu-stat__sub{color:#9a9ea4}
+	body.dark-mode .tu-pos{color:#7dde9d !important}
+	body.dark-mode .tu-neg{color:#e87973 !important}
+	body.dark-mode .tu-table th,body.dark-mode .tu-table td{border-bottom:1px solid #29323d;color:#cccccc}
+	body.dark-mode .tu-table th{color:#9a9da3;background:#1a1a1a}
+	body.dark-mode .tu-table tr.is-active td{background:#322a17}
+	body.dark-mode .tu-note{color:#9a9da3}
+	body.dark-mode .tu-toast{background:#3c4f67}
+	body.dark-mode .tu-seo{border-top:1px solid #333333}
+	body.dark-mode .tu-svg-line{stroke:#394a60}
+	body.dark-mode .tu-svg-text{fill:#cccccc}
+	body.dark-mode .tu-svg-grid{stroke:#28323e}
+	body.dark-mode .tu [data-names="0"] .rw-num,body.dark-mode .tu [data-table="1"] .rw-num{color:#999da3}
+	body.dark-mode .tu [data-table="1"] .rw-head{color:#9a9aa2;border-bottom:2px solid #2b323c}
+	body.dark-mode .tu [data-table="1"] .rw-row{border-bottom:1px solid #27313f}
+	body.dark-mode .tu kbd{border:1px solid #3a424d;background:#16191d;color:#cccccc}
+	body.dark-mode .tu .cp-boards{border-bottom:2px solid #543e09}
+	body.dark-mode .tu .cp-tab{border:1px solid #3a424d;background:#1a1a1a;color:#bbbbbb}
+	body.dark-mode .tu .cp-n{background:rgba(82,82,82,0.08)}
+	body.dark-mode .tu .cp-tab[aria-selected="true"] .cp-n{background:rgba(26,26,26,0.25)}
+	body.dark-mode .tu .cp-menu-box{background:#1a1a1a;border:1px solid #3a424d}
+	body.dark-mode .tu .cp-menu-box button{color:#cccccc}
+	body.dark-mode .tu .cp-menu-box button:hover{background:#322a17}
+	body.dark-mode .tu .cp-menu-box .cp-danger{color:#e87973}
+	body.dark-mode .tu .cp-status.cp-warn{color:#ffb35c}
+	body.dark-mode .tu .cp-note{background:#25200e;border:1px solid #625425;border-left:5px solid #a88a24}
+	body.dark-mode .tu .cp-note.c-x{background:#1a1a1a;border-color:#28323e;border-left-color:#4f5966}
+	body.dark-mode .tu .cp-note.c-y{background:#25220e;border-color:#796719;border-left-color:#e3ba1c}
+	body.dark-mode .tu .cp-note.c-g{background:#151e16;border-color:#2a5231;border-left-color:#48b768}
+	body.dark-mode .tu .cp-note.c-b{background:#111822;border-color:#18335a;border-left-color:#275aa5}
+	body.dark-mode .tu .cp-note.c-p{background:#181122;border-color:#2f1a54;border-left-color:#5c2d9f}
+	body.dark-mode .tu .cp-note.c-r{background:#221311;border-color:#5a221b;border-left-color:#a52f27}
+	body.dark-mode .tu .cp-grip{color:#989da4}
+	body.dark-mode .tu .cp-title{color:#d1d6dc}
+	body.dark-mode .tu .cp-title i{color:#9a9da3}
+	body.dark-mode .tu .cp-bname{background:#191c20;color:#9d9da6}
+	body.dark-mode .tu .cp-dyn{background:#322a17}
+	body.dark-mode .tu .cp-ibtn{color:#979da5}
+	body.dark-mode .tu .cp-ibtn:hover{color:#ffdb5c}
+	body.dark-mode .tu .cp-ibtn[aria-pressed="true"]{color:#ffd65c}
+	body.dark-mode .tu .cp-body:hover{background:rgba(82,82,82,0.04)}
+	body.dark-mode .tu .cp-body pre{color:#dddddd}
+	body.dark-mode .tu .cp-count{color:#999da3}
+	body.dark-mode .tu .cp-sw{border:2px solid #333333}
+	body.dark-mode .tu .cp-sw.c-x{background:#1a1a1a}
+	body.dark-mode .tu .cp-move{color:#9a9aa2}
+	body.dark-mode .tu .cp-empty{color:#9a9da3;border:2px dashed #28323e}
+	body.dark-mode .tu .cp-sp-row{border-top:1px solid #29323d}
+	/* TOOL-DARK:END */
 /* Floating compact header bar: once the full header + nav scroll out of
    view, a slim fixed bar (small logo, title, as many nav links as fit)
    slides in, and the hamburger is pinned into its right end. Toggled by
@@ -460,76 +598,6 @@ body.is-stuck #navbar.hide { position: fixed; top: 56px; right: 8px; }
 @media (max-width: 480px) {
   #compact-nav { padding-right: 70px; gap: 8px; }
 }
-
-	/* TOOL-DARK:START -- generated by add_tool_page_controls.py, do not edit */
-	body.dark-mode .page-content :where(div,span,p,li,ul,ol,h1,h2,h3,h4,h5,h6,td,th,label,summary,small,strong,b,em,i,code,pre,legend,figcaption,dl,dt,dd,blockquote,caption,cite,button,input,select,textarea){color:#d8d8d8}
-	body.dark-mode .page-content code{background-color:#33363d;color:#f0a8bd}
-	body.dark-mode .page-content .btn-default{background-color:#2e2e2e;background-image:none;color:#ddd;border-color:#555}
-	body.dark-mode .tu{--accent:#f59914;--accent-dark:#f59914}
-	body.dark-mode .tu h2{color:#d1d6dc;border-bottom:2px solid #543e09}
-	body.dark-mode .tu h3{color:#d1d6dc}
-	body.dark-mode .tu-card{background:#1a1a1a;border:1px solid #28323e}
-	body.dark-mode .tu-card--tint{background:#322a17;border-color:#543e09}
-	body.dark-mode .tu-field > label,body.dark-mode .tu-label{color:#9a9aa2}
-	body.dark-mode .tu-input,body.dark-mode .tu-select{border:1px solid #404a58;background:#1a1a1a;color:#dddddd}
-	body.dark-mode .tu-suffix span{color:#999da3}
-	body.dark-mode .tu-btn{background:#1a1a1a}
-	body.dark-mode .tu-btn--ghost{border-color:#3a424d;color:#aaaaaa}
-	body.dark-mode .tu-btn--ghost:hover{background:#191c20;color:#dddddd;border-color:#3a424d}
-	body.dark-mode .tu-seg{border:1px solid #404a58;background:#1a1a1a}
-	body.dark-mode .tu-seg button{color:#aaaaaa;border-right:1px solid #28323e}
-	body.dark-mode .tu-seg button:hover{background:#16191d}
-	body.dark-mode .tu-chip{border:1px solid #3a424d;background:#1a1a1a;color:#aaaaaa}
-	body.dark-mode .tu-stat{background:#1a1a1a;border:1px solid #28323e}
-	body.dark-mode .tu-stat--hero{background:#322a17;border-color:#543e09}
-	body.dark-mode .tu-stat__label{color:#9a9aa2}
-	body.dark-mode .tu-stat__value{color:#d1d6dc}
-	body.dark-mode .tu-stat__sub{color:#9a9da3}
-	body.dark-mode .tu-pos{color:#7dde9d !important}
-	body.dark-mode .tu-neg{color:#e87973 !important}
-	body.dark-mode .tu-table th,body.dark-mode .tu-table td{border-bottom:1px solid #29323d;color:#cccccc}
-	body.dark-mode .tu-table th{color:#9a9da3;background:#1a1a1a}
-	body.dark-mode .tu-table tr.is-active td{background:#322a17}
-	body.dark-mode .tu-note{color:#9a9da3}
-	body.dark-mode .tu-toast{background:#3c4f67}
-	body.dark-mode .tu-seo{border-top:1px solid #333333}
-	body.dark-mode .tu-svg-line{stroke:#394a60}
-	body.dark-mode .tu-svg-text{fill:#cccccc}
-	body.dark-mode .tu-svg-grid{stroke:#28323e}
-	body.dark-mode .tu kbd{border:1px solid #3a424d;background:#16191d;color:#cccccc}
-	body.dark-mode .tu .cp-boards{border-bottom:2px solid #543e09}
-	body.dark-mode .tu .cp-tab{border:1px solid #3a424d;background:#1a1a1a;color:#bbbbbb}
-	body.dark-mode .tu .cp-n{background:rgba(82,82,82,0.08)}
-	body.dark-mode .tu .cp-tab[aria-selected="true"] .cp-n{background:rgba(26,26,26,0.25)}
-	body.dark-mode .tu .cp-menu-box{background:#1a1a1a;border:1px solid #3a424d}
-	body.dark-mode .tu .cp-menu-box button{color:#cccccc}
-	body.dark-mode .tu .cp-menu-box button:hover{background:#322a17}
-	body.dark-mode .tu .cp-menu-box .cp-danger{color:#e87973}
-	body.dark-mode .tu .cp-status.cp-warn{color:#ffb35c}
-	body.dark-mode .tu .cp-note{background:#25200e;border:1px solid #625425;border-left:5px solid #a88a24}
-	body.dark-mode .tu .cp-note.c-x{background:#1a1a1a;border-color:#28323e;border-left-color:#4f5966}
-	body.dark-mode .tu .cp-note.c-y{background:#25220e;border-color:#796719;border-left-color:#e3ba1c}
-	body.dark-mode .tu .cp-note.c-g{background:#151e16;border-color:#2a5231;border-left-color:#48b768}
-	body.dark-mode .tu .cp-note.c-b{background:#111822;border-color:#18335a;border-left-color:#275aa5}
-	body.dark-mode .tu .cp-note.c-p{background:#181122;border-color:#2f1a54;border-left-color:#5c2d9f}
-	body.dark-mode .tu .cp-note.c-r{background:#221311;border-color:#5a221b;border-left-color:#a52f27}
-	body.dark-mode .tu .cp-grip{color:#989da4}
-	body.dark-mode .tu .cp-title{color:#d1d6dc}
-	body.dark-mode .tu .cp-title i{color:#9a9da3}
-	body.dark-mode .tu .cp-bname{background:#191c20;color:#9d9da6}
-	body.dark-mode .tu .cp-dyn{background:#322a17}
-	body.dark-mode .tu .cp-ibtn{color:#979da5}
-	body.dark-mode .tu .cp-ibtn:hover{color:#ffdb5c}
-	body.dark-mode .tu .cp-ibtn[aria-pressed="true"]{color:#ffd65c}
-	body.dark-mode .tu .cp-body:hover{background:rgba(82,82,82,0.04)}
-	body.dark-mode .tu .cp-body pre{color:#dddddd}
-	body.dark-mode .tu .cp-count{color:#999da3}
-	body.dark-mode .tu .cp-sw{border:2px solid #333333}
-	body.dark-mode .tu .cp-sw.c-x{background:#1a1a1a}
-	body.dark-mode .tu .cp-move{color:#9a9aa2}
-	body.dark-mode .tu .cp-empty{color:#9a9da3;border:2px dashed #28323e}
-	body.dark-mode .tu .cp-sp-row{border-top:1px solid #29323d}
-	/* TOOL-DARK:END */
 </style>
         <meta property="fb:app_id" content="" />
         <meta name="author" content="Math Easy Solutions Staff">
@@ -703,18 +771,7 @@ body.is-stuck #navbar.hide { position: fixed; top: 56px; right: 8px; }
     }).observe(document.documentElement, {childList: true, subtree: true});
 })();
 </script>
-    <style id="seo-headings">
-/* SEO-HEADINGS */
-body .tu-seo {font-size:1.04em;line-height:1.65;}
-body .tu-seo h2 {font-size:1.45em;font-weight:800;line-height:1.25;margin:0 0 0.6em;color:#1e2733;border-bottom:0;padding-bottom:0;}
-body .tu-seo h3 {font-size:1.2em;font-weight:800;line-height:1.3;margin:1.6em 0 0.5em;padding:0.15em 0 0.15em 0.65em;border-left:5px solid var(--accent,#4a6fa5);color:#1e2733;}
-body .tu-seo h4, body .tu-seo dt {font-size:1.08em;font-weight:700;font-style:normal;line-height:1.35;margin:1.3em 0 0.3em;color:#1e2733;}
-body .tu-seo dd {margin:0 0 0.6em;} body .tu-seo p, body .tu-seo li, body .tu-seo dd {line-height:1.65;}
-body.dark-mode .tu-seo h2, body.dark-mode .tu-seo h3, body.dark-mode .tu-seo h4, body.dark-mode .tu-seo dt {color:#f2f2f2;}
-.tu sup, .tu sub {font-size:0.72em !important;line-height:0;vertical-align:baseline;position:relative;} .tu sup {top:-0.5em;} .tu sub {top:0.3em;}   /* the page reset made superscripts as big as the text, e.g. 10^-13 */
-.tu div[class$="-eq"] {overflow-y:hidden;}   /* equation boxes: overflow-x:auto made overflow-y auto too, so a tall formula showed a vertical scrollbar */
-</style>
-<!-- MES-ASIDE-HEAD --><link rel="stylesheet" href="/main_js/aside.css?v=2"><script>try{if(localStorage.getItem('asideSide')==='left')document.documentElement.classList.add('aside-left')}catch(e){}try{if(localStorage.getItem('pageWide')==='1')document.documentElement.classList.add('page-wide')}catch(e){}try{if(localStorage.getItem('pageMode')==='theatre')document.documentElement.classList.add('page-theatre')}catch(e){}try{if(localStorage.getItem('asideHidden')==='1')document.documentElement.classList.add('aside-hidden')}catch(e){}</script><!-- /MES-ASIDE-HEAD --></head>
+    <!-- MES-ASIDE-HEAD --><link rel="stylesheet" href="/main_js/aside.css?v=2"><script>try{if(localStorage.getItem('asideSide')==='left')document.documentElement.classList.add('aside-left')}catch(e){}try{if(localStorage.getItem('pageWide')==='1')document.documentElement.classList.add('page-wide')}catch(e){}try{if(localStorage.getItem('pageMode')==='theatre')document.documentElement.classList.add('page-theatre')}catch(e){}try{if(localStorage.getItem('asideHidden')==='1')document.documentElement.classList.add('aside-hidden')}catch(e){}</script><!-- /MES-ASIDE-HEAD --></head>
     <body>            <!-- Google Tag Manager (noscript) -->
             <noscript><iframe src="https://www.googletagmanager.com/ns.html?id=GTM-PL6QNQR"
             height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
@@ -821,7 +878,7 @@ body.dark-mode .tu-seo h2, body.dark-mode .tu-seo h3, body.dark-mode .tu-seo h4,
 <!-- /MES-BOTTOM-AD -->
                             </div>
                         <!-- MES-ASIDE -->
-<aside id="mes-aside" class="mes-aside" data-aside-family="tools" aria-label="More from MES Tools"><div class="mes-aside__sticky"><div class="mes-aside__ad" data-ad-slot="8429975111"></div><div class="mes-aside__head"><h2 class="mes-aside__title-h">More like this</h2><button type="button" class="mes-aside__flip" aria-label="Move this sidebar to the other side" title="Move sidebar to the other side">&#8644;</button></div><ul class="mes-aside__list"><li><a class="mes-aside__card" href="/unit-conversion"><img class="mes-aside__img mes-aside__img--logo" src="/unit-conversion/img/logo.png" width="56" height="56" loading="lazy" alt=""><span class="mes-aside__text"><span class="mes-aside__name">Unit Conversion Calculator</span><span class="mes-aside__tag">Calculator</span></span></a></li><li><a class="mes-aside__card" href="/exif-viewer"><img class="mes-aside__img mes-aside__img--logo" src="/exif-viewer/img/logo.png" width="56" height="56" loading="lazy" alt=""><span class="mes-aside__text"><span class="mes-aside__name">EXIF Viewer: Photo Metadata, GPS Location and AI Flags</span><span class="mes-aside__tag">Tool</span></span></a></li><li><a class="mes-aside__card" href="/tools"><img class="mes-aside__img" src="/img/tools-icon.jpg" width="56" height="56" loading="lazy" alt=""><span class="mes-aside__text"><span class="mes-aside__name">All MES Tools</span><span class="mes-aside__tag">Gallery</span></span></a></li><li><a class="mes-aside__card" href="/gpacalculator"><img class="mes-aside__img mes-aside__img--logo" src="/gpacalculator/img/logo.png" width="56" height="56" loading="lazy" alt=""><span class="mes-aside__text"><span class="mes-aside__name">GPA Calculator</span><span class="mes-aside__tag">Calculator</span></span></a></li></ul></div></aside>
+<aside id="mes-aside" class="mes-aside" data-aside-family="tools" aria-label="More from MES Tools"><div class="mes-aside__sticky"><div class="mes-aside__ad" data-ad-slot="8429975111"></div><div class="mes-aside__head"><h2 class="mes-aside__title-h">More like this</h2><button type="button" class="mes-aside__flip" aria-label="Move this sidebar to the other side" title="Move sidebar to the other side">&#8644;</button></div><ul class="mes-aside__list"><li><a class="mes-aside__card" href="/translate"><img class="mes-aside__img mes-aside__img--logo" src="/translate/img/logo.png" width="56" height="56" loading="lazy" alt=""><span class="mes-aside__text"><span class="mes-aside__name">Translate Text and Pictures</span><span class="mes-aside__tag">Tool</span></span></a></li><li><a class="mes-aside__card" href="/reverse-image-search"><img class="mes-aside__img mes-aside__img--logo" src="/reverse-image-search/img/logo.png" width="56" height="56" loading="lazy" alt=""><span class="mes-aside__text"><span class="mes-aside__name">Reverse Image Search</span><span class="mes-aside__tag">Tool</span></span></a></li><li><a class="mes-aside__card" href="/tools"><img class="mes-aside__img" src="/img/tools-icon.jpg" width="56" height="56" loading="lazy" alt=""><span class="mes-aside__text"><span class="mes-aside__name">All MES Tools</span><span class="mes-aside__tag">Gallery</span></span></a></li><li><a class="mes-aside__card" href="/gpacalculator"><img class="mes-aside__img mes-aside__img--logo" src="/gpacalculator/img/logo.png" width="56" height="56" loading="lazy" alt=""><span class="mes-aside__text"><span class="mes-aside__name">GPA Calculator</span><span class="mes-aside__tag">Calculator</span></span></a></li></ul></div></aside>
 <!-- /MES-ASIDE -->
 </div>
 
@@ -871,7 +928,7 @@ body.dark-mode .tu-seo h2, body.dark-mode .tu-seo h3, body.dark-mode .tu-seo h4,
             hide_search:false,
             current_tab:0
         }        </script><!-- FASTCOMMENTS-LAZY: widget init moved to main_js/main.js -- it pulls embed.min.js only when #fastcomments-widget nears the viewport or on the first Comments-toggle click, so it no longer blocks first render -->                <script src="https://mes.fm/main_js/lazysizes.min.js?v=1.0.3" async></script>
-	<script src="/copy-text/js/copy-text.js?v=2" defer></script>
+	<script src="/copy-text/js/copy-text.js?v=3" defer></script>
             <script src="https://mes.fm/main_js/main.js?v=1.0.5"></script>    <!-- PAGEVIEW-TRACKING-INSERTED --><script src="https://mes.fm/main_js/track.js" defer></script><script>document.getElementById('copyright-year').textContent = new Date().getFullYear();</script><script src="/main_js/info-bar-fit.js" defer></script><script>
   // Floating compact header bar (see #compact-nav CSS): appears once the
   // header + nav bar have scrolled off the top; nav links that don't fit

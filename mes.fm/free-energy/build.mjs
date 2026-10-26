@@ -17,6 +17,7 @@ import { execFileSync } from "node:child_process";
 import { fileURLToPath } from "node:url";
 import { dirname, join } from "node:path";
 import { SECTIONS, IMPORTANT_LINKS_HTML } from "./sections.mjs";
+import { lpMap, lpAttrs, lpCaption, lpIcon, lpSite, lpSwitch, lpWanted, lpSolo, LP_CSS, LP_SCRIPT } from "../shared/link-pref.mjs";
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 
@@ -329,11 +330,13 @@ function buildCard(item, meta) {
   const href = itemHref(item);
   const external = !/^https?:\/\/(?:www\.)?mes\.fm\//.test(href);
   const thumbStyle = image ? ` style="background-image:url('${cssSafeUrl(escapeHtml(image))}')"` : "";
-  return `<a class="link-card" href="${escapeHtml(href)}"${external ? ' target="_blank" rel="noopener"' : ""}>
+  // "Open in:" switch (shared/link-pref.mjs): set on the items of a section that has it (see buildSection).
+  const lp = item.lp ? lpAttrs(lpMap(buildLinksForItem(item, meta)), href) : "";
+  return `<a class="link-card${lp ? " lp-a" : ""}"${lp} href="${escapeHtml(href)}"${external ? ' target="_blank" rel="noopener"' : ""}>
       <span class="link-card-thumb"${thumbStyle}></span>
       <span class="link-card-body">
         <span class="link-card-title">${escapeHtml(item.title)}</span>
-        <span class="link-card-readmore">View &rarr;</span>
+        <span class="link-card-readmore">${lp ? lpCaption(href) : "View &rarr;"}</span>
       </span>
     </a>`;
 }
@@ -345,8 +348,14 @@ function buildRow(item, meta, linksBuilder) {
     .map((l) => `<a href="${escapeHtml(l.href)}" target="_blank" rel="noopener">${escapeHtml(l.label)}</a>`)
     .join(" - ");
   const imgHtml = image ? `<img class="list-thumb" src="${escapeHtml(image)}" alt="${escapeHtml(item.title)}">` : "";
+  // A link-pref item's title links where its Grid View card goes (and follows the "Open in:" switch).
+  const lpHref = item.lp ? itemHref(item) : "";
+  const lp = item.lp ? lpAttrs(lpMap(links), lpHref) : "";
+  const titleHtml = lp
+    ? `<a class="lp-a" href="${escapeHtml(lpHref)}"${lp}${/^https?:\/\/(?:www\.)?mes\.fm\//.test(lpHref) ? "" : ' target="_blank" rel="noopener"'}>${escapeHtml(item.title)}${lpIcon(lpSite(lpHref))}</a>`
+    : escapeHtml(item.title);
   return `<div class="list-row">
-      <h3>${escapeHtml(item.title)}</h3>
+      <h3>${titleHtml}</h3>
       <p>${linksHtml}</p>
       ${imgHtml}
     </div>`;
@@ -373,6 +382,10 @@ function capitalize(str) {
 function buildSection(section, meta) {
   const standaloneItems = section.standalone || [];
   const cardItems = section.items;
+  // "Open in:" preferred-site switch (shared/link-pref.mjs) when most items have links on several sites (as in 911/build.mjs).
+  const lpMaps = cardItems.map((i) => lpMap(buildLinksForItem(i, meta)));
+  const lpHtml = !section.single && lpWanted(lpMaps) ? lpSwitch(lpMaps, { min: 1 }) : "";
+  if (lpHtml) { section.linkPref = true; cardItems.forEach((i) => { i.lp = true; }); }
   // One line of links (icon + label, separated by dots) rather than one paragraph each, so the playlist and
   // the troubleshooting notes sit side by side; external links open in a new tab.
   const standaloneHtml = standaloneItems.length
@@ -413,7 +426,7 @@ function buildSection(section, meta) {
 
   return `<div class="list-container">
   <div id="${section.id}" class="section-body">
-  ${standaloneHtml}
+  ${standaloneHtml}${lpHtml ? `\n    ${lpSolo(lpHtml)}` : ""}
     <div class="view-toggle">
       <button type="button" class="view-toggle-btn active" id="${section.id}GridBtn">Grid View</button>
       <button type="button" class="view-toggle-btn" id="${section.id}ListBtn">List View</button>
@@ -451,6 +464,7 @@ function buildPage(meta, page) {
   const sectionsHtml = isHub
     ? `<div class="icon-grid">\n${PAGES.map(buildTile).join("\n")}\n</div>\n${buildImportantLinks()}`
     : sections.map((s) => buildSection(s, meta)).join("\n\n");
+  const hasLinkPref = sections.some((s) => s.linkPref);
   const viewToggleWiring = sections
     .filter((s) => !s.single)
     .map((s) => {
@@ -1423,7 +1437,7 @@ body.is-stuck #header-controls { transform: none; bottom: auto; }
   #header-controls { top: auto; bottom: 0; right: 8px; transform: none; }
   body.is-stuck #header-controls { top: 13px; bottom: auto; }
 }
-</style>
+${hasLinkPref ? LP_CSS : ""}</style>
 
 <meta property="fb:app_id" content="120877788060946" />
 <meta name="author" content="MES">
@@ -2093,7 +2107,7 @@ var MES_Vars = {
 <script src="/main_js/main.js?v=1.0.3"></script>
 <script>document.getElementById('copyright-year').textContent = new Date().getFullYear();</script>
 <!-- PAGEVIEW-TRACKING-INSERTED --><script src="/main_js/track.js" defer></script><script src="/main_js/info-bar-fit.js" defer></script>
-<script src="/main_js/site-search.js?v=1" defer></script><!-- HUB-THEATRE-JS --><script src="/main_js/hub-theatre.js?v=1" defer></script><!-- /HUB-THEATRE-JS --></body>
+<script src="/main_js/site-search.js?v=1" defer></script><!-- HUB-THEATRE-JS --><script src="/main_js/hub-theatre.js?v=1" defer></script><!-- /HUB-THEATRE-JS -->${hasLinkPref ? LP_SCRIPT : ""}</body>
 </html>
 `;
 }

@@ -21,7 +21,7 @@
 import { writeFileSync, readFileSync, existsSync, mkdirSync } from "node:fs";
 import { fileURLToPath } from "node:url";
 import { dirname, join } from "node:path";
-import { lpMap, lpAttrs, lpCaption, lpIcon, lpSite, lpSwitch, LP_CSS, LP_SCRIPT } from "../shared/link-pref.mjs";
+import { lpMap, lpAttrs, lpCaption, lpIcon, lpSite, lpSwitch, lpWanted, lpSolo, LP_CSS, LP_SCRIPT } from "../shared/link-pref.mjs";
 import { catSpec, checkCats, topupScripts } from "../shared/list-topup.mjs";
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
@@ -894,6 +894,18 @@ function buildFilter(section, meta) {
 function buildSection(section, meta) {
   const standaloneItems = section.items.filter((item) => item.standalone);
   const cardItems = section.items.filter((item) => !item.standalone);
+  // "Open in:" switch for the other sections too (vector functions, vectors, ...): when most items have links on several
+  // sites (Hive notes, YouTube, 3Speak, Rumble ...), like the 911 / hutchison hubs (lpWanted). math-qa sets linkPref itself;
+  // single-item sections (spherical harmonics) have no Grid View, so no switch.
+  let lpSoloHtml = "";
+  if (!section.linkPref && !section.single) {
+    const lpMaps = cardItems.map((i) => lpMap(buildLinksForItem(i, meta)));
+    if (lpWanted(lpMaps, 0.3)) {   // 0.3: vectors (4 of 12) and sequences (7 of 19) have the videos on only some items
+      section.linkPref = true;
+      cardItems.forEach((i) => { i.lp = true; });
+      if (!section.filter) lpSoloHtml = lpSolo(lpSwitch(lpMaps, { min: 1 }));
+    }
+  }
   const standaloneHtml = standaloneItems
     .map((item) => `<p class="section-standalone-link"><a href="${escapeHtml(item.href)}">&#9654;&#65039; ${escapeHtml(item.title)}</a></p>`)
     .join("\n  ");
@@ -932,7 +944,7 @@ function buildSection(section, meta) {
 
   return `<div class="list-container">
   <div id="${section.id}" class="section-body${section.big ? " ls-big" : ""}">
-  ${standaloneHtml}${section.filter ? `\n    ${buildFilter(section, meta)}` : ""}
+  ${standaloneHtml}${section.filter ? `\n    ${buildFilter(section, meta)}` : lpSoloHtml ? `\n    ${lpSoloHtml}` : ""}
     <div class="view-toggle">
       <button type="button" class="view-toggle-btn active" id="${section.id}GridBtn">Grid View</button>
       <button type="button" class="view-toggle-btn" id="${section.id}ListBtn">List View</button>

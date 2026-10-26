@@ -55,13 +55,12 @@
 				</div>
 				<div class="rn-dnrow">
 					<div class="tu-field rn-dnf"><label for="rn-dn">Dice to roll (tap a die above, or type)</label><input id="rn-dn" class="tu-input tu-input--big rn-mono" type="text" autocomplete="off" autocapitalize="off" spellcheck="false" value="2d6" aria-describedby="rn-dn-msg"></div>
-					<button type="button" class="tu-btn tu-btn--primary rn-go" id="rn-roll">Roll</button>
 					<button type="button" class="tu-btn tu-btn--ghost" id="rn-dclear">Clear</button>
 				</div>
 				<p class="tu-note" id="rn-dn-msg" aria-live="polite"></p>
 				<div class="rn-tray" id="rn-tray" role="button" tabindex="0" aria-label="Roll the dice again" title="Tap the dice to roll again"></div>
 				<div class="rn-total" id="rn-dice-out" aria-live="polite"></div>
-				<div class="rn-again" id="rn-again" hidden><button type="button" class="tu-btn tu-btn--primary" id="rn-roll2">🎲 Roll again</button><span class="tu-note rn-tip">or tap the dice</span></div>
+				<div class="rn-again" id="rn-again"><button type="button" class="tu-btn tu-btn--primary rn-go" id="rn-roll">🎲 Roll</button><span class="tu-note rn-tip" id="rn-tip" hidden>or tap the dice (Enter / Space)</span></div>
 				<h3 class="rn-h rn-exh">Quick rolls</h3>
 				<div class="tu-chips" id="rn-dex" aria-label="Examples">
 					<button type="button" class="tu-chip" data-n="2d6">2d6</button><button type="button" class="tu-chip" data-n="3d6">3d6</button><button type="button" class="tu-chip" data-n="d20+5">d20+5</button><button type="button" class="tu-chip" data-n="d20 adv">d20 advantage</button><button type="button" class="tu-chip" data-n="d20 dis">d20 disadvantage</button><button type="button" class="tu-chip" data-n="4d6 drop lowest">4d6 drop lowest</button><button type="button" class="tu-chip" data-n="8d6">8d6 fireball</button><button type="button" class="tu-chip" data-n="3d6!">3d6 exploding</button><button type="button" class="tu-chip" data-n="d%">d% (1-100)</button><button type="button" class="tu-chip" data-n="4dF">4dF fudge</button><button type="button" class="tu-chip" data-n="2d10+1d8-1">2d10+1d8-1</button>

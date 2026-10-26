@@ -534,7 +534,14 @@
 	dn.addEventListener("input", onDn);
 	dn.addEventListener("keydown", function (e) { if (e.key === "Enter") { e.preventDefault(); roll(); } });
 	$("rn-roll").onclick = roll;
-	$("rn-roll2").onclick = roll;
+	// Enter / Space anywhere in the dice panel roll too (not while typing in a box or on another button / link).
+	document.addEventListener("keydown", function (e) {
+		if ((e.key !== "Enter" && e.key !== " ") || e.ctrlKey || e.metaKey || e.altKey || $("rn-p-dice").hidden) return;
+		var t = e.target;
+		if (t && t !== document.body && !$("rn-p-dice").contains(t)) return;
+		if (t && t.closest && t.closest("input, textarea, select, button, a, summary, [role=button], [contenteditable]")) return;
+		e.preventDefault(); roll();
+	});
 	$("rn-tray").addEventListener("click", function () { if ($("rn-tray").children.length) roll(); });
 	$("rn-tray").addEventListener("keydown", function (e) { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); roll(); } });
 
@@ -594,7 +601,8 @@
 		} else finish();
 		function finish() {
 			renderTray(res, false);
-			$("rn-again").hidden = false;
+			$("rn-tip").hidden = false;
+			$("rn-roll").innerHTML = "🎲 Roll again";
 			var parts = res.groups.map(function (g) {
 				if (!g.dice) return (g.sum < 0 ? "− " : "+ ") + Math.abs(g.sum);
 				var list = g.dice.length > 40 ? "" : " [" + g.dice.map(function (d) { var s = g.term.fudge ? (d.v > 0 ? "+" : d.v < 0 ? "−" : "0") : String(d.v); return d.kept ? s : "<s>" + s + "</s>"; }).join(", ") + "]";

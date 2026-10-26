@@ -10,7 +10,7 @@ window.PC_I18N (toolbar / toast strings + decimal comma + share path) for js/per
 string up there. The English-only Android-tester banner is dropped; the "Type it in words" box gets this language's label,
 placeholder, examples and messages (ASK table) and calls MESAsk.percent(text, code) (main_js/mes-ask.js reads es / pt / id /
 fr / de phrasings, and English too). The site shell (info bar, menu, sidebar, footer, Comments) stays English, as on the translated BMI pages.
-All six pages get hreflang links (x-default = English) and a language switcher under the intro (marker PC-LANGS).
+All six pages get hreflang links (x-default = English) and a language menu under the intro (marker PC-LANGS; a right-aligned "🌐 English ▾" <details> button like the BMI pages' .bm-lang, real <a href> links).
 The page keeps <base href="/percentagecalculator/">, so its images / script / css load from the English folder.
 
 Dry-runs by default; --apply writes. Idempotent.
@@ -263,15 +263,43 @@ def head_links(code):
     return "<!-- PC-HREFLANG -->" + "".join(links) + "<!-- /PC-HREFLANG -->"
 
 
+# The language menu: the same <details> button as the BMI pages (.bm-lang in tool_apps_src/bmicalculator/app.css), right-aligned
+# "🌐 English ▾" opening a list of the native names, the current one bold + aria-current. Real <a href> links, so crawlers still
+# follow them. These are classic-shell pages without the tool CSS, so the styles travel inside the marker block; the dark rules
+# carry an extra "html" so they beat display-controls.js's derived dark twins. Percentage blue instead of the BMI pink.
+LANG_WORD = {"en": "Language", "es": "Idioma", "pt": "Idioma", "id": "Bahasa", "fr": "Langue", "de": "Sprache"}
+LANG_CSS = (
+    "<style>"
+    ".pc-lang{display:flex;justify-content:flex-end;margin:0.6em 0 0;}"
+    ".pc-lang details{position:relative;font-size:1.05em;}"
+    ".pc-lang summary{cursor:pointer;list-style:none;padding:0.35em 0.8em;min-height:2.2em;box-sizing:border-box;display:flex;align-items:center;"
+    "border:1px solid #b9cbe0;border-radius:999px;background:#fff;color:#1d5a91;font-weight:600;user-select:none;}"
+    ".pc-lang summary::-webkit-details-marker{display:none;}"
+    ".pc-lang summary::after{content:\" \\25BE\";white-space:pre;}"
+    ".pc-lang summary:focus-visible{outline:2px solid #1d5a91;outline-offset:2px;}"
+    ".pc-lang ul{position:absolute;right:0;top:calc(100% + 4px);z-index:30;margin:0;padding:0.35em 0;list-style:none;min-width:12em;"
+    "background:#fff;border:1px solid #b9cbe0;border-radius:10px;box-shadow:0 8px 24px rgba(0,0,0,0.14);}"
+    ".pc-lang li{margin:0;padding:0;list-style:none;}"
+    ".pc-lang li a{display:block;padding:0.5em 1em;color:#333 !important;text-decoration:none !important;}"
+    ".pc-lang li a:hover,.pc-lang li a:focus{background:#e6f0fa;}"
+    ".pc-lang li a[aria-current]{font-weight:700;color:#1d5a91 !important;}"
+    "html body.dark-mode .pc-lang summary,html body.dark-mode .pc-lang ul{background:#262626;border-color:#4a5868;color:#9fcbf2;}"
+    "html body.dark-mode .pc-lang li a{color:#e6e6e6 !important;}"
+    "html body.dark-mode .pc-lang li a:hover,html body.dark-mode .pc-lang li a:focus{background:#2f3b48;}"
+    "html body.dark-mode .pc-lang li a[aria-current]{color:#9fcbf2 !important;}"
+    "</style>"
+)
+
+
 def switcher(code):
+    cur = EN if code == "en" else LANGS[code]
     items = []
     for c in ORDER:
         L = EN if c == "en" else LANGS[c]
-        if c == code:
-            items.append('<b>%s</b>' % L["label"])
-        else:
-            items.append('<a class="link" href="/%s" hreflang="%s" lang="%s">%s</a>' % (L["slug"], L["lang"], L["lang"], L["label"]))
-    return ('<!-- PC-LANGS --><p class="pc-langs" style="margin:0.6em 0 0;font-size:0.92em;">&#127760; ' + " &middot; ".join(items) + '</p><!-- /PC-LANGS -->')
+        items.append('<li><a href="/%s" hreflang="%s" lang="%s"%s>%s</a></li>'
+                     % (L["slug"], L["lang"], L["lang"], ' aria-current="page"' if c == code else "", L["label"]))
+    return ('<!-- PC-LANGS -->' + LANG_CSS + '<nav class="pc-lang" aria-label="%s"><details><summary>&#127760; %s</summary><ul>%s</ul></details></nav>'
+            % (LANG_WORD[code], cur["label"], "".join(items)) + '<!-- /PC-LANGS -->')
 
 
 def put_shared(html, code):
