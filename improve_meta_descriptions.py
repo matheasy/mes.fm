@@ -45,7 +45,7 @@ GENERATED = {
     "spherical-harmonics", "math-qa", "sequences-series", "vectors", "vector-functions",
     # emitted by mes.fm/hutchison/build.mjs (hub + section pages)
     "hutchison-all", "911-all", "science-all", "conspiracy-all", "911spooks-all", "bg-all", "mh370-all", "crypto-all",
-    "hutchison-posts", "hutchison-videos", "highlights", "hutchison-articles", "hutchison-debunking-debunkers",
+    "hutchison-posts", "hutchison-videos", "highlights", "hutchison-articles", "nancy", "hutchison-debunking-debunkers",
     "hutchison-news", "hutchison-unedited-footage", "hutchison-interviews", "cold-fusion-lenr",
     # emitted by mes.fm/livestreams/build.mjs
     "livestreams",

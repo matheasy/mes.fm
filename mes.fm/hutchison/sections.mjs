@@ -101,11 +101,18 @@ export const SECTIONS = [
     ],
   },
   {
+    id: "nancy",
+    title: "Nancy Hutchison",
+    items: [
+      { href: "https://mes.fm/hutchison-nancy-turn-return", title: "TURN, RETURN, and the Operator Differential — transcript for John Hutchison" },
+      { href: "https://mes.fm/hutchison-nancy-physics-system", title: "John Hutchison and the Physics of the System — report by Nancy Hutchison" },
+    ],
+  },
+  {
     id: "articles",
     title: "Articles",
     items: [
       { href: "https://mes.fm/los-alamos-appendix-hutchison-effect", title: "Los Alamos Report Appendix C of the Hutchison Effect" },
-      { href: "https://mes.fm/hutchison-nancy-physics-system", title: "John Hutchison and the Physics of the System — report by Nancy Hutchison" },
       { title: "Hutchison Effect: Stop Motion Photos of Levitating WATER",
         image: "https://files.peakd.com/file/peakd-hive/mes/Eos1McX1hDrTwP8GUx8GhY7VsBhufMNgUygaCrcZY3W6ihMnwByRBQBKiWWfKyfBoit.png",
         links: [["Hive", "https://peakd.com/hive-128780/@mes/hutchison-effect-levitating-water-37i"], ["Telegram", "https://t.me/meslinks/29910"], ["InLeo", "https://inleo.io/threads/view/mes/re-leothreads-yfh4z4mf"]] },

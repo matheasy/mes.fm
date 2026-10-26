@@ -144,7 +144,18 @@ const PAGES = [
     tileLabel: "Articles",
     title: "Hutchison Effect Articles",
     description:
-      "Written Hutchison Effect articles from MES: the 1983 Los Alamos report appendix, Nancy Hutchison's physics report, stop motion photos of levitating water and rare family photos of John Hutchison's family.",
+      "Written Hutchison Effect articles from MES: the 1983 Los Alamos report appendix, stop motion photos of levitating water and rare family photos of John Hutchison's family.",
+  },
+  {
+    // Nancy Hutchison's reports, newest first. Icon img/nancy-icon.jpg = 900x600 crop of the newest
+    // report's picture (hutchison-nancy-turn-return/img/turn-return.jpg): refresh it + bump iconVersion per new report.
+    slug: "nancy",
+    sectionId: "nancy",
+    iconVersion: 1,
+    tileLabel: "Nancy Hutchison",
+    title: "Nancy Hutchison: Reports for John Hutchison",
+    description:
+      "Nancy Hutchison's reports and transcripts on John Hutchison's work: TURN, RETURN and the Operator Differential, and John Hutchison and the Physics of the System.",
   },
   {
     // Tile only: the page is now a hand-made mirror of the Hive video post (mes.fm/hutchison-debunking-debunkers, not written by this build).
