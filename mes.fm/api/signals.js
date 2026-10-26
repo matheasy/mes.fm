@@ -21,7 +21,10 @@
 //   fed      federalreserve.gov press_monetary.xml
 //   poly     gamma-api.polymarket.com /events (economy, fed, crypto, politics)
 //   kalshi   api.elections.kalshi.com /trade-api/v2/events (KXFED, KXCPIYOY, KXRECSSNBER)
-//   news     Fed RSS + CoinDesk + Cointelegraph (titles and links only)
+//   news     CoinDesk + Cointelegraph   mnews  CNBC Markets, MarketWatch, BBC Business   wnews  BBC World, Al Jazeera, NPR, Guardian, DW
+//            (all RSS, list in lib NEWS_FEEDS: titles, links, the feed's one-line summary and a thumbnail from the publisher's own image host)
+//   geo      gamma-api.polymarket.com /events (geopolitics, middle-east, ukraine, china tags), conflict questions only
+//   geok     Kalshi KXHORMUZNORM (Strait of Hormuz)
 const L = require('./_signals-lib.js');
 
 const UA = 'mes.fm-signals/1.0 (+https://mes.fm/signals)';
@@ -42,6 +45,15 @@ const fredCache = {};
 function fred(id, since, extra) { const k = id + since + (extra || ''); return fredCache[k] || (fredCache[k] = text('https://fred.stlouisfed.org/graph/fredgraph.csv?id=' + id + '&cosd=' + since + (extra || ''), 9000).then(L.parseFredCsv)); }
 const YAHOO = { spx: ['^GSPC', 'S&P 500', 'SP500'], nasdaq: ['^IXIC', 'Nasdaq Composite', 'NASDAQCOM'], dow: ['^DJI', 'Dow Jones', 'DJIA'], gold: ['GC=F', 'Gold (oz)', null], oil: ['CL=F', 'Oil (WTI barrel)', 'DCOILWTICO'], dxy: ['DX-Y.NYB', 'US Dollar Index', null] };
 // Yahoo first (same-day prices), FRED when Yahoo refuses (it is unofficial and sometimes blocks cloud addresses)
+// one News-tab section: every feed of L.NEWS_FEEDS with that sec, in parallel; titles, links, one-line summaries and thumbnails only
+async function feeds(sec) {
+  const list = L.NEWS_FEEDS.filter((f) => f.sec === sec);
+  const got = await Promise.allSettled(list.map((f) => text(f.url, 7000).then((x) => L.parseRss(x, 12, { sum: true, imgHosts: f.img }).map((i) => Object.assign({ src: f.name, sid: f.id }, i)))));
+  const errs = []; got.forEach((g, i) => { if (g.status !== 'fulfilled') errs.push(list[i].name + ': ' + g.reason.message); });
+  const items = L.mergeNews(got.map((g) => (g.status === 'fulfilled' ? g.value : [])), 12);
+  if (!items.length) throw new Error(errs.join('; ') || 'no feed answered');
+  return errs.length ? { items, missing: errs } : { items };
+}
 async function quote(k) {
   const y = YAHOO[k];
   try { const q = L.parseYahoo(await json('https://query1.finance.yahoo.com/v8/finance/chart/' + encodeURIComponent(y[0]) + '?range=3mo&interval=1d', 6000, { 'user-agent': 'Mozilla/5.0 (compatible; mes.fm-signals/1.0)' })); q.name = y[1]; return q; }
@@ -87,7 +99,7 @@ const JOBS = {
   boc: async () => { const a = L.parseValet(await json('https://www.bankofcanada.ca/valet/observations/V39079/json?recent=400'), 'V39079'); const p = L.policy(a); p.hist = L.thin(a, 120); return p; },
   ecb: async () => L.policy(L.parseEcbCsv(await text('https://data-api.ecb.europa.eu/service/data/FM/B.U2.EUR.4F.KR.DFR.LEV?format=csvdata&lastNObservations=12'))),
   boe: async () => L.policy(L.parseBoeCsv(await text('https://www.bankofengland.co.uk/boeapps/database/_iadb-fromshowcolumns.asp?csv.x=yes&SeriesCodes=IUDBEDR&Datefrom=01/Jan/' + (new Date().getUTCFullYear() - 2) + '&Dateto=now&CSVF=TN&UsingCodes=Y&VPD=Y&VFD=N'))),
-  fed: async () => { const it = L.parseRss(await text('https://www.federalreserve.gov/feeds/press_monetary.xml'), 8); if (!it.length) throw new Error('empty feed'); return it; },
+  fed: async () => { const it = L.parseRss(await text('https://www.federalreserve.gov/feeds/press_monetary.xml'), 12, { sum: true }); if (!it.length) throw new Error('empty feed'); return it; },
   poly: async () => {
     const cats = [['economy', 'Economy'], ['fed', 'Fed'], ['crypto', 'Crypto'], ['politics', 'Politics']];
     const got = await Promise.allSettled(cats.map((c) => json('https://gamma-api.polymarket.com/events?closed=false&active=true&tag_slug=' + c[0] + '&order=volume24hr&ascending=false&limit=8', 8000).then((j) => L.parsePolymarket(j, c[1]))));
@@ -103,12 +115,23 @@ const JOBS = {
     if (!out.length) throw new Error(got.map((g) => g.reason && g.reason.message).filter(Boolean).join('; ') || 'no markets');
     return out;
   },
-  news: async () => {
-    const feeds = [['CoinDesk', 'https://www.coindesk.com/arc/outboundfeeds/rss/'], ['Cointelegraph', 'https://cointelegraph.com/rss']];
-    const got = await Promise.allSettled(feeds.map((f) => text(f[1]).then((x) => L.parseRss(x, 8).map((i) => Object.assign({ src: f[0] }, i)))));
-    const out = []; got.forEach((g) => { if (g.status === 'fulfilled') out.push.apply(out, g.value); });
-    if (!out.length) throw new Error('no feed answered');
-    return out.sort((a, b) => (b.date || '') < (a.date || '') ? -1 : 1).slice(0, 14);
+  news: () => feeds('crypto'),
+  mnews: () => feeds('markets'),
+  wnews: () => feeds('world'),
+  // Geopolitics: Polymarket conflict markets (war, ceasefire, invasion, blockade ...) from four tags, filtered by L.isConflict, biggest first
+  geo: async () => {
+    const tags = ['geopolitics', 'middle-east', 'ukraine', 'china'];
+    const got = await Promise.allSettled(tags.map((t) => json('https://gamma-api.polymarket.com/events?closed=false&active=true&tag_slug=' + t + '&order=volume24hr&ascending=false&limit=12', 8000).then((j) => L.parsePolymarket(j, 'Geopolitics', { dated: true }))));
+    const out = L.geoMarkets(got.filter((g) => g.status === 'fulfilled').map((g) => g.value)).slice(0, 24);
+    if (!out.length) throw new Error(got.map((g) => g.reason && g.reason.message).filter(Boolean).join('; ') || 'no markets');
+    return out;
+  },
+  // Kalshi's geopolitics series that had open markets on 2026-10-25 (Strait of Hormuz back to normal)
+  geok: async () => {
+    const got = await Promise.allSettled(['KXHORMUZNORM'].map((s) => json('https://api.elections.kalshi.com/trade-api/v2/events?series_ticker=' + s + '&status=open&with_nested_markets=true&limit=3', 8000).then((j) => L.parseKalshi(j, 'Geopolitics'))));
+    const out = L.geoMarkets(got.filter((g) => g.status === 'fulfilled').map((g) => g.value));
+    if (!out.length) throw new Error(got.map((g) => g.reason && g.reason.message).filter(Boolean).join('; ') || 'no markets');
+    return out;
   },
 };
 

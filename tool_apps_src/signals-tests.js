@@ -49,6 +49,61 @@ async function t(name, fn) { try { await fn(); n++; } catch (e) { fail++; consol
 		const evil = S.parseRss('<item><title>A &amp; B <b>x</b></title><link>javascript:alert(1)</link></item><item><title><![CDATA[Ok & fine]]></title><link>https://ex.com/a</link></item>');
 		assert.deepStrictEqual(evil.map((x) => x.title), ['Ok & fine']);
 	});
+	await t('news feeds: thumbnails from the publisher image host only, summaries, all 10 fixtures', () => {
+		const FN = { coindesk: 'coindesk', cointelegraph: 'cointelegraph', cnbc: 'cnbc_markets', marketwatch: 'marketwatch', bbcbiz: 'bbc_business', bbcworld: 'bbc_world', aljazeera: 'aljazeera', npr: 'npr_world', guardian: 'guardian_world', dw: 'dw_world' };
+		assert.strictEqual(S.NEWS_FEEDS.length, 10); S.NEWS_FEEDS.forEach((f) => { assert(/^https:\/\//.test(f.url)); assert(S.NEWS_SECTIONS.some((s) => s[0] === f.sec)); assert(FN[f.id], f.id); });
+		const pics = {};
+		S.NEWS_FEEDS.forEach((f) => {
+			const it = S.parseRss(fx(FN[f.id] + '.xml'), 12, { sum: true, imgHosts: f.img });
+			assert(it.length >= 10, f.id + ' items'); pics[f.id] = it.filter((i) => i.img).length;
+			it.forEach((i) => {
+				assert(i.host && /^https?:\/\//.test(i.link)); assert(!/</.test(i.title));
+				if (i.sum) { assert(i.sum.length <= 201 && !/<|&lt;|&amp;/.test(i.sum), f.id + ' summary is plain text'); }
+				if (i.img) assert(S.imgOk(i.img, f.img), f.id + ' image host ' + i.img);
+			});
+			assert(it.filter((i) => i.sum).length >= 8, f.id + ' summaries');
+		});
+		['coindesk', 'cointelegraph', 'marketwatch', 'bbcbiz', 'bbcworld', 'guardian'].forEach((k) => assert(pics[k] >= 8, k + ' thumbnails ' + pics[k]));
+		assert.strictEqual(pics.npr, 0, 'NPR: no image host allowed (its pictures are full-size)');
+		// the Guardian lists 140 / 460 / 700 px versions: the one nearest 480 wins
+		assert(/width=460/.test(S.parseRss(fx('guardian_world.xml'), 1, { imgHosts: ['guim.co.uk'] })[0].img));
+		// cointelegraph: the enclosure / media:content image, not the tracking pixel
+		const evil = S.parseRss('<item><title>T</title><link>https://ex.com/a</link><media:content url="https://evil.example/x.jpg" medium="image"/><description>&lt;img src="https://ex.com/pixel.gif"&gt;&lt;img src="https://img.ex.com/a.jpg"&gt; Hello &amp;amp; welcome to a longer summary line here</description></item>', 1, { sum: true, imgHosts: ['ex.com'] })[0];
+		assert.strictEqual(evil.img, 'https://img.ex.com/a.jpg', 'other hosts and pixels are skipped');
+		assert(/^Hello & welcome/.test(evil.sum));
+		assert.strictEqual(S.parseRss('<item><title>T</title><link>https://ex.com/a</link><enclosure url="http://ex.com/a.jpg" type="image/jpeg"/></item>', 1, { imgHosts: ['ex.com'] })[0].img, undefined, 'http images are dropped');
+		assert(!S.imgOk('https://notex.com/a.jpg', ['ex.com']) && S.imgOk('https://a.ex.com/a.jpg', ['ex.com']) && !S.imgOk('javascript:alert(1)', ['ex.com']));
+		assert.strictEqual(S.rssSummary('Same headline here', 'Same headline here'), '');
+		const long = S.rssSummary('word '.repeat(80), 'x'); assert(long.length <= 201 && /…$/.test(long));
+		const m = S.mergeNews([[{ date: '2026-01-01' }, { date: '2026-01-03' }], [{ date: '2026-01-02' }]], 12); assert.deepStrictEqual(m.map((x) => x.date), ['2026-01-03', '2026-01-02', '2026-01-01']);
+	});
+	await t('geopolitics: conflict filter, dated ladders, the markets\' own odds', () => {
+		const now = Date.parse('2026-10-25T12:00:00Z'), lists = ['geopolitics', 'middle-east', 'ukraine', 'china'].map((t2) => S.parsePolymarket(fj('polymarket_geo_' + t2 + '.json'), 'Geopolitics', { dated: true, now }));
+		const g = S.geoMarkets(lists);
+		assert(g.length >= 15); assert.strictEqual(new Set(g.map((m) => m.id)).size, g.length, 'no duplicates across tags');
+		for (let i = 1; i < g.length; i++) assert((g[i - 1].vol || 0) >= (g[i].vol || 0), 'biggest first');
+		assert(!g.some((m) => /Prime Minister of Israel|Election/i.test(m.title)), 'elections are left out');
+		const cf = g.find((m) => /US-Iran ceasefire continues through/.test(m.title)); assert(cf && cf.dated);
+		assert(!cf.outcomes.some((o) => o.label === 'October 24'), 'a date already past is dropped'); assert.strictEqual(cf.outcomes[0].label, 'October 28');
+		const odds = S.conflictOdds(g, 6); assert(odds.length >= 4);
+		odds.forEach((o) => { const src = g.find((m) => m.url === o.url); assert.strictEqual(o.yes, src.outcomes.find((x) => x.label === 'Yes').p, 'odds = the market\'s own Yes price'); });
+		assert(S.isConflict('Will China invade Taiwan by end of 2026?') && S.isConflict('Russia x Ukraine ceasefire agreement by...?') && !S.isConflict('Israeli Legislative Election Winner') && !S.isConflict('Best Chinese AI Company'));
+		const k = S.parseKalshi(fj('kalshi_hormuz.json'), 'Geopolitics'); assert.strictEqual(k.length, 1); assert(k[0].dated && k[0].contracts > 0 && !('vol' in k[0]), 'Kalshi volume is contracts, not dollars');
+		for (let i = 1; i < k[0].outcomes.length; i++) assert(Date.parse(k[0].outcomes[i].label.replace('Before ', '')) > Date.parse(k[0].outcomes[i - 1].label.replace('Before ', '')));
+		assert(!JSON.stringify(g).match(/ww3 is coming|will happen/i));
+	});
+	await t('Doomsday Clock table + war-cost estimates (hand-entered, sourced)', () => {
+		const d = S.DOOMSDAY; assert.strictEqual(d[0][0], 1947); assert.strictEqual(d[0][1], 420); assert.deepStrictEqual(d[d.length - 1], [2026, 85]);
+		for (let i = 1; i < d.length; i++) assert(d[i][0] > d[i - 1][0], 'years ascending');
+		assert.strictEqual(d.length, 33); assert.deepStrictEqual(d.find((x) => x[0] === 1991), [1991, 1020]); assert.deepStrictEqual(d.find((x) => x[0] === 2017), [2017, 150]);
+		assert.strictEqual(S.DOOMSDAY_LATEST.seconds, 85); assert.strictEqual(S.DOOMSDAY_LATEST.announced, '2026-01-27'); assert(/^https:\/\/thebulletin\.org\//.test(S.DOOMSDAY_SRC));
+		const st2 = S.doomsdayStats(); assert.deepStrictEqual(st2.closest, [2026, 85]); assert.deepStrictEqual(st2.farthest, [1991, 1020]); assert.deepStrictEqual(st2.lastMove, { from: 89, to: 85, year: 2026 });
+		assert.strictEqual(S.clockText(85), '85 seconds'); assert.strictEqual(S.clockText(150), '2.5 minutes'); assert.strictEqual(S.clockText(420), '7 minutes');
+		const steps = S.doomsdaySteps('2026-10-25'); assert.strictEqual(steps.length, d.length * 2); assert.deepStrictEqual(steps[steps.length - 1], ['2026-10-25', S.round(85 / 60, 3)]);
+		S.WAR_COSTS.forEach((w) => { assert(/^\d{4}-\d\d-\d\d$/.test(w[0]) && w[1] > 0 && w[2].length > 3 && w[3].length > 20 && /^https:\/\//.test(w[4]), 'every figure has a date, who, what and a source'); });
+		for (let i = 1; i < S.WAR_COSTS.length; i++) assert(S.WAR_COSTS[i][0] > S.WAR_COSTS[i - 1][0]);
+		assert.strictEqual(S.WAR_START, '2026-02-28');
+	});
 	await t('polymarket', () => {
 		const p = S.parsePolymarket(fj('polymarket_fed.json'), 'Fed');
 		assert(p.length >= 2); assert(/^https:\/\/polymarket\.com\/event\//.test(p[0].url));
@@ -123,14 +178,14 @@ async function t(name, fn) { try { await fn(); n++; } catch (e) { fail++; consol
 		assert(by.cfg.big && by.cfg.text === '+12 pts'); assert(!by.btc.big && by.btc.text === '+1.0%'); assert(by.t10.big && by.t10.text === '+10 bp'); assert(!by.spx.big);
 	});
 	await t('glossary', () => {
-		['cfg', 'sfg', 'vix', 'yieldcurve', 'inversion', 'bps', 'dominance', 'halving', 'fomc', 'dotplot', 'cpi', 'pred', 'odds'].forEach((k) => assert(S.GLOSSARY[k] && S.GLOSSARY[k][1].length > 60, k));
+		['cfg', 'sfg', 'vix', 'yieldcurve', 'inversion', 'bps', 'dominance', 'halving', 'fomc', 'dotplot', 'cpi', 'pred', 'odds', 'doomsday', 'geoodds', 'dated', 'contracts', 'warcost', 'feargauges'].forEach((k) => assert(S.GLOSSARY[k] && S.GLOSSARY[k][1].length > 60, k));
 		assert(/252 trading days/.test(S.GLOSSARY.sfg[1]));
 	});
 	await t('page markup: every ? button has a glossary entry', () => {
 		const html = fs.readFileSync(path.join(__dirname, 'signals', 'content.html'), 'utf8') + fs.readFileSync(path.join(__dirname, 'signals', 'app.js'), 'utf8');
 		const keys = new Set((html.match(/data-g="(\w+)"/g) || []).map((m) => m.slice(8, -1)).concat((html.match(/q\('(\w+)'/g) || []).map((m) => m.slice(3, -1))));
 		assert(keys.size > 10); keys.forEach((k) => assert(S.GLOSSARY[k], 'missing glossary entry: ' + k));
-		assert(!/buy now|you should (buy|sell)/i.test(html));
+		assert(!/buy now|you should (buy|sell)/i.test(html)); assert(!/ww3 is coming|world war (3|iii) is|war is coming|will start a war/i.test(html), 'neutral wording only');
 	});
 
 	// ---- the aggregator with a mocked fetch ----
@@ -139,7 +194,9 @@ async function t(name, fn) { try { await fn(); n++; } catch (e) { fail++; consol
 		[/blocks\/tip\/height/, 'mempool_height.txt'], [/difficulty-adjustment/, 'mempool_difficulty.json'], [/finance\.yahoo\.com/, 'yahoo_gspc.json'],
 		[/id=T10Y2Y/, 'fred_T10Y2Y_monthly.csv'], [/id=USREC/, 'fred_USREC.csv'], [/id=CPIAUCSL/, 'fred_CPIAUCSL.csv'], [/id=VIXCLS/, 'fred_VIXCLS.csv'], [/id=BAMLH0A0HYM2/, 'fred_BAMLH0A0HYM2.csv'],
 		[/fredgraph\.csv/, 'fred_SP500.csv'], [/bankofcanada/, 'boc_valet.json'], [/data-api\.ecb/, 'ecb_dfr.csv'], [/bankofengland/, 'boe_bankrate.csv'], [/federalreserve\.gov\/feeds/, 'fed_press_monetary.xml'],
-		[/gamma-api\.polymarket/, 'polymarket_fed.json'], [/series_ticker=KXFED/, 'kalshi_kxfed.json'], [/kalshi/, 'kalshi_recession.json'], [/coindesk/, 'coindesk.xml'], [/cointelegraph/, 'cointelegraph.xml']];
+		[/tag_slug=geopolitics/, 'polymarket_geo_geopolitics.json'], [/tag_slug=middle-east/, 'polymarket_geo_middle-east.json'], [/tag_slug=ukraine/, 'polymarket_geo_ukraine.json'], [/tag_slug=china/, 'polymarket_geo_china.json'],
+		[/gamma-api\.polymarket/, 'polymarket_fed.json'], [/series_ticker=KXFED/, 'kalshi_kxfed.json'], [/series_ticker=KXHORMUZNORM/, 'kalshi_hormuz.json'], [/kalshi/, 'kalshi_recession.json'], [/coindesk/, 'coindesk.xml'], [/cointelegraph/, 'cointelegraph.xml'],
+		[/cnbc\.com/, 'cnbc_markets.xml'], [/dowjones\.io/, 'marketwatch.xml'], [/bbci\.co\.uk\/news\/business/, 'bbc_business.xml'], [/bbci\.co\.uk\/news\/world/, 'bbc_world.xml'], [/aljazeera/, 'aljazeera.xml'], [/npr\.org/, 'npr_world.xml'], [/theguardian/, 'guardian_world.xml'], [/rss\.dw\.com/, 'dw_world.xml']];
 	let calls = [], breakers = [];
 	global.fetch = async (url, opts) => {
 		calls.push({ url, ua: opts && opts.headers && opts.headers['user-agent'] });
@@ -157,7 +214,13 @@ async function t(name, fn) { try { await fn(); n++; } catch (e) { fail++; consol
 		assert.strictEqual(res.code, 200); assert(/s-maxage=300, stale-while-revalidate=3600/.test(res.h['Cache-Control']));
 		const s = res.body.sources, bad = Object.keys(s).filter((k) => !s[k].ok);
 		assert.deepStrictEqual(bad, [], 'failed: ' + bad.map((k) => k + ' ' + s[k].error).join('; '));
-		assert.strictEqual(Object.keys(s).length, 17);
+		assert.strictEqual(Object.keys(s).length, 21);
+		['news', 'mnews', 'wnews'].forEach((k) => { assert(s[k].data.items.length >= 10, k); assert(!s[k].data.missing, k + ' missing ' + s[k].data.missing); s[k].data.items.forEach((i) => { assert(i.src && /^https?:\/\//.test(i.link)); if (i.img) assert(/^https:\/\//.test(i.img)); }); });
+		assert(s.mnews.data.items.some((i) => i.src === 'CNBC') && s.mnews.data.items.some((i) => i.img), 'markets section has CNBC and pictures');
+		assert(new Set(s.wnews.data.items.map((i) => i.src)).size === 5, 'all five world feeds');
+		assert(s.geo.data.length >= 10 && s.geo.data.every((m) => S.isConflict(m.title)), 'geo = conflict markets only');
+		assert(s.geok.data[0].src === 'Kalshi' && s.geok.data[0].dated);
+		assert(s.fed.data[0].sum === undefined || typeof s.fed.data[0].sum === 'string');
 		assert(calls.every((c) => /^https:\/\//.test(c.url)), 'https only'); assert(!calls.some((c) => /ignored|x=1/.test(c.url)), 'client input never reaches a fetch');
 		assert(s.markets.data.spx.price > 0 && s.markets.data.gold.price > 0); assert(s.rates.data.latest.spread); assert.strictEqual(s.rates.data.target.rate, 4);
 		const snap = S.snapshot(s); ['cfg', 'sfg', 'btc', 'spx', 't10', 'spread', 'dff'].forEach((k) => assert(snap[k] != null, 'snapshot ' + k));

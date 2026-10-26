@@ -112,42 +112,133 @@
 		return { rate: l[1], date: l[0], since: a[i][0], prev: i > 0 ? a[i - 1][1] : null };
 	};
 
-	// RSS / Atom -> [{title, link, date}] (titles and links only; tags stripped, http(s) links only)
+	// RSS / Atom -> [{title, link, date, host, sum?, img?}]. Headlines, links and the feed's own one-line summary only (never article text);
+	// tags stripped, http(s) links only. A thumbnail is kept only when it is https AND on one of the image hosts listed for that feed
+	// (opt.imgHosts, see NEWS_FEEDS), so a feed can never make the page load pictures from somewhere else.
 	function decode(s) {
 		return String(s).replace(/<!\[CDATA\[([\s\S]*?)\]\]>/g, '$1').replace(/<[^>]+>/g, '').replace(/&#x([0-9a-f]+);/gi, function (m, h) { return String.fromCharCode(parseInt(h, 16)); })
 			.replace(/&#(\d+);/g, function (m, d) { return String.fromCharCode(+d); }).replace(/&quot;/g, '"').replace(/&apos;|&#39;/g, "'").replace(/&lt;/g, '<').replace(/&gt;/g, '>').replace(/&nbsp;/g, ' ').replace(/&amp;/g, '&').replace(/\s+/g, ' ').trim();
 	}
 	S.decode = decode;
-	S.parseRss = function (xml, n) {
+	// entity-decode only (keeps tags), so an <img> inside an escaped description can still be found
+	function unent(s) { return String(s || '').replace(/<!\[CDATA\[([\s\S]*?)\]\]>/g, '$1').replace(/&lt;/g, '<').replace(/&gt;/g, '>').replace(/&quot;/g, '"').replace(/&#39;|&apos;/g, "'").replace(/&amp;/g, '&'); }
+	S.hostOf = function (u) { var m = /^https?:\/\/([^\/?#:]+)/i.exec(String(u || '')); return m ? m[1].toLowerCase().replace(/^www\./, '') : ''; };
+	S.imgOk = function (u, hosts) {
+		if (!/^https:\/\/[^\s"'<>]+$/i.test(u || '') || !hosts || !hosts.length) return false;
+		if (/pixel|tracking|spacer|1x1/i.test(u)) return false;
+		var h = S.hostOf(u);
+		return hosts.some(function (x) { return h === x || h.slice(-x.length - 1) === '.' + x; });
+	};
+	// best thumbnail of one <item>: media:thumbnail / media:content (width nearest 480) / enclosure (image) / first <img> in the description or content
+	S.rssImage = function (it, hosts) {
+		var c = [], re = /<(media:thumbnail|media:content|enclosure)\b([^>]*)>/g, m;
+		var attr = function (a, k) { var r = new RegExp('\\b' + k + '\\s*=\\s*["\']([^"\']+)').exec(a); return r ? unent(r[1]) : null; };
+		while ((m = re.exec(it))) {
+			var a = m[2], u = attr(a, 'url'), ty = attr(a, 'type') || '', md = attr(a, 'medium') || '';
+			if (!u) continue;
+			if (m[1] !== 'media:thumbnail' && !/^image/i.test(ty) && md !== 'image' && !/\.(jpe?g|png|webp|gif)(\?|$)/i.test(u)) continue;
+			c.push({ u: u, w: num(attr(a, 'width')) });
+		}
+		var body = unent((/<(description|content:encoded)\b[^>]*>([\s\S]*?)<\/\1>/.exec(it) || [])[2] || ''), im = /<img\b[^>]*\bsrc\s*=\s*["']([^"']+)/gi;
+		while ((m = im.exec(body))) c.push({ u: m[1], w: null });
+		c = c.filter(function (x) { return S.imgOk(x.u, hosts); });
+		if (!c.length) return null;
+		var sized = c.filter(function (x) { return x.w; });
+		if (sized.length) return sized.sort(function (p, q) { return Math.abs(p.w - 480) - Math.abs(q.w - 480); })[0].u;
+		return c[0].u;
+	};
+	// one-line plain-text summary: the feed's own description, tags stripped, cut at a word boundary (~200 chars); none if it only repeats the title
+	S.rssSummary = function (raw, title) {
+		var t = decode(unent(raw || '')).replace(/\s*(Continue reading|Read more|The post .* appeared first on)[\s\S]*$/i, '').trim();
+		if (!t || t.length < 20) return '';
+		if (title && t.toLowerCase().indexOf(String(title).toLowerCase().slice(0, 60)) === 0 && t.length < title.length + 20) return '';
+		if (t.length > 200) { t = t.slice(0, 200); t = t.slice(0, Math.max(120, t.lastIndexOf(' '))).replace(/[\s,;:.\-–—]+$/, '') + '…'; }
+		return t;
+	};
+	S.parseRss = function (xml, n, opt) {
+		opt = opt || {};
 		var items = String(xml || '').match(/<(item|entry)\b[\s\S]*?<\/\1>/g) || [], out = [];
 		items.forEach(function (it) {
 			var t = /<title[^>]*>([\s\S]*?)<\/title>/.exec(it), l = /<link[^>]*>([\s\S]*?)<\/link>/.exec(it) || /<link[^>]*href="([^"]+)"/.exec(it), d = /<(pubDate|updated|published|dc:date)[^>]*>([\s\S]*?)<\/\1>/.exec(it);
 			var link = l ? decode(l[1]) : '', title = t ? decode(t[1]) : '';
 			if (!title || !/^https?:\/\//i.test(link)) return;
-			var ms = d ? Date.parse(decode(d[2])) : NaN;
-			out.push({ title: title.slice(0, 220), link: link, date: isFinite(ms) ? new Date(ms).toISOString() : null });
+			var ms = d ? Date.parse(decode(d[2])) : NaN, o = { title: title.slice(0, 220), link: link, date: isFinite(ms) ? new Date(ms).toISOString() : null, host: S.hostOf(link) };
+			if (opt.sum) { var ds = /<(description|summary)\b[^>]*>([\s\S]*?)<\/\1>/.exec(it), sm = S.rssSummary(ds && ds[2], title); if (sm) o.sum = sm; }
+			if (opt.imgHosts) { var im = S.rssImage(it, opt.imgHosts); if (im) o.img = im; }
+			out.push(o);
 		});
 		return out.slice(0, n || 8);
+	};
+	// The news feeds (all keyless; each checked from a server 2026-10-25). sec = News tab section; img = the hosts its thumbnails may come from.
+	S.NEWS_SECTIONS = [['crypto', 'Crypto'], ['markets', 'Stocks & markets'], ['world', 'World'], ['fed', 'Federal Reserve (monetary policy)']];
+	S.NEWS_FEEDS = [
+		{ id: 'coindesk', name: 'CoinDesk', sec: 'crypto', url: 'https://www.coindesk.com/arc/outboundfeeds/rss/', img: ['cdn.sanity.io', 'coindesk.com'] },
+		{ id: 'cointelegraph', name: 'Cointelegraph', sec: 'crypto', url: 'https://cointelegraph.com/rss', img: ['ctmedia.io', 'cointelegraph.com'] },
+		{ id: 'cnbc', name: 'CNBC', sec: 'markets', url: 'https://www.cnbc.com/id/20910258/device/rss/rss.html', img: ['cnbcfm.com'] },
+		{ id: 'marketwatch', name: 'MarketWatch', sec: 'markets', url: 'https://feeds.content.dowjones.io/public/rss/mw_topstories', img: ['mktw.net'] },
+		{ id: 'bbcbiz', name: 'BBC Business', sec: 'markets', url: 'https://feeds.bbci.co.uk/news/business/rss.xml', img: ['bbci.co.uk'] },
+		{ id: 'bbcworld', name: 'BBC World', sec: 'world', url: 'https://feeds.bbci.co.uk/news/world/rss.xml', img: ['bbci.co.uk'] },
+		{ id: 'aljazeera', name: 'Al Jazeera', sec: 'world', url: 'https://www.aljazeera.com/xml/rss/all.xml', img: ['aljazeera.com'] },
+		{ id: 'npr', name: 'NPR World', sec: 'world', url: 'https://feeds.npr.org/1004/rss.xml', img: [] },
+		{ id: 'guardian', name: 'The Guardian', sec: 'world', url: 'https://www.theguardian.com/world/rss', img: ['guim.co.uk'] },
+		{ id: 'dw', name: 'DW', sec: 'world', url: 'https://rss.dw.com/rdf/rss-en-world', img: ['dw.com'] }];
+	// newest first, at most n per source so one busy feed cannot fill a section
+	S.mergeNews = function (lists, n) {
+		var out = []; lists.forEach(function (l) { out.push.apply(out, (l || []).slice(0, n || 12)); });
+		return out.sort(function (a, b) { return (b.date || '') < (a.date || '') ? -1 : (b.date || '') > (a.date || '') ? 1 : 0; });
 	};
 
 	// Polymarket gamma /events -> [{id, title, url, vol24, end, outcomes:[{label, p}]}]
 	function jsonArr(x) { if (Array.isArray(x)) return x; try { var a = JSON.parse(x); return Array.isArray(a) ? a : []; } catch (e) { return []; } }
-	S.parsePolymarket = function (events, cat) {
+	// opt.dated: a multi-answer event whose answers are dates ("Ceasefire continues through October 31 / November 30 ...") keeps
+	// Polymarket's own order (groupItemThreshold = earliest first) instead of being sorted by chance, and is flagged `dated`.
+	S.parsePolymarket = function (events, cat, opt) {
 		if (!Array.isArray(events)) throw new Error('not a list');
 		var out = [];
 		events.forEach(function (e) {
 			if (!e || e.closed || !e.slug) return;
-			var ms = (e.markets || []).filter(function (m) { return m && m.active && !m.closed; }), oc = [];
+			var ms = (e.markets || []).filter(function (m) { return m && m.active && !m.closed; }), oc = [], dated = false;
 			if (!ms.length) return;
 			if (ms.length === 1) {
 				var names = jsonArr(ms[0].outcomes), pr = jsonArr(ms[0].outcomePrices);
 				names.forEach(function (nm, i) { var p = num(pr[i]); if (p !== null) oc.push({ label: String(nm), p: round(p * 100, 1) }); });
-			} else ms.forEach(function (m) { var p = num(jsonArr(m.outcomePrices)[0]); if (p !== null) oc.push({ label: String(m.groupItemTitle || m.question || '').slice(0, 80), p: round(p * 100, 1) }); });
-			oc.sort(function (a, b) { return b.p - a.p; });
+			} else {
+				dated = !!(opt && opt.dated) && ms.length > 1 && ms.every(function (m) { return num(m.groupItemThreshold) !== null && /^(by )?(jan|feb|mar|apr|may|jun|jul|aug|sep|oct|nov|dec)[a-z]*\.? \d{1,2}(,? \d{4})?$|^(before|by) /i.test(String(m.groupItemTitle || '').trim()); });
+				if (dated) {
+					// dates already passed but not yet settled (they sit at ~99% or ~1% while they resolve) are left out
+					var now = opt.now == null ? Date.now() : opt.now, fut = ms.filter(function (m) { var t = Date.parse(m.endDate || ''); return !isFinite(t) || t > now; });
+					if (fut.length) ms = fut;
+					ms = ms.slice().sort(function (a, b) { return num(a.groupItemThreshold) - num(b.groupItemThreshold); });
+				}
+				ms.forEach(function (m) { var p = num(jsonArr(m.outcomePrices)[0]); if (p !== null) oc.push({ label: String(m.groupItemTitle || m.question || '').slice(0, 80), p: round(p * 100, 1) }); });
+			}
+			if (!dated) oc.sort(function (a, b) { return b.p - a.p; });
 			if (!oc.length) return;
-			out.push({ id: 'pm' + e.id, src: 'Polymarket', cat: cat || '', title: String(e.title || '').slice(0, 160), url: 'https://polymarket.com/event/' + encodeURIComponent(e.slug), vol24: round(num(e.volume24hr), 0), vol: round(num(e.volume), 0), end: e.endDate || null, outcomes: oc.slice(0, 5), more: Math.max(0, oc.length - 5) });
+			var o = { id: 'pm' + e.id, src: 'Polymarket', cat: cat || '', title: String(e.title || '').slice(0, 160), url: 'https://polymarket.com/event/' + encodeURIComponent(e.slug), vol24: round(num(e.volume24hr), 0), vol: round(num(e.volume), 0), end: e.endDate || null, outcomes: oc.slice(0, dated ? 6 : 5), more: Math.max(0, oc.length - (dated ? 6 : 5)) };
+			if (dated) o.dated = true;
+			if (ms.length === 1 && oc.some(function (x) { return /^yes$/i.test(x.label); })) o.binary = true;
+			out.push(o);
 		});
 		return out;
+	};
+	// ---------- geopolitics ----------
+	// a prediction market counts as "conflict" when its title is about war, ceasefires, invasions, strikes, blockades, nuclear tests ...
+	// (elections, leaders' approval and trade deals are left out). Neutral wording only: this is a filter, not a forecast.
+	S.CONFLICT_RE = /\b(war|wars|ceasefire|cease-fire|truce|invade|invades|invasion|military|clash|strikes?|attack|attacks|missile|nuclear|nuke|blockade|hormuz|troops|peace (talks|deal|agreement)|annex|capture|airspace|regime fall|bomb|drone|shelling|occupation|withdraws?|hostilities|armistice|escalat\w*)\b/i;
+	S.isConflict = function (title) { return S.CONFLICT_RE.test(String(title || '')) && !/\belection|\bprime minister of|\bnominee\b|\bapproval\b/i.test(String(title || '')); };
+	// merge Polymarket / Kalshi lists, drop duplicates and non-conflict events, biggest total volume first
+	S.geoMarkets = function (lists) {
+		var seen = {}, out = [];
+		lists.forEach(function (l) { (l || []).forEach(function (e) { if (seen[e.id] || !S.isConflict(e.title + ' ' + (e.sub || ''))) return; seen[e.id] = 1; out.push(e); }); });
+		var size = function (m) { return m.vol || m.contracts || 0; };
+		return out.sort(function (a, b) { return size(b) - size(a); });
+	};
+	// "MES conflict odds": the market's own Yes price for the biggest yes/no conflict questions, nothing added or averaged
+	S.conflictOdds = function (markets, n) {
+		return (markets || []).filter(function (m) { return m.binary; }).map(function (m) {
+			var y = m.outcomes.filter(function (o) { return /^yes$/i.test(o.label); })[0];
+			return { title: m.title, yes: y ? y.p : null, vol: m.vol || null, vol24: m.vol24 || null, url: m.url, src: m.src, end: m.end };
+		}).filter(function (x) { return x.yes !== null; }).slice(0, n || 6);
 	};
 	// Kalshi public /events?with_nested_markets=true -> same shape. Ladder events ("Above 3.00%") get the most likely bracket too.
 	S.parseKalshi = function (j, cat) {
@@ -159,10 +250,16 @@
 				if (p !== null) oc.push({ label: String(m.yes_sub_title || m.title || '').slice(0, 80), p: round(p * 100, 1) });
 			});
 			if (!oc.length) return;
+			var vol = 0, v24 = 0; ms.forEach(function (m) { vol += num(m.volume_fp != null ? m.volume_fp : m.volume) || 0; v24 += num(m.volume_24h_fp != null ? m.volume_24h_fp : m.volume_24h) || 0; });
 			var series = String(e.series_ticker || e.event_ticker || '').split('-')[0].toLowerCase();
 			var item = { id: 'k' + e.event_ticker, src: 'Kalshi', cat: cat || '', title: String(e.title || '').slice(0, 160), sub: e.sub_title || '', url: 'https://kalshi.com/markets/' + encodeURIComponent(series), end: (ms[0] && ms[0].close_time) || null, outcomes: oc };
+			// Kalshi counts contracts (each pays $1), not dollars, so these are kept apart from Polymarket's dollar volume
+			if (vol) item.contracts = round(vol, 0); if (v24) item.contracts24 = round(v24, 0);
 			if (oc.length > 2 && oc.every(function (o) { return /^Above /.test(o.label); })) item.ladder = true;
-			if (!item.ladder) { oc.sort(function (a, b) { return b.p - a.p; }); item.more = Math.max(0, oc.length - 5); item.outcomes = oc.slice(0, 5); }
+			var bt = function (o) { return Date.parse(String(o.label).replace(/^Before\s+/i, '')); };
+			if (!item.ladder && oc.length > 1 && oc.every(function (o) { return /^Before /i.test(o.label) && isFinite(bt(o)); })) {
+				item.dated = true; oc.sort(function (a, b) { return bt(a) - bt(b); }); item.more = Math.max(0, oc.length - 6); item.outcomes = oc.slice(0, 6);
+			} else if (!item.ladder) { oc.sort(function (a, b) { return b.p - a.p; }); item.more = Math.max(0, oc.length - 5); item.outcomes = oc.slice(0, 5); }
 			else item.likely = S.ladderBucket(oc);
 			out.push(item);
 		});
@@ -264,6 +361,41 @@
 		return d > 0 ? d + 'd ' + h + 'h' : h > 0 ? h + 'h ' + m + 'm' : m + 'm';
 	};
 
+	// ---------- the Doomsday Clock (hand-entered from the Bulletin of the Atomic Scientists' own timeline, checked 2026-10-25) ----------
+	// [year of the statement, seconds to midnight]. Every setting since 1947, including the years it stayed the same ("It is still ...").
+	// Source: https://thebulletin.org/doomsday-clock/timeline/ ; latest: https://thebulletin.org/doomsday-clock/ ("It is 85 seconds to midnight", 27 Jan 2026).
+	S.DOOMSDAY = [[1947, 420], [1949, 180], [1953, 120], [1960, 420], [1963, 720], [1968, 420], [1969, 600], [1972, 720], [1974, 540], [1980, 420], [1981, 240],
+		[1984, 180], [1988, 360], [1990, 600], [1991, 1020], [1995, 840], [1998, 540], [2002, 420], [2007, 300], [2010, 360], [2012, 300], [2015, 180], [2016, 180],
+		[2017, 150], [2018, 120], [2019, 120], [2020, 100], [2021, 100], [2022, 100], [2023, 90], [2024, 90], [2025, 89], [2026, 85]];
+	S.DOOMSDAY_LATEST = { seconds: 85, announced: '2026-01-27', url: 'https://thebulletin.org/doomsday-clock/' };
+	S.DOOMSDAY_SRC = 'https://thebulletin.org/doomsday-clock/timeline/';
+	S.DOOMSDAY_CHECKED = '2026-10-25';
+	S.clockText = function (sec) { return sec >= 120 ? (sec % 60 ? (sec / 60).toFixed(1) : String(sec / 60)) + ' minutes' : sec + ' seconds'; };
+	// step series for the chart: each setting holds until the next one (or `toYmd`), in minutes
+	S.doomsdaySteps = function (toYmd) {
+		var out = [], d = S.DOOMSDAY;
+		d.forEach(function (x, i) { var m = round(x[1] / 60, 3); out.push([x[0] + '-01-15', m]); out.push([i + 1 < d.length ? (d[i + 1][0] - 1) + '-12-31' : (toYmd || x[0] + '-12-31'), m]); });
+		return out;
+	};
+	S.doomsdayStats = function () {
+		var d = S.DOOMSDAY, lo = d.reduce(function (a, x) { return x[1] < a[1] ? x : a; }), hi = d.reduce(function (a, x) { return x[1] > a[1] ? x : a; }), n = d[d.length - 1], p = null;
+		for (var i = d.length - 2; i >= 0; i--) if (d[i][1] !== n[1]) { p = d[i]; break; }
+		return { now: n, closest: lo, farthest: hi, lastMove: p ? { from: p[1], to: n[1], year: n[0] } : null };
+	};
+
+	// ---------- published estimates of what the 2026 Iran war has cost the US (hand-entered; each line = its source, its date) ----------
+	// Deliberately NOT a running ticker: the only published daily rate (CSIS, $891.4M/day) is for the opening 100 hours, the Pentagon totals
+	// are cumulative figures given on dates (one of them includes costs "anticipated" to 30 Sep), and there was a ceasefire for part of the time,
+	// so extrapolating any rate to today would be our own guess. [date, US$ billions, who, what it covers, source URL]
+	S.WAR_COSTS = [
+		['2026-03-06', 3.7, 'CSIS (Mark Cancian, Chris Park)', 'First 100 hours, about $891.4 million a day; built from CBO unit operating costs plus munitions (about $3.5 billion of it unbudgeted). Independent think-tank estimate.', 'https://www.aljazeera.com/news/2026/3/6/cost-to-us-for-war-on-iran-is-3-7bn-in-first-100-hours-says-think-tank'],
+		['2026-03-12', 11.3, 'Pentagon briefing to Congress (reported by The New York Times)', 'First six days; "more than" this, and leaves out many costs of the build-up before the strikes.', 'https://www.newarab.com/news/us-says-iran-campaign-cost-11-billion-six-days'],
+		['2026-04-29', 25, 'Jules Hurst III, acting Pentagon Comptroller, House Armed Services Committee', 'To that day, about 60 days in: mostly munitions, plus operations, maintenance and equipment replacement.', 'https://www.nbcnews.com/politics/congress/iran-war-cost-25-billion-dollars-us-munitions-hegseth-armed-services-rcna342714'],
+		['2026-07-21', 37.5, 'Defense Secretary Pete Hegseth, Senate Appropriations Committee', 'Includes some military pay, operations and maintenance and "other anticipated costs" through 30 Sep 2026; apparently not repairs to damaged bases.', 'https://www.airandspaceforces.com/hegseth-iran-war-cost-37-5b/'],
+		['2026-08-13', 42, 'Pentagon estimate sent to the congressional defense committees (reported by The Hill)', '"Over" this; $4.5 billion more than the July figure.', 'https://thehill.com/policy/defense/6090292-pentagon-iran-war-cost-increase/']];
+	S.WAR_START = '2026-02-28'; // US-Israeli strikes began on Saturday 28 Feb 2026 (Al Jazeera, 6 Mar 2026: the war "entered its seventh day on Friday")
+	S.WAR_COSTS_CHECKED = '2026-10-25';
+
 	// ---------- formatting ----------
 	S.money = function (v, opt) {
 		if (v === null || v === undefined || !isFinite(v)) return '—';
@@ -332,7 +464,13 @@
 		policyrate: ['Policy rate', 'The main interest rate a central bank sets. Bank of Canada: the target for the overnight rate. ECB: the deposit facility rate (what banks earn on money left with the ECB). Bank of England: Bank Rate.'],
 		pred: ['Prediction markets', 'Websites where people trade contracts that pay $1 if something happens and $0 if it does not. The price of a “Yes” share, in cents, is read as the crowd’s chance: 70¢ = about 70%. They react fast to news but they can be wrong, thin markets can be moved by a few traders, and they are not available or legal everywhere.'],
 		odds: ['Reading the odds', 'Polymarket shows the last trade price of “Yes”; for Kalshi we use the middle of the best bid and ask. In a market with several answers (“How many cuts?”) the chances should add up to about 100%. A “ladder” like “Above 3.00%, Above 3.25% ...” shows the chance of each level; the most likely range is the step with the biggest drop between two rungs.'],
-		vol: ['24h volume', 'How much money changed hands in that market over the last 24 hours. Bigger volume usually means a price that is harder to push around.']
+		vol: ['24h volume', 'How much money changed hands in that market over the last 24 hours. Bigger volume usually means a price that is harder to push around.'],
+		doomsday: ['Doomsday Clock', 'A symbol, not a measurement. Since 1947 the Bulletin of the Atomic Scientists (founded by scientists from the Manhattan Project) has set the hands once a year, usually in late January, to show how close its Science and Security Board judges humanity to be to a man-made global catastrophe: nuclear war first, and since 2007 also climate change, and lately biological threats and AI. Midnight = catastrophe. It is an expert opinion, not a probability, and it is not updated when news breaks between announcements.'],
+		geoodds: ['Conflict odds from prediction markets', 'The price of a “Yes” share on Polymarket or Kalshi for questions about wars, ceasefires, invasions and blockades, read as the traders’ chance. We only show the markets’ own numbers: no averaging, weighting or MES index on top. Markets about war are often thin and can be moved by a few traders or by rumours, they can be worded in surprising ways (always read the rules on the market page), and they are not open to everyone in every country.'],
+		dated: ['“By ...?” and “through ...?” markets', 'Some questions are split into dates: “Ceasefire continues through October 31 / November 30 / December 31”. Each date is its own yes/no market, shown here earliest first. For “continues through” the chance usually falls the further out you go; for “happens by” it usually rises.'],
+		contracts: ['Kalshi volume (contracts)', 'Kalshi reports how many contracts were traded, not dollars. Each contract pays $1 if the answer is Yes, so the dollars that changed hands are less than the contract count.'],
+		warcost: ['War-cost estimates', 'Official figures come from the Pentagon (testimony or briefings to Congress) and are cumulative totals on the day they were given; what they include changes (some leave out the build-up, base repairs, veterans’ care or interest on borrowing). Think-tank estimates such as CSIS work from Congressional Budget Office unit costs. Long-run studies (for example Brown University’s Costs of War project) count far more, so different numbers can all be honest. We list each with its date and source instead of running a live counter.'],
+		feargauges: ['Markets’ fear gauges', 'Prices that often jump when people get scared: oil (supply worries, especially around the Strait of Hormuz, where about a fifth of the world’s oil passes), gold (a traditional safe haven), the VIX (expected stock-market swings) and the US dollar. They react to many things besides conflict, so a move is a hint, not proof.']
 	};
 	S.GLOSSARY.sfg[1] += S.STOCK_FG_METHOD;
 

@@ -9,6 +9,7 @@
 			<button type="button" role="tab" data-tab="mkts" aria-selected="false">Stocks &amp; commodities</button>
 			<button type="button" role="tab" data-tab="rates" aria-selected="false">Rates &amp; the Fed</button>
 			<button type="button" role="tab" data-tab="pred" aria-selected="false">Prediction markets</button>
+			<button type="button" role="tab" data-tab="geo" aria-selected="false">Geopolitics</button>
 			<button type="button" role="tab" data-tab="news" aria-selected="false">News</button>
 		</div>
 
@@ -70,11 +71,34 @@
 		</section>
 
 		<section class="sg-panel" id="sg-p-news" role="tabpanel" hidden>
-			<p class="tu-note">Headlines only, linked to the publisher. MES does not pick, rewrite or endorse them.</p>
-			<h2>Crypto</h2>
-			<ul class="sg-news" id="sg-cnews"></ul>
-			<h2>Federal Reserve press releases (monetary policy)</h2>
-			<ul class="sg-news" id="sg-fed2"></ul>
+			<p class="tu-note">Headlines, the publisher&rsquo;s own one-line summary and its picture, linked to the article. MES does not pick, rewrite or endorse them.</p>
+			<div class="sg-ntools" id="sg-ntools">
+				<div class="sg-ntool"><span class="sg-ntool__l">View</span><div class="tu-seg" data-nset="nview"><button type="button" data-v="cards">Cards</button><button type="button" data-v="list">List</button><button type="button" data-v="compact">Compact</button></div></div>
+				<div class="sg-ntool sg-ncols-tool"><span class="sg-ntool__l">Columns</span><div class="tu-seg" data-nset="ncols"><button type="button" data-v="auto">Auto</button><button type="button" data-v="1">1</button><button type="button" data-v="2">2</button><button type="button" data-v="3">3</button><button type="button" data-v="4">4</button></div></div>
+				<div class="sg-ntool"><span class="sg-ntool__l">Show</span><div class="tu-seg" data-nset="nshow"><button type="button" data-v="5">5</button><button type="button" data-v="10">10</button><button type="button" data-v="20">20</button><button type="button" data-v="0">All</button></div></div>
+				<div class="sg-ntool sg-nfold"><button type="button" class="tu-btn tu-btn--ghost" data-fold="close">Collapse all</button><button type="button" class="tu-btn tu-btn--ghost" data-fold="open">Expand all</button></div>
+			</div>
+			<div id="sg-nsecs"></div>
+		</section>
+
+		<section class="sg-panel" id="sg-p-geo" role="tabpanel" hidden>
+			<p class="tu-note">War and peace in numbers: what prediction-market traders are paying on conflict questions, the Doomsday Clock, how markets that often react to crises are moving, and what the war with Iran has been reported to cost. <b>Readings, not forecasts</b>: none of these numbers tells you what will happen.</p>
+			<div class="tu-card sg-godds" id="sg-godds"></div>
+			<div class="sg-two">
+				<div class="tu-card sg-dclock" id="sg-dclock"></div>
+				<div class="tu-card" id="sg-gauges"></div>
+			</div>
+			<div class="tu-card">
+				<div class="sg-chead"><b>The Doomsday Clock since 1947 <button type="button" class="sg-q" data-g="doomsday" aria-label="What is the Doomsday Clock?">?</button></b><span class="tu-note">minutes to midnight, lower = closer</span></div>
+				<div class="sg-chart" id="sg-dc-chart"></div>
+				<details class="sg-method"><summary>Every setting</summary><div class="sg-dctable" id="sg-dctable"></div></details>
+			</div>
+			<h2>Conflict markets <button type="button" class="sg-q" data-g="geoodds" aria-label="About conflict odds">?</button></h2>
+			<p class="tu-note">Questions about wars, ceasefires, invasions and blockades on Polymarket and Kalshi, most money traded first. Dated questions <button type="button" class="sg-q" data-g="dated" aria-label="About dated markets">?</button> list their dates earliest first.</p>
+			<div class="sg-markets" id="sg-gmarkets"></div>
+			<div class="tu-card sg-warcost" id="sg-warcost"></div>
+			<h2>World headlines</h2>
+			<div id="sg-gnews"></div>
 		</section>
 
 		<div class="tu-card sg-foot">
@@ -88,7 +112,7 @@
 			<h2>Free market signals dashboard: fear &amp; greed, rates, the Fed and the odds</h2>
 			<p>MES Market Signals puts the numbers people check every morning on one free page with no sign-up: the <strong>Crypto Fear &amp; Greed Index</strong>, a <strong>stock-market fear &amp; greed</strong> reading you can verify, Bitcoin, Ether, XRP, Solana and HIVE prices, Bitcoin dominance and the halving countdown, the S&amp;P 500, Nasdaq, Dow, gold, oil and the dollar, the <strong>fed funds rate</strong>, Treasury yields and the yield curve, inflation, the <strong>next FOMC meeting</strong>, and what <strong>prediction markets</strong> say about the Fed, inflation and recession. Every technical word has a &ldquo;?&rdquo; button with a plain-English explanation.</p>
 			<h3>Where the numbers come from</h3>
-			<p>Crypto Fear &amp; Greed: alternative.me. Crypto prices, market cap and stablecoins: CoinGecko. Bitcoin block height: mempool.space. Stock indexes, gold, oil and the dollar: Yahoo Finance (with FRED closing prices as a backup). Interest rates, VIX, junk-bond spreads, inflation and recession dates: FRED, the database of the Federal Reserve Bank of St. Louis. Bank of Canada: its Valet API. ECB and Bank of England: their own statistics sites. Prediction markets: Polymarket and Kalshi public data. Headlines: the Federal Reserve, CoinDesk and Cointelegraph feeds. The page refreshes about every five minutes; markets that are closed show their last price.</p>
+			<p>Crypto Fear &amp; Greed: alternative.me. Crypto prices, market cap and stablecoins: CoinGecko. Bitcoin block height: mempool.space. Stock indexes, gold, oil and the dollar: Yahoo Finance (with FRED closing prices as a backup). Interest rates, VIX, junk-bond spreads, inflation and recession dates: FRED, the database of the Federal Reserve Bank of St. Louis. Bank of Canada: its Valet API. ECB and Bank of England: their own statistics sites. Prediction markets: Polymarket and Kalshi public data. Headlines: the RSS feeds of the Federal Reserve, CoinDesk, Cointelegraph, CNBC, MarketWatch, BBC, Al Jazeera, NPR, The Guardian and DW (headline, the publisher&rsquo;s one-line summary and picture, linked to the article). Doomsday Clock: the Bulletin of the Atomic Scientists. The page refreshes about every five minutes; markets that are closed show their last price.</p>
 			<h3>How is the stock fear &amp; greed number made?</h3>
 			<p>It is MES&rsquo;s own composite, not CNN&rsquo;s index (that one uses data we cannot get for free). It averages three readings, each ranked against its own last year so they share a 0-100 scale: how far the S&amp;P 500 is above or below its 125-day average, the VIX (flipped, since a high VIX means fear) and the extra interest junk-rated companies pay over the US government (flipped too). The method is written out next to the gauge so anyone can check it.</p>
 			<h3>Questions</h3>
@@ -98,6 +122,10 @@
 			<p>A negative 10-year minus 2-year spread came before every US recession since the 1970s, usually by 6 to 24 months, which is why people watch it. But the gap varies a lot, and the 2022-2024 inversion, the longest on record, had not been followed by an official recession as of late 2026. It is a warning light, not a calendar.</p>
 			<h4>What does &ldquo;72% on Polymarket&rdquo; mean?</h4>
 			<p>A &ldquo;Yes&rdquo; share pays $1 if the event happens. If it trades at 72 cents, traders as a group are acting as if the chance is about 72%. Prices move with news and with the money in each market, so treat them as the crowd&rsquo;s current guess.</p>
+			<h4>What is on the Geopolitics tab?</h4>
+			<p>Prediction-market prices on war, ceasefire, invasion and blockade questions from Polymarket and Kalshi (only the markets&rsquo; own numbers, biggest markets first), the Doomsday Clock of the Bulletin of the Atomic Scientists with every setting since 1947, oil, gold, the dollar and the VIX side by side, the published estimates of what the 2026 war with Iran has cost the United States, each with its date and source, and world headlines from the BBC, Al Jazeera, NPR, The Guardian and DW.</p>
+			<h4>Why is there no live war-cost counter?</h4>
+			<p>Because no source publishes a current daily rate. The Pentagon has given cumulative totals on particular dates, and the one published daily figure (CSIS) covers only the first 100 hours. Running a counter from those would mean inventing a number, so the page lists each published estimate with what it includes.</p>
 			<h4>Why is the Fed meeting countdown useful?</h4>
 			<p>Interest-rate decisions move mortgage rates, savings rates, stocks, the dollar and crypto. The Fed announces at 2:00 pm Eastern on the second day of each meeting; four meetings a year also publish the &ldquo;dot plot&rdquo; of where officials expect rates to go.</p>
 			<h4>Is anything stored or tracked?</h4>

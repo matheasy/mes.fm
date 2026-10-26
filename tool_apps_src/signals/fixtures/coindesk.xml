@@ -6,7 +6,7 @@
     <atom:link rel="self" type="application/rss+xml" href="https://www.coindesk.com/arc/outboundfeeds/rss"/>
     <atom:link rel="hub" href="true"/>
     <description>Leader in cryptocurrency, Bitcoin, Ethereum, XRP, blockchain, DeFi, digital finance and Web 3.0 news with analysis, video and live price updates.</description>
-    <lastBuildDate>Sat, 24 Oct 2026 18:11:25 +0000</lastBuildDate>
+    <lastBuildDate>Mon, 26 Oct 2026 04:38:39 +0000</lastBuildDate>
     <language>en-US</language>
     <copyright>© 2026 CoinDesk, Inc.</copyright>
     <generator>CoinDesk</generator>
@@ -19,6 +19,66 @@
       <link>https://www.coindesk.com/</link>
     </image>
     <item>
+      <title><![CDATA[Bitcoin slips under $80,000 as traders de-risk ahead of Fed meeting]]></title>
+      <link>https://www.coindesk.com/markets/2026/10/26/bitcoin-slips-under-usd80-000-as-traders-de-risk-ahead-of-fed-meeting</link>
+      <media:content url="https://cdn.sanity.io/images/s3y3vcno/production/f7711f978a2d69fe002fffabb76faa6278fb0b5e-1512x844.png?fm=jpg&amp;w=800&amp;h=450&amp;crop=focalpoint&amp;fit=clip" type="image/*" medium="image"/>
+      <guid isPermaLink="false">ebf37010-7126-43df-ae53-852951b98f36</guid>
+      <pubDate>Mon, 26 Oct 2026 04:37:02 +0000</pubDate>
+      <description><![CDATA[Ether and XRP led losses among the majors as the AI trade took another hit in Asia, where Goldman Sachs cut its Kospi target by 25%.]]></description>
+      <dc:creator>Shaurya Malwa</dc:creator>
+      <content:encoded/>
+      <dc:description/>
+      <category domain="https://www.coindesk.com/markets"><![CDATA[Markets]]></category>
+      <category domain="https://www.coindesk.com/">News</category>
+    </item>
+<item>
+      <title><![CDATA[Elon Musk issues a warning for 'AI neoclouds' as SpaceX borrows $40 billion for chips]]></title>
+      <link>https://www.coindesk.com/markets/2026/10/26/elon-musk-confirms-usd40-billion-spacex-debt-deal-for-ai-chips-warns-of-neocloud-shakeout</link>
+      <media:content url="https://cdn.sanity.io/images/s3y3vcno/production/163774b1444abc52081546c972d6d021d51f57bd-4076x2913.jpg?fm=jpg&amp;w=800&amp;h=450&amp;crop=focalpoint&amp;fit=clip" type="image/*" medium="image"/>
+      <guid isPermaLink="false">27f9f1cb-00fe-4ac3-9060-faadbe47a6ee</guid>
+      <pubDate>Mon, 26 Oct 2026 03:11:39 +0000</pubDate>
+      <description><![CDATA[SpaceX has raised $40 billion in debt to buy GPUs, while Musk predicts a major shakeout among smaller AI cloud providers.]]></description>
+      <dc:creator>Omkar Godbole</dc:creator>
+      <dc:creator>AI Boost</dc:creator>
+      <content:encoded/>
+      <dc:description/>
+      <category domain="https://www.coindesk.com/markets"><![CDATA[Markets]]></category>
+      <category domain="tag"><![CDATA[Elon Musk]]></category>
+      <category domain="https://www.coindesk.com/">News</category>
+    </item>
+<item>
+      <title><![CDATA[Latvia targets tokenization rules in 2027 with commercial property in focus]]></title>
+      <link>https://www.coindesk.com/business/2026/10/25/latvia-targets-tokenization-rules-in-2027-with-commercial-property-in-focus</link>
+      <media:content url="https://cdn.sanity.io/images/s3y3vcno/production/4884d996e19df3d06ed21ee3284515f592e3718a-1920x1280.jpg?fm=jpg&amp;w=800&amp;h=450&amp;crop=focalpoint&amp;fit=clip" type="image/*" medium="image"/>
+      <guid isPermaLink="false">b01e607f-b51e-4cf9-802c-193744b02e8c</guid>
+      <pubDate>Sun, 25 Oct 2026 15:00:00 +0000</pubDate>
+      <description><![CDATA[Economics Minister Viktors Valainis says rules could arrive in the first half of next year, but an overdue assessment remains unfinished and no sovereign-bond issuance was identified.
+]]></description>
+      <dc:creator>Francisco Rodrigues</dc:creator>
+      <content:encoded/>
+      <dc:description/>
+      <category domain="https://www.coindesk.com/business"><![CDATA[Finance]]></category>
+      <category domain="tag"><![CDATA[Tokenization]]></category>
+      <category domain="tag"><![CDATA[Exclusive]]></category>
+      <category domain="https://www.coindesk.com/">News</category>
+    </item>
+<item>
+      <title><![CDATA[UK banks face 10,000 complaints in 3 months over crypto restrictions]]></title>
+      <link>https://www.coindesk.com/policy/2026/10/22/uk-banks-face-10-000-complaints-in-3-months-over-crypto-restrictions</link>
+      <media:content url="https://cdn.sanity.io/images/s3y3vcno/production/6a55120319f442a7083bbe28359db7f277af29df-5745x3830.jpg?fm=jpg&amp;w=800&amp;h=450&amp;crop=focalpoint&amp;fit=clip" type="image/*" medium="image"/>
+      <guid isPermaLink="false">c82550a1-cd38-40ed-bc8b-778cab3df3c5</guid>
+      <pubDate>Sun, 25 Oct 2026 13:00:00 +0000</pubDate>
+      <description><![CDATA[The U.K. claims to aspire to become a global cryptocurrency hub, an ambition that would appear to be at odds with the attitude to crypto purchases of its major banks.]]></description>
+      <dc:creator>Jamie Crawley</dc:creator>
+      <dc:creator>AI Boost</dc:creator>
+      <content:encoded/>
+      <dc:description/>
+      <category domain="https://www.coindesk.com/policy"><![CDATA[Policy]]></category>
+      <category domain="tag"><![CDATA[UK]]></category>
+      <category domain="tag"><![CDATA[banks]]></category>
+      <category domain="https://www.coindesk.com/">News</category>
+    </item>
+<item>
       <title><![CDATA[Strategy, Strive face balancing act between bitcoin buying and preferred stock dividends]]></title>
       <link>https://www.coindesk.com/business/2026/10/24/strategy-strive-face-balancing-act-between-bitcoin-buying-and-preferred-stock-dividends</link>
       <media:content url="https://cdn.sanity.io/images/s3y3vcno/production/dc1a0236f5c1c10010c2b1e42f39c41736508170-6000x3375.jpg?fm=jpg&amp;w=800&amp;h=450&amp;crop=focalpoint&amp;fit=clip" type="image/*" medium="image"/>
@@ -34,7 +94,8 @@
       <category domain="tag"><![CDATA[MicroStrategy]]></category>
       <category domain="tag"><![CDATA[Exclusive]]></category>
       <category domain="https://www.coindesk.com/">News</category>
-    </item><item>
+    </item>
+<item>
       <title><![CDATA[Block's new voice AI sounds eerily human, sparking awe and scam fears]]></title>
       <link>https://www.coindesk.com/tech/2026/10/24/block-s-new-voice-ai-sounds-eerily-human-sparking-awe-and-scam-fears</link>
       <media:content url="https://cdn.sanity.io/images/s3y3vcno/production/7aad17172474a7876af59da08b2b538535468c12-2048x1365.jpg?fm=jpg&amp;w=800&amp;h=450&amp;crop=focalpoint&amp;fit=clip" type="image/*" medium="image"/>
@@ -47,7 +108,8 @@
       <category domain="https://www.coindesk.com/tech"><![CDATA[Tech]]></category>
       <category domain="tag"><![CDATA[Artificial Intelligence]]></category>
       <category domain="https://www.coindesk.com/">News</category>
-    </item><item>
+    </item>
+<item>
       <title><![CDATA[Crypto under weekend pressure, bitcoin slides below $80,000 on U.S. Middle East evacuations]]></title>
       <link>https://www.coindesk.com/markets/2026/10/24/crypto-under-weekend-pressure-bitcoin-slides-below-usd80-000-on-u-s-middle-east-evacuations</link>
       <guid isPermaLink="false">621f562c-804f-4ab4-ab24-c4f968932256</guid>
@@ -58,7 +120,8 @@
       <dc:description/>
       <category domain="https://www.coindesk.com/markets"><![CDATA[Markets]]></category>
       <category domain="https://www.coindesk.com/">News</category>
-    </item><item>
+    </item>
+<item>
       <title><![CDATA[Why McDonalds, Microsoft and Google saying no to tokenized stocks isn't a dealbreaker]]></title>
       <link>https://www.coindesk.com/business/2026/10/23/why-mcdonalds-microsoft-and-google-saying-no-to-tokenized-stocks-isn-t-a-dealbreaker</link>
       <media:content url="https://cdn.sanity.io/images/s3y3vcno/production/5f5b4bcc5ab7ba1437f88bb9961bbd70e3bbb448-5624x3749.jpg?fm=jpg&amp;w=800&amp;h=450&amp;crop=focalpoint&amp;fit=clip" type="image/*" medium="image"/>
@@ -73,4 +136,96 @@
       <category domain="tag"><![CDATA[Tokenization]]></category>
       <category domain="tag"><![CDATA[Exclusive]]></category>
       <category domain="https://www.coindesk.com/">News</category>
-    </item></channel></rss>
+    </item>
+<item>
+      <title><![CDATA[Argentina drops criminal probe into President Milei over crashed memecoin LIBRA]]></title>
+      <link>https://www.coindesk.com/business/2026/10/24/argentina-drops-criminal-probe-into-president-milei-over-crashed-memecoin-libra</link>
+      <media:content url="https://cdn.sanity.io/images/s3y3vcno/production/d5be50574b7c98b10befa8ee5f9704bd3fba1aa4-960x640.jpg?fm=jpg&amp;w=800&amp;h=450&amp;crop=focalpoint&amp;fit=clip" type="image/*" medium="image"/>
+      <guid isPermaLink="false">52a45aad-f51f-4727-8a01-016a3a430857</guid>
+      <pubDate>Sat, 24 Oct 2026 14:38:47 +0000</pubDate>
+      <description><![CDATA[The judge found that Milei's promotion of LIBRA did not constitute fraud, despite the attention his support drew to the token.]]></description>
+      <dc:creator>Francisco Rodrigues</dc:creator>
+      <content:encoded/>
+      <dc:description/>
+      <category domain="https://www.coindesk.com/business"><![CDATA[Finance]]></category>
+      <category domain="tag"><![CDATA[Crypto News]]></category>
+      <category domain="tag"><![CDATA[Memecoin]]></category>
+      <category domain="https://www.coindesk.com/">News</category>
+    </item>
+<item>
+      <title><![CDATA[Wells Fargo, Cisco, Marvell among latest firms objecting to OKXICE's tokenized stock plan]]></title>
+      <link>https://www.coindesk.com/business/2026/10/24/wells-fargo-cisco-marvell-among-latest-firms-objecting-to-okxice-s-tokenized-stock-plan</link>
+      <media:content url="https://cdn.sanity.io/images/s3y3vcno/production/e73f268e229858cf3a57675d0f3f6ee3ae61a1ab-6000x4000.jpg?fm=jpg&amp;w=800&amp;h=450&amp;crop=focalpoint&amp;fit=clip" type="image/*" medium="image"/>
+      <guid isPermaLink="false">61f72b7d-e41e-48b8-84c8-c6246c58c4c8</guid>
+      <pubDate>Sat, 24 Oct 2026 14:06:24 +0000</pubDate>
+      <description><![CDATA[Six more companies have objected to listing tokenized versions of their stock on the venue, Reuters reported, bringing the total to 22.]]></description>
+      <dc:creator>Krisztian Sandor</dc:creator>
+      <content:encoded/>
+      <dc:description/>
+      <category domain="https://www.coindesk.com/business"><![CDATA[Finance]]></category>
+      <category domain="tag"><![CDATA[Tokenization]]></category>
+      <category domain="tag"><![CDATA[Tokenized Equities]]></category>
+      <category domain="tag"><![CDATA[OKX]]></category>
+      <category domain="https://www.coindesk.com/">News</category>
+    </item>
+<item>
+      <title><![CDATA[Bitcoin’s wealthy holders turning to loans and yield as investment habits mature: Xapo CEO]]></title>
+      <link>https://www.coindesk.com/business/2026/10/24/bitcoin-s-wealthy-holders-turning-to-loans-and-yield-as-investment-habits-mature-xapo-ceo</link>
+      <media:content url="https://cdn.sanity.io/images/s3y3vcno/production/c9de0b20ae95de1a178d4e5154bdfe83bda7c652-6336x3564.jpg?fm=jpg&amp;w=800&amp;h=450&amp;crop=focalpoint&amp;fit=clip" type="image/*" medium="image"/>
+      <guid isPermaLink="false">d336a08e-0f52-4648-8468-6541e40f3911</guid>
+      <pubDate>Sat, 24 Oct 2026 14:00:00 +0000</pubDate>
+      <description><![CDATA[Borrowing against bitcoin and earning income to build their BTC holdings are becoming priorities for long-term investors, Xapo Bank CEO Seamus Rocca told CoinDesk.]]></description>
+      <dc:creator>Will Canny</dc:creator>
+      <dc:creator>AI Boost</dc:creator>
+      <content:encoded/>
+      <dc:description/>
+      <category domain="https://www.coindesk.com/business"><![CDATA[Finance]]></category>
+      <category domain="tag"><![CDATA[Bitcoin News]]></category>
+      <category domain="tag"><![CDATA[Exclusive]]></category>
+      <category domain="https://www.coindesk.com/">News</category>
+    </item>
+<item>
+      <title><![CDATA[U.S. Clarity Act failure gives Asia and Middle East a competitive edge, says Apex Group CEO]]></title>
+      <link>https://www.coindesk.com/policy/2026/10/24/u-s-clarity-act-failure-gives-asia-and-middle-east-a-competitive-edge-says-apex-group-ceo</link>
+      <media:content url="https://cdn.sanity.io/images/s3y3vcno/production/cb2a91ec8eda764f9a0f74f30550a6a716563fda-2517x1416.jpg?fm=jpg&amp;w=800&amp;h=450&amp;crop=focalpoint&amp;fit=clip" type="image/*" medium="image"/>
+      <guid isPermaLink="false">6fb281fd-4811-43a3-b88f-aa268af04abd</guid>
+      <pubDate>Sat, 24 Oct 2026 12:00:00 +0000</pubDate>
+      <description><![CDATA[Apex Group CEO Peter Hughes warned that the failure of the U.S. Clarity Act will drive digital asset businesses toward faster-moving jurisdictions in Asia and the Middle East.]]></description>
+      <dc:creator>Olivier Acuna</dc:creator>
+      <content:encoded/>
+      <dc:description/>
+      <category domain="https://www.coindesk.com/policy"><![CDATA[Policy]]></category>
+      <category domain="tag"><![CDATA[Clarity Act]]></category>
+      <category domain="tag"><![CDATA[Regulation]]></category>
+      <category domain="tag"><![CDATA[Tokenization]]></category>
+      <category domain="https://www.coindesk.com/">News</category>
+    </item>
+<item>
+      <title><![CDATA[Franklin Templeton adds $150 million in fund shares to XRP Ledger, all in one wallet]]></title>
+      <link>https://www.coindesk.com/markets/2026/10/24/franklin-templeton-adds-usd150-million-in-fund-shares-to-xrp-ledger-all-in-one-wallet</link>
+      <media:content url="https://cdn.sanity.io/images/s3y3vcno/production/38b95887c36694f1eb6785def8e9fef7464fc126-7680x4320.jpg?fm=jpg&amp;w=800&amp;h=450&amp;crop=focalpoint&amp;fit=clip" type="image/*" medium="image"/>
+      <guid isPermaLink="false">b24fbb6b-1b18-40ef-9b52-f4b292bc2010</guid>
+      <pubDate>Sat, 24 Oct 2026 04:45:43 +0000</pubDate>
+      <description><![CDATA[Two subscriptions on Thursday nearly quadrupled the fund’s tokens on the network. The receiving wallet shares its authorized signers with the issuer.]]></description>
+      <dc:creator>Shaurya Malwa</dc:creator>
+      <content:encoded/>
+      <dc:description/>
+      <category domain="https://www.coindesk.com/markets"><![CDATA[Markets]]></category>
+      <category domain="https://www.coindesk.com/">News</category>
+    </item>
+<item>
+      <title><![CDATA[Robinhood sees surge in bitcoin, gold prediction markets as traders move beyond sports]]></title>
+      <link>https://www.coindesk.com/markets/2026/10/23/robinhood-sees-surge-in-bitcoin-gold-prediction-markets-as-traders-move-beyond-sports</link>
+      <media:content url="https://cdn.sanity.io/images/s3y3vcno/production/9655eada3129b642b283dac1319e070000a740b5-6960x4640.jpg?fm=jpg&amp;w=800&amp;h=450&amp;crop=focalpoint&amp;fit=clip" type="image/*" medium="image"/>
+      <guid isPermaLink="false">0de3c42c-b2f1-46ed-9b3c-703c0100bd76</guid>
+      <pubDate>Fri, 23 Oct 2026 13:58:56 +0000</pubDate>
+      <description><![CDATA[The company's head of futures and prediction markets said bitcoin, gold and oil contracts are among its fastest-growing prediction markets.]]></description>
+      <dc:creator>Helene Braun</dc:creator>
+      <content:encoded/>
+      <dc:description/>
+      <category domain="https://www.coindesk.com/markets"><![CDATA[Markets]]></category>
+      <category domain="tag"><![CDATA[Robinhood]]></category>
+      <category domain="tag"><![CDATA[Prediction Markets]]></category>
+      <category domain="https://www.coindesk.com/">News</category>
+    </item>
+</channel></rss>
