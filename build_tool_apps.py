@@ -157,6 +157,14 @@ APPS = {
                     js_v="1",
                     nav_extra="<li class=\"info-bar__item\"><a class=\"info-bar__item__text\" href='/crypto'>Crypto</a></li>",
                     menu_extra="<li class=\"navbar__item\"><a class=\"navbar__link\" href=\"/crypto\">MES Crypto</a></li>"),
+    # MES Debt Clock (2026-10-25, mes.fm/debt-clock): US / world / Canada government debt as running estimates (last official figure + average change over a stated window).
+    # Data = mes.fm/api/debt.js (one aggregator, keyless: Treasury Fiscal Data, FRED, IMF DataMapper, Statistics Canada, Bank of Canada); lib.js is shared with the API as
+    # mes.fm/api/_debt-lib.js (byte-identical copy). Snapshot mes.fm/debt-clock/data/sample.json (`node mes.fm/api/debt.js --write`). Tests: node tool_apps_src/debt-clock-tests.js.
+    "debt-clock": dict(title="MES Debt Clock", page_title="Debt Clock: US National Debt, World Debt and Canada's Debt, Live Estimate",
+                       tag="The national debt, ticking: from official figures, with the maths shown.", accent="#9b1c31", dark="#6b1220", tint="#f9e3e6",
+                       desc="Free live debt clock: a running estimate of the US national debt from the Treasury's daily figures, plus world government debt and Canada's federal debt, the share per person, household and taxpayer, debt-to-GDP, interest per second, the deficit, and charts back to 1790. Every number shows its source and how it is estimated.",
+                       meta_desc="Live US national debt clock from Treasury data, plus world and Canada debt: per person, debt-to-GDP, interest per second and charts since 1790.",
+                       js_v="1"),
     "baby-growth-percentile-calculator": dict(title="MES Baby Growth Percentile Calculator", page_title="Baby Growth Percentile Calculator (WHO Weight, Length, Head)",
                           tag="Weight, length and head percentiles on the WHO chart.", accent="#15803d", dark="#0f5f2c", tint="#dcf3e3", src="baby-growth", js_path="baby-growth/js/baby-growth.js", js_parts=["data.js"],
                           desc="Free baby growth percentile calculator using the WHO Child Growth Standards: enter age, weight, length and head circumference to see the percentile and z-score on the growth chart, corrected age for premature babies, and a private growth log that shows your baby's trend.",

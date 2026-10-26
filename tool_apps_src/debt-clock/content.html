@@ -1,0 +1,125 @@
+	<div class="tu dc" id="dc">
+		<p class="dc-disc"><b>Estimates from official data, for information.</b> The ticking numbers start from the last figure each government or the IMF published and add the average change per second since then <button type="button" class="dc-q" data-g="estimate" aria-label="How the ticking number is estimated">?</button>. They are not exact, and nothing here is advice.</p>
+		<div class="dc-status" id="dc-status" role="status" aria-live="polite" hidden></div>
+		<div class="dc-top">
+			<div class="dc-tabs" role="tablist" id="dc-tabs">
+				<button type="button" role="tab" data-tab="us" aria-selected="true">United States</button>
+				<button type="button" role="tab" data-tab="world" aria-selected="false">World</button>
+				<button type="button" role="tab" data-tab="ca" aria-selected="false">Canada</button>
+			</div>
+			<label class="dc-cur">Amounts in <select id="dc-cur"><option value="native">each country&rsquo;s own currency</option><option value="USD">US dollars</option><option value="CAD">Canadian dollars</option></select></label>
+		</div>
+
+		<section class="dc-panel" id="dc-p-us" role="tabpanel">
+			<div class="tu-card dc-clock" id="dc-us-clock">
+				<div class="dc-clock__l">US national debt right now <span class="dc-est">estimate</span> <button type="button" class="dc-q" data-g="total" aria-label="What is total public debt outstanding?">?</button></div>
+				<div class="dc-num" id="dc-us-num" aria-live="off">&hellip;</div>
+				<div class="dc-rate" id="dc-us-rate"></div>
+				<div class="dc-win"><span>Average change over</span> <span class="tu-seg" data-win="us"><button type="button" data-d="30">30 days</button><button type="button" data-d="90">90 days</button><button type="button" data-d="365">1 year</button></span></div>
+				<p class="dc-how" id="dc-us-how"></p>
+				<div class="dc-actions"><button type="button" class="tu-btn" data-big="us">&#x2922; Big clock</button><button type="button" class="tu-btn tu-btn--ghost" data-fs="us">&#x26F6; Full screen</button></div>
+			</div>
+			<div class="dc-tiles" id="dc-us-tiles"></div>
+			<div class="tu-card">
+				<div class="dc-chead"><b>Who is owed: held by the public <button type="button" class="dc-q" data-g="public" aria-label="What is debt held by the public?">?</button> vs intragovernmental <button type="button" class="dc-q" data-g="intragov" aria-label="What are intragovernmental holdings?">?</button></b></div>
+				<div id="dc-split"></div>
+			</div>
+			<div class="tu-card">
+				<div class="dc-chead"><b id="dc-hist-title">US debt since 1790</b>
+					<span class="dc-ctl"><span class="tu-seg" data-set="hr"><button type="button" data-v="all">Since 1790</button><button type="button" data-v="1940">Since 1940</button><button type="button" data-v="1y">Last 12 months</button></span>
+					<span class="tu-seg" data-set="hs"><button type="button" data-v="log">Log</button><button type="button" data-v="lin">Linear</button></span></span></div>
+				<div class="dc-chart" id="dc-hist-chart"></div>
+				<p class="tu-note" id="dc-hist-note"></p>
+			</div>
+			<div class="tu-card">
+				<div class="dc-chead"><b>Debt as a share of the economy (debt-to-GDP) <button type="button" class="dc-q" data-g="debtgdp" aria-label="What is debt-to-GDP?">?</button></b></div>
+				<div class="dc-chart" id="dc-ratio-chart"></div>
+				<p class="tu-note">Total public debt as a percentage of GDP, quarterly since 1966 (FRED series GFDEGDQ188S).</p>
+			</div>
+			<div class="dc-two">
+				<div class="tu-card">
+					<div class="dc-chead"><b>Interest cost by fiscal year <button type="button" class="dc-q" data-g="interest" aria-label="What is interest expense?">?</button></b></div>
+					<div class="dc-chart" id="dc-int-chart"></div>
+					<p class="tu-note">Interest on public issues (paid to holders outside the government), October to September.</p>
+				</div>
+				<div class="tu-card">
+					<div class="dc-chead"><b>Average interest rate on the debt <button type="button" class="dc-q" data-g="avgrate" aria-label="What is the average interest rate?">?</button></b></div>
+					<div class="dc-chart" id="dc-rate-chart"></div>
+					<p class="tu-note">All interest-bearing Treasury debt, monthly since 2001.</p>
+				</div>
+			</div>
+			<div class="tu-card">
+				<div class="dc-chead"><b>Deficit by month <button type="button" class="dc-q" data-g="deficit" aria-label="What is the deficit?">?</button></b><span class="tu-note" id="dc-def-sub"></span></div>
+				<div class="dc-chart" id="dc-def-chart"></div>
+				<p class="tu-note">Monthly Treasury Statement. Bars above zero = spending more than came in that month; below zero = a surplus month (often April, when taxes are due).</p>
+			</div>
+			<p class="tu-note">The debt ceiling <button type="button" class="dc-q" data-g="ceiling" aria-label="What is the debt ceiling?">?</button> is not shown: Treasury does not publish it in a simple live table. Related: <a href="/signals?tab=rates">interest rates and the Fed on MES Market Signals</a> &middot; <a href="/inflationcalculator">what a dollar from any year is worth today</a>.</p>
+		</section>
+
+		<section class="dc-panel" id="dc-p-world" role="tabpanel" hidden>
+			<div class="tu-card dc-clock" id="dc-w-clock">
+				<div class="dc-clock__l">World government debt <span class="dc-est">estimate</span> <button type="button" class="dc-q" data-g="world" aria-label="How is world government debt added up?">?</button></div>
+				<div class="dc-num" id="dc-w-num" aria-live="off">&hellip;</div>
+				<div class="dc-rate" id="dc-w-rate"></div>
+				<p class="dc-how" id="dc-w-how"></p>
+				<div class="dc-actions"><button type="button" class="tu-btn" data-big="world">&#x2922; Big clock</button><button type="button" class="tu-btn tu-btn--ghost" data-fs="world">&#x26F6; Full screen</button></div>
+			</div>
+			<div class="dc-tiles" id="dc-w-tiles"></div>
+			<div class="tu-card">
+				<div class="dc-chead"><b>Government debt by country <button type="button" class="dc-q" data-g="gross" aria-label="What is general government gross debt?">?</button></b>
+					<span class="dc-ctl"><label class="dc-lab">Year <select id="dc-year"></select></label>
+					<span class="tu-seg" data-set="wm"><button type="button" data-v="pct">% of GDP</button><button type="button" data-v="debt">Total</button><button type="button" data-v="pp">Per person</button></span></span></div>
+				<div class="dc-chart dc-bars" id="dc-w-bars"></div>
+				<div class="dc-tfind"><label for="dc-find">Find a country</label> <input type="search" id="dc-find" placeholder="e.g. Japan" autocomplete="off"> <span class="tu-note" id="dc-wcount"></span></div>
+				<div class="dc-twrap"><table class="dc-table" id="dc-wtable"><thead><tr><th data-k="rank" class="num">#</th><th data-k="name">Country</th><th data-k="pct" class="num">Debt % of GDP</th><th data-k="debt" class="num">Debt</th><th data-k="perPerson" class="num">Per person</th><th data-k="gdp" class="num">GDP</th></tr></thead><tbody></tbody></table></div>
+				<p class="tu-note">IMF World Economic Outlook (DataMapper): general government gross debt and GDP in current US dollars. Recent years are IMF estimates or projections. Click a column to sort.</p>
+			</div>
+		</section>
+
+		<section class="dc-panel" id="dc-p-ca" role="tabpanel" hidden>
+			<div class="tu-card dc-clock dc-clock--ca" id="dc-ca-clock">
+				<div class="dc-clock__l">Canada&rsquo;s federal debt right now <span class="dc-est">estimate</span> <button type="button" class="dc-q" data-g="cafed" aria-label="What is Canada's federal debt?">?</button></div>
+				<div class="dc-num" id="dc-ca-num" aria-live="off">&hellip;</div>
+				<div class="dc-rate" id="dc-ca-rate"></div>
+				<div class="dc-win"><span>Average change over</span> <span class="tu-seg" data-win="ca"><button type="button" data-d="12">1 year</button><button type="button" data-d="36">3 years</button></span></div>
+				<p class="dc-how" id="dc-ca-how"></p>
+				<div class="dc-actions"><button type="button" class="tu-btn" data-big="ca">&#x2922; Big clock</button><button type="button" class="tu-btn tu-btn--ghost" data-fs="ca">&#x26F6; Full screen</button></div>
+			</div>
+			<div class="dc-tiles" id="dc-ca-tiles"></div>
+			<div class="tu-card">
+				<div class="dc-chead"><b>Federal debt, month by month</b></div>
+				<div class="dc-chart" id="dc-ca-chart"></div>
+				<p class="tu-note">Statistics Canada table 10-10-0002-01 (federal debt = accumulated deficit). The yearly jumps in March come from end-of-fiscal-year accounting. Federal only: the provinces have debts of their own, which the IMF figure includes.</p>
+			</div>
+		</section>
+
+		<div class="tu-card dc-foot">
+			<div class="tu-row" style="justify-content:space-between;gap:0.5em;align-items:center"><span id="dc-updated" class="tu-note"></span><button type="button" class="tu-btn tu-btn--ghost" id="dc-refresh">Refresh</button></div>
+			<details><summary>Sources and their status</summary><ul class="dc-srcs" id="dc-srcs"></ul></details>
+		</div>
+		<div class="dc-pop" id="dc-pop" role="dialog" aria-modal="false" hidden><button type="button" class="dc-pop__x" aria-label="Close">&times;</button><b class="dc-pop__t"></b><p class="dc-pop__p"></p></div>
+		<div class="dc-tip" id="dc-tip" hidden></div>
+		<div class="dc-bv" id="dc-bv" role="dialog" aria-modal="true" aria-label="Big debt clock" hidden>
+			<div class="dc-bv__bar"><span class="tu-seg" id="dc-bv-pick"><button type="button" data-c="us">United States</button><button type="button" data-c="world">World</button><button type="button" data-c="ca">Canada</button></span><span class="dc-bv__sp"></span><button type="button" class="dc-bv__b" id="dc-bv-fs">&#x26F6; Full screen</button><button type="button" class="dc-bv__b" id="dc-bv-x">Close (Esc)</button></div>
+			<div class="dc-bv__main"><div class="dc-bv__l" id="dc-bv-l"></div><div class="dc-bv__n" id="dc-bv-n"></div><div class="dc-bv__s" id="dc-bv-s"></div><div class="dc-bv__s dc-bv__s2" id="dc-bv-s2"></div></div>
+			<div class="dc-bv__note" id="dc-bv-note"></div>
+		</div>
+
+		<div class="tu-seo">
+			<h2>A live US, world and Canada debt clock from official numbers</h2>
+			<p>MES Debt Clock shows the <strong>US national debt</strong>, <strong>world government debt</strong> and <strong>Canada&rsquo;s federal debt</strong> as running estimates, with the share per person, per household and per taxpayer, debt-to-GDP, what the interest costs every second, and charts back to 1790. Every number says where it comes from, when it was last published and how the in-between estimate is worked out.</p>
+			<h3>Where the numbers come from</h3>
+			<p>US debt: the Treasury&rsquo;s &ldquo;Debt to the Penny&rdquo; (every business day) and Historical Debt Outstanding (since 1790); interest: Treasury&rsquo;s monthly interest expense and average interest rate tables; deficit: the Monthly Treasury Statement. GDP, population, households and debt-to-GDP history: FRED, the database of the Federal Reserve Bank of St. Louis. Taxpayers: about 160 million individual income tax returns a year (IRS filing statistics, rounded). Other countries and the world: the IMF World Economic Outlook. Canada: Statistics Canada (federal debt, population, GDP) and the Bank of Canada exchange rate. The page asks for fresh data at most about once an hour.</p>
+			<h3>Questions</h3>
+			<h4>Why does the number tick so fast?</h4>
+			<p>Because the US debt has been growing by billions of dollars a day on average. The page spreads the average change over the window you pick (30 days, 90 days or a year) across every second. Real borrowing happens in lumps on auction and payment days, so the official figure the next morning can land above or below the estimate.</p>
+			<h4>Is it the same as the famous debt clock in New York or other debt clock sites?</h4>
+			<p>No. This is MES&rsquo;s own page, built from the public Treasury, FRED, IMF and Statistics Canada data, with the method shown next to each number so you can check it.</p>
+			<h4>What is the difference between debt and deficit?</h4>
+			<p>The deficit is the shortfall in one year (spending minus revenue); the debt is the total of all past borrowing still owed. Deficits add to the debt.</p>
+			<h4>Why is Canada&rsquo;s debt-to-GDP different on the World tab?</h4>
+			<p>The Canada tab shows the federal government only (Statistics Canada&rsquo;s accumulated deficit). The IMF figure on the World tab is general government gross debt: federal plus provinces, local governments and pension plans, before subtracting assets, which is why it is much higher.</p>
+			<h4>Does my share mean I owe this money?</h4>
+			<p>No. Per person figures are a way to picture the size of the debt. Governments pay interest and roll over debt from taxes and new borrowing; nobody gets a personal bill.</p>
+		</div>
+	</div>
