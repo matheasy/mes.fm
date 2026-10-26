@@ -1,0 +1,32 @@
+#ct.ct {display:grid;gap:1em}
+#ct .ct-lead {font-size:1.12em;margin:0 0 .8em}
+#ct h2 {margin:0 0 .4em;font-size:1.25em}
+#ct .ct-topics {display:flex;flex-wrap:wrap;gap:.5em;margin:.3em 0 .5em}
+#ct .ct-topic {appearance:none;font:inherit;font-size:1em;display:inline-flex;align-items:center;gap:.4em;min-height:44px;padding:.45em .9em;border-radius:999px;border:1px solid #c5ccd6;background:#fff;color:#222;cursor:pointer;line-height:1.2;text-align:left}
+#ct .ct-topic:hover {border-color:#1a5fb4}
+#ct .ct-topic[aria-pressed="true"] {background:#1a5fb4;border-color:#1a5fb4;color:#fff}
+#ct .ct-topic:focus-visible {outline:2px solid #1a5fb4;outline-offset:2px}
+#ct .ct-hint {margin:.2em 0 0}
+#ct .ct-widget {background:#fff;border-radius:.5em;padding:.4em;min-height:4em}
+#ct .ct-widget iframe {display:block;width:100% !important;max-width:100%;border:0}
+#ct .ct-loading {color:#555;margin:.6em;font-size:.95em}
+#ct .ct-fallback {margin-top:.8em;padding:.8em 1em;border-radius:.5em;border:1px solid #e0a43a;background:#fff6e5;color:#3b2a06}
+#ct .ct-fallback[hidden] {display:none}
+#ct .ct-fallback p {margin:.3em 0}
+#ct .ct-mailrow {display:flex;flex-wrap:wrap;align-items:center;gap:.6em 1em;margin:.2em 0 .8em}
+#ct .ct-mail {font-size:1.15em;font-weight:600}
+#ct .ct-social {display:flex;flex-wrap:wrap;gap:.5em;margin:0 0 .8em}
+#ct .ct-social a {display:inline-flex;align-items:center;min-height:40px;padding:.3em .9em;border-radius:999px;border:1px solid #c5ccd6;text-decoration:none;color:#1a5fb4;font-weight:600}
+#ct .ct-social a:hover {border-color:#1a5fb4}
+#ct .ct-faq details {border-top:1px solid #e1e5ea;padding:.55em 0}
+#ct .ct-faq details:first-of-type {border-top:0}
+#ct .ct-faq summary {cursor:pointer;font-weight:600;min-height:32px;display:flex;align-items:center}
+#ct .ct-faq details p {margin:.4em 0 .2em;line-height:1.5}
+body.dark-mode #ct .ct-topic {background:#23262b;border-color:#4a505a;color:#e6e6e6}
+body.dark-mode #ct .ct-topic:hover {border-color:#8ab4f8}
+body.dark-mode #ct .ct-topic[aria-pressed="true"] {background:#2f6fd0;border-color:#2f6fd0;color:#fff}
+body.dark-mode #ct .ct-widget {background:#f4f5f7}
+body.dark-mode #ct .ct-loading {color:#444}
+body.dark-mode #ct .ct-fallback {background:#3a2c0f;border-color:#a8781e;color:#f3e3c0}
+body.dark-mode #ct .ct-social a {border-color:#4a505a;color:#8ab4f8}
+body.dark-mode #ct .ct-faq details {border-color:#3a3f46}

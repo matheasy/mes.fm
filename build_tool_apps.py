@@ -750,6 +750,15 @@ APPS = {
                       tag="Bigger or smaller text on any website.", accent="#0e7490", dark="#0b5568", tint="#e3f4f8",
                       desc="Free MES Text Size browser extension for Chrome, Brave and Edge: A- and A+ for any website, changing only the text (not pictures or layout), remembered per site, from 50% to 300%. Private, no tracking.",
                       js_v="2"),
+    # Contact page (mes.fm/contact = contact.html, rebuilt 2026-10-25 from the 2016 classic page). The Zotabox form (embed in content.html,
+    # widget zbwid-4d9973a2) still delivers the mail; /main_js/contact-prefill.js fills it from ?name=&email=&subject=&message= (used by the
+    # rating row, the Android tester banners and the homepage suggestion link: keep that contract) and exposes window.MESContactFill for the
+    # topic buttons. Assets live in contact-page/ (js_path, logo_from) so no contact/ folder sits beside contact.html. Ad-free, no sidebar.
+    "contact": dict(title="Contact MES", page_title="Contact Us",
+                    tag="Questions, ideas and corrections: we read everything.", accent="#1a5fb4", dark="#134a8e", tint="#e6effa",
+                    desc="Contact Math Easy Solutions (MES.fm) with questions, feedback, corrections or ideas for new math videos, calculators and tools.",
+                    meta_desc="Contact Math Easy Solutions (MES.fm) with questions, feedback, corrections or ideas for new math videos, calculators and tools. We read every message.",
+                    js_v="1", no_ads=True, url="contact", out="contact.html", js_path="contact-page/js/contact.js", logo_from="contact-page", no_comments=True, home="/", tab=3),
     "go": dict(title="MES Short Links", page_title="Short Links",
                tag="Every mes.fm short link, searchable.", accent="#0e8a6a", dark="#0a6650", tint="#e0f4ee",
                desc="Every MES short link in one searchable list: mes.fm/pomodoro, mes.fm/physics-playlist and more. Filter by category or topic, copy any short link, and get the line for a new one.",
@@ -805,7 +814,7 @@ APPS = {
     # Tests: node tool_apps_src/rating-api-tests.js.
     "ratings": dict(title="MES Ratings", page_title="MES Ratings: Top Rated Pages and Feedback",
                 tag="Top rated pages, by the people who use them.", accent="#b45309", dark="#8a3f07", tint="#fdf0dd",
-                desc="The top rated, most rated and recently rated mes.fm calculators, tools and tutorials, from the Rate this page stars at the bottom of every page. Fair Bayesian ranking, filter by section, and send us feedback by email or the contact form.",
+                desc="The top rated, most rated and recently rated mes.fm calculators, tools and tutorials, from the Rate this page stars at the bottom of every page. Fair Bayesian ranking, filter by section, and send us feedback through the contact form.",
                 js_v="1", no_ads=True),
     # MES Compressor: pictures (canvas re-encode, target size), PDFs (embedded JPEGs re-saved smaller with pdf-lib; Extreme = rasterise) and audio (decode -> MP3 with lamejs), all in the browser.
     # Decisions in lib.js (MESCmp, node tests tool_apps_src/compress-tests.js); /compress-pdf stays as the PDF-specific landing page. Video is not supported yet.
@@ -1127,6 +1136,9 @@ def build_from_source(slug, cfg, tpl):
         assert a > 0 and b > a, "ad block markers not found in tool_page_template.html"
         page = page[:a] + page[b:]
         assert "adsbygoogle" not in page and "googlesyndication" not in page
+    if cfg.get("no_comments"):        # no Comments bar / FastComments box (e.g. the contact page)
+        page, n = re.subn(r'<div id="comments-button"[^>]*>Comments</div>\s*<div id="comments-box" class="hide">\s*<div id="fastcomments-widget"></div>\s*</div>', "", page, count=1)
+        assert n == 1, "comments block not found in tool_page_template.html"
     if cfg.get("nav_extra"):          # extra info-bar tab after Home, and an entry in the Site Navigation menu
         home = "<li class=\"info-bar__item\"><a class=\"info-bar__item__text\" href='/%s'>Home</a></li>" % slug
         assert home in page

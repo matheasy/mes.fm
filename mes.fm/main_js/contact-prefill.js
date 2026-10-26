@@ -8,18 +8,13 @@
    widget is a Vue app, so just setting .value directly doesn't register: it needs the native property
    setter (bypassing the framework's own instrumented setter) plus a dispatched "input" event so Vue's
    reactivity picks up the change, exactly as if the visitor had typed it. Polls for up to 10s since the
-   widget script loads and mounts asynchronously. */
+   widget script loads and mounts asynchronously.
+
+   window.MESContactFill(values, {keepMessage}) fills the form the same way on demand (the contact page's topic buttons);
+   keepMessage leaves a message the visitor already typed alone. The query-string contract above must not change: the rating
+   row, the Android tester banner (percentagecalculator, mobile-apps) and the homepage suggestion link depend on it. */
 (function () {
   "use strict";
-  var params = new URLSearchParams(location.search);
-  var values = {
-    name: params.get("name"),
-    email: params.get("email"),
-    subject: params.get("subject"),
-    message: params.get("message"),
-  };
-  if (!values.name && !values.email && !values.subject && !values.message) return;
-
   function setVal(el, val) {
     var proto = el.tagName === "TEXTAREA" ? window.HTMLTextAreaElement.prototype : window.HTMLInputElement.prototype;
     Object.getOwnPropertyDescriptor(proto, "value").set.call(el, val);
@@ -27,7 +22,7 @@
     el.dispatchEvent(new Event("change", { bubbles: true }));
   }
 
-  function tryFill() {
+  function tryFill(values, opts) {
     var filled = false;
     Array.prototype.forEach.call(document.querySelectorAll("iframe"), function (frame) {
       var doc;
@@ -36,16 +31,35 @@
       var fields = { name: doc.getElementById("name"), email: doc.getElementById("email"), subject: doc.getElementById("subject"), message: doc.getElementById("message") };
       if (!fields.email && !fields.message) return; // not the contact-form widget
       Object.keys(values).forEach(function (key) {
-        if (values[key] && fields[key]) setVal(fields[key], values[key]);
+        if (values[key] == null || !fields[key]) return;
+        if (key === "message" && opts.keepMessage && fields.message.value.trim() && fields.message.value !== window.__mesContactLast) return;
+        setVal(fields[key], values[key]);
+        if (key === "message") window.__mesContactLast = values[key];
       });
       filled = true;
     });
     return filled;
   }
 
-  var attempts = 0;
-  var poll = setInterval(function () {
-    attempts++;
-    if (tryFill() || attempts >= 40) clearInterval(poll);
-  }, 250);
+  var poll = 0;
+  function fill(values, opts) {
+    opts = opts || {};
+    clearInterval(poll);
+    if (tryFill(values, opts)) return;
+    var attempts = 0;
+    poll = setInterval(function () {
+      attempts++;
+      if (tryFill(values, opts) || attempts >= 40) clearInterval(poll);
+    }, 250);
+  }
+  window.MESContactFill = fill;
+
+  var params = new URLSearchParams(location.search);
+  var values = {
+    name: params.get("name"),
+    email: params.get("email"),
+    subject: params.get("subject"),
+    message: params.get("message"),
+  };
+  if (values.name || values.email || values.subject || values.message) fill(values);
 })();
