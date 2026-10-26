@@ -456,6 +456,83 @@ body.is-stuck #navbar.hide { position: fixed; top: 56px; right: 8px; }
 	body.dark-mode .page-content .latex-pal__key:hover {background:#17312a;border-color:#23dc98;}
 	body.dark-mode .page-content .latex-pal__more {color:#8ab4f8;}
 </style>
+<style id="lxo-css">
+	/* LATEX-OCR: "Picture to LaTeX" panel (js/latex-ocr.js); hand-written light + dark rules (.page-content prefix beats the generated TOOL-DARK block) */
+	.page-content .lxo {margin:0 0 1em;border:1px solid #cfe3da;border-radius:0.55em;background:#f6fbf9;}
+	.page-content .lxo__sum {cursor:pointer;padding:0.7em 0.9em;list-style:none;display:flex;flex-wrap:wrap;gap:0.2em 0.6em;align-items:baseline;color:#1e2733;}
+	.page-content .lxo__sum::-webkit-details-marker {display:none;}
+	.page-content .lxo__sum::before {content:"\25B8";color:#137752;font-size:0.9em;}
+	.page-content .lxo[open] > .lxo__sum::before {content:"\25BE";}
+	.page-content .lxo__sum-t {font-weight:bold;color:#0d5c40;}
+	.page-content .lxo__sum-d {font-size:0.88em;color:#4a5260;}
+	.page-content .lxo__body {padding:0 0.9em 0.9em;}
+	.page-content .lxo__modes {display:flex;flex-wrap:wrap;gap:0.4em;margin:0 0 0.7em;}
+	.page-content .lxo__mode {font:inherit;font-size:0.9em;cursor:pointer;padding:0.45em 0.9em;border-radius:1.2em;border:1px solid #b9c4cf;background:#fff;color:#333;line-height:1.2;}
+	.page-content .lxo__mode--on {background:#137752;border-color:#137752;color:#fff;}
+	.page-content .lxo__drop {border:2px dashed #9fc7b6;border-radius:0.5em;padding:0.9em;text-align:center;background:#fff;cursor:pointer;}
+	.page-content .lxo__drop--over {border-color:#137752;background:#eaf7f1;}
+	.page-content .lxo__drop-t {margin:0 0 0.6em;color:#333;}
+	.page-content .lxo__drop-btns {display:flex;flex-wrap:wrap;gap:0.5em;justify-content:center;}
+	.page-content .lxo__url {margin:0.7em 0 0;}
+	.page-content .lxo__lab {display:block;font-size:0.85em;font-weight:bold;color:#444;margin:0 0 0.3em;}
+	.page-content .lxo__urlrow {display:flex;gap:0.5em;}
+	.page-content .lxo__urlrow input {flex:1 1 auto;min-width:0;font:inherit;font-size:0.95em;padding:0.5em 0.6em;border:1px solid #bbb;border-radius:0.35em;background:#fff;color:#111;}
+	.page-content .lxo__note {font-size:0.85em;color:#355a4a;margin:0.4em 0 0;line-height:1.4;}
+	.page-content .lxo__note--warn {color:#8a3b00;}
+	.page-content .lxo__work {margin-top:0.9em;}
+	.page-content .lxo__stage {border:1px solid #d5dbe3;border-radius:0.45em;background:#fff;overflow:hidden;}
+	.page-content .lxo__stagebar {display:flex;flex-wrap:wrap;gap:0.4em;align-items:center;padding:0.45em 0.55em;border-bottom:1px solid #e3e7ec;background:#f7f9fb;}
+	.page-content .lxo__stagehint {flex:1 1 12em;font-size:0.82em;color:#555;}
+	.page-content .lxo__sbtn {font:inherit;font-size:0.85em;cursor:pointer;padding:0.35em 0.7em;border-radius:0.35em;border:1px solid #b9c4cf;background:#fff;color:#1e2733;line-height:1.2;min-height:2.2em;}
+	.page-content .lxo__sbtn:hover {border-color:#137752;color:#137752;}
+	.page-content .lxo__canwrap {padding:0.5em;display:flex;justify-content:center;background:repeating-conic-gradient(#f1f3f5 0 25%, #fff 0 50%) 0 0/16px 16px;}
+	.page-content .lxo__canvas {display:block;max-width:100%;cursor:crosshair;touch-action:none;}
+	.page-content .lxo__stage--fill {position:fixed;inset:0;z-index:120;border-radius:0;border:0;display:flex;flex-direction:column;}
+	.page-content .lxo__stage--fill .lxo__canwrap {flex:1 1 auto;align-items:center;overflow:auto;}
+	html.lxo-filling body {overflow:hidden;}
+	.page-content .lxo__opts {display:flex;flex-wrap:wrap;gap:0.6em 1.2em;align-items:center;margin:0.8em 0 0;font-size:0.9em;color:#333;}
+	.page-content .lxo__opt {display:flex;flex-wrap:wrap;gap:0.4em;align-items:center;}
+	.page-content .lxo__opt select {font:inherit;padding:0.3em 0.4em;border:1px solid #bbb;border-radius:0.35em;background:#fff;color:#111;max-width:100%;}
+	.page-content .lxo__chk {display:flex;gap:0.35em;align-items:center;font-weight:normal;margin:0;cursor:pointer;}
+	.page-content .lxo__opts [hidden], .page-content .lxo [hidden] {display:none !important;}
+	.page-content .lxo__go {display:flex;flex-wrap:wrap;gap:0.5em;align-items:center;margin:0.8em 0 0;}
+	.page-content .lxo__status {font-size:0.85em;color:#444;}
+	.page-content .lxo__prog {height:6px;border-radius:3px;background:#dde7e2;margin:0.5em 0 0;overflow:hidden;}
+	.page-content .lxo__progbar {height:100%;width:0;background:#137752;transition:width 0.2s;}
+	.page-content .lxo__res {margin-top:1em;}
+	.page-content .lxo__out {width:100%;box-sizing:border-box;font-family:"SFMono-Regular",Consolas,"Liberation Mono",Menlo,monospace;font-size:14px;line-height:1.5;padding:0.6em 0.7em;border:1px solid #bbb;border-radius:0.35em;background:#fbfbfb;color:#000;resize:vertical;}
+	.page-content .lxo__preview {margin:0.5em 0 0;padding:0.4em 0.7em;border:1px solid #e3e7ec;border-radius:0.35em;background:#fff;color:#000;overflow-x:auto;}
+	.page-content .lxo__resbtns {display:flex;flex-wrap:wrap;gap:0.5em;align-items:center;margin:0.6em 0 0;}
+	.page-content .lxo__about {font-size:0.8em;color:#555;margin:0.9em 0 0;line-height:1.45;}
+	.page-content .lxo__about a, .page-content .lxo__note a {color:#1d4f91;text-decoration:underline !important;}
+	@media (max-width:600px) {
+		.page-content .lxo__body {padding:0 0.6em 0.7em;}
+		.page-content .lxo__drop-btns .latex-tool__btn, .page-content .lxo__go .latex-tool__btn {min-height:2.75em;}
+		.page-content .lxo__sbtn {min-height:2.6em;}
+		.page-content .lxo__opts {flex-direction:column;align-items:flex-start;}
+	}
+	body.dark-mode .page-content .lxo {background:#17201c;border-color:#2f4a3e;}
+	body.dark-mode .page-content .lxo__sum, body.dark-mode .page-content .lxo__drop-t, body.dark-mode .page-content .lxo__opts, body.dark-mode .page-content .lxo__opts label {color:#e2e6eb;}
+	body.dark-mode .page-content .lxo__sum::before, body.dark-mode .page-content .lxo__sum-t {color:#72e9bd;}
+	body.dark-mode .page-content .lxo__sum-d, body.dark-mode .page-content .lxo__stagehint, body.dark-mode .page-content .lxo__about, body.dark-mode .page-content .lxo__status {color:#b9c1ca;}
+	body.dark-mode .page-content .lxo__lab {color:#cfd5dc;}
+	body.dark-mode .page-content .lxo__mode {background:#1f2226;border-color:#3a424d;color:#e6e6e6;}
+	body.dark-mode .page-content .lxo__mode--on {background:#137752;border-color:#23dc98;color:#fff;}
+	body.dark-mode .page-content .lxo__drop {background:#1b1f22;border-color:#2f6a52;}
+	body.dark-mode .page-content .lxo__drop--over {background:#17312a;border-color:#23dc98;}
+	body.dark-mode .page-content .lxo__urlrow input, body.dark-mode .page-content .lxo__opt select, body.dark-mode .page-content .lxo__out {background:#1a1a1a;border-color:#535353;color:#f2f2f2;}
+	body.dark-mode .page-content .lxo__note {color:#9fd9bf;}
+	body.dark-mode .page-content .lxo__note--warn {color:#ffb27a;}
+	body.dark-mode .page-content .lxo__stage {background:#1a1a1a;border-color:#3a424d;}
+	body.dark-mode .page-content .lxo__stagebar {background:#202428;border-color:#3a424d;}
+	body.dark-mode .page-content .lxo__sbtn {background:#1f2226;border-color:#3a424d;color:#e6e6e6;}
+	body.dark-mode .page-content .lxo__sbtn:hover {border-color:#23dc98;color:#72e9bd;}
+	body.dark-mode .page-content .lxo__canwrap {background:repeating-conic-gradient(#2a2d31 0 25%, #222528 0 50%) 0 0/16px 16px;}
+	body.dark-mode .page-content .lxo__prog {background:#2a3330;}
+	body.dark-mode .page-content .lxo__preview {background:#1a1a1a;border-color:#3a424d;color:#f2f2f2;}
+	body.dark-mode .page-content .lxo__preview * {color:#f2f2f2;}
+	body.dark-mode .page-content .lxo__about a, body.dark-mode .page-content .lxo__note a {color:#8ab4f8;}
+</style>
         <meta property="fb:app_id" content="" />
         <meta name="author" content="Math Easy Solutions Staff">
         <meta property="og:type" content="website" />
@@ -660,7 +737,7 @@ body.is-stuck #navbar.hide { position: fixed; top: 56px; right: 8px; }
                                                         <!-- (Responsive) Horizontal -->
                                                         <div class="outer-page-content">
                             <div class="page-content" role="main">                                    <div class="color-box"></div>
-                                    <h1 class="page-title">MES LaTeX Render</h1>                                        <p class="page-description">Paste or type LaTeX in the box on the left and it renders on the right as you go. Handles inline math like <code>$E=mc^2$</code>, display equations, <code>align</code>/<code>matrix</code>/<code>cases</code> environments, <code>\section</code> headings, a full <code>\documentclass</code> &hellip; <code>\end{document}</code> source (the preamble is skipped automatically), and even math pasted straight out of a chat reply with no <code>$</code> signs at all &mdash; a formula-only paragraph, or a bare <code>\boxed{&hellip;}</code>, is detected and rendered anyway. Rendering happens entirely in your browser &mdash; nothing is uploaded.</p>                                    	<div id="main-content" data-tool data-text-scale>
+                                    <h1 class="page-title">MES LaTeX Render</h1>                                        <p class="page-description">Paste or type LaTeX in the box on the left and it renders on the right as you go. Handles inline math like <code>$E=mc^2$</code>, display equations, <code>align</code>/<code>matrix</code>/<code>cases</code> environments, <code>\section</code> headings, a full <code>\documentclass</code> &hellip; <code>\end{document}</code> source (the preamble is skipped automatically), and even math pasted straight out of a chat reply with no <code>$</code> signs at all &mdash; a formula-only paragraph, or a bare <code>\boxed{&hellip;}</code>, is detected and rendered anyway. Rendering happens entirely in your browser &mdash; nothing is uploaded. Have the formula only as a picture? Open <b>Picture to LaTeX</b> below the symbols: upload, paste, photograph or link it and it is turned into LaTeX right in your browser.</p>                                    	<div id="main-content" data-tool data-text-scale>
 	<div class="latex-tool">
 		<div class="latex-tool__examples" id="latex-examples">
 			<button type="button" class="latex-tool__example" data-ex="quadratic">Quadratic formula</button>
@@ -673,6 +750,84 @@ body.is-stuck #navbar.hide { position: fixed; top: 56px; right: 8px; }
 		</div>
 
 		<div class="latex-pal" id="latex-palette" role="group" aria-label="Insert a symbol"><a class="latex-pal__more" href="/symbols">Find a symbol &rarr;</a></div>
+
+		<!-- LATEX-OCR: Picture to LaTeX (js/latex-ocr.js) -->
+		<details class="lxo" id="lxo">
+			<summary class="lxo__sum"><span class="lxo__sum-t">&#128247; Picture to LaTeX</span> <span class="lxo__sum-d">upload, paste, take a photo or open a link: the formula becomes LaTeX you can edit</span></summary>
+			<div class="lxo__body">
+				<div class="lxo__modes" role="radiogroup" aria-label="What is in the picture?">
+					<button type="button" class="lxo__mode lxo__mode--on" data-mode="math" role="radio" aria-checked="true">Math formula &rarr; LaTeX</button>
+					<button type="button" class="lxo__mode" data-mode="text" role="radio" aria-checked="false">Ordinary text &rarr; plain text</button>
+				</div>
+				<div class="lxo__drop" id="lxo-drop" tabindex="0" role="button" aria-label="Choose a picture, or drop one here">
+					<p class="lxo__drop-t"><b>Drop a picture here</b>, paste one (Ctrl+V / &#8984;V), or</p>
+					<div class="lxo__drop-btns">
+						<button type="button" class="latex-tool__btn latex-tool__btn--primary" id="lxo-pick">Choose a picture</button>
+						<button type="button" class="latex-tool__btn" id="lxo-cam" hidden>&#128247; Take a photo</button>
+					</div>
+					<input type="file" id="lxo-file" accept="image/*" hidden>
+					<input type="file" id="lxo-camfile" accept="image/*" capture="environment" hidden>
+				</div>
+				<form class="lxo__url" id="lxo-urlform">
+					<label class="lxo__lab" for="lxo-url">Or a link to a picture</label>
+					<div class="lxo__urlrow"><input type="url" id="lxo-url" placeholder="https://example.com/formula.png" autocomplete="off" spellcheck="false" inputmode="url"><button type="submit" class="latex-tool__btn" id="lxo-urlgo">Open</button></div>
+					<p class="lxo__note" id="lxo-urlnote" hidden></p>
+				</form>
+
+				<div class="lxo__work" id="lxo-work" hidden>
+					<div class="lxo__stage" id="lxo-stage">
+						<div class="lxo__stagebar">
+							<span class="lxo__stagehint" id="lxo-hint">Drag on the picture to pick one formula (optional)</span>
+							<button type="button" class="lxo__sbtn" id="lxo-edit" hidden>&#9998; Edit picture</button>
+							<button type="button" class="lxo__sbtn" id="lxo-unsel" hidden>Use the whole picture</button>
+							<button type="button" class="lxo__sbtn" id="lxo-fill" aria-pressed="false">&#10530; Fill window</button>
+							<button type="button" class="lxo__sbtn" id="lxo-remove">Remove</button>
+						</div>
+						<div class="lxo__canwrap"><canvas id="lxo-canvas" class="lxo__canvas" aria-label="Your picture"></canvas></div>
+					</div>
+					<div class="lxo__opts">
+						<label class="lxo__opt lxo__opt--math">Lines
+							<select id="lxo-lines">
+								<option value="auto">Automatic</option>
+								<option value="one">One formula</option>
+								<option value="split">Each line separately (aligned)</option>
+							</select></label>
+						<label class="lxo__opt lxo__opt--text" hidden>Language
+							<select id="lxo-lang">
+								<option value="eng">English</option><option value="fra">French</option><option value="deu">German</option><option value="spa">Spanish</option><option value="ita">Italian</option><option value="por">Portuguese</option><option value="nld">Dutch</option><option value="pol">Polish</option><option value="tur">Turkish</option><option value="vie">Vietnamese</option><option value="ind">Indonesian</option><option value="rus">Russian</option><option value="ell">Greek</option>
+							</select></label>
+						<label class="lxo__opt">Put it
+							<select id="lxo-where">
+								<option value="cursor">at the cursor in the editor</option>
+								<option value="replace">in place of everything in the editor</option>
+								<option value="none">nowhere (just show it here)</option>
+							</select></label>
+						<label class="lxo__chk lxo__opt--math"><input type="checkbox" id="lxo-tidy" checked> Tidy the LaTeX</label>
+						<label class="lxo__chk lxo__opt--math"><input type="checkbox" id="lxo-display" checked> As a display formula ($$&hellip;$$)</label>
+						<label class="lxo__chk"><input type="checkbox" id="lxo-autoedit" checked> Open the picture editor when I add a picture</label>
+					</div>
+					<div class="lxo__go">
+						<button type="button" class="latex-tool__btn latex-tool__btn--primary" id="lxo-read">Read the picture</button>
+						<button type="button" class="latex-tool__btn" id="lxo-cancel" hidden>Stop</button>
+						<span class="lxo__status" id="lxo-status" aria-live="polite"></span>
+					</div>
+					<div class="lxo__prog" id="lxo-prog" hidden><div class="lxo__progbar" id="lxo-progbar"></div></div>
+				</div>
+
+				<div class="lxo__res" id="lxo-res" hidden>
+					<label class="lxo__lab" for="lxo-out" id="lxo-outlab">Recognised LaTeX (you can fix it here)</label>
+					<textarea id="lxo-out" class="lxo__out" spellcheck="false" autocomplete="off" autocapitalize="off" rows="3"></textarea>
+					<div class="lxo__preview" id="lxo-preview" aria-live="polite"></div>
+					<div class="lxo__resbtns">
+						<button type="button" class="latex-tool__btn latex-tool__btn--primary" id="lxo-put">Put the fixed version in the editor</button>
+						<button type="button" class="latex-tool__btn" id="lxo-copy">Copy</button>
+						<span class="lxo__status" id="lxo-resnote"></span>
+					</div>
+				</div>
+				<p class="lxo__about" id="lxo-about">The picture is read <b>in your browser</b>. Math uses the free <a href="https://huggingface.co/breezedeus/pix2text-mfr-1.5" target="_blank" rel="noopener">Pix2Text MFR 1.5</a> model (MIT licence, about 120&nbsp;MB, downloaded once from Hugging Face the first time you read a formula, then kept by your browser); ordinary text uses Tesseract. Works best on a clear, straight picture of printed or neat handwritten math.</p>
+			</div>
+		</details>
+		<!-- /LATEX-OCR -->
 
 		<div class="latex-tool__grid">
 			<div>
@@ -797,7 +952,9 @@ body.is-stuck #navbar.hide { position: fixed; top: 56px; right: 8px; }
 	};
 	</script>
 	<script id="MathJax-script" async src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/3.2.2/es5/tex-mml-chtml.js"></script>
-	<script src="/latex/js/latex.js?v=2" defer></script>
+	<script src="/latex/js/latex.js?v=3" defer></script>
+	<script src="/main_js/photo-prep.js" defer></script>
+	<script src="/latex/js/latex-ocr.js?v=1" defer></script>
             <script src="https://mes.fm/main_js/main.js?v=1.0.5"></script>    <!-- PAGEVIEW-TRACKING-INSERTED --><script src="https://mes.fm/main_js/track.js" defer></script><script>document.getElementById('copyright-year').textContent = new Date().getFullYear();</script><script src="/main_js/info-bar-fit.js" defer></script><script>
   // Floating compact header bar (see #compact-nav CSS): appears once the
   // header + nav bar have scrolled off the top; nav links that don't fit
