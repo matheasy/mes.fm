@@ -402,6 +402,18 @@ sub {vertical-align:sub;}        .warning-message {font-size:1em;text-align:cent
 	the other site then sees our server's request instead of yours, and the picture is still read only in your browser.
 	</p>
 
+	<h2 class="mini-title">LaTeX Render: Picture to LaTeX</h2>
+
+	<p>
+	On <a href="/latex">MES LaTeX Render</a>, a picture you give to <i>Picture to LaTeX</i> (by uploading, pasting, dropping,
+	taking a photo or opening a link) is read in your own browser and is never uploaded. The first time you read a formula,
+	your browser downloads the formula-reading model (Pix2Text MFR, about 120&nbsp;MB) from Hugging Face (huggingface.co) and
+	the AI engine from the jsDelivr CDN, then keeps them on your device; for ordinary text the Tesseract text reader is
+	downloaded from jsDelivr. Those sites see a normal download request from your browser, not your picture. A picture opened
+	from a link is fetched the same way as on Image to Text above (through mes.fm/api/image-fetch only when the other site
+	blocks direct loading, without keeping a copy).
+	</p>
+
 	<h2 class="mini-title">Reverse Image Search: a temporary copy of your picture</h2>
 
 	<p>

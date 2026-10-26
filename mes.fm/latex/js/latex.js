@@ -498,4 +498,6 @@
 		source.value = saved || EXAMPLES.quadratic;
 	}
 	render();
+	// for js/latex-ocr.js (Picture to LaTeX): render now and the math-mode test, so it knows whether to add $$ around what it inserts
+	window.MESLatex = { render: render, inMath: inMath, source: source };
 })();
