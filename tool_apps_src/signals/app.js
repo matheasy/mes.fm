@@ -4,11 +4,12 @@
 	'use strict';
 	var S = window.MESSig, $ = function (id) { return document.getElementById(id); }, root = $('sg');
 	if (!S || !root) return;
-	var KEY = 'mes-signals:v1', st = { tab: 'sent', fg: 90, rates: 1100, curve: 9999, qk: 'spx', pcat: 'All' }, data = null, snaps = null, loading = false;
-	try { var sv = JSON.parse(localStorage.getItem(KEY) || '{}'); ['tab', 'fg', 'rates', 'curve', 'qk', 'pcat'].forEach(function (k) { if (sv[k] != null) st[k] = sv[k]; }); } catch (e) {}
+	var KEY = 'mes-signals:v1', st = { tab: 'sent', fg: 90, rates: 1100, curve: 9999, qk: 'spx', pcat: 'All', nview: 'cards', ncols: 'auto', nshow: 10, nclosed: {}, nsrc: {}, gconf: 1 }, data = null, snaps = null, loading = false;
+	var SKEYS = ['tab', 'fg', 'rates', 'curve', 'qk', 'pcat', 'nview', 'ncols', 'nshow', 'nclosed', 'nsrc', 'gconf'];
+	try { var sv = JSON.parse(localStorage.getItem(KEY) || '{}'); SKEYS.forEach(function (k) { if (sv[k] != null) st[k] = sv[k]; }); } catch (e) {}
 	var qs = new URLSearchParams(location.search), MOCK = qs.get('mock') === '1' || /^(127\.0\.0\.1|localhost)$/.test(location.hostname);
 	if (qs.get('tab')) st.tab = qs.get('tab');
-	function save() { try { var o = JSON.parse(localStorage.getItem(KEY) || '{}'); ['tab', 'fg', 'rates', 'curve', 'qk', 'pcat'].forEach(function (k) { o[k] = st[k]; }); localStorage.setItem(KEY, JSON.stringify(o)); } catch (e) {} }
+	function save() { try { var o = JSON.parse(localStorage.getItem(KEY) || '{}'); SKEYS.forEach(function (k) { o[k] = st[k]; }); localStorage.setItem(KEY, JSON.stringify(o)); } catch (e) {} }
 	function esc(s) { return String(s == null ? '' : s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;'); }
 	function q(k) { var g = S.GLOSSARY[k]; return g ? '<button type="button" class="sg-q" data-g="' + k + '" aria-label="' + esc('What is ' + g[0] + '?') + '">?</button>' : ''; }
 	function src(n) { return data && data.sources[n] && data.sources[n].ok ? data.sources[n].data : null; }
@@ -19,7 +20,7 @@
 	function ago(iso) { var ms = Date.now() - Date.parse(iso); return isFinite(ms) ? S.ago(Math.max(0, ms)) + ' ago' : ''; }
 
 	// ---------- tabs ----------
-	var TABS = ['sent', 'crypto', 'mkts', 'rates', 'pred', 'news'];
+	var TABS = ['sent', 'crypto', 'mkts', 'rates', 'pred', 'geo', 'news'];
 	if (TABS.indexOf(st.tab) < 0) st.tab = 'sent';
 	function showTab(t, focus) {
 		st.tab = t; save();
@@ -130,6 +131,9 @@
 			o.push(stripItem('rates', '10-yr yield', esc(S.fmt(r.latest.dgs10[1], 2) + '%'), '', 't10'));
 			var sp = r.latest.spread[1]; o.push(stripItem('rates', '10y − 2y', (sp < 0 ? '<span class="sg-neg">' : '<span>') + esc((sp > 0 ? '+' : '') + Math.round(sp * 100) + ' bp') + '</span>', sp < 0 ? 'inverted' : 'normal', 'spread'));
 		}
+		var odds = S.conflictOdds(S.geoMarkets([(src('geo') || []).concat(src('geok') || [])]), 1)[0];
+		o.push(stripItem('geo', 'Doomsday Clock', esc(S.DOOMSDAY_LATEST.seconds + ' s'), 'to midnight'));
+		if (odds) o.push(stripItem('geo', 'Top conflict market', esc((odds.yes < 1 ? '<1' : S.fmt(odds.yes, 0)) + '%'), '<span class="sg-si__q" title="' + esc(odds.title) + '">' + esc(odds.title.replace(/\?$/, '').slice(0, 28)) + (odds.title.length > 29 ? '…' : '') + '</span>'));
 		if (fo) o.push(stripItem('rates', 'Next FOMC', '<span id="sg-fomc-cd">' + esc(fo.live ? 'this week' : S.countdown(fo.at - Date.now())) + '</span>', esc(dshort(fo.end)) + (fo.sep ? ' · dot plot' : '')));
 		$('sg-strip').innerHTML = o.join('') || '<span class="sg-loading">No data right now.</span>';
 		markChanged();
@@ -254,6 +258,17 @@
 			'<div class="sg-later"><span class="tu-note">After that:</span> ' + rest.map(function (f) { return '<span>' + esc(dshort(f[1])) + (f[2] ? ' &#9679;' : '') + '</span>'; }).join('') + ' <span class="tu-note">(&#9679; = dot plot)</span></div>' +
 			'<p class="tu-note">Schedule from <a href="https://www.federalreserve.gov/monetarypolicy/fomccalendars.htm" target="_blank" rel="noopener">federalreserve.gov</a>, checked ' + esc(S.FOMC_CHECKED) + '. Kalshi and Polymarket odds for this meeting are on the Prediction markets tab.</p>';
 	}
+	// one prediction-market card (Prediction markets tab and Geopolitics tab)
+	function mkCard(m) {
+		var rows = m.outcomes;
+		if (m.ladder) { var near = m.outcomes.map(function (o, i) { return [Math.abs(o.p - 50), i]; }).sort(function (a, b) { return a[0] - b[0]; }).slice(0, 6).map(function (x) { return x[1]; }).sort(function (a, b) { return a - b; }); rows = near.map(function (i) { return m.outcomes[i]; }); }
+		var vol = m.vol24 && m.src !== 'Kalshi' ? '<span class="tu-note">' + esc(S.money(m.vol24, 'big')) + ' traded in 24h ' + q('vol') + '</span>' : '';
+		if (m.geo) vol = (m.vol ? '<span class="tu-note">' + esc(S.money(m.vol, 'big')) + ' traded in total</span>' : '') + (m.contracts ? '<span class="tu-note">' + esc(S.fmt(m.contracts, 0)) + ' contracts traded ' + q('contracts') + '</span>' : '');
+		return '<article class="sg-mk"><div class="sg-mk__h"><span class="sg-src sg-src--' + (m.src === 'Kalshi' ? 'k' : 'p') + '">' + esc(m.src) + '</span><span class="tu-note">' + esc(m.dated ? 'by date, earliest first' : m.cat) + '</span></div><h3>' + esc(m.title) + (m.sub ? ' <small>' + esc(m.sub) + '</small>' : '') + '</h3>' +
+			(m.likely ? '<p class="sg-likely">Most likely range: <b>' + esc(m.likely.label) + '</b> (' + esc(S.fmt(m.likely.p, 0)) + '%)</p>' : '') +
+			'<ul class="sg-oc">' + rows.map(function (o) { return '<li><span class="sg-oc__l" title="' + esc(o.label) + '">' + esc(o.label) + '</span><span class="sg-bar"><i style="width:' + Math.max(1, o.p) + '%"></i></span><b>' + esc(o.p < 1 ? '<1' : S.fmt(o.p, 0)) + '%</b></li>'; }).join('') + '</ul>' +
+			'<div class="sg-mk__f">' + (m.more ? '<span class="tu-note">+' + m.more + ' more answers</span>' : '') + vol + (m.ladder ? '<span class="tu-note">' + m.outcomes.length + ' levels, showing the 6 nearest 50%</span>' : '') + (m.end ? '<span class="tu-note">ends ' + esc(dshort(m.end.slice(0, 10))) + '</span>' : '') + '<a href="' + esc(m.url) + '" target="_blank" rel="noopener nofollow">Open on ' + esc(m.src) + ' &#8599;</a></div></article>';
+	}
 	function drawPred() {
 		var pm = src('poly') || [], ks = src('kalshi') || [], all = ks.concat(pm), cats = ['All'];
 		all.forEach(function (m) { if (m.cat && cats.indexOf(m.cat) < 0) cats.push(m.cat); });
@@ -263,22 +278,119 @@
 		all = all.map(function (m, i) { return [m, i]; }).sort(function (a, b) { return rank(a[0]) - rank(b[0]) || a[1] - b[1]; }).map(function (x) { return x[0]; });
 		var list = all.filter(function (m) { return st.pcat === 'All' || m.cat === st.pcat; });
 		if (!all.length) { $('sg-markets').innerHTML = err('poly'); return; }
-		$('sg-markets').innerHTML = list.map(function (m) {
-			var rows = m.outcomes;
-			if (m.ladder) { var near = m.outcomes.map(function (o, i) { return [Math.abs(o.p - 50), i]; }).sort(function (a, b) { return a[0] - b[0]; }).slice(0, 6).map(function (x) { return x[1]; }).sort(function (a, b) { return a - b; }); rows = near.map(function (i) { return m.outcomes[i]; }); }
-			return '<article class="sg-mk"><div class="sg-mk__h"><span class="sg-src sg-src--' + (m.src === 'Kalshi' ? 'k' : 'p') + '">' + esc(m.src) + '</span><span class="tu-note">' + esc(m.cat) + '</span></div><h3>' + esc(m.title) + (m.sub ? ' <small>' + esc(m.sub) + '</small>' : '') + '</h3>' +
-				(m.likely ? '<p class="sg-likely">Most likely range: <b>' + esc(m.likely.label) + '</b> (' + esc(S.fmt(m.likely.p, 0)) + '%)</p>' : '') +
-				'<ul class="sg-oc">' + rows.map(function (o) { return '<li><span class="sg-oc__l">' + esc(o.label) + '</span><span class="sg-bar"><i style="width:' + Math.max(1, o.p) + '%"></i></span><b>' + esc(o.p < 1 ? '<1' : S.fmt(o.p, 0)) + '%</b></li>'; }).join('') + '</ul>' +
-				'<div class="sg-mk__f">' + (m.more ? '<span class="tu-note">+' + m.more + ' more answers</span>' : '') + (m.vol24 ? '<span class="tu-note">' + esc(S.money(m.vol24, 'big')) + ' traded in 24h ' + q('vol') + '</span>' : '') + (m.ladder ? '<span class="tu-note">' + m.outcomes.length + ' levels, showing the 6 nearest 50%</span>' : '') + (m.end ? '<span class="tu-note">ends ' + esc(dshort(m.end.slice(0, 10))) + '</span>' : '') + '<a href="' + esc(m.url) + '" target="_blank" rel="noopener nofollow">Open on ' + esc(m.src) + ' &#8599;</a></div></article>';
-		}).join('') + ((src('poly') && src('kalshi')) ? '' : '<p class="tu-note">' + (!src('poly') ? 'Polymarket' : 'Kalshi') + ' did not answer this time.</p>');
+		$('sg-markets').innerHTML = list.map(mkCard).join('') + ((src('poly') && src('kalshi')) ? '' : '<p class="tu-note">' + (!src('poly') ? 'Polymarket' : 'Kalshi') + ' did not answer this time.</p>') +
+			'<p class="tu-note sg-wide">War, ceasefire and invasion markets are on the <a href="?tab=geo" data-goto="geo">Geopolitics</a> tab.</p>';
 	}
 	$('sg-pcats').addEventListener('click', function (e) { var b = e.target.closest('.tu-chip'); if (b) { st.pcat = b.getAttribute('data-c'); save(); drawPred(); } });
+	root.addEventListener('click', function (e) { var a = e.target.closest('[data-goto]'); if (a) { e.preventDefault(); showTab(a.getAttribute('data-goto')); $('sg-tabs').scrollIntoView({ behavior: 'smooth', block: 'start' }); } });
 	function news(el, items, n) { el.innerHTML = items ? items.map(function (i) { return '<li><a href="' + esc(i.link) + '" target="_blank" rel="noopener nofollow">' + esc(i.title) + '</a><span class="tu-note">' + (i.src ? esc(i.src) + ' · ' : '') + esc(i.date ? ago(i.date) : '') + '</span></li>'; }).join('') : '<li>' + err(n) + '</li>'; }
-	function drawNews() { news($('sg-cnews'), src('news'), 'news'); news($('sg-fed2'), src('fed'), 'fed'); }
-	function drawTab(t) { ({ sent: drawSent, crypto: drawCrypto, mkts: drawMkts, rates: drawRates, pred: drawPred, news: drawNews })[t](); rangeBtns(); }
+
+	// ---------- News tab: collapsible sections, Cards | List | Compact, columns, how many, source chips (all saved in localStorage) ----------
+	var SECSRC = { crypto: 'news', markets: 'mnews', world: 'wnews', fed: 'fed' };
+	function secItems(sec) {
+		var d = src(SECSRC[sec]);
+		if (sec === 'fed') return d ? d.map(function (i) { return Object.assign({ src: 'Federal Reserve', sid: 'fed' }, i); }) : null;
+		return d ? d.items : null;
+	}
+	function initial(name) { return esc(String(name || '?').replace(/^The /, '').charAt(0).toUpperCase()); }
+	function newsItem(i) {
+		var meta = '<span class="sg-nc__m"><b>' + esc(i.src || i.host) + '</b>' + (i.date ? ' · <time datetime="' + esc(i.date) + '">' + esc(ago(i.date)) + '</time>' : '') + '</span>';
+		var pic = st.nview === 'cards' ? '<span class="sg-nc__img sg-nc__img--' + esc(i.sid || 'x') + '">' + (i.img ? '<img src="' + esc(i.img) + '" alt="" loading="lazy" decoding="async" referrerpolicy="no-referrer">' : '') + '<span class="sg-nc__ini" aria-hidden="true">' + initial(i.src) + '</span></span>' : '';
+		var sum = st.nview !== 'compact' && i.sum ? '<span class="sg-nc__s">' + esc(i.sum) + '</span>' : '';
+		return '<li class="sg-nc' + (i.img && st.nview === 'cards' ? ' has-img' : '') + '"><a class="sg-nc__a" href="' + esc(i.link) + '" target="_blank" rel="noopener nofollow">' + pic + '<span class="sg-nc__b"><span class="sg-nc__t">' + esc(i.title) + '</span>' + sum + meta + '</span></a></li>';
+	}
+	// box = container, key = section key (also the saved collapse / source-filter key), title, items, extra filter
+	function newsSection(key, title, items, errName, filt) {
+		var closed = !!st.nclosed[key], off = st.nsrc[key] || [], srcs = [];
+		if (items) items.forEach(function (i) { if (srcs.indexOf(i.src) < 0) srcs.push(i.src); });
+		var shown = items ? items.filter(function (i) { return off.indexOf(i.src) < 0 && (!filt || filt(i)); }) : [], lim = +st.nshow || shown.length, list = shown.slice(0, lim);
+		var head = '<h2 class="sg-nsec__h"><button type="button" class="sg-nsec__tg" aria-expanded="' + !closed + '" data-nsec="' + esc(key) + '"><span class="sg-nsec__ar" aria-hidden="true">&#9662;</span>' + esc(title) + ' <span class="sg-nsec__n">' + (items ? shown.length : 0) + '</span></button></h2>';
+		var body = '';
+		if (!items) body = err(errName);
+		else {
+			if (srcs.length > 1) body += '<div class="tu-chips sg-nsrc">' + srcs.map(function (s) { var n = items.filter(function (i) { return i.src === s && (!filt || filt(i)); }).length; return '<button type="button" class="tu-chip" data-nsrc="' + esc(key) + '" data-s="' + esc(s) + '" aria-pressed="' + (off.indexOf(s) < 0) + '">' + esc(s) + ' (' + n + ')</button>'; }).join('') + '</div>';
+			body += list.length ? '<ul class="sg-nlist sg-nlist--' + st.nview + '" data-cols="' + esc(st.nview === 'compact' && st.ncols === 'auto' ? '1' : st.ncols) + '">' + list.map(newsItem).join('') + '</ul>' : '<p class="tu-note">Nothing to show with these sources switched off.</p>';
+			if (shown.length > list.length) body += '<button type="button" class="tu-btn tu-btn--ghost sg-nmore" data-nset-more="1">Show all ' + shown.length + '</button>';
+			var miss = src(SECSRC[key]) && src(SECSRC[key]).missing; if (miss) body += '<p class="tu-note">Not available right now: ' + esc(miss.map(function (m) { return m.split(':')[0]; }).join(', ')) + '.</p>';
+		}
+		return '<section class="sg-nsec' + (closed ? ' is-closed' : '') + '">' + head + '<div class="sg-nsec__b"' + (closed ? ' hidden' : '') + '>' + body + '</div></section>';
+	}
+	function drawNews() {
+		$('sg-nsecs').innerHTML = S.NEWS_SECTIONS.map(function (s) { return newsSection(s[0], s[1], secItems(s[0]), SECSRC[s[0]]); }).join('');
+		ntools();
+	}
+	function ntools() {
+		[].forEach.call(root.querySelectorAll('[data-nset]'), function (g) { var k = g.getAttribute('data-nset'); [].forEach.call(g.querySelectorAll('button'), function (b) { b.setAttribute('aria-pressed', String(b.getAttribute('data-v') === String(st[k]))); }); });
+		var ct = root.querySelector('.sg-ncols-tool'); if (ct) ct.classList.toggle('is-dim', st.nview === 'compact');
+	}
+	function redrawNews() { if (st.tab === 'news') drawNews(); else if (st.tab === 'geo') drawGeoNews(); }
+	root.addEventListener('click', function (e) {
+		var b = e.target.closest('[data-nset] button');
+		if (b) { var k = b.parentNode.getAttribute('data-nset'), v = b.getAttribute('data-v'); st[k] = k === 'nshow' ? +v : v; save(); redrawNews(); return; }
+		var t = e.target.closest('.sg-nsec__tg');
+		if (t) {
+			var key = t.getAttribute('data-nsec'), sec = t.closest('.sg-nsec'), open = t.getAttribute('aria-expanded') !== 'true';
+			if (open) delete st.nclosed[key]; else st.nclosed[key] = 1; save();
+			t.setAttribute('aria-expanded', String(open)); sec.classList.toggle('is-closed', !open); sec.querySelector('.sg-nsec__b').hidden = !open; return;
+		}
+		var f = e.target.closest('[data-fold]');
+		if (f) { var shut = f.getAttribute('data-fold') === 'close'; S.NEWS_SECTIONS.forEach(function (s) { if (shut) st.nclosed[s[0]] = 1; else delete st.nclosed[s[0]]; }); save(); drawNews(); return; }
+		var c = e.target.closest('[data-nsrc]');
+		if (c) { var k2 = c.getAttribute('data-nsrc'), s2 = c.getAttribute('data-s'), off = (st.nsrc[k2] || []).slice(), i = off.indexOf(s2); if (i < 0) off.push(s2); else off.splice(i, 1); if (off.length) st.nsrc[k2] = off; else delete st.nsrc[k2]; save(); redrawNews(); return; }
+		if (e.target.closest('[data-nset-more]')) { st.nshow = 0; save(); redrawNews(); }
+		var gc = e.target.closest('[data-gconf]'); if (gc) { st.gconf = st.gconf ? 0 : 1; save(); drawGeoNews(); }
+	});
+	// a picture that fails to load leaves the source initial behind it
+	root.addEventListener('error', function (e) { var t = e.target; if (t && t.tagName === 'IMG' && t.closest('.sg-nc__img')) { var li = t.closest('.sg-nc'); t.remove(); if (li) li.classList.remove('has-img'); } }, true);
+
+	// ---------- Geopolitics tab ----------
+	function geoList() { return (src('geo') || []).concat(src('geok') || []).map(function (m) { return Object.assign({ geo: true }, m); }); }
+	function drawGeo() {
+		var all = S.geoMarkets([geoList()]), odds = S.conflictOdds(all, 6);
+		$('sg-godds').innerHTML = '<div class="sg-chead"><b>Conflict odds, as the markets price them ' + q('geoodds') + '</b><span class="tu-note">the market&rsquo;s own &ldquo;Yes&rdquo; price, biggest markets first</span></div>' +
+			(odds.length ? '<ul class="sg-gol">' + odds.map(function (o) { return '<li><a href="' + esc(o.url) + '" target="_blank" rel="noopener nofollow">' + esc(o.title) + '</a><span class="sg-bar"><i style="width:' + Math.max(1, o.yes) + '%"></i></span><b>' + esc(o.yes < 1 ? '<1' : S.fmt(o.yes, 0)) + '%</b><span class="tu-note">' + esc(o.src + (o.vol ? ' · ' + S.money(o.vol, 'big') + ' traded' : '') + (o.end ? ' · ends ' + dshort(o.end.slice(0, 10)) : '')) + '</span></li>'; }).join('') + '</ul>' +
+				'<p class="tu-note">Traders&rsquo; prices, not facts or forecasts by MES; nothing is averaged or added. Thin markets move on rumours: open the market to read exactly how it resolves.</p>' : err('geo'));
+		drawClock();
+		drawGauges();
+		$('sg-gmarkets').innerHTML = all.length ? all.slice(0, 18).map(mkCard).join('') + (src('geo') && src('geok') ? '' : '<p class="tu-note sg-wide">' + (!src('geo') ? 'Polymarket' : 'Kalshi') + ' did not answer this time.</p>') : err('geo');
+		drawWarCost();
+		drawGeoNews();
+	}
+	function clockFace(sec) {
+		var a = -sec / 3600 * 2 * Math.PI, cx = 60, cy = 60, r = 52, mh = [cx + 44 * Math.sin(a), cy - 44 * Math.cos(a)], ticks = '';
+		for (var i = 0; i < 12; i++) { var t = i / 12 * 2 * Math.PI; ticks += '<line class="sg-ck__t" x1="' + (cx + 46 * Math.sin(t)).toFixed(1) + '" y1="' + (cy - 46 * Math.cos(t)).toFixed(1) + '" x2="' + (cx + 51 * Math.sin(t)).toFixed(1) + '" y2="' + (cy - 51 * Math.cos(t)).toFixed(1) + '"></line>'; }
+		var wedge = 'M' + cx + ' ' + cy + ' L' + mh[0].toFixed(2) + ' ' + mh[1].toFixed(2) + ' A44 44 0 0 1 ' + cx + ' ' + (cy - 44) + ' Z';
+		return '<svg class="sg-ck" viewBox="0 0 120 120" role="img" aria-label="Clock face with the minute hand ' + esc(S.clockText(sec)) + ' before midnight"><circle class="sg-ck__f" cx="60" cy="60" r="' + r + '"></circle>' + ticks + '<path class="sg-ck__w" d="' + wedge + '"></path><line class="sg-ck__h" x1="60" y1="60" x2="60" y2="30"></line><line class="sg-ck__m" x1="60" y1="60" x2="' + mh[0].toFixed(2) + '" y2="' + mh[1].toFixed(2) + '"></line><circle class="sg-ck__c" cx="60" cy="60" r="3.5"></circle></svg>';
+	}
+	function drawClock() {
+		var ds = S.doomsdayStats(), L0 = S.DOOMSDAY_LATEST, mv = ds.lastMove;
+		$('sg-dclock').innerHTML = '<div class="sg-gh"><b>Doomsday Clock</b> ' + q('doomsday') + '</div><div class="sg-ckw">' + clockFace(L0.seconds) + '<div><div class="sg-hv__big sg-dc__v">' + esc(S.clockText(L0.seconds)) + '</div><div>to midnight, set ' + esc(dshort(L0.announced)) + '</div>' +
+			(mv ? '<div class="tu-note">Moved from ' + esc(S.clockText(mv.from)) + ' in ' + mv.year + '. The closest it has ever been; the farthest was ' + esc(S.clockText(ds.farthest[1])) + ' in ' + ds.farthest[0] + '.</div>' : '') + '</div></div>' +
+			'<p class="tu-note">Set once a year by the <a href="' + esc(L0.url) + '" target="_blank" rel="noopener">Bulletin of the Atomic Scientists</a>, usually in late January: an expert judgment, not a probability. The next setting is usually announced in January. Settings entered by hand from <a href="' + esc(S.DOOMSDAY_SRC) + '" target="_blank" rel="noopener">the Bulletin&rsquo;s timeline</a>, checked ' + esc(S.DOOMSDAY_CHECKED) + '.</p>';
+		chart($('sg-dc-chart'), { series: [{ name: 'Minutes to midnight', cls: 's2', pts: S.doomsdaySteps(S.ymd(Date.now())), fill: true }], yMin: 0, yMax: 18, yTicks: [0, 3, 6, 9, 12, 15, 18], label: 'Doomsday Clock, minutes to midnight, 1947 to today', fy: function (v) { return v + ' min'; }, fv: function (v) { return S.clockText(Math.round(v * 60)) + ' to midnight'; } });
+		$('sg-dctable').innerHTML = '<table class="tu-table"><thead><tr><th>Year</th><th>Setting</th></tr></thead><tbody>' + S.DOOMSDAY.slice().reverse().map(function (x, i, a) { var nx = a[i + 1], ch = nx ? (x[1] < nx[1] ? ' <span class="sg-neg">&#9650; closer</span>' : x[1] > nx[1] ? ' <span class="sg-ch up">&#9660; farther</span>' : ' <span class="tu-note">unchanged</span>') : ' <span class="tu-note">first setting</span>'; return '<tr><td>' + x[0] + '</td><td>' + esc(S.clockText(x[1])) + ch + '</td></tr>'; }).join('') + '</tbody></table>';
+	}
+	function drawGauges() {
+		var m = src('markets') || {}, sf = src('stockfg'), vix = sf && sf.parts.filter(function (p) { return p.key === 'vix'; })[0], o = [];
+		[['oil', 'Oil (WTI)', true], ['gold', 'Gold', true], ['dxy', 'US dollar index', false]].forEach(function (k) { var x = m[k[0]]; if (x) o.push('<div class="sg-quote sg-gq"><span class="sg-coin__h"><b>' + esc(k[1]) + '</b></span><span class="sg-coin__p">' + esc(k[2] ? S.money(x.price) : S.fmt(x.price, 2)) + '</span><span class="sg-coin__c">' + chg(x.chPct, 2) + '<span>day</span></span>' + spark(x.spark.map(function (p) { return p[1]; }), 150, 30) + '</div>'); });
+		if (vix) o.push('<div class="sg-quote sg-gq"><span class="sg-coin__h"><b>VIX</b>' + q('vix') + '</span><span class="sg-coin__p">' + esc(S.fmt(vix.value, 2)) + '</span><span class="sg-coin__c"><span>' + esc(vix.value >= 30 ? 'fearful' : vix.value >= 20 ? 'nervous' : 'calm') + ' · ' + esc(dshort(sf.date)) + '</span></span></div>');
+		$('sg-gauges').innerHTML = '<div class="sg-gh"><b>Markets&rsquo; fear gauges</b> ' + q('feargauges') + '</div>' + (o.length ? '<div class="sg-gqs">' + o.join('') + '</div><p class="tu-note">Day change and 3-month line. These move for many reasons besides conflict. More on the <a href="?tab=mkts" data-goto="mkts">Stocks &amp; commodities</a> tab.</p>' : err('markets'));
+	}
+	function drawWarCost() {
+		var W = S.WAR_COSTS, max = Math.max.apply(null, W.map(function (w) { return w[1]; })), days = Math.floor((Date.now() - Date.parse(S.WAR_START + 'T00:00:00Z')) / 864e5);
+		$('sg-warcost').innerHTML = '<div class="sg-chead"><b>What the Iran war has cost the US: published estimates ' + q('warcost') + '</b><span class="tu-note">US dollars, as stated on each date</span></div>' +
+			'<ul class="sg-wc">' + W.map(function (w) { return '<li><span class="sg-wc__d">' + esc(dshort(w[0])) + '</span><span class="sg-wc__v">' + esc('$' + S.fmt(w[1], w[1] % 1 ? 1 : 0) + 'B') + '</span><span class="sg-bar"><i style="width:' + (w[1] / max * 100).toFixed(1) + '%"></i></span><span class="sg-wc__w"><b>' + esc(w[2]) + '.</b> ' + esc(w[3]) + ' <a href="' + esc(w[4]) + '" target="_blank" rel="noopener nofollow">Source &#8599;</a></span></li>'; }).join('') + '</ul>' +
+			'<p class="tu-note">Strikes began on ' + esc(dshort(S.WAR_START)) + ' (' + days + ' days ago). <b>Why there is no live counter:</b> the only published daily rate (CSIS, about $891 million a day) covers the first 100 hours; the Pentagon totals are cumulative figures given on a date, they count different things, and there were ceasefires in between, so any running number would be our own guess. Wider studies (veterans&rsquo; care, interest on borrowing) put the full cost much higher. Figures entered by hand, checked ' + esc(S.WAR_COSTS_CHECKED) + '.</p>';
+	}
+	function drawGeoNews() {
+		var items = secItems('world'), filt = st.gconf ? function (i) { return S.CONFLICT_RE.test(i.title + ' ' + (i.sum || '')); } : null;
+		$('sg-gnews').innerHTML = '<div class="tu-chips"><button type="button" class="tu-chip" data-gconf="1" aria-pressed="' + !!st.gconf + '">Only war, ceasefire &amp; security stories</button></div>' + newsSection('geoworld', 'World headlines', items, 'wnews', filt) +
+			'<p class="tu-note">View, columns and how many to show follow the <a href="?tab=news" data-goto="news">News</a> tab&rsquo;s settings.</p>';
+	}
+	function drawTab(t) { ({ sent: drawSent, crypto: drawCrypto, mkts: drawMkts, rates: drawRates, pred: drawPred, geo: drawGeo, news: drawNews })[t](); rangeBtns(); }
 
 	// ---------- footer + loading ----------
-	var NAMES = { fng: 'Crypto Fear & Greed (alternative.me)', coins: 'Crypto prices (CoinGecko)', global: 'Crypto market (CoinGecko)', stables: 'Stablecoins (CoinGecko)', halving: 'Bitcoin blocks (mempool.space)', markets: 'Stocks, gold, oil, dollar (Yahoo Finance, FRED backup)', stockfg: 'Stock Fear & Greed inputs (FRED)', rates: 'US rates (FRED)', curve: 'Yield curve + recessions (FRED)', cpi: 'CPI (FRED)', boc: 'Bank of Canada (Valet)', ecb: 'ECB', boe: 'Bank of England', fed: 'Fed press releases (RSS)', poly: 'Polymarket', kalshi: 'Kalshi', news: 'CoinDesk + Cointelegraph (RSS)' };
+	var NAMES = { fng: 'Crypto Fear & Greed (alternative.me)', coins: 'Crypto prices (CoinGecko)', global: 'Crypto market (CoinGecko)', stables: 'Stablecoins (CoinGecko)', halving: 'Bitcoin blocks (mempool.space)', markets: 'Stocks, gold, oil, dollar (Yahoo Finance, FRED backup)', stockfg: 'Stock Fear & Greed inputs (FRED)', rates: 'US rates (FRED)', curve: 'Yield curve + recessions (FRED)', cpi: 'CPI (FRED)', boc: 'Bank of Canada (Valet)', ecb: 'ECB', boe: 'Bank of England', fed: 'Fed press releases (RSS)', poly: 'Polymarket', kalshi: 'Kalshi', news: 'Crypto news: CoinDesk, Cointelegraph (RSS)', mnews: 'Markets news: CNBC, MarketWatch, BBC Business (RSS)', wnews: 'World news: BBC, Al Jazeera, NPR, The Guardian, DW (RSS)', geo: 'Conflict markets (Polymarket)', geok: 'Conflict markets (Kalshi)' };
 	function foot() {
 		$('sg-updated').innerHTML = (MOCK ? '<b>Sample data</b> saved ' : 'Updated ') + esc(ago(data.generated)) + ' · refreshes every 5 minutes';
 		$('sg-srcs').innerHTML = Object.keys(NAMES).map(function (k) { var s = data.sources[k]; return '<li class="' + (s && s.ok ? 'ok' : 'bad') + '">' + (s && s.ok ? '&#10003; ' : '&#10007; ') + esc(NAMES[k]) + (s && !s.ok ? ' <span class="tu-note">' + esc(s.error) + '</span>' : '') + '</li>'; }).join('');

@@ -6,7 +6,7 @@
     <atom:link href="https://cointelegraph.com/rss" rel="self" type="application/rss+xml"/>
     <description>Cointelegraph covers fintech, blockchain and Bitcoin bringing you the latest crypto news and analyses on the future of money.</description>
     <generator>cointelegraph.com</generator>
-    <lastBuildDate>Sat, 24 Oct 2026 18:01:46 +0000</lastBuildDate>
+    <lastBuildDate>Mon, 26 Oct 2026 04:39:23 +0000</lastBuildDate>
     <language>en</language>
     <sy:updatePeriod>hourly</sy:updatePeriod>
     <sy:updateFrequency>1</sy:updateFrequency>
@@ -17,6 +17,96 @@
       <description>Cointelegraph covers fintech, blockchain and Bitcoin bringing you the latest crypto news and analyses on the future of money.</description>
     </image>
     <item>
+      <title>Hong Kong names Nasdaq-listed Solana Company a strategic enterprise</title>
+      <pubDate>Mon, 26 Oct 2026 03:21:26 +0000</pubDate>
+      <atom:updated>Mon, 26 Oct 2026 03:23:53 +0000</atom:updated>
+      <guid isPermaLink="true">https://cointelegraph.com/news/hong-kong-names-nasdaq-listed-solana-company-a-strategic-enterprise</guid>
+      <link><![CDATA[https://cointelegraph.com/news/hong-kong-names-nasdaq-listed-solana-company-a-strategic-enterprise?utm_source=rss_feed&utm_medium=rss&utm_campaign=rss_partner_inbound]]></link>
+      <description><![CDATA[<p style="float:right; margin:0 0 10px 15px; width:240px;"><img src="https://s3-images.ctmedia.io/media/article-covers/2026/10/01M5V29PC31CCCR3TY3KBGFNVX/hi-an-overview-of-the-cryptocurrency-regulations-in-hong-kong.jpg" alt="Hong Kong names Nasdaq-listed Solana Company a strategic enterprise" class="type:primaryImage"></p><p>The Nasdaq-listed firm said it plans to establish Solana validator operations in Hong Kong.</p>]]></description>
+      <dc:creator>Cointelegraph by Felix Ng</dc:creator>
+      <media:content url="https://s3-images.ctmedia.io/media/article-covers/2026/10/01M5V29PC31CCCR3TY3KBGFNVX/hi-an-overview-of-the-cryptocurrency-regulations-in-hong-kong.jpg" fileSize="616570" type="image/jpeg" medium="image" height="966" width="1450">
+        <credit>Cointelegraph</credit>
+        <media:credit role="publishing company">Cointelegraph</media:credit>
+      </media:content>
+      <enclosure url="https://s3-images.ctmedia.io/media/article-covers/2026/10/01M5V29PC31CCCR3TY3KBGFNVX/hi-an-overview-of-the-cryptocurrency-regulations-in-hong-kong.jpg" length="616570" type="image/jpeg"/>
+      <category>Latest News</category>
+    </item>
+<item>
+      <title>Keystone says website breach exposed hardware wallet buyers’ addresses</title>
+      <pubDate>Mon, 26 Oct 2026 02:24:04 +0000</pubDate>
+      <atom:updated>Mon, 26 Oct 2026 03:20:11 +0000</atom:updated>
+      <guid isPermaLink="true">https://cointelegraph.com/news/keystone-says-website-breach-exposed-hardware-wallet-buyers-addresses</guid>
+      <link><![CDATA[https://cointelegraph.com/news/keystone-says-website-breach-exposed-hardware-wallet-buyers-addresses?utm_source=rss_feed&utm_medium=rss&utm_campaign=rss_partner_inbound]]></link>
+      <description><![CDATA[<p style="float:right; margin:0 0 10px 15px; width:240px;"><img src="https://s3-images.ctmedia.io/media/article-covers/2026/10/01M5V04TXMGNCT7SCNB1WB3PZF/customer-address.jpg" alt="Keystone says website breach exposed hardware wallet buyers’ addresses" class="type:primaryImage"></p><p>A security researcher warned that the leaked shipping details could expose crypto holders to targeted scams and physical attacks.</p>]]></description>
+      <dc:creator>Cointelegraph by Felix Ng</dc:creator>
+      <media:content url="https://s3-images.ctmedia.io/media/article-covers/2026/10/01M5V04TXMGNCT7SCNB1WB3PZF/customer-address.jpg" fileSize="257361" type="image/jpeg" medium="image" height="966" width="1450">
+        <credit>Cointelegraph</credit>
+        <media:credit role="publishing company">Cointelegraph</media:credit>
+      </media:content>
+      <enclosure url="https://s3-images.ctmedia.io/media/article-covers/2026/10/01M5V04TXMGNCT7SCNB1WB3PZF/customer-address.jpg" length="257361" type="image/jpeg"/>
+      <category>Latest News</category>
+    </item>
+<item>
+      <title>Standard Chartered-led Anchorpoint says it’s not rushing retail stablecoin</title>
+      <pubDate>Mon, 26 Oct 2026 00:13:29 +0000</pubDate>
+      <atom:updated>Mon, 26 Oct 2026 02:15:11 +0000</atom:updated>
+      <guid isPermaLink="true">https://cointelegraph.com/news/standard-chartered-led-anchorpoint-says-its-not-rushing-retail-stablecoin</guid>
+      <link><![CDATA[https://cointelegraph.com/news/standard-chartered-led-anchorpoint-says-its-not-rushing-retail-stablecoin?utm_source=rss_feed&utm_medium=rss&utm_campaign=rss_partner_inbound]]></link>
+      <description><![CDATA[<p style="float:right; margin:0 0 10px 15px; width:240px;"><img src="https://s3-images.ctmedia.io/media/article-covers/2026/10/01M5TQBHC9044ZJ3Z4XFZ9MKN2/hong-kong.jpg" alt="Standard Chartered-led Anchorpoint says it’s not rushing retail stablecoin" class="type:primaryImage"></p><p>The Standard Chartered and Animoca Brands joint venture previously targeted retail access as early as the end of 2026, but its CEO declined to reaffirm that timeline.</p>]]></description>
+      <dc:creator>Cointelegraph by Felix Ng</dc:creator>
+      <media:content url="https://s3-images.ctmedia.io/media/article-covers/2026/10/01M5TQBHC9044ZJ3Z4XFZ9MKN2/hong-kong.jpg" fileSize="549341" type="image/jpeg" medium="image" height="966" width="1450">
+        <credit>Cointelegraph</credit>
+        <media:credit role="publishing company">Cointelegraph</media:credit>
+      </media:content>
+      <enclosure url="https://s3-images.ctmedia.io/media/article-covers/2026/10/01M5TQBHC9044ZJ3Z4XFZ9MKN2/hong-kong.jpg" length="549341" type="image/jpeg"/>
+      <category>Latest News</category>
+    </item>
+<item>
+      <title>AI agents help rescue ETH’s Glamsterdam fork, ‘Steal My Bitcoin’ site: Hodler’s Digest</title>
+      <pubDate>Sun, 25 Oct 2026 22:48:40 +0000</pubDate>
+      <atom:updated>Mon, 26 Oct 2026 03:15:31 +0000</atom:updated>
+      <guid isPermaLink="true">https://cointelegraph.com/magazine/ai-agents-help-rescue-eths-glamsterdam-fork-steal-my-bitcoin-site-hodlers-digest</guid>
+      <link><![CDATA[https://cointelegraph.com/magazine/ai-agents-help-rescue-eths-glamsterdam-fork-steal-my-bitcoin-site-hodlers-digest?utm_source=rss_feed&utm_medium=rss&utm_campaign=rss_partner_inbound]]></link>
+      <description><![CDATA[<p style="float:right; margin:0 0 10px 15px; width:240px;"><img src="https://s3-images.ctmedia.io/media/article-covers/2026/10/01M5TEA8K047VPRWAXPGMZR148/final-collage-oct-23-png.png" alt="AI agents help rescue ETH’s Glamsterdam fork, ‘Steal My Bitcoin’ site: Hodler’s Digest" class="type:primaryImage"></p><p>Similar to the Hugging Face hack, Ethereum researchers have set up an AI Agent message board to help rescue the Glamsterdam fork. ‘Steal My Bitcoin’ site successfully hacked.</p>]]></description>
+      <dc:creator>Cointelegraph by Andrew Fenton</dc:creator>
+      <media:content url="https://s3-images.ctmedia.io/media/article-covers/2026/10/01M5TEA8K047VPRWAXPGMZR148/final-collage-oct-23-png.png" fileSize="3533459" type="image/png" medium="image" height="966" width="1450">
+        <credit>Cointelegraph</credit>
+        <media:credit role="publishing company">Cointelegraph</media:credit>
+      </media:content>
+      <enclosure url="https://s3-images.ctmedia.io/media/article-covers/2026/10/01M5TEA8K047VPRWAXPGMZR148/final-collage-oct-23-png.png" length="3533459" type="image/png"/>
+      <category>Magazine</category>
+    </item>
+<item>
+      <title>ECB official sees digital euro as key to protecting EU ‘sovereignty’</title>
+      <pubDate>Sun, 25 Oct 2026 15:11:00 +0000</pubDate>
+      <atom:updated>Sun, 25 Oct 2026 15:13:19 +0000</atom:updated>
+      <guid isPermaLink="true">https://cointelegraph.com/news/ecb-official-sees-digital-euro-tool-to-protect-eu-sovereignty</guid>
+      <link><![CDATA[https://cointelegraph.com/news/ecb-official-sees-digital-euro-tool-to-protect-eu-sovereignty?utm_source=rss_feed&utm_medium=rss&utm_campaign=rss_partner_inbound]]></link>
+      <description><![CDATA[<p style="float:right; margin:0 0 10px 15px; width:240px;"><img src="https://s3-images.ctmedia.io/media/article-covers/2026/10/01M5SRKMQRMTK1JF6KQQYDH57E/hi-european-mica-regulation-on-digital-euro-where-do-we-stand-1.jpg" alt="ECB official sees digital euro as key to protecting EU ‘sovereignty’" class="type:primaryImage"></p><p>Piero Cipollone said the bloc is on track to test real transactions in 2027 and roll out a digital euro as early as 2029, pending legislation this year.</p>]]></description>
+      <dc:creator>Cointelegraph by Robert Lakin</dc:creator>
+      <media:content url="https://s3-images.ctmedia.io/media/article-covers/2026/10/01M5SRKMQRMTK1JF6KQQYDH57E/hi-european-mica-regulation-on-digital-euro-where-do-we-stand-1.jpg" fileSize="865685" type="image/jpeg" medium="image" height="966" width="1450">
+        <credit>Cointelegraph</credit>
+        <media:credit role="publishing company">Cointelegraph</media:credit>
+      </media:content>
+      <enclosure url="https://s3-images.ctmedia.io/media/article-covers/2026/10/01M5SRKMQRMTK1JF6KQQYDH57E/hi-european-mica-regulation-on-digital-euro-where-do-we-stand-1.jpg" length="865685" type="image/jpeg"/>
+      <category>Latest News</category>
+    </item>
+<item>
+      <title>Netanyahu floats use of blockchain as solution to potential financial sanctions</title>
+      <pubDate>Sun, 25 Oct 2026 11:42:00 +0000</pubDate>
+      <atom:updated>Sun, 25 Oct 2026 11:48:24 +0000</atom:updated>
+      <guid isPermaLink="true">https://cointelegraph.com/news/netanyahu-floats-use-of-blockchain-as-solution-to-potential-financial-sanctions</guid>
+      <link><![CDATA[https://cointelegraph.com/news/netanyahu-floats-use-of-blockchain-as-solution-to-potential-financial-sanctions?utm_source=rss_feed&utm_medium=rss&utm_campaign=rss_partner_inbound]]></link>
+      <description><![CDATA[<p style="float:right; margin:0 0 10px 15px; width:240px;"><img src="https://s3-images.ctmedia.io/media/article-covers/2026/10/01M5SCA4VS7NKA06DYBPJVW2FM/benjamin-netanyahu.png" alt="Netanyahu floats use of blockchain as solution to potential financial sanctions" class="type:primaryImage"></p><p>Ahead of elections, Prime Minister Benjamin Netanyahu said Israel could turn to blockchain and crypto to skirt potential international sanctions, to the dismay of opponents and the country’s central banker.</p>]]></description>
+      <dc:creator>Cointelegraph by Robert Lakin</dc:creator>
+      <media:content url="https://s3-images.ctmedia.io/media/article-covers/2026/10/01M5SCA4VS7NKA06DYBPJVW2FM/benjamin-netanyahu.png" fileSize="3255041" type="image/png" medium="image" height="966" width="1450">
+        <credit>Cointelegraph</credit>
+        <media:credit role="publishing company">Cointelegraph</media:credit>
+      </media:content>
+      <enclosure url="https://s3-images.ctmedia.io/media/article-covers/2026/10/01M5SCA4VS7NKA06DYBPJVW2FM/benjamin-netanyahu.png" length="3255041" type="image/png"/>
+      <category>Latest News</category>
+    </item>
+<item>
       <title>Wells Fargo and five others object to OKX-ICE tokenized stock listings: Report</title>
       <pubDate>Fri, 23 Oct 2026 21:32:16 +0000</pubDate>
       <atom:updated>Fri, 23 Oct 2026 21:36:04 +0000</atom:updated>
@@ -30,7 +120,8 @@
       </media:content>
       <enclosure url="https://s3-images.ctmedia.io/media/article-covers/2026/10/01M5N19TPWN37A162FFHMQDBR2/hi-cover-imagereview-of-us-stocks.jpg" length="747934" type="image/jpeg"/>
       <category>Latest News</category>
-    </item><item>
+    </item>
+<item>
       <title>IRS plans lower tax disclosure penalties, including for crypto: Forbes</title>
       <pubDate>Fri, 23 Oct 2026 20:54:17 +0000</pubDate>
       <atom:updated>Fri, 23 Oct 2026 20:57:16 +0000</atom:updated>
@@ -44,7 +135,8 @@
       </media:content>
       <enclosure url="https://s3-images.ctmedia.io/media/article-covers/2026/10/01M5N6SNMRK1BS8PGZSR5F8GRG/hi-taxes-on-crypto-kraken.png" length="1872256" type="image/png"/>
       <category>Latest News</category>
-    </item><item>
+    </item>
+<item>
       <title>Initia halts blockchain after exploit reportedly drains over $2.6M</title>
       <pubDate>Fri, 23 Oct 2026 18:39:02 +0000</pubDate>
       <atom:updated>Fri, 23 Oct 2026 18:43:17 +0000</atom:updated>
@@ -59,7 +151,8 @@
       </media:content>
       <enclosure url="https://s3-images.ctmedia.io/media/article-covers/2026/10/01M5MZKF3C8AJPVBYK5JQWCAWW/hi-got-crypto-losses-wallet.png" length="1735558" type="image/png"/>
       <category>Latest News</category>
-    </item><item>
+    </item>
+<item>
       <title>US senator probes Tether after reported deal with ex-Trump crypto adviser</title>
       <pubDate>Fri, 23 Oct 2026 17:42:12 +0000</pubDate>
       <atom:updated>Fri, 23 Oct 2026 18:31:53 +0000</atom:updated>
@@ -73,4 +166,65 @@
       </media:content>
       <enclosure url="https://s3-images.ctmedia.io/media/article-covers/2026/10/01M5MWKYVWPGFNQZJ4EMBSGH91/hi-probe-crypto-senator.jpg" length="2980428" type="image/png"/>
       <category>Latest News</category>
-    </item></channel></rss>
+    </item>
+<item>
+      <title>SEC flags tokenization as high-risk area in 2027 market examinations</title>
+      <pubDate>Fri, 23 Oct 2026 16:08:40 +0000</pubDate>
+      <atom:updated>Fri, 23 Oct 2026 16:12:38 +0000</atom:updated>
+      <guid isPermaLink="true">https://cointelegraph.com/news/sec-adds-tokenized-securities-to-2027-examination-priorities</guid>
+      <link><![CDATA[https://cointelegraph.com/news/sec-adds-tokenized-securities-to-2027-examination-priorities?utm_source=rss_feed&utm_medium=rss&utm_campaign=rss_partner_inbound]]></link>
+      <description><![CDATA[<p style="float:right; margin:0 0 10px 15px; width:240px;"><img src="https://s3-images.ctmedia.io/media/article-covers/2026/10/01M5MP9HHR5PTKGP6MBRZ5FNFH/hi-irs-joins-the-j5-international-crypto-tax-enforcement-coming-next1.png" alt="SEC flags tokenization as high-risk area in 2027 market examinations" class="type:primaryImage"></p><p>The SEC’s latest priorities highlight tokenization as an emerging market risk, while cryptocurrencies remain absent as a standalone examination category.</p>]]></description>
+      <dc:creator>Cointelegraph by Nate Kostar</dc:creator>
+      <media:content url="https://s3-images.ctmedia.io/media/article-covers/2026/10/01M5MP9HHR5PTKGP6MBRZ5FNFH/hi-irs-joins-the-j5-international-crypto-tax-enforcement-coming-next1.png" fileSize="1490986" type="image/png" medium="image" height="848" width="1264">
+        <credit>Cointelegraph</credit>
+        <media:credit role="publishing company">Cointelegraph</media:credit>
+      </media:content>
+      <enclosure url="https://s3-images.ctmedia.io/media/article-covers/2026/10/01M5MP9HHR5PTKGP6MBRZ5FNFH/hi-irs-joins-the-j5-international-crypto-tax-enforcement-coming-next1.png" length="1490986" type="image/png"/>
+      <category>Latest News</category>
+    </item>
+<item>
+      <title>Bitcoin seeks support above $81K as Brent crude oil hits highest level since March </title>
+      <pubDate>Fri, 23 Oct 2026 15:39:17 +0000</pubDate>
+      <atom:updated>Fri, 23 Oct 2026 15:48:06 +0000</atom:updated>
+      <guid isPermaLink="true">https://cointelegraph.com/markets/bitcoin-seeks-support-above-81k-as-brent-crude-oil-hits-highest-level-since-march</guid>
+      <link><![CDATA[https://cointelegraph.com/markets/bitcoin-seeks-support-above-81k-as-brent-crude-oil-hits-highest-level-since-march?utm_source=rss_feed&utm_medium=rss&utm_campaign=rss_partner_inbound]]></link>
+      <description><![CDATA[<p style="float:right; margin:0 0 10px 15px; width:240px;"><img src="https://s3-images.ctmedia.io/media/article-covers/2026/10/01M5MPBY5231GNMGE2Q9V1FYVN/hi-crypto-offers-russia-no-way-out-from-western-sanctions2-1.jpg" alt="Bitcoin seeks support above $81K as Brent crude oil hits highest level since March " class="type:primaryImage"></p><p>Bitcoin dipped below $81,000 as stocks fell and Brent crude hit its highest level since March, leaving the 50-day moving average in focus.</p>]]></description>
+      <dc:creator>Cointelegraph by William Suberg</dc:creator>
+      <media:content url="https://s3-images.ctmedia.io/media/article-covers/2026/10/01M5MPBY5231GNMGE2Q9V1FYVN/hi-crypto-offers-russia-no-way-out-from-western-sanctions2-1.jpg" fileSize="722922" type="image/jpeg" medium="image" height="966" width="1450">
+        <credit>Cointelegraph</credit>
+        <media:credit role="publishing company">Cointelegraph</media:credit>
+      </media:content>
+      <enclosure url="https://s3-images.ctmedia.io/media/article-covers/2026/10/01M5MPBY5231GNMGE2Q9V1FYVN/hi-crypto-offers-russia-no-way-out-from-western-sanctions2-1.jpg" length="722922" type="image/jpeg"/>
+      <category>Markets</category>
+    </item>
+<item>
+      <title>Here’s what happened in crypto today</title>
+      <pubDate>Fri, 23 Oct 2026 13:38:53 +0000</pubDate>
+      <atom:updated>Fri, 23 Oct 2026 13:42:39 +0000</atom:updated>
+      <guid isPermaLink="true">https://cointelegraph.com/news/what-happened-in-crypto-today</guid>
+      <link><![CDATA[https://cointelegraph.com/news/what-happened-in-crypto-today?utm_source=rss_feed&utm_medium=rss&utm_campaign=rss_partner_inbound]]></link>
+      <description><![CDATA[<p style="float:right; margin:0 0 10px 15px; width:240px;"><img src="https://s3-images.ctmedia.io/media/article-covers/article-covers-110589-what-happened-in-crypto-today.jpg" alt="Here’s what happened in crypto today" class="type:primaryImage"></p><p>Need to know what happened in crypto today? Here is the latest news on daily trends and events impacting Bitcoin price, blockchain, DeFi, Web3 and crypto regulation.</p>]]></description>
+      <dc:creator>Cointelegraph by Yohan Yun</dc:creator>
+      <media:content url="https://s3-images.ctmedia.io/media/article-covers/article-covers-110589-what-happened-in-crypto-today.jpg" fileSize="848525" type="image/jpeg" medium="image" height="966" width="1450">
+        <credit>Cointelegraph</credit>
+        <media:credit role="publishing company">Cointelegraph</media:credit>
+      </media:content>
+      <enclosure url="https://s3-images.ctmedia.io/media/article-covers/article-covers-110589-what-happened-in-crypto-today.jpg" length="848525" type="image/jpeg"/>
+      <category>Latest News</category>
+    </item>
+<item>
+      <title>China targets 2030 for its national blockchain network buildout</title>
+      <pubDate>Fri, 23 Oct 2026 13:21:07 +0000</pubDate>
+      <atom:updated>Fri, 23 Oct 2026 13:24:00 +0000</atom:updated>
+      <guid isPermaLink="true">https://cointelegraph.com/news/china-2030-national-blockchain-network-buildout</guid>
+      <link><![CDATA[https://cointelegraph.com/news/china-2030-national-blockchain-network-buildout?utm_source=rss_feed&utm_medium=rss&utm_campaign=rss_partner_inbound]]></link>
+      <description><![CDATA[<p style="float:right; margin:0 0 10px 15px; width:240px;"><img src="https://s3-images.ctmedia.io/media/article-covers/2026/10/01M5MEGNPQ3M8HRRFF6ZWNHZKK/chinese-blockchain-patents.jpg" alt="China targets 2030 for its national blockchain network buildout" class="type:primaryImage"></p><p>China’s five-year digital development plan calls for wider blockchain use in trade and manufacturing alongside stronger technical standards.</p>]]></description>
+      <dc:creator>Cointelegraph by Yohan Yun</dc:creator>
+      <media:content url="https://s3-images.ctmedia.io/media/article-covers/2026/10/01M5MEGNPQ3M8HRRFF6ZWNHZKK/chinese-blockchain-patents.jpg" fileSize="255643" type="image/jpeg" medium="image" height="966" width="1450">
+        <credit>Cointelegraph</credit>
+        <media:credit role="publishing company">Cointelegraph</media:credit>
+      </media:content>
+      <enclosure url="https://s3-images.ctmedia.io/media/article-covers/2026/10/01M5MEGNPQ3M8HRRFF6ZWNHZKK/chinese-blockchain-patents.jpg" length="255643" type="image/jpeg"/>
+      <category>Latest News</category>
+    </item>
+</channel></rss>
