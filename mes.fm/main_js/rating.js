@@ -1,7 +1,7 @@
 /* MES "Rate this page": one compact line of stars just above the Comments bar (else above the footer) on every public page.
    Loaded lazily by site-search.js when the bottom of the page nears the screen. Votes go to /api/rating (one per browser per
    page, changing it replaces it); the average is shown once a page has 5 ratings. "Tell us more" opens a short text box whose
-   text is only ever sent by the visitor's own email (mailto:) or the contact form: nothing written is stored or shown here.
+   text is only ever sent through the prefilled contact form (the visitor presses its Send): nothing written is stored or shown here.
    Ranking: mes.fm/ratings. Opt out per page with <body data-no-rating> or <html data-no-rating>. */
 (function () {
     "use strict";
@@ -73,17 +73,16 @@
     html += '</span><span class="mes-rate__info" aria-live="polite"></span></div>' +
         '<div class="mes-rate__more" hidden><label class="mes-rate__lab" for="mes-rate-ta">Tell us more (optional)</label>' +
         '<textarea class="mes-rate__ta" id="mes-rate-ta" maxlength="1000" placeholder="What was useful? What was missing, confusing or broken?"></textarea>' +
-        '<div class="mes-rate__acts"><a class="mes-rate__btn" id="mes-rate-mail" href="#">Send by email</a>' +
-        '<a class="mes-rate__btn mes-rate__btn--ghost" id="mes-rate-form" href="/contact">Use the contact form</a>' +
+        '<div class="mes-rate__acts"><a class="mes-rate__btn" id="mes-rate-form" href="/contact" target="_blank" rel="noopener">Send feedback</a>' +
         '<button type="button" class="mes-rate__lnk" id="mes-rate-close">Close</button></div>' +
-        '<p class="mes-rate__note">Your message goes to ' + EMAIL + ' from your own email app or the contact form. Nothing you write is posted on this page or kept by the rating.</p></div>' +
+        '<p class="mes-rate__note">Opens our contact form in a new tab with your message filled in: add your name and email there and press its Send button. Prefer email? Write to ' + EMAIL + '. Nothing you write is posted on this page or kept by the rating.</p></div>' +
         '<input class="mes-rate__hp" type="text" name="website" tabindex="-1" autocomplete="off" aria-hidden="true">';
     box.innerHTML = html;
     anchor.parentNode.insertBefore(box, anchor);
 
     var stars = Array.prototype.slice.call(box.querySelectorAll(".mes-rate__s"));
     var info = box.querySelector(".mes-rate__info"), more = box.querySelector(".mes-rate__more"), ta = box.querySelector(".mes-rate__ta");
-    var mail = box.querySelector("#mes-rate-mail"), form = box.querySelector("#mes-rate-form"), hp = box.querySelector(".mes-rate__hp");
+    var form = box.querySelector("#mes-rate-form"), hp = box.querySelector(".mes-rate__hp");
 
     function paint(n) {
         stars.forEach(function (b, k) {
@@ -111,13 +110,13 @@
             if (a) parts.push(a);
             parts.push(linkBtn("more", "Feedback"));
         }
+        parts.push('<a class="mes-rate__lnk" href="/ratings">Top rated pages</a>');
         info.innerHTML = parts.join(" · ");
     }
     function feedbackLinks() {
         var text = (ta.value || "").trim().slice(0, 1000);
         var subj = "Feedback on " + title;
         var body = (text ? text + "\n\n" : "") + "Page: " + location.origin + path + (mine ? "\nMy rating: " + mine + " out of 5" : "");
-        mail.href = "mailto:" + EMAIL + "?subject=" + encodeURIComponent(subj) + "&body=" + encodeURIComponent(body);
         form.href = "/contact?subject=" + encodeURIComponent(subj) + "&message=" + encodeURIComponent(body);
     }
     ta.addEventListener("input", feedbackLinks);

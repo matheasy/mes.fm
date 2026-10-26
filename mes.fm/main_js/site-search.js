@@ -592,7 +592,7 @@
         function go() {
             if (done) return; done = true;
             window.removeEventListener("scroll", onScroll);
-            var s = document.createElement("script"); s.src = "/main_js/rating.js?v=1"; s.defer = true; document.head.appendChild(s);
+            var s = document.createElement("script"); s.src = "/main_js/rating.js?v=2"; s.defer = true; document.head.appendChild(s);
         }
         function near() { var r = a.getBoundingClientRect(); return (r.width || r.height) && r.top < (window.innerHeight || 800) + 600; }
         function onScroll() { if (!t) t = setTimeout(function () { t = 0; if (near()) go(); }, 200); }

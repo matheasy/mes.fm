@@ -120,11 +120,10 @@
 	var qt; $("rt-q").value = S.q;
 	$("rt-q").addEventListener("input", function () { clearTimeout(qt); var v = this.value; qt = setTimeout(function () { S.q = v.trim().slice(0, 80); if (D) render(); writeURL(); }, 150); });
 
-	/* general feedback: email or the contact form, prefilled; nothing stored */
+	/* general feedback: the contact form, prefilled; nothing stored */
 	var ta = $("rt-fbta");
 	function fb() {
 		var text = ta.value.trim().slice(0, 1500), subj = "Feedback on mes.fm";
-		$("rt-mail").href = "mailto:contact@mes.fm?subject=" + encodeURIComponent(subj) + (text ? "&body=" + encodeURIComponent(text) : "");
 		$("rt-form").href = "/contact?subject=" + encodeURIComponent(subj) + (text ? "&message=" + encodeURIComponent(text) : "");
 	}
 	ta.addEventListener("input", fb);
