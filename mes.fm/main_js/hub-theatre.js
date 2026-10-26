@@ -10,7 +10,9 @@
 
    2026-10-24: a page that carries data-page-modes="3" on any element (the private /search-console and /ads dashboards) gets
    Standard | Wide | Theatre WITHOUT the sidebar: html.page-wide (Wide and Theatre) and html.page-theatre (Theatre), the same
-   classes and saved "pageMode" as everywhere else; the page's own CSS says how wide each one is. */
+   classes and saved "pageMode" as everywhere else; the page's own CSS says how wide each one is.
+   2026-10-25: on those pages the switch floats right (.hub-mode--float) instead of sitting absolutely over the top right
+   corner, so in Standard (the narrow 50em tool shell) a long title wraps beside or below it instead of running under it. */
 (function () {
     "use strict";
     var host = document.querySelector(".outer-page-content .page-content");
@@ -53,7 +55,7 @@
         return;
     }
     var group = document.createElement("div");
-    group.className = "hub-mode";
+    group.className = three ? "hub-mode hub-mode--float" : "hub-mode";   /* 3-state pages: floats right so the title wraps beside / below it (hub-theatre.css) */
     group.setAttribute("role", "group");
     group.setAttribute("aria-label", "Page width");
     var MODES = [["std", "Standard", "Normal page width"], ["theatre", "Theatre", "Use nearly the whole window: more columns on big screens"]], btn = {};

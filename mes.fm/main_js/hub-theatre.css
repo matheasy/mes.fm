@@ -6,6 +6,11 @@
   .outer-page-content .page-content, .hub-host-container { position: relative; }
   .hub-mode { display: inline-flex; position: absolute; top: .45em; right: 0; z-index: 2; border: 1px solid #b9c2cc; border-radius: 999px;
     background: #fff; overflow: hidden; font-size: .82em; line-height: 1.2; }
+  /* data-page-modes="3" pages (/search-console, /ads): float right like aside.css's pill on .page-content pages, so the title
+     wraps beside or below it at any text size; the description starts under it. */
+  .hub-mode.hub-mode--float { position: static; float: right; margin: .45em 0 .5em 1em; }
+  .hub-mode--float ~ .page-title { display: inline; }   /* inline (not inline-block): its words wrap beside the switch instead of the whole title dropping under it */
+  .hub-mode--float ~ .page-description { clear: right; padding-top: .45em; }   /* stands in for the inline title's lost bottom margin */
   .hub-mode button { border: 0; background: transparent; color: #1479c7; font: inherit; padding: .28em .8em; cursor: pointer; }
   .hub-mode button + button { border-left: 1px solid #d5dbe2; }
   .hub-mode button:hover { background: #e8f2fb; }
