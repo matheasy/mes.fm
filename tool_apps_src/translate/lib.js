@@ -258,7 +258,26 @@
     return { lay: set && set.lay === "stack" ? "stack" : "side", full: !!(set && set.full) };
   }
 
+  // the source tabs above the text box: Translate = text first, Image to Text = the picture tabs only; Camera only where a camera can be used
+  function sourceTabs(mode, camera) {
+    var t = mode === "ocr" ? ["file", "link", "cam"] : ["text", "file", "link", "cam"];
+    return camera ? t : t.filter(function (k) { return k !== "cam"; });
+  }
+  // roving keys of a tab list: the tab to move to, or null when the key is not a tab key
+  function nextTab(list, cur, key) {
+    var i = list.indexOf(cur), n = list.length;
+    if (!n) return null;
+    if (key === "ArrowRight" || key === "ArrowDown") return list[(i + 1 + n) % n];
+    if (key === "ArrowLeft" || key === "ArrowUp") return list[(i - 1 + n * 2) % n];
+    if (key === "Home") return list[0];
+    if (key === "End") return list[n - 1];
+    return null;
+  }
+  // "Edit pictures before reading them": off on a computer, on for touch screens (phone photos usually want a crop)
+  function editDefault(coarse) { return !!coarse; }
+
   var api = {
+    sourceTabs: sourceTabs, nextTab: nextTab, editDefault: editDefault,
     LANGS: LANGS, DAILY: DAILY, norm: norm, isRtl: isRtl, known: known, toTess: toTess, fromTess: fromTess, tessLangs: tessLangs,
     myMemoryCode: myMemoryCode, apiCode: apiCode, utf8Len: utf8Len, sentences: sentences, chunk: chunk, join: join,
     pickMyMemory: pickMyMemory, chooseEngine: chooseEngine, liveOk: liveOk, parseQuery: parseQuery, buildQuery: buildQuery,

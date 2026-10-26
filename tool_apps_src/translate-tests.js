@@ -116,6 +116,18 @@ eq(T.linkName("https://a.com/", "application/pdf"), "picture.pdf", "linkName fal
 eq(T.layoutOf({}), { lay: "side", full: false }, "layout default");
 eq(T.layoutOf({ lay: "stack", full: 1 }), { lay: "stack", full: true }, "layout saved");
 eq(T.layoutOf({ lay: "weird" }).lay, "side", "layout unknown");
+// source tabs
+eq(T.sourceTabs("translate", true), ["text", "file", "link", "cam"], "translate tabs, text first");
+eq(T.sourceTabs("ocr", true), ["file", "link", "cam"], "Image to Text: picture tabs only, picture first");
+eq(T.sourceTabs("translate", false), ["text", "file", "link"], "no camera tab without a camera");
+eq(T.nextTab(["text", "file", "link"], "text", "ArrowRight"), "file", "arrow right");
+eq(T.nextTab(["text", "file", "link"], "text", "ArrowLeft"), "link", "arrow left wraps");
+eq(T.nextTab(["text", "file", "link"], "link", "ArrowRight"), "text", "arrow right wraps");
+eq(T.nextTab(["text", "file", "link"], "file", "Home"), "text", "Home");
+eq(T.nextTab(["text", "file", "link"], "file", "End"), "link", "End");
+eq(T.nextTab(["text", "file", "link"], "file", "a"), null, "other keys ignored");
+eq(T.nextTab([], "x", "ArrowRight"), null, "empty list");
+eq([T.editDefault(true), T.editDefault(false)], [true, false], "edit before reading: on for touch, off on a computer");
 
 console.log((bad ? bad + " of " : "all ") + n + " checks " + (bad ? "FAILED" : "passed"));
 process.exit(bad ? 1 : 0);

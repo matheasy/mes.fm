@@ -1,80 +1,111 @@
 	<div class="tu tr" id="tr" data-mode="{{MODE}}">
 		<section class="tu-card tr-tx" id="tr-tx" aria-labelledby="tr-tx-h">
 			<div class="tr-head">
-				<h2 class="tr-h" id="tr-tx-h">Translate text</h2>
+				<h2 class="tr-h" id="tr-tx-h">Translate</h2>
 				<div class="tr-view" role="group" aria-label="Layout">
 					<div class="tu-seg" id="tr-lay" role="group" aria-label="Text boxes"><button type="button" data-v="side" aria-pressed="true">Side by side</button><button type="button" data-v="stack" aria-pressed="false">Stacked</button></div>
 					<button type="button" class="tu-btn tu-btn--ghost tr-small tr-fullw" id="tr-fullw" aria-pressed="false" title="Use the whole page width for the text boxes (the sidebar moves below)">&#8596; Full width</button>
-					<button type="button" class="tu-btn tu-btn--ghost tr-small tr-fillx" data-fillx hidden>&#10005;&nbsp;Close&nbsp;<span class="tr-dim">(Esc)</span></button>
 				</div>
 			</div>
 			<div class="tr-langs">
 				<div class="tu-field tr-lf"><label for="tr-from">From</label><select id="tr-from" class="tu-select"></select></div>
 				<button type="button" class="tu-btn tu-btn--ghost tr-swap" id="tr-swap" title="Swap the languages (and the texts)" aria-label="Swap languages">&#8644;</button>
 				<div class="tu-field tr-lf"><label for="tr-to">To</label><select id="tr-to" class="tu-select"></select></div>
-				<div class="tu-field tr-ef"><label for="tr-engine">Engine</label><select id="tr-engine" class="tu-select">
-					<option value="auto">Auto (on this device when possible)</option>
-					<option value="device">On this device only</option>
-					<option value="online">Online service (MyMemory)</option>
-				</select></div>
 			</div>
 			<div class="tr-panes">
-				<div class="tr-pane">
-					<textarea id="tr-in" class="tr-text" dir="auto" rows="7" spellcheck="true" placeholder="Type or paste text here" aria-label="Text to translate"></textarea>
-					<div class="tr-tools">
-						<span class="tr-count" id="tr-count">0 characters</span>
-						<span class="tr-det" id="tr-det"></span>
-						<span class="tr-sp"></span>
-						<button type="button" class="tr-ib" id="tr-say-in" title="Read the text aloud" aria-label="Read the text aloud">&#128266;</button>
-						<button type="button" class="tr-ib" id="tr-paste" title="Paste from the clipboard" aria-label="Paste">&#128203;</button>
-						<button type="button" class="tr-ib" data-fill="tx" title="Fill the browser window (Esc closes)" aria-label="Fill the browser window"><svg class="tr-ic" viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="4" width="18" height="16" rx="2"/><path d="M10 10L6.5 7.5M6.5 7.5v3M6.5 7.5h3M14 14l3.5 2.5M17.5 16.5v-3M17.5 16.5h-3"/></svg></button>
-						<button type="button" class="tr-ib" data-fs="tx" title="Full screen" aria-label="Full screen"><svg class="tr-ic" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 9V4h5M20 9V4h-5M4 15v5h5M20 15v5h-5"/></svg></button>
-						<button type="button" class="tr-ib" id="tr-clear" title="Clear" aria-label="Clear the text">&#10005;</button>
+				<div class="tr-col tr-col--in">
+					<div class="tr-src" id="tr-src">
+						<div class="tr-tabs" role="tablist" aria-label="Where the text comes from">
+							<button type="button" role="tab" class="tr-tab" id="tr-tab-text" data-src="text" aria-controls="tr-p-text" aria-selected="true"><span class="tr-tabi" aria-hidden="true">&#9998;&#65038;</span><span>Type or paste</span></button>
+							<button type="button" role="tab" class="tr-tab" id="tr-tab-file" data-src="file" aria-controls="tr-p-file" aria-selected="false" tabindex="-1"><span class="tr-tabi" aria-hidden="true">&#128444;&#65038;</span><span>Photo / file</span></button>
+							<button type="button" role="tab" class="tr-tab" id="tr-tab-link" data-src="link" aria-controls="tr-p-link" aria-selected="false" tabindex="-1"><span class="tr-tabi" aria-hidden="true">&#128279;&#65038;</span><span>Link</span></button>
+							<button type="button" role="tab" class="tr-tab" id="tr-tab-cam" data-src="cam" aria-controls="tr-p-cam" aria-selected="false" tabindex="-1"><span class="tr-tabi" aria-hidden="true">&#128247;&#65038;</span><span>Camera</span></button>
+						</div>
+						<div class="tr-srcp" id="tr-p-file" role="tabpanel" aria-labelledby="tr-tab-file" hidden>
+							<div class="tr-drop" id="tr-drop" tabindex="0" role="button" aria-label="Choose, drop or paste a picture or PDF">
+								<div class="tr-drop__big">Choose a photo, screenshot or PDF</div>
+								<div class="tr-drop__sub">or drop it here, or paste a screenshot with <kbd>Ctrl</kbd>/<kbd>&#8984;</kbd> + <kbd>V</kbd></div>
+								<input type="file" id="tr-file" accept="image/*,application/pdf,.pdf" hidden>
+							</div>
+						</div>
+						<div class="tr-srcp" id="tr-p-link" role="tabpanel" aria-labelledby="tr-tab-link" hidden>
+							<form class="tr-urlrow" id="tr-urlform" autocomplete="off">
+								<label for="tr-url">Link to a picture or PDF</label>
+								<div class="tr-urlin"><input type="url" id="tr-url" class="tu-input" inputmode="url" spellcheck="false" placeholder="https://example.com/photo.jpg"><button type="submit" class="tu-btn tu-btn--primary" id="tr-urlgo">Open</button></div>
+								<p class="tu-note tr-urlnote" id="tr-urlnote" role="status" hidden></p>
+							</form>
+						</div>
+						<div class="tr-srcp" id="tr-p-cam" role="tabpanel" aria-labelledby="tr-tab-cam" hidden>
+							<div class="tr-cam">
+								<button type="button" class="tu-btn tu-btn--primary tr-cambtn" id="tr-camgo"><span aria-hidden="true">&#128247;&#65038;</span> Take a photo</button>
+								<input type="file" id="tr-camfile" accept="image/*" capture="environment" hidden>
+								<label class="tr-live"><input type="checkbox" id="tr-camedit" checked> Crop and straighten each photo before it is read</label>
+							</div>
+							<div class="tr-camview" id="tr-camview" hidden>
+								<video id="tr-video" playsinline muted aria-label="Camera preview"></video>
+								<div class="tr-camacts"><button type="button" class="tu-btn tu-btn--primary" id="tr-snap">Take the photo</button><button type="button" class="tu-btn tu-btn--ghost" id="tr-camstop">Stop the camera</button></div>
+							</div>
+						</div>
+						<div class="tr-picset" id="tr-picset" hidden>
+							<div class="tu-field tr-lf"><label for="tr-olang">Language in the picture</label><select id="tr-olang" class="tu-select"></select></div>
+							<label class="tr-live"><input type="checkbox" id="tr-oeng" checked> Also read English words</label>
+							<label class="tr-live"><input type="checkbox" id="tr-editfirst"> Edit pictures before reading them</label>
+						</div>
+						<div class="tr-pics" id="tr-pics" hidden>
+							<div class="tr-thumbs" id="tr-thumbs" role="group" aria-label="Your pictures"></div>
+							<div class="tr-picacts">
+								<button type="button" class="tu-btn tu-btn--ghost" id="tr-oedit"><span aria-hidden="true">&#9998;&#65038;</span> Edit picture</button>
+								<button type="button" class="tu-btn tu-btn--primary" id="tr-oread" disabled>Read the text</button>
+							</div>
+							<div class="tr-prog" id="tr-oprog" hidden><div class="tr-prog__bar"><i id="tr-oprog-i"></i></div><span id="tr-oprog-t"></span><button type="button" class="tr-cancel" id="tr-ocancel">Cancel</button></div>
+						</div>
 					</div>
-				</div>
-				<div class="tr-pane tr-pane--out">
-					<div id="tr-out" class="tr-text tr-out" role="region" aria-live="polite" aria-label="Translation"><span class="tr-ph">The translation appears here</span></div>
-					<div class="tr-tools">
-						<span class="tr-count" id="tr-ocount"></span>
-						<span class="tr-sp"></span>
-						<button type="button" class="tr-ib" id="tr-say-out" title="Read the translation aloud" aria-label="Read the translation aloud">&#128266;</button>
-						<button type="button" class="tr-ib" data-fill="tx" title="Fill the browser window (Esc closes)" aria-label="Fill the browser window"><svg class="tr-ic" viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="4" width="18" height="16" rx="2"/><path d="M10 10L6.5 7.5M6.5 7.5v3M6.5 7.5h3M14 14l3.5 2.5M17.5 16.5v-3M17.5 16.5h-3"/></svg></button>
-						<button type="button" class="tr-ib" data-fs="tx" title="Full screen" aria-label="Full screen"><svg class="tr-ic" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 9V4h5M20 9V4h-5M4 15v5h5M20 15v5h-5"/></svg></button>
-						<button type="button" class="tr-ib" id="tr-copy" title="Copy the translation" aria-label="Copy the translation">&#10697;</button>
+					<div class="tr-pane tr-box" id="tr-p-text" role="tabpanel" aria-labelledby="tr-tab-text" data-box="in">
+						<div class="tr-fillbar"><b class="tr-fbt">Your text</b><span class="tr-sp"></span><button type="button" class="tr-ib" data-fb="copy" title="Copy" aria-label="Copy"><svg class="tr-ic" viewBox="0 0 24 24" aria-hidden="true"><rect x="8" y="8" width="12" height="12" rx="2"/><path d="M16 8V5a1 1 0 0 0-1-1H5a1 1 0 0 0-1 1v10a1 1 0 0 0 1 1h3"/></svg></button><button type="button" class="tr-ib" data-fb="say" title="Read aloud" aria-label="Read aloud"><svg class="tr-ic" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 9v6h4l5 4V5L8 9z"/><path d="M16 9a4 4 0 0 1 0 6M18.5 6.5a7.5 7.5 0 0 1 0 11"/></svg></button><button type="button" class="tr-ib" data-fb="fs" title="Full screen" aria-label="Full screen"><svg class="tr-ic" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 9V4h5M20 9V4h-5M4 15v5h5M20 15v5h-5"/></svg></button><button type="button" class="tr-fbx" data-fillx title="Close (Esc)" aria-label="Close"><svg class="tr-ic" viewBox="0 0 24 24" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18"/></svg><span>Close</span></button></div>
+						<textarea id="tr-in" class="tr-text" dir="auto" rows="7" spellcheck="true" placeholder="Type or paste text here" aria-label="Text to translate"></textarea>
+						<div class="tr-tools">
+							<span class="tr-count" id="tr-count">0 characters</span>
+							<span class="tr-det" id="tr-det"></span>
+							<span class="tr-sp"></span>
+							<button type="button" class="tr-ib" id="tr-say-in" title="Read the text aloud" aria-label="Read the text aloud"><svg class="tr-ic" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 9v6h4l5 4V5L8 9z"/><path d="M16 9a4 4 0 0 1 0 6M18.5 6.5a7.5 7.5 0 0 1 0 11"/></svg></button>
+							<button type="button" class="tr-ib" id="tr-paste" title="Paste from the clipboard" aria-label="Paste">&#128203;&#65038;</button>
+							<button type="button" class="tr-ib tr-fillb" data-fill="in" title="Fill the browser window (Esc closes)" aria-label="Fill the browser window"><svg class="tr-ic" viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="4" width="18" height="16" rx="2"/><path d="M10 10L6.5 7.5M6.5 7.5v3M6.5 7.5h3M14 14l3.5 2.5M17.5 16.5v-3M17.5 16.5h-3"/></svg></button><button type="button" class="tr-ib tr-fillb" data-fs="in" title="Full screen" aria-label="Full screen"><svg class="tr-ic" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 9V4h5M20 9V4h-5M4 15v5h5M20 15v5h-5"/></svg></button>
+							<button type="button" class="tr-ib" id="tr-clear" title="Clear" aria-label="Clear the text"><svg class="tr-ic" viewBox="0 0 24 24" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18"/></svg></button>
+						</div>
 					</div>
+					<div class="tr-act">
+						<button type="button" class="tu-btn tu-btn--primary tr-go" id="tr-go">Translate</button>
+						<label class="tr-live" id="tr-livebox"><input type="checkbox" id="tr-live" checked> <span>Translate as I type <span class="tr-dim">(on this device only)</span></span></label>
+					</div>
+					<p class="tr-badge" id="tr-badge" role="status"></p>
+					<div class="tr-engrow"><label for="tr-engine">Engine</label><select id="tr-engine" class="tu-select">
+						<option value="auto">Auto (on this device when possible)</option>
+						<option value="device">On this device only</option>
+						<option value="online">Online service (MyMemory)</option>
+					</select></div>
 				</div>
-			</div>
-			<div class="tr-act">
-				<button type="button" class="tu-btn tu-btn--primary tr-go" id="tr-go">Translate</button>
-				<span class="tr-badge" id="tr-badge" role="status"></span>
-				<label class="tr-live" id="tr-livebox"><input type="checkbox" id="tr-live" checked> Translate as I type <span class="tr-dim">(on this device only)</span></label>
-				<span class="tr-sp"></span>
-				<button type="button" class="tu-btn tu-btn--ghost" id="tr-link">&#128279; Copy link</button>
+				<div class="tr-col tr-col--out">
+					<div class="tr-pane tr-pane--out tr-box" data-box="out">
+						<div class="tr-fillbar"><b class="tr-fbt">Translation</b><span class="tr-sp"></span><button type="button" class="tr-ib" data-fb="copy" title="Copy" aria-label="Copy"><svg class="tr-ic" viewBox="0 0 24 24" aria-hidden="true"><rect x="8" y="8" width="12" height="12" rx="2"/><path d="M16 8V5a1 1 0 0 0-1-1H5a1 1 0 0 0-1 1v10a1 1 0 0 0 1 1h3"/></svg></button><button type="button" class="tr-ib" data-fb="say" title="Read aloud" aria-label="Read aloud"><svg class="tr-ic" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 9v6h4l5 4V5L8 9z"/><path d="M16 9a4 4 0 0 1 0 6M18.5 6.5a7.5 7.5 0 0 1 0 11"/></svg></button><button type="button" class="tr-ib" data-fb="fs" title="Full screen" aria-label="Full screen"><svg class="tr-ic" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 9V4h5M20 9V4h-5M4 15v5h5M20 15v5h-5"/></svg></button><button type="button" class="tr-fbx" data-fillx title="Close (Esc)" aria-label="Close"><svg class="tr-ic" viewBox="0 0 24 24" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18"/></svg><span>Close</span></button></div>
+						<div id="tr-out" class="tr-text tr-out" role="region" aria-live="polite" aria-label="Translation"><span class="tr-ph">The translation appears here</span></div>
+						<div class="tr-tools">
+							<span class="tr-count" id="tr-ocount"></span>
+							<span class="tr-sp"></span>
+							<button type="button" class="tr-ib" id="tr-say-out" title="Read the translation aloud" aria-label="Read the translation aloud"><svg class="tr-ic" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 9v6h4l5 4V5L8 9z"/><path d="M16 9a4 4 0 0 1 0 6M18.5 6.5a7.5 7.5 0 0 1 0 11"/></svg></button>
+							<button type="button" class="tr-ib tr-fillb" data-fill="out" title="Fill the browser window (Esc closes)" aria-label="Fill the browser window"><svg class="tr-ic" viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="4" width="18" height="16" rx="2"/><path d="M10 10L6.5 7.5M6.5 7.5v3M6.5 7.5h3M14 14l3.5 2.5M17.5 16.5v-3M17.5 16.5h-3"/></svg></button><button type="button" class="tr-ib tr-fillb" data-fs="out" title="Full screen" aria-label="Full screen"><svg class="tr-ic" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 9V4h5M20 9V4h-5M4 15v5h5M20 15v5h-5"/></svg></button>
+							<button type="button" class="tr-ib" id="tr-copy" title="Copy the translation" aria-label="Copy the translation"><svg class="tr-ic" viewBox="0 0 24 24" aria-hidden="true"><rect x="8" y="8" width="12" height="12" rx="2"/><path d="M16 8V5a1 1 0 0 0-1-1H5a1 1 0 0 0-1 1v10a1 1 0 0 0 1 1h3"/></svg></button>
+						</div>
+					</div>
+					<div class="tr-act tr-act--out"><button type="button" class="tu-btn tu-btn--ghost tr-small" id="tr-link">&#128279;&#65038; Copy a link to this translation</button></div>
+				</div>
 			</div>
 			<div class="tr-prog" id="tr-prog" hidden><div class="tr-prog__bar"><i id="tr-prog-i"></i></div><span id="tr-prog-t"></span></div>
 			<p class="tu-note tr-msg" id="tr-msg" hidden></p>
 		</section>
 
 		<section class="tu-card tr-ocr" id="tr-ocr" aria-labelledby="tr-ocr-h">
-			<h2 class="tr-h" id="tr-ocr-h">Text from a picture</h2>
-			<p class="tu-note tr-ocr-intro" id="tr-ocr-intro">Add a photo, screenshot or PDF: its text is read right here in your browser (nothing is uploaded), then you can fix it and translate it.</p>
-			<div class="tr-drop" id="tr-drop" tabindex="0" role="button" aria-label="Choose, drop or paste a picture or PDF">
-				<div class="tr-drop__big">Drop a picture or PDF here</div>
-				<div class="tr-drop__sub">or <b>click to choose</b> a file, or press <kbd>Ctrl</kbd>/<kbd>&#8984;</kbd> + <kbd>V</kbd> to paste a screenshot</div>
-				<input type="file" id="tr-file" accept="image/*,application/pdf,.pdf" hidden>
-			</div>
-			<form class="tr-urlrow" id="tr-urlform" autocomplete="off">
-				<label for="tr-url">Or paste a link to a picture or PDF</label>
-				<div class="tr-urlin"><input type="url" id="tr-url" class="tu-input" inputmode="url" spellcheck="false" placeholder="https://example.com/photo.jpg"><button type="submit" class="tu-btn tu-btn--primary" id="tr-urlgo">Open</button></div>
-				<p class="tu-note tr-urlnote" id="tr-urlnote" role="status" hidden></p>
-			</form>
-			<div class="tr-ocrbar">
-				<div class="tu-field tr-lf"><label for="tr-olang">Language in the picture</label><select id="tr-olang" class="tu-select"></select></div>
-				<label class="tr-live"><input type="checkbox" id="tr-oeng" checked> Also read English words</label>
-				<button type="button" class="tu-btn tu-btn--primary" id="tr-oread" disabled>Read the text</button>
-			</div>
-			<div class="tr-prog" id="tr-oprog" hidden><div class="tr-prog__bar"><i id="tr-oprog-i"></i></div><span id="tr-oprog-t"></span><button type="button" class="tr-cancel" id="tr-ocancel">Cancel</button></div>
-			<div class="tr-pages" id="tr-pages" hidden></div>
+			<h2 class="tr-h" id="tr-ocr-h">Your picture</h2>
+			<p class="tu-note tr-ocr-intro" id="tr-ocr-intro">The text found in the picture is put in the text box above. Click boxes on the picture to translate only some of it.</p>
 			<div class="tr-ores" id="tr-ores" hidden>
 				<div class="tr-stagewrap">
 					<div class="tr-stagebar">
@@ -84,14 +115,15 @@
 					</div>
 					<div class="tr-stage" id="tr-stage"><canvas id="tr-cv" aria-label="Your picture with the text that was found boxed"></canvas><div class="tr-boxes" id="tr-boxes"></div></div>
 					<p class="tu-note">Click a box to select that text (click again to unselect). Boxes are coloured by how sure the reader is: green sure, amber unsure, red guessing.</p>
+					<div class="tr-obtns tr-obtns--sel"><button type="button" class="tu-btn tu-btn--primary" id="tr-ousesel2" disabled>Translate only the selected boxes</button></div>
 				</div>
 				<div class="tr-oside" id="tr-oside">
-					<div class="tr-fillbar"><b>Text found</b><span class="tr-sp"></span><button type="button" class="tu-btn tu-btn--ghost tr-small" data-fillx>&#10005;&nbsp;Close&nbsp;<span class="tr-dim">(Esc)</span></button></div>
 					<label class="tu-label" for="tr-otext">Text found (you can edit it)</label>
-					<textarea id="tr-otext" class="tr-text" dir="auto" rows="10" spellcheck="true"></textarea>
-					<div class="tr-tools"><span class="tr-count" id="tr-ostat"></span><span class="tr-sp"></span><button type="button" class="tr-ib" data-fill="ocr" title="Fill the browser window (Esc closes)" aria-label="Fill the browser window"><svg class="tr-ic" viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="4" width="18" height="16" rx="2"/><path d="M10 10L6.5 7.5M6.5 7.5v3M6.5 7.5h3M14 14l3.5 2.5M17.5 16.5v-3M17.5 16.5h-3"/></svg></button>
-<button type="button" class="tr-ib" data-fs="ocr" title="Full screen" aria-label="Full screen"><svg class="tr-ic" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 9V4h5M20 9V4h-5M4 15v5h5M20 15v5h-5"/></svg></button>
-<button type="button" class="tr-ib" id="tr-ocopy" title="Copy the text found" aria-label="Copy the text found">&#10697;</button></div>
+					<div class="tr-obox tr-box" id="tr-obox" data-box="ocr">
+						<div class="tr-fillbar"><b class="tr-fbt">Text found</b><span class="tr-sp"></span><button type="button" class="tr-ib" data-fb="copy" title="Copy" aria-label="Copy"><svg class="tr-ic" viewBox="0 0 24 24" aria-hidden="true"><rect x="8" y="8" width="12" height="12" rx="2"/><path d="M16 8V5a1 1 0 0 0-1-1H5a1 1 0 0 0-1 1v10a1 1 0 0 0 1 1h3"/></svg></button><button type="button" class="tr-ib" data-fb="say" title="Read aloud" aria-label="Read aloud"><svg class="tr-ic" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 9v6h4l5 4V5L8 9z"/><path d="M16 9a4 4 0 0 1 0 6M18.5 6.5a7.5 7.5 0 0 1 0 11"/></svg></button><button type="button" class="tr-ib" data-fb="fs" title="Full screen" aria-label="Full screen"><svg class="tr-ic" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 9V4h5M20 9V4h-5M4 15v5h5M20 15v5h-5"/></svg></button><button type="button" class="tr-fbx" data-fillx title="Close (Esc)" aria-label="Close"><svg class="tr-ic" viewBox="0 0 24 24" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18"/></svg><span>Close</span></button></div>
+						<textarea id="tr-otext" class="tr-text" dir="auto" rows="10" spellcheck="true"></textarea>
+						<div class="tr-tools"><span class="tr-count" id="tr-ostat"></span><span class="tr-sp"></span><button type="button" class="tr-ib tr-fillb" data-fill="ocr" title="Fill the browser window (Esc closes)" aria-label="Fill the browser window"><svg class="tr-ic" viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="4" width="18" height="16" rx="2"/><path d="M10 10L6.5 7.5M6.5 7.5v3M6.5 7.5h3M14 14l3.5 2.5M17.5 16.5v-3M17.5 16.5h-3"/></svg></button><button type="button" class="tr-ib tr-fillb" data-fs="ocr" title="Full screen" aria-label="Full screen"><svg class="tr-ic" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 9V4h5M20 9V4h-5M4 15v5h5M20 15v5h-5"/></svg></button><button type="button" class="tr-ib" id="tr-ocopy" title="Copy the text found" aria-label="Copy the text found"><svg class="tr-ic" viewBox="0 0 24 24" aria-hidden="true"><rect x="8" y="8" width="12" height="12" rx="2"/><path d="M16 8V5a1 1 0 0 0-1-1H5a1 1 0 0 0-1 1v10a1 1 0 0 0 1 1h3"/></svg></button></div>
+					</div>
 					<div class="tr-obtns">
 						<button type="button" class="tu-btn tu-btn--primary" id="tr-ouse">Translate this text</button>
 						<button type="button" class="tu-btn tu-btn--ghost" id="tr-ousesel" disabled>Translate only the selected boxes</button>
