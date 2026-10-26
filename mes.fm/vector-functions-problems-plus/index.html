@@ -874,6 +874,51 @@
     @media (max-width: 600px) {
       .lightbox-zoom-btn { width: 36px; height: 36px; font-size: 1.05em; }
     }
+/* "Open in:" preferred-site switch + per-card site icon (shared/link-pref.mjs, main_js/link-pref.js). */
+.lp-row { display: flex; flex-wrap: wrap; align-items: flex-start; column-gap: 1em; }
+.lp-row > .ls-chips { flex: 1 1 22em; }
+.lp-row--solo { margin: 0 0 0.6em; }
+.lp { display: flex; flex-wrap: wrap; align-items: center; gap: 0.3em; margin: 0.7em 0 0 auto; font-size: 0.85em; }
+.lp-lbl { color: #555; margin-right: 0.15em; }
+.lp button {
+  font: inherit; cursor: pointer; display: inline-flex; align-items: center; gap: 0.3em; min-height: 2.2em;
+  padding: 0.3em 0.65em; border-radius: 1.2em; border: 1px solid #c3c9d2; background: #fff; color: #333;
+}
+.lp button:hover { border-color: #277bb6; color: #1a6fb0; }
+.lp button:focus-visible { outline: 2px solid #277bb6; outline-offset: 2px; }
+.lp button[aria-pressed="true"] { background: #277bb6; border-color: #277bb6; color: #fff; }
+.lp button.lp-few:not([aria-pressed="true"]) { color: #6a7280; border-style: dashed; }
+.lp-n { font-size: 0.85em; font-variant-numeric: tabular-nums; }
+.lp-ic {
+  display: inline-block; flex: none; width: 1.15em; height: 1.15em; vertical-align: -0.2em; background: currentColor;
+  -webkit-mask: var(--lp-i) center / contain no-repeat; mask: var(--lp-i) center / contain no-repeat;
+}
+/* the pages' CSS reset paints every span / a #333: take the button's / caption's colour instead */
+.lp button span, .lp-a .lp-ic, .lp-a .lp-name { color: inherit; }
+.link-card-readmore .lp-ic { margin-right: 0.3em; }
+.list-row h3 .lp-a { color: inherit; text-decoration: none; }
+.list-row h3 .lp-a:hover { text-decoration: underline; }
+.list-row h3 .lp-ic { width: 0.85em; height: 0.85em; margin-left: 0.35em; vertical-align: -0.05em; opacity: 0.75; }
+.lp-ic[data-s="mes"] { --lp-i: url("data:image/svg+xml,%3Csvg%20xmlns%3D'http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg'%20viewBox%3D'0%200%2024%2024'%3E%3Cpath%20fill-rule%3D'evenodd'%20d%3D'M1%2012.6%204.6%2010.6%208.6%2017.4%2014.6%201.8H23.2V4.8H16.6L10%2022.4H7.4z'%2F%3E%3C%2Fsvg%3E"); }
+.lp-ic[data-s="youtube"] { --lp-i: url("data:image/svg+xml,%3Csvg%20xmlns%3D'http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg'%20viewBox%3D'0%200%2024%2024'%3E%3Cpath%20fill-rule%3D'evenodd'%20d%3D'M23%207.2a3%203%200%200%200-2.1-2.1C19%204.6%2012%204.6%2012%204.6s-7%200-8.9.5A3%203%200%200%200%201%207.2C.5%209.1.5%2012%20.5%2012s0%202.9.5%204.8a3%203%200%200%200%202.1%202.1c1.9.5%208.9.5%208.9.5s7%200%208.9-.5a3%203%200%200%200%202.1-2.1c.5-1.9.5-4.8.5-4.8s0-2.9-.5-4.8zM9.7%2015.4V8.6l5.9%203.4z'%2F%3E%3C%2Fsvg%3E"); }
+.lp-ic[data-s="hive"] { --lp-i: url("data:image/svg+xml,%3Csvg%20xmlns%3D'http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg'%20viewBox%3D'0%200%2024%2024'%3E%3Cpath%20fill-rule%3D'evenodd'%20d%3D'M6.8%202.5h10.4L22.5%2012l-5.3%209.5H6.8L1.5%2012zM9%206.5%206.3%2012%209%2017.5h6l2.7-5.5L15%206.5z'%2F%3E%3C%2Fsvg%3E"); }
+.lp-ic[data-s="3speak"] { --lp-i: url("data:image/svg+xml,%3Csvg%20xmlns%3D'http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg'%20viewBox%3D'0%200%2024%2024'%3E%3Cpath%20fill-rule%3D'evenodd'%20d%3D'M12%201.5a10.5%2010.5%200%201%201%200%2021%2010.5%2010.5%200%200%201%200-21zM9.5%207.5v9l7-4.5z'%2F%3E%3C%2Fsvg%3E"); }
+.lp-ic[data-s="rumble"] { --lp-i: url("data:image/svg+xml,%3Csvg%20xmlns%3D'http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg'%20viewBox%3D'0%200%2024%2024'%3E%3Cpath%20fill-rule%3D'evenodd'%20d%3D'M5%203.8c0-1.6%201.7-2.5%203-1.6l12.4%208.2c1.2.8%201.2%202.4%200%203.2L8%2021.8c-1.3.9-3-.1-3-1.6zM8.6%208.5v7l5.4-3.5z'%2F%3E%3C%2Fsvg%3E"); }
+.lp-ic[data-s="odysee"] { --lp-i: url("data:image/svg+xml,%3Csvg%20xmlns%3D'http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg'%20viewBox%3D'0%200%2024%2024'%3E%3Cpath%20fill-rule%3D'evenodd'%20d%3D'M12%201.5a10.5%2010.5%200%201%201%200%2021%2010.5%2010.5%200%200%201%200-21zM12%206a6%206%200%201%200%200%2012%206%206%200%200%200%200-12z'%2F%3E%3C%2Fsvg%3E"); }
+.lp-ic[data-s="x"] { --lp-i: url("data:image/svg+xml,%3Csvg%20xmlns%3D'http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg'%20viewBox%3D'0%200%2024%2024'%3E%3Cpath%20fill-rule%3D'evenodd'%20d%3D'M3%203h5.4l4.2%205.9L17.7%203h3l-6.7%207.7L21.5%2021h-5.4l-4.6-6.4L5.9%2021H3l7.2-8.3z'%2F%3E%3C%2Fsvg%3E"); }
+.lp-ic[data-s="bitchute"] { --lp-i: url("data:image/svg+xml,%3Csvg%20xmlns%3D'http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg'%20viewBox%3D'0%200%2024%2024'%3E%3Cpath%20fill-rule%3D'evenodd'%20d%3D'M3%203h18v18H3zM8%206.5v11h5.3c2.2%200%203.7-1.2%203.7-3.1%200-1.4-.8-2.4-2.1-2.7%201-.4%201.6-1.3%201.6-2.4%200-1.8-1.4-2.8-3.5-2.8zM10.6%208.6h2.1c.9%200%201.4.4%201.4%201.1s-.5%201.2-1.4%201.2h-2.1zm0%204.2h2.4c1%200%201.5.5%201.5%201.2%200%20.8-.6%201.3-1.5%201.3h-2.4z'%2F%3E%3C%2Fsvg%3E"); }
+.lp-ic[data-s="telegram"] { --lp-i: url("data:image/svg+xml,%3Csvg%20xmlns%3D'http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg'%20viewBox%3D'0%200%2024%2024'%3E%3Cpath%20fill-rule%3D'evenodd'%20d%3D'M1.5%2011.2%2021.6%203.3c.9-.3%201.7.3%201.4%201.7l-3.4%2016c-.2%201.1-.9%201.4-1.8.9l-5-3.7-2.4%202.3c-.3.3-.5.5-1%20.5l.4-5.1%209.3-8.4c.4-.4-.1-.6-.6-.2L6.9%2014.6%202%2013.1c-1.1-.3-1.1-1.1.5-1.9z'%2F%3E%3C%2Fsvg%3E"); }
+.lp-ic[data-s="twitch"] { --lp-i: url("data:image/svg+xml,%3Csvg%20xmlns%3D'http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg'%20viewBox%3D'0%200%2024%2024'%3E%3Cpath%20fill-rule%3D'evenodd'%20d%3D'M4%202%202.5%206v14h5v2.5h2.8L13%2020h4l5-5V2zm16%2012-3%203h-4.5L10%2019.5V17H6V4h14zM15%207h2v5h-2zm-5%200h2v5h-2z'%2F%3E%3C%2Fsvg%3E"); }
+body.dark-mode .lp-lbl, body.dark .lp-lbl { color: #bbb; }
+body.dark-mode .list-row h3 .lp-a, body.dark .list-row h3 .lp-a { color: inherit; }
+body.dark-mode .lp button, body.dark .lp button { background: #2a2a2a; color: #ddd; border-color: #555; }
+body.dark-mode .lp button:hover, body.dark .lp button:hover { border-color: #6cb6f5; color: #6cb6f5; }
+body.dark-mode .lp button[aria-pressed="true"], body.dark .lp button[aria-pressed="true"] { background: #6cb6f5; border-color: #6cb6f5; color: #111; }
+body.dark-mode .lp button.lp-few:not([aria-pressed="true"]), body.dark .lp button.lp-few:not([aria-pressed="true"]) { color: #a3abb8; }
+body.dark-mode .lp button:focus-visible, body.dark .lp button:focus-visible { outline-color: #6cb6f5; }
+.playlist-list-view h2 .lp-a { color: inherit; text-decoration: none; }
+.playlist-list-view h2 .lp-a:hover { text-decoration: underline; }
+.playlist-list-view h2 .lp-ic { width: 0.7em; height: 0.7em; margin-left: 0.35em; vertical-align: 0; opacity: 0.75; }
 </style>
   <!-- ADSENSE-DEFERRED: load adsbygoogle.js (auto ads + consent) on the first
      real interaction (scroll / pointer / key), or after a 15s idle fallback,
@@ -1023,82 +1068,85 @@
 <div class="chapter-toggle" id="playlist">
 <h2 class="chapter-toggle-header chapter-top" onclick="toggleChapter('playlist-list')"><center>Playlist <span id="arrowIcon-playlist-list" class="arrow-icon">&#9660;</span></center></h2>
 <div id="playlist-list" class="chapter-toggle-list">
+<div class="lp-row lp-row--solo"><div class="lp" data-lp role="group" aria-label="Open links in">
+        <span class="lp-lbl" aria-hidden="true">Open in:</span><button type="button" data-s="auto" aria-pressed="true" aria-label="Open in: Auto (the usual link: the mes.fm page when there is one)" title="Auto: the usual link (the mes.fm page when there is one)">Auto</button><button type="button" data-s="mes" data-label="MES.fm" aria-pressed="false" aria-label="Open in MES.fm (7 of 7 have a MES.fm link)" title="Open in MES.fm (7 of 7 have a MES.fm link)"><span class="lp-ic" data-s="mes" aria-hidden="true"></span><span class="lp-n">7</span></button><button type="button" data-s="youtube" data-label="YouTube" aria-pressed="false" aria-label="Open in YouTube (7 of 7 have a YouTube link)" title="Open in YouTube (7 of 7 have a YouTube link)"><span class="lp-ic" data-s="youtube" aria-hidden="true"></span><span class="lp-n">7</span></button><button type="button" data-s="3speak" data-label="3Speak" aria-pressed="false" aria-label="Open in 3Speak (7 of 7 have a 3Speak link)" title="Open in 3Speak (7 of 7 have a 3Speak link)"><span class="lp-ic" data-s="3speak" aria-hidden="true"></span><span class="lp-n">7</span></button><button type="button" data-s="rumble" data-label="Rumble" aria-pressed="false" aria-label="Open in Rumble (1 of 7 have a Rumble link)" title="Open in Rumble (1 of 7 have a Rumble link)" class="lp-few"><span class="lp-ic" data-s="rumble" aria-hidden="true"></span><span class="lp-n">1</span></button><button type="button" data-s="odysee" data-label="Odysee" aria-pressed="false" aria-label="Open in Odysee (1 of 7 have a Odysee link)" title="Open in Odysee (1 of 7 have a Odysee link)" class="lp-few"><span class="lp-ic" data-s="odysee" aria-hidden="true"></span><span class="lp-n">1</span></button><button type="button" data-s="bitchute" data-label="BitChute" aria-pressed="false" aria-label="Open in BitChute (1 of 7 have a BitChute link)" title="Open in BitChute (1 of 7 have a BitChute link)" class="lp-few"><span class="lp-ic" data-s="bitchute" aria-hidden="true"></span><span class="lp-n">1</span></button><button type="button" data-s="telegram" data-label="Telegram" aria-pressed="false" aria-label="Open in Telegram (7 of 7 have a Telegram link)" title="Open in Telegram (7 of 7 have a Telegram link)"><span class="lp-ic" data-s="telegram" aria-hidden="true"></span><span class="lp-n">7</span></button>
+      </div></div>
 <div class="view-toggle">
   <button type="button" class="view-toggle-btn active" id="playlistGridBtn">Grid View</button>
   <button type="button" class="view-toggle-btn" id="playlistListBtn">List View</button>
 </div>
 <div class="card-grid" id="playlistGrid">
-<a class="link-card" href="https://mes.fm/problems-plus-1-projectile-origin">
+<a class="link-card lp-a" data-lp-def="mes" data-l-mes="https://mes.fm/problems-plus-1-projectile-origin" data-l-youtube="https://youtu.be/V4Y_5Cp2EAU" data-l-3speak="https://3speak.tv/watch?v=mes/problems-plus-1-projectile-813" data-l-telegram="https://t.me/meslinks/35459" href="https://mes.fm/problems-plus-1-projectile-origin">
   <span class="link-card-thumb" style="background-image:url('https://images.3speak.tv/images/1788413406899-99e6f9413ec1674d.webp')"></span>
   <span class="link-card-body">
     <span class="link-card-title">Problems Plus 1: Projectile Fired from the Origin</span>
-    <span class="link-card-readmore">Watch &rarr;</span>
+    <span class="link-card-readmore"><span class="lp-ic" data-s="mes" aria-hidden="true"></span><span class="lp-name">View on MES.fm</span> &rarr;</span>
   </span>
 </a>
-<a class="link-card" href="https://mes.fm/projectile-hits-target">
+<a class="link-card lp-a" data-lp-def="mes" data-l-mes="https://mes.fm/projectile-hits-target" data-l-youtube="https://youtu.be/epyX7jZChnU" data-l-3speak="https://3speak.tv/watch?v=mes/projectile-aimed-at-a-targe-648" data-l-telegram="https://t.me/meslinks/35499" href="https://mes.fm/projectile-hits-target">
   <span class="link-card-thumb" style="background-image:url('https://images.3speak.tv/images/1789274360087-0f5fe2a3f9dbd45d.webp')"></span>
   <span class="link-card-body">
     <span class="link-card-title">Projectile Aimed at a Target Downrange Will Always Hit When Dropped and Fired at the Same Time!</span>
-    <span class="link-card-readmore">Watch &rarr;</span>
+    <span class="link-card-readmore"><span class="lp-ic" data-s="mes" aria-hidden="true"></span><span class="lp-name">View on MES.fm</span> &rarr;</span>
   </span>
 </a>
-<a class="link-card" href="https://mes.fm/problems-plus-2-projectile-inclined-plane">
+<a class="link-card lp-a" data-lp-def="mes" data-l-mes="https://mes.fm/problems-plus-2-projectile-inclined-plane" data-l-youtube="https://youtu.be/q8I-Lpv0zlQ" data-l-3speak="https://3speak.tv/watch?v=mes/problems-plus-2-firing-a-pr-551" data-l-telegram="https://t.me/meslinks/35519" href="https://mes.fm/problems-plus-2-projectile-inclined-plane">
   <span class="link-card-thumb" style="background-image:url('https://images.3speak.tv/images/1789493218448-388d779a1e159279.webp')"></span>
   <span class="link-card-body">
     <span class="link-card-title">Problems Plus 2: Firing a Projectile Up and Down an Inclined Plane</span>
-    <span class="link-card-readmore">Watch &rarr;</span>
+    <span class="link-card-readmore"><span class="lp-ic" data-s="mes" aria-hidden="true"></span><span class="lp-name">View on MES.fm</span> &rarr;</span>
   </span>
 </a>
-<a class="link-card" href="https://mes.fm/problems-plus-3-ball-rolls-table">
+<a class="link-card lp-a" data-lp-def="mes" data-l-mes="https://mes.fm/problems-plus-3-ball-rolls-table" data-l-youtube="https://youtu.be/QTW3NuKc1jw" data-l-3speak="https://3speak.tv/watch?v=mes/problems-plus-3-physics-of-338" data-l-telegram="https://t.me/meslinks/35552" href="https://mes.fm/problems-plus-3-ball-rolls-table">
   <span class="link-card-thumb" style="background-image:url('https://images.3speak.tv/images/1789792015495-4a862252df63c678.webp')"></span>
   <span class="link-card-body">
     <span class="link-card-title">Problems Plus 3: Physics of a Ball Rolling Off a Table</span>
-    <span class="link-card-readmore">Watch &rarr;</span>
+    <span class="link-card-readmore"><span class="lp-ic" data-s="mes" aria-hidden="true"></span><span class="lp-name">View on MES.fm</span> &rarr;</span>
   </span>
 </a>
-<a class="link-card" href="https://mes.fm/problems-plus-4-curvature-parametric-integrals">
+<a class="link-card lp-a" data-lp-def="mes" data-l-mes="https://mes.fm/problems-plus-4-curvature-parametric-integrals" data-l-youtube="https://youtu.be/q45sniCahKE" data-l-3speak="https://3speak.tv/watch?v=mes/problems-plus-4-curvature-f-765" data-l-telegram="https://t.me/meslinks/35563" href="https://mes.fm/problems-plus-4-curvature-parametric-integrals">
   <span class="link-card-thumb" style="background-image:url('https://images.3speak.tv/images/1790032008106-4188cd9b782a924c.webp')"></span>
   <span class="link-card-body">
     <span class="link-card-title">Problems Plus 4: Curvature from Parametric Equations that involve Integrals</span>
-    <span class="link-card-readmore">Watch &rarr;</span>
+    <span class="link-card-readmore"><span class="lp-ic" data-s="mes" aria-hidden="true"></span><span class="lp-name">View on MES.fm</span> &rarr;</span>
   </span>
 </a>
-<a class="link-card" href="https://mes.fm/problems-plus-5-projectile-total-distance">
+<a class="link-card lp-a" data-lp-def="mes" data-l-mes="https://mes.fm/problems-plus-5-projectile-total-distance" data-l-youtube="https://youtu.be/KwGXk61Gumc" data-l-3speak="https://3speak.tv/watch?v=mes/problems-plus-5-launch-angl-248" data-l-telegram="https://t.me/meslinks/35579" href="https://mes.fm/problems-plus-5-projectile-total-distance">
   <span class="link-card-thumb" style="background-image:url('https://images.3speak.tv/images/1790371128592-f55516a1db338d93.webp')"></span>
   <span class="link-card-body">
     <span class="link-card-title">Problems Plus 5: Launch Angle of 56° maximizes TOTAL distance a projectile travels</span>
-    <span class="link-card-readmore">Watch &rarr;</span>
+    <span class="link-card-readmore"><span class="lp-ic" data-s="mes" aria-hidden="true"></span><span class="lp-name">View on MES.fm</span> &rarr;</span>
   </span>
 </a>
-<a class="link-card" href="https://mes.fm/problems-plus-6-cable-wound-spool">
+<a class="link-card lp-a" data-lp-def="mes" data-l-mes="https://mes.fm/problems-plus-6-cable-wound-spool" data-l-youtube="https://youtu.be/8KoSB4DSXyQ" data-l-3speak="https://3speak.tv/watch?v=mes/problems-plus-6-cable-wound-536" data-l-rumble="https://rumble.com/v7g9p9e-problems-plus-6-cable-wound-around-a-spool.html" data-l-odysee="https://odysee.com/@mes:8/Problems-Plus-6-Cable-spool:389a341c64" data-l-bitchute="https://www.bitchute.com/video/8yStohb19ITy/" data-l-telegram="https://t.me/meslinks/35607" href="https://mes.fm/problems-plus-6-cable-wound-spool">
   <span class="link-card-thumb" style="background-image:url('https://images.3speak.tv/images/1790919596494-21fecef619fb83dd.webp')"></span>
   <span class="link-card-body">
     <span class="link-card-title">Problems Plus 6: Cable wound around a spool</span>
-    <span class="link-card-readmore">Watch &rarr;</span>
+    <span class="link-card-readmore"><span class="lp-ic" data-s="mes" aria-hidden="true"></span><span class="lp-name">View on MES.fm</span> &rarr;</span>
   </span>
 </a>
 </div>
 <div class="playlist-list-view view-hidden" id="playlistList">
-<h2>Problems Plus 1: Projectile Fired from the Origin</h2>
+<h2><a class="lp-a" href="https://mes.fm/problems-plus-1-projectile-origin" data-lp-def="mes" data-l-mes="https://mes.fm/problems-plus-1-projectile-origin" data-l-youtube="https://youtu.be/V4Y_5Cp2EAU" data-l-3speak="https://3speak.tv/watch?v=mes/problems-plus-1-projectile-813" data-l-telegram="https://t.me/meslinks/35459">Problems Plus 1: Projectile Fired from the Origin<span class="lp-ic" data-s="mes" aria-hidden="true"></span></a></h2>
 <p><a href="https://mes.fm/problems-plus-1-projectile-origin" target="_blank" rel="noopener">Notes</a> - <a href="https://3speak.tv/watch?v=mes/problems-plus-1-projectile-813" target="_blank" rel="noopener">3Speak</a> - <a href="https://youtu.be/V4Y_5Cp2EAU" target="_blank" rel="noopener">YouTube</a> - <a href="https://t.me/meslinks/35459" target="_blank" rel="noopener">Telegram</a></p>
 <img loading="lazy" class="playlist-row-thumb" src="https://images.3speak.tv/images/1788413406899-99e6f9413ec1674d.webp" alt="">
-<h2>Projectile Aimed at a Target Downrange Will Always Hit When Dropped and Fired at the Same Time!</h2>
+<h2><a class="lp-a" href="https://mes.fm/projectile-hits-target" data-lp-def="mes" data-l-mes="https://mes.fm/projectile-hits-target" data-l-youtube="https://youtu.be/epyX7jZChnU" data-l-3speak="https://3speak.tv/watch?v=mes/projectile-aimed-at-a-targe-648" data-l-telegram="https://t.me/meslinks/35499">Projectile Aimed at a Target Downrange Will Always Hit When Dropped and Fired at the Same Time!<span class="lp-ic" data-s="mes" aria-hidden="true"></span></a></h2>
 <p><a href="https://mes.fm/projectile-hits-target" target="_blank" rel="noopener">Notes</a> - <a href="https://3speak.tv/watch?v=mes/projectile-aimed-at-a-targe-648" target="_blank" rel="noopener">3Speak</a> - <a href="https://youtu.be/epyX7jZChnU" target="_blank" rel="noopener">YouTube</a> - <a href="https://t.me/meslinks/35499" target="_blank" rel="noopener">Telegram</a></p>
 <img loading="lazy" class="playlist-row-thumb" src="https://images.3speak.tv/images/1789274360087-0f5fe2a3f9dbd45d.webp" alt="">
-<h2>Problems Plus 2: Firing a Projectile Up and Down an Inclined Plane</h2>
+<h2><a class="lp-a" href="https://mes.fm/problems-plus-2-projectile-inclined-plane" data-lp-def="mes" data-l-mes="https://mes.fm/problems-plus-2-projectile-inclined-plane" data-l-youtube="https://youtu.be/q8I-Lpv0zlQ" data-l-3speak="https://3speak.tv/watch?v=mes/problems-plus-2-firing-a-pr-551" data-l-telegram="https://t.me/meslinks/35519">Problems Plus 2: Firing a Projectile Up and Down an Inclined Plane<span class="lp-ic" data-s="mes" aria-hidden="true"></span></a></h2>
 <p><a href="https://mes.fm/problems-plus-2-projectile-inclined-plane" target="_blank" rel="noopener">Notes</a> - <a href="https://3speak.tv/watch?v=mes/problems-plus-2-firing-a-pr-551" target="_blank" rel="noopener">3Speak</a> - <a href="https://youtu.be/q8I-Lpv0zlQ" target="_blank" rel="noopener">YouTube</a> - <a href="https://t.me/meslinks/35519" target="_blank" rel="noopener">Telegram</a></p>
 <img loading="lazy" class="playlist-row-thumb" src="https://images.3speak.tv/images/1789493218448-388d779a1e159279.webp" alt="">
-<h2>Problems Plus 3: Physics of a Ball Rolling Off a Table</h2>
+<h2><a class="lp-a" href="https://mes.fm/problems-plus-3-ball-rolls-table" data-lp-def="mes" data-l-mes="https://mes.fm/problems-plus-3-ball-rolls-table" data-l-youtube="https://youtu.be/QTW3NuKc1jw" data-l-3speak="https://3speak.tv/watch?v=mes/problems-plus-3-physics-of-338" data-l-telegram="https://t.me/meslinks/35552">Problems Plus 3: Physics of a Ball Rolling Off a Table<span class="lp-ic" data-s="mes" aria-hidden="true"></span></a></h2>
 <p><a href="https://mes.fm/problems-plus-3-ball-rolls-table" target="_blank" rel="noopener">Notes</a> - <a href="https://3speak.tv/watch?v=mes/problems-plus-3-physics-of-338" target="_blank" rel="noopener">3Speak</a> - <a href="https://youtu.be/QTW3NuKc1jw" target="_blank" rel="noopener">YouTube</a> - <a href="https://t.me/meslinks/35552" target="_blank" rel="noopener">Telegram</a></p>
 <img loading="lazy" class="playlist-row-thumb" src="https://images.3speak.tv/images/1789792015495-4a862252df63c678.webp" alt="">
-<h2>Problems Plus 4: Curvature from Parametric Equations that involve Integrals</h2>
+<h2><a class="lp-a" href="https://mes.fm/problems-plus-4-curvature-parametric-integrals" data-lp-def="mes" data-l-mes="https://mes.fm/problems-plus-4-curvature-parametric-integrals" data-l-youtube="https://youtu.be/q45sniCahKE" data-l-3speak="https://3speak.tv/watch?v=mes/problems-plus-4-curvature-f-765" data-l-telegram="https://t.me/meslinks/35563">Problems Plus 4: Curvature from Parametric Equations that involve Integrals<span class="lp-ic" data-s="mes" aria-hidden="true"></span></a></h2>
 <p><a href="https://mes.fm/problems-plus-4-curvature-parametric-integrals" target="_blank" rel="noopener">Notes</a> - <a href="https://3speak.tv/watch?v=mes/problems-plus-4-curvature-f-765" target="_blank" rel="noopener">3Speak</a> - <a href="https://youtu.be/q45sniCahKE" target="_blank" rel="noopener">YouTube</a> - <a href="https://t.me/meslinks/35563" target="_blank" rel="noopener">Telegram</a></p>
 <img loading="lazy" class="playlist-row-thumb" src="https://images.3speak.tv/images/1790032008106-4188cd9b782a924c.webp" alt="">
-<h2>Problems Plus 5: Launch Angle of 56° maximizes TOTAL distance a projectile travels</h2>
+<h2><a class="lp-a" href="https://mes.fm/problems-plus-5-projectile-total-distance" data-lp-def="mes" data-l-mes="https://mes.fm/problems-plus-5-projectile-total-distance" data-l-youtube="https://youtu.be/KwGXk61Gumc" data-l-3speak="https://3speak.tv/watch?v=mes/problems-plus-5-launch-angl-248" data-l-telegram="https://t.me/meslinks/35579">Problems Plus 5: Launch Angle of 56° maximizes TOTAL distance a projectile travels<span class="lp-ic" data-s="mes" aria-hidden="true"></span></a></h2>
 <p><a href="https://mes.fm/problems-plus-5-projectile-total-distance" target="_blank" rel="noopener">Notes</a> - <a href="https://3speak.tv/watch?v=mes/problems-plus-5-launch-angl-248" target="_blank" rel="noopener">3Speak</a> - <a href="https://youtu.be/KwGXk61Gumc" target="_blank" rel="noopener">YouTube</a> - <a href="https://t.me/meslinks/35579" target="_blank" rel="noopener">Telegram</a></p>
 <img loading="lazy" class="playlist-row-thumb" src="https://images.3speak.tv/images/1790371128592-f55516a1db338d93.webp" alt="">
-<h2>Problems Plus 6: Cable wound around a spool</h2>
-<p><a href="https://mes.fm/problems-plus-6-cable-wound-spool" target="_blank" rel="noopener">Notes</a> - <a href="https://3speak.tv/watch?v=mes/problems-plus-6-cable-wound-536" target="_blank" rel="noopener">3Speak</a> - <a href="https://youtu.be/8KoSB4DSXyQ" target="_blank" rel="noopener">YouTube</a> - <a href="https://t.me/meslinks/35607" target="_blank" rel="noopener">Telegram</a></p>
+<h2><a class="lp-a" href="https://mes.fm/problems-plus-6-cable-wound-spool" data-lp-def="mes" data-l-mes="https://mes.fm/problems-plus-6-cable-wound-spool" data-l-youtube="https://youtu.be/8KoSB4DSXyQ" data-l-3speak="https://3speak.tv/watch?v=mes/problems-plus-6-cable-wound-536" data-l-rumble="https://rumble.com/v7g9p9e-problems-plus-6-cable-wound-around-a-spool.html" data-l-odysee="https://odysee.com/@mes:8/Problems-Plus-6-Cable-spool:389a341c64" data-l-bitchute="https://www.bitchute.com/video/8yStohb19ITy/" data-l-telegram="https://t.me/meslinks/35607">Problems Plus 6: Cable wound around a spool<span class="lp-ic" data-s="mes" aria-hidden="true"></span></a></h2>
+<p><a href="https://mes.fm/problems-plus-6-cable-wound-spool" target="_blank" rel="noopener">Notes</a> - <a href="https://3speak.tv/watch?v=mes/problems-plus-6-cable-wound-536" target="_blank" rel="noopener">3Speak</a> - <a href="https://youtu.be/8KoSB4DSXyQ" target="_blank" rel="noopener">YouTube</a> - <a href="https://t.me/meslinks/35607" target="_blank" rel="noopener">Telegram</a> - <a href="https://www.bitchute.com/video/8yStohb19ITy/" target="_blank" rel="noopener">BitChute</a> - <a href="https://odysee.com/@mes:8/Problems-Plus-6-Cable-spool:389a341c64" target="_blank" rel="noopener">Odysee</a> - <a href="https://rumble.com/v7g9p9e-problems-plus-6-cable-wound-around-a-spool.html" target="_blank" rel="noopener">Rumble</a></p>
 <img loading="lazy" class="playlist-row-thumb" src="https://images.3speak.tv/images/1790919596494-21fecef619fb83dd.webp" alt="">
 </div>
 </div>
@@ -1580,7 +1628,7 @@
     <a class="source-link" href="https://peakd.com/hive-128780/@mes/vector-functions-problems-p-729" target="_blank" rel="noopener">Originally published on Hive &rarr;</a>
     <div class="retrieved-note">
       Vote/comment/reblog counts and article text were fetched from the Hive blockchain
-      at build time (September 25, 2026) and are not live.
+      at build time (October 25, 2026) and are not live.
     </div>
     <div id="footer" class="footer" role="contentinfo">
       <div class="footer__item-container">
@@ -2085,5 +2133,5 @@
     update();
   })();
 </script>
-<script src="/main_js/site-search.js?v=1" defer></script><script src="/main_js/toc-flip.js?v=5" defer></script><!-- JUMP-ASIDE-JS --><script src="/main_js/jump-aside.js?v=1" defer></script><!-- /JUMP-ASIDE-JS --></body>
+<script src="/main_js/site-search.js?v=1" defer></script><script src="/main_js/toc-flip.js?v=5" defer></script><!-- JUMP-ASIDE-JS --><script src="/main_js/jump-aside.js?v=1" defer></script><!-- /JUMP-ASIDE-JS --><script src="/main_js/link-pref.js?v=1" defer></script></body>
 </html>

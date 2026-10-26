@@ -954,6 +954,48 @@ body.is-stuck #header-controls { transform: none; bottom: auto; }
   #header-controls { top: auto; bottom: 0; right: 8px; transform: none; }
   body.is-stuck #header-controls { top: 13px; bottom: auto; }
 }
+/* "Open in:" preferred-site switch + per-card site icon (shared/link-pref.mjs, main_js/link-pref.js). */
+.lp-row { display: flex; flex-wrap: wrap; align-items: flex-start; column-gap: 1em; }
+.lp-row > .ls-chips { flex: 1 1 22em; }
+.lp-row--solo { margin: 0 0 0.6em; }
+.lp { display: flex; flex-wrap: wrap; align-items: center; gap: 0.3em; margin: 0.7em 0 0 auto; font-size: 0.85em; }
+.lp-lbl { color: #555; margin-right: 0.15em; }
+.lp button {
+  font: inherit; cursor: pointer; display: inline-flex; align-items: center; gap: 0.3em; min-height: 2.2em;
+  padding: 0.3em 0.65em; border-radius: 1.2em; border: 1px solid #c3c9d2; background: #fff; color: #333;
+}
+.lp button:hover { border-color: #277bb6; color: #1a6fb0; }
+.lp button:focus-visible { outline: 2px solid #277bb6; outline-offset: 2px; }
+.lp button[aria-pressed="true"] { background: #277bb6; border-color: #277bb6; color: #fff; }
+.lp button.lp-few:not([aria-pressed="true"]) { color: #6a7280; border-style: dashed; }
+.lp-n { font-size: 0.85em; font-variant-numeric: tabular-nums; }
+.lp-ic {
+  display: inline-block; flex: none; width: 1.15em; height: 1.15em; vertical-align: -0.2em; background: currentColor;
+  -webkit-mask: var(--lp-i) center / contain no-repeat; mask: var(--lp-i) center / contain no-repeat;
+}
+/* the pages' CSS reset paints every span / a #333: take the button's / caption's colour instead */
+.lp button span, .lp-a .lp-ic, .lp-a .lp-name { color: inherit; }
+.link-card-readmore .lp-ic { margin-right: 0.3em; }
+.list-row h3 .lp-a { color: inherit; text-decoration: none; }
+.list-row h3 .lp-a:hover { text-decoration: underline; }
+.list-row h3 .lp-ic { width: 0.85em; height: 0.85em; margin-left: 0.35em; vertical-align: -0.05em; opacity: 0.75; }
+.lp-ic[data-s="mes"] { --lp-i: url("data:image/svg+xml,%3Csvg%20xmlns%3D'http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg'%20viewBox%3D'0%200%2024%2024'%3E%3Cpath%20fill-rule%3D'evenodd'%20d%3D'M1%2012.6%204.6%2010.6%208.6%2017.4%2014.6%201.8H23.2V4.8H16.6L10%2022.4H7.4z'%2F%3E%3C%2Fsvg%3E"); }
+.lp-ic[data-s="youtube"] { --lp-i: url("data:image/svg+xml,%3Csvg%20xmlns%3D'http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg'%20viewBox%3D'0%200%2024%2024'%3E%3Cpath%20fill-rule%3D'evenodd'%20d%3D'M23%207.2a3%203%200%200%200-2.1-2.1C19%204.6%2012%204.6%2012%204.6s-7%200-8.9.5A3%203%200%200%200%201%207.2C.5%209.1.5%2012%20.5%2012s0%202.9.5%204.8a3%203%200%200%200%202.1%202.1c1.9.5%208.9.5%208.9.5s7%200%208.9-.5a3%203%200%200%200%202.1-2.1c.5-1.9.5-4.8.5-4.8s0-2.9-.5-4.8zM9.7%2015.4V8.6l5.9%203.4z'%2F%3E%3C%2Fsvg%3E"); }
+.lp-ic[data-s="hive"] { --lp-i: url("data:image/svg+xml,%3Csvg%20xmlns%3D'http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg'%20viewBox%3D'0%200%2024%2024'%3E%3Cpath%20fill-rule%3D'evenodd'%20d%3D'M6.8%202.5h10.4L22.5%2012l-5.3%209.5H6.8L1.5%2012zM9%206.5%206.3%2012%209%2017.5h6l2.7-5.5L15%206.5z'%2F%3E%3C%2Fsvg%3E"); }
+.lp-ic[data-s="3speak"] { --lp-i: url("data:image/svg+xml,%3Csvg%20xmlns%3D'http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg'%20viewBox%3D'0%200%2024%2024'%3E%3Cpath%20fill-rule%3D'evenodd'%20d%3D'M12%201.5a10.5%2010.5%200%201%201%200%2021%2010.5%2010.5%200%200%201%200-21zM9.5%207.5v9l7-4.5z'%2F%3E%3C%2Fsvg%3E"); }
+.lp-ic[data-s="rumble"] { --lp-i: url("data:image/svg+xml,%3Csvg%20xmlns%3D'http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg'%20viewBox%3D'0%200%2024%2024'%3E%3Cpath%20fill-rule%3D'evenodd'%20d%3D'M5%203.8c0-1.6%201.7-2.5%203-1.6l12.4%208.2c1.2.8%201.2%202.4%200%203.2L8%2021.8c-1.3.9-3-.1-3-1.6zM8.6%208.5v7l5.4-3.5z'%2F%3E%3C%2Fsvg%3E"); }
+.lp-ic[data-s="odysee"] { --lp-i: url("data:image/svg+xml,%3Csvg%20xmlns%3D'http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg'%20viewBox%3D'0%200%2024%2024'%3E%3Cpath%20fill-rule%3D'evenodd'%20d%3D'M12%201.5a10.5%2010.5%200%201%201%200%2021%2010.5%2010.5%200%200%201%200-21zM12%206a6%206%200%201%200%200%2012%206%206%200%200%200%200-12z'%2F%3E%3C%2Fsvg%3E"); }
+.lp-ic[data-s="x"] { --lp-i: url("data:image/svg+xml,%3Csvg%20xmlns%3D'http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg'%20viewBox%3D'0%200%2024%2024'%3E%3Cpath%20fill-rule%3D'evenodd'%20d%3D'M3%203h5.4l4.2%205.9L17.7%203h3l-6.7%207.7L21.5%2021h-5.4l-4.6-6.4L5.9%2021H3l7.2-8.3z'%2F%3E%3C%2Fsvg%3E"); }
+.lp-ic[data-s="bitchute"] { --lp-i: url("data:image/svg+xml,%3Csvg%20xmlns%3D'http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg'%20viewBox%3D'0%200%2024%2024'%3E%3Cpath%20fill-rule%3D'evenodd'%20d%3D'M3%203h18v18H3zM8%206.5v11h5.3c2.2%200%203.7-1.2%203.7-3.1%200-1.4-.8-2.4-2.1-2.7%201-.4%201.6-1.3%201.6-2.4%200-1.8-1.4-2.8-3.5-2.8zM10.6%208.6h2.1c.9%200%201.4.4%201.4%201.1s-.5%201.2-1.4%201.2h-2.1zm0%204.2h2.4c1%200%201.5.5%201.5%201.2%200%20.8-.6%201.3-1.5%201.3h-2.4z'%2F%3E%3C%2Fsvg%3E"); }
+.lp-ic[data-s="telegram"] { --lp-i: url("data:image/svg+xml,%3Csvg%20xmlns%3D'http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg'%20viewBox%3D'0%200%2024%2024'%3E%3Cpath%20fill-rule%3D'evenodd'%20d%3D'M1.5%2011.2%2021.6%203.3c.9-.3%201.7.3%201.4%201.7l-3.4%2016c-.2%201.1-.9%201.4-1.8.9l-5-3.7-2.4%202.3c-.3.3-.5.5-1%20.5l.4-5.1%209.3-8.4c.4-.4-.1-.6-.6-.2L6.9%2014.6%202%2013.1c-1.1-.3-1.1-1.1.5-1.9z'%2F%3E%3C%2Fsvg%3E"); }
+.lp-ic[data-s="twitch"] { --lp-i: url("data:image/svg+xml,%3Csvg%20xmlns%3D'http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg'%20viewBox%3D'0%200%2024%2024'%3E%3Cpath%20fill-rule%3D'evenodd'%20d%3D'M4%202%202.5%206v14h5v2.5h2.8L13%2020h4l5-5V2zm16%2012-3%203h-4.5L10%2019.5V17H6V4h14zM15%207h2v5h-2zm-5%200h2v5h-2z'%2F%3E%3C%2Fsvg%3E"); }
+body.dark-mode .lp-lbl, body.dark .lp-lbl { color: #bbb; }
+body.dark-mode .list-row h3 .lp-a, body.dark .list-row h3 .lp-a { color: inherit; }
+body.dark-mode .lp button, body.dark .lp button { background: #2a2a2a; color: #ddd; border-color: #555; }
+body.dark-mode .lp button:hover, body.dark .lp button:hover { border-color: #6cb6f5; color: #6cb6f5; }
+body.dark-mode .lp button[aria-pressed="true"], body.dark .lp button[aria-pressed="true"] { background: #6cb6f5; border-color: #6cb6f5; color: #111; }
+body.dark-mode .lp button.lp-few:not([aria-pressed="true"]), body.dark .lp button.lp-few:not([aria-pressed="true"]) { color: #a3abb8; }
+body.dark-mode .lp button:focus-visible, body.dark .lp button:focus-visible { outline-color: #6cb6f5; }
 </style>
 
 <meta property="fb:app_id" content="120877788060946" />
@@ -1170,155 +1212,158 @@ body.is-stuck #header-controls { transform: none; bottom: auto; }
 <div class="list-container">
   <div id="vectors" class="section-body">
   
+    <div class="lp-row lp-row--solo"><div class="lp" data-lp role="group" aria-label="Open links in">
+        <span class="lp-lbl" aria-hidden="true">Open in:</span><button type="button" data-s="auto" aria-pressed="true" aria-label="Open in: Auto (the usual link: the mes.fm page when there is one)" title="Auto: the usual link (the mes.fm page when there is one)">Auto</button><button type="button" data-s="youtube" data-label="YouTube" aria-pressed="false" aria-label="Open in YouTube (4 of 12 have a YouTube link)" title="Open in YouTube (4 of 12 have a YouTube link)"><span class="lp-ic" data-s="youtube" aria-hidden="true"></span><span class="lp-n">4</span></button><button type="button" data-s="hive" data-label="Hive" aria-pressed="false" aria-label="Open in Hive (12 of 12 have a Hive link)" title="Open in Hive (12 of 12 have a Hive link)"><span class="lp-ic" data-s="hive" aria-hidden="true"></span><span class="lp-n">12</span></button><button type="button" data-s="3speak" data-label="3Speak" aria-pressed="false" aria-label="Open in 3Speak (4 of 12 have a 3Speak link)" title="Open in 3Speak (4 of 12 have a 3Speak link)"><span class="lp-ic" data-s="3speak" aria-hidden="true"></span><span class="lp-n">4</span></button><button type="button" data-s="rumble" data-label="Rumble" aria-pressed="false" aria-label="Open in Rumble (4 of 12 have a Rumble link)" title="Open in Rumble (4 of 12 have a Rumble link)"><span class="lp-ic" data-s="rumble" aria-hidden="true"></span><span class="lp-n">4</span></button><button type="button" data-s="odysee" data-label="Odysee" aria-pressed="false" aria-label="Open in Odysee (4 of 12 have a Odysee link)" title="Open in Odysee (4 of 12 have a Odysee link)"><span class="lp-ic" data-s="odysee" aria-hidden="true"></span><span class="lp-n">4</span></button><button type="button" data-s="bitchute" data-label="BitChute" aria-pressed="false" aria-label="Open in BitChute (4 of 12 have a BitChute link)" title="Open in BitChute (4 of 12 have a BitChute link)"><span class="lp-ic" data-s="bitchute" aria-hidden="true"></span><span class="lp-n">4</span></button>
+      </div></div>
     <div class="view-toggle">
       <button type="button" class="view-toggle-btn active" id="vectorsGridBtn">Grid View</button>
       <button type="button" class="view-toggle-btn" id="vectorsListBtn">List View</button>
       
     </div>
     <div class="card-grid" id="vectorsGrid">
-    <a class="link-card" href="https://peakd.com/hive-128780/@mes/vector-space-and-geometry-3d-coordinate-systems">
+    <a class="link-card lp-a" data-lp-def="hive" data-l-hive="https://peakd.com/hive-128780/@mes/vector-space-and-geometry-3d-coordinate-systems" href="https://peakd.com/hive-128780/@mes/vector-space-and-geometry-3d-coordinate-systems">
       <span class="link-card-thumb" style="background-image:url('https://images.hive.blog/1200x630/https:/files.peakd.com/file/peakd-hive/mes/23z7bC64o1TcF1G445p3dPi2xRaYuRA7SCnW48zFyfVbXWY9UFAEcBvzsjxN9ZLcNmaHV.jpg')"></span>
       <span class="link-card-body">
         <span class="link-card-title">3D Coordinates Systems</span>
-        <span class="link-card-readmore">View &rarr;</span>
+        <span class="link-card-readmore"><span class="lp-ic" data-s="hive" aria-hidden="true"></span><span class="lp-name">View on Hive</span> &rarr;</span>
       </span>
     </a>
-    <a class="link-card" href="https://peakd.com/hive-128780/@mes/vectors-and-the-geometry-of-space-vectors">
+    <a class="link-card lp-a" data-lp-def="hive" data-l-hive="https://peakd.com/hive-128780/@mes/vectors-and-the-geometry-of-space-vectors" href="https://peakd.com/hive-128780/@mes/vectors-and-the-geometry-of-space-vectors">
       <span class="link-card-thumb" style="background-image:url('https://images.hive.blog/1200x630/https:/snipboard.io/2YPoXV.jpg')"></span>
       <span class="link-card-body">
         <span class="link-card-title">Vectors</span>
-        <span class="link-card-readmore">View &rarr;</span>
+        <span class="link-card-readmore"><span class="lp-ic" data-s="hive" aria-hidden="true"></span><span class="lp-name">View on Hive</span> &rarr;</span>
       </span>
     </a>
-    <a class="link-card" href="https://peakd.com/hive-128780/@mes/complex-numbers-as-rotation-matrices">
+    <a class="link-card lp-a" data-lp-def="hive" data-l-hive="https://peakd.com/hive-128780/@mes/complex-numbers-as-rotation-matrices" href="https://peakd.com/hive-128780/@mes/complex-numbers-as-rotation-matrices">
       <span class="link-card-thumb" style="background-image:url('https://images.hive.blog/1200x630/https:/files.peakd.com/file/peakd-hive/mes/23twA7QknK6cdrSeC4PVyzCXDonrhb3uavjJ3qiwMHHfG2azSWeP9LLtBgsmz2YtKsZyd.jpeg')"></span>
       <span class="link-card-body">
         <span class="link-card-title">Complex Numbers as Rotation Matrices</span>
-        <span class="link-card-readmore">View &rarr;</span>
+        <span class="link-card-readmore"><span class="lp-ic" data-s="hive" aria-hidden="true"></span><span class="lp-name">View on Hive</span> &rarr;</span>
       </span>
     </a>
-    <a class="link-card" href="https://peakd.com/hive-128780/@mes/vectors-and-the-geometry-of-space-the-dot-product">
+    <a class="link-card lp-a" data-lp-def="hive" data-l-hive="https://peakd.com/hive-128780/@mes/vectors-and-the-geometry-of-space-the-dot-product" href="https://peakd.com/hive-128780/@mes/vectors-and-the-geometry-of-space-the-dot-product">
       <span class="link-card-thumb" style="background-image:url('https://images.hive.blog/1200x630/https:/files.peakd.com/file/peakd-hive/mes/23tcP5UHCYrRzMwqZuqgSgCKwzN3chiBwFzsPe9sXXyh3Y5QGQkLk4RCazyW9iKnyp31b.jpeg')"></span>
       <span class="link-card-body">
         <span class="link-card-title">The Dot Product</span>
-        <span class="link-card-readmore">View &rarr;</span>
+        <span class="link-card-readmore"><span class="lp-ic" data-s="hive" aria-hidden="true"></span><span class="lp-name">View on Hive</span> &rarr;</span>
       </span>
     </a>
-    <a class="link-card" href="https://peakd.com/hive-128780/@mes/vectors-and-the-geometry-of-space-the-cross-product">
+    <a class="link-card lp-a" data-lp-def="hive" data-l-hive="https://peakd.com/hive-128780/@mes/vectors-and-the-geometry-of-space-the-cross-product" href="https://peakd.com/hive-128780/@mes/vectors-and-the-geometry-of-space-the-cross-product">
       <span class="link-card-thumb" style="background-image:url('https://images.hive.blog/1200x630/https:/files.peakd.com/file/peakd-hive/mes/23wgoZnRipYa1SKGoZsn5yPX8UE2S2e5y2CchJHBYDMSTuRNiAEVRmM3xbtKMPUeza4F8.jpeg')"></span>
       <span class="link-card-body">
         <span class="link-card-title">The Cross Product</span>
-        <span class="link-card-readmore">View &rarr;</span>
+        <span class="link-card-readmore"><span class="lp-ic" data-s="hive" aria-hidden="true"></span><span class="lp-name">View on Hive</span> &rarr;</span>
       </span>
     </a>
-    <a class="link-card" href="https://peakd.com/hive-128780/@mes/discovery-project-geometry-of-a-tetrahedron">
+    <a class="link-card lp-a" data-lp-def="hive" data-l-hive="https://peakd.com/hive-128780/@mes/discovery-project-geometry-of-a-tetrahedron" href="https://peakd.com/hive-128780/@mes/discovery-project-geometry-of-a-tetrahedron">
       <span class="link-card-thumb" style="background-image:url('https://images.hive.blog/1200x630/https:/files.peakd.com/file/peakd-hive/mes/23wCbb2sbLNyoVuXx3Cy197xPK9VFoBXLUkf2QG1t3xvw9cUAy8e8gwcwEdi1uEAb5zjF.jpeg')"></span>
       <span class="link-card-body">
         <span class="link-card-title">Laboratory Project: The Geometry of a Tetrahedron</span>
-        <span class="link-card-readmore">View &rarr;</span>
+        <span class="link-card-readmore"><span class="lp-ic" data-s="hive" aria-hidden="true"></span><span class="lp-name">View on Hive</span> &rarr;</span>
       </span>
     </a>
-    <a class="link-card" href="https://peakd.com/hive-128780/@mes/equations-of-lines-and-planes">
+    <a class="link-card lp-a" data-lp-def="hive" data-l-hive="https://peakd.com/hive-128780/@mes/equations-of-lines-and-planes" href="https://peakd.com/hive-128780/@mes/equations-of-lines-and-planes">
       <span class="link-card-thumb" style="background-image:url('https://images.hive.blog/1200x630/https:/files.peakd.com/file/peakd-hive/mes/23wr9nrYJqFNc63AfLqHNfuTpWPQGhSRwL8wU1TVSpvtjM4Xq3fja1UuW1t1YAki1ZuJi.jpeg')"></span>
       <span class="link-card-body">
         <span class="link-card-title">Equations of Lines and Planes</span>
-        <span class="link-card-readmore">View &rarr;</span>
+        <span class="link-card-readmore"><span class="lp-ic" data-s="hive" aria-hidden="true"></span><span class="lp-name">View on Hive</span> &rarr;</span>
       </span>
     </a>
-    <a class="link-card" href="https://peakd.com/hive-128780/@mes/laboratory-project-putting-3d-in-perspective">
+    <a class="link-card lp-a" data-lp-def="hive" data-l-youtube="https://youtu.be/3txedAqdtkQ" data-l-hive="https://peakd.com/hive-128780/@mes/laboratory-project-putting-3d-in-perspective" data-l-3speak="https://3speak.tv/watch?v=mes/iesdwkis" data-l-rumble="https://rumble.com/v3q97gl-laboratory-project-putting-3d-in-perspective.html" data-l-odysee="https://odysee.com/@mes:8/Laboratory-Project-Putting-3D-in-Perspective:0" data-l-bitchute="https://www.bitchute.com/video/iOOd0GF7ijSC/" href="https://peakd.com/hive-128780/@mes/laboratory-project-putting-3d-in-perspective">
       <span class="link-card-thumb" style="background-image:url('https://images.hive.blog/1200x630/https:/files.peakd.com/file/peakd-hive/mes/23tcNa7q2ZWVgjnvrELxS1DnZAhG4qcaGV4Lz38oQbe3Wj6UKdJYo1hWktVAN2bcgCL8R.jpeg')"></span>
       <span class="link-card-body">
         <span class="link-card-title">Laboratory Project: Putting 3D in Perspective</span>
-        <span class="link-card-readmore">View &rarr;</span>
+        <span class="link-card-readmore"><span class="lp-ic" data-s="hive" aria-hidden="true"></span><span class="lp-name">View on Hive</span> &rarr;</span>
       </span>
     </a>
-    <a class="link-card" href="https://peakd.com/hive-128780/@mes/cylinders-and-quadric-surfaces">
+    <a class="link-card lp-a" data-lp-def="hive" data-l-youtube="https://youtu.be/k4EyLr4uOUA" data-l-hive="https://peakd.com/hive-128780/@mes/cylinders-and-quadric-surfaces" data-l-3speak="https://3speak.tv/watch?v=mes/fzsjbngl" data-l-rumble="https://rumble.com/v4jaf73-vectors-and-the-geometry-of-space-cylinders-and-quadric-surfaces.html" data-l-odysee="https://odysee.com/@mes:8/Cylinders-and-Quadric-Surfaces:1" data-l-bitchute="https://www.bitchute.com/video/H4CY92XZojQQ/" href="https://peakd.com/hive-128780/@mes/cylinders-and-quadric-surfaces">
       <span class="link-card-thumb" style="background-image:url('https://images.hive.blog/1200x630/https:/files.peakd.com/file/peakd-hive/mes/23xf4omKKUCp5Dr1yr6TsvK614ZwWCXbBXkHMLTsPGh1iv6dbbdm98fpzb9psDAonhZox.jpeg')"></span>
       <span class="link-card-body">
         <span class="link-card-title">Cylinders and Quadric Surfaces</span>
-        <span class="link-card-readmore">View &rarr;</span>
+        <span class="link-card-readmore"><span class="lp-ic" data-s="hive" aria-hidden="true"></span><span class="lp-name">View on Hive</span> &rarr;</span>
       </span>
     </a>
-    <a class="link-card" href="https://peakd.com/hive-128780/@mes/vectors-and-the-geometry-of-space-review">
+    <a class="link-card lp-a" data-lp-def="hive" data-l-youtube="https://youtu.be/VMKb69uDVt0" data-l-hive="https://peakd.com/hive-128780/@mes/vectors-and-the-geometry-of-space-review" data-l-3speak="https://3speak.tv/watch?v=mes/gqwfwnst" data-l-rumble="https://rumble.com/v52c4v7-vectors-and-the-geometry-of-space-review-of-chapter.html" data-l-odysee="https://odysee.com/@mes:8/Vectors-Geometry-Review:1" data-l-bitchute="https://www.bitchute.com/video/xjUs0mQfZFdk/" href="https://peakd.com/hive-128780/@mes/vectors-and-the-geometry-of-space-review">
       <span class="link-card-thumb" style="background-image:url('https://images.hive.blog/1200x630/https:/files.peakd.com/file/peakd-hive/mes/23vsrFwwAkY5PgSZ7oH3byKBhmjjcbiAdJ7pBXuBvK97cJSMoiK2odHTP7yKVk3s2uZQE.jpeg')"></span>
       <span class="link-card-body">
         <span class="link-card-title">Review</span>
-        <span class="link-card-readmore">View &rarr;</span>
+        <span class="link-card-readmore"><span class="lp-ic" data-s="hive" aria-hidden="true"></span><span class="lp-name">View on Hive</span> &rarr;</span>
       </span>
     </a>
-    <a class="link-card" href="https://peakd.com/hive-128780/@mes/vectors-geometry-true-false-quiz">
+    <a class="link-card lp-a" data-lp-def="hive" data-l-hive="https://peakd.com/hive-128780/@mes/vectors-geometry-true-false-quiz" href="https://peakd.com/hive-128780/@mes/vectors-geometry-true-false-quiz">
       <span class="link-card-thumb" style="background-image:url('https://images.hive.blog/1200x630/https:/files.peakd.com/file/peakd-hive/mes/23vsqqLYVW31oWxCuTr4WGukQNR5ygKYwCjbCPgDotyT6raUMEBpEfxSbqe2ukUSVFGnQ.jpeg')"></span>
       <span class="link-card-body">
         <span class="link-card-title">True-False Quiz</span>
-        <span class="link-card-readmore">View &rarr;</span>
+        <span class="link-card-readmore"><span class="lp-ic" data-s="hive" aria-hidden="true"></span><span class="lp-name">View on Hive</span> &rarr;</span>
       </span>
     </a>
-    <a class="link-card" href="https://peakd.com/hive-128780/@mes/jlgigkdl">
+    <a class="link-card lp-a" data-lp-def="hive" data-l-youtube="https://youtu.be/4x6uh1zQ-M0" data-l-hive="https://peakd.com/hive-128780/@mes/jlgigkdl" data-l-3speak="https://3speak.tv/watch?v=mes/jlgigkdl" data-l-rumble="https://rumble.com/v5gzvcp-vectors-and-the-geometry-of-space-problems-plus.html" data-l-odysee="https://odysee.com/@mes:8/Vectors-Geometry-Problems-Plus:a" data-l-bitchute="https://www.bitchute.com/video/fdhjh9vmakKc/" href="https://peakd.com/hive-128780/@mes/jlgigkdl">
       <span class="link-card-thumb" style="background-image:url('https://images.hive.blog/1200x630/https:/files.peakd.com/file/peakd-hive/mes/23u6UDcUEmsFnbSdPFNoPBs8WNJJUtmwfxp5qHQdTDnKLwQpq2XTAX2TS1w1XwNVrDd8E.jpeg')"></span>
       <span class="link-card-body">
         <span class="link-card-title">Problems Plus</span>
-        <span class="link-card-readmore">View &rarr;</span>
+        <span class="link-card-readmore"><span class="lp-ic" data-s="hive" aria-hidden="true"></span><span class="lp-name">View on Hive</span> &rarr;</span>
       </span>
     </a>
     </div>
     <div class="list-view view-hidden" id="vectorsList">
     <div class="list-row">
-      <h3>3D Coordinates Systems</h3>
+      <h3><a class="lp-a" href="https://peakd.com/hive-128780/@mes/vector-space-and-geometry-3d-coordinate-systems" data-lp-def="hive" data-l-hive="https://peakd.com/hive-128780/@mes/vector-space-and-geometry-3d-coordinate-systems">3D Coordinates Systems<span class="lp-ic" data-s="hive" aria-hidden="true"></span></a></h3>
       <p><a href="https://peakd.com/hive-128780/@mes/vector-space-and-geometry-3d-coordinate-systems" target="_blank" rel="noopener">Notes</a></p>
       <img loading="lazy" class="list-thumb" src="https://images.hive.blog/1200x630/https:/files.peakd.com/file/peakd-hive/mes/23z7bC64o1TcF1G445p3dPi2xRaYuRA7SCnW48zFyfVbXWY9UFAEcBvzsjxN9ZLcNmaHV.jpg" alt="">
     </div>
     <div class="list-row">
-      <h3>Vectors</h3>
+      <h3><a class="lp-a" href="https://peakd.com/hive-128780/@mes/vectors-and-the-geometry-of-space-vectors" data-lp-def="hive" data-l-hive="https://peakd.com/hive-128780/@mes/vectors-and-the-geometry-of-space-vectors">Vectors<span class="lp-ic" data-s="hive" aria-hidden="true"></span></a></h3>
       <p><a href="https://peakd.com/hive-128780/@mes/vectors-and-the-geometry-of-space-vectors" target="_blank" rel="noopener">Notes</a></p>
       <img loading="lazy" class="list-thumb" src="https://images.hive.blog/1200x630/https:/snipboard.io/2YPoXV.jpg" alt="">
     </div>
     <div class="list-row">
-      <h3>Complex Numbers as Rotation Matrices</h3>
+      <h3><a class="lp-a" href="https://peakd.com/hive-128780/@mes/complex-numbers-as-rotation-matrices" data-lp-def="hive" data-l-hive="https://peakd.com/hive-128780/@mes/complex-numbers-as-rotation-matrices">Complex Numbers as Rotation Matrices<span class="lp-ic" data-s="hive" aria-hidden="true"></span></a></h3>
       <p><a href="https://peakd.com/hive-128780/@mes/complex-numbers-as-rotation-matrices" target="_blank" rel="noopener">Notes</a></p>
       <img loading="lazy" class="list-thumb" src="https://images.hive.blog/1200x630/https:/files.peakd.com/file/peakd-hive/mes/23twA7QknK6cdrSeC4PVyzCXDonrhb3uavjJ3qiwMHHfG2azSWeP9LLtBgsmz2YtKsZyd.jpeg" alt="">
     </div>
     <div class="list-row">
-      <h3>The Dot Product</h3>
+      <h3><a class="lp-a" href="https://peakd.com/hive-128780/@mes/vectors-and-the-geometry-of-space-the-dot-product" data-lp-def="hive" data-l-hive="https://peakd.com/hive-128780/@mes/vectors-and-the-geometry-of-space-the-dot-product">The Dot Product<span class="lp-ic" data-s="hive" aria-hidden="true"></span></a></h3>
       <p><a href="https://peakd.com/hive-128780/@mes/vectors-and-the-geometry-of-space-the-dot-product" target="_blank" rel="noopener">Notes</a></p>
       <img loading="lazy" class="list-thumb" src="https://images.hive.blog/1200x630/https:/files.peakd.com/file/peakd-hive/mes/23tcP5UHCYrRzMwqZuqgSgCKwzN3chiBwFzsPe9sXXyh3Y5QGQkLk4RCazyW9iKnyp31b.jpeg" alt="">
     </div>
     <div class="list-row">
-      <h3>The Cross Product</h3>
+      <h3><a class="lp-a" href="https://peakd.com/hive-128780/@mes/vectors-and-the-geometry-of-space-the-cross-product" data-lp-def="hive" data-l-hive="https://peakd.com/hive-128780/@mes/vectors-and-the-geometry-of-space-the-cross-product">The Cross Product<span class="lp-ic" data-s="hive" aria-hidden="true"></span></a></h3>
       <p><a href="https://peakd.com/hive-128780/@mes/vectors-and-the-geometry-of-space-the-cross-product" target="_blank" rel="noopener">Notes</a></p>
       <img loading="lazy" class="list-thumb" src="https://images.hive.blog/1200x630/https:/files.peakd.com/file/peakd-hive/mes/23wgoZnRipYa1SKGoZsn5yPX8UE2S2e5y2CchJHBYDMSTuRNiAEVRmM3xbtKMPUeza4F8.jpeg" alt="">
     </div>
     <div class="list-row">
-      <h3>Laboratory Project: The Geometry of a Tetrahedron</h3>
+      <h3><a class="lp-a" href="https://peakd.com/hive-128780/@mes/discovery-project-geometry-of-a-tetrahedron" data-lp-def="hive" data-l-hive="https://peakd.com/hive-128780/@mes/discovery-project-geometry-of-a-tetrahedron">Laboratory Project: The Geometry of a Tetrahedron<span class="lp-ic" data-s="hive" aria-hidden="true"></span></a></h3>
       <p><a href="https://peakd.com/hive-128780/@mes/discovery-project-geometry-of-a-tetrahedron" target="_blank" rel="noopener">Notes</a></p>
       <img loading="lazy" class="list-thumb" src="https://images.hive.blog/1200x630/https:/files.peakd.com/file/peakd-hive/mes/23wCbb2sbLNyoVuXx3Cy197xPK9VFoBXLUkf2QG1t3xvw9cUAy8e8gwcwEdi1uEAb5zjF.jpeg" alt="">
     </div>
     <div class="list-row">
-      <h3>Equations of Lines and Planes</h3>
+      <h3><a class="lp-a" href="https://peakd.com/hive-128780/@mes/equations-of-lines-and-planes" data-lp-def="hive" data-l-hive="https://peakd.com/hive-128780/@mes/equations-of-lines-and-planes">Equations of Lines and Planes<span class="lp-ic" data-s="hive" aria-hidden="true"></span></a></h3>
       <p><a href="https://peakd.com/hive-128780/@mes/equations-of-lines-and-planes" target="_blank" rel="noopener">Notes</a></p>
       <img loading="lazy" class="list-thumb" src="https://images.hive.blog/1200x630/https:/files.peakd.com/file/peakd-hive/mes/23wr9nrYJqFNc63AfLqHNfuTpWPQGhSRwL8wU1TVSpvtjM4Xq3fja1UuW1t1YAki1ZuJi.jpeg" alt="">
     </div>
     <div class="list-row">
-      <h3>Laboratory Project: Putting 3D in Perspective</h3>
+      <h3><a class="lp-a" href="https://peakd.com/hive-128780/@mes/laboratory-project-putting-3d-in-perspective" data-lp-def="hive" data-l-youtube="https://youtu.be/3txedAqdtkQ" data-l-hive="https://peakd.com/hive-128780/@mes/laboratory-project-putting-3d-in-perspective" data-l-3speak="https://3speak.tv/watch?v=mes/iesdwkis" data-l-rumble="https://rumble.com/v3q97gl-laboratory-project-putting-3d-in-perspective.html" data-l-odysee="https://odysee.com/@mes:8/Laboratory-Project-Putting-3D-in-Perspective:0" data-l-bitchute="https://www.bitchute.com/video/iOOd0GF7ijSC/">Laboratory Project: Putting 3D in Perspective<span class="lp-ic" data-s="hive" aria-hidden="true"></span></a></h3>
       <p><a href="https://peakd.com/hive-128780/@mes/laboratory-project-putting-3d-in-perspective" target="_blank" rel="noopener">Notes</a> - <a href="https://3speak.tv/watch?v=mes/iesdwkis" target="_blank" rel="noopener">3Speak</a> - <a href="https://youtu.be/3txedAqdtkQ" target="_blank" rel="noopener">YouTube</a> - <a href="https://www.bitchute.com/video/iOOd0GF7ijSC/" target="_blank" rel="noopener">BitChute</a> - <a href="https://odysee.com/@mes:8/Laboratory-Project-Putting-3D-in-Perspective:0" target="_blank" rel="noopener">Odysee</a> - <a href="https://rumble.com/v3q97gl-laboratory-project-putting-3d-in-perspective.html" target="_blank" rel="noopener">Rumble</a></p>
       <img loading="lazy" class="list-thumb" src="https://images.hive.blog/1200x630/https:/files.peakd.com/file/peakd-hive/mes/23tcNa7q2ZWVgjnvrELxS1DnZAhG4qcaGV4Lz38oQbe3Wj6UKdJYo1hWktVAN2bcgCL8R.jpeg" alt="">
     </div>
     <div class="list-row">
-      <h3>Cylinders and Quadric Surfaces</h3>
+      <h3><a class="lp-a" href="https://peakd.com/hive-128780/@mes/cylinders-and-quadric-surfaces" data-lp-def="hive" data-l-youtube="https://youtu.be/k4EyLr4uOUA" data-l-hive="https://peakd.com/hive-128780/@mes/cylinders-and-quadric-surfaces" data-l-3speak="https://3speak.tv/watch?v=mes/fzsjbngl" data-l-rumble="https://rumble.com/v4jaf73-vectors-and-the-geometry-of-space-cylinders-and-quadric-surfaces.html" data-l-odysee="https://odysee.com/@mes:8/Cylinders-and-Quadric-Surfaces:1" data-l-bitchute="https://www.bitchute.com/video/H4CY92XZojQQ/">Cylinders and Quadric Surfaces<span class="lp-ic" data-s="hive" aria-hidden="true"></span></a></h3>
       <p><a href="https://peakd.com/hive-128780/@mes/cylinders-and-quadric-surfaces" target="_blank" rel="noopener">Notes</a> - <a href="https://3speak.tv/watch?v=mes/fzsjbngl" target="_blank" rel="noopener">3Speak</a> - <a href="https://youtu.be/k4EyLr4uOUA" target="_blank" rel="noopener">YouTube</a> - <a href="https://www.bitchute.com/video/H4CY92XZojQQ/" target="_blank" rel="noopener">BitChute</a> - <a href="https://odysee.com/@mes:8/Cylinders-and-Quadric-Surfaces:1" target="_blank" rel="noopener">Odysee</a> - <a href="https://rumble.com/v4jaf73-vectors-and-the-geometry-of-space-cylinders-and-quadric-surfaces.html" target="_blank" rel="noopener">Rumble</a></p>
       <img loading="lazy" class="list-thumb" src="https://images.hive.blog/1200x630/https:/files.peakd.com/file/peakd-hive/mes/23xf4omKKUCp5Dr1yr6TsvK614ZwWCXbBXkHMLTsPGh1iv6dbbdm98fpzb9psDAonhZox.jpeg" alt="">
     </div>
     <div class="list-row">
-      <h3>Review</h3>
+      <h3><a class="lp-a" href="https://peakd.com/hive-128780/@mes/vectors-and-the-geometry-of-space-review" data-lp-def="hive" data-l-youtube="https://youtu.be/VMKb69uDVt0" data-l-hive="https://peakd.com/hive-128780/@mes/vectors-and-the-geometry-of-space-review" data-l-3speak="https://3speak.tv/watch?v=mes/gqwfwnst" data-l-rumble="https://rumble.com/v52c4v7-vectors-and-the-geometry-of-space-review-of-chapter.html" data-l-odysee="https://odysee.com/@mes:8/Vectors-Geometry-Review:1" data-l-bitchute="https://www.bitchute.com/video/xjUs0mQfZFdk/">Review<span class="lp-ic" data-s="hive" aria-hidden="true"></span></a></h3>
       <p><a href="https://peakd.com/hive-128780/@mes/vectors-and-the-geometry-of-space-review" target="_blank" rel="noopener">Notes</a> - <a href="https://3speak.tv/watch?v=mes/gqwfwnst" target="_blank" rel="noopener">3Speak</a> - <a href="https://youtu.be/VMKb69uDVt0" target="_blank" rel="noopener">YouTube</a> - <a href="https://www.bitchute.com/video/xjUs0mQfZFdk/" target="_blank" rel="noopener">BitChute</a> - <a href="https://odysee.com/@mes:8/Vectors-Geometry-Review:1" target="_blank" rel="noopener">Odysee</a> - <a href="https://rumble.com/v52c4v7-vectors-and-the-geometry-of-space-review-of-chapter.html" target="_blank" rel="noopener">Rumble</a></p>
       <img loading="lazy" class="list-thumb" src="https://images.hive.blog/1200x630/https:/files.peakd.com/file/peakd-hive/mes/23vsrFwwAkY5PgSZ7oH3byKBhmjjcbiAdJ7pBXuBvK97cJSMoiK2odHTP7yKVk3s2uZQE.jpeg" alt="">
     </div>
     <div class="list-row">
-      <h3>True-False Quiz</h3>
+      <h3><a class="lp-a" href="https://peakd.com/hive-128780/@mes/vectors-geometry-true-false-quiz" data-lp-def="hive" data-l-hive="https://peakd.com/hive-128780/@mes/vectors-geometry-true-false-quiz">True-False Quiz<span class="lp-ic" data-s="hive" aria-hidden="true"></span></a></h3>
       <p><a href="https://peakd.com/hive-128780/@mes/vectors-geometry-true-false-quiz" target="_blank" rel="noopener">Notes</a></p>
       <img loading="lazy" class="list-thumb" src="https://images.hive.blog/1200x630/https:/files.peakd.com/file/peakd-hive/mes/23vsqqLYVW31oWxCuTr4WGukQNR5ygKYwCjbCPgDotyT6raUMEBpEfxSbqe2ukUSVFGnQ.jpeg" alt="">
     </div>
     <div class="list-row">
-      <h3>Problems Plus</h3>
+      <h3><a class="lp-a" href="https://peakd.com/hive-128780/@mes/jlgigkdl" data-lp-def="hive" data-l-youtube="https://youtu.be/4x6uh1zQ-M0" data-l-hive="https://peakd.com/hive-128780/@mes/jlgigkdl" data-l-3speak="https://3speak.tv/watch?v=mes/jlgigkdl" data-l-rumble="https://rumble.com/v5gzvcp-vectors-and-the-geometry-of-space-problems-plus.html" data-l-odysee="https://odysee.com/@mes:8/Vectors-Geometry-Problems-Plus:a" data-l-bitchute="https://www.bitchute.com/video/fdhjh9vmakKc/">Problems Plus<span class="lp-ic" data-s="hive" aria-hidden="true"></span></a></h3>
       <p><a href="https://peakd.com/hive-128780/@mes/jlgigkdl" target="_blank" rel="noopener">Notes</a> - <a href="https://3speak.tv/watch?v=mes/jlgigkdl" target="_blank" rel="noopener">3Speak</a> - <a href="https://youtu.be/4x6uh1zQ-M0" target="_blank" rel="noopener">YouTube</a> - <a href="https://www.bitchute.com/video/fdhjh9vmakKc/" target="_blank" rel="noopener">BitChute</a> - <a href="https://odysee.com/@mes:8/Vectors-Geometry-Problems-Plus:a" target="_blank" rel="noopener">Odysee</a> - <a href="https://rumble.com/v5gzvcp-vectors-and-the-geometry-of-space-problems-plus.html" target="_blank" rel="noopener">Rumble</a></p>
       <img loading="lazy" class="list-thumb" src="https://images.hive.blog/1200x630/https:/files.peakd.com/file/peakd-hive/mes/23u6UDcUEmsFnbSdPFNoPBs8WNJJUtmwfxp5qHQdTDnKLwQpq2XTAX2TS1w1XwNVrDd8E.jpeg" alt="">
     </div>
@@ -1776,5 +1821,5 @@ var MES_Vars = {
 <script src="/main_js/main.js?v=1.0.3"></script>
 <script>document.getElementById('copyright-year').textContent = new Date().getFullYear();</script>
 <!-- PAGEVIEW-TRACKING-INSERTED --><script src="/main_js/track.js" defer></script><script src="/main_js/info-bar-fit.js" defer></script>
-<script src="/main_js/site-search.js?v=1" defer></script><!-- HUB-THEATRE-JS --><script src="/main_js/hub-theatre.js?v=1" defer></script><!-- /HUB-THEATRE-JS --></body>
+<script src="/main_js/site-search.js?v=1" defer></script><!-- HUB-THEATRE-JS --><script src="/main_js/hub-theatre.js?v=1" defer></script><!-- /HUB-THEATRE-JS --><script src="/main_js/link-pref.js?v=1" defer></script></body>
 </html>

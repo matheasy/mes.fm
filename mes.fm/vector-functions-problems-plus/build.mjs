@@ -20,6 +20,7 @@ import { writeFileSync, readFileSync, existsSync } from "node:fs";
 import { fileURLToPath } from "node:url";
 import { dirname, join } from "node:path";
 import { marked } from "marked";
+import { lpMap, lpAttrs, lpCaption, lpIcon, lpSwitch, lpWanted, lpSolo, LP_CSS, LP_SCRIPT } from "../shared/link-pref.mjs";
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 
@@ -184,21 +185,6 @@ function cssSafeUrl(url) {
 // Renders the Playlist chapter's Grid View (thumbnail cards, default) and List
 // View (title + full thumbnail + row of every platform link that page has).
 function buildPlaylistSection(meta) {
-  const cards = PLAYLIST.map((entry) => {
-    const m = meta[entry.href] || {};
-    const title = m.title || entry.href;
-    const thumbStyle = m.image
-      ? ` style="background-image:url('${cssSafeUrl(escapeHtml(m.image))}')"`
-      : "";
-    return `<a class="link-card" href="${escapeHtml(entry.href)}">
-  <span class="link-card-thumb"${thumbStyle}></span>
-  <span class="link-card-body">
-    <span class="link-card-title">${escapeHtml(title)}</span>
-    <span class="link-card-readmore">Watch &rarr;</span>
-  </span>
-</a>`;
-  }).join("\n");
-
   // Watch-on links are sorted to this canonical platform order (whichever the
   // page actually has); anything scraped that isn't in this list (an "etc.")
   // is kept, appended after the recognized ones in its original order.
@@ -211,22 +197,46 @@ function buildPlaylistSection(meta) {
     return [...known, ...rest];
   }
 
-  const rows = PLAYLIST.map((entry) => {
+  const linksOf = (entry) => [{ label: "Notes", href: entry.href }, ...sortWatchLinks((meta[entry.href] || {}).watchLinks || [])];
+  // "Open in:" preferred-site switch (shared/link-pref.mjs, as on mes.fm/livestreams): cards and List View titles open the
+  // mes.fm page by default, or YouTube / 3Speak / Rumble ... when the reader picks that site.
+  const lpMaps = PLAYLIST.map((entry) => lpMap(linksOf(entry)));
+  const lpHtml = lpWanted(lpMaps) ? lpSwitch(lpMaps, { min: 1 }) : "";
+  const lpOf = (entry, i) => (lpHtml ? lpAttrs(lpMaps[i], entry.href) : "");
+  const cards = PLAYLIST.map((entry, i) => {
     const m = meta[entry.href] || {};
     const title = m.title || entry.href;
-    const allLinks = [{ label: "Notes", href: entry.href }, ...sortWatchLinks(m.watchLinks || [])];
+    const thumbStyle = m.image
+      ? ` style="background-image:url('${cssSafeUrl(escapeHtml(m.image))}')"`
+      : "";
+    const lp = lpOf(entry, i);
+    return `<a class="link-card${lp ? " lp-a" : ""}"${lp} href="${escapeHtml(entry.href)}">
+  <span class="link-card-thumb"${thumbStyle}></span>
+  <span class="link-card-body">
+    <span class="link-card-title">${escapeHtml(title)}</span>
+    <span class="link-card-readmore">${lp ? lpCaption(entry.href, "Watch &rarr;") : "Watch &rarr;"}</span>
+  </span>
+</a>`;
+  }).join("\n");
+
+  const rows = PLAYLIST.map((entry, i) => {
+    const m = meta[entry.href] || {};
+    const title = m.title || entry.href;
+    const allLinks = linksOf(entry);
+    const lp = lpOf(entry, i);
     const linksHtml = allLinks
       .map((l) => `<a href="${escapeHtml(l.href)}" target="_blank" rel="noopener">${escapeHtml(l.label)}</a>`)
       .join(" - ");
     const imgHtml = m.image
       ? `<img class="playlist-row-thumb" src="${escapeHtml(m.image)}" alt="">`
       : "";
-    return `<h2>${escapeHtml(title)}</h2>
+    const titleHtml = lp ? `<a class="lp-a" href="${escapeHtml(entry.href)}"${lp}>${escapeHtml(title)}${lpIcon("mes")}</a>` : escapeHtml(title);
+    return `<h2>${titleHtml}</h2>
 <p>${linksHtml}</p>
 ${imgHtml}`;
   }).join("\n");
 
-  return `<div class="view-toggle">
+  return `${lpHtml ? `${lpSolo(lpHtml)}\n` : ""}<div class="view-toggle">
   <button type="button" class="view-toggle-btn active" id="playlistGridBtn">Grid View</button>
   <button type="button" class="view-toggle-btn" id="playlistListBtn">List View</button>
 </div>
@@ -1460,6 +1470,9 @@ ${leadingHtml}
     @media (max-width: 600px) {
       .lightbox-zoom-btn { width: 36px; height: 36px; font-size: 1.05em; }
     }
+${LP_CSS}.playlist-list-view h2 .lp-a { color: inherit; text-decoration: none; }
+.playlist-list-view h2 .lp-a:hover { text-decoration: underline; }
+.playlist-list-view h2 .lp-ic { width: 0.7em; height: 0.7em; margin-left: 0.35em; vertical-align: 0; opacity: 0.75; }
 </style>
   <!-- ADSENSE-DEFERRED: load adsbygoogle.js (auto ads + consent) on the first
      real interaction (scroll / pointer / key), or after a 15s idle fallback,
@@ -2099,7 +2112,7 @@ ${bodyHtml}
     update();
   })();
 </script>
-<script src="/main_js/site-search.js?v=1" defer></script><script src="/main_js/toc-flip.js?v=5" defer></script><!-- JUMP-ASIDE-JS --><script src="/main_js/jump-aside.js?v=1" defer></script><!-- /JUMP-ASIDE-JS --></body>
+<script src="/main_js/site-search.js?v=1" defer></script><script src="/main_js/toc-flip.js?v=5" defer></script><!-- JUMP-ASIDE-JS --><script src="/main_js/jump-aside.js?v=1" defer></script><!-- /JUMP-ASIDE-JS -->${LP_SCRIPT}</body>
 </html>
 `;
 }
