@@ -363,28 +363,98 @@
   $("tr-say-out").addEventListener("click", function () { say(outText, S.to, this); });
   if (!("speechSynthesis" in window)) { $("tr-say-in").hidden = true; $("tr-say-out").hidden = true; }
 
+
+  // ---------- where the text comes from: Type or paste | Photo / file | Link | Camera ----------
+  var coarse = !!(window.matchMedia && window.matchMedia("(pointer: coarse)").matches);
+  var canLive = !!(navigator.mediaDevices && navigator.mediaDevices.getUserMedia);
+  if (S.editFirst == null) S.editFirst = T.editDefault(coarse);
+  if (S.camEdit == null) S.camEdit = true;
+  $("tr-editfirst").checked = !!S.editFirst;
+  $("tr-camedit").checked = !!S.camEdit;
+  var TABS = T.sourceTabs(MODE, coarse || canLive);
+  var srcBox = $("tr-src"), srcKey = "";
+  if (MODE === "ocr") {   // picture first: the source switcher sits at the top of the picture card, the text box stays in the Translate card
+    $("tr-ocr-intro").insertAdjacentElement("afterend", srcBox);
+    $("tr-p-text").removeAttribute("role"); $("tr-p-text").removeAttribute("aria-labelledby");
+  }
+  Array.prototype.forEach.call(srcBox.querySelectorAll("[role=tab]"), function (b) { if (TABS.indexOf(b.getAttribute("data-src")) < 0) b.remove(); });
+  function setSrc(key, focus) {
+    if (TABS.indexOf(key) < 0) key = TABS[0];
+    if (srcKey === "cam" && key !== "cam") stopLive();
+    srcKey = key;
+    Array.prototype.forEach.call(srcBox.querySelectorAll("[role=tab]"), function (b) {
+      var on = b.getAttribute("data-src") === key;
+      b.setAttribute("aria-selected", on ? "true" : "false"); b.tabIndex = on ? 0 : -1;
+      if (on && focus) b.focus();
+    });
+    ["file", "link", "cam"].forEach(function (k) { $("tr-p-" + k).hidden = k !== key; });
+    if (MODE === "translate") { $("tr-p-text").hidden = key !== "text"; root.querySelector(".tr-col--in > .tr-act").hidden = key !== "text"; }
+    $("tr-picset").hidden = key === "text";
+  }
+  srcBox.querySelector("[role=tablist]").addEventListener("click", function (e) {
+    var b = e.target.closest("[role=tab]"); if (!b) return;
+    setSrc(b.getAttribute("data-src"));
+    var k = b.getAttribute("data-src");
+    if (k === "link") setTimeout(function () { $("tr-url").focus(); }, 0);
+    if (k === "text") setTimeout(function () { inp.focus(); }, 0);
+  });
+  srcBox.querySelector("[role=tablist]").addEventListener("keydown", function (e) {
+    var k = T.nextTab(TABS, srcKey, e.key); if (k === null) return;
+    e.preventDefault(); setSrc(k, true);
+  });
+  $("tr-editfirst").addEventListener("change", function () { S.editFirst = this.checked; save(); });
+  $("tr-camedit").addEventListener("change", function () { S.camEdit = this.checked; save(); });
+
+  // camera: a phone opens its own camera app (capture="environment"); a computer gets a live preview + Take the photo
+  var camFile = $("tr-camfile"), stream = null;
+  $("tr-camgo").addEventListener("click", function () { if (coarse || !canLive) camFile.click(); else startLive(); });
+  camFile.addEventListener("change", function () { if (camFile.files[0]) loadFile(camFile.files[0], "cam"); camFile.value = ""; });
+  function startLive() {
+    navigator.mediaDevices.getUserMedia({ video: { facingMode: "environment", width: { ideal: 1920 }, height: { ideal: 1080 } }, audio: false }).then(function (s) {
+      stream = s; var v = $("tr-video"); v.srcObject = s; v.play().catch(function () {});
+      $("tr-camview").hidden = false;
+    }, function (e) {
+      toast(/NotFound|Overconstrained/i.test(e && e.name) ? "No camera found on this device" : /NotAllowed|Security/i.test(e && e.name) ? "The browser did not allow the camera" : "Could not start the camera");
+    });
+  }
+  function stopLive() {
+    if (stream) { stream.getTracks().forEach(function (t) { t.stop(); }); stream = null; }
+    var v = $("tr-video"); if (v) v.srcObject = null; $("tr-camview").hidden = true;
+  }
+  $("tr-camstop").addEventListener("click", stopLive);
+  $("tr-snap").addEventListener("click", function () {
+    var v = $("tr-video"); if (!v.videoWidth) { toast("The camera is still starting"); return; }
+    var c = document.createElement("canvas"); c.width = v.videoWidth; c.height = v.videoHeight; c.getContext("2d").drawImage(v, 0, 0);
+    stopLive();
+    c.toBlob(function (b) { var f; try { f = new File([b], "Camera photo.jpg", { type: "image/jpeg" }); } catch (e) { f = b; f.name = "Camera photo.jpg"; } loadFile(f, "cam"); }, "image/jpeg", 0.92);
+  });
+
   // ---------- OCR ----------
   var pages = [], cur = 0, worker = null, workerLangs = "", ocrBusy = false, selected = {};
   var cv = $("tr-cv"), boxes = $("tr-boxes"), drop = $("tr-drop"), fileIn = $("tr-file");
   drop.addEventListener("click", function () { fileIn.click(); });
   drop.addEventListener("keydown", function (e) { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); fileIn.click(); } });
-  fileIn.addEventListener("change", function () { if (fileIn.files[0]) loadFile(fileIn.files[0]); fileIn.value = ""; });
-  ["dragenter", "dragover"].forEach(function (t) { drop.addEventListener(t, function (e) { e.preventDefault(); drop.classList.add("tr-drop--over"); }); });
-  ["dragleave", "drop"].forEach(function (t) { drop.addEventListener(t, function (e) { e.preventDefault(); drop.classList.remove("tr-drop--over"); }); });
-  drop.addEventListener("drop", function (e) { var f = e.dataTransfer && e.dataTransfer.files && e.dataTransfer.files[0]; if (f) loadFile(f); });
-  drop.addEventListener("drop", function (e) {   // a picture dragged from another web page arrives as a link, not a file
-    var dt = e.dataTransfer; if (!dt || (dt.files && dt.files.length)) return;
+  fileIn.addEventListener("change", function () { if (fileIn.files[0]) loadFile(fileIn.files[0], "file"); fileIn.value = ""; });
+  // drop a file (or a picture dragged from another page) anywhere on the tool
+  function isFileDrag(e) { var t = e.dataTransfer && e.dataTransfer.types; return t && Array.prototype.indexOf.call(t, "Files") >= 0; }
+  ["dragenter", "dragover"].forEach(function (t) { root.addEventListener(t, function (e) { if (!isFileDrag(e) && !(e.dataTransfer && Array.prototype.indexOf.call(e.dataTransfer.types || [], "text/uri-list") >= 0)) return; e.preventDefault(); if (srcKey !== "file") setSrc("file"); drop.classList.add("tr-drop--over"); }); });
+  ["dragleave", "drop"].forEach(function (t) { root.addEventListener(t, function (e) { if (t === "dragleave" && root.contains(e.relatedTarget)) return; drop.classList.remove("tr-drop--over"); }); });
+  root.addEventListener("drop", function (e) {
+    var dt = e.dataTransfer; if (!dt) return;
+    var f = dt.files && dt.files[0];
+    if (f) { e.preventDefault(); loadFile(f, "drop"); return; }
     var l = T.imageLink((dt.getData("text/uri-list") || "").split(/\r?\n/).filter(function (x) { return x && x[0] !== "#"; })[0] || dt.getData("text/plain"));
-    if (l) loadUrl(l);
+    if (l) { e.preventDefault(); $("tr-url").value = l; setSrc("link"); loadUrl(l); }
   });
   document.addEventListener("paste", function (e) {
+    if (document.getElementById("mes-pp")) return;   // the picture editor is open
     var items = (e.clipboardData && e.clipboardData.items) || [];
-    for (var i = 0; i < items.length; i++) if (items[i].kind === "file" && /^image\//.test(items[i].type)) { e.preventDefault(); loadFile(items[i].getAsFile()); return; }
+    for (var i = 0; i < items.length; i++) if (items[i].kind === "file" && /^image\//.test(items[i].type)) { e.preventDefault(); if (srcKey === "text" && MODE === "translate") setSrc("file"); loadFile(items[i].getAsFile(), "paste"); return; }
     // a pasted link to a picture: only outside the text boxes (there a link is just text), or into the link box itself
     var t = e.target, inBox = t && (t.tagName === "TEXTAREA" || (t.tagName === "INPUT" && t.id !== "tr-url") || t.isContentEditable);
     if (inBox) return;
     var l = T.imageLink(e.clipboardData && e.clipboardData.getData("text/plain"));
-    if (l) { e.preventDefault(); $("tr-url").value = l; loadUrl(l); }
+    if (l) { e.preventDefault(); $("tr-url").value = l; setSrc("link"); loadUrl(l); }
   });
 
   // ---------- picture from a link ----------
@@ -434,7 +504,7 @@
       urlMsg(how === "mes"
         ? "Fetched through mes.fm because " + esc(host) + " doesn't allow pictures to be loaded straight into other sites. mes.fm passed the file on and kept no copy; the picture itself is still read only in your browser."
         : "Opened straight from " + esc(host) + " in your browser.");
-      return loadFile(f);
+      return loadFile(f, "link");
     }).catch(function (e) {
       if (my !== urlGen || String(e && e.message) === "stale") return;
       urlMsg("Could not open that link: " + esc(e && e.message || e) + " You can save the picture and drop the file here instead.", true);
@@ -458,6 +528,14 @@
       });
     }
   }
+  // the picture as decoded (upright, at most 4000 px): what the editor starts from
+  function srcCanvas(bmp) {
+    var w = bmp.width || bmp.naturalWidth, h = bmp.height || bmp.naturalHeight, k = Math.min(1, 4000 / Math.max(w, h));
+    var c = document.createElement("canvas"); c.width = Math.max(1, Math.round(w * k)); c.height = Math.max(1, Math.round(h * k));
+    var g = c.getContext("2d"); g.fillStyle = "#fff"; g.fillRect(0, 0, c.width, c.height); g.imageSmoothingQuality = "high"; g.drawImage(bmp, 0, 0, c.width, c.height);
+    return c;
+  }
+  // the copy that is read: shrunk or enlarged to a size Tesseract likes, on white
   function toCanvas(src, w, h) {
     var k = T.ocrScale(w, h), c = document.createElement("canvas");
     c.width = Math.max(1, Math.round(w * k)); c.height = Math.max(1, Math.round(h * k));
@@ -465,26 +543,46 @@
     g.imageSmoothingQuality = "high"; g.drawImage(src, 0, 0, c.width, c.height);
     return c;
   }
-  function loadFile(file) {
+  var prepP = null;
+  function photoPrep() {
+    if (window.MESPhotoPrep) return Promise.resolve(window.MESPhotoPrep);
+    if (!prepP) prepP = loadScript("/main_js/photo-prep.js?v=1").then(function () { return window.MESPhotoPrep; }, function (e) { prepP = null; throw e; });
+    return prepP;
+  }
+  function editCanvas(c, name) {
+    return photoPrep().then(function (P) {
+      return P.open(c, { title: "Edit picture" + (name ? ": " + name : ""), done: "Use this picture", mime: "image/png", maxSide: 4000 });
+    });
+  }
+  function pageFrom(c, name) { return { src: c, canvas: toCanvas(c, c.width, c.height), name: name, w: c.width, h: c.height, lines: null, text: "", edited: false }; }
+  var loadGen = 0;
+  function loadFile(file, how) {
     if (ocrBusy) cancelOcr();
+    var my = ++loadGen;
     var isPdf = file.type === "application/pdf" || /\.pdf$/i.test(file.name || "");
-    $("tr-ores").hidden = true; $("tr-oread").disabled = true;
-    var job = isPdf ? loadPdf(file) : decodeImage(file).then(function (bmp) {
-      var w = bmp.width || bmp.naturalWidth, h = bmp.height || bmp.naturalHeight;
-      var c = toCanvas(bmp, w, h); if (bmp.close) bmp.close();
-      return [{ canvas: c, name: file.name || "Pasted picture", w: w, h: h }];
+    if (MODE === "translate" && how !== "paste" && how !== "drop" && srcKey === "text") setSrc("file");
+    var name = file.name || (how === "cam" ? "Camera photo" : "Pasted picture"), wantEdit = !isPdf && (how === "cam" ? S.camEdit : S.editFirst), skipRead = false;
+    var job = isPdf ? loadPdf(file).then(function (ps) { return ps.map(function (p) { return pageFrom(p.canvas, p.name); }); }) : decodeImage(file).then(function (bmp) {
+      var c = srcCanvas(bmp); if (bmp.close) bmp.close();
+      if (!wantEdit) return [pageFrom(c, name)];
+      return editCanvas(c, name).then(function (r) {
+        if (!r) { skipRead = true; return [pageFrom(c, name)]; }
+        var p = pageFrom(r.canvas, name); p.edited = r.edited; return [p];
+      }, function () { toast("The picture editor could not load: reading the picture as it is"); return [pageFrom(c, name)]; });
     });
     return job.then(function (ps) {
-      pages = ps.map(function (p) { p.lines = null; return p; }); cur = 0; selected = {};
+      if (my !== loadGen) return;
+      pages = ps; cur = 0; selected = {};
+      $("tr-pics").hidden = false; $("tr-otext").value = ""; $("tr-ostat").textContent = isPdf ? "PDF: " + ps.length + (ps.length === 1 ? " page" : " pages") + " ready" : "";
       drawPages(); showPage(0);
-      $("tr-ores").hidden = false; $("tr-otext").value = ""; $("tr-ostat").textContent = isPdf ? "PDF: " + ps.length + (ps.length === 1 ? " page" : " pages") + " ready" : "";
       $("tr-oread").disabled = false;
+      if (skipRead) { toast("Press Read the text when the picture is ready"); return; }
       readOcr();
     }).catch(function (e) { toast(String(e.message || e)); $("tr-oread").disabled = !pages.length; });
   }
   function loadPdf(file) {
     var p = window.pdfjsLib ? Promise.resolve() : loadScript(PDF_URL);
-    prog("tr-oprog", 0.02, "Opening the PDF…");
+    prog("tr-oprog", 0.02, "Opening the PDF…"); $("tr-pics").hidden = false;
     return p.then(function () {
       window.pdfjsLib.GlobalWorkerOptions.workerSrc = PDF_WORKER;
       return file.arrayBuffer();
@@ -498,7 +596,7 @@
           var c = document.createElement("canvas"); c.width = Math.round(vp.width); c.height = Math.round(vp.height);
           var g = c.getContext("2d"); g.fillStyle = "#fff"; g.fillRect(0, 0, c.width, c.height);
           prog("tr-oprog", num / n * 0.9, "Drawing page " + num + " of " + n + "…");
-          return pg.render({ canvasContext: g, viewport: vp }).promise.then(function () { list.push({ canvas: c, name: "Page " + num, w: c.width, h: c.height }); return next(); });
+          return pg.render({ canvasContext: g, viewport: vp }).promise.then(function () { list.push({ canvas: c, name: "Page " + num }); return next(); });
         });
       }
       return Promise.resolve(next()).then(function (l) {
@@ -509,17 +607,39 @@
     }).catch(function (e) { prog("tr-oprog", null); throw new Error(/password/i.test(String(e && e.name || e)) ? "This PDF has a password." : "Could not open this PDF (" + (e.message || e) + ")."); });
   }
   function drawPages() {
-    var el = $("tr-pages");
-    if (pages.length < 2) { el.hidden = true; el.innerHTML = ""; return; }
-    el.hidden = false;
-    el.innerHTML = pages.map(function (p, i) { return '<button type="button" class="tu-chip" data-pg="' + i + '" aria-pressed="' + (i === cur) + '">' + esc(p.name) + "</button>"; }).join("");
+    var el = $("tr-thumbs"); el.innerHTML = "";
+    pages.forEach(function (p, i) {
+      var b = document.createElement("button"); b.type = "button"; b.className = "tr-thumb"; b.setAttribute("data-pg", i); b.setAttribute("aria-pressed", i === cur ? "true" : "false");
+      b.title = p.name + (pages.length > 1 ? " (show this page)" : "");
+      var k = Math.min(1, 168 / Math.max(p.src.width, p.src.height)), c = document.createElement("canvas");
+      c.width = Math.max(1, Math.round(p.src.width * k)); c.height = Math.max(1, Math.round(p.src.height * k)); c.getContext("2d").drawImage(p.src, 0, 0, c.width, c.height);
+      c.setAttribute("aria-hidden", "true");
+      var s = document.createElement("span"); s.textContent = p.name;
+      b.appendChild(c); b.appendChild(s);
+      if (p.edited) { var e2 = document.createElement("span"); e2.className = "tr-thumbed"; e2.textContent = "Edited"; b.appendChild(e2); }
+      el.appendChild(b);
+    });
+    $("tr-oedit").textContent = pages.length > 1 ? "✎ Edit this page" : "✎ Edit picture";
   }
-  $("tr-pages").addEventListener("click", function (e) { var b = e.target.closest("[data-pg]"); if (b) showPage(+b.getAttribute("data-pg")); });
+  $("tr-thumbs").addEventListener("click", function (e) { var b = e.target.closest("[data-pg]"); if (b) showPage(+b.getAttribute("data-pg")); });
+  $("tr-oedit").addEventListener("click", function () {
+    var p = pages[cur]; if (!p) return;
+    if (ocrBusy) cancelOcr();
+    var at = cur;
+    editCanvas(p.src, p.name).then(function (r) {
+      if (!r || !pages[at]) return;
+      if (!r.edited) { toast("No changes"); return; }
+      var np = pageFrom(r.canvas, p.name); np.edited = true; pages[at] = np; selected = {};
+      drawPages(); showPage(at); readOcr();
+    }, function (e) { toast(String(e && e.message || e)); });
+  });
   function showPage(i) {
     cur = i; var p = pages[i]; if (!p) return;
+    $("tr-ocr").hidden = false; $("tr-ores").hidden = false;
     cv.width = p.canvas.width; cv.height = p.canvas.height; cv.getContext("2d").drawImage(p.canvas, 0, 0);
     $("tr-stage").style.aspectRatio = p.canvas.width + " / " + p.canvas.height;
-    drawPages(); drawBoxes();
+    Array.prototype.forEach.call($("tr-thumbs").querySelectorAll("[data-pg]"), function (b) { b.setAttribute("aria-pressed", +b.getAttribute("data-pg") === i ? "true" : "false"); });
+    drawBoxes();
   }
   function confClass(c) { return c >= 80 ? "ok" : c >= 55 ? "mid" : "low"; }
   function drawBoxes() {
@@ -531,7 +651,7 @@
       items.forEach(function (it) {
         if (!it.b) return;
         var x = it.b.x0 / W * 100, y = it.b.y0 / H * 100, w = (it.b.x1 - it.b.x0) / W * 100, h = (it.b.y1 - it.b.y0) / H * 100;
-        html.push('<button type="button" class="tr-box tr-box--' + confClass(it.c) + (selected[it.id] ? " tr-box--sel" : "") + '" data-id="' + it.id + '" style="left:' + x.toFixed(3) + "%;top:" + y.toFixed(3) + "%;width:" + w.toFixed(3) + "%;height:" + h.toFixed(3) + '%" title="' + esc(it.t) + " (" + it.c + '% sure)" aria-label="' + esc(it.t) + '" aria-pressed="' + !!selected[it.id] + '"></button>');
+        html.push('<button type="button" class="tr-b tr-b--' + confClass(it.c) + (selected[it.id] ? " tr-b--sel" : "") + '" data-id="' + it.id + '" style="left:' + x.toFixed(3) + "%;top:" + y.toFixed(3) + "%;width:" + w.toFixed(3) + "%;height:" + h.toFixed(3) + '%" title="' + esc(it.t) + " (" + it.c + '% sure)" aria-label="' + esc(it.t) + '" aria-pressed="' + !!selected[it.id] + '"></button>');
       });
     });
     boxes.innerHTML = html.join("");
@@ -550,16 +670,18 @@
   }
   function selChanged() {
     var n = Object.keys(selected).length;
-    $("tr-ousesel").disabled = !n;
-    $("tr-ousesel").textContent = n ? "Translate the " + n + " selected " + (n === 1 ? "box" : "boxes") : "Translate only the selected boxes";
+    ["tr-ousesel", "tr-ousesel2"].forEach(function (id) {
+      $(id).disabled = !n;
+      $(id).textContent = n ? "Translate the " + n + " selected " + (n === 1 ? "box" : "boxes") : "Translate only the selected boxes";
+    });
     var t = selText(), ta = $("tr-otext");
-    if (t) { var at = ta.value.indexOf(t.split("\n")[0]); if (at >= 0 && document.activeElement !== ta) { try { ta.setSelectionRange(at, at + t.split("\n")[0].length); } catch (e) {} } }
+    if (t && MODE === "ocr") { var at = ta.value.indexOf(t.split("\n")[0]); if (at >= 0 && document.activeElement !== ta) { try { ta.setSelectionRange(at, at + t.split("\n")[0].length); } catch (e) {} } }
   }
   boxes.addEventListener("click", function (e) {
-    var b = e.target.closest(".tr-box"); if (!b) return;
+    var b = e.target.closest(".tr-b"); if (!b) return;
     var id = b.getAttribute("data-id");
     if (selected[id]) delete selected[id]; else selected[id] = 1;
-    b.classList.toggle("tr-box--sel", !!selected[id]); b.setAttribute("aria-pressed", !!selected[id]);
+    b.classList.toggle("tr-b--sel", !!selected[id]); b.setAttribute("aria-pressed", !!selected[id]);
     selChanged();
   });
   $("tr-selall").addEventListener("click", function () {
@@ -592,24 +714,26 @@
     if (/loading language|loading tesseract|initializ/i.test(m.status)) prog("tr-oprog", (m.progress || 0) * 0.3, base + (/language/i.test(m.status) ? "Downloading the " + lname(T.fromTess(workerLangs) || "en") + " reading data (cached after the first time)…" : "Starting the text reader…"));
     else if (/recogniz/i.test(m.status)) prog("tr-oprog", 0.3 + (m.progress || 0) * 0.7, base + "Reading the text: " + Math.round((m.progress || 0) * 100) + "%");
   }
+  var readLangs = "";
+  // reads every page that has not been read yet (an edited page is read again on its own)
   function readOcr() {
     if (!pages.length || ocrBusy) return;
-    ocrBusy = true; $("tr-oread").disabled = true;
     var langs = T.tessLangs(olSel.value, $("tr-oeng").checked);
-    var texts = [], t0 = Date.now();
+    if (langs !== readLangs) pages.forEach(function (p) { p.lines = null; });
+    readLangs = langs;
+    ocrBusy = true; $("tr-oread").disabled = true;
+    var t0 = Date.now(), todo = pages.filter(function (p) { return !p.lines; });
     ocrPages = pages.length;
     prog("tr-oprog", 0.01, "Loading the text reader…");
     getWorker(langs).then(function (w) {
       var i = 0;
       function next() {
-        if (!ocrBusy) return;
-        if (i >= pages.length) return;
-        ocrPage = i;
-        var p = pages[i++];
+        if (!ocrBusy || i >= todo.length) return;
+        var p = todo[i++]; ocrPage = pages.indexOf(p);
         return w.recognize(p.canvas, {}, { text: true, blocks: true }).then(function (r) {
           p.lines = T.ocrLines(r.data);
-          texts.push((pages.length > 1 ? "— " + p.name + " —\n" : "") + p.lines.map(function (l) { return l.text; }).join("\n"));
-          if (i - 1 === cur) drawBoxes();
+          p.text = p.lines.map(function (l) { return l.text; }).join("\n");
+          if (pages[cur] === p) drawBoxes();
           return next();
         });
       }
@@ -617,13 +741,15 @@
     }).then(function () {
       if (!ocrBusy) return;
       ocrBusy = false; prog("tr-oprog", null); $("tr-oread").disabled = false;
-      var all = texts.join("\n\n").trim(), lines = 0, conf = 0, nw = 0;
+      var all = pages.map(function (p) { return (pages.length > 1 ? "— " + p.name + " —\n" : "") + (p.text || ""); }).join("\n\n").trim(), lines = 0, conf = 0, nw = 0;
       pages.forEach(function (p) { (p.lines || []).forEach(function (l) { lines++; l.words.forEach(function (w) { conf += w.conf; nw++; }); }); });
       $("tr-otext").value = all;
       $("tr-otext").setAttribute("dir", T.isRtl(olSel.value) ? "rtl" : "auto");
-      $("tr-ostat").textContent = all ? lines + " lines · " + nw + " words · " + Math.round(nw ? conf / nw : 0) + "% sure on average · " + ((Date.now() - t0) / 1000).toFixed(1) + " s" : "No text found. Try the right language, a sharper photo, or crop closer.";
+      var stat = all ? lines + " lines · " + nw + " words · " + Math.round(nw ? conf / nw : 0) + "% sure on average · " + ((Date.now() - t0) / 1000).toFixed(1) + " s" : "No text found. Try the right language, Edit picture (crop, straighten, Make text clearer), or a sharper photo.";
+      $("tr-ostat").textContent = stat;
       drawBoxes(); selChanged();
-      if (!all) toast("No text found");
+      if (!all) { toast("No text found"); if (MODE === "translate") msg("No text was found in the picture. Check <b>Language in the picture</b>, or press <b>Edit picture</b> to crop, straighten or <i>Make text clearer</i>.", "info"); return; }
+      if (MODE === "translate") textToInput(all, true);
     }).catch(function (e) {
       ocrBusy = false; prog("tr-oprog", null); $("tr-oread").disabled = false;
       if (worker) { try { worker.terminate(); } catch (x) {} worker = null; }
@@ -643,19 +769,30 @@
     a.download = ((pages[0] && pages[0].name) || "text").replace(/\.[a-z0-9]+$/i, "").replace(/[^\w\- ]+/g, "") + ".txt";
     document.body.appendChild(a); a.click(); setTimeout(function () { URL.revokeObjectURL(a.href); a.remove(); }, 1500);
   });
-  function useText(t) {
-    if (!t.trim()) { toast("No text to translate yet"); return; }
+  // text from the picture goes into the box you translate (picture language becomes From)
+  function textToInput(t, fromOcr) {
+    if (!t.trim()) { toast("No text to translate yet"); return false; }
     inp.value = t; counts();
     var l = olSel.value;
     if (S.from !== l) { S.from = l; fromSel.value = l; save(); applyDirs(); }
     if (S.to === S.from) { S.to = T.pickTarget(prefs, S.from); toSel.value = S.to; save(); }
+    if (MODE === "translate") setSrc("text");
+    if (fromOcr) {   // only on-device translation happens by itself; online needs the button (nothing is sent without a click)
+      var g0 = gen + 1;
+      translate(false, true).then(function () { if (!outText && gen === g0 && $("tr-msg").hidden) msg("The text from your picture is in the box. Check it, then press <b>Translate</b>.", "info"); });
+    }
+    return true;
+  }
+  function useText(t) {
+    if (!textToInput(t)) return;
     $("tr-tx").scrollIntoView({ behavior: "smooth", block: "start" });
     translate(true);
   }
   $("tr-ouse").addEventListener("click", function () { useText($("tr-otext").value); });
   $("tr-ousesel").addEventListener("click", function () { useText(selText()); });
+  $("tr-ousesel2").addEventListener("click", function () { useText(selText()); });
 
-  // ---------- layout: Side by side | Stacked, Full width, Fill window, Full screen ----------
+  // ---------- layout: Side by side | Stacked, Full width ----------
   function applyLayout() {
     var L = T.layoutOf(S);
     root.classList.toggle("tr-stack", L.lay === "stack");
@@ -667,53 +804,74 @@
   $("tr-lay").addEventListener("click", function (e) { var b = e.target.closest("[data-v]"); if (!b) return; S.lay = b.getAttribute("data-v"); save(); applyLayout(); });
   $("tr-fullw").addEventListener("click", function () { S.full = !T.layoutOf(S).full; save(); applyLayout(); });
 
-  var filled = null, fsOn = false, toastHome = $("tr-toast").parentNode;
-  var FILL = { tx: $("tr-tx"), ocr: $("tr-oside") };
-  function fillOpen(key, focusEl, full) {
-    if (filled && filled !== FILL[key]) fillClose();
-    var el = FILL[key]; if (!el) return;
+  // ---------- Fill window / Full screen: only the box whose button was pressed, with its own bar (copy, read aloud, full screen, close) ----------
+  var filled = null, toastHome = $("tr-toast").parentNode;
+  var BOX = { in: $("tr-p-text"), out: root.querySelector(".tr-pane--out"), ocr: $("tr-obox") };
+  function boxText(key) { return key === "in" ? inp.value : key === "out" ? outText : $("tr-otext").value; }
+  function boxEdit(key) { return key === "in" ? inp : key === "out" ? out : $("tr-otext"); }
+  function keyOf(el) { return el && el.getAttribute("data-box"); }
+  function fsOf() { return document.fullscreenElement || document.webkitFullscreenElement || null; }
+  function goFull(el) {
+    var f = el.requestFullscreen || el.webkitRequestFullscreen;
+    if (!f) { toast("This browser has no full screen for page parts, so the box fills the window instead"); return; }
+    var r = f.call(el); if (r && r.then) r.then(function () { el.appendChild($("tr-toast")); el.classList.add("tr-fs-on"); }, function () { toast("Full screen isn't allowed here, so the box fills the window instead"); });
+    else { el.appendChild($("tr-toast")); el.classList.add("tr-fs-on"); }
+  }
+  function exitFull() { var x = document.exitFullscreen || document.webkitExitFullscreen; if (fsOf() && x) { var r = x.call(document); if (r && r.catch) r.catch(function () {}); } }
+  function fillOpen(key, full) {
+    var el = BOX[key]; if (!el) return;
+    if (filled && filled !== el) fillClose();
     filled = el; el.classList.add("tr-fill"); document.documentElement.classList.add("tr-locked");
-    Array.prototype.forEach.call(el.querySelectorAll("[data-fillx]"), function (b) { b.hidden = false; });
-    if (full && el.requestFullscreen) {
-      el.requestFullscreen().then(function () { fsOn = true; el.appendChild($("tr-toast")); }, function () { toast("Full screen isn't allowed here, so the box fills the window instead"); });
-    } else if (full) toast("This browser has no full screen for page parts, so the box fills the window instead");
-    if (focusEl && focusEl.focus) setTimeout(function () { focusEl.focus({ preventScroll: true }); }, 30);
+    var sayBtn = el.querySelector('[data-fb="say"]'); if (sayBtn) sayBtn.hidden = !("speechSynthesis" in window);
+    if (full) goFull(el);
+    var ed = boxEdit(key); setTimeout(function () { if (ed && ed.focus) ed.focus({ preventScroll: true }); }, 30);
   }
   function fillClose() {
     if (!filled) return;
     var el = filled; filled = null;
-    if (document.fullscreenElement === el && document.exitFullscreen) document.exitFullscreen().catch(function () {});
-    fsOn = false; toastHome.appendChild($("tr-toast"));
+    if (fsOf() === el) exitFull();
+    el.classList.remove("tr-fs-on"); toastHome.appendChild($("tr-toast"));
     el.classList.remove("tr-fill"); document.documentElement.classList.remove("tr-locked");
-    Array.prototype.forEach.call(el.querySelectorAll("[data-fillx]"), function (b) { b.hidden = true; });
+    var b = el.querySelector("[data-fill]"); if (b) b.focus({ preventScroll: true });
   }
   root.addEventListener("click", function (e) {
-    var b = e.target.closest("[data-fill], [data-fs], [data-fillx]"); if (!b) return;
+    var b = e.target.closest("[data-fill], [data-fs], [data-fillx], [data-fb]"); if (!b) return;
     if (b.hasAttribute("data-fillx")) { fillClose(); return; }
-    var key = b.getAttribute("data-fill") || b.getAttribute("data-fs"), full = b.hasAttribute("data-fs");
-    var pane = b.closest(".tr-pane, .tr-oside"), box = pane && pane.querySelector("textarea, .tr-out");
-    if (filled === FILL[key] && !full) { fillClose(); return; }
-    fillOpen(key, box, full);
+    var box = b.closest(".tr-box"), key = b.getAttribute("data-fill") || b.getAttribute("data-fs") || keyOf(box);
+    var fb = b.getAttribute("data-fb");
+    if (fb === "copy") { copyText(boxText(key)); return; }
+    if (fb === "say") { ($(key === "in" ? "tr-say-in" : key === "out" ? "tr-say-out" : "") || { click: function () { say($("tr-otext").value, olSel.value, b); } }).click(); return; }
+    if (fb === "fs") { if (fsOf() === filled) { exitFull(); } else goFull(filled); return; }
+    var full = b.hasAttribute("data-fs");
+    if (filled === BOX[key] && !full) { fillClose(); return; }
+    fillOpen(key, full);
   });
-  document.addEventListener("fullscreenchange", function () { if (fsOn && !document.fullscreenElement) fillClose(); });
-  document.addEventListener("keydown", function (e) { if (e.key === "Escape" && filled && !document.fullscreenElement) { e.preventDefault(); fillClose(); } });
-  root.addEventListener("click", function (e) { if (filled === FILL.ocr && e.target.closest("#tr-ouse, #tr-ousesel")) fillClose(); }, true);   // capture: closes before the button scrolls up to the translation
+  ["fullscreenchange", "webkitfullscreenchange"].forEach(function (ev) {
+    document.addEventListener(ev, function () {
+      if (filled && !fsOf()) { filled.classList.remove("tr-fs-on"); if (filled.contains($("tr-toast"))) toastHome.appendChild($("tr-toast")); }
+    });
+  });
+  document.addEventListener("keydown", function (e) { if (e.key === "Escape" && filled && !fsOf() && !document.getElementById("mes-pp")) { e.preventDefault(); fillClose(); } });
+  root.addEventListener("click", function (e) { if (filled === BOX.ocr && e.target.closest("#tr-ouse, #tr-ousesel")) fillClose(); }, true);   // capture: closes before the button scrolls up to the translation
   applyLayout();
 
   // ---------- page mode + start ----------
   if (MODE === "ocr") {
     $("tr-tx-h").textContent = "Translate it (optional)";
     $("tr-ocr-h").textContent = "Image to text";
-    $("tr-ocr-intro").innerHTML = "Add a photo, screenshot, scan or PDF and its text is read right here in your browser: nothing is uploaded. Fix anything it got wrong, copy it, or translate it below.";
+    $("tr-ocr-intro").innerHTML = "Add a photo, screenshot, scan or PDF and its text is read right here in your browser: nothing is uploaded. Crop or clean up the picture first with <b>Edit picture</b> if you like, then copy the text, fix it, or translate it below.";
+  } else {
+    $("tr-ocr").hidden = true;   // shown once a picture has been added
   }
+  setSrc(TABS[0]);
   var q = T.parseQuery(location.search);
   if (q.from) { S.from = q.from; fromSel.value = q.from; }
   if (q.to) { S.to = q.to; toSel.value = q.to; }
   applyDirs(); counts(); drawHist(); previewBadge();
   if (!hasApi) $("tr-livebox").title = "This browser can't translate on-device, so nothing is translated while you type (that would send every keystroke online)";
-  if (q.img) { $("tr-url").value = q.img; if (MODE !== "ocr") $("tr-ocr").scrollIntoView({ block: "start" }); loadUrl(q.img); }
+  if (q.img) { $("tr-url").value = q.img; setSrc("link"); loadUrl(q.img); }
   if (q.q) {
-    inp.value = q.q; counts();
+    inp.value = q.q; counts(); if (MODE === "translate") setSrc("text");
     var g0 = gen + 1;
     translate(false, true).then(function () { if (!outText && gen === g0 && $("tr-msg").hidden) msg("Press <b>Translate</b> to translate the text from the link.", "info"); });
   }

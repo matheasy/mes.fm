@@ -306,73 +306,162 @@ body.dark-mode .tu .rw-head {color:#a0a8b3;border-bottom-color:#555;} body.dark-
 .tu [class$="-eq__n"] {vertical-align:middle;}
 
 	/* MES Translate (tool_apps_src/translate). Colours are --tr-* custom properties, restated for dark mode under body.dark-mode #tr.tr (the derived TOOL-DARK block leaves custom properties alone) */
-	#tr.tr {--tr-ink:#1e2733;--tr-mut:#5b6573;--tr-line:#cfd8e0;--tr-card:#ffffff;--tr-soft:#f2f7f8;--tr-out:#f5fafb;--tr-acc:#0b7285;--tr-accd:#085563;--tr-tint:#e0f3f6;
-		--tr-dev:#0f6b3a;--tr-devbg:#e3f5ea;--tr-net:#8a4b00;--tr-netbg:#fff1dc;--tr-warn:#9a3b00;--tr-warnbg:#fff3e6;--tr-info:#14506b;--tr-infobg:#e6f3f9;
+	#tr.tr {--tr-ink:#1e2733;--tr-mut:#56606d;--tr-line:#cfd8e0;--tr-card:#ffffff;--tr-soft:#f2f7f8;--tr-out:#f5fafb;--tr-acc:#0b7285;--tr-accd:#085563;--tr-tint:#e0f3f6;--tr-onacc:#ffffff;
+		--tr-dev:#0f6b3a;--tr-devbg:#e3f5ea;--tr-net:#7a4200;--tr-netbg:#fff1dc;--tr-warn:#9a3b00;--tr-warnbg:#fff3e6;--tr-info:#14506b;--tr-infobg:#e6f3f9;
 		--tr-ok:#16a34a;--tr-mid:#d97706;--tr-low:#dc2626;--tr-sel:#2563eb;display:flex;flex-direction:column;color:var(--tr-ink);}
 	:where(#tr) :is(div, span, p, li, label, b, strong, em, i, small, code, h2, h3, summary, output) {color:inherit;}
-	#tr [hidden] {display:none !important;}   /* .tr-prog / .tr-ores are display:flex/grid, which beats the hidden attribute */
+	#tr [hidden] {display:none !important;}   /* flex / grid rules below beat the hidden attribute otherwise */
 	#tr .tr-tx {order:1;} #tr .tr-ocr {order:2;} #tr .tr-hist {order:3;} #tr .tu-seo {order:4;}
 	#tr[data-mode="ocr"] .tr-ocr {order:0;}
 	#tr .tr-h {font-size:1.25em;font-weight:800;margin:0 0 0.6em;color:var(--tr-ink);}
 	#tr .tr-dim {color:var(--tr-mut);font-weight:400;}
-	#tr .tr-langs {display:flex;flex-wrap:wrap;align-items:flex-end;gap:0.5em 0.6em;margin-bottom:0.7em;}
-	#tr .tr-lf {flex:1 1 11em;min-width:0;margin:0;}
-	#tr .tr-ef {flex:1 1 14em;min-width:0;margin:0;}
-	#tr .tr-swap {font-size:1.25em;line-height:1;padding:0.45em 0.7em;min-height:44px;flex:0 0 auto;}
-	#tr .tr-panes {display:grid;grid-template-columns:1fr 1fr;gap:0.8em;}
+	#tr .tr-sp {flex:1 1 auto;}
+	#tr select.tu-select {min-height:44px;max-width:100%;min-width:0;text-overflow:ellipsis;}
+
+	/* header: title + layout switches */
+	#tr .tr-head {display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:0.4em 0.8em;margin:0 0 0.6em;}
+	#tr .tr-head .tr-h {margin:0;}
+	#tr .tr-view {display:flex;flex-wrap:wrap;align-items:center;gap:0.4em;}
+	#tr .tr-view .tu-seg button {min-height:36px;padding:0.35em 0.8em;}
+	#tr .tr-fullw[aria-pressed="true"] {background:var(--tr-tint);border-color:var(--tr-acc);color:var(--tr-accd);}
+	@media (max-width: 1199px) { #tr .tr-fullw {display:none;} }      /* below 1200px the sidebar already sits under the content */
+	@media (max-width: 720px) { #tr #tr-lay {display:none;} }         /* phones always stack the two boxes */
+	@media (min-width: 1200px) {   /* Full width: the sidebar moves below the content, the boxes get the whole frame */
+		body.tr-wide .has-aside .outer-page-content {grid-template-columns:minmax(0,1fr);}
+		body.tr-wide .has-aside .page-content {grid-column:1;grid-row:1;}
+		body.tr-wide .has-aside .mes-aside {grid-column:1;grid-row:2;max-width:none;margin-left:0;margin-right:0;}
+	}
+
+	/* languages */
+	#tr .tr-langs {display:flex;flex-wrap:wrap;align-items:flex-end;gap:0.5em 0.6em;margin-bottom:0.8em;}
+	#tr .tr-lf {flex:1 1 7em;min-width:0;margin:0;}
+	/* engine: a secondary setting, under the Translate button next to the badge that explains it */
+	#tr .tr-engrow {display:flex;flex-wrap:wrap;align-items:center;gap:0.3em 0.6em;font-size:0.92em;}
+	#tr .tr-engrow label {font-weight:700;color:var(--tr-mut);}
+	#tr .tr-engrow select {flex:1 1 12em;width:auto;}
+	#tr .tr-swap {font-size:1.25em;line-height:1;padding:0.45em 0.7em;min-height:44px;min-width:44px;flex:0 0 auto;}
+
+	/* two columns: [source tabs + your text + Translate] | [translation] */
+	#tr .tr-panes {display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:0.9em;align-items:start;}
+	#tr.tr-stack .tr-panes {grid-template-columns:minmax(0,1fr);}
 	@media (max-width: 720px) { #tr .tr-panes {grid-template-columns:minmax(0,1fr);} }
+	#tr .tr-col {display:flex;flex-direction:column;gap:0.6em;min-width:0;}
+	/* side by side: the translation box lines up with your text box (not with the source tabs above it) */
+	@media (min-width: 721px) {
+		#tr:not(.tr-stack) .tr-panes {row-gap:0.6em;}
+		#tr:not(.tr-stack) .tr-col {display:contents;}
+		#tr:not(.tr-stack) .tr-src {grid-column:1;grid-row:1;}
+		#tr:not(.tr-stack) #tr-p-text {grid-column:1;grid-row:2;}
+		#tr:not(.tr-stack) .tr-col--in > .tr-act {grid-column:1;grid-row:3;}
+		#tr:not(.tr-stack) .tr-badge {grid-column:1;grid-row:4;}
+		#tr:not(.tr-stack) .tr-engrow {grid-column:1;grid-row:5;}
+		#tr:not(.tr-stack) .tr-pane--out {grid-column:2;grid-row:2;align-self:stretch;}
+		#tr:not(.tr-stack) .tr-act--out {grid-column:2;grid-row:3;}
+		#tr:not(.tr-stack) .tr-pane--out .tr-out {flex:1 1 auto;}
+	}
 	#tr .tr-pane {display:flex;flex-direction:column;min-width:0;border:1px solid var(--tr-line);border-radius:0.6em;background:var(--tr-card);overflow:hidden;}
 	#tr .tr-pane:focus-within {border-color:var(--tr-acc);box-shadow:0 0 0 3px var(--tr-tint);}
 	#tr .tr-pane--out {background:var(--tr-out);}
-	#tr .tr-text {display:block;box-sizing:border-box;width:100%;min-height:10em;border:0;outline:0;resize:vertical;background:transparent;color:var(--tr-ink);font:inherit;font-size:1.12em;line-height:1.55;padding:0.75em 0.85em;white-space:pre-wrap;overflow-wrap:anywhere;}
+	#tr .tr-text {display:block;box-sizing:border-box;width:100%;min-height:9em;border:0;outline:0;resize:vertical;background:transparent;color:var(--tr-ink);font:inherit;font-size:1.12em;line-height:1.55;padding:0.75em 0.85em;white-space:pre-wrap;overflow-wrap:anywhere;margin:0;}
 	#tr .tr-out {overflow:auto;max-height:60vh;}
 	#tr .tr-out[dir="rtl"], #tr .tr-text[dir="rtl"] {text-align:right;}
 	#tr .tr-ph {color:var(--tr-mut);}
-	#tr .tr-tools {display:flex;align-items:center;gap:0.25em;padding:0.25em 0.45em;border-top:1px solid var(--tr-line);font-size:0.9em;min-height:2.6em;flex-wrap:wrap;}
+	#tr .tr-tools {display:flex;align-items:center;gap:0;padding:0.2em 0.3em;border-top:1px solid var(--tr-line);font-size:0.9em;min-height:2.6em;flex-wrap:wrap;}
 	#tr .tr-count, #tr .tr-det {color:var(--tr-mut);margin:0 0.35em;}
 	#tr .tr-det {color:var(--tr-accd);font-weight:600;}
-	#tr .tr-sp {flex:1 1 auto;}
-	#tr .tr-ib {background:none;border:1px solid transparent;border-radius:0.5em;min-width:40px;min-height:40px;font-size:1.05em;cursor:pointer;color:var(--tr-ink);}
+	#tr .tr-ib {background:none;border:1px solid transparent;border-radius:0.5em;min-width:40px;min-height:40px;padding:0 0.3em;font-size:1.05em;cursor:pointer;color:var(--tr-ink);display:inline-flex;align-items:center;justify-content:center;}
 	#tr .tr-ib:hover, #tr .tr-ib:focus-visible {background:var(--tr-soft);border-color:var(--tr-line);}
 	#tr .tr-ib--on {background:var(--tr-tint);border-color:var(--tr-acc);}
-	#tr .tr-act {display:flex;flex-wrap:wrap;align-items:center;gap:0.5em 0.8em;margin-top:0.8em;}
-	#tr .tr-go {min-height:44px;padding-left:1.6em;padding-right:1.6em;font-size:1.05em;}
-	#tr .tr-badge {font-size:0.92em;color:var(--tr-mut);}
-	#tr .tr-badge--dev {color:var(--tr-dev);background:var(--tr-devbg);padding:0.3em 0.7em;border-radius:2em;font-weight:600;}
-	#tr .tr-badge--net {color:var(--tr-net);background:var(--tr-netbg);padding:0.3em 0.7em;border-radius:2em;font-weight:600;}
-	#tr .tr-live {display:inline-flex;align-items:center;gap:0.4em;font-size:0.92em;cursor:pointer;}
+	#tr .tr-ic {width:1.2em;height:1.2em;fill:none;stroke:currentColor;stroke-width:2;stroke-linecap:round;stroke-linejoin:round;flex:0 0 auto;}
+
+	/* Translate button right under the text box; the badge is its own line under it */
+	#tr .tr-act {display:flex;flex-wrap:wrap;align-items:center;gap:0.5em 0.9em;}
+	#tr .tr-go {min-height:48px;padding:0.5em 1.8em;font-size:1.08em;font-weight:700;flex:0 0 auto;}
+	#tr .tr-act--out {justify-content:flex-end;}
+	#tr .tr-act--out .tu-btn {min-height:40px;}
+	#tr .tr-live {display:inline-flex;align-items:center;gap:0.45em;font-size:0.92em;cursor:pointer;min-height:36px;min-width:0;}
+	#tr .tr-live input {width:1.15em;height:1.15em;flex:0 0 auto;margin:0;}
+	#tr .tr-badge {margin:0;font-size:0.9em;color:var(--tr-mut);line-height:1.4;overflow-wrap:anywhere;}
+	#tr .tr-badge:empty {display:none;}
+	#tr .tr-badge--dev, #tr .tr-badge--net {display:inline-block;align-self:flex-start;padding:0.35em 0.8em;border-radius:1em;font-weight:600;}
+	#tr .tr-badge--dev {color:var(--tr-dev);background:var(--tr-devbg);}
+	#tr .tr-badge--net {color:var(--tr-net);background:var(--tr-netbg);}
+
 	#tr .tr-prog {display:flex;align-items:center;flex-wrap:wrap;gap:0.4em 0.8em;margin-top:0.7em;font-size:0.9em;color:var(--tr-mut);}
-	#tr .tr-prog__bar {flex:1 1 12em;height:0.55em;background:var(--tr-soft);border:1px solid var(--tr-line);border-radius:1em;overflow:hidden;}
+	#tr .tr-prog__bar {flex:1 1 10em;height:0.55em;background:var(--tr-soft);border:1px solid var(--tr-line);border-radius:1em;overflow:hidden;}
 	#tr .tr-prog__bar i {display:block;height:100%;width:0;background:var(--tr-acc);transition:width 0.2s;}
 	#tr .tr-cancel {background:none;border:0;color:var(--tr-accd);text-decoration:underline;cursor:pointer;font:inherit;min-height:36px;}
 	#tr .tr-msg {margin:0.7em 0 0;padding:0.55em 0.8em;border-radius:0.5em;}
 	#tr .tr-msg--warn {background:var(--tr-warnbg);color:var(--tr-warn);}
 	#tr .tr-msg--info {background:var(--tr-infobg);color:var(--tr-info);}
-	#tr .tr-drop {border:2px dashed var(--tr-line);border-radius:0.8em;padding:1.4em 1em;text-align:center;cursor:pointer;background:var(--tr-soft);}
+
+	/* where the text comes from: Type or paste | Photo / file | Link | Camera */
+	#tr .tr-src {display:flex;flex-direction:column;gap:0.6em;min-width:0;}
+	#tr .tr-tabs {display:flex;flex-wrap:wrap;gap:0.3em;padding:0.25em;background:var(--tr-soft);border:1px solid var(--tr-line);border-radius:0.7em;}
+	#tr .tr-tab {flex:1 1 auto;display:inline-flex;align-items:center;justify-content:center;gap:0.4em;min-height:44px;padding:0.35em 0.7em;border:1px solid transparent;border-radius:0.5em;background:transparent;color:var(--tr-ink);font:inherit;font-size:0.95em;font-weight:600;cursor:pointer;white-space:nowrap;}
+	#tr .tr-tab:hover {background:var(--tr-card);}
+	#tr .tr-tab:focus-visible {outline:3px solid var(--tr-acc);outline-offset:1px;}
+	#tr .tr-tab[aria-selected="true"] {background:var(--tr-card);border-color:var(--tr-acc);color:var(--tr-accd);box-shadow:0 1px 3px rgba(0,0,0,0.12);}
+	#tr .tr-tabi {font-size:1.1em;line-height:1;}
+	@media (max-width: 440px) { #tr .tr-tab {padding:0.35em 0.45em;} #tr[data-mode="translate"] .tr-tab {flex:1 1 40%;} }
+	#tr .tr-srcp {min-width:0;}
+	#tr .tr-drop {border:2px dashed var(--tr-line);border-radius:0.7em;padding:1.1em 0.9em;text-align:center;cursor:pointer;background:var(--tr-soft);}
 	#tr .tr-drop:hover, #tr .tr-drop:focus-visible, #tr .tr-drop--over {border-color:var(--tr-acc);background:var(--tr-tint);outline:0;}
-	#tr .tr-drop__big {font-size:1.15em;font-weight:700;}
-	#tr .tr-drop__sub {color:var(--tr-mut);margin-top:0.3em;font-size:0.95em;}
+	#tr .tr-drop__big {font-size:1.1em;font-weight:700;color:var(--tr-accd);}
+	#tr .tr-drop__sub {color:var(--tr-mut);margin-top:0.3em;font-size:0.92em;}
 	#tr kbd {border:1px solid var(--tr-line);border-bottom-width:2px;border-radius:0.3em;padding:0 0.3em;font-size:0.85em;background:var(--tr-card);color:var(--tr-ink);}
-	#tr .tr-ocrbar {display:flex;flex-wrap:wrap;align-items:flex-end;gap:0.5em 0.9em;margin-top:0.8em;}
-	#tr .tr-ocrbar .tu-btn {min-height:44px;}
-	#tr .tr-pages {display:flex;flex-wrap:wrap;gap:0.4em;margin-top:0.7em;}
-	#tr .tr-ores {display:grid;grid-template-columns:minmax(0,1.25fr) minmax(0,1fr);gap:1em;margin-top:0.9em;}
+	#tr .tr-urlrow {margin:0;}
+	#tr .tr-urlrow label {display:block;font-weight:600;font-size:0.95em;margin-bottom:0.3em;}
+	#tr .tr-urlin {display:flex;flex-wrap:wrap;gap:0.5em;}
+	#tr .tr-urlin input {flex:1 1 12em;min-width:0;min-height:44px;box-sizing:border-box;font-size:1em;background:var(--tr-card);color:var(--tr-ink);border:1px solid var(--tr-line);}
+	#tr .tr-urlin .tu-btn {min-height:44px;flex:0 0 auto;}
+	#tr .tr-urlnote {margin:0.45em 0 0;padding:0.45em 0.75em;border-radius:0.5em;background:var(--tr-infobg);color:var(--tr-info);font-size:0.92em;overflow-wrap:anywhere;}
+	#tr .tr-urlnote--warn {background:var(--tr-warnbg);color:var(--tr-warn);}
+	#tr .tr-cam {display:flex;flex-wrap:wrap;align-items:center;gap:0.6em 0.9em;padding:0.9em;border:2px dashed var(--tr-line);border-radius:0.7em;background:var(--tr-soft);}
+	#tr .tr-cambtn {min-height:48px;font-size:1.02em;}
+	#tr .tr-camview {margin-top:0.6em;display:flex;flex-direction:column;gap:0.5em;}
+	#tr .tr-camview video {width:100%;max-height:60vh;background:#000;border-radius:0.6em;}
+	#tr .tr-camacts {display:flex;flex-wrap:wrap;gap:0.5em;}
+	#tr .tr-camacts .tu-btn {min-height:44px;}
+	#tr .tr-picset {display:flex;flex-wrap:wrap;align-items:flex-end;gap:0.4em 0.9em;}
+	#tr .tr-picset .tr-lf {flex:1 1 12em;}
+	/* the pictures you added: thumbnails + Edit picture / Read the text */
+	#tr .tr-pics {display:flex;flex-direction:column;gap:0.5em;padding:0.6em;border:1px solid var(--tr-line);border-radius:0.7em;background:var(--tr-card);}
+	#tr .tr-thumbs {display:flex;gap:0.45em;overflow-x:auto;padding-bottom:0.15em;}
+	#tr .tr-thumb {flex:0 0 auto;display:flex;flex-direction:column;align-items:center;gap:0.2em;padding:0.25em;border:2px solid var(--tr-line);border-radius:0.5em;background:var(--tr-soft);cursor:pointer;color:var(--tr-ink);font:inherit;font-size:0.8em;max-width:9em;}
+	#tr .tr-thumb[aria-pressed="true"] {border-color:var(--tr-acc);}
+	#tr .tr-thumb canvas {display:block;height:4.2em;width:auto;max-width:8.4em;border-radius:0.3em;background:#fff;}
+	#tr .tr-thumb span {max-width:8.4em;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+	#tr .tr-thumb .tr-thumbed {color:var(--tr-accd);font-weight:700;}
+	#tr .tr-picacts {display:flex;flex-wrap:wrap;gap:0.5em;}
+	#tr .tr-picacts .tu-btn {min-height:44px;}
+	#tr .tr-pics .tr-prog {margin-top:0;}
+
+	/* the picture card */
+	#tr .tr-ores {display:grid;grid-template-columns:minmax(0,1.25fr) minmax(0,1fr);gap:1em;margin-top:0.6em;}
+	#tr[data-mode="translate"] .tr-ores {grid-template-columns:minmax(0,1fr);}
+	#tr[data-mode="translate"] .tr-oside {display:none;}
+	#tr[data-mode="ocr"] .tr-obtns--sel {display:none;}
 	@media (max-width: 860px) { #tr .tr-ores {grid-template-columns:minmax(0,1fr);} }
 	#tr .tr-stagebar {display:flex;flex-wrap:wrap;align-items:center;gap:0.4em 0.6em;margin-bottom:0.5em;}
 	#tr .tr-small {padding:0.35em 0.8em;min-height:36px;}
 	#tr .tr-stage {position:relative;width:100%;border:1px solid var(--tr-line);border-radius:0.4em;overflow:hidden;background:#fff;}
+	#tr[data-mode="translate"] .tr-stage {max-width:48em;}
 	#tr .tr-stage canvas {display:block;width:100%;height:100%;}
 	#tr .tr-boxes {position:absolute;inset:0;}
-	#tr .tr-box {position:absolute;padding:0;margin:0;background:rgba(22,163,74,0.08);border:2px solid var(--tr-ok);border-radius:3px;cursor:pointer;min-width:0;min-height:0;}
-	#tr .tr-box--mid {border-color:var(--tr-mid);background:rgba(217,119,6,0.08);}
-	#tr .tr-box--low {border-color:var(--tr-low);background:rgba(220,38,38,0.08);}
-	#tr .tr-box:hover, #tr .tr-box:focus-visible {background:rgba(37,99,235,0.15);outline:0;}
-	#tr .tr-box--sel {border-color:var(--tr-sel);background:rgba(37,99,235,0.3);box-shadow:0 0 0 2px rgba(255,255,255,0.8);}
-	#tr .tr-oside {display:flex;flex-direction:column;min-width:0;}
-	#tr .tr-oside .tr-text {border:1px solid var(--tr-line);border-radius:0.6em 0.6em 0 0;min-height:14em;background:var(--tr-card);}
-	#tr .tr-oside .tr-tools {border:1px solid var(--tr-line);border-top:0;border-radius:0 0 0.6em 0.6em;}
-	#tr .tr-obtns {display:flex;flex-wrap:wrap;gap:0.5em;margin-top:0.7em;}
+	#tr .tr-box--ok, #tr .tr-boxes button {position:absolute;padding:0;margin:0;background:rgba(22,163,74,0.08);border:2px solid var(--tr-ok);border-radius:3px;cursor:pointer;min-width:0;min-height:0;}
+	#tr .tr-boxes .tr-b--mid {border-color:var(--tr-mid);background:rgba(217,119,6,0.08);}
+	#tr .tr-boxes .tr-b--low {border-color:var(--tr-low);background:rgba(220,38,38,0.08);}
+	#tr .tr-boxes button:hover, #tr .tr-boxes button:focus-visible {background:rgba(37,99,235,0.15);outline:0;}
+	#tr .tr-boxes .tr-b--sel {border-color:var(--tr-sel);background:rgba(37,99,235,0.3);box-shadow:0 0 0 2px rgba(255,255,255,0.8);}
+	#tr .tr-oside {display:flex;flex-direction:column;gap:0.35em;min-width:0;}
+	#tr .tr-obox {display:flex;flex-direction:column;border:1px solid var(--tr-line);border-radius:0.6em;background:var(--tr-card);overflow:hidden;min-width:0;}
+	#tr .tr-obox:focus-within {border-color:var(--tr-acc);box-shadow:0 0 0 3px var(--tr-tint);}
+	#tr .tr-obox .tr-text {min-height:13em;}
+	#tr .tr-obtns {display:flex;flex-wrap:wrap;gap:0.5em;margin-top:0.5em;}
 	#tr .tr-obtns .tu-btn {min-height:44px;}
+
+	/* history */
 	#tr .tr-hist summary {cursor:pointer;font-size:1.05em;padding:0.2em 0;}
 	#tr .tr-hlist {list-style:none;margin:0.4em 0 0;padding:0;}
 	#tr .tr-hlist li {display:flex;align-items:stretch;gap:0.3em;border-top:1px solid var(--tr-line);}
@@ -382,76 +471,58 @@ body.dark-mode .tu .rw-head {color:#a0a8b3;border-bottom-color:#555;} body.dark-
 	#tr .tr-hq, #tr .tr-ho {white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
 	#tr .tr-ho {color:var(--tr-accd);}
 	#tr .tr-linkb {background:none;border:0;padding:0;color:var(--tr-accd);text-decoration:underline;cursor:pointer;font:inherit;}
-	#tr select.tu-select {min-height:44px;}
-	body.dark-mode #tr.tr {--tr-ink:#e8ecf1;--tr-mut:#aab3bf;--tr-line:#4a4f57;--tr-card:#1f1f1f;--tr-soft:#2a2c30;--tr-out:#24282c;--tr-acc:#38bdd2;--tr-accd:#7dd3e3;--tr-tint:#123a42;
+
+	/* Fill window / full screen: ONLY the box whose button was pressed covers the window, with its own small bar */
+	#tr .tr-fillbar {display:none;}
+	html.tr-locked, html.tr-locked body {overflow:hidden;}
+	#tr .tr-box.tr-fill {position:fixed;inset:0;z-index:2000;margin:0;border:0;border-radius:0;box-shadow:none;max-width:none;width:auto;box-sizing:border-box;display:flex;flex-direction:column;overflow:hidden;background:var(--tr-card);}
+	#tr .tr-box.tr-fill:fullscreen {background:var(--tr-card);}
+	#tr .tr-pane--out.tr-fill {background:var(--tr-out);}
+	#tr .tr-fill .tr-fillbar {display:flex;align-items:center;gap:0.3em;padding:0.4em 0.6em;border-bottom:1px solid var(--tr-line);background:var(--tr-soft);flex:0 0 auto;flex-wrap:wrap;}
+	#tr .tr-fbt {font-size:1.05em;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;flex:0 1 auto;}
+	#tr .tr-fbx {display:inline-flex;align-items:center;gap:0.35em;min-height:40px;padding:0.3em 0.75em;border:1px solid var(--tr-line);border-radius:0.5em;background:var(--tr-card);color:var(--tr-ink);font:inherit;font-size:0.95em;font-weight:600;cursor:pointer;flex:0 0 auto;}
+	#tr .tr-fbx:hover, #tr .tr-fbx:focus-visible {border-color:var(--tr-acc);}
+	#tr .tr-fill .tr-text {flex:1 1 auto;min-height:0;height:auto;max-height:none;resize:none;font-size:1.25em;overflow:auto;}
+	#tr .tr-fill .tr-fillb {display:none;}
+	#tr .tr-fill .tr-tools {flex:0 0 auto;}
+	#tr .tr-fs-on [data-fb="fs"] {background:var(--tr-tint);border-color:var(--tr-acc);}
+	#tr .tu-toast {z-index:2100;}
+
+	@media (max-width: 440px) { #tr .tr-ib {min-width:38px;padding:0;} #tr .tr-tools {gap:0.05em;} #tr .tr-count {margin:0 0.2em;} #tr .tu-card {padding:0.85em 0.75em;} }
+
+	/* dark mode */
+	body.dark-mode #tr.tr {--tr-ink:#e8ecf1;--tr-mut:#aab3bf;--tr-line:#4a4f57;--tr-card:#1f1f1f;--tr-soft:#2a2c30;--tr-out:#24282c;--tr-acc:#38bdd2;--tr-accd:#7dd3e3;--tr-tint:#123a42;--tr-onacc:#062a30;
 		--tr-dev:#86efac;--tr-devbg:#123522;--tr-net:#fcd38d;--tr-netbg:#3d2a0c;--tr-warn:#fdba8c;--tr-warnbg:#3b220f;--tr-info:#9bd5f0;--tr-infobg:#13303d;--tr-sel:#60a5fa;}
 	body.dark-mode #tr.tr .tr-text, body.dark-mode #tr.tr .tr-out {color:var(--tr-ink);background:transparent;}
-	body.dark-mode #tr.tr .tr-oside .tr-text {background:var(--tr-card);}
-	body.dark-mode #tr.tr .tr-pane {background:var(--tr-card);}
+	body.dark-mode #tr.tr .tr-pane, body.dark-mode #tr.tr .tr-obox, body.dark-mode #tr.tr .tr-pics {background:var(--tr-card);}
 	body.dark-mode #tr.tr .tr-pane--out {background:var(--tr-out);}
-	body.dark-mode #tr.tr .tr-drop {background:var(--tr-soft);border-color:var(--tr-line);}
+	body.dark-mode #tr.tr .tr-drop, body.dark-mode #tr.tr .tr-cam, body.dark-mode #tr.tr .tr-tabs, body.dark-mode #tr.tr .tr-thumb {background:var(--tr-soft);border-color:var(--tr-line);}
 	body.dark-mode #tr.tr .tr-drop:hover, body.dark-mode #tr.tr .tr-drop--over {background:var(--tr-tint);border-color:var(--tr-acc);}
-	body.dark-mode #tr.tr .tr-ib, body.dark-mode #tr.tr .tr-hitem {color:var(--tr-ink);}
+	body.dark-mode #tr.tr .tr-tab {color:var(--tr-ink);background:transparent;}
+	body.dark-mode #tr.tr .tr-tab:hover {background:var(--tr-card);}
+	body.dark-mode #tr.tr .tr-tab[aria-selected="true"] {background:var(--tr-card);border-color:var(--tr-acc);color:var(--tr-accd);}
+	body.dark-mode #tr.tr .tr-thumb {color:var(--tr-ink);}
+	body.dark-mode #tr.tr .tr-thumb[aria-pressed="true"] {border-color:var(--tr-acc);}
+	body.dark-mode #tr.tr .tr-ib, body.dark-mode #tr.tr .tr-hitem, body.dark-mode #tr.tr .tr-fbx {color:var(--tr-ink);}
+	body.dark-mode #tr.tr .tr-fbx {background:var(--tr-card);border-color:var(--tr-line);}
 	body.dark-mode #tr.tr .tr-ib:hover {background:var(--tr-soft);}
-	body.dark-mode #tr.tr .tr-ho, body.dark-mode #tr.tr .tr-det, body.dark-mode #tr.tr .tr-linkb, body.dark-mode #tr.tr .tr-cancel {color:var(--tr-accd);}
+	body.dark-mode #tr.tr .tr-ho, body.dark-mode #tr.tr .tr-det, body.dark-mode #tr.tr .tr-linkb, body.dark-mode #tr.tr .tr-cancel, body.dark-mode #tr.tr .tr-drop__big, body.dark-mode #tr.tr .tr-thumbed {color:var(--tr-accd);}
+	body.dark-mode #tr.tr .tr-badge {color:var(--tr-mut);}
 	body.dark-mode #tr.tr .tr-badge--dev {color:var(--tr-dev);background:var(--tr-devbg);}
 	body.dark-mode #tr.tr .tr-badge--net {color:var(--tr-net);background:var(--tr-netbg);}
 	body.dark-mode #tr.tr .tr-msg--warn {color:var(--tr-warn);background:var(--tr-warnbg);}
 	body.dark-mode #tr.tr .tr-msg--info {color:var(--tr-info);background:var(--tr-infobg);}
 	body.dark-mode #tr.tr kbd {background:var(--tr-card);color:var(--tr-ink);border-color:var(--tr-line);}
 	body.dark-mode #tr.tr .tr-h {color:var(--tr-ink);}
-
-	/* Picture from a link */
-	#tr .tr-urlrow {margin:0.8em 0 0;}
-	#tr .tr-urlrow label {display:block;font-weight:600;font-size:0.95em;margin-bottom:0.3em;}
-	#tr .tr-urlin {display:flex;gap:0.5em;}
-	#tr .tr-urlin input {flex:1 1 auto;min-width:0;min-height:44px;box-sizing:border-box;font-size:1em;background:var(--tr-card);color:var(--tr-ink);border:1px solid var(--tr-line);}
-	#tr .tr-urlin .tu-btn {min-height:44px;flex:0 0 auto;}
-	#tr .tr-urlnote {margin:0.45em 0 0;padding:0.45em 0.75em;border-radius:0.5em;background:var(--tr-infobg);color:var(--tr-info);font-size:0.92em;overflow-wrap:anywhere;}
-	#tr .tr-urlnote--warn {background:var(--tr-warnbg);color:var(--tr-warn);}
 	body.dark-mode #tr.tr .tr-urlin input {background:var(--tr-card);color:var(--tr-ink);border-color:var(--tr-line);}
 	body.dark-mode #tr.tr .tr-urlnote {background:var(--tr-infobg);color:var(--tr-info);}
 	body.dark-mode #tr.tr .tr-urlnote--warn {background:var(--tr-warnbg);color:var(--tr-warn);}
-
-	/* Layout: header row with Side by side | Stacked, Full width, and Close while filling the window */
-	#tr .tr-head {display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:0.4em 0.8em;margin:0 0 0.6em;}
-	#tr .tr-head .tr-h {margin:0;}
-	#tr .tr-view {display:flex;flex-wrap:wrap;align-items:center;gap:0.4em;}
-	#tr .tr-view .tu-seg button {min-height:36px;padding:0.35em 0.8em;}
-	#tr .tr-fullw[aria-pressed="true"] {background:var(--tr-tint);border-color:var(--tr-acc);color:var(--tr-accd);}
-	#tr.tr-stack .tr-panes {grid-template-columns:minmax(0,1fr);}
-	@media (max-width: 1199px) { #tr .tr-fullw {display:none;} }      /* below 1200px the sidebar already sits under the content */
-	/* Full width: the sidebar moves below the content (same shape as aside.css's Wide / Theater video rule), so the boxes get the whole frame of the chosen Standard | Wide | Theatre mode */
-	@media (min-width: 1200px) {
-		body.tr-wide .has-aside .outer-page-content {grid-template-columns:minmax(0,1fr);}
-		body.tr-wide .has-aside .page-content {grid-column:1;grid-row:1;}
-		body.tr-wide .has-aside .mes-aside {grid-column:1;grid-row:2;max-width:none;margin-left:0;margin-right:0;}
-	}
-
-	/* Fill window / full screen: the Translate card (both boxes + buttons) or the "Text found" box covers the browser window */
-	#tr .tr-fillbar {display:none;}
-	html.tr-locked, html.tr-locked body {overflow:hidden;}
-	#tr .tr-fill {position:fixed;inset:0;z-index:2000;margin:0;border-radius:0;max-width:none;width:auto;box-sizing:border-box;background:var(--tr-card);display:flex;flex-direction:column;padding:0.8em 1em 1em;overflow:auto;}
-	#tr .tr-fill:fullscreen {background:var(--tr-card);}
-	#tr .tr-tx.tr-fill .tr-panes {flex:1 1 auto;min-height:0;grid-template-rows:minmax(12em,1fr);}
-	#tr.tr-stack .tr-tx.tr-fill .tr-panes {grid-template-rows:minmax(10em,1fr) minmax(10em,1fr);}
-	#tr .tr-tx.tr-fill .tr-text {flex:1 1 auto;min-height:0;height:auto;resize:none;max-height:none;font-size:1.25em;}
-	#tr .tr-tx.tr-fill .tr-act {flex:0 0 auto;}
-	#tr .tr-tx.tr-fill [data-fillx] {display:inline-flex;}
-	#tr .tr-tx.tr-fill [data-fillx][hidden] {display:inline-flex !important;}
-	@media (max-width: 720px) {
-		#tr .tr-tx.tr-fill .tr-panes {grid-template-columns:minmax(0,1fr);grid-template-rows:minmax(8em,1fr) minmax(8em,1fr);}
-		#tr .tr-fill {padding:0.5em 0.6em 0.7em;}
-	}
-	#tr .tr-oside.tr-fill .tr-fillbar {display:flex;align-items:center;gap:0.5em;margin-bottom:0.5em;font-size:1.1em;}
-	#tr .tr-oside.tr-fill .tr-text {flex:1 1 auto;min-height:0;resize:none;font-size:1.2em;}
-	#tr .tu-toast {z-index:2100;}
-	#tr .tr-fill .tr-fullw {display:none;}
-	@media (max-width: 720px) { #tr #tr-lay {display:none;} }         /* phones always stack the two boxes */
-	@media (max-width: 440px) { #tr .tr-ib {min-width:36px;padding:0;} #tr .tr-tools {gap:0.1em;} #tr .tr-count {margin:0 0.2em;} }
-	#tr .tr-ic {width:1.15em;height:1.15em;vertical-align:-0.2em;fill:none;stroke:currentColor;stroke-width:2;stroke-linecap:round;stroke-linejoin:round;}
-	body.dark-mode #tr.tr .tr-fill {background:var(--tr-card);}
+	body.dark-mode #tr.tr .tr-fill, body.dark-mode #tr.tr .tr-box.tr-fill {background:var(--tr-card);}
+	body.dark-mode #tr.tr .tr-pane--out.tr-fill {background:var(--tr-out);}
+	body.dark-mode #tr.tr .tr-fill .tr-fillbar {background:var(--tr-soft);border-color:var(--tr-line);}
 	body.dark-mode #tr.tr .tr-fullw[aria-pressed="true"] {background:var(--tr-tint);border-color:var(--tr-acc);color:var(--tr-accd);}
+	body.dark-mode #tr.tr button span, body.dark-mode #tr.tr .tr-tab span {color:inherit;}
+	@media (max-width: 440px) { #tr .tr-fbx span {display:none;} #tr .tr-fbx {padding:0.3em 0.55em;} #tr .tr-fill .tr-fillbar {flex-wrap:nowrap;} }
 
 
 	@media print {
@@ -531,6 +602,8 @@ body.dark-mode .tu .rw-head {color:#a0a8b3;border-bottom-color:#555;} body.dark-
 	body.dark-mode .tu [data-table="1"] .rw-head{color:#9a9aa2;border-bottom:2px solid #2b323c}
 	body.dark-mode .tu [data-table="1"] .rw-row{border-bottom:1px solid #27313f}
 	body.dark-mode #tr.tr{--tr-acc:#1dccec;--tr-accd:#1dcded;--tr-dev:#28e17f;--tr-net:#ff8f0a;--tr-warn:#ff680a;--tr-info:#31a4d8;--tr-ok:#27e26c;--tr-mid:#f88d11;--tr-low:#dd2c2c}
+	body.dark-mode #tr .tr-camview video{background:#525252}
+	body.dark-mode #tr .tr-thumb canvas{background:#1a1a1a}
 	body.dark-mode #tr .tr-stage{background:#1a1a1a}
 	/* TOOL-DARK:END */
 /* Floating compact header bar: once the full header + nav scroll out of
@@ -787,80 +860,111 @@ body.is-stuck #navbar.hide { position: fixed; top: 56px; right: 8px; }
 	<div class="tu tr" id="tr" data-mode="ocr">
 		<section class="tu-card tr-tx" id="tr-tx" aria-labelledby="tr-tx-h">
 			<div class="tr-head">
-				<h2 class="tr-h" id="tr-tx-h">Translate text</h2>
+				<h2 class="tr-h" id="tr-tx-h">Translate</h2>
 				<div class="tr-view" role="group" aria-label="Layout">
 					<div class="tu-seg" id="tr-lay" role="group" aria-label="Text boxes"><button type="button" data-v="side" aria-pressed="true">Side by side</button><button type="button" data-v="stack" aria-pressed="false">Stacked</button></div>
 					<button type="button" class="tu-btn tu-btn--ghost tr-small tr-fullw" id="tr-fullw" aria-pressed="false" title="Use the whole page width for the text boxes (the sidebar moves below)">&#8596; Full width</button>
-					<button type="button" class="tu-btn tu-btn--ghost tr-small tr-fillx" data-fillx hidden>&#10005;&nbsp;Close&nbsp;<span class="tr-dim">(Esc)</span></button>
 				</div>
 			</div>
 			<div class="tr-langs">
 				<div class="tu-field tr-lf"><label for="tr-from">From</label><select id="tr-from" class="tu-select"></select></div>
 				<button type="button" class="tu-btn tu-btn--ghost tr-swap" id="tr-swap" title="Swap the languages (and the texts)" aria-label="Swap languages">&#8644;</button>
 				<div class="tu-field tr-lf"><label for="tr-to">To</label><select id="tr-to" class="tu-select"></select></div>
-				<div class="tu-field tr-ef"><label for="tr-engine">Engine</label><select id="tr-engine" class="tu-select">
-					<option value="auto">Auto (on this device when possible)</option>
-					<option value="device">On this device only</option>
-					<option value="online">Online service (MyMemory)</option>
-				</select></div>
 			</div>
 			<div class="tr-panes">
-				<div class="tr-pane">
-					<textarea id="tr-in" class="tr-text" dir="auto" rows="7" spellcheck="true" placeholder="Type or paste text here" aria-label="Text to translate"></textarea>
-					<div class="tr-tools">
-						<span class="tr-count" id="tr-count">0 characters</span>
-						<span class="tr-det" id="tr-det"></span>
-						<span class="tr-sp"></span>
-						<button type="button" class="tr-ib" id="tr-say-in" title="Read the text aloud" aria-label="Read the text aloud">&#128266;</button>
-						<button type="button" class="tr-ib" id="tr-paste" title="Paste from the clipboard" aria-label="Paste">&#128203;</button>
-						<button type="button" class="tr-ib" data-fill="tx" title="Fill the browser window (Esc closes)" aria-label="Fill the browser window"><svg class="tr-ic" viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="4" width="18" height="16" rx="2"/><path d="M10 10L6.5 7.5M6.5 7.5v3M6.5 7.5h3M14 14l3.5 2.5M17.5 16.5v-3M17.5 16.5h-3"/></svg></button>
-						<button type="button" class="tr-ib" data-fs="tx" title="Full screen" aria-label="Full screen"><svg class="tr-ic" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 9V4h5M20 9V4h-5M4 15v5h5M20 15v5h-5"/></svg></button>
-						<button type="button" class="tr-ib" id="tr-clear" title="Clear" aria-label="Clear the text">&#10005;</button>
+				<div class="tr-col tr-col--in">
+					<div class="tr-src" id="tr-src">
+						<div class="tr-tabs" role="tablist" aria-label="Where the text comes from">
+							<button type="button" role="tab" class="tr-tab" id="tr-tab-text" data-src="text" aria-controls="tr-p-text" aria-selected="true"><span class="tr-tabi" aria-hidden="true">&#9998;&#65038;</span><span>Type or paste</span></button>
+							<button type="button" role="tab" class="tr-tab" id="tr-tab-file" data-src="file" aria-controls="tr-p-file" aria-selected="false" tabindex="-1"><span class="tr-tabi" aria-hidden="true">&#128444;&#65038;</span><span>Photo / file</span></button>
+							<button type="button" role="tab" class="tr-tab" id="tr-tab-link" data-src="link" aria-controls="tr-p-link" aria-selected="false" tabindex="-1"><span class="tr-tabi" aria-hidden="true">&#128279;&#65038;</span><span>Link</span></button>
+							<button type="button" role="tab" class="tr-tab" id="tr-tab-cam" data-src="cam" aria-controls="tr-p-cam" aria-selected="false" tabindex="-1"><span class="tr-tabi" aria-hidden="true">&#128247;&#65038;</span><span>Camera</span></button>
+						</div>
+						<div class="tr-srcp" id="tr-p-file" role="tabpanel" aria-labelledby="tr-tab-file" hidden>
+							<div class="tr-drop" id="tr-drop" tabindex="0" role="button" aria-label="Choose, drop or paste a picture or PDF">
+								<div class="tr-drop__big">Choose a photo, screenshot or PDF</div>
+								<div class="tr-drop__sub">or drop it here, or paste a screenshot with <kbd>Ctrl</kbd>/<kbd>&#8984;</kbd> + <kbd>V</kbd></div>
+								<input type="file" id="tr-file" accept="image/*,application/pdf,.pdf" hidden>
+							</div>
+						</div>
+						<div class="tr-srcp" id="tr-p-link" role="tabpanel" aria-labelledby="tr-tab-link" hidden>
+							<form class="tr-urlrow" id="tr-urlform" autocomplete="off">
+								<label for="tr-url">Link to a picture or PDF</label>
+								<div class="tr-urlin"><input type="url" id="tr-url" class="tu-input" inputmode="url" spellcheck="false" placeholder="https://example.com/photo.jpg"><button type="submit" class="tu-btn tu-btn--primary" id="tr-urlgo">Open</button></div>
+								<p class="tu-note tr-urlnote" id="tr-urlnote" role="status" hidden></p>
+							</form>
+						</div>
+						<div class="tr-srcp" id="tr-p-cam" role="tabpanel" aria-labelledby="tr-tab-cam" hidden>
+							<div class="tr-cam">
+								<button type="button" class="tu-btn tu-btn--primary tr-cambtn" id="tr-camgo"><span aria-hidden="true">&#128247;&#65038;</span> Take a photo</button>
+								<input type="file" id="tr-camfile" accept="image/*" capture="environment" hidden>
+								<label class="tr-live"><input type="checkbox" id="tr-camedit" checked> Crop and straighten each photo before it is read</label>
+							</div>
+							<div class="tr-camview" id="tr-camview" hidden>
+								<video id="tr-video" playsinline muted aria-label="Camera preview"></video>
+								<div class="tr-camacts"><button type="button" class="tu-btn tu-btn--primary" id="tr-snap">Take the photo</button><button type="button" class="tu-btn tu-btn--ghost" id="tr-camstop">Stop the camera</button></div>
+							</div>
+						</div>
+						<div class="tr-picset" id="tr-picset" hidden>
+							<div class="tu-field tr-lf"><label for="tr-olang">Language in the picture</label><select id="tr-olang" class="tu-select"></select></div>
+							<label class="tr-live"><input type="checkbox" id="tr-oeng" checked> Also read English words</label>
+							<label class="tr-live"><input type="checkbox" id="tr-editfirst"> Edit pictures before reading them</label>
+						</div>
+						<div class="tr-pics" id="tr-pics" hidden>
+							<div class="tr-thumbs" id="tr-thumbs" role="group" aria-label="Your pictures"></div>
+							<div class="tr-picacts">
+								<button type="button" class="tu-btn tu-btn--ghost" id="tr-oedit"><span aria-hidden="true">&#9998;&#65038;</span> Edit picture</button>
+								<button type="button" class="tu-btn tu-btn--primary" id="tr-oread" disabled>Read the text</button>
+							</div>
+							<div class="tr-prog" id="tr-oprog" hidden><div class="tr-prog__bar"><i id="tr-oprog-i"></i></div><span id="tr-oprog-t"></span><button type="button" class="tr-cancel" id="tr-ocancel">Cancel</button></div>
+						</div>
 					</div>
-				</div>
-				<div class="tr-pane tr-pane--out">
-					<div id="tr-out" class="tr-text tr-out" role="region" aria-live="polite" aria-label="Translation"><span class="tr-ph">The translation appears here</span></div>
-					<div class="tr-tools">
-						<span class="tr-count" id="tr-ocount"></span>
-						<span class="tr-sp"></span>
-						<button type="button" class="tr-ib" id="tr-say-out" title="Read the translation aloud" aria-label="Read the translation aloud">&#128266;</button>
-						<button type="button" class="tr-ib" data-fill="tx" title="Fill the browser window (Esc closes)" aria-label="Fill the browser window"><svg class="tr-ic" viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="4" width="18" height="16" rx="2"/><path d="M10 10L6.5 7.5M6.5 7.5v3M6.5 7.5h3M14 14l3.5 2.5M17.5 16.5v-3M17.5 16.5h-3"/></svg></button>
-						<button type="button" class="tr-ib" data-fs="tx" title="Full screen" aria-label="Full screen"><svg class="tr-ic" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 9V4h5M20 9V4h-5M4 15v5h5M20 15v5h-5"/></svg></button>
-						<button type="button" class="tr-ib" id="tr-copy" title="Copy the translation" aria-label="Copy the translation">&#10697;</button>
+					<div class="tr-pane tr-box" id="tr-p-text" role="tabpanel" aria-labelledby="tr-tab-text" data-box="in">
+						<div class="tr-fillbar"><b class="tr-fbt">Your text</b><span class="tr-sp"></span><button type="button" class="tr-ib" data-fb="copy" title="Copy" aria-label="Copy"><svg class="tr-ic" viewBox="0 0 24 24" aria-hidden="true"><rect x="8" y="8" width="12" height="12" rx="2"/><path d="M16 8V5a1 1 0 0 0-1-1H5a1 1 0 0 0-1 1v10a1 1 0 0 0 1 1h3"/></svg></button><button type="button" class="tr-ib" data-fb="say" title="Read aloud" aria-label="Read aloud"><svg class="tr-ic" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 9v6h4l5 4V5L8 9z"/><path d="M16 9a4 4 0 0 1 0 6M18.5 6.5a7.5 7.5 0 0 1 0 11"/></svg></button><button type="button" class="tr-ib" data-fb="fs" title="Full screen" aria-label="Full screen"><svg class="tr-ic" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 9V4h5M20 9V4h-5M4 15v5h5M20 15v5h-5"/></svg></button><button type="button" class="tr-fbx" data-fillx title="Close (Esc)" aria-label="Close"><svg class="tr-ic" viewBox="0 0 24 24" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18"/></svg><span>Close</span></button></div>
+						<textarea id="tr-in" class="tr-text" dir="auto" rows="7" spellcheck="true" placeholder="Type or paste text here" aria-label="Text to translate"></textarea>
+						<div class="tr-tools">
+							<span class="tr-count" id="tr-count">0 characters</span>
+							<span class="tr-det" id="tr-det"></span>
+							<span class="tr-sp"></span>
+							<button type="button" class="tr-ib" id="tr-say-in" title="Read the text aloud" aria-label="Read the text aloud"><svg class="tr-ic" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 9v6h4l5 4V5L8 9z"/><path d="M16 9a4 4 0 0 1 0 6M18.5 6.5a7.5 7.5 0 0 1 0 11"/></svg></button>
+							<button type="button" class="tr-ib" id="tr-paste" title="Paste from the clipboard" aria-label="Paste">&#128203;&#65038;</button>
+							<button type="button" class="tr-ib tr-fillb" data-fill="in" title="Fill the browser window (Esc closes)" aria-label="Fill the browser window"><svg class="tr-ic" viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="4" width="18" height="16" rx="2"/><path d="M10 10L6.5 7.5M6.5 7.5v3M6.5 7.5h3M14 14l3.5 2.5M17.5 16.5v-3M17.5 16.5h-3"/></svg></button><button type="button" class="tr-ib tr-fillb" data-fs="in" title="Full screen" aria-label="Full screen"><svg class="tr-ic" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 9V4h5M20 9V4h-5M4 15v5h5M20 15v5h-5"/></svg></button>
+							<button type="button" class="tr-ib" id="tr-clear" title="Clear" aria-label="Clear the text"><svg class="tr-ic" viewBox="0 0 24 24" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18"/></svg></button>
+						</div>
 					</div>
+					<div class="tr-act">
+						<button type="button" class="tu-btn tu-btn--primary tr-go" id="tr-go">Translate</button>
+						<label class="tr-live" id="tr-livebox"><input type="checkbox" id="tr-live" checked> <span>Translate as I type <span class="tr-dim">(on this device only)</span></span></label>
+					</div>
+					<p class="tr-badge" id="tr-badge" role="status"></p>
+					<div class="tr-engrow"><label for="tr-engine">Engine</label><select id="tr-engine" class="tu-select">
+						<option value="auto">Auto (on this device when possible)</option>
+						<option value="device">On this device only</option>
+						<option value="online">Online service (MyMemory)</option>
+					</select></div>
 				</div>
-			</div>
-			<div class="tr-act">
-				<button type="button" class="tu-btn tu-btn--primary tr-go" id="tr-go">Translate</button>
-				<span class="tr-badge" id="tr-badge" role="status"></span>
-				<label class="tr-live" id="tr-livebox"><input type="checkbox" id="tr-live" checked> Translate as I type <span class="tr-dim">(on this device only)</span></label>
-				<span class="tr-sp"></span>
-				<button type="button" class="tu-btn tu-btn--ghost" id="tr-link">&#128279; Copy link</button>
+				<div class="tr-col tr-col--out">
+					<div class="tr-pane tr-pane--out tr-box" data-box="out">
+						<div class="tr-fillbar"><b class="tr-fbt">Translation</b><span class="tr-sp"></span><button type="button" class="tr-ib" data-fb="copy" title="Copy" aria-label="Copy"><svg class="tr-ic" viewBox="0 0 24 24" aria-hidden="true"><rect x="8" y="8" width="12" height="12" rx="2"/><path d="M16 8V5a1 1 0 0 0-1-1H5a1 1 0 0 0-1 1v10a1 1 0 0 0 1 1h3"/></svg></button><button type="button" class="tr-ib" data-fb="say" title="Read aloud" aria-label="Read aloud"><svg class="tr-ic" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 9v6h4l5 4V5L8 9z"/><path d="M16 9a4 4 0 0 1 0 6M18.5 6.5a7.5 7.5 0 0 1 0 11"/></svg></button><button type="button" class="tr-ib" data-fb="fs" title="Full screen" aria-label="Full screen"><svg class="tr-ic" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 9V4h5M20 9V4h-5M4 15v5h5M20 15v5h-5"/></svg></button><button type="button" class="tr-fbx" data-fillx title="Close (Esc)" aria-label="Close"><svg class="tr-ic" viewBox="0 0 24 24" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18"/></svg><span>Close</span></button></div>
+						<div id="tr-out" class="tr-text tr-out" role="region" aria-live="polite" aria-label="Translation"><span class="tr-ph">The translation appears here</span></div>
+						<div class="tr-tools">
+							<span class="tr-count" id="tr-ocount"></span>
+							<span class="tr-sp"></span>
+							<button type="button" class="tr-ib" id="tr-say-out" title="Read the translation aloud" aria-label="Read the translation aloud"><svg class="tr-ic" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 9v6h4l5 4V5L8 9z"/><path d="M16 9a4 4 0 0 1 0 6M18.5 6.5a7.5 7.5 0 0 1 0 11"/></svg></button>
+							<button type="button" class="tr-ib tr-fillb" data-fill="out" title="Fill the browser window (Esc closes)" aria-label="Fill the browser window"><svg class="tr-ic" viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="4" width="18" height="16" rx="2"/><path d="M10 10L6.5 7.5M6.5 7.5v3M6.5 7.5h3M14 14l3.5 2.5M17.5 16.5v-3M17.5 16.5h-3"/></svg></button><button type="button" class="tr-ib tr-fillb" data-fs="out" title="Full screen" aria-label="Full screen"><svg class="tr-ic" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 9V4h5M20 9V4h-5M4 15v5h5M20 15v5h-5"/></svg></button>
+							<button type="button" class="tr-ib" id="tr-copy" title="Copy the translation" aria-label="Copy the translation"><svg class="tr-ic" viewBox="0 0 24 24" aria-hidden="true"><rect x="8" y="8" width="12" height="12" rx="2"/><path d="M16 8V5a1 1 0 0 0-1-1H5a1 1 0 0 0-1 1v10a1 1 0 0 0 1 1h3"/></svg></button>
+						</div>
+					</div>
+					<div class="tr-act tr-act--out"><button type="button" class="tu-btn tu-btn--ghost tr-small" id="tr-link">&#128279;&#65038; Copy a link to this translation</button></div>
+				</div>
 			</div>
 			<div class="tr-prog" id="tr-prog" hidden><div class="tr-prog__bar"><i id="tr-prog-i"></i></div><span id="tr-prog-t"></span></div>
 			<p class="tu-note tr-msg" id="tr-msg" hidden></p>
 		</section>
 
 		<section class="tu-card tr-ocr" id="tr-ocr" aria-labelledby="tr-ocr-h">
-			<h2 class="tr-h" id="tr-ocr-h">Text from a picture</h2>
-			<p class="tu-note tr-ocr-intro" id="tr-ocr-intro">Add a photo, screenshot or PDF: its text is read right here in your browser (nothing is uploaded), then you can fix it and translate it.</p>
-			<div class="tr-drop" id="tr-drop" tabindex="0" role="button" aria-label="Choose, drop or paste a picture or PDF">
-				<div class="tr-drop__big">Drop a picture or PDF here</div>
-				<div class="tr-drop__sub">or <b>click to choose</b> a file, or press <kbd>Ctrl</kbd>/<kbd>&#8984;</kbd> + <kbd>V</kbd> to paste a screenshot</div>
-				<input type="file" id="tr-file" accept="image/*,application/pdf,.pdf" hidden>
-			</div>
-			<form class="tr-urlrow" id="tr-urlform" autocomplete="off">
-				<label for="tr-url">Or paste a link to a picture or PDF</label>
-				<div class="tr-urlin"><input type="url" id="tr-url" class="tu-input" inputmode="url" spellcheck="false" placeholder="https://example.com/photo.jpg"><button type="submit" class="tu-btn tu-btn--primary" id="tr-urlgo">Open</button></div>
-				<p class="tu-note tr-urlnote" id="tr-urlnote" role="status" hidden></p>
-			</form>
-			<div class="tr-ocrbar">
-				<div class="tu-field tr-lf"><label for="tr-olang">Language in the picture</label><select id="tr-olang" class="tu-select"></select></div>
-				<label class="tr-live"><input type="checkbox" id="tr-oeng" checked> Also read English words</label>
-				<button type="button" class="tu-btn tu-btn--primary" id="tr-oread" disabled>Read the text</button>
-			</div>
-			<div class="tr-prog" id="tr-oprog" hidden><div class="tr-prog__bar"><i id="tr-oprog-i"></i></div><span id="tr-oprog-t"></span><button type="button" class="tr-cancel" id="tr-ocancel">Cancel</button></div>
-			<div class="tr-pages" id="tr-pages" hidden></div>
+			<h2 class="tr-h" id="tr-ocr-h">Your picture</h2>
+			<p class="tu-note tr-ocr-intro" id="tr-ocr-intro">The text found in the picture is put in the text box above. Click boxes on the picture to translate only some of it.</p>
 			<div class="tr-ores" id="tr-ores" hidden>
 				<div class="tr-stagewrap">
 					<div class="tr-stagebar">
@@ -870,14 +974,15 @@ body.is-stuck #navbar.hide { position: fixed; top: 56px; right: 8px; }
 					</div>
 					<div class="tr-stage" id="tr-stage"><canvas id="tr-cv" aria-label="Your picture with the text that was found boxed"></canvas><div class="tr-boxes" id="tr-boxes"></div></div>
 					<p class="tu-note">Click a box to select that text (click again to unselect). Boxes are coloured by how sure the reader is: green sure, amber unsure, red guessing.</p>
+					<div class="tr-obtns tr-obtns--sel"><button type="button" class="tu-btn tu-btn--primary" id="tr-ousesel2" disabled>Translate only the selected boxes</button></div>
 				</div>
 				<div class="tr-oside" id="tr-oside">
-					<div class="tr-fillbar"><b>Text found</b><span class="tr-sp"></span><button type="button" class="tu-btn tu-btn--ghost tr-small" data-fillx>&#10005;&nbsp;Close&nbsp;<span class="tr-dim">(Esc)</span></button></div>
 					<label class="tu-label" for="tr-otext">Text found (you can edit it)</label>
-					<textarea id="tr-otext" class="tr-text" dir="auto" rows="10" spellcheck="true"></textarea>
-					<div class="tr-tools"><span class="tr-count" id="tr-ostat"></span><span class="tr-sp"></span><button type="button" class="tr-ib" data-fill="ocr" title="Fill the browser window (Esc closes)" aria-label="Fill the browser window"><svg class="tr-ic" viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="4" width="18" height="16" rx="2"/><path d="M10 10L6.5 7.5M6.5 7.5v3M6.5 7.5h3M14 14l3.5 2.5M17.5 16.5v-3M17.5 16.5h-3"/></svg></button>
-<button type="button" class="tr-ib" data-fs="ocr" title="Full screen" aria-label="Full screen"><svg class="tr-ic" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 9V4h5M20 9V4h-5M4 15v5h5M20 15v5h-5"/></svg></button>
-<button type="button" class="tr-ib" id="tr-ocopy" title="Copy the text found" aria-label="Copy the text found">&#10697;</button></div>
+					<div class="tr-obox tr-box" id="tr-obox" data-box="ocr">
+						<div class="tr-fillbar"><b class="tr-fbt">Text found</b><span class="tr-sp"></span><button type="button" class="tr-ib" data-fb="copy" title="Copy" aria-label="Copy"><svg class="tr-ic" viewBox="0 0 24 24" aria-hidden="true"><rect x="8" y="8" width="12" height="12" rx="2"/><path d="M16 8V5a1 1 0 0 0-1-1H5a1 1 0 0 0-1 1v10a1 1 0 0 0 1 1h3"/></svg></button><button type="button" class="tr-ib" data-fb="say" title="Read aloud" aria-label="Read aloud"><svg class="tr-ic" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 9v6h4l5 4V5L8 9z"/><path d="M16 9a4 4 0 0 1 0 6M18.5 6.5a7.5 7.5 0 0 1 0 11"/></svg></button><button type="button" class="tr-ib" data-fb="fs" title="Full screen" aria-label="Full screen"><svg class="tr-ic" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 9V4h5M20 9V4h-5M4 15v5h5M20 15v5h-5"/></svg></button><button type="button" class="tr-fbx" data-fillx title="Close (Esc)" aria-label="Close"><svg class="tr-ic" viewBox="0 0 24 24" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18"/></svg><span>Close</span></button></div>
+						<textarea id="tr-otext" class="tr-text" dir="auto" rows="10" spellcheck="true"></textarea>
+						<div class="tr-tools"><span class="tr-count" id="tr-ostat"></span><span class="tr-sp"></span><button type="button" class="tr-ib tr-fillb" data-fill="ocr" title="Fill the browser window (Esc closes)" aria-label="Fill the browser window"><svg class="tr-ic" viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="4" width="18" height="16" rx="2"/><path d="M10 10L6.5 7.5M6.5 7.5v3M6.5 7.5h3M14 14l3.5 2.5M17.5 16.5v-3M17.5 16.5h-3"/></svg></button><button type="button" class="tr-ib tr-fillb" data-fs="ocr" title="Full screen" aria-label="Full screen"><svg class="tr-ic" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 9V4h5M20 9V4h-5M4 15v5h5M20 15v5h-5"/></svg></button><button type="button" class="tr-ib" id="tr-ocopy" title="Copy the text found" aria-label="Copy the text found"><svg class="tr-ic" viewBox="0 0 24 24" aria-hidden="true"><rect x="8" y="8" width="12" height="12" rx="2"/><path d="M16 8V5a1 1 0 0 0-1-1H5a1 1 0 0 0-1 1v10a1 1 0 0 0 1 1h3"/></svg></button></div>
+					</div>
 					<div class="tr-obtns">
 						<button type="button" class="tu-btn tu-btn--primary" id="tr-ouse">Translate this text</button>
 						<button type="button" class="tu-btn tu-btn--ghost" id="tr-ousesel" disabled>Translate only the selected boxes</button>
@@ -901,6 +1006,7 @@ body.is-stuck #navbar.hide { position: fixed; top: 56px; right: 8px; }
 				<li><strong>Private:</strong> the picture is never uploaded. The text reader (Tesseract) is downloaded into your browser and runs there.</li>
 				<li><strong>About 80 languages and scripts:</strong> English, Spanish, French, German, Russian, Arabic, Hebrew, Hindi, Chinese, Japanese, Korean, Thai, Vietnamese and many more. Choose the language of the text; its reading data is downloaded once and then cached.</li>
 				<li><strong>Phone photos come out the right way up</strong> (the camera's rotation is read from the file), huge photos are shrunk and small screenshots enlarged, so the reader sees letters at a good size.</li>
+				<li><strong>Fix the picture first:</strong> <em>Edit picture</em> opens a small editor to crop (or <em>Auto-crop to text</em>), turn and straighten a crooked photo, brighten it, switch on <em>Make text clearer</em>, hide parts with a white-out box, or write and highlight on it. The text is then read from the edited picture. Take a photo with <em>Camera</em> and the editor opens by itself.</li>
 				<li><strong>PDFs:</strong> the first five pages of a PDF are drawn and read, so scanned PDFs work too.</li>
 				<li><strong>Pick what you need:</strong> click line or word boxes to select them, then translate just those.</li>
 			</ul>
@@ -919,7 +1025,7 @@ body.is-stuck #navbar.hide { position: fixed; top: 56px; right: 8px; }
 			</dl>
 			<h3>Tips</h3>
 			<ul>
-				<li>Hold the phone straight above the page, in good light, and fill the frame with the text.</li>
+				<li>Hold the phone straight above the page, in good light, and fill the frame with the text. A photo taken at an angle? Use <em>Edit picture</em> &rarr; <em>Rotate</em> &rarr; <em>Straighten</em> until the lines are level, then <em>Crop</em>.</li>
 				<li>Tick <em>Also read English words</em> for signs or menus that mix a language with English words or numbers; untick it for a cleaner result in one language.</li>
 				<li>For columns, newspapers or forms, select the boxes of one column and translate those.</li>
 			</ul>
@@ -985,7 +1091,7 @@ body.is-stuck #navbar.hide { position: fixed; top: 56px; right: 8px; }
             hide_search:false,
             current_tab:1
         }        </script><!-- FASTCOMMENTS-LAZY: widget init moved to main_js/main.js -- it pulls embed.min.js only when #fastcomments-widget nears the viewport or on the first Comments-toggle click, so it no longer blocks first render -->                <script src="https://mes.fm/main_js/lazysizes.min.js?v=1.0.3" async></script>
-	<script src="/translate/js/translate.js?v=2" defer></script>
+	<script src="/translate/js/translate.js?v=3" defer></script>
             <script src="https://mes.fm/main_js/main.js?v=1.0.5"></script>    <!-- PAGEVIEW-TRACKING-INSERTED --><script src="https://mes.fm/main_js/track.js" defer></script><script>document.getElementById('copyright-year').textContent = new Date().getFullYear();</script><script src="/main_js/info-bar-fit.js" defer></script><script>
   // Floating compact header bar (see #compact-nav CSS): appears once the
   // header + nav bar have scrolled off the top; nav links that don't fit
