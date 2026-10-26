@@ -389,7 +389,7 @@
     { "source": "/backpropagation", "destination": "/neural-network-playground", "permanent": true },
     { "source": "/machine-learning", "destination": "/neural-network-playground", "permanent": true },
     { "source": "/digit-recognition", "destination": "/letter-recognition", "permanent": true },
-    { "source": "/ocr", "destination": "/letter-recognition", "permanent": true },
+    { "source": "/ocr", "destination": "/image-to-text", "permanent": true },
     { "source": "/handwriting-recognition", "destination": "/letter-recognition", "permanent": true },
     { "source": "/mnist", "destination": "/letter-recognition", "permanent": true },
     { "source": "/letter-recognizer", "destination": "/letter-recognition", "permanent": true },
