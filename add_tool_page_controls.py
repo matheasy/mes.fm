@@ -135,6 +135,7 @@ TOOLS = [  # (directory, compact-bar title[, home path of the site the page belo
     ("ads", "MES Ads"),
     ("search-console", "MES Search Console"),
     ("fav", "MES Favourites"),
+    ("ratings", "MES Ratings"),
     ("compress", "MES Compressor"),
     ("compress-video", "MES Video Compressor"),
     ("fonts", "MES Font Preview and Finder"),

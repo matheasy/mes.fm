@@ -1,0 +1,36 @@
+	<div class="tu rt" id="rt">
+		<div class="tu-card rt-intro">
+			<p>Every mes.fm page has a small row of stars at the bottom, just above the comments: <b>Rate this page</b>. These are the results. A page needs <b id="rt-min">5</b> ratings before its average is shown, and the ranking uses a <a href="#rt-how">fair average</a> so one lucky 5-star vote cannot put a page on top.</p>
+			<div class="tu-stats rt-tiles" id="rt-tiles" aria-live="polite"></div>
+			<p class="rt-src tu-note" id="rt-src" role="status">Loading the ratings…</p>
+		</div>
+
+		<div class="tu-card rt-controls">
+			<div class="rt-tabs" role="tablist" aria-label="List" id="rt-tabs">
+				<button type="button" role="tab" data-v="top" aria-selected="true">Top rated</button>
+				<button type="button" role="tab" data-v="most" aria-selected="false">Most rated</button>
+				<button type="button" role="tab" data-v="recent" aria-selected="false">Recently rated</button>
+			</div>
+			<div class="rt-qrow"><label class="tu-label" for="rt-q">Filter</label><input id="rt-q" type="search" class="tu-input" placeholder="e.g. calculator, timer, cubic" autocomplete="off" spellcheck="false"></div>
+			<div class="rt-chips" id="rt-chips" role="group" aria-label="Section"></div>
+		</div>
+
+		<ol class="rt-list" id="rt-list" aria-live="polite"></ol>
+		<p class="rt-empty tu-note" id="rt-empty" hidden></p>
+
+		<div class="tu-card rt-fb" id="feedback">
+			<h2>Send us feedback</h2>
+			<p>Something missing, broken or confusing? An idea for a new calculator or tool? Write it here and send it with your own email app or our contact form. We read everything; nothing you write is posted on mes.fm.</p>
+			<label class="tu-label" for="rt-fbta">Your feedback</label>
+			<textarea id="rt-fbta" class="tu-input rt-ta" maxlength="1500" placeholder="What should we add, fix or change?"></textarea>
+			<div class="rt-acts"><a class="tu-btn tu-btn--primary" id="rt-mail" href="mailto:contact@mes.fm?subject=Feedback%20on%20mes.fm">Send by email</a> <a class="tu-btn tu-btn--ghost" id="rt-form" href="/contact?subject=Feedback%20on%20mes.fm">Use the contact form</a></div>
+			<p class="tu-note">Email goes to contact@mes.fm. The contact form opens with your text filled in; you still press its own Send button.</p>
+		</div>
+
+		<div class="tu-card rt-how" id="rt-how">
+			<h2>How the ranking works</h2>
+			<p><b>The fair average.</b> A page with one 5-star rating should not beat a page with 200 ratings averaging 4.8. So every page starts as if it already had <b>5 ratings of 4 stars</b>, and its real ratings are added to those: score = (sum of stars + 4 × 5) ÷ (number of ratings + 5). With few ratings a page sits near 4; with many, the score is its real average. This is called a <i>Bayesian average</i>.</p>
+			<p><b>One vote per person.</b> Each browser has one vote per page; rating again replaces your earlier rating. Only a few different browsers from one internet connection can rate the same page in 30 days (a school or office shares one connection), and there is an hourly limit, so a script cannot stuff the results.</p>
+			<p><b>Privacy.</b> A rating stores the page, the stars, a random number your browser makes up for itself, and for 30 days a scrambled (hashed) form of your internet address, never the address itself. No text you write is stored. See the <a href="/privacy-policy">privacy policy</a>.</p>
+		</div>
+	</div>
