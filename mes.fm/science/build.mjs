@@ -219,11 +219,11 @@ const PAGES = [
   },
   {
     // Tile only: links to the Magnetic Isopotentials page (the EM simulator's Magnets tab on its own). Icon = img/magnetic-isopotentials-icon.jpg,
-    // a 900x600 crop of the "Magnetic Isopotentials" video thumbnail (placeholder until Grok art lands; bump iconVersion when replaced).
+    // Grok art since 2026-10-25 (import_grok_art.py; bump iconVersion when replaced).
     slug: "magnetic-isopotentials",
     section: "tools",
     href: "/magnetic-isopotentials",
-    iconVersion: 1,
+    iconVersion: 2,
     tileOnly: true,
     tileLabel: "Magnetic Isopotentials",
   },
