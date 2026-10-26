@@ -121,7 +121,7 @@
 			'<button type="button" class="cp-ibtn cp-pin" aria-pressed="' + !!n.pin + '" title="' + (n.pin ? "Unpin" : "Pin to the top") + '" aria-label="' + (n.pin ? "Unpin" : "Pin to the top") + '">★</button></div>' +
 			'<div class="cp-body' + (long && !ex ? " is-clamped" : "") + '" tabindex="0" role="button" title="Click to copy" aria-label="Copy: ' + esc(n.title || n.text.slice(0, 30)) + '"><pre>' + esc(n.text) + "</pre></div>" +
 			(long ? '<button type="button" class="cp-more">' + (ex ? "Show less" : "Show more") + "</button>" : "") +
-			'<div class="cp-foot"><button type="button" class="tu-btn tu-btn--primary cp-copy">Copy</button><button type="button" class="tu-btn tu-btn--ghost cp-edit-btn" title="Edit" aria-label="Edit">✎</button>' +
+			'<div class="cp-foot"><button type="button" class="tu-btn tu-btn--primary cp-copy">Copy</button><button type="button" class="tu-btn tu-btn--ghost cp-show-btn" title="Show big: this text alone, filling the window (to show someone)" aria-label="Show big">⤢</button><button type="button" class="tu-btn tu-btn--ghost cp-edit-btn" title="Edit" aria-label="Edit">✎</button>' +
 			'<button type="button" class="tu-btn tu-btn--ghost cp-dup" title="Duplicate" aria-label="Duplicate">⧉</button><button type="button" class="tu-btn tu-btn--ghost cp-del" title="Delete" aria-label="Delete">🗑</button>' +
 			'<span class="cp-sp"></span><span class="cp-count">' + n.text.length + " chars · " + words(n.text) + " words</span></div></div>";
 	}
@@ -365,6 +365,7 @@
 		}
 		if (btn && btn.classList.contains("cp-pin")) { f.n.pin = !f.n.pin; save(); render(); return; }
 		if (btn && btn.classList.contains("cp-more")) { expanded[id] = !expanded[id]; render.noFocus = true; render(); render.noFocus = false; return; }
+		if (btn && btn.classList.contains("cp-show-btn")) { showBig(id, btn); return; }
 		if (btn && btn.classList.contains("cp-edit-btn")) { editing = id; render(); return; }
 		if (btn && btn.classList.contains("cp-dup")) { var c = JSON.parse(JSON.stringify(f.n)); c.id = uid(); c.title = c.title ? c.title + " (copy)" : ""; c.pin = false; f.b.notes.splice(f.i + 1, 0, c); save(); render(); toast("Duplicated"); return; }
 		if (btn && btn.classList.contains("cp-del")) {
@@ -395,6 +396,163 @@
 		f.n.text = text.replace(/\s+$/, ""); f.n.title = title; if (card.dataset.pc != null) f.n.c = card.dataset.pc;
 		if (to !== f.b.id && board(to)) { f.b.notes.splice(f.i, 1); board(to).notes.unshift(f.n); toast("Moved to “" + board(to).name + "”"); }
 		if (!quiet) { editing = null; save(); render(); } else save();
+	}
+
+	/* ---------- Show big: one note alone, filling the window ----------
+	 * For showing someone an address, a phone number, a code... Text = what Copy gives (placeholders filled in), line breaks
+	 * kept, font size fitted to the window (binary search). ‹ › / arrow keys / swipe go through the notes shown on the page
+	 * (this board, or the search results). Light / dark is the overlay's own choice (KEY:show); colours are set inline so the
+	 * derived TOOL-DARK block never touches them. Full screen = the real Fullscreen API; the screen is kept awake while open. */
+	var SHOW_KEY = KEY + ":show", sv = null;
+	var THEMES = {
+		dark: { bg: "#000", fg: "#fff", mut: "#b8bec7", line: "#555", btn: "#1c1c1c", acc: "#ffd34d", accFg: "#111" },
+		light: { bg: "#fff", fg: "#000", mut: "#4a525d", line: "#9aa3af", btn: "#f1f3f6", acc: "#7a4a05", accFg: "#fff" }
+	};
+	function showTheme() {
+		try { var t = localStorage.getItem(SHOW_KEY); if (t === "dark" || t === "light") return t; } catch (e) {}
+		return document.body.classList.contains("dark-mode") ? "dark" : "light";
+	}
+	function showIds() { return Array.prototype.map.call($("cp-out").querySelectorAll(".cp-note[data-id]:not(.cp-edit)"), function (el) { return el.dataset.id; }); }
+	function showBig(id, from) {
+		if (!findNote(id)) return;
+		if (!sv) buildShow();
+		sv.ids = showIds(); sv.id = id; sv.from = from || null;
+		sv.el.hidden = false;
+		document.documentElement.classList.add("cp-show-open");
+		paintShow(); fsLabel(); showNote();
+		sv.close.focus();
+		wake(true);
+	}
+	function buildShow() {
+		var el = document.createElement("div");
+		el.className = "cp-show"; el.hidden = true;
+		el.setAttribute("role", "dialog"); el.setAttribute("aria-modal", "true"); el.setAttribute("aria-label", "Text shown big");
+		el.innerHTML = '<div class="cp-show-bar">' +
+			'<button type="button" class="cp-show-b" data-a="prev" title="Previous text (←)" aria-label="Previous text">‹</button>' +
+			'<span class="cp-show-pos" aria-live="polite"></span>' +
+			'<button type="button" class="cp-show-b" data-a="next" title="Next text (→)" aria-label="Next text">›</button>' +
+			'<b class="cp-show-title"></b><span class="cp-show-sp"></span>' +
+			'<button type="button" class="cp-show-b cp-show-copy" data-a="copy" title="Copy this text (C)">Copy</button>' +
+			'<button type="button" class="cp-show-b" data-a="theme" title="Light / dark (T)" aria-label="Switch light / dark">◐</button>' +
+			'<button type="button" class="cp-show-b" data-a="fs" title="Full screen (F)" aria-label="Full screen">⛶</button>' +
+			'<button type="button" class="cp-show-b" data-a="close" title="Close (Esc)" aria-label="Close">✕</button></div>' +
+			'<div class="cp-show-box"><div class="cp-show-t"></div></div>' +
+			'<div class="cp-show-hint">‹ › or swipe for the other texts · Esc closes</div>';
+		document.body.appendChild(el);
+		sv = { el: el, box: el.querySelector(".cp-show-box"), t: el.querySelector(".cp-show-t"), close: el.querySelector('[data-a="close"]'), ids: [], id: null };
+		el.addEventListener("click", function (e) {
+			var b = e.target.closest("[data-a]"); if (!b) return;
+			var a = b.dataset.a;
+			if (a === "close") closeShow();
+			else if (a === "prev") stepShow(-1);
+			else if (a === "next") stepShow(1);
+			else if (a === "copy") copyNote(sv.id);
+			else if (a === "theme") { try { localStorage.setItem(SHOW_KEY, showTheme() === "dark" ? "light" : "dark"); } catch (x) {} paintShow(); }
+			else if (a === "fs") toggleFs();
+		});
+		el.addEventListener("keydown", function (e) {
+			if (e.key !== "Tab") return; // keep focus inside the overlay
+			var f = el.querySelectorAll("button:not([disabled]):not([hidden])"), first = f[0], last = f[f.length - 1];
+			if (e.shiftKey && document.activeElement === first) { e.preventDefault(); last.focus(); }
+			else if (!e.shiftKey && document.activeElement === last) { e.preventDefault(); first.focus(); }
+		});
+		document.addEventListener("keydown", function (e) {
+			if (!sv || sv.el.hidden || e.ctrlKey || e.metaKey || e.altKey) return;
+			var k = e.key;
+			if (k === "Escape") { e.preventDefault(); closeShow(); }
+			else if (k === "ArrowLeft" || k === "PageUp") { e.preventDefault(); stepShow(-1); }
+			else if (k === "ArrowRight" || k === "PageDown") { e.preventDefault(); stepShow(1); }
+			else if (k === "c" || k === "C") copyNote(sv.id);
+			else if (k === "t" || k === "T") sv.el.querySelector('[data-a="theme"]').click();
+			else if (k === "f" || k === "F") toggleFs();
+		});
+		var sx = null, sy = 0;
+		sv.box.addEventListener("pointerdown", function (e) { sx = e.clientX; sy = e.clientY; });
+		sv.box.addEventListener("pointerup", function (e) {
+			if (sx === null) return;
+			var dx = e.clientX - sx, dy = e.clientY - sy; sx = null;
+			if (Math.abs(dx) > 50 && Math.abs(dx) > 1.5 * Math.abs(dy)) stepShow(dx < 0 ? 1 : -1);
+		});
+		sv.box.addEventListener("pointercancel", function () { sx = null; });
+		window.addEventListener("resize", function () { if (!sv.el.hidden) fitShow(); });
+		["fullscreenchange", "webkitfullscreenchange"].forEach(function (ev) { document.addEventListener(ev, function () { if (sv && !sv.el.hidden) { fsLabel(); fitShow(); } }); });
+		document.addEventListener("visibilitychange", function () { if (sv && !sv.el.hidden && document.visibilityState === "visible") wake(true); });
+		if (!(el.requestFullscreen || el.webkitRequestFullscreen)) el.querySelector('[data-a="fs"]').hidden = true;
+	}
+	function paintShow() {
+		var th = THEMES[showTheme()], el = sv.el;
+		el.style.background = th.bg; el.style.color = th.fg;
+		sv.t.style.color = th.fg; el.querySelector(".cp-show-title").style.color = th.fg; // the page's reset paints div / b #333
+		el.querySelector(".cp-show-hint").style.color = th.mut;
+		el.querySelector(".cp-show-pos").style.color = th.mut;
+		Array.prototype.forEach.call(el.querySelectorAll(".cp-show-b"), function (b) {
+			var acc = b.classList.contains("cp-show-copy");
+			b.style.background = acc ? th.acc : th.btn; b.style.color = acc ? th.accFg : th.fg; b.style.borderColor = acc ? th.acc : th.line;
+		});
+	}
+	function showNote() {
+		var f = findNote(sv.id); if (!f) { closeShow(); return; }
+		var i = sv.ids.indexOf(sv.id), n = sv.ids.length;
+		sv.el.querySelector(".cp-show-title").textContent = f.n.title || "";
+		sv.el.querySelector(".cp-show-pos").textContent = i >= 0 && n > 1 ? (i + 1) + " / " + n : "";
+		sv.el.querySelector('[data-a="prev"]').disabled = !(i > 0);
+		sv.el.querySelector('[data-a="next"]').disabled = !(i >= 0 && i < n - 1);
+		sv.el.querySelector(".cp-show-hint").hidden = n < 2;
+		sv.t.textContent = expand(f.n.text);
+		fitShow();
+	}
+	function stepShow(d) {
+		var i = sv.ids.indexOf(sv.id) + d;
+		if (i < 0 || i >= sv.ids.length) return;
+		sv.id = sv.ids[i]; showNote();
+	}
+	function fitShow() { // largest font size (px) at which the text fits the box without scrolling
+		var box = sv.box, t = sv.t;
+		box.classList.remove("is-scroll");
+		var cs = getComputedStyle(box);
+		var W = box.clientWidth - parseFloat(cs.paddingLeft) - parseFloat(cs.paddingRight);
+		var H = box.clientHeight - parseFloat(cs.paddingTop) - parseFloat(cs.paddingBottom);
+		if (W <= 0 || H <= 0) return;
+		var fits = function (px) { t.style.fontSize = px + "px"; return t.scrollWidth <= W + 0.5 && t.offsetHeight <= H + 0.5; };
+		var best = function () {
+			var lo = 12, hi = Math.max(14, Math.min(480, H)), ok = lo;
+			if (fits(hi)) return hi;
+			for (var k = 0; k < 14 && hi - lo > 0.5; k++) { var mid = (lo + hi) / 2; if (fits(mid)) { ok = mid; lo = mid; } else hi = mid; }
+			return Math.floor(ok);
+		};
+		// Keep the note's own lines when that costs little size (an address stays one line per line); else let long lines wrap.
+		t.classList.add("is-nowrap"); var keep = best(), keepOk = fits(keep);
+		t.classList.remove("is-nowrap"); var wrap = best();
+		var useKeep = keepOk && keep >= 0.7 * wrap;
+		t.classList.toggle("is-nowrap", useKeep);
+		box.classList.toggle("is-scroll", !fits(useKeep ? keep : wrap)); // a very long text at the smallest size: it scrolls instead
+	}
+	function fsEl() { return document.fullscreenElement || document.webkitFullscreenElement; }
+	function toggleFs() {
+		var el = sv.el;
+		try {
+			if (fsEl()) (document.exitFullscreen || document.webkitExitFullscreen).call(document);
+			else { var r = (el.requestFullscreen || el.webkitRequestFullscreen).call(el); if (r && r.catch) r.catch(function () { toast("Full screen was refused by the browser"); }); }
+		} catch (e) { toast("Full screen is not available here"); }
+	}
+	function fsLabel() {
+		var b = sv.el.querySelector('[data-a="fs"]'), on = !!fsEl();
+		b.textContent = on ? "⤡" : "⛶"; b.title = on ? "Leave full screen (F)" : "Full screen (F)"; b.setAttribute("aria-label", on ? "Leave full screen" : "Full screen");
+	}
+	var lock = null;
+	function wake(on) { // keep the screen on while a text is shown (where the browser allows it)
+		if (!on) { if (lock) { try { lock.release(); } catch (e) {} lock = null; } return; }
+		if (!navigator.wakeLock || lock) return;
+		navigator.wakeLock.request("screen").then(function (l) { lock = l; l.addEventListener("release", function () { if (lock === l) lock = null; }); }, function () {});
+	}
+	function closeShow() {
+		if (!sv || sv.el.hidden) return;
+		if (fsEl()) { try { (document.exitFullscreen || document.webkitExitFullscreen).call(document); } catch (e) {} }
+		sv.el.hidden = true;
+		document.documentElement.classList.remove("cp-show-open");
+		wake(false);
+		var back = $("cp-out").querySelector('.cp-note[data-id="' + sv.id + '"] .cp-show-btn') || sv.from;
+		if (back && back.isConnected) back.focus();
 	}
 
 	/* ---------- drag to reorder (desktop) ---------- */
