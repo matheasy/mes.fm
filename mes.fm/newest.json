@@ -1,5 +1,5 @@
 {
- "generated": "2026-10-24",
+ "generated": "2026-10-25",
  "calculators": [
   {
    "href": "/compound-interest-calculator",
@@ -100,6 +100,22 @@
  ],
  "tools": [
   {
+   "href": "/debt-clock",
+   "title": "Debt Clock",
+   "icon": "/img/debt-clock-logo.png",
+   "desc": "The US national debt ticking live from Treasury figures, plus world and Canada debt, per person, debt-to-GDP, interest per second and charts since 1790.",
+   "added": "2026-10-25",
+   "kind": "tool"
+  },
+  {
+   "href": "/magnetic-isopotentials",
+   "title": "Magnetic Isopotentials",
+   "icon": "/img/magnetic-isopotentials-logo.png",
+   "desc": "Drag and turn bar magnets and see their flux lines and magnetic isopotentials at once, with compasses, horseshoe and Halbach examples.",
+   "added": "2026-10-25",
+   "kind": "tool"
+  },
+  {
    "href": "/translate",
    "title": "Translate & Image to Text",
    "icon": "/img/translate-logo.png",
@@ -178,25 +194,25 @@
    "desc": "See which famous people were born today or on your birthday, who shares your exact date, and their zodiac signs.",
    "added": "2026-10-21",
    "kind": "tool"
-  },
-  {
-   "href": "/zodiac",
-   "title": "Zodiac & Birth Chart",
-   "icon": "/img/zodiac-logo.png",
-   "desc": "Your Sun, Moon and rising sign, planets, Moon phase and Chinese zodiac, with a chart wheel. For fun.",
-   "added": "2026-10-21",
-   "kind": "tool"
-  },
-  {
-   "href": "/reminder",
-   "title": "Reminder",
-   "icon": "/img/reminder-logo.png",
-   "desc": "Make one link for a livestream or event: a countdown in everyone's time zone and one-click calendar reminders.",
-   "added": "2026-10-21",
-   "kind": "tool"
   }
  ],
  "latest": [
+  {
+   "href": "/debt-clock",
+   "title": "Debt Clock",
+   "icon": "/img/debt-clock-logo.png",
+   "desc": "The US national debt ticking live from Treasury figures, plus world and Canada debt, per person, debt-to-GDP, interest per second and charts since 1790.",
+   "added": "2026-10-25",
+   "kind": "tool"
+  },
+  {
+   "href": "/magnetic-isopotentials",
+   "title": "Magnetic Isopotentials",
+   "icon": "/img/magnetic-isopotentials-logo.png",
+   "desc": "Drag and turn bar magnets and see their flux lines and magnetic isopotentials at once, with compasses, horseshoe and Halbach examples.",
+   "added": "2026-10-25",
+   "kind": "tool"
+  },
   {
    "href": "/translate",
    "title": "Translate & Image to Text",
@@ -242,22 +258,6 @@
    "title": "Fuel Cost Calculator",
    "icon": "/img/fuel-cost-calculator-logo.png",
    "desc": "What a trip costs in fuel, from distance, L/100 km or mpg and price, split per person, plus EV comparison.",
-   "added": "2026-10-23",
-   "kind": "calculator"
-  },
-  {
-   "href": "/time-calculator",
-   "title": "Time Calculator",
-   "icon": "/img/time-calculator-logo.png",
-   "desc": "Hours between two times, add and subtract time, a timesheet with breaks and decimal hours for payroll.",
-   "added": "2026-10-23",
-   "kind": "calculator"
-  },
-  {
-   "href": "/tip-calculator",
-   "title": "Tip Calculator",
-   "icon": "/img/tip-calculator-logo.png",
-   "desc": "Tip and split the bill: evenly or by what each person ordered, rounding, and tipping customs by country.",
    "added": "2026-10-23",
    "kind": "calculator"
   }

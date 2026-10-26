@@ -526,7 +526,7 @@ body.is-stuck #navbar.hide { position: fixed; top: 56px; right: 8px; }
                                     <h1 class="page-title">Tools</h1>                                        <p class="page-description">Free online tools for all your needs.</p>	<div id="main-content">
 		<div class="hub-filter">
 			<input type="search" id="hub-search" placeholder="Search tools&hellip;" aria-label="Search tools" autocomplete="off">
-			<div class="hub-chips" id="hub-chips"><button type="button" data-c="all" aria-pressed="true">All (80)</button><button type="button" data-c="popular" aria-pressed="false">&#9733; Popular (8)</button><button type="button" data-c="text" aria-pressed="false">Text &amp; Symbols (7)</button><button type="button" data-c="time" aria-pressed="false">Time &amp; Focus (17)</button><button type="button" data-c="media" aria-pressed="false">Media &amp; Web (19)</button><button type="button" data-c="money" aria-pressed="false">Money &amp; Markets (1)</button><button type="button" data-c="games" aria-pressed="false">Games &amp; Chance (4)</button><button type="button" data-c="photos" aria-pressed="false">Photos &amp; Images (7)</button><button type="button" data-c="sky" aria-pressed="false">Sky &amp; Space (3)</button><button type="button" data-c="sim" aria-pressed="false">Simulations (22)</button></div>
+			<div class="hub-chips" id="hub-chips"><button type="button" data-c="all" aria-pressed="true">All (82)</button><button type="button" data-c="popular" aria-pressed="false">&#9733; Popular (8)</button><button type="button" data-c="text" aria-pressed="false">Text &amp; Symbols (7)</button><button type="button" data-c="time" aria-pressed="false">Time &amp; Focus (17)</button><button type="button" data-c="media" aria-pressed="false">Media &amp; Web (19)</button><button type="button" data-c="money" aria-pressed="false">Money &amp; Markets (2)</button><button type="button" data-c="games" aria-pressed="false">Games &amp; Chance (4)</button><button type="button" data-c="photos" aria-pressed="false">Photos &amp; Images (7)</button><button type="button" data-c="sky" aria-pressed="false">Sky &amp; Space (3)</button><button type="button" data-c="sim" aria-pressed="false">Simulations (23)</button></div>
 		</div>
 		<section class="hub-cat hub-cat--mini hub-cat--newest" data-cat="newest" id="newest">
 			<h2 class="hub-cat__title">New tools</h2>
@@ -911,7 +911,14 @@ body.is-stuck #navbar.hide { position: fixed; top: 56px; right: 8px; }
 			<h2 class="hub-cat__title">Money &amp; Markets</h2>
 		<table class="tbl tbl--stack">
 			<tr class="calc-row">
-				<td class="calc-container"><a class="calc-link" href="https://mes.fm/signals">
+				<td class="calc-container"><a class="calc-link" href="https://mes.fm/debt-clock">
+					<div class="calc__img-container"><img class="calc__img" src="img/debt-clock-logo.png?v=1" alt="MES Debt Clock logo" width="88" height="88"></div>
+					<div class="calc__text">
+						<span class="calc__text--title">Debt Clock</span>
+						<span class="calc__text--desc">The US national debt ticking live from Treasury figures, plus world and Canada debt, per person, debt-to-GDP, interest per second and charts since 1790.</span>
+					</div></a>
+		        </td>
+				<td class="calc-container calc-container--last"><a class="calc-link" href="https://mes.fm/signals">
 					<div class="calc__img-container"><img class="calc__img" src="img/signals-logo.png?v=2" alt="MES Market Signals logo" width="88" height="88"></div>
 					<div class="calc__text">
 						<span class="calc__text--title">Market Signals</span>
@@ -1157,71 +1164,80 @@ body.is-stuck #navbar.hide { position: fixed; top: 56px; right: 8px; }
 						<span class="calc__text--desc">Paint glass, water or any refractive index and watch a live light wave slow down, bend, focus in a lens or curve like a mirage. Compare it with rays.</span>
 					</div></a>
 		        </td>
-				<td class="calc-container calc-container--last"><a class="calc-link" href="https://mes.fm/mandelbrot">
+				<td class="calc-container calc-container--last"><a class="calc-link" href="https://mes.fm/magnetic-isopotentials">
+					<div class="calc__img-container"><img class="calc__img" src="img/magnetic-isopotentials-logo.png?v=1" alt="Magnetic Isopotentials logo" width="88" height="88"></div>
+					<div class="calc__text">
+						<span class="calc__text--title">Magnetic Isopotentials</span>
+						<span class="calc__text--desc">Drag and turn bar magnets and see their flux lines and magnetic isopotentials at once, with compasses, horseshoe and Halbach examples.</span>
+					</div></a>
+		        </td>
+			</tr>
+			<tr class="calc-row">
+				<td class="calc-container"><a class="calc-link" href="https://mes.fm/mandelbrot">
 					<div class="calc__img-container"><img class="calc__img" src="img/mandelbrot-logo.png?v=1" alt="MES Mandelbrot Explorer logo" width="88" height="88"></div>
 					<div class="calc__text">
 						<span class="calc__text--title">Mandelbrot Explorer</span>
 						<span class="calc__text--desc">Zoom into the Mandelbrot set, see the Julia set of any point, trace orbits and try the Burning Ship, Tricorn and Multibrot fractals.</span>
 					</div></a>
 		        </td>
-			</tr>
-			<tr class="calc-row">
-				<td class="calc-container"><a class="calc-link" href="https://mes.fm/metric-tensor">
+				<td class="calc-container calc-container--last"><a class="calc-link" href="https://mes.fm/metric-tensor">
 					<div class="calc__img-container"><img class="calc__img" src="img/metric-tensor-logo.png?v=1" alt="MES Metric Tensor Explorer logo" width="88" height="88"></div>
 					<div class="calc__text">
 						<span class="calc__text--title">Metric Tensor Explorer</span>
 						<span class="calc__text--desc">Type or pick a metric (Schwarzschild, de Sitter, a wormhole...) and get the Christoffel symbols, Riemann, Ricci and Einstein tensors, plus geodesics drawn on curved surfaces.</span>
 					</div></a>
 		        </td>
-				<td class="calc-container calc-container--last"><a class="calc-link" href="https://mes.fm/michelson-morley-experiment">
+			</tr>
+			<tr class="calc-row">
+				<td class="calc-container"><a class="calc-link" href="https://mes.fm/michelson-morley-experiment">
 					<div class="calc__img-container"><img class="calc__img" src="img/michelson-morley-experiment-logo.png?v=1" alt="MES Michelson-Morley Experiment Simulator logo" width="88" height="88"></div>
 					<div class="calc__text">
 						<span class="calc__text--title">Michelson-Morley Experiment Simulator</span>
 						<span class="calc__text--desc">Turn an interferometer through an aether wind, watch the fringes shift, compare the 1881 and 1887 experiments and calculate the expected shift.</span>
 					</div></a>
 		        </td>
-			</tr>
-			<tr class="calc-row">
-				<td class="calc-container"><a class="calc-link" href="https://mes.fm/neural-network-playground">
+				<td class="calc-container calc-container--last"><a class="calc-link" href="https://mes.fm/neural-network-playground">
 					<div class="calc__img-container"><img class="calc__img" src="img/neural-network-playground-logo.png?v=3" alt="Neural Network Playground logo" width="88" height="88"></div>
 					<div class="calc__text">
 						<span class="calc__text--title">Neural Network Playground</span>
 						<span class="calc__text--desc">Train a real neural network in your browser: pick the data, layers and activation, and watch the decision boundary, the loss and every hidden neuron.</span>
 					</div></a>
 		        </td>
-				<td class="calc-container calc-container--last"><a class="calc-link" href="https://mes.fm/orbit-simulator">
+			</tr>
+			<tr class="calc-row">
+				<td class="calc-container"><a class="calc-link" href="https://mes.fm/orbit-simulator">
 					<div class="calc__img-container"><img class="calc__img" src="img/orbit-simulator-logo.png?v=1" alt="MES Orbit Simulator logo" width="88" height="88"></div>
 					<div class="calc__text">
 						<span class="calc__text--title">Orbit Simulator</span>
 						<span class="calc__text--desc">Launch planets by dragging, watch real gravity with many bodies, see Kepler's laws and equal areas, try Halley's comet, the Moon and a gravity assist, and compute orbit speeds and transfers.</span>
 					</div></a>
 		        </td>
-			</tr>
-			<tr class="calc-row">
-<td class="calc-container"><a class="calc-link" href="https://mes.fm/photoelectric-effect-simulator">
+<td class="calc-container calc-container--last"><a class="calc-link" href="https://mes.fm/photoelectric-effect-simulator">
 					<div class="calc__img-container"><img class="calc__img" src="img/photoelectric-effect-simulator-logo.png?v=2" alt="MES Photoelectric Effect Simulator logo" width="88" height="88"></div>
 					<div class="calc__text">
 						<span class="calc__text--title">Photoelectric Effect Simulator</span>
 						<span class="calc__text--desc">Shine light on a metal and watch electrons escape. Threshold, stopping voltage, graphs, and a lab to measure Planck's constant.</span>
 					</div></a>
 		        </td>
-				<td class="calc-container calc-container--last"><a class="calc-link" href="https://mes.fm/redshift-simulator">
+			</tr>
+			<tr class="calc-row">
+				<td class="calc-container"><a class="calc-link" href="https://mes.fm/redshift-simulator">
 					<div class="calc__img-container"><img class="calc__img" src="img/redshift-simulator-logo.png?v=1" alt="MES Redshift and Blueshift Simulator logo" width="88" height="88"></div>
 					<div class="calc__text">
 						<span class="calc__text--title">Redshift &amp; Blueshift Simulator</span>
 						<span class="calc__text--desc">Why light changes colour: near and far from a heavy mass, moving sources, a spectrum shifter and the expanding universe, with real numbers.</span>
 					</div></a>
 		        </td>
-			</tr>
-			<tr class="calc-row">
-							<td class="calc-container"><a class="calc-link" href="https://mes.fm/time-dilation">
+							<td class="calc-container calc-container--last"><a class="calc-link" href="https://mes.fm/time-dilation">
 					<div class="calc__img-container"><img class="calc__img" src="img/time-dilation-logo.png?v=1" alt="MES Time Dilation Simulator logo" width="88" height="88"></div>
 					<div class="calc__text">
 						<span class="calc__text--title">Time Dilation Simulator</span>
 						<span class="calc__text--desc">How much would you age at close to the speed of light? Watch a traveller's clock, heartbeat and ageing slow down, see the light clock that explains why, fly the twin paradox at a steady 1 g, and calculate it.</span>
 					</div></a>
 		        </td>
-				<td class="calc-container calc-container--last"><a class="calc-link" href="https://mes.fm/llm-simulator">
+			</tr>
+			<tr class="calc-row">
+				<td class="calc-container"><a class="calc-link" href="https://mes.fm/llm-simulator">
 					<div class="calc__img-container"><img class="calc__img" src="img/llm-simulator-logo.png?v=3" alt="Toy Language Model Simulator logo" width="88" height="88"></div>
 					<div class="calc__text">
 						<span class="calc__text--title">Toy Language Model Simulator</span>
