@@ -581,4 +581,23 @@
         if (nav && btn && nav.classList.contains("hide")) btn.click();
     });
     window.MESSearch.open = open;
+
+    /* "Rate this page" stars (main_js/rating.js, ~4 KB): fetched only when the Comments bar / footer nears the screen.
+       rating.js decides itself which pages get it (private / utility pages, data-no-rating). */
+    function ratingLoader() {
+        var a = document.getElementById("comments-button") || document.querySelector(".mes-comments-toggle") || document.getElementById("footer");
+        if (!a || window.__mesRatingLoad) return;
+        window.__mesRatingLoad = 1;
+        var done = false, t = 0;
+        function go() {
+            if (done) return; done = true;
+            window.removeEventListener("scroll", onScroll);
+            var s = document.createElement("script"); s.src = "/main_js/rating.js?v=1"; s.defer = true; document.head.appendChild(s);
+        }
+        function near() { var r = a.getBoundingClientRect(); return (r.width || r.height) && r.top < (window.innerHeight || 800) + 600; }
+        function onScroll() { if (!t) t = setTimeout(function () { t = 0; if (near()) go(); }, 200); }
+        window.addEventListener("scroll", onScroll, { passive: true });
+        if (near()) go();
+    }
+    if (document.readyState === "loading") document.addEventListener("DOMContentLoaded", ratingLoader); else ratingLoader();
 })();
