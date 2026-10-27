@@ -193,6 +193,7 @@ export const SECTIONS = [
   {
     // Andrew Johnson's two 9/11 books (published on mes.fm with his permission, 2026-10): the online editions are built by
     // build_aj_books.py, the PDF pages by build_pdf_page.py. Card images = img/og.jpg of each book page (the title page on a blurred backdrop).
+    // One card per book: its PDF page is the card's "PDF" link, reached through the Open in: switch (MES.fm | PDF), not a tile of its own.
     id: "911-andrew-johnson-books",
     title: "Andrew Johnson's 9/11 Books",
     standalone: [
@@ -200,18 +201,12 @@ export const SECTIONS = [
       {"href": "https://peakd.com/hive-113182/@mes/andrew-johnsons-911-books-2011-finding-the-truth-and-2017-holding-the-truth", "title": "MES post about both books"},
     ],
     items: [
-      { title: "9/11 Holding the Truth (2017) by Andrew Johnson: Read Online",
+      { title: "9/11 Holding the Truth (2017) by Andrew Johnson",
         image: "https://mes.fm/911-holding-truth/img/og.jpg",
         links: [["Read online", "https://mes.fm/911-holding-truth"], ["PDF", "https://mes.fm/911-holding-truth-pdf"], ["Author's page", "https://www.checktheevidence.com/wordpress/2017/11/20/9-11-holding-the-truth/"], ["Amazon", "https://www.amazon.com/dp/1979875987"]] },
-      { title: "9/11 Finding the Truth (2011) by Andrew Johnson: Read Online",
+      { title: "9/11 Finding the Truth (2011) by Andrew Johnson",
         image: "https://mes.fm/911-finding-truth/img/og.jpg",
         links: [["Read online", "https://mes.fm/911-finding-truth"], ["PDF", "https://mes.fm/911-finding-truth-pdf"], ["Author's page", "https://www.checktheevidence.com/wordpress/2009/06/15/9-11-finding-the-truth-free-download-book/"], ["Amazon", "https://www.amazon.com/911-Finding-Truth-Andrew-Johnson/dp/1548827614/"]] },
-      { title: "9/11 Holding the Truth: the PDF (read or download)",
-        image: "https://mes.fm/911-holding-truth/img/og.jpg",
-        links: [["PDF", "https://mes.fm/911-holding-truth-pdf"], ["Read online", "https://mes.fm/911-holding-truth"], ["Author's PDF", "http://www.checktheevidence.com/pdf/911%20Holding%20The%20Truth%20-Andrew%20Johnson%20-%202017.pdf"]] },
-      { title: "9/11 Finding the Truth: the PDF (read or download)",
-        image: "https://mes.fm/911-finding-truth/img/og.jpg",
-        links: [["PDF", "https://mes.fm/911-finding-truth-pdf"], ["Read online", "https://mes.fm/911-finding-truth"], ["Author's PDF", "http://www.checktheevidence.co.uk/pdf/9-11%20-%20Finding%20the%20Truth.pdf"]] },
     ],
   },
   {

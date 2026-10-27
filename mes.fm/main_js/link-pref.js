@@ -34,7 +34,7 @@
       var ic = a.querySelector('.lp-ic');
       if (ic) ic.setAttribute('data-s', s);
       var nm = a.querySelector('.lp-name');
-      if (nm && labels[s]) nm.textContent = 'View on ' + labels[s];
+      if (nm && labels[s]) nm.textContent = s === 'pdf' ? 'View the PDF' : 'View on ' + labels[s];
     });
   }
 

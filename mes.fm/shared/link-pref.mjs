@@ -19,6 +19,9 @@ const svg = (d) =>
 // Site order = button order. Icons are simple 24x24 single-colour marks (filled by currentColor through a mask).
 export const LP_SITES = [
   { id: "mes", label: "MES.fm", host: /^https?:\/\/(?:www\.)?mes\.fm\//, d: "M1 12.6 4.6 10.6 8.6 17.4 14.6 1.8H23.2V4.8H16.6L10 22.4H7.4z" },
+  // PDF: a hosted-PDF page on mes.fm (`/<slug>-pdf`, build_pdf_page.py) or a .pdf file anywhere. `first`: tested before the
+  // other sites, so a mes.fm/...-pdf link counts as PDF, not MES.fm. Icon = a page with a folded corner and a "PDF" band.
+  { id: "pdf", label: "PDF", first: true, host: /^https?:\/\/(?:(?:www\.)?mes\.fm\/[\w.-]+-pdf\/?(?:[?#].*)?$|[^?#]+\.pdf(?:[?#].*)?$)/i, d: "M4 1h10v1.6h-10zM14 1 14 7 20 7zM18.4 7h1.6v14.4h-1.6zM4 21.4h16v1.6h-16zM4 2.6h1.6v9.4h-1.6zM4 19.5h1.6v1.9h-1.6zM1.5 12h16v7.5h-16zM3 13.5h1.2v4.5h-1.2zM4.2 13.5h2.4v1.2h-2.4zM5.4 14.7h1.2v0.9h-1.2zM4.2 15.6h2.4v1.2h-2.4zM7.6 13.5h1.2v4.5h-1.2zM8.8 13.5h1.6v1.2h-1.6zM8.8 16.8h1.6v1.2h-1.6zM10 14.7h1.2v2.1h-1.2zM12.2 13.5h1.2v4.5h-1.2zM13.4 13.5h2.4v1.2h-2.4zM13.4 15.4h1.8v1.2h-1.8z" },
   {
     id: "youtube", label: "YouTube", host: /^https?:\/\/(?:(?:www|m)\.)?(?:youtube\.com\/(?:watch|live|shorts)|youtu\.be\/)/,
     d: "M23 7.2a3 3 0 0 0-2.1-2.1C19 4.6 12 4.6 12 4.6s-7 0-8.9.5A3 3 0 0 0 1 7.2C.5 9.1.5 12 .5 12s0 2.9.5 4.8a3 3 0 0 0 2.1 2.1c1.9.5 8.9.5 8.9.5s7 0 8.9-.5a3 3 0 0 0 2.1-2.1c.5-1.9.5-4.8.5-4.8s0-2.9-.5-4.8zM9.7 15.4V8.6l5.9 3.4z",
@@ -34,11 +37,13 @@ export const LP_SITES = [
 ];
 const BY_ID = Object.fromEntries(LP_SITES.map((s) => [s.id, s]));
 
-// Labels of links that are not the item itself (a trailer, a summary post, a playlist, notes PDFs): never a target.
-const NOT_THE_ITEM = /^(?:trailer|summary|playlist|pdf|mes links)/i;
+// Labels of links that are not the item itself (a trailer, a summary post, a playlist, "PDF notes"): never a target.
+// (A plain "PDF" link IS the item in another format, e.g. a book's PDF, and is offered under the PDF button.)
+const NOT_THE_ITEM = /^(?:trailer|summary|playlist|pdf notes|mes links)/i;
 
 export function lpSite(href) {
-  const s = LP_SITES.find((x) => x.host.test(href || ""));
+  const h = href || "";
+  const s = LP_SITES.find((x) => x.first && x.host.test(h)) || LP_SITES.find((x) => !x.first && x.host.test(h));
   return s ? s.id : null;
 }
 
@@ -70,7 +75,7 @@ export const lpIcon = (site) => `<span class="lp-ic" data-s="${site}" aria-hidde
 export function lpCaption(defHref, fallback = "View &rarr;") {
   const s = lpSite(defHref);
   if (!s) return fallback;
-  return `${lpIcon(s)}<span class="lp-name">View on ${BY_ID[s].label}</span> &rarr;`;
+  return `${lpIcon(s)}<span class="lp-name">${s === "pdf" ? "View the PDF" : "View on " + BY_ID[s].label}</span> &rarr;`;
 }
 
 // The switch. maps = one lpMap() per item of the main list (for the counts); a site is offered when at least
