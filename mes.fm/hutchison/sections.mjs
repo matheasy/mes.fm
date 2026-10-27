@@ -104,6 +104,7 @@ export const SECTIONS = [
     id: "nancy",
     title: "Nancy Hutchison",
     items: [
+      { href: "https://mes.fm/imagining-motion", title: "Imagining Motion: Pain, Cancer, RETURN, and Volition — conversation for John Hutchison" },
       { href: "https://mes.fm/hutchison-nancy-turn-return", title: "TURN, RETURN, and the Operator Differential — transcript for John Hutchison" },
       { href: "https://mes.fm/hutchison-nancy-physics-system", title: "John Hutchison and the Physics of the System — report by Nancy Hutchison" },
     ],

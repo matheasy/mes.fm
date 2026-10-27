@@ -192,10 +192,10 @@ const PAGES = [
   },
   {
     // Tile only: the MES Hutchison Effect Simulator (a build_tool_apps.py tool page). Icon = img/hutchison-effect-simulator-icon.jpg
-    // (900x600 render of the simulator's LADS Phase I floor until Grok art lands; bump iconVersion when replaced).
+    // (Grok art since 2026-10-26; bump iconVersion when replaced).
     slug: "hutchison-effect-simulator",
     href: "/hutchison-effect-simulator",
-    iconVersion: 1,
+    iconVersion: 2,
     tileOnly: true,
     tileLabel: "Hutchison Effect Simulator",
   },
@@ -220,14 +220,14 @@ const PAGES = [
   },
   {
     // Nancy Hutchison's reports, newest first. Kept as the LAST tile on the hub (owner request, 2026-10-26). Icon img/nancy-icon.jpg = 900x600 crop of the newest
-    // report's picture (hutchison-nancy-turn-return/img/turn-return.jpg): refresh it + bump iconVersion per new report.
+    // report's picture (now imagining-motion/img/imagining-motion.jpg): refresh it + bump iconVersion per new report.
     slug: "nancy",
     sectionId: "nancy",
-    iconVersion: 1,
+    iconVersion: 2,
     tileLabel: "Nancy Hutchison",
     title: "Nancy Hutchison: Reports for John Hutchison",
     description:
-      "Nancy Hutchison's reports and transcripts on John Hutchison's work: TURN, RETURN and the Operator Differential, and John Hutchison and the Physics of the System.",
+      "Nancy Hutchison's reports and transcripts on John Hutchison's work: Imagining Motion, TURN, RETURN and the Operator Differential, and the Physics of the System.",
   },
 ];
 addAllPage(SECTIONS, PAGES, { hub: "hutchison", name: "Hutchison Effect" });

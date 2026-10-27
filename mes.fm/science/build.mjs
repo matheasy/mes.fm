@@ -140,7 +140,7 @@ const PAGES = [
     // Tile only: the Hutchison Effect Simulator tool page. Icon = img/hutchison-effect-simulator-icon.jpg (shared with the mes.fm/hutchison tile).
     slug: "hutchison-effect-simulator",
     href: "/hutchison-effect-simulator",
-    iconVersion: 1,
+    iconVersion: 2,
     tileOnly: true,
     tileLabel: "Hutchison Effect Simulator",
   },
