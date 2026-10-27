@@ -1,0 +1,159 @@
+	<script>try{if(!localStorage.getItem('pageMode')){document.documentElement.classList.add('page-wide')}}catch(e){}</script>
+	<div class="tu hx" id="hx">
+		<div class="hx-tabs" role="tablist" aria-label="Simulator views">
+			<button type="button" role="tab" data-tab="lab" aria-selected="true">Lab floor</button>
+			<button type="button" role="tab" data-tab="sch" aria-selected="false">Schematic</button>
+			<button type="button" role="tab" data-tab="eq" aria-selected="false">Equipment</button>
+		</div>
+
+		<section data-panel="lab" role="tabpanel">
+			<p class="tu-note hx-lead">Lay out a Hutchison lab, switch the equipment on and watch the fields cross. The colours show where the fields of the Tesla coils, Van de Graaff, RF transmitters and spark gaps meet; the samples in that zone may <b>lift, wobble, bend, fracture, glow, smoke or bubble</b>, as in John Hutchison's footage. Start from a preset, then move, turn, add and cable things together.</p>
+			<div class="hx-chips" id="hx-pre" role="group" aria-label="Lab layouts"></div>
+			<div class="hx-bar" id="hx-tools" role="toolbar" aria-label="Floor tools">
+				<button type="button" data-tool="move" aria-pressed="true" title="Select, move and turn (drag the yellow handle)">✥ Move / turn</button>
+				<button type="button" data-tool="cable" aria-pressed="false" title="Click the device that feeds, then the device it feeds">⇢ Cable</button>
+				<button type="button" data-tool="del" aria-pressed="false" title="Click anything to remove it">✕ Remove</button>
+				<span class="hx-note" id="hx-note" aria-live="polite"></span>
+			</div>
+			<details class="hx-pal-wrap" open><summary>Equipment palette</summary><div class="hx-pal" id="hx-pal" role="group" aria-label="Add equipment"></div></details>
+			<details class="hx-pal-wrap"><summary>Samples palette</summary><div class="hx-pal" id="hx-spal" role="group" aria-label="Add samples"></div></details>
+
+			<div class="hx-wrap"><div class="hx-stage" id="hx-stage">
+				<canvas id="hx-c" tabindex="0" role="img" aria-label="Top-down floor plan of the lab: equipment, cables, samples and a colour map of the fields. Drag things to move them; keys: arrows nudge, R turns, Delete removes, Ctrl+D duplicates."></canvas>
+				<div class="hx-leg" id="hx-leg"></div>
+				<div class="hx-run"><button type="button" id="hx-play" aria-pressed="true">❚❚ Pause</button><button type="button" id="hx-restart" title="Start the experiment clock again">↺ Restart</button><button type="button" id="hx-png" title="Save the floor as a picture" aria-label="Save as PNG">📷</button><button type="button" id="hx-full" title="Full screen" aria-label="Full screen">⛶</button></div>
+				<div class="hx-spd" role="group" aria-label="Speed of the experiment clock"><button type="button" id="hx-slow" aria-label="Slower">−</button><span id="hx-spd-v">60×</span><button type="button" id="hx-fast" aria-label="Faster">+</button></div>
+			</div>
+			<div class="hx-camwrap"><canvas id="hx-cam" role="img" aria-label="Target camera: the samples in the active area seen from the side, with interference when the camera sits in a strong field."></canvas></div>
+			<div class="hx-readouts">
+				<div class="hx-ro"><span>Pointer</span><b id="hx-r-p">–</b><small>x, y from the top-left corner</small></div>
+				<div class="hx-ro"><span>Field there</span><b id="hx-r-e">–</b><small id="hx-r-es">move over the floor</small></div>
+				<div class="hx-ro"><span>Hutchison drive</span><b id="hx-r-d">–</b><small id="hx-r-ds"></small></div>
+				<div class="hx-ro"><span>Beat frequency</span><b id="hx-r-b">–</b><small id="hx-r-bs"></small></div>
+				<div class="hx-ro"><span>Experiment time</span><b id="hx-r-t">0:00</b><small id="hx-r-ts"></small></div>
+				<div class="hx-ro"><span>Events</span><b id="hx-r-ev">0</b><small>see the log below</small></div>
+				<div class="hx-ro"><span>Power drawn</span><b id="hx-r-w">–</b><small id="hx-r-ws"></small></div>
+			</div></div>
+
+			<div class="hx-cols">
+				<div class="tu-card hx-edit" id="hx-edit" aria-live="off"></div>
+				<div class="tu-card hx-opts">
+					<h3 class="hx-h">View and room</h3>
+					<div class="tu-field"><span class="tu-label">Colour the floor by</span><select id="hx-map" class="tu-select" aria-label="Colour the floor by">
+						<option value="D">Hutchison drive (best estimate)</option><option value="E">Electric field |E|</option><option value="B">Magnetic field |B|</option><option value="N">Overlap of sources</option><option value="W">Standing waves (locked sources)</option><option value="I">Camera glitch risk</option><option value="T">Field in time (animated)</option>
+					</select></div>
+					<div class="hx-checks">
+						<label class="hx-ck"><input type="checkbox" id="hx-o-cab"> Cables</label>
+						<label class="hx-ck"><input type="checkbox" id="hx-o-lab"> Labels</label>
+						<label class="hx-ck"><input type="checkbox" id="hx-o-ring"> Live rings</label>
+						<label class="hx-ck"><input type="checkbox" id="hx-o-cam"> Target camera</label>
+					</div>
+					<div class="hx-room">
+						<label>Room <input type="number" id="hx-rw" class="tu-input" min="2" max="60" step="0.1" aria-label="Room width in metres"> × <input type="number" id="hx-rh" class="tu-input" min="2" max="60" step="0.1" aria-label="Room depth in metres"> m</label>
+					</div>
+					<div class="tu-field"><span class="tu-label" id="hx-rr-l">Walls and metal gear reflect RF: <b id="hx-rr-v"></b></span><input type="range" id="hx-rr" min="0" max="0.9" step="0.05" aria-labelledby="hx-rr-l"><span class="tu-note">For RF above 1 MHz: first reflections off the four walls (standing waves).</span></div>
+					<div class="hx-checks"><button type="button" class="tu-btn tu-btn--ghost" id="hx-link">🔗 Copy link to this layout</button></div>
+					<p class="tu-note">Keys on the floor: arrows nudge (Shift = 1 m), <b>R</b> turns, <b>Delete</b> removes, <b>Ctrl+D</b> duplicates, <b>Space</b> runs / pauses, <b>Esc</b> cancels.</p>
+				</div>
+			</div>
+
+			<div class="tu-card">
+				<h3 class="hx-h">Samples: chance of each effect in the next 10 minutes</h3>
+				<p class="tu-note">Best estimates after the warm-up, from the field where each sample sits. The last column is the ordinary electrostatic pull as a share of the sample's weight, for comparison.</p>
+				<div class="hx-tscroll"><table class="hx-table" id="hx-table"><thead id="hx-thead"></thead><tbody id="hx-tbody"></tbody></table></div>
+				<h3 class="hx-h">Event log</h3>
+				<ul class="hx-log" id="hx-log" aria-live="polite"></ul>
+			</div>
+
+			<div class="hx-charts">
+				<div class="tu-card"><canvas id="hx-ch1" role="img" aria-label="Field strength against distance from the selected source, with the drive."></canvas></div>
+				<div class="tu-card"><canvas id="hx-ch2" role="img" aria-label="Spectrum of all sources at the sample or active area."></canvas></div>
+				<div class="tu-card hx-span"><canvas id="hx-ch3" role="img" aria-label="Timeline of the effects seen so far."></canvas></div>
+			</div>
+
+			<div class="tu-card" id="hx-explain">
+				<h3 class="hx-h">How this setup works</h3>
+				<div id="hx-explain-b"></div>
+			</div>
+		</section>
+
+		<section data-panel="sch" role="tabpanel" hidden>
+			<p class="tu-note hx-lead">The circuit of the apparatus on the floor, drawn from the cables: power on the left, then gaps, tanks and tuning, then the coils and field shapers they drive. Devices with no cables act on the target through the air and are listed underneath. Draw cables on the Lab floor with the <b>Cable</b> tool.</p>
+			<div class="tu-card hx-schwrap"><canvas id="hx-sch" role="img" aria-label="Block schematic of the apparatus generated from the layout."></canvas></div>
+			<div class="hx-checks"><button type="button" class="tu-btn tu-btn--ghost" id="hx-sch-png">📷 Save the schematic</button><button type="button" class="tu-btn tu-btn--ghost" id="hx-sch-go">← Back to the lab floor</button></div>
+			<div class="tu-card">
+				<h3 class="hx-h">George Hathaway's LADS Phase I block schematic</h3>
+				<p>In his 1993 overview George Hathaway drew the circuit of the Phase I lab on a board: a <b>Van de Graaff</b> generator (150,000-200,000 V at microamps); a <b>small Tesla coil</b> driven by twin 807 vacuum-tube oscillators with a clean spectrum; a <b>spark gap</b> arcing every 40 seconds or so, fed by a 15 kV DC supply through about a 0.1 µF capacitor; high voltage entering at 21 kV DC through capacitively coupled toroid coils; a <b>double-ended (dumbbell) Tesla coil</b>; a <b>field shaper</b> (a coil with an aluminium ball and a halo ring); a <b>tank circuit</b> of tuned capacitors and inductors in parallel; a <b>main tuning section</b> of 15 kV capacitors of a few picofarads controlling the energy into the primary of the <b>large Tesla coil</b> (about 4.5 ft tall, 21-turn primary of #8 enamelled wire about 1.5 ft across); a brass ring around the bottom of the large coil fed from a Tesla discharge coil (double iron core); and a <b>snapping gap</b> that fired every 30-40 seconds at 10-15 kV across about half an inch, charging a toroid around the top of the large coil that was connected to neither winding. The large coil was never driven directly: it was powered loosely, inductively and capacitively, through nearby toroid-shaped coils. The <b>LADS Phase I</b> preset on the Lab floor rebuilds this layout.</p>
+			</div>
+		</section>
+
+		<section data-panel="eq" role="tabpanel" hidden>
+			<p class="tu-note hx-lead">Every piece of equipment in the simulator: a drawing, typical specifications, what John Hutchison and George Hathaway used, and notes for planning a replication. <b>+ Add to the lab floor</b> takes you back to the floor with that device ready to place.</p>
+			<div class="hx-eqgrid" id="hx-eqgrid"></div>
+			<div class="tu-card">
+				<h3 class="hx-h">How each material responds (model)</h3>
+				<p class="tu-note">0 = never, 1 = strongest. Best estimates from the reported samples: aluminium and steel turning to dust and white powder, steel bars splitting, a molybdenum rod bending, paper smoking, water foaming, wood and metal fusing.</p>
+				<div class="hx-tscroll"><table class="hx-table" id="hx-mattable"></table></div>
+				<h3 class="hx-h">The effects in the model</h3>
+				<div class="hx-tscroll"><table class="hx-table hx-table--text" id="hx-efftable"></table></div>
+			</div>
+		</section>
+
+		<div class="tu-seo">
+			<h2>What the Hutchison Effect is</h2>
+			<p>In 1979 John Hutchison, a self-taught experimenter in Vancouver, was trying to repeat experiments of Nikola Tesla with two Tesla coils. When he added a <strong>Van de Graaff generator</strong> to the two coils, strange things began to happen in the space between them. Over the following decades he and the people who visited his labs reported:</p>
+			<ul>
+				<li><strong>Levitation</strong> of conducting and insulating solids, of semi-solids and of liquids, with lifts and "ballistic lifts" seen with objects of a few grams up to about 750 kg (1,500 lb); hovering, translation and vibration.</li>
+				<li><strong>Metal fracturing</strong>: bars splitting, steel crumbling "like a cookie", the tops of steel bars and aluminium blocks turning to dust and white powder, chrome plating blown off, holes appearing in glass.</li>
+				<li><strong>"Jelly-metal" plasticization</strong>: metal going soft and bending into strange shapes while staying cold ("molten, yet cold, metals").</li>
+				<li><strong>Fusion of dissimilar materials</strong> such as wood and metal, or rubber and steel, with no displacement, sometimes into "globs".</li>
+				<li><strong>Anomalous heating</strong> of metals without burning the wood next to them, glows, a mid-air "aurora", a persistent white fog and a grey mist from metal ("Carl the ghost").</li>
+				<li><strong>"Breathing" bottles, bubbling and foaming water, smoking paper</strong>, and the rare <strong>disappearance and reappearance</strong> of samples.</li>
+				<li>Strong <strong>electromagnetic interference</strong>: the RF reached televisions up to half a mile away, so the lab ran at night, and the 1988-1989 footage is full of picture glitches and dropouts.</li>
+			</ul>
+			<p>All of this happened at <strong>low average power and at a distance</strong>, as George Hathaway wrote on his summary board: Hutchison's affidavit gives the total input as 75 W to 4 kW at 110 V, and the early lab ran from a single 10-15 A wall socket.</p>
+
+			<h2>George Hathaway's lab, LADS Phase I</h2>
+			<p>George Hathaway, a professional engineer in Toronto, worked with Hutchison and Alexis Pezarro from 1981 and filmed the effects on 8 mm film. In a presentation on May 14, 1993 (<a href="/hutchison-videos">Hutchison Effect videos</a>) he explained the history and drew the <strong>LADS Phase I</strong> lab, a room about 70 ft wide: spark gaps, tank circuits and inductors along the back wall, the double-ended Tesla coil hanging in front of them, the main power supply and gap in one alcove, the large Tesla coil, the field shaper and the Van de Graaff around a marked <strong>active area</strong>, the small tube-driven Tesla coil in a room of its own, and the operator's station. The effects were very transitory: in 1981 the equipment had to run for days for anything to happen; by 1989 the gaps between events were down to about 30 minutes. In 1993 Hathaway proposed rebuilding the apparatus in Toronto "with a reasonable minimum of robust components" and fully instrumenting it, aiming for lifts, levitations and fracturing more than once an hour.</p>
+
+			<h2>The affidavit</h2>
+			<p>For <a href="https://www.doctorjudywood.com/pdf/AffJHutchison4.pdf" target="_blank" rel="noopener">his 2008 affidavit</a> in Dr. Judy Wood's qui tam case, Hutchison listed the effects he had witnessed since 1979: levitation of heavy objects; spontaneous fracturing of metals; changes in their crystalline structure (tested by the Max Planck Institute in 1986, which found the structure "changing very rapidly over time"); fusion of dissimilar materials; anomalous heating of metals without burning adjacent material; disappearance of samples; holes in glass with a white outer layer; aluminium blocks turning to dust; foaming water; lift in about 80% of cases with objects from a few grams to about 750 kg; and effects at a distance, around 300 ft from the main experiment. It also records the labs (Lynn Valley 1979, North Vancouver 1982, East Hastings Street 1983, later New Westminster), the 1983 Los Alamos visit, the 1985 controlled tests for Col. John Alexander, the 1986 visit of Canada's Defence Research Establishment Pacific, and the 1996 rebuild with electronics salvaged from Canadian Navy vessels.</p>
+
+			<h2>How the simulator works</h2>
+			<p>The simulator has two layers. The <strong>fields</strong> are ordinary electromagnetism on a floor plan: every device is a point source with an electrode field that falls as 1/r², an RF part that is reactive close to the antenna and radiates farther out, a magnetic dipole part that falls as 1/r³, a frequency and a phase. Devices on the same frequency that are cabled together share a phase and interfere (fixed nodes and antinodes); free-running ones drift. RF above 1 MHz can reflect off the walls. The <strong>effects</strong> are a best-estimate model fitted to the reports above: a "Hutchison drive" between 0 and 1 that grows with the field strength, with how many sources meet with similar strength, with how many different frequencies cross, with a DC bias (the Van de Graaff) and with spark-gap pulses; and for every sample an event rate per hour for each effect, scaled by its material and its mass. The model is calibrated so that a LADS-like active area gives roughly one event an hour after a 20-minute warm-up, in line with Hutchison's 1989 rate and Hathaway's 1993 goal.</p>
+			<div class="hx-eq" role="math" aria-label="Key equations">
+				<div><span class="hx-eq__n">electrode field</span> <span class="hx-eq__f mes-tex">\(\displaystyle E_i(r) = \frac{V_i\,a_i}{r^2}\)</span></div>
+				<div><span class="hx-eq__n">antenna field</span> <span class="hx-eq__f mes-tex">\(\displaystyle E_i(r) = \frac{\sqrt{60\,P_{\mathrm{rad}}\,G(\theta)}}{r}\sqrt{1 + \frac{1}{(kr)^2} + \frac{1}{(kr)^4}},\quad k = \frac{2\pi f}{c}\)</span></div>
+				<div><span class="hx-eq__n">coil field</span> <span class="hx-eq__f mes-tex">\(\displaystyle B_i(r) = \frac{\mu_0}{4\pi}\,\frac{2\,N I \pi R^2}{r^3}\)</span></div>
+				<div><span class="hx-eq__n">locked sources add</span> <span class="hx-eq__f mes-tex">\(\displaystyle \vec E_g = \sum_{i \in g} E_i\,\hat r_i\,e^{\,i(\varphi_i - k r_i)},\qquad E_{\mathrm{rms}} = \sqrt{\sum_g \tfrac12 |\vec E_g|^2 + |\vec E_{\mathrm{DC}}|^2}\)</span></div>
+				<div><span class="hx-eq__n">overlap</span> <span class="hx-eq__f mes-tex">\(\displaystyle N_{\mathrm{eff}} = \frac{\left(\sum_i |E_i|\right)^2}{\sum_i |E_i|^2}\)</span></div>
+				<div><span class="hx-eq__n">drive</span> <span class="hx-eq__f mes-tex">\(\displaystyle D = 1 - e^{-H/3},\quad H = \sqrt{\left(\tfrac{E}{10\ \mathrm{kV/m}}\right)^2 + \left(\tfrac{B}{100\ \mu\mathrm{T}}\right)^2}\,\big(1 + 0.6\,(N_{\mathrm{eff}}-1)\big)\big(1 + 0.25\,(S-1)\big)\,b_{\mathrm{DC}}\,(1 + 0.5\,p)\)</span></div>
+				<div><span class="hx-eq__n">event rate</span> <span class="hx-eq__f mes-tex">\(\displaystyle \lambda_{e} = \lambda_{e,0}\; s_{e}(\text{material})\; D^{2.2}\; m_e(\text{mass})\;\big(1 - e^{-t/20\,\mathrm{min}}\big)\)</span></div>
+			</div>
+			<p>S counts the different frequencies, the DC part, modulation sidebands and spark pulses that meet at a point; b<sub>DC</sub> is up to 1.6 when a DC field sits under the AC fields; p is the spark-gap pulse factor. The ordinary field pull shown for each sample is the electrostatic pressure ε₀E²/2 on its top face compared with its weight: it shows how far the reported lifts are beyond ordinary field forces.</p>
+
+			<h2>Using it to plan a replication</h2>
+			<ol>
+				<li><strong>Start small.</strong> The "Starter" preset is the 1979-1981 recipe: two Tesla coils and a Van de Graaff with a sample table where their fields cross. Check the drive map: the bright zone is where to put the table.</li>
+				<li><strong>Tune.</strong> Cable a tank to each coil and set its L and C until the coil reports close to 100% of its output (the tank must resonate at the coil's own frequency).</li>
+				<li><strong>Make the fields meet.</strong> Use the Overlap map: the target should sit where several sources have similar strength, not right next to one of them. Two coils a few kilohertz apart give a slow beat in the target; locked coils on the same frequency give fixed nodes (Standing waves map), which you can move with the phase.</li>
+				<li><strong>Add pulses and modulation.</strong> A spark gap firing every 30-40 s and a signal generator modulating a coil add the broadband parts of the LADS circuit (see the Spectrum chart).</li>
+				<li><strong>Instrument everything.</strong> Hathaway's plan called for chart recorders and data acquisition. Place meters and cameras, check their glitch risk, and keep a shielded camera as a control. Log every event with its time and the conditions.</li>
+				<li><strong>Count watts and distances.</strong> The Power readout shows the draw against a 15 A, 110 V circuit; the Operator readout compares your control position with the occupational field level. 0.1 µF at 15 kV stores 11 J: treat every capacitor as lethal.</li>
+				<li><strong>Be patient.</strong> The reports describe effects that took hours to days to appear at first. Run at 60× or 300× here to see what an evening of running could look like, then try it for real.</li>
+			</ol>
+			<p>More: <a href="/hutchison">MES Hutchison Effect hub</a> · <a href="/highlights">Highlights</a> · <a href="/hutchison-unedited-footage">Unedited footage</a> · <a href="/hutchison-interviews">Interviews and presentations</a> · <a href="/hutchison-news">News reels</a> · <a href="/hutchison-articles">Articles</a> · <a href="/hutchison-nancy-physics-system">Nancy Hutchison: John Hutchison and the Physics of the System</a> · <a href="/ufo">UFO Replication build log</a> · <a href="/electromagnetic-fields-simulator">Electromagnetic Fields Simulator</a> · <a href="/grounding-rod-simulator">Ground Rod &amp; Earthing Simulator</a> · <a href="/tools">More MES tools</a></p>
+			<h3>Questions</h3>
+			<dl>
+				<dt>Which equipment did Hutchison use?</dt>
+				<dd>Tesla coils (a large spark-gap coil, a small coil driven by twin 807 tubes, a double-ended dumbbell coil), Van de Graaff generators, high-voltage DC supplies, spark gaps and capacitor banks, tank circuits and tuning capacitors, inductors and toroid coils, RF transmitters and signal generators, a field shaper, and in later years electronics salvaged from Canadian Navy ships. The Equipment tab has a card for each.</dd>
+				<dt>Why does the effect need several sources?</dt>
+				<dd>The reports consistently describe effects in the zone where several fields cross, not next to one device. The model follows that: the drive grows with the number of sources of similar strength, the number of frequencies and a DC bias.</dd>
+				<dt>Why does the camera picture glitch?</dt>
+				<dd>Cameras and instruments have a limited immunity to strong fields (often 3-10 V/m for consumer gear). The glitch risk uses the real field at the camera; the 1988-89 footage shows the same rolling and dropouts.</dd>
+				<dt>Can I share a layout?</dt>
+				<dd>Yes: "Copy link to this layout" puts the whole floor plan (every device, cable and sample) in the link. Your last layout is also kept in this browser. Nothing is uploaded.</dd>
+			</dl>
+		</div>
+		<script src="/main_js/mes-math.js" defer></script>
+	</div>

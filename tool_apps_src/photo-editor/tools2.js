@@ -2,7 +2,7 @@
 (function () {
 	"use strict";
 	var PE = window.PE, P = window.MESPixel, mk = PE.mk, rgba = PE.rgba;
-	PE.optGet = function (id, k) { var t = PE.tools[id]; if (t.optsTarget) { var tg = t.optsTarget(); if (tg) return tg[k]; } return PE.opt[id][k]; };
+	PE.optGet = function (id, k) { var t = PE.tools[id]; if (t.optGet) { var ov = t.optGet(k); if (ov !== undefined) return ov; } if (t.optsTarget) { var tg = t.optsTarget(); if (tg) return tg[k]; } return PE.opt[id][k]; };
 	PE.optSet = function (id, k, v) { var t = PE.tools[id]; PE.opt[id][k] = v; if (t.optsTarget) { var tg = t.optsTarget(); if (tg && tg !== PE.opt[id]) { tg[k] = v; if (t.onopt) t.onopt(k, v); } } PE.emit("opts", id); PE.invalidateOverlay(); };
 
 	/* ---------- fonts ---------- */
@@ -19,7 +19,7 @@
 	var te = null, hoverT = null, blinkOn = true, blinkT = 0, tdrag = null, lastDbl = { t: 0, x: 0, y: 0 };
 	function editor() { return PE.els.textedit; }
 	function locToDoc(L, u, v) { var c = Math.cos(L.rot), s = Math.sin(L.rot), lx = (u - L.canvas.width / 2) * L.sx, ly = (v - L.canvas.height / 2) * L.sy; return { x: L.cx + c * lx - s * ly, y: L.cy + s * lx + c * ly }; }
-	function frameOf(L) { var lay = PE.textLayout(L), p = lay.pad, g = Math.max(2, lay.size * 0.06); return { u0: p - g, v0: p - g, u1: p + lay.mw + g, v1: p + lay.lhp * lay.lines.length + lay.size * 0.25 + g }; }
+	function frameOf(L) { var lay = PE.textLayout(L), p = lay.pad, g = Math.max(2, lay.size * 0.06); return { u0: p - g, v0: p - g, u1: p + lay.mw + g, v1: p + lay.bh + g }; }
 	function placeEditor() {   // the (invisible) key catcher sits over the text so an IME pop-up opens next to it
 		if (!te) return; var L = te.L, ta = editor(), t = L.text, v = PE.view, c = Math.cos(L.rot), s = Math.sin(L.rot), lay = PE.textLayout(L), pad = lay.pad;
 		var dp = locToDoc(L, pad, pad), sp = PE.toScreen(dp.x, dp.y), z = v.zoom;
@@ -61,20 +61,21 @@
 	function lineMove(dir, shift, ta) {   // Up / Down / Home / End follow the lines as they are drawn on the canvas (the hidden box wraps differently)
 		var L = te.L, lay = PE.textLayout(L), f = focusIdx(ta), cl = P.caretLine(lay.lines, f), line = lay.lines[cl.line], nIdx;
 		if (dir === "home") nIdx = line.start; else if (dir === "end") nIdx = line.end;
-		else { var x = lay.lx[cl.line] + lay.measure(line.text.slice(0, cl.k)), j = cl.line + dir; if (j < 0) nIdx = 0; else if (j >= lay.lines.length) nIdx = ta.value.length; else nIdx = P.hitInLine(lay.lines[j], x - lay.lx[j], lay.measure); }
+		else { var x = lay.lx[cl.line] + lay.measure(line.text.slice(0, cl.k), line.start), j = cl.line + dir; if (j < 0) nIdx = 0; else if (j >= lay.lines.length) nIdx = ta.value.length; else nIdx = P.hitInLine(lay.lines[j], x - lay.lx[j], lay.measure); }
 		setSel(shift ? anchorIdx(ta) : nIdx, nIdx);
 	}
 	PE.initTextEditor = function () {
 		var ta = editor();
-		ta.addEventListener("input", function () { if (!te) return; te.L.text.str = ta.value; PE.renderText(te.L); PE.touch(te.L); placeEditor(); poke(); });
+		ta.addEventListener("input", function () { if (!te) return; var tt = te.L.text; if (PE.textRich(tt) || tt.rich) { var nr = P.richNorm(P.richEdit(tt.rich || String(PE.textMask(tt)).repeat(tt.str.length), tt.str, ta.value, PE.textMask(tt))); tt.rich = nr.rich; if (nr.mask != null) normFlags(tt, nr.mask); } tt.str = ta.value; PE.renderText(te.L); PE.touch(te.L); placeEditor(); poke(); });
 		ta.addEventListener("keydown", function (e) {
 			e.stopPropagation(); if (!te) return; var mod = e.ctrlKey || e.metaKey;
 			if (e.key === "Escape" || (e.key === "Enter" && mod)) { e.preventDefault(); PE.endTextEdit(false); return; }
+			if (mod && !e.altKey && !e.shiftKey) { var kb = e.key.toLowerCase(), bit = kb === "b" ? 1 : kb === "i" ? 2 : kb === "u" ? 4 : 0; if (bit) { e.preventDefault(); PE.textToggleStyle(bit); return; } }   // Ctrl / Cmd + B, I, U: bold / italic / underline the selected letters (all of the text when nothing is selected)
 			if ((e.key === "ArrowUp" || e.key === "ArrowDown") && !mod && !e.altKey) { e.preventDefault(); lineMove(e.key === "ArrowUp" ? -1 : 1, e.shiftKey, ta); return; }
 			if ((e.key === "Home" || e.key === "End") && !mod) { e.preventDefault(); lineMove(e.key === "Home" ? "home" : "end", e.shiftKey, ta); return; }
 			setTimeout(poke, 0);
 		});
-		["keyup", "select", "focus"].forEach(function (t) { ta.addEventListener(t, poke); });
+		["keyup", "select", "focus"].forEach(function (t) { ta.addEventListener(t, function () { poke(); selStyleSync(); }); });
 		ta.addEventListener("blur", function () { setTimeout(function () {
 			var a = document.activeElement, opts = document.getElementById("pe-opts");
 			if (!te || a === ta || PE.keepTextEdit) return;
@@ -96,11 +97,67 @@
 		PE.on("history", function () { if (te && PE.doc.layers.indexOf(te.L) < 0) { te = null; clearInterval(blinkT); ta.style.display = "none"; } });   // undo / redo replaced the layer objects
 	};
 	var ctimer = 0;
-	var bw = null;   // dragging the box-width handle of a text layer
-	function boxHandle() {   // the purple handle on the right edge of the active text box (only for an upright, unscaled text layer)
-		var L = PE.active(); if (!L || L.type !== "text" || PE.toolId !== "text" || L.rot || Math.abs(L.sx - 1) > 1e-6 || Math.abs(L.sy - 1) > 1e-6) return null;
-		var lay = PE.textLayout(L), pad = lay.pad, left = L.cx - L.canvas.width / 2 + pad, tw = lay.mw, th = lay.lhp * lay.lines.length; return { L: L, left: left, x: left + tw, y: L.cy - L.canvas.height / 2 + pad + th / 2 };
+	/* ---------- bold / italic / underline of a range (rich text) ---------- */
+	function normFlags(t, m) { t.bold = !!(m & 1); t.italic = !!(m & 2); t.underline = !!(m & 4); }
+	var BITS = { bold: 1, italic: 2, underline: 4 };
+	/* set (force = true / false) or toggle (force = null) one style bit on the characters a..b of a text layer; the whole text when a..b is empty */
+	function styleRange(L, bit, a, b, force) {
+		var t = L.text, n = String(t.str).length, key = bit === 1 ? "bold" : bit === 2 ? "italic" : "underline";
+		if (!n) { t[key] = force != null ? !!force : !t[key]; t.rich = null; return; }
+		if (a == null || b == null || a === b) { a = 0; b = n; }
+		var r = PE.textRich(t) || String(PE.textMask(t)).repeat(n), on = force != null ? !!force : !P.richAll(r, a, b, bit);
+		var nm = P.richNorm(P.richSet(r, a, b, bit, on)); t.rich = nm.rich; normFlags(t, nm.mask);
 	}
+	PE.textStyleRange = styleRange;
+	function selRange() { if (!te) return null; var ta = editor(); return ta.selectionStart !== ta.selectionEnd ? [ta.selectionStart, ta.selectionEnd] : null; }
+	/* Ctrl / Cmd + B, I, U (also outside the text box: then it is the whole active text layer) */
+	PE.textToggleStyle = function (bit) {
+		var L = te ? te.L : PE.active(); if (!L || L.type !== "text" || !L.text) return false; var rg = selRange();
+		styleRange(L, bit, rg ? rg[0] : null, rg ? rg[1] : null, null); PE.renderText(L); PE.touch(L);
+		if (te) { placeEditor(); poke(); } else PE.commit(bit === 1 ? "Bold" : bit === 2 ? "Italic" : "Underline");
+		lastSig = ""; PE.emit("opts", "text"); return true;
+	};
+	/* the B / I / U ticks in the option bar show the selected letters while a text is open */
+	var lastSig = "";
+	function selStyleSync() { if (!te) return; var sg = ["bold", "italic", "underline"].map(function (k) { return PE.optGet("text", k) ? 1 : 0; }).join("") + (selRange() ? "s" : ""); if (sg !== lastSig) { lastSig = sg; PE.emit("opts", "text"); } }
+
+	/* ---------- the text box on the canvas: drag its edges to set the wrap width; with Auto-fit text also its height (the font size follows) ----------
+	 * Handles sit on the text frame (not on the layer's padding). hx / hy = 0, 0.5 or 1 across / down the frame; the opposite side stays where it is. */
+	var bw = null;   // a text-box drag in the Text tool
+	var SIDES = [[0, 0.5], [1, 0.5]], ALL8 = [[0, 0], [0.5, 0], [1, 0], [1, 0.5], [1, 1], [0.5, 1], [0, 1], [0, 0.5]];
+	function boxHandles(L) {
+		if (!L || L.type !== "text" || !L.text || L.locked || !PE.effVisible(L)) return []; var lay = PE.textLayout(L), p = lay.pad;
+		var o0 = PE.toScreen.apply(null, xy(locToDoc(L, 0, 0))), oX = PE.toScreen.apply(null, xy(locToDoc(L, 1, 0))), oY = PE.toScreen.apply(null, xy(locToDoc(L, 0, 1))), ux = unit(oX.x - o0.x, oX.y - o0.y), uy = unit(oY.x - o0.x, oY.y - o0.y);
+		// the grips sit 8 px outside the box so they never cover the first / last letter
+		return (lay.fit || L.text.fit ? ALL8 : SIDES).map(function (h) { var d = locToDoc(L, p + h[0] * lay.mw, p + h[1] * lay.bh), sc = PE.toScreen(d.x, d.y), kx = (h[0] - 0.5) * 2 * 8, ky = (h[1] - 0.5) * 2 * 8; return { hx: h[0], hy: h[1], x: d.x, y: d.y, s: { x: sc.x + ux[0] * kx + uy[0] * ky, y: sc.y + ux[1] * kx + uy[1] * ky } }; });
+	}
+	function scrOf(e) { var r = PE.els.over.getBoundingClientRect(); return { x: e.sx - r.left, y: e.sy - r.top }; }
+	/* the handle under the pointer: a dot within 9 px, or anywhere along a left / right edge (5 px) */
+	PE.textBoxHit = function (L, e) {
+		var hs = boxHandles(L); if (!hs.length) return null; var sp = scrOf(e), best = null, bd = 9.5;
+		hs.forEach(function (h) { var d = Math.hypot(h.s.x - sp.x, h.s.y - sp.y); if (d < bd) { bd = d; best = h; } }); if (best) return best;
+		var lay = PE.textLayout(L), p = lay.pad;
+		for (var i = 0; i < hs.length; i++) { var h = hs[i]; if (h.hy !== 0.5) continue; var a = PE.toScreen.apply(null, xy(locToDoc(L, p + h.hx * lay.mw, p))), b = PE.toScreen.apply(null, xy(locToDoc(L, p + h.hx * lay.mw, p + lay.bh))), vx = b.x - a.x, vy = b.y - a.y, ll = vx * vx + vy * vy || 1, tt = ((sp.x - a.x) * vx + (sp.y - a.y) * vy) / ll; if (tt < 0 || tt > 1) continue; if (Math.hypot(a.x + vx * tt - sp.x, a.y + vy * tt - sp.y) < 5) return h; }
+		return null;
+	};
+	function xy(d) { return [d.x, d.y]; }
+	function unit(x, y) { var l = Math.hypot(x, y) || 1; return [x / l, y / l]; }
+	PE.textBoxCursor = function (h, L) { if (!h) return ""; var r = ((L.rot % Math.PI) + Math.PI) % Math.PI, turned = r > Math.PI / 4 && r < Math.PI * 3 / 4; if (h.hy === 0.5) return turned ? "ns-resize" : "ew-resize"; if (h.hx === 0.5) return turned ? "ew-resize" : "ns-resize"; return (h.hx === h.hy) !== turned ? "nwse-resize" : "nesw-resize"; };
+	PE.textBoxStart = function (L, h) {
+		var lay = PE.textLayout(L), p = lay.pad, f = locToDoc(L, p + (1 - h.hx) * lay.mw, p + (1 - h.hy) * lay.bh);
+		return { L: L, h: h, fixed: f, orig: JSON.stringify(L.text), cx: L.cx, cy: L.cy, moved: false };
+	};
+	PE.textBoxMove = function (b, e) {
+		var L = b.L, t = L.text, h = b.h, c = Math.cos(L.rot), s = Math.sin(L.rot), dx = e.x - b.fixed.x, dy = e.y - b.fixed.y, du = (c * dx + s * dy) / L.sx, dv = (-s * dx + c * dy) / L.sy;
+		if (h.hx !== 0.5) t.wrapW = Math.max(20, Math.round(h.hx === 1 ? du : -du));
+		if (h.hy !== 0.5 && t.fit) { t.boxH = Math.max(12, Math.round(h.hy === 1 ? dv : -dv)); if (!(t.wrapW > 0)) t.wrapW = Math.round(PE.textLayout(L).mw); }
+		PE.renderText(L); var lay = PE.textLayout(L), p = lay.pad, n = locToDoc(L, p + (1 - h.hx) * lay.mw, p + (1 - h.hy) * lay.bh); L.cx += b.fixed.x - n.x; L.cy += b.fixed.y - n.y;   // the opposite side stays put
+		b.moved = true; PE.touch(L); if (te && te.L === L) placeEditor(); PE.emit("opts", PE.toolId === "text" ? "text" : PE.toolId);
+	};
+	PE.textBoxAbort = function (b) { b.L.text = JSON.parse(b.orig); PE.renderText(b.L); b.L.cx = b.cx; b.L.cy = b.cy; PE.touch(b.L); };
+	PE.drawTextBoxHandles = function (x, L) { boxHandles(L).forEach(function (h) { var sp = h.s; x.fillStyle = "#a78bfa"; x.strokeStyle = "#fff"; x.lineWidth = 2; x.beginPath(); if (h.hy === 0.5) x.rect(sp.x - 5, sp.y - 11, 10, 22); else if (h.hx === 0.5) x.rect(sp.x - 11, sp.y - 5, 22, 10); else x.rect(sp.x - 6, sp.y - 6, 12, 12); x.fill(); x.stroke(); }); };
+	PE.textAt = function (e) { return hitText(e, null); };
+	PE.drawTextFrame = function (x, L, solid) { drawFrame(x, L, solid); };
 	function drawFrame(x, L, solid) {
 		var f = frameOf(L), pts = [[f.u0, f.v0], [f.u1, f.v0], [f.u1, f.v1], [f.u0, f.v1]].map(function (q) { var d = locToDoc(L, q[0], q[1]); return PE.toScreen(d.x, d.y); });
 		x.save(); x.lineWidth = 1; x.setLineDash(solid ? [] : [4, 3]); x.strokeStyle = "rgba(0,0,0,0.65)"; x.beginPath(); pts.forEach(function (p, i) { i ? x.lineTo(p.x + 0.5, p.y + 0.5) : x.moveTo(p.x + 0.5, p.y + 0.5); }); x.closePath(); x.stroke();
@@ -113,38 +170,46 @@
 			x.fillStyle = "rgba(59,130,246,0.38)";
 			lay.lines.forEach(function (ln, i) {
 				var s0 = Math.max(a, ln.start), s1 = Math.min(b, ln.end); var past = b > ln.end && a <= ln.end;   // the selection runs on past this line: show the line break as selected too
-				if (s1 < s0 || (s1 === s0 && !past)) return; var x0 = lay.lx[i] + lay.measure(ln.text.slice(0, s0 - ln.start)), x1 = lay.lx[i] + lay.measure(ln.text.slice(0, s1 - ln.start)) + (past ? sz * 0.25 : 0);
+				if (s1 < s0 || (s1 === s0 && !past)) return; var x0 = lay.lx[i] + lay.measure(ln.text.slice(0, s0 - ln.start), ln.start), x1 = lay.lx[i] + lay.measure(ln.text.slice(0, s1 - ln.start), ln.start) + (past ? sz * 0.25 : 0);
 				x.fillRect(x0, lay.base[i] - sz * 0.86, x1 - x0, sz * 1.1);
 			});
 		} else if (blinkOn) {
-			var cl = P.caretLine(lay.lines, focusIdx(ta)), ln = lay.lines[cl.line], cx = lay.lx[cl.line] + lay.measure(ln.text.slice(0, cl.k)), y0 = lay.base[cl.line] - sz * 0.86, y1 = lay.base[cl.line] + sz * 0.24;
+			var cl = P.caretLine(lay.lines, focusIdx(ta)), ln = lay.lines[cl.line], cx = lay.lx[cl.line] + lay.measure(ln.text.slice(0, cl.k), ln.start), y0 = lay.base[cl.line] - sz * 0.86, y1 = lay.base[cl.line] + sz * 0.24;
 			x.lineCap = "butt"; x.strokeStyle = "rgba(255,255,255,0.95)"; x.lineWidth = 4 / sc; x.beginPath(); x.moveTo(cx, y0); x.lineTo(cx, y1); x.stroke(); x.strokeStyle = "#111"; x.lineWidth = 2 / sc; x.stroke();
 		}
 		x.restore();
 	}
-	PE.defTool({ id: "text", name: "Text / Label", key: "t", icon: "T", opts: JSON.parse(JSON.stringify(PE.TEXTDEF)), hint: "Click empty canvas to add text, click a text to edit it (caret where you click, drag to select, double-click a word, triple-click a line). Enter = new line, Ctrl+Enter or Esc or a click outside = done. The option bar changes the selected text layer live.",
-		ui: [{ k: "font", label: "Font", type: "select", options: "fonts" }, { k: "size", label: "Size", type: "range", min: 6, max: 400, step: 1, unit: "px" }, { k: "wrapW", label: "Box width (0 = auto)", type: "range", min: 0, max: 4000, step: 10, unit: "px" }, { k: "bold", label: "Bold", type: "check" }, { k: "italic", label: "Italic", type: "check" }, { k: "align", label: "Align", type: "seg", options: [["left", "Left"], ["center", "Centre"], ["right", "Right"]] }, { k: "lh", label: "Line height", type: "range", min: 0.8, max: 3, step: 0.05 }, { k: "color", label: "Colour", type: "color" },
+	PE.defTool({ id: "text", name: "Text / Label", key: "t", icon: "T", opts: JSON.parse(JSON.stringify(PE.TEXTDEF)), hint: "Click empty canvas to add text, click a text to edit it (caret where you click, drag to select, double-click a word, triple-click a line). Ctrl/Cmd+B, I, U = bold, italic, underline of the selected letters. Drag the purple handles on the box edges to wrap the text (with Auto-fit text: the corners too, and the size follows). Enter = new line, Ctrl+Enter, Esc or a click outside = done.",
+		ui: [{ k: "font", label: "Font", type: "select", options: "fonts" }, { k: "size", label: "Size", type: "range", min: 6, max: 400, step: 1, unit: "px" }, { k: "wrapW", label: "Box width (0 = auto)", type: "range", min: 0, max: 4000, step: 10, unit: "px" }, { k: "fit", label: "Auto-fit text", type: "check" }, { k: "boxH", label: "Box height", type: "range", min: 0, max: 4000, step: 10, unit: "px", show: "fit" }, { k: "bold", label: "Bold", type: "check" }, { k: "italic", label: "Italic", type: "check" }, { k: "underline", label: "Underline", type: "check" }, { k: "align", label: "Align", type: "seg", options: [["left", "Left"], ["center", "Centre"], ["right", "Right"]] }, { k: "lh", label: "Line height", type: "range", min: 0.8, max: 3, step: 0.05 }, { k: "ls", label: "Letter spacing", type: "range", min: -10, max: 60, step: 1, unit: "px" }, { k: "color", label: "Colour", type: "color" },
 			{ k: "bgOn", label: "Background box", type: "check" }, { k: "bgColor", label: "Box colour", type: "color", show: "bgOn" }, { k: "bgPad", label: "Padding", type: "range", min: 0, max: 80, step: 1, unit: "px", show: "bgOn" }, { k: "bgRadius", label: "Corners", type: "range", min: 0, max: 80, step: 1, unit: "px", show: "bgOn" },
-			{ k: "strokeOn", label: "Outline", type: "check" }, { k: "stroke", label: "Outline colour", type: "color", show: "strokeOn" }, { k: "strokeW", label: "Outline width", type: "range", min: 1, max: 40, step: 1, unit: "px", show: "strokeOn" },
-			{ k: "shadowOn", label: "Shadow", type: "check" }, { k: "shadow", label: "Shadow colour", type: "color", show: "shadowOn" }, { k: "shadowBlur", label: "Blur", type: "range", min: 0, max: 60, step: 1, unit: "px", show: "shadowOn" },
+			{ k: "strokeOn", label: "Outline", type: "check" }, { k: "stroke", label: "Outline colour", type: "color", show: "strokeOn" }, { k: "strokeW", label: "Outline width", type: "range", min: 0, max: 40, step: 1, unit: "px", show: "strokeOn" },
+			{ k: "shadowOn", label: "Shadow", type: "check" }, { k: "shadow", label: "Shadow colour", type: "color", show: "shadowOn" }, { k: "shadowBlur", label: "Blur", type: "range", min: 0, max: 60, step: 1, unit: "px", show: "shadowOn" }, { k: "shadowDx", label: "Shadow X", type: "range", min: -60, max: 60, step: 1, unit: "px", show: "shadowOn" }, { k: "shadowDy", label: "Shadow Y", type: "range", min: -60, max: 60, step: 1, unit: "px", show: "shadowOn" },
 			{ type: "button", label: "Load font file…", act: function () { PE.pickFontFile(); } }, { type: "button", label: "Yellow label", act: function () { preset({ bgOn: true, bgColor: "#ffeb3b", color: "#111111", bold: true, bgPad: 14, bgRadius: 8 }); } }, { type: "button", label: "Red callout", act: function () { preset({ bgOn: true, bgColor: "#e53935", color: "#ffffff", bold: true, bgPad: 14, bgRadius: 10 }); } }, { type: "button", label: "Meme text", act: function () { preset({ bgOn: false, color: "#ffffff", strokeOn: true, stroke: "#000000", strokeW: 6, bold: true, font: "Impact, 'Arial Black', sans-serif", align: "center" }); } }],
 		optsTarget: function () { var L = PE.active(); return L && L.type === "text" && L.text ? L.text : null; },
-		onopt: function () { var L = PE.active(); if (!L || L.type !== "text") return; PE.renderText(L); PE.touch(L); if (te) { placeEditor(); poke(); return; } clearTimeout(ctimer); ctimer = setTimeout(function () { PE.commit("Text style"); }, 450); },   // while editing, the style change is part of the edit's one undo step
+		optGet: function (k) {   // B / I / U while a text is open show the selected letters; with mixed styles, ticked = every letter has it
+			if (!BITS[k]) return undefined; var L = te ? te.L : PE.active(); if (!L || L.type !== "text" || !L.text) return undefined; var t = L.text, r = PE.textRich(t), rg = selRange();
+			if (rg) return P.richAll(r || String(PE.textMask(t)).repeat(t.str.length), rg[0], rg[1], BITS[k]); return undefined;
+		},
+		onopt: function (k, v) { var L = PE.active(); if (!L || L.type !== "text") return; var t = L.text;
+			if (BITS[k]) { var rg = te && te.L === L ? selRange() : null; if (rg) styleRange(L, BITS[k], rg[0], rg[1], v); else if (PE.textRich(t)) styleRange(L, BITS[k], 0, t.str.length, v); lastSig = ""; }
+			if (k === "fit" && v) { var ly = PE.textLayout(L); if (!(t.wrapW > 0)) t.wrapW = Math.round(ly.mw); if (!(t.boxH > 0)) t.boxH = Math.round(ly.bh); setTimeout(function () { PE.emit("opts", "text"); }, 0); }
+			if (k === "size" && t.fit) { t.fit = false; PE.opt.text.fit = false; PE.toast("Auto-fit text is off now, so the size you set is kept"); setTimeout(function () { PE.emit("opts", "text"); }, 0); }
+			PE.renderText(L); PE.touch(L); if (te) { placeEditor(); poke(); return; } clearTimeout(ctimer); ctimer = setTimeout(function () { PE.commit("Text style"); }, 450); },   // while editing, the style change is part of the edit's one undo step
 		overlay: function (x, v) {
 			var A = PE.active();
 			if (hoverT && hoverT !== A && PE.doc.layers.indexOf(hoverT) >= 0 && !te) drawFrame(x, hoverT, false);
 			if (A && A.type === "text" && A.text) { drawFrame(x, A, !!te); if (te && te.L === A) drawCaret(x, v); }
-			var h = boxHandle(); if (!h) return; var sp = PE.toScreen(h.x, h.y); x.fillStyle = "#a78bfa"; x.strokeStyle = "#fff"; x.lineWidth = 2; x.beginPath(); x.rect(sp.x - 6, sp.y - 12, 12, 24); x.fill(); x.stroke();
+			if (A && A.type === "text" && A.text) PE.drawTextBoxHandles(x, A);
 		},
-		hover: function (e) { if (!PE.doc) return; var h = hitText(e, null); if (h !== hoverT) { hoverT = h; PE.invalidateOverlay(); } PE.els.over.style.cursor = (function () { var hh = boxHandle(); return hh && Math.abs(e.x - hh.x) * PE.view.zoom < 12 && Math.abs(e.y - hh.y) * PE.view.zoom < 18 ? "ew-resize" : "text"; })(); },
+		hover: function (e) { if (!PE.doc) return; var h = hitText(e, null); if (h !== hoverT) { hoverT = h; PE.invalidateOverlay(); } var A = PE.active(), hh = A && A.type === "text" ? PE.textBoxHit(A, e) : null; PE.els.over.style.cursor = hh ? PE.textBoxCursor(hh, A) : "text"; },
 		move: function (e) {
-			if (bw) { var L = bw.L, nw = Math.max(40, Math.round(e.x - bw.left)); L.text.wrapW = nw; PE.renderText(L); PE.touch(L); if (te) placeEditor(); PE.emit("opts", "text"); return; }
+			if (bw) { PE.textBoxMove(bw, e); return; }
 			if (tdrag && te) { setSel(tdrag.a, indexAt(te.L, e.x, e.y)); }
 		},
-		up: function () { if (bw) { bw = null; if (!te) PE.commit("Text box width"); } tdrag = null; },
+		up: function () { if (bw) { var w0 = bw; bw = null; if (w0.moved && !te) PE.commit("Text box"); } tdrag = null; },
 		dbl: function (e) { if (!te || !PE.layerAtPoint(te.L, e.x, e.y)) return; var w = P.wordAt(te.L.text.str, indexAt(te.L, e.x, e.y)); setSel(w[0], w[1]); tdrag = null; lastDbl = { t: Date.now(), x: e.sx, y: e.sy }; },
 		down: function (e) {
-			var hh = boxHandle(); if (hh && Math.abs(e.x - hh.x) * PE.view.zoom < 12 && Math.abs(e.y - hh.y) * PE.view.zoom < 18) { bw = { L: hh.L, left: hh.left }; return; }
+			var A0 = te ? te.L : PE.active(), hh = A0 && A0.type === "text" ? PE.textBoxHit(A0, e) : null; if (hh) { bw = PE.textBoxStart(A0, hh); return; }
 			var hit = hitText(e, te ? te.L : PE.active());
 			if (te && hit === te.L) {
 				var idx = indexAt(hit, e.x, e.y), ta = editor();
@@ -155,7 +220,7 @@
 			if (hit) { PE.setActive(hit.id); var i2 = indexAt(hit, e.x, e.y); openEdit(hit, false, i2); tdrag = { a: i2 }; return; }
 			var o = JSON.parse(JSON.stringify(PE.opt.text)); o.str = ""; var L = PE.makeLayer({ type: "text", name: "Text", text: o, w: 4, h: 4 }); PE.renderText(L); var pd = PE.textLayout(L).pad; L.cx = e.x - pd + L.canvas.width / 2; L.cy = e.y - pd + L.canvas.height / 2;
 			PE.addLayer(L); openEdit(L, true, 0);
-		}, cancel: function () { PE.endTextEdit(false); hoverT = null; } });
+		}, cancel: function () { if (bw) { PE.textBoxAbort(bw); bw = null; } PE.endTextEdit(false); hoverT = null; } });
 	function preset(o) { for (var k in o) PE.optSet("text", k, o[k]); PE.emit("opts", "text"); }
 	/* open the active text layer for editing: at = a point on the canvas (caret there, from a double-click with the Move tool), else everything selected */
 	PE.editActiveText = function (at) { var L = PE.active(); if (L && L.type === "text") { PE.setTool("text"); openEdit(L, false, at ? indexAt(L, at.x, at.y) : "all"); } };

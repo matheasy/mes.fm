@@ -1,5 +1,5 @@
 {
- "generated": "2026-10-25",
+ "generated": "2026-10-26",
  "calculators": [
   {
    "href": "/compound-interest-calculator",
@@ -100,6 +100,38 @@
  ],
  "tools": [
   {
+   "href": "/hutchison-effect-simulator",
+   "title": "Hutchison Effect Simulator",
+   "icon": "/img/hutchison-effect-simulator-logo.png",
+   "desc": "Lay out John Hutchison's lab of Tesla coils, Van de Graaff, RF and spark gaps, see where the fields cross and watch samples levitate, bend like jelly, fracture and glow.",
+   "added": "2026-10-26",
+   "kind": "tool"
+  },
+  {
+   "href": "/nba-picks",
+   "title": "NBA Picks",
+   "icon": "/img/nba-picks-logo.png",
+   "desc": "Your predicted NBA standings against the live table: how many are right, a picture of every pick, friends and a leaderboard.",
+   "added": "2026-10-26",
+   "kind": "tool"
+  },
+  {
+   "href": "/docx",
+   "title": "Word Viewer (DOCX)",
+   "icon": "/img/docx-logo.png",
+   "desc": "Open Word documents with the real page layout, search and count words, edit and save as .docx, PDF or text. Private: nothing is uploaded.",
+   "added": "2026-10-26",
+   "kind": "tool"
+  },
+  {
+   "href": "/pronounce",
+   "title": "Pronounce",
+   "icon": "/img/pronounce-logo.png",
+   "desc": "Hear any word or sentence in US, UK and other accents, with syllables, stress, IPA, an easy respelling and slow playback.",
+   "added": "2026-10-26",
+   "kind": "tool"
+  },
+  {
    "href": "/debt-clock",
    "title": "Debt Clock",
    "icon": "/img/debt-clock-logo.png",
@@ -162,41 +194,41 @@
    "desc": "Check any page's SEO: title, description, headings, canonical, robots, social cards and a report of every mes.fm page.",
    "added": "2026-10-23",
    "kind": "tool"
-  },
-  {
-   "href": "/dice-roller",
-   "title": "Dice Roller",
-   "icon": "/img/dice-roller-logo.png",
-   "desc": "Roll any dice (2d6+3, 4d6 drop lowest, d20 advantage) and see the exact odds of every total.",
-   "added": "2026-10-23",
-   "kind": "tool"
-  },
-  {
-   "href": "/random-number-generator",
-   "title": "Random Number Generator",
-   "icon": "/img/random-number-generator-logo.png",
-   "desc": "Random numbers, dice, coin flips, cards and a list picker, with the odds and a fairness test.",
-   "added": "2026-10-23",
-   "kind": "tool"
-  },
-  {
-   "href": "/site-traffic",
-   "title": "Site Traffic & Rank",
-   "icon": "/img/site-traffic-logo.png",
-   "desc": "How popular is a website? Public popularity rank and 30-day trend, domain age, hosting and Internet Archive history. An honest alternative to traffic-estimate extensions.",
-   "added": "2026-10-22",
-   "kind": "tool"
-  },
-  {
-   "href": "/birthday",
-   "title": "Famous Birthdays",
-   "icon": "/img/birthday-logo.png",
-   "desc": "See which famous people were born today or on your birthday, who shares your exact date, and their zodiac signs.",
-   "added": "2026-10-21",
-   "kind": "tool"
   }
  ],
  "latest": [
+  {
+   "href": "/hutchison-effect-simulator",
+   "title": "Hutchison Effect Simulator",
+   "icon": "/img/hutchison-effect-simulator-logo.png",
+   "desc": "Lay out John Hutchison's lab of Tesla coils, Van de Graaff, RF and spark gaps, see where the fields cross and watch samples levitate, bend like jelly, fracture and glow.",
+   "added": "2026-10-26",
+   "kind": "tool"
+  },
+  {
+   "href": "/nba-picks",
+   "title": "NBA Picks",
+   "icon": "/img/nba-picks-logo.png",
+   "desc": "Your predicted NBA standings against the live table: how many are right, a picture of every pick, friends and a leaderboard.",
+   "added": "2026-10-26",
+   "kind": "tool"
+  },
+  {
+   "href": "/docx",
+   "title": "Word Viewer (DOCX)",
+   "icon": "/img/docx-logo.png",
+   "desc": "Open Word documents with the real page layout, search and count words, edit and save as .docx, PDF or text. Private: nothing is uploaded.",
+   "added": "2026-10-26",
+   "kind": "tool"
+  },
+  {
+   "href": "/pronounce",
+   "title": "Pronounce",
+   "icon": "/img/pronounce-logo.png",
+   "desc": "Hear any word or sentence in US, UK and other accents, with syllables, stress, IPA, an easy respelling and slow playback.",
+   "added": "2026-10-26",
+   "kind": "tool"
+  },
   {
    "href": "/debt-clock",
    "title": "Debt Clock",
@@ -228,38 +260,6 @@
    "desc": "Crypto and stock fear & greed, Bitcoin and market prices, the fed funds rate, the yield curve, the next Fed meeting and prediction-market odds, explained in plain English. Not advice.",
    "added": "2026-10-24",
    "kind": "tool"
-  },
-  {
-   "href": "/compound-interest-calculator",
-   "title": "Compound Interest Calculator",
-   "icon": "/img/compound-interest-calculator-logo.png",
-   "desc": "Grow savings with monthly deposits: year-by-year table and chart, goals, APY and the rule of 72.",
-   "added": "2026-10-23",
-   "kind": "calculator"
-  },
-  {
-   "href": "/loan-calculator",
-   "title": "Loan Calculator",
-   "icon": "/img/loan-calculator-logo.png",
-   "desc": "Monthly payment, total interest, payoff date and schedule for car, personal and student loans, with extra payments and APR.",
-   "added": "2026-10-23",
-   "kind": "calculator"
-  },
-  {
-   "href": "/age-calculator",
-   "title": "Age Calculator",
-   "icon": "/img/age-calculator-logo.png",
-   "desc": "Exact age in years, months and days, days lived, next birthday, milestones and the age gap between two people.",
-   "added": "2026-10-23",
-   "kind": "calculator"
-  },
-  {
-   "href": "/fuel-cost-calculator",
-   "title": "Fuel Cost Calculator",
-   "icon": "/img/fuel-cost-calculator-logo.png",
-   "desc": "What a trip costs in fuel, from distance, L/100 km or mpg and price, split per person, plus EV comparison.",
-   "added": "2026-10-23",
-   "kind": "calculator"
   }
  ]
 }

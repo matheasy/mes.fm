@@ -101,6 +101,43 @@
       api = m.exports; return api;
     });
   }
+
+  // ---- AI search (imported console exports): made-up blobs, answered by the REAL mes.fm/api/search-console-ai.js
+  var AISTORE = new Map();
+  (function () {
+    var gd = [], bd = [];
+    for (var k = 479; k >= 2; k--) { var d = addDays(today, -k), g = 0.4 + 0.6 * (1 - k / 480); gd.push([d, Math.round((260 + rnd() * 160) * g)]); }
+    for (var j = 179; j >= 3; j--) { var e = addDays(today, -j); bd.push([e, Math.round(30 + rnd() * 40), Math.round((8 + rnd() * 9) * 10) / 10]); }
+    var GP = [['https://gradecalculator.mes.fm/', 31000], ['https://percentagecalculator.mes.fm/', 26000], ['https://bmicalculator.mes.fm/bmi-chart.html', 14000],
+      ['https://mes.fm/percentagecalculator', 12000], ['https://gpacalculator.mes.fm/', 9000], ['https://mes.fm/gradecalculator', 8000], ['https://timer.mes.fm/', 6500],
+      ['https://mes.fm/bmicalculator', 6000], ['https://mes.fm/weighted-average-calculator', 4200], ['https://mortgagecalculator.mes.fm/', 3100], ['https://mes.fm/cubic-formula', 1800],
+      ['https://mes.fm/hutchison', 900], ['https://mes.fm/time-dilation', 700], ['https://speedreader.mes.fm/', 500]];
+    var GC = [['United States', 70000], ['India', 24000], ['Canada', 15000], ['United Kingdom', 12000], ['Philippines', 9000], ['Australia', 7000], ['Pakistan', 5000], ['Germany', 3000]];
+    var BQ = [['grade calculator final exam', 'Informational', 'Education', 412, 23.5, 2.1], ['how to calculate percentage of a number', 'Informational', 'Math', 380, 18.2, 1.8],
+      ['bmi chart for adults', 'Informational', 'Health', 220, 11.0, 1.4], ['what grade do i need on my final', 'Transactional', 'Education', 190, 30.1, 1.2],
+      ['gpa calculator 4.0 scale', 'Informational', 'Education', 140, 9.4, 1.1], ['hutchison effect explained', 'Informational', 'Science', 60, 44.0, 1.0],
+      ['online stopwatch', 'Navigational', 'Tools', 45, 4.2, 1.0], ['cubic formula derivation', 'Informational', 'Math', 30, 15.0, 1.0]];
+    var BP = [['https://gradecalculator.mes.fm/', 900], ['https://mes.fm/percentagecalculator', 640], ['https://mes.fm/bmicalculator/bmi-chart', 300], ['https://gpacalculator.mes.fm/gpa-scale-4.html', 160], ['https://mes.fm/hutchison', 60]];
+    var api2 = null;
+    window.SC_MOCK_AI = function (method, url, body) {
+      var get = api2 ? Promise.resolve(api2) : fetch('/api/search-console-ai.js', { cache: 'no-store' }).then(function (r) { return r.text(); }).then(function (src) {
+        var m = { exports: {} }; new Function('module', 'exports', 'require', src)(m, m.exports, function () { return {}; }); api2 = m.exports;
+        if (!/[?&]noai=1/.test(location.search)) {
+          AISTORE.set('gscdash:ai:google', JSON.stringify(api2.merge(null, api2.parse({ source: 'google', daily: gd, pages: GP, countries: GC, devices: [['Mobile', 90000], ['Desktop', 52000], ['Tablet', 4000]], files: ['Generative AI-mes.fm-2026-10-26.zip'] }))));
+          AISTORE.set('gscdash:ai:bing', JSON.stringify(api2.merge(null, api2.parse({ source: 'bing', daily: bd, queries: BQ, pages: BP, files: ['AIPerformance_mes.fm.csv'] }))));
+        }
+        return api2;
+      });
+      return get.then(function (a) {
+        var u = new URL(url, location.href), q = {}; u.searchParams.forEach(function (v, k) { q[k] = v; });
+        return a.respond({ method: method, query: q, body: body, local: true, contentType: 'application/json' }, {
+          get: function (k) { return Promise.resolve(AISTORE.has(k) ? AISTORE.get(k) : null); },
+          set: function (k, v) { AISTORE.set(k, v); return Promise.resolve(); },
+          del: function (k) { AISTORE.delete(k); return Promise.resolve(); },
+        });
+      }).then(function (out) { if (out.status !== 200) throw new Error(out.body && out.body.error || out.status); return out.body; });
+    };
+  })();
   window.SC_MOCK = function (url) {
     var u = new URL(url, location.href), q = {};
     u.searchParams.forEach(function (v, k) { q[k] = v; });

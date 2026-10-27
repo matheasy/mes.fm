@@ -161,5 +161,22 @@ var rb2 = M.curve({ id: "r", name: "stiff rubber", c: "rubber", E: 68.9, su: 700
 var sb = M.saneCurveMat({ id: "r", c: "brittle", E: 200, su: 700, el: 18 }), cb = M.curve(sb.m); ok(sb.notes.length === 1 && Math.abs(M.measure(cb).eu - cb.ef) < 1e-9, "a brittle custom material peaks at its break");
 var odd = M.curve({ id: "r", name: "odd", c: "duct", E: 68.9, sy: 3447, su: 4826, el: 15 }); ok(odd.warn === "fit", "an impossible metal fit is flagged");
 
+/* thermal: yield / buckling temperatures, series, state, colour */
+(function () {
+	var a = 12e-6, E = 200e9, L = 10, sy = 250e6;
+	var h = M.thermalDT(a, L, E, "held", 0, sy); ok(Math.abs(h.up - 104.1667) < 1e-3 && Math.abs(h.down + 104.1667) < 1e-3, "held steel bar yields after a 104 °C rise (or fall): 250 MPa / (200 GPa x 12e-6)");
+	var gp = M.thermalDT(23e-6, 1, 69e9, "gap", 0.5e-3, 0); ok(Math.abs(gp.up - 21.739) < 1e-3 && gp.down === null, "a 0.5 mm gap on a 1 m aluminium bar closes after 21.7 °C; cooling never stresses it");
+	var gy = M.thermalDT(23e-6, 1, 69e9, "gap", 0.5e-3, 276e6); ok(Math.abs(M.thermal(23e-6, gy.up, 1, 69e9, "gap", 0.5e-3).sigma + 276e6) < 1, "at the gap bar's yield temperature the stress is exactly the yield strength");
+	ok(M.thermalDT(a, L, E, "free", 0, sy) === null, "a free bar never reaches a stress");
+	var sb = M.bucklingStress(200e9, 0.02, 1, 1); ok(Math.abs(sb - Math.PI * Math.PI * 200e9 * 25e-6 / 1) < 1, "Euler stress of a 20 mm x 1 m pinned steel bar = pi^2 E (d/4)^2 / L^2 (49.3 MPa)");
+	ok(Math.abs(M.bucklingStress(200e9, 0.02, 1, 0.5) / sb - 4) < 1e-9, "clamped ends: 4 times the pinned buckling stress");
+	var pin = M.euler(200e9, Math.PI * Math.pow(0.02, 4) / 64, 1) / (Math.PI * 1e-4); ok(Math.abs(pin - sb) / sb < 1e-9, "buckling stress agrees with the Euler load / area");
+	var ser = M.thermalSeries(a, L, E, "held", 0, -50, 150, 40); ok(ser.length === 41 && ser[0][0] === -50 && ser[40][0] === 150 && Math.abs(ser[40][1] + E * a * 150) < 1, "series runs from lo to hi with the held stress");
+	var sg = M.thermalSeries(23e-6, 1, 69e9, "gap", 0.5e-3, 0, 40, 40); ok(sg[20][1] === 0 && sg[40][1] < 0, "gap series: zero until the gap closes, compression after");
+	ok(M.thermalState(-100e6, 250e6, 49e6) === "buckle" && M.thermalState(-100e6, 250e6, 400e6) === "ok" && M.thermalState(-300e6, 250e6, 400e6) === "yield" && M.thermalState(300e6, 250e6, 49e6) === "yield" && M.thermalState(0, 250e6, 1) === "ok", "state: buckle / ok / yield / tension never buckles");
+	ok(M.thermalState(-300e6, 250e6, 270e6) === "yield", "yield first when the strength is reached before the buckling stress");
+	ok(M.heatRGB(0).join() === "148,163,184" && M.heatRGB(1).join() === "220,38,38" && M.heatRGB(-5).join() === "37,99,235", "bar colour: grey, red when hot, blue when cold (clamped)");
+})();
+
 console.log(fails ? fails + " of " + n + " checks FAILED" : "all " + n + " checks passed");
 process.exit(fails ? 1 : 0);

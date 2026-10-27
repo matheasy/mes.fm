@@ -401,6 +401,19 @@ body.dark-mode .tu .rw-head {color:#a0a8b3;border-bottom-color:#555;} body.dark-
 	/* in dark mode the accent is lightened for contrast with the page, so a filled (pressed / chosen) button needs dark text on it */
 	body.dark-mode #em .em-toolrow button[aria-pressed="true"], body.dark-mode #em .em-chips button.is-on {color:#111;}
 	@media (max-width:560px) {.em-eq__n {display:block;min-width:0;}}
+	/* Flux / Iso overlay at the top left of the magnets picture */
+	.em-mgov {position:absolute;left:0.6em;top:0.6em;display:flex;flex-wrap:wrap;gap:0.35em;z-index:2;max-width:calc(100% - 9.5em);}
+	.em-ovg {display:inline-flex;align-items:center;border:1px solid var(--em-line);background:rgba(10,13,20,0.82);border-radius:0.45em;overflow:hidden;font-size:0.85em;}
+	.em-ovg button, body.dark-mode #em .em-ovg button {cursor:pointer;border:0;background:transparent;color:#e8ecf5;font:inherit;min-height:2.1em;min-width:2em;padding:0 0.55em;}
+	.em-ovg button:hover {background:rgba(255,255,255,0.08);} .em-ovg button:disabled {opacity:0.35;cursor:default;} .em-ovg button:focus-visible {outline:2px solid #fff;outline-offset:-2px;}
+	.em-ovg b {min-width:1.6em;text-align:center;color:var(--em-text);font-variant-numeric:tabular-nums;font-weight:600;}
+	.em-ovt {font-weight:700 !important;border-right:1px solid var(--em-line) !important;display:inline-flex;align-items:center;gap:0.35em;}
+	.em-ovt::before {content:"";width:0.8em;height:0.8em;border-radius:0.2em;border:2px solid currentColor;box-sizing:border-box;}
+	#em .em-ovg--flux .em-ovt, body.dark-mode #em .em-ovg--flux .em-ovt {color:#afd0ff;} #em .em-ovg--iso .em-ovt, body.dark-mode #em .em-ovg--iso .em-ovt {color:#ffc454;}
+	.em-ovt[aria-pressed="true"]::before {background:currentColor;}
+	#em .em-ovg.is-off .em-ovt, body.dark-mode #em .em-ovg.is-off .em-ovt {color:#9aa5bb;} .em-ovg.is-off b, .em-ovg.is-off .em-ovn {opacity:0.45;}
+	#em-mg-badge {top:3.2em;}
+	@media (max-width:560px) {.em-mgov {flex-direction:column;align-items:flex-start;max-width:none;} .em-ovg {font-size:0.8em;} .em-ovg button {min-height:2.4em;min-width:2.3em;} #em-mg-badge {top:auto;}}
 
 
 	@media print {
@@ -440,6 +453,48 @@ body.dark-mode .tu .rw-head {color:#a0a8b3;border-bottom-color:#555;} body.dark-
 		.footer__item--extra-padding { padding-left: 0; }
 		.footer__text--extra-info { float: none; display: block; margin-top: 0.5em; }
 	}
+/* Floating compact header bar: once the full header + nav scroll out of
+   view, a slim fixed bar (small logo, title, as many nav links as fit)
+   slides in, and the hamburger is pinned into its right end. Toggled by
+   the compact-nav script below. Ported from mes.fm/math's version (see
+   its build.mjs) -- display-controls.js pins the A-/A+/moon buttons into its right end.
+
+   Hidden by default via the inline style="display:none" on the element
+   itself (not just this stylesheet's "display: none" below) -- some
+   browser extensions strip or neutralize cosmetic-looking CSS for
+   elements named "sticky-*"/"*-bar" (a common ad/cookie-bar filter
+   pattern), which left an earlier version's raw unstyled markup visible
+   above the real header on mes.fm/math. The inline attribute is a
+   fallback the JS clears itself, independent of this stylesheet
+   surviving intact. */
+#compact-nav {
+  position: fixed; top: 0; left: 0; right: 0; height: 52px; z-index: 15;
+  display: none; align-items: center; gap: 12px;
+  padding: 0 80px 0 12px; box-sizing: border-box;
+  background: #ffffff; border-bottom: 3px solid #c2410c;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.18);
+  transform: translateY(-110%); transition: transform 0.2s ease;
+}
+#compact-nav.is-visible { display: flex; }
+body.is-stuck #compact-nav { transform: none; }
+#compact-nav .compact-nav-logo { display: block; width: 32px; height: 32px; border-radius: 6px; flex: 0 0 auto; }
+#compact-nav .compact-nav-title {
+  flex: 0 1 auto; min-width: 0; font-weight: 700; font-size: 1.05em; color: #1a1a1a;
+  text-decoration: none; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+}
+#compact-nav .compact-nav-links { display: flex; flex: 1 1 0; min-width: 0; overflow: hidden; margin: 0 0 0 8px; padding: 0; list-style: none; }
+#compact-nav .compact-nav-links li { flex: 0 0 auto; }
+#compact-nav .compact-nav-links a { display: block; padding: 0 10px; line-height: 52px; font-size: 0.9em; color: #c2410c; text-decoration: none; white-space: nowrap; }
+#compact-nav .compact-nav-links a:hover { background: rgba(194,65,12,0.12); }
+body.is-stuck #navbar-button { position: fixed !important; top: 4px !important; right: 8px !important; display: flex; align-items: center; }
+body.is-stuck #navbar.hide { position: fixed; top: 56px; right: 8px; }
+@media (max-width: 700px) {
+  #compact-nav .compact-nav-title { display: none; }
+  #compact-nav .compact-nav-logo { width: 36px; height: 36px; }
+}
+@media (max-width: 480px) {
+  #compact-nav { padding-right: 70px; gap: 8px; }
+}
 
 	/* TOOL-DARK:START -- generated by add_tool_page_controls.py, do not edit */
 	body.dark-mode .page-content :where(div,span,p,li,ul,ol,h1,h2,h3,h4,h5,h6,td,th,label,summary,small,strong,b,em,i,code,pre,legend,figcaption,dl,dt,dd,blockquote,caption,cite,button,input,select,textarea){color:#d8d8d8}
@@ -500,49 +555,11 @@ body.dark-mode .tu .rw-head {color:#a0a8b3;border-bottom-color:#555;} body.dark-
 	body.dark-mode .em-k-s{color:#73e89f}
 	body.dark-mode .em-vcard{border:1px solid #29323d;background:#1a1a1a;color:#d0d0d9}
 	body.dark-mode .em-vcard__t small{color:#9a9aa2}
+	body.dark-mode .em-ovg button:hover{background:rgba(26,26,26,0.08)}
+	body.dark-mode .em-ovg button:focus-visible{outline:2px solid #333333}
+	body.dark-mode #em .em-ovg--iso .em-ovt{color:#ffc75c}
+	body.dark-mode #em .em-ovg.is-off .em-ovt{color:#959ba8}
 	/* TOOL-DARK:END */
-/* Floating compact header bar: once the full header + nav scroll out of
-   view, a slim fixed bar (small logo, title, as many nav links as fit)
-   slides in, and the hamburger is pinned into its right end. Toggled by
-   the compact-nav script below. Ported from mes.fm/math's version (see
-   its build.mjs) -- display-controls.js pins the A-/A+/moon buttons into its right end.
-
-   Hidden by default via the inline style="display:none" on the element
-   itself (not just this stylesheet's "display: none" below) -- some
-   browser extensions strip or neutralize cosmetic-looking CSS for
-   elements named "sticky-*"/"*-bar" (a common ad/cookie-bar filter
-   pattern), which left an earlier version's raw unstyled markup visible
-   above the real header on mes.fm/math. The inline attribute is a
-   fallback the JS clears itself, independent of this stylesheet
-   surviving intact. */
-#compact-nav {
-  position: fixed; top: 0; left: 0; right: 0; height: 52px; z-index: 15;
-  display: none; align-items: center; gap: 12px;
-  padding: 0 80px 0 12px; box-sizing: border-box;
-  background: #ffffff; border-bottom: 3px solid #c2410c;
-  box-shadow: 0 2px 8px rgba(0,0,0,0.18);
-  transform: translateY(-110%); transition: transform 0.2s ease;
-}
-#compact-nav.is-visible { display: flex; }
-body.is-stuck #compact-nav { transform: none; }
-#compact-nav .compact-nav-logo { display: block; width: 32px; height: 32px; border-radius: 6px; flex: 0 0 auto; }
-#compact-nav .compact-nav-title {
-  flex: 0 1 auto; min-width: 0; font-weight: 700; font-size: 1.05em; color: #1a1a1a;
-  text-decoration: none; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
-}
-#compact-nav .compact-nav-links { display: flex; flex: 1 1 0; min-width: 0; overflow: hidden; margin: 0 0 0 8px; padding: 0; list-style: none; }
-#compact-nav .compact-nav-links li { flex: 0 0 auto; }
-#compact-nav .compact-nav-links a { display: block; padding: 0 10px; line-height: 52px; font-size: 0.9em; color: #c2410c; text-decoration: none; white-space: nowrap; }
-#compact-nav .compact-nav-links a:hover { background: rgba(194,65,12,0.12); }
-body.is-stuck #navbar-button { position: fixed !important; top: 4px !important; right: 8px !important; display: flex; align-items: center; }
-body.is-stuck #navbar.hide { position: fixed; top: 56px; right: 8px; }
-@media (max-width: 700px) {
-  #compact-nav .compact-nav-title { display: none; }
-  #compact-nav .compact-nav-logo { width: 36px; height: 36px; }
-}
-@media (max-width: 480px) {
-  #compact-nav { padding-right: 70px; gap: 8px; }
-}
 </style>
         <meta property="fb:app_id" content="" />
         <meta name="author" content="Math Easy Solutions Staff">
@@ -860,6 +877,10 @@ body.is-stuck #navbar.hide { position: fixed; top: 56px; right: 8px; }
 			</div>
 			<div class="em-wrap"><div class="em-stage" id="em-mg-stage">
 				<canvas id="em-mg-c" tabindex="0" role="img" aria-label="Flux lines and isopotential lines of the bar magnets. Drag a magnet to move it, drag its handle to turn it."></canvas>
+				<div class="em-mgov" id="em-mg-ov" role="group" aria-label="Lines to draw">
+					<span class="em-ovg em-ovg--flux"><button type="button" class="em-ovt" data-ov="em-mg-flux" aria-pressed="true" title="Show or hide the flux lines (B)">Flux</button><button type="button" class="em-ovn" data-ovn="em-mg-nf" data-d="-2" aria-label="Fewer flux lines" title="Fewer flux lines">−</button><b id="em-mg-ov-nf" aria-label="Number of flux lines">16</b><button type="button" class="em-ovn" data-ovn="em-mg-nf" data-d="2" aria-label="More flux lines" title="More flux lines">+</button></span>
+					<span class="em-ovg em-ovg--iso"><button type="button" class="em-ovt" data-ov="em-mg-iso" aria-pressed="true" title="Show or hide the isopotentials (ψ)">Iso</button><button type="button" class="em-ovn" data-ovn="em-mg-ni" data-d="-2" aria-label="Fewer isopotentials" title="Fewer isopotentials">−</button><b id="em-mg-ov-ni" aria-label="Number of isopotentials">14</b><button type="button" class="em-ovn" data-ovn="em-mg-ni" data-d="2" aria-label="More isopotentials" title="More isopotentials">+</button></span>
+				</div>
 				<div class="em-badge" id="em-mg-badge"></div>
 				<div class="em-run"><button type="button" id="em-mg-reset" title="Back to the example you started from">↺ Reset</button><button type="button" id="em-mg-png" title="Save as a picture" aria-label="Save as PNG">📷</button><button type="button" id="em-mg-full" title="Full screen" aria-label="Full screen">⛶</button></div>
 				<div class="em-legend" id="em-mg-legend" aria-hidden="true"><span class="em-lg-flux">— flux line (B)</span><span class="em-lg-iso">— isopotential (ψ)</span></div>
@@ -1105,7 +1126,7 @@ body.is-stuck #navbar.hide { position: fixed; top: 56px; right: 8px; }
             hide_search:false,
             current_tab:0
         }        </script><!-- FASTCOMMENTS-LAZY: widget init moved to main_js/main.js -- it pulls embed.min.js only when #fastcomments-widget nears the viewport or on the first Comments-toggle click, so it no longer blocks first render -->                <script src="https://mes.fm/main_js/lazysizes.min.js?v=1.0.3" async></script>
-	<script src="/main_js/stage-ctl.js?v=2" defer></script><script src="/electromagnetic-fields-simulator/js/electromagnetic-fields-simulator.js?v=13" defer></script>
+	<script src="/main_js/stage-ctl.js?v=2" defer></script><script src="/electromagnetic-fields-simulator/js/electromagnetic-fields-simulator.js?v=14" defer></script>
             <script src="https://mes.fm/main_js/main.js?v=1.0.5"></script>    <!-- PAGEVIEW-TRACKING-INSERTED --><script src="https://mes.fm/main_js/track.js" defer></script><script>document.getElementById('copyright-year').textContent = new Date().getFullYear();</script><script src="/main_js/info-bar-fit.js" defer></script><script>
   // Floating compact header bar (see #compact-nav CSS): appears once the
   // header + nav bar have scrolled off the top; nav links that don't fit

@@ -137,6 +137,14 @@ const PAGES = [
     tileLabel: "UFO Replication",
   },
   {
+    // Tile only: the Hutchison Effect Simulator tool page. Icon = img/hutchison-effect-simulator-icon.jpg (shared with the mes.fm/hutchison tile).
+    slug: "hutchison-effect-simulator",
+    href: "/hutchison-effect-simulator",
+    iconVersion: 1,
+    tileOnly: true,
+    tileLabel: "Hutchison Effect Simulator",
+  },
+  {
     // Tile only: link to the sibling hub mes.fm/math. Icon = img/math-tutorials-icon.jpg (the homepage's Math tile).
     slug: "math",
     icon: "math-tutorials",

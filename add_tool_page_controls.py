@@ -78,6 +78,7 @@ TOOLS = [  # (directory, compact-bar title[, home path of the site the page belo
     ("age-calculator", "Age Calculator"),   # 2026-10-23
     ("poker", "Poker"),   # 2026-10-23
     ("backgammon", "Backgammon"),   # 2026-10-23
+    ("nba-picks", "NBA Picks"),   # 2026-10-26
     ("statistics-calculator", "Statistics Calculator"),   # 2026-10-23
     ("birthday-personality", "Birthday Personality"),   # 2026-10-23
     ("seo", "SEO Checker"),   # 2026-10-23
@@ -140,6 +141,7 @@ TOOLS = [  # (directory, compact-bar title[, home path of the site the page belo
     ("contact.html", "Contact MES"),   # built by build_tool_apps.py (out=contact.html)
     ("compress", "MES Compressor"),
     ("compress-video", "MES Video Compressor"),
+    ("docx", "MES Word Viewer"),
     ("fonts", "MES Font Preview and Finder"),
     ("llm-simulator", "MES Toy Language Model Simulator"),
     ("letter-recognition", "MES Letter and Digit Recognition"),
@@ -155,6 +157,7 @@ TOOLS = [  # (directory, compact-bar title[, home path of the site the page belo
     ("typing-test-voice", "Typing Test", "/typing-test"),   # voice typing test: same brand, built by build_tool_apps.py
     ("typing-test-transcribe", "Typing Test", "/typing-test"),   # transcription test: a sub-page of the Typing Test brand (brand option in build_tool_apps.py)
     ("copy-text", "Copy Text"),    # also built by build_tool_apps.py
+    ("pronounce", "Pronounce"),
     ("sum-of-integers-calculator", "Sum of Integers Calculator"),   # also built by build_tool_apps.py
     ("reynolds-number-calculator", "Reynolds Number Calculator"),   # also built by build_tool_apps.py
     ("photoelectric-effect-simulator", "Photoelectric Effect"),   # also built by build_tool_apps.py (wide page, dark apparatus stage)
@@ -180,6 +183,7 @@ TOOLS = [  # (directory, compact-bar title[, home path of the site the page belo
     ("magnetic-isopotentials", "Magnetic Isopotentials"),
     ("grounding-rod-simulator", "Ground Rod Simulator"),
     ("double-pendulum", "Double Pendulum"),
+    ("hutchison-effect-simulator", "Hutchison Effect Simulator"),
     ("orbit-simulator", "Orbit Simulator"),
     ("redshift-simulator", "Redshift Simulator"),
     ("metric-tensor", "Metric Tensor Explorer"),

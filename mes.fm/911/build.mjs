@@ -185,6 +185,17 @@ const PAGES = [
       "The complete MES #911Truth video series, Parts 1 to 37, from dustification and Building 7 to Dr. Judy Wood's lectures and energetic dust and fumes, with notes and links on every platform.",
   },
   {
+    // Andrew Johnson's 9/11 books: both online editions (build_aj_books.py) and both PDF pages (build_pdf_page.py).
+    // Icon = img/911-andrew-johnson-books-icon.jpg (both title pages, made by build_aj_books.py).
+    slug: "911-andrew-johnson-books",
+    sectionId: "911-andrew-johnson-books",
+    tileLabel: "Andrew Johnson's 9/11 Books",
+    iconVersion: 1,
+    title: "Andrew Johnson's 9/11 Books",
+    description:
+      "Andrew Johnson's 9/11 books, published with his permission: 9/11 Finding the Truth (2011) and 9/11 Holding the Truth (2017), online and as PDFs.",
+  },
+  {
     slug: "911-observable-evidence",
     sectionId: "911-observable-evidence",
     tileLabel: "Observable Evidence",

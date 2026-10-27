@@ -129,5 +129,19 @@ eq(T.nextTab(["text", "file", "link"], "file", "a"), null, "other keys ignored")
 eq(T.nextTab([], "x", "ArrowRight"), null, "empty list");
 eq([T.editDefault(true), T.editDefault(false)], [true, false], "edit before reading: on for touch, off on a computer");
 
+// saved translations
+(function () {
+  var a = { q: "hello", o: "bonjour", f: "en", t: "fr", e: "online", d: 5 };
+  var r = T.toggleSaved([], a, 100); eq([r.on, r.list.length, r.list[0].s, r.list[0].e], [true, 1, 100, "online"], "star adds one entry, stamped when saved");
+  var r2 = T.toggleSaved(r.list, { q: "hello", o: "bonjour", t: "fr" }, 200); eq([r2.on, r2.list.length], [false, 0], "star again removes it");
+  eq(T.toggleSaved([], { q: " ", o: "x", t: "fr" }, 1).list.length, 0, "empty text is not saved");
+  eq(T.savedIndex(r.list, { q: "hello", o: "bonjour", t: "de" }), -1, "a different target language is a different entry");
+  var m = T.mergeSaved(r.list, { saved: [a, { q: "cat", o: "chat", f: "en", t: "fr", s: 300 }, { q: 3 }] }, 400); eq([m.added, m.list.length, m.list[0].q], [1, 2, "cat"], "import merges, skips duplicates and junk, newest first");
+  eq(T.mergeSaved([], "nope"), null, "import of a wrong file gives null");
+  var txt = T.savedText(m.list, function (c) { return c.toUpperCase(); }); ok(/EN → FR/.test(txt) && /bonjour/.test(txt) && /chat/.test(txt), "text export has languages and both texts");
+  eq(JSON.parse(T.savedJson(m.list)).saved.length, 2, "JSON export round-trips");
+  var big = []; for (var i = 0; i < T.SAVED_MAX; i++) big.push({ q: "q" + i, o: "o", t: "fr" }); eq(T.toggleSaved(big, { q: "new", o: "o", t: "fr" }, 1).list.length, T.SAVED_MAX, "capped at SAVED_MAX");
+})();
+
 console.log((bad ? bad + " of " : "all ") + n + " checks " + (bad ? "FAILED" : "passed"));
 process.exit(bad ? 1 : 0);

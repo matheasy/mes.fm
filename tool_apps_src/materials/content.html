@@ -265,14 +265,21 @@
 		<!-- ============ 6. THERMAL ============ -->
 		<section data-panel="thermal" role="tabpanel" hidden>
 			<div class="mt-grid2">
-				<div class="tu-card mt-fig"><svg id="mt-th-svg" class="mt-svg" viewBox="0 0 520 300" role="img" aria-label="A bar that is heated, free to grow or held between walls"></svg><p class="mt-cap" id="mt-th-cap"></p></div>
+				<div class="tu-card mt-fig">
+					<div class="mt-thtop"><div class="tu-seg mt-thsup" id="mt-th-sup" role="group" aria-label="How the bar is held (same as the buttons beside)"><button type="button" data-v="free" aria-pressed="true"><svg viewBox="0 0 40 16" aria-hidden="true"><rect x="6" y="5" width="28" height="6" rx="1"/></svg>Free</button><button type="button" data-v="held" aria-pressed="false"><svg viewBox="0 0 40 16" aria-hidden="true"><rect x="1" y="1" width="4" height="14"/><rect x="6" y="5" width="28" height="6" rx="1"/><rect x="35" y="1" width="4" height="14"/></svg>Both ends fixed</button><button type="button" data-v="gap" aria-pressed="false"><svg viewBox="0 0 40 16" aria-hidden="true"><rect x="1" y="1" width="4" height="14"/><rect x="6" y="5" width="22" height="6" rx="1"/><rect x="35" y="1" width="4" height="14"/></svg>Gap, then fixed</button></div>
+					<label class="mt-tht0">Starts at <input type="text" inputmode="decimal" id="mt-th-t0" class="tu-input" value="20" aria-label="Starting temperature"> <span id="mt-th-t0u">°C</span></label></div>
+					<svg id="mt-th-svg" class="mt-svg" viewBox="0 0 620 300" role="img" aria-label="A bar that is heated, free to grow or held between walls. Drag the round handle at its end, or the thermometer, to heat or cool it."></svg>
+					<div class="mt-sliders" id="mt-th-sl"></div>
+					<svg id="mt-th-chart" class="mt-svg mt-thch" viewBox="0 0 520 210" role="img" aria-label="Stress in the bar against the temperature change, with the yield strength and buckling stress. Click or drag on it to set the temperature change."></svg>
+					<p class="mt-cap" id="mt-th-cap"></p>
+				</div>
 				<div class="tu-card mt-inp">
-					<div class="tu-seg mt-modes" id="mt-th-cond" role="group" aria-label="Ends of the bar"><button type="button" data-v="free" aria-pressed="true">Free to grow</button><button type="button" data-v="held" aria-pressed="false">Held between walls</button><button type="button" data-v="gap" aria-pressed="false">Walls with a gap</button></div>
+					<div class="tu-seg mt-modes" id="mt-th-cond" role="group" aria-label="Ends of the bar"><button type="button" data-v="free" aria-pressed="true">Free to grow</button><button type="button" data-v="held" aria-pressed="false">Both ends fixed</button><button type="button" data-v="gap" aria-pressed="false">Gap, then fixed</button></div>
 					<div class="tu-row" style="margin-top:0.8em;">
 						<div class="mt-f" data-f="th-dT" data-k="dtemp" data-d="dtemp" data-l="Temperature change ΔT" data-sg></div>
 						<div class="mt-f" data-f="th-L" data-k="len" data-d="len" data-l="Length L"></div>
 						<div class="mt-f" data-f="th-g" data-k="len" data-d="small" data-l="Gap δ" data-m="gap"></div>
-						<div class="mt-f" data-f="th-d" data-k="len" data-d="small" data-l="Bar diameter (for the force)" data-x></div>
+						<div class="mt-f" data-f="th-d" data-k="len" data-d="small" data-l="Bar diameter (force, buckling)" data-x></div>
 					</div>
 					<div class="tu-row mt-r2">
 						<div class="mt-f" data-f="th-a" data-k="alpha" data-d="alpha" data-l="Thermal expansion α" data-x data-sg></div>

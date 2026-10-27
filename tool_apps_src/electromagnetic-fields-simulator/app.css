@@ -94,3 +94,16 @@
 	/* in dark mode the accent is lightened for contrast with the page, so a filled (pressed / chosen) button needs dark text on it */
 	body.dark-mode #em .em-toolrow button[aria-pressed="true"], body.dark-mode #em .em-chips button.is-on {color:#111;}
 	@media (max-width:560px) {.em-eq__n {display:block;min-width:0;}}
+	/* Flux / Iso overlay at the top left of the magnets picture */
+	.em-mgov {position:absolute;left:0.6em;top:0.6em;display:flex;flex-wrap:wrap;gap:0.35em;z-index:2;max-width:calc(100% - 9.5em);}
+	.em-ovg {display:inline-flex;align-items:center;border:1px solid var(--em-line);background:rgba(10,13,20,0.82);border-radius:0.45em;overflow:hidden;font-size:0.85em;}
+	.em-ovg button, body.dark-mode #em .em-ovg button {cursor:pointer;border:0;background:transparent;color:#e8ecf5;font:inherit;min-height:2.1em;min-width:2em;padding:0 0.55em;}
+	.em-ovg button:hover {background:rgba(255,255,255,0.08);} .em-ovg button:disabled {opacity:0.35;cursor:default;} .em-ovg button:focus-visible {outline:2px solid #fff;outline-offset:-2px;}
+	.em-ovg b {min-width:1.6em;text-align:center;color:var(--em-text);font-variant-numeric:tabular-nums;font-weight:600;}
+	.em-ovt {font-weight:700 !important;border-right:1px solid var(--em-line) !important;display:inline-flex;align-items:center;gap:0.35em;}
+	.em-ovt::before {content:"";width:0.8em;height:0.8em;border-radius:0.2em;border:2px solid currentColor;box-sizing:border-box;}
+	#em .em-ovg--flux .em-ovt, body.dark-mode #em .em-ovg--flux .em-ovt {color:#afd0ff;} #em .em-ovg--iso .em-ovt, body.dark-mode #em .em-ovg--iso .em-ovt {color:#ffc454;}
+	.em-ovt[aria-pressed="true"]::before {background:currentColor;}
+	#em .em-ovg.is-off .em-ovt, body.dark-mode #em .em-ovg.is-off .em-ovt {color:#9aa5bb;} .em-ovg.is-off b, .em-ovg.is-off .em-ovn {opacity:0.45;}
+	#em-mg-badge {top:3.2em;}
+	@media (max-width:560px) {.em-mgov {flex-direction:column;align-items:flex-start;max-width:none;} .em-ovg {font-size:0.8em;} .em-ovg button {min-height:2.4em;min-width:2.3em;} #em-mg-badge {top:auto;}}

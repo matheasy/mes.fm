@@ -110,3 +110,16 @@
 	.se-sc-in {width:6em;}
 
 .se-also button.is-same {opacity:0.45;text-decoration:line-through;}
+.se-allx {display:inline-flex;flex-wrap:wrap;align-items:center;gap:0.3em;font-size:0.85em;color:#5a6270;}
+.se-allx-l {margin-right:0.1em;}
+.se-allx button {cursor:pointer;font-size:1em;padding:0.3em 0.75em;border-radius:1em;border:1px dashed #b9c1cc;background:#fff;color:#444;}
+.se-allx button:hover:not(:disabled) {border-color:var(--accent);color:var(--accent);}
+.se-allx button[aria-pressed="true"] {background:var(--accent);border-color:var(--accent);border-style:solid;color:#fff;}
+.se-allx button[aria-pressed="mixed"] {border-style:solid;border-color:var(--accent);color:var(--accent);background:#fff3ec;}
+.se-allx button[aria-pressed="true"]::before {content:"\2713\00a0";}
+.se-allx button[aria-pressed="mixed"]::before {content:"\2012\00a0";}
+.se-allx button:disabled {opacity:0.45;cursor:default;}
+body.dark-mode #se .se-allx {color:#b4bcc6;}
+body.dark-mode #se .se-allx button {background:#1f2329;color:#d6dbe1;border-color:#4b535e;}
+body.dark-mode #se .se-allx button[aria-pressed="true"] {background:var(--accent);border-color:var(--accent);border-style:solid;color:#0b1416;}
+body.dark-mode #se .se-allx button[aria-pressed="mixed"] {background:#2a2018;border-color:var(--accent);border-style:solid;color:var(--accent);}

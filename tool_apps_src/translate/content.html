@@ -93,6 +93,7 @@
 							<span class="tr-sp"></span>
 							<button type="button" class="tr-ib" id="tr-say-out" title="Read the translation aloud" aria-label="Read the translation aloud"><svg class="tr-ic" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 9v6h4l5 4V5L8 9z"/><path d="M16 9a4 4 0 0 1 0 6M18.5 6.5a7.5 7.5 0 0 1 0 11"/></svg></button>
 							<button type="button" class="tr-ib tr-fillb" data-fill="out" title="Fill the browser window (Esc closes)" aria-label="Fill the browser window"><svg class="tr-ic" viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="4" width="18" height="16" rx="2"/><path d="M10 10L6.5 7.5M6.5 7.5v3M6.5 7.5h3M14 14l3.5 2.5M17.5 16.5v-3M17.5 16.5h-3"/></svg></button><button type="button" class="tr-ib tr-fillb" data-fs="out" title="Full screen" aria-label="Full screen"><svg class="tr-ic" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 9V4h5M20 9V4h-5M4 15v5h5M20 15v5h-5"/></svg></button>
+							<button type="button" class="tr-ib tr-star" id="tr-star" aria-pressed="false" aria-label="Save this translation" title="Save this translation" disabled>&#9734;</button>
 							<button type="button" class="tr-ib" id="tr-copy" title="Copy the translation" aria-label="Copy the translation"><svg class="tr-ic" viewBox="0 0 24 24" aria-hidden="true"><rect x="8" y="8" width="12" height="12" rx="2"/><path d="M16 8V5a1 1 0 0 0-1-1H5a1 1 0 0 0-1 1v10a1 1 0 0 0 1 1h3"/></svg></button>
 						</div>
 					</div>
@@ -133,6 +134,12 @@
 			</div>
 		</section>
 
+		<details class="tu-card tr-hist tr-saved" id="tr-savebox">
+			<summary><b>&#9733; Saved translations</b> <span class="tr-dim" id="tr-scount"></span></summary>
+			<p class="tu-note">Press &#9734; on a translation or a history row to keep it here. Saved translations stay in this browser until you delete them: <i>Clear history</i> and turning the history off do not touch them.</p>
+			<div class="tr-sbar"><button type="button" class="tu-btn tu-btn--ghost tr-small" id="tr-sexptxt">Download .txt</button><button type="button" class="tu-btn tu-btn--ghost tr-small" id="tr-sexpjson">Download .json (backup)</button><button type="button" class="tu-btn tu-btn--ghost tr-small" id="tr-scopyall">Copy all</button><button type="button" class="tu-btn tu-btn--ghost tr-small" id="tr-simp">Restore from .json…</button><input type="file" id="tr-simpf" accept=".json,application/json" hidden><button type="button" class="tr-linkb" id="tr-sundo" hidden>Undo delete</button></div>
+			<ul class="tr-hlist" id="tr-slist"></ul>
+		</details>
 		<details class="tu-card tr-hist" id="tr-histbox">
 			<summary><b>History</b> <span class="tr-dim" id="tr-hcount"></span></summary>
 			<p class="tu-note">Kept in this browser only. <button type="button" class="tr-linkb" id="tr-hclear">Clear history</button> · <label><input type="checkbox" id="tr-hkeep" checked> Keep a history</label></p>

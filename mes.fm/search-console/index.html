@@ -464,6 +464,37 @@ body.dark-mode .tu .rw-head {color:#a0a8b3;border-bottom-color:#555;} body.dark-
 	/* the shell's reset paints every span #333: inherit inside our own widgets (in light and dark mode) */
 	#gs :where(.gs-mt, .gs-read, .gs-fchip, .gs-fresh, .gs-legend) span {color:inherit;}
 	.gs-hbtns {display:inline-flex;flex-wrap:wrap;gap:0.35em;align-items:center;}
+	/* AI search panel */
+	#gs .gs-aiimport {border:1px dashed var(--gs-line);border-radius:0.5em;padding:0.7em;margin:0 0 0.8em;color:var(--gs-ink);}
+	#gs .gs-drop {display:flex;flex-wrap:wrap;align-items:baseline;gap:0.3em 0.5em;padding:1em;border:2px dashed var(--gs-g);border-radius:0.5em;background:var(--gs-hl);color:var(--gs-ink);cursor:pointer;}
+	#gs .gs-drop.on {border-style:solid;}
+	#gs .gs-drop span {flex-basis:100%;font-size:0.85em;color:var(--gs-muted);}
+	#gs .gs-drop:focus-visible {box-shadow:0 0 0 2px var(--accent);outline:none;}
+	#gs .gs-pick {color:var(--gs-link);text-decoration:underline;cursor:pointer;}
+	#gs .gs-pick input {position:absolute;width:1px;height:1px;opacity:0;}
+	#gs .gs-aifiles {margin:0.6em 0;padding-left:1.2em;font-size:0.9em;}
+	#gs .gs-aifiles li {margin:0.2em 0;color:var(--gs-ink);}
+	#gs .gs-aifiles li.skip {color:var(--gs-muted);}
+	#gs .gs-aifiles li.ok b {color:var(--gs-good);}
+	#gs .gs-aiok {color:var(--gs-good);font-weight:600;margin:0.5em 0;}
+	#gs .gs-howto {margin:0.7em 0 0;font-size:0.9em;color:var(--gs-ink);}
+	#gs .gs-howto summary {cursor:pointer;color:var(--gs-link);}
+	#gs .gs-howto p {margin:0.4em 0;}
+	#gs .gs-howto a, #gs .gs-aiold a {color:var(--gs-link);}
+	#gs .gs-aidel {margin:0.6em 0 0;font-size:0.9em;}
+	#gs .gs-aiold {margin:0.4em 0 0.8em;padding:0.5em 0.8em;border-radius:0.4em;border-left:4px solid #e67e22;background:var(--gs-hl);color:var(--gs-ink);font-size:0.9em;}
+	#gs .gs-aiold b {color:var(--gs-ink);}
+	#gs .gs-oldtag {display:inline-block;font-size:0.75em;font-weight:700;padding:0.05em 0.45em;border-radius:0.3em;background:#fde9d4;color:#8a3d00;vertical-align:middle;}
+	body.dark-mode #gs .gs-oldtag {background:#4a2c10;color:#ffcf99;}
+	#gs .gs-newurl {color:var(--gs-link);font-size:0.85em;margin-left:0.3em;}
+	#gs #gs-aitiles {margin:0.4em 0 0.6em;}
+	#gs .gs-aithead {margin-top:0.9em;}
+	#gs .gs-ai .gs-t td.gs-k {max-width:34em;}
+	#gs .gs-sec.mes-pfill .gs-aichart {flex:1 1 auto;height:auto;min-height:150px;}
+	#gs :where(.gs-aiold, .gs-drop, .gs-aiprev) span:not(.gs-oldtag) {color:inherit;}
+	#gs .gs-drop > span {color:var(--gs-muted);}
+	#gs .gs-ai .gs-t td.gs-k {white-space:normal;min-width:15em;overflow-wrap:anywhere;}
+	@media (max-width: 600px) { #gs .gs-ai .gs-t td.gs-k {min-width:13em;max-width:16em;} }
 
 
 	@media print {
@@ -503,6 +534,48 @@ body.dark-mode .tu .rw-head {color:#a0a8b3;border-bottom-color:#555;} body.dark-
 		.footer__item--extra-padding { padding-left: 0; }
 		.footer__text--extra-info { float: none; display: block; margin-top: 0.5em; }
 	}
+/* Floating compact header bar: once the full header + nav scroll out of
+   view, a slim fixed bar (small logo, title, as many nav links as fit)
+   slides in, and the hamburger is pinned into its right end. Toggled by
+   the compact-nav script below. Ported from mes.fm/math's version (see
+   its build.mjs) -- display-controls.js pins the A-/A+/moon buttons into its right end.
+
+   Hidden by default via the inline style="display:none" on the element
+   itself (not just this stylesheet's "display: none" below) -- some
+   browser extensions strip or neutralize cosmetic-looking CSS for
+   elements named "sticky-*"/"*-bar" (a common ad/cookie-bar filter
+   pattern), which left an earlier version's raw unstyled markup visible
+   above the real header on mes.fm/math. The inline attribute is a
+   fallback the JS clears itself, independent of this stylesheet
+   surviving intact. */
+#compact-nav {
+  position: fixed; top: 0; left: 0; right: 0; height: 52px; z-index: 15;
+  display: none; align-items: center; gap: 12px;
+  padding: 0 80px 0 12px; box-sizing: border-box;
+  background: #ffffff; border-bottom: 3px solid #1a73e8;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.18);
+  transform: translateY(-110%); transition: transform 0.2s ease;
+}
+#compact-nav.is-visible { display: flex; }
+body.is-stuck #compact-nav { transform: none; }
+#compact-nav .compact-nav-logo { display: block; width: 32px; height: 32px; border-radius: 6px; flex: 0 0 auto; }
+#compact-nav .compact-nav-title {
+  flex: 0 1 auto; min-width: 0; font-weight: 700; font-size: 1.05em; color: #1a1a1a;
+  text-decoration: none; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+}
+#compact-nav .compact-nav-links { display: flex; flex: 1 1 0; min-width: 0; overflow: hidden; margin: 0 0 0 8px; padding: 0; list-style: none; }
+#compact-nav .compact-nav-links li { flex: 0 0 auto; }
+#compact-nav .compact-nav-links a { display: block; padding: 0 10px; line-height: 52px; font-size: 0.9em; color: #1a73e8; text-decoration: none; white-space: nowrap; }
+#compact-nav .compact-nav-links a:hover { background: rgba(26,115,232,0.12); }
+body.is-stuck #navbar-button { position: fixed !important; top: 4px !important; right: 8px !important; display: flex; align-items: center; }
+body.is-stuck #navbar.hide { position: fixed; top: 56px; right: 8px; }
+@media (max-width: 700px) {
+  #compact-nav .compact-nav-title { display: none; }
+  #compact-nav .compact-nav-logo { width: 36px; height: 36px; }
+}
+@media (max-width: 480px) {
+  #compact-nav { padding-right: 70px; gap: 8px; }
+}
 
 	/* TOOL-DARK:START -- generated by add_tool_page_controls.py, do not edit */
 	body.dark-mode .page-content :where(div,span,p,li,ul,ol,h1,h2,h3,h4,h5,h6,td,th,label,summary,small,strong,b,em,i,code,pre,legend,figcaption,dl,dt,dd,blockquote,caption,cite,button,input,select,textarea){color:#d8d8d8}
@@ -547,49 +620,9 @@ body.dark-mode .tu .rw-head {color:#a0a8b3;border-bottom-color:#555;} body.dark-
 	body.dark-mode .gs-bar{background:rgba(82,82,82,0.20)}
 	body.dark-mode .gs-db .gs-db__bar{background:rgba(82,82,82,0.15)}
 	body.dark-mode #gs .gs-fchip button:hover{background:rgba(82,82,82,0.20)}
+	body.dark-mode #gs .gs-aiold{border-left:4px solid #b76115}
+	body.dark-mode #gs .gs-oldtag{background:#352616;color:#ffa45c}
 	/* TOOL-DARK:END */
-/* Floating compact header bar: once the full header + nav scroll out of
-   view, a slim fixed bar (small logo, title, as many nav links as fit)
-   slides in, and the hamburger is pinned into its right end. Toggled by
-   the compact-nav script below. Ported from mes.fm/math's version (see
-   its build.mjs) -- display-controls.js pins the A-/A+/moon buttons into its right end.
-
-   Hidden by default via the inline style="display:none" on the element
-   itself (not just this stylesheet's "display: none" below) -- some
-   browser extensions strip or neutralize cosmetic-looking CSS for
-   elements named "sticky-*"/"*-bar" (a common ad/cookie-bar filter
-   pattern), which left an earlier version's raw unstyled markup visible
-   above the real header on mes.fm/math. The inline attribute is a
-   fallback the JS clears itself, independent of this stylesheet
-   surviving intact. */
-#compact-nav {
-  position: fixed; top: 0; left: 0; right: 0; height: 52px; z-index: 15;
-  display: none; align-items: center; gap: 12px;
-  padding: 0 80px 0 12px; box-sizing: border-box;
-  background: #ffffff; border-bottom: 3px solid #1a73e8;
-  box-shadow: 0 2px 8px rgba(0,0,0,0.18);
-  transform: translateY(-110%); transition: transform 0.2s ease;
-}
-#compact-nav.is-visible { display: flex; }
-body.is-stuck #compact-nav { transform: none; }
-#compact-nav .compact-nav-logo { display: block; width: 32px; height: 32px; border-radius: 6px; flex: 0 0 auto; }
-#compact-nav .compact-nav-title {
-  flex: 0 1 auto; min-width: 0; font-weight: 700; font-size: 1.05em; color: #1a1a1a;
-  text-decoration: none; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
-}
-#compact-nav .compact-nav-links { display: flex; flex: 1 1 0; min-width: 0; overflow: hidden; margin: 0 0 0 8px; padding: 0; list-style: none; }
-#compact-nav .compact-nav-links li { flex: 0 0 auto; }
-#compact-nav .compact-nav-links a { display: block; padding: 0 10px; line-height: 52px; font-size: 0.9em; color: #1a73e8; text-decoration: none; white-space: nowrap; }
-#compact-nav .compact-nav-links a:hover { background: rgba(26,115,232,0.12); }
-body.is-stuck #navbar-button { position: fixed !important; top: 4px !important; right: 8px !important; display: flex; align-items: center; }
-body.is-stuck #navbar.hide { position: fixed; top: 56px; right: 8px; }
-@media (max-width: 700px) {
-  #compact-nav .compact-nav-title { display: none; }
-  #compact-nav .compact-nav-logo { width: 36px; height: 36px; }
-}
-@media (max-width: 480px) {
-  #compact-nav { padding-right: 70px; gap: 8px; }
-}
 </style>
         <meta property="fb:app_id" content="" />
         <meta name="author" content="Math Easy Solutions Staff">
@@ -660,6 +693,12 @@ body.is-stuck #navbar.hide { position: fixed; top: 56px; right: 8px; }
 		<p class="gs-fresh" id="gs-fresh" hidden></p>
 		<noscript><p class="tu-note">This page needs JavaScript.</p></noscript>
 
+		<div id="gs-setup"></div>
+
+		<div class="gs-tilerow"><h2 class="gs-src gs-src--g"><i class="gs-dot gs-dot--g"></i>Google</h2><div class="tu-stats gs-tiles" id="gs-tiles-g"></div></div>
+		<div class="gs-tilerow"><h2 class="gs-src gs-src--b"><i class="gs-dot gs-dot--b"></i>Bing</h2><div class="tu-stats gs-tiles" id="gs-tiles-b"></div><p class="tu-note gs-bnote" id="gs-bnote" hidden></p></div>
+
+		<!-- filters sit right above the chart and table they change -->
 		<div class="gs-fbar" id="gs-fbar">
 			<span class="gs-fchips" id="gs-fchips"></span>
 			<button type="button" class="tu-chip gs-fadd" id="gs-fadd" aria-expanded="false" aria-controls="gs-fform">+ Filter</button>
@@ -679,11 +718,6 @@ body.is-stuck #navbar.hide { position: fixed; top: 56px; right: 8px; }
 			</form>
 		</div>
 		<p class="tu-note gs-fnote" id="gs-fnote" hidden></p>
-		<div id="gs-setup"></div>
-
-		<div class="gs-tilerow"><h2 class="gs-src gs-src--g"><i class="gs-dot gs-dot--g"></i>Google</h2><div class="tu-stats gs-tiles" id="gs-tiles-g"></div></div>
-		<div class="gs-tilerow"><h2 class="gs-src gs-src--b"><i class="gs-dot gs-dot--b"></i>Bing</h2><div class="tu-stats gs-tiles" id="gs-tiles-b"></div><p class="tu-note gs-bnote" id="gs-bnote" hidden></p></div>
-
 		<section class="tu-card gs-sec" id="gs-chartsec">
 			<div class="gs-head" id="gs-chead">
 				<h2 id="gs-ctitle">Day by day</h2>
@@ -723,6 +757,42 @@ body.is-stuck #navbar.hide { position: fixed; top: 56px; right: 8px; }
 			<div class="gs-filter"><label class="gs-sr" for="gs-q">Search this table</label><input id="gs-q" class="tu-input" type="search" placeholder="Search this table (e.g. bmi, /timer, canada)" autocomplete="off" spellcheck="false"><span class="tu-note" id="gs-count"></span></div>
 			<p class="tu-note gs-tnote" id="gs-tnote"></p>
 			<div class="gs-wrap"><table class="gs-t" id="gs-t"></table></div><button type="button" class="tu-btn tu-btn--ghost gs-more" id="gs-more" hidden></button>
+		</section>
+		<section class="tu-card gs-sec gs-ai" id="gs-aisec" aria-labelledby="gs-aititle">
+			<div class="gs-head" id="gs-aihead">
+				<h2 id="gs-aititle">AI search</h2>
+				<div class="gs-tabs" id="gs-aisrc" role="group" aria-label="AI source">
+					<button type="button" class="tu-chip" data-s="google" aria-pressed="true">Google AI Overviews &amp; AI Mode</button>
+					<button type="button" class="tu-chip" data-s="bing" aria-pressed="false">Bing Copilot citations</button>
+				</div>
+				<span class="gs-hbtns" id="gs-aibtns"><button type="button" class="mes-pbtn" id="gs-aiimp" aria-expanded="false" aria-controls="gs-aiimport">Import exports…</button></span>
+			</div>
+			<div class="gs-aiimport" id="gs-aiimport" hidden>
+				<div class="gs-drop" id="gs-drop" tabindex="0" role="button" aria-label="Drop or choose export files">
+					<b>Drop the export files here</b> or <label class="gs-pick">choose files<input type="file" id="gs-aifile" multiple accept=".csv,.tsv,.txt,.zip,.xlsx,text/csv,application/zip"></label>
+					<span>CSV, the ZIP Search Console downloads, or an Excel (.xlsx) file. Several at once is fine. Nothing leaves your browser until you press Save.</span>
+				</div>
+				<div id="gs-aiprev" class="gs-aiprev" aria-live="polite"></div>
+				<details class="gs-howto">
+					<summary>How to export them</summary>
+					<p><b>Google:</b> <a href="https://search.google.com/search-console" target="_blank" rel="noopener">Search Console</a> → the mes.fm property → Performance → <b>Generative AI</b> (Search) → choose the date range (e.g. Last 16 months) → <b>Export</b> → <b>Download CSV</b>. Drop the ZIP as it is (it holds Dates, Pages, Countries and Devices). Google has no API for this report.</p>
+					<p><b>Bing:</b> <a href="https://www.bing.com/webmasters" target="_blank" rel="noopener">Bing Webmaster Tools</a> → mes.fm → <b>AI Performance</b> → choose the range → <b>Download all</b> (or the Download button above each table: the citations chart, Grounding queries, Pages). Bing has no API for this report.</p>
+					<p>Import again whenever you like: days are added or replaced by date, so a new 3-month export does not wipe the older months; the tables (pages, queries, countries, devices) are replaced by the newest export.</p>
+				</details>
+				<p class="gs-aidel"><button type="button" class="gs-fclear" data-aidel="google">Remove the imported Google numbers</button> · <button type="button" class="gs-fclear" data-aidel="bing">Remove the imported Bing numbers</button></p>
+			</div>
+			<p class="tu-note" id="gs-aimeta"></p>
+			<div class="tu-stats gs-tiles" id="gs-aitiles"></div>
+			<p class="gs-aiold" id="gs-aiold" hidden></p>
+			<div class="gs-read" id="gs-airead" aria-live="polite"></div>
+			<div class="gs-chart gs-aichart" id="gs-aichart"><svg id="gs-aisvg" preserveAspectRatio="none" role="img" aria-label="AI search numbers per day"></svg></div>
+			<div class="gs-legend" id="gs-ailegend"></div>
+			<div class="gs-head gs-aithead">
+				<div class="gs-tabs" id="gs-aitab" role="tablist" aria-label="AI table"></div>
+			</div>
+			<div class="gs-filter"><label class="gs-sr" for="gs-aiq">Search this table</label><input id="gs-aiq" class="tu-input" type="search" placeholder="Search this table" autocomplete="off" spellcheck="false"><span class="tu-note" id="gs-aicount"></span></div>
+			<p class="tu-note gs-tnote" id="gs-aitnote"></p>
+			<div class="gs-wrap"><table class="gs-t" id="gs-ait"></table></div><button type="button" class="tu-btn tu-btn--ghost gs-more" id="gs-aimore" hidden></button>
 		</section>
 	</div>
 	<script src="/main_js/panel-view.js?v=1" defer></script>
@@ -779,7 +849,7 @@ body.is-stuck #navbar.hide { position: fixed; top: 56px; right: 8px; }
             hide_search:false,
             current_tab:0
         }        </script><!-- FASTCOMMENTS-LAZY: widget init moved to main_js/main.js -- it pulls embed.min.js only when #fastcomments-widget nears the viewport or on the first Comments-toggle click, so it no longer blocks first render -->                <script src="https://mes.fm/main_js/lazysizes.min.js?v=1.0.3" async></script>
-	<script src="/search-console/js/search-console.js?v=2" defer></script>
+	<script src="/search-console/js/search-console.js?v=3" defer></script>
             <script src="https://mes.fm/main_js/main.js?v=1.0.5"></script>    <!-- PAGEVIEW-TRACKING-INSERTED --><script src="https://mes.fm/main_js/track.js" defer></script><script>document.getElementById('copyright-year').textContent = new Date().getFullYear();</script><script src="/main_js/info-bar-fit.js" defer></script><script>
   // Floating compact header bar (see #compact-nav CSS): appears once the
   // header + nav bar have scrolled off the top; nav links that don't fit

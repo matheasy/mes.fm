@@ -147,17 +147,6 @@ const PAGES = [
       "Written Hutchison Effect articles from MES: the 1983 Los Alamos report appendix, stop motion photos of levitating water and rare family photos of John Hutchison's family.",
   },
   {
-    // Nancy Hutchison's reports, newest first. Icon img/nancy-icon.jpg = 900x600 crop of the newest
-    // report's picture (hutchison-nancy-turn-return/img/turn-return.jpg): refresh it + bump iconVersion per new report.
-    slug: "nancy",
-    sectionId: "nancy",
-    iconVersion: 1,
-    tileLabel: "Nancy Hutchison",
-    title: "Nancy Hutchison: Reports for John Hutchison",
-    description:
-      "Nancy Hutchison's reports and transcripts on John Hutchison's work: TURN, RETURN and the Operator Differential, and John Hutchison and the Physics of the System.",
-  },
-  {
     // Tile only: the page is now a hand-made mirror of the Hive video post (mes.fm/hutchison-debunking-debunkers, not written by this build).
     slug: "hutchison-debunking-debunkers",
     href: "/hutchison-debunking-debunkers",
@@ -202,6 +191,15 @@ const PAGES = [
       "Cold fusion and low energy nuclear reactions (LENR): Martin Fleischmann's rare interviews, including the 1985 “hole in the floor” palladium electrolysis experiment, plus a free energy playlist.",
   },
   {
+    // Tile only: the MES Hutchison Effect Simulator (a build_tool_apps.py tool page). Icon = img/hutchison-effect-simulator-icon.jpg
+    // (900x600 render of the simulator's LADS Phase I floor until Grok art lands; bump iconVersion when replaced).
+    slug: "hutchison-effect-simulator",
+    href: "/hutchison-effect-simulator",
+    iconVersion: 1,
+    tileOnly: true,
+    tileLabel: "Hutchison Effect Simulator",
+  },
+  {
     // Tile only: no page is written; links to mes.fm/ufo (UFO Replication: Tesla coil / free energy build log).
     // Icon = img/ufo-icon.jpg (900x600 crop of that page's share image, shared with the mes.fm/science tile).
     slug: "ufo",
@@ -219,6 +217,17 @@ const PAGES = [
     iconVersion: 2,
     tileOnly: true,
     tileLabel: "MES Livestreams",
+  },
+  {
+    // Nancy Hutchison's reports, newest first. Kept as the LAST tile on the hub (owner request, 2026-10-26). Icon img/nancy-icon.jpg = 900x600 crop of the newest
+    // report's picture (hutchison-nancy-turn-return/img/turn-return.jpg): refresh it + bump iconVersion per new report.
+    slug: "nancy",
+    sectionId: "nancy",
+    iconVersion: 1,
+    tileLabel: "Nancy Hutchison",
+    title: "Nancy Hutchison: Reports for John Hutchison",
+    description:
+      "Nancy Hutchison's reports and transcripts on John Hutchison's work: TURN, RETURN and the Operator Differential, and John Hutchison and the Physics of the System.",
   },
 ];
 addAllPage(SECTIONS, PAGES, { hub: "hutchison", name: "Hutchison Effect" });

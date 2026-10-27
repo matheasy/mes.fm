@@ -73,6 +73,8 @@
 	function cosine(a, b) { var ab = 0, aa = 0, bb = 0; for (var i = 0; i < a.length; i++) { ab += a[i] * b[i]; aa += a[i] * a[i]; bb += b[i] * b[i]; } return aa && bb ? ab / Math.sqrt(aa * bb) : 0; }
 	// similarity 0..1 of two ink grids, discounted when the shapes' proportions differ (a condensed font vs a wide one)
 	function similarity(gA, gB, gw, gh, aspA, aspB) { var s = cosine(blur(gA, gw, gh), blur(gB, gw, gh)), pen = Math.exp(-Math.abs(Math.log(aspA / aspB)) * 1.6); return Math.max(0, s) * pen; }
-	var M = { CATS: CATS, LOCAL: LOCAL, GOOGLE: GOOGLE, DEFAULT: DEFAULT, PRESETS: PRESETS, style: style, css: css, ffam: ffam, otsu: otsu, binarise: binarise, inkBox: inkBox, grid: grid, blur: blur, cosine: cosine, similarity: similarity };
+	/* card sizes: minimum column width in em of the font grid */
+	var CARD_W = { s: 13, m: 19, l: 27, xl: 38 };
+	var M = { CARD_W: CARD_W, CATS: CATS, LOCAL: LOCAL, GOOGLE: GOOGLE, DEFAULT: DEFAULT, PRESETS: PRESETS, style: style, css: css, ffam: ffam, otsu: otsu, binarise: binarise, inkBox: inkBox, grid: grid, blur: blur, cosine: cosine, similarity: similarity };
 	if (typeof module !== "undefined" && module.exports) module.exports = M; else root.MESFont = M;
 })(typeof window !== "undefined" ? window : globalThis);

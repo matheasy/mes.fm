@@ -115,7 +115,7 @@
 			var si = exactSI(f); if (isFinite(si)) setExact(f, si, nu);
 			f.u = nu; f.sel.value = nu; S.f[id] = { t: typed(id) ? f.inp.value : undefined, u: nu };
 		});
-		paintSeg("mt-sys", sys); save(); renderAll();
+		paintSeg("mt-sys", sys); save(); if (TH.t0Paint) TH.t0Paint(); renderAll();
 	}
 	function paintSeg(id, v) { [].forEach.call($(id).querySelectorAll("button"), function (b) { b.setAttribute("aria-pressed", String(b.getAttribute("data-v") === String(v))); }); }
 	function seg(id, get, set) { paintSeg(id, get()); $(id).addEventListener("click", function (e) { var b = e.target.closest("button"); if (!b) return; set(b.getAttribute("data-v")); paintSeg(id, get()); save(); }); }
@@ -1048,47 +1048,155 @@
 	}
 
 	/* =========================== 6. THERMAL =========================== */
-	seg("mt-th-cond", function () { return S.th.cond; }, function (v) { S.th.cond = v; thCompute(); });
+	/* Interactive: sliders (ΔT, length, gap, diameter), drag the bar's end or the thermometer, click the stress chart; the bar's colour goes blue (cold)
+	   to red (hot) and its length animates. While something is dragged the drawing scale and the slider / chart ranges stay put (TH.lock). */
+	var TH = { lock: false, k: 1, rng: null, P: null, anim: 0, drag: null, g: null };
+	function thSup(v) { S.th.cond = v; paintSeg("mt-th-cond", v); paintSeg("mt-th-sup", v); save(); thCompute(); }
+	seg("mt-th-cond", function () { return S.th.cond; }, function (v) { thSup(v); });
+	seg("mt-th-sup", function () { return S.th.cond; }, function (v) { thSup(v); });
+	function thStrength(m, comp) { return comp && !m.sy ? (m.sc || m.su) : (m.sy || m.su); }
+	function t0C() { var t = num(S.th.t0); return isFinite(t) ? t : 20; }
+	function tShow(c) { var v = S.sys === "us" ? c * 9 / 5 + 32 : c; v = Math.round(v * 10) / 10; return M.pretty(v === 0 ? 0 : v, 4) + (S.sys === "us" ? " °F" : " °C"); }
 	function thCompute() {
 		var m = mv(), cond = S.th.cond, h = [], msg = "";
 		modeVis("thermal", function (a) { return a.indexOf(cond) >= 0; });
 		var a = mfield("th-a", m.a), E = mfield("th-E", m.E), dT = fval("th-dT"), L = fval("th-L"), g = fval("th-g"), d = fval("th-d");
 		if (!isFinite(dT)) msg = "Type the temperature change (negative for cooling)."; else if (!(L > 0)) msg = "Type the length."; else if (!isFinite(a)) msg = "Type the thermal expansion α."; else if (cond === "gap" && !(g >= 0)) msg = "Type the gap.";
-		var r = msg ? null : M.thermal(a, dT, L, E, cond, g);
+		var r = msg ? null : M.thermal(a, dT, L, E, cond, g), comp = r && r.sigma < 0, str = thStrength(m, comp), sB = d > 0 ? M.bucklingStress(E, d, L, 1) : NaN;
+		var state = r ? M.thermalState(r.sigma, str, sB) : "ok";
 		if (r) {
-			h.push(tile(cond === "free" ? "Change in length" : "Stress in the bar", cond === "free" ? fmt(Math.abs(r.free), "small") : (r.sigma === 0 ? "0" : fmt(Math.abs(r.sigma), "stress")), cond === "free" ? (r.free >= 0 ? "longer" : "shorter") + " " + fmtO(Math.abs(r.free), "small") : r.sigma < 0 ? "compression (the walls push back) " + fmtO(-r.sigma, "stress") : r.sigma > 0 ? "tension (the walls hold it stretched) " + fmtO(r.sigma, "stress") : "the gap did not close", "tu-stat--hero"));
+			h.push(tile(cond === "free" ? "Change in length" : "Stress in the bar", cond === "free" ? fmt(Math.abs(r.free), "small") : (r.sigma === 0 ? "0" : fmt(Math.abs(r.sigma), "stress")), cond === "free" ? (r.free >= 0 ? "longer" : "shorter") + " " + fmtO(Math.abs(r.free), "small") : r.sigma < 0 ? "compression (the walls push back) " + fmtO(-r.sigma, "stress") : r.sigma > 0 ? "tension (the walls hold it stretched) " + fmtO(r.sigma, "stress") : "the gap did not close", "tu-stat--hero" + (state === "yield" ? " mt-warn" : state === "buckle" ? " mt-bad" : "")));
+			h.push(tile("Temperature", tShow(t0C() + dT), "from " + tShow(t0C()) + " (" + (dT >= 0 ? "+" : "−") + fmtIn(Math.abs(dT), "dtemp") + ")"));
 			h.push(tile("Thermal strain α ΔT", M.pretty(r.eps, 4), M.pretty(r.eps * 1e6, 4) + " µε"));
 			if (cond !== "free") h.push(tile("Free expansion would be", fmt(Math.abs(r.free), "small"), "α ΔT L, if nothing held it"));
 			if (cond === "gap") h.push(tile(r.touching ? "Gap" : "Gap left", r.touching ? "closed" : fmt(r.gapLeft, "small"), isFinite(r.dTclose) ? "closes after a rise of " + fmtIn(r.dTclose, "dtemp") : ""));
+			if (cond !== "free" && str > 0) {
+				var ty = M.thermalDT(a, L, E, cond, g, str);
+				if (ty) h.push(tile("Yields at", (ty.up < 5000 ? "+" + fmtIn(ty.up, "dtemp") : "–"), "a rise of this much " + (m.sy ? "yields" : "crushes") + " " + m.short + (ty.down != null ? "; cooling by " + fmtIn(-ty.down, "dtemp") + " " + (m.sy ? "yields" : "cracks") + " it" : ""), state === "yield" ? "mt-bad" : ""));
+			}
 			if (r.sigma !== 0) {
-				var comp = r.sigma < 0, str = comp && !m.sy ? (m.sc || m.su) : (m.sy || m.su), sfa = str / Math.abs(r.sigma);
+				var sfa = str / Math.abs(r.sigma);
 				h.push(tile("Safety factor", M.pretty(sfa, 3), "against " + (m.sy ? "yield" : comp && m.sc ? "crushing" : "breaking") + " (" + fmt(str, "stress") + ") of " + m.short, sfa < 1 ? "mt-bad" : sfa < 1.5 ? "mt-warn" : ""));
-				if (d > 0) { var A = PI * d * d / 4, F = Math.abs(r.sigma) * A; h.push(tile("Force on the walls", fmt(F, "force"), "σ × A for a " + fmt(d, "small") + " bar")); if (comp) { var pcr = M.euler(E, PI * Math.pow(d, 4) / 64, L); h.push(tile("Buckling load (pinned ends)", fmt(pcr, "force"), F > pcr ? "<strong>it buckles sideways</strong> before this stress is reached" : "your force is " + M.pretty(F / pcr * 100, 3) + "% of it", F > pcr ? "mt-bad" : "")); } }
+				if (d > 0) { var A = PI * d * d / 4, F = Math.abs(r.sigma) * A; h.push(tile("Force on the walls", fmt(F, "force"), "σ × A for a " + fmt(d, "small") + " bar")); }
+			}
+			if (cond !== "free") {
+				if (d > 0) { var tb = M.thermalDT(a, L, E, cond, g, sB); h.push(tile("Buckling (pinned ends)", fmt(sB, "stress"), "Euler stress π²E(d/4)²/L², reached after a rise of " + (tb ? fmtIn(tb.up, "dtemp") : "–") + "; with clamped ends 4× more (" + fmt(4 * sB, "stress") + ")" + (state === "buckle" ? ". <strong>It bows sideways</strong>" : ""), state === "buckle" ? "mt-bad" : "")); }
+				else h.push(tile("Buckling", "–", "type the bar diameter (or drag its slider) to check whether the hot bar bows sideways"));
 			}
 		}
 		$("mt-th-stats").innerHTML = h.join(""); $("mt-th-msg").textContent = msg;
-		drawThermal(r, cond, dT);
-		if (r && r.sigma !== 0) { var mm2 = mv(), cmp = r.sigma < 0, str2 = cmp && !mm2.sy ? (mm2.sc || mm2.su) : (mm2.sy || mm2.su); if (Math.abs(r.sigma) > str2) $("mt-th-cap").textContent += " This is more than " + mm2.short + " can take: it would " + (mm2.sy ? "yield" : cmp ? "crush" : "crack") + ". That is why long slabs, rails and pipes get expansion joints or loops."; }
+		var G = { r: r, cond: cond, dT: dT, a: a, E: E, L: L, g: g, d: d, str: str, sB: sB, state: state, m: m };
+		thSliders(G); drawThermal(G); drawThChart(G);
+		var cap = !r ? "" : cond === "free" ? (dT > 0 ? "Heated, the bar grows; nothing stops it, so there is no stress." : dT < 0 ? "Cooled, the bar shrinks; nothing stops it, so there is no stress." : "Drag the slider, the bar's end or the thermometer to heat or cool the bar.") : cond === "held" ? "The walls stop the bar changing length, so all of the thermal strain turns into stress: σ = −E α ΔT." : r.touching ? "The bar grew until it closed the gap; only the rest of the growth turns into stress." : "The gap has not closed yet, so there is no stress.";
+		if (state === "yield") cap += " This is more than " + m.short + " can take: it would " + (m.sy ? "yield" : comp ? "crush" : "crack") + ". That is why long slabs, rails and pipes get expansion joints or loops.";
+		else if (state === "buckle") cap += " Long before that, the bar buckles: it bows sideways (railway tracks do this on hot days, “sun kinks”).";
+		$("mt-th-cap").textContent = cap;
 	}
-	function drawThermal(r, cond, dT) {
-		var h = ["<defs>" + MARK.replace("@", "mt-th-mk") + "</defs>"], x1 = 70, w0 = 340, yc = 140, hh = 44, hot = dT > 0;
-		var k = exag(r ? r.eps : 0, 0.12), de = r ? clamp(r.eps * k, -0.25, 0.3) : 0;
-		var gapPx = cond === "gap" && r ? clamp((fval("th-g") / (fval("th-L") || 1)) * k * w0, 4, 80) : 0;
+	/* sliders under the picture; their ranges (and the chart's) stay put while anything is dragged */
+	function thSliders(G) {
+		var big = S.sys === "us", specs = [], rg = thRange(G);
+		function lenS(id, label, val, fb) { return { key: id, label: label, keep: true, min: 0, max: Math.max(isFinite(val) && val > 0 ? 3 * val : 0, fb), v: val, show: function (x) { return fmt(x, "small"); }, set: function (x) { setFieldSI(id, Math.max(x, fb / 100)); thCompute(); } }; }
+		specs.push({ key: "th-dT", label: "Temperature change ΔT", min: rg[0], max: rg[1], v: G.dT, show: function (x) { return (x > 0 ? "+" : x < 0 ? "−" : "") + fmtIn(Math.abs(x), "dtemp"); }, set: function (x) { setFieldSI("th-dT", Math.round(x * 10) / 10); thCompute(); } });
+		specs.push({ key: "th-L", label: "Length L", keep: true, min: 0, max: Math.max(isFinite(G.L) && G.L > 0 ? 3 * G.L : 0, big ? 3.048 : 3), v: G.L, show: function (x) { return fmt(x, "len"); }, set: function (x) { setFieldSI("th-L", Math.max(x, 0.01)); thCompute(); } });
+		if (G.cond === "gap") specs.push(lenS("th-g", "Gap δ", G.g, 0.005));
+		if (G.cond !== "free") specs.push(lenS("th-d", "Bar diameter d", G.d, 0.05));
+		sliders("mt-th-sl", specs, { lock: function (on) { TH.lock = on; }, done: thCompute });
+	}
+	/* ΔT range of the slider, the thermometer and the chart: wide enough to show where the bar yields / buckles */
+	function thRange(G) {
+		if (TH.lock && TH.rng) return TH.rng;
+		var hi = 150, lo = -80, dT = isFinite(G.dT) ? G.dT : 0;
+		if (G.r && G.cond !== "free") { var ty = M.thermalDT(G.a, G.L, G.E, G.cond, G.g, G.str); if (ty && ty.up < 3000) hi = Math.max(hi, 1.25 * ty.up); if (ty && ty.down != null && ty.down > -1000) lo = Math.min(lo, 1.25 * ty.down); }
+		hi = Math.max(hi, 1.2 * dT); lo = Math.min(lo, 1.2 * dT); var st = Math.pow(10, Math.floor(Math.log10(hi - lo))) / 2;
+		TH.rng = [Math.floor(lo / st) * st, Math.ceil(hi / st) * st]; return TH.rng;
+	}
+	function drawThermal(G) {
+		var r = G.r, cond = G.cond, x1 = 70, w0 = 340;
+		if (!TH.lock) TH.k = exag(r ? r.eps : 0, 0.12); var k = TH.k, de = r ? clamp(r.eps * k, -0.25, 0.3) : 0;
+		var gapPx = cond === "gap" ? (r ? clamp((G.g / (G.L || 1)) * k * w0, 4, 80) : 20) : 0;
 		var wFree = w0 * (1 + de), wBar = cond === "free" ? wFree : cond === "held" ? w0 : Math.min(wFree, w0 + gapPx);
-		if (cond !== "free") { h.push("<rect x='" + (x1 - 26) + "' y='60' width='26' height='160' class='mt-sup'/>", "<rect x='" + r1(x1 + w0 + gapPx) + "' y='60' width='26' height='160' class='mt-sup'/>"); }
-		h.push("<rect x='" + x1 + "' y='" + (yc - hh / 2) + "' width='" + w0 + "' height='" + hh + "' class='mt-ghost'/>");
-		h.push("<rect x='" + x1 + "' y='" + (yc - hh / 2) + "' width='" + r1(wBar) + "' height='" + hh + "' class='mt-rod mt-heat" + (dT > 0 ? " mt-heat--hot" : dT < 0 ? " mt-heat--cold" : "") + "'/>");
-		if (r && r.sigma < 0) h.push(arrowSimple(x1 + 46, yc, x1 + 6, yc), arrowSimple(x1 + wBar - 46, yc, x1 + wBar - 6, yc), lab("mt-th-svg:n1", x1 + wBar / 2, yc + 6, "pushes on the walls", "mt-t mt-ts mt-b", "middle"));
-		if (r && r.sigma > 0) h.push(arrowSimple(x1 + 6, yc, x1 + 46, yc), arrowSimple(x1 + wBar - 6, yc, x1 + wBar - 46, yc), lab("mt-th-svg:n2", x1 + wBar / 2, yc + 6, "pulls on the walls", "mt-t mt-ts mt-b", "middle"));
-		if (cond === "free" && r) h.push(dimH(yc + hh / 2 + 22, x1 + w0, x1 + wFree, "mt-th-mk"), lab("mt-th-svg:n3", x1 + w0, yc + hh / 2 + 46, "δT = " + fmt(Math.abs(r.free), "small"), "mt-t mt-ts mt-b", "middle"));
-		h.push(lab("mt-th-svg:n4", 260, 262, k > 1 ? "Change drawn " + kTxt(k) + "× larger than real." : "Drawn to true scale.", "mt-t mt-ts", "middle"), lab("mt-th-svg:n5", 260, 284, "Dashed: the bar before the temperature change.", "mt-t mt-ts", "middle"));
-		$("mt-th-svg").innerHTML = h.join("");
-		$("mt-th-cap").textContent = !r ? "" : cond === "free" ? (hot ? "Heated, the bar grows; nothing stops it, so there is no stress." : "Cooled, the bar shrinks; nothing stops it, so there is no stress.") : cond === "held" ? "The walls stop the bar changing length, so all of the thermal strain turns into stress: σ = −E α ΔT." : r.touching ? "The bar grew until it closed the gap; only the rest of the growth turns into stress." : "The gap has not closed yet, so there is no stress.";
+		var P = { w: wBar, t: isFinite(G.dT) ? clamp(G.dT / 150, -1, 1) : 0, bow: G.state === "buckle" ? 26 : 0, gapPx: gapPx, G: G, k: k, wFree: wFree };
+		TH.g = { x1: x1, w0: w0, k: k, a: G.a, rng: thRange(G) };
+		var from = TH.P; TH.P = P; cancelAnimationFrame(TH.anim);
+		if (TH.lock || !from || from.G.cond !== cond || matchMedia("(prefers-reduced-motion: reduce)").matches) { thPaint(P); return; }
+		var t0 = performance.now();
+		(function step(now) { var u = clamp((now - t0) / 280, 0, 1), e = 1 - Math.pow(1 - u, 3); thPaint(Object.assign({}, P, { w: from.w + (P.w - from.w) * e, t: from.t + (P.t - from.t) * e, bow: from.bow + (P.bow - from.bow) * e })); if (u < 1) TH.anim = requestAnimationFrame(step); })(t0);
 	}
+	function thPaint(P) {
+		var G = P.G, r = G.r, cond = G.cond, x1 = 70, w0 = 340, yc = 140, hh = 44, h = ["<defs>" + MARK.replace("@", "mt-th-mk") + "</defs>"], wBar = P.w, gapPx = P.gapPx;
+		if (cond !== "free") { h.push("<rect x='" + (x1 - 26) + "' y='60' width='26' height='160' class='mt-sup'/>", "<rect x='" + r1(x1 + w0 + gapPx) + "' y='60' width='26' height='160' class='mt-sup'/>"); }
+		else h.push("<path d='M" + (x1 - 30) + "," + (yc + hh / 2 + 4) + " h" + (w0 + 120) + "' class='mt-ghostl'/>");
+		h.push("<rect x='" + x1 + "' y='" + (yc - hh / 2) + "' width='" + w0 + "' height='" + hh + "' class='mt-ghost'/>");
+		/* the bar: a path, so a buckled bar can bow sideways */
+		var top = [], bot = [], N = 28, i, x, dy;
+		for (i = 0; i <= N; i++) { x = x1 + wBar * i / N; dy = -P.bow * Math.sin(PI * i / N); top.push(r1(x) + "," + r1(yc - hh / 2 + dy)); bot.unshift(r1(x) + "," + r1(yc + hh / 2 + dy)); }
+		var rgb = M.heatRGB(P.t), st = G.state;
+		h.push("<path d='M" + top.join(" L") + " L" + bot.join(" L") + " Z' class='mt-rod mt-thbar" + (st === "yield" ? " mt-thbar--yield" : st === "buckle" ? " mt-thbar--buckle" : "") + "' style='fill:rgb(" + rgb.join(",") + ")'/>");
+		if (Math.abs(P.t) > 0.25) for (i = 1; i <= 3; i++) { var hx = x1 + wBar * i / 4, hy = yc - hh / 2 - P.bow * Math.sin(PI * i / 4) - 8; h.push(P.t > 0 ? "<path d='M" + r1(hx - 5) + "," + r1(hy) + " q5,-7 0,-14 q-5,-7 0,-14' class='mt-thwave'/>" : "<text x='" + r1(hx) + "' y='" + r1(hy) + "' class='mt-t mt-thsnow' text-anchor='middle'>❄</text>"); }
+		if (r && r.sigma < 0) h.push(arrowSimple(x1 + 46, yc, x1 + 6, yc), arrowSimple(x1 + wBar - 46, yc, x1 + wBar - 6, yc), lab("mt-th-svg:n1", x1 + wBar / 2, yc + 6 - P.bow, "pushes on the walls", "mt-t mt-ts mt-b", "middle"));
+		if (r && r.sigma > 0) h.push(arrowSimple(x1 + 6, yc, x1 + 46, yc), arrowSimple(x1 + wBar - 6, yc, x1 + wBar - 46, yc), lab("mt-th-svg:n2", x1 + wBar / 2, yc + 6, "pulls on the walls", "mt-t mt-ts mt-b", "middle"));
+		if (cond === "free" && r && Math.abs(P.wFree - w0) > 2) h.push(dimH(yc + hh / 2 + 22, x1 + w0, x1 + P.wFree, "mt-th-mk"), lab("mt-th-svg:n3", x1 + w0, yc + hh / 2 + 46, "δT = " + fmt(Math.abs(r.free), "small"), "mt-t mt-ts mt-b", "middle"));
+		if (st !== "ok") h.push(lab("mt-th-svg:n6", x1 + w0 / 2, 46, st === "yield" ? "⚠ past the " + (G.m.sy ? "yield" : "breaking") + " strength" : "⚠ buckles: bows sideways", "mt-t mt-b mt-thwarn" + (st === "buckle" ? " mt-thwarn--b" : ""), "middle"));
+		/* handle on the bar's end: drag it to heat or cool */
+		var xe = x1 + wBar, ye = yc - P.bow * 0;
+		h.push("<g class='mt-dragx' data-drag='end'><title>Drag to heat (right) or cool (left)</title><circle cx='" + r1(xe) + "' cy='" + ye + "' r='13' class='mt-handle'/><path d='M" + r1(xe - 4) + "," + (ye - 5) + " l-5,5 l5,5 M" + r1(xe + 4) + "," + (ye - 5) + " l5,5 l-5,5' class='mt-hgrip'/></g>");
+		/* thermometer: drag it up or down */
+		var rg = TH.g ? TH.g.rng : [-80, 150], tx = 572, tTop = 40, tBot = 214, fr = isFinite(G.dT) ? clamp((G.dT - rg[0]) / (rg[1] - rg[0]), 0, 1) : 0.4, ty0 = tBot - (tBot - tTop) * fr, z = tBot - (tBot - tTop) * clamp(-rg[0] / (rg[1] - rg[0]), 0, 1);
+		h.push("<g class='mt-drag' data-drag='therm'><title>Drag up to heat, down to cool</title><rect x='" + (tx - 22) + "' y='" + (tTop - 14) + "' width='44' height='" + (tBot - tTop + 54) + "' fill='transparent'/>",
+			"<rect x='" + (tx - 7) + "' y='" + (tTop - 6) + "' width='14' height='" + (tBot - tTop + 12) + "' rx='7' class='mt-thtube'/><circle cx='" + tx + "' cy='" + (tBot + 16) + "' r='14' class='mt-thtube'/>",
+			"<rect x='" + (tx - 3.5) + "' y='" + r1(ty0) + "' width='7' height='" + r1(tBot + 8 - ty0) + "' style='fill:rgb(" + rgb.join(",") + ")'/><circle cx='" + tx + "' cy='" + (tBot + 16) + "' r='10' style='fill:rgb(" + rgb.join(",") + ")'/>",
+			"<line x1='" + (tx - 12) + "' y1='" + r1(z) + "' x2='" + (tx + 12) + "' y2='" + r1(z) + "' class='mt-ghostl'/></g>");
+		h.push(lab("mt-th-svg:n7", tx, 18, isFinite(G.dT) ? tShow(t0C() + G.dT) : "?", "mt-t mt-ts mt-b", "middle"), lab("mt-th-svg:n8", tx - 16, r1(z) + 4, "start", "mt-t mt-ts", "end"));
+		h.push(lab("mt-th-svg:n4", 300, 262, P.k > 1 ? "Change drawn " + kTxt(P.k) + "× larger than real." : "Drawn to true scale.", "mt-t mt-ts", "middle"), lab("mt-th-svg:n5", 300, 284, "Dashed: before the change. Drag the round handle or the thermometer.", "mt-t mt-ts", "middle"));
+		$("mt-th-svg").innerHTML = h.join("");
+	}
+	/* stress against temperature change, with the yield strength and the buckling stress, and the bar's point on it; click / drag to set ΔT */
+	function drawThChart(G) {
+		var svg = $("mt-th-chart"), W = 520, H = 210, l = 62, rr = 14, t = 14, b = 34, rg = TH.g ? TH.g.rng : thRange(G), h = [];
+		if (!G.r) { svg.innerHTML = "<text x='260' y='105' class='mt-t mt-ts' text-anchor='middle'>Type the numbers above to see the stress against temperature.</text>"; return; }
+		var ser = M.thermalSeries(G.a, G.L, G.E, G.cond, G.g, rg[0], rg[1], 120), sc = thStrength(G.m, true), stn = thStrength(G.m, false), ymax = 0;
+		ser.forEach(function (p) { ymax = Math.max(ymax, Math.abs(p[1])); }); if (G.cond !== "free") ymax = Math.min(ymax, 1.3 * Math.max(sc || 0, stn || 0, G.sB > 0 ? G.sB : 0)); ymax = Math.max(ymax, 1.15 * Math.max(sc || 0, stn || 0), 1e6);
+		if (TH.lock && TH.ymax) ymax = TH.ymax; TH.ymax = ymax;
+		function X(v) { return l + (W - l - rr) * (v - rg[0]) / (rg[1] - rg[0]); } function Y(s) { return t + (H - t - b) * (1 - (clamp(s, -ymax, ymax) + ymax) / (2 * ymax)); }
+		var su = U("stress"), sk = M.fromSI(kindOf("stress"), 1, su), tk = function (v) { return M.fromSI(kindOf("dtemp"), v, U("dtemp")); };
+		h.push("<rect x='" + l + "' y='" + t + "' width='" + (W - l - rr) + "' height='" + (H - t - b) + "' class='mt-thch-bg'/>");
+		[-1, -0.5, 0, 0.5, 1].forEach(function (f) { var s = f * ymax, y = Y(s); h.push("<line x1='" + l + "' y1='" + r1(y) + "' x2='" + (W - rr) + "' y2='" + r1(y) + "' class='" + (f === 0 ? "mt-thch-zero" : "mt-thch-grid") + "'/><text x='" + (l - 5) + "' y='" + r1(y + 4) + "' class='mt-t mt-thch-tk' text-anchor='end'>" + M.pretty(s * sk, 3) + "</text>"); });
+		var nt = 6, st = (rg[1] - rg[0]) / nt; for (var i = 0; i <= nt; i++) { var v = rg[0] + st * i; h.push("<line x1='" + r1(X(v)) + "' y1='" + t + "' x2='" + r1(X(v)) + "' y2='" + (H - b) + "' class='mt-thch-grid'/><text x='" + r1(X(v)) + "' y='" + (H - b + 14) + "' class='mt-t mt-thch-tk' text-anchor='middle'>" + M.pretty(tk(v), 3) + "</text>"); }
+		h.push("<text x='" + ((l + W - rr) / 2) + "' y='" + (H - 4) + "' class='mt-t mt-thch-ax' text-anchor='middle'>temperature change ΔT (" + U("dtemp") + ")</text><text x='12' y='" + ((t + H - b) / 2) + "' class='mt-t mt-thch-ax' text-anchor='middle' transform='rotate(-90 12 " + ((t + H - b) / 2) + ")'>stress σ (" + su + ")</text>");
+		function hl(s, cls, txt, anchorLeft) { if (!(s > 0) || s > ymax) return; [s, -s].forEach(function (v, j) { if (j === 0 && cls === "mt-thch-buck") return; var y = Y(v); h.push("<line x1='" + l + "' y1='" + r1(y) + "' x2='" + (W - rr) + "' y2='" + r1(y) + "' class='" + cls + "'/><text x='" + (anchorLeft ? l + 4 : W - rr - 4) + "' y='" + r1(y + (v < 0 ? 13 : -4)) + "' class='mt-t mt-thch-lb " + cls + "-t' text-anchor='" + (anchorLeft ? "start" : "end") + "'>" + txt + (v < 0 ? " (squeeze)" : " (pull)") + "</text>"); }); }
+		if (G.cond !== "free") { hl(stn, "mt-thch-yield", G.m.sy ? "yield" : "breaks"); if (sc !== stn) { /* compressive strength differs: draw its line only below zero */ var y2 = Y(-sc); if (sc <= ymax) h.push("<line x1='" + l + "' y1='" + r1(y2) + "' x2='" + (W - rr) + "' y2='" + r1(y2) + "' class='mt-thch-yield'/>"); } if (G.sB > 0) hl(G.sB, "mt-thch-buck", "buckles", true); }
+		h.push("<polyline points='" + ser.map(function (p) { return r1(X(p[0])) + "," + r1(Y(p[1])); }).join(" ") + "' class='mt-thch-line'/>");
+		if (isFinite(G.dT)) { var px = X(clamp(G.dT, rg[0], rg[1])), py = Y(G.r.sigma); h.push("<line x1='" + r1(px) + "' y1='" + t + "' x2='" + r1(px) + "' y2='" + (H - b) + "' class='mt-thch-now'/><circle cx='" + r1(px) + "' cy='" + r1(py) + "' r='7' class='mt-thch-pt mt-thch-pt--" + G.state + "'/>"); }
+		svg.innerHTML = h.join(""); TH.cg = { l: l, w: W - l - rr, rg: rg };
+	}
+	(function () {
+		var svg = $("mt-th-svg"), ch = $("mt-th-chart");
+		function setDT(v) { var rg = TH.g ? TH.g.rng : [-80, 150]; setFieldSI("th-dT", Math.round(clamp(v, rg[0], rg[1]) * 10) / 10); thCompute(); }
+		function to(ev) {
+			var g = TH.g; if (!g || !TH.drag) return; var p = svgPt(svg, ev);
+			if (TH.drag === "therm") { var fr = clamp((214 - p.y) / (214 - 40), 0, 1); setDT(g.rng[0] + (g.rng[1] - g.rng[0]) * fr); }
+			else if (g.a > 0) { if (S.th.cond === "held") { setDT(TH.d0 + (p.x - TH.x0) / g.w0 * (g.rng[1] - g.rng[0])); } else setDT(clamp((p.x - g.x1) / g.w0 - 1, -0.25, 0.3) / g.k / g.a); }
+		}
+		svg.addEventListener("pointerdown", function (ev) { var d = ev.target.closest("[data-drag]"); if (!d || ev.target.closest(".mt-lab")) return; ev.preventDefault(); TH.drag = d.getAttribute("data-drag"); TH.lock = true; TH.x0 = svgPt(svg, ev).x; TH.d0 = fval("th-dT") || 0; try { svg.setPointerCapture(ev.pointerId); } catch (e) { /* ignore */ } if (TH.drag === "therm") to(ev); });
+		svg.addEventListener("pointermove", function (ev) { if (TH.drag) to(ev); });
+		function end() { if (!TH.drag) return; TH.drag = null; TH.lock = false; thCompute(); }
+		svg.addEventListener("pointerup", end); svg.addEventListener("pointercancel", end);
+		var cd = false;
+		function cto(ev) { var c = TH.cg; if (!c) return; var p = svgPt(ch, ev); setDT(c.rg[0] + (c.rg[1] - c.rg[0]) * clamp((p.x - c.l) / c.w, 0, 1)); }
+		ch.addEventListener("pointerdown", function (ev) { ev.preventDefault(); cd = true; TH.lock = true; try { ch.setPointerCapture(ev.pointerId); } catch (e) { /* ignore */ } cto(ev); });
+		ch.addEventListener("pointermove", function (ev) { if (cd) cto(ev); });
+		function cend() { if (!cd) return; cd = false; TH.lock = false; thCompute(); }
+		ch.addEventListener("pointerup", cend); ch.addEventListener("pointercancel", cend);
+		var t0 = $("mt-th-t0");
+		function t0Paint() { $("mt-th-t0u").textContent = S.sys === "us" ? "°F" : "°C"; if (document.activeElement !== t0) t0.value = String(Math.round((S.sys === "us" ? t0C() * 9 / 5 + 32 : t0C()) * 10) / 10).replace("-", "−"); }
+		t0.addEventListener("input", function () { var v = num(t0.value); if (!isFinite(v)) return; S.th.t0 = String(Math.round((S.sys === "us" ? (v - 32) * 5 / 9 : v) * 1e6) / 1e6); save(); thCompute(); });
+		t0.addEventListener("blur", t0Paint); TH.t0Paint = t0Paint; t0Paint();
+	})();
 	chipRow("mt-th-ex", [
-		["Steel rail, +40 °C, 10 m, held", function () { setMat("a36", true); S.th.cond = "held"; paintSeg("mt-th-cond", "held"); setField("th-dT", 40, "°C"); setField("th-L", 10, "m"); FL["th-d"].inp.value = ""; setT(FL["th-d"], ""); thCompute(); }],
-		["Aluminium bar, 2 mm gap, +60 °C", function () { setMat("al6061", true); S.th.cond = "gap"; paintSeg("mt-th-cond", "gap"); setField("th-dT", 60, "°C"); setField("th-L", 1, "m"); setField("th-g", 0.5, "mm"); setField("th-d", 20, "mm"); thCompute(); }],
-		["Concrete slab cooling 30 °C", function () { setMat("concrete", true); S.th.cond = "held"; paintSeg("mt-th-cond", "held"); setField("th-dT", -30, "°C"); setField("th-L", 6, "m"); FL["th-d"].inp.value = ""; setT(FL["th-d"], ""); thCompute(); }]
+		["Steel rail, +40 °C, 10 m, held", function () { setMat("a36", true); S.th.cond = "held"; paintSeg("mt-th-cond", "held"); paintSeg("mt-th-sup", "held"); setField("th-dT", 40, "°C"); setField("th-L", 10, "m"); FL["th-d"].inp.value = ""; setT(FL["th-d"], ""); thCompute(); }],
+		["Aluminium bar, 2 mm gap, +60 °C", function () { setMat("al6061", true); S.th.cond = "gap"; paintSeg("mt-th-cond", "gap"); paintSeg("mt-th-sup", "gap"); setField("th-dT", 60, "°C"); setField("th-L", 1, "m"); setField("th-g", 0.5, "mm"); setField("th-d", 20, "mm"); thCompute(); }],
+		["Steel rod, 2 m × 20 mm, clamped, +50 °C (buckles)", function () { setMat("a36", true); S.th.cond = "held"; paintSeg("mt-th-cond", "held"); paintSeg("mt-th-sup", "held"); setField("th-dT", 50, "°C"); setField("th-L", 2, "m"); setField("th-d", 20, "mm"); thCompute(); }],
+		["Concrete slab cooling 30 °C", function () { setMat("concrete", true); S.th.cond = "held"; paintSeg("mt-th-cond", "held"); paintSeg("mt-th-sup", "held"); setField("th-dT", -30, "°C"); setField("th-L", 6, "m"); FL["th-d"].inp.value = ""; setT(FL["th-d"], ""); thCompute(); }]
 	], function (fn) { fn(); matNote(); });
 
 	/* =========================== 7. TABLE + ASHBY CHART =========================== */
@@ -1191,7 +1299,7 @@
 		if (t === "shear") q.push("md=" + S.sh.mode, "n=" + S.sh.n, "sf=" + encodeURIComponent(S.sh.sf), "rt=" + encodeURIComponent(S.sh.ratio));
 		if (t === "torsion") q.push("src=" + S.to.src, "hol=" + S.to.hol, "sf=" + encodeURIComponent(S.to.sf));
 		if (t === "poisson") q.push("md=" + S.po.mode, "by=" + S.po.by, "dir=" + S.po.dir, "pair=" + encodeURIComponent(S.po.pair));
-		if (t === "thermal") q.push("cond=" + S.th.cond);
+		if (t === "thermal") { q.push("cond=" + S.th.cond); if (S.th.t0 != null && num(S.th.t0) !== 20) q.push("t0=" + encodeURIComponent(S.th.t0)); }
 		return location.origin + location.pathname + "?" + q.join("&");
 	}
 	$("mt-link").addEventListener("click", function () { copy(shareUrl(), "Link copied: it opens this tab with your numbers."); });
@@ -1209,7 +1317,7 @@
 		if (t === "shear") { if (p.get("md")) S.sh.mode = p.get("md"); if (p.get("n")) S.sh.n = p.get("n") === "2" ? "2" : "1"; if (p.get("sf")) S.sh.sf = p.get("sf"); if (p.get("rt")) S.sh.ratio = p.get("rt"); }
 		if (t === "torsion") { if (p.get("src")) S.to.src = p.get("src") === "P" ? "P" : "T"; if (p.get("hol")) S.to.hol = p.get("hol") === "1" ? "1" : "0"; if (p.get("sf")) S.to.sf = p.get("sf"); }
 		if (t === "poisson") { if (p.get("md")) S.po.mode = p.get("md"); if (p.get("by")) S.po.by = p.get("by") === "e" ? "e" : "s"; if (p.get("dir")) S.po.dir = p.get("dir") === "e" ? "e" : "s"; if (p.get("pair")) S.po.pair = p.get("pair"); }
-		if (t === "thermal" && p.get("cond")) S.th.cond = p.get("cond");
+		if (t === "thermal") { if (/^(free|held|gap)$/.test(p.get("cond") || "")) S.th.cond = p.get("cond"); if (p.get("t0") && isFinite(num(p.get("t0")))) S.th.t0 = p.get("t0"); }
 		return t;
 	}
 
@@ -1219,7 +1327,7 @@
 		try { history.replaceState(null, "", location.pathname + (VIEWS.length > 1 && effTab !== VIEWS[0] ? "?tab=" + effTab : "")); } catch (e) { /* ignore */ }
 		save();
 	}
-	["mt-sh-mode", "mt-sh-n", "mt-to-src", "mt-to-hol", "mt-po-mode", "mt-po-by", "mt-p3-dir", "mt-th-cond", "mt-ax-dir"].forEach(function (id) { var map = { "mt-sh-mode": S.sh.mode, "mt-sh-n": S.sh.n, "mt-to-src": S.to.src, "mt-to-hol": S.to.hol, "mt-po-mode": S.po.mode, "mt-po-by": S.po.by, "mt-p3-dir": S.po.dir, "mt-th-cond": S.th.cond, "mt-ax-dir": S.ax.dir }; paintSeg(id, map[id]); });
+	["mt-sh-mode", "mt-sh-n", "mt-to-src", "mt-to-hol", "mt-po-mode", "mt-po-by", "mt-p3-dir", "mt-th-cond", "mt-ax-dir"].forEach(function (id) { var map = { "mt-sh-mode": S.sh.mode, "mt-sh-n": S.sh.n, "mt-to-src": S.to.src, "mt-to-hol": S.to.hol, "mt-po-mode": S.po.mode, "mt-po-by": S.po.by, "mt-p3-dir": S.po.dir, "mt-th-cond": S.th.cond, "mt-ax-dir": S.ax.dir }; paintSeg(id, map[id]); }); paintSeg("mt-th-sup", S.th.cond);
 	$("mt-sh-ratio").value = S.sh.ratio; $("mt-sh-sf").value = S.sh.sf; $("mt-to-sf").value = S.to.sf; $("mt-ec-pair").value = S.po.pair; $("mt-ax-sfv").value = S.ax.sf || "2"; shapeSel.value = S.ax.shape;
 	cmpOpts($("mt-tt-c2"), S.tt.c2); cmpOpts($("mt-tt-c3"), S.tt.c3); paintSeg("mt-tt-zoom", S.tt.zoom); $("mt-tt-true").checked = !!S.tt.tr;
 	seg("mt-sys", function () { return S.sys; }, function (v) { setSys(v === "us" ? "us" : "si"); });

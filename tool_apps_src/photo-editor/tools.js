@@ -121,7 +121,7 @@
 	}
 	function boxHandle(b, hd) { return PE.toScreen(b.x + (hd[0] + 1) / 2 * b.w, b.y + (hd[1] + 1) / 2 * b.h); }
 	function scr(e) { var r = PE.els.over.getBoundingClientRect(); return { x: e.sx - r.left, y: e.sy - r.top }; }
-	var mv = null;
+	var mv = null, hoverTM = null;
 	function pickTarget(hit, L, groupsOn) {
 		if (!groupsOn) return hit; var anc = PE.ancestorsOf(hit); if (!anc.length) return hit; if (L === hit) return hit; if (L && anc.indexOf(L) >= 0) return L;
 		if (L && PE.topGroupOf(L) === PE.topGroupOf(hit)) return hit; return PE.topGroupOf(hit);
@@ -184,7 +184,7 @@
 	}
 	PE.defTool({ id: "move", name: "Move / Transform", key: "v", icon: "✥", opts: { auto: true, handles: true, snap: true, snapLayers: true, groups: true },
 		ui: [{ k: "auto", label: "Pick layer on click", type: "check" }, { k: "groups", label: "Pick the whole group", type: "check" }, { k: "handles", label: "Transform handles", type: "check" }, { k: "snap", label: "Snap to canvas edges", type: "check" }, { k: "snapLayers", label: "Snap to other layers", type: "check" }, { type: "button", label: "✎ Edit text / equation", act: function () { var L = PE.active(); if (L && L.type === "text") PE.editActiveText(); else if (L && L.eq) PE.dlgEquation(L); else PE.toast("Select a text or equation layer first (click it on the picture)"); } }, { type: "button", label: "✂ Remove background (AI)", act: function () { PE.aiRemoveBackground(); } }],
-		hint: "Drag to move. Shift / Ctrl-click adds or removes layers; drag on empty canvas to box-select several. Handles resize (Shift = other proportions), just outside a corner rotates. Hold Ctrl (or Alt) while dragging = no snapping. Arrows nudge.",
+		hint: "Drag to move. Shift / Ctrl-click adds or removes layers; drag on empty canvas to box-select several. Handles resize (Shift = other proportions), just outside a corner rotates. On a text: the purple side handles wrap it (with Auto-fit text the purple corners resize the box; Alt+corner scales). Hold Ctrl (or Alt) while dragging = no snapping. Arrows nudge.",
 		down: function (e) {
 			var o = PE.opt.move, A = PE.active(), set = PE.moveSet(), multi = set.length > 1, sp = scr(e), i;
 			mv = null; PE.guides = [];
@@ -194,7 +194,12 @@
 						var its = leaves(set).filter(function (k) { return !k.locked; }); if (its.length !== leaves(set).length) { PE.toast("A locked layer is in the selection"); return; }
 						mv = { kind: "mscale", set: set, b0: b, vb0: P.unionBox(its.filter(PE.effVisible).map(PE.visBox)) || b, h: HANDLES[i], items: its.map(function (k) { return [k, k.cx, k.cy, k.sx, k.sy, k.rot]; }), tg: targetsFor(its) }; return; } }
 				} else if (A && A.visible && !PE.isGroup(A) && !A.locked) {
-					for (i = 0; i < 8; i++) { var s = handleScreen(A, HANDLES[i]); if (Math.hypot(s.x - sp.x, s.y - sp.y) < 9) { mv = { kind: "scale", L: A, h: HANDLES[i], sx0: A.sx, sy0: A.sy, cx0: A.cx, cy0: A.cy, rot: A.rot, p0: e, tg: targetsFor([A]) }; return; } }
+					var isText = A.type === "text" && A.text && PE.textBoxHit;
+					if (isText) {   // a text layer: the purple handles on its box change the wrap width (and, with Auto-fit text, the box height); Alt on a box corner = scale
+						var tbh = PE.textBoxHit(A, e);
+						if (tbh) { if (e.alt && tbh.hx !== 0.5 && tbh.hy !== 0.5) { mv = { kind: "scale", L: A, h: [tbh.hx * 2 - 1, tbh.hy * 2 - 1], sx0: A.sx, sy0: A.sy, cx0: A.cx, cy0: A.cy, rot: A.rot, p0: e, tg: targetsFor([A]) }; return; } mv = { kind: "tbox", tb: PE.textBoxStart(A, tbh) }; return; }
+					}
+					for (i = 0; i < 8; i++) { if (isText && (A.text.fit || i % 2)) continue; var s = handleScreen(A, HANDLES[i]); if (Math.hypot(s.x - sp.x, s.y - sp.y) < 9) { mv = { kind: "scale", L: A, h: HANDLES[i], sx0: A.sx, sy0: A.sy, cx0: A.cx, cy0: A.cy, rot: A.rot, p0: e, tg: targetsFor([A]) }; return; } }
 					var corners = [0, 2, 4, 6].map(function (k) { return handleScreen(A, HANDLES[k]); });
 					for (i = 0; i < 4; i++) { var dd = Math.hypot(corners[i].x - sp.x, corners[i].y - sp.y); if (dd >= 9 && dd < 30 && !PE.layerAtPoint(A, e.x, e.y)) { mv = { kind: "rot", L: A, a0: Math.atan2(e.y - A.cy, e.x - A.cx), rot0: A.rot }; return; } }
 				}
@@ -216,6 +221,7 @@
 		move: function (e) {
 			if (!mv) return; var L = mv.L, T = th();
 			if (mv.kind === "band") { mv.b = e; PE.invalidateOverlay(); return; }
+			if (mv.kind === "tbox") { PE.textBoxMove(mv.tb, e); mv.moved = mv.tb.moved; return; }
 			if (mv.kind === "move") {
 				var dx = Math.round(e.x - mv.p0.x), dy = Math.round(e.y - mv.p0.y); if (e.shift) { if (Math.abs(dx) > Math.abs(dy)) dy = 0; else dx = 0; }
 				PE.guides = [];
@@ -265,7 +271,7 @@
 			if (m && m.kind === "band") { bandSelect(m, e); PE.invalidateOverlay(); return; }
 			if (m && m.moved) {
 				var n = m.set ? m.set.length : 1, grp = m.set && n === 1 && PE.isGroup(m.set[0]);
-				PE.commit(m.kind === "move" ? (n > 1 ? "Move " + n + " layers" : grp ? "Move group" : "Move layer") : m.kind === "rot" ? "Rotate layer" : m.kind === "mscale" ? "Resize " + n + " layers" : "Resize layer");
+				PE.commit(m.kind === "tbox" ? "Text box" : m.kind === "move" ? (n > 1 ? "Move " + n + " layers" : grp ? "Move group" : "Move layer") : m.kind === "rot" ? "Rotate layer" : m.kind === "mscale" ? "Resize " + n + " layers" : "Resize layer");
 			}
 			PE.invalidateOverlay();
 		},
@@ -273,11 +279,17 @@
 			var m = mv; mv = null; PE.guides = []; if (!m) return;
 			if (m.kind === "move") m.items.forEach(function (g) { g[0].cx = g[1]; g[0].cy = g[2]; });
 			else if (m.kind === "mscale") m.items.forEach(function (it) { var k = it[0]; k.cx = it[1]; k.cy = it[2]; k.sx = it[3]; k.sy = it[4]; });
+			else if (m.kind === "tbox") PE.textBoxAbort(m.tb);
 			else if (m.kind === "scale") { m.L.cx = m.cx0; m.L.cy = m.cy0; m.L.sx = m.sx0; m.L.sy = m.sy0; } else if (m.kind === "rot") m.L.rot = m.rot0;
 			PE.invalidate();
 		},
-		cancel: function () { if (mv && mv.kind !== "band") this.abort(); mv = null; },
+		cancel: function () { if (mv && mv.kind !== "band") this.abort(); mv = null; hoverTM = null; },
+		hover: function (e) {   // a text layer under the pointer shows its box; the cursor tells when a box edge can be dragged
+			if (!PE.doc) return; var A = PE.active(), h = null; if (PE.opt.move.handles && PE.moveSet().length === 1 && A && A.type === "text" && A.text) h = PE.textBoxHit(A, e);
+			PE.els.over.style.cursor = h ? PE.textBoxCursor(h, A) : "default"; var ht = PE.textAt ? PE.textAt(e) : null; if (ht === A) ht = null; if (ht !== hoverTM) { hoverTM = ht; PE.invalidateOverlay(); }
+		},
 		overlay: function (x, v) {
+			if (hoverTM && PE.doc.layers.indexOf(hoverTM) >= 0 && PE.drawTextFrame) PE.drawTextFrame(x, hoverTM, false);
 			if (mv && mv.kind === "band") { var a = PE.toScreen(mv.a.x, mv.a.y), b = PE.toScreen(mv.b.x, mv.b.y), r = P.rectFrom(a.x, a.y, b.x, b.y); x.fillStyle = "rgba(26,115,232,0.12)"; x.fillRect(r.x, r.y, r.w, r.h); x.lineWidth = 1; [["#000", 0], ["#fff", 4]].forEach(function (p) { x.setLineDash([4, 4]); x.lineDashOffset = p[1]; x.strokeStyle = p[0]; x.strokeRect(r.x + 0.5, r.y + 0.5, r.w, r.h); }); x.setLineDash([]); x.lineDashOffset = 0; }
 			var set = PE.moveSet(), o = PE.opt.move; if (!set.length) return;
 			if (set.length > 1) {
@@ -291,6 +303,10 @@
 			var L = set[0]; if (!o.handles || !L.visible) return;
 			if (PE.isGroup(L)) { var gb = PE.groupBounds(L), g0 = PE.toScreen(gb.x, gb.y), g1 = PE.toScreen(gb.x + gb.w, gb.y + gb.h); x.setLineDash([6, 4]); x.strokeStyle = "#1a73e8"; x.lineWidth = 1.5; x.strokeRect(g0.x, g0.y, g1.x - g0.x, g1.y - g0.y); x.setLineDash([]); return; }
 			var pts = PE.corners(L).map(function (p) { return PE.toScreen(p[0], p[1]); }); x.strokeStyle = "#1a73e8"; x.lineWidth = 1.5; x.beginPath(); pts.forEach(function (p, i) { i ? x.lineTo(p.x, p.y) : x.moveTo(p.x, p.y); }); x.closePath(); x.stroke();
+			if (L.type === "text" && L.text && PE.drawTextBoxHandles) {   // corners = scale (not with Auto-fit text: there the box corners resize the box), purple = the text box
+				if (!L.text.fit) for (var j = 0; j < 8; j += 2) { var sj = handleScreen(L, HANDLES[j]); PE.handleBox(x, sj.x, sj.y, 4.5); }
+				PE.drawTextFrame(x, L, true); PE.drawTextBoxHandles(x, L); return;
+			}
 			for (var i = 0; i < 8; i++) { var s = handleScreen(L, HANDLES[i]); PE.handleBox(x, s.x, s.y, 4.5); }
 		} });
 	/* rubber band: every visible, unlocked layer whose visible box the band touches (not the full-canvas background picture); "Pick the whole group" picks groups */

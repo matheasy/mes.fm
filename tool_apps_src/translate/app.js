@@ -14,8 +14,8 @@
   var MM_URL = "https://api.mymemory.translated.net/get";
 
   // ---------- state ----------
-  var store = { set: {}, hist: [], use: null };
-  try { var raw = JSON.parse(localStorage.getItem(KEY) || "null"); if (raw && typeof raw === "object") store = { set: raw.set || {}, hist: Array.isArray(raw.hist) ? raw.hist : [], use: raw.use || null }; } catch (e) {}
+  var store = { set: {}, hist: [], use: null, saved: [] };
+  try { var raw = JSON.parse(localStorage.getItem(KEY) || "null"); if (raw && typeof raw === "object") store = { set: raw.set || {}, hist: Array.isArray(raw.hist) ? raw.hist : [], use: raw.use || null, saved: Array.isArray(raw.saved) ? raw.saved : [] }; } catch (e) {}
   function save() { try { localStorage.setItem(KEY, JSON.stringify(store)); } catch (e) {} }
   var S = store.set;
   var prefs = (navigator.languages && navigator.languages.length ? navigator.languages : [navigator.language || "en"]).slice();
@@ -92,6 +92,7 @@
   }
   function setOut(text, lang) {
     outText = text || "";
+    if (cur && cur.o !== outText) cur = null; starState();
     if (!outText) { out.innerHTML = '<span class="tr-ph">The translation appears here</span>'; out.removeAttribute("dir"); out.removeAttribute("lang"); $("tr-ocount").textContent = ""; return; }
     out.textContent = outText;
     out.setAttribute("dir", T.isRtl(lang) ? "rtl" : "ltr");
@@ -270,7 +271,9 @@
 
   // ---------- history ----------
   function remember(q, from, to, eng) {
-    if (!S.keep || !q.trim() || !outText) return;
+    if (!q.trim() || !outText) return;
+    cur = { q: q, o: outText, f: from, t: to, e: eng, d: Date.now() }; starState();
+    if (!S.keep) return;
     var h = store.hist, e = { q: q.slice(0, 2000), o: outText.slice(0, 3000), f: from, t: to, e: eng, d: Date.now() };
     var last = h[0];
     if (last && last.f === e.f && last.t === e.t && (q.indexOf(last.q) === 0 || last.q.indexOf(q) === 0) && Date.now() - last.d < 120000) h[0] = e;
@@ -283,20 +286,72 @@
     ul.innerHTML = h.length ? "" : '<li class="tr-dim">Nothing yet.</li>';
     h.forEach(function (e, i) {
       var li = document.createElement("li");
-      li.innerHTML = '<button type="button" class="tr-hitem" data-i="' + i + '"><span class="tr-hl">' + esc(lname(e.f)) + " → " + esc(lname(e.t)) + (e.e === "online" ? " · online" : " · on device") + '</span><span class="tr-hq" dir="auto">' + esc(e.q.slice(0, 140)) + '</span><span class="tr-ho" dir="auto">' + esc(e.o.slice(0, 140)) + '</span></button><button type="button" class="tr-ib tr-hdel" data-del="' + i + '" aria-label="Delete this one" title="Delete">&#10005;</button>';
+      var on = T.savedIndex(store.saved, e) >= 0;
+      li.innerHTML = '<button type="button" class="tr-ib tr-hstar' + (on ? " on" : "") + '" data-star="' + i + '" aria-pressed="' + on + '" aria-label="' + (on ? "Saved: remove from Saved" : "Save this translation") + '" title="' + (on ? "Saved (click to remove from Saved)" : "Save it: kept even when the history is cleared") + '">' + (on ? "&#9733;" : "&#9734;") + '</button><button type="button" class="tr-hitem" data-i="' + i + '"><span class="tr-hl">' + esc(lname(e.f)) + " → " + esc(lname(e.t)) + (e.e === "online" ? " · online" : " · on device") + '</span><span class="tr-hq" dir="auto">' + esc(e.q.slice(0, 140)) + '</span><span class="tr-ho" dir="auto">' + esc(e.o.slice(0, 140)) + '</span></button><button type="button" class="tr-ib tr-hdel" data-del="' + i + '" aria-label="Delete this one" title="Delete">&#10005;</button>';
       ul.appendChild(li);
     });
   }
   $("tr-hlist").addEventListener("click", function (ev) {
-    var d = ev.target.closest("[data-del]"), it = ev.target.closest("[data-i]");
+    var d = ev.target.closest("[data-del]"), it = ev.target.closest("[data-i]"), sv = ev.target.closest("[data-star]");
+    if (sv) { var he = store.hist[+sv.getAttribute("data-star")]; if (he) starToggle(he); return; }
     if (d) { store.hist.splice(+d.getAttribute("data-del"), 1); save(); drawHist(); return; }
     if (it) {
-      var e = store.hist[+it.getAttribute("data-i")]; if (!e) return;
-      S.from = e.f; S.to = e.t; fromSel.value = e.f; toSel.value = e.t; save(); applyDirs();
-      inp.value = e.q; counts(); setOut(e.o, e.t); badge(e.e === "online" ? "online" : "device", "from your history");
-      $("tr-tx").scrollIntoView({ behavior: "smooth", block: "start" });
+      var e = store.hist[+it.getAttribute("data-i")]; if (!e) return; showEntry(e, "from your history");
     }
   });
+  function showEntry(e, how) {
+      S.from = e.f; S.to = e.t; fromSel.value = e.f; toSel.value = e.t; save(); applyDirs();
+      inp.value = e.q; counts(); setOut(e.o, e.t); cur = { q: e.q, o: e.o, f: e.f, t: e.t, e: e.e, d: e.d }; starState(); badge(e.e === "online" ? "online" : "device", how);
+      $("tr-tx").scrollIntoView({ behavior: "smooth", block: "start" });
+  }
+
+  // ---------- saved translations (the star): never pruned, not cleared with the history, kept when "Keep a history" is off ----------
+  var cur = null;   // the translation now in the box: {q, o, f, t, e, d}
+  function starState() {
+    var b = $("tr-star"); if (!b) return; var on = !!cur && T.savedIndex(store.saved, cur) >= 0;
+    b.disabled = !cur; b.classList.toggle("on", on); b.setAttribute("aria-pressed", String(on));
+    b.title = !cur ? "Save this translation (translate something first)" : on ? "Saved: click to remove it from Saved" : "Save this translation (kept until you delete it)";
+    b.innerHTML = on ? "&#9733;" : "&#9734;";
+  }
+  function starToggle(e) {
+    var r = T.toggleSaved(store.saved, e, Date.now()); store.saved = r.list; save(); drawSaved(); drawHist(); starState();
+    toast(r.on ? "Saved: find it under Saved translations" : "Removed from Saved");
+    if (r.on) $("tr-savebox").open = true;
+  }
+  function drawSaved() {
+    var ul = $("tr-slist"), L = store.saved, box = $("tr-savebox");
+    $("tr-scount").textContent = L.length ? "(" + L.length + ")" : "";
+    ["tr-sexptxt", "tr-sexpjson", "tr-scopyall"].forEach(function (id) { $(id).disabled = !L.length; });
+    ul.innerHTML = L.length ? "" : '<li class="tr-dim tr-sempty">Nothing saved yet. Press &#9734; on a translation (or on a history row) to keep it here.</li>';
+    L.forEach(function (e, i) {
+      var li = document.createElement("li");
+      li.innerHTML = '<button type="button" class="tr-hitem" data-si="' + i + '"><span class="tr-hl">' + esc(lname(e.f)) + " → " + esc(lname(e.t)) + " · " + esc(new Date(e.s || e.d).toLocaleDateString()) + '</span><span class="tr-hq" dir="auto">' + esc(e.q.slice(0, 200)) + '</span><span class="tr-ho" dir="auto">' + esc(e.o.slice(0, 200)) + '</span></button>' +
+        '<button type="button" class="tr-ib" data-scopy="' + i + '" aria-label="Copy the translation" title="Copy the translation"><svg class="tr-ic" viewBox="0 0 24 24" aria-hidden="true"><rect x="8" y="8" width="12" height="12" rx="2"/><path d="M16 8V5a1 1 0 0 0-1-1H5a1 1 0 0 0-1 1v10a1 1 0 0 0 1 1h3"/></svg></button>' +
+        '<button type="button" class="tr-ib tr-hdel" data-sdel="' + i + '" aria-label="Delete from Saved" title="Delete from Saved">&#10005;</button>';
+      ul.appendChild(li);
+    });
+    box.classList.toggle("is-empty", !L.length);
+  }
+  var lastDel = null;
+  $("tr-slist").addEventListener("click", function (ev) {
+    var c = ev.target.closest("[data-scopy]"), d = ev.target.closest("[data-sdel]"), it = ev.target.closest("[data-si]");
+    if (c) { var ce = store.saved[+c.getAttribute("data-scopy")]; if (ce) copyText(ce.o); return; }
+    if (d) { var k = +d.getAttribute("data-sdel"); lastDel = { e: store.saved[k], i: k }; store.saved.splice(k, 1); save(); drawSaved(); drawHist(); starState(); $("tr-sundo").hidden = false; toast("Deleted from Saved"); return; }
+    if (it) { var e = store.saved[+it.getAttribute("data-si")]; if (e) showEntry(e, "from Saved"); }
+  });
+  $("tr-sundo").addEventListener("click", function () { if (!lastDel || !lastDel.e) return; store.saved.splice(Math.min(lastDel.i, store.saved.length), 0, lastDel.e); lastDel = null; this.hidden = true; save(); drawSaved(); drawHist(); starState(); });
+  $("tr-star").addEventListener("click", function () { if (cur) starToggle(cur); });
+  function dlFile(text, name, type) { var a = document.createElement("a"); a.href = URL.createObjectURL(new Blob([text], { type: type })); a.download = name; document.body.appendChild(a); a.click(); a.remove(); setTimeout(function () { URL.revokeObjectURL(a.href); }, 4000); }
+  var stamp = function () { return new Date().toISOString().slice(0, 10); };
+  $("tr-sexptxt").addEventListener("click", function () { dlFile(T.savedText(store.saved, lname), "saved-translations-" + stamp() + ".txt", "text/plain;charset=utf-8"); });
+  $("tr-sexpjson").addEventListener("click", function () { dlFile(T.savedJson(store.saved), "saved-translations-" + stamp() + ".json", "application/json"); });
+  $("tr-scopyall").addEventListener("click", function () { copyText(T.savedText(store.saved, lname)); });
+  $("tr-simp").addEventListener("click", function () { $("tr-simpf").click(); });
+  $("tr-simpf").addEventListener("change", function () {
+    var f = this.files[0]; this.value = ""; if (!f) return;
+    f.text().then(function (t) { var r = null; try { r = T.mergeSaved(store.saved, JSON.parse(t), Date.now()); } catch (e) {} if (!r) { toast("That is not a saved-translations file"); return; } store.saved = r.list; save(); drawSaved(); drawHist(); starState(); toast(r.added ? "Added " + r.added + " saved translation" + (r.added === 1 ? "" : "s") : "Nothing new in that file"); });
+  });
+  window.addEventListener("storage", function (ev) { if (ev.key !== KEY) return; try { var r = JSON.parse(ev.newValue || "null"); if (r && Array.isArray(r.saved)) { store.saved = r.saved; drawSaved(); drawHist(); starState(); } } catch (e) {} });
   $("tr-hclear").addEventListener("click", function () { if (!store.hist.length) return; if (confirm("Delete the whole translation history in this browser?")) { store.hist = []; save(); drawHist(); } });
   $("tr-hkeep").addEventListener("change", function () { S.keep = this.checked; save(); });
 
@@ -867,7 +922,7 @@
   var q = T.parseQuery(location.search);
   if (q.from) { S.from = q.from; fromSel.value = q.from; }
   if (q.to) { S.to = q.to; toSel.value = q.to; }
-  applyDirs(); counts(); drawHist(); previewBadge();
+  applyDirs(); counts(); drawSaved(); if (store.saved.length) $("tr-savebox").open = true; drawHist(); starState(); previewBadge();
   if (!hasApi) $("tr-livebox").title = "This browser can't translate on-device, so nothing is translated while you type (that would send every keystroke online)";
   if (q.img) { $("tr-url").value = q.img; setSrc("link"); loadUrl(q.img); }
   if (q.q) {

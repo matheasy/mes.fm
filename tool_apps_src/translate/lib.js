@@ -276,7 +276,41 @@
   // "Edit pictures before reading them": off on a computer, on for touch screens (phone photos usually want a crop)
   function editDefault(coarse) { return !!coarse; }
 
+  // ---------- Saved translations (pinned with the star; never pruned, not touched by Clear history) ----------
+  var SAVED_MAX = 1000;
+  function savedSame(a, b) { return !!a && !!b && a.q === b.q && a.o === b.o && a.t === b.t; }
+  function savedIndex(list, e) { for (var i = 0; i < (list || []).length; i++) if (savedSame(list[i], e)) return i; return -1; }
+  // a clean copy of one entry {q, o, f, t, e, d}; null when there is nothing to keep
+  function savedEntry(e, now) {
+    if (!e || typeof e.q !== "string" || typeof e.o !== "string" || !e.q.trim() || !e.o.trim()) return null;
+    return { q: e.q.slice(0, 20000), o: e.o.slice(0, 30000), f: String(e.f || "auto").slice(0, 20), t: String(e.t || "").slice(0, 20), e: e.e === "online" ? "online" : "device", d: +e.d || now || 0, s: now || +e.d || 0 };
+  }
+  // star / un-star: returns {list, on}
+  function toggleSaved(list, e, now) {
+    list = (list || []).slice(); var i = savedIndex(list, e);
+    if (i >= 0) { list.splice(i, 1); return { list: list, on: false }; }
+    var c = savedEntry(e, now); if (!c) return { list: list, on: false };
+    list.unshift(c); if (list.length > SAVED_MAX) list.length = SAVED_MAX; return { list: list, on: true };
+  }
+  // merge an imported file (array, or {saved: [...]}) into the list; duplicates skipped
+  function mergeSaved(list, data, now) {
+    var arr = Array.isArray(data) ? data : data && Array.isArray(data.saved) ? data.saved : null; if (!arr) return null;
+    list = (list || []).slice(); var added = 0;
+    arr.forEach(function (x) { var c = savedEntry(x, now); if (c && savedIndex(list, c) < 0) { if (x.s) c.s = +x.s || c.s; list.push(c); added++; } });
+    list.sort(function (a, b) { return (b.s || 0) - (a.s || 0); }); if (list.length > SAVED_MAX) list.length = SAVED_MAX;
+    return { list: list, added: added };
+  }
+  function savedText(list, lname) {
+    lname = lname || function (c) { return c; };
+    return (list || []).map(function (e) {
+      var dt = e.s || e.d ? new Date(e.s || e.d).toISOString().slice(0, 10) : "";
+      return lname(e.f) + " → " + lname(e.t) + (dt ? " · " + dt : "") + "\n" + e.q + "\n---\n" + e.o;
+    }).join("\n\n==========\n\n") + "\n";
+  }
+  function savedJson(list) { return JSON.stringify({ app: "mes.fm/translate", v: 1, saved: list || [] }, null, 1); }
+
   var api = {
+    savedSame: savedSame, savedIndex: savedIndex, savedEntry: savedEntry, toggleSaved: toggleSaved, mergeSaved: mergeSaved, savedText: savedText, savedJson: savedJson, SAVED_MAX: SAVED_MAX,
     sourceTabs: sourceTabs, nextTab: nextTab, editDefault: editDefault,
     LANGS: LANGS, DAILY: DAILY, norm: norm, isRtl: isRtl, known: known, toTess: toTess, fromTess: fromTess, tessLangs: tessLangs,
     myMemoryCode: myMemoryCode, apiCode: apiCode, utf8Len: utf8Len, sentences: sentences, chunk: chunk, join: join,

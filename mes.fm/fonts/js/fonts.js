@@ -73,7 +73,9 @@
 	function cosine(a, b) { var ab = 0, aa = 0, bb = 0; for (var i = 0; i < a.length; i++) { ab += a[i] * b[i]; aa += a[i] * a[i]; bb += b[i] * b[i]; } return aa && bb ? ab / Math.sqrt(aa * bb) : 0; }
 	// similarity 0..1 of two ink grids, discounted when the shapes' proportions differ (a condensed font vs a wide one)
 	function similarity(gA, gB, gw, gh, aspA, aspB) { var s = cosine(blur(gA, gw, gh), blur(gB, gw, gh)), pen = Math.exp(-Math.abs(Math.log(aspA / aspB)) * 1.6); return Math.max(0, s) * pen; }
-	var M = { CATS: CATS, LOCAL: LOCAL, GOOGLE: GOOGLE, DEFAULT: DEFAULT, PRESETS: PRESETS, style: style, css: css, ffam: ffam, otsu: otsu, binarise: binarise, inkBox: inkBox, grid: grid, blur: blur, cosine: cosine, similarity: similarity };
+	/* card sizes: minimum column width in em of the font grid */
+	var CARD_W = { s: 13, m: 19, l: 27, xl: 38 };
+	var M = { CARD_W: CARD_W, CATS: CATS, LOCAL: LOCAL, GOOGLE: GOOGLE, DEFAULT: DEFAULT, PRESETS: PRESETS, style: style, css: css, ffam: ffam, otsu: otsu, binarise: binarise, inkBox: inkBox, grid: grid, blur: blur, cosine: cosine, similarity: similarity };
 	if (typeof module !== "undefined" && module.exports) module.exports = M; else root.MESFont = M;
 })(typeof window !== "undefined" ? window : globalThis);
 
@@ -83,9 +85,11 @@
 	"use strict";
 	var F = window.MESFont, $ = function (id) { return document.getElementById(id); }, root = $("fn"); if (!root || !F) return;
 	var KEY = "mes-fonts:v1", S = Object.assign({}, F.DEFAULT), st = { cat: "all", q: "", favOnly: false, fav: [], cmp: [], big: null, tab: "browse", google: false };
-	try { var sv = JSON.parse(localStorage.getItem(KEY) || "null"); if (sv) { if (sv.S) Object.assign(S, sv.S); if (Array.isArray(sv.fav)) st.fav = sv.fav; } } catch (e) { /* ignore */ }
+	/* card layout prefs: cw = card size (s|m|l|xl), cs = sample size in the cards (%), col = collapsed font names, hid = hidden font names */
+	var UI = { cw: "m", cs: 100, col: [], hid: [] };
+	try { var sv = JSON.parse(localStorage.getItem(KEY) || "null"); if (sv) { if (sv.S) Object.assign(S, sv.S); if (Array.isArray(sv.fav)) st.fav = sv.fav; if (sv.ui) { if (F.CARD_W[sv.ui.cw]) UI.cw = sv.ui.cw; if (+sv.ui.cs >= 40 && +sv.ui.cs <= 250) UI.cs = +sv.ui.cs; if (Array.isArray(sv.ui.col)) UI.col = sv.ui.col.slice(0, 2000); if (Array.isArray(sv.ui.hid)) UI.hid = sv.ui.hid.slice(0, 2000); } } } catch (e) { /* ignore */ }
 	var qp = new URLSearchParams(location.search); if (qp.get("t")) { S.text = qp.get("t").slice(0, 300); S.runs = null; } var startFont = qp.get("f") || "";
-	function save() { try { localStorage.setItem(KEY, JSON.stringify({ S: S, fav: st.fav })); } catch (e) { /* ignore */ } }
+	function save() { try { localStorage.setItem(KEY, JSON.stringify({ S: S, fav: st.fav, ui: UI })); } catch (e) { /* ignore */ } }
 	function esc(s) { return String(s).replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;"); }
 	var toastT; function toast(m) { var t = $("fn-toast"); t.textContent = m; t.classList.add("tu-toast--show"); clearTimeout(toastT); toastT = setTimeout(function () { t.classList.remove("tu-toast--show"); }, 2600); }
 
@@ -132,26 +136,68 @@
 
 	/* ---------- browse grid ---------- */
 	var fontByName = function (n) { for (var i = 0; i < fonts.length; i++) if (fonts[i].name === n) return fonts[i]; return null; };
-	function visible() { var q = st.q.trim().toLowerCase(); return fonts.filter(function (f) { return (st.cat === "all" || f.cat === st.cat) && (!q || f.name.toLowerCase().indexOf(q) >= 0) && (!st.favOnly || st.fav.indexOf(f.name) >= 0); }); }
+	function visible() { var q = st.q.trim().toLowerCase(); return fonts.filter(function (f) { return UI.hid.indexOf(f.name) < 0 && (st.cat === "all" || f.cat === st.cat) && (!q || f.name.toLowerCase().indexOf(q) >= 0) && (!st.favOnly || st.fav.indexOf(f.name) >= 0); }); }
 	function renderGrid() {
 		var g = $("fn-grid"); applyVars(g); var list = visible(); g.innerHTML = ""; var frag = document.createDocumentFragment();
 		list.forEach(function (f) {
-			var c = document.createElement("div"); c.className = "fn-card" + (st.big === f.name ? " is-on" : ""); var isFav = st.fav.indexOf(f.name) >= 0, inCmp = st.cmp.indexOf(f.name) >= 0;
-			var h = document.createElement("div"); h.className = "fn-chead"; h.innerHTML = '<span class="fn-name" title="' + esc(f.name) + '">' + esc(f.name) + '</span><span class="fn-acts"><button type="button" class="fn-ib' + (isFav ? " on" : "") + '" data-a="fav" title="' + (isFav ? "Remove from favourites" : "Add to favourites") + '" aria-label="Favourite">' + (isFav ? "★" : "☆") + '</button><button type="button" class="fn-ib' + (inCmp ? " on" : "") + '" data-a="cmp" title="Add to Compare (up to four)">⇆</button></span>';
+			var c = document.createElement("div"), isCol = UI.col.indexOf(f.name) >= 0; c.className = "fn-card" + (st.big === f.name ? " is-on" : "") + (isCol ? " is-col" : ""); var isFav = st.fav.indexOf(f.name) >= 0, inCmp = st.cmp.indexOf(f.name) >= 0;
+			var h = document.createElement("div"); h.className = "fn-chead"; h.innerHTML = '<span class="fn-name" title="' + esc(f.name) + '">' + esc(f.name) + '</span><span class="fn-acts"><button type="button" class="fn-ib' + (isFav ? " on" : "") + '" data-a="fav" title="' + (isFav ? "Remove from favourites" : "Add to favourites") + '" aria-label="Favourite">' + (isFav ? "★" : "☆") + '</button><button type="button" class="fn-ib' + (inCmp ? " on" : "") + '" data-a="cmp" title="Add to Compare (up to four)">⇆</button><button type="button" class="fn-ib" data-a="view" title="Show this font big (fill the window)" aria-label="Show big">⤢</button><button type="button" class="fn-ib" data-a="col" title="' + (isCol ? "Expand this card" : "Collapse this card to its name") + '" aria-label="' + (isCol ? "Expand" : "Collapse") + '" aria-expanded="' + !isCol + '">' + (isCol ? "▸" : "▾") + '</button><button type="button" class="fn-ib" data-a="hide" title="Hide this font (bring it back from Hidden fonts)" aria-label="Hide">⊘</button></span>';
 			c.appendChild(h); var s = sample(f); s.setAttribute("data-a", "big"); c.appendChild(s); c.setAttribute("data-f", f.name); frag.appendChild(c);
 		});
-		g.appendChild(frag); $("fn-count").textContent = list.length + " of " + fonts.length + " fonts shown";
+		g.appendChild(frag); $("fn-count").textContent = list.length + " of " + fonts.length + " fonts shown"; renderHidden(); cardVars();
 		if (!list.length) g.innerHTML = '<p class="tu-note">No fonts match. Clear the search or the filter, or press “Add 80 popular Google Fonts”.</p>';
 	}
 	$("fn-grid").addEventListener("click", function (e) {
 		var c = e.target.closest(".fn-card"); if (!c) return; var name = c.getAttribute("data-f"), a = e.target.closest("[data-a]"); a = a && a.getAttribute("data-a");
 		if (a === "fav") { var i = st.fav.indexOf(name); if (i >= 0) st.fav.splice(i, 1); else st.fav.push(name); save(); renderGrid(); return; }
+		if (a === "col") { var k = UI.col.indexOf(name); if (k >= 0) UI.col.splice(k, 1); else UI.col.push(name); save(); renderGrid(); return; }
+		if (a === "hide") { if (UI.hid.indexOf(name) < 0) UI.hid.push(name); if (st.big === name) { st.big = null; $("fn-big").hidden = true; } save(); renderGrid(); toast("Hidden " + name + ": bring it back under Hidden fonts"); return; }
+		if (a === "view") { openView(name); return; }
 		if (a === "cmp") { var j = st.cmp.indexOf(name); if (j >= 0) st.cmp.splice(j, 1); else if (st.cmp.length >= 4) { toast("Compare shows up to four fonts: remove one first"); return; } else st.cmp.push(name); renderGrid(); renderCompare(); toast(st.cmp.length + " font" + (st.cmp.length === 1 ? "" : "s") + " in Compare"); return; }
 		openBig(name);
 	});
 	$("fn-cats").innerHTML = F.CATS.map(function (c) { return '<button type="button" class="tu-chip" data-c="' + c[0] + '" aria-pressed="' + (c[0] === "all") + '">' + c[1] + "</button>"; }).join("");
 	$("fn-cats").addEventListener("click", function (e) { var b = e.target.closest("[data-c]"); if (!b) return; st.cat = b.getAttribute("data-c"); Array.prototype.forEach.call($("fn-cats").children, function (x) { x.setAttribute("aria-pressed", String(x === b)); }); renderGrid(); });
 	$("fn-q").addEventListener("input", function () { st.q = this.value; renderGrid(); }); $("fn-favonly").addEventListener("change", function () { st.favOnly = this.checked; renderGrid(); });
+
+	/* ---------- card size, collapse, hidden fonts ---------- */
+	function cardVars() { var g = $("fn-grid"); g.style.setProperty("--cw", F.CARD_W[UI.cw] + "em"); g.style.setProperty("--cs", UI.cs / 100); }
+	function renderHidden() {
+		var box = $("fn-hidden"), n = UI.hid.length; box.hidden = !n; $("fn-hidn").textContent = n; if (!n) { box.open = false; return; }
+		$("fn-hidlist").innerHTML = UI.hid.map(function (nm) { return '<button type="button" class="tu-chip" data-r="' + esc(nm) + '" title="Show this font again">↺ ' + esc(nm) + "</button>"; }).join("");
+	}
+	$("fn-hidlist").addEventListener("click", function (e) { var b = e.target.closest("[data-r]"); if (!b) return; var i = UI.hid.indexOf(b.getAttribute("data-r")); if (i >= 0) UI.hid.splice(i, 1); save(); renderGrid(); });
+	$("fn-hidall").onclick = function () { UI.hid = []; save(); renderGrid(); toast("All fonts shown again"); };
+	Array.prototype.forEach.call(document.querySelectorAll("#fn-cw [data-cw]"), function (b) { b.setAttribute("aria-pressed", String(b.getAttribute("data-cw") === UI.cw)); b.onclick = function () { UI.cw = b.getAttribute("data-cw"); Array.prototype.forEach.call(document.querySelectorAll("#fn-cw [data-cw]"), function (x) { x.setAttribute("aria-pressed", String(x === b)); }); save(); cardVars(); }; });
+	var csIn = $("fn-cs"); csIn.value = UI.cs; $("fn-csv").textContent = UI.cs + "%";
+	csIn.addEventListener("input", function () { UI.cs = +csIn.value; $("fn-csv").textContent = UI.cs + "%"; cardVars(); save(); });
+	$("fn-colall").onclick = function () { visible().forEach(function (f) { if (UI.col.indexOf(f.name) < 0) UI.col.push(f.name); }); save(); renderGrid(); };
+	$("fn-expall").onclick = function () { UI.col = []; save(); renderGrid(); };
+
+	/* ---------- one font, filling the window (or the screen) ---------- */
+	var vw = $("fn-view"), vwName = null, vwSize = 0;
+	function fitView() {
+		var box = $("fn-vbody"), smp = box.firstChild; if (!smp) return; var lo = 8, hi = 600, cs = getComputedStyle(box), avH = box.clientHeight - parseFloat(cs.paddingTop) - parseFloat(cs.paddingBottom) - 2;
+		if (vwSize) { smp.style.fontSize = vwSize + "px"; return; }
+		for (var k = 0; k < 18; k++) { var mid = (lo + hi) / 2; smp.style.fontSize = mid + "px"; if (smp.scrollHeight <= avH && smp.scrollWidth <= smp.clientWidth + 1) lo = mid; else hi = mid; }
+		smp.style.fontSize = Math.floor(lo) + "px";
+	}
+	function openView(name) {
+		var f = fontByName(name); if (!f) return; vwName = name; vwSize = 0; $("fn-vname").textContent = f.name; applyVars(vw); var b = $("fn-vbody"); b.innerHTML = ""; var smp = sample(f); smp.classList.add("fn-vs"); b.appendChild(smp);
+		vw.hidden = false; document.documentElement.classList.add("fn-viewing"); fitView(); $("fn-vclose").focus();
+	}
+	function closeView() { if (vw.hidden) return; if (document.fullscreenElement === vw && document.exitFullscreen) document.exitFullscreen().catch(function () {}); vw.hidden = true; document.documentElement.classList.remove("fn-viewing"); var c = document.querySelector('#fn-grid .fn-card[data-f="' + (window.CSS && CSS.escape ? CSS.escape(vwName || "") : vwName) + '"] [data-a="view"]'); if (c) c.focus(); vwName = null; }
+	$("fn-vclose").onclick = closeView;
+	$("fn-vfs").onclick = function () { if (document.fullscreenElement) { document.exitFullscreen().catch(function () {}); return; } if (vw.requestFullscreen) vw.requestFullscreen().catch(function () { toast("Your browser would not go full screen"); }); else toast("Your browser cannot go full screen: the window view stays"); };
+	document.addEventListener("fullscreenchange", function () { $("fn-vfs").textContent = document.fullscreenElement === vw ? "⛶ Leave full screen" : "⛶ Full screen"; if (!vw.hidden) setTimeout(fitView, 60); });
+	$("fn-vminus").onclick = function () { var s = parseFloat($("fn-vbody").firstChild.style.fontSize) || 40; vwSize = Math.max(8, Math.round(s / 1.2)); fitView(); };
+	$("fn-vplus").onclick = function () { var s = parseFloat($("fn-vbody").firstChild.style.fontSize) || 40; vwSize = Math.min(1200, Math.round(s * 1.2)); fitView(); };
+	$("fn-vfit").onclick = function () { vwSize = 0; fitView(); };
+	$("fn-vbig").onclick = function () { var n = vwName; closeView(); openBig(n); };
+	function stepView(d) { var list = visible(); if (!list.length) return; var i = -1; list.forEach(function (f, k) { if (f.name === vwName) i = k; }); var nx = list[(i + d + list.length) % list.length]; var keep = vwSize; openView(nx.name); vwSize = keep; fitView(); }
+	$("fn-vprev").onclick = function () { stepView(-1); }; $("fn-vnext").onclick = function () { stepView(1); };
+	document.addEventListener("keydown", function (e) { if (vw.hidden) return; if (e.key === "Escape" && !document.fullscreenElement) { e.preventDefault(); closeView(); } else if (e.key === "ArrowLeft") stepView(-1); else if (e.key === "ArrowRight") stepView(1); else if (e.key === "+" || e.key === "=") $("fn-vplus").click(); else if (e.key === "-") $("fn-vminus").click(); });
+	window.addEventListener("resize", function () { if (!vw.hidden) fitView(); });
 
 	/* ---------- big preview, CSS, PNG ---------- */
 	function openBig(name) {
@@ -215,7 +261,7 @@
 		b.addEventListener("click", function () { richBox.focus(); document.execCommand(b.getAttribute("data-fmt")); setRuns(runsOf(richBox)); changed(); });
 	});
 	$("fn-fmtclear").addEventListener("click", function () { setRuns([{ t: S.text, b: false, i: false, u: false }]); fillBox(); changed(); });
-	var ct = 0; function changed() { clearTimeout(ct); ct = setTimeout(function () { save(); renderGrid(); renderCompare(); if (st.big) { var f = fontByName(st.big); if (f) { applyVars($("fn-bigprev")); $("fn-bigprev").firstChild.innerHTML = sampleHtml(); $("fn-css").textContent = F.css(f.name, f.cat, S); } } }, 60); }
+	var ct = 0; function changed() { clearTimeout(ct); ct = setTimeout(function () { save(); renderGrid(); renderCompare(); if (st.big) { var f = fontByName(st.big); if (f) { applyVars($("fn-bigprev")); $("fn-bigprev").firstChild.innerHTML = sampleHtml(); $("fn-css").textContent = F.css(f.name, f.cat, S); } } if (vwName) { applyVars(vw); var vs = $("fn-vbody").firstChild; if (vs) { vs.innerHTML = sampleHtml(); fitView(); } } }, 60); }
 	var pr = $("fn-presets"); F.PRESETS.forEach(function (p) { var b = document.createElement("button"); b.type = "button"; b.className = "tu-chip"; b.textContent = p[0]; b.addEventListener("click", function () { var keep = S.text, keepR = S.runs; S = Object.assign({}, F.DEFAULT, p[1], { text: keep, runs: keepR }); CTL.forEach(function (c) { var el = $(c[0]), v = S[c[1]]; if (el.type === "checkbox") el.checked = !!v; else el.value = v; var pair = $(c[0] + "n"); if (pair) pair.value = v; }); save(); changed(); toast(p[0] + " look applied"); }); pr.appendChild(b); });
 
 	/* ---------- more fonts ---------- */

@@ -1,0 +1,143 @@
+	<div class="tu pr" id="pr">
+		<form class="tu-card pr-ask" id="pr-form" autocomplete="off" role="search">
+			<label class="pr-asklab" for="pr-q">Type a word or a sentence</label>
+			<div class="pr-askrow">
+				<input type="text" id="pr-q" class="tu-input tu-input--big" maxlength="400" spellcheck="true" autocapitalize="off" placeholder="pronunciation" aria-describedby="pr-hint">
+				<button type="submit" class="tu-btn tu-btn--primary pr-say" id="pr-go" title="Say it (Enter)"><span aria-hidden="true">&#128264;&#65038;</span> Say it</button>
+			</div>
+			<p class="tu-note pr-hint" id="pr-hint">Press <kbd>Enter</kbd> to hear it. Try a hard word, a name or a whole sentence.</p>
+			<div class="pr-chiprow"><span class="pr-chiplab">Try:</span><div class="tu-chips" id="pr-ex"></div></div>
+			<div class="pr-chiprow" id="pr-recentrow" hidden><span class="pr-chiplab">Recent:</span><div class="tu-chips" id="pr-recent"></div><button type="button" class="pr-link" id="pr-recentclr">Clear</button></div>
+		</form>
+
+		<section class="tu-card pr-stage" id="pr-stage" aria-labelledby="pr-word" aria-live="polite">
+			<div class="pr-stagebar">
+				<div class="pr-forms" id="pr-forms" role="tablist" aria-label="Pronunciations"></div>
+				<div class="pr-viewbtns">
+					<button type="button" class="pr-icon" id="pr-share" title="Copy a link to this word">&#128279;&#65038; Link</button>
+					<button type="button" class="pr-icon" id="pr-fill" title="Fill the browser window (W)" aria-pressed="false">&#10530; Fill window</button>
+					<button type="button" class="pr-icon" id="pr-fs" title="Full screen (F)">&#9974; Full screen</button>
+				</div>
+			</div>
+			<div class="pr-big">
+				<h2 class="pr-word" id="pr-word">pronunciation</h2>
+				<div class="pr-syls" id="pr-syls" aria-label="Syllables"></div>
+				<div class="pr-lines">
+					<div class="pr-line"><span class="pr-k">Say it like</span><span class="pr-v pr-resp" id="pr-resp"></span></div>
+					<div class="pr-line"><span class="pr-k">IPA</span><span class="pr-v pr-ipa" id="pr-ipa"></span><button type="button" class="pr-mini" id="pr-ipacopy" title="Copy the IPA">Copy</button></div>
+					<div class="pr-line"><span class="pr-k">Syllables</span><span class="pr-v" id="pr-count"></span></div>
+					<div class="pr-line" id="pr-spellline"><span class="pr-k">Written</span><span class="pr-v" id="pr-spell"></span></div>
+					<div class="pr-line" id="pr-noteline" hidden><span class="pr-k">Note</span><span class="pr-v" id="pr-note"></span></div>
+				</div>
+				<p class="pr-est" id="pr-est" hidden></p>
+				<div class="pr-sent" id="pr-sent" hidden></div>
+			</div>
+			<div class="pr-play" role="group" aria-label="Play">
+				<button type="button" class="tu-btn tu-btn--primary pr-pbtn" id="pr-play" title="Play (Space)">&#9654;&#65038; Play</button>
+				<button type="button" class="tu-btn pr-pbtn" id="pr-slow" title="Play slowly">&#128034;&#65038; Slowly</button>
+				<button type="button" class="tu-btn pr-pbtn" id="pr-bysyl" title="One syllable at a time, then the whole word">Syllable by syllable</button>
+				<button type="button" class="tu-btn pr-pbtn" id="pr-byword" title="One word at a time" hidden>Word by word</button>
+				<button type="button" class="tu-btn pr-pbtn" id="pr-loop" aria-pressed="false" title="Keep repeating until you press Stop (L)">&#128257;&#65038; Loop</button>
+				<button type="button" class="tu-btn tu-btn--ghost pr-pbtn" id="pr-stop" title="Stop (Esc)" disabled>&#9632;&#65038; Stop</button>
+			</div>
+			<p class="tu-note pr-vnote" id="pr-vnote" role="status"></p>
+		</section>
+
+		<section class="tu-card pr-voicecard" aria-labelledby="pr-vh">
+			<h2 class="pr-h" id="pr-vh">Accent and voice</h2>
+			<div class="pr-vrow">
+				<div class="tu-field pr-lang"><label for="pr-langsel">Language</label><select id="pr-langsel" class="tu-select"><option value="en">English</option></select></div>
+				<div class="tu-field pr-voice"><label for="pr-voice">Voice</label><select id="pr-voice" class="tu-select"><option value="">Loading voices&#8230;</option></select></div>
+			</div>
+			<div class="tu-chips pr-accents" id="pr-accents" role="group" aria-label="Accent"></div>
+			<p class="tu-note" id="pr-anote"></p>
+			<div class="pr-sliders">
+				<div class="tu-field"><label for="pr-rate">Speed <output id="pr-rate-o">1.0&#215;</output></label><input type="range" id="pr-rate" min="0.3" max="2" step="0.05" value="1"></div>
+				<div class="tu-field"><label for="pr-pitch">Pitch <output id="pr-pitch-o">1.0</output></label><input type="range" id="pr-pitch" min="0.5" max="1.6" step="0.05" value="1"></div>
+				<div class="tu-field"><label for="pr-vol">Volume <output id="pr-vol-o">100%</output></label><input type="range" id="pr-vol" min="0" max="1" step="0.05" value="1"></div>
+				<div class="tu-field"><label for="pr-rep">Say it</label><select id="pr-rep" class="tu-select"><option value="1">Once</option><option value="2">2 times</option><option value="3">3 times</option><option value="5">5 times</option></select></div>
+				<div class="tu-field"><label for="pr-gap">Pause between</label><select id="pr-gap" class="tu-select"><option value="300">Short</option><option value="800">Medium</option><option value="1600">Long</option></select></div>
+			</div>
+			<button type="button" class="pr-link" id="pr-vreset">Reset speed, pitch and volume</button>
+		</section>
+
+		<section class="tu-card pr-rec" id="pr-reccard" aria-labelledby="pr-rh" hidden>
+			<h2 class="pr-h" id="pr-rh">Real recordings</h2>
+			<p class="tu-note">People saying the word, from Wikimedia Commons through the free dictionaryapi.dev. Not every word has one.</p>
+			<div class="pr-reclist" id="pr-reclist"></div>
+			<div id="pr-ipas"></div>
+			<div class="pr-mean" id="pr-mean"></div>
+		</section>
+
+		<section class="tu-card pr-sounds" id="pr-soundcard" aria-labelledby="pr-sh">
+			<h2 class="pr-h" id="pr-sh">The sounds in this word</h2>
+			<p class="tu-note">Each sound in order. Press one to hear a common word that has it.</p>
+			<div class="pr-seq" id="pr-seq"></div>
+		</section>
+
+		<section class="tu-card pr-cmp" aria-labelledby="pr-ch">
+			<h2 class="pr-h" id="pr-ch">Compare two pronunciations</h2>
+			<p class="tu-note">Two words, or one word in two accents. Press <em>Play both</em> to hear them one after the other.</p>
+			<div class="tu-chips" id="pr-cmpex"></div>
+			<div class="pr-cmpgrid">
+				<div class="pr-side" id="pr-sa">
+					<div class="pr-sidein"><input type="text" class="tu-input" id="pr-ca" aria-label="First word" maxlength="80"><select class="tu-select" id="pr-caa" aria-label="Accent of the first word"></select></div>
+					<div class="pr-sideout" id="pr-cao"></div>
+					<button type="button" class="tu-btn" data-cplay="a">&#9654;&#65038; Play</button>
+				</div>
+				<div class="pr-side" id="pr-sb">
+					<div class="pr-sidein"><input type="text" class="tu-input" id="pr-cb" aria-label="Second word" maxlength="80"><select class="tu-select" id="pr-cba" aria-label="Accent of the second word"></select></div>
+					<div class="pr-sideout" id="pr-cbo"></div>
+					<button type="button" class="tu-btn" data-cplay="b">&#9654;&#65038; Play</button>
+				</div>
+			</div>
+			<div class="pr-cmpbtns"><button type="button" class="tu-btn tu-btn--primary" id="pr-cboth">&#9654;&#65038; Play both</button><button type="button" class="tu-btn" id="pr-calt" aria-pressed="false">&#128257;&#65038; Keep alternating</button></div>
+		</section>
+
+		<section class="tu-card pr-prac" aria-labelledby="pr-ph">
+			<h2 class="pr-h" id="pr-ph">Practice: say it yourself</h2>
+			<p class="tu-note" id="pr-pnote">Press the microphone, say the word or sentence above, and see what the browser heard.</p>
+			<div class="pr-pracrow"><button type="button" class="tu-btn tu-btn--primary pr-mic" id="pr-mic">&#127908;&#65038; Say it now</button><span class="pr-pres" id="pr-pres" role="status" aria-live="polite"></span></div>
+			<ul class="pr-heard" id="pr-heard"></ul>
+		</section>
+
+		<section class="tu-card pr-common" aria-labelledby="pr-mh">
+			<h2 class="pr-h" id="pr-mh">Commonly mispronounced words</h2>
+			<p class="tu-note">Press a word to hear it and see its syllables.</p>
+			<div class="pr-cgrid" id="pr-cgrid"></div>
+		</section>
+
+		<section class="tu-card pr-guide" aria-labelledby="pr-gh">
+			<details id="pr-gdet">
+				<summary><h2 class="pr-h" id="pr-gh">IPA and respelling key</h2></summary>
+				<p class="tu-note">The symbols used above, with a word that has each sound. Capital letters in the respelling mark the stressed syllable.</p>
+				<div class="tu-table-wrap"><table class="tu-table pr-key" id="pr-key"><thead><tr><th>IPA</th><th>Respelling</th><th>As in</th><th></th></tr></thead><tbody></tbody></table></div>
+			</details>
+		</section>
+
+		<div class="tu-toast" id="pr-toast" role="status" aria-live="polite"></div>
+
+		<div class="tu-seo">
+			<h2>Hear how to pronounce any word, in different accents</h2>
+			<p>Type a word and press <em>Say it</em>. The page shows the word split into <strong>syllables</strong>, with the <strong>stressed syllable</strong> drawn bigger, a plain-English <strong>respelling</strong> (like <em>pruh-nuhn-see-AY-shuhn</em>) and the <strong>IPA</strong> transcription that dictionaries use. Where a word has more than one accepted pronunciation (<em>either</em>, <em>data</em>, <em>route</em>) or a different one in British English (<em>tomato</em>, <em>schedule</em>, <em>privacy</em>), each one has its own tab.</p>
+			<h3>Accents and voices</h3>
+			<p>The voices are the ones built into your device and browser, so the list is different on a phone, a Mac or Windows. The accent buttons (US, UK, Australia, India, Ireland, South Africa, Canada, Scotland and more) only show the accents your device actually has. Choose a voice from the list (you can search it and press &#9654; to hear a sample), and change the speed, pitch and volume. <em>Slowly</em> plays at about half speed, <em>Syllable by syllable</em> says each syllable on its own with that syllable lit up, then the whole word, and <em>Loop</em> keeps repeating until you press Stop. If a voice does not make a sound (some phones list voices whose data is not installed), the page notices, says so and switches to another voice.</p>
+			<h3>Real recordings</h3>
+			<p>For many English words there are also recordings of real people from Wikimedia Commons, usually US and UK and sometimes Australian or Canadian, found through the free dictionaryapi.dev. Each one shows its licence and a link to its source.</p>
+			<h3>Where the syllables and IPA come from</h3>
+			<p>American pronunciations come from the <a href="https://github.com/cmusphinx/cmudict" rel="noopener" target="_blank">CMU Pronouncing Dictionary</a> (about 126,000 words and names, free under a BSD licence). The page splits each pronunciation into syllables by sound, giving consonants to the next syllable where English allows it, and turns the dictionary's sounds into IPA and a respelling. British forms of words that differ are written in by hand. The <em>Written</em> line splits the spelling into syllables too; that one is an estimate from spelling rules, so it can differ from a printed dictionary's hyphenation. Words that are not in the dictionary get a syllable count estimated from the spelling, and the page says so.</p>
+			<h3>Practice</h3>
+			<p>In Chrome, Edge and Safari you can press the microphone and say the word. The browser's own speech recognition writes down what it heard, and the page tells you whether it matches. In Chrome your voice is sent to the browser maker's speech service to do this; nothing is sent to mes.fm.</p>
+			<h3>Questions</h3>
+			<dl>
+				<dt>What is the stressed syllable?</dt>
+				<dd>The one said a little louder, longer and higher than the others. In <em>baNAna</em> it is the second. Getting the stress right matters more than any single sound: <em>REcord</em> is a noun and <em>reCORD</em> is a verb.</dd>
+				<dt>What is IPA?</dt>
+				<dd>The International Phonetic Alphabet: one symbol for each sound, the same in every language. Dictionaries put it between slashes, like /təˈmeɪtoʊ/. The mark ˈ comes before the stressed syllable and ˌ before a syllable with lighter stress. Open the <em>IPA and respelling key</em> above for every symbol with an example.</dd>
+				<dt>Can it say words in other languages?</dt>
+				<dd>Yes: choose the language under <em>Accent and voice</em>. Your device's voices for that language read the text. Syllables, IPA and the respelling are only shown for English.</dd>
+				<dt>Is anything saved?</dt>
+				<dd>Your last words and voice settings stay in this browser only. Single English words are looked up on dictionaryapi.dev to find recordings.</dd>
+			</dl>
+		</div>
+	</div>

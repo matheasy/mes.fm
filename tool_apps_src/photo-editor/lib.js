@@ -282,23 +282,71 @@ var MESPixel = (function () {
 	/* a quantity that is linear in a parameter (v0 at f0, v1 at f1): the parameter that gives `target`, null when the quantity does not change */
 	function linSolve(f0, v0, f1, v1, target) { var dv = v1 - v0; if (Math.abs(dv) < 1e-12) return null; return f0 + (target - v0) * (f1 - f0) / dv; }
 	function scaleAbout(p, a, f) { return a + (p - a) * f; }
-	/* word wrap that remembers where each line came from in the string: [{text, start, end}] (end = start + text.length; a wrapped line loses its trailing spaces) */
+	/* word wrap that remembers where each line came from in the string: [{text, start, end}] (end = start + text.length; a wrapped line loses its trailing spaces).
+	 * measure(s, start) = width of s, which begins at string index start (rich text: bold / italic parts measure wider) */
 	function wrapLines(str, lim, measure) {
 		str = String(str == null ? "" : str); var out = [], pos = 0;
 		str.split("\n").forEach(function (para) {
 			var base = pos; pos += para.length + 1;
-			if (measure(para) <= lim) { out.push({ text: para, start: base, end: base + para.length }); return; }
+			if (measure(para, base) <= lim) { out.push({ text: para, start: base, end: base + para.length }); return; }
 			var cur = "", cs = base, tp = base;
 			var push = function (s, st, trim) { var tx = trim ? s.replace(/\s+$/, "") : s; out.push({ text: tx, start: st, end: st + tx.length }); };
 			para.split(/(\s+)/).forEach(function (wd) {
 				var ws = tp; tp += wd.length; if (!wd) return;
-				if (cur && measure((cur + wd).replace(/\s+$/, "")) > lim) { push(cur, cs, true); if (/^\s+$/.test(wd)) { cur = ""; cs = tp; } else { cur = wd; cs = ws; } }
+				if (cur && measure((cur + wd).replace(/\s+$/, ""), cur ? cs : ws) > lim) { push(cur, cs, true); if (/^\s+$/.test(wd)) { cur = ""; cs = tp; } else { cur = wd; cs = ws; } }
 				else { if (!cur) cs = ws; cur += wd; }
-				while (measure(cur.replace(/\s+$/, "")) > lim && cur.length > 1) { var k = cur.length - 1; while (k > 1 && measure(cur.slice(0, k)) > lim) k--; push(cur.slice(0, k), cs, false); cur = cur.slice(k); cs += k; }   // one word longer than the box
+				while (measure(cur.replace(/\s+$/, ""), cs) > lim && cur.length > 1) { var k = cur.length - 1; while (k > 1 && measure(cur.slice(0, k), cs) > lim) k--; push(cur.slice(0, k), cs, false); cur = cur.slice(k); cs += k; }   // one word longer than the box
 			});
 			push(cur, cs, true);
 		});
 		return out;
+	}
+	/* ---------- rich text: per-character bold / italic / underline ----------
+	 * A text layer may carry rich = a string as long as the text, one digit per character: bit 1 bold, 2 italic, 4 underline (so "0" plain, "5" bold + underline).
+	 * rich = null means every character uses the layer's own bold / italic / underline. Kept as a string so it survives JSON (history, .mesproj, duplicate). */
+	function richMask(b, i, u) { return (b ? 1 : 0) | (i ? 2 : 0) | (u ? 4 : 0); }
+	function richRepeat(m, n) { var s = ""; for (var k = 0; k < n; k++) s += m; return s; }
+	/* the text changed from oldS to newS (typing, paste, delete, undo inside the box): keep each kept character's style; new characters take the style of the
+	 * character before them (or after them, at the very start) */
+	function richEdit(rich, oldS, newS, def) {
+		if (rich == null) return null; oldS = String(oldS); newS = String(newS); var ol = oldS.length, nl = newS.length, p = 0, s = 0;
+		if (rich.length !== ol) rich = (rich + richRepeat(String(def || 0), ol)).slice(0, ol);
+		while (p < ol && p < nl && oldS[p] === newS[p]) p++;
+		while (s < ol - p && s < nl - p && oldS[ol - 1 - s] === newS[nl - 1 - s]) s++;
+		var m = p > 0 ? rich[p - 1] : ol > 0 ? rich[0] : String(def || 0);
+		return rich.slice(0, p) + richRepeat(m, nl - p - s) + rich.slice(ol - s);
+	}
+	/* switch one style bit on or off for the characters a..b */
+	function richSet(rich, a, b, bit, on) { var out = rich.slice(0, a); for (var i = a; i < b && i < rich.length; i++) { var m = +rich[i]; out += String(on ? m | bit : m & ~bit); } return out + rich.slice(Math.min(b, rich.length)); }
+	/* does every character a..b have the bit? (an empty range: the character before it) */
+	function richAll(rich, a, b, bit) { if (b <= a) { var c = rich[Math.max(0, a - 1)]; return !!(c != null && (+c & bit)); } for (var i = a; i < b; i++) if (!(+rich[i] & bit)) return false; return true; }
+	/* all characters the same -> {rich: null, mask}; else {rich, mask = the bits every character has} */
+	function richNorm(rich) {
+		if (rich == null || !rich.length) return { rich: null, mask: rich && rich.length ? +rich[0] : null };
+		var all = 7, same = true; for (var i = 0; i < rich.length; i++) { all &= +rich[i]; if (rich[i] !== rich[0]) same = false; }
+		return same ? { rich: null, mask: +rich[0] } : { rich: rich, mask: all };
+	}
+	/* the runs of one style in a..b: [{s, e, m}] (no rich = one run with the layer's mask) */
+	function richSegs(rich, a, b, base) {
+		if (rich == null) return b > a ? [{ s: a, e: b, m: base }] : []; var out = [], st = a;
+		for (var i = a + 1; i <= b; i++) if (i === b || rich[i] !== rich[st]) { out.push({ s: st, e: i, m: +rich[st] }); st = i; }
+		return out;
+	}
+	/* Auto-fit text: the largest font size whose wrapped text fits a box w x h (box height = size * (lh * lines + 0.25), like the editor's text frame),
+	 * without breaking a word. measureAt(size) -> measure(s, start). Returns a size in steps of 0.5 between lo and hi. */
+	function fitFontSize(str, w, h, lh, measureAt, lo, hi) {
+		str = String(str == null ? "" : str); lo = lo || 4; hi = hi || 1000; if (!(w > 0) || !(h > 0)) return null;
+		var words = [], re = /\S+/g, mm; while ((mm = re.exec(str))) words.push([mm[0], mm.index]);
+		var fits = function (sz) { var me = measureAt(sz); for (var k = 0; k < words.length; k++) if (me(words[k][0], words[k][1]) > w) return false; return sz * (lh * wrapLines(str, w, me).length + 0.25) <= h; };
+		if (!fits(lo)) return lo; if (fits(hi)) return hi;
+		var a = lo, b = hi; for (var it = 0; it < 40 && b - a > 0.25; it++) { var mid = (a + b) / 2; if (fits(mid)) a = mid; else b = mid; }
+		return Math.max(lo, Math.floor(a * 2) / 2);
+	}
+	/* a dropped / picked folder: the project.json that is closest to the top and the project files next to it.
+	 * paths = "Fetzer/project.json", ... -> {prefix: "Fetzer/", files: [paths]} or null when there is no project.json */
+	function folderProject(paths) {
+		var pre = projectPrefix(paths); if (pre === null) return null;
+		return { prefix: pre, files: (paths || []).filter(function (n) { if (n.indexOf(pre) !== 0 || /(^|\/)__MACOSX\//.test(n) || /(^|\/)\._/.test(n)) return false; var r = n.slice(pre.length); return /^(project\.json|layer-[^\/]+\.png|mask-[^\/]+\.png)$/.test(r); }) };
 	}
 	/* which line a string index is on, and how far into it: {line, k} */
 	function caretLine(lines, idx) {
@@ -306,7 +354,7 @@ var MESPixel = (function () {
 		var L = lines[li]; return { line: li, k: Math.max(0, Math.min(L.text.length, idx - L.start)) };
 	}
 	/* the string index closest to x (measured from the line's own left edge) */
-	function hitInLine(line, x, measure) { var best = 0, bd = Infinity; for (var k = 0; k <= line.text.length; k++) { var d = Math.abs(measure(line.text.slice(0, k)) - x); if (d < bd) { bd = d; best = k; } } return line.start + best; }
+	function hitInLine(line, x, measure) { var best = 0, bd = Infinity; for (var k = 0; k <= line.text.length; k++) { var d = Math.abs(measure(line.text.slice(0, k), line.start) - x); if (d < bd) { bd = d; best = k; } } return line.start + best; }
 	/* the word around a string index (double-click): [start, end] */
 	function wordAt(str, idx) {
 		// a run of non-space characters ("2.0", "don't"), without punctuation stuck to its ends ("Fetzer," -> "Fetzer")
@@ -391,7 +439,7 @@ var MESPixel = (function () {
 	function newProjectId(rand) { rand = rand || Math.random; var s = "p"; for (var i = 0; i < 12; i++) s += "abcdefghijklmnopqrstuvwxyz0123456789"[Math.floor(rand() * 36)]; return s; }
 
 	var api = { projectKind: projectKind, projectBase: projectBase, projectFileName: projectFileName, isZipBytes: isZipBytes, zipEntries: zipEntries, projectPrefix: projectPrefix, pruneRecent: pruneRecent, upsertRecent: upsertRecent, agoText: agoText, diskChanged: diskChanged, layerFileNames: layerFileNames, newProjectId: newProjectId,
-		unionBox: unionBox, boxesTouch: boxesTouch, rectFrom: rectFrom, snapTargets: snapTargets, snapAxis: snapAxis, snapBox: snapBox, guidesOn: guidesOn, linSolve: linSolve, scaleAbout: scaleAbout, wrapLines: wrapLines, caretLine: caretLine, hitInLine: hitInLine, wordAt: wordAt, describeSource: describeSource, bytesText: bytesText, panelClamp: panelClamp, panelKey: panelKey, clamp: clamp, hexToRgb: hexToRgb, rgbToHex: rgbToHex, rgbToHsl: rgbToHsl, hslToRgb: hslToRgb, histogram: histogram, identityLUT: identityLUT, applyLUT: applyLUT, levelsLUT: levelsLUT, curveLUT: curveLUT,
+		unionBox: unionBox, boxesTouch: boxesTouch, rectFrom: rectFrom, snapTargets: snapTargets, snapAxis: snapAxis, snapBox: snapBox, guidesOn: guidesOn, linSolve: linSolve, scaleAbout: scaleAbout, wrapLines: wrapLines, richMask: richMask, richEdit: richEdit, richSet: richSet, richAll: richAll, richNorm: richNorm, richSegs: richSegs, fitFontSize: fitFontSize, folderProject: folderProject, caretLine: caretLine, hitInLine: hitInLine, wordAt: wordAt, describeSource: describeSource, bytesText: bytesText, panelClamp: panelClamp, panelKey: panelKey, clamp: clamp, hexToRgb: hexToRgb, rgbToHex: rgbToHex, rgbToHsl: rgbToHsl, hslToRgb: hslToRgb, histogram: histogram, identityLUT: identityLUT, applyLUT: applyLUT, levelsLUT: levelsLUT, curveLUT: curveLUT,
 		brightnessContrast: brightnessContrast, exposure: exposure, hueSat: hueSat, vibrance: vibrance, temperature: temperature, invert: invert, grayscale: grayscale, sepia: sepia, threshold: threshold, posterize: posterize,
 		gaussianBlur: gaussianBlur, boxBlur: boxBlur, unsharp: unsharp, noise: noise, pixelate: pixelate, vignette: vignette, convolve: convolve, floodMask: floodMask, growShrinkMask: growShrinkMask, featherMask: featherMask, invertMask: invertMask,
 		maskBounds: maskBounds, opaqueBounds: opaqueBounds, blendByMask: blendByMask, autoLevels: autoLevels, premultiply: premultiply, unpremultiply: unpremultiply };

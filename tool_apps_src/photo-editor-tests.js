@@ -256,4 +256,36 @@ t("xcf: header, layer list, tiles", () => {
 	t("layerFileNames are numbered, unique and safe", () => { assert.deepStrictEqual(P.layerFileNames(["Background", "Title: 9/11", "Background", ""]), ["01 Background.png", "02 Title 9 11.png", "03 Background.png", "04 Layer.png"]); });
 	t("newProjectId", () => { assert.ok(/^p[a-z0-9]{12}$/.test(P.newProjectId())); assert.notStrictEqual(P.newProjectId(), P.newProjectId()); });
 }
+// Rich text (bold / italic / underline per letter), Auto-fit text, project folders
+t("rich text: edits keep styles, new letters take the style before them", () => {
+	assert.strictEqual(P.richMask(true, false, true), 5);
+	let r = P.richSet("0000000000", 3, 6, 1, true); assert.strictEqual(r, "0001110000");
+	assert.strictEqual(P.richEdit(r, "abcdefghij", "abcdeXXfghij", 0), "000111110000");   // typing inside the bold part -> bold
+	assert.strictEqual(P.richEdit(r, "abcdefghij", "abcghij", 0), "0000000");          // deleting the bold part
+	assert.strictEqual(P.richEdit(r, "abcdefghij", "Zabcdefghij", 0), "00001110000");  // at the start: style of the first letter
+	assert.strictEqual(P.richEdit("15", "ab", "", 0), ""); assert.strictEqual(P.richEdit(null, "a", "ab", 0), null);
+	assert.ok(P.richAll("0111", 1, 4, 1)); assert.ok(!P.richAll("0111", 0, 4, 1)); assert.ok(P.richAll("0110", 3, 3, 1)); assert.ok(!P.richAll("0110", 1, 1, 1));
+	assert.deepStrictEqual(P.richNorm("5555"), { rich: null, mask: 5 }); assert.deepStrictEqual(P.richNorm("1513"), { rich: "1513", mask: 1 });
+	assert.deepStrictEqual(P.richSegs("0011400", 1, 6, 0), [{ s: 1, e: 2, m: 0 }, { s: 2, e: 4, m: 1 }, { s: 4, e: 5, m: 4 }, { s: 5, e: 6, m: 0 }]);
+	assert.deepStrictEqual(P.richSegs(null, 2, 5, 3), [{ s: 2, e: 5, m: 3 }]); assert.deepStrictEqual(P.richSegs(null, 2, 2, 3), []);
+});
+t("wrapLines / hitInLine pass the string position to measure (bold letters are wider)", () => {
+	const s = "aaaa bbbb", rich = "000001111", me = (x, st) => { let w = 0; for (let i = 0; i < x.length; i++) w += rich[(st || 0) + i] === "1" ? 20 : 10; return w; };
+	assert.deepStrictEqual(P.wrapLines(s, 100, me).map((l) => l.text), ["aaaa", "bbbb"]); assert.deepStrictEqual(P.wrapLines(s, 130, me).map((l) => l.text), ["aaaa bbbb"]);
+	const L = P.wrapLines(s, 100, me); assert.strictEqual(P.hitInLine(L[1], 41, me), 7);
+});
+t("fitFontSize: the largest size whose wrapped text fits the box", () => {
+	const at = (sz) => (x) => x.length * sz * 0.5;
+	const f = P.fitFontSize("Hello world", 300, 100, 1.2, at, 4, 1000); assert.ok(f > 4 && f < 1000);
+	const lines = P.wrapLines("Hello world", 300, at(f)).length; assert.ok(f * (1.2 * lines + 0.25) <= 100); assert.ok(at(f)("world") <= 300);
+	const g = P.fitFontSize("Hello world", 300, 100, 1.2, at, 4, 1000), bigger = g + 1; assert.ok(at(bigger)("Hello") > 300 || bigger * (1.2 * P.wrapLines("Hello world", 300, at(bigger)).length + 0.25) > 100);
+	assert.strictEqual(P.fitFontSize("x", 0, 50, 1.2, at), null); assert.ok(P.fitFontSize("a b c d e f g h", 100, 400, 1.2, at, 4, 1000) > P.fitFontSize("a b c d e f g h", 100, 100, 1.2, at, 4, 1000));
+	assert.ok(f % 0.5 === 0);
+});
+t("folderProject: the project files of an unzipped .mesproj", () => {
+	const r = P.folderProject(["Fetzer/project.json", "Fetzer/layer-1.png", "Fetzer/mask-1.png", "Fetzer/notes.txt", "__MACOSX/Fetzer/._layer-1.png", "Fetzer/._project.json", "Fetzer/old/project.json"]);
+	assert.strictEqual(r.prefix, "Fetzer/"); assert.deepStrictEqual(r.files, ["Fetzer/project.json", "Fetzer/layer-1.png", "Fetzer/mask-1.png"]);
+	assert.deepStrictEqual(P.folderProject(["project.json", "layer-2.png", "sub/layer-3.png"]), { prefix: "", files: ["project.json", "layer-2.png"] });
+	assert.strictEqual(P.folderProject(["a.png", "b.jpg"]), null);
+});
 console.log(n + " checks ok");

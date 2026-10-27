@@ -1,0 +1,154 @@
+	<script>try{if(!localStorage.getItem('pageMode')){document.documentElement.classList.add('page-wide')}}catch(e){}</script>
+	<div class="tu dx" id="dx">
+		<div class="dx-app" id="dx-app">
+			<div class="dx-top">
+				<button type="button" class="dx-btn dx-btn--primary" id="dx-open" title="Open .docx files (Ctrl+O)">Open</button>
+				<button type="button" class="dx-btn" id="dx-new" title="Start a new blank document">New</button>
+				<input type="file" id="dx-input" accept=".docx,.docm,.dotx,.dotm,application/vnd.openxmlformats-officedocument.wordprocessingml.document" multiple hidden>
+				<div class="dx-tabs" id="dx-tabs" role="tablist" aria-label="Open documents"></div>
+			</div>
+			<div class="dx-bar" id="dx-bar">
+				<div class="dx-seg" role="group" aria-label="Mode">
+					<button type="button" class="dx-segb" id="dx-mview" aria-pressed="true" title="Page layout view, as Word lays it out">View</button>
+					<button type="button" class="dx-segb" id="dx-medit" aria-pressed="false" title="Edit the text (simplified layout)">Edit</button>
+				</div>
+				<span class="dx-sep"></span>
+				<button type="button" class="dx-ib" id="dx-zout" title="Zoom out (Ctrl -)" aria-label="Zoom out">&minus;</button>
+				<button type="button" class="dx-zoom" id="dx-zoom" title="Zoom: click to fit the page width">100%</button>
+				<button type="button" class="dx-ib" id="dx-zin" title="Zoom in (Ctrl +)" aria-label="Zoom in">+</button>
+				<button type="button" class="dx-ib dx-ib--txt" id="dx-fit" aria-pressed="false" title="Fit the page width">&#8596; <span class="dx-lbl">Fit</span></button>
+				<span class="dx-sep"></span>
+				<button type="button" class="dx-ib dx-ib--txt" id="dx-side" aria-pressed="true" title="Show or hide the side panel">&#9776; <span class="dx-lbl">Panel</span></button>
+				<button type="button" class="dx-ib dx-ib--txt" id="dx-paper" aria-pressed="false" title="Show the pages dark (easier on the eyes at night)">&#9681; <span class="dx-lbl">Dark paper</span></button>
+				<button type="button" class="dx-ib dx-ib--txt" id="dx-fill" aria-pressed="false" title="Fill the browser window (W, Esc to leave)">&#10530; <span class="dx-lbl">Fill window</span></button>
+				<button type="button" class="dx-ib dx-ib--txt" id="dx-fs" title="Full screen (F)">&#9974; <span class="dx-lbl">Full screen</span></button>
+				<span class="dx-grow"></span>
+				<button type="button" class="dx-btn" id="dx-print" title="Print, or choose Save as PDF in the print window (Ctrl+P)">Print / PDF</button>
+				<div class="dx-dlwrap">
+					<button type="button" class="dx-btn dx-btn--primary" id="dx-dl" aria-haspopup="true" aria-expanded="false">Download &#9662;</button>
+					<div class="dx-menu" id="dx-menu" hidden role="menu">
+						<button type="button" role="menuitem" data-dl="docx"><b>Word (.docx)</b><small id="dx-dl-docx-s">the document</small></button>
+						<button type="button" role="menuitem" data-dl="orig" id="dx-dl-orig"><b>Original file</b><small>exactly as you opened it</small></button>
+						<button type="button" role="menuitem" data-dl="pdf"><b>PDF</b><small>opens the print window: choose &ldquo;Save as PDF&rdquo;</small></button>
+						<button type="button" role="menuitem" data-dl="html"><b>Web page (.html)</b><small>with pictures inside</small></button>
+						<button type="button" role="menuitem" data-dl="md"><b>Markdown (.md)</b><small>headings, lists, links, tables</small></button>
+						<button type="button" role="menuitem" data-dl="txt"><b>Plain text (.txt)</b><small>just the words</small></button>
+						<button type="button" role="menuitem" data-dl="copy"><b>Copy all text</b><small>to the clipboard</small></button>
+					</div>
+				</div>
+			</div>
+			<div class="dx-edbar" id="dx-edbar" hidden role="toolbar" aria-label="Formatting">
+				<button type="button" class="dx-eb" data-cmd="undo" title="Undo (Ctrl+Z)" aria-label="Undo">&#8630;</button>
+				<button type="button" class="dx-eb" data-cmd="redo" title="Redo (Ctrl+Y)" aria-label="Redo">&#8631;</button>
+				<span class="dx-sep"></span>
+				<select class="dx-esel" id="dx-block" title="Paragraph style" aria-label="Paragraph style">
+					<option value="p">Normal text</option><option value="title">Title</option><option value="h1">Heading 1</option><option value="h2">Heading 2</option><option value="h3">Heading 3</option><option value="h4">Heading 4</option><option value="blockquote">Quote</option><option value="pre">Code</option>
+				</select>
+				<button type="button" class="dx-eb" data-cmd="bold" title="Bold (Ctrl+B)" aria-label="Bold"><b>B</b></button>
+				<button type="button" class="dx-eb" data-cmd="italic" title="Italic (Ctrl+I)" aria-label="Italic"><i>I</i></button>
+				<button type="button" class="dx-eb" data-cmd="underline" title="Underline (Ctrl+U)" aria-label="Underline"><u>U</u></button>
+				<button type="button" class="dx-eb" data-cmd="strikeThrough" title="Strikethrough" aria-label="Strikethrough"><s>S</s></button>
+				<button type="button" class="dx-eb" data-cmd="superscript" title="Superscript" aria-label="Superscript">x&sup2;</button>
+				<button type="button" class="dx-eb" data-cmd="subscript" title="Subscript" aria-label="Subscript">x&#8322;</button>
+				<button type="button" class="dx-eb" data-cmd="hilite" title="Highlight" aria-label="Highlight"><span class="dx-hl">ab</span></button>
+				<span class="dx-sep"></span>
+				<button type="button" class="dx-eb" data-cmd="insertUnorderedList" title="Bullet list" aria-label="Bullet list">&#8226;&#8801;</button>
+				<button type="button" class="dx-eb" data-cmd="insertOrderedList" title="Numbered list" aria-label="Numbered list">1.&#8801;</button>
+				<button type="button" class="dx-eb" data-cmd="outdent" title="Decrease indent (Shift+Tab in a list)" aria-label="Decrease indent">&#8676;</button>
+				<button type="button" class="dx-eb" data-cmd="indent" title="Increase indent (Tab in a list)" aria-label="Increase indent">&#8677;</button>
+				<span class="dx-sep"></span>
+				<button type="button" class="dx-eb" data-cmd="justifyLeft" title="Align left" aria-label="Align left">&#8676;&#8801;</button>
+				<button type="button" class="dx-eb" data-cmd="justifyCenter" title="Centre" aria-label="Centre">&#8801;</button>
+				<button type="button" class="dx-eb" data-cmd="justifyRight" title="Align right" aria-label="Align right">&#8801;&#8677;</button>
+				<button type="button" class="dx-eb" data-cmd="justifyFull" title="Justify" aria-label="Justify">&#9776;</button>
+				<span class="dx-sep"></span>
+				<button type="button" class="dx-eb" data-cmd="link" title="Add a link (Ctrl+K)" aria-label="Add a link">&#128279;</button>
+				<button type="button" class="dx-eb" data-cmd="unlink" title="Remove the link" aria-label="Remove the link">&#10799;&#128279;</button>
+				<button type="button" class="dx-eb" data-cmd="image" title="Insert a picture" aria-label="Insert a picture">&#128444;</button>
+				<button type="button" class="dx-eb" data-cmd="table" title="Insert a table" aria-label="Insert a table">&#9638;</button>
+				<button type="button" class="dx-eb" data-cmd="insertHorizontalRule" title="Horizontal line" aria-label="Horizontal line">&#8213;</button>
+				<button type="button" class="dx-eb" data-cmd="removeFormat" title="Clear formatting" aria-label="Clear formatting">T&#824;</button>
+				<input type="file" id="dx-imgin" accept="image/*" hidden>
+			</div>
+			<div class="dx-note" id="dx-note" hidden role="status"></div>
+			<div class="dx-main" id="dx-main">
+				<aside class="dx-sidep" id="dx-sidep" aria-label="Document panel">
+					<div class="dx-stabs" role="tablist">
+						<button type="button" class="dx-stab" data-tab="outline" role="tab">Outline</button>
+						<button type="button" class="dx-stab" data-tab="find" role="tab">Find</button>
+						<button type="button" class="dx-stab" data-tab="info" role="tab">Info</button>
+						<button type="button" class="dx-stab" data-tab="notes" role="tab">Comments</button>
+						<button type="button" class="dx-stab" data-tab="pics" role="tab">Pictures</button>
+					</div>
+					<div class="dx-spane" data-pane="outline"><div id="dx-outline" class="dx-outline"></div></div>
+					<div class="dx-spane" data-pane="find" hidden>
+						<div class="dx-findrow"><input type="search" class="dx-in" id="dx-q" placeholder="Find in document" aria-label="Find in document" autocomplete="off"></div>
+						<div class="dx-findrow"><button type="button" class="dx-ib" id="dx-qprev" title="Previous (Shift+Enter)" aria-label="Previous match">&#8593;</button><button type="button" class="dx-ib" id="dx-qnext" title="Next (Enter)" aria-label="Next match">&#8595;</button><span class="dx-qn" id="dx-qn" aria-live="polite"></span></div>
+						<label class="dx-chk"><input type="checkbox" id="dx-qcase"> Match case</label>
+						<label class="dx-chk"><input type="checkbox" id="dx-qword"> Whole words</label>
+						<div id="dx-repl" hidden>
+							<div class="dx-findrow"><input type="text" class="dx-in" id="dx-r" placeholder="Replace with" aria-label="Replace with" autocomplete="off"></div>
+							<div class="dx-findrow"><button type="button" class="dx-btn" id="dx-r1">Replace</button><button type="button" class="dx-btn" id="dx-rall">Replace all</button></div>
+						</div>
+						<p class="dx-hint" id="dx-qhint">Switch to Edit to replace text.</p>
+						<div class="dx-qlist" id="dx-qlist"></div>
+					</div>
+					<div class="dx-spane" data-pane="info" hidden><div id="dx-info"></div></div>
+					<div class="dx-spane" data-pane="notes" hidden>
+						<label class="dx-chk"><input type="checkbox" id="dx-ocom" checked> Show comments in the pages</label>
+						<label class="dx-chk"><input type="checkbox" id="dx-ochg" checked> Show tracked changes</label>
+						<div id="dx-notes"></div>
+					</div>
+					<div class="dx-spane" data-pane="pics" hidden><div id="dx-pics"></div></div>
+				</aside>
+				<div class="dx-view" id="dx-view" tabindex="-1">
+					<div class="dx-empty" id="dx-empty">
+						<div class="dx-drop" id="dx-drop" tabindex="0" role="button" aria-label="Open a Word document">
+							<div class="dx-drop-ic" aria-hidden="true">DOCX</div>
+							<div class="dx-drop-t">Drop Word documents here</div>
+							<div class="dx-drop-s">.docx files, as many as you like (each opens in its own tab). You can also paste a file or press Open.</div>
+							<div class="dx-drop-b"><button type="button" class="dx-btn dx-btn--primary dx-big" id="dx-e-open">Open a .docx</button> <button type="button" class="dx-btn dx-big" id="dx-e-new">New blank document</button></div>
+							<p class="dx-priv">Private: the document is read and shown by your own browser. Nothing is uploaded.</p>
+						</div>
+						<div class="dx-recent" id="dx-recent" hidden>
+							<div class="dx-recent-h"><b>Recent files</b> <span class="dx-recent-s">kept on this device only</span> <button type="button" class="dx-link" id="dx-rclear">Forget all</button></div>
+							<div id="dx-rlist"></div>
+						</div>
+						<label class="dx-chk dx-remember"><input type="checkbox" id="dx-remember"> Remember files I open here (in this browser only)</label>
+					</div>
+				</div>
+			</div>
+			<div class="dx-status" id="dx-status" aria-live="polite"></div>
+			<div class="dx-imgbar" id="dx-imgbar" hidden>
+			<span>Picture width:</span> <button type="button" data-w="25">25%</button><button type="button" data-w="50">50%</button><button type="button" data-w="75">75%</button><button type="button" data-w="100">100%</button><button type="button" data-w="0" title="Remove the picture">Remove</button>
+		</div>
+		</div>
+		<div class="tu-card tu-card--tint dx-cross">
+			<b>Working with PDFs?</b> The free <a href="/pdf">PDF Editor</a> signs, fills in and annotates PDFs, and <a href="/pdf-tools">PDF Tools</a> merges, splits, compresses and converts them. To sign a Word document, save it here as a PDF (Download &rarr; PDF), then open that PDF in the <a href="/pdf">PDF Editor</a>.
+		</div>
+
+		<div class="tu-seo">
+			<h2>Open, read and edit Word documents online</h2>
+			<p>This viewer opens Microsoft Word <b>.docx</b> files right in your browser, laid out page by page like Word shows them: fonts, colours, tables, pictures, headers and footers, footnotes, lists, comments and tracked changes. Open several files at once and switch between them with the tabs. Nothing is uploaded: the file is read by your own browser, so it works for private letters, contracts and school work.</p>
+			<h2>What can it do?</h2>
+			<dl>
+				<dt>View</dt><dd>Page layout view with zoom, fit to width, a dark-paper option, Fill window and full screen. The Outline lists the headings so you can jump around a long document.</dd>
+				<dt>Find</dt><dd>Search the whole document, with match case and whole words. In Edit you can also replace one match or all of them.</dd>
+				<dt>Info</dt><dd>Word and character counts (with and without spaces), paragraphs, pages, reading and speaking time, the document properties (title, author, dates, the app that made it), page size and margins, and how many tables, pictures, comments and changes it has.</dd>
+				<dt>Comments and changes</dt><dd>Comments are listed with their author and date and marked in the text (hover the speech bubble). Tracked changes are shown as insertions and deletions. Both can be switched off.</dd>
+				<dt>Pictures</dt><dd>Every picture inside the document, ready to download one by one or all together as a ZIP.</dd>
+				<dt>Print and PDF</dt><dd>Print / PDF opens your browser's print window with just the pages; choose &ldquo;Save as PDF&rdquo; to make a PDF. You can then sign or annotate that PDF in the <a href="/pdf">PDF Editor</a>.</dd>
+				<dt>Edit</dt><dd>Edit turns the document into a simple editable page: type, make text bold, italic or underlined, add headings, lists, links, pictures and tables, then download a new .docx that Word, Google Docs and LibreOffice open. You can also save it as a web page, Markdown or plain text.</dd>
+			</dl>
+			<h2 id="dx-lossy">What does editing keep, and what does it lose?</h2>
+			<p>Editing keeps the words, headings, bold / italic / underline / strikethrough, superscript and subscript, bullet and numbered lists, links, tables and pictures. It does <b>not</b> keep the exact page design: fonts, font sizes and colours, line spacing, page breaks, columns, text boxes and shapes, headers and footers, page numbers, footnotes, comments, tracked changes, fields such as a table of contents, and exact picture sizes are simplified or dropped. The saved file uses clean standard Word styles and keeps the original page size and margins. Your original file is never changed: <b>Download &rarr; Original file</b> always gives it back exactly. For documents with a complex layout, use View, Print / PDF, or edit in Word itself.</p>
+			<h2>Questions</h2>
+			<dl>
+				<dt>Can I open an old .doc file?</dt><dd>No. Only the modern .docx format (Word 2007 and later) can be read here. Open the .doc in Word, LibreOffice or Google Docs and save it as .docx first. .docm, .dotx and .dotm files open too.</dd>
+				<dt>Why does a page break fall in a different place than in Word?</dt><dd>Pages are laid out by your browser, not by Word, so line and page breaks can differ slightly, especially with fonts you do not have installed. Page breaks Word saved in the file are used where they exist.</dd>
+				<dt>Is my document uploaded anywhere?</dt><dd>No. The viewer and the libraries that read Word files run inside your browser. If you tick &ldquo;Remember files I open here&rdquo;, recent files are kept in this browser's own storage on this device, and you can forget them at any time.</dd>
+				<dt>Does it work on a phone?</dt><dd>Yes. Open a file from your phone's Files app; the page fits the screen width, and you can zoom in.</dd>
+			</dl>
+			<p class="dx-credit">Made with the open-source <a href="https://github.com/VolodymyrBaydalka/docxjs" rel="noopener">docx-preview</a> (Apache-2.0), <a href="https://github.com/mwilliamson/mammoth.js" rel="noopener">mammoth.js</a> (BSD) and <a href="https://stuk.github.io/jszip/" rel="noopener">JSZip</a> (MIT) libraries.</p>
+		</div>
+	</div>

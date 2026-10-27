@@ -6,6 +6,10 @@
 			</div>
 			<div class="em-wrap"><div class="em-stage" id="em-mg-stage">
 				<canvas id="em-mg-c" tabindex="0" role="img" aria-label="Flux lines and isopotential lines of the bar magnets. Drag a magnet to move it, drag its handle to turn it."></canvas>
+				<div class="em-mgov" id="em-mg-ov" role="group" aria-label="Lines to draw">
+					<span class="em-ovg em-ovg--flux"><button type="button" class="em-ovt" data-ov="em-mg-flux" aria-pressed="true" title="Show or hide the flux lines (B)">Flux</button><button type="button" class="em-ovn" data-ovn="em-mg-nf" data-d="-2" aria-label="Fewer flux lines" title="Fewer flux lines">−</button><b id="em-mg-ov-nf" aria-label="Number of flux lines">16</b><button type="button" class="em-ovn" data-ovn="em-mg-nf" data-d="2" aria-label="More flux lines" title="More flux lines">+</button></span>
+					<span class="em-ovg em-ovg--iso"><button type="button" class="em-ovt" data-ov="em-mg-iso" aria-pressed="true" title="Show or hide the isopotentials (ψ)">Iso</button><button type="button" class="em-ovn" data-ovn="em-mg-ni" data-d="-2" aria-label="Fewer isopotentials" title="Fewer isopotentials">−</button><b id="em-mg-ov-ni" aria-label="Number of isopotentials">14</b><button type="button" class="em-ovn" data-ovn="em-mg-ni" data-d="2" aria-label="More isopotentials" title="More isopotentials">+</button></span>
+				</div>
 				<div class="em-badge" id="em-mg-badge"></div>
 				<div class="em-run"><button type="button" id="em-mg-reset" title="Back to the example you started from">↺ Reset</button><button type="button" id="em-mg-png" title="Save as a picture" aria-label="Save as PNG">📷</button><button type="button" id="em-mg-full" title="Full screen" aria-label="Full screen">⛶</button></div>
 				<div class="em-legend" id="em-mg-legend" aria-hidden="true"><span class="em-lg-flux">— flux line (B)</span><span class="em-lg-iso">— isopotential (ψ)</span></div>

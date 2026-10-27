@@ -29,7 +29,7 @@
 	function whereText(L) { return L ? (L.dir ? L.dir + "/" : "") + L.name : ""; }
 	PE.projectWhere = function () { return whereText(cur()); };
 	/* the folder path of a file inside the connected folder ("Thumbnail Meta" when that folder is connected), else "" */
-	function dirOf(h) { var dh = PE.folderHandle && PE.folderHandle(); if (!dh || !dh.resolve) return Promise.resolve(""); return dh.resolve(h).then(function (p) { return p ? [dh.name].concat(p.slice(0, -1)).join("/") : ""; }).catch(function () { return ""; }); }
+	function dirOf(h) { var dh = PE.folderHandle && PE.folderHandle(); if (!dh || !dh.resolve) return Promise.resolve(""); return dh.resolve(h._folder || h).then(function (p) { return p ? [dh.name].concat(p.slice(0, -1)).join("/") : ""; }).catch(function () { return ""; }); }
 	/* call right after a project (or anything) became PE.doc: info = {dir, lm, savedAt, dirty} */
 	PE.linkProject = function (h, info) {
 		info = info || {}; if (!PE.doc || !h) return; var my = { doc: PE.doc, handle: h, name: h.name, dir: info.dir || "", lm: info.lm || 0, savedAt: info.savedAt || 0 }; link = my;
@@ -84,7 +84,7 @@
 				PE.toast("Saved " + n + " to your Downloads" + (isBrave() ? " (to save straight into a folder, switch on " + BRAVE_FLAG + ")" : "")); }).catch(function (e) { PE.toast("Could not save the project: " + errText(e)); });
 		}
 		var dh = PE.folderHandle && PE.folderHandle(), opts = { suggestedName: P.projectFileName(base, kind || (L && P.projectKind(L.name)) || "mesproj"), id: "mes-photo-proj", types: [{ description: "MES Photo Editor project", accept: { "application/zip": [".mesproj", ".zip"] } }] };
-		if (L && L.handle) opts.startIn = L.handle; else if (dh) opts.startIn = dh;
+		if (L && L.handle) opts.startIn = L.handle._folder || L.handle; else if (dh) opts.startIn = dh;
 		var e0 = edits, pick = function (o) { return window.showSaveFilePicker(o).catch(function (x) { if (x && x.name === "TypeError" && o.startIn) { var o2 = Object.assign({}, o); delete o2.startIn; return window.showSaveFilePicker(o2); } throw x; }); };
 		return pick(opts).then(function (h) {
 			if (L && L.handle && h !== L.handle) PE.doc.pid = P.newProjectId();   // a copy under a new name is its own project in Recent projects
@@ -140,6 +140,7 @@
 	function remember(fields) {
 		var d = PE.doc; if (!d || !d.pid) return chain; var L = cur(), e = Object.assign({ id: d.pid, name: d.name || "Untitled", w: d.w, h: d.h, t: Date.now(), thumb: thumbOf() }, fields || {});
 		if (L && !("fh" in (fields || {}))) { e.fh = L.handle; e.file = { name: L.name, dir: L.dir }; }
+		if (e.fh && e.fh._folder) { e.fh = e.fh._folder; e.file = Object.assign({}, e.file || { name: e.fh.name }, { folder: true }); }   // a project folder: IndexedDB keeps the real folder handle
 		return update(function (list) { return P.upsertRecent(list, e); });
 	}
 	PE.rememberProject = remember;
@@ -170,6 +171,7 @@
 	/* reopen a recent project. The click is the user gesture the browser needs to give the file back (one permission prompt). */
 	PE.openRecent = function (e) {
 		if (!e) return; if (PE.confirmReplace && !PE.confirmReplace()) return;
+		if (e.fh && e.file && e.file.folder && !e.fh._folder) e = Object.assign({}, e, { fh: PE.folderProjectHandle(e.fh) });
 		var permP = e.fh ? ensurePerm(e.fh, true).catch(function () { return false; }) : Promise.resolve(false);   // called right away, inside the click
 		var autoP = e.bytes > 0 ? idb(function (st) { return rq(st.get("auto:" + e.id)); }).catch(function () { return null; }) : Promise.resolve(null);
 		return Promise.all([permP, autoP]).then(function (r) {
@@ -196,7 +198,7 @@
 			var g = el("div", "pe-rec-g"); box.appendChild(g);
 			list.forEach(function (e) {
 				var it = el("div", "pe-rec-i"), b = el("button", "pe-rec-b"), x = el("button", "pe-rec-x", "✕"); b.type = "button"; x.type = "button"; x.title = "Remove from this list (deletes its autosave; a project file on disk is not touched)"; x.setAttribute("aria-label", "Remove " + (e.name || "project") + " from recent projects");
-				var where = e.file ? "📄 " + (e.file.dir ? e.file.dir + "/" : "") + e.file.name : "", saved = e.bytes > 0 ? "autosave " + P.bytesText(e.bytes) : "";
+				var where = e.file ? (e.file.folder ? "📁 " : "📄 ") + (e.file.dir ? e.file.dir + "/" : "") + e.file.name : "", saved = e.bytes > 0 ? "autosave " + P.bytesText(e.bytes) : "";
 				b.innerHTML = (e.thumb ? '<img class="pe-rec-th" alt="" src="' + esc(e.thumb) + '">' : '<span class="pe-rec-th pe-rec-th--none" aria-hidden="true">🖼</span>') + '<span class="pe-rec-m"><b class="pe-rec-n">' + esc(e.name || "Untitled") + "</b>"
 					+ '<span class="pe-rec-s">' + esc([e.w && e.h ? e.w + " × " + e.h : "", saved, P.agoText(e.t)].filter(Boolean).join(" · ")) + "</span>" + (where ? '<span class="pe-rec-f">' + esc(where) + "</span>" : "") + "</span>";
 				b.title = "Open " + (e.name || "this project") + (e.file ? " (the browser may ask once to let the editor use " + e.file.name + " again)" : " from this browser's autosave");
@@ -224,7 +226,7 @@
 		var dirty = !!(PE.dirty && PE.hist.stack.length > 1), st = L ? (L.conflict ? "changed on disk" : L.needPerm && dirty ? "press Save to allow saving" : dirty ? "unsaved changes" : L.savedAt ? "saved " + P.agoText(L.savedAt) : "opened") : dirty ? "not saved to a file" : "";
 		var af = PE.autoFileOn(), title = L ? "This project is linked to the file " + whereText(L) + ". " + PE.modKey() + "S writes it there." + (af ? " Auto-save writes changes there " + AUTO_FILE_MS / 1000 + " s after you stop." : "") : "This project is not saved in a file yet: Save project makes one (in a folder you choose, or your Downloads).";
 		bar.className = "pe-projst" + (dirty ? " is-dirty" : "") + (L && L.conflict ? " is-warn" : "");
-		bar.innerHTML = (L ? '<span class="pe-projst-f">📄 ' + esc(L.name) + "</span>" : "") + (st ? '<span class="pe-projst-s">' + esc(st) + "</span>" : "")
+		bar.innerHTML = (L ? '<span class="pe-projst-f">' + (L.handle && L.handle._folder ? "📁 " : "📄 ") + esc(L.name) + "</span>" : "") + (st ? '<span class="pe-projst-s">' + esc(st) + "</span>" : "")
 			+ (L ? '<label class="pe-projst-a" title="Write changes to ' + esc(whereText(L)) + " " + AUTO_FILE_MS / 1000 + ' s after you stop editing (handy when the folder is synced by OneDrive)"><input type="checkbox"' + (af ? " checked" : "") + "> Auto-save</label>" : "");
 		bar.title = title; var cb = bar.querySelector("input"); if (cb) cb.addEventListener("change", function () { PE.setAutoFile(cb.checked); });
 	}
@@ -259,6 +261,101 @@
 			var n = I.cleanFileName(d.name || "image") + " layers.zip"; PE.download(new Blob([I.zipStore(files)], { type: "application/zip" }), n); PE.toast("Downloaded " + n + " (" + L0.length + " PNGs + layers.json)");
 		}).catch(function (x) { PE.toast("Could not export the layers: " + errText(x)); });
 	}
+
+	/* ---------- a project kept as a FOLDER (an unzipped .mesproj: project.json + layer-N.png + mask-N.png) ----------
+	 * A .mesproj is a ZIP. Unzipped (Finder / Explorer / OneDrive sometimes hand it over that way) it is a folder; dropping that folder, choosing it with
+	 * File -> Open project folder…, or clicking it in the connected folder opens it with the same loader as the ZIP (the files are put back into one).
+	 * With a real folder handle (Chrome / Edge / Brave with the flag) the project is LINKED to the folder: Save writes project.json and the PNGs back into it
+	 * (stale layer PNGs are removed). Without one (Safari, Firefox, or the read-only folder input) it opens, and Save makes a new .mesproj file. */
+	var FOLDER_MAX = 4000, SKIP_DIR = /^(__MACOSX|\..*|node_modules)$/;
+	/* every file under a FileSystemDirectoryHandle, a few folders deep -> [{path, fh}] */
+	function listHandle(dh, pre, depth, out) {
+		out = out || []; pre = pre || ""; depth = depth || 0;
+		return (async function () { for await (var e of dh.values()) { if (out.length >= FOLDER_MAX) break; if (e.kind === "file") out.push({ path: pre + e.name, fh: e }); else if (depth < 4 && !SKIP_DIR.test(e.name)) await listHandle(e, pre + e.name + "/", depth + 1, out); } return out; })();
+	}
+	/* the same for a dropped FileSystemDirectoryEntry (webkitGetAsEntry: every browser) -> [{path, file}] */
+	function listEntry(de, pre, depth, out) {
+		out = out || []; pre = pre || ""; depth = depth || 0;
+		return new Promise(function (res) {
+			var rd = de.createReader(), all = [];
+			var next = function () { rd.readEntries(function (es) { if (!es.length) return done(); all = all.concat(Array.prototype.slice.call(es)); next(); }, done); };
+			var done = function () { var ch = Promise.resolve(); all.forEach(function (e) { ch = ch.then(function () { if (out.length >= FOLDER_MAX) return; if (e.isFile) return new Promise(function (r2) { e.file(function (f) { out.push({ path: pre + e.name, file: f }); r2(); }, function () { r2(); }); }); if (e.isDirectory && depth < 4 && !SKIP_DIR.test(e.name)) return listEntry(e, pre + e.name + "/", depth + 1, out); }); }); ch.then(function () { res(out); }); };
+			next();
+		});
+	}
+	function fileOf(it) { return it.file ? Promise.resolve(it.file) : it.fh.getFile(); }
+	/* the project files of a folder listing as one stored ZIP (what PE.loadProject reads) + project.json's lastModified */
+	function zipFromList(list, prefix, names) {
+		var sel = list.filter(function (it) { return names.indexOf(it.path) >= 0; }), lm = 0;
+		return Promise.all(sel.map(function (it) { return fileOf(it).then(function (f) { if (/(^|\/)project\.json$/.test(it.path)) lm = f.lastModified; return f.arrayBuffer().then(function (b) { return { name: it.path.slice(prefix.length), data: new Uint8Array(b) }; }); }); }))
+			.then(function (files) { files.sort(function (a, b) { return a.name === "project.json" ? -1 : b.name === "project.json" ? 1 : 0; }); return { zip: I.zipStore(files), lm: lm, n: files.length }; });
+	}
+	function subDir(dh, prefix) { var parts = prefix.split("/").filter(Boolean), p = Promise.resolve(dh); parts.forEach(function (n) { p = p.then(function (d) { return d.getDirectoryHandle(n); }); }); return p; }
+	/* open a folder listing: a project when it has a project.json (the one closest to the top), else its pictures as layers / a new image.
+	 * info = {name (the folder's name), dirHandle (a real folder handle, or null), how} */
+	PE.openProjectFolder = function (list, info) {
+		info = info || {}; var fp = P.folderProject(list.map(function (it) { return it.path; }));
+		if (!fp) {
+			var imgs = list.filter(function (it) { return /\.(png|jpe?g|webp|gif|bmp|avif|svg|psd|xcf|mesproj|zip)$/i.test(it.path) && !/(^|\/)(__MACOSX\/|\._)/.test(it.path); }).slice(0, 60);
+			if (!imgs.length) { PE.toast("“" + (info.name || "That folder") + "” has no MES project (project.json) and no pictures in it"); return Promise.resolve(); }
+			return Promise.all(imgs.map(fileOf)).then(function (fs) { PE.toast("“" + (info.name || "folder") + "” is not a MES project (no project.json): its " + fs.length + " picture" + (fs.length === 1 ? "" : "s") + " are opened instead"); PE.openFiles(fs, { place: !!PE.doc, how: info.how || "drop", dir: info.name || "" }); });
+		}
+		if (PE.confirmReplace && !PE.confirmReplace()) return Promise.resolve();
+		var folderName = fp.prefix ? fp.prefix.replace(/\/$/, "").split("/").pop() : info.name || "project";
+		PE.toast("Opening the project folder “" + folderName + "”…");
+		return zipFromList(list, fp.prefix, fp.files).then(function (z) {
+			return PE.loadProject(z.zip, folderName, { file: folderName, dir: info.name && fp.prefix ? info.name : "", bytes: z.zip.length }).then(function () {
+				if (!info.dirHandle || !info.dirHandle.getFileHandle) { PE.rememberProject({}); if (PE.setTool) PE.setTool("move"); PE.toast("Opened the project folder “" + folderName + "”. This browser cannot write into a dropped folder, so Save project makes a new .mesproj file" + (PE.canOpenPicker() ? " (File → Open project folder… links the folder instead)" : "")); return; }
+				return subDir(info.dirHandle, fp.prefix).then(function (sd) {
+					PE.linkProject(PE.folderProjectHandle(sd), { lm: z.lm, dir: fp.prefix ? info.name : "" }); if (PE.setTool) PE.setTool("move");
+					PE.toast("Opened the project folder “" + folderName + "”: " + PE.modKey() + "S saves back into it (the browser asks once to allow changes)");
+				});
+			});
+		}).catch(function (x) { PE.toast("Could not open the project folder: " + errText(x)); });
+	};
+	/* a folder handle that behaves like the project file handle the rest of this file uses (getFile, createWritable, permissions) */
+	PE.folderProjectHandle = function (dir) {
+		var H = { kind: "file", name: dir.name, _folder: dir,
+			queryPermission: function (o) { return dir.queryPermission ? dir.queryPermission(o) : Promise.resolve("granted"); },
+			requestPermission: function (o) { return dir.requestPermission ? dir.requestPermission(o) : Promise.resolve("granted"); },
+			getFile: function () { return listHandle(dir, "", 3).then(function (list) { var fp = P.folderProject(list.map(function (it) { return it.path; })); if (!fp || fp.prefix) throw new Error("project.json is missing from the folder “" + dir.name + "”"); return zipFromList(list, "", fp.files); })
+				.then(function (z) { return { name: dir.name, lastModified: z.lm, size: z.zip.length, arrayBuffer: function () { return Promise.resolve(z.zip.buffer.slice(z.zip.byteOffset, z.zip.byteOffset + z.zip.byteLength)); } }; }); },
+			createWritable: function () { var parts = []; return Promise.resolve({ write: function (b) { parts.push(b); return Promise.resolve(); }, close: function () { return writeFolder(dir, new Blob(parts)); }, abort: function () {} }); },
+			isSameEntry: function (o) { return Promise.resolve(!!o && (o === H || o._folder === dir)); } };
+		return H;
+	};
+	function writeOne(dir, name, data) { return dir.getFileHandle(name, { create: true }).then(function (fh) { return fh.createWritable(); }).then(function (w) { return w.write(data).then(function () { return w.close(); }); }); }
+	/* write a project ZIP into a project folder: the PNGs first, project.json last (its time is the project's time), then remove PNGs no layer uses any more */
+	function writeFolder(dir, blob) {
+		return blob.arrayBuffer().then(function (ab) {
+			var ents = P.zipEntries(new Uint8Array(ab)); if (!ents) throw new Error("could not prepare the project"); var keep = {}, pj = null;
+			var ch = Promise.resolve(); ents.forEach(function (e) { keep[e.name] = 1; if (e.name === "project.json") { pj = e; return; } ch = ch.then(function () { return writeOne(dir, e.name, e.data); }); });
+			return ch.then(function () { return pj ? writeOne(dir, "project.json", pj.data) : null; }).then(function () {
+				return (async function () { var gone = []; for await (var e of dir.values()) if (e.kind === "file" && /^(layer|mask)-[^\/]+\.png$/.test(e.name) && !keep[e.name]) gone.push(e.name); for (var i = 0; i < gone.length; i++) { try { await dir.removeEntry(gone[i]); } catch (x) { } } })();
+			});
+		});
+	}
+	/* a drop that contains a folder: the first folder (a real handle when the browser gives one, so Save can write back) */
+	PE.openDroppedFolder = function (entry, handleP) {
+		return Promise.resolve(handleP).catch(function () { return null; }).then(function (h) {
+			if (h && h.kind === "directory") return listHandle(h).then(function (list) { return PE.openProjectFolder(list, { name: h.name, dirHandle: h, how: "drop" }); });
+			return listEntry(entry).then(function (list) { return PE.openProjectFolder(list, { name: entry.name, how: "drop" }); });
+		}).catch(function (x) { PE.toast("Could not read the folder: " + errText(x)); });
+	};
+	PE.openFolderHandle = function (h, how) { return listHandle(h).then(function (list) { return PE.openProjectFolder(list, { name: h.name, dirHandle: h, how: how || "folder" }); }); };
+	/* File -> Open project folder…: a folder picker that can also save (Chrome / Edge), else the read-only folder input (Safari, Firefox, Brave without the flag) */
+	PE.openProjectFolderPicker = function () {
+		if (typeof window.showDirectoryPicker === "function") {
+			var dh = PE.folderHandle && PE.folderHandle(), o = { id: "mes-photo-projdir", mode: "readwrite" }; if (dh) o.startIn = dh;
+			window.showDirectoryPicker(o).then(function (h) { return PE.openFolderHandle(h, "open"); }).catch(function (x) { if (x && x.name === "AbortError") return; PE.toast("Could not open the folder: " + errText(x)); });
+			return;
+		}
+		var inp = document.createElement("input"); inp.type = "file"; inp.multiple = true; inp.setAttribute("webkitdirectory", ""); inp.style.display = "none"; document.body.appendChild(inp);
+		inp.addEventListener("change", function () { var fs = Array.prototype.slice.call(inp.files || []); inp.remove(); if (!fs.length) return; var top = (fs[0].webkitRelativePath || "").split("/")[0] || "folder";
+			PE.openProjectFolder(fs.map(function (f) { return { path: (f.webkitRelativePath || f.name).split("/").slice(1).join("/") || f.name, file: f }; }), { name: top, how: "open" }); });
+		inp.click();
+	};
+	PE.listFolderHandle = listHandle;
 
 	/* ---------- moving to another computer (in File -> Files and folders) ---------- */
 	PE.moveHelpEl = function () {

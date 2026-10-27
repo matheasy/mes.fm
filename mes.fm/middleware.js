@@ -1,5 +1,5 @@
 // Vercel Edge Middleware — light HTTP Basic Auth gate for the private finance dashboards:
-// /portfolio, /taxes, /sov, /lp, /assets, /random-wallets, /ads (+ its data /api/earnings), /search-console (+ /api/search-console) - and the same pages reached under /finance/..., the one app's
+// /portfolio, /taxes, /sov, /lp, /assets, /random-wallets, /ads (+ its data /api/earnings), /search-console (+ /api/search-console, /api/search-console-ai) - and the same pages reached under /finance/..., the one app's
 // own path (Vercel project mes-fm-crypto, basePath /finance, rewritten in vercel.json). mes.fm/ai and
 // mes.fm/mfa are sections of the same app but public by design, so /finance/ai/*, /finance/mfa/* and
 // the app's /finance/_next/* assets are let through. (mes.fm/crypto is the unrelated static MES Crypto
@@ -36,6 +36,8 @@ export const config = {
     '/search-console',
     '/search-console/:path*',
     '/api/search-console',
+    // its imported AI-search numbers (Google AI features / Bing AI Performance exports dropped on the page)
+    '/api/search-console-ai',
   ],
 };
 

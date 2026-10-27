@@ -4,7 +4,7 @@
 		--tr-ok:#16a34a;--tr-mid:#d97706;--tr-low:#dc2626;--tr-sel:#2563eb;display:flex;flex-direction:column;color:var(--tr-ink);}
 	:where(#tr) :is(div, span, p, li, label, b, strong, em, i, small, code, h2, h3, summary, output) {color:inherit;}
 	#tr [hidden] {display:none !important;}   /* flex / grid rules below beat the hidden attribute otherwise */
-	#tr .tr-tx {order:1;} #tr .tr-ocr {order:2;} #tr .tr-hist {order:3;} #tr .tu-seo {order:4;}
+	#tr .tr-tx {order:1;} #tr .tr-ocr {order:2;} #tr .tr-saved {order:3;} #tr .tr-hist {order:3;} #tr .tu-seo {order:4;}
 	#tr[data-mode="ocr"] .tr-ocr {order:0;}
 	#tr .tr-h {font-size:1.25em;font-weight:800;margin:0 0 0.6em;color:var(--tr-ink);}
 	#tr .tr-dim {color:var(--tr-mut);font-weight:400;}
@@ -163,6 +163,11 @@
 	#tr .tr-hl {font-size:0.8em;color:var(--tr-mut);font-weight:700;}
 	#tr .tr-hq, #tr .tr-ho {white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
 	#tr .tr-ho {color:var(--tr-accd);}
+	#tr .tr-star, #tr .tr-hstar {font-size:1.25em;line-height:1;color:var(--tr-mut);} #tr .tr-star.on, #tr .tr-hstar.on {color:#b45309;} #tr .tr-star:disabled {opacity:0.45;cursor:default;}
+	#tr .tr-hlist li > .tr-ib {align-self:center;flex:0 0 auto;}
+	#tr .tr-sbar {display:flex;flex-wrap:wrap;gap:0.4em;align-items:center;margin:0 0 0.4em;} #tr .tr-sbar .tu-btn {margin:0;} #tr .tr-sbar .tu-btn:disabled {opacity:0.5;}
+	#tr .tr-saved summary b {color:#92400e;} #tr .tr-sempty {padding:0.5em 0.2em;border-top:1px solid var(--tr-line);}
+	body.dark-mode #tr.tr .tr-star.on, body.dark-mode #tr.tr .tr-hstar.on {color:#fbbf24;} body.dark-mode #tr.tr .tr-saved summary b {color:#fcd34d;}
 	#tr .tr-linkb {background:none;border:0;padding:0;color:var(--tr-accd);text-decoration:underline;cursor:pointer;font:inherit;}
 
 	/* Fill window / full screen: ONLY the box whose button was pressed covers the window, with its own small bar */

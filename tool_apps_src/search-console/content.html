@@ -10,6 +10,12 @@
 		<p class="gs-fresh" id="gs-fresh" hidden></p>
 		<noscript><p class="tu-note">This page needs JavaScript.</p></noscript>
 
+		<div id="gs-setup"></div>
+
+		<div class="gs-tilerow"><h2 class="gs-src gs-src--g"><i class="gs-dot gs-dot--g"></i>Google</h2><div class="tu-stats gs-tiles" id="gs-tiles-g"></div></div>
+		<div class="gs-tilerow"><h2 class="gs-src gs-src--b"><i class="gs-dot gs-dot--b"></i>Bing</h2><div class="tu-stats gs-tiles" id="gs-tiles-b"></div><p class="tu-note gs-bnote" id="gs-bnote" hidden></p></div>
+
+		<!-- filters sit right above the chart and table they change -->
 		<div class="gs-fbar" id="gs-fbar">
 			<span class="gs-fchips" id="gs-fchips"></span>
 			<button type="button" class="tu-chip gs-fadd" id="gs-fadd" aria-expanded="false" aria-controls="gs-fform">+ Filter</button>
@@ -29,11 +35,6 @@
 			</form>
 		</div>
 		<p class="tu-note gs-fnote" id="gs-fnote" hidden></p>
-		<div id="gs-setup"></div>
-
-		<div class="gs-tilerow"><h2 class="gs-src gs-src--g"><i class="gs-dot gs-dot--g"></i>Google</h2><div class="tu-stats gs-tiles" id="gs-tiles-g"></div></div>
-		<div class="gs-tilerow"><h2 class="gs-src gs-src--b"><i class="gs-dot gs-dot--b"></i>Bing</h2><div class="tu-stats gs-tiles" id="gs-tiles-b"></div><p class="tu-note gs-bnote" id="gs-bnote" hidden></p></div>
-
 		<section class="tu-card gs-sec" id="gs-chartsec">
 			<div class="gs-head" id="gs-chead">
 				<h2 id="gs-ctitle">Day by day</h2>
@@ -73,6 +74,42 @@
 			<div class="gs-filter"><label class="gs-sr" for="gs-q">Search this table</label><input id="gs-q" class="tu-input" type="search" placeholder="Search this table (e.g. bmi, /timer, canada)" autocomplete="off" spellcheck="false"><span class="tu-note" id="gs-count"></span></div>
 			<p class="tu-note gs-tnote" id="gs-tnote"></p>
 			<div class="gs-wrap"><table class="gs-t" id="gs-t"></table></div><button type="button" class="tu-btn tu-btn--ghost gs-more" id="gs-more" hidden></button>
+		</section>
+		<section class="tu-card gs-sec gs-ai" id="gs-aisec" aria-labelledby="gs-aititle">
+			<div class="gs-head" id="gs-aihead">
+				<h2 id="gs-aititle">AI search</h2>
+				<div class="gs-tabs" id="gs-aisrc" role="group" aria-label="AI source">
+					<button type="button" class="tu-chip" data-s="google" aria-pressed="true">Google AI Overviews &amp; AI Mode</button>
+					<button type="button" class="tu-chip" data-s="bing" aria-pressed="false">Bing Copilot citations</button>
+				</div>
+				<span class="gs-hbtns" id="gs-aibtns"><button type="button" class="mes-pbtn" id="gs-aiimp" aria-expanded="false" aria-controls="gs-aiimport">Import exports…</button></span>
+			</div>
+			<div class="gs-aiimport" id="gs-aiimport" hidden>
+				<div class="gs-drop" id="gs-drop" tabindex="0" role="button" aria-label="Drop or choose export files">
+					<b>Drop the export files here</b> or <label class="gs-pick">choose files<input type="file" id="gs-aifile" multiple accept=".csv,.tsv,.txt,.zip,.xlsx,text/csv,application/zip"></label>
+					<span>CSV, the ZIP Search Console downloads, or an Excel (.xlsx) file. Several at once is fine. Nothing leaves your browser until you press Save.</span>
+				</div>
+				<div id="gs-aiprev" class="gs-aiprev" aria-live="polite"></div>
+				<details class="gs-howto">
+					<summary>How to export them</summary>
+					<p><b>Google:</b> <a href="https://search.google.com/search-console" target="_blank" rel="noopener">Search Console</a> → the mes.fm property → Performance → <b>Generative AI</b> (Search) → choose the date range (e.g. Last 16 months) → <b>Export</b> → <b>Download CSV</b>. Drop the ZIP as it is (it holds Dates, Pages, Countries and Devices). Google has no API for this report.</p>
+					<p><b>Bing:</b> <a href="https://www.bing.com/webmasters" target="_blank" rel="noopener">Bing Webmaster Tools</a> → mes.fm → <b>AI Performance</b> → choose the range → <b>Download all</b> (or the Download button above each table: the citations chart, Grounding queries, Pages). Bing has no API for this report.</p>
+					<p>Import again whenever you like: days are added or replaced by date, so a new 3-month export does not wipe the older months; the tables (pages, queries, countries, devices) are replaced by the newest export.</p>
+				</details>
+				<p class="gs-aidel"><button type="button" class="gs-fclear" data-aidel="google">Remove the imported Google numbers</button> · <button type="button" class="gs-fclear" data-aidel="bing">Remove the imported Bing numbers</button></p>
+			</div>
+			<p class="tu-note" id="gs-aimeta"></p>
+			<div class="tu-stats gs-tiles" id="gs-aitiles"></div>
+			<p class="gs-aiold" id="gs-aiold" hidden></p>
+			<div class="gs-read" id="gs-airead" aria-live="polite"></div>
+			<div class="gs-chart gs-aichart" id="gs-aichart"><svg id="gs-aisvg" preserveAspectRatio="none" role="img" aria-label="AI search numbers per day"></svg></div>
+			<div class="gs-legend" id="gs-ailegend"></div>
+			<div class="gs-head gs-aithead">
+				<div class="gs-tabs" id="gs-aitab" role="tablist" aria-label="AI table"></div>
+			</div>
+			<div class="gs-filter"><label class="gs-sr" for="gs-aiq">Search this table</label><input id="gs-aiq" class="tu-input" type="search" placeholder="Search this table" autocomplete="off" spellcheck="false"><span class="tu-note" id="gs-aicount"></span></div>
+			<p class="tu-note gs-tnote" id="gs-aitnote"></p>
+			<div class="gs-wrap"><table class="gs-t" id="gs-ait"></table></div><button type="button" class="tu-btn tu-btn--ghost gs-more" id="gs-aimore" hidden></button>
 		</section>
 	</div>
 	<script src="/main_js/panel-view.js?v=1" defer></script>

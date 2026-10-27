@@ -157,3 +157,34 @@
 	/* the shell's reset paints every span #333: inherit inside our own widgets (in light and dark mode) */
 	#gs :where(.gs-mt, .gs-read, .gs-fchip, .gs-fresh, .gs-legend) span {color:inherit;}
 	.gs-hbtns {display:inline-flex;flex-wrap:wrap;gap:0.35em;align-items:center;}
+	/* AI search panel */
+	#gs .gs-aiimport {border:1px dashed var(--gs-line);border-radius:0.5em;padding:0.7em;margin:0 0 0.8em;color:var(--gs-ink);}
+	#gs .gs-drop {display:flex;flex-wrap:wrap;align-items:baseline;gap:0.3em 0.5em;padding:1em;border:2px dashed var(--gs-g);border-radius:0.5em;background:var(--gs-hl);color:var(--gs-ink);cursor:pointer;}
+	#gs .gs-drop.on {border-style:solid;}
+	#gs .gs-drop span {flex-basis:100%;font-size:0.85em;color:var(--gs-muted);}
+	#gs .gs-drop:focus-visible {box-shadow:0 0 0 2px var(--accent);outline:none;}
+	#gs .gs-pick {color:var(--gs-link);text-decoration:underline;cursor:pointer;}
+	#gs .gs-pick input {position:absolute;width:1px;height:1px;opacity:0;}
+	#gs .gs-aifiles {margin:0.6em 0;padding-left:1.2em;font-size:0.9em;}
+	#gs .gs-aifiles li {margin:0.2em 0;color:var(--gs-ink);}
+	#gs .gs-aifiles li.skip {color:var(--gs-muted);}
+	#gs .gs-aifiles li.ok b {color:var(--gs-good);}
+	#gs .gs-aiok {color:var(--gs-good);font-weight:600;margin:0.5em 0;}
+	#gs .gs-howto {margin:0.7em 0 0;font-size:0.9em;color:var(--gs-ink);}
+	#gs .gs-howto summary {cursor:pointer;color:var(--gs-link);}
+	#gs .gs-howto p {margin:0.4em 0;}
+	#gs .gs-howto a, #gs .gs-aiold a {color:var(--gs-link);}
+	#gs .gs-aidel {margin:0.6em 0 0;font-size:0.9em;}
+	#gs .gs-aiold {margin:0.4em 0 0.8em;padding:0.5em 0.8em;border-radius:0.4em;border-left:4px solid #e67e22;background:var(--gs-hl);color:var(--gs-ink);font-size:0.9em;}
+	#gs .gs-aiold b {color:var(--gs-ink);}
+	#gs .gs-oldtag {display:inline-block;font-size:0.75em;font-weight:700;padding:0.05em 0.45em;border-radius:0.3em;background:#fde9d4;color:#8a3d00;vertical-align:middle;}
+	body.dark-mode #gs .gs-oldtag {background:#4a2c10;color:#ffcf99;}
+	#gs .gs-newurl {color:var(--gs-link);font-size:0.85em;margin-left:0.3em;}
+	#gs #gs-aitiles {margin:0.4em 0 0.6em;}
+	#gs .gs-aithead {margin-top:0.9em;}
+	#gs .gs-ai .gs-t td.gs-k {max-width:34em;}
+	#gs .gs-sec.mes-pfill .gs-aichart {flex:1 1 auto;height:auto;min-height:150px;}
+	#gs :where(.gs-aiold, .gs-drop, .gs-aiprev) span:not(.gs-oldtag) {color:inherit;}
+	#gs .gs-drop > span {color:var(--gs-muted);}
+	#gs .gs-ai .gs-t td.gs-k {white-space:normal;min-width:15em;overflow-wrap:anywhere;}
+	@media (max-width: 600px) { #gs .gs-ai .gs-t td.gs-k {min-width:13em;max-width:16em;} }

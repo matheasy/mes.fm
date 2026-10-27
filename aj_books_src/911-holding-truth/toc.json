@@ -1,0 +1,854 @@
+{
+ "toc": [
+  {
+   "id": "other-books-by-andrew-johnson",
+   "title": "Other Books by Andrew Johnson",
+   "level": 0
+  },
+  {
+   "id": "dedication",
+   "title": "Dedication",
+   "level": 0
+  },
+  {
+   "id": "author-biography",
+   "title": "Author Biography",
+   "level": 0
+  },
+  {
+   "id": "acknowledgements",
+   "title": "Acknowledgements",
+   "level": 0
+  },
+  {
+   "id": "part-1",
+   "title": "Part 1: Setting the Scene",
+   "level": -1
+  },
+  {
+   "id": "ch-1",
+   "title": "1. Introduction",
+   "level": 0
+  },
+  {
+   "id": "what-9-11-truth-are-we-holding",
+   "title": "What 9/11 Truth are we Holding?",
+   "level": 1
+  },
+  {
+   "id": "finding-this-truth",
+   "title": "Finding this Truth",
+   "level": 1
+  },
+  {
+   "id": "more-of-the-same",
+   "title": "“More of the Same…?”",
+   "level": 1
+  },
+  {
+   "id": "why-this-is-important",
+   "title": "Why This Is Important",
+   "level": 1
+  },
+  {
+   "id": "brief-summary-of-key-9-11-evidence-to-be",
+   "title": "Brief Summary of Key 9/11 Evidence to Be Explained",
+   "level": 1
+  },
+  {
+   "id": "what-caused-the-towers-to-turn-to-dust",
+   "title": "What caused the towers to turn to dust?",
+   "level": 1
+  },
+  {
+   "id": "irrefutable-video-series",
+   "title": "Irrefutable – Video Series",
+   "level": 1
+  },
+  {
+   "id": "a-brief-note-about-calling-for-a-new-inv",
+   "title": "A Brief Note about “Calling for A New Investigation”",
+   "level": 1
+  },
+  {
+   "id": "implications-of-the-forensic-study-cover",
+   "title": "Implications of the Forensic Study & Cover Up – Video",
+   "level": 1
+  },
+  {
+   "id": "ch-2",
+   "title": "2. Emerging Thoughts",
+   "level": 0
+  },
+  {
+   "id": "rhetorical-questions",
+   "title": "Rhetorical Questions",
+   "level": 1
+  },
+  {
+   "id": "the-truth-needs-no-protection",
+   "title": "“The Truth Needs No Protection”",
+   "level": 1
+  },
+  {
+   "id": "soft-cover-up-and-hard-cover-up",
+   "title": "“Soft” Cover Up and “Hard” Cover Up",
+   "level": 1
+  },
+  {
+   "id": "threats-and-protection",
+   "title": "Threats and Protection",
+   "level": 1
+  },
+  {
+   "id": "the-numbers-game",
+   "title": "The Numbers Game",
+   "level": 1
+  },
+  {
+   "id": "education-credentials-arrogance-experien",
+   "title": "Education, Credentials, Arrogance, Experience",
+   "level": 1
+  },
+  {
+   "id": "the-curse-of-the-truth",
+   "title": "The Curse of the Truth?",
+   "level": 1
+  },
+  {
+   "id": "dealing-with-the-truth",
+   "title": "Dealing with the Truth",
+   "level": 1
+  },
+  {
+   "id": "why-dont-other-researchers-know-the-trut",
+   "title": "Why Don’t Other Researchers Know the Truth?",
+   "level": 1
+  },
+  {
+   "id": "dr-eric-larsen-thank-you",
+   "title": "Dr Eric Larsen – Thank You!",
+   "level": 1
+  },
+  {
+   "id": "hon-paul-t-hellyer-full-disclosure",
+   "title": "Hon Paul T Hellyer – FULL Disclosure",
+   "level": 1
+  },
+  {
+   "id": "leading-the-way",
+   "title": "Leading the Way",
+   "level": 1
+  },
+  {
+   "id": "some-notes-about-received-correspondence",
+   "title": "Some Notes About Received Correspondence",
+   "level": 1
+  },
+  {
+   "id": "ch-3",
+   "title": "3. “Compliance and Acquiescence Disorder” – CAD",
+   "level": 0
+  },
+  {
+   "id": "ch-4",
+   "title": "4. Do We Have the Energy to Change the World?",
+   "level": 0
+  },
+  {
+   "id": "part-2",
+   "title": "Part 2: How the cover up of what happened on 9/11 is maintained by key people telling… “Some truth, some half-truth – or anything but the truth…”",
+   "level": -1
+  },
+  {
+   "id": "ch-5",
+   "title": "5. “Alien Scientist” and His “Alien Science”",
+   "level": 0
+  },
+  {
+   "id": "a-video-from-23rd-december-2008",
+   "title": "A Video from 23rd December 2008",
+   "level": 1
+  },
+  {
+   "id": "alienscientists-sept-2011-video-9-11-col",
+   "title": "AlienScientist’s - Sept 2011 Video “9/11 Collapse Hypotheses”",
+   "level": 1
+  },
+  {
+   "id": "alienscientist-fan-encourages-debate",
+   "title": "AlienScientist “Fan” Encourages “Debate”",
+   "level": 1
+  },
+  {
+   "id": "jeremy-alienscientist-and-edgar-fouch",
+   "title": "Jeremy AlienScientist and Edgar Fouché",
+   "level": 1
+  },
+  {
+   "id": "jeremy-alienscientist-and-eugene-podklet",
+   "title": "Jeremy AlienScientist and Eugene Podkletnov and American Antigravity",
+   "level": 1
+  },
+  {
+   "id": "alienated-scientist",
+   "title": "Alienated Scientist",
+   "level": 1
+  },
+  {
+   "id": "alien-scientist-connections",
+   "title": "Alien Scientist – Connections",
+   "level": 1
+  },
+  {
+   "id": "alien-scientist-supports-edgar-fouch",
+   "title": "Alien Scientist supports Edgar Fouché!",
+   "level": 1
+  },
+  {
+   "id": "the-alien-scientist-forum-and-its-demise",
+   "title": "The Alien Scientist Forum and Its Demise - Edgar Fouché Writes to Andrew Johnson",
+   "level": 1
+  },
+  {
+   "id": "alien-scientist-further-brief-notes",
+   "title": "Alien Scientist – Further Brief Notes",
+   "level": 1
+  },
+  {
+   "id": "summary-and-conclusion",
+   "title": "Summary and Conclusion",
+   "level": 1
+  },
+  {
+   "id": "ch-6",
+   "title": "6. SAIC, Dr Steven Greer, Disclosure, 9/11 and the CIA",
+   "level": 0
+  },
+  {
+   "id": "saic-science-applications-international",
+   "title": "SAIC-Science Applications International Corporation",
+   "level": 1
+  },
+  {
+   "id": "dr-steven-greer",
+   "title": "Dr Steven Greer",
+   "level": 1
+  },
+  {
+   "id": "ch-7",
+   "title": "7. 9/11 Truth “Deafness” in Toronto Hearings",
+   "level": 0
+  },
+  {
+   "id": "the-reason-for-documenting-this",
+   "title": "The Reason for Documenting This",
+   "level": 1
+  },
+  {
+   "id": "ch-8",
+   "title": "8. 9 or 11 “Clues” about Simon Shack and a 3D-Analysis of Flight 175",
+   "level": 0
+  },
+  {
+   "id": "september-clues",
+   "title": "September Clues",
+   "level": 1
+  },
+  {
+   "id": "andrew-johnson-offers-support-to-simon-s",
+   "title": "Andrew Johnson Offers Support to Simon Shack",
+   "level": 1
+  },
+  {
+   "id": "9-11-actors",
+   "title": "9/11 Actors!",
+   "level": 1
+  },
+  {
+   "id": "9-11-shills",
+   "title": "9/11 Shills!",
+   "level": 1
+  },
+  {
+   "id": "dr-judy-wood-sent-hate-mail-right",
+   "title": "Dr Judy Wood Sent Hate Mail, Right?",
+   "level": 1
+  },
+  {
+   "id": "real-names-vs-aliases-and-pseudonyms",
+   "title": "Real Names Vs. Aliases and Pseudonyms",
+   "level": 1
+  },
+  {
+   "id": "its-all-fake",
+   "title": "It’s All Fake!",
+   "level": 1
+  },
+  {
+   "id": "simons-skype-chat",
+   "title": "Simon’s Skype Chat",
+   "level": 1
+  },
+  {
+   "id": "simon-says-believe",
+   "title": "Simon Says “Believe…”",
+   "level": 1
+  },
+  {
+   "id": "on-the-ball",
+   "title": "On the Ball",
+   "level": 1
+  },
+  {
+   "id": "9-11-flights-video-and-radar",
+   "title": "9/11 Flights - Video and Radar",
+   "level": 1
+  },
+  {
+   "id": "plane-sounds",
+   "title": "Plane Sounds",
+   "level": 1
+  },
+  {
+   "id": "soap-opera",
+   "title": "Soap Opera",
+   "level": 1
+  },
+  {
+   "id": "conclusions",
+   "title": "Conclusions",
+   "level": 1
+  },
+  {
+   "id": "ch-9",
+   "title": "9. Jeff Prager Nukes 9/11 Research",
+   "level": 0
+  },
+  {
+   "id": "arguing-specific-points-of-evidence-whil",
+   "title": "Arguing Specific Points of Evidence, Whilst Ignoring Others",
+   "level": 1
+  },
+  {
+   "id": "additional-small-points",
+   "title": "Additional Small Points",
+   "level": 1
+  },
+  {
+   "id": "possible-motivation-behind-producing-the",
+   "title": "Possible Motivation Behind Producing The “America Nuked” Document",
+   "level": 1
+  },
+  {
+   "id": "andrew-johnson-known-on-the-internet-as",
+   "title": "Andrew Johnson - “known on the internet as the moron of morons”",
+   "level": 1
+  },
+  {
+   "id": "ch-10",
+   "title": "10. The Vancouver 9/11 “Hearings” Encouraging Conjecture, Discouraging Certainty, Obscuring Known Truths",
+   "level": 0
+  },
+  {
+   "id": "conspiracy-culture",
+   "title": "“Conspiracy Culture”",
+   "level": 1
+  },
+  {
+   "id": "encouraging-uncertainty",
+   "title": "Encouraging Uncertainty",
+   "level": 1
+  },
+  {
+   "id": "discouraging-certainty",
+   "title": "Discouraging Certainty",
+   "level": 1
+  },
+  {
+   "id": "9-11-certainties",
+   "title": "9/11 Certainties",
+   "level": 1
+  },
+  {
+   "id": "vancouver-hearings",
+   "title": "Vancouver “Hearings”",
+   "level": 1
+  },
+  {
+   "id": "a-hearing-without-a-judge",
+   "title": "A Hearing Without a Judge",
+   "level": 1
+  },
+  {
+   "id": "hypothesis-theory-feasibility-and-possib",
+   "title": "Hypothesis, Theory, Feasibility and Possibility",
+   "level": 1
+  },
+  {
+   "id": "1-1-may-not-be-equal-to-2",
+   "title": "“1 + 1 May Not Be Equal to 2”",
+   "level": 1
+  },
+  {
+   "id": "1-1-equals-2",
+   "title": "“1 + 1 Equals 2”",
+   "level": 1
+  },
+  {
+   "id": "an-energy-weapon-was-used-to-destroy-the",
+   "title": "An Energy Weapon WAS Used To Destroy the WTC – This is not a Theory",
+   "level": 1
+  },
+  {
+   "id": "the-towers-are-gone-do-you-care",
+   "title": "The Towers Are Gone – Do You Care?",
+   "level": 1
+  },
+  {
+   "id": "ch-11",
+   "title": "11. Steve De’Ak’s “9/11 Crash Test”",
+   "level": 0
+  },
+  {
+   "id": "and-finally",
+   "title": "And Finally...",
+   "level": 1
+  },
+  {
+   "id": "ch-12",
+   "title": "12. Don’t Tell the Truth About 9/11",
+   "level": 0
+  },
+  {
+   "id": "dr-david-ray-griffin",
+   "title": "Dr David Ray Griffin",
+   "level": 1
+  },
+  {
+   "id": "joseph-p-farrell",
+   "title": "Joseph P Farrell",
+   "level": 1
+  },
+  {
+   "id": "mimicry",
+   "title": "Mimicry?",
+   "level": 1
+  },
+  {
+   "id": "nick-begich",
+   "title": "Nick Begich",
+   "level": 1
+  },
+  {
+   "id": "james-corbett-and-mark-gaffney",
+   "title": "James Corbett and Mark Gaffney",
+   "level": 1
+  },
+  {
+   "id": "ian-r-crane",
+   "title": "Ian R Crane",
+   "level": 1
+  },
+  {
+   "id": "jan-irvin",
+   "title": "Jan Irvin",
+   "level": 1
+  },
+  {
+   "id": "jim-marrs",
+   "title": "Jim Marrs",
+   "level": 1
+  },
+  {
+   "id": "steve-bassett",
+   "title": "Steve Bassett",
+   "level": 1
+  },
+  {
+   "id": "conclusion-2",
+   "title": "Conclusion",
+   "level": 1
+  },
+  {
+   "id": "ch-13",
+   "title": "13. Red Ice Radio joins the 9/11 Disinformation Promotion Brigade",
+   "level": 0
+  },
+  {
+   "id": "9-11-evidence-and-theory-is-andrew-johns",
+   "title": "9/11 Evidence and Theory – Is Andrew Johnson A ‘Truth Fascist’?",
+   "level": 1
+  },
+  {
+   "id": "ch-14",
+   "title": "14. The Weakness of “The Power Hour”",
+   "level": 0
+  },
+  {
+   "id": "introduction",
+   "title": "Introduction",
+   "level": 1
+  },
+  {
+   "id": "dr-wood-interviewed-by-joyce-riley-22-ma",
+   "title": "Dr Wood Interviewed by Joyce Riley – 22 Mar 2010",
+   "level": 1
+  },
+  {
+   "id": "summary-of-dr-woods-interview",
+   "title": "Summary of Dr Wood’s Interview",
+   "level": 1
+  },
+  {
+   "id": "andrew-johnson-on-the-power-hour-for-the",
+   "title": "Andrew Johnson on the Power Hour for the 2nd Time – 31st Mar 2010",
+   "level": 1
+  },
+  {
+   "id": "after-the-event-the-power-hour-shows-its",
+   "title": "After The Event - The Power Hour Shows Its Weaknesses",
+   "level": 1
+  },
+  {
+   "id": "these-people-are-frauds",
+   "title": "“These People Are Frauds”…",
+   "level": 1
+  },
+  {
+   "id": "john-hutchisons-appearance-on-the-power",
+   "title": "John Hutchison’s Appearance on The Power Hour – 05 April 2010",
+   "level": 1
+  },
+  {
+   "id": "conclusions-2",
+   "title": "Conclusions",
+   "level": 1
+  },
+  {
+   "id": "ch-15",
+   "title": "15. “Chilling Out” about 9/11 With Sterling D Allan and Steven E Jones",
+   "level": 0
+  },
+  {
+   "id": "sterling-allan-and-pesn-com",
+   "title": "Sterling Allan and pesn.com",
+   "level": 1
+  },
+  {
+   "id": "sterling-d-allan-at-global-bem-2012",
+   "title": "Sterling D Allan at Global BEM 2012",
+   "level": 1
+  },
+  {
+   "id": "bem-conference-review-by-sterling-d-alla",
+   "title": "BEM Conference review by Sterling D Allan",
+   "level": 1
+  },
+  {
+   "id": "stephen-e-jones-and-cold-fusion-and-trit",
+   "title": "Stephen E Jones and Cold Fusion and Tritium",
+   "level": 1
+  },
+  {
+   "id": "steven-e-jones-remembering-wtc-molten-me",
+   "title": "Steven E Jones - Remembering WTC Molten Metal and “Paint on Thermite”",
+   "level": 1
+  },
+  {
+   "id": "keeping-it-in-the-family",
+   "title": "Keeping it in the Family?",
+   "level": 1
+  },
+  {
+   "id": "sterling-d-allan-reviews-dr-woods-book",
+   "title": "Sterling D Allan “Reviews” Dr Wood’s Book",
+   "level": 1
+  },
+  {
+   "id": "vote-for-the-evidence-vote-for-the-truth",
+   "title": "Vote for the Evidence, Vote for the Truth!",
+   "level": 1
+  },
+  {
+   "id": "cold-fusion-and-space-beams",
+   "title": "Cold Fusion and Space Beams",
+   "level": 1
+  },
+  {
+   "id": "perhaps-i-should-just-chill-out",
+   "title": "Perhaps I should just “Chill Out”?",
+   "level": 1
+  },
+  {
+   "id": "under-the-influence",
+   "title": "“Under the Influence”?",
+   "level": 1
+  },
+  {
+   "id": "here-we-are-yet-again",
+   "title": "Here We Are Yet Again…",
+   "level": 1
+  },
+  {
+   "id": "sterling-d-allan-sentenced-to-minimum-15",
+   "title": "Sterling D Allan Sentenced to Minimum 15 Years in Prison in June 2016",
+   "level": 1
+  },
+  {
+   "id": "ch-16",
+   "title": "16. 9/11 and Cold Fusion – a Possible Attempt to Rewrite History?",
+   "level": 0
+  },
+  {
+   "id": "ch-17",
+   "title": "17. Richard Gage and Dane Wigington - Lying Together about 9/11 Evidence",
+   "level": 0
+  },
+  {
+   "id": "architects-and-engineers-for-9-11-cover",
+   "title": "Architects and Engineers for 9/11 Cover Up",
+   "level": 1
+  },
+  {
+   "id": "richard-gage-lies-about-the-contents-of",
+   "title": "Richard Gage Lies about the Contents of the WDTTG Book",
+   "level": 1
+  },
+  {
+   "id": "ch-18",
+   "title": "18. Methodical Creation of a Methodical Illusion",
+   "level": 0
+  },
+  {
+   "id": "novel-research",
+   "title": "Novel Research?",
+   "level": 1
+  },
+  {
+   "id": "old-news",
+   "title": "Old News",
+   "level": 1
+  },
+  {
+   "id": "bait-and-switch",
+   "title": "Bait and Switch?",
+   "level": 1
+  },
+  {
+   "id": "promotion",
+   "title": "Promotion",
+   "level": 1
+  },
+  {
+   "id": "scripted-promotions",
+   "title": "Scripted Promotions?",
+   "level": 1
+  },
+  {
+   "id": "keeping-mum",
+   "title": "“Keeping Mum”",
+   "level": 1
+  },
+  {
+   "id": "wood-or-woods-i-dont-know",
+   "title": "“Wood” or “Woods” - I don't know…”",
+   "level": 1
+  },
+  {
+   "id": "the-9-11-expert-speaks-again",
+   "title": "The 9/11 Expert Speaks Again…",
+   "level": 1
+  },
+  {
+   "id": "more-lying-ensues",
+   "title": "More Lying Ensues",
+   "level": 1
+  },
+  {
+   "id": "closing-comments",
+   "title": "Closing Comments",
+   "level": 1
+  },
+  {
+   "id": "amazon-review",
+   "title": "Amazon Review",
+   "level": 1
+  },
+  {
+   "id": "ch-19",
+   "title": "19. David Icke Backtracks on 9/11 Truth",
+   "level": 0
+  },
+  {
+   "id": "the-peoples-voice",
+   "title": "The People’s Voice",
+   "level": 1
+  },
+  {
+   "id": "ch-20",
+   "title": "20. Ken O’Keefe and Truth, Justice and Peace",
+   "level": 0
+  },
+  {
+   "id": "ken-okeefe-awakened-state-11-may-2013",
+   "title": "Ken O’Keefe – Awakened State – 11 May 2013",
+   "level": 1
+  },
+  {
+   "id": "ken-okeefe-promotes-9-11-disinformation",
+   "title": "Ken O’Keefe Promotes 9/11 Disinformation",
+   "level": 1
+  },
+  {
+   "id": "former-us-marine-s",
+   "title": "Former US Marine(s)",
+   "level": 1
+  },
+  {
+   "id": "conclusions-3",
+   "title": "Conclusions",
+   "level": 1
+  },
+  {
+   "id": "ch-21",
+   "title": "21. David Shayler, Annie Machon and The UK 9/11 Truth Movement 2005 – 2009",
+   "level": 0
+  },
+  {
+   "id": "ch-22",
+   "title": "22. Honouring the Real Truth of Ground Zero",
+   "level": 0
+  },
+  {
+   "id": "ch-23",
+   "title": "23. “Re-Investigate 9/11” and the BBC TV Licence Fee (UK)",
+   "level": 0
+  },
+  {
+   "id": "tony-rooke-and-the-bbc-tv-licence-fee",
+   "title": "Tony Rooke and the BBC TV Licence Fee",
+   "level": 1
+  },
+  {
+   "id": "ch-24",
+   "title": "24. Media Propaganda Exercises",
+   "level": 0
+  },
+  {
+   "id": "dont-take-them-seriously",
+   "title": "“Don’t take them seriously…”",
+   "level": 1
+  },
+  {
+   "id": "jon-ronson-a-shilling-for-his-thoughts",
+   "title": "Jon Ronson - “A-Shilling for his Thoughts…”?",
+   "level": 1
+  },
+  {
+   "id": "robert-fisk-and-society-matters",
+   "title": "Robert Fisk and “Society Matters”",
+   "level": 1
+  },
+  {
+   "id": "9-11-conspiracy-road-trip-may-2011",
+   "title": "9/11 Conspiracy Road Trip – May 2011",
+   "level": 1
+  },
+  {
+   "id": "people-who-think-lets-debate",
+   "title": "“…People Who Think… Let’s Debate!”",
+   "level": 1
+  },
+  {
+   "id": "ch-25",
+   "title": "25. Video Fakery – Another Component of the “Second Tier” 9/11 Cover Up",
+   "level": 0
+  },
+  {
+   "id": "part-3",
+   "title": "Part 3: Other aspects of Deception. Conclusions.",
+   "level": -1
+  },
+  {
+   "id": "ch-26",
+   "title": "26. 9/11 and Global Warming Consensus",
+   "level": 0
+  },
+  {
+   "id": "ch-27",
+   "title": "27. Uncritical Thinking – DEW and 2017 California Wildfires",
+   "level": 0
+  },
+  {
+   "id": "ch-28",
+   "title": "28. 9/11 – Another Dimension?",
+   "level": 0
+  },
+  {
+   "id": "the-wtc-site-in-2017",
+   "title": "The WTC Site in 2017",
+   "level": 1
+  },
+  {
+   "id": "numerology-and-symbolism",
+   "title": "Numerology and Symbolism",
+   "level": 1
+  },
+  {
+   "id": "predictive-programming",
+   "title": "Predictive Programming?",
+   "level": 1
+  },
+  {
+   "id": "back-to-the-future-1985-1989",
+   "title": "Back to the Future – 1985 - 1989",
+   "level": 1
+  },
+  {
+   "id": "masonic-logos",
+   "title": "Masonic Logos",
+   "level": 1
+  },
+  {
+   "id": "an-attack-on-human-consciousness",
+   "title": "An Attack on Human Consciousness",
+   "level": 1
+  },
+  {
+   "id": "alchemy-and-magic",
+   "title": "Alchemy and Magic?",
+   "level": 1
+  },
+  {
+   "id": "ch-29",
+   "title": "29. Conclusions",
+   "level": 0
+  },
+  {
+   "id": "guidelines-for-researchers",
+   "title": "Guidelines for Researchers?",
+   "level": 1
+  },
+  {
+   "id": "talk-show-and-podcast-hosts-and-disinfor",
+   "title": "Talk-show and Podcast Hosts and Disinformation",
+   "level": 1
+  },
+  {
+   "id": "global-control-grid",
+   "title": "Global Control Grid",
+   "level": 1
+  },
+  {
+   "id": "a-realisation-of-full-disclosure",
+   "title": "A Realisation of Full Disclosure",
+   "level": 1
+  },
+  {
+   "id": "ch-30",
+   "title": "30. References",
+   "level": 0
+  }
+ ]
+}

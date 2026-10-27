@@ -562,6 +562,14 @@
 		$("em-mg-ang-f").hidden = !s; $("em-mg-sel").hidden = !s; if (s) { $("em-mg-ang").value = deg(s.a); $("em-mg-ang-v").textContent = deg(s.a); }
 		MG.wk = Math.log10(MG.VW / 0.2); $("em-mg-w").value = MG.wk; $("em-mg-w-v").textContent = sig(MG.VW * 100, 3) + " cm";
 		$("em-mg-nf").value = MG.nf; $("em-mg-nf-v").textContent = MG.nf; $("em-mg-ni").value = MG.ni; $("em-mg-ni-v").textContent = MG.ni;
+		mgOv();
+	}
+	/* the Flux / Iso overlay at the top left of the picture mirrors the checkboxes and line-count sliders under it, both ways */
+	function mgOv() {
+		var ov = $("em-mg-ov"); if (!ov) return;
+		Array.prototype.forEach.call(ov.querySelectorAll("[data-ov]"), function (b) { var on = $(b.getAttribute("data-ov")).checked; b.setAttribute("aria-pressed", String(on)); b.closest(".em-ovg").classList.toggle("is-off", !on); });
+		$("em-mg-ov-nf").textContent = $("em-mg-nf").value; $("em-mg-ov-ni").textContent = $("em-mg-ni").value;
+		Array.prototype.forEach.call(ov.querySelectorAll("[data-ovn]"), function (b) { var r = $(b.getAttribute("data-ovn")), v = +r.value, d = +b.getAttribute("data-d"); b.disabled = d < 0 ? v <= +r.min : v >= +r.max; });
 	}
 	function grid(fn, box, nx, ny) { var F = new Float64Array((nx + 1) * (ny + 1)), dx = (box[2] - box[0]) / nx, dy = (box[3] - box[1]) / ny, i, j, lo = Infinity, hi = -Infinity, v; for (j = 0; j <= ny; j++) for (i = 0; i <= nx; i++) { v = fn(box[0] + i * dx, box[1] + j * dy); F[j * (nx + 1) + i] = v; if (v < lo) lo = v; if (v > hi) hi = v; } return { F: F, lo: lo, hi: hi }; }
 	function fromGrid(g) { var k = 0; return function () { return g.F[k++]; }; }   /* M.contours samples in the same order, so it can read the grid back instead of evaluating again */
@@ -669,6 +677,12 @@
 	$("em-mg-w").oninput = function () { MG.VW = 0.2 * Math.pow(10, +this.value); $("em-mg-w-v").textContent = sig(MG.VW * 100, 3) + " cm"; MG.dirty = true; };
 	$("em-mg-nf").oninput = function () { MG.nf = +this.value; $("em-mg-nf-v").textContent = this.value; MG.dirty = true; sset({ mg_nf: MG.nf }); };
 	$("em-mg-ni").oninput = function () { MG.ni = +this.value; $("em-mg-ni-v").textContent = this.value; MG.dirty = true; sset({ mg_ni: MG.ni }); };
+	[["em-mg-flux", "change"], ["em-mg-iso", "change"], ["em-mg-nf", "input"], ["em-mg-ni", "input"]].forEach(function (p) { $(p[0]).addEventListener(p[1], mgOv); });
+	$("em-mg-ov").addEventListener("click", function (e) {
+		var t = e.target.closest("[data-ov]"), n = e.target.closest("[data-ovn]");
+		if (t) { var cb = $(t.getAttribute("data-ov")); cb.checked = !cb.checked; cb.dispatchEvent(new Event("change", { bubbles: true })); }
+		else if (n) { var r = $(n.getAttribute("data-ovn")); r.value = Math.max(+r.min, Math.min(+r.max, +r.value + +n.getAttribute("data-d"))); r.dispatchEvent(new Event("input", { bubbles: true })); }
+	});
 	[["em-mg-flux", "flux"], ["em-mg-iso", "iso"], ["em-mg-arrows", "arrows"], ["em-mg-needles", "needles"], ["em-mg-labels", "labels"]].forEach(function (p) { $(p[0]).onchange = function () { MG[p[1]] = this.checked; MG.dirty = true; var o = {}; o["mg_" + p[1]] = this.checked; sset(o); }; });
 	$("em-mg-col").onchange = function () { MG.col = this.value; MG.dirty = true; sset({ mg_col: MG.col }); };
 	$("em-mg-sp").onchange = function () { MG.sp = +this.value; MG.dirty = true; sset({ mg_sp: MG.sp }); };

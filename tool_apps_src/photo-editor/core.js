@@ -115,36 +115,64 @@
 	};
 
 	/* ---------- text layers ---------- */
-	PE.TEXTDEF = { str: "Text", font: "Arial, Helvetica, sans-serif", size: 64, bold: false, italic: false, color: "#000000", align: "left", lh: 1.2, bgOn: false, bgColor: "#ffeb3b", bgPad: 12, bgRadius: 8, strokeOn: false, stroke: "#ffffff", strokeW: 4, shadowOn: false, shadow: "#000000", shadowBlur: 8, shadowDx: 4, shadowDy: 4, ls: 0, wrapW: 0 };
+	PE.TEXTDEF = { str: "Text", font: "Arial, Helvetica, sans-serif", size: 64, bold: false, italic: false, underline: false, color: "#000000", align: "left", lh: 1.2, bgOn: false, bgColor: "#ffeb3b", bgPad: 12, bgRadius: 8, strokeOn: false, stroke: "#ffffff", strokeW: 4, shadowOn: false, shadow: "#000000", shadowBlur: 8, shadowDx: 4, shadowDy: 4, ls: 0, wrapW: 0, fit: false, boxH: 0 };
+	/* rich text (MESPixel.rich*): t.rich = one style digit per character (1 bold, 2 italic, 4 underline) or null = the layer's own bold / italic / underline */
+	PE.textRich = function (t) { return t && typeof t.rich === "string" && t.rich.length === String(t.str).length && t.rich.length ? t.rich : null; };
+	PE.textMask = function (t) { return P.richMask(t.bold, t.italic, t.underline); };
+	function fontFor(t, m, size) { return (m & 2 ? "italic " : "") + (m & 1 ? "bold " : "") + (size == null ? t.size : size) + "px " + t.font; }
+	PE.textFont = fontFor;
+	/* a measure(s, start) for a text at a given size: rich parts are measured with their own font */
+	function measurer(t, size, ctx) {
+		var rich = PE.textRich(t), base = PE.textMask(t), ls = (t.ls || 0) + "px", cache = {}, set = function (fn) { if (ctx.font !== fn) ctx.font = fn; if ("letterSpacing" in ctx && ctx.letterSpacing !== ls) ctx.letterSpacing = ls; };
+		if (!rich) { var f = fontFor(t, base, size); return function (s) { var w = cache[s]; if (w == null) { set(f); w = cache[s] = ctx.measureText(s).width; } return w; }; }
+		return function (s, st) {
+			st = st || 0; var key = st + "|" + s, w = cache[key]; if (w != null) return w; w = 0;
+			P.richSegs(rich, st, st + s.length, base).forEach(function (g) { set(fontFor(t, g.m, size)); w += ctx.measureText(s.slice(g.s - st, g.e - st)).width; });
+			return (cache[key] = w);
+		};
+	}
+	/* Auto-fit text: the font size that fills the box (Box width x box height) */
+	PE.fitTextSize = function (L) {
+		var t = L.text; if (!t || !t.fit || !(t.wrapW > 0) || !(t.boxH > 0)) return null; var m = lmc || (lmc = mk(8, 8).getContext("2d"));
+		return P.fitFontSize(t.str, t.wrapW, t.boxH, t.lh, function (sz) { return measurer(t, sz, m); }, 4, Math.min(1000, t.boxH * 1.2));
+	};
 	/* where every line of a text layer sits in its canvas (shared by the renderer and the on-canvas text editor: caret, selection, click-to-place).
-	 * lines = [{text, start, end}] with string offsets (MESPixel.wrapLines), lx[i] = left edge of line i, base[i] = its baseline, measure(s) = width in px */
+	 * lines = [{text, start, end}] with string offsets (MESPixel.wrapLines), lx[i] = left edge of line i, base[i] = its baseline, measure(s, start) = width in px,
+	 * bh = height of the text box (the text, or the Auto-fit box when that is taller) */
 	var lmc = null;
 	PE.textLayout = function (L) {
-		var t = L.text; if (!t) return null; var f = (t.italic ? "italic " : "") + (t.bold ? "bold " : "") + t.size + "px " + t.font, dw = PE.doc ? PE.doc.w : 1200;
-		var key = JSON.stringify([t.str, f, t.ls || 0, t.wrapW, t.lh, t.align, t.bgOn && t.bgPad, t.strokeOn && t.strokeW, t.shadowOn && [t.shadowBlur, t.shadowDx, t.shadowDy], t.wrapW > 0 ? 0 : dw]);
+		var t = L.text; if (!t) return null; var rich = PE.textRich(t), f = fontFor(t, PE.textMask(t)), dw = PE.doc ? PE.doc.w : 1200, fit = !!(t.fit && t.wrapW > 0 && t.boxH > 0);
+		var key = JSON.stringify([t.str, f, rich, t.ls || 0, t.wrapW, t.lh, t.align, t.bgOn && t.bgPad, t.strokeOn && t.strokeW, t.shadowOn && [t.shadowBlur, t.shadowDx, t.shadowDy], t.wrapW > 0 ? 0 : dw, fit && t.boxH]);
 		if (L._lay && L._lay.key === key) return L._lay;
-		var m = lmc || (lmc = mk(8, 8).getContext("2d")); m.font = f; if ("letterSpacing" in m) m.letterSpacing = (t.ls || 0) + "px";
-		var cache = {}, measure = function (s) { var w = cache[s]; if (w == null) w = cache[s] = m.measureText(s).width; return w; };
-		// word wrap: an explicit box width (Box width option / the handle on the box), else never wider than 90% of the image so pasted text stays reasonable
+		var m = lmc || (lmc = mk(8, 8).getContext("2d")), measure = measurer(t, t.size, m);
+		// word wrap: an explicit box width (Box width option / the handles on the box), else never wider than 90% of the image so pasted text stays reasonable
 		var lim = t.wrapW > 0 ? t.wrapW : Math.max(160, dw * 0.9), lines = P.wrapLines(t.str, lim, measure);
-		var lw = lines.map(function (s) { return measure(s.text); }), mw = t.wrapW > 0 ? t.wrapW : Math.max.apply(null, lw.concat([1])), lhp = t.size * t.lh;
-		var bgp = t.bgOn ? t.bgPad : 0, pad = Math.ceil(bgp + (t.strokeOn ? t.strokeW : 0) + (t.shadowOn ? t.shadowBlur * 2 + Math.max(Math.abs(t.shadowDx), Math.abs(t.shadowDy)) : 0) + t.size * 0.15 + 2);
+		var lw = lines.map(function (s) { return measure(s.text, s.start); }), mw = t.wrapW > 0 ? t.wrapW : Math.max.apply(null, lw.concat([1])), lhp = t.size * t.lh;
+		var sw = t.strokeOn ? Math.max(0, t.strokeW || 0) : 0, bgp = t.bgOn ? t.bgPad : 0, pad = Math.ceil(bgp + sw + (t.shadowOn ? t.shadowBlur * 2 + Math.max(Math.abs(t.shadowDx), Math.abs(t.shadowDy)) : 0) + t.size * 0.15 + 2);
 		var lx = lw.map(function (w) { return t.align === "center" ? pad + mw / 2 - w / 2 : t.align === "right" ? pad + mw - w : pad; }), base = lines.map(function (s, i) { return pad + lhp * i + t.size * 0.92; });
-		var measureNow = function (s) { m.font = f; if ("letterSpacing" in m) m.letterSpacing = (t.ls || 0) + "px"; return measure(s); };
-		L._lay = { key: key, font: f, lines: lines, lw: lw, lx: lx, base: base, mw: mw, lhp: lhp, pad: pad, bgp: bgp, W: Math.ceil(mw) + pad * 2, H: Math.ceil(lhp * lines.length + t.size * 0.3) + pad * 2, size: t.size, measure: measureNow };
+		var th = lhp * lines.length + t.size * 0.25, bh = fit ? Math.max(t.boxH, th) : th;
+		L._lay = { key: key, font: f, rich: rich, lines: lines, lw: lw, lx: lx, base: base, mw: mw, lhp: lhp, pad: pad, bgp: bgp, bh: bh, fit: fit, W: Math.ceil(mw) + pad * 2, H: Math.ceil(Math.max(lhp * lines.length + t.size * 0.3, bh + t.size * 0.05)) + pad * 2, size: t.size, measure: measure };
 		return L._lay;
 	};
 	PE.renderText = function (L) {
-		var t = L.text, lay = PE.textLayout(L), f = lay.font, lines = lay.lines.map(function (l) { return l.text; }), mw = lay.mw, lhp = lay.lhp, bgp = lay.bgp, pad = lay.pad;
+		var t = L.text; if (t.fit) { var fs = PE.fitTextSize(L); if (fs) t.size = fs; }
+		var lay = PE.textLayout(L), lines = lay.lines, mw = lay.mw, lhp = lay.lhp, bgp = lay.bgp, pad = lay.pad, rich = lay.rich, base = PE.textMask(t), sz = t.size;
 		var W = lay.W, H = lay.H; if (W * H > PE.MAXAREA) return;
-		var oldW = L.canvas.width, oldH = L.canvas.height, c = mk(W, H), x = c.getContext("2d");
-		x.font = f; if ("letterSpacing" in x) x.letterSpacing = (t.ls || 0) + "px"; x.textBaseline = "alphabetic"; x.lineJoin = "round"; x.textAlign = t.align;
-		if (t.bgOn) { var bx = pad - bgp, by = pad - bgp, bw = Math.ceil(mw) + bgp * 2, bh = Math.ceil(lhp * lines.length + t.size * 0.3 - t.size * 0.1) + bgp * 2 - Math.round(t.size * 0.05), br = Math.min(t.bgRadius, bw / 2, bh / 2); x.fillStyle = t.bgColor; x.beginPath(); x.moveTo(bx + br, by); x.arcTo(bx + bw, by, bx + bw, by + bh, br); x.arcTo(bx + bw, by + bh, bx, by + bh, br); x.arcTo(bx, by + bh, bx, by, br); x.arcTo(bx, by, bx + bw, by, br); x.closePath(); x.fill(); }
-		lines.forEach(function (s, i) {
-			var px = t.align === "center" ? pad + mw / 2 : t.align === "right" ? pad + mw : pad, py = pad + lhp * i + t.size * 0.92;
-			if (t.shadowOn) { x.save(); x.shadowColor = t.shadow; x.shadowBlur = t.shadowBlur; x.shadowOffsetX = t.shadowDx; x.shadowOffsetY = t.shadowDy; x.fillStyle = t.color; x.fillText(s, px, py); x.restore(); }
-			if (t.strokeOn) { x.strokeStyle = t.stroke; x.lineWidth = t.strokeW * 2; x.strokeText(s, px, py); }
-			x.fillStyle = t.color; x.fillText(s, px, py);
+		var oldW = L.canvas.width, oldH = L.canvas.height, c = mk(W, H), x = c.getContext("2d"), sw = t.strokeOn ? Math.max(0, t.strokeW || 0) : 0;
+		if ("letterSpacing" in x) x.letterSpacing = (t.ls || 0) + "px"; x.textBaseline = "alphabetic"; x.lineJoin = "round"; x.textAlign = "left";
+		if (t.bgOn) { var inner = Math.ceil(lhp * lines.length + sz * 0.3 - sz * 0.1) - Math.round(sz * 0.05); if (lay.fit) inner = Math.max(inner, Math.ceil(lay.bh)); var bx = pad - bgp, by = pad - bgp, bw = Math.ceil(mw) + bgp * 2, bh = inner + bgp * 2, br = Math.min(t.bgRadius, bw / 2, bh / 2); x.fillStyle = t.bgColor; x.beginPath(); x.moveTo(bx + br, by); x.arcTo(bx + bw, by, bx + bw, by + bh, br); x.arcTo(bx + bw, by + bh, bx, by + bh, br); x.arcTo(bx, by + bh, bx, by, br); x.arcTo(bx, by, bx + bw, by, br); x.closePath(); x.fill(); }
+		// underline: scaled to the font size, from the first to the last underlined letter of each run (not the letter spacing after the last one)
+		var uOff = Math.max(1, sz * 0.11), uTh = Math.max(1, sz * 0.065), ls = t.ls || 0;
+		lines.forEach(function (ln, i) {
+			var py = lay.base[i], x0 = lay.lx[i], segs = P.richSegs(rich, ln.start, ln.end, base), ul = [];
+			segs.forEach(function (g) { g.x = x0 + lay.measure(ln.text.slice(0, g.s - ln.start), ln.start); g.txt = ln.text.slice(g.s - ln.start, g.e - ln.start); });
+			segs.forEach(function (g) { if (!(g.m & 4)) return; var xe = x0 + lay.measure(ln.text.slice(0, g.e - ln.start), ln.start) - (ls > 0 ? ls : 0), last = ul[ul.length - 1]; if (last && last.e === g.s) { last.e = g.e; last.x1 = xe; } else ul.push({ s: g.s, e: g.e, x0: g.x, x1: xe }); });
+			ul = ul.filter(function (u) { return u.x1 > u.x0; });
+			var draw = function (fn) { segs.forEach(function (g) { x.font = fontFor(t, g.m); fn(g); }); };
+			var bars = function (fn) { ul.forEach(function (u) { fn(u.x0, py + uOff, u.x1 - u.x0, uTh); }); };
+			if (t.shadowOn) { x.save(); x.shadowColor = t.shadow; x.shadowBlur = t.shadowBlur; x.shadowOffsetX = t.shadowDx; x.shadowOffsetY = t.shadowDy; x.fillStyle = t.color; draw(function (g) { x.fillText(g.txt, g.x, py); }); bars(function (a, b, w, h) { x.fillRect(a, b, w, h); }); x.restore(); }
+			if (sw > 0) { x.strokeStyle = t.stroke; x.lineWidth = sw * 2; draw(function (g) { x.strokeText(g.txt, g.x, py); }); bars(function (a, b, w, h) { x.strokeRect(a, b, w, h); }); }
+			x.fillStyle = t.color; draw(function (g) { x.fillText(g.txt, g.x, py); }); bars(function (a, b, w, h) { x.fillRect(a, b, w, h); });
 		});
 		L._pad = pad; var dx = (W - oldW) / 2, dy = (H - oldH) / 2, m6 = matrix(L);      // keep the top-left corner where it was
 		L.cx += m6[0] * dx + m6[2] * dy; L.cy += m6[1] * dx + m6[3] * dy; L.canvas = c; L.rev++;

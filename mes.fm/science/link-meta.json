@@ -1,22 +1,25 @@
 {
-  "https://mes.fm/fungi-poop": {
-    "image": "https://mes.fm/fungi-poop/img/fungi-poop-1.jpg",
+  "https://mes.fm/america-gov-ai-chat": {
+    "image": "https://mes.fm/america-gov-ai-chat/img/america-gov-ai-chat.jpg",
     "watchLinks": [],
     "namedLinks": [
       {
-        "label": "Telegram",
-        "href": "https://t.me/meslinks/35613"
+        "label": "Hive",
+        "href": "https://inleo.io/threads/view/mes/re-leothreads-2v3puenkb"
       },
       {
-        "label": "More science",
+        "label": "Telegram",
+        "href": "https://t.me/meslinks/35605"
+      },
+      {
+        "label": "Site",
+        "href": "http://America.gov/"
+      },
+      {
+        "label": "More science links",
         "href": "https://mes.fm/science"
       }
     ]
-  },
-  "https://mes.fm/america-gov-ai-chat": {
-    "image": "https://mes.fm/america-gov-ai-chat/img/america-gov-ai-chat.jpg",
-    "title": "USA Launches America.gov, an AI Chat Site for Government Services",
-    "excerpt": "USA launched America.gov, an AI chat site where users can ask about government services."
   },
   "https://mes.fm/ferrocell-specular-reflection": {
     "image": "https://files.peakd.com/file/peakd-hive/mes/23vhny5FYdGt5Vi9vRPtqXcPUCNTMTAhM3FtxDNqwoqgWWWmd6Ua5nzvWDPZbD1AZts7y.png",
@@ -30,6 +33,20 @@
       {
         "label": "Telegram",
         "href": "https://t.me/meslinks/35467"
+      },
+      {
+        "label": "More science",
+        "href": "https://mes.fm/science"
+      }
+    ]
+  },
+  "https://mes.fm/fungi-poop": {
+    "image": "https://mes.fm/fungi-poop/img/fungi-poop-1.jpg",
+    "watchLinks": [],
+    "namedLinks": [
+      {
+        "label": "Telegram",
+        "href": "https://t.me/meslinks/35613"
       },
       {
         "label": "More science",

@@ -286,6 +286,7 @@
     if (TSRC === 'bing' && !bOk() && g.setup) { TSRC = 'google'; setSrc('google'); }
     if (!HIDE) drawChart();
     renderTable(false);
+    if (AI) renderAi(false);
   }
 
   // ---- chart: several metrics at once (each its own scale, like Search Console), Google / Bing / both, previous period dashed
@@ -594,8 +595,8 @@
     var th = e.target.closest('#gs th[data-k]'); if (!th) return;
     var el = th.closest('table'), st = ST[el.id]; if (!st) return;
     if (st.key === th.dataset.k) st.dir = st.dir === 'desc' ? 'asc' : 'desc';
-    else { st.key = th.dataset.k; st.dir = th.dataset.k === 'k' || th.dataset.k === 'p' ? 'asc' : 'desc'; }
-    renderTable(false);
+    else { st.key = th.dataset.k; st.dir = th.dataset.k === 'k' || th.dataset.k === 'p' || th.dataset.k === 'in' || th.dataset.k === 'to' ? 'asc' : 'desc'; }
+    if (el.id === 'gs-ait') renderAiTable(false); else renderTable(false);
   });
 
   // first column resize (same behaviour as the Page column on /stats); width per table in localStorage
@@ -646,6 +647,246 @@
     });
   }
 
+  // ---- AI search: Google "Generative AI" (AI Overviews / AI Mode impressions) and Bing "AI Performance" (Copilot citations).
+  // Neither has an API, so the owner drops the console exports on the page (parsed here by MESSCAI, lib.js) and they are
+  // kept by /api/search-console-ai. Range and Compare follow the page's controls; filters do not apply (no queries in Google's report).
+  var AI = null, AISRC = LS('aisrc', 'google', /^(google|bing)$/), AITAB = { google: LS('aitab-g', 'pages', /^(pages|countries|devices)$/), bing: LS('aitab-b', 'queries', /^(queries|pages)$/) };
+  var AIQ = '', AISEL = null, AIPENDING = null;
+  var AI_TABS = { google: [['pages', 'Pages'], ['countries', 'Countries'], ['devices', 'Devices']], bing: [['queries', 'Grounding queries'], ['pages', 'Cited pages']] };
+  function aiReq(method, url, body) {
+    if (MOCK) {
+      mockReady = mockReady || new Promise(function (res, rej) { var s = document.createElement('script'); s.src = '/search-console/js/sc-mock.js?v=' + Date.now(); s.onload = res; s.onerror = rej; document.head.appendChild(s); });
+      return mockReady.then(function () { return window.SC_MOCK_AI(method, url, body); });
+    }
+    return fetch(url, { method: method, cache: 'no-store', headers: body ? { 'Content-Type': 'application/json' } : {}, body: body ? JSON.stringify(body) : undefined })
+      .then(function (r) { return r.json().catch(function () { return {}; }).then(function (j) { if (!r.ok) throw new Error(j.error || r.status); return j; }); });
+  }
+  function loadAi() {
+    aiReq('GET', '/api/search-console-ai').then(function (d) { AI = d || {}; renderAi(); })
+      .catch(function (e) { AI = {}; $('gs-aimeta').textContent = 'Could not load the imported AI numbers (' + e.message + ').'; });
+  }
+  chips('gs-aisrc', 's', AISRC, function (v) { AISRC = v; SAVE('aisrc', v); AISEL = null; AIQ = ''; $('gs-aiq').value = ''; renderAi(true); });
+  $('gs-aiimp').onclick = function () { var box = $('gs-aiimport'), open = box.hidden; box.hidden = !open; this.setAttribute('aria-expanded', open ? 'true' : 'false'); };
+  $('gs-aitab').onclick = function (e) { var b = e.target.closest('button[data-t]'); if (!b) return; AITAB[AISRC] = b.dataset.t; SAVE('aitab-' + AISRC.charAt(0), b.dataset.t); renderAiTable(true); };
+  var aiqT = 0;
+  $('gs-aiq').addEventListener('input', function () { clearTimeout(aiqT); aiqT = setTimeout(function () { AIQ = $('gs-aiq').value.trim().toLowerCase(); renderAiTable(true); }, 120); });
+  (function aiPanel() { if (!window.MESPanel) { setTimeout(aiPanel, 60); return; } window.MESPanel.add($('gs-aisec'), { bar: $('gs-aibtns'), onChange: function () { if (AI) drawAiChart(); } }); })();
+
+  // import: drop / choose files -> preview of what was recognised -> Save
+  function readFiles(list) {
+    var files = Array.prototype.slice.call(list || []).slice(0, 30);
+    if (!files.length) return;
+    $('gs-aiprev').innerHTML = '<p class="tu-note">Reading ' + files.length + ' file' + (files.length > 1 ? 's' : '') + '…</p>';
+    Promise.all(files.map(function (f) {
+      if (f.size > 40e6) return Promise.resolve([{ kind: 'unknown', name: f.name, rows: [], label: 'too large (over 40 MB), skipped' }]);
+      return f.arrayBuffer().then(function (b) { return MESSCAI.parseFile({ name: f.name, bytes: new Uint8Array(b) }); })
+        .catch(function (e) { return [{ kind: 'unknown', name: f.name, rows: [], label: 'could not be read (' + e.message + ')' }]; });
+    })).then(function (lists) {
+      var tables = [].concat.apply([], lists);
+      AIPENDING = MESSCAI.combine(tables);
+      var ok = AIPENDING.google || AIPENDING.bing;
+      $('gs-aiprev').innerHTML = '<ul class="gs-aifiles">' + tables.map(function (t) {
+        var good = t.rows.length && /^[gb]-/.test(t.kind);
+        return '<li class="' + (good ? 'ok' : 'skip') + '"><b>' + esc(t.name) + '</b>: ' + esc(t.label) + (good ? ' (' + t.rows.length.toLocaleString() + (t.rows.length === 1 ? ' row)' : ' rows)') : '') + '</li>';
+      }).join('') + '</ul>' + (ok ? '<button type="button" class="tu-btn" id="gs-aisave">Save to the dashboard</button> <button type="button" class="tu-btn tu-btn--ghost" id="gs-aicancel">Cancel</button>'
+        : '<p class="tu-note">Nothing to import: these are not Generative AI / AI Performance exports (see “How to export them”).</p>');
+      if (!ok) return;
+      $('gs-aicancel').onclick = function () { AIPENDING = null; $('gs-aiprev').innerHTML = ''; };
+      $('gs-aisave').onclick = function () {
+        var btn = this; btn.disabled = true; btn.textContent = 'Saving…';
+        var jobs = ['google', 'bing'].filter(function (s) { return AIPENDING[s]; }).map(function (s) { var p = Object.assign({}, AIPENDING[s]); delete p.period; return aiReq('POST', '/api/search-console-ai', p); });
+        Promise.all(jobs).then(function (res) {
+          var first = res[0] && res[0].source;
+          $('gs-aiprev').innerHTML = '<p class="gs-aiok">Saved: ' + res.map(function (r) { return (r.source === 'google' ? 'Google' : 'Bing') + ' (' + r.days.toLocaleString() + ' days stored)'; }).join(', ') + '.</p>';
+          AIPENDING = null;
+          if (first && res.length === 1) { AISRC = first; SAVE('aisrc', first); document.querySelectorAll('#gs-aisrc button').forEach(function (b) { b.setAttribute('aria-pressed', b.dataset.s === first ? 'true' : 'false'); }); }
+          loadAi();
+        }).catch(function (e) { btn.disabled = false; btn.textContent = 'Save to the dashboard'; $('gs-aiprev').insertAdjacentHTML('beforeend', '<p class="dn">Could not save: ' + esc(e.message) + '</p>'); });
+      };
+    });
+  }
+  $('gs-aifile').onchange = function () { readFiles(this.files); this.value = ''; };
+  var drop = $('gs-drop');
+  ['dragenter', 'dragover'].forEach(function (t) { drop.addEventListener(t, function (e) { e.preventDefault(); drop.classList.add('on'); }); });
+  ['dragleave', 'drop'].forEach(function (t) { drop.addEventListener(t, function () { drop.classList.remove('on'); }); });
+  drop.addEventListener('drop', function (e) { e.preventDefault(); readFiles(e.dataTransfer && e.dataTransfer.files); });
+  drop.addEventListener('keydown', function (e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); $('gs-aifile').click(); } });
+  document.querySelectorAll('#gs [data-aidel]').forEach(function (b) {
+    b.onclick = function () {
+      var s = b.dataset.aidel;
+      if (!confirm('Remove all imported ' + (s === 'google' ? 'Google AI features' : 'Bing AI Performance') + ' numbers from the dashboard?')) return;
+      aiReq('DELETE', '/api/search-console-ai?src=' + s).then(loadAi).catch(function (e) { alert('Could not remove them: ' + e.message); });
+    };
+  });
+
+  function aiBlob() { return AI && AI[AISRC]; }
+  function aiN() { return RANGE === 'today' || RANGE === 'yesterday' ? 1 : +RANGE; }
+  // metrics per source: Google = impressions; Bing = citations (index 0) + cited pages per day (index 1, averaged)
+  function renderAi(resetPage) {
+    if (!AI) return;
+    var blob = aiBlob(), meta = $('gs-aimeta');
+    $('gs-aitab').innerHTML = AI_TABS[AISRC].map(function (t) { return '<button type="button" class="tu-chip" data-t="' + t[0] + '" aria-pressed="' + (AITAB[AISRC] === t[0]) + '">' + t[1] + '</button>'; }).join('');
+    var empty = !blob || !Object.keys(blob.daily || {}).length && !(blob.pages || blob.queries || []).length;
+    ['gs-aitiles', 'gs-airead', 'gs-aichart', 'gs-ailegend'].forEach(function (id) { $(id).hidden = empty; });
+    $('gs-aisec').querySelector('.gs-aithead').hidden = empty; $('gs-aisec').querySelector('.gs-filter').hidden = empty;
+    $('gs-ait').hidden = empty; $('gs-aitnote').hidden = empty;
+    if (empty) {
+      $('gs-aiold').hidden = true; $('gs-aimore').hidden = true;
+      meta.innerHTML = 'No ' + (AISRC === 'google' ? 'Google Generative AI' : 'Bing AI Performance') + ' numbers imported yet. Neither console has an API for these reports: press <b>Import exports…</b>, drop the export file(s) and Save.';
+      if ($('gs-aiimport').hidden && !renderAi.opened) { renderAi.opened = true; $('gs-aiimp').click(); }
+      return;
+    }
+    var per = MESSCAI.periods(blob.daily, aiN());
+    var bits = [];
+    if (per) bits.push((AISRC === 'google' ? 'Impressions in AI Overviews and AI Mode' : 'Citations in Microsoft Copilot and partners') + ': <b>' + (per.start === per.end ? fmtD(per.end) : fmtD(per.start) + ' – ' + fmtD(per.end)) + '</b> (' + (isDay() ? 'the newest day in the export' : 'ends on the newest day in the export') + ')');
+    bits.push('imported ' + ago(blob.at) + (blob.imports && blob.imports[0] && blob.imports[0].files.length ? ' from ' + esc(blob.imports[0].files.slice(0, 4).join(', ')) + (blob.imports[0].files.length > 4 ? '…' : '') : ''));
+    if (per && per.first) bits.push('stored days ' + fmtD(per.first) + ' – ' + fmtD(per.end));
+    if (FILTERS.length) bits.push('the page’s filters do not apply here');
+    var stale = per && daysBetween(per.end, DATA ? DATA.today || per.end : per.end) > 7;
+    meta.innerHTML = bits.join(' · ') + '.' + (stale ? ' <b>The newest imported day is ' + daysBetween(per.end, DATA.today) + ' days old: import a fresh export.</b>' : '');
+    // tiles
+    var t = '', has = per && CMP && per.prevFull && per.prev.length;
+    if (AISRC === 'google') {
+      var ci = per ? MESSCAI.sumOf(blob.daily, per.cur) : 0, pi = per ? MESSCAI.sumOf(blob.daily, per.prev) : 0;
+      t += tile(int(ci), 'AI feature impressions', has ? change(ci, pi) : null);
+      t += tile(per && per.cur.length ? int(ci / per.cur.length) : '–', 'per day', has ? change(ci / per.cur.length, pi / Math.max(1, per.prev.length)) : null);
+      var gt = DATA && gOk() && DATA.google.totals;
+      if (gt && gt.i && ci && per && !isDay()) t += '<div class="tu-stat" title="AI feature impressions as a share of all Google web impressions in the range above (the two ranges can end on different days)"><div class="tu-stat__value">≈ ' + pctTxt(ci / gt.i) + '</div><div class="tu-stat__label">of Google web impressions</div></div>';
+      t += tile(int((blob.pages || []).length), 'pages shown in AI features', null);
+    } else {
+      var cc = per ? MESSCAI.sumOf(blob.daily, per.cur, 0) : 0, pc = per ? MESSCAI.sumOf(blob.daily, per.prev, 0) : 0;
+      var cp = per && per.cur.length ? MESSCAI.sumOf(blob.daily, per.cur, 1) / per.cur.length : 0, pp = per && per.prev.length ? MESSCAI.sumOf(blob.daily, per.prev, 1) / per.prev.length : 0;
+      t += tile(int(cc), 'total citations', has ? change(cc, pc) : null);
+      t += tile(cp ? (+cp.toFixed(1)).toLocaleString() : '–', 'avg cited pages per day', has ? change(cp, pp) : null);
+      t += tile(int((blob.queries || []).length), 'grounding queries', null);
+      t += tile(int((blob.pages || []).length), 'cited pages', null);
+    }
+    $('gs-aitiles').innerHTML = t;
+    // pages still on the old calculator subdomains
+    var old = (blob.pages || []).filter(function (r) { return MESSCAI.oldSubdomain(r[0]); });
+    if (old.length) {
+      var oi = 0, all = 0; old.forEach(function (r) { oi += r[1]; }); (blob.pages || []).forEach(function (r) { all += r[1]; });
+      $('gs-aiold').hidden = false;
+      $('gs-aiold').innerHTML = '<b>' + old.length.toLocaleString() + ' page' + (old.length > 1 ? 's' : '') + ' in this report still use the old subdomain addresses</b> (' + pctTxt(all ? oi / all : 0) + ' of its ' + (AISRC === 'google' ? 'impressions' : 'citations') +
+        ', e.g. ' + esc(old[0][0]) + '). They redirect to the new mes.fm/&lt;slug&gt; pages; the AI features will switch once the search engines have re-crawled them. Marked <span class="gs-oldtag">old address</span> in the Pages table with the new URL.';
+    } else $('gs-aiold').hidden = true;
+    drawAiChart();
+    renderAiTable(resetPage);
+  }
+
+  function drawAiChart() {
+    var blob = aiBlob(); if (!blob || $('gs-aichart').hidden) return;
+    var svg = $('gs-aisvg'), box = $('gs-aichart');
+    var per = MESSCAI.periods(blob.daily, isDay() ? 28 : aiN());
+    var W = box.clientWidth || 600, H = box.clientHeight || 220, padL = 46, padR = AISRC === 'bing' ? 44 : 12, padT = 10, padB = 22;
+    svg.setAttribute('viewBox', '0 0 ' + W + ' ' + H);
+    var cLine = cssv('--gs-line'), cMuted = cssv('--gs-muted');
+    if (!per) { svg.innerHTML = '<text x="' + W / 2 + '" y="' + H / 2 + '" text-anchor="middle" fill="' + cMuted + '" font-size="13">No days in the import (tables only)</text>'; $('gs-airead').innerHTML = ''; $('gs-ailegend').innerHTML = ''; return; }
+    var xs = []; for (var d = per.start; d <= per.end; d = addDays(d, 1)) xs.push(d);
+    var off = xs.length;
+    var V = MESSCAI.val, iw = W - padL - padR, ih = H - padT - padB;
+    var X = function (i) { return padL + (xs.length === 1 ? iw / 2 : i / (xs.length - 1) * iw); };
+    var mets = AISRC === 'google' ? [[0, 'AI impressions', '--gs-mi']] : [[0, 'Citations', '--gs-b'], [1, 'Cited pages', '--gs-mp']];
+    var showPrev = CMP && per.prevFull;
+    var at = function (k, m) { var v = blob.daily[k]; return v == null ? null : V(v, m); };
+    var scales = mets.map(function (m) {
+      var hi = 0; xs.forEach(function (k) { [at(k, m[0]), showPrev ? at(addDays(k, -off), m[0]) : null].forEach(function (v) { if (v != null && v > hi) hi = v; }); });
+      hi = hi || 1; var step = Math.pow(10, Math.floor(Math.log10(hi))) || 1, top = Math.ceil(hi / step) * step;
+      return { top: top, y: function (v) { return padT + ih - v / top * ih; } };
+    });
+    var s = '';
+    for (var gi = 0; gi <= 4; gi++) {
+      var gy = padT + ih * gi / 4;
+      s += '<line x1="' + padL + '" x2="' + (W - padR) + '" y1="' + gy.toFixed(1) + '" y2="' + gy.toFixed(1) + '" stroke="' + cLine + '"/>';
+      s += '<text x="' + (padL - 6) + '" y="' + (gy + 4).toFixed(1) + '" text-anchor="end" font-size="11" fill="' + cssv(mets[0][2]) + '">' + short(scales[0].top * (1 - gi / 4)) + '</text>';
+      if (mets[1]) s += '<text x="' + (W - padR + 6) + '" y="' + (gy + 4).toFixed(1) + '" text-anchor="start" font-size="11" fill="' + cssv(mets[1][2]) + '">' + (+(scales[1].top * (1 - gi / 4)).toFixed(1)) + '</text>';
+    }
+    var line = function (get, col, dash, op) {
+      var out = '', run = [];
+      var flush = function () { if (run.length > 1) out += '<polyline points="' + run.join(' ') + '" fill="none" stroke="' + col + '" stroke-width="' + (dash ? 1.6 : 2.4) + '" stroke-linejoin="round"' + (dash ? ' stroke-dasharray="5 4"' : '') + (op ? ' stroke-opacity="' + op + '"' : '') + '/>'; else if (run.length === 1) out += '<circle cx="' + run[0].split(',')[0] + '" cy="' + run[0].split(',')[1] + '" r="3" fill="' + col + '"/>'; run = []; };
+      xs.forEach(function (k, i) { var v = get(k); if (v == null) flush(); else run.push(X(i).toFixed(1) + ',' + v.toFixed(1)); });
+      flush(); return out;
+    };
+    mets.forEach(function (m, mi) {
+      var col = cssv(m[2]), y = scales[mi].y;
+      if (showPrev) s += line(function (k) { var v = at(addDays(k, -off), m[0]); return v == null ? null : y(v); }, col, true, 0.6);
+      s += line(function (k) { var v = at(k, m[0]); return v == null ? null : y(v); }, col, false);
+    });
+    var every = Math.ceil(xs.length / Math.max(2, Math.floor(iw / 60)));
+    xs.forEach(function (k, i) { if (i % every === 0 || xs.length < 3) s += '<text x="' + X(i).toFixed(1) + '" y="' + (H - 6) + '" text-anchor="middle" font-size="11" fill="' + cMuted + '">' + k.slice(5) + '</text>'; });
+    s += '<g id="gs-aimark"></g>';
+    svg.innerHTML = s;
+    $('gs-ailegend').innerHTML = mets.map(function (m) { return '<span><i class="gs-key" style="border-color:' + cssv(m[2]) + '"></i>' + m[1] + '</span>'; }).join('') +
+      (showPrev ? '<span><i class="gs-key gs-key--dash"></i>previous ' + xs.length + ' days</span>' : '') + (isDay() ? '<span>(28 days shown: AI reports have no hours)</span>' : '');
+    function mark(i) {
+      AISEL = i;
+      var k = xs[i], x = X(i), out = '<line x1="' + x.toFixed(1) + '" x2="' + x.toFixed(1) + '" y1="' + padT + '" y2="' + (padT + ih) + '" stroke="' + cMuted + '" stroke-dasharray="3 3"/>';
+      var html = '<b class="gs-read__d">' + esc(fmtD(k, W < 560)) + '</b>';
+      mets.forEach(function (m, mi) {
+        var v = at(k, m[0]);
+        if (v != null) out += '<circle cx="' + x.toFixed(1) + '" cy="' + scales[mi].y(v).toFixed(1) + '" r="4.5" fill="' + cssv(m[2]) + '" stroke="' + cssv('--gs-card') + '" stroke-width="2"/>';
+        var pv = showPrev ? at(addDays(k, -off), m[0]) : null;
+        html += '<span class="gs-read__m on" style="--mc:var(' + m[2] + ')">' + (v == null ? '–' : int(v)) + '<small> ' + (m[0] === 0 && AISRC === 'google' ? 'AI impressions' : m[1].toLowerCase()) + '</small></span>' +
+          (showPrev ? '<span class="gs-read__p">vs ' + esc(fmtD(addDays(k, -off), true)) + ': ' + (pv == null ? '–' : int(pv)) + '</span>' : '');
+      });
+      $('gs-aimark').innerHTML = out; $('gs-airead').innerHTML = html;
+    }
+    if (AISEL == null || AISEL >= xs.length) { AISEL = xs.length - 1; while (AISEL > 0 && blob.daily[xs[AISEL]] == null) AISEL--; }
+    mark(AISEL);
+    var pick = function (e) { var r = box.getBoundingClientRect(); var i = xs.length === 1 ? 0 : Math.round(((e.clientX - r.left) / r.width * W - padL) / iw * (xs.length - 1)); mark(Math.max(0, Math.min(xs.length - 1, i))); };
+    var down = false, rest = AISEL;
+    box.onpointerdown = function (e) { down = true; pick(e); };
+    box.onpointermove = function (e) { if (e.pointerType === 'mouse' || down) pick(e); };
+    box.onpointerup = box.onpointercancel = function () { down = false; };
+    box.onpointerleave = function (e) { down = false; if (e.pointerType === 'mouse') mark(rest); };
+    box.tabIndex = 0;
+    box.onkeydown = function (e) { if (e.key === 'ArrowLeft' || e.key === 'ArrowRight') { e.preventDefault(); mark(Math.max(0, Math.min(xs.length - 1, AISEL + (e.key === 'ArrowLeft' ? -1 : 1)))); } };
+  }
+  window.addEventListener('resize', function () { if (AI) drawAiChart(); });
+
+  // a page cell: the URL, its new address when it is still an old subdomain, and an open link
+  function aiPageCell(u) {
+    var o = MESSCAI.oldSubdomain(u), href = /^https?:\/\//i.test(u) ? u : 'https://' + u.replace(/^\/+/, 'mes.fm/');
+    var shown = u.replace(/^https?:\/\/(www\.)?/i, '');
+    return esc(shown) + '<a class="gs-open" href="' + esc(href) + '" target="_blank" rel="noopener" title="Open the page" aria-label="Open the page">↗</a>' +
+      (o ? ' <span class="gs-oldtag" title="Old subdomain: it redirects">old address</span>' + (o.to ? ' <a class="gs-newurl" href="' + esc(o.to) + '" target="_blank" rel="noopener">→ ' + esc(o.to.replace(/^https:\/\//, '')) + '</a>' : '') : '');
+  }
+  function renderAiTable(resetPage) {
+    var blob = aiBlob(); if (!blob) return;
+    var tab = AITAB[AISRC], rows = (blob[tab] || []).slice(), tp = blob.tp && blob.tp[tab];
+    var max = 1, tot = 0; rows.forEach(function (r) { var v = AISRC === 'bing' && tab === 'queries' ? r[3] : r[1]; max = Math.max(max, v); tot += v; });
+    var metric = AISRC === 'google' ? 'Impressions' : 'Citations';
+    var bar = function (v) { return '<span class="gs-bar"><i style="width:' + (v / max * 100).toFixed(1) + '%;background:var(' + (AISRC === 'google' ? '--gs-mi' : '--gs-b') + ')"></i></span>' + int(v); };
+    var share = function (v) { return tot ? pctTxt(v / tot) : '–'; };
+    var cs;
+    if (AISRC === 'bing' && tab === 'queries') cs = [
+      { k: 'k', t: 'Grounding query', v: function (r) { return r[0]; }, h: function (r) { return esc(r[0]); } },
+      { k: 'in', t: 'Intent', v: function (r) { return r[1]; }, h: function (r) { return esc(r[1] || '–'); } },
+      { k: 'to', t: 'Topic', v: function (r) { return r[2]; }, h: function (r) { return esc(r[2] || '–'); } },
+      { k: 'c', t: 'Citations', v: function (r) { return r[3]; }, h: function (r) { return bar(r[3]); } },
+      { k: 'sh', t: 'Citation share', v: function (r) { return r[4]; }, h: function (r) { return r[4] ? (+r[4].toFixed(1)) + '%' : '–'; } },
+      { k: 'ap', t: 'Avg cited pages / day', v: function (r) { return r[5]; }, h: function (r) { return r[5] ? (+r[5].toFixed(2)).toString() : '–'; } },
+    ];
+    else cs = [
+      { k: 'k', t: { pages: 'Page', countries: 'Country', devices: 'Device' }[tab], v: function (r) { return r[0]; }, h: function (r) { return tab === 'pages' ? aiPageCell(r[0]) : esc(r[0]); } },
+      { k: 'c', t: metric, v: function (r) { return r[1]; }, h: function (r) { return bar(r[1]); } },
+      { k: 'sh', t: 'Share', v: function (r) { return r[1]; }, h: function (r) { return share(r[1]); } },
+    ];
+    var all = rows.length;
+    if (AIQ) { var words = AIQ.split(/\s+/); rows = rows.filter(function (r) { var hay = r.join(' ').toLowerCase() + (tab === 'pages' && MESSCAI.oldSubdomain(r[0]) ? ' old address subdomain' : ''); return words.every(function (w) { return hay.indexOf(w) !== -1; }); }); }
+    $('gs-aicount').textContent = all ? (AIQ ? rows.length.toLocaleString() + ' of ' + all.toLocaleString() : all.toLocaleString() + ' rows') : '';
+    var note = tp ? 'This table covers the exported period ' + fmtD(tp.from) + ' – ' + fmtD(tp.to) + ' (the console export, not the range above).' : 'This table covers the period of the export it came from (the range above does not change it).';
+    if (AISRC === 'google') note += ' Google’s AI report has no queries, clicks or positions; these impressions are also inside the normal Web numbers above.';
+    else note += ' Bing’s grounding queries are a sample, not every citation.';
+    $('gs-aitnote').textContent = note;
+    var id = 'gs-ait', st = ST[id] || (ST[id] = { key: 'c', dir: 'desc', all: false });
+    if (resetPage) st.all = false;
+    if (!cs.some(function (c) { return c.k === st.key; })) { st.key = 'c'; st.dir = 'desc'; }
+    st.cols = cs; st.rows = rows;
+    draw(id, 'gs-aimore', st, null, all ? 'No rows match the search.' : 'This export had no ' + tab + ' table.');
+  }
+
   if (FILTERS.length && RANGE === '365') { RANGE = '90'; paintRange(); }
   load();
+  loadAi();
 })();

@@ -353,6 +353,24 @@
       }
     ]
   },
+  "https://mes.fm/stephen-smith-jerry-jones-cowboys": {
+    "image": "https://mes.fm/stephen-smith-jerry-jones-cowboys/img/stephen-a-smith-jerry-jones-cowboys.jpg",
+    "watchLinks": [],
+    "namedLinks": [
+      {
+        "label": "Hive",
+        "href": "https://inleo.io/threads/view/mestruth/re-leothreads-2cm6zelob"
+      },
+      {
+        "label": "Telegram",
+        "href": "https://t.me/meslinks/35659"
+      },
+      {
+        "label": "MES Conspiracy",
+        "href": "https://mes.fm/conspiracy"
+      }
+    ]
+  },
   "https://mes.fm/stephen-smith-trump-dinner": {
     "image": "https://mes.fm/stephen-smith-trump-dinner/img/stephen-a-smith-trump-dinner-cnn.jpg",
     "watchLinks": [],

@@ -607,6 +607,24 @@ body.dark-mode .tu .rw-head {color:#a0a8b3;border-bottom-color:#555;} body.dark-
 	body.dark-mode #mt.mt .tu-table td, body.dark-mode #mt.mt .tu-table th {border-bottom-color:#3a3f46;color:#e8ecf1;}
 	body.dark-mode #mt.mt .tu-table tr.is-active td {background:#16324a;}
 	body.dark-mode #mt.mt .tu-stat--hero {background:#16324a;border-color:#2d5375;}
+	/* thermal tab: support picker in the picture, coloured bar, thermometer, stress chart */
+	#mt .mt-thtop {display:flex;flex-wrap:wrap;gap:0.5em 1em;align-items:center;justify-content:space-between;margin:0 0 0.4em;}
+	#mt .mt-thsup button {display:inline-flex;align-items:center;gap:0.35em;} #mt .mt-thsup svg {width:2.1em;height:0.9em;fill:currentColor;opacity:0.85;}
+	#mt .mt-tht0 {display:inline-flex;align-items:center;gap:0.35em;font-size:0.9em;color:var(--mt-mut);} #mt .mt-tht0 input {width:4.6em;min-height:34px;padding:0.2em 0.4em;}
+	#mt .mt-thbar {stroke:var(--mt-s3);stroke-width:1.4;transition:stroke 0.2s;} #mt .mt-thbar--yield {stroke:var(--mt-yield);stroke-width:4;} #mt .mt-thbar--buckle {stroke:var(--mt-break);stroke-width:4;}
+	#mt .mt-thwave {fill:none;stroke:#dc2626;stroke-width:2;stroke-linecap:round;opacity:0.8;} #mt .mt-thsnow {fill:#2563eb;font-size:15px;}
+	#mt .mt-thwarn {fill:#b45309;} #mt .mt-thwarn--b {fill:var(--mt-break);}
+	#mt .mt-thtube {fill:var(--mt-card);stroke:var(--mt-s3);stroke-width:1.5;}
+	#mt [data-drag="therm"] {cursor:ns-resize;} #mt [data-drag="therm"]:hover .mt-thtube {stroke:var(--accent);stroke-width:2.5;}
+	#mt .mt-thch {margin-top:0.5em;cursor:crosshair;touch-action:none;} #mt .mt-thch-bg {fill:var(--mt-soft);} #mt .mt-thch-grid {stroke:var(--mt-grid);stroke-width:1;} #mt .mt-thch-zero {stroke:var(--mt-axis);stroke-width:1.2;}
+	#mt .mt-thch-tk {font-size:11px;fill:var(--mt-mut);} #mt .mt-thch-ax {font-size:12px;fill:var(--mt-mut);} #mt .mt-thch-lb {font-size:11px;font-weight:700;}
+	#mt .mt-thch-line {fill:none;stroke:var(--accent);stroke-width:2.6;stroke-linejoin:round;} #mt .mt-thch-now {stroke:var(--mt-ghost);stroke-width:1;stroke-dasharray:3 3;}
+	#mt .mt-thch-yield {stroke:var(--mt-yield);stroke-width:1.6;stroke-dasharray:7 4;} #mt .mt-thch-yield-t {fill:#b45309;} #mt .mt-thch-buck {stroke:#7c3aed;stroke-width:1.6;stroke-dasharray:3 3;} #mt .mt-thch-buck-t {fill:#7c3aed;}
+	#mt .mt-thch-pt {stroke:var(--mt-card);stroke-width:2.5;fill:#16a34a;} #mt .mt-thch-pt--yield {fill:var(--mt-yield);} #mt .mt-thch-pt--buckle {fill:var(--mt-break);}
+	body.dark-mode #mt.mt .mt-thch-yield-t, body.dark-mode #mt.mt .mt-thwarn {fill:#fbbf24;} body.dark-mode #mt.mt .mt-thch-buck-t {fill:#c4b5fd;} body.dark-mode #mt.mt .mt-thch-buck {stroke:#a78bfa;} body.dark-mode #mt.mt .mt-thwave {stroke:#f87171;} body.dark-mode #mt.mt .mt-thsnow {fill:#93c5fd;} body.dark-mode #mt.mt .mt-thch-line {stroke:#7fb2e0;}
+	@media (max-width:560px) {#mt .mt-thsup button {padding:0.35em 0.5em;font-size:0.85em;}}
+	/* phones: each slider gets its own row (label + value above, the track full width below), so long labels don't squeeze the track */
+	@media (max-width:560px) {#mt .mt-sliders {display:block;} #mt .mt-sliders .mt-slide {display:grid;grid-template-columns:minmax(0,1fr) auto;grid-template-areas:"l o" "r r";gap:0 0.5em;margin:0.15em 0 0.35em;} #mt .mt-sliders .mt-slide label {grid-area:l;} #mt .mt-sliders .mt-slide output {grid-area:o;min-width:0;} #mt .mt-sliders .mt-slide input {grid-area:r;width:100%;}}
 
 
 	@media print {
@@ -735,6 +753,13 @@ body.is-stuck #navbar.hide { position: fixed; top: 56px; right: 8px; }
 	body.dark-mode #mt .mt-sp--composite{fill:#ccced1}
 	body.dark-mode #mt .mt-ss__o:hover,body.dark-mode #mt .mt-ss__o--act{background:#1a242b}
 	body.dark-mode #mt .mt-tbl tr.is-active td:first-child{background:#1a242b}
+	body.dark-mode #mt .mt-thwave{stroke:#b01c1c}
+	body.dark-mode #mt .mt-thsnow{fill:#6a94f1}
+	body.dark-mode #mt .mt-thwarn{fill:#f7a364}
+	body.dark-mode #mt .mt-thch-yield-t{fill:#f7a364}
+	body.dark-mode #mt .mt-thch-buck{stroke:#5011bb}
+	body.dark-mode #mt .mt-thch-buck-t{fill:#9c69f1}
+	body.dark-mode #mt .mt-thch-pt{fill:#6fec9d}
 	/* TOOL-DARK:END */
 </style>
         <meta property="fb:app_id" content="" />
@@ -1212,14 +1237,21 @@ body.is-stuck #navbar.hide { position: fixed; top: 56px; right: 8px; }
 		<!-- ============ 6. THERMAL ============ -->
 		<section data-panel="thermal" role="tabpanel" hidden>
 			<div class="mt-grid2">
-				<div class="tu-card mt-fig"><svg id="mt-th-svg" class="mt-svg" viewBox="0 0 520 300" role="img" aria-label="A bar that is heated, free to grow or held between walls"></svg><p class="mt-cap" id="mt-th-cap"></p></div>
+				<div class="tu-card mt-fig">
+					<div class="mt-thtop"><div class="tu-seg mt-thsup" id="mt-th-sup" role="group" aria-label="How the bar is held (same as the buttons beside)"><button type="button" data-v="free" aria-pressed="true"><svg viewBox="0 0 40 16" aria-hidden="true"><rect x="6" y="5" width="28" height="6" rx="1"/></svg>Free</button><button type="button" data-v="held" aria-pressed="false"><svg viewBox="0 0 40 16" aria-hidden="true"><rect x="1" y="1" width="4" height="14"/><rect x="6" y="5" width="28" height="6" rx="1"/><rect x="35" y="1" width="4" height="14"/></svg>Both ends fixed</button><button type="button" data-v="gap" aria-pressed="false"><svg viewBox="0 0 40 16" aria-hidden="true"><rect x="1" y="1" width="4" height="14"/><rect x="6" y="5" width="22" height="6" rx="1"/><rect x="35" y="1" width="4" height="14"/></svg>Gap, then fixed</button></div>
+					<label class="mt-tht0">Starts at <input type="text" inputmode="decimal" id="mt-th-t0" class="tu-input" value="20" aria-label="Starting temperature"> <span id="mt-th-t0u">°C</span></label></div>
+					<svg id="mt-th-svg" class="mt-svg" viewBox="0 0 620 300" role="img" aria-label="A bar that is heated, free to grow or held between walls. Drag the round handle at its end, or the thermometer, to heat or cool it."></svg>
+					<div class="mt-sliders" id="mt-th-sl"></div>
+					<svg id="mt-th-chart" class="mt-svg mt-thch" viewBox="0 0 520 210" role="img" aria-label="Stress in the bar against the temperature change, with the yield strength and buckling stress. Click or drag on it to set the temperature change."></svg>
+					<p class="mt-cap" id="mt-th-cap"></p>
+				</div>
 				<div class="tu-card mt-inp">
-					<div class="tu-seg mt-modes" id="mt-th-cond" role="group" aria-label="Ends of the bar"><button type="button" data-v="free" aria-pressed="true">Free to grow</button><button type="button" data-v="held" aria-pressed="false">Held between walls</button><button type="button" data-v="gap" aria-pressed="false">Walls with a gap</button></div>
+					<div class="tu-seg mt-modes" id="mt-th-cond" role="group" aria-label="Ends of the bar"><button type="button" data-v="free" aria-pressed="true">Free to grow</button><button type="button" data-v="held" aria-pressed="false">Both ends fixed</button><button type="button" data-v="gap" aria-pressed="false">Gap, then fixed</button></div>
 					<div class="tu-row" style="margin-top:0.8em;">
 						<div class="mt-f" data-f="th-dT" data-k="dtemp" data-d="dtemp" data-l="Temperature change ΔT" data-sg></div>
 						<div class="mt-f" data-f="th-L" data-k="len" data-d="len" data-l="Length L"></div>
 						<div class="mt-f" data-f="th-g" data-k="len" data-d="small" data-l="Gap δ" data-m="gap"></div>
-						<div class="mt-f" data-f="th-d" data-k="len" data-d="small" data-l="Bar diameter (for the force)" data-x></div>
+						<div class="mt-f" data-f="th-d" data-k="len" data-d="small" data-l="Bar diameter (force, buckling)" data-x></div>
 					</div>
 					<div class="tu-row mt-r2">
 						<div class="mt-f" data-f="th-a" data-k="alpha" data-d="alpha" data-l="Thermal expansion α" data-x data-sg></div>
@@ -1311,7 +1343,7 @@ body.is-stuck #navbar.hide { position: fixed; top: 56px; right: 8px; }
 <!-- /MES-BOTTOM-AD -->
                             </div>
                         <!-- MES-ASIDE -->
-<aside id="mes-aside" class="mes-aside" data-aside-family="tools" aria-label="More from MES Tools"><div class="mes-aside__sticky"><div class="mes-aside__ad" data-ad-slot="8429975111"></div><div class="mes-aside__head"><h2 class="mes-aside__title-h">More like this</h2><button type="button" class="mes-aside__flip" aria-label="Move this sidebar to the other side" title="Move sidebar to the other side">&#8644;</button></div><ul class="mes-aside__list"><li><a class="mes-aside__card" href="/youngs-modulus-calculator"><img class="mes-aside__img mes-aside__img--logo" src="/youngs-modulus-calculator/img/logo.png" width="56" height="56" loading="lazy" alt=""><span class="mes-aside__text"><span class="mes-aside__name">Young's Modulus Calculator: Stress, Strain and Elongation</span><span class="mes-aside__tag">Calculator</span></span></a></li><li><a class="mes-aside__card" href="/ideal-weight-calculator"><img class="mes-aside__img mes-aside__img--logo" src="/ideal-weight-calculator/img/logo.png" width="56" height="56" loading="lazy" alt=""><span class="mes-aside__text"><span class="mes-aside__name">Ideal Weight Calculator: Devine, Robinson, Miller and Hamwi Formulas</span><span class="mes-aside__tag">Calculator</span></span></a></li><li><a class="mes-aside__card" href="/tools"><img class="mes-aside__img" src="/img/tools-icon.jpg" width="56" height="56" loading="lazy" alt=""><span class="mes-aside__text"><span class="mes-aside__name">All MES Tools</span><span class="mes-aside__tag">Gallery</span></span></a></li><li><a class="mes-aside__card" href="/percentagecalculator"><img class="mes-aside__img mes-aside__img--logo" src="/percentagecalculator/img/logo.png" width="56" height="56" loading="lazy" alt=""><span class="mes-aside__text"><span class="mes-aside__name">Percentage Calculator</span><span class="mes-aside__tag">Calculator</span></span></a></li></ul></div></aside>
+<aside id="mes-aside" class="mes-aside" data-aside-family="tools" aria-label="More from MES Tools"><div class="mes-aside__sticky"><div class="mes-aside__ad" data-ad-slot="8429975111"></div><div class="mes-aside__head"><h2 class="mes-aside__title-h">More like this</h2><button type="button" class="mes-aside__flip" aria-label="Move this sidebar to the other side" title="Move sidebar to the other side">&#8644;</button></div><ul class="mes-aside__list"><li><a class="mes-aside__card" href="/youngs-modulus-calculator"><img class="mes-aside__img mes-aside__img--logo" src="/youngs-modulus-calculator/img/logo.png" width="56" height="56" loading="lazy" alt=""><span class="mes-aside__text"><span class="mes-aside__name">Young's Modulus Calculator: Stress, Strain and Elongation</span><span class="mes-aside__tag">Calculator</span></span></a></li><li><a class="mes-aside__card" href="/body-fat-calculator"><img class="mes-aside__img mes-aside__img--logo" src="/body-fat-calculator/img/logo.png" width="56" height="56" loading="lazy" alt=""><span class="mes-aside__text"><span class="mes-aside__name">Body Fat Calculator: U.S. Navy Method and BMI Estimate</span><span class="mes-aside__tag">Calculator</span></span></a></li><li><a class="mes-aside__card" href="/tools"><img class="mes-aside__img" src="/img/tools-icon.jpg" width="56" height="56" loading="lazy" alt=""><span class="mes-aside__text"><span class="mes-aside__name">All MES Tools</span><span class="mes-aside__tag">Gallery</span></span></a></li><li><a class="mes-aside__card" href="/gradecalculator"><img class="mes-aside__img mes-aside__img--logo" src="/gradecalculator/img/logo.png" width="56" height="56" loading="lazy" alt=""><span class="mes-aside__text"><span class="mes-aside__name">Grade Calculator</span><span class="mes-aside__tag">Calculator</span></span></a></li></ul></div></aside>
 <!-- /MES-ASIDE -->
 </div>
 
@@ -1361,7 +1393,7 @@ body.is-stuck #navbar.hide { position: fixed; top: 56px; right: 8px; }
             hide_search:false,
             current_tab:2
         }        </script><!-- FASTCOMMENTS-LAZY: widget init moved to main_js/main.js -- it pulls embed.min.js only when #fastcomments-widget nears the viewport or on the first Comments-toggle click, so it no longer blocks first render -->                <script src="https://mes.fm/main_js/lazysizes.min.js?v=1.0.3" async></script>
-	<script src="/materials/js/materials.js?v=4" defer></script>
+	<script src="/materials/js/materials.js?v=5" defer></script>
             <script src="https://mes.fm/main_js/main.js?v=1.0.5"></script>    <!-- PAGEVIEW-TRACKING-INSERTED --><script src="https://mes.fm/main_js/track.js" defer></script><script>document.getElementById('copyright-year').textContent = new Date().getFullYear();</script><script src="/main_js/info-bar-fit.js" defer></script><script>
   // Floating compact header bar (see #compact-nav CSS): appears once the
   // header + nav bar have scrolled off the top; nav links that don't fit

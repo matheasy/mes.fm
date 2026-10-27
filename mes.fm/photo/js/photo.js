@@ -373,23 +373,71 @@ var MESPixel = (function () {
 	/* a quantity that is linear in a parameter (v0 at f0, v1 at f1): the parameter that gives `target`, null when the quantity does not change */
 	function linSolve(f0, v0, f1, v1, target) { var dv = v1 - v0; if (Math.abs(dv) < 1e-12) return null; return f0 + (target - v0) * (f1 - f0) / dv; }
 	function scaleAbout(p, a, f) { return a + (p - a) * f; }
-	/* word wrap that remembers where each line came from in the string: [{text, start, end}] (end = start + text.length; a wrapped line loses its trailing spaces) */
+	/* word wrap that remembers where each line came from in the string: [{text, start, end}] (end = start + text.length; a wrapped line loses its trailing spaces).
+	 * measure(s, start) = width of s, which begins at string index start (rich text: bold / italic parts measure wider) */
 	function wrapLines(str, lim, measure) {
 		str = String(str == null ? "" : str); var out = [], pos = 0;
 		str.split("\n").forEach(function (para) {
 			var base = pos; pos += para.length + 1;
-			if (measure(para) <= lim) { out.push({ text: para, start: base, end: base + para.length }); return; }
+			if (measure(para, base) <= lim) { out.push({ text: para, start: base, end: base + para.length }); return; }
 			var cur = "", cs = base, tp = base;
 			var push = function (s, st, trim) { var tx = trim ? s.replace(/\s+$/, "") : s; out.push({ text: tx, start: st, end: st + tx.length }); };
 			para.split(/(\s+)/).forEach(function (wd) {
 				var ws = tp; tp += wd.length; if (!wd) return;
-				if (cur && measure((cur + wd).replace(/\s+$/, "")) > lim) { push(cur, cs, true); if (/^\s+$/.test(wd)) { cur = ""; cs = tp; } else { cur = wd; cs = ws; } }
+				if (cur && measure((cur + wd).replace(/\s+$/, ""), cur ? cs : ws) > lim) { push(cur, cs, true); if (/^\s+$/.test(wd)) { cur = ""; cs = tp; } else { cur = wd; cs = ws; } }
 				else { if (!cur) cs = ws; cur += wd; }
-				while (measure(cur.replace(/\s+$/, "")) > lim && cur.length > 1) { var k = cur.length - 1; while (k > 1 && measure(cur.slice(0, k)) > lim) k--; push(cur.slice(0, k), cs, false); cur = cur.slice(k); cs += k; }   // one word longer than the box
+				while (measure(cur.replace(/\s+$/, ""), cs) > lim && cur.length > 1) { var k = cur.length - 1; while (k > 1 && measure(cur.slice(0, k), cs) > lim) k--; push(cur.slice(0, k), cs, false); cur = cur.slice(k); cs += k; }   // one word longer than the box
 			});
 			push(cur, cs, true);
 		});
 		return out;
+	}
+	/* ---------- rich text: per-character bold / italic / underline ----------
+	 * A text layer may carry rich = a string as long as the text, one digit per character: bit 1 bold, 2 italic, 4 underline (so "0" plain, "5" bold + underline).
+	 * rich = null means every character uses the layer's own bold / italic / underline. Kept as a string so it survives JSON (history, .mesproj, duplicate). */
+	function richMask(b, i, u) { return (b ? 1 : 0) | (i ? 2 : 0) | (u ? 4 : 0); }
+	function richRepeat(m, n) { var s = ""; for (var k = 0; k < n; k++) s += m; return s; }
+	/* the text changed from oldS to newS (typing, paste, delete, undo inside the box): keep each kept character's style; new characters take the style of the
+	 * character before them (or after them, at the very start) */
+	function richEdit(rich, oldS, newS, def) {
+		if (rich == null) return null; oldS = String(oldS); newS = String(newS); var ol = oldS.length, nl = newS.length, p = 0, s = 0;
+		if (rich.length !== ol) rich = (rich + richRepeat(String(def || 0), ol)).slice(0, ol);
+		while (p < ol && p < nl && oldS[p] === newS[p]) p++;
+		while (s < ol - p && s < nl - p && oldS[ol - 1 - s] === newS[nl - 1 - s]) s++;
+		var m = p > 0 ? rich[p - 1] : ol > 0 ? rich[0] : String(def || 0);
+		return rich.slice(0, p) + richRepeat(m, nl - p - s) + rich.slice(ol - s);
+	}
+	/* switch one style bit on or off for the characters a..b */
+	function richSet(rich, a, b, bit, on) { var out = rich.slice(0, a); for (var i = a; i < b && i < rich.length; i++) { var m = +rich[i]; out += String(on ? m | bit : m & ~bit); } return out + rich.slice(Math.min(b, rich.length)); }
+	/* does every character a..b have the bit? (an empty range: the character before it) */
+	function richAll(rich, a, b, bit) { if (b <= a) { var c = rich[Math.max(0, a - 1)]; return !!(c != null && (+c & bit)); } for (var i = a; i < b; i++) if (!(+rich[i] & bit)) return false; return true; }
+	/* all characters the same -> {rich: null, mask}; else {rich, mask = the bits every character has} */
+	function richNorm(rich) {
+		if (rich == null || !rich.length) return { rich: null, mask: rich && rich.length ? +rich[0] : null };
+		var all = 7, same = true; for (var i = 0; i < rich.length; i++) { all &= +rich[i]; if (rich[i] !== rich[0]) same = false; }
+		return same ? { rich: null, mask: +rich[0] } : { rich: rich, mask: all };
+	}
+	/* the runs of one style in a..b: [{s, e, m}] (no rich = one run with the layer's mask) */
+	function richSegs(rich, a, b, base) {
+		if (rich == null) return b > a ? [{ s: a, e: b, m: base }] : []; var out = [], st = a;
+		for (var i = a + 1; i <= b; i++) if (i === b || rich[i] !== rich[st]) { out.push({ s: st, e: i, m: +rich[st] }); st = i; }
+		return out;
+	}
+	/* Auto-fit text: the largest font size whose wrapped text fits a box w x h (box height = size * (lh * lines + 0.25), like the editor's text frame),
+	 * without breaking a word. measureAt(size) -> measure(s, start). Returns a size in steps of 0.5 between lo and hi. */
+	function fitFontSize(str, w, h, lh, measureAt, lo, hi) {
+		str = String(str == null ? "" : str); lo = lo || 4; hi = hi || 1000; if (!(w > 0) || !(h > 0)) return null;
+		var words = [], re = /\S+/g, mm; while ((mm = re.exec(str))) words.push([mm[0], mm.index]);
+		var fits = function (sz) { var me = measureAt(sz); for (var k = 0; k < words.length; k++) if (me(words[k][0], words[k][1]) > w) return false; return sz * (lh * wrapLines(str, w, me).length + 0.25) <= h; };
+		if (!fits(lo)) return lo; if (fits(hi)) return hi;
+		var a = lo, b = hi; for (var it = 0; it < 40 && b - a > 0.25; it++) { var mid = (a + b) / 2; if (fits(mid)) a = mid; else b = mid; }
+		return Math.max(lo, Math.floor(a * 2) / 2);
+	}
+	/* a dropped / picked folder: the project.json that is closest to the top and the project files next to it.
+	 * paths = "Fetzer/project.json", ... -> {prefix: "Fetzer/", files: [paths]} or null when there is no project.json */
+	function folderProject(paths) {
+		var pre = projectPrefix(paths); if (pre === null) return null;
+		return { prefix: pre, files: (paths || []).filter(function (n) { if (n.indexOf(pre) !== 0 || /(^|\/)__MACOSX\//.test(n) || /(^|\/)\._/.test(n)) return false; var r = n.slice(pre.length); return /^(project\.json|layer-[^\/]+\.png|mask-[^\/]+\.png)$/.test(r); }) };
 	}
 	/* which line a string index is on, and how far into it: {line, k} */
 	function caretLine(lines, idx) {
@@ -397,7 +445,7 @@ var MESPixel = (function () {
 		var L = lines[li]; return { line: li, k: Math.max(0, Math.min(L.text.length, idx - L.start)) };
 	}
 	/* the string index closest to x (measured from the line's own left edge) */
-	function hitInLine(line, x, measure) { var best = 0, bd = Infinity; for (var k = 0; k <= line.text.length; k++) { var d = Math.abs(measure(line.text.slice(0, k)) - x); if (d < bd) { bd = d; best = k; } } return line.start + best; }
+	function hitInLine(line, x, measure) { var best = 0, bd = Infinity; for (var k = 0; k <= line.text.length; k++) { var d = Math.abs(measure(line.text.slice(0, k), line.start) - x); if (d < bd) { bd = d; best = k; } } return line.start + best; }
 	/* the word around a string index (double-click): [start, end] */
 	function wordAt(str, idx) {
 		// a run of non-space characters ("2.0", "don't"), without punctuation stuck to its ends ("Fetzer," -> "Fetzer")
@@ -482,7 +530,7 @@ var MESPixel = (function () {
 	function newProjectId(rand) { rand = rand || Math.random; var s = "p"; for (var i = 0; i < 12; i++) s += "abcdefghijklmnopqrstuvwxyz0123456789"[Math.floor(rand() * 36)]; return s; }
 
 	var api = { projectKind: projectKind, projectBase: projectBase, projectFileName: projectFileName, isZipBytes: isZipBytes, zipEntries: zipEntries, projectPrefix: projectPrefix, pruneRecent: pruneRecent, upsertRecent: upsertRecent, agoText: agoText, diskChanged: diskChanged, layerFileNames: layerFileNames, newProjectId: newProjectId,
-		unionBox: unionBox, boxesTouch: boxesTouch, rectFrom: rectFrom, snapTargets: snapTargets, snapAxis: snapAxis, snapBox: snapBox, guidesOn: guidesOn, linSolve: linSolve, scaleAbout: scaleAbout, wrapLines: wrapLines, caretLine: caretLine, hitInLine: hitInLine, wordAt: wordAt, describeSource: describeSource, bytesText: bytesText, panelClamp: panelClamp, panelKey: panelKey, clamp: clamp, hexToRgb: hexToRgb, rgbToHex: rgbToHex, rgbToHsl: rgbToHsl, hslToRgb: hslToRgb, histogram: histogram, identityLUT: identityLUT, applyLUT: applyLUT, levelsLUT: levelsLUT, curveLUT: curveLUT,
+		unionBox: unionBox, boxesTouch: boxesTouch, rectFrom: rectFrom, snapTargets: snapTargets, snapAxis: snapAxis, snapBox: snapBox, guidesOn: guidesOn, linSolve: linSolve, scaleAbout: scaleAbout, wrapLines: wrapLines, richMask: richMask, richEdit: richEdit, richSet: richSet, richAll: richAll, richNorm: richNorm, richSegs: richSegs, fitFontSize: fitFontSize, folderProject: folderProject, caretLine: caretLine, hitInLine: hitInLine, wordAt: wordAt, describeSource: describeSource, bytesText: bytesText, panelClamp: panelClamp, panelKey: panelKey, clamp: clamp, hexToRgb: hexToRgb, rgbToHex: rgbToHex, rgbToHsl: rgbToHsl, hslToRgb: hslToRgb, histogram: histogram, identityLUT: identityLUT, applyLUT: applyLUT, levelsLUT: levelsLUT, curveLUT: curveLUT,
 		brightnessContrast: brightnessContrast, exposure: exposure, hueSat: hueSat, vibrance: vibrance, temperature: temperature, invert: invert, grayscale: grayscale, sepia: sepia, threshold: threshold, posterize: posterize,
 		gaussianBlur: gaussianBlur, boxBlur: boxBlur, unsharp: unsharp, noise: noise, pixelate: pixelate, vignette: vignette, convolve: convolve, floodMask: floodMask, growShrinkMask: growShrinkMask, featherMask: featherMask, invertMask: invertMask,
 		maskBounds: maskBounds, opaqueBounds: opaqueBounds, blendByMask: blendByMask, autoLevels: autoLevels, premultiply: premultiply, unpremultiply: unpremultiply };
@@ -607,36 +655,64 @@ var MESPixel = (function () {
 	};
 
 	/* ---------- text layers ---------- */
-	PE.TEXTDEF = { str: "Text", font: "Arial, Helvetica, sans-serif", size: 64, bold: false, italic: false, color: "#000000", align: "left", lh: 1.2, bgOn: false, bgColor: "#ffeb3b", bgPad: 12, bgRadius: 8, strokeOn: false, stroke: "#ffffff", strokeW: 4, shadowOn: false, shadow: "#000000", shadowBlur: 8, shadowDx: 4, shadowDy: 4, ls: 0, wrapW: 0 };
+	PE.TEXTDEF = { str: "Text", font: "Arial, Helvetica, sans-serif", size: 64, bold: false, italic: false, underline: false, color: "#000000", align: "left", lh: 1.2, bgOn: false, bgColor: "#ffeb3b", bgPad: 12, bgRadius: 8, strokeOn: false, stroke: "#ffffff", strokeW: 4, shadowOn: false, shadow: "#000000", shadowBlur: 8, shadowDx: 4, shadowDy: 4, ls: 0, wrapW: 0, fit: false, boxH: 0 };
+	/* rich text (MESPixel.rich*): t.rich = one style digit per character (1 bold, 2 italic, 4 underline) or null = the layer's own bold / italic / underline */
+	PE.textRich = function (t) { return t && typeof t.rich === "string" && t.rich.length === String(t.str).length && t.rich.length ? t.rich : null; };
+	PE.textMask = function (t) { return P.richMask(t.bold, t.italic, t.underline); };
+	function fontFor(t, m, size) { return (m & 2 ? "italic " : "") + (m & 1 ? "bold " : "") + (size == null ? t.size : size) + "px " + t.font; }
+	PE.textFont = fontFor;
+	/* a measure(s, start) for a text at a given size: rich parts are measured with their own font */
+	function measurer(t, size, ctx) {
+		var rich = PE.textRich(t), base = PE.textMask(t), ls = (t.ls || 0) + "px", cache = {}, set = function (fn) { if (ctx.font !== fn) ctx.font = fn; if ("letterSpacing" in ctx && ctx.letterSpacing !== ls) ctx.letterSpacing = ls; };
+		if (!rich) { var f = fontFor(t, base, size); return function (s) { var w = cache[s]; if (w == null) { set(f); w = cache[s] = ctx.measureText(s).width; } return w; }; }
+		return function (s, st) {
+			st = st || 0; var key = st + "|" + s, w = cache[key]; if (w != null) return w; w = 0;
+			P.richSegs(rich, st, st + s.length, base).forEach(function (g) { set(fontFor(t, g.m, size)); w += ctx.measureText(s.slice(g.s - st, g.e - st)).width; });
+			return (cache[key] = w);
+		};
+	}
+	/* Auto-fit text: the font size that fills the box (Box width x box height) */
+	PE.fitTextSize = function (L) {
+		var t = L.text; if (!t || !t.fit || !(t.wrapW > 0) || !(t.boxH > 0)) return null; var m = lmc || (lmc = mk(8, 8).getContext("2d"));
+		return P.fitFontSize(t.str, t.wrapW, t.boxH, t.lh, function (sz) { return measurer(t, sz, m); }, 4, Math.min(1000, t.boxH * 1.2));
+	};
 	/* where every line of a text layer sits in its canvas (shared by the renderer and the on-canvas text editor: caret, selection, click-to-place).
-	 * lines = [{text, start, end}] with string offsets (MESPixel.wrapLines), lx[i] = left edge of line i, base[i] = its baseline, measure(s) = width in px */
+	 * lines = [{text, start, end}] with string offsets (MESPixel.wrapLines), lx[i] = left edge of line i, base[i] = its baseline, measure(s, start) = width in px,
+	 * bh = height of the text box (the text, or the Auto-fit box when that is taller) */
 	var lmc = null;
 	PE.textLayout = function (L) {
-		var t = L.text; if (!t) return null; var f = (t.italic ? "italic " : "") + (t.bold ? "bold " : "") + t.size + "px " + t.font, dw = PE.doc ? PE.doc.w : 1200;
-		var key = JSON.stringify([t.str, f, t.ls || 0, t.wrapW, t.lh, t.align, t.bgOn && t.bgPad, t.strokeOn && t.strokeW, t.shadowOn && [t.shadowBlur, t.shadowDx, t.shadowDy], t.wrapW > 0 ? 0 : dw]);
+		var t = L.text; if (!t) return null; var rich = PE.textRich(t), f = fontFor(t, PE.textMask(t)), dw = PE.doc ? PE.doc.w : 1200, fit = !!(t.fit && t.wrapW > 0 && t.boxH > 0);
+		var key = JSON.stringify([t.str, f, rich, t.ls || 0, t.wrapW, t.lh, t.align, t.bgOn && t.bgPad, t.strokeOn && t.strokeW, t.shadowOn && [t.shadowBlur, t.shadowDx, t.shadowDy], t.wrapW > 0 ? 0 : dw, fit && t.boxH]);
 		if (L._lay && L._lay.key === key) return L._lay;
-		var m = lmc || (lmc = mk(8, 8).getContext("2d")); m.font = f; if ("letterSpacing" in m) m.letterSpacing = (t.ls || 0) + "px";
-		var cache = {}, measure = function (s) { var w = cache[s]; if (w == null) w = cache[s] = m.measureText(s).width; return w; };
-		// word wrap: an explicit box width (Box width option / the handle on the box), else never wider than 90% of the image so pasted text stays reasonable
+		var m = lmc || (lmc = mk(8, 8).getContext("2d")), measure = measurer(t, t.size, m);
+		// word wrap: an explicit box width (Box width option / the handles on the box), else never wider than 90% of the image so pasted text stays reasonable
 		var lim = t.wrapW > 0 ? t.wrapW : Math.max(160, dw * 0.9), lines = P.wrapLines(t.str, lim, measure);
-		var lw = lines.map(function (s) { return measure(s.text); }), mw = t.wrapW > 0 ? t.wrapW : Math.max.apply(null, lw.concat([1])), lhp = t.size * t.lh;
-		var bgp = t.bgOn ? t.bgPad : 0, pad = Math.ceil(bgp + (t.strokeOn ? t.strokeW : 0) + (t.shadowOn ? t.shadowBlur * 2 + Math.max(Math.abs(t.shadowDx), Math.abs(t.shadowDy)) : 0) + t.size * 0.15 + 2);
+		var lw = lines.map(function (s) { return measure(s.text, s.start); }), mw = t.wrapW > 0 ? t.wrapW : Math.max.apply(null, lw.concat([1])), lhp = t.size * t.lh;
+		var sw = t.strokeOn ? Math.max(0, t.strokeW || 0) : 0, bgp = t.bgOn ? t.bgPad : 0, pad = Math.ceil(bgp + sw + (t.shadowOn ? t.shadowBlur * 2 + Math.max(Math.abs(t.shadowDx), Math.abs(t.shadowDy)) : 0) + t.size * 0.15 + 2);
 		var lx = lw.map(function (w) { return t.align === "center" ? pad + mw / 2 - w / 2 : t.align === "right" ? pad + mw - w : pad; }), base = lines.map(function (s, i) { return pad + lhp * i + t.size * 0.92; });
-		var measureNow = function (s) { m.font = f; if ("letterSpacing" in m) m.letterSpacing = (t.ls || 0) + "px"; return measure(s); };
-		L._lay = { key: key, font: f, lines: lines, lw: lw, lx: lx, base: base, mw: mw, lhp: lhp, pad: pad, bgp: bgp, W: Math.ceil(mw) + pad * 2, H: Math.ceil(lhp * lines.length + t.size * 0.3) + pad * 2, size: t.size, measure: measureNow };
+		var th = lhp * lines.length + t.size * 0.25, bh = fit ? Math.max(t.boxH, th) : th;
+		L._lay = { key: key, font: f, rich: rich, lines: lines, lw: lw, lx: lx, base: base, mw: mw, lhp: lhp, pad: pad, bgp: bgp, bh: bh, fit: fit, W: Math.ceil(mw) + pad * 2, H: Math.ceil(Math.max(lhp * lines.length + t.size * 0.3, bh + t.size * 0.05)) + pad * 2, size: t.size, measure: measure };
 		return L._lay;
 	};
 	PE.renderText = function (L) {
-		var t = L.text, lay = PE.textLayout(L), f = lay.font, lines = lay.lines.map(function (l) { return l.text; }), mw = lay.mw, lhp = lay.lhp, bgp = lay.bgp, pad = lay.pad;
+		var t = L.text; if (t.fit) { var fs = PE.fitTextSize(L); if (fs) t.size = fs; }
+		var lay = PE.textLayout(L), lines = lay.lines, mw = lay.mw, lhp = lay.lhp, bgp = lay.bgp, pad = lay.pad, rich = lay.rich, base = PE.textMask(t), sz = t.size;
 		var W = lay.W, H = lay.H; if (W * H > PE.MAXAREA) return;
-		var oldW = L.canvas.width, oldH = L.canvas.height, c = mk(W, H), x = c.getContext("2d");
-		x.font = f; if ("letterSpacing" in x) x.letterSpacing = (t.ls || 0) + "px"; x.textBaseline = "alphabetic"; x.lineJoin = "round"; x.textAlign = t.align;
-		if (t.bgOn) { var bx = pad - bgp, by = pad - bgp, bw = Math.ceil(mw) + bgp * 2, bh = Math.ceil(lhp * lines.length + t.size * 0.3 - t.size * 0.1) + bgp * 2 - Math.round(t.size * 0.05), br = Math.min(t.bgRadius, bw / 2, bh / 2); x.fillStyle = t.bgColor; x.beginPath(); x.moveTo(bx + br, by); x.arcTo(bx + bw, by, bx + bw, by + bh, br); x.arcTo(bx + bw, by + bh, bx, by + bh, br); x.arcTo(bx, by + bh, bx, by, br); x.arcTo(bx, by, bx + bw, by, br); x.closePath(); x.fill(); }
-		lines.forEach(function (s, i) {
-			var px = t.align === "center" ? pad + mw / 2 : t.align === "right" ? pad + mw : pad, py = pad + lhp * i + t.size * 0.92;
-			if (t.shadowOn) { x.save(); x.shadowColor = t.shadow; x.shadowBlur = t.shadowBlur; x.shadowOffsetX = t.shadowDx; x.shadowOffsetY = t.shadowDy; x.fillStyle = t.color; x.fillText(s, px, py); x.restore(); }
-			if (t.strokeOn) { x.strokeStyle = t.stroke; x.lineWidth = t.strokeW * 2; x.strokeText(s, px, py); }
-			x.fillStyle = t.color; x.fillText(s, px, py);
+		var oldW = L.canvas.width, oldH = L.canvas.height, c = mk(W, H), x = c.getContext("2d"), sw = t.strokeOn ? Math.max(0, t.strokeW || 0) : 0;
+		if ("letterSpacing" in x) x.letterSpacing = (t.ls || 0) + "px"; x.textBaseline = "alphabetic"; x.lineJoin = "round"; x.textAlign = "left";
+		if (t.bgOn) { var inner = Math.ceil(lhp * lines.length + sz * 0.3 - sz * 0.1) - Math.round(sz * 0.05); if (lay.fit) inner = Math.max(inner, Math.ceil(lay.bh)); var bx = pad - bgp, by = pad - bgp, bw = Math.ceil(mw) + bgp * 2, bh = inner + bgp * 2, br = Math.min(t.bgRadius, bw / 2, bh / 2); x.fillStyle = t.bgColor; x.beginPath(); x.moveTo(bx + br, by); x.arcTo(bx + bw, by, bx + bw, by + bh, br); x.arcTo(bx + bw, by + bh, bx, by + bh, br); x.arcTo(bx, by + bh, bx, by, br); x.arcTo(bx, by, bx + bw, by, br); x.closePath(); x.fill(); }
+		// underline: scaled to the font size, from the first to the last underlined letter of each run (not the letter spacing after the last one)
+		var uOff = Math.max(1, sz * 0.11), uTh = Math.max(1, sz * 0.065), ls = t.ls || 0;
+		lines.forEach(function (ln, i) {
+			var py = lay.base[i], x0 = lay.lx[i], segs = P.richSegs(rich, ln.start, ln.end, base), ul = [];
+			segs.forEach(function (g) { g.x = x0 + lay.measure(ln.text.slice(0, g.s - ln.start), ln.start); g.txt = ln.text.slice(g.s - ln.start, g.e - ln.start); });
+			segs.forEach(function (g) { if (!(g.m & 4)) return; var xe = x0 + lay.measure(ln.text.slice(0, g.e - ln.start), ln.start) - (ls > 0 ? ls : 0), last = ul[ul.length - 1]; if (last && last.e === g.s) { last.e = g.e; last.x1 = xe; } else ul.push({ s: g.s, e: g.e, x0: g.x, x1: xe }); });
+			ul = ul.filter(function (u) { return u.x1 > u.x0; });
+			var draw = function (fn) { segs.forEach(function (g) { x.font = fontFor(t, g.m); fn(g); }); };
+			var bars = function (fn) { ul.forEach(function (u) { fn(u.x0, py + uOff, u.x1 - u.x0, uTh); }); };
+			if (t.shadowOn) { x.save(); x.shadowColor = t.shadow; x.shadowBlur = t.shadowBlur; x.shadowOffsetX = t.shadowDx; x.shadowOffsetY = t.shadowDy; x.fillStyle = t.color; draw(function (g) { x.fillText(g.txt, g.x, py); }); bars(function (a, b, w, h) { x.fillRect(a, b, w, h); }); x.restore(); }
+			if (sw > 0) { x.strokeStyle = t.stroke; x.lineWidth = sw * 2; draw(function (g) { x.strokeText(g.txt, g.x, py); }); bars(function (a, b, w, h) { x.strokeRect(a, b, w, h); }); }
+			x.fillStyle = t.color; draw(function (g) { x.fillText(g.txt, g.x, py); }); bars(function (a, b, w, h) { x.fillRect(a, b, w, h); });
 		});
 		L._pad = pad; var dx = (W - oldW) / 2, dy = (H - oldH) / 2, m6 = matrix(L);      // keep the top-left corner where it was
 		L.cx += m6[0] * dx + m6[2] * dy; L.cy += m6[1] * dx + m6[3] * dy; L.canvas = c; L.rev++;
@@ -1127,7 +1203,7 @@ var MESPixel = (function () {
 	}
 	function boxHandle(b, hd) { return PE.toScreen(b.x + (hd[0] + 1) / 2 * b.w, b.y + (hd[1] + 1) / 2 * b.h); }
 	function scr(e) { var r = PE.els.over.getBoundingClientRect(); return { x: e.sx - r.left, y: e.sy - r.top }; }
-	var mv = null;
+	var mv = null, hoverTM = null;
 	function pickTarget(hit, L, groupsOn) {
 		if (!groupsOn) return hit; var anc = PE.ancestorsOf(hit); if (!anc.length) return hit; if (L === hit) return hit; if (L && anc.indexOf(L) >= 0) return L;
 		if (L && PE.topGroupOf(L) === PE.topGroupOf(hit)) return hit; return PE.topGroupOf(hit);
@@ -1190,7 +1266,7 @@ var MESPixel = (function () {
 	}
 	PE.defTool({ id: "move", name: "Move / Transform", key: "v", icon: "✥", opts: { auto: true, handles: true, snap: true, snapLayers: true, groups: true },
 		ui: [{ k: "auto", label: "Pick layer on click", type: "check" }, { k: "groups", label: "Pick the whole group", type: "check" }, { k: "handles", label: "Transform handles", type: "check" }, { k: "snap", label: "Snap to canvas edges", type: "check" }, { k: "snapLayers", label: "Snap to other layers", type: "check" }, { type: "button", label: "✎ Edit text / equation", act: function () { var L = PE.active(); if (L && L.type === "text") PE.editActiveText(); else if (L && L.eq) PE.dlgEquation(L); else PE.toast("Select a text or equation layer first (click it on the picture)"); } }, { type: "button", label: "✂ Remove background (AI)", act: function () { PE.aiRemoveBackground(); } }],
-		hint: "Drag to move. Shift / Ctrl-click adds or removes layers; drag on empty canvas to box-select several. Handles resize (Shift = other proportions), just outside a corner rotates. Hold Ctrl (or Alt) while dragging = no snapping. Arrows nudge.",
+		hint: "Drag to move. Shift / Ctrl-click adds or removes layers; drag on empty canvas to box-select several. Handles resize (Shift = other proportions), just outside a corner rotates. On a text: the purple side handles wrap it (with Auto-fit text the purple corners resize the box; Alt+corner scales). Hold Ctrl (or Alt) while dragging = no snapping. Arrows nudge.",
 		down: function (e) {
 			var o = PE.opt.move, A = PE.active(), set = PE.moveSet(), multi = set.length > 1, sp = scr(e), i;
 			mv = null; PE.guides = [];
@@ -1200,7 +1276,12 @@ var MESPixel = (function () {
 						var its = leaves(set).filter(function (k) { return !k.locked; }); if (its.length !== leaves(set).length) { PE.toast("A locked layer is in the selection"); return; }
 						mv = { kind: "mscale", set: set, b0: b, vb0: P.unionBox(its.filter(PE.effVisible).map(PE.visBox)) || b, h: HANDLES[i], items: its.map(function (k) { return [k, k.cx, k.cy, k.sx, k.sy, k.rot]; }), tg: targetsFor(its) }; return; } }
 				} else if (A && A.visible && !PE.isGroup(A) && !A.locked) {
-					for (i = 0; i < 8; i++) { var s = handleScreen(A, HANDLES[i]); if (Math.hypot(s.x - sp.x, s.y - sp.y) < 9) { mv = { kind: "scale", L: A, h: HANDLES[i], sx0: A.sx, sy0: A.sy, cx0: A.cx, cy0: A.cy, rot: A.rot, p0: e, tg: targetsFor([A]) }; return; } }
+					var isText = A.type === "text" && A.text && PE.textBoxHit;
+					if (isText) {   // a text layer: the purple handles on its box change the wrap width (and, with Auto-fit text, the box height); Alt on a box corner = scale
+						var tbh = PE.textBoxHit(A, e);
+						if (tbh) { if (e.alt && tbh.hx !== 0.5 && tbh.hy !== 0.5) { mv = { kind: "scale", L: A, h: [tbh.hx * 2 - 1, tbh.hy * 2 - 1], sx0: A.sx, sy0: A.sy, cx0: A.cx, cy0: A.cy, rot: A.rot, p0: e, tg: targetsFor([A]) }; return; } mv = { kind: "tbox", tb: PE.textBoxStart(A, tbh) }; return; }
+					}
+					for (i = 0; i < 8; i++) { if (isText && (A.text.fit || i % 2)) continue; var s = handleScreen(A, HANDLES[i]); if (Math.hypot(s.x - sp.x, s.y - sp.y) < 9) { mv = { kind: "scale", L: A, h: HANDLES[i], sx0: A.sx, sy0: A.sy, cx0: A.cx, cy0: A.cy, rot: A.rot, p0: e, tg: targetsFor([A]) }; return; } }
 					var corners = [0, 2, 4, 6].map(function (k) { return handleScreen(A, HANDLES[k]); });
 					for (i = 0; i < 4; i++) { var dd = Math.hypot(corners[i].x - sp.x, corners[i].y - sp.y); if (dd >= 9 && dd < 30 && !PE.layerAtPoint(A, e.x, e.y)) { mv = { kind: "rot", L: A, a0: Math.atan2(e.y - A.cy, e.x - A.cx), rot0: A.rot }; return; } }
 				}
@@ -1222,6 +1303,7 @@ var MESPixel = (function () {
 		move: function (e) {
 			if (!mv) return; var L = mv.L, T = th();
 			if (mv.kind === "band") { mv.b = e; PE.invalidateOverlay(); return; }
+			if (mv.kind === "tbox") { PE.textBoxMove(mv.tb, e); mv.moved = mv.tb.moved; return; }
 			if (mv.kind === "move") {
 				var dx = Math.round(e.x - mv.p0.x), dy = Math.round(e.y - mv.p0.y); if (e.shift) { if (Math.abs(dx) > Math.abs(dy)) dy = 0; else dx = 0; }
 				PE.guides = [];
@@ -1271,7 +1353,7 @@ var MESPixel = (function () {
 			if (m && m.kind === "band") { bandSelect(m, e); PE.invalidateOverlay(); return; }
 			if (m && m.moved) {
 				var n = m.set ? m.set.length : 1, grp = m.set && n === 1 && PE.isGroup(m.set[0]);
-				PE.commit(m.kind === "move" ? (n > 1 ? "Move " + n + " layers" : grp ? "Move group" : "Move layer") : m.kind === "rot" ? "Rotate layer" : m.kind === "mscale" ? "Resize " + n + " layers" : "Resize layer");
+				PE.commit(m.kind === "tbox" ? "Text box" : m.kind === "move" ? (n > 1 ? "Move " + n + " layers" : grp ? "Move group" : "Move layer") : m.kind === "rot" ? "Rotate layer" : m.kind === "mscale" ? "Resize " + n + " layers" : "Resize layer");
 			}
 			PE.invalidateOverlay();
 		},
@@ -1279,11 +1361,17 @@ var MESPixel = (function () {
 			var m = mv; mv = null; PE.guides = []; if (!m) return;
 			if (m.kind === "move") m.items.forEach(function (g) { g[0].cx = g[1]; g[0].cy = g[2]; });
 			else if (m.kind === "mscale") m.items.forEach(function (it) { var k = it[0]; k.cx = it[1]; k.cy = it[2]; k.sx = it[3]; k.sy = it[4]; });
+			else if (m.kind === "tbox") PE.textBoxAbort(m.tb);
 			else if (m.kind === "scale") { m.L.cx = m.cx0; m.L.cy = m.cy0; m.L.sx = m.sx0; m.L.sy = m.sy0; } else if (m.kind === "rot") m.L.rot = m.rot0;
 			PE.invalidate();
 		},
-		cancel: function () { if (mv && mv.kind !== "band") this.abort(); mv = null; },
+		cancel: function () { if (mv && mv.kind !== "band") this.abort(); mv = null; hoverTM = null; },
+		hover: function (e) {   // a text layer under the pointer shows its box; the cursor tells when a box edge can be dragged
+			if (!PE.doc) return; var A = PE.active(), h = null; if (PE.opt.move.handles && PE.moveSet().length === 1 && A && A.type === "text" && A.text) h = PE.textBoxHit(A, e);
+			PE.els.over.style.cursor = h ? PE.textBoxCursor(h, A) : "default"; var ht = PE.textAt ? PE.textAt(e) : null; if (ht === A) ht = null; if (ht !== hoverTM) { hoverTM = ht; PE.invalidateOverlay(); }
+		},
 		overlay: function (x, v) {
+			if (hoverTM && PE.doc.layers.indexOf(hoverTM) >= 0 && PE.drawTextFrame) PE.drawTextFrame(x, hoverTM, false);
 			if (mv && mv.kind === "band") { var a = PE.toScreen(mv.a.x, mv.a.y), b = PE.toScreen(mv.b.x, mv.b.y), r = P.rectFrom(a.x, a.y, b.x, b.y); x.fillStyle = "rgba(26,115,232,0.12)"; x.fillRect(r.x, r.y, r.w, r.h); x.lineWidth = 1; [["#000", 0], ["#fff", 4]].forEach(function (p) { x.setLineDash([4, 4]); x.lineDashOffset = p[1]; x.strokeStyle = p[0]; x.strokeRect(r.x + 0.5, r.y + 0.5, r.w, r.h); }); x.setLineDash([]); x.lineDashOffset = 0; }
 			var set = PE.moveSet(), o = PE.opt.move; if (!set.length) return;
 			if (set.length > 1) {
@@ -1297,6 +1385,10 @@ var MESPixel = (function () {
 			var L = set[0]; if (!o.handles || !L.visible) return;
 			if (PE.isGroup(L)) { var gb = PE.groupBounds(L), g0 = PE.toScreen(gb.x, gb.y), g1 = PE.toScreen(gb.x + gb.w, gb.y + gb.h); x.setLineDash([6, 4]); x.strokeStyle = "#1a73e8"; x.lineWidth = 1.5; x.strokeRect(g0.x, g0.y, g1.x - g0.x, g1.y - g0.y); x.setLineDash([]); return; }
 			var pts = PE.corners(L).map(function (p) { return PE.toScreen(p[0], p[1]); }); x.strokeStyle = "#1a73e8"; x.lineWidth = 1.5; x.beginPath(); pts.forEach(function (p, i) { i ? x.lineTo(p.x, p.y) : x.moveTo(p.x, p.y); }); x.closePath(); x.stroke();
+			if (L.type === "text" && L.text && PE.drawTextBoxHandles) {   // corners = scale (not with Auto-fit text: there the box corners resize the box), purple = the text box
+				if (!L.text.fit) for (var j = 0; j < 8; j += 2) { var sj = handleScreen(L, HANDLES[j]); PE.handleBox(x, sj.x, sj.y, 4.5); }
+				PE.drawTextFrame(x, L, true); PE.drawTextBoxHandles(x, L); return;
+			}
 			for (var i = 0; i < 8; i++) { var s = handleScreen(L, HANDLES[i]); PE.handleBox(x, s.x, s.y, 4.5); }
 		} });
 	/* rubber band: every visible, unlocked layer whose visible box the band touches (not the full-canvas background picture); "Pick the whole group" picks groups */
@@ -1631,7 +1723,7 @@ var MESPixel = (function () {
 (function () {
 	"use strict";
 	var PE = window.PE, P = window.MESPixel, mk = PE.mk, rgba = PE.rgba;
-	PE.optGet = function (id, k) { var t = PE.tools[id]; if (t.optsTarget) { var tg = t.optsTarget(); if (tg) return tg[k]; } return PE.opt[id][k]; };
+	PE.optGet = function (id, k) { var t = PE.tools[id]; if (t.optGet) { var ov = t.optGet(k); if (ov !== undefined) return ov; } if (t.optsTarget) { var tg = t.optsTarget(); if (tg) return tg[k]; } return PE.opt[id][k]; };
 	PE.optSet = function (id, k, v) { var t = PE.tools[id]; PE.opt[id][k] = v; if (t.optsTarget) { var tg = t.optsTarget(); if (tg && tg !== PE.opt[id]) { tg[k] = v; if (t.onopt) t.onopt(k, v); } } PE.emit("opts", id); PE.invalidateOverlay(); };
 
 	/* ---------- fonts ---------- */
@@ -1648,7 +1740,7 @@ var MESPixel = (function () {
 	var te = null, hoverT = null, blinkOn = true, blinkT = 0, tdrag = null, lastDbl = { t: 0, x: 0, y: 0 };
 	function editor() { return PE.els.textedit; }
 	function locToDoc(L, u, v) { var c = Math.cos(L.rot), s = Math.sin(L.rot), lx = (u - L.canvas.width / 2) * L.sx, ly = (v - L.canvas.height / 2) * L.sy; return { x: L.cx + c * lx - s * ly, y: L.cy + s * lx + c * ly }; }
-	function frameOf(L) { var lay = PE.textLayout(L), p = lay.pad, g = Math.max(2, lay.size * 0.06); return { u0: p - g, v0: p - g, u1: p + lay.mw + g, v1: p + lay.lhp * lay.lines.length + lay.size * 0.25 + g }; }
+	function frameOf(L) { var lay = PE.textLayout(L), p = lay.pad, g = Math.max(2, lay.size * 0.06); return { u0: p - g, v0: p - g, u1: p + lay.mw + g, v1: p + lay.bh + g }; }
 	function placeEditor() {   // the (invisible) key catcher sits over the text so an IME pop-up opens next to it
 		if (!te) return; var L = te.L, ta = editor(), t = L.text, v = PE.view, c = Math.cos(L.rot), s = Math.sin(L.rot), lay = PE.textLayout(L), pad = lay.pad;
 		var dp = locToDoc(L, pad, pad), sp = PE.toScreen(dp.x, dp.y), z = v.zoom;
@@ -1690,20 +1782,21 @@ var MESPixel = (function () {
 	function lineMove(dir, shift, ta) {   // Up / Down / Home / End follow the lines as they are drawn on the canvas (the hidden box wraps differently)
 		var L = te.L, lay = PE.textLayout(L), f = focusIdx(ta), cl = P.caretLine(lay.lines, f), line = lay.lines[cl.line], nIdx;
 		if (dir === "home") nIdx = line.start; else if (dir === "end") nIdx = line.end;
-		else { var x = lay.lx[cl.line] + lay.measure(line.text.slice(0, cl.k)), j = cl.line + dir; if (j < 0) nIdx = 0; else if (j >= lay.lines.length) nIdx = ta.value.length; else nIdx = P.hitInLine(lay.lines[j], x - lay.lx[j], lay.measure); }
+		else { var x = lay.lx[cl.line] + lay.measure(line.text.slice(0, cl.k), line.start), j = cl.line + dir; if (j < 0) nIdx = 0; else if (j >= lay.lines.length) nIdx = ta.value.length; else nIdx = P.hitInLine(lay.lines[j], x - lay.lx[j], lay.measure); }
 		setSel(shift ? anchorIdx(ta) : nIdx, nIdx);
 	}
 	PE.initTextEditor = function () {
 		var ta = editor();
-		ta.addEventListener("input", function () { if (!te) return; te.L.text.str = ta.value; PE.renderText(te.L); PE.touch(te.L); placeEditor(); poke(); });
+		ta.addEventListener("input", function () { if (!te) return; var tt = te.L.text; if (PE.textRich(tt) || tt.rich) { var nr = P.richNorm(P.richEdit(tt.rich || String(PE.textMask(tt)).repeat(tt.str.length), tt.str, ta.value, PE.textMask(tt))); tt.rich = nr.rich; if (nr.mask != null) normFlags(tt, nr.mask); } tt.str = ta.value; PE.renderText(te.L); PE.touch(te.L); placeEditor(); poke(); });
 		ta.addEventListener("keydown", function (e) {
 			e.stopPropagation(); if (!te) return; var mod = e.ctrlKey || e.metaKey;
 			if (e.key === "Escape" || (e.key === "Enter" && mod)) { e.preventDefault(); PE.endTextEdit(false); return; }
+			if (mod && !e.altKey && !e.shiftKey) { var kb = e.key.toLowerCase(), bit = kb === "b" ? 1 : kb === "i" ? 2 : kb === "u" ? 4 : 0; if (bit) { e.preventDefault(); PE.textToggleStyle(bit); return; } }   // Ctrl / Cmd + B, I, U: bold / italic / underline the selected letters (all of the text when nothing is selected)
 			if ((e.key === "ArrowUp" || e.key === "ArrowDown") && !mod && !e.altKey) { e.preventDefault(); lineMove(e.key === "ArrowUp" ? -1 : 1, e.shiftKey, ta); return; }
 			if ((e.key === "Home" || e.key === "End") && !mod) { e.preventDefault(); lineMove(e.key === "Home" ? "home" : "end", e.shiftKey, ta); return; }
 			setTimeout(poke, 0);
 		});
-		["keyup", "select", "focus"].forEach(function (t) { ta.addEventListener(t, poke); });
+		["keyup", "select", "focus"].forEach(function (t) { ta.addEventListener(t, function () { poke(); selStyleSync(); }); });
 		ta.addEventListener("blur", function () { setTimeout(function () {
 			var a = document.activeElement, opts = document.getElementById("pe-opts");
 			if (!te || a === ta || PE.keepTextEdit) return;
@@ -1725,11 +1818,67 @@ var MESPixel = (function () {
 		PE.on("history", function () { if (te && PE.doc.layers.indexOf(te.L) < 0) { te = null; clearInterval(blinkT); ta.style.display = "none"; } });   // undo / redo replaced the layer objects
 	};
 	var ctimer = 0;
-	var bw = null;   // dragging the box-width handle of a text layer
-	function boxHandle() {   // the purple handle on the right edge of the active text box (only for an upright, unscaled text layer)
-		var L = PE.active(); if (!L || L.type !== "text" || PE.toolId !== "text" || L.rot || Math.abs(L.sx - 1) > 1e-6 || Math.abs(L.sy - 1) > 1e-6) return null;
-		var lay = PE.textLayout(L), pad = lay.pad, left = L.cx - L.canvas.width / 2 + pad, tw = lay.mw, th = lay.lhp * lay.lines.length; return { L: L, left: left, x: left + tw, y: L.cy - L.canvas.height / 2 + pad + th / 2 };
+	/* ---------- bold / italic / underline of a range (rich text) ---------- */
+	function normFlags(t, m) { t.bold = !!(m & 1); t.italic = !!(m & 2); t.underline = !!(m & 4); }
+	var BITS = { bold: 1, italic: 2, underline: 4 };
+	/* set (force = true / false) or toggle (force = null) one style bit on the characters a..b of a text layer; the whole text when a..b is empty */
+	function styleRange(L, bit, a, b, force) {
+		var t = L.text, n = String(t.str).length, key = bit === 1 ? "bold" : bit === 2 ? "italic" : "underline";
+		if (!n) { t[key] = force != null ? !!force : !t[key]; t.rich = null; return; }
+		if (a == null || b == null || a === b) { a = 0; b = n; }
+		var r = PE.textRich(t) || String(PE.textMask(t)).repeat(n), on = force != null ? !!force : !P.richAll(r, a, b, bit);
+		var nm = P.richNorm(P.richSet(r, a, b, bit, on)); t.rich = nm.rich; normFlags(t, nm.mask);
 	}
+	PE.textStyleRange = styleRange;
+	function selRange() { if (!te) return null; var ta = editor(); return ta.selectionStart !== ta.selectionEnd ? [ta.selectionStart, ta.selectionEnd] : null; }
+	/* Ctrl / Cmd + B, I, U (also outside the text box: then it is the whole active text layer) */
+	PE.textToggleStyle = function (bit) {
+		var L = te ? te.L : PE.active(); if (!L || L.type !== "text" || !L.text) return false; var rg = selRange();
+		styleRange(L, bit, rg ? rg[0] : null, rg ? rg[1] : null, null); PE.renderText(L); PE.touch(L);
+		if (te) { placeEditor(); poke(); } else PE.commit(bit === 1 ? "Bold" : bit === 2 ? "Italic" : "Underline");
+		lastSig = ""; PE.emit("opts", "text"); return true;
+	};
+	/* the B / I / U ticks in the option bar show the selected letters while a text is open */
+	var lastSig = "";
+	function selStyleSync() { if (!te) return; var sg = ["bold", "italic", "underline"].map(function (k) { return PE.optGet("text", k) ? 1 : 0; }).join("") + (selRange() ? "s" : ""); if (sg !== lastSig) { lastSig = sg; PE.emit("opts", "text"); } }
+
+	/* ---------- the text box on the canvas: drag its edges to set the wrap width; with Auto-fit text also its height (the font size follows) ----------
+	 * Handles sit on the text frame (not on the layer's padding). hx / hy = 0, 0.5 or 1 across / down the frame; the opposite side stays where it is. */
+	var bw = null;   // a text-box drag in the Text tool
+	var SIDES = [[0, 0.5], [1, 0.5]], ALL8 = [[0, 0], [0.5, 0], [1, 0], [1, 0.5], [1, 1], [0.5, 1], [0, 1], [0, 0.5]];
+	function boxHandles(L) {
+		if (!L || L.type !== "text" || !L.text || L.locked || !PE.effVisible(L)) return []; var lay = PE.textLayout(L), p = lay.pad;
+		var o0 = PE.toScreen.apply(null, xy(locToDoc(L, 0, 0))), oX = PE.toScreen.apply(null, xy(locToDoc(L, 1, 0))), oY = PE.toScreen.apply(null, xy(locToDoc(L, 0, 1))), ux = unit(oX.x - o0.x, oX.y - o0.y), uy = unit(oY.x - o0.x, oY.y - o0.y);
+		// the grips sit 8 px outside the box so they never cover the first / last letter
+		return (lay.fit || L.text.fit ? ALL8 : SIDES).map(function (h) { var d = locToDoc(L, p + h[0] * lay.mw, p + h[1] * lay.bh), sc = PE.toScreen(d.x, d.y), kx = (h[0] - 0.5) * 2 * 8, ky = (h[1] - 0.5) * 2 * 8; return { hx: h[0], hy: h[1], x: d.x, y: d.y, s: { x: sc.x + ux[0] * kx + uy[0] * ky, y: sc.y + ux[1] * kx + uy[1] * ky } }; });
+	}
+	function scrOf(e) { var r = PE.els.over.getBoundingClientRect(); return { x: e.sx - r.left, y: e.sy - r.top }; }
+	/* the handle under the pointer: a dot within 9 px, or anywhere along a left / right edge (5 px) */
+	PE.textBoxHit = function (L, e) {
+		var hs = boxHandles(L); if (!hs.length) return null; var sp = scrOf(e), best = null, bd = 9.5;
+		hs.forEach(function (h) { var d = Math.hypot(h.s.x - sp.x, h.s.y - sp.y); if (d < bd) { bd = d; best = h; } }); if (best) return best;
+		var lay = PE.textLayout(L), p = lay.pad;
+		for (var i = 0; i < hs.length; i++) { var h = hs[i]; if (h.hy !== 0.5) continue; var a = PE.toScreen.apply(null, xy(locToDoc(L, p + h.hx * lay.mw, p))), b = PE.toScreen.apply(null, xy(locToDoc(L, p + h.hx * lay.mw, p + lay.bh))), vx = b.x - a.x, vy = b.y - a.y, ll = vx * vx + vy * vy || 1, tt = ((sp.x - a.x) * vx + (sp.y - a.y) * vy) / ll; if (tt < 0 || tt > 1) continue; if (Math.hypot(a.x + vx * tt - sp.x, a.y + vy * tt - sp.y) < 5) return h; }
+		return null;
+	};
+	function xy(d) { return [d.x, d.y]; }
+	function unit(x, y) { var l = Math.hypot(x, y) || 1; return [x / l, y / l]; }
+	PE.textBoxCursor = function (h, L) { if (!h) return ""; var r = ((L.rot % Math.PI) + Math.PI) % Math.PI, turned = r > Math.PI / 4 && r < Math.PI * 3 / 4; if (h.hy === 0.5) return turned ? "ns-resize" : "ew-resize"; if (h.hx === 0.5) return turned ? "ew-resize" : "ns-resize"; return (h.hx === h.hy) !== turned ? "nwse-resize" : "nesw-resize"; };
+	PE.textBoxStart = function (L, h) {
+		var lay = PE.textLayout(L), p = lay.pad, f = locToDoc(L, p + (1 - h.hx) * lay.mw, p + (1 - h.hy) * lay.bh);
+		return { L: L, h: h, fixed: f, orig: JSON.stringify(L.text), cx: L.cx, cy: L.cy, moved: false };
+	};
+	PE.textBoxMove = function (b, e) {
+		var L = b.L, t = L.text, h = b.h, c = Math.cos(L.rot), s = Math.sin(L.rot), dx = e.x - b.fixed.x, dy = e.y - b.fixed.y, du = (c * dx + s * dy) / L.sx, dv = (-s * dx + c * dy) / L.sy;
+		if (h.hx !== 0.5) t.wrapW = Math.max(20, Math.round(h.hx === 1 ? du : -du));
+		if (h.hy !== 0.5 && t.fit) { t.boxH = Math.max(12, Math.round(h.hy === 1 ? dv : -dv)); if (!(t.wrapW > 0)) t.wrapW = Math.round(PE.textLayout(L).mw); }
+		PE.renderText(L); var lay = PE.textLayout(L), p = lay.pad, n = locToDoc(L, p + (1 - h.hx) * lay.mw, p + (1 - h.hy) * lay.bh); L.cx += b.fixed.x - n.x; L.cy += b.fixed.y - n.y;   // the opposite side stays put
+		b.moved = true; PE.touch(L); if (te && te.L === L) placeEditor(); PE.emit("opts", PE.toolId === "text" ? "text" : PE.toolId);
+	};
+	PE.textBoxAbort = function (b) { b.L.text = JSON.parse(b.orig); PE.renderText(b.L); b.L.cx = b.cx; b.L.cy = b.cy; PE.touch(b.L); };
+	PE.drawTextBoxHandles = function (x, L) { boxHandles(L).forEach(function (h) { var sp = h.s; x.fillStyle = "#a78bfa"; x.strokeStyle = "#fff"; x.lineWidth = 2; x.beginPath(); if (h.hy === 0.5) x.rect(sp.x - 5, sp.y - 11, 10, 22); else if (h.hx === 0.5) x.rect(sp.x - 11, sp.y - 5, 22, 10); else x.rect(sp.x - 6, sp.y - 6, 12, 12); x.fill(); x.stroke(); }); };
+	PE.textAt = function (e) { return hitText(e, null); };
+	PE.drawTextFrame = function (x, L, solid) { drawFrame(x, L, solid); };
 	function drawFrame(x, L, solid) {
 		var f = frameOf(L), pts = [[f.u0, f.v0], [f.u1, f.v0], [f.u1, f.v1], [f.u0, f.v1]].map(function (q) { var d = locToDoc(L, q[0], q[1]); return PE.toScreen(d.x, d.y); });
 		x.save(); x.lineWidth = 1; x.setLineDash(solid ? [] : [4, 3]); x.strokeStyle = "rgba(0,0,0,0.65)"; x.beginPath(); pts.forEach(function (p, i) { i ? x.lineTo(p.x + 0.5, p.y + 0.5) : x.moveTo(p.x + 0.5, p.y + 0.5); }); x.closePath(); x.stroke();
@@ -1742,38 +1891,46 @@ var MESPixel = (function () {
 			x.fillStyle = "rgba(59,130,246,0.38)";
 			lay.lines.forEach(function (ln, i) {
 				var s0 = Math.max(a, ln.start), s1 = Math.min(b, ln.end); var past = b > ln.end && a <= ln.end;   // the selection runs on past this line: show the line break as selected too
-				if (s1 < s0 || (s1 === s0 && !past)) return; var x0 = lay.lx[i] + lay.measure(ln.text.slice(0, s0 - ln.start)), x1 = lay.lx[i] + lay.measure(ln.text.slice(0, s1 - ln.start)) + (past ? sz * 0.25 : 0);
+				if (s1 < s0 || (s1 === s0 && !past)) return; var x0 = lay.lx[i] + lay.measure(ln.text.slice(0, s0 - ln.start), ln.start), x1 = lay.lx[i] + lay.measure(ln.text.slice(0, s1 - ln.start), ln.start) + (past ? sz * 0.25 : 0);
 				x.fillRect(x0, lay.base[i] - sz * 0.86, x1 - x0, sz * 1.1);
 			});
 		} else if (blinkOn) {
-			var cl = P.caretLine(lay.lines, focusIdx(ta)), ln = lay.lines[cl.line], cx = lay.lx[cl.line] + lay.measure(ln.text.slice(0, cl.k)), y0 = lay.base[cl.line] - sz * 0.86, y1 = lay.base[cl.line] + sz * 0.24;
+			var cl = P.caretLine(lay.lines, focusIdx(ta)), ln = lay.lines[cl.line], cx = lay.lx[cl.line] + lay.measure(ln.text.slice(0, cl.k), ln.start), y0 = lay.base[cl.line] - sz * 0.86, y1 = lay.base[cl.line] + sz * 0.24;
 			x.lineCap = "butt"; x.strokeStyle = "rgba(255,255,255,0.95)"; x.lineWidth = 4 / sc; x.beginPath(); x.moveTo(cx, y0); x.lineTo(cx, y1); x.stroke(); x.strokeStyle = "#111"; x.lineWidth = 2 / sc; x.stroke();
 		}
 		x.restore();
 	}
-	PE.defTool({ id: "text", name: "Text / Label", key: "t", icon: "T", opts: JSON.parse(JSON.stringify(PE.TEXTDEF)), hint: "Click empty canvas to add text, click a text to edit it (caret where you click, drag to select, double-click a word, triple-click a line). Enter = new line, Ctrl+Enter or Esc or a click outside = done. The option bar changes the selected text layer live.",
-		ui: [{ k: "font", label: "Font", type: "select", options: "fonts" }, { k: "size", label: "Size", type: "range", min: 6, max: 400, step: 1, unit: "px" }, { k: "wrapW", label: "Box width (0 = auto)", type: "range", min: 0, max: 4000, step: 10, unit: "px" }, { k: "bold", label: "Bold", type: "check" }, { k: "italic", label: "Italic", type: "check" }, { k: "align", label: "Align", type: "seg", options: [["left", "Left"], ["center", "Centre"], ["right", "Right"]] }, { k: "lh", label: "Line height", type: "range", min: 0.8, max: 3, step: 0.05 }, { k: "color", label: "Colour", type: "color" },
+	PE.defTool({ id: "text", name: "Text / Label", key: "t", icon: "T", opts: JSON.parse(JSON.stringify(PE.TEXTDEF)), hint: "Click empty canvas to add text, click a text to edit it (caret where you click, drag to select, double-click a word, triple-click a line). Ctrl/Cmd+B, I, U = bold, italic, underline of the selected letters. Drag the purple handles on the box edges to wrap the text (with Auto-fit text: the corners too, and the size follows). Enter = new line, Ctrl+Enter, Esc or a click outside = done.",
+		ui: [{ k: "font", label: "Font", type: "select", options: "fonts" }, { k: "size", label: "Size", type: "range", min: 6, max: 400, step: 1, unit: "px" }, { k: "wrapW", label: "Box width (0 = auto)", type: "range", min: 0, max: 4000, step: 10, unit: "px" }, { k: "fit", label: "Auto-fit text", type: "check" }, { k: "boxH", label: "Box height", type: "range", min: 0, max: 4000, step: 10, unit: "px", show: "fit" }, { k: "bold", label: "Bold", type: "check" }, { k: "italic", label: "Italic", type: "check" }, { k: "underline", label: "Underline", type: "check" }, { k: "align", label: "Align", type: "seg", options: [["left", "Left"], ["center", "Centre"], ["right", "Right"]] }, { k: "lh", label: "Line height", type: "range", min: 0.8, max: 3, step: 0.05 }, { k: "ls", label: "Letter spacing", type: "range", min: -10, max: 60, step: 1, unit: "px" }, { k: "color", label: "Colour", type: "color" },
 			{ k: "bgOn", label: "Background box", type: "check" }, { k: "bgColor", label: "Box colour", type: "color", show: "bgOn" }, { k: "bgPad", label: "Padding", type: "range", min: 0, max: 80, step: 1, unit: "px", show: "bgOn" }, { k: "bgRadius", label: "Corners", type: "range", min: 0, max: 80, step: 1, unit: "px", show: "bgOn" },
-			{ k: "strokeOn", label: "Outline", type: "check" }, { k: "stroke", label: "Outline colour", type: "color", show: "strokeOn" }, { k: "strokeW", label: "Outline width", type: "range", min: 1, max: 40, step: 1, unit: "px", show: "strokeOn" },
-			{ k: "shadowOn", label: "Shadow", type: "check" }, { k: "shadow", label: "Shadow colour", type: "color", show: "shadowOn" }, { k: "shadowBlur", label: "Blur", type: "range", min: 0, max: 60, step: 1, unit: "px", show: "shadowOn" },
+			{ k: "strokeOn", label: "Outline", type: "check" }, { k: "stroke", label: "Outline colour", type: "color", show: "strokeOn" }, { k: "strokeW", label: "Outline width", type: "range", min: 0, max: 40, step: 1, unit: "px", show: "strokeOn" },
+			{ k: "shadowOn", label: "Shadow", type: "check" }, { k: "shadow", label: "Shadow colour", type: "color", show: "shadowOn" }, { k: "shadowBlur", label: "Blur", type: "range", min: 0, max: 60, step: 1, unit: "px", show: "shadowOn" }, { k: "shadowDx", label: "Shadow X", type: "range", min: -60, max: 60, step: 1, unit: "px", show: "shadowOn" }, { k: "shadowDy", label: "Shadow Y", type: "range", min: -60, max: 60, step: 1, unit: "px", show: "shadowOn" },
 			{ type: "button", label: "Load font file…", act: function () { PE.pickFontFile(); } }, { type: "button", label: "Yellow label", act: function () { preset({ bgOn: true, bgColor: "#ffeb3b", color: "#111111", bold: true, bgPad: 14, bgRadius: 8 }); } }, { type: "button", label: "Red callout", act: function () { preset({ bgOn: true, bgColor: "#e53935", color: "#ffffff", bold: true, bgPad: 14, bgRadius: 10 }); } }, { type: "button", label: "Meme text", act: function () { preset({ bgOn: false, color: "#ffffff", strokeOn: true, stroke: "#000000", strokeW: 6, bold: true, font: "Impact, 'Arial Black', sans-serif", align: "center" }); } }],
 		optsTarget: function () { var L = PE.active(); return L && L.type === "text" && L.text ? L.text : null; },
-		onopt: function () { var L = PE.active(); if (!L || L.type !== "text") return; PE.renderText(L); PE.touch(L); if (te) { placeEditor(); poke(); return; } clearTimeout(ctimer); ctimer = setTimeout(function () { PE.commit("Text style"); }, 450); },   // while editing, the style change is part of the edit's one undo step
+		optGet: function (k) {   // B / I / U while a text is open show the selected letters; with mixed styles, ticked = every letter has it
+			if (!BITS[k]) return undefined; var L = te ? te.L : PE.active(); if (!L || L.type !== "text" || !L.text) return undefined; var t = L.text, r = PE.textRich(t), rg = selRange();
+			if (rg) return P.richAll(r || String(PE.textMask(t)).repeat(t.str.length), rg[0], rg[1], BITS[k]); return undefined;
+		},
+		onopt: function (k, v) { var L = PE.active(); if (!L || L.type !== "text") return; var t = L.text;
+			if (BITS[k]) { var rg = te && te.L === L ? selRange() : null; if (rg) styleRange(L, BITS[k], rg[0], rg[1], v); else if (PE.textRich(t)) styleRange(L, BITS[k], 0, t.str.length, v); lastSig = ""; }
+			if (k === "fit" && v) { var ly = PE.textLayout(L); if (!(t.wrapW > 0)) t.wrapW = Math.round(ly.mw); if (!(t.boxH > 0)) t.boxH = Math.round(ly.bh); setTimeout(function () { PE.emit("opts", "text"); }, 0); }
+			if (k === "size" && t.fit) { t.fit = false; PE.opt.text.fit = false; PE.toast("Auto-fit text is off now, so the size you set is kept"); setTimeout(function () { PE.emit("opts", "text"); }, 0); }
+			PE.renderText(L); PE.touch(L); if (te) { placeEditor(); poke(); return; } clearTimeout(ctimer); ctimer = setTimeout(function () { PE.commit("Text style"); }, 450); },   // while editing, the style change is part of the edit's one undo step
 		overlay: function (x, v) {
 			var A = PE.active();
 			if (hoverT && hoverT !== A && PE.doc.layers.indexOf(hoverT) >= 0 && !te) drawFrame(x, hoverT, false);
 			if (A && A.type === "text" && A.text) { drawFrame(x, A, !!te); if (te && te.L === A) drawCaret(x, v); }
-			var h = boxHandle(); if (!h) return; var sp = PE.toScreen(h.x, h.y); x.fillStyle = "#a78bfa"; x.strokeStyle = "#fff"; x.lineWidth = 2; x.beginPath(); x.rect(sp.x - 6, sp.y - 12, 12, 24); x.fill(); x.stroke();
+			if (A && A.type === "text" && A.text) PE.drawTextBoxHandles(x, A);
 		},
-		hover: function (e) { if (!PE.doc) return; var h = hitText(e, null); if (h !== hoverT) { hoverT = h; PE.invalidateOverlay(); } PE.els.over.style.cursor = (function () { var hh = boxHandle(); return hh && Math.abs(e.x - hh.x) * PE.view.zoom < 12 && Math.abs(e.y - hh.y) * PE.view.zoom < 18 ? "ew-resize" : "text"; })(); },
+		hover: function (e) { if (!PE.doc) return; var h = hitText(e, null); if (h !== hoverT) { hoverT = h; PE.invalidateOverlay(); } var A = PE.active(), hh = A && A.type === "text" ? PE.textBoxHit(A, e) : null; PE.els.over.style.cursor = hh ? PE.textBoxCursor(hh, A) : "text"; },
 		move: function (e) {
-			if (bw) { var L = bw.L, nw = Math.max(40, Math.round(e.x - bw.left)); L.text.wrapW = nw; PE.renderText(L); PE.touch(L); if (te) placeEditor(); PE.emit("opts", "text"); return; }
+			if (bw) { PE.textBoxMove(bw, e); return; }
 			if (tdrag && te) { setSel(tdrag.a, indexAt(te.L, e.x, e.y)); }
 		},
-		up: function () { if (bw) { bw = null; if (!te) PE.commit("Text box width"); } tdrag = null; },
+		up: function () { if (bw) { var w0 = bw; bw = null; if (w0.moved && !te) PE.commit("Text box"); } tdrag = null; },
 		dbl: function (e) { if (!te || !PE.layerAtPoint(te.L, e.x, e.y)) return; var w = P.wordAt(te.L.text.str, indexAt(te.L, e.x, e.y)); setSel(w[0], w[1]); tdrag = null; lastDbl = { t: Date.now(), x: e.sx, y: e.sy }; },
 		down: function (e) {
-			var hh = boxHandle(); if (hh && Math.abs(e.x - hh.x) * PE.view.zoom < 12 && Math.abs(e.y - hh.y) * PE.view.zoom < 18) { bw = { L: hh.L, left: hh.left }; return; }
+			var A0 = te ? te.L : PE.active(), hh = A0 && A0.type === "text" ? PE.textBoxHit(A0, e) : null; if (hh) { bw = PE.textBoxStart(A0, hh); return; }
 			var hit = hitText(e, te ? te.L : PE.active());
 			if (te && hit === te.L) {
 				var idx = indexAt(hit, e.x, e.y), ta = editor();
@@ -1784,7 +1941,7 @@ var MESPixel = (function () {
 			if (hit) { PE.setActive(hit.id); var i2 = indexAt(hit, e.x, e.y); openEdit(hit, false, i2); tdrag = { a: i2 }; return; }
 			var o = JSON.parse(JSON.stringify(PE.opt.text)); o.str = ""; var L = PE.makeLayer({ type: "text", name: "Text", text: o, w: 4, h: 4 }); PE.renderText(L); var pd = PE.textLayout(L).pad; L.cx = e.x - pd + L.canvas.width / 2; L.cy = e.y - pd + L.canvas.height / 2;
 			PE.addLayer(L); openEdit(L, true, 0);
-		}, cancel: function () { PE.endTextEdit(false); hoverT = null; } });
+		}, cancel: function () { if (bw) { PE.textBoxAbort(bw); bw = null; } PE.endTextEdit(false); hoverT = null; } });
 	function preset(o) { for (var k in o) PE.optSet("text", k, o[k]); PE.emit("opts", "text"); }
 	/* open the active text layer for editing: at = a point on the canvas (caret there, from a double-click with the Move tool), else everything selected */
 	PE.editActiveText = function (at) { var L = PE.active(); if (L && L.type === "text") { PE.setTool("text"); openEdit(L, false, at ? indexAt(L, at.x, at.y) : "all"); } };
@@ -3045,18 +3202,20 @@ var MESPixel = (function () {
 		function roEntries() { return roFiles.map(function (f) { var rel = (f.webkitRelativePath || f.name).split("/").slice(1).join("/") || f.name; return { name: f.name, label: rel, file: function () { return Promise.resolve(f); } }; }); }
 		function load(h) {
 			dirHandle = h; remembered = null; drawChip(); roFiles = null; var my = ++token; entries = []; grid.innerHTML = ""; msg.textContent = "Reading “" + h.name + "”…"; refreshState();
-			(async function () { var out = []; try { for await (var e of h.values()) if (e.kind === "file" && IMG.test(e.name)) out.push(e); } catch (x) { if (my === token) msg.textContent = "Could not read the folder: " + errText(x); return; }
-				if (my !== token) return; out.sort(function (a, b) { return a.name.localeCompare(b.name, undefined, { numeric: true }); }); entries = out.map(function (fh) { return { name: fh.name, label: fh.name, fh: fh, file: function () { return fh.getFile(); } }; }); count(h.name, entries.length); render(); })();
+			(async function () { var out = []; try { var nd = 0; for await (var e of h.values()) { if (e.kind === "file" && IMG.test(e.name)) out.push(e); else if (e.kind === "directory" && nd++ < 300 && !/^(\.|__MACOSX)/.test(e.name)) { try { await e.getFileHandle("project.json"); out.push(e); } catch (x2) { } } } } catch (x) { if (my === token) msg.textContent = "Could not read the folder: " + errText(x); return; }
+				if (my !== token) return; out.sort(function (a, b) { return a.name.localeCompare(b.name, undefined, { numeric: true }); }); entries = out.map(function (fh) { return fh.kind === "directory" ? { name: fh.name, label: fh.name + " (project folder)", dirProj: fh, file: function () { return Promise.reject(new Error("a folder")); } } : { name: fh.name, label: fh.name, fh: fh, file: function () { return fh.getFile(); } }; }); count(h.name, entries.length); render(); })();
 		}
 		function render() {
 			var q = search.value.trim().toLowerCase(), shown = entries.filter(function (e) { return !q || e.label.toLowerCase().indexOf(q) >= 0; }).slice(0, 400); grid.innerHTML = "";
 			var io = "IntersectionObserver" in window ? new IntersectionObserver(function (es) { es.forEach(function (x) { if (x.isIntersecting) { io.unobserve(x.target); x.target._load(); } }); }, { root: grid, rootMargin: "200px" }) : null;
 			shown.forEach(function (e) {
 				var t = el("button", "pe-fold-t"), c = el("canvas"), n = el("span", "pe-fold-n", esc(e.label)); t.type = "button"; c.width = 120; c.height = 90; t.appendChild(c); t.appendChild(n); t.title = e.label + " · click: add as a layer · Shift-click: open as a new image";
-				t._load = function () { if (/\.(psd|xcf|mesproj|zip)$/i.test(e.name)) { var x = c.getContext("2d"); x.fillStyle = "#26262e"; x.fillRect(0, 0, 120, 90); x.fillStyle = "#9b9bab"; x.font = "bold 14px sans-serif"; x.textAlign = "center"; x.fillText(e.name.split(".").pop().toUpperCase(), 60, 50); return; }
+				t._load = function () { if (e.dirProj) { var xd = c.getContext("2d"); xd.fillStyle = "#2b2540"; xd.fillRect(0, 0, 120, 90); xd.font = "34px sans-serif"; xd.textAlign = "center"; xd.fillText("📁", 60, 48); xd.fillStyle = "#c4b5fd"; xd.font = "bold 12px sans-serif"; xd.fillText("PROJECT", 60, 74); return; }
+					if (/\.(psd|xcf|mesproj|zip)$/i.test(e.name)) { var x = c.getContext("2d"); x.fillStyle = "#26262e"; x.fillRect(0, 0, 120, 90); x.fillStyle = "#9b9bab"; x.font = "bold 14px sans-serif"; x.textAlign = "center"; x.fillText(e.name.split(".").pop().toUpperCase(), 60, 50); return; }
 					e.file().then(function (f) { return createImageBitmap(f, { resizeWidth: 120, resizeQuality: "medium" }).catch(function () { return PE.decodeFile(f); }); }).then(function (im) { var x = c.getContext("2d"), w = im.width || im.naturalWidth, h = im.height || im.naturalHeight, s = Math.min(120 / w, 90 / h); x.drawImage(im, (120 - w * s) / 2, (90 - h * s) / 2, w * s, h * s); }).catch(function () { n.textContent = "⚠ " + e.label; }); };
 				if (io) io.observe(t); else t._load();
-				t.addEventListener("click", function (ev) { var o = { place: !!PE.doc && !ev.shiftKey }; if (e.fh) { o.how = "folder"; o.dir = dirHandle ? dirHandle.name : ""; o.hk = regHandle(e.fh, dirHandle); o.fh = e.fh; } else { o.how = "folder-ro"; o.dir = roName; }
+				if (e.dirProj) t.title = e.name + " · an unzipped project (project.json + layer PNGs): click to open it; Save then writes back into this folder";
+				t.addEventListener("click", function (ev) { if (e.dirProj) { m.close(); PE.openFolderHandle(e.dirProj, "folder").catch(function (x) { PE.toast("Could not open " + e.name + ": " + errText(x)); }); return; } var o = { place: !!PE.doc && !ev.shiftKey }; if (e.fh) { o.how = "folder"; o.dir = dirHandle ? dirHandle.name : ""; o.hk = regHandle(e.fh, dirHandle); o.fh = e.fh; } else { o.how = "folder-ro"; o.dir = roName; }
 					e.file().then(function (f) { PE.openFiles([f], o); m.close(); }).catch(function (x) { PE.toast("Could not open " + e.name + ": " + errText(x)); }); });
 				grid.appendChild(t);
 			});
@@ -3161,7 +3320,7 @@ var MESPixel = (function () {
 	function whereText(L) { return L ? (L.dir ? L.dir + "/" : "") + L.name : ""; }
 	PE.projectWhere = function () { return whereText(cur()); };
 	/* the folder path of a file inside the connected folder ("Thumbnail Meta" when that folder is connected), else "" */
-	function dirOf(h) { var dh = PE.folderHandle && PE.folderHandle(); if (!dh || !dh.resolve) return Promise.resolve(""); return dh.resolve(h).then(function (p) { return p ? [dh.name].concat(p.slice(0, -1)).join("/") : ""; }).catch(function () { return ""; }); }
+	function dirOf(h) { var dh = PE.folderHandle && PE.folderHandle(); if (!dh || !dh.resolve) return Promise.resolve(""); return dh.resolve(h._folder || h).then(function (p) { return p ? [dh.name].concat(p.slice(0, -1)).join("/") : ""; }).catch(function () { return ""; }); }
 	/* call right after a project (or anything) became PE.doc: info = {dir, lm, savedAt, dirty} */
 	PE.linkProject = function (h, info) {
 		info = info || {}; if (!PE.doc || !h) return; var my = { doc: PE.doc, handle: h, name: h.name, dir: info.dir || "", lm: info.lm || 0, savedAt: info.savedAt || 0 }; link = my;
@@ -3216,7 +3375,7 @@ var MESPixel = (function () {
 				PE.toast("Saved " + n + " to your Downloads" + (isBrave() ? " (to save straight into a folder, switch on " + BRAVE_FLAG + ")" : "")); }).catch(function (e) { PE.toast("Could not save the project: " + errText(e)); });
 		}
 		var dh = PE.folderHandle && PE.folderHandle(), opts = { suggestedName: P.projectFileName(base, kind || (L && P.projectKind(L.name)) || "mesproj"), id: "mes-photo-proj", types: [{ description: "MES Photo Editor project", accept: { "application/zip": [".mesproj", ".zip"] } }] };
-		if (L && L.handle) opts.startIn = L.handle; else if (dh) opts.startIn = dh;
+		if (L && L.handle) opts.startIn = L.handle._folder || L.handle; else if (dh) opts.startIn = dh;
 		var e0 = edits, pick = function (o) { return window.showSaveFilePicker(o).catch(function (x) { if (x && x.name === "TypeError" && o.startIn) { var o2 = Object.assign({}, o); delete o2.startIn; return window.showSaveFilePicker(o2); } throw x; }); };
 		return pick(opts).then(function (h) {
 			if (L && L.handle && h !== L.handle) PE.doc.pid = P.newProjectId();   // a copy under a new name is its own project in Recent projects
@@ -3272,6 +3431,7 @@ var MESPixel = (function () {
 	function remember(fields) {
 		var d = PE.doc; if (!d || !d.pid) return chain; var L = cur(), e = Object.assign({ id: d.pid, name: d.name || "Untitled", w: d.w, h: d.h, t: Date.now(), thumb: thumbOf() }, fields || {});
 		if (L && !("fh" in (fields || {}))) { e.fh = L.handle; e.file = { name: L.name, dir: L.dir }; }
+		if (e.fh && e.fh._folder) { e.fh = e.fh._folder; e.file = Object.assign({}, e.file || { name: e.fh.name }, { folder: true }); }   // a project folder: IndexedDB keeps the real folder handle
 		return update(function (list) { return P.upsertRecent(list, e); });
 	}
 	PE.rememberProject = remember;
@@ -3302,6 +3462,7 @@ var MESPixel = (function () {
 	/* reopen a recent project. The click is the user gesture the browser needs to give the file back (one permission prompt). */
 	PE.openRecent = function (e) {
 		if (!e) return; if (PE.confirmReplace && !PE.confirmReplace()) return;
+		if (e.fh && e.file && e.file.folder && !e.fh._folder) e = Object.assign({}, e, { fh: PE.folderProjectHandle(e.fh) });
 		var permP = e.fh ? ensurePerm(e.fh, true).catch(function () { return false; }) : Promise.resolve(false);   // called right away, inside the click
 		var autoP = e.bytes > 0 ? idb(function (st) { return rq(st.get("auto:" + e.id)); }).catch(function () { return null; }) : Promise.resolve(null);
 		return Promise.all([permP, autoP]).then(function (r) {
@@ -3328,7 +3489,7 @@ var MESPixel = (function () {
 			var g = el("div", "pe-rec-g"); box.appendChild(g);
 			list.forEach(function (e) {
 				var it = el("div", "pe-rec-i"), b = el("button", "pe-rec-b"), x = el("button", "pe-rec-x", "✕"); b.type = "button"; x.type = "button"; x.title = "Remove from this list (deletes its autosave; a project file on disk is not touched)"; x.setAttribute("aria-label", "Remove " + (e.name || "project") + " from recent projects");
-				var where = e.file ? "📄 " + (e.file.dir ? e.file.dir + "/" : "") + e.file.name : "", saved = e.bytes > 0 ? "autosave " + P.bytesText(e.bytes) : "";
+				var where = e.file ? (e.file.folder ? "📁 " : "📄 ") + (e.file.dir ? e.file.dir + "/" : "") + e.file.name : "", saved = e.bytes > 0 ? "autosave " + P.bytesText(e.bytes) : "";
 				b.innerHTML = (e.thumb ? '<img class="pe-rec-th" alt="" src="' + esc(e.thumb) + '">' : '<span class="pe-rec-th pe-rec-th--none" aria-hidden="true">🖼</span>') + '<span class="pe-rec-m"><b class="pe-rec-n">' + esc(e.name || "Untitled") + "</b>"
 					+ '<span class="pe-rec-s">' + esc([e.w && e.h ? e.w + " × " + e.h : "", saved, P.agoText(e.t)].filter(Boolean).join(" · ")) + "</span>" + (where ? '<span class="pe-rec-f">' + esc(where) + "</span>" : "") + "</span>";
 				b.title = "Open " + (e.name || "this project") + (e.file ? " (the browser may ask once to let the editor use " + e.file.name + " again)" : " from this browser's autosave");
@@ -3356,7 +3517,7 @@ var MESPixel = (function () {
 		var dirty = !!(PE.dirty && PE.hist.stack.length > 1), st = L ? (L.conflict ? "changed on disk" : L.needPerm && dirty ? "press Save to allow saving" : dirty ? "unsaved changes" : L.savedAt ? "saved " + P.agoText(L.savedAt) : "opened") : dirty ? "not saved to a file" : "";
 		var af = PE.autoFileOn(), title = L ? "This project is linked to the file " + whereText(L) + ". " + PE.modKey() + "S writes it there." + (af ? " Auto-save writes changes there " + AUTO_FILE_MS / 1000 + " s after you stop." : "") : "This project is not saved in a file yet: Save project makes one (in a folder you choose, or your Downloads).";
 		bar.className = "pe-projst" + (dirty ? " is-dirty" : "") + (L && L.conflict ? " is-warn" : "");
-		bar.innerHTML = (L ? '<span class="pe-projst-f">📄 ' + esc(L.name) + "</span>" : "") + (st ? '<span class="pe-projst-s">' + esc(st) + "</span>" : "")
+		bar.innerHTML = (L ? '<span class="pe-projst-f">' + (L.handle && L.handle._folder ? "📁 " : "📄 ") + esc(L.name) + "</span>" : "") + (st ? '<span class="pe-projst-s">' + esc(st) + "</span>" : "")
 			+ (L ? '<label class="pe-projst-a" title="Write changes to ' + esc(whereText(L)) + " " + AUTO_FILE_MS / 1000 + ' s after you stop editing (handy when the folder is synced by OneDrive)"><input type="checkbox"' + (af ? " checked" : "") + "> Auto-save</label>" : "");
 		bar.title = title; var cb = bar.querySelector("input"); if (cb) cb.addEventListener("change", function () { PE.setAutoFile(cb.checked); });
 	}
@@ -3391,6 +3552,101 @@ var MESPixel = (function () {
 			var n = I.cleanFileName(d.name || "image") + " layers.zip"; PE.download(new Blob([I.zipStore(files)], { type: "application/zip" }), n); PE.toast("Downloaded " + n + " (" + L0.length + " PNGs + layers.json)");
 		}).catch(function (x) { PE.toast("Could not export the layers: " + errText(x)); });
 	}
+
+	/* ---------- a project kept as a FOLDER (an unzipped .mesproj: project.json + layer-N.png + mask-N.png) ----------
+	 * A .mesproj is a ZIP. Unzipped (Finder / Explorer / OneDrive sometimes hand it over that way) it is a folder; dropping that folder, choosing it with
+	 * File -> Open project folder…, or clicking it in the connected folder opens it with the same loader as the ZIP (the files are put back into one).
+	 * With a real folder handle (Chrome / Edge / Brave with the flag) the project is LINKED to the folder: Save writes project.json and the PNGs back into it
+	 * (stale layer PNGs are removed). Without one (Safari, Firefox, or the read-only folder input) it opens, and Save makes a new .mesproj file. */
+	var FOLDER_MAX = 4000, SKIP_DIR = /^(__MACOSX|\..*|node_modules)$/;
+	/* every file under a FileSystemDirectoryHandle, a few folders deep -> [{path, fh}] */
+	function listHandle(dh, pre, depth, out) {
+		out = out || []; pre = pre || ""; depth = depth || 0;
+		return (async function () { for await (var e of dh.values()) { if (out.length >= FOLDER_MAX) break; if (e.kind === "file") out.push({ path: pre + e.name, fh: e }); else if (depth < 4 && !SKIP_DIR.test(e.name)) await listHandle(e, pre + e.name + "/", depth + 1, out); } return out; })();
+	}
+	/* the same for a dropped FileSystemDirectoryEntry (webkitGetAsEntry: every browser) -> [{path, file}] */
+	function listEntry(de, pre, depth, out) {
+		out = out || []; pre = pre || ""; depth = depth || 0;
+		return new Promise(function (res) {
+			var rd = de.createReader(), all = [];
+			var next = function () { rd.readEntries(function (es) { if (!es.length) return done(); all = all.concat(Array.prototype.slice.call(es)); next(); }, done); };
+			var done = function () { var ch = Promise.resolve(); all.forEach(function (e) { ch = ch.then(function () { if (out.length >= FOLDER_MAX) return; if (e.isFile) return new Promise(function (r2) { e.file(function (f) { out.push({ path: pre + e.name, file: f }); r2(); }, function () { r2(); }); }); if (e.isDirectory && depth < 4 && !SKIP_DIR.test(e.name)) return listEntry(e, pre + e.name + "/", depth + 1, out); }); }); ch.then(function () { res(out); }); };
+			next();
+		});
+	}
+	function fileOf(it) { return it.file ? Promise.resolve(it.file) : it.fh.getFile(); }
+	/* the project files of a folder listing as one stored ZIP (what PE.loadProject reads) + project.json's lastModified */
+	function zipFromList(list, prefix, names) {
+		var sel = list.filter(function (it) { return names.indexOf(it.path) >= 0; }), lm = 0;
+		return Promise.all(sel.map(function (it) { return fileOf(it).then(function (f) { if (/(^|\/)project\.json$/.test(it.path)) lm = f.lastModified; return f.arrayBuffer().then(function (b) { return { name: it.path.slice(prefix.length), data: new Uint8Array(b) }; }); }); }))
+			.then(function (files) { files.sort(function (a, b) { return a.name === "project.json" ? -1 : b.name === "project.json" ? 1 : 0; }); return { zip: I.zipStore(files), lm: lm, n: files.length }; });
+	}
+	function subDir(dh, prefix) { var parts = prefix.split("/").filter(Boolean), p = Promise.resolve(dh); parts.forEach(function (n) { p = p.then(function (d) { return d.getDirectoryHandle(n); }); }); return p; }
+	/* open a folder listing: a project when it has a project.json (the one closest to the top), else its pictures as layers / a new image.
+	 * info = {name (the folder's name), dirHandle (a real folder handle, or null), how} */
+	PE.openProjectFolder = function (list, info) {
+		info = info || {}; var fp = P.folderProject(list.map(function (it) { return it.path; }));
+		if (!fp) {
+			var imgs = list.filter(function (it) { return /\.(png|jpe?g|webp|gif|bmp|avif|svg|psd|xcf|mesproj|zip)$/i.test(it.path) && !/(^|\/)(__MACOSX\/|\._)/.test(it.path); }).slice(0, 60);
+			if (!imgs.length) { PE.toast("“" + (info.name || "That folder") + "” has no MES project (project.json) and no pictures in it"); return Promise.resolve(); }
+			return Promise.all(imgs.map(fileOf)).then(function (fs) { PE.toast("“" + (info.name || "folder") + "” is not a MES project (no project.json): its " + fs.length + " picture" + (fs.length === 1 ? "" : "s") + " are opened instead"); PE.openFiles(fs, { place: !!PE.doc, how: info.how || "drop", dir: info.name || "" }); });
+		}
+		if (PE.confirmReplace && !PE.confirmReplace()) return Promise.resolve();
+		var folderName = fp.prefix ? fp.prefix.replace(/\/$/, "").split("/").pop() : info.name || "project";
+		PE.toast("Opening the project folder “" + folderName + "”…");
+		return zipFromList(list, fp.prefix, fp.files).then(function (z) {
+			return PE.loadProject(z.zip, folderName, { file: folderName, dir: info.name && fp.prefix ? info.name : "", bytes: z.zip.length }).then(function () {
+				if (!info.dirHandle || !info.dirHandle.getFileHandle) { PE.rememberProject({}); if (PE.setTool) PE.setTool("move"); PE.toast("Opened the project folder “" + folderName + "”. This browser cannot write into a dropped folder, so Save project makes a new .mesproj file" + (PE.canOpenPicker() ? " (File → Open project folder… links the folder instead)" : "")); return; }
+				return subDir(info.dirHandle, fp.prefix).then(function (sd) {
+					PE.linkProject(PE.folderProjectHandle(sd), { lm: z.lm, dir: fp.prefix ? info.name : "" }); if (PE.setTool) PE.setTool("move");
+					PE.toast("Opened the project folder “" + folderName + "”: " + PE.modKey() + "S saves back into it (the browser asks once to allow changes)");
+				});
+			});
+		}).catch(function (x) { PE.toast("Could not open the project folder: " + errText(x)); });
+	};
+	/* a folder handle that behaves like the project file handle the rest of this file uses (getFile, createWritable, permissions) */
+	PE.folderProjectHandle = function (dir) {
+		var H = { kind: "file", name: dir.name, _folder: dir,
+			queryPermission: function (o) { return dir.queryPermission ? dir.queryPermission(o) : Promise.resolve("granted"); },
+			requestPermission: function (o) { return dir.requestPermission ? dir.requestPermission(o) : Promise.resolve("granted"); },
+			getFile: function () { return listHandle(dir, "", 3).then(function (list) { var fp = P.folderProject(list.map(function (it) { return it.path; })); if (!fp || fp.prefix) throw new Error("project.json is missing from the folder “" + dir.name + "”"); return zipFromList(list, "", fp.files); })
+				.then(function (z) { return { name: dir.name, lastModified: z.lm, size: z.zip.length, arrayBuffer: function () { return Promise.resolve(z.zip.buffer.slice(z.zip.byteOffset, z.zip.byteOffset + z.zip.byteLength)); } }; }); },
+			createWritable: function () { var parts = []; return Promise.resolve({ write: function (b) { parts.push(b); return Promise.resolve(); }, close: function () { return writeFolder(dir, new Blob(parts)); }, abort: function () {} }); },
+			isSameEntry: function (o) { return Promise.resolve(!!o && (o === H || o._folder === dir)); } };
+		return H;
+	};
+	function writeOne(dir, name, data) { return dir.getFileHandle(name, { create: true }).then(function (fh) { return fh.createWritable(); }).then(function (w) { return w.write(data).then(function () { return w.close(); }); }); }
+	/* write a project ZIP into a project folder: the PNGs first, project.json last (its time is the project's time), then remove PNGs no layer uses any more */
+	function writeFolder(dir, blob) {
+		return blob.arrayBuffer().then(function (ab) {
+			var ents = P.zipEntries(new Uint8Array(ab)); if (!ents) throw new Error("could not prepare the project"); var keep = {}, pj = null;
+			var ch = Promise.resolve(); ents.forEach(function (e) { keep[e.name] = 1; if (e.name === "project.json") { pj = e; return; } ch = ch.then(function () { return writeOne(dir, e.name, e.data); }); });
+			return ch.then(function () { return pj ? writeOne(dir, "project.json", pj.data) : null; }).then(function () {
+				return (async function () { var gone = []; for await (var e of dir.values()) if (e.kind === "file" && /^(layer|mask)-[^\/]+\.png$/.test(e.name) && !keep[e.name]) gone.push(e.name); for (var i = 0; i < gone.length; i++) { try { await dir.removeEntry(gone[i]); } catch (x) { } } })();
+			});
+		});
+	}
+	/* a drop that contains a folder: the first folder (a real handle when the browser gives one, so Save can write back) */
+	PE.openDroppedFolder = function (entry, handleP) {
+		return Promise.resolve(handleP).catch(function () { return null; }).then(function (h) {
+			if (h && h.kind === "directory") return listHandle(h).then(function (list) { return PE.openProjectFolder(list, { name: h.name, dirHandle: h, how: "drop" }); });
+			return listEntry(entry).then(function (list) { return PE.openProjectFolder(list, { name: entry.name, how: "drop" }); });
+		}).catch(function (x) { PE.toast("Could not read the folder: " + errText(x)); });
+	};
+	PE.openFolderHandle = function (h, how) { return listHandle(h).then(function (list) { return PE.openProjectFolder(list, { name: h.name, dirHandle: h, how: how || "folder" }); }); };
+	/* File -> Open project folder…: a folder picker that can also save (Chrome / Edge), else the read-only folder input (Safari, Firefox, Brave without the flag) */
+	PE.openProjectFolderPicker = function () {
+		if (typeof window.showDirectoryPicker === "function") {
+			var dh = PE.folderHandle && PE.folderHandle(), o = { id: "mes-photo-projdir", mode: "readwrite" }; if (dh) o.startIn = dh;
+			window.showDirectoryPicker(o).then(function (h) { return PE.openFolderHandle(h, "open"); }).catch(function (x) { if (x && x.name === "AbortError") return; PE.toast("Could not open the folder: " + errText(x)); });
+			return;
+		}
+		var inp = document.createElement("input"); inp.type = "file"; inp.multiple = true; inp.setAttribute("webkitdirectory", ""); inp.style.display = "none"; document.body.appendChild(inp);
+		inp.addEventListener("change", function () { var fs = Array.prototype.slice.call(inp.files || []); inp.remove(); if (!fs.length) return; var top = (fs[0].webkitRelativePath || "").split("/")[0] || "folder";
+			PE.openProjectFolder(fs.map(function (f) { return { path: (f.webkitRelativePath || f.name).split("/").slice(1).join("/") || f.name, file: f }; }), { name: top, how: "open" }); });
+		inp.click();
+	};
+	PE.listFolderHandle = listHandle;
 
 	/* ---------- moving to another computer (in File -> Files and folders) ---------- */
 	PE.moveHelpEl = function () {
@@ -3544,7 +3800,7 @@ var MESPixel = (function () {
 		if (id === "text" || id === "shape") { }
 	}
 	function rebuildOpts() { buildOpts(); if (PE.textEditing && PE.textEditing()) setTimeout(PE.focusText, 0); }   // a change in the option bar while typing: keep typing into the text
-	var OPTHELP = { "Hardness": "How sharp the edge of the brush is. 100% is a crisp hard circle; lower values fade softly towards the edge, like an airbrush.", "Opacity": "How see-through the paint is. 100% covers fully; 30% lets what is underneath show through. Overlapping strokes in one drag do not stack.", "Smoothing": "Steadies a shaky hand: the brush lags a little behind the pointer and draws smoother curves. 0% = follows the pointer exactly.", "Pen pressure": "With a drawing tablet or pen, pressing harder makes the stroke bigger. Has no effect with a mouse.", "Tolerance": "How different a colour can be and still count as the same area. Low = only almost identical colours; high = spreads into similar colours.", "Strength": "How strong the effect is each time you paint over it.", "Aligned": "On: the copy source moves along with your brush. Off: every stroke starts again from the same source point.", "Contiguous": "On: only connected areas are filled. Off: every matching colour in the whole layer.", "Sample all layers": "Look at the merged picture instead of only the selected layer when deciding what is the same colour.", "Pick the layer under the click": "On: clicking a letter or shape picks the layer that is actually showing there, so the selection (and a following Delete) acts on that layer and not on the picture behind it. Off: always use the selected layer.", "Box width (0 = auto)": "How wide the text box is before words wrap onto the next line. 0 = as wide as the text needs (up to the image width). You can also drag the purple handle on the right edge of the text box.", };
+	var OPTHELP = { "Hardness": "How sharp the edge of the brush is. 100% is a crisp hard circle; lower values fade softly towards the edge, like an airbrush.", "Opacity": "How see-through the paint is. 100% covers fully; 30% lets what is underneath show through. Overlapping strokes in one drag do not stack.", "Smoothing": "Steadies a shaky hand: the brush lags a little behind the pointer and draws smoother curves. 0% = follows the pointer exactly.", "Pen pressure": "With a drawing tablet or pen, pressing harder makes the stroke bigger. Has no effect with a mouse.", "Tolerance": "How different a colour can be and still count as the same area. Low = only almost identical colours; high = spreads into similar colours.", "Strength": "How strong the effect is each time you paint over it.", "Aligned": "On: the copy source moves along with your brush. Off: every stroke starts again from the same source point.", "Contiguous": "On: only connected areas are filled. Off: every matching colour in the whole layer.", "Sample all layers": "Look at the merged picture instead of only the selected layer when deciding what is the same colour.", "Pick the layer under the click": "On: clicking a letter or shape picks the layer that is actually showing there, so the selection (and a following Delete) acts on that layer and not on the picture behind it. Off: always use the selected layer.", "Box width (0 = auto)": "How wide the text box is before words wrap onto the next line. 0 = as wide as the text needs (up to the image width). You can also drag the purple handles on the left and right edges of the text box (Text tool or Move tool).", "Auto-fit text": "On: the font size changes by itself so the text fills the box. Drag the box's edges or corners (purple handles) and the words re-wrap and grow or shrink to fit. Off: dragging the box's sides only re-wraps the words, and the box is as tall as the text.", "Box height": "With Auto-fit text: how tall the text box is. The font size is the largest one that fits the box's width and height.", "Underline": "Underlines the text. While you are typing in a text, Ctrl/Cmd+U (and B, I) changes only the selected letters; with nothing selected, the whole text.", "Outline width": "How thick the outline around the letters is. 0 = no outline.", "Letter spacing": "Extra space between letters (negative = tighter).", };
 	function optHelp(u) { var t = u.help || OPTHELP[u.label]; return t ? PE.helpBtn(u.label, esc(t)) : null; }
 	function fmtV(v, u) { return (u.step < 1 ? (+v).toFixed(2) : Math.round(v)) + (u.unit || ""); }
 	var optsTimer = 0; PE.on("opts", function (id) { if (id === PE.toolId) { clearTimeout(optsTimer); optsTimer = setTimeout(function () { if (!document.activeElement || document.activeElement.type !== "range") buildOpts(); }, 10); } sset({ opt: PE.opt }); });
@@ -3797,7 +4053,9 @@ $("pe-share").addEventListener("click", function () { if (needDoc()) PE.dlgShare
 				if (h) PE.linkProject(h, { dir: opts.dir || "", lm: f.lastModified }); else PE.rememberProject({});
 				PE.setTool("move"); PE.toast(h ? "Opened " + f.name + ": " + MOD + "S saves back to this file" : "Project opened" + (PE.canOpenPicker() ? " (use File → Open project… so " + MOD + "S can save back to the same file)" : ""));
 			});
-		}).catch(function (e) { PE.toast(e && e.message || String(e)); });
+		}).catch(function (e) {   // a file that cannot be read: an online-only OneDrive / iCloud placeholder, or a folder the browser handed over as a file
+			if (e && (e.name === "NotReadableError" || e.name === "NotFoundError")) { PE.toast("Could not read “" + f.name + "”. If it is in OneDrive or iCloud, make it available on this computer first (right-click → Always keep on this device), then drop it again. If it is a folder (an unzipped project), use File → Open project folder…"); return; }
+			PE.toast(e && e.message || String(e)); });
 	}
 	function confirmReplace() { if (!PE.doc || !PE.dirty || PE.hist.stack.length < 2) return true; return window.confirm("Replace the current image? Unsaved changes will be lost (you can still restore the last auto-saved session)."); }
 	PE.openFiles = openFiles; PE.confirmReplace = confirmReplace;
@@ -3817,7 +4075,13 @@ $("pe-share").addEventListener("click", function () { if (needDoc()) PE.dlgShare
 	var stage = PE.els.stage;
 	["dragenter", "dragover"].forEach(function (ev) { stage.addEventListener(ev, function (e) { if (e.dataTransfer && Array.prototype.indexOf.call(e.dataTransfer.types || [], "Files") >= 0) { e.preventDefault(); stage.classList.add("is-drop"); } }); });
 	["dragleave", "drop"].forEach(function (ev) { stage.addEventListener(ev, function () { stage.classList.remove("is-drop"); }); });
-	stage.addEventListener("drop", function (e) { if (e.dataTransfer && e.dataTransfer.files && e.dataTransfer.files.length) { e.preventDefault(); var at = PE.doc ? PE.toDoc(e.clientX, e.clientY) : null; var hs = null; try { var items = Array.prototype.slice.call(e.dataTransfer.items || []); if (items.length && items[0].getAsFileSystemHandle) hs = Promise.all(items.map(function (it) { return it.kind === "file" ? it.getAsFileSystemHandle().catch(function () { return null; }) : null; })); } catch (x) { hs = null; }
+	stage.addEventListener("drop", function (e) {
+		/* a dropped FOLDER (an unzipped .mesproj, or a folder of pictures): read it with the entry / handle API, which must be asked during the drop event itself */
+		try { var its = Array.prototype.slice.call((e.dataTransfer && e.dataTransfer.items) || []).filter(function (it) { return it.kind === "file"; }), ents = its.map(function (it) { try { return it.webkitGetAsEntry ? it.webkitGetAsEntry() : null; } catch (x) { return null; } }), di = -1;
+			ents.forEach(function (en, i) { if (di < 0 && en && en.isDirectory) di = i; });
+			if (di >= 0 && PE.openDroppedFolder) { e.preventDefault(); var hp = null; try { hp = its[di].getAsFileSystemHandle ? its[di].getAsFileSystemHandle() : null; } catch (x) { hp = null; } PE.openDroppedFolder(ents[di], hp); return; }
+		} catch (x) { }
+		if (e.dataTransfer && e.dataTransfer.files && e.dataTransfer.files.length) { e.preventDefault(); var at = PE.doc ? PE.toDoc(e.clientX, e.clientY) : null; var hs = null; try { var items = Array.prototype.slice.call(e.dataTransfer.items || []); if (items.length && items[0].getAsFileSystemHandle) hs = Promise.all(items.map(function (it) { return it.kind === "file" ? it.getAsFileSystemHandle().catch(function () { return null; }) : null; })); } catch (x) { hs = null; }
 		openFiles(e.dataTransfer.files, { place: !!PE.doc, at: null, how: "drop", handles: hs }); } });
 	function saveProject() { PE.saveProject(); }   // Save / Save as / download: projects.js
 	/* the top-bar Save button shows a dot while there are changes that are not in a saved project file */
@@ -3831,7 +4095,7 @@ $("pe-share").addEventListener("click", function () { if (needDoc()) PE.dlgShare
 	var isMac = /Mac|iPhone|iPad/.test(navigator.platform), MOD = isMac ? "⌘" : "Ctrl+";
 	function adj(list) { return list.map(function (a) { return { label: a.title, act: function () { if (needDoc()) PE.runAdjust(a.id); } }; }); }
 	var MENUS = [
-		{ label: "File", items: [{ label: "New image…", act: function () { PE.dlgNew(); } }, { label: "Open image / PSD / GIMP / project…", key: MOD + "O", act: pickOpen }, { label: "Open project file…", icon: "📂", title: "Open a .mesproj (or a .zip with a project in it) so that Save writes back to the same file", act: function () { PE.openProjectPicker(); } }, { label: "Open recent…", act: function () { PE.dlgRecent(); }, title: "Projects autosaved in this browser and project files opened or saved here" }, { label: "Insert equation (LaTeX)…", act: function () { PE.dlgEquation(null, null); } }, { label: "Place image(s) as layers…", act: function () { if (!needDoc()) return; pickFiles("image/*,.xcf", true, function (fs) { openFiles(fs, { place: true }); }); } }, "-",
+		{ label: "File", items: [{ label: "New image…", act: function () { PE.dlgNew(); } }, { label: "Open image / PSD / GIMP / project…", key: MOD + "O", act: pickOpen }, { label: "Open project file…", icon: "📂", title: "Open a .mesproj (or a .zip with a project in it) so that Save writes back to the same file", act: function () { PE.openProjectPicker(); } }, { label: "Open project folder…", icon: "📁", title: "Open an unzipped project: a folder with project.json and the layer PNGs in it (Chrome / Edge: Save then writes back into that folder)", act: function () { PE.openProjectFolderPicker(); } }, { label: "Open recent…", act: function () { PE.dlgRecent(); }, title: "Projects autosaved in this browser and project files opened or saved here" }, { label: "Insert equation (LaTeX)…", act: function () { PE.dlgEquation(null, null); } }, { label: "Place image(s) as layers…", act: function () { if (!needDoc()) return; pickFiles("image/*,.xcf", true, function (fs) { openFiles(fs, { place: true }); }); } }, "-",
 			{ label: "Save project", tag: "keeps layers", icon: "💾", hi: true, key: MOD + "S", act: saveProject, title: "A .mesproj file with every layer, group, mask, text and comp: open it again here to keep working. Once it is in a file, this writes to that same file" }, { label: "Save project as…", key: MOD + "Alt+Shift+S", act: function () { PE.saveProjectAs(); }, title: "Save the project under a new name or in another folder" }, { label: function () { return (PE.autoFileOn() ? "✓ " : "") + "Auto-save to the project file"; }, act: function () { PE.setAutoFile(!PE.autoFileOn()); }, title: "Write changes into the linked project file 20 s after you stop editing, so a synced folder (OneDrive…) always has the latest" }, { label: "Download project as .zip", act: function () { PE.downloadProjectZip(); }, title: "The same project as a normal .zip file (project.json + one PNG per layer): drop it on the editor to keep working" }, "-", { label: "Export as PNG / JPEG / WebP…", key: MOD + "Shift+S", act: function () { if (needDoc()) PE.dlgExport(); } }, { label: "Export the selected group as its own image…", act: function () { if (needDoc()) PE.dlgExportGroup(); } }, { label: "Export all comps as pictures (ZIP)…", act: function () { if (needDoc()) PE.dlgExportComps(); } }, { label: "Export every layer as PNG (ZIP)…", act: function () { PE.dlgExportLayers(); }, title: "One PNG per layer plus layers.json with the positions, for other apps" }, { label: "Save as PSD (Photoshop)", act: savePsd }, { label: "Save as GIMP file (.xcf)", act: function () { PE.saveXcf(); } }, "-",
 			{ label: "Where are my images? (files, folder, autosave)…", act: function () { PE.dlgFolder("where"); } }, { label: "Keep working on another computer…", act: function () { PE.dlgFolder("move"); } }, { label: "Connect a folder on this computer…", act: function () { PE.dlgFolder("folder"); } }, "-", { label: "Copy merged image to clipboard", act: function () { if (needDoc()) copyMerged(); } }, { label: "Share as a link (temporary upload)…", act: function () { if (needDoc()) PE.dlgShare(); } }, "-", { label: "Bulk convert images…", act: function () { window.open("/image-converter", "_blank"); } }] },
 		{ label: "Edit", items: [{ label: "Undo", key: MOD + "Z", act: function () { PE.undo(); } }, { label: "Redo", key: MOD + "Shift+Z", act: function () { PE.redo(); } }, "-", { label: "Cut", key: MOD + "X", act: function () { copySel(true); } }, { label: "Copy", key: MOD + "C", act: function () { copySel(false); } }, { label: "Copy merged", act: function () { if (needDoc()) copyMerged(); } }, { label: "Paste as new layer", key: MOD + "V", act: pasteInternal }, "-",
@@ -3919,6 +4183,7 @@ $("pe-share").addEventListener("click", function () { if (needDoc()) PE.dlgShare
 		if (mod) {
 			if (low === "z") { e.preventDefault(); e.shiftKey ? PE.redo() : PE.undo(); return; } if (low === "y") { e.preventDefault(); PE.redo(); return; }
 			if (!has && low !== "v" && low !== "o") return;
+			if ((low === "b" || low === "u" || (low === "i" && !e.shiftKey)) && !e.altKey) { var AL = PE.active(); if (AL && AL.type === "text" && AL.text && PE.textToggleStyle) { e.preventDefault(); PE.textToggleStyle(low === "b" ? 1 : low === "i" ? 2 : 4); return; } }   // bold / italic / underline the whole active text layer
 			if (low === "a") { e.preventDefault(); PE.selAll(); PE.commit("Select all"); } else if (low === "d") { e.preventDefault(); if (PE.sel) { PE.selClear(); PE.commit("Deselect"); } } else if (low === "i" && e.shiftKey) { e.preventDefault(); PE.selInvert(); PE.commit("Invert selection"); }
 			else if (low === "c") { e.preventDefault(); e.shiftKey ? copyMerged() : copySel(false); } else if (low === "x") { e.preventDefault(); copySel(true); } else if (low === "j") { e.preventDefault(); PE.duplicateLayer(); } else if (low === "g") { e.preventDefault(); e.shiftKey ? PE.ungroup() : groupSelected(); } else if (low === "e") { e.preventDefault(); PE.mergeDown(); }
 			else if (low === "n" && e.shiftKey) { e.preventDefault(); PE.newRasterLayer(); } else if (low === "s" || e.code === "KeyS") { e.preventDefault(); e.shiftKey && e.altKey ? PE.saveProjectAs() : e.shiftKey ? PE.dlgExport() : saveProject(); } else if (k === "0") { e.preventDefault(); PE.fit(); } else if (k === "1") { e.preventDefault(); PE.setZoom(1); } else if (k === "=" || k === "+") { e.preventDefault(); PE.setZoom(PE.view.zoom * 1.25); } else if (k === "-") { e.preventDefault(); PE.setZoom(PE.view.zoom / 1.25); }

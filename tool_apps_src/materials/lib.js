@@ -213,6 +213,31 @@
 		}
 		return r;
 	}
+	/* the temperature changes at which a heated (or cooled) bar reaches a given stress s (Pa, > 0): for "held" ±s/(E a), for "gap" (heating only)
+	   the closing rise g/(a L) plus s/(E a). null when that can't happen (free bar; a gap bar being cooled pulls away from the wall). */
+	function thermalDT(a, L, E, cond, g, s) {
+		if (!(a > 0) || !(E > 0) || !(s >= 0)) return null;
+		if (cond === "held") return { up: s / (E * a), down: -s / (E * a) };
+		if (cond === "gap") return { up: (g > 0 ? g : 0) / (a * L) + s / (E * a), down: null };
+		return null;
+	}
+	/* Euler buckling of a round bar of diameter d and length L held between walls: stress = pi^2 E (d/4)^2 / (K L)^2, K = 1 pinned ends, 0.5 clamped ends */
+	function bucklingStress(E, d, L, K) { if (!(E > 0) || !(d > 0) || !(L > 0)) return NaN; var r = d / 4, kl = (K || 1) * L; return PI * PI * E * r * r / (kl * kl); }
+	/* stress-against-temperature curve for the chart: n + 1 points from lo to hi (K) */
+	function thermalSeries(a, L, E, cond, g, lo, hi, n) { var out = [], i, dT; n = n || 60; for (i = 0; i <= n; i++) { dT = lo + (hi - lo) * i / n; out.push([dT, thermal(a, dT, L, E, cond, g).sigma]); } return out; }
+	/* state of a heated bar: "ok", "yield" (|sigma| past the strength) or "buckle" (compression past the buckling stress, checked first only if it comes before yield) */
+	function thermalState(sigma, strength, sBuckle) {
+		var c = Math.abs(sigma); if (!(c > 0)) return "ok";
+		if (sigma < 0 && sBuckle > 0 && c >= sBuckle && (!(strength > 0) || sBuckle <= strength)) return "buckle";
+		if (strength > 0 && c >= strength) return "yield";
+		if (sigma < 0 && sBuckle > 0 && c >= sBuckle) return "buckle";
+		return "ok";
+	}
+	/* colour of the bar: t = -1 (cold) .. 0 .. +1 (hot) -> [r, g, b] from blue through grey to red */
+	function heatRGB(t) {
+		t = t < -1 ? -1 : t > 1 ? 1 : t; var a = [148, 163, 184], c = t >= 0 ? [220, 38, 38] : [37, 99, 235], u = Math.abs(t);
+		return [0, 1, 2].map(function (i) { return Math.round(a[i] + (c[i] - a[i]) * u); });
+	}
 	function resilience(sy, E) { return sy * sy / (2 * E); }
 
 	/* ---------- materials: TYPICAL values. E, G in GPa; strengths in MPa; el = elongation at break %; ra = reduction of area % (rough; shapes the neck);
@@ -413,7 +438,7 @@
 	var api = { UNITS: UNITS, factor: factor, toSI: toSI, fromSI: fromSI, conv: conv, unitOf: unitOf, parseNum: parseNum, parseQty: parseQty, sig: sig, pretty: pretty,
 		SHAPES: SHAPES, section: section, sizeFor: sizeFor, AX: AX, axialPropagate: axialPropagate, axialSolve: axialSolve, euler: euler,
 		shearPin: shearPin, pinSize: pinSize, gFrom: gFrom, kFrom: kFrom, torsion: torsion, shaftSize: shaftSize, torqueFromPower: torqueFromPower,
-		elastic: elastic, hooke: hooke, hookeInv: hookeInv, poissonBar: poissonBar, thermal: thermal, resilience: resilience,
+		elastic: elastic, hooke: hooke, hookeInv: hookeInv, poissonBar: poissonBar, thermal: thermal, thermalDT: thermalDT, bucklingStress: bucklingStress, thermalSeries: thermalSeries, thermalState: thermalState, heatRGB: heatRGB, resilience: resilience,
 		FAMS: FAMS, MATS: MATS, mat: mat, curve: curve, saneCurveMat: saneCurveMat, stressAt: stressAt, idxAt: idxAt, measure: measure, permanentSet: permanentSet, roPoint: roPoint, neckOf: neckOf };
 	if (typeof module !== "undefined" && module.exports) module.exports = api; else root.MESMech = api;
 })(this);

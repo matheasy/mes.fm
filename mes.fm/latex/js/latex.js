@@ -500,4 +500,30 @@
 	render();
 	// for js/latex-ocr.js (Picture to LaTeX): render now and the math-mode test, so it knows whether to add $$ around what it inserts
 	window.MESLatex = { render: render, inMath: inMath, source: source };
+
+	// Corner-resizing the source or the output box (2026-10-26): side by side, the other box follows so the two panes
+	// stay the same height; stacked (phones) each keeps its own. Heights the browser sets while dragging are inline px.
+	(function () {
+		var out = document.getElementById("latex-output");
+		if (!out || !window.ResizeObserver) return;
+		var boxes = [source, out], lock = false, last = {};
+		function sideBySide() { return source.getBoundingClientRect().top === out.getBoundingClientRect().top; }
+		var ro = new ResizeObserver(function (entries) {
+			if (lock) return;
+			entries.forEach(function (en) {
+				var el = en.target, h = el.offsetHeight, k = el.id;
+				if (last[k] === undefined) { last[k] = h; return; }
+				if (h === last[k]) return;
+				last[k] = h;
+				if (!el.style.height || !sideBySide()) return;   // only a drag sets an inline height
+				var other = el === source ? out : source;
+				if (Math.abs(other.offsetHeight - h) < 2) return;
+				lock = true;
+				other.style.height = h + "px";
+				last[other.id] = other.offsetHeight;
+				requestAnimationFrame(function () { lock = false; });
+			});
+		});
+		boxes.forEach(function (b) { ro.observe(b); });
+	})();
 })();

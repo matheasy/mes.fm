@@ -47,6 +47,8 @@ GENERATED = {
     "hutchison-all", "911-all", "science-all", "conspiracy-all", "911spooks-all", "bg-all", "mh370-all", "crypto-all",
     "hutchison-posts", "hutchison-videos", "highlights", "hutchison-articles", "nancy", "hutchison-debunking-debunkers",
     "hutchison-news", "hutchison-unedited-footage", "hutchison-interviews", "cold-fusion-lenr",
+    # build_aj_books.py / build_pdf_page.py (Andrew Johnson's 9/11 books) + the 911/build.mjs section page listing them
+    "911-finding-truth", "911-holding-truth", "911-finding-truth-pdf", "911-holding-truth-pdf", "911-andrew-johnson-books",
     # emitted by mes.fm/livestreams/build.mjs
     "livestreams",
     # emitted by mes.fm/911/build.mjs (hub + section pages)

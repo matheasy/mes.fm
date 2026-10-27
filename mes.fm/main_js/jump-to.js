@@ -98,3 +98,93 @@
     new MutationObserver(sync).observe(document.body, { attributes: true, attributeFilter: ["class"] });
     sync();
 })();
+
+/* Scrollspy for the "Jump to" lists (2026-10-26): highlights the section you are reading (and, for a sub-section,
+   its chapter) in the fixed .toc-sidebar, the in-page "Jump to section" list (.toc-mobile) and the floating bar's
+   panel above. The current section = the last target whose top has passed ~30% of the window (sections hidden inside
+   a collapsed chapter are skipped, so their chapter stays lit); at the very bottom of the page the last visible target
+   wins. The sidebar / panel scroll themselves to keep the lit link in view (only when it changes, so a reader scrolling
+   the list by hand is not fought). Runs on every page that loads this file and has a TOC; nothing to regenerate. */
+(function () {
+    "use strict";
+    var lists = [".toc-sidebar", ".toc-mobile .toc-links"];
+    var src = document.querySelector(".toc-sidebar") || document.querySelector(".toc-mobile .toc-links");
+    if (!src || document.getElementById("mes-toc-spy-css")) return;
+    var items = [], parentOf = {}, lastTop = null;
+    Array.prototype.forEach.call(src.querySelectorAll("a[href^='#']"), function (a) {
+        var id = decodeURIComponent(a.getAttribute("href").slice(1)), el = id && document.getElementById(id);
+        if (!el) return;
+        var sub = a.classList.contains("toc-sub");
+        if (!sub) lastTop = id; else if (lastTop) parentOf[id] = lastTop;
+        items.push({ id: id, el: el });
+    });
+    if (items.length < 2) return;
+
+    var css = document.createElement("style");
+    css.id = "mes-toc-spy-css";
+    css.textContent =
+        ".toc-sidebar a.toc-active,.toc-mobile a.toc-active,#compact-jump-panel a.toc-active{opacity:1 !important;font-weight:700;" +
+        "background:rgba(128,128,128,.16);box-shadow:inset 3px 0 0 currentColor;border-radius:0 4px 4px 0;padding-left:.55em;padding-right:.3em}" +
+        ".toc-sidebar a.toc-sub.toc-active,.toc-mobile a.toc-sub.toc-active{padding-left:1.55em}" +
+        "#compact-jump-panel a.toc-sub.toc-active{padding-left:2.1em}" +
+        ".toc-sidebar a.toc-parent,.toc-mobile a.toc-parent,#compact-jump-panel a.toc-parent{opacity:1 !important;font-weight:700}" +
+        "body.dark .toc-sidebar a.toc-active,body.dark-mode .toc-sidebar a.toc-active,body.dark .toc-mobile a.toc-active,body.dark-mode .toc-mobile a.toc-active," +
+        "body.dark #compact-jump-panel a.toc-active,body.dark-mode #compact-jump-panel a.toc-active{background:rgba(255,255,255,.12)}";
+    document.head.appendChild(css);
+
+    var current = null, raf = 0;
+    function pick() {
+        var line = Math.max(90, window.innerHeight * 0.3), best = null, lastVis = null;
+        for (var i = 0; i < items.length; i++) {
+            var r = items[i].el.getBoundingClientRect();
+            if (!r.width && !r.height) continue;        /* inside a collapsed chapter */
+            lastVis = items[i].id;
+            if (r.top <= line) best = items[i].id;
+        }
+        var doc = document.documentElement;
+        if (lastVis && window.innerHeight + window.pageYOffset >= doc.scrollHeight - 4 && best) best = lastVis;
+        return best;
+    }
+    function links(scope) {
+        var out = [];
+        lists.concat("#compact-jump-panel").forEach(function (sel) {
+            Array.prototype.forEach.call(document.querySelectorAll(sel + " a[href^='#']"), function (a) { out.push(a); });
+        });
+        return out;
+    }
+    function keepVisible(box, a) {
+        if (!box || !a || box.scrollHeight <= box.clientHeight + 2) return;
+        var b = box.getBoundingClientRect(), r = a.getBoundingClientRect();
+        if (r.top < b.top + 30 || r.bottom > b.bottom - 30) box.scrollTop += (r.top - b.top) - box.clientHeight / 2 + r.height / 2;
+    }
+    function paint(force) {
+        raf = 0;
+        var id = pick();
+        if (id === current && !force) return;
+        var changed = id !== current;
+        current = id;
+        var par = id && parentOf[id];
+        links().forEach(function (a) {
+            var h = decodeURIComponent(a.getAttribute("href").slice(1));
+            var on = h === id, p = !!par && h === par;
+            a.classList.toggle("toc-active", on);
+            a.classList.toggle("toc-parent", p);
+            if (on) a.setAttribute("aria-current", "location"); else a.removeAttribute("aria-current");
+        });
+        if (changed) {
+            keepVisible(document.querySelector(".toc-sidebar"), document.querySelector(".toc-sidebar a.toc-active"));
+            keepVisible(document.getElementById("compact-jump-panel"), document.querySelector("#compact-jump-panel a.toc-active"));
+        }
+    }
+    function later() { if (!raf) raf = requestAnimationFrame(function () { paint(false); }); }
+    window.addEventListener("scroll", later, { passive: true });
+    window.addEventListener("resize", later);
+    document.addEventListener("click", function () { setTimeout(function () { paint(true); }, 60); }, true);  /* chapter folds open / close */
+    /* the floating panel is built by the block above; when it opens, light its link and bring it into view */
+    var panel = document.getElementById("compact-jump-panel");
+    if (panel) new MutationObserver(function () {
+        if (panel.classList.contains("open")) { paint(true); keepVisible(panel, panel.querySelector("a.toc-active")); }
+    }).observe(panel, { attributes: true, attributeFilter: ["class"] });
+    paint(true);
+    setTimeout(function () { paint(true); }, 800);       /* after images / lazy content settle */
+})();

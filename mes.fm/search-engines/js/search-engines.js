@@ -279,6 +279,7 @@
 		var t = tg(), html = "", list = all(), ft = filterText.toLowerCase();
 		var nx = 0; Object.keys(S.extra).forEach(function (id) { nx += (S.extra[id] || []).length; });
 		var cx = $("se-clearx"); if (cx) { cx.hidden = !nx; cx.textContent = 'Clear "Also" extras (' + nx + ")"; }
+		allxPaint();
 		groups().forEach(function (g) {
 			var items = list.filter(function (e) { return e.g === g[0] && (!ft || e.name.toLowerCase().indexOf(ft) >= 0 || e.id.indexOf(ft) >= 0); });
 			if (!items.length) return;
@@ -438,6 +439,33 @@
 	};
 	$("se-none").onclick = function () { S.sel = []; S.extra = {}; persist(); render(); };
 	$("se-clearx").onclick = function () { S.extra = {}; persist(); render(); };
+	// "Also, for every engine:" -- one switch per type for all ticked engines that have that search.
+	// pressed = every ticked engine that can do it has it; mixed = some do (or unticked engines still carry it); off = none.
+	function allxState(t) {
+		var can = S.sel.filter(function (id) { var e = engineById(id); return e && e.types && e.types[t]; });
+		var on = can.filter(function (id) { return (S.extra[id] || []).indexOf(t) >= 0; }).length;
+		var any = Object.keys(S.extra).some(function (id) { return (S.extra[id] || []).indexOf(t) >= 0; });
+		return { can: can, st: can.length && on === can.length ? "true" : any ? "mixed" : "false" };
+	}
+	function allxPaint() {
+		var box = $("se-allx"); if (!box) return;
+		box.querySelectorAll("button[data-ax]").forEach(function (b) {
+			var t = b.dataset.ax, x = allxState(t), lbl = t.charAt(0).toUpperCase() + t.slice(1);
+			b.setAttribute("aria-pressed", x.st);
+			b.disabled = !x.can.length && x.st === "false";
+			b.title = x.st === "true" ? "Untick " + lbl + " on every engine" : x.can.length ? "Tick " + lbl + " on all " + x.can.length + " ticked engines that have it" + (x.st === "mixed" ? " (some have it now)" : "") : x.st === "mixed" ? "Untick " + lbl + " everywhere" : "None of the ticked engines has a " + t + " search";
+		});
+	}
+	$("se-allx").onclick = function (ev) {
+		var b = ev.target.closest("button[data-ax]"); if (!b) return;
+		var t = b.dataset.ax, x = allxState(t);
+		if (x.st === "true" || !x.can.length) {
+			Object.keys(S.extra).forEach(function (id) { var a = (S.extra[id] || []).filter(function (y) { return y !== t; }); if (a.length) S.extra[id] = a; else delete S.extra[id]; });
+		} else {
+			x.can.forEach(function (id) { var a = (S.extra[id] || []).slice(); if (a.indexOf(t) < 0) a.push(t); S.extra[id] = a; });
+		}
+		persist(); render();
+	};
 	$("se-saveset").onclick = function () {
 		if (!S.sel.length) { toast("Tick some engines first"); return; }
 		var name = prompt("Name for this set of " + S.sel.length + " engines:\n(Shift-click a saved set later to delete it.)", ""); if (!name || !name.trim()) return;

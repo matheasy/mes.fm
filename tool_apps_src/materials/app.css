@@ -300,3 +300,21 @@
 	body.dark-mode #mt.mt .tu-table td, body.dark-mode #mt.mt .tu-table th {border-bottom-color:#3a3f46;color:#e8ecf1;}
 	body.dark-mode #mt.mt .tu-table tr.is-active td {background:#16324a;}
 	body.dark-mode #mt.mt .tu-stat--hero {background:#16324a;border-color:#2d5375;}
+	/* thermal tab: support picker in the picture, coloured bar, thermometer, stress chart */
+	#mt .mt-thtop {display:flex;flex-wrap:wrap;gap:0.5em 1em;align-items:center;justify-content:space-between;margin:0 0 0.4em;}
+	#mt .mt-thsup button {display:inline-flex;align-items:center;gap:0.35em;} #mt .mt-thsup svg {width:2.1em;height:0.9em;fill:currentColor;opacity:0.85;}
+	#mt .mt-tht0 {display:inline-flex;align-items:center;gap:0.35em;font-size:0.9em;color:var(--mt-mut);} #mt .mt-tht0 input {width:4.6em;min-height:34px;padding:0.2em 0.4em;}
+	#mt .mt-thbar {stroke:var(--mt-s3);stroke-width:1.4;transition:stroke 0.2s;} #mt .mt-thbar--yield {stroke:var(--mt-yield);stroke-width:4;} #mt .mt-thbar--buckle {stroke:var(--mt-break);stroke-width:4;}
+	#mt .mt-thwave {fill:none;stroke:#dc2626;stroke-width:2;stroke-linecap:round;opacity:0.8;} #mt .mt-thsnow {fill:#2563eb;font-size:15px;}
+	#mt .mt-thwarn {fill:#b45309;} #mt .mt-thwarn--b {fill:var(--mt-break);}
+	#mt .mt-thtube {fill:var(--mt-card);stroke:var(--mt-s3);stroke-width:1.5;}
+	#mt [data-drag="therm"] {cursor:ns-resize;} #mt [data-drag="therm"]:hover .mt-thtube {stroke:var(--accent);stroke-width:2.5;}
+	#mt .mt-thch {margin-top:0.5em;cursor:crosshair;touch-action:none;} #mt .mt-thch-bg {fill:var(--mt-soft);} #mt .mt-thch-grid {stroke:var(--mt-grid);stroke-width:1;} #mt .mt-thch-zero {stroke:var(--mt-axis);stroke-width:1.2;}
+	#mt .mt-thch-tk {font-size:11px;fill:var(--mt-mut);} #mt .mt-thch-ax {font-size:12px;fill:var(--mt-mut);} #mt .mt-thch-lb {font-size:11px;font-weight:700;}
+	#mt .mt-thch-line {fill:none;stroke:var(--accent);stroke-width:2.6;stroke-linejoin:round;} #mt .mt-thch-now {stroke:var(--mt-ghost);stroke-width:1;stroke-dasharray:3 3;}
+	#mt .mt-thch-yield {stroke:var(--mt-yield);stroke-width:1.6;stroke-dasharray:7 4;} #mt .mt-thch-yield-t {fill:#b45309;} #mt .mt-thch-buck {stroke:#7c3aed;stroke-width:1.6;stroke-dasharray:3 3;} #mt .mt-thch-buck-t {fill:#7c3aed;}
+	#mt .mt-thch-pt {stroke:var(--mt-card);stroke-width:2.5;fill:#16a34a;} #mt .mt-thch-pt--yield {fill:var(--mt-yield);} #mt .mt-thch-pt--buckle {fill:var(--mt-break);}
+	body.dark-mode #mt.mt .mt-thch-yield-t, body.dark-mode #mt.mt .mt-thwarn {fill:#fbbf24;} body.dark-mode #mt.mt .mt-thch-buck-t {fill:#c4b5fd;} body.dark-mode #mt.mt .mt-thch-buck {stroke:#a78bfa;} body.dark-mode #mt.mt .mt-thwave {stroke:#f87171;} body.dark-mode #mt.mt .mt-thsnow {fill:#93c5fd;} body.dark-mode #mt.mt .mt-thch-line {stroke:#7fb2e0;}
+	@media (max-width:560px) {#mt .mt-thsup button {padding:0.35em 0.5em;font-size:0.85em;}}
+	/* phones: each slider gets its own row (label + value above, the track full width below), so long labels don't squeeze the track */
+	@media (max-width:560px) {#mt .mt-sliders {display:block;} #mt .mt-sliders .mt-slide {display:grid;grid-template-columns:minmax(0,1fr) auto;grid-template-areas:"l o" "r r";gap:0 0.5em;margin:0.15em 0 0.35em;} #mt .mt-sliders .mt-slide label {grid-area:l;} #mt .mt-sliders .mt-slide output {grid-area:o;min-width:0;} #mt .mt-sliders .mt-slide input {grid-area:r;width:100%;}}

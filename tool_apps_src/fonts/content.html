@@ -53,7 +53,17 @@
 				<span class="tu-note" id="fn-count"></span>
 				<p class="tu-note">Only fonts your browser can really draw are listed, so every sample is honest. Google Fonts are downloaded from Google when you press the button (that is the only thing that leaves your computer); everything else stays here.</p>
 			</div>
+			<div class="fn-cards">
+				<span class="fn-cw" id="fn-cw" role="group" aria-label="Card size"><b>Card size:</b> <button type="button" class="tu-chip" data-cw="s">S</button><button type="button" class="tu-chip" data-cw="m">M</button><button type="button" class="tu-chip" data-cw="l">L</button><button type="button" class="tu-chip" data-cw="xl">XL</button></span>
+				<label class="fn-csl">Text in cards <input type="range" id="fn-cs" min="40" max="250" step="5" value="100" aria-label="Text size in the cards"> <span id="fn-csv">100%</span></label>
+				<button type="button" class="tu-btn tu-btn--ghost" id="fn-colall">▸ Collapse all</button><button type="button" class="tu-btn tu-btn--ghost" id="fn-expall">▾ Expand all</button>
+			</div>
+			<details class="fn-hidden" id="fn-hidden" hidden><summary>Hidden fonts (<span id="fn-hidn">0</span>): show</summary><div class="fn-hidlist" id="fn-hidlist"></div><button type="button" class="tu-btn tu-btn--ghost" id="fn-hidall">Show all hidden fonts</button></details>
 			<div class="fn-grid" id="fn-grid"></div>
+		</div>
+		<div class="fn-view" id="fn-view" hidden role="dialog" aria-modal="true" aria-labelledby="fn-vname">
+			<div class="fn-vbar"><b id="fn-vname"></b><span class="fn-vbtns"><button type="button" class="tu-btn tu-btn--ghost" id="fn-vprev" title="Previous font (←)">‹</button><button type="button" class="tu-btn tu-btn--ghost" id="fn-vnext" title="Next font (→)">›</button><button type="button" class="tu-btn tu-btn--ghost" id="fn-vminus" title="Smaller (−)">A−</button><button type="button" class="tu-btn tu-btn--ghost" id="fn-vfit" title="Fit the text to the window">Fit</button><button type="button" class="tu-btn tu-btn--ghost" id="fn-vplus" title="Bigger (+)">A+</button><button type="button" class="tu-btn tu-btn--ghost" id="fn-vbig" title="Open the big preview with PNG and CSS">PNG / CSS</button><button type="button" class="tu-btn tu-btn--ghost" id="fn-vfs">⛶ Full screen</button><button type="button" class="tu-btn" id="fn-vclose" title="Close (Esc)">✕ Close</button></span></div>
+			<div class="fn-vbody" id="fn-vbody"></div>
 		</div>
 
 		<div id="fn-p-compare" hidden>

@@ -14,4 +14,5 @@ t("similarity: same shape high, different low, aspect penalty", () => {
 	const same = F.similarity(A, B, gw, gh, 4, 4), diff = F.similarity(A, C, gw, gh, 4, 4), wide = F.similarity(A, B, gw, gh, 4, 8);
 	assert.ok(same > 0.99 && diff < 0.8 && wide < same * 0.7, [same, diff, wide].join());
 });
+t("card sizes grow S < M < L < XL", () => { const w = ["s", "m", "l", "xl"].map(k => F.CARD_W[k]); assert.ok(w.every((v, i) => !i || v > w[i - 1]) && w[0] >= 10); });
 console.log(n + " font checks passed");

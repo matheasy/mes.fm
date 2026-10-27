@@ -4,7 +4,7 @@
    preference as the other pages: localStorage "asideHidden" / html.aside-hidden). Needs >= 1500px; below that the page is exactly as before. Installed by add_jump_aside.py. */
 (function () {
     "use strict";
-    var FAMILY = { "cubic-formula": "cubic-formula", "vector-functions-problems-plus": "vector-functions-problems-plus", "moon": "tools" };
+    var FAMILY = { "cubic-formula": "cubic-formula", "vector-functions-problems-plus": "vector-functions-problems-plus", "moon": "tools", "911-finding-truth": "911", "911-holding-truth": "911" };
     var slug = location.pathname.replace(/^\/+|\/+$/g, "").replace(/\/index\.html$/, "");
     var fam = FAMILY[slug];
     if (!fam || document.getElementById("mes-aside")) return;

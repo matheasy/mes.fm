@@ -15,6 +15,7 @@ export const SECTIONS = [
     id: "conspiracy-posts",
     title: "Posts",
     items: [
+  { href: "https://mes.fm/stephen-smith-jerry-jones-cowboys", title: "Future President Stephen A. Smith Sitting Next to Jerry Jones, Owner of the Dallas Cowboys" },
   { href: "https://mes.fm/stephen-smith-trump-dinner", title: "Future President Stephen A. Smith Having Dinner with Trump at the White House" },
   { title: "Tucker Carlson Jumps on the MH370 Teleportation Cartoons Bandwagon", image: "https://snipboard.io/qyuA5S.jpg", links: [["mes.fm", "https://mes.fm/tucker-carlson-mh370-cartoons"]] },
   { href: "https://mes.fm/us-ambassador-thornhill-human-trafficking", title: "New US Ambassador on Human Trafficking Is Lookin' Very... Human" },

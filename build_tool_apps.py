@@ -36,7 +36,7 @@ EXT_TAB = "<li class=\"info-bar__item\"><a class=\"info-bar__item__text\" href='
 
 # simulator pages whose boxes (.fl-wrap, .lm-wrap, ...) get the shared View bar from main_js/stage-ctl.js
 STAGE_CTL = {"julia-set-explorer", "fluid-simulator", "light-in-a-medium", "black-hole-simulator", "mandelbrot", "buddhabrot", "time-dilation", "metric-tensor", "orbit-simulator", "double-pendulum", "electromagnetic-fields-simulator", "photoelectric-effect-simulator", "solar-system-today", "atomic-clock-simulator",
-             "michelson-morley-experiment", "faster-than-light-shadow-simulator", "fountain-clock", "magnetic-isopotentials"}
+             "michelson-morley-experiment", "faster-than-light-shadow-simulator", "fountain-clock", "magnetic-isopotentials", "hutchison-effect-simulator"}
 
 # PDF family nav (2026-10-16): Home = the PDF Tools hub, then the editor and the six tools, ahead of Calculators / Tools
 PDF_NAV_INFO = '<li class="info-bar__item"><a class="info-bar__item__text" href=\'/pdf\'>Editor</a></li><li class="info-bar__item"><a class="info-bar__item__text" href=\'/merge-pdf\'>Merge</a></li><li class="info-bar__item"><a class="info-bar__item__text" href=\'/split-pdf\'>Split</a></li><li class="info-bar__item"><a class="info-bar__item__text" href=\'/organize-pdf\'>Organize</a></li><li class="info-bar__item"><a class="info-bar__item__text" href=\'/jpg-to-pdf\'>Images to PDF</a></li><li class="info-bar__item"><a class="info-bar__item__text" href=\'/pdf-to-jpg\'>PDF to images</a></li><li class="info-bar__item"><a class="info-bar__item__text" href=\'/compress-pdf\'>Compress</a></li>'
@@ -165,6 +165,14 @@ APPS = {
                        desc="Free live debt clock: a running estimate of the US national debt from the Treasury's daily figures, plus world government debt and Canada's federal debt, the share per person, household and taxpayer, debt-to-GDP, interest per second, the deficit, and charts back to 1790. Every number shows its source and how it is estimated.",
                        meta_desc="Live US national debt clock from Treasury data, plus world and Canada debt: per person, debt-to-GDP, interest per second and charts since 1790.",
                        js_v="1"),
+    # MES NBA Picks (2026-10-26, mes.fm/nba-picks): predicted final standings (15 teams per conference) scored against the live standings (exact, within 1/2/3, tier, points,
+    # closeness, Spearman). Standings = mes.fm/api/nba-standings.js (ESPN, keyless); leaderboard = mes.fm/api/nba-picks.js (Upstash). lib.js is shared with both as
+    # mes.fm/api/_nba-lib.js (byte-identical copy). Snapshot mes.fm/nba-picks/data/sample.json (`node mes.fm/api/nba-standings.js --write`). Tests: node tool_apps_src/nba-picks-tests.js.
+    "nba-picks": dict(title="MES NBA Picks", page_title="NBA Standings Predictions Tracker: How Many of Your Picks Are Right?",
+                      tag="Your predicted standings vs the live table, scored every way.", accent="#c2410c", dark="#9a3412", tint="#fdeee4",
+                      desc="Free NBA standings predictions tracker: put the 15 teams of the East and the West in the order you think they will finish and see how many you have right so far against the live standings: exact spots, within one to three spots, the right playoff / play-in / lottery tier, points and rank correlation, with a picture of every pick. Save several sets, share a link, compare with friends and join the leaderboard.",
+                      meta_desc="Track your NBA standings predictions: see how many of your East and West picks are right against the live standings, compare with friends, join the leaderboard.",
+                      js_v="1"),
     "baby-growth-percentile-calculator": dict(title="MES Baby Growth Percentile Calculator", page_title="Baby Growth Percentile Calculator (WHO Weight, Length, Head)",
                           tag="Weight, length and head percentiles on the WHO chart.", accent="#15803d", dark="#0f5f2c", tint="#dcf3e3", src="baby-growth", js_path="baby-growth/js/baby-growth.js", js_parts=["data.js"],
                           desc="Free baby growth percentile calculator using the WHO Child Growth Standards: enter age, weight, length and head circumference to see the percentile and z-score on the growth chart, corrected age for premature babies, and a private growth log that shows your baby's trend.",
@@ -294,14 +302,21 @@ APPS = {
     "electromagnetic-fields-simulator": dict(title="MES Electromagnetic Fields Simulator", page_title="Electromagnetic Fields Simulator: Electric, Magnetic and Light Waves",
                                              tag="See the fields. Watch the waves.", accent="#c2410c", dark="#9a3412", tint="#ffedd5",
                                              desc="A free electromagnetism simulator: place charges and see field lines, equipotentials and Gauss's law, add current-carrying wires and check Ampere's law, turn bar magnets and see their flux lines and magnetic isopotentials, steer a charged particle through electric and magnetic fields, watch Maxwell's equations make waves reflect, refract and diffract, and explore a 3D electromagnetic plane wave.",
-                                             js_v="13", vars={"MAGNETS": "@panel-magnets.html"}),
+                                             js_v="14", vars={"MAGNETS": "@panel-magnets.html"}),
     # Magnetic Isopotentials (2026-10-25): the Magnets tab of the EM Fields Simulator as its own page (own URL, text, FAQ, logos). Shares that app's source folder (src) and served script (js_path);
     # content-magnets.html carries only the magnets panel (the same panel-magnets.html, via vars) + its own text; data-only="mg" tells app.js to run just that panel.
     "magnetic-isopotentials": dict(title="MES Magnetic Isopotentials", page_title="Magnetic Isopotentials and Flux Lines of Bar Magnets",
                                    tag="Flux lines and isopotentials, live.", accent="#b91c1c", dark="#991b1b", tint="#fee2e2",
                                    desc="Free magnet simulator: drag and turn bar magnets and see their magnetic flux lines and isopotential lines (equal magnetic scalar potential) at once, with compasses, field strength colours, horseshoe and Halbach examples.",
                                    src="electromagnetic-fields-simulator", content="content-magnets.html", js_path="electromagnetic-fields-simulator/js/electromagnetic-fields-simulator.js",
-                                   js_v="13", vars={"MAGNETS": "@panel-magnets.html"}),
+                                   js_v="14", vars={"MAGNETS": "@panel-magnets.html"}),
+    # Hutchison Effect Simulator (2026-10-26): top-down lab floor of John Hutchison's apparatus (Tesla coils, Van de Graaff, RF, spark gaps, tanks, inductors, field shaper ...), field superposition
+    # heat maps (drive / |E| / |B| / overlap / standing waves / glitch risk / animated), samples with best-estimate effect rates (levitation, jelly metal, fracturing ...), target camera, schematic + equipment views.
+    # (lib.js = MESHut, node-tested: tool_apps_src/hutchison-effect-simulator-tests.js.) Normal-width page in the tools sidebar collection, Wide by default.
+    "hutchison-effect-simulator": dict(title="MES Hutchison Effect Simulator", page_title="Hutchison Effect Simulator: Tesla Coils, Fields and Levitation",
+                                       tag="Cross the fields. Watch the samples.", accent="#b45309", dark="#92400e", tint="#fef3c7",
+                                       desc="A free Hutchison Effect simulator: lay out John Hutchison's apparatus (Tesla coils, Van de Graaff, RF transmitters, spark gaps, tank circuits, inductors, field shaper), see where their fields cross, and watch samples levitate, bend like jelly, fracture, glow, smoke and bubble. Includes George Hathaway's LADS Phase I lab, a schematic view and an equipment guide for planning a replication.",
+                                       js_v="1"),
     # Double Pendulum: live chaotic pendulum (RK4, copies for the butterfly effect, angle and divergence graphs, Lyapunov estimate) + a flip-time chaos map of every starting pair of angles
     # (lib.js node-tested: tool_apps_src/double-pendulum-tests.js). Normal-width page in the tools sidebar collection, Wide by default.
     "double-pendulum": dict(title="MES Double Pendulum", page_title="Double Pendulum Simulator: Chaos and the Butterfly Effect",
@@ -355,7 +370,7 @@ APPS = {
     "photo": dict(title="MES Photo Editor", src="photo-editor", page_title="Free Online Photo Editor with Layers",
                          tag="Pro tools. No upload. No sign-up.", accent="#7c3aed", dark="#5b21b6", tint="#f1eafe",
                          desc="Free online photo editor with layers, selections, magic wand, clone stamp, levels and curves. Add text labels, arrows, callouts and blur boxes to screenshots, combine images, keep transparency, open PSD and GIMP (.xcf) files and export PNG, JPEG or WebP. Private: nothing is uploaded.",
-                         js_v="25", js_parts=["core.js", "tools.js", "tools2.js", "dialogs.js", "ai.js", "aiort.js", "erase.js", "upscale.js", "equation.js", "xcf.js", "files.js", "projects.js"], lib_from=["image-converter"]),
+                         js_v="26", js_parts=["core.js", "tools.js", "tools2.js", "dialogs.js", "ai.js", "aiort.js", "erase.js", "upscale.js", "equation.js", "xcf.js", "files.js", "projects.js"], lib_from=["image-converter"]),
     # Bulk Image Converter: PNG / JPEG / WebP in bulk in the browser (canvas), optional resize, ZIP download. lib.js = MESImg (formats, sizes, names, ZIP writer; node-tested: tool_apps_src/image-converter-tests.js), shared with the photo editor.
     "image-converter": dict(title="MES Bulk Image Converter", page_title="Bulk Image Converter: PNG to JPG, JPG to PNG, WebP",
                          tag="Convert many images at once. Nothing is uploaded.", accent="#0f766e", dark="#0b5a54", tint="#e2f3f1",
@@ -401,19 +416,19 @@ APPS = {
     "materials": dict(title="MES Mechanics of Materials", page_title="Mechanics of Materials Calculator: Stress, Strain, Young's Modulus, Shear, Torsion",
                       tag="Stress, strain, shear and torsion, with the pictures.", accent="#2f6690", dark="#22496a", tint="#e1edf6",
                       desc="Free mechanics of materials calculators: stress and strain with Young's modulus, a tensile test simulator with the stress-strain curve, shear stress in bolts and pins, torsion of shafts, Poisson's ratio and 3D Hooke's law, thermal stress, and a table of 30 materials. SI and US units.",
-                      js_v="4", vars={"VIEWS": "axial,tensile,shear,torsion,poisson,thermal,table", "PAGE": "materials", "SEO": "@seo/materials.html"}, nav_extra=MAT_NAV_INFO, menu_extra=MAT_NAV_MENU),
+                      js_v="5", vars={"VIEWS": "axial,tensile,shear,torsion,poisson,thermal,table", "PAGE": "materials", "SEO": "@seo/materials.html"}, nav_extra=MAT_NAV_INFO, menu_extra=MAT_NAV_MENU),
     "youngs-modulus-calculator": dict(title="Young's Modulus Calculator", page_title="Young's Modulus Calculator: Stress, Strain and Elongation",
                       tag="Stress, strain and stretch from any four values.", accent="#2f6690", dark="#22496a", tint="#e1edf6", src="materials", js_path="materials/js/materials.js",
                       desc="Free Young's modulus calculator: find stress, strain, elongation or the modulus of elasticity from the force, area and length, with a live picture of the stretched bar, safety factor, buckling load and 30 materials. SI and US units, every formula shown.",
-                      js_v="4", vars={"VIEWS": "axial,tensile,table", "PAGE": "youngs", "SEO": "@seo/youngs-modulus-calculator.html"}, brand=MAT_BRAND, tab=1, nav_extra=MAT_NAV_INFO, menu_extra=MAT_NAV_MENU),
+                      js_v="5", vars={"VIEWS": "axial,tensile,table", "PAGE": "youngs", "SEO": "@seo/youngs-modulus-calculator.html"}, brand=MAT_BRAND, tab=1, nav_extra=MAT_NAV_INFO, menu_extra=MAT_NAV_MENU),
     "tensile-test-simulator": dict(title="Tensile Test Simulator", page_title="Tensile Test Simulator: Stress-Strain Curve, Yield, UTS and Necking",
                       tag="Pull a bar until it breaks and watch the curve.", accent="#2f6690", dark="#22496a", tint="#e1edf6", src="materials", js_path="materials/js/materials.js",
                       desc="Free tensile test simulator: pull steel, aluminium, cast iron, glass, plastics, rubber and more until they break and watch the stress-strain curve being drawn: yield, 0.2% offset, Lüders plateau, UTS, necking, unloading, true stress, resilience and toughness. Compare three materials.",
-                      js_v="4", vars={"VIEWS": "tensile,table", "PAGE": "tensile", "SEO": "@seo/tensile-test-simulator.html"}, brand=MAT_BRAND, tab=2, nav_extra=MAT_NAV_INFO, menu_extra=MAT_NAV_MENU),
+                      js_v="5", vars={"VIEWS": "tensile,table", "PAGE": "tensile", "SEO": "@seo/tensile-test-simulator.html"}, brand=MAT_BRAND, tab=2, nav_extra=MAT_NAV_INFO, menu_extra=MAT_NAV_MENU),
     "shear-stress-calculator": dict(title="Shear Stress Calculator", page_title="Shear Stress Calculator: Bolts, Pins, Punching and Shaft Torsion",
                       tag="Shear in bolts and pins, and twisted shafts.", accent="#2f6690", dark="#22496a", tint="#e1edf6", src="materials", js_path="materials/js/materials.js",
                       desc="Free shear stress calculator: shear stress and strain in bolts and pins in single or double shear, glued joints and punching, shear modulus from E and Poisson's ratio, and torsion of solid and hollow shafts with the angle of twist and motor power. Safety factors and sizes.",
-                      js_v="4", vars={"VIEWS": "shear,torsion,table", "PAGE": "shear", "SEO": "@seo/shear-stress-calculator.html"}, brand=MAT_BRAND, tab=3, nav_extra=MAT_NAV_INFO, menu_extra=MAT_NAV_MENU),
+                      js_v="5", vars={"VIEWS": "shear,torsion,table", "PAGE": "shear", "SEO": "@seo/shear-stress-calculator.html"}, brand=MAT_BRAND, tab=3, nav_extra=MAT_NAV_INFO, menu_extra=MAT_NAV_MENU),
     # Photoelectric Effect Simulator: light on a metal, electrons, stopping voltage, I-V and KE-vs-f graphs, and a "measure h" lab. lib.js node-tested (tool_apps_src/photoelectric-effect-tests.js). Normal-width page with the sidebar (Wide by default); opensearch.xml lets browsers add it as a search engine.
     "photoelectric-effect-simulator": dict(title="MES Photoelectric Effect Simulator", page_title="Photoelectric Effect Simulator",
                             tag="Light knocks electrons out of metal.", accent="#6d28d9", dark="#5b21b6", tint="#ede9fe",
@@ -441,7 +456,7 @@ APPS = {
     "search-engines": dict(title="MES Search Engines", page_title="Search Engines",
                            tag="One search, every search engine.", accent="#c2410c", dark="#9a3412", tint="#fdeadf",
                            desc="Type your search once and open it in Google (.com, .ca, .co.uk and more), Bing, DuckDuckGo, Brave, Yandex and 60+ other search engines, AI assistants and video sites, in tabs or tiled windows. Compare results, check censorship and bias, and add your own engines.",
-                           js_v="6",
+                           js_v="7",
                            head_extra='<link rel="search" type="application/opensearchdescription+xml" title="MES Search Engines" href="https://mes.fm/search-engines/opensearch.xml" />'),
     # Mortgage Calculator 2.0 (rewritten 2026-10-03 from the 2013-2018 jQuery page): lib.js = exact-cents maths + the country rules tables (CMHC, minimum down payment, stress test, SDLT;
     # node-testable: tool_apps_src/mortgagecalculator-tests.js), app.js = UI. Keeps ads; old /mortgagecalculator/s/<id> links still resolve via /api/share?calc=mc.
@@ -681,14 +696,22 @@ APPS = {
                       tag="Translate text, photos and PDFs, on your device when it can.", accent="#0b7285", dark="#085563", tint="#e0f3f6",
                       desc="Free translator for text, photos, screenshots and PDFs in about 85 languages. Chrome and Edge translate on your own device, so nothing is sent anywhere; other browsers use a free online service. Reads the text in pictures right in your browser.",
                       meta_desc="Free translator for text, photos and PDFs in 85 languages. Chrome and Edge translate on your device; pictures are read in your browser, never uploaded.",
-                      js_v="3", vars={"MODE": "translate", "SEO": "@seo/translate.html"},
+                      js_v="4", vars={"MODE": "translate", "SEO": "@seo/translate.html"},
                       nav_extra=TR_NAV_INFO, menu_extra=TR_NAV_MENU),
     "image-to-text": dict(title="Image to Text (OCR)", page_title="Image to Text: Free OCR in Your Browser",
                           tag="Copy the text out of photos, screenshots and PDFs.", accent="#0b7285", dark="#085563", tint="#e0f3f6", src="translate", js_path="translate/js/translate.js",
                           desc="Free image to text converter (OCR): drop a photo, screenshot, scan or PDF and copy its text, in about 80 languages. The picture is read right in your browser and never uploaded. Fix the text, save it as .txt or translate it.",
                           meta_desc="Free image to text (OCR): copy the text from photos, screenshots and scanned PDFs in 80 languages. Runs in your browser, nothing is uploaded.",
-                          js_v="3", vars={"MODE": "ocr", "SEO": "@seo/image-to-text.html"}, brand=TR_BRAND, tab=1, share_img="image-to-text/img/logo-big.png",
+                          js_v="4", vars={"MODE": "ocr", "SEO": "@seo/image-to-text.html"}, brand=TR_BRAND, tab=1, share_img="image-to-text/img/logo-big.png",
                           nav_extra=TR_NAV_INFO, menu_extra=TR_NAV_MENU),
+    # MES Pronounce (new 2026-10-26, mes.fm/pronounce; aliases /pronunciation /how-to-pronounce /syllables /ipa ...): hear words and sentences in the device's accents,
+    # syllables + stress + IPA + respelling from the CMU Pronouncing Dictionary (shards in mes.fm/pronounce/data/, build_pronounce_data.py), UK forms by hand,
+    # recordings via dictionaryapi.dev (Wikimedia Commons). lib.js = MESPron (tests: node tool_apps_src/pronounce-tests.js) + the Speed Reader's SRLib (voices).
+    "pronounce": dict(title="MES Pronounce", page_title="How to Pronounce: Hear Words, Syllables and IPA",
+                      tag="Hear any word in different accents, with syllables, stress and IPA.", accent="#9d174d", dark="#6f1037", tint="#fbe7f0",
+                      desc="Free pronunciation tool: type a word or sentence and hear it in US, UK, Australian, Indian, Irish and other accents. See its syllables with the stressed one bigger, IPA, an easy respelling, US and UK forms, real recordings, slow syllable-by-syllable playback and practice with your microphone.",
+                      meta_desc="Hear how to pronounce any word in US, UK, Australian and other accents, with syllables, stress, IPA, an easy respelling and slow playback.",
+                      js_v="1", lib_from=["speedreader"], pre_js=["/main_js/voice-picker.js?v=1"]),
     "reminder": dict(title="Event Reminder", page_title="Livestream and Event Reminder",
                      tag="One link: a countdown and a calendar reminder in everyone's time zone.", accent="#b4235a", dark="#86183f", tint="#fbe6ee",
                      desc="Free event reminder link: make one link for a livestream, class or meeting and share it. Everyone who opens it sees a countdown and the time in their own time zone, and can add it to Google Calendar, Apple Calendar, Outlook or their phone with alerts, or get a browser notification.",
@@ -780,11 +803,12 @@ APPS = {
                 head_extra='<meta name="robots" content="noindex, nofollow">' + PAGE3_HEAD),
     # MES Search Console (private, mes.fm/search-console, behind the middleware.js password like /ads): Google Search Console
     # (pushed by google-ads/search-console-gsc-script.js -> api/search-console-ingest.js) + Bing Webmaster API (env BING_WEBMASTER_KEY),
-    # read through api/search-console.js. Wide, ad-free, no sidebar, noindex. Tests: tool_apps_src/search-console-tests.js.
+    # read through api/search-console.js. AI search panel = console exports imported in the browser (lib.js = MESSCAI) -> api/search-console-ai.js.
+    # Wide, ad-free, no sidebar, noindex. Tests: tool_apps_src/search-console-tests.js.
     "search-console": dict(title="MES Search Console", page_title="Search Console: Google and Bing Search Performance",
                 tag="Google and Bing search clicks, impressions and positions.", accent="#1a73e8", dark="#1557b0", tint="#e8f0fe",
                 desc="Private dashboard: Google Search Console and Bing Webmaster clicks, impressions, CTR and average position for mes.fm, by day, query, page, country and device.",
-                js_v="2", no_ads=True,
+                js_v="3", no_ads=True,
                 head_extra='<meta name="robots" content="noindex, nofollow">' + PAGE3_HEAD),
     # How much do YouTubers make?: leaderboard of big channels with ESTIMATED ad revenue (companion of /youtubemoney, ad-free like it). Data = mes.fm/how-much-do-youtubers-make/data/channels.json
     # (update_youtuber_snapshot.py), live refresh = mes.fm/api/youtuber-stats.js; lib.js = maths + a copy of the calculator's RPM tables (node-testable:
@@ -818,6 +842,13 @@ APPS = {
                 js_v="1", no_ads=True),
     # MES Compressor: pictures (canvas re-encode, target size), PDFs (embedded JPEGs re-saved smaller with pdf-lib; Extreme = rasterise) and audio (decode -> MP3 with lamejs), all in the browser.
     # Decisions in lib.js (MESCmp, node tests tool_apps_src/compress-tests.js); /compress-pdf stays as the PDF-specific landing page. Video is not supported yet.
+    # MES Word Viewer (2026-10-26, mes.fm/docx): .docx files as tabs, page layout view (docx-preview 0.4.1 in a shadow root), outline / find / info / comments / pictures, print / save as PDF,
+    # Edit = mammoth 1.13.0 -> contentEditable, saved as a new .docx by lib.js (MESDocx.toDocxParts; node tests tool_apps_src/docx-tests.js). Nothing is uploaded.
+    "docx": dict(title="MES Word Viewer", page_title="DOCX Viewer and Editor: Open Word Documents Online, No Upload",
+                 tag="Open, read and edit Word documents in your browser.", accent="#2b579a", dark="#1e3f73", tint="#e3ebf7",
+                 desc="Free online DOCX viewer and editor: open Word documents in your browser with the real page layout, zoom, outline, search, word count, comments and tracked changes. Print or save as PDF, edit the text and download a new .docx, or save as HTML, Markdown or text. Private: nothing is uploaded.",
+                 meta_desc="Free DOCX viewer and editor: open Word files with the real page layout, search, word count and comments, edit, then save as .docx, PDF, HTML or text. No upload.",
+                 js_v="1"),
     "compress": dict(title="MES Compressor", page_title="Compressor: Compress Images, PDFs and Audio Online",
                        tag="Make pictures, PDFs and audio smaller.", accent="#4338ca", dark="#3730a3", tint="#e8e9fb",
                        desc="Free online compressor for pictures, PDFs and audio: shrink JPG, PNG and WebP to a quality or file size you choose, make PDFs smaller while keeping text selectable, and save audio as smaller MP3s. Before and after preview, ZIP download. Private: nothing is uploaded.",
@@ -833,7 +864,7 @@ APPS = {
     "fonts": dict(title="MES Font Preview and Finder", page_title="Font Preview: See Your Text in Every Font, and Find a Font from a Picture",
                   tag="See your text in every font.", accent="#7c2d92", dark="#5f2070", tint="#f3e5f8",
                   desc="Free online font previewer: type your text and see it in every font on your computer at once, with size, colour, shadow, outline, gradient and glow. Make marketing text, download a transparent PNG or copy the CSS, compare fonts side by side, and find a font from a picture. Private: nothing is uploaded.",
-                  js_v="3"),
+                  js_v="4"),
     # Machine-learning teaching tools (2026-10-19): matrix calculator (lib = MESMat), neural network playground (MESNN), letter / digit recognition (MESOCR, uses MESNN), toy language model (MESLM). Node tests: tool_apps_src/<slug>-tests.js
     "matrix-calculator": dict(title="MES Matrix Calculator", page_title="Matrix Calculator with Steps: Multiply, Inverse, Determinant, Eigenvalues, SVD and Machine Learning",
                   tag="Linear algebra with the working shown, plus machine-learning tools.", accent="#0369a1", dark="#075985", tint="#e0f2fe",
