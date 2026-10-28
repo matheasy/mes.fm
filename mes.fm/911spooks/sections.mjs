@@ -9,7 +9,6 @@ export const SECTIONS = [
     id: "911spooks-posts",
     title: "Posts",
     items: [
-      { href: "https://mes.fm/judy-wood-rebuttal", title: "Dr. Judy Wood's Rebuttal to All the “Debunkers”" },
       { href: "https://mes.fm/david-hughes-fetzer-2.0", title: "Dear Dr. David A. Fetzer...", who: "hughes fetzer" },
       { href: "https://mes.fm/mh370-litmus-spooks", title: "MH370 Teleportation Cartoons are a Litmus Test for Spooks", who: "bob revisionist" },
       { href: "https://mes.fm/abby-martin-911-spook", title: "Abby Martin Outed Herself as a 9/11 Spook as Far Back as 2012" },

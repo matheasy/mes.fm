@@ -99,7 +99,7 @@ const PAGES = [
     slug: "911spooks-posts",
     sectionId: "911spooks-posts",
     tileLabel: "Posts",
-    iconVersion: 4, // icon = crop of the newest post's thumbnail (img/911spooks-posts-icon.jpg); bump when refreshed
+    iconVersion: 6, // icon = crop of the newest post's thumbnail (img/911spooks-posts-icon.jpg); bump when refreshed
     title: "9/11 Spooks: Posts",
     description:
       "9/11 disinfo spooks and spammers exposed by MES: 9/11 Revisionist, Ryan Banister, David Hughes, Bob Greenyer, the OffGuardian account, Andrew Mason and more, newest first.",
@@ -112,6 +112,15 @@ const PAGES = [
     title: "9/11 Spooks: Videos",
     description:
       "MES videos on 9/11 spooks: Richard Gage on whether the Earth is round or flat, and highlights from the letter Ashton Forbes totally didn't write to himself.",
+  },
+  {
+    // Tile only: Dr. Judy Wood's rebuttal page (hand-made, 9/11 Truth theme, also listed in 911-posts). Icon =
+    // img/judy-wood-rebuttal-icon.jpg, the page's share card fitted to 900x600; bump iconVersion if replaced.
+    slug: "judy-wood-rebuttal",
+    href: "/judy-wood-rebuttal",
+    iconVersion: 1,
+    tileOnly: true,
+    tileLabel: "Dr. Judy Wood's Rebuttal",
   },
   {
     // Tile only: links to the mirror of MES Livestream 112 (9/11 Spooks Database, hand-made page, not generated here).
