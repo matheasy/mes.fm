@@ -1,0 +1,118 @@
+	<div class="tu mm" id="mm">
+		<p class="mm-intro">Tap a team to send it through to the next round. Every pick shows its chance of coming true, the bar on top shows how bold your bracket is, and during the tournament the scores, live win chances and your points update by themselves.</p>
+		<div class="mm-banner" id="mm-banner" role="status" aria-live="polite" hidden></div>
+
+		<div class="mm-top">
+			<div class="mm-tabs" role="tablist" id="mm-tabs" aria-label="Tournament">
+				<button type="button" role="tab" data-g="m" aria-selected="true">Men&rsquo;s</button>
+				<button type="button" role="tab" data-g="w" aria-selected="false">Women&rsquo;s</button>
+			</div>
+			<div class="mm-src">
+				<label class="mm-lab">Year <select id="mm-year" aria-label="Tournament year"></select></label>
+				<span class="mm-upd" id="mm-upd"></span>
+				<button type="button" class="mm-link" id="mm-refresh">Refresh</button>
+			</div>
+		</div>
+
+		<div class="tu-card mm-sets">
+			<label class="mm-lab">Bracket <select id="mm-set" aria-label="Your bracket"></select></label>
+			<span class="mm-btns">
+				<button type="button" class="tu-btn tu-btn--ghost" id="mm-new">+ New</button>
+				<button type="button" class="tu-btn tu-btn--ghost" id="mm-rename">Rename</button>
+				<button type="button" class="tu-btn tu-btn--ghost" id="mm-dup">Copy</button>
+				<button type="button" class="tu-btn tu-btn--ghost" id="mm-del">Delete</button>
+			</span>
+			<div class="mm-fill-row">
+				<span class="mm-small">Fill the empty games with:</span>
+				<button type="button" class="mm-chip" data-fill="model" title="The team the model gives the better chance in each game">Favourites</button>
+				<button type="button" class="mm-chip" data-fill="chalk" title="The better seed wins every game">Chalk (seeds)</button>
+				<button type="button" class="mm-chip" data-fill="random" title="A random draw by the model's odds: upsets as often as the odds say">Random by the odds</button>
+				<button type="button" class="mm-chip" data-fill="results" id="mm-fill-res" title="The real winners of the games played so far">Real results</button>
+				<span class="mm-sep" aria-hidden="true"></span>
+				<button type="button" class="mm-chip" id="mm-undo" disabled>&#8630; Undo</button>
+				<button type="button" class="mm-chip mm-chip--warn" id="mm-clear">Clear all</button>
+			</div>
+		</div>
+
+		<div class="mm-sum" id="mm-sum" aria-live="polite"></div>
+
+		<div class="mm-stagewrap" id="mm-wrap">
+			<div class="mm-bar" id="mm-bar">
+				<div class="mm-seg" role="group" aria-label="View">
+					<button type="button" data-view="bracket" aria-pressed="true">Bracket</button>
+					<button type="button" data-view="rounds" aria-pressed="false">Round by round</button>
+				</div>
+				<label class="mm-check"><input type="checkbox" id="mm-show"> Show real results</label>
+				<label class="mm-check"><input type="checkbox" id="mm-logos" checked> Logos</label>
+				<label class="mm-lab">Odds <select id="mm-model" aria-label="Win probability model"><option value="mes">Seeds + season records</option><option value="seed">Seeds only</option></select></label>
+				<span class="mm-zoom" id="mm-zoomg"><button type="button" class="mm-ib" id="mm-zout" aria-label="Smaller">&minus;</button><span id="mm-zv">100%</span><button type="button" class="mm-ib" id="mm-zin" aria-label="Bigger">+</button><button type="button" class="mm-ib mm-ib--txt" id="mm-zfit" title="Fit the whole bracket in the width">Fit</button></span>
+				<span class="mm-bar__r">
+					<button type="button" class="mm-ib mm-ib--txt" id="mm-win" title="Fill the browser window (W)">&#10530; Fill window</button>
+					<button type="button" class="mm-ib mm-ib--txt" id="mm-fs" title="Full screen (F)">&#9974; Full screen</button>
+					<button type="button" class="mm-ib mm-ib--txt mm-close" id="mm-close" hidden>Close &times;</button>
+				</span>
+			</div>
+			<div class="mm-roundbar" id="mm-roundbar" hidden></div>
+			<div class="mm-stage" id="mm-stage" tabindex="-1"></div>
+			<div class="mm-live" id="mm-live" hidden></div>
+		</div>
+
+		<div class="tu-card mm-share">
+			<b>Save &amp; share</b>
+			<p class="mm-small">Your brackets are saved in this browser by themselves. A link carries the whole bracket (no account, nothing stored on a server).</p>
+			<div class="mm-btns">
+				<button type="button" class="tu-btn tu-btn--primary" id="mm-copylink">Copy link to this bracket</button>
+				<button type="button" class="tu-btn tu-btn--ghost" id="mm-png">Download picture (PNG)</button>
+				<button type="button" class="tu-btn tu-btn--ghost" id="mm-print">Print</button>
+			</div>
+		</div>
+
+		<div class="tu-card mm-lb" id="mm-lbcard">
+			<div class="mm-head"><b id="mm-lb-title">Leaderboard</b>
+				<span class="mm-btns">
+					<span class="mm-seg" role="group" aria-label="Board">
+						<button type="button" data-late="0" aria-pressed="true">On time</button>
+						<button type="button" data-late="1" aria-pressed="false">Replay</button>
+					</span>
+					<label class="mm-lab">Scoring <select id="mm-sys" aria-label="Scoring"></select></label>
+				</span>
+			</div>
+			<p class="mm-small" id="mm-lb-note"></p>
+			<div class="mm-post">
+				<label class="mm-lab">Your name on the board <input type="text" id="mm-lb-name" maxlength="24" autocomplete="nickname"></label>
+				<button type="button" class="tu-btn tu-btn--primary" id="mm-lb-post">Post this bracket</button>
+				<button type="button" class="tu-btn tu-btn--ghost" id="mm-lb-del" hidden>Remove from the board</button>
+			</div>
+			<div class="mm-small mm-lb-msg" id="mm-lb-msg" aria-live="polite"></div>
+			<div class="tu-table-wrap"><table class="tu-table mm-lbt" id="mm-lbt"></table></div>
+		</div>
+
+		<div class="mm-toast tu-toast" id="mm-toast" role="status" aria-live="polite"></div>
+
+		<div class="tu-seo">
+			<h2>A March Madness bracket with the odds of every pick</h2>
+			<p>MES March Madness is a free NCAA tournament bracket maker for the <strong>men&rsquo;s</strong> and <strong>women&rsquo;s</strong> tournaments. Pick a winner for every game, from the First Four to the national championship, and see the chance that each pick comes true, the chance that your whole bracket is perfect, how many upsets you picked and how &ldquo;chalky&rdquo; it is. During the tournament the real scores come in by themselves, games in progress show ESPN&rsquo;s live win probability, your points and the most you can still score update, and you can post your bracket to the leaderboard.</p>
+			<h3>Before Selection Sunday</h3>
+			<p>The field of 68 is announced on Selection Sunday (expected Sunday, March 14, 2027). Until then the page plays the most recent tournament with its real bracket and results: fill in your picks without looking (leave &ldquo;Show real results&rdquo; off), then switch the results on to see how you would have done. When the new field is out the page switches to it by itself.</p>
+			<h3>How the win probability is worked out</h3>
+			<p>It is a simple model you can check by hand, not a secret rating:</p>
+			<ul>
+				<li><b>First round:</b> the historical record of that seed pairing (men since 1985, women since 1994; approximate): a 1 seed beats a 16 seed about 98.8% of the time in the men&rsquo;s tournament, a 5 beats a 12 about 64%, an 8 beats a 9 about 48%.</li>
+				<li><b>Later rounds:</b> each seed has a rating fitted to those records and to how seeds have done against each other in later rounds; the chance is the logistic of the difference, <span class="mes-tex">\( P(A) = \dfrac{1}{1 + e^{-(r_A - r_B)}} \)</span>. Gaps are stretched by 1.3 for the women&rsquo;s tournament, where favourites win more often.</li>
+				<li><b>Season record:</b> both are nudged by each team&rsquo;s win percentage against what is usual for its seed (3 &times; the difference, in the same log-odds units). &ldquo;Seeds only&rdquo; turns the nudge off.</li>
+				<li><b>During the tournament:</b> a finished game counts as 100% or 0%, a game in progress uses ESPN&rsquo;s live win probability, and each team&rsquo;s chance to win a later game adds up every way it can get there.</li>
+			</ul>
+			<p>The chance of a perfect bracket is the product of the chances of your 63 picks (each one given the teams you sent into that game). <b>Chalk</b> compares that with a bracket of the same games where the favourite always wins: 100 means you always took the favourite, lower means bolder.</p>
+			<h3>Scoring</h3>
+			<p><b>ESPN</b> gives 10 points for each right pick in the round of 64, then 20, 40, 80, 160 and 320 for the champion (1,920 is perfect). <b>Doubling</b> is 1, 2, 4, 8, 16, 32. <b>Upset bonus</b> is the ESPN points plus the winning team&rsquo;s seed, so a right pick of a 12 seed is worth more than a right pick of a 5 seed. First Four games are not scored. &ldquo;Max&rdquo; is your points plus every pick whose team is still alive.</p>
+			<h3>Questions</h3>
+			<h4>When does the leaderboard lock?</h4>
+			<p>At the first tip-off of the round of 64. A bracket posted or changed after that goes to the <b>Replay</b> board, which is just for fun (the results of earlier games are already known), so the main board stays fair.</p>
+			<h4>Where do the results come from?</h4>
+			<p>From ESPN&rsquo;s public scoreboard, refreshed about every 30 seconds while games are on. Past tournaments are saved copies of the same data.</p>
+			<h4>Is anything about me stored?</h4>
+			<p>Your brackets stay in this browser. Only if you post to the leaderboard are the name you chose and your picks stored, with a private key in your browser that lets you change or remove them.</p>
+			<p class="mm-small">Not affiliated with the NCAA or ESPN. Team logos are ESPN&rsquo;s and are shown only to tell the teams apart. This is a game for fun, not betting advice.</p>
+		</div>
+	</div>
+<script src="/main_js/mes-math.js" defer></script>

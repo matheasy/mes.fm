@@ -173,6 +173,15 @@ APPS = {
                       desc="Free NBA standings predictions tracker: put the 15 teams of the East and the West in the order you think they will finish and see how many you have right so far against the live standings: exact spots, within one to three spots, the right playoff / play-in / lottery tier, points and rank correlation, with a picture of every pick. Save several sets, share a link, compare with friends and join the leaderboard.",
                       meta_desc="Track your NBA standings predictions: see how many of your East and West picks are right against the live standings, compare with friends, join the leaderboard.",
                       js_v="1"),
+    # MES March Madness (2026-10-27, mes.fm/march-madness): NCAA men's + women's bracket builder with a transparent win-probability model (seed history + seed ratings
+    # + season-record nudge), live ESPN results / live win probability, scoring, share links and a leaderboard. Bracket data = mes.fm/api/mm-bracket.js (ESPN scoreboard,
+    # keyless); leaderboard = mes.fm/api/mm-picks.js (Upstash). lib.js is shared with both as mes.fm/api/_mm-lib.js (byte-identical copy). Snapshots of past tournaments
+    # mes.fm/march-madness/data/<m|w>-<year>.json + index.json (`node mes.fm/api/mm-bracket.js --write <year>`). Tests: node tool_apps_src/march-madness-tests.js.
+    "march-madness": dict(title="MES March Madness", page_title="March Madness Bracket Maker with Win Probability, Live Scores and a Leaderboard",
+                          tag="Fill in your bracket, see the odds of every pick, follow it live.", accent="#1d4ed8", dark="#1e3a8a", tint="#e0e9fd",
+                          desc="Free March Madness bracket maker for the NCAA men's and women's tournaments: tap teams to fill in your bracket and see the chance of every pick, the odds of a perfect bracket, a chalk-or-upset meter and your upset count. During the tournament the real scores and ESPN's live win probability come in by themselves and your points and maximum update. Save several brackets, share a link, download a picture, print it, and join the leaderboard. Until Selection Sunday, play the last tournament with its real bracket.",
+                          meta_desc="Free March Madness bracket maker: the odds of every pick, a perfect-bracket chance, live scores and win probability, saving, sharing and a leaderboard.",
+                          js_v="1"),
     "baby-growth-percentile-calculator": dict(title="MES Baby Growth Percentile Calculator", page_title="Baby Growth Percentile Calculator (WHO Weight, Length, Head)",
                           tag="Weight, length and head percentiles on the WHO chart.", accent="#15803d", dark="#0f5f2c", tint="#dcf3e3", src="baby-growth", js_path="baby-growth/js/baby-growth.js", js_parts=["data.js"],
                           desc="Free baby growth percentile calculator using the WHO Child Growth Standards: enter age, weight, length and head circumference to see the percentile and z-score on the growth chart, corrected age for premature babies, and a private growth log that shows your baby's trend.",
