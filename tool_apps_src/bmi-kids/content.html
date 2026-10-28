@@ -1,0 +1,88 @@
+	<div class="tu kb" id="kb">
+		<p class="tu-note kb-private">&#128274; Private: nothing is uploaded. The numbers stay in this browser.</p>
+		<div class="kb-layout">
+			<div class="tu-card kb-in">
+				<div class="kb-line">
+					<div class="kb-f"><span class="tu-label" id="kb-sex-l">Child is a</span><div class="tu-seg" id="kb-sex" role="group" aria-labelledby="kb-sex-l"><button type="button" data-v="f" aria-pressed="true">Girl</button><button type="button" data-v="m" aria-pressed="false">Boy</button></div></div>
+					<div class="kb-f"><span class="tu-label" id="kb-mode-l">Age</span><div class="tu-seg" id="kb-mode" role="group" aria-labelledby="kb-mode-l"><button type="button" data-v="age" aria-pressed="true">Years + months</button><button type="button" data-v="dates" aria-pressed="false">Birth date</button></div></div>
+				</div>
+				<div class="kb-line" id="kb-agerow">
+					<div class="kb-f"><label class="tu-label" for="kb-y">Years</label><select id="kb-y" class="tu-select kb-sel"></select></div>
+					<div class="kb-f"><label class="tu-label" for="kb-m">Months</label><select id="kb-m" class="tu-select kb-sel"></select></div>
+				</div>
+				<div class="kb-line" id="kb-daterow" hidden>
+					<div class="kb-f"><label class="tu-label" for="kb-birth">Date of birth</label><input id="kb-birth" class="tu-input kb-date" type="date"></div>
+					<div class="kb-f"><label class="tu-label" for="kb-on">Measured on</label><input id="kb-on" class="tu-input kb-date" type="date"></div>
+				</div>
+				<p class="tu-note kb-unitnote">Type in either unit: the other one fills itself in.</p>
+				<div class="kb-line kb-meas">
+					<div class="kb-f"><label class="tu-label" for="kb-kg">Weight</label><div class="kb-pair"><input id="kb-kg" class="tu-input kb-num" type="text" inputmode="decimal" autocomplete="off" placeholder="32"><span>kg</span><i>or</i><input id="kb-lb" class="tu-input kb-num" type="text" inputmode="decimal" autocomplete="off" placeholder="70.5" aria-label="Weight in pounds"><span>lb</span></div></div>
+					<div class="kb-f"><label class="tu-label" for="kb-cm">Height</label><div class="kb-pair"><input id="kb-cm" class="tu-input kb-num" type="text" inputmode="decimal" autocomplete="off" placeholder="138"><span>cm</span><i>or</i><input id="kb-ft" class="tu-input kb-num kb-num--s" type="text" inputmode="numeric" autocomplete="off" placeholder="4" aria-label="Height, feet"><span>ft</span><input id="kb-in" class="tu-input kb-num kb-num--s" type="text" inputmode="decimal" autocomplete="off" placeholder="6.3" aria-label="Height, inches"><span>in</span></div></div>
+				</div>
+				<div class="tu-row kb-acts0"><button type="button" class="tu-btn tu-btn--ghost" id="kb-clear">Clear</button><span class="tu-chips" id="kb-examples"></span></div>
+			</div>
+			<div class="kb-res">
+				<p class="tu-note kb-msg" id="kb-msg" role="status" aria-live="polite"></p>
+				<div class="kb-empty" id="kb-empty">Enter the age, weight and height to see the BMI percentile.</div>
+				<div id="kb-out" hidden>
+					<div class="tu-stats" id="kb-hero" aria-live="polite"></div>
+					<div class="tu-card kb-verdict" id="kb-verdict"></div>
+					<div class="kb-bar" id="kb-bar" aria-hidden="true"></div>
+					<div class="tu-row kb-acts"><button type="button" class="tu-btn tu-btn--ghost" id="kb-copy">Copy result</button><button type="button" class="tu-btn tu-btn--ghost" id="kb-print">Print</button></div>
+				</div>
+			</div>
+		</div>
+
+		<h2>BMI-for-age chart</h2>
+		<div class="tu-card">
+			<div id="kb-chart" class="kb-chart"></div>
+			<p class="tu-note kb-legend">Curves are the CDC percentiles for the chosen sex (5th, 10th, 25th, 50th, 75th, 85th, 90th, 95th), the dashed line is 120% of the 95th percentile. Coloured bands: <span class="kb-sw kb-sw--under"></span> underweight, <span class="kb-sw kb-sw--healthy"></span> healthy weight, <span class="kb-sw kb-sw--over"></span> overweight, <span class="kb-sw kb-sw--obese"></span> obesity, <span class="kb-sw kb-sw--severe"></span> severe obesity.</p>
+		</div>
+
+		<div id="kb-refbox" hidden>
+			<h2>BMI cut-offs at this age</h2>
+			<div class="tu-card"><div class="tu-table-wrap"><table class="tu-table" id="kb-ref"></table></div><p class="tu-note" id="kb-refnote"></p></div>
+		</div>
+
+		<div class="tu-card tu-card--tint kb-care">
+			<p><strong>A number, not a verdict.</strong> BMI is a quick screening check. It cannot tell muscle from fat, and children's bodies change a lot during growth spurts and puberty. Only a doctor or nurse who knows your child can say what a result means, usually by looking at growth over several visits.</p>
+			<p>Please don't put a child on a diet without medical advice, and keep weight talk out of everyday life: regular family meals, active play, enough sleep and less screen time help every child, whatever the number.</p>
+		</div>
+		<div class="tu-toast" id="kb-toast" role="status" aria-live="polite"></div>
+
+		<div class="tu-seo">
+			<h2>BMI calculator for kids and teens</h2>
+			<p>For children and teens aged <strong>2 to 19</strong>, BMI is read differently from adults. The number itself is worked out the same way (weight in kilograms divided by height in metres squared), but because body fat changes as children grow, and differs between girls and boys, the BMI is compared with other children of the <strong>same age and sex</strong>. The result is a <strong>BMI-for-age percentile</strong>. This calculator uses the <strong>CDC 2000 growth charts</strong>, the reference used by doctors in the United States and many other countries, and the <strong>CDC 2022 extended BMI charts</strong> for BMIs above the 95th percentile.</p>
+			<h3>What the percentile means</h3>
+			<p>A BMI at the <strong>60th percentile</strong> means that, in the CDC reference group, 60 out of 100 children of the same age and sex had a lower BMI. It is not a score or a grade.</p>
+			<div class="tu-table-wrap"><table class="tu-table">
+				<tr><th>BMI-for-age percentile</th><th>Category (CDC)</th></tr>
+				<tr><td>Below the 5th</td><td>Underweight</td></tr>
+				<tr><td>5th to less than the 85th</td><td>Healthy weight</td></tr>
+				<tr><td>85th to less than the 95th</td><td>Overweight</td></tr>
+				<tr><td>95th or higher</td><td>Obesity</td></tr>
+				<tr><td>120% of the 95th percentile or higher</td><td>Severe obesity (class 2; class 3 from 140%)</td></tr>
+			</table></div>
+			<h3>Why the same BMI can mean different things</h3>
+			<p>A BMI of 18 is above the 90th percentile for a 6-year-old girl but only at about the 30th for a 14-year-old girl. Children's BMI usually falls from age 2 until about age 5 or 6 and then rises through the teen years (doctors call the turning point the <em>adiposity rebound</em>). That is why the adult cut-offs (18.5, 25, 30) are never used for children. Turn on <strong>Try other numbers on the chart</strong> and drag the point sideways to see it.</p>
+			<h3>Questions</h3>
+			<dl>
+				<dt>Which age do I enter?</dt>
+				<dd>Use the child's age on the day they were weighed and measured: years and completed months, or the birth date and the date of the measurement. The calculator uses the middle of the month, as CDC's own programs do for whole months.</dd>
+				<dt>What if my child is under 2?</dt>
+				<dd>Under 2, doctors use the WHO growth standards and weight-for-length rather than BMI. Use the <a href="/baby-growth-percentile-calculator">Baby Growth Percentile Calculator</a>.</dd>
+				<dt>What about 20 and older?</dt>
+				<dd>From age 20 the adult categories apply: use the <a href="/bmicalculator">BMI Calculator</a>.</dd>
+				<dt>What are the "extended" percentiles?</dt>
+				<dd>The original 2000 charts stop at the 97th percentile and are not accurate above it. In 2022 the CDC added extended BMI-for-age charts: above the 95th percentile the percentile is placed on a curve fitted to newer data, and very high BMIs are also described as a percentage of the 95th percentile. 120% of the 95th percentile or more is called severe obesity.</dd>
+				<dt>My child plays a lot of sport. Is BMI fair for them?</dt>
+				<dd>Muscle is heavier than fat, so a very muscular or tall-for-age child can have a high BMI without extra body fat. The reverse is also possible. A health professional can use other checks if the BMI seems not to fit the child.</dd>
+				<dt>I am a teen checking my own BMI. What should I do with it?</dt>
+				<dd>Bodies change fast during the teen years and grow in different ways and at different times. If the result worries you, talk to a parent, school nurse or doctor rather than cutting food or skipping meals. Your body needs fuel to grow.</dd>
+				<dt>Is my child's data stored?</dt>
+				<dd>No. Everything is worked out in your browser; the last numbers you typed are kept only in this browser so they are there next time, and <em>Clear</em> removes them.</dd>
+			</dl>
+			<p class="tu-note">Sources: CDC 2000 growth charts (Kuczmarski et al., 2002), BMI-for-age LMS parameters as published by the CDC; CDC extended BMI-for-age growth charts (2022; Wei et al., 2020; Hales et al., 2022). Public domain data. This page is for information only and is not medical advice.</p>
+			<p class="tu-note">Related: <a href="/bmicalculator">BMI Calculator for adults</a>, <a href="/bmicalculator/bmi-formula">BMI formula</a>, <a href="/bmicalculator/bmi-chart">BMI chart</a>, <a href="/baby-growth-percentile-calculator">Baby Growth Percentile Calculator</a>.</p>
+		</div>
+	</div>

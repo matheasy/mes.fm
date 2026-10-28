@@ -87,6 +87,7 @@ TOOLS = [  # (directory, compact-bar title[, home path of the site the page belo
     ("exif-viewer", "EXIF Viewer"),
     ("contraction-timer", "Contraction Timer"),
     ("bmr-calculator", "BMR Calculator"),
+    ("bmi-calculator-kids", "BMI Calculator", "/bmicalculator"),   # 2026-10-27 kids & teens sub-page of the BMI brand (brand option)
     ("calculadora-imc", "Calculadora IMC"),   # BMI Calculator in another language (build_tool_apps.py BMI_LANG_SLUGS)
     ("calculadora-imc-pt", "Calculadora de IMC"),   # BMI Calculator in another language (build_tool_apps.py BMI_LANG_SLUGS)
     ("kalkulator-bmi", "Kalkulator BMI"),   # BMI Calculator in another language (build_tool_apps.py BMI_LANG_SLUGS)
