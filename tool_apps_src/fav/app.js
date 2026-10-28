@@ -12,6 +12,11 @@
     var esc = S.esc, byPath = {}, indexReady = false;
     var STARTERS = ["/percentagecalculator", "/gradecalculator", "/gpacalculator", "/timer", "/speedreader", "/moon", "/emoji", "/calculator", "/clock", "/pdf"];
     var PER = 8, shown = PER, state = load(), query = "", lastRes = null;
+    /* view options, per browser: mes-fav:view (tiles | list | compact | table), mes-fav:clean ("1" = hide the drag / copy / remove controls), mes-fav:sort (table) */
+    function lsGet(k, d) { try { return localStorage.getItem(k) || d; } catch (e) { return d; } }
+    function lsSet(k, v) { try { localStorage.setItem(k, v); } catch (e) { /* private mode */ } }
+    var VIEWS = ["tiles", "list", "compact", "table"], view = lsGet("mes-fav:view", "tiles"), cleanView = lsGet("mes-fav:clean", "0") === "1", sortBy = lsGet("mes-fav:sort", "");
+    if (VIEWS.indexOf(view) < 0) view = "tiles";
 
     /* ---------- state ---------- */
     function uid() { return "g" + Date.now().toString(36) + Math.random().toString(36).slice(2, 6); }
@@ -128,9 +133,35 @@
         var it = byPath[p], hay = S.norm((it ? it.title + " " + it.where + " " + it.desc : "") + " " + p);
         return terms.every(function (t) { return hay.indexOf(t) !== -1; });
     }
+    function tableHtml(terms) {
+        var rows = [], n = 0;
+        state.groups.forEach(function (g) { g.items.forEach(function (p) { if (!terms.length || match(p, terms)) rows.push({ p: p, g: g, n: n++ }); }); });
+        if (!rows.length) return terms.length ? "" : '<p class="tu-card fv-empty-all">No pages yet. Search above and press Add.</p>';
+        var key = sortBy.split(":")[0], dir = sortBy.split(":")[1] === "d" ? -1 : 1;
+        function val(r) { var it = byPath[r.p]; return key === "title" ? (it ? it.title : r.p) : key === "sec" ? (it ? it.catLabel || "" : "") : key === "url" ? r.p : key === "group" ? r.g.name : ""; }
+        if (key) rows.sort(function (a, b) { var x = val(a).toLowerCase(), y = val(b).toLowerCase(); return x < y ? -dir : x > y ? dir : a.n - b.n; });
+        function th(k, label) {
+            var on = key === k, sort = on ? (dir > 0 ? "ascending" : "descending") : "none";
+            return '<th scope="col" aria-sort="' + sort + '"><button type="button" class="fv-sort" data-k="' + k + '" title="Sort by ' + label.toLowerCase() + ' (click again to reverse, a third time for your own order)">' + label + (on ? (dir > 0 ? " &#9650;" : " &#9660;") : "") + "</button></th>";
+        }
+        return '<div class="fv-twrap"><table class="fv-table"><thead><tr>' + th("title", "Page") + th("sec", "Section") + th("url", "URL") + th("group", "Group") + (cleanView ? "" : '<th scope="col"><span class="fv-sr">Remove</span></th>') + "</tr></thead><tbody>" +
+            rows.map(function (r) {
+                var it = byPath[r.p], title = it ? it.title : r.p.replace(/^\//, "") || "Home";
+                return '<tr><td class="fv-tdt"><a href="' + esc(r.p) + '">' + thumb(it, r.p) + "<span>" + esc(title) + "</span></a></td><td>" + esc(it ? it.catLabel || "" : "") + '</td><td class="fv-tdu">' + esc(r.p) + "</td><td>" + esc(r.g.name) + "</td>" +
+                    (cleanView ? "" : '<td><button type="button" class="fv-ib fv-trm" data-p="' + esc(r.p) + '" data-g="' + esc(r.g.id) + '" aria-label="Remove ' + esc(title) + " from " + esc(r.g.name) + '" title="Remove">&times;</button></td>') + "</tr>";
+            }).join("") + "</tbody></table></div>";
+    }
+    function paintViewBar() {
+        [].forEach.call(document.querySelectorAll("#fv-view [data-v]"), function (b) { b.setAttribute("aria-pressed", String(b.getAttribute("data-v") === view)); });
+        var c = $("fv-clean"); if (c) c.setAttribute("aria-pressed", String(cleanView));
+        foldBtn.hidden = view === "table";
+    }
     function render() {
         var terms = S.norm(query).split(" ").filter(Boolean), filtering = terms.length > 0, shownTiles = 0;
-        groupsEl.innerHTML = state.groups.map(function (g) {
+        groupsEl.className = "fv-groups fv-v-" + view + (cleanView ? " fv-clean" : "");
+        paintViewBar();
+        if (view === "table") groupsEl.innerHTML = tableHtml(terms) || '<p class="tu-card fv-empty-all">Nothing in your favourites matches &ldquo;' + esc(query) + "&rdquo;.</p>";
+        else groupsEl.innerHTML = state.groups.map(function (g) {
             var items = filtering ? g.items.filter(function (p) { return match(p, terms); }) : g.items;
             if (filtering && !items.length) return "";
             shownTiles += items.length;
@@ -183,6 +214,15 @@
 
     /* ---------- group / tile controls ---------- */
     groupsEl.addEventListener("click", function (e) {
+        var srt = e.target.closest(".fv-sort");
+        if (srt) {
+            var k = srt.getAttribute("data-k"), cur = sortBy.split(":");
+            sortBy = cur[0] !== k ? k + ":a" : cur[1] === "a" ? k + ":d" : "";
+            lsSet("mes-fav:sort", sortBy); render();
+            var nb = groupsEl.querySelector('.fv-sort[data-k="' + k + '"]'); if (nb) nb.focus(); return;
+        }
+        var trm = e.target.closest(".fv-trm");
+        if (trm) { removeFrom(trm.getAttribute("data-p"), trm.getAttribute("data-g")); return; }
         var tile = e.target.closest(".fv-tile"), grp = e.target.closest(".fv-group");
         if (!grp) return;
         var gid = grp.getAttribute("data-g"), g = groupBy(gid);
@@ -207,6 +247,11 @@
         inp.onblur = function () { fin(true); };
     }
     $("fv-newg").onclick = function () { var g = newGroup("New group"); var el = groupsEl.querySelector('[data-g="' + g.id + '"]'); if (el) { el.scrollIntoView({ block: "center", behavior: "smooth" }); rename(el, g); } };
+    $("fv-view").addEventListener("click", function (e) {
+        var b = e.target.closest("[data-v]"); if (!b) return;
+        view = b.getAttribute("data-v"); lsSet("mes-fav:view", view); render();
+    });
+    $("fv-clean").onclick = function () { cleanView = !cleanView; lsSet("mes-fav:clean", cleanView ? "1" : "0"); render(); };
     foldBtn.onclick = function () { var anyOpen = state.groups.some(function (g) { return g.open; }); state.groups.forEach(function (g) { g.open = !anyOpen; }); save(); render(); };
     starterBtn.onclick = function () {
         var g = state.groups[0], n = 0; STARTERS.forEach(function (p) { if (byPath[p] && g.items.indexOf(p) === -1) { g.items.push(p); n++; } });
@@ -306,7 +351,7 @@
         });
     }
     groupsEl.addEventListener("pointerdown", function (e) {
-        if (e.button > 0 || query.trim()) return;
+        if (e.button > 0 || query.trim() || cleanView || view === "table") return;
         var grip = e.target.closest(".fv-grip"), tile = e.target.closest(".fv-tile"), isG = grip && grip.classList.contains("fv-ggrip");
         if (!grip && !(tile && e.pointerType === "mouse" && !e.target.closest("button"))) return;
         var el = isG ? grip.closest(".fv-group") : tile;
@@ -342,7 +387,7 @@
             body.classList.add("is-over");
             var empty = body.querySelector(".fv-empty"); if (empty) empty.remove();
             if (ot && ot !== drag.el) {
-                var tr = ot.getBoundingClientRect(), sameRow = e.clientY > tr.top && e.clientY < tr.bottom, aft = sameRow ? e.clientX > tr.left + tr.width / 2 : e.clientY > tr.top + tr.height / 2;
+                var tr = ot.getBoundingClientRect(), sameRow = view !== "list" && e.clientY > tr.top && e.clientY < tr.bottom, aft = sameRow ? e.clientX > tr.left + tr.width / 2 : e.clientY > tr.top + tr.height / 2;
                 flip(body, function () { body.insertBefore(drag.el, aft ? ot.nextSibling : ot); });
                 if (body !== drag.last && drag.last) flip(drag.last, function () {});
             } else if (!ot && drag.el.parentNode !== body) flip(body, function () { body.appendChild(drag.el); });
@@ -388,6 +433,9 @@
             var n = groupsEl.querySelector('[data-g="' + gid + '"] .fv-ggrip'); if (n) n.focus(); return;
         }
         var tile = grip.closest(".fv-tile"), p = tile.getAttribute("data-p"), sg = tile.getAttribute("data-g"), G = groupBy(sg), ti = G.items.indexOf(p), gi = state.groups.indexOf(G);
+        if (view === "list") { /* one column: up / down move within the group, then on to the next group */
+            if (k === "ArrowUp" && ti > 0) k = "ArrowLeft"; else if (k === "ArrowDown" && ti < G.items.length - 1) k = "ArrowRight";
+        }
         if (k === "ArrowLeft" && ti > 0) { G.items.splice(ti, 1); G.items.splice(ti - 1, 0, p); }
         else if (k === "ArrowRight" && ti < G.items.length - 1) { G.items.splice(ti, 1); G.items.splice(ti + 1, 0, p); }
         else if (k === "ArrowDown" || k === "ArrowUp") {

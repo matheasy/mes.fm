@@ -395,7 +395,7 @@
   $('gs-hide').onclick = function () { HIDE = !HIDE; SAVE('hidechart', HIDE ? '1' : '0'); paintHide(); if (!HIDE && DATA) drawChart(); };
   paintRange(); paintCmp(); paintHide();
   var qTimer = 0;
-  $('gs-q').addEventListener('input', function () { clearTimeout(qTimer); qTimer = setTimeout(function () { TFILTER = $('gs-q').value.trim().toLowerCase(); renderTable(true); }, 120); });
+  $('gs-q').addEventListener('input', function () { clearTimeout(qTimer); qTimer = setTimeout(function () { TFILTER = $('gs-q').value.trim().toLowerCase(); renderTable(true); }, 120); paintTClear(); });
 
   // Fill window / Full screen for the chart card and the table card (main_js/panel-view.js)
   (function panels() {
@@ -419,7 +419,16 @@
       return '<span class="gs-fchip"><span>' + esc(fLabel(f)) + '</span><button type="button" data-fx="' + i + '" aria-label="Remove filter: ' + esc(fLabel(f)) + '" title="Remove">×</button></span>';
     }).join('') + (FILTERS.length > 1 ? '<button type="button" class="gs-fclear" data-fx="all">Clear all</button>' : '');
     $('gs-fadd').textContent = FILTERS.length ? '+ Add filter' : '+ Filter';
+    paintTClear();
   }
+  // Clear beside the table: drops every filter and the table search
+  function paintTClear() { var b = $('gs-tclear'); if (b) b.hidden = !FILTERS.length && !$('gs-q').value; }
+  $('gs-tclear').onclick = function () {
+    var had = FILTERS.length; clearTimeout(qTimer);
+    $('gs-q').value = ''; TFILTER = '';
+    if (had) { FILTERS = []; saveFilters(); paintFilters(); paintRange(); NOTE = ''; SEL = null; load(); } else { paintTClear(); renderTable(true); }
+    $('gs-q').focus();
+  };
   $('gs-fchips').onclick = function (e) {
     var b = e.target.closest('button[data-fx]'); if (!b) return;
     if (b.dataset.fx === 'all') FILTERS = []; else FILTERS.splice(+b.dataset.fx, 1);
@@ -514,13 +523,31 @@
   }
 
   function tile(v, label, ch) { return '<div class="tu-stat"><div class="tu-stat__value">' + v + chHtml(ch, 'span') + '</div><div class="tu-stat__label">' + esc(label) + '</div></div>'; }
+  // Google / Bing totals: collapsible; collapsed = one summary line (localStorage mes-gsc:sumfold)
+  var SUMS = {}, SUMFOLD = LS('sumfold', '0', /^[01]$/) === '1';
+  function paintSum() {
+    $('gs-sumbody').hidden = SUMFOLD;
+    var b = $('gs-sumbtn');
+    b.setAttribute('aria-expanded', SUMFOLD ? 'false' : 'true');
+    b.title = SUMFOLD ? 'Show the Google and Bing totals' : 'Hide the totals (a one-line summary stays)';
+    b.querySelector('.gs-sumarr').textContent = SUMFOLD ? '▸' : '▾';
+    var line = ['g', 'b'].filter(function (k) { return SUMS[k]; }).map(function (k) {
+      return '<span class="gs-sumpart"><i class="gs-dot gs-dot--' + k + '"></i><b>' + (k === 'g' ? 'Google' : 'Bing') + '</b> ' + SUMS[k] + '</span>';
+    }).join('');
+    var ln = $('gs-sumline'); ln.hidden = !SUMFOLD; ln.innerHTML = line || 'No totals yet';
+  }
+  $('gs-sumbtn').onclick = function () { SUMFOLD = !SUMFOLD; SAVE('sumfold', SUMFOLD ? '1' : '0'); paintSum(); };
+  paintSum();
   function tiles(id, s, hideWhy) {
-    var el = $(id), row = el.parentElement;
-    if (!s || !s.setup || s.error) { row.hidden = true; return; }
+    var el = $(id), row = el.parentElement, k = id.slice(-1);
+    SUMS[k] = '';
+    if (!s || !s.setup || s.error) { row.hidden = true; paintSum(); return; }
     row.hidden = false;
-    if (hideWhy) { el.innerHTML = ''; el.hidden = true; return; }
+    if (hideWhy) { el.innerHTML = ''; el.hidden = true; paintSum(); return; }
     el.hidden = false;
     var t = s.totals || { c: 0, i: 0, p: 0, days: 0 }, p = s.prevTotals || {};
+    SUMS[k] = esc(int(t.c)) + ' clicks · ' + esc(int(t.i)) + ' impr. · ' + esc(pctTxt(ctrOf(t.c, t.i))) + ' CTR · pos. ' + esc(posTxt(t.p));
+    paintSum();
     var hasPrev = !s.prevPartial && p.days > 0;
     el.innerHTML = tile(int(t.c), 'clicks', hasPrev ? change(t.c, p.c) : null) +
       tile(int(t.i), 'impressions', hasPrev ? change(t.i, p.i) : null) +

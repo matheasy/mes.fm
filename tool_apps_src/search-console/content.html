@@ -12,8 +12,16 @@
 
 		<div id="gs-setup"></div>
 
-		<div class="gs-tilerow"><h2 class="gs-src gs-src--g"><i class="gs-dot gs-dot--g"></i>Google</h2><div class="tu-stats gs-tiles" id="gs-tiles-g"></div></div>
-		<div class="gs-tilerow"><h2 class="gs-src gs-src--b"><i class="gs-dot gs-dot--b"></i>Bing</h2><div class="tu-stats gs-tiles" id="gs-tiles-b"></div><p class="tu-note gs-bnote" id="gs-bnote" hidden></p></div>
+		<div class="gs-sum" id="gs-sum">
+			<div class="gs-sumbar">
+				<button type="button" class="gs-sumbtn" id="gs-sumbtn" aria-expanded="true" aria-controls="gs-sumbody"><span class="gs-sumarr" aria-hidden="true">▾</span><span class="gs-sumlab">Totals</span></button>
+				<span class="gs-sumline" id="gs-sumline" hidden></span>
+			</div>
+			<div class="gs-sumbody" id="gs-sumbody">
+				<div class="gs-tilerow"><h2 class="gs-src gs-src--g"><i class="gs-dot gs-dot--g"></i>Google</h2><div class="tu-stats gs-tiles" id="gs-tiles-g"></div></div>
+				<div class="gs-tilerow"><h2 class="gs-src gs-src--b"><i class="gs-dot gs-dot--b"></i>Bing</h2><div class="tu-stats gs-tiles" id="gs-tiles-b"></div><p class="tu-note gs-bnote" id="gs-bnote" hidden></p></div>
+			</div>
+		</div>
 
 		<!-- filters sit right above the chart and table they change -->
 		<div class="gs-fbar" id="gs-fbar">
@@ -71,7 +79,7 @@
 					<button type="button" class="tu-chip" data-s="bing" aria-pressed="false">Bing</button>
 				</div>
 			</div>
-			<div class="gs-filter"><label class="gs-sr" for="gs-q">Search this table</label><input id="gs-q" class="tu-input" type="search" placeholder="Search this table (e.g. bmi, /timer, canada)" autocomplete="off" spellcheck="false"><span class="tu-note" id="gs-count"></span></div>
+			<div class="gs-filter"><label class="gs-sr" for="gs-q">Search this table</label><input id="gs-q" class="tu-input" type="search" placeholder="Search this table (e.g. bmi, /timer, canada)" autocomplete="off" spellcheck="false"><button type="button" class="tu-chip gs-tclear" id="gs-tclear" hidden title="Clear the filters and this search box">✕ Clear</button><span class="tu-note" id="gs-count"></span></div>
 			<p class="tu-note gs-tnote" id="gs-tnote"></p>
 			<div class="gs-wrap"><table class="gs-t" id="gs-t"></table></div><button type="button" class="tu-btn tu-btn--ghost gs-more" id="gs-more" hidden></button>
 		</section>

@@ -17,6 +17,16 @@
 			<span class="fv-bar-sp"></span>
 			<button type="button" class="tu-btn tu-btn--ghost" id="fv-copylink">&#128279; Copy my link</button>
 		</div>
+		<div class="fv-viewbar">
+			<span class="fv-vlab" id="fv-vlab">View</span>
+			<div class="fv-seg" id="fv-view" role="group" aria-labelledby="fv-vlab">
+				<button type="button" class="tu-chip" data-v="tiles" aria-pressed="true" title="Big tiles with pictures">Tiles</button>
+				<button type="button" class="tu-chip" data-v="list" aria-pressed="false" title="One row per page">List</button>
+				<button type="button" class="tu-chip" data-v="compact" aria-pressed="false" title="Small chips, many per row">Compact</button>
+				<button type="button" class="tu-chip" data-v="table" aria-pressed="false" title="A sortable table of every page">Table</button>
+			</div>
+			<button type="button" class="tu-chip fv-cleanbtn" id="fv-clean" aria-pressed="false" title="Hide the drag handles, copy and remove buttons for a clean look">Hide controls</button>
+		</div>
 		<div class="tu-card tu-card--tint fv-notice" id="fv-notice" role="status" hidden></div>
 		<div class="fv-groups" id="fv-groups"></div>
 

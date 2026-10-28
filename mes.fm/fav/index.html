@@ -361,6 +361,78 @@ body.dark-mode .tu .rw-head {color:#a0a8b3;border-bottom-color:#555;} body.dark-
 	#fv .fv-short {margin:0 0 1em;} #fv .fv-long {margin:0.6em 0 1em;} #fv .fv-long summary {cursor:pointer;font-weight:700;color:var(--fv-acc);}
 	body.dark-mode #fv .tu-btn--ghost {color:#e4e4e4;border-color:#6b6b6b;background:transparent;} body.dark-mode #fv .tu-btn--ghost:hover {background:#3a3a3a;}
 	#fv .fv-find {min-width:0;} #fv .fv-rb {overflow:hidden;} #fv .fv-add {white-space:nowrap;} @media (max-width:560px) {#fv .fv-add {padding:0.4em 0.6em;}}
+	/* view options (mes-fav:view / mes-fav:clean) */
+	#fv .fv-viewbar {display:flex;flex-wrap:wrap;align-items:center;gap:0.4em 0.8em;margin:-0.4em 0 1em;}
+	#fv .fv-vlab {font-size:0.85em;font-weight:700;color:var(--fv-mut);}
+	#fv .fv-seg {display:flex;gap:0.3em;flex-wrap:wrap;}
+	#fv .tu-chip {background:var(--fv-surf);color:var(--fv-text);border-color:var(--fv-line);}
+	#fv .tu-chip[aria-pressed="true"] {background:var(--fv-acc);border-color:var(--fv-acc);color:#fff;}
+	body.dark-mode #fv .tu-chip[aria-pressed="true"] {color:#1e1a12;}
+	#fv .fv-sr {position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);}
+	/* hide controls: read-only look */
+	#fv .fv-clean .fv-grip, #fv .fv-clean .fv-tools, #fv .fv-clean .fv-ren, #fv .fv-clean .fv-del {display:none !important;}
+	#fv .fv-clean .fv-tile {cursor:default;}
+	#fv .fv-clean .fv-ghead {padding-left:0.3em;}
+	@media (pointer:coarse) {#fv .fv-clean .fv-tile {padding-top:0.7em;}}
+	/* List: one row per page */
+	#fv .fv-v-list .fv-gbody {grid-template-columns:minmax(0,1fr);gap:0.3em;padding:0.5em;min-height:3em;}
+	#fv .fv-v-list .fv-tile, #fv .fv-v-compact .fv-tile {flex-direction:row;align-items:center;text-align:left;padding:0.25em 0.35em;gap:0.3em;border-radius:0.5em;}
+	#fv .fv-v-list .fv-tile a, #fv .fv-v-compact .fv-tile a {flex-direction:row;align-items:center;gap:0.55em;flex:1 1 auto;width:auto;}
+	#fv .fv-v-list .fv-tile .fv-th {width:2em;height:2em;border-radius:0.35em;font-size:0.9em;}
+	#fv .fv-v-list .fv-tt, #fv .fv-v-compact .fv-tt {display:block;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;-webkit-line-clamp:unset;}
+	#fv .fv-v-list .fv-tile .fv-grip, #fv .fv-v-compact .fv-tile .fv-grip {position:static;opacity:1;flex:none;min-height:30px;width:1.5em;order:-1;}
+	#fv .fv-v-list .fv-tools, #fv .fv-v-compact .fv-tools {position:static;flex:none;order:2;}
+	#fv .fv-v-list .fv-tile .fv-ib, #fv .fv-v-compact .fv-tile .fv-ib {min-width:30px;min-height:30px;font-size:0.95em;}
+	#fv .fv-v-list .fv-tile:hover, #fv .fv-v-compact .fv-tile:hover {box-shadow:none;}
+	/* Compact: small chips, many per row */
+	#fv .fv-v-compact .fv-gbody {grid-template-columns:repeat(auto-fill,minmax(12em,1fr));gap:0.35em;padding:0.5em;min-height:3em;}
+	#fv .fv-v-compact .fv-tile .fv-th {width:1.5em;height:1.5em;border-radius:0.3em;font-size:0.75em;}
+	#fv .fv-v-compact .fv-tile a {font-size:0.85em;gap:0.4em;}
+	#fv .fv-v-compact .fv-tile .fv-grip {width:1.2em;min-height:26px;font-size:0.9em;}
+	#fv .fv-v-compact .fv-tile .fv-ib {min-width:26px;min-height:26px;margin-left:0.1em;font-size:0.85em;}
+	#fv .fv-v-compact .fv-cp {display:none;}
+	@media (hover:hover) {#fv .fv-v-compact .fv-tools {opacity:0;} #fv .fv-v-compact .fv-tile:hover .fv-tools, #fv .fv-v-compact .fv-tile:focus-within .fv-tools {opacity:1;} #fv .fv-v-compact .fv-tile:hover .fv-cp, #fv .fv-v-compact .fv-tile:focus-within .fv-cp {display:inline-block;}}
+	@media (pointer:coarse) {#fv .fv-v-list .fv-tile, #fv .fv-v-compact .fv-tile {padding-top:0.25em;} #fv .fv-v-list .fv-tile .fv-grip, #fv .fv-v-list .fv-tile .fv-ib {min-width:36px;min-height:36px;}}
+	/* Table */
+	#fv .fv-twrap {overflow-x:auto;border:1px solid var(--fv-line);border-radius:0.6em;background:var(--fv-surf);}
+	#fv .fv-table {width:100%;border-collapse:collapse;font-size:0.92em;}
+	#fv .fv-table th, #fv .fv-table td {padding:0.35em 0.6em;border-bottom:1px solid var(--fv-line);text-align:left;color:var(--fv-text);vertical-align:middle;}
+	#fv .fv-table th {background:var(--fv-surf2);white-space:nowrap;}
+	#fv .fv-sort {all:unset;cursor:pointer;font-weight:700;font-size:0.85em;color:var(--fv-text);}
+	#fv .fv-sort:focus-visible {outline:2px solid var(--fv-acc);outline-offset:2px;}
+	#fv .fv-table th[aria-sort="ascending"] .fv-sort, #fv .fv-table th[aria-sort="descending"] .fv-sort {color:var(--fv-acc);}
+	#fv .fv-tdt a {display:flex;align-items:center;gap:0.5em;color:var(--fv-text);font-weight:700;text-decoration:none;min-width:10em;}
+	#fv .fv-tdt a:hover span {text-decoration:underline;}
+	#fv .fv-tdt .fv-th {width:1.8em;height:1.8em;border-radius:0.3em;font-size:0.8em;}
+	#fv .fv-tdu {color:var(--fv-mut);font-family:ui-monospace,Menlo,Consolas,monospace;font-size:0.85em;white-space:nowrap;}
+	#fv .fv-table td:not(.fv-tdt):not(.fv-tdu) {color:var(--fv-mut);}
+	#fv .fv-table .fv-ib {min-width:32px;min-height:32px;}
+	#fv .fv-table tbody tr:hover td {background:var(--fv-hover);}
+	/* phones: compact toolbar, smaller tiles */
+	@media (max-width:560px) {
+		#fv .fv-bar {gap:0.35em;margin:0.8em 0;}
+		#fv .fv-bar .tu-btn {font-size:0.82em;padding:0.4em 0.7em;min-height:34px;}
+		#fv .fv-bar-sp {display:none;}
+		#fv .fv-viewbar {gap:0.3em 0.5em;}
+		#fv .fv-viewbar .tu-chip {font-size:0.76em;padding:0.3em 0.6em;}
+		#fv .fv-v-tiles .fv-gbody {grid-template-columns:repeat(auto-fill,minmax(6.4em,1fr));gap:0.4em;padding:0.5em;}
+		#fv .fv-v-tiles .fv-tile {padding:0.5em 0.3em 0.4em;}
+		#fv .fv-v-tiles .fv-tile .fv-th {width:2.9em;height:2.9em;}
+		#fv .fv-v-tiles .fv-tile a {font-size:0.82em;}
+		#fv .fv-v-compact .fv-gbody {grid-template-columns:repeat(2,minmax(0,1fr));}
+		#fv .fv-ghead {padding:0.25em 0.4em;}
+		#fv .fv-gt {font-size:1em;min-height:36px;}
+		#fv .fv-ghead .fv-ib {min-width:36px;min-height:36px;}
+		#fv .fv-table {font-size:0.85em;}
+	}
+	@media (max-width:560px) and (pointer:coarse) {
+		#fv .fv-v-tiles .fv-tile {padding-top:2em;}
+		#fv .fv-v-tiles .fv-tile .fv-grip {width:30px;min-height:30px;}
+		#fv .fv-v-tiles .fv-tile .fv-ib {min-width:30px;min-height:30px;margin-left:0.1em;}
+		#fv .fv-clean.fv-v-tiles .fv-tile {padding-top:0.5em;}
+	}
+	#fv .fv-v-compact .fv-tt {white-space:normal;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;line-height:1.2;word-break:break-word;}
+	@media (max-width:560px) {#fv .fv-v-compact .fv-tile .fv-grip {width:1em;} #fv .fv-v-compact .fv-tile a {font-size:0.8em;gap:0.3em;}}
 
 
 	@media print {
@@ -400,48 +472,6 @@ body.dark-mode .tu .rw-head {color:#a0a8b3;border-bottom-color:#555;} body.dark-
 		.footer__item--extra-padding { padding-left: 0; }
 		.footer__text--extra-info { float: none; display: block; margin-top: 0.5em; }
 	}
-/* Floating compact header bar: once the full header + nav scroll out of
-   view, a slim fixed bar (small logo, title, as many nav links as fit)
-   slides in, and the hamburger is pinned into its right end. Toggled by
-   the compact-nav script below. Ported from mes.fm/math's version (see
-   its build.mjs) -- display-controls.js pins the A-/A+/moon buttons into its right end.
-
-   Hidden by default via the inline style="display:none" on the element
-   itself (not just this stylesheet's "display: none" below) -- some
-   browser extensions strip or neutralize cosmetic-looking CSS for
-   elements named "sticky-*"/"*-bar" (a common ad/cookie-bar filter
-   pattern), which left an earlier version's raw unstyled markup visible
-   above the real header on mes.fm/math. The inline attribute is a
-   fallback the JS clears itself, independent of this stylesheet
-   surviving intact. */
-#compact-nav {
-  position: fixed; top: 0; left: 0; right: 0; height: 52px; z-index: 15;
-  display: none; align-items: center; gap: 12px;
-  padding: 0 80px 0 12px; box-sizing: border-box;
-  background: #ffffff; border-bottom: 3px solid #a15c07;
-  box-shadow: 0 2px 8px rgba(0,0,0,0.18);
-  transform: translateY(-110%); transition: transform 0.2s ease;
-}
-#compact-nav.is-visible { display: flex; }
-body.is-stuck #compact-nav { transform: none; }
-#compact-nav .compact-nav-logo { display: block; width: 32px; height: 32px; border-radius: 6px; flex: 0 0 auto; }
-#compact-nav .compact-nav-title {
-  flex: 0 1 auto; min-width: 0; font-weight: 700; font-size: 1.05em; color: #1a1a1a;
-  text-decoration: none; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
-}
-#compact-nav .compact-nav-links { display: flex; flex: 1 1 0; min-width: 0; overflow: hidden; margin: 0 0 0 8px; padding: 0; list-style: none; }
-#compact-nav .compact-nav-links li { flex: 0 0 auto; }
-#compact-nav .compact-nav-links a { display: block; padding: 0 10px; line-height: 52px; font-size: 0.9em; color: #a15c07; text-decoration: none; white-space: nowrap; }
-#compact-nav .compact-nav-links a:hover { background: rgba(161,92,7,0.12); }
-body.is-stuck #navbar-button { position: fixed !important; top: 4px !important; right: 8px !important; display: flex; align-items: center; }
-body.is-stuck #navbar.hide { position: fixed; top: 56px; right: 8px; }
-@media (max-width: 700px) {
-  #compact-nav .compact-nav-title { display: none; }
-  #compact-nav .compact-nav-logo { width: 36px; height: 36px; }
-}
-@media (max-width: 480px) {
-  #compact-nav { padding-right: 70px; gap: 8px; }
-}
 
 	/* TOOL-DARK:START -- generated by add_tool_page_controls.py, do not edit */
 	body.dark-mode .page-content :where(div,span,p,li,ul,ol,h1,h2,h3,h4,h5,h6,td,th,label,summary,small,strong,b,em,i,code,pre,legend,figcaption,dl,dt,dd,blockquote,caption,cite,button,input,select,textarea){color:#d8d8d8}
@@ -486,6 +516,48 @@ body.is-stuck #navbar.hide { position: fixed; top: 56px; right: 8px; }
 	body.dark-mode .fv-menu{background:#1a1a1a;color:#d1d6dc;border:1px solid #343d48}
 	body.dark-mode .fv-toast{background:#525252}
 	/* TOOL-DARK:END */
+/* Floating compact header bar: once the full header + nav scroll out of
+   view, a slim fixed bar (small logo, title, as many nav links as fit)
+   slides in, and the hamburger is pinned into its right end. Toggled by
+   the compact-nav script below. Ported from mes.fm/math's version (see
+   its build.mjs) -- display-controls.js pins the A-/A+/moon buttons into its right end.
+
+   Hidden by default via the inline style="display:none" on the element
+   itself (not just this stylesheet's "display: none" below) -- some
+   browser extensions strip or neutralize cosmetic-looking CSS for
+   elements named "sticky-*"/"*-bar" (a common ad/cookie-bar filter
+   pattern), which left an earlier version's raw unstyled markup visible
+   above the real header on mes.fm/math. The inline attribute is a
+   fallback the JS clears itself, independent of this stylesheet
+   surviving intact. */
+#compact-nav {
+  position: fixed; top: 0; left: 0; right: 0; height: 52px; z-index: 15;
+  display: none; align-items: center; gap: 12px;
+  padding: 0 80px 0 12px; box-sizing: border-box;
+  background: #ffffff; border-bottom: 3px solid #a15c07;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.18);
+  transform: translateY(-110%); transition: transform 0.2s ease;
+}
+#compact-nav.is-visible { display: flex; }
+body.is-stuck #compact-nav { transform: none; }
+#compact-nav .compact-nav-logo { display: block; width: 32px; height: 32px; border-radius: 6px; flex: 0 0 auto; }
+#compact-nav .compact-nav-title {
+  flex: 0 1 auto; min-width: 0; font-weight: 700; font-size: 1.05em; color: #1a1a1a;
+  text-decoration: none; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+}
+#compact-nav .compact-nav-links { display: flex; flex: 1 1 0; min-width: 0; overflow: hidden; margin: 0 0 0 8px; padding: 0; list-style: none; }
+#compact-nav .compact-nav-links li { flex: 0 0 auto; }
+#compact-nav .compact-nav-links a { display: block; padding: 0 10px; line-height: 52px; font-size: 0.9em; color: #a15c07; text-decoration: none; white-space: nowrap; }
+#compact-nav .compact-nav-links a:hover { background: rgba(161,92,7,0.12); }
+body.is-stuck #navbar-button { position: fixed !important; top: 4px !important; right: 8px !important; display: flex; align-items: center; }
+body.is-stuck #navbar.hide { position: fixed; top: 56px; right: 8px; }
+@media (max-width: 700px) {
+  #compact-nav .compact-nav-title { display: none; }
+  #compact-nav .compact-nav-logo { width: 36px; height: 36px; }
+}
+@media (max-width: 480px) {
+  #compact-nav { padding-right: 70px; gap: 8px; }
+}
 </style>
         <meta property="fb:app_id" content="" />
         <meta name="author" content="Math Easy Solutions Staff">
@@ -562,6 +634,16 @@ body.is-stuck #navbar.hide { position: fixed; top: 56px; right: 8px; }
 			<button type="button" class="tu-btn tu-btn--ghost" id="fv-starter" hidden>Add popular starters</button>
 			<span class="fv-bar-sp"></span>
 			<button type="button" class="tu-btn tu-btn--ghost" id="fv-copylink">&#128279; Copy my link</button>
+		</div>
+		<div class="fv-viewbar">
+			<span class="fv-vlab" id="fv-vlab">View</span>
+			<div class="fv-seg" id="fv-view" role="group" aria-labelledby="fv-vlab">
+				<button type="button" class="tu-chip" data-v="tiles" aria-pressed="true" title="Big tiles with pictures">Tiles</button>
+				<button type="button" class="tu-chip" data-v="list" aria-pressed="false" title="One row per page">List</button>
+				<button type="button" class="tu-chip" data-v="compact" aria-pressed="false" title="Small chips, many per row">Compact</button>
+				<button type="button" class="tu-chip" data-v="table" aria-pressed="false" title="A sortable table of every page">Table</button>
+			</div>
+			<button type="button" class="tu-chip fv-cleanbtn" id="fv-clean" aria-pressed="false" title="Hide the drag handles, copy and remove buttons for a clean look">Hide controls</button>
 		</div>
 		<div class="tu-card tu-card--tint fv-notice" id="fv-notice" role="status" hidden></div>
 		<div class="fv-groups" id="fv-groups"></div>
@@ -645,7 +727,7 @@ body.is-stuck #navbar.hide { position: fixed; top: 56px; right: 8px; }
             hide_search:false,
             current_tab:0
         }        </script><!-- FASTCOMMENTS-LAZY: widget init moved to main_js/main.js -- it pulls embed.min.js only when #fastcomments-widget nears the viewport or on the first Comments-toggle click, so it no longer blocks first render -->                <script src="https://mes.fm/main_js/lazysizes.min.js?v=1.0.3" async></script>
-	<script src="/main_js/site-search.js?v=1" defer></script><script src="/fav/js/fav.js?v=2" defer></script>
+	<script src="/main_js/site-search.js?v=1" defer></script><script src="/fav/js/fav.js?v=3" defer></script>
             <script src="https://mes.fm/main_js/main.js?v=1.0.5"></script>    <!-- PAGEVIEW-TRACKING-INSERTED --><script src="https://mes.fm/main_js/track.js" defer></script><script>document.getElementById('copyright-year').textContent = new Date().getFullYear();</script><script src="/main_js/info-bar-fit.js" defer></script><script>
   // Floating compact header bar (see #compact-nav CSS): appears once the
   // header + nav bar have scrolled off the top; nav links that don't fit

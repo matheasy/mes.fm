@@ -495,6 +495,42 @@ body.dark-mode .tu .rw-head {color:#a0a8b3;border-bottom-color:#555;} body.dark-
 	#gs .gs-drop > span {color:var(--gs-muted);}
 	#gs .gs-ai .gs-t td.gs-k {white-space:normal;min-width:15em;overflow-wrap:anywhere;}
 	@media (max-width: 600px) { #gs .gs-ai .gs-t td.gs-k {min-width:13em;max-width:16em;} }
+	/* collapsible Google / Bing totals (mes-gsc:sumfold) */
+	.gs-sum {margin:0 0 0.9em;}
+	.gs-sumbar {display:flex;flex-wrap:wrap;align-items:center;gap:0.3em 0.8em;margin:0 0 0.4em;}
+	#gs .gs-sumbtn {display:inline-flex;align-items:center;gap:0.35em;border:1px solid var(--gs-line);background:var(--gs-card);color:var(--gs-ink);font:inherit;font-size:0.85em;font-weight:600;border-radius:999px;padding:0.25em 0.8em 0.25em 0.6em;cursor:pointer;}
+	#gs .gs-sumbtn:hover {border-color:var(--accent);}
+	#gs .gs-sumbtn span {color:inherit;}
+	.gs-sumarr {display:inline-block;width:0.9em;text-align:center;}
+	#gs .gs-sumline {display:flex;flex-wrap:wrap;gap:0.15em 1em;font-size:0.85em;color:var(--gs-ink);min-width:0;}
+	#gs .gs-sumpart {display:inline-flex;align-items:center;gap:0.35em;color:var(--gs-ink);}
+	#gs .gs-sumpart b {color:var(--gs-ink);}
+	#gs .gs-sumline .gs-dot {width:0.6em;height:0.6em;}
+	.gs-sumbody[hidden] {display:none;}
+	#gs .gs-tclear {font-size:0.8em;}
+	@media (max-width: 600px) {
+		/* compact totals: 4 small tiles per row */
+		#gs .gs-tiles {grid-template-columns:repeat(4,minmax(0,1fr));gap:0.3em;}
+		#gs .gs-tiles .tu-stat {padding:0.35em 0.4em;border-radius:0.4em;min-width:0;}
+		#gs .gs-tiles .tu-stat__value {font-size:1em;margin:0;}
+		#gs .gs-tiles .tu-stat__label {font-size:0.6em;letter-spacing:0;line-height:1.2;}
+		#gs .tu-stat__value .gs-d {font-size:0.68em;}
+		#gs .gs-src {font-size:0.85em;margin-bottom:0.2em;}
+		.gs-tilerow {margin-bottom:0.5em;}
+		/* chips: smaller, one row that scrolls sideways */
+		#gs .gs-tabs {flex-wrap:nowrap;overflow-x:auto;scrollbar-width:none;gap:0.3em;max-width:100%;}
+		#gs .gs-tabs::-webkit-scrollbar {display:none;}
+		#gs .gs-tabs .tu-chip, #gs .gs-cbar .tu-chip {font-size:0.74em;padding:0.3em 0.65em;white-space:nowrap;flex:none;}
+		#gs .gs-head {gap:0.35em 0.5em;}
+		#gs .gs-head .mes-pbtn, #gs .gs-hbtns .mes-pbtn {font-size:0.74em;padding:0.25em 0.6em;}
+		#gs .gs-hbtns {gap:0.25em;}
+		#gs .gs-filter input {flex:1 1 9em;font-size:0.9em;}
+		#gs .gs-tnote {font-size:0.8em;}
+		/* table: the first column gets the room, long queries wrap */
+		#gs .gs-t td.gs-k {max-width:58vw;min-width:8.5em;white-space:normal;overflow-wrap:anywhere;line-height:1.3;}
+		#gs .gs-t .gs-bar {width:1.8em;margin-right:0.25em;}
+		#gs .gs-t th, #gs .gs-t td {padding:0.35em 0.3em;}
+	}
 
 
 	@media print {
@@ -695,8 +731,16 @@ body.is-stuck #navbar.hide { position: fixed; top: 56px; right: 8px; }
 
 		<div id="gs-setup"></div>
 
-		<div class="gs-tilerow"><h2 class="gs-src gs-src--g"><i class="gs-dot gs-dot--g"></i>Google</h2><div class="tu-stats gs-tiles" id="gs-tiles-g"></div></div>
-		<div class="gs-tilerow"><h2 class="gs-src gs-src--b"><i class="gs-dot gs-dot--b"></i>Bing</h2><div class="tu-stats gs-tiles" id="gs-tiles-b"></div><p class="tu-note gs-bnote" id="gs-bnote" hidden></p></div>
+		<div class="gs-sum" id="gs-sum">
+			<div class="gs-sumbar">
+				<button type="button" class="gs-sumbtn" id="gs-sumbtn" aria-expanded="true" aria-controls="gs-sumbody"><span class="gs-sumarr" aria-hidden="true">▾</span><span class="gs-sumlab">Totals</span></button>
+				<span class="gs-sumline" id="gs-sumline" hidden></span>
+			</div>
+			<div class="gs-sumbody" id="gs-sumbody">
+				<div class="gs-tilerow"><h2 class="gs-src gs-src--g"><i class="gs-dot gs-dot--g"></i>Google</h2><div class="tu-stats gs-tiles" id="gs-tiles-g"></div></div>
+				<div class="gs-tilerow"><h2 class="gs-src gs-src--b"><i class="gs-dot gs-dot--b"></i>Bing</h2><div class="tu-stats gs-tiles" id="gs-tiles-b"></div><p class="tu-note gs-bnote" id="gs-bnote" hidden></p></div>
+			</div>
+		</div>
 
 		<!-- filters sit right above the chart and table they change -->
 		<div class="gs-fbar" id="gs-fbar">
@@ -754,7 +798,7 @@ body.is-stuck #navbar.hide { position: fixed; top: 56px; right: 8px; }
 					<button type="button" class="tu-chip" data-s="bing" aria-pressed="false">Bing</button>
 				</div>
 			</div>
-			<div class="gs-filter"><label class="gs-sr" for="gs-q">Search this table</label><input id="gs-q" class="tu-input" type="search" placeholder="Search this table (e.g. bmi, /timer, canada)" autocomplete="off" spellcheck="false"><span class="tu-note" id="gs-count"></span></div>
+			<div class="gs-filter"><label class="gs-sr" for="gs-q">Search this table</label><input id="gs-q" class="tu-input" type="search" placeholder="Search this table (e.g. bmi, /timer, canada)" autocomplete="off" spellcheck="false"><button type="button" class="tu-chip gs-tclear" id="gs-tclear" hidden title="Clear the filters and this search box">✕ Clear</button><span class="tu-note" id="gs-count"></span></div>
 			<p class="tu-note gs-tnote" id="gs-tnote"></p>
 			<div class="gs-wrap"><table class="gs-t" id="gs-t"></table></div><button type="button" class="tu-btn tu-btn--ghost gs-more" id="gs-more" hidden></button>
 		</section>
@@ -849,7 +893,7 @@ body.is-stuck #navbar.hide { position: fixed; top: 56px; right: 8px; }
             hide_search:false,
             current_tab:0
         }        </script><!-- FASTCOMMENTS-LAZY: widget init moved to main_js/main.js -- it pulls embed.min.js only when #fastcomments-widget nears the viewport or on the first Comments-toggle click, so it no longer blocks first render -->                <script src="https://mes.fm/main_js/lazysizes.min.js?v=1.0.3" async></script>
-	<script src="/search-console/js/search-console.js?v=3" defer></script>
+	<script src="/search-console/js/search-console.js?v=4" defer></script>
             <script src="https://mes.fm/main_js/main.js?v=1.0.5"></script>    <!-- PAGEVIEW-TRACKING-INSERTED --><script src="https://mes.fm/main_js/track.js" defer></script><script>document.getElementById('copyright-year').textContent = new Date().getFullYear();</script><script src="/main_js/info-bar-fit.js" defer></script><script>
   // Floating compact header bar (see #compact-nav CSS): appears once the
   // header + nav bar have scrolled off the top; nav links that don't fit
