@@ -1,0 +1,410 @@
+<div id="divViewStart">
+    <div class="row justify-content-center" id="divTotals">
+        <div class="box col-lg-3 col-md-4 col-sm-6 col-5">
+            <div class="content">
+                <div class="main-line">
+                        INITIAL COUNT
+
+                </div>
+                <div class="icon tick-mark">
+                    <i class="fas fa-circle"></i>
+                </div>
+            </div>
+            <div class="small-line">Complete</div>
+        </div>
+
+        <div class="box col-lg-3 col-md-4 col-sm-6 col-5">
+            <div class="content">
+                <div class="main-line">FINAL COUNT</div>
+                <div class="icon cross-mark">
+                    <i class="fas fa-circle"></i>
+                </div>
+            </div>
+            <div class="small-line">November 6, 2026</div>
+        </div>
+
+        <div class="push-right">
+            <div class="content">
+                As of October 26, 2026 10:34 PST<br />
+                
+            </div>
+        </div>
+
+        <div class="row">
+            <p>Initial count completed on October 25, 2026. 
+<br/><br/>
+<strong>Results reported at initial count are preliminary.</strong> Preliminary results are subject to change as they are being verified for accuracy and completeness.
+<br/><br/>
+Mail-in ballots and absentee ballots will be counted at final count, scheduled for November 6 to 10, 2026.
+<br/><br/>
+Elections BC conducts additional integrity checks on these ballots to ensure that only eligible voters vote, and that they only vote once.<br/>
+<p>Read more about <a  style='display:inline !important;' href='https://electionsbcenr.blob.core.windows.net/electionsbcenr/counting-processes.pdf' target='_blank'>counting processes</a>.</p>
+ </p>
+            <p></p>
+        </div>
+
+
+
+
+
+
+        <!--<div>-->
+        <!--Common table-->
+        <!--<label for="partySelection" style="vertical-align:top;">Select Party:</label>
+        <select id="partySelection" style="width:34rem;text-align:center;" multiple onchange="filterTableByParty(this)">
+                    <option value="BC Green Party" style="background-color: #808080">BC Green Party</option>
+                    <option value="BC NDP" style="background-color: #808080">BC NDP</option>
+                    <option value="Conservative Party" style="background-color: #808080">Conservative Party</option>
+                    <option value="CWP" style="background-color: #808080">CWP</option>
+                    <option value="CentreBC" style="background-color: #808080">CentreBC</option>
+                    <option value="Christian Heritage Party of B.C." style="background-color: #808080">Christian Heritage Party of B.C.</option>
+                    <option value="Communist Party of BC" style="background-color: #808080">Communist Party of BC</option>
+                    <option value="Freedom Party of BC" style="background-color: #808080">Freedom Party of BC</option>
+                    <option value="Libertarian" style="background-color: #808080">Libertarian</option>
+                    <option value="OneBC" style="background-color: #808080">OneBC</option>
+                    <option value="Independent" style="background-color: #808080">Independent</option>
+                    <option value="Other" style="background-color: #808080">Other</option>
+        </select>
+    </div>-->
+        
+        <div class="content">
+                <div id="partyTableContainer">
+                    <br />
+                    <table border="1" style="">
+                        <thead>
+                            <tr>
+                                <th class="col-sm-3">Party</th>
+                                <th colspan="2" class="col-sm-5" style="text-align:center">Electoral Districts Leading</th>
+                                <th style="text-align:center" align="center" class="col-sm-2">Total Votes</th>
+                                <th style="text-align:center" align="center" class="col-sm-2">% of Vote</th>
+                            </tr>
+                        </thead>
+
+                        <tbody id="partyTableBody">
+                                                        <tr data-party="BC Green Party" class="visible-row">
+                                                            <td>
+                                                                BC Green Party
+                                                            </td>
+                                                            <td class="col-sm-4">
+                                                                <div class="bar" style="width: 4.3010752688172px;background-color: #009A44"></div>
+
+                                                                
+
+
+                                                            </td>
+                                                            <td style="text-align:center" lass="col-sm-1">2</td>
+                                                            <td style="text-align:center">
+
+                                                                196,896
+                                                            </td>
+                                                            
+                                                            <td style="text-align:center">
+
+                                                                10.97 <span>%</span>
+                                                            </td>
+
+
+                                                        </tr>
+                                                        <tr data-party="BC NDP" class="visible-row">
+                                                            <td>
+                                                                BC NDP
+                                                            </td>
+                                                            <td class="col-sm-4">
+                                                                <div class="bar" style="width: 60.2150537634409px;background-color: #ff6633"></div>
+
+                                                                
+
+
+                                                            </td>
+                                                            <td style="text-align:center" lass="col-sm-1">28</td>
+                                                            <td style="text-align:center">
+
+                                                                670,811
+                                                            </td>
+                                                            
+                                                            <td style="text-align:center">
+
+                                                                37.37 <span>%</span>
+                                                            </td>
+
+
+                                                        </tr>
+                                                        <tr data-party="Conservative Party" class="visible-row">
+                                                            <td>
+                                                                Conservative Party
+                                                            </td>
+                                                            <td class="col-sm-4">
+                                                                <div class="bar" style="width: 135.483870967742px;background-color: #004AAD"></div>
+
+                                                                
+
+
+                                                            </td>
+                                                            <td style="text-align:center" lass="col-sm-1">63</td>
+                                                            <td style="text-align:center">
+
+                                                                862,688
+                                                            </td>
+                                                            
+                                                            <td style="text-align:center">
+
+                                                                48.06 <span>%</span>
+                                                            </td>
+
+
+                                                        </tr>
+                                                        <tr data-party="CWP" class="hidden-row">
+                                                            <td>
+                                                                CWP
+                                                            </td>
+                                                            <td class="col-sm-4">
+                                                                <div class="bar" style="width: 0px;background-color: #808080"></div>
+
+                                                                
+
+
+                                                            </td>
+                                                            <td style="text-align:center" lass="col-sm-1">0</td>
+                                                            <td style="text-align:center">
+
+                                                                447
+                                                            </td>
+                                                            
+                                                            <td style="text-align:center">
+
+                                                                0.02 <span>%</span>
+                                                            </td>
+
+
+                                                        </tr>
+                                                        <tr data-party="CentreBC" class="hidden-row">
+                                                            <td>
+                                                                CentreBC
+                                                            </td>
+                                                            <td class="col-sm-4">
+                                                                <div class="bar" style="width: 0px;background-color: #808080"></div>
+
+                                                                
+
+
+                                                            </td>
+                                                            <td style="text-align:center" lass="col-sm-1">0</td>
+                                                            <td style="text-align:center">
+
+                                                                29,104
+                                                            </td>
+                                                            
+                                                            <td style="text-align:center">
+
+                                                                1.62 <span>%</span>
+                                                            </td>
+
+
+                                                        </tr>
+                                                        <tr data-party="Christian Heritage Party of B.C." class="hidden-row">
+                                                            <td>
+                                                                Christian Heritage Party of B.C.
+                                                            </td>
+                                                            <td class="col-sm-4">
+                                                                <div class="bar" style="width: 0px;background-color: #808080"></div>
+
+                                                                
+
+
+                                                            </td>
+                                                            <td style="text-align:center" lass="col-sm-1">0</td>
+                                                            <td style="text-align:center">
+
+                                                                459
+                                                            </td>
+                                                            
+                                                            <td style="text-align:center">
+
+                                                                0.03 <span>%</span>
+                                                            </td>
+
+
+                                                        </tr>
+                                                        <tr data-party="Communist Party of BC" class="hidden-row">
+                                                            <td>
+                                                                Communist Party of BC
+                                                            </td>
+                                                            <td class="col-sm-4">
+                                                                <div class="bar" style="width: 0px;background-color: #808080"></div>
+
+                                                                
+
+
+                                                            </td>
+                                                            <td style="text-align:center" lass="col-sm-1">0</td>
+                                                            <td style="text-align:center">
+
+                                                                559
+                                                            </td>
+                                                            
+                                                            <td style="text-align:center">
+
+                                                                0.03 <span>%</span>
+                                                            </td>
+
+
+                                                        </tr>
+                                                        <tr data-party="Freedom Party of BC" class="hidden-row">
+                                                            <td>
+                                                                Freedom Party of BC
+                                                            </td>
+                                                            <td class="col-sm-4">
+                                                                <div class="bar" style="width: 0px;background-color: #808080"></div>
+
+                                                                
+
+
+                                                            </td>
+                                                            <td style="text-align:center" lass="col-sm-1">0</td>
+                                                            <td style="text-align:center">
+
+                                                                127
+                                                            </td>
+                                                            
+                                                            <td style="text-align:center">
+
+                                                                0.01 <span>%</span>
+                                                            </td>
+
+
+                                                        </tr>
+                                                        <tr data-party="Libertarian" class="hidden-row">
+                                                            <td>
+                                                                Libertarian
+                                                            </td>
+                                                            <td class="col-sm-4">
+                                                                <div class="bar" style="width: 0px;background-color: #808080"></div>
+
+                                                                
+
+
+                                                            </td>
+                                                            <td style="text-align:center" lass="col-sm-1">0</td>
+                                                            <td style="text-align:center">
+
+                                                                1,105
+                                                            </td>
+                                                            
+                                                            <td style="text-align:center">
+
+                                                                0.06 <span>%</span>
+                                                            </td>
+
+
+                                                        </tr>
+                                                        <tr data-party="OneBC" class="hidden-row">
+                                                            <td>
+                                                                OneBC
+                                                            </td>
+                                                            <td class="col-sm-4">
+                                                                <div class="bar" style="width: 0px;background-color: #808080"></div>
+
+                                                                
+
+
+                                                            </td>
+                                                            <td style="text-align:center" lass="col-sm-1">0</td>
+                                                            <td style="text-align:center">
+
+                                                                27,056
+                                                            </td>
+                                                            
+                                                            <td style="text-align:center">
+
+                                                                1.51 <span>%</span>
+                                                            </td>
+
+
+                                                        </tr>
+                                                        <tr data-party="Independent" class="hidden-row">
+                                                            <td>
+                                                                Independent
+                                                            </td>
+                                                            <td class="col-sm-4">
+                                                                <div class="bar" style="width: 0px;background-color: #808080"></div>
+
+                                                                
+
+
+                                                            </td>
+                                                            <td style="text-align:center" lass="col-sm-1">0</td>
+                                                            <td style="text-align:center">
+
+                                                                3,202
+                                                            </td>
+                                                            
+                                                            <td style="text-align:center">
+
+                                                                0.18 <span>%</span>
+                                                            </td>
+
+
+                                                        </tr>
+                                                        <tr data-party="Other" class="hidden-row">
+                                                            <td>
+                                                                Unaffiliated
+                                                            </td>
+                                                            <td class="col-sm-4">
+                                                                <div class="bar" style="width: 0px;background-color: #808080"></div>
+
+                                                                
+
+
+                                                            </td>
+                                                            <td style="text-align:center" lass="col-sm-1">0</td>
+                                                            <td style="text-align:center">
+
+                                                                2,679
+                                                            </td>
+                                                            
+                                                            <td style="text-align:center">
+
+                                                                0.15 <span>%</span>
+                                                            </td>
+
+
+                                                        </tr>
+
+                        </tbody>
+                            <tr id="viewMoreRow">
+                                <td colspan="6">
+                                    <button id="viewMoreButton">View More</button>
+                                </td>
+                            </tr>
+                    </table>
+                    <br />
+
+
+                </div>
+            <!---->
+        </div>
+        
+        <div class="row justify-content-center" style="padding:10px;" id="divInfoTable">
+            <div class="box col-md-3 col-12" style="margin:0px;">
+                <div class="content">
+                    <div class="main-line">100%</div>
+                </div>
+                <div class="small-line">Of ballot boxes reporting</div>
+            </div>
+
+            <div class="box col-md-3 col-12" style="margin:0px;">
+                <div class="content">
+                    <div class="main-line">48.14%</div>
+                </div>
+                <div class="small-line">Preliminary Voter Turnout</div>
+            </div>
+
+            <div class="box col-md-3 col-12" style="margin:0px;">
+                <div class="content">
+                    <div class="main-line">1,799,550</div>
+                </div>
+                <div class="small-line">Total Votes Considered</div>
+            </div>
+
+            <div class="box col-md-3 col-12" style="margin:0px;">
+                <di

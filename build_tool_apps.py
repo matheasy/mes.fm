@@ -172,6 +172,14 @@ APPS = {
                        desc="Free live debt clock: a running estimate of the US national debt from the Treasury's daily figures, plus world government debt and Canada's federal debt, the share per person, household and taxpayer, debt-to-GDP, interest per second, the deficit, and charts back to 1790. Every number shows its source and how it is estimated.",
                        meta_desc="Live US national debt clock from Treasury data, plus world and Canada debt: per person, debt-to-GDP, interest per second and charts since 1790.",
                        js_v="1"),
+    # MES Elections (2026-10-27, mes.fm/elections): US 2026 midterms (Polymarket race-by-race + Kalshi control prices, build-your-own outcome), Canada 2025 + House of
+    # Commons today, BC 2024 / 2026 (Elections BC live), election calendar. Data = mes.fm/api/elections.js (keyless); lib.js is shared with it as mes.fm/api/_elections-lib.js
+    # (byte-identical copy). Snapshot mes.fm/elections/data/sample.json (`node mes.fm/api/elections.js --write`). Tests: node tool_apps_src/elections-tests.js.
+    "elections": dict(title="MES Elections", page_title="Elections Tracker: 2026 US Midterms, Canada and BC Results, Election Calendar",
+                      tag="Results and market odds side by side, with every source. No spin.", accent="#0f6e6e", dark="#0a4f4f", tint="#dff3f2",
+                      desc="Free, neutral elections tracker: the 2026 US midterms with every House, Senate and governor race priced by Polymarket and Kalshi, a build-your-own-outcome seat map, Canada's 2025 federal election and today's House of Commons, British Columbia's 2024 and 2026 elections with seats-versus-votes and majority tools, and a calendar of upcoming elections worldwide with sources.",
+                      meta_desc="Neutral 2026 midterm tracker with race-by-race market odds and a seat builder, plus Canada and BC election results and a world election calendar.",
+                      js_v="1"),
     # MES NBA Picks (2026-10-26, mes.fm/nba-picks): predicted final standings (15 teams per conference) scored against the live standings (exact, within 1/2/3, tier, points,
     # closeness, Spearman). Standings = mes.fm/api/nba-standings.js (ESPN, keyless); leaderboard = mes.fm/api/nba-picks.js (Upstash). lib.js is shared with both as
     # mes.fm/api/_nba-lib.js (byte-identical copy). Snapshot mes.fm/nba-picks/data/sample.json (`node mes.fm/api/nba-standings.js --write`). Tests: node tool_apps_src/nba-picks-tests.js.

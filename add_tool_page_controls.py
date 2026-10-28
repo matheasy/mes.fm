@@ -68,6 +68,7 @@ TOOLS = [  # (directory, compact-bar title[, home path of the site the page belo
     ("domain-lookup", "Domain Lookup"),
     ("site-traffic", "Site Traffic"),
     ("signals", "Market Signals"),
+    ("elections", "Elections"),
     ("debt-clock", "Debt Clock"),
     ("compound-interest-calculator", "Compound Interest Calculator"),   # 2026-10-23
     ("compound-interest-explained", "Compound Interest Calculator", "/compound-interest-calculator"),   # 2026-10-24 tutorial sub-page (brand option)

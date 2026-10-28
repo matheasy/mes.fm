@@ -1,0 +1,113 @@
+<script>try{if(!localStorage.getItem('pageMode')){document.documentElement.classList.add('page-wide')}}catch(e){}</script>
+	<div class="tu el" id="el">
+		<div class="el-hero" id="el-hero">
+			<div class="el-hero__main"><span class="el-hero__k">US midterms</span><span class="el-hero__d">Tuesday 3 November 2026</span></div>
+			<div class="el-hero__cd" id="el-cd" aria-live="off">&nbsp;</div>
+			<div class="el-hero__next" id="el-next"></div>
+		</div>
+		<p class="el-disc"><b>Neutral by design.</b> Official results and the prediction markets&rsquo; own prices, side by side, with every source linked. MES does not make forecasts, rate races or back any party; colours are each party&rsquo;s usual colour. Market prices are traders&rsquo; bets, not polls and not facts <button type="button" class="el-q" data-g="pm" aria-label="What is a prediction market?">?</button>.</p>
+		<div class="el-status" id="el-status" role="status" aria-live="polite" hidden></div>
+		<div class="el-tabs" role="tablist" id="el-tabs">
+			<button type="button" role="tab" data-tab="us" aria-selected="true">US midterms 2026</button>
+			<button type="button" role="tab" data-tab="ca" aria-selected="false">Canada</button>
+			<button type="button" role="tab" data-tab="bc" aria-selected="false">British Columbia</button>
+			<button type="button" role="tab" data-tab="cal" aria-selected="false">Election calendar</button>
+		</div>
+
+		<section class="el-panel" id="el-p-us" role="tabpanel">
+			<div class="el-cards" id="el-us-cards"></div>
+
+			<div class="tu-card el-build" id="el-build">
+				<div class="el-chead"><h2>Build your own outcome <button type="button" class="el-q" data-g="midterm" aria-label="What are the midterms?">?</button></h2></div>
+				<p class="tu-note el-lead">Every race starts on the side its market prices highest (or blank, if you prefer). Click a seat, a state or a race to choose the winner yourself, slide every race toward one side, and see who controls the chamber.</p>
+				<div class="el-ctrls">
+					<div class="el-ctrl"><span class="el-ctrl__l">Chamber</span><div class="tu-seg" id="el-ch"><button type="button" data-v="H">House</button><button type="button" data-v="S">Senate</button><button type="button" data-v="G">Governors</button></div></div>
+					<div class="el-ctrl"><span class="el-ctrl__l">Start from</span><div class="tu-seg" id="el-base"><button type="button" data-v="market">Market favourites</button><button type="button" data-v="blank">Blank</button></div></div>
+					<div class="el-ctrl el-ctrl--shift"><label class="el-ctrl__l" for="el-shift">Shift every race <button type="button" class="el-q" data-g="shift" aria-label="What does the shift do?">?</button></label>
+						<div class="el-shiftrow"><span class="el-sd">D</span><input type="range" id="el-shift" min="-25" max="25" step="1" value="0" aria-describedby="el-shiftv"><span class="el-sr">R</span><output id="el-shiftv" for="el-shift">none</output></div></div>
+					<div class="el-ctrl"><label class="el-ctrl__l" for="el-ind">New independents count <button type="button" class="el-q" data-g="caucus" aria-label="What is a caucus?">?</button></label><select id="el-ind"><option value="">On their own</option><option value="D">With the Democrats</option><option value="R">With the Republicans</option></select></div>
+					<div class="el-ctrl el-ctrl--btns"><button type="button" class="tu-btn tu-btn--ghost" id="el-reset">Reset</button><button type="button" class="tu-btn tu-btn--ghost" id="el-share">Copy link</button></div>
+				</div>
+				<div class="el-result" id="el-result"></div>
+				<div class="el-views">
+					<div class="el-arcwrap" id="el-arcwrap"><div class="el-arc" id="el-arc"></div></div>
+					<div class="el-mapwrap"><div class="el-map" id="el-map" role="group" aria-label="States"></div><p class="tu-note el-maplegend" id="el-maplegend"></p></div>
+				</div>
+				<div class="el-legend" id="el-legend"></div>
+				<div class="el-listbar">
+					<input type="search" id="el-find" placeholder="Find a state, district or candidate" aria-label="Find a race">
+					<div class="tu-seg" id="el-sort"><button type="button" data-v="close">Closest first</button><button type="button" data-v="az">A&ndash;Z</button><button type="button" data-v="mine">My changes</button></div>
+				</div>
+				<div class="el-list" id="el-list"></div>
+				<div class="el-more" id="el-more"></div>
+				<p class="tu-note" id="el-sumnote"></p>
+			</div>
+
+			<div class="tu-card" id="el-ov">
+				<div class="el-chead"><h2>The markets on the big questions <button type="button" class="el-q" data-g="polymarket" aria-label="About Polymarket">?</button> <button type="button" class="el-q" data-g="kalshi" aria-label="About Kalshi">?</button></h2></div>
+				<div class="el-ovgrid" id="el-ovgrid"></div>
+			</div>
+
+			<div class="tu-card" id="el-res">
+				<div class="el-chead"><h2>Results on election night <button type="button" class="el-q" data-g="called" aria-label="What is a called race?">?</button></h2></div>
+				<p>There is no free, open feed of live US results: the Associated Press and Decision Desk HQ, which most news sites use, sell theirs. Each state publishes its own count on its election website. From the evening of 3 November, this page marks a race as <b>settled</b> once its Polymarket market has settled (the market&rsquo;s reading of the result, not an official one) and keeps showing prices for the rest. Official, certified results come from the states in the weeks after.</p>
+				<input type="search" id="el-sfind" placeholder="Find a state" aria-label="Find a state's results page">
+				<div class="el-slinks" id="el-slinks"></div>
+			</div>
+
+			<div class="tu-card" id="el-ctx">
+				<div class="el-chead"><h2>Context</h2></div>
+				<div class="el-two">
+					<div><h3>Seats now</h3><div id="el-now"></div></div>
+					<div><h3>New House maps in 2026 <button type="button" class="el-q" data-g="redistricting" aria-label="What is redistricting?">?</button></h3><ul class="el-ul" id="el-redis"></ul></div>
+				</div>
+				<p class="tu-note" id="el-ussrc"></p>
+			</div>
+		</section>
+
+		<section class="el-panel" id="el-p-ca" role="tabpanel" hidden>
+			<div class="tu-seg el-dsel" id="el-casel"><button type="button" data-v="ca2025">2025 election</button><button type="button" data-v="now">House today</button></div>
+			<div id="el-ca"></div>
+		</section>
+
+		<section class="el-panel" id="el-p-bc" role="tabpanel" hidden>
+			<div class="tu-seg el-dsel" id="el-bcsel"><button type="button" data-v="bc2026">2026 election (initial count)</button><button type="button" data-v="bc2024">2024 election</button><button type="button" data-v="cmp">2024 &rarr; 2026</button></div>
+			<div id="el-bc"></div>
+		</section>
+
+		<section class="el-panel" id="el-p-cal" role="tabpanel" hidden>
+			<p class="tu-note">Major national elections worldwide, every Canadian province and territory, and the US. Dates checked on <b id="el-calchk"></b> against official or published sources (linked). Where the law sets only a deadline the row says so <button type="button" class="el-q" data-g="latest" aria-label="Latest legal date">?</button>.</p>
+			<div class="el-listbar"><div class="tu-seg" id="el-calg"><button type="button" data-v="all">All</button><button type="button" data-v="ca">Canada</button><button type="button" data-v="us">United States</button><button type="button" data-v="world">World</button></div><input type="search" id="el-calfind" placeholder="Find a country or province" aria-label="Find a country or province"></div>
+			<div class="el-cal" id="el-cal"></div>
+			<h2>Recent results (2026)</h2>
+			<div class="el-cal el-cal--recent" id="el-recent"></div>
+		</section>
+
+		<div class="tu-card el-foot">
+			<div class="tu-row" style="justify-content:space-between;gap:0.5em;align-items:center"><span id="el-updated" class="tu-note"></span><button type="button" class="tu-btn tu-btn--ghost" id="el-refresh">Refresh</button></div>
+			<details><summary>Sources and their status</summary><ul class="el-srcs" id="el-srcs"></ul></details>
+		</div>
+		<div class="el-pop" id="el-pop" role="dialog" aria-modal="false" hidden><button type="button" class="el-pop__x" aria-label="Close">&times;</button><b class="el-pop__t"></b><p class="el-pop__p"></p></div>
+		<div class="el-tip" id="el-tip" hidden></div>
+
+		<div class="tu-seo">
+			<h2>A free, neutral elections tracker</h2>
+			<p>MES Elections follows the <strong>2026 US midterm elections</strong> (all 435 House seats, 35 Senate seats and 36 governors on Tuesday 3 November 2026), <strong>Canada&rsquo;s 2025 federal election</strong> and today&rsquo;s House of Commons, the <strong>British Columbia elections of 2024 and 2026</strong>, and a calendar of upcoming elections around the world. It shows official results and the prediction markets&rsquo; own prices next to each other, links every source, and lets you test &ldquo;what if&rdquo; questions yourself: flip any race, shift every race at once, see how many seats would follow the vote under proportional representation, or which parties together reach a majority.</p>
+			<h3>Where the numbers come from</h3>
+			<p>Race-by-race and chamber-control prices: Polymarket (every House, Senate and governor market) and Kalshi (House and Senate control), refreshed about every five minutes. Seats held today and the lists of incumbents and open seats: the Office of the Clerk of the House, Senate and state sources as summarised by Wikipedia and Ballotpedia (checked 27 October 2026). Canada: Elections Canada&rsquo;s validated results of 28 April 2025 and the House of Commons&rsquo; live party standings. British Columbia: Elections BC (2024 final results; the 2026 count live from its results site). The calendar: each country&rsquo;s electoral authority or law, or published reports of them, linked row by row.</p>
+			<h3>What this page does not do</h3>
+			<p>It does not forecast. There is no MES model, no &ldquo;lean&rdquo; or &ldquo;toss-up&rdquo; rating and no polling average. The seat counts in the builder only count the side each market prices highest, or the side you chose; adding up the race prices is labelled as plain arithmetic.</p>
+			<h3>Questions</h3>
+			<h4>When do polls close on 3 November 2026?</h4>
+			<p>The first polls close at 6 pm Eastern (23:00 UTC) in parts of Indiana and Kentucky; the last at 1 am Eastern in western Alaska. Close races, mail ballots and states that count slowly can take days. Louisiana&rsquo;s House races go to a second round on 12 December under its new map, and Georgia holds runoffs when no candidate passes 50%.</p>
+			<h4>How many seats does a party need?</h4>
+			<p>House: 218 of 435. Senate: 51 of 100, or 50 plus the Vice President&rsquo;s tie-breaking vote (the Vice President is JD Vance, a Republican). Governors are not a chamber; the count of 50 is shown for comparison.</p>
+			<h4>Why can the market favourites and the control odds disagree?</h4>
+			<p>Each race market and the control market trade separately, with different traders and amounts of money. Races are also linked (a good night for one party usually lifts it everywhere), which counting favourites one by one cannot show. That is why the page shows both, and the &ldquo;shift every race&rdquo; slider lets you see how many races change hands if the markets are off in one direction.</p>
+			<h4>Why does the Canada page offer a proportional &ldquo;what if&rdquo;?</h4>
+			<p>Canada elects one member per riding, so seat shares can differ from vote shares. Applying a nationwide proportional formula to the actual votes shows how big that gap is. It is only a comparison: under a different system parties would campaign differently and people might vote differently.</p>
+			<h4>Is anything stored about me?</h4>
+			<p>No account and no personal data. Your race choices are kept in your browser&rsquo;s own storage and in the link only when you copy one.</p>
+		</div>
+	</div>
+	<script src="/main_js/panel-view.js?v=1" defer></script>
