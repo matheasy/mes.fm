@@ -227,7 +227,7 @@ def build():
     T = sub1(r'  <script>\s*// playlist-view-toggle.*?</script>\n\n', "", T)
     T = sub1(r'  <script>\s*// view-mode:.*?</script>\n\n', "", T)
     T = sub1(r'  <script>\s*// auto-hide-controls:.*?</script>\n\n', "", T)
-    T = sub1(r'  <script src="https://cdn\.jsdelivr\.net/npm/hls\.js@1/dist/hls\.min\.js"></script>\n  <script>\s*// speak-video-hls:.*?</script>\n\n', "", T)
+    T = sub1(r'  <script src="https://cdn\.jsdelivr\.net/npm/hls\.js@1/dist/hls\.min\.js"></script>\n(?:  <script src="/main_js/video-speed-hold\.js[^"]*" defer></script>\n)?  <script>\s*// speak-video-hls:.*?</script>\n\n', "", T)
     # Jump-to / in-page links must also unfold a collapsed chapter
     T = sub1(r"'\.toc-sidebar a, \.toc-mobile a'", "'.toc-sidebar a, .toc-mobile a, .post-body a[href^=\"#\"]'", T)
     # Jumping to a folded section should open the section itself too, not just its ancestors
@@ -242,8 +242,19 @@ def build():
              "      while (target && (list = target.closest('.chapter-toggle-list'))) {", T)
     return T
 
+# "More like this" rail (main_js/jump-aside.js, family "hutchison" there): the same head / body tags add_jump_aside.py puts on the
+# other Jump-to pages. Idempotent, so a shell that already carries them is left alone.
+JUMP_ASIDE_HEAD = '<!-- JUMP-ASIDE --><link rel="stylesheet" href="/main_js/jump-aside.css?v=1"><!-- /JUMP-ASIDE -->'
+JUMP_ASIDE_JS = '<!-- JUMP-ASIDE-JS --><script src="/main_js/jump-aside.js?v=1" defer></script><!-- /JUMP-ASIDE-JS -->'
+def with_jump_aside(T):
+    if "JUMP-ASIDE" in T:
+        return T
+    T = T.replace("</head>", JUMP_ASIDE_HEAD + "</head>", 1)
+    i = T.rfind("</body>")
+    return T[:i] + JUMP_ASIDE_JS + T[i:]
+
 if __name__ == "__main__":
-    out = build()
+    out = with_jump_aside(build())
     apply = "--apply" in sys.argv
     print(f"{len(out)} bytes -> {os.path.relpath(OUT, ROOT)}" + ("" if apply else "   (dry run; pass --apply to write)"))
     if apply:

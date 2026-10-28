@@ -149,8 +149,19 @@ def build():
         raise SystemExit(f"leftover template text: {left}")
     return T
 
+# "More like this" rail (main_js/jump-aside.js, family "hutchison" there): the same head / body tags add_jump_aside.py puts on the
+# other Jump-to pages. Idempotent, so a shell that already carries them is left alone.
+JUMP_ASIDE_HEAD = '<!-- JUMP-ASIDE --><link rel="stylesheet" href="/main_js/jump-aside.css?v=1"><!-- /JUMP-ASIDE -->'
+JUMP_ASIDE_JS = '<!-- JUMP-ASIDE-JS --><script src="/main_js/jump-aside.js?v=1" defer></script><!-- /JUMP-ASIDE-JS -->'
+def with_jump_aside(T):
+    if "JUMP-ASIDE" in T:
+        return T
+    T = T.replace("</head>", JUMP_ASIDE_HEAD + "</head>", 1)
+    i = T.rfind("</body>")
+    return T[:i] + JUMP_ASIDE_JS + T[i:]
+
 if __name__ == "__main__":
-    out = build()
+    out = with_jump_aside(build())
     apply = "--apply" in sys.argv
     print(f"{len(out)} bytes -> {os.path.relpath(OUT, ROOT)}" + ("" if apply else "   (dry run; pass --apply to write)"))
     if apply:
