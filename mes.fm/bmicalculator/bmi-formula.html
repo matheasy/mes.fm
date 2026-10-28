@@ -481,6 +481,7 @@ sub {vertical-align:sub;}        .warning-message {font-size:1em;text-align:cent
 	#bf .bf-box__t {font-size:0.8em;font-weight:700;text-transform:uppercase;letter-spacing:0.04em;color:#7a2f6b;margin:0 0 0.3em;}
 	#bf .bf-eq {display:block;font-size:1.15em;overflow-x:auto;overflow-y:hidden;padding:0.2em 0;}
 	#bf .bf-eq--s {font-size:1em;}
+	#bf .bf-eq.bf-fit {overflow:visible;}
 	#bf .bf-note {font-size:0.92em;color:#555d68;}
 	#bf .bf-tool {border:1px solid #d9dde3;border-radius:0.6em;padding:0.9em 1em;background:#fff;}
 	#bf .bf-seg {display:inline-flex;border:1px solid #b3529d;border-radius:0.5em;overflow:hidden;margin-bottom:0.7em;}
@@ -619,6 +620,23 @@ sub {vertical-align:sub;}        .warning-message {font-size:1em;text-align:cent
 })();
 </script>
 <script src="/main_js/mes-math.js" defer></script>
+<script>/* BF-EQ-FIT: shrink a formula that is wider than its box (down to 72%) instead of showing a scroll bar */
+(function(){
+  function fit(e){
+    e.style.fontSize=''; e.classList.remove('bf-fit');
+    var cw=e.clientWidth, sw=e.scrollWidth;
+    if(cw && sw>cw+1){
+      var base=parseFloat(getComputedStyle(e).fontSize), k=Math.max(0.72,(cw-2)/sw);
+      e.style.fontSize=(base*k)+'px';
+    }
+    if(e.scrollWidth<=e.clientWidth+1) e.classList.add('bf-fit');
+  }
+  function all(){ Array.prototype.forEach.call(document.querySelectorAll('#bf .bf-eq.mes-tex--done'),fit); }
+  var seen=new WeakSet(), t; function soon(){ clearTimeout(t); t=setTimeout(all,60); }
+  new MutationObserver(function(m){ for(var i=0;i<m.length;i++){ var n=m[i].target; if(n.classList&&n.classList.contains('mes-tex--done')&&!seen.has(n)){ seen.add(n); soon(); return; } } }).observe(document.documentElement,{subtree:true,attributes:true,attributeFilter:['class']});
+  window.addEventListener('resize',soon);
+  var mc=document.getElementById('main-content'); if(mc) new MutationObserver(soon).observe(mc,{attributes:true,attributeFilter:['style']});
+})();</script>
 </div>
 
                                     <!-- PC (Responsive/Rectangle) Matched Content -->
