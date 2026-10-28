@@ -9,22 +9,31 @@
 		<section data-panel="lab" role="tabpanel">
 			<p class="tu-note hx-lead">Lay out a Hutchison lab, switch the equipment on and watch the fields cross. The colours show where the fields of the Tesla coils, Van de Graaff, RF transmitters and spark gaps meet; the samples in that zone may <b>lift, wobble, bend, fracture, glow, smoke or bubble</b>, as in John Hutchison's footage. Start from a preset, then move, turn, add and cable things together.</p>
 			<div class="hx-chips" id="hx-pre" role="group" aria-label="Lab layouts"></div>
-			<div class="hx-bar" id="hx-tools" role="toolbar" aria-label="Floor tools">
-				<button type="button" data-tool="move" aria-pressed="true" title="Select, move and turn (drag the yellow handle)">✥ Move / turn</button>
-				<button type="button" data-tool="cable" aria-pressed="false" title="Click the device that feeds, then the device it feeds">⇢ Cable</button>
-				<button type="button" data-tool="del" aria-pressed="false" title="Click anything to remove it">✕ Remove</button>
-				<span class="hx-note" id="hx-note" aria-live="polite"></span>
-			</div>
+			<p class="tu-note hx-pnote" id="hx-pnote" aria-live="polite"></p>
+			<p class="tu-note hx-how"><b>How to connect devices:</b> press <b>⇢ Connect</b> in the bar over the floor, click the device that <i>feeds</i> (for example the power supply), then the device it <i>feeds</i> (the Tesla coil): a cable with an arrow appears, pointing the way the power or signal flows. Click the same pair again to remove that cable. Cabled devices on the same frequency are phase-locked.</p>
 			<details class="hx-pal-wrap" open><summary>Equipment palette</summary><div class="hx-pal" id="hx-pal" role="group" aria-label="Add equipment"></div></details>
 			<details class="hx-pal-wrap"><summary>Samples palette</summary><div class="hx-pal" id="hx-spal" role="group" aria-label="Add samples"></div></details>
 
 			<div class="hx-wrap"><div class="hx-stage" id="hx-stage">
 				<canvas id="hx-c" tabindex="0" role="img" aria-label="Top-down floor plan of the lab: equipment, cables, samples and a colour map of the fields. Drag things to move them; keys: arrows nudge, R turns, Delete removes, Ctrl+D duplicates."></canvas>
 				<div class="hx-leg" id="hx-leg"></div>
-				<div class="hx-run"><button type="button" id="hx-play" aria-pressed="true">❚❚ Pause</button><button type="button" id="hx-restart" title="Start the experiment clock again">↺ Restart</button><button type="button" id="hx-png" title="Save the floor as a picture" aria-label="Save as PNG">📷</button><button type="button" id="hx-full" title="Full screen" aria-label="Full screen">⛶</button></div>
-				<div class="hx-spd" role="group" aria-label="Speed of the experiment clock"><button type="button" id="hx-slow" aria-label="Slower">−</button><span id="hx-spd-v">60×</span><button type="button" id="hx-fast" aria-label="Faster">+</button></div>
+				<div class="hx-tb" id="hx-tb">
+					<div class="hx-tbrow" id="hx-tools" role="toolbar" aria-label="Floor tools">
+						<span class="hx-grp"><button type="button" data-tool="move" aria-pressed="true" title="Select, move and turn things (drag the yellow handle to turn)">✥ Move</button><button type="button" data-tool="cable" aria-pressed="false" title="Draw a cable with an arrow: click the device that feeds, then the device it feeds">⇢ Connect</button><button type="button" data-tool="del" aria-pressed="false" title="Click anything to remove it">✕ Remove</button></span>
+						<span class="hx-grp"><button type="button" id="hx-addbtn" aria-expanded="false" aria-controls="hx-addpop" title="Add equipment or samples">＋ Add</button><button type="button" id="hx-delsel" title="Remove the selected item (Delete)" hidden>🗑 Delete</button></span>
+						<span class="hx-grp"><button type="button" id="hx-play" aria-pressed="true">❚❚ Pause</button><button type="button" id="hx-restart" title="Start the experiment clock again">↺ Restart</button></span>
+						<span class="hx-grp hx-spd" role="group" aria-label="Speed of the experiment clock" id="hx-spd"></span>
+						<span class="hx-grp" role="group" aria-label="Zoom"><button type="button" id="hx-zout" aria-label="Zoom out" title="Zoom out (Ctrl + scroll, pinch)">−</button><button type="button" id="hx-zfit" title="Fit the whole room (0)">100%</button><button type="button" id="hx-zin" aria-label="Zoom in" title="Zoom in (Ctrl + scroll, pinch); drag the empty floor to pan">+</button></span>
+						<span class="hx-grp"><button type="button" id="hx-views" aria-pressed="true" title="Show where each camera is looking">◭ Camera views</button><button type="button" id="hx-disp" aria-pressed="true" title="Show or hide the camera recording and the readouts under the floor">▤ Displays</button><button type="button" id="hx-png" title="Save the floor as a picture" aria-label="Save as PNG">📷</button><button type="button" id="hx-full" title="Full screen" aria-label="Full screen">⛶</button></span>
+					</div>
+					<div class="hx-tnote" id="hx-note" aria-live="polite"></div>
+				</div>
+				<div class="hx-addpop" id="hx-addpop" hidden>
+					<div class="hx-addh">Equipment <button type="button" id="hx-addx" aria-label="Close">✕</button></div><div class="hx-pal" id="hx-ppal" role="group" aria-label="Add equipment"></div>
+					<div class="hx-addh">Samples</div><div class="hx-pal" id="hx-pspal" role="group" aria-label="Add samples"></div>
+				</div>
 			</div>
-			<div class="hx-camwrap"><canvas id="hx-cam" role="img" aria-label="Target camera: the samples in the active area seen from the side, with interference when the camera sits in a strong field."></canvas></div>
+			<div class="hx-camwrap"><canvas id="hx-cam" role="img" aria-label="Target camera recording: the samples the camera is pointed at, seen from the side, with interference when the camera sits in a strong field."></canvas><canvas id="hx-tl" class="hx-tl" role="img" aria-label="Timeline of the experiment: every event as a dot; click a dot to replay it on the recording."></canvas></div>
 			<div class="hx-readouts">
 				<div class="hx-ro"><span>Pointer</span><b id="hx-r-p">–</b><small>x, y from the top-left corner</small></div>
 				<div class="hx-ro"><span>Field there</span><b id="hx-r-e">–</b><small id="hx-r-es">move over the floor</small></div>
@@ -46,14 +55,15 @@
 						<label class="hx-ck"><input type="checkbox" id="hx-o-cab"> Cables</label>
 						<label class="hx-ck"><input type="checkbox" id="hx-o-lab"> Labels</label>
 						<label class="hx-ck"><input type="checkbox" id="hx-o-ring"> Live rings</label>
-						<label class="hx-ck"><input type="checkbox" id="hx-o-cam"> Target camera</label>
+						<label class="hx-ck"><input type="checkbox" id="hx-o-cam"> Camera recording</label>
+						<label class="hx-ck"><input type="checkbox" id="hx-o-view"> Camera views</label>
 					</div>
 					<div class="hx-room">
 						<label>Room <input type="number" id="hx-rw" class="tu-input" min="2" max="60" step="0.1" aria-label="Room width in metres"> × <input type="number" id="hx-rh" class="tu-input" min="2" max="60" step="0.1" aria-label="Room depth in metres"> m</label>
 					</div>
 					<div class="tu-field"><span class="tu-label" id="hx-rr-l">Walls and metal gear reflect RF: <b id="hx-rr-v"></b></span><input type="range" id="hx-rr" min="0" max="0.9" step="0.05" aria-labelledby="hx-rr-l"><span class="tu-note">For RF above 1 MHz: first reflections off the four walls (standing waves).</span></div>
 					<div class="hx-checks"><button type="button" class="tu-btn tu-btn--ghost" id="hx-link">🔗 Copy link to this layout</button></div>
-					<p class="tu-note">Keys on the floor: arrows nudge (Shift = 1 m), <b>R</b> turns, <b>Delete</b> removes, <b>Ctrl+D</b> duplicates, <b>Space</b> runs / pauses, <b>Esc</b> cancels.</p>
+					<p class="tu-note">Keys on the floor: arrows nudge (Shift = 1 m), <b>R</b> turns, <b>[</b> <b>]</b> turn a camera by 5° (Alt + Up / Down widens or narrows its view), <b>Delete</b> removes, <b>Ctrl+D</b> duplicates, <b>Space</b> runs / pauses, <b>+</b> / <b>−</b> / <b>0</b> zoom, <b>Esc</b> cancels. Drag the empty floor to pan when zoomed in; Ctrl + scroll or pinch zooms.</p>
 				</div>
 			</div>
 
@@ -123,12 +133,12 @@
 			<p>The simulator has two layers. The <strong>fields</strong> are ordinary electromagnetism on a floor plan: every device is a point source with an electrode field that falls as 1/r², an RF part that is reactive close to the antenna and radiates farther out, a magnetic dipole part that falls as 1/r³, a frequency and a phase. Devices on the same frequency that are cabled together share a phase and interfere (fixed nodes and antinodes); free-running ones drift. RF above 1 MHz can reflect off the walls. The <strong>effects</strong> are a best-estimate model fitted to the reports above: a "Hutchison drive" between 0 and 1 that grows with the field strength, with how many sources meet with similar strength, with how many different frequencies cross, with a DC bias (the Van de Graaff) and with spark-gap pulses; and for every sample an event rate per hour for each effect, scaled by its material and its mass. The model is calibrated so that a LADS-like active area gives roughly one event an hour after a 20-minute warm-up, in line with Hutchison's 1989 rate and Hathaway's 1993 goal.</p>
 			<div class="hx-eq" role="math" aria-label="Key equations">
 				<div><span class="hx-eq__n">electrode field</span> <span class="hx-eq__f mes-tex">\(\displaystyle E_i(r) = \frac{V_i\,a_i}{r^2}\)</span></div>
-				<div><span class="hx-eq__n">antenna field</span> <span class="hx-eq__f mes-tex">\(\displaystyle E_i(r) = \frac{\sqrt{60\,P_{\mathrm{rad}}\,G(\theta)}}{r}\sqrt{1 + \frac{1}{(kr)^2} + \frac{1}{(kr)^4}},\quad k = \frac{2\pi f}{c}\)</span></div>
+				<div><span class="hx-eq__n">antenna field</span> <span class="hx-eq__f mes-tex">\(\displaystyle \begin{aligned} E_i(r) &= \frac{\sqrt{60\,P_{\mathrm{rad}}\,G(\theta)}}{r}\sqrt{1 + \frac{1}{(kr)^2} + \frac{1}{(kr)^4}} \\ k &= \frac{2\pi f}{c} \end{aligned}\)</span></div>
 				<div><span class="hx-eq__n">coil field</span> <span class="hx-eq__f mes-tex">\(\displaystyle B_i(r) = \frac{\mu_0}{4\pi}\,\frac{2\,N I \pi R^2}{r^3}\)</span></div>
-				<div><span class="hx-eq__n">locked sources add</span> <span class="hx-eq__f mes-tex">\(\displaystyle \vec E_g = \sum_{i \in g} E_i\,\hat r_i\,e^{\,i(\varphi_i - k r_i)},\qquad E_{\mathrm{rms}} = \sqrt{\sum_g \tfrac12 |\vec E_g|^2 + |\vec E_{\mathrm{DC}}|^2}\)</span></div>
+				<div><span class="hx-eq__n">locked sources add</span> <span class="hx-eq__f mes-tex">\(\displaystyle \begin{aligned} \vec E_g &= \sum_{i \in g} E_i\,\hat r_i\,e^{\,i(\varphi_i - k r_i)} \\ E_{\mathrm{rms}} &= \sqrt{\sum_g \tfrac12 |\vec E_g|^2 + |\vec E_{\mathrm{DC}}|^2} \end{aligned}\)</span></div>
 				<div><span class="hx-eq__n">overlap</span> <span class="hx-eq__f mes-tex">\(\displaystyle N_{\mathrm{eff}} = \frac{\left(\sum_i |E_i|\right)^2}{\sum_i |E_i|^2}\)</span></div>
-				<div><span class="hx-eq__n">drive</span> <span class="hx-eq__f mes-tex">\(\displaystyle D = 1 - e^{-H/3},\quad H = \sqrt{\left(\tfrac{E}{10\ \mathrm{kV/m}}\right)^2 + \left(\tfrac{B}{100\ \mu\mathrm{T}}\right)^2}\,\big(1 + 0.6\,(N_{\mathrm{eff}}-1)\big)\big(1 + 0.25\,(S-1)\big)\,b_{\mathrm{DC}}\,(1 + 0.5\,p)\)</span></div>
-				<div><span class="hx-eq__n">event rate</span> <span class="hx-eq__f mes-tex">\(\displaystyle \lambda_{e} = \lambda_{e,0}\; s_{e}(\text{material})\; D^{2.2}\; m_e(\text{mass})\;\big(1 - e^{-t/20\,\mathrm{min}}\big)\)</span></div>
+				<div><span class="hx-eq__n">drive</span> <span class="hx-eq__f mes-tex">\(\displaystyle \begin{aligned} D &= 1 - e^{-H/3} \\ H &= \sqrt{E_n^2 + B_n^2}\;\big(1 + 0.6\,(N_{\mathrm{eff}}-1)\big) \\ &\quad\times \big(1 + 0.25\,(S-1)\big)\,b_{\mathrm{DC}}\,(1 + 0.5\,p) \\ E_n &= \tfrac{E}{10\ \mathrm{kV/m}},\quad B_n = \tfrac{B}{100\ \mu\mathrm{T}} \end{aligned}\)</span></div>
+				<div><span class="hx-eq__n">event rate</span> <span class="hx-eq__f mes-tex">\(\displaystyle \begin{aligned} \lambda_{e} &= \lambda_{e,0}\; s_{e}(\text{material})\; D^{2.2} \\ &\quad\times m_e(\text{mass})\;\big(1 - e^{-t/20\,\mathrm{min}}\big) \end{aligned}\)</span></div>
 			</div>
 			<p>S counts the different frequencies, the DC part, modulation sidebands and spark pulses that meet at a point; b<sub>DC</sub> is up to 1.6 when a DC field sits under the AC fields; p is the spark-gap pulse factor. The ordinary field pull shown for each sample is the electrostatic pressure ε₀E²/2 on its top face compared with its weight: it shows how far the reported lifts are beyond ordinary field forces.</p>
 
@@ -145,6 +155,10 @@
 			<p>More: <a href="/hutchison">MES Hutchison Effect hub</a> · <a href="/highlights">Highlights</a> · <a href="/hutchison-unedited-footage">Unedited footage</a> · <a href="/hutchison-interviews">Interviews and presentations</a> · <a href="/hutchison-news">News reels</a> · <a href="/hutchison-articles">Articles</a> · <a href="/hutchison-nancy-physics-system">Nancy Hutchison: John Hutchison and the Physics of the System</a> · <a href="/ufo">UFO Replication build log</a> · <a href="/electromagnetic-fields-simulator">Electromagnetic Fields Simulator</a> · <a href="/grounding-rod-simulator">Ground Rod &amp; Earthing Simulator</a> · <a href="/tools">More MES tools</a></p>
 			<h3>Questions</h3>
 			<dl>
+				<dt>How do I see where a camera is looking?</dt>
+				<dd>Press <b>◭ Camera views</b>: every camera gets a coloured wedge across the floor up to the walls. Drag the round handle at the end of the wedge to turn the camera, and the small square on its edge to make the view wider or narrower (or select the camera and press [ and ], Alt + Up / Down). The items the camera sees get a dashed ring, and the recording under the floor shows only the samples inside its view, from left to right as the camera sees them. Click a camera to record with it.</dd>
+				<dt>Why does the recording drop out?</dt>
+				<dd>Cameras glitch when the AC field at the camera passes their immunity (about 3-10 V/m for consumer gear). The picture gets snow and torn lines that grow with the field, and short dropouts that come more often in stronger fields and with every spark-gap shot, as in Hutchison's 1980s footage. Move the camera further away, or raise its immunity (shielded gear), for a clean picture. The timeline under the recording marks every event; click a dot (or "replay" in the event log) to watch it again.</dd>
 				<dt>Which equipment did Hutchison use?</dt>
 				<dd>Tesla coils (a large spark-gap coil, a small coil driven by twin 807 tubes, a double-ended dumbbell coil), Van de Graaff generators, high-voltage DC supplies, spark gaps and capacitor banks, tank circuits and tuning capacitors, inductors and toroid coils, RF transmitters and signal generators, a field shaper, and in later years electronics salvaged from Canadian Navy ships. The Equipment tab has a card for each.</dd>
 				<dt>Why does the effect need several sources?</dt>

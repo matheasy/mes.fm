@@ -316,7 +316,7 @@ APPS = {
     "hutchison-effect-simulator": dict(title="MES Hutchison Effect Simulator", page_title="Hutchison Effect Simulator: Tesla Coils, Fields and Levitation",
                                        tag="Cross the fields. Watch the samples.", accent="#b45309", dark="#92400e", tint="#fef3c7",
                                        desc="A free Hutchison Effect simulator: lay out John Hutchison's apparatus (Tesla coils, Van de Graaff, RF transmitters, spark gaps, tank circuits, inductors, field shaper), see where their fields cross, and watch samples levitate, bend like jelly, fracture, glow, smoke and bubble. Includes George Hathaway's LADS Phase I lab, a schematic view and an equipment guide for planning a replication.",
-                                       js_v="1"),
+                                       js_v="2"),
     # Double Pendulum: live chaotic pendulum (RK4, copies for the butterfly effect, angle and divergence graphs, Lyapunov estimate) + a flip-time chaos map of every starting pair of angles
     # (lib.js node-tested: tool_apps_src/double-pendulum-tests.js). Normal-width page in the tools sidebar collection, Wide by default.
     "double-pendulum": dict(title="MES Double Pendulum", page_title="Double Pendulum Simulator: Chaos and the Butterfly Effect",

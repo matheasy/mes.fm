@@ -10,17 +10,20 @@
 	var reduce = window.matchMedia && window.matchMedia("(prefers-reduced-motion: reduce)").matches;
 
 	/* ================= state ================= */
-	var st = null, ui = {tool: "move", sel: null, add: null, map: "D", speed: 60, run: true, opts: {cab: true, lab: true, cam: true, arr: false, ring: true}, cableFrom: null, tab: "lab"}, simT = 0, events = [], anims = [], parts = [], gapNext = {}, ostate = {}, rnd = H.rng(1989), idn = 0;
+	var SPEEDS = [1, 10, 60, 600, 3600];
+	function nearestSpeed(v) { var best = 60; SPEEDS.forEach(function (x) { if (Math.abs(Math.log(x / v)) < Math.abs(Math.log(best / v))) best = x; }); return isFinite(v) && v > 0 ? best : 60; }
+	var st = null, ui = {tool: "move", sel: null, add: null, map: "D", speed: 60, run: true, opts: {cab: true, lab: true, cam: true, arr: false, ring: true, view: true, disp: true}, cableFrom: null, tab: "lab", recCam: null}, zm = {z: 1, px: 0, py: 0}, view0 = {s: 40, ox: 20, oy: 20}, VB = 0, simT = 0, events = [], anims = [], parts = [], gapNext = {}, ostate = {}, rnd = H.rng(1989), idn = 0;
 	function newId() { var id; do { id = "u" + (++idn).toString(36); } while (st.items.some(function (d) { return d.id === id; })); return id; }
 	function byId(id) { for (var i = 0; i < st.items.length; i++) if (st.items[i].id === id) return st.items[i]; return null; }
-	function loadPreset(k) { var P = H.PRESETS[k]; st = P.build(); st.preset = k; resetRun(); ui.sel = null; dirty(true); renderAll(); note(P.note); }
+	function loadPreset(k) { var P = H.PRESETS[k]; st = P.build(); st.preset = k; resetRun(); ui.sel = null; ui.recCam = null; zm = {z: 1, px: 0, py: 0}; dirty(true); renderAll(); pnote(P.note); }
+	function pnote(t) { var n = $("hx-pnote"); if (n) n.textContent = t || ""; }
 	function resetRun() { simT = 0; events = []; anims = []; parts = []; gapNext = {}; ostate = {}; rnd = H.rng(1989); }
 	function save() { try { localStorage.setItem(KEY, JSON.stringify({s: H.pack(st), ui: {map: ui.map, speed: ui.speed, opts: ui.opts}})); } catch (e) { /* ignore */ } }
 	var saveT = 0; function saveSoon() { clearTimeout(saveT); saveT = setTimeout(save, 400); }
 	function init() {
 		var q = new URLSearchParams(location.search), s = q.get("s"), saved = null;
 		try { saved = JSON.parse(localStorage.getItem(KEY) || "null"); } catch (e) { /* ignore */ }
-		if (saved && saved.ui) { if (saved.ui.map) ui.map = saved.ui.map; if (saved.ui.speed) ui.speed = saved.ui.speed; if (saved.ui.opts) Object.keys(ui.opts).forEach(function (k) { if (saved.ui.opts[k] != null) ui.opts[k] = !!saved.ui.opts[k]; }); }
+		if (saved && saved.ui) { if (saved.ui.map) ui.map = saved.ui.map; if (saved.ui.speed) ui.speed = nearestSpeed(+saved.ui.speed); if (saved.ui.opts) Object.keys(ui.opts).forEach(function (k) { if (saved.ui.opts[k] != null) ui.opts[k] = !!saved.ui.opts[k]; }); }
 		if (s) st = H.decode(s);
 		if (!st && q.get("p") && H.PRESETS[q.get("p")]) { st = H.PRESETS[q.get("p")].build(); st.preset = q.get("p"); }
 		if (!st && saved && saved.s) st = H.unpack(saved.s);
@@ -123,19 +126,41 @@
 	var camC = $("hx-cam"), camX = camC.getContext("2d"), CW = 800, CH = 200;
 	function layout() {
 		var wrap = stage.parentNode, w = wrap.clientWidth || 800; dpr = Math.min(2, window.devicePixelRatio || 1);
+		stage.style.width = w + "px";
+		var tb = $("hx-tb"), band = tb ? tb.offsetHeight : 0;
 		var asp = Math.max(1.1, Math.min(2.2, st.room.w / st.room.h)), h = Math.round(w / asp + 24);
-		wrap.setAttribute("data-mes-free", "1"); if (window.MESStage && window.MESStage.sh) h = window.MESStage.sh(stage, h);
 		var fullish = document.fullscreenElement === wrap || wrap.classList.contains("mes-fill");
+		if (w < 600 && !fullish) h = Math.max(h, Math.round(w * 0.82));
+		h += band;   // the toolbar sits over the top of the stage: the floor is drawn below it, never under it
+		wrap.setAttribute("data-mes-free", "1"); if (window.MESStage && window.MESStage.sh) h = window.MESStage.sh(stage, h);
 		if (fullish) h = window.MESStage && window.MESStage.fillH ? window.MESStage.fillH(wrap) : window.innerHeight - 260;
-		if (w < 600 && !fullish) h = Math.max(h, Math.round(w * 0.82));   // phones: room for the controls over the floor
-		h = Math.max(260, h);
-		stage.style.width = w + "px"; stage.style.height = h + "px"; W = w; Hh = h;
+		h = Math.max(260 + band, h);
+		stage.style.height = h + "px"; W = w; Hh = h; VB = band;
 		var cw = Math.round(w * dpr), ch = Math.round(h * dpr); if (cv.width !== cw || cv.height !== ch) { cv.width = cw; cv.height = ch; }
-		var pad = 26, s = Math.min((w - 2 * pad) / st.room.w, (h - 2 * pad - 10) / st.room.h); view = {s: s, ox: (w - s * st.room.w) / 2, oy: (h - s * st.room.h) / 2 + 4};
-		camC.parentNode.style.display = ui.opts.cam ? "" : "none";
+		var pad = 26, avail = h - band, s = Math.max(1, Math.min((w - 2 * pad) / st.room.w, (avail - 2 * pad - 10) / st.room.h)); view0 = {s: s, ox: (w - s * st.room.w) / 2, oy: band + (avail - s * st.room.h) / 2 + 4};
+		applyView();
+		var lg = $("hx-leg"); if (lg) lg.style.top = (band + 6) + "px";
+		var pop = $("hx-addpop"); if (pop) { pop.style.top = (band + 4) + "px"; pop.style.maxHeight = Math.max(120, h - band - 12) + "px"; }
+		var showCam = ui.opts.cam && ui.opts.disp; camC.parentNode.style.display = showCam ? "" : "none";
+		var ro = root.querySelector(".hx-readouts"); if (ro) ro.style.display = ui.opts.disp ? "" : "none";
 		CW = w; CH = Math.round(Math.max(150, Math.min(260, w * 0.28))); camC.style.height = CH + "px"; camC.width = Math.round(CW * dpr); camC.height = Math.round(CH * dpr);
-		drawCharts();
+		var tl = $("hx-tl"); if (tl) { tl.width = Math.round(CW * dpr); tl.height = Math.round(38 * dpr); }
+		drawCharts(); drawTL();
 	}
+	/* zoom and pan: view0 = the whole room fitted below the toolbar; zm scales it about the middle of the floor area and shifts it */
+	function applyView() {
+		var cx0 = W / 2, cy0 = VB + (Hh - VB) / 2;
+		view = {s: view0.s * zm.z, ox: cx0 + (view0.ox - cx0) * zm.z + zm.px, oy: cy0 + (view0.oy - cy0) * zm.z + zm.py};
+		var b = $("hx-zfit"); if (b) b.textContent = Math.round(zm.z * 100) + "%";
+	}
+	function zoomAt(f, sx, sy) {
+		if (sx == null) { sx = W / 2; sy = VB + (Hh - VB) / 2; }
+		var m = toM(sx, sy); zm.z = H.clamp(zm.z * f, 0.5, 12); applyView();
+		var p2 = toPx(m[0], m[1]); zm.px += sx - p2[0]; zm.py += sy - p2[1];
+		if (Math.abs(zm.z - 1) < 1e-6) { zm.px = 0; zm.py = 0; }
+		applyView();
+	}
+	function zoomFit() { zm = {z: 1, px: 0, py: 0}; applyView(); }
 	function toPx(x, y) { return [view.ox + x * view.s, view.oy + y * view.s]; }
 	function toM(px, py) { return [(px - view.ox) / view.s, (py - view.oy) / view.s]; }
 	function itemR(d) { var T = DEV[d.t]; if (d.t === "sample") return Math.max(9, 0.22 * view.s); return Math.max(11, (T ? T.size : 0.5) * view.s * 0.5); }
@@ -156,9 +181,11 @@
 		c.save(); c.translate(p0[0] - 12, p0[1] + sh / 2); c.rotate(-Math.PI / 2); c.fillText(r.h.toFixed(1) + " m", 0, 0); c.restore();
 		// areas and zones first
 		st.items.forEach(function (d) { if (d.t === "area" || d.t === "zone") drawArea(c, d); });
+		if (ui.opts.view) drawViews(c);
 		if (ui.opts.cab) drawCables(c, now);
 		st.items.forEach(function (d) { if (d.t !== "area" && d.t !== "zone" && d.t !== "sample") drawDevice(c, d, now); });
 		samples().forEach(function (d) { drawSampleTop(c, d, now); });
+		if (ui.opts.view) drawSeen(c);
 		// sparks while a gap fires
 		Object.keys(flash).forEach(function (id) { var d = byId(id), age = (now - flash[id]) / 1000; if (!d || age > 0.45) { delete flash[id]; return; } var p = toPx(d.x, d.y); c.save(); c.globalAlpha = 1 - age / 0.45; var g = c.createRadialGradient(p[0], p[1], 2, p[0], p[1], 60); g.addColorStop(0, "rgba(255,240,255,0.9)"); g.addColorStop(1, "rgba(200,120,255,0)"); c.fillStyle = g; c.beginPath(); c.arc(p[0], p[1], 60, 0, TAU); c.fill(); c.restore(); });
 		drawParts(c, "floor");
@@ -207,7 +234,7 @@
 		sym(c, d.t, p[0], p[1], R * 1.45, col);
 		if (d.t === "rf_tx" || d.t === "fieldshaper" || d.t === "camera") {   // pointing direction
 			c.strokeStyle = col; c.fillStyle = col; c.lineWidth = 2; var ax = p[0] + Math.cos(rot) * (R + 12), ay = p[1] + Math.sin(rot) * (R + 12);
-			if (d.t === "camera") { c.globalAlpha = 0.18; c.beginPath(); c.moveTo(p[0], p[1]); c.arc(p[0], p[1], R + 60, rot - 0.4, rot + 0.4); c.closePath(); c.fill(); c.globalAlpha = 1; }
+			if (d.t === "camera") { if (!ui.opts.view) { c.globalAlpha = 0.18; c.beginPath(); c.moveTo(p[0], p[1]); c.arc(p[0], p[1], R + 60, rot - 0.4, rot + 0.4); c.closePath(); c.fill(); c.globalAlpha = 1; } }
 			else { c.beginPath(); c.moveTo(p[0] + Math.cos(rot) * R, p[1] + Math.sin(rot) * R); c.lineTo(ax, ay); c.stroke(); c.beginPath(); c.moveTo(ax + Math.cos(rot) * 5, ay + Math.sin(rot) * 5); c.lineTo(ax + Math.cos(rot + 2.5) * 6, ay + Math.sin(rot + 2.5) * 6); c.lineTo(ax + Math.cos(rot - 2.5) * 6, ay + Math.sin(rot - 2.5) * 6); c.closePath(); c.fill(); }
 		}
 		if (d.t === "camera" || d.t === "meter" || d.t === "operator") {   // instrument status
@@ -215,9 +242,48 @@
 			if (risk > 0.05) { c.fillStyle = risk > 0.5 ? "#ef4444" : "#f59e0b"; c.beginPath(); c.arc(p[0] + R * 0.75, p[1] - R * 0.75, 4.5, 0, TAU); c.fill(); }
 		}
 		if (showLab(d)) { c.fillStyle = d.on === false ? "#6b7280" : "#e5e7eb"; c.font = "600 11px system-ui,sans-serif"; c.textAlign = "center"; c.textBaseline = "top"; label(c, nameOf(d), p[0], p[1] + R + 3); c.textBaseline = "alphabetic"; }
-		if (sel && (d.t === "rf_tx" || d.t === "fieldshaper" || d.t === "camera" || d.t === "tesla_dumbbell" || d.t === "sample")) { var hp = rotHandle(d); c.strokeStyle = "#fff"; c.setLineDash([3, 3]); c.beginPath(); c.moveTo(p[0], p[1]); c.lineTo(hp[0], hp[1]); c.stroke(); c.setLineDash([]); c.fillStyle = "#fde047"; c.beginPath(); c.arc(hp[0], hp[1], 6, 0, TAU); c.fill(); }
+		if (sel && (d.t === "rf_tx" || d.t === "fieldshaper" || (d.t === "camera" && !ui.opts.view) || d.t === "tesla_dumbbell" || d.t === "sample")) { var hp = rotHandle(d); c.strokeStyle = "#fff"; c.setLineDash([3, 3]); c.beginPath(); c.moveTo(p[0], p[1]); c.lineTo(hp[0], hp[1]); c.stroke(); c.setLineDash([]); c.fillStyle = "#fde047"; c.beginPath(); c.arc(hp[0], hp[1], 6, 0, TAU); c.fill(); }
 		if (ui.cableFrom === d.id) { c.strokeStyle = "#fde047"; c.lineWidth = 3; c.beginPath(); c.arc(p[0], p[1], R + 5, 0, TAU); c.stroke(); }
 		c.restore();
+	}
+	/* ================= camera views ================= */
+	var CAMCOL = ["#fde047", "#5eead4", "#f9a8d4", "#93c5fd", "#fdba74", "#c4b5fd"];
+	function cams() { return st.items.filter(function (d) { return d.t === "camera"; }); }
+	function camIndex(d) { return Math.max(0, cams().indexOf(d)); }
+	function camCol(d) { return CAMCOL[camIndex(d) % CAMCOL.length]; }
+	function rgba(hex, a) { var n = parseInt(hex.slice(1), 16); return "rgba(" + ((n >> 16) & 255) + "," + ((n >> 8) & 255) + "," + (n & 255) + "," + a + ")"; }
+	function viewHandles(d) {
+		var p = toPx(d.x, d.y), a = (+d.rot || 0) * Math.PI / 180, h = H.camFov(d) * Math.PI / 360, wd = H.wallDist(st.room, d.x, d.y, a) * view.s;
+		var L = Math.max(itemR(d) + 28, Math.min(wd * 0.7, 120)), Lf = L * 0.8;
+		return {rot: [p[0] + Math.cos(a) * L, p[1] + Math.sin(a) * L], fov: [p[0] + Math.cos(a - h) * Lf, p[1] + Math.sin(a - h) * Lf]};
+	}
+	function focusCam() { var d = ui.sel ? byId(ui.sel) : null; return d && d.t === "camera" ? d : recCam(); }
+	function drawViews(c) {
+		var fc = focusCam();
+		cams().forEach(function (d) {
+			var col = camCol(d), off = d.on === false, foc = d === fc, poly = H.viewPoly(d, st.room, 40).map(function (q) { return toPx(q[0], q[1]); });
+			c.save(); c.fillStyle = rgba(col, off ? 0.04 : foc ? 0.14 : 0.08); c.beginPath(); c.moveTo(poly[0][0], poly[0][1]); for (var i = 1; i < poly.length; i++) c.lineTo(poly[i][0], poly[i][1]); c.closePath(); c.fill();
+			c.strokeStyle = rgba(col, off ? 0.35 : 0.85); c.lineWidth = foc ? 2 : 1.3; c.setLineDash([6, 4]); c.beginPath(); c.moveTo(poly[0][0], poly[0][1]); c.lineTo(poly[1][0], poly[1][1]); c.moveTo(poly[0][0], poly[0][1]); c.lineTo(poly[poly.length - 1][0], poly[poly.length - 1][1]); c.stroke();
+			var a = (+d.rot || 0) * Math.PI / 180, wd = H.wallDist(st.room, d.x, d.y, a) * view.s; c.setLineDash([2, 4]); c.strokeStyle = rgba(col, 0.5); c.beginPath(); c.moveTo(poly[0][0], poly[0][1]); c.lineTo(poly[0][0] + Math.cos(a) * wd, poly[0][1] + Math.sin(a) * wd); c.stroke(); c.setLineDash([]);
+			var hd = viewHandles(d);
+			c.fillStyle = "#0b0f17"; c.beginPath(); c.arc(hd.rot[0], hd.rot[1], 9, 0, TAU); c.fill(); c.fillStyle = col; c.beginPath(); c.arc(hd.rot[0], hd.rot[1], 7, 0, TAU); c.fill();
+			c.strokeStyle = "#0b0f17"; c.lineWidth = 1.5; c.beginPath(); c.moveTo(hd.rot[0] - 3.5, hd.rot[1]); c.lineTo(hd.rot[0] + 3.5, hd.rot[1]); c.moveTo(hd.rot[0], hd.rot[1] - 3.5); c.lineTo(hd.rot[0], hd.rot[1] + 3.5); c.stroke();
+			c.fillStyle = "#0b0f17"; c.fillRect(hd.fov[0] - 6, hd.fov[1] - 6, 12, 12); c.fillStyle = "#f8fafc"; c.fillRect(hd.fov[0] - 4.5, hd.fov[1] - 4.5, 9, 9);
+			c.font = "600 11px system-ui,sans-serif"; c.textAlign = "center"; c.textBaseline = "top"; c.fillStyle = col; label(c, "Cam " + (camIndex(d) + 1) + " · " + Math.round(H.camFov(d)) + "°", hd.rot[0], hd.rot[1] + 11); c.textBaseline = "alphabetic";
+			c.restore();
+		});
+	}
+	function drawSeen(c) {
+		var fc = focusCam(); if (!fc) return; var sees = H.camSees(st, fc), col = camCol(fc);
+		c.save(); c.strokeStyle = col; c.lineWidth = 1.6; c.setLineDash([3, 3]);
+		sees.ids.forEach(function (id) { var d = byId(id); if (!d) return; var p = toPx(d.x, d.y); c.beginPath(); c.arc(p[0], p[1], itemR(d) + 6, 0, TAU); c.stroke(); });
+		sees.zones.forEach(function (z) { var d = byId(z.id); if (!d) return; var p = toPx(d.x - d.w / 2, d.y - d.h / 2); c.lineWidth = 2.2; c.strokeRect(p[0] - 3, p[1] - 3, d.w * view.s + 6, d.h * view.s + 6); });
+		c.restore();
+	}
+	function seesText(d) {
+		var s0 = H.camSees(st, d), nS = 0, nD = 0; s0.ids.forEach(function (id) { var o = byId(id); if (!o) return; if (o.t === "sample") nS++; else nD++; });
+		var z = s0.zones.filter(function (q) { var o = byId(q.id); return o && o.t === "zone"; })[0];
+		return "Sees " + nS + " sample" + (nS === 1 ? "" : "s") + " and " + nD + " other item" + (nD === 1 ? "" : "s") + (z ? "; " + Math.round(z.cover * 100) + "% of the active area" : "; not the active area") + ".";
 	}
 	function label(c, t, x, y) { var w = c.measureText(t).width; c.save(); c.fillStyle = "rgba(7,9,15,0.72)"; c.fillRect(x - w / 2 - 3, y - 1, w + 6, 14); c.restore(); c.fillText(t, x, y); }
 	// on a small floor (a phone) only the selected item, the hovered one and the zones keep their labels
@@ -274,34 +340,64 @@
 
 	/* ================= the target camera (side view) ================= */
 	var camCur = null;
-	function camDevice() { var cams = st.items.filter(function (d) { return d.t === "camera" && d.on !== false; }); return cams[0] || null; }
+	function recCam() {
+		var cs = cams().filter(function (d) { return d.on !== false; }), sd = ui.sel ? byId(ui.sel) : null;
+		if (sd && sd.t === "camera" && sd.on !== false) { ui.recCam = sd.id; return sd; }
+		if (ui.recCam) { var r = byId(ui.recCam); if (r && r.t === "camera" && r.on !== false) return r; }
+		return cs[0] || null;
+	}
+	function camDevice() { return recCam(); }
 	function camSamples() {
+		var cam = recCam();
+		if (cam) return samples().filter(function (d) { return H.inView(cam, d.x, d.y); }).sort(function (a, b) { return H.viewAngle(cam, a.x, a.y) - H.viewAngle(cam, b.x, b.y); }).slice(0, 8);
 		var z = zone(), list = samples();
 		if (z) { var inZ = list.filter(function (d) { return Math.abs(d.x - z.x) <= z.w / 2 + 0.2 && Math.abs(d.y - z.y) <= z.h / 2 + 0.2; }); if (inZ.length) list = inZ; }
 		return list.slice().sort(function (a, b) { return a.x - b.x; }).slice(0, 8);
 	}
+	function seedOf(d) { var h = 7; String(d.id).split("").forEach(function (ch) { h = (h * 31 + ch.charCodeAt(0)) | 0; }); return h; }
+	var replay = null;
 	function drawCam(now) {
-		if (!ui.opts.cam) return; var c = camX; c.setTransform(dpr, 0, 0, dpr, 0, 0);
-		var cam = camDevice(), fa = cam ? H.fieldAt(src, cam.x, cam.y) : null, risk = cam ? H.emfRisk(fa.Eac, +cam.imm || 10) : 0;
+		if (!ui.opts.cam || !ui.opts.disp) return; var c = camX; c.setTransform(dpr, 0, 0, dpr, 0, 0);
+		var cam = recCam(), fa = cam ? H.fieldAt(src, cam.x, cam.y) : null, imm = cam ? (+cam.imm || 10) : 10, noise = cam ? H.camNoise(fa.Eac, imm) : 0;
 		var bg = c.createLinearGradient(0, 0, 0, CH); bg.addColorStop(0, "#151a22"); bg.addColorStop(1, "#05070b"); c.fillStyle = bg; c.fillRect(0, 0, CW, CH);
-		// coils in the background (silhouettes of the nearest live high-voltage gear)
-		var hv = st.items.filter(function (d) { return d.on !== false && DEV[d.t] && /hv|dc/.test(DEV[d.t].kind); }).slice(0, 4);
-		hv.forEach(function (d, i) { var x = CW * (0.12 + 0.76 * (i + 0.5) / Math.max(1, hv.length)), sz = CH * 0.55; c.globalAlpha = 0.28; sym(c, d.t, x, CH * 0.38, sz, "#94a3b8"); c.globalAlpha = 1; if (d.on !== false && Math.random() < 0.06) { c.strokeStyle = "rgba(200,180,255,0.7)"; c.lineWidth = 1; c.beginPath(); var yx = x, yy = CH * 0.12; c.moveTo(yx, yy); for (var k = 0; k < 6; k++) { yx += (Math.random() - 0.5) * 30; yy += 10; c.lineTo(yx, yy); } c.stroke(); } });
-		// table
+		// the high-voltage gear this camera can see, as silhouettes behind the table
+		var hv = st.items.filter(function (d) { return d.on !== false && DEV[d.t] && /hv|dc/.test(DEV[d.t].kind) && (!cam || H.inView(cam, d.x, d.y)); }).slice(0, 4);
+		hv.forEach(function (d, i) { var x = cam ? CW * (0.5 + 0.9 * H.viewAngle(cam, d.x, d.y) / H.camFov(cam)) : CW * (0.12 + 0.76 * (i + 0.5) / Math.max(1, hv.length)), sz = CH * 0.55; c.globalAlpha = 0.28; sym(c, d.t, x, CH * 0.38, sz, "#94a3b8"); c.globalAlpha = 1; if (Math.random() < 0.06) { c.strokeStyle = "rgba(200,180,255,0.7)"; c.lineWidth = 1; c.beginPath(); var yx = x, yy = CH * 0.12; c.moveTo(yx, yy); for (var k = 0; k < 6; k++) { yx += (Math.random() - 0.5) * 30; yy += 10; c.lineTo(yx, yy); } c.stroke(); } });
 		var ty = CH * 0.78; c.fillStyle = "#3f2e1e"; c.fillRect(CW * 0.04, ty, CW * 0.92, 8); c.fillStyle = "#2a1f15"; c.fillRect(CW * 0.08, ty + 8, 8, CH - ty); c.fillRect(CW * 0.9, ty + 8, 8, CH - ty);
 		var list = camSamples(), n = list.length;
 		list.forEach(function (d, i) { drawSampleSide(c, d, CW * (0.1 + 0.8 * (i + 0.5) / Math.max(1, n)), ty, Math.min(CW / Math.max(4, n) * 0.55, CH * 0.38), now); });
 		drawParts(c, "cam");
-		// EMF interference on the picture
-		if (cam && risk > 0.02 && !reduce) {
-			var g = risk * (0.5 + 0.5 * Math.random());
-			if (Math.random() < g * 0.7) { var by = Math.random() * CH, bh = 4 + Math.random() * 30 * g, sh = (Math.random() - 0.5) * 60 * g; try { c.drawImage(camC, 0, by * dpr, CW * dpr, bh * dpr, sh, by, CW, bh); } catch (e) { /* ignore */ } }
-			c.fillStyle = "rgba(255,255,255," + 0.06 * g + ")"; for (var k = 0; k < 40 * g; k++) c.fillRect(Math.random() * CW, Math.random() * CH, Math.random() * 40, 1);
-			if (Math.random() < g * g * 0.25) { c.fillStyle = "rgba(0,0,0,0.85)"; c.fillRect(0, 0, CW, CH); c.fillStyle = "#e5e7eb"; c.font = "700 14px ui-monospace,monospace"; c.textAlign = "center"; c.fillText("SIGNAL DROPOUT", CW / 2, CH / 2); }
+		// interference: snow and torn lines grow with the field at the camera; dropouts come in short bursts (more often in stronger fields) and with spark-gap shots
+		var gapShot = Object.keys(flash).some(function (id) { return now - flash[id] < 250; }), drop = 0;
+		if (cam && noise > 0 && !reduce) {
+			var g = noise;
+			if (Math.random() < g * 0.45) { var by = Math.random() * CH, bh = 3 + Math.random() * 18 * g, sh = (Math.random() - 0.5) * 40 * g; try { c.drawImage(camC, 0, by * dpr, CW * dpr, bh * dpr, sh, by, CW, bh); } catch (e) { /* ignore */ } }
+			c.fillStyle = "rgba(255,255,255," + (0.03 + 0.06 * g) + ")"; for (var k = 0; k < 30 * g; k++) c.fillRect(Math.random() * CW, Math.random() * CH, Math.random() * 40, 1);
+			drop = H.camDropout(noise, now / 1000, seedOf(cam)); if (gapShot && noise > 0.15) drop = 1;
+			if (drop) { c.fillStyle = "rgba(0,0,0,0.88)"; c.fillRect(0, 0, CW, CH); for (var q = 0; q < 6; q++) { c.fillStyle = "rgba(255,255,255," + (0.05 + 0.08 * Math.random()) + ")"; c.fillRect(0, Math.random() * CH, CW, 1 + Math.random() * 3); } c.fillStyle = "#e5e7eb"; c.font = "700 14px ui-monospace,monospace"; c.textAlign = "center"; c.fillText(gapShot ? "SPARK GAP: SIGNAL LOST" : "SIGNAL DROPOUT", CW / 2, CH / 2); }
 		}
-		c.fillStyle = "#e5e7eb"; c.font = "12px ui-monospace,monospace"; c.textAlign = "left"; c.fillText((Math.floor(now / 600) % 2 ? "● " : "  ") + "REC  " + fmtT(simT), 10, 18);
-		c.textAlign = "right"; c.font = (CW < 560 ? "10px" : "12px") + " ui-monospace,monospace"; c.fillText(cam ? (nameOf(cam) + " · AC " + H.fmtE(fa.Eac) + " · glitch risk " + Math.round(risk * 100) + "%") : "no camera placed: add one to see interference", CW - 10, CW < 560 ? 34 : 18);
-		if (!n) { c.textAlign = "center"; c.fillText("Place samples in the active area to watch them here", CW / 2, CH / 2); }
+		var narrow = CW < 560;
+		c.fillStyle = "#e5e7eb"; c.font = "12px ui-monospace,monospace"; c.textAlign = "left"; c.fillText((Math.floor(now / 600) % 2 ? "● " : "  ") + "REC  " + fmtT(simT) + (ui.run ? "" : "  ❚❚ PAUSED"), 10, 18);
+		var q2 = !cam ? "" : noise === 0 ? "clean picture" : noise < 0.35 ? "light interference" : noise < 0.7 ? "heavy interference" : "frequent dropouts";
+		c.textAlign = "right"; c.font = (narrow ? "10px" : "12px") + " ui-monospace,monospace";
+		c.fillText(cam ? (nameOf(cam) + " · " + H.fmtE(fa.Eac) + " AC" + (narrow ? "" : " (" + (fa.Eac / imm >= 10 ? Math.round(fa.Eac / imm) : (fa.Eac / imm).toFixed(1)) + "× its " + imm + " V/m immunity)") + " · " + q2) : "no camera on: add one to record", CW - 10, narrow ? 34 : 18);
+		if (replay && now < replay.until) { var E = H.EFF[replay.ev.e]; c.textAlign = "left"; c.fillStyle = "#fde047"; c.font = "700 11px ui-monospace,monospace"; c.fillText("▶ REPLAY " + fmtT(replay.ev.t) + " · " + (E ? E.name : "") + (list.some(function (d) { return d.id === replay.ev.id; }) ? "" : " (not in this camera's view)"), 10, narrow ? 50 : 34); }
+		if (!n && !drop) { c.textAlign = "center"; c.fillStyle = "#e5e7eb"; c.font = (narrow ? "11px" : "12px") + " system-ui,sans-serif"; c.fillText(cam ? (narrow ? nameOf(cam) + " sees no samples: turn it" : nameOf(cam) + " is not pointed at any samples: turn it with the round handle at the end of its view") : "Place samples in the active area to watch them here", CW / 2, CH / 2); }
+	}
+	/* timeline under the recording: every event as a dot; click one to replay it */
+	function drawTL() {
+		var tl = $("hx-tl"); if (!tl || !ui.opts.cam || !ui.opts.disp) return; var c = tl.getContext("2d"), w = CW, h = 38; c.setTransform(dpr, 0, 0, dpr, 0, 0);
+		c.fillStyle = "#0a0d14"; c.fillRect(0, 0, w, h); var T = Math.max(60, simT), x0 = 10, x1 = w - 10;
+		c.strokeStyle = "#263042"; c.lineWidth = 1; c.beginPath(); c.moveTo(x0, 24); c.lineTo(x1, 24); c.stroke();
+		c.fillStyle = "#9aa5bb"; c.font = "10px system-ui,sans-serif"; c.textAlign = "left"; c.fillText("0:00", x0, 36); c.textAlign = "right"; c.fillText(fmtT(T) + (events.length ? "  ·  " + events.length + " events: click a dot to replay" : "  ·  events appear here"), x1, 36);
+		events.forEach(function (ev) { var E = H.EFF[ev.e], x = x0 + (x1 - x0) * ev.t / T; c.fillStyle = E ? E.color : "#fff"; c.beginPath(); c.arc(x, 14 + (H.EFFECTS.indexOf(E) % 3) * 4, 3.2, 0, TAU); c.fill(); });
+		c.strokeStyle = "#fde047"; c.beginPath(); c.moveTo(x0 + (x1 - x0) * simT / T, 4); c.lineTo(x0 + (x1 - x0) * simT / T, 28); c.stroke();
+	}
+	function evAtTL(px) { var T = Math.max(60, simT), x0 = 10, x1 = CW - 10, best = null, bd = 12; events.forEach(function (ev) { var dx = Math.abs(x0 + (x1 - x0) * ev.t / T - px); if (dx < bd) { bd = dx; best = ev; } }); return best; }
+	function doReplay(ev) {
+		var E = H.EFF[ev.e]; if (!E || !byId(ev.id)) { note("That sample is no longer on the floor."); return; }
+		var now = performance.now(); anims.push({id: ev.id, e: ev.e, t0: now, dur: E.dur}); replay = {ev: ev, until: now + E.dur * 1000 + 600};
+		var cam = recCam(); if (cam && !H.inView(cam, byId(ev.id).x, byId(ev.id).y)) note("Replaying " + fmtT(ev.t) + ": " + ev.txt + ". The sample is outside " + nameOf(cam) + "'s view: turn the camera to see it."); else note("Replaying " + fmtT(ev.t) + ": " + ev.txt);
 	}
 	function drawSampleSide(c, d, x, ty, s, now) {
 		var M = MAT[d.mat] || MAT.al, a = animOf(d.id, now), o = os(d.id), lift = a.lev != null ? liftAt(a.lev) : 0, sh = d.shape;
@@ -372,7 +468,7 @@
 	}
 	function logEvent(ev) {
 		var ul = $("hx-log"); if (!ul) return; var li = document.createElement("li"), E = H.EFF[ev.e];
-		li.innerHTML = "<span class=\"hx-dot\" style=\"background:" + E.color + "\"></span><b>" + fmtT(ev.t) + "</b> " + esc(E.name) + ": " + esc(ev.txt);
+		li.innerHTML = "<span class=\"hx-dot\" style=\"background:" + E.color + "\"></span><b>" + fmtT(ev.t) + "</b> " + esc(E.name) + ": " + esc(ev.txt) + " <button type=\"button\" class=\"hx-rp\" title=\"Replay this event on the camera recording\">▶ replay</button>"; li.querySelector(".hx-rp").onclick = function () { doReplay(ev); };
 		ul.insertBefore(li, ul.firstChild); while (ul.children.length > 40) ul.removeChild(ul.lastChild);
 		var c = $("hx-r-ev"); if (c) c.textContent = events.length;
 	}
@@ -385,9 +481,18 @@
 		return null;
 	}
 	function evPos(e) { var b = cv.getBoundingClientRect(); return [e.clientX - b.left, e.clientY - b.top]; }
+	var ptrs = {};
+	function startPinch() { var k = Object.keys(ptrs); if (k.length < 2) return; var a = ptrs[k[0]], b = ptrs[k[1]], mid = [(a[0] + b[0]) / 2, (a[1] + b[1]) / 2]; drag = {mode: "pinch", d0: Math.max(10, Math.hypot(a[0] - b[0], a[1] - b[1])), z0: zm.z, wm: toM(mid[0], mid[1])}; }
+	function viewHit(p, touch) {
+		if (!ui.opts.view) return null; var r = touch ? 18 : 11, cs = cams();
+		for (var i = cs.length - 1; i >= 0; i--) { var hd = viewHandles(cs[i]); if (Math.hypot(p[0] - hd.rot[0], p[1] - hd.rot[1]) < r) return {mode: "crot", d: cs[i]}; if (Math.hypot(p[0] - hd.fov[0], p[1] - hd.fov[1]) < r) return {mode: "fov", d: cs[i]}; }
+		return null;
+	}
 	cv.addEventListener("pointerdown", function (e) {
 		var p = evPos(e), m = toM(p[0], p[1]); cv.focus({preventScroll: true});
+		ptrs[e.pointerId] = p; if (Object.keys(ptrs).length >= 2) { try { cv.setPointerCapture(e.pointerId); } catch (x) { /* ignore */ } startPinch(); return; }
 		if (ui.add) { place(ui.add, m[0], m[1]); return; }
+		if (ui.tool === "move") { var vh = viewHit(p, e.pointerType === "touch"); if (vh) { drag = vh; select(vh.d.id); ui.recCam = vh.d.id; cv.setPointerCapture(e.pointerId); return; } }
 		var d = hit(p[0], p[1]), sd = ui.sel ? byId(ui.sel) : null;
 		if (ui.tool === "move" && sd) {
 			if (sd.t === "zone" || sd.t === "area") { var pz = toPx(sd.x + sd.w / 2, sd.y + sd.h / 2); if (Math.abs(p[0] - pz[0]) < 10 && Math.abs(p[1] - pz[1]) < 10) { drag = {mode: "size", d: sd}; cv.setPointerCapture(e.pointerId); return; } }
@@ -400,28 +505,51 @@
 			if (ui.cableFrom === d.id) { ui.cableFrom = null; return; }
 			toggleCable(ui.cableFrom, d.id); ui.cableFrom = null; return;
 		}
-		select(d ? d.id : null);
+		select(d ? d.id : null); if (d && d.t === "camera") ui.recCam = d.id;
 		if (d) { drag = {mode: "move", d: d, dx: m[0] - d.x, dy: m[1] - d.y, moved: false}; cv.setPointerCapture(e.pointerId); }
+		else { drag = {mode: "pan", sx: p[0], sy: p[1], px0: zm.px, py0: zm.py}; cv.setPointerCapture(e.pointerId); }
 	});
 	cv.addEventListener("pointermove", function (e) {
 		var p = evPos(e), m = toM(p[0], p[1]); hover = {px: p[0], py: p[1], x: m[0], y: m[1]};
+		if (ptrs[e.pointerId]) ptrs[e.pointerId] = p;
+		if (drag && drag.mode === "pinch") { var k = Object.keys(ptrs); if (k.length >= 2) { var a = ptrs[k[0]], b = ptrs[k[1]], mid = [(a[0] + b[0]) / 2, (a[1] + b[1]) / 2]; zm.z = H.clamp(drag.z0 * Math.hypot(a[0] - b[0], a[1] - b[1]) / drag.d0, 0.5, 12); applyView(); var p2 = toPx(drag.wm[0], drag.wm[1]); zm.px += mid[0] - p2[0]; zm.py += mid[1] - p2[1]; applyView(); } return; }
+		if (drag && drag.mode === "pan") { zm.px = drag.px0 + p[0] - drag.sx; zm.py = drag.py0 + p[1] - drag.sy; applyView(); cv.style.cursor = "grabbing"; return; }
+		if (drag && (drag.mode === "crot" || drag.mode === "fov")) {
+			var dc = drag.d;
+			if (drag.mode === "crot") { var c1 = toPx(dc.x, dc.y), a1 = Math.atan2(p[1] - c1[1], p[0] - c1[0]) * 180 / Math.PI; if (!e.shiftKey) a1 = Math.round(a1 / 5) * 5; dc.rot = Math.round(a1); }
+			else dc.fov = Math.round(H.clamp(2 * Math.abs(H.viewAngle(dc, m[0], m[1])), 10, 120));
+			saveSoon(); editor(); pointerReadout(); return;
+		}
 		if (drag) {
 			var d = drag.d;
 			if (drag.mode === "move") { d.x = H.clamp(m[0] - drag.dx, 0, st.room.w); d.y = H.clamp(m[1] - drag.dy, 0, st.room.h); drag.moved = true; delete d.__fa; if (d.t !== "zone" && d.t !== "area" && d.t !== "sample") dirty(false); else samplesChanged(); }
-			else if (drag.mode === "rot") { var c0 = toPx(d.x, d.y), a = Math.atan2(p[1] - c0[1], p[0] - c0[0]) * 180 / Math.PI; if (!e.shiftKey) a = Math.round(a / 5) * 5; d.rot = Math.round(a); dirty(false); }
+			else if (drag.mode === "rot") { var c0 = toPx(d.x, d.y), a = Math.atan2(p[1] - c0[1], p[0] - c0[0]) * 180 / Math.PI; if (!e.shiftKey) a = Math.round(a / 5) * 5; d.rot = Math.round(a); if (d.t === "camera") saveSoon(); else dirty(false); }
 			else if (drag.mode === "size") { d.w = Math.max(0.3, (m[0] - d.x) * 2); d.h = Math.max(0.3, (m[1] - d.y) * 2); samplesChanged(); }
 			editor();
 		}
 		pointerReadout();
-		cv.style.cursor = drag ? "grabbing" : ui.add ? "copy" : ui.tool === "del" ? "not-allowed" : ui.tool === "cable" ? "crosshair" : hit(p[0], p[1]) ? "grab" : "default";
+		cv.style.cursor = drag ? "grabbing" : ui.add ? "copy" : ui.tool === "del" ? "not-allowed" : ui.tool === "cable" ? "crosshair" : (hit(p[0], p[1]) || (ui.tool === "move" && viewHit(p, false))) ? "grab" : "default";
 	});
-	function endDrag() { if (drag) { var d = drag.d; drag = null; if (d.t !== "zone" && d.t !== "area" && d.t !== "sample") dirty(true); samplesChanged(); renderPanels(); } }
+	function endDrag(e) { if (e && e.pointerId != null) delete ptrs[e.pointerId]; if (drag && drag.mode === "pinch") { if (Object.keys(ptrs).length < 2) drag = null; return; } if (drag && (drag.mode === "pan" || drag.mode === "crot" || drag.mode === "fov")) { drag = null; saveSoon(); return; } if (drag) { var d = drag.d; drag = null; if (d.t !== "zone" && d.t !== "area" && d.t !== "sample") dirty(true); samplesChanged(); renderPanels(); } }
 	cv.addEventListener("pointerup", endDrag); cv.addEventListener("pointercancel", endDrag);
 	cv.addEventListener("pointerleave", function () { hover = null; pointerReadout(); });
+	cv.addEventListener("wheel", function (e) {
+		var wrap = stage.parentNode, big = wrap.classList.contains("mes-fill") || document.fullscreenElement === wrap;
+		if (!e.ctrlKey && !big) return; e.preventDefault(); var p = evPos(e); zoomAt(Math.exp(-e.deltaY * (e.deltaMode === 1 ? 0.05 : 0.0018)), p[0], p[1]);
+	}, {passive: false});
 	cv.addEventListener("keydown", function (e) {
 		var d = ui.sel ? byId(ui.sel) : null;
-		if (e.key === "Escape") { ui.add = null; ui.cableFrom = null; setTool("move"); select(null); return; }
+		if (e.key === "Escape") { ui.add = null; ui.cableFrom = null; setTool("move"); select(null); closeAdd(); return; }
+		if (!e.ctrlKey && !e.metaKey && (e.key === "+" || e.key === "=")) { e.preventDefault(); zoomAt(1.25); return; }
+		if (!e.ctrlKey && !e.metaKey && (e.key === "-" || e.key === "_")) { e.preventDefault(); zoomAt(0.8); return; }
+		if (!e.ctrlKey && !e.metaKey && e.key === "0") { e.preventDefault(); zoomFit(); return; }
 		if (!d) return;
+		if (d.t === "camera" && (e.key === "[" || e.key === "]" || e.key === "{" || e.key === "}" || (e.altKey && /^Arrow/.test(e.key)))) {
+			e.preventDefault();
+			if (e.key === "ArrowUp" || e.key === "ArrowDown") d.fov = H.clamp(H.camFov(d) + (e.key === "ArrowUp" ? 5 : -5), 10, 120);
+			else { var step = (e.key === "{" || e.key === "}" || e.shiftKey) ? 1 : 5, dir = (e.key === "]" || e.key === "}" || e.key === "ArrowRight") ? 1 : -1, r0 = (+d.rot || 0) + dir * step; d.rot = ((r0 + 180) % 360 + 360) % 360 - 180; }
+			saveSoon(); editor(); return;
+		}
 		if (e.key === "Delete" || e.key === "Backspace") { e.preventDefault(); remove(d.id); }
 		else if ((e.key === "d" || e.key === "D") && (e.ctrlKey || e.metaKey)) { e.preventDefault(); duplicate(d.id); }
 		else if (e.key === "r" || e.key === "R") { d.rot = ((+d.rot || 0) + (e.shiftKey ? -15 : 15)) % 360; dirty(true); editor(); }
@@ -434,10 +562,10 @@
 		d.x = H.clamp(x, 0, st.room.w); d.y = H.clamp(y, 0, st.room.h); delete d.label; if (a.t === "sample") d.label = H.SAMPLES[a.k].name;
 		st.items.push(d); ui.add = null; paintPalette(); select(d.id); if (d.t === "sample" || d.t === "zone" || d.t === "area") samplesChanged(); dirty(true); renderPanels();
 	}
-	function remove(id) { st.items = st.items.filter(function (d) { return d.id !== id; }); st.cables = st.cables.filter(function (c) { return c[0] !== id && c[1] !== id; }); if (ui.sel === id) ui.sel = null; dirty(true); samplesChanged(); renderPanels(); }
+	function remove(id) { if (ui.sel === id) { var db = $("hx-delsel"); if (db) db.hidden = true; } st.items = st.items.filter(function (d) { return d.id !== id; }); st.cables = st.cables.filter(function (c) { return c[0] !== id && c[1] !== id; }); if (ui.sel === id) ui.sel = null; dirty(true); samplesChanged(); renderPanels(); }
 	function duplicate(id) { var d = byId(id); if (!d) return; var n = JSON.parse(JSON.stringify(d)); delete n.__fa; n.id = newId(); n.x = H.clamp(d.x + 0.5, 0, st.room.w); n.y = H.clamp(d.y + 0.5, 0, st.room.h); st.items.push(n); select(n.id); dirty(true); samplesChanged(); renderPanels(); }
 	function toggleCable(a, b) { var i = st.cables.findIndex(function (c) { return c[0] === a && c[1] === b; }); if (i >= 0) { st.cables.splice(i, 1); note("Cable removed."); } else { st.cables.push([a, b]); note("Cable: " + nameOf(byId(a)) + " → " + nameOf(byId(b)) + "."); } dirty(true); renderPanels(); }
-	function select(id) { ui.sel = id; editor(); }
+	function select(id) { ui.sel = id; var db = $("hx-delsel"); if (db) db.hidden = !id; editor(); }
 	function samplesChanged() { samples().forEach(function (d) { delete d.__fa; }); saveSoon(); }
 
 	/* ================= palette + toolbar ================= */
@@ -445,14 +573,19 @@
 	function paintPalette() {
 		var box = $("hx-pal"); if (!box.__built) {
 			box.__built = 1;
-			H.ORDER.forEach(function (t) { var b = document.createElement("button"); b.type = "button"; b.className = "hx-pb"; b.dataset.t = t; b.title = "Add: " + DEV[t].name; b.appendChild(iconCanvas(t, 26, DEV[t].color)); var sp = document.createElement("span"); sp.textContent = DEV[t].name.replace(/ \(.+\)$/, ""); b.appendChild(sp); b.onclick = function () { armAdd({t: t}); }; box.appendChild(b); });
-			var sbox = $("hx-spal"); Object.keys(H.SAMPLES).forEach(function (k) { var P = H.SAMPLES[k], b = document.createElement("button"); b.type = "button"; b.className = "hx-pb hx-pb--s"; b.dataset.k = k; var dot = document.createElement("i"); dot.style.background = MAT[P.mat].color; b.appendChild(dot); var sp = document.createElement("span"); sp.textContent = P.name; b.appendChild(sp); b.title = "Add: " + P.name + " (" + MAT[P.mat].name + ", " + fmtMass(P.m) + ")"; b.onclick = function () { armAdd({t: "sample", k: k}); }; sbox.appendChild(b); });
+			H.ORDER.forEach(function (t) { [box, $("hx-ppal")].forEach(function (box) { if (!box) return; var b = document.createElement("button"); b.type = "button"; b.className = "hx-pb"; b.dataset.t = t; b.title = "Add: " + DEV[t].name; b.appendChild(iconCanvas(t, 26, DEV[t].color)); var sp = document.createElement("span"); sp.textContent = DEV[t].name.replace(/ \(.+\)$/, ""); b.appendChild(sp); b.onclick = function () { armAdd({t: t}); }; box.appendChild(b); }); });
+			Object.keys(H.SAMPLES).forEach(function (k) { [$("hx-spal"), $("hx-pspal")].forEach(function (sbox) { if (!sbox) return; var P = H.SAMPLES[k], b = document.createElement("button"); b.type = "button"; b.className = "hx-pb hx-pb--s"; b.dataset.k = k; var dot = document.createElement("i"); dot.style.background = MAT[P.mat].color; b.appendChild(dot); var sp = document.createElement("span"); sp.textContent = P.name; b.appendChild(sp); b.title = "Add: " + P.name + " (" + MAT[P.mat].name + ", " + fmtMass(P.m) + ")"; b.onclick = function () { armAdd({t: "sample", k: k}); }; sbox.appendChild(b); }); });
 		}
 		Array.prototype.forEach.call(document.querySelectorAll("#hx .hx-pb"), function (b) { var on = ui.add && (ui.add.t === b.dataset.t || (ui.add.k && ui.add.k === b.dataset.k)); b.setAttribute("aria-pressed", on ? "true" : "false"); });
 	}
-	function armAdd(a) { if (ui.add && ui.add.t === a.t && ui.add.k === a.k) { ui.add = null; note(""); } else { ui.add = a; setTool("move", true); note("Click on the floor to place: " + (a.t === "sample" ? H.SAMPLES[a.k].name : DEV[a.t].name) + ". Esc to cancel."); } paintPalette(); }
+	function armAdd(a) { closeAdd(); if (ui.add && ui.add.t === a.t && ui.add.k === a.k) { ui.add = null; note(""); } else { ui.add = a; setTool("move", true); note("Click on the floor to place: " + (a.t === "sample" ? H.SAMPLES[a.k].name : DEV[a.t].name) + ". Esc to cancel."); } paintPalette(); }
+	function openAdd() { var p = $("hx-addpop"), b = $("hx-addbtn"); if (!p) return; p.hidden = false; b.setAttribute("aria-expanded", "true"); }
+	function closeAdd() { var p = $("hx-addpop"), b = $("hx-addbtn"); if (!p) return; p.hidden = true; if (b) b.setAttribute("aria-expanded", "false"); }
+	$("hx-addbtn").onclick = function () { if ($("hx-addpop").hidden) openAdd(); else closeAdd(); };
+	$("hx-addx").onclick = closeAdd;
+	$("hx-delsel").onclick = function () { if (ui.sel) remove(ui.sel); };
 	function fmtMass(m) { return m >= 1 ? (+m.toPrecision(3)) + " kg" : Math.round(m * 1000) + " g"; }
-	function setTool(t, keepAdd) { ui.tool = t; if (!keepAdd) ui.add = null; ui.cableFrom = null; Array.prototype.forEach.call(document.querySelectorAll("#hx-tools button[data-tool]"), function (b) { b.setAttribute("aria-pressed", b.dataset.tool === t ? "true" : "false"); }); paintPalette(); if (t === "cable") note("Cable: click the device that feeds, then the device it feeds (click an existing cable's pair again to remove it)."); else if (t === "del") note("Click anything to remove it."); }
+	function setTool(t, keepAdd) { ui.tool = t; if (!keepAdd) ui.add = null; ui.cableFrom = null; Array.prototype.forEach.call(document.querySelectorAll("#hx-tools button[data-tool]"), function (b) { b.setAttribute("aria-pressed", b.dataset.tool === t ? "true" : "false"); }); paintPalette(); if (t === "cable") note("Connect: click the device that feeds (e.g. the power supply), then the device it feeds: a cable with an arrow appears. Click the same pair again to remove it. Esc stops."); else if (t === "del") note("Click anything to remove it."); }
 	Array.prototype.forEach.call(document.querySelectorAll("#hx-tools button[data-tool]"), function (b) { b.onclick = function () { setTool(b.dataset.tool); }; });
 	function note(t) { var n = $("hx-note"); if (n) n.textContent = t || ""; }
 
@@ -482,7 +615,8 @@
 			if (d.t === "inductor") h += row("Current", num("I", d, 0, 200, 0.5, "A")) + row("Turns", num("N", d, 1, 2000, 1, "")) + row("Radius", num("R", d, 0.01, 1, 0.01, "m"));
 			if (/hv|rf|dc|pow|pulse|tank|mag|sig/.test(k)) h += row(d.t === "mains" ? "Circuit capacity" : "Input power", num("P", d, 0, d.t === "mains" ? 3000 : 5000, 5, "W"));
 			if (/hv|rf|mag|sig/.test(k)) h += row("Duty / pulsing", num("duty", d, 1, 100, 1, "%")) + row("Phase", num("phase", d, -180, 180, 5, "°"), "Matters for devices on the same frequency that are cabled together (locked).");
-			if (d.t === "rf_tx" || d.t === "fieldshaper" || d.t === "camera" || d.t === "tesla_dumbbell") h += row("Points at", num("rot", d, -180, 180, 5, "°"), "Or drag the yellow handle; R turns it.");
+			if (d.t === "rf_tx" || d.t === "fieldshaper" || d.t === "camera" || d.t === "tesla_dumbbell") h += row("Points at", num("rot", d, -180, 180, 5, "°"), d.t === "camera" ? "Or drag the round handle at the end of its view cone; [ and ] turn it by 5°." : "Or drag the yellow handle; R turns it.");
+			if (d.t === "camera") { if (d.fov == null) d.fov = H.camFov(d); h += row("Field of view", num("fov", d, 10, 120, 1, "°"), "Drag the square handle on the edge of its view; Alt + Up / Down. " + esc(seesText(d)) + (ui.opts.view ? "" : " Turn on Camera views to see it on the floor.")); }
 			if (d.t === "camera") h += row("Immunity", num("imm", d, 1, 200, 1, "V/m"), "Consumer cameras: 3-10 V/m. Shielded industrial: 30 V/m or more.");
 			h += "<div class=\"hx-rep\">" + deviceReport(d) + "</div>";
 		}
@@ -523,7 +657,7 @@
 		if (t.type === "checkbox") v = t.checked; else if (k === "label" || k === "mat" || k === "shape") v = t.value; else if (t.dataset.f) { v = parseF(t.value); if (!(v >= 0)) return; } else { v = parseFloat(t.value); if (!isFinite(v)) return; }
 		d[k] = v; delete d.__fa;
 		if (t.classList.contains("hx-rng")) { var nb = t.parentNode.querySelector(".hx-num[data-k=\"" + k + "\"]"); if (nb) nb.value = v; } else if (t.classList.contains("hx-num") && !t.dataset.f) { var rg = t.parentNode.querySelector(".hx-rng[data-k=\"" + k + "\"]"); if (rg) rg.value = v; }
-		if (d.t === "sample" || d.t === "zone" || d.t === "area") samplesChanged(); else { samplesChanged(); dirty(false); }
+		if (d.t === "sample" || d.t === "zone" || d.t === "area" || (d.t === "camera" && (k === "rot" || k === "fov"))) samplesChanged(); else { samplesChanged(); dirty(false); }
 		clearTimeout(edT); edT = setTimeout(function () { if (inEditor()) refreshEditorReports(); else editor(); renderPanels(); }, 450);
 	});
 	var edT = 0;
@@ -720,17 +854,22 @@
 	(function () { var box = $("hx-pre"); Object.keys(H.PRESETS).forEach(function (k) { var b = document.createElement("button"); b.type = "button"; b.dataset.p = k; b.textContent = H.PRESETS[k].name; b.onclick = function () { loadPreset(k); }; box.appendChild(b); }); var cl = document.createElement("button"); cl.type = "button"; cl.textContent = "Empty room"; cl.onclick = function () { st = {room: {w: st.room.w, h: st.room.h, refl: st.room.refl}, items: [], cables: [], preset: ""}; resetRun(); ui.sel = null; dirty(true); renderAll(); note("An empty room: add equipment from the palette."); }; box.appendChild(cl); })();
 	function paintLegend() { var m = MAPS[ui.map], lg = $("hx-leg"); if (!lg) return; var g = STOPS[m.map].map(function (s) { return "rgb(" + s[1] + "," + s[2] + "," + s[3] + ") " + Math.round(s[0] * 100) + "%"; }).join(","); lg.innerHTML = "<b>" + esc(m.name) + "</b><span class=\"hx-lgbar\" style=\"background:linear-gradient(90deg," + g + ")\"></span><span class=\"hx-lgt\"><i>" + esc(m.leg[0]) + "</i><i>" + esc(m.leg[1]) + "</i><i>" + esc(m.leg[2]) + "</i></span>"; }
 	$("hx-map").onchange = function () { ui.map = this.value; mapDirty = true; paintLegend(); saveSoon(); };
-	["cab", "lab", "cam", "ring"].forEach(function (k) { var el = $("hx-o-" + k); if (!el) return; el.checked = ui.opts[k]; el.onchange = function () { ui.opts[k] = el.checked; if (k === "cam") layout(); saveSoon(); }; });
+	["cab", "lab", "cam", "ring", "view"].forEach(function (k) { var el = $("hx-o-" + k); if (!el) return; el.checked = ui.opts[k]; el.onchange = function () { ui.opts[k] = el.checked; if (k === "cam") layout(); if (k === "view") { paintToggles(); editor(); } saveSoon(); }; });
+	function paintToggles() { $("hx-views").setAttribute("aria-pressed", ui.opts.view ? "true" : "false"); $("hx-disp").setAttribute("aria-pressed", ui.opts.disp ? "true" : "false"); var v = $("hx-o-view"); if (v) v.checked = ui.opts.view; }
+	$("hx-views").onclick = function () { ui.opts.view = !ui.opts.view; paintToggles(); editor(); saveSoon(); };
+	$("hx-disp").onclick = function () { ui.opts.disp = !ui.opts.disp; paintToggles(); layout(); saveSoon(); };
+	$("hx-zin").onclick = function () { zoomAt(1.25); }; $("hx-zout").onclick = function () { zoomAt(0.8); }; $("hx-zfit").onclick = zoomFit;
+	$("hx-tl").addEventListener("click", function (e) { var b = this.getBoundingClientRect(), ev = evAtTL(e.clientX - b.left); if (ev) doReplay(ev); });
+	$("hx-tl").addEventListener("mousemove", function (e) { var b = this.getBoundingClientRect(), ev = evAtTL(e.clientX - b.left); this.title = ev ? fmtT(ev.t) + " " + (H.EFF[ev.e] ? H.EFF[ev.e].name : "") + ": " + ev.txt + " (click to replay)" : ""; });
+	paintToggles();
 	function setRoomInputs() { $("hx-rw").value = st.room.w; $("hx-rh").value = st.room.h; $("hx-rr").value = st.room.refl || 0; $("hx-rr-v").textContent = Math.round((st.room.refl || 0) * 100) + "%"; }
 	$("hx-rw").onchange = $("hx-rh").onchange = function () { var w = parseFloat($("hx-rw").value), h = parseFloat($("hx-rh").value); if (w >= 2 && w <= 60) st.room.w = w; if (h >= 2 && h <= 60) st.room.h = h; st.items.forEach(function (d) { d.x = H.clamp(d.x, 0, st.room.w); d.y = H.clamp(d.y, 0, st.room.h); }); samplesChanged(); dirty(true); layout(); renderPanels(); };
 	$("hx-rr").oninput = function () { st.room.refl = parseFloat(this.value) || 0; $("hx-rr-v").textContent = Math.round(st.room.refl * 100) + "%"; samplesChanged(); dirty(false); clearTimeout(edT); edT = setTimeout(renderPanels, 300); };
 	function setRun(r) { ui.run = r; var b = $("hx-play"); b.textContent = r ? "❚❚ Pause" : "▶ Run"; b.setAttribute("aria-pressed", r ? "true" : "false"); updateReadouts(); }
 	$("hx-play").onclick = function () { setRun(!ui.run); };
 	$("hx-restart").onclick = function () { resetRun(); var l = $("hx-log"); if (l) l.innerHTML = ""; samplesChanged(); renderPanels(); updateReadouts(); note("Experiment restarted: the warm-up starts again from zero."); };
-	var SPEEDS = [1, 10, 60, 300, 1200];
-	function paintSpeed() { $("hx-spd-v").textContent = ui.speed + "×"; }
-	$("hx-slow").onclick = function () { var i = SPEEDS.indexOf(ui.speed); ui.speed = SPEEDS[Math.max(0, (i < 0 ? 2 : i) - 1)]; paintSpeed(); saveSoon(); };
-	$("hx-fast").onclick = function () { var i = SPEEDS.indexOf(ui.speed); ui.speed = SPEEDS[Math.min(SPEEDS.length - 1, (i < 0 ? 2 : i) + 1)]; paintSpeed(); saveSoon(); };
+	function paintSpeed() { Array.prototype.forEach.call(document.querySelectorAll("#hx-spd button"), function (b) { b.setAttribute("aria-pressed", +b.dataset.v === ui.speed ? "true" : "false"); }); }
+	SPEEDS.forEach(function (v) { var b = document.createElement("button"); b.type = "button"; b.dataset.v = v; b.textContent = v + "×"; b.title = v === 1 ? "Real time" : v + " times real time (" + (v >= 60 ? fmtT(v) + " of experiment per second" : v + " s per second") + ")"; b.onclick = function () { ui.speed = v; paintSpeed(); if (!ui.run) setRun(true); saveSoon(); }; $("hx-spd").appendChild(b); });
 	$("hx-png").onclick = function () {
 		var c2 = document.createElement("canvas"); c2.width = cv.width; c2.height = cv.height + Math.round(28 * dpr); var x = c2.getContext("2d"); x.drawImage(cv, 0, 0); x.fillStyle = "#0b0f17"; x.fillRect(0, cv.height, c2.width, c2.height - cv.height); x.fillStyle = "#e5e7eb"; x.font = Math.round(13 * dpr) + "px system-ui,sans-serif"; x.fillText("MES Hutchison Effect Simulator · " + MAPS[ui.map].name + " · mes.fm/hutchison-effect-simulator", 10 * dpr, cv.height + 19 * dpr);
 		c2.toBlob(function (b) { if (!b) return; var a = document.createElement("a"); a.href = URL.createObjectURL(b); a.download = "hutchison-lab-" + (st.preset || "layout") + ".png"; document.body.appendChild(a); a.click(); setTimeout(function () { URL.revokeObjectURL(a.href); a.remove(); }, 500); });
@@ -745,6 +884,13 @@
 	};
 	$("hx-sch-go").onclick = function () { setTab("lab"); };
 
+	/* formula boxes: shrink a formula that is wider than its box (down to 72%) so it fits without a scroll bar */
+	function eqFit() {
+		var els = root.querySelectorAll(".hx-eq__f"); if (!els.length) return;
+		function fit() { Array.prototype.forEach.call(els, function (el) { if (!el.classList.contains("mes-tex--done")) return; el.style.fontSize = ""; var w = el.clientWidth, sw = el.scrollWidth; if (w > 0 && sw > w + 1) el.style.fontSize = Math.max(72, Math.floor(100 * w / sw)) + "%"; }); }
+		new MutationObserver(fit).observe(root.querySelector(".hx-eq"), {subtree: true, attributes: true, attributeFilter: ["class"]});
+		var fw = 0; window.addEventListener("resize", function () { clearTimeout(fw); fw = setTimeout(fit, 120); }); fit();
+	}
 	/* ================= loop ================= */
 	var last = performance.now(), frame = 0;
 	function redrawStatic() { drawFloor(performance.now()); }
@@ -753,7 +899,7 @@
 		if (ui.tab === "lab") {
 			tick(dt, now); stepParts(dt); if (ui.map === "T" && ui.run) tview += dt;
 			drawFloor(now); drawCam(now);
-			if (frame % 15 === 0) updateReadouts();
+			if (frame % 15 === 0) { updateReadouts(); drawTL(); }
 			if (frame % 90 === 0) { chartTimeline(); if (ui.sel) { var d = byId(ui.sel); if (d && d.t === "sample") refreshEditorReports(); } }
 		}
 		requestAnimationFrame(loop);
@@ -762,7 +908,9 @@
 	/* ================= start ================= */
 	init(); paintPalette(); paintSpeed(); setRun(true); dirty(true);
 	var tabWanted = ui.tab; setTab(tabWanted); renderAll();
-	if (st.preset && H.PRESETS[st.preset]) note(H.PRESETS[st.preset].note);
+	if (st.preset && H.PRESETS[st.preset]) pnote(H.PRESETS[st.preset].note);
+	if (window.ResizeObserver && $("hx-tb")) { var tbH = 0; new ResizeObserver(function () { var h2 = $("hx-tb").offsetHeight; if (h2 !== tbH) { tbH = h2; layout(); } }).observe($("hx-tb")); }
+	eqFit();
 	window.addEventListener("resize", function () { clearTimeout(rzT); rzT = setTimeout(function () { layout(); if (ui.tab === "sch") drawSchematic(); if (ui.tab === "eq") paintEquipment(); }, 80); });
 	var rzT = 0; if (window.ResizeObserver) new ResizeObserver(function () { clearTimeout(rzT); rzT = setTimeout(function () { layout(); }, 80); }).observe(stage.parentNode);
 	new MutationObserver(function () { renderPanels(); if (ui.tab === "sch") drawSchematic(); }).observe(document.body, {attributes: true, attributeFilter: ["class"]});

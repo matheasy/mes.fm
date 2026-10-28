@@ -107,4 +107,20 @@ ok(colOf.ac < colOf.ps && colOf.ps < colOf.gp && colOf.gp < colOf.tk && colOf.tk
 // 15. ICNIRP reference levels
 near(H.eRef(14e6), 61, 1e-12, "61 V/m between 10 and 400 MHz"); near(H.eRef(200e3), 610, 1e-12, "610 V/m at 200 kHz");
 
+// 16. cameras: field of view, what they see, picture noise
+var cam = H.dev("c", "camera", 2, 4, {rot: 0}), rm = {w: 10, h: 8};
+near(H.camFov(cam), 50, 1e-12, "default field of view 50 degrees"); near(H.camFov({fov: 500}), 120, 1e-12, "field of view is capped at 120");
+near(H.wallDist(rm, 2, 4, 0), 8, 1e-9, "looking right from x=2 meets the wall 8 m away"); near(H.wallDist(rm, 2, 4, -Math.PI / 2), 4, 1e-9, "looking up meets the top wall");
+ok(H.inView(cam, 6, 4.5) && !H.inView(cam, 1, 4) && !H.inView(cam, 6, 8), "in view straight ahead, not behind or far to the side");
+near(H.viewAngle(cam, 5, 3), -45 * 0 + Math.atan2(-1, 3) * 180 / Math.PI, 1e-9, "points above the centre line are on the left of the picture (negative)");
+var vp = H.viewPoly(cam, rm, 10); ok(vp.length === 12 && vp.every(function (q) { return q[0] >= -1e-9 && q[0] <= 10 + 1e-9 && q[1] >= -1e-9 && q[1] <= 8 + 1e-9; }), "the view polygon stays inside the room");
+var zz = H.dev("z", "zone", 7, 4, {w: 2, h: 1}); near(H.zoneCoverage(cam, zz), 1, 1e-9, "a zone straight ahead is fully covered");
+ok(H.zoneCoverage(H.dev("c2", "camera", 2, 4, {rot: 180}), zz) === 0, "a camera turned away sees none of it");
+var sees = H.camSees(room([cam, zz, H.dev("t", "tesla_large", 8, 4), H.dev("v", "vdg", 1, 1)]), cam); ok(sees.ids.indexOf("t") >= 0 && sees.ids.indexOf("v") < 0 && sees.zones.length === 1, "camSees lists what is in front only");
+var back2 = H.decode(H.encode(room([H.dev("c", "camera", 2, 4, {fov: 30})]))); ok(back2.items[0].fov === 30, "share links keep the field of view");
+ok(H.camNoise(2, 10) === 0 && H.camNoise(300, 10) === 1 && H.camNoise(30, 10) > H.camNoise(10, 10), "picture noise grows with the field / immunity ratio");
+var dropF = function (lv) { var k = 0; for (var i = 0; i < 6000; i++) k += H.camDropout(lv, i * 0.05, 3); return k / 6000; };
+ok(dropF(0.2) === 0, "no dropouts at low noise"); ok(dropF(1) > 0.02 && dropF(1) < 0.15, "dropouts are intermittent even at full noise (" + dropF(1).toFixed(3) + ")"); ok(dropF(0.6) < dropF(1), "fewer dropouts at medium noise");
+ok(H.camDropout(1, 12.34, 5) === H.camDropout(1, 12.34, 5), "dropouts are deterministic");
+
 console.log(n - bad + " / " + n + " checks passed"); if (bad) process.exit(1);

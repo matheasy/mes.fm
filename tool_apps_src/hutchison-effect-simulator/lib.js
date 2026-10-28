@@ -381,6 +381,41 @@
 	// camera / instrument upset: probability per second of a visible glitch (use the AC field: a steady DC field does not upset electronics)
 	function emfRisk(E, immunity) { var x = E / (immunity || 10); return 1 - Math.exp(-x * x / 9); }
 
+	// camera picture noise level 0..1 from the AC field at the camera vs its immunity: 0 below 0.3x immunity, 1 at 30x and above (log scale)
+	function camNoise(E, immunity) { var x = (E || 0) / (immunity || 10); return x <= 0.3 ? 0 : clamp(Math.log10(x / 0.3) / 2, 0, 1); }
+	// intermittent dropouts: the picture drops out in short bursts (0.12-0.4 s) that start in some 1.5 s windows of real time; more often as the noise grows.
+	// Deterministic in (time, seed) so a frame never flickers between two answers. Returns 0 (picture) .. 1 (full dropout).
+	function hash01(a, b) { var h = Math.imul((a | 0) ^ 0x9e3779b1, 0x85ebca6b) ^ Math.imul((b | 0) + 0x632be5ab, 0xc2b2ae35); h ^= h >>> 13; h = Math.imul(h, 0x27d4eb2f); h ^= h >>> 16; return (h >>> 0) / 4294967296; }
+	function camDropout(level, tReal, seed) {
+		if (!(level > 0.25)) return 0; var W = 1.5, k = Math.floor(tReal / W), u = tReal - k * W;
+		if (hash01(k, seed || 0) >= 0.4 * level * level) return 0;
+		var start = hash01(k, (seed || 0) + 7) * 0.8, len = 0.12 + 0.28 * hash01(k, (seed || 0) + 13) * level;
+		return u >= start && u < start + len ? 1 : 0;
+	}
+	/* ---------- cameras: where they look ---------- */
+	function camFov(d) { var f = +(d && d.fov); return clamp(isFinite(f) && f > 0 ? f : 50, 10, 120); }
+	function wallDist(room, x, y, a) {   // distance from (x, y) along angle a (radians, y down) to the room's wall
+		var cx = Math.cos(a), cy = Math.sin(a), t = Infinity;
+		if (cx > 1e-12) t = Math.min(t, (room.w - x) / cx); else if (cx < -1e-12) t = Math.min(t, -x / cx);
+		if (cy > 1e-12) t = Math.min(t, (room.h - y) / cy); else if (cy < -1e-12) t = Math.min(t, -y / cy);
+		return Math.max(0, isFinite(t) ? t : 0);
+	}
+	function viewPoly(d, room, n) {   // the floor the camera sees: its position, then points on the walls across its field of view
+		var a0 = (+d.rot || 0) * Math.PI / 180, h = camFov(d) * Math.PI / 360, out = [[d.x, d.y]]; n = Math.max(2, n || 24);
+		for (var i = 0; i <= n; i++) { var a = a0 - h + 2 * h * i / n, r = wallDist(room, d.x, d.y, a); out.push([d.x + Math.cos(a) * r, d.y + Math.sin(a) * r]); }
+		return out;
+	}
+	function viewAngle(d, x, y) {   // signed angle (degrees) of a point from the camera's centre line; negative = the left of its picture
+		var a = Math.atan2(y - d.y, x - d.x) * 180 / Math.PI - (+d.rot || 0); a = ((a + 180) % 360 + 360) % 360 - 180; return a;
+	}
+	function inView(d, x, y) { return Math.hypot(x - d.x, y - d.y) > 1e-6 && Math.abs(viewAngle(d, x, y)) <= camFov(d) / 2 + 1e-9; }
+	function zoneCoverage(d, z) { var n = 0, k = 0; for (var i = 0; i < 11; i++) for (var j = 0; j < 11; j++) { n++; if (inView(d, z.x + z.w * (i / 10 - 0.5), z.y + z.h * (j / 10 - 0.5))) k++; } return k / n; }
+	function camSees(st, d) {
+		var ids = [], zones = [];
+		(st.items || []).forEach(function (o) { if (o === d || o.id === d.id) return; if (o.t === "zone" || o.t === "area") { var c = zoneCoverage(d, o); if (c > 0) zones.push({id: o.id, cover: c}); } else if (inView(d, o.x, o.y)) ids.push(o.id); });
+		return {ids: ids, zones: zones};
+	}
+
 	/* ---------- room totals ---------- */
 	function power(st) {
 		var tot = 0, rows = [];
@@ -419,7 +454,7 @@
 	}
 
 	/* ---------- share links ---------- */
-	var KEYS = ["t", "x", "y", "rot", "on", "kV", "f", "P", "duty", "phase", "C", "L", "gap", "I", "N", "R", "w", "h", "label", "mat", "m", "shape", "imm"];
+	var KEYS = ["t", "x", "y", "rot", "on", "kV", "f", "P", "duty", "phase", "C", "L", "gap", "I", "N", "R", "w", "h", "label", "mat", "m", "shape", "imm", "fov"];
 	function round(v) { return typeof v === "number" ? Math.round(v * 1000) / 1000 : v; }
 	function pack(st) {
 		var o = {r: [round(st.room.w), round(st.room.h), round(st.room.refl || 0)], i: [], c: st.cables || [], p: st.preset || ""};
@@ -510,7 +545,7 @@
 	var MESHut = {DEV: DEV, ORDER: ORDER, MAT: MAT, SAMPLES: SAMPLES, EFFECTS: EFFECTS, EFF: EFF, PRESETS: PRESETS, E0: E0, B0: B0,
 		tankF: tankF, tuning: tuning, gapEnergy: gapEnergy, sameF: sameF, components: components, resolve: resolve, sources: sources, srcE: srcE, srcB: srcB,
 		fieldAt: fieldAt, grid: grid, drive: drive, rates: rates, massFactor: massFactor, warm: warm, probWithin: probWithin, magnitude: magnitude, classicalLift: classicalLift,
-		emfRisk: emfRisk, eRef: eRef, power: power, spectrum: spectrum, schematic: schematic, encode: encode, decode: decode, pack: pack, unpack: unpack,
+		emfRisk: emfRisk, camNoise: camNoise, camDropout: camDropout, camFov: camFov, wallDist: wallDist, viewPoly: viewPoly, viewAngle: viewAngle, inView: inView, zoneCoverage: zoneCoverage, camSees: camSees, eRef: eRef, power: power, spectrum: spectrum, schematic: schematic, encode: encode, decode: decode, pack: pack, unpack: unpack,
 		rng: rng, clamp: clamp, fmtF: fmtF, fmtE: fmtE, fmtB: fmtB, dev: dev, smp: smp};
 	if (typeof module !== "undefined" && module.exports) module.exports = MESHut; else root.MESHut = MESHut;
 })(this);
