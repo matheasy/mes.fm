@@ -79,6 +79,11 @@ TOOLS = [  # (directory, compact-bar title[, home path of the site the page belo
     ("poker", "Poker"),   # 2026-10-23
     ("backgammon", "Backgammon"),   # 2026-10-23
     ("nba-picks", "NBA Picks"),   # 2026-10-26
+    ("nfl-picks", "NFL Picks"),   # 2026-10-27
+    ("mlb-picks", "MLB Picks"),   # 2026-10-27
+    ("nhl-picks", "NHL Picks"),   # 2026-10-27
+    ("la-liga-picks", "La Liga Picks"),   # 2026-10-27
+    ("premier-league-picks", "Premier League Picks"),   # 2026-10-27
     ("march-madness", "March Madness"),   # 2026-10-27
     ("statistics-calculator", "Statistics Calculator"),   # 2026-10-23
     ("birthday-personality", "Birthday Personality"),   # 2026-10-23

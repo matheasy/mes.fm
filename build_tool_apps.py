@@ -46,6 +46,13 @@ PDF_NAV_MENU = '<li class="navbar__item"><a class="navbar__link" href="/pdf">Edi
 TR_BRAND = dict(slug="translate", title="MES Translate", tag="Translate text, photos and PDFs, on your device when it can.")
 TR_NAV_INFO = "<li class=\"info-bar__item\"><a class=\"info-bar__item__text\" href='/image-to-text'>Image to Text</a></li>"
 TR_NAV_MENU = "<li class=\"navbar__item\"><a class=\"navbar__link\" href=\"/image-to-text\">Image to Text (OCR)</a></li>"
+# MES Picks (2026-10-27): one source (tool_apps_src/nba-picks, lib = MESNBA, shared by api/nba-standings.js + api/nba-picks.js as _nba-lib.js) for six leagues.
+PICKS = [("nba", "nba-picks", "NBA"), ("nfl", "nfl-picks", "NFL"), ("mlb", "mlb-picks", "MLB"), ("nhl", "nhl-picks", "NHL"), ("laliga", "la-liga-picks", "La Liga"), ("epl", "premier-league-picks", "Premier League")]
+def _picks_vars(lg, intro, long):
+    nav = "".join('<a href="/%s"%s>%s</a>' % (sl, ' aria-current="page"' if l == lg else "", nm) for l, sl, nm in PICKS)
+    return {"LG": lg, "LEAGUES": nav, "INTRO": intro, "LONG": long, "SEO": "@seo/%s.html" % lg}
+PICKS_NAV_INFO = "".join("<li class=\"info-bar__item\"><a class=\"info-bar__item__text\" href='/%s'>%s</a></li>" % (sl, nm.replace("Premier League", "EPL")) for l, sl, nm in PICKS)
+PICKS_NAV_MENU = "".join('<li class="navbar__item"><a class="navbar__link" href="/%s">%s Picks</a></li>' % (sl, nm) for l, sl, nm in PICKS)
 MAT_BRAND = dict(slug="materials", title="MES Mechanics of Materials", tag="Stress, strain, shear and torsion, with the pictures.")
 CI_NAV_INFO = "<li class=\"info-bar__item\"><a class=\"info-bar__item__text\" href='/compound-interest-explained'>Explained</a></li><li class=\"info-bar__item\"><a class=\"info-bar__item__text\" href='/loan-calculator'>Loan</a></li><li class=\"info-bar__item\"><a class=\"info-bar__item__text\" href='/mortgagecalculator'>Mortgage</a></li>"
 CI_NAV_MENU = "<li class=\"navbar__item\"><a class=\"navbar__link\" href=\"/compound-interest-explained\">Compound Interest Explained</a></li><li class=\"navbar__item\"><a class=\"navbar__link\" href=\"/loan-calculator\">Loan Calculator</a></li><li class=\"navbar__item\"><a class=\"navbar__link\" href=\"/mortgagecalculator\">Mortgage Calculator</a></li>"
@@ -168,11 +175,42 @@ APPS = {
     # MES NBA Picks (2026-10-26, mes.fm/nba-picks): predicted final standings (15 teams per conference) scored against the live standings (exact, within 1/2/3, tier, points,
     # closeness, Spearman). Standings = mes.fm/api/nba-standings.js (ESPN, keyless); leaderboard = mes.fm/api/nba-picks.js (Upstash). lib.js is shared with both as
     # mes.fm/api/_nba-lib.js (byte-identical copy). Snapshot mes.fm/nba-picks/data/sample.json (`node mes.fm/api/nba-standings.js --write`). Tests: node tool_apps_src/nba-picks-tests.js.
-    "nba-picks": dict(title="MES NBA Picks", page_title="NBA Standings Predictions Tracker: How Many of Your Picks Are Right?",
-                      tag="Your predicted standings vs the live table, scored every way.", accent="#c2410c", dark="#9a3412", tint="#fdeee4",
-                      desc="Free NBA standings predictions tracker: put the 15 teams of the East and the West in the order you think they will finish and see how many you have right so far against the live standings: exact spots, within one to three spots, the right playoff / play-in / lottery tier, points and rank correlation, with a picture of every pick. Save several sets, share a link, compare with friends and join the leaderboard.",
-                      meta_desc="Track your NBA standings predictions: see how many of your East and West picks are right against the live standings, compare with friends, join the leaderboard.",
-                      js_v="1"),
+    "nba-picks": dict(title="MES NBA Picks", page_title="NBA Standings and Playoff Predictions Tracker: How Many of Your Picks Are Right?",
+                      tag="Your predicted standings and playoffs vs the live table, scored every way.", accent="#c2410c", dark="#9a3412", tint="#fdeee4",
+                      desc="Free NBA standings predictions tracker: put the East, the West, the whole league or the divisions in the order you think they will finish, pick the playoff bracket, and see how many you have right against the live standings and results: exact spots, within one to three spots, the right playoff / play-in / lottery tier, points and rank correlation, with a picture of every pick. Save several sets, share a link, compare with friends and join the leaderboard.",
+                      meta_desc="Track your NBA standings and playoff predictions: East, West, whole league, divisions and bracket, scored against the live table. Compare with friends, join the leaderboard.",
+                      js_v="2", vars=_picks_vars("nba", "Drag the teams into the order you think they will finish (or paste your list), pick your playoff bracket, and the score updates against today&rsquo;s standings.", "NBA"),
+                      nav_extra=PICKS_NAV_INFO, menu_extra=PICKS_NAV_MENU, tab=1),
+    "nfl-picks": dict(title="MES NFL Picks", page_title="NFL Standings, Playoff Seeds and Super Bowl Predictions Tracker",
+                      tag="Your AFC, NFC and Super Bowl picks vs the live standings.", accent="#c2410c", dark="#9a3412", tint="#fdeee4", src="nba-picks", js_path="nba-picks/js/nba-picks.js",
+                      desc="Free NFL predictions tracker: put the AFC and NFC (your playoff seeds), the eight divisions or all 32 teams in the order you think they will finish, pick the playoff bracket to the Super Bowl, and see how many you have right against the live standings and results, with a picture of every pick. Save several sets, share a link, compare with friends and join the leaderboard.",
+                      meta_desc="Track your NFL standings, playoff seeds and Super Bowl picks against the live table: AFC, NFC, divisions, whole league and bracket. Compare with friends.",
+                      js_v="2", vars=_picks_vars("nfl", "Drag the teams into the order you think they will finish (the conference order is your playoff seeding), pick the bracket to the Super Bowl, and the score updates against today&rsquo;s standings.", "NFL"),
+                      nav_extra=PICKS_NAV_INFO, menu_extra=PICKS_NAV_MENU, tab=2),
+    "mlb-picks": dict(title="MES MLB Picks", page_title="MLB Standings and World Series Predictions Tracker",
+                      tag="Your AL, NL and World Series picks vs the live standings.", accent="#c2410c", dark="#9a3412", tint="#fdeee4", src="nba-picks", js_path="nba-picks/js/nba-picks.js",
+                      desc="Free MLB predictions tracker: put the American and National League, the six divisions or all 30 teams in the order you think they will finish, pick the postseason bracket to the World Series, and see how many you have right against the live standings and results, with a picture of every pick. Save several sets, share a link, compare with friends and join the leaderboard.",
+                      meta_desc="Track your MLB standings and World Series predictions against the live table: AL, NL, divisions, whole league and postseason bracket. Compare with friends.",
+                      js_v="2", vars=_picks_vars("mlb", "Drag the teams into the order you think they will finish (or paste your list), pick your postseason bracket, and the score updates against the standings.", "MLB"),
+                      nav_extra=PICKS_NAV_INFO, menu_extra=PICKS_NAV_MENU, tab=3),
+    "nhl-picks": dict(title="MES NHL Picks", page_title="NHL Standings and Stanley Cup Predictions Tracker",
+                      tag="Your East, West and Stanley Cup picks vs the live standings.", accent="#c2410c", dark="#9a3412", tint="#fdeee4", src="nba-picks", js_path="nba-picks/js/nba-picks.js",
+                      desc="Free NHL predictions tracker: put the Eastern and Western Conference, the four divisions or all 32 teams in the order you think they will finish, pick the playoff bracket to the Stanley Cup, and see how many you have right against the live standings and results, with a picture of every pick. Save several sets, share a link, compare with friends and join the leaderboard.",
+                      meta_desc="Track your NHL standings and Stanley Cup predictions against the live table: East, West, divisions, whole league and playoff bracket. Compare with friends.",
+                      js_v="2", vars=_picks_vars("nhl", "Drag the teams into the order you think they will finish (or paste your list), pick your playoff bracket, and the score updates against today&rsquo;s standings.", "NHL"),
+                      nav_extra=PICKS_NAV_INFO, menu_extra=PICKS_NAV_MENU, tab=4),
+    "la-liga-picks": dict(title="MES La Liga Picks", page_title="La Liga Table Predictions Tracker: How Many of Your Picks Are Right?",
+                      tag="Your predicted La Liga table vs the live standings.", accent="#c2410c", dark="#9a3412", tint="#fdeee4", src="nba-picks", js_path="nba-picks/js/nba-picks.js",
+                      desc="Free La Liga table predictor and tracker: put the 20 clubs in the order you think they will finish and see how many you have right against the live table: exact places, within one to three places, the right zone (Champions League, Europe, mid-table, relegation), points and rank correlation, with a picture of every pick. Save several tables, share a link, compare with friends and join the leaderboard.",
+                      meta_desc="Predict the La Liga table and track it against the live standings: top 4, Europe, relegation, exact places and more. Compare with friends, join the leaderboard.",
+                      js_v="2", vars=_picks_vars("laliga", "Drag the clubs into the order you think they will finish (or paste your table), and the score updates against today&rsquo;s standings.", "La Liga"),
+                      nav_extra=PICKS_NAV_INFO, menu_extra=PICKS_NAV_MENU, tab=5),
+    "premier-league-picks": dict(title="MES Premier League Picks", page_title="Premier League Table Predictions Tracker: How Many of Your Picks Are Right?",
+                      tag="Your predicted Premier League table vs the live standings.", accent="#c2410c", dark="#9a3412", tint="#fdeee4", src="nba-picks", js_path="nba-picks/js/nba-picks.js",
+                      desc="Free Premier League table predictor and tracker: put the 20 clubs in the order you think they will finish and see how many you have right against the live table: exact places, within one to three places, the right zone (Champions League, Europe, mid-table, relegation), points and rank correlation, with a picture of every pick. Save several tables, share a link, compare with friends and join the leaderboard.",
+                      meta_desc="Predict the Premier League table and track it against the live standings: top 4, Europe, relegation, exact places and more. Compare with friends.",
+                      js_v="2", vars=_picks_vars("epl", "Drag the clubs into the order you think they will finish (or paste your table), and the score updates against today&rsquo;s standings.", "Premier League"),
+                      nav_extra=PICKS_NAV_INFO, menu_extra=PICKS_NAV_MENU, tab=6),
     # MES March Madness (2026-10-27, mes.fm/march-madness): NCAA men's + women's bracket builder with a transparent win-probability model (seed history + seed ratings
     # + season-record nudge), live ESPN results / live win probability, scoring, share links and a leaderboard. Bracket data = mes.fm/api/mm-bracket.js (ESPN scoreboard,
     # keyless); leaderboard = mes.fm/api/mm-picks.js (Upstash). lib.js is shared with both as mes.fm/api/_mm-lib.js (byte-identical copy). Snapshots of past tournaments

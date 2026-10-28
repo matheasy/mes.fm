@@ -1,12 +1,11 @@
-	<div class="tu np" id="np">
-		<p class="np-intro">Drag the teams into the order you think they will finish (or paste your list), and the score updates against today&rsquo;s standings.</p>
+	<div class="tu np" id="np" data-lg="{{LG}}">
+		<nav class="np-leagues" aria-label="Other leagues">{{LEAGUES}}</nav>
+		<p class="np-intro">{{INTRO}}</p>
 		<div class="np-status" id="np-status" role="status" aria-live="polite" hidden></div>
+		<div class="np-banner" id="np-banner" role="note" hidden></div>
 
 		<div class="np-top">
-			<div class="np-tabs" role="tablist" id="np-tabs" aria-label="Conference">
-				<button type="button" role="tab" data-conf="E" aria-selected="true">East</button>
-				<button type="button" role="tab" data-conf="W" aria-selected="false">West</button>
-			</div>
+			<div class="np-tabs" role="tablist" id="np-tabs" aria-label="Table"></div>
 			<div class="np-src">
 				<label class="np-lab">Standings <select id="np-season" aria-label="Season to check against"></select></label>
 				<span class="np-upd" id="np-upd"></span>
@@ -26,49 +25,69 @@
 		</div>
 
 		<div class="np-main">
-			<div class="tu-card np-edit">
-				<div class="np-head"><b id="np-edit-title">Your East picks</b>
+			<div class="tu-card np-edit np-tableonly">
+				<div class="np-head"><b id="np-edit-title">Your picks</b>
 					<span class="np-tools">
 						<button type="button" class="np-link" id="np-paste-open" aria-expanded="false">Paste a list</button>
 						<button type="button" class="np-link" id="np-fill">Copy current standings</button>
+						<button type="button" class="np-link" id="np-fromconf" hidden>Merge my conference lists</button>
 						<button type="button" class="np-link" id="np-az">A-Z</button>
 					</span>
 				</div>
 				<div class="np-paste" id="np-paste" hidden>
-					<label for="np-paste-t" class="np-small">One team per line, numbered or not, or separated by commas. Nicknames, cities, short forms (Sixers, Philly, Cavs, Dubs, NYK) and small typos are fine.</label>
-					<textarea id="np-paste-t" rows="8" spellcheck="false" placeholder="1 76ers&#10;2 Celtics&#10;3 Knicks&#10;..."></textarea>
-					<div class="np-paste__btns"><button type="button" class="tu-btn tu-btn--primary" id="np-paste-go">Use this list</button><button type="button" class="tu-btn tu-btn--ghost" id="np-paste-x">Cancel</button><button type="button" class="np-link" id="np-example">Fill in an example</button></div>
+					<label for="np-paste-t" class="np-small" id="np-paste-lab">One team per line, numbered or not, or separated by commas.</label>
+					<select id="np-paste-g" aria-label="Table to fill" hidden></select>
+					<textarea id="np-paste-t" rows="8" spellcheck="false" placeholder="1. ...&#10;2. ...&#10;3. ..."></textarea>
+					<div class="np-paste__btns"><button type="button" class="tu-btn tu-btn--primary" id="np-paste-go">Use this list</button><button type="button" class="tu-btn tu-btn--ghost" id="np-paste-x">Cancel</button><button type="button" class="np-link" id="np-example" hidden>Fill in an example</button></div>
 					<div class="np-paste__msg" id="np-paste-msg" aria-live="polite"></div>
 				</div>
-				<p class="np-small" id="np-hint">Drag a team by its handle (or use the arrows) to put it where you think it will finish. On a keyboard: focus a handle, then Up / Down, Home / End.</p>
-				<ol class="np-list" id="np-list" aria-label="Your predicted standings, first to fifteenth"></ol>
+				<p class="np-small" id="np-hint">Drag a team by its handle to put it where you think it will finish.</p>
+				<div class="np-lists" id="np-lists"></div>
+			</div>
+
+			<div class="tu-card np-poedit np-poonly">
+				<div class="np-head"><b id="np-po-title">Playoff picks</b>
+					<span class="np-tools">
+						<button type="button" class="np-link" id="np-po-fill">Fill from my table picks</button>
+						<button type="button" class="np-link" id="np-po-clear">Clear</button>
+					</span>
+				</div>
+				<p class="np-small" id="np-po-note"></p>
+				<div class="np-po" id="np-po"></div>
 			</div>
 
 			<div class="tu-card np-score">
-				<div class="np-head"><b id="np-score-title">How your East picks are doing</b></div>
+				<div class="np-head"><b id="np-score-title">How your picks are doing</b></div>
 				<div class="np-hero" id="np-hero"></div>
-				<div class="np-kpick"><span class="np-small">Count a pick as right when it is</span>
+				<div class="np-kpick" id="np-kpick"><span class="np-small">Count a pick as right when it is</span>
 					<span class="tu-seg" id="np-k"><button type="button" data-k="exact">exact</button><button type="button" data-k="w1">within 1</button><button type="button" data-k="w2">within 2</button><button type="button" data-k="w3">within 3</button><button type="button" data-k="tier">right tier</button></span>
+					<label class="np-check"><input type="checkbox" id="np-ties" checked> Teams with the same record share their spots <button type="button" class="np-q" id="np-ties-q" aria-label="What does sharing spots mean?" aria-expanded="false">?</button></label>
+					<p class="np-small np-tiesnote" id="np-ties-note" hidden>Early in a season several teams often have the same record, say five teams at 2-1 in 4th to 8th. Their order in the table is only a tie-break, so a pick of any of them for any spot from 4th to 8th counts as exact. Untick it to use the published order exactly.</p>
 				</div>
-				<label class="np-check"><input type="checkbox" id="np-ties" checked> Teams with the same record share their spots <button type="button" class="np-q" id="np-ties-q" aria-label="What does sharing spots mean?" aria-expanded="false">?</button></label>
-				<p class="np-small np-tiesnote" id="np-ties-note" hidden>Early in a season several teams often have the same win-loss record, say five teams at 2-1 in 4th to 8th. Their order in the table is only a tie-break, so a pick of any of them for any spot from 4th to 8th counts as exact. Untick it to use the published order exactly.</p>
+				<p class="np-small" id="np-tiers"></p>
 				<div class="np-metrics" id="np-metrics"></div>
 				<p class="np-small" id="np-both"></p>
 			</div>
 		</div>
 
-		<div class="tu-card np-vizcard" id="np-vizcard">
+		<div class="tu-card np-vizcard np-tableonly" id="np-vizcard">
 			<div class="np-head"><b id="np-viz-title">Your order vs the standings now</b>
-				<span class="np-tools">
-					<span class="tu-seg" id="np-who" hidden></span>
-					<button type="button" class="tu-btn tu-btn--ghost" id="np-fillwin">&#x2922; Fill window</button>
-					<button type="button" class="tu-btn tu-btn--ghost" id="np-fs">&#x26F6; Full screen</button>
-					<button type="button" class="tu-btn tu-btn--ghost np-only-fill" id="np-fillx">Close (Esc)</button>
-				</span>
+				<span class="np-tools np-xbtns"><span class="tu-seg" id="np-who" hidden></span></span>
 			</div>
 			<div class="np-legend" id="np-legend"></div>
 			<div class="np-viz" id="np-viz"></div>
 			<p class="np-small np-vizinfo" id="np-vizinfo" aria-live="polite">Tap or hover a team to follow its line.</p>
+		</div>
+
+		<div class="tu-card np-tablecard np-tableonly" id="np-tablecard">
+			<div class="np-head"><b id="np-table-title">Standings</b><span class="np-tools np-xbtns"></span></div>
+			<div class="np-tables" id="np-tables"></div>
+			<p class="np-small">Lines between rows mark the tiers. From ESPN&rsquo;s public standings.</p>
+		</div>
+
+		<div class="tu-card np-porescard np-poonly" id="np-porescard">
+			<div class="np-head"><b id="np-pores-title">Playoff results</b><span class="np-tools np-xbtns"></span></div>
+			<div class="np-pores" id="np-pores"></div>
 		</div>
 
 		<div class="tu-card np-compare" id="np-compare" hidden>
@@ -78,25 +97,32 @@
 		</div>
 
 		<div class="tu-card np-share">
-			<div class="np-head"><b>Send these picks</b></div>
-			<p class="np-small">The link carries the name and both lists, nothing else, and nothing is stored on a server. Whoever opens it gets the picks as a new set, scored against the standings on the day they look.</p>
-			<div class="np-sharerow"><input type="text" id="np-link" readonly aria-label="Link to these picks"><button type="button" class="tu-btn tu-btn--primary" id="np-copy">Copy link</button></div>
+			<div class="np-head"><b>Save and send these picks</b></div>
+			<p class="np-small">Your sets of picks are saved in this browser as you go. A link carries the name and the picks, nothing else, and nothing is stored on a server: whoever opens it gets the picks as a new set, scored on the day they look.</p>
+			<div class="np-sharerow"><input type="text" id="np-link" readonly aria-label="Link to these picks"><button type="button" class="tu-btn tu-btn--primary" id="np-copy">Copy link</button><button type="button" class="tu-btn tu-btn--ghost" id="np-native" hidden>Share…</button></div>
+			<label class="np-check" id="np-share-only-lab"><input type="checkbox" id="np-share-only"><span id="np-share-only-t"> Only this tab</span></label>
+			<p class="np-small" id="np-share-what"></p>
+			<div class="np-sharerow np-sharerow--more">
+				<button type="button" class="tu-btn tu-btn--ghost" id="np-copytext">Copy this tab as text</button>
+				<button type="button" class="tu-btn tu-btn--ghost" id="np-export">Download a backup</button>
+				<button type="button" class="tu-btn tu-btn--ghost" id="np-import">Restore a backup</button>
+				<input type="file" id="np-importf" accept="application/json,.json" hidden>
+			</div>
 		</div>
 
 		<div class="tu-card np-lb" id="np-lb">
 			<div class="np-head"><b>Leaderboard <span id="np-lb-season"></span></b>
 				<span class="np-tools">
-					<span class="tu-seg" id="np-lb-board"><button type="button" data-b="E">East</button><button type="button" data-b="W">West</button><button type="button" data-b="both">Both</button></span>
+					<span class="tu-seg" id="np-lb-board"></span>
 					<select id="np-lb-m" aria-label="Rank the leaderboard by"></select>
 				</span>
 			</div>
-			<p class="np-small">Everyone&rsquo;s picks are scored against the same live standings, worked out on the server. Picks made after the season started are marked with how many games had been played, so early birds get the credit.</p>
+			<p class="np-small">Everyone&rsquo;s picks are scored against the same live standings, worked out on the server. Picks made after the season started are marked with how many games had been played, so early birds get the credit; playoff picks close when the playoffs start.</p>
 			<div class="np-post" id="np-post">
 				<label class="np-lab">Your name on the board <input type="text" id="np-lb-name" maxlength="24" autocomplete="nickname"></label>
-				<label class="np-check"><input type="checkbox" id="np-lb-e" checked> East</label>
-				<label class="np-check"><input type="checkbox" id="np-lb-w" checked> West</label>
 				<button type="button" class="tu-btn tu-btn--primary" id="np-lb-post">Post these picks</button>
 				<button type="button" class="tu-btn tu-btn--ghost" id="np-lb-del" hidden>Remove from the board</button>
+				<span class="np-small" id="np-lb-what"></span>
 			</div>
 			<div class="np-small np-lb-msg" id="np-lb-msg" aria-live="polite"></div>
 			<div class="tu-table-wrap"><table class="tu-table np-lbt" id="np-lbt"></table></div>
@@ -106,19 +132,7 @@
 		<div class="np-toast tu-toast" id="np-toast" role="status" aria-live="polite"></div>
 
 		<div class="tu-seo">
-			<h2>Track your NBA standings predictions against the live table</h2>
-			<p>MES NBA Picks checks your predicted final standings for the <strong>Eastern</strong> and <strong>Western Conference</strong> against the current NBA standings. Type or paste your order of the 15 teams in each conference, and it shows how many teams are in the exact spot, within one, two or three spots, in the right tier (top 6 playoff spot, 7th to 10th play-in, 11th to 15th lottery), plus a points score and a rank correlation, with a picture that joins each of your picks to where that team is now.</p>
-			<h3>How the scores work</h3>
-			<p><b>Exact</b> counts the teams in the spot you picked. <b>Within 1, 2 or 3</b> counts the teams that many spots or fewer away. <b>Right tier</b> counts the teams in the same group you put them in: playoffs (1st-6th), play-in (7th-10th) or lottery (11th-15th). <b>In or out of the top 10</b> checks only whether you had a team in the post-season picture. <b>Points</b> gives 3 for an exact spot, 2 for one off and 1 for two off (45 is perfect). <b>Closeness</b> is 100% minus the total number of spots you are off as a share of the worst possible order (112 spots). <b>Spearman&rsquo;s &rho;</b> is the usual rank correlation: 1 is the same order, 0 no relation, &minus;1 the reverse.</p>
-			<h3>Questions</h3>
-			<h4>Where do the standings come from?</h4>
-			<p>From ESPN&rsquo;s public standings feed, refreshed about every 10 minutes, in ESPN&rsquo;s published order (which already applies the NBA tie-breakers once teams have played enough games).</p>
-			<h4>Why do tied teams share their spots?</h4>
-			<p>In the first weeks many teams have the same record, and their order is a coin flip of tie-breakers. With the box ticked a pick counts as exact anywhere inside the group of spots the tied teams cover. Untick it to score against the published order only.</p>
-			<h4>Can I fix my picks after the season starts?</h4>
-			<p>Yes, but the leaderboard shows how many games had been played when you last changed them, and a tie on the board goes to whoever picked earlier.</p>
-			<h4>Is anything about me stored?</h4>
-			<p>Your sets of picks stay in this browser. Only if you post to the leaderboard are the name you chose and your two lists stored, with a private key in your browser that lets you change or remove them.</p>
-			<p class="np-small">Not affiliated with the NBA, its teams or ESPN. Team colours are used only to tell the teams apart.</p>
+{{SEO}}
+			<p class="np-small">Not affiliated with the {{LONG}}, its teams or ESPN. Logos come from ESPN&rsquo;s public site and are shown only to tell the teams apart.</p>
 		</div>
 	</div>
