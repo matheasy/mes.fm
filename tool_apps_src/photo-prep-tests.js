@@ -131,5 +131,24 @@ while (H.canUndo()) H.undo(); ok(H.cur() === 9 && H.undo() === 9, "undo stops at
 const f = M.fitSide(8000, 2000, 4000); ok(f.w === 4000 && f.h === 1000, "fitSide caps the long side");
 ok(M.fitSide(100, 50, 4000).w === 100, "fitSide never enlarges");
 
+// phone view: a 4000 x 3000 photo on a 412 px wide stage fits with room for finger-sized crop handles, all 8 on screen
+[[412, 560], [360, 480], [1280, 720]].forEach(function (sz) {
+  const sw = sz[0], sh = sz[1], R = { x: 0, y: 0, w: 4000, h: 3000 };
+  const pad = M.viewPad("crop", sw, sh, true), t = M.fitView(sw, sh, R, pad, 1, 0, 0);
+  ok(pad >= 24, "crop pad leaves room for a finger at " + sw);
+  const xs = [R.x * t.k + t.ox, (R.x + R.w) * t.k + t.ox], ys = [R.y * t.k + t.oy, (R.y + R.h) * t.k + t.oy];
+  ok(xs[0] >= pad - 1e-6 && xs[1] <= sw - pad + 1e-6 && ys[0] >= pad - 1e-6 && ys[1] <= sh - pad + 1e-6, "every crop handle is on screen with a margin at " + sw + "x" + sh + " " + xs + " " + ys);
+  ok(Math.abs((xs[0] + xs[1]) / 2 - sw / 2) < 1e-6 && Math.abs((ys[0] + ys[1]) / 2 - sh / 2) < 1e-6, "picture centred at " + sw);
+  ok(Math.abs(xs[1] - xs[0] - (sw - 2 * pad)) < 1e-6 || Math.abs(ys[1] - ys[0] - (sh - 2 * pad)) < 1e-6, "picture uses the space at " + sw);
+});
+ok(M.viewPad("move", 412, 560, true) < 24, "other tools keep a small margin");
+ok(M.fitView(100, 100, { x: 0, y: 0, w: 10, h: 10 }, 999, 1).k > 0, "a silly pad still leaves a positive scale");
+ok(M.zoomLabel(1) === "1×" && M.zoomLabel(2) === "2×" && M.zoomLabel(0.5) === "0.5×", "zoom label is times the fitted size, not a misleading 100%");
+// the visible box: null when nothing is zoomed, else the visual viewport
+ok(M.visibleBox({ width: 412, height: 860, offsetLeft: 0, offsetTop: 0 }, 412, 860) === null, "visibleBox null when not zoomed");
+const vb = M.visibleBox({ width: 206, height: 430, offsetLeft: 100, offsetTop: 50 }, 412, 860);
+ok(vb && vb.x === 100 && vb.y === 50 && vb.w === 206 && vb.h === 430, "visibleBox follows a pinch-zoomed page");
+ok(M.visibleBox({ width: 412, height: 500, offsetLeft: 0, offsetTop: 0 }, 412, 860).h === 500, "visibleBox follows an open keyboard");
+
 console.log((bad ? bad + " of " : "all ") + n + " checks " + (bad ? "FAILED" : "passed"));
 process.exit(bad ? 1 : 0);

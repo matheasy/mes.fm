@@ -143,5 +143,67 @@ eq([T.editDefault(true), T.editDefault(false)], [true, false], "edit before read
   var big = []; for (var i = 0; i < T.SAVED_MAX; i++) big.push({ q: "q" + i, o: "o", t: "fr" }); eq(T.toggleSaved(big, { q: "new", o: "o", t: "fr" }, 1).list.length, T.SAVED_MAX, "capped at SAVED_MAX");
 })();
 
+
+// language guess (no network): the owner's Spanish screenshot read without accents is still Spanish
+const G = t => (T.guessLang(t) || {}).lang || "";
+eq(G("Se requiere permiso para la accion posting Clave posting Esta clave se guardara solo en tu sesion actual y no persistira tras cerrar sesion."), "es", "guess es without accents");
+eq(G("Se requiere permiso para la acción. Esta clave se guardará solo en tu sesión actual."), "es", "guess es");
+eq(G("The quick brown fox is in the house and it was good for you"), "en", "guess en");
+eq(G("Je ne sais pas ce que vous voulez dire avec cette chose"), "fr", "guess fr");
+eq(G("Ich bin nicht sicher, ob das eine gute Idee ist und wir"), "de", "guess de");
+eq(G("Eu não sei o que você quer dizer com isso"), "pt", "guess pt");
+eq(G("Non so cosa vuoi dire con questo, ma il gatto è sul tavolo"), "it", "guess it");
+eq(G("Привет, как дела? Я тебя люблю"), "ru", "guess ru");
+eq(G("Привіт, як справи? Їжак"), "uk", "guess uk");
+eq(G("这是一个问题"), "zh", "guess zh simplified");
+eq(G("這是一個問題"), "zh-Hant", "guess zh traditional");
+eq(G("これは日本語です"), "ja", "guess ja (kana with kanji)");
+eq(G("안녕하세요 반갑습니다"), "ko", "guess ko");
+eq(G("مرحبا كيف حالك"), "ar", "guess ar");
+eq(G("سلام چطوری"), "fa", "guess fa");
+eq(G("नमस्ते आप कैसे हैं"), "hi", "guess hi");
+eq(G("Γεια σου τι κάνεις"), "el", "guess el");
+eq(T.guessLang("hola"), null, "too short to guess");
+eq(T.guessLang("12345 !!!"), null, "no letters");
+// picture language: first pass, re-read, and the From / To that follow
+eq(T.ocrFirst("auto", "en", ["en-US"]), "en", "auto reads with From first");
+eq(T.ocrFirst("auto", "auto", ["fr-CA", "en"]), "fr", "auto From: the browser's language");
+eq(T.ocrFirst("de", "en", ["en"]), "de", "a chosen picture language wins");
+eq(T.ocrFirst("auto", "auto", ["xx"]), "en", "fallback English");
+eq(T.ocrRecheck("en", { lang: "es", conf: 0.9 }), "es", "Spanish text read as English: read again in Spanish");
+eq(T.ocrRecheck("es", { lang: "es", conf: 0.9 }), null, "no re-read when it matches");
+eq(T.ocrRecheck("en", { lang: "es", conf: 0.3 }), null, "no re-read on a weak guess");
+eq(T.ocrRecheck("en", null), null, "no re-read without a guess");
+eq(T.ocrRecheck("en", { lang: "zu", conf: 0.9 }), null, "no re-read without a reading model");
+eq(T.afterOcrLangs("es", "es", ["en-US"], "en"), { from: "es", to: "en" }, "the owner's case: From English / To Spanish + a Spanish picture -> Spanish to English");
+eq(T.afterOcrLangs("es", "fr", ["en"], "en"), { from: "es", to: "fr" }, "To kept when it differs");
+eq(T.afterOcrLangs("en", "en", ["en-US"], "auto"), { from: "en", to: "es" }, "English picture, English browser: some other To");
+eq(T.afterOcrLangs("de", "de", ["fr-FR"], "auto"), { from: "de", to: "fr" }, "To moves to the browser language");
+eq(T.afterOcrLangs("", "en", [], "en"), null, "nothing detected: nothing changes");
+// joining wrapped OCR lines
+eq(T.ocrParagraphs("Se requiere permiso para la acción\n«posting». Esta clave se guardará\nsolo en tu sesión actual y no\npersistirá tras cerrar sesión.\nClave no encontrada.\nNovedades\nAgregar clave"),
+  "Se requiere permiso para la acción «posting». Esta clave se guardará solo en tu sesión actual y no persistirá tras cerrar sesión.\nClave no encontrada.\nNovedades\nAgregar clave", "OCR lines joined into sentences, short labels kept");
+eq(T.ocrParagraphs("Hyphen-\nated word"), "Hyphenated word", "hyphenated line break joined");
+eq(T.ocrParagraphs("— Page 1 —\nText here"), "— Page 1 —\nText here", "page markers stay on their own line");
+eq(T.ocrParagraphs("Title\nSecond Title"), "Title\nSecond Title", "short capitalised lines are not joined");
+// searchable language picker
+const items = [["en", "English"], ["es", "Spanish", "Español"], ["de", "German", "Deutsch"], ["gl", "Galician"], ["ka", "Georgian"], ["zh", "Chinese"], ["zh-Hant", "Chinese (Traditional)"], ["auto", "Detect language"]].map(x => ({ c: x[0], n: x[2] || x[1], e: x[1] }));
+eq(T.langFilter("spa", items).map(x => x.c), ["es"], "filter by English name");
+eq(T.langFilter("espan", items).map(x => x.c), ["es"], "filter by own name, accents ignored");
+eq(T.langFilter("g", items).map(x => x.c).slice(0, 1), ["de"], "common languages first among equal matches");
+eq(T.langFilter("trad", items).map(x => x.c), ["zh-Hant"], "match a word inside the name");
+eq(T.langFilter("chinese", items).map(x => x.c), ["zh", "zh-Hant"], "exact name first");
+eq(T.langFilter("ZH", items).map(x => x.c)[0], "zh", "code match");
+eq(T.langFilter("xyz", items), [], "no match");
+eq(T.langFilter("", items).length, items.length, "empty query: everything");
+const grp = T.langGroups(["de", "en", "es", "fr", "gl", "ka", "zh"], ["ka", "xx", "ka"], ["fr-CA"]);
+eq(grp.map(g => g.title), ["Recent", "Common", "All languages"], "groups");
+eq(grp[0].codes, ["ka"], "recent: known, no duplicates");
+eq(grp[1].codes, ["fr", "en", "es", "de", "zh"], "common: the browser's language first, not repeating recent");
+eq(grp[2].codes.length, 7, "all languages listed");
+eq(T.langGroups(["en"], [], []).map(g => g.title), ["Common", "All languages"], "no Recent group when empty");
+eq(T.pushRecent(["es", "fr"], "fr"), ["fr", "es"], "pushRecent moves to front");
+eq(T.pushRecent(["es"], "auto"), ["es"], "pushRecent ignores auto");
+eq(T.pushRecent(["a", "b", "c", "d", "e", "f"], "g").length, 6, "pushRecent caps");
 console.log((bad ? bad + " of " : "all ") + n + " checks " + (bad ? "FAILED" : "passed"));
 process.exit(bad ? 1 : 0);

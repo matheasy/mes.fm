@@ -276,6 +276,162 @@
   // "Edit pictures before reading them": off on a computer, on for touch screens (phone photos usually want a crop)
   function editDefault(coarse) { return !!coarse; }
 
+
+  // ---------- language guess without a network (used when the browser has no LanguageDetector): script first, then common words ----------
+  function fold(s) { return String(s || "").normalize ? String(s || "").normalize("NFD").replace(/[̀-ͯ]/g, "").toLowerCase() : String(s || "").toLowerCase(); }
+  var SCRIPTS = [
+    ["ja", /[぀-ヿ]/g], ["ko", /[가-힯ᄀ-ᇿ㄰-㆏]/g], ["zh", /[一-鿿㐀-䶿]/g], ["th", /[฀-๿]/g],
+    ["he", /[֐-׿]/g], ["ar", /[؀-ۿݐ-ݿﭐ-﷿ﹰ-﻿]/g], ["hi", /[ऀ-ॿ]/g], ["bn", /[ঀ-৿]/g],
+    ["pa", /[਀-੿]/g], ["gu", /[઀-૿]/g], ["ta", /[஀-௿]/g], ["te", /[ఀ-౿]/g], ["kn", /[ಀ-೿]/g],
+    ["ml", /[ഀ-ൿ]/g], ["si", /[඀-෿]/g], ["ka", /[Ⴀ-ჿ]/g], ["hy", /[԰-֏]/g], ["am", /[ሀ-፿]/g],
+    ["km", /[ក-៿]/g], ["lo", /[຀-໿]/g], ["my", /[က-႟]/g], ["el", /[Ͱ-Ͽἀ-῿]/g], ["ru", /[Ѐ-ӿ]/g],
+    ["la_", /[a-zA-ZÀ-ɏḀ-ỿ]/g]
+  ];
+  var TRAD = "這們個來說國時會對發後過還為與學經點體關門開問題實現樣麼見長書車東電話氣", SIMP = "这们个来说国时会对发后过还为与学经点体关门开问题实现样么见长书车东电话气";
+  var WORDS = {
+    en: "the and of to in is that it for you was with on are this be have not your will can from they we at by or what all if",
+    es: "el la de que y en los las un una es por con para no se del al lo como mas pero su sus le ya esta este tu solo muy hay tras",
+    fr: "le la les de des et est un une que qui pas pour dans sur avec ce il je vous au du ne se sont plus mais elle nous cette",
+    de: "der die das und ist nicht ein eine zu mit den von sie ich es auf fur im dem auch sich wird werden oder aber wir",
+    it: "il di che la e un una per non sono gli le del della con mi ma ho questo si da al nel come anche piu sei",
+    pt: "o a os as de que e nao um uma para com do da em no na voce mas por se dos das ao seu sua isso esta foi",
+    nl: "de het een en van is dat niet je op te zijn met voor ik er die wat ook naar maar bij uit",
+    sv: "och att det ar som en pa for av med jag inte har till den de om ett var men sig",
+    da: "og at det er som en pa for af med jeg ikke har til den de om et var men sig",
+    no: "og at det er som en pa for av med jeg ikke har til den de om et var men seg ikkje",
+    pl: "i w nie sie na ze to z jest do jak co ale o tak po sa dla od",
+    cs: "a je se na v to ze s z do jako ale jsem by o pro jsou tak",
+    ro: "si de la in nu este care o un cu pe sa mai din pentru se ca",
+    tr: "ve bir bu da de icin ile ne cok degil var ben sen o gibi daha",
+    id: "dan yang di ini itu dengan untuk tidak ada dari saya kamu akan ke dalam bisa",
+    vi: "va cua la co khong duoc nhung mot nguoi cho nay trong voi da cac",
+    ca: "el la i de que els les per amb no es una un al del com",
+    fi: "ja on ei se etta han mutta kun niin olen oli ovat tama",
+    hu: "a az es hogy nem egy is van de meg ez el mint"
+  };
+  var WSET = {};
+  Object.keys(WORDS).forEach(function (k) { WSET[k] = {}; WORDS[k].split(" ").forEach(function (w) { WSET[k][w] = 1; }); });
+  var MARKS = { es: /[ñ¿¡]/g, pt: /[ãõ]/g, de: /ß/g, pl: /[łąężźśćń]/g, cs: /[řůěď]/g, ro: /[ășț]/g, tr: /[ğış]/g, vi: /[ơưđạảấầẩẫậắằẳẵặẹẻẽếềểễệỉịọỏốồổỗộớờởỡợụủứừửữựỳỵỷỹ]/g, hu: /[őű]/g, da: /[æø]/g, sv: /[å]/g, fr: /[œèêëàùç]/g };
+  // guessLang(text) -> {lang, conf (0..1), by: "script"|"words"} or null when it can't tell
+  function guessLang(text) {
+    var s = String(text || "").slice(0, 4000);
+    var counts = {}, total = 0;
+    SCRIPTS.forEach(function (sc) { var m = s.match(sc[1]); counts[sc[0]] = m ? m.length : 0; total += counts[sc[0]]; });
+    if (!total) return null;
+    var lat = counts.la_;
+    if (lat / total < 0.5) {
+      var cjk = counts.zh + counts.ja;
+      if (counts.ja && counts.ja >= cjk * 0.1) return { lang: "ja", conf: 0.9, by: "script" };
+      var best = "", bn = 0;
+      Object.keys(counts).forEach(function (k) { if (k !== "la_" && counts[k] > bn) { bn = counts[k]; best = k; } });
+      if (!best || bn < 2) return null;
+      var low = s.toLowerCase();
+      if (best === "zh") { var tr = 0, si = 0; for (var i = 0; i < s.length; i++) { if (TRAD.indexOf(s[i]) >= 0) tr++; else if (SIMP.indexOf(s[i]) >= 0) si++; } if (tr > si) best = "zh-Hant"; }
+      else if (best === "ar") { if (/[ٹڈڑںےۓ]/.test(s)) best = "ur"; else if (/[پچژگکی]/.test(s)) best = "fa"; }
+      else if (best === "ru") { if (/[іїєґ]/.test(low)) best = "uk"; else if (/[ђћџљњ]/.test(low)) best = "sr"; else if (/[ѓќѕ]/.test(low)) best = "mk"; else if (/ў/.test(low)) best = "be"; else if (/[әғқңөұһ]/.test(low)) best = "kk"; else if (/ъ/.test(low) && !/[ыэё]/.test(low)) best = "bg"; }
+      else if (best === "he" && /[װױײ]/.test(s)) best = "yi";
+      return { lang: best, conf: Math.min(1, 0.6 + bn / total * 0.4), by: "script" };
+    }
+    var toks = fold(s).match(/[a-z]+/g) || [];
+    if (toks.length < 3) return null;
+    var sc = {}, raw = s.toLowerCase();
+    Object.keys(WSET).forEach(function (k) {
+      var h = 0; toks.forEach(function (t) { if (WSET[k][t]) h++; });
+      var m = MARKS[k] ? (raw.match(MARKS[k]) || []).length : 0;
+      sc[k] = h + Math.min(m, 6) * 0.75;
+    });
+    var order = Object.keys(sc).sort(function (a, b) { return sc[b] - sc[a]; });
+    var a = order[0], b = order[1];
+    if (sc[a] < 2 || sc[a] < toks.length * 0.08) return null;
+    var margin = (sc[a] - sc[b]) / sc[a];
+    if (margin < 0.15) return null;
+    return { lang: a, conf: Math.min(1, 0.4 + margin), by: "words" };
+  }
+
+  // Picture language: the first pass reads with the chosen language, else the From language, else the browser's; then the text is
+  // guessed, and if it is clearly another language with a reading model the picture is read again in that language.
+  function ocrFirst(choice, from, prefs) {
+    if (choice && choice !== "auto" && toTess(choice)) return norm(choice);
+    if (from && from !== "auto" && toTess(from)) return norm(from);
+    prefs = prefs || [];
+    for (var i = 0; i < prefs.length; i++) if (toTess(prefs[i])) return norm(prefs[i]);
+    return "en";
+  }
+  function ocrRecheck(passLang, guess) {
+    if (!guess || !guess.lang || guess.conf < 0.5) return null;
+    var g = norm(guess.lang);
+    return g !== norm(passLang) && toTess(g) ? g : null;
+  }
+  // After reading a picture: the new From / To. To flips to the person's language (or English) when it equals the picture's language.
+  function afterOcrLangs(detected, to, prefs, prevFrom) {
+    if (!detected) return null;
+    var t = to;
+    if (!t || norm(t) === norm(detected)) t = pickTarget((prevFrom && prevFrom !== "auto" ? [prevFrom] : []).concat(prefs || [], ["en"]), norm(detected));
+    return { from: norm(detected), to: t };
+  }
+
+
+  // OCR text keeps the picture's line breaks; a sentence wrapped over several lines translates badly line by line. Join a line to the
+  // next when it does not end a sentence and the next one carries on (starts in lower case), or when it is a long wrapped line.
+  function ocrParagraphs(text) {
+    var L = String(text || "").split("\n"), out = [];
+    for (var i = 0; i < L.length; i++) {
+      var line = L[i].replace(/\s+$/, ""), prev = out.length ? out[out.length - 1] : null;
+      if (prev && prev.trim() && line.trim() && !/^—.*—$/.test(line.trim()) && !/^—.*—$/.test(prev.trim())) {
+        var ends = /[.!?:;。！？…»"”)\]]$/.test(prev), next = line.trim();
+        var lower = /^[a-zà-ÿа-я«"“(]/.test(next) && !/^[A-ZÀ-Þ]/.test(next);
+        var hyph = /[a-zà-ÿ]-$/i.test(prev);
+        if (hyph) { out[out.length - 1] = prev.slice(0, -1) + next; continue; }
+        if (!ends && (lower || (prev.length >= 28 && /[\w,]$/.test(prev)))) { out[out.length - 1] = prev + " " + next; continue; }
+      }
+      out.push(line);
+    }
+    return out.join("\n");
+  }
+
+  // ---------- searchable language picker ----------
+  var COMMON = ["en", "es", "fr", "de", "zh", "ja", "ar", "pt", "ru", "hi", "ko", "it", "vi"];
+  // items [{c: code, n: name in the page's language, e: English name}]; returns the matching items, best first
+  function langFilter(q, items, boost) {
+    var f = fold(q).trim(), B = {};
+    (boost || COMMON).forEach(function (c, i) { c = norm(c); if (!(c in B)) B[c] = i; });
+    if (!f) return items.slice();
+    var out = [];
+    items.forEach(function (it, i) {
+      var best = 9;
+      [it.n, it.e].forEach(function (name) {
+        var x = fold(name);
+        if (!x) return;
+        if (x === f) best = Math.min(best, 0);
+        else if (x.indexOf(f) === 0) best = Math.min(best, 1);
+        else if (new RegExp("(^|[\\s(\\-])" + f.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")).test(x)) best = Math.min(best, 2);
+        else if (x.indexOf(f) >= 0) best = Math.min(best, 3);
+      });
+      if (fold(it.c) === f) best = Math.min(best, 0);
+      if (best < 9) out.push({ it: it, s: best, i: i });
+    });
+    var bo = function (x) { return x.it.c in B ? B[x.it.c] : 999; };
+    out.sort(function (a, b) { return a.s - b.s || bo(a) - bo(b) || a.i - b.i; });
+    return out.map(function (x) { return x.it; });
+  }
+  // groups shown before anything is typed: Recent (max 5), Common (max 8, not repeating Recent), All (A-Z, everything)
+  function langGroups(codes, recent, prefs) {
+    var has = {}; codes.forEach(function (c) { has[c] = 1; });
+    var r = [], seen = {};
+    (recent || []).forEach(function (c) { c = norm(c); if (has[c] && !seen[c] && r.length < 5) { r.push(c); seen[c] = 1; } });
+    var cm = [];
+    (prefs || []).map(norm).concat(COMMON).forEach(function (c) { if (has[c] && !seen[c] && cm.length < 8) { cm.push(c); seen[c] = 1; } });
+    var g = [];
+    if (r.length) g.push({ title: "Recent", codes: r });
+    if (cm.length) g.push({ title: "Common", codes: cm });
+    g.push({ title: "All languages", codes: codes.slice() });
+    return g;
+  }
+  function pushRecent(list, code, max) {
+    list = (list || []).filter(function (c) { return c !== code; }); if (code && code !== "auto") list.unshift(code);
+    return list.slice(0, max || 6);
+  }
+
   // ---------- Saved translations (pinned with the star; never pruned, not touched by Clear history) ----------
   var SAVED_MAX = 1000;
   function savedSame(a, b) { return !!a && !!b && a.q === b.q && a.o === b.o && a.t === b.t; }
@@ -311,6 +467,7 @@
 
   var api = {
     savedSame: savedSame, savedIndex: savedIndex, savedEntry: savedEntry, toggleSaved: toggleSaved, mergeSaved: mergeSaved, savedText: savedText, savedJson: savedJson, SAVED_MAX: SAVED_MAX,
+    COMMON: COMMON, guessLang: guessLang, ocrParagraphs: ocrParagraphs, ocrFirst: ocrFirst, ocrRecheck: ocrRecheck, afterOcrLangs: afterOcrLangs, langFilter: langFilter, langGroups: langGroups, pushRecent: pushRecent, fold: fold,
     sourceTabs: sourceTabs, nextTab: nextTab, editDefault: editDefault,
     LANGS: LANGS, DAILY: DAILY, norm: norm, isRtl: isRtl, known: known, toTess: toTess, fromTess: fromTess, tessLangs: tessLangs,
     myMemoryCode: myMemoryCode, apiCode: apiCode, utf8Len: utf8Len, sentences: sentences, chunk: chunk, join: join,
@@ -374,15 +531,104 @@
   engSel.value = S.engine;
   var olSel = $("tr-olang");
   var ocrList = sorted.filter(function (c) { return T.toTess(c); });
-  function defaultOcrLang() {
-    if (S.from !== "auto" && T.toTess(S.from)) return S.from;
-    for (var i = 0; i < prefs.length; i++) if (T.toTess(prefs[i])) return T.norm(prefs[i]);
-    return "en";
+  if (!S.olangPicked) S.olang = "auto";
+  fill(olSel, ["auto"].concat(ocrList), S.olang || "auto");
+
+  // ---------- searchable language pickers: a button + a popover with a search box and a list (the <select> stays, hidden, as the value) ----------
+  var pickers = {}, pickN = 0;
+  var selValue = Object.getOwnPropertyDescriptor(HTMLSelectElement.prototype, "value");
+  function makePicker(sel, opts) {
+    var id = "tr-pk" + (++pickN), lab = document.querySelector('label[for="' + sel.id + '"]');
+    var wrap = document.createElement("div"); wrap.className = "tr-pick" + (opts.end ? " tr-pick--end" : "");
+    var btn = document.createElement("button"); btn.type = "button"; btn.className = "tr-pickb"; btn.id = id + "-b";
+    btn.setAttribute("aria-haspopup", "listbox"); btn.setAttribute("aria-expanded", "false");
+    btn.innerHTML = '<span class="tr-pickn"></span><span class="tr-picks"></span><svg class="tr-ic tr-pickc" viewBox="0 0 24 24" aria-hidden="true"><path d="M6 9l6 6 6-6"/></svg>';
+    if (lab) { lab.id = lab.id || id + "-l"; lab.setAttribute("for", btn.id); btn.setAttribute("aria-labelledby", lab.id + " " + btn.id); }
+    var pop = document.createElement("div"); pop.className = "tr-pickpop"; pop.hidden = true;
+    pop.innerHTML = '<input type="text" class="tr-pickq" role="combobox" aria-autocomplete="list" aria-expanded="true" aria-controls="' + id + '-l1" placeholder="Search languages" autocomplete="off" spellcheck="false" aria-label="Search languages"><ul class="tr-pickl" id="' + id + '-l1" role="listbox" aria-label="Languages"></ul>';
+    sel.parentNode.insertBefore(wrap, sel); wrap.appendChild(btn); wrap.appendChild(pop); wrap.appendChild(sel); sel.hidden = true; sel.tabIndex = -1;
+    var q = pop.querySelector("input"), ul = pop.querySelector("ul"), act = -1, opts2 = [];
+    function codes() { return Array.prototype.map.call(sel.options, function (o) { return o.value; }); }
+    function item(c) { return { c: c, n: lname(c), e: ename(c) }; }
+    function refresh() {
+      var v = selValue.get.call(sel);
+      btn.querySelector(".tr-pickn").textContent = opts.name ? opts.name(v) : lname(v);
+      var sub = opts.sub ? opts.sub(v) : "";
+      btn.querySelector(".tr-picks").textContent = sub ? " (" + sub + ")" : "";
+    }
+    Object.defineProperty(sel, "value", { configurable: true, get: function () { return selValue.get.call(sel); }, set: function (v) { selValue.set.call(sel, v); refresh(); } });
+    function render() {
+      var all = codes(), v = sel.value, text = q.value, html = [], n = 0, special = all.filter(function (c) { return c === "auto"; }), rest = all.filter(function (c) { return c !== "auto"; });
+      opts2 = [];
+      function li(c) { opts2.push(c); var on = c === v; return '<li role="option" id="' + id + "-o" + (n++) + '" data-v="' + esc(c) + '" aria-selected="' + on + '"' + (on ? ' class="on"' : "") + ">" + esc(opts.name ? opts.name(c) : lname(c)) + (c !== "auto" && ename(c) !== lname(c) ? ' <span class="tr-dim">' + esc(ename(c)) + "</span>" : "") + "</li>"; }
+      if (text.trim()) {
+        var hit = T.langFilter(text, special.concat(rest).map(item), (S.recent || []).concat(prefs, T.COMMON));
+        if (!hit.length) html.push('<li class="tr-pickh" role="presentation">No language matches “' + esc(text) + "”</li>");
+        hit.forEach(function (it) { html.push(li(it.c)); });
+      } else {
+        special.forEach(function (c) { html.push(li(c)); });
+        T.langGroups(rest, S.recent, prefs).forEach(function (g) {
+          html.push('<li class="tr-pickh" role="presentation">' + esc(g.title) + "</li>");
+          g.codes.forEach(function (c) { html.push(li(c)); });
+        });
+      }
+      ul.innerHTML = html.join("");
+      setAct(text.trim() ? 0 : Math.max(0, opts2.indexOf(v)), true);
+    }
+    function setAct(i, scroll) {
+      var lis = ul.querySelectorAll("[role=option]"); if (!lis.length) { act = -1; q.removeAttribute("aria-activedescendant"); return; }
+      act = Math.max(0, Math.min(lis.length - 1, i));
+      Array.prototype.forEach.call(lis, function (l, k) { l.classList.toggle("act", k === act); });
+      q.setAttribute("aria-activedescendant", lis[act].id);
+      if (scroll) lis[act].scrollIntoView({ block: "nearest" });
+    }
+    function open(seed) {
+      if (!pop.hidden) return;
+      Object.keys(pickers).forEach(function (k) { if (pickers[k] !== api) pickers[k].close(); });
+      pop.hidden = false; btn.setAttribute("aria-expanded", "true"); wrap.classList.add("open");
+      q.value = seed || ""; render();
+      setTimeout(function () { q.focus(); if (seed) q.setSelectionRange(seed.length, seed.length); }, 0);
+    }
+    function close(focus) { if (pop.hidden) return; pop.hidden = true; btn.setAttribute("aria-expanded", "false"); wrap.classList.remove("open"); if (focus) btn.focus(); }
+    function pick(c) {
+      close(true);
+      if (c === sel.value) return;
+      sel.value = c; if (c !== "auto") { S.recent = T.pushRecent(S.recent, c); save(); }
+      sel.dispatchEvent(new Event("change", { bubbles: true }));
+    }
+    btn.addEventListener("click", function () { if (pop.hidden) open(); else close(); });
+    btn.addEventListener("keydown", function (e) {
+      if (e.key === "ArrowDown" || e.key === "ArrowUp") { e.preventDefault(); open(); }
+      else if (e.key.length === 1 && /\S/.test(e.key) && !e.ctrlKey && !e.metaKey && !e.altKey) { e.preventDefault(); open(e.key); }
+    });
+    q.addEventListener("input", render);
+    q.addEventListener("keydown", function (e) {
+      var lis = ul.querySelectorAll("[role=option]");
+      if (e.key === "ArrowDown") { e.preventDefault(); setAct(act + 1, true); }
+      else if (e.key === "ArrowUp") { e.preventDefault(); setAct(act - 1, true); }
+      else if (e.key === "PageDown") { e.preventDefault(); setAct(act + 8, true); }
+      else if (e.key === "PageUp") { e.preventDefault(); setAct(act - 8, true); }
+      else if (e.key === "Enter") { e.preventDefault(); if (lis[act]) pick(lis[act].getAttribute("data-v")); }
+      else if (e.key === "Escape") { e.preventDefault(); e.stopPropagation(); close(true); }
+      else if (e.key === "Tab") close();
+    });
+    ul.addEventListener("mousedown", function (e) { e.preventDefault(); });   // keep focus in the search box
+    ul.addEventListener("click", function (e) { var l = e.target.closest("[role=option]"); if (l) pick(l.getAttribute("data-v")); });
+    document.addEventListener("pointerdown", function (e) { if (!pop.hidden && !wrap.contains(e.target)) close(); });
+    var api = { refresh: refresh, open: open, close: close, btn: btn };
+    refresh();
+    return api;
   }
-  fill(olSel, ocrList, S.olang || defaultOcrLang());
+  var dnEn = null;
+  try { dnEn = new Intl.DisplayNames(["en"], { type: "language" }); } catch (e) {}
+  function ename(c) { if (c === "auto") return ""; var n = ""; try { n = dnEn ? dnEn.of(c === "zh" ? "zh-Hans" : c) : ""; } catch (e) {} return n || c; }
+  if (!Array.isArray(S.recent)) S.recent = [];
   $("tr-oeng").checked = !!S.oeng;
   $("tr-live").checked = !!S.live;
   $("tr-hkeep").checked = !!S.keep;
+  pickers.from = makePicker(fromSel, { sub: function (v) { return v === "auto" && detLang ? lname(detLang) : ""; } });
+  pickers.to = makePicker(toSel, { end: true });
+  pickers.olang = makePicker(olSel, { name: function (v) { return v === "auto" ? "Automatic" : lname(v); }, sub: function (v) { return v === "auto" && picLang ? lname(picLang) : ""; } });
 
   // ---------- small UI helpers ----------
   var toastT;
@@ -408,7 +654,8 @@
   }
 
   // ---------- text pane ----------
-  var inp = $("tr-in"), out = $("tr-out"), outText = "";
+  var inp = $("tr-in"), out = $("tr-out"), outText = "", detLang = "";
+  function setDet(c) { detLang = c || ""; $("tr-det").textContent = detLang ? "Detected: " + lname(detLang) : ""; if (pickers.from) pickers.from.refresh(); }
   function counts() {
     var n = inp.value.length;
     $("tr-count").textContent = n.toLocaleString() + (n === 1 ? " character" : " characters");
@@ -495,19 +742,20 @@
   function translate(gesture, auto) {
     var text = inp.value, my = ++gen;
     if (ctl) { try { ctl.abort(); } catch (e) {} ctl = null; }
-    if (!text.trim()) { setOut(""); msg(""); previewBadge(); $("tr-det").textContent = ""; return Promise.resolve(); }
+    if (!text.trim()) { setOut(""); msg(""); previewBadge(); setDet(""); return Promise.resolve(); }
     var from = S.from, to = S.to;
     var step = Promise.resolve(from);
     msg("");
     if (from === "auto" && S.engine !== "online") {
       step = detectAvail().then(function (a) {
-        if (a === "unavailable" || (!gesture && a !== "available")) return "";
-        return within(detectOnDevice(text), a === "available" ? 6000 : 120000, "").catch(function () { return ""; });
+        var g = T.guessLang(text), local = g && g.conf >= 0.6 ? g.lang : "";
+        if (a === "unavailable" || (!gesture && a !== "available")) return local;
+        return within(detectOnDevice(text), a === "available" ? 6000 : 120000, "").catch(function () { return ""; }).then(function (r) { return r || local; });
       });
-    }
+    } else if (from === "auto") { var g0 = T.guessLang(text); if (g0 && g0.conf >= 0.6) step = Promise.resolve(g0.lang); }
     return step.then(function (src) {
       if (my !== gen) return;
-      if (from === "auto") $("tr-det").textContent = src ? "Detected: " + lname(src) : "";
+      if (from === "auto") setDet(src);
       if (src && src === to) { setOut(text, to); badge("same"); return; }
       var deviceTry = src && src !== "auto" ? availability(src, to) : Promise.resolve(hasApi ? "unavailable" : "");
       return deviceTry.then(function (a) {
@@ -583,7 +831,7 @@
         if (!outs.some(Boolean)) return;
       }
       setOut(T.join(pieces, outs), to);
-      if (from === "auto" && detected) $("tr-det").textContent = "Detected: " + lname(detected);
+      if (from === "auto" && detected) setDet(detected);
       if (detected && detected === to) badge("same"); else badge("online");
       remember(text, detected || from, to, "online");
     }, function (e) {
@@ -596,6 +844,7 @@
   function remember(q, from, to, eng) {
     if (!q.trim() || !outText) return;
     cur = { q: q, o: outText, f: from, t: to, e: eng, d: Date.now() }; starState();
+    if (MODE === "translate" && pages && pages.length && !$("tr-onote").hidden) onote(picLang ? "Read as <b>" + esc(lname(picLang)) + "</b> and translated into " + esc(lname(to)) + ". You can fix the text and translate again." : "");
     if (!S.keep) return;
     var h = store.hist, e = { q: q.slice(0, 2000), o: outText.slice(0, 3000), f: from, t: to, e: eng, d: Date.now() };
     var last = h[0];
@@ -683,28 +932,30 @@
   inp.addEventListener("input", function () {
     counts();
     clearTimeout(typeT);
-    if (!inp.value.trim()) { setOut(""); $("tr-det").textContent = ""; msg(""); return; }
+    if (!inp.value.trim()) { setOut(""); setDet(""); msg(""); return; }
     if (S.live) typeT = setTimeout(function () { translate(false, true); }, 650);
   });
-  $("tr-go").addEventListener("click", function () { clearTimeout(typeT); translate(true); });
+  $("tr-go").addEventListener("click", function () {
+    clearTimeout(typeT); this.classList.remove("tr-go--pulse");
+    if (MODE === "translate" && srcKey !== "text" && pages.length && unread()) { readOcr(true); return; }
+    translate(true);
+  });
   inp.addEventListener("keydown", function (e) { if (e.key === "Enter" && (e.ctrlKey || e.metaKey)) { e.preventDefault(); translate(true); } });
   fromSel.addEventListener("change", function () {
     S.from = fromSel.value; save(); applyDirs();
-    if (!S.olangPicked && S.from !== "auto" && T.toTess(S.from)) { olSel.value = S.from; }
     previewBadge(); if (inp.value.trim()) translate(false, true);
   });
   toSel.addEventListener("change", function () { S.to = toSel.value; save(); previewBadge(); if (inp.value.trim()) translate(false, true); });
   engSel.addEventListener("change", function () { S.engine = engSel.value; save(); msg(""); previewBadge(); });
   $("tr-live").addEventListener("change", function () { S.live = this.checked; save(); });
   $("tr-swap").addEventListener("click", function () {
-    var det = ($("tr-det").textContent.match(/^Detected: /) && sorted.filter(function (c) { return "Detected: " + lname(c) === $("tr-det").textContent; })[0]) || "";
-    var src = S.from === "auto" ? (det || "") : S.from;
+    var src = S.from === "auto" ? detLang : S.from;
     if (!src) { toast("Choose the From language first"); return; }
     S.from = S.to; S.to = src; fromSel.value = S.from; toSel.value = S.to; save(); applyDirs();
     if (outText) { inp.value = outText; counts(); setOut(""); translate(true); }
     previewBadge();
   });
-  $("tr-clear").addEventListener("click", function () { inp.value = ""; counts(); setOut(""); msg(""); $("tr-det").textContent = ""; inp.focus(); });
+  $("tr-clear").addEventListener("click", function () { inp.value = ""; counts(); setOut(""); msg(""); setDet(""); inp.focus(); });
   $("tr-paste").addEventListener("click", function () {
     if (!navigator.clipboard || !navigator.clipboard.readText) { toast("Press Ctrl/⌘ + V in the box to paste"); inp.focus(); return; }
     navigator.clipboard.readText().then(function (t) { if (t) { inp.value = t; counts(); translate(true); } }, function () { toast("Press Ctrl/⌘ + V in the box to paste"); inp.focus(); });
@@ -735,8 +986,7 @@
     speaking = btn; btn.classList.add("tr-ib--on"); ss.speak(u);
   }
   $("tr-say-in").addEventListener("click", function () {
-    var d = sorted.filter(function (c) { return "Detected: " + lname(c) === $("tr-det").textContent; })[0];
-    say(inp.value, S.from === "auto" ? (d || "") : S.from, this);
+    say(inp.value, S.from === "auto" ? detLang : S.from, this);
   });
   $("tr-say-out").addEventListener("click", function () { say(outText, S.to, this); });
   if (!("speechSynthesis" in window)) { $("tr-say-in").hidden = true; $("tr-say-out").hidden = true; }
@@ -752,8 +1002,8 @@
   var TABS = T.sourceTabs(MODE, coarse || canLive);
   var srcBox = $("tr-src"), srcKey = "";
   if (MODE === "ocr") {   // picture first: the source switcher sits at the top of the picture card, the text box stays in the Translate card
-    $("tr-ocr-intro").insertAdjacentElement("afterend", srcBox);
-    $("tr-p-text").removeAttribute("role"); $("tr-p-text").removeAttribute("aria-labelledby");
+    var after = $("tr-ocr-intro");
+    [srcBox, root.querySelector(".tr-srcpanels"), $("tr-pics"), $("tr-picset")].forEach(function (el) { after.insertAdjacentElement("afterend", el); after = el; });
   }
   Array.prototype.forEach.call(srcBox.querySelectorAll("[role=tab]"), function (b) { if (TABS.indexOf(b.getAttribute("data-src")) < 0) b.remove(); });
   function setSrc(key, focus) {
@@ -766,8 +1016,27 @@
       if (on && focus) b.focus();
     });
     ["file", "link", "cam"].forEach(function (k) { $("tr-p-" + k).hidden = k !== key; });
-    if (MODE === "translate") { $("tr-p-text").hidden = key !== "text"; root.querySelector(".tr-col--in > .tr-act").hidden = key !== "text"; }
-    $("tr-picset").hidden = key === "text";
+    syncInput();
+  }
+  // what the input column shows: the text box for Text (and, in Translate, under a picture once one is added); a source panel until a picture is added
+  function syncInput() {
+    var key = srcKey, has = !!(pages && pages.length), pic = key !== "text";
+    ["file", "link", "cam"].forEach(function (k) { $("tr-p-" + k).hidden = k !== key || (has && k !== "cam") || (has && k === "cam" && !stream); });
+    $("tr-pics").hidden = !has || (MODE === "translate" && !pic);
+    $("tr-picset").hidden = !pic;
+    if (MODE === "translate") {
+      $("tr-p-text").hidden = pic && !has;
+      inp.placeholder = pic ? "The text in your picture appears here" : "Type or paste text here, or add a picture";
+    }
+    $("tr-livebox").hidden = MODE === "translate" && pic;
+    goLabel();
+  }
+  function unread() { return (pages || []).some(function (p) { return !p.lines; }); }
+  function goLabel() {
+    var b = $("tr-go"), pic = MODE === "translate" && srcKey !== "text" && pages && pages.length;
+    if (ocrBusy) { b.textContent = "Reading the picture…"; b.disabled = true; return; }
+    b.disabled = false;
+    b.textContent = pic && unread() ? "Read & translate" : "Translate";
   }
   srcBox.querySelector("[role=tablist]").addEventListener("click", function (e) {
     var b = e.target.closest("[role=tab]"); if (!b) return;
@@ -790,7 +1059,7 @@
   function startLive() {
     navigator.mediaDevices.getUserMedia({ video: { facingMode: "environment", width: { ideal: 1920 }, height: { ideal: 1080 } }, audio: false }).then(function (s) {
       stream = s; var v = $("tr-video"); v.srcObject = s; v.play().catch(function () {});
-      $("tr-camview").hidden = false;
+      $("tr-camview").hidden = false; syncInput();
     }, function (e) {
       toast(/NotFound|Overconstrained/i.test(e && e.name) ? "No camera found on this device" : /NotAllowed|Security/i.test(e && e.name) ? "The browser did not allow the camera" : "Could not start the camera");
     });
@@ -798,6 +1067,7 @@
   function stopLive() {
     if (stream) { stream.getTracks().forEach(function (t) { t.stop(); }); stream = null; }
     var v = $("tr-video"); if (v) v.srcObject = null; $("tr-camview").hidden = true;
+    if (srcKey) syncInput();
   }
   $("tr-camstop").addEventListener("click", stopLive);
   $("tr-snap").addEventListener("click", function () {
@@ -808,7 +1078,7 @@
   });
 
   // ---------- OCR ----------
-  var pages = [], cur = 0, worker = null, workerLangs = "", ocrBusy = false, selected = {};
+  var pages = [], pgi = 0, worker = null, workerLangs = "", ocrBusy = false, selected = {};
   var cv = $("tr-cv"), boxes = $("tr-boxes"), drop = $("tr-drop"), fileIn = $("tr-file");
   drop.addEventListener("click", function () { fileIn.click(); });
   drop.addEventListener("keydown", function (e) { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); fileIn.click(); } });
@@ -889,8 +1159,9 @@
     }).then(function () { if (my === urlGen) $("tr-urlgo").disabled = false; });
   }
   $("tr-urlform").addEventListener("submit", function (e) { e.preventDefault(); loadUrl($("tr-url").value); });
-  olSel.addEventListener("change", function () { S.olang = olSel.value; S.olangPicked = true; save(); });
-  $("tr-oeng").addEventListener("change", function () { S.oeng = this.checked; save(); });
+  function reread() { if (!pages.length) return; if (ocrBusy) cancelOcr(); pages.forEach(function (p) { p.lines = null; }); readLangs = ""; selected = {}; drawBoxes(); readOcr(false); }
+  olSel.addEventListener("change", function () { S.olang = olSel.value; S.olangPicked = true; save(); reread(); });
+  $("tr-oeng").addEventListener("change", function () { S.oeng = this.checked; save(); reread(); });
 
   function decodeImage(file) {
     if (window.createImageBitmap) {
@@ -938,7 +1209,7 @@
     if (ocrBusy) cancelOcr();
     var my = ++loadGen;
     var isPdf = file.type === "application/pdf" || /\.pdf$/i.test(file.name || "");
-    if (MODE === "translate" && how !== "paste" && how !== "drop" && srcKey === "text") setSrc("file");
+    if (srcKey === "text") setSrc("file");
     var name = file.name || (how === "cam" ? "Camera photo" : "Pasted picture"), wantEdit = !isPdf && (how === "cam" ? S.camEdit : S.editFirst), skipRead = false;
     var job = isPdf ? loadPdf(file).then(function (ps) { return ps.map(function (p) { return pageFrom(p.canvas, p.name); }); }) : decodeImage(file).then(function (bmp) {
       var c = srcCanvas(bmp); if (bmp.close) bmp.close();
@@ -950,17 +1221,17 @@
     });
     return job.then(function (ps) {
       if (my !== loadGen) return;
-      pages = ps; cur = 0; selected = {};
-      $("tr-pics").hidden = false; $("tr-otext").value = ""; $("tr-ostat").textContent = isPdf ? "PDF: " + ps.length + (ps.length === 1 ? " page" : " pages") + " ready" : "";
-      drawPages(); showPage(0);
-      $("tr-oread").disabled = false;
-      if (skipRead) { toast("Press Read the text when the picture is ready"); return; }
-      readOcr();
-    }).catch(function (e) { toast(String(e.message || e)); $("tr-oread").disabled = !pages.length; });
+      pages = ps; pgi = 0; selected = {}; picLang = ""; onote("");
+      $("tr-otext").value = ""; $("tr-ostat").textContent = isPdf ? "PDF: " + ps.length + (ps.length === 1 ? " page" : " pages") + " ready" : "";
+      if (MODE === "translate") { inp.value = ""; counts(); setOut(""); setDet(""); msg(""); }
+      drawPages(); showPage(0); syncInput();
+      if (skipRead) { onote("Press <b>Read &amp; translate</b> when the picture is ready.", "info"); return; }
+      readOcr(false);
+    }).catch(function (e) { toast(String(e.message || e)); syncInput(); });
   }
   function loadPdf(file) {
     var p = window.pdfjsLib ? Promise.resolve() : loadScript(PDF_URL);
-    prog("tr-oprog", 0.02, "Opening the PDF…"); $("tr-pics").hidden = false;
+    prog("tr-oprog", 0.02, "Opening the PDF…");
     return p.then(function () {
       window.pdfjsLib.GlobalWorkerOptions.workerSrc = PDF_WORKER;
       return file.arrayBuffer();
@@ -987,32 +1258,42 @@
   function drawPages() {
     var el = $("tr-thumbs"); el.innerHTML = "";
     pages.forEach(function (p, i) {
-      var b = document.createElement("button"); b.type = "button"; b.className = "tr-thumb"; b.setAttribute("data-pg", i); b.setAttribute("aria-pressed", i === cur ? "true" : "false");
-      b.title = p.name + (pages.length > 1 ? " (show this page)" : "");
+      var b = document.createElement("button"); b.type = "button"; b.className = "tr-thumb"; b.setAttribute("data-pg", i); b.setAttribute("aria-pressed", i === pgi ? "true" : "false");
+      b.title = "Edit " + p.name; b.setAttribute("aria-label", "Edit " + p.name);
       var k = Math.min(1, 168 / Math.max(p.src.width, p.src.height)), c = document.createElement("canvas");
       c.width = Math.max(1, Math.round(p.src.width * k)); c.height = Math.max(1, Math.round(p.src.height * k)); c.getContext("2d").drawImage(p.src, 0, 0, c.width, c.height);
       c.setAttribute("aria-hidden", "true");
       var s = document.createElement("span"); s.textContent = p.name;
       b.appendChild(c); b.appendChild(s);
-      if (p.edited) { var e2 = document.createElement("span"); e2.className = "tr-thumbed"; e2.textContent = "Edited"; b.appendChild(e2); }
+      var e2 = document.createElement("span"); e2.className = "tr-thumbed"; e2.setAttribute("aria-hidden", "true"); e2.textContent = p.edited ? "✎ Edited" : "✎ Edit"; b.appendChild(e2);
       el.appendChild(b);
     });
-    $("tr-oedit").textContent = pages.length > 1 ? "✎ Edit this page" : "✎ Edit picture";
+    $("tr-oedit").textContent = pages.length > 1 ? "✎ Edit this page" : "✎ Edit";
   }
-  $("tr-thumbs").addEventListener("click", function (e) { var b = e.target.closest("[data-pg]"); if (b) showPage(+b.getAttribute("data-pg")); });
-  $("tr-oedit").addEventListener("click", function () {
-    var p = pages[cur]; if (!p) return;
+  $("tr-thumbs").addEventListener("click", function (e) { var b = e.target.closest("[data-pg]"); if (!b) return; showPage(+b.getAttribute("data-pg")); editPage(); });
+  $("tr-oedit").addEventListener("click", editPage);
+  $("tr-oother").addEventListener("click", function () { if (srcKey === "cam") $("tr-camgo").click(); else fileIn.click(); });
+  $("tr-oclear").addEventListener("click", function () {
     if (ocrBusy) cancelOcr();
-    var at = cur;
+    pages = []; selected = {}; picLang = ""; onote(""); $("tr-thumbs").innerHTML = ""; $("tr-ocr").hidden = MODE === "translate"; $("tr-ores").hidden = true; $("tr-otext").value = ""; $("tr-ostat").textContent = "";
+    if (MODE === "translate") { inp.value = ""; counts(); setOut(""); setDet(""); msg(""); }
+    if (pickers.olang) pickers.olang.refresh();
+    syncInput();
+  });
+  function onote(html, kind) { var n = $("tr-onote"); if (!html) { n.hidden = true; return; } n.hidden = false; n.className = "tr-onote" + (kind ? " tr-onote--" + kind : ""); n.innerHTML = html; }
+  function editPage() {
+    var p = pages[pgi]; if (!p) return;
+    if (ocrBusy) cancelOcr();
+    var at = pgi;
     editCanvas(p.src, p.name).then(function (r) {
       if (!r || !pages[at]) return;
       if (!r.edited) { toast("No changes"); return; }
       var np = pageFrom(r.canvas, p.name); np.edited = true; pages[at] = np; selected = {};
-      drawPages(); showPage(at); readOcr();
+      drawPages(); showPage(at); readOcr(false);
     }, function (e) { toast(String(e && e.message || e)); });
-  });
+  }
   function showPage(i) {
-    cur = i; var p = pages[i]; if (!p) return;
+    pgi = i; var p = pages[i]; if (!p) return;
     $("tr-ocr").hidden = false; $("tr-ores").hidden = false;
     cv.width = p.canvas.width; cv.height = p.canvas.height; cv.getContext("2d").drawImage(p.canvas, 0, 0);
     $("tr-stage").style.aspectRatio = p.canvas.width + " / " + p.canvas.height;
@@ -1021,11 +1302,11 @@
   }
   function confClass(c) { return c >= 80 ? "ok" : c >= 55 ? "mid" : "low"; }
   function drawBoxes() {
-    var p = pages[cur]; boxes.innerHTML = "";
+    var p = pages[pgi]; boxes.innerHTML = "";
     if (!p || !p.lines) return;
     var W = p.canvas.width, H = p.canvas.height, html = [];
     p.lines.forEach(function (l, li) {
-      var items = S.level === "word" ? l.words.map(function (w, wi) { return { t: w.text, b: w.box, c: w.conf, id: cur + ":" + li + ":" + wi }; }) : [{ t: l.text, b: l.box, c: l.conf, id: cur + ":" + li }];
+      var items = S.level === "word" ? l.words.map(function (w, wi) { return { t: w.text, b: w.box, c: w.conf, id: pgi + ":" + li + ":" + wi }; }) : [{ t: l.text, b: l.box, c: l.conf, id: pgi + ":" + li }];
       items.forEach(function (it) {
         if (!it.b) return;
         var x = it.b.x0 / W * 100, y = it.b.y0 / H * 100, w = (it.b.x1 - it.b.x0) / W * 100, h = (it.b.y1 - it.b.y0) / H * 100;
@@ -1063,8 +1344,8 @@
     selChanged();
   });
   $("tr-selall").addEventListener("click", function () {
-    var p = pages[cur]; if (!p || !p.lines) return;
-    p.lines.forEach(function (l, li) { if (S.level === "word") l.words.forEach(function (w, wi) { selected[cur + ":" + li + ":" + wi] = 1; }); else selected[cur + ":" + li] = 1; });
+    var p = pages[pgi]; if (!p || !p.lines) return;
+    p.lines.forEach(function (l, li) { if (S.level === "word") l.words.forEach(function (w, wi) { selected[pgi + ":" + li + ":" + wi] = 1; }); else selected[pgi + ":" + li] = 1; });
     drawBoxes(); selChanged();
   });
   $("tr-selnone").addEventListener("click", function () { selected = {}; drawBoxes(); selChanged(); });
@@ -1092,15 +1373,21 @@
     if (/loading language|loading tesseract|initializ/i.test(m.status)) prog("tr-oprog", (m.progress || 0) * 0.3, base + (/language/i.test(m.status) ? "Downloading the " + lname(T.fromTess(workerLangs) || "en") + " reading data (cached after the first time)…" : "Starting the text reader…"));
     else if (/recogniz/i.test(m.status)) prog("tr-oprog", 0.3 + (m.progress || 0) * 0.7, base + "Reading the text: " + Math.round((m.progress || 0) * 100) + "%");
   }
-  var readLangs = "";
-  // reads every page that has not been read yet (an edited page is read again on its own)
-  function readOcr() {
+  var readLangs = "", picLang = "";
+  // Read every page not read yet. "Automatic" picture language: read with the From language (else the browser's), guess the
+  // language of what came out, and read again in that language when it is clearly another one (so a Spanish picture keeps its accents).
+  function readOcr(gesture) {
     if (!pages.length || ocrBusy) return;
-    var langs = T.tessLangs(olSel.value, $("tr-oeng").checked);
+    var auto = olSel.value === "auto";
+    runPass(T.ocrFirst(olSel.value, S.from, prefs), gesture, auto, 0);
+  }
+  function runPass(lang, gesture, mayRecheck, t0) {
+    var langs = T.tessLangs(lang, $("tr-oeng").checked);
     if (langs !== readLangs) pages.forEach(function (p) { p.lines = null; });
     readLangs = langs;
-    ocrBusy = true; $("tr-oread").disabled = true;
-    var t0 = Date.now(), todo = pages.filter(function (p) { return !p.lines; });
+    ocrBusy = true; goLabel();
+    t0 = t0 || Date.now();
+    var todo = pages.filter(function (p) { return !p.lines; });
     ocrPages = pages.length;
     prog("tr-oprog", 0.01, "Loading the text reader…");
     getWorker(langs).then(function (w) {
@@ -1111,34 +1398,75 @@
         return w.recognize(p.canvas, {}, { text: true, blocks: true }).then(function (r) {
           p.lines = T.ocrLines(r.data);
           p.text = p.lines.map(function (l) { return l.text; }).join("\n");
-          if (pages[cur] === p) drawBoxes();
+          if (pages[pgi] === p) drawBoxes();
           return next();
         });
       }
       return next();
     }).then(function () {
       if (!ocrBusy) return;
-      ocrBusy = false; prog("tr-oprog", null); $("tr-oread").disabled = false;
-      var all = pages.map(function (p) { return (pages.length > 1 ? "— " + p.name + " —\n" : "") + (p.text || ""); }).join("\n\n").trim(), lines = 0, conf = 0, nw = 0;
-      pages.forEach(function (p) { (p.lines || []).forEach(function (l) { lines++; l.words.forEach(function (w) { conf += w.conf; nw++; }); }); });
-      $("tr-otext").value = all;
-      $("tr-otext").setAttribute("dir", T.isRtl(olSel.value) ? "rtl" : "auto");
-      var stat = all ? lines + " lines · " + nw + " words · " + Math.round(nw ? conf / nw : 0) + "% sure on average · " + ((Date.now() - t0) / 1000).toFixed(1) + " s" : "No text found. Try the right language, Edit picture (crop, straighten, Make text clearer), or a sharper photo.";
-      $("tr-ostat").textContent = stat;
-      drawBoxes(); selChanged();
-      if (!all) { toast("No text found"); if (MODE === "translate") msg("No text was found in the picture. Check <b>Language in the picture</b>, or press <b>Edit picture</b> to crop, straighten or <i>Make text clearer</i>.", "info"); return; }
-      if (MODE === "translate") textToInput(all, true);
+      var all = pages.map(function (p) { return (pages.length > 1 ? "— " + p.name + " —\n" : "") + (p.text || ""); }).join("\n\n").trim();
+      if (!all) return done(all, lang, null);
+      prog("tr-oprog", 0.98, "Working out the language…");
+      return detectText(all, gesture).then(function (g) {
+        if (!ocrBusy) return;
+        var again = mayRecheck ? T.ocrRecheck(lang, g) : null;
+        if (again) {
+          ocrBusy = false;
+          onote("The text looks like " + esc(lname(again)) + ": reading it again in " + esc(lname(again)) + "…", "info");
+          return runPass(again, gesture, false, t0);
+        }
+        done(all, lang, g);
+      });
     }).catch(function (e) {
-      ocrBusy = false; prog("tr-oprog", null); $("tr-oread").disabled = false;
-      if (worker) { try { worker.terminate(); } catch (x) {} worker = null; }
-      toast("The text reader failed: " + (e && e.message || e));
+      ocrBusy = false; prog("tr-oprog", null); goLabel();
+      if (worker) { try { worker.terminate(); } catch (x) {} worker = null; workerLangs = ""; }
+      onote("The text reader failed: " + esc(e && e.message || e), "warn");
+    });
+    function done(all, lang, g) {
+      ocrBusy = false; prog("tr-oprog", null);
+      var lines = 0, conf = 0, nw = 0;
+      pages.forEach(function (p) { (p.lines || []).forEach(function (l) { lines++; l.words.forEach(function (w) { conf += w.conf; nw++; }); }); });
+      picLang = olSel.value !== "auto" ? olSel.value : g && g.conf >= 0.5 ? T.norm(g.lang) : "";
+      if (pickers.olang) pickers.olang.refresh();
+      $("tr-otext").value = all;
+      $("tr-otext").setAttribute("dir", T.isRtl(picLang || lang) ? "rtl" : "auto");
+      $("tr-ostat").textContent = all ? lines + " lines · " + nw + " words · " + Math.round(nw ? conf / nw : 0) + "% sure · " + ((Date.now() - t0) / 1000).toFixed(1) + " s" : "";
+      drawBoxes(); selChanged(); goLabel();
+      if (!all) {
+        onote("No text was found. Choose the <b>Language in the picture</b> under Reading options, or press <b>Edit picture</b> to crop, straighten or <i>Make text clearer</i>.", "warn");
+        if (MODE === "translate") $("tr-picset").open = true;
+        return;
+      }
+      if (MODE === "translate") textToInput(all, picLang, gesture);
+      else {
+        var r = setLangsFor(picLang);
+        onote(picLang ? "Read as " + esc(lname(picLang)) + (olSel.value === "auto" ? " (detected)" : "") + "." + (r ? " Translating below would go " + esc(lname(S.from)) + " → " + esc(lname(S.to)) + "." : "") : langUnknownNote(nw ? conf / nw : 0), picLang ? "" : "info");
+      }
+    }
+  }
+  function langUnknownNote(avg) {
+    return "Couldn't tell the language of the text" + (avg < 60 ? " (the reading looks unsure)" : "") + ". If it isn't in the Latin alphabet, choose the <b>Language in the picture</b> under Reading options.";
+  }
+  function detectText(text, gesture) {
+    var local = T.guessLang(text);
+    if (!hasDet) return Promise.resolve(local);
+    return detectAvail().then(function (a) {
+      if (a === "unavailable" || (!gesture && a !== "available")) return local;
+      return within(detectOnDevice(text).then(function (c) { return c ? { lang: c, conf: 0.9, by: "device" } : local; }), 8000, local).catch(function () { return local; });
     });
   }
+  // the picture's language becomes From; To moves away from it when they are the same. Returns true when anything changed.
+  function setLangsFor(lang) {
+    var r = T.afterOcrLangs(lang, S.to, prefs, S.from); if (!r) return false;
+    var ch = r.from !== S.from || r.to !== S.to;
+    S.from = r.from; S.to = r.to; fromSel.value = S.from; toSel.value = S.to; S.recent = T.pushRecent(S.recent, S.from); save(); applyDirs(); setDet("");
+    return ch;
+  }
   function cancelOcr() {
-    ocrBusy = false; prog("tr-oprog", null); $("tr-oread").disabled = !pages.length;
+    ocrBusy = false; prog("tr-oprog", null); goLabel();
     if (worker) { try { worker.terminate(); } catch (e) {} worker = null; workerLangs = ""; }
   }
-  $("tr-oread").addEventListener("click", function () { pages.forEach(function (p) { p.lines = null; }); selected = {}; drawBoxes(); readOcr(); });
   $("tr-ocancel").addEventListener("click", cancelOcr);
   $("tr-ocopy").addEventListener("click", function () { copyText($("tr-otext").value); });
   $("tr-otxt").addEventListener("click", function () {
@@ -1147,24 +1475,25 @@
     a.download = ((pages[0] && pages[0].name) || "text").replace(/\.[a-z0-9]+$/i, "").replace(/[^\w\- ]+/g, "") + ".txt";
     document.body.appendChild(a); a.click(); setTimeout(function () { URL.revokeObjectURL(a.href); a.remove(); }, 1500);
   });
-  // text from the picture goes into the box you translate (picture language becomes From)
-  function textToInput(t, fromOcr) {
+  // text from the picture goes into the box you translate; its language becomes From (and To moves away from it)
+  function textToInput(t, lang, gesture) {
     if (!t.trim()) { toast("No text to translate yet"); return false; }
-    inp.value = t; counts();
-    var l = olSel.value;
-    if (S.from !== l) { S.from = l; fromSel.value = l; save(); applyDirs(); }
-    if (S.to === S.from) { S.to = T.pickTarget(prefs, S.from); toSel.value = S.to; save(); }
-    if (MODE === "translate") setSrc("text");
-    if (fromOcr) {   // only on-device translation happens by itself; online needs the button (nothing is sent without a click)
-      var g0 = gen + 1;
-      translate(false, true).then(function () { if (!outText && gen === g0 && $("tr-msg").hidden) msg("The text from your picture is in the box. Check it, then press <b>Translate</b>.", "info"); });
-    }
+    inp.value = T.ocrParagraphs(t); counts();
+    if (lang) setLangsFor(lang);
+    var head = lang ? "Read as <b>" + esc(lname(lang)) + "</b>" + (olSel.value === "auto" ? " (detected)" : "") + ". " : "";
+    if (!lang) onote(langUnknownNote(100), "info");
+    if (gesture) { onote(head + "Translating into " + esc(lname(S.to)) + "…"); translate(true).then(function () { if (outText) onote(head + "Translated into " + esc(lname(S.to)) + ". You can fix the text and translate again."); }); return true; }
+    var g0 = gen + 1;
+    translate(false, true).then(function () {
+      if (outText && gen === g0) onote(head + "Translated into " + esc(lname(S.to)) + " on this device.");
+      else if (gen === g0 && lang) onote(head + "Press <b>Translate</b> to translate it into " + esc(lname(S.to)) + ".", "info");
+      if (!outText) $("tr-go").classList.add("tr-go--pulse");
+    });
     return true;
   }
   function useText(t) {
-    if (!textToInput(t)) return;
+    if (!textToInput(t, picLang, true)) return;
     $("tr-tx").scrollIntoView({ behavior: "smooth", block: "start" });
-    translate(true);
   }
   $("tr-ouse").addEventListener("click", function () { useText($("tr-otext").value); });
   $("tr-ousesel").addEventListener("click", function () { useText(selText()); });
@@ -1233,11 +1562,25 @@
   root.addEventListener("click", function (e) { if (filled === BOX.ocr && e.target.closest("#tr-ouse, #tr-ousesel")) fillClose(); }, true);   // capture: closes before the button scrolls up to the translation
   applyLayout();
 
+  // ---------- text size of the boxes (A- / A+ in a filled / full-screen box, and in the tool rows with Full width) ----------
+  var FZ = [0.8, 0.9, 1, 1.15, 1.3, 1.5, 1.75, 2, 2.4, 3];
+  function applyFz() {
+    if (FZ.indexOf(S.fz) < 0) S.fz = 1;
+    root.style.setProperty("--tr-fz", String(S.fz));
+    Array.prototype.forEach.call(root.querySelectorAll("[data-fz]"), function (b) { var d = +b.getAttribute("data-fz"); b.disabled = d < 0 ? S.fz === FZ[0] : S.fz === FZ[FZ.length - 1]; });
+  }
+  root.addEventListener("click", function (e) {
+    var b = e.target.closest("[data-fz]"); if (!b) return;
+    var i = FZ.indexOf(S.fz) + (+b.getAttribute("data-fz")); S.fz = FZ[Math.max(0, Math.min(FZ.length - 1, i))]; save(); applyFz();
+    toast("Text size " + Math.round(S.fz * 100) + "%");
+  });
+  applyFz();
+
   // ---------- page mode + start ----------
   if (MODE === "ocr") {
-    $("tr-tx-h").textContent = "Translate it (optional)";
+    $("tr-tx-h").textContent = "Translate the text (optional)";
     $("tr-ocr-h").textContent = "Image to text";
-    $("tr-ocr-intro").innerHTML = "Add a photo, screenshot, scan or PDF and its text is read right here in your browser: nothing is uploaded. Crop or clean up the picture first with <b>Edit picture</b> if you like, then copy the text, fix it, or translate it below.";
+    $("tr-ocr-intro").innerHTML = "Add a photo, screenshot, scan or PDF: its text is read right here in your browser (nothing is uploaded) and its language is detected. Click the picture to crop or clean it up.";
   } else {
     $("tr-ocr").hidden = true;   // shown once a picture has been added
   }

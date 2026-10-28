@@ -218,6 +218,24 @@
     return { fx: horizontal ? !st.fx : !!st.fx, fy: horizontal ? !!st.fy : !st.fy, rot: (4 - (st.rot || 0)) % 4, str: st.str ? -st.str : 0 };
   };
   M.ASPECTS = { free: 0, "1:1": 1, "4:3": 4 / 3, "16:9": 16 / 9 };
+  // frame region (rw x rh) -> screen (sw x sh): scale and offsets that fit it inside the screen with `pad` css px all round (zoom z, pan px/py)
+  M.fitView = function (sw, sh, R, pad, z, px, py) {
+    pad = Math.max(0, Math.min(pad || 0, sw / 4, sh / 4));
+    var k = Math.max(1e-6, Math.min((sw - 2 * pad) / R.w, (sh - 2 * pad) / R.h)) * (z || 1);
+    return { k: k, ox: sw / 2 - (R.x + R.w / 2) * k + (px || 0), oy: sh / 2 - (R.y + R.h / 2) * k + (py || 0) };
+  };
+  // the margin around the picture: room for the crop handles (finger-sized on touch screens), a little air otherwise
+  M.viewPad = function (tool, sw, sh, touch) {
+    if (tool === "crop" || tool === "rotate") return touch ? 28 : 20;
+    return Math.round(Math.min(sw, sh) * 0.04);
+  };
+  // the visible part of the page (visualViewport) when it differs from the layout viewport (pinch-zoomed page, keyboard open): {x, y, w, h}, else null
+  M.visibleBox = function (vv, lw, lh) {
+    if (!vv || !vv.width || !vv.height) return null;
+    if (Math.abs(vv.width - lw) < 2 && Math.abs(vv.height - lh) < 2 && Math.abs(vv.offsetLeft || 0) < 1 && Math.abs(vv.offsetTop || 0) < 1) return null;
+    return { x: Math.round(vv.offsetLeft || 0), y: Math.round(vv.offsetTop || 0), w: Math.round(vv.width), h: Math.round(vv.height) };
+  };
+  M.zoomLabel = function (z) { return (Math.round(z * 10) / 10 || 0.1) + "×"; };   // times the fitted size (a "100%" here was read as real pixels)
 
   var API = { math: M, version: "1.0", open: open };
   if (typeof module !== "undefined" && module.exports) module.exports = API;
@@ -234,7 +252,9 @@
     "#mes-pp :is(div,span,p,b,label,small,output,strong){color:inherit}" +
     "#mes-pp .mpp-win{position:absolute;inset:3vh 3vw;max-width:1400px;margin:0 auto;background:var(--pp-bg);border-radius:12px;display:flex;flex-direction:column;overflow:hidden;box-shadow:0 20px 60px rgba(0,0,0,.45)}" +
     "@media (max-width:760px),(max-height:620px){#mes-pp .mpp-win{inset:0;border-radius:0}}" +
-    "#mes-pp .mpp-top{display:flex;align-items:center;gap:6px;padding:8px 10px;background:var(--pp-panel);border-bottom:1px solid var(--pp-line);flex-wrap:wrap}" +
+    "#mes-pp .mpp-top{display:flex;align-items:center;gap:6px;padding:8px 10px;background:var(--pp-panel);border-bottom:1px solid var(--pp-line);flex-wrap:nowrap;min-width:0}" +
+    "#mes-pp .mpp-top>button{flex:0 0 auto}" +
+    "#mes-pp .mpp-ds{display:none}" +
     "#mes-pp .mpp-title{font-weight:800;font-size:1.05em;margin-right:4px;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;flex:1 1 0}" +
     "#mes-pp button{font:inherit;color:var(--pp-ink);background:var(--pp-panel);border:1px solid var(--pp-line);border-radius:9px;min-height:40px;min-width:40px;padding:0 10px;cursor:pointer;display:inline-flex;align-items:center;justify-content:center;gap:5px;line-height:1.1;touch-action:manipulation}" +
     "#mes-pp button:hover{background:var(--pp-hover)}" +
@@ -262,8 +282,11 @@
     "#mes-pp .mpp-size{position:absolute;left:8px;bottom:8px;background:var(--pp-panel);border:1px solid var(--pp-line);border-radius:8px;padding:3px 8px;font-size:.8em;color:var(--pp-mut)}" +
     "#mes-pp .mpp-wait{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;font-weight:700;color:var(--pp-ink)}" +
     "#mes-pp .mpp-sp{flex:1 1 auto}" +
-    "@media (max-width:760px){#mes-pp .mpp-win{display:grid;grid-template-rows:auto minmax(0,1fr) auto auto}#mes-pp .mpp-top{order:0}#mes-pp .mpp-stage{order:1}#mes-pp .mpp-opts{order:2;border-top:1px solid var(--pp-line);border-bottom:0;max-height:34vh;overflow:auto}#mes-pp .mpp-tools{order:3;border-top:1px solid var(--pp-line);border-bottom:0}#mes-pp .mpp-lbl-long{display:none}#mes-pp .mpp-top button{padding:0 8px}}" +
-    "@media (max-width:420px){#mes-pp .mpp-top .mpp-reset{display:none}}";
+    "@media (max-width:760px){#mes-pp .mpp-win{display:grid;grid-template-columns:minmax(0,1fr);grid-template-rows:auto minmax(0,1fr) auto auto}#mes-pp .mpp-win>*{min-width:0}#mes-pp .mpp-top{order:0}#mes-pp .mpp-stage{order:1}#mes-pp .mpp-opts{order:2;border-top:1px solid var(--pp-line);border-bottom:0;max-height:34vh;overflow:auto}#mes-pp .mpp-tools{order:3;border-top:1px solid var(--pp-line);border-bottom:0}#mes-pp .mpp-lbl-long{display:none}#mes-pp .mpp-top button{padding:0 8px}}" +
+    "@media (max-width:520px){#mes-pp{font-size:14px}#mes-pp .mpp-top{gap:4px;padding:6px}#mes-pp .mpp-top .mpp-reset,#mes-pp .mpp-title{display:none}#mes-pp .mpp-top .mpp-pri{margin-left:auto}#mes-pp .mpp-dl{display:none}#mes-pp .mpp-ds{display:inline}" +
+    "#mes-pp .mpp-tools{display:grid;grid-template-columns:repeat(8,minmax(0,1fr));gap:3px;padding:5px 4px;overflow:visible}#mes-pp .mpp-tools button{min-width:0;min-height:50px;padding:3px 1px;font-size:.72em;border-radius:8px}#mes-pp .mpp-tools button span{max-width:100%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}" +
+    "#mes-pp .mpp-opts{gap:6px 8px;padding:6px 8px}#mes-pp .mpp-opts input[type=range]{width:min(52vw,200px)}#mes-pp .mpp-zoom{right:6px;bottom:6px}#mes-pp .mpp-size{display:none}}" +
+    "@media (max-width:340px){#mes-pp .mpp-cancel .mpp-lbl{display:none}}";
 
   var IC = {
     move: '<path d="M12 3v18M3 12h18M12 3l-3 3M12 3l3 3M12 21l-3-3M12 21l3-3M3 12l3-3M3 12l3 3M21 12l-3-3M21 12l-3 3"/>',
@@ -279,11 +302,13 @@
     rl: '<path d="M4 11a8 8 0 1 1 2.3 5.7"/><path d="M4 4v7h7"/>',
     rr: '<path d="M20 11a8 8 0 1 0-2.3 5.7"/><path d="M20 4v7h-7"/>',
     fh: '<path d="M12 3v18"/><path d="M9 7L4 12l5 5z"/><path d="M15 7l5 5-5 5z"/>',
-    fv: '<path d="M3 12h18"/><path d="M7 9l5-5 5 5z"/><path d="M7 15l5 5 5-5z"/>'
+    fv: '<path d="M3 12h18"/><path d="M7 9l5-5 5 5z"/><path d="M7 15l5 5 5-5z"/>',
+    x: '<path d="M6 6l12 12M18 6L6 18"/>',
+    ok: '<path d="M5 12.5l4.5 4.5L19 7.5"/>'
   };
   function ic(n) { return '<svg class="mpp-i" viewBox="0 0 24 24" aria-hidden="true">' + IC[n] + "</svg>"; }
   var TOOLS = [["move", "Move", "Move and zoom"], ["crop", "Crop", "Crop"], ["rotate", "Rotate", "Rotate and straighten"], ["adjust", "Adjust", "Brightness, contrast and clearer text"],
-    ["pen", "Pen", "Draw"], ["hl", "Highlight", "Highlighter"], ["er", "Erase", "Erase your drawing"], ["box", "White-out", "Cover a part with a box"]];
+    ["pen", "Pen", "Draw"], ["hl", "Marker", "Highlighter"], ["er", "Erase", "Erase your drawing"], ["box", "Cover", "White-out: cover a part with a box"]];
   var PEN_COLORS = ["#111111", "#ffffff", "#e11d48", "#2563eb", "#16a34a", "#f59e0b"];
   var HL_COLORS = ["#fde047", "#86efac", "#f9a8d4", "#93c5fd"];
 
@@ -326,12 +351,13 @@
     var root = mk("div"); root.id = "mes-pp"; root.setAttribute("role", "dialog"); root.setAttribute("aria-modal", "true"); root.setAttribute("aria-label", opts.title || "Edit picture");
     root.innerHTML =
       '<div class="mpp-win">' +
-        '<div class="mpp-top"><span class="mpp-title"></span>' +
+        '<div class="mpp-top">' +
+          '<button type="button" data-a="cancel" class="mpp-cancel" title="Cancel (Esc)" aria-label="Cancel">' + ic("x") + '<span class="mpp-lbl">Cancel</span></button>' +
+          '<span class="mpp-title"></span>' +
           '<button type="button" data-a="undo" title="Undo (Ctrl+Z)" aria-label="Undo">' + ic("undo") + "</button>" +
           '<button type="button" data-a="redo" title="Redo (Ctrl+Y)" aria-label="Redo">' + ic("redo") + "</button>" +
           '<button type="button" data-a="reset" class="mpp-reset" title="Back to the picture as it came">Reset</button>' +
-          '<button type="button" data-a="cancel">Cancel</button>' +
-          '<button type="button" data-a="done" class="mpp-pri"></button></div>' +
+          '<button type="button" data-a="done" class="mpp-pri">' + ic("ok") + '<span class="mpp-dl"></span><span class="mpp-ds">Done</span></button></div>' +
         '<div class="mpp-tools" role="toolbar" aria-label="Tools"></div>' +
         '<div class="mpp-opts" aria-live="polite"></div>' +
         '<div class="mpp-stage"><canvas aria-label="The picture you are editing"></canvas>' +
@@ -341,7 +367,8 @@
       "</div>";
     var q = function (s) { return root.querySelector(s); };
     q(".mpp-title").textContent = opts.title || "Edit picture";
-    q('[data-a="done"]').textContent = opts.done || "Use this picture";
+    q('[data-a="done"] .mpp-dl').textContent = opts.done || "Use this picture";
+    q('[data-a="done"]').setAttribute("aria-label", opts.done || "Use this picture");
     var toolsEl = q(".mpp-tools"), optsEl = q(".mpp-opts"), stage = q(".mpp-stage"), cv = q(".mpp-stage canvas"), zoomOut = q(".mpp-zoom output");
     TOOLS.forEach(function (t) {
       var b = mk("button", "", ic(t[0]) + "<span>" + t[1] + "</span>"); b.type = "button"; b.setAttribute("data-tool", t[0]); b.title = t[2]; b.setAttribute("aria-pressed", "false");
@@ -349,13 +376,23 @@
     });
     document.body.appendChild(root);
     document.documentElement.classList.add("mpp-locked");
+    // a page zoomed in on a phone: position:fixed covers the (bigger) layout viewport, so the right side of the editor would sit off screen.
+    // Pin the editor to what is actually visible.
+    var vv = G.visualViewport;
+    function fitVV() {
+      if (!vv) return;
+      var R = M.visibleBox(vv, document.documentElement.clientWidth, document.documentElement.clientHeight);
+      if (!R) { root.style.left = root.style.top = root.style.width = root.style.height = ""; root.style.inset = ""; return; }
+      root.style.inset = "auto"; root.style.left = R.x + "px"; root.style.top = R.y + "px"; root.style.width = R.w + "px"; root.style.height = R.h + "px";
+    }
+    if (vv) { vv.addEventListener("resize", fitVV); vv.addEventListener("scroll", fitVV); fitVV(); }
 
     // ---- state ----
     var base = null, bw = 0, bh = 0, vs = 1, viewBase = null, st = null, init = null, hist = new M.History(80);
     var tool = "move", view = { z: 1, px: 0, py: 0 }, aspect = 0, portrait = false;
     var pen = { pen: { c: PEN_COLORS[2], s: 6 }, hl: { c: HL_COLORS[0], s: 26 }, er: { s: 30 }, box: { c: "#ffffff" } };
     var cache = { adjKey: null, adj: null, inkN: -1, ink: null, frameKey: null, frame: null, fs: 1 }, live = null;
-    var dpr = 1, sw = 1, sh = 1, raf = 0;
+    var dpr = 1, sw = 1, sh = 1, raf = 0, coarse = !!(G.matchMedia && G.matchMedia("(pointer: coarse)").matches);
 
     function finish(result) {
       if (finished) return; finished = true;
@@ -363,6 +400,7 @@
       document.removeEventListener("keydown", onKey, true); document.removeEventListener("keyup", onKeyUp, true);
       window.removeEventListener("resize", sched);
       if (ro) ro.disconnect();
+      if (vv) { vv.removeEventListener("resize", fitVV); vv.removeEventListener("scroll", fitVV); }
       root.remove(); document.documentElement.classList.remove("mpp-locked");
       try { if (lastFocus && lastFocus.focus) lastFocus.focus({ preventScroll: true }); } catch (e) {}
       resolve(result);
@@ -390,8 +428,7 @@
     function geo() { return M.geom(bw, bh, st); }
     function region() { var g = geo(); return (tool === "crop" || tool === "rotate") ? { x: 0, y: 0, w: g.fw, h: g.fh } : st.crop; }
     function xf() {   // frame -> screen (css px)
-      var R = region(), k = Math.min(sw / R.w, sh / R.h) * 0.92 * view.z;
-      return { k: k, ox: sw / 2 - (R.x + R.w / 2) * k + view.px, oy: sh / 2 - (R.y + R.h / 2) * k + view.py };
+      return M.fitView(sw, sh, region(), M.viewPad(tool, sw, sh, coarse), view.z, view.px, view.py);
     }
     function toFrame(sx, sy) { var t = xf(); return [(sx - t.ox) / t.k, (sy - t.oy) / t.k]; }
     function toBase(sx, sy) { var f = toFrame(sx, sy); return M.apply(geo().inv, f[0], f[1]); }
@@ -477,8 +514,12 @@
         for (var i = 1; i < n; i++) { g.moveTo(x + w * i / n, y); g.lineTo(x + w * i / n, y + h); g.moveTo(x, y + h * i / n); g.lineTo(x + w, y + h * i / n); }
         g.stroke();
         if (tool === "crop") handles().forEach(function (hd) {
+          var R0 = coarse ? 11 : 8;
           g.fillStyle = "#fff"; g.strokeStyle = "#0b7285"; g.lineWidth = 2;
-          g.beginPath(); g.arc(hd.x, hd.y, 8, 0, Math.PI * 2); g.fill(); g.stroke();
+          g.beginPath();
+          if (hd.h.length === 1) { var hz = hd.h === "n" || hd.h === "s", L = R0 * 1.7; if (g.roundRect) g.roundRect(hd.x - (hz ? L : R0 * 0.55), hd.y - (hz ? R0 * 0.55 : L), hz ? 2 * L : R0 * 1.1, hz ? R0 * 1.1 : 2 * L, R0 * 0.55); else g.rect(hd.x - (hz ? L : R0 * 0.55), hd.y - (hz ? R0 * 0.55 : L), hz ? 2 * L : R0 * 1.1, hz ? R0 * 1.1 : 2 * L); }
+          else g.arc(hd.x, hd.y, R0, 0, Math.PI * 2);
+          g.fill(); g.stroke();
         });
       }
       if (tool === "box" && boxDrag) {
@@ -489,7 +530,7 @@
       if (brushAt && (tool === "pen" || tool === "hl" || tool === "er") && !drag) {
         g.strokeStyle = "rgba(127,127,127,0.9)"; g.lineWidth = 1; g.beginPath(); g.arc(brushAt[0], brushAt[1], pen[tool].s / 2, 0, Math.PI * 2); g.stroke();
       }
-      zoomOut.textContent = Math.round(view.z * 100) + "%";
+      zoomOut.textContent = M.zoomLabel(view.z);
       var out = outSize(); q(".mpp-size").textContent = out.w + " × " + out.h + " px";
     }
     function outSize() { var f = M.fitSide(st.crop.w, st.crop.h, maxSide); return f; }
@@ -617,7 +658,7 @@
       if (npts() > 2) return;
       var panBtn = e.button === 1 || e.button === 2 || spaceDown || tool === "move" || tool === "adjust";
       if (!panBtn && tool === "crop") {
-        var hd = hitHandle(p, e.pointerType === "touch" ? 26 : 16);
+        var hd = hitHandle(p, e.pointerType === "touch" || coarse ? 30 : 16);
         if (hd) { drag = { kind: "crop", h: hd, f0: toFrame(p[0], p[1]), c0: { x: st.crop.x, y: st.crop.y, w: st.crop.w, h: st.crop.h }, st0: st.crop }; return; }
       }
       if (!panBtn && tool === "rotate") panBtn = true;

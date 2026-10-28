@@ -276,6 +276,162 @@
   // "Edit pictures before reading them": off on a computer, on for touch screens (phone photos usually want a crop)
   function editDefault(coarse) { return !!coarse; }
 
+
+  // ---------- language guess without a network (used when the browser has no LanguageDetector): script first, then common words ----------
+  function fold(s) { return String(s || "").normalize ? String(s || "").normalize("NFD").replace(/[̀-ͯ]/g, "").toLowerCase() : String(s || "").toLowerCase(); }
+  var SCRIPTS = [
+    ["ja", /[぀-ヿ]/g], ["ko", /[가-힯ᄀ-ᇿ㄰-㆏]/g], ["zh", /[一-鿿㐀-䶿]/g], ["th", /[฀-๿]/g],
+    ["he", /[֐-׿]/g], ["ar", /[؀-ۿݐ-ݿﭐ-﷿ﹰ-﻿]/g], ["hi", /[ऀ-ॿ]/g], ["bn", /[ঀ-৿]/g],
+    ["pa", /[਀-੿]/g], ["gu", /[઀-૿]/g], ["ta", /[஀-௿]/g], ["te", /[ఀ-౿]/g], ["kn", /[ಀ-೿]/g],
+    ["ml", /[ഀ-ൿ]/g], ["si", /[඀-෿]/g], ["ka", /[Ⴀ-ჿ]/g], ["hy", /[԰-֏]/g], ["am", /[ሀ-፿]/g],
+    ["km", /[ក-៿]/g], ["lo", /[຀-໿]/g], ["my", /[က-႟]/g], ["el", /[Ͱ-Ͽἀ-῿]/g], ["ru", /[Ѐ-ӿ]/g],
+    ["la_", /[a-zA-ZÀ-ɏḀ-ỿ]/g]
+  ];
+  var TRAD = "這們個來說國時會對發後過還為與學經點體關門開問題實現樣麼見長書車東電話氣", SIMP = "这们个来说国时会对发后过还为与学经点体关门开问题实现样么见长书车东电话气";
+  var WORDS = {
+    en: "the and of to in is that it for you was with on are this be have not your will can from they we at by or what all if",
+    es: "el la de que y en los las un una es por con para no se del al lo como mas pero su sus le ya esta este tu solo muy hay tras",
+    fr: "le la les de des et est un une que qui pas pour dans sur avec ce il je vous au du ne se sont plus mais elle nous cette",
+    de: "der die das und ist nicht ein eine zu mit den von sie ich es auf fur im dem auch sich wird werden oder aber wir",
+    it: "il di che la e un una per non sono gli le del della con mi ma ho questo si da al nel come anche piu sei",
+    pt: "o a os as de que e nao um uma para com do da em no na voce mas por se dos das ao seu sua isso esta foi",
+    nl: "de het een en van is dat niet je op te zijn met voor ik er die wat ook naar maar bij uit",
+    sv: "och att det ar som en pa for av med jag inte har till den de om ett var men sig",
+    da: "og at det er som en pa for af med jeg ikke har til den de om et var men sig",
+    no: "og at det er som en pa for av med jeg ikke har til den de om et var men seg ikkje",
+    pl: "i w nie sie na ze to z jest do jak co ale o tak po sa dla od",
+    cs: "a je se na v to ze s z do jako ale jsem by o pro jsou tak",
+    ro: "si de la in nu este care o un cu pe sa mai din pentru se ca",
+    tr: "ve bir bu da de icin ile ne cok degil var ben sen o gibi daha",
+    id: "dan yang di ini itu dengan untuk tidak ada dari saya kamu akan ke dalam bisa",
+    vi: "va cua la co khong duoc nhung mot nguoi cho nay trong voi da cac",
+    ca: "el la i de que els les per amb no es una un al del com",
+    fi: "ja on ei se etta han mutta kun niin olen oli ovat tama",
+    hu: "a az es hogy nem egy is van de meg ez el mint"
+  };
+  var WSET = {};
+  Object.keys(WORDS).forEach(function (k) { WSET[k] = {}; WORDS[k].split(" ").forEach(function (w) { WSET[k][w] = 1; }); });
+  var MARKS = { es: /[ñ¿¡]/g, pt: /[ãõ]/g, de: /ß/g, pl: /[łąężźśćń]/g, cs: /[řůěď]/g, ro: /[ășț]/g, tr: /[ğış]/g, vi: /[ơưđạảấầẩẫậắằẳẵặẹẻẽếềểễệỉịọỏốồổỗộớờởỡợụủứừửữựỳỵỷỹ]/g, hu: /[őű]/g, da: /[æø]/g, sv: /[å]/g, fr: /[œèêëàùç]/g };
+  // guessLang(text) -> {lang, conf (0..1), by: "script"|"words"} or null when it can't tell
+  function guessLang(text) {
+    var s = String(text || "").slice(0, 4000);
+    var counts = {}, total = 0;
+    SCRIPTS.forEach(function (sc) { var m = s.match(sc[1]); counts[sc[0]] = m ? m.length : 0; total += counts[sc[0]]; });
+    if (!total) return null;
+    var lat = counts.la_;
+    if (lat / total < 0.5) {
+      var cjk = counts.zh + counts.ja;
+      if (counts.ja && counts.ja >= cjk * 0.1) return { lang: "ja", conf: 0.9, by: "script" };
+      var best = "", bn = 0;
+      Object.keys(counts).forEach(function (k) { if (k !== "la_" && counts[k] > bn) { bn = counts[k]; best = k; } });
+      if (!best || bn < 2) return null;
+      var low = s.toLowerCase();
+      if (best === "zh") { var tr = 0, si = 0; for (var i = 0; i < s.length; i++) { if (TRAD.indexOf(s[i]) >= 0) tr++; else if (SIMP.indexOf(s[i]) >= 0) si++; } if (tr > si) best = "zh-Hant"; }
+      else if (best === "ar") { if (/[ٹڈڑںےۓ]/.test(s)) best = "ur"; else if (/[پچژگکی]/.test(s)) best = "fa"; }
+      else if (best === "ru") { if (/[іїєґ]/.test(low)) best = "uk"; else if (/[ђћџљњ]/.test(low)) best = "sr"; else if (/[ѓќѕ]/.test(low)) best = "mk"; else if (/ў/.test(low)) best = "be"; else if (/[әғқңөұһ]/.test(low)) best = "kk"; else if (/ъ/.test(low) && !/[ыэё]/.test(low)) best = "bg"; }
+      else if (best === "he" && /[װױײ]/.test(s)) best = "yi";
+      return { lang: best, conf: Math.min(1, 0.6 + bn / total * 0.4), by: "script" };
+    }
+    var toks = fold(s).match(/[a-z]+/g) || [];
+    if (toks.length < 3) return null;
+    var sc = {}, raw = s.toLowerCase();
+    Object.keys(WSET).forEach(function (k) {
+      var h = 0; toks.forEach(function (t) { if (WSET[k][t]) h++; });
+      var m = MARKS[k] ? (raw.match(MARKS[k]) || []).length : 0;
+      sc[k] = h + Math.min(m, 6) * 0.75;
+    });
+    var order = Object.keys(sc).sort(function (a, b) { return sc[b] - sc[a]; });
+    var a = order[0], b = order[1];
+    if (sc[a] < 2 || sc[a] < toks.length * 0.08) return null;
+    var margin = (sc[a] - sc[b]) / sc[a];
+    if (margin < 0.15) return null;
+    return { lang: a, conf: Math.min(1, 0.4 + margin), by: "words" };
+  }
+
+  // Picture language: the first pass reads with the chosen language, else the From language, else the browser's; then the text is
+  // guessed, and if it is clearly another language with a reading model the picture is read again in that language.
+  function ocrFirst(choice, from, prefs) {
+    if (choice && choice !== "auto" && toTess(choice)) return norm(choice);
+    if (from && from !== "auto" && toTess(from)) return norm(from);
+    prefs = prefs || [];
+    for (var i = 0; i < prefs.length; i++) if (toTess(prefs[i])) return norm(prefs[i]);
+    return "en";
+  }
+  function ocrRecheck(passLang, guess) {
+    if (!guess || !guess.lang || guess.conf < 0.5) return null;
+    var g = norm(guess.lang);
+    return g !== norm(passLang) && toTess(g) ? g : null;
+  }
+  // After reading a picture: the new From / To. To flips to the person's language (or English) when it equals the picture's language.
+  function afterOcrLangs(detected, to, prefs, prevFrom) {
+    if (!detected) return null;
+    var t = to;
+    if (!t || norm(t) === norm(detected)) t = pickTarget((prevFrom && prevFrom !== "auto" ? [prevFrom] : []).concat(prefs || [], ["en"]), norm(detected));
+    return { from: norm(detected), to: t };
+  }
+
+
+  // OCR text keeps the picture's line breaks; a sentence wrapped over several lines translates badly line by line. Join a line to the
+  // next when it does not end a sentence and the next one carries on (starts in lower case), or when it is a long wrapped line.
+  function ocrParagraphs(text) {
+    var L = String(text || "").split("\n"), out = [];
+    for (var i = 0; i < L.length; i++) {
+      var line = L[i].replace(/\s+$/, ""), prev = out.length ? out[out.length - 1] : null;
+      if (prev && prev.trim() && line.trim() && !/^—.*—$/.test(line.trim()) && !/^—.*—$/.test(prev.trim())) {
+        var ends = /[.!?:;。！？…»"”)\]]$/.test(prev), next = line.trim();
+        var lower = /^[a-zà-ÿа-я«"“(]/.test(next) && !/^[A-ZÀ-Þ]/.test(next);
+        var hyph = /[a-zà-ÿ]-$/i.test(prev);
+        if (hyph) { out[out.length - 1] = prev.slice(0, -1) + next; continue; }
+        if (!ends && (lower || (prev.length >= 28 && /[\w,]$/.test(prev)))) { out[out.length - 1] = prev + " " + next; continue; }
+      }
+      out.push(line);
+    }
+    return out.join("\n");
+  }
+
+  // ---------- searchable language picker ----------
+  var COMMON = ["en", "es", "fr", "de", "zh", "ja", "ar", "pt", "ru", "hi", "ko", "it", "vi"];
+  // items [{c: code, n: name in the page's language, e: English name}]; returns the matching items, best first
+  function langFilter(q, items, boost) {
+    var f = fold(q).trim(), B = {};
+    (boost || COMMON).forEach(function (c, i) { c = norm(c); if (!(c in B)) B[c] = i; });
+    if (!f) return items.slice();
+    var out = [];
+    items.forEach(function (it, i) {
+      var best = 9;
+      [it.n, it.e].forEach(function (name) {
+        var x = fold(name);
+        if (!x) return;
+        if (x === f) best = Math.min(best, 0);
+        else if (x.indexOf(f) === 0) best = Math.min(best, 1);
+        else if (new RegExp("(^|[\\s(\\-])" + f.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")).test(x)) best = Math.min(best, 2);
+        else if (x.indexOf(f) >= 0) best = Math.min(best, 3);
+      });
+      if (fold(it.c) === f) best = Math.min(best, 0);
+      if (best < 9) out.push({ it: it, s: best, i: i });
+    });
+    var bo = function (x) { return x.it.c in B ? B[x.it.c] : 999; };
+    out.sort(function (a, b) { return a.s - b.s || bo(a) - bo(b) || a.i - b.i; });
+    return out.map(function (x) { return x.it; });
+  }
+  // groups shown before anything is typed: Recent (max 5), Common (max 8, not repeating Recent), All (A-Z, everything)
+  function langGroups(codes, recent, prefs) {
+    var has = {}; codes.forEach(function (c) { has[c] = 1; });
+    var r = [], seen = {};
+    (recent || []).forEach(function (c) { c = norm(c); if (has[c] && !seen[c] && r.length < 5) { r.push(c); seen[c] = 1; } });
+    var cm = [];
+    (prefs || []).map(norm).concat(COMMON).forEach(function (c) { if (has[c] && !seen[c] && cm.length < 8) { cm.push(c); seen[c] = 1; } });
+    var g = [];
+    if (r.length) g.push({ title: "Recent", codes: r });
+    if (cm.length) g.push({ title: "Common", codes: cm });
+    g.push({ title: "All languages", codes: codes.slice() });
+    return g;
+  }
+  function pushRecent(list, code, max) {
+    list = (list || []).filter(function (c) { return c !== code; }); if (code && code !== "auto") list.unshift(code);
+    return list.slice(0, max || 6);
+  }
+
   // ---------- Saved translations (pinned with the star; never pruned, not touched by Clear history) ----------
   var SAVED_MAX = 1000;
   function savedSame(a, b) { return !!a && !!b && a.q === b.q && a.o === b.o && a.t === b.t; }
@@ -311,6 +467,7 @@
 
   var api = {
     savedSame: savedSame, savedIndex: savedIndex, savedEntry: savedEntry, toggleSaved: toggleSaved, mergeSaved: mergeSaved, savedText: savedText, savedJson: savedJson, SAVED_MAX: SAVED_MAX,
+    COMMON: COMMON, guessLang: guessLang, ocrParagraphs: ocrParagraphs, ocrFirst: ocrFirst, ocrRecheck: ocrRecheck, afterOcrLangs: afterOcrLangs, langFilter: langFilter, langGroups: langGroups, pushRecent: pushRecent, fold: fold,
     sourceTabs: sourceTabs, nextTab: nextTab, editDefault: editDefault,
     LANGS: LANGS, DAILY: DAILY, norm: norm, isRtl: isRtl, known: known, toTess: toTess, fromTess: fromTess, tessLangs: tessLangs,
     myMemoryCode: myMemoryCode, apiCode: apiCode, utf8Len: utf8Len, sentences: sentences, chunk: chunk, join: join,
