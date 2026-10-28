@@ -403,7 +403,21 @@
 	 * kept, font size fitted to the window (binary search). ‹ › / arrow keys / swipe go through the notes shown on the page
 	 * (this board, or the search results). Light / dark is the overlay's own choice (KEY:show); colours are set inline so the
 	 * derived TOOL-DARK block never touches them. Full screen = the real Fullscreen API; the screen is kept awake while open. */
-	var SHOW_KEY = KEY + ":show", sv = null;
+	var SHOW_KEY = KEY + ":show", SIZE_KEY = KEY + ":showsize", sv = null;
+	/* text size: "fit" (largest size that fits, the default) or a fixed size in px chosen with A− / A+ (saved, used for every note;
+	   a fixed size larger than the window scrolls) */
+	function showSize() { try { var v = localStorage.getItem(SIZE_KEY); if (v && v !== "fit" && +v >= 12 && +v <= 600) return +v; } catch (e) {} return "fit"; }
+	function setShowSize(v) { try { localStorage.setItem(SIZE_KEY, String(v)); } catch (e) {} sizeLabel(); fitShow(); }
+	function stepSize(d) {
+		var cur = parseFloat(sv.t.style.fontSize) || 48, nx = d > 0 ? cur * 1.2 : cur / 1.2;
+		setShowSize(Math.round(Math.max(12, Math.min(600, nx))));
+	}
+	function sizeLabel() {
+		var v = showSize(), f = sv.el.querySelector('[data-a="fit"]');
+		f.setAttribute("aria-pressed", v === "fit" ? "true" : "false");
+		f.title = v === "fit" ? "Text fills the window (0)" : "Fit the text to the window again (0); now " + v + " px";
+		paintShow();
+	}
 	var THEMES = {
 		dark: { bg: "#000", fg: "#fff", mut: "#b8bec7", line: "#555", btn: "#1c1c1c", acc: "#ffd34d", accFg: "#111" },
 		light: { bg: "#fff", fg: "#000", mut: "#4a525d", line: "#9aa3af", btn: "#f1f3f6", acc: "#7a4a05", accFg: "#fff" }
@@ -419,7 +433,7 @@
 		sv.ids = showIds(); sv.id = id; sv.from = from || null;
 		sv.el.hidden = false;
 		document.documentElement.classList.add("cp-show-open");
-		paintShow(); fsLabel(); showNote();
+		paintShow(); fsLabel(); sizeLabel(); showNote();
 		sv.close.focus();
 		wake(true);
 	}
@@ -431,7 +445,12 @@
 			'<button type="button" class="cp-show-b" data-a="prev" title="Previous text (←)" aria-label="Previous text">‹</button>' +
 			'<span class="cp-show-pos" aria-live="polite"></span>' +
 			'<button type="button" class="cp-show-b" data-a="next" title="Next text (→)" aria-label="Next text">›</button>' +
-			'<b class="cp-show-title"></b><span class="cp-show-sp"></span>' +
+			'<b class="cp-show-title"></b><span class="cp-show-br" aria-hidden="true"></span>' +
+			'<span class="cp-show-sz" role="group" aria-label="Text size">' +
+			'<button type="button" class="cp-show-b" data-a="smaller" title="Smaller text (−)" aria-label="Smaller text">A−</button>' +
+			'<button type="button" class="cp-show-b" data-a="bigger" title="Bigger text (+)" aria-label="Bigger text">A+</button>' +
+			'<button type="button" class="cp-show-b cp-show-fit" data-a="fit" aria-pressed="true">Fit</button></span>' +
+			'<span class="cp-show-sp"></span>' +
 			'<button type="button" class="cp-show-b cp-show-copy" data-a="copy" title="Copy this text (C)">Copy</button>' +
 			'<button type="button" class="cp-show-b" data-a="theme" title="Light / dark (T)" aria-label="Switch light / dark">◐</button>' +
 			'<button type="button" class="cp-show-b" data-a="fs" title="Full screen (F)" aria-label="Full screen">⛶</button>' +
@@ -449,6 +468,9 @@
 			else if (a === "copy") copyNote(sv.id);
 			else if (a === "theme") { try { localStorage.setItem(SHOW_KEY, showTheme() === "dark" ? "light" : "dark"); } catch (x) {} paintShow(); }
 			else if (a === "fs") toggleFs();
+			else if (a === "smaller") stepSize(-1);
+			else if (a === "bigger") stepSize(1);
+			else if (a === "fit") setShowSize("fit");
 		});
 		el.addEventListener("keydown", function (e) {
 			if (e.key !== "Tab") return; // keep focus inside the overlay
@@ -465,6 +487,9 @@
 			else if (k === "c" || k === "C") copyNote(sv.id);
 			else if (k === "t" || k === "T") sv.el.querySelector('[data-a="theme"]').click();
 			else if (k === "f" || k === "F") toggleFs();
+			else if (k === "+" || k === "=") { e.preventDefault(); stepSize(1); }
+			else if (k === "-" || k === "_") { e.preventDefault(); stepSize(-1); }
+			else if (k === "0") { e.preventDefault(); setShowSize("fit"); }
 		});
 		var sx = null, sy = 0;
 		sv.box.addEventListener("pointerdown", function (e) { sx = e.clientX; sy = e.clientY; });
@@ -486,7 +511,7 @@
 		el.querySelector(".cp-show-hint").style.color = th.mut;
 		el.querySelector(".cp-show-pos").style.color = th.mut;
 		Array.prototype.forEach.call(el.querySelectorAll(".cp-show-b"), function (b) {
-			var acc = b.classList.contains("cp-show-copy");
+			var acc = b.classList.contains("cp-show-copy") || b.getAttribute("aria-pressed") === "true";
 			b.style.background = acc ? th.acc : th.btn; b.style.color = acc ? th.accFg : th.fg; b.style.borderColor = acc ? th.acc : th.line;
 		});
 	}
@@ -513,6 +538,13 @@
 		var W = box.clientWidth - parseFloat(cs.paddingLeft) - parseFloat(cs.paddingRight);
 		var H = box.clientHeight - parseFloat(cs.paddingTop) - parseFloat(cs.paddingBottom);
 		if (W <= 0 || H <= 0) return;
+		var fixed = showSize();
+		if (fixed !== "fit") { // a chosen size: lines wrap at the window's width, a text taller than the window scrolls
+			t.classList.remove("is-nowrap"); t.classList.add("is-fixed"); t.style.fontSize = fixed + "px";
+			box.classList.toggle("is-scroll", t.offsetHeight > H + 0.5);
+			return;
+		}
+		t.classList.remove("is-fixed");
 		var fits = function (px) { t.style.fontSize = px + "px"; return t.scrollWidth <= W + 0.5 && t.offsetHeight <= H + 0.5; };
 		var best = function () {
 			var lo = 12, hi = Math.max(14, Math.min(480, H)), ok = lo;
