@@ -64,8 +64,8 @@
 	];
 	// House now (Clerk, 2026-10-27): R 218, D 214, I 1 (Kevin Kiley, CA-03), 2 vacant (FL-20, TX-23). All 435 seats are on the ballot; 218 is a majority.
 	E.HOUSE = { total: 435, majority: 218, now: { R: 218, D: 214, I: 1, V: 2 } };
-	// Governors now: R 26, D 24. 36 races: held R 20, D 16; not on the ballot: R 6, D 8.
-	E.GOV = { total: 50, now: { R: 26, D: 24 }, hold: { R: 6, D: 8 } };
+	// Governors now: R 26, D 24. 36 races: held R 18, D 18; not on the ballot (DE IN KY LA MS MO MT NJ NC ND UT VA WA WV): R 8, D 6.
+	E.GOV = { total: 50, now: { R: 26, D: 24 }, hold: { R: 8, D: 6 } };
 	E.GOV_2026 = [
 		['AL', 'Kay Ivey', 'R', 'Term-limited'], ['AK', 'Mike Dunleavy', 'R', 'Term-limited'], ['AZ', 'Katie Hobbs', 'D', 'Running'], ['AR', 'Sarah Huckabee Sanders', 'R', 'Running'],
 		['CA', 'Gavin Newsom', 'D', 'Term-limited'], ['CO', 'Jared Polis', 'D', 'Term-limited'], ['CT', 'Ned Lamont', 'D', 'Running'], ['FL', 'Ron DeSantis', 'R', 'Term-limited'],
@@ -259,7 +259,8 @@
 		for (i = 0; i < rows; i++) for (j = 0; j < counts[i]; j++) { var a = Math.PI * (1 - (counts[i] === 1 ? 0.5 : j / (counts[i] - 1))); pts.push({ a: a, x: 0.5 + radii[i] * Math.cos(a), y: 0.5 - radii[i] * Math.sin(a), row: i }); }
 		pts.sort(function (p, q) { return q.a - p.a || p.row - q.row; });
 		var rad = Math.min(dr * 0.42, Math.PI * r0 / Math.max(1, counts[0]) * 0.45);
-		pts.forEach(function (p) { p.r = rad; });
+		// shrink about the centre so the outer dots stay inside the 0..1 x 0..0.5 box
+		var k = (0.5 - rad) / 0.5; pts.forEach(function (p) { p.r = rad; p.x = 0.5 + (p.x - 0.5) * k; p.y = 0.5 - (0.5 - p.y) * k; });
 		return pts;
 	};
 
@@ -823,7 +824,7 @@
 			'<div class="el-ctrls"><div class="el-ctrl"><span class="el-ctrl__l">Method</span><div class="tu-seg el-prm" data-v="' + st.pr + '"><button type="button" data-v="dhondt" aria-pressed="' + (st.pr === 'dhondt') + '">D&rsquo;Hondt</button><button type="button" data-v="sl" aria-pressed="' + (st.pr === 'sl') + '">Sainte-Lagu&euml;</button><button type="button" data-v="hare" aria-pressed="' + (st.pr === 'hare') + '">Largest remainder</button></div> ' + q(st.pr === 'sl' ? 'sl' : st.pr === 'hare' ? 'hare' : 'dhondt') + '</div>' +
 			'<div class="el-ctrl el-ctrl--shift"><label class="el-ctrl__l">Threshold ' + q('threshold') + '</label><div class="el-shiftrow"><input type="range" class="el-thr" min="0" max="10" step="0.5" value="' + st.thr + '" aria-label="Threshold in percent"><output>' + E.fmt(st.thr, 1) + '%</output><button type="button" class="tu-btn tu-btn--ghost el-thr0">Reset</button></div></div></div>' +
 			'<div class="el-pres"><div class="el-parlarc">' + arcFor(ps, D.seats, D.majority) + '</div><div class="el-pside"><ul class="el-cmp">' + D.parties.map(function (p) { var a = pr[p.k] || 0, d = a - p.s; return '<li>' + sw(p.col) + '<span>' + esc(p.n) + '</span><b>' + a + '</b><small>' + (d ? (d > 0 ? '+' : '') + d + ' vs actual' : 'same') + '</small></li>'; }).join('') + '</ul><p>' + (prMaj ? esc(prMaj.n) + ' would still have a majority.' : 'No party would have a majority.') + '</p></div></div>' +
-			'<p class="tu-note">The same votes, shared out nationwide' + (D.id === 'ca2025' ? '' : ' across BC') + ' with this formula. Only a comparison: under another system parties would campaign and people might vote differently.' + (D.id === 'ca2025' ? ' The Bloc Québécois runs only in Quebec, so a nationwide count understates how its votes work regionally.' : '') + '</p></div>';
+			'<p class="tu-note">The same votes, shared out across ' + (D.id === 'ca2025' ? 'the whole country' : 'the whole province') + ' with this formula. Only a comparison: under another system parties would campaign and people might vote differently.' + (D.id === 'ca2025' ? ' The Bloc Québécois runs only in Quebec, so a nationwide count understates how its votes work regionally.' : '') + '</p></div>';
 	}
 	function coalCard(D, id) {
 		var sel = st.coal[D.id] || {}, sum = 0, parts = D.parties.filter(function (p) { return p.s > 0; });
