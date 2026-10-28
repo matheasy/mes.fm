@@ -905,7 +905,7 @@ APPS = {
     "fav": dict(title="MES Favourites", page_title="MES Favourites: Your Own Calculators and Tools Page",
                 tag="Your favourite MES pages, your way.", accent="#a15c07", dark="#7a4505", tint="#fdf0d8",
                 desc="Make your own start page of favourite mes.fm calculators, tools and tutorials: search to add, drag tiles into groups you name and fold, and take the whole list to another browser or computer with one link. Private: it stays in your browser.",
-                js_v="4", pre_js=["/main_js/site-search.js?v=1"], no_ads=True),
+                js_v="3", pre_js=["/main_js/site-search.js?v=1"], no_ads=True),
     # MES Ratings (mes.fm/ratings): results of the "Rate this page" stars every public page carries (main_js/rating.js, loaded lazily by
     # site-search.js; votes = /api/rating, Upstash): Top rated (Bayesian average), Most rated, Recently rated, section chips, and a feedback box
     # that only sends by email / the contact form. Local preview falls back to ratings/data/sample.json. Wide, ad-free, no sidebar.
@@ -933,7 +933,7 @@ APPS = {
     "compress-video": dict(title="MES Video Compressor", page_title="Video Compressor: Make Videos Smaller Online, No Upload",
                        tag="Make videos smaller, privately.", accent="#0f766e", dark="#115e59", tint="#dcf5f1",
                        desc="Free online video compressor: shrink MP4 and MOV videos to a file size you choose (say 25 MB for email or chat) or a quality, lower the resolution and frame rate, and save as MP4 or WebM. Fast with your computer's own video encoder, a queue for several files, and nothing is uploaded.",
-                       js_v="3"),
+                       js_v="2"),
     # MES Font Preview and Finder (2026-10-19): text in every font the browser really has (+ optional Google Fonts), effects, PNG / CSS export, compare, and a picture matcher. lib.js = MESFont (node tests tool_apps_src/fonts-tests.js).
     "fonts": dict(title="MES Font Preview and Finder", page_title="Font Preview: See Your Text in Every Font, and Find a Font from a Picture",
                   tag="See your text in every font.", accent="#7c2d92", dark="#5f2070", tint="#f3e5f8",
