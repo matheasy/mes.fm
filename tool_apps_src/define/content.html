@@ -1,0 +1,155 @@
+	<div class="tu df" id="df">
+		<form class="tu-card df-ask" id="df-form" autocomplete="off" role="search">
+			<label class="df-asklab" for="df-q">Look up a word</label>
+			<div class="df-askrow">
+				<div class="df-qwrap">
+					<input type="search" id="df-q" class="tu-input tu-input--big" maxlength="80" spellcheck="true" autocapitalize="off" placeholder="serendipity" role="combobox" aria-autocomplete="list" aria-expanded="false" aria-controls="df-sug">
+					<ul class="df-sug" id="df-sug" role="listbox" hidden></ul>
+				</div>
+				<button type="submit" class="tu-btn tu-btn--primary df-go" id="df-go">Define</button>
+			</div>
+			<div class="df-chiprow">
+				<span class="df-chiplab">Word of the day:</span><button type="button" class="tu-chip df-wotdchip" id="df-wotdchip"></button>
+				<button type="button" class="df-link" id="df-random" title="A random word from our list">Random word</button>
+			</div>
+			<div class="df-chiprow" id="df-recentrow" hidden><span class="df-chiplab">Recent:</span><div class="tu-chips" id="df-recent"></div><button type="button" class="df-link" id="df-recentclr">Clear</button></div>
+		</form>
+
+		<div class="tu-card df-msg" id="df-msg" role="status" aria-live="polite" hidden></div>
+
+		<section class="tu-card df-entry" id="df-entry" aria-labelledby="df-word" hidden>
+			<div class="df-fillbar"><span class="df-fillt">Dictionary</span><button type="button" class="tu-btn" id="df-fillclose">Close (Esc)</button></div>
+			<div class="df-head">
+				<div class="df-headl">
+					<h2 class="df-word" id="df-word"></h2>
+					<div class="df-pron" id="df-pron"></div>
+				</div>
+				<button type="button" class="tu-btn tu-btn--primary df-hear" id="df-hear" title="Hear the word (H)"><span aria-hidden="true">&#128264;&#65038;</span> Hear it</button>
+			</div>
+			<div class="df-tools" role="toolbar" aria-label="Word tools">
+				<button type="button" class="df-tb" id="df-save" aria-pressed="false" title="Save to your word list (S)"><span aria-hidden="true">&#9734;</span> <span class="df-tbl">Save</span></button>
+				<button type="button" class="df-tb" id="df-share" title="Copy or share a link to this word"><span aria-hidden="true">&#128279;&#65038;</span> Share</button>
+				<button type="button" class="df-tb" id="df-copy" title="Copy the definitions as text"><span aria-hidden="true">&#128203;&#65038;</span> Copy</button>
+				<button type="button" class="df-tb" id="df-read" aria-pressed="false" title="Read the definitions aloud (R)"><span aria-hidden="true">&#9654;&#65038;</span> <span class="df-tbl">Read aloud</span></button>
+				<span class="df-trwrap"><label class="df-sr" for="df-trlang">Translate into</label><select id="df-trlang" class="df-tsel" title="Language to translate into"></select><button type="button" class="df-tb" id="df-tr" title="Open the word in MES Translate"><span aria-hidden="true">&#127760;&#65038;</span> Translate</button></span>
+				<a class="df-tb" id="df-pr" href="/pronounce"><span aria-hidden="true">&#128483;&#65038;</span> Pronounce</a>
+				<button type="button" class="df-tb" id="df-fill" title="Fill the browser window (W)"><span aria-hidden="true">&#10530;</span> Fill window</button>
+			</div>
+			<div class="df-posbar" id="df-posbar" role="group" aria-label="Show parts of speech"></div>
+			<div class="df-senses" id="df-senses"></div>
+			<p class="df-src" id="df-src"></p>
+		</section>
+
+		<div class="df-grid" id="df-more" hidden>
+			<section class="tu-card df-card" id="df-mes" aria-labelledby="df-mesh" hidden>
+				<h2 class="df-h" id="df-mesh">On MES</h2>
+				<p class="tu-note">Calculators, tools and tutorials on mes.fm about this word.</p>
+				<div class="df-mesgrid" id="df-mesgrid"></div>
+			</section>
+			<section class="tu-card df-card" id="df-prcard" aria-labelledby="df-prh">
+				<h2 class="df-h" id="df-prh">Pronunciation</h2>
+				<div id="df-prbody"></div>
+			</section>
+			<section class="tu-card df-card" id="df-etycard" aria-labelledby="df-etyh" hidden>
+				<h2 class="df-h" id="df-etyh">Where the word comes from</h2>
+				<div id="df-ety"></div>
+			</section>
+			<section class="tu-card df-card" id="df-formscard" aria-labelledby="df-formsh" hidden>
+				<h2 class="df-h" id="df-formsh">Forms</h2>
+				<div id="df-forms"></div>
+			</section>
+			<section class="tu-card df-card" id="df-thescard" aria-labelledby="df-thesh" hidden>
+				<h2 class="df-h" id="df-thesh">Synonyms and antonyms</h2>
+				<p class="tu-note">Press a word to look it up.</p>
+				<div id="df-thes"></div>
+			</section>
+			<section class="tu-card df-card" id="df-relcard" aria-labelledby="df-relh" hidden>
+				<h2 class="df-h" id="df-relh">Related words</h2>
+				<div id="df-rel"></div>
+			</section>
+			<section class="tu-card df-card df-card--wide" id="df-trcard" aria-labelledby="df-trh" hidden>
+				<h2 class="df-h" id="df-trh">In other languages</h2>
+				<div class="df-trtop">
+					<label for="df-trgloss" class="df-sr">Meaning</label><select id="df-trgloss" class="df-tsel"></select>
+					<label for="df-trfilter" class="df-sr">Find a language</label><input type="search" id="df-trfilter" class="tu-input df-trfilter" placeholder="Find a language">
+				</div>
+				<div class="df-trlist" id="df-trlist"></div>
+				<p class="tu-note">From Wiktionary's translation tables. Press <em>Translate</em> beside a language to open MES Translate.</p>
+			</section>
+		</div>
+
+		<section class="tu-card df-mine" id="df-mine" aria-labelledby="df-mineh">
+			<div class="df-minehead">
+				<h2 class="df-h" id="df-mineh">My words</h2>
+				<div class="df-tabs" role="tablist" aria-label="My words">
+					<button type="button" role="tab" class="df-tab" id="df-t-saved" aria-selected="true" aria-controls="df-p-saved">Saved <span class="df-n" id="df-nsaved"></span></button>
+					<button type="button" role="tab" class="df-tab" id="df-t-cards" aria-selected="false" aria-controls="df-p-cards">Flashcards</button>
+					<button type="button" role="tab" class="df-tab" id="df-t-quiz" aria-selected="false" aria-controls="df-p-quiz">Quiz</button>
+					<button type="button" role="tab" class="df-tab" id="df-t-wotd" aria-selected="false" aria-controls="df-p-wotd">Word of the day</button>
+				</div>
+			</div>
+			<div class="df-pane" id="df-p-saved" role="tabpanel" aria-labelledby="df-t-saved">
+				<div class="df-saverow">
+					<input type="search" id="df-sfilter" class="tu-input df-sfilter" placeholder="Find in my words" aria-label="Find in my words">
+					<select id="df-ssort" class="df-tsel" aria-label="Sort"><option value="new">Newest first</option><option value="az">A to Z</option><option value="box">Least known first</option></select>
+				</div>
+				<ul class="df-slist" id="df-slist"></ul>
+				<p class="tu-note" id="df-sempty">No saved words yet. Look up a word and press <strong>&#9734; Save</strong>. Your list stays in this browser.</p>
+				<div class="df-sacts">
+					<button type="button" class="df-tb" id="df-slink" title="A link with your whole list (words only)">&#128279;&#65038; Link to my list</button>
+					<button type="button" class="df-tb" id="df-scopy">&#128203;&#65038; Copy as text</button>
+					<button type="button" class="df-tb" id="df-sexport">&#11015;&#65038; Backup file</button>
+					<label class="df-tb df-file">&#11014;&#65038; Restore / import<input type="file" id="df-simport" accept=".json,.txt,.csv,application/json,text/plain"></label>
+					<button type="button" class="df-tb df-danger" id="df-sclear">Clear all</button>
+				</div>
+			</div>
+			<div class="df-pane" id="df-p-cards" role="tabpanel" aria-labelledby="df-t-cards" hidden>
+				<div class="df-cardbox" id="df-cardbox">
+					<div class="df-cardbar"><span id="df-cardinfo" class="tu-note"></span><button type="button" class="df-tb" id="df-cardfill" title="Fill the browser window"><span aria-hidden="true">&#10530;</span> Fill window</button></div>
+					<button type="button" class="df-flash" id="df-flash" aria-live="polite"><span class="df-flashf" id="df-flashf"></span><span class="df-flashb" id="df-flashb" hidden></span><span class="df-flashhint" id="df-flashhint">Press to turn over (Space)</span></button>
+					<div class="df-cardbtns">
+						<button type="button" class="tu-btn" id="df-again">&#8635; Again (1)</button>
+						<button type="button" class="tu-btn" id="df-cardhear">&#128264;&#65038; Hear</button>
+						<button type="button" class="tu-btn tu-btn--primary" id="df-knew">&#10003; I knew it (2)</button>
+					</div>
+					<p class="tu-note df-boxes" id="df-boxes"></p>
+				</div>
+				<p class="tu-note" id="df-cardempty" hidden>Save a few words first: each card shows a word, and turns over to its meaning. Words you know come back less often.</p>
+			</div>
+			<div class="df-pane" id="df-p-quiz" role="tabpanel" aria-labelledby="df-t-quiz" hidden>
+				<div id="df-quizbox">
+					<p class="df-qdef" id="df-qdef"></p>
+					<div class="df-qopts" id="df-qopts"></div>
+					<p class="df-qres" id="df-qres" role="status" aria-live="polite"></p>
+					<div class="df-cardbtns"><button type="button" class="tu-btn tu-btn--primary" id="df-qnext">Next question</button><span class="tu-note" id="df-qscore"></span></div>
+				</div>
+				<p class="tu-note" id="df-quizempty" hidden>The quiz uses your saved words: save at least one word (with its meaning) to start. Wrong answers come from your list and our word-of-the-day list.</p>
+			</div>
+			<div class="df-pane" id="df-p-wotd" role="tabpanel" aria-labelledby="df-t-wotd" hidden>
+				<p class="tu-note">Everyone gets the same word each day. Here are this week's.</p>
+				<ul class="df-wlist" id="df-wlist"></ul>
+			</div>
+		</section>
+
+		<div class="tu-toast" id="df-toast" role="status" aria-live="polite"></div>
+
+		<div class="tu-seo">
+			<h2>A free English dictionary with pronunciation, translation and your own word list</h2>
+			<p>Type any English word and press <em>Define</em> (or Enter). You get every meaning, grouped by part of speech (noun, verb, adjective ...), with labels such as <em>mathematics</em>, <em>informal</em> or <em>transitive</em>, example sentences, and the synonyms and antonyms for each meaning. Every underlined word in a definition can be looked up with one press, so you can follow a word you don't know without leaving the page. Below the meanings: where the word comes from (its etymology), its forms (plural, past tense, comparative), related and derived words, and the word in other languages.</p>
+			<h3>Hear it, read it aloud, translate it</h3>
+			<p><em>Hear it</em> says the word with a voice on your device; the Pronunciation box adds the syllables with the stressed one marked, the IPA, an easy respelling and recordings of real speakers from Wikimedia Commons, with a link to <a href="/pronounce">MES Pronounce</a> for slow and syllable-by-syllable playback. <em>Read aloud</em> reads the definitions, lighting up each one as it goes. <em>Translate</em> opens the word in <a href="/translate">MES Translate</a> in the language you choose.</p>
+			<h3>Save words and learn them</h3>
+			<p>Press <em>Save</em> to keep a word and its meaning in your list. <em>Flashcards</em> show a word and turn over to its meaning; the ones you know come back less and less often (1, 2, 4, 8 and 16 days), the ones you miss come back at once. The <em>Quiz</em> gives a meaning and four words to choose from. Make a backup file, restore it on another computer, or share your list as a link.</p>
+			<h3>Questions</h3>
+			<dl>
+				<dt>Where do the definitions come from?</dt>
+				<dd>From <a href="https://en.wiktionary.org/" rel="noopener" target="_blank">Wiktionary</a>, the free dictionary written by volunteers, under the Creative Commons Attribution-ShareAlike licence (CC BY-SA 4.0). Each entry links to its Wiktionary page. When Wiktionary cannot be reached, the page tries the free <a href="https://dictionaryapi.dev/" rel="noopener" target="_blank">dictionaryapi.dev</a>, which is also built from Wiktionary. Syllables and IPA come from the CMU Pronouncing Dictionary (BSD licence), the same data as MES Pronounce. The word of the day and its short meaning are written by MES.</dd>
+				<dt>Can I link to a word?</dt>
+				<dd>Yes: the address <em>mes.fm/define?w=serendipity</em> opens that word. <em>Share</em> copies it, or opens your phone's share menu.</dd>
+				<dt>What is "On MES"?</dt>
+				<dd>When a word is the subject of an MES calculator, tool or tutorial (<em>percentage</em>, <em>torsion</em>, <em>orbit</em>, <em>inflation</em> ...), those pages are shown as cards under the definition.</dd>
+				<dt>Is anything sent or saved?</dt>
+				<dd>The word you look up is sent to Wiktionary (and dictionaryapi.dev if needed) to fetch its entry. Your saved words, recent lookups and flashcard progress stay in this browser only; nothing is stored on mes.fm.</dd>
+			</dl>
+		</div>
+	</div>

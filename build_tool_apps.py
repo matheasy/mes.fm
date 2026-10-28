@@ -731,6 +731,15 @@ APPS = {
                       desc="Free pronunciation tool: type a word or sentence and hear it in US, UK, Australian, Indian, Irish and other accents. See its syllables with the stressed one bigger, IPA, an easy respelling, US and UK forms, real recordings, slow syllable-by-syllable playback and practice with your microphone.",
                       meta_desc="Hear how to pronounce any word in US, UK, Australian and other accents, with syllables, stress, IPA, an easy respelling and slow playback.",
                       js_v="1", lib_from=["speedreader"], pre_js=["/main_js/voice-picker.js?v=1"]),
+    # MES Dictionary (2026-10-27, mes.fm/define; /define?w=word, also /define/<word> when vercel.json rewrites it): Wiktionary REST definitions + the page wikitext
+    # (labels, synonyms / antonyms, etymology, forms, related terms, translations; CC BY-SA, credited), dictionaryapi.dev fallback, MES Pronounce's CMU data (lib_from),
+    # read aloud, translate (MES Translate link), saved words + flashcards + quiz (localStorage mes-define:v1), word of the day (our list in lib.js), "On MES" cards
+    # from the site search index (pre_js site-search.js). lib.js = MESDef; tests: node tool_apps_src/define-tests.js (recorded fixtures in define/fixtures/).
+    "define": dict(title="MES Dictionary", page_title="Dictionary: Define Any Word, Hear It, Translate It",
+                   tag="Meanings, pronunciation, origins and translations of any English word.", accent="#1e5aa8", dark="#164580", tint="#e6effa",
+                   desc="Free English dictionary: look up any word for its meanings, examples, synonyms and antonyms, where it comes from, its forms and its translations. Hear it said, read the definitions aloud, save words to your own list and learn them with flashcards and a quiz.",
+                   meta_desc="Free English dictionary: meanings, examples, synonyms, etymology and translations of any word. Hear it, save it, and learn it with flashcards.",
+                   js_v="1", lib_from=["speedreader", "pronounce"], pre_js=["/main_js/site-search.js?v=1"]),
     "reminder": dict(title="Event Reminder", page_title="Livestream and Event Reminder",
                      tag="One link: a countdown and a calendar reminder in everyone's time zone.", accent="#b4235a", dark="#86183f", tint="#fbe6ee",
                      desc="Free event reminder link: make one link for a livestream, class or meeting and share it. Everyone who opens it sees a countdown and the time in their own time zone, and can add it to Google Calendar, Apple Calendar, Outlook or their phone with alerts, or get a browser notification.",
