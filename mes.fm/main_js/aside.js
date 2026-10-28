@@ -7,6 +7,8 @@
       deferred one; pushes made before it loads are queued by AdSense. Never requests an ad for a hidden slot.
       Add ?aside-debug to the URL to see a labelled placeholder box where the ad will go.
    3. Random card        -- appends one random related page (same family, not already listed) from aside-random.json. */
+/* a card picture that fails to load (a dead CDN link in the index) shows the MES mark instead of an empty box */
+function asideImgFail() { this.onerror = null; this.src = "/img/logo-mark-64.png"; this.className += " mes-aside__img--logo"; }
 (function () {
     "use strict";
     var aside = document.getElementById("mes-aside");
@@ -205,7 +207,7 @@
                 if (it.i) {
                     var img = document.createElement("img");
                     img.className = "mes-aside__img";
-                    img.width = 56; img.height = 56; img.loading = "lazy"; img.alt = ""; img.src = it.i;
+                    img.width = 56; img.height = 56; img.loading = "lazy"; img.alt = ""; img.onerror = asideImgFail; img.src = it.i;
                     a.appendChild(img);
                 }
                 var text = document.createElement("span");
@@ -295,7 +297,7 @@
             if (it.i) {
                 var img = document.createElement("img");
                 img.className = "mes-aside__img" + (logo ? " mes-aside__img--logo" : "");
-                img.width = 56; img.height = 56; img.loading = "lazy"; img.alt = ""; img.src = it.i;
+                img.width = 56; img.height = 56; img.loading = "lazy"; img.alt = ""; img.onerror = asideImgFail; img.src = it.i;
                 a.appendChild(img);
             }
             var text = document.createElement("span"), name = document.createElement("span"), tag = document.createElement("span");
