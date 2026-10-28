@@ -1,6 +1,14 @@
 {
- "generated": "2026-10-26",
+ "generated": "2026-10-27",
  "calculators": [
+  {
+   "href": "/bmi-calculator-kids",
+   "title": "BMI Calculator for Kids and Teens",
+   "icon": "/img/bmi-calculator-kids-logo.png",
+   "desc": "BMI-for-age percentile for ages 2 to 19 on the CDC growth chart.",
+   "added": "2026-10-27",
+   "kind": "calculator"
+  },
   {
    "href": "/compound-interest-calculator",
    "title": "Compound Interest Calculator",
@@ -88,22 +96,78 @@
    "desc": "Stress, strain and stretch of a bar from any four values, with a live picture.",
    "added": "2026-10-20",
    "kind": "calculator"
-  },
-  {
-   "href": "/matrix-calculator",
-   "title": "Matrix Calculator",
-   "icon": "/img/matrix-calculator-logo.png",
-   "desc": "Type or paste matrices into a grid: multiply, invert, determinants, eigenvalues and SVD with the working shown, plus softmax, a neural-network layer and attention.",
-   "added": "2026-10-19",
-   "kind": "calculator"
   }
  ],
  "tools": [
   {
-   "href": "/hutchison-effect-simulator",
-   "title": "Hutchison Effect Simulator",
-   "icon": "/img/hutchison-effect-simulator-logo.png",
-   "desc": "Lay out John Hutchison's lab of Tesla coils, Van de Graaff, RF and spark gaps, see where the fields cross and watch samples levitate, bend like jelly, fracture and glow.",
+   "href": "/elections",
+   "title": "Elections",
+   "icon": "/img/elections-logo.png",
+   "desc": "2026 US midterms with every race’s market odds and a build-your-own seat map, Canada and BC results with seats-vs-votes tools, and a world election calendar. Neutral, sourced.",
+   "added": "2026-10-27",
+   "kind": "tool"
+  },
+  {
+   "href": "/la-liga-picks",
+   "title": "La Liga Picks",
+   "icon": "/img/la-liga-picks-logo.png",
+   "desc": "Predict the La Liga table and track it live: top 4, Europe, relegation, exact places, friends and a leaderboard.",
+   "added": "2026-10-27",
+   "kind": "tool"
+  },
+  {
+   "href": "/mlb-picks",
+   "title": "MLB Picks",
+   "icon": "/img/mlb-picks-logo.png",
+   "desc": "Your AL, NL, division and World Series picks against the standings and the postseason, with friends and a leaderboard.",
+   "added": "2026-10-27",
+   "kind": "tool"
+  },
+  {
+   "href": "/nfl-picks",
+   "title": "NFL Picks",
+   "icon": "/img/nfl-picks-logo.png",
+   "desc": "Your AFC, NFC, division and Super Bowl picks against the live standings: playoff seeds, bracket, friends and a leaderboard.",
+   "added": "2026-10-27",
+   "kind": "tool"
+  },
+  {
+   "href": "/nhl-picks",
+   "title": "NHL Picks",
+   "icon": "/img/nhl-picks-logo.png",
+   "desc": "Your East, West, division and Stanley Cup picks against the live standings and the playoffs, with a leaderboard.",
+   "added": "2026-10-27",
+   "kind": "tool"
+  },
+  {
+   "href": "/premier-league-picks",
+   "title": "Premier League Picks",
+   "icon": "/img/premier-league-picks-logo.png",
+   "desc": "Predict the Premier League table and track it live: top 4, Europe, relegation, exact places and a leaderboard.",
+   "added": "2026-10-27",
+   "kind": "tool"
+  },
+  {
+   "href": "/define",
+   "title": "Dictionary",
+   "icon": "/img/define-logo.png",
+   "desc": "Define any English word: meanings, examples, synonyms, where it comes from and translations. Hear it, save it and learn it with flashcards.",
+   "added": "2026-10-27",
+   "kind": "tool"
+  },
+  {
+   "href": "/march-madness",
+   "title": "March Madness",
+   "icon": "/img/march-madness-logo.png",
+   "desc": "NCAA bracket maker for the men’s and women’s tournaments: the odds of every pick, live scores and win chances, sharing and a leaderboard.",
+   "added": "2026-10-27",
+   "kind": "tool"
+  },
+  {
+   "href": "/pronounce",
+   "title": "Pronounce",
+   "icon": "/img/pronounce-logo.png",
+   "desc": "Hear any word or sentence in US, UK and other accents, with syllables, stress, IPA, an easy respelling and slow playback.",
    "added": "2026-10-26",
    "kind": "tool"
   },
@@ -111,7 +175,7 @@
    "href": "/nba-picks",
    "title": "NBA Picks",
    "icon": "/img/nba-picks-logo.png",
-   "desc": "Your predicted NBA standings against the live table: how many are right, a picture of every pick, friends and a leaderboard.",
+   "desc": "Your predicted NBA standings (East, West, whole league, divisions) and playoff bracket against the live table: a picture of every pick, friends and a leaderboard.",
    "added": "2026-10-26",
    "kind": "tool"
   },
@@ -124,141 +188,77 @@
    "kind": "tool"
   },
   {
-   "href": "/pronounce",
-   "title": "Pronounce",
-   "icon": "/img/pronounce-logo.png",
-   "desc": "Hear any word or sentence in US, UK and other accents, with syllables, stress, IPA, an easy respelling and slow playback.",
+   "href": "/hutchison-effect-simulator",
+   "title": "Hutchison Effect Simulator",
+   "icon": "/img/hutchison-effect-simulator-logo.png",
+   "desc": "Lay out John Hutchison's lab of Tesla coils, Van de Graaff, RF and spark gaps, see where the fields cross and watch samples levitate, bend like jelly, fracture and glow.",
    "added": "2026-10-26",
-   "kind": "tool"
-  },
-  {
-   "href": "/debt-clock",
-   "title": "Debt Clock",
-   "icon": "/img/debt-clock-logo.png",
-   "desc": "The US national debt ticking live from Treasury figures, plus world and Canada debt, per person, debt-to-GDP, interest per second and charts since 1790.",
-   "added": "2026-10-25",
-   "kind": "tool"
-  },
-  {
-   "href": "/magnetic-isopotentials",
-   "title": "Magnetic Isopotentials",
-   "icon": "/img/magnetic-isopotentials-logo.png",
-   "desc": "Drag and turn bar magnets and see their flux lines and magnetic isopotentials at once, with compasses, horseshoe and Halbach examples.",
-   "added": "2026-10-25",
-   "kind": "tool"
-  },
-  {
-   "href": "/translate",
-   "title": "Translate & Image to Text",
-   "icon": "/img/translate-logo.png",
-   "desc": "Translate text, photos, screenshots and PDFs in 85 languages, and copy the text out of pictures (OCR). On your device in Chrome and Edge.",
-   "added": "2026-10-24",
-   "kind": "tool"
-  },
-  {
-   "href": "/signals",
-   "title": "Market Signals",
-   "icon": "/img/signals-logo.png",
-   "desc": "Crypto and stock fear & greed, Bitcoin and market prices, the fed funds rate, the yield curve, the next Fed meeting and prediction-market odds, explained in plain English. Not advice.",
-   "added": "2026-10-24",
-   "kind": "tool"
-  },
-  {
-   "href": "/poker",
-   "title": "Poker",
-   "icon": "/img/poker-logo.png",
-   "desc": "Play Texas Hold'em against computer players with play money, and calculate your odds for any hand.",
-   "added": "2026-10-23",
-   "kind": "tool"
-  },
-  {
-   "href": "/backgammon",
-   "title": "Backgammon",
-   "icon": "/img/backgammon-logo.png",
-   "desc": "Play backgammon against the computer at three levels, with hints, the doubling cube and your statistics.",
-   "added": "2026-10-23",
-   "kind": "tool"
-  },
-  {
-   "href": "/birthday-personality",
-   "title": "Birthday Personality",
-   "icon": "/img/birthday-personality-logo.png",
-   "desc": "A playful character sketch for every day of the year: your day's archetype, strengths and lucky numbers.",
-   "added": "2026-10-23",
-   "kind": "tool"
-  },
-  {
-   "href": "/seo",
-   "title": "SEO Checker",
-   "icon": "/img/seo-logo.png",
-   "desc": "Check any page's SEO: title, description, headings, canonical, robots, social cards and a report of every mes.fm page.",
-   "added": "2026-10-23",
    "kind": "tool"
   }
  ],
  "latest": [
   {
-   "href": "/hutchison-effect-simulator",
-   "title": "Hutchison Effect Simulator",
-   "icon": "/img/hutchison-effect-simulator-logo.png",
-   "desc": "Lay out John Hutchison's lab of Tesla coils, Van de Graaff, RF and spark gaps, see where the fields cross and watch samples levitate, bend like jelly, fracture and glow.",
-   "added": "2026-10-26",
+   "href": "/elections",
+   "title": "Elections",
+   "icon": "/img/elections-logo.png",
+   "desc": "2026 US midterms with every race’s market odds and a build-your-own seat map, Canada and BC results with seats-vs-votes tools, and a world election calendar. Neutral, sourced.",
+   "added": "2026-10-27",
    "kind": "tool"
   },
   {
-   "href": "/nba-picks",
-   "title": "NBA Picks",
-   "icon": "/img/nba-picks-logo.png",
-   "desc": "Your predicted NBA standings against the live table: how many are right, a picture of every pick, friends and a leaderboard.",
-   "added": "2026-10-26",
+   "href": "/la-liga-picks",
+   "title": "La Liga Picks",
+   "icon": "/img/la-liga-picks-logo.png",
+   "desc": "Predict the La Liga table and track it live: top 4, Europe, relegation, exact places, friends and a leaderboard.",
+   "added": "2026-10-27",
    "kind": "tool"
   },
   {
-   "href": "/docx",
-   "title": "Word Viewer (DOCX)",
-   "icon": "/img/docx-logo.png",
-   "desc": "Open Word documents with the real page layout, search and count words, edit and save as .docx, PDF or text. Private: nothing is uploaded.",
-   "added": "2026-10-26",
+   "href": "/mlb-picks",
+   "title": "MLB Picks",
+   "icon": "/img/mlb-picks-logo.png",
+   "desc": "Your AL, NL, division and World Series picks against the standings and the postseason, with friends and a leaderboard.",
+   "added": "2026-10-27",
    "kind": "tool"
   },
   {
-   "href": "/pronounce",
-   "title": "Pronounce",
-   "icon": "/img/pronounce-logo.png",
-   "desc": "Hear any word or sentence in US, UK and other accents, with syllables, stress, IPA, an easy respelling and slow playback.",
-   "added": "2026-10-26",
+   "href": "/nfl-picks",
+   "title": "NFL Picks",
+   "icon": "/img/nfl-picks-logo.png",
+   "desc": "Your AFC, NFC, division and Super Bowl picks against the live standings: playoff seeds, bracket, friends and a leaderboard.",
+   "added": "2026-10-27",
    "kind": "tool"
   },
   {
-   "href": "/debt-clock",
-   "title": "Debt Clock",
-   "icon": "/img/debt-clock-logo.png",
-   "desc": "The US national debt ticking live from Treasury figures, plus world and Canada debt, per person, debt-to-GDP, interest per second and charts since 1790.",
-   "added": "2026-10-25",
+   "href": "/nhl-picks",
+   "title": "NHL Picks",
+   "icon": "/img/nhl-picks-logo.png",
+   "desc": "Your East, West, division and Stanley Cup picks against the live standings and the playoffs, with a leaderboard.",
+   "added": "2026-10-27",
    "kind": "tool"
   },
   {
-   "href": "/magnetic-isopotentials",
-   "title": "Magnetic Isopotentials",
-   "icon": "/img/magnetic-isopotentials-logo.png",
-   "desc": "Drag and turn bar magnets and see their flux lines and magnetic isopotentials at once, with compasses, horseshoe and Halbach examples.",
-   "added": "2026-10-25",
+   "href": "/premier-league-picks",
+   "title": "Premier League Picks",
+   "icon": "/img/premier-league-picks-logo.png",
+   "desc": "Predict the Premier League table and track it live: top 4, Europe, relegation, exact places and a leaderboard.",
+   "added": "2026-10-27",
    "kind": "tool"
   },
   {
-   "href": "/translate",
-   "title": "Translate & Image to Text",
-   "icon": "/img/translate-logo.png",
-   "desc": "Translate text, photos, screenshots and PDFs in 85 languages, and copy the text out of pictures (OCR). On your device in Chrome and Edge.",
-   "added": "2026-10-24",
+   "href": "/define",
+   "title": "Dictionary",
+   "icon": "/img/define-logo.png",
+   "desc": "Define any English word: meanings, examples, synonyms, where it comes from and translations. Hear it, save it and learn it with flashcards.",
+   "added": "2026-10-27",
    "kind": "tool"
   },
   {
-   "href": "/signals",
-   "title": "Market Signals",
-   "icon": "/img/signals-logo.png",
-   "desc": "Crypto and stock fear & greed, Bitcoin and market prices, the fed funds rate, the yield curve, the next Fed meeting and prediction-market odds, explained in plain English. Not advice.",
-   "added": "2026-10-24",
+   "href": "/march-madness",
+   "title": "March Madness",
+   "icon": "/img/march-madness-logo.png",
+   "desc": "NCAA bracket maker for the men’s and women’s tournaments: the odds of every pick, live scores and win chances, sharing and a leaderboard.",
+   "added": "2026-10-27",
    "kind": "tool"
   }
  ]

@@ -1169,3 +1169,124 @@ identical sites), not isolated to one file.
   - **Search Console review findings** (2026-10-26): Google clicks 2.3K vs 4.5K over 28 days is the Sept 10 subdomain move (new URLs up: /gradecalculator 248→1,076, /gpacalculator 224→741); /percentagecalculator 18.9K impressions at 0.4% CTR; 455 "Not found" are mostly old numeric study-tips / memes stubs on old subdomains; Bing still lists the old subdomains and its AI answers cite them (gradecalculator.mes.fm/midterm-grade-calculator 102 citations was a 404: now 308s to /gradecalculator).
   - **Gotcha**: follow-up scripts crash (FileNotFoundError) while another session has an `APPS` entry whose page isn't built yet; re-run them afterwards.
 - **Imagining Motion** (2026-10-26, `mes.fm/imagining-motion`): Nancy Hutchison's conversation excerpt for John ("Imagining Motion: Pain, Cancer, RETURN, and Volition") as a Jump-to article, built by `build_nancy_imagining_motion_article.py --apply` (a clone of the TURN, RETURN builder: shell = the built Nancy physics report) from `nancy_imagining_motion_src/content.html` (hand-converted from the PDF, wording unchanged; arrow chains are `<div class="chain">`, one step per line). The PDF is hosted beside it (`imagining-motion/imagining-motion.pdf`, Author metadata set to Nancy Hutchison). Picture = the owner's image (`img/imagining-motion.jpg`, share `img/imagining-motion-share.jpg`); it is first on `/nancy` and the /nancy hub tile `img/nancy-icon.jpg` is now a crop of it (`iconVersion` 2). Same day: the Open-in switch gained a **PDF** site (`shared/link-pref.mjs`, matches `mes.fm/<slug>-pdf` and `.pdf` URLs, tested before the other sites, caption "View the PDF"), used for one-card-per-book on `/911-andrew-johnson-books`; `/911spooks` has a books tile. Grok art imported for hutchison-effect-simulator, docx, pronounce and nba-picks (the docx / nba icons had a dark border: re-cropped to their coloured tile).
+
+- **Search Console + Favourites layout pass** (2026-10-27): `/search-console` (js_v 4): the Google / Bing tiles sit under a "Totals" toggle (`#gs-sumbtn`, localStorage `mes-gsc:sumfold`; collapsed = one summary line per source). At <=600 px: 4 small tiles per row, every `.gs-tabs` chip row stays on one line that scrolls sideways, the first table column can be up to 58vw and long queries wrap. A "✕ Clear" chip (`#gs-tclear`) next to the table search clears every filter and the search text. `/fav` (js_v 3): view switch Tiles / List / Compact / Table (`mes-fav:view`; Table sorts by Page / Section / URL / Group, `mes-fav:sort`, ascending → descending → own order) and "Hide controls" (`mes-fav:clean`: hides drag handles, copy / remove and group rename / delete, and turns drag off). Tiles / List / Compact share the `.fv-tile` markup, restyled via `.fv-v-<view>` on `#fv-groups`, so drag and keyboard reorder are unchanged (List judges before / after by height; Arrow Up / Down moves within the group first). Table is its own render (`tableHtml()`) and has no drag.
+- **Mathiew hub + Judy Wood rebuttal** (2026-10-27): `mathiew/build.mjs` was re-cloned from `conspiracy/build.mjs`, so `mes.fm/mathiew` is now a tile hub (Posts, Videos; MES.fm logo-mark brand; info bar `Mathiew | Posts | Videos | Conspiracy`). It writes `mathiew-posts` and `mathiew-videos` from `mathiew/sections.mjs` (newest first; then `npm run build`). The Posts tile follows the newest post automatically (`syncPostsTile()`, hub `mathiew` in `set_posts_tile.py` HUBS); `img/mathiew-videos-icon.jpg` is a crop of the newest video's thumbnail. The hub is small, so it has no `addAllPage`. The old `convert_mirror_pages.py --only=mathiew` / `add_hub_theatre.py` post-steps are gone (the shell is native now). `add_conspiracy_section_links.py` also covers mathiew and inserts each section link right after its hub's link (re-run it after adding a mirror). Manual `set_posts_tile.py` runs now bump from max(build.mjs iconVersion, the posts-tiles.json `v`), so they never go back to an older `?v=`. `mes.fm/judy-wood-rebuttal` is a hand-made page in the 9/11 Spooks brand (cloned from `david-hughes-fetzer-2.0`; og image / tile = a PIL text card), at the top of 911spooks-posts and 911-posts. `mes.fm/richmond-elections-sticker-2026` mirrors Hive `@mestruth/re-leothreads-w9ul1rxh` + Telegram 35660 (conspiracy + mathiew Posts).
+- **Round 2026-10-27 (helper):**
+  - **Materials:** 37 more materials. Rubbers: SBR, NBR, EPDM, neoprene, silicone, FKM, PU. Wood: several species along the grain, plus red oak and Douglas fir across it (`aniso`, brittle, id ends in `x`). Concrete 20 / 40 / 60 MPa, UHPC, lightweight. Mortar, brick, granite, limestone, marble, sandstone, asphalt. Glass: tempered, borosilicate, fused silica. Ceramics: porcelain, alumina, SiC, Si3N4, zirconia. The family "ceramic" is now labelled "Concrete, stone & ceramics"; js_v 6.
+  - **Homepage:** has a MES Links tile (`img/links-icon.jpg`).
+  - **9/11 hub:** the Andrew Johnson books tile sits right before MES 9/11 Livestreams (`PAGES` order).
+  - **Thumbnails:** `build_search_index.py` swaps a bare 3Speak thumbnail CID og:image (`ipfs-3speak.b-cdn.net/ipfs/<cid>`, answers 403) for the page's first Hive/Peakd image. `aside.js` `asideImgFail()` shows the MES mark for any card picture that fails to load.
+  - **Nancy articles:** the three Nancy Hutchison articles have the jump-aside rail (`jump-aside.js` FAMILY "hutchison"; the builders end with `with_jump_aside()`). Run the Nancy builders with python3.14 (the system 3.9 can't parse them).
+  - **Copy Text "Show big":** A- / A+ / Fit (`mes-copytext:v1:showsize`, keys + - 0); at <=640 px the bar takes two rows. Fit never splits a word.
+- **Translate round 3** (2026-10-27, js_v 5; append to the Translate bullet):
+  - **Layout:** source tabs on top, then one grid `.tr-main`: From | ⇄ | To above `.tr-col--in` | `.tr-col--out`. Side by side, the two boxes stretch to the same height (no empty space).
+  - **One primary button `#tr-go`:** "Read & translate" while a picture is unread (`unread()`), else "Translate". Pictures are read as soon as they're added. The text is translated automatically only when it can be done on the device; online translation waits for the click, and the button pulses.
+  - **Picture language "Automatic"** (default; `S.olang` = "auto" unless `S.olangPicked`):
+    - Read with `MESTr.ocrFirst`: the chosen language, else From, else the browser's.
+    - Guess the language: LanguageDetector, else the offline `MESTr.guessLang` (script ranges + accent-free stopwords).
+    - Read again when `ocrRecheck` says it's a different language with a model.
+    - `afterOcrLangs` then sets From to the picture's language and moves To away from it (to the old From, then the browser's language, then English). One status line in `#tr-onote`.
+    - OCR text is joined into sentences (`ocrParagraphs`) before it goes into the input box.
+  - **Language pickers:** From / To / picture language are searchable (`makePicker` in app.js: a button + popover combobox/listbox; `langFilter` / `langGroups` / `pushRecent` in lib.js; recent list `S.recent`). The hidden `<select>` still holds the value (its `value` setter refreshes the button), so code can keep setting `fromSel.value`.
+  - **Thumbnails and text size:** clicking a thumbnail opens MESPhotoPrep. A- / A+ (`[data-fz]`, `S.fz`, CSS `--tr-fz`) are in every fill bar and, with Full width on, in the tool rows.
+  - **photo-prep.js phone pass:**
+    - Top bar: Cancel / undo / redo / Done. The 8 tools fit in one grid row; `grid-template-columns: minmax(0,1fr)`.
+    - The editor is pinned to the visual viewport (`M.visibleBox`).
+    - Crop is fitted with a finger margin (`M.fitView` / `M.viewPad`), so all 8 handles are on screen. The zoom label reads "1×" (`M.zoomLabel`).
+  - **Tests:** translate-tests.js 159, photo-prep-tests.js 208.
+- **BMI Calculator for Kids and Teens** (2026-10-27, `mes.fm/bmi-calculator-kids`). A sub-page of the BMI brand (`brand` = bmicalculator, `tab=1`, "Kids & Teens" in the BMI info bar and menu); ads kept.
+  - **Maths:** BMI-for-age percentile for ages 2-19 from the CDC 2000 growth charts (LMS method). Above the 95th it uses the CDC 2022 extended percentile, 90 + 10·Φ((BMI-P95)/σ), with σ by sex and age as in CDC's cdcanthro. Severe obesity = 120% of the 95th or more; class 3 is noted from 140%.
+  - **Source** in `tool_apps_src/bmi-kids/`: `lib.js` (= `KB`), `data.js`, `app.js`, `app.css`, `content.html`. `data.js` is generated by `build_cdc_bmi_data.py --apply` from CDC's `CDCref_d.csv`; cdc.gov answers 403 to scripts, so it downloads growthcleanr's copy, or reads `--cache FILE`. Tests: `node tool_apps_src/bmi-kids-tests.js`.
+  - **Inputs and UI:** age as years + months (+0.5 month) or birth / measurement dates; units mirrored; interactive chart with "Try other numbers". Kind wording on purpose: no weight targets and no diet advice. State in localStorage `mes-bmi-kids:v1`; no share links.
+  - **Rebuild:** `build_tool_apps.py --only=bmi-calculator-kids --apply` + the usual four follow-ups.
+  - **Related pages:** `bmicalculator/bmi-formula` (hand-made) uses MathJax via `mes-math.js` (marker `BMI-FORMULA-2026`, inline `#bf` style and script); its worked example re-typesets with `MathJax.typesetPromise`. Never bring back the codecogs images. `gpacalculator/grade-point-average` has a `GPA-FORMULA-BOX` (MathJax).
+- **Hutchison Effect Simulator round 2** (2026-10-27, js_v 2; short link `/hes`):
+  - **Toolbar:** `#hx-tb` sits inside `.hx-stage`. `layout()` measures its height (`VB`) and draws the floor below it, so it never covers the plan and stays in Fill window / `.mes-nopanel`. It holds:
+    - Move / Connect / Remove.
+    - ＋ Add (`#hx-addpop`; the palettes are also built into `#hx-ppal` / `#hx-pspal`) and Delete selected.
+    - Pause / Restart, speeds `SPEEDS` 1-3600×, zoom.
+    - Camera views, Displays, PNG, full screen.
+  - **Zoom and pan:** `zm` = {z, px, py} on top of the fitted `view0` (`applyView`, `zoomAt`). The plain wheel zooms only in fill / full screen, otherwise Ctrl+wheel; pinch zooms; dragging the empty floor pans.
+  - **Camera views** (`ui.opts.view`): a `viewPoly` wedge out to the walls. A round handle turns the camera and a square handle sets `fov` (per-camera key, default 50, kept in share links); `[ ]` and Alt+arrows do the same from the keyboard. What the focused camera sees gets a dashed ring (`camSees`).
+  - **Recording:** follows the selected camera (`recCam`) and shows only the samples in its view, sorted by `viewAngle`. Noise = `camNoise(Eac, imm)`; dropouts = `camDropout(level, realSeconds, seed)` bursts plus spark-gap shots. Event timeline `#hx-tl` and "▶ replay" buttons in the log (`doReplay`).
+  - **Displays** (`ui.opts.disp`, saved) hides the recording and the readouts.
+  - **Equation box:** long formulas are `aligned` and fitted by `eqFit()` (min 72%), with mjx-container as a block (no scroll bars).
+  - **Gotcha:** the derived TOOL-DARK block rewrites the `--hx-*` custom properties (the stage turned blue), so `app.css` ends with `body.dark-mode #hx.hx {...}` restating them. Keep that rule in step when adding a `--hx-*` variable, and never put a colour word in a variable name.
+- **Jump-to search** (2026-10-27, `main_js/jump-to.js` third block):
+  - **Where:** a "Search the article…" box at the top of the fixed `.toc-sidebar`, the `.toc-mobile` "Jump to section" list and the floating `#compact-jump-panel`.
+  - **What:** the article text (root = the closest element holding every TOC target; nav / toc / buttons / comments / aside skipped), ignoring case and accents, from 2 letters. The index is built on first focus (~60 ms for a whole book) and again on a focus more than a minute later.
+  - **Results:** "N matches in M sections", grouped by TOC section with snippets; the first 300 shown, counted up to 5,000. Prev / Next, Enter / Shift+Enter, Esc clears.
+  - **Jumping:** opens `.chapter-toggle-list.hidden` (via the page's `toggleChapter()`), `.section-body.collapsed` and `<details>`, centres the match below the floating bar and highlights it with `::highlight(mes-find)` / `::highlight(mes-find-cur)`. Nothing is wrapped in `<mark>`.
+  - **Floating panel:** the results replace the section list (`.mf-searching`); after a jump the panel shrinks to its search row (`.mf-mini`).
+  - Every page that loads jump-to.js gets it. A new way of collapsing sections needs a case in `reveal()`.
+- **MES March Madness** (2026-10-27, `mes.fm/march-madness`, blue `#1d4ed8`; card in `tools.html` "Games &amp; Chance"; tools sidebar + bottom ad). NCAA men's + women's bracket maker.
+  - **Shared lib:** `tool_apps_src/march-madness/lib.js` (`MESMM`) **must stay byte-identical to `mes.fm/api/_mm-lib.js`** (`cp` after editing; the tests check).
+  - **Game numbers:** 0-31 R64, 32-47 R32, 48-55 S16, 56-59 E8, 60-61 F4 (60 = regions 0+1), 62 final, 63-66 First Four. Picks are 0/1/2 per game, 2 bits each, encoded as base64url with a "1" prefix.
+  - **Model:** round 1 uses historical seed-pairing rates (`HIST`); later rounds use fitted seed ratings `SEED_R` (women ×1.3). Record nudge = 3 × (win% − usual for the seed). Finished games count 1 / 0; live games use ESPN's win probability.
+  - **Results API:** `api/mm-bracket.js` reads ESPN's keyless scoreboard, one request per day from Selection Sunday + 1 to + 24 (Selection Sunday = 20 days before the first Saturday of April), plus the game summary for live odds.
+    - Before Selection Sunday it answers "pending", so the page plays the last saved tournament, blind until "Show real results".
+    - Cache: 30 s while live, 5 min during the tournament, 1 day after.
+    - **After each tournament run `node mes.fm/api/mm-bracket.js --write <year>`** (writes `mes.fm/march-madness/data/{m,w}-<year>.json` + `index.json`) and commit.
+    - If ESPN's Final Four games have no teams yet, set the region pairing in `PAIRING` in mm-bracket.js.
+  - **Leaderboard:** `api/mm-picks.js` on Upstash (`mmb:<g>:<year>:e`, hashed edit key, 20 writes per IP hash per hour, env `MM_PICKS_ADMIN_KEY` for admin remove). A bracket posted or changed after the first R64 tip-off goes to a separate "Replay" board.
+  - **Tests:** `node tool_apps_src/march-madness-tests.js`.
+  - **Art:** placeholder PIL logos until Grok art lands (`import_grok_art.py march-madness --apply`, then bump the `tools.html` card's `?v=`).
+  - **Rebuild:** `build_tool_apps.py --only=march-madness --apply` + the usual four follow-ups.
+- **BMI formula page fit** (2026-10-27): `bmicalculator/bmi-formula` has a `BF-EQ-FIT` script that scales a typeset formula wider than its box down to no less than 72% (no scroll bar). `gpacalculator/grade-point-average`'s 4.33 scale is a real HTML table (`GPA-SCALE-TABLE`), and the formula box's link colour is set as `#main-content .gpaf a` (a bare `.gpaf a` loses to `#main-content a {color:-webkit-link}`).
+- **MES Dictionary** (2026-10-27, `mes.fm/define`, blue `#1e5aa8`; card in `tools.html` "Text & Symbols"; tools sidebar + bottom ad).
+  - **Build:** `build_tool_apps.py` from `tool_apps_src/define/` (`lib_from=["speedreader","pronounce"]`, `pre_js` site-search.js). `lib.js` = `MESDef`, pure; tests `node tool_apps_src/define-tests.js` (108 checks, recorded fixtures in `define/fixtures/`).
+  - **Definitions:** Wiktionary REST `page/definition/<word>` (HTML parsed into text plus clickable words). The page wikitext (`action=parse&prop=wikitext&origin=*`) adds:
+    - `{{lb}}` labels and `#: {{syn}}` / `{{ant}}` per meaning (matched to the REST meanings by text);
+    - etymology (`etyTpl` renders der / inh / bor / m / cog / af / suffix, with a language-name table `LANG`);
+    - forms from en-noun / en-verb (incl. `run<,,ran,run>`) / en-adj, and multi-line `{{col}}` derived and related terms;
+    - IPA by accent, `{{audio}}` (Commons MP3 transcode URL from an MD5 of the file name) and translation tables.
+    - dictionaryapi.dev is only the fallback (often 502).
+  - **Pronunciation:** MES Pronounce's CMU shards (`MESPron.forms`).
+  - **Actions:** Read aloud, Translate (`/translate?from=en&to=&q=`), Share (`?w=`; `/define/<word>` via the vercel rewrite), Fill window.
+  - **Saved state** (localStorage `mes-define:v1`): saved words (backup / restore, `?list=` links), recent lookups, flashcards (boxes 0-5 at 1 / 2 / 4 / 8 / 16 days), quiz.
+  - **Word of the day:** `WOTD` in lib.js (our own short meanings; a fixed step through the list by local date).
+  - **"On MES" cards:** `mesPick()` on `MESSearch.search()`: whole word or stem in the title or description, calculators and tools first, at most one meme.
+  - `track.js` drops its query.
+  - **Art:** PIL placeholder logos until Grok art (`import_grok_art.py define --apply`, then bump the tools.html card `?v=`).
+  - **Rebuild:** `build_tool_apps.py --only=define --apply` + `add_tool_page_controls` / `add_sidebar` / `add_bottom_ad` / `add_cross_links` (`git checkout` the churn).
+- **MES Picks: NBA, NFL, MLB, NHL, La Liga, Premier League** (2026-10-27; `mes.fm/nba-picks`, `nfl-picks`, `mlb-picks`, `nhl-picks`, `la-liga-picks`, `premier-league-picks`, orange `#c2410c`; one card each in tools.html "Games & Chance"; short links `/nba`, `/nfl`, `/mlb`, `/nhl`, `/la-liga`, `/epl` ...).
+  - **One source:** `tool_apps_src/nba-picks/` (`lib.js` = `MESNBA`/`MESPicks`, `app.js`, `app.css`, `content.html` with `{{LG}} {{LEAGUES}} {{INTRO}} {{LONG}} {{SEO}}`, `seo/<lg>.html`) and one served script `nba-picks/js/nba-picks.js`. The other five pages use `src="nba-picks"`, `js_path`, `vars=_picks_vars(lg, ...)`, `nav_extra=PICKS_NAV_INFO`, `tab=N`; bump `js_v` on all six.
+  - **League config:** `#np[data-lg]` picks the league from `LEAGUES` in lib.js: conferences, divisions (matched to ESPN division names), tiers / cut per table type, whole-league order (`pct`, NHL `pts`, soccer `table`), playoffs (`po.stages` with headline regexes, best-of, `slots`; `po.months(season)` = the scoreboard months, since ESPN rejects date ranges).
+  - **Team data:** from ESPN (standings `?level=3`, `/teams` colours, logos via the `a.espncdn.com/combiner` resizer). NBA keeps its fixed ids, so old sets, `?e=&w=` links and `nbap:` entries still work.
+  - **Tabs:** each conference, Whole league, Divisions (all lists on one tab, scores summed), Playoffs (picks per round, 1 / 2 / 4 / 8 points, results card).
+  - **Shared lib:** lib.js **must stay byte-identical to `mes.fm/api/_nba-lib.js`** (`cp` after editing; the tests check).
+  - **APIs:**
+    - `api/nba-standings.js?lg=&season=` (v2: `groups`, `teams`, `over`, `started`, `po` results; 10-min edge cache).
+    - `api/nba-picks.js` (`lg` in query / body). Keys: `nbap:<season>:e` for NBA, else `picks:<lg>:<season>:e`. Boards: conference keys, `all`, `L`, `D`, `P`. Table boards close when the regular season ends; playoff picks close when the playoffs start.
+  - **State and links:** `mes-nba-picks:v1` / `mes-<lg>-picks:v1`; links `?n=&<group key lowercase>=ids&p=<stages _ slots . empty ->&v=<tab>` (dropped by track.js).
+  - **Samples:** `node mes.fm/api/nba-standings.js --write all`.
+  - **Tests:** `node tool_apps_src/nba-picks-tests.js` (fixtures for every league + playoff months).
+  - **Art:** logos for the five new pages are PIL placeholders until Grok art (`import_grok_art.py <slug> --apply`, then bump the tools.html card `?v=`).
+  - **Rebuild:** `build_tool_apps.py --only=nba-picks,nfl-picks,mlb-picks,nhl-picks,la-liga-picks,premier-league-picks --apply` + the four follow-ups.
+- **MES Elections** (2026-10-27, `mes.fm/elections`, teal `#0f6e6e`, deliberately neither party colour; card in `tools.html` "Money & Markets"; tools sidebar + bottom ad; Wide by default). Short links: `/midterms`, `/election`, `/senate-map`, `/balance-of-power`, `/bc-election` (tab bc), `/canada-election` (tab ca), `/election-calendar` (tab cal) ...
+  - **Build:** `build_tool_apps.py` from `tool_apps_src/elections/` (`lib.js` = `MESElect`, `app.js`, `app.css`, `content.html` with `/main_js/panel-view.js` for Fill window / Full screen).
+  - **Strictly neutral:** party colours only, no MES forecast or race ratings; market prices are shown as the markets' own; a banned-words test guards the hand-written text.
+  - **Tabs** (`?tab=us|ca|bc|cal`):
+    - **US:** countdown, House / Senate / Governors cards with control prices from Polymarket + Kalshi.
+      - **Builder:** every race from its Polymarket market (`E.parseRaces`). Party comes from the market question, a `(D)` suffix or the `E.CAND_PARTY` hand table; click to override (`D/R/I/U`).
+      - **Shift slider** in log-odds (+ = toward D inside the lib). `E.chamber` applies 51, or 50 + the Vice President (R).
+      - **Links and state:** `?ch=&o=H-AZ-01:R,...&sh=&base=blank&ind=`; localStorage `mes-elections:v1`.
+      - **After the vote:** a closed market at 1 = "market settled", not official.
+      - **Official results:** state results pages are `E.RESULTS_URLS`.
+    - **Canada:** 2025 results + live House of Commons standings CSV.
+    - **BC:** 2024 final; the 24 Oct 2026 snap election live from `results.elections.bc.ca` (`E.parseBcEnr`; fallback `E.BC2026`, update it after the final count ~18 Nov); 2024 → 2026 comparison.
+    - **Each Canada / BC election** also gets a seats-vs-votes table, a PR what-if (`E.proportional`: dhondt / sl / hare + threshold) and a coalition builder.
+    - **Calendar:** hand-entered `E.CALENDAR` / `E.RECENT`, each row with basis + source. Re-check now and then and bump `E.CHECKED`.
+  - **Data:** `mes.fm/api/elections.js` (keyless, no client input, `s-maxage=300`) runs these jobs:
+    - `races`: every open `tag_slug=midterms` Polymarket event, `order=id`, 100 per page, plus events closed after 2 Nov.
+    - `kalshiH` / `kalshiS`: CONTROLH / CONTROLS.
+    - `commons`: the ourcommons.ca CSV.
+    - `bcenr`: the Elections BC results site.
+  - **Shared lib:** `lib.js` must stay byte-identical to `mes.fm/api/_elections-lib.js` (`cp` after editing).
+  - **Samples and tests:** `node mes.fm/api/elections.js --write` refreshes `elections/data/sample.json` (local preview / `?mock=1`). Tests: `node tool_apps_src/elections-tests.js`.
+  - **Facts:** seat facts are hand-entered, checked 2026-10-27; the tests check they add up.
+  - **Art:** PIL placeholder logos until Grok art.
+  - **Rebuild:** `build_tool_apps.py --only=elections --apply` + the usual four follow-ups.
+- **Judy Wood rebuttal** (update, 2026-10-27): `mes.fm/judy-wood-rebuttal` uses the 9/11 Truth theme (not the Spooks brand). It sits at the top of 911-posts, and the 9/11 Spooks hub has a tile-only `PAGES` entry for it (`img/judy-wood-rebuttal-icon.jpg`); it is not in the Spooks Posts list.
+- **Gotcha (2026-10-27):** when several sessions share this tree, commit with `git commit -m ... -- <paths>`. A bare `git commit` also takes whatever another session has staged, and that happened twice this round.
