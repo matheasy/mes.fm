@@ -180,6 +180,20 @@
       }
     ]
   },
+  "https://mes.fm/judy-wood-rebuttal": {
+    "image": "https://mes.fm/judy-wood-rebuttal/img/judy-wood-rebuttal.jpg",
+    "watchLinks": [],
+    "namedLinks": [
+      {
+        "label": "wheredidthetowersgo.com",
+        "href": "https://www.wheredidthetowersgo.com/"
+      },
+      {
+        "label": "Amazon",
+        "href": "https://tinyurl.com/JudyWood-amazon"
+      }
+    ]
+  },
   "https://mes.fm/mh370-litmus-spooks": {
     "image": "https://img.leopedia.io/DQmUbPhYLJApryihLsPh92imJHKrzJrbpDAuiHEX8brG5Lv/telegram-cloud-photo-size-1-5089256253007007191-y.jpg",
     "watchLinks": [],

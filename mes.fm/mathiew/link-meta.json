@@ -1,27 +1,102 @@
 {
   "https://mes.fm/full-moon-hat": {
     "image": "https://mes.fm/full-moon-hat/img/full-moon-hat-1.jpg",
-    "title": "Full Moon Lookin' Like It's Got a Hat On",
-    "excerpt": "The full moon at dusk with a dark band of cloud across the top -- lookin' like it's got a hat on."
+    "watchLinks": [],
+    "namedLinks": [
+      {
+        "label": "Telegram",
+        "href": "https://t.me/meslinks/35436"
+      },
+      {
+        "label": "More personal posts",
+        "href": "https://mes.fm/mathiew"
+      }
+    ]
   },
   "https://mes.fm/haircut-neice": {
     "image": "https://mes.fm/haircut-neice/img/haircut-neice-1.jpg",
-    "title": "Neice Gave Me a Haircut",
-    "excerpt": "My niece decided to give me a haircut -- with strips of paper taped on instead of scissors."
+    "watchLinks": [],
+    "namedLinks": [
+      {
+        "label": "Telegram",
+        "href": "https://t.me/meslinks/35597"
+      },
+      {
+        "label": "More personal posts",
+        "href": "https://mes.fm/mathiew"
+      }
+    ]
   },
   "https://mes.fm/lightning-sky": {
     "image": "https://images.3speak.tv/images/1787466250311-2f93b430cbf2ad0d.webp",
-    "title": "Lightning Lighting Up the Entire Sky",
-    "excerpt": "Lightning lighting up the entire sky, filmed in Richmond, BC, Canada"
+    "watchLinks": [
+      {
+        "label": "3Speak",
+        "href": "https://3speak.tv/watch?v=mathiew/lightning-lighting-up-the-e-469"
+      },
+      {
+        "label": "YouTube",
+        "href": "https://youtu.be/VzDZJl5k7Zg"
+      },
+      {
+        "label": "Telegram",
+        "href": "https://t.me/meslinks/35418"
+      }
+    ],
+    "namedLinks": []
   },
   "https://mes.fm/mathiew-not-robber": {
     "image": "https://mes.fm/mathiew-not-robber/img/mathiew-not-robber-1.jpg",
-    "title": "MES Is NOT Robbin' a Bank #notarobber 🥷🌚",
-    "excerpt": "MES is NOT robbin' a bank #notarobber 🥷🌚"
+    "watchLinks": [],
+    "namedLinks": [
+      {
+        "label": "Telegram",
+        "href": "https://t.me/meslinks/35615"
+      },
+      {
+        "label": "More personal posts",
+        "href": "https://mes.fm/mathiew"
+      }
+    ]
+  },
+  "https://mes.fm/richmond-elections-sticker-2026": {
+    "image": "https://mes.fm/richmond-elections-sticker-2026/img/i-voted-sticker.jpg",
+    "watchLinks": [],
+    "namedLinks": [
+      {
+        "label": "Hive",
+        "href": "https://inleo.io/threads/view/mestruth/re-leothreads-w9ul1rxh"
+      },
+      {
+        "label": "Telegram",
+        "href": "https://t.me/meslinks/35660"
+      },
+      {
+        "label": "More conspiracy links",
+        "href": "https://mes.fm/conspiracy"
+      },
+      {
+        "label": "More personal posts",
+        "href": "https://mes.fm/mathiew-posts"
+      }
+    ]
   },
   "https://mes.fm/swim-iran-nukes": {
     "image": "https://snipboard.io/vXIQB0.jpg",
-    "title": "MES Goes Undercover to Check If Iran Built Underwater Mini-Nukes",
-    "excerpt": "MES going undercover with new swim gear to check if Iran built underwater cold fusion mini-nukes under the Strait of Hormuz."
+    "watchLinks": [],
+    "namedLinks": [
+      {
+        "label": "Hive",
+        "href": "https://inleo.io/threads/view/mestruth/re-leothreads-2mdgbs5be"
+      },
+      {
+        "label": "Telegram",
+        "href": "https://t.me/meslinks/35508"
+      },
+      {
+        "label": "More conspiracy links",
+        "href": "https://mes.fm/conspiracy"
+      }
+    ]
   }
 }

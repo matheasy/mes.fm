@@ -28,7 +28,7 @@ from PIL import Image, ImageDraw, ImageFilter
 
 ROOT = os.path.dirname(os.path.abspath(__file__))
 SITE = os.path.join(ROOT, "mes.fm")
-HUBS = {"911": "911-posts", "911spooks": "911spooks-posts", "bg": "bg-posts", "conspiracy": "conspiracy-posts", "mh370": "mh370-posts"}
+HUBS = {"911": "911-posts", "911spooks": "911spooks-posts", "bg": "bg-posts", "conspiracy": "conspiracy-posts", "mathiew": "mathiew-posts", "mh370": "mh370-posts"}
 STAMP = os.path.join(SITE, "img", "posts-tiles.json")
 
 
@@ -103,12 +103,14 @@ def make_tile(img, anchor, box):
     return img.crop((left, top, left + cw, top + ch)).resize((W, H), Image.LANCZOS)
 
 
-def bump(build, slug):
+def bump(build, slug, floor=0):
+    # floor = the version an automatic run last recorded in posts-tiles.json, so a manual run never goes back to a
+    # ?v= number a browser or the CDN may already hold for an older tile
     s = open(build, encoding="utf-8").read()
     m = re.search(r'(slug:\s*"%s".*?iconVersion:\s*)(\d+)' % re.escape(slug), s, re.S)
     if not m:
         sys.exit(f"iconVersion for {slug} not found in {build}")
-    new = int(m.group(2)) + 1
+    new = max(int(m.group(2)), floor) + 1
     open(build, "w", encoding="utf-8").write(s[:m.start(2)] + str(new) + s[m.end(2):])
     return new
 
@@ -163,7 +165,7 @@ def main():
                 v = max(icon_version(build, HUBS[h]), stamp.get(HUBS[h], {}).get("v", 0)) + 1
                 print(f"  {HUBS[h]} tile version -> {v} (posts-tiles.json)")
             else:
-                v = bump(build, HUBS[h])
+                v = bump(build, HUBS[h], stamp.get(HUBS[h], {}).get("v", 0))
                 print(f"  {h}/build.mjs iconVersion -> {v}")
             if key:
                 stamp[HUBS[h]] = {"key": key, "src": src, "v": v}

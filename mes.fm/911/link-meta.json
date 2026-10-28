@@ -665,6 +665,20 @@
       }
     ]
   },
+  "https://mes.fm/judy-wood-rebuttal": {
+    "image": "https://mes.fm/judy-wood-rebuttal/img/judy-wood-rebuttal.jpg",
+    "watchLinks": [],
+    "namedLinks": [
+      {
+        "label": "wheredidthetowersgo.com",
+        "href": "https://www.wheredidthetowersgo.com/"
+      },
+      {
+        "label": "Amazon",
+        "href": "https://tinyurl.com/JudyWood-amazon"
+      }
+    ]
+  },
   "https://mes.fm/kj-french-911-100k": {
     "image": "https://mes.fm/kj-french-911-100k/img/kj-french-100k-views.jpg",
     "watchLinks": [],

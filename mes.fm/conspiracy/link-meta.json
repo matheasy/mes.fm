@@ -335,6 +335,28 @@
       }
     ]
   },
+  "https://mes.fm/richmond-elections-sticker-2026": {
+    "image": "https://mes.fm/richmond-elections-sticker-2026/img/i-voted-sticker.jpg",
+    "watchLinks": [],
+    "namedLinks": [
+      {
+        "label": "Hive",
+        "href": "https://inleo.io/threads/view/mestruth/re-leothreads-w9ul1rxh"
+      },
+      {
+        "label": "Telegram",
+        "href": "https://t.me/meslinks/35660"
+      },
+      {
+        "label": "More conspiracy links",
+        "href": "https://mes.fm/conspiracy"
+      },
+      {
+        "label": "More personal posts",
+        "href": "https://mes.fm/mathiew-posts"
+      }
+    ]
+  },
   "https://mes.fm/rudy-giuiliani-medal-cross-dress-trump": {
     "image": "https://snipboard.io/R8gKJo.jpg",
     "watchLinks": [],
