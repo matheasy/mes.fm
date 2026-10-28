@@ -590,6 +590,7 @@
     { "source": "/hutchison-effect-simulator-apparatus", "destination": "/hutchison-effect-simulator", "permanent": true },
     { "source": "/hutchison-apparatus", "destination": "/hutchison-effect-simulator", "permanent": true },
     { "source": "/lads", "destination": "/hutchison-effect-simulator", "permanent": true },
+    { "source": "/hes", "destination": "/hutchison-effect-simulator", "permanent": true },
     { "source": "/pendulum", "destination": "/double-pendulum", "permanent": true },
     { "source": "/double-pendulum-simulator", "destination": "/double-pendulum", "permanent": true },
     { "source": "/double-pendulum-chaos", "destination": "/double-pendulum", "permanent": true },
