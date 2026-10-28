@@ -416,19 +416,19 @@ APPS = {
     "materials": dict(title="MES Mechanics of Materials", page_title="Mechanics of Materials Calculator: Stress, Strain, Young's Modulus, Shear, Torsion",
                       tag="Stress, strain, shear and torsion, with the pictures.", accent="#2f6690", dark="#22496a", tint="#e1edf6",
                       desc="Free mechanics of materials calculators: stress and strain with Young's modulus, a tensile test simulator with the stress-strain curve, shear stress in bolts and pins, torsion of shafts, Poisson's ratio and 3D Hooke's law, thermal stress, and a table of 30 materials. SI and US units.",
-                      js_v="5", vars={"VIEWS": "axial,tensile,shear,torsion,poisson,thermal,table", "PAGE": "materials", "SEO": "@seo/materials.html"}, nav_extra=MAT_NAV_INFO, menu_extra=MAT_NAV_MENU),
+                      js_v="6", vars={"VIEWS": "axial,tensile,shear,torsion,poisson,thermal,table", "PAGE": "materials", "SEO": "@seo/materials.html"}, nav_extra=MAT_NAV_INFO, menu_extra=MAT_NAV_MENU),
     "youngs-modulus-calculator": dict(title="Young's Modulus Calculator", page_title="Young's Modulus Calculator: Stress, Strain and Elongation",
                       tag="Stress, strain and stretch from any four values.", accent="#2f6690", dark="#22496a", tint="#e1edf6", src="materials", js_path="materials/js/materials.js",
                       desc="Free Young's modulus calculator: find stress, strain, elongation or the modulus of elasticity from the force, area and length, with a live picture of the stretched bar, safety factor, buckling load and 30 materials. SI and US units, every formula shown.",
-                      js_v="5", vars={"VIEWS": "axial,tensile,table", "PAGE": "youngs", "SEO": "@seo/youngs-modulus-calculator.html"}, brand=MAT_BRAND, tab=1, nav_extra=MAT_NAV_INFO, menu_extra=MAT_NAV_MENU),
+                      js_v="6", vars={"VIEWS": "axial,tensile,table", "PAGE": "youngs", "SEO": "@seo/youngs-modulus-calculator.html"}, brand=MAT_BRAND, tab=1, nav_extra=MAT_NAV_INFO, menu_extra=MAT_NAV_MENU),
     "tensile-test-simulator": dict(title="Tensile Test Simulator", page_title="Tensile Test Simulator: Stress-Strain Curve, Yield, UTS and Necking",
                       tag="Pull a bar until it breaks and watch the curve.", accent="#2f6690", dark="#22496a", tint="#e1edf6", src="materials", js_path="materials/js/materials.js",
                       desc="Free tensile test simulator: pull steel, aluminium, cast iron, glass, plastics, rubber and more until they break and watch the stress-strain curve being drawn: yield, 0.2% offset, Lüders plateau, UTS, necking, unloading, true stress, resilience and toughness. Compare three materials.",
-                      js_v="5", vars={"VIEWS": "tensile,table", "PAGE": "tensile", "SEO": "@seo/tensile-test-simulator.html"}, brand=MAT_BRAND, tab=2, nav_extra=MAT_NAV_INFO, menu_extra=MAT_NAV_MENU),
+                      js_v="6", vars={"VIEWS": "tensile,table", "PAGE": "tensile", "SEO": "@seo/tensile-test-simulator.html"}, brand=MAT_BRAND, tab=2, nav_extra=MAT_NAV_INFO, menu_extra=MAT_NAV_MENU),
     "shear-stress-calculator": dict(title="Shear Stress Calculator", page_title="Shear Stress Calculator: Bolts, Pins, Punching and Shaft Torsion",
                       tag="Shear in bolts and pins, and twisted shafts.", accent="#2f6690", dark="#22496a", tint="#e1edf6", src="materials", js_path="materials/js/materials.js",
                       desc="Free shear stress calculator: shear stress and strain in bolts and pins in single or double shear, glued joints and punching, shear modulus from E and Poisson's ratio, and torsion of solid and hollow shafts with the angle of twist and motor power. Safety factors and sizes.",
-                      js_v="5", vars={"VIEWS": "shear,torsion,table", "PAGE": "shear", "SEO": "@seo/shear-stress-calculator.html"}, brand=MAT_BRAND, tab=3, nav_extra=MAT_NAV_INFO, menu_extra=MAT_NAV_MENU),
+                      js_v="6", vars={"VIEWS": "shear,torsion,table", "PAGE": "shear", "SEO": "@seo/shear-stress-calculator.html"}, brand=MAT_BRAND, tab=3, nav_extra=MAT_NAV_INFO, menu_extra=MAT_NAV_MENU),
     # Photoelectric Effect Simulator: light on a metal, electrons, stopping voltage, I-V and KE-vs-f graphs, and a "measure h" lab. lib.js node-tested (tool_apps_src/photoelectric-effect-tests.js). Normal-width page with the sidebar (Wide by default); opensearch.xml lets browsers add it as a search engine.
     "photoelectric-effect-simulator": dict(title="MES Photoelectric Effect Simulator", page_title="Photoelectric Effect Simulator",
                             tag="Light knocks electrons out of metal.", accent="#6d28d9", dark="#5b21b6", tint="#ede9fe",
@@ -808,7 +808,7 @@ APPS = {
     "search-console": dict(title="MES Search Console", page_title="Search Console: Google and Bing Search Performance",
                 tag="Google and Bing search clicks, impressions and positions.", accent="#1a73e8", dark="#1557b0", tint="#e8f0fe",
                 desc="Private dashboard: Google Search Console and Bing Webmaster clicks, impressions, CTR and average position for mes.fm, by day, query, page, country and device.",
-                js_v="3", no_ads=True,
+                js_v="4", no_ads=True,
                 head_extra='<meta name="robots" content="noindex, nofollow">' + PAGE3_HEAD),
     # How much do YouTubers make?: leaderboard of big channels with ESTIMATED ad revenue (companion of /youtubemoney, ad-free like it). Data = mes.fm/how-much-do-youtubers-make/data/channels.json
     # (update_youtuber_snapshot.py), live refresh = mes.fm/api/youtuber-stats.js; lib.js = maths + a copy of the calculator's RPM tables (node-testable:
@@ -831,7 +831,7 @@ APPS = {
     "fav": dict(title="MES Favourites", page_title="MES Favourites: Your Own Calculators and Tools Page",
                 tag="Your favourite MES pages, your way.", accent="#a15c07", dark="#7a4505", tint="#fdf0d8",
                 desc="Make your own start page of favourite mes.fm calculators, tools and tutorials: search to add, drag tiles into groups you name and fold, and take the whole list to another browser or computer with one link. Private: it stays in your browser.",
-                js_v="2", pre_js=["/main_js/site-search.js?v=1"], no_ads=True),
+                js_v="3", pre_js=["/main_js/site-search.js?v=1"], no_ads=True),
     # MES Ratings (mes.fm/ratings): results of the "Rate this page" stars every public page carries (main_js/rating.js, loaded lazily by
     # site-search.js; votes = /api/rating, Upstash): Top rated (Bayesian average), Most rated, Recently rated, section chips, and a feedback box
     # that only sends by email / the contact form. Local preview falls back to ratings/data/sample.json. Wide, ad-free, no sidebar.
