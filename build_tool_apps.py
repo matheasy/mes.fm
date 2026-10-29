@@ -141,6 +141,18 @@ APPS = {
                               tag="One big button to time contractions.", accent="#c026d3", dark="#8f1b9f", tint="#f7e1fa",
                               desc="Free contraction timer: tap once when a contraction starts and again when it ends. See how long each lasted, how far apart they are, your average over the last hour and an alert when they follow the 5-1-1 rule. Saved on your phone, keeps the screen on, no sign-up.",
                               js_v="3"),
+    # MES Ping Test (2026-10-28, mes.fm/ping): HTTP round-trip times (browsers can't send ICMP), several targets, chart, ping-style log. lib.js = MESPing, tests tool_apps_src/ping-tests.js.
+    # mes.fm's own target is the static file mes.fm/ping/pong.txt (cache-busted), so no API is needed.
+    "ping": dict(title="MES Ping Test", page_title="Ping Test: Continuous Latency, Jitter and Packet Loss Test",
+                 tag="Like ping -t, in your browser.", accent="#0e7490", dark="#155e75", tint="#dcf1f6",
+                 desc="Free continuous ping test: check latency, jitter and packet loss to Cloudflare 1.1.1.1, Google 8.8.8.8, mes.fm or any website, with a live chart, ping-style log and plain-word verdicts for gaming, calls and streaming. Nothing to install.",
+                 js_v="1"),
+    # MES Mic Test (2026-10-28, mes.fm/mic-test): live dBFS meter (OBS style), verdict, noise floor, 10 s recording, spectrogram, speaker test; OBS / macOS / Yeti help.
+    # lib.js = MESMic, tests tool_apps_src/mic-test-tests.js. Audio never leaves the browser.
+    "mic-test": dict(title="MES Mic Test", page_title="Mic Test: Check Your Microphone Level in dBFS (OBS, Yeti, Mac)",
+                     tag="See your real microphone level.", accent="#7c3aed", dark="#5b21b6", tint="#efe7fd",
+                     desc="Free online mic test: see your microphone's real input level in dBFS on an OBS-style meter, find out if you are too quiet or clipping, measure room noise, record and play back 10 seconds, and test your speakers left and right. Private.",
+                     js_v="1"),
     "exif-viewer": dict(title="MES EXIF Viewer", page_title="EXIF Viewer: Photo Metadata, GPS Location and AI Flags",
                         tag="See the hidden data in a photo.", accent="#0f766e", dark="#0a5750", tint="#dcf2ef",
                         desc="Free EXIF viewer: drop a photo to see the camera, date, settings, GPS location, editing software and AI / Content Credentials flags hidden in it, and save a clean copy with all metadata removed. Private: the photo never leaves your browser.",

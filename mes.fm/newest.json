@@ -1,5 +1,5 @@
 {
- "generated": "2026-10-27",
+ "generated": "2026-10-28",
  "calculators": [
   {
    "href": "/bmi-calculator-kids",
@@ -100,6 +100,22 @@
  ],
  "tools": [
   {
+   "href": "/mic-test",
+   "title": "Mic Test",
+   "icon": "/img/mic-test-logo.png",
+   "desc": "See your microphone's real level in dBFS on an OBS-style meter: too quiet, good or clipping. Noise floor, record and play back, speaker test.",
+   "added": "2026-10-28",
+   "kind": "tool"
+  },
+  {
+   "href": "/ping",
+   "title": "Ping Test",
+   "icon": "/img/ping-logo.png",
+   "desc": "Like ping -t in your browser: latency, jitter and packet loss to Cloudflare, Google DNS or any website, with a live chart and verdicts for gaming and calls.",
+   "added": "2026-10-28",
+   "kind": "tool"
+  },
+  {
    "href": "/elections",
    "title": "Elections",
    "icon": "/img/elections-logo.png",
@@ -178,25 +194,25 @@
    "desc": "Your predicted NBA standings (East, West, whole league, divisions) and playoff bracket against the live table: a picture of every pick, friends and a leaderboard.",
    "added": "2026-10-26",
    "kind": "tool"
-  },
-  {
-   "href": "/docx",
-   "title": "Word Viewer (DOCX)",
-   "icon": "/img/docx-logo.png",
-   "desc": "Open Word documents with the real page layout, search and count words, edit and save as .docx, PDF or text. Private: nothing is uploaded.",
-   "added": "2026-10-26",
-   "kind": "tool"
-  },
-  {
-   "href": "/hutchison-effect-simulator",
-   "title": "Hutchison Effect Simulator",
-   "icon": "/img/hutchison-effect-simulator-logo.png",
-   "desc": "Lay out John Hutchison's lab of Tesla coils, Van de Graaff, RF and spark gaps, see where the fields cross and watch samples levitate, bend like jelly, fracture and glow.",
-   "added": "2026-10-26",
-   "kind": "tool"
   }
  ],
  "latest": [
+  {
+   "href": "/mic-test",
+   "title": "Mic Test",
+   "icon": "/img/mic-test-logo.png",
+   "desc": "See your microphone's real level in dBFS on an OBS-style meter: too quiet, good or clipping. Noise floor, record and play back, speaker test.",
+   "added": "2026-10-28",
+   "kind": "tool"
+  },
+  {
+   "href": "/ping",
+   "title": "Ping Test",
+   "icon": "/img/ping-logo.png",
+   "desc": "Like ping -t in your browser: latency, jitter and packet loss to Cloudflare, Google DNS or any website, with a live chart and verdicts for gaming and calls.",
+   "added": "2026-10-28",
+   "kind": "tool"
+  },
   {
    "href": "/elections",
    "title": "Elections",
@@ -242,22 +258,6 @@
    "title": "Premier League Picks",
    "icon": "/img/premier-league-picks-logo.png",
    "desc": "Predict the Premier League table and track it live: top 4, Europe, relegation, exact places and a leaderboard.",
-   "added": "2026-10-27",
-   "kind": "tool"
-  },
-  {
-   "href": "/define",
-   "title": "Dictionary",
-   "icon": "/img/define-logo.png",
-   "desc": "Define any English word: meanings, examples, synonyms, where it comes from and translations. Hear it, save it and learn it with flashcards.",
-   "added": "2026-10-27",
-   "kind": "tool"
-  },
-  {
-   "href": "/march-madness",
-   "title": "March Madness",
-   "icon": "/img/march-madness-logo.png",
-   "desc": "NCAA bracket maker for the men’s and women’s tournaments: the odds of every pick, live scores and win chances, sharing and a leaderboard.",
    "added": "2026-10-27",
    "kind": "tool"
   }
