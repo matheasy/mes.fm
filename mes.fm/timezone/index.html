@@ -281,6 +281,11 @@ sub {vertical-align:sub;}        .warning-message {font-size:1em;text-align:cent
 	.tz__share input {font:inherit;font-size:0.85em;flex:1 1 18em;min-width:0;padding:0.5em 0.6em;border:1px solid #b9c1cc;border-radius:0.35em;background:#f7f8fa;color:#333;}
 	.tz__copied {color:#2f6d33;font-weight:700;font-size:0.85em;}
 	.tz__note {font-size:0.82em;color:#77808c;font-style:italic;margin-top:0.6em;}
+	.tz__remind {display:flex;flex-wrap:wrap;gap:0.5em 0.8em;align-items:center;margin-top:1em;padding:0.75em 0.9em;border:1px solid #c3c9d2;border-radius:0.5em;background:#f7f8fa;}
+	.tz__remind-txt {flex:1 1 16em;font-size:0.88em;color:#444;line-height:1.4;}
+	#main-content .tz-seo a, #main-content .tz__remind-txt a {color:#2f4a6e;text-decoration:underline;}   /* the shell's "a {color:white}" made these links invisible on the light page */
+	#main-content a.tz__btn {text-decoration:none;}
+	#main-content a.tz__btn--primary, #main-content a.tz__btn--primary:visited {color:#fff;}
 	.tz-seo {margin-top:2em;border-top:1px solid #e3e3e3;padding-top:1.2em;}
 	.tz-seo h2 {font-size:1.2em;color:#1e2733;margin:1em 0 0.4em;}
 	.tz-seo h3 {font-size:1.02em;color:#1e2733;margin:1em 0 0.3em;}
@@ -423,6 +428,9 @@ body.is-stuck #navbar.hide { position: fixed; top: 56px; right: 8px; }
 	body.dark-mode .tz__share input{border:1px solid #404a58;background:#17191c;color:#cccccc}
 	body.dark-mode .tz__copied{color:#8dce91}
 	body.dark-mode .tz__note{color:#9a9ea2}
+	body.dark-mode .tz__remind{border:1px solid #3a424d;background:#17191c}
+	body.dark-mode .tz__remind-txt{color:#bbbbbb}
+	body.dark-mode #main-content .tz-seo a,body.dark-mode #main-content .tz__remind-txt a{color:#8da9ce}
 	body.dark-mode .tz-seo{border-top:1px solid #333333}
 	body.dark-mode .tz-seo h2{color:#d1d6dc}
 	body.dark-mode .tz-seo h3{color:#d1d6dc}
@@ -689,6 +697,10 @@ body.is-stuck #navbar.hide { position: fixed; top: 56px; right: 8px; }
 			<input type="text" id="tz-link" readonly aria-label="Shareable link">
 			<span class="tz__copied hide" id="tz-copied">Copied &#10003;</span>
 		</div>
+		<div class="tz__remind">
+			<a class="tz__btn tz__btn--primary" id="tz-remind" href="/reminder">&#9200; Make a reminder for this time</a>
+			<span class="tz__remind-txt" id="tz-remind-txt">Opens the <a href="/reminder">Reminder</a> with the date, time and zone above filled in: one link that shows everyone the time in their own zone, a countdown and calendar buttons.</span>
+		</div>
 		<p class="tz__note">Everything runs in your browser. &ldquo;Use my location&rdquo; reads only your device&rsquo;s time-zone setting &mdash; no GPS prompt, nothing sent anywhere.</p>
 	</div>
 
@@ -708,6 +720,9 @@ body.is-stuck #navbar.hide { position: fixed; top: 56px; right: 8px; }
 
 		<h3>Common conversions from 1:00 PM in Vancouver</h3>
 		<p>From mid-March to early November, 1:00&nbsp;PM in Vancouver is about 4:00&nbsp;PM in New York and Toronto, 9:00&nbsp;PM in London, 10:00&nbsp;PM in Paris and Berlin, 1:30&nbsp;AM the next day in Mumbai, and 5:00&nbsp;AM the next day in Tokyo. Because Vancouver no longer changes its clock, the rest of the year the zones that <em>do</em> fall back shift by an hour: 3:00&nbsp;PM in New York and Toronto, 8:00&nbsp;PM in London and 9:00&nbsp;PM in Paris and Berlin, while Mumbai and Tokyo stay the same. The live cards above always show the exact result for the date you pick.</p>
+
+		<h3>Related tools</h3>
+		<p>Announcing an event? <a href="/reminder">Event Reminder</a> turns the time above into one share link with a countdown, the time in each viewer&rsquo;s zone and calendar alerts (the <strong>Make a reminder for this time</strong> button fills it in for you). See the time right now in many cities with the <a href="/clock">Clock</a>, or count down to a day with the <a href="/countdown-to-date">Date Countdown</a>.</p>
 
 		<h3>Does this handle daylight saving time?</h3>
 		<p>Yes. All conversions are computed from the official IANA time-zone database that ships with your browser, so DST start/end dates, historical changes and permanent-DST regions are all accounted for automatically. B.C.&rsquo;s new year-round Pacific Time (PCT, UTC&minus;7) is built in as well, so it stays correct even if your browser&rsquo;s time-zone data is out of date.</p>
@@ -773,7 +788,7 @@ body.is-stuck #navbar.hide { position: fixed; top: 56px; right: 8px; }
         }        </script><!-- FASTCOMMENTS-LAZY: widget init moved to main_js/main.js -- it pulls embed.min.js only when #fastcomments-widget nears the viewport or on the first Comments-toggle click, so it no longer blocks first render -->                <script src="https://mes.fm/main_js/lazysizes.min.js?v=1.0.3" async></script>
 	<script src="/main_js/time-input.js?v=3" defer></script>
 	<script src="/main_js/when-parse.js?v=1" defer></script>
-	<script src="/timezone/js/timezone.js?v=8" defer></script>
+	<script src="/timezone/js/timezone.js?v=9" defer></script>
             <script src="https://mes.fm/main_js/main.js?v=1.0.5"></script>    <!-- PAGEVIEW-TRACKING-INSERTED --><script src="https://mes.fm/main_js/track.js" defer></script><script>document.getElementById('copyright-year').textContent = new Date().getFullYear();</script><script src="/main_js/info-bar-fit.js" defer></script><script>
   // Floating compact header bar (see #compact-nav CSS): appears once the
   // header + nav bar have scrolled off the top; nav links that don't fit

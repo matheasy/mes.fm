@@ -852,6 +852,8 @@
 		// the home URL stays a clean /timezone; a #hash link is only produced when
 		// the visitor clicks "Copy shareable link" (and honoured when one is opened).
 		$("tz-link").value = linkFor();
+		var rm = $("tz-remind");   // "Make a reminder for this time": the Reminder page reads ?t=YYYY-MM-DDTHH:MM&tz=<IANA zone>
+		if (rm) rm.href = "/reminder?t=" + state.date + "T" + (state.time.length === 4 ? "0" + state.time : state.time) + "&tz=" + encodeURIComponent(state.from) + "&make=1";
 		saveStore();
 	}
 

@@ -47,7 +47,9 @@
 	}
 
 	/* ---------- event view (from a share link) ---------- */
-	var EV = RM.fromQuery(location.search), EV_URL = "", RID = EV ? "" : RM.shortId(location.pathname, location.search);
+	// ?make=1 (the Time Zone Converter's "Make a reminder for this time"): the t / tz / title in the link fill the maker form instead of showing an event
+	var MAKE_EV = /[?&]make=1(&|$)/.test(location.search) ? RM.fromQuery(location.search) : null;
+	var EV = MAKE_EV ? null : RM.fromQuery(location.search), EV_URL = "", RID = EV ? "" : RM.shortId(location.pathname, location.search);
 	function leadBoxes() {
 		$("rm-leads").innerHTML = LEADS.map(function (m) { return '<label class="rm-check"><input type="checkbox" value="' + m + '"' + (S.leads.indexOf(m) >= 0 ? " checked" : "") + "> " + esc(RM.leadText(m).replace(/^at/, "At").replace(/^(\d)/, "$1")) + "</label>"; }).join("");
 		$("rm-leads").addEventListener("change", function () {
@@ -217,6 +219,16 @@
 	})();
 	["rm-title", "rm-date", "rm-time", "rm-tz", "rm-url", "rm-desc", "rm-rep", "rm-len"].forEach(function (id) { $(id).addEventListener("input", upd); $(id).addEventListener("change", upd); });
 	$("rm-tz").addEventListener("change", function () { var z = resolveZone(this.value); if (z) this.value = z; upd(); });
+	if (MAKE_EV && /^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}$/.test(MAKE_EV.t)) {
+		var mk = MAKE_EV.t.split("T");
+		$("rm-date").value = mk[0]; $("rm-time").value = mk[1]; $("rm-tz").value = resolveZone(MAKE_EV.tz) || MAKE_EV.tz;
+		if (MAKE_EV.title && MAKE_EV.title !== "Reminder") $("rm-title").value = MAKE_EV.title;
+		["rm-date", "rm-time", "rm-tz"].forEach(function (id) { $(id).dispatchEvent(new Event("change", { bubbles: true })); });
+		upd();
+		try { history.replaceState(null, "", location.pathname); } catch (e) {}
+		setTimeout(function () { var h = $("rm-make-h"); if (h) h.scrollIntoView({ block: "start" }); try { $("rm-title").focus({ preventScroll: true }); } catch (e) {} }, 60);
+		toast("Time filled in from the Time Zone Converter: add a name and copy the link");
+	}
 	function copy(text, msg) {
 		if (!text) { toast("Pick a date and a time first"); return; }
 		var done = function () { toast(msg); };
