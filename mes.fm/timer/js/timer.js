@@ -697,10 +697,11 @@
 		document.body.appendChild(el);
 		sortable($("tm-dp-grid"), ".tm-dp__tile", function (els) { var ks = []; els.forEach(function (x) { if (x.dataset.k === "alarms") ks = ks.concat((x.dataset.members || "").split(",").filter(Boolean)); else ks.push(x.dataset.k); }); S.display = ks.concat((S.display || []).filter(function (k) { return ks.indexOf(k) < 0; })); dpKeys = ""; save(); renderDisplay(); });
 		el.addEventListener("click", function (e) {
+			if (!e.target.closest('#tm-dp-pick, [data-d="pick"]')) closePick();   // a click anywhere outside the list closes it
 			var rb = e.target.closest("#tm-dp-ring [data-r]"); if (rb) { ringAct(rb.dataset.r); return; }
 			var mu = e.target.closest("[data-mute]"); if (mu) { toggleMute(mu.dataset.mute); return; }
 			var ab = e.target.closest("[data-act]"); if (ab) { var tl = ab.closest(".tm-dp__tile"); if (tl) dpAct(ab.dataset.ak || tl.dataset.k, ab.dataset.act); return; }
-			var b = e.target.closest("[data-d]"); if (b) { if (b.dataset.d === "close") closeDisplay(); else if (b.dataset.d === "snd") toggleAllSound(); else if (b.dataset.d === "fs") toggleScreen(); else if (b.dataset.d === "pick") { var pk = $("tm-dp-pick"); pk.hidden = !pk.hidden; if (!pk.hidden) drawPick(); } return; }
+			var b = e.target.closest("[data-d]"); if (b) { if (b.dataset.d === "close") closeDisplay(); else if (b.dataset.d === "snd") toggleAllSound(); else if (b.dataset.d === "fs") toggleScreen(); else if (b.dataset.d === "pickclose") closePick(); else if (b.dataset.d === "pick") { var pk = $("tm-dp-pick"); pk.hidden = !pk.hidden; if (!pk.hidden) drawPick(); } return; }
 			if (e.target.matches("#tm-dp-pick input[type=checkbox]")) {
 				var cur = S.display || dpSelected(dpItems()), k = e.target.dataset.k, i = cur.indexOf(k); cur = cur.slice(); if (e.target.checked && i < 0) cur.push(k); else if (!e.target.checked && i >= 0) cur.splice(i, 1);
 				S.display = cur; save(); dpKeys = ""; renderDisplay();
@@ -708,10 +709,25 @@
 		});
 		return el;
 	}
+	function at12(hm) { if (!hm) return "no time set"; var x = hm.split(":"); return new Date(2000, 0, 1, +x[0], +x[1]).toLocaleTimeString([], { hour: "numeric", minute: "2-digit" }); }
+	// the line after each name in "Choose timers", so six alarms (or timers) can be told apart
+	function pickDetail(i) {
+		var m = /^([tsae]):(.+)$/.exec(i.key);
+		if (m && m[1] === "a") { var a = findAlarm(m[2]); if (!a) return ""; return at12(a.time) + (a.daily ? ", daily" : ", once") + (a.on ? "" : " · off"); }
+		if (m && m[1] === "t") { var t = findTimer(m[2]); if (!t) return ""; var len = t.total > 0 ? plain(t.total, true) : "no time set"; return t.st === "run" || t.st === "pause" ? len + " · " + i.time + " left" + (t.st === "pause" ? " (paused)" : "") : t.st === "done" ? len + " · done" : len; }
+		if (m && m[1] === "s") return i.time + (i.state === "run" ? " · running" : i.state === "pause" ? " · paused" : "");
+		if (m && m[1] === "e") return i.time;
+		return i.kind + " · " + i.time + (i.state === "pause" ? " (paused)" : "");
+	}
 	function drawPick() {
 		var items = dpItems(), sel = dpSelected(items);
-		$("tm-dp-pick").innerHTML = '<div class="tm-dp__pt">Choose what the display shows</div>' + items.map(function (i) { return '<label><input type="checkbox" data-k="' + esc(i.key) + '"' + (sel.indexOf(i.key) >= 0 ? " checked" : "") + '> ' + esc(i.label) + ' <small>' + esc(i.kind) + (i.state === "idle" ? " (not started)" : "") + "</small></label>"; }).join("");
+		$("tm-dp-pick").innerHTML = '<div class="tm-dp__pt">Choose what the display shows<button type="button" class="tm-dp__px" data-d="pickclose" aria-label="Close this list" title="Close (Esc)">✕</button></div>' + items.map(function (i) { return '<label><input type="checkbox" data-k="' + esc(i.key) + '"' + (sel.indexOf(i.key) >= 0 ? " checked" : "") + '> <span class="tm-dp__pn"><b>' + esc(i.label) + '</b> <span class="tm-dp__pd" data-pd="' + esc(i.key) + '">' + esc(pickDetail(i)) + '</span></span><small>' + esc(i.kind === "Countdown" || i.kind === "Stopwatch" || i.kind === "Alarm" || i.kind === "Countdown to a date" ? i.kind : (i.key === "po" ? "Pomodoro" : "Interval")) + (i.state === "idle" ? " (not started)" : "") + "</small></label>"; }).join("");
 	}
+	function pickLive(items) {
+		var pk = $("tm-dp-pick"); if (!pk || pk.hidden) return;
+		items.forEach(function (i) { var el = pk.querySelector('[data-pd="' + i.key.replace(/"/g, "") + '"]'); if (el) { var v = pickDetail(i); if (el.textContent !== v) el.textContent = v; } });
+	}
+	function closePick() { var pk = $("tm-dp-pick"); if (pk && !pk.hidden) { pk.hidden = true; return true; } return false; }
 	function dpAlarmGroup(shown) {
 		var al = shown.filter(function (i) { return i.kind === "Alarm"; });
 		if (al.length < 2) return shown;
@@ -754,7 +770,7 @@
 			var cl = tile.querySelector("[data-ctl]"), ch = dpCtl(i.key); if (cl._h !== ch) { cl._h = ch; cl.innerHTML = ch; }
 				var b = tile.querySelector(".tm-dp__b"); b.style.visibility = i.pct >= 0 ? "visible" : "hidden"; tile.querySelector("[data-b]").style.width = Math.max(0, Math.min(100, i.pct)).toFixed(1) + "%";
 		});
-		paintMute();
+		paintMute(); pickLive(items);
 	}
 	function openDisplay() {
 		var el = ensureDisplay(); dpOpen = true; dpKeys = ""; el.hidden = false; $("tm-dp-pick").hidden = true; document.body.classList.add("tm-dp-on");
@@ -763,7 +779,7 @@
 		if ("wakeLock" in navigator && !lock) navigator.wakeLock.request("screen").then(function (l) { lock = l; l.addEventListener("release", function () { lock = null; }); }, function () {});
 	}
 	function closeDisplay() { dpOpen = false; var el = $("tm-dp"); if (el) el.hidden = true; document.body.classList.remove("tm-dp-on"); leaveScreen(); updateAwake(); }
-	document.addEventListener("keydown", function (e) { if (e.key === "Escape" && dpOpen) closeDisplay(); else if (e.key === "Escape" && document.querySelector(".tm-fs")) toggleFull(document.querySelector(".tm-fs")); else if (e.key === "Escape" && winOn && !inScreen()) setWin(false); else if ((e.key === "d" || e.key === "D") && !/^(input|textarea|select)$/i.test(e.target.tagName || "") && !e.ctrlKey && !e.metaKey && !e.altKey) { dpOpen ? closeDisplay() : openDisplay(); } });
+	document.addEventListener("keydown", function (e) { if (e.key === "Escape" && dpOpen) { if (!closePick()) closeDisplay(); } else if (e.key === "Escape" && document.querySelector(".tm-fs")) toggleFull(document.querySelector(".tm-fs")); else if (e.key === "Escape" && winOn && !inScreen()) setWin(false); else if ((e.key === "d" || e.key === "D") && !/^(input|textarea|select)$/i.test(e.target.tagName || "") && !e.ctrlKey && !e.metaKey && !e.altKey) { dpOpen ? closeDisplay() : openDisplay(); } });
 
 	/* ---------- full screen ---------- */
 	function inScreen() { return !!document.fullscreenElement; }
