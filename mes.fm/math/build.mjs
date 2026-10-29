@@ -137,6 +137,7 @@ const SECTIONS = [
         // Newest first. Each stats page gets the filter chips (`cats`) of the Q/A it belongs to, copied
         // from the Q/A item with the same number (see the QA_CATEGORIES block below).
         items: [
+          { href: "https://mes.fm/math-qa-73-stats", title: "73: Stats" },
           { href: "https://mes.fm/math-qa-72-stats", title: "72: Stats" },
           { href: "https://mes.fm/math-qa-71-stats", title: "71: Stats" },
         ],

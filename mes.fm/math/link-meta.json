@@ -1979,6 +1979,24 @@
       }
     ]
   },
+  "https://mes.fm/math-qa-73-stats": {
+    "image": "https://mes.fm/math-qa-73-stats/img/stats-screen.jpg",
+    "watchLinks": [],
+    "namedLinks": [
+      {
+        "label": "Hive",
+        "href": "https://inleo.io/threads/view/mes/re-leothreads-34msxrgw7"
+      },
+      {
+        "label": "Telegram",
+        "href": "https://t.me/meslinks/35662"
+      },
+      {
+        "label": "More math links",
+        "href": "https://mes.fm/math"
+      }
+    ]
+  },
   "https://mes.fm/math-qa-72-stats": {
     "image": "https://mes.fm/math-qa-72-stats/img/stats-screen.png",
     "watchLinks": [],
