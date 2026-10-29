@@ -435,10 +435,76 @@ var MESPixel = (function () {
 			var f = num + " " + b + ".png", k = 2; while (used[f.toLowerCase()]) f = num + " " + b + " (" + (k++) + ").png"; used[f.toLowerCase()] = 1; return f;
 		});
 	}
+	/* ---------- round 7 (2026-10-28) ---------- */
+	/* colour picker maths: HSV <-> RGB (h 0-360, s / v 0-1, rgb 0-255) and a forgiving parser for typed colours ("#abc", "abc", "#aabbcc", "rgb(1, 2, 3)", "1,2,3") -> "#rrggbb" or null */
+	function rgbToHsv(r, g, b) { r /= 255; g /= 255; b /= 255; var mx = Math.max(r, g, b), mn = Math.min(r, g, b), d = mx - mn, h = 0; if (d > 1e-9) { h = mx === r ? (g - b) / d + (g < b ? 6 : 0) : mx === g ? (b - r) / d + 2 : (r - g) / d + 4; h *= 60; } return [h, mx > 0 ? d / mx : 0, mx]; }
+	function hsvToRgb(h, s, v) { h = ((h % 360) + 360) % 360 / 60; var i = Math.floor(h), f = h - i, p = v * (1 - s), q = v * (1 - s * f), t = v * (1 - s * (1 - f)), m = [[v, t, p], [q, v, p], [p, v, t], [p, q, v], [t, p, v], [v, p, q]][i % 6]; return [m[0] * 255, m[1] * 255, m[2] * 255]; }
+	function parseColor(str) {
+		var s = String(str == null ? "" : str).trim().toLowerCase(), m;
+		if ((m = /^#?([0-9a-f]{3}|[0-9a-f]{6})$/.exec(s))) { var h = m[1]; if (h.length === 3) h = h[0] + h[0] + h[1] + h[1] + h[2] + h[2]; return "#" + h; }
+		if ((m = /^(?:rgba?\()?\s*(\d{1,3})\s*[, ]\s*(\d{1,3})\s*[, ]\s*(\d{1,3})\s*(?:[, \/]\s*[\d.]+%?\s*)?\)?$/.exec(s))) { var v = [+m[1], +m[2], +m[3]]; if (v.every(function (x) { return x <= 255; })) return rgbToHex(v[0], v[1], v[2]); }
+		return null;
+	}
+	/* perceived lightness 0-1 of a hex colour (a mask brush: dark hides, light shows) */
+	function lightness(hex) { var c = hexToRgb(hex); return (c[0] * 0.2126 + c[1] * 0.7152 + c[2] * 0.0722) / 255; }
+	/* squared Euclidean distance transform (Felzenszwalb & Huttenlocher): for every pixel, the squared distance to the nearest pixel where on[i] is true */
+	function edt(on, w, h) {
+		var INF = 1e20, d = new Float64Array(w * h), n = Math.max(w, h), f = new Float64Array(n), z = new Float64Array(n + 1), v = new Int32Array(n), out = new Float64Array(n);
+		for (var i = 0; i < w * h; i++) d[i] = on[i] ? 0 : INF;
+		function pass(len) { var k = 0; v[0] = 0; z[0] = -INF; z[1] = INF; for (var q = 1; q < len; q++) { var sq; while (true) { var r = v[k]; sq = ((f[q] + q * q) - (f[r] + r * r)) / (2 * q - 2 * r); if (sq <= z[k]) { k--; if (k < 0) { k = 0; break; } } else break; } k++; v[k] = q; z[k] = sq; z[k + 1] = INF; } k = 0; for (var q2 = 0; q2 < len; q2++) { while (z[k + 1] < q2) k++; var dd = q2 - v[k]; out[q2] = dd * dd + f[v[k]]; } }
+		for (var x = 0; x < w; x++) { for (var y = 0; y < h; y++) f[y] = d[y * w + x]; pass(h); for (y = 0; y < h; y++) d[y * w + x] = out[y]; }
+		for (var y2 = 0; y2 < h; y2++) { for (var x2 = 0; x2 < w; x2++) f[x2] = d[y2 * w + x2]; pass(w); for (x2 = 0; x2 < w; x2++) d[y2 * w + x2] = out[x2]; }
+		return d;
+	}
+	/* the alpha (0-255) of an outline / stroke around the opaque part of a picture: pos "outside" | "inside" | "center", width in pixels.
+	   alpha = the picture's alpha channel (the caller leaves enough transparent margin round it for an outside stroke). Anti-aliased by half a pixel. */
+	function outlineAlpha(alpha, w, h, width, pos) {
+		var n = w * h, inside = new Uint8Array(n), outside = new Uint8Array(n), out = new Uint8Array(n), r = Math.max(0, +width || 0); if (!r) return out;
+		for (var i = 0; i < n; i++) { if (alpha[i] >= 128) inside[i] = 1; else outside[i] = 1; }
+		var dOut = pos === "inside" ? null : edt(inside, w, h), dIn = pos === "outside" ? null : edt(outside, w, h), ro = pos === "center" ? r / 2 : r, ri = pos === "center" ? r / 2 : r;
+		for (var j = 0; j < n; j++) {
+			var a = 0;
+			if (dOut && !inside[j]) { var d1 = Math.sqrt(dOut[j]) - 0.5; a = clamp(ro + 0.5 - d1, 0, 1); }
+			else if (dIn && inside[j]) { var d2 = Math.sqrt(dIn[j]) - 0.5; a = clamp(ri + 0.5 - d2, 0, 1); }
+			out[j] = Math.round(a * 255);
+		}
+		return out;
+	}
+	/* the tool panel's layout: groups [{id, name, open, tools: [ids]}] + hidden [ids]. Unknown ids are dropped, every known tool that is in no group and not
+	   hidden goes into the first group (so new tools always show up), and every group keeps a name. */
+	function normToolLayout(lay, all, defGroups) {
+		var seen = {}, groups = [], hidden = [], ok = function (id) { return all.indexOf(id) >= 0 && !seen[id]; };
+		var src = lay && Array.isArray(lay.groups) && lay.groups.length ? lay.groups : defGroups;
+		((lay && lay.hidden) || []).forEach(function (id) { if (ok(id)) { seen[id] = 1; hidden.push(id); } });
+		src.forEach(function (g, i) { var ts = []; (g.tools || []).forEach(function (id) { if (ok(id)) { seen[id] = 1; ts.push(id); } }); groups.push({ id: String(g.id || "g" + i), name: String(g.name || "Tools").slice(0, 40), open: g.open !== false, tools: ts }); });
+		if (!groups.length) groups.push({ id: "g0", name: "Tools", open: true, tools: [] });
+		all.forEach(function (id) { if (!seen[id]) { seen[id] = 1; var home = null; defGroups.forEach(function (g) { if ((g.tools || []).indexOf(id) >= 0) home = g.id; }); var tg = groups.filter(function (g) { return g.id === home; })[0] || groups[0]; tg.tools.push(id); } });
+		return { groups: groups, hidden: hidden };
+	}
+	/* move a tool to another place in the layout: to group gid before index at (at = -1 or past the end: last); "hidden" hides it */
+	function moveTool(lay, id, gid, at) {
+		var L = { groups: lay.groups.map(function (g) { return Object.assign({}, g, { tools: g.tools.filter(function (t) { return t !== id; }) }); }), hidden: lay.hidden.filter(function (t) { return t !== id; }) };
+		if (gid === "hidden") { L.hidden.push(id); return L; }
+		var g = L.groups.filter(function (x) { return x.id === gid; })[0] || L.groups[0]; if (at == null || at < 0 || at > g.tools.length) at = g.tools.length; g.tools.splice(at, 0, id); return L;
+	}
+	/* a layer crop box {x, y, w, h} in the layer's own pixels, kept inside the canvas and at least 1 px; null when it covers the whole canvas */
+	function clampCrop(c, cw, ch) {
+		if (!c) return null; var x0 = clamp(Math.round(c.x), 0, cw - 1), y0 = clamp(Math.round(c.y), 0, ch - 1), x1 = clamp(Math.round(c.x + c.w), x0 + 1, cw), y1 = clamp(Math.round(c.y + c.h), y0 + 1, ch);
+		if (x0 === 0 && y0 === 0 && x1 === cw && y1 === ch) return null; return { x: x0, y: y0, w: x1 - x0, h: y1 - y0 };
+	}
+	/* drag one edge / corner of a crop box (hx, hy in -1 / 0 / 1; dx, dy in layer pixels) */
+	function dragCrop(c, hx, hy, dx, dy, cw, ch) {
+		var x0 = c.x, y0 = c.y, x1 = c.x + c.w, y1 = c.y + c.h;
+		if (hx < 0) x0 = clamp(x0 + dx, 0, x1 - 1); if (hx > 0) x1 = clamp(x1 + dx, x0 + 1, cw); if (hy < 0) y0 = clamp(y0 + dy, 0, y1 - 1); if (hy > 0) y1 = clamp(y1 + dy, y0 + 1, ch);
+		return { x: x0, y: y0, w: x1 - x0, h: y1 - y0 };
+	}
+	/* the crop box after the layer's canvas was shifted (grown / cut) by ox, oy and is now cw x ch */
+	function shiftCrop(c, ox, oy, cw, ch) { if (!c) return null; return clampCrop({ x: c.x + ox, y: c.y + oy, w: c.w, h: c.h }, cw, ch); }
+
 	/* a random id for a project (kept in project.json, so autosaves of the same project from different files and sessions line up) */
 	function newProjectId(rand) { rand = rand || Math.random; var s = "p"; for (var i = 0; i < 12; i++) s += "abcdefghijklmnopqrstuvwxyz0123456789"[Math.floor(rand() * 36)]; return s; }
 
-	var api = { projectKind: projectKind, projectBase: projectBase, projectFileName: projectFileName, isZipBytes: isZipBytes, zipEntries: zipEntries, projectPrefix: projectPrefix, pruneRecent: pruneRecent, upsertRecent: upsertRecent, agoText: agoText, diskChanged: diskChanged, layerFileNames: layerFileNames, newProjectId: newProjectId,
+	var api = { rgbToHsv: rgbToHsv, hsvToRgb: hsvToRgb, parseColor: parseColor, lightness: lightness, edt: edt, outlineAlpha: outlineAlpha, normToolLayout: normToolLayout, moveTool: moveTool, clampCrop: clampCrop, dragCrop: dragCrop, shiftCrop: shiftCrop, projectKind: projectKind, projectBase: projectBase, projectFileName: projectFileName, isZipBytes: isZipBytes, zipEntries: zipEntries, projectPrefix: projectPrefix, pruneRecent: pruneRecent, upsertRecent: upsertRecent, agoText: agoText, diskChanged: diskChanged, layerFileNames: layerFileNames, newProjectId: newProjectId,
 		unionBox: unionBox, boxesTouch: boxesTouch, rectFrom: rectFrom, snapTargets: snapTargets, snapAxis: snapAxis, snapBox: snapBox, guidesOn: guidesOn, linSolve: linSolve, scaleAbout: scaleAbout, wrapLines: wrapLines, richMask: richMask, richEdit: richEdit, richSet: richSet, richAll: richAll, richNorm: richNorm, richSegs: richSegs, fitFontSize: fitFontSize, folderProject: folderProject, caretLine: caretLine, hitInLine: hitInLine, wordAt: wordAt, describeSource: describeSource, bytesText: bytesText, panelClamp: panelClamp, panelKey: panelKey, clamp: clamp, hexToRgb: hexToRgb, rgbToHex: rgbToHex, rgbToHsl: rgbToHsl, hslToRgb: hslToRgb, histogram: histogram, identityLUT: identityLUT, applyLUT: applyLUT, levelsLUT: levelsLUT, curveLUT: curveLUT,
 		brightnessContrast: brightnessContrast, exposure: exposure, hueSat: hueSat, vibrance: vibrance, temperature: temperature, invert: invert, grayscale: grayscale, sepia: sepia, threshold: threshold, posterize: posterize,
 		gaussianBlur: gaussianBlur, boxBlur: boxBlur, unsharp: unsharp, noise: noise, pixelate: pixelate, vignette: vignette, convolve: convolve, floodMask: floodMask, growShrinkMask: growShrinkMask, featherMask: featherMask, invertMask: invertMask,

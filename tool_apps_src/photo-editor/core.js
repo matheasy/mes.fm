@@ -23,7 +23,7 @@
 		o = o || {}; var d = PE.doc, w = o.w || (d ? d.w : 1), h = o.h || (d ? d.h : 1);
 		var c = o.canvas || mk(w, h);
 		return { id: d ? d.next++ : 1, name: o.name || "Layer", type: o.type || "raster", canvas: c, cx: o.cx != null ? o.cx : (o.x || 0) + c.width / 2, cy: o.cy != null ? o.cy : (o.y || 0) + c.height / 2,
-			sx: 1, sy: 1, rot: 0, visible: true, opacity: 1, blend: "source-over", locked: false, text: o.text || null, mask: null, editMask: false, rev: 0, _snap: null, group: null, collapsed: false, _p: null, src: o.src || null };
+			sx: 1, sy: 1, rot: 0, visible: true, opacity: 1, blend: "source-over", locked: false, text: o.text || null, mask: null, editMask: false, rev: 0, _snap: null, group: null, collapsed: false, _p: null, src: o.src || null, crop: null, fx: null };
 	};
 	/* where a layer came from (shown in File -> Files and folders): {how: open|drop|paste|folder|folder-ro|psd|xcf|project|autosave|merge|made, file, path, dir, bytes, w, h, t, hk (memory-only key of a folder file handle), copy, ai: [steps]}.
 	 * src objects are never changed in place (history snapshots share them): every update makes a new object. */
@@ -72,6 +72,7 @@
 		for (var i = ls.length - 1; i >= 0; i--) {
 			var L = ls[i]; if (PE.isGroup(L) || !PE.effVisible(L)) continue; var p = PE.toLayerPt(L, x, y);
 			if (p.x < 0 || p.y < 0 || p.x >= L.canvas.width || p.y >= L.canvas.height) continue;
+			var cr = L.crop; if (cr && (p.x < cr.x || p.y < cr.y || p.x >= cr.x + cr.w || p.y >= cr.y + cr.h)) continue;   // hidden by the layer's crop box
 			try { if (L.canvas.getContext("2d").getImageData(p.x | 0, p.y | 0, 1, 1).data[3] > 8) return L; } catch (e) { return L; }
 		}
 		return null;
@@ -79,13 +80,23 @@
 	/* bake the transform into the pixels (scale / rotation / flip) so tools can paint in layer space */
 	PE.bake = function (L) {
 		if (PE.isIdentity(L)) return;
+		var cr = L.crop, m0 = matrix(L);
+		if (cr && Math.abs(Math.sin(L.rot)) > 1e-9 && Math.abs(Math.cos(L.rot)) > 1e-9) { cropIntoMask(L); cr = null; }   // a crop box turned at an odd angle can't stay a box: it becomes part of the layer mask (still undoable, nothing is deleted)
 		var b = PE.bounds(L), ox = Math.floor(b.x + 1e-6), oy = Math.floor(b.y + 1e-6), W = Math.max(1, Math.ceil(b.x + b.w - 1e-6) - ox), H = Math.max(1, Math.ceil(b.y + b.h - 1e-6) - oy);
 		if (W * H > PE.MAXAREA) { PE.toast("That layer would be too large to edit"); return; }
 		var m = matrix(L), nc = mk(W, H), x = nc.getContext("2d"); x.imageSmoothingQuality = "high";
 		x.setTransform(m[0], m[1], m[2], m[3], m[4] - ox, m[5] - oy); x.drawImage(L.canvas, -L.canvas.width / 2, -L.canvas.height / 2); x.setTransform(1, 0, 0, 1, 0, 0);   // reset: tools later draw into this canvas with its own 2D context, and a leftover scale / offset put Delete, brush and fill marks in the wrong place
 		if (L.mask) { var nm = mk(W, H), mx = nm.getContext("2d"); mx.setTransform(m[0], m[1], m[2], m[3], m[4] - ox, m[5] - oy); mx.drawImage(L.mask, -L.canvas.width / 2, -L.canvas.height / 2); mx.setTransform(1, 0, 0, 1, 0, 0); L.mask = nm; }
+		if (cr) { var pts = [[cr.x, cr.y], [cr.x + cr.w, cr.y + cr.h]].map(function (q) { var u = q[0] - L.canvas.width / 2, v = q[1] - L.canvas.height / 2; return [m0[0] * u + m0[2] * v + m0[4] - ox, m0[1] * u + m0[3] * v + m0[5] - oy]; });
+			L.crop = P.clampCrop({ x: Math.min(pts[0][0], pts[1][0]), y: Math.min(pts[0][1], pts[1][1]), w: Math.abs(pts[1][0] - pts[0][0]), h: Math.abs(pts[1][1] - pts[0][1]) }, W, H); }
 		L.canvas = nc; L.cx = ox + W / 2; L.cy = oy + H / 2; L.sx = L.sy = 1; L.rot = 0; L.rev++;
 	};
+	/* fold a layer's crop box into its mask (used before baking a layer turned at an odd angle) */
+	function cropIntoMask(L) {
+		var cr = L.crop; if (!cr) return; var w = L.canvas.width, h = L.canvas.height, m = L.mask || (function () { var c = mk(w, h), x = c.getContext("2d"); x.fillStyle = "#000"; x.fillRect(0, 0, w, h); return c; })(), x = m.getContext("2d");
+		x.save(); x.globalCompositeOperation = "destination-in"; x.fillStyle = "#000"; x.fillRect(cr.x, cr.y, cr.w, cr.h); x.restore(); L.mask = m; L.crop = null; L.rev++;
+	}
+	PE.cropIntoMask = cropIntoMask;
 	/* grow a layer's canvas (and mask) so it covers rect {x,y,w,h} (doc coordinates); the layer must be baked */
 	PE.growLayer = function (L, r) {
 		var o = PE.origin(L), w = L.canvas.width, h = L.canvas.height, x0 = Math.min(o.x, Math.floor(r.x)), y0 = Math.min(o.y, Math.floor(r.y)), x1 = Math.max(o.x + w, Math.ceil(r.x + r.w)), y1 = Math.max(o.y + h, Math.ceil(r.y + r.h));
@@ -93,6 +104,7 @@
 		var W = x1 - x0, H = y1 - y0; if (W * H > PE.MAXAREA || W > PE.MAXPX * 2) return;
 		var nc = mk(W, H); nc.getContext("2d").drawImage(L.canvas, o.x - x0, o.y - y0);
 		if (L.mask) { var nm = mk(W, H), mx = nm.getContext("2d"); mx.fillStyle = "#000"; mx.fillRect(0, 0, W, H); mx.clearRect(o.x - x0, o.y - y0, w, h); mx.drawImage(L.mask, o.x - x0, o.y - y0); L.mask = nm; }
+		if (L.crop) L.crop = P.shiftCrop(L.crop, o.x - x0, o.y - y0, W, H);
 		L.canvas = nc; L.cx = x0 + W / 2; L.cy = y0 + H / 2; L.rev++;
 	};
 	/* shrink a baked layer's canvas (and mask) to rect {x,y,w,h} in doc coordinates, clipped to what it has now (the opposite of growLayer) */
@@ -101,6 +113,7 @@
 		if (x1 <= x0 || y1 <= y0 || (x0 === o.x && y0 === o.y && x1 === o.x + w && y1 === o.y + h)) return;
 		var W = x1 - x0, H = y1 - y0, nc = mk(W, H); nc.getContext("2d").drawImage(L.canvas, x0 - o.x, y0 - o.y, W, H, 0, 0, W, H);
 		if (L.mask) { var nm = mk(W, H); nm.getContext("2d").drawImage(L.mask, x0 - o.x, y0 - o.y, W, H, 0, 0, W, H); L.mask = nm; }
+		if (L.crop) L.crop = P.shiftCrop(L.crop, o.x - x0, o.y - y0, W, H);
 		L.canvas = nc; L.cx = x0 + W / 2; L.cy = y0 + H / 2; L.rev++;
 	};
 	PE.rasterize = function (L) { if (L.type === "text") { L.type = "raster"; L.text = null; L.rev++; } };
@@ -176,28 +189,73 @@
 		});
 		L._pad = pad; var dx = (W - oldW) / 2, dy = (H - oldH) / 2, m6 = matrix(L);      // keep the top-left corner where it was
 		L.cx += m6[0] * dx + m6[2] * dy; L.cy += m6[1] * dx + m6[3] * dy; L.canvas = c; L.rev++;
-		if (L.mask) { L.mask = null; }
+		if (L.mask) { L.mask = null; } if (L.crop) L.crop = P.clampCrop(L.crop, W, H);
 	};
 
+	/* ---------- layer styles (L.fx): an outline and / or a drop shadow worked out from the layer's visible pixels (mask and crop included), never baked
+	   into the layer: change or remove them any time (Layer -> Layer style). Cached in the layer's own pixel space, so panning and zooming cost nothing.
+	   fx = { outline: {on, w (px on the image), c, pos: outside | center | inside, op (0-1)}, shadow: {on, c, op, blur, dx, dy (px on the image)} } */
+	PE.FXDEF = { outline: { on: false, w: 4, c: "#ffffff", pos: "outside", op: 1 }, shadow: { on: false, c: "#000000", op: 0.55, blur: 14, dx: 6, dy: 8 } };
+	function fxOn(L) { var f = L.fx; return !!(f && ((f.outline && f.outline.on && f.outline.w > 0) || (f.shadow && f.shadow.on))); }
+	PE.hasFx = fxOn;
+	/* how far (image px) the style reaches past the layer's pixels: for bounding boxes (XCF export) */
+	PE.fxReach = function (L) { if (!fxOn(L)) return 0; var f = L.fx, r = 0; if (f.outline && f.outline.on && f.outline.pos !== "inside") r = f.outline.w; if (f.shadow && f.shadow.on) r = Math.max(r, f.shadow.blur * 2 + Math.max(Math.abs(f.shadow.dx), Math.abs(f.shadow.dy))); return Math.ceil(r) + 2; };
+	function fxCanvases(L) {
+		var f = L.fx, cw = L.canvas.width, ch = L.canvas.height, sc = Math.max(0.01, Math.sqrt(Math.abs(L.sx * L.sy))), key = [L.rev, cw, ch, L.sx, L.sy, L.rot, JSON.stringify(L.crop), JSON.stringify(f), !!L.mask].join("|"), k = L._fxc;
+		if (k && k.key === key && k.c === L.canvas) return k.r;
+		var ol = f.outline && f.outline.on && f.outline.w > 0 ? f.outline : null, sh = f.shadow && f.shadow.on ? f.shadow : null, olw = ol ? ol.w / sc : 0;
+		// the shadow offset is on the image (down-right stays down-right however the layer is turned): back into the layer's own axes
+		var co = Math.cos(L.rot), si = Math.sin(L.rot), sdx = sh ? (co * sh.dx + si * sh.dy) / L.sx : 0, sdy = sh ? (-si * sh.dx + co * sh.dy) / L.sy : 0, sbl = sh ? sh.blur / sc : 0;
+		var mg = Math.ceil(Math.max(ol && ol.pos !== "inside" ? olw : 0, sh ? sbl * 2 + Math.max(Math.abs(sdx), Math.abs(sdy)) : 0)) + 2, W = cw + mg * 2, H = ch + mg * 2, r = { mg: mg, under: null, over: null };
+		if (W * H > 24e6) { L._fxc = { key: key, c: L.canvas, r: r }; return r; }   // too big to work out in a browser: drawn without the style
+		var src = mk(W, H), sx = src.getContext("2d"); sx.drawImage(L.canvas, mg, mg);
+		if (L.mask) { sx.globalCompositeOperation = "destination-in"; sx.drawImage(L.mask, mg, mg); }
+		if (L.crop) { sx.globalCompositeOperation = "destination-in"; sx.fillStyle = "#000"; sx.fillRect(mg + L.crop.x, mg + L.crop.y, L.crop.w, L.crop.h); }
+		sx.globalCompositeOperation = "source-over";
+		var under = null, over = null;
+		if (sh) {
+			var rgb = P.hexToRgb(sh.c), sc2 = mk(W, H), q = sc2.getContext("2d"); q.shadowColor = "rgba(" + rgb[0] + "," + rgb[1] + "," + rgb[2] + "," + Math.max(0, Math.min(1, sh.op)) + ")"; q.shadowBlur = sbl; q.shadowOffsetX = 30000 + sdx; q.shadowOffsetY = sdy; q.drawImage(src, -30000, 0); under = sc2;
+		}
+		if (ol) {
+			var id = sx.getImageData(0, 0, W, H), al = new Uint8Array(W * H); for (var i = 0; i < al.length; i++) al[i] = id.data[i * 4 + 3];
+			var oa = P.outlineAlpha(al, W, H, olw, ol.pos), c3 = P.hexToRgb(ol.c), oc = mk(W, H), ox = oc.getContext("2d"), od = ox.createImageData(W, H), opa = Math.max(0, Math.min(1, ol.op == null ? 1 : ol.op));
+			for (var j = 0; j < oa.length; j++) { if (!oa[j]) continue; od.data[j * 4] = c3[0]; od.data[j * 4 + 1] = c3[1]; od.data[j * 4 + 2] = c3[2]; od.data[j * 4 + 3] = Math.round(oa[j] * opa); }
+			ox.putImageData(od, 0, 0);
+			if (ol.pos === "outside") { if (under) { under.getContext("2d").drawImage(oc, 0, 0); } else under = oc; } else over = oc;
+		}
+		r.under = under; r.over = over; L._fxc = { key: key, c: L.canvas, r: r }; return r;
+	}
+	PE.fxCanvases = fxCanvases;
+
 	/* ---------- compositing ---------- */
+	function clipCrop(x, L) { var cr = L.crop; if (!cr) return; x.beginPath(); x.rect(cr.x - L.canvas.width / 2, cr.y - L.canvas.height / 2, cr.w, cr.h); x.clip(); }
 	function drawLayer(ctx, L, base, tmpKey, w, h) {
 		if (PE.isGroup(L) || !L.visible) return; var op = L.opacity; for (var gp = L._p; gp; gp = gp._p) { if (!gp.visible) return; op *= gp.opacity; } if (op <= 0) return;
-		var src = L.preview || L.canvas, cw = L.canvas.width, ch = L.canvas.height, m = matrix(L);
-		var needTmp = L.mask || L.live;
+		var src = L.preview || L.canvas, cw = L.canvas.width, ch = L.canvas.height, m = matrix(L), fx = fxOn(L) && !L.noFx ? fxCanvases(L) : null;
+		var needTmp = L.mask || L.live || fx;
 		if (!needTmp) {
 			ctx.save(); ctx.globalAlpha = op; ctx.globalCompositeOperation = L.blend;
 			ctx.setTransform(base[0] * m[0] + base[2] * m[1], base[1] * m[0] + base[3] * m[1], base[0] * m[2] + base[2] * m[3], base[1] * m[2] + base[3] * m[3], base[0] * m[4] + base[2] * m[5] + base[4], base[1] * m[4] + base[3] * m[5] + base[5]);
-			ctx.drawImage(src, -cw / 2, -ch / 2, cw, ch); ctx.restore(); return;
+			clipCrop(ctx, L); ctx.drawImage(src, -cw / 2, -ch / 2, cw, ch); ctx.restore(); return;
 		}
 		var t = PE.tmp(tmpKey, w, h), tx = t.getContext("2d");
-		tx.setTransform(base[0] * m[0] + base[2] * m[1], base[1] * m[0] + base[3] * m[1], base[0] * m[2] + base[2] * m[3], base[1] * m[2] + base[3] * m[3], base[0] * m[4] + base[2] * m[5] + base[4], base[1] * m[4] + base[3] * m[5] + base[5]);
+		tx.save(); tx.setTransform(base[0] * m[0] + base[2] * m[1], base[1] * m[0] + base[3] * m[1], base[0] * m[2] + base[2] * m[3], base[1] * m[2] + base[3] * m[3], base[0] * m[4] + base[2] * m[5] + base[4], base[1] * m[4] + base[3] * m[5] + base[5]);
 		tx.imageSmoothingQuality = "high"; tx.imageSmoothingEnabled = ctx.imageSmoothingEnabled;
+		clipCrop(tx, L);
 		tx.drawImage(src, -cw / 2, -ch / 2, cw, ch);
 		if (L.live && L.live.target !== "mask") { tx.globalCompositeOperation = L.live.erase ? "destination-out" : "source-over"; tx.globalAlpha = L.live.alpha; tx.drawImage(L.live.buf, -cw / 2, -ch / 2); tx.globalAlpha = 1; }
 		if (L.mask) {
 			tx.globalCompositeOperation = "destination-in";
 			if (L.live && L.live.target === "mask") { var mm = PE.tmp(tmpKey + "m", L.mask.width, L.mask.height), mc = mm.getContext("2d"); mc.drawImage(L.mask, 0, 0); mc.globalCompositeOperation = L.live.erase ? "destination-out" : "source-over"; mc.globalAlpha = L.live.alpha; mc.drawImage(L.live.buf, 0, 0); tx.drawImage(mm, -cw / 2, -ch / 2); }
 			else tx.drawImage(L.mask, -cw / 2, -ch / 2);
+		}
+		tx.restore();
+		if (fx && (fx.under || fx.over)) {
+			tx.save(); tx.setTransform(base[0] * m[0] + base[2] * m[1], base[1] * m[0] + base[3] * m[1], base[0] * m[2] + base[2] * m[3], base[1] * m[2] + base[3] * m[3], base[0] * m[4] + base[2] * m[5] + base[4], base[1] * m[4] + base[3] * m[5] + base[5]);
+			tx.imageSmoothingQuality = "high"; tx.imageSmoothingEnabled = ctx.imageSmoothingEnabled;
+			if (fx.under) { tx.globalCompositeOperation = "destination-over"; tx.drawImage(fx.under, -cw / 2 - fx.mg, -ch / 2 - fx.mg); }
+			if (fx.over) { tx.globalCompositeOperation = "source-over"; tx.drawImage(fx.over, -cw / 2 - fx.mg, -ch / 2 - fx.mg); }
+			tx.restore();
 		}
 		ctx.save(); ctx.setTransform(1, 0, 0, 1, 0, 0); ctx.globalAlpha = op; ctx.globalCompositeOperation = L.blend; ctx.drawImage(t, 0, 0); ctx.restore();
 	}
@@ -308,7 +366,7 @@
 	var H = PE.hist = { stack: [], idx: -1 };
 	function snapLayer(L) {
 		var s = L._snap; if (!s || s.rev !== L.rev || (L.mask ? !s.m : !!s.m)) { s = L._snap = { rev: L.rev, c: clone(L.canvas), m: L.mask ? clone(L.mask) : null }; }
-		return { meta: { id: L.id, group: L.group, collapsed: L.collapsed, name: L.name, type: L.type, cx: L.cx, cy: L.cy, sx: L.sx, sy: L.sy, rot: L.rot, visible: L.visible, opacity: L.opacity, blend: L.blend, locked: L.locked, text: L.text ? JSON.parse(JSON.stringify(L.text)) : null, eq: L.eq ? JSON.parse(JSON.stringify(L.eq)) : null, editMask: L.editMask, src: L.src || null }, snap: s };
+		return { meta: { id: L.id, group: L.group, collapsed: L.collapsed, name: L.name, type: L.type, cx: L.cx, cy: L.cy, sx: L.sx, sy: L.sy, rot: L.rot, visible: L.visible, opacity: L.opacity, blend: L.blend, locked: L.locked, text: L.text ? JSON.parse(JSON.stringify(L.text)) : null, eq: L.eq ? JSON.parse(JSON.stringify(L.eq)) : null, editMask: L.editMask, src: L.src || null, crop: L.crop ? Object.assign({}, L.crop) : null, fx: L.fx ? JSON.parse(JSON.stringify(L.fx)) : null }, snap: s };
 	}
 	var lastSel = { ver: -1, obj: null };
 	function takeSnapshot(label) {
@@ -325,7 +383,7 @@
 	};
 	function restore(e) {
 		var d = PE.doc; d.w = e.w; d.h = e.h; d.layers = e.layers.map(function (l) {
-			var L = PE.makeLayer({ canvas: clone(l.snap.c), type: l.meta.type, name: l.meta.name, text: l.meta.text }); for (var k in l.meta) if (k !== "text" && k !== "eq") L[k] = l.meta[k]; L.text = l.meta.text ? JSON.parse(JSON.stringify(l.meta.text)) : null; L.eq = l.meta.eq ? JSON.parse(JSON.stringify(l.meta.eq)) : null;
+			var L = PE.makeLayer({ canvas: clone(l.snap.c), type: l.meta.type, name: l.meta.name, text: l.meta.text }); for (var k in l.meta) if (k !== "text" && k !== "eq" && k !== "crop" && k !== "fx") L[k] = l.meta[k]; L.crop = l.meta.crop ? Object.assign({}, l.meta.crop) : null; L.fx = l.meta.fx ? JSON.parse(JSON.stringify(l.meta.fx)) : null; L.text = l.meta.text ? JSON.parse(JSON.stringify(l.meta.text)) : null; L.eq = l.meta.eq ? JSON.parse(JSON.stringify(l.meta.eq)) : null;
 			L.mask = l.snap.m ? clone(l.snap.m) : null; L.rev = l.snap.rev; L._snap = l.snap; return L; });
 		d.comps = JSON.parse(e.comps || "[]"); d.activeId = e.active; if (!PE.layerById(d.activeId) && d.layers.length) d.activeId = d.layers[d.layers.length - 1].id;
 		PE.sel = e.sel ? { c: clone(e.sel), ver: ++PE.selSeq } : null; PE.relink(); PE.emit("sel"); PE.emit("history"); PE.emit("layers"); PE.emit("comps"); PE.emit("docsize"); PE.invalidate(); PE.scheduleAutosave && PE.scheduleAutosave();
@@ -367,7 +425,7 @@
 	PE.duplicateLayer = function (L) {
 		L = L || PE.active(); if (!L) return; var d = PE.doc, block = PE.blockOf(L), map = {}, copies = block.map(function (B) {
 			var n = PE.makeLayer({ canvas: clone(B.canvas), type: B.type, name: B.name + (B === L ? " copy" : ""), text: B.text ? JSON.parse(JSON.stringify(B.text)) : null }); map[B.id] = n;
-			["cx", "cy", "sx", "sy", "rot", "visible", "opacity", "blend", "collapsed"].forEach(function (k) { n[k] = B[k]; }); if (B.eq) n.eq = JSON.parse(JSON.stringify(B.eq)); if (B.mask) n.mask = clone(B.mask); if (B.src) n.src = Object.assign({}, B.src, { copy: true }); return n; });
+			["cx", "cy", "sx", "sy", "rot", "visible", "opacity", "blend", "collapsed"].forEach(function (k) { n[k] = B[k]; }); if (B.eq) n.eq = JSON.parse(JSON.stringify(B.eq)); if (B.mask) n.mask = clone(B.mask); if (B.src) n.src = Object.assign({}, B.src, { copy: true }); if (B.crop) n.crop = Object.assign({}, B.crop); if (B.fx) n.fx = JSON.parse(JSON.stringify(B.fx)); return n; });
 		copies.forEach(function (n, i) { var B = block[i]; n.group = B === L ? L.group : (map[B.group] ? map[B.group].id : L.group); });
 		var at = d.layers.indexOf(L) + 1; Array.prototype.splice.apply(d.layers, [at, 0].concat(copies)); d.activeId = copies[copies.length - 1].id; PE.relink(); PE.commit("Duplicate " + (PE.isGroup(L) ? "group" : "layer"));
 	};
@@ -466,7 +524,7 @@
 			if (L.type === "text" && Math.abs(fx - fy) < 1e-6) { L.text.size = Math.max(1, L.text.size * fx); L.text.strokeW *= fx; L.text.shadowBlur *= fx; L.text.shadowDx *= fx; L.text.shadowDy *= fx; var ocx = L.cx * fx, ocy = L.cy * fy; PE.renderText(L); L.cx = ocx; L.cy = ocy; return; }
 			if (L.type === "text") PE.rasterize(L);
 			PE.bake(L); var nw = Math.max(1, Math.round(L.canvas.width * fx)), nh = Math.max(1, Math.round(L.canvas.height * fy));
-			L.canvas = PE.resample(L.canvas, nw, nh); if (L.mask) L.mask = PE.resample(L.mask, nw, nh); L.cx *= fx; L.cy *= fy; L.cx = Math.round(L.cx - nw / 2) + nw / 2; L.cy = Math.round(L.cy - nh / 2) + nh / 2; L.rev++;
+			var ow0 = L.canvas.width, oh0 = L.canvas.height; L.canvas = PE.resample(L.canvas, nw, nh); if (L.mask) L.mask = PE.resample(L.mask, nw, nh); if (L.crop) L.crop = P.clampCrop({ x: L.crop.x * nw / ow0, y: L.crop.y * nh / oh0, w: L.crop.w * nw / ow0, h: L.crop.h * nh / oh0 }, nw, nh); L.cx *= fx; L.cy *= fy; L.cx = Math.round(L.cx - nw / 2) + nw / 2; L.cy = Math.round(L.cy - nh / 2) + nh / 2; L.rev++;
 		});
 		d.w = w; d.h = h; PE.sel = null; PE.emit("sel"); PE.emit("docsize"); PE.commit("Image size"); PE.fit();
 	};
@@ -502,7 +560,7 @@
 	PE.projectBlob = function () {
 		var d = PE.doc, files = [], metas = [], jobs = [];
 		d.layers.forEach(function (L) {
-			var m = { id: L.id, group: L.group, collapsed: L.collapsed, name: L.name, type: L.type, cx: L.cx, cy: L.cy, sx: L.sx, sy: L.sy, rot: L.rot, visible: L.visible, opacity: L.opacity, blend: L.blend, locked: L.locked, text: L.text, w: L.canvas.width, h: L.canvas.height, hasMask: !!L.mask, eq: L.eq || null, src: L.src ? Object.assign({}, L.src, { hk: undefined }) : null }; metas.push(m);
+			var m = { id: L.id, group: L.group, collapsed: L.collapsed, name: L.name, type: L.type, cx: L.cx, cy: L.cy, sx: L.sx, sy: L.sy, rot: L.rot, visible: L.visible, opacity: L.opacity, blend: L.blend, locked: L.locked, text: L.text, w: L.canvas.width, h: L.canvas.height, hasMask: !!L.mask, eq: L.eq || null, src: L.src ? Object.assign({}, L.src, { hk: undefined }) : null, crop: L.crop || null, fx: L.fx || null }; metas.push(m);
 			jobs.push(canvasBytes(L.canvas).then(function (u) { files.push({ name: "layer-" + L.id + ".png", data: u }); }));
 			if (L.mask) jobs.push(canvasBytes(L.mask).then(function (u) { files.push({ name: "mask-" + L.id + ".png", data: u }); }));
 		});
@@ -532,7 +590,7 @@
 		var by = {}; files.forEach(function (f) { by[f.name] = f.data; }); if (!by["project.json"]) return Promise.reject(new Error("Not a MES project file"));
 		var p = JSON.parse(new TextDecoder().decode(by["project.json"])), layers = [];
 		return Promise.all(p.layers.map(function (m, i) {
-			return loadPng(by["layer-" + m.id + ".png"]).then(function (c) { var L = PE.makeLayer({ canvas: c, name: m.name, type: m.type, text: m.text }); L.id = m.id; L.eq = m.eq || null; L.src = m.src || (m.type === "group" ? null : { how: fileName === "autosave" ? "autosave" : "project", file: fileName === "autosave" ? "" : fileName || "" }); ["cx", "cy", "sx", "sy", "rot", "visible", "opacity", "blend", "locked", "group", "collapsed"].forEach(function (k) { if (m[k] !== undefined) L[k] = m[k]; }); layers[i] = L; return m.hasMask ? loadPng(by["mask-" + m.id + ".png"]).then(function (mc) { L.mask = mc; }) : null; });
+			return loadPng(by["layer-" + m.id + ".png"]).then(function (c) { var L = PE.makeLayer({ canvas: c, name: m.name, type: m.type, text: m.text }); L.id = m.id; L.eq = m.eq || null; L.src = m.src || (m.type === "group" ? null : { how: fileName === "autosave" ? "autosave" : "project", file: fileName === "autosave" ? "" : fileName || "" }); ["cx", "cy", "sx", "sy", "rot", "visible", "opacity", "blend", "locked", "group", "collapsed"].forEach(function (k) { if (m[k] !== undefined) L[k] = m[k]; }); L.crop = m.crop ? P.clampCrop(m.crop, c.width, c.height) : null; L.fx = m.fx && typeof m.fx === "object" ? m.fx : null; layers[i] = L; return m.hasMask ? loadPng(by["mask-" + m.id + ".png"]).then(function (mc) { L.mask = mc; }) : null; });
 		})).then(function () {
 			PE.doc = { w: p.w, h: p.h, layers: layers, activeId: p.active, next: p.next || 1000, name: p.name || "Untitled", comps: p.comps || [], pid: p.pid || opts.pid || P.newProjectId(), file: PE.mkSrc(fileName === "autosave" ? { how: "autosave" } : Object.assign({ how: "project", file: fileName }, meta || {}, { how: "project" })) }; PE.relink(); PE.sel = null; H.stack = []; H.idx = -1; lastSel = { ver: -1 };
 			PE.commit("Open project"); PE.dirty = false; PE.emit("docsize"); PE.emit("sel"); PE.fit();

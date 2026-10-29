@@ -9,7 +9,7 @@
 		var d = PE.doc; if (!d) { PE.toast("Open or create an image first"); return; } PE.relink();
 		var out = [], skipped = 0;
 		d.layers.forEach(function (L) {
-			if (PE.isGroup(L)) return; var b = PE.bounds(L), x0 = Math.max(0, Math.floor(b.x)), y0 = Math.max(0, Math.floor(b.y)), x1 = Math.min(d.w, Math.ceil(b.x + b.w)), y1 = Math.min(d.h, Math.ceil(b.y + b.h));
+			if (PE.isGroup(L)) return; var b = PE.bounds(L), fr = PE.fxReach ? PE.fxReach(L) : 0; b = { x: b.x - fr, y: b.y - fr, w: b.w + fr * 2, h: b.h + fr * 2 }; var x0 = Math.max(0, Math.floor(b.x)), y0 = Math.max(0, Math.floor(b.y)), x1 = Math.min(d.w, Math.ceil(b.x + b.w)), y1 = Math.min(d.h, Math.ceil(b.y + b.h));
 			if (x1 <= x0 || y1 <= y0) { skipped++; return; }
 			var w = x1 - x0, h = y1 - y0, c = PE.mk(w, h), x = c.getContext("2d");
 			PE.drawLayer(x, Object.assign({}, L, { _p: null, opacity: 1, blend: "source-over", visible: true }), [1, 0, 0, 1, -x0, -y0], "xcf", w, h);

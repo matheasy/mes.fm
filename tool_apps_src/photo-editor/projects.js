@@ -80,6 +80,7 @@
 	PE.saveProjectAs = function (kind) {
 		if (!needDoc()) return; var L = cur(), base = PE.doc.name || "Untitled";
 		if (!canSavePicker()) {
+			if (!sget().dlNoAsk && !PE._dlExplained) return explainDownload().then(function (go) { if (go) { PE._dlExplained = true; return PE.saveProjectAs(kind); } });
 			return PE.projectBlob().then(function (b) { var n = P.projectFileName(base, kind || "mesproj"); PE.download(b, n); PE.dirty = false; if (PE.saveState) PE.saveState(); drawBar();
 				PE.toast("Saved " + n + " to your Downloads" + (isBrave() ? " (to save straight into a folder, switch on " + BRAVE_FLAG + ")" : "")); }).catch(function (e) { PE.toast("Could not save the project: " + errText(e)); });
 		}
@@ -94,6 +95,23 @@
 			});
 		}).catch(function (x) { if (x && x.name === "AbortError") return; PE.toast("Could not save the project: " + errText(x)); });
 	};
+	/* Brave (by default), Safari and Firefox have no way for a page to write to a file it opened: every Save is a NEW download. When the browser is set to
+	   "ask where to save each file", that looks like a Save As dialog on every Save. Say so once, and how to get silent saving. */
+	function explainDownload() {
+		return new Promise(function (res) {
+			var br = isBrave(), w = el("div", "pe-fx"), done = false;
+			w.innerHTML = "<p><b>This browser can't save over the project file.</b> Each Save makes a new download of <i>" + esc(P.projectFileName(PE.doc.name || "Untitled", "mesproj")) + "</i>. If your browser asks where to save every download, you will see a Save dialog each time: that is the browser, not a new project.</p>"
+				+ (br ? "<p><b>In Brave you can switch it on:</b> open <code>" + BRAVE_FLAG + "</code> (copy it into the address bar), set it to <b>Enabled</b> and relaunch Brave. Then the first Save asks once where to put the file, and every later Save (" + PE.modKey() + "S) writes that same file silently, also in a OneDrive folder.</p>"
+					: "<p>Chrome and Edge on a computer can write to the same file with no questions. Safari and Firefox can't.</p>")
+				+ "<p class=\"pe-hint2\">To stop the Save dialog for downloads: browser Settings → Downloads → turn off “Ask where to save each file”. The project then goes straight to your Downloads folder.</p>"
+				+ '<label class="pe-chk"><input type="checkbox" id="pe-dlnoask"> Always download without showing this again</label>';
+			var fin = function (m, v) { if (done) return; done = true; if (w.querySelector("#pe-dlnoask").checked) sset({ dlNoAsk: true }); m.close(); res(v); };
+			var btns = [{ label: "Cancel", act: function (m) { fin(m, false); } }];
+			if (br) btns.push({ label: "Copy the Brave setting link", act: function () { try { navigator.clipboard.writeText(BRAVE_FLAG); PE.toast("Copied: paste it into the address bar"); } catch (x) {} } });
+			btns.push({ label: "⬇ Download the project", primary: true, act: function (m) { fin(m, true); } });
+			PE.modal({ title: "Saving in this browser", body: w, onClose: function () { if (!done) { done = true; res(false); } }, buttons: btns });
+		});
+	}
 	PE.downloadProjectZip = function () {
 		if (!needDoc()) return; PE.projectBlob().then(function (b) { var n = P.projectFileName(PE.doc.name, "zip"); PE.download(b, n); PE.toast("Downloaded " + n + ": a normal ZIP (project.json + one PNG per layer). Drop it on the editor to keep working"); }).catch(function (e) { PE.toast("Could not make the ZIP: " + errText(e)); });
 	};
@@ -223,7 +241,7 @@
 	function drawBar() {
 		bar = bar || document.getElementById("pe-projst"); if (!bar) return; var d = PE.doc, L = cur();
 		if (!d) { bar.hidden = true; return; } bar.hidden = false;
-		var dirty = !!(PE.dirty && PE.hist.stack.length > 1), st = L ? (L.conflict ? "changed on disk" : L.needPerm && dirty ? "press Save to allow saving" : dirty ? "unsaved changes" : L.savedAt ? "saved " + P.agoText(L.savedAt) : "opened") : dirty ? "not saved to a file" : "";
+		var dirty = !!(PE.dirty && PE.hist.stack.length > 1), st = !L && !canSavePicker() ? (dirty ? "Save = new download" : "") : L ? (L.conflict ? "changed on disk" : L.needPerm && dirty ? "press Save to allow saving" : dirty ? "unsaved changes" : L.savedAt ? "saved " + P.agoText(L.savedAt) : "opened") : dirty ? "not saved to a file" : "";
 		var af = PE.autoFileOn(), title = L ? "This project is linked to the file " + whereText(L) + ". " + PE.modKey() + "S writes it there." + (af ? " Auto-save writes changes there " + AUTO_FILE_MS / 1000 + " s after you stop." : "") : "This project is not saved in a file yet: Save project makes one (in a folder you choose, or your Downloads).";
 		bar.className = "pe-projst" + (dirty ? " is-dirty" : "") + (L && L.conflict ? " is-warn" : "");
 		bar.innerHTML = (L ? '<span class="pe-projst-f">' + (L.handle && L.handle._folder ? "📁 " : "📄 ") + esc(L.name) + "</span>" : "") + (st ? '<span class="pe-projst-s">' + esc(st) + "</span>" : "")

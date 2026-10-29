@@ -288,4 +288,27 @@ t("folderProject: the project files of an unzipped .mesproj", () => {
 	assert.deepStrictEqual(P.folderProject(["project.json", "layer-2.png", "sub/layer-3.png"]), { prefix: "", files: ["project.json", "layer-2.png"] });
 	assert.strictEqual(P.folderProject(["a.png", "b.jpg"]), null);
 });
+// ---- round 7 (2026-10-28): colour picker, outline style, tool layout, layer crop ----
+t("hsv roundtrip", () => { for (const c of [[200, 30, 60], [10, 250, 90], [128, 128, 128], [255, 0, 0], [0, 0, 0], [255, 255, 255]]) { const h = P.rgbToHsv(...c), r = P.hsvToRgb(...h); c.forEach((v, i) => assert(Math.abs(v - r[i]) < 0.6, c + " vs " + r)); } assert.deepStrictEqual(P.hsvToRgb(120, 1, 1).map(Math.round), [0, 255, 0]); });
+t("parseColor", () => { assert.strictEqual(P.parseColor("#ABC"), "#aabbcc"); assert.strictEqual(P.parseColor("ff8000"), "#ff8000"); assert.strictEqual(P.parseColor("rgb(255, 128, 0)"), "#ff8000"); assert.strictEqual(P.parseColor("10,20,30"), "#0a141e"); assert.strictEqual(P.parseColor("rgba(1,2,3,0.5)"), "#010203"); assert.strictEqual(P.parseColor("blue-ish"), null); assert.strictEqual(P.parseColor("300,0,0"), null); });
+t("lightness", () => { assert.strictEqual(P.lightness("#000000"), 0); assert(Math.abs(P.lightness("#ffffff") - 1) < 1e-9); assert(P.lightness("#808080") > 0.45 && P.lightness("#808080") < 0.55); });
+t("edt distances", () => { const w = 7, h = 1, on = new Uint8Array(w); on[3] = 1; const d = P.edt(on, w, h); assert.deepStrictEqual(Array.from(d), [9, 4, 1, 0, 1, 4, 9]); const on2 = new Uint8Array(25); on2[12] = 1; const d2 = P.edt(on2, 5, 5); assert.strictEqual(d2[0], 8); assert.strictEqual(d2[2], 4); });
+t("outline outside / inside / centre", () => {
+	const w = 21, h = 21, a = new Uint8Array(w * h); for (let y = 8; y <= 12; y++) for (let x = 8; x <= 12; x++) a[y * w + x] = 255;   // a 5x5 square in the middle
+	const o = P.outlineAlpha(a, w, h, 3, "outside"); assert.strictEqual(o[10 * w + 10], 0, "outside never covers the shape"); assert.strictEqual(o[10 * w + 6], 255, "2 px out"); assert.strictEqual(o[10 * w + 3], 0, "5 px out is past the stroke");
+	const i = P.outlineAlpha(a, w, h, 1, "inside"); assert.strictEqual(i[10 * w + 8], 255, "edge pixel"); assert.strictEqual(i[10 * w + 10], 0, "centre stays clear"); assert.strictEqual(i[10 * w + 6], 0, "nothing outside");
+	const c = P.outlineAlpha(a, w, h, 2, "center"); assert(c[10 * w + 8] > 200 && c[10 * w + 7] > 200 && c[10 * w + 10] === 0 && c[10 * w + 4] === 0);
+	assert.strictEqual(P.outlineAlpha(a, w, h, 0, "outside").reduce((s, v) => s + v, 0), 0); });
+t("tool layout normalise + move", () => {
+	const all = ["move", "brush", "eraser", "text", "newtool"], def = [{ id: "sel", name: "Select", tools: ["move"] }, { id: "paint", name: "Paint", tools: ["brush", "eraser", "newtool"] }, { id: "t", name: "Text", tools: ["text"] }];
+	const n0 = P.normToolLayout(null, all, def); assert.deepStrictEqual(n0.groups.map((g) => g.tools), [["move"], ["brush", "eraser", "newtool"], ["text"]]);
+	const saved = { groups: [{ id: "mine", name: "Mine", tools: ["text", "gone", "move"] }], hidden: ["eraser"] }, n1 = P.normToolLayout(saved, all, def);
+	assert.deepStrictEqual(n1.hidden, ["eraser"]); assert.deepStrictEqual(n1.groups[0].tools, ["text", "move", "brush", "newtool"], "unknown dropped, missing tools appended");
+	const m = P.moveTool(n1, "move", "mine", 0); assert.deepStrictEqual(m.groups[0].tools.slice(0, 2), ["move", "text"]); const h2 = P.moveTool(m, "text", "hidden"); assert.deepStrictEqual(h2.hidden, ["eraser", "text"]); assert(h2.groups[0].tools.indexOf("text") < 0);
+	assert.deepStrictEqual(n1.groups[0].tools, ["text", "move", "brush", "newtool"], "moveTool does not change its input"); });
+t("layer crop helpers", () => {
+	assert.strictEqual(P.clampCrop({ x: 0, y: 0, w: 100, h: 50 }, 100, 50), null, "full canvas = no crop"); assert.deepStrictEqual(P.clampCrop({ x: -5, y: 10, w: 200, h: 5 }, 100, 50), { x: 0, y: 10, w: 100, h: 5 });
+	assert.deepStrictEqual(P.dragCrop({ x: 10, y: 10, w: 50, h: 30 }, -1, 0, 15, 99, 100, 50), { x: 25, y: 10, w: 35, h: 30 }); assert.deepStrictEqual(P.dragCrop({ x: 10, y: 10, w: 50, h: 30 }, 1, 1, 500, 500, 100, 50), { x: 10, y: 10, w: 90, h: 40 });
+	assert.deepStrictEqual(P.dragCrop({ x: 10, y: 10, w: 5, h: 5 }, 1, 0, -50, 0, 100, 50).w, 1, "never below 1 px");
+	assert.deepStrictEqual(P.shiftCrop({ x: 10, y: 10, w: 20, h: 20 }, 30, 5, 200, 100), { x: 40, y: 15, w: 20, h: 20 }, "canvas grew on the left / top"); });
 console.log(n + " checks ok");

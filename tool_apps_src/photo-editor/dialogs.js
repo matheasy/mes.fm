@@ -236,8 +236,17 @@
 
 	/* ---------- export ---------- */
 	var HELP_FMT = "<p><b>PNG</b>: perfect quality, keeps transparency. Files are big for photos. Best for screenshots, logos, text, anything with sharp edges or see-through parts.</p><p><b>JPEG</b>: small files for photos, but slightly lossy and no transparency (it fills with the background colour). Works everywhere. Best for photographs and anything you will email or post.</p><p><b>WebP</b>: a newer format that is usually 25-35% smaller than JPEG at the same look, and keeps transparency. Works in all modern browsers and most apps, but some older programs cannot open it.</p>";
+	/* the name to suggest for an exported picture: the linked project file, else the document's own name (the opened picture / project), else the first
+	   layer's file, else "image" (never "Untitled") */
+	PE.docBaseName = function () {
+		var d = PE.doc; if (!d) return "image"; var L = PE.projectLink && PE.projectLink(), ok = function (s) { s = String(s || "").trim(); return s && !/^(untitled|image|layer)$/i.test(s) ? s : ""; };
+		var n = (L && ok(P.projectBase(L.name))) || ok(d.name) || (d.file && d.file.file && ok(I.baseName(d.file.file)));
+		if (!n) d.layers.some(function (k) { return k.src && k.src.file && (n = ok(I.baseName(k.src.file))); });
+		return n || "image";
+	};
 	PE.dlgExport = function () {
-		var d = PE.doc; if (!d) return; var wrap = el("div", "pe-exp"), saved = PE.savedParams.export || { fmt: "png", q: 90, scale: 100, bg: "#ffffff", name: d.name };
+		var d = PE.doc; if (!d) return; var wrap = el("div", "pe-exp"), saved = Object.assign({ fmt: "png", q: 90, scale: 100, bg: "#ffffff" }, PE.savedParams.export || {});
+		if (saved.pid !== d.pid || !saved.name) saved.name = PE.docBaseName();   // a name typed earlier is kept only for the same project
 		var f = PE.form([{ k: "fmt", label: "Format", help: HELP_FMT, type: "seg", options: [["png", "PNG"], ["jpg", "JPEG"], ["webp", "WebP"]], val: saved.fmt }, { k: "q", label: "Quality", help: "How much detail JPEG and WebP keep. Higher looks better but makes a bigger file. 85-92% is a good balance: the picture looks the same and the file is much smaller than PNG. PNG is lossless, so it has no quality setting.", type: "range", min: 30, max: 100, step: 1, val: saved.q, unit: "%" }, { k: "scale", label: "Scale", help: "Makes the exported picture bigger or smaller than the image you are editing. 100% keeps the size. 50% halves the width and height (a quarter of the pixels), handy for web use; 200% doubles it (the pixels are enlarged, it does not add detail).", type: "range", min: 10, max: 400, step: 1, val: saved.scale, unit: "%" }, { k: "bg", label: "Background (JPEG)", help: "JPEG cannot be see-through. Any transparent parts of your image are filled with this colour. PNG and WebP keep transparency, so they ignore this.", type: "color", val: saved.bg }, { k: "name", label: "File name", help: "The name of the downloaded file, without the ending (the ending comes from the format).", type: "text", val: saved.name }], function () { vis(); est(); });
 		wrap.appendChild(f.el); var info = el("div", "pe-exp-info", ""); wrap.appendChild(info);
 		function vis() { var v = f.get(), F = I.FORMATS[v.fmt]; f.inputs.q.inp.closest(".pe-row").style.display = F.lossy ? "" : "none"; f.inputs.bg.inp.closest(".pe-row").style.display = F.alpha ? "none" : ""; }
@@ -245,7 +254,7 @@
 		vis(); est();
 		function getBlob(v) { return PE.exportBlob(v.fmt, v.q / 100, { scale: v.scale / 100, bg: v.bg }); }
 		PE.modal({ title: "Export image", body: wrap, buttons: [{ label: "Copy to clipboard", act: function (m) { var v = f.get(); PE.exportBlob("png", 1, { scale: v.scale / 100 }).then(function (b) { return navigator.clipboard.write([new ClipboardItem({ "image/png": b })]); }).then(function () { PE.toast("Copied as PNG"); }).catch(function () { PE.toast("This browser can't copy images"); }); } },
-			{ label: "Cancel", act: function (m) { m.close(); } }, { label: "⬇ Download", primary: true, act: function (m) { var v = f.get(); PE.savedParams.export = v; getBlob(v).then(function (b) { PE.download(b, I.cleanFileName(v.name || "image") + "." + I.FORMATS[v.fmt].ext); PE.toast("Saved"); m.close(); }).catch(function (e) { PE.toast(e.message); }); } }] });
+			{ label: "Cancel", act: function (m) { m.close(); } }, { label: "⬇ Download", primary: true, act: function (m) { var v = f.get(); PE.savedParams.export = Object.assign({ pid: d.pid }, v); getBlob(v).then(function (b) { PE.download(b, I.cleanFileName(v.name || "image") + "." + I.FORMATS[v.fmt].ext); PE.toast("Saved"); m.close(); }).catch(function (e) { PE.toast(e.message); }); } }] });
 	};
 	/* ---------- export one group as its own image, on a canvas of its own size ---------- */
 	PE.dlgExportGroup = function (G) {

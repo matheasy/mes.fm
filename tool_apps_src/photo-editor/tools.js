@@ -134,10 +134,11 @@
 	function leaves(set) { var out = []; set.forEach(function (L) { (PE.isGroup(L) ? PE.descendants(L) : [L]).forEach(function (k) { if (!PE.isGroup(k) && out.indexOf(k) < 0) out.push(k); }); }); return out; }
 	/* visible box: the non-transparent part of a layer, in document coordinates (cached per pixel revision); null = nothing visible */
 	function visLocal(L) {
-		var c = L.canvas, v = L._vb; if (v && v.rev === L.rev && v.c === c) return v.r;
+		var c = L.canvas, v = L._vb, ck = L.crop ? [L.crop.x, L.crop.y, L.crop.w, L.crop.h].join(",") : ""; if (v && v.rev === L.rev && v.c === c && v.ck === ck) return v.r;
 		var r = { x: 0, y: 0, w: c.width, h: c.height };
 		if (c.width * c.height <= 16e6) { try { r = P.opaqueBounds(c.getContext("2d").getImageData(0, 0, c.width, c.height).data, c.width, c.height, 8); } catch (x) { } }
-		L._vb = { rev: L.rev, c: c, r: r }; return r;
+		if (r && L.crop) { var cr = L.crop, x0 = Math.max(r.x, cr.x), y0 = Math.max(r.y, cr.y), x1 = Math.min(r.x + r.w, cr.x + cr.w), y1 = Math.min(r.y + r.h, cr.y + cr.h); r = x1 > x0 && y1 > y0 ? { x: x0, y: y0, w: x1 - x0, h: y1 - y0 } : null; }   // only what the crop box shows
+		L._vb = { rev: L.rev, c: c, r: r, ck: ck }; return r;
 	}
 	function locToDoc(L, u, v) { var c = Math.cos(L.rot), s = Math.sin(L.rot), lx = (u - L.canvas.width / 2) * L.sx, ly = (v - L.canvas.height / 2) * L.sy; return { x: L.cx + c * lx - s * ly, y: L.cy + s * lx + c * ly }; }
 	PE.visBox = function (L) {
