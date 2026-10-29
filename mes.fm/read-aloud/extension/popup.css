@@ -19,3 +19,8 @@ section { padding: 12px 14px; }
 .opts .chk { justify-content: flex-start; }
 output { min-width: 40px; text-align: right; }
 footer { padding: 0 14px 12px; display: flex; justify-content: space-between; align-items: baseline; }
+body { --rap-bg: var(--chip); --rap-panel: var(--bg); --rap-fg: var(--fg); --rap-mut: var(--mut); --rap-line: var(--line); --rap-acc: var(--acc); --rap-scheme: light dark; }
+.opts .rap { width: 200px; } .opts .rap-btn { height: 30px; }
+.note { font-size: 12.5px; border: 1px solid var(--line); border-radius: 8px; padding: 7px 9px; background: var(--chip); }
+.note button { font: inherit; font-weight: 600; margin-top: 5px; padding: 4px 9px; border-radius: 6px; border: 1px solid var(--acc); background: var(--bg); color: var(--fg); cursor: pointer; }
+.note[hidden] { display: none; }

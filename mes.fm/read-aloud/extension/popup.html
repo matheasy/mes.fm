@@ -11,7 +11,10 @@
 <section class="go">
   <button id="sel" class="big" disabled>Read selection</button>
   <button id="page" class="big pri">Read this page</button>
+  <div id="docs" class="note" hidden><b>Google Docs</b>: to read whole Docs every time, let the extension fetch a Doc's text from Google (asked once). <button id="docsAllow">Allow Google Docs</button></div>
+  <div id="fileoff" class="note" hidden><b>A file on this computer</b>: to open it here, switch on <b>Allow access to file URLs</b> on the extension's details page. <button id="extPage">Open that page</button> Or use <b>Read a PDF or Word file</b> below and pick it.</div>
   <p class="small" id="msg"></p>
+  <button id="file" class="big">Read a PDF or Word file&hellip;</button>
 </section>
 <section class="opts">
   <label>Setup <select id="profile"></select></label>
@@ -22,6 +25,7 @@
 <footer><a href="options.html" target="_blank">All settings</a> <span class="small">Shortcut: Alt+Shift+R</span></footer>
 <script src="srlib.js"></script>
 <script src="shared.js"></script>
+<script src="vpick.js"></script>
 <script src="popup.js"></script>
 </body>
 </html>

@@ -1,0 +1,52 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="robots" content="noindex">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>MES Read Aloud: read a file</title>
+<link rel="stylesheet" href="doc.css">
+</head>
+<body>
+<header class="top">
+  <div class="brand">MES Read Aloud <span>&middot; read a PDF or Word file</span></div>
+  <div class="tools">
+    <button id="play" class="pri" disabled>&#9654; Read aloud</button>
+    <button id="pick">Open a file&hellip;</button>
+    <button id="smaller" title="Smaller text" aria-label="Smaller text">A&minus;</button><button id="bigger" title="Larger text" aria-label="Larger text">A+</button>
+    <input type="file" id="file" accept=".pdf,.docx,.txt,.md,application/pdf,application/vnd.openxmlformats-officedocument.wordprocessingml.document,text/plain" hidden>
+  </div>
+</header>
+<main>
+  <div id="msg" class="msg" role="status" aria-live="polite"></div>
+  <div id="drop" class="drop">
+    <p class="big">Drop a PDF or Word (.docx) file here</p>
+    <p>or <button id="pick2" class="pri">choose a file</button></p>
+    <p class="hint">The file is read on this computer. Nothing is uploaded. Plain text (.txt) works too. Old Word files (.doc) do not: save them as .docx first.</p>
+  </div>
+  <div id="fileaccess" class="card" hidden>
+    <h2>Let the extension open files on your computer</h2>
+    <p>The browser shows PDFs from your computer in its own viewer, which extensions cannot read. To read this one here, switch on one setting once:</p>
+    <ol>
+      <li>Open the extension's details page: <button id="openext">Open it</button> (or go to <b>chrome://extensions</b>, <b>brave://extensions</b> or <b>edge://extensions</b> and click <b>Details</b> under MES Read Aloud).</li>
+      <li>Switch on <b>Allow access to file URLs</b>.</li>
+      <li>Come back to this tab and press <button id="retry">Try again</button>.</li>
+    </ol>
+    <p class="hint">Or skip the setting: <button id="pick3">choose the file</button> and pick it from your computer.</p>
+  </div>
+  <div id="siteaccess" class="card" hidden>
+    <h2>Allow reading files from <span class="org"></span></h2>
+    <p>That website does not let other pages load its files. Allow MES Read Aloud to download PDFs and Word files from it (only from that site, only when you open one):</p>
+    <p><button id="allow" class="pri">Allow <span class="org"></span></button> <button id="pick4">Choose a downloaded copy instead</button></p>
+  </div>
+  <article id="doc" lang="" hidden></article>
+</main>
+<script src="lib/pdf.min.js"></script>
+<script src="lib/mammoth.browser.min.js"></script>
+<script src="srlib.js"></script>
+<script src="shared.js"></script>
+<script src="vpick.js"></script>
+<script src="reader.js"></script>
+<script src="doc.js"></script>
+</body>
+</html>

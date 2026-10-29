@@ -45,6 +45,9 @@ TAIL = '''
   window.MESReadAloud = {
     // the speaker button: start reading (the selection, else the page from where you clicked), or pause / resume if a player is open
     toggle: function () { if (msgListener) msgListener({ mesra: "toggle" }, {}, function () {}); },
+    // start reading now (a page that set window.__mesraSource, e.g. mes.fm/pdf and mes.fm/docx, is read from where its start() says)
+    read: function () { if (window.__mesraBegin) window.__mesraBegin("auto"); },
+    isActive: function () { var r = false; if (msgListener) msgListener({ mesra: "get" }, {}, function (o) { r = !!(o && o.active); }); return r; },
     stop: function () { if (msgListener) msgListener({ mesra: "stop" }, {}, function () {}); }
   };
 })();
@@ -55,6 +58,7 @@ def main():
     srlib = SRLIB.read_text(encoding="utf-8")
     parts = [HEAD, "\n  /* ---- Speed Reader lib (tokenizer, sentence chunks, voices) ---- */\n", srlib, "\n  window.SRLib = SRLib;\n",
              "\n  /* ---- setups + page text map (extension/shared.js) ---- */\n", (EXT / "shared.js").read_text(encoding="utf-8"),
+             "\n  /* ---- searchable voice list (extension/vpick.js) ---- */\n", (EXT / "vpick.js").read_text(encoding="utf-8"),
              "\n  /* ---- the reader (extension/reader.js) ---- */\n", (EXT / "reader.js").read_text(encoding="utf-8"), TAIL]
     out = "".join(parts)
     print("site-read-aloud.js: %d bytes (%d KB gzipped is about a third of that)" % (len(out.encode("utf-8")), len(out) // 3000))

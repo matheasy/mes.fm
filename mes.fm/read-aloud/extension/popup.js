@@ -8,14 +8,20 @@
   function save() { clearTimeout(timer); timer = setTimeout(function () { chrome.storage.sync.set({ mesra: S }); }, 200); }
   function cfg() { return R.resolveProfile(S, host).config; }
 
+  var vlist = [];
   function fillVoices() {
-    var vs = speechSynthesis.getVoices(), c = cfg();
-    vs = vs.slice().sort(function (a, b) { return SR.voiceScore(b, '', navigator.language) - SR.voiceScore(a, '', navigator.language); });
-    $('voice').innerHTML = '';
-    var auto = document.createElement('option'); auto.value = ''; auto.textContent = 'Automatic (best for the text)'; $('voice').appendChild(auto);
-    vs.forEach(function (v) { var o = document.createElement('option'); o.value = v.voiceURI; o.textContent = v.name + ' (' + v.lang + ')'; $('voice').appendChild(o); });
-    $('voice').value = c.voice;
+    vlist = speechSynthesis.getVoices();
+    MESRAPick.fillVoices($('voice'), vlist, { auto: 'Automatic (best for the text)', value: cfg().voice, textLang: '' });
   }
+  MESRAPick.attach($('voice'), { up: false, sample: 'This is how MES Read Aloud sounds with this voice.', voice: function (id) { for (var i = 0; i < vlist.length; i++) if (vlist[i].voiceURI === id) return vlist[i]; return null; } });
+  var isDoc = false;
+  function openDoc(src) { chrome.tabs.create({ url: chrome.runtime.getURL('doc.html') + (src ? '?src=' + encodeURIComponent(src) : ''), index: tab ? tab.index + 1 : undefined }); window.close(); }
+  $('file').onclick = function () { openDoc(''); };
+  var DOCS = ['https://docs.google.com/*', 'https://*.googleusercontent.com/*'];
+  $('docsAllow').onclick = function () {
+    chrome.permissions.request({ origins: DOCS }, function (ok) { $('docs').hidden = !!ok; $('msg').textContent = ok ? 'Google Docs allowed. Press "Read this page".' : 'Not allowed: the extension will read the Doc another way, which may miss parts of long Docs.'; });
+  };
+  $('extPage').onclick = function () { chrome.tabs.create({ url: 'chrome://extensions/?id=' + chrome.runtime.id }); window.close(); };
   function fillProfiles() {
     $('profile').innerHTML = '';
     S.profiles.forEach(function (p) { var o = document.createElement('option'); o.value = p.id; o.textContent = p.name; $('profile').appendChild(o); });
@@ -25,6 +31,7 @@
 
   async function run(mode) {
     if (!tab) return;
+    if (isDoc && mode === 'page') { openDoc(tab.url); return; }
     try {
       try { await chrome.tabs.sendMessage(tab.id, { mesra: 'ping' }); }
       catch (e) { await chrome.scripting.executeScript({ target: { tabId: tab.id }, files: FILES }); }
@@ -56,6 +63,16 @@
       fillProfiles(); fillVoices(); fillRate();
       speechSynthesis.addEventListener('voiceschanged', fillVoices);
       $('siteprof').checked = !!(host && S.siteProfiles[host]);
+      // a PDF or a Word file: read it in the extension's file reader page (the browser's PDF viewer cannot be scripted)
+      isDoc = R.isPdfUrl(tab.url) || R.isDocxUrl(tab.url);
+      if (!isDoc && /^(https?|file):/.test(tab.url || '')) {
+        try { var ct = await chrome.scripting.executeScript({ target: { tabId: tab.id }, func: function () { return document.contentType; } }); isDoc = !!(ct && ct[0] && ct[0].result === 'application/pdf'); } catch (e) { /* ignore */ }
+      }
+      if (isDoc) {
+        $('page').textContent = R.isDocxUrl(tab.url) ? 'Read this Word file' : 'Read this PDF';
+        if (/^file:/.test(tab.url)) chrome.extension.isAllowedFileSchemeAccess(function (ok) { $('fileoff').hidden = !!ok; });
+      }
+      if (R.docsId(tab.url)) chrome.permissions.contains({ origins: DOCS }, function (has) { $('docs').hidden = !!has; });
       // is anything selected on the page?
       try {
         var r = await chrome.scripting.executeScript({ target: { tabId: tab.id }, func: function () { var s = window.getSelection(); return !!(s && !s.isCollapsed && /\S/.test(s.toString())); } });

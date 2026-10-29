@@ -48,11 +48,17 @@
 
   <p class="hint">The &#9680; button darkens the page only while the player is open. Want every page dark? Try <a href="https://mes.fm/dark-mode" target="_blank" rel="noopener">MES Dark Mode</a>, our free extension (the &#9680; button steps aside when it is on).</p>
 
+  <h2>Google Docs, PDFs and Word files</h2>
+  <div class="pref"><div><b>Google Docs</b><span>Docs draws its pages itself, so the extension reads the Doc's text from Google with your own login. Allowing it once makes this work for every Doc you can open, long ones included. Nothing goes through mes.fm.</span></div><div class="col"><button id="docsAllow">Allow Google Docs</button><span id="docsState" class="hint"></span></div></div>
+  <div class="pref"><div><b>PDFs and Word files on this computer</b><span>The browser's own PDF viewer cannot be read by extensions, and Word files just download. The extension opens them in its own reading page instead. For files on your computer, switch on <b>Allow access to file URLs</b> on the extension's details page (or simply pick the file in the reading page).</span></div><div class="col"><button id="extPage">Open the details page</button><span id="fileState" class="hint"></span></div></div>
+  <div class="pref"><div><b>Read a PDF or Word file now</b><span>Drop or choose a .pdf, .docx or .txt file. It is read on this computer; nothing is uploaded.</span></div><button id="openDoc">Open the file reader</button></div>
+
   <h2>Sites that always use a setup</h2>
   <div id="sitemap"></div>
   <p><button id="factory">Restore the built-in setups</button></p>
 </main>
 <script src="shared.js"></script>
+<script src="vpick.js"></script>
 <script src="options.js"></script>
 </body>
 </html>

@@ -153,12 +153,15 @@
 
   // mode: 'selection' | 'page' | 'auto' (selection if there is one, else page). Returns false if there is nothing to read.
   function collect(mode, pre) {
-    memo = [new Map(), new Map()]; vmemo = new Map();
+    memo = [new Map(), new Map()]; vmemo = new Map(); st.shadows = [];
     var sel = window.getSelection(), items, startPos = 0, caret = null;
     var hasSel = sel && sel.rangeCount && !sel.isCollapsed && /\S/.test(sel.toString());
     var ft = hasSel ? '' : fieldText();
     if (mode === 'auto') mode = (hasSel || /\S/.test(ft)) ? 'selection' : 'page';
-    if (pre) { items = pre; mode = 'page'; }   // a Google Doc: the text came from its export
+    var hk = null;
+    if (!pre && (mode === 'page' || (mode === 'selection' && !hasSel && !/\S/.test(ft)))) hk = hookItems();
+    if (hk && hk.items.length) { pre = null; items = hk.items; mode = 'page'; caret = null; }
+    else if (pre) { items = pre; mode = 'page'; }   // a Google Doc: the text came from its export
     else if (mode === 'selection') {
       if (hasSel) {
         var r = sel.getRangeAt(0), root = r.commonAncestorContainer;
@@ -178,10 +181,17 @@
     if (tk.text !== map.text) {   // cleanText changed something (should not happen): keep the offsets honest by tokenizing the cleaned text only for speech
       return false;
     }
-    st.map = map; st.nodes = items.map(function (i) { return i.node; }); st.key = ++keyN; st.panelOver = null;
+    st.map = map; st.nodes = items.map(function (i) { return i.node; }); st.boxes = items.map(function (i) { return i.box || null; }); st.key = ++keyN; st.panelOver = null;
     st.selText = mode === 'selection' && hasSel ? sel.toString().trim() : ''; st.words = tk.words; st.starts = tk.sentStarts; st.text = tk.text; st.mode = mode; st.docs = !!pre;
     st.lang = SR.detectLang(tk.text) || (document.documentElement.lang || '').toLowerCase();
     st.idx = 0;
+    if (hk && hk.start) {
+      for (var hi = 0; hi < st.nodes.length; hi++) {
+        var nd = st.nodes[hi], rel = 0;
+        try { rel = hk.start === nd ? 16 : hk.start.compareDocumentPosition(nd); } catch (e) { rel = 0; }
+        if (rel & 16 || (rel & 4 && !(rel & 1))) { var hp = map.first[hi]; if (hp >= 0) { var hw = SR.wordAtChar(st.words, hp), hs = SR.sentenceStartAt(st.starts, hw); st.idx = hs >= 0 ? st.starts[hs] : hw; } break; }
+      }
+    }
     if (caret) {
       for (var i = 0; i < st.nodes.length; i++) if (st.nodes[i] === caret.node) {
         var p = RA.posOf(map, i, caret.off);
@@ -198,7 +208,23 @@
     styleEl.textContent =
       '::highlight(mesra-sentence){background-color:' + P.sentenceColor + ';color:' + RA.contrastText(P.sentenceColor) + '}' +
       '::highlight(mesra-word){background-color:' + P.wordColor + ';color:' + RA.contrastText(P.wordColor) + '}';
+    // text inside a shadow root (mes.fm/docx) is styled only by that root's own sheets
+    shadowStyles.forEach(function (x) { x.remove(); }); shadowStyles = [];
+    (st.shadows || []).forEach(function (r) { try { var c = styleEl.cloneNode(true); c.removeAttribute('id'); r.appendChild(c); shadowStyles.push(c); } catch (e) { /* ignore */ } });
   }
+  var shadowStyles = [];
+  // node-less text with an element to point at (Google Docs' own text boxes): a box drawn over that element
+  var boxEl = null;
+  function boxShow(el) {
+    if (!el || !el.isConnected || !P.highlightSentence && !P.highlightWord) { boxHide(); return; }
+    var r = el.getBoundingClientRect();
+    if (!r.width && !r.height) { boxHide(); return; }
+    if (!boxEl) { boxEl = document.createElement('div'); boxEl.id = 'mesra-box'; document.documentElement.appendChild(boxEl); }
+    boxEl.style.cssText = 'all:initial;position:fixed;pointer-events:none;z-index:2147483646;border-radius:3px;mix-blend-mode:multiply;background:' + P.wordColor + ';opacity:.55;left:' + (r.left - 2) + 'px;top:' + (r.top - 1) + 'px;width:' + (r.width + 4) + 'px;height:' + (r.height + 2) + 'px';
+    var vh = window.innerHeight;
+    if (P.autoScroll && (r.top < 70 || r.bottom > vh - 160) && Date.now() - userScrollAt > 4000 && el.scrollIntoView) { lastScrollAt = Date.now(); el.scrollIntoView({ block: 'center', behavior: 'smooth' }); }
+  }
+  function boxHide() { if (boxEl) { boxEl.remove(); boxEl = null; } }
 
   function rangeFor(a, b) {
     var m = st.map, s = RA.locate(m, a), e = RA.locate(m, b - 1);
@@ -218,6 +244,7 @@
   function highlight(i) {
     if (!st.words || !st.words[i]) return;
     panelMark(i);
+    if (st.boxes && st.boxes.some(Boolean)) { var lw = RA.locate(st.map, st.words[i].s); boxShow(lw ? st.boxes[lw.item] : null); }
     if (!(window.CSS && CSS.highlights && window.Highlight)) return;
     var w = st.words[i], k = SR.sentenceStartAt(st.starts, i);
     if (P.highlightSentence) {
@@ -383,24 +410,73 @@
     applyStyle();
     loadUi(function () { buildUi(); fillUi(); applyText(); speakFrom(st.idx); });
   }
-  // Google Docs: the page is a canvas, so read the document through its own plain-text export (same origin, with the person's own login).
-  function fetchDoc(id, cb) {
-    var done = false, fin = function (items) { if (!done) { done = true; cb(items); } };
-    try {
-      fetch('/document/d/' + id + '/export?format=txt', { credentials: 'include' }).then(function (r) { if (!r.ok) throw new Error(r.status); return r.text(); })
-        .then(function (t) { var it = RA.docsItems(t); fin(it.length ? it : null); }, function () { fin(null); });
-    } catch (e) { fin(null); }
-    setTimeout(function () { fin(null); }, 15000);
+  // Google Docs: the page is a canvas, so there is no text in it for a page script. In order:
+  //  1. the service worker reads the plain-text export (only if the person allowed docs.google.com + googleusercontent.com: the export
+  //     redirects to *.googleusercontent.com, whose CORS answer a page fetch with cookies refuses; this was why 1.6-1.8 failed);
+  //  2. the same-origin "mobilebasic" view of the document (HTML with every paragraph, sent with the person's own login);
+  //  3. the export from the page itself (works if Google ever serves it without the redirect);
+  //  4. the text Docs puts in its own page for screen readers / extensions (svg rect aria-labels, old DOM lines): only what is loaded.
+  function withTimeout(p, ms) { return Promise.race([p, new Promise(function (res) { setTimeout(function () { res(null); }, ms); })]); }
+  function docsViaWorker(url) {
+    return withTimeout(new Promise(function (res) {
+      try { chrome.runtime.sendMessage({ mesra: 'docsFetch', url: url }, function (r) { void chrome.runtime.lastError; res(r && r.ok && r.text ? r.text : null); }); } catch (e) { res(null); }
+    }), 20000);
+  }
+  function getText(url) {
+    return withTimeout(fetch(url, { credentials: 'include' }).then(function (r) { if (!r.ok) throw new Error(r.status); return r.text(); }).catch(function () { return null; }), 20000);
+  }
+  function docsDom() {
+    var out = [], b = 0;
+    var rects = document.querySelectorAll('.kix-canvas-tile-content rect[aria-label]');
+    if (rects.length) {
+      var lastG = null;
+      Array.prototype.forEach.call(rects, function (r) {
+        var t = r.getAttribute('aria-label'); if (!t || !/\S/.test(t)) return;
+        var g = r.closest('g[role=paragraph]') || r.parentNode; if (g !== lastG) { b++; lastG = g; }
+        out.push({ node: null, t: t, base: 0, b: b, box: r });
+      });
+      return out;
+    }
+    var lines = document.querySelectorAll('.kix-lineview-text-block, .kix-paragraphrenderer');
+    if (lines.length) { memo = [new Map(), new Map()]; vmemo = new Map(); Array.prototype.forEach.call(document.querySelectorAll('.kix-paginateddocumentplugin, .kix-appview-editor'), function (r) { if (!out.length) out = textNodes(r, null, false); }); }
+    return out;
+  }
+  async function fetchDoc(cb) {
+    var u = RA.docsUrls(location.href), t;
+    if (!u) return cb(null, 'none');
+    t = await docsViaWorker(u.exportTxt);
+    if (t) { var it = RA.docsItems(t); if (it.length) return cb(it, 'export'); }
+    t = await getText(u.mobile);
+    if (t) { var paras = RA.docsHtmlParas(t); if (paras.length) return cb(RA.parasToItems(paras), 'mobile'); }
+    t = await getText(u.exportTxt);
+    if (t && !/^\s*</.test(t)) { var it2 = RA.docsItems(t); if (it2.length) return cb(it2, 'export'); }
+    var dom = docsDom();
+    cb(dom.length ? dom : null, dom.length ? 'dom' : 'none');
+  }
+  // a page can hand the reader its own text (mes.fm/pdf, mes.fm/docx, the extension's file reader):
+  // window.__mesraSource = { roots: function () -> [Element | ShadowRoot], start: function () -> Node or null (start reading here) }
+  function hookItems() {
+    var src = window.__mesraSource;
+    if (!src || typeof src.roots !== 'function') return null;
+    var roots = []; try { roots = src.roots() || []; } catch (e) { roots = []; }
+    var items = [];
+    st.shadows = [];
+    roots.forEach(function (r) { if (!r) return; if (r.nodeType === 11) st.shadows.push(r); items = items.concat(textNodes(r, null, false)); });
+    var start = null; try { start = src.start ? src.start() : null; } catch (e) { start = null; }
+    return { items: items, start: start };
   }
   function begin(mode) {
     if (st.active) stopSpeech();
     loadSettings(function () {
+      var hasSel = window.getSelection && !window.getSelection().isCollapsed && /\S/.test(String(window.getSelection()));
       var did = window.__mesraSite ? '' : RA.docsId(location.href);
-      if (did && !(window.getSelection && !window.getSelection().isCollapsed && /\S/.test(String(window.getSelection())))) {
+      if (did && !hasSel) {
         showNote('MES Read Aloud: loading this Google Doc…', 1500);
-        fetchDoc(did, function (items) {
-          if (!items || !collect(mode === 'selection' ? 'page' : mode, items)) { showNothing('docs'); return; }
+        fetchDoc(function (items, how) {
+          if (!items || !collect('page', items)) { showNothing('docs'); return; }
+          st.docsHow = how;
           go();
+          if (how === 'dom') setTimeout(function () { setStatus('Read from the part of the Doc that is loaded. For the whole Doc, allow Google Docs in the toolbar popup.'); st.noticeUntil = Date.now() + 8000; }, 50);
         });
         return;
       }
@@ -408,6 +484,8 @@
       go();
     });
   }
+  window.__mesraBegin = begin;
+  window.__mesraStop = function () { stopAll(); };
 
   // a new selection made while the player is open: offer to read it (no need for the right-click menu or the toolbar button)
   function selCheck() {
@@ -422,6 +500,7 @@
     closePip();
     if (ui) { ui.host.remove(); ui = null; }
     if (styleEl) { styleEl.remove(); styleEl = null; }
+    shadowStyles.forEach(function (x) { x.remove(); }); shadowStyles = []; boxHide();
     if (darkOn) setDark(false, false);   // the dark page only lasts while the player is open (the site choice is kept for next time); left behind, it stacked with the Dark Mode extension's invert and the two cancelled out
   }
 
@@ -440,6 +519,7 @@
     '.tp{display:none;margin:0 0 8px;border:1px solid #3a3c41;border-radius:10px;background:#17181a;overflow:hidden}.tp.on{display:block}.p.pip .tp,.p.min .tp{display:none}' +
     '.th{display:flex;align-items:center;gap:4px;padding:3px 6px;background:#25272b;color:#aab0b8;font-size:12px}.th b{flex:1;font-weight:600}.th button{min-width:28px;height:24px;font-size:13px;border-radius:6px;padding:0 6px}.tpb.on{background:#1a4d6b}' +
     '.tb{position:relative;height:150px;min-height:56px;max-height:60vh;overflow:auto;resize:vertical;padding:8px 12px;font-size:calc(16px * var(--tf,1));line-height:1.55;white-space:pre-wrap;overflow-wrap:anywhere;color:#e6e6e6;user-select:text}.tb .w{cursor:pointer;border-radius:3px}.tb .w:hover{text-decoration:underline}.tb .s.cur{background:var(--sc);color:var(--sct);border-radius:3px}.tb .w.cur{background:var(--wc);color:var(--wct)}' +
+    '.rap{max-width:200px;min-width:120px}.p.min .rap{display:none}' + (window.MESRAPick ? MESRAPick.css : '') +
     '.p.min{width:auto;padding:6px 8px}.p.min .bar,.p.min .row>*:not(.grip):not(.pl):not(.mini):not(.x){display:none}.p.min .row{flex-wrap:nowrap}';
 
   function buildUi() {
@@ -460,6 +540,8 @@
     var q = function (c) { return sh.querySelector(c); };
     if (window.__mesraSite) { var gearBtn = sh.querySelector('.gear'); if (gearBtn) gearBtn.style.display = 'none'; }   // the site player has no options page
     ui = { host: h, sh: sh, p: q('.p'), fill: q('.fill'), bar: q('.bar'), pl: q('.pl'), rate: q('.rate'), voice: q('.voice'), setup: q('.setup'), st: q('.st'), hl: q('.hl'), rs: q('.rs'), dk: q('.dk'), mini: q('.mini'), grip: q('.grip'), vol: q('.vol'), volr: q('.volr'), pipb: q('.pip-b'), tp: q('.tp'), tb: q('.tb'), tl: q('.tl'), tpb: q('.tpb'), wEls: null, curW: null, curS: null, tkey: 0 };
+    if (window.MESRAPick) ui.pick = MESRAPick.attach(q('.voice'), { up: function () { return pipWin ? null : P.playerPosition !== 'top'; }, sample: 'This is how MES Read Aloud sounds with this voice.',
+      voice: function (id) { for (var i = 0; i < voices.length; i++) if (voices[i].voiceURI === id) return voices[i]; return null; }, onPreview: function () { if (st.playing) pause(); } });
     q('.prev').onclick = function () { jumpSentence(-1); };
     q('.next').onclick = function () { jumpSentence(1); };
     ui.pl.onclick = toggle;
@@ -724,9 +806,13 @@
     var list = voices.slice().sort(function (a, b) { return rk(a) - rk(b) || SR.voiceScore(b, st.lang, navigator.language) - SR.voiceScore(a, st.lang, navigator.language); });
     var cur = chooseVoice(), curId = P.voice || (cur && cur.voiceURI) || '', sig = String(list.length) + '|' + curId + '|' + Object.keys(badVoices).length;
     if (ui.voice.getAttribute('data-n') !== sig) {
-      ui.voice.innerHTML = '';
-      list.forEach(function (v) { var o = document.createElement('option'); o.value = v.voiceURI; o.textContent = (badVoices[SR.voiceKey(v)] ? '\u26a0 ' : '') + v.name + ' (' + v.lang + ')' + (badVoices[SR.voiceKey(v)] ? ' - did not speak here' : ''); ui.voice.appendChild(o); });
-      ui.voice.value = curId; ui.voice.setAttribute('data-n', sig);
+      if (window.MESRAPick) MESRAPick.fillVoices(ui.voice, list, { textLang: st.lang, value: curId, bad: function (v) { return !!badVoices[SR.voiceKey(v)]; } });
+      else {
+        ui.voice.innerHTML = '';
+        list.forEach(function (v) { var o = document.createElement('option'); o.value = v.voiceURI; o.textContent = (badVoices[SR.voiceKey(v)] ? '\u26a0 ' : '') + v.name + ' (' + v.lang + ')' + (badVoices[SR.voiceKey(v)] ? ' - did not speak here' : ''); ui.voice.appendChild(o); });
+        ui.voice.value = curId;
+      }
+      ui.voice.setAttribute('data-n', sig);
     }
     ui.setup.innerHTML = '';
     S.profiles.forEach(function (p) { var o = document.createElement('option'); o.value = p.id; o.textContent = p.name; ui.setup.appendChild(o); });
@@ -756,6 +842,8 @@
   }
   function onKey(e) {
     if (!st.active || e.defaultPrevented || e.ctrlKey || e.metaKey || e.altKey || typing(e)) return;
+    if (ui && ui.sh.activeElement && /^(INPUT|SELECT|TEXTAREA)$/.test(ui.sh.activeElement.tagName) && ui.sh.activeElement.type !== 'range') return;   // typing in the voice search box
+    if (ui && ui.pick && ui.pick.isOpen()) return;
     var path = e.composedPath ? e.composedPath() : [];
     if (ui && path.indexOf(ui.host) >= 0 && (e.key === ' ' || e.key === 'Enter')) return;   // a focused player button handles its own press
     var k = e.key, used = true;
@@ -793,6 +881,7 @@
   try {
     chrome.runtime.onMessage.addListener(function (m, sender, send) {
       if (!m || !m.mesra) return;
+      if (m.toTab && window.__mesraTabId !== m.toTab) return;   // the file reader page gets runtime messages meant for one tab
       if (m.mesra === 'ping') send({ ok: 1 });
       else if (m.mesra === 'read') { begin(m.mode || 'auto'); send({ ok: 1 }); }
       else if (m.mesra === 'toggle') { if (st.active) toggle(); else begin('auto'); send({ ok: 1 }); }

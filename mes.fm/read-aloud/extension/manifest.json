@@ -1,8 +1,8 @@
 {
   "manifest_version": 3,
   "name": "MES Read Aloud",
-  "version": "1.8.4",
-  "description": "Reads any web page or selected text aloud and highlights the word and sentence being read. Free, private, no tracking. By MES (mes.fm).",
+  "version": "1.9.0",
+  "description": "Reads any web page, Google Doc, PDF or Word file aloud and highlights the word and sentence being read. Free, private, no tracking. By MES (mes.fm).",
   "homepage_url": "https://mes.fm/read-aloud",
   "icons": {
     "16": "icons/icon16.png",
@@ -38,5 +38,13 @@
       },
       "description": "Read the selection or page aloud / pause / resume"
     }
-  }
+  },
+  "optional_host_permissions": [
+    "https://docs.google.com/*",
+    "https://*.googleusercontent.com/*",
+    "*://*/*"
+  ],
+  "host_permissions": [
+    "file:///*"
+  ]
 }

@@ -580,10 +580,293 @@ if (typeof module !== "undefined" && module.exports) module.exports = SRLib;
     return out;
   }
 
-  var api = { docsId: docsId, docsItems: docsItems, defaultConfig: defaultConfig, builtins: builtins, normConfig: normConfig, merge: merge, profileById: profileById, resolveProfile: resolveProfile,
+  // the account part of a Docs address (/u/1/ for a second signed-in Google account): the fetches must use the same one
+  function docsInfo(url) {
+    var m = /^https:\/\/docs\.google\.com\/document\/(u\/\d+\/)?d\/([\w-]{10,})/.exec(String(url || ''));
+    return m ? { id: m[2], u: m[1] ? '/' + m[1].replace(/\/$/, '') : '' } : null;
+  }
+  // the addresses to try, in order. The plain-text export answers with a redirect to *.googleusercontent.com whose CORS header is
+  // "Access-Control-Allow-Origin: *" with credentials, which a browser refuses for a request that sends cookies: that is why a page script
+  // cannot read it (only the service worker, with host permission). The mobile view is same-origin HTML with the whole text.
+  function docsUrls(url) {
+    var d = docsInfo(url); if (!d) return null;
+    var b = 'https://docs.google.com/document' + d.u + '/d/' + d.id;
+    return { id: d.id, mobile: b + '/mobilebasic', exportTxt: b + '/export?format=txt' };
+  }
+  var ENT = { amp: '&', lt: '<', gt: '>', quot: '"', apos: "'", nbsp: ' ', '#39': "'" };
+  function decodeEntities(s) {
+    return String(s).replace(/&(#x[0-9a-f]+|#\d+|[a-z]+\d*);/gi, function (m, e) {
+      if (e[0] === '#') { var c = e[1] === 'x' || e[1] === 'X' ? parseInt(e.slice(2), 16) : parseInt(e.slice(1), 10); try { return String.fromCodePoint(c); } catch (x) { return m; } }
+      return Object.prototype.hasOwnProperty.call(ENT, e.toLowerCase()) ? ENT[e.toLowerCase()] : m;
+    });
+  }
+  // the paragraphs of a Docs "mobilebasic" page (or any Docs HTML export): text of every <p>, <li>, heading and table cell inside .doc-content
+  function docsHtmlParas(html) {
+    html = String(html || '');
+    var i = html.search(/class="doc-content/);
+    if (i < 0) i = html.search(/<body[^>]*>/i);
+    i = i < 0 ? 0 : html.indexOf('>', i) + 1;
+    var body = html.slice(i).replace(/<(script|style)[\s\S]*?<\/\1>/gi, ' ').replace(/<\/body>[\s\S]*$/i, '');
+    var parts = body.split(/<\/(?:p|li|h[1-6]|td|th|div|tr)>|<br\s*\/?>/i), out = [];
+    for (var k = 0; k < parts.length; k++) {
+      var t = decodeEntities(parts[k].replace(/<[^>]*>/g, '')).replace(/[​ \s]+/g, ' ').trim();
+      if (t) out.push(t);
+    }
+    return out;
+  }
+  function parasToItems(paras) { return paras.map(function (t, b) { return { node: null, t: t, base: 0, b: b }; }); }
+
+  // ---- PDFs and Word files (the extension's own reader page) ----
+  function isPdfUrl(u) { return /^(https?|file):[^#?]*\.pdf(?:[?#]|$)/i.test(String(u || '')); }
+  function isDocxUrl(u) { return /^(https?|file):[^#?]*\.docx(?:[?#]|$)/i.test(String(u || '')); }
+  /* lines of one PDF page, top to bottom, [{ text, y (baseline, PDF units: up is bigger), size, x }] -> paragraphs. The page's usual line
+     spacing is the median gap between neighbouring lines of the same size; a clearly bigger gap (1.4 x that) starts a new paragraph, as does a
+     big change of font size (a heading). A word broken with a hyphen at a line end is joined again. */
+  function pdfParas(lines) {
+    var L = [], gaps = [];
+    for (var i = 0; i < lines.length; i++) { var t = String(lines[i].text || '').replace(/\s+/g, ' ').trim(); if (t) L.push({ text: t, y: lines[i].y, size: lines[i].size || 10 }); }
+    for (var j = 1; j < L.length; j++) { var g = L[j - 1].y - L[j].y; if (g > 0 && Math.abs(L[j].size - L[j - 1].size) < 0.15 * L[j].size && g < 3 * L[j].size) gaps.push(g / L[j].size); }
+    gaps.sort(function (a, b) { return a - b; });
+    var med = gaps.length >= 3 ? gaps[Math.floor(gaps.length / 2)] : 1.2, lim = Math.max(1.2, Math.min(2.6, med * 1.4));
+    var out = [], cur = null, prev = null;
+    for (var k = 0; k < L.length; k++) {
+      var l = L[k], size = l.size, gap = prev ? prev.y - l.y : 0, big = prev ? Math.max(size, prev.size) : size;
+      var brk = !cur || gap > lim * big || gap < -2 * size || Math.abs(size - prev.size) > 0.25 * big;
+      if (brk) { cur = { text: l.text }; out.push(cur); }
+      else if (/[A-Za-z]-$/.test(cur.text) && /^[a-z]/.test(l.text)) cur.text = cur.text.slice(0, -1) + l.text;
+      else cur.text += ' ' + l.text;
+      prev = l;
+    }
+    return out.map(function (p) { return p.text; });
+  }
+  // running headers / footers: a first or last line that comes back (digits aside) on at least half of the pages (and 3 or more)
+  function pdfRepeats(pages) {
+    var cnt = {}, key = function (t) { return String(t || '').replace(/\d+/g, '#').replace(/\s+/g, ' ').trim().toLowerCase(); };
+    pages.forEach(function (ls) { var seen = {}; [ls[0], ls[1], ls[ls.length - 1], ls[ls.length - 2]].forEach(function (l) { if (l) { var k = key(l.text); if (k && !seen[k]) { seen[k] = 1; cnt[k] = (cnt[k] || 0) + 1; } } }); });
+    var rep = {};
+    for (var k in cnt) if (cnt[k] >= 3 && cnt[k] >= pages.length / 2) rep[k] = 1;
+    return function (l) { return !!rep[key(l.text)]; };
+  }
+
+  /* voices grouped like the Speed Reader: the text's language first, then the browser's, then every other one as "Other languages: X".
+     langName(code) -> display name (Intl.DisplayNames in a browser). isBad(voice) -> true for voices that did not speak here (they sort last). */
+  function voiceGroups(voices, textLang, browserLang, langName, isBad) {
+    var SRL = (typeof SRLib !== 'undefined' && SRLib) || (root && root.SRLib), groups = {}, order = [];
+    var rank = function (l) {
+      if (SRL && SRL.voiceLangRank) return SRL.voiceLangRank(l, textLang, browserLang);
+      var vl = String(l || '').toLowerCase().split(/[-_]/)[0], tl = String(textLang || '').toLowerCase().split('-')[0], bl = String(browserLang || '').toLowerCase().split(/[-_]/)[0];
+      return tl ? (vl === tl ? 0 : vl === bl ? 1 : 2) : (vl === bl ? 0 : 2);
+    };
+    langName = langName || function (c) { return String(c || '').split(/[-_]/)[0] || 'Other'; };
+    isBad = isBad || function () { return false; };
+    (voices || []).forEach(function (v) {
+      var key = langName(v.lang) || 'Other';
+      if (!groups[key]) { groups[key] = { name: key, rank: 3, voices: [] }; order.push(groups[key]); }
+      groups[key].voices.push(v); groups[key].rank = Math.min(groups[key].rank, rank(v.lang));
+    });
+    order.sort(function (a, b) { return a.rank - b.rank || a.name.localeCompare(b.name); });
+    order.forEach(function (g) {
+      g.label = (g.rank >= 2 ? 'Other languages: ' : '') + g.name;
+      g.voices.sort(function (a, b) { return (isBad(a) ? 1 : 0) - (isBad(b) ? 1 : 0) || a.name.localeCompare(b.name); });
+    });
+    return order;
+  }
+  // words of a search box against a voice's name, language code and group label (every word must match, case and accents ignored)
+  function fold(s) { return String(s || '').normalize('NFD').replace(/[̀-ͯ]/g, '').toLowerCase(); }
+  function voiceMatches(query, hay) {
+    var w = fold(query).trim().split(/\s+/).filter(Boolean), h = fold(hay);
+    for (var i = 0; i < w.length; i++) if (h.indexOf(w[i]) < 0) return false;
+    return true;
+  }
+
+  var api = { docsId: docsId, docsItems: docsItems, docsInfo: docsInfo, docsUrls: docsUrls, docsHtmlParas: docsHtmlParas, parasToItems: parasToItems, decodeEntities: decodeEntities,
+              isPdfUrl: isPdfUrl, isDocxUrl: isDocxUrl, pdfParas: pdfParas, pdfRepeats: pdfRepeats, voiceGroups: voiceGroups, voiceMatches: voiceMatches, fold: fold, defaultConfig: defaultConfig, builtins: builtins, normConfig: normConfig, merge: merge, profileById: profileById, resolveProfile: resolveProfile,
               uid: uid, contrastText: contrastText, buildText: buildText, locate: locate, posOf: posOf };
   root.MESRA = api;
   if (typeof module !== 'undefined' && module.exports) module.exports = api;
+})(typeof self !== 'undefined' ? self : this);
+
+  /* ---- searchable voice list (extension/vpick.js) ---- */
+/* MES Read Aloud: a searchable voice list. Turns a native <select> (options, optionally inside <optgroup>s, values = voiceURI) into a button
+   plus a panel with a search box (name, language, country, "online") and a list grouped by language, with a play button per voice.
+   The <select> stays the source of truth: the code keeps filling it, reading .value and listening for "change"; this only mirrors it.
+   Works in a page and inside a shadow root (the player): the CSS goes into the select's own root.
+   MESRAPick.attach(select, { up: true|false|function, sample: 'text', voice: function (value) -> SpeechSynthesisVoice })
+   Colours: --rap-bg, --rap-fg, --rap-mut, --rap-line, --rap-acc, --rap-hi (defaults = the dark player). */
+(function (root) {
+  'use strict';
+  if (root.MESRAPick) return;
+  var CSS = '.rap{position:relative;display:inline-block;max-width:100%;vertical-align:middle}' +
+    '.rap-native{position:absolute!important;width:1px!important;height:1px!important;margin:-1px!important;padding:0!important;border:0!important;overflow:hidden!important;clip:rect(0 0 0 0)!important;white-space:nowrap!important;opacity:0!important}' +
+    '.rap-btn{all:unset;box-sizing:border-box;display:flex;align-items:center;gap:6px;max-width:100%;width:100%;height:34px;padding:0 8px;border-radius:8px;border:1px solid var(--rap-line,#3a3c41);background:var(--rap-bg,#2c2e33);color:var(--rap-fg,#f2f2f2);font:inherit;cursor:pointer;text-align:left;justify-content:flex-start;min-width:0}' +
+    '.rap-btn:hover,.rap-btn:focus-visible,.rap-btn[aria-expanded=true]{border-color:var(--rap-acc,#4cc38a);outline:none}' +
+    '.rap-btn span{flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.rap-btn i{font-style:normal;opacity:.65;flex:none}' +
+    '.rap-panel{position:absolute;z-index:2147483647;left:0;width:min(340px,calc(100vw - 24px));box-sizing:border-box;background:var(--rap-panel,#1f2023);color:var(--rap-fg,#f2f2f2);border:1px solid var(--rap-line,#3a3c41);border-radius:10px;box-shadow:0 10px 30px rgba(0,0,0,.45);padding:8px;color-scheme:var(--rap-scheme,dark);font:13px/1.35 system-ui,-apple-system,Segoe UI,Roboto,sans-serif;text-align:left}' +
+    '.rap-panel.down{top:calc(100% + 4px)}.rap-panel.up{bottom:calc(100% + 4px)}.rap-panel[hidden]{display:none}' +
+    '.rap-search{all:unset;box-sizing:border-box;display:block;width:100%;padding:7px 9px;border:1px solid var(--rap-line,#3a3c41);border-radius:7px;background:var(--rap-bg,#2c2e33);color:var(--rap-fg,#f2f2f2);font:inherit;cursor:text}' +
+    '.rap-search:focus{border-color:var(--rap-acc,#4cc38a)}.rap-search::placeholder{color:var(--rap-mut,#aab0b8)}' +
+    '.rap-count{font-size:12px;color:var(--rap-mut,#aab0b8);margin:5px 2px}' +
+    '.rap-list{max-height:min(260px,45vh);overflow:auto;margin:0;padding:0;list-style:none;overscroll-behavior:contain}' +
+    '.rap-group{font-size:11px;font-weight:700;letter-spacing:.03em;text-transform:uppercase;color:var(--rap-mut,#aab0b8);padding:7px 5px 2px;position:sticky;top:0;background:var(--rap-panel,#1f2023)}' +
+    '.rap-opt{display:flex;align-items:center;gap:6px;padding:4px 5px;border-radius:6px;cursor:pointer}' +
+    '.rap-opt:hover,.rap-opt.act{background:var(--rap-hi,rgba(76,195,138,.18))}.rap-opt[aria-selected=true]{font-weight:700}.rap-opt[aria-selected=true]::before{content:"\\2713";color:var(--rap-acc,#4cc38a)}' +
+    '.rap-name{flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.rap-tag{font-size:11px;color:var(--rap-mut,#aab0b8);flex:none}' +
+    '.rap-play{all:unset;box-sizing:border-box;flex:none;width:24px;height:24px;border-radius:12px;border:1px solid var(--rap-line,#3a3c41);text-align:center;line-height:22px;font-size:10px;cursor:pointer;color:var(--rap-fg,#f2f2f2);min-width:0;padding:0;display:inline-block;background:transparent}' +
+    '.rap-play:hover,.rap-play:focus-visible{border-color:var(--rap-acc,#4cc38a);color:var(--rap-acc,#4cc38a)}' +
+    '.rap-empty{padding:8px 5px;color:var(--rap-mut,#aab0b8);font-style:italic}';
+
+  function el(doc, tag, cls, text) { var e = doc.createElement(tag); if (cls) e.className = cls; if (text != null) e.textContent = text; return e; }
+  function fold(s) { return String(s || '').normalize('NFD').replace(/[̀-ͯ]/g, '').toLowerCase(); }
+
+  function addCss(node) {
+    var host = node.nodeType === 11 ? node : (node.head || node.documentElement);
+    if (!host || (host.querySelector && host.querySelector('style[data-rap]'))) return;
+    var s = (node.ownerDocument || node).createElement('style'); s.setAttribute('data-rap', '1'); s.textContent = CSS; host.appendChild(s);
+  }
+
+  function attach(sel, opts) {
+    if (!sel || sel.__rap) return sel && sel.__rap;
+    opts = opts || {};
+    var doc = sel.ownerDocument, rootNode = sel.getRootNode ? sel.getRootNode() : doc;
+    addCss(rootNode.nodeType === 11 ? rootNode : doc);
+    var wrap = el(doc, 'div', 'rap'), btn = el(doc, 'button', 'rap-btn'), txt = el(doc, 'span'), caret = el(doc, 'i', '', '▾');
+    btn.type = 'button'; btn.setAttribute('aria-haspopup', 'listbox'); btn.setAttribute('aria-expanded', 'false'); btn.title = sel.title || 'Voice';
+    btn.appendChild(txt); btn.appendChild(caret);
+    var panel = el(doc, 'div', 'rap-panel down'); panel.hidden = true;
+    var search = el(doc, 'input', 'rap-search'); search.type = 'search'; search.placeholder = 'Search voices: name, language, country…'; search.setAttribute('aria-label', 'Search voices'); search.autocomplete = 'off'; search.spellcheck = false;
+    var count = el(doc, 'div', 'rap-count'), list = el(doc, 'ul', 'rap-list'); list.setAttribute('role', 'listbox'); list.setAttribute('aria-label', 'Voices');
+    panel.appendChild(search); panel.appendChild(count); panel.appendChild(list);
+    wrap.appendChild(btn); wrap.appendChild(panel);
+    sel.parentNode.insertBefore(wrap, sel.nextSibling);
+    wrap.insertBefore(sel, btn);            // keep the select inside the wrapper (hidden) so a parent's layout rules still find one element
+    sel.classList.add('rap-native'); sel.tabIndex = -1; sel.setAttribute('aria-hidden', 'true');
+    if (sel.style.maxWidth) wrap.style.maxWidth = sel.style.maxWidth;
+
+    var rows = [], active = -1;
+    function label() { var o = sel.options[sel.selectedIndex]; txt.textContent = o ? o.textContent : 'Loading voices…'; btn.title = (sel.title || 'Voice') + (o ? ': ' + o.textContent : ''); }
+    function build() {
+      rows = [];
+      Array.prototype.forEach.call(sel.children, function (c) {
+        if (c.tagName === 'OPTGROUP') Array.prototype.forEach.call(c.children, function (o) { rows.push({ v: o.value, t: o.textContent, g: c.label, d: o.disabled, k: o.getAttribute('data-k') || '' }); });
+        else if (c.tagName === 'OPTION') rows.push({ v: c.value, t: c.textContent, g: '', d: c.disabled, k: c.getAttribute('data-k') || '' });
+      });
+      label(); if (!panel.hidden) render();
+    }
+    function render() {
+      var q = fold(search.value).trim(), words = q ? q.split(/\s+/) : [], shown = 0, lastG = null, total = 0;
+      list.innerHTML = ''; active = -1;
+      rows.forEach(function (r) {
+        if (r.d) return;
+        var isAuto = r.v === '' || r.v === 'auto';
+        if (!isAuto) total++;
+        if (words.length && (isAuto || !words.every(function (w) { return fold(r.t + ' ' + r.g + ' ' + r.k).indexOf(w) >= 0; }))) return;
+        if (r.g && r.g !== lastG) { lastG = r.g; var g = el(doc, 'li', 'rap-group', r.g); g.setAttribute('role', 'presentation'); list.appendChild(g); }
+        var li = el(doc, 'li', 'rap-opt'); li.setAttribute('role', 'option'); li.setAttribute('data-v', r.v); li.setAttribute('aria-selected', String(r.v === sel.value));
+        li.appendChild(el(doc, 'span', 'rap-name', r.t));
+        if (!isAuto && opts.voice) { var p = el(doc, 'button', 'rap-play', '▶'); p.type = 'button'; p.title = 'Hear this voice'; p.setAttribute('aria-label', 'Hear ' + r.t); p.setAttribute('data-v', r.v); li.appendChild(p); }
+        list.appendChild(li); if (!isAuto) shown++;
+      });
+      count.textContent = total ? (words.length ? shown + ' of ' + total + ' voices match' : total + ' voices') : 'No voices on this device yet.';
+      if (words.length && !shown && total) list.appendChild(el(doc, 'li', 'rap-empty', 'No voice matches “' + search.value + '”.'));
+    }
+    function place() {
+      var up = typeof opts.up === 'function' ? opts.up() : opts.up;
+      if (up == null) { var r = btn.getBoundingClientRect(), vh = (doc.defaultView || window).innerHeight; up = r.top > vh - r.bottom; }
+      panel.classList.toggle('up', !!up); panel.classList.toggle('down', !up);
+      // keep the panel inside the window: shift it left as far as needed (never past the window's left edge)
+      panel.style.left = '0px';
+      var br = btn.getBoundingClientRect(), vw = (doc.defaultView || window).innerWidth, w = panel.offsetWidth || 340, z = (wrap.getBoundingClientRect().width / (wrap.offsetWidth || 1)) || 1;
+      var shift = Math.min(0, vw - 8 - (br.left + w * z));
+      shift = Math.max(shift, 8 - br.left);
+      panel.style.left = Math.round(shift / z) + 'px';
+    }
+    function toggle(open) {
+      if (open === undefined) open = panel.hidden;
+      panel.hidden = !open; btn.setAttribute('aria-expanded', String(open));
+      if (open) {
+        search.value = ''; render(); place();
+        var cur = list.querySelector('[aria-selected="true"]'); if (cur && cur.scrollIntoView) cur.scrollIntoView({ block: 'center' });
+        search.focus({ preventScroll: true });
+      } else if (previewing) { previewing = false; try { speechSynthesis.cancel(); } catch (e) { /* ignore */ } }
+    }
+    function choose(v) {
+      sel.value = v; label(); toggle(false);
+      sel.dispatchEvent(new Event('change', { bubbles: true })); btn.focus();
+    }
+    var previewing = false;
+    function preview(v) {
+      if (!opts.voice || typeof speechSynthesis === 'undefined') return;
+      var voice = opts.voice(v); try { speechSynthesis.cancel(); } catch (e) { /* ignore */ }
+      var u = new SpeechSynthesisUtterance(opts.sample || 'Hello, this is how I sound.');
+      if (voice) { u.voice = voice; u.lang = voice.lang; }
+      previewing = true;
+      if (opts.onPreview) opts.onPreview();
+      try { speechSynthesis.speak(u); } catch (e) { /* ignore */ }
+    }
+    btn.addEventListener('click', function () { toggle(); });
+    search.addEventListener('input', function () { render(); list.scrollTop = 0; });
+    list.addEventListener('click', function (e) {
+      var p = e.target.closest && e.target.closest('.rap-play'); if (p) { e.stopPropagation(); preview(p.getAttribute('data-v')); return; }
+      var li = e.target.closest && e.target.closest('.rap-opt'); if (li) choose(li.getAttribute('data-v'));
+    });
+    function move(d) {
+      var all = Array.prototype.slice.call(list.querySelectorAll('.rap-opt')); if (!all.length) return;
+      if (active >= 0 && all[active]) all[active].classList.remove('act');
+      active = Math.max(0, Math.min(all.length - 1, active + d)); all[active].classList.add('act'); all[active].scrollIntoView({ block: 'nearest' });
+    }
+    panel.addEventListener('keydown', function (e) {
+      e.stopPropagation();
+      if (e.key === 'Escape') { e.preventDefault(); toggle(false); btn.focus(); }
+      else if (e.key === 'ArrowDown') { e.preventDefault(); move(1); }
+      else if (e.key === 'ArrowUp') { e.preventDefault(); move(-1); }
+      else if (e.key === 'Enter') { e.preventDefault(); var o = list.querySelectorAll('.rap-opt')[active >= 0 ? active : 0]; if (o) choose(o.getAttribute('data-v')); }
+    });
+    panel.addEventListener('keyup', function (e) { e.stopPropagation(); });
+    btn.addEventListener('keydown', function (e) { if (e.key === 'ArrowDown' || e.key === 'ArrowUp') { e.preventDefault(); e.stopPropagation(); toggle(true); } });
+    function outside(e) { if (!panel.hidden && !(e.composedPath ? e.composedPath().indexOf(wrap) >= 0 : wrap.contains(e.target))) toggle(false); }
+    (rootNode.nodeType === 11 ? rootNode : doc).addEventListener('pointerdown', outside, true);
+    if (rootNode.nodeType === 11) doc.addEventListener('pointerdown', function (e) { if (!panel.hidden && e.composedPath().indexOf(wrap) < 0) toggle(false); }, true);
+    var queued = false;
+    new MutationObserver(function () { if (queued) return; queued = true; setTimeout(function () { queued = false; build(); }, 0); }).observe(sel, { childList: true, subtree: true, characterData: true, attributes: true, attributeFilter: ['selected', 'disabled', 'label'] });
+    sel.addEventListener('change', label);
+    // a script setting .value changes nothing in the DOM: wrap the setter so the button follows
+    try {
+      var d = Object.getOwnPropertyDescriptor(HTMLSelectElement.prototype, 'value');
+      Object.defineProperty(sel, 'value', { configurable: true, get: function () { return d.get.call(sel); }, set: function (v) { d.set.call(sel, v); label(); if (!panel.hidden) render(); } });
+    } catch (e) { /* ignore */ }
+    build();
+    var api = { wrap: wrap, button: btn, panel: panel, open: function () { toggle(true); }, close: function () { toggle(false); }, isOpen: function () { return !panel.hidden; }, refresh: build };
+    sel.__rap = api;
+    return api;
+  }
+  // fill a voice <select> with optgroups by language (text language first, then the browser's, then the rest). o = { textLang, auto: 'label for
+  // the automatic choice' (omit for none), value, bad: function (voice) -> true if it did not speak here }. Returns a signature string.
+  var dnL = null, dnR = null;
+  try { dnL = new Intl.DisplayNames([navigator.language || 'en'], { type: 'language' }); dnR = new Intl.DisplayNames([navigator.language || 'en'], { type: 'region' }); } catch (e) { /* old browser */ }
+  function langName(code) { var c = String(code || '').replace('_', '-').split('-')[0]; if (!c) return 'Other'; try { return (dnL && dnL.of(c)) || c; } catch (e) { return c; } }
+  function region(code) { var r = String(code || '').replace('_', '-').split('-')[1]; if (!r) return ''; try { return (dnR && dnR.of(r.toUpperCase())) || r; } catch (e) { return r; } }
+  function fillVoices(sel, voices, o) {
+    o = o || {};
+    var RA = root.MESRA, bad = o.bad || function () { return false; };
+    var groups = RA.voiceGroups(voices || [], o.textLang || '', navigator.language || '', langName, bad);
+    var doc = sel.ownerDocument;
+    sel.innerHTML = '';
+    if (o.auto) { var a = doc.createElement('option'); a.value = ''; a.textContent = o.auto; sel.appendChild(a); }
+    groups.forEach(function (g) {
+      var og = doc.createElement('optgroup'); og.label = g.label;
+      g.voices.forEach(function (v) {
+        var op = doc.createElement('option'), b = bad(v), rg = region(v.lang);
+        op.value = v.voiceURI;
+        op.textContent = (b ? '⚠ ' : '') + v.name + (rg && v.name.indexOf(rg) < 0 ? ' (' + rg + ')' : '') + (v.localService === false ? ' · online' : '') + (b ? ' · did not speak here' : '');
+        op.setAttribute('data-k', v.lang + ' ' + langName(v.lang) + ' ' + rg + (v.localService === false ? ' online' : ' on device'));
+        og.appendChild(op);
+      });
+      sel.appendChild(og);
+    });
+    if (o.value != null) sel.value = o.value;
+    if (sel.value !== (o.value || '') && o.auto) sel.value = '';
+  }
+  root.MESRAPick = { attach: attach, css: CSS, fillVoices: fillVoices, langName: langName };
 })(typeof self !== 'undefined' ? self : this);
 
   /* ---- the reader (extension/reader.js) ---- */
@@ -742,12 +1025,15 @@ if (typeof module !== "undefined" && module.exports) module.exports = SRLib;
 
   // mode: 'selection' | 'page' | 'auto' (selection if there is one, else page). Returns false if there is nothing to read.
   function collect(mode, pre) {
-    memo = [new Map(), new Map()]; vmemo = new Map();
+    memo = [new Map(), new Map()]; vmemo = new Map(); st.shadows = [];
     var sel = window.getSelection(), items, startPos = 0, caret = null;
     var hasSel = sel && sel.rangeCount && !sel.isCollapsed && /\S/.test(sel.toString());
     var ft = hasSel ? '' : fieldText();
     if (mode === 'auto') mode = (hasSel || /\S/.test(ft)) ? 'selection' : 'page';
-    if (pre) { items = pre; mode = 'page'; }   // a Google Doc: the text came from its export
+    var hk = null;
+    if (!pre && (mode === 'page' || (mode === 'selection' && !hasSel && !/\S/.test(ft)))) hk = hookItems();
+    if (hk && hk.items.length) { pre = null; items = hk.items; mode = 'page'; caret = null; }
+    else if (pre) { items = pre; mode = 'page'; }   // a Google Doc: the text came from its export
     else if (mode === 'selection') {
       if (hasSel) {
         var r = sel.getRangeAt(0), root = r.commonAncestorContainer;
@@ -767,10 +1053,17 @@ if (typeof module !== "undefined" && module.exports) module.exports = SRLib;
     if (tk.text !== map.text) {   // cleanText changed something (should not happen): keep the offsets honest by tokenizing the cleaned text only for speech
       return false;
     }
-    st.map = map; st.nodes = items.map(function (i) { return i.node; }); st.key = ++keyN; st.panelOver = null;
+    st.map = map; st.nodes = items.map(function (i) { return i.node; }); st.boxes = items.map(function (i) { return i.box || null; }); st.key = ++keyN; st.panelOver = null;
     st.selText = mode === 'selection' && hasSel ? sel.toString().trim() : ''; st.words = tk.words; st.starts = tk.sentStarts; st.text = tk.text; st.mode = mode; st.docs = !!pre;
     st.lang = SR.detectLang(tk.text) || (document.documentElement.lang || '').toLowerCase();
     st.idx = 0;
+    if (hk && hk.start) {
+      for (var hi = 0; hi < st.nodes.length; hi++) {
+        var nd = st.nodes[hi], rel = 0;
+        try { rel = hk.start === nd ? 16 : hk.start.compareDocumentPosition(nd); } catch (e) { rel = 0; }
+        if (rel & 16 || (rel & 4 && !(rel & 1))) { var hp = map.first[hi]; if (hp >= 0) { var hw = SR.wordAtChar(st.words, hp), hs = SR.sentenceStartAt(st.starts, hw); st.idx = hs >= 0 ? st.starts[hs] : hw; } break; }
+      }
+    }
     if (caret) {
       for (var i = 0; i < st.nodes.length; i++) if (st.nodes[i] === caret.node) {
         var p = RA.posOf(map, i, caret.off);
@@ -787,7 +1080,23 @@ if (typeof module !== "undefined" && module.exports) module.exports = SRLib;
     styleEl.textContent =
       '::highlight(mesra-sentence){background-color:' + P.sentenceColor + ';color:' + RA.contrastText(P.sentenceColor) + '}' +
       '::highlight(mesra-word){background-color:' + P.wordColor + ';color:' + RA.contrastText(P.wordColor) + '}';
+    // text inside a shadow root (mes.fm/docx) is styled only by that root's own sheets
+    shadowStyles.forEach(function (x) { x.remove(); }); shadowStyles = [];
+    (st.shadows || []).forEach(function (r) { try { var c = styleEl.cloneNode(true); c.removeAttribute('id'); r.appendChild(c); shadowStyles.push(c); } catch (e) { /* ignore */ } });
   }
+  var shadowStyles = [];
+  // node-less text with an element to point at (Google Docs' own text boxes): a box drawn over that element
+  var boxEl = null;
+  function boxShow(el) {
+    if (!el || !el.isConnected || !P.highlightSentence && !P.highlightWord) { boxHide(); return; }
+    var r = el.getBoundingClientRect();
+    if (!r.width && !r.height) { boxHide(); return; }
+    if (!boxEl) { boxEl = document.createElement('div'); boxEl.id = 'mesra-box'; document.documentElement.appendChild(boxEl); }
+    boxEl.style.cssText = 'all:initial;position:fixed;pointer-events:none;z-index:2147483646;border-radius:3px;mix-blend-mode:multiply;background:' + P.wordColor + ';opacity:.55;left:' + (r.left - 2) + 'px;top:' + (r.top - 1) + 'px;width:' + (r.width + 4) + 'px;height:' + (r.height + 2) + 'px';
+    var vh = window.innerHeight;
+    if (P.autoScroll && (r.top < 70 || r.bottom > vh - 160) && Date.now() - userScrollAt > 4000 && el.scrollIntoView) { lastScrollAt = Date.now(); el.scrollIntoView({ block: 'center', behavior: 'smooth' }); }
+  }
+  function boxHide() { if (boxEl) { boxEl.remove(); boxEl = null; } }
 
   function rangeFor(a, b) {
     var m = st.map, s = RA.locate(m, a), e = RA.locate(m, b - 1);
@@ -807,6 +1116,7 @@ if (typeof module !== "undefined" && module.exports) module.exports = SRLib;
   function highlight(i) {
     if (!st.words || !st.words[i]) return;
     panelMark(i);
+    if (st.boxes && st.boxes.some(Boolean)) { var lw = RA.locate(st.map, st.words[i].s); boxShow(lw ? st.boxes[lw.item] : null); }
     if (!(window.CSS && CSS.highlights && window.Highlight)) return;
     var w = st.words[i], k = SR.sentenceStartAt(st.starts, i);
     if (P.highlightSentence) {
@@ -972,24 +1282,73 @@ if (typeof module !== "undefined" && module.exports) module.exports = SRLib;
     applyStyle();
     loadUi(function () { buildUi(); fillUi(); applyText(); speakFrom(st.idx); });
   }
-  // Google Docs: the page is a canvas, so read the document through its own plain-text export (same origin, with the person's own login).
-  function fetchDoc(id, cb) {
-    var done = false, fin = function (items) { if (!done) { done = true; cb(items); } };
-    try {
-      fetch('/document/d/' + id + '/export?format=txt', { credentials: 'include' }).then(function (r) { if (!r.ok) throw new Error(r.status); return r.text(); })
-        .then(function (t) { var it = RA.docsItems(t); fin(it.length ? it : null); }, function () { fin(null); });
-    } catch (e) { fin(null); }
-    setTimeout(function () { fin(null); }, 15000);
+  // Google Docs: the page is a canvas, so there is no text in it for a page script. In order:
+  //  1. the service worker reads the plain-text export (only if the person allowed docs.google.com + googleusercontent.com: the export
+  //     redirects to *.googleusercontent.com, whose CORS answer a page fetch with cookies refuses; this was why 1.6-1.8 failed);
+  //  2. the same-origin "mobilebasic" view of the document (HTML with every paragraph, sent with the person's own login);
+  //  3. the export from the page itself (works if Google ever serves it without the redirect);
+  //  4. the text Docs puts in its own page for screen readers / extensions (svg rect aria-labels, old DOM lines): only what is loaded.
+  function withTimeout(p, ms) { return Promise.race([p, new Promise(function (res) { setTimeout(function () { res(null); }, ms); })]); }
+  function docsViaWorker(url) {
+    return withTimeout(new Promise(function (res) {
+      try { chrome.runtime.sendMessage({ mesra: 'docsFetch', url: url }, function (r) { void chrome.runtime.lastError; res(r && r.ok && r.text ? r.text : null); }); } catch (e) { res(null); }
+    }), 20000);
+  }
+  function getText(url) {
+    return withTimeout(fetch(url, { credentials: 'include' }).then(function (r) { if (!r.ok) throw new Error(r.status); return r.text(); }).catch(function () { return null; }), 20000);
+  }
+  function docsDom() {
+    var out = [], b = 0;
+    var rects = document.querySelectorAll('.kix-canvas-tile-content rect[aria-label]');
+    if (rects.length) {
+      var lastG = null;
+      Array.prototype.forEach.call(rects, function (r) {
+        var t = r.getAttribute('aria-label'); if (!t || !/\S/.test(t)) return;
+        var g = r.closest('g[role=paragraph]') || r.parentNode; if (g !== lastG) { b++; lastG = g; }
+        out.push({ node: null, t: t, base: 0, b: b, box: r });
+      });
+      return out;
+    }
+    var lines = document.querySelectorAll('.kix-lineview-text-block, .kix-paragraphrenderer');
+    if (lines.length) { memo = [new Map(), new Map()]; vmemo = new Map(); Array.prototype.forEach.call(document.querySelectorAll('.kix-paginateddocumentplugin, .kix-appview-editor'), function (r) { if (!out.length) out = textNodes(r, null, false); }); }
+    return out;
+  }
+  async function fetchDoc(cb) {
+    var u = RA.docsUrls(location.href), t;
+    if (!u) return cb(null, 'none');
+    t = await docsViaWorker(u.exportTxt);
+    if (t) { var it = RA.docsItems(t); if (it.length) return cb(it, 'export'); }
+    t = await getText(u.mobile);
+    if (t) { var paras = RA.docsHtmlParas(t); if (paras.length) return cb(RA.parasToItems(paras), 'mobile'); }
+    t = await getText(u.exportTxt);
+    if (t && !/^\s*</.test(t)) { var it2 = RA.docsItems(t); if (it2.length) return cb(it2, 'export'); }
+    var dom = docsDom();
+    cb(dom.length ? dom : null, dom.length ? 'dom' : 'none');
+  }
+  // a page can hand the reader its own text (mes.fm/pdf, mes.fm/docx, the extension's file reader):
+  // window.__mesraSource = { roots: function () -> [Element | ShadowRoot], start: function () -> Node or null (start reading here) }
+  function hookItems() {
+    var src = window.__mesraSource;
+    if (!src || typeof src.roots !== 'function') return null;
+    var roots = []; try { roots = src.roots() || []; } catch (e) { roots = []; }
+    var items = [];
+    st.shadows = [];
+    roots.forEach(function (r) { if (!r) return; if (r.nodeType === 11) st.shadows.push(r); items = items.concat(textNodes(r, null, false)); });
+    var start = null; try { start = src.start ? src.start() : null; } catch (e) { start = null; }
+    return { items: items, start: start };
   }
   function begin(mode) {
     if (st.active) stopSpeech();
     loadSettings(function () {
+      var hasSel = window.getSelection && !window.getSelection().isCollapsed && /\S/.test(String(window.getSelection()));
       var did = window.__mesraSite ? '' : RA.docsId(location.href);
-      if (did && !(window.getSelection && !window.getSelection().isCollapsed && /\S/.test(String(window.getSelection())))) {
+      if (did && !hasSel) {
         showNote('MES Read Aloud: loading this Google Doc…', 1500);
-        fetchDoc(did, function (items) {
-          if (!items || !collect(mode === 'selection' ? 'page' : mode, items)) { showNothing('docs'); return; }
+        fetchDoc(function (items, how) {
+          if (!items || !collect('page', items)) { showNothing('docs'); return; }
+          st.docsHow = how;
           go();
+          if (how === 'dom') setTimeout(function () { setStatus('Read from the part of the Doc that is loaded. For the whole Doc, allow Google Docs in the toolbar popup.'); st.noticeUntil = Date.now() + 8000; }, 50);
         });
         return;
       }
@@ -997,6 +1356,8 @@ if (typeof module !== "undefined" && module.exports) module.exports = SRLib;
       go();
     });
   }
+  window.__mesraBegin = begin;
+  window.__mesraStop = function () { stopAll(); };
 
   // a new selection made while the player is open: offer to read it (no need for the right-click menu or the toolbar button)
   function selCheck() {
@@ -1011,6 +1372,7 @@ if (typeof module !== "undefined" && module.exports) module.exports = SRLib;
     closePip();
     if (ui) { ui.host.remove(); ui = null; }
     if (styleEl) { styleEl.remove(); styleEl = null; }
+    shadowStyles.forEach(function (x) { x.remove(); }); shadowStyles = []; boxHide();
     if (darkOn) setDark(false, false);   // the dark page only lasts while the player is open (the site choice is kept for next time); left behind, it stacked with the Dark Mode extension's invert and the two cancelled out
   }
 
@@ -1029,6 +1391,7 @@ if (typeof module !== "undefined" && module.exports) module.exports = SRLib;
     '.tp{display:none;margin:0 0 8px;border:1px solid #3a3c41;border-radius:10px;background:#17181a;overflow:hidden}.tp.on{display:block}.p.pip .tp,.p.min .tp{display:none}' +
     '.th{display:flex;align-items:center;gap:4px;padding:3px 6px;background:#25272b;color:#aab0b8;font-size:12px}.th b{flex:1;font-weight:600}.th button{min-width:28px;height:24px;font-size:13px;border-radius:6px;padding:0 6px}.tpb.on{background:#1a4d6b}' +
     '.tb{position:relative;height:150px;min-height:56px;max-height:60vh;overflow:auto;resize:vertical;padding:8px 12px;font-size:calc(16px * var(--tf,1));line-height:1.55;white-space:pre-wrap;overflow-wrap:anywhere;color:#e6e6e6;user-select:text}.tb .w{cursor:pointer;border-radius:3px}.tb .w:hover{text-decoration:underline}.tb .s.cur{background:var(--sc);color:var(--sct);border-radius:3px}.tb .w.cur{background:var(--wc);color:var(--wct)}' +
+    '.rap{max-width:200px;min-width:120px}.p.min .rap{display:none}' + (window.MESRAPick ? MESRAPick.css : '') +
     '.p.min{width:auto;padding:6px 8px}.p.min .bar,.p.min .row>*:not(.grip):not(.pl):not(.mini):not(.x){display:none}.p.min .row{flex-wrap:nowrap}';
 
   function buildUi() {
@@ -1049,6 +1412,8 @@ if (typeof module !== "undefined" && module.exports) module.exports = SRLib;
     var q = function (c) { return sh.querySelector(c); };
     if (window.__mesraSite) { var gearBtn = sh.querySelector('.gear'); if (gearBtn) gearBtn.style.display = 'none'; }   // the site player has no options page
     ui = { host: h, sh: sh, p: q('.p'), fill: q('.fill'), bar: q('.bar'), pl: q('.pl'), rate: q('.rate'), voice: q('.voice'), setup: q('.setup'), st: q('.st'), hl: q('.hl'), rs: q('.rs'), dk: q('.dk'), mini: q('.mini'), grip: q('.grip'), vol: q('.vol'), volr: q('.volr'), pipb: q('.pip-b'), tp: q('.tp'), tb: q('.tb'), tl: q('.tl'), tpb: q('.tpb'), wEls: null, curW: null, curS: null, tkey: 0 };
+    if (window.MESRAPick) ui.pick = MESRAPick.attach(q('.voice'), { up: function () { return pipWin ? null : P.playerPosition !== 'top'; }, sample: 'This is how MES Read Aloud sounds with this voice.',
+      voice: function (id) { for (var i = 0; i < voices.length; i++) if (voices[i].voiceURI === id) return voices[i]; return null; }, onPreview: function () { if (st.playing) pause(); } });
     q('.prev').onclick = function () { jumpSentence(-1); };
     q('.next').onclick = function () { jumpSentence(1); };
     ui.pl.onclick = toggle;
@@ -1313,9 +1678,13 @@ if (typeof module !== "undefined" && module.exports) module.exports = SRLib;
     var list = voices.slice().sort(function (a, b) { return rk(a) - rk(b) || SR.voiceScore(b, st.lang, navigator.language) - SR.voiceScore(a, st.lang, navigator.language); });
     var cur = chooseVoice(), curId = P.voice || (cur && cur.voiceURI) || '', sig = String(list.length) + '|' + curId + '|' + Object.keys(badVoices).length;
     if (ui.voice.getAttribute('data-n') !== sig) {
-      ui.voice.innerHTML = '';
-      list.forEach(function (v) { var o = document.createElement('option'); o.value = v.voiceURI; o.textContent = (badVoices[SR.voiceKey(v)] ? '\u26a0 ' : '') + v.name + ' (' + v.lang + ')' + (badVoices[SR.voiceKey(v)] ? ' - did not speak here' : ''); ui.voice.appendChild(o); });
-      ui.voice.value = curId; ui.voice.setAttribute('data-n', sig);
+      if (window.MESRAPick) MESRAPick.fillVoices(ui.voice, list, { textLang: st.lang, value: curId, bad: function (v) { return !!badVoices[SR.voiceKey(v)]; } });
+      else {
+        ui.voice.innerHTML = '';
+        list.forEach(function (v) { var o = document.createElement('option'); o.value = v.voiceURI; o.textContent = (badVoices[SR.voiceKey(v)] ? '\u26a0 ' : '') + v.name + ' (' + v.lang + ')' + (badVoices[SR.voiceKey(v)] ? ' - did not speak here' : ''); ui.voice.appendChild(o); });
+        ui.voice.value = curId;
+      }
+      ui.voice.setAttribute('data-n', sig);
     }
     ui.setup.innerHTML = '';
     S.profiles.forEach(function (p) { var o = document.createElement('option'); o.value = p.id; o.textContent = p.name; ui.setup.appendChild(o); });
@@ -1345,6 +1714,8 @@ if (typeof module !== "undefined" && module.exports) module.exports = SRLib;
   }
   function onKey(e) {
     if (!st.active || e.defaultPrevented || e.ctrlKey || e.metaKey || e.altKey || typing(e)) return;
+    if (ui && ui.sh.activeElement && /^(INPUT|SELECT|TEXTAREA)$/.test(ui.sh.activeElement.tagName) && ui.sh.activeElement.type !== 'range') return;   // typing in the voice search box
+    if (ui && ui.pick && ui.pick.isOpen()) return;
     var path = e.composedPath ? e.composedPath() : [];
     if (ui && path.indexOf(ui.host) >= 0 && (e.key === ' ' || e.key === 'Enter')) return;   // a focused player button handles its own press
     var k = e.key, used = true;
@@ -1382,6 +1753,7 @@ if (typeof module !== "undefined" && module.exports) module.exports = SRLib;
   try {
     chrome.runtime.onMessage.addListener(function (m, sender, send) {
       if (!m || !m.mesra) return;
+      if (m.toTab && window.__mesraTabId !== m.toTab) return;   // the file reader page gets runtime messages meant for one tab
       if (m.mesra === 'ping') send({ ok: 1 });
       else if (m.mesra === 'read') { begin(m.mode || 'auto'); send({ ok: 1 }); }
       else if (m.mesra === 'toggle') { if (st.active) toggle(); else begin('auto'); send({ ok: 1 }); }
@@ -1399,6 +1771,9 @@ if (typeof module !== "undefined" && module.exports) module.exports = SRLib;
   window.MESReadAloud = {
     // the speaker button: start reading (the selection, else the page from where you clicked), or pause / resume if a player is open
     toggle: function () { if (msgListener) msgListener({ mesra: "toggle" }, {}, function () {}); },
+    // start reading now (a page that set window.__mesraSource, e.g. mes.fm/pdf and mes.fm/docx, is read from where its start() says)
+    read: function () { if (window.__mesraBegin) window.__mesraBegin("auto"); },
+    isActive: function () { var r = false; if (msgListener) msgListener({ mesra: "get" }, {}, function (o) { r = !!(o && o.active); }); return r; },
     stop: function () { if (msgListener) msgListener({ mesra: "stop" }, {}, function () {}); }
   };
 })();

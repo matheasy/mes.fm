@@ -17,12 +17,20 @@
   var SELECTS = ['scope', 'playerPosition', 'textPanel'], COLORS = ['wordColor', 'sentenceColor'];
 
   function fillVoices() {
-    voices = speechSynthesis.getVoices().slice().sort(function (a, b) { return (a.lang + a.name).localeCompare(b.lang + b.name); });
-    $('voice').innerHTML = '';
-    var auto = document.createElement('option'); auto.value = ''; auto.textContent = 'Automatic (best for the text)'; $('voice').appendChild(auto);
-    voices.forEach(function (v) { var o = document.createElement('option'); o.value = v.voiceURI; o.textContent = v.name + ' (' + v.lang + ')' + (v.localService ? '' : ' online'); $('voice').appendChild(o); });
-    $('voice').value = cfg().voice;
+    voices = speechSynthesis.getVoices().slice();
+    MESRAPick.fillVoices($('voice'), voices, { auto: 'Automatic (best for the text)', value: cfg().voice, textLang: '' });
   }
+  MESRAPick.attach($('voice'), { up: false, sample: 'This is how MES Read Aloud sounds with the voice you picked.', voice: function (id) { for (var i = 0; i < voices.length; i++) if (voices[i].voiceURI === id) return voices[i]; return null; } });
+  var DOCS = ['https://docs.google.com/*', 'https://*.googleusercontent.com/*'];
+  function docsState() { chrome.permissions.contains({ origins: DOCS }, function (has) { $('docsState').textContent = has ? 'Allowed' : 'Not allowed yet'; $('docsAllow').textContent = has ? 'Remove the permission' : 'Allow Google Docs'; $('docsAllow').dataset.has = has ? '1' : ''; }); }
+  $('docsAllow').onclick = function () {
+    if ($('docsAllow').dataset.has) chrome.permissions.remove({ origins: DOCS }, docsState); else chrome.permissions.request({ origins: DOCS }, docsState);
+  };
+  function fileState() { chrome.extension.isAllowedFileSchemeAccess(function (ok) { $('fileState').textContent = ok ? 'Allowed: files open directly' : 'Off: pick files in the reader instead'; }); }
+  $('extPage').onclick = function () { chrome.tabs.create({ url: 'chrome://extensions/?id=' + chrome.runtime.id }); };
+  $('openDoc').onclick = function () { chrome.tabs.create({ url: chrome.runtime.getURL('doc.html') }); };
+  docsState(); fileState();
+  window.addEventListener('focus', function () { docsState(); fileState(); });
 
   function sample() {
     var c = cfg(), sp = $('sample').querySelector('.s'), w = $('sample').querySelector('.w');

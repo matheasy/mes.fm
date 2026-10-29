@@ -55,4 +55,27 @@ ok(R.docsId('https://docs.google.com/document/d/1tDsVMwtTusn0KFnyLTQW5Xq0lpPgyjU
 ok(R.docsId('https://docs.google.com/document/u/1/d/abcdefghij1234/edit') === 'abcdefghij1234', 'docs id with /u/1/');
 ok(R.docsId('https://docs.google.com/spreadsheets/d/abcdefghij1234/edit') === '' && R.docsId('https://example.com/document/d/abcdefghij1234') === '' && R.docsId('') === '', 'not a doc');
 { const it = R.docsItems('\uFEFFTitle line\r\n\r\nFirst paragraph.\n \u200b \nSecond one.\n'); ok(it.length === 3 && it[0].t === 'Title line' && it[2].t === 'Second one.' && it.every(x => x.node === null) && it[0].b === 0 && it[2].b === 2, 'docsItems splits into paragraphs'); const m = R.buildText(it); ok(m.text.indexOf('Title line') === 0 && m.text.indexOf('First paragraph.') > 0, 'buildText accepts them'); }
+
+/* 1.9: Docs addresses (account /u/N/ kept), the mobilebasic HTML, PDF paragraphs, voice groups and search */
+{ const u = R.docsUrls('https://docs.google.com/document/u/1/d/abcdefghij1234/edit?tab=t.0#heading=h.x');
+  ok(u && u.mobile === 'https://docs.google.com/document/u/1/d/abcdefghij1234/mobilebasic' && u.exportTxt === 'https://docs.google.com/document/u/1/d/abcdefghij1234/export?format=txt', 'docsUrls keeps /u/1/, drops ?tab and #');
+  ok(R.docsUrls('https://docs.google.com/document/d/abcdefghij1234/edit').mobile === 'https://docs.google.com/document/d/abcdefghij1234/mobilebasic', 'docsUrls default account');
+  ok(R.docsUrls('https://docs.google.com/document/d/e/2PACX-1vabc/pub') === null, 'published-to-web docs are normal pages'); }
+{ const html = '<html><head><style>.c{x:1}</style></head><body><div class="app"><a>Open in app</a></div><div class="doc-content" style="x"><p class="title"><span>My &amp; Title</span></p><p><span>First </span><span style="font-weight:700">bold</span><span> part.</span></p><p><span></span></p><ul><li><span>Item &#8220;one&#8221;</span></li><li>Two&nbsp;x</li></ul><table><tr><td><p>Cell A</p></td><td><p>Cell B</p></td></tr></table><script>var x="<p>no</p>"</script></div></body></html>';
+  const p = R.docsHtmlParas(html);
+  eq(p, ['My & Title', 'First bold part.', 'Item “one”', 'Two x', 'Cell A', 'Cell B'], 'docsHtmlParas: paragraphs, entities, lists, tables; no scripts, nothing before .doc-content');
+  ok(R.parasToItems(p)[1].t === 'First bold part.' && R.parasToItems(p)[1].b === 1, 'parasToItems'); }
+ok(R.decodeEntities('&lt;a&gt; &#x41;&#66; &bogus;') === '<a> AB &bogus;', 'decodeEntities');
+ok(R.isPdfUrl('file:///Users/me/A%20b.pdf') && R.isPdfUrl('https://x.org/f.PDF?dl=1') && !R.isPdfUrl('https://x.org/pdf/page') && !R.isPdfUrl('chrome://x/a.pdf'), 'isPdfUrl');
+ok(R.isDocxUrl('https://x.org/a.docx') && !R.isDocxUrl('https://x.org/a.doc'), 'isDocxUrl');
+eq(R.pdfParas([{ text: 'Heading', y: 700, size: 18 }, { text: 'First line of a para-', y: 670, size: 11 }, { text: 'graph goes on', y: 657, size: 11 }, { text: 'here.', y: 644, size: 11 }, { text: 'Next paragraph.', y: 610, size: 11 }, { text: '  ', y: 600, size: 11 }]),
+  ['Heading', 'First line of a paragraph goes on here.', 'Next paragraph.'], 'pdfParas: heading, hyphen join, gap = new paragraph');
+eq(R.pdfParas([]), [], 'pdfParas empty');
+{ const V = [{ name: 'Zed', lang: 'en-GB' }, { name: 'Amelie', lang: 'fr-FR' }, { name: 'Bad', lang: 'en-US' }, { name: 'Ann', lang: 'en-US' }, { name: 'Hans', lang: 'de-DE' }];
+  const names = { en: 'English', fr: 'French', de: 'German' };
+  const g = R.voiceGroups(V, 'fr', 'en-US', c => names[c.split('-')[0]], v => v.name === 'Bad');
+  eq(g.map(x => x.label), ['French', 'English', 'Other languages: German'], 'voiceGroups: text language, browser language, then others');
+  eq(g[1].voices.map(v => v.name), ['Ann', 'Zed', 'Bad'], 'voices A-Z inside a group, voices that did not speak last');
+  const g2 = R.voiceGroups(V, '', 'de', c => names[c.split('-')[0]]); eq(g2[0].label, 'German', 'no text language: browser language first'); }
+ok(R.voiceMatches('eng kingdom', 'Daniel en-GB English United Kingdom') && R.voiceMatches('', 'x') && !R.voiceMatches('french', 'Daniel en-GB English') && R.voiceMatches('amelie', 'Amélie fr-CA'), 'voiceMatches: every word, accents ignored');
 console.log(bad ? bad + ' FAILED of ' + n : 'all ' + n + ' checks passed'); process.exit(bad ? 1 : 0);
