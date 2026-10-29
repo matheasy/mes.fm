@@ -16,9 +16,10 @@
 	#vc .vc-eng {font-size:0.8em;padding:0.05em 0.55em;border-radius:1em;background:#eef1f4;color:#344054;white-space:nowrap;font-weight:700;} #vc .vc-eng.is-fast {background:#d9f2e0;color:#14532d;}
 	#vc .vc-actions {display:flex;align-items:center;gap:0.6em;flex-wrap:wrap;margin:1em 0;} #vc .vc-go {font-size:1.1em;padding:0.7em 1.5em;} #vc .vc-prog {color:#475467;}
 	#vc .vc-vid {width:100%;max-height:50vh;background:#000;border-radius:0.4em;margin-top:0.5em;display:block;}
-	body.dark-mode #vc.tu .vc-drop {background:rgba(255,255,255,0.05);} body.dark-mode #vc.tu .vc-drop.is-over {background:rgba(255,255,255,0.12);} body.dark-mode #vc.tu .vc-drop-t, body.dark-mode #vc.tu .vc-fn {color:#ececec;}
+	body.dark-mode #vc.tu .vc-drop {background:#1d2030;} body.dark-mode #vc.tu .vc-drop.is-over {background:#2a2f48;} body.dark-mode #vc.tu .vc-drop-t, body.dark-mode #vc.tu .vc-fn {color:#ececec;}
 	body.dark-mode #vc.tu .vc-drop-s, body.dark-mode #vc.tu .vc-priv, body.dark-mode #vc.tu .vc-note, body.dark-mode #vc.tu .vc-fm, body.dark-mode #vc.tu .vc-prog {color:#c3c9d1;}
 	body.dark-mode #vc.tu .vc-f {background:#262a2e;border-color:#3a3f45;} body.dark-mode #vc.tu .vc-th {background:#33383d;color:#c3c9d1;} body.dark-mode #vc.tu .vc-bar {background:#3a3f45;}
 	body.dark-mode #vc.tu .vc-ok {color:#8fd19a;} body.dark-mode #vc.tu .vc-bad {color:#ffae8c;} body.dark-mode #vc.tu .vc-x {color:#c3c9d1;} body.dark-mode #vc.tu .vc-x:hover {background:#3a3f45;}
 	body.dark-mode #vc.tu .vc-eng {background:#3a3f45;color:#e4e7ec;} body.dark-mode #vc.tu .vc-eng.is-fast {background:#1f4d2e;color:#c9f0d4;}
 	@media (max-width:560px) {#vc .vc-f {grid-template-columns:3.4em minmax(0,1fr);} #vc .vc-fr {grid-column:1 / -1;justify-content:flex-start;} #vc .vc-go {width:100%;}}
+	#vc .vc-fr a.tu-btn {display:inline-flex;align-items:center;text-decoration:none;} #vc .vc-fr a.tu-btn--primary, body.dark-mode #vc.tu .vc-fr a.tu-btn--primary {color:#fff;background:#4338ca;border-color:#4338ca;}
