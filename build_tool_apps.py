@@ -673,7 +673,7 @@ APPS = {
     "pdf": dict(title="MES PDF Editor", page_title="Free PDF Editor: Sign, Fill, Annotate, Redact and Edit PDFs Online",
                 tag="Sign, fill in, annotate and redact PDFs in your browser.", accent="#d9363e", dark="#a82a31", tint="#fbe3e4",
                 desc="Free online PDF editor and signer: add a typed, drawn or uploaded signature, fill in forms, draw and highlight, add comments, edit text, black out private details, and rotate, delete or reorder pages. Private: your PDF never leaves your browser.",
-                js_v="5", src="pdf-editor", tab=1, nav_extra=PDF_NAV_INFO, menu_extra=PDF_NAV_MENU, home="/pdf-tools", js_parts=["core.js", "tools.js", "form.js", "sign.js", "export.js"]),
+                js_v="6", src="pdf-editor", tab=1, nav_extra=PDF_NAV_INFO, menu_extra=PDF_NAV_MENU, home="/pdf-tools", js_parts=["core.js", "tools.js", "form.js", "sign.js", "export.js"]),
     # PDF Tools family (2026-10-15): one script (tool_apps_src/pdf-tools/app.js, helpers lib.js = PT, tests tool_apps_src/pdf-tools-tests.js) and one content template; data-mode on #pt picks merge / split / organize / images / toimg / compress, vars.SEO = seo/<mode>.html. Same brand as the PDF editor (slug pdf). pdf.js + pdf-lib from cdnjs on first use; ZIPs use MESImg (lib_from image-converter).
     "merge-pdf": dict(title="Merge PDF", page_title="Merge PDF: Combine PDF Files Online for Free", tag="Combine PDFs into one file.", accent="#d9363e", dark="#a82a31", tint="#fbe3e4",
                     desc="Free online PDF merger: combine two or more PDF files into a single document, put them in any order, and pick which pages to use from each. Private: your files never leave your browser. No sign-up, no watermark.",
@@ -934,7 +934,7 @@ APPS = {
                  tag="Open, read and edit Word documents in your browser.", accent="#2b579a", dark="#1e3f73", tint="#e3ebf7",
                  desc="Free online DOCX viewer and editor: open Word documents in your browser with the real page layout, zoom, outline, search, word count, comments and tracked changes. Print or save as PDF, edit the text and download a new .docx, or save as HTML, Markdown or text. Private: nothing is uploaded.",
                  meta_desc="Free DOCX viewer and editor: open Word files with the real page layout, search, word count and comments, edit, then save as .docx, PDF, HTML or text. No upload.",
-                 js_v="1"),
+                 js_v="2"),
     "compress": dict(title="MES Compressor", page_title="Compressor: Compress Images, PDFs and Audio Online",
                        tag="Make pictures, PDFs and audio smaller.", accent="#4338ca", dark="#3730a3", tint="#e8e9fb",
                        desc="Free online compressor for pictures, PDFs and audio: shrink JPG, PNG and WebP to a quality or file size you choose, make PDFs smaller while keeping text selectable, and save audio as smaller MP3s. Before and after preview, ZIP download. Private: nothing is uploaded.",
