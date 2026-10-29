@@ -1,0 +1,75 @@
+	<script>try{if(!localStorage.getItem('pageMode')){document.documentElement.classList.add('page-wide')}}catch(e){}</script>
+	<div class="tu pg" id="pg">
+		<p class="pg-honest"><b>How this works:</b> a web page can't send real <code>ping</code> (ICMP) packets, so this test sends tiny web requests instead and times the round trip. The numbers are usually a few milliseconds higher than the <code>ping</code> command shows, but slow, uneven or lost replies show up the same way. Nothing is uploaded.</p>
+		<div class="tu-card pg-ctl">
+			<div class="pg-tlabel">Ping these</div>
+			<div class="pg-targets" id="pg-targets" role="group" aria-label="Targets"></div>
+			<form class="pg-add" id="pg-add" autocomplete="off">
+				<label class="pg-sr" for="pg-host">Add a website</label>
+				<input class="tu-input" id="pg-host" type="text" inputmode="url" spellcheck="false" placeholder="Add a website, e.g. example.com">
+				<button type="submit" class="tu-btn tu-btn--ghost">+ Add</button>
+				<span class="pg-adderr" id="pg-adderr" role="alert"></span>
+			</form>
+			<div class="pg-row">
+				<button type="button" class="tu-btn tu-btn--primary pg-go" id="pg-go">▶ Start</button>
+				<div class="tu-field tu-field--sm"><label class="tu-label" for="pg-int">Every <b id="pg-intv">1</b> s</label>
+					<input type="range" id="pg-int" min="0.5" max="10" step="0.5" value="1"></div>
+				<div class="tu-field tu-field--sm"><label class="tu-label" for="pg-to">Give up after</label>
+					<select class="tu-select" id="pg-to"><option value="1000">1 s</option><option value="2000" selected>2 s</option><option value="3000">3 s</option><option value="5000">5 s</option></select></div>
+				<div class="tu-field tu-field--sm"><label class="tu-label" for="pg-count">How many</label>
+					<select class="tu-select" id="pg-count"><option value="0" selected>Until I stop (-t)</option><option value="4">4 (like ping)</option><option value="20">20</option><option value="100">100</option></select></div>
+			</div>
+			<div class="pg-status" id="pg-status" aria-live="polite">Press Start. The first reply from each place opens the connection, so it is shown as a warm-up and not counted.</div>
+		</div>
+
+		<div class="tu-card" id="pg-vcard">
+			<h2 class="pg-h">Is my connection good enough?</h2>
+			<p class="tu-note" id="pg-vbasis">Start the test to see.</p>
+			<div class="pg-verdicts" id="pg-verdicts"></div>
+		</div>
+
+		<div class="tu-card" id="pg-tcard">
+			<div class="tu-table-wrap"><table class="tu-table pg-tbl"><thead><tr><th>Target</th><th>Last</th><th>Min</th><th>Avg</th><th>Max</th><th title="How much the time changes from one reply to the next">Jitter</th><th>Lost</th><th title="The first request: looking up the name and opening the connection">Warm-up</th></tr></thead><tbody id="pg-tbody"></tbody></table></div>
+			<p class="tu-note">Times in milliseconds (ms). Warm-up = the first request to each place, which also has to look up the name and open a secure connection.</p>
+		</div>
+
+		<section class="tu-card pg-chartcard" id="pg-chartsec">
+			<div class="pg-chead"><h2 class="pg-h">Round-trip time</h2><span class="pg-cbtns" id="pg-cbtns"></span></div>
+			<div class="pg-crow">
+				<div class="tu-chips" id="pg-span" role="group" aria-label="Time shown"><button type="button" class="tu-chip" data-s="60">1 min</button><button type="button" class="tu-chip" data-s="300">5 min</button><button type="button" class="tu-chip" data-s="900">15 min</button><button type="button" class="tu-chip" data-s="0">All</button></div>
+				<span class="pg-legend" id="pg-legend"></span>
+			</div>
+			<div class="pg-chart" id="pg-chartbox"><canvas id="pg-chart" role="img" aria-label="Round-trip time chart"></canvas><div class="pg-tip" id="pg-tip" hidden></div></div>
+			<p class="tu-note">Red marks along the top = lost requests. Hover or touch the chart to read the times.</p>
+		</section>
+
+		<section class="tu-card" id="pg-logsec">
+			<div class="pg-chead"><h2 class="pg-h">Log</h2><label class="pg-check"><input type="checkbox" id="pg-follow" checked> Keep scrolling to the newest</label></div>
+			<div class="pg-log" id="pg-log" role="log" aria-live="off" tabindex="0"></div>
+			<div class="tu-row pg-lbtns"><button type="button" class="tu-btn tu-btn--ghost" id="pg-copy">Copy log</button><button type="button" class="tu-btn tu-btn--ghost" id="pg-csv">Download CSV</button><button type="button" class="tu-btn tu-btn--ghost" id="pg-clear">Clear</button></div>
+		</section>
+		<div class="tu-toast" id="pg-toast" role="status" aria-live="polite"></div>
+
+		<div class="tu-seo">
+			<h2>A continuous ping test in your browser</h2>
+			<p>This page does what <code>ping 8.8.8.8 -t</code> does in a terminal: it keeps checking how long it takes to get an answer from a server, and shows every reply, the lowest, average and highest time, the <strong>jitter</strong> (how uneven the times are) and how many requests got <strong>lost</strong>. You can ping several places at once (Cloudflare, Google, Google DNS 8.8.8.8, mes.fm or any website you add) and watch them on one chart.</p>
+			<h3>Why the times are a little higher than real ping</h3>
+			<p>Real <code>ping</code> uses ICMP packets, which web pages are not allowed to send. This test times small HTTPS requests instead. Each reply has to go through the browser and the web server, which usually adds a few milliseconds. The very first request to a place also looks up its name (DNS) and opens a secure connection (TCP and TLS); that is shown on its own as the <strong>warm-up</strong> and left out of the averages. After that the browser reuses the connection, so the times are close to the true network round trip.</p>
+			<h3>What the numbers mean</h3>
+			<dl>
+				<dt>Round-trip time (latency)</dt><dd>How long a request takes to get there and back, in milliseconds. Under 30 ms is excellent, under 60 ms is good for most things.</dd>
+				<dt>Jitter</dt><dd>The average change from one reply to the next. High jitter makes calls choppy and games feel laggy even when the average looks fine.</dd>
+				<dt>Lost (packet loss)</dt><dd>Requests that got no answer before the time limit. Even 1-2% loss can cause freezes in calls and games.</dd>
+			</dl>
+			<h3>Questions</h3>
+			<h4>Why is one target much slower than the others?</h4>
+			<p>Distance. Cloudflare and Google have servers in most big cities, so they usually answer fastest. A website hosted far away can't answer faster than light travels there and back.</p>
+			<h4>My ping is fine but calls still freeze. Why?</h4>
+			<p>Look at jitter and loss, not only the average. Wi-Fi far from the router, a busy network (someone downloading or streaming) or a weak mobile signal usually show up as spikes on the chart. Try a cable, move closer to the router, or test again when nobody else is using the connection.</p>
+			<h4>Does this test my download speed?</h4>
+			<p>No. Speed (megabits per second) and latency are different things. This page only measures latency, jitter and loss.</p>
+			<h4>Why does a website I added say unreachable?</h4>
+			<p>Some sites block requests from other pages or don't answer on https. Try its main address (example.com) or another site.</p>
+		</div>
+	</div>
+	<script src="/main_js/panel-view.js?v=1" defer></script>
