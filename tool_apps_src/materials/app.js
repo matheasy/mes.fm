@@ -554,27 +554,34 @@
 	}
 	function ttCtl(st) {
 		var pb = $("mt-tt-play"); pb.textContent = TT.play ? "❚❚ Pause" : st.broken ? "↺ Test again" : TT.p > 0 ? "▶ Play" : "▶ Start the test";
-		$("mt-tt-unload").disabled = st.broken || st.k !== "c" || st.e <= 0;
+		/* the same button is "Unload here" on the loading curve and "Load again" once the bar is (being) unloaded and the test is paused */
+		var ub = $("mt-tt-unload"), atU = !TT.play && !st.broken && st.k === "u";
+		ub.textContent = atU ? "⤒ Load again" : "⤓ Unload here";
+		ub.title = atU ? "Put the load back on: it climbs the same straight line, then carries on along the curve" : "Take the load off from where the test is now";
+		ub.classList.toggle("tu-btn--primary", atU); pb.classList.toggle("tu-btn--primary", !atU);
+		if (atU && !TT.play) pb.textContent = "▶ Load again";
+		ub.disabled = atU ? false : (st.broken || st.k !== "c" || st.e <= 0);
+		ub.dataset.mode = atU ? "load" : "unload";
 		var c = TT.c, msg = "";
 		var stopNow = TT.stops.some(function (s) { return Math.abs(s - TT.p) < 1e-9; });
 		if (st.broken) msg = (c.brittle ? "Broke with almost no warning at " + strainTxt(c.ef) + ": a brittle material does not yield or neck." : c.elastic ? "Snapped at " + strainTxt(c.ef) + ": the pieces spring back almost to their old length." : "Broke at " + strainTxt(c.ef) + " strain. After the break the elastic part (" + strainTxt(c.sf / c.E) + ") springs back, so the pieces fitted together are " + strainTxt(c.ef - c.sf / c.E) + " longer than at the start.");
 		else if (stopNow && st.k === "u") { var top = ttUnloadTop(); if (top) {
-			if (c.elastic) msg = "Rubber gives all of the stretch back: no permanent set.";
-			else if (st.e < 1e-5) msg = "Back to zero: below the yield point everything springs back (elastic).";
-			else { msg = "Unloaded from " + strainTxt(top.e) + ": " + strainTxt(top.e - st.e) + " sprang back (slope E) and " + strainTxt(st.e) + " stays (permanent set). Press Play to load it again.";
+			if (c.elastic) msg = "Rubber gives all of the stretch back: no permanent set. Press Load again to pull it again.";
+			else if (st.e < 1e-5) msg = "Back to zero: below the yield point everything springs back (elastic). Press Load again to pull it again.";
+			else { msg = "Unloaded from " + strainTxt(top.e) + ": " + strainTxt(top.e - st.e) + " sprang back (slope E) and " + strainTxt(st.e) + " stays (permanent set). Press Load again to put the load back on.";
 				if ((c.yieldKind === "offset" || c.yieldKind === "luders") && top.s > c.sy * 1.01) msg += " It now stays elastic up to " + fmt(top.s, "stress") + ", higher than the first yield (" + fmt(c.sy, "stress") + "): that is strain hardening.";
 				else if (c.brittle) msg += " A brittle material's curve is not quite straight, so even it keeps a small set.";
 				else if (c.type === "polymer") msg += " Plastics also creep back slowly over minutes to hours, which this model leaves out."; }
 		} }
-		else if (st.k === "u") msg = "Taking the load off: the line comes down with the same slope E as the start.";
-		else if (st.k === "r") msg = "Loading again: straight up the same line until it meets the curve.";
+		else if (st.k === "u") msg = "Taking the load off: the line comes down with the same slope E as the start." + (TT.play ? "" : " Press Load again to put the load back on.");
+		else if (st.k === "r") msg = "Loading again: straight up the same line until it meets the curve, then the test carries on (you can unload again there).";
 		else if (st.ph === "neck") msg = "Necking: the bar gets thinner in one place, so the force it takes falls even though the metal there keeps getting stronger (see the true stress).";
 		else if (st.ph === "lud") msg = "Lüders plateau: bands of yielded steel travel along the bar at an almost constant force.";
 		else if (st.ph === "draw") msg = "Cold drawing: a neck forms and travels along the bar while the force stays about the same.";
 		else if (st.ph === "pl" || st.ph === "hard") msg = "Plastic: the bar stays longer when unloaded, and it gets stronger as it stretches (strain hardening).";
 		else if (TT.p > 0 && c.type === "polymer") msg = st.e < c.ey ? "Before the yield peak the curve already bends: plastics creep and relax (they are viscoelastic), so the start is only roughly straight." : "Strain hardening: the drawn-out chains line up and the plastic gets stiffer until it breaks.";
 		else if (TT.p > 0) msg = c.brittle ? "Elastic, then it breaks: there is no yield point." : c.elastic ? "Rubber: soft at first, then stiffer as the chains straighten out." : "Elastic: stress and strain rise in a straight line with slope E.";
-		else msg = "Press Start to pull the bar. Drag the slider to go back and forth. Press Unload here at any point to take the load off.";
+		else msg = "Press Start to pull the bar. Drag the slider to go back and forth. Press Unload here at any point to take the load off, then Load again to put it back on.";
 		$("mt-tt-msg").textContent = msg;
 	}
 	function ttStats() {
@@ -668,6 +675,10 @@
 	$("mt-tt-play").addEventListener("click", ttPlay);
 	$("mt-tt-reset").addEventListener("click", function () { TT.play = false; TT.unl = []; ttPath(); TT.p = 0; ttRender(); });
 	$("mt-tt-unload").addEventListener("click", function () {
+		if (this.dataset.mode === "load") {   /* Load again: from the bottom of the unloading line, play the reload */
+			var nx = TT.stops.filter(function (x) { return x >= TT.p - 1e-9; })[0]; if (nx != null) TT.p = nx;
+			TT.play = true; TT.last = 0; ttRender(); requestAnimationFrame(ttTick); return;
+		}
 		var st = ttState(); if (st.broken || st.k !== "c" || !(st.e > 0)) return;
 		var e = st.e; TT.unl.push(e); ttPath();
 		for (var i = 1; i < TT.P.length; i++) if (TT.P[i].k === "u" && Math.abs(TT.P[i - 1].e - e) < 1e-12) { TT.p = TT.cum[i - 1]; break; }
