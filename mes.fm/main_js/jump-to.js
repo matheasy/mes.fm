@@ -238,6 +238,12 @@
         ".mes-find .mf-res:empty{display:none}" +
         ".mes-find .mf-sec{position:sticky;top:0;z-index:1;padding:.4em .6em;font-size:12px;font-weight:700;background:#eef1f5;color:#1a1a1a;border-bottom:1px solid rgba(128,128,128,.25)}" +
         ".mes-find .mf-sec span{font-weight:400;opacity:.75}" +
+        ".mes-find button.mf-sec{display:flex;align-items:baseline;gap:.35em;width:100%;box-sizing:border-box;margin:0;font-family:inherit;line-height:1.35;text-align:left;cursor:pointer;border:0;border-bottom:1px solid rgba(128,128,128,.25);border-radius:0;white-space:normal;overflow-wrap:anywhere}" +
+        ".mes-find button.mf-sec:hover,.mes-find button.mf-sec:focus-visible{background:#dde6f0;outline:none;text-decoration:underline}" +
+        ".mes-find button.mf-sec .mf-go{margin-left:auto;padding-left:.4em;font-weight:400;opacity:.7;white-space:nowrap}" +
+        ".mes-find button.mf-hit:hover .mf-snip{text-decoration:underline;text-decoration-color:rgba(128,128,128,.6)}" +
+        ".mes-find .mf-count.mf-link,.mes-find .mf-more.mf-link{cursor:pointer}" +
+        ".mes-find .mf-count.mf-link:hover,.mes-find .mf-more.mf-link:hover{text-decoration:underline}" +
         ".mes-find button.mf-hit{display:block;width:100%;box-sizing:border-box;margin:0;padding:.45em .6em;font:inherit;font-size:13px;line-height:1.4;text-align:left;cursor:pointer;" +
         "color:inherit;background:transparent;border:0;border-bottom:1px solid rgba(128,128,128,.15);border-radius:0;white-space:normal;overflow-wrap:anywhere}" +
         ".mes-find button.mf-hit:hover,.mes-find button.mf-hit:focus-visible{background:rgba(128,128,128,.16);outline:none}" +
@@ -254,6 +260,7 @@
         "body.dark .mes-find input.mf-q::placeholder,body.dark-mode .mes-find input.mf-q::placeholder{color:#a5a5a5}" +
         "body.dark .mes-find input.mf-q:focus,body.dark-mode .mes-find input.mf-q:focus{outline-color:#6cb6f5;border-color:#6cb6f5}" +
         "body.dark .mes-find .mf-sec,body.dark-mode .mes-find .mf-sec{background:#2c2f33;color:#eee}" +
+        "body.dark .mes-find button.mf-sec:hover,body.dark-mode .mes-find button.mf-sec:hover,body.dark .mes-find button.mf-sec:focus-visible,body.dark-mode .mes-find button.mf-sec:focus-visible{background:#3a4048}" +
         "body.dark .mes-find .mf-res,body.dark-mode .mes-find .mf-res{background:#1e1e1e;color:#e6e6e6;border-color:rgba(255,255,255,.2)}" +
         "body.dark .mes-find .mf-count,body.dark-mode .mes-find .mf-count{color:#ddd}" +
         "body.dark .mes-find button.mf-hit.cur,body.dark-mode .mes-find button.mf-hit.cur{background:rgba(255,150,50,.22)}" +
@@ -362,13 +369,15 @@
         matches.forEach(function (m) { per[m.sec] = (per[m.sec] || 0) + 1; });
         for (var i = 0; i < matches.length && i < SHOW; i++) {
             var m = matches[i];
-            if (m.sec !== last) { last = m.sec; html += '<div class="mf-sec">' + esc(secLabel(m.sec)) + ' <span>(' + per[m.sec] + ')</span></div>'; }
-            html += '<button type="button" class="mf-hit' + (i === cur ? " cur" : "") + '" data-i="' + i + '">' + snippet(m) + "</button>";
+            if (m.sec !== last) { last = m.sec; html += '<button type="button" class="mf-sec" data-s="' + m.sec + '" title="Go to this section">' + esc(secLabel(m.sec)) + ' <span>(' + per[m.sec] + ')</span><span class="mf-go" aria-hidden="true">Go ›</span></button>'; }
+            html += '<button type="button" class="mf-hit' + (i === cur ? " cur" : "") + '" data-i="' + i + '"><span class="mf-snip">' + snippet(m) + "</span></button>";
         }
-        if (matches.length > SHOW) html += '<div class="mf-more">Showing the first ' + SHOW + '. Use Next to keep going, or type more words.</div>';
+        if (matches.length > SHOW) html += '<div class="mf-more mf-link" role="button" tabindex="0">Showing the first ' + SHOW + '. Use Next to keep going, or type more words.</div>';
         boxes.forEach(function (bx) {
             if (bx.q.value !== query) bx.q.value = query;
             bx.count.textContent = c;
+            bx.count.classList.toggle("mf-link", !!matches.length);
+            bx.count.title = matches.length ? "Go to the " + (cur >= 0 ? "current" : "first") + " match" : "";
             bx.res.innerHTML = html;
             bx.prev.disabled = bx.next.disabled = !matches.length;
             bx.el.classList.remove("mf-mini");
@@ -424,6 +433,31 @@
         paintHL(); markCur();
         if (fromBox && fromBox.panel) fromBox.el.classList.add("mf-mini");   /* floating panel: shrink to the search row so the match shows */
     }
+    /* a section heading in the results: open that section and scroll to its heading */
+    function goSec(k, fromBox) {
+        var bar = document.getElementById("compact-nav"), off = (bar && document.body.classList.contains("is-stuck") ? bar.offsetHeight : 0) + 12;
+        var target = k < 0 ? root : secs[k].el;
+        if (k >= 0) {
+            reveal(target);
+            /* the fold this heading opens: inside the section wrapper (div#ch-5 > .chapter-toggle-list) or right after a header */
+            var list = target.querySelector(":scope > .chapter-toggle-list, :scope > .section-body") || target.nextElementSibling;
+            if (list && list.classList.contains("chapter-toggle-list") && hiddenEl(list)) {
+                if (list.id && typeof window.toggleChapter === "function") { try { window.toggleChapter(list.id); } catch (x) {} }
+                if (hiddenEl(list)) list.classList.remove("hidden");
+                var ar = list.id && document.getElementById("arrowIcon-" + list.id); if (ar && ar.textContent === "\u25bc") ar.textContent = "\u25b2";
+            } else if (list && list.classList.contains("section-body") && list.classList.contains("collapsed")) {
+                var hd = list.previousElementSibling;
+                if (hd && (hd.getAttribute("role") === "button" || /toggle/.test(hd.className))) hd.click();
+                if (hiddenEl(list)) list.classList.remove("collapsed");
+            }
+            if (target.tagName === "DETAILS") target.open = true;
+        }
+        var first = -1; for (var i = 0; i < matches.length; i++) if (matches[i].sec === k) { first = i; break; }
+        if (first >= 0) { cur = first; paintHL(); markCur(); }
+        var y = window.pageYOffset + target.getBoundingClientRect().top - off;
+        window.scrollTo({ top: Math.max(0, y), behavior: window.matchMedia && matchMedia("(prefers-reduced-motion: reduce)").matches ? "auto" : "smooth" });
+        if (fromBox && fromBox.panel) fromBox.el.classList.add("mf-mini");
+    }
     function clear() {
         query = ""; matches = []; cur = -1;
         if (hasHL) { CSS.highlights.delete("mes-find"); CSS.highlights.delete("mes-find-cur"); }
@@ -463,9 +497,16 @@
         bx.prev.addEventListener("click", function (e) { e.stopPropagation(); go(cur < 0 ? matches.length - 1 : cur - 1, bx); });
         bx.next.addEventListener("click", function (e) { e.stopPropagation(); go(cur + 1, bx); });
         bx.res.addEventListener("click", function (e) {
+            var sh = e.target.closest && e.target.closest(".mf-sec[data-s]");
+            if (sh) { e.stopPropagation(); goSec(+sh.getAttribute("data-s"), bx); return; }
+            if (e.target.closest && e.target.closest(".mf-more")) { e.stopPropagation(); go(cur + 1, bx); return; }
             var b = e.target.closest && e.target.closest(".mf-hit"); if (!b) return;
             e.stopPropagation(); go(+b.getAttribute("data-i"), bx);
         });
+        bx.res.addEventListener("keydown", function (e) {
+            if ((e.key === "Enter" || e.key === " ") && e.target.classList && e.target.classList.contains("mf-more")) { e.preventDefault(); go(cur + 1, bx); }
+        });
+        bx.count.addEventListener("click", function (e) { if (!matches.length) return; e.stopPropagation(); go(cur < 0 ? 0 : cur, bx); });
         bx.q.addEventListener("click", function () { el.classList.remove("mf-mini"); });
         return bx;
     }
