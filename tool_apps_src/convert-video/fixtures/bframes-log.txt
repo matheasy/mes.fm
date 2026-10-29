@@ -1,0 +1,6 @@
+Input #0, avi, from 'h264-bframes.avi':
+  Metadata:
+    software        : Lavf62.12.102
+  Duration: 00:00:01.10, start: 0.000000, bitrate: 189 kb/s
+  Stream #0:0: Video: h264 (High) (H264 / 0x34363248), yuv420p(progressive), 96x64 [SAR 1:1 DAR 3:2], 30 fps, 30 tbr, 30 tbn
+  Stream #0:1: Audio: mp3 (mp3float) (U[0][0][0] / 0x0055), 44100 Hz, mono, fltp, 32 kb/s

@@ -946,6 +946,13 @@ APPS = {
                        tag="Make videos smaller, privately.", accent="#0f766e", dark="#115e59", tint="#dcf5f1",
                        desc="Free online video compressor: shrink MP4 and MOV videos to a file size you choose (say 25 MB for email or chat) or a quality, lower the resolution and frame rate, and save as MP4 or WebM. Fast with your computer's own video encoder, a queue for several files, and nothing is uploaded.",
                        js_v="2"),
+    # MES Video Converter (2026-10-28): any video -> MP4 (H.264 + AAC) for Camtasia etc. AVI + H.264 is remuxed by our own AVI reader (lib.js = MESConv, node tests
+    # tool_apps_src/convert-video-tests.js; engine.js = MESConvEngine, shared with the MES Video Editor), everything else goes through ffmpeg.wasm (self-hosted
+    # /main_js/ffmpeg/0.12.15/ + @ffmpeg/core 0.12.10 from jsDelivr, loaded on first use). lib_from image-converter for the ZIP writer.
+    "convert-video": dict(title="MES Video Converter", page_title="Video Converter: AVI, MKV, WMV, MOV to MP4 Online, No Upload",
+                       tag="Any video to MP4, privately.", accent="#4338ca", dark="#3730a3", tint="#e9e8fd",
+                       desc="Free online video converter: turn AVI, MKV, WMV, FLV, MOV, WebM and MPG files into MP4 (H.264 + AAC) that Camtasia, Premiere and every phone can open. AVI screen recordings with H.264 are copied without re-encoding, so even big files take seconds. A queue for many files, ZIP or save to a folder, nothing is uploaded.",
+                       js_v="1", js_parts=["engine.js"], lib_from=["image-converter"]),
     # MES Font Preview and Finder (2026-10-19): text in every font the browser really has (+ optional Google Fonts), effects, PNG / CSS export, compare, and a picture matcher. lib.js = MESFont (node tests tool_apps_src/fonts-tests.js).
     "fonts": dict(title="MES Font Preview and Finder", page_title="Font Preview: See Your Text in Every Font, and Find a Font from a Picture",
                   tag="See your text in every font.", accent="#7c2d92", dark="#5f2070", tint="#f3e5f8",

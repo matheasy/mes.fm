@@ -1,0 +1,46 @@
+	<div class="tu" id="vc">
+		<div class="vc-drop" id="vc-drop" tabindex="0" role="button" aria-label="Choose videos or drop them here">
+			<div class="vc-drop-t">Drop videos here</div>
+			<div class="vc-drop-s">AVI, MKV, WMV, FLV, MOV, WebM, MPG, TS, 3GP and more become MP4 (H.264 + AAC) that Camtasia, Premiere, phones and every player open. Choose several files to make a queue.</div>
+			<button type="button" class="tu-btn tu-btn--primary" id="vc-pick">Choose videos</button>
+			<input type="file" id="vc-input" accept="video/*,.avi,.mkv,.wmv,.asf,.flv,.f4v,.mov,.webm,.mpg,.mpeg,.vob,.ts,.mts,.m2ts,.3gp,.ogv,.divx,.m4v,.mp4" multiple hidden>
+			<p class="vc-priv">Private: your videos never leave this computer. Nothing is uploaded.</p>
+		</div>
+		<div id="vc-notice" class="tu-card tu-card--tint vc-notice" role="status" hidden></div>
+		<div id="vc-work" hidden>
+			<div class="tu-card vc-opts">
+				<div class="vc-row">
+					<label for="vc-quality">When the picture has to be re-encoded <select id="vc-quality">
+						<option value="high">High quality (bigger file)</option>
+						<option value="balanced">Balanced</option>
+						<option value="small">Smaller file</option>
+					</select></label>
+					<label><input type="checkbox" id="vc-reenc"> Always re-encode the picture (slow; only if an editor refuses the copied one)</label>
+				</div>
+				<div class="vc-row" id="vc-diskrow"><label><input type="checkbox" id="vc-disk"> Save into a folder I choose (best for big files: nothing is kept in memory)</label></div>
+				<p class="vc-note" id="vc-disknote"></p>
+			</div>
+			<div class="vc-list" id="vc-list" aria-live="polite"></div>
+			<div class="vc-actions">
+				<button type="button" class="tu-btn tu-btn--primary vc-go" id="vc-go">Convert to MP4</button>
+				<button type="button" class="tu-btn tu-btn--ghost" id="vc-zip" hidden>Download all as ZIP</button>
+				<button type="button" class="tu-btn tu-btn--ghost" id="vc-more">Add more videos</button>
+				<button type="button" class="tu-btn tu-btn--ghost" id="vc-clear">Start over</button>
+				<span class="vc-prog" id="vc-prog" role="status" aria-live="polite"></span>
+			</div>
+			<p class="vc-note">Next: put the MP4s together, trim them and add titles in the <a href="/video">MES Video Editor</a>, or make them smaller with the <a href="/compress-video">Video Compressor</a>.</p>
+		</div>
+
+		<div class="tu-seo">
+			<h2>How the video converter works</h2>
+			<dl>
+				<dt>AVI with H.264: copied, not re-encoded</dt><dd>Screen recorders such as Bandicam, OBS and many cameras save AVI files whose picture is already H.264, the same video format MP4 uses. For those the converter does not touch the picture at all: it reads the AVI itself, takes every frame as it is and packs it into an MP4. That is why a long recording converts in seconds, with exactly the same picture quality. MP3 or PCM sound is turned into AAC (the sound MP4 editors expect); AAC sound is copied. It reads files of any size, including the OpenDML AVIs over 1 GB, and with &ldquo;Save into a folder&rdquo; the result is written as it is made.</dd>
+				<dt>Everything else: ffmpeg in your browser</dt><dd>MKV, WMV, FLV, MPG, MOV, WebM and AVIs with other codecs are read by ffmpeg compiled to WebAssembly (ffmpeg.wasm). It downloads once (about 31 MB) the first time you need it. When the picture is H.264 it is copied again; otherwise (WMV, MPEG-2, DivX, VP9 ...) it is re-encoded with x264, which is slower: count on a few minutes per minute of HD video. ffmpeg in a web page keeps the result in memory, so files up to about 1.5 GB are safe there.</dd>
+				<dt>Why MP4 for Camtasia?</dt><dd>Camtasia, Premiere, DaVinci Resolve, PowerPoint and phones read MP4 with H.264 picture and AAC sound everywhere. Older AVI, WMV and FLV files often import without sound, out of sync or not at all. Converting first fixes that.</dd>
+				<dt>Names</dt><dd>Each file keeps its name: <code>Lesson 3.avi</code> becomes <code>Lesson 3.mp4</code>. Download the files one by one, all at once as a ZIP, or let the page write them straight into a folder you choose (Chrome, Edge and Brave with the File System Access API turned on).</dd>
+				<dt>Brave: &ldquo;Save into a folder&rdquo; is off</dt><dd>Brave turns off the File System Access API. Open <code>brave://flags/#file-system-access-api</code>, set it to Enabled and restart Brave. Without it the results are kept in memory and downloaded.</dd>
+			</dl>
+			<h2>Is it private?</h2>
+			<p>Yes. Your videos are read and converted by your own browser and never sent anywhere. The only downloads are the small open-source libraries (mp4-muxer) and, for formats that need it, ffmpeg.wasm.</p>
+		</div>
+	</div>

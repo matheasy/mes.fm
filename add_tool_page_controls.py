@@ -151,6 +151,7 @@ TOOLS = [  # (directory, compact-bar title[, home path of the site the page belo
     ("contact.html", "Contact MES"),   # built by build_tool_apps.py (out=contact.html)
     ("compress", "MES Compressor"),
     ("compress-video", "MES Video Compressor"),
+    ("convert-video", "MES Video Converter"),
     ("docx", "MES Word Viewer"),
     ("fonts", "MES Font Preview and Finder"),
     ("llm-simulator", "MES Toy Language Model Simulator"),
