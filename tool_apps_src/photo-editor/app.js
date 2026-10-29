@@ -25,7 +25,7 @@
 	var _fit = PE.fit; PE.fit = function (p) { PE.autoFit = true; _fit(p); }; var _sz = PE.setZoom; PE.setZoom = function (z, x, y) { PE.autoFit = false; _sz(z, x, y); }; var _pb = PE.panBy; PE.panBy = function (dx, dy) { PE.autoFit = false; _pb(dx, dy); };
 
 	/* ---------- tool bar ---------- */
-	var ORDER = ["move", "marquee", "lasso", "wand", "crop", "brush", "smudge", "eraser", "clone", "retouch", "objerase", "bucket", "gradient", "eyedropper", "text", "equation", "shape", "hand", "zoom"];
+	var ORDER = ["move", "marquee", "lasso", "wand", "crop", "layercrop", "brush", "smudge", "eraser", "clone", "retouch", "objerase", "bucket", "gradient", "eyedropper", "text", "equation", "shape", "hand", "zoom"];
 	var HELP = {
 		move: "Move, resize and rotate layers. Drag a layer to move it. Several at once: Ctrl / Cmd- or Shift-click layers on the picture (or in the Layers panel), or drag a box on empty canvas (or from outside the picture) to pick every layer it touches; Shift-drag a box adds to the selection. Then drag any of them to move them all, or drag the handles of the combined box to resize them together (rotating works on one layer at a time). While moving or resizing, the layer snaps to the canvas edges and centre (magenta guides) and to other layers' edges and centres (cyan guides); hold Ctrl (or Alt while moving) to place freely. Shift while moving keeps to one direction; on a handle, Shift switches between keeping and changing the proportions and Alt resizes from the centre. Drag just outside a corner to rotate. Arrow keys nudge the selection by 1 px (Shift = 10 px). Double-click a text to edit it.",
 		marquee: "Draw a rectangle or ellipse selection. Anything you then do (fill, delete, adjust, copy) only touches the selection. Shift while dragging = square or circle, Shift-drag on an existing selection = add to it, Alt = subtract. Drag inside a selection to move it, click once to deselect. Feather softens the edge.",
@@ -45,7 +45,8 @@
 		equation: "Insert a maths equation. Click where it goes, type LaTeX (a live preview appears), then Insert. Click an existing equation to edit it. Equations stay sharp when enlarged.",
 		shape: "Draw rectangles, rounded boxes, ellipses, lines, arrows, callouts, numbered step badges, highlights and blur / hide areas. Shift = square or straight line. Outline uses the foreground colour, fill uses the background colour. Each shape lands on its own layer.",
 		hand: "Drag to pan around a zoomed-in picture. You can also hold Space with any tool, or use the middle mouse button.",
-		zoom: "Click to zoom in, Alt-click to zoom out. Ctrl + mouse wheel also zooms, and Ctrl+0 fits the picture to the window."
+		zoom: "Click to zoom in, Alt-click to zoom out. Ctrl + mouse wheel also zooms, and Ctrl+0 fits the picture to the window.",
+		layercrop: "Crops ONE layer without deleting anything (like Camtasia): drag the edges or corners of the purple box to hide the sides of the selected layer, drag inside the box to slide what shows. The hidden part is kept, so Show whole layer brings it back any time. Then use the Move tool to place the layer; the crop moves with it."
 	};
 	var UI = S.ui || { tw: false, sw: 17.5, side: "r", hide: false }; if (!UI.tws) UI.tws = 15.5; if (!UI.tside) UI.tside = "l";
 	function saveUI() { sset({ ui: UI }); }
@@ -99,11 +100,69 @@
 			function up() { tg2.removeEventListener("pointermove", mv); tg2.removeEventListener("pointerup", up); saveUI(); window.dispatchEvent(new Event("resize")); } tg2.addEventListener("pointermove", mv); tg2.addEventListener("pointerup", up); });
 		applyUI();
 	}
+	/* the tool panel in groups (round 7): fold a group, Arrange mode = drag tools to reorder or into another group, new / rename / delete groups, hide
+	   tools you never use (their keys still work), Reset. Saved as UI.tl {groups: [{id, name, open, tools}], hidden: [ids]} (MESPixel.normToolLayout). */
+	var TL_DEF = [{ id: "sel", name: "Select & move", tools: ["move", "marquee", "lasso", "wand", "crop", "layercrop"] }, { id: "paint", name: "Paint & fix", tools: ["brush", "smudge", "eraser", "clone", "retouch", "objerase", "bucket", "gradient"] },
+		{ id: "add", name: "Text & shapes", tools: ["text", "equation", "shape"] }, { id: "view", name: "Colour & view", tools: ["eyedropper", "hand", "zoom"] }];
+	var arranging = false, tdrag = null;
+	function toolLayout() { return P.normToolLayout(UI.tl, ORDER.filter(function (id) { return PE.tools[id]; }), TL_DEF); }
+	function saveLayout(L) { UI.tl = L; saveUI(); drawTools(); }
+	function toolRow(id) {
+		var t = PE.tools[id], row = el("div", "pe-trow"), b = el("button", "pe-tool"); row.dataset.t = id; b.type = "button"; b.dataset.t = id; b.title = t.name + " (" + t.key.toUpperCase() + ")"; b.setAttribute("aria-label", t.name); b.setAttribute("aria-pressed", PE.toolId === id ? "true" : "false");
+		b.innerHTML = '<span class="pe-ticon">' + esc(t.icon) + '</span><span class="pe-tname">' + esc(t.name.replace(/ \(.*\)$/, "")) + '</span><kbd class="pe-tkey">' + esc(t.key.toUpperCase()) + "</kbd>"; b.addEventListener("click", function () { if (!arranging) PE.setTool(id); });
+		row.appendChild(b);
+		if (arranging) {
+			row.draggable = true; row.classList.add("is-arr");
+			var hb = el("button", "pe-thide", "✕"); hb.type = "button"; hb.title = "Hide this tool (its key still works; show it again from Hidden tools)"; hb.setAttribute("aria-label", "Hide " + t.name); hb.addEventListener("click", function () { saveLayout(P.moveTool(toolLayout(), id, "hidden")); }); row.appendChild(hb);
+			row.addEventListener("dragstart", function (e) { tdrag = id; e.dataTransfer.effectAllowed = "move"; e.dataTransfer.setData("text/x-pe-tool", id); row.classList.add("is-dragging"); });
+			row.addEventListener("dragend", function () { tdrag = null; row.classList.remove("is-dragging"); clearMarks(); });
+			row.addEventListener("dragover", function (e) { if (!tdrag) return; e.preventDefault(); clearMarks(); var r = row.getBoundingClientRect(); row.classList.add(e.clientY < r.top + r.height / 2 ? "is-over-above" : "is-over-below"); });
+			row.addEventListener("drop", function (e) { if (!tdrag) return; e.preventDefault(); e.stopPropagation(); var r = row.getBoundingClientRect(), below = e.clientY >= r.top + r.height / 2, L = toolLayout(), gid = row.closest(".pe-tgrp").dataset.g, g = L.groups.filter(function (x) { return x.id === gid; })[0], src = tdrag; tdrag = null; if (!g || src === id) { drawTools(); return; }
+				var list = g.tools.filter(function (x) { return x !== src; }), at = list.indexOf(id) + (below ? 1 : 0); saveLayout(P.moveTool(L, src, gid, at)); });
+			// keyboard: Alt+Up / Alt+Down move the tool inside its group
+			b.addEventListener("keydown", function (e) { if (!e.altKey || (e.key !== "ArrowUp" && e.key !== "ArrowDown")) return; e.preventDefault(); var L = toolLayout(), g = L.groups.filter(function (x) { return x.tools.indexOf(id) >= 0; })[0]; if (!g) return; var i = g.tools.indexOf(id) + (e.key === "ArrowUp" ? -1 : 1); if (i < 0 || i >= g.tools.length) return; saveLayout(P.moveTool(L, id, g.id, i)); setTimeout(function () { var nb = $("pe-tools").querySelector('.pe-tool[data-t="' + id + '"]'); if (nb) nb.focus(); }, 0); });
+		} else {
+			var q = el("button", "pe-thelp", "?"); q.type = "button"; q.title = "What is this tool and how do I use it?"; q.setAttribute("aria-label", "Help: " + t.name); q.addEventListener("click", function () { showHelp(id, row); }); row.appendChild(q);
+		}
+		return row;
+	}
+	function clearMarks() { Array.prototype.forEach.call($("pe-tools").querySelectorAll(".is-over-above,.is-over-below,.is-over-into"), function (r) { r.classList.remove("is-over-above", "is-over-below", "is-over-into"); }); }
+	function drawTools() {
+		var box = $("pe-tools"), head = box.querySelector(".pe-thead"); Array.prototype.slice.call(box.children).forEach(function (c) { if (c !== head) c.remove(); });
+		var L = toolLayout(); box.classList.toggle("pe-tools--arr", arranging);
+		var ab = $("pe-tarr"); if (ab) { ab.setAttribute("aria-pressed", arranging ? "true" : "false"); ab.textContent = arranging ? "✓ Done" : "⚙"; ab.title = arranging ? "Finish arranging" : "Arrange the tools: drag to reorder, group, hide"; }
+		L.groups.forEach(function (g) {
+			var gw = el("div", "pe-tgrp" + (g.open ? "" : " is-closed")); gw.dataset.g = g.id; gw.setAttribute("role", "group"); gw.setAttribute("aria-label", g.name);
+			var gh = el("div", "pe-tgh"), fold = el("button", "pe-tgfold"); fold.type = "button"; fold.setAttribute("aria-expanded", g.open ? "true" : "false"); fold.title = (g.open ? "Fold " : "Open ") + g.name; fold.innerHTML = '<span class="pe-tgar" aria-hidden="true">' + (g.open ? "▾" : "▸") + '</span><span class="pe-tgn">' + esc(g.name) + "</span>" + (g.open ? "" : '<span class="pe-tgc">' + g.tools.length + "</span>");
+			fold.addEventListener("click", function () { var L2 = toolLayout(); L2.groups.forEach(function (x) { if (x.id === g.id) x.open = !x.open; }); saveLayout(L2); }); gh.appendChild(fold);
+			if (arranging) {
+				var rn = el("button", "pe-tgbtn", "✎"); rn.type = "button"; rn.title = "Rename this group"; rn.setAttribute("aria-label", "Rename group " + g.name); rn.addEventListener("click", function () { var n = window.prompt("Group name", g.name); if (n == null || !n.trim()) return; var L2 = toolLayout(); L2.groups.forEach(function (x) { if (x.id === g.id) x.name = n.trim().slice(0, 40); }); saveLayout(L2); }); gh.appendChild(rn);
+				if (L.groups.length > 1) { var dl = el("button", "pe-tgbtn", "🗑"); dl.type = "button"; dl.title = "Delete this group (its tools move to the group above)"; dl.setAttribute("aria-label", "Delete group " + g.name); dl.addEventListener("click", function () { var L2 = toolLayout(), i = L2.groups.map(function (x) { return x.id; }).indexOf(g.id), to = L2.groups[i > 0 ? i - 1 : 1]; to.tools = to.tools.concat(L2.groups[i].tools); L2.groups.splice(i, 1); saveLayout(L2); }); gh.appendChild(dl); }
+				gh.addEventListener("dragover", function (e) { if (!tdrag) return; e.preventDefault(); clearMarks(); gh.classList.add("is-over-into"); });
+				gh.addEventListener("drop", function (e) { if (!tdrag) return; e.preventDefault(); var src = tdrag; tdrag = null; saveLayout(P.moveTool(toolLayout(), src, g.id, -1)); });
+			}
+			gw.appendChild(gh);
+			if (g.open || arranging) g.tools.forEach(function (id) { gw.appendChild(toolRow(id)); });
+			if (arranging && !g.tools.length) { var em = el("div", "pe-tgempty", "Drop tools here"); em.addEventListener("dragover", function (e) { if (tdrag) e.preventDefault(); }); em.addEventListener("drop", function (e) { if (!tdrag) return; e.preventDefault(); var src = tdrag; tdrag = null; saveLayout(P.moveTool(toolLayout(), src, g.id, -1)); }); gw.appendChild(em); }
+			box.appendChild(gw);
+		});
+		if (arranging) {
+			var hw = el("div", "pe-tgrp pe-tgrp--hidden"); hw.dataset.g = "hidden"; hw.appendChild(el("div", "pe-tgh", '<span class="pe-tgn">Hidden tools (' + L.hidden.length + ")</span>"));
+			L.hidden.forEach(function (id) { var t = PE.tools[id], r = el("div", "pe-trow is-arr"), sb = el("button", "pe-tool"); sb.type = "button"; sb.title = "Show " + t.name + " again"; sb.innerHTML = '<span class="pe-ticon">' + esc(t.icon) + '</span><span class="pe-tname">' + esc(t.name.replace(/ \(.*\)$/, "")) + "</span>"; sb.addEventListener("click", function () { saveLayout(P.moveTool(toolLayout(), id, toolLayout().groups[0].id, -1)); }); var sh = el("button", "pe-thide", "＋"); sh.type = "button"; sh.title = "Show this tool again"; sh.setAttribute("aria-label", "Show " + t.name); sh.addEventListener("click", function () { sb.click(); }); r.appendChild(sb); r.appendChild(sh); hw.appendChild(r); });
+			hw.addEventListener("dragover", function (e) { if (tdrag) e.preventDefault(); }); hw.addEventListener("drop", function (e) { if (!tdrag) return; e.preventDefault(); var src = tdrag; tdrag = null; saveLayout(P.moveTool(toolLayout(), src, "hidden")); });
+			box.appendChild(hw);
+			var acts = el("div", "pe-tacts"), ng = el("button", "pe-btn pe-btn--sm", "+ New group"), rs = el("button", "pe-btn pe-btn--sm", "Reset"); ng.type = rs.type = "button"; ng.title = "Add an empty group: drag tools into it"; rs.title = "Back to the standard tool groups, nothing hidden";
+			ng.addEventListener("click", function () { var n = window.prompt("Name of the new group", "My tools"); if (n == null || !n.trim()) return; var L2 = toolLayout(); L2.groups.push({ id: "u" + Date.now().toString(36), name: n.trim().slice(0, 40), open: true, tools: [] }); saveLayout(L2); });
+			rs.addEventListener("click", function () { if (!window.confirm("Put every tool back in the standard groups and show the hidden ones?")) return; UI.tl = null; saveUI(); drawTools(); });
+			acts.appendChild(ng); acts.appendChild(rs); box.appendChild(acts); box.appendChild(el("p", "pe-thint", "Drag a tool up or down, onto a group's name or into another group. ✕ hides it (its keyboard key still works). On a keyboard: Alt+↑ / Alt+↓."));
+		}
+	}
+	PE.drawTools = drawTools;
 	function buildTools() {
 		var box = $("pe-tools"); box.innerHTML = "";
-		ORDER.forEach(function (id) { var t = PE.tools[id]; if (!t) return; var row = el("div", "pe-trow"), b = el("button", "pe-tool"); b.type = "button"; b.dataset.t = id; b.title = t.name + " (" + t.key.toUpperCase() + ")"; b.setAttribute("aria-label", t.name); b.innerHTML = '<span class="pe-ticon">' + esc(t.icon) + '</span><span class="pe-tname">' + esc(t.name.replace(/ \(.*\)$/, "")) + '</span><kbd class="pe-tkey">' + esc(t.key.toUpperCase()) + "</kbd>"; b.addEventListener("click", function () { PE.setTool(id); });
-			var q = el("button", "pe-thelp", "?"); q.type = "button"; q.title = "What is this tool and how do I use it?"; q.setAttribute("aria-label", "Help: " + t.name); q.addEventListener("click", function () { showHelp(id, row); }); row.appendChild(b); row.appendChild(q); box.appendChild(row); });
 		initLayoutUI();
+		var ab = el("button", "pe-tarr", "⚙"); ab.type = "button"; ab.id = "pe-tarr"; ab.addEventListener("click", function () { arranging = !arranging; if (arranging && !UI.tw) { UI.tw = true; saveUI(); applyUI(); } drawTools(); }); box.querySelector(".pe-thead").appendChild(ab);
+		drawTools();
 	}
 	PE.on("tool", function () { Array.prototype.forEach.call($("pe-tools").querySelectorAll(".pe-tool"), function (b) { b.setAttribute("aria-pressed", b.dataset.t === PE.toolId ? "true" : "false"); }); var t = PE.tool(); if (t.activate) t.activate(); buildOpts(); $("pe-hint").textContent = t.hint || ""; setCursor(); });
 	function setCursor() { PE.els.over.style.cursor = PE.tool().cursorSize ? "none" : PE.toolId === "hand" ? "grab" : PE.toolId === "zoom" ? "zoom-in" : PE.toolId === "text" ? "text" : PE.toolId === "move" ? "default" : "crosshair"; }
@@ -118,7 +177,7 @@
 			if (u.type === "check") { inp = el("input"); inp.type = "checkbox"; inp.checked = !!v; inp.addEventListener("change", function () { PE.optSet(id, u.k, inp.checked); rebuildOpts(); }); }
 			else if (u.type === "select") { inp = el("select"); var opts = u.options === "fonts" ? PE.FONTS : u.options; opts.forEach(function (o) { var op = el("option", null, esc(o[1])); op.value = o[0]; inp.appendChild(op); }); inp.value = v; inp.addEventListener("change", function () { PE.optSet(id, u.k, u.num ? +inp.value : inp.value); rebuildOpts(); }); }
 			else if (u.type === "seg") { inp = el("span", "pe-seg"); u.options.forEach(function (o) { var b = el("button", null, esc(o[1])); b.type = "button"; b.setAttribute("aria-pressed", String(v) === String(o[0]) ? "true" : "false"); b.addEventListener("mousedown", function (e) { e.preventDefault(); }); b.addEventListener("click", function () { PE.optSet(id, u.k, o[0]); rebuildOpts(); }); inp.appendChild(b); }); }
-			else if (u.type === "color") { inp = el("input"); inp.type = "color"; inp.value = v; inp.addEventListener("input", function () { PE.optSet(id, u.k, inp.value); });
+			else if (u.type === "color") { inp = el("input"); inp.type = "color"; inp.dataset.ck = "opt:" + id + ":" + u.k; inp.dataset.cname = u.label; inp.value = v; inp.addEventListener("input", function () { PE.optSet(id, u.k, inp.value); });
 				// 💉 next to the well: pick this option's colour from the picture (drag with a magnifier, applied on release)
 				var dp = el("button", "pe-mini pe-dropbtn", "💉"); dp.type = "button"; dp.title = "Pick " + u.label.toLowerCase() + " from the picture: press and drag over it, let go to use the colour"; dp.setAttribute("aria-label", dp.title);
 				dp.addEventListener("mousedown", function (e) { e.preventDefault(); }); dp.addEventListener("click", function () { if (!needDoc()) return; PE.pickColorFromImage({ label: u.label, apply: function (hex) { PE.optSet(id, u.k, hex); rebuildOpts(); } }); });
@@ -148,8 +207,8 @@
 	function buildColor() {
 		var box = $("pe-colors"); box.innerHTML = "";
 		var sw = el("div", "pe-sw"), bgb = el("label", "pe-sw-bg"), fgb = el("label", "pe-sw-fg"); bgb.style.background = PE.bg; fgb.style.background = PE.fg; bgb.title = "Background colour"; fgb.title = "Foreground colour (brush, shapes, text outline)";
-		var fi = el("input"); fi.type = "color"; fi.value = PE.fg; fi.addEventListener("input", function () { PE.fg = fi.value; fgb.style.background = fi.value; hexIn.value = fi.value; PE.emit("color-live"); }); fi.addEventListener("change", function () { PE.setFg(fi.value); });
-		var bi = el("input"); bi.type = "color"; bi.value = PE.bg; bi.addEventListener("input", function () { PE.bg = bi.value; bgb.style.background = bi.value; }); bi.addEventListener("change", function () { PE.setBg(bi.value); });
+		var fi = el("input"); fi.type = "color"; fi.dataset.ck = "fg"; fi.dataset.cname = "Foreground colour"; fi.value = PE.fg; fi.addEventListener("input", function () { PE.fg = fi.value; fgb.style.background = fi.value; hexIn.value = fi.value; PE.emit("color-live"); }); fi.addEventListener("change", function () { PE.setFg(fi.value); });
+		var bi = el("input"); bi.type = "color"; bi.dataset.ck = "bg"; bi.dataset.cname = "Background colour"; bi.value = PE.bg; bi.addEventListener("input", function () { PE.bg = bi.value; bgb.style.background = bi.value; }); bi.addEventListener("change", function () { PE.setBg(bi.value); });
 		fgb.appendChild(fi); bgb.appendChild(bi); sw.appendChild(bgb); sw.appendChild(fgb);
 		var swap = el("button", "pe-mini", "⇄"); swap.type = "button"; swap.title = "Swap colours (X)"; swap.addEventListener("click", swapColors); var def = el("button", "pe-mini", "◐"); def.type = "button"; def.title = "Default colours: black and white (D)"; def.addEventListener("click", function () { PE.fg = "#000000"; PE.bg = "#ffffff"; PE.emit("color"); });
 		var hexIn = el("input", "pe-hex"); hexIn.value = PE.fg; hexIn.maxLength = 7; hexIn.title = "Foreground colour hex"; hexIn.addEventListener("change", function () { var h = hexIn.value.trim(); if (/^#?[0-9a-f]{3}([0-9a-f]{3})?$/i.test(h)) { if (h[0] !== "#") h = "#" + h; if (h.length === 4) h = "#" + h[1] + h[1] + h[2] + h[2] + h[3] + h[3]; PE.setFg(h.toLowerCase()); } else hexIn.value = PE.fg; });
@@ -195,18 +254,27 @@
 	 * layer up / down only moves rows. Rebuilding every row on every step made the list flash, and fought with page-zoom / text-size extensions that
 	 * restyle new elements a moment after they appear. Handlers look the layer up by id at click time (undo / redo replace the layer objects). */
 	var rowCache = {};
-	function rowSig(L, r, on) { return [L.name, L.type, L.visible, PE.effVisible(L), on ? 1 : 0, r.depth, L.collapsed, L.locked, L.mask ? 1 : 0, L.editMask ? 1 : 0, L.rev, L.canvas.width, L.canvas.height, PE.isGroup(L) ? PE.descendants(L).filter(function (k) { return !PE.isGroup(k); }).length : -1].join("|"); }
+	function rowSig(L, r, on) { return [L.name, L.type, L.visible, PE.effVisible(L), on ? 1 : 0, r.depth, L.collapsed, L.locked, L.mask ? 1 : 0, L.editMask ? 1 : 0, L.maskOff ? 1 : 0, L.viewMask ? 1 : 0, PE.hasFx(L) ? 1 : 0, L.crop ? 1 : 0, L.rev, L.canvas.width, L.canvas.height, PE.isGroup(L) ? PE.descendants(L).filter(function (k) { return !PE.isGroup(k); }).length : -1].join("|"); }
 	function makeRow(id, depth, on) {
 		var L0 = PE.layerById(id), grp = PE.isGroup(L0), hidden = !PE.effVisible(L0) && !grp ? true : !L0.visible, cur = function () { return PE.layerById(id); };
 		var row = el("div", "pe-layer" + (on ? " is-active" : "") + (hidden ? " is-hidden" : "") + (grp ? " is-group" : "")); row.draggable = true; row.dataset.id = id; row.style.paddingLeft = (0.3 + depth * 1.1) + "em";
 		var eye = el("button", "pe-eye", L0.visible ? "👁" : "—"); eye.type = "button"; eye.title = "Show / hide"; eye.addEventListener("click", function (e) { e.stopPropagation(); var L = cur(); if (!L) return; L.visible = !L.visible; PE.touch(L); PE.commit("Toggle visibility"); });
 		row.appendChild(eye);
 		if (grp) { var ar = el("button", "pe-arrow", L0.collapsed ? "▸" : "▾"); ar.type = "button"; ar.title = L0.collapsed ? "Expand group" : "Collapse group"; ar.addEventListener("click", function (e) { e.stopPropagation(); var L = cur(); if (!L) return; L.collapsed = !L.collapsed; buildLayers(); }); row.appendChild(ar); var th0 = el("span", "pe-th pe-th--grp", "📁"); row.appendChild(th0); }
-		else { var th = el("span", "pe-th"); th.appendChild(thumbFor(L0)); row.appendChild(th); }
+		else { var th = el("span", "pe-th" + (L0.mask && !L0.editMask ? " is-paint" : "")); th.appendChild(thumbFor(L0)); if (L0.mask) th.title = L0.editMask ? "Click to paint on the picture again" : "You are painting on the picture"; row.appendChild(th); }
 		var nm = el("span", "pe-lname", esc(L0.name) + (L0.type === "text" ? " ᵀ" : "") + (grp ? ' <small class="pe-cnt">' + PE.descendants(L0).filter(function (k) { return !PE.isGroup(k); }).length + "</small>" : "")); nm.title = L0.name + " (double-click to rename)";
-		if (L0.mask) { var mt = el("span", "pe-th pe-th--mask" + (L0.editMask ? " is-on" : "")); var mc = PE.mk(36, 36), mx = mc.getContext("2d"); mx.fillStyle = "#000"; mx.fillRect(0, 0, 36, 36); var wm = PE.mk(36, 36), wx = wm.getContext("2d"); wx.drawImage(L0.mask, 0, 0, 36, 36); wx.globalCompositeOperation = "source-in"; wx.fillStyle = "#fff"; wx.fillRect(0, 0, 36, 36); mx.drawImage(wm, 0, 0); mt.appendChild(mc); mt.title = "Layer mask: click to paint on the mask (white-ish = shown). Click the picture to paint on the layer."; mt.addEventListener("click", function (e) { e.stopPropagation(); var L = cur(); if (!L) return; PE.setActive(id); L.editMask = true; buildLayers(); }); row.querySelector(".pe-th").addEventListener("click", function (e) { e.stopPropagation(); var L = cur(); if (!L) return; PE.setActive(id); L.editMask = false; buildLayers(); }); row.appendChild(mt); }
+		if (L0.mask) {
+			var mt = el("span", "pe-th pe-th--mask" + (L0.editMask ? " is-on is-paint" : "") + (L0.maskOff ? " is-off" : "") + (L0.viewMask ? " is-view" : "")); mt.appendChild(PE.maskView ? (function () { var c = PE.mk(36, 36), x = c.getContext("2d"), v = PE.maskView(L0), sc = Math.min(36 / v.width, 36 / v.height); x.fillStyle = "#3a3a44"; x.fillRect(0, 0, 36, 36); x.drawImage(v, (36 - v.width * sc) / 2, (36 - v.height * sc) / 2, v.width * sc, v.height * sc); return c; })() : el("span"));
+			mt.title = "Layer mask (white = shown, black = hidden). " + (L0.editMask ? "You are painting on the mask: black hides, white shows." : "Click to paint on the mask.") + " Shift-click: switch the mask " + (L0.maskOff ? "on again" : "off for a moment") + ". Alt-click: " + (L0.viewMask ? "back to the picture" : "see the mask itself") + ".";
+			mt.setAttribute("role", "button"); mt.tabIndex = 0; mt.setAttribute("aria-label", "Layer mask of " + L0.name + (L0.editMask ? ", being painted" : ""));
+			var mclick = function (e) { e.stopPropagation(); var L = cur(); if (!L) return; PE.setActive(id); if (e.shiftKey) { L.maskOff = !L.maskOff; L.rev++; PE.commit(L.maskOff ? "Switch mask off" : "Switch mask on"); return; } if (e.altKey) { L.viewMask = !L.viewMask; delete rowCache[id]; PE.invalidate(); buildLayers(); return; } L.editMask = true; delete rowCache[id]; buildLayers(); PE.emit("paintTarget"); };
+			mt.addEventListener("click", mclick); mt.addEventListener("keydown", function (e) { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); mclick(e); } });
+			row.querySelector(".pe-th").addEventListener("click", function (e) { e.stopPropagation(); var L = cur(); if (!L) return; PE.setActive(id); L.editMask = false; L.viewMask = false; delete rowCache[id]; PE.invalidate(); buildLayers(); PE.emit("paintTarget"); }); row.appendChild(mt);
+		}
 		row.appendChild(nm);
 		if (grp) { var xg = el("button", "pe-pen", "⬇"); xg.type = "button"; xg.title = "Export this group as its own image, on a canvas of any size"; xg.addEventListener("click", function (e) { e.stopPropagation(); var L = cur(); if (L) PE.dlgExportGroup(L); }); row.appendChild(xg); }
+		if (!grp) { var fxb = el("button", "pe-pen pe-fxb" + (PE.hasFx(L0) ? " is-on" : ""), "fx"); fxb.type = "button"; fxb.title = PE.hasFx(L0) ? "Layer style (outline / shadow) is on: click to change it" : "Add an outline or shadow (layer style)"; fxb.setAttribute("aria-label", "Layer style of " + L0.name); fxb.addEventListener("click", function (e) { e.stopPropagation(); PE.setActive(id); PE.dlgLayerStyle(cur()); }); row.appendChild(fxb);
+			if (L0.crop) { var cb = el("button", "pe-pen pe-cropb is-on", "⛶"); cb.type = "button"; cb.title = "This layer is cropped (its edges are hidden, not deleted): click to change the crop"; cb.setAttribute("aria-label", "Change the crop of " + L0.name); cb.addEventListener("click", function (e) { e.stopPropagation(); PE.setActive(id); PE.setTool("layercrop"); }); row.appendChild(cb); } }
 		var pen = el("button", "pe-pen", "✎"); pen.type = "button"; pen.title = "Rename"; pen.addEventListener("click", function (e) { e.stopPropagation(); renameLayer(id); }); row.appendChild(pen);
 		if (L0.locked) row.appendChild(el("span", "pe-lock", "🔒"));
 		row.addEventListener("click", function (e) {
@@ -222,12 +290,37 @@
 			["click", "mousedown", "pointerdown", "dblclick", "dragstart"].forEach(function (t) { inp.addEventListener(t, function (ev) { ev.stopPropagation(); }); });
 			inp.addEventListener("keydown", function (ev) { ev.stopPropagation(); if (ev.key === "Enter") { ev.preventDefault(); done(true); } if (ev.key === "Escape") { ev.preventDefault(); done(false); } }); inp.addEventListener("blur", function () { done(true); });
 		});
+		row.addEventListener("contextmenu", function (e) { e.preventDefault(); var L = cur(); if (!L) return; if (PE.active() !== L) PE.setActive(id); layerMenu(L, e.clientX, e.clientY); });
 		row.addEventListener("dragstart", function (e) { dragId = id; e.dataTransfer.effectAllowed = "move"; e.dataTransfer.setData("text/x-pe-layer", String(id)); });
 		function zoneOf(e) { var rc = row.getBoundingClientRect(), y = (e.clientY - rc.top) / rc.height; return grp ? (y < 0.25 ? "above" : "into") : (y < 0.5 ? "above" : "below"); }
 		row.addEventListener("dragover", function (e) { if (dragId == null) return; e.preventDefault(); row.classList.remove("is-over-above", "is-over-below", "is-over-into"); row.classList.add("is-over-" + zoneOf(e)); });
 		row.addEventListener("dragleave", function () { row.classList.remove("is-over-above", "is-over-below", "is-over-into"); });
 		row.addEventListener("drop", function (e) { if (dragId == null) return; e.preventDefault(); e.stopPropagation(); row.classList.remove("is-over-above", "is-over-below", "is-over-into"); var src = PE.layerById(dragId), z = zoneOf(e), L = cur(); dragId = null; if (src && L && src !== L) PE.relocate(src, L, z); });
 		return row;
+	}
+	/* a small menu at the pointer (right-click on a layer, the Mask button) */
+	function popMenu(items, x, y) {
+		var old = root.querySelector(".pe-cmenu"); if (old) old.remove(); var m = el("div", "pe-cmenu pe-pop"); m.setAttribute("role", "menu");
+		items.forEach(function (it) { if (it === "-") { m.appendChild(el("div", "pe-sep")); return; } var b = el("button", "pe-item", "<span>" + esc(it.label) + "</span>"); b.type = "button"; b.setAttribute("role", "menuitem"); if (it.dis) b.disabled = true; b.addEventListener("click", function () { m.remove(); it.act(); }); m.appendChild(b); });
+		root.appendChild(m); var rr = root.getBoundingClientRect(), w = m.offsetWidth, h = m.offsetHeight; m.style.left = Math.max(4, Math.min(x - rr.left, rr.width - w - 4)) + "px"; m.style.top = Math.max(4, Math.min(y - rr.top, rr.height - h - 4)) + "px";
+		var f = m.querySelector("button:not(:disabled)"); if (f) f.focus();
+		var off = function (e) { if (!m.contains(e.target)) { m.remove(); document.removeEventListener("pointerdown", off, true); document.removeEventListener("keydown", esck, true); } }, esck = function (e) { if (e.key === "Escape") { e.stopPropagation(); m.remove(); document.removeEventListener("pointerdown", off, true); document.removeEventListener("keydown", esck, true); } };
+		setTimeout(function () { document.addEventListener("pointerdown", off, true); document.addEventListener("keydown", esck, true); }, 0);
+	}
+	PE.popMenu = popMenu;
+	function maskItems(L) {
+		if (!L.mask) return [{ label: "◑ Add layer mask", act: function () { PE.addMask(L, true); } }, { label: "? How layer masks work", act: PE.maskHelp }];
+		return [{ label: (L.editMask ? "✓ " : "") + "Paint on the mask", act: function () { L.editMask = true; L.viewMask = false; PE.invalidate(); buildLayers(); PE.emit("paintTarget"); } }, { label: (!L.editMask ? "✓ " : "") + "Paint on the picture", act: function () { L.editMask = false; L.viewMask = false; PE.invalidate(); buildLayers(); PE.emit("paintTarget"); } },
+			{ label: (L.viewMask ? "✓ " : "") + "Show the mask itself (black and white)", act: function () { L.viewMask = !L.viewMask; PE.invalidate(); buildLayers(); } }, { label: L.maskOff ? "Switch the mask on again" : "Switch the mask off for now", act: function () { L.maskOff = !L.maskOff; L.rev++; PE.commit(L.maskOff ? "Switch mask off" : "Switch mask on"); } },
+			"-", { label: "Apply mask (make the hiding permanent)", act: function () { PE.applyMask(L); } }, { label: "Delete mask (show the whole layer)", act: function () { PE.deleteMask(L); } }, "-", { label: "? How layer masks work", act: PE.maskHelp }];
+	}
+	function layerMenu(L, x, y) {
+		var grp = PE.isGroup(L), items = [{ label: "✎ Rename", act: function () { renameLayer(L.id); } }, { label: "⧉ Duplicate", act: function () { PE.duplicateLayer(L); } }];
+		if (!grp) items = items.concat(["-", { label: "fx Layer style: outline, shadow, glow…", act: function () { PE.dlgLayerStyle(L); } }, { label: "⛶ Crop this layer (hide edges)", act: function () { PE.setTool("layercrop"); } }]);
+		if (!grp && L.crop) items.push({ label: "Show the whole layer (uncrop)", act: function () { PE.clearLayerCrop(L); } });
+		if (!grp) items = items.concat(["-"], maskItems(L));
+		items = items.concat(["-", { label: L.locked ? "🔓 Unlock" : "🔒 Lock", act: function () { L.locked = !L.locked; PE.commit(L.locked ? "Lock layer" : "Unlock layer"); } }, { label: "🗑 Delete layer", act: function () { PE.deleteLayer(); } }]);
+		popMenu(items, x, y);
 	}
 	function buildLayers() {
 		var list = $("pe-layers"), d = PE.doc; if (!d) { list.innerHTML = ""; rowCache = {}; return; } var act = PE.active(), rows = rowsTopDown(); PE.relink();
@@ -292,10 +385,32 @@
 	function lbtn(id, fn) { $(id).addEventListener("click", function () { if (PE.doc) fn(); }); }
 	lbtn("pe-lrename", function () { var L = PE.active(); if (L) renameLayer(L.id); }); lbtn("pe-lnew", function () { PE.newRasterLayer(); }); lbtn("pe-lfill", function () { PE.dlgFillLayer(); }); lbtn("pe-lgroup", function () { groupSelected(); }); lbtn("pe-ldup", function () { PE.duplicateLayer(); }); lbtn("pe-ldel", function () { PE.deleteLayer(); }); lbtn("pe-lmerge", function () { PE.mergeDown(); });
 	lbtn("pe-lock", function () { var L = PE.active(); L.locked = !L.locked; PE.commit(L.locked ? "Lock layer" : "Unlock layer"); });
-	lbtn("pe-mask-btn", function () { var L = PE.active(); if (L.mask) PE.deleteMask(L); else PE.addMask(L, true); });
+	lbtn("pe-mask-btn", function () { var L = PE.active(); if (!L) return; if (!L.mask) { PE.addMask(L, true); return; } var r = $("pe-mask-btn").getBoundingClientRect(); popMenu(maskItems(L), r.left, r.bottom + 4); });
+	$("pe-mask-help").addEventListener("click", function () { PE.maskHelp(); });
+	lbtn("pe-lstyle", function () { PE.dlgLayerStyle(); }); lbtn("pe-lcrop", function () { var L = PE.active(); if (!L || PE.isGroup(L)) { PE.toast("Select a layer (not a group) to crop"); return; } PE.setTool("layercrop"); });
+	/* the Layers list: Fill the side column (other panels fold away), a big floating Layers window over the picture, or drag the grip under the list for any height */
+	(function () {
+		var panel = root.querySelector(".pe-panel--layers"), home = panel.parentNode, next = panel.nextSibling, side = $("pe-side"), list = $("pe-layers"), grip = $("pe-lgrip"), fl = null;
+		function apply() {
+			side.classList.toggle("pe-side--lfill", UI.lmode === "fill"); list.style.height = UI.lmode === "fill" || UI.lmode === "big" ? "" : (UI.lh ? UI.lh + "px" : ""); panel.classList.toggle("pe-panel--lsized", !!UI.lh && !UI.lmode);
+			$("pe-lfillbtn").setAttribute("aria-pressed", UI.lmode === "fill" ? "true" : "false"); $("pe-lbigbtn").setAttribute("aria-pressed", UI.lmode === "big" ? "true" : "false"); $("pe-lbigbtn").textContent = UI.lmode === "big" ? "✕ Close" : "⤢ Big";
+			if (UI.lmode === "big" && !fl) { fl = el("div", "pe-lfloat"); fl.setAttribute("role", "dialog"); fl.setAttribute("aria-label", "Layers"); PE.els.stage.appendChild(fl); fl.appendChild(panel); }
+			if (UI.lmode !== "big" && fl) { home.insertBefore(panel, next); fl.remove(); fl = null; }
+		}
+		$("pe-lfillbtn").addEventListener("click", function () { UI.lmode = UI.lmode === "fill" ? "" : "fill"; if (UI.lmode && UI.hide) { UI.hide = false; applyUI(); } saveUI(); apply(); });
+		$("pe-lbigbtn").addEventListener("click", function () { UI.lmode = UI.lmode === "big" ? "" : "big"; saveUI(); apply(); });
+		if (UI.lmode === "big") UI.lmode = "";   // the big Layers window is for now only: a reload starts with the normal list
+		document.addEventListener("keydown", function (e) { if (e.key === "Escape" && UI.lmode === "big" && fl && fl.contains(document.activeElement) && document.activeElement.tagName !== "INPUT") { UI.lmode = ""; saveUI(); apply(); } });
+		grip.addEventListener("pointerdown", function (e) { if (e.button > 0 || UI.lmode) return; e.preventDefault(); grip.setPointerCapture(e.pointerId); var y0 = e.clientY, h0 = list.getBoundingClientRect().height;
+			var mv = function (ev) { UI.lh = Math.round(P.clamp(h0 + ev.clientY - y0, 80, 3000)); list.style.height = UI.lh + "px"; panel.classList.add("pe-panel--lsized"); }, up = function () { grip.removeEventListener("pointermove", mv); grip.removeEventListener("pointerup", up); saveUI(); }; grip.addEventListener("pointermove", mv); grip.addEventListener("pointerup", up); });
+		grip.addEventListener("dblclick", function () { UI.lh = 0; saveUI(); apply(); });
+		grip.addEventListener("keydown", function (e) { if (e.key !== "ArrowUp" && e.key !== "ArrowDown") return; e.preventDefault(); UI.lh = Math.round(P.clamp((UI.lh || list.getBoundingClientRect().height) + (e.key === "ArrowDown" ? 40 : -40), 80, 3000)); saveUI(); apply(); });
+		apply();
+	})();
 
 	/* ---------- status + zoom ---------- */
-	function status() { var d = PE.doc; $("pe-st-doc").textContent = d ? d.w + " × " + d.h + " px" : "No image"; $("pe-zoom").textContent = Math.round(PE.view.zoom * 100) + "%"; var L = PE.active(); $("pe-st-layer").textContent = L ? L.name + " · " + L.canvas.width + "×" + L.canvas.height : ""; }
+	function status() { var d = PE.doc; $("pe-st-doc").textContent = d ? d.w + " × " + d.h + " px" : "No image"; $("pe-zoom").textContent = Math.round(PE.view.zoom * 100) + "%"; var L = PE.active(); $("pe-st-layer").textContent = L ? L.name + " · " + L.canvas.width + "×" + L.canvas.height + (L.mask && !PE.isGroup(L) ? (L.editMask ? " · painting on the MASK" : " · painting on the picture") : "") + (L.crop ? " · cropped" : "") : ""; }
+	PE.on("paintTarget", status); PE.on("active", status);
 	PE.on("view", status); PE.on("docsize", status); PE.on("layers", status); PE.on("pointer", function (p) { $("pe-st-xy").textContent = Math.floor(p.x) + ", " + Math.floor(p.y); });
 	PE.on("cropinfo", function (c) { $("pe-st-xy").textContent = "crop " + c.w + " × " + c.h; });
 	PE.on("docsize", function () { $("pe-empty").hidden = !!PE.doc; });
@@ -442,9 +557,9 @@ $("pe-share").addEventListener("click", function () { if (needDoc()) PE.dlgShare
 		{ label: "Image", items: [{ label: "Image size…", act: function () { PE.dlgImageSize(); } }, { label: "Canvas size…", act: function () { PE.dlgCanvasSize(); } }, { label: "Upscale with AI (2× / 4×)…", act: function () { PE.aiUpscale(); } }, { label: "Crop to selection", act: function () { if (!needDoc()) return; var b = PE.selBounds(); if (!b) { PE.toast("Make a selection first, or use the Crop tool"); return; } PE.cropTo(b.x, b.y, b.w, b.h); } }, { label: "Trim transparent edges", act: function () { if (needDoc()) PE.trim(); } }, "-",
 			{ label: "Rotate / straighten…", act: function () { PE.dlgStraighten(); } }, { label: "Rotate 90° clockwise", act: function () { if (needDoc()) PE.rotateImage(90); } }, { label: "Rotate 90° counter-clockwise", act: function () { if (needDoc()) PE.rotateImage(270); } }, { label: "Rotate 180°", act: function () { if (needDoc()) PE.rotateImage(180); } }, { label: "Flip horizontal", act: function () { if (needDoc()) PE.flipImage(true); } }, { label: "Flip vertical", act: function () { if (needDoc()) PE.flipImage(false); } }, "-", { label: "Flatten image", act: function () { if (needDoc()) PE.flattenImage(); } }] },
 		{ label: "Layer", items: [{ label: "Group layers", key: MOD + "G", act: function () { if (needDoc()) groupSelected(); } }, { label: "Ungroup", key: MOD + "Shift+G", act: function () { if (needDoc()) PE.ungroup(); } }, "-", { label: "New layer (empty)", key: MOD + "Shift+N", act: function () { if (needDoc()) PE.newRasterLayer(); } }, { label: "New solid colour layer… (white, black, any colour)", act: function () { PE.dlgFillLayer(); } }, { label: "Duplicate layer", key: MOD + "J", act: function () { if (needDoc()) PE.duplicateLayer(); } }, { label: "Delete layer", act: function () { if (needDoc()) PE.deleteLayer(); } }, { label: "Layer via copy (selection)", act: function () { if (needDoc()) PE.layerFromSelection(false); } }, { label: "Layer via cut (selection)", act: function () { if (needDoc()) PE.layerFromSelection(true); } }, "-",
-			{ label: "Merge down", key: MOD + "E", act: function () { if (needDoc()) PE.mergeDown(); } }, { label: "Merge visible", act: function () { if (needDoc()) PE.mergeVisible(); } }, "-", { label: "Remove background (AI)…", act: function () { PE.aiRemoveBackground(); } }, { label: "Add layer mask", act: function () { if (needDoc()) PE.addMask(PE.active(), true); } }, { label: "Apply layer mask", act: function () { if (needDoc()) PE.applyMask(); } }, { label: "Delete layer mask", act: function () { if (needDoc()) PE.deleteMask(); } }, { label: "Rasterize text layer", act: function () { var L = PE.active(); if (L && L.type === "text") { PE.rasterize(L); PE.commit("Rasterize"); } } }, "-",
+			{ label: "Merge down", key: MOD + "E", act: function () { if (needDoc()) PE.mergeDown(); } }, { label: "Merge visible", act: function () { if (needDoc()) PE.mergeVisible(); } }, "-", { label: "Remove background (AI)…", act: function () { PE.aiRemoveBackground(); } }, { label: "Add layer mask", act: function () { if (needDoc()) PE.addMask(PE.active(), true); } }, { label: "Apply layer mask", act: function () { if (needDoc()) PE.applyMask(); } }, { label: "Delete layer mask", act: function () { if (needDoc()) PE.deleteMask(); } }, { label: "How layer masks work", act: function () { PE.maskHelp(); } }, { label: "Rasterize text layer", act: function () { var L = PE.active(); if (L && L.type === "text") { PE.rasterize(L); PE.commit("Rasterize"); } } }, "-",
 			{ label: "Align: left", act: function () { align("left"); } }, { label: "Align: centre horizontally", act: function () { align("hcenter"); } }, { label: "Align: right", act: function () { align("right"); } }, { label: "Align: top", act: function () { align("top"); } }, { label: "Align: centre vertically", act: function () { align("vcenter"); } }, { label: "Align: bottom", act: function () { align("bottom"); } }, "-",
-			{ label: "Drop shadow / glow…", act: function () { PE.dlgEffect("shadow"); } }, { label: "Outline…", act: function () { PE.dlgEffect("outline"); } }, { label: "Round corners…", act: function () { PE.dlgRoundCorners(); } }, "-", { label: "Fit layer inside canvas", act: function () { fitLayer(false); } }, { label: "Fill canvas with layer", act: function () { fitLayer(true); } }, { label: "Reset layer scale / rotation", act: resetTransform }, { label: "Flip layer horizontally", act: function () { if (needDoc()) PE.flipLayer(true); } }, { label: "Flip layer vertically", act: function () { if (needDoc()) PE.flipLayer(false); } }, "-", { label: "Move layer up", act: function () { var L = PE.active(); if (L) PE.stepLayer(L, 1); } }, { label: "Move layer down", act: function () { var L = PE.active(); if (L) PE.stepLayer(L, -1); } }, { label: "Bring to front", act: function () { var L = PE.active(); if (L) PE.stepLayer(L, 999); } }, { label: "Send to back", act: function () { var L = PE.active(); if (L) PE.stepLayer(L, -999); } }] },
+			{ label: "Layer style: outline…", act: function () { PE.dlgLayerStyle(null, "outline"); }, title: "A live outline around the layer's visible pixels: change or remove it any time" }, { label: "Layer style: drop shadow…", act: function () { PE.dlgLayerStyle(null, "shadow"); } }, { label: "Layer style: glow…", act: function () { PE.dlgLayerStyle(null, "glow"); } }, { label: "Outline / shadow as a new layer (pixels)…", act: function () { PE.dlgEffect("outline"); } }, { label: "Crop layer (hide its edges)", key: "Y", act: function () { var L = PE.active(); if (needDoc() && L && !PE.isGroup(L)) PE.setTool("layercrop"); } }, { label: "Show the whole layer (uncrop)", act: function () { if (needDoc()) PE.clearLayerCrop(); } }, { label: "Round corners…", act: function () { PE.dlgRoundCorners(); } }, "-", { label: "Fit layer inside canvas", act: function () { fitLayer(false); } }, { label: "Fill canvas with layer", act: function () { fitLayer(true); } }, { label: "Reset layer scale / rotation", act: resetTransform }, { label: "Flip layer horizontally", act: function () { if (needDoc()) PE.flipLayer(true); } }, { label: "Flip layer vertically", act: function () { if (needDoc()) PE.flipLayer(false); } }, "-", { label: "Move layer up", act: function () { var L = PE.active(); if (L) PE.stepLayer(L, 1); } }, { label: "Move layer down", act: function () { var L = PE.active(); if (L) PE.stepLayer(L, -1); } }, { label: "Bring to front", act: function () { var L = PE.active(); if (L) PE.stepLayer(L, 999); } }, { label: "Send to back", act: function () { var L = PE.active(); if (L) PE.stepLayer(L, -999); } }] },
 		{ label: "Adjust", items: adj(PE.ADJUST) }, { label: "Filter", items: adj(PE.FILTERS) },
 		{ label: "View", items: [{ label: "Zoom in", key: MOD + "+", act: function () { PE.setZoom(PE.view.zoom * 1.25); } }, { label: "Zoom out", key: MOD + "−", act: function () { PE.setZoom(PE.view.zoom / 1.25); } }, { label: "Fit on screen", key: MOD + "0", act: function () { PE.fit(); } }, { label: "Actual pixels (100%)", key: MOD + "1", act: function () { PE.setZoom(1); } }, "-", { label: "Pixel grid (when zoomed in)", act: function () { PE.showGrid = !PE.showGrid; PE.invalidate(); } }, { label: "Full window mode", key: "F", act: function () { toggleWin(); } }] },
 		{ label: "Help", items: [{ label: "Keyboard shortcuts", act: shortcuts }, { label: "Tips for labels, arrows and callouts", act: tips }] }

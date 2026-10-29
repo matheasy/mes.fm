@@ -201,7 +201,7 @@
 	/* how far (image px) the style reaches past the layer's pixels: for bounding boxes (XCF export) */
 	PE.fxReach = function (L) { if (!fxOn(L)) return 0; var f = L.fx, r = 0; if (f.outline && f.outline.on && f.outline.pos !== "inside") r = f.outline.w; if (f.shadow && f.shadow.on) r = Math.max(r, f.shadow.blur * 2 + Math.max(Math.abs(f.shadow.dx), Math.abs(f.shadow.dy))); return Math.ceil(r) + 2; };
 	function fxCanvases(L) {
-		var f = L.fx, cw = L.canvas.width, ch = L.canvas.height, sc = Math.max(0.01, Math.sqrt(Math.abs(L.sx * L.sy))), key = [L.rev, cw, ch, L.sx, L.sy, L.rot, JSON.stringify(L.crop), JSON.stringify(f), !!L.mask].join("|"), k = L._fxc;
+		var f = L.fx, cw = L.canvas.width, ch = L.canvas.height, sc = Math.max(0.01, Math.sqrt(Math.abs(L.sx * L.sy))), key = [L.rev, cw, ch, L.sx, L.sy, L.rot, JSON.stringify(L.crop), JSON.stringify(f), !!L.mask, !!L.maskOff].join("|"), k = L._fxc;
 		if (k && k.key === key && k.c === L.canvas) return k.r;
 		var ol = f.outline && f.outline.on && f.outline.w > 0 ? f.outline : null, sh = f.shadow && f.shadow.on ? f.shadow : null, olw = ol ? ol.w / sc : 0;
 		// the shadow offset is on the image (down-right stays down-right however the layer is turned): back into the layer's own axes
@@ -209,7 +209,7 @@
 		var mg = Math.ceil(Math.max(ol && ol.pos !== "inside" ? olw : 0, sh ? sbl * 2 + Math.max(Math.abs(sdx), Math.abs(sdy)) : 0)) + 2, W = cw + mg * 2, H = ch + mg * 2, r = { mg: mg, under: null, over: null };
 		if (W * H > 24e6) { L._fxc = { key: key, c: L.canvas, r: r }; return r; }   // too big to work out in a browser: drawn without the style
 		var src = mk(W, H), sx = src.getContext("2d"); sx.drawImage(L.canvas, mg, mg);
-		if (L.mask) { sx.globalCompositeOperation = "destination-in"; sx.drawImage(L.mask, mg, mg); }
+		if (L.mask && !L.maskOff) { sx.globalCompositeOperation = "destination-in"; sx.drawImage(L.mask, mg, mg); }
 		if (L.crop) { sx.globalCompositeOperation = "destination-in"; sx.fillStyle = "#000"; sx.fillRect(mg + L.crop.x, mg + L.crop.y, L.crop.w, L.crop.h); }
 		sx.globalCompositeOperation = "source-over";
 		var under = null, over = null;
@@ -231,8 +231,9 @@
 	function clipCrop(x, L) { var cr = L.crop; if (!cr) return; x.beginPath(); x.rect(cr.x - L.canvas.width / 2, cr.y - L.canvas.height / 2, cr.w, cr.h); x.clip(); }
 	function drawLayer(ctx, L, base, tmpKey, w, h) {
 		if (PE.isGroup(L) || !L.visible) return; var op = L.opacity; for (var gp = L._p; gp; gp = gp._p) { if (!gp.visible) return; op *= gp.opacity; } if (op <= 0) return;
-		var src = L.preview || L.canvas, cw = L.canvas.width, ch = L.canvas.height, m = matrix(L), fx = fxOn(L) && !L.noFx ? fxCanvases(L) : null;
-		var needTmp = L.mask || L.live || fx;
+		var src = L.preview || L.canvas, cw = L.canvas.width, ch = L.canvas.height, m = matrix(L), fx = fxOn(L) && !L.noFx ? fxCanvases(L) : null, msk = L.mask && !L.maskOff ? L.mask : null;
+		if (L.mask && L.viewMask && PE.maskView) { src = PE.maskView(L); msk = null; fx = null; }   // Alt-click on the mask box: show the mask itself (white = shown)
+		var needTmp = msk || L.live || fx;
 		if (!needTmp) {
 			ctx.save(); ctx.globalAlpha = op; ctx.globalCompositeOperation = L.blend;
 			ctx.setTransform(base[0] * m[0] + base[2] * m[1], base[1] * m[0] + base[3] * m[1], base[0] * m[2] + base[2] * m[3], base[1] * m[2] + base[3] * m[3], base[0] * m[4] + base[2] * m[5] + base[4], base[1] * m[4] + base[3] * m[5] + base[5]);
@@ -244,7 +245,7 @@
 		clipCrop(tx, L);
 		tx.drawImage(src, -cw / 2, -ch / 2, cw, ch);
 		if (L.live && L.live.target !== "mask") { tx.globalCompositeOperation = L.live.erase ? "destination-out" : "source-over"; tx.globalAlpha = L.live.alpha; tx.drawImage(L.live.buf, -cw / 2, -ch / 2); tx.globalAlpha = 1; }
-		if (L.mask) {
+		if (msk) {
 			tx.globalCompositeOperation = "destination-in";
 			if (L.live && L.live.target === "mask") { var mm = PE.tmp(tmpKey + "m", L.mask.width, L.mask.height), mc = mm.getContext("2d"); mc.drawImage(L.mask, 0, 0); mc.globalCompositeOperation = L.live.erase ? "destination-out" : "source-over"; mc.globalAlpha = L.live.alpha; mc.drawImage(L.live.buf, 0, 0); tx.drawImage(mm, -cw / 2, -ch / 2); }
 			else tx.drawImage(L.mask, -cw / 2, -ch / 2);
@@ -366,7 +367,7 @@
 	var H = PE.hist = { stack: [], idx: -1 };
 	function snapLayer(L) {
 		var s = L._snap; if (!s || s.rev !== L.rev || (L.mask ? !s.m : !!s.m)) { s = L._snap = { rev: L.rev, c: clone(L.canvas), m: L.mask ? clone(L.mask) : null }; }
-		return { meta: { id: L.id, group: L.group, collapsed: L.collapsed, name: L.name, type: L.type, cx: L.cx, cy: L.cy, sx: L.sx, sy: L.sy, rot: L.rot, visible: L.visible, opacity: L.opacity, blend: L.blend, locked: L.locked, text: L.text ? JSON.parse(JSON.stringify(L.text)) : null, eq: L.eq ? JSON.parse(JSON.stringify(L.eq)) : null, editMask: L.editMask, src: L.src || null, crop: L.crop ? Object.assign({}, L.crop) : null, fx: L.fx ? JSON.parse(JSON.stringify(L.fx)) : null }, snap: s };
+		return { meta: { id: L.id, group: L.group, collapsed: L.collapsed, name: L.name, type: L.type, cx: L.cx, cy: L.cy, sx: L.sx, sy: L.sy, rot: L.rot, visible: L.visible, opacity: L.opacity, blend: L.blend, locked: L.locked, text: L.text ? JSON.parse(JSON.stringify(L.text)) : null, eq: L.eq ? JSON.parse(JSON.stringify(L.eq)) : null, editMask: L.editMask, maskOff: !!L.maskOff, src: L.src || null, crop: L.crop ? Object.assign({}, L.crop) : null, fx: L.fx ? JSON.parse(JSON.stringify(L.fx)) : null }, snap: s };
 	}
 	var lastSel = { ver: -1, obj: null };
 	function takeSnapshot(label) {
@@ -485,8 +486,8 @@
 		if (fromSel && PE.sel) { var o = PE.origin(L); x.drawImage(PE.sel.c, -o.x, -o.y); } else { x.fillStyle = "#000"; x.fillRect(0, 0, m.width, m.height); }
 		L.mask = m; L.editMask = true; L.rev++; PE.commit("Add layer mask");
 	};
-	PE.applyMask = function (L) { L = L || PE.active(); if (!L || !L.mask) return; PE.bake(L); var x = L.canvas.getContext("2d"); x.save(); x.globalCompositeOperation = "destination-in"; x.drawImage(L.mask, 0, 0); x.restore(); L.mask = null; L.editMask = false; L.rev++; PE.commit("Apply layer mask"); };
-	PE.deleteMask = function (L) { L = L || PE.active(); if (!L || !L.mask) return; L.mask = null; L.editMask = false; L.rev++; PE.commit("Delete layer mask"); };
+	PE.applyMask = function (L) { L = L || PE.active(); if (!L || !L.mask) return; PE.bake(L); var x = L.canvas.getContext("2d"); x.save(); x.globalCompositeOperation = "destination-in"; x.drawImage(L.mask, 0, 0); x.restore(); L.mask = null; L.editMask = false; L.maskOff = false; L.viewMask = false; L.rev++; PE.commit("Apply layer mask"); };
+	PE.deleteMask = function (L) { L = L || PE.active(); if (!L || !L.mask) return; L.mask = null; L.editMask = false; L.maskOff = false; L.viewMask = false; L.rev++; PE.commit("Delete layer mask"); };
 
 	/* ---------- comps (scenes): named states of every layer's visibility, position, scale, rotation, opacity and blend mode (like Photoshop layer comps). Layers that did not exist when a comp was
 	   saved are hidden when it is applied, so a comp always shows what it showed. "Export all comps" turns one project with many groups into a set of pictures. ---------- */
@@ -560,7 +561,7 @@
 	PE.projectBlob = function () {
 		var d = PE.doc, files = [], metas = [], jobs = [];
 		d.layers.forEach(function (L) {
-			var m = { id: L.id, group: L.group, collapsed: L.collapsed, name: L.name, type: L.type, cx: L.cx, cy: L.cy, sx: L.sx, sy: L.sy, rot: L.rot, visible: L.visible, opacity: L.opacity, blend: L.blend, locked: L.locked, text: L.text, w: L.canvas.width, h: L.canvas.height, hasMask: !!L.mask, eq: L.eq || null, src: L.src ? Object.assign({}, L.src, { hk: undefined }) : null, crop: L.crop || null, fx: L.fx || null }; metas.push(m);
+			var m = { id: L.id, group: L.group, collapsed: L.collapsed, name: L.name, type: L.type, cx: L.cx, cy: L.cy, sx: L.sx, sy: L.sy, rot: L.rot, visible: L.visible, opacity: L.opacity, blend: L.blend, locked: L.locked, text: L.text, w: L.canvas.width, h: L.canvas.height, hasMask: !!L.mask, eq: L.eq || null, src: L.src ? Object.assign({}, L.src, { hk: undefined }) : null, crop: L.crop || null, fx: L.fx || null, maskOff: !!L.maskOff }; metas.push(m);
 			jobs.push(canvasBytes(L.canvas).then(function (u) { files.push({ name: "layer-" + L.id + ".png", data: u }); }));
 			if (L.mask) jobs.push(canvasBytes(L.mask).then(function (u) { files.push({ name: "mask-" + L.id + ".png", data: u }); }));
 		});
@@ -590,7 +591,7 @@
 		var by = {}; files.forEach(function (f) { by[f.name] = f.data; }); if (!by["project.json"]) return Promise.reject(new Error("Not a MES project file"));
 		var p = JSON.parse(new TextDecoder().decode(by["project.json"])), layers = [];
 		return Promise.all(p.layers.map(function (m, i) {
-			return loadPng(by["layer-" + m.id + ".png"]).then(function (c) { var L = PE.makeLayer({ canvas: c, name: m.name, type: m.type, text: m.text }); L.id = m.id; L.eq = m.eq || null; L.src = m.src || (m.type === "group" ? null : { how: fileName === "autosave" ? "autosave" : "project", file: fileName === "autosave" ? "" : fileName || "" }); ["cx", "cy", "sx", "sy", "rot", "visible", "opacity", "blend", "locked", "group", "collapsed"].forEach(function (k) { if (m[k] !== undefined) L[k] = m[k]; }); L.crop = m.crop ? P.clampCrop(m.crop, c.width, c.height) : null; L.fx = m.fx && typeof m.fx === "object" ? m.fx : null; layers[i] = L; return m.hasMask ? loadPng(by["mask-" + m.id + ".png"]).then(function (mc) { L.mask = mc; }) : null; });
+			return loadPng(by["layer-" + m.id + ".png"]).then(function (c) { var L = PE.makeLayer({ canvas: c, name: m.name, type: m.type, text: m.text }); L.id = m.id; L.eq = m.eq || null; L.src = m.src || (m.type === "group" ? null : { how: fileName === "autosave" ? "autosave" : "project", file: fileName === "autosave" ? "" : fileName || "" }); ["cx", "cy", "sx", "sy", "rot", "visible", "opacity", "blend", "locked", "group", "collapsed"].forEach(function (k) { if (m[k] !== undefined) L[k] = m[k]; }); L.crop = m.crop ? P.clampCrop(m.crop, c.width, c.height) : null; L.fx = m.fx && typeof m.fx === "object" ? m.fx : null; L.maskOff = !!m.maskOff; layers[i] = L; return m.hasMask ? loadPng(by["mask-" + m.id + ".png"]).then(function (mc) { L.mask = mc; }) : null; });
 		})).then(function () {
 			PE.doc = { w: p.w, h: p.h, layers: layers, activeId: p.active, next: p.next || 1000, name: p.name || "Untitled", comps: p.comps || [], pid: p.pid || opts.pid || P.newProjectId(), file: PE.mkSrc(fileName === "autosave" ? { how: "autosave" } : Object.assign({ how: "project", file: fileName }, meta || {}, { how: "project" })) }; PE.relink(); PE.sel = null; H.stack = []; H.idx = -1; lastSel = { ver: -1 };
 			PE.commit("Open project"); PE.dirty = false; PE.emit("docsize"); PE.emit("sel"); PE.fit();

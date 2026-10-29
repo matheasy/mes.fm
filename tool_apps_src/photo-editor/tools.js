@@ -442,6 +442,7 @@
 		var pre = (function () { var q = PE.origin(L); return { x: q.x, y: q.y, w: L.canvas.width, h: L.canvas.height }; })();   // the layer as it was: after the stroke it only grows as far as the paint reached
 		PE.growLayer(L, { x: 0, y: 0, w: PE.doc.w, h: PE.doc.h });
 		var o = PE.opt[kind === "eraser" ? "eraser" : kind === "clone" ? "clone" : kind === "retouch" ? "retouch" : "brush"], cv = mask ? L.mask : L.canvas, og = PE.origin(L), erase = kind === "eraser";
+		if (mask && kind === "brush") erase = P.lightness(PE.fg) < 0.5;   // on a layer mask the Brush follows the colour: dark hides, light shows (like other editors)
 		var hex = mask ? "#000000" : (erase ? "#000000" : PE.fg);
 		stroke = { kind: kind, L: L, o: o, og: og, target: mask ? "mask" : "pixel", buf: mk(cv.width, cv.height), erase: erase, alpha: (o.opacity == null ? 100 : o.opacity) / 100, col: { solid: rgba(hex, 1), clear: rgba(hex, 0) }, last: null, rem: 0, sm: { x: e.x, y: e.y }, n: 0, pre: pre, bb: null };
 		L.live = { buf: stroke.buf, erase: erase, alpha: stroke.alpha, target: stroke.target };
