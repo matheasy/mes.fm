@@ -21,6 +21,18 @@ ROOT = Path(__file__).resolve().parent
 SITE = ROOT / "mes.fm"
 APPLY = "--apply" in sys.argv
 
+# pages that must never be recommended anywhere (sidebar pools, cluster pools...), though they stay live and in their hub lists (2026-10-28, owner request)
+NO_RECOMMEND = {"/kj-french-911-100k"}
+
+
+def drop_excluded(o):
+    """Remove every card whose "u" is in NO_RECOMMEND, at any depth of the output."""
+    if isinstance(o, dict):
+        return {k: drop_excluded(v) for k, v in o.items()}
+    if isinstance(o, list):
+        return [drop_excluded(v) for v in o if not (isinstance(v, dict) and v.get("u") in NO_RECOMMEND)]
+    return o
+
 CALC = {   # path -> (kind, tags)
     "/calculator": ("Calculator", ["everyday", "algebra", "school"]),
     "/derivative-calculator": ("Calculator", ["calculus", "school", "algebra"]),
@@ -245,6 +257,7 @@ def main():
         ctx[pat] = [{"u": u, "t": t, "i": logos.get(lg, lg + "/img/logo.png"), "k": "Try it"} for u, t, lg in cards]
     out["ctx"] = ctx
     print("calc %d, math %d, mathall %d, qa %d, ctx patterns %d" % (len(calc), len(math), len(allm), len(qa), len(ctx)))
+    out = drop_excluded(out)
     text = json.dumps(out, ensure_ascii=False, separators=(",", ":"))
     if APPLY:
         (SITE / "main_js" / "aside-recs.json").write_text(text, encoding="utf-8")
