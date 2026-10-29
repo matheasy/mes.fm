@@ -438,6 +438,14 @@ APPS = {
                          tag="Pro tools. No upload. No sign-up.", accent="#7c3aed", dark="#5b21b6", tint="#f1eafe",
                          desc="Free online photo editor with layers, selections, magic wand, clone stamp, levels and curves. Add text labels, arrows, callouts and blur boxes to screenshots, combine images, keep transparency, open PSD and GIMP (.xcf) files and export PNG, JPEG or WebP. Private: nothing is uploaded.",
                          js_v="27", js_parts=["core.js", "tools.js", "tools2.js", "dialogs.js", "ai.js", "aiort.js", "erase.js", "upscale.js", "equation.js", "xcf.js", "files.js", "projects.js", "round7.js"], lib_from=["image-converter"]),
+    # MES Audio Editor (mes.fm/audio): Audacity-style multi-track editor with AI noise removal. lib.js = MESAudio (clip model, edits, mixdown, peaks, fades, EQ,
+    # BS.1770 loudness / true peak, limiter, compressor, de-click, WAV; node-tested with the shared denoiser: tool_apps_src/audio-tests.js), app.js = UI.
+    # The noise removal is the shared /main_js/denoise.js (MESDenoise: DeepFilterNet3 ONNX + RNNoise wasm + spectral gate), also used by the video editor.
+    "audio": dict(title="MES Audio Editor", page_title="Free Online Audio Editor with AI Noise Removal",
+                         tag="Cut, clean and export audio. No upload. No sign-up.", accent="#0369a1", dark="#075985", tint="#e0f2fe",
+                         desc="Free online audio editor with AI noise removal: open audio or the sound of a video, remove background noise, hum and clicks, cut, fade and arrange tracks, set the loudness to -14 or -16 LUFS and export WAV, MP3 or M4A. Runs in your browser: nothing is uploaded.",
+                         meta_desc="Free online audio editor with AI noise removal. Cut, fade, clean up voice, set LUFS loudness and export WAV, MP3 or M4A. Runs in your browser, nothing uploaded.",
+                         js_v="1", pre_js=["/main_js/denoise.js?v=1"]),
     # Bulk Image Converter: PNG / JPEG / WebP in bulk in the browser (canvas), optional resize, ZIP download. lib.js = MESImg (formats, sizes, names, ZIP writer; node-tested: tool_apps_src/image-converter-tests.js), shared with the photo editor.
     "image-converter": dict(title="MES Bulk Image Converter", page_title="Bulk Image Converter: PNG to JPG, JPG to PNG, WebP",
                          tag="Convert many images at once. Nothing is uploaded.", accent="#0f766e", dark="#0b5a54", tint="#e2f3f1",

@@ -53,6 +53,10 @@ function rms(x, a, b) { var s = 0, i; a = a || 0; b = b || x.length; for (i = a;
 	var cleaned = D.humRemove([hum], sr, { base: "auto" })[0];
 	var h50 = function (a) { var c = 0, d = 0; for (var k = sr; k < 2 * sr; k++) { c += a[k] * Math.cos(2 * Math.PI * 50 * k / sr); d += a[k] * Math.sin(2 * Math.PI * 50 * k / sr); } return Math.hypot(c, d); };
 	ok(h50(cleaned) < h50(hum) / 30, "hum removal cuts 50 Hz by > 30 dB");
+	var drift = new Float32Array(sr * 4); for (i = 0; i < drift.length; i++) drift[i] = 0.2 * Math.sin(2 * Math.PI * 59.94 * i / sr) + 0.05 * Math.sin(2 * Math.PI * 119.88 * i / sr);
+	near(D.refineHum([drift], sr, 60), 59.94, 0.021, "finds the exact hum frequency (59.94 Hz)");
+	var voice = new Float32Array(sr * 2), r5 = rng(2); for (i = 0; i < voice.length; i++) { var tv = i / sr, f0 = 110 + 25 * Math.sin(tv * 2); voice[i] = 0.1 * (Math.sin(2 * Math.PI * f0 * tv) + 0.5 * Math.sin(4 * Math.PI * f0 * tv)) + 0.01 * r5(); }
+	ok(D.siSdr(voice, D.humRemove([voice], sr, { base: 60, refine: false })[0]) > 20, "hum notches barely touch a voice-like signal");
 	near(rms(D.humRemove([tone(sr, 1, 1000, 0.5)], sr, { base: 50 })[0], 2000, 46000), rms(tone(sr, 1, 1000, 0.5)), 0.01, "hum notches leave 1 kHz alone");
 	/* spectral gate: noise-profile denoising improves a tone in white noise and learns from a noise sample */
 	var clean = tone(sr, 3, 440, 0.3); for (i = 0; i < clean.length; i++) clean[i] *= i > sr && i < 2 * sr ? 1 : 0;
