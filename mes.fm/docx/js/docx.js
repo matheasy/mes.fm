@@ -1382,6 +1382,30 @@ var MESDocx = (function () {
 	}
 	$("dx-print").onclick = printDoc;
 
+	/* ---------- read aloud: the MES Read Aloud engine (main_js/site-read-aloud.js, the browser extension's reader) reads the open document.
+	   The page hands it the text through window.__mesraSource: the pages of the open tab (inside its shadow root) or the editor, starting at
+	   the selected text, else at the first paragraph on screen. The header's speaker button uses the same source. ---------- */
+	function readStart() {
+		var r = activeRoot(); if (!r) return null;
+		try { var sh = cur && cur.mode !== "edit" && cur.shadow, sel = sh && sh.getSelection ? sh.getSelection() : window.getSelection(); if (sel && !sel.isCollapsed && sel.anchorNode && r.contains(sel.anchorNode)) return sel.anchorNode; } catch (e) {}
+		var vr = view.getBoundingClientRect(), ps = r.querySelectorAll("p,li,h1,h2,h3,h4,h5,h6,td");
+		for (var i = 0; i < ps.length; i++) { var b = ps[i].getBoundingClientRect(); if (b.height && b.bottom > vr.top + 10) return i ? ps[i] : null; }
+		return null;
+	}
+	window.__mesraSource = { roots: function () { var r = activeRoot(); return r ? [r] : []; }, start: readStart };
+	var raLoading = false;
+	function readAloud() {
+		if (!cur) return;
+		if (window.MESReadAloud) { if (window.MESReadAloud.isActive && window.MESReadAloud.isActive()) window.MESReadAloud.toggle(); else window.MESReadAloud.read(); return; }
+		if (raLoading) return; raLoading = true; $("dx-read").setAttribute("aria-busy", "true");
+		var sc = document.createElement("script"); sc.src = "/main_js/site-read-aloud.js?v=1";
+		sc.onload = function () { raLoading = false; $("dx-read").removeAttribute("aria-busy"); if (window.MESReadAloud) window.MESReadAloud.read(); };
+		sc.onerror = function () { raLoading = false; $("dx-read").removeAttribute("aria-busy"); toast("Read aloud could not load. Check your connection and try again."); };
+		document.head.appendChild(sc);
+	}
+	$("dx-read").onclick = readAloud;
+	document.addEventListener("keydown", function (e) { if (e.altKey && e.shiftKey && e.code === "KeyR" && cur) { e.preventDefault(); readAloud(); } });
+
 	/* ---------- mode / dark paper / fill window / full screen ---------- */
 	$("dx-mview").onclick = function () { if (cur && cur.mode !== "view") setMode(cur, "view"); };
 	$("dx-medit").onclick = function () { if (cur && cur.mode !== "edit") setMode(cur, "edit"); };
@@ -1426,7 +1450,7 @@ var MESDocx = (function () {
 		var on = !!cur, edit = on && cur.mode === "edit";
 		$("dx-mview").setAttribute("aria-pressed", String(!edit)); $("dx-medit").setAttribute("aria-pressed", String(edit));
 		$("dx-edbar").hidden = !edit;
-		["dx-mview", "dx-medit", "dx-zin", "dx-zout", "dx-zoom", "dx-fit", "dx-print", "dx-dl"].forEach(function (id) { $(id).disabled = !on; });
+		["dx-mview", "dx-medit", "dx-zin", "dx-zout", "dx-zoom", "dx-fit", "dx-print", "dx-dl", "dx-read"].forEach(function (id) { $(id).disabled = !on; });
 		$("dx-medit").disabled = !on || (!cur.bytes && !cur.editEl);
 		$("dx-paper").setAttribute("aria-pressed", String(!!S.dark));
 		if (!on) $("dx-zoom").textContent = "100%";

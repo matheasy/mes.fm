@@ -864,5 +864,57 @@
 	});
 	/* the width mode (Standard / Wide / Theatre), the sidebar and Full window all change the room: keep a fit-to-width zoom fitted */
 	if (window.ResizeObserver) { var ro, last = 0; new ResizeObserver(function () { var w = view.clientWidth; if (Math.abs(w - last) < 4) return; last = w; clearTimeout(ro); ro = setTimeout(refit, 150); }).observe(view); }
+	/* ---- read aloud: the MES Read Aloud engine (main_js/site-read-aloud.js, the browser extension's reader) reads the PDF's own text.
+	   Each page gets an invisible text layer (one span per line, from pdf.js getTextContent grouped by PDM.groupText), laid out at zoom 1
+	   and scaled with the page, so the word being read is highlighted on the page itself. Reading starts at the page you are on. Text you
+	   added with the tools is not read (only the PDF's own text). The header's speaker button uses the same source (window.__mesraSource). */
+	var measureCtx = document.createElement("canvas").getContext("2d");
+	async function textLayer(p) {
+		var el = PD.pageEl(p); if (!el || p.blank || !p.proxy) return 0;
+		var tl = el.querySelector(".pd-tl");
+		if (!tl || tl._key !== (p.rot0 + p.rot)) {
+			if (tl) tl.remove();
+			if (!p._lines) { try { var tc = await p.proxy.getTextContent(); p._lines = M.groupText(tc.items, tc.styles); } catch (e) { p._lines = []; } }
+			var vp = PD.vp(p, 1); tl = document.createElement("div"); tl.className = "pd-tl"; tl._key = p.rot0 + p.rot;
+			tl.style.width = vp.width + "px"; tl.style.height = vp.height + "px"; tl.setAttribute("aria-hidden", "false");
+			var q = (p.rot0 + p.rot) % 180 === 90;
+			p._lines.forEach(function (l) {
+				var a = vp.toView(l.x, l.y - 0.22 * l.size), b = vp.toView(l.x + l.w, l.y + 0.88 * l.size), x = Math.min(a[0], b[0]), y = Math.min(a[1], b[1]), w = Math.abs(a[0] - b[0]), h = Math.abs(a[1] - b[1]);
+				if (w < 1 || h < 1) return;
+				var sp = document.createElement("span"), fs = (q ? w : h) * 0.9; sp.textContent = l.text + " ";   // the space keeps the last word of a line apart from the next line's first
+				measureCtx.font = fs + "px sans-serif"; var mw = measureCtx.measureText(l.text).width || 1;
+				sp.style.cssText = "left:" + x + "px;top:" + y + "px;font-size:" + fs + "px;height:" + (q ? w : h) + "px;transform:" + (q ? "translate(" + w + "px,0) rotate(90deg) " : "") + "scaleX(" + ((q ? h : w) / mw) + ")";
+				tl.appendChild(sp);
+			});
+			el.appendChild(tl);
+		}
+		tl.style.transform = "scale(" + PD.zoom + ")";
+		return tl.childNodes.length;
+	}
+	PD.on("layout", function () { if (PD.doc) PD.doc.pages.forEach(function (p) { var el = PD.pageEl(p), tl = el && el.querySelector(".pd-tl"); if (tl) { if (tl._key !== (p.rot0 + p.rot)) tl.remove(); else tl.style.transform = "scale(" + PD.zoom + ")"; } }); });
+	function readStart() {
+		var p = PD.doc && PD.doc.pages[Math.max(0, PD.cur)], v = $("pd-view").getBoundingClientRect();
+		if (PD.doc) for (var i = 0; i < PD.doc.pages.length; i++) { var el = PD.pageEl(PD.doc.pages[i]); if (el && el.getBoundingClientRect().bottom > v.top + 40) { p = PD.doc.pages[i]; break; } }
+		var el2 = p && PD.pageEl(p), tl = el2 && el2.querySelector(".pd-tl");
+		return tl && PD.doc.pages.indexOf(p) > 0 ? tl : null;
+	}
+	window.__mesraSource = { roots: function () { return PD.doc ? [].slice.call(document.querySelectorAll("#pd-pages .pd-tl")) : []; }, start: readStart };
+	var raLoading = false, raBtn = $("pd-read");
+	async function readAloud() {
+		if (!PD.doc) { PD.toast("Open a PDF first"); return; }
+		if (window.MESReadAloud && window.MESReadAloud.isActive && window.MESReadAloud.isActive()) { window.MESReadAloud.toggle(); return; }
+		if (raLoading) return; raLoading = true; raBtn.setAttribute("aria-busy", "true");
+		var n = 0; if (PD.doc.pages.length > 20) PD.toast("Getting the text of " + PD.doc.pages.length + " pages…", 4000);
+		for (var i = 0; i < PD.doc.pages.length; i++) n += await textLayer(PD.doc.pages[i]);
+		if (!n) { raLoading = false; raBtn.removeAttribute("aria-busy"); PD.toast("This PDF has no text to read: it is probably a scan (pictures of pages). mes.fm/image-to-text can read text from a picture.", 6000); return; }
+		var go = function () { raLoading = false; raBtn.removeAttribute("aria-busy"); if (window.MESReadAloud) window.MESReadAloud.read(); };
+		if (window.MESReadAloud) { go(); return; }
+		var sc = document.createElement("script"); sc.src = "/main_js/site-read-aloud.js?v=1"; sc.onload = go;
+		sc.onerror = function () { raLoading = false; raBtn.removeAttribute("aria-busy"); PD.toast("Read aloud could not load. Check your connection and try again."); };
+		document.head.appendChild(sc);
+	}
+	raBtn.onclick = readAloud;
+	document.addEventListener("keydown", function (e) { if (e.altKey && e.shiftKey && e.code === "KeyR" && PD.doc) { e.preventDefault(); readAloud(); } });
+	PD.on("open", function () { if (window.MESReadAloud) window.MESReadAloud.stop(); });
 	PD.status();
 })();

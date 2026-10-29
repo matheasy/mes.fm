@@ -41,3 +41,9 @@
 	@media (max-width:760px) {.pd {height:clamp(520px,calc(100vh - 110px),1100px);} .pd-main {flex-direction:column;} .pd-tools {flex-direction:row;width:100%;border-right:0;border-bottom:1px solid var(--pd-line);overflow-x:auto;overflow-y:hidden;} .pd-tool {min-width:4.2em;} .pd-thumbs {width:100%;flex-direction:row;overflow-x:auto;overflow-y:hidden;border-right:0;border-bottom:1px solid var(--pd-line);max-height:9.5em;} .pd-th {width:6.3em;flex:none;} .pd-view {flex:1 1 auto;min-height:0;} .pd-fname {max-width:9em;}}
 	@media print {.pd {display:none;}}
 	.pd .pd-empty-s a {color:#8ec5ff;text-decoration:underline;}
+
+/* read aloud: an invisible text layer over each page (laid out at zoom 1, scaled with the page) that the MES Read Aloud engine highlights */
+.pd-page .pd-tl {position:absolute;left:0;top:0;transform-origin:0 0;pointer-events:none;z-index:2;}
+.pd-page .pd-tl span {position:absolute;white-space:pre;color:transparent;line-height:1;transform-origin:0 0;font-family:sans-serif;}
+.pd-page .pd-tl span::highlight(mesra-sentence) {color:transparent;background-color:rgba(255,213,74,0.28);}
+.pd-page .pd-tl span::highlight(mesra-word) {color:transparent;background-color:rgba(255,190,0,0.55);}
