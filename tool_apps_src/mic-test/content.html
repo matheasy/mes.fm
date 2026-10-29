@@ -1,0 +1,107 @@
+	<script>try{if(!localStorage.getItem('pageMode')){document.documentElement.classList.add('page-wide')}}catch(e){}</script>
+	<div class="tu mk" id="mk">
+		<p class="mk-priv">Everything happens in this browser. Your voice and recordings are never uploaded.</p>
+		<div class="tu-card mk-start" id="mk-start">
+			<button type="button" class="tu-btn tu-btn--primary mk-big" id="mk-go">🎙 Start the microphone</button>
+			<p class="tu-note" id="mk-err" role="alert"></p>
+		</div>
+
+		<section class="tu-card mk-metercard" id="mk-metersec">
+			<div class="mk-chead"><h2 class="mk-h">Input level</h2><span id="mk-mbtns"></span></div>
+			<div class="mk-verdict mk-v--wait" id="mk-verdict" aria-live="polite"><div class="mk-vw" id="mk-vw">Start the microphone</div><div class="mk-vt" id="mk-vt">Then talk in your normal streaming voice.</div></div>
+			<div class="mk-meterwrap"><canvas id="mk-meter" role="img" aria-label="Microphone level meter"></canvas></div>
+			<div class="mk-read">
+				<div class="mk-r"><span class="mk-rl">Peak</span><span class="mk-rv" id="mk-pk">-∞</span><span class="mk-ru">dBFS</span></div>
+				<div class="mk-r"><span class="mk-rl">Average (RMS)</span><span class="mk-rv" id="mk-rms">-∞</span><span class="mk-ru">dBFS</span></div>
+				<div class="mk-r"><span class="mk-rl">Peak hold</span><span class="mk-rv" id="mk-hold">-∞</span><span class="mk-ru">dBFS</span></div>
+				<div class="mk-r"><span class="mk-rl">Talking level</span><span class="mk-rv" id="mk-sp">–</span><span class="mk-ru">dBFS</span></div>
+				<button type="button" class="mk-clip" id="mk-clip" title="Lights red when the sound hits 0 dBFS. Click to reset.">CLIP</button>
+			</div>
+			<p class="tu-note">Target for a voice: average about <b>-18 to -12 dBFS</b> while you talk, loudest peaks about <b>-6</b>, never touching 0 (the shaded band on the meter). The meter is drawn like OBS's: green to -20, yellow to -9, red above.</p>
+			<p class="mk-stereo" id="mk-stereo"></p>
+		</section>
+
+		<div class="tu-card">
+			<div class="mk-grid2">
+				<div>
+					<div class="tu-field"><label class="tu-label" for="mk-dev">Microphone</label>
+						<input class="tu-input mk-dsearch" id="mk-dsearch" type="search" placeholder="Search microphones" hidden>
+						<select class="tu-select" id="mk-dev"><option value="">Start the microphone to see the list</option></select></div>
+					<div class="mk-info" id="mk-info"></div>
+				</div>
+				<div>
+					<div class="tu-label">Browser sound processing</div>
+					<label class="mk-check"><input type="checkbox" id="mk-agc"> Automatic gain control</label>
+					<label class="mk-check"><input type="checkbox" id="mk-ns"> Noise suppression</label>
+					<label class="mk-check"><input type="checkbox" id="mk-ec"> Echo cancellation</label>
+					<p class="tu-note">All off = the true level of the mic, like OBS hears it. Turn them on to hear what Zoom, Meet or Discord might do to your voice.</p>
+				</div>
+			</div>
+		</div>
+
+		<div class="tu-card">
+			<h2 class="mk-h">Noise floor</h2>
+			<p>How loud is your room when you say nothing? Press the button and stay quiet for 3 seconds.</p>
+			<div class="tu-row"><button type="button" class="tu-btn tu-btn--ghost" id="mk-nf">Measure the noise floor</button><span class="mk-nfout" id="mk-nfout" aria-live="polite"></span></div>
+		</div>
+
+		<div class="tu-card">
+			<h2 class="mk-h">Record and listen</h2>
+			<p>Record 10 seconds, then play it back with headphones to hear yourself as viewers will.</p>
+			<div class="tu-row"><button type="button" class="tu-btn tu-btn--primary" id="mk-rec">● Record 10 s</button><span class="mk-recst" id="mk-recst" aria-live="polite"></span></div>
+			<canvas class="mk-wave" id="mk-wave" role="img" aria-label="Waveform of the recording" hidden></canvas>
+			<audio id="mk-audio" controls hidden></audio>
+			<p class="mk-recinfo" id="mk-recinfo"></p>
+		</div>
+
+		<section class="tu-card" id="mk-specsec">
+			<div class="mk-chead"><h2 class="mk-h">Spectrogram</h2><span id="mk-sbtns"></span></div>
+			<p class="tu-note">Low sounds at the bottom, high at the top. A steady line near the bottom is usually hum from power or a fan.</p>
+			<canvas class="mk-spec" id="mk-spec" role="img" aria-label="Spectrogram"></canvas>
+		</section>
+
+		<div class="tu-card" id="mk-spk">
+			<h2 class="mk-h">Speaker and headphone test</h2>
+			<p>Check that left is left, right is right, and how high and low your speakers or headphones can play. Start with the volume low.</p>
+			<div class="tu-field tu-field--sm"><label class="tu-label" for="mk-vol">Test volume <b id="mk-volv">25%</b></label><input type="range" id="mk-vol" min="0" max="100" value="25"></div>
+			<div class="tu-row mk-spkbtns">
+				<button type="button" class="tu-btn tu-btn--ghost" data-spk="left">◀ Left</button>
+				<button type="button" class="tu-btn tu-btn--ghost" data-spk="both">Both</button>
+				<button type="button" class="tu-btn tu-btn--ghost" data-spk="right">Right ▶</button>
+				<button type="button" class="tu-btn tu-btn--ghost" data-spk="sweep">Sweep 20 Hz to 20 kHz</button>
+				<button type="button" class="tu-btn tu-btn--ghost" data-spk="stop">■ Stop</button>
+			</div>
+			<div class="mk-spkst" id="mk-spkst" aria-live="polite"></div>
+		</div>
+		<div class="tu-toast" id="mk-toast" role="status" aria-live="polite"></div>
+
+		<div class="tu-seo">
+			<h2>Why OBS shows your mic at max but you still sound quiet</h2>
+			<p>There are three volume steps between your mouth and your stream, and only the first two can make you <strong>louder</strong>:</p>
+			<ol>
+				<li><strong>The microphone's own gain.</strong> A Blue Yeti has a gain knob on the back. This is the best place to set your level.</li>
+				<li><strong>The computer's input volume.</strong> On a Mac: <em>System Settings &gt; Sound &gt; Input</em>, pick the mic, and move the <em>Input volume</em> slider. This is applied <em>before</em> OBS sees the sound. If it is low, everything after it is low.</li>
+				<li><strong>The OBS mixer fader.</strong> Its top is <strong>0.0 dB</strong>, which means "no change". It can only turn you down, never up. So "the fader is at max" does not mean "loud".</li>
+			</ol>
+			<p>OBS's meter shows the level in dBFS <em>after</em> its fader. This page shows the level the browser gets from the mic, which is the same point OBS starts from.</p>
+			<h3>How to get louder, in this order</h3>
+			<ol>
+				<li>Turn the Yeti's gain knob up until your normal voice sits in the target band (or the Yeti's own light stays green).</li>
+				<li>Raise the macOS Input volume (System Settings &gt; Sound &gt; Input). Many Macs set a USB mic quite low the first time.</li>
+				<li>Still quiet? In OBS, right-click the mic &gt; <em>Filters</em> &gt; + &gt; <em>Gain</em> and add a few dB. Add a <em>Limiter</em> at about -3 dB after it so loud laughs don't clip.</li>
+			</ol>
+			<p>Speak 10-20 cm (4-8 inches) from the mic, into the side of a Yeti (it is a side-address mic), not the top.</p>
+			<h3>Questions</h3>
+			<h4>What is dBFS?</h4>
+			<p>Decibels relative to "full scale", the loudest sample a recording can store. 0 dBFS is the ceiling; everything else is negative. -6 dBFS is about half the maximum, -20 dBFS is a tenth.</p>
+			<h4>Why turn off automatic gain control?</h4>
+			<p>Automatic gain control (AGC) quietly turns your voice up and down for you. Video-call apps like Zoom, Meet and Discord use it, so a quiet mic can sound fine there and still be quiet in OBS, which has no AGC. Test with it off to see your real level. In Zoom, untick "Automatically adjust microphone volume" if it fights your settings.</p>
+			<h4>Peak or average: which number matters?</h4>
+			<p>Both. The average (RMS) is how loud you sound; the peak is how close you come to clipping. A good voice level has an average around -18 to -12 dBFS and peaks around -6.</p>
+			<h4>Why does the browser ask for the microphone?</h4>
+			<p>It has to, to hear anything. The sound stays in this tab: nothing is recorded unless you press Record, and the recording stays on your computer.</p>
+			<h4>The list has no names, only "Microphone 1"?</h4>
+			<p>Browsers show device names only after you allow the microphone once. Press Start, allow it, and the names appear.</p>
+		</div>
+	</div>
+	<script src="/main_js/panel-view.js?v=1" defer></script>
