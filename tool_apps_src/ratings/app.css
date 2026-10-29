@@ -44,3 +44,9 @@
 		#rt .rt-num {text-align:left;}
 	}
 	#rt .tu-stat {background:var(--rt-surf2);border-color:var(--rt-line);} #rt .tu-stat__label {color:var(--rt-mut);} #rt .tu-stat__value {color:var(--rt-text);}
+	/* Send feedback is a link styled as a button: the page's own link colour (#main-content a) and underline used to win, leaving blue underlined text on amber */
+	html body #main-content #rt a.tu-btn {text-decoration:none !important;}   /* beats _shared.css ".tu a {text-decoration:underline !important}" */
+	html body #main-content #rt a.tu-btn--primary {background:#b45309;border-color:#b45309;color:#fff;font-weight:700;}
+	html body #main-content #rt a.tu-btn--primary:hover, html body #main-content #rt a.tu-btn--primary:focus-visible {background:#92400e;border-color:#92400e;color:#fff;}
+	html body.dark-mode #main-content #rt a.tu-btn--primary {background:#f59e0b;border-color:#f59e0b;color:#1a1a1a;}
+	html body.dark-mode #main-content #rt a.tu-btn--primary:hover, html body.dark-mode #main-content #rt a.tu-btn--primary:focus-visible {background:#fbbf24;border-color:#fbbf24;color:#1a1a1a;}

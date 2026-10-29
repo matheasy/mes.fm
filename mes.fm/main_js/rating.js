@@ -50,7 +50,7 @@
         ".mes-rate__more{margin-top:.6em}.mes-rate__more[hidden]{display:none}" +
         ".mes-rate .mes-rate__ta{display:block;width:100%;box-sizing:border-box;min-height:5.5em;padding:.5em .6em;font:inherit;font-size:1em;color:#222;background:#fff;border:1px solid #b9bec6;border-radius:.4em;resize:vertical}" +
         ".mes-rate__acts{display:flex;flex-wrap:wrap;gap:.5em;align-items:center;margin-top:.5em}" +
-        ".mes-rate .mes-rate__btn{display:inline-flex;align-items:center;min-height:40px;padding:.35em .9em;border-radius:.4em;border:1px solid #1a5fb4;background:#1a5fb4;color:#fff!important;text-decoration:none;font-weight:700;font-size:.95em}" +
+        ".mes-rate .mes-rate__btn{display:inline-flex;align-items:center;min-height:40px;padding:.35em .9em;border-radius:.4em;border:1px solid #1a5fb4;background:#1a5fb4;color:#fff!important;text-decoration:none!important;font-weight:700;font-size:.95em}" +
         ".mes-rate .mes-rate__btn--ghost{background:transparent;color:#1a5fb4!important}" +
         ".mes-rate .mes-rate__note{font-size:.85em;margin:.45em 0 0;color:#555}" +
         ".mes-rate__hp{position:absolute!important;left:-9999px!important;width:1px;height:1px;overflow:hidden}" +
