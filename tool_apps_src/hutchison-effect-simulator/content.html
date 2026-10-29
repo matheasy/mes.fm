@@ -24,9 +24,16 @@
 						<span class="hx-grp"><button type="button" id="hx-play" aria-pressed="true">❚❚ Pause</button><button type="button" id="hx-restart" title="Start the experiment clock again">↺ Restart</button></span>
 						<span class="hx-grp hx-spd" role="group" aria-label="Speed of the experiment clock" id="hx-spd"></span>
 						<span class="hx-grp" role="group" aria-label="Zoom"><button type="button" id="hx-zout" aria-label="Zoom out" title="Zoom out (Ctrl + scroll, pinch)">−</button><button type="button" id="hx-zfit" title="Fit the whole room (0)">100%</button><button type="button" id="hx-zin" aria-label="Zoom in" title="Zoom in (Ctrl + scroll, pinch); drag the empty floor to pan">+</button></span>
-						<span class="hx-grp"><button type="button" id="hx-views" aria-pressed="true" title="Show where each camera is looking">◭ Camera views</button><button type="button" id="hx-disp" aria-pressed="true" title="Show or hide the camera recording and the readouts under the floor">▤ Displays</button><button type="button" id="hx-png" title="Save the floor as a picture" aria-label="Save as PNG">📷</button><button type="button" id="hx-full" title="Full screen" aria-label="Full screen">⛶</button></span>
+						<span class="hx-grp"><button type="button" id="hx-views" aria-pressed="true" title="Show where each camera is looking">◭ Camera views</button><button type="button" id="hx-labs" aria-pressed="true" title="Labels on the floor: device names, room size, camera labels (L)">🏷 Labels</button><button type="button" id="hx-show" aria-expanded="false" aria-controls="hx-showpop" title="Show or hide each part: floor, legend, toolbar, recording, timeline, readouts">▤ Show ▾</button><button type="button" id="hx-png" title="Save the floor as a picture" aria-label="Save as PNG">📷</button><button type="button" id="hx-full" title="Full screen" aria-label="Full screen">⛶</button></span>
 					</div>
 					<div class="hx-tnote" id="hx-note" aria-live="polite"></div>
+				</div>
+				<button type="button" class="hx-showpill" id="hx-showpill" aria-expanded="false" aria-controls="hx-showpop" title="The toolbar is hidden: show it or other parts again" hidden>▤ Show ▾</button>
+				<div class="hx-showpop" id="hx-showpop" role="group" aria-label="Show or hide parts of the simulator" hidden>
+					<div class="hx-addh">Show <button type="button" id="hx-showx" aria-label="Close">✕</button></div>
+					<div class="hx-showlist" id="hx-showlist"></div>
+					<div class="hx-showb"><button type="button" id="hx-showall">Show everything</button><button type="button" id="hx-showfloor">Floor only</button></div>
+					<p class="hx-shown">Remembered on this device. Works inline, in Fill window and in full screen. <b>L</b> turns labels on / off.</p>
 				</div>
 				<div class="hx-addpop" id="hx-addpop" hidden>
 					<div class="hx-addh">Equipment <button type="button" id="hx-addx" aria-label="Close">✕</button></div><div class="hx-pal" id="hx-ppal" role="group" aria-label="Add equipment"></div>
@@ -63,7 +70,7 @@
 					</div>
 					<div class="tu-field"><span class="tu-label" id="hx-rr-l">Walls and metal gear reflect RF: <b id="hx-rr-v"></b></span><input type="range" id="hx-rr" min="0" max="0.9" step="0.05" aria-labelledby="hx-rr-l"><span class="tu-note">For RF above 1 MHz: first reflections off the four walls (standing waves).</span></div>
 					<div class="hx-checks"><button type="button" class="tu-btn tu-btn--ghost" id="hx-link">🔗 Copy link to this layout</button></div>
-					<p class="tu-note">Keys on the floor: arrows nudge (Shift = 1 m), <b>R</b> turns, <b>[</b> <b>]</b> turn a camera by 5° (Alt + Up / Down widens or narrows its view), <b>Delete</b> removes, <b>Ctrl+D</b> duplicates, <b>Space</b> runs / pauses, <b>+</b> / <b>−</b> / <b>0</b> zoom, <b>Esc</b> cancels. Drag the empty floor to pan when zoomed in; Ctrl + scroll or pinch zooms.</p>
+					<p class="tu-note">Keys on the floor: arrows nudge (Shift = 1 m), <b>R</b> turns, <b>[</b> <b>]</b> turn a camera by 5° (Alt + Up / Down widens or narrows its view), <b>Delete</b> removes, <b>Ctrl+D</b> duplicates, <b>Space</b> runs / pauses, <b>L</b> labels on / off, <b>+</b> / <b>−</b> / <b>0</b> zoom, <b>Esc</b> cancels. Drag the empty floor to pan when zoomed in; Ctrl + scroll or pinch zooms.</p>
 				</div>
 			</div>
 

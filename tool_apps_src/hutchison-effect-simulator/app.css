@@ -156,3 +156,18 @@
 	body.dark-mode #hx.tu .hx-rp {border-color:#3b4658;color:#93c5fd;}
 	/* the derived TOOL-DARK block rewrites the custom properties above (the stage turned blue in dark mode): the stage is dark in both themes */
 	body.dark-mode #hx.hx {--hx-bg:#07090f;--hx-line:#263042;--hx-text:#e8ecf5;--hx-dim:#9aa5bb;--hx-panel:#0e1219;--hx-tbbg:rgba(10,13,20,0.94);--hx-bb:#344055;--hx-btn:#121825;--hx-yel:#facc15;--hx-on:#2b3a55;--hx-onb:#7aa2ff;--hx-hi:#ffffff;--hx-lo:#111111;--hx-xb:#7f1d1d;--hx-xt:#fecaca;--hx-dim2:#cbd5e1;--hx-sh:rgba(0,0,0,0.5);}
+	/* Show menu, labels, cable legend (2026-10-28) */
+	.hx-showpop {position:absolute;right:0.4em;z-index:4;background:var(--hx-panel);border:1px solid var(--hx-bb);border-radius:0.5em;padding:0.4em 0.7em 0.5em;box-shadow:0 8px 24px var(--hx-sh);width:18em;max-width:calc(100% - 0.8em);box-sizing:border-box;color:var(--hx-text);}
+	.hx-showlist {display:grid;gap:0.15em;padding:0.3em 0;}
+	#hx .hx-showlist .hx-ck {font-size:0.85em;color:var(--hx-text);min-height:1.9em;}
+	#hx .hx-showlist input {accent-color:var(--hx-yel);width:1.05em;height:1.05em;}
+	.hx-showb {display:flex;flex-wrap:wrap;gap:0.3em;margin:0.2em 0;}
+	#hx .hx-showb button, #hx .hx-showpill {cursor:pointer;font:inherit;font-size:0.78em;min-height:2.2em;padding:0 0.6em;border-radius:0.4em;border:1px solid var(--hx-bb);background:var(--hx-btn);color:var(--hx-text);}
+	#hx .hx-showb button:hover, #hx .hx-showpill:hover {border-color:var(--hx-yel);}
+	.hx-shown {margin:0.3em 0 0;font-size:0.7em;color:var(--hx-dim);line-height:1.35;}
+	#hx .hx-shown b {color:var(--hx-text);}
+	.hx-showpill {position:absolute;right:0.4em;top:0.4em;z-index:3;opacity:0.9;}
+	.hx.hx-noplan canvas#hx-c {pointer-events:none;}
+	.hx-lgc {display:flex;align-items:center;gap:0.4em;margin-top:0.25em;color:var(--hx-text);}
+	.hx-lgc svg {flex:none;}
+	@media (max-width:560px) {.hx-lgc {display:inline-flex;margin-right:0.7em;}}

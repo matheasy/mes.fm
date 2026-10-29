@@ -12,18 +12,21 @@
 	/* ================= state ================= */
 	var SPEEDS = [1, 10, 60, 600, 3600];
 	function nearestSpeed(v) { var best = 60; SPEEDS.forEach(function (x) { if (Math.abs(Math.log(x / v)) < Math.abs(Math.log(best / v))) best = x; }); return isFinite(v) && v > 0 ? best : 60; }
-	var st = null, ui = {tool: "move", sel: null, add: null, map: "D", speed: 60, run: true, opts: {cab: true, lab: true, cam: true, arr: false, ring: true, view: true, disp: true}, cableFrom: null, tab: "lab", recCam: null}, zm = {z: 1, px: 0, py: 0}, view0 = {s: 40, ox: 20, oy: 20}, VB = 0, simT = 0, events = [], anims = [], parts = [], gapNext = {}, ostate = {}, rnd = H.rng(1989), idn = 0;
+	var st = null, ui = {tool: "move", sel: null, add: null, map: "D", speed: 60, run: true, opts: {cab: true, lab: true, cam: true, arr: false, ring: true, view: true, disp: true}, show: {plan: true, rec: true, tl: true, ro: true, tb: true, leg: true}, showOpen: false, selCab: -1, hovCab: -1, cableFrom: null, tab: "lab", recCam: null}, zm = {z: 1, px: 0, py: 0}, view0 = {s: 40, ox: 20, oy: 20}, VB = 0, simT = 0, events = [], anims = [], parts = [], gapNext = {}, ostate = {}, rnd = H.rng(1989), idn = 0;
 	function newId() { var id; do { id = "u" + (++idn).toString(36); } while (st.items.some(function (d) { return d.id === id; })); return id; }
 	function byId(id) { for (var i = 0; i < st.items.length; i++) if (st.items[i].id === id) return st.items[i]; return null; }
 	function loadPreset(k) { var P = H.PRESETS[k]; st = P.build(); st.preset = k; resetRun(); ui.sel = null; ui.recCam = null; zm = {z: 1, px: 0, py: 0}; dirty(true); renderAll(); pnote(P.note); }
 	function pnote(t) { var n = $("hx-pnote"); if (n) n.textContent = t || ""; }
 	function resetRun() { simT = 0; events = []; anims = []; parts = []; gapNext = {}; ostate = {}; rnd = H.rng(1989); }
-	function save() { try { localStorage.setItem(KEY, JSON.stringify({s: H.pack(st), ui: {map: ui.map, speed: ui.speed, opts: ui.opts}})); } catch (e) { /* ignore */ } }
+	function save() { try { localStorage.setItem(KEY, JSON.stringify({s: H.pack(st), ui: {map: ui.map, speed: ui.speed, opts: ui.opts, show: ui.show}})); } catch (e) { /* ignore */ } }
 	var saveT = 0; function saveSoon() { clearTimeout(saveT); saveT = setTimeout(save, 400); }
 	function init() {
 		var q = new URLSearchParams(location.search), s = q.get("s"), saved = null;
 		try { saved = JSON.parse(localStorage.getItem(KEY) || "null"); } catch (e) { /* ignore */ }
-		if (saved && saved.ui) { if (saved.ui.map) ui.map = saved.ui.map; if (saved.ui.speed) ui.speed = nearestSpeed(+saved.ui.speed); if (saved.ui.opts) Object.keys(ui.opts).forEach(function (k) { if (saved.ui.opts[k] != null) ui.opts[k] = !!saved.ui.opts[k]; }); }
+		if (saved && saved.ui) { if (saved.ui.map) ui.map = saved.ui.map; if (saved.ui.speed) ui.speed = nearestSpeed(+saved.ui.speed); if (saved.ui.opts) Object.keys(ui.opts).forEach(function (k) { if (saved.ui.opts[k] != null) ui.opts[k] = !!saved.ui.opts[k]; });
+			if (saved.ui.show) Object.keys(ui.show).forEach(function (k) { if (saved.ui.show[k] != null) ui.show[k] = !!saved.ui.show[k]; });
+			else { if (ui.opts.disp === false) ui.show.rec = ui.show.tl = ui.show.ro = false; if (ui.opts.cam === false) ui.show.rec = ui.show.tl = false; }   // older saves: the Displays / Camera recording switches
+			ui.opts.disp = true; ui.opts.cam = true; }
 		if (s) st = H.decode(s);
 		if (!st && q.get("p") && H.PRESETS[q.get("p")]) { st = H.PRESETS[q.get("p")].build(); st.preset = q.get("p"); }
 		if (!st && saved && saved.s) st = H.unpack(saved.s);
@@ -34,7 +37,7 @@
 
 	/* ================= field cache ================= */
 	var src = [], gridC = null, gridLo = false, gridT = 0, mapImg = document.createElement("canvas"), mapDirty = true, info = null;
-	function dirty(now) { src = H.sources(st); info = H.resolve(st); if (st) st.items.forEach(function (d) { delete d.__fa; }); clearTimeout(gridT); if (now) computeGrid(false); else { computeGrid(true); gridT = setTimeout(function () { computeGrid(false); redrawStatic(); }, 220); } saveSoon(); }
+	function dirty(now) { paintLegend(); src = H.sources(st); info = H.resolve(st); if (st) st.items.forEach(function (d) { delete d.__fa; }); clearTimeout(gridT); if (now) computeGrid(false); else { computeGrid(true); gridT = setTimeout(function () { computeGrid(false); redrawStatic(); }, 220); } saveSoon(); }
 	function computeGrid(lo) {
 		var r = st.room, n = lo ? 56 : 132, nx = r.w >= r.h ? n : Math.max(12, Math.round(n * r.w / r.h)), ny = r.w >= r.h ? Math.max(12, Math.round(n * r.h / r.w)) : n;
 		gridC = H.grid(src, r, nx, ny); gridLo = lo; mapDirty = true;
@@ -127,24 +130,38 @@
 	function layout() {
 		var wrap = stage.parentNode, w = wrap.clientWidth || 800; dpr = Math.min(2, window.devicePixelRatio || 1);
 		stage.style.width = w + "px";
-		var tb = $("hx-tb"), band = tb ? tb.offsetHeight : 0;
-		var asp = Math.max(1.1, Math.min(2.2, st.room.w / st.room.h)), h = Math.round(w / asp + 24);
-		var fullish = document.fullscreenElement === wrap || wrap.classList.contains("mes-fill");
-		if (w < 600 && !fullish) h = Math.max(h, Math.round(w * 0.82));
-		h += band;   // the toolbar sits over the top of the stage: the floor is drawn below it, never under it
-		wrap.setAttribute("data-mes-free", "1"); if (window.MESStage && window.MESStage.sh) h = window.MESStage.sh(stage, h);
-		if (fullish) h = window.MESStage && window.MESStage.fillH ? window.MESStage.fillH(wrap) : window.innerHeight - 260;
-		h = Math.max(260 + band, h);
+		// which sections show (the Show menu): set them first, so the fill-window height below sees what is really there
+		var S = ui.show, camwrap = camC.parentNode, tlC = $("hx-tl"), ro = root.querySelector(".hx-readouts"), tb = $("hx-tb"), lg = $("hx-leg");
+		camC.style.display = S.rec ? "" : "none"; if (tlC) tlC.style.display = S.tl ? "" : "none"; camwrap.style.display = (S.rec || S.tl) ? "" : "none";
+		if (ro) ro.style.display = S.ro ? "" : "none"; if (tb) tb.hidden = !S.tb; if (lg) lg.hidden = !S.leg || !S.plan;
+		root.classList.toggle("hx-noplan", !S.plan); root.classList.toggle("hx-notb", !S.tb);   // on the root: stage-ctl finds the stage by its class ending in "-stage"
+		var band = S.tb && tb ? tb.offsetHeight : 0, pill = $("hx-showpill"); if (pill) pill.hidden = S.tb;
+		var menu = $("hx-showpop"), mTop = S.tb ? band : 38, menuH = ui.showOpen && menu ? menu.offsetHeight + 12 + (S.tb ? 0 : 38) : 0;
+		var fullish = document.fullscreenElement === wrap || wrap.classList.contains("mes-fill"), top0 = (wrap.classList.contains("mes-fill") || wrap.classList.contains("mes-fs")) ? 34 : 0;
+		CW = w; var tlH = S.tl ? 38 : 0, roH = S.ro && ro ? ro.offsetHeight : 0, h;
+		if (!S.plan) {   // no floor: the stage is just the toolbar (or the Show pill), and in Fill window the recording takes the room
+			h = Math.max(band || 40, menuH + band);
+			CH = Math.round(Math.max(150, Math.min(260, w * 0.28)));
+			if (fullish && S.rec) CH = Math.max(150, window.innerHeight - top0 - h - tlH - roH - 4);
+		} else {
+			CH = Math.round(Math.max(150, Math.min(260, w * 0.28)));
+			var asp = Math.max(1.1, Math.min(2.2, st.room.w / st.room.h)); h = Math.round(w / asp + 24);
+			if (w < 600 && !fullish) h = Math.max(h, Math.round(w * 0.82));
+			h += band;   // the toolbar sits over the top of the stage: the floor is drawn below it, never under it
+			wrap.setAttribute("data-mes-free", "1"); if (window.MESStage && window.MESStage.sh) h = window.MESStage.sh(stage, h);
+			if (S.rec) camC.style.height = CH + "px";
+			if (fullish) h = window.MESStage && window.MESStage.fillH ? window.MESStage.fillH(wrap) : window.innerHeight - 260;
+			h = Math.max(260 + band, h, menuH + band);
+		}
 		stage.style.height = h + "px"; W = w; Hh = h; VB = band;
 		var cw = Math.round(w * dpr), ch = Math.round(h * dpr); if (cv.width !== cw || cv.height !== ch) { cv.width = cw; cv.height = ch; }
 		var pad = 26, avail = h - band, s = Math.max(1, Math.min((w - 2 * pad) / st.room.w, (avail - 2 * pad - 10) / st.room.h)); view0 = {s: s, ox: (w - s * st.room.w) / 2, oy: band + (avail - s * st.room.h) / 2 + 4};
 		applyView();
-		var lg = $("hx-leg"); if (lg) lg.style.top = (band + 6) + "px";
+		if (lg) lg.style.top = (band + 6) + "px";
 		var pop = $("hx-addpop"); if (pop) { pop.style.top = (band + 4) + "px"; pop.style.maxHeight = Math.max(120, h - band - 12) + "px"; }
-		var showCam = ui.opts.cam && ui.opts.disp; camC.parentNode.style.display = showCam ? "" : "none";
-		var ro = root.querySelector(".hx-readouts"); if (ro) ro.style.display = ui.opts.disp ? "" : "none";
-		CW = w; CH = Math.round(Math.max(150, Math.min(260, w * 0.28))); camC.style.height = CH + "px"; camC.width = Math.round(CW * dpr); camC.height = Math.round(CH * dpr);
-		var tl = $("hx-tl"); if (tl) { tl.width = Math.round(CW * dpr); tl.height = Math.round(38 * dpr); }
+		if (menu) menu.style.top = (mTop + 4) + "px";
+		camC.style.height = CH + "px"; camC.width = Math.round(CW * dpr); camC.height = Math.round(CH * dpr);
+		if (tlC) { tlC.width = Math.round(CW * dpr); tlC.height = Math.round(38 * dpr); }
 		drawCharts(); drawTL();
 	}
 	/* zoom and pan: view0 = the whole room fitted below the toolbar; zm scales it about the middle of the floor area and shifts it */
@@ -168,6 +185,7 @@
 	var flash = {};   // spark gap id -> real time of the last firing (for the drawing)
 	function drawFloor(now) {
 		var c = cx, dark = true; c.setTransform(dpr, 0, 0, dpr, 0, 0); c.fillStyle = "#07090f"; c.fillRect(0, 0, W, Hh);
+		if (!ui.show.plan) return;
 		var r = st.room, p0 = toPx(0, 0), sw = r.w * view.s, sh = r.h * view.s;
 		if (ui.map === "T" || mapDirty) paintMap();
 		c.imageSmoothingEnabled = true; c.globalAlpha = 0.92; c.drawImage(mapImg, p0[0], p0[1], sw, sh); c.globalAlpha = 1;
@@ -177,14 +195,15 @@
 		for (var x = step; x < r.w; x += step) { var px = p0[0] + x * view.s; c.moveTo(px, p0[1]); c.lineTo(px, p0[1] + sh); }
 		for (var y = step; y < r.h; y += step) { var py = p0[1] + y * view.s; c.moveTo(p0[0], py); c.lineTo(p0[0] + sw, py); }
 		c.stroke(); c.strokeStyle = "#cbd5e1"; c.lineWidth = 3; c.strokeRect(p0[0], p0[1], sw, sh);
-		c.fillStyle = "#94a3b8"; c.font = "11px system-ui,sans-serif"; c.textAlign = "center"; c.fillText(r.w.toFixed(1) + " m (" + Math.round(r.w * 3.281) + " ft)", p0[0] + sw / 2, p0[1] + sh + 15);
-		c.save(); c.translate(p0[0] - 12, p0[1] + sh / 2); c.rotate(-Math.PI / 2); c.fillText(r.h.toFixed(1) + " m", 0, 0); c.restore();
+		if (ui.opts.lab) { c.fillStyle = "#94a3b8"; c.font = "11px system-ui,sans-serif"; c.textAlign = "center"; c.fillText(r.w.toFixed(1) + " m (" + Math.round(r.w * 3.281) + " ft)", p0[0] + sw / 2, p0[1] + sh + 15);
+		c.save(); c.translate(p0[0] - 12, p0[1] + sh / 2); c.rotate(-Math.PI / 2); c.fillText(r.h.toFixed(1) + " m", 0, 0); c.restore(); }
 		// areas and zones first
 		st.items.forEach(function (d) { if (d.t === "area" || d.t === "zone") drawArea(c, d); });
 		if (ui.opts.view) drawViews(c);
 		if (ui.opts.cab) drawCables(c, now);
 		st.items.forEach(function (d) { if (d.t !== "area" && d.t !== "zone" && d.t !== "sample") drawDevice(c, d, now); });
 		samples().forEach(function (d) { drawSampleTop(c, d, now); });
+		if (ui.opts.cab) cableTag(c);
 		if (ui.opts.view) drawSeen(c);
 		// sparks while a gap fires
 		Object.keys(flash).forEach(function (id) { var d = byId(id), age = (now - flash[id]) / 1000; if (!d || age > 0.45) { delete flash[id]; return; } var p = toPx(d.x, d.y); c.save(); c.globalAlpha = 1 - age / 0.45; var g = c.createRadialGradient(p[0], p[1], 2, p[0], p[1], 60); g.addColorStop(0, "rgba(255,240,255,0.9)"); g.addColorStop(1, "rgba(200,120,255,0)"); c.fillStyle = g; c.beginPath(); c.arc(p[0], p[1], 60, 0, TAU); c.fill(); c.restore(); });
@@ -202,22 +221,52 @@
 		else if (d.w * d.h > 6) { c.strokeStyle = "rgba(203,213,225,0.55)"; c.lineWidth = 2; c.strokeRect(p[0], p[1], w, h); }
 		else { c.fillStyle = "rgba(71,85,105,0.55)"; c.strokeStyle = "rgba(148,163,184,0.7)"; c.lineWidth = 1; c.fillRect(p[0], p[1], w, h); c.strokeRect(p[0], p[1], w, h); }
 		c.setLineDash([]);
-		if (showLab(d) || d.t === "zone") { c.fillStyle = d.t === "zone" ? "#fde68a" : "#cbd5e1"; c.font = "600 11px system-ui,sans-serif"; c.textAlign = "left"; c.fillText(nameOf(d), p[0] + 4, p[1] + 13); }
+		if (showLab(d)) { c.fillStyle = d.t === "zone" ? "#fde68a" : "#cbd5e1"; c.font = "600 11px system-ui,sans-serif"; c.textAlign = "left"; c.textBaseline = "top"; label(c, nameOf(d), p[0] + 5, p[1] + 4); c.textBaseline = "alphabetic"; }
 		if (sel) { c.strokeStyle = "#fff"; c.lineWidth = 1.5; c.strokeRect(p[0] - 3, p[1] - 3, w + 6, h + 6); c.fillStyle = "#fff"; c.fillRect(p[0] + w - 4, p[1] + h - 4, 9, 9); }
 		c.restore();
 	}
 	function cableEnds(c0) { var a = byId(c0[0]), b = byId(c0[1]); return a && b ? [a, b] : null; }
+	/* cables: typed by what feeds them, drawn as a bright line on a dark halo so they read on every colour map; arrows show the way power / signal flows */
+	var CABT = {pow: {name: "Power", col: "#ff6b6b", w: 3, dash: null}, hv: {name: "High voltage", col: "#ffd23f", w: 3, dash: null}, sig: {name: "Signal", col: "#5ab0ff", w: 2.4, dash: [8, 5]}, rf: {name: "RF", col: "#e08bff", w: 2.4, dash: [3, 4]}};
+	function cabType(a) { var k = DEV[a.t] ? DEV[a.t].kind : ""; return k === "pow" ? "pow" : k === "sig" ? "sig" : k === "rf" ? "rf" : "hv"; }
+	function cabGeom(cb) {
+		var e = cableEnds(cb); if (!e) return null; var a = toPx(e[0].x, e[0].y), b = toPx(e[1].x, e[1].y), L = Math.hypot(b[0] - a[0], b[1] - a[1]);
+		var mx = (a[0] + b[0]) / 2, my = (a[1] + b[1]) / 2 - Math.min(40, L * 0.12);
+		return {e: e, a: a, b: b, m: [mx, my], L: L, ty: cabType(e[0]), at: function (t) { var u = 1 - t; return [u * u * a[0] + 2 * u * t * mx + t * t * b[0], u * u * a[1] + 2 * u * t * my + t * t * b[1]]; }, dir: function (t) { var dx = 2 * (1 - t) * (mx - a[0]) + 2 * t * (b[0] - mx), dy = 2 * (1 - t) * (my - a[1]) + 2 * t * (b[1] - my); return Math.atan2(dy, dx); }};
+	}
+	function cabHit(px, py) {
+		if (!ui.opts.cab || !ui.show.plan) return -1; var best = -1, bd = 7;
+		st.cables.forEach(function (cb, i) { var g = cabGeom(cb); if (!g) return; for (var k = 1; k < 24; k++) { var q = g.at(k / 24), dd = Math.hypot(q[0] - px, q[1] - py); if (dd < bd) { bd = dd; best = i; } } });
+		return best;
+	}
+	function arrowHead(c, x, y, ang, sz) { c.beginPath(); c.moveTo(x + Math.cos(ang) * sz, y + Math.sin(ang) * sz); c.lineTo(x + Math.cos(ang + 2.5) * sz, y + Math.sin(ang + 2.5) * sz); c.lineTo(x + Math.cos(ang - 2.5) * sz, y + Math.sin(ang - 2.5) * sz); c.closePath(); }
+	function cabLit(cb, i) { return i === ui.selCab || i === ui.hovCab || (ui.sel && (cb[0] === ui.sel || cb[1] === ui.sel)); }
 	function drawCables(c, now) {
-		st.cables.forEach(function (cb) {
-			var e = cableEnds(cb); if (!e) return; var a = toPx(e[0].x, e[0].y), b = toPx(e[1].x, e[1].y), hv = /^(hvps|sparkgap|tank|inductor|tesla|fieldshaper)/.test(e[0].t), sig = e[0].t === "siggen";
-			c.strokeStyle = sig ? "rgba(96,165,250,0.75)" : hv ? "rgba(248,113,113,0.75)" : "rgba(203,213,225,0.55)"; c.lineWidth = hv ? 2.2 : 1.5;
-			var mx = (a[0] + b[0]) / 2, my = (a[1] + b[1]) / 2 - Math.min(40, Math.hypot(b[0] - a[0], b[1] - a[1]) * 0.12);
-			c.beginPath(); c.moveTo(a[0], a[1]); c.quadraticCurveTo(mx, my, b[0], b[1]); c.stroke();
-			// a dot travelling along shows the direction (from -> to)
-			var t = ((now / 1600) + (cb[0].length * 0.13)) % 1, qx = (1 - t) * (1 - t) * a[0] + 2 * (1 - t) * t * mx + t * t * b[0], qy = (1 - t) * (1 - t) * a[1] + 2 * (1 - t) * t * my + t * t * b[1];
-			c.fillStyle = c.strokeStyle; c.beginPath(); c.arc(qx, qy, 2.4, 0, TAU); c.fill();
+		var any = ui.selCab >= 0 || ui.hovCab >= 0 || (ui.sel && st.cables.some(function (cb) { return cb[0] === ui.sel || cb[1] === ui.sel; }));
+		st.cables.forEach(function (cb, i) {
+			var g = cabGeom(cb); if (!g) return; var T = CABT[g.ty], lit = cabLit(cb, i), off = g.e[0].on === false, w = T.w + (lit ? 1.6 : 0);
+			c.save(); c.lineCap = "round"; c.lineJoin = "round"; c.globalAlpha = any && !lit ? 0.55 : 1;
+			function path() { c.beginPath(); c.moveTo(g.a[0], g.a[1]); c.quadraticCurveTo(g.m[0], g.m[1], g.b[0], g.b[1]); }
+			if (lit) { c.strokeStyle = "rgba(255,255,255,0.85)"; c.lineWidth = w + 9; path(); c.stroke(); }
+			c.strokeStyle = "rgba(3,5,10,0.92)"; c.lineWidth = w + 4.5; path(); c.stroke();   // the halo
+			c.strokeStyle = off ? "#9ca3af" : T.col; c.lineWidth = w; if (T.dash) c.setLineDash(T.dash); path(); c.stroke(); c.setLineDash([]);
+			// arrows along the cable (one per ~140 px), each with its own halo
+			var n = Math.max(1, Math.min(4, Math.round(g.L / 140))), sz = lit ? 9 : 7.5;
+			for (var k = 0; k < n; k++) { var t = (k + 0.5) / n * 0.8 + 0.1, q = g.at(t), an = g.dir(t); c.fillStyle = "rgba(3,5,10,0.95)"; arrowHead(c, q[0], q[1], an, sz + 2.5); c.fill(); c.fillStyle = off ? "#9ca3af" : T.col; arrowHead(c, q[0], q[1], an, sz); c.fill(); }
+			// flow: dots travel from the feeding device to the fed one while the experiment runs and the feeder is on
+			if (ui.run && !off && !reduce) {
+				var nd = Math.max(2, Math.round(g.L / 70)), sp = g.ty === "rf" ? 900 : g.ty === "sig" ? 1300 : 1800;
+				for (var j = 0; j < nd; j++) { var tt = ((now / sp) + j / nd + (cb[0].length * 0.13)) % 1, p2 = g.at(tt); c.fillStyle = "rgba(3,5,10,0.9)"; c.beginPath(); c.arc(p2[0], p2[1], 3.6, 0, TAU); c.fill(); c.fillStyle = "#ffffff"; c.beginPath(); c.arc(p2[0], p2[1], 2.2, 0, TAU); c.fill(); }
+			}
+			c.restore();
 		});
 	}
+	// the hovered / selected cable gets a tag at its middle: type and which way it runs
+	function cableTag(c) {
+		var i = ui.hovCab >= 0 ? ui.hovCab : ui.selCab; if (i < 0 || !st.cables[i]) return; var g = cabGeom(st.cables[i]); if (!g) return; var q = g.at(0.5), T = CABT[g.ty];
+		c.save(); c.font = "600 11px system-ui,sans-serif"; c.textAlign = "center"; c.textBaseline = "top"; c.fillStyle = T.col; label(c, T.name + ": " + nameOf(g.e[0]) + " → " + nameOf(g.e[1]), q[0], q[1] + 10); c.restore();
+	}
+	function cablesUsed() { var u = {}; st.cables.forEach(function (cb) { var e = cableEnds(cb); if (e) u[cabType(e[0])] = 1; }); return Object.keys(CABT).filter(function (k) { return u[k]; }); }
 	function devColor(d) { return d.on === false ? "#4b5563" : (DEV[d.t] ? DEV[d.t].color : "#ccc"); }
 	function drawDevice(c, d, now) {
 		var T = DEV[d.t]; if (!T) return; var p = toPx(d.x, d.y), R = itemR(d), sel = ui.sel === d.id, col = devColor(d), rot = (+d.rot || 0) * Math.PI / 180;
@@ -269,7 +318,7 @@
 			c.fillStyle = "#0b0f17"; c.beginPath(); c.arc(hd.rot[0], hd.rot[1], 9, 0, TAU); c.fill(); c.fillStyle = col; c.beginPath(); c.arc(hd.rot[0], hd.rot[1], 7, 0, TAU); c.fill();
 			c.strokeStyle = "#0b0f17"; c.lineWidth = 1.5; c.beginPath(); c.moveTo(hd.rot[0] - 3.5, hd.rot[1]); c.lineTo(hd.rot[0] + 3.5, hd.rot[1]); c.moveTo(hd.rot[0], hd.rot[1] - 3.5); c.lineTo(hd.rot[0], hd.rot[1] + 3.5); c.stroke();
 			c.fillStyle = "#0b0f17"; c.fillRect(hd.fov[0] - 6, hd.fov[1] - 6, 12, 12); c.fillStyle = "#f8fafc"; c.fillRect(hd.fov[0] - 4.5, hd.fov[1] - 4.5, 9, 9);
-			c.font = "600 11px system-ui,sans-serif"; c.textAlign = "center"; c.textBaseline = "top"; c.fillStyle = col; label(c, "Cam " + (camIndex(d) + 1) + " · " + Math.round(H.camFov(d)) + "°", hd.rot[0], hd.rot[1] + 11); c.textBaseline = "alphabetic";
+			c.font = "600 11px system-ui,sans-serif"; c.textAlign = "center"; c.textBaseline = "top"; c.fillStyle = col; if (ui.opts.lab) label(c, "Cam " + (camIndex(d) + 1) + " · " + Math.round(H.camFov(d)) + "°", hd.rot[0], hd.rot[1] + 11); c.textBaseline = "alphabetic";
 			c.restore();
 		});
 	}
@@ -285,9 +334,14 @@
 		var z = s0.zones.filter(function (q) { var o = byId(q.id); return o && o.t === "zone"; })[0];
 		return "Sees " + nS + " sample" + (nS === 1 ? "" : "s") + " and " + nD + " other item" + (nD === 1 ? "" : "s") + (z ? "; " + Math.round(z.cover * 100) + "% of the active area" : "; not the active area") + ".";
 	}
-	function label(c, t, x, y) { var w = c.measureText(t).width; c.save(); c.fillStyle = "rgba(7,9,15,0.72)"; c.fillRect(x - w / 2 - 3, y - 1, w + 6, 14); c.restore(); c.fillText(t, x, y); }
+	// a label on a dark rounded plate with a dark outline round the letters, so it reads on any colour map (top-baseline callers; others get the plate around the text box too)
+	function label(c, t, x, y) {
+		var w = c.measureText(t).width, al = c.textAlign, x0 = al === "left" || al === "start" ? x : al === "right" || al === "end" ? x - w : x - w / 2, bl = c.textBaseline, fs = parseFloat(/(\d+(?:\.\d+)?)px/.exec(c.font) ? /(\d+(?:\.\d+)?)px/.exec(c.font)[1] : 11), y0 = bl === "top" ? y - 2 : bl === "middle" ? y - fs / 2 - 2 : y - fs;
+		c.save(); c.fillStyle = "rgba(5,7,12,0.84)"; c.beginPath(); if (c.roundRect) c.roundRect(x0 - 4, y0, w + 8, fs + 5, 4); else c.rect(x0 - 4, y0, w + 8, fs + 5); c.fill();
+		c.strokeStyle = "rgba(0,0,0,0.9)"; c.lineWidth = 3; c.lineJoin = "round"; c.strokeText(t, x, y); c.restore(); c.fillText(t, x, y);
+	}
 	// on a small floor (a phone) only the selected item, the hovered one and the zones keep their labels
-	function showLab(d) { if (!ui.opts.lab) return false; if (view.s >= 22 || ui.sel === d.id || d.t === "zone") return true; if (hover) { var p = toPx(d.x, d.y); return Math.hypot(hover.px - p[0], hover.py - p[1]) < 40; } return false; }
+	function showLab(d) { if (!ui.opts.lab) return ui.sel === d.id; if (view.s >= 22 || ui.sel === d.id || d.t === "zone") return true; if (hover) { var p = toPx(d.x, d.y); return Math.hypot(hover.px - p[0], hover.py - p[1]) < 40; } return false; }
 	function rotHandle(d) { var p = toPx(d.x, d.y), R = itemR(d) + (d.t === "tesla_dumbbell" ? 0.7 * view.s : 0) + 18, a = (+d.rot || 0) * Math.PI / 180; return [p[0] + Math.cos(a) * R, p[1] + Math.sin(a) * R]; }
 
 	// samples seen from above, with their live state
@@ -357,7 +411,7 @@
 	function seedOf(d) { var h = 7; String(d.id).split("").forEach(function (ch) { h = (h * 31 + ch.charCodeAt(0)) | 0; }); return h; }
 	var replay = null;
 	function drawCam(now) {
-		if (!ui.opts.cam || !ui.opts.disp) return; var c = camX; c.setTransform(dpr, 0, 0, dpr, 0, 0);
+		if (!ui.show.rec) return; var c = camX; c.setTransform(dpr, 0, 0, dpr, 0, 0);
 		var cam = recCam(), fa = cam ? H.fieldAt(src, cam.x, cam.y) : null, imm = cam ? (+cam.imm || 10) : 10, noise = cam ? H.camNoise(fa.Eac, imm) : 0;
 		var bg = c.createLinearGradient(0, 0, 0, CH); bg.addColorStop(0, "#151a22"); bg.addColorStop(1, "#05070b"); c.fillStyle = bg; c.fillRect(0, 0, CW, CH);
 		// the high-voltage gear this camera can see, as silhouettes behind the table
@@ -386,7 +440,7 @@
 	}
 	/* timeline under the recording: every event as a dot; click one to replay it */
 	function drawTL() {
-		var tl = $("hx-tl"); if (!tl || !ui.opts.cam || !ui.opts.disp) return; var c = tl.getContext("2d"), w = CW, h = 38; c.setTransform(dpr, 0, 0, dpr, 0, 0);
+		var tl = $("hx-tl"); if (!tl || !ui.show.tl) return; var c = tl.getContext("2d"), w = CW, h = 38; c.setTransform(dpr, 0, 0, dpr, 0, 0);
 		c.fillStyle = "#0a0d14"; c.fillRect(0, 0, w, h); var T = Math.max(60, simT), x0 = 10, x1 = w - 10;
 		c.strokeStyle = "#263042"; c.lineWidth = 1; c.beginPath(); c.moveTo(x0, 24); c.lineTo(x1, 24); c.stroke();
 		c.fillStyle = "#9aa5bb"; c.font = "10px system-ui,sans-serif"; c.textAlign = "left"; c.fillText("0:00", x0, 36); c.textAlign = "right"; c.fillText(fmtT(T) + (events.length ? "  ·  " + events.length + " events: click a dot to replay" : "  ·  events appear here"), x1, 36);
@@ -498,19 +552,22 @@
 			if (sd.t === "zone" || sd.t === "area") { var pz = toPx(sd.x + sd.w / 2, sd.y + sd.h / 2); if (Math.abs(p[0] - pz[0]) < 10 && Math.abs(p[1] - pz[1]) < 10) { drag = {mode: "size", d: sd}; cv.setPointerCapture(e.pointerId); return; } }
 			else if (/^(rf_tx|fieldshaper|camera|tesla_dumbbell|sample)$/.test(sd.t)) { var hp = rotHandle(sd); if (Math.hypot(p[0] - hp[0], p[1] - hp[1]) < 10) { drag = {mode: "rot", d: sd}; cv.setPointerCapture(e.pointerId); return; } }
 		}
-		if (ui.tool === "del") { if (d) remove(d.id); return; }
+		var ci = d ? -1 : cabHit(p[0], p[1]);
+		if (ui.tool === "del") { if (d) remove(d.id); else if (ci >= 0) { var cb0 = st.cables[ci]; toggleCable(cb0[0], cb0[1]); } return; }
 		if (ui.tool === "cable") {
 			if (!d || d.t === "zone" || d.t === "area" || d.t === "sample") { ui.cableFrom = null; note("Cable: click the device that feeds, then the device it feeds."); return; }
 			if (!ui.cableFrom) { ui.cableFrom = d.id; note("Now click the device that " + nameOf(d) + " feeds."); return; }
 			if (ui.cableFrom === d.id) { ui.cableFrom = null; return; }
 			toggleCable(ui.cableFrom, d.id); ui.cableFrom = null; return;
 		}
+		if (ui.tool === "move" && !d && ci >= 0) { select(null); ui.selCab = ci; var g0 = cabGeom(st.cables[ci]); if (g0) note(CABT[g0.ty].name + " cable: " + nameOf(g0.e[0]) + " → " + nameOf(g0.e[1]) + ". Delete removes it."); return; }
 		select(d ? d.id : null); if (d && d.t === "camera") ui.recCam = d.id;
 		if (d) { drag = {mode: "move", d: d, dx: m[0] - d.x, dy: m[1] - d.y, moved: false}; cv.setPointerCapture(e.pointerId); }
 		else { drag = {mode: "pan", sx: p[0], sy: p[1], px0: zm.px, py0: zm.py}; cv.setPointerCapture(e.pointerId); }
 	});
 	cv.addEventListener("pointermove", function (e) {
 		var p = evPos(e), m = toM(p[0], p[1]); hover = {px: p[0], py: p[1], x: m[0], y: m[1]};
+		ui.hovCab = !drag && (ui.tool === "move" || ui.tool === "del") && !hit(p[0], p[1]) ? cabHit(p[0], p[1]) : -1;
 		if (ptrs[e.pointerId]) ptrs[e.pointerId] = p;
 		if (drag && drag.mode === "pinch") { var k = Object.keys(ptrs); if (k.length >= 2) { var a = ptrs[k[0]], b = ptrs[k[1]], mid = [(a[0] + b[0]) / 2, (a[1] + b[1]) / 2]; zm.z = H.clamp(drag.z0 * Math.hypot(a[0] - b[0], a[1] - b[1]) / drag.d0, 0.5, 12); applyView(); var p2 = toPx(drag.wm[0], drag.wm[1]); zm.px += mid[0] - p2[0]; zm.py += mid[1] - p2[1]; applyView(); } return; }
 		if (drag && drag.mode === "pan") { zm.px = drag.px0 + p[0] - drag.sx; zm.py = drag.py0 + p[1] - drag.sy; applyView(); cv.style.cursor = "grabbing"; return; }
@@ -528,21 +585,22 @@
 			editor();
 		}
 		pointerReadout();
-		cv.style.cursor = drag ? "grabbing" : ui.add ? "copy" : ui.tool === "del" ? "not-allowed" : ui.tool === "cable" ? "crosshair" : (hit(p[0], p[1]) || (ui.tool === "move" && viewHit(p, false))) ? "grab" : "default";
+		cv.style.cursor = drag ? "grabbing" : ui.add ? "copy" : ui.tool === "del" ? "not-allowed" : ui.tool === "cable" ? "crosshair" : (hit(p[0], p[1]) || (ui.tool === "move" && viewHit(p, false))) ? "grab" : ui.hovCab >= 0 ? "pointer" : "default";
 	});
 	function endDrag(e) { if (e && e.pointerId != null) delete ptrs[e.pointerId]; if (drag && drag.mode === "pinch") { if (Object.keys(ptrs).length < 2) drag = null; return; } if (drag && (drag.mode === "pan" || drag.mode === "crot" || drag.mode === "fov")) { drag = null; saveSoon(); return; } if (drag) { var d = drag.d; drag = null; if (d.t !== "zone" && d.t !== "area" && d.t !== "sample") dirty(true); samplesChanged(); renderPanels(); } }
 	cv.addEventListener("pointerup", endDrag); cv.addEventListener("pointercancel", endDrag);
-	cv.addEventListener("pointerleave", function () { hover = null; pointerReadout(); });
+	cv.addEventListener("pointerleave", function () { hover = null; ui.hovCab = -1; pointerReadout(); });
 	cv.addEventListener("wheel", function (e) {
 		var wrap = stage.parentNode, big = wrap.classList.contains("mes-fill") || document.fullscreenElement === wrap;
 		if (!e.ctrlKey && !big) return; e.preventDefault(); var p = evPos(e); zoomAt(Math.exp(-e.deltaY * (e.deltaMode === 1 ? 0.05 : 0.0018)), p[0], p[1]);
 	}, {passive: false});
 	cv.addEventListener("keydown", function (e) {
 		var d = ui.sel ? byId(ui.sel) : null;
-		if (e.key === "Escape") { ui.add = null; ui.cableFrom = null; setTool("move"); select(null); closeAdd(); return; }
+		if (e.key === "Escape") { ui.add = null; ui.cableFrom = null; ui.selCab = -1; closeShow(); setTool("move"); select(null); closeAdd(); return; }
 		if (!e.ctrlKey && !e.metaKey && (e.key === "+" || e.key === "=")) { e.preventDefault(); zoomAt(1.25); return; }
 		if (!e.ctrlKey && !e.metaKey && (e.key === "-" || e.key === "_")) { e.preventDefault(); zoomAt(0.8); return; }
 		if (!e.ctrlKey && !e.metaKey && e.key === "0") { e.preventDefault(); zoomFit(); return; }
+		if (!d && ui.selCab >= 0 && (e.key === "Delete" || e.key === "Backspace")) { e.preventDefault(); var cb1 = st.cables[ui.selCab]; if (cb1) toggleCable(cb1[0], cb1[1]); return; }
 		if (!d) return;
 		if (d.t === "camera" && (e.key === "[" || e.key === "]" || e.key === "{" || e.key === "}" || (e.altKey && /^Arrow/.test(e.key)))) {
 			e.preventDefault();
@@ -555,17 +613,22 @@
 		else if (e.key === "r" || e.key === "R") { d.rot = ((+d.rot || 0) + (e.shiftKey ? -15 : 15)) % 360; dirty(true); editor(); }
 		else if (/^Arrow/.test(e.key)) { e.preventDefault(); var st0 = e.shiftKey ? 1 : 0.1; if (e.key === "ArrowLeft") d.x -= st0; if (e.key === "ArrowRight") d.x += st0; if (e.key === "ArrowUp") d.y -= st0; if (e.key === "ArrowDown") d.y += st0; d.x = H.clamp(d.x, 0, st.room.w); d.y = H.clamp(d.y, 0, st.room.h); delete d.__fa; dirty(true); samplesChanged(); editor(); }
 	});
-	document.addEventListener("keydown", function (e) { if (e.target && /INPUT|TEXTAREA|SELECT/.test(e.target.tagName)) return; if (e.key === " " && ui.tab === "lab" && (e.target === cv || e.target === document.body)) { e.preventDefault(); setRun(!ui.run); } });
+	document.addEventListener("keydown", function (e) {
+		if (e.target && /INPUT|TEXTAREA|SELECT/.test(e.target.tagName)) return;
+		var here = e.target === cv || e.target === document.body || (e.target.closest && e.target.closest("#hx .hx-wrap"));
+		if (e.key === " " && ui.tab === "lab" && (e.target === cv || e.target === document.body)) { e.preventDefault(); setRun(!ui.run); }
+		if ((e.key === "l" || e.key === "L") && !e.ctrlKey && !e.metaKey && !e.altKey && ui.tab === "lab" && here) { e.preventDefault(); toggleLabels(); }
+	});
 	function place(a, x, y) {
 		var d;
 		if (a.t === "sample") d = H.smp(newId(), a.k, x, y); else d = H.dev(newId(), a.t, x, y, {label: ""});
 		d.x = H.clamp(x, 0, st.room.w); d.y = H.clamp(y, 0, st.room.h); delete d.label; if (a.t === "sample") d.label = H.SAMPLES[a.k].name;
 		st.items.push(d); ui.add = null; paintPalette(); select(d.id); if (d.t === "sample" || d.t === "zone" || d.t === "area") samplesChanged(); dirty(true); renderPanels();
 	}
-	function remove(id) { if (ui.sel === id) { var db = $("hx-delsel"); if (db) db.hidden = true; } st.items = st.items.filter(function (d) { return d.id !== id; }); st.cables = st.cables.filter(function (c) { return c[0] !== id && c[1] !== id; }); if (ui.sel === id) ui.sel = null; dirty(true); samplesChanged(); renderPanels(); }
+	function remove(id) { if (ui.sel === id) { var db = $("hx-delsel"); if (db) db.hidden = true; } st.items = st.items.filter(function (d) { return d.id !== id; }); st.cables = st.cables.filter(function (c) { return c[0] !== id && c[1] !== id; }); ui.selCab = ui.hovCab = -1; if (ui.sel === id) ui.sel = null; dirty(true); samplesChanged(); renderPanels(); }
 	function duplicate(id) { var d = byId(id); if (!d) return; var n = JSON.parse(JSON.stringify(d)); delete n.__fa; n.id = newId(); n.x = H.clamp(d.x + 0.5, 0, st.room.w); n.y = H.clamp(d.y + 0.5, 0, st.room.h); st.items.push(n); select(n.id); dirty(true); samplesChanged(); renderPanels(); }
-	function toggleCable(a, b) { var i = st.cables.findIndex(function (c) { return c[0] === a && c[1] === b; }); if (i >= 0) { st.cables.splice(i, 1); note("Cable removed."); } else { st.cables.push([a, b]); note("Cable: " + nameOf(byId(a)) + " → " + nameOf(byId(b)) + "."); } dirty(true); renderPanels(); }
-	function select(id) { ui.sel = id; var db = $("hx-delsel"); if (db) db.hidden = !id; editor(); }
+	function toggleCable(a, b) { ui.selCab = -1; ui.hovCab = -1; var i = st.cables.findIndex(function (c) { return c[0] === a && c[1] === b; }); if (i >= 0) { st.cables.splice(i, 1); note("Cable removed."); } else { st.cables.push([a, b]); note("Cable: " + nameOf(byId(a)) + " → " + nameOf(byId(b)) + "."); } dirty(true); renderPanels(); }
+	function select(id) { ui.sel = id; ui.selCab = -1; var db = $("hx-delsel"); if (db) db.hidden = !id; editor(); }
 	function samplesChanged() { samples().forEach(function (d) { delete d.__fa; }); saveSoon(); }
 
 	/* ================= palette + toolbar ================= */
@@ -579,7 +642,7 @@
 		Array.prototype.forEach.call(document.querySelectorAll("#hx .hx-pb"), function (b) { var on = ui.add && (ui.add.t === b.dataset.t || (ui.add.k && ui.add.k === b.dataset.k)); b.setAttribute("aria-pressed", on ? "true" : "false"); });
 	}
 	function armAdd(a) { closeAdd(); if (ui.add && ui.add.t === a.t && ui.add.k === a.k) { ui.add = null; note(""); } else { ui.add = a; setTool("move", true); note("Click on the floor to place: " + (a.t === "sample" ? H.SAMPLES[a.k].name : DEV[a.t].name) + ". Esc to cancel."); } paintPalette(); }
-	function openAdd() { var p = $("hx-addpop"), b = $("hx-addbtn"); if (!p) return; p.hidden = false; b.setAttribute("aria-expanded", "true"); }
+	function openAdd() { var p = $("hx-addpop"), b = $("hx-addbtn"); if (!p) return; if (ui.showOpen) closeShow(); p.hidden = false; b.setAttribute("aria-expanded", "true"); }
 	function closeAdd() { var p = $("hx-addpop"), b = $("hx-addbtn"); if (!p) return; p.hidden = true; if (b) b.setAttribute("aria-expanded", "false"); }
 	$("hx-addbtn").onclick = function () { if ($("hx-addpop").hidden) openAdd(); else closeAdd(); };
 	$("hx-addx").onclick = closeAdd;
@@ -852,12 +915,40 @@
 	function renderAll() { layout(); setRoomInputs(); editor(); renderPanels(); if (ui.tab === "sch") drawSchematic(); paintPreset(); var sel = $("hx-map"); if (sel) sel.value = ui.map; paintLegend(); }
 	function paintPreset() { Array.prototype.forEach.call(document.querySelectorAll("#hx-pre button"), function (b) { b.setAttribute("aria-pressed", b.dataset.p === st.preset ? "true" : "false"); }); }
 	(function () { var box = $("hx-pre"); Object.keys(H.PRESETS).forEach(function (k) { var b = document.createElement("button"); b.type = "button"; b.dataset.p = k; b.textContent = H.PRESETS[k].name; b.onclick = function () { loadPreset(k); }; box.appendChild(b); }); var cl = document.createElement("button"); cl.type = "button"; cl.textContent = "Empty room"; cl.onclick = function () { st = {room: {w: st.room.w, h: st.room.h, refl: st.room.refl}, items: [], cables: [], preset: ""}; resetRun(); ui.sel = null; dirty(true); renderAll(); note("An empty room: add equipment from the palette."); }; box.appendChild(cl); })();
-	function paintLegend() { var m = MAPS[ui.map], lg = $("hx-leg"); if (!lg) return; var g = STOPS[m.map].map(function (s) { return "rgb(" + s[1] + "," + s[2] + "," + s[3] + ") " + Math.round(s[0] * 100) + "%"; }).join(","); lg.innerHTML = "<b>" + esc(m.name) + "</b><span class=\"hx-lgbar\" style=\"background:linear-gradient(90deg," + g + ")\"></span><span class=\"hx-lgt\"><i>" + esc(m.leg[0]) + "</i><i>" + esc(m.leg[1]) + "</i><i>" + esc(m.leg[2]) + "</i></span>"; }
+	function paintLegend() { var m = MAPS[ui.map], lg = $("hx-leg"); if (!lg) return; var g = STOPS[m.map].map(function (s) { return "rgb(" + s[1] + "," + s[2] + "," + s[3] + ") " + Math.round(s[0] * 100) + "%"; }).join(","); lg.innerHTML = "<b>" + esc(m.name) + "</b><span class=\"hx-lgbar\" style=\"background:linear-gradient(90deg," + g + ")\"></span><span class=\"hx-lgt\"><i>" + esc(m.leg[0]) + "</i><i>" + esc(m.leg[1]) + "</i><i>" + esc(m.leg[2]) + "</i></span>" + (ui.opts.cab ? cablesUsed().map(function (k) { var T = CABT[k]; return "<span class=\"hx-lgc\"><svg width=\"26\" height=\"10\" aria-hidden=\"true\"><line x1=\"2\" y1=\"5\" x2=\"24\" y2=\"5\" stroke=\"#03050a\" stroke-width=\"" + (T.w + 4) + "\" stroke-linecap=\"round\"/><line x1=\"2\" y1=\"5\" x2=\"24\" y2=\"5\" stroke=\"" + T.col + "\" stroke-width=\"" + T.w + "\" stroke-linecap=\"round\"" + (T.dash ? " stroke-dasharray=\"" + T.dash.join(",") + "\"" : "") + "/></svg>" + esc(T.name) + " cable</span>"; }).join("") : ""); }
 	$("hx-map").onchange = function () { ui.map = this.value; mapDirty = true; paintLegend(); saveSoon(); };
-	["cab", "lab", "cam", "ring", "view"].forEach(function (k) { var el = $("hx-o-" + k); if (!el) return; el.checked = ui.opts[k]; el.onchange = function () { ui.opts[k] = el.checked; if (k === "cam") layout(); if (k === "view") { paintToggles(); editor(); } saveSoon(); }; });
-	function paintToggles() { $("hx-views").setAttribute("aria-pressed", ui.opts.view ? "true" : "false"); $("hx-disp").setAttribute("aria-pressed", ui.opts.disp ? "true" : "false"); var v = $("hx-o-view"); if (v) v.checked = ui.opts.view; }
+	["cab", "lab", "cam", "ring", "view"].forEach(function (k) { var el = $("hx-o-" + k); if (!el) return; el.checked = ui.opts[k]; el.onchange = function () { if (k === "cam") { ui.show.rec = el.checked; paintShow(); layout(); saveSoon(); return; } ui.opts[k] = el.checked; if (k === "view") { paintToggles(); editor(); } if (k === "lab" || k === "cab") { paintToggles(); paintLegend(); } saveSoon(); }; });
+	function paintToggles() { $("hx-views").setAttribute("aria-pressed", ui.opts.view ? "true" : "false"); $("hx-labs").setAttribute("aria-pressed", ui.opts.lab ? "true" : "false"); var v = $("hx-o-view"); if (v) v.checked = ui.opts.view; var l = $("hx-o-lab"); if (l) l.checked = ui.opts.lab; var cb = $("hx-o-cab"); if (cb) cb.checked = ui.opts.cab; var rg = $("hx-o-ring"); if (rg) rg.checked = ui.opts.ring; }
 	$("hx-views").onclick = function () { ui.opts.view = !ui.opts.view; paintToggles(); editor(); saveSoon(); };
-	$("hx-disp").onclick = function () { ui.opts.disp = !ui.opts.disp; paintToggles(); layout(); saveSoon(); };
+	function toggleLabels() { ui.opts.lab = !ui.opts.lab; paintToggles(); note(ui.opts.lab ? "Labels on (L)." : "Labels off (L): only the selected item keeps its name."); saveSoon(); }
+	$("hx-labs").onclick = toggleLabels;
+	/* the Show menu: each section of the box can be shown or hidden on its own (inline, in Fill window and full screen alike); the floor grows into the freed space */
+	var SHOWS = [["plan", "Lab floor (the plan)"], ["leg", "Legend"], ["tb", "Toolbar"], ["rec", "Camera recording"], ["tl", "Event timeline"], ["ro", "Readouts (pointer, field, drive...)"]];
+	(function () {
+		var box = $("hx-showlist"); if (!box) return;
+		SHOWS.forEach(function (q) { var lb = document.createElement("label"), ip = document.createElement("input"); ip.type = "checkbox"; ip.dataset.s = q[0]; ip.onchange = function () { setShow(q[0], ip.checked); }; lb.className = "hx-ck"; lb.appendChild(ip); lb.appendChild(document.createTextNode(" " + q[1])); box.appendChild(lb); });
+		var all = $("hx-showall"); if (all) all.onclick = function () { SHOWS.forEach(function (q) { ui.show[q[0]] = true; }); paintShow(); layout(); saveSoon(); };
+		var fo = $("hx-showfloor"); if (fo) fo.onclick = function () { ui.show.rec = ui.show.tl = ui.show.ro = false; ui.show.plan = true; paintShow(); layout(); saveSoon(); };
+	})();
+	function setShow(k, on) {
+		ui.show[k] = on;
+		if (!ui.show.plan && !ui.show.rec && !ui.show.tl && !ui.show.ro) { ui.show.plan = true; note("Something has to show: the floor is back."); }
+		if (k === "tb" && !on) note("");
+		paintShow(); layout(); saveSoon();
+	}
+	function paintShow() {
+		Array.prototype.forEach.call(document.querySelectorAll("#hx-showlist input"), function (ip) { ip.checked = !!ui.show[ip.dataset.s]; });
+		var hidden = SHOWS.filter(function (q) { return !ui.show[q[0]]; }).length, b = $("hx-show"); if (b) b.textContent = "▤ Show" + (hidden ? " (" + hidden + " hidden)" : "") + " ▾";
+		var o = $("hx-o-cam"); if (o) o.checked = ui.show.rec;
+	}
+	function openShow() { var m = $("hx-showpop"); if (!m) return; closeAdd(); m.hidden = false; ui.showOpen = true; $("hx-show").setAttribute("aria-expanded", "true"); var pl = $("hx-showpill"); if (pl) pl.setAttribute("aria-expanded", "true"); layout(); var f = m.querySelector("input"); if (f) f.focus({preventScroll: true}); }
+	function closeShow() { var m = $("hx-showpop"); if (!m || m.hidden) return; m.hidden = true; ui.showOpen = false; $("hx-show").setAttribute("aria-expanded", "false"); var pl = $("hx-showpill"); if (pl) pl.setAttribute("aria-expanded", "false"); layout(); }
+	$("hx-show").onclick = function () { if (ui.showOpen) closeShow(); else openShow(); };
+	$("hx-showpill").onclick = function () { if (ui.showOpen) closeShow(); else openShow(); };
+	$("hx-showx").onclick = closeShow;
+	$("hx-showpop").addEventListener("keydown", function (e) { if (e.key === "Escape") { e.stopPropagation(); closeShow(); var b = ui.show.tb ? $("hx-show") : $("hx-showpill"); if (b) b.focus(); } });
+	document.addEventListener("pointerdown", function (e) { if (ui.showOpen && !e.target.closest("#hx-showpop, #hx-show, #hx-showpill")) closeShow(); });
+	paintShow();
 	$("hx-zin").onclick = function () { zoomAt(1.25); }; $("hx-zout").onclick = function () { zoomAt(0.8); }; $("hx-zfit").onclick = zoomFit;
 	$("hx-tl").addEventListener("click", function (e) { var b = this.getBoundingClientRect(), ev = evAtTL(e.clientX - b.left); if (ev) doReplay(ev); });
 	$("hx-tl").addEventListener("mousemove", function (e) { var b = this.getBoundingClientRect(), ev = evAtTL(e.clientX - b.left); this.title = ev ? fmtT(ev.t) + " " + (H.EFF[ev.e] ? H.EFF[ev.e].name : "") + ": " + ev.txt + " (click to replay)" : ""; });
@@ -906,7 +997,7 @@
 	}
 
 	/* ================= start ================= */
-	init(); paintPalette(); paintSpeed(); setRun(true); dirty(true);
+	init(); paintPalette(); paintSpeed(); setRun(true); paintToggles(); paintShow(); dirty(true);
 	var tabWanted = ui.tab; setTab(tabWanted); renderAll();
 	if (st.preset && H.PRESETS[st.preset]) pnote(H.PRESETS[st.preset].note);
 	if (window.ResizeObserver && $("hx-tb")) { var tbH = 0; new ResizeObserver(function () { var h2 = $("hx-tb").offsetHeight; if (h2 !== tbH) { tbH = h2; layout(); } }).observe($("hx-tb")); }
