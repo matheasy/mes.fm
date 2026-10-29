@@ -100,6 +100,30 @@
  ],
  "tools": [
   {
+   "href": "/video",
+   "title": "Video Editor",
+   "icon": "/img/video-logo.png",
+   "desc": "Cut, split and join videos on a multi-track timeline, add titles and pictures, cross-fade, remove background noise and export MP4 up to 4K. A free Camtasia-style editor; nothing is uploaded.",
+   "added": "2026-10-28",
+   "kind": "tool"
+  },
+  {
+   "href": "/audio",
+   "title": "Audio Editor",
+   "icon": "/img/audio-logo.png",
+   "desc": "Remove background noise with AI, cut, fade and mix tracks, set the loudness for YouTube or podcasts and export WAV, MP3 or M4A. Nothing is uploaded.",
+   "added": "2026-10-28",
+   "kind": "tool"
+  },
+  {
+   "href": "/convert-video",
+   "title": "Video Converter",
+   "icon": "/img/convert-video-logo.png",
+   "desc": "AVI, MKV, WMV, FLV, MOV and MPG to MP4 that Camtasia and every phone open. AVI screen recordings are copied without re-encoding, in seconds. Nothing is uploaded.",
+   "added": "2026-10-28",
+   "kind": "tool"
+  },
+  {
    "href": "/mic-test",
    "title": "Mic Test",
    "icon": "/img/mic-test-logo.png",
@@ -170,33 +194,33 @@
    "desc": "Define any English word: meanings, examples, synonyms, where it comes from and translations. Hear it, save it and learn it with flashcards.",
    "added": "2026-10-27",
    "kind": "tool"
-  },
-  {
-   "href": "/march-madness",
-   "title": "March Madness",
-   "icon": "/img/march-madness-logo.png",
-   "desc": "NCAA bracket maker for the men’s and women’s tournaments: the odds of every pick, live scores and win chances, sharing and a leaderboard.",
-   "added": "2026-10-27",
-   "kind": "tool"
-  },
-  {
-   "href": "/pronounce",
-   "title": "Pronounce",
-   "icon": "/img/pronounce-logo.png",
-   "desc": "Hear any word or sentence in US, UK and other accents, with syllables, stress, IPA, an easy respelling and slow playback.",
-   "added": "2026-10-26",
-   "kind": "tool"
-  },
-  {
-   "href": "/nba-picks",
-   "title": "NBA Picks",
-   "icon": "/img/nba-picks-logo.png",
-   "desc": "Your predicted NBA standings (East, West, whole league, divisions) and playoff bracket against the live table: a picture of every pick, friends and a leaderboard.",
-   "added": "2026-10-26",
-   "kind": "tool"
   }
  ],
  "latest": [
+  {
+   "href": "/video",
+   "title": "Video Editor",
+   "icon": "/img/video-logo.png",
+   "desc": "Cut, split and join videos on a multi-track timeline, add titles and pictures, cross-fade, remove background noise and export MP4 up to 4K. A free Camtasia-style editor; nothing is uploaded.",
+   "added": "2026-10-28",
+   "kind": "tool"
+  },
+  {
+   "href": "/audio",
+   "title": "Audio Editor",
+   "icon": "/img/audio-logo.png",
+   "desc": "Remove background noise with AI, cut, fade and mix tracks, set the loudness for YouTube or podcasts and export WAV, MP3 or M4A. Nothing is uploaded.",
+   "added": "2026-10-28",
+   "kind": "tool"
+  },
+  {
+   "href": "/convert-video",
+   "title": "Video Converter",
+   "icon": "/img/convert-video-logo.png",
+   "desc": "AVI, MKV, WMV, FLV, MOV and MPG to MP4 that Camtasia and every phone open. AVI screen recordings are copied without re-encoding, in seconds. Nothing is uploaded.",
+   "added": "2026-10-28",
+   "kind": "tool"
+  },
   {
    "href": "/mic-test",
    "title": "Mic Test",
@@ -234,30 +258,6 @@
    "title": "MLB Picks",
    "icon": "/img/mlb-picks-logo.png",
    "desc": "Your AL, NL, division and World Series picks against the standings and the postseason, with friends and a leaderboard.",
-   "added": "2026-10-27",
-   "kind": "tool"
-  },
-  {
-   "href": "/nfl-picks",
-   "title": "NFL Picks",
-   "icon": "/img/nfl-picks-logo.png",
-   "desc": "Your AFC, NFC, division and Super Bowl picks against the live standings: playoff seeds, bracket, friends and a leaderboard.",
-   "added": "2026-10-27",
-   "kind": "tool"
-  },
-  {
-   "href": "/nhl-picks",
-   "title": "NHL Picks",
-   "icon": "/img/nhl-picks-logo.png",
-   "desc": "Your East, West, division and Stanley Cup picks against the live standings and the playoffs, with a leaderboard.",
-   "added": "2026-10-27",
-   "kind": "tool"
-  },
-  {
-   "href": "/premier-league-picks",
-   "title": "Premier League Picks",
-   "icon": "/img/premier-league-picks-logo.png",
-   "desc": "Predict the Premier League table and track it live: top 4, Europe, relegation, exact places and a leaderboard.",
    "added": "2026-10-27",
    "kind": "tool"
   }
