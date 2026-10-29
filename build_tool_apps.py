@@ -961,6 +961,13 @@ APPS = {
                        tag="Any video to MP4, privately.", accent="#4338ca", dark="#3730a3", tint="#e9e8fd",
                        desc="Free online video converter: turn AVI, MKV, WMV, FLV, MOV, WebM and MPG files into MP4 (H.264 + AAC) that Camtasia, Premiere and every phone can open. AVI screen recordings with H.264 are copied without re-encoding, so even big files take seconds. A queue for many files, ZIP or save to a folder, nothing is uploaded.",
                        js_v="1", js_parts=["engine.js"], lib_from=["image-converter"]),
+    # MES Video Editor (2026-10-28): Camtasia-lite timeline editor. lib.js = MESVed (pure timeline maths, node tests tool_apps_src/video-tests.js); js_parts = the converter's
+    # engine (imports any format: AVI + H.264 remux / ffmpeg.wasm), core (state, IndexedDB, media analysis, compositor), preview, timeline, export (WebCodecs + mp4-muxer).
+    # Noise removal comes from window.MESDenoise (/main_js/denoise.js, written for mes.fm/audio). Normal page in the tools sidebar collection, always-dark workspace (--vd-*).
+    "video": dict(title="MES Video Editor", page_title="Free Online Video Editor: Cut, Join, Add Titles, Clean Up Sound",
+                       tag="Cut, join, add titles, clean up the sound. No upload.", accent="#be123c", dark="#9f1239", tint="#fde4ea",
+                       desc="Free online video editor in your browser: put videos, sound and pictures on a multi-track timeline, trim and split clips, join many videos in order, add titles and overlays, cross-fade, remove background noise, even out the loudness and export MP4 up to 4K. Opens AVI, MKV, WMV and MOV too. Nothing is uploaded.",
+                       js_v="1", lib_from=["convert-video"], js_parts=["../convert-video/engine.js", "core.js", "preview.js", "timeline.js", "export.js"]),
     # MES Font Preview and Finder (2026-10-19): text in every font the browser really has (+ optional Google Fonts), effects, PNG / CSS export, compare, and a picture matcher. lib.js = MESFont (node tests tool_apps_src/fonts-tests.js).
     "fonts": dict(title="MES Font Preview and Finder", page_title="Font Preview: See Your Text in Every Font, and Find a Font from a Picture",
                   tag="See your text in every font.", accent="#7c2d92", dark="#5f2070", tint="#f3e5f8",

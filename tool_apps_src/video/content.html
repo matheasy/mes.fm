@@ -1,0 +1,117 @@
+	<script>try{if(!localStorage.getItem('pageMode')){document.documentElement.classList.add('page-wide')}}catch(e){}</script>
+	<div class="tu" id="vd">
+		<div class="vd" id="vd-app" tabindex="-1">
+			<div class="vd-top" role="toolbar" aria-label="Project">
+				<div class="vd-menu">
+					<button type="button" class="vd-btn" id="vd-filebtn" aria-haspopup="true" aria-expanded="false">File &#9662;</button>
+					<div class="vd-pop" id="vd-filemenu" hidden role="menu">
+						<button type="button" role="menuitem" data-act="import">Import videos, sound, pictures&hellip; <kbd>Ctrl+I</kbd></button>
+						<button type="button" role="menuitem" data-act="title">Add a title <kbd>T</kbd></button>
+						<hr>
+						<button type="button" role="menuitem" data-act="saveproj">Save project file (.mesvideo) <kbd>Ctrl+S</kbd></button>
+						<button type="button" role="menuitem" data-act="openproj">Open project file&hellip;</button>
+						<button type="button" role="menuitem" data-act="new">New project&hellip;</button>
+						<hr>
+						<button type="button" role="menuitem" data-act="snapshot">Save this frame as PNG</button>
+						<button type="button" role="menuitem" data-act="export">Export MP4&hellip; <kbd>Ctrl+E</kbd></button>
+						<a role="menuitem" href="/convert-video" target="_blank" rel="noopener">Video Converter (AVI, MKV, WMV to MP4)</a>
+					</div>
+				</div>
+				<button type="button" class="vd-btn vd-ico" id="vd-undo" title="Undo (Ctrl+Z)" aria-label="Undo">&#8630;</button>
+				<button type="button" class="vd-btn vd-ico" id="vd-redo" title="Redo (Ctrl+Shift+Z)" aria-label="Redo">&#8631;</button>
+				<input type="text" class="vd-name" id="vd-name" aria-label="Project name" maxlength="120">
+				<span class="vd-saved" id="vd-saved" aria-live="polite"></span>
+				<span class="vd-sp"></span>
+				<button type="button" class="vd-btn" id="vd-help" aria-expanded="false" title="Keyboard shortcuts">Keys</button>
+				<button type="button" class="vd-btn" id="vd-win" aria-pressed="false" title="Fill the browser window (W)">&#10530; Fill window</button>
+				<button type="button" class="vd-btn vd-primary" id="vd-export">Export MP4</button>
+			</div>
+			<div class="vd-main">
+				<aside class="vd-bin" aria-label="Media">
+					<div class="vd-binhead"><b>Media</b><span class="vd-sp"></span><button type="button" class="vd-btn vd-sm" id="vd-import">+ Import</button></div>
+					<input type="search" class="vd-search" id="vd-binsearch" placeholder="Search media" aria-label="Search media">
+					<div class="vd-binlist" id="vd-binlist" role="listbox" aria-label="Media files" aria-multiselectable="true"></div>
+					<div class="vd-binfoot">
+						<button type="button" class="vd-btn vd-sm" id="vd-addsel" disabled title="Put the selected files one after another at the end of the timeline">Add selected in order</button>
+						<button type="button" class="vd-btn vd-sm" id="vd-addtitle">+ Title</button>
+					</div>
+					<p class="vd-hint" id="vd-binhint">Drop files here or anywhere in the editor. Drag them onto the timeline, or double-click to put one at the playhead. AVI, MKV, WMV and other formats are converted to MP4 first.</p>
+				</aside>
+				<div class="vd-center">
+					<div class="vd-stagewrap" id="vd-stagewrap"><canvas id="vd-canvas" width="640" height="360" aria-label="Preview"></canvas></div>
+					<div class="vd-transport" role="toolbar" aria-label="Playback">
+						<button type="button" class="vd-btn vd-ico" data-tp="start" title="To the start (Home)" aria-label="To the start">&#9198;</button>
+						<button type="button" class="vd-btn vd-ico" data-tp="back" title="One frame back (Left arrow; Shift = 1 s)" aria-label="One frame back">&#9664;&#9646;</button>
+						<button type="button" class="vd-btn vd-ico vd-play" id="vd-play" title="Play / pause (Space)" aria-label="Play">&#9654;</button>
+						<button type="button" class="vd-btn vd-ico" data-tp="fwd" title="One frame forward (Right arrow; Shift = 1 s)" aria-label="One frame forward">&#9646;&#9654;</button>
+						<button type="button" class="vd-btn vd-ico" data-tp="end" title="To the end (End)" aria-label="To the end">&#9197;</button>
+						<span class="vd-time" id="vd-time" aria-live="off">0:00;00 / 0:00;00</span>
+						<span class="vd-sp"></span>
+						<button type="button" class="vd-btn vd-sm" id="vd-snap" title="Save this frame as a PNG picture">PNG</button>
+						<button type="button" class="vd-btn vd-sm" id="vd-fs" title="Preview full screen">&#9974; Full screen</button>
+					</div>
+				</div>
+				<aside class="vd-insp" id="vd-insp" aria-label="Properties"></aside>
+			</div>
+			<div class="vd-tools" role="toolbar" aria-label="Timeline tools">
+				<button type="button" class="vd-btn vd-sm" id="vd-split" title="Split at the playhead (S)">&#9986; Split</button>
+				<button type="button" class="vd-btn vd-sm" id="vd-del" title="Delete (Delete)">Delete</button>
+				<button type="button" class="vd-btn vd-sm" id="vd-ripple" title="Delete and close the gap (Shift+Delete)">Ripple delete</button>
+				<span class="vd-div"></span>
+				<button type="button" class="vd-btn vd-sm" id="vd-in" title="Mark in (I)">[ In</button>
+				<button type="button" class="vd-btn vd-sm" id="vd-out" title="Mark out (O)">Out ]</button>
+				<button type="button" class="vd-btn vd-sm" id="vd-cutrange" title="Cut out the marked part on every track and close the gap" disabled>Cut out marked</button>
+				<button type="button" class="vd-btn vd-sm" id="vd-clearmarks" title="Clear the marks" disabled>&times;</button>
+				<span class="vd-div"></span>
+				<button type="button" class="vd-btn vd-sm" id="vd-addv" title="Add a video track">+ Video track</button>
+				<button type="button" class="vd-btn vd-sm" id="vd-adda" title="Add an audio track">+ Audio track</button>
+				<span class="vd-sp"></span>
+				<label class="vd-chk" title="Clips snap to the playhead, marks and each other (hold Alt to drag freely)"><input type="checkbox" id="vd-snapchk" checked> Snap</label>
+				<button type="button" class="vd-btn vd-ico vd-sm" id="vd-zout" title="Zoom out (-)" aria-label="Zoom out">&minus;</button>
+				<input type="range" id="vd-zoom" min="0" max="1000" aria-label="Timeline zoom">
+				<button type="button" class="vd-btn vd-ico vd-sm" id="vd-zin" title="Zoom in (+)" aria-label="Zoom in">+</button>
+				<button type="button" class="vd-btn vd-sm" id="vd-zfit" title="Show the whole timeline">Fit</button>
+			</div>
+			<div class="vd-tl" id="vd-tl">
+				<div class="vd-tlscroll" id="vd-tlscroll">
+					<div class="vd-tlinner" id="vd-tlinner">
+						<div class="vd-rulerwrap" id="vd-rulerwrap"><canvas id="vd-ruler"></canvas></div>
+						<div id="vd-rows"></div>
+						<div class="vd-markzone" id="vd-markzone" hidden></div>
+						<div class="vd-playhead" id="vd-playhead"><i></i></div>
+						<div class="vd-dropline" id="vd-dropline" hidden></div>
+					</div>
+				</div>
+			</div>
+			<div class="vd-status" id="vd-status" role="status" aria-live="polite"></div>
+			<div class="vd-keys" id="vd-keys" hidden>
+				<b>Keyboard</b>
+				<dl>
+					<dt>Space</dt><dd>Play / pause</dd><dt>J K L</dt><dd>Play backwards / stop / play (press again for 2&times;, 4&times;)</dd>
+					<dt>&larr; &rarr;</dt><dd>One frame (Shift: 1 second)</dd><dt>Home / End</dt><dd>Start / end</dd>
+					<dt>S</dt><dd>Split at the playhead (the selected clips, or every clip there)</dd><dt>Delete</dt><dd>Delete; Shift+Delete closes the gap</dd>
+					<dt>I / O</dt><dd>Mark in / out; then &ldquo;Cut out marked&rdquo;, or export only that part</dd><dt>T</dt><dd>Add a title</dd>
+					<dt>Ctrl+Z / Ctrl+Shift+Z</dt><dd>Undo / redo</dd><dt>Ctrl+D</dt><dd>Duplicate</dd><dt>+ / &minus;</dt><dd>Zoom the timeline (Ctrl + wheel too)</dd>
+					<dt>W</dt><dd>Fill the browser window (Esc leaves)</dd><dt>Ctrl+S / Ctrl+E</dt><dd>Save project file / export</dd><dt>Alt + drag</dt><dd>Move without snapping</dd>
+				</dl>
+			</div>
+			<div class="vd-modal" id="vd-modal" hidden><div class="vd-dlg" id="vd-dlg" role="dialog" aria-modal="true"></div></div>
+			<div class="vd-toast" id="vd-toast" role="status" aria-live="polite" hidden></div>
+			<input type="file" id="vd-file" multiple hidden accept="video/*,audio/*,image/*,.avi,.mkv,.wmv,.flv,.mov,.mpg,.mpeg,.ts,.mts,.m2ts,.3gp,.webm,.mp3,.wav,.m4a,.aac,.flac,.ogg,.opus">
+			<input type="file" id="vd-projfile" hidden accept=".mesvideo,application/json">
+		</div>
+
+		<div class="tu-seo">
+			<h2>A free video editor in your browser</h2>
+			<dl>
+				<dt>What it does</dt><dd>Put videos, sound and pictures on a timeline with as many video and audio tracks as you need, trim the ends, split at the playhead, delete parts and close the gap, join many clips in order, add titles and picture overlays, cross-fade between clips, fade in and out, change the speed, set the volume of each clip, remove background noise and even out the loudness. Then export an MP4 (H.264 and AAC) that plays everywhere, from 480p to 4K.</dd>
+				<dt>Made to replace the everyday parts of Camtasia</dt><dd>Screen recordings and lessons usually need the same few steps: cut out the mistakes, join the parts, put a title on top, make the voice clear and loud enough, export. Those are all here, with the familiar keys (S to split, I and O to mark, J K L to play). AVI, MKV, WMV and other files are converted to MP4 when you import them; an AVI screen recording with H.264 is only re-packed, so it takes seconds.</dd>
+				<dt>Clean up the sound</dt><dd>Select a clip and press <b>Remove noise</b> to take out fan hum, hiss and room noise (AI noise removal running in your browser), and <b>Normalize loudness</b> to bring each clip to the same loudness (-16 LUFS for videos and podcasts, -14 for YouTube) without clipping.</dd>
+				<dt>Your work is saved as you go</dt><dd>The project and its media are kept in this browser, so closing the tab loses nothing. <b>Save project file</b> writes a small .mesvideo file you can open again later; the media files are matched by name, so keep them.</dd>
+				<dt>How the export works</dt><dd>Every frame is decoded with your computer's video decoder (WebCodecs), drawn with the titles and overlays, and encoded again with its H.264 encoder, usually on the graphics chip; the sound is mixed and encoded to AAC. In Chrome, Edge and Brave (with the File System Access API on) the MP4 can be written straight to disk, so even long exports do not fill the memory.</dd>
+				<dt>Limits of this first version</dt><dd>No keyframe animation, no green screen, no cursor effects or zoom-and-pan yet, and the speed change also changes the pitch of the sound. Firefox and Safari cannot export (no H.264 encoder there yet); use Chrome, Edge or Brave on a computer.</dd>
+			</dl>
+			<h2>Is it private?</h2>
+			<p>Yes. Your videos, sound and pictures stay on your computer; nothing is uploaded to mes.fm or anywhere else. The only downloads are the open-source libraries the editor uses (mp4box.js, mp4-muxer, and ffmpeg.wasm when a file needs converting) and the noise-removal model the first time you use it.</p>
+		</div>
+	</div>
