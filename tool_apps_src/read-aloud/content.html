@@ -1,9 +1,9 @@
 	<div class="tu" id="ra">
 		<div class="tu-card tu-card--tint">
 			<h2 style="margin-top:0;">Listen to any web page, with the words highlighted as they are read</h2>
-			<p style="margin-top:0;">A free browser extension by MES for Chrome, Brave, Edge and other Chromium browsers. Click the toolbar icon (or press <kbd>Alt</kbd>+<kbd>Shift</kbd>+<kbd>R</kbd>) and it reads the page, or just the text you selected, out loud with your browser's own voices. The <b>word and the sentence being read are highlighted right on the page</b> and the page scrolls to follow, so you can read along, study, proofread or rest your eyes.</p>
+			<p style="margin-top:0;">A free browser extension by MES for Chrome, Brave, Edge and other Chromium browsers. Click the toolbar icon (or press <kbd>Alt</kbd>+<kbd>Shift</kbd>+<kbd>R</kbd>) and it reads the page, a Google Doc, a PDF or a Word file, or just the text you selected, out loud with your browser's own voices. The <b>word and the sentence being read are highlighted right on the page</b> and the page scrolls to follow, so you can read along, study, proofread or rest your eyes.</p>
 			<div class="ra-btns">
-				<a class="tu-btn tu-btn--primary" id="ra-dl" href="/read-aloud/mes-read-aloud.zip?v=1.8.2" download>Download <span id="ra-ver">v1.8.2</span> (zip)</a>
+				<a class="tu-btn tu-btn--primary" id="ra-dl" href="/read-aloud/mes-read-aloud.zip?v=1.9.0" download>Download <span id="ra-ver">v1.9.0</span> (zip)</a>
 				<a class="tu-btn tu-btn--ghost" href="#ra-install">How to install</a>
 				<a class="tu-btn tu-btn--ghost" href="/read-aloud/extension/reader.js">View the source</a>
 			</div>
@@ -33,13 +33,24 @@
 			</ul>
 		</div>
 
+		<h2 id="ra-files">Google Docs, PDFs and Word files</h2>
+		<div class="tu-card">
+			<ul class="ra-list">
+				<li><b>Google Docs:</b> open the Doc and press <b>Read this page</b>. Docs draws its pages itself, so the extension reads the Doc's text from Google with your own login and the words are followed in a text box above the player. For long Docs, press <b>Allow Google Docs</b> in the popup once: the extension may then fetch the Doc's text straight from Google (nothing goes through mes.fm).</li>
+				<li><b>PDFs:</b> the browser's own PDF viewer cannot be read by any extension. With a PDF open, press <b>Read this PDF</b> in the popup (or right-click a PDF link and choose <b>Read this PDF / Word file aloud</b>): it opens in the extension's reading page, with the word and sentence highlighted and the reading starting at the page you scroll to. Scanned PDFs (pictures of pages) have no text to read.</li>
+				<li><b>Word files (.docx)</b> just download, so use <b>Read a PDF or Word file&hellip;</b> in the popup and drop or choose the file. Old <code>.doc</code> files need saving as .docx first. Nothing is uploaded.</li>
+				<li><b>PDFs on your computer</b> (an address that starts with <code>file://</code>): switch on <b>Allow access to file URLs</b> once. Open <code>chrome://extensions</code> (<code>brave://extensions</code>, <code>edge://extensions</code>), click <b>Details</b> under MES Read Aloud and turn on <b>Allow access to file URLs</b>. Without it, just choose the file in the reading page.</li>
+				<li>On this site, the <a href="/pdf">PDF Editor</a> and the <a href="/docx">Word Viewer</a> have their own <b>Read aloud</b> button, no extension needed.</li>
+			</ul>
+		</div>
+
 		<h2>What you get</h2>
 		<div class="tu-card">
 			<ul class="ra-list">
 				<li><b>Highlighting on the page itself.</b> The current word and sentence are marked with colours you choose. The page is not changed: the highlight is drawn by the browser, so layouts, links and selections keep working.</li>
 				<li><b>Smart text finding.</b> Reads the article content, skipping navigation, hidden text, code blocks and (if you like) tables. Or switch to everything visible.</li>
 				<li><b>Setups.</b> Save different voices, speeds and highlight styles for different purposes or people (it ships with <b>Default</b>, <b>Study</b> and <b>Quick listen</b>), switch in the player or the popup, pin a setup to a site, and export or import them as text.</li>
-				<li><b>Your browser's voices.</b> It picks the best installed voice for the language of the text automatically, or you choose one. The same engine as the <a href="/speedreader">MES Speed Reader</a>, which also reads aloud.</li>
+				<li><b>Your browser's voices.</b> It picks the best installed voice for the language of the text automatically, or you choose one from a <b>searchable list grouped by language</b> (type a name, language or country; press &#9654; to hear a voice). The same engine as the <a href="/speedreader">MES Speed Reader</a>, which also reads aloud.</li>
 				<li><b>Speed from 0.5x to 4x</b>, pitch and volume, an estimate of the time left, and scrolling that follows the reading and backs off while you scroll yourself.</li>
 			</ul>
 		</div>
@@ -47,8 +58,8 @@
 		<h2>Voices, privacy and limits</h2>
 		<div class="tu-card">
 			<p style="margin-top:0;">The voices come from your browser and operating system, so what you hear depends on them. <b>Edge</b> has very natural built-in Microsoft voices, <b>Chrome</b> offers Google voices, and <b>Brave</b> uses the voices installed on your computer. A voice marked <i>online</i> in the settings is run by the voice provider, so the text being read is sent to them; pick a voice without that label to keep everything on your computer. Voices that do not report word positions still get the sentence highlighted, and the word highlight then follows an estimate (the player says so).</p>
-			<p>Permissions: <code>activeTab</code> and <code>scripting</code> let the extension add the reader to the page you are on, only when you ask; <code>storage</code> keeps your setups; <code>contextMenus</code> adds the right-click items. It does <b>not</b> ask to read your data on all websites.</p>
-			<p style="margin-bottom:0;">It cannot read browser pages (<code>chrome://</code>), the Web Store, or the built-in PDF viewer, and text drawn inside images or canvas is not text to the browser. Text inside embedded frames can be read by selecting it and using the right-click menu.</p>
+			<p>Permissions: <code>activeTab</code> and <code>scripting</code> let the extension add the reader to the page you are on, only when you ask; <code>storage</code> keeps your setups; <code>contextMenus</code> adds the right-click items; files on your computer are only opened if you switch on <b>Allow access to file URLs</b>. Two kinds are asked for only when you choose: Google Docs (docs.google.com and googleusercontent.com, for the Doc's text) and a website you open a PDF from that blocks other pages. It does <b>not</b> ask to read your data on all websites.</p>
+			<p style="margin-bottom:0;">It cannot read browser pages (<code>chrome://</code>) or the Web Store, and text drawn inside images or canvas is not text to the browser (PDFs and Google Docs are handled as described above). Text inside embedded frames can be read by selecting it and using the right-click menu.</p>
 		</div>
 
 		<div class="tu-seo">

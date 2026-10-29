@@ -1333,7 +1333,12 @@ if (typeof module !== "undefined" && module.exports) module.exports = SRLib;
     var roots = []; try { roots = src.roots() || []; } catch (e) { roots = []; }
     var items = [];
     st.shadows = [];
-    roots.forEach(function (r) { if (!r) return; if (r.nodeType === 11) st.shadows.push(r); items = items.concat(textNodes(r, null, false)); });
+    roots.forEach(function (r) {
+      if (!r) return;
+      var rn = r.nodeType === 11 ? r : (r.getRootNode ? r.getRootNode() : null);
+      if (rn && rn.nodeType === 11 && st.shadows.indexOf(rn) < 0) st.shadows.push(rn);
+      items = items.concat(textNodes(r, null, false));
+    });
     var start = null; try { start = src.start ? src.start() : null; } catch (e) { start = null; }
     return { items: items, start: start };
   }
