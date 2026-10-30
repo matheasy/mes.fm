@@ -113,6 +113,7 @@ TOOLS = [  # (directory, compact-bar title[, home path of the site the page belo
     ("hasibat-kutlat-al-jism", "حاسبة كتلة الجسم"),   # BMI Calculator in another language (build_tool_apps.py BMI_LANG_SLUGS)
     ("bmi-calculator-hindi", "बीएमआई कैलकुलेटर"),   # BMI Calculator in another language (build_tool_apps.py BMI_LANG_SLUGS)
     ("shear-stress-calculator", "Mechanics of Materials", "/materials"),   # MES Mechanics of Materials family page (brand option in build_tool_apps.py)
+    ("bending-stress-calculator", "Mechanics of Materials", "/materials"),   # 2026-10-29: 5th page of the family (beams)
     ("tensile-test-simulator", "Mechanics of Materials", "/materials"),   # MES Mechanics of Materials family page (brand option in build_tool_apps.py)
     ("youngs-modulus-calculator", "Mechanics of Materials", "/materials"),   # MES Mechanics of Materials family page (brand option in build_tool_apps.py)
     ("materials", "Mechanics of Materials"),   # also built by build_tool_apps.py
