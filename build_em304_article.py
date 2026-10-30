@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Builds mes.fm/em-304-problem-1-judy-wood/index.html -- "Exam Problem by Dr. Judy Wood: Space Shuttle Columbia Disaster",
+"""Builds mes.fm/space-shuttle-columbia/index.html -- "Exam Problem by Dr. Judy Wood: Space Shuttle Columbia Disaster",
 a mirror of the Hive post @mes/exam-problem-by-dr-judy-woo-59 (2026-10-30) in the Problems Plus shell: MES Math Tutorials
 brand, Jump-to sidebar + mobile "Jump to section" + search, Collapse All, per-chapter folds, Standard | Wide | Theatre,
 the "More like this" rail, comments and ads. The shell is the BUILT mes.fm/vector-functions-problems-plus/index.html (so every
@@ -11,8 +11,8 @@ Structure: everything before the first heading = the "Full Video" chapter (3Spea
 description, timestamps, links); `##` headings before the first `#` and every `#` heading = top-level folds; `##` inside a
 `#` chapter = sub-folds (listed in Jump to); `###` stay plain headings. Timestamp links seek the video on the page.
 Video: 3Speak mes/ta0jgic7, its HLS manifest resolved at RUNTIME from play.3speak.tv/api/embed (hls.js), falling back to
-the YouTube embed (zNdifMfnqcs) if 3Speak fails. The original test PDF + preview.jpg (build_pdf_page.py's files) stay in the
-folder and are linked from the box. Images: img/share.jpg (1200x630 og:image) and mes.fm/img/em-304-problem-1-judy-wood-icon.jpg
+the YouTube embed (zNdifMfnqcs) if 3Speak fails. The box links Dr. Judy Wood's original test PDF page, mes.fm/em-304-problem-1-judy-wood
+(build_pdf_page.py), and its preview.jpg. Images: img/share.jpg (1200x630 og:image) and mes.fm/img/space-shuttle-columbia-icon.jpg
 (900x600 /math tile), both crops of the video thumbnail.
 
     python3 build_em304_article.py              # dry run: report only
@@ -26,7 +26,8 @@ import json, os, re, sys, html, subprocess, urllib.request
 ROOT = os.path.dirname(os.path.abspath(__file__))
 MES = os.path.join(ROOT, "mes.fm")
 SRC = os.path.join(ROOT, "em304_src")
-SLUG = "em-304-problem-1-judy-wood"
+SLUG = "space-shuttle-columbia"
+TEST_SLUG = "em-304-problem-1-judy-wood"   # build_pdf_page.py's page for Dr. Judy Wood's original test PDF
 OUT = os.path.join(MES, SLUG, "index.html")
 TEMPLATE = os.path.join(MES, "vector-functions-problems-plus", "index.html")
 MARKED = os.path.join(MES, "vector-functions-problems-plus", "node_modules", "marked", "lib", "marked.esm.js")
@@ -39,7 +40,7 @@ TITLE = "Exam Problem by Dr. Judy Wood: Space Shuttle Columbia Disaster"
 DESC = ("Dr. Judy Wood's EM 304 exam problem from February 6, 2003: the Space Shuttle Columbia disaster as a thermal "
         "expansion problem. Full video solution and notes.")
 OG_IMAGE = f"https://mes.fm/{SLUG}/img/share.jpg"
-TEST_PDF = f"/{SLUG}/space-shuttle-columbia-test-problem-judy-wood.pdf"
+TEST_PDF = f"/{TEST_SLUG}"
 NOTES_PDF = "https://mes.fm/space-shuttle-columbia-pdf"
 esc = lambda t: html.escape(t, quote=True)
 
@@ -103,9 +104,6 @@ def postprocess(body):
         t = int(tm.group(1)) if tm else secs(text)
         return f'<a class="ts-link" data-t="{t}" href="{href}">{text}</a>'
     body = re.sub(r'<a href="([^"]+)">([^<]+)</a>', ts, body)
-    # "View/download the PDF here: <this page>" -> the PDF itself (the page was the PDF viewer when the post was written)
-    body = body.replace(f'<a href="https://mes.fm/{SLUG}">https://mes.fm/{SLUG}</a>',
-                        f'<a href="{TEST_PDF}">https://mes.fm/{SLUG}</a>')
     # every post image lazy-loads except the first
     n = [0]
     def lazy(m):
@@ -122,7 +120,7 @@ def video_html(poster):
             f'<a class="video-badge" href="https://3speak.tv/watch?v={SPEAK}" target="_blank" rel="noopener">View on 3Speak &nearr;</a>'
             '</div>\n')
 
-PDF_BOX = (f'<div class="pdf-box"><a href="{TEST_PDF}"><img src="/{SLUG}/preview.jpg" width="96" height="50" alt="First page of the test"></a>'
+PDF_BOX = (f'<div class="pdf-box"><a href="{TEST_PDF}"><img src="/{TEST_SLUG}/preview.jpg" width="96" height="50" alt="First page of the test"></a>'
            '<div class="pdf-box-text"><span class="pdf-box-title">The original test (PDF)</span>'
            f'<a class="pdf-box-link" href="{TEST_PDF}">View Dr. Judy Wood\'s test (PDF)</a>'
            f'<a class="pdf-box-link" href="{NOTES_PDF}">These notes as a PDF</a></div></div>\n')

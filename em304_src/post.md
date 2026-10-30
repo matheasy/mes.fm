@@ -4,7 +4,7 @@ In this video, I go over an exam problem that Dr. Judy Wood gave her Mechanics o
 
 Later in this video, I cover the Space Shuttle Columbia disaster and some of the controversial aspects of the disaster, including possible knowledge or carelessness on investigating the left wing damage during the life of the flight.
 
-[MES](https://mes.fm/em-304-problem-1-judy-wood) - [3Speak](https://3speak.tv/@mes/exam-problem-by-dr-judy-woo-59) - [YouTube](https://youtu.be/zNdifMfnqcs) - [PDF Notes](mes.fm/space-shuttle-columbia-pdf) [Playlist](https://www.youtube.com/playlist?list=PLEJOImrX4SIc) - [mes.fm/math](https://mes.fm/math)
+[MES](https://mes.fm/space-shuttle-columbia) - [3Speak](https://3speak.tv/@mes/exam-problem-by-dr-judy-woo-59) - [YouTube](https://youtu.be/zNdifMfnqcs) - [PDF Notes](mes.fm/space-shuttle-columbia-pdf) [Playlist](https://www.youtube.com/playlist?list=PLEJOImrX4SIc) - [mes.fm/math](https://mes.fm/math)
 
 ### Timestamps
 

@@ -34,7 +34,7 @@ SITE = base.SITE
 LOADER = "pagead2.googlesyndication.com/pagead/js/adsbygoogle.js"
 
 # pages that are indexable (sitemap, Google, site search) but that the user has not linked from anywhere yet: remove a slug once it is linked
-UNLINKED = {
+UNLINKED = {"em-304-problem-1-judy-wood",
             "kj-french-911-100k"}   # 2026-10-28: owner wants it out of every recommendation for good (keep it here; it stays in the 9/11 hub lists)
 
 PART_RE = re.compile(r'<div class="part-of">(.*?)</div>', re.S)
