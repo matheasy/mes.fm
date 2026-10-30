@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """Make a mes.fm page that hosts a PDF: the standard branded page shell (hive_mirror_template.html), an inline PDF viewer, a Download button and an optional alternative-download link.
-Used for mes.fm/em-304-problem-1-judy-wood and Andrew Johnson's two 9/11 books (mes.fm/911-finding-truth-pdf, 911-holding-truth-pdf).
+Used for mes.fm/space-shuttle-columbia-pdf (first used for em-304-problem-1-judy-wood, now a Hive mirror) and Andrew Johnson's two 9/11 books (mes.fm/911-finding-truth-pdf, 911-holding-truth-pdf).
 Copies the PDF from ~/Downloads (or the page's own `src`, or --pdf) into mes.fm/<slug>/<pdf-name>, then writes mes.fm/<slug>/index.html.
   python3 build_pdf_page.py --apply          (the page definitions are in PAGES below; add one to host another PDF)
 Per-page options: `brand="911"` (a key of convert_mirror_pages.BRANDS without the slash: that hub's logo / title / tab instead of
@@ -12,19 +12,24 @@ import argparse, html, os, shutil, sys
 from pathlib import Path
 R = Path(__file__).resolve().parent; SITE = R / "mes.fm"
 PAGES = {
-    "em-304-problem-1-judy-wood": dict(
-        title="Space Shuttle Columbia Disaster Test Problem by Dr. Judy Wood",
-        subtitle="EM 304 (Engineering Mechanics), Clemson University &middot; test given February 6, 2003",
-        desc="The EM 304 test problem on the Space Shuttle Columbia disaster that Dr. Judy Wood set at Clemson University on February 6, 2003, five days after Columbia was lost on February 1, 2003. Read the PDF here or download it.",
-        pdf="space-shuttle-columbia-test-problem-judy-wood.pdf", pdf_label="Space Shuttle Columbia test problem (PDF)",
-        alt_url="https://1drv.ms/b/c/88862ef47bcaf6cd/IQAQX2EbxWr_RbAMFBCkcW8uAUIElk-X46QL_S4JXPuLDj0?e=R0Arkl", alt_label="Alternative download (OneDrive)",
-        partof='Part of <a href="/science">MES Science</a>',
-        intro="""<p>This is the test problem on the <b>Space Shuttle Columbia disaster</b> that <b>Dr. Judy Wood</b> gave her students in <b>EM 304 at Clemson University</b> (EM stands for <b>Engineering Mechanics</b>, the mechanics of engineering structures and machines: forces, equilibrium, stresses and motion) on <b>February 6, 2003</b>, just five days after Columbia was lost on <b>February 1, 2003</b>.</p>
-<p>The PDF (6 pages, starting with the EM 304 Test #1 cover page) is shown below. You can also download it, or use the alternative OneDrive link if you prefer.</p>""",
-        og="preview.jpg",   # indexable (sitemap, Google, site search) but not linked from other pages yet: add_sidebar_math.UNLINKED keeps it out of the sidebar cards until the user links it from a math tutorial
-        outro="""<h2>About this page</h2>
-<p>Space Shuttle Columbia (mission STS-107) broke apart during re-entry on February 1, 2003, and all seven crew members were lost. For the background, see the <a href="https://en.wikipedia.org/wiki/Space_Shuttle_Columbia_disaster" target="_blank" rel="noopener">Wikipedia article on the Space Shuttle Columbia disaster</a>.</p>
-<p>The test was set for the course EM 304 at Clemson University, which Dr. Wood taught. <b>EM</b> is the course prefix for <b>Engineering Mechanics</b>: the applied mechanics that engineers use to analyse structures, machines and materials under load. The cover page of the test reminds students to draw free-body diagrams and show their equilibrium equations.</p>"""),
+    # em-304-problem-1-judy-wood was this script's first page (Dr. Judy Wood's original test PDF); since 2026-10-29 that URL is the
+    # mirror of the Hive post (build_em304_article.py), which keeps the test PDF + preview.jpg in its folder and links them.
+    "space-shuttle-columbia-pdf": dict(
+        title="Space Shuttle Columbia Exam Problem: Notes (PDF)",
+        subtitle="Notes for the EM 304 exam problem by Dr. Judy Wood &middot; 36 pages &middot; free PDF",
+        desc="Read or download the PDF notes for MES's video on Dr. Judy Wood's EM 304 exam problem (February 6, 2003) on the Space Shuttle Columbia disaster: thermal stress in the wing tube, the solution and the CAIB findings.",
+        pdf="space-shuttle-columbia-notes-mes.pdf", pdf_label="Space Shuttle Columbia exam problem notes (PDF)",
+        src=Path.home() / "Library/CloudStorage/OneDrive-Personal/MathEasySolutions/YouTube/Video Files/1060 Space Shuttle Columbia/Space Shuttle Columbia.pdf",
+        meta=dict(title="Exam Problem by Dr. Judy Wood: Space Shuttle Columbia Disaster (notes)", author="MES (Math Easy Solutions)",
+                  subject="Notes for the MES video on the EM 304 test problem Dr. Judy Wood set at Clemson University on February 6, 2003, on the Space Shuttle Columbia disaster",
+                  keywords="Space Shuttle Columbia, Dr. Judy Wood, EM 304, thermal expansion, mechanics of materials, CAIB", creator="Microsoft OneNote (published on mes.fm)"),
+        alt_url="https://1drv.ms/b/c/88862ef47bcaf6cd/IQCO44JbFMHoSq-0IV9jIx7EAekmcSOuZB4jUhNL6RgYx58", alt_label="Alternative download (OneDrive)",
+        partof='Part of <a href="/math">MES Math</a> &middot; <a href="/em-304-problem-1-judy-wood">Exam Problem by Dr. Judy Wood: Space Shuttle Columbia Disaster</a>',
+        og_abs="https://mes.fm/em-304-problem-1-judy-wood/img/share.jpg",
+        intro="""<p>These are the notes for the MES video <a href="/em-304-problem-1-judy-wood"><b>Exam Problem by Dr. Judy Wood: Space Shuttle Columbia Disaster</b></a>, as a PDF: the EM 304 test problem Dr. Judy Wood set at Clemson University on February 6, 2003, the review of mechanics of materials, the full solution, and the Columbia Accident Investigation Board's findings.</p>
+<p><b>Prefer a web page?</b> The same notes, with the video, are at <a href="/em-304-problem-1-judy-wood"><b>mes.fm/em-304-problem-1-judy-wood</b></a>. The PDF (36 pages) is shown below; you can also download it, or use the OneDrive link.</p>""",
+        outro="""<h2>About these notes</h2>
+<p>Dr. Judy Wood's original test is on the <a href="/em-304-problem-1-judy-wood">video page</a> as its own PDF. Try the numbers yourself with the <a href="/materials">MES Mechanics of Materials calculators</a> (thermal stress, Young's modulus, shear).</p>"""),
 }
 AJ_CREDIT = """<h2>About this book</h2>
 <p><b>Andrew Johnson</b> has kept the evidence of what happened to the World Trade Center on 9/11 in front of people for two decades, centred on the research of <b>Dr. Judy Wood</b>. He gave MES permission to publish both of his 9/11 books on mes.fm. The PDF is the author's own free edition, as published on his website <a href="https://www.checktheevidence.com/" target="_blank" rel="noopener">checktheevidence.com</a>; the text is &copy; Andrew Johnson and the cover graphic &copy; Nick Buchanan.</p>"""
@@ -102,7 +107,7 @@ def copy_pdf(src, dst, meta):
         raise SystemExit("this page sets PDF metadata: run with a python that has pymupdf (pip install pymupdf)")
     d = fitz.open(src)
     d.set_metadata(dict(d.metadata or {}, title=meta["title"], author=meta["author"], subject=meta.get("subject", ""), keywords=meta.get("keywords", ""),
-                        creator="Microsoft Word (published on mes.fm with the author's permission)", producer="mes.fm build_pdf_page.py"))
+                        creator=meta.get("creator", "Microsoft Word (published on mes.fm with the author's permission)"), producer="mes.fm build_pdf_page.py"))
     d.xref_set_key(d.pdf_catalog(), "ViewerPreferences", "<</DisplayDocTitle true>>")
     d.save(str(dst), garbage=3, deflate=True)
     print("  metadata:", fitz.open(str(dst)).metadata.get("title"), "/", fitz.open(str(dst)).metadata.get("author"))
