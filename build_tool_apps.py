@@ -53,11 +53,11 @@ def _picks_vars(lg, intro, long):
     return {"LG": lg, "LEAGUES": nav, "INTRO": intro, "LONG": long, "SEO": "@seo/%s.html" % lg}
 PICKS_NAV_INFO = "".join("<li class=\"info-bar__item\"><a class=\"info-bar__item__text\" href='/%s'>%s</a></li>" % (sl, nm.replace("Premier League", "EPL")) for l, sl, nm in PICKS)
 PICKS_NAV_MENU = "".join('<li class="navbar__item"><a class="navbar__link" href="/%s">%s Picks</a></li>' % (sl, nm) for l, sl, nm in PICKS)
-MAT_BRAND = dict(slug="materials", title="MES Mechanics of Materials", tag="Stress, strain, shear, torsion and bending, with the pictures.")
+MAT_BRAND = dict(slug="materials", title="MES Mechanics of Materials", tag="Stress, strain, shear and torsion, with the pictures.")
 CI_NAV_INFO = "<li class=\"info-bar__item\"><a class=\"info-bar__item__text\" href='/compound-interest-explained'>Explained</a></li><li class=\"info-bar__item\"><a class=\"info-bar__item__text\" href='/loan-calculator'>Loan</a></li><li class=\"info-bar__item\"><a class=\"info-bar__item__text\" href='/mortgagecalculator'>Mortgage</a></li>"
 CI_NAV_MENU = "<li class=\"navbar__item\"><a class=\"navbar__link\" href=\"/compound-interest-explained\">Compound Interest Explained</a></li><li class=\"navbar__item\"><a class=\"navbar__link\" href=\"/loan-calculator\">Loan Calculator</a></li><li class=\"navbar__item\"><a class=\"navbar__link\" href=\"/mortgagecalculator\">Mortgage Calculator</a></li>"
-MAT_NAV_INFO = "<li class=\"info-bar__item\"><a class=\"info-bar__item__text\" href='/youngs-modulus-calculator'>Young's Modulus</a></li><li class=\"info-bar__item\"><a class=\"info-bar__item__text\" href='/tensile-test-simulator'>Tensile Test</a></li><li class=\"info-bar__item\"><a class=\"info-bar__item__text\" href='/shear-stress-calculator'>Shear &amp; Torsion</a></li><li class=\"info-bar__item\"><a class=\"info-bar__item__text\" href='/bending-stress-calculator'>Bending</a></li><li class=\"info-bar__item\"><a class=\"info-bar__item__text\" href='/materials?tab=table'>Materials Table</a></li>"
-MAT_NAV_MENU = '<li class="navbar__item"><a class="navbar__link" href="/youngs-modulus-calculator">Young\'s Modulus Calculator</a></li><li class="navbar__item"><a class="navbar__link" href="/tensile-test-simulator">Tensile Test Simulator</a></li><li class="navbar__item"><a class="navbar__link" href="/shear-stress-calculator">Shear &amp; Torsion Calculator</a></li><li class="navbar__item"><a class="navbar__link" href="/bending-stress-calculator">Bending Stress &amp; Beam Calculator</a></li><li class="navbar__item"><a class="navbar__link" href="/materials?tab=table">Materials Table</a></li>'
+MAT_NAV_INFO = "<li class=\"info-bar__item\"><a class=\"info-bar__item__text\" href='/youngs-modulus-calculator'>Young's Modulus</a></li><li class=\"info-bar__item\"><a class=\"info-bar__item__text\" href='/tensile-test-simulator'>Tensile Test</a></li><li class=\"info-bar__item\"><a class=\"info-bar__item__text\" href='/shear-stress-calculator'>Shear &amp; Torsion</a></li><li class=\"info-bar__item\"><a class=\"info-bar__item__text\" href='/materials?tab=table'>Materials Table</a></li>"
+MAT_NAV_MENU = '<li class="navbar__item"><a class="navbar__link" href="/youngs-modulus-calculator">Young\'s Modulus Calculator</a></li><li class="navbar__item"><a class="navbar__link" href="/tensile-test-simulator">Tensile Test Simulator</a></li><li class="navbar__item"><a class="navbar__link" href="/shear-stress-calculator">Shear &amp; Torsion Calculator</a></li><li class="navbar__item"><a class="navbar__link" href="/materials?tab=table">Materials Table</a></li>'
 
 # Standard | Wide | Theatre without a sidebar (the private /ads and /search-console dashboards): the hub pages' head snippet
 # (Wide by default, same saved "pageMode"), main_js/hub-theatre.js builds the switch when the page has data-page-modes="3".
@@ -468,7 +468,7 @@ APPS = {
                          tag="Cut, clean and export audio. No upload. No sign-up.", accent="#0369a1", dark="#075985", tint="#e0f2fe",
                          desc="Free online audio editor with AI noise removal: open audio or the sound of a video, remove background noise, hum and clicks, cut, fade and arrange tracks, set the loudness to -14 or -16 LUFS and export WAV, MP3 or M4A. Runs in your browser: nothing is uploaded.",
                          meta_desc="Free online audio editor with AI noise removal. Cut, fade, clean up voice, set LUFS loudness and export WAV, MP3 or M4A. Runs in your browser, nothing uploaded.",
-                         js_v="1", pre_js=["/main_js/denoise.js?v=1"]),
+                         js_v="2", pre_js=["/main_js/denoise.js?v=2"], lib_from=["convert-video"], js_parts=["../convert-video/engine.js"]),
     # Bulk Image Converter: PNG / JPEG / WebP in bulk in the browser (canvas), optional resize, ZIP download. lib.js = MESImg (formats, sizes, names, ZIP writer; node-tested: tool_apps_src/image-converter-tests.js), shared with the photo editor.
     "image-converter": dict(title="MES Bulk Image Converter", page_title="Bulk Image Converter: PNG to JPG, JPG to PNG, WebP",
                          tag="Convert many images at once. Nothing is uploaded.", accent="#0f766e", dark="#0b5a54", tint="#e2f3f1",
@@ -512,25 +512,21 @@ APPS = {
     # seo/<slug>.html) and one served script (materials/js/materials.js) for four pages; data-views on #mt picks the tabs: axial, tensile, shear, torsion, poisson, thermal, table.
     # /materials shows all seven; the other three use the materials brand (logo, header, Home). State: localStorage mes-materials:v1 (shared). Share links are plain query strings.
     "materials": dict(title="MES Mechanics of Materials", page_title="Mechanics of Materials Calculator: Stress, Strain, Young's Modulus, Shear, Torsion",
-                      tag="Stress, strain, shear, torsion and bending, with the pictures.", accent="#2f6690", dark="#22496a", tint="#e1edf6",
-                      desc="Free mechanics of materials calculators: stress and strain with Young's modulus, a tensile test simulator with the stress-strain curve, shear stress in bolts and pins, torsion of shafts, beam bending with shear and moment diagrams, Poisson's ratio and 3D Hooke's law, thermal stress, and a table of 30 materials. SI and US units.",
-                      js_v="8", vars={"VIEWS": "axial,tensile,shear,torsion,bending,poisson,thermal,table", "PAGE": "materials", "SEO": "@seo/materials.html"}, nav_extra=MAT_NAV_INFO, menu_extra=MAT_NAV_MENU),
+                      tag="Stress, strain, shear and torsion, with the pictures.", accent="#2f6690", dark="#22496a", tint="#e1edf6",
+                      desc="Free mechanics of materials calculators: stress and strain with Young's modulus, a tensile test simulator with the stress-strain curve, shear stress in bolts and pins, torsion of shafts, Poisson's ratio and 3D Hooke's law, thermal stress, and a table of 30 materials. SI and US units.",
+                      js_v="7", vars={"VIEWS": "axial,tensile,shear,torsion,poisson,thermal,table", "PAGE": "materials", "SEO": "@seo/materials.html"}, nav_extra=MAT_NAV_INFO, menu_extra=MAT_NAV_MENU),
     "youngs-modulus-calculator": dict(title="Young's Modulus Calculator", page_title="Young's Modulus Calculator: Stress, Strain and Elongation",
                       tag="Stress, strain and stretch from any four values.", accent="#2f6690", dark="#22496a", tint="#e1edf6", src="materials", js_path="materials/js/materials.js",
                       desc="Free Young's modulus calculator: find stress, strain, elongation or the modulus of elasticity from the force, area and length, with a live picture of the stretched bar, safety factor, buckling load and 30 materials. SI and US units, every formula shown.",
-                      js_v="8", vars={"VIEWS": "axial,tensile,table", "PAGE": "youngs", "SEO": "@seo/youngs-modulus-calculator.html"}, brand=MAT_BRAND, tab=1, nav_extra=MAT_NAV_INFO, menu_extra=MAT_NAV_MENU),
+                      js_v="7", vars={"VIEWS": "axial,tensile,table", "PAGE": "youngs", "SEO": "@seo/youngs-modulus-calculator.html"}, brand=MAT_BRAND, tab=1, nav_extra=MAT_NAV_INFO, menu_extra=MAT_NAV_MENU),
     "tensile-test-simulator": dict(title="Tensile Test Simulator", page_title="Tensile Test Simulator: Stress-Strain Curve, Yield, UTS and Necking",
                       tag="Pull a bar until it breaks and watch the curve.", accent="#2f6690", dark="#22496a", tint="#e1edf6", src="materials", js_path="materials/js/materials.js",
                       desc="Free tensile test simulator: pull steel, aluminium, cast iron, glass, plastics, rubber and more until they break and watch the stress-strain curve being drawn: yield, 0.2% offset, Lüders plateau, UTS, necking, unloading, true stress, resilience and toughness. Compare three materials.",
-                      js_v="8", vars={"VIEWS": "tensile,table", "PAGE": "tensile", "SEO": "@seo/tensile-test-simulator.html"}, brand=MAT_BRAND, tab=2, nav_extra=MAT_NAV_INFO, menu_extra=MAT_NAV_MENU),
+                      js_v="7", vars={"VIEWS": "tensile,table", "PAGE": "tensile", "SEO": "@seo/tensile-test-simulator.html"}, brand=MAT_BRAND, tab=2, nav_extra=MAT_NAV_INFO, menu_extra=MAT_NAV_MENU),
     "shear-stress-calculator": dict(title="Shear Stress Calculator", page_title="Shear Stress Calculator: Bolts, Pins, Punching and Shaft Torsion",
                       tag="Shear in bolts and pins, and twisted shafts.", accent="#2f6690", dark="#22496a", tint="#e1edf6", src="materials", js_path="materials/js/materials.js",
                       desc="Free shear stress calculator: shear stress and strain in bolts and pins in single or double shear, glued joints and punching, shear modulus from E and Poisson's ratio, and torsion of solid and hollow shafts with the angle of twist and motor power. Safety factors and sizes.",
-                      js_v="8", vars={"VIEWS": "shear,torsion,table", "PAGE": "shear", "SEO": "@seo/shear-stress-calculator.html"}, brand=MAT_BRAND, tab=3, nav_extra=MAT_NAV_INFO, menu_extra=MAT_NAV_MENU),
-    "bending-stress-calculator": dict(title="Bending Stress Calculator", page_title="Bending Stress and Beam Deflection Calculator: Shear and Moment Diagrams",
-                      tag="Beams, loads you can drag, and the bending stress.", accent="#2f6690", dark="#22496a", tint="#e1edf6", src="materials", js_path="materials/js/materials.js",
-                      desc="Free bending stress and beam deflection calculator: simply supported, cantilever, fixed, propped and overhanging beams with point loads, spread loads and moments you drag along the beam. Live shear-force and bending-moment diagrams, the deflected shape, σ = Mc/I for I-beams, channels, tubes and rectangles, safety factor and the L/360 check. SI and US units.",
-                      js_v="8", vars={"VIEWS": "bending,table", "PAGE": "bending", "SEO": "@seo/bending-stress-calculator.html"}, brand=MAT_BRAND, tab=4, nav_extra=MAT_NAV_INFO, menu_extra=MAT_NAV_MENU),
+                      js_v="7", vars={"VIEWS": "shear,torsion,table", "PAGE": "shear", "SEO": "@seo/shear-stress-calculator.html"}, brand=MAT_BRAND, tab=3, nav_extra=MAT_NAV_INFO, menu_extra=MAT_NAV_MENU),
     # Photoelectric Effect Simulator: light on a metal, electrons, stopping voltage, I-V and KE-vs-f graphs, and a "measure h" lab. lib.js node-tested (tool_apps_src/photoelectric-effect-tests.js). Normal-width page with the sidebar (Wide by default); opensearch.xml lets browsers add it as a search engine.
     "photoelectric-effect-simulator": dict(title="MES Photoelectric Effect Simulator", page_title="Photoelectric Effect Simulator",
                             tag="Light knocks electrons out of metal.", accent="#6d28d9", dark="#5b21b6", tint="#ede9fe",
@@ -994,14 +990,14 @@ APPS = {
     "convert-video": dict(title="MES Video Converter", page_title="Video Converter: AVI, MKV, WMV, MOV to MP4 Online, No Upload",
                        tag="Any video to MP4, privately.", accent="#4338ca", dark="#3730a3", tint="#e9e8fd",
                        desc="Free online video converter: turn AVI, MKV, WMV, FLV, MOV, WebM and MPG files into MP4 (H.264 + AAC) that Camtasia, Premiere and every phone can open. AVI screen recordings with H.264 are copied without re-encoding, so even big files take seconds. A queue for many files, ZIP or save to a folder, nothing is uploaded.",
-                       js_v="1", js_parts=["engine.js"], lib_from=["image-converter"]),
+                       js_v="2", js_parts=["engine.js"], lib_from=["image-converter"]),
     # MES Video Editor (2026-10-28): Camtasia-lite timeline editor. lib.js = MESVed (pure timeline maths, node tests tool_apps_src/video-tests.js); js_parts = the converter's
     # engine (imports any format: AVI + H.264 remux / ffmpeg.wasm), core (state, IndexedDB, media analysis, compositor), preview, timeline, export (WebCodecs + mp4-muxer).
     # Noise removal comes from window.MESDenoise (/main_js/denoise.js, written for mes.fm/audio). Normal page in the tools sidebar collection, always-dark workspace (--vd-*).
     "video": dict(title="MES Video Editor", page_title="Free Online Video Editor: Cut, Join, Add Titles, Clean Up Sound",
                        tag="Cut, join, add titles, clean up the sound. No upload.", accent="#be123c", dark="#9f1239", tint="#fde4ea",
                        desc="Free online video editor in your browser: put videos, sound and pictures on a multi-track timeline, trim and split clips, join many videos in order, add titles and overlays, cross-fade, remove background noise, even out the loudness and export MP4 up to 4K. Opens AVI, MKV, WMV and MOV too. Nothing is uploaded.",
-                       js_v="1", lib_from=["convert-video"], js_parts=["../convert-video/engine.js", "core.js", "preview.js", "timeline.js", "export.js"]),
+                       js_v="2", lib_from=["convert-video"], js_parts=["../convert-video/engine.js", "core.js", "preview.js", "timeline.js", "export.js"]),
     # MES Font Preview and Finder (2026-10-19): text in every font the browser really has (+ optional Google Fonts), effects, PNG / CSS export, compare, and a picture matcher. lib.js = MESFont (node tests tool_apps_src/fonts-tests.js).
     "fonts": dict(title="MES Font Preview and Finder", page_title="Font Preview: See Your Text in Every Font, and Find a Font from a Picture",
                   tag="See your text in every font.", accent="#7c2d92", dark="#5f2070", tint="#f3e5f8",

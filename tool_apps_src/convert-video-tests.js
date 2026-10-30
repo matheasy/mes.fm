@@ -106,5 +106,16 @@ eq(C.streamOf("00dc"), 0, "streamOf video"); eq(C.streamOf("01wb"), 1, "streamOf
 	eq(C.ffmpegPlan({ streams: [{ type: "audio", codec: "mp3", index: 0 }] }, "a", "b").ok, false, "no video -> error");
 	eq(C.ffmpegTime("frame=  10 fps=0.0 q=-1.0 size=  1kB time=00:01:02.50 bitrate"), 62.5, "progress time");
 }
+/* ADTS wrapping (raw AAC in AVI -> a stream decodeAudioData reads), used by MESConvEngine.extractAudio */
+{
+	var au = new Uint8Array([1, 2, 3, 4, 5]), asc = new Uint8Array([0x12, 0x10]), f = C.adtsFrame(au, asc);   // AAC-LC, 44.1 kHz, stereo
+	ok(f.length === 12 && f[0] === 0xff && (f[1] & 0xf6) === 0xf0 && C.isAdts(f), "ADTS sync word");
+	ok(((f[2] >> 6) & 3) === 1 && ((f[2] >> 2) & 15) === 4 && (((f[2] & 1) << 2) | (f[3] >> 6)) === 2, "profile LC, 44.1 kHz index, 2 channels");
+	ok((((f[3] & 3) << 11) | (f[4] << 3) | (f[5] >> 5)) === 12, "frame length includes the header");
+	ok(f[7] === 1 && f[11] === 5, "payload follows the header");
+	var g = C.adtsFrame(au, new Uint8Array([0x11, 0x88])); ok(((g[2] >> 2) & 15) === 3 && (((g[2] & 1) << 2) | (g[3] >> 6)) === 1, "48 kHz mono");
+	ok(!C.isAdts(au) && !C.isAdts(new Uint8Array([0xff, 0xfb, 0x90, 0, 0, 0, 0, 0])), "an MP3 frame is not ADTS");
+	var pl = C.s16Planar(new Uint8Array([0, 0x40, 0, 0xc0]), 2); ok(pl.length === 2 && pl[0][0] === 0.5 && pl[1][0] === -0.5, "s16le stereo -> planar");
+}
 console.log(pass + " passed, " + fail + " failed");
 process.exit(fail ? 1 : 0);

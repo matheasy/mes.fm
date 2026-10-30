@@ -32,17 +32,19 @@
 			<canvas class="au-meter" id="au-meter" width="120" height="14" aria-label="Playback level"></canvas>
 		</div>
 		<div class="au-recbar" id="au-recbar" hidden><span class="au-recdot"></span><b>Recording</b><span id="au-rect">0:00</span><canvas class="au-meter" id="au-recmeter" width="160" height="14"></canvas><button type="button" class="au-btn au-btn--sm" id="au-recstop">⏹ Stop recording</button></div>
+		<div class="au-cmpbar" id="au-cmpbar" hidden></div>
 		<div class="au-main">
 			<div class="au-tl" id="au-tl">
 				<div class="au-rulerrow"><div class="au-corner"><button type="button" class="au-btn au-btn--sm" id="au-addtrack" title="Add an empty track">+ Track</button></div><canvas class="au-ruler" id="au-ruler" aria-label="Timeline: click to move the playhead, drag to select"></canvas></div>
 				<div class="au-scroll" id="au-scroll">
 					<div class="au-rows"><div class="au-heads" id="au-heads"></div><div class="au-lanes" id="au-lanes"><canvas id="au-cv" tabindex="0" role="application" aria-label="Tracks: drag to select, drag a clip's title bar to move it"></canvas><canvas id="au-over"></canvas></div></div>
 				</div>
+				<div class="au-agrip" id="au-agrip" role="separator" aria-orientation="horizontal" tabindex="0" title="Drag to make the track area taller or shorter (double-click: back to normal)" aria-label="Resize the track area: drag, or use the up and down arrow keys"><span></span></div>
 				<div class="au-hbar"><span id="au-vrange">0:00 – 0:00</span><input type="range" id="au-hs" min="0" max="1000" value="0" aria-label="Scroll the timeline"><span id="au-zoomlab"></span></div>
 				<div class="au-empty" id="au-empty">
 					<div class="au-empty-in">
 						<div class="au-empty-t">Free online audio editor</div>
-						<div class="au-empty-s">Open or drop audio (MP3, WAV, M4A, OGG, FLAC) or a video (MP4, MOV, WebM) to edit its sound. Remove background noise with AI, cut, fade, set the loudness and export. Everything stays on your device.</div>
+						<div class="au-empty-s">Open or drop audio (MP3, WAV, M4A, OGG, FLAC) or a video (MP4, MOV, WebM, AVI, MKV, WMV) to edit its sound. Remove background noise with AI, cut, fade, set the loudness and export. Everything stays on your device.</div>
 						<div class="au-empty-b"><button type="button" class="au-btn au-btn--primary" id="au-e-open">Open audio or video</button> <button type="button" class="au-btn" id="au-e-rec">⏺ Record</button> <button type="button" class="au-btn" id="au-e-tone">Try a noisy test clip</button></div>
 						<div class="au-empty-r" id="au-restore" hidden></div>
 					</div>
@@ -54,7 +56,7 @@
 			</aside>
 		</div>
 		<div class="au-status"><span id="au-st-len">No audio</span><span id="au-st-rate"></span><span id="au-st-sel"></span><span class="au-hint" id="au-hint">Space = play · drag = select · Ctrl+wheel = zoom · ? = shortcuts</span></div>
-		<input type="file" id="au-file" accept="audio/*,video/*,.mp3,.wav,.m4a,.aac,.ogg,.oga,.opus,.flac,.webm,.mp4,.mov,.m4v,.mkv,.aif,.aiff,.caf" multiple hidden>
+		<input type="file" id="au-file" accept="audio/*,video/*,.mp3,.wav,.m4a,.aac,.ogg,.oga,.opus,.flac,.webm,.mp4,.mov,.m4v,.mkv,.avi,.wmv,.asf,.flv,.mpg,.mpeg,.ts,.mts,.m2ts,.3gp,.vob,.aif,.aiff,.caf" multiple hidden>
 	</div>
 
 	<div class="tu-seo">
@@ -62,10 +64,12 @@
 		<p>MES Audio Editor is an Audacity-style editor that runs in your browser. Open audio or the sound of a video, cut and rearrange it on several tracks, fade in and out, set the loudness for YouTube or podcasts, and remove background noise with a neural network. <b>Nothing is uploaded</b>: decoding, editing, the AI models and the export all run on your device.</p>
 		<h3>How the noise removal works</h3>
 		<p>The default model is <b>DeepFilterNet 3</b> (Hendrik Schröter and contributors, MIT / Apache-2.0), a speech-enhancement network that removes fans, air conditioning, traffic, hiss, keyboard and room noise while keeping the voice natural. It is an 8.6 MB download the first time, kept by your browser afterwards, and runs on the processor through WebAssembly at roughly 10 to 30 times real time on a laptop (a 10-minute recording takes well under a minute). The audio is processed at 48 kHz and converted back to your project's rate. <b>RNNoise</b> (Xiph, BSD) is a smaller, faster and gentler alternative. The <b>Spectral gate</b> needs no download: select a few seconds of noise only, press "Learn noise from selection", then apply it; it suits steady hiss on music too, where the speech models are not the right tool. <b>Strength</b> limits how far the noise is pushed down, so you can keep a little room sound. Hum removal notches 50 or 60 Hz mains hum and its harmonics.</p>
-		<p>Use <b>Preview</b> to hear the selection processed, then switch between <b>A = original</b> and <b>B = processed</b> while it plays (key B). Speech models are trained on voices: on music or singing they can remove instruments too, so preview first.</p>
+		<p>Use <b>Preview</b> to hear the selection processed, then switch between <b>Before</b> (your original) and <b>After</b> while it plays (key B); the panel draws both waveforms on top of each other, grey behind and bright in front, and says how far the background noise went down. After <b>Apply</b>, the <b>Compare</b> bar above the tracks plays the Original or the Cleaned version of the whole track, and Undo (Ctrl+Z) takes it back. Speech models are trained on voices: on music or singing they can remove instruments too, so preview first.</p>
+		<h3>"I applied it but my video still sounds noisy"</h3>
+		<p>The cleaned sound is only in the file you export. In Camtasia, Premiere, CapCut or another video editor the video clip still carries its own (noisy) sound: mute or delete that track and use the exported file instead, otherwise you hear both. Mains hum is the low 50 Hz (Europe, Asia, Africa, Australia) or 60 Hz (North America) buzz from the electricity; turn on "Mains hum" in the noise removal or use Hum removal if you hear one.</p>
 		<h3>Questions</h3>
 		<dl>
-			<dt>Which files can I open?</dt><dd>Anything your browser can decode: MP3, WAV, M4A / AAC, OGG / Opus, FLAC and the audio track of MP4, MOV and WebM videos (MKV and AIFF depend on the browser). Several files open as separate tracks you can line up.</dd>
+			<dt>Which files can I open?</dt><dd>Anything your browser can decode: MP3, WAV, M4A / AAC, OGG / Opus, FLAC and the audio track of MP4, MOV and WebM videos. The sound of AVI, MKV, WMV, FLV, MPG and other videos the browser cannot read is pulled out by the <a href="/convert-video">Video Converter</a>'s engine: AVI with MP3, PCM or AAC sound directly, anything else with ffmpeg in the page (a one-time download of about 31 MB). Several files open as separate tracks you can line up.</dd>
 			<dt>How do I make my audio the right loudness for YouTube or a podcast?</dt><dd>Effects → Normalize / loudness → choose −14 LUFS (YouTube, Spotify) or −16 LUFS (podcasts, Apple) with a −1 dBTP true-peak ceiling. The meter shows the integrated loudness, loudness range and true peak before and after. The export dialog can also do it on the way out.</dd>
 			<dt>What does "Enhance speech" do?</dt><dd>One click for a voice recording: AI noise removal, a low cut for rumble, a voice-clarity EQ, a gentle compressor and loudness to −16 LUFS. Each step can be switched off.</dd>
 			<dt>Which formats can I export?</dt><dd>WAV (16-bit, 24-bit or 32-bit float), MP3 (64 to 320 kbps, encoded in the page with lamejs) and M4A / AAC where the browser has an AAC encoder (Chrome, Edge and Safari). Export the whole project or only the selection, and markers as a text file Audacity can import.</dd>

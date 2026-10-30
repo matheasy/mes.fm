@@ -346,6 +346,8 @@
 		});
 	}
 	function dfnSession(onProg) {
+		/* node tests inject {ort, s} (onnxruntime-node) here, so the exact browser pipeline runs on the real network */
+		if (M.session) return Promise.resolve(M.session);
 		return sessP = sessP || Promise.all([ort(), fetchCached(DFN_URLS, 8.6, onProg)]).then(function (r) {
 			var o = r[0];
 			o.env.wasm.numThreads = window.crossOriginIsolated ? Math.min(4, navigator.hardwareConcurrency || 1) : 1;

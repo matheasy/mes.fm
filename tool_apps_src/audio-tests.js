@@ -153,9 +153,46 @@ function rms(x, a, b) { var s = 0, i; a = a || 0; b = b || x.length; for (i = a;
 	ok(h.canUndo() && h.undo().label === "Open" && !h.canUndo() && h.canRedo() && h.redo().label === "Cut", "undo / redo");
 	var hb = new A.History(5000); for (i = 0; i < 6; i++) h.push("x", A.snapshot(s0)); for (i = 0; i < 6; i++) hb.push("e" + i, A.snapshot({ tracks: [A.track({ clips: [A.clip(0, [new Float32Array(500)])] })], markers: [] }));
 	ok(hb.stack.length <= 3, "history drops old steps over its memory budget (" + hb.stack.length + ")");
+	/* noise floor + report */
+	var r10 = rng(11), nf = new Float32Array(sr * 4); for (i = 0; i < nf.length; i++) nf[i] = 0.01 * r10() + (i > sr && i < sr * 3 ? 0.3 * Math.sin(2 * Math.PI * 220 * i / sr) : 0);
+	near(A.noiseFloor([nf], sr), 20 * Math.log10(0.01 / Math.sqrt(3)), 1.5, "noise floor = the level of the quiet parts (" + A.noiseFloor([nf], sr).toFixed(1) + " dB)");
+	ok(A.noiseFloor([new Float32Array(sr)], sr) === -Infinity, "digital silence has no noise floor");
+	ok(/45 dB quieter/.test(A.noiseReport(-39, -84).text) && A.noiseReport(-39, -84).db === 45, "report says how much quieter");
+	ok(/almost no steady noise/.test(A.noiseReport(-70, -71).text), "report says when nothing was found");
 	var cmds = [{ name: "Noise removal", keys: "denoise background hiss" }, { name: "Normalize", keys: "loudness lufs" }, { name: "Fade in" }];
 	ok(A.match(cmds, "lufs")[0].name === "Normalize" && A.match(cmds, "hiss")[0].name === "Noise removal" && A.match(cmds, "fade")[0].name === "Fade in" && A.match(cmds, "zzz").length === 0, "command search");
 })();
 
-console.log(pass + " passed, " + fail + " failed");
-process.exit(fail ? 1 : 0);
+/* DeepFilterNet end to end on real speech (LibriVox sample + fan / hiss / room / keyboard noise), through the exact MESDenoise.process path the page uses.
+ * Needs onnxruntime-node (npm i onnxruntime-node@1.22.0; or ORT_NODE=/path/to/node_modules/onnxruntime-node) and ffmpeg to decode the MP3; skipped otherwise. */
+function dfnChild() { return (async function () {
+	var ort = null, cp = require("child_process"), fs = require("fs");
+	try { ort = require(process.env.ORT_NODE || "onnxruntime-node"); } catch (e) { ort = null; }
+	var mp3 = path.join(__dirname, "../mes.fm/audio/sample-speech.mp3"), dec = ort && cp.spawnSync("ffmpeg", ["-v", "error", "-i", mp3, "-ac", "1", "-ar", "48000", "-f", "f32le", "-"], { maxBuffer: 1 << 26 });
+	if (!ort || !dec || dec.status !== 0) { console.log("SKIP DeepFilterNet end-to-end (no onnxruntime-node or ffmpeg)"); return; }
+	DN.session = { ort: ort, s: await ort.InferenceSession.create(path.join(__dirname, "../mes.fm/main_js/denoise/deepfilter.onnx"), { intraOpNumThreads: 1, interOpNumThreads: 1 }) };
+	var b = dec.stdout, x = new Float32Array(b.buffer.slice(b.byteOffset, b.byteOffset + b.length)), n = x.length, sr = 48000;
+	function quiet(clean, y) { var F = 4800, num = 0, c = 0; for (var i = 0; i + F < n; i += F) { var e = 0, q = 0; for (var j = i; j < i + F; j++) { e += clean[j] * clean[j]; q += y[j] * y[j]; } if (Math.sqrt(e / F) < 0.003) { num += q / F; c++; } } return 10 * Math.log10(num / c); }
+	var kinds = { fan: function (w, st) { st.b = 0.995 * st.b + 0.05 * w; st.p = 0.9 * st.p + 0.1 * w; return st.b + 0.3 * st.p; }, hiss: function (w) { return w; }, room: function (w, st) { st.b = 0.995 * st.b + 0.05 * w; return st.b; }, keyboard: function (w, st, i) { return (i % 9000 < 300 ? Math.exp(-(i % 9000) / 40) * w * 4 : 0) + 0.1 * w; } };
+	for (var k in kinds) {
+		var r = rng(5), st = { b: 0, p: 0 }, nz = new Float32Array(n), e = 0, en = 0, i;
+		for (i = 0; i < n; i++) { nz[i] = kinds[k](r(), st, i); e += x[i] * x[i]; en += nz[i] * nz[i]; }
+		var g = Math.sqrt(e / en / Math.pow(10, 0.5)), y = new Float32Array(n); for (i = 0; i < n; i++) y[i] = x[i] + g * nz[i];   // 5 dB SNR
+		var out = (await DN.process([y], sr, { model: "deepfilter", strength: 1 }))[0], before = quiet(x, y), after = quiet(x, out);
+		ok(before - after > 18, "DeepFilterNet at 100% on speech + " + k + ": pauses " + before.toFixed(1) + " -> " + after.toFixed(1) + " dB");
+		ok(D.siSdr(x, out) > D.siSdr(x, y) + 7, "DeepFilterNet improves SI-SDR on " + k + " (" + D.siSdr(x, y).toFixed(1) + " -> " + D.siSdr(x, out).toFixed(1) + " dB)");
+		var half = (await DN.process([y], sr, { model: "deepfilter", strength: 0.5 }))[0], ah = quiet(x, half);
+		ok(ah > after + 3 && ah < before - 10, "strength 50% stops at about 20 dB on " + k + " (" + ah.toFixed(1) + " dB)");
+		ok(Math.abs(A.noiseFloor([y], sr) - A.noiseFloor([out], sr)) > 15, "noiseFloor() sees the change the page reports");
+	}
+})(); }
+/* run in a child process: onnxruntime-node aborts in its own native teardown when the process exits */
+if (process.argv.indexOf("--dfn") >= 0) {
+	pass = 0; fail = 0; dfnChild().catch(function (e) { console.log("FAIL: DeepFilterNet end-to-end threw: " + (e && e.stack || e)); }).then(function () { console.log("@@" + pass + "/" + fail); process.reallyExit(0); });
+} else {
+	var ch = require("child_process").spawnSync(process.execPath, [__filename, "--dfn"], { encoding: "utf8", env: process.env, maxBuffer: 1 << 24 }), outp = ch.stdout || "", mm = /@@(\d+)\/(\d+)/.exec(outp);
+	outp.split("\n").forEach(function (l) { if (/^(FAIL|SKIP)/.test(l)) console.log(l); });
+	if (mm) { pass += +mm[1]; fail += +mm[2]; } else { fail++; console.log("FAIL: DeepFilterNet child did not finish"); }
+	console.log(pass + " passed, " + fail + " failed");
+	process.exit(fail ? 1 : 0);
+}

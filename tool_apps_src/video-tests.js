@@ -130,5 +130,12 @@ function proj(clips) { const p = V.newProject(); p.clips = clips; return p; }
 	eq([n.w, n.fps, n.tracks.length, n.clips.length, n.clips[0].speed], [1920, 120, 1, 1, 1], "normalize a loaded project");
 	ok(V.frameSnap(1.016, 30) === 1, "frame snap");
 }
+/* WAV for the noise-removed sound at other preview speeds */
+{
+	var wv = new DataView(V.wav16([new Float32Array([0, 0.5, -1, 2]), new Float32Array([1, -0.5, 0, 0])], 48000));
+	ok(wv.byteLength === 44 + 16 && String.fromCharCode(wv.getUint8(8), wv.getUint8(9), wv.getUint8(10), wv.getUint8(11)) === "WAVE", "WAV header");
+	ok(wv.getUint16(22, true) === 2 && wv.getUint32(24, true) === 48000 && wv.getUint16(34, true) === 16, "2 channels, 48 kHz, 16-bit");
+	ok(wv.getInt16(44, true) === 0 && wv.getInt16(46, true) === 32767 && wv.getInt16(48, true) === 16384 && wv.getInt16(52, true) === -32768 && wv.getInt16(56, true) === 32767, "interleaved, clipped to the 16-bit range");
+}
 console.log(pass + " passed, " + fail + " failed");
 process.exit(fail ? 1 : 0);

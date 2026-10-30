@@ -5,7 +5,7 @@
 	"use strict";
 	var VE = window.VE; if (!VE) return;
 	var V = VE.V, $ = function (id) { return document.getElementById(id); };
-	var P = VE.preview = { playing: false, rate: 1, rev: false, t0: 0, p0: 0 };
+	var P = VE.preview = { playing: false, rate: 1, rev: false, t0: 0, p0: 0, speed: 1 };   // speed = the "Playback speed" menu (preview only)
 	var cv = $("vd-canvas"), ctx = cv.getContext("2d"), wrap = $("vd-stagewrap"), els = {}, ac = null, cleanNodes = [], cleanBufs = {}, raf = 0, needDraw = true;
 
 	function audio() {
@@ -46,7 +46,15 @@
 		Object.keys(els).forEach(function (k) { var e = els[k]; e.el.pause(); if (e.gain && ac) e.gain.gain.setTargetAtTime(0, ac.currentTime, 0.01); });
 		stopClean(); VE.emit("pause"); sync(); draw();
 	};
-	P.toggle = function () { if (P.playing && !P.rev) P.pause(); else P.play(1); };
+	P.toggle = function () { if (P.playing && !P.rev) P.pause(); else P.play(P.speed); };
+	// preview playback speed (0.25x-4x): the edit and the export are not changed; video / audio elements keep their pitch at this speed
+	P.SPEEDS = [0.25, 0.5, 0.75, 1, 1.25, 1.5, 1.75, 2, 3, 4];
+	P.setSpeed = function (s) {
+		s = Math.max(0.25, Math.min(4, +s || 1)); P.speed = s;
+		if (P.playing && !P.rev) { P.pause(); P.play(s); }
+		VE.emit("speed", s);
+	};
+	P.stepSpeed = function (dir) { var L = P.SPEEDS, i = 0; while (i < L.length - 1 && L[i] < P.speed - 1e-9) i++; P.setSpeed(L[Math.max(0, Math.min(L.length - 1, i + dir))]); };
 	P.seek = function (t) {
 		var was = P.playing && !P.rev; if (P.playing) P.pause();
 		VE.t = Math.max(0, Math.min(t, Math.max(V.duration(VE.P), 0)));
@@ -82,6 +90,8 @@
 			if (playing && active) {
 				var pr = Math.max(0.0625, Math.min(16, (c.speed || 1) * P.rate));
 				if (Math.abs(e.el.playbackRate - pr) > 1e-3) e.el.playbackRate = pr;
+				var keep = Math.abs(P.rate - 1) > 1e-3 && Math.abs(P.rate - P.speed) < 1e-3;   // the speed menu: keep the voice's pitch (J / L shuttle and clip speed do not)
+				if (e.el.preservesPitch !== keep) e.el.preservesPitch = keep;
 				if (e.el.paused) { if (Math.abs(e.el.currentTime - src) > 0.02) e.el.currentTime = src; var pp = e.el.play(); if (pp && pp.catch) pp.catch(function () { }); }
 				else if (Math.abs(e.el.currentTime - src) > 0.3 * Math.max(1, P.rate)) e.el.currentTime = src;
 			} else {
@@ -108,6 +118,7 @@
 			var now = P.time(), from = Math.max(now, c.start - (c.xin || 0)), src = V.srcAt(c, from), off = src - cp.start;
 			if (off < 0) { from += -off / (c.speed || 1); off = 0; }
 			var len = (V.end(c) - from) * (c.speed || 1); if (len <= 0 || off >= buf.duration) continue;
+			if (Math.abs(P.rate - 1) > 1e-3 && Math.abs(P.rate - P.speed) < 1e-3 && window.HTMLMediaElement) { cleanEl(a, c, cp, from, now, off, len); continue; }
 			var node = a.createBufferSource(), gain = a.createGain(); node.buffer = buf; node.playbackRate.value = (c.speed || 1) * P.rate; gain.gain.value = 0;
 			node.connect(gain).connect(a.destination);
 			node.start(a.currentTime + Math.max(0, (from - now) / P.rate), off, Math.min(len, buf.duration - off));
@@ -115,8 +126,18 @@
 		}
 		sync();
 	}
+	// at a menu speed other than 1x the noise-removed sound plays from an <audio> element (a WAV of it) so the voice keeps its pitch
+	var cleanUrls = {};
+	function cleanEl(a, c, cp, from, now, off, len) {
+		var url = cleanUrls[c.clean.key] || (cleanUrls[c.clean.key] = URL.createObjectURL(new Blob([V.wav16(cp.ch, cp.rate)], { type: "audio/wav" })));
+		var el = new Audio(); el.preload = "auto"; el.src = url; el.preservesPitch = true; el.playbackRate = Math.max(0.0625, Math.min(16, (c.speed || 1) * P.rate));
+		var sn = a.createMediaElementSource(el), gain = a.createGain(); gain.gain.value = 0; sn.connect(gain).connect(a.destination);
+		var timer = setTimeout(function () { el.currentTime = off; var pp = el.play(); if (pp && pp.catch) pp.catch(function () { }); }, Math.max(0, (from - now) / P.rate * 1000));
+		cleanNodes.push({ id: c.id, gain: gain, node: { stop: function () { clearTimeout(timer); el.pause(); el.removeAttribute("src"); }, disconnect: function () { sn.disconnect(); } } });
+		void len;
+	}
 	function stopClean() { cleanNodes.forEach(function (n) { try { n.node.stop(); n.node.disconnect(); n.gain.disconnect(); } catch (e) { /* ignore */ } }); cleanNodes = []; }
-	P.forgetClean = function (key) { delete cleanBufs[key]; };
+	P.forgetClean = function (key) { delete cleanBufs[key]; if (cleanUrls[key]) { URL.revokeObjectURL(cleanUrls[key]); delete cleanUrls[key]; } };
 
 	/* ---------- drawing ---------- */
 	function source(c) {

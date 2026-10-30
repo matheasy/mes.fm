@@ -269,6 +269,58 @@
 		}
 	}
 
+	/* ---------- sound only (for the Audio Editor and the Video Editor) ---------- */
+	// -> { channels: Float32Array[], sampleRate } (PCM, ffmpeg) or { encoded: ArrayBuffer, kind } (MP3 / ADTS AAC bytes for decodeAudioData).
+	// opts: { onStatus(text, f), onProgress(f) }. AVI with MP3 / PCM / AAC sound: our own reader, no download. Anything else: ffmpeg.wasm.
+	async function extractAudio(file, opts) {
+		opts = opts || {};
+		var p = null;
+		try { p = await probe(file); } catch (e) { p = null; }
+		var avi = p && p.avi, kind = avi && avi.audioKind;
+		if (p && p.container === "avi" && p.hdr) {
+			if (kind === "none") throw new Error("this video has no sound track");
+			if (["mp3", "pcm", "pcmf", "aac"].indexOf(kind) >= 0) {
+				try { return await aviAudio(file, p, opts); }
+				catch (e) { if (window.console) console.warn("[audio] AVI reader failed, trying ffmpeg", e); }
+			}
+		}
+		return ffAudio(file, opts);
+	}
+	async function aviAudio(file, p, opts) {
+		var avi = p.avi, a = avi.audio, kind = avi.audioKind, parts = [], total = 0, lastPct = -1;
+		await walk(file, p.hdr, async function (id, st, off, size, rd) {
+			if (st !== avi.audioStream || !size) return;
+			var d = (await rd.read(off, size)).slice();
+			if (kind === "aac" && !C.isAdts(d)) d = C.adtsFrame(d, a.extra && a.extra.length >= 2 ? a.extra : null);
+			parts.push(d); total += d.length;
+		}, function (pos) { var pc = Math.floor(pos / file.size * 100); if (pc !== lastPct) { lastPct = pc; if (opts.onProgress) opts.onProgress(pos / file.size); } });
+		if (!total) throw new Error("this video has no sound track");
+		var all = new Uint8Array(total), o = 0; parts.forEach(function (x) { all.set(x, o); o += x.length; });
+		if (kind === "pcm" || kind === "pcmf") return { channels: C.pcmToPlanar(all, a.channels || 2, a.bits || 16, kind === "pcmf"), sampleRate: a.sampleRate, engine: "avi" };
+		return { encoded: all.buffer, kind: kind, engine: "avi" };
+	}
+	async function ffAudio(file, opts) {
+		var inst = await ffmpeg(opts.onStatus), dir = "/in" + (++ffJob), out = "/aud" + ffJob + ".raw";
+		await inst.createDir(dir); await inst.mount("WORKERFS", { files: [file] }, dir);
+		try {
+			var info = await ffProbe(file, dir), dur = info.duration;
+			if (!info.streams.some(function (s) { return s.type === "audio"; })) throw new Error("this file has no sound track");
+			if (opts.onStatus) opts.onStatus("Reading the sound with ffmpeg", 0);
+			ffmpeg.onLog = function (line) { var t = C.ffmpegTime(line); if (t != null && dur && opts.onProgress) opts.onProgress(Math.min(0.99, t / dur)); };
+			ffLog = [];
+			var code = await inst.exec(["-hide_banner", "-i", dir + "/" + file.name, "-vn", "-sn", "-dn", "-ac", "2", "-ar", "48000", "-f", "s16le", "-c:a", "pcm_s16le", out]);
+			if (code !== 0) { var errLine = ffLog.filter(function (l) { return /error|invalid|not supported|could not/i.test(l); }).slice(-2).join(" "); throw new Error("ffmpeg could not read the sound" + (errLine ? ": " + errLine : ".")); }
+			var data = await inst.readFile(out); try { await inst.deleteFile(out); } catch (e) { /* ignore */ }
+			return { channels: C.s16Planar(data, 2), sampleRate: 48000, engine: "ffmpeg" };
+		} catch (e) {
+			if (/memory|OOM|Aborted/i.test(String(e && e.message))) { ff = null; ffLoading = null; throw new Error("the converter ran out of memory (ffmpeg in a web page holds about 1.5 GB)"); }
+			throw e;
+		} finally {
+			ffmpeg.onLog = null;
+			if (ff) { try { await inst.unmount(dir); await inst.deleteDir(dir); } catch (e) { /* ignore */ } }
+		}
+	}
+
 	/* ---------- public ---------- */
 	// opts: { handle (FileSystemFileHandle to write to), quality, reencode, onProgress(0..1), onStatus(text, pct), onPlan(plan), cancelled() }
 	async function convert(file, opts) {
@@ -281,5 +333,5 @@
 		if (file.size > C.FFMPEG_SAFE_BYTES && opts.onStatus) opts.onStatus("This is a big file for ffmpeg in a web page (about 1.5 GB at most); it may run out of memory.", 0);
 		return convertFfmpeg(file, p, opts);
 	}
-	window.MESConvEngine = { probe: probe, convert: convert, ffmpeg: ffmpeg, loadScript: loadScript, Reader: Reader };
+	window.MESConvEngine = { probe: probe, convert: convert, extractAudio: extractAudio, ffmpeg: ffmpeg, loadScript: loadScript, Reader: Reader };
 })();

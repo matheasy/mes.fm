@@ -92,3 +92,7 @@
 		#vd .vd-name {width:9em;}
 	}
 	@media (max-width:560px) { #vd .vd-top kbd {display:none;} #vd .vd-pop {min-width:15em;} #vd .vd-grid {grid-template-columns:1fr 1fr;} #vd .vd-time {font-size:0.8em;} #vd #vd-zoom {width:5em;} }
+	/* preview playback speed (does not change the edit) */
+	#vd .vd-speed {display:inline-flex;align-items:center;gap:0.35em;font-size:0.85em;color:var(--vd-dim);}
+	#vd .vd-speed select {background:var(--vd-in);color:var(--vd-fg);border:1px solid var(--vd-line);border-radius:0.4em;padding:0.25em 0.3em;font:inherit;min-height:30px;color-scheme:dark;}
+	#vd .vd-speed select.is-on {border-color:var(--vd-sel);color:#7dd3fc;font-weight:700;}

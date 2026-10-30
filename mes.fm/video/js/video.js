@@ -294,6 +294,19 @@
 	function concat(a, b) { var c = new Uint8Array(a.length + b.length); c.set(a, 0); c.set(b, a.length); return c; }
 	C.concat = concat;
 
+	/* ---------- AAC ---------- */
+	// one raw AAC access unit + its AudioSpecificConfig (2+ bytes) -> the same frame with a 7-byte ADTS header (so decodeAudioData can read a run of them)
+	C.adtsFrame = function (au, asc) {
+		var ot = Math.max(1, (asc && asc.length >= 2 ? asc[0] >> 3 : 2)), sri = asc && asc.length >= 2 ? ((asc[0] & 7) << 1) | (asc[1] >> 7) : 4, chc = asc && asc.length >= 2 ? (asc[1] >> 3) & 15 : 2;
+		var len = au.length + 7, o = new Uint8Array(len);
+		o[0] = 0xff; o[1] = 0xf1; o[2] = (((ot - 1) & 3) << 6) | ((sri & 15) << 2) | ((chc >> 2) & 1);
+		o[3] = ((chc & 3) << 6) | ((len >> 11) & 3); o[4] = (len >> 3) & 0xff; o[5] = ((len & 7) << 5) | 0x1f; o[6] = 0xfc;
+		o.set(au, 7); return o;
+	};
+	C.isAdts = function (d) { return d.length > 7 && d[0] === 0xff && (d[1] & 0xf6) === 0xf0; };
+	// interleaved s16le of n channels -> planar Float32 (ffmpeg's -f s16le output)
+	C.s16Planar = function (b, n) { return C.pcmToPlanar(b, n, 16, false); };
+
 	/* ---------- PCM ---------- */
 	// interleaved little-endian PCM bytes -> planar Float32 channels
 	C.pcmToPlanar = function (b, channels, bits, float) {
@@ -639,6 +652,15 @@
 	};
 	V.db = function (g) { return g > 0 ? 20 * Math.log10(g) : -Infinity; };
 	V.fromDb = function (d) { return Math.pow(10, d / 20); };
+	// planar Float32 channels -> 16-bit PCM WAV (ArrayBuffer); the preview plays noise-removed sound from it at other speeds with the pitch kept
+	V.wav16 = function (ch, rate) {
+		var n = ch[0].length, k = ch.length, buf = new ArrayBuffer(44 + n * k * 2), dv = new DataView(buf), i, c, o = 44;
+		function str(p, s) { for (var j = 0; j < s.length; j++) dv.setUint8(p + j, s.charCodeAt(j)); }
+		str(0, "RIFF"); dv.setUint32(4, 36 + n * k * 2, true); str(8, "WAVE"); str(12, "fmt "); dv.setUint32(16, 16, true); dv.setUint16(20, 1, true); dv.setUint16(22, k, true);
+		dv.setUint32(24, rate, true); dv.setUint32(28, rate * k * 2, true); dv.setUint16(32, k * 2, true); dv.setUint16(34, 16, true); str(36, "data"); dv.setUint32(40, n * k * 2, true);
+		for (i = 0; i < n; i++) for (c = 0; c < k; c++) { var v = Math.max(-1, Math.min(1, ch[c][i])); dv.setInt16(o, v < 0 ? Math.round(v * 32768) : Math.round(v * 32767), true); o += 2; }
+		return buf;
+	};
 	// waveform: max |x| per bin -> Uint8Array (0..255)
 	V.peaks = function (chs, rate, perSec) {
 		var bin = Math.max(1, Math.round(rate / perSec)), n = Math.ceil(chs[0].length / bin), out = new Uint8Array(n);
@@ -976,6 +998,58 @@
 		}
 	}
 
+	/* ---------- sound only (for the Audio Editor and the Video Editor) ---------- */
+	// -> { channels: Float32Array[], sampleRate } (PCM, ffmpeg) or { encoded: ArrayBuffer, kind } (MP3 / ADTS AAC bytes for decodeAudioData).
+	// opts: { onStatus(text, f), onProgress(f) }. AVI with MP3 / PCM / AAC sound: our own reader, no download. Anything else: ffmpeg.wasm.
+	async function extractAudio(file, opts) {
+		opts = opts || {};
+		var p = null;
+		try { p = await probe(file); } catch (e) { p = null; }
+		var avi = p && p.avi, kind = avi && avi.audioKind;
+		if (p && p.container === "avi" && p.hdr) {
+			if (kind === "none") throw new Error("this video has no sound track");
+			if (["mp3", "pcm", "pcmf", "aac"].indexOf(kind) >= 0) {
+				try { return await aviAudio(file, p, opts); }
+				catch (e) { if (window.console) console.warn("[audio] AVI reader failed, trying ffmpeg", e); }
+			}
+		}
+		return ffAudio(file, opts);
+	}
+	async function aviAudio(file, p, opts) {
+		var avi = p.avi, a = avi.audio, kind = avi.audioKind, parts = [], total = 0, lastPct = -1;
+		await walk(file, p.hdr, async function (id, st, off, size, rd) {
+			if (st !== avi.audioStream || !size) return;
+			var d = (await rd.read(off, size)).slice();
+			if (kind === "aac" && !C.isAdts(d)) d = C.adtsFrame(d, a.extra && a.extra.length >= 2 ? a.extra : null);
+			parts.push(d); total += d.length;
+		}, function (pos) { var pc = Math.floor(pos / file.size * 100); if (pc !== lastPct) { lastPct = pc; if (opts.onProgress) opts.onProgress(pos / file.size); } });
+		if (!total) throw new Error("this video has no sound track");
+		var all = new Uint8Array(total), o = 0; parts.forEach(function (x) { all.set(x, o); o += x.length; });
+		if (kind === "pcm" || kind === "pcmf") return { channels: C.pcmToPlanar(all, a.channels || 2, a.bits || 16, kind === "pcmf"), sampleRate: a.sampleRate, engine: "avi" };
+		return { encoded: all.buffer, kind: kind, engine: "avi" };
+	}
+	async function ffAudio(file, opts) {
+		var inst = await ffmpeg(opts.onStatus), dir = "/in" + (++ffJob), out = "/aud" + ffJob + ".raw";
+		await inst.createDir(dir); await inst.mount("WORKERFS", { files: [file] }, dir);
+		try {
+			var info = await ffProbe(file, dir), dur = info.duration;
+			if (!info.streams.some(function (s) { return s.type === "audio"; })) throw new Error("this file has no sound track");
+			if (opts.onStatus) opts.onStatus("Reading the sound with ffmpeg", 0);
+			ffmpeg.onLog = function (line) { var t = C.ffmpegTime(line); if (t != null && dur && opts.onProgress) opts.onProgress(Math.min(0.99, t / dur)); };
+			ffLog = [];
+			var code = await inst.exec(["-hide_banner", "-i", dir + "/" + file.name, "-vn", "-sn", "-dn", "-ac", "2", "-ar", "48000", "-f", "s16le", "-c:a", "pcm_s16le", out]);
+			if (code !== 0) { var errLine = ffLog.filter(function (l) { return /error|invalid|not supported|could not/i.test(l); }).slice(-2).join(" "); throw new Error("ffmpeg could not read the sound" + (errLine ? ": " + errLine : ".")); }
+			var data = await inst.readFile(out); try { await inst.deleteFile(out); } catch (e) { /* ignore */ }
+			return { channels: C.s16Planar(data, 2), sampleRate: 48000, engine: "ffmpeg" };
+		} catch (e) {
+			if (/memory|OOM|Aborted/i.test(String(e && e.message))) { ff = null; ffLoading = null; throw new Error("the converter ran out of memory (ffmpeg in a web page holds about 1.5 GB)"); }
+			throw e;
+		} finally {
+			ffmpeg.onLog = null;
+			if (ff) { try { await inst.unmount(dir); await inst.deleteDir(dir); } catch (e) { /* ignore */ } }
+		}
+	}
+
 	/* ---------- public ---------- */
 	// opts: { handle (FileSystemFileHandle to write to), quality, reencode, onProgress(0..1), onStatus(text, pct), onPlan(plan), cancelled() }
 	async function convert(file, opts) {
@@ -988,7 +1062,7 @@
 		if (file.size > C.FFMPEG_SAFE_BYTES && opts.onStatus) opts.onStatus("This is a big file for ffmpeg in a web page (about 1.5 GB at most); it may run out of memory.", 0);
 		return convertFfmpeg(file, p, opts);
 	}
-	window.MESConvEngine = { probe: probe, convert: convert, ffmpeg: ffmpeg, loadScript: loadScript, Reader: Reader };
+	window.MESConvEngine = { probe: probe, convert: convert, extractAudio: extractAudio, ffmpeg: ffmpeg, loadScript: loadScript, Reader: Reader };
 })();
 
 /* MES Video Editor core: state, storage (IndexedDB), importing media (anything the converter reads), MP4 sample tables (mp4box.js),
@@ -1264,7 +1338,7 @@
 	// the sound buffer a clip plays at source time s: noise-removed when it has one covering s
 	VE.clipPcm = async function (c, s0, s1) {
 		var m = VE.media(c.media); if (!m) return null;
-		if (c.clean && c.clean.key) { var cp = await VE.cleanPcm(c.clean.key); if (cp && s0 >= cp.start - 0.01 && s1 <= cp.start + cp.ch[0].length / cp.rate + 0.01) return cp; }
+		if (c.clean && c.clean.key) { var cp = await VE.cleanPcm(c.clean.key); if (cp && s0 >= cp.start - 0.01 && s1 <= cp.start + cp.ch[0].length / cp.rate + 0.35) return cp; }   // a little past the end = silence (the decoded sound can be a few frames shorter than the clip)
 		return VE.pcm(m, s0, s1);
 	};
 
@@ -1366,7 +1440,7 @@
 	"use strict";
 	var VE = window.VE; if (!VE) return;
 	var V = VE.V, $ = function (id) { return document.getElementById(id); };
-	var P = VE.preview = { playing: false, rate: 1, rev: false, t0: 0, p0: 0 };
+	var P = VE.preview = { playing: false, rate: 1, rev: false, t0: 0, p0: 0, speed: 1 };   // speed = the "Playback speed" menu (preview only)
 	var cv = $("vd-canvas"), ctx = cv.getContext("2d"), wrap = $("vd-stagewrap"), els = {}, ac = null, cleanNodes = [], cleanBufs = {}, raf = 0, needDraw = true;
 
 	function audio() {
@@ -1407,7 +1481,15 @@
 		Object.keys(els).forEach(function (k) { var e = els[k]; e.el.pause(); if (e.gain && ac) e.gain.gain.setTargetAtTime(0, ac.currentTime, 0.01); });
 		stopClean(); VE.emit("pause"); sync(); draw();
 	};
-	P.toggle = function () { if (P.playing && !P.rev) P.pause(); else P.play(1); };
+	P.toggle = function () { if (P.playing && !P.rev) P.pause(); else P.play(P.speed); };
+	// preview playback speed (0.25x-4x): the edit and the export are not changed; video / audio elements keep their pitch at this speed
+	P.SPEEDS = [0.25, 0.5, 0.75, 1, 1.25, 1.5, 1.75, 2, 3, 4];
+	P.setSpeed = function (s) {
+		s = Math.max(0.25, Math.min(4, +s || 1)); P.speed = s;
+		if (P.playing && !P.rev) { P.pause(); P.play(s); }
+		VE.emit("speed", s);
+	};
+	P.stepSpeed = function (dir) { var L = P.SPEEDS, i = 0; while (i < L.length - 1 && L[i] < P.speed - 1e-9) i++; P.setSpeed(L[Math.max(0, Math.min(L.length - 1, i + dir))]); };
 	P.seek = function (t) {
 		var was = P.playing && !P.rev; if (P.playing) P.pause();
 		VE.t = Math.max(0, Math.min(t, Math.max(V.duration(VE.P), 0)));
@@ -1443,6 +1525,8 @@
 			if (playing && active) {
 				var pr = Math.max(0.0625, Math.min(16, (c.speed || 1) * P.rate));
 				if (Math.abs(e.el.playbackRate - pr) > 1e-3) e.el.playbackRate = pr;
+				var keep = Math.abs(P.rate - 1) > 1e-3 && Math.abs(P.rate - P.speed) < 1e-3;   // the speed menu: keep the voice's pitch (J / L shuttle and clip speed do not)
+				if (e.el.preservesPitch !== keep) e.el.preservesPitch = keep;
 				if (e.el.paused) { if (Math.abs(e.el.currentTime - src) > 0.02) e.el.currentTime = src; var pp = e.el.play(); if (pp && pp.catch) pp.catch(function () { }); }
 				else if (Math.abs(e.el.currentTime - src) > 0.3 * Math.max(1, P.rate)) e.el.currentTime = src;
 			} else {
@@ -1469,6 +1553,7 @@
 			var now = P.time(), from = Math.max(now, c.start - (c.xin || 0)), src = V.srcAt(c, from), off = src - cp.start;
 			if (off < 0) { from += -off / (c.speed || 1); off = 0; }
 			var len = (V.end(c) - from) * (c.speed || 1); if (len <= 0 || off >= buf.duration) continue;
+			if (Math.abs(P.rate - 1) > 1e-3 && Math.abs(P.rate - P.speed) < 1e-3 && window.HTMLMediaElement) { cleanEl(a, c, cp, from, now, off, len); continue; }
 			var node = a.createBufferSource(), gain = a.createGain(); node.buffer = buf; node.playbackRate.value = (c.speed || 1) * P.rate; gain.gain.value = 0;
 			node.connect(gain).connect(a.destination);
 			node.start(a.currentTime + Math.max(0, (from - now) / P.rate), off, Math.min(len, buf.duration - off));
@@ -1476,8 +1561,18 @@
 		}
 		sync();
 	}
+	// at a menu speed other than 1x the noise-removed sound plays from an <audio> element (a WAV of it) so the voice keeps its pitch
+	var cleanUrls = {};
+	function cleanEl(a, c, cp, from, now, off, len) {
+		var url = cleanUrls[c.clean.key] || (cleanUrls[c.clean.key] = URL.createObjectURL(new Blob([V.wav16(cp.ch, cp.rate)], { type: "audio/wav" })));
+		var el = new Audio(); el.preload = "auto"; el.src = url; el.preservesPitch = true; el.playbackRate = Math.max(0.0625, Math.min(16, (c.speed || 1) * P.rate));
+		var sn = a.createMediaElementSource(el), gain = a.createGain(); gain.gain.value = 0; sn.connect(gain).connect(a.destination);
+		var timer = setTimeout(function () { el.currentTime = off; var pp = el.play(); if (pp && pp.catch) pp.catch(function () { }); }, Math.max(0, (from - now) / P.rate * 1000));
+		cleanNodes.push({ id: c.id, gain: gain, node: { stop: function () { clearTimeout(timer); el.pause(); el.removeAttribute("src"); }, disconnect: function () { sn.disconnect(); } } });
+		void len;
+	}
 	function stopClean() { cleanNodes.forEach(function (n) { try { n.node.stop(); n.node.disconnect(); n.gain.disconnect(); } catch (e) { /* ignore */ } }); cleanNodes = []; }
-	P.forgetClean = function (key) { delete cleanBufs[key]; };
+	P.forgetClean = function (key) { delete cleanBufs[key]; if (cleanUrls[key]) { URL.revokeObjectURL(cleanUrls[key]); delete cleanUrls[key]; } };
 
 	/* ---------- drawing ---------- */
 	function source(c) {
@@ -2101,6 +2196,10 @@
 	/* ---------- transport ---------- */
 	var P = VE.preview;
 	$("vd-play").onclick = function () { P.toggle(); };
+	var spSel = $("vd-speed");
+	if (spSel) { spSel.value = String(UI.speed || 1); P.speed = +spSel.value || 1; spSel.onchange = function () { P.setSpeed(+spSel.value); }; }
+	VE.on("speed", function (s) { UI.speed = s; saveUI(); if (spSel) { spSel.value = String(s); spSel.classList.toggle("is-on", s !== 1); } if (s !== 1) toast("Preview speed " + s + "× (the exported video is not changed)"); });
+	if (spSel) spSel.classList.toggle("is-on", P.speed !== 1);
 	document.querySelectorAll("[data-tp]").forEach(function (b) { b.onclick = function (e) { var a = b.getAttribute("data-tp"), f = 1 / VE.P.fps; if (a === "start") P.seek(0); else if (a === "end") P.seek(V.duration(VE.P)); else P.seek(VE.t + (a === "fwd" ? 1 : -1) * (e.shiftKey ? 1 : f)); }; });
 	function timeText() { $("vd-time").textContent = V.tc(VE.t, VE.P.fps) + " / " + V.tc(V.duration(VE.P), VE.P.fps); }
 	VE.on("time", timeText);
@@ -2193,7 +2292,7 @@
 		var h = '<div class="vd-sec"><b>Sound</b>';
 		if (list.length === 1) h += '<label class="vd-f vd-wide"><span>Volume <output id="vd-volout">' + (isFinite(db) ? (db > 0 ? "+" : "") + db + " dB" : "off") + '</output></span><input type="range" id="vd-i-vol" min="-40" max="20" step="0.5" value="' + (isFinite(db) ? db : -40) + '"></label><div class="vd-checks"><label><input type="checkbox" id="vd-i-mute"' + (c.mute ? " checked" : "") + "> Mute this clip</label></div>";
 		var cleaned = list.filter(function (x) { return x.clean && x.clean.key; }).length;
-		h += '<div class="vd-clean"><div class="vd-grid"><label class="vd-f"><span>Noise removal</span><select id="vd-dn-model"><option value="auto">Automatic (best available)</option><option value="deepfilter">DeepFilterNet (AI, best)</option><option value="rnnoise">RNNoise (AI, fast)</option><option value="spectral">Spectral (no download)</option></select></label>' + num("vd-dn-str", "Strength", Math.round((UI.dnStr == null ? 0.8 : UI.dnStr) * 100), 5, 0, 100, "%") + "</div>" +
+		h += '<div class="vd-clean"><div class="vd-grid"><label class="vd-f"><span>Noise removal</span><select id="vd-dn-model"><option value="auto">Automatic (best available)</option><option value="deepfilter">DeepFilterNet (AI, best)</option><option value="rnnoise">RNNoise (AI, fast)</option><option value="spectral">Spectral (no download)</option></select></label>' + num("vd-dn-str", "Strength", Math.round((UI.dnStr == null ? 1 : UI.dnStr) * 100), 5, 0, 100, "%") + "</div>" +
 			'<div class="vd-row"><button type="button" class="vd-btn vd-sm vd-primary" id="vd-dn-go">Remove noise' + (list.length > 1 ? " (" + list.length + " clips)" : "") + "</button>" + (cleaned ? '<button type="button" class="vd-btn vd-sm" id="vd-dn-off">Use the original sound</button>' : "") + '</div><p class="vd-sub" id="vd-dn-st">' + (cleaned ? (list.length > 1 ? cleaned + " of " + list.length + " clips have" : "This clip has") + " noise removed (" + esc((c.clean && c.clean.model) || "") + ")." : "Takes out hum, hiss and room noise. The first time, the AI model downloads (a few MB).") + "</p></div>";
 		h += '<div class="vd-clean"><div class="vd-grid"><label class="vd-f"><span>Normalize loudness to</span><select id="vd-ln-tgt">' + [[-14, "-14 LUFS (YouTube, loud)"], [-16, "-16 LUFS (videos, podcasts)"], [-19, "-19 LUFS (quieter)"], [-23, "-23 LUFS (TV, EBU R128)"]].map(function (q) { return '<option value="' + q[0] + '"' + ((UI.lnTgt || -16) === q[0] ? " selected" : "") + ">" + q[1] + "</option>"; }).join("") + '</select></label></div><div class="vd-row"><button type="button" class="vd-btn vd-sm" id="vd-ln-go">Normalize loudness' + (list.length > 1 ? " (" + list.length + " clips)" : "") + '</button></div><p class="vd-sub" id="vd-ln-st">' + (c.lufs != null ? "Set to " + c.lufs + " LUFS." : "Sets the volume so the clip is as loud as the target, never clipping.") + "</p></div></div>";
 		return h;
@@ -2257,7 +2356,7 @@
 	function bindSound(list) {
 		var m = $("vd-dn-model"); if (m) m.value = UI.dnModel || "auto";
 		if (m) m.onchange = function () { UI.dnModel = m.value; saveUI(); };
-		var st = $("vd-dn-str"); if (st) st.onchange = function () { UI.dnStr = V.clamp((+st.value || 80) / 100, 0, 1); saveUI(); };
+		var st = $("vd-dn-str"); if (st) st.onchange = function () { UI.dnStr = V.clamp((st.value === "" ? 100 : +st.value) / 100, 0, 1); saveUI(); };
 		var go = $("vd-dn-go"); if (go) go.onclick = function () { denoise(list); };
 		var off = $("vd-dn-off"); if (off) off.onclick = function () { list.forEach(function (c) { c.clean = null; }); VE.commit("Original sound"); };
 		var lt = $("vd-ln-tgt"); if (lt) lt.onchange = function () { UI.lnTgt = +lt.value; saveUI(); };
@@ -2282,7 +2381,7 @@
 	function loadDenoise() {
 		if (window.MESDenoise) return Promise.resolve(window.MESDenoise);
 		return new Promise(function (res) {
-			var s = document.createElement("script"); s.src = "/main_js/denoise.js?v=1"; s.onload = function () { res(window.MESDenoise || null); }; s.onerror = function () { res(null); }; document.head.appendChild(s);
+			var s = document.createElement("script"); s.src = "/main_js/denoise.js?v=2"; s.onload = function () { res(window.MESDenoise || null); }; s.onerror = function () { res(null); }; document.head.appendChild(s);
 		});
 	}
 	var cleaning = false;
@@ -2290,7 +2389,7 @@
 		if (cleaning) return; var stEl = function (t) { var e = $("vd-dn-st"); if (e) e.textContent = t; };
 		var D = await loadDenoise();
 		if (!D || typeof D.process !== "function") { stEl("Noise removal is not available yet: it is being added to mes.fm (the MES Audio Editor's engine). Normalize loudness works now."); return; }
-		cleaning = true; var model = UI.dnModel || "auto", strength = UI.dnStr == null ? 0.8 : UI.dnStr, done = 0;
+		cleaning = true; var model = UI.dnModel || "auto", strength = UI.dnStr == null ? 1 : UI.dnStr, done = 0;
 		try {
 			if (D.load) { stEl("Loading the noise-removal model..."); await D.load({ model: model, onProgress: function (x) { stEl("Loading the noise-removal model... " + Math.round((x && x.progress != null ? x.progress : x) * 100) + "%"); } }); }
 			for (var j = 0; j < list.length; j++) {
@@ -2393,6 +2492,8 @@
 		switch (k) {
 			case " ": P.toggle(); break;
 			case "k": case "K": P.pause(); break;
+			case "<": case ",": if (k === "<" || e.shiftKey) P.stepSpeed(-1); else h = false; break;
+			case ">": case ".": if (k === ">" || e.shiftKey) P.stepSpeed(1); else h = false; break;
 			case "l": case "L": if (P.playing && !P.rev) P.play(Math.min(8, P.rate * 2)); else P.play(1); break;
 			case "j": case "J": if (P.playing && P.rev) P.reverse(Math.min(8, P.rate * 2)); else P.reverse(1); break;
 			case "ArrowLeft": P.seek(VE.t - (e.shiftKey ? 1 : f)); break;

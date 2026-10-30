@@ -164,6 +164,21 @@
 		return ch.map(function (c) { var o = new Float32Array(c.length), i; for (i = 0; i < c.length; i++) { var p = (off + i + 0.5) / total; o[i] = c[i] * A.fadeShape(dir === "in" ? p : 1 - p, curve); } return o; });
 	};
 	A.peak = function (ch) { var m = 0; ch.forEach(function (c) { for (var i = 0; i < c.length; i++) { var v = Math.abs(c[i]); if (v > m) m = v; } }); return m; };
+	/* background-noise level: the quietest 10% of 50 ms blocks (mono mix), as RMS in dBFS. Used to show what the noise removal did. */
+	A.noiseFloor = function (ch, sr) {
+		var n = ch[0] ? ch[0].length : 0, B = Math.max(64, Math.round((sr || 48000) * 0.05)), v = [], i, k;
+		for (i = 0; i + B <= n; i += B) { var e = 0; for (var j = i; j < i + B; j++) { var x = 0; for (k = 0; k < ch.length; k++) x += ch[k][j]; x /= ch.length; e += x * x; } v.push(e / B); }
+		if (!v.length) return -Infinity; v.sort(function (a, b) { return a - b; });
+		var m = Math.max(1, Math.floor(v.length * 0.1)), s = 0; for (i = 0; i < m; i++) s += v[i];
+		return s > 0 ? 10 * Math.log10(s / m) : -Infinity;
+	};
+	/* plain-English summary of a before / after noise floor */
+	A.noiseReport = function (before, after) {
+		if (!isFinite(before)) return { db: 0, text: "This part is silent: there is no noise to remove." };
+		var aft = isFinite(after) ? after : -120, d = before - aft;
+		if (d < 3) return { db: d, text: "Background noise " + before.toFixed(0) + " dB → " + aft.toFixed(0) + " dB: almost no steady noise was found to remove." };
+		return { db: d, text: "Background noise " + before.toFixed(0) + " dB → " + aft.toFixed(0) + " dB (" + d.toFixed(0) + " dB quieter)." };
+	};
 	A.normalizePeakGain = function (ch, targetDb) { var p = A.peak(ch); return p > 0 ? targetDb - A.gainToDb(p) : 0; };
 
 	/* biquad (RBJ cookbook) */

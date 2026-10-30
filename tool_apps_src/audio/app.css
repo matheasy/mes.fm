@@ -176,3 +176,42 @@ body.au-noscroll { overflow: hidden; }
 	.au-menu > button { padding: 5px 6px; }
 }
 .au [hidden] { display: none !important; }
+
+/* compare bar (after an effect), before / after picture, help "?" buttons, result box */
+.au-cmpbar { display: flex; flex-wrap: wrap; gap: 8px 12px; align-items: center; padding: 7px 10px; background: #102a36; border-bottom: 1px solid var(--au-acc2); }
+.au-cmp-t { white-space: nowrap; }
+.au-cmp-n { color: var(--au-dim); font-size: 0.88em; flex: 1 1 260px; }
+#au .au-cmp-n kbd, #au .au-note kbd { font: 0.9em ui-monospace, Menlo, monospace; background: var(--au-bg); border: 1px solid var(--au-line); border-radius: 4px; padding: 0 4px; color: var(--au-ink); }
+.au-cmp-r { display: flex; gap: 6px; margin-left: auto; }
+.au-ab--bar { min-width: 190px; }
+.au-ab--bar button { padding: 6px 12px; }
+#au .au-ab--bar button[data-w=before][aria-pressed=true] { background: #a16207; }
+.au-listen { display: flex; align-items: center; gap: 8px; }
+.au-listen-l { font-weight: 600; white-space: nowrap; }
+.au-listen .au-ab { flex: 1 1 auto; }
+.au-step { font-size: 0.92em; margin-top: 4px; padding-top: 8px; border-top: 1px dashed var(--au-line); }
+.au-cmpwrap { display: flex; flex-direction: column; gap: 4px; }
+.au-cmpcv { width: 100%; height: 150px; border: 1px solid var(--au-line); border-radius: 6px; background: #0b0d11; }
+.au-cmpleg { display: flex; flex-wrap: wrap; gap: 4px 12px; font-size: 0.82em; color: var(--au-dim); align-items: center; }
+.au-lg::before { content: ""; display: inline-block; width: 12px; height: 8px; border-radius: 2px; margin-right: 5px; vertical-align: middle; }
+.au-lg--b::before { background: #5b6472; }
+.au-lg--a::before { background: #5eead4; }
+#au-cmpnum { flex-basis: 100%; color: var(--au-ink); }
+#au .au-q { display: inline-flex; align-items: center; justify-content: center; width: 18px; height: 18px; margin-left: 5px; padding: 0; border-radius: 50%; border: 1px solid var(--au-acc); background: transparent; color: var(--au-acc); font: 700 11px/1 system-ui, sans-serif; vertical-align: 1px; }
+#au .au-q[aria-expanded=true], #au .au-q:hover { background: var(--au-acc); color: #0b0d11; }
+.au-qpop { font-size: 0.86em; line-height: 1.5; background: var(--au-bg); border: 1px solid var(--au-line); border-left: 3px solid var(--au-acc); border-radius: 6px; padding: 7px 9px; margin-top: -4px; }
+#au .au-qpop b { color: var(--au-ink); }
+.au-result { display: flex; flex-direction: column; gap: 6px; padding: 8px; border: 1px solid #166534; background: #0f241a; border-radius: 8px; }
+#au .au-ok { color: var(--au-good); font-weight: 700; }
+#au .au-warnnote { color: var(--au-warn); }
+
+/* resize grips */
+.au-head { position: relative; }
+.au-hgrip { position: absolute; left: 0; right: 0; bottom: 0; height: 9px; cursor: ns-resize; display: flex; align-items: center; justify-content: center; touch-action: none; }
+.au-hgrip span, .au-agrip span { display: block; width: 34px; height: 3px; border-radius: 2px; background: var(--au-line); }
+.au-hgrip:hover span, .au-hgrip.is-drag span, .au-hgrip:focus-visible span, .au-agrip:hover span, .au-agrip.is-drag span, .au-agrip:focus-visible span { background: var(--au-acc); }
+.au-agrip { height: 11px; cursor: ns-resize; display: flex; align-items: center; justify-content: center; background: var(--au-panel); border-top: 1px solid var(--au-line); touch-action: none; }
+.au.au-win .au-agrip, .au:fullscreen .au-agrip { display: none; }
+.au.au-win .au-scroll, .au:fullscreen .au-scroll { height: auto !important; max-height: none !important; }
+@media (pointer: coarse) { .au-hgrip { height: 16px; } .au-agrip { height: 18px; } }
+.au-f > span .au-q { margin-right: auto; }

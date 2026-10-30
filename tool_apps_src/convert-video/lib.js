@@ -294,6 +294,19 @@
 	function concat(a, b) { var c = new Uint8Array(a.length + b.length); c.set(a, 0); c.set(b, a.length); return c; }
 	C.concat = concat;
 
+	/* ---------- AAC ---------- */
+	// one raw AAC access unit + its AudioSpecificConfig (2+ bytes) -> the same frame with a 7-byte ADTS header (so decodeAudioData can read a run of them)
+	C.adtsFrame = function (au, asc) {
+		var ot = Math.max(1, (asc && asc.length >= 2 ? asc[0] >> 3 : 2)), sri = asc && asc.length >= 2 ? ((asc[0] & 7) << 1) | (asc[1] >> 7) : 4, chc = asc && asc.length >= 2 ? (asc[1] >> 3) & 15 : 2;
+		var len = au.length + 7, o = new Uint8Array(len);
+		o[0] = 0xff; o[1] = 0xf1; o[2] = (((ot - 1) & 3) << 6) | ((sri & 15) << 2) | ((chc >> 2) & 1);
+		o[3] = ((chc & 3) << 6) | ((len >> 11) & 3); o[4] = (len >> 3) & 0xff; o[5] = ((len & 7) << 5) | 0x1f; o[6] = 0xfc;
+		o.set(au, 7); return o;
+	};
+	C.isAdts = function (d) { return d.length > 7 && d[0] === 0xff && (d[1] & 0xf6) === 0xf0; };
+	// interleaved s16le of n channels -> planar Float32 (ffmpeg's -f s16le output)
+	C.s16Planar = function (b, n) { return C.pcmToPlanar(b, n, 16, false); };
+
 	/* ---------- PCM ---------- */
 	// interleaved little-endian PCM bytes -> planar Float32 channels
 	C.pcmToPlanar = function (b, channels, bits, float) {

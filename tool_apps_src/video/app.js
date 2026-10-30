@@ -165,6 +165,10 @@
 	/* ---------- transport ---------- */
 	var P = VE.preview;
 	$("vd-play").onclick = function () { P.toggle(); };
+	var spSel = $("vd-speed");
+	if (spSel) { spSel.value = String(UI.speed || 1); P.speed = +spSel.value || 1; spSel.onchange = function () { P.setSpeed(+spSel.value); }; }
+	VE.on("speed", function (s) { UI.speed = s; saveUI(); if (spSel) { spSel.value = String(s); spSel.classList.toggle("is-on", s !== 1); } if (s !== 1) toast("Preview speed " + s + "× (the exported video is not changed)"); });
+	if (spSel) spSel.classList.toggle("is-on", P.speed !== 1);
 	document.querySelectorAll("[data-tp]").forEach(function (b) { b.onclick = function (e) { var a = b.getAttribute("data-tp"), f = 1 / VE.P.fps; if (a === "start") P.seek(0); else if (a === "end") P.seek(V.duration(VE.P)); else P.seek(VE.t + (a === "fwd" ? 1 : -1) * (e.shiftKey ? 1 : f)); }; });
 	function timeText() { $("vd-time").textContent = V.tc(VE.t, VE.P.fps) + " / " + V.tc(V.duration(VE.P), VE.P.fps); }
 	VE.on("time", timeText);
@@ -257,7 +261,7 @@
 		var h = '<div class="vd-sec"><b>Sound</b>';
 		if (list.length === 1) h += '<label class="vd-f vd-wide"><span>Volume <output id="vd-volout">' + (isFinite(db) ? (db > 0 ? "+" : "") + db + " dB" : "off") + '</output></span><input type="range" id="vd-i-vol" min="-40" max="20" step="0.5" value="' + (isFinite(db) ? db : -40) + '"></label><div class="vd-checks"><label><input type="checkbox" id="vd-i-mute"' + (c.mute ? " checked" : "") + "> Mute this clip</label></div>";
 		var cleaned = list.filter(function (x) { return x.clean && x.clean.key; }).length;
-		h += '<div class="vd-clean"><div class="vd-grid"><label class="vd-f"><span>Noise removal</span><select id="vd-dn-model"><option value="auto">Automatic (best available)</option><option value="deepfilter">DeepFilterNet (AI, best)</option><option value="rnnoise">RNNoise (AI, fast)</option><option value="spectral">Spectral (no download)</option></select></label>' + num("vd-dn-str", "Strength", Math.round((UI.dnStr == null ? 0.8 : UI.dnStr) * 100), 5, 0, 100, "%") + "</div>" +
+		h += '<div class="vd-clean"><div class="vd-grid"><label class="vd-f"><span>Noise removal</span><select id="vd-dn-model"><option value="auto">Automatic (best available)</option><option value="deepfilter">DeepFilterNet (AI, best)</option><option value="rnnoise">RNNoise (AI, fast)</option><option value="spectral">Spectral (no download)</option></select></label>' + num("vd-dn-str", "Strength", Math.round((UI.dnStr == null ? 1 : UI.dnStr) * 100), 5, 0, 100, "%") + "</div>" +
 			'<div class="vd-row"><button type="button" class="vd-btn vd-sm vd-primary" id="vd-dn-go">Remove noise' + (list.length > 1 ? " (" + list.length + " clips)" : "") + "</button>" + (cleaned ? '<button type="button" class="vd-btn vd-sm" id="vd-dn-off">Use the original sound</button>' : "") + '</div><p class="vd-sub" id="vd-dn-st">' + (cleaned ? (list.length > 1 ? cleaned + " of " + list.length + " clips have" : "This clip has") + " noise removed (" + esc((c.clean && c.clean.model) || "") + ")." : "Takes out hum, hiss and room noise. The first time, the AI model downloads (a few MB).") + "</p></div>";
 		h += '<div class="vd-clean"><div class="vd-grid"><label class="vd-f"><span>Normalize loudness to</span><select id="vd-ln-tgt">' + [[-14, "-14 LUFS (YouTube, loud)"], [-16, "-16 LUFS (videos, podcasts)"], [-19, "-19 LUFS (quieter)"], [-23, "-23 LUFS (TV, EBU R128)"]].map(function (q) { return '<option value="' + q[0] + '"' + ((UI.lnTgt || -16) === q[0] ? " selected" : "") + ">" + q[1] + "</option>"; }).join("") + '</select></label></div><div class="vd-row"><button type="button" class="vd-btn vd-sm" id="vd-ln-go">Normalize loudness' + (list.length > 1 ? " (" + list.length + " clips)" : "") + '</button></div><p class="vd-sub" id="vd-ln-st">' + (c.lufs != null ? "Set to " + c.lufs + " LUFS." : "Sets the volume so the clip is as loud as the target, never clipping.") + "</p></div></div>";
 		return h;
@@ -321,7 +325,7 @@
 	function bindSound(list) {
 		var m = $("vd-dn-model"); if (m) m.value = UI.dnModel || "auto";
 		if (m) m.onchange = function () { UI.dnModel = m.value; saveUI(); };
-		var st = $("vd-dn-str"); if (st) st.onchange = function () { UI.dnStr = V.clamp((+st.value || 80) / 100, 0, 1); saveUI(); };
+		var st = $("vd-dn-str"); if (st) st.onchange = function () { UI.dnStr = V.clamp((st.value === "" ? 100 : +st.value) / 100, 0, 1); saveUI(); };
 		var go = $("vd-dn-go"); if (go) go.onclick = function () { denoise(list); };
 		var off = $("vd-dn-off"); if (off) off.onclick = function () { list.forEach(function (c) { c.clean = null; }); VE.commit("Original sound"); };
 		var lt = $("vd-ln-tgt"); if (lt) lt.onchange = function () { UI.lnTgt = +lt.value; saveUI(); };
@@ -346,7 +350,7 @@
 	function loadDenoise() {
 		if (window.MESDenoise) return Promise.resolve(window.MESDenoise);
 		return new Promise(function (res) {
-			var s = document.createElement("script"); s.src = "/main_js/denoise.js?v=1"; s.onload = function () { res(window.MESDenoise || null); }; s.onerror = function () { res(null); }; document.head.appendChild(s);
+			var s = document.createElement("script"); s.src = "/main_js/denoise.js?v=2"; s.onload = function () { res(window.MESDenoise || null); }; s.onerror = function () { res(null); }; document.head.appendChild(s);
 		});
 	}
 	var cleaning = false;
@@ -354,7 +358,7 @@
 		if (cleaning) return; var stEl = function (t) { var e = $("vd-dn-st"); if (e) e.textContent = t; };
 		var D = await loadDenoise();
 		if (!D || typeof D.process !== "function") { stEl("Noise removal is not available yet: it is being added to mes.fm (the MES Audio Editor's engine). Normalize loudness works now."); return; }
-		cleaning = true; var model = UI.dnModel || "auto", strength = UI.dnStr == null ? 0.8 : UI.dnStr, done = 0;
+		cleaning = true; var model = UI.dnModel || "auto", strength = UI.dnStr == null ? 1 : UI.dnStr, done = 0;
 		try {
 			if (D.load) { stEl("Loading the noise-removal model..."); await D.load({ model: model, onProgress: function (x) { stEl("Loading the noise-removal model... " + Math.round((x && x.progress != null ? x.progress : x) * 100) + "%"); } }); }
 			for (var j = 0; j < list.length; j++) {
@@ -457,6 +461,8 @@
 		switch (k) {
 			case " ": P.toggle(); break;
 			case "k": case "K": P.pause(); break;
+			case "<": case ",": if (k === "<" || e.shiftKey) P.stepSpeed(-1); else h = false; break;
+			case ">": case ".": if (k === ">" || e.shiftKey) P.stepSpeed(1); else h = false; break;
 			case "l": case "L": if (P.playing && !P.rev) P.play(Math.min(8, P.rate * 2)); else P.play(1); break;
 			case "j": case "J": if (P.playing && P.rev) P.reverse(Math.min(8, P.rate * 2)); else P.reverse(1); break;
 			case "ArrowLeft": P.seek(VE.t - (e.shiftKey ? 1 : f)); break;

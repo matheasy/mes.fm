@@ -16,15 +16,60 @@
 	var S = { sr: 48000, tracks: [], markers: [], sel: null, selT: [], cursor: 0, start: 0, spp: 400, spec: false, name: "", laneH: 112 };
 	var H = new A.History(1.5e9), clipboard = null, dirty = false;
 	function snap() { return A.snapshot(S); }
-	function commit(label) { H.push(label, snap()); dirty = true; afterChange(); schedSave(); }
+	function commit(label) { if (cmp) endCompare(true); H.push(label, snap()); dirty = true; afterChange(); schedSave(); }
 	function restore(e) { S.tracks = e.snap.tracks.map(function (t) { var o = {}, k; for (k in t) o[k] = t[k]; o.clips = t.clips.slice(); return o; }); S.markers = e.snap.markers.map(function (m) { return { id: m.id, t: m.t, name: m.name }; }); S.selT = S.selT.filter(function (id) { return trackById(id); }); afterChange(); schedSave(); }
-	function undo() { stopAll(); var e = H.undo(); if (e) { restore(e); toast("Undid " + H.stack[H.pos + 1].label); } }
-	function redo() { stopAll(); var e = H.redo(); if (e) { restore(e); toast("Redid " + e.label); } }
+	function undo() { stopAll(); endCompare(true); var e = H.undo(); if (e) { restore(e); toast("Undid " + H.stack[H.pos + 1].label); var r = $("au-result"); if (r && !r.hidden) { r.innerHTML = '<span class="au-ok">↶ Undone: the track is back to how it was.</span>'; } } else toast("Nothing to undo"); }
+	function redo() { stopAll(); endCompare(true); var e = H.redo(); if (e) { restore(e); toast("Redid " + e.label); } else toast("Nothing to redo"); }
 	function trackById(id) { for (var i = 0; i < S.tracks.length; i++) if (S.tracks[i].id === id) return S.tracks[i]; return null; }
 	function setTrack(t) { S.tracks = S.tracks.map(function (x) { return x.id === t.id ? t : x; }); }
 	function projEnd() { return A.projectEnd(S.tracks); }
 	function sec(n) { return n / S.sr; }
 	function fmt(n, d) { return A.fmtTime(n / S.sr, d); }
+
+	/* ---------------- compare after an effect: the track keeps the cleaned audio; playback / drawing can show the original ---------------- */
+	var cmp = null;   // { label, before: tracks before, after: tracks after, ids, a, b, report, show: "after" | "before" }
+	function vt() { return cmp && cmp.show === "before" ? cmp.before : S.tracks; }
+	function versionOf(list, id) { for (var i = 0; i < list.length; i++) if (list[i].id === id) return list[i]; return null; }
+	function startCompare(c) { cmp = c; cmp.show = "after"; renderCmpBar(); draw(); }
+	function endCompare(silent) { if (!cmp) return; var was = cmp.show; cmp = null; $("au-cmpbar").hidden = true; if (was === "before" && playing) playFrom(playPos(), playEnd); if (!silent) toast("Keeping the result"); draw(); }
+	function setCompare(w) {
+		if (!cmp || cmp.show === w) return; var p = playing ? playPos() : null, end = playEnd; cmp.show = w;
+		if (p != null) playFrom(p, end); renderCmpBar(); draw();
+	}
+	function renderCmpBar() {
+		var bar = $("au-cmpbar"); if (!cmp) { bar.hidden = true; return; } bar.hidden = false;
+		var nice = cmp.label.replace(/ \(.*\)$/, "");
+		bar.innerHTML = '<span class="au-cmp-t">Compare <b>' + esc(nice) + '</b>:</span><div class="au-ab au-ab--bar" role="group" aria-label="Hear the track before or after ' + esc(nice) + '"><button type="button" data-w="before" aria-pressed="' + (cmp.show === "before") + '">Original</button><button type="button" data-w="after" aria-pressed="' + (cmp.show === "after") + '">' + (/noise|enhance|hum/i.test(cmp.label) ? "Cleaned" : "After") + '</button></div>' +
+			'<span class="au-cmp-n">' + (cmp.report ? esc(cmp.report.text) : "") + ' Press Space to play, <kbd>B</kbd> to switch.</span><span class="au-cmp-r"><button type="button" class="au-btn au-btn--sm" data-act="undo" title="Undo (' + MOD + 'Z)">↶ Undo</button><button type="button" class="au-btn au-btn--sm" data-act="keep">✓ Keep it</button></span>';
+		bar.querySelectorAll("[data-w]").forEach(function (b) { b.onclick = function () { setCompare(b.getAttribute("data-w")); }; });
+		bar.querySelector("[data-act=undo]").onclick = undo; bar.querySelector("[data-act=keep]").onclick = function () { endCompare(); };
+	}
+	/* before (grey, behind) and after (bright, in front) waveforms, min / max per pixel of the mono mix */
+	function drawCompare(c, before, after, num) {
+		if (!c) return; var wrap = c.parentNode; wrap.hidden = false;
+		var w = Math.max(200, Math.round(c.clientWidth || 300)), h = 150, r = window.devicePixelRatio || 1; c.width = w * r; c.height = h * r;
+		var g = c.getContext("2d"); g.setTransform(r, 0, 0, r, 0, 0); g.fillStyle = "#0b0d11"; g.fillRect(0, 0, w, h); g.fillStyle = "rgba(255,255,255,0.08)"; g.fillRect(0, h / 2, w, 1);
+		function mono(ch) { if (ch.length === 1) return ch[0]; var m = new Float32Array(ch[0].length); for (var i = 0; i < m.length; i++) m[i] = 0.5 * (ch[0][i] + ch[1][i]); return m; }
+		/* decibel scale (0 to -54 dB below the loudest peak) so quiet background noise is visible, like the spectral editors do */
+		var pk = Math.max(1e-4, A.peak(before), A.peak(after)), half = h / 2 - 3, RANGE = 54;
+		function yOf(v) { var a = Math.abs(v) / pk; if (a <= 0) return 0; var d = 20 * Math.log10(a); return Math.max(0, (d + RANGE) / RANGE) * half; }
+		[[mono(before), "#6b7280"], [mono(after), "#5eead4"]].forEach(function (L) {
+			var d = L[0], n = d.length, step = n / w; g.fillStyle = L[1];
+			for (var x = 0; x < w; x++) { var i0 = Math.floor(x * step), i1 = Math.max(i0 + 1, Math.floor((x + 1) * step)), m = 0; for (var i = i0; i < i1 && i < n; i++) { var v = Math.abs(d[i]); if (v > m) m = v; } var yy = yOf(m); g.fillRect(x, h / 2 - yy, 1, Math.max(1, 2 * yy)); }
+		});
+		g.fillStyle = "rgba(231,233,238,0.55)"; g.font = "10px system-ui,sans-serif"; g.fillText("dB scale: quiet noise shows", 6, 12);
+		var nb = $("au-cmpnum"); if (nb && num !== undefined) nb.textContent = num || "";
+	}
+	function showResult(fx, rep) {
+		var r = $("au-result"); if (!r || !curFx || curFx.id !== fx.id) return; r.hidden = false;
+		var low = rep && rep.db < 3 && fx.id === "noise";
+		r.innerHTML = '<div class="au-ok">✓ Applied ' + esc(fx.name.replace(/ \(.*\)$/, "").toLowerCase()) + ".</div>" + (rep ? '<div class="au-note"><b>' + esc(rep.text) + "</b></div>" : "") +
+			(low ? '<div class="au-note au-warnnote">If you still hear noise, it is probably not steady background noise (another voice, music, echo of the room). Try the Spectral gate with a noise sample, or Hum removal for a buzz.</div>' : "") +
+			'<div class="au-row"><button type="button" class="au-btn au-btn--sm" data-act="undo">↶ Undo (' + MOD + 'Z)</button><span class="au-note">Use <b>Compare</b> above the tracks to hear Original and Cleaned, then export.</span></div>' +
+			'<div class="au-note">Using it in a video editor (Camtasia, Premiere, CapCut…)? Mute or delete the video\'s own sound there, or you will still hear the noisy original under the cleaned file.</div>';
+		r.querySelector("[data-act=undo]").onclick = undo;
+		if (cmp && $("au-cmpcv")) { var keep = cmp, b0 = keep.before.filter(function (t) { return keep.ids.indexOf(t.id) >= 0; }), a0 = keep.after.filter(function (t) { return keep.ids.indexOf(t.id) >= 0; }); drawCompare($("au-cmpcv"), A.mix(b0, keep.a, keep.b, 1), A.mix(a0, keep.a, keep.b, 1), "Whole applied part"); }
+	}
 
 	/* ---------------- toast / busy ---------------- */
 	var toastT = null;
@@ -68,10 +113,21 @@
 			}
 			var f = files[i++]; b.set((i - 1) / files.length, "Decoding " + f.name);
 			if (/\.mesaudio$|\.json$/i.test(f.name)) { toast("Project files are not supported yet: the project is kept in this browser automatically"); return next(); }
-			return f.arrayBuffer().then(decode).then(function (ab) {
-				var ch = abToCh(ab); if (!ch[0].length) throw new Error("no audio");
-				addTrackFrom(ch, f.name.replace(/\.[^.]+$/, ""), firstEmpty ? 0 : 0); added++;
-			}).catch(function (e) { toast("Could not open " + f.name + (/video|mp4|mov|mkv|webm/i.test(f.type + f.name) ? " (this browser cannot read the sound of this video)" : "") + ": " + (e && e.message || "not an audio file")); }).then(tick).then(next);
+			var viaConv = /\.(avi|mkv|wmv|asf|flv|mpg|mpeg|vob|ts|mts|m2ts|3gp|3g2|divx|xvid|rm|rmvb|ogv|dv)$/i.test(f.name);
+			return (viaConv ? Promise.reject(new Error("container")) : f.arrayBuffer().then(decode).then(abToCh)).catch(function (e0) {
+				/* the browser cannot read it (AVI, MKV, WMV, FLV ... or an odd codec): the Video Converter's engine pulls the sound out */
+				var E = window.MESConvEngine; if (!E || !E.extractAudio) throw e0;
+				b.set((i - 1) / files.length, "Reading the sound of " + f.name);
+				return E.extractAudio(f, { onStatus: function (m, x) { b.set(x || 0, m); }, onProgress: function (x) { b.set(x, "Reading the sound of " + f.name); } }).then(function (r) {
+					if (r.encoded) return decode(r.encoded).then(abToCh);
+					var ch = r.channels.slice(0, 2); if (r.sampleRate !== S.sr && D) ch = ch.map(function (c) { return D.resample(c, r.sampleRate, S.sr); });
+					if (ch.length === 2 && D && D.sameChannels(ch)) ch = [ch[0]];
+					return ch;
+				});
+			}).then(function (ch) {
+				if (!ch || !ch[0] || !ch[0].length) throw new Error("no sound found in it");
+				addTrackFrom(ch, f.name.replace(/\.[^.]+$/, ""), 0); added++;
+			}).catch(function (e) { toast("Could not open " + f.name + ": " + (e && e.message || "not an audio or video file")); }).then(tick).then(next);
 		}
 		next();
 	}
@@ -110,7 +166,9 @@
 		S.markers.forEach(function (m) { var x = xOf(m.t); if (x < -1 || x > W + 1) return; g.strokeStyle = "rgba(244,114,182,0.7)"; g.setLineDash([3, 3]); g.beginPath(); g.moveTo(x + 0.5, 0); g.lineTo(x + 0.5, h); g.stroke(); g.setLineDash([]); });
 		drawRuler(); drawOver(); syncUi();
 	}
-	function drawLane(g, t, ti) {
+	function drawLane(g, t0, ti) {
+		/* while comparing: draw the version that plays in colour, the other one in grey behind it */
+		var inCmp = cmp && cmp.ids.indexOf(t0.id) >= 0, t = inCmp ? (versionOf(vt(), t0.id) || t0) : t0, ghost = inCmp ? versionOf(cmp.show === "before" ? cmp.after : cmp.before, t0.id) : null;
 		var y0 = ti * S.laneH, lh = S.laneH, col = trackColor(ti), sel = S.selT.indexOf(t.id) >= 0;
 		g.fillStyle = sel ? "#161d24" : "#14161b"; g.fillRect(0, y0, W, lh);
 		g.fillStyle = "#333948"; g.fillRect(0, y0 + lh - 1, W, 1);
@@ -123,8 +181,13 @@
 			if (x1 - x0 > 50) { g.fillStyle = "#cfe9ee"; g.font = "11px system-ui,sans-serif"; g.fillText(fmt(A.clipLen(c), 1), Math.max(cx0, x0) + 5, y0 + 12); }
 			var top = y0 + 16, avail = lh - 20, nch = c.ch.length, chH = avail / nch;
 			if (S.spec) { drawSpec(g, t, c, cx0, cx1, top, avail); return; }
+			if (ghost) ghost.clips.forEach(function (gc) {
+				var gx0 = Math.max(cx0, xOf(gc.start)), gx1 = Math.min(cx1, xOf(gc.start + A.clipLen(gc))); if (gx1 <= gx0) return;
+				for (var kk = 0; kk < Math.min(nch, gc.ch.length); kk++) drawWave(g, gc, kk, gx0, gx1, top + kk * chH, chH, "rgba(148,160,180,0.45)");
+			});
 			for (var k = 0; k < nch; k++) drawWave(g, c, k, cx0, cx1, top + k * chH, chH, t.mute ? "#5b6472" : col);
 		});
+		if (inCmp) { g.font = "bold 11px system-ui,sans-serif"; var lab = cmp.show === "before" ? "ORIGINAL (playing)" : "CLEANED (playing) · grey = original"; var tw = g.measureText(lab).width; g.fillStyle = "rgba(11,13,17,0.75)"; g.fillRect(W - tw - 16, y0 + lh - 20, tw + 12, 16); g.fillStyle = cmp.show === "before" ? "#fbbf24" : "#5eead4"; g.fillText(lab, W - tw - 10, y0 + lh - 8); }
 	}
 	function drawWave(g, c, k, cx0, cx1, top, hh, col) {
 		var mid = top + hh / 2, amp = hh / 2 - 1, data = c.ch[k], len = data.length;
@@ -203,10 +266,24 @@
 			rs[0].onchange = function () { commit("Track volume"); };
 			rs[1].oninput = function () { var o = Object.assign({}, trackById(t.id)); o.pan = +rs[1].value; setTrack(o); liveMix(); };
 			rs[1].onchange = function () { commit("Pan"); };
-			h.addEventListener("pointerdown", function (e) { if (e.target.closest("input,button")) return; selectTracks(e.shiftKey || e.metaKey || e.ctrlKey ? toggle(S.selT, t.id) : [t.id]); });
+			var hg = el("div", { class: "au-hgrip", role: "separator", "aria-orientation": "horizontal", tabindex: "0", title: "Drag to make the tracks taller or shorter (double-click: back to normal)", "aria-label": "Track height: drag, or use the up and down arrow keys" }, "<span></span>"); h.appendChild(hg); gripLane(hg);
+			h.addEventListener("pointerdown", function (e) { if (e.target.closest("input,button,.au-hgrip")) return; selectTracks(e.shiftKey || e.metaKey || e.ctrlKey ? toggle(S.selT, t.id) : [t.id]); });
 			heads.appendChild(h);
 		});
 	}
+	/* ---- resizing: track height (grip under each track header) and the whole track area (grip under the tracks) ---- */
+	var LANE_MIN = 56, LANE_MAX = 420, LANE_DEF = window.innerWidth < 600 ? 92 : 112;
+	function setLaneH(v, save) { S.laneH = Math.round(Math.max(LANE_MIN, Math.min(LANE_MAX, v))); if (save) store("laneH", S.laneH); Array.prototype.forEach.call(heads.children, function (h) { h.style.height = S.laneH + "px"; }); draw(); }
+	function dragGrip(g, get, set, done, reset) {
+		g.addEventListener("pointerdown", function (e) { e.preventDefault(); e.stopPropagation(); try { g.setPointerCapture(e.pointerId); } catch (x) { /* synthetic pointer */ } var y0 = e.clientY, v0 = get(); g.classList.add("is-drag");
+			function mv(ev) { set(v0 + ev.clientY - y0); } function up() { g.classList.remove("is-drag"); g.removeEventListener("pointermove", mv); g.removeEventListener("pointerup", up); g.removeEventListener("pointercancel", up); done(); }
+			g.addEventListener("pointermove", mv); g.addEventListener("pointerup", up); g.addEventListener("pointercancel", up); });
+		g.addEventListener("dblclick", function (e) { e.stopPropagation(); reset(); });
+		g.addEventListener("keydown", function (e) { if (e.key === "ArrowUp" || e.key === "ArrowDown") { e.preventDefault(); e.stopPropagation(); set(get() + (e.key === "ArrowDown" ? 1 : -1) * (e.shiftKey ? 40 : 10)); done(); } });
+	}
+	function gripLane(g) { dragGrip(g, function () { return S.laneH; }, function (v) { setLaneH(v); }, function () { store("laneH", S.laneH); }, function () { setLaneH(LANE_DEF, true); }); }
+	var areaH = store("areaH") || 0;
+	function setAreaH(v, save) { var sb = scrollBox; if (v) { areaH = Math.round(Math.max(120, Math.min(Math.max(240, window.innerHeight - 120), v))); sb.style.maxHeight = areaH + "px"; sb.style.height = areaH + "px"; } else { areaH = 0; sb.style.maxHeight = ""; sb.style.height = ""; } if (save) store("areaH", areaH); draw(); }
 	function toggle(arr, id) { var a = arr.slice(), i = a.indexOf(id); if (i >= 0) a.splice(i, 1); else a.push(id); return a; }
 	function selectTracks(ids) { S.selT = ids; if (!S.sel && ids.length) { /* selecting a whole track */ } afterSel(); }
 	function deleteTrack(id) { stopAll(); var t = trackById(id); S.tracks = S.tracks.filter(function (x) { return x.id !== id; }); S.selT = S.selT.filter(function (x) { return x !== id; }); commit("Delete track " + (t ? t.name : "")); }
@@ -315,7 +392,7 @@
 		actx(); stopPreview(); stopSources(); if (!S.tracks.length) return;
 		var from = Math.max(0, Math.round(n)), stop = end != null ? end : projEnd(); if (from >= stop) from = 0;
 		var t0 = ctx.currentTime + 0.04, anySolo = S.tracks.some(function (t) { return t.solo; });
-		S.tracks.forEach(function (t) {
+		vt().forEach(function (t) {
 			var g = ctx.createGain(), p = ctx.createStereoPanner ? ctx.createStereoPanner() : null, on = !t.mute && (!anySolo || t.solo);
 			g.gain.value = on ? A.dbToGain(t.gain) : 0; if (p) { p.pan.value = t.pan; g.connect(p); p.connect(master); } else g.connect(master);
 			tnodes[t.id] = { g: g, p: p };
@@ -384,9 +461,9 @@
 	var EFFECTS = [
 		{ id: "noise", name: "Noise removal (AI)", icon: "✨", keys: "denoise background hiss fan hum deepfilternet rnnoise clean voice", desc: "Remove fans, hiss, traffic, room noise",
 			params: [
-				{ k: "model", type: "select", label: "Method", def: "deepfilter", opts: [["deepfilter", "DeepFilterNet 3 (AI, best for speech)"], ["rnnoise", "RNNoise (AI, faster, gentler)"], ["spectral", "Spectral gate (classic, uses a noise sample)"]] },
-				{ k: "strength", type: "range", label: "Strength", def: 100, min: 0, max: 100, step: 1, unit: "%", cheap: true },
-				{ k: "hum", type: "select", label: "Mains hum (after the noise removal)", def: "0", cheap: true, opts: [["0", "Leave"], ["auto", "Remove (detect 50 / 60 Hz)"], ["50", "Remove 50 Hz"], ["60", "Remove 60 Hz"]] }
+				{ k: "model", type: "select", label: "Method", def: "deepfilter", help: "<b>Which tool cleans the sound.</b><br><b>DeepFilterNet 3</b> is an AI trained on thousands of hours of speech: it keeps the voice and removes almost everything else (fans, air conditioning, traffic, hiss, keyboard, room noise). Best choice for talking, podcasts and videos.<br><b>RNNoise</b> is a smaller AI: faster, a little gentler.<br><b>Spectral gate</b> is the classic method: it learns what the noise sounds like from a few seconds with no voice, then turns that sound down. Use it for music or for one steady sound (hiss, a hum, a fridge).", opts: [["deepfilter", "DeepFilterNet 3 (AI, best for speech)"], ["rnnoise", "RNNoise (AI, faster, gentler)"], ["spectral", "Spectral gate (classic, uses a noise sample)"]] },
+				{ k: "strength", type: "range", label: "Strength", def: 100, min: 0, max: 100, step: 1, unit: "%", cheap: true, help: "<b>How far the noise is pushed down.</b> 100% removes as much as the AI can (often 40 dB or more: the noise is gone). 50% turns it down by about 20 dB (a quarter of its loudness is a lot of difference, but some room sound stays, which can sound more natural). 0% changes nothing. Move it while the preview plays to hear the difference." },
+				{ k: "hum", type: "select", label: "Mains hum (after the noise removal)", def: "0", cheap: true, help: "<b>Mains hum</b> is a low, steady buzz at the frequency of the electricity in the walls: <b>60 Hz</b> in North America and parts of South America, <b>50 Hz</b> in Europe, Asia, Africa and Australia. It comes from power cables near the microphone, cheap power adapters, lights, or a <b>ground loop</b> (two devices plugged into different sockets). It sounds like a deep \"hmmm\" that is there even when nobody talks.<br><b>Remove (detect)</b> finds which one it is and notches exactly that frequency and its overtones, leaving the voice alone. Choose <b>Leave</b> if you hear no buzz.", opts: [["0", "Leave"], ["auto", "Remove (detect 50 / 60 Hz)"], ["50", "Remove 50 Hz"], ["60", "Remove 60 Hz"]] }
 			],
 			note: function (v) { return v.model === "spectral" ? (noiseProfile ? "Noise sample: <b>" + fmt(noiseProfile[0].length, 1) + "</b> learned." : "Select a few seconds of <b>noise only</b> (no voice) and press Learn; otherwise the quietest moments are used.") + ' <button type="button" class="au-btn au-btn--sm" data-act="learn">Learn noise from selection</button>' : (v.model === "deepfilter" ? "Runs on this device. First use downloads the 8.6 MB model (kept by the browser). Speech models can remove music too: preview first." : "Runs on this device (4.8 MB download the first time)."); },
 			run: function (buf, v, ctl) { return denoiseRun(buf, v, ctl); } },
@@ -415,7 +492,7 @@
 		{ id: "eq", name: "EQ", icon: "🎚️", keys: "equalizer eq voice clarity low cut high pass bass treble muddy telephone", desc: "Voice clarity, low cut, presets",
 			params: [{ k: "preset", type: "select", label: "Preset", def: "voice", opts: EQ_KEYS.map(function (k) { return [k, A.EQ_PRESETS[k].name]; }) }], curve: true,
 			run: function (buf, v) { return A.eq(buf, S.sr, A.EQ_PRESETS[v.preset].bands); } },
-		{ id: "hum", name: "Hum removal", icon: "〰️", keys: "hum buzz mains 50 60 hz notch ground loop", desc: "50 / 60 Hz mains hum and harmonics", params: [{ k: "base", type: "select", label: "Hum", def: "auto", opts: [["auto", "Detect 50 or 60 Hz"], ["50", "50 Hz (Europe, Asia, Africa)"], ["60", "60 Hz (Americas)"]] }, { k: "harm", type: "range", label: "Harmonics", def: 8, min: 1, max: 20, step: 1, unit: "" }],
+		{ id: "hum", name: "Hum removal", icon: "〰️", keys: "hum buzz mains 50 60 hz notch ground loop", desc: "50 / 60 Hz mains hum and harmonics", params: [{ k: "base", type: "select", label: "Hum", def: "auto", help: "A low, steady buzz from the electricity: 60 Hz in North America, 50 Hz in Europe, Asia, Africa and Australia. Detect finds which one your recording has.", opts: [["auto", "Detect 50 or 60 Hz"], ["50", "50 Hz (Europe, Asia, Africa)"], ["60", "60 Hz (Americas)"]] }, { k: "harm", type: "range", label: "Harmonics", def: 8, min: 1, max: 20, step: 1, unit: "" }],
 			run: function (buf, v) { if (!D) return buf; var base = v.base === "auto" ? D.detectHum(buf, S.sr).base : +v.base; if (!base) { toast("No mains hum found"); return buf; } return D.humRemove(buf, S.sr, { base: base, harmonics: v.harm }); } },
 		{ id: "declick", name: "De-click", icon: "✂", keys: "click pop crackle declick vinyl mouth", desc: "Repair short clicks and pops", params: [{ k: "sens", type: "range", label: "Sensitivity", def: 50, min: 0, max: 100, step: 1, unit: "%" }], run: function (buf, v) { var o = A.declick(buf, S.sr, v.sens / 100); toast(o.fixed + " click" + (o.fixed === 1 ? "" : "s") + " repaired"); return o.slice(); } },
 		{ id: "reverse", name: "Reverse", icon: "⇆", keys: "reverse backwards", desc: "Play it backwards", params: [], run: function (buf) { return A.reverse(buf); } }
@@ -460,6 +537,7 @@
 				else if (p.type === "select") { f = el("label", { class: "au-f" }, "<span>" + esc(p.label) + "</span><select></select>"); var se = f.querySelector("select"); p.opts.forEach(function (o) { se.appendChild(el("option", { value: o[0] }, esc(o[1]))); }); se.value = vals[p.k]; se.onchange = function () { vals[p.k] = se.value; if (p.presets && p.presets[se.value]) Object.assign(vals, p.presets[se.value]); changed(p, true); }; }
 				else { f = el("label", { class: "au-f" }, "<span>" + esc(p.label) + " <b></b></span><input type=range>"); var r = f.querySelector("input"), bv = f.querySelector("b"); r.min = p.min; r.max = p.max; r.step = p.step; r.value = vals[p.k]; bv.textContent = vals[p.k] + p.unit; r.oninput = function () { vals[p.k] = +r.value; bv.textContent = r.value + p.unit; if (fx.id === "comp" && p.k !== "preset") vals.preset = "custom"; changed(p); }; }
 				form.appendChild(f);
+				if (p.help) helpFor(f, p.label, p.help, "au-p-" + p.k);
 			});
 			if (fx.curve) { var cvs = el("canvas", { class: "au-eqcv", width: 600, height: 220, "aria-label": "EQ curve" }); form.appendChild(cvs); drawEq(cvs); }
 			if (fx.note) { var nt = el("div", { class: "au-note" }, fx.note(vals)); form.appendChild(nt); var lb = nt.querySelector("[data-act=learn]"); if (lb) lb.onclick = learnNoise; }
@@ -468,17 +546,33 @@
 		build();
 		if (fx.analyse) { var an = el("div", { class: "au-stats" }); an.id = "au-anal"; box.appendChild(el("div", { class: "au-row" }, '<button type="button" class="au-btn au-btn--sm" id="au-measure">Measure loudness</button>')); box.appendChild(an); }
 		if (!fx.noPreview) {
-			box.appendChild(el("div", { class: "au-row" }, '<button type="button" class="au-btn" id="au-pv">▶ Preview</button><span class="au-note" id="au-pvn">Plays up to 30 s</span>'));
-			var ab = el("div", { class: "au-ab", role: "group", "aria-label": "Compare" }, '<button type="button" id="au-pa" aria-pressed="false" title="Original (B toggles)">A · Original</button><button type="button" id="au-pb2" aria-pressed="true" title="Processed (B toggles)">B · Processed</button>');
+			box.appendChild(el("div", { class: "au-step" }, '<b>1. Try it first</b> (nothing changes yet)'));
+			box.appendChild(el("div", { class: "au-row" }, '<button type="button" class="au-btn" id="au-pv">▶ Preview</button><span class="au-note" id="au-pvn">Plays up to 30 s of ' + (S.sel ? "the selection" : "your audio") + ' on a loop</span>'));
+			var ab = el("div", { class: "au-listen" }, '<span class="au-listen-l">Listen:</span><div class="au-ab" role="group" aria-label="Listen to the sound before or after the effect"><button type="button" id="au-pa" aria-pressed="false" title="Your original sound (key B switches)">Before</button><button type="button" id="au-pb2" aria-pressed="true" title="With the effect (key B switches)">After</button></div>');
 			box.appendChild(ab);
+			box.appendChild(el("div", { class: "au-note" }, "Switch between <b>Before</b> (your original) and <b>After</b> (with " + esc(fx.name.replace(/ \(.*\)$/, "").toLowerCase()) + ") while it plays; key <kbd>B</kbd> does the same. They stay in sync, so you hear exactly what changes."));
+			var cmpWrap = el("div", { class: "au-cmpwrap" }, '<canvas class="au-cmpcv" id="au-cmpcv" width="640" height="150" aria-label="Waveform before (grey, behind) and after (bright, in front)"></canvas><div class="au-cmpleg"><span class="au-lg au-lg--b">Before</span><span class="au-lg au-lg--a">After</span><span id="au-cmpnum"></span></div>');
+			cmpWrap.hidden = true; box.appendChild(cmpWrap);
+			box.appendChild(el("div", { class: "au-step" }, '<b>2. Apply it</b> to ' + (S.sel ? "the selection" : "the whole " + (targets().length > 1 ? "project" : "track"))));
 		}
 		box.appendChild(el("div", { class: "au-row" }, '<button type="button" class="au-btn au-btn--primary" id="au-apply">Apply</button><button type="button" class="au-btn" id="au-cancel">Close</button>'));
+		box.appendChild(el("div", { class: "au-result", id: "au-result", hidden: "" }));
 		openPanel(fx.icon + " " + fx.name, box);
 		$("au-apply").onclick = function () { applyFx(fx, Object.assign({}, vals)); };
 		$("au-cancel").onclick = closePanel;
 		if ($("au-pv")) { $("au-pv").onclick = function () { if (preview && preview.playing) stopPreview(); else startPreview(); }; $("au-pa").onclick = function () { setAB("A"); }; $("au-pb2").onclick = function () { setAB("B"); }; }
 		if ($("au-measure")) $("au-measure").onclick = measure;
 		wetCache = null;
+	}
+	/* a small "?" next to an option's name; the explanation opens under it (plain-English help for beginners) */
+	function helpFor(f, label, html, id) {
+		var ctl = f.querySelector("input,select"); if (ctl && id) { ctl.id = id; f.setAttribute("for", id); }
+		var sp = f.querySelector("span"), q = el("button", { type: "button", class: "au-q", "aria-expanded": "false", "aria-label": "What is " + label + "?", title: "What is this?" }, "?");
+		var pop = el("div", { class: "au-qpop", role: "note" }, html); pop.hidden = true;
+		if (sp) { var tn = sp.firstChild; if (tn && tn.nextSibling) sp.insertBefore(q, tn.nextSibling); else sp.appendChild(q); } else f.appendChild(q);
+		f.parentNode.insertBefore(pop, f.nextSibling);
+		q.onclick = function (e) { e.preventDefault(); e.stopPropagation(); pop.hidden = !pop.hidden; q.setAttribute("aria-expanded", !pop.hidden); };
+		return q;
 	}
 	function defaultsOf(fx) { var o = {}; fx.params.forEach(function (p) { o[p.k] = p.def; }); return o; }
 	function drawEq(c) {
@@ -501,13 +595,22 @@
 		var tt = targets(); if (!tt.length) return toast("Open some audio first");
 		if (fx.needSel && !S.sel) return toast("Select the part to " + fx.name.toLowerCase() + " first");
 		stopAll(); var a = S.sel ? S.sel.a : 0, b = S.sel ? S.sel.b : projEnd(); if (b <= a) return;
-		var bz = busy(fx.name), i = 0, out = [];
+		var bz = busy(fx.name), i = 0, out = [], beforeTracks = S.tracks, measure = fx.id === "noise" || fx.id === "enhance" || fx.id === "hum", fl = null;
 		function next() {
-			if (i >= tt.length) { bz.done(); out.forEach(function (t) { setTrack(t); }); commit(fx.name); if (!quiet) toast(fx.name + " applied", { label: "Undo", fn: undo }); return; }
+			if (i >= tt.length) {
+				bz.done(); out.forEach(function (t) { setTrack(t); }); commit(fx.name);
+				var rep = fl ? A.noiseReport(fl.b, fl.a) : null;
+				startCompare({ label: fx.name, before: beforeTracks, after: S.tracks, a: a, b: b, ids: tt.map(function (t) { return t.id; }), report: rep });
+				if (!quiet) toast(fx.name + " applied." + (rep ? " " + rep.text : "") + " Press B to compare.", { label: "Undo", fn: undo });
+				showResult(fx, rep);
+				return;
+			}
 			var t = trackById(tt[i].id), buf = A.renderTrack(t, a, b), base = i / tt.length;
 			bz.set(base, "Processing " + t.name);
 			return tick().then(function () { return fx.run(buf, v, { prog: function (f, m) { bz.set(base + f / tt.length, m || "Processing " + t.name); }, signal: bz.signal }); }).then(function (res) {
 				if (bz.signal.aborted) throw Object.assign(new Error("Cancelled"), { name: "AbortError" });
+				if (!res || !res[0] || res[0].length !== buf[0].length) throw new Error("the effect returned the wrong length");
+				if (measure && i === 0) fl = { b: A.noiseFloor(buf, S.sr), a: A.noiseFloor(res, S.sr) };
 				out.push(A.writeRange(t, a, b, res)); i++; return tick().then(next);
 			});
 		}
@@ -525,13 +628,17 @@
 			if (i >= tt.length) {
 				bz.done(); var orig = A.mix(S.tracks, r.a, r.b, nOut), procTracks = S.tracks.map(function (t) { return proc[t.id] ? proc[t.id] : t; });
 				preview = { a: r.a, b: r.b, ids: ids, raw: proc.__raw, fx: fx, which: (preview && preview.which) || "B" };
-				preview.orig = toAbuf(orig); preview.proc = toAbuf(A.mix(procTracks, r.a, r.b, nOut)); playPreview(0); return;
+				var procMix = A.mix(procTracks, r.a, r.b, nOut); preview.orig = toAbuf(orig); preview.proc = toAbuf(procMix); playPreview(0); previewCompare(orig, procMix); return;
 			}
 			var t = tt[i], buf = A.renderTrack(t, r.a, r.b);
 			return Promise.resolve(fx.run(buf, Object.assign({}, vals), { prog: function (f, m) { bz.set((i + f) / tt.length, m); }, signal: bz.signal, key: "pv" + t.id + r.a + "-" + r.b })).then(function (res) { proc[t.id] = A.writeRange(t, r.a, r.b, res); i++; return tick().then(next); });
 		}
 		wetCache = wetCache && wetCache.key.indexOf("pv" + tt[0].id + r.a + "-" + r.b) >= 0 ? wetCache : wetCache;
 		Promise.resolve().then(next).catch(function (e) { bz.done(); toast(e.name === "AbortError" ? "Preview cancelled" : "Preview failed: " + (e.message || e)); });
+	}
+	function previewCompare(orig, proc) {
+		var c = $("au-cmpcv"); if (!c) return; var nf = curFx && /noise|enhance|hum/.test(curFx.id) ? A.noiseReport(A.noiseFloor(orig, S.sr), A.noiseFloor(proc, S.sr)).text : "";
+		drawCompare(c, orig, proc, "Preview" + (nf ? ": " + nf : ""));
 	}
 	function toAbuf(ch) { var b = ctx.createBuffer(ch.length, Math.max(1, ch[0].length), S.sr); ch.forEach(function (d, k) { b.getChannelData(k).set(d); }); return b; }
 	function playPreview(offset) {
@@ -555,7 +662,7 @@
 			var off = ((ctx.currentTime - preview.t0) % preview.orig.duration + preview.orig.duration) % preview.orig.duration, r = { a: preview.a, b: preview.b }, nOut = preview.orig.numberOfChannels, tt = targets(), proc = {}, i = 0;
 			var bz = cheap ? null : busy("Updating the preview");
 			function next() {
-				if (i >= tt.length) { if (bz) bz.done(); preview.proc = toAbuf(A.mix(S.tracks.map(function (t) { return proc[t.id] || t; }), r.a, r.b, nOut)); playPreview(off); return; }
+				if (i >= tt.length) { if (bz) bz.done(); var pm = A.mix(S.tracks.map(function (t) { return proc[t.id] || t; }), r.a, r.b, nOut); preview.proc = toAbuf(pm); playPreview(off); previewCompare(A.mix(S.tracks, r.a, r.b, nOut), pm); return; }
 				var t = tt[i], buf = A.renderTrack(t, r.a, r.b);
 				return Promise.resolve(curFx.run(buf, Object.assign({}, vals), { key: "pv" + t.id + r.a + "-" + r.b, prog: function (f, m) { if (bz) bz.set(f, m); }, signal: bz ? bz.signal : null })).then(function (res) { proc[t.id] = A.writeRange(t, r.a, r.b, res); i++; return next(); });
 			}
@@ -633,7 +740,7 @@
 	function download(blob, name) { var a = document.createElement("a"), u = URL.createObjectURL(blob); a.href = u; a.download = name; document.body.appendChild(a); a.click(); a.remove(); setTimeout(function () { URL.revokeObjectURL(u); }, 30000); }
 	var EX_LS = store("export") || { fmt: "mp3", bits: "16", kbps: "192", rate: "same", ch: "auto", range: "all", lufs: "none" };
 	function openExport() {
-		if (!S.tracks.length) return toast("Open or record some audio first"); panel = "export";
+		if (!S.tracks.length) return toast("Open or record some audio first"); if (cmp) endCompare(true); panel = "export";
 		var box = el("div", { class: "au-pb" }); box.style.padding = "0";
 		var aac = typeof window.AudioEncoder === "function";
 		box.innerHTML = '<label class="au-f"><span>Format</span><select id="ex-fmt"><option value="mp3">MP3</option><option value="wav">WAV</option><option value="m4a"' + (aac ? "" : " disabled") + '>M4A (AAC)' + (aac ? "" : " – not in this browser") + '</option></select></label>' +
@@ -749,7 +856,7 @@
 		{ m: "View", name: "Zoom in", kb: "+", fn: function () { zoomAt(2, W / 2); } }, { m: "View", name: "Zoom out", kb: "−", fn: function () { zoomAt(0.5, W / 2); } },
 		{ m: "View", name: "Fit project", kb: "0", fn: zoomFit }, { m: "View", name: "Zoom to selection", kb: MOD + "3", fn: zoomSel },
 		{ m: "View", name: "Spectrogram on / off", kb: "S", fn: function () { S.spec = !S.spec; store("spec", S.spec); draw(); } },
-		{ m: "View", name: "Taller tracks", fn: function () { S.laneH = Math.min(320, S.laneH + 30); store("laneH", S.laneH); afterChange(); } }, { m: "View", name: "Shorter tracks", fn: function () { S.laneH = Math.max(64, S.laneH - 30); store("laneH", S.laneH); afterChange(); } },
+		{ m: "View", name: "Taller tracks", keys: "track height bigger resize", fn: function () { setLaneH(S.laneH + 30, true); } }, { m: "View", name: "Shorter tracks", keys: "track height smaller resize", fn: function () { setLaneH(S.laneH - 30, true); } },
 		{ m: "View", name: "Fill window", kb: "F", fn: toggleWin }, { m: "View", name: "Full screen", kb: "Shift+F", fn: toggleFs },
 		{ m: "Help", name: "Keyboard shortcuts", kb: "?", fn: showHelp }, { m: "Help", name: "About the noise removal", fn: function () { openPanel("About the noise removal", '<div class="au-note">' + DN.models.map(function (m) { return "<p><b>" + esc(m.name) + "</b> · " + esc(m.licence) + " · " + esc(m.size) + "<br>" + esc(m.note) + "</p>"; }).join("") + "<p>Everything runs on this device; nothing is uploaded. DeepFilterNet runs on the processor with WebAssembly (one thread).</p></div>"); panel = "about"; } }
 	]);
@@ -787,6 +894,9 @@
 		var inEditor = root.contains(tg) || tg === document.body || root.classList.contains("au-win");
 		var mod = e.ctrlKey || e.metaKey, k = e.key;
 		if (mod && (k === "k" || k === "K")) { if (!inEditor && !root.contains(document.activeElement)) return; e.preventDefault(); sq.focus(); sq.select(); return; }
+		/* undo / redo work everywhere in the editor except while typing text (also right after choosing a menu option or moving a slider) */
+		var textEntry = tg && ((tg.tagName === "INPUT" && /^(text|search|number|email|url|tel|password)$/i.test(tg.type || "text")) || tg.tagName === "TEXTAREA" || tg.isContentEditable);
+		if (mod && /^[zy]$/i.test(k) && !textEntry && inEditor) { e.preventDefault(); (k.toLowerCase() === "y" || e.shiftKey ? redo : undo)(); return; }
 		if (typing || !inEditor) return;
 		if (k === " ") { e.preventDefault(); togglePlay(); return; }
 		if (mod) {
@@ -810,7 +920,7 @@
 			case "s": case "S": S.spec = !S.spec; store("spec", S.spec); draw(); break;
 			case "n": case "N": openFx("noise"); break;
 			case "e": case "E": openFxList(); break;
-			case "b": case "B": if (preview && preview.playing) setAB(preview.which === "A" ? "B" : "A"); break;
+			case "b": case "B": if (preview && preview.playing) setAB(preview.which === "A" ? "B" : "A"); else if (cmp) setCompare(cmp.show === "after" ? "before" : "after"); break;
 			case "f": if (!e.shiftKey) toggleWin(); break; case "F": toggleFs(); break;
 			case "?": showHelp(); break;
 			default: return;
@@ -840,7 +950,9 @@
 	if (window.ResizeObserver) new ResizeObserver(function () { draw(); }).observe(lanes); else window.addEventListener("resize", draw);
 
 	/* ---------------- start ---------------- */
-	S.spec = !!store("spec"); S.laneH = store("laneH") || (window.innerWidth < 600 ? 92 : 112);
+	S.spec = !!store("spec"); S.laneH = Math.max(LANE_MIN, Math.min(LANE_MAX, store("laneH") || LANE_DEF));
+	dragGrip($("au-agrip"), function () { return areaH || scrollBox.clientHeight; }, function (v) { setAreaH(v); }, function () { store("areaH", areaH); }, function () { setAreaH(0, true); });
+	if (areaH) setAreaH(areaH);
 	buildMenus(); H.push("Start", snap()); afterChange(); meterClear(); offerRestore();
 	window.MESAudioEditor = { state: S, openFiles: openFiles, applyFx: applyFx, effects: EFFECTS, commit: commit, testClip: testClip };
 })();
