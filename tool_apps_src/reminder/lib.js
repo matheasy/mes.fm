@@ -108,7 +108,7 @@
 	function googleUrl(ev, pageUrl) {
 		var e = clean(ev), s = startOf(e), q = new URLSearchParams(), w = parseWall(e.t);
 		q.set("action", "TEMPLATE"); q.set("text", e.title);
-		if (e.r === "weekly" && w && e.tz) { var end = new Date(Date.UTC(w.y, w.mo - 1, w.d, w.h, w.m) + e.len * 60000); q.set("dates", wallStamp(w) + "/" + wallStamp({ y: end.getUTCFullYear(), mo: end.getUTCMonth() + 1, d: end.getUTCDate(), h: end.getUTCHours(), m: end.getUTCMinutes() })); q.set("ctz", e.tz); q.set("recur", "RRULE:FREQ=WEEKLY"); }
+		if (w && e.tz) { var end = new Date(Date.UTC(w.y, w.mo - 1, w.d, w.h, w.m) + e.len * 60000); q.set("dates", wallStamp(w) + "/" + wallStamp({ y: end.getUTCFullYear(), mo: end.getUTCMonth() + 1, d: end.getUTCDate(), h: end.getUTCHours(), m: end.getUTCMinutes() })); q.set("ctz", e.tz); if (e.r === "weekly") q.set("recur", "RRULE:FREQ=WEEKLY"); }
 		else q.set("dates", utcStamp(s) + "/" + utcStamp(s + e.len * 60000));
 		var det = details(e, pageUrl); if (det) q.set("details", det); if (e.u) q.set("location", e.u);
 		return "https://calendar.google.com/calendar/render?" + q.toString();

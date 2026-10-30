@@ -35,10 +35,11 @@
 	/* ---------- formatting ---------- */
 	function fmtWhen(ms, tz, withZone) {
 		var o = { weekday: "long", month: "long", day: "numeric", year: "numeric", hour: "numeric", minute: "2-digit" };
-		if (tz) o.timeZone = tz; if (withZone) o.timeZoneName = "short";
-		try { return new Intl.DateTimeFormat(undefined, o).format(new Date(ms)); } catch (e) { return new Date(ms).toString(); }
+		var z = CK.zoneAt(tz, ms), fixed = /^Etc\/GMT/.test(z) && !/^Etc/.test(tz || "");
+		o.timeZone = z; if (withZone) o.timeZoneName = "short";
+		try { var t = new Intl.DateTimeFormat(undefined, o).format(new Date(ms)); return fixed ? t.replace(/GMT-7|UTC-7|GMT−7/, "PT (UTC-7)") : t; } catch (e) { return new Date(ms).toString(); }
 	}
-	function shortWhen(ms) { try { return new Intl.DateTimeFormat(undefined, { weekday: "short", month: "short", day: "numeric", hour: "numeric", minute: "2-digit" }).format(new Date(ms)); } catch (e) { return new Date(ms).toLocaleString(); } }
+	function shortWhen(ms) { try { return new Intl.DateTimeFormat(undefined, { weekday: "short", month: "short", day: "numeric", hour: "numeric", minute: "2-digit", timeZone: CK.zoneAt("", ms) }).format(new Date(ms)); } catch (e) { return new Date(ms).toLocaleString(); } }
 	function pageUrl(ev) { return ev === EV && EV_URL ? EV_URL : location.origin + "/reminder?" + RM.toQuery(ev); }
 	function slug(s) { return String(s).toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "").slice(0, 50) || "reminder"; }
 	function state(ev, now) {
@@ -65,7 +66,7 @@
 	// Link to the Time Zone Converter for the same moment, written in the event's own zone (its #d=&t=&f= hash form).
 	function tzLink(ms, zone) {
 		zone = zone || LOCAL;
-		var p = {}; new Intl.DateTimeFormat("en-CA", { timeZone: zone, year: "numeric", month: "2-digit", day: "2-digit", hour: "2-digit", minute: "2-digit", hourCycle: "h23" }).formatToParts(new Date(ms)).forEach(function (x) { p[x.type] = x.value; });
+		var p = {}; new Intl.DateTimeFormat("en-CA", { timeZone: CK.zoneAt(zone, ms), year: "numeric", month: "2-digit", day: "2-digit", hour: "2-digit", minute: "2-digit", hourCycle: "h23" }).formatToParts(new Date(ms)).forEach(function (x) { p[x.type] = x.value; });
 		return "/timezone#d=" + p.year + "-" + p.month + "-" + p.day + "&t=" + p.hour + ":" + p.minute + "&f=" + encodeURIComponent(zone);
 	}
 	function tzA(ms, zone) { return ' <a class="rm-tzlink" href="' + esc(tzLink(ms, zone)) + '" target="_blank" rel="noopener">See it in other time zones →</a>'; }
