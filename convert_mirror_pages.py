@@ -371,6 +371,9 @@ def brand_nav(s):
                        lambda m: m.group(1) + '<li class="navbar__item"><a target="_self" class="navbar__link" href="%s">%s</a></li>\n' % (href, label) + m.group(1) + m.group(2),
                        s, count=1)
         s = s.replace("current_tab: 99, info_bar_tab: -1", "current_tab: 1, info_bar_tab: 0", 1)
+        if href == "/911":
+            from add_911_spooks_tab import patch as spooks_tab  # "Spooks" tab after "9/11 Truth" (2026-10-29)
+            s = spooks_tab(s)
     return s
 
 
