@@ -5,7 +5,8 @@
 (function () {
     "use strict";
     var FAMILY = { "cubic-formula": "cubic-formula", "vector-functions-problems-plus": "vector-functions-problems-plus", "moon": "tools", "911-finding-truth": "911", "911-holding-truth": "911",
-        "hutchison-nancy-physics-system": "hutchison", "hutchison-nancy-turn-return": "hutchison", "imagining-motion": "hutchison" };
+        "hutchison-nancy-physics-system": "hutchison", "hutchison-nancy-turn-return": "hutchison", "imagining-motion": "hutchison",
+        "em-304-problem-1-judy-wood": "vector-functions-problems-plus" };
     var slug = location.pathname.replace(/^\/+|\/+$/g, "").replace(/\/index\.html$/, "");
     var fam = FAMILY[slug];
     if (!fam || document.getElementById("mes-aside")) return;

@@ -83,6 +83,17 @@ const PAGES = [
       "Video and written tutorials on vector functions: space curves, derivatives and integrals, arc length and curvature, motion in space, and Kepler's laws.",
   },
   {
+    slug: "em-304-problem-1-judy-wood",
+    // Own build: build_em304_article.py (repo root) mirrors the Hive article in the Problems Plus shell.
+    // ownBuild (not tileOnly) so it is a big icon tile: tileOnly entries are the small square-logo tool links.
+    // This entry only supplies the hub tile -- no page is written for it here. Icon: img/em-304-problem-1-judy-wood-icon.jpg (900x600 crop of the video thumbnail).
+    ownBuild: true,
+    href: "/em-304-problem-1-judy-wood",
+    iconVersion: 1,
+    tileLabel: "Space Shuttle Columbia: EM 304 Exam Problem",
+    description: "Dr. Judy Wood's EM 304 exam problem from February 6, 2003: the Space Shuttle Columbia disaster as a thermal expansion problem.",
+  },
+  {
     slug: "youtube",
     sectionId: "mathYoutube",
     tileLabel: "MES YouTube: All Videos",

@@ -3,24 +3,26 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <meta name="description" content="The EM 304 test problem on the Space Shuttle Columbia disaster that Dr. Judy Wood set at Clemson University on February 6, 2003, five days after Columbia was lost on February 1, 2003. Read the PDF here or download it.">
+  <meta name="description" content="Dr. Judy Wood&#x27;s EM 304 exam problem from February 6, 2003: the Space Shuttle Columbia disaster as a thermal expansion problem. Full video solution and notes.">
   <meta name="author" content="MES">
   <link rel="canonical" href="https://mes.fm/em-304-problem-1-judy-wood" />
   <!-- OG-TAGS:START -->
   <meta property="og:type" content="article">
   <meta property="og:site_name" content="MES Truth">
   <meta property="og:url" content="https://mes.fm/em-304-problem-1-judy-wood">
-  <meta property="og:title" content="Space Shuttle Columbia Disaster Test Problem by Dr. Judy Wood">
-  <meta property="og:description" content="The EM 304 test problem on the Space Shuttle Columbia disaster that Dr. Judy Wood set at Clemson University on February 6, 2003, five days after Columbia was lost on February 1, 2003. Read the PDF here or download it.">
-  <meta property="og:image" content="https://mes.fm/em-304-problem-1-judy-wood/preview.jpg">
+  <meta property="og:title" content="Exam Problem by Dr. Judy Wood: Space Shuttle Columbia Disaster">
+  <meta property="og:description" content="Dr. Judy Wood&#x27;s EM 304 exam problem from February 6, 2003: the Space Shuttle Columbia disaster as a thermal expansion problem. Full video solution and notes.">
+  <meta property="og:image" content="https://mes.fm/em-304-problem-1-judy-wood/img/share.jpg">
+  <meta property="og:image:width" content="1200">
+  <meta property="og:image:height" content="630">
   <meta name="twitter:card" content="summary_large_image">
   <meta name="twitter:site" content="@MathEasySolns">
-  <meta name="twitter:title" content="Space Shuttle Columbia Disaster Test Problem by Dr. Judy Wood">
-  <meta name="twitter:description" content="The EM 304 test problem on the Space Shuttle Columbia disaster that Dr. Judy Wood set at Clemson University on February 6, 2003, five days after Columbia was lost on February 1, 2003. Read the PDF here or download it.">
-  <meta name="twitter:image" content="https://mes.fm/em-304-problem-1-judy-wood/preview.jpg">
+  <meta name="twitter:title" content="Exam Problem by Dr. Judy Wood: Space Shuttle Columbia Disaster">
+  <meta name="twitter:description" content="Dr. Judy Wood&#x27;s EM 304 exam problem from February 6, 2003: the Space Shuttle Columbia disaster as a thermal expansion problem. Full video solution and notes.">
+  <meta name="twitter:image" content="https://mes.fm/em-304-problem-1-judy-wood/img/share.jpg">
   <!-- OG-TAGS:END -->
   <link rel="icon" href="https://mes.fm/img/favicon.ico?v=1.0" type="image/x-icon" />
-  <title>Space Shuttle Columbia Disaster Test Problem by Dr. Judy Wood | Math Easy Solutions</title>
+  <title>Exam Problem by Dr. Judy Wood: Space Shuttle Columbia Disaster | Math Easy Solutions</title>
   <style>
     * { box-sizing: border-box; }
 
@@ -38,11 +40,6 @@
     body.dark a { color: #6cb6f5; }
 
     .container {
-      max-width: 760px;
-      margin: 0 auto;
-    }
-
-    .ad-slot {
       max-width: 760px;
       margin: 0 auto;
     }
@@ -137,52 +134,129 @@
       #info-bar .info-bar__item__text { min-height: 44px; display: flex; align-items: center; }
     }
 
+    .theme-toggle-btn {
+      flex: 0 0 auto;
+      padding: 5px 10px;
+      border: none;
+      border-radius: 4px;
+      cursor: pointer;
+      font-size: 0.85em;
+      white-space: nowrap;
+    }
+
+    body.light .theme-toggle-btn { background-color: #dddddd; color: #000000; }
+    body.dark .theme-toggle-btn { background-color: #444444; color: #ffffff; }
+
     .site-link {
       font-size: 0.9em;
     }
 
     h1 {
-      font-size: 1.8em;
-      margin: 0.4em 0 0.1em;
+      font-size: 2em;
+      margin: 0.4em 0 0.2em;
     }
 
-    .page-subtitle {
-      font-size: 0.85em;
-      opacity: 0.75;
-      margin-bottom: 1.4em;
+    /* Text-size control (--ts, set by the header A-/A+ buttons): only prose,
+       the byline and the Jump To navigation scale. Uses rem so nested
+       lists/quotes don't compound. Playlist cards/rows are excluded. */
+    .post-body :is(p, li, blockquote, td, th):not(#playlist *) { font-size: calc(1rem * var(--ts, 1)); }
+
+    .post-meta {
+      font-size: calc(0.9rem * var(--ts, 1));
+      opacity: 0.85;
+      margin-bottom: 0.6em;
     }
 
-    article p {
+    .post-meta span:not(:last-child)::after {
+      content: " \00b7 ";
+    }
+
+    .peakd-link {
+      display: inline-block;
+      margin: 0.6em 0 1.4em;
+      font-size: calc(0.9rem * var(--ts, 1));
+      font-style: italic;
+    }
+
+    .post-body {
+      word-wrap: break-word;
+    }
+
+    .post-body h1 {
+      text-align: center;
+      font-size: 1.5em;
+      margin: 1.8em 0 0.8em;
+    }
+
+    .post-body h2.chapter-top {
+      text-align: center;
+      font-size: 1.5em;
+      margin: 1.8em 0 0.8em;
+    }
+
+    .post-body h2 {
+      font-size: 1.3em;
+      margin: 1.9em 0 0.4em;
+    }
+
+    .post-body h3 {
+      font-size: 1.1em;
+      margin: 1.6em 0 0.4em;
+    }
+
+    .post-body p {
       margin: 0 0 1em;
     }
 
-    .source-list {
-      margin: 0 0 1.2em;
+    .post-body img {
+      max-width: 100%;
+      height: auto;
+      border-radius: 4px;
+      margin: 0.6em 0;
+      cursor: zoom-in;
+    }
+
+    .post-body ul {
       padding-left: 1.3em;
     }
 
-    .source-list li {
+    .post-body li {
       margin: 0 0 0.5em;
     }
 
-    .source-list li ul {
-      margin: 0.4em 0 0;
-      padding-left: 1.3em;
+    .post-body blockquote {
+      border-left: 3px solid #277bb6;
+      margin: 1em 0;
+      padding: 0.2em 1em;
+      opacity: 0.9;
+    }
+
+    .post-body table {
+      border-collapse: collapse;
+      max-width: 100%;
+      margin: 1.5em 0;
+    }
+
+    .post-body td,
+    .post-body th {
+      border: 1px solid;
+      border-color: inherit;
+      padding: 6px 10px;
     }
 
     .video-embed {
       position: relative;
       width: 100%;
-      padding-top: 56.25%;
+      padding-bottom: 56.25%;
       border-radius: 4px;
       overflow: hidden;
       margin: 0.6em 0 1.2em;
       transition: width 0.25s ease, max-width 0.25s ease, margin 0.25s ease,
-        height 0.25s ease, padding-top 0.25s ease, border-radius 0.25s ease;
+        height 0.25s ease, padding-bottom 0.25s ease, border-radius 0.25s ease;
     }
 
-    .video-embed video,
-    .video-embed iframe {
+    .video-embed iframe,
+    .video-embed video {
       position: absolute;
       top: 0;
       left: 0;
@@ -198,12 +272,13 @@
       left: 50%;
       margin-left: -50vw;
       margin-right: -50vw;
-      padding-top: 0;
+      padding-bottom: 0;
       height: min(85vh, 56.25vw);
       border-radius: 0;
       background: #000;
     }
 
+    .video-embed.theater-mode iframe,
     .video-embed.theater-mode video {
       object-fit: contain;
     }
@@ -262,65 +337,6 @@
       pointer-events: none;
     }
 
-    .source-link {
-      display: inline-block;
-      font-size: 0.9em;
-      font-style: italic;
-    }
-
-    .timestamps {
-      margin: 0 0 1.4em;
-      font-size: 0.92em;
-    }
-
-    .timestamps summary {
-      cursor: pointer;
-      font-weight: bold;
-      margin-bottom: 0.6em;
-    }
-
-    .timestamps ul {
-      margin: 0.3em 0;
-      padding-left: 1.3em;
-    }
-
-    .timestamps li {
-      margin: 0 0 0.35em;
-    }
-
-    .written-solution {
-      margin: 0 0 1.6em;
-    }
-
-    .written-solution > summary {
-      cursor: pointer;
-      font-weight: bold;
-      font-size: 1.15em;
-      margin-bottom: 0.4em;
-    }
-
-    .written-solution .ws-note {
-      font-size: 0.85em;
-      opacity: 0.75;
-      margin: 0.4em 0 1.2em;
-    }
-
-    .written-solution h3 {
-      font-size: 1.05em;
-      margin: 1.4em 0 0.4em;
-    }
-
-    .written-solution p { margin: 0 0 1em; }
-
-    .sol-image {
-      max-width: 100%;
-      height: auto;
-      border-radius: 4px;
-      display: block;
-      margin: 0.6em 0 1.2em;
-      cursor: zoom-in;
-    }
-
     .lightbox-overlay {
       display: none;
       position: fixed;
@@ -363,6 +379,7 @@
     .lightbox-close,
     .lightbox-prev,
     .lightbox-next {
+      position: fixed;
       display: inline-flex;
       align-items: center;
       justify-content: center;
@@ -377,7 +394,6 @@
     .lightbox-next:hover { background: rgba(0, 0, 0, 0.85); }
 
     .lightbox-close {
-      position: fixed;
       top: 16px;
       right: 16px;
       width: 40px;
@@ -389,6 +405,7 @@
 
     .lightbox-prev,
     .lightbox-next {
+      position: static;
       width: 44px;
       height: 44px;
       border-radius: 50%;
@@ -403,15 +420,21 @@
       .lightbox-close { width: 36px; height: 36px; }
     }
 
-    .retrieved-note {
-      font-size: 0.85em;
-      opacity: 0.7;
-      margin-top: 0.4em;
-    }
-
     hr {
       margin: 2em 0;
       opacity: 0.3;
+    }
+
+    .source-link {
+      display: inline-block;
+      font-size: 0.9em;
+      font-style: italic;
+    }
+
+    .retrieved-note {
+      font-size: calc(0.85rem * var(--ts, 1));
+      opacity: 0.7;
+      margin-top: 0.4em;
     }
 
     .site-footer-note {
@@ -420,85 +443,297 @@
       text-align: center;
     }
 
+    /* Every chapter (the leading "Full Video" one plus every Hive-sourced "# "
+       section) is a collapsible dropdown -- see wrapChaptersInToggles() in
+       build.mjs and toggleChapter() below. */
+    .chapter-toggle-header {
+      cursor: pointer;
+    }
+
+    .chapter-toggle-header .arrow-icon {
+      font-size: 0.6em;
+      display: inline-block;
+      vertical-align: middle;
+      transition: transform 0.3s ease;
+    }
+
+    .chapter-toggle-list.hidden {
+      display: none;
+    }
+
+    /* Pinned to the top of the post body, just under the <hr> that follows the
+       article meta -- a collapse/expand-all control anchored to the right edge,
+       above the first ("Full Video") chapter. */
+    .chapters-toolbar {
+      display: flex;
+      justify-content: flex-end;
+      margin: -0.8em 0 0.4em;
+    }
+
+    /* Playlist chapter — Grid View (card-grid, default) / List View toggle for
+       the sibling Problems Plus video pages. See buildPlaylistSection() in
+       build.mjs. Card-grid styling kept in sync with the identical block in
+       mes.fm/911/build.mjs, mes.fm/hutchison/build.mjs, and
+       mes.fm/conspiracy/build.mjs. */
+    .view-toggle {
+      display: flex;
+      gap: 0.5em;
+      margin: 0 0 1em;
+    }
+
+    .view-toggle-btn {
+      padding: 5px 10px;
+      border: none;
+      border-radius: 4px;
+      cursor: pointer;
+      font-size: 0.85em;
+    }
+
+    body.light .view-toggle-btn { background-color: #dddddd; color: #000000; }
+    body.dark .view-toggle-btn { background-color: #444444; color: #ffffff; }
+    body.light .view-toggle-btn.active { background-color: #1a6fb0; color: #ffffff; }
+    body.dark .view-toggle-btn.active { background-color: #6cb6f5; color: #1a1a1a; }
+
+    .card-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 1rem;
+      margin: 0 0 0.4em;
+    }
+
+    .link-card {
+      display: flex;
+      flex-direction: column;
+      border: 1px solid rgba(128, 128, 128, 0.35);
+      border-radius: 8px;
+      overflow: hidden;
+      text-decoration: none;
+      color: inherit;
+      transition: transform 0.15s ease, box-shadow 0.15s ease;
+    }
+
+    .link-card:hover {
+      transform: translateY(-3px);
+      box-shadow: 0 8px 20px rgba(0, 0, 0, 0.25);
+    }
+
+    body.light .link-card { background-color: #fafafa; color: #000000; }
+    body.dark .link-card { background-color: #232323; color: #ffffff; }
+
+    .link-card-thumb {
+      width: 100%;
+      aspect-ratio: 16 / 9;
+      background-color: #333333;
+      background-image: linear-gradient(135deg, #2a2a2a, #4a4a4a);
+      background-size: cover;
+      background-position: center;
+    }
+
+    .link-card-body {
+      padding: 0.6rem 0.8rem 0.8rem;
+      display: flex;
+      flex-direction: column;
+      gap: 0.35rem;
+      flex: 1;
+    }
+
+    .link-card-title {
+      font-size: 0.95rem;
+      font-weight: 700;
+      line-height: 1.3;
+      color: inherit;
+    }
+
+    .link-card-readmore {
+      font-size: 0.8rem;
+      font-weight: 600;
+    }
+
+    body.light .link-card-readmore { color: #1a6fb0; }
+    body.dark .link-card-readmore { color: #6cb6f5; }
+
+    @media (max-width: 560px) {
+      .card-grid { grid-template-columns: 1fr; }
+    }
+
+    /* List View -- plain title / links-row / full-thumbnail markup, matching
+       how a Hive-sourced "Thumbnail View" chapter (e.g. mes.fm/hutchison's
+       Cold Fusion section) already renders each entry: <h2> title, a <p> link
+       row, then the full (uncropped) image. */
+    .playlist-list-view {
+      margin: 0 0 0.4em;
+    }
+
+    .playlist-list-view h2 {
+      font-size: 1.15em;
+      margin: 1.4em 0 0.3em;
+    }
+
+    .playlist-list-view h2:first-child {
+      margin-top: 0;
+    }
+
+    .playlist-list-view p {
+      margin: 0 0 0.6em;
+    }
+
+    .playlist-row-thumb {
+      display: block;
+      max-width: 100%;
+      height: auto;
+      border-radius: 4px;
+      margin: 0 0 1.2em;
+    }
+
+    /* Must come after .card-grid/.playlist-list-view above: same specificity
+       (single class), so source order decides the tie -- this needs to win. */
+    .view-hidden {
+      display: none;
+    }
+
+    /* Table of contents: a fixed side column on wide viewports, collapsing to a
+       <details> dropdown above the article on anything narrower. */
+    .toc-sidebar {
+      display: none;
+    }
+
+    @media (min-width: 1300px) {
+      .toc-sidebar {
+        display: block;
+        position: fixed;
+        top: 90px;
+        left: calc(50% + 410px);
+        width: 210px;
+        max-height: calc(100vh - 120px);
+        overflow-y: auto;
+        font-size: calc(0.85rem * var(--ts, 1));
+        padding-right: 10px;
+        scrollbar-width: thin;
+        scrollbar-color: rgba(128, 128, 128, 0.4) transparent;
+      }
+
+      /* toc-sidebar-scrollbar */
+      .toc-sidebar::-webkit-scrollbar {
+        width: 6px;
+      }
+
+      .toc-sidebar::-webkit-scrollbar-track {
+        background: transparent;
+      }
+
+      .toc-sidebar::-webkit-scrollbar-thumb {
+        background: rgba(128, 128, 128, 0.4);
+        border-radius: 3px;
+      }
+
+      .toc-sidebar-header {
+        display: flex;
+        align-items: baseline;
+        justify-content: space-between;
+        gap: 0.6em;
+        margin: 0 0 0.7em;
+      }
+
+      .toc-sidebar .toc-title {
+        font-size: 0.75em;
+        text-transform: uppercase;
+        letter-spacing: 0.05em;
+        opacity: 0.6;
+        margin: 0;
+      }
+
+      .toc-collapse-all-btn {
+        font-size: 0.8em;
+        opacity: 0.65;
+        background: none;
+        border: none;
+        padding: 0;
+        margin: 0;
+        cursor: pointer;
+        text-decoration: underline;
+        color: inherit;
+        font-family: inherit;
+        white-space: nowrap;
+      }
+
+      .toc-collapse-all-btn:hover {
+        opacity: 1;
+      }
+
+      .toc-sidebar a {
+        display: block;
+        padding: 0.3em 0;
+        opacity: 0.85;
+        text-decoration: none;
+      }
+
+      .toc-sidebar a:hover {
+        opacity: 1;
+        text-decoration: underline;
+      }
+
+      /* "## " sub-chapters (e.g. each Problem) nested under their chapter */
+      .toc-sidebar a.toc-sub {
+        padding-left: 1em;
+        font-size: 0.92em;
+      }
+    }
+
+    .toc-mobile {
+      margin: 1.2em 0;
+    }
+
+    @media (min-width: 1300px) {
+      .toc-mobile {
+        display: none;
+      }
+    }
+
+    .toc-mobile { font-size: calc(1rem * var(--ts, 1)); }
+
+    .toc-mobile summary {
+      cursor: pointer;
+      font-weight: bold;
+      padding: 0.6em 0.9em;
+      border: 1px solid rgba(128, 128, 128, 0.4);
+      border-radius: 6px;
+    }
+
+    .toc-mobile .toc-links {
+      display: flex;
+      flex-direction: column;
+      gap: 0.4em;
+      padding: 0.8em 0.9em 0.2em;
+    }
+
+    .toc-mobile a {
+      text-decoration: none;
+      opacity: 0.9;
+    }
+
+    .toc-mobile a:hover {
+      text-decoration: underline;
+    }
+
+    .toc-mobile a.toc-sub {
+      padding-left: 1em;
+      font-size: 0.92em;
+    }
+
     @media (max-width: 600px) {
-      h1 { font-size: 1.4em; }
+      h1 { font-size: 1.5em; }
       body { padding: 0 12px 40px; }
     }
-
-    .lightbox-zoom-controls {
-      position: fixed;
-      top: 16px;
-      left: 16px;
-      display: flex;
-      align-items: center;
-      gap: 6px;
-      z-index: 2147483647;
-    }
-
-    .lightbox-zoom-btn {
-      width: 40px;
-      height: 40px;
-      border-radius: 50%;
-      background: rgba(0, 0, 0, 0.7);
-      color: #ffffff;
-      border: 0;
-      cursor: pointer;
-      font-size: 1.2em;
-      font-weight: 700;
-      display: inline-flex;
-      align-items: center;
-      justify-content: center;
-    }
-
-    .lightbox-zoom-btn:hover {
-      background: rgba(0, 0, 0, 0.85);
-    }
-
-    .lightbox-zoom-btn:disabled {
-      opacity: 0.4;
-      cursor: default;
-    }
-
-    .lightbox-zoom-level {
-      min-width: 3.4em;
-      text-align: center;
-      background: rgba(0, 0, 0, 0.7);
-      color: #ffffff;
-      font-size: 0.8em;
-      padding: 5px 8px;
-      border-radius: 999px;
-    }
-
-    #lightboxImage {
-      transition: transform 0.15s ease;
-    }
-
-    #lightboxImage.zoomed {
-      cursor: grab;
-    }
-
-    #lightboxImage.dragging {
-      cursor: grabbing;
-      transition: none;
-    }
-
-    @media (max-width: 600px) {
-      .lightbox-zoom-btn { width: 36px; height: 36px; font-size: 1.05em; }
-    }
-
-    /* "Part of" strip under the nav bar: links back to the full main article
-       page (playlist + written notes) at this problem's section. */
-    .part-of { margin: 14px 0 0; padding: 0.55em 0.9em; border-radius: 6px; font-size: 0.9em; border: 1px solid rgba(128, 128, 128, 0.4); }
-    .part-of a { font-weight: bold; }
-
-    /* Text-size control (--ts, set by the header A-/A+ buttons): only prose,
-       the byline and the video timestamps scale -- headings, buttons and the
-       video stay fixed. rem so nested lists don't compound. */
-    .container article :is(p, li, blockquote):not(.video-embed *) { font-size: calc(1rem * var(--ts, 1)); }
-    .container article .timestamps li { font-size: calc(0.92rem * var(--ts, 1)); }
-    .container article .written-solution .ws-note { font-size: calc(0.85rem * var(--ts, 1)); }
-    .page-subtitle { font-size: calc(0.85rem * var(--ts, 1)); }
-  /* Site footer -- same links/markup as mes.fm/math and mes.fm/911, in
+  /* RESPONSIVE-FIX-INSERTED */
+@media (max-width: 768px) {
+  .outer-container { width: 100% !important; margin: 0 !important; }
+  .outer-page-content { width: 100% !important; display: block !important; }
+  .side-bar { width: 100% !important; float: none !important; }
+  .page-box { width: auto !important; display: block !important; margin: 0 auto 0.5em auto !important; }
+  img { max-width: 100% !important; height: auto !important; }
+  table { max-width: 100% !important; }
+}
+/* Site footer -- same links/markup as mes.fm/math and mes.fm/911, in
        this page family's own blue accent (#277bb6, matching .hamburger-btn/
        .info-bar above) and sized to this family's 760px .container (911
        uses 1180px for its own wider card-grid page). */
@@ -580,14 +815,123 @@
       .header-controls { position: absolute; right: 8px; bottom: 0; margin-left: 0; }
       body.is-stuck .header-controls { bottom: auto; }
     }
-    .pdf-actions { display: flex; flex-wrap: wrap; gap: 0.6em; margin: 1em 0; }
-    .pdf-btn { display: inline-block; padding: 0.7em 1.2em; border-radius: 8px; font-weight: 700; text-decoration: none; border: 2px solid #1a73e8; background: #1a73e8; color: #fff !important; }
-    .pdf-btn.alt { background: transparent; color: #1a73e8 !important; }
-    body.dark .pdf-btn.alt { color: #8ab4f8 !important; border-color: #8ab4f8; }
-    .pdf-wrap { margin: 1em 0 1.4em; border: 1px solid rgba(128,128,128,0.4); border-radius: 8px; overflow: hidden; background: #fff; }
-    .pdf-frame { display: block; width: 100%; height: 85vh; min-height: 480px; border: 0; }
-    .pdf-fallback { padding: 2em 1em; text-align: center; color: #333; }
-    @media (max-width: 700px) { .pdf-frame { height: 70vh; } }
+    /* LIGHTBOX-ZOOM-INSERTED */
+    .lightbox-zoom-controls {
+      position: fixed;
+      top: 16px;
+      left: 16px;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      z-index: 2147483647;
+    }
+
+    .lightbox-zoom-btn {
+      width: 40px;
+      height: 40px;
+      border-radius: 50%;
+      background: rgba(0, 0, 0, 0.7);
+      color: #ffffff;
+      border: 0;
+      cursor: pointer;
+      font-size: 1.2em;
+      font-weight: 700;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .lightbox-zoom-btn:hover {
+      background: rgba(0, 0, 0, 0.85);
+    }
+
+    .lightbox-zoom-btn:disabled {
+      opacity: 0.4;
+      cursor: default;
+    }
+
+    .lightbox-zoom-level {
+      min-width: 3.4em;
+      text-align: center;
+      background: rgba(0, 0, 0, 0.7);
+      color: #ffffff;
+      font-size: 0.8em;
+      padding: 5px 8px;
+      border-radius: 999px;
+    }
+
+    #lightboxImage {
+      transition: transform 0.15s ease;
+    }
+
+    #lightboxImage.zoomed {
+      cursor: grab;
+    }
+
+    #lightboxImage.dragging {
+      cursor: grabbing;
+      transition: none;
+    }
+
+    @media (max-width: 600px) {
+      .lightbox-zoom-btn { width: 36px; height: 36px; font-size: 1.05em; }
+    }
+/* "Open in:" preferred-site switch + per-card site icon (shared/link-pref.mjs, main_js/link-pref.js). */
+.lp-row { display: flex; flex-wrap: wrap; align-items: flex-start; column-gap: 1em; }
+.lp-row > .ls-chips { flex: 1 1 22em; }
+.lp-row--solo { margin: 0 0 0.6em; }
+.lp { display: flex; flex-wrap: wrap; align-items: center; gap: 0.3em; margin: 0.7em 0 0 auto; font-size: 0.85em; }
+.lp-lbl { color: #555; margin-right: 0.15em; }
+.lp button {
+  font: inherit; cursor: pointer; display: inline-flex; align-items: center; gap: 0.3em; min-height: 2.2em;
+  padding: 0.3em 0.65em; border-radius: 1.2em; border: 1px solid #c3c9d2; background: #fff; color: #333;
+}
+.lp button:hover { border-color: #277bb6; color: #1a6fb0; }
+.lp button:focus-visible { outline: 2px solid #277bb6; outline-offset: 2px; }
+.lp button[aria-pressed="true"] { background: #277bb6; border-color: #277bb6; color: #fff; }
+.lp button.lp-few:not([aria-pressed="true"]) { color: #6a7280; border-style: dashed; }
+.lp-n { font-size: 0.85em; font-variant-numeric: tabular-nums; }
+.lp-ic {
+  display: inline-block; flex: none; width: 1.15em; height: 1.15em; vertical-align: -0.2em; background: currentColor;
+  -webkit-mask: var(--lp-i) center / contain no-repeat; mask: var(--lp-i) center / contain no-repeat;
+}
+/* the pages' CSS reset paints every span / a #333: take the button's / caption's colour instead */
+.lp button span, .lp-a .lp-ic, .lp-a .lp-name { color: inherit; }
+.link-card-readmore .lp-ic { margin-right: 0.3em; }
+.list-row h3 .lp-a { color: inherit; text-decoration: none; }
+.list-row h3 .lp-a:hover { text-decoration: underline; }
+.list-row h3 .lp-ic { width: 0.85em; height: 0.85em; margin-left: 0.35em; vertical-align: -0.05em; opacity: 0.75; }
+.lp-ic[data-s="mes"] { --lp-i: url("data:image/svg+xml,%3Csvg%20xmlns%3D'http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg'%20viewBox%3D'0%200%2024%2024'%3E%3Cpath%20fill-rule%3D'evenodd'%20d%3D'M1%2012.6%204.6%2010.6%208.6%2017.4%2014.6%201.8H23.2V4.8H16.6L10%2022.4H7.4z'%2F%3E%3C%2Fsvg%3E"); }
+.lp-ic[data-s="youtube"] { --lp-i: url("data:image/svg+xml,%3Csvg%20xmlns%3D'http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg'%20viewBox%3D'0%200%2024%2024'%3E%3Cpath%20fill-rule%3D'evenodd'%20d%3D'M23%207.2a3%203%200%200%200-2.1-2.1C19%204.6%2012%204.6%2012%204.6s-7%200-8.9.5A3%203%200%200%200%201%207.2C.5%209.1.5%2012%20.5%2012s0%202.9.5%204.8a3%203%200%200%200%202.1%202.1c1.9.5%208.9.5%208.9.5s7%200%208.9-.5a3%203%200%200%200%202.1-2.1c.5-1.9.5-4.8.5-4.8s0-2.9-.5-4.8zM9.7%2015.4V8.6l5.9%203.4z'%2F%3E%3C%2Fsvg%3E"); }
+.lp-ic[data-s="hive"] { --lp-i: url("data:image/svg+xml,%3Csvg%20xmlns%3D'http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg'%20viewBox%3D'0%200%2024%2024'%3E%3Cpath%20fill-rule%3D'evenodd'%20d%3D'M6.8%202.5h10.4L22.5%2012l-5.3%209.5H6.8L1.5%2012zM9%206.5%206.3%2012%209%2017.5h6l2.7-5.5L15%206.5z'%2F%3E%3C%2Fsvg%3E"); }
+.lp-ic[data-s="3speak"] { --lp-i: url("data:image/svg+xml,%3Csvg%20xmlns%3D'http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg'%20viewBox%3D'0%200%2024%2024'%3E%3Cpath%20fill-rule%3D'evenodd'%20d%3D'M12%201.5a10.5%2010.5%200%201%201%200%2021%2010.5%2010.5%200%200%201%200-21zM9.5%207.5v9l7-4.5z'%2F%3E%3C%2Fsvg%3E"); }
+.lp-ic[data-s="rumble"] { --lp-i: url("data:image/svg+xml,%3Csvg%20xmlns%3D'http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg'%20viewBox%3D'0%200%2024%2024'%3E%3Cpath%20fill-rule%3D'evenodd'%20d%3D'M5%203.8c0-1.6%201.7-2.5%203-1.6l12.4%208.2c1.2.8%201.2%202.4%200%203.2L8%2021.8c-1.3.9-3-.1-3-1.6zM8.6%208.5v7l5.4-3.5z'%2F%3E%3C%2Fsvg%3E"); }
+.lp-ic[data-s="odysee"] { --lp-i: url("data:image/svg+xml,%3Csvg%20xmlns%3D'http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg'%20viewBox%3D'0%200%2024%2024'%3E%3Cpath%20fill-rule%3D'evenodd'%20d%3D'M12%201.5a10.5%2010.5%200%201%201%200%2021%2010.5%2010.5%200%200%201%200-21zM12%206a6%206%200%201%200%200%2012%206%206%200%200%200%200-12z'%2F%3E%3C%2Fsvg%3E"); }
+.lp-ic[data-s="x"] { --lp-i: url("data:image/svg+xml,%3Csvg%20xmlns%3D'http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg'%20viewBox%3D'0%200%2024%2024'%3E%3Cpath%20fill-rule%3D'evenodd'%20d%3D'M3%203h5.4l4.2%205.9L17.7%203h3l-6.7%207.7L21.5%2021h-5.4l-4.6-6.4L5.9%2021H3l7.2-8.3z'%2F%3E%3C%2Fsvg%3E"); }
+.lp-ic[data-s="bitchute"] { --lp-i: url("data:image/svg+xml,%3Csvg%20xmlns%3D'http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg'%20viewBox%3D'0%200%2024%2024'%3E%3Cpath%20fill-rule%3D'evenodd'%20d%3D'M3%203h18v18H3zM8%206.5v11h5.3c2.2%200%203.7-1.2%203.7-3.1%200-1.4-.8-2.4-2.1-2.7%201-.4%201.6-1.3%201.6-2.4%200-1.8-1.4-2.8-3.5-2.8zM10.6%208.6h2.1c.9%200%201.4.4%201.4%201.1s-.5%201.2-1.4%201.2h-2.1zm0%204.2h2.4c1%200%201.5.5%201.5%201.2%200%20.8-.6%201.3-1.5%201.3h-2.4z'%2F%3E%3C%2Fsvg%3E"); }
+.lp-ic[data-s="telegram"] { --lp-i: url("data:image/svg+xml,%3Csvg%20xmlns%3D'http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg'%20viewBox%3D'0%200%2024%2024'%3E%3Cpath%20fill-rule%3D'evenodd'%20d%3D'M1.5%2011.2%2021.6%203.3c.9-.3%201.7.3%201.4%201.7l-3.4%2016c-.2%201.1-.9%201.4-1.8.9l-5-3.7-2.4%202.3c-.3.3-.5.5-1%20.5l.4-5.1%209.3-8.4c.4-.4-.1-.6-.6-.2L6.9%2014.6%202%2013.1c-1.1-.3-1.1-1.1.5-1.9z'%2F%3E%3C%2Fsvg%3E"); }
+.lp-ic[data-s="twitch"] { --lp-i: url("data:image/svg+xml,%3Csvg%20xmlns%3D'http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg'%20viewBox%3D'0%200%2024%2024'%3E%3Cpath%20fill-rule%3D'evenodd'%20d%3D'M4%202%202.5%206v14h5v2.5h2.8L13%2020h4l5-5V2zm16%2012-3%203h-4.5L10%2019.5V17H6V4h14zM15%207h2v5h-2zm-5%200h2v5h-2z'%2F%3E%3C%2Fsvg%3E"); }
+body.dark-mode .lp-lbl, body.dark .lp-lbl { color: #bbb; }
+body.dark-mode .list-row h3 .lp-a, body.dark .list-row h3 .lp-a { color: inherit; }
+body.dark-mode .lp button, body.dark .lp button { background: #2a2a2a; color: #ddd; border-color: #555; }
+body.dark-mode .lp button:hover, body.dark .lp button:hover { border-color: #6cb6f5; color: #6cb6f5; }
+body.dark-mode .lp button[aria-pressed="true"], body.dark .lp button[aria-pressed="true"] { background: #6cb6f5; border-color: #6cb6f5; color: #111; }
+body.dark-mode .lp button.lp-few:not([aria-pressed="true"]), body.dark .lp button.lp-few:not([aria-pressed="true"]) { color: #a3abb8; }
+body.dark-mode .lp button:focus-visible, body.dark .lp button:focus-visible { outline-color: #6cb6f5; }
+.playlist-list-view h2 .lp-a { color: inherit; text-decoration: none; }
+.playlist-list-view h2 .lp-a:hover { text-decoration: underline; }
+.playlist-list-view h2 .lp-ic { width: 0.7em; height: 0.7em; margin-left: 0.35em; vertical-align: 0; opacity: 0.75; }
+
+    /* ---- EM 304 / Columbia page (build_em304_article.py) ---- */
+    .pdf-box { display: flex; align-items: center; gap: 0.9em; flex-wrap: wrap; margin: 1em 0 1.3em; padding: 0.75em 1em; border: 1px solid rgba(39,123,182,0.45); border-left: 5px solid #277bb6; border-radius: 0 8px 8px 0; background: rgba(39,123,182,0.07); }
+    .pdf-box img { width: 96px; height: auto; border-radius: 4px; border: 1px solid rgba(0,0,0,0.15); margin: 0; }
+    .pdf-box .pdf-box-text { flex: 1 1 14em; min-width: 0; }
+    .pdf-box .pdf-box-title { display: block; font-weight: 700; margin-bottom: 0.25em; }
+    .pdf-box a.pdf-box-link { display: inline-block; margin: 0.15em 1.1em 0.15em 0; font-weight: 600; }
+    body.dark .pdf-box { background: rgba(108,182,245,0.08); border-color: rgba(108,182,245,0.4); border-left-color: #6cb6f5; }
+    body.dark .pdf-box img { border-color: rgba(255,255,255,0.2); }
+    .post-body a.ts-link { font-variant-numeric: tabular-nums; font-weight: 600; }
+    .post-body { overflow-wrap: anywhere; }
 </style>
   <!-- ADSENSE-DEFERRED: load adsbygoogle.js (auto ads + consent) on the first
      real interaction (scroll / pointer / key), or after a 15s idle fallback,
@@ -611,14 +955,14 @@
       setTimeout(go, 15000);
     })();
     </script>
-<!-- MES-ASIDE-HEAD --><link rel="stylesheet" href="/main_js/aside.css?v=2"><script>try{if(localStorage.getItem('asideSide')==='left')document.documentElement.classList.add('aside-left')}catch(e){}try{if(localStorage.getItem('pageWide')==='1')document.documentElement.classList.add('page-wide')}catch(e){}try{if(localStorage.getItem('pageMode')==='theatre')document.documentElement.classList.add('page-theatre')}catch(e){}try{if(localStorage.getItem('asideHidden')==='1')document.documentElement.classList.add('aside-hidden')}catch(e){}</script><!-- /MES-ASIDE-HEAD --></head>
+<!-- TOC-FLIP-HEAD --><link rel="stylesheet" href="/main_js/toc-flip.css?v=5"><script>try{var L=localStorage,H=document.documentElement.classList;if(L.getItem('asideSide')==='left')H.add('aside-left');if(L.getItem('pageWide')==='1')H.add('page-wide');if(L.getItem('pageMode')==='theatre')H.add('page-theatre');if(L.getItem('tocHidden')==='1')H.add('toc-hidden')}catch(e){}</script><!-- /TOC-FLIP-HEAD -->
+<!-- JUMP-ASIDE --><link rel="stylesheet" href="/main_js/jump-aside.css?v=1"><!-- /JUMP-ASIDE --></head>
 <body class="dark">
 
   <div id="compact-nav" aria-hidden="true" style="display:none">
-  <a href="/" tabindex="-1"><img class="compact-nav-logo" alt="" width="32" height="32" src="https://mes.fm/img/logo-mark.png"></a>
-  <a class="compact-nav-title" href="/" tabindex="-1">MES.fm</a>
+  <a href="/math" tabindex="-1"><img class="compact-nav-logo" alt="" width="32" height="32" src="https://mes.fm/img/logo-mark.png"></a>
+  <a class="compact-nav-title" href="/math" tabindex="-1">MES Math Tutorials</a>
   <ul class="compact-nav-links">
-    <li><a href="/math" tabindex="-1">Math Tutorials</a></li>
     <li><a href="/calculators" tabindex="-1">Calculators</a></li>
     <li><a href="/tools" tabindex="-1">Tools</a></li>
     <li><a href="/mobile-apps" tabindex="-1">Mobile Apps</a></li>
@@ -629,12 +973,33 @@
 </div>
 
 
-
-  <div class="container has-aside">
+  <nav class="toc-sidebar" aria-label="Table of contents">
+    <div class="toc-sidebar-header">
+      <div class="toc-title">Jump to</div>
+      <button type="button" class="toc-collapse-all-btn toggle-all-chapters-btn" onclick="toggleAllChapters()">Collapse All</button>
+    </div>
+      <a href="#overview">Full Video</a>
+      <a href="#introduction-em-304-test-problem-1">Introduction: EM 304 Test Problem 1</a>
+      <a href="#topics-to-cover">Topics to Cover</a>
+      <a href="#live-footage-of-the-space-shuttle-columbia-disaster">Live Footage of the Space Shuttle Columbia Disaster</a>
+      <a href="#problem-1-of-em-304-test-1-february-6-2003">Problem 1 of EM 304 – Test #1 – February 6, 2003</a>
+      <a class="toc-sub" href="#solution-review-of-mechanics-of-materials">Solution: Review of Mechanics of Materials</a>
+      <a class="toc-sub" href="#solution-to-part-a-maximum-temperature-without-failure">Solution to Part (a): Maximum temperature without failure</a>
+      <a class="toc-sub" href="#solution-to-part-b-where-it-fails-first">Solution to part (b): Where it fails first</a>
+      <a class="toc-sub" href="#solution-to-part-c-stress-state-at-the-failure-temperature">Solution to part (c): Stress state at the failure temperature</a>
+      <a class="toc-sub" href="#solution-to-part-d-volume-element-sketches">Solution to part (d): Volume-element sketches</a>
+      <a class="toc-sub" href="#summary-of-the-engineering-logic">Summary of the Engineering Logic</a>
+      <a href="#dr-judy-wood-solved-the-space-shuttle-columbia-disaster-right-away">Dr. Judy Wood solved the Space Shuttle Columbia Disaster right away!</a>
+      <a class="toc-sub" href="#caib-investigator-scott-hubbard-april-15-2003-presentation-confirmed-dr-judy-wood-s-analysis">CAIB Investigator Scott Hubbard April 15, 2003 presentation confirmed Dr. Judy Wood&#x27;s analysis</a>
+      <a href="#space-shuttle-columbia-disaster">Space Shuttle Columbia Disaster</a>
+      <a class="toc-sub" href="#cnn-anchor-judy-woodruff-transcript-of-cnn-s-february-6-2003-live-columbia-memorial">CNN Anchor Judy Woodruff transcript of CNN&#x27;s February 6, 2003 Live Columbia Memorial</a>
+      <a class="toc-sub" href="#grok-ai-list-of-controversies-surrounding-the-disaster">Grok AI List of Controversies Surrounding the Disaster</a>
+  </nav>
+  <div class="container">
     <div class="top-bar">
       <div class="site-brand">
-        <a class="site-brand-logo-link" href="/"><img class="site-brand-logo" src="/img/logo-mark.png" width="88" height="88" alt="MES.fm logo"></a>
-        <div class="site-brand-text"><a class="site-brand-title" href="/">MES.fm</a><p class="site-brand-tag">Videos, tutorials, calculators and research by Math Easy Solutions.</p></div>
+        <a class="site-brand-logo-link" href="/math"><img class="site-brand-logo" src="https://mes.fm/img/logo-mark.png" width="88" height="88" alt="MES Math Tutorials logo"></a>
+        <div class="site-brand-text"><a class="site-brand-title" href="/math">MES Math Tutorials</a><p class="site-brand-tag">Free math tutorials by Math Easy Solutions.</p></div>
       </div>
       <div class="header-controls">
         <button id="textSizeDown" class="header-icon-btn" type="button" aria-label="Decrease text size" title="Decrease text size">A&minus;</button>
@@ -682,33 +1047,663 @@
         <li class="info-bar__item info-bar__item--mes"><a class="info-bar__item__text" href="/" style="font-weight:bold;">MES.fm</a></li>
       </ul>
     </div>
-    <!-- MES-COLS-START --><div class="mes-cols"><div class="mes-col-main"><div class="part-of">Part of <a href="/science">MES Science</a></div>
 
-    <h1>Space Shuttle Columbia Disaster Test Problem by Dr. Judy Wood</h1>
-    <div class="page-subtitle">EM 304 (Engineering Mechanics), Clemson University &middot; test given February 6, 2003</div>
+    <h1>Exam Problem by Dr. Judy Wood: Space Shuttle Columbia Disaster</h1>
+    <div class="post-meta">
+      <span>By mes</span>
+      <span>October 30, 2026</span>
+      <span>44 votes</span>
+      <span>1 comments</span>
+      <span>1 reblogs</span>
+    </div>
+    <a class="peakd-link" href="https://peakd.com/hive-128780/@mes/exam-problem-by-dr-judy-woo-59" target="_blank" rel="noopener">Originally published on Hive &rarr;</a>
 
-    <article>
-<p>This is the test problem on the <b>Space Shuttle Columbia disaster</b> that <b>Dr. Judy Wood</b> gave her students in <b>EM 304 at Clemson University</b> (EM stands for <b>Engineering Mechanics</b>, the mechanics of engineering structures and machines: forces, equilibrium, stresses and motion) on <b>February 6, 2003</b>, just five days after Columbia was lost on <b>February 1, 2003</b>.</p>
-<p>The PDF (6 pages, starting with the EM 304 Test #1 cover page) is shown below. You can also download it, or use the alternative OneDrive link if you prefer.</p>
-<div class="pdf-actions"><a class="pdf-btn" href="/em-304-problem-1-judy-wood/space-shuttle-columbia-test-problem-judy-wood.pdf" download>Download the PDF</a><a class="pdf-btn alt" href="https://1drv.ms/b/c/88862ef47bcaf6cd/IQAQX2EbxWr_RbAMFBCkcW8uAUIElk-X46QL_S4JXPuLDj0?e=R0Arkl" target="_blank" rel="noopener">Alternative download (OneDrive)</a><a class="pdf-btn alt" href="/em-304-problem-1-judy-wood/space-shuttle-columbia-test-problem-judy-wood.pdf" target="_blank" rel="noopener">Open it full screen</a></div>
-<div class="pdf-wrap"><object class="pdf-frame" data="/em-304-problem-1-judy-wood/space-shuttle-columbia-test-problem-judy-wood.pdf#view=FitH" type="application/pdf" aria-label="Space Shuttle Columbia test problem (PDF)"><div class="pdf-fallback"><p>Your browser cannot show a PDF inside the page.</p><p><a class="pdf-btn" href="/em-304-problem-1-judy-wood/space-shuttle-columbia-test-problem-judy-wood.pdf">Open the PDF</a></p></div></object></div>
-<h2>About this page</h2>
-<p>Space Shuttle Columbia (mission STS-107) broke apart during re-entry on February 1, 2003, and all seven crew members were lost. For the background, see the <a href="https://en.wikipedia.org/wiki/Space_Shuttle_Columbia_disaster" target="_blank" rel="noopener">Wikipedia article on the Space Shuttle Columbia disaster</a>.</p>
-<p>The test was set for the course EM 304 at Clemson University, which Dr. Wood taught. <b>EM</b> is the course prefix for <b>Engineering Mechanics</b>: the applied mechanics that engineers use to analyse structures, machines and materials under load. The cover page of the test reminds students to draw free-body diagrams and show their equilibrium equations.</p>
-    </article>
+    <details class="toc-mobile">
+      <summary>Jump to section</summary>
+      <nav class="toc-links" aria-label="Table of contents">
+      <a href="#overview">Full Video</a>
+      <a href="#introduction-em-304-test-problem-1">Introduction: EM 304 Test Problem 1</a>
+      <a href="#topics-to-cover">Topics to Cover</a>
+      <a href="#live-footage-of-the-space-shuttle-columbia-disaster">Live Footage of the Space Shuttle Columbia Disaster</a>
+      <a href="#problem-1-of-em-304-test-1-february-6-2003">Problem 1 of EM 304 – Test #1 – February 6, 2003</a>
+      <a class="toc-sub" href="#solution-review-of-mechanics-of-materials">Solution: Review of Mechanics of Materials</a>
+      <a class="toc-sub" href="#solution-to-part-a-maximum-temperature-without-failure">Solution to Part (a): Maximum temperature without failure</a>
+      <a class="toc-sub" href="#solution-to-part-b-where-it-fails-first">Solution to part (b): Where it fails first</a>
+      <a class="toc-sub" href="#solution-to-part-c-stress-state-at-the-failure-temperature">Solution to part (c): Stress state at the failure temperature</a>
+      <a class="toc-sub" href="#solution-to-part-d-volume-element-sketches">Solution to part (d): Volume-element sketches</a>
+      <a class="toc-sub" href="#summary-of-the-engineering-logic">Summary of the Engineering Logic</a>
+      <a href="#dr-judy-wood-solved-the-space-shuttle-columbia-disaster-right-away">Dr. Judy Wood solved the Space Shuttle Columbia Disaster right away!</a>
+      <a class="toc-sub" href="#caib-investigator-scott-hubbard-april-15-2003-presentation-confirmed-dr-judy-wood-s-analysis">CAIB Investigator Scott Hubbard April 15, 2003 presentation confirmed Dr. Judy Wood&#x27;s analysis</a>
+      <a href="#space-shuttle-columbia-disaster">Space Shuttle Columbia Disaster</a>
+      <a class="toc-sub" href="#cnn-anchor-judy-woodruff-transcript-of-cnn-s-february-6-2003-live-columbia-memorial">CNN Anchor Judy Woodruff transcript of CNN&#x27;s February 6, 2003 Live Columbia Memorial</a>
+      <a class="toc-sub" href="#grok-ai-list-of-controversies-surrounding-the-disaster">Grok AI List of Controversies Surrounding the Disaster</a>
+      </nav>
+    </details>
+
+    <hr>
+
+    <div class="post-body">
+<div class="chapters-toolbar">
+<button id="toggleAllChaptersBtn" class="theme-toggle-btn toggle-all-chapters-btn" onclick="toggleAllChapters()">Collapse All</button>
+</div>
+<div class="chapter-toggle" id="overview">
+<h2 class="chapter-toggle-header chapter-top" onclick="toggleChapter('overview-list')"><center>Full Video <span id="arrowIcon-overview-list" class="arrow-icon">&#9660;</span></center></h2>
+<div id="overview-list" class="chapter-toggle-list"><div class="video-embed" id="emVideoEmbed" google-side-rail-overlap="false"><video id="speak-video-1" controls playsinline preload="metadata" poster="https://images.3speak.tv/images/1793338697652-09f1672ac6a230fc.webp"></video><button class="theater-toggle-btn wide-toggle-btn" type="button" aria-pressed="false" style="top:46px;">Wide View</button><button class="theater-toggle-btn" type="button" aria-pressed="false" style="top:82px;">Theater Mode</button><a class="video-badge" href="https://3speak.tv/watch?v=mes/ta0jgic7" target="_blank" rel="noopener">View on 3Speak &nearr;</a></div>
+<div class="pdf-box"><a href="/em-304-problem-1-judy-wood/space-shuttle-columbia-test-problem-judy-wood.pdf"><img src="/em-304-problem-1-judy-wood/preview.jpg" width="96" height="50" alt="First page of the test"></a><div class="pdf-box-text"><span class="pdf-box-title">The original test (PDF)</span><a class="pdf-box-link" href="/em-304-problem-1-judy-wood/space-shuttle-columbia-test-problem-judy-wood.pdf">View Dr. Judy Wood's test (PDF)</a><a class="pdf-box-link" href="https://mes.fm/space-shuttle-columbia-pdf">These notes as a PDF</a></div></div>
+<p>In this video, I go over an exam problem that Dr. Judy Wood gave her Mechanics of Materials class on February 6, 2003, in which she solved the cause of the Space Shuttle Columbia disaster that had occurred just 5 days prior. After seeing the news coverage of the disaster, which had also shown footage of the left wing being hit weeks prior on January 16 during takeoff, Dr. Judy Wood turned it into a classic thermal expansion problem. Assuming a thermal tile was broken off from the debris impact, the aluminum tube connecting the top and bottom support plates of the left wing would thus be exposed to high temperature during re-entry. As the aluminum tube wants to expand, it is prevented from doing so by the support plates, thus producing a compressive force in the tube. This compressive force also acts as bearing stress and shear stress on the plate. The problem involves finding the location of failure, deduced from the lowest temperature to failure. Months later, the Columbia Accident Investigation Board (CAIB) came to the same conclusion as Dr. Judy Wood, even experimentally validating it too with a test foam strike. Her students then gave her the nickname &quot;The Disaster Queen&quot;!</p>
+<p>Later in this video, I cover the Space Shuttle Columbia disaster and some of the controversial aspects of the disaster, including possible knowledge or carelessness on investigating the left wing damage during the life of the flight.</p>
+<p><a href="https://mes.fm/em-304-problem-1-judy-wood">MES</a> - <a href="https://3speak.tv/@mes/exam-problem-by-dr-judy-woo-59">3Speak</a> - <a href="https://youtu.be/zNdifMfnqcs">YouTube</a> - <a href="https://mes.fm/space-shuttle-columbia-pdf">PDF Notes</a> <a href="https://www.youtube.com/playlist?list=PLEJOImrX4SIc">Playlist</a> - <a href="https://mes.fm/math">mes.fm/math</a></p>
+<h3>Timestamps</h3>
+<ul>
+<li><a class="ts-link" data-t="0" href="https://3speak.tv/watch?v=mes/exam-problem-by-dr-judy-woo-59">0:00</a> Intro</li>
+<li><a class="ts-link" data-t="139" href="https://3speak.tv/watch?v=mes/exam-problem-by-dr-judy-woo-59&t=139">2:19</a> Introduction: EM 304 Test Problem 1</li>
+<li><a class="ts-link" data-t="224" href="https://3speak.tv/watch?v=mes/exam-problem-by-dr-judy-woo-59&t=224">3:44</a> Topics to Cover</li>
+<li><a class="ts-link" data-t="403" href="https://3speak.tv/watch?v=mes/exam-problem-by-dr-judy-woo-59&t=403">6:43</a> Live Footage of the Space Shuttle Columbia Disaster</li>
+<li><a class="ts-link" data-t="688" href="https://3speak.tv/watch?v=mes/exam-problem-by-dr-judy-woo-59&t=688">11:28</a> Problem 1 of EM 304 – Test #1 – February 6, 2003</li>
+<li><a class="ts-link" data-t="1432" href="https://3speak.tv/watch?v=mes/exam-problem-by-dr-judy-woo-59&t=1432">23:52</a> Solution: Review of Mechanics of Materials</li>
+<li><a class="ts-link" data-t="1468" href="https://3speak.tv/watch?v=mes/exam-problem-by-dr-judy-woo-59&t=1468">24:28</a> Strain and thermal expansion</li>
+<li><a class="ts-link" data-t="1708" href="https://3speak.tv/watch?v=mes/exam-problem-by-dr-judy-woo-59&t=1708">28:28</a> 2014-T6 Aluminum Alloy</li>
+<li><a class="ts-link" data-t="1918" href="https://3speak.tv/watch?v=mes/exam-problem-by-dr-judy-woo-59&t=1918">31:58</a> Elastic Constants</li>
+<li><a class="ts-link" data-t="1990" href="https://3speak.tv/watch?v=mes/exam-problem-by-dr-judy-woo-59&t=1990">33:10</a> Young&#39;s modulus</li>
+<li><a class="ts-link" data-t="2015" href="https://3speak.tv/watch?v=mes/exam-problem-by-dr-judy-woo-59&t=2015">33:35</a> Stress</li>
+<li><a class="ts-link" data-t="2204" href="https://3speak.tv/watch?v=mes/exam-problem-by-dr-judy-woo-59&t=2204">36:44</a> Shear modulus</li>
+<li><a class="ts-link" data-t="2291" href="https://3speak.tv/watch?v=mes/exam-problem-by-dr-judy-woo-59&t=2291">38:11</a> Shear stress</li>
+<li><a class="ts-link" data-t="2409" href="https://3speak.tv/watch?v=mes/exam-problem-by-dr-judy-woo-59&t=2409">40:09</a> Poisson&#39;s ratio</li>
+<li><a class="ts-link" data-t="2665" href="https://3speak.tv/watch?v=mes/exam-problem-by-dr-judy-woo-59&t=2665">44:25</a> Thermal Expansion Properties of the Support Plates and Aluminum Tube</li>
+<li><a class="ts-link" data-t="2685" href="https://3speak.tv/watch?v=mes/exam-problem-by-dr-judy-woo-59&t=2685">44:45</a> Strength Limits (Allowable Stresses)</li>
+<li><a class="ts-link" data-t="2819" href="https://3speak.tv/watch?v=mes/exam-problem-by-dr-judy-woo-59&t=2819">46:59</a> MES Mechanics of Materials Calculator: <a href="https://mes.fm/materials">https://mes.fm/materials</a></li>
+<li><a class="ts-link" data-t="3081" href="https://3speak.tv/watch?v=mes/exam-problem-by-dr-judy-woo-59&t=3081">51:21</a> Solution to Part (a): Maximum temperature without failure</li>
+<li><a class="ts-link" data-t="3825" href="https://3speak.tv/watch?v=mes/exam-problem-by-dr-judy-woo-59&t=3825">1:03:45</a> Candidate 1: Aluminum tube in compression (point C)</li>
+<li><a class="ts-link" data-t="4114" href="https://3speak.tv/watch?v=mes/exam-problem-by-dr-judy-woo-59&t=4114">1:08:34</a> Candidate 2: Plate bearing at the tube end (point B)</li>
+<li><a class="ts-link" data-t="4337" href="https://3speak.tv/watch?v=mes/exam-problem-by-dr-judy-woo-59&t=4337">1:12:17</a> Candidate 3: Shear at the plate connection (point A)</li>
+<li><a class="ts-link" data-t="5400" href="https://3speak.tv/watch?v=mes/exam-problem-by-dr-judy-woo-59&t=5400">1:30:00</a> Solution to part (b): Where it fails first</li>
+<li><a class="ts-link" data-t="5462" href="https://3speak.tv/watch?v=mes/exam-problem-by-dr-judy-woo-59&t=5462">1:31:02</a> Solution to part (c): Stress state at the failure temperature</li>
+<li><a class="ts-link" data-t="5732" href="https://3speak.tv/watch?v=mes/exam-problem-by-dr-judy-woo-59&t=5732">1:35:32</a> Solution to part (d): Volume-element sketches</li>
+<li><a class="ts-link" data-t="6152" href="https://3speak.tv/watch?v=mes/exam-problem-by-dr-judy-woo-59&t=6152">1:42:32</a> Summary of the Engineering Logic</li>
+<li><a class="ts-link" data-t="6197" href="https://3speak.tv/watch?v=mes/exam-problem-by-dr-judy-woo-59&t=6197">1:43:17</a> Dr. Judy Wood solved the Space Shuttle Columbia Disaster right away!</li>
+<li><a class="ts-link" data-t="6720" href="https://3speak.tv/watch?v=mes/exam-problem-by-dr-judy-woo-59&t=6720">1:52:00</a> CAIB Investigator Scott Hubbard April 15, 2003 presentation confirmed Dr. Judy Wood&#39;s analysis</li>
+<li><a class="ts-link" data-t="7155" href="https://3speak.tv/watch?v=mes/exam-problem-by-dr-judy-woo-59&t=7155">1:59:15</a> Space Shuttle Columbia Disaster</li>
+<li><a class="ts-link" data-t="7841" href="https://3speak.tv/watch?v=mes/exam-problem-by-dr-judy-woo-59&t=7841">2:10:41</a> Columbia Accident Investigation Board (CAIB)</li>
+<li><a class="ts-link" data-t="8187" href="https://3speak.tv/watch?v=mes/exam-problem-by-dr-judy-woo-59&t=8187">2:16:27</a> CNN Anchor Judy Woodruff transcript of CNN&#39;s February 6, 2003 Live Columbia Memorial</li>
+<li><a class="ts-link" data-t="8249" href="https://3speak.tv/watch?v=mes/exam-problem-by-dr-judy-woo-59&t=8249">2:17:29</a> News footage of the Columbia disaster</li>
+<li><a class="ts-link" data-t="8387" href="https://3speak.tv/watch?v=mes/exam-problem-by-dr-judy-woo-59&t=8387">2:19:47</a> Grok AI List of Controversies Surrounding the Disaster</li>
+<li><a class="ts-link" data-t="8906" href="https://3speak.tv/watch?v=mes/exam-problem-by-dr-judy-woo-59&t=8906">2:28:26</a> Outro</li>
+</ul>
+<p><img src="https://images.3speak.tv/images/1793338697652-09f1672ac6a230fc.webp" alt="Space Shuttle Columbia.jpeg"></p>
+<p>#math #science #nasa #space #engineering </p>
+<hr>
+<h3>Links</h3>
+<p><a href="https://mes.fm/math">MES</a> - <a href="https://mes.fm/donate">Donate</a> - <a href="https://t.me/meslinks">Telegram</a> - MES Truth: @mestruth on <a href="https://3speak.tv/user/mestruth">Hive</a> &amp;  <a href="https://www.youtube.com/@mestruth">YouTube</a> - <a href="http://wheredidthetowersgo.com">Where Did the Towers Go? by Dr. Judy Wood</a></p>
+<ul>
+<li>Reuse of my videos: Feel free to make use of / re-upload / monetize my videos as long as you provide a link to the original video.</li>
+<li>Fight back against censorship: Bookmark sites/channels/accounts and check periodically. <a href="https://mes.fm/archive">Archive webpages</a> - <a href="https://mes.fm/hive-crypto-tutorial">Hive blockchain tutorial</a> </li>
+<li><a href="https://mes.fm/videospeed">Playback videos fast</a></li>
+</ul>
+</div>
+</div>
+<hr>
+<div class="chapter-toggle" id="introduction-em-304-test-problem-1">
+<h2 class="chapter-toggle-header chapter-top" onclick="toggleChapter('introduction-em-304-test-problem-1-list')"><center>Introduction: EM 304 Test Problem 1 <span id="arrowIcon-introduction-em-304-test-problem-1-list" class="arrow-icon">&#9660;</span></center></h2>
+<div id="introduction-em-304-test-problem-1-list" class="chapter-toggle-list"><p>This is a problem for Mechanics of Engineering course EM 304 that Dr. Judy Wood, author of the famous book <a href="http://wheredidthetowersgo.com">Where Did The Towers Go</a>, gave to her class in Clemson University on February 6, 2003. </p>
+<p>She has sent me the test problem and solutions key so that I can make this tutorial.</p>
+<ul>
+<li>View/download the PDF here: <a href="/em-304-problem-1-judy-wood/space-shuttle-columbia-test-problem-judy-wood.pdf">https://mes.fm/em-304-problem-1-judy-wood</a></li>
+<li>View these notes in article format: <a href="https://mes.fm/space-shuttle-columbia">https://mes.fm/space-shuttle-columbia</a></li>
+</ul>
+</div>
+</div>
+<hr>
+<div class="chapter-toggle" id="topics-to-cover">
+<h2 class="chapter-toggle-header chapter-top" onclick="toggleChapter('topics-to-cover-list')"><center>Topics to Cover <span id="arrowIcon-topics-to-cover-list" class="arrow-icon">&#9660;</span></center></h2>
+<div id="topics-to-cover-list" class="chapter-toggle-list"><ul>
+<li>Live Footage of the Space Shuttle Columbia Disaster</li>
+<li>Problem 1 of EM 304 – Test #1 – February 6, 2003</li>
+<li>Solution: Review of Mechanics of Materials<ul>
+<li>Strain and thermal expansion</li>
+<li>2014-T6 Aluminum Alloy</li>
+<li>Elastic Constants<ul>
+<li>Young&#39;s modulus</li>
+<li>Stress</li>
+<li>Shear modulus</li>
+<li>Shear stress</li>
+<li>Poisson&#39;s ratio</li>
+</ul>
+</li>
+<li>Thermal Expansion Properties of the Support Plates and Aluminum Tube</li>
+<li>Strength Limits (Allowable Stresses)</li>
+<li>MES Mechanics of Materials Calculator: <a href="https://mes.fm/materials">https://mes.fm/materials</a></li>
+<li>Solution to Part (a): Maximum temperature without failure<ul>
+<li>Candidate 1: Aluminum tube in compression (point C)</li>
+<li>Candidate 2: Plate bearing at the tube end (point B)</li>
+<li>Candidate 3: Shear at the plate connection (point A)</li>
+</ul>
+</li>
+<li>Solution to part (b): Where it fails first</li>
+<li>Solution to part (c): Stress state at the failure temperature</li>
+<li>Solution to part (d): Volume-element sketches</li>
+<li>Summary of the Engineering Logic</li>
+</ul>
+</li>
+<li>Dr. Judy Wood solved the Space Shuttle Columbia Disaster right away!<ul>
+<li>CAIB Investigator Scott Hubbard April 15, 2003 presentation confirmed Dr. Judy Wood&#39;s analysis</li>
+</ul>
+</li>
+<li>Space Shuttle Columbia Disaster<ul>
+<li>Columbia Accident Investigation Board (CAIB)</li>
+<li>CNN Anchor Judy Woodruff transcript of CNN&#39;s February 6, 2003 Live Columbia Memorial </li>
+<li>News footage of the Columbia disaster</li>
+<li>Grok AI List of Controversies Surrounding the Disaster</li>
+</ul>
+</li>
+</ul>
+</div>
+</div>
+<hr>
+<div class="chapter-toggle" id="live-footage-of-the-space-shuttle-columbia-disaster">
+<h2 class="chapter-toggle-header chapter-top" onclick="toggleChapter('live-footage-of-the-space-shuttle-columbia-disaster-list')"><center>Live Footage of the Space Shuttle Columbia Disaster <span id="arrowIcon-live-footage-of-the-space-shuttle-columbia-disaster-list" class="arrow-icon">&#9660;</span></center></h2>
+<div id="live-footage-of-the-space-shuttle-columbia-disaster-list" class="chapter-toggle-list"><p>Footage from February 1, 2003 of the disaster can be seen at the 1:48 timestamp, as the space shuttle is disintegrating upon entry through the atmosphere: <a href="https://youtu.be/hkrf8Jjv0tw?t=120">https://youtu.be/hkrf8Jjv0tw?t=120</a></p>
+<p><img loading="lazy" src="https://files.peakd.com/file/peakd-hive/mes/23zbCv38ry3Vqu7BhhxK6QNFekxeWpDHYuo8FqtgaTaUjReGYTdoGRLqdRwFjeUTqi7Bt.png" alt="image.png"></p>
+<p><img loading="lazy" src="https://files.peakd.com/file/peakd-hive/mes/244xwqCBMvp9wGyXPLUnozjj86K8gjdnP9wDbrMNwgyXVjJSdyzW4U4GybAjUHABX2HML.png" alt="image.png"></p>
+<blockquote>
+<p>At the 43:31 timestamp, the thermal tile damage is mentioned as a possible cause: <a href="https://youtu.be/hkrf8Jjv0tw?t=2611">https://youtu.be/hkrf8Jjv0tw?t=2611</a></p>
+<p>Here is footage of the thermal tile damage during the launch on January 16, 2003, in which a piece of foam from the rocket booster breaks off and strikes the left wing: <a href="https://youtu.be/IgQ3ekcvyRA">https://youtu.be/IgQ3ekcvyRA</a></p>
+</blockquote>
+<p><img loading="lazy" src="https://files.peakd.com/file/peakd-hive/mes/23ynKzci2WjGwNf1XSFinVNDLNmGJv5s8VcgXn8ECAfDmPBTajWeyTZqxZvmHc82KYKEM.png" alt="image.png"></p>
+</div>
+</div>
+<hr>
+<div class="chapter-toggle" id="problem-1-of-em-304-test-1-february-6-2003">
+<h2 class="chapter-toggle-header chapter-top" onclick="toggleChapter('problem-1-of-em-304-test-1-february-6-2003-list')"><center>Problem 1 of EM 304 – Test #1 – February 6, 2003 <span id="arrowIcon-problem-1-of-em-304-test-1-february-6-2003-list" class="arrow-icon">&#9660;</span></center></h2>
+<div id="problem-1-of-em-304-test-1-february-6-2003-list" class="chapter-toggle-list"><p>Last Saturday (February 1, 2003), the space shuttle Columbia disintegrated during re-entry through the Earth&#39;s atmosphere.</p>
+<p>One possible cause could be the loss of thermal tiles…</p>
+<p><img loading="lazy" src="https://files.peakd.com/file/peakd-hive/mes/23viTJdMkBe88YERb79A5czTteU6yFgWqVyMKP4fg8uX7Fz8rQU73tNtJ3mgDfDff9WE1.png" alt="image.png"></p>
+<p><img loading="lazy" src="https://files.peakd.com/file/peakd-hive/mes/EoKC593zaCenMUyUtW4GTE5xAY4tyND6KYFZjKEHHrCUJopEyBxE8WiPz1dVzQakXCL.png" alt="image.png"></p>
+<ul>
+<li>Assume tiles were lost in the localized zone shown below, exposing just <u>one</u> of the many aluminum stiffening tubes, connected to both the top and bottom <strong>framework</strong> of the wing.</li>
+<li>Assume the remaining structure is completely insulated from the heat and remains at 0°F.</li>
+<li>Assume the one exposed tube is <u>heated uniformly</u>.</li>
+<li>At 0°F, the aluminum tube is stress free and there are no gaps.<ul>
+<li>Heat shields insulate the structure from temperature variations, as shown below.</li>
+</ul>
+</li>
+<li>Assume the top and bottom of the <strong>framework</strong> is made of a solid plate.</li>
+</ul>
+<p><img loading="lazy" src="https://files.peakd.com/file/peakd-hive/mes/48Pxf1tvTYEP3JFnckfmJkcRFWEap7M5zxSvtWuMsprJcGY3T5EqCi2exQKaxjXs6T.png" alt="image.png"></p>
+<p><img loading="lazy" src="https://files.peakd.com/file/peakd-hive/mes/23uFuVRWVNCpS5szvg7riSYTfrghG7wMBNwNChrzKm15W87YLTm6wFS4Mb5NhwV52unKX.png" alt="image.png"></p>
+<p>Material properties:</p>
+<ul>
+<li><strong>L = <u>constant</u></strong><ul>
+<li>Note this is the length of the aluminum tube within the structural support surfaces (support plates) as shown in the earlier figure above.</li>
+</ul>
+</li>
+<li>Δtmax = <a href="https://mes.fm/unit-conversion/?c=temperature&v=3000&f=f&t=c">3,000°F (maximum possible)</a><ul>
+<li><a href="https://en.wikipedia.org/wiki/Space_Shuttle_Columbia_disaster">From wiki</a>: During re-entry, the thermal protection system (TPS) experienced temperatures up to <a href="https://mes.fm/unit-conversion/?c=temperature&v=3000&f=f&t=c">3,000 °F (1,648 °C)</a>, but had to keep the orbiter vehicle&#39;s aluminum skin temperature below 350 °F (180 °C).</li>
+</ul>
+</li>
+</ul>
+<p><u>Top and Bottom plates:</u></p>
+<ul>
+<li>α<sub>plate</sub> = 0.00 με/°F</li>
+<li>E<sub>plate</sub> = ∞, <strong>G</strong> = ∞, <strong>v</strong> = 0 (rigid)</li>
+<li>τ<sub>max</sub> = 10.2 ksi</li>
+<li>σ<sub>max</sub> = 104 ksi (tension)</li>
+<li>σ<sub>max</sub> = 74 ksi (compression)</li>
+</ul>
+<p>Aluminum (2014-T6):</p>
+<ul>
+<li>α<sub>al</sub> = 12.8 με/°F</li>
+<li>E<sub>al</sub> = 10.6 Msi, <strong>G</strong> = 3.9 Msi, <strong>v</strong> = 0.34</li>
+<li>τ<sub>max</sub> = 19 ksi</li>
+<li>σ<sub>max</sub> = 60 ksi (tension)</li>
+<li>σ<sub>max</sub> = 60 ksi (compression)</li>
+</ul>
+<p>Given the properties above:</p>
+<p>(a) Determine the maximum temperature of the aluminum tube without causing failure at point A, B, or C. </p>
+<ul>
+<li>Note: Failure may occur in the plate or the tube.</li>
+</ul>
+<p>(b) Where is it most likely to fail first (choose location A, B, or C). Why?</p>
+<ul>
+<li>Justify your answer with calculations.</li>
+</ul>
+<p>(c) Using your answer from part (a), calculate the stress state in locations A, B, and C at the failure temperature. </p>
+<p>(d) Show these stresses (from part (c)) on each of the volume elements (A, B, and C) provided on above, representing the state of stress at each of the three locations.</p>
+<p>Note: Volume elements C, B, and A are provided below.</p>
+<p><u>Location descriptions:</u></p>
+<ul>
+<li>Point A: zone of material inside top plate</li>
+<li>Point B: surface of plate facing tube end, and surface of tube end facing plate</li>
+<li>Point C: zone of material in outer surface of the aluminum tube.</li>
+</ul>
+<div class="chapter-toggle chapter-sub" id="solution-review-of-mechanics-of-materials">
+<h2 class="chapter-toggle-header" onclick="toggleChapter('solution-review-of-mechanics-of-materials-list')">Solution: Review of Mechanics of Materials <span id="arrowIcon-solution-review-of-mechanics-of-materials-list" class="arrow-icon">&#9660;</span></h2>
+<div id="solution-review-of-mechanics-of-materials-list" class="chapter-toggle-list"><p>Note that I will be using Grok AI&#39;s assistance in the solution, as well as Dr. Judy Wood&#39;s solution key: <a href="https://grok.com/share/c2hhcmQtMg_4766b37c-cfd8-4dea-897f-42a2e51d1568">https://grok.com/share/c2hhcmQtMg_4766b37c-cfd8-4dea-897f-42a2e51d1568</a></p>
+<p>Let&#39;s first cover some of the mechanics of materials terms first.</p>
+<h3>Strain and Thermal Expansion</h3>
+<p>We are given the thermal strain for the support plates and aluminum tube, via their coefficients of thermal expansion:</p>
+<ul>
+<li>α<sub>plate</sub> = 0.00 με/°F</li>
+<li>α<sub>al</sub> = 12.8 με/°F</li>
+</ul>
+<p><a href="https://en.wikipedia.org/wiki/Strain_(mechanics)">Strain</a> is the relative deformation compared to a reference position, and has <a href="https://en.wikipedia.org/wiki/SI_base_units">SI base units</a> of meter per meter (m/m).</p>
+<p>α is the coefficient of linear <a href="https://en.wikipedia.org/wiki/Thermal_expansion">thermal expansion</a> (tendency of matter to increase in size with increasing temperature).</p>
+<p><img loading="lazy" src="https://files.peakd.com/file/peakd-hive/mes/23xedu6WzsBwfcPdgiaVHrNUoY3SvvnwaKpW48Aw4DfJWYEFsYqubu84oxGURT45LWFwB.png" alt="image.png"></p>
+<blockquote>
+<p><a href="https://en.wikipedia.org/wiki/Thermal_expansion#/media/File:Dehnungsfuge.jpg">Figure</a>: <a href="https://en.wikipedia.org/wiki/Expansion_joint">Expansion joint</a> in a <a href="https://en.wikipedia.org/wiki/Road_bridge">road bridge</a> used to avoid damage from thermal expansion.</p>
+<p>The units με/°F = microstrain per degree Fahrenheit = 10<sup>-6</sup> strain per °F.</p>
+</blockquote>
+<p>10<sup>-6</sup> strain corresponds to 1 unit of length changed per 1,000,000 unit of length, aka 1 part per million.</p>
+<p>For example, aluminum expands by 12.8 millionths of an inch per inch of length for every 1 °F temperature increase.</p>
+<p>The plates are assumed to not expand at all with temperature, hence α<sub>plate</sub> = 0.</p>
+<h3>2014-T6 Aluminum Alloy</h3>
+<p><a href="https://en.wikipedia.org/wiki/2014_aluminium_alloy">2014 aluminium alloy</a> (or aluminum in USA / Canada) is an aluminum-based alloy often used in the aerospace industry.</p>
+<p>The T6 refers to the <a href="https://en.wikipedia.org/wiki/Tempering_(metallurgy)">tempering</a> process used, which is a process of heat treating used to increase the toughness of (typically) iron-based alloys.</p>
+<p><img loading="lazy" src="https://files.peakd.com/file/peakd-hive/mes/23uaaWn7igjEaGeuybahjYHD4JWWpYAnp4xHG9H3rm76RLg3FDCGJmfh5JUp51mQrMB28.png" alt="image.png">
+	</p>
+<blockquote>
+<p><a href="https://en.wikipedia.org/wiki/Tempering_(metallurgy)#/media/File:Tempering_colors_in_steel.jpg">Figure</a>: Differentially tempered steel. The various colors produced indicate the temperature the steel was heated to. Light straw indicates 204 °C (399 °F) and light blue indicates 337 °C (639 °F).[1][2]</p>
+</blockquote>
+<p>The <a href="https://www.makeitfrom.com/material-properties/2014-T6-Aluminum">T6 temper</a> involves solution heat-treating and artificially aging until the metal meets standard mechanical property requirements.</p>
+<p><img loading="lazy" src="https://files.peakd.com/file/peakd-hive/mes/23tbPiZnnf37BjJfGkrZM2bkkc5ffyr5HPAFLdMe73CZCJkaL8oqXmJuL1mgg3nRrgtMM.png" alt="image.png"></p>
+<blockquote>
+<p>The graph bars on the material properties cards above compare 2014-T6 aluminum to: 2000-series alloys (top), all aluminum alloys (middle), and the entire database (bottom). A full bar means this is the highest value in the relevant set. A half-full bar means it&#39;s 50% of the highest, and so on. <strong>For example, the Brinell Hardness and Elastic Modulus of 2014-T6 aluminum is very high compared with other aluminum alloys.</strong></p>
+</blockquote>
+<hr>
+<h3>Elastic Constants</h3>
+<p>We are given the elastic constants for the support plates and aluminum tube:</p>
+<ul>
+<li>E<sub>plate</sub> = ∞, <strong>G</strong> = ∞, <strong>v</strong> = 0 (rigid)</li>
+<li>E<sub>al</sub> = 10.6 Msi, G = 3.9 Msi, v = 0.34</li>
+</ul>
+<p><a href="https://en.wikipedia.org/wiki/Young%27s_modulus">Young&#39;s modulus</a> (or the Young modulus), E, is a measure of the tensile or compressive stiffness when a force is applied lengthwise. </p>
+<p>Young&#39;s modulus is given by the equation of <a href="https://en.wikipedia.org/wiki/Stress_(mechanics)">stress</a> (force per unit area) divided by the strain.</p>
+<p><img loading="lazy" src="https://files.peakd.com/file/peakd-hive/mes/EoEwpmqexsFMYJNnSk9daB1PDTTo6LiMeYCGRw5GdhQ1iLGs1b7HDBsMKsNPedK57Jt.png" alt="image.png"></p>
+<p><a href="https://en.wikipedia.org/wiki/Stress_(mechanics)">Stress</a> (σ for axial stress) describes the forces present during deformation. </p>
+<p><img loading="lazy" src="https://files.peakd.com/file/peakd-hive/mes/EpA7qN3oKDSd7wb7cH5jXhWVijbCNkgwDR6Hx5ikjvGjYA8amVMgX1DcbiYG7yEV8cR.png" alt="image.png"></p>
+<blockquote>
+<p><a href="https://en.wikipedia.org/wiki/Stress_(mechanics)#/media/File:Different-types-of-mechanical-stress_EN.svg">Figure</a>: Mechanical stress</p>
+</blockquote>
+<p><img loading="lazy" src="https://files.peakd.com/file/peakd-hive/mes/23wXLmHugPhx9Cfs4CFSwKTPxki1adefxpmjcboRsuoezMFdzbrdZFNXu3HLVsRe3Ghuz.png" alt="image.png">
+<a href="https://en.wikipedia.org/wiki/Young%27s_modulus#/media/File:Stress_strain_ductile.svg">Figure</a>: Idealized stress in a straight bar with uniform cross-section.</p>
+<p><img loading="lazy" src="https://files.peakd.com/file/peakd-hive/mes/23tSyz4YyY5iv7e4EcWFbv16zG4UrYEu2tqgpn5CfNmAiGhMcLoWaMWRDUS7rhKD3w7Hq.png" alt="image.png"></p>
+<p><a href="https://en.wikipedia.org/wiki/Young%27s_modulus#/media/File:Stress_strain_ductile.svg">Figure</a>: The slope of the linear part of the <a href="https://en.wikipedia.org/wiki/Stress%E2%80%93strain_curve">stress–strain curve</a> for a material under tension or compression</p>
+<blockquote>
+<p><a href="https://zjaluminum-cnc.com/blog/youngs-modulus-of-aluminum/">Figure</a>: Relationship between Young&#39;s modulus and deformation under stretching aluminum</p>
+<p>The <a href="https://en.wikipedia.org/wiki/Shear_modulus">Shear Modulus</a> or modulus of rigidity, G or sometimes S or μ, is a measure of the <a href="https://en.wikipedia.org/wiki/Elasticity_(physics)">elastic</a> shear stiffness of a material and is defined (hence the := sign) as the ratio of <a href="https://en.wikipedia.org/wiki/Shear_stress">shear stress</a> to <a href="https://en.wikipedia.org/wiki/Shear_strain">shear strain</a>.</p>
+</blockquote>
+<p><img loading="lazy" src="https://files.peakd.com/file/peakd-hive/mes/23u6YyrukDi6P1aGVDPh9ZNponH56Db3MuTBFG59omY46vkFXHLXMymeNQ3DiFFGbVZL5.png" alt="image.png"></p>
+<p><img loading="lazy" src="https://files.peakd.com/file/peakd-hive/mes/23zbkxjjBRcx6m555NryQQTNuruGJNujdpXvWrWrahDeWH9rH3DhfcRaR5xbuRcVwd5iP.png" alt="image.png"></p>
+<blockquote>
+<p><a href="https://en.wikipedia.org/wiki/Shear_modulus#/media/File:Shear_scherung.svg">Figure</a>: Shear strain</p>
+</blockquote>
+<p><a href="https://en.wikipedia.org/wiki/Shear_stress">Shear stress</a>, τ, is the component of <a href="https://en.wikipedia.org/wiki/Stress_(physics)">stress</a> <a href="https://en.wikipedia.org/wiki/Coplanar">coplanar</a> (on the same plane) with a <a href="https://en.wikipedia.org/wiki/Material_cross_section">material cross section</a>. It arises from the <a href="https://en.wikipedia.org/wiki/Shear_force">shear force</a>, the component of the <a href="https://en.wikipedia.org/wiki/Force">force</a> vector parallel to the material cross section. <u><a href="https://en.wikipedia.org/wiki/Normal_stress">Normal stress</a></u>, on the other hand, arises from the force vector component perpendicular to the material cross section on which it acts.</p>
+<p><img loading="lazy" src="https://files.peakd.com/file/peakd-hive/mes/EoKCbRTNw8zR41qWTqZb5uXkL9L34CSvJ9FMMK2Ho5amtcGP6LbBeePk1TtsyeVNofg.png" alt="image.png"></p>
+<p><img loading="lazy" src="https://files.peakd.com/file/peakd-hive/mes/23t8CSNv1mf9sqpz7swYVK4GQ2vFrUdKoAaBwh1D3J7KCaxoMDrxuwDbV6hN4nU76f3S4.png" alt="image.png"></p>
+<blockquote>
+<p><a href="https://en.wikipedia.org/wiki/Shear_stress#/media/File:Shear_stress_simple.svg">Figure</a>: Side view of a <a href="https://en.wikipedia.org/wiki/Parallelepiped">parallelepiped</a> where a shearing force is applied to the top of a <a href="https://en.wikipedia.org/wiki/Rectangular_cuboid">rectangular cuboid</a> while the bottom is held in place. The resulting shear stress, τ, deforms the cuboid&#39;s rectangular side into a <a href="https://en.wikipedia.org/wiki/Parallelogram">parallelogram</a>. The area involved would be the top of the parallelopiped.</p>
+<p><a href="https://en.wikipedia.org/wiki/Poisson%27s_ratio">Poisson&#39;s ratio</a>, ν, is a measure of the Poisson effect, the deformation (expansion or contraction) of a material in directions perpendicular to the specific direction of loading.</p>
+</blockquote>
+<p><img loading="lazy" src="https://files.peakd.com/file/peakd-hive/mes/23tHbg12BWe4f9wYSgG1KCkcnfPUNqkZBjwQ6aNyr4sunwyQctCeThdb6skV5PQhqQjzD.png" alt="image.png"></p>
+<blockquote>
+<p><a href="https://en.wikipedia.org/wiki/Poisson%27s_ratio#/media/File:Poisson_ratio_compression_example.svg">Figure</a>: Poisson&#39;s ratio of a material defines the ratio of transverse strain (or lateral strain) (x direction) to the axial strain (y direction).</p>
+</blockquote>
+<p><img loading="lazy" src="https://files.peakd.com/file/peakd-hive/mes/244AHfHZWhmq1uxrGu37FUPEEjXwZK6A5XFcHMctJ1ZxxCYaSKzbMsFdEeD9dsqUm1YLU.png" alt="image.png"></p>
+<blockquote>
+<p><a href="https://en.wikipedia.org/wiki/Poisson%27s_ratio#/media/File:PoissonRatio.svg">Figure</a>: A cube with sides of length L of an isotropic linearly elastic material subject to tension along the x axis, with a Poisson&#39;s ratio of 0.5. The green cube is unstrained, the red is expanded in the x-direction by ΔL due to tension, and contracted in the y- and z-directions by ΔL′.</p>
+</blockquote>
+<p><img loading="lazy" src="https://files.peakd.com/file/peakd-hive/mes/23twA7Qkmp7dPL3jdf3GCDURFidUxEFCpCwEjRt7BZdpLg8JDWa1ELhGvWvBTg5ZnbVuB.png" alt="image.png"></p>
+<hr>
+<h3>Thermal Expansion Properties of the Support Plates and Aluminum Tube</h3>
+<p>In summary, the support plates are considered idealized as perfectly rigid and non-expanding, hence having a coefficient of thermal expansion of zero, an infinite Young&#39;s modulus, infinite shear modulus, and a Poisson&#39;s ratio of zero.</p>
+<p>While the aluminum tube has a coefficient of thermal expansion of 12.8 με/°F, a Young&#39;s modulus of 10.6 Msi (million psi aka million pounds per square inch), shear modulus of 3.9 Msi, and Poisson&#39;s ratio of 0.34 (the transverse strain is 34% of axial strain).</p>
+<h3>Strength Limits (Allowable Stresses)</h3>
+<p>We are also given the following strength limits for the support plates and the aluminum tube, at which the material is considered to fail (either yield or ultimate strength, depending on the design criteria):</p>
+<p>Plates:</p>
+<ul>
+<li>τ<sub>max</sub> = 10.2 ksi = maximum allowable shear stress</li>
+<li>σ<sub>max</sub> = 104 ksi (tension) = maximum allowable normal stress in tension</li>
+<li>σm<sub>max</sub> = 70 ksi (compression) = maximum allowable normal stress in compression</li>
+</ul>
+<p>Aluminum: </p>
+<ul>
+<li>τ<sub>max</sub> = 19 ksi</li>
+<li>σ<sub>max</sub> = 60 ksi (tension)</li>
+<li>σ<sub>max</sub> = 60 ksi (compression)</li>
+</ul>
+<p>Note that ksi = kips per square inch = 1000 pounds per square inch = 1000 psi</p>
+<hr>
+<h3>MES Mechanics of Materials Calculator: <a href="https://mes.fm/materials">https://mes.fm/materials</a></h3>
+<blockquote>
+<p>Play around with it and let me know what you think!</p>
+<p>I made it with Claude Code AI.</p>
+</blockquote>
+</div>
+</div>
+<div class="chapter-toggle chapter-sub" id="solution-to-part-a-maximum-temperature-without-failure">
+<h2 class="chapter-toggle-header" onclick="toggleChapter('solution-to-part-a-maximum-temperature-without-failure-list')">Solution to Part (a): Maximum temperature without failure <span id="arrowIcon-solution-to-part-a-maximum-temperature-without-failure-list" class="arrow-icon">&#9660;</span></h2>
+<div id="solution-to-part-a-maximum-temperature-without-failure-list" class="chapter-toggle-list"><blockquote>
+<p>Determine the maximum temperature of the aluminum tube without causing failure at point A, B, or C. </p>
+<p>Note: Failure may occur in the plate or the tube.</p>
+</blockquote>
+<p>Let&#39;s look at locations A, B, and C in the earlier given diagrams, also shown below.</p>
+<p><img loading="lazy" src="https://files.peakd.com/file/peakd-hive/mes/48Pxf1tvTYEP3JFnckfmJkcRFWEap7M5zxSvtWuMsprJcGY3T5EqCi2exQKaxjXs6T.png" alt="image.png"></p>
+<p><img loading="lazy" src="https://files.peakd.com/file/peakd-hive/mes/23uFuVRWVNCpS5szvg7riSYTfrghG7wMBNwNChrzKm15W87YLTm6wFS4Mb5NhwV52unKX.png" alt="image.png">
+	
+We are given that the one aluminum tube is exposed and heated uniformly while the top and bottom support plates (and the rest of the structure) stay at 0 °F.</p>
+<p>At 0 °F the aluminum tube is stress-free and there are no gaps.</p>
+<p>The plates are modeled as rigid (E = ∞, G = ∞, v = 0, α = 0), so the length L of the tube is fixed.</p>
+<p>Only the exposed tube wants to expand due to thermal expansion; the rigid plates prevent that expansion, producing compressive force in the tube and equal-and-opposite reactions on the plates.</p>
+<p>Failure can occur in the aluminum tube or in the plates (bearing or shear).</p>
+<p>Because L is constant:</p>
+<p><img loading="lazy" src="https://files.peakd.com/file/peakd-hive/mes/23tHbg1MP4ByMPrjdkJkDFyz7FDLtZNXySwdLQeoVy1q1SZWDwe9s7ycWomGU121KS6Q4.png" alt="image.png"></p>
+<p><img loading="lazy" src="https://files.peakd.com/file/peakd-hive/mes/23tHb6kphfZHZYRywP7Ps2JpzCRyXVSZEJBs3kD9qzy3RbkT1kamvaM7khUfySiQp4mVc.png" alt="image.png"></p>
+<h3>Candidate 1: Aluminum tube in compression (point C)</h3>
+<p>If the first failure is aluminum in compression, then the maximum temperature is:</p>
+<p><img loading="lazy" src="https://files.peakd.com/file/peakd-hive/mes/Eo6SAAzW3kpoCfMTUefdTEZyudfjh8nGEXySUPW5bYg2x7Ku5dNSCUZ2Fd3gqVzD6dS.png" alt="image.png">
+	
+<a href="https://mes.fm/calculator?q=60000%2F(10.6*12.8)">Calculation check</a>:</p>
+<blockquote>
+<p>60,000/(10.6*12.8) = 442.217 </p>
+</blockquote>
+<h3>Candidate 2: Plate bearing at the tube end (point B)</h3>
+<p>The support plate&#39;s compressive allowable stress is given as σ<sub>max</sub> = 70 ksi.</p>
+<p><img loading="lazy" src="https://files.peakd.com/file/peakd-hive/mes/23zGwRkHd6UWLdHMB9CNATf9ZwtTdTVp2EEjH2i5BojBYMVq7MoZka8VdFjtjkrRSAyCa.png" alt="image.png"></p>
+<p>If the point at B fails, then the compressive stress is greater than 70 ksi.</p>
+<p>But we have already checked the point at C, which has a compressive strength of 60 ksi in the aluminum tube, thus the aluminum controls as it would fail before the plate does.</p>
+<p>Since the support plates are idealized as rigid and non-expanding, we can&#39;t just plug in α = 0 and E = ∞ into the earlier ΔT formula to obtain the temperature at this higher stress.</p>
+<p>As the aluminum tube expands due to thermal expansion, this expansion imposes stress on the support plate as well.</p>
+<p>Thus, we can obtain the maximum temperature that the support plate will fail at by simply scaling up our earlier maximum temperature by the ratio of the compressive strength of the support plate to the aluminum tube.</p>
+<p><img loading="lazy" src="https://files.peakd.com/file/peakd-hive/mes/23viTTuZXQXQNL56k66EUFS7Hj8VhyDu5P4h6iVAQYFTN8hLQEgaS4RVdWaxA21R7LNQr.png" alt="image.png"></p>
+<p>Note again that the aluminum tube at point C will fail before this temperature is reached at point B in the support plate.</p>
+<p><a href="https://mes.fm/calculator?q=70%2F60*442.217">Calculation check</a>:</p>
+<blockquote>
+<p>70/60 * 442.217 = 515.9198 </p>
+</blockquote>
+<h3>Candidate 3: Shear at the plate connection (point A)</h3>
+<p>First note that we are told to assume that the &quot;remaining structure is completely insulated from the heat and remains at 0 °F&quot;.</p>
+<p>The skin of the wing, aka the support plate, is not affected by the temperature, but it is affected by the thermally expanding aluminum tube.</p>
+<p>This thermal expansion of the aluminum tube causes shear stress on the support plate, at the point A.</p>
+<p><img loading="lazy" src="https://files.peakd.com/file/peakd-hive/mes/EocDFcDJgDFyLvzGmo3xpGJrfRG8otXNbwSrBhbefSSuoP4sTqHSYa6V8Co3KBFf69Y.png" alt="image.png"></p>
+<p>Thus, by equilibrium:</p>
+<p><img loading="lazy" src="https://files.peakd.com/file/peakd-hive/mes/23tmmf7kj9j3K89tJKbDLu5LkNAs5igDRVCY8MFK9nCfpDuEBTXpgoTf8376fqG81yuP7.png" alt="image.png"></p>
+<p>Recall that the maximum allowable compressive stress in the aluminum is 60 ksi, while the maximum allowable shear stress in the support plate is 10.2 ksi.</p>
+<p>Thus we can now obtain the corresponding temperature increase of the aluminum tube that would cause the support plate to fail in shear. </p>
+<p><img loading="lazy" src="https://files.peakd.com/file/peakd-hive/mes/23twA2Y16xvTDMQ28Sht1NXepASfVXg51mUKnxXovawUevuymmMYvwkKaEdq27Gu24Gdi.png" alt="image.png"></p>
+<p><a href="https://mes.fm/calculator?q=10200%2F(10.6*12.8)*(0.3%2F0.11)">Calculation check</a>:</p>
+<blockquote>
+<p>10,200/(10.6<em>12.8)</em>(0.3/0.11) = 205.0279 </p>
+</blockquote>
+<p>This is the lowest temperature rise!</p>
+<p>Therefore the maximum allowable temperature of the tube is 205 °F.</p>
+</div>
+</div>
+<div class="chapter-toggle chapter-sub" id="solution-to-part-b-where-it-fails-first">
+<h2 class="chapter-toggle-header" onclick="toggleChapter('solution-to-part-b-where-it-fails-first-list')">Solution to part (b): Where it fails first <span id="arrowIcon-solution-to-part-b-where-it-fails-first-list" class="arrow-icon">&#9660;</span></h2>
+<div id="solution-to-part-b-where-it-fails-first-list" class="chapter-toggle-list"><blockquote>
+<p>Where is it most likely to fail first (choose location A, B, or C). Why?</p>
+<p>Justify your answer with calculations.</p>
+<p>The three candidate temperatures are approximately:</p>
+</blockquote>
+<ul>
+<li><strong>A: 205 °F</strong></li>
+<li>B: 442 °F</li>
+<li>C: 516 °F</li>
+</ul>
+<p>Thus the failure occurs first at point A, which is shear in the support plate at the tube connection.</p>
+</div>
+</div>
+<div class="chapter-toggle chapter-sub" id="solution-to-part-c-stress-state-at-the-failure-temperature">
+<h2 class="chapter-toggle-header" onclick="toggleChapter('solution-to-part-c-stress-state-at-the-failure-temperature-list')">Solution to part (c): Stress state at the failure temperature <span id="arrowIcon-solution-to-part-c-stress-state-at-the-failure-temperature-list" class="arrow-icon">&#9660;</span></h2>
+<div id="solution-to-part-c-stress-state-at-the-failure-temperature-list" class="chapter-toggle-list"><blockquote>
+<p>(c) Using your answer from part (a), calculate the stress state in locations A, B, and C at the failure temperature. </p>
+</blockquote>
+<p>We can use our earlier equation relating aluminum compressive stress to the plate shear stress:</p>
+<blockquote>
+<p>Note that Dr. Judy Wood used the stress-strain-temperature equation to obtain this corresponding compressive stress, both choices work.</p>
+</blockquote>
+<p><img loading="lazy" src="https://files.peakd.com/file/peakd-hive/mes/23u6YQciGwZmraQENy6khxiYT1Eu8ydFAtcJbcdUPys9XZEk2ANAyowtm51a6PPHW7Lse.png" alt="image.png"></p>
+<p><a href="https://mes.fm/calculator?q=10.2*(.3%2F.11)">Calculation check</a>:</p>
+<blockquote>
+<p>10.2*(0.3/0.11) = 27.8182 </p>
+</blockquote>
+<p>At point C (outer surface of the aluminum tube), we have uniaxial compression of 27.8 ksi.</p>
+<p>At point B (interface): the same compressive force acts as bearing stress on the plate and as axial stress on the tube end.</p>
+<p>Because the force is limited by shear capacity at A, the bearing stress is well below the plate allowable (70 ksi).</p>
+<p>At point A (inside the plate), the stress state is pure shear at the maximum allowable shear stress in the plate, which was given as 10.2 ksi.</p>
+</div>
+</div>
+<div class="chapter-toggle chapter-sub" id="solution-to-part-d-volume-element-sketches">
+<h2 class="chapter-toggle-header" onclick="toggleChapter('solution-to-part-d-volume-element-sketches-list')">Solution to part (d): Volume-element sketches <span id="arrowIcon-solution-to-part-d-volume-element-sketches-list" class="arrow-icon">&#9660;</span></h2>
+<div id="solution-to-part-d-volume-element-sketches-list" class="chapter-toggle-list"><blockquote>
+<p>(d) Show these stresses (from part (c)) on <u>each</u> of the volume elements (A, B, and C) provided below, representing the state of stress at each of the three locations.</p>
+<p>Note: Volume elements C, B, and A are provided below.</p>
+<p>On the provided volume elements, the stresses at ΔT = 205 °F are shown below:</p>
+</blockquote>
+<p><img loading="lazy" src="https://files.peakd.com/file/peakd-hive/mes/23u6YysEwv9iFgFwrvAxQrnSHDLn5nxQbkVamrJvBBMU1V6tqNTQokCaVyWvjTTsazhgA.png" alt="image.png"></p>
+<p><img loading="lazy" src="https://files.peakd.com/file/peakd-hive/mes/Ep1ckdzPbkRfYxsSFAWR4o26ugmJVrU6ybNBCmj6AA8X61PNxPxW8NpBGM1TsLhACM7.png" alt="image.png"></p>
+<p><img loading="lazy" src="https://files.peakd.com/file/peakd-hive/mes/23wXNkV5q1S8vThHX1Bk9aoSVDeSDxFpmvZwSVghyXbtyukqNnGuamrFXMqe3Agt549Ke.png" alt="image.png"></p>
+<p><img loading="lazy" src="https://files.peakd.com/file/peakd-hive/mes/EonrNfNrQ8FiDanT1mRRe3b6j3svFnwj8A4hJrdN9DyQEGbw5NQsuhxtSuNjkUqnnFG.png" alt="image.png"></p>
+</div>
+</div>
+<div class="chapter-toggle chapter-sub" id="summary-of-the-engineering-logic">
+<h2 class="chapter-toggle-header" onclick="toggleChapter('summary-of-the-engineering-logic-list')">Summary of the Engineering Logic <span id="arrowIcon-summary-of-the-engineering-logic-list" class="arrow-icon">&#9660;</span></h2>
+<div id="summary-of-the-engineering-logic-list" class="chapter-toggle-list"><p>Because the plates are rigid, the aluminum tube develops compressive stress linearly with temperature.</p>
+<p>The connection, however, can transmit only a limited shear force before the plate fails in shear.</p>
+<p>That force limit is reached at only 205 °F, which is well before the aluminum itself reaches its 60 ksi compressive yield.</p>
+<p>Hence the first failure is shear at the plate-to-tube interface (point A).</p>
+</div>
+</div>
+</div>
+</div>
+<hr>
+<div class="chapter-toggle" id="dr-judy-wood-solved-the-space-shuttle-columbia-disaster-right-away">
+<h2 class="chapter-toggle-header chapter-top" onclick="toggleChapter('dr-judy-wood-solved-the-space-shuttle-columbia-disaster-right-away-list')"><center>Dr. Judy Wood solved the Space Shuttle Columbia Disaster right away! <span id="arrowIcon-dr-judy-wood-solved-the-space-shuttle-columbia-disaster-right-away-list" class="arrow-icon">&#9660;</span></center></h2>
+<div id="dr-judy-wood-solved-the-space-shuttle-columbia-disaster-right-away-list" class="chapter-toggle-list"><p>Dr. Judy Wood gave this test to her EM 304 class just 5 days after the Space Shuttle Columbia disaster, and months later NASA officially came to the same conclusion!</p>
+<p>Here is a <strong>Gemini AI</strong> summary of emails that Dr. Judy Wood sent me regarding how she rapidly analyzed and solved the failure mechanism.
+	</p>
+<ul>
+<li><strong>Identifying the Thermal Tile Issue:</strong><ul>
+<li>Following the disintegration of the Space Shuttle Columbia on February 1, 2003, Dr. Wood watched the lift-off footage on television and <a href="https://youtu.be/IgQ3ekcvyRA">analyzed the foam strike</a>.</li>
+<li>She noticed that the foam made a right-angle turn and &quot;dustified&quot; upon impact, indicating it was a hard, significant hit rather than a light grazing.</li>
+<li>Recognizing the necessity of thermal tiles during re-entry to manage thermal expansion, she correctly deduced the exact location of the wing damage.</li>
+</ul>
+</li>
+<li><strong>The February 6, 2003 Test:</strong><ul>
+<li>Just five days after the disaster, Dr. Wood incorporated the real-world event into her EM 304 (Mechanics of Materials) exam on February 6, 2003.</li>
+<li>The test required students to calculate stresses, thermal expansion, and the failure temperature for the exposed aluminum substructure.</li>
+<li>To help students grasp concepts like shear stress versus normal stress, she famously used visual aids in her classes, including Roadrunner cartoons (<a href="https://youtu.be/OmVCF0nmslU?t=144">such as the Coyote cutting a circular disk out of a bridge</a>) to teach them how to identify the <strong>correct surface area</strong>.</li>
+<li>Around half of her students solved it completely, though many initially doubted their calculations because the resulting failure temperature (~205°F) seemed surprisingly low.</li>
+</ul>
+</li>
+<li><strong>NASA&#39;s Timeline to the Same Conclusion:</strong><ul>
+<li>It took NASA <strong>two months</strong> following the disaster (upon analyzing flight-data-recorder equivalent thermocouple data) to officially update and confirm the exact failure location on the wing—matching the conclusion Dr. Wood had already mapped out for her students&#39; exam.</li>
+</ul>
+</li>
+<li><strong>Other Notable Details:</strong><ul>
+<li><strong>&quot;The Disaster Queen&quot;:</strong> Dr. Wood was known by this nickname for her ability to analyze structural failures and apply them to coursework.</li>
+<li><strong>NASA&#39;s Internal Awareness &amp; Cover-Up:</strong> She noted that NASA management was aware of the foam strike early on and even discussed launching a &quot;care package&quot; of supplies to the space station that could have been redirected to the shuttle, but chose not to inform the crew of the serious danger. Furthermore, multiple requests by outside groups for spy-satellite imaging of the wing were cancelled by higher-ups.</li>
+<li><strong>Experimental Validation:</strong> Months later, Columbia Accident Investigation Board (CAIB) investigator <a href="https://youtu.be/IgQ3ekcvyRA?t=79">G. Scott Hubbard conducted physical tests</a>—first on a fiberglass rehearsal wing and then on a real shuttle wing—that successfully replicated the exact damage pattern.</li>
+</ul>
+</li>
+</ul>
+<div class="chapter-toggle chapter-sub" id="caib-investigator-scott-hubbard-april-15-2003-presentation-confirmed-dr-judy-wood-s-analysis">
+<h2 class="chapter-toggle-header" onclick="toggleChapter('caib-investigator-scott-hubbard-april-15-2003-presentation-confirmed-dr-judy-wood-s-analysis-list')">CAIB Investigator Scott Hubbard April 15, 2003 presentation confirmed Dr. Judy Wood&#39;s analysis <span id="arrowIcon-caib-investigator-scott-hubbard-april-15-2003-presentation-confirmed-dr-judy-wood-s-analysis-list" class="arrow-icon">&#9660;</span></h2>
+<div id="caib-investigator-scott-hubbard-april-15-2003-presentation-confirmed-dr-judy-wood-s-analysis-list" class="chapter-toggle-list"><p>Here is one of the slides from Scott Hubbard&#39;s investigation that Dr. Judy Wood included in her test problem PDF that she sent me.</p>
+<blockquote>
+<p>Archive: <a href="https://web.archive.org/web/20030503081106/https://www.caib.us/news/press_briefings/pb030415-present-hubbard.html">https://web.archive.org/web/20030503081106/https://www.caib.us/news/press_briefings/pb030415-present-hubbard.html</a></p>
+<p>Alternative link: <a href="https://govinfo.library.unt.edu/caib/events/press_briefings/20030415/present_hubbard.html">https://govinfo.library.unt.edu/caib/events/press_briefings/20030415/present_hubbard.html</a></p>
+</blockquote>
+<p><img loading="lazy" src="https://files.peakd.com/file/peakd-hive/mes/23yTx2Md8xAKteLzBGQ7f7NzADWk2H62ZomZmf9KL957rNygP1PHT94tKwKsjEryf5Np9.png" alt="image.png">
+	
+Note the landing gear door, showing the damage shown is to the left wing, exactly where Dr. Judy Wood pointed out.</p>
+<p><img loading="lazy" src="https://files.peakd.com/file/peakd-hive/mes/EoCpNqtJud3tzUTFamVrXVugcNxNAxfSsjEcnYuYLMkVEweDHgFNRv2g2ZrHCMe9sCH.png" alt="image.png"></p>
+<p>Note that the above image is <a href="https://gemini.google.com/share/d/17N_c4Rnm9fAxj0X-iToN91XBvVFSwVJN">erroneously showing the right wing</a>.</p>
+<p>Here is a <a href="https://grok.com/share/c2hhcmQtMg_fc040234-028b-42e7-8409-c6119ec15c3a">Grok AI explanation</a> for the above chart, since it doesn&#39;t come with any text.</p>
+<blockquote>
+<p><strong>This chart shows temperature data from sensors near Reinforced Carbon-Carbon (RCC) Panel 9 on the left wing leading edge of Columbia (STS-107) during re-entry.</strong></p>
+<p>It is from G. Scott Hubbard’s April 15, 2003 CAIB presentation. The graph plots temperature (°F) versus seconds from Entry Interface (EI). The two lines correspond to two different sensors in the Panel 9 region (shown in the small diagram at upper right):</p>
+<ul>
+<li>One line (typically the lower/blue-ish trace) is from a sensor that starts colder (around –100 °F).</li>
+<li>The other (red/brown) starts near 0–20 °F.</li>
+</ul>
+<p>These are <strong>internal sensors</strong> (spar and clevis area behind/near the RCC panels), not external surface temperatures. Normal re-entry temperatures for these locations rise only modestly.</p>
+<p><strong>What the spike means</strong></p>
+<p>Around <strong>EI + 480–520 seconds</strong> both traces rise sharply. One climbs rapidly past ~200 °F and goes off-scale high (the sensor range tops out around 450 °F), then both drop off-scale low.</p>
+<p>This does <strong>not</strong> mean the vehicle broke up at that instant. Columbia continued flying for several more minutes (loss of signal occurred near EI + 900 s). The spike and subsequent sensor failure indicate that superheated plasma had entered the wing through a breach in the leading-edge thermal protection system and was heating the internal structure and wiring. The sensors (or their wires) were destroyed by the heat—exactly the “wires cut or burned through” behavior Hubbard described in the briefing.</p>
+<p>Later CAIB analysis identified the breach as originating near RCC panels 8–9 from the foam strike during ascent. The temperature data were one of the early lines of evidence pointing to heating inside the wing well before breakup.</p>
+<p><strong>Judy’s 205 °F annotation</strong></p>
+<p>In her exam materials she marks the rising portion of the red trace near <strong>205 °F</strong>. That number is the failure temperature she calculated in the exam problem for the aluminum stiffener under constrained thermal expansion (shear failure at the plate connection). She is drawing a direct visual link between the real flight data and the temperature her idealized tube problem predicted would cause structural failure.</p>
+<p>In short: the chart shows the moment hot gas entered the wing and began destroying sensors near Panel 9. The spike marks the onset of that internal heating event, not the final breakup, and Judy highlighted the 205 °F level to connect it to her thermal-stress calculation.</p>
+</blockquote>
+</div>
+</div>
+</div>
+</div>
+<hr>
+<div class="chapter-toggle" id="space-shuttle-columbia-disaster">
+<h2 class="chapter-toggle-header chapter-top" onclick="toggleChapter('space-shuttle-columbia-disaster-list')"><center>Space Shuttle Columbia Disaster <span id="arrowIcon-space-shuttle-columbia-disaster-list" class="arrow-icon">&#9660;</span></center></h2>
+<div id="space-shuttle-columbia-disaster-list" class="chapter-toggle-list"><p>Let&#39;s go through the mainstream overview of the Space Shuttle Columbia disaster. </p>
+<blockquote>
+<p><a href="https://en.wikipedia.org/wiki/Space_Shuttle_Columbia_disaster">https://en.wikipedia.org/wiki/Space_Shuttle_Columbia_disaster</a></p>
+</blockquote>
+<blockquote>
+<p>On February 1, 2003, Space Shuttle Columbia disintegrated as it re-entered the atmosphere over Texas and Louisiana, killing all seven astronauts on board. It was the second of two Space Shuttle missions to end in disaster, after the loss of Challenger and crew in 1986.</p>
+<p>The mission, designated STS-107, was the 28th flight for the orbiter and the 113th flight of the Space Shuttle fleet. It was dedicated to research in various fields, mainly on board the SpaceHab module inside the shuttle&#39;s payload bay.</p>
+</blockquote>
+<p><img loading="lazy" src="https://files.peakd.com/file/peakd-hive/mes/EonqK6TeAMknmJ1sBMM1LVi4qCM22PwKTeA8Yw5ybi2Uqkhyw3FQ7nT2azASVhzS4Hv.png" alt="image.png"></p>
+<blockquote>
+<p>During launch, a piece of the insulating foam broke off from the Space Shuttle external tank and struck the thermal protection system tiles on the orbiter&#39;s left wing. Similar foam shedding had occurred during previous Space Shuttle launches, causing damage that ranged from minor to near-catastrophic, but some engineers suspected that the damage to Columbia was more serious. When Columbia re-entered the atmosphere of Earth, the damage allowed hot atmospheric gases to penetrate the heat shield and destroy the internal wing structure, which caused the orbiter to become unstable and break apart.</p>
+</blockquote>
+<p><img loading="lazy" src="https://files.peakd.com/file/peakd-hive/mes/243BnnppjgyTUzB5s4n1D1vjio85wDxystUBgr4T7vdyef3CeKsfvkjw3PYVcJ1pARf8M.jpg" alt="image.png"></p>
+<blockquote>
+<p><a href="https://en.wikipedia.org/wiki/Space_Shuttle_Columbia_disaster#/media/File:STS-107_launchpad_circled.jpg">Figure</a>: Columbia prior to launch. The circled area on the external tank (ET) is the left bipod foam ramp, and the circled area on the orbiter is the location that was damaged.</p>
+</blockquote>
+<p><img loading="lazy" src="https://files.peakd.com/file/peakd-hive/mes/23rBNFgLwnT9MkN3VocYEqFWv8TVDy7GgWKkHyjSGPcacTraWAzrq4pfSiVtdMKj8cYPr.png" alt="image.png"></p>
+<blockquote>
+<p><a href="https://en.wikipedia.org/wiki/Space_Shuttle_Columbia_disaster#/media/File:Left_bipod_foam_ramp.jpg">Close-up</a> of the left bipod foam ramp that broke off and damaged the orbiter wing</p>
+</blockquote>
+<p><img loading="lazy" src="https://files.peakd.com/file/peakd-hive/mes/48TKBcWFBaxLaHivzawEQ64RKiNDxBoy1h3mmjzDKZCwtEC8wLK4sHQD41KtoywD5k.jpg" alt="image.png"></p>
+<blockquote>
+<p><a href="https://en.wikipedia.org/wiki/Space_Shuttle_Columbia_disaster#/media/File:Crew_of_STS-107,_official_photo.jpg">The crew of STS-107</a>. From left to right: Brown, Husband, Clark, Chawla, Anderson, McCool, Ramon.</p>
+</blockquote>
+<p><img loading="lazy" src="https://files.peakd.com/file/peakd-hive/mes/EpA1UTZyNyFitvFL7Xfe2NdS7hsWmUpNQBPpZqGseuRoH9csqBbxk6XvuMiko3JwHYt.png" alt="image.png"></p>
+<blockquote>
+<p><a href="https://en.wikipedia.org/wiki/Space_Shuttle_Columbia_disaster#/media/File:Space_Shuttle_Columbia_disaster_ET208_camera.gif">Animation</a>: Footage of the debris strike at T+81.9 seconds</p>
+</blockquote>
+<p><img loading="lazy" src="https://files.peakd.com/file/peakd-hive/mes/EpA1UTZy47VX9iQAk4uCaf4AFbT5ZsRTfcUGXBHaUWWCMqK8M5XjeSbKAdPJNhcEVFa.jpg" alt="image.png"></p>
+<p><img loading="lazy" src="https://files.peakd.com/file/peakd-hive/mes/23yJ9kdKdH4vmog6YzCtZEYRcrUTsXRr6Q88u6T2AVx6wNaVURYFL4sJP5WjHhvTvTZuE.jpg" alt="image.png"></p>
+<p><img loading="lazy" src="https://files.peakd.com/file/peakd-hive/mes/Eo4C54AGRnLHW3GygmfH51iuSn3VXpA2ytp7gWHa9Mvcj93iNPkznPAhQJq1wYwSBpm.jpg" alt="image.png"></p>
+<blockquote>
+<p><a href="https://en.wikipedia.org/wiki/Space_Shuttle_Columbia_disaster#/media/File:Grid_with_Columbia's_Debris_-_GPN-2003-00081.jpg">84,000+ parts recovered</a>: A grid on the floor is used to organize recovered debris.</p>
+<p>The search for Columbia debris ended in May.[17]: 203  Approximately 83,900 pieces of debris were recovered, weighing 84,900 pounds (38,500 kg), which was about <strong>38 percent of the orbiter&#39;s overall weight</strong>. </p>
+<p><strong>Space Shuttle</strong></p>
+<p>The Space Shuttle was a partially reusable spacecraft operated by the US National Aeronautics and Space Administration (NASA).[2]: 5, 195  It flew in space for the first time in April 1981,[3]: III-24  and was used to conduct in-orbit research,[3]: III-188  and deploy commercial, military, and scientific payloads.[3]: III-66, 68, 148 </p>
+<p>The orbiter was protected from heat during re-entry by the thermal protection system (TPS), a thermal soaking protective layer around the orbiter. In contrast with previous US spacecraft, which had used ablative heat shields, the reusability of the orbiter required a multi-use heat shield.[5]: 72–73  During re-entry, the TPS experienced temperatures up to 3,000 °F (1,600 °C), but had to keep the orbiter vehicle&#39;s aluminum skin temperature below 350 °F (180 °C). The TPS primarily consisted of four sub-systems. The nose cone and leading edges of the wings experienced temperatures above 2,300 °F (1,300 °C), and were protected by the composite material reinforced carbon–carbon (RCC). Thicker RCC was developed and installed in 1998 to prevent damage from micrometeoroid and orbital debris.[3]: II-112–113  The entire underside of the orbiter vehicle, as well as the other hottest surfaces, were protected with black high-temperature reusable surface insulation. Areas on the upper parts of the orbiter vehicle were covered with white low-temperature reusable surface insulation, which provided protection at temperatures below 1,200 °F (650 °C). The payload bay doors and parts of the upper wing surfaces were covered with reusable felt surface insulation, as the temperature there remained below 700 °F (370 °C).[4]: 395 </p>
+<p>When the Space Shuttle launched, the orbiter and SRBs were connected to the ET, which held the fuel for the SSMEs.[4]: II-222  The ET consisted of a tank for liquid hydrogen (LH2), stored at −423 °F (−253 °C) and a smaller tank for liquid oxygen (LOX), stored at −297 °F (−183 °C). It was covered in insulating foam to keep the liquids cold and prevent ice forming on the tank&#39;s exterior. The orbiter connected to the ET via two umbilicals near its bottom and a bipod near its top section.[6]: 50–51  After its fuel had been expended, the ET separated from the orbiter and reentered the atmosphere, where it would break apart during re-entry and its pieces would land in the Indian or Pacific Ocean.[4]: II-238 </p>
+<p><strong>Launch and debris strike</strong></p>
+<p>Columbia was launched from the Kennedy Space Center Launch Complex 39A (LC-39A) on January 16, 2003 at 10:39:00 am. At T+81.7 seconds, a piece of foam approximately 21 to 27 inches (53 to 69 cm) long and 12 to 18 inches (30 to 46 cm) wide broke off from the left bipod on the ET. At T+81.9 seconds, the foam struck the reinforced carbon–carbon (RCC) panels on Columbia&#39;s left wing at relative velocity of 625 to 840 feet per second (426 to 573 mph; 686 to 922 km/h).[6]: 34  The foam&#39;s low ballistic coefficient caused it to lose speed immediately after separating from the ET, and the orbiter ran into the slower foam.[6]: 60  Neither the mission nor ground crew noticed the debris strike at the time.[6]: 140  The SRBs separated from the ET at T+2 minutes and 7 seconds, followed by the ET&#39;s separation from the orbiter at T+8 minutes 30 seconds.[6]: 35  The ET separation was photographed by Anderson and recorded by Brown, but they did not record the bipod with missing foam.[6]: 148  At T+43 minutes, Columbia completed its orbital insertion as planned.[6]: 35 </p>
+<p><strong>Cause of the accident</strong></p>
+<p>After looking at sensor data, the CAIB considered damage to the left wing as a likely culprit for Columbia&#39;s destruction. An investigation studied recovered debris and noted the difference in heat damage between the two wings. RCC panels from the left wing were found in the western portion of the debris field, indicating that it was shed first before the rest of the orbiter disintegrated.[6]: 73–74  X-ray and chemical analysis was conducted on the RCC panels, revealing the highest levels of slag deposits to be in the left wing tiles.[6]: 75–76  Impact testing was conducted at the Southwest Research Institute, using a nitrogen-powered gun to fire a projectile made of the same material as the ET bipod foam. Panels taken from Enterprise, Discovery, and Atlantis were used to determine the projectiles&#39; effect on RCC panels.[6]: 79–80  A test on RCC panel 8, taken from Atlantis, was the most consistent with the damage observed on Columbia, indicating it was the damaged panel that led to the in-flight breakup.[6]: 82–83 </p>
+<p><a href="https://en.wikipedia.org/wiki/Columbia_Accident_Investigation_Board">Columbia Accident Investigation Board</a></p>
+<p>About ninety minutes after the disaster, NASA Administrator Sean O&#39;Keefe called to convene the Columbia Accident Investigation Board (CAIB) to determine the cause.[6]: 231 [33] It was chaired by retired US Navy Admiral Harold W. Gehman, Jr. and included military and civilian analysts. It initially consisted of 8 members, including Gehman, but expanded to 13 members by March. The CAIB members were notified by noon on the day of the accident, and participated in a teleconference that evening. The following day, they traveled to Barksdale AFB to begin the investigation. The CAIB members first toured the debris fields, and then established their operations at JSC. The CAIB established four teams to investigate NASA management and program safety, NASA training and crew operations, the technical aspects of the disaster, and how NASA culture affected the Space Shuttle program. These groups collaborated, and hired other support staff to investigate.[6]: 231–232  The CAIB worked alongside the reconstruction efforts to determine the cause of the accident, and interviewed members of the Space Shuttle program, including those who had been involved with STS-107.[6]: 234–235  The CAIB conducted public hearings from March until June,[6]: 237–238  and released its final report in August 2003.[6]: 2 </p>
+</blockquote>
+<p><img loading="lazy" src="https://files.peakd.com/file/peakd-hive/mes/23tSUKESKydkidXDfDigrnitceJeR4fqFDzTyaAXimncgXXHnofkru7LkfFshDW7AFySR.png" alt="image.png"></p>
+<blockquote>
+<p><a href="https://en.wikipedia.org/wiki/Space_Shuttle_Columbia_disaster#/media/File:STS107_Columbia_FoamStrike_Test_NASA_SWRI_NGRC.gif">Animation</a>: Mock-up of an orbiter&#39;s wing&#39;s leading edge made with an RCC-panel taken from Atlantis. Simulation of known and possible conditions of the foam impact on Columbia&#39;s final launch showed brittle fracture of RCC (reinforced carbon-carbon is a composite material consisting of carbon fiber reinforced in a matrix of graphite (crystalline form of the element carbon).</p>
+</blockquote>
+<p><img loading="lazy" src="https://files.peakd.com/file/peakd-hive/mes/23w2kymVjE3eG2SGHLAng3e8ZTvprJWio3KyZ6t1PBxnRKReVkbPq3FRV4nZG6em9Ui31.png" alt="image.png"></p>
+<p><img loading="lazy" src="https://files.peakd.com/file/peakd-hive/mes/23uFRqgBoySzfPio2ykmdDotUD5zqrc2UyVN5Da3MCETWzA9yDt5c7F4hdCA86zBACQ44.png" alt="image.png"></p>
+<p><img loading="lazy" src="https://files.peakd.com/file/peakd-hive/mes/23u5xbCjCQtciWFucqshspoAUxhFDR3oe4V8Aqg8ikxPiJbYsFG5wyi7jjZmnTH4SkjFf.jpg" alt="image.png"></p>
+<p>Here is a video of the foam strike test too: <a href="https://youtu.be/ySiyzJEi01M">https://youtu.be/ySiyzJEi01M</a></p>
+<p><img loading="lazy" src="https://files.peakd.com/file/peakd-hive/mes/23tS13fKN8iLisZHNKUhyHKa1BLoQRaS7HxcCjwNLNzdPZaNJk7h6u7zwpJoa8p9XkNxc.png" alt="image.png"></p>
+<div class="chapter-toggle chapter-sub" id="cnn-anchor-judy-woodruff-transcript-of-cnn-s-february-6-2003-live-columbia-memorial">
+<h2 class="chapter-toggle-header" onclick="toggleChapter('cnn-anchor-judy-woodruff-transcript-of-cnn-s-february-6-2003-live-columbia-memorial-list')">CNN Anchor Judy Woodruff transcript of CNN&#39;s February 6, 2003 Live Columbia Memorial <span id="arrowIcon-cnn-anchor-judy-woodruff-transcript-of-cnn-s-february-6-2003-live-columbia-memorial-list" class="arrow-icon">&#9660;</span></h2>
+<div id="cnn-anchor-judy-woodruff-transcript-of-cnn-s-february-6-2003-live-columbia-memorial-list" class="chapter-toggle-list"><p>Coincidently (and synchronistically), CNN aired a live special event on February 6, 2003, the same day as Dr. Judy Wood&#39;s test, of a memorial for the Columbia astronauts. The transcript of the programmed was rushed to completion by… CNN Anchor <strong>Judy Wood</strong>ruff! 🤯</p>
+<blockquote>
+<p><a href="http://transcripts.cnn.com/TRANSCRIPTS/0302/06/se.03.html">http://transcripts.cnn.com/TRANSCRIPTS/0302/06/se.03.html
+</a>	</p>
+</blockquote>
+<p><img loading="lazy" src="https://files.peakd.com/file/peakd-hive/mes/23tmmT3BG8ojZ7wWFwGUVmt5ReWBxFPLtAgfrpDbX5FwKd8A418U5Nq2Ed3C612Wxtafm.png" alt="image.png">
+	
+	
+Here is news footage of the Columbia disaster, note again that almost 40% of the Space Shuttle was recovered!!</p>
+<blockquote>
+<p><a href="https://youtu.be/EW0_Be0Mnlk?t=219">https://youtu.be/EW0_Be0Mnlk?t=219</a></p>
+</blockquote>
+<p><img loading="lazy" src="https://files.peakd.com/file/peakd-hive/mes/23xoWB6hvoTh43ajK1xRsHUd74xUwoGu7RFHLHXMLGMnRyDdVqaHbuLbnzLHeV7DSGwNc.png" alt="image.png"></p>
+<p><img loading="lazy" src="https://files.peakd.com/file/peakd-hive/mes/23swnqRisQurdjibLZjCz1E6eApZ3FdZdt2jzVGJvKJUm5Egdzn3eMXcH7LpZoJGV7hZ7.png" alt="image.png"></p>
+</div>
+</div>
+<div class="chapter-toggle chapter-sub" id="grok-ai-list-of-controversies-surrounding-the-disaster">
+<h2 class="chapter-toggle-header" onclick="toggleChapter('grok-ai-list-of-controversies-surrounding-the-disaster-list')">Grok AI List of Controversies Surrounding the Disaster <span id="arrowIcon-grok-ai-list-of-controversies-surrounding-the-disaster-list" class="arrow-icon">&#9660;</span></h2>
+<div id="grok-ai-list-of-controversies-surrounding-the-disaster-list" class="chapter-toggle-list"><p>Here is a Grok AI list of controversies surrounding the Space Shuttle Columbia disaster.</p>
+<blockquote>
+<p>Note that nearly all mainstream artificial intelligence (AI) models are biased towards the mainstream or &quot;official&quot; narrative, so keep that in mind.</p>
+<p>If you have any information that AI gets wrong or leaves out, let me know!</p>
+<p><a href="https://grok.com/share/c2hhcmQtMg_4766b37c-cfd8-4dea-897f-42a2e51d1568">https://grok.com/share/c2hhcmQtMg_4766b37c-cfd8-4dea-897f-42a2e51d1568</a></p>
+</blockquote>
+<blockquote>
+<p><strong>Here is a factual list of the documented controversies, management failures, known risks, and missed opportunities related to the Space Shuttle Columbia (STS-107) disaster.</strong> </p>
+<p>These are drawn primarily from the official Columbia Accident Investigation Board (CAIB) report, contemporary news reporting, and released internal NASA emails and documents. The physical cause was a foam strike during ascent that breached the left-wing leading-edge Reinforced Carbon-Carbon (RCC) panels; superheated plasma entered during re-entry. The CAIB concluded that NASA’s organizational culture was as much a cause as the foam itself.</p>
+<p>Known Foam-Shedding Problem and Normalization of Deviance</p>
+<ul>
+<li>Foam loss from the External Tank occurred on more than 80% of missions for which imagery was available. It was a chronic, known issue.</li>
+<li>NASA had repeatedly treated foam strikes as a maintenance/turnaround problem rather than a potential safety-of-flight risk. Requirements that debris strikes not damage the thermal protection system were routinely waived.</li>
+<li>A significant foam strike on Atlantis (STS-112) just months earlier was classified as an “action” item rather than a more serious in-flight anomaly that would have required resolution before the next flight. Schedule pressure (including ISS construction goals) contributed to this decision.</li>
+<li>The CAIB described this as classic “normalization of deviance”: each successful flight with foam strikes was taken as evidence that the risk was acceptable.</li>
+</ul>
+<p><strong>Imagery Requests for Damage Assessment Were Not Obtained</strong></p>
+<ul>
+<li>During the mission, multiple engineers (including Rodney Rocha of the Debris Assessment Team) <strong>requested higher-resolution imagery of the left wing</strong> using Department of Defense assets (spy satellites or ground telescopes).</li>
+<li>Rocha wrote that without better images it would be “very difficult to even bound the problem” and asked colleagues whether they could <strong>“petition (beg)”</strong> for outside agency assistance.</li>
+<li>Requests were blocked or not acted upon. Mission Management Team chair Linda Ham’s actions and communications contributed to the cancellation of at least one request. Associate Administrator William Readdy later stated he declined to make an “emergency” request for satellite imagery after engineers had already concluded there was no safety-of-flight issue, though he said non-interfering imaging could proceed (it did not).</li>
+<li>The CAIB identified this as one of several missed opportunities. Managers viewed the requests as non-critical engineering desires rather than operational needs. The crew and senior decision-makers never received definitive visual confirmation of the damage extent.</li>
+<li>Post-accident, NASA arranged for routine military imaging of orbiting shuttles.</li>
+</ul>
+<p><strong>Internal Engineering Concerns and Incomplete Communication</strong></p>
+<ul>
+<li>Engineers (including Robert Daugherty at Langley and others) exchanged emails discussing <strong>possible catastrophic scenarios from the foam strike</strong>, including damage near the wheel well, tire failure, or structural breach leading to loss of vehicle and crew. Some used language such as “world of hurt” or described worst-case outcomes.</li>
+<li>These concerns largely remained at the mid-level engineering level. They were not effectively escalated into a formal safety-of-flight challenge that altered the Mission Management Team’s conclusions.</li>
+<li>A Boeing analysis (using a tool primarily calibrated for smaller tile impacts) concluded the strike was not a safety concern. Management accepted this analysis. The actual damage was to the RCC leading edge, outside the primary assumptions of that tool.</li>
+<li><strong>The crew was informed</strong> via email that there was <strong>“absolutely no concern”</strong> for RCC or tile damage and that the issue was <strong>“not even worth mentioning”</strong> except to avoid being surprised by reporter questions. They were <strong>not told of the ongoing internal debate</strong> among some engineers.</li>
+</ul>
+<p><strong>Organizational and Cultural Factors (CAIB Findings)</strong></p>
+<ul>
+<li>The CAIB stated that “the NASA organizational culture had as much to do with this accident as the foam.”</li>
+<li>Key issues included: inverted burden of proof (prove the strike was unsafe rather than prove it was safe), communication barriers and informal processes that diluted urgency, schedule pressure, resource constraints, and a history of treating the Shuttle as operational rather than developmental.</li>
+<li>Similar cultural issues had been identified after Challenger; the CAIB noted that lessons had atrophied.</li>
+<li>There were at least eight identified missed opportunities during the flight to better understand the damage.</li>
+</ul>
+<p><strong>Media and Public Perception Notes</strong></p>
+<ul>
+<li>Landing-day weather at Kennedy Space Center was excellent (clear conditions after morning fog burned off). Contemporary accounts described it as near-perfect weather for the scheduled touchdown. Re-entries were not normally major news events, but STS-107 received elevated attention in part because it carried the first Israeli astronaut (Ilan Ramon) and a large suite of science experiments.</li>
+<li>I did not locate a specific major newspaper headline with the exact phrasing “A perfect day for a perfect mission.” Coverage commonly described the mission as appearing successful and the weather as favorable until contact was lost.</li>
+</ul>
+<p><strong>What Was Not the Case</strong></p>
+<ul>
+<li>There is no credible evidence in the official investigation or contemporaneous reporting of deliberate sabotage, intentional withholding of a known fatal breach, or a decision to fly despite confirmed knowledge that the vehicle would be lost. The core failures were cultural, analytical, and communicative: a known foam risk was underestimated, damage-assessment tools were insufficient for the actual strike, and requests for better data were not pursued vigorously enough under the belief that the strike was not a safety-of-flight issue and that little could be done in any case.</li>
+</ul>
+<p>The CAIB report (especially Volume I) remains the primary authoritative source for these points. Many of the internal emails were released via FOIA or during the investigation and are publicly available.</p>
+</blockquote>
+</div>
+</div>
+</div>
+</div>
+
+    </div>
     <!-- FASTCOMMENTS-BLOCK: Comments toggle + lazy FastComments widget, see main_js/comments.js -->
     <div id="comments-button" class="mes-comments-toggle">Comments</div>
     <div id="comments-box" class="hide"><div id="fastcomments-widget"></div></div>
-<!-- MES-BOTTOM-AD -->
-<div class="mes-bottom-ad" data-ad-slot="1532113018" data-ad-mode="rect" style="clear:both;text-align:center;margin:1.5em auto 1.75em;min-height:330px;"><span style="display:block;font-size:11px;line-height:16px;color:#595959;margin-bottom:4px;">Advertisement</span><div class="mes-bottom-ad__slot" style="width:100%;min-height:310px;margin:0 auto;"></div></div>
-<!-- /MES-BOTTOM-AD -->
-<!-- MES-COLS-END --></div><aside id="mes-aside" class="mes-aside" data-aside-family="science" aria-label="More like this"><div class="mes-aside__sticky"><div class="mes-aside__ad" data-ad-slot="8429975111"></div><div class="mes-aside__head"><h2 class="mes-aside__title-h">More like this</h2><button type="button" class="mes-aside__flip" aria-label="Move this sidebar to the other side" title="Move sidebar to the other side">&#8644;</button></div><ul class="mes-aside__list"><li><a class="mes-aside__card" href="/fleischmann-corn-starch"><span class="mes-aside__text"><span class="mes-aside__name">Is Corn Starch the Key to Martin Fleischmann's Cold Fusion Experiments? &#128569;&#128569;&#128569;</span><span class="mes-aside__tag">Science</span></span></a></li><li><a class="mes-aside__card" href="/fungi-poop"><span class="mes-aside__text"><span class="mes-aside__name">Fungi Decomposin&#39; Dog Poop &#129440;&#128169;&#128064;</span><span class="mes-aside__tag">Science</span></span></a></li><li><a class="mes-aside__card" href="/mendeleev-chemical-table-dream"><span class="mes-aside__text"><span class="mes-aside__name">Dmitri Mendeleev Said He Came Up With the Periodic Table in a Dream</span><span class="mes-aside__tag">Science</span></span></a></li><li><a class="mes-aside__card" href="/science"><span class="mes-aside__text"><span class="mes-aside__name">MES Science</span><span class="mes-aside__tag">Collection</span></span></a></li></ul></div></aside></div><!-- /MES-COLS-END -->
-
     <script src="/main_js/comments.js?v=1.0.1" defer></script>
 
 
     <hr>
 
+    <a class="source-link" href="https://peakd.com/hive-128780/@mes/exam-problem-by-dr-judy-woo-59" target="_blank" rel="noopener">Originally published on Hive &rarr;</a>
+    <div class="retrieved-note">
+      Vote/comment/reblog counts and article text were fetched from the Hive blockchain
+      at build time (October 30, 2026) and are not live.
+    </div>
     <div id="footer" class="footer" role="contentinfo">
       <div class="footer__item-container">
         <div class="footer__item">
@@ -748,6 +1743,60 @@
   </div>
 
   <script>
+    function toggleChapter(listId) {
+      const list = document.getElementById(listId);
+      const arrowIcon = document.getElementById('arrowIcon-' + listId);
+      list.classList.toggle('hidden');
+      arrowIcon.textContent = list.classList.contains('hidden') ? '▼' : '▲';
+    }
+
+    // A Jump-to link (or a deep link such as #problem-3-...) can target a
+    // heading inside a collapsed chapter or sub-chapter, which is display:none
+    // and so can't be scrolled to -- expand every collapsed ancestor first.
+    // Runs in the click handler, before the browser performs the anchor jump,
+    // and on hashchange / page load.
+    function revealChapterFor(hash) {
+      if (!hash || hash.length < 2) return;
+      let target = document.getElementById(decodeURIComponent(hash.slice(1)));
+      let list;
+      const own = target && target.classList.contains('chapter-toggle') && document.getElementById(target.id + '-list');
+      if (own && own.classList.contains('hidden')) {
+        own.classList.remove('hidden');
+        const ownArrow = document.getElementById('arrowIcon-' + own.id);
+        if (ownArrow) ownArrow.textContent = '▲';
+      }
+      while (target && (list = target.closest('.chapter-toggle-list'))) {
+        if (list.classList.contains('hidden')) {
+          list.classList.remove('hidden');
+          const arrowIcon = document.getElementById('arrowIcon-' + list.id);
+          if (arrowIcon) arrowIcon.textContent = '▲';
+        }
+        target = list.parentElement;
+      }
+    }
+    document.addEventListener('click', function (e) {
+      const link = e.target.closest && e.target.closest('.toc-sidebar a, .toc-mobile a');
+      if (link) revealChapterFor(link.hash);
+    });
+    window.addEventListener('hashchange', function () {
+      revealChapterFor(location.hash);
+      const target = document.getElementById(decodeURIComponent(location.hash.slice(1)));
+      if (target) target.scrollIntoView();
+    });
+    revealChapterFor(location.hash);
+
+    function toggleAllChapters() {
+      const lists = document.querySelectorAll('.chapter-toggle-list');
+      const buttons = document.querySelectorAll('.toggle-all-chapters-btn');
+      const collapse = lists.length === 0 || !lists[0].classList.contains('hidden');
+      lists.forEach((list) => {
+        list.classList.toggle('hidden', collapse);
+        const arrowIcon = document.getElementById('arrowIcon-' + list.id);
+        if (arrowIcon) arrowIcon.textContent = collapse ? '▼' : '▲';
+      });
+      buttons.forEach((btn) => { btn.textContent = collapse ? 'Expand All' : 'Collapse All'; });
+    }
+
     const body = document.body;
     const themeToggle = document.getElementById('themeToggle');
 
@@ -775,54 +1824,219 @@
   </script>
 
   <script>
-    // view-mode: Default / Wide (fills the page width -- the "More like this" sidebar moves below,
-    // see main_js/aside.css) / Theater (fills the browser width, like YouTube's theater mode; also
-    // moves the sidebar below). Height is capped at min(85vh, 56.25vw) in theater mode so ultra-wide
-    // viewports don't get a comically tall player. Only one mode is active at a time.
+    // playlist-view-toggle: switches the Playlist chapter between Grid View
+    // (thumbnail cards, default) and List View (title + full thumbnail + every
+    // platform link) -- both are pre-rendered at build time in
+    // buildPlaylistSection(), so this just toggles which one is visible.
     (function () {
-      var embed = document.getElementById('videoEmbed');
-      var wideBtn = document.getElementById('wideToggle');
-      var theaterBtn = document.getElementById('theaterToggle');
-      if (!embed || !wideBtn || !theaterBtn) return;
-      var mode = 'default';
+      var gridBtn = document.getElementById('playlistGridBtn');
+      var listBtn = document.getElementById('playlistListBtn');
+      var grid = document.getElementById('playlistGrid');
+      var list = document.getElementById('playlistList');
+      if (!gridBtn || !listBtn || !grid || !list) return;
 
+      gridBtn.addEventListener('click', function () {
+        gridBtn.classList.add('active');
+        listBtn.classList.remove('active');
+        grid.classList.remove('view-hidden');
+        list.classList.add('view-hidden');
+      });
+      listBtn.addEventListener('click', function () {
+        listBtn.classList.add('active');
+        gridBtn.classList.remove('active');
+        list.classList.remove('view-hidden');
+        grid.classList.add('view-hidden');
+      });
+    })();
+  </script>
+
+  <script>
+    // text-size control: same STEPS / 'articleFontScale' key as
+    // add_text_size_control.py and mes.fm/math. Drives the --ts CSS variable,
+    // which only prose (paragraphs/lists/tables), the byline and the Jump To
+    // navigation multiply into their font-size -- headings, chapter titles
+    // ("Playlist"), cards and buttons stay fixed.
+    (function () {
+      var STEPS = [75, 87.5, 100, 112.5, 125, 137.5, 150, 162.5, 175, 200];
+      var body = document.body;
+      var downBtn = document.getElementById('textSizeDown');
+      var upBtn = document.getElementById('textSizeUp');
+      if (!body || !downBtn || !upBtn) return;
+      var index;
+      try { index = STEPS.indexOf(parseFloat(localStorage.getItem('articleFontScale'))); } catch (e) { index = -1; }
+      if (index === -1) index = STEPS.indexOf(100);
       function apply() {
+        body.style.setProperty('--ts', String(STEPS[index] / 100));
+        downBtn.disabled = index === 0;
+        upBtn.disabled = index === STEPS.length - 1;
+        try { localStorage.setItem('articleFontScale', String(STEPS[index])); } catch (e) {}
+      }
+      downBtn.addEventListener('click', function () { index = Math.max(0, index - 1); apply(); });
+      upBtn.addEventListener('click', function () { index = Math.min(STEPS.length - 1, index + 1); apply(); });
+      apply();
+    })();
+  </script>
+
+  <script>
+    // view-mode: Default / Wide (fills the page width -- the "More like this" sidebar moves below, see
+    // main_js/aside.css) / Theater (fills the browser width, like YouTube's theater mode; also moves the
+    // sidebar below). Delegated + per-embed since a page may hold several videos; only one mode per embed.
+    (function () {
+      function refreshBody() {
+        document.body.classList.toggle('video-wide', !!document.querySelector('.video-embed.wide-mode'));
+        document.body.classList.toggle('video-theater', !!document.querySelector('.video-embed.theater-mode'));
+      }
+
+      function modeOf(embed) {
+        if (embed.classList.contains('theater-mode')) return 'theater';
+        if (embed.classList.contains('wide-mode')) return 'wide';
+        return 'default';
+      }
+
+      function setEmbedMode(embed, wideBtn, theaterBtn, mode) {
+        embed.classList.toggle('wide-mode', mode === 'wide');
         embed.classList.toggle('theater-mode', mode === 'theater');
-        document.body.classList.toggle('video-wide', mode === 'wide');
-        document.body.classList.toggle('video-theater', mode === 'theater');
-        wideBtn.textContent = mode === 'wide' ? 'Default View' : 'Wide View';
-        wideBtn.setAttribute('aria-pressed', mode === 'wide' ? 'true' : 'false');
-        theaterBtn.textContent = mode === 'theater' ? 'Default View' : 'Theater Mode';
-        theaterBtn.setAttribute('aria-pressed', mode === 'theater' ? 'true' : 'false');
-        // AdSense's side rail ads only re-check google-side-rail-overlap exclusion
-        // zones on scroll/resize, not on a plain class-driven layout change, so nudge
-        // it to recompute once the width/height transition above has settled.
+        if (wideBtn) {
+          wideBtn.textContent = mode === 'wide' ? 'Default View' : 'Wide View';
+          wideBtn.setAttribute('aria-pressed', mode === 'wide' ? 'true' : 'false');
+        }
+        if (theaterBtn) {
+          theaterBtn.textContent = mode === 'theater' ? 'Default View' : 'Theater Mode';
+          theaterBtn.setAttribute('aria-pressed', mode === 'theater' ? 'true' : 'false');
+        }
+        refreshBody();
+        // AdSense's side rail ads only re-check google-side-rail-overlap exclusion zones on
+        // scroll/resize, not on a plain class-driven layout change, so nudge it to recompute
+        // once the width/height transition above has settled.
         setTimeout(function () {
           window.dispatchEvent(new Event('resize'));
         }, 300);
       }
 
-      function setMode(next) {
-        mode = mode === next ? 'default' : next;
-        apply();
-      }
-
-      wideBtn.addEventListener('click', function () { setMode('wide'); });
-      theaterBtn.addEventListener('click', function () { setMode('theater'); });
+      document.addEventListener('click', function (e) {
+        var wideBtn = e.target.closest('.wide-toggle-btn');
+        var theaterBtn = !wideBtn && e.target.closest('.theater-toggle-btn');
+        var toggle = wideBtn || theaterBtn;
+        if (!toggle) return;
+        var embed = toggle.closest('.video-embed');
+        if (!embed) return;
+        var wanted = wideBtn ? 'wide' : 'theater';
+        var embedWideBtn = embed.querySelector('.wide-toggle-btn');
+        var embedTheaterBtn = embed.querySelector('.theater-toggle-btn:not(.wide-toggle-btn)');
+        setEmbedMode(embed, embedWideBtn, embedTheaterBtn, modeOf(embed) === wanted ? 'default' : wanted);
+      });
 
       document.addEventListener('keydown', function (e) {
-        if (e.key === 'Escape' && mode !== 'default') setMode(mode);
+        if (e.key !== 'Escape') return;
+        document.querySelectorAll('.video-embed.wide-mode, .video-embed.theater-mode').forEach(function (embed) {
+          setEmbedMode(embed, embed.querySelector('.wide-toggle-btn'), embed.querySelector('.theater-toggle-btn:not(.wide-toggle-btn)'), 'default');
+        });
       });
     })();
   </script>
 
+  <script>
+    // auto-hide-controls: fades the theater-mode toggle and 3Speak badge out while
+    // a native <video> is playing and the pointer is idle, like YouTube's own
+    // control bar. Only applies to embeds that hold a real <video> (the 3Speak
+    // HLS player) -- YouTube iframes keep their badge.
+    (function () {
+      document.querySelectorAll('.video-embed').forEach(function (embed) {
+        var video = embed.querySelector('video');
+        var toggle = embed.querySelector('.theater-toggle-btn');
+        if (!video || !toggle) return;
+        var hideTimer = null;
 
+        function showControls() {
+          embed.classList.remove('controls-hidden');
+        }
+
+        function scheduleHide() {
+          clearTimeout(hideTimer);
+          if (video.paused || video.ended) return;
+          hideTimer = setTimeout(function () {
+            embed.classList.add('controls-hidden');
+          }, 2000);
+        }
+
+        video.addEventListener('play', scheduleHide);
+        video.addEventListener('pause', showControls);
+        video.addEventListener('ended', showControls);
+        embed.addEventListener('mousemove', function () {
+          showControls();
+          scheduleHide();
+        });
+        embed.addEventListener('mouseleave', scheduleHide);
+      });
+    })();
+  </script>
+
+  <script src="https://cdn.jsdelivr.net/npm/hls.js@1/dist/hls.min.js"></script>
+  <script src="/main_js/video-speed-hold.js?v=1" defer></script>
+  <script>
+    // speak-video-hls (build_em304_article.py): the 3Speak manifest is resolved at RUNTIME from play.3speak.tv/api/embed
+    // (a re-upload keeps working without a rebuild); if 3Speak fails, the player swaps itself for the YouTube embed.
+    // Timestamp links (a.ts-link[data-t]) seek whichever player is showing.
+    (function () {
+      var SLUG = 'mes/ta0jgic7', YT_ID = 'zNdifMfnqcs';
+      var embed = document.getElementById('emVideoEmbed');
+      var video = document.getElementById('speak-video-1');
+      if (!embed || !video) return;
+      var fellBack = false, frame = null;
+      function toYouTube(start) {
+        if (fellBack) return;
+        fellBack = true;
+        frame = document.createElement('iframe');
+        frame.src = 'https://www.youtube-nocookie.com/embed/' + YT_ID + (start ? '?start=' + start + '&autoplay=1' : '');
+        frame.title = 'YouTube video';
+        frame.allow = 'accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture';
+        frame.allowFullscreen = true;
+        embed.replaceChild(frame, video);
+        var badge = embed.querySelector('.video-badge');
+        if (badge) { badge.href = 'https://youtu.be/' + YT_ID; badge.innerHTML = 'View on YouTube &nearr;'; }
+        embed.classList.remove('controls-hidden');
+      }
+      function play(src) {
+        if (!src) { toYouTube(); return; }
+        if (window.Hls && Hls.isSupported()) {
+          var hls = new Hls();
+          hls.loadSource(src);
+          hls.attachMedia(video);
+          hls.on(Hls.Events.ERROR, function (e, data) { if (data && data.fatal) toYouTube(); });
+        } else if (video.canPlayType('application/vnd.apple.mpegurl')) {
+          video.src = src;
+          video.addEventListener('error', function () { toYouTube(); });
+        } else {
+          toYouTube();
+        }
+      }
+      fetch('https://play.3speak.tv/api/embed?v=' + SLUG)
+        .then(function (r) { return r.ok ? r.json() : null; })
+        .then(function (d) { play(d && d.success !== false && d.videoUrl); })
+        .catch(function () { toYouTube(); });
+
+      document.addEventListener('click', function (e) {
+        var a = e.target.closest && e.target.closest('a.ts-link[data-t]');
+        if (!a || e.ctrlKey || e.metaKey || e.shiftKey || e.button) return;
+        e.preventDefault();
+        var t = parseInt(a.getAttribute('data-t'), 10) || 0;
+        var y = embed.getBoundingClientRect().top + window.pageYOffset - 70;
+        window.scrollTo({ top: Math.max(0, y), behavior: 'smooth' });
+        if (fellBack) {
+          if (frame) frame.src = 'https://www.youtube-nocookie.com/embed/' + YT_ID + '?start=' + t + '&autoplay=1';
+          return;
+        }
+        try { video.currentTime = t; } catch (err) {}
+        var p = video.play(); if (p && p.catch) p.catch(function () {});
+      });
+    })();
+  </script>
 
   <script>
-    // image-lightbox: click any figure in the written solution (or the thumbnail)
-    // to pop it out full-viewport, with prev/next via on-screen arrows and keys.
+    // image-lightbox: click any post-body image to pop it out full-viewport, with
+    // prev/next via on-screen arrows and keyboard arrows.
     (function () {
-      var images = Array.prototype.slice.call(document.querySelectorAll('article img'));
+      var images = Array.prototype.slice.call(document.querySelectorAll('.post-body img'));
       if (!images.length) return;
 
       var overlay = document.getElementById('lightboxOverlay');
@@ -834,7 +2048,9 @@
       var nextBtn = document.getElementById('lightboxNext');
       var currentIndex = 0;
 
-      if (images.length < 2) { controlsEl.style.display = 'none'; }
+      if (images.length < 2) {
+        controlsEl.style.display = 'none';
+      }
 
       function show(index) {
         currentIndex = (index + images.length) % images.length;
@@ -843,24 +2059,30 @@
         imageEl.alt = img.alt || '';
         counterEl.textContent = (currentIndex + 1) + ' / ' + images.length;
       }
+
       function open(index) {
         show(index);
         overlay.classList.add('open');
         document.body.style.overflow = 'hidden';
       }
+
       function close() {
         overlay.classList.remove('open');
         document.body.style.overflow = '';
       }
 
       images.forEach(function (img, index) {
-        img.style.cursor = 'zoom-in';
         img.addEventListener('click', function () { open(index); });
       });
+
       closeBtn.addEventListener('click', close);
       prevBtn.addEventListener('click', function () { show(currentIndex - 1); });
       nextBtn.addEventListener('click', function () { show(currentIndex + 1); });
-      overlay.addEventListener('click', function (e) { if (e.target === overlay) close(); });
+
+      overlay.addEventListener('click', function (e) {
+        if (e.target === overlay) close();
+      });
+
       document.addEventListener('keydown', function (e) {
         if (!overlay.classList.contains('open')) return;
         if (e.key === 'Escape') close();
@@ -870,6 +2092,9 @@
     })();
   </script>
 
+  <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.11.3/jquery.min.js"></script>
+  <script>var MES_Vars = { mobile: false, hide_search: false, current_tab: 1, info_bar_tab: 0 };</script>
+  <script src="/main_js/main.js?v=1.0.3"></script>
   <script>
     // lightbox-zoom: adds +/- zoom and drag-to-pan on top of the existing
     // image lightbox. Purely additive -- it only touches the #lightboxZoom*
@@ -971,37 +2196,7 @@
 
       applyTransform();
     })();
-  </script>
-  <script>
-    // text-size control: same STEPS / 'articleFontScale' key as
-    // add_text_size_control.py and mes.fm/math. Drives the --ts CSS variable,
-    // which only prose (paragraphs/lists/tables), the byline and the Jump To
-    // navigation multiply into their font-size -- headings, chapter titles
-    // ("Playlist"), cards and buttons stay fixed.
-    (function () {
-      var STEPS = [75, 87.5, 100, 112.5, 125, 137.5, 150, 162.5, 175, 200];
-      var body = document.body;
-      var downBtn = document.getElementById('textSizeDown');
-      var upBtn = document.getElementById('textSizeUp');
-      if (!body || !downBtn || !upBtn) return;
-      var index;
-      try { index = STEPS.indexOf(parseFloat(localStorage.getItem('articleFontScale'))); } catch (e) { index = -1; }
-      if (index === -1) index = STEPS.indexOf(100);
-      function apply() {
-        body.style.setProperty('--ts', String(STEPS[index] / 100));
-        downBtn.disabled = index === 0;
-        upBtn.disabled = index === STEPS.length - 1;
-        try { localStorage.setItem('articleFontScale', String(STEPS[index])); } catch (e) {}
-      }
-      downBtn.addEventListener('click', function () { index = Math.max(0, index - 1); apply(); });
-      upBtn.addEventListener('click', function () { index = Math.min(STEPS.length - 1, index + 1); apply(); });
-      apply();
-    })();
-  </script>
-  <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.11.3/jquery.min.js"></script>
-  <script>var MES_Vars = { mobile: false, hide_search: false, current_tab: 99, info_bar_tab: -1 };</script>
-  <script src="/main_js/main.js?v=1.0.5"></script>
-  <!-- PAGEVIEW-TRACKING-INSERTED --><script src="/main_js/track.js" defer></script><script src="/main_js/info-bar-fit.js" defer></script><script>
+  </script><!-- PAGEVIEW-TRACKING-INSERTED --><script src="/main_js/track.js" defer></script><script src="/main_js/info-bar-fit.js" defer></script><script src="/main_js/jump-to.js?v=3" data-always defer></script><script>
   // Floating compact header bar (see #compact-nav CSS): appears once the
   // header + nav bar have scrolled off the top; nav links that don't fit
   // are dropped from the right, least important first, rather than
@@ -1056,5 +2251,5 @@
     update();
   })();
 </script>
-<script src="/main_js/site-search.js?v=1" defer></script><!-- MES-ASIDE-JS --><script src="/main_js/aside.js?v=2" defer></script><!-- /MES-ASIDE-JS --><!-- MES-BOTTOM-AD-JS --><script src="/main_js/bottom-ad.js?v=1" defer></script><!-- /MES-BOTTOM-AD-JS --></body>
+<script src="/main_js/site-search.js?v=1" defer></script><script src="/main_js/toc-flip.js?v=5" defer></script><!-- JUMP-ASIDE-JS --><script src="/main_js/jump-aside.js?v=1" defer></script><!-- /JUMP-ASIDE-JS --><script src="/main_js/link-pref.js?v=1" defer></script></body>
 </html>
