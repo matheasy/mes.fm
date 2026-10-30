@@ -101,6 +101,74 @@ function res() { return { code: 0, headers: {}, setHeader(k, v) { this.headers[k
   ok(r.code === 200 && r.body.range === 'yesterday' && r.body.daily.length <= 1, 'yesterday = one day');
   r = res(); await earnings({ query: { range: 'all' } }, r);
   ok(r.body.range === '30d', 'unknown range -> 30d');
+  // ---- Search Console on the ads page (?gsc=1, ?vs=1) + the join helpers
+  const GJ = require(path.join(ROOT, 'api/_gsc-join.js'));
+  ok(GJ.a2of('arg') === 'AR' && GJ.a3of('ar') === 'arg' && GJ.a2of('xkx') === 'XK' && GJ.a2of('zzz') === null, 'alpha-3 <-> alpha-2');
+  const pd = earnings.pacificDays(3, new Date());
+  const today2 = earnings.pacificDay(new Date());
+  ok(pd.length === 3 && pd[2] === today2 && pd[0] < pd[1], 'pacific days, oldest first, ending today');
+  const PC = 'https://mes.fm/percentagecalculator';
+  for (const d of pd) {
+    store['gscdash:day:' + d] = JSON.stringify(d === today2 ? { t: [0, 0, 0], f: 1 } : { t: [10, 900, 9], dev: [] });
+    store['gscdash:dp:' + d] = JSON.stringify({ s: [PC, 'https://mes.fm/timer'], r: [[0, 3, 800, 9], [1, 1, 100, 5]] });
+    store['gscdash:da:' + d] = JSON.stringify({ s: ['arg', 'MOBILE', 'usa'], r: [[0, 1, 2, 300, 9], [2, 1, 8, 600, 9]] });
+    store['gscdash:db:' + d] = JSON.stringify({ s: [PC, 'arg', 'MOBILE'], r: [[0, 1, 2, 1, 40, 9]] });
+  }
+  store['gscdash:meta'] = JSON.stringify({ lastDay: pd[1] });
+  store['gscdash:bing:GetRankAndTrafficStats'] = JSON.stringify({ at: new Date().toISOString(), rows: [[pd[0], 4, 50]] });
+  r = res(); await earnings({ query: { gsc: '1', range: '7d' } }, r);
+  ok(r.code === 200 && r.body.setup, 'gsc part answers');
+  const gd = r.body.daily.find((x) => x.d === pd[0]);
+  ok(gd && gd.gc === 10 && gd.gi === 900 && gd.bc === 4 && gd.bi === 50, 'daily Google + Bing search numbers');
+  ok(!('gc' in r.body.daily.find((x) => x.d === today2)), 'an empty fresh day is a gap, not 0');
+  ok(r.body.pages['/percentagecalculator'].i === 2400 && r.body.pages['/percentagecalculator'].c === 9, 'pages joined by path from the complete page breakdown');
+  ok(r.body.countries.AR.i === 900 && r.body.countries.US.c === 24, 'countries converted to alpha-2');
+  // days before the page breakdown existed fall back to b
+  delete store['gscdash:dp:' + pd[0]];
+  r = res(); await earnings({ query: { gsc: '1', range: '7d' } }, r);
+  ok(r.body.cover.bDays === 1 && r.body.pages['/percentagecalculator'].i === 1600 + 40, 'fallback to page x country x device, counted');
+  store['gscdash:dp:' + pd[0]] = JSON.stringify({ s: [PC], r: [[0, 3, 800, 9]] });
+  // Ads vs SEO
+  for (const d of pd) store['adsdash:gads:' + d] = JSON.stringify(d === pd[0] ? { camps: [], geo: [], lp: [] } : { camps: [['PC AR', 'MOBILE', 50, 5, 18000000000]], geo: [['AR', 'Argentina', 'PC AR', 50, 5, 18000000000], ['US', 'United States', 'Other', 10, 1, 18000000]], lp: [[PC + '?gclid=1', 'PC AR', 5, 18000000000]] });
+  r = res(); await earnings({ query: { vs: '1', days: '30', cc: 'ar', page: '/percentagecalculator' } }, r);
+  ok(r.code === 200 && r.body.basis === 'b' && r.body.cc === 'AR' && r.body.campaigns.join() === 'PC AR', 'vs: page + country');
+  const vr = r.body.rows.find((x) => x.d === pd[1]);
+  ok(vr && Math.abs(vr.spend - 1) < 1e-6 && vr.adClicks === 5 && vr.oc === 1 && vr.oi === 40, 'vs: spend in CAD, ad clicks, organic from page x country');
+  ok(r.body.rows.length === 30 && r.body.rows[0].oc === null, 'vs: days without Search Console data are null');
+  ok(r.body.ba.start === pd[1] && r.body.ba.n === 2 && r.body.ba.before.days === 1 && r.body.ba.before.i === 40 && r.body.ba.after.i === 80 && r.body.ba.imprChange === 0, 'vs: before / after around the first ad spend');
+  r = res(); await earnings({ query: { vs: '1', days: '30', page: '/percentagecalculator' } }, r);
+  ok(r.body.basis === 'p' && r.body.rows.find((x) => x.d === pd[1]).oi === 800, 'vs: page only = complete page totals');
+  r = res(); await earnings({ query: { vs: '1', days: '30', cc: 'US' } }, r);
+  ok(r.body.basis === 'a' && r.body.rows.find((x) => x.d === pd[1]).oi === 600 && r.body.rows.find((x) => x.d === pd[1]).adClicks === 1, 'vs: country only');
+  ok(GJ.beforeAfter([{ d: 'a', spend: 1 }]).why === 'spend-from-first-day' && GJ.beforeAfter([{ d: 'a', spend: 0 }]).why === 'no-spend', 'before / after edge cases');
+  const ba = GJ.beforeAfter([{ d: '1', spend: 0, oc: 1, oi: 10 }, { d: '2', spend: 0, oc: 1, oi: 10 }, { d: '3', spend: 2, oc: 2, oi: 20 }, { d: '4', spend: 2, oc: 4, oi: 30 }]);
+  ok(ba.n === 2 && ba.clicksChange === 200 && ba.imprChange === 150, 'before / after: per-day change');
+
+  // ---- chart notes API
+  const notes = require(path.join(ROOT, 'api/chart-notes.js'));
+  let nstore = null;
+  const ndeps = { get: async () => nstore, set: async (v) => { nstore = v; } };
+  let n = await notes.respond({ method: 'POST', origin: 'https://evil.example', contentType: 'application/json', body: { op: 'add', d: '2026-10-20', t: 'x' } }, ndeps);
+  ok(n.status === 403, 'notes: other origins refused');
+  n = await notes.respond({ method: 'POST', origin: 'https://mes.fm', contentType: 'text/plain', body: '{}' }, ndeps);
+  ok(n.status === 415, 'notes: JSON only');
+  n = await notes.respond({ method: 'POST', origin: 'https://mes.fm', contentType: 'application/json', body: JSON.stringify({ op: 'add', d: '2026-10-20', t: '  Argentina\ncampaigns  started ' }) }, ndeps);
+  ok(n.status === 200 && n.body.note.t === 'Argentina campaigns started' && /^[0-9a-f]{12}$/.test(n.body.note.id), 'notes: add (text tidied)');
+  const nid = n.body.note.id;
+  n = await notes.respond({ method: 'POST', origin: 'https://mes.fm', contentType: 'application/json', body: { op: 'add', d: '2026-10-01', t: 'earlier' } }, ndeps);
+  n = await notes.respond({ method: 'GET' }, ndeps);
+  ok(n.body.notes.length === 2 && n.body.notes[0].d === '2026-10-01', 'notes: listed oldest day first');
+  ok((await notes.respond({ method: 'POST', origin: 'https://mes.fm', contentType: 'application/json', body: { op: 'add', d: '2026-13-40', t: 'x' } }, ndeps)).status === 400, 'notes: bad date refused');
+  ok((await notes.respond({ method: 'POST', origin: 'https://mes.fm', contentType: 'application/json', body: { op: 'add', d: '2026-10-02', t: '   ' } }, ndeps)).status === 400, 'notes: empty text refused');
+  n = await notes.respond({ method: 'POST', origin: 'https://mes.fm', contentType: 'application/json', body: { op: 'update', id: nid, t: 'edited', d: '2026-10-21' } }, ndeps);
+  ok(n.status === 200 && n.body.note.t === 'edited' && n.body.note.d === '2026-10-21', 'notes: update');
+  n = await notes.respond({ method: 'POST', origin: 'https://mes.fm', contentType: 'application/json', body: { op: 'delete', id: nid } }, ndeps);
+  ok(n.status === 200 && JSON.parse(nstore).length === 1, 'notes: delete');
+  ok((await notes.respond({ method: 'POST', origin: 'https://mes.fm', contentType: 'application/json', body: { op: 'delete', id: 'nope' } }, ndeps)).status === 404, 'notes: unknown id -> 404');
+  ok(notes.cleanText('a'.repeat(300)).length === 200, 'notes: at most 200 characters');
+  const mw = require('fs').readFileSync(path.join(ROOT, 'middleware.js'), 'utf8');
+  ok(/'\/api\/chart-notes'/.test(mw), 'notes API is behind the password');
+
   console.log(`${passes} passed, ${fails} failed`);
   process.exit(fails ? 1 : 0);
 })();

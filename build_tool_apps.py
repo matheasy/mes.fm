@@ -899,7 +899,7 @@ APPS = {
     "ads": dict(title="MES Ads", page_title="Ads: Earnings vs Spend",
                 tag="AdSense earnings vs Google Ads spend.", accent="#2e7d32", dark="#1b5e20", tint="#e8f5e9",
                 desc="AdSense earnings against Google Ads spend per day, landing page, country, device and campaign, and whether ad visitors come back.",
-                js_v="11", no_ads=True, js_path="earnings/js/earnings.js", logo_from="earnings",
+                js_v="12", no_ads=True, js_path="earnings/js/earnings.js", logo_from="earnings",
                 head_extra='<meta name="robots" content="noindex, nofollow">' + PAGE3_HEAD),
     # MES Search Console (private, mes.fm/search-console, behind the middleware.js password like /ads): Google Search Console
     # (pushed by google-ads/search-console-gsc-script.js -> api/search-console-ingest.js) + Bing Webmaster API (env BING_WEBMASTER_KEY),
@@ -908,7 +908,7 @@ APPS = {
     "search-console": dict(title="MES Search Console", page_title="Search Console: Google and Bing Search Performance",
                 tag="Google and Bing search clicks, impressions and positions.", accent="#1a73e8", dark="#1557b0", tint="#e8f0fe",
                 desc="Private dashboard: Google Search Console and Bing Webmaster clicks, impressions, CTR and average position for mes.fm, by day, query, page, country and device.",
-                js_v="4", no_ads=True,
+                js_v="5", no_ads=True,
                 head_extra='<meta name="robots" content="noindex, nofollow">' + PAGE3_HEAD),
     # How much do YouTubers make?: leaderboard of big channels with ESTIMATED ad revenue (companion of /youtubemoney, ad-free like it). Data = mes.fm/how-much-do-youtubers-make/data/channels.json
     # (update_youtuber_snapshot.py), live refresh = mes.fm/api/youtuber-stats.js; lib.js = maths + a copy of the calculator's RPM tables (node-testable:

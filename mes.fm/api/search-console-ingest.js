@@ -8,9 +8,10 @@
 //         days: { "YYYY-MM-DD": { t: [clicks, impressions, position], dev: [[device, clicks, impressions, position], ...],
 //                                 f: 1 when Google still calls the day incomplete ("fresh data"),
 //                                 h: [[hour 0-23 Pacific, clicks, impressions, position], ...] (hourly, the last few days only) } },
-//         dims: { "YYYY-MM-DD": { a: SET, b: SET, q: SET } }  (day-by-day breakdowns, the last ~180 days, used for filters)
+//         dims: { "YYYY-MM-DD": { a: SET, p: SET, b: SET, q: SET } }  (day-by-day breakdowns, the last ~180 days, used for filters)
 //         SET = { s: [strings], r: [[string indexes..., clicks, impressions, position]] }, a dictionary-encoded table:
 //           a = [country, device] (complete: no query / page dimension, so Google hides nothing),
+//           p = [page] (complete page totals: the fewer dimensions, the less Search Console leaves out; script v3+),
 //           b = [page, country, device], q = [query, page, country, device] (rare queries hidden by Google).
 //         sums: { "7": { cur: SUM, prev: SUM }, "28": ..., "90": ..., "365": ... } }
 // SUM = { start, end, pages: [[page, c, i, pos]], queries: [[query, c, i, pos]], countries: [[cc, c, i, pos]],
@@ -19,7 +20,7 @@
 // itself (an average of daily top-N rows is wrong for the long tail), and reading 2 x 365 day blobs per request would be
 // tens of MB. Day rows (totals + devices, tiny) give the chart; the summaries give the tables.
 // Stored: gscdash:day:<date> (one key per day), gscdash:sum:<range>:<cur|prev>, gscdash:meta (written with day rows),
-// gscdash:at (time of the last POST), gscdash:da|db|dq:<date> (breakdowns, 200 days). ~16 months expiry.
+// gscdash:at (time of the last POST), gscdash:da|dp|db|dq:<date> (breakdowns, 200 days). ~16 months expiry.
 const crypto = require('crypto');
 
 const TTL = 490 * 86400; // ~16 months
@@ -37,7 +38,7 @@ const DATE = /^\d{4}-\d{2}-\d{2}$/;
 const DIM_TTL = 200 * 86400;
 const MAX_DIM_DATES = 45; // per POST (the script sends a few days at a time)
 // indexes per row and the most strings / rows one day may carry
-const DIMSETS = { a: { n: 2, s: 3000, r: 4000 }, b: { n: 3, s: 6000, r: 8000 }, q: { n: 4, s: 14000, r: 8000 } };
+const DIMSETS = { a: { n: 2, s: 3000, r: 4000 }, p: { n: 1, s: 6000, r: 6000 }, b: { n: 3, s: 6000, r: 8000 }, q: { n: 4, s: 14000, r: 8000 } };
 
 function sameKey(given, expected) {
   if (!given || !expected) return false;

@@ -308,6 +308,17 @@
   var FILTERS = [];
   try { FILTERS = JSON.parse(sessionStorage.getItem('mes-gsc:filters') || '[]'); if (!Array.isArray(FILTERS)) FILTERS = []; } catch (e) { FILTERS = []; }
   var DATA = null, TFILTER = '', NOTE = '', SEL = null;
+  // ticked table rows drawn as their own lines in the Day by day chart (like /stats): at most 8, colour = the tick box
+  var LCOL = ['#e8710a', '#d01884', '#188038', '#b06000', '#c5221f', '#6d4c41', '#7a7f86', '#00a3a3'];
+  var MAXL = 8, LINES = [], LDATA = {}, LERR = '';
+  try { LINES = JSON.parse(LS('lines', '[]')); } catch (e) { LINES = []; }
+  if (!Array.isArray(LINES)) LINES = [];
+  LINES = LINES.filter(function (l) { return l && /^(query|page|country|device)$/.test(l.dim) && typeof l.v === 'string' && typeof l.k === 'string' && typeof l.c === 'string'; }).slice(0, MAXL);
+  var HIDETOT = LS('hidetot', '0') === '1';
+  var lkey = function (l) { return l.dim + '\u0001' + l.k; };
+  var ctxKey = function () { return RANGE + '|' + JSON.stringify(FILTERS); };
+  function saveLines() { SAVE('lines', JSON.stringify(LINES)); }
+  function freeColor() { var used = LINES.map(function (l) { return l.c; }); return LCOL.filter(function (c) { return used.indexOf(c) === -1; })[0] || LCOL[0]; }
   var MOCK = /^(127\.0\.0\.1|localhost|\[::1\])$/.test(location.hostname);
   var $ = function (id) { return document.getElementById(id); };
   var esc = function (s) { var d = document.createElement('div'); d.textContent = String(s == null ? '' : s); return d.innerHTML; };
@@ -492,9 +503,33 @@
     var seq = ++loadSeq;
     $('gs-meta').textContent = 'Loading…';
     var url = '/api/search-console?range=' + RANGE + (FILTERS.length ? '&f=' + encodeURIComponent(JSON.stringify(FILTERS)) : '');
-    getJSON(url).then(function (d) { if (seq !== loadSeq) return; DATA = d; render(); })
+    getJSON(url).then(function (d) { if (seq !== loadSeq) return; DATA = d; render(); loadLines(); })
       .catch(function (e) { if (seq === loadSeq) $('gs-meta').textContent = 'Could not load the data (' + e.message + ').'; });
   }
+  // per-row lines: only the ones not loaded yet for this range + filters are asked for
+  var lineSeq = 0;
+  function loadLines() {
+    var ctx = ctxKey();
+    var miss = LINES.filter(function (l) { return !LDATA[ctx + '|' + lkey(l)]; });
+    if (!miss.length || isDay()) { if (DATA && !HIDE) drawChart(); return; }
+    var seq = ++lineSeq;
+    var url = '/api/search-console?range=' + RANGE + (FILTERS.length ? '&f=' + encodeURIComponent(JSON.stringify(FILTERS)) : '') +
+      '&lines=' + encodeURIComponent(JSON.stringify(miss.map(function (l) { return { dim: l.dim, v: l.v }; })));
+    getJSON(url).then(function (d) {
+      if (seq !== lineSeq || ctx !== ctxKey()) return;
+      LERR = d.error || '';
+      (d.lines || []).forEach(function (x, j) { var l = miss[j]; if (l) LDATA[ctx + '|' + lkey(l)] = { daily: x.daily || [], basis: x.basis }; });
+      if (d.clamped) LDATA[ctx + '|clamped'] = 1;
+      if (DATA && !HIDE) drawChart();
+    }).catch(function (e) { LERR = 'Could not load the row lines (' + e.message + ').'; if (DATA && !HIDE) drawChart(); });
+  }
+  function toggleLine(l) {
+    var k = lkey(l), i = LINES.findIndex(function (x) { return lkey(x) === k; });
+    if (i !== -1) LINES.splice(i, 1);
+    else { if (LINES.length >= MAXL) return; l.c = freeColor(); LINES.push(l); }
+    saveLines(); renderTable(false); loadLines();
+  }
+
   function ago(iso) {
     if (!iso) return 'never';
     var m = Math.round((Date.now() - Date.parse(iso)) / 60000);
@@ -593,7 +628,9 @@
     if (FILTERS.length && gOk()) {
       if (g.clamped) fn.push('Filters cover at most 90 days, so this shows 90 days.');
       if (g.basis === 'q') fn.push('With a query filter only the queries Google lists are counted (it hides rare queries for privacy), so totals are lower than the unfiltered ones.');
-      else if (g.basis === 'b') fn.push('With a page filter, a search that showed two mes.fm pages counts once for each page.');
+      else if (g.basis === 'p') fn.push('Page filter: Search Console’s own page totals (a search that showed two mes.fm pages counts once for each page).');
+      else if (g.basis === 'b') fn.push('A page filter together with a country or device filter uses Google’s page × country × device rows, which leave out small rows, so these read lower than Search Console’s own (page-only filters are exact).');
+      if (g.pFallback) fn.push(g.pFallback.want - g.pFallback.have + ' of these ' + g.pFallback.want + ' days were stored before the complete page breakdown existed, so they come from page × country × device rows and read far too low: paste the version 3 Apps Script and run backfillDims() once.');
       if (g.dimDays && g.dimDays.have < g.dimDays.want) fn.push('Google’s day-by-day breakdowns cover ' + g.dimDays.have + ' of these ' + g.dimDays.want + ' days' + (g.dimDays.have ? '' : ': run backfillDims() in the Apps Script once') + '.');
     }
     $('gs-fnote').hidden = !fn.length; $('gs-fnote').textContent = fn.join(' ');
@@ -658,13 +695,28 @@
         series.push({ src: s, cur: function (k) { return cur[k]; }, prev: function (k) { return prev[addDays(k, -off)]; }, prevKey: function (k) { return addDays(k, -off); } });
       });
     }
-    return { srcs: srcs, xs: xs, series: series, hourly: hourly };
+    // ticked rows (Google, by day): own lines in their tick-box colour
+    var lines = [];
+    if (!hourly && !isDay() && gOk()) {
+      var ctx = ctxKey();
+      LINES.forEach(function (l) {
+        var got = LDATA[ctx + '|' + lkey(l)]; if (!got) return;
+        var m = {}; got.daily.forEach(function (x) { m[x.d] = x; if (xs.indexOf(x.d) === -1) xs.push(x.d); });
+        lines.push({ line: l, src: { id: 'l' }, name: lname(l), color: l.c, cur: function (k) { return m[k]; }, prev: function () { return null; } });
+      });
+      xs.sort();
+    }
+    return { srcs: srcs, xs: xs, series: series, lines: lines, hourly: hourly };
   }
+  var lname = function (l) { return l.dim === 'country' ? country(l.k) : l.dim === 'device' ? (DEV[l.k] || l.k) : l.k; };
+  var LDASH = { c: '', i: '7 4', ctr: '2 3', p: '9 3 2 3' };
 
   function drawChart() {
     if (!DATA || HIDE) return;
     var svg = $('gs-svg'), box = $('gs-chart');
-    var model = chartModel(), xs = model.xs, series = model.series;
+    var model = chartModel(), xs = model.xs, lseries = model.lines;
+    var showTot = !HIDETOT || !lseries.length;
+    var series = showTot ? model.series : [];
     metricTiles(model.srcs);
     $('gs-ctitle').textContent = model.hourly ? 'Hour by hour' : 'Day by day';
     var W = box.clientWidth || 600, H = box.clientHeight || 220;
@@ -679,6 +731,10 @@
     if (isDay() && !model.hourly) notes.push(FILTERS.length ? 'Hourly numbers exist only for the whole site, so with a filter the day is one point.' : 'No hourly numbers for this day yet.');
     if (model.hourly && model.srcs.some(function (s) { return s.id === 'b'; })) notes.push('Bing has no hourly numbers.');
     if (model.hourly) notes.push('Hours are Pacific time.');
+    if (LINES.length && isDay()) notes.push('Ticked rows are drawn as lines for 7 days or more.');
+    else if (LINES.length && lseries.length < LINES.length && !LERR) notes.push('Loading the ticked rows…');
+    if (lseries.length) notes.push('Ticked rows: Google, from its day-by-day breakdowns' + (LDATA[ctxKey() + '|clamped'] ? ' (the last 90 days only)' : '') + (mets.length > 1 ? '; dash = metric (clicks solid, impressions dashed, CTR dotted)' : '') + '.');
+    if (LERR) notes.push(LERR);
     if (!xs.length) {
       svg.innerHTML = '<text x="' + W / 2 + '" y="' + H / 2 + '" text-anchor="middle" fill="' + cMuted + '" font-size="13">No data for this range</text>';
       $('gs-legend').innerHTML = ''; $('gs-cnote').textContent = notes.join(' '); $('gs-read').innerHTML = ''; box.onpointermove = box.onpointerdown = null; return;
@@ -693,7 +749,7 @@
     var scales = {};
     mets.forEach(function (m) {
       var lo = Infinity, hi = -Infinity;
-      series.forEach(function (sr) {
+      series.concat(lseries).forEach(function (sr) {
         if (m === 'p' && sr.src.id === 'b') return;
         xs.forEach(function (k) { [mval(sr.cur(k), m), CMP ? mval(sr.prev(k), m) : null].forEach(function (v) { if (v != null) { lo = Math.min(lo, v); hi = Math.max(hi, v); } }); });
       });
@@ -745,14 +801,27 @@
         if (CMP) s += poly(xs.map(function (k, i) { var v = mval(sr.prev(k), m); return v == null ? null : X(i).toFixed(1) + ',' + y(v).toFixed(1); }), col, 1.6, '5 4', 0.6);
         s += poly(xs.map(function (k, i) { var v = mval(sr.cur(k), m); return v == null ? null : X(i).toFixed(1) + ',' + y(v).toFixed(1); }), col, bing ? 2 : 2.6, bing ? '1.5 3.5' : '', 0);
       });
+      lseries.forEach(function (sr) {
+        var y = scales[m].y;
+        s += poly(xs.map(function (k, i) { var v = mval(sr.cur(k), m); return v == null ? null : X(i).toFixed(1) + ',' + y(v).toFixed(1); }), sr.color, 2.2, mets.length > 1 ? LDASH[m] : '', 0);
+      });
     });
+    // chart notes: markers on the x axis (daily view)
+    if (!model.hourly && window.MESNotes) s += window.MESNotes.marks({ days: xs, X: X, y0: padT + ih, y1: padT, size: 6 });
     // legend
     if (mets.length === 1) series.forEach(function (sr) { legend.push('<span><i class="gs-key" style="border-color:' + colorOf(sr, mets[0]) + '"></i>' + sr.src.name + '</span>'); });
     else {
       mets.forEach(function (m) { var q = MET.filter(function (x) { return x[0] === m; })[0]; legend.push('<span><i class="gs-key" style="border-color:' + cssv(q[2]) + '"></i>' + q[1] + '</span>'); });
       if (series.some(function (sr) { return sr.src.id === 'b'; })) legend.push('<span><i class="gs-key gs-key--dot"></i>Bing (dotted), Google (solid)</span>');
     }
-    if (CMP) legend.push('<span><i class="gs-key gs-key--dash"></i>' + (isDay() ? 'the day before' : 'previous ' + rangeName(DATA.rangeUsed || RANGE)) + '</span>');
+    if (CMP && series.length) legend.push('<span><i class="gs-key gs-key--dash"></i>' + (isDay() ? 'the day before' : 'previous ' + rangeName(DATA.rangeUsed || RANGE)) + '</span>');
+    if (lseries.length || LINES.length) {
+      legend.push('<button type="button" class="gs-lchip gs-lchip--tot" data-tot aria-pressed="' + (showTot ? 'true' : 'false') + '" title="Show or hide the totals while rows are ticked">Total</button>');
+      LINES.forEach(function (l) {
+        legend.push('<span class="gs-lchip" style="--lc:' + l.c + '"><i class="gs-key" style="border-color:' + l.c + '"></i>' + esc(lname(l)) +
+          '<button type="button" data-lrm="' + esc(lkey(l)) + '" aria-label="Remove the line for ' + esc(lname(l)) + '" title="Remove">×</button></span>');
+      });
+    }
     // x labels
     var every = Math.ceil(xs.length / Math.max(2, Math.floor(iw / (model.hourly ? 46 : 60))));
     xs.forEach(function (k, i) {
@@ -773,6 +842,10 @@
           var v = mval(sr.cur(k), m); if (v == null) return;
           out += '<circle cx="' + x.toFixed(1) + '" cy="' + scales[m].y(v).toFixed(1) + '" r="4.5" fill="' + colorOf(sr, m) + '" stroke="' + cssv('--gs-card') + '" stroke-width="2"/>';
         });
+        lseries.forEach(function (sr) {
+          var v = mval(sr.cur(k), m); if (v == null) return;
+          out += '<circle cx="' + x.toFixed(1) + '" cy="' + scales[m].y(v).toFixed(1) + '" r="4" fill="' + sr.color + '" stroke="' + cssv('--gs-card') + '" stroke-width="2"/>';
+        });
       });
       g.innerHTML = out;
       var narrow = W < 560;
@@ -790,11 +863,21 @@
           }).join('');
         };
         html += '<span class="gs-read__s"><i class="gs-dot gs-dot--' + sr.src.id + '"></i>' + part(x2) + '</span>';
-        if (CMP) {
+        if (CMP && showTot) {
           var pk = sr.prevKey ? sr.prevKey(k) : null;
           html += '<span class="gs-read__s gs-read__p">vs ' + (model.hourly ? 'the day before' : esc(fmtD(pk, true))) + ': ' + part(sr.prev(k)) + '</span>';
         }
       });
+      lseries.forEach(function (sr) {
+        var x3 = sr.cur(k);
+        html += '<span class="gs-read__s gs-read__l"><i class="gs-dot" style="background:' + sr.color + '"></i><span class="gs-read__ln">' + esc(sr.name) + '</span> ' +
+          (x3 ? mets.map(function (m) { var q = MET.filter(function (z) { return z[0] === m; })[0]; return '<span class="gs-read__m on" style="--mc:var(' + q[2] + ')">' + (m === 'c' ? int(x3.c) : m === 'i' ? (narrow ? short(x3.i) : int(x3.i)) : m === 'ctr' ? pctTxt(ctrOf(x3.c, x3.i)) : posTxt(x3.p)) + '<small> ' + (narrow ? { c: 'cl', i: 'im', ctr: 'ctr', p: 'pos' }[m] : q[1].toLowerCase()) + '</small></span>'; }).join('') : '<span class="gs-read__na">no data</span>') + '</span>';
+      });
+      if (!model.hourly && window.MESNotes) {
+        var dn = window.MESNotes.list().filter(function (n) { return n.d === k; });
+        html += dn.map(function (n) { return '<button type="button" class="gs-nread" data-nid="' + esc(n.id) + '" title="Edit this note">✎ ' + esc(n.t) + '</button>'; }).join('') +
+          '<button type="button" class="gs-nadd" data-nd="' + esc(k) + '" title="Add a note on this day (also: right-click the chart)">+ Note</button>';
+      }
       $('gs-read').innerHTML = html;
     }
     mark(Math.min(SEL, xs.length - 1));
@@ -810,12 +893,33 @@
     box.onpointerup = box.onpointercancel = function () { down = false; };
     var rest = SEL;
     box.onpointerleave = function (e) { down = false; if (e.pointerType === 'mouse') mark(rest); };
+    box.oncontextmenu = function (e) {
+      if (model.hourly || !window.MESNotes) return;
+      e.preventDefault(); pick(e); down = false; window.MESNotes.edit(xs[SEL]);
+    };
+    if (window.MESNotes) window.MESNotes.attach(box);
     box.tabIndex = 0;
     box.onkeydown = function (e) {
       if (e.key === 'ArrowLeft' || e.key === 'ArrowRight') { e.preventDefault(); mark(Math.max(0, Math.min(xs.length - 1, SEL + (e.key === 'ArrowLeft' ? -1 : 1)))); }
     };
   }
   window.addEventListener('resize', function () { if (DATA) drawChart(); });
+  // readout buttons (notes) and legend chips (row lines)
+  $('gs-read').addEventListener('click', function (e) {
+    var a = e.target.closest('.gs-nadd'), b = e.target.closest('.gs-nread');
+    if (a && window.MESNotes) window.MESNotes.edit(a.dataset.nd);
+    if (b && window.MESNotes) window.MESNotes.edit(null, b.dataset.nid);
+  });
+  $('gs-legend').addEventListener('click', function (e) {
+    var rm = e.target.closest('button[data-lrm]'), tot = e.target.closest('button[data-tot]');
+    if (rm) { LINES = LINES.filter(function (l) { return lkey(l) !== rm.dataset.lrm; }); saveLines(); renderTable(false); drawChart(); }
+    if (tot) { HIDETOT = !HIDETOT; SAVE('hidetot', HIDETOT ? '1' : '0'); drawChart(); }
+  });
+  (function notesHook() {
+    if (!window.MESNotes) { setTimeout(notesHook, 80); return; }
+    window.MESNotes.on(function () { if (DATA && !HIDE) drawChart(); });
+    $('gs-notes').onclick = function () { window.MESNotes.manage(); };
+  })();
 
   // ---- table (sortable, quick search, top N + Show all, draggable first column); a row click adds it as a filter
   var ST = {};
@@ -827,8 +931,9 @@
         { k: 'k', t: label, v: function (r) { return kind === 'countries' ? country(r.k) : kind === 'devices' ? (DEV[r.k] || r.k) : r.k; },
           h: function (r) {
             var name = kind === 'countries' ? country(r.k) : kind === 'devices' ? (DEV[r.k] || r.k) : r.k;
-            if (kind === 'pages') { var u = r.u || (r.k.charAt(0) === '/' ? 'https://mes.fm' + r.k : 'https://' + r.k); return esc(name) + '<a class="gs-open" href="' + esc(u) + '" target="_blank" rel="noopener" title="Open the page" aria-label="Open the page">↗</a>'; }
-            return esc(name);
+            name = (TSRC === 'google' ? lineBox(kind, r) : '') + esc(name);
+            if (kind === 'pages') { var u = r.u || (r.k.charAt(0) === '/' ? 'https://mes.fm' + r.k : 'https://' + r.k); return name + '<a class="gs-open" href="' + esc(u) + '" target="_blank" rel="noopener" title="Open the page" aria-label="Open the page">↗</a>'; }
+            return name;
           } },
         { k: 'c', t: 'Clicks', v: function (r) { return r.c; }, h: function (r) { return '<span class="gs-bar"><i style="width:' + (r.c / max * 100).toFixed(1) + '%;background:var(--accent)"></i></span>' + int(r.c) + chHtml(r.pi != null ? change(r.c, r.pc) : null); } },
         { k: 'i', t: 'Impressions', v: function (r) { return r.i; }, h: function (r) { return int(r.i) + chHtml(r.pi != null ? change(r.i, r.pi) : null); } },
@@ -838,6 +943,14 @@
       if (CMP && !noPrev) c.push({ k: 'dc', t: 'Click change', v: function (r) { return r.c - (r.pc || 0); }, h: function (r) { var d = r.c - (r.pc || 0); return '<span class="' + (d > 0 ? 'up' : d < 0 ? 'dn' : 'flat') + '">' + (d > 0 ? '+' : d < 0 ? '−' : '') + int(Math.abs(d)) + '</span>'; } });
       return c;
     };
+  }
+  // the tick box in front of a row: draw this row as its own line in the chart (its colour once ticked)
+  var rowLine = function (kind, r) { return { dim: TAB2DIM[kind], k: String(r.k), v: kind === 'pages' ? String(r.u || r.k) : String(r.k) }; };
+  function lineBox(kind, r) {
+    var l = rowLine(kind, r), k = lkey(l), on = LINES.filter(function (x) { return lkey(x) === k; })[0];
+    var off = !on && LINES.length >= MAXL;
+    return '<label class="gs-lck"' + (on ? ' style="--lc:' + on.c + '"' : '') + ' title="' + (off ? 'At most ' + MAXL + ' lines: untick one first' : on ? 'Remove its line from the chart' : 'Draw this row as its own line in the chart') + '">' +
+      '<input type="checkbox" data-lk="1"' + (on ? ' checked' : '') + (off ? ' disabled' : '') + ' aria-label="Line in the chart"></label>';
   }
   function renderTable(resetPage) {
     var s = TSRC === 'bing' ? DATA.bing : DATA.google;
@@ -854,7 +967,7 @@
         if (TAB === 'queries') note = 'Search Console hides rare queries for privacy, so these add up to less than the totals.';
         if (noPrev && CMP && !isDay()) note += (note ? ' ' : '') + 'No changes shown: Search Console keeps 16 months, so the ' + rangeName(DATA.rangeUsed || RANGE) + ' before this range are not complete.';
       }
-      note += (note ? ' ' : '') + 'Click a row to filter the whole page by it.';
+      note += (note ? ' ' : '') + 'Click a row to filter the whole page by it' + (TSRC === 'google' ? '; tick its box to draw it as its own line in the chart (up to ' + MAXL + ').' : '.');
     }
     $('gs-tnote').textContent = note;
     var all = rows.length;
@@ -898,9 +1011,11 @@
     st.shown = shown;
     if (onRow) {
       el.querySelectorAll('tbody tr').forEach(function (tr) {
-        var go = function (e) { if (e.target.closest('a')) return; onRow(st.shown[+tr.dataset.i]); };
+        var go = function (e) { if (e.target.closest('a') || e.target.closest('.gs-lck')) return; onRow(st.shown[+tr.dataset.i]); };
+        var lk = tr.querySelector('input[data-lk]');
+        if (lk) lk.addEventListener('change', function () { toggleLine(rowLine(st.kind, st.shown[+tr.dataset.i])); });
         tr.addEventListener('click', go);
-        tr.addEventListener('keydown', function (e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); go(e); } });
+        tr.addEventListener('keydown', function (e) { if (e.target.closest('.gs-lck')) return; if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); go(e); } });
       });
     }
     attachResizer(el);

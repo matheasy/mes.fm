@@ -4,7 +4,13 @@
 //   gscdash:day:<date>   totals + devices per day (+ f = fresh / incomplete day, h = hourly rows for the last few days)
 //   gscdash:sum:<range>:<cur|prev>   top lists worked out by Search Console over 7 / 28 / 90 / 365 days (unfiltered views)
 //   gscdash:da|db|dq:<date>   day-by-day breakdowns for the last ~180 days (filters, Today / Yesterday):
-//       a = [country, device] (complete), b = [page, country, device], q = [query, page, country, device] (Google hides rare queries)
+//       a = [country, device] (complete), p = [page] (complete, script v3+), b = [page, country, device],
+//       q = [query, page, country, device] (Google hides rare queries)
+//   Why p: Search Console drops more of a page's numbers the more dimensions a request has (rows for page x country x
+//   device leave out what Google treats as anonymised / rare, like the query rows do), so a page filter computed from b
+//   came out like the query table (Oct 2026: /percentagecalculator 705 impressions in 28 days against 23K in Search
+//   Console). Page-only filters therefore use p; b is only used when the page filter is combined with country / device
+//   (approximate, said on the page), and as a stand-in for days stored before p existed (flagged: g.pFallback).
 // Bing: calls the Bing Webmaster API server-side with the key in Vercel env BING_WEBMASTER_KEY (plain project-level
 //   variable; never sent to the browser or echoed in errors). GetRankAndTrafficStats = clicks / impressions per day,
 //   GetQueryStats / GetPageStats = weekly buckets (one row per query or page per week) with AvgImpressionPosition,
@@ -20,7 +26,8 @@ const RANGES = ['today', 'yesterday', '7', '28', '90', '365'];
 const SUM_RANGES = ['7', '28', '90', '365'];
 const FDIMS = ['query', 'page', 'country', 'device'];
 const FOPS = ['contains', 'exact', 'not'];
-const SETDIMS = { a: ['country', 'device'], b: ['page', 'country', 'device'], q: ['query', 'page', 'country', 'device'] };
+const SETDIMS = { a: ['country', 'device'], p: ['page'], b: ['page', 'country', 'device'], q: ['query', 'page', 'country', 'device'] };
+const MAX_LINES = 8;
 const MAX_FILTER_DAYS = 90;
 const BING_BASE = 'https://ssl.bing.com/webmaster/api.svc/json/';
 const BING_TTL = 6 * 3600;
@@ -98,6 +105,14 @@ function totalsOf(days) {
 // before a 365-day range has ~120 days at most, and a change against that would be meaningless.
 const covered = (have, want) => want > 0 && have >= Math.ceil(want * 0.9);
 
+// Pure: a day Google still calls fresh that has no impressions yet (today, minutes after midnight Pacific, or the
+// breakdowns not in yet) is not a real drop to 0: leave such days off the end of a series.
+function dropEmptyFresh(rows) {
+  let n = rows.length;
+  while (n > 0 && rows[n - 1].f && !rows[n - 1].i && !rows[n - 1].c) n--;
+  return n === rows.length ? rows : rows.slice(0, n);
+}
+
 function dayRow(d, b) {
   const o = { d, c: b.t[0], i: b.t[1], p: b.t[2] };
   if (b.f) o.f = 1;
@@ -107,7 +122,7 @@ function dayRow(d, b) {
 // Pure: build the Google part from stored blobs (unfiltered 7 / 28 / 90 / 365 days).
 function googlePart(meta, sumCur, sumPrev, dayBlobs, curDates, prevDates) {
   if (!meta && !sumCur && !Object.keys(dayBlobs).length) return { setup: false };
-  const daily = curDates.filter((d) => dayBlobs[d]).map((d) => dayRow(d, dayBlobs[d]));
+  const daily = dropEmptyFresh(curDates.filter((d) => dayBlobs[d]).map((d) => dayRow(d, dayBlobs[d])));
   const prevDaily = prevDates.filter((d) => dayBlobs[d]).map((d) => dayRow(d, dayBlobs[d]));
   const prevPartial = !covered(prevDaily.length, prevDates.length) || !sumPrev;
   const out = {
@@ -170,14 +185,16 @@ function decodeSet(set, kind) {
   return out;
 }
 
-// Which breakdown answers a filter set: any query filter needs the query table, a page filter the page table, else the
-// complete country x device table (the same totals Search Console shows).
+// Which breakdown answers a filter set: the one with the FEWEST dimensions that still has every filtered dimension,
+// because Search Console leaves more out the more dimensions a request has. Query filter -> q; page only -> p (complete
+// page totals, falls back to b on days stored before p existed); page + country / device -> b; country / device only ->
+// a (complete: the same totals Search Console shows).
 function basisOf(filters) {
   if (filters.some((f) => f.dim === 'query')) return 'q';
-  if (filters.some((f) => f.dim === 'page')) return 'b';
+  if (filters.some((f) => f.dim === 'page')) return filters.some((f) => f.dim === 'country' || f.dim === 'device') ? 'b' : 'p';
   return 'a';
 }
-const kindsFor = (filters) => { const b = basisOf(filters); return b === 'q' ? ['q'] : b === 'b' ? ['b', 'q'] : ['a', 'b', 'q']; };
+const kindsFor = (filters) => { const b = basisOf(filters); return b === 'q' ? ['q'] : b === 'b' ? ['b', 'q'] : b === 'p' ? ['p', 'b', 'q'] : ['a', 'p', 'b', 'q']; };
 
 // Pure: the Google part from day-by-day breakdowns (filters, or Today / Yesterday).
 // sets = { date: { a, b, q } } (parsed), dayBlobs = { date: day blob } (unfiltered day totals + hours).
@@ -188,7 +205,11 @@ function filteredPart(meta, dayBlobs, sets, curDates, prevDates, filters, opts) 
   const cache = {};
   const rowsOf = (d, kind) => {
     const key = d + kind;
-    if (!(key in cache)) cache[key] = sets[d] && sets[d][kind] ? decodeSet(sets[d][kind], kind).filter((r) => passes(r, filters)) : null;
+    if (!(key in cache)) {
+      let k = kind;
+      if (k === 'p' && !(sets[d] && sets[d].p)) k = 'b'; // days stored before the page breakdown existed
+      cache[key] = sets[d] && sets[d][k] ? decodeSet(sets[d][k], k).filter((r) => passes(r, filters)) : null;
+    }
     return cache[key];
   };
   const series = (dates) => {
@@ -201,12 +222,13 @@ function filteredPart(meta, dayBlobs, sets, curDates, prevDates, filters, opts) 
       for (const r of rows) { c += r.c; i += r.i; pw += r.p * r.i; }
       const o = { d, c, i, p: i ? Math.round(pw / i * 100) / 100 : 0 };
       if (dayBlobs[d] && dayBlobs[d].f) o.f = 1;
+      if (basis === 'p' && !(sets[d] && sets[d].p)) o.pb = 1;
       out.push(o);
     }
     return out;
   };
-  const daily = series(curDates), prevDaily = series(prevDates);
-  const have = (dates, kind) => dates.filter((d) => sets[d] && sets[d][kind]).length;
+  const daily = dropEmptyFresh(series(curDates)), prevDaily = series(prevDates);
+  const have = (dates, kind) => dates.filter((d) => sets[d] && (sets[d][kind] || (kind === 'p' && sets[d].b))).length;
   const prevPartial = !covered(prevDaily.length, prevDates.length) || !covered(have(prevDates, 'q'), prevDates.length);
   const table = (dates, kind, dim) => {
     const m = new Map();
@@ -220,7 +242,7 @@ function filteredPart(meta, dayBlobs, sets, curDates, prevDates, filters, opts) 
     }
     return [...m.values()].map(fin).sort((a, b) => b.c - a.c || b.i - a.i);
   };
-  const tkind = { queries: 'q', pages: basis === 'q' ? 'q' : 'b', countries: basis, devices: basis };
+  const tkind = { queries: 'q', pages: basis === 'q' ? 'q' : basis === 'b' ? 'b' : 'p', countries: basis === 'p' ? 'b' : basis, devices: basis === 'p' ? 'b' : basis };
   const tdim = { queries: 'query', pages: 'page', countries: 'country', devices: 'device' };
   const out = {
     setup: true, meta: meta || null, filtered: !unfiltered, basis,
@@ -230,6 +252,10 @@ function filteredPart(meta, dayBlobs, sets, curDates, prevDates, filters, opts) 
     fresh: daily.some((x) => x.f),
     dimDays: { have: have(curDates, unfiltered ? 'q' : basis), want: curDates.length },
   };
+  if (basis === 'p') {
+    const pDays = curDates.filter((d) => sets[d] && sets[d].p).length;
+    if (pDays < curDates.length) out.pFallback = { have: pDays, want: curDates.length };
+  }
   for (const t of Object.keys(tkind)) {
     out[t] = joinPrev(table(curDates, tkind[t], tdim[t]), table(prevDates, tkind[t], tdim[t]), prevPartial).slice(0, t === 'queries' ? 1000 : 500);
   }
@@ -239,6 +265,29 @@ function filteredPart(meta, dayBlobs, sets, curDates, prevDates, filters, opts) 
     out.prevHourly = hrs(prevDates[0]);
   }
   return out;
+}
+
+// ---- per-item lines (the ticked rows of a table, one chart line each)
+// Pure: validate ?lines=[{dim, v}] (at most 8).
+function parseLines(raw) {
+  let arr;
+  try { arr = JSON.parse(String(raw).slice(0, 4000)); } catch (e) { return { error: 'bad lines' }; }
+  if (!Array.isArray(arr) || !arr.length || arr.length > MAX_LINES) return { error: 'bad lines' };
+  const lines = [];
+  for (const l of arr) {
+    if (!l || !FDIMS.includes(l.dim) || typeof l.v !== 'string' || !l.v.trim()) return { error: 'bad line' };
+    lines.push({ dim: l.dim, v: l.v.trim().slice(0, 200) });
+  }
+  return { lines };
+}
+// Pure: one day-by-day series per line = the page's filters AND "<dim> is exactly <v>", each from the breakdown that
+// answers that combination (basisOf), so a page line uses the complete page totals like a page filter does.
+function linesPart(sets, dayBlobs, dates, filters, lines) {
+  return lines.map((l) => {
+    const fs = filters.concat([{ dim: l.dim, op: 'exact', v: l.v }]);
+    const part = filteredPart(null, dayBlobs, sets, dates, [], fs);
+    return { dim: l.dim, v: l.v, basis: part.basis, daily: part.daily };
+  });
 }
 
 // Pure: the queries of one page from a summary's [page, query, c, i, pos] rows.
@@ -397,7 +446,7 @@ async function mgetChunked(keys) {
 }
 
 // The Google answer. deps.mget(keys) -> values (strings or null); split out so the browser mock (sc-mock.js) runs this same code.
-async function googleAnswer(range, filters, today, deps) {
+async function googleAnswer(range, filters, today, deps, lines) {
   const [metaS, atS] = await deps.mget(['gscdash:meta', 'gscdash:at']);
   const meta = pj(metaS);
   if (meta && atS) meta.at = atS;
@@ -413,6 +462,16 @@ async function googleAnswer(range, filters, today, deps) {
     }));
     return { blobs, sets };
   };
+  if (lines) {
+    // lines cover the day-by-day breakdowns only: at most the last 90 days of the range
+    const end = (meta && meta.lastDay) || today;
+    const dates = range === 'today' ? [today] : range === 'yesterday' ? [addDays(today, -1)]
+      : datesBetween(addDays(end, -(Math.min(Number(range), MAX_FILTER_DAYS) - 1)), end);
+    const kinds = new Set();
+    lines.forEach((l) => { const b = basisOf(filters.concat([{ dim: l.dim, op: 'exact', v: l.v }])); kinds.add(b); if (b === 'p') kinds.add('b'); });
+    const { blobs, sets } = await readDays(dates, [...kinds]);
+    return { lines: linesPart(sets, blobs, dates, filters, lines), clamped: !/^(today|yesterday)$/.test(range) && Number(range) > MAX_FILTER_DAYS };
+  }
   if (range === 'today' || range === 'yesterday') {
     const D = range === 'today' ? today : addDays(today, -1), P = addDays(D, -1);
     const { blobs, sets } = await readDays([P, D], kindsFor(filters));
@@ -456,6 +515,14 @@ async function respond(q, deps) {
   if (pf.error) return { status: 400, body: { error: pf.error } };
   const filters = pf.filters;
   const today = ptDate(deps.now || Date.now());
+  if (q.lines != null && q.lines !== '') {
+    const pl = parseLines(q.lines);
+    if (pl.error) return { status: 400, body: { error: pl.error } };
+    try {
+      const g = await googleAnswer(range, filters, today, deps, pl.lines);
+      return { status: 200, body: { range, today, filters, lines: g.lines, clamped: g.clamped } };
+    } catch (e) { return { status: 200, body: { range, today, filters, lines: [], error: 'Stored data could not be read.' } }; }
+  }
   const result = { range, today, filters };
   try {
     result.google = await googleAnswer(range, filters, today, deps);
@@ -513,4 +580,4 @@ async function handler(req, res) {
 }
 
 module.exports = handler;
-Object.assign(module.exports, { normPage, gscRows, googlePart, filteredPart, parseFilters, passes, decodeSet, basisOf, pageQueries, bingDate, slimBing, bingAgg, bingPart, bingFilter, joinPrev, scrub, respond, ptDate, _mem: MEM });
+Object.assign(module.exports, { parseLines, linesPart, dropEmptyFresh, normPage, gscRows, googlePart, filteredPart, parseFilters, passes, decodeSet, basisOf, pageQueries, bingDate, slimBing, bingAgg, bingPart, bingFilter, joinPrev, scrub, respond, ptDate, _mem: MEM });

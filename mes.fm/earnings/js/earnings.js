@@ -7,7 +7,12 @@
   var RANGE = '30d';
   try { RANGE = localStorage.getItem('mes-ads:range') || '30d'; } catch (e) {}
   if (!/^(today|yesterday|7d|30d|90d|365d)$/.test(RANGE)) RANGE = '30d';
-  var DATA = null, RET = null;
+  var DATA = null, RET = null, GSC = null, VS = null;
+  // Search Console lines on the daily chart (right axis): gc / gi = Google clicks / impressions, bc / bi = Bing (localStorage)
+  var SEOL = ['gc'];
+  try { var sv = localStorage.getItem('mes-ads:seo'); if (sv != null) SEOL = sv ? sv.split(',') : []; } catch (e) {}
+  SEOL = SEOL.filter(function (x) { return /^(gc|gi|bc|bi)$/.test(x); });
+  var SEON = { gc: 'Google clicks', gi: 'Google impressions', bc: 'Bing clicks', bi: 'Bing impressions' };
   var esc = function (s) { var d = document.createElement('div'); d.textContent = String(s); return d.innerHTML; };
   var $ = function (id) { return document.getElementById(id); };
   // Currency switch: everything arrives in CAD; the chosen currency (CAD / VND / USD, localStorage) is applied when drawing.
@@ -173,6 +178,10 @@
     ]).then(function (res) {
       DATA = res[0]; RET = res[1];
       render();
+      var r0 = RANGE;
+      fetch('/api/earnings?gsc=1&range=' + RANGE, { cache: 'no-store' }).then(function (r) { return r.ok ? r.json() : null; }).catch(function () { return null; })
+        .then(function (g) { if (r0 !== RANGE) return; GSC = g; render(); });
+      if (!VS) loadVs();
     }).catch(function (e) {
       $('ad-meta').textContent = 'Could not load the data (' + e.message + ').';
     });
@@ -229,9 +238,26 @@
     if (MODE === 'both') T.push(tile(t.pv ? (t.clicks / t.pv * 1000).toFixed(1) : '–', 'ad clicks per 1,000 views'));
     $('ad-tiles').innerHTML = T.join('');
     drawChart();
+    if (VS) drawVs();
 
     var ret = {};
     ((RET && RET.rows) || []).forEach(function (r) { ret[r.path] = r; });
+    // Search Console columns (organic = Google Search): by landing path and by country (alpha-2)
+    var gOk = GSC && GSC.setup;
+    var gp = function (path) { return gOk && GSC.pages ? GSC.pages[path] || (path.charAt(0) === '/' ? { c: 0, i: 0 } : null) : null; };
+    var gc = function (cc) { return gOk && GSC.countries && cc ? GSC.countries[String(cc).toUpperCase()] || { c: 0, i: 0 } : null; };
+    var gTot = function (k) { if (!gOk) return '–'; var sum = 0; (GSC.daily || []).forEach(function (x) { sum += (k === 'c' ? x.gc : x.gi) || 0; }); return int(sum); };
+    var sn = [];
+    if (!GSC) sn.push('Loading the Search Console numbers…');
+    else if (!GSC.setup) sn.push('No Search Console numbers yet (see mes.fm/search-console).');
+    else {
+      var cv = GSC.cover || {};
+      sn.push('Organic = Google Search clicks / impressions (Search Console) for the same days' + (GSC.lastDay ? ', which Google has up to ' + esc(GSC.lastDay) + ' (it lags 2–3 days)' : '') + '.');
+      if (cv.from === 'summary') sn.push('For 365 days the page and country columns are Search Console’s own 365-day totals (' + esc(cv.sumStart || '') + ' – ' + esc(cv.sumEnd || '') + ').');
+      else if (cv.bDays) sn.push(cv.bDays + ' of these days come from an older, thinner page breakdown (paste the version 3 Search Console script and run backfillDims()).');
+      if (SEOL.some(function (x) { return x.charAt(0) === 'b'; })) sn.push(GSC.bingAt ? 'Bing: day totals as last read by the Search Console page (' + ago(GSC.bingAt) + ').' : 'Bing: open mes.fm/search-console once so its Bing numbers are cached.');
+    }
+    $('ad-seonote').textContent = sn.join(' ');
     var maxRev = Math.max.apply(null, d.pages.map(function (p) { return p.rev; }).concat([0]));
     table('t-pages', 'm-pages', [
       { k: 'path', t: 'Page', v: function (r) { return r.path; }, h: function (r) { if (r.path.charAt(0) === '(') return '<i>' + esc(r.path) + '</i>'; var u = r.path.charAt(0) === '/' ? r.path : 'https://' + r.path; return '<a href="' + esc(u) + '" target="_blank" rel="noopener">' + esc(r.path) + '</a>'; } },
@@ -244,6 +270,8 @@
       { k: 'spk', t: 'Spent / 1k views', m: 'pk', v: function (r) { return r.pv ? r.spend / r.pv : 0; }, h: function (r) { return r.spend ? C(perK(r.spend, r.pv)) : '–'; }, f: C(perK(t.spend, t.pv)) },
       { k: 'npk', t: 'Net / 1k views', m: 'pk', v: function (r) { return r.pv ? (r.rev - r.spend) / r.pv : 0; }, h: function (r) { return signedK(r.rev - r.spend, r.pv); }, f: signedK(t.rev - t.spend, t.pv) },
       { k: 'net', t: 'Earn − spend', m: 'tot', v: function (r) { return r.rev - r.spend; }, h: function (r) { return signed(r.rev - r.spend); }, f: signed(t.rev - t.spend) },
+      { k: 'oc', t: 'Organic clicks', v: function (r) { var x = gp(r.path); return x ? x.c : -1; }, h: function (r) { var x = gp(r.path); return x ? int(x.c) : '–'; }, f: gTot('c') },
+      { k: 'oi', t: 'Organic impr.', v: function (r) { var x = gp(r.path); return x ? x.i : -1; }, h: function (r) { var x = gp(r.path); return x ? int(x.i) : '–'; }, f: gTot('i') },
       { k: 'back', t: 'Came back', v: function (r) { var x = ret[r.path]; return x && x.arrivals ? x.returned / x.arrivals : -1; }, h: function (r) { var x = ret[r.path]; return x && x.arrivals ? int(x.returned) + '<small>(' + pct(x.returned, x.arrivals) + ' of ' + int(x.arrivals) + ')</small>' : '–'; } },
     ], d.pages, { sort: 'rev', top: 15, empty: 'No AdSense or Google Ads data for this range yet.',
       foot: true });
@@ -259,6 +287,8 @@
       { k: 'spk', t: 'Spent / 1k views', m: 'pk', v: function (r) { return r.pv ? r.spend / r.pv : 0; }, h: function (r) { return r.spend ? C(perK(r.spend, r.pv)) : '–'; }, f: C(perK(t.spend, t.pv)) },
       { k: 'npk', t: 'Net / 1k views', m: 'pk', v: function (r) { return r.pv ? (r.rev - r.spend) / r.pv : 0; }, h: function (r) { return signedK(r.rev - r.spend, r.pv); }, f: signedK(t.rev - t.spend, t.pv) },
       { k: 'net', t: 'Earn − spend', m: 'tot', v: function (r) { return r.rev - r.spend; }, h: function (r) { return signed(r.rev - r.spend); }, f: signed(t.rev - t.spend) },
+      { k: 'oc', t: 'Organic clicks', v: function (r) { var x = gc(r.cc); return x ? x.c : -1; }, h: function (r) { var x = gc(r.cc); return x ? int(x.c) : '–'; }, f: gTot('c') },
+      { k: 'oi', t: 'Organic impr.', v: function (r) { var x = gc(r.cc); return x ? x.i : -1; }, h: function (r) { var x = gc(r.cc); return x ? int(x.i) : '–'; }, f: gTot('i') },
     ], d.countries, { sort: 'rev', top: 15, foot: true });
 
     table('t-campaigns', 'm-campaigns', [
@@ -305,53 +335,198 @@
   }
   function tile(v, label, cls) { return '<div class="tu-stat ' + (cls || '') + '"><div class="tu-stat__value">' + v + '</div><div class="tu-stat__label">' + esc(label) + '</div></div>'; }
 
-  // ---- chart: earnings bars + spend line
+  // ---- chart: earnings bars + spend line, Search Console lines on a right axis, chart notes on the x axis
+  function niceTop(max) { max = max || 1; var step = Math.pow(10, Math.floor(Math.log10(max))); return Math.ceil(max / step) * step; }
+  var shortN = function (v) { return v >= 1e6 ? +(v / 1e6).toFixed(1) + 'M' : v >= 1e4 ? Math.round(v / 1e3) + 'k' : v >= 1e3 ? +(v / 1e3).toFixed(1) + 'k' : String(Math.round(v)); };
+  function paintSeoT() { document.querySelectorAll('#ad-seot button[data-g]').forEach(function (b) { b.setAttribute('aria-pressed', SEOL.indexOf(b.dataset.g) !== -1 ? 'true' : 'false'); }); }
+  paintSeoT();
+  $('ad-seot').onclick = function (e) {
+    var b = e.target.closest('button[data-g]'); if (!b) return;
+    var i = SEOL.indexOf(b.dataset.g);
+    if (i === -1) SEOL.push(b.dataset.g); else SEOL.splice(i, 1);
+    try { localStorage.setItem('mes-ads:seo', SEOL.join(',')); } catch (x) {}
+    paintSeoT(); if (DATA) render();
+  };
   function drawChart() {
     var days = DATA.daily, svg = $('ad-svg'), box = $('ad-chart');
-    var W = box.clientWidth || 600, H = box.clientHeight || 200, padL = 46, padB = 22, padT = 8, padR = 8;
+    var gmap = {};
+    ((GSC && GSC.setup && GSC.daily) || []).forEach(function (x) { gmap[x.d] = x; });
+    var seo = GSC && GSC.setup ? SEOL.filter(function (k) { return days.some(function (x) { return gmap[x.d] && gmap[x.d][k] != null; }); }) : [];
+    var W = box.clientWidth || 600, H = box.clientHeight || 200, padL = 46, padB = 22, padT = 8, padR = seo.length ? 44 : 8;
     svg.setAttribute('viewBox', '0 0 ' + W + ' ' + H);
     if (!days.length) { svg.innerHTML = '<text x="' + W / 2 + '" y="' + H / 2 + '" text-anchor="middle" fill="currentColor" font-size="13">No data yet</text>'; svg.style.color = 'var(--ad-muted)'; return; }
     var max = 0; days.forEach(function (x) { max = Math.max(max, x.rev, x.spend); });
-    max = max || 1;
-    var step = Math.pow(10, Math.floor(Math.log10(max))), nice = Math.ceil(max / step) * step;
+    var nice = niceTop(max);
+    var smax = 0; days.forEach(function (x) { var g = gmap[x.d]; if (g) seo.forEach(function (k) { if (g[k] != null) smax = Math.max(smax, g[k]); }); });
+    var snice = niceTop(smax);
     var iw = W - padL - padR, ih = H - padT - padB, bw = iw / days.length;
     var y = function (v) { return padT + ih - v / nice * ih; };
+    var y2 = function (v) { return padT + ih - v / snice * ih; };
     var css = getComputedStyle($('ad'));
-    var cRev = css.getPropertyValue('--ad-rev').trim(), cSp = css.getPropertyValue('--ad-cost').trim(), cLine = css.getPropertyValue('--ad-line').trim(), cMuted = css.getPropertyValue('--ad-muted').trim();
+    var cv = function (n) { return css.getPropertyValue(n).trim(); };
+    var cRev = cv('--ad-rev'), cSp = cv('--ad-cost'), cLine = cv('--ad-line'), cMuted = cv('--ad-muted');
     var s = '';
-    for (var g = 0; g <= 4; g++) { var gv = nice * g / 4, gy = y(gv); s += '<line x1="' + padL + '" x2="' + (W - padR) + '" y1="' + gy + '" y2="' + gy + '" stroke="' + cLine + '"/><text x="' + (padL - 6) + '" y="' + (gy + 4) + '" text-anchor="end" font-size="11" fill="' + cMuted + '">' + axisMoney(gv) + '</text>'; }
+    for (var g = 0; g <= 4; g++) {
+      var gv = nice * g / 4, gy = y(gv);
+      s += '<line x1="' + padL + '" x2="' + (W - padR) + '" y1="' + gy + '" y2="' + gy + '" stroke="' + cLine + '"/><text x="' + (padL - 6) + '" y="' + (gy + 4) + '" text-anchor="end" font-size="11" fill="' + cMuted + '">' + axisMoney(gv) + '</text>';
+      if (seo.length) s += '<text x="' + (W - padR + 6) + '" y="' + (gy + 4) + '" text-anchor="start" font-size="11" fill="' + (seo.length === 1 ? cv('--ad-' + seo[0]) : cMuted) + '">' + shortN(snice * g / 4) + '</text>';
+    }
     days.forEach(function (x, i) {
       var bx = padL + i * bw + bw * 0.15, bh = Math.max(0, padT + ih - y(x.rev));
       var isToday = x.d === DATA.today;
       s += '<rect x="' + bx.toFixed(1) + '" y="' + y(x.rev).toFixed(1) + '" width="' + Math.max(1, bw * 0.7).toFixed(1) + '" height="' + bh.toFixed(1) + '" fill="' + cRev + '" rx="1.5"' +
         (isToday ? ' fill-opacity="0.45" stroke="' + cRev + '" stroke-dasharray="3 2"' : '') + '/>';
     });
-    var pts = days.map(function (x, i) { return (padL + i * bw + bw / 2).toFixed(1) + ',' + y(x.spend).toFixed(1); });
+    var cx = function (i) { return padL + i * bw + bw / 2; };
+    var pts = days.map(function (x, i) { return cx(i).toFixed(1) + ',' + y(x.spend).toFixed(1); });
     var lastToday = days.length > 1 && days[days.length - 1].d === DATA.today;
     var solid = lastToday ? pts.slice(0, -1) : pts;
     if (solid.length > 1) s += '<polyline points="' + solid.join(' ') + '" fill="none" stroke="' + cSp + '" stroke-width="2.8" stroke-linejoin="round"/>';
     if (lastToday) s += '<polyline points="' + pts.slice(-2).join(' ') + '" fill="none" stroke="' + cSp + '" stroke-width="2.8" stroke-dasharray="5 4"/>';
     if (days.length === 1) s += '<circle cx="' + pts[0].split(',')[0] + '" cy="' + pts[0].split(',')[1] + '" r="4" fill="' + cSp + '"/>';
+    // search lines: a gap where Search Console has no number yet (it lags 2-3 days), never a drop to 0
+    seo.forEach(function (k) {
+      var col = cv('--ad-' + k), dash = k.charAt(0) === 'b' ? ' stroke-dasharray="6 4"' : '', run = [], out = '';
+      var flush = function () { if (run.length > 1) out += '<polyline points="' + run.join(' ') + '" fill="none" stroke="' + col + '" stroke-width="2" stroke-linejoin="round"' + dash + '/>'; else if (run.length === 1) out += '<circle cx="' + run[0].split(',')[0] + '" cy="' + run[0].split(',')[1] + '" r="2.8" fill="' + col + '"/>'; run = []; };
+      days.forEach(function (x, i) { var gx = gmap[x.d]; if (gx && gx[k] != null) run.push(cx(i).toFixed(1) + ',' + y2(gx[k]).toFixed(1)); else flush(); });
+      flush(); s += out;
+    });
     var every = Math.ceil(days.length / Math.max(2, Math.floor(iw / 60)));
-    days.forEach(function (x, i) { if (i % every === 0) s += '<text x="' + (padL + i * bw + bw / 2) + '" y="' + (H - 6) + '" text-anchor="middle" font-size="11" fill="' + cMuted + '">' + x.d.slice(5) + '</text>'; });
+    days.forEach(function (x, i) { if (i % every === 0) s += '<text x="' + cx(i) + '" y="' + (H - 6) + '" text-anchor="middle" font-size="11" fill="' + cMuted + '">' + x.d.slice(5) + '</text>'; });
+    if (window.MESNotes) s += window.MESNotes.marks({ days: days.map(function (x) { return x.d; }), X: cx, y0: padT + ih, y1: padT, size: 6 });
     svg.innerHTML = s;
+    var at = function (pt) { var r = box.getBoundingClientRect(); var i = Math.floor((pt.clientX - r.left - padL) / bw); return i < 0 || i >= days.length ? -1 : i; };
     box.onmousemove = box.ontouchstart = function (e) {
       var pt = e.touches ? e.touches[0] : e, r = box.getBoundingClientRect();
-      var i = Math.floor((pt.clientX - r.left - padL) / bw); if (i < 0 || i >= days.length) { $('ad-tip').style.display = 'none'; return; }
-      var x = days[i], tip = $('ad-tip');
-      tip.innerHTML = x.d + '<br>Earned ' + R(money(x.rev)) + ' · Spent ' + C(money(x.spend)) + '<br>' + int(x.pv) + ' views · ' + int(x.clicks) + ' ad clicks';
+      var i = at(pt); if (i === -1) { $('ad-tip').style.display = 'none'; return; }
+      var x = days[i], tip = $('ad-tip'), gx = gmap[x.d];
+      var notes = window.MESNotes ? window.MESNotes.list().filter(function (n) { return n.d === x.d; }) : [];
+      tip.innerHTML = x.d + '<br>Earned ' + R(money(x.rev)) + ' · Spent ' + C(money(x.spend)) + '<br>' + int(x.pv) + ' views · ' + int(x.clicks) + ' ad clicks' +
+        (gx && gx.gc != null ? '<br>Google search: ' + int(gx.gc) + ' clicks · ' + int(gx.gi) + ' impr.' + (gx.gf ? ' (fresh)' : '') : '') +
+        (gx && gx.bc != null && SEOL.some(function (k) { return k.charAt(0) === 'b'; }) ? '<br>Bing: ' + int(gx.bc) + ' clicks · ' + int(gx.bi) + ' impr.' : '') +
+        notes.map(function (n) { return '<br>✎ ' + esc(n.t); }).join('');
       tip.style.display = 'block';
       tip.style.left = Math.min(r.width - tip.offsetWidth - 4, Math.max(0, pt.clientX - r.left + 10)) + 'px'; tip.style.top = '6px';
     };
     box.onmouseleave = function () { $('ad-tip').style.display = 'none'; };
+    box.oncontextmenu = function (e) { var i = at(e); if (i === -1 || !window.MESNotes) return; e.preventDefault(); $('ad-tip').style.display = 'none'; window.MESNotes.edit(days[i].d); };
+    if (window.MESNotes) window.MESNotes.attach(box);
   }
-  window.addEventListener('resize', function () { if (DATA) drawChart(); });
+  (function notesHook() {
+    if (!window.MESNotes) { setTimeout(notesHook, 80); return; }
+    window.MESNotes.on(function () { if (DATA) drawChart(); if (VS) drawVs(); });
+    $('ad-notes').onclick = function () { window.MESNotes.manage(); };
+  })();
+
+  // ---- Ads vs SEO: one country and / or landing page, per day (api/earnings ?vs=1)
+  var VSSEL = { cc: '', page: '', days: '90' };
+  try { var vsv = JSON.parse(localStorage.getItem('mes-ads:vs') || 'null'); if (vsv && typeof vsv === 'object') VSSEL = { cc: String(vsv.cc || ''), page: String(vsv.page || ''), days: /^(30|60|90|180)$/.test(vsv.days) ? vsv.days : '90' }; } catch (e) {}
+  function fillVsSelects() {
+    var cs = $('ad-vscc'), ps = $('ad-vspage');
+    var cc = (DATA && DATA.countries || []).filter(function (r) { return r.cc && /^[A-Z]{2}$/i.test(r.cc); });
+    if (GSC && GSC.countries) Object.keys(GSC.countries).forEach(function (k) { if (/^[A-Z]{2}$/.test(k) && !cc.some(function (r) { return r.cc.toUpperCase() === k; })) cc.push({ cc: k, name: '', spend: 0 }); });
+    var dn = null; try { dn = new Intl.DisplayNames(['en'], { type: 'region' }); } catch (e) {}
+    var cname = function (r) { if (r.name) return r.name; try { return dn ? dn.of(r.cc.toUpperCase()) : r.cc; } catch (e) { return r.cc; } };
+    cc.sort(function (a, b) { return (b.spend > 0) - (a.spend > 0) || cname(a).localeCompare(cname(b)); });
+    var spentC = cc.filter(function (r) { return r.spend > 0; }), restC = cc.filter(function (r) { return !(r.spend > 0); });
+    var opt = function (v, t) { return '<option value="' + esc(v) + '">' + esc(t) + '</option>'; };
+    cs.innerHTML = opt('', 'All countries') + (spentC.length ? '<optgroup label="With ad spend">' + spentC.map(function (r) { return opt(r.cc.toUpperCase(), cname(r)); }).join('') + '</optgroup>' : '') +
+      (restC.length ? '<optgroup label="Others">' + restC.map(function (r) { return opt(r.cc.toUpperCase(), cname(r)); }).join('') + '</optgroup>' : '');
+    var pages = (DATA && DATA.pages || []).filter(function (r) { return r.path.charAt(0) === '/'; });
+    var spentP = pages.filter(function (r) { return r.spend > 0; }).map(function (r) { return r.path; }).sort();
+    var restP = pages.filter(function (r) { return !(r.spend > 0); }).map(function (r) { return r.path; }).sort();
+    ps.innerHTML = opt('', 'All pages') + (spentP.length ? '<optgroup label="Ad landing pages">' + spentP.map(function (p) { return opt(p, p); }).join('') + '</optgroup>' : '') +
+      (restP.length ? '<optgroup label="Other pages">' + restP.slice(0, 300).map(function (p) { return opt(p, p); }).join('') + '</optgroup>' : '');
+    [[cs, VSSEL.cc], [ps, VSSEL.page]].forEach(function (x) { if (x[1] && !x[0].querySelector('option[value="' + CSS.escape(x[1]) + '"]')) x[0].insertAdjacentHTML('beforeend', opt(x[1], x[1])); x[0].value = x[1]; });
+    $('ad-vsdays').value = VSSEL.days;
+  }
+  $('ad-vsf').onchange = function () {
+    VSSEL = { cc: $('ad-vscc').value, page: $('ad-vspage').value, days: $('ad-vsdays').value };
+    try { localStorage.setItem('mes-ads:vs', JSON.stringify(VSSEL)); } catch (e) {}
+    loadVs();
+  };
+  var vsSeq = 0;
+  function loadVs() {
+    var seq = ++vsSeq;
+    $('ad-vsnote').textContent = 'Loading…';
+    fetch('/api/earnings?vs=1&days=' + VSSEL.days + (VSSEL.cc ? '&cc=' + VSSEL.cc : '') + (VSSEL.page ? '&page=' + encodeURIComponent(VSSEL.page) : ''), { cache: 'no-store' })
+      .then(function (r) { if (!r.ok) throw new Error(r.status); return r.json(); })
+      .then(function (d) { if (seq !== vsSeq) return; VS = d; drawVs(); })
+      .catch(function (e) { if (seq === vsSeq) $('ad-vsnote').textContent = 'Could not load (' + e.message + ').'; });
+  }
+  function pctCh(v) { if (v == null || !isFinite(v)) return ''; return ' <small class="' + (v >= 0 ? 'ad-up' : 'ad-dn') + '">' + (v >= 0 ? '+' : '−') + Math.abs(v).toFixed(Math.abs(v) < 10 ? 1 : 0) + '%</small>'; }
+  function drawVs() {
+    if (!VS) return;
+    fillVsSelects();
+    var rows = VS.rows || [], ba = VS.ba || {}, svg = $('ad-vssvg'), box = $('ad-vschart');
+    var T = [];
+    var sum = function (k) { return rows.reduce(function (t, r) { return t + (r[k] || 0); }, 0); };
+    T.push(tile(C(money(sum('spend'))), 'ad spend, ' + VS.days + ' days'), tile(int(sum('adClicks')), 'ad clicks'),
+      tile(int(sum('oc')), 'organic clicks'), tile(int(sum('oi')), 'organic impressions'));
+    if (ba.before) {
+      T.push(tile((+ba.before.cPerDay.toFixed(1)) + ' → ' + (+ba.after.cPerDay.toFixed(1)) + pctCh(ba.clicksChange), 'organic clicks a day, ' + ba.n + ' days before → after ' + ba.start),
+        tile(shortN(ba.before.iPerDay) + ' → ' + shortN(ba.after.iPerDay) + pctCh(ba.imprChange), 'organic impressions a day, before → after'));
+    }
+    $('ad-vstiles').innerHTML = T.join('');
+    var n = [];
+    if (ba.why === 'no-spend') n.push('No ad spend for this choice in these ' + VS.days + ' days, so there is no before / after.');
+    else if (ba.why === 'spend-from-first-day') n.push('Ads ran from the first day shown, so there is no “before”: choose more days.');
+    else if (ba.start) n.push('Before / after: the ' + ba.n + ' days before the first ad spend (' + ba.start + ') against the ' + ba.n + ' days from it; a rise can also be the season or Google, so compare with a page or country without ads.');
+    if (VS.basis === 'b') n.push('A page in one country comes from Search Console’s page × country × device rows, which leave out small rows: compare the shape, not the level, with the page’s own totals.');
+    if (VS.page && VS.cc && VS.campaigns && !VS.campaigns.length) n.push('No campaign points at this page, so ad spend is 0.');
+    else if (VS.page && VS.campaigns && VS.campaigns.length) n.push('Campaigns pointing at this page: ' + VS.campaigns.join(', ') + '.');
+    if (rows.some(function (r) { return r.ob; })) n.push('Some days use an older, thinner page breakdown (paste the version 3 Search Console script and run backfillDims()).');
+    n.push('Organic numbers lag 2–3 days.');
+    $('ad-vsnote').textContent = n.join(' ');
+    // chart: spend bars (left, money), ad + organic clicks (right), impressions dashed on their own scale
+    var W = box.clientWidth || 600, H = box.clientHeight || 200, padL = 46, padR = 40, padB = 22, padT = 8;
+    svg.setAttribute('viewBox', '0 0 ' + W + ' ' + H);
+    if (!rows.length) { svg.innerHTML = ''; return; }
+    var iw = W - padL - padR, ih = H - padT - padB, bw = iw / rows.length;
+    var mS = niceTop(Math.max.apply(null, rows.map(function (r) { return r.spend; }).concat([0]))), mC = niceTop(Math.max.apply(null, rows.map(function (r) { return Math.max(r.adClicks || 0, r.oc || 0); }).concat([0])));
+    var mI = Math.max.apply(null, rows.map(function (r) { return r.oi || 0; }).concat([1]));
+    var css = getComputedStyle($('ad')), cv = function (k) { return css.getPropertyValue(k).trim(); };
+    var cx = function (i) { return padL + i * bw + bw / 2; }, ys = function (v) { return padT + ih - v / mS * ih; }, yc = function (v) { return padT + ih - v / mC * ih; }, yi = function (v) { return padT + ih - v / mI * ih * 0.95; };
+    var s = '';
+    for (var g = 0; g <= 4; g++) {
+      var gy = padT + ih * g / 4;
+      s += '<line x1="' + padL + '" x2="' + (W - padR) + '" y1="' + gy + '" y2="' + gy + '" stroke="' + cv('--ad-line') + '"/>' +
+        '<text x="' + (padL - 6) + '" y="' + (gy + 4) + '" text-anchor="end" font-size="11" fill="' + cv('--ad-cost') + '">' + axisMoney(mS * (4 - g) / 4) + '</text>' +
+        '<text x="' + (W - padR + 6) + '" y="' + (gy + 4) + '" font-size="11" fill="' + cv('--ad-gc') + '">' + shortN(mC * (4 - g) / 4) + '</text>';
+    }
+    if (ba.start && ba.n) { var si = rows.findIndex(function (r) { return r.d === ba.start; }); if (si > -1) s += '<line x1="' + (padL + si * bw).toFixed(1) + '" x2="' + (padL + si * bw).toFixed(1) + '" y1="' + padT + '" y2="' + (padT + ih) + '" stroke="' + cv('--ad-muted') + '" stroke-dasharray="4 3"/><text x="' + (padL + si * bw + 4).toFixed(1) + '" y="' + (padT + 11) + '" font-size="10.5" fill="' + cv('--ad-muted') + '">first ad spend</text>'; }
+    rows.forEach(function (r, i) { if (r.spend > 0) s += '<rect x="' + (padL + i * bw + bw * 0.15).toFixed(1) + '" y="' + ys(r.spend).toFixed(1) + '" width="' + Math.max(1, bw * 0.7).toFixed(1) + '" height="' + Math.max(0, padT + ih - ys(r.spend)).toFixed(1) + '" fill="' + cv('--ad-cost') + '" fill-opacity="0.35" rx="1"/>'; });
+    var line = function (key, y, col, dash) {
+      var run = [], out = '';
+      var flush = function () { if (run.length > 1) out += '<polyline points="' + run.join(' ') + '" fill="none" stroke="' + col + '" stroke-width="2" stroke-linejoin="round"' + (dash ? ' stroke-dasharray="' + dash + '"' : '') + '/>'; run = []; };
+      rows.forEach(function (r, i) { if (r[key] == null) flush(); else run.push(cx(i).toFixed(1) + ',' + y(r[key]).toFixed(1)); });
+      flush(); return out;
+    };
+    s += line('oi', yi, cv('--ad-gi'), '6 4') + line('adClicks', yc, cv('--ad-cost'), '') + line('oc', yc, cv('--ad-gc'), '');
+    var every = Math.ceil(rows.length / Math.max(2, Math.floor(iw / 60)));
+    rows.forEach(function (r, i) { if (i % every === 0) s += '<text x="' + cx(i) + '" y="' + (H - 6) + '" text-anchor="middle" font-size="11" fill="' + cv('--ad-muted') + '">' + r.d.slice(5) + '</text>'; });
+    if (window.MESNotes) s += window.MESNotes.marks({ days: rows.map(function (r) { return r.d; }), X: cx, y0: padT + ih, y1: padT, size: 6 });
+    svg.innerHTML = s;
+    var at = function (pt) { var rc = box.getBoundingClientRect(); var i = Math.floor((pt.clientX - rc.left - padL) / bw); return i < 0 || i >= rows.length ? -1 : i; };
+    box.onmousemove = box.ontouchstart = function (e) {
+      var pt = e.touches ? e.touches[0] : e, rc = box.getBoundingClientRect(), i = at(pt), tip = $('ad-vstip');
+      if (i === -1) { tip.style.display = 'none'; return; }
+      var r = rows[i];
+      tip.innerHTML = r.d + '<br>Spent ' + C(money(r.spend)) + ' · ' + int(r.adClicks) + ' ad clicks<br>Organic: ' + (r.oc == null ? 'no data yet' : int(r.oc) + ' clicks · ' + int(r.oi) + ' impr.' + (r.of ? ' (fresh)' : ''));
+      tip.style.display = 'block';
+      tip.style.left = Math.min(rc.width - tip.offsetWidth - 4, Math.max(0, pt.clientX - rc.left + 10)) + 'px'; tip.style.top = '6px';
+    };
+    box.onmouseleave = function () { $('ad-vstip').style.display = 'none'; };
+    box.oncontextmenu = function (e) { var i = at(e); if (i === -1 || !window.MESNotes) return; e.preventDefault(); window.MESNotes.edit(rows[i].d); };
+    if (window.MESNotes) window.MESNotes.attach(box);
+  }
+  window.addEventListener('resize', function () { if (DATA) drawChart(); if (VS) drawVs(); });
   // Fill window / Full screen for the chart and every table (main_js/panel-view.js)
   (function panels() {
     if (!window.MESPanel) { setTimeout(panels, 60); return; }
     document.querySelectorAll('#ad .ad-sec').forEach(function (sec) {
       var head = sec.querySelector('.ad-head');
-      if (head) window.MESPanel.add(sec, { bar: head, onChange: function () { if (DATA && sec.contains($('ad-chart'))) drawChart(); } });
+      if (head) window.MESPanel.add(sec, { bar: head, onChange: function () { if (DATA && sec.contains($('ad-chart'))) drawChart(); if (VS && sec.contains($('ad-vschart'))) drawVs(); } });
     });
   })();
   load();

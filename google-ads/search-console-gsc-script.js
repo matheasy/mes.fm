@@ -28,6 +28,11 @@
 //     the script then saves where it was and continues by itself a minute later (a one-time trigger), until it logs
 //     "Breakdowns: all done".
 //  5. Run installTrigger() once: main() then runs every hour (the last 5 days, fresh data, hours; the summaries every 6 hours).
+// Version 3 (2026-10-29): adds a page-only breakdown (p = [page] per day). Search Console leaves out more of a page's
+// numbers the more dimensions a request has, so page filters computed from page x country x device (b) came out far too
+// low (like the query table); p gives the same page totals as Search Console's own page filter.
+// Updating from version 2: paste this file over Code.gs, Save, then run backfillDims() once (it resends every breakdown
+// for the last 182 days, now with p, a week at a time; it continues by itself until it logs "Breakdowns: all done").
 // Updating from version 1: paste this file over Code.gs, Save, run installTrigger() (hourly now), then run backfillDims()
 // once (only the breakdowns; the day totals and summaries you already sent stay).
 // If the property is a URL-prefix property instead of a Domain property, change PROPERTY to 'https://mes.fm/'.
@@ -43,8 +48,8 @@ var SUMMARY_EVERY_H = 6;      // range summaries are heavier: every 6 hours is p
 // rows kept per summary (the ingest API refuses more)
 var TOP = { pages: 500, queries: 1000, countries: 250, devices: 10, pq: 1500 };
 // rows kept per day in each breakdown (the ingest API refuses more; mes.fm is far below these)
-var DIM_TOP = { a: 3500, b: 7000, q: 7000 };
-var DIM_SETS = { a: ['country', 'device'], b: ['page', 'country', 'device'], q: ['query', 'page', 'country', 'device'] };
+var DIM_TOP = { a: 3500, p: 5500, b: 7000, q: 7000 };
+var DIM_SETS = { a: ['country', 'device'], p: ['page'], b: ['page', 'country', 'device'], q: ['query', 'page', 'country', 'device'] };
 
 function main() {
   run(RESEND_DAYS, { dims: true, hours: true, sums: summariesDue() });
@@ -171,7 +176,7 @@ function hours(first, today) {
   return out;
 }
 
-// Day-by-day breakdowns for [from, to], dictionary-encoded per day: { s: [strings], r: [[indexes..., c, i, pos]] }.
+// Day-by-day breakdowns for [from, to] (every row: queryAll pages through 25,000 at a time), dictionary-encoded per day: { s: [strings], r: [[indexes..., c, i, pos]] }.
 function sendDims(from, to) {
   var byDay = {};
   Object.keys(DIM_SETS).forEach(function (set) {

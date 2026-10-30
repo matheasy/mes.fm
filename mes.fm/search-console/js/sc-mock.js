@@ -60,7 +60,7 @@
     }
     set('gscdash:day:' + d, blob);
     if (k < QDAYS) {
-      set('gscdash:dq:' + d, enc(qrows, 4)); set('gscdash:db:' + d, enc(b, 3)); set('gscdash:da:' + d, enc(a, 2));
+      set('gscdash:dq:' + d, enc(qrows, 4)); set('gscdash:db:' + d, enc(b, 3)); set('gscdash:dp:' + d, enc(agg(b.map(function (r) { return [r[0]].concat(r.slice(3)); }), 1), 1)); set('gscdash:da:' + d, enc(a, 2));
       qRowsByDay[d] = qrows;
     }
   }

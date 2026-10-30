@@ -262,7 +262,7 @@ const sum = (start, end, extra) => Object.assign({ start, end,
     ok(g.basis === 'a' && g.totals.c === 21 && g.totals.i === 490, 'country filter uses the complete country x device breakdown (hidden queries included)');
     eq(g.pages.map((x) => x.k), ['/bmicalculator', '/timer'], 'pages for a country filter come from the page breakdown');
     r = await sc.respond({ range: '7', f: JSON.stringify([{ dim: 'page', op: 'not', v: '/timer' }]) }, deps);
-    ok(r.body.google.basis === 'b' && r.body.google.totals.c === 56, 'page "not contains" filter on the page breakdown');
+    ok(r.body.google.basis === 'p' && r.body.google.totals.c === 56 && r.body.google.pFallback && r.body.google.pFallback.have === 0, 'page "not contains" filter: page breakdown, falls back to b on days without p (flagged)');
     r = await sc.respond({ range: '365', f: JSON.stringify([{ dim: 'device', op: 'exact', v: 'mobile' }]) }, deps);
     ok(r.body.google.clamped && r.body.rangeUsed === '90' && r.body.google.daily.length === 90, '365 days with a filter answered for 90 days');
     ok(!r.body.google.prevPartial, '...with its previous 90 days (180 days of breakdowns kept)');
@@ -282,6 +282,59 @@ const sum = (start, end, extra) => Object.assign({ start, end,
     for (const k of [...S.keys()]) if (k.startsWith('gscdash:dq:') && k < 'gscdash:dq:' + ad(today, -3)) S.delete(k);
     r = await sc.respond({ range: '7', f: JSON.stringify([{ dim: 'query', op: 'contains', v: 'bmi' }]) }, deps);
     eq(r.body.google.dimDays, { have: 4, want: 7 }, 'days without breakdowns counted');
+  }
+
+  // ---- page filter = Search Console's own numbers (Oct 2026 bug: "Page is exactly /percentagecalculator", 28 days showed
+  // 59 clicks / 705 impressions against Search Console's 74 / 23K, because it was summed from a breakdown with more
+  // dimensions, which Google thins out like the query rows). Fake store: p holds the true page totals, b and q the thinned rows.
+  {
+    const S = new Map(), set = (k, v) => S.set(k, JSON.stringify(v));
+    const now = Date.parse('2026-10-29T20:00:00Z'), today = sc.ptDate(now);
+    const ad = (s, n) => new Date(Date.parse(s + 'T12:00:00Z') + n * 864e5).toISOString().slice(0, 10);
+    const PC = 'https://mes.fm/percentagecalculator', BMI = 'https://mes.fm/bmicalculator';
+    for (let k = 0; k < 60; k++) {
+      const d = ad(today, -k);
+      // 28 days: p = 74 clicks (2 or 3 a day) / 826 impressions a day; b and q only see ~2 / 25 a day
+      set('gscdash:dp:' + d, { s: [PC, BMI], r: [[0, k % 2 ? 3 : 2, 826, 9], [1, 1, 300, 7]] });
+      set('gscdash:db:' + d, { s: [PC, 'arg', 'MOBILE', 'usa', BMI], r: [[0, 1, 2, 1, 15, 12], [0, 3, 2, 1, 10, 12], [4, 3, 2, 1, 100, 7]] });
+      set('gscdash:dq:' + d, { s: ['percentage calculator', PC, 'usa', 'MOBILE'], r: [[0, 1, 2, 3, 2, 25, 12]] });
+      set('gscdash:da:' + d, { s: ['usa', 'MOBILE', 'arg'], r: [[0, 1, 4, 900, 8], [2, 1, 1, 226, 9]] });
+      const blob = { t: [5, 1126, 8.5], dev: [] };
+      if (k < 2) blob.f = 1;
+      set('gscdash:day:' + d, blob);
+    }
+    // today has no breakdown rows yet, only an empty fresh day
+    set('gscdash:dp:' + today, { s: [], r: [] }); set('gscdash:db:' + today, { s: [], r: [] });
+    set('gscdash:meta', { at: '2026-10-29T19:00:00Z', lastDay: today });
+    const deps = { now, mget: async (keys) => keys.map((k) => (S.has(k) ? S.get(k) : null)), bing: null };
+    const pf = (extra) => JSON.stringify([{ dim: 'page', op: 'exact', v: PC }].concat(extra || []));
+    let r = await sc.respond({ range: '28', f: pf() }, deps);
+    let g = r.body.google;
+    ok(g.basis === 'p', 'page-only filter uses the page breakdown');
+    eq(g.daily.map((x) => x.d).pop(), ad(today, -1), 'the empty fresh day (today) is not drawn as a drop to 0');
+    eq(g.daily.length, 27, '27 days with numbers');
+    eq(g.totals.i, 27 * 826, 'page filter impressions = Search Console page totals, not the thinned rows');
+    ok(g.totals.i > 20000 && g.totals.c > 60, 'page filter is in the 23K / 74 range of the bug report');
+    ok(!g.pFallback, 'no fallback when p is stored');
+    eq(g.queries.map((x) => x.k), ['percentage calculator'], 'queries under a page filter still from the query breakdown');
+    r = await sc.respond({ range: '28', f: pf([{ dim: 'country', op: 'exact', v: 'arg' }]) }, deps);
+    ok(r.body.google.basis === 'b' && r.body.google.totals.i === 27 * 15, 'page + country filter uses page x country x device');
+    // lines: one per ticked row, each from its own breakdown
+    r = await sc.respond({ range: '28', lines: JSON.stringify([{ dim: 'page', v: PC }, { dim: 'country', v: 'arg' }, { dim: 'query', v: 'percentage calculator' }]) }, deps);
+    eq(r.body.lines.map((l) => l.basis), ['p', 'a', 'q'], 'lines: page from p, country from a, query from q');
+    eq(r.body.lines[0].daily[0].i, 826, 'page line = complete page totals');
+    eq(r.body.lines[1].daily[0].i, 226, 'country line = complete country totals');
+    r = await sc.respond({ range: '28', f: pf(), lines: JSON.stringify([{ dim: 'country', v: 'arg' }]) }, deps);
+    eq(r.body.lines[0].daily[0].i, 15, 'lines respect the page filters');
+    r = await sc.respond({ range: '365', lines: JSON.stringify([{ dim: 'page', v: PC }]) }, deps);
+    ok(r.body.clamped && r.body.lines[0].daily.length <= 90, 'lines cover at most 90 days');
+    eq((await sc.respond({ range: '28', lines: '[]' }, deps)).status, 400, 'empty lines -> 400');
+    eq((await sc.respond({ range: '28', lines: JSON.stringify(Array(9).fill({ dim: 'page', v: 'x' })) }, deps)).status, 400, 'more than 8 lines -> 400');
+    eq(sc.dropEmptyFresh([{ d: '1', i: 5 }, { d: '2', i: 0, c: 0, f: 1 }]).length, 1, 'dropEmptyFresh');
+    eq(sc.dropEmptyFresh([{ d: '1', i: 5 }, { d: '2', i: 0, c: 0 }]).length, 2, 'a final (not fresh) 0 day stays');
+    // ingest takes the new page set
+    const pp = ingest.parse({ source: 'gsc', dims: { [today]: { p: { s: [PC], r: [[0, 3, 826, 9]] } } } }, today);
+    ok(!pp.error && pp.dims[0][0] === 'dp:' + today, 'ingest stores the page breakdown');
   }
 
   // ---- Google not set up

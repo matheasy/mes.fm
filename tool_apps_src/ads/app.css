@@ -86,3 +86,24 @@
 	@media (max-height: 500px) {
 		#ad .ad-sec.mes-pfill > .tu-note, #ad .ad-sec.mes-pfill .ad-legend, #ad .ad-sec.mes-pfill .ad-ends {display:none;}
 	}
+	/* Search Console lines on the daily chart, the Ads vs SEO section */
+	#ad {--ad-gc:#1a73e8;--ad-gi:#8e44ef;--ad-bc:#00809d;--ad-bi:#5a9e00;--mcn-bg:var(--ad-card);}
+	body.dark-mode #ad.tu {--ad-gc:#8ab4f8;--ad-gi:#c39bff;--ad-bc:#3cc6e0;--ad-bi:#9bd34a;}
+	#ad .ad-seot {align-items:center;margin:0 0 0.4em;font-size:0.9em;}
+	#ad .ad-seol {color:var(--ad-muted);font-size:0.9em;}
+	.ad-key--ln {width:1.3em;height:0;border-top:3px solid var(--k);border-radius:0;background:none;}
+	.ad-key--dash {border-top-style:dashed;}
+	#ad .ad-seot .ad-key--ln {width:0.75em;height:0.75em;border:2px solid #fff;border-radius:50%;background:var(--k);box-sizing:border-box;}
+	#ad .ad-seot .ad-key--dash {border-style:dotted;}
+	#ad .ad-hbtns {display:inline-flex;gap:0.4em;flex-wrap:wrap;margin-left:auto;}
+	.ad-vsf {display:flex;flex-wrap:wrap;gap:0.5em 1em;align-items:flex-end;margin:0 0 0.8em;}
+	.ad-vsf label {display:flex;flex-direction:column;gap:0.2em;font-size:0.85em;color:var(--ad-muted);min-width:0;max-width:100%;}
+	.ad-vsf select {min-width:8em;max-width:min(24em,90vw);}
+	#ad .ad-tiles .tu-stat small {display:block;font-size:0.7em;font-weight:400;color:var(--ad-muted);}
+	#ad .ad-tiles .tu-stat small.ad-up {color:var(--ad-good);font-weight:700;font-size:0.75em;}
+	#ad .ad-tiles .tu-stat small.ad-dn {color:var(--ad-bad);font-weight:700;font-size:0.75em;}
+	.ad-t th small {display:block;text-transform:none;letter-spacing:0;font-weight:400;margin:0;}
+	@media (max-width: 600px) {
+		#ad #ad-vstiles {display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:0.5em;}
+		#ad #ad-vstiles .tu-stat__value {font-size:1.25em;}
+	}

@@ -3,7 +3,12 @@
 // by day, landing page, country, device and campaign. Spend is converted to CAD (AdSense's currency) with a
 // daily rate from open.er-api.com, cached in Redis for 12 h, fallback 18,396.41 VND per CAD (Oct 21, 2026).
 // ?range=today|yesterday|7d|30d|90d|365d (days end today; the scripts send each account's own Pacific dates).
+// ?gsc=1&range=...: the Search Console columns (organic clicks / impressions per day, page and country; Bing day totals
+//   from the Search Console page's 6-hour cache), read from the gscdash:* keys (see api/search-console.js, _gsc-join.js).
+// ?vs=1&days=30|60|90|180&cc=<alpha-2>&page=<path>: "Ads vs SEO", one country and / or landing page per day: ad spend,
+//   ad clicks, organic clicks and impressions, and a before / after comparison around the first day with ad spend.
 const { lastNDayKeys } = require('./_bucket-keys');
+const GJ = require('./_gsc-join');
 
 const RANGES = { today: 1, yesterday: 1, '7d': 7, '30d': 30, '90d': 90, '365d': 365 };
 // Both Google accounts report in Pacific time (America/Vancouver), so "today" is the Pacific date. AdSense has no
@@ -154,8 +159,113 @@ async function fxRate(currency, cached) {
   return pick(null, null, false);
 }
 
+// Pacific dates, oldest first: the last n days ending today.
+function pacificDays(n, now) {
+  const today = pacificDay(now || new Date());
+  const out = [];
+  for (let k = n - 1; k >= 0; k--) out.push(new Date(Date.parse(today + 'T12:00:00Z') - k * 864e5).toISOString().slice(0, 10));
+  return out;
+}
+const pj = (v) => { if (!v) return null; try { return JSON.parse(v); } catch (e) { return null; } };
+async function mget(keys) {
+  const parts = [];
+  for (let k = 0; k < keys.length; k += 30) parts.push(keys.slice(k, k + 30));
+  const got = await Promise.all(parts.map((part) => redis([['MGET', ...part]])));
+  const out = [];
+  got.forEach((g, j) => { const vals = (g[0] && g[0].result) || []; parts[j].forEach((_, x) => out.push(vals[x] == null ? null : vals[x])); });
+  return out;
+}
+// Reads day blobs + the wanted breakdowns for dates -> { days, sets }. kinds: 'a', 'p', 'b'; 'p' also reads b for the days
+// stored before p existed.
+async function readGsc(dates, kinds) {
+  const keys = dates.map((d) => 'gscdash:day:' + d);
+  kinds.forEach((k) => dates.forEach((d) => keys.push('gscdash:d' + k + ':' + d)));
+  const vals = await mget(keys);
+  const days = {}, sets = {};
+  dates.forEach((d, j) => { const b = pj(vals[j]); if (b) days[d] = b; });
+  kinds.forEach((k, ki) => dates.forEach((d, j) => { const v = pj(vals[dates.length * (ki + 1) + j]); if (v) (sets[d] || (sets[d] = {}))[k] = v; }));
+  if (kinds.includes('p') && !kinds.includes('b')) {
+    const miss = dates.filter((d) => !(sets[d] && sets[d].p));
+    if (miss.length) {
+      const bv = await mget(miss.map((d) => 'gscdash:db:' + d));
+      miss.forEach((d, j) => { const v = pj(bv[j]); if (v) (sets[d] || (sets[d] = {})).b = v; });
+    }
+  }
+  return { days, sets };
+}
+
+async function gscHandler(req, res) {
+  const range = RANGES[req.query.range] ? req.query.range : '30d';
+  const now = new Date();
+  const today = pacificDay(now);
+  const dates = range === 'today' ? [today] : range === 'yesterday' ? pacificDays(2, now).slice(0, 1) : pacificDays(RANGES[range], now);
+  try {
+    const big = dates.length > 90; // breakdowns are kept ~180 days: a year uses Search Console's own 365-day summary
+    const { days, sets } = await readGsc(dates, big ? [] : ['a', 'p']);
+    const extra = await redis([['GET', 'gscdash:bing:GetRankAndTrafficStats'], ['GET', 'gscdash:meta']].concat(big ? [['GET', 'gscdash:sum:365:cur']] : []));
+    const bingBlob = pj(extra[0] && extra[0].result), meta = pj(extra[1] && extra[1].result);
+    const sum = big ? pj(extra[2] && extra[2].result) : null;
+    if (!meta && !Object.keys(days).length) return res.status(200).json({ setup: false });
+    const out = GJ.joinGsc(dates, days, sets, bingBlob && bingBlob.rows, normPage, sum);
+    return res.status(200).json(Object.assign({ setup: true, range, today, lastDay: meta && meta.lastDay, bingAt: bingBlob && bingBlob.at }, out));
+  } catch (e) { return res.status(502).json({ error: 'data unavailable' }); }
+}
+
+// Pure: ad spend / clicks / impressions per day for one country (alpha-2) and / or landing page, in CAD.
+// gads = { date: blob }. A page picks the campaigns whose ads point at it (Google Ads' landing-page report);
+// with a country too, those campaigns' spend in that country (the geo report).
+function adSeries(dates, gads, perCad, page, cc) {
+  const cad = (m) => m / 1e6 / perCad;
+  const camps = new Set();
+  if (page) for (const d of dates) for (const [url, name] of (gads[d] && gads[d].lp) || []) if (normPage(url) === page) camps.add(name);
+  const rows = dates.map((d) => {
+    const g = gads[d], o = { d, spend: 0, adClicks: 0, adImp: 0 };
+    if (!g) return o;
+    if (cc) {
+      for (const [code, , camp, imp, clk, mic] of g.geo || []) {
+        if (String(code).toUpperCase() !== cc || (page && !camps.has(camp))) continue;
+        o.spend += cad(mic); o.adClicks += clk; o.adImp += imp;
+      }
+    } else if (page) {
+      for (const [url, , clk, mic] of g.lp || []) if (normPage(url) === page) { o.spend += cad(mic); o.adClicks += clk; }
+      for (const [camp, , imp] of g.camps || []) if (camps.has(camp)) o.adImp += imp;
+    } else {
+      for (const [, , imp, clk, mic] of g.camps || []) { o.spend += cad(mic); o.adClicks += clk; o.adImp += imp; }
+    }
+    o.spend = Math.round(o.spend * 10000) / 10000;
+    return o;
+  });
+  return { rows, campaigns: [...camps] };
+}
+
+async function vsHandler(req, res) {
+  const q = req.query || {};
+  const n = [30, 60, 90, 180].includes(Number(q.days)) ? Number(q.days) : 90;
+  const cc = /^[A-Za-z]{2}$/.test(String(q.cc || '')) ? String(q.cc).toUpperCase() : '';
+  const page = q.page ? normPage(String(q.page).slice(0, 300)) : '';
+  const dates = pacificDays(n);
+  try {
+    const kinds = page && cc ? ['b'] : page ? ['p'] : cc ? ['a'] : [];
+    const [{ days, sets }, gv, extra] = await Promise.all([
+      readGsc(dates, kinds),
+      mget(dates.map((d) => 'adsdash:gads:' + d)),
+      redis([['GET', 'adsdash:meta:gads'], ['GET', 'adsdash:fx']]),
+    ]);
+    const gads = {};
+    dates.forEach((d, j) => { const v = pj(gv[j]); if (v) gads[d] = v; });
+    const metaG = pj(extra[0] && extra[0].result);
+    const fx = await fxRate((metaG && metaG.currency) || 'VND', pj(extra[1] && extra[1].result));
+    const ads = adSeries(dates, gads, fx.perCad, page, cc);
+    const org = GJ.organicSeries(dates, days, sets, normPage, page, cc);
+    const rows = ads.rows.map((r, j) => Object.assign(r, org.rows[j]));
+    return res.status(200).json({ days: n, cc, page, basis: org.basis, campaigns: ads.campaigns, rows, ba: GJ.beforeAfter(rows), fx: { rates: fx.rates } });
+  } catch (e) { return res.status(502).json({ error: 'data unavailable' }); }
+}
+
 async function handler(req, res) {
   res.setHeader('Cache-Control', 'private, no-store');
+  if (req.query && req.query.gsc) return gscHandler(req, res);
+  if (req.query && req.query.vs) return vsHandler(req, res);
   const range = RANGES[req.query.range] ? req.query.range : '30d';
   const today = pacificDay(new Date());
   const yesterday = new Date(Date.parse(today + 'T12:00:00Z') - 864e5).toISOString().slice(0, 10);
@@ -193,3 +303,5 @@ module.exports.aggregate = aggregate;
 module.exports.normPage = normPage;
 module.exports.normDevice = normDevice;
 module.exports.pacificDay = pacificDay;
+module.exports.adSeries = adSeries;
+module.exports.pacificDays = pacificDays;

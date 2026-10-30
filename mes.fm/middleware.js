@@ -38,6 +38,8 @@ export const config = {
     '/api/search-console',
     // its imported AI-search numbers (Google AI features / Bing AI Performance exports dropped on the page)
     '/api/search-console-ai',
+    // chart notes shared by the /search-console and /ads charts
+    '/api/chart-notes',
   ],
 };
 

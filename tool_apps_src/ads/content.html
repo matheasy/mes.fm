@@ -26,10 +26,18 @@
 		<div class="tu-stats ad-tiles" id="ad-tiles"></div>
 
 		<section class="tu-card ad-sec">
-			<div class="ad-head"><h2>Day by day</h2></div>
-			<p class="tu-note">AdSense earnings (bars) and Google Ads spend (line), in the currency chosen at the top. Hover or tap a day for its numbers.</p>
+			<div class="ad-head"><h2>Day by day</h2><span class="ad-hbtns"><button type="button" class="mes-pbtn" id="ad-notes" title="Chart notes: list, add, edit (shared with the Search Console chart)">Notes</button></span></div>
+			<p class="tu-note">AdSense earnings (bars) and Google Ads spend (line), in the currency chosen at the top. Hover or tap a day for its numbers; right-click a day to add a note.</p>
+			<div class="ad-tabs ad-seot" id="ad-seot" role="group" aria-label="Search lines (right axis)">
+				<span class="ad-seol">Search (right axis):</span>
+				<button type="button" class="tu-chip" data-g="gc" aria-pressed="false" style="--k:var(--ad-gc)"><i class="ad-key ad-key--ln"></i>Google clicks</button>
+				<button type="button" class="tu-chip" data-g="gi" aria-pressed="false" style="--k:var(--ad-gi)"><i class="ad-key ad-key--ln"></i>Google impressions</button>
+				<button type="button" class="tu-chip" data-g="bc" aria-pressed="false" style="--k:var(--ad-bc)"><i class="ad-key ad-key--ln ad-key--dash"></i>Bing clicks</button>
+				<button type="button" class="tu-chip" data-g="bi" aria-pressed="false" style="--k:var(--ad-bi)"><i class="ad-key ad-key--ln ad-key--dash"></i>Bing impressions</button>
+			</div>
 			<div class="ad-chart" id="ad-chart"><svg id="ad-svg" preserveAspectRatio="none" role="img" aria-label="Daily earnings and spend"></svg><div class="ad-tip" id="ad-tip"></div></div>
 			<div class="ad-legend"><span><i class="ad-key ad-key--rev"></i>AdSense earnings</span><span><i class="ad-key ad-key--spend"></i>Google Ads spend</span></div>
+			<p class="tu-note" id="ad-seonote"></p>
 			<p class="tu-note ad-ends" id="ad-ends"></p>
 		</section>
 
@@ -43,6 +51,20 @@
 			<div class="ad-head"><h2>Countries</h2></div>
 			<p class="tu-note">Where ad clicks were bought and where AdSense earned. Earned per 1,000 views (RPM) is what a visitor from that country is worth.</p>
 			<div class="ad-wrap"><table class="ad-t" id="t-countries"></table></div><button type="button" class="tu-btn tu-btn--ghost ad-more" id="m-countries" hidden></button>
+		</section>
+
+		<section class="tu-card ad-sec">
+			<div class="ad-head"><h2>Ads vs SEO</h2></div>
+			<p class="tu-note">Do the ads grow search traffic? Pick a country and / or a landing page: ad spend and ad clicks (Google Ads) next to organic clicks and impressions (Google Search Console) per day, and the days after the first ad spend compared with the same number of days before it.</p>
+			<form class="ad-vsf" id="ad-vsf">
+				<label>Country <select id="ad-vscc" class="tu-input"><option value="">All countries</option></select></label>
+				<label>Landing page <select id="ad-vspage" class="tu-input"><option value="">All pages</option></select></label>
+				<label>Days <select id="ad-vsdays" class="tu-input"><option>30</option><option>60</option><option selected>90</option><option>180</option></select></label>
+			</form>
+			<div class="tu-stats ad-tiles" id="ad-vstiles"></div>
+			<div class="ad-chart" id="ad-vschart"><svg id="ad-vssvg" preserveAspectRatio="none" role="img" aria-label="Ad spend against organic search per day"></svg><div class="ad-tip" id="ad-vstip"></div></div>
+			<div class="ad-legend"><span><i class="ad-key ad-key--spend"></i>Ad spend</span><span><i class="ad-key ad-key--ln" style="--k:var(--ad-cost)"></i>Ad clicks</span><span><i class="ad-key ad-key--ln" style="--k:var(--ad-gc)"></i>Organic clicks</span><span><i class="ad-key ad-key--ln ad-key--dash" style="--k:var(--ad-gi)"></i>Organic impressions (own scale)</span></div>
+			<p class="tu-note" id="ad-vsnote"></p>
 		</section>
 
 		<section class="tu-card ad-sec">
@@ -70,5 +92,6 @@
 			<p class="tu-note" id="r-young"></p>
 		</section>
 	</div>
+	<script src="/main_js/chart-notes.js?v=1" defer></script>
 	<script src="/main_js/panel-view.js?v=1" defer></script>
 	<script src="/main_js/hub-theatre.js?v=2" defer></script>
