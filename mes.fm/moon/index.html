@@ -483,11 +483,14 @@
   <meta name="twitter:card" content="summary_large_image">
   <meta name="twitter:image" content="https://mes.fm/moon/img/logo-big.png">
 <!-- TOC-FLIP-HEAD --><link rel="stylesheet" href="/main_js/toc-flip.css?v=5"><script>try{var L=localStorage,H=document.documentElement.classList;if(L.getItem('asideSide')==='left')H.add('aside-left');if(L.getItem('pageWide')==='1')H.add('page-wide');if(L.getItem('pageMode')==='theatre')H.add('page-theatre');if(L.getItem('tocHidden')==='1')H.add('toc-hidden')}catch(e){}</script><!-- /TOC-FLIP-HEAD -->
-<!-- JUMP-ASIDE --><link rel="stylesheet" href="/main_js/jump-aside.css?v=1"><!-- /JUMP-ASIDE --></head>
+<!-- JUMP-ASIDE --><link rel="stylesheet" href="/main_js/jump-aside.css?v=1"><!-- /JUMP-ASIDE -->
+<link rel="stylesheet" href="/moon/js/moon-weather.css?v=1"></head>
 <body class="dark">
   <nav class="toc-sidebar" aria-label="Jump to section">
     <div class="toc-title">Jump to</div>
     <a href="#moon-phase">Moon phase</a>
+    <a href="#tonight">Tonight's Moon</a>
+    <a href="#moon-weather">Moon weather</a>
     <a href="#sky-times">Sun &amp; Moon times</a>
     <a href="#conditions">Conditions &amp; air quality</a>
     <a href="#today-sky">Today's sky</a>
@@ -612,6 +615,8 @@
       <summary>Jump to section</summary>
       <nav class="toc-links" aria-label="Jump to section">
         <a href="#moon-phase">Moon phase</a>
+        <a href="#tonight">Tonight's Moon</a>
+        <a href="#moon-weather">Moon weather</a>
         <a href="#sky-times">Sun &amp; Moon times</a>
         <a href="#conditions">Conditions &amp; air quality</a>
         <a href="#today-sky">Today's sky</a>
@@ -632,6 +637,37 @@
     <div class="sections-toolbar">
       <button id="collapseAllBtn" class="loc-btn" type="button">Collapse all sections</button>
     </div>
+
+    <h2 id="tonight">Tonight's Moon &mdash; <span id="mwTonightLoc">Richmond, BC</span></h2>
+    <p class="section-note">The Moon in your own sky, weather-report style: phase, where it is now, rise and set, the best time to look
+    tonight (with the cloud cover from the conditions below) and the next phases. Computed on your device with Astronomy&nbsp;Engine.</p>
+    <div class="mw-tonight" id="mwTonight"><p class="section-note">Computing&hellip;</p></div>
+
+    <h2 id="moon-weather">Moon Weather &mdash; Conditions on the Moon Right Now</h2>
+    <p class="section-note">If the Moon had a weather report: pick a landing site or crater (or click anywhere on the globe) to see
+    how hot or cold the ground is there right now, when the Sun next rises or sets (in Earth days), whether Earth is in the sky,
+    and what you would weigh. The Moon has no air, so there is no wind, rain or blue sky, and its days and nights each last about
+    two Earth weeks: that is why the ground swings from about +120&nbsp;&deg;C at noon to about &minus;180&nbsp;&deg;C before dawn.</p>
+    <div id="mw" class="mw"><p class="section-note">Loading the Moon weather&hellip;</p></div>
+    <details class="mw-sources">
+      <summary>How these numbers are worked out, and sources</summary>
+      <p class="section-note">Where the Sun and Earth are overhead on the Moon comes from <a href="https://github.com/cosinekitty/astronomy" target="_blank" rel="noopener">Astronomy&nbsp;Engine</a>
+      (the IAU rotation model of the Moon). Temperatures are a <strong>model</strong>, not live measurements (no instrument reports the Moon's
+      temperature in real time): in sunlight the ground balances the sunshine it absorbs, scaled so the equator at noon is 392&nbsp;K
+      (about 119&nbsp;&deg;C), and at night it cools quickly and then slowly to about 95&nbsp;K (&minus;178&nbsp;&deg;C) at the equator before dawn,
+      colder towards the poles. That matches the global maps from NASA's Diviner radiometer on the Lunar Reconnaissance Orbiter
+      (<a href="https://doi.org/10.1016/j.icarus.2016.08.012" target="_blank" rel="noopener">Williams et al. 2017</a>,
+      <a href="https://doi.org/10.1029/2011JE003987" target="_blank" rel="noopener">Vasavada et al. 2012</a>) to within roughly 10-20&nbsp;&deg;C;
+      real slopes, crater shadows and rocks make the actual ground patchier. Permanently shadowed crater floors use fixed values from Diviner
+      (<a href="https://doi.org/10.1126/science.1187726" target="_blank" rel="noopener">Paige et al. 2010</a>; Hermite crater about 26&nbsp;K).
+      Other figures: gravity 1.62&nbsp;m/s&sup2; (<a href="https://nssdc.gsfc.nasa.gov/planetary/factsheet/moonfact.html" target="_blank" rel="noopener">NASA Moon fact sheet</a>);
+      radiation 1,369&nbsp;&micro;Sv per day measured by Chang'e&nbsp;4
+      (<a href="https://doi.org/10.1126/sciadv.aaz1334" target="_blank" rel="noopener">Zhang et al. 2020</a>);
+      water in Cabeus crater (<a href="https://doi.org/10.1126/science.1186986" target="_blank" rel="noopener">Colaprete et al. 2010, LCROSS</a>);
+      about 12,500 moonquakes recorded by the Apollo seismometers (<a href="https://science.nasa.gov/moon/moonquakes/" target="_blank" rel="noopener">NASA</a>);
+      Earth's temperature records from the <a href="https://wmo.asu.edu/" target="_blank" rel="noopener">WMO archive</a>.
+      Your local temperature is the same Open-Meteo reading shown in Conditions below.</p>
+    </details>
 
     <h2 id="sky-times">Sun &amp; Moon Times &mdash; <span id="locName">Richmond, BC</span></h2>
     <p class="section-note">Rise and set times for the chosen location's local calendar day.
@@ -920,6 +956,8 @@
 
   <script src="/moon/js/astronomy.browser.min.js"></script>
   <script src="/moon/js/moon-row.js?v=3" defer></script>
+  <script src="/moon/js/moon-weather-lib.js?v=1" defer></script>
+  <script src="/moon/js/moon-weather.js?v=1" defer></script>
   <script src="/solar-system-today/js/orrery-embed.js?v=1" defer></script>
   <script>
     // Live Sun / Moon dashboard.
@@ -1616,6 +1654,7 @@
           drawVisuals(now, dayStart);
           try {
             window.MES_MOON_RAW = collectRaw(now, fc, aq);
+            window.MES_MOON_CTX = { loc: state.loc, tz: state.tz, fc: fc };
             document.dispatchEvent(new CustomEvent('moon-data'));
           } catch (e) {}
 
