@@ -153,6 +153,12 @@ APPS = {
                      tag="See your real microphone level.", accent="#7c3aed", dark="#5b21b6", tint="#efe7fd",
                      desc="Free online mic test: see your microphone's real input level in dBFS on an OBS-style meter, find out if you are too quiet or clipping, measure room noise, record and play back 10 seconds, and test your speakers left and right. Private.",
                      js_v="1"),
+    # MES Storage Analyzer (2026-10-29, mes.fm/storage): WinDirStat / DaisyDisk in the browser. lib.js = MESStorage (scan of a FileSystemDirectoryHandle,
+    # also run as a Blob Web Worker from its own source; model in typed arrays, squarify, sunburst, lists, CSV/JSON), tests tool_apps_src/storage-tests.js.
+    "storage": dict(title="MES Storage Analyzer", page_title="Storage Analyzer: See What Is Taking Up Space in a Folder",
+                    tag="Find what fills your disk.", accent="#0d7a5f", dark="#0a5c48", tint="#dff2ec",
+                    desc="Free disk usage analyzer in your browser, like WinDirStat or DaisyDisk: pick a folder and see what takes up the space as a sunburst or treemap, with a folder table, largest files, file types, old and large files, duplicates and empty folders. Nothing is uploaded.",
+                    js_v="1"),
     "exif-viewer": dict(title="MES EXIF Viewer", page_title="EXIF Viewer: Photo Metadata, GPS Location and AI Flags",
                         tag="See the hidden data in a photo.", accent="#0f766e", dark="#0a5750", tint="#dcf2ef",
                         desc="Free EXIF viewer: drop a photo to see the camera, date, settings, GPS location, editing software and AI / Content Credentials flags hidden in it, and save a clean copy with all metadata removed. Private: the photo never leaves your browser.",

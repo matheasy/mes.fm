@@ -1,0 +1,920 @@
+<!DOCTYPE html>    <html lang="en">
+<!-- MES Storage Analyzer -- mes.fm/storage -->
+<!-- Added by HTTrack --><meta http-equiv="content-type" content="text/html;charset=UTF-8" /><!-- /Added by HTTrack -->
+<head>                    <link rel="icon" href="/storage/img/logo.png?v=2" type="image/png" /><link rel="canonical" href="https://mes.fm/storage" />                    <title>MES Storage Analyzer | Math Easy Solutions</title>
+        <meta name="viewport" content="width=device-width, initial-scale=1">	<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css" integrity="sha384-BVYiiSIFeK1dGmJRAkycuHAHRg32OmUcww7on3RYdg4Va+PmSTsz/K68vbdEjh4u" crossorigin="anonymous">
+        <style>html, body, div, span, applet, object, iframe, h1, h2, h3, h4, h5, h6, p, blockquote, pre, a, abbr, acronym, address, big, cite, code,del, dfn, em, img,
+ins, kbd, q, s, samp, small, strike, strong, sub, tt, var, u, i, center, dl, dt, dd, ol, ul, li, fieldset, form, label, legend, table, caption, tbody,
+tfoot, thead, tr, th, td, article, aside, canvas, details, embed, figure, figcaption, footer, header, hgroup, menu, nav, output, ruby, section, summary,
+time, mark, audio, video {margin:0;padding:0;border:0;font-size:100%;font-family:Helvetica,Arial,Optima,Sans Pro;vertical-align:baseline;color:#333333;}
+sup {margin:0;padding:0;border:0;font-size:100%;font-family:Helvetica,Arial,Optima,Sans Pro;vertical-align:super;color:black;}
+b {margin:0;padding:0;border:0;font-size:100%;font-family:Helvetica,Arial,Optima,Sans Pro;vertical-align:baseline;}
+/* HTML5 display-role reset for older browsers */
+article, aside, details, figcaption, figure, footer, header, hgroup, menu, nav, section {display:block;}
+body {background-color:#e2e2e2;line-height:1;}
+ol, ul {list-style:none;}
+blockquote, q {quotes:none;}
+blockquote:before, blockquote:after,
+q:before, q:after {content:'';content:none;}
+table {border-collapse:collapse;border-spacing:0;}
+a {text-decoration:none;}
+sub {vertical-align:sub;}        .warning-message {font-size:1em;text-align:center;padding:0.5em;background-color:#0d7a5f;color:white;}
+        .button {color:#0d7a5f;border:0.125em solid#0d7a5f;margin:0.7em 0;padding:0.5em 0.2em;text-align:center;-moz-user-select:none; -webkit-user-select:none; -ms-user-select:none; user-select:none; cursor:pointer;}
+        .button--subscribe {line-height:1.2;}
+        .button--share-calc {display: inline-block;padding-left: 1em;padding-right: 1em;margin-top: 0.5em;margin-bottom: 0.5em;}
+        .italic {font-style:italic;}
+        .bold {font-weight:700;}
+        .list {list-style-type:disc;}
+        .list__indent {line-height:1.2;margin-left:2em;margin-top:0.4em;margin-bottom:0.2em;font-size: 0.95em;}
+        .time {font-style:italic;font-weight:100;color:#939393;}
+        .small-text {font-size:0.9em;}
+        .big-text {font-size:1.1em;}
+        .link {color:#0d7a5f; font-weight:700;}
+        .link--dark {color: blue; font-weight: 700;}
+        .link--dark:hover {text-decoration: underline;}
+        .basic-table {margin:1em auto;}
+        .basic-table td, .basic-table th {border: 1px solid black; padding:0.5em 1em; text-align: center;}
+        .basic-table th {background-color: #ededed}
+        .basic-table--full {width:100%;}
+        .sponsored-ad {text-align:right;display:block;font-size:0.7em;margin-bottom:0.3em;font-style:italic;}
+        .box-border {border:0.1em solid#0d7a5f; padding:1em;margin-bottom: 1.2em;}
+        .selected {background-color:#0d7a5f;color:white;}
+        .right-arrow {font-size:2em;vertical-align:middle;margin:0 0.2em;display:inline-block;color:#0d7a5f;}
+        .share-calc-url {border: 2px solid black;font-size:0.9em;display:inline-block;width:15.5em;padding:0.45em 0.8em;font-weight:700;vertical-align:middle;color:#0d7a5f;background-color:#fdc010;}
+        .share-calc-url-container {margin-bottom: 0.5em;display: inline-block;}
+        .scissors-icon {vertical-align:middle;cursor: pointer;}
+        .hide {display:none;}
+        .crypto-container {background-color: #257bb6; padding: 10px; border-radius: 5px;}
+        .crypto-text {color: white; line-height: 1.4; padding: 5px;}.header2 {font-size:1.1em; margin-top:1.3em;margin-bottom:0.5em;}
+.header3 {font-size:1.0em; margin-top:1.0em;margin-bottom:0.3em;}
+.sentence {margin-top:0.5em; margin-bottom:0.5em;line-height:1.5}
+.sentence--indent {margin-left:1.5em;}
+
+.shadow {box-shadow:0.2em 0.2em 0.5em #999999;}
+.link:hover {color:#0a5c48;text-decoration:underline; cursor:pointer;}
+
+.outer-container {width:68.25em;margin:0 auto;}
+.inner-container {padding:1em 2em 1em 2em;overflow:hidden;background-color:white;box-shadow:0 0 1em #BBBBBB;}
+.header {position:relative;margin-bottom: 0.7em;}
+.logo-image-container {display:table-cell;}
+.logo {display:block;}
+.logo-text-container {display:table-cell;vertical-align:middle;padding-left:1.5em;}
+.calculator-title-link {display: block;}
+.calculator-title {margin-bottom:0.3em;font-size:1.8em;}
+.tag-line {font-size:1.2em;}
+
+.social-container {position:absolute;right:0;top:0;}
+.social-container--bottom {position:absolute;right:0;bottom:0;}
+.social {display: table-cell;}
+.social__text {display:table-cell;font-size:1.2em;vertical-align:middle;padding-right:0.6em;font-style:italic;color:#0d7a5f;}.social__logo {float:left;}
+.social__logo:not(:last-child) {margin-right:0.5em;}
+.social__link {height:2em;width:2em;display:block;}
+.social__fb {background: url(https://mes.fm/main_img/social-sprites.png) 0 0;}
+.social__gplus {background: url(https://mes.fm/main_img/social-sprites.png) -2em 0;}
+.social__insta {background: url(https://mes.fm/main_img/social-sprites.png) -4em 0;}
+.social__pin {background: url(https://mes.fm/main_img/social-sprites.png) -6em 0;}
+.social__twitter {background: url(https://mes.fm/main_img/social-sprites.png) -8em 0;}
+.social__yt {background: url(https://mes.fm/main_img/social-sprites.png) -10em 0;}
+.social__patreon {background: url(https://mes.fm/main_img/social-sprites.png) -12em 0;}
+.social__steemit {background: url(https://mes.fm/main_img/social-sprites.png) -14em 0;}
+.social__hive {background: url(https://mes.fm/main_img/social-sprites.png) -16em 0;}
+.social__telegram {background: url(https://mes.fm/main_img/social-sprites.png) -18em 0;}
+
+.info-bar-container {display: table-cell;}
+.info-bar {display:inline-block;margin-left:-2em;padding-left:1.1em;overflow:hidden;}
+.info-bar__item {float:left;}
+.info-bar__item__text {display:block;text-align:center;padding:0.7em 1em 0.7em 1em;font-size:0.9em;color:white}
+.info-bar__logo-container {display: table-cell;vertical-align: middle;}
+.info-bar__logo {display: block; margin-left: 0.8em;}
+
+.outer-page-content {width:45.5em;display:inline-block;}
+.page-content {padding:1.2em 2.25em 0 0;}
+.color-box {width:1.2em;height:1.2em;display:inline-block;margin-right:0.5em;}
+.page-title {display:inline-block;font-size:1.5em;font-weight:400;margin-bottom:0.3em;}
+.page-description {line-height:1.3;}
+#main-content {margin:1.5em 0;position:relative;}
+
+.side-bar {width:18.75em;float:right;}
+.navbar-container {margin:2.1em 0.8em;}
+.navbar {margin-bottom:-1em;}
+.button--navbar {padding:0.7em 0.2em;font-size:1.2em;margin-bottom:0;color:#0d7a5f;border:0.125em solid#0d7a5f;}
+
+.navbar__item:hover {cursor:pointer;}
+.navbar__link  {display:block;color:white;padding:0.7em 1em 0.7em 1.4em;}
+.navbar__link--first {padding-top:0.8em;}
+.navbar__dropdown-item {color:#222222;}
+.navbar__dropdown-item:hover {text-decoration:underline;}
+.dropdown-symbol {margin-left:1em;color:white;}
+
+.latest-article {margin-top:1em;padding:0.5em;text-align:center;box-shadow:0 0 1em #BBBBBB;}
+.latest-article__tag:first-child {margin-bottom:0.5em;line-height:normal;}
+.latest-article__title:last-child {text-align:left;font-weight:700;}
+.latest-article__logo {vertical-align:bottom;margin-bottom:0.5em;}
+
+.footer {padding:2em;}
+.footer__item-container {display:table;width:100%;margin-bottom:1.6em;}
+.footer__item {display:table-cell;}
+.footer__item--extra-padding {padding-left:2.5em;}
+.footer__text {color:white;line-height:1.5;}
+.footer__text--title {display:inline-block;margin-bottom:1.6em;font-size:1.3em;font-style:italic;}
+.footer__text--extra-info {float:right;}
+.footer__text:not(.footer__text--copyright):hover {text-decoration:underline; cursor:pointer;}
+.footer__text--black {color:#000;}
+.footer__separator {color:white;}
+#copyright-year {color:white;}
+
+.active-tab {background-color:#fdc010;color: #222222;}
+.navbar__link:hover:not(.navbar__dropdown-item):not(.active-tab),.info-bar__item__text:hover:not(.active-tab) {background-color:#0a5c48;}
+        .info-bar,.color-box,.navbar,.footer {background-color:#0d7a5f;}
+        .dropdown-symbol--dark {color:#0d7a5f;}
+        .button--active {background-color:#0d7a5f;color:white;}
+        .navbar__dropdown-container {color: #222222;background-color:#fdc010;}
+        .header2--top {margin-top: 0.5em;}
+        .basic-table td, .basic-table th {border: 1px solid black; padding:0.3em 0.5em; text-align: center;}
+        /* RESPONSIVE-FIX-INSERTED */
+@media (max-width: 768px) {
+  .outer-container { width: 100% !important; margin: 0 !important; }
+  .outer-page-content { width: 100% !important; display: block !important; }
+  .side-bar { width: 100% !important; float: none !important; }
+  .page-box { width: auto !important; display: block !important; margin: 0 auto 0.5em auto !important; }
+  img { max-width: 100% !important; height: auto !important; }
+  table { max-width: 100% !important; }
+
+  #info-bar > .info-bar__item:has(a[href$="index.html"]),
+  #info-bar > .info-bar__item:has(a[href*="donate"]),
+  #info-bar > .info-bar__item:has(a[href*="substack.com"]),
+  #info-bar > .info-bar__item:has(a[href*="mes.fm/links"]) { display: none !important; }
+}
+
+.inner-container { position: relative !important; }
+.header .social-container { display: none !important; }
+.side-bar { width: auto !important; float: none !important; }
+.navbar-container { margin: 0 !important; box-shadow: none !important; }
+.navbar__item--social { display: list-item; padding: 1em 1.6em 1em 1.4em; border-bottom: 1px solid rgba(255,255,255,0.25); }
+.navbar__item--social .social-container--navbar { position: static !important; display: flex; flex-wrap: wrap; align-items: center; gap: 0.6em; }
+.navbar__item--social .social__text { color: white; margin: 0; }
+.navbar__item--social .social { display: flex; flex-wrap: wrap; gap: 0.5em; margin: 0; padding: 0; }
+.navbar__item--social .info-bar__logo-container { display: block; margin-top: 0.4em; }
+#navbar-button {
+  position: absolute !important; top: 16px !important; right: 16px !important; z-index: 20;
+  width: 44px; height: 44px; padding: 0; margin: 0 !important;
+  background: transparent !important; border: none !important;
+  font-size: 0;
+}
+
+@media (max-width: 768px) {
+  .header { padding-right: 4em !important; box-sizing: border-box; }
+}
+#navbar-button::before {
+  content: ""; display: block; margin: 0 auto;
+  width: 26px; height: 4px; background: currentColor; border-radius: 1px;
+  box-shadow: 0 7px 0 currentColor, 0 -7px 0 currentColor;
+}
+#navbar { display: none; }
+#navbar.hide {
+  display: block !important; box-sizing: border-box;
+  position: absolute; top: 76px; right: 16px; z-index: 19;
+  width: 16em; max-width: 90vw; max-height: 75vh; overflow-y: auto;
+  scrollbar-gutter: stable;
+  box-shadow: 0 0.25em 1em rgba(0,0,0,0.3);
+  border-radius: 0.25em;
+}
+
+#navbar.hide { display: flex !important; flex-direction: column; }
+.navbar__item--social { order: 999; }
+.navbar__item--social .info-bar__logo-container { display: block !important; }
+
+.outer-container { width: auto !important; max-width: 50em; margin: 0 auto !important; }
+.outer-page-content { width: 100% !important; display: block !important; }
+.page-content { padding-right: 0 !important; }
+
+</style>	<style>
+	.hide {display:none;}
+	a,a:hover {text-decoration: none !important;color:white;}
+	a.active-tab:hover {color:#222222;}
+	.navbar {border:none;}
+
+	/* the tool itself (scoped to #main-content) */
+	/* shared widget kit for the calculator tool pages (build_tool_apps.py prepends this to each app's own CSS) */
+	.tu {margin:1em 0;--accent:#0d7a5f;--accent-dark:#0a5c48;--tint:#dff2ec;}
+	.tu *, .tu *::before, .tu *::after {box-sizing:border-box;}
+	.tu a {color:var(--accent);text-decoration:underline !important;}
+	.tu a:hover {color:var(--accent-dark);}
+	.tu button, .tu input, .tu select {font:inherit;}
+	.tu h2 {font-size:1.05em;color:#1e2733;margin:1.4em 0 0.6em;padding-bottom:0.3em;border-bottom:2px solid #dff2ec;}
+	.tu h3 {font-size:0.98em;color:#1e2733;margin:1em 0 0.4em;}
+	.tu p {line-height:1.5;margin:0.5em 0;}
+	.tu-card {background:#fff;border:1px solid #dfe4ea;border-radius:0.55em;padding:1em 1.1em;}
+	.tu-card--tint {background:#dff2ec;border-color:#dff2ec;}
+	.tu-row {display:flex;flex-wrap:wrap;gap:0.9em 1.1em;align-items:flex-end;}
+	.tu-field {display:flex;flex-direction:column;gap:0.3em;flex:1 1 11em;min-width:0;}
+	.tu-field--sm {flex:0 1 8em;}
+	.tu-field > label, .tu-label {font-size:0.75em;font-weight:700;text-transform:uppercase;letter-spacing:0.04em;color:#667;}
+	.tu-input, .tu-select {width:100%;font-size:1.05em;padding:0.55em 0.65em;border:1px solid #b9c1cc;border-radius:0.4em;background:#fff;color:#222;}
+	.tu-input:focus, .tu-select:focus {outline:none;border-color:var(--accent);box-shadow:0 0 0 2px #dff2ec;}
+	.tu-input--big {font-size:1.35em;padding:0.55em 0.7em;}
+	.tu-suffix {position:relative;}
+	.tu-suffix .tu-input {padding-right:3.2em;}
+	.tu-suffix span {position:absolute;right:0.7em;top:50%;transform:translateY(-50%);font-size:0.85em;color:#667085;pointer-events:none;}
+	.tu-btn {cursor:pointer;padding:0.5em 0.95em;border-radius:0.35em;border:0.125em solid var(--accent);background:#fff;color:var(--accent);font-size:0.9em;line-height:1.1;}
+	.tu-btn:hover {background:var(--accent);color:#fff;}
+	.tu-btn--primary {background:var(--accent);color:#fff;}
+	.tu-btn--primary:hover {background:var(--accent-dark);border-color:var(--accent-dark);}
+	.tu-btn--ghost {border-color:#c3c9d2;color:#555;}
+	.tu-btn--ghost:hover {background:#eef1f5;color:#222;border-color:#c3c9d2;}
+	.tu-seg {display:inline-flex;border:1px solid #b9c1cc;border-radius:0.4em;overflow:hidden;background:#fff;}
+	.tu-seg button {cursor:pointer;border:0;background:transparent;padding:0.55em 0.9em;color:#555;font-size:0.95em;border-right:1px solid #dfe4ea;}
+	.tu-seg button:last-child {border-right:0;}
+	.tu-seg button:hover {background:#f4f6f9;}
+	.tu-seg button[aria-pressed="true"] {background:var(--accent);color:#fff;}
+	.tu-chips {display:flex;flex-wrap:wrap;gap:0.4em;margin:0.6em 0 0;}
+	.tu-chip {cursor:pointer;font-size:0.82em;padding:0.35em 0.8em;border-radius:1.2em;border:1px solid #c3c9d2;background:#fff;color:#555;}
+	.tu-chip:hover {border-color:var(--accent);color:var(--accent);}
+	.tu-chip[aria-pressed="true"] {background:var(--accent);border-color:var(--accent);color:#fff;}
+	.tu-stats {display:grid;grid-template-columns:repeat(auto-fit,minmax(13em,1fr));gap:0.8em;margin:1em 0;}
+	.tu-stat {background:#fff;border:1px solid #dfe4ea;border-radius:0.55em;padding:0.8em 1em;}
+	.tu-stat--hero {background:#dff2ec;border-color:#dff2ec;}
+	.tu-stat__label {font-size:0.72em;font-weight:700;text-transform:uppercase;letter-spacing:0.05em;color:#667;}
+	.tu-stat__value {font-size:1.7em;font-weight:700;color:#1e2733;line-height:1.2;margin:0.15em 0;word-break:break-word;}
+	.tu-stat__sub {font-size:0.85em;color:#555d6b;line-height:1.35;}
+	.tu-pos {color:#1f7a3d !important;}
+	.tu-neg {color:#b3261e !important;}
+	.tu-table-wrap {overflow-x:auto;}
+	.tu-table {width:100%;border-collapse:collapse;font-size:0.95em;}
+	.tu-table th, .tu-table td {text-align:right;padding:0.5em 0.7em;border-bottom:1px solid #e3e7ec;color:#333;white-space:nowrap;}
+	.tu-table th:first-child, .tu-table td:first-child {text-align:left;}
+	.tu-table th {font-size:0.75em;text-transform:uppercase;letter-spacing:0.03em;color:#6a7280;background:#fff;}
+	.tu-table tr.is-active td {background:#dff2ec;font-weight:700;}
+	.tu-note {font-size:0.85em;color:#6a7280;line-height:1.45;}
+	.tu-toast {position:fixed;left:50%;bottom:2em;transform:translateX(-50%) translateY(0.5em);background:#1e2733;color:#fff;padding:0.6em 1.1em;border-radius:2em;font-size:0.9em;box-shadow:0 0.4em 1.2em rgba(0,0,0,0.25);opacity:0;pointer-events:none;transition:opacity 0.15s, transform 0.15s;z-index:60;}
+	.tu-toast--show {opacity:1;transform:translateX(-50%) translateY(0);}
+	.tu-seo {margin-top:2em;border-top:1px solid #e3e3e3;padding-top:1.2em;}
+	/* SEO-HEADINGS: headlines and questions stand out from the body text (also added to built pages by add_seo_heading_style.py) */
+	body .tu-seo {font-size:1.04em;line-height:1.65;}
+	body .tu-seo h2 {font-size:1.45em;font-weight:800;line-height:1.25;margin:0 0 0.6em;color:#1e2733;border-bottom:0;padding-bottom:0;}
+	body .tu-seo h3 {font-size:1.2em;font-weight:800;line-height:1.3;margin:1.6em 0 0.5em;padding:0.15em 0 0.15em 0.65em;border-left:5px solid var(--accent,#4a6fa5);color:#1e2733;}
+	body .tu-seo h4, body .tu-seo dt {font-size:1.08em;font-weight:700;font-style:normal;line-height:1.35;margin:1.3em 0 0.3em;color:#1e2733;}
+	body .tu-seo dd {margin:0 0 0.6em;} body .tu-seo p, body .tu-seo li, body .tu-seo dd {line-height:1.65;}
+	body.dark-mode .tu-seo h2, body.dark-mode .tu-seo h3, body.dark-mode .tu-seo h4, body.dark-mode .tu-seo dt {color:#f2f2f2;}
+	.tu sup, .tu sub {font-size:0.72em !important;line-height:0;vertical-align:baseline;position:relative;} .tu sup {top:-0.5em;} .tu sub {top:0.3em;}
+	.tu div[class$="-eq"] {overflow-y:hidden;}
+	.tu-seo ul {list-style:disc;margin:0.5em 0 0.5em 1.5em;line-height:1.5;}
+	.tu-svg-line {fill:none;stroke:#1e2733;stroke-width:2;}
+	.tu-svg-accent {fill:none;stroke:var(--accent);stroke-width:3;}
+	.tu-svg-fill {fill:var(--accent);}
+	.tu-svg-tint {fill:#dff2ec;}
+	.tu-svg-text {font-size:13px;fill:#333;}
+	.tu-svg-grid {stroke:#dfe4ea;stroke-width:1;fill:none;}
+	/* selected states: the derived dark theme would darken these, so restate them for dark mode */
+	/* the dark theme lightens --accent so it reads on dark; text on filled accent surfaces then has to be dark */
+	body.dark-mode .tu .tu-seg button[aria-pressed="true"], body.dark-mode .tu .tu-chip[aria-pressed="true"], body.dark-mode .tu .uc-cat[aria-selected="true"],
+	body.dark-mode .tu .tu-btn:hover, body.dark-mode .tu .tu-btn--primary, body.dark-mode .tu .tu-btn--primary:hover {background:var(--accent);border-color:var(--accent);color:#0b1416;}
+	body.dark-mode .tu .tu-btn--ghost:hover {background:#2e2e2e;border-color:#666;color:#eee;}
+	body.dark-mode .tu .uc-cat[aria-selected="true"] span {color:#0b1416;}
+	body.dark-mode .tu .tu-svg-tint {fill:rgba(255,255,255,0.09);}
+	body.dark-mode .tu .gm-card[aria-pressed="true"] {border-color:var(--accent);background:rgba(255,255,255,0.08);}
+	/* dark mode: the tool's accent lightened (same hue) so links, outlines and the text on filled buttons keep their contrast on the dark page */
+	body.dark-mode .tu {--accent:#12ad86 !important;--accent-dark:#12ad86 !important;}
+	@media (max-width:600px) {
+		.tu-stat__value {font-size:1.45em;}
+		.tu-field--sm {flex:1 1 7em;}
+	}
+	@media print {
+		.tu-btn, .tu-chips, .tu-seg {display:none !important;}
+	}
+
+/* row layout options on the grade / GPA / weighted-average calculators (names on-off, table layout) */
+.tu .rw-bar {display:flex;gap:0.4em;flex-wrap:wrap;margin:0.5em 0 0.1em;}
+.tu .gc-n {display:none;}
+.tu [data-names="0"] .rw-name {display:none !important;}
+.tu [data-names="0"] .rw-num, .tu [data-table="1"] .rw-num {display:block !important;flex:0 0 1.7em;text-align:right;color:#8a93a0;font-size:0.85em;padding-bottom:0.7em;}
+.tu [data-table="1"] .rw-head, .tu [data-table="1"] .rw-row {display:grid !important;grid-template-columns:var(--rw-cols);gap:0.3em;align-items:center;}
+.tu [data-table="1"] .rw-head {font-size:0.68em;font-weight:700;text-transform:uppercase;letter-spacing:0.03em;color:#667;padding:0.4em 0 0.2em;border-bottom:2px solid #d5dae1;} .tu [data-table="1"] .rw-head span {text-align:center;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;} .tu [data-table="1"] .rw-head span:first-child {text-align:right;}
+.tu [data-table="1"] .rw-row {padding:0.22em 0;border-bottom:1px solid #eceff3;}
+.tu [data-table="1"] .rw-row > * {order:0 !important;flex:none !important;margin:0 !important;min-width:0 !important;width:auto !important;}
+.tu [data-table="1"] .rw-row .rw-num {padding:0;}
+.tu [data-table="1"] .rw-f label {display:none;}
+.tu [data-table="1"] .rw-row .tu-input, .tu [data-table="1"] .rw-row .tu-select {padding:0.35em 0.2em;width:100%;min-width:0;text-align:center;}
+.tu [data-table="1"] .rw-row .rw-name .tu-input {text-align:left;padding-left:0.4em;}
+.tu [data-table="1"] .rw-del {padding:0.25em 0 !important;font-size:0.95em !important;}
+.tu [data-table="1"] .rw-pts {padding:0 !important;font-size:0.78em;text-align:center;}
+body.dark-mode .tu .rw-head {color:#a0a8b3;border-bottom-color:#555;} body.dark-mode .tu [data-table="1"] .rw-row {border-bottom-color:#333;}
+/* equation boxes typeset by main_js/mes-math.js (MathJax) */
+.tu [class$="-eq__f"].mes-tex {font-family:inherit;white-space:normal;display:inline-block;vertical-align:middle;max-width:100%;overflow-x:auto;overflow-y:hidden;}
+.tu [class$="-eq"] mjx-container {margin:0.15em 0 !important;}
+.tu [class$="-eq"] > div {margin:0.25em 0;}
+.tu [class$="-eq__n"] {vertical-align:middle;}
+
+	/* MES Storage Analyzer. Colours are custom properties on #st, restated under body.dark-mode #st.st (the generated TOOL-DARK block would otherwise remap literals). */
+	.st {--st-fg:#1f2733;--st-muted:#5b6573;--st-line:#dfe4ea;--st-card:#fff;--st-soft:#f4f6f9;--st-hover:#eef3f9;--st-drop:#f7faf9;--st-dropb:#9fc9bb;--st-bar:#0d7a5f;--st-bartrack:#e6ebf0;--st-tipbg:rgba(17,24,39,0.94);--st-tipfg:#fff;--st-honest:#eaf5f1;--st-honestb:#bfe0d4;--st-sel:#f59e0b;--st-err:#b91c1c;--st-chartbg:#ffffff;--st-tag:#e8eef5;}
+	/* the page's reset paints every div/span/td/aside... #333: inherit instead (0,1,0, so the class colour rules below still win) */
+	.st :where(div, span, p, label, dd, dt, td, th, tr, tbody, thead, table, li, ul, b, small, em, i, aside, section, nav, h2, h3, h4, strong) {color:inherit;}
+	#st .tu-table th {background:var(--st-soft);}
+	#st {color:var(--st-fg);}
+	#st .tu-card, #st .tu-table, #st .tu-table td, #st .tu-table th, #st .tu-note, #st .tu-label {color:var(--st-fg);}
+	#st .tu-note {color:var(--st-muted);}
+	#st b, #st strong, #st h2, #st h3, #st h4, #st .st-info div {color:inherit;}
+	#st .st-info .st-ipath, #st .st-stat span {color:var(--st-muted);}
+	#st code {color:inherit;background:rgba(128,128,128,0.15);padding:0 0.25em;border-radius:0.25em;}
+	.st-honest {background:var(--st-honest);border:1px solid var(--st-honestb);border-radius:0.6em;padding:0.8em 1em;line-height:1.5;margin:0 0 1em;}
+	.st-h {margin:0;font-size:1.2em;}
+	.st-sr {position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);}
+	/* pick */
+	.st-drop {border:2px dashed var(--st-dropb);border-radius:0.8em;background:var(--st-drop);padding:1.6em 1em;text-align:center;transition:background 0.15s, border-color 0.15s;}
+	.st-drop.st-over {border-color:var(--accent);background:var(--st-hover);}
+	.st-dropicon {font-size:2.4em;line-height:1;}
+	.st-droptext {margin:0.4em 0 0.7em;font-size:1.1em;}
+	.st-pickbtns {display:flex;flex-wrap:wrap;gap:0.6em;justify-content:center;}
+	.st-big {font-size:1.1em;padding:0.7em 1.4em;min-height:46px;}
+	.st-pickbtns .tu-btn {min-height:46px;}
+	.st-how {color:var(--st-muted);margin:0.9em auto 0;max-width:46em;line-height:1.5;font-size:0.95em;}
+	/* progress */
+	.st-proghead {display:flex;justify-content:space-between;align-items:center;gap:1em;flex-wrap:wrap;}
+	.st-pstats {display:grid;grid-template-columns:repeat(4, minmax(0, 1fr));gap:0.6em;margin:0.9em 0;}
+	.st-pstats > div {background:var(--st-soft);border-radius:0.5em;padding:0.55em 0.7em;}
+	.st-pnum {display:block;font-size:1.45em;font-weight:700;font-variant-numeric:tabular-nums;}
+	.st-plab {font-size:0.85em;color:var(--st-muted);}
+	.st-pbar {height:6px;border-radius:3px;background:var(--st-bartrack);overflow:hidden;position:relative;}
+	.st-pbar span {position:absolute;top:0;bottom:0;width:30%;background:var(--st-bar);border-radius:3px;animation:st-slide 1.2s linear infinite;}
+	@keyframes st-slide {from {left:-30%;} to {left:100%;}}
+	.st-ppath {margin-top:0.6em;font-family:ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;font-size:0.85em;color:var(--st-muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;direction:rtl;text-align:left;}
+	/* summary */
+	.st-sumhead, .st-chead {display:flex;flex-wrap:wrap;gap:0.5em 0.8em;align-items:center;justify-content:space-between;}
+	.st-sumbtns {display:flex;gap:0.5em;flex-wrap:wrap;}
+	.st-stats {display:grid;grid-template-columns:repeat(auto-fit, minmax(10em, 1fr));gap:0.6em;margin-top:0.8em;}
+	.st-stat {background:var(--st-soft);border-radius:0.55em;padding:0.6em 0.8em;}
+	.st-stat b {display:block;font-size:1.4em;font-variant-numeric:tabular-nums;}
+	.st-stat span {font-size:0.86em;color:var(--st-muted);}
+	.st-warnline {margin:0.7em 0 0;color:var(--st-err);}
+	.st-warnline button {font:inherit;background:none;border:0;color:inherit;text-decoration:underline;cursor:pointer;padding:0;}
+	/* chart */
+	.st-seg button {min-height:38px;}
+	.st-rings {display:inline-flex;align-items:center;gap:0.4em;font-size:0.92em;}
+	.st-rings input {width:7em;accent-color:var(--accent);}
+	.st-cbtns {margin-left:auto;}
+	.st-crumbs {display:flex;flex-wrap:wrap;align-items:center;gap:0.2em;margin:0.7em 0 0.4em;font-size:0.95em;}
+	.st-crumbs button {font:inherit;border:1px solid transparent;background:transparent;color:var(--accent);cursor:pointer;padding:0.2em 0.45em;border-radius:0.35em;max-width:16em;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+	.st-crumbs button:hover {background:var(--st-hover);}
+	.st-crumbs button[aria-current] {color:var(--st-fg);font-weight:700;cursor:default;}
+	.st-crumbs .st-sep {color:var(--st-muted);}
+	.st-chartwrap {display:grid;grid-template-columns:minmax(0, 1fr) 17em;gap:1em;align-items:start;}
+	.st-chart {position:relative;height:min(72vh, 40em);min-height:18em;background:var(--st-chartbg);border-radius:0.5em;touch-action:manipulation;}
+	.st-chart canvas {display:block;cursor:pointer;}
+	.st-tip {position:absolute;background:var(--st-tipbg);color:var(--st-tipfg);padding:0.45em 0.65em;border-radius:0.45em;font-size:0.86em;line-height:1.45;pointer-events:none;z-index:3;max-width:22em;}
+	.st-tip[hidden] {display:none;}
+	#st .st-tip * {color:var(--st-tipfg);}
+	.st-tip .st-tippath {opacity:0.75;font-size:0.92em;word-break:break-all;}
+	.st-info {background:var(--st-soft);border-radius:0.6em;padding:0.8em 0.9em;font-size:0.95em;line-height:1.45;min-height:8em;word-break:break-word;}
+	.st-info h3 {margin:0 0 0.2em;font-size:1.08em;word-break:break-word;}
+	.st-info .st-ibig {font-size:1.6em;font-weight:700;margin:0.1em 0;}
+	.st-info .st-ipath {font-family:ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;font-size:0.82em;color:var(--st-muted);margin:0.4em 0;word-break:break-all;}
+	.st-info .tu-row {margin-top:0.6em;gap:0.4em;}
+	.st-small {font-size:0.82em;padding:0.4em 0.75em;}
+	.st-legend {display:flex;flex-wrap:wrap;gap:0.3em 0.9em;margin-top:0.7em;font-size:0.9em;}
+	.st-legend button {font:inherit;border:1px solid var(--st-line);background:var(--st-card);color:var(--st-fg);border-radius:999px;padding:0.25em 0.7em;cursor:pointer;display:inline-flex;align-items:center;gap:0.4em;}
+	.st-legend button[aria-pressed="true"] {border-color:var(--st-fg);font-weight:700;}
+	.st-legend button.st-dim {opacity:0.45;}
+	.st-sw {display:inline-block;width:0.8em;height:0.8em;border-radius:0.2em;flex:none;}
+	.st-chint {margin-top:0.6em;}
+	.st-chartcard.mes-pfill .st-chartwrap {flex:1 1 auto;min-height:0;grid-template-rows:minmax(0, 1fr);}
+	.st-chartcard.mes-pfill .st-chart {height:100%;min-height:12em;}
+	.st-chartcard.mes-pfill .st-chint {display:none;}
+	/* table */
+	.st-searchrow {display:flex;flex-wrap:wrap;align-items:center;gap:0.5em 0.8em;margin:0.6em 0;}
+	.st-q {flex:1 1 16em;max-width:30em;}
+	.st-qinfo {color:var(--st-muted);font-size:0.92em;}
+	.st-tablewrap {max-height:min(70vh, 44em);overflow:auto;border:1px solid var(--st-line);border-radius:0.5em;}
+	.st-tablesec.mes-pfill .st-tablewrap, #st-tablesec.mes-pfill .st-tablewrap {max-height:none;flex:1 1 auto;}
+	.st-tree {width:100%;border-collapse:collapse;font-size:0.94em;}
+	.st-tree th {position:sticky;top:0;background:var(--st-soft);z-index:1;text-align:left;padding:0;border-bottom:1px solid var(--st-line);}
+	.st-tree th button {font:inherit;font-weight:700;border:0;background:transparent;color:var(--st-fg);cursor:pointer;padding:0.55em 0.6em;width:100%;text-align:inherit;white-space:nowrap;}
+	.st-tree th.st-num, .st-tree td.st-num {text-align:right;}
+	.st-tree th[aria-sort] button::after {content:" ▾";}
+	.st-tree th[aria-sort="ascending"] button::after {content:" ▴";}
+	.st-tree td {padding:0.3em 0.6em;border-bottom:1px solid var(--st-line);white-space:nowrap;font-variant-numeric:tabular-nums;}
+	.st-tree tr.st-row:hover td {background:var(--st-hover);}
+	.st-tree tr.st-row.st-on td {background:var(--st-hover);box-shadow:inset 3px 0 0 var(--st-sel);}
+	.st-tree td.st-name {white-space:normal;min-width:12em;}
+	.st-nm {display:flex;align-items:center;gap:0.25em;}
+	.st-tog {font:inherit;border:0;background:transparent;color:var(--st-muted);cursor:pointer;width:1.8em;height:1.8em;flex:none;border-radius:0.3em;}
+	.st-tog:hover {background:var(--st-soft);}
+	.st-tog[disabled] {cursor:default;visibility:hidden;}
+	.st-ico {flex:none;width:1.4em;text-align:center;}
+	.st-nlink {font:inherit;border:0;background:transparent;color:var(--st-fg);cursor:pointer;text-align:left;padding:0.15em 0.1em;word-break:break-word;}
+	.st-nlink:hover {text-decoration:underline;}
+	.st-pathsm {display:block;color:var(--st-muted);font-size:0.82em;word-break:break-all;}
+	.st-pbarcell {min-width:8em;}
+	.st-bar {display:flex;align-items:center;gap:0.45em;}
+	.st-bar i {display:block;height:0.7em;border-radius:0.35em;background:var(--st-bartrack);flex:1 1 auto;min-width:4em;position:relative;overflow:hidden;}
+	.st-bar i b {position:absolute;left:0;top:0;bottom:0;border-radius:0.35em;background:var(--st-bar);}
+	.st-bar span {font-size:0.85em;color:var(--st-muted);min-width:3.2em;text-align:right;}
+	.st-more td {text-align:center;}
+	.st-more button {font:inherit;border:0;background:transparent;color:var(--accent);cursor:pointer;padding:0.4em;text-decoration:underline;}
+	/* lists */
+	.st-tabs {margin:0;}
+	.st-tabs .tu-chip {font-size:0.9em;padding:0.45em 0.9em;min-height:36px;}
+	.st-tabs .tu-chip[aria-selected="true"] {background:var(--accent);border-color:var(--accent);color:#fff;}
+	.st-scope {color:var(--st-muted);margin:0.7em 0 0.4em;font-size:0.92em;}
+	.st-panel .tu-table-wrap {max-height:min(70vh, 40em);overflow:auto;}
+	.st-lists.mes-pfill .st-panel {flex:1 1 auto;overflow:auto;}
+	.st-lists.mes-pfill .st-panel .tu-table-wrap {max-height:none;}
+	#st .st-ltbl td, #st .st-ltbl th {vertical-align:top;text-align:left;white-space:normal;border-bottom-color:var(--st-line);}
+	#st .st-ltbl td.st-num, #st .st-ltbl th.st-num {text-align:right;white-space:nowrap;}
+	.st-ltbl td.st-num, .st-ltbl th.st-num {text-align:right;white-space:nowrap;font-variant-numeric:tabular-nums;}
+	.st-ctl {display:flex;flex-wrap:wrap;gap:0.6em 1em;align-items:flex-end;margin:0.3em 0 0.8em;}
+	.st-ctl .tu-field {margin:0;}
+	.st-catbars {display:grid;gap:0.45em;margin:0.4em 0 1em;}
+	.st-cb {display:grid;grid-template-columns:minmax(8em, 13em) minmax(0, 1fr) auto;gap:0.7em;align-items:center;font:inherit;border:0;background:transparent;color:var(--st-fg);cursor:pointer;text-align:left;padding:0.2em;border-radius:0.35em;}
+	.st-cb:hover {background:var(--st-hover);}
+	.st-cb i {display:block;height:1em;border-radius:0.3em;background:var(--st-bartrack);position:relative;overflow:hidden;}
+	.st-cb i b {position:absolute;left:0;top:0;bottom:0;border-radius:0.3em;}
+	.st-cb small {color:var(--st-muted);white-space:nowrap;font-variant-numeric:tabular-nums;}
+	.st-stack {display:flex;height:1.4em;border-radius:0.4em;overflow:hidden;margin:0.3em 0 0.8em;}
+	.st-stack span {display:block;height:100%;}
+	.st-tag {display:inline-block;background:var(--st-tag);border-radius:0.3em;padding:0 0.4em;font-size:0.85em;}
+	.st-dupg {border:1px solid var(--st-line);border-radius:0.5em;padding:0.55em 0.75em;margin:0 0 0.6em;}
+	.st-dupg h4 {margin:0 0 0.3em;font-size:1em;}
+	.st-dupg ul {margin:0;padding-left:1.1em;}
+	.st-dupg li {margin:0.15em 0;word-break:break-all;}
+	.st-hashbar {height:6px;background:var(--st-bartrack);border-radius:3px;overflow:hidden;margin:0.5em 0;}
+	.st-hashbar b {display:block;height:100%;background:var(--st-bar);width:0;}
+	.st-linkbtn {font:inherit;border:0;background:transparent;color:var(--accent);cursor:pointer;padding:0;text-align:left;word-break:break-word;}
+	.st-linkbtn:hover {text-decoration:underline;}
+	.st-copy {font:inherit;font-size:0.85em;border:1px solid var(--st-line);background:var(--st-card);color:var(--st-fg);border-radius:0.35em;cursor:pointer;padding:0.15em 0.5em;margin-left:0.3em;}
+	.st-empty {color:var(--st-muted);padding:0.6em 0;}
+	.st-estout {font-variant-numeric:tabular-nums;}
+	.st-quota p {line-height:1.5;}
+	@media (max-width:900px) {
+		.st-chartwrap {grid-template-columns:minmax(0, 1fr);}
+		.st-info {min-height:0;}
+		.st-chartcard.mes-pfill .st-info {display:none;}
+	}
+	@media (max-width:600px) {
+		.st-pstats {grid-template-columns:repeat(2, minmax(0, 1fr));}
+		.st-chart {height:min(62vh, 26em);}
+		.st-hidesm {display:none;}
+		.st-tree td.st-name {min-width:9em;}
+		.st-pbarcell {min-width:5.5em;}
+		.st-bar i {min-width:2.5em;}
+		.st-cb {grid-template-columns:minmax(6em, 9em) minmax(0, 1fr);}
+		.st-cb small {grid-column:1 / -1;}
+		.st-cbtns {margin-left:0;}
+		.st-rings input {width:5em;}
+	}
+	body.dark-mode #st.st {--st-fg:#e3e7ec;--st-muted:#a7b1bd;--st-line:#343a42;--st-card:#1f2329;--st-soft:#24292f;--st-hover:#2a313a;--st-drop:#1c2422;--st-dropb:#3f6b5e;--st-bar:#34d399;--st-bartrack:#343a42;--st-honest:#15261f;--st-honestb:#2d4d41;--st-err:#f87171;--st-chartbg:#15181c;--st-tag:#2f3742;}
+	body.dark-mode #st .tu-card {background:var(--st-card);border-color:var(--st-line);}
+	body.dark-mode #st .tu-seg {background:#1f2329;border-color:#3a414b;}
+	body.dark-mode #st .tu-seg button {color:#cfd6de;border-color:#3a414b;}
+	body.dark-mode #st .tu-seg button[aria-pressed="true"], body.dark-mode #st .st-tabs .tu-chip[aria-selected="true"] {background:#34d399;color:#0b1410;}
+	body.dark-mode #st .st-tabs .tu-chip {background:#1f2329;border-color:#3a414b;color:#cfd6de;}
+	body.dark-mode #st .st-crumbs button, body.dark-mode #st .st-linkbtn, body.dark-mode #st .st-more button {color:#6ee7b7;}
+	body.dark-mode #st .st-crumbs button[aria-current] {color:#e3e7ec;}
+	body.dark-mode #st .tu-btn:not(.tu-btn--primary):not(.tu-btn--ghost) {background:transparent;color:#6ee7b7;border-color:#34d399;}
+	body.dark-mode #st .tu-btn--primary {background:#34d399;border-color:#34d399;color:#0b1410;}
+	body.dark-mode #st .tu-btn--ghost {color:#cfd6de;border-color:#4a525d;background:transparent;}
+	body.dark-mode #st .tu-btn--ghost:hover {background:#2a313a;}
+
+
+	@media print {
+		.header, .info-bar-container, .side-bar, #footer, #comments-button, #comments-box, .color-box { display:none !important; }
+		.outer-container, .inner-container, .outer-page-content, .page-content { width:auto !important; box-shadow:none !important; padding:0 !important; margin:0 !important; }
+	}
+	/* Mobile layout: stack header/nav/footer, full-width calculator inputs */
+	@media (max-width: 600px) {
+		.inner-container { padding: 1em 0.75em; }
+
+		.header { display: flex; flex-wrap: wrap; align-items: center; }
+		.logo-image-container { flex: 0 0 auto; }
+		.logo-text-container { display: block; flex: 1 1 0; min-width: 0; padding-left: 0.75em; vertical-align: initial; }
+		.calculator-title { font-size: 1.3em; }
+		.tag-line { font-size: 1em; }
+		.social-container, .social-container--bottom { position: static; flex: 0 0 100%; margin-top: 0.5em; }
+		.social-container { display: flex; align-items: center; flex-wrap: wrap; gap: 0.5em; }
+		.social-container .social__text { margin: 0; font-size: 0.9em; }
+		.social { display: flex; gap: 0.4em; }
+		.social-container .info-bar__logo-container { margin-left: auto; }
+		#mes-logo { width: 110px; height: auto; }
+
+		.info-bar-container { display: block; width: 100%; }
+		.info-bar { display: flex; flex-wrap: wrap; margin-left: 0; padding-left: 0; width: 100%; }
+		.info-bar__item { float: none; flex: 1 1 33%; min-width: 0; }
+		.info-bar__item__text { padding: 0.5em 0.2em; font-size: 0.75em; text-align: center; white-space: normal; line-height: 1.2; }
+		.navbar-container { margin: 1em 0; width: 100%; box-sizing: border-box; }
+		.button--navbar { box-sizing: border-box; width: 100%; }
+		.navbar { width: 100%; }
+		.navbar__link { box-sizing: border-box; }
+
+		.page-content { padding: 1.2em 0 0 0; }
+
+		.footer { padding: 1.25em 0.75em; }
+		.footer__item-container { display: block; }
+		.footer__item { display: block; margin-bottom: 0.75em; }
+		.footer__item--extra-padding { padding-left: 0; }
+		.footer__text--extra-info { float: none; display: block; margin-top: 0.5em; }
+	}
+</style>
+        <meta property="fb:app_id" content="" />
+        <meta name="author" content="Math Easy Solutions Staff">
+        <meta property="og:type" content="website" />
+        <meta property="og:url" content="https://mes.fm/storage" />            <meta property="og:title" content="MES Storage Analyzer | Math Easy Solutions" />        <meta property="og:image" content="https://mes.fm/storage/img/logo-big.png" />
+        <meta property="og:description" content="Free disk usage analyzer in your browser, like WinDirStat or DaisyDisk: pick a folder and see what takes up the space as a sunburst or treemap, with a folder table, largest files, file types, old and large files, duplicates and empty folders. Nothing is uploaded." />
+
+        <meta name="description" content="Free disk usage analyzer in your browser, like WinDirStat or DaisyDisk: pick a folder and see what takes up the space as a sunburst or treemap, with a folder table, largest files, file types, old and large files, duplicates and empty folders. Nothing is uploaded.">            <meta name="twitter:card" content="summary">        <meta name="twitter:site" content="@MathEasySolns">
+        <meta name="twitter:title" content="MES Storage Analyzer">
+        <meta name="twitter:description" content="Free disk usage analyzer in your browser, like WinDirStat or DaisyDisk: pick a folder and see what takes up the space as a sunburst or treemap, with a folder table, largest files, file types, old and large files, duplicates and empty folders. Nothing is uploaded.">
+        <meta name="twitter:image" content="https://mes.fm/storage/img/logo-big.png">
+        <meta name="twitter:image:alt" content="MES Storage Analyzer">
+        <script type="application/ld+json">
+        {"@context": "https://schema.org", "@type": "WebApplication", "name": "MES Storage Analyzer", "url": "https://mes.fm/storage", "applicationCategory": "UtilitiesApplication", "operatingSystem": "Any", "offers": {"@type": "Offer", "price": "0", "priceCurrency": "USD"}, "description": "Free disk usage analyzer in your browser, like WinDirStat or DaisyDisk: pick a folder and see what takes up the space as a sunburst or treemap, with a folder table, largest files, file types, old and large files, duplicates and empty folders. Nothing is uploaded."}
+        </script>            <!-- Google Tag Manager -->
+            <script>(function(w,d,s,l,i){w[l]=w[l]||[];w[l].push({'gtm.start':
+            new Date().getTime(),event:'gtm.js'});var f=d.getElementsByTagName(s)[0],
+            j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
+            'https://www.googletagmanager.com/gtm.js?id='+i+dl;f.parentNode.insertBefore(j,f);
+            })(window,document,'script','dataLayer','GTM-PL6QNQR');</script>
+            <!-- End Google Tag Manager -->
+<!-- Legacy Universal Analytics removed: every UA property stopped processing data in 2023; pageviews are tracked via main_js/track.js (+ GTM) -->
+    <!-- ADSENSE-DEFERRED: load adsbygoogle.js (auto ads + consent) on the first
+     real interaction (scroll / pointer / key), or after a 15s idle fallback,
+     so its ad + consent JS (doubleclick ads ~100KB, Funding Choices ~70KB,
+     sodar, osd) never runs during the page-load / Lighthouse trace window. -->
+    <script>
+    (function () {
+      var EVT = ['scroll', 'pointerdown', 'keydown', 'touchstart'];
+      var done = false;
+      function go() {
+        if (done) return;
+        done = true;
+        EVT.forEach(function (e) { removeEventListener(e, go); });
+        var s = document.createElement('script');
+        s.async = true;
+        s.crossOrigin = 'anonymous';
+        s.src = 'https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-1461238060884369';
+        document.head.appendChild(s);
+      }
+      EVT.forEach(function (e) { addEventListener(e, go, { passive: true }); });
+      setTimeout(go, 15000);
+    })();
+    </script>
+    <script>
+/* autoads-header-gap-guard: guards two gaps against Google Auto ads (in-page ad blocks,
+   class `google-auto-placed`), plus Google's separate "annotation" text-ad
+   formats, which are a different Auto ads mechanism than the in-page blocks
+   above. 1) Logo header <-> nav bar: on desktop, any in-page ad caught here
+   is relocated to just below the whole header+nav+logo-badge complex
+   (before .outer-page-content) and allowed to show if it fills; on mobile
+   (max-width: 768px, this repo's existing responsive breakpoint) it is
+   hidden outright instead -- no ad shows below the nav bar on mobile at
+   all. 2) Comments toggle (#comments-button) <-> comments widget
+   (#comments-box): on every device, any in-page ad caught here is relocated
+   to just after the comments box and allowed to show if it fills.
+   3) Annotation/related-entry chips -- any element carrying the
+   `google-anno-skip` class, which covers every chip variant Google serves
+   (`google-anno-sc` pill/badge tooltips, `goog-rentry` related-entry
+   tooltips, `google-anno-sa-qtx` tooltip text) -- and 4) in-text link ads
+   (`<a class="google-anno">` wrapping a `<span class="google-anno-t">`
+   around an ordinary word, e.g. turning "Calculate" into a
+   double-underlined, clickable ad): both are only guarded inside #header,
+   #footer, the top .info-bar-container nav, or the .side-bar "Site
+   Navigation" widget -- chips are hidden outright there, and in-text links
+   are unwrapped back to plain text there, so the word stays readable
+   without the ad behavior. Elsewhere in the actual page content both are
+   left alone on purpose. Unlike the in-page ad blocks, Google serves many
+   of these chips/links per page load, so removing the guarded-zone ones
+   doesn't cost the page its one shot at an ad the way deleting the in-page
+   block did -- no relocate/poll needed, just hide/unwrap on sight.
+   In the first two cases Google's own placeholder-collapse doesn't reliably
+   fire once we've moved the node, so we poll it: if no real ad iframe shows
+   up within ~2s, we force the reserved space to 0 ourselves, so an unfilled
+   slot never leaves a blank gap. */
+(function () {
+    function isMobile() {
+        return window.matchMedia('(max-width: 768px)').matches;
+    }
+    function isBetween(before, after, el) {
+        if (!before || !after) return false;
+        return !!(before.compareDocumentPosition(el) & Node.DOCUMENT_POSITION_FOLLOWING) &&
+               !!(after.compareDocumentPosition(el) & Node.DOCUMENT_POSITION_PRECEDING);
+    }
+    function collapseIfUnfilled(node) {
+        var attempts = 0;
+        var poll = setInterval(function () {
+            attempts++;
+            if (!node.isConnected) {
+                clearInterval(poll);
+                return;
+            }
+            if (node.querySelector('iframe')) {
+                clearInterval(poll);
+                return;
+            }
+            if (attempts >= 10) {
+                node.style.setProperty('display', 'none', 'important');
+                clearInterval(poll);
+            }
+        }, 200);
+    }
+    function handleHeaderNavZone(node) {
+        var header = document.getElementById('header');
+        var nav = document.querySelector('.info-bar-container');
+        if (!isBetween(header, nav, node)) return false;
+        if (isMobile()) {
+            node.style.setProperty('display', 'none', 'important');
+            return true;
+        }
+        var target = document.querySelector('.outer-page-content');
+        if (target) {
+            target.before(node);
+        } else if (nav) {
+            nav.after(node);
+        }
+        collapseIfUnfilled(node);
+        return true;
+    }
+    function handleCommentsZone(node) {
+        var button = document.getElementById('comments-button');
+        var box = document.getElementById('comments-box');
+        if (!isBetween(button, box, node)) return false;
+        box.after(node);
+        collapseIfUnfilled(node);
+        return true;
+    }
+    function inAnnotationGuardedZone(el) {
+        return !!(el.closest('#header') || el.closest('#footer') || el.closest('.side-bar') || el.closest('.info-bar-container'));
+    }
+    function handleAnnotationChip(node) {
+        if (node.classList && node.classList.contains('google-anno-skip') && inAnnotationGuardedZone(node)) {
+            node.style.setProperty('display', 'none', 'important');
+            return true;
+        }
+        return false;
+    }
+    function handleInTextLinkAd(node) {
+        if (node.classList && node.classList.contains('google-anno') && node.parentNode && inAnnotationGuardedZone(node)) {
+            node.replaceWith(document.createTextNode(node.textContent));
+            return true;
+        }
+        return false;
+    }
+    function handle(node) {
+        if (node.nodeType !== 1) return;
+        if (node.classList && node.classList.contains('google-auto-placed')) {
+            if (handleHeaderNavZone(node)) return;
+            handleCommentsZone(node);
+            return;
+        }
+        if (handleAnnotationChip(node)) return;
+        if (handleInTextLinkAd(node)) return;
+        if (node.querySelectorAll) {
+            node.querySelectorAll('.google-auto-placed').forEach(function (n) {
+                if (handleHeaderNavZone(n)) return;
+                handleCommentsZone(n);
+            });
+            node.querySelectorAll('.google-anno-skip').forEach(function (n) {
+                handleAnnotationChip(n);
+            });
+            node.querySelectorAll('.google-anno').forEach(function (n) {
+                handleInTextLinkAd(n);
+            });
+        }
+    }
+    new MutationObserver(function (mutations) {
+        mutations.forEach(function (m) {
+            m.addedNodes.forEach(handle);
+        });
+    }).observe(document.documentElement, {childList: true, subtree: true});
+})();
+</script>
+    </head>
+    <body>            <!-- Google Tag Manager (noscript) -->
+            <noscript><iframe src="https://www.googletagmanager.com/ns.html?id=GTM-PL6QNQR"
+            height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
+            <!-- End Google Tag Manager (noscript) -->        <div id="outer-container" class="outer-container">                <div class = "inner-container">                        <div id="header" class="header" role="banner">                                <a class="logo-image-container" href='/storage'><img height="88" width="88" id="logo" class="logo lazyload" alt="MES Storage Analyzer logo" data-src="/storage/img/logo.png?v=2"></a>
+                            <div class="logo-text-container">
+                                <a class="calculator-title-link" href='/storage'>
+                                    <p class="calculator-title">MES Storage Analyzer</p>
+                                </a>
+                                <p class="tag-line">Find what fills your disk.</p>                            </div>
+
+                            <div class="social-container"><ul class="social">	<li class="social__logo social__hive"><a class="social__link" href="https://peakd.com/@mes" target="_blank"></a></li></a></li>
+    <li class="social__logo social__telegram"><a class="social__link" href="https://t.me/meslinks" target="_blank"></a></li></a></li></ul><a class="info-bar__logo-container" href="https://mes.fm/" title="Math Easy Solutions"><img id="mes-logo" class="info-bar__logo lazyload" alt="math easy solutions logo" height="29" width="126" data-src="https://mes.fm/main_img/mes-logo-small.png"></a>                            </div>                                                        </div>
+                        <div class="info-bar-container" role="navigation" aria-label="Primary">
+                            <ul id="info-bar" class="info-bar shadow">
+                                <li class="info-bar__item"><a class="info-bar__item__text" href='/storage'>Home</a></li>                                    <li class="info-bar__item"><a class="info-bar__item__text" href='https://mes.fm/calculators'>Calculators</a></li><li class="info-bar__item"><a class="info-bar__item__text" href='https://mes.fm/tools'>Tools</a></li>                                    <li class="info-bar__item info-bar__item--utility" style="display:none !important;"><a class="info-bar__item__text" href='/contact'>Contact Us</a></li>
+                                    <li class="info-bar__item info-bar__item--utility" style="display:none !important;"><a class="info-bar__item__text" target='_blank' href='https://mes.fm/donate.html'>Donate</a></li><li class="info-bar__item info-bar__item--utility" style="display:none !important;"><a class="info-bar__item__text" target='_blank' rel="nofollow" href='https://matheasy.substack.com/'>Subscribe</a></li>
+                                    <li class="info-bar__item info-bar__item--mes"><a class="info-bar__item__text" href="/" style="font-weight:bold;">MES.fm</a></li></ul>
+                        </div>
+                                                        <!-- (Responsive) Horizontal -->
+                                                        <div class="outer-page-content">
+                            <div class="page-content" role="main">                                    <div class="color-box"></div>
+                                    <h1 class="page-title">Storage Analyzer: See What Is Taking Up Space in a Folder</h1>                                        <p class="page-description">Free disk usage analyzer in your browser, like WinDirStat or DaisyDisk: pick a folder and see what takes up the space as a sunburst or treemap, with a folder table, largest files, file types, old and large files, duplicates and empty folders. Nothing is uploaded.</p>                                    	<div id="main-content">
+	<script>try{if(!localStorage.getItem('pageMode')){document.documentElement.classList.add('page-wide')}}catch(e){}</script>
+	<div class="tu st" id="st">
+		<p class="st-honest"><b>Private:</b> this page looks at a folder on your computer and adds up the file sizes. It never opens or reads your files (unless you ask it to check for exact duplicates), and nothing is uploaded: everything happens in this browser tab.</p>
+
+		<section class="tu-card st-pick" id="st-pick">
+			<div class="st-drop" id="st-drop" tabindex="-1">
+				<div class="st-dropicon" aria-hidden="true">🗂️</div>
+				<div class="st-droptext"><b>Drop a folder here</b> or</div>
+				<div class="st-pickbtns">
+					<button type="button" class="tu-btn tu-btn--primary st-big" id="st-choose">Choose a folder</button>
+					<button type="button" class="tu-btn tu-btn--ghost" id="st-demo">Try a made-up example</button>
+				</div>
+				<input type="file" id="st-dirinput" webkitdirectory directory multiple hidden>
+				<p class="st-how" id="st-how">Checking what this browser can do…</p>
+			</div>
+		</section>
+
+		<section class="tu-card st-prog" id="st-prog" hidden aria-live="polite">
+			<div class="st-proghead"><h2 class="st-h">Adding up sizes…</h2><button type="button" class="tu-btn tu-btn--ghost" id="st-cancel">Cancel</button></div>
+			<div class="st-pstats">
+				<div><span class="st-pnum" id="st-pfiles">0</span><span class="st-plab">files</span></div>
+				<div><span class="st-pnum" id="st-pdirs">0</span><span class="st-plab">folders</span></div>
+				<div><span class="st-pnum" id="st-pbytes">0 B</span><span class="st-plab">so far</span></div>
+				<div><span class="st-pnum" id="st-ptime">0 s</span><span class="st-plab">time</span></div>
+			</div>
+			<div class="st-pbar"><span id="st-pspin"></span></div>
+			<div class="st-ppath" id="st-ppath"></div>
+		</section>
+
+		<div id="st-res" hidden>
+			<section class="tu-card st-sum" id="st-sum">
+				<div class="st-sumhead">
+					<h2 class="st-h" id="st-rootname">Folder</h2>
+					<div class="st-sumbtns">
+						<button type="button" class="tu-btn tu-btn--ghost" id="st-again">Scan again</button>
+						<button type="button" class="tu-btn tu-btn--ghost" id="st-new">Another folder</button>
+					</div>
+				</div>
+				<div class="st-stats" id="st-stats"></div>
+				<p class="st-warnline" id="st-warn" hidden></p>
+			</section>
+
+			<section class="tu-card st-chartcard" id="st-chartsec">
+				<div class="st-chead">
+					<div class="tu-seg st-seg" role="group" aria-label="Chart">
+						<button type="button" data-view="sun" aria-pressed="true">◔ Sunburst</button><button type="button" data-view="tree" aria-pressed="false">▦ Treemap</button>
+					</div>
+					<div class="tu-seg st-seg" role="group" aria-label="Colours">
+						<button type="button" data-col="folder" aria-pressed="true">By folder</button><button type="button" data-col="type" aria-pressed="false">By file type</button>
+					</div>
+					<label class="st-rings" id="st-ringslab">Rings <input type="range" id="st-rings" min="2" max="10" step="1" value="6"> <b id="st-ringsv">6</b></label>
+					<span class="st-cbtns" id="st-cbtns"></span>
+				</div>
+				<nav class="st-crumbs" id="st-crumbs" aria-label="Folder path"></nav>
+				<div class="st-chartwrap">
+					<div class="st-chart" id="st-chartbox">
+						<canvas id="st-canvas" role="img" aria-label="Chart of folder sizes. The table below lists the same folders."></canvas>
+						<div class="st-tip" id="st-tip" hidden></div>
+					</div>
+					<aside class="st-info" id="st-info" aria-live="polite"></aside>
+				</div>
+				<div class="st-legend" id="st-legend"></div>
+				<p class="tu-note st-chint" id="st-chint">Click a folder to zoom in; click the middle (or a name in the path above, or press Backspace) to go back up. Hover or touch to see sizes.</p>
+			</section>
+
+			<section class="tu-card st-tablecard" id="st-tablesec">
+				<div class="st-chead">
+					<h2 class="st-h">Folders and files</h2>
+					<span class="st-cbtns" id="st-tbtns"></span>
+				</div>
+				<div class="st-searchrow">
+					<label class="st-sr" for="st-q">Search</label>
+					<input class="tu-input st-q" id="st-q" type="search" placeholder="Search names, e.g. backup, *.mov, ext:psd" autocomplete="off" spellcheck="false">
+					<span class="st-qinfo" id="st-qinfo"></span>
+					<button type="button" class="tu-btn tu-btn--ghost st-small" id="st-collapse">Collapse all</button>
+				</div>
+				<div class="st-tablewrap" id="st-tablewrap">
+					<table class="st-tree" id="st-tree">
+						<thead><tr>
+							<th class="st-thname"><button type="button" data-sort="name">Name</button></th>
+							<th class="st-num"><button type="button" data-sort="size">Size</button></th>
+							<th class="st-thbar"><button type="button" data-sort="size">% of folder</button></th>
+							<th class="st-num"><button type="button" data-sort="files">Files</button></th>
+							<th class="st-num st-hidesm"><button type="button" data-sort="date">Last changed</button></th>
+						</tr></thead>
+						<tbody id="st-tbody"></tbody>
+					</table>
+				</div>
+			</section>
+
+			<section class="tu-card st-lists" id="st-listsec">
+				<div class="st-chead">
+					<div class="tu-chips st-tabs" id="st-tabs" role="tablist" aria-label="Lists">
+						<button type="button" class="tu-chip" role="tab" data-tab="big">Largest files</button>
+						<button type="button" class="tu-chip" role="tab" data-tab="types">File types</button>
+						<button type="button" class="tu-chip" role="tab" data-tab="old">Old &amp; large</button>
+						<button type="button" class="tu-chip" role="tab" data-tab="dup">Duplicates</button>
+						<button type="button" class="tu-chip" role="tab" data-tab="empty">Empty folders</button>
+						<button type="button" class="tu-chip" role="tab" data-tab="err">Couldn't read</button>
+					</div>
+					<span class="st-cbtns" id="st-lbtns"></span>
+				</div>
+				<p class="st-scope" id="st-scope"></p>
+				<div class="st-panel" id="st-panel" role="tabpanel"></div>
+			</section>
+
+			<section class="tu-card st-export">
+				<h2 class="st-h">Save a report</h2>
+				<p class="tu-note">A list of what was found, for a spreadsheet or for later. File names and sizes only.</p>
+				<div class="tu-row">
+					<button type="button" class="tu-btn" id="st-csv">CSV: every file and folder</button>
+					<button type="button" class="tu-btn tu-btn--ghost" id="st-csvd">CSV: folders only</button>
+					<button type="button" class="tu-btn tu-btn--ghost" id="st-json">JSON (6 levels deep)</button>
+				</div>
+			</section>
+		</div>
+
+		<section class="tu-card st-quota">
+			<h2 class="st-h">What about the free space on my disk?</h2>
+			<p>A web page can't see how full your disk is. Browsers do offer <code>navigator.storage.estimate()</code>, but that number is something else: it is how much this browser lets <em>websites</em> store (their quota), not your disk's free space. Here it is, for the curious:</p>
+			<div class="tu-row"><button type="button" class="tu-btn tu-btn--ghost" id="st-est">Show this browser's website storage quota</button></div>
+			<p class="st-estout" id="st-estout" aria-live="polite"></p>
+			<p class="tu-note">To see real disk space: Windows: File Explorer &gt; This PC. Mac: Apple menu &gt; System Settings &gt; General &gt; Storage. Linux: <code>df -h</code>. Android: Settings &gt; Storage.</p>
+		</section>
+		<div class="tu-toast" id="st-toast" role="status" aria-live="polite"></div>
+
+		<div class="tu-seo">
+			<h2>A free disk usage analyzer that runs in your browser</h2>
+			<p>MES Storage Analyzer is like <strong>WinDirStat</strong>, <strong>DaisyDisk</strong>, <strong>GrandPerspective</strong> or <strong>WizTree</strong>, with nothing to install. Pick a folder (Documents, Downloads, a project folder, an external drive) and see at a glance what is taking up the space: a <strong>sunburst</strong> chart with rings of folders (DaisyDisk style), a <strong>treemap</strong> where every file is a rectangle sized by its size (WinDirStat style), a sortable folder table, the 50 largest files, totals by file type, old and large files, possible duplicates and empty folders.</p>
+			<h3>What a browser can and can't do</h3>
+			<dl>
+				<dt>It sees only the folder you pick</dt><dd>Web pages can't look at your whole disk. You choose one folder and the page gets read-only access to it, for this tab only.</dd>
+				<dt>No system folders</dt><dd>Browsers refuse to open the top of the disk, your home folder itself, and system folders like Windows or /System. Pick a folder inside them instead (Documents, Downloads, Pictures, a drive's folder).</dd>
+				<dt>It doesn't read your files</dt><dd>Sizes and dates come from the file list, like a file manager's. The one exception is the duplicate check, which reads the files you ask it to compare (and still uploads nothing).</dd>
+				<dt>No "Show in Finder / Explorer"</dt><dd>A web page isn't allowed to open your file manager or point at a file there. Use "Copy path" and paste it into your file manager's address bar or search.</dd>
+				<dt>No delete button, on purpose</dt><dd>Some browsers could let a page delete files in a folder you opened, but deleting from a web page skips the Recycle Bin / Trash, so a slip can't be undone. Delete in your file manager, where it goes to the bin first.</dd>
+				<dt>No free-space number</dt><dd>The disk's size and free space aren't available to web pages. The storage quota a browser reports is for website data, not your disk.</dd>
+			</dl>
+			<h3>Which browsers work</h3>
+			<p><b>Chrome, Edge, Opera and other Chromium browsers</b> on a computer use the File System Access API: the scan runs in the background (a Web Worker), shows empty folders and works with very large folders. <b>Firefox, Safari and Brave</b> use the browser's "upload a folder" picker instead: nothing is uploaded, but the browser may say "upload" in its window, it shows a list of the files first, and empty folders don't appear. In <b>Brave</b>, the faster way is off by default: type <code>brave://flags/#file-system-access-api</code> in the address bar, set it to Enabled and restart Brave. On <b>iPhone and iPad</b> Safari can't open folders, so use a computer. You can also drag a folder onto this page.</p>
+			<h3>Questions</h3>
+			<h4>Why is the total smaller than my file manager says?</h4>
+			<p>This page adds up file sizes. Disks store files in blocks, so a file uses a little more space on disk than its size, especially many small files. Folders you can't read, hidden system files and files in other folders (like caches outside the one you picked) aren't counted either. Sizes use 1 KB = 1,000 bytes, as macOS does; Windows shows 1 KB = 1,024 bytes, so its numbers look about 7% smaller in GB.</p>
+			<h4>What counts as old?</h4>
+			<p>"Last changed" is the date the file was last modified. Web pages can't see when a file was last opened, so an old date means "not changed", not necessarily "not used".</p>
+			<h4>How are duplicates found?</h4>
+			<p>First by size: files with exactly the same number of bytes are possible duplicates, which costs nothing. If you press "Check contents", the page reads those files and compares their SHA-256 fingerprints; files with the same fingerprint have the same contents. Very large files (over 2 GB) are compared by their first and last 8 MB and are marked as "probably the same".</p>
+			<h4>What about shortcuts and links?</h4>
+			<p>Browsers decide how links (symlinks, shortcuts, aliases) appear; some are skipped and a shortcut file counts as a small file. A link loop can't run forever: the scan stops 64 folder levels down and lists anything it skipped under "Couldn't read".</p>
+			<h4>How many files can it handle?</h4>
+			<p>Hundreds of thousands. The scan keeps the list in compact arrays, and the charts only draw what is big enough to see. A folder with a million files works too but needs a good amount of memory.</p>
+		</div>
+	</div>
+	<script src="/main_js/panel-view.js?v=1" defer></script>
+	</div>                                    <!-- PC (Responsive/Rectangle) Matched Content -->
+                                                                        <div id="comments-button" class="hide-div-button button">Comments</div>
+                                    <div id="comments-box" class="hide">
+                                        <div id="fastcomments-widget"></div>                                    </div>                            </div>
+                        </div>
+
+                        <!-- side bar -->                            <div class="side-bar">                                    <div class="navbar-container shadow" role="navigation" aria-label="Site menu">
+                                        <div class="button button--navbar" id="navbar-button" style="position:relative;">Site Navigation<span class="dropdown-symbol dropdown-symbol--dark" style="position:absolute;right:0.75em;top:50%;transform:translateY(-50%);margin-left:0;">&#9660;</span></div>    <ul id="navbar" class="navbar">
+    <li class="navbar__item navbar__item--social"><div class="social-container social-container--navbar"><ul class="social">	<li class="social__logo social__hive"><a class="social__link" href="https://peakd.com/@mes" target="_blank"></a></li>
+    <li class="social__logo social__telegram"><a class="social__link" href="https://t.me/meslinks" target="_blank"></a></li></ul><a class="info-bar__logo-container" href="https://mes.fm/" title="Math Easy Solutions"><img id="mes-logo" class="info-bar__logo lazyload" alt="math easy solutions logo" height="29" width="126" data-src="https://mes.fm/main_img/mes-logo-small.png"></a></div></li>
+        <li class="navbar__item"><a class="navbar__link navbar__link--first" href="/storage">Home</a></li>    <li class="navbar__item"><a class="navbar__link" href="/calculators">Calculators</a></li>
+    <li class="navbar__item"><a class="navbar__link" href="/tools">Tools</a></li>
+    <li class="navbar__item"><a class="navbar__link" href="/browser">Browser Extensions</a></li>
+    <!-- MOBILE-APPS-DROPDOWN-REMOVED: every linked app was a dead App Store / Play Store listing (lapsed developer account) -- add an entry back here for each app once it is relaunched -->
+    <li class="navbar__item"><a target="_blank" class="navbar__link" target='_blank' href="https://teespring.com/stores/mes-store">Store</a></li><li class="navbar__item"><a class="navbar__link" target="_blank" rel="nofollow" href="https://matheasy.substack.com/">Subscribe</a></li></ul>
+                                    </div>                                        <!-- (Responsive) Vertical -->
+
+                            </div>                            <!-- (Responsive) Horizontal -->
+                                            </div><div id="footer" class="footer" role="contentinfo">
+            <div class="footer__item-container">
+            <div class="footer__item">
+                <a class="footer__text footer__text--title" href="https://mes.fm/calculators.html">Calculators</a>
+            </div>
+
+            <div class="footer__item">
+                <a class="footer__text footer__text--title" href="https://mes.fm/tools">Tools</a>
+            </div>
+
+            <div class="footer__item footer__item--extra-padding">
+                <a class="footer__text footer__text--title" href="https://mes.fm/mobile-apps">Mobile Apps</a>
+            </div>
+
+            <div class="footer__item">
+                <a class="footer__text footer__text--title" href="https://mes.fm">MES.fm</a>
+            </div>
+        </div>
+        <a class="footer__text" href="/contact">Contact Us</a><span class="footer__separator"> | </span>
+        <a class="footer__text" href="/privacy-policy">Privacy Policy</a><span class="footer__separator"> | </span>
+        <a class="footer__text" target='_blank' href="https://mes.fm/donate.html">Donate</a><span class="footer__separator"> | </span><a class="footer__text" target='_blank' rel="nofollow" href="https://matheasy.substack.com/">Subscribe</a>
+        <div class="footer__text--extra-info"><span class="footer__text footer__text--copyright">Copyright &copy; <span id="copyright-year">2013</span>&nbsp;Math Easy Solutions</span></div>
+    </div>
+
+
+        </div>
+
+        <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.11.3/jquery.min.js"></script>
+        <script>
+        var MES_Vars = {
+            mobile:false,
+            hide_search:false,
+            current_tab:0
+        }        </script><!-- FASTCOMMENTS-LAZY: widget init moved to main_js/main.js -- it pulls embed.min.js only when #fastcomments-widget nears the viewport or on the first Comments-toggle click, so it no longer blocks first render -->                <script src="https://mes.fm/main_js/lazysizes.min.js?v=1.0.3" async></script>
+	<script src="/storage/js/storage.js?v=1" defer></script>
+            <script src="https://mes.fm/main_js/main.js?v=1.0.5"></script>    <!-- PAGEVIEW-TRACKING-INSERTED --><script src="https://mes.fm/main_js/track.js" defer></script><script>document.getElementById('copyright-year').textContent = new Date().getFullYear();</script><script src="/main_js/info-bar-fit.js" defer></script></body>
+
+</html>

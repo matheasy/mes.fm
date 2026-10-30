@@ -1,0 +1,154 @@
+	<script>try{if(!localStorage.getItem('pageMode')){document.documentElement.classList.add('page-wide')}}catch(e){}</script>
+	<div class="tu st" id="st">
+		<p class="st-honest"><b>Private:</b> this page looks at a folder on your computer and adds up the file sizes. It never opens or reads your files (unless you ask it to check for exact duplicates), and nothing is uploaded: everything happens in this browser tab.</p>
+
+		<section class="tu-card st-pick" id="st-pick">
+			<div class="st-drop" id="st-drop" tabindex="-1">
+				<div class="st-dropicon" aria-hidden="true">🗂️</div>
+				<div class="st-droptext"><b>Drop a folder here</b> or</div>
+				<div class="st-pickbtns">
+					<button type="button" class="tu-btn tu-btn--primary st-big" id="st-choose">Choose a folder</button>
+					<button type="button" class="tu-btn tu-btn--ghost" id="st-demo">Try a made-up example</button>
+				</div>
+				<input type="file" id="st-dirinput" webkitdirectory directory multiple hidden>
+				<p class="st-how" id="st-how">Checking what this browser can do…</p>
+			</div>
+		</section>
+
+		<section class="tu-card st-prog" id="st-prog" hidden aria-live="polite">
+			<div class="st-proghead"><h2 class="st-h">Adding up sizes…</h2><button type="button" class="tu-btn tu-btn--ghost" id="st-cancel">Cancel</button></div>
+			<div class="st-pstats">
+				<div><span class="st-pnum" id="st-pfiles">0</span><span class="st-plab">files</span></div>
+				<div><span class="st-pnum" id="st-pdirs">0</span><span class="st-plab">folders</span></div>
+				<div><span class="st-pnum" id="st-pbytes">0 B</span><span class="st-plab">so far</span></div>
+				<div><span class="st-pnum" id="st-ptime">0 s</span><span class="st-plab">time</span></div>
+			</div>
+			<div class="st-pbar"><span id="st-pspin"></span></div>
+			<div class="st-ppath" id="st-ppath"></div>
+		</section>
+
+		<div id="st-res" hidden>
+			<section class="tu-card st-sum" id="st-sum">
+				<div class="st-sumhead">
+					<h2 class="st-h" id="st-rootname">Folder</h2>
+					<div class="st-sumbtns">
+						<button type="button" class="tu-btn tu-btn--ghost" id="st-again">Scan again</button>
+						<button type="button" class="tu-btn tu-btn--ghost" id="st-new">Another folder</button>
+					</div>
+				</div>
+				<div class="st-stats" id="st-stats"></div>
+				<p class="st-warnline" id="st-warn" hidden></p>
+			</section>
+
+			<section class="tu-card st-chartcard" id="st-chartsec">
+				<div class="st-chead">
+					<div class="tu-seg st-seg" role="group" aria-label="Chart">
+						<button type="button" data-view="sun" aria-pressed="true">◔ Sunburst</button><button type="button" data-view="tree" aria-pressed="false">▦ Treemap</button>
+					</div>
+					<div class="tu-seg st-seg" role="group" aria-label="Colours">
+						<button type="button" data-col="folder" aria-pressed="true">By folder</button><button type="button" data-col="type" aria-pressed="false">By file type</button>
+					</div>
+					<label class="st-rings" id="st-ringslab">Rings <input type="range" id="st-rings" min="2" max="10" step="1" value="6"> <b id="st-ringsv">6</b></label>
+					<span class="st-cbtns" id="st-cbtns"></span>
+				</div>
+				<nav class="st-crumbs" id="st-crumbs" aria-label="Folder path"></nav>
+				<div class="st-chartwrap">
+					<div class="st-chart" id="st-chartbox">
+						<canvas id="st-canvas" role="img" aria-label="Chart of folder sizes. The table below lists the same folders."></canvas>
+						<div class="st-tip" id="st-tip" hidden></div>
+					</div>
+					<aside class="st-info" id="st-info" aria-live="polite"></aside>
+				</div>
+				<div class="st-legend" id="st-legend"></div>
+				<p class="tu-note st-chint" id="st-chint">Click a folder to zoom in; click the middle (or a name in the path above, or press Backspace) to go back up. Hover or touch to see sizes.</p>
+			</section>
+
+			<section class="tu-card st-tablecard" id="st-tablesec">
+				<div class="st-chead">
+					<h2 class="st-h">Folders and files</h2>
+					<span class="st-cbtns" id="st-tbtns"></span>
+				</div>
+				<div class="st-searchrow">
+					<label class="st-sr" for="st-q">Search</label>
+					<input class="tu-input st-q" id="st-q" type="search" placeholder="Search names, e.g. backup, *.mov, ext:psd" autocomplete="off" spellcheck="false">
+					<span class="st-qinfo" id="st-qinfo"></span>
+					<button type="button" class="tu-btn tu-btn--ghost st-small" id="st-collapse">Collapse all</button>
+				</div>
+				<div class="st-tablewrap" id="st-tablewrap">
+					<table class="st-tree" id="st-tree">
+						<thead><tr>
+							<th class="st-thname"><button type="button" data-sort="name">Name</button></th>
+							<th class="st-num"><button type="button" data-sort="size">Size</button></th>
+							<th class="st-thbar"><button type="button" data-sort="size">% of folder</button></th>
+							<th class="st-num"><button type="button" data-sort="files">Files</button></th>
+							<th class="st-num st-hidesm"><button type="button" data-sort="date">Last changed</button></th>
+						</tr></thead>
+						<tbody id="st-tbody"></tbody>
+					</table>
+				</div>
+			</section>
+
+			<section class="tu-card st-lists" id="st-listsec">
+				<div class="st-chead">
+					<div class="tu-chips st-tabs" id="st-tabs" role="tablist" aria-label="Lists">
+						<button type="button" class="tu-chip" role="tab" data-tab="big">Largest files</button>
+						<button type="button" class="tu-chip" role="tab" data-tab="types">File types</button>
+						<button type="button" class="tu-chip" role="tab" data-tab="old">Old &amp; large</button>
+						<button type="button" class="tu-chip" role="tab" data-tab="dup">Duplicates</button>
+						<button type="button" class="tu-chip" role="tab" data-tab="empty">Empty folders</button>
+						<button type="button" class="tu-chip" role="tab" data-tab="err">Couldn't read</button>
+					</div>
+					<span class="st-cbtns" id="st-lbtns"></span>
+				</div>
+				<p class="st-scope" id="st-scope"></p>
+				<div class="st-panel" id="st-panel" role="tabpanel"></div>
+			</section>
+
+			<section class="tu-card st-export">
+				<h2 class="st-h">Save a report</h2>
+				<p class="tu-note">A list of what was found, for a spreadsheet or for later. File names and sizes only.</p>
+				<div class="tu-row">
+					<button type="button" class="tu-btn" id="st-csv">CSV: every file and folder</button>
+					<button type="button" class="tu-btn tu-btn--ghost" id="st-csvd">CSV: folders only</button>
+					<button type="button" class="tu-btn tu-btn--ghost" id="st-json">JSON (6 levels deep)</button>
+				</div>
+			</section>
+		</div>
+
+		<section class="tu-card st-quota">
+			<h2 class="st-h">What about the free space on my disk?</h2>
+			<p>A web page can't see how full your disk is. Browsers do offer <code>navigator.storage.estimate()</code>, but that number is something else: it is how much this browser lets <em>websites</em> store (their quota), not your disk's free space. Here it is, for the curious:</p>
+			<div class="tu-row"><button type="button" class="tu-btn tu-btn--ghost" id="st-est">Show this browser's website storage quota</button></div>
+			<p class="st-estout" id="st-estout" aria-live="polite"></p>
+			<p class="tu-note">To see real disk space: Windows: File Explorer &gt; This PC. Mac: Apple menu &gt; System Settings &gt; General &gt; Storage. Linux: <code>df -h</code>. Android: Settings &gt; Storage.</p>
+		</section>
+		<div class="tu-toast" id="st-toast" role="status" aria-live="polite"></div>
+
+		<div class="tu-seo">
+			<h2>A free disk usage analyzer that runs in your browser</h2>
+			<p>MES Storage Analyzer is like <strong>WinDirStat</strong>, <strong>DaisyDisk</strong>, <strong>GrandPerspective</strong> or <strong>WizTree</strong>, with nothing to install. Pick a folder (Documents, Downloads, a project folder, an external drive) and see at a glance what is taking up the space: a <strong>sunburst</strong> chart with rings of folders (DaisyDisk style), a <strong>treemap</strong> where every file is a rectangle sized by its size (WinDirStat style), a sortable folder table, the 50 largest files, totals by file type, old and large files, possible duplicates and empty folders.</p>
+			<h3>What a browser can and can't do</h3>
+			<dl>
+				<dt>It sees only the folder you pick</dt><dd>Web pages can't look at your whole disk. You choose one folder and the page gets read-only access to it, for this tab only.</dd>
+				<dt>No system folders</dt><dd>Browsers refuse to open the top of the disk, your home folder itself, and system folders like Windows or /System. Pick a folder inside them instead (Documents, Downloads, Pictures, a drive's folder).</dd>
+				<dt>It doesn't read your files</dt><dd>Sizes and dates come from the file list, like a file manager's. The one exception is the duplicate check, which reads the files you ask it to compare (and still uploads nothing).</dd>
+				<dt>No "Show in Finder / Explorer"</dt><dd>A web page isn't allowed to open your file manager or point at a file there. Use "Copy path" and paste it into your file manager's address bar or search.</dd>
+				<dt>No delete button, on purpose</dt><dd>Some browsers could let a page delete files in a folder you opened, but deleting from a web page skips the Recycle Bin / Trash, so a slip can't be undone. Delete in your file manager, where it goes to the bin first.</dd>
+				<dt>No free-space number</dt><dd>The disk's size and free space aren't available to web pages. The storage quota a browser reports is for website data, not your disk.</dd>
+			</dl>
+			<h3>Which browsers work</h3>
+			<p><b>Chrome, Edge, Opera and other Chromium browsers</b> on a computer use the File System Access API: the scan runs in the background (a Web Worker), shows empty folders and works with very large folders. <b>Firefox, Safari and Brave</b> use the browser's "upload a folder" picker instead: nothing is uploaded, but the browser may say "upload" in its window, it shows a list of the files first, and empty folders don't appear. In <b>Brave</b>, the faster way is off by default: type <code>brave://flags/#file-system-access-api</code> in the address bar, set it to Enabled and restart Brave. On <b>iPhone and iPad</b> Safari can't open folders, so use a computer. You can also drag a folder onto this page.</p>
+			<h3>Questions</h3>
+			<h4>Why is the total smaller than my file manager says?</h4>
+			<p>This page adds up file sizes. Disks store files in blocks, so a file uses a little more space on disk than its size, especially many small files. Folders you can't read, hidden system files and files in other folders (like caches outside the one you picked) aren't counted either. Sizes use 1 KB = 1,000 bytes, as macOS does; Windows shows 1 KB = 1,024 bytes, so its numbers look about 7% smaller in GB.</p>
+			<h4>What counts as old?</h4>
+			<p>"Last changed" is the date the file was last modified. Web pages can't see when a file was last opened, so an old date means "not changed", not necessarily "not used".</p>
+			<h4>How are duplicates found?</h4>
+			<p>First by size: files with exactly the same number of bytes are possible duplicates, which costs nothing. If you press "Check contents", the page reads those files and compares their SHA-256 fingerprints; files with the same fingerprint have the same contents. Very large files (over 2 GB) are compared by their first and last 8 MB and are marked as "probably the same".</p>
+			<h4>What about shortcuts and links?</h4>
+			<p>Browsers decide how links (symlinks, shortcuts, aliases) appear; some are skipped and a shortcut file counts as a small file. A link loop can't run forever: the scan stops 64 folder levels down and lists anything it skipped under "Couldn't read".</p>
+			<h4>How many files can it handle?</h4>
+			<p>Hundreds of thousands. The scan keeps the list in compact arrays, and the charts only draw what is big enough to see. A folder with a million files works too but needs a good amount of memory.</p>
+		</div>
+	</div>
+	<script src="/main_js/panel-view.js?v=1" defer></script>
