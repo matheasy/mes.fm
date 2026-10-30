@@ -8,10 +8,23 @@
 	}
 	function valid(tz) { try { fmt(tz); return true; } catch (e) { return false; } }
 	var WD = { Sun: 0, Mon: 1, Tue: 2, Wed: 3, Thu: 4, Fri: 5, Sat: 6 };
+	// B.C. stays on UTC-7 all year from 1 Nov 2026 (clocks did not fall back). Browsers / node with older time-zone data
+	// still put America/Vancouver on PST (UTC-8) after that date, so the zone is swapped for Etc/GMT+7 (= UTC-7) then.
+	var BC_FROM = Date.UTC(2026, 10, 1, 9), BC_OLD = null;
+	function bcOld() {
+		if (BC_OLD === null) { try { BC_OLD = new Intl.DateTimeFormat("en-US", { timeZone: "America/Vancouver", hour: "numeric", hourCycle: "h23" }).format(new Date(Date.UTC(2027, 0, 15, 12))).replace(/^0/, "") === "4"; } catch (e) { BC_OLD = false; } }
+		return BC_OLD;
+	}
+	// the IANA name to hand Intl for `tz` at `date` ("" = the browser's own zone)
+	function zoneAt(tz, date) {
+		var z = tz || Intl.DateTimeFormat().resolvedOptions().timeZone || "UTC";
+		if (z === "America/Vancouver" && +date >= BC_FROM && bcOld()) return "Etc/GMT+7";
+		return z;
+	}
 	// wall-clock parts of `date` in time zone `tz` ("" / null = the browser's own zone)
 	function partsIn(date, tz) {
 		var o = {}, ms = ((date.getTime() % 1000) + 1000) % 1000;
-		var f = tz ? fmt(tz) : fmt(Intl.DateTimeFormat().resolvedOptions().timeZone || "UTC");
+		var f = fmt(zoneAt(tz, date));
 		f.formatToParts(date).forEach(function (p) { o[p.type] = p.value; });
 		var h = +o.hour; if (h === 24) h = 0;
 		return { y: +o.year, mo: +o.month, d: +o.day, h: h, m: +o.minute, s: +o.second, ms: ms, wd: WD[o.weekday] };
@@ -47,7 +60,7 @@
 	}
 	function isDay(p) { return p.h >= 6 && p.h < 18; }
 	var POPULAR = ["America/Vancouver", "America/Los_Angeles", "America/New_York", "America/Sao_Paulo", "Europe/London", "Europe/Paris", "Africa/Cairo", "Asia/Dubai", "Asia/Kolkata", "Asia/Bangkok", "Asia/Ho_Chi_Minh", "Asia/Shanghai", "Asia/Tokyo", "Australia/Sydney", "Pacific/Auckland"];
-	var CK = { valid: valid, partsIn: partsIn, offsetMin: offsetMin, offsetLabel: offsetLabel, timeText: timeText, angles: angles, dayOfYear: dayOfYear, isoWeek: isoWeek, city: city, diffText: diffText, isDay: isDay, pad: pad, POPULAR: POPULAR };
+	var CK = { zoneAt: zoneAt, valid: valid, partsIn: partsIn, offsetMin: offsetMin, offsetLabel: offsetLabel, timeText: timeText, angles: angles, dayOfYear: dayOfYear, isoWeek: isoWeek, city: city, diffText: diffText, isDay: isDay, pad: pad, POPULAR: POPULAR };
 	if (typeof module !== "undefined" && module.exports) module.exports = CK; else root.CK = CK;
 })(typeof window !== "undefined" ? window : globalThis);
 
@@ -161,7 +174,7 @@
 	function googleUrl(ev, pageUrl) {
 		var e = clean(ev), s = startOf(e), q = new URLSearchParams(), w = parseWall(e.t);
 		q.set("action", "TEMPLATE"); q.set("text", e.title);
-		if (e.r === "weekly" && w && e.tz) { var end = new Date(Date.UTC(w.y, w.mo - 1, w.d, w.h, w.m) + e.len * 60000); q.set("dates", wallStamp(w) + "/" + wallStamp({ y: end.getUTCFullYear(), mo: end.getUTCMonth() + 1, d: end.getUTCDate(), h: end.getUTCHours(), m: end.getUTCMinutes() })); q.set("ctz", e.tz); q.set("recur", "RRULE:FREQ=WEEKLY"); }
+		if (w && e.tz) { var end = new Date(Date.UTC(w.y, w.mo - 1, w.d, w.h, w.m) + e.len * 60000); q.set("dates", wallStamp(w) + "/" + wallStamp({ y: end.getUTCFullYear(), mo: end.getUTCMonth() + 1, d: end.getUTCDate(), h: end.getUTCHours(), m: end.getUTCMinutes() })); q.set("ctz", e.tz); if (e.r === "weekly") q.set("recur", "RRULE:FREQ=WEEKLY"); }
 		else q.set("dates", utcStamp(s) + "/" + utcStamp(s + e.len * 60000));
 		var det = details(e, pageUrl); if (det) q.set("details", det); if (e.u) q.set("location", e.u);
 		return "https://calendar.google.com/calendar/render?" + q.toString();
@@ -247,10 +260,11 @@
 	/* ---------- formatting ---------- */
 	function fmtWhen(ms, tz, withZone) {
 		var o = { weekday: "long", month: "long", day: "numeric", year: "numeric", hour: "numeric", minute: "2-digit" };
-		if (tz) o.timeZone = tz; if (withZone) o.timeZoneName = "short";
-		try { return new Intl.DateTimeFormat(undefined, o).format(new Date(ms)); } catch (e) { return new Date(ms).toString(); }
+		var z = CK.zoneAt(tz, ms), fixed = /^Etc\/GMT/.test(z) && !/^Etc/.test(tz || "");
+		o.timeZone = z; if (withZone) o.timeZoneName = "short";
+		try { var t = new Intl.DateTimeFormat(undefined, o).format(new Date(ms)); return fixed ? t.replace(/GMT-7|UTC-7|GMT−7/, "PT (UTC-7)") : t; } catch (e) { return new Date(ms).toString(); }
 	}
-	function shortWhen(ms) { try { return new Intl.DateTimeFormat(undefined, { weekday: "short", month: "short", day: "numeric", hour: "numeric", minute: "2-digit" }).format(new Date(ms)); } catch (e) { return new Date(ms).toLocaleString(); } }
+	function shortWhen(ms) { try { return new Intl.DateTimeFormat(undefined, { weekday: "short", month: "short", day: "numeric", hour: "numeric", minute: "2-digit", timeZone: CK.zoneAt("", ms) }).format(new Date(ms)); } catch (e) { return new Date(ms).toLocaleString(); } }
 	function pageUrl(ev) { return ev === EV && EV_URL ? EV_URL : location.origin + "/reminder?" + RM.toQuery(ev); }
 	function slug(s) { return String(s).toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "").slice(0, 50) || "reminder"; }
 	function state(ev, now) {
@@ -277,7 +291,7 @@
 	// Link to the Time Zone Converter for the same moment, written in the event's own zone (its #d=&t=&f= hash form).
 	function tzLink(ms, zone) {
 		zone = zone || LOCAL;
-		var p = {}; new Intl.DateTimeFormat("en-CA", { timeZone: zone, year: "numeric", month: "2-digit", day: "2-digit", hour: "2-digit", minute: "2-digit", hourCycle: "h23" }).formatToParts(new Date(ms)).forEach(function (x) { p[x.type] = x.value; });
+		var p = {}; new Intl.DateTimeFormat("en-CA", { timeZone: CK.zoneAt(zone, ms), year: "numeric", month: "2-digit", day: "2-digit", hour: "2-digit", minute: "2-digit", hourCycle: "h23" }).formatToParts(new Date(ms)).forEach(function (x) { p[x.type] = x.value; });
 		return "/timezone#d=" + p.year + "-" + p.month + "-" + p.day + "&t=" + p.hour + ":" + p.minute + "&f=" + encodeURIComponent(zone);
 	}
 	function tzA(ms, zone) { return ' <a class="rm-tzlink" href="' + esc(tzLink(ms, zone)) + '" target="_blank" rel="noopener">See it in other time zones →</a>'; }

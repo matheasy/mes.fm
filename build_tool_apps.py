@@ -53,11 +53,11 @@ def _picks_vars(lg, intro, long):
     return {"LG": lg, "LEAGUES": nav, "INTRO": intro, "LONG": long, "SEO": "@seo/%s.html" % lg}
 PICKS_NAV_INFO = "".join("<li class=\"info-bar__item\"><a class=\"info-bar__item__text\" href='/%s'>%s</a></li>" % (sl, nm.replace("Premier League", "EPL")) for l, sl, nm in PICKS)
 PICKS_NAV_MENU = "".join('<li class="navbar__item"><a class="navbar__link" href="/%s">%s Picks</a></li>' % (sl, nm) for l, sl, nm in PICKS)
-MAT_BRAND = dict(slug="materials", title="MES Mechanics of Materials", tag="Stress, strain, shear and torsion, with the pictures.")
+MAT_BRAND = dict(slug="materials", title="MES Mechanics of Materials", tag="Stress, strain, shear, torsion and bending, with the pictures.")
 CI_NAV_INFO = "<li class=\"info-bar__item\"><a class=\"info-bar__item__text\" href='/compound-interest-explained'>Explained</a></li><li class=\"info-bar__item\"><a class=\"info-bar__item__text\" href='/loan-calculator'>Loan</a></li><li class=\"info-bar__item\"><a class=\"info-bar__item__text\" href='/mortgagecalculator'>Mortgage</a></li>"
 CI_NAV_MENU = "<li class=\"navbar__item\"><a class=\"navbar__link\" href=\"/compound-interest-explained\">Compound Interest Explained</a></li><li class=\"navbar__item\"><a class=\"navbar__link\" href=\"/loan-calculator\">Loan Calculator</a></li><li class=\"navbar__item\"><a class=\"navbar__link\" href=\"/mortgagecalculator\">Mortgage Calculator</a></li>"
-MAT_NAV_INFO = "<li class=\"info-bar__item\"><a class=\"info-bar__item__text\" href='/youngs-modulus-calculator'>Young's Modulus</a></li><li class=\"info-bar__item\"><a class=\"info-bar__item__text\" href='/tensile-test-simulator'>Tensile Test</a></li><li class=\"info-bar__item\"><a class=\"info-bar__item__text\" href='/shear-stress-calculator'>Shear &amp; Torsion</a></li><li class=\"info-bar__item\"><a class=\"info-bar__item__text\" href='/materials?tab=table'>Materials Table</a></li>"
-MAT_NAV_MENU = '<li class="navbar__item"><a class="navbar__link" href="/youngs-modulus-calculator">Young\'s Modulus Calculator</a></li><li class="navbar__item"><a class="navbar__link" href="/tensile-test-simulator">Tensile Test Simulator</a></li><li class="navbar__item"><a class="navbar__link" href="/shear-stress-calculator">Shear &amp; Torsion Calculator</a></li><li class="navbar__item"><a class="navbar__link" href="/materials?tab=table">Materials Table</a></li>'
+MAT_NAV_INFO = "<li class=\"info-bar__item\"><a class=\"info-bar__item__text\" href='/youngs-modulus-calculator'>Young's Modulus</a></li><li class=\"info-bar__item\"><a class=\"info-bar__item__text\" href='/tensile-test-simulator'>Tensile Test</a></li><li class=\"info-bar__item\"><a class=\"info-bar__item__text\" href='/shear-stress-calculator'>Shear &amp; Torsion</a></li><li class=\"info-bar__item\"><a class=\"info-bar__item__text\" href='/bending-stress-calculator'>Bending</a></li><li class=\"info-bar__item\"><a class=\"info-bar__item__text\" href='/materials?tab=table'>Materials Table</a></li>"
+MAT_NAV_MENU = '<li class="navbar__item"><a class="navbar__link" href="/youngs-modulus-calculator">Young\'s Modulus Calculator</a></li><li class="navbar__item"><a class="navbar__link" href="/tensile-test-simulator">Tensile Test Simulator</a></li><li class="navbar__item"><a class="navbar__link" href="/shear-stress-calculator">Shear &amp; Torsion Calculator</a></li><li class="navbar__item"><a class="navbar__link" href="/bending-stress-calculator">Bending Stress &amp; Beam Calculator</a></li><li class="navbar__item"><a class="navbar__link" href="/materials?tab=table">Materials Table</a></li>'
 
 # Standard | Wide | Theatre without a sidebar (the private /ads and /search-console dashboards): the hub pages' head snippet
 # (Wide by default, same saved "pageMode"), main_js/hub-theatre.js builds the switch when the page has data-page-modes="3".
@@ -525,21 +525,25 @@ APPS = {
     # seo/<slug>.html) and one served script (materials/js/materials.js) for four pages; data-views on #mt picks the tabs: axial, tensile, shear, torsion, poisson, thermal, table.
     # /materials shows all seven; the other three use the materials brand (logo, header, Home). State: localStorage mes-materials:v1 (shared). Share links are plain query strings.
     "materials": dict(title="MES Mechanics of Materials", page_title="Mechanics of Materials Calculator: Stress, Strain, Young's Modulus, Shear, Torsion",
-                      tag="Stress, strain, shear and torsion, with the pictures.", accent="#2f6690", dark="#22496a", tint="#e1edf6",
-                      desc="Free mechanics of materials calculators: stress and strain with Young's modulus, a tensile test simulator with the stress-strain curve, shear stress in bolts and pins, torsion of shafts, Poisson's ratio and 3D Hooke's law, thermal stress, and a table of 30 materials. SI and US units.",
-                      js_v="7", vars={"VIEWS": "axial,tensile,shear,torsion,poisson,thermal,table", "PAGE": "materials", "SEO": "@seo/materials.html"}, nav_extra=MAT_NAV_INFO, menu_extra=MAT_NAV_MENU),
+                      tag="Stress, strain, shear, torsion and bending, with the pictures.", accent="#2f6690", dark="#22496a", tint="#e1edf6",
+                      desc="Free mechanics of materials calculators: stress and strain with Young's modulus, a tensile test simulator with the stress-strain curve, shear stress in bolts and pins, torsion of shafts, beam bending with shear and moment diagrams, Poisson's ratio and 3D Hooke's law, thermal stress, and a table of 30 materials. SI and US units.",
+                      js_v="8", vars={"VIEWS": "axial,tensile,shear,torsion,bending,poisson,thermal,table", "PAGE": "materials", "SEO": "@seo/materials.html"}, nav_extra=MAT_NAV_INFO, menu_extra=MAT_NAV_MENU),
     "youngs-modulus-calculator": dict(title="Young's Modulus Calculator", page_title="Young's Modulus Calculator: Stress, Strain and Elongation",
                       tag="Stress, strain and stretch from any four values.", accent="#2f6690", dark="#22496a", tint="#e1edf6", src="materials", js_path="materials/js/materials.js",
                       desc="Free Young's modulus calculator: find stress, strain, elongation or the modulus of elasticity from the force, area and length, with a live picture of the stretched bar, safety factor, buckling load and 30 materials. SI and US units, every formula shown.",
-                      js_v="7", vars={"VIEWS": "axial,tensile,table", "PAGE": "youngs", "SEO": "@seo/youngs-modulus-calculator.html"}, brand=MAT_BRAND, tab=1, nav_extra=MAT_NAV_INFO, menu_extra=MAT_NAV_MENU),
+                      js_v="8", vars={"VIEWS": "axial,tensile,table", "PAGE": "youngs", "SEO": "@seo/youngs-modulus-calculator.html"}, brand=MAT_BRAND, tab=1, nav_extra=MAT_NAV_INFO, menu_extra=MAT_NAV_MENU),
     "tensile-test-simulator": dict(title="Tensile Test Simulator", page_title="Tensile Test Simulator: Stress-Strain Curve, Yield, UTS and Necking",
                       tag="Pull a bar until it breaks and watch the curve.", accent="#2f6690", dark="#22496a", tint="#e1edf6", src="materials", js_path="materials/js/materials.js",
                       desc="Free tensile test simulator: pull steel, aluminium, cast iron, glass, plastics, rubber and more until they break and watch the stress-strain curve being drawn: yield, 0.2% offset, Lüders plateau, UTS, necking, unloading, true stress, resilience and toughness. Compare three materials.",
-                      js_v="7", vars={"VIEWS": "tensile,table", "PAGE": "tensile", "SEO": "@seo/tensile-test-simulator.html"}, brand=MAT_BRAND, tab=2, nav_extra=MAT_NAV_INFO, menu_extra=MAT_NAV_MENU),
+                      js_v="8", vars={"VIEWS": "tensile,table", "PAGE": "tensile", "SEO": "@seo/tensile-test-simulator.html"}, brand=MAT_BRAND, tab=2, nav_extra=MAT_NAV_INFO, menu_extra=MAT_NAV_MENU),
     "shear-stress-calculator": dict(title="Shear Stress Calculator", page_title="Shear Stress Calculator: Bolts, Pins, Punching and Shaft Torsion",
                       tag="Shear in bolts and pins, and twisted shafts.", accent="#2f6690", dark="#22496a", tint="#e1edf6", src="materials", js_path="materials/js/materials.js",
                       desc="Free shear stress calculator: shear stress and strain in bolts and pins in single or double shear, glued joints and punching, shear modulus from E and Poisson's ratio, and torsion of solid and hollow shafts with the angle of twist and motor power. Safety factors and sizes.",
-                      js_v="7", vars={"VIEWS": "shear,torsion,table", "PAGE": "shear", "SEO": "@seo/shear-stress-calculator.html"}, brand=MAT_BRAND, tab=3, nav_extra=MAT_NAV_INFO, menu_extra=MAT_NAV_MENU),
+                      js_v="8", vars={"VIEWS": "shear,torsion,table", "PAGE": "shear", "SEO": "@seo/shear-stress-calculator.html"}, brand=MAT_BRAND, tab=3, nav_extra=MAT_NAV_INFO, menu_extra=MAT_NAV_MENU),
+    "bending-stress-calculator": dict(title="Bending Stress Calculator", page_title="Bending Stress and Beam Deflection Calculator: Shear and Moment Diagrams",
+                      tag="Beams, loads you can drag, and the bending stress.", accent="#2f6690", dark="#22496a", tint="#e1edf6", src="materials", js_path="materials/js/materials.js",
+                      desc="Free bending stress and beam deflection calculator: simply supported, cantilever, fixed, propped and overhanging beams with point loads, spread loads and moments you drag along the beam. Live shear-force and bending-moment diagrams, the deflected shape, σ = Mc/I for I-beams, channels, tubes and rectangles, safety factor and the L/360 check. SI and US units.",
+                      js_v="8", vars={"VIEWS": "bending,table", "PAGE": "bending", "SEO": "@seo/bending-stress-calculator.html"}, brand=MAT_BRAND, tab=4, nav_extra=MAT_NAV_INFO, menu_extra=MAT_NAV_MENU),
     # Photoelectric Effect Simulator: light on a metal, electrons, stopping voltage, I-V and KE-vs-f graphs, and a "measure h" lab. lib.js node-tested (tool_apps_src/photoelectric-effect-tests.js). Normal-width page with the sidebar (Wide by default); opensearch.xml lets browsers add it as a search engine.
     "photoelectric-effect-simulator": dict(title="MES Photoelectric Effect Simulator", page_title="Photoelectric Effect Simulator",
                             tag="Light knocks electrons out of metal.", accent="#6d28d9", dark="#5b21b6", tint="#ede9fe",
@@ -804,7 +808,7 @@ APPS = {
     "clock": dict(title="Clock by MES", page_title="Online Clock",
                   tag="A big, clean clock for any time zone.", accent="#2563a8", dark="#1c4a80", tint="#e3eefb",
                   desc="Free online clock: a big digital, analog or both clock for your location or any city, 12 or 24 hour, with colour themes including a red night mode, a full-screen display that keeps your screen awake, and world clocks for up to eight cities.",
-                  js_v="3",
+                  js_v="4",
                   nav_extra="<li class=\"info-bar__item\"><a class=\"info-bar__item__text\" href='/timer'>Timer</a></li><li class=\"info-bar__item\"><a class=\"info-bar__item__text\" href='/timezone'>Time Zones</a></li>",
                   menu_extra="<li class=\"navbar__item\"><a class=\"navbar__link\" href=\"/timer\">Timer</a></li><li class=\"navbar__item\"><a class=\"navbar__link\" href=\"/timezone\">Time Zone Converter</a></li>"),
     # Reminder (new 2026-10-21, mes.fm/reminder; aliases /remind /remindme /reminders /notify): share link for a livestream / event (the whole event is in the query string,
@@ -845,7 +849,7 @@ APPS = {
     "reminder": dict(title="Event Reminder", page_title="Livestream and Event Reminder",
                      tag="One link: a countdown and a calendar reminder in everyone's time zone.", accent="#b4235a", dark="#86183f", tint="#fbe6ee",
                      desc="Free event reminder link: make one link for a livestream, class or meeting and share it. Everyone who opens it sees a countdown and the time in their own time zone, and can add it to Google Calendar, Apple Calendar, Outlook or their phone with alerts, or get a browser notification.",
-                     js_v="12", lib_from=["clock"],
+                     js_v="13", lib_from=["clock"],
                      nav_extra="<li class=\"info-bar__item\"><a class=\"info-bar__item__text\" href='/timezone'>Time Zones</a></li><li class=\"info-bar__item\"><a class=\"info-bar__item__text\" href='/timer'>Timer</a></li><li class=\"info-bar__item\"><a class=\"info-bar__item__text\" href='/calendar'>Calendar</a></li>",
                      menu_extra="<li class=\"navbar__item\"><a class=\"navbar__link\" href=\"/timezone\">Time Zone Converter</a></li><li class=\"navbar__item\"><a class=\"navbar__link\" href=\"/timer\">Timer</a></li><li class=\"navbar__item\"><a class=\"navbar__link\" href=\"/calendar\">Calendar</a></li>"),
     # Workout Planner (2026-10-29, mes.fm/workout-planner): weekly plan with a rotating "Currently at" marker, training lists (checklists +
@@ -862,7 +866,7 @@ APPS = {
     "birthday": dict(title="MES Famous Birthdays", page_title="Famous Birthdays: Who Shares Your Birthday?",
                      tag="Who was born on your day?", accent="#b45309", dark="#8a3f06", tint="#fdf0e1",
                      desc="Free famous birthdays finder: see which celebrities, scientists, athletes, musicians and leaders were born today or on your birthday, who shares your exact birth date and year, with their zodiac signs. Search 10,000 famous people by name.",
-                     js_v="4", pre_js=["/moon/js/astronomy.browser.min.js"], lib_from=["clock", "zodiac", "birthday-personality"],
+                     js_v="5", pre_js=["/moon/js/astronomy.browser.min.js"], lib_from=["clock", "zodiac", "birthday-personality"],
                      nav_extra="<li class=\"info-bar__item\"><a class=\"info-bar__item__text\" href='/zodiac'>Zodiac</a></li><li class=\"info-bar__item\"><a class=\"info-bar__item__text\" href='/calendar'>Calendar</a></li>",
                      menu_extra="<li class=\"navbar__item\"><a class=\"navbar__link\" href=\"/zodiac\">Zodiac &amp; Birth Chart</a></li><li class=\"navbar__item\"><a class=\"navbar__link\" href=\"/calendar\">Calendar</a></li>"),
     # Zodiac & Birth Chart (new 2026-10-21, mes.fm/zodiac; aliases /birth-chart /natal-chart /horoscope /star-sign ...): Sun / Moon / rising sign, planets in signs + retrograde,
@@ -871,7 +875,7 @@ APPS = {
     "zodiac": dict(title="MES Zodiac & Birth Chart", page_title="Zodiac Sign and Birth Chart Calculator",
                    tag="Sun, Moon and rising sign, for fun.", accent="#6b3fa0", dark="#4e2c78", tint="#efe8f8",
                    desc="Free birth chart calculator: find your Sun sign, Moon sign and rising sign, where the planets were when you were born, the Moon phase and your Chinese zodiac animal, with a chart wheel. Compare your signs with famous people born on your day.",
-                   js_v="3", pre_js=["/moon/js/astronomy.browser.min.js"], lib_from=["clock", "birthday", "birthday-personality"],
+                   js_v="4", pre_js=["/moon/js/astronomy.browser.min.js"], lib_from=["clock", "birthday", "birthday-personality"],
                    nav_extra="<li class=\"info-bar__item\"><a class=\"info-bar__item__text\" href='/birthday'>Birthdays</a></li><li class=\"info-bar__item\"><a class=\"info-bar__item__text\" href='/moon'>Moon</a></li><li class=\"info-bar__item\"><a class=\"info-bar__item__text\" href='/solar-system-today'>Solar System</a></li>",
                    menu_extra="<li class=\"navbar__item\"><a class=\"navbar__link\" href=\"/birthday\">Famous Birthdays</a></li><li class=\"navbar__item\"><a class=\"navbar__link\" href=\"/moon\">Moon</a></li><li class=\"navbar__item\"><a class=\"navbar__link\" href=\"/solar-system-today\">Solar System Today</a></li>"),
     # Short Links (new 2026-10-06, mes.fm/go; aliases /redirects /short-links /shortlinks /urls): every redirect of vercel.json, categorized + searchable + a helper that writes the next line.
