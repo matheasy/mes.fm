@@ -1,0 +1,99 @@
+		<div class="kd-wrap" id="kd-wrap">
+			<div class="kd-top">
+				<div class="kd-modes" role="tablist" aria-label="Activity">
+					<button type="button" role="tab" id="kd-m-learn" data-play="learn" aria-selected="true"><span aria-hidden="true">📖</span> Look &amp; listen</button>
+					<button type="button" role="tab" id="kd-m-quiz" data-play="quiz" aria-selected="false"><span aria-hidden="true">❓</span> What's this?</button>
+				</div>
+				<span class="kd-score" id="kd-score" aria-label="Stars collected" hidden>⭐ <b id="kd-stars">0</b></span>
+				<div class="kd-grown">
+					<button type="button" class="kd-hold" id="kd-gear" title="Grown-ups: hold for 2 seconds to open the settings" aria-label="Settings for grown-ups: hold for 2 seconds"><span class="kd-ring" aria-hidden="true"></span><span aria-hidden="true">⚙️</span><span class="kd-tl">Grown-ups</span></button>
+					<button type="button" class="kd-tbtn" id="kd-fill" title="Fill the browser window (kid-proof: hold ✕ for 2 seconds to leave)"><span aria-hidden="true">⤢</span><span class="kd-tl">Fill window</span></button>
+					<button type="button" class="kd-tbtn" id="kd-fs" title="Full screen (kid-proof: hold ✕ for 2 seconds to leave)"><span aria-hidden="true">⛶</span><span class="kd-tl">Full screen</span></button>
+					<button type="button" class="kd-hold kd-exit" id="kd-exit" title="Hold for 2 seconds to leave" aria-label="Leave: hold for 2 seconds" hidden><span class="kd-ring" aria-hidden="true"></span><span aria-hidden="true">✕</span><span class="kd-tl">Hold to leave</span></button>
+				</div>
+			</div>
+			<div class="kd-stage" id="kd-stage" tabindex="0" aria-label="Flash card. Swipe or use the arrow keys for the next card, tap the picture to hear it again.">
+				<button type="button" class="kd-side kd-side--prev" id="kd-prev" aria-label="Back"><span aria-hidden="true">◀</span></button>
+				<div class="kd-card" id="kd-card" aria-live="polite">
+					<button type="button" class="kd-pic" id="kd-pic" aria-label="Say it again"></button>
+					<div class="kd-word" id="kd-word"></div>
+					<div class="kd-sub" id="kd-sub"></div>
+				</div>
+				<div class="kd-quiz" id="kd-qz" hidden>
+					<button type="button" class="kd-qq" id="kd-qq" title="Hear it again"></button>
+					<div class="kd-choices" id="kd-choices"></div>
+				</div>
+				<button type="button" class="kd-side kd-side--next" id="kd-next" aria-label="Next"><span aria-hidden="true">▶</span></button>
+				<div class="kd-burst" id="kd-burst" aria-hidden="true"></div>
+				<div class="kd-pos" id="kd-pos" aria-hidden="true"></div>
+			</div>
+			<div class="kd-ctl">
+				<button type="button" class="kd-big" id="kd-back"><span aria-hidden="true">◀</span> Back</button>
+				<button type="button" class="kd-big kd-big--say" id="kd-say"><span aria-hidden="true">🔊</span> Say it again</button>
+				<button type="button" class="kd-big kd-big--snd" id="kd-snd" hidden><span aria-hidden="true">🐾</span> Animal sound</button>
+				<button type="button" class="kd-big" id="kd-shuf"><span aria-hidden="true">🔀</span> Shuffle</button>
+				<button type="button" class="kd-big kd-big--go" id="kd-fwd">Next <span aria-hidden="true">▶</span></button>
+			</div>
+			<p class="kd-hint" id="kd-hint" role="status"></p>
+
+			<div class="kd-set" id="kd-set" role="dialog" aria-modal="true" aria-labelledby="kd-set-h" hidden>
+				<div class="kd-set-in">
+					<div class="kd-set-head"><h2 id="kd-set-h">Settings for grown-ups</h2><button type="button" class="kd-x" id="kd-set-x" aria-label="Close settings">✕</button></div>
+					<div class="kd-sec" id="kd-sec-cats">
+						<h3>What to show</h3>
+						<div class="kd-cats" id="kd-cats"></div>
+						<p class="kd-small" id="kd-count"></p>
+					</div>
+					<div class="kd-sec">
+						<h3>Cards</h3>
+						<label class="kd-chk"><input type="checkbox" id="kd-o-word"> Show the word (untick to quiz: "what's this?")</label>
+						<div class="kd-row" id="kd-row-case"><span>Letters</span>
+							<div class="kd-seg" id="kd-o-case" role="radiogroup" aria-label="Letter case">
+								<button type="button" data-v="title" role="radio">Cat</button><button type="button" data-v="upper" role="radio">CAT</button><button type="button" data-v="lower" role="radio">cat</button><button type="button" data-v="both" role="radio">Aa</button>
+							</div>
+						</div>
+						<div class="kd-row"><span>Order</span>
+							<div class="kd-seg" id="kd-o-order" role="radiogroup" aria-label="Order"><button type="button" data-v="shuffle" role="radio">🔀 Shuffled</button><button type="button" data-v="order" role="radio">In order</button></div>
+						</div>
+						<div class="kd-row" id="kd-row-num"><span>Numbers up to</span>
+							<div class="kd-seg" id="kd-o-num" role="radiogroup" aria-label="Numbers up to"><button type="button" data-v="5" role="radio">5</button><button type="button" data-v="10" role="radio">10</button><button type="button" data-v="20" role="radio">20</button></div>
+						</div>
+						<label class="kd-chk" id="kd-row-count"><input type="checkbox" id="kd-o-count"> Count out loud on number cards</label>
+						<div class="kd-row"><span>Slideshow</span>
+							<div class="kd-seg" id="kd-o-adv" role="radiogroup" aria-label="Next card by itself"><button type="button" data-v="0" role="radio">Off</button><button type="button" data-v="4" role="radio">4 s</button><button type="button" data-v="6" role="radio">6 s</button><button type="button" data-v="10" role="radio">10 s</button><button type="button" data-v="15" role="radio">15 s</button></div>
+						</div>
+						<div class="kd-row"><span>"What's this?" pictures</span>
+							<div class="kd-seg" id="kd-o-qn" role="radiogroup" aria-label="Pictures to choose from"><button type="button" data-v="2" role="radio">2</button><button type="button" data-v="3" role="radio">3</button><button type="button" data-v="4" role="radio">4</button></div>
+						</div>
+						<div class="kd-row"><span>Colours</span>
+							<div class="kd-seg" id="kd-o-theme" role="radiogroup" aria-label="Colours"><button type="button" data-v="bright" role="radio">🌈 Bright</button><button type="button" data-v="calm" role="radio">🌙 Calm</button></div>
+						</div>
+					</div>
+					<div class="kd-sec" id="kd-sec-snd">
+						<h3>Animal sounds</h3>
+						<label class="kd-chk"><input type="checkbox" id="kd-o-snd"> Play real animal recordings</label>
+						<label class="kd-chk"><input type="checkbox" id="kd-o-sw"> Say what the animal says ("The cow says moo!")</label>
+					</div>
+					<div class="kd-sec">
+						<h3>Voice</h3>
+						<label class="kd-chk"><input type="checkbox" id="kd-o-auto"> Say the word when a card appears</label>
+						<div class="kd-field"><label for="kd-voice">Voice</label><select id="kd-voice"></select></div>
+						<div class="kd-field kd-field--r"><label for="kd-rate">Speed <output id="kd-rate-v"></output></label><input type="range" id="kd-rate" min="0.4" max="1.5" step="0.05"></div>
+						<div class="kd-field kd-field--r"><label for="kd-pitch">Pitch <output id="kd-pitch-v"></output></label><input type="range" id="kd-pitch" min="0.5" max="2" step="0.05"></div>
+						<div class="kd-row"><button type="button" class="kd-sbtn" id="kd-test">🔊 Test the voice</button><button type="button" class="kd-sbtn" id="kd-vreset">Reset speed and pitch</button></div>
+						<p class="kd-small" id="kd-vnote"></p>
+					</div>
+					<div class="kd-sec">
+						<h3>Kid-proof screen</h3>
+						<p class="kd-small"><b>Fill window</b> covers the whole browser window; <b>Full screen</b> covers the whole screen. Inside either one, the page asks before the browser leaves it, the Back button stays on the cards, the Escape key does nothing, and to get out you <b>hold ✕ for 2 seconds</b>. A browser's own shortcuts (closing the tab, switching apps) can't be blocked by a web page: on a phone or tablet, Guided Access (iPhone / iPad) or Screen pinning (Android) locks the device to this page.</p>
+						<div class="kd-row"><button type="button" class="kd-sbtn" id="kd-s-fill">⤢ Fill window</button><button type="button" class="kd-sbtn" id="kd-s-fs">⛶ Full screen</button><button type="button" class="kd-sbtn" id="kd-s-stars">Reset stars</button></div>
+					</div>
+					<div class="kd-set-foot"><button type="button" class="kd-big kd-big--go" id="kd-set-done">Done</button></div>
+				</div>
+			</div>
+		</div>
+		<details class="kd-credits" id="kd-credits">
+			<summary>Animal sound credits (public domain and CC0 recordings)</summary>
+			<p class="kd-small">Every recording is from <a href="https://commons.wikimedia.org/" rel="noopener">Wikimedia Commons</a> and is in the public domain or under CC0, so it is free for anyone to use. We trimmed each one to a few seconds and evened out the volume. Animals without a free recording (cow, tiger, mouse) say their sound with the voice instead.</p>
+			<ol id="kd-credlist"></ol>
+		</details>

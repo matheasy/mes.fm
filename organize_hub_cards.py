@@ -38,6 +38,7 @@ PAGES = {
         ("media", "Media &amp; Web", ["seo", "youtube-thumbnail", "stats", "fav", "share", "search", "search-engines", "reverse-image-search", "domain-lookup", "site-traffic", "ping", "mic-test", "file-check", "storage", "archive", "site-index", "go", "browser", "videospeed", "read-aloud", "dark-mode", "volume-booster", "text-size"]),
         ("money", "Money &amp; Markets", ["signals", "debt-clock", "elections"]),
         ("home", "Home &amp; Car", ["jump-start"]),
+        ("kids", "Kids &amp; Toddlers", ["kids"]),
         ("games", "Games &amp; Chance", ["poker", "backgammon", "nba-picks", "nfl-picks", "mlb-picks", "nhl-picks", "la-liga-picks", "premier-league-picks", "march-madness", "random-number-generator", "dice-roller"]),
         ("photos", "Photos &amp; Images", ["photo", "audio", "compress", "compress-video", "convert-video", "video", "pdf", "pdf-tools", "docx", "merge-pdf", "image-converter", "exif-viewer"]),
         ("sky", "Sky &amp; Space", ["moon", "solar-system-today", "zodiac"]),
