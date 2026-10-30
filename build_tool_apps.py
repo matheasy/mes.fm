@@ -159,6 +159,15 @@ APPS = {
                     tag="Find what fills your disk.", accent="#0d7a5f", dark="#0a5c48", tint="#dff2ec",
                     desc="Free disk usage analyzer in your browser, like WinDirStat or DaisyDisk: pick a folder and see what takes up the space as a sunburst or treemap, with a folder table, largest files, file types, old and large files, duplicates and empty folders. Nothing is uploaded.",
                     js_v="1"),
+    # MES File Safety Check (2026-10-29, mes.fm/file-check): what a file really is (magic bytes vs name), common malware tricks (disguised programs, double
+    # endings, RLO, Office macros / template injection / DDE, PDF JavaScript / Launch, password zips, zip bombs, phishing HTML, shortcuts), EICAR, hashes with
+    # VirusTotal / MalwareBazaar links, a link checker and an honest "how to really scan your computer" guide. Not an antivirus. lib.js = MESScan (node tests
+    # tool_apps_src/file-check-tests.js); MESImg (image-converter) only for building the example docm. Everything stays in the browser.
+    "file-check": dict(title="MES File Safety Check", page_title="Is This File Safe? File Safety Check and Suspicious Link Checker",
+                       tag="See what a file really is and spot common malware tricks.", accent="#b42318", dark="#8a1a12", tint="#fde7e4",
+                       desc="Free file safety check: drop files or a whole folder to see what each one really is and spot the tricks malware uses, like programs disguised as PDFs, double endings, Office macros, PDF JavaScript, password-protected zips and phishing pages. Get SHA-256 hashes to look up on VirusTotal, check suspicious links, and learn how to really scan your computer. Nothing is uploaded.",
+                       meta_desc="Free file safety check: spot disguised programs, macros, PDF JavaScript, zip bombs and phishing files, get hashes for VirusTotal and check links. Nothing is uploaded.",
+                       js_v="1", lib_from=["image-converter"]),
     "exif-viewer": dict(title="MES EXIF Viewer", page_title="EXIF Viewer: Photo Metadata, GPS Location and AI Flags",
                         tag="See the hidden data in a photo.", accent="#0f766e", dark="#0a5750", tint="#dcf2ef",
                         desc="Free EXIF viewer: drop a photo to see the camera, date, settings, GPS location, editing software and AI / Content Credentials flags hidden in it, and save a clean copy with all metadata removed. Private: the photo never leaves your browser.",

@@ -134,7 +134,21 @@ M.MATS.forEach(function (m) {
 	near(ep, c.n, 0.01, id + ": necking at true strain ≈ n");
 	near(c.su * (1 + c.eu), c.K * Math.pow(c.n, c.n) * Math.pow(1 - c.su * (1 + c.eu) / c.E, c.n), 1e-6, id + ": Hollomon K, n reproduce the true UTS");
 });
-var a36 = M.curve(M.mat("a36")); near(a36.suy, 1.12 * 250e6, 1e-12, "A36 upper yield"); near(M.stressAt(a36, 0.01), 250e6, 1e-9, "A36 Lüders plateau at the lower yield");
+var a36 = M.curve(M.mat("a36")); near(a36.suy, 1.07 * 250e6, 1e-12, "A36 upper yield 7% above the lower yield");
+(function () {   /* the yield point drawn as a real test records it (2026-10-29) */
+	var i, top = 0, it = 0, sum = 0, n = 0, dev = 0; for (i = 0; i < a36.e.length; i++) if (a36.s[i] > top && a36.e[i] < a36.eL) { top = a36.s[i]; it = i; }
+	near(top, a36.suy, 1e-9, "A36 highest stress before the plateau = upper yield");
+	ok(a36.eyu > a36.suy / a36.E * 1.02, "A36: the elastic line bends into a rounded peak (peak strain past σuy/E)");
+	ok(M.stressAt(a36, a36.suy / a36.E) < a36.suy * 0.999, "A36: below the straight line just before the peak");
+	var sl = (a36.s[it] - a36.s[it - 1]) / (a36.e[it] - a36.e[it - 1]); ok(sl < 0.1 * a36.E, "A36: the slope at the top of the peak is nearly zero (rounded, not a sharp corner)");
+	for (i = 0; i < a36.e.length; i++) if (a36.ph[i] === "lud") { sum += a36.s[i]; n++; dev = Math.max(dev, Math.abs(a36.s[i] / 250e6 - 1)); }
+	near(sum / n, 250e6, 0.002, "A36 Lüders plateau averages the lower yield"); ok(dev > 0.001 && dev <= 0.0041, "A36 plateau serrations are small (±0.4%)");
+	ok(a36.eL >= 0.01 && a36.eL <= 0.03, "A36 Lüders strain 1 to 3%");
+	ok(a36.emax > 0.13 && a36.emax < 0.21 && a36.smax / 6894757.29 > 57 && a36.smax / 6894757.29 < 81, "A36 UTS 58 to 80 ksi at about 15 to 20% strain");
+	var flat = M.curve(M.mat("a36"), { ser: false }); near(M.stressAt(flat, 0.01), 250e6, 1e-9, "A36 without serrations: plateau exactly at the lower yield");
+	var al = M.curve(M.mat("al2014")); ok(al.yieldKind === "offset" && !al.suy, "aluminium 2014-T6 yields continuously (no yield point), 0.2% offset");
+	var dmax = 0; for (i = 1; i < al.s.length && al.e[i] < al.eu; i++) if (al.s[i] < al.s[i - 1] - 1) dmax = 1; ok(!dmax, "aluminium 2014-T6: stress rises without a drop up to the UTS");
+})();
 ok(a36.eu > a36.eL && a36.eu < a36.ef, "A36 necks between the plateau and the break");
 var gl = M.curve(M.mat("glass")); near(M.stressAt(gl, gl.ef / 2), 22.5e6, 1e-9, "glass is linear to the break");
 ok(M.curve(M.mat("mg")).noNeck && M.curve(M.mat("bone")).noNeck, "low-elongation metals break at the top of the curve");
@@ -176,6 +190,46 @@ var odd = M.curve({ id: "r", name: "odd", c: "duct", E: 68.9, sy: 3447, su: 4826
 	ok(M.thermalState(-100e6, 250e6, 49e6) === "buckle" && M.thermalState(-100e6, 250e6, 400e6) === "ok" && M.thermalState(-300e6, 250e6, 400e6) === "yield" && M.thermalState(300e6, 250e6, 49e6) === "yield" && M.thermalState(0, 250e6, 1) === "ok", "state: buckle / ok / yield / tension never buckles");
 	ok(M.thermalState(-300e6, 250e6, 270e6) === "yield", "yield first when the strength is reached before the buckling stress");
 	ok(M.heatRGB(0).join() === "148,163,184" && M.heatRGB(1).join() === "220,38,38" && M.heatRGB(-5).join() === "37,99,235", "bar colour: grey, red when hot, blue when cold (clamped)");
+})();
+
+/* bending: the general Macaulay solver against the textbook cases, superposition, statics, sections (2026-10-29) */
+(function () {
+	var EI = 200e9 * 18.456e-6, L = 4, P = 10e3, w = 5e3, C = M.BEAMCASES, r, k;
+	function sol(sup, loads, b) { return M.beamSolve({ L: L, sup: sup, EI: EI, loads: loads, b: b }); }
+	r = sol("ss", [{ t: "P", x: L / 2, P: P }]); k = C.ssP(P, L, EI);
+	near(r.Mabs.M, k.M, 1e-9, "simply supported, P at midspan: Mmax = PL/4"); near(-r.Yabs.y, k.y, 1e-9, "simply supported, P at midspan: δ = PL³/48EI"); near(r.Yabs.x, L / 2, 1e-6, "…largest deflection at midspan");
+	near(r.reac[0].R, P / 2, 1e-12, "…reactions P/2"); near(Math.abs(r.Vabs.V), P / 2, 1e-12, "…largest shear P/2");
+	r = sol("ss", [{ t: "w", x1: 0, x2: L, w: w }]); k = C.ssW(w, L, EI);
+	near(r.Mabs.M, k.M, 1e-9, "simply supported UDL: Mmax = wL²/8"); near(-r.Yabs.y, k.y, 1e-9, "simply supported UDL: δ = 5wL⁴/384EI"); near(r.Mabs.x, L / 2, 1e-9, "…at midspan");
+	r = sol("cant", [{ t: "P", x: L, P: P }]); k = C.cantP(P, L, EI);
+	near(-r.Mabs.M, k.M, 1e-9, "cantilever end load: M at the wall = PL (hogging)"); near(-r.Yabs.y, k.y, 1e-9, "cantilever end load: δ = PL³/3EI"); near(r.Yabs.x, L, 1e-12, "…at the free end");
+	near(-r.reac[0].M, P * L, 1e-9, "…wall moment PL"); near(r.reac[0].R, P, 1e-12, "…wall force P");
+	r = sol("cant", [{ t: "w", x1: 0, x2: L, w: w }]); k = C.cantW(w, L, EI); near(-r.Mabs.M, k.M, 1e-9, "cantilever UDL: wL²/2"); near(-r.Yabs.y, k.y, 1e-9, "cantilever UDL: wL⁴/8EI");
+	r = sol("fixed", [{ t: "w", x1: 0, x2: L, w: w }]); k = C.fixW(w, L, EI);
+	near(-r.Mmin.M, k.M, 1e-9, "fixed-fixed UDL: end moments wL²/12"); near(r.Mmax.M, k.Mmid, 1e-9, "fixed-fixed UDL: midspan wL²/24"); near(-r.Yabs.y, k.y, 1e-9, "fixed-fixed UDL: δ = wL⁴/384EI");
+	r = sol("fixed", [{ t: "P", x: L / 2, P: P }]); k = C.fixP(P, L, EI); near(Math.abs(r.Mabs.M), k.M, 1e-9, "fixed-fixed central P: PL/8"); near(-r.Yabs.y, k.y, 1e-9, "fixed-fixed central P: PL³/192EI");
+	r = sol("prop", [{ t: "w", x1: 0, x2: L, w: w }]); near(r.reac[1].R, 3 * w * L / 8, 1e-9, "propped cantilever UDL: prop reaction 3wL/8"); near(-r.reac[0].M, w * L * L / 8, 1e-9, "…wall moment wL²/8");
+	near(-r.Yabs.y, w * Math.pow(L, 4) / (185 * EI), 0.002, "…δmax ≈ wL⁴/185EI");
+	r = sol("over", [{ t: "P", x: L, P: P }], 3); near(r.reac[1].R, P * 4 / 3, 1e-9, "overhang: support reaction P(L)/b"); near(r.reac[0].R, -P / 3, 1e-9, "…the far support is pulled down");
+	near(-r.Mabs.M, P * 1, 1e-9, "…hogging moment P × overhang at the support"); near(-r.at(L, -1).y, P * 1 * 1 / (3 * EI) * (1 + 3), 1e-9, "…tip deflection Pa²(a+b)/3EI");
+	/* a: P not at midspan: Mmax = Pab/L under the load; δ under load = Pa²b²/3EIL */
+	r = sol("ss", [{ t: "P", x: 1, P: P }]); near(r.Mabs.M, P * 1 * 3 / L, 1e-9, "simply supported, P at a: Mmax = Pab/L"); near(-r.at(1, 1).y, P * 1 * 9 / (3 * EI * L), 1e-9, "…δ under the load = Pa²b²/3EIL");
+	/* superposition */
+	var r1 = sol("ss", [{ t: "P", x: 1, P: P }]), r2 = sol("ss", [{ t: "w", x1: 1.5, x2: 3.2, w: w }]), r3 = sol("ss", [{ t: "P", x: 1, P: P }, { t: "w", x1: 1.5, x2: 3.2, w: w }]), sup = true;
+	[0.3, 1.2, 2, 2.9, 3.7].forEach(function (x) { var a = r1.at(x, 1), b = r2.at(x, 1), c = r3.at(x, 1); if (Math.abs(a.M + b.M - c.M) > 1e-6 || Math.abs(a.y + b.y - c.y) > 1e-15) sup = false; }); ok(sup, "superposition: two loads = the sum of each alone");
+	r = sol("ss", [{ t: "M", x: L / 2, M: 1e4 }]); near(r.reac[1].R, 1e4 / L, 1e-9, "couple on a simple beam: reactions ±M/L"); near(r.Mmax.M - r.Mmin.M, 1e4, 1e-9, "…M jumps by the couple");
+	/* statics hold for an odd mix on every support layout */
+	var mix = [{ t: "P", x: 0.7, P: 3e3 }, { t: "w", x1: 1, x2: 3.5, w: 2e3 }, { t: "M", x: 2.2, M: -4e3 }, { t: "P", x: 3.9, P: -1e3 }], tot = 3e3 + 2e3 * 2.5 - 1e3, st = true;
+	M.BSUP.forEach(function (s) { var q = sol(s[0], mix, 2.8), F = 0; q.reac.forEach(function (o) { F += o.R; }); if (Math.abs(F - tot) > 1e-6 || Math.abs(q.at(L, 1).M) > 1e-6 || Math.abs(q.at(L, 1).V) > 1e-6) st = false; q.sup.forEach(function (o) { if (Math.abs(q.at(o.x, 1).y) > 1e-14) st = false; }); }); ok(st, "every support layout: forces balance, M(L) = 0, no deflection at the supports");
+	/* sections */
+	var s = M.beamSection("rect", { b: 0.05, h: 0.1 }); near(s.I, 0.05 * 1e-3 / 12, 1e-12, "rectangle I = bh³/12"); near(s.S, 0.05 * 0.01 / 6, 1e-12, "rectangle S = bh²/6"); near(s.Q / (s.I * s.tw), 1.5 / s.A, 1e-12, "rectangle τmax = 1.5 V/A");
+	s = M.beamSection("round", { d: 0.04 }); near(s.Q / (s.I * s.tw), 4 / (3 * s.A), 1e-12, "round bar τmax = 4V/3A"); near(s.S, PI * 64e-6 / 32, 1e-12, "round S = πd³/32");
+	s = M.beamSection("ibeam", { b: 0.1, h: 0.2, tf: 0.0085, tw: 0.0056 }); near(s.I, (0.1 * 8e-3 - 0.0944 * Math.pow(0.183, 3)) / 12, 1e-12, "I-beam I = (bh³ − (b−tw)hw³)/12"); near(s.c, 0.1, 1e-12, "I-beam c = h/2");
+	var big = M.beamSection("ibeam", { b: 0.1, h: 0.2, tf: 0.0085, tw: 0.0056 }), ch = M.beamSection("chan", { b: 0.1, h: 0.2, tf: 0.0085, tw: 0.0056 }); near(ch.I, big.I, 1e-12, "a channel has the same strong-axis I as an I-beam of the same plates");
+	s = M.beamSection("tube", { D: 0.06, t: 0.004 }); near(s.I, PI * (Math.pow(0.06, 4) - Math.pow(0.052, 4)) / 64, 1e-12, "tube I");
+	s = M.beamSection("rtube", { B: 0.1, H: 0.15, t: 0.005 }); near(s.I, (0.1 * Math.pow(0.15, 3) - 0.09 * Math.pow(0.14, 3)) / 12, 1e-12, "box I");
+	ok(M.beamSection("ibeam", { b: 0.1, h: 0.01, tf: 0.006, tw: 0.005 }).err, "flanges thicker than the depth are refused");
+	ok(M.beamSolve({ L: 4, sup: "ss", EI: 1, loads: [] }).Mabs.M === 0, "no load: no moment");
 })();
 
 console.log(fails ? fails + " of " + n + " checks FAILED" : "all " + n + " checks passed");

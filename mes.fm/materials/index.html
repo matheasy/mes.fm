@@ -420,7 +420,8 @@ body.dark-mode .tu .rw-head {color:#a0a8b3;border-bottom-color:#555;} body.dark-
 	#mt #mt-tt-msg {min-height:4.4em;}
 	#mt #mt-tt-play {min-width:9.6em;}
 	#mt .mt-tt-live b {color:var(--mt-mut);font-weight:600;margin-right:0.25em;}
-	#mt .mt-tt-ctl {display:flex;flex-wrap:wrap;gap:0.5em 0.6em;align-items:center;margin-top:0.6em;}
+	#mt .mt-tt-ctl {display:flex;flex-wrap:wrap;gap:0.5em 0.6em;align-items:center;margin:0.2em 0 0.7em;padding-bottom:0.6em;border-bottom:1px solid var(--mt-grid);}
+	#mt .mt-ypn p {margin:0 0 0.6em;line-height:1.5;font-size:0.95em;}
 	#mt .mt-tt-ctl .tu-btn {min-height:40px;}
 	#mt .mt-tt-ctl .tu-btn:disabled {opacity:0.45;cursor:not-allowed;}
 	#mt .mt-tt-ctl input[type=range] {flex:1 1 12em;min-width:8em;height:36px;accent-color:var(--accent);}
@@ -625,6 +626,67 @@ body.dark-mode .tu .rw-head {color:#a0a8b3;border-bottom-color:#555;} body.dark-
 	@media (max-width:560px) {#mt .mt-thsup button {padding:0.35em 0.5em;font-size:0.85em;}}
 	/* phones: each slider gets its own row (label + value above, the track full width below), so long labels don't squeeze the track */
 	@media (max-width:560px) {#mt .mt-sliders {display:block;} #mt .mt-sliders .mt-slide {display:grid;grid-template-columns:minmax(0,1fr) auto;grid-template-areas:"l o" "r r";gap:0 0.5em;margin:0.15em 0 0.35em;} #mt .mt-sliders .mt-slide label {grid-area:l;} #mt .mt-sliders .mt-slide output {grid-area:o;min-width:0;} #mt .mt-sliders .mt-slide input {grid-area:r;width:100%;}}
+	/* bending (2026-10-29) */
+	#mt {--mt-bdv:rgba(37,99,235,0.22);--mt-bdvl:#2563eb;--mt-bdm:rgba(217,72,15,0.2);--mt-bdml:#c2410c;--mt-bdy:rgba(15,118,110,0.2);--mt-bdyl:#0f766e;--mt-comp:rgba(220,38,38,0.28);--mt-ten:rgba(37,99,235,0.28);--mt-load:#d4351c;--mt-reac:#1f7a3d;--mt-pn:#f8fafc;--mt-bsfill:#b7c4d3;}
+	body.dark-mode #mt.mt {--mt-bdv:rgba(122,167,255,0.25);--mt-bdvl:#7aa7ff;--mt-bdm:rgba(255,138,92,0.22);--mt-bdml:#ff9a6b;--mt-bdy:rgba(45,212,191,0.2);--mt-bdyl:#5eead4;--mt-comp:rgba(255,120,110,0.3);--mt-ten:rgba(122,167,255,0.32);--mt-load:#ff7b61;--mt-reac:#6ee7a1;--mt-pn:#24272b;--mt-bsfill:#55657a;}
+	#mt .mt-bdsup button {display:inline-flex;align-items:center;gap:0.35em;} #mt .mt-bdsup svg {width:2.3em;height:0.95em;fill:currentColor;opacity:0.85;flex:0 0 auto;}
+	#mt .mt-bdh {margin:0.6em 0 0.4em;} #mt .mt-bdhint {font-weight:400;font-size:0.8em;color:var(--mt-mut);margin-left:0.4em;}
+	#mt .mt-bdloads {display:flex;flex-direction:column;gap:0.4em;}
+	#mt .mt-ld {display:flex;flex-wrap:wrap;align-items:center;gap:0.35em 0.6em;padding:0.4em 0.5em;border:1px solid var(--mt-line);border-radius:0.5em;background:var(--mt-card);}
+	#mt .mt-ld--sel {border-color:var(--accent);box-shadow:0 0 0 1px var(--accent) inset;}
+	#mt .mt-ld__n {width:2em;height:2em;min-height:36px;min-width:36px;border-radius:50%;border:1px solid var(--mt-line);background:var(--mt-soft);color:var(--mt-ink);font:inherit;font-weight:700;cursor:pointer;}
+	#mt .mt-ld--sel .mt-ld__n {background:var(--accent);border-color:var(--accent);color:#ffffff;}
+	#mt .mt-ld__t {font-weight:600;font-size:0.9em;min-width:6.5em;}
+	#mt .mt-ldv, #mt .mt-ldp {display:inline-flex;align-items:center;gap:0.3em;font-size:0.9em;color:var(--mt-mut);}
+	#mt .mt-ldv .tu-input {width:6em;min-height:40px;font-variant-numeric:tabular-nums;}
+	#mt .mt-ldu {color:var(--mt-ink);font-size:0.95em;}
+	#mt .mt-ldh {font-size:0.78em;color:var(--mt-mut);margin-left:auto;}
+	#mt .mt-ld .mt-x {width:2.3em;min-height:36px;margin:0;}
+	#mt .mt-bdadd .tu-btn:disabled {opacity:0.45;cursor:not-allowed;}
+	#mt .mt-bdbeam {fill:none;stroke:var(--mt-main);stroke-width:7;stroke-linejoin:round;stroke-linecap:round;}
+	#mt .mt-bdla {stroke:var(--mt-load);stroke-width:3.5;} #mt .mt-bdla.mt-ah {fill:var(--mt-load);stroke:none;}
+	#mt .mt-bdla--s {stroke-width:2;}
+	#mt .mt-bdra {stroke:var(--mt-reac);stroke-width:3.5;} #mt .mt-bdra.mt-ah {fill:var(--mt-reac);stroke:none;}
+	#mt .mt-bdrt {fill:var(--mt-reac);font-weight:700;}
+	#mt .mt-bdwb {fill:var(--mt-load);opacity:0.1;} #mt .mt-bdwl {stroke:var(--mt-load);stroke-width:2.5;}
+	#mt .mt-bdma {fill:none;stroke:var(--mt-load);stroke-width:3.5;} #mt .mt-bdmh {fill:var(--mt-load);}
+	#mt .mt-bdn {fill:var(--accent);font-weight:800;}
+	#mt .mt-bdld--sel .mt-bdla, #mt .mt-bdld--sel .mt-bdma, #mt .mt-bdld--sel .mt-bdwl {stroke-width:5;}
+	#mt .mt-bdpn {fill:var(--mt-pn);stroke:var(--mt-grid);}
+	#mt .mt-bdz {stroke:var(--mt-axis);stroke-width:1.2;}
+	#mt .mt-bdV {fill:var(--mt-bdv);stroke:var(--mt-bdvl);stroke-width:2;stroke-linejoin:round;}
+	#mt .mt-bdM {fill:var(--mt-bdm);stroke:var(--mt-bdml);stroke-width:2;stroke-linejoin:round;}
+	#mt .mt-bdY {fill:var(--mt-bdy);stroke:var(--mt-bdyl);stroke-width:2;stroke-linejoin:round;}
+	#mt .mt-bdmv {paint-order:stroke;stroke:var(--mt-card);stroke-width:4px;stroke-linejoin:round;}
+	#mt .mt-bdlim {stroke:var(--mt-bad);stroke-width:1.5;stroke-dasharray:6 4;} #mt .mt-bdlimt {fill:var(--mt-bad);}
+	#mt .mt-bdhvt {font-weight:600;fill:var(--mt-ink);}
+	#mt .mt-bdfig .mt-svg:focus-visible {outline:3px solid var(--accent);outline-offset:2px;}
+	#mt .mt-bssec {fill:var(--mt-bsfill);stroke:var(--mt-s3);stroke-width:1.5;} #mt .mt-bshole {fill:var(--mt-card);stroke:var(--mt-s3);stroke-width:1.5;}
+	#mt .mt-bsany {stroke-dasharray:6 4;fill-opacity:0.5;}
+	#mt .mt-bsna {stroke:var(--mt-mut);stroke-width:1.5;stroke-dasharray:8 5;}
+	#mt .mt-bscomp {fill:var(--mt-comp);stroke:var(--mt-red);stroke-width:1.5;} #mt .mt-bsten {fill:var(--mt-ten);stroke:var(--mt-main);stroke-width:1.5;}
+	#mt .mt-bsar {stroke:var(--mt-mut);stroke-width:1;}
+	#mt .mt-bsy {stroke:var(--mt-warn);stroke-width:1.5;stroke-dasharray:5 4;} #mt .mt-bsyt {fill:var(--mt-warn);}
+	#mt .mt-rx {display:inline-block;white-space:nowrap;margin-right:0.5em;font-size:0.82em;}
+	#mt .mt-bsfig {margin-bottom:0.9em;} #mt .mt-bsfig .mt-svg {max-width:760px;margin:0 auto;}
+	#mt .mt-glo {margin:0.9em 0;} #mt .mt-glo summary {cursor:pointer;list-style:revert;} #mt .mt-glo summary .mt-h {display:inline;margin:0;}
+	#mt .mt-glo dl {margin:0.6em 0 0;display:grid;grid-template-columns:minmax(10em,0.3fr) minmax(0,1fr);gap:0.45em 1em;}
+	#mt .mt-glo dt {font-weight:700;} #mt .mt-glo dd {margin:0;line-height:1.45;color:var(--mt-ink);}
+	@media (max-width:600px) {#mt .mt-glo dl {grid-template-columns:minmax(0,1fr);} #mt .mt-glo dd {margin-bottom:0.4em;} #mt .mt-bdsup button {padding:0.35em 0.5em;font-size:0.85em;} #mt .mt-ldh {margin-left:0;}}
+	/* the five-load-types strip on /materials */
+	#mt .mt-lt {display:flex;flex-wrap:wrap;gap:0.4em;margin:0 0 0.7em;}
+	#mt .mt-lt button {flex:1 1 6.5em;display:flex;flex-direction:column;align-items:center;gap:0.15em;padding:0.45em 0.3em 0.35em;border:1px solid var(--mt-line);border-radius:0.6em;background:var(--mt-soft);color:var(--mt-ink);font:inherit;font-size:0.85em;font-weight:600;cursor:pointer;min-height:44px;}
+	#mt .mt-lt button:hover, #mt .mt-lt button:focus-visible {border-color:var(--accent);background:var(--mt-hl);outline:none;}
+	#mt .mt-lt svg {width:4em;height:2.5em;}
+	#mt .mt-lt-bar {fill:var(--mt-bsfill);stroke:var(--mt-s3);stroke-width:1.2;}
+	#mt .mt-lt-beam {fill:none;stroke:var(--mt-main);stroke-width:5;stroke-linecap:round;}
+	#mt .mt-lt-sup {fill:var(--mt-sup);stroke:var(--mt-hatch);}
+	#mt .mt-lt-ar {fill:none;stroke:var(--mt-load);stroke-width:2.6;stroke-linecap:round;stroke-linejoin:round;}
+	#mt .mt-ld__t, #mt .mt-glo dt, #mt .mt-ypn h2, #mt .mt-ldp, #mt .mt-ldv {color:var(--mt-ink);}
+	#mt .mt-ld .mt-x {background:var(--mt-soft);color:var(--mt-ink);border-color:var(--mt-line);}
+	#mt .mt-ld .tu-input {background:var(--mt-card);color:var(--mt-ink);border-color:var(--mt-line);}
+	body.dark-mode #mt.mt .mt-ld--sel .mt-ld__n {color:#0b1416;}
+	body.dark-mode #mt.mt .mt-lt button[aria-current], body.dark-mode #mt.mt .mt-lt button:hover {color:var(--mt-ink);}
 
 
 	@media print {
@@ -664,117 +726,20 @@ body.dark-mode .tu .rw-head {color:#a0a8b3;border-bottom-color:#555;} body.dark-
 		.footer__item--extra-padding { padding-left: 0; }
 		.footer__text--extra-info { float: none; display: block; margin-top: 0.5em; }
 	}
-/* Floating compact header bar: once the full header + nav scroll out of
-   view, a slim fixed bar (small logo, title, as many nav links as fit)
-   slides in, and the hamburger is pinned into its right end. Toggled by
-   the compact-nav script below. Ported from mes.fm/math's version (see
-   its build.mjs) -- display-controls.js pins the A-/A+/moon buttons into its right end.
-
-   Hidden by default via the inline style="display:none" on the element
-   itself (not just this stylesheet's "display: none" below) -- some
-   browser extensions strip or neutralize cosmetic-looking CSS for
-   elements named "sticky-*"/"*-bar" (a common ad/cookie-bar filter
-   pattern), which left an earlier version's raw unstyled markup visible
-   above the real header on mes.fm/math. The inline attribute is a
-   fallback the JS clears itself, independent of this stylesheet
-   surviving intact. */
-#compact-nav {
-  position: fixed; top: 0; left: 0; right: 0; height: 52px; z-index: 15;
-  display: none; align-items: center; gap: 12px;
-  padding: 0 80px 0 12px; box-sizing: border-box;
-  background: #ffffff; border-bottom: 3px solid #2f6690;
-  box-shadow: 0 2px 8px rgba(0,0,0,0.18);
-  transform: translateY(-110%); transition: transform 0.2s ease;
-}
-#compact-nav.is-visible { display: flex; }
-body.is-stuck #compact-nav { transform: none; }
-#compact-nav .compact-nav-logo { display: block; width: 32px; height: 32px; border-radius: 6px; flex: 0 0 auto; }
-#compact-nav .compact-nav-title {
-  flex: 0 1 auto; min-width: 0; font-weight: 700; font-size: 1.05em; color: #1a1a1a;
-  text-decoration: none; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
-}
-#compact-nav .compact-nav-links { display: flex; flex: 1 1 0; min-width: 0; overflow: hidden; margin: 0 0 0 8px; padding: 0; list-style: none; }
-#compact-nav .compact-nav-links li { flex: 0 0 auto; }
-#compact-nav .compact-nav-links a { display: block; padding: 0 10px; line-height: 52px; font-size: 0.9em; color: #2f6690; text-decoration: none; white-space: nowrap; }
-#compact-nav .compact-nav-links a:hover { background: rgba(47,102,144,0.12); }
-body.is-stuck #navbar-button { position: fixed !important; top: 4px !important; right: 8px !important; display: flex; align-items: center; }
-body.is-stuck #navbar.hide { position: fixed; top: 56px; right: 8px; }
-@media (max-width: 700px) {
-  #compact-nav .compact-nav-title { display: none; }
-  #compact-nav .compact-nav-logo { width: 36px; height: 36px; }
-}
-@media (max-width: 480px) {
-  #compact-nav { padding-right: 70px; gap: 8px; }
-}
-
-	/* TOOL-DARK:START -- generated by add_tool_page_controls.py, do not edit */
-	body.dark-mode .page-content :where(div,span,p,li,ul,ol,h1,h2,h3,h4,h5,h6,td,th,label,summary,small,strong,b,em,i,code,pre,legend,figcaption,dl,dt,dd,blockquote,caption,cite,button,input,select,textarea){color:#d8d8d8}
-	body.dark-mode .page-content code{background-color:#33363d;color:#f0a8bd}
-	body.dark-mode .page-content .btn-default{background-color:#2e2e2e;background-image:none;color:#ddd;border-color:#555}
-	body.dark-mode .tu{--accent:#468dc3;--accent-dark:#468ac4}
-	body.dark-mode .tu h2{color:#d1d6dc;border-bottom:2px solid #153045}
-	body.dark-mode .tu h3{color:#d1d6dc}
-	body.dark-mode .tu-card{background:#1a1a1a;border:1px solid #28323e}
-	body.dark-mode .tu-card--tint{background:#1a242b;border-color:#153045}
-	body.dark-mode .tu-field > label,body.dark-mode .tu-label{color:#9a9aa2}
-	body.dark-mode .tu-input,body.dark-mode .tu-select{border:1px solid #404a58;background:#1a1a1a;color:#dddddd}
-	body.dark-mode .tu-suffix span{color:#989ca4}
-	body.dark-mode .tu-btn{background:#1a1a1a}
-	body.dark-mode .tu-btn--ghost{border-color:#3a424d;color:#aaaaaa}
-	body.dark-mode .tu-btn--ghost:hover{background:#191c20;color:#dddddd;border-color:#3a424d}
-	body.dark-mode .tu-seg{border:1px solid #404a58;background:#1a1a1a}
-	body.dark-mode .tu-seg button{color:#aaaaaa;border-right:1px solid #28323e}
-	body.dark-mode .tu-seg button:hover{background:#16191d}
-	body.dark-mode .tu-chip{border:1px solid #3a424d;background:#1a1a1a;color:#aaaaaa}
-	body.dark-mode .tu-stat{background:#1a1a1a;border:1px solid #28323e}
-	body.dark-mode .tu-stat--hero{background:#1a242b;border-color:#153045}
-	body.dark-mode .tu-stat__label{color:#9a9aa2}
-	body.dark-mode .tu-stat__value{color:#d1d6dc}
-	body.dark-mode .tu-stat__sub{color:#9a9ea4}
-	body.dark-mode .tu-pos{color:#7dde9d !important}
-	body.dark-mode .tu-neg{color:#e87973 !important}
-	body.dark-mode .tu-table th,body.dark-mode .tu-table td{border-bottom:1px solid #29323d;color:#cccccc}
-	body.dark-mode .tu-table th{color:#9a9da3;background:#1a1a1a}
-	body.dark-mode .tu-table tr.is-active td{background:#1a242b}
-	body.dark-mode .tu-note{color:#9a9da3}
-	body.dark-mode .tu-toast{background:#3c4f67}
-	body.dark-mode .tu-seo{border-top:1px solid #333333}
-	body.dark-mode .tu-svg-line{stroke:#394a60}
-	body.dark-mode .tu-svg-text{fill:#cccccc}
-	body.dark-mode .tu-svg-grid{stroke:#28323e}
-	body.dark-mode .tu [data-names="0"] .rw-num,body.dark-mode .tu [data-table="1"] .rw-num{color:#999da3}
-	body.dark-mode .tu [data-table="1"] .rw-head{color:#9a9aa2;border-bottom:2px solid #2b323c}
-	body.dark-mode .tu [data-table="1"] .rw-row{border-bottom:1px solid #27313f}
-	body.dark-mode #mt{--mt-red:#d63333;--mt-farrow:#e24027;--mt-warn:#f59014;--mt-bad:#dc372d;--mt-good:#3ccd6c;--mt-yield:#f5a214;--mt-res:rgba(30,236,167,0.35)}
-	body.dark-mode #mt .mt-q[data-s="calc"] .tu-input{background:#1a242b}
-	body.dark-mode #mt .mt-sp--elastomer{fill:#bbbbbe}
-	body.dark-mode #mt .mt-sp--ceramic{fill:#94a0a8}
-	body.dark-mode #mt .mt-sp--wood{fill:#d7b384}
-	body.dark-mode #mt .mt-sp--composite{fill:#ccced1}
-	body.dark-mode #mt .mt-ss__o:hover,body.dark-mode #mt .mt-ss__o--act{background:#1a242b}
-	body.dark-mode #mt .mt-tbl tr.is-active td:first-child{background:#1a242b}
-	body.dark-mode #mt .mt-thwave{stroke:#b01c1c}
-	body.dark-mode #mt .mt-thsnow{fill:#6a94f1}
-	body.dark-mode #mt .mt-thwarn{fill:#f7a364}
-	body.dark-mode #mt .mt-thch-yield-t{fill:#f7a364}
-	body.dark-mode #mt .mt-thch-buck{stroke:#5011bb}
-	body.dark-mode #mt .mt-thch-buck-t{fill:#9c69f1}
-	body.dark-mode #mt .mt-thch-pt{fill:#6fec9d}
-	/* TOOL-DARK:END */
 </style>
         <meta property="fb:app_id" content="" />
         <meta name="author" content="Math Easy Solutions Staff">
         <meta property="og:type" content="website" />
         <meta property="og:url" content="https://mes.fm/materials" />            <meta property="og:title" content="MES Mechanics of Materials | Math Easy Solutions" />        <meta property="og:image" content="https://mes.fm/materials/img/logo-big.png" />
-        <meta property="og:description" content="Free mechanics of materials calculators: stress and strain with Young's modulus, a tensile test simulator with the stress-strain curve, shear stress in bolts and pins, torsion of shafts, Poisson's ratio and 3D Hooke's law, thermal stress, and a table of 30 materials. SI and US units." />
+        <meta property="og:description" content="Free mechanics of materials calculators: stress and strain with Young's modulus, a tensile test simulator with the stress-strain curve, shear stress in bolts and pins, torsion of shafts, beam bending with shear and moment diagrams, Poisson's ratio and 3D Hooke's law, thermal stress, and a table of 30 materials. SI and US units." />
 
-        <meta name="description" content="Free mechanics of materials calculators: stress and strain with Young's modulus, a tensile test simulator with the stress-strain curve, shear stress in bolts and pins, torsion of shafts, Poisson's ratio and 3D Hooke's law, thermal stress, and a table of 30 materials. SI and US units.">            <meta name="twitter:card" content="summary">        <meta name="twitter:site" content="@MathEasySolns">
+        <meta name="description" content="Free mechanics of materials calculators: stress and strain with Young's modulus, a tensile test simulator with the stress-strain curve, shear stress in bolts and pins, torsion of shafts, beam bending with shear and moment diagrams, Poisson's ratio and 3D Hooke's law, thermal stress, and a table of 30 materials. SI and US units.">            <meta name="twitter:card" content="summary">        <meta name="twitter:site" content="@MathEasySolns">
         <meta name="twitter:title" content="MES Mechanics of Materials">
-        <meta name="twitter:description" content="Free mechanics of materials calculators: stress and strain with Young's modulus, a tensile test simulator with the stress-strain curve, shear stress in bolts and pins, torsion of shafts, Poisson's ratio and 3D Hooke's law, thermal stress, and a table of 30 materials. SI and US units.">
+        <meta name="twitter:description" content="Free mechanics of materials calculators: stress and strain with Young's modulus, a tensile test simulator with the stress-strain curve, shear stress in bolts and pins, torsion of shafts, beam bending with shear and moment diagrams, Poisson's ratio and 3D Hooke's law, thermal stress, and a table of 30 materials. SI and US units.">
         <meta name="twitter:image" content="https://mes.fm/materials/img/logo-big.png">
         <meta name="twitter:image:alt" content="MES Mechanics of Materials">
         <script type="application/ld+json">
-        {"@context": "https://schema.org", "@type": "WebApplication", "name": "MES Mechanics of Materials", "url": "https://mes.fm/materials", "applicationCategory": "UtilitiesApplication", "operatingSystem": "Any", "offers": {"@type": "Offer", "price": "0", "priceCurrency": "USD"}, "description": "Free mechanics of materials calculators: stress and strain with Young's modulus, a tensile test simulator with the stress-strain curve, shear stress in bolts and pins, torsion of shafts, Poisson's ratio and 3D Hooke's law, thermal stress, and a table of 30 materials. SI and US units."}
+        {"@context": "https://schema.org", "@type": "WebApplication", "name": "MES Mechanics of Materials", "url": "https://mes.fm/materials", "applicationCategory": "UtilitiesApplication", "operatingSystem": "Any", "offers": {"@type": "Offer", "price": "0", "priceCurrency": "USD"}, "description": "Free mechanics of materials calculators: stress and strain with Young's modulus, a tensile test simulator with the stress-strain curve, shear stress in bolts and pins, torsion of shafts, beam bending with shear and moment diagrams, Poisson's ratio and 3D Hooke's law, thermal stress, and a table of 30 materials. SI and US units."}
         </script>            <!-- Google Tag Manager -->
             <script>(function(w,d,s,l,i){w[l]=w[l]||[];w[l].push({'gtm.start':
             new Date().getTime(),event:'gtm.js'});var f=d.getElementsByTagName(s)[0],
@@ -934,49 +899,44 @@ body.is-stuck #navbar.hide { position: fixed; top: 56px; right: 8px; }
     }).observe(document.documentElement, {childList: true, subtree: true});
 })();
 </script>
-    <!-- MES-ASIDE-HEAD --><link rel="stylesheet" href="/main_js/aside.css?v=2"><script>try{if(localStorage.getItem('asideSide')==='left')document.documentElement.classList.add('aside-left')}catch(e){}try{if(localStorage.getItem('pageWide')==='1')document.documentElement.classList.add('page-wide')}catch(e){}try{if(localStorage.getItem('pageMode')==='theatre')document.documentElement.classList.add('page-theatre')}catch(e){}try{if(localStorage.getItem('asideHidden')==='1')document.documentElement.classList.add('aside-hidden')}catch(e){}</script><!-- /MES-ASIDE-HEAD --></head>
+    </head>
     <body>            <!-- Google Tag Manager (noscript) -->
             <noscript><iframe src="https://www.googletagmanager.com/ns.html?id=GTM-PL6QNQR"
             height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
-            <!-- End Google Tag Manager (noscript) -->        <div id="compact-nav" aria-hidden="true" style="display:none">
-  <a href="/materials" tabindex="-1"><img class="compact-nav-logo" alt="" width="32" height="32" src="/materials/img/logo.png?v=2"></a>
-  <a class="compact-nav-title" href="/materials" tabindex="-1">Mechanics of Materials</a>
-  <ul class="compact-nav-links">
-    <li><a href="/math" tabindex="-1">Math Tutorials</a></li>
-    <li><a href="/calculators" tabindex="-1">Calculators</a></li>
-    <li><a href="/tools" tabindex="-1">Tools</a></li>
-    <li><a href="/mobile-apps" tabindex="-1">Mobile Apps</a></li>
-    <li><a href="/puzzles" tabindex="-1">Puzzles</a></li>
-    <li><a href="/memes" tabindex="-1">Memes</a></li>
-    <li><a href="/" tabindex="-1"><b>MES.fm</b></a></li>
-  </ul>
-</div>
-<div id="outer-container" class="outer-container has-aside">                <div class = "inner-container">                        <div id="header" class="header" role="banner">                                <a class="logo-image-container" href='/materials'><img height="88" width="88" id="logo" class="logo lazyload" alt="MES Mechanics of Materials logo" data-src="/materials/img/logo.png?v=2"></a>
+            <!-- End Google Tag Manager (noscript) -->        <div id="outer-container" class="outer-container">                <div class = "inner-container">                        <div id="header" class="header" role="banner">                                <a class="logo-image-container" href='/materials'><img height="88" width="88" id="logo" class="logo lazyload" alt="MES Mechanics of Materials logo" data-src="/materials/img/logo.png?v=2"></a>
                             <div class="logo-text-container">
                                 <a class="calculator-title-link" href='/materials'>
                                     <p class="calculator-title">MES Mechanics of Materials</p>
                                 </a>
-                                <p class="tag-line">Stress, strain, shear and torsion, with the pictures.</p>                            </div>
+                                <p class="tag-line">Stress, strain, shear, torsion and bending, with the pictures.</p>                            </div>
 
                             <div class="social-container"><ul class="social">	<li class="social__logo social__hive"><a class="social__link" href="https://peakd.com/@mes" target="_blank"></a></li></a></li>
     <li class="social__logo social__telegram"><a class="social__link" href="https://t.me/meslinks" target="_blank"></a></li></a></li></ul><a class="info-bar__logo-container" href="https://mes.fm/" title="Math Easy Solutions"><img id="mes-logo" class="info-bar__logo lazyload" alt="math easy solutions logo" height="29" width="126" data-src="https://mes.fm/main_img/mes-logo-small.png"></a>                            </div>                                                        </div>
                         <div class="info-bar-container" role="navigation" aria-label="Primary">
                             <ul id="info-bar" class="info-bar shadow">
-                                <li class="info-bar__item"><a class="info-bar__item__text" href='/materials'>Home</a></li><li class="info-bar__item"><a class="info-bar__item__text" href='/youngs-modulus-calculator'>Young's Modulus</a></li><li class="info-bar__item"><a class="info-bar__item__text" href='/tensile-test-simulator'>Tensile Test</a></li><li class="info-bar__item"><a class="info-bar__item__text" href='/shear-stress-calculator'>Shear &amp; Torsion</a></li><li class="info-bar__item"><a class="info-bar__item__text" href='/materials?tab=table'>Materials Table</a></li>                                    <li class="info-bar__item"><a class="info-bar__item__text" href='https://mes.fm/calculators'>Calculators</a></li><li class="info-bar__item"><a class="info-bar__item__text" href='https://mes.fm/tools'>Tools</a></li>                                    <li class="info-bar__item info-bar__item--utility" style="display:none !important;"><a class="info-bar__item__text" href='/contact'>Contact Us</a></li>
+                                <li class="info-bar__item"><a class="info-bar__item__text" href='/materials'>Home</a></li><li class="info-bar__item"><a class="info-bar__item__text" href='/youngs-modulus-calculator'>Young's Modulus</a></li><li class="info-bar__item"><a class="info-bar__item__text" href='/tensile-test-simulator'>Tensile Test</a></li><li class="info-bar__item"><a class="info-bar__item__text" href='/shear-stress-calculator'>Shear &amp; Torsion</a></li><li class="info-bar__item"><a class="info-bar__item__text" href='/bending-stress-calculator'>Bending</a></li><li class="info-bar__item"><a class="info-bar__item__text" href='/materials?tab=table'>Materials Table</a></li>                                    <li class="info-bar__item"><a class="info-bar__item__text" href='https://mes.fm/calculators'>Calculators</a></li><li class="info-bar__item"><a class="info-bar__item__text" href='https://mes.fm/tools'>Tools</a></li>                                    <li class="info-bar__item info-bar__item--utility" style="display:none !important;"><a class="info-bar__item__text" href='/contact'>Contact Us</a></li>
                                     <li class="info-bar__item info-bar__item--utility" style="display:none !important;"><a class="info-bar__item__text" target='_blank' href='https://mes.fm/donate.html'>Donate</a></li><li class="info-bar__item info-bar__item--utility" style="display:none !important;"><a class="info-bar__item__text" target='_blank' rel="nofollow" href='https://matheasy.substack.com/'>Subscribe</a></li>
                                     <li class="info-bar__item info-bar__item--mes"><a class="info-bar__item__text" href="/" style="font-weight:bold;">MES.fm</a></li></ul>
                         </div>
                                                         <!-- (Responsive) Horizontal -->
                                                         <div class="outer-page-content">
                             <div class="page-content" role="main">                                    <div class="color-box"></div>
-                                    <h1 class="page-title">Mechanics of Materials Calculator: Stress, Strain, Young's Modulus, Shear, Torsion</h1>                                        <p class="page-description">Free mechanics of materials calculators: stress and strain with Young's modulus, a tensile test simulator with the stress-strain curve, shear stress in bolts and pins, torsion of shafts, Poisson's ratio and 3D Hooke's law, thermal stress, and a table of 30 materials. SI and US units.</p>                                    	<div id="main-content" data-tool data-text-scale>
+                                    <h1 class="page-title">Mechanics of Materials Calculator: Stress, Strain, Young's Modulus, Shear, Torsion</h1>                                        <p class="page-description">Free mechanics of materials calculators: stress and strain with Young's modulus, a tensile test simulator with the stress-strain curve, shear stress in bolts and pins, torsion of shafts, beam bending with shear and moment diagrams, Poisson's ratio and 3D Hooke's law, thermal stress, and a table of 30 materials. SI and US units.</p>                                    	<div id="main-content">
 	<script>try{if(!localStorage.getItem('pageMode')){document.documentElement.classList.add('page-wide')}}catch(e){}</script>
-	<div class="tu mt" id="mt" data-views="axial,tensile,shear,torsion,poisson,thermal,table" data-page="materials">
+	<div class="tu mt" id="mt" data-views="axial,tensile,shear,torsion,bending,poisson,thermal,table" data-page="materials">
+		<nav class="mt-lt" id="mt-lt" aria-label="The five ways to load a bar" hidden>
+			<button type="button" data-go="tension" title="Tension: pulled apart (stress and strain, tensile test)"><svg viewBox="0 0 64 40" aria-hidden="true"><rect x="16" y="15" width="32" height="10" rx="2" class="mt-lt-bar"/><path d="M14,20 H2 M2,20 l6,-5 M2,20 l6,5 M50,20 H62 M62,20 l-6,-5 M62,20 l-6,5" class="mt-lt-ar"/></svg><span>Tension</span></button>
+			<button type="button" data-go="compression" title="Compression: pushed together (stress and strain)"><svg viewBox="0 0 64 40" aria-hidden="true"><rect x="16" y="15" width="32" height="10" rx="2" class="mt-lt-bar"/><path d="M2,20 H14 M14,20 l-6,-5 M14,20 l-6,5 M62,20 H50 M50,20 l6,-5 M50,20 l6,5" class="mt-lt-ar"/></svg><span>Compression</span></button>
+			<button type="button" data-go="shear" title="Shear: one part slides past the other (bolts, pins)"><svg viewBox="0 0 64 40" aria-hidden="true"><rect x="12" y="8" width="20" height="12" rx="2" class="mt-lt-bar"/><rect x="32" y="20" width="20" height="12" rx="2" class="mt-lt-bar"/><path d="M22,4 v10 M22,14 l-4,-5 M22,14 l4,-5 M42,36 v-10 M42,26 l-4,5 M42,26 l4,5" class="mt-lt-ar"/></svg><span>Shear</span></button>
+			<button type="button" data-go="bending" title="Bending: a beam under load (bending stress, deflection)"><svg viewBox="0 0 64 40" aria-hidden="true"><path d="M6,18 Q32,30 58,18" class="mt-lt-beam"/><path d="M6,22 l-4,8 h8 z M58,22 l-4,8 h8 z" class="mt-lt-sup"/><path d="M32,2 V18 M32,18 l-4,-5 M32,18 l4,-5" class="mt-lt-ar"/></svg><span>Bending</span></button>
+			<button type="button" data-go="torsion" title="Torsion: twisted (shafts)"><svg viewBox="0 0 64 40" aria-hidden="true"><rect x="10" y="15" width="44" height="10" rx="2" class="mt-lt-bar"/><path d="M8,9 a5,11 0 1 0 0,22 M8,31 l5,-1 M8,31 l3,4 M56,31 a5,11 0 1 0 0,-22 M56,9 l-5,1 M56,9 l-3,-4" class="mt-lt-ar"/></svg><span>Torsion</span></button>
+		</nav>
 		<div class="mt-tabs" role="tablist" aria-label="Tools">
 			<button type="button" role="tab" data-tab="axial" aria-selected="false">Stress &amp; strain</button>
 			<button type="button" role="tab" data-tab="tensile" aria-selected="false">Tensile test</button>
 			<button type="button" role="tab" data-tab="shear" aria-selected="false">Shear</button>
 			<button type="button" role="tab" data-tab="torsion" aria-selected="false">Torsion</button>
+			<button type="button" role="tab" data-tab="bending" aria-selected="false">Bending</button>
 			<button type="button" role="tab" data-tab="poisson" aria-selected="false">Poisson &amp; 3D</button>
 			<button type="button" role="tab" data-tab="thermal" aria-selected="false">Thermal</button>
 			<button type="button" role="tab" data-tab="table" aria-selected="false">Materials table</button>
@@ -1065,11 +1025,8 @@ body.is-stuck #navbar.hide { position: fixed; top: 56px; right: 8px; }
 						<div class="tu-seg" id="mt-tt-zoom" role="group" aria-label="Chart range"><button type="button" data-v="follow" aria-pressed="true" title="Zoomed in at the start, widening as the bar stretches">Follow the test</button><button type="button" data-v="all" aria-pressed="false">Whole curve</button><button type="button" data-v="el" aria-pressed="false">Start (elastic part)</button></div>
 						<label class="mt-chk"><input type="checkbox" id="mt-tt-true"> True stress–strain</label>
 						<label class="mt-chk"><input type="checkbox" id="mt-tt-areas" checked> Shade areas</label>
+						<label class="mt-chk" title="Mild steel only: the small ups and downs of the Lüders plateau"><input type="checkbox" id="mt-tt-ser" checked> Plateau serrations</label>
 					</div>
-				</div>
-				<div class="mt-tt-stage" id="mt-tt-stage">
-					<div class="mt-tt-spec"><svg id="mt-tt-spec" class="mt-svg" viewBox="0 0 240 640" role="img" aria-label="The test specimen in the grips of the testing machine"></svg><div class="mt-tt-live" id="mt-tt-live" aria-live="off"></div></div>
-					<div class="mt-tt-chart"><svg id="mt-tt-chart" class="mt-svg" viewBox="0 0 720 500" role="img" aria-label="Stress-strain chart drawn as the test runs"></svg></div>
 				</div>
 				<div class="mt-tt-ctl">
 					<button type="button" class="tu-btn tu-btn--primary" id="mt-tt-play">▶ Play</button>
@@ -1079,9 +1036,18 @@ body.is-stuck #navbar.hide { position: fixed; top: 56px; right: 8px; }
 					<input type="range" id="mt-tt-scrub" min="0" max="1000" step="1" value="0" aria-label="How far the test has gone">
 					<span class="mt-tt-view"><button type="button" class="tu-btn tu-btn--ghost" id="mt-tt-win" title="Fill the browser window (Esc to close)">⤢ Fill window</button><button type="button" class="tu-btn tu-btn--ghost" id="mt-tt-full" title="Full screen">⛶ Full screen</button></span>
 				</div>
+				<div class="mt-tt-stage" id="mt-tt-stage">
+					<div class="mt-tt-spec"><svg id="mt-tt-spec" class="mt-svg" viewBox="0 0 240 640" role="img" aria-label="The test specimen in the grips of the testing machine"></svg><div class="mt-tt-live" id="mt-tt-live" aria-live="off"></div></div>
+					<div class="mt-tt-chart"><svg id="mt-tt-chart" class="mt-svg" viewBox="0 0 720 500" role="img" aria-label="Stress-strain chart drawn as the test runs"></svg></div>
+				</div>
 				<p class="mt-msg" id="mt-tt-msg" aria-live="polite"></p>
 			</div>
 			<div class="tu-stats" id="mt-tt-stats"></div>
+			<div class="tu-card mt-ypn">
+				<h2 class="mt-h">Yield point or smooth yielding?</h2>
+				<p><strong>Mild and structural steels (A36, 1020) have a yield point.</strong> Carbon and nitrogen atoms pin the dislocations, so the stress climbs a little past the yield strength until a band of metal breaks free: that is the <em>upper yield point</em>. The force then drops to the <em>lower yield point</em> and the bar stretches at nearly constant stress while Lüders bands spread along it (the <em>Lüders strain</em>, about 1 to 3% for A36), with small serrations as each band starts. Only then does strain hardening begin, up to the tensile strength (58 to 80 ksi, 400 to 550 MPa for A36, at about 15 to 20% strain) and necking. The upper yield is usually only a few % to about 10% above the lower one, and its height depends on the test: a stiff machine, a fast pull and a smooth, well-aligned specimen give a taller, sharper peak; a soft machine or a slightly bent bar can hide it. The line also bends a little just before the peak (some grains yield early), so the top is rounded rather than a sharp corner. Codes therefore use the <em>lower</em> yield (or 0.2% offset) as the yield strength: 250 MPa (36 ksi) for A36.</p>
+				<p><strong>Aluminium alloys (2014-T6, 6061-T6), copper, stainless steel and most other metals yield continuously:</strong> no peak, no drop, no plateau. The curve just bends away from the straight line, so the yield strength is defined by the <em>0.2% offset rule</em>: draw a line with slope E starting at 0.2% strain, and where it meets the curve is the yield strength (414 MPa, 60 ksi, for 2014-T6).</p>
+			</div>
 			<div class="tu-card" id="mt-tt-cmpw" hidden><h2 class="mt-h">Side by side</h2><div class="tu-table-wrap"><table class="tu-table" id="mt-tt-cmpt"></table></div></div>
 			<div class="tu-card mt-eq">
 				<div class="mt-eqb"><span class="mt-eqb__n">Engineering stress</span><span class="mt-eqb__f mes-tex">\(\displaystyle \sigma = \frac{F}{A_0},\)</span><span class="mt-eqb__f mes-tex">\(\displaystyle \varepsilon = \frac{L - L_0}{L_0}\)</span></div>
@@ -1170,6 +1136,85 @@ body.is-stuck #navbar.hide { position: fixed; top: 56px; right: 8px; }
 				<div class="mt-eqb"><span class="mt-eqb__n">Angle of twist</span><span class="mt-eqb__f mes-tex">\(\displaystyle \theta = \frac{T\,L}{G\,J}\)</span></div>
 				<div class="mt-eqb"><span class="mt-eqb__n">Power</span><span class="mt-eqb__f mes-tex">\(\displaystyle P = T\,\omega,\)</span><span class="mt-eqb__f mes-tex">\(\displaystyle \omega = \frac{2\pi n}{60}\)</span></div>
 			</div>
+		</section>
+
+		<!-- ============ 5. BENDING ============ -->
+		<section data-panel="bending" role="tabpanel" hidden>
+			<div class="mt-grid2">
+				<div class="tu-card mt-fig mt-bdfig">
+					<svg id="mt-bd-svg" class="mt-svg" viewBox="0 0 560 680" role="img" aria-label="The beam on its supports with the loads, its deflected shape, and the shear-force, bending-moment and deflection diagrams. Drag a load along the beam."></svg>
+					<div class="mt-sliders" id="mt-bd-sl"></div>
+					<p class="mt-cap" id="mt-bd-cap"></p>
+				</div>
+				<div class="tu-card mt-inp">
+					<span class="tu-label">Supports</span>
+					<div class="tu-seg mt-modes mt-bdsup" id="mt-bd-sup" role="group" aria-label="Supports"><button type="button" data-v="ss" aria-pressed="true"><svg viewBox="0 0 44 18" aria-hidden="true"><rect x="2" y="3" width="40" height="4" rx="1"/><path d="M4,7 l-3,7 h6 z M40,7 l-3,7 h6 z"/></svg>Simply supported</button><button type="button" data-v="cant" aria-pressed="false"><svg viewBox="0 0 44 18" aria-hidden="true"><rect x="0" y="0" width="4" height="18"/><rect x="4" y="5" width="38" height="4" rx="1"/></svg>Cantilever</button><button type="button" data-v="fixed" aria-pressed="false"><svg viewBox="0 0 44 18" aria-hidden="true"><rect x="0" y="0" width="4" height="18"/><rect x="4" y="5" width="36" height="4" rx="1"/><rect x="40" y="0" width="4" height="18"/></svg>Fixed both ends</button><button type="button" data-v="prop" aria-pressed="false"><svg viewBox="0 0 44 18" aria-hidden="true"><rect x="0" y="0" width="4" height="18"/><rect x="4" y="5" width="38" height="4" rx="1"/><path d="M40,9 l-3,7 h6 z"/></svg>Propped cantilever</button><button type="button" data-v="over" aria-pressed="false"><svg viewBox="0 0 44 18" aria-hidden="true"><rect x="2" y="3" width="40" height="4" rx="1"/><path d="M4,7 l-3,7 h6 z M30,7 l-3,7 h6 z"/></svg>Overhang</button></div>
+					<div class="tu-row" style="margin-top:0.8em;">
+						<div class="mt-f" data-f="bd-L" data-k="len" data-d="span" data-l="Beam length L"></div>
+						<div class="mt-f" data-f="bd-ob" data-k="len" data-d="span" data-l="Second support at" data-m="over"></div>
+					</div>
+					<h2 class="mt-h mt-bdh">Loads <span class="mt-bdhint">drag them along the beam</span></h2>
+					<div class="mt-bdloads" id="mt-bd-loads"></div>
+					<div class="mt-btns mt-bdadd"><button type="button" class="tu-btn" data-add="P">＋ Point load</button><button type="button" class="tu-btn" data-add="w">＋ Spread load (UDL)</button><button type="button" class="tu-btn" data-add="M">＋ Moment</button></div>
+					<div class="mt-sec">
+						<div class="tu-row">
+							<div class="tu-field" style="flex-basis:14em;"><label for="mt-bd-shape">Cross-section</label><select id="mt-bd-shape" class="tu-select"></select></div>
+							<div class="mt-f" data-f="bd-b" data-k="len" data-d="small" data-l="Width b" data-sh="rect"></div>
+							<div class="mt-f" data-f="bd-h" data-k="len" data-d="small" data-l="Height h" data-sh="rect"></div>
+							<div class="mt-f" data-f="bd-d" data-k="len" data-d="small" data-l="Diameter d" data-sh="round"></div>
+							<div class="mt-f" data-f="bd-D" data-k="len" data-d="small" data-l="Outside diameter D" data-sh="tube"></div>
+							<div class="mt-f" data-f="bd-B" data-k="len" data-d="small" data-l="Outside width B" data-sh="rtube"></div>
+							<div class="mt-f" data-f="bd-H" data-k="len" data-d="small" data-l="Outside height H" data-sh="rtube"></div>
+							<div class="mt-f" data-f="bd-t" data-k="len" data-d="small" data-l="Wall thickness t" data-sh="tube rtube"></div>
+							<div class="mt-f" data-f="bd-fh" data-k="len" data-d="small" data-l="Depth h" data-sh="ibeam chan"></div>
+							<div class="mt-f" data-f="bd-fb" data-k="len" data-d="small" data-l="Flange width b" data-sh="ibeam chan"></div>
+							<div class="mt-f" data-f="bd-tf" data-k="len" data-d="small" data-l="Flange thickness tf" data-sh="ibeam chan"></div>
+							<div class="mt-f" data-f="bd-tw" data-k="len" data-d="small" data-l="Web thickness tw" data-sh="ibeam chan"></div>
+							<div class="mt-f" data-f="bd-I" data-k="inertia" data-d="inert" data-l="Second moment of area I" data-sh="Ic"></div>
+							<div class="mt-f" data-f="bd-c" data-k="len" data-d="small" data-l="Distance to the outer fibre c" data-sh="Ic"></div>
+						</div>
+					</div>
+					<div class="tu-row mt-r2">
+						<div class="mt-f" data-f="bd-E" data-k="stress" data-d="modulus" data-l="Young's modulus E" data-x></div>
+						<div class="mt-f" data-f="bd-sy" data-k="stress" data-d="stress" data-l="Yield strength σy" data-x></div>
+						<div class="tu-field" style="flex-basis:10em;"><label for="mt-bd-lim">Deflection limit</label><select id="mt-bd-lim" class="tu-select"><option value="180">L/180 (roofs, cantilevers)</option><option value="240">L/240 (roofs, total load)</option><option value="360">L/360 (floors, live load)</option><option value="480">L/480 (brittle finishes)</option><option value="600">L/600 (machinery)</option><option value="0">No limit</option></select></div>
+					</div>
+					<p class="mt-msg" id="mt-bd-msg" aria-live="polite"></p>
+					<div class="tu-chips" id="mt-bd-ex" role="group" aria-label="Examples"></div>
+				</div>
+			</div>
+			<div class="tu-stats" id="mt-bd-stats"></div>
+			<div class="tu-card mt-fig mt-bsfig">
+				<svg id="mt-bs-svg" class="mt-svg" viewBox="0 0 560 330" role="img" aria-label="The cross-section with its neutral axis, and how the bending stress varies across it at the point of the largest bending moment"></svg>
+				<p class="mt-cap" id="mt-bs-cap"></p>
+			</div>
+			<div class="tu-card mt-eq">
+				<div class="mt-eqb"><span class="mt-eqb__n">Bending stress (flexure formula)</span><span class="mt-eqb__f mes-tex">\(\displaystyle \sigma = \frac{M\,c}{I} = \frac{M}{S},\)</span><span class="mt-eqb__f mes-tex">\(\displaystyle S = \frac{I}{c}\)</span><span class="mt-eqb__v" id="mt-bd-v1"></span></div>
+				<div class="mt-eqb"><span class="mt-eqb__n">Shear stress</span><span class="mt-eqb__f mes-tex">\(\displaystyle \tau = \frac{V\,Q}{I\,t}\)</span><span class="mt-eqb__v" id="mt-bd-v2"></span></div>
+				<div class="mt-eqb"><span class="mt-eqb__n">Deflection curve</span><span class="mt-eqb__f mes-tex">\(\displaystyle E I\,\frac{d^2 y}{dx^2} = M(x),\)</span><span class="mt-eqb__f mes-tex">\(\displaystyle \frac{dM}{dx} = V\)</span></div>
+				<div class="mt-eqb"><span class="mt-eqb__n">Rectangle</span><span class="mt-eqb__f mes-tex">\(\displaystyle I = \frac{b\,h^3}{12},\)</span><span class="mt-eqb__f mes-tex">\(\displaystyle S = \frac{b\,h^2}{6}\)</span></div>
+				<div class="mt-eqb"><span class="mt-eqb__n">Simply supported, load P at the middle</span><span class="mt-eqb__f mes-tex">\(\displaystyle M_{max} = \frac{P L}{4},\)</span><span class="mt-eqb__f mes-tex">\(\displaystyle \delta = \frac{P L^3}{48 E I}\)</span></div>
+				<div class="mt-eqb"><span class="mt-eqb__n">Simply supported, spread load w</span><span class="mt-eqb__f mes-tex">\(\displaystyle M_{max} = \frac{w L^2}{8},\)</span><span class="mt-eqb__f mes-tex">\(\displaystyle \delta = \frac{5 w L^4}{384 E I}\)</span></div>
+				<div class="mt-eqb"><span class="mt-eqb__n">Cantilever, load P at the end</span><span class="mt-eqb__f mes-tex">\(\displaystyle M_{max} = P L,\)</span><span class="mt-eqb__f mes-tex">\(\displaystyle \delta = \frac{P L^3}{3 E I}\)</span></div>
+				<div class="mt-eqb"><span class="mt-eqb__n">Fixed both ends, spread load w</span><span class="mt-eqb__f mes-tex">\(\displaystyle M_{ends} = \frac{w L^2}{12},\)</span><span class="mt-eqb__f mes-tex">\(\displaystyle \delta = \frac{w L^4}{384 E I}\)</span></div>
+			</div>
+			<p class="tu-note">The beam is solved exactly for any mix of loads (singularity functions: equilibrium plus the deflection conditions at the supports), so the fixed and propped cases, which statics alone cannot solve, come out right too. It assumes a straight, elastic beam with small deflections (Euler–Bernoulli), bending about the strong axis, no buckling sideways (long, slender I-beams without bracing can twist out of the way: lateral-torsional buckling) and no self-weight unless you add it as a spread load.</p>
+			<details class="tu-card mt-glo">
+				<summary><h2 class="mt-h">Words used here</h2></summary>
+				<dl>
+					<dt>Bending moment M</dt><dd>How much the loads try to bend the beam at a point: force × distance, summed over everything on one side. Sagging (smiling, top squeezed) is drawn upward here; hogging (frowning, top stretched, over supports) downward.</dd>
+					<dt>Shear force V</dt><dd>The force trying to slide one part of the beam past the next. It jumps at every point load and support, and the slope of the moment diagram equals it, so M is largest where V crosses zero.</dd>
+					<dt>Neutral axis</dt><dd>The line through the section that is neither stretched nor squeezed. For these symmetric sections it sits at mid-depth; the stress grows in a straight line away from it.</dd>
+					<dt>Second moment of area I</dt><dd>How the area is spread away from the neutral axis (m⁴, in⁴). Depth counts cubed, which is why I-beams put their metal in the flanges and why a plank is far stiffer on edge.</dd>
+					<dt>c and section modulus S = I/c</dt><dd>c is the distance from the neutral axis to the outermost fibre, where the stress is largest. S rolls I and c into one number: σmax = M/S.</dd>
+					<dt>Flexure formula σ = Mc/I</dt><dd>The largest bending stress in the section, valid while the material stays elastic.</dd>
+					<dt>Q and τ = VQ/(It)</dt><dd>Q is the first moment of the area above the neutral axis and t the width there. The shear stress is largest at the neutral axis; in an I-beam the thin web carries nearly all of it.</dd>
+					<dt>Deflection δ and L/360</dt><dd>How far the beam sags. Codes limit it as a fraction of the span (L/360 for floors under live load, L/240 or L/180 for roofs) so floors do not feel bouncy and plaster does not crack.</dd>
+					<dt>Simply supported, cantilever, fixed, propped, overhang</dt><dd>A pin and a roller at the ends; built into a wall at one end only; built in at both ends; built in at one end and resting on a support at the other; resting on two supports with part of the beam sticking out past one of them.</dd>
+					<dt>Point load, spread load (UDL), moment</dt><dd>A force at one spot (kN, kip); a force spread evenly along a length (kN/m, kip/ft), such as a floor's weight; a twisting couple applied at one spot (kN·m, kip·ft).</dd>
+					<dt>EI (flexural rigidity)</dt><dd>Young's modulus times I: how hard the beam is to bend. Deflection is inversely proportional to it.</dd>
+				</dl>
+			</details>
 		</section>
 
 		<!-- ============ 5. POISSON & 3D HOOKE ============ -->
@@ -1301,18 +1346,20 @@ body.is-stuck #navbar.hide { position: fixed; top: 56px; right: 8px; }
 			<a href="/youngs-modulus-calculator">Young's modulus, stress &amp; strain</a>
 			<a href="/tensile-test-simulator">Tensile test simulator</a>
 			<a href="/shear-stress-calculator">Shear &amp; torsion</a>
+			<a href="/bending-stress-calculator">Bending stress &amp; beam deflection</a>
 			<a href="/materials?tab=poisson">Poisson's ratio &amp; 3D Hooke's law</a>
 			<a href="/materials?tab=thermal">Thermal stress</a>
 			<a href="/materials?tab=table">Materials table</a>
 		</nav>
 		<div class="tu-seo">
 			<h2>Mechanics of materials calculators</h2>
-			<p>Seven tools for strength of materials, in one place and with one material list, so the material you pick is used in every tab. Each tool shows the formula, the numbers put into it, a live picture drawn from the same numbers and a warning when the material would yield or break. SI and US units, a shareable link for every tab, and nothing is uploaded: your numbers stay in your browser.</p>
+			<p>Eight tools for strength of materials, in one place and with one material list, so the material you pick is used in every tab. Each tool shows the formula, the numbers put into it, a live picture drawn from the same numbers and a warning when the material would yield or break. SI and US units, a shareable link for every tab, and nothing is uploaded: your numbers stay in your browser.</p>
 			<h3>What is here</h3>
 			<ul>
 				<li><strong>Stress &amp; strain</strong> (axial loading): type any four of F, A, L, ΔL, σ, ε and E and get the rest, with a draggable picture of a stretched bar, the safety factor and the buckling load. Also on its own page: the <a href="/youngs-modulus-calculator">Young's modulus calculator</a>.</li>
 				<li><strong>Tensile test:</strong> the stress-strain curve drawn as a bar is pulled to destruction, with unloading, true stress, resilience and toughness, and three materials side by side. Bigger on the <a href="/tensile-test-simulator">tensile test simulator</a> page.</li>
 				<li><strong>Shear</strong> of bolts and pins (single and double shear), glued joints and punching, and <strong>Torsion</strong> of solid and hollow shafts with the angle of twist and motor power. Together on the <a href="/shear-stress-calculator">shear stress calculator</a> page.</li>
+				<li><strong>Bending:</strong> beams on any supports (simply supported, cantilever, fixed at both ends, propped, overhang) with point loads, spread loads and moments you drag along the beam: reactions, shear-force and bending-moment diagrams, the deflected shape, the bending stress σ = Mc/I in a rectangle, round bar, tube, box, I-beam or channel, and the L/360 deflection check. Also on its own page: the <a href="/bending-stress-calculator">bending stress and beam deflection calculator</a>.</li>
 				<li><strong>Poisson &amp; 3D:</strong> how much a bar gets thinner when it is pulled, the change in volume, Hooke's law for stresses in all three directions (and back from strains to stresses), and a converter between E, G, ν and the bulk modulus K.</li>
 				<li><strong>Thermal:</strong> how much a bar grows when it is heated, and the stress when walls stop it, with or without a gap.</li>
 				<li><strong>Materials table:</strong> about 30 materials (steels, stainless, aluminium, titanium, copper, brass, bronze, cast iron, nickel alloys, tungsten, lead, gold, silver, wood, concrete, glass, plastics, rubber, carbon fibre and bone) with E, G, ν, yield and tensile strength, elongation, density and thermal expansion, a search, sorting and a chart of stiffness against weight.</li>
@@ -1341,21 +1388,14 @@ body.is-stuck #navbar.hide { position: fixed; top: 56px; right: 8px; }
 	</div>                                    <!-- PC (Responsive/Rectangle) Matched Content -->
                                                                         <div id="comments-button" class="hide-div-button button">Comments</div>
                                     <div id="comments-box" class="hide">
-                                        <div id="fastcomments-widget"></div>                                    </div>
-<!-- MES-BOTTOM-AD -->
-<div class="mes-bottom-ad" data-ad-slot="1532113018" data-ad-mode="rect" style="clear:both;text-align:center;margin:1.5em auto 1.75em;min-height:330px;"><span style="display:block;font-size:11px;line-height:16px;color:#595959;margin-bottom:4px;">Advertisement</span><div class="mes-bottom-ad__slot" style="width:100%;min-height:310px;margin:0 auto;"></div></div>
-<!-- /MES-BOTTOM-AD -->
-                            </div>
-                        <!-- MES-ASIDE -->
-<aside id="mes-aside" class="mes-aside" data-aside-family="tools" aria-label="More from MES Tools"><div class="mes-aside__sticky"><div class="mes-aside__ad" data-ad-slot="8429975111"></div><div class="mes-aside__head"><h2 class="mes-aside__title-h">More like this</h2><button type="button" class="mes-aside__flip" aria-label="Move this sidebar to the other side" title="Move sidebar to the other side">&#8644;</button></div><ul class="mes-aside__list"><li><a class="mes-aside__card" href="/matrix-calculator"><img class="mes-aside__img mes-aside__img--logo" src="/matrix-calculator/img/logo.png" width="56" height="56" loading="lazy" alt=""><span class="mes-aside__text"><span class="mes-aside__name">Matrix Calculator with Steps: Multiply, Inverse, Determinant, Eigenvalues, SVD and Machine Learning</span><span class="mes-aside__tag">Calculator</span></span></a></li><li><a class="mes-aside__card" href="/symbols"><img class="mes-aside__img mes-aside__img--logo" src="/symbols/img/logo.png" width="56" height="56" loading="lazy" alt=""><span class="mes-aside__text"><span class="mes-aside__name">Symbol Copier</span><span class="mes-aside__tag">Tool</span></span></a></li><li><a class="mes-aside__card" href="/tools"><img class="mes-aside__img" src="/img/tools-icon.jpg" width="56" height="56" loading="lazy" alt=""><span class="mes-aside__text"><span class="mes-aside__name">All MES Tools</span><span class="mes-aside__tag">Gallery</span></span></a></li><li><a class="mes-aside__card" href="/gpacalculator"><img class="mes-aside__img mes-aside__img--logo" src="/gpacalculator/img/logo.png" width="56" height="56" loading="lazy" alt=""><span class="mes-aside__text"><span class="mes-aside__name">GPA Calculator</span><span class="mes-aside__tag">Calculator</span></span></a></li></ul></div></aside>
-<!-- /MES-ASIDE -->
-</div>
+                                        <div id="fastcomments-widget"></div>                                    </div>                            </div>
+                        </div>
 
                         <!-- side bar -->                            <div class="side-bar">                                    <div class="navbar-container shadow" role="navigation" aria-label="Site menu">
                                         <div class="button button--navbar" id="navbar-button" style="position:relative;">Site Navigation<span class="dropdown-symbol dropdown-symbol--dark" style="position:absolute;right:0.75em;top:50%;transform:translateY(-50%);margin-left:0;">&#9660;</span></div>    <ul id="navbar" class="navbar">
     <li class="navbar__item navbar__item--social"><div class="social-container social-container--navbar"><ul class="social">	<li class="social__logo social__hive"><a class="social__link" href="https://peakd.com/@mes" target="_blank"></a></li>
     <li class="social__logo social__telegram"><a class="social__link" href="https://t.me/meslinks" target="_blank"></a></li></ul><a class="info-bar__logo-container" href="https://mes.fm/" title="Math Easy Solutions"><img id="mes-logo" class="info-bar__logo lazyload" alt="math easy solutions logo" height="29" width="126" data-src="https://mes.fm/main_img/mes-logo-small.png"></a></div></li>
-        <li class="navbar__item"><a class="navbar__link navbar__link--first" href="/materials">Home</a></li><li class="navbar__item"><a class="navbar__link" href="/youngs-modulus-calculator">Young's Modulus Calculator</a></li><li class="navbar__item"><a class="navbar__link" href="/tensile-test-simulator">Tensile Test Simulator</a></li><li class="navbar__item"><a class="navbar__link" href="/shear-stress-calculator">Shear &amp; Torsion Calculator</a></li><li class="navbar__item"><a class="navbar__link" href="/materials?tab=table">Materials Table</a></li>    <li class="navbar__item"><a class="navbar__link" href="/calculators">Calculators</a></li>
+        <li class="navbar__item"><a class="navbar__link navbar__link--first" href="/materials">Home</a></li><li class="navbar__item"><a class="navbar__link" href="/youngs-modulus-calculator">Young's Modulus Calculator</a></li><li class="navbar__item"><a class="navbar__link" href="/tensile-test-simulator">Tensile Test Simulator</a></li><li class="navbar__item"><a class="navbar__link" href="/shear-stress-calculator">Shear &amp; Torsion Calculator</a></li><li class="navbar__item"><a class="navbar__link" href="/bending-stress-calculator">Bending Stress &amp; Beam Calculator</a></li><li class="navbar__item"><a class="navbar__link" href="/materials?tab=table">Materials Table</a></li>    <li class="navbar__item"><a class="navbar__link" href="/calculators">Calculators</a></li>
     <li class="navbar__item"><a class="navbar__link" href="/tools">Tools</a></li>
     <li class="navbar__item"><a class="navbar__link" href="/browser">Browser Extensions</a></li>
     <!-- MOBILE-APPS-DROPDOWN-REMOVED: every linked app was a dead App Store / Play Store listing (lapsed developer account) -- add an entry back here for each app once it is relaunched -->
@@ -1397,61 +1437,7 @@ body.is-stuck #navbar.hide { position: fixed; top: 56px; right: 8px; }
             hide_search:false,
             current_tab:0
         }        </script><!-- FASTCOMMENTS-LAZY: widget init moved to main_js/main.js -- it pulls embed.min.js only when #fastcomments-widget nears the viewport or on the first Comments-toggle click, so it no longer blocks first render -->                <script src="https://mes.fm/main_js/lazysizes.min.js?v=1.0.3" async></script>
-	<script src="/materials/js/materials.js?v=7" defer></script>
-            <script src="https://mes.fm/main_js/main.js?v=1.0.5"></script>    <!-- PAGEVIEW-TRACKING-INSERTED --><script src="https://mes.fm/main_js/track.js" defer></script><script>document.getElementById('copyright-year').textContent = new Date().getFullYear();</script><script src="/main_js/info-bar-fit.js" defer></script><script>
-  // Floating compact header bar (see #compact-nav CSS): appears once the
-  // header + nav bar have scrolled off the top; nav links that don't fit
-  // are dropped from the right, least important first, rather than
-  // wrapping. The last link is kept longest, so drop from the one before
-  // it first. Visibility is driven from here via the inline style
-  // attribute (not just a CSS class) so the bar stays hidden even if the
-  // stylesheet rules for it get stripped -- see the CSS comment above
-  // #compact-nav. Identical across every page that has this bar.
-  (function () {
-    var bar = document.getElementById('compact-nav');
-    var nav = document.querySelector('.info-bar-container');
-    var links = bar && bar.querySelector('.compact-nav-links');
-    if (!bar || !nav || !links) return;
-    var items = Array.prototype.slice.call(links.children);
-    var stuck = false, ticking = false, hideTimer;
-
-    function fit() {
-      items.forEach(function (li) { li.style.display = ''; });
-      var order = items.slice(0, -1).reverse();
-      for (var i = 0; i < order.length && links.scrollWidth > links.clientWidth; i++) {
-        order[i].style.display = 'none';
-      }
-      if (links.scrollWidth > links.clientWidth) items[items.length - 1].style.display = 'none';
-    }
-
-    function update() {
-      ticking = false;
-      var now = nav.getBoundingClientRect().bottom < 0;
-      if (now === stuck) return;
-      stuck = now;
-      bar.setAttribute('aria-hidden', stuck ? 'false' : 'true');
-      Array.prototype.forEach.call(bar.querySelectorAll('a'), function (a) {
-        a.tabIndex = stuck ? 0 : -1;
-      });
-      if (stuck) {
-        clearTimeout(hideTimer);
-        bar.style.display = 'flex';
-        fit();
-        requestAnimationFrame(function () {
-          requestAnimationFrame(function () { document.body.classList.add('is-stuck'); });
-        });
-      } else {
-        document.body.classList.remove('is-stuck');
-        hideTimer = setTimeout(function () { bar.style.display = 'none'; }, 220);
-      }
-    }
-
-    window.addEventListener('scroll', function () {
-      if (!ticking) { ticking = true; requestAnimationFrame(update); }
-    }, { passive: true });
-    window.addEventListener('resize', function () { if (stuck) fit(); });
-    update();
-  })();
-</script><script src="/main_js/display-controls.js?v=1.7" defer></script><!-- MES-ASIDE-JS --><script src="/main_js/aside.js?v=2" defer></script><!-- /MES-ASIDE-JS --><!-- MES-BOTTOM-AD-JS --><script src="/main_js/bottom-ad.js?v=1" defer></script><!-- /MES-BOTTOM-AD-JS --></body>
+	<script src="/materials/js/materials.js?v=8" defer></script>
+            <script src="https://mes.fm/main_js/main.js?v=1.0.5"></script>    <!-- PAGEVIEW-TRACKING-INSERTED --><script src="https://mes.fm/main_js/track.js" defer></script><script>document.getElementById('copyright-year').textContent = new Date().getFullYear();</script><script src="/main_js/info-bar-fit.js" defer></script></body>
 
 </html>

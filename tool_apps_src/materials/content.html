@@ -1,10 +1,18 @@
 	<script>try{if(!localStorage.getItem('pageMode')){document.documentElement.classList.add('page-wide')}}catch(e){}</script>
 	<div class="tu mt" id="mt" data-views="{{VIEWS}}" data-page="{{PAGE}}">
+		<nav class="mt-lt" id="mt-lt" aria-label="The five ways to load a bar" hidden>
+			<button type="button" data-go="tension" title="Tension: pulled apart (stress and strain, tensile test)"><svg viewBox="0 0 64 40" aria-hidden="true"><rect x="16" y="15" width="32" height="10" rx="2" class="mt-lt-bar"/><path d="M14,20 H2 M2,20 l6,-5 M2,20 l6,5 M50,20 H62 M62,20 l-6,-5 M62,20 l-6,5" class="mt-lt-ar"/></svg><span>Tension</span></button>
+			<button type="button" data-go="compression" title="Compression: pushed together (stress and strain)"><svg viewBox="0 0 64 40" aria-hidden="true"><rect x="16" y="15" width="32" height="10" rx="2" class="mt-lt-bar"/><path d="M2,20 H14 M14,20 l-6,-5 M14,20 l-6,5 M62,20 H50 M50,20 l6,-5 M50,20 l6,5" class="mt-lt-ar"/></svg><span>Compression</span></button>
+			<button type="button" data-go="shear" title="Shear: one part slides past the other (bolts, pins)"><svg viewBox="0 0 64 40" aria-hidden="true"><rect x="12" y="8" width="20" height="12" rx="2" class="mt-lt-bar"/><rect x="32" y="20" width="20" height="12" rx="2" class="mt-lt-bar"/><path d="M22,4 v10 M22,14 l-4,-5 M22,14 l4,-5 M42,36 v-10 M42,26 l-4,5 M42,26 l4,5" class="mt-lt-ar"/></svg><span>Shear</span></button>
+			<button type="button" data-go="bending" title="Bending: a beam under load (bending stress, deflection)"><svg viewBox="0 0 64 40" aria-hidden="true"><path d="M6,18 Q32,30 58,18" class="mt-lt-beam"/><path d="M6,22 l-4,8 h8 z M58,22 l-4,8 h8 z" class="mt-lt-sup"/><path d="M32,2 V18 M32,18 l-4,-5 M32,18 l4,-5" class="mt-lt-ar"/></svg><span>Bending</span></button>
+			<button type="button" data-go="torsion" title="Torsion: twisted (shafts)"><svg viewBox="0 0 64 40" aria-hidden="true"><rect x="10" y="15" width="44" height="10" rx="2" class="mt-lt-bar"/><path d="M8,9 a5,11 0 1 0 0,22 M8,31 l5,-1 M8,31 l3,4 M56,31 a5,11 0 1 0 0,-22 M56,9 l-5,1 M56,9 l-3,-4" class="mt-lt-ar"/></svg><span>Torsion</span></button>
+		</nav>
 		<div class="mt-tabs" role="tablist" aria-label="Tools">
 			<button type="button" role="tab" data-tab="axial" aria-selected="false">Stress &amp; strain</button>
 			<button type="button" role="tab" data-tab="tensile" aria-selected="false">Tensile test</button>
 			<button type="button" role="tab" data-tab="shear" aria-selected="false">Shear</button>
 			<button type="button" role="tab" data-tab="torsion" aria-selected="false">Torsion</button>
+			<button type="button" role="tab" data-tab="bending" aria-selected="false">Bending</button>
 			<button type="button" role="tab" data-tab="poisson" aria-selected="false">Poisson &amp; 3D</button>
 			<button type="button" role="tab" data-tab="thermal" aria-selected="false">Thermal</button>
 			<button type="button" role="tab" data-tab="table" aria-selected="false">Materials table</button>
@@ -93,11 +101,8 @@
 						<div class="tu-seg" id="mt-tt-zoom" role="group" aria-label="Chart range"><button type="button" data-v="follow" aria-pressed="true" title="Zoomed in at the start, widening as the bar stretches">Follow the test</button><button type="button" data-v="all" aria-pressed="false">Whole curve</button><button type="button" data-v="el" aria-pressed="false">Start (elastic part)</button></div>
 						<label class="mt-chk"><input type="checkbox" id="mt-tt-true"> True stress–strain</label>
 						<label class="mt-chk"><input type="checkbox" id="mt-tt-areas" checked> Shade areas</label>
+						<label class="mt-chk" title="Mild steel only: the small ups and downs of the Lüders plateau"><input type="checkbox" id="mt-tt-ser" checked> Plateau serrations</label>
 					</div>
-				</div>
-				<div class="mt-tt-stage" id="mt-tt-stage">
-					<div class="mt-tt-spec"><svg id="mt-tt-spec" class="mt-svg" viewBox="0 0 240 640" role="img" aria-label="The test specimen in the grips of the testing machine"></svg><div class="mt-tt-live" id="mt-tt-live" aria-live="off"></div></div>
-					<div class="mt-tt-chart"><svg id="mt-tt-chart" class="mt-svg" viewBox="0 0 720 500" role="img" aria-label="Stress-strain chart drawn as the test runs"></svg></div>
 				</div>
 				<div class="mt-tt-ctl">
 					<button type="button" class="tu-btn tu-btn--primary" id="mt-tt-play">▶ Play</button>
@@ -107,9 +112,18 @@
 					<input type="range" id="mt-tt-scrub" min="0" max="1000" step="1" value="0" aria-label="How far the test has gone">
 					<span class="mt-tt-view"><button type="button" class="tu-btn tu-btn--ghost" id="mt-tt-win" title="Fill the browser window (Esc to close)">⤢ Fill window</button><button type="button" class="tu-btn tu-btn--ghost" id="mt-tt-full" title="Full screen">⛶ Full screen</button></span>
 				</div>
+				<div class="mt-tt-stage" id="mt-tt-stage">
+					<div class="mt-tt-spec"><svg id="mt-tt-spec" class="mt-svg" viewBox="0 0 240 640" role="img" aria-label="The test specimen in the grips of the testing machine"></svg><div class="mt-tt-live" id="mt-tt-live" aria-live="off"></div></div>
+					<div class="mt-tt-chart"><svg id="mt-tt-chart" class="mt-svg" viewBox="0 0 720 500" role="img" aria-label="Stress-strain chart drawn as the test runs"></svg></div>
+				</div>
 				<p class="mt-msg" id="mt-tt-msg" aria-live="polite"></p>
 			</div>
 			<div class="tu-stats" id="mt-tt-stats"></div>
+			<div class="tu-card mt-ypn">
+				<h2 class="mt-h">Yield point or smooth yielding?</h2>
+				<p><strong>Mild and structural steels (A36, 1020) have a yield point.</strong> Carbon and nitrogen atoms pin the dislocations, so the stress climbs a little past the yield strength until a band of metal breaks free: that is the <em>upper yield point</em>. The force then drops to the <em>lower yield point</em> and the bar stretches at nearly constant stress while Lüders bands spread along it (the <em>Lüders strain</em>, about 1 to 3% for A36), with small serrations as each band starts. Only then does strain hardening begin, up to the tensile strength (58 to 80 ksi, 400 to 550 MPa for A36, at about 15 to 20% strain) and necking. The upper yield is usually only a few % to about 10% above the lower one, and its height depends on the test: a stiff machine, a fast pull and a smooth, well-aligned specimen give a taller, sharper peak; a soft machine or a slightly bent bar can hide it. The line also bends a little just before the peak (some grains yield early), so the top is rounded rather than a sharp corner. Codes therefore use the <em>lower</em> yield (or 0.2% offset) as the yield strength: 250 MPa (36 ksi) for A36.</p>
+				<p><strong>Aluminium alloys (2014-T6, 6061-T6), copper, stainless steel and most other metals yield continuously:</strong> no peak, no drop, no plateau. The curve just bends away from the straight line, so the yield strength is defined by the <em>0.2% offset rule</em>: draw a line with slope E starting at 0.2% strain, and where it meets the curve is the yield strength (414 MPa, 60 ksi, for 2014-T6).</p>
+			</div>
 			<div class="tu-card" id="mt-tt-cmpw" hidden><h2 class="mt-h">Side by side</h2><div class="tu-table-wrap"><table class="tu-table" id="mt-tt-cmpt"></table></div></div>
 			<div class="tu-card mt-eq">
 				<div class="mt-eqb"><span class="mt-eqb__n">Engineering stress</span><span class="mt-eqb__f mes-tex">\(\displaystyle \sigma = \frac{F}{A_0},\)</span><span class="mt-eqb__f mes-tex">\(\displaystyle \varepsilon = \frac{L - L_0}{L_0}\)</span></div>
@@ -198,6 +212,85 @@
 				<div class="mt-eqb"><span class="mt-eqb__n">Angle of twist</span><span class="mt-eqb__f mes-tex">\(\displaystyle \theta = \frac{T\,L}{G\,J}\)</span></div>
 				<div class="mt-eqb"><span class="mt-eqb__n">Power</span><span class="mt-eqb__f mes-tex">\(\displaystyle P = T\,\omega,\)</span><span class="mt-eqb__f mes-tex">\(\displaystyle \omega = \frac{2\pi n}{60}\)</span></div>
 			</div>
+		</section>
+
+		<!-- ============ 5. BENDING ============ -->
+		<section data-panel="bending" role="tabpanel" hidden>
+			<div class="mt-grid2">
+				<div class="tu-card mt-fig mt-bdfig">
+					<svg id="mt-bd-svg" class="mt-svg" viewBox="0 0 560 680" role="img" aria-label="The beam on its supports with the loads, its deflected shape, and the shear-force, bending-moment and deflection diagrams. Drag a load along the beam."></svg>
+					<div class="mt-sliders" id="mt-bd-sl"></div>
+					<p class="mt-cap" id="mt-bd-cap"></p>
+				</div>
+				<div class="tu-card mt-inp">
+					<span class="tu-label">Supports</span>
+					<div class="tu-seg mt-modes mt-bdsup" id="mt-bd-sup" role="group" aria-label="Supports"><button type="button" data-v="ss" aria-pressed="true"><svg viewBox="0 0 44 18" aria-hidden="true"><rect x="2" y="3" width="40" height="4" rx="1"/><path d="M4,7 l-3,7 h6 z M40,7 l-3,7 h6 z"/></svg>Simply supported</button><button type="button" data-v="cant" aria-pressed="false"><svg viewBox="0 0 44 18" aria-hidden="true"><rect x="0" y="0" width="4" height="18"/><rect x="4" y="5" width="38" height="4" rx="1"/></svg>Cantilever</button><button type="button" data-v="fixed" aria-pressed="false"><svg viewBox="0 0 44 18" aria-hidden="true"><rect x="0" y="0" width="4" height="18"/><rect x="4" y="5" width="36" height="4" rx="1"/><rect x="40" y="0" width="4" height="18"/></svg>Fixed both ends</button><button type="button" data-v="prop" aria-pressed="false"><svg viewBox="0 0 44 18" aria-hidden="true"><rect x="0" y="0" width="4" height="18"/><rect x="4" y="5" width="38" height="4" rx="1"/><path d="M40,9 l-3,7 h6 z"/></svg>Propped cantilever</button><button type="button" data-v="over" aria-pressed="false"><svg viewBox="0 0 44 18" aria-hidden="true"><rect x="2" y="3" width="40" height="4" rx="1"/><path d="M4,7 l-3,7 h6 z M30,7 l-3,7 h6 z"/></svg>Overhang</button></div>
+					<div class="tu-row" style="margin-top:0.8em;">
+						<div class="mt-f" data-f="bd-L" data-k="len" data-d="span" data-l="Beam length L"></div>
+						<div class="mt-f" data-f="bd-ob" data-k="len" data-d="span" data-l="Second support at" data-m="over"></div>
+					</div>
+					<h2 class="mt-h mt-bdh">Loads <span class="mt-bdhint">drag them along the beam</span></h2>
+					<div class="mt-bdloads" id="mt-bd-loads"></div>
+					<div class="mt-btns mt-bdadd"><button type="button" class="tu-btn" data-add="P">＋ Point load</button><button type="button" class="tu-btn" data-add="w">＋ Spread load (UDL)</button><button type="button" class="tu-btn" data-add="M">＋ Moment</button></div>
+					<div class="mt-sec">
+						<div class="tu-row">
+							<div class="tu-field" style="flex-basis:14em;"><label for="mt-bd-shape">Cross-section</label><select id="mt-bd-shape" class="tu-select"></select></div>
+							<div class="mt-f" data-f="bd-b" data-k="len" data-d="small" data-l="Width b" data-sh="rect"></div>
+							<div class="mt-f" data-f="bd-h" data-k="len" data-d="small" data-l="Height h" data-sh="rect"></div>
+							<div class="mt-f" data-f="bd-d" data-k="len" data-d="small" data-l="Diameter d" data-sh="round"></div>
+							<div class="mt-f" data-f="bd-D" data-k="len" data-d="small" data-l="Outside diameter D" data-sh="tube"></div>
+							<div class="mt-f" data-f="bd-B" data-k="len" data-d="small" data-l="Outside width B" data-sh="rtube"></div>
+							<div class="mt-f" data-f="bd-H" data-k="len" data-d="small" data-l="Outside height H" data-sh="rtube"></div>
+							<div class="mt-f" data-f="bd-t" data-k="len" data-d="small" data-l="Wall thickness t" data-sh="tube rtube"></div>
+							<div class="mt-f" data-f="bd-fh" data-k="len" data-d="small" data-l="Depth h" data-sh="ibeam chan"></div>
+							<div class="mt-f" data-f="bd-fb" data-k="len" data-d="small" data-l="Flange width b" data-sh="ibeam chan"></div>
+							<div class="mt-f" data-f="bd-tf" data-k="len" data-d="small" data-l="Flange thickness tf" data-sh="ibeam chan"></div>
+							<div class="mt-f" data-f="bd-tw" data-k="len" data-d="small" data-l="Web thickness tw" data-sh="ibeam chan"></div>
+							<div class="mt-f" data-f="bd-I" data-k="inertia" data-d="inert" data-l="Second moment of area I" data-sh="Ic"></div>
+							<div class="mt-f" data-f="bd-c" data-k="len" data-d="small" data-l="Distance to the outer fibre c" data-sh="Ic"></div>
+						</div>
+					</div>
+					<div class="tu-row mt-r2">
+						<div class="mt-f" data-f="bd-E" data-k="stress" data-d="modulus" data-l="Young's modulus E" data-x></div>
+						<div class="mt-f" data-f="bd-sy" data-k="stress" data-d="stress" data-l="Yield strength σy" data-x></div>
+						<div class="tu-field" style="flex-basis:10em;"><label for="mt-bd-lim">Deflection limit</label><select id="mt-bd-lim" class="tu-select"><option value="180">L/180 (roofs, cantilevers)</option><option value="240">L/240 (roofs, total load)</option><option value="360">L/360 (floors, live load)</option><option value="480">L/480 (brittle finishes)</option><option value="600">L/600 (machinery)</option><option value="0">No limit</option></select></div>
+					</div>
+					<p class="mt-msg" id="mt-bd-msg" aria-live="polite"></p>
+					<div class="tu-chips" id="mt-bd-ex" role="group" aria-label="Examples"></div>
+				</div>
+			</div>
+			<div class="tu-stats" id="mt-bd-stats"></div>
+			<div class="tu-card mt-fig mt-bsfig">
+				<svg id="mt-bs-svg" class="mt-svg" viewBox="0 0 560 330" role="img" aria-label="The cross-section with its neutral axis, and how the bending stress varies across it at the point of the largest bending moment"></svg>
+				<p class="mt-cap" id="mt-bs-cap"></p>
+			</div>
+			<div class="tu-card mt-eq">
+				<div class="mt-eqb"><span class="mt-eqb__n">Bending stress (flexure formula)</span><span class="mt-eqb__f mes-tex">\(\displaystyle \sigma = \frac{M\,c}{I} = \frac{M}{S},\)</span><span class="mt-eqb__f mes-tex">\(\displaystyle S = \frac{I}{c}\)</span><span class="mt-eqb__v" id="mt-bd-v1"></span></div>
+				<div class="mt-eqb"><span class="mt-eqb__n">Shear stress</span><span class="mt-eqb__f mes-tex">\(\displaystyle \tau = \frac{V\,Q}{I\,t}\)</span><span class="mt-eqb__v" id="mt-bd-v2"></span></div>
+				<div class="mt-eqb"><span class="mt-eqb__n">Deflection curve</span><span class="mt-eqb__f mes-tex">\(\displaystyle E I\,\frac{d^2 y}{dx^2} = M(x),\)</span><span class="mt-eqb__f mes-tex">\(\displaystyle \frac{dM}{dx} = V\)</span></div>
+				<div class="mt-eqb"><span class="mt-eqb__n">Rectangle</span><span class="mt-eqb__f mes-tex">\(\displaystyle I = \frac{b\,h^3}{12},\)</span><span class="mt-eqb__f mes-tex">\(\displaystyle S = \frac{b\,h^2}{6}\)</span></div>
+				<div class="mt-eqb"><span class="mt-eqb__n">Simply supported, load P at the middle</span><span class="mt-eqb__f mes-tex">\(\displaystyle M_{max} = \frac{P L}{4},\)</span><span class="mt-eqb__f mes-tex">\(\displaystyle \delta = \frac{P L^3}{48 E I}\)</span></div>
+				<div class="mt-eqb"><span class="mt-eqb__n">Simply supported, spread load w</span><span class="mt-eqb__f mes-tex">\(\displaystyle M_{max} = \frac{w L^2}{8},\)</span><span class="mt-eqb__f mes-tex">\(\displaystyle \delta = \frac{5 w L^4}{384 E I}\)</span></div>
+				<div class="mt-eqb"><span class="mt-eqb__n">Cantilever, load P at the end</span><span class="mt-eqb__f mes-tex">\(\displaystyle M_{max} = P L,\)</span><span class="mt-eqb__f mes-tex">\(\displaystyle \delta = \frac{P L^3}{3 E I}\)</span></div>
+				<div class="mt-eqb"><span class="mt-eqb__n">Fixed both ends, spread load w</span><span class="mt-eqb__f mes-tex">\(\displaystyle M_{ends} = \frac{w L^2}{12},\)</span><span class="mt-eqb__f mes-tex">\(\displaystyle \delta = \frac{w L^4}{384 E I}\)</span></div>
+			</div>
+			<p class="tu-note">The beam is solved exactly for any mix of loads (singularity functions: equilibrium plus the deflection conditions at the supports), so the fixed and propped cases, which statics alone cannot solve, come out right too. It assumes a straight, elastic beam with small deflections (Euler–Bernoulli), bending about the strong axis, no buckling sideways (long, slender I-beams without bracing can twist out of the way: lateral-torsional buckling) and no self-weight unless you add it as a spread load.</p>
+			<details class="tu-card mt-glo">
+				<summary><h2 class="mt-h">Words used here</h2></summary>
+				<dl>
+					<dt>Bending moment M</dt><dd>How much the loads try to bend the beam at a point: force × distance, summed over everything on one side. Sagging (smiling, top squeezed) is drawn upward here; hogging (frowning, top stretched, over supports) downward.</dd>
+					<dt>Shear force V</dt><dd>The force trying to slide one part of the beam past the next. It jumps at every point load and support, and the slope of the moment diagram equals it, so M is largest where V crosses zero.</dd>
+					<dt>Neutral axis</dt><dd>The line through the section that is neither stretched nor squeezed. For these symmetric sections it sits at mid-depth; the stress grows in a straight line away from it.</dd>
+					<dt>Second moment of area I</dt><dd>How the area is spread away from the neutral axis (m⁴, in⁴). Depth counts cubed, which is why I-beams put their metal in the flanges and why a plank is far stiffer on edge.</dd>
+					<dt>c and section modulus S = I/c</dt><dd>c is the distance from the neutral axis to the outermost fibre, where the stress is largest. S rolls I and c into one number: σmax = M/S.</dd>
+					<dt>Flexure formula σ = Mc/I</dt><dd>The largest bending stress in the section, valid while the material stays elastic.</dd>
+					<dt>Q and τ = VQ/(It)</dt><dd>Q is the first moment of the area above the neutral axis and t the width there. The shear stress is largest at the neutral axis; in an I-beam the thin web carries nearly all of it.</dd>
+					<dt>Deflection δ and L/360</dt><dd>How far the beam sags. Codes limit it as a fraction of the span (L/360 for floors under live load, L/240 or L/180 for roofs) so floors do not feel bouncy and plaster does not crack.</dd>
+					<dt>Simply supported, cantilever, fixed, propped, overhang</dt><dd>A pin and a roller at the ends; built into a wall at one end only; built in at both ends; built in at one end and resting on a support at the other; resting on two supports with part of the beam sticking out past one of them.</dd>
+					<dt>Point load, spread load (UDL), moment</dt><dd>A force at one spot (kN, kip); a force spread evenly along a length (kN/m, kip/ft), such as a floor's weight; a twisting couple applied at one spot (kN·m, kip·ft).</dd>
+					<dt>EI (flexural rigidity)</dt><dd>Young's modulus times I: how hard the beam is to bend. Deflection is inversely proportional to it.</dd>
+				</dl>
+			</details>
 		</section>
 
 		<!-- ============ 5. POISSON & 3D HOOKE ============ -->
@@ -329,6 +422,7 @@
 			<a href="/youngs-modulus-calculator">Young's modulus, stress &amp; strain</a>
 			<a href="/tensile-test-simulator">Tensile test simulator</a>
 			<a href="/shear-stress-calculator">Shear &amp; torsion</a>
+			<a href="/bending-stress-calculator">Bending stress &amp; beam deflection</a>
 			<a href="/materials?tab=poisson">Poisson's ratio &amp; 3D Hooke's law</a>
 			<a href="/materials?tab=thermal">Thermal stress</a>
 			<a href="/materials?tab=table">Materials table</a>

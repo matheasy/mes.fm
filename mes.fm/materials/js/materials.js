@@ -12,7 +12,7 @@
 		area: [["mm²", 1e-6], ["cm²", 1e-4], ["m²", 1], ["in²", IN * IN], ["ft²", 0.3048 * 0.3048]],
 		stress: [["Pa", 1], ["kPa", 1e3], ["MPa", 1e6], ["GPa", 1e9], ["psi", PSI], ["ksi", PSI * 1e3], ["Msi", PSI * 1e6]],
 		strain: [["mm/mm", 1], ["%", 0.01], ["µε", 1e-6]],
-		torque: [["N·m", 1], ["kN·m", 1e3], ["N·mm", 1e-3], ["lbf·in", LBF * IN], ["lbf·ft", LBF * 0.3048], ["kip·in", LBF * IN * 1e3]],
+		torque: [["N·m", 1], ["kN·m", 1e3], ["N·mm", 1e-3], ["lbf·in", LBF * IN], ["lbf·ft", LBF * 0.3048], ["kip·in", LBF * IN * 1e3], ["kip·ft", LBF * 0.3048 * 1e3]],
 		angle: [["rad", 1], ["°", PI / 180], ["mrad", 1e-3]],
 		power: [["W", 1], ["kW", 1e3], ["MW", 1e6], ["hp", 745.69987158227022]],
 		speed: [["rpm", 2 * PI / 60], ["rad/s", 1], ["Hz", 2 * PI]],
@@ -20,7 +20,9 @@
 		alpha: [["µm/m·°C", 1e-6], ["µin/in·°F", 1.8e-6], ["1/°C", 1]],
 		density: [["kg/m³", 1], ["g/cm³", 1000], ["lb/ft³", LB / Math.pow(0.3048, 3)], ["lb/in³", LB / Math.pow(IN, 3)]],
 		energy: [["J/m³", 1], ["kJ/m³", 1e3], ["MJ/m³", 1e6], ["in·lbf/in³", PSI]],
-		inertia: [["mm⁴", 1e-12], ["cm⁴", 1e-8], ["m⁴", 1], ["in⁴", Math.pow(IN, 4)]]
+		inertia: [["mm⁴", 1e-12], ["cm⁴", 1e-8], ["m⁴", 1], ["in⁴", Math.pow(IN, 4)]],
+		dist: [["N/m", 1], ["kN/m", 1e3], ["N/mm", 1e3], ["lbf/ft", LBF / 0.3048], ["kip/ft", LBF * 1e3 / 0.3048], ["lbf/in", LBF / IN], ["kip/in", LBF * 1e3 / IN]],
+		secmod: [["mm³", 1e-9], ["cm³", 1e-6], ["m³", 1], ["in³", Math.pow(IN, 3)]]
 	};
 	var EXTRA = {   /* typed spellings -> unit name (after norm()) */
 		force: { n: "N", newton: "N", newtons: "N", kilonewton: "kN", kilonewtons: "kN", lb: "lbf", lbs: "lbf", pound: "lbf", pounds: "lbf", kips: "kip", klbf: "kip" },
@@ -28,7 +30,7 @@
 		area: { mm2: "mm²", sqmm: "mm²", cm2: "cm²", m2: "m²", in2: "in²", sqin: "in²", ft2: "ft²", sqft: "ft²" },
 		stress: { "n/mm2": "MPa", nmm2: "MPa", "kn/mm2": "GPa", "lb/in2": "psi", "lbf/in2": "psi", "n/m2": "Pa" },
 		strain: { "": "mm/mm", "-": "mm/mm", "m/m": "mm/mm", "in/in": "mm/mm", ue: "µε", "uε": "µε", microstrain: "µε", "με": "µε", percent: "%" },
-		torque: { nm: "N·m", "n-m": "N·m", knm: "kN·m", nmm: "N·mm", lbin: "lbf·in", inlb: "lbf·in", inlbf: "lbf·in", lbfin: "lbf·in", lbft: "lbf·ft", ftlb: "lbf·ft", ftlbf: "lbf·ft", lbfft: "lbf·ft", kipin: "kip·in", inkip: "kip·in" },
+		torque: { nm: "N·m", "n-m": "N·m", knm: "kN·m", nmm: "N·mm", lbin: "lbf·in", inlb: "lbf·in", inlbf: "lbf·in", lbfin: "lbf·in", lbft: "lbf·ft", ftlb: "lbf·ft", ftlbf: "lbf·ft", lbfft: "lbf·ft", kipin: "kip·in", inkip: "kip·in", kipft: "kip·ft", ftkip: "kip·ft", kipsft: "kip·ft" },
 		angle: { deg: "°", degree: "°", degrees: "°", radian: "rad", radians: "rad" },
 		power: { watt: "W", watts: "W", kilowatt: "kW", kilowatts: "kW", bhp: "hp", horsepower: "hp" },
 		speed: { "r/min": "rpm", revmin: "rpm", rads: "rad/s", hertz: "Hz", rps: "Hz", "rev/s": "Hz" },
@@ -36,7 +38,9 @@
 		alpha: { "um/m°c": "µm/m·°C", "um/mc": "µm/m·°C", "um/mk": "µm/m·°C", "ppm/°c": "µm/m·°C", "ppm/c": "µm/m·°C", "ppm/k": "µm/m·°C", "uin/in°f": "µin/in·°F", "uin/inf": "µin/in·°F", "ppm/°f": "µin/in·°F", "ppm/f": "µin/in·°F", "/°c": "1/°C", "/c": "1/°C", "1/k": "1/°C", "/k": "1/°C" },
 		density: { kgm3: "kg/m³", "kg/m3": "kg/m³", "g/cm3": "g/cm³", gcc: "g/cm³", "lb/ft3": "lb/ft³", pcf: "lb/ft³", "lb/in3": "lb/in³" },
 		energy: { "j/m3": "J/m³", "kj/m3": "kJ/m³", "mj/m3": "MJ/m³", "inlb/in3": "in·lbf/in³", "inlbf/in3": "in·lbf/in³" },
-		inertia: { mm4: "mm⁴", cm4: "cm⁴", m4: "m⁴", in4: "in⁴" }
+		inertia: { mm4: "mm⁴", cm4: "cm⁴", m4: "m⁴", in4: "in⁴" },
+		dist: { plf: "lbf/ft", klf: "kip/ft", "lb/ft": "lbf/ft", "lbs/ft": "lbf/ft", "kips/ft": "kip/ft", "k/ft": "kip/ft", "lb/in": "lbf/in" },
+		secmod: { mm3: "mm³", cm3: "cm³", m3: "m³", in3: "in³" }
 	};
 	function norm(s) { return String(s).toLowerCase().replace(/\s+/g, "").replace(/²/g, "2").replace(/³/g, "3").replace(/⁴/g, "4").replace(/\^/g, "").replace(/[μµ]/g, "u").replace(/[·*]/g, "").replace(/deg/g, "°").replace(/°°/g, "°"); }
 	var ALIAS = {};
@@ -244,8 +248,8 @@
 	   rho kg/m³; a = thermal expansion in µm/m·°C (10⁻⁶/K). c = curve model: duct | luders | brittle | polymer | rubber. sc = compressive strength. ---------- */
 	var FAMS = [["metal", "Metals"], ["polymer", "Plastics"], ["elastomer", "Rubber"], ["ceramic", "Concrete, stone & ceramics"], ["wood", "Wood"], ["composite", "Composites"], ["bio", "Bone"]];
 	var MATS = [
-		{ id: "a36", name: "Structural steel A36", fam: "metal", E: 200, G: 79.3, nu: 0.26, sy: 250, su: 400, el: 23, ra: 55, rho: 7850, a: 11.7, c: "luders", x: { uy: 1.12, eL: 0.016 }, note: "Yield and tensile strength are the ASTM A36 minimums; real plate is often 10 to 20% stronger. Mild steel has a yield point: the stress drops a little and the bar stretches at constant stress (Lüders bands) before it hardens." },
-		{ id: "s1020", name: "Carbon steel 1020, hot rolled", fam: "metal", E: 200, G: 77.5, nu: 0.29, sy: 210, su: 380, el: 25, ra: 50, rho: 7870, a: 11.7, c: "luders", x: { uy: 1.1, eL: 0.02 } },
+		{ id: "a36", name: "Structural steel A36", fam: "metal", E: 200, G: 79.3, nu: 0.26, sy: 250, su: 400, el: 23, ra: 55, rho: 7850, a: 11.7, c: "luders", x: { uy: 1.07, eL: 0.016 }, note: "Yield and tensile strength are the ASTM A36 minimums; real plate is often 10 to 20% stronger. Mild steel has a yield point: the stress peaks a few % above the lower yield (upper yield), drops, and the bar stretches at nearly constant stress (Lüders bands) for 1 to 3% before it hardens." },
+		{ id: "s1020", name: "Carbon steel 1020, hot rolled", fam: "metal", E: 200, G: 77.5, nu: 0.29, sy: 210, su: 380, el: 25, ra: 50, rho: 7870, a: 11.7, c: "luders", x: { uy: 1.06, eL: 0.02 } },
 		{ id: "s4140", name: "Alloy steel 4140, annealed", fam: "metal", E: 205, G: 80, nu: 0.29, sy: 417, su: 655, el: 25.7, ra: 56.9, rho: 7850, a: 12.3, c: "duct", note: "Quenched and tempered 4140 is two to three times stronger, with less elongation." },
 		{ id: "ss304", name: "Stainless steel 304, annealed", fam: "metal", E: 193, G: 75, nu: 0.29, sy: 215, su: 505, el: 60, ra: 65, rho: 8000, a: 17.3, c: "duct" },
 		{ id: "ss316", name: "Stainless steel 316, annealed", fam: "metal", E: 193, G: 75, nu: 0.29, sy: 290, su: 580, el: 50, ra: 65, rho: 8000, a: 16.0, c: "duct" },
@@ -362,7 +366,10 @@
 	}
 	function lin(a, b, k) { return a + (b - a) * k; }
 	/* p = {E (Pa), sy, su (Pa), el (%), ra (%), c, x}; returns the curve: arrays e, s (engineering), t (true stress), et (true strain), ph (phase), and key points */
-	function curve(m) {
+	/* Lüders-plateau serrations: a fixed, repeatable wiggle in -1..1 (two incommensurate waves plus a slow one), so the same material always draws the same curve */
+	function serration(e) { var w = 0.55 * Math.sin(2 * PI * e / 0.00118 + 0.4) + 0.3 * Math.sin(2 * PI * e / 0.00047 + 1.3) + 0.15 * Math.sin(2 * PI * e / 0.0043 + 2.1); return Math.max(-1, Math.min(1, w)); }
+	/* opt = {ser: false} draws the Lüders plateau of mild steel perfectly flat (no serrations) */
+	function curve(m, opt) {
 		var E = m.E * 1e9, sy = m.sy != null ? m.sy * 1e6 : null, su = m.su * 1e6, ef = m.el != null ? m.el / 100 : null, ra = m.ra != null ? m.ra / 100 : null;
 		var c = { type: m.c, E: E, e: [], s: [], t: [], et: [], ph: [], name: m.name, id: m.id, warn: "" };
 		function add(e, s, t, et, ph) { c.e.push(e); c.s.push(s); c.t.push(t != null ? t : s * (1 + e)); c.et.push(et != null ? et : Math.log(1 + e)); c.ph.push(ph); }
@@ -370,7 +377,7 @@
 		if ((type === "duct" || type === "luders") && !(sy > 0 && su > sy * 1.0005)) type = sy > 0 ? "duct" : "brittle";
 		if ((type === "duct" || type === "luders") && ef == null) ef = 0.2;
 		var fitL = null;
-		if (type === "luders") { fitL = fitLuders(E, sy, su, (m.x && m.x.eL) || 0.015, (m.x && m.x.eu) || 0.7 * ef); if (!fitL || !(fitL.epL > 1e-4) || !(fitL.K > 0) || !isFinite(fitL.K)) { fitL = null; type = "duct"; c.warn = "no plateau"; } }
+		if (type === "luders") { c.eL0 = Math.max((m.x && m.x.eL) || 0.015, 1.25 * sy / E + 0.002); fitL = fitLuders(E, sy, su, c.eL0, (m.x && m.x.eu) || 0.7 * ef); if (!fitL || !(fitL.epL > 1e-4) || !(fitL.K > 0) || !isFinite(fitL.K)) { fitL = null; type = "duct"; c.warn = "no plateau"; } }
 		if (type === "brittle") {
 			if (ef == null || ef < su / E) ef = su / E;
 			var mm = Math.max(1, E * ef / su); c.mExp = mm;
@@ -396,12 +403,20 @@
 		} else {
 			var nn = null;
 			if (type === "luders") {
-				var uy = (m.x && m.x.uy) || 1.1, eL = (m.x && m.x.eL) || 0.015; fit = fitL;
-				var suy = uy * sy, e1 = suy / E, law = swiftLaw(fit);
-				for (i = 0; i <= 40; i++) add(e1 * i / 40, suy * i / 40, null, null, "el");
-				for (i = 1; i <= 6; i++) add(e1 + 0.0004 * i / 6, lin(suy, sy, i / 6), null, null, "yp");
-				for (i = 1; i <= 40; i++) add(lin(e1 + 0.0004, eL, i / 40), sy, null, null, "lud");
-				c.suy = suy; c.eL = eL; c.yieldKind = "luders"; c.sy = sy;
+				/* the yield point, as a real test records it (2026-10-29): the straight line bends slightly into a ROUNDED upper yield (micro-yielding: the
+				   slope falls from E to zero over the last ~7% of the stress), the force drops smoothly to the lower yield (how sharply depends on the machine's
+				   stiffness and the speed), then the Lüders plateau at the lower yield with small serrations (each one a band nucleating / a pinned
+				   dislocation front breaking away) of about ±0.4% around the mean, faded in and out so the curve stays continuous. */
+				var uy = (m.x && m.x.uy) || 1.07, eL = c.eL0; fit = fitL;
+				uy = Math.max(1.005, Math.min(uy, 0.97 * su / sy));
+				var suy = uy * sy, law = swiftLaw(fit), sa = Math.max(sy * 0.6, suy - 0.07 * suy * (uy > 1.02 ? 1 : 0.5)), dE = (suy - sa) * PI / (2 * E), eyu = sa / E + dE;
+				var dD = Math.min(0.0006, Math.max(1e-5, (eL - eyu) * 0.25)), eD = eyu + dD, serOn = !opt || opt.ser !== false;
+				for (i = 0; i <= 40; i++) add(sa / E * i / 40, sa * i / 40, null, null, "el");
+				for (i = 1; i <= 14; i++) { var uu = i / 14; add(sa / E + dE * uu, sa + (suy - sa) * Math.sin(uu * PI / 2), null, null, "yp"); }
+				for (i = 1; i <= 12; i++) { var kd = i / 12; add(eyu + dD * kd, sy + (suy - sy) * (1 + Math.cos(PI * kd)) / 2, null, null, "yp"); }
+				var nP = serOn ? Math.max(40, Math.min(420, Math.round((eL - eD) / 0.00004))) : 40;
+				for (i = 1; i <= nP; i++) { var kp = i / nP, ep2 = lin(eD, eL, kp), w = serOn ? serration(ep2) * Math.pow(Math.sin(PI * kp), 0.35) : 0; add(ep2, sy * (1 + 0.004 * w), null, null, "lud"); }
+				c.suy = suy; c.eyu = eyu; c.eL = eL; c.yieldKind = "luders"; c.sy = sy; c.ser = serOn;
 				var nk = neckLaw(law, E, fit.epL, fit.epL + 6);
 				for (i = 1; i <= 220; i++) { var ep = lin(fit.epL, nk.ep, Math.pow(i / 220, 1.6)), sg = law.f(ep), et = sg / E + ep, eE = Math.exp(et) - 1; add(eE, sg / (1 + eE), sg, et, "pl"); }
 				nn = nk; c.law = law.f; c.e0 = fit.e0;
@@ -472,11 +487,123 @@
 	}
 	function permanentSet(c, e, s) { return c.elastic ? 0 : Math.max(0, e - s / c.E); }
 
+	/* ---------- bending of beams (2026-10-29) ----------
+	   Sections for bending about the strong (horizontal) axis; all are symmetric top / bottom, so c = h/2. Q = first moment of the area above the neutral
+	   axis and tw = the width there, for the largest shear stress tau = V Q / (I tw). Dims in m. */
+	var BSHAPES = [["rect", "Rectangle"], ["round", "Round bar"], ["tube", "Round tube (pipe)"], ["rtube", "Rectangular tube (box)"], ["ibeam", "I-beam (W / IPE shape)"], ["chan", "Channel (C shape)"], ["Ic", "I know I and c"]];
+	function beamSection(sh, d) {
+		var r = { A: NaN, I: NaN, c: NaN, h: NaN, b: NaN, Q: NaN, tw: NaN, err: "" };
+		function bad(m) { r.err = m; return r; }
+		function fin() { r.S = r.I / r.c; r.r = r.A > 0 ? Math.sqrt(r.I / r.A) : NaN; return r; }
+		if (sh === "rect") { if (!(d.b > 0) || !(d.h > 0)) return bad("Type the width b and the height h."); r.A = d.b * d.h; r.I = d.b * Math.pow(d.h, 3) / 12; r.c = d.h / 2; r.h = d.h; r.b = d.b; r.Q = d.b * d.h * d.h / 8; r.tw = d.b; return fin(); }
+		if (sh === "round") { if (!(d.d > 0)) return bad("Type the diameter."); r.A = PI * d.d * d.d / 4; r.I = PI * Math.pow(d.d, 4) / 64; r.c = d.d / 2; r.h = r.b = d.d; r.Q = Math.pow(d.d, 3) / 12; r.tw = d.d; return fin(); }
+		if (sh === "tube") {
+			if (!(d.D > 0) || !(d.t > 0)) return bad("Type the outside diameter and the wall thickness.");
+			var di = Math.max(0, d.D - 2 * d.t); r.A = PI * (d.D * d.D - di * di) / 4; r.I = PI * (Math.pow(d.D, 4) - Math.pow(di, 4)) / 64; r.c = d.D / 2; r.h = r.b = d.D; r.Q = (Math.pow(d.D, 3) - Math.pow(di, 3)) / 12; r.tw = d.D - di; if (di === 0) r.note = "The wall is half the diameter or more: a solid bar."; return fin();
+		}
+		if (sh === "rtube") {
+			if (!(d.B > 0) || !(d.H > 0) || !(d.t > 0)) return bad("Type the outside width, height and the wall thickness.");
+			var bi = Math.max(0, d.B - 2 * d.t), hi = Math.max(0, d.H - 2 * d.t); if (!(bi > 0) || !(hi > 0)) { bi = hi = 0; r.note = "The wall fills the whole tube: a solid bar."; }
+			r.A = d.B * d.H - bi * hi; r.I = (d.B * Math.pow(d.H, 3) - bi * Math.pow(hi, 3)) / 12; r.c = d.H / 2; r.h = d.H; r.b = d.B; r.Q = (d.B * d.H * d.H - bi * hi * hi) / 8; r.tw = d.B - bi; return fin();
+		}
+		if (sh === "ibeam" || sh === "chan") {
+			if (!(d.b > 0) || !(d.h > 0) || !(d.tf > 0) || !(d.tw > 0)) return bad("Type the flange width, the depth and both thicknesses.");
+			if (2 * d.tf >= d.h) return bad("The two flanges are thicker than the whole depth: check the flange thickness.");
+			if (d.tw > d.b) return bad("The web is wider than the flanges: check the web thickness.");
+			var hw = d.h - 2 * d.tf; r.A = 2 * d.b * d.tf + d.tw * hw; r.I = (d.b * Math.pow(d.h, 3) - (d.b - d.tw) * Math.pow(hw, 3)) / 12; r.c = d.h / 2; r.h = d.h; r.b = d.b;
+			r.Q = d.b * d.tf * (d.h - d.tf) / 2 + d.tw * hw * hw / 8; r.tw = d.tw; r.note = "Plain plates: the small rounded fillets of a rolled shape (a few % of I) are left out; use the table value of I for design."; return fin();
+		}
+		if (sh === "Ic") { if (!(d.I > 0) || !(d.c > 0)) return bad("Type I and c (half the depth for a symmetric shape)."); r.I = d.I; r.c = d.c; r.h = 2 * d.c; r.S = d.I / d.c; return r; }
+		return bad("Pick a cross-section.");
+	}
+	/* Beam on supports, solved exactly with singularity (Macaulay) functions: EI y'' = M(x), y up, M sagging +, V = dM/dx = upward forces to the left.
+	   def = {L, sup: "ss" | "cant" | "fixed" | "prop" | "over", b (2nd support of "over", default 0.75 L), EI (N·m²),
+	          loads: [{t: "P", x, P} (P > 0 down, N), {t: "w", x1, x2, w} (w > 0 down, N/m), {t: "M", x, M} (M > 0 clockwise, N·m)]}.
+	   Unknowns = the support reactions (a force at each support, a moment at a fixed end) + the two integration constants; equations = V(L+) = M(L+) = 0
+	   (equilibrium of the whole beam) + y = 0 at each support + y' = 0 at each fixed end. Works for the determinate and the indeterminate cases alike. */
+	var BSUP = [["ss", "Simply supported"], ["cant", "Cantilever"], ["fixed", "Fixed at both ends"], ["prop", "Propped cantilever"], ["over", "Overhang"]];
+	function beamSupports(def) {
+		var L = def.L, b = def.b > 0 && def.b <= L ? def.b : 0.75 * L;
+		return ({ ss: [[0, "pin"], [L, "roll"]], cant: [[0, "fix"]], fixed: [[0, "fix"], [L, "fix"]], prop: [[0, "fix"], [L, "roll"]], over: [[0, "pin"], [b, "roll"]] }[def.sup] || [[0, "pin"], [L, "roll"]]).map(function (s) { return { x: s[0], k: s[1] }; });
+	}
+	/* one term at x: [V, M, EI theta, EI y]; kind f = upward unit force, c = unit sagging couple, w = unit downward UDL from a to b. side > 0 counts a term sitting exactly at x */
+	function bterm(kind, a, b, x, side) {
+		var d = x - a; if (d < 0 || (d === 0 && !(side > 0))) return [0, 0, 0, 0];
+		if (kind === "f") return [1, d, d * d / 2, d * d * d / 6];
+		if (kind === "c") return [0, 1, d, d * d / 2];
+		var e = x - b, on = e > 0 || (e === 0 && side > 0), r = [-d, -d * d / 2, -d * d * d / 6, -d * d * d * d / 24];
+		if (on) { r[0] += e; r[1] += e * e / 2; r[2] += e * e * e / 6; r[3] += e * e * e * e / 24; }
+		return r;
+	}
+	function solveLin(A, y) {   /* Gaussian elimination with partial pivoting; null when singular */
+		var n = y.length, a = A.map(function (r, i) { return r.slice().concat([y[i]]); }), i, j, k;
+		for (i = 0; i < n; i++) {
+			var p = i; for (j = i + 1; j < n; j++) if (Math.abs(a[j][i]) > Math.abs(a[p][i])) p = j;
+			if (!(Math.abs(a[p][i]) > 1e-300)) return null; var t = a[i]; a[i] = a[p]; a[p] = t;
+			for (j = i + 1; j < n; j++) { var f = a[j][i] / a[i][i]; if (f) for (k = i; k <= n; k++) a[j][k] -= f * a[i][k]; }
+		}
+		var x = new Array(n); for (i = n - 1; i >= 0; i--) { var s = a[i][n]; for (j = i + 1; j < n; j++) s -= a[i][j] * x[j]; x[i] = s / a[i][i]; } return x;
+	}
+	function beamSolve(def) {
+		var L = def.L, EI = def.EI, sup = beamSupports(def), loads = (def.loads || []).filter(function (l) { return l && (l.t === "P" || l.t === "M" || l.t === "w"); });
+		if (!(L > 0)) return { err: "Type the span." };
+		var terms = [];   /* the known loads, as unit terms times a value */
+		loads.forEach(function (l) {
+			if (l.t === "P" && isFinite(l.P) && isFinite(l.x)) terms.push({ k: "f", a: Math.max(0, Math.min(L, l.x)), v: -l.P });
+			else if (l.t === "M" && isFinite(l.M) && isFinite(l.x)) terms.push({ k: "c", a: Math.max(0, Math.min(L, l.x)), v: l.M });
+			else if (l.t === "w" && isFinite(l.w) && isFinite(l.x1) && isFinite(l.x2)) { var a = Math.max(0, Math.min(L, Math.min(l.x1, l.x2))), b = Math.max(0, Math.min(L, Math.max(l.x1, l.x2))); if (b > a) terms.push({ k: "w", a: a, b: b, v: l.w }); }
+		});
+		var unk = []; sup.forEach(function (s, i) { unk.push({ k: "f", a: s.x, s: i }); if (s.k === "fix") unk.push({ k: "c", a: s.x, s: i }); });
+		var n = unk.length + 2, A = [], y = [];
+		function rowAt(x, side, comp) {   /* comp: 0 V, 1 M, 2 EI theta, 3 EI y; returns [coeffs over unknowns + C1, C2], known part */
+			var r = unk.map(function (u) { return bterm(u.k, u.a, u.b, x, side)[comp]; }), kn = 0;
+			terms.forEach(function (t) { kn += t.v * bterm(t.k, t.a, t.b, x, side)[comp]; });
+			r.push(comp === 3 ? 1 : 0, comp === 3 ? x : comp === 2 ? 1 : 0); return [r, kn];
+		}
+		function eq(x, side, comp) { var q = rowAt(x, side, comp); A.push(q[0]); y.push(-q[1]); }
+		eq(L, 1, 0); eq(L, 1, 1);
+		sup.forEach(function (s) { eq(s.x, 1, 3); if (s.k === "fix") eq(s.x, 1, 2); });
+		if (A.length !== n) return { err: "This support layout cannot be solved." };
+		var u = solveLin(A, y); if (!u) return { err: "These supports do not hold the beam up (it would move as a mechanism)." };
+		var all = terms.slice(); unk.forEach(function (q, i) { all.push({ k: q.k, a: q.a, b: q.b, v: u[i] }); });
+		var C1 = u[n - 2], C2 = u[n - 1];
+		function at(x, side) { var r = [0, 0, C2, C1 + C2 * x]; all.forEach(function (t) { var b = bterm(t.k, t.a, t.b, x, side); for (var j = 0; j < 4; j++) r[j] += t.v * b[j]; }); return { x: x, V: r[0], M: r[1], th: r[2] / EI, y: r[3] / EI }; }
+		/* sample points: a uniform grid plus both sides of every break */
+		var N = def.n || 400, xs = [], i, brk = [0, L];
+		for (i = 0; i <= N; i++) xs.push([L * i / N, 1]);
+		terms.concat(unk).forEach(function (t) { brk.push(t.a); if (t.b != null) brk.push(t.b); });
+		brk.forEach(function (x) { if (x >= 0 && x <= L) { xs.push([x, -1]); xs.push([x, 1]); } });
+		xs.sort(function (p, q) { return p[0] - q[0] || p[1] - q[1]; });
+		var pts = xs.map(function (p) { return at(p[0], p[0] === 0 ? 1 : p[0] === L ? -1 : p[1]); });
+		/* extremes: M has its peaks where V crosses zero (V is straight between samples, so the crossing is exact); y where theta crosses zero (bisection) */
+		var mmax = pts[0], mmin = pts[0], vmax = pts[0], ymax = pts[0];
+		function cand(p) { if (p.M > mmax.M) mmax = p; if (p.M < mmin.M) mmin = p; if (Math.abs(p.V) > Math.abs(vmax.V)) vmax = p; if (Math.abs(p.y) > Math.abs(ymax.y)) ymax = p; }
+		pts.forEach(cand);
+		for (i = 1; i < pts.length; i++) {
+			var p0 = pts[i - 1], p1 = pts[i]; if (!(p1.x > p0.x)) continue;
+			if (p0.V * p1.V < 0) { var xz = p0.x + (p1.x - p0.x) * p0.V / (p0.V - p1.V); cand(at(xz, 1)); }
+			if (p0.th * p1.th < 0) { var lo = p0.x, hi = p1.x, s0 = p0.th; for (var k = 0; k < 60; k++) { var mid = (lo + hi) / 2, tm = at(mid, 1).th; if (tm * s0 > 0) { lo = mid; } else hi = mid; } cand(at((lo + hi) / 2, 1)); }
+		}
+		var reac = sup.map(function (s, j) { var o = { x: s.x, k: s.k, R: 0, M: null }; unk.forEach(function (q, ii) { if (q.s === j) { if (q.k === "f") o.R = u[ii]; else o.M = u[ii]; } }); return o; });
+		var mAbs = Math.abs(mmax.M) >= Math.abs(mmin.M) ? mmax : mmin;
+		return { L: L, EI: EI, sup: sup, reac: reac, pts: pts, at: at, Mmax: mmax, Mmin: mmin, Mabs: mAbs, Vabs: vmax, Yabs: ymax, err: "" };
+	}
+	/* the textbook formulas (for the "check" line and the tests) */
+	var BEAMCASES = {
+		ssP: function (P, L, EI) { return { M: P * L / 4, y: P * L * L * L / (48 * EI) }; },
+		ssW: function (w, L, EI) { return { M: w * L * L / 8, y: 5 * w * Math.pow(L, 4) / (384 * EI) }; },
+		cantP: function (P, L, EI) { return { M: P * L, y: P * L * L * L / (3 * EI) }; },
+		cantW: function (w, L, EI) { return { M: w * L * L / 2, y: w * Math.pow(L, 4) / (8 * EI) }; },
+		fixW: function (w, L, EI) { return { M: w * L * L / 12, Mmid: w * L * L / 24, y: w * Math.pow(L, 4) / (384 * EI) }; },
+		fixP: function (P, L, EI) { return { M: P * L / 8, y: P * L * L * L / (192 * EI) }; }
+	};
+
 	var api = { UNITS: UNITS, factor: factor, toSI: toSI, fromSI: fromSI, conv: conv, unitOf: unitOf, parseNum: parseNum, parseQty: parseQty, sig: sig, pretty: pretty,
 		SHAPES: SHAPES, section: section, sizeFor: sizeFor, AX: AX, axialPropagate: axialPropagate, axialSolve: axialSolve, euler: euler,
 		shearPin: shearPin, pinSize: pinSize, gFrom: gFrom, kFrom: kFrom, torsion: torsion, shaftSize: shaftSize, torqueFromPower: torqueFromPower,
 		elastic: elastic, hooke: hooke, hookeInv: hookeInv, poissonBar: poissonBar, thermal: thermal, thermalDT: thermalDT, bucklingStress: bucklingStress, thermalSeries: thermalSeries, thermalState: thermalState, heatRGB: heatRGB, resilience: resilience,
-		FAMS: FAMS, MATS: MATS, mat: mat, curve: curve, saneCurveMat: saneCurveMat, stressAt: stressAt, idxAt: idxAt, measure: measure, permanentSet: permanentSet, roPoint: roPoint, neckOf: neckOf };
+		BSHAPES: BSHAPES, beamSection: beamSection, BSUP: BSUP, beamSupports: beamSupports, beamSolve: beamSolve, BEAMCASES: BEAMCASES, solveLin: solveLin,
+		FAMS: FAMS, MATS: MATS, mat: mat, curve: curve, serration: serration, saneCurveMat: saneCurveMat, stressAt: stressAt, idxAt: idxAt, measure: measure, permanentSet: permanentSet, roPoint: roPoint, neckOf: neckOf };
 	if (typeof module !== "undefined" && module.exports) module.exports = api; else root.MESMech = api;
 })(this);
 
@@ -490,20 +617,23 @@
 	var VIEWS = (root.getAttribute("data-views") || "axial").split(","), PAGE = root.getAttribute("data-page") || "materials";
 	/* display units per quantity class: [SI, US] */
 	var DU = { force: ["kN", "kip"], len: ["m", "in"], small: ["mm", "in"], area: ["mm²", "in²"], stress: ["MPa", "ksi"], modulus: ["GPa", "ksi"], strain: ["mm/mm", "mm/mm"], pct: ["%", "%"], ustrain: ["µε", "µε"], ratio: ["mm/mm", "mm/mm"],
-		torque: ["N·m", "lbf·ft"], power: ["kW", "hp"], speed: ["rpm", "rpm"], angle: ["°", "°"], dtemp: ["°C", "°F"], alpha: ["µm/m·°C", "µin/in·°F"], density: ["kg/m³", "lb/in³"], energy: ["MJ/m³", "in·lbf/in³"], inertia: ["mm⁴", "in⁴"] };
-	var KIND = { small: "len", modulus: "stress", pct: "strain", ustrain: "strain", ratio: "strain" };
+		torque: ["N·m", "lbf·ft"], power: ["kW", "hp"], speed: ["rpm", "rpm"], angle: ["°", "°"], dtemp: ["°C", "°F"], alpha: ["µm/m·°C", "µin/in·°F"], density: ["kg/m³", "lb/in³"], energy: ["MJ/m³", "in·lbf/in³"], inertia: ["mm⁴", "in⁴"],
+		span: ["m", "ft"], dist: ["kN/m", "kip/ft"], moment: ["kN·m", "kip·ft"], secmod: ["cm³", "in³"], inert: ["cm⁴", "in⁴"] };
+	var KIND = { small: "len", modulus: "stress", pct: "strain", ustrain: "strain", ratio: "strain", span: "len", moment: "torque", inert: "inertia" };
 	function kindOf(d) { return KIND[d] || d; }
 	var DEF = {
 		si: { "ax-F": "10", "ax-L": "1", "ax-d": "10", "ax-D": "40", "ax-t": "3", "ax-b": "20", "ax-h": "10", "ax-B": "40", "ax-H": "20", "sh-V": "10", "sh-d": "10", "sh-A": "500", "sh-hd": "20", "sh-t": "6",
 			"to-T": "1000", "to-P": "7.5", "to-n": "1450", "to-D": "50", "to-di": "40", "to-L": "1", "po-s": "100", "po-e": "0.001", "po-d": "20", "po-L": "1",
 			"p3-sx": "80", "p3-sy": "-30", "p3-sz": "0", "p3-txy": "20", "p3-tyz": "0", "p3-tzx": "0", "p3-ex": "500", "p3-ey": "-150", "p3-ez": "-150", "p3-gxy": "0", "p3-gyz": "0", "p3-gzx": "0",
-			"ec-E": "200", "ec-G": "76.92", "ec-K": "166.7", "ec-nu": "0.3", "th-dT": "40", "th-L": "10", "th-g": "2" },
+			"ec-E": "200", "ec-G": "76.92", "ec-K": "166.7", "ec-nu": "0.3", "th-dT": "40", "th-L": "10", "th-g": "2",
+			"bd-L": "4", "bd-ob": "3", "bd-b": "50", "bd-h": "100", "bd-d": "60", "bd-D": "60", "bd-t": "4", "bd-B": "100", "bd-H": "150", "bd-fh": "200", "bd-fb": "100", "bd-tf": "8.5", "bd-tw": "5.6", "bd-I": "1946", "bd-c": "100" },
 		us: { "ax-F": "2", "ax-L": "40", "ax-d": "0.5", "ax-D": "1.5", "ax-t": "0.12", "ax-b": "1", "ax-h": "0.5", "ax-B": "2", "ax-H": "1", "sh-V": "2", "sh-d": "0.5", "sh-A": "1", "sh-hd": "0.75", "sh-t": "0.25",
 			"to-T": "750", "to-P": "10", "to-n": "1750", "to-D": "2", "to-di": "1.5", "to-L": "40", "po-s": "15", "po-e": "0.001", "po-d": "0.75", "po-L": "40",
 			"p3-sx": "12", "p3-sy": "-4", "p3-sz": "0", "p3-txy": "3", "p3-tyz": "0", "p3-tzx": "0", "p3-ex": "500", "p3-ey": "-150", "p3-ez": "-150", "p3-gxy": "0", "p3-gyz": "0", "p3-gzx": "0",
-			"ec-E": "29000", "ec-G": "11150", "ec-K": "24170", "ec-nu": "0.3", "th-dT": "70", "th-L": "400", "th-g": "0.08" }
+			"ec-E": "29000", "ec-G": "11150", "ec-K": "24170", "ec-nu": "0.3", "th-dT": "70", "th-L": "400", "th-g": "0.08",
+			"bd-L": "12", "bd-ob": "9", "bd-b": "2", "bd-h": "4", "bd-d": "2.5", "bd-D": "2.5", "bd-t": "0.15", "bd-B": "4", "bd-H": "6", "bd-fh": "8", "bd-fb": "4", "bd-tf": "0.33", "bd-tw": "0.23", "bd-I": "30.8", "bd-c": "3.95" }
 	};
-	var MATF = ["ax-E", "sh-G", "to-G", "po-E", "po-nu", "p3-E", "p3-nu", "th-a", "th-E"];   /* filled from the material unless typed */
+	var MATF = ["ax-E", "sh-G", "to-G", "po-E", "po-nu", "p3-E", "p3-nu", "th-a", "th-E", "bd-E", "bd-sy"];   /* filled from the material unless typed */
 	function esc(s) { return String(s == null ? "" : s).replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/'/g, "&#39;").replace(/"/g, "&quot;"); }
 	function clamp(x, a, b) { return Math.max(a, Math.min(b, x)); }
 	function r1(x) { return Math.round(x * 10) / 10; }
@@ -511,7 +641,7 @@
 
 	/* ---------- state ---------- */
 	var S = { sys: "", mat: "a36", tabs: {}, f: {}, ax: { ord: ["F", "A", "L", "E"], shape: "round", dir: "t", sf: "2" }, tt: { c2: "", c3: "", zoom: "follow", tr: false, ar: true, sp: "1" },
-		sh: { mode: "pin", n: "1", ratio: "0.75", sf: "2" }, to: { src: "T", hol: "0", sf: "2" }, po: { mode: "bar", by: "s", dir: "s", pair: "E,nu" }, th: { cond: "free" },
+		sh: { mode: "pin", n: "1", ratio: "0.75", sf: "2" }, to: { src: "T", hol: "0", sf: "2" }, po: { mode: "bar", by: "s", dir: "s", pair: "E,nu" }, th: { cond: "free" }, bd: { sup: "ss", shape: "ibeam", lim: "360", loads: null, sel: 0 },
 		tb: { q: "", fam: "", sort: "", dir: 1, x: "rho", y: "E" }, cu: null, lab: {} };
 	try { var sv = JSON.parse(localStorage.getItem(KEY) || "null"); if (sv && typeof sv === "object") for (var k0 in S) { if (sv[k0] == null) continue; if (S[k0] && typeof S[k0] === "object" && !Array.isArray(S[k0])) { for (var j0 in sv[k0]) S[k0][j0] = sv[k0][j0]; } else S[k0] = sv[k0]; } } catch (e) { /* ignore */ }
 	if (S.tt.zv !== 1) { S.tt.zoom = "follow"; S.tt.zv = 1; }   /* 2026-10-21: "Follow the test" became the default chart view */
@@ -554,7 +684,8 @@
 	function lab(id, x, y, s, cls, anchor, extra) { var o = S.lab[id], t = o && (o[0] || o[1]) ? " transform='translate(" + r1(o[0]) + " " + r1(o[1]) + ")'" : ""; return "<g class='mt-lab' data-lab='" + id + "'" + t + "><title>Drag to move this label</title>" + tx(x, y, s, cls, anchor, extra) + "</g>"; }
 
 	var LINKF = { axial: ["ax-F", "ax-L", "ax-d", "ax-D", "ax-t", "ax-b", "ax-h", "ax-B", "ax-H", "ax-A", "ax-dL", "ax-s", "ax-e", "ax-E"], shear: ["sh-V", "sh-d", "sh-A", "sh-hd", "sh-t", "sh-G"], torsion: ["to-T", "to-P", "to-n", "to-D", "to-di", "to-L", "to-G"],
-		poisson: ["po-s", "po-e", "po-d", "po-L", "po-E", "po-nu", "p3-sx", "p3-sy", "p3-sz", "p3-txy", "p3-tyz", "p3-tzx", "p3-ex", "p3-ey", "p3-ez", "p3-gxy", "p3-gyz", "p3-gzx", "p3-E", "p3-nu", "ec-E", "ec-G", "ec-K", "ec-nu"], thermal: ["th-dT", "th-L", "th-g", "th-d", "th-a", "th-E"], tensile: [], table: [] };
+		poisson: ["po-s", "po-e", "po-d", "po-L", "po-E", "po-nu", "p3-sx", "p3-sy", "p3-sz", "p3-txy", "p3-tyz", "p3-tzx", "p3-ex", "p3-ey", "p3-ez", "p3-gxy", "p3-gyz", "p3-gzx", "p3-E", "p3-nu", "ec-E", "ec-G", "ec-K", "ec-nu"], thermal: ["th-dT", "th-L", "th-g", "th-d", "th-a", "th-E"], tensile: [], table: [],
+		bending: ["bd-L", "bd-ob", "bd-b", "bd-h", "bd-d", "bd-D", "bd-t", "bd-B", "bd-H", "bd-fh", "bd-fb", "bd-tf", "bd-tw", "bd-I", "bd-c", "bd-E", "bd-sy"] };
 	function pkey(id) { var p = id.split("-"); return (p[0] === "p3" ? "3" : p[0] === "ec" ? "c" : "") + p[1]; }
 	var qtab = loadQuery();
 	/* ---------- fields: label + input + unit select (+ clear) built from <div class="mt-f" data-f data-k data-d data-l> ---------- */
@@ -694,11 +825,12 @@
 		if (t !== "tensile") TT.play = false;
 		renderTab(t);
 	}
-	function renderTab(t) { ({ axial: axCompute, tensile: ttShow, shear: shCompute, torsion: toCompute, poisson: poCompute, thermal: thCompute, table: tbRender })[t](); }
+	function renderTab(t) { ({ axial: axCompute, tensile: ttShow, shear: shCompute, torsion: toCompute, bending: bdShow, poisson: poCompute, thermal: thCompute, table: tbRender })[t](); }
+	function bdShow() { bdRows(); bdCompute(); }
 	function renderAll() { matNote(); renderTab(CUR); }
 	function onField(f, unitOnly) {
 		var p = f.id.split("-")[0];
-		if (p === "ax") axInput(f, unitOnly); else if (p === "sh") shCompute(); else if (p === "to") toCompute(); else if (p === "po" || p === "p3" || p === "ec") poCompute(); else if (p === "th") thCompute();
+		if (p === "ax") axInput(f, unitOnly); else if (p === "sh") shCompute(); else if (p === "to") toCompute(); else if (p === "po" || p === "p3" || p === "ec") poCompute(); else if (p === "th") thCompute(); else if (p === "bd") { if (unitOnly) bdRows(); bdCompute(); }
 		else if (p === "cu") { custRead(); save(); TT.c = null; matNote(); renderTab(CUR); }
 	}
 
@@ -908,8 +1040,11 @@
 	$("mt-tt-true").checked = !!S.tt.tr; $("mt-tt-areas").checked = S.tt.ar !== false;
 	$("mt-tt-true").addEventListener("change", function () { S.tt.tr = this.checked; save(); ttStatic(); ttRender(); });
 	$("mt-tt-areas").addEventListener("change", function () { S.tt.ar = this.checked; save(); ttRender(); });
+	$("mt-tt-ser").checked = S.tt.ser !== false;
+	$("mt-tt-ser").addEventListener("change", function () { S.tt.ser = this.checked; save(); ttBuild(); ttShow(); });
 	$("mt-tt-speed").value = S.tt.sp || "1"; $("mt-tt-speed").addEventListener("change", function () { S.tt.sp = this.value; save(); });
-	function ttBuildCmp() { TT.cmp = [S.tt.c2, S.tt.c3].filter(function (id) { return id && M.mat(id); }).map(function (id) { return M.curve(M.mat(id)); }); }
+	function ttBuildCmp() { TT.cmp = [S.tt.c2, S.tt.c3].filter(function (id) { return id && M.mat(id); }).map(function (id) { return M.curve(M.mat(id), curveOpt()); }); }
+	function curveOpt() { return { ser: S.tt.ser !== false }; }
 	function curveRec() {   /* the material for the tensile model; your own material is clamped to the ranges real materials have */
 		var m = matRec(); if (m.id !== "custom") return { m: m, notes: [] };
 		var r = M.saneCurveMat(m), o = r.m;
@@ -918,7 +1053,7 @@
 		return r;
 	}
 	function ttBuild() {
-		var cr = curveRec(); TT.c = M.curve(cr.m); TT.meas = M.measure(TT.c); TT.unl = []; TT.p = 0; TT.play = false; ttBuildCmp(); ttPath();
+		var cr = curveRec(); TT.c = M.curve(cr.m, curveOpt()); TT.meas = M.measure(TT.c); TT.unl = []; TT.p = 0; TT.play = false; ttBuildCmp(); ttPath();
 		if (S.mat === "custom") { var w = cr.notes.slice(); if (TT.c.warn === "fit") w.push("these numbers do not fit the usual shape of a metal's curve, so the closest one is drawn"); else if (TT.c.warn && TT.c.warn !== "no plateau") w.push(TT.c.warn); $("mt-cu-msg").textContent = (CUMSG ? CUMSG + " " : "") + (w.length ? "For the tensile test: " + w.join("; ") + "." : CUMSG ? "" : CUDEF); }
 	}
 	function ptOf(c, i) { return { e: c.e[i], s: c.s[i], t: c.t[i], et: c.et[i], ph: c.ph[i] }; }
@@ -1015,7 +1150,7 @@
 		}
 		function dot(e, s, label, anchor, dy) { var X = sc.x(e), Y = sc.y(s); if (X > X1 + 2 || Y < Y0 - 2) return; h.push("<circle cx='" + r1(X) + "' cy='" + r1(Y) + "' r='5' class='mt-tt-mk'/>", tx(X + (anchor === "end" ? -9 : 9), Y + (dy || -9), label, "mt-t mt-ts mt-tt-lab", anchor || "start")); }
 		var su = function (s) { return fmt(s, "stress", 3); };
-		if (c.yieldKind === "luders") { if (st.emax >= c.suy / c.E) dot(c.suy / c.E, c.suy, "upper yield " + su(c.suy), "start", -10); if (st.emax >= c.eL * 0.6) dot(c.eL * 0.6, c.sy, "lower yield " + su(c.sy), "start", 20); }
+		if (c.yieldKind === "luders") { if (st.emax >= c.eyu) dot(c.eyu, c.suy, "upper yield " + su(c.suy), "start", -10); if (st.emax >= c.eL * 0.6) dot(c.eL * 0.6, c.sy, "lower yield " + su(c.sy), "start", 20); }
 		else if (c.yieldKind === "offset" && mk && st.emax >= mk.e) dot(mk.e, mk.s, "yield " + su(mk.s), "start", 20);
 		else if (c.yieldKind === "peak" && mm.peak && st.emax >= mm.peak.e) dot(mm.peak.e, mm.peak.s, "yield " + su(mm.peak.s), "start", -10);
 		if (!c.brittle && !c.elastic && st.emax >= c.emax && c.emax < c.ef * 0.999) dot(c.emax, c.smax, "UTS " + su(c.smax) + ": necking starts", sc.x(c.emax) > X1 - 220 ? "end" : "start", -12);
@@ -1058,7 +1193,8 @@
 		else if (st.k === "u") msg = "Taking the load off: the line comes down with the same slope E as the start." + (TT.play ? "" : " Press Load again to put the load back on.");
 		else if (st.k === "r") msg = "Loading again: straight up the same line until it meets the curve, then the test carries on (you can unload again there).";
 		else if (st.ph === "neck") msg = "Necking: the bar gets thinner in one place, so the force it takes falls even though the metal there keeps getting stronger (see the true stress).";
-		else if (st.ph === "lud") msg = "Lüders plateau: bands of yielded steel travel along the bar at an almost constant force.";
+		else if (st.ph === "yp") msg = "The yield point: the line bends over into the upper yield, then the force drops as the first Lüders band forms (the pinned dislocations break free).";
+		else if (st.ph === "lud") msg = "Lüders plateau: bands of yielded steel travel along the bar at an almost constant force; each little wiggle is a band starting or a dislocation front breaking free.";
 		else if (st.ph === "draw") msg = "Cold drawing: a neck forms and travels along the bar while the force stays about the same.";
 		else if (st.ph === "pl" || st.ph === "hard") msg = "Plastic: the bar stays longer when unloaded, and it gets stronger as it stretches (strain hardening).";
 		else if (TT.p > 0 && c.type === "polymer") msg = st.e < c.ey ? "Before the yield peak the curve already bends: plastics creep and relax (they are viscoelastic), so the start is only roughly straight." : "Strain hardening: the drawn-out chains line up and the plastic gets stiffer until it breaks.";
@@ -1782,13 +1918,299 @@
 	$("mt-as").addEventListener("click", function (e) { var g = e.target.closest("[data-id]"); if (g) { setMat(g.getAttribute("data-id")); toast(matRec().name + " is now used in every tool."); } });
 	$("mt-as").addEventListener("keydown", function (e) { if (e.key !== "Enter" && e.key !== " ") return; var g = e.target.closest("[data-id]"); if (g) { e.preventDefault(); setMat(g.getAttribute("data-id")); } });
 
+	/* =========================== 5b. BENDING (2026-10-29) =========================== */
+	/* Beam on supports with point loads, spread loads (UDL) and moments that can be added, typed and dragged along the beam. M.beamSolve gives the exact
+	   reactions, V(x), M(x), slope and deflection; one picture shows the beam with its deflected shape (exaggerated, scale written on it) above the shear,
+	   moment and deflection diagrams; a second one shows the section with its neutral axis and the stress across it. Loads are kept in SI with their place
+	   as a fraction of the length (so changing L keeps them where they were along the beam). */
+	var BDS = [["b", "bd-b"], ["h", "bd-h"], ["d", "bd-d"], ["D", "bd-D"], ["B", "bd-B"], ["H", "bd-H"], ["t", "bd-t"], ["fh", "bd-fh"], ["fb", "bd-fb"], ["tf", "bd-tf"], ["tw", "bd-tw"], ["I", "bd-I"], ["c", "bd-c"]];
+	var BD = { lock: false, k: 1, sc: null, drag: null, g: null, res: null, hx: null };
+	function bdDefLoads() { return [{ t: "P", f: 0.5, v: S.sys === "us" ? 2 * 4448.2216152605 : 10e3 }]; }
+	if (!Array.isArray(S.bd.loads)) S.bd.loads = bdDefLoads();
+	S.bd.loads = S.bd.loads.filter(function (l) { return l && /^[PwM]$/.test(l.t) && isFinite(l.v); }).slice(0, 8); S.bd.sel = clamp(+S.bd.sel || 0, 0, Math.max(0, S.bd.loads.length - 1));
+	var bdShapeSel = $("mt-bd-shape"); bdShapeSel.innerHTML = M.BSHAPES.map(function (o) { return "<option value='" + o[0] + "'>" + o[1] + "</option>"; }).join("");
+	if (!M.BSHAPES.some(function (o) { return o[0] === S.bd.shape; })) S.bd.shape = "ibeam"; bdShapeSel.value = S.bd.shape;
+	bdShapeSel.addEventListener("change", function () { S.bd.shape = bdShapeSel.value; bdShapeFields(); save(); bdCompute(); });
+	function bdShapeFields() { BDS.forEach(function (p) { var f = FL[p[1]]; f.div.hidden = f.div.getAttribute("data-sh").split(" ").indexOf(S.bd.shape) < 0; }); }
+	seg("mt-bd-sup", function () { return S.bd.sup; }, function (v) { S.bd.sup = v; BD.k = 0; bdCompute(); });
+	$("mt-bd-lim").value = S.bd.lim || "360"; $("mt-bd-lim").addEventListener("change", function () { S.bd.lim = this.value; save(); bdCompute(); });
+	var LDK = { P: ["force", "force", "Point load"], w: ["dist", "dist", "Spread load"], M: ["torque", "moment", "Moment"] };
+	function ldShow(l) { var d = LDK[l.t][1]; return M.sig(M.fromSI(kindOf(d), l.v, U(d)), 4); }
+	function posShow(f) { var L = fval("bd-L"); return isFinite(L) ? M.sig(M.fromSI("len", f * L, FL["bd-L"].u), 4) : ""; }
+	/* the load rows: built when a load is added / removed / selected; typing only updates the numbers (so the box keeps its focus) */
+	function bdRows() {
+		var lu = FL["bd-L"].u, h = S.bd.loads.map(function (l, i) {
+			var k = LDK[l.t], d = k[1], pos = l.t === "w" ? "<label class='mt-ldp'>from <input class='tu-input mt-mini' data-p='f1' inputmode='decimal' value='" + posShow(l.f1) + "' aria-label='Start of the spread load (" + lu + ")'></label><label class='mt-ldp'>to <input class='tu-input mt-mini' data-p='f2' inputmode='decimal' value='" + posShow(l.f2) + "' aria-label='End of the spread load (" + lu + ")'> " + esc(lu) + "</label>"
+				: "<label class='mt-ldp'>at <input class='tu-input mt-mini' data-p='f' inputmode='decimal' value='" + posShow(l.f) + "' aria-label='Where the load is, from the left end (" + lu + ")'> " + esc(lu) + "</label>";
+			var hint = l.t === "M" ? "+ clockwise" : "+ down";
+			return "<div class='mt-ld" + (i === S.bd.sel ? " mt-ld--sel" : "") + "' data-i='" + i + "'><button type='button' class='mt-ld__n' data-act='sel' title='Pick this load (its sliders appear under the picture)'>" + (i + 1) + "</button><span class='mt-ld__t'>" + k[2] + "</span>" +
+				"<label class='mt-ldv'><input class='tu-input' data-p='v' inputmode='text' value='" + ldShow(l) + "' aria-label='" + k[2] + " " + (i + 1) + " (" + U(d) + ", " + hint + ")'> <span class='mt-ldu'>" + esc(U(d)) + "</span></label>" + pos +
+				"<span class='mt-ldh'>" + hint + "</span><button type='button' class='mt-x' data-act='del' title='Remove this load' aria-label='Remove load " + (i + 1) + "'>×</button></div>";
+		});
+		$("mt-bd-loads").innerHTML = h.join("") || "<p class='tu-note'>No loads: add one below.</p>";
+		[].forEach.call(root.querySelectorAll(".mt-bdadd button"), function (b) { b.disabled = S.bd.loads.length >= 8; });
+	}
+	function bdRowVals() {   /* refresh the numbers in the rows after a drag or a slider, leaving a box being typed in alone */
+		[].forEach.call($("mt-bd-loads").querySelectorAll(".mt-ld"), function (row) {
+			var l = S.bd.loads[+row.getAttribute("data-i")]; if (!l) return;
+			[].forEach.call(row.querySelectorAll("input"), function (inp) { if (document.activeElement === inp) return; var p = inp.getAttribute("data-p"); inp.value = p === "v" ? ldShow(l) : posShow(l[p]); });
+			row.classList.toggle("mt-ld--sel", +row.getAttribute("data-i") === S.bd.sel);
+		});
+	}
+	$("mt-bd-loads").addEventListener("input", function (e) {
+		var inp = e.target.closest("input"), row = e.target.closest(".mt-ld"); if (!inp || !row) return;
+		var i = +row.getAttribute("data-i"), l = S.bd.loads[i], p = inp.getAttribute("data-p"); if (!l) return; S.bd.sel = i;
+		if (p === "v") { var d = LDK[l.t][1], q = M.parseQty(inp.value, kindOf(d)); if (!isFinite(q.v)) return; l.v = M.toSI(kindOf(d), q.v, q.unit || U(d)); }
+		else { var L = fval("bd-L"), q2 = M.parseQty(inp.value, "len"); if (!isFinite(q2.v) || !(L > 0)) return; l[p] = clamp(M.toSI("len", q2.v, q2.unit || FL["bd-L"].u) / L, 0, 1); }
+		save(); bdCompute(true);
+	});
+	$("mt-bd-loads").addEventListener("change", function () { bdRowVals(); });
+	$("mt-bd-loads").addEventListener("click", function (e) {
+		var b = e.target.closest("button"), row = e.target.closest(".mt-ld"); if (!b || !row) return; var i = +row.getAttribute("data-i");
+		if (b.getAttribute("data-act") === "del") { S.bd.loads.splice(i, 1); S.bd.sel = Math.max(0, Math.min(S.bd.sel, S.bd.loads.length - 1)); }
+		else S.bd.sel = i;
+		save(); bdRows(); bdCompute();
+	});
+	root.querySelector(".mt-bdadd").addEventListener("click", function (e) {
+		var b = e.target.closest("[data-add]"); if (!b || S.bd.loads.length >= 8) return; var t = b.getAttribute("data-add"), us = S.sys === "us";
+		var used = S.bd.loads.map(function (l) { return l.t === "w" ? (l.f1 + l.f2) / 2 : l.f; }), f = [0.5, 0.25, 0.75, 0.33, 0.66, 0.1, 0.9, 0.4].filter(function (x) { return used.every(function (u) { return Math.abs(u - x) > 0.04; }); })[0] || 0.5;
+		if (t === "P") S.bd.loads.push({ t: "P", f: f, v: us ? 1 * 4448.2216152605 : 5e3 });
+		else if (t === "w") S.bd.loads.push({ t: "w", f1: 0, f2: 1, v: us ? 0.2 * 4448.2216152605 / 0.3048 : 2e3 });
+		else S.bd.loads.push({ t: "M", f: f, v: us ? 2 * 4448.2216152605 * 0.3048 : 3e3 });
+		S.bd.sel = S.bd.loads.length - 1; save(); bdRows(); bdCompute();
+	});
+	function bdDims() { var d = {}; BDS.forEach(function (p) { d[p[0]] = fval(FL[p[1]]); }); return { b: d.b, h: d.h, d: d.d, D: d.D, B: d.B, H: d.H, t: d.t, tf: d.tf, tw: d.tw, I: d.I, c: d.c, ib: { b: d.fb, h: d.fh, tf: d.tf, tw: d.tw } }; }
+	function bdSection() { var d = bdDims(); return M.beamSection(S.bd.shape, S.bd.shape === "ibeam" || S.bd.shape === "chan" ? d.ib : d); }
+	function bdLoadsSI(L) { return S.bd.loads.map(function (l) { return l.t === "P" ? { t: "P", x: l.f * L, P: l.v } : l.t === "M" ? { t: "M", x: l.f * L, M: l.v } : { t: "w", x1: l.f1 * L, x2: l.f2 * L, w: l.v }; }); }
+	function bdCompute(fromRow) {
+		var m = mv(), h = [], msg = "";
+		modeVis("bending", function (a) { return a.indexOf(S.bd.sup) >= 0; });
+		var E = mfield("bd-E", m.E), sy = mfield("bd-sy", m.sy || m.su), L = fval("bd-L"), ob = fval("bd-ob"), sec = bdSection();
+		if (!(L > 0)) msg = "Type the beam length."; else if (sec.err) msg = sec.err; else if (!(E > 0)) msg = "Type Young's modulus E.";
+		else if (S.bd.sup === "over" && !(ob > 0 && ob < L)) msg = "The second support must be between the left end and the right end (the beam overhangs past it).";
+		var res = msg ? null : M.beamSolve({ L: L, sup: S.bd.sup, b: ob, EI: E * sec.I, loads: bdLoadsSI(L) });
+		if (res && res.err) { msg = res.err; res = null; }
+		BD.res = res;
+		var G = { res: res, L: L, ob: ob, sec: sec, E: E, sy: sy, m: m, lim: +(S.bd.lim || 360) };
+		if (res) {
+			var Mx = res.Mabs, Mm = Math.abs(Mx.M), sig = sec.I > 0 ? Mm * sec.c / sec.I : NaN, tau = isFinite(sec.Q) ? Math.abs(res.Vabs.V) * sec.Q / (sec.I * sec.tw) : NaN, dY = Math.abs(res.Yabs.y);
+			var span = S.bd.sup === "over" ? Math.max(ob, L - ob) : L, dl = G.lim > 0 ? span / G.lim : NaN; G.sig = sig; G.tau = tau; G.dl = dl; G.dY = dY;
+			var str = sy, sf = sig > 0 ? str / sig : Infinity; G.sf = sf;
+			h.push(tile("Bending stress σmax = Mc/I", isFinite(sig) ? fmt(sig, "stress") : "–", (Mx.M >= 0 ? "sagging: top squeezed, bottom stretched" : "hogging: top stretched, bottom squeezed") + " " + fmtO(sig, "stress"), "tu-stat--hero" + (sf < 1 ? " mt-bad" : sf < 1.5 ? " mt-warn" : "")));
+			h.push(tile("Safety factor", isFinite(sf) ? M.pretty(sf, 3) : "∞", "against " + (m.sy || typed("bd-sy") ? "yield" : "breaking") + " (" + fmt(str, "stress") + ")" + (sf < 1 ? ": <strong>it " + (m.sy ? "yields" : "breaks") + "</strong>" : ""), sf < 1 ? "mt-bad" : sf < 1.5 ? "mt-warn" : ""));
+			h.push(tile("Largest bending moment", fmt(Mm, "moment"), "at x = " + fmt(Mx.x, "span") + " (" + (Mx.M >= 0 ? "sagging" : "hogging") + ") " + fmtO(Mm, "moment")));
+			h.push(tile("Largest shear force", fmt(Math.abs(res.Vabs.V), "force"), "at x = " + fmt(res.Vabs.x, "span") + (isFinite(tau) ? "; shear stress at the neutral axis τ = VQ/(It) = " + fmt(tau, "stress") : "")));
+			var ok = !(dl > 0) || dY <= dl;
+			h.push(tile("Largest deflection", fmt(dY, "small"), "at x = " + fmt(res.Yabs.x, "span") + (dl > 0 ? "; limit L/" + G.lim + " = " + fmt(dl, "small") + (ok ? " ✓ OK" : ": <strong>too much</strong>") : "") + (dY > 0 ? " (L/" + M.pretty(Math.round(span / dY), 4) + ")" : ""), dl > 0 && !ok ? "mt-bad" : ""));
+			h.push(tile("Support reactions", res.reac.map(function (o, j) { return "<span class='mt-rx'>" + "AB"[j] + ": " + fmt(Math.abs(o.R), "force") + (o.R < -1e-9 ? " ↓" : " ↑") + (o.M != null ? ", " + fmt(Math.abs(o.M), "moment") + (o.M > 0 ? " ↻" : " ↺") : "") + "</span>"; }).join(" "), res.reac.some(function (o) { return o.R < -1e-9; }) ? "↓ = the support must hold the beam down" : "↑ up, ↻ / ↺ the wall's moment"));
+			h.push(tile("Section", "I = " + fmtIn(sec.I, "inert"), "S = I/c = " + fmtIn(sec.S, "secmod") + ", c = " + fmt(sec.c, "small") + (sec.A > 0 ? ", A = " + fmt(sec.A, "area") + (m.rho ? ", weighs " + fmtIn(m.rho * sec.A * 9.80665, "dist", S.sys === "us" ? "lbf/ft" : "N/m") : "") : "")));
+		} else G.sig = NaN;
+		$("mt-bd-stats").innerHTML = h.join(""); $("mt-bd-msg").textContent = msg + (sec.note && !msg ? sec.note : ""); $("mt-bd-msg").className = "mt-msg" + (msg ? " mt-msg--err" : "");
+		$("mt-bd-v1").textContent = res && isFinite(G.sig) ? "= " + fmt(Math.abs(res.Mabs.M), "moment") + " × " + fmt(sec.c, "small") + " ÷ " + fmtIn(sec.I, "inert") + " = " + fmt(G.sig, "stress") : "";
+		$("mt-bd-v2").textContent = res && isFinite(G.tau) ? "= " + fmt(Math.abs(res.Vabs.V), "force") + " × " + fmtIn(sec.Q, "secmod") + " ÷ (" + fmtIn(sec.I, "inert") + " × " + fmt(sec.tw, "small") + ") = " + fmt(G.tau, "stress") : "";
+		var cap = "";
+		if (res) {
+			cap = { ss: "Simply supported: free to rotate at both ends, so the moment is zero there and largest in the span.", cant: "Cantilever: everything is carried back to the wall, so the moment and the stress are largest at the wall and the free end sags most.", fixed: "Fixed at both ends: the walls stop the ends rotating, so the beam hogs at the walls and sags less in the middle (stiffer and stronger than simply supported).", prop: "Propped cantilever: built in at the left, resting on a support at the right; the wall takes a hogging moment.", over: "Overhang: the part past the second support bends the other way (hogging) and lifts the far span when it is loaded." }[S.bd.sup];
+			if (G.sf < 1) cap += " The stress is above the " + (m.sy ? "yield" : "breaking") + " strength of " + m.short + ": use a deeper section, a stronger material or a shorter span.";
+			else if (G.dl > 0 && G.dY > G.dl) cap += " Strong enough, but it bends more than L/" + G.lim + ": deflection, not strength, often decides the size of a beam.";
+		}
+		$("mt-bd-cap").textContent = cap;
+		BD.G = G; bdSliders(G); drawBeam(G); drawSection(G); if (!fromRow) bdRowVals(); labBtns();
+	}
+	function bdSliders(G) {
+		var specs = [], L = G.L;
+		specs.push({ key: "bd-L", label: "Beam length L", keep: true, min: 0, max: Math.max(isFinite(L) && L > 0 ? 3 * L : 0, S.sys === "us" ? 6.096 : 6), v: L, show: function (x) { return fmt(x, "span"); }, set: function (x) { setFieldSI("bd-L", Math.max(x, 0.05)); bdCompute(); } });
+		if (S.bd.sup === "over") specs.push({ key: "bd-ob", label: "Second support at", min: 0, max: L > 0 ? L : 1, v: G.ob, show: function (x) { return fmt(x, "span"); }, set: function (x) { setFieldSI("bd-ob", clamp(x, 0.05 * L, 0.98 * L)); bdCompute(); } });
+		var i = S.bd.sel, l = S.bd.loads[i];
+		if (l) {
+			var d = LDK[l.t][1], kk = kindOf(d), a = Math.abs(l.v), big = Math.max(3 * a, M.toSI(kk, l.t === "P" ? 10 : l.t === "w" ? 5 : 10, U(d)));
+			specs.push({ key: "ld" + i + l.t + "v", label: "Load " + (i + 1) + ": " + LDK[l.t][2].toLowerCase(), min: -big, max: big, v: l.v, show: function (x) { return fmt(Math.abs(x), d) + (x < 0 ? (l.t === "M" ? " ↺" : " ↑") : (l.t === "M" ? " ↻" : " ↓")); }, set: function (x) { l.v = Math.abs(x) < big * 0.01 ? 0 : x; save(); bdCompute(); } });
+			if (l.t === "w") {
+				specs.push({ key: "ld" + i + "f1", label: "Load " + (i + 1) + " starts at", min: 0, max: L, v: l.f1 * L, show: function (x) { return fmt(x, "span"); }, set: function (x) { l.f1 = clamp(x / L, 0, l.f2 - 0.01); save(); bdCompute(); } });
+				specs.push({ key: "ld" + i + "f2", label: "Load " + (i + 1) + " ends at", min: 0, max: L, v: l.f2 * L, show: function (x) { return fmt(x, "span"); }, set: function (x) { l.f2 = clamp(x / L, l.f1 + 0.01, 1); save(); bdCompute(); } });
+			} else specs.push({ key: "ld" + i + "f", label: "Load " + (i + 1) + " at", min: 0, max: L, v: l.f * L, show: function (x) { return fmt(x, "span"); }, set: function (x) { l.f = clamp(x / L, 0, 1); save(); bdCompute(); } });
+		}
+		sliders("mt-bd-sl", specs, { lock: function (on) { BD.lock = on; }, done: bdCompute });
+	}
+	var BX0 = 64, BX1 = 520, BY = 128;
+	function drawBeam(G) {
+		var svg = $("mt-bd-svg"), res = G.res, L = G.L, h = ["<defs>" + MARK.replace("@", "mt-bd-mk") + "</defs>"];
+		if (!res) { svg.innerHTML = "<text x='280' y='200' class='mt-t mt-ts' text-anchor='middle'>" + esc($("mt-bd-msg").textContent || "Type the numbers to see the beam.") + "</text>"; BD.g = null; return; }
+		var W = BX1 - BX0, X = function (x) { return BX0 + W * x / L; }, pts = res.pts;
+		/* scales: frozen while something is dragged so the picture does not jump */
+		var vmax = 0, mmax = 0, ymax = 0, rg = { V: [0, 0], M: [0, 0], y: [0, 0] }; pts.forEach(function (p) { vmax = Math.max(vmax, Math.abs(p.V)); mmax = Math.max(mmax, Math.abs(p.M)); ymax = Math.max(ymax, Math.abs(p.y)); ["V", "M", "y"].forEach(function (k) { rg[k][0] = Math.max(rg[k][0], p[k]); rg[k][1] = Math.max(rg[k][1], -p[k]); }); });
+		["V", "M", "y"].forEach(function (k) { var a = rg[k][0] + rg[k][1]; if (!(a > 0)) rg[k] = [1, 1]; else { if (rg[k][0] < 0.08 * a) rg[k][0] = 0.08 * a; if (rg[k][1] < 0.08 * a) rg[k][1] = 0.08 * a; } });
+		var Pm = 0, Wm = 0, Mm = 0; S.bd.loads.forEach(function (l) { var a = Math.abs(l.v); if (l.t === "P") Pm = Math.max(Pm, a); else if (l.t === "w") Wm = Math.max(Wm, a); else Mm = Math.max(Mm, a); });
+		if (!BD.lock || !BD.sc) { var kd = exag(ymax / L, 36 / W); BD.sc = { v: rg.V, m: rg.M, y: rg.y, ym: ymax > 0 ? ymax : 1, k: kd, P: Pm || 1, w: Wm || 1, M: Mm || 1 }; }
+		var sc = BD.sc, ky = sc.k * W / L;   /* px per m of deflection */
+		/* --- beam panel --- */
+		h.push(lab("mt-bd-svg:t1", 12, 22, "Beam, loads and deflected shape", "mt-t mt-ts mt-b", "start"));
+		res.sup.forEach(function (s, j) {
+			var x = X(s.x);
+			if (s.k === "fix") { var left = s.x === 0, wx = left ? x - 16 : x; h.push("<rect x='" + r1(wx) + "' y='" + (BY - 46) + "' width='16' height='92' class='mt-sup'/>"); for (var q = 0; q < 7; q++) h.push(line(left ? wx : wx + 16, BY - 40 + q * 13, left ? wx - 10 : wx + 26, BY - 30 + q * 13, "mt-hatch")); }
+			else {
+				var drag = S.bd.sup === "over" && j === 1, tri = "<path d='M" + r1(x) + "," + (BY + 7) + " l-13,22 h26 z' class='mt-sup'/>";
+				var grd = s.k === "roll" ? "<circle cx='" + r1(x - 7) + "' cy='" + (BY + 34) + "' r='4.5' class='mt-sup'/><circle cx='" + r1(x + 7) + "' cy='" + (BY + 34) + "' r='4.5' class='mt-sup'/>" : "";
+				var gy = BY + (s.k === "roll" ? 39 : 29), base = line(x - 20, gy, x + 20, gy, "mt-hatch");
+				h.push(drag ? "<g class='mt-dragx' data-sup='b'><title>Drag to move the support</title><rect x='" + r1(x - 22) + "' y='" + (BY + 4) + "' width='44' height='44' fill='transparent'/>" + tri + grd + base + "</g>" : tri + grd + base);
+			}
+			/* reaction */
+			var o = res.reac[j], up = o.R >= 0, ry = BY + 50;
+			if (Math.abs(o.R) > 1e-9 * (vmax || 1)) h.push("<g class='mt-bdreac'>" + arrowSimpleC(x, up ? ry + 34 : ry, x, up ? ry : ry + 34, "mt-bdra") + "</g>", tx(x + (s.x > L * 0.9 ? -6 : 6), ry + 46, "AB"[j] + " " + fmt(Math.abs(o.R), "force", 3), "mt-t mt-ts mt-bdrt", s.x > L * 0.9 ? "end" : "start"));
+			if (o.M != null && Math.abs(o.M) > 1e-9 * (mmax || 1)) h.push(tx(x + (s.x === 0 ? 4 : -4), BY - 54, "M = " + fmt(Math.abs(o.M), "moment", 3), "mt-t mt-ts mt-bdrt", s.x === 0 ? "start" : "end"));
+		});
+		/* the beam, straight (ghost) and bent */
+		h.push("<rect x='" + BX0 + "' y='" + (BY - 6) + "' width='" + W + "' height='12' class='mt-ghost'/>");
+		var dp = pts.map(function (p) { return r1(X(p.x)) + "," + r1(BY - p.y * ky); });
+		h.push("<polyline points='" + dp.join(" ") + "' class='mt-bdbeam'/>");
+		h.push(tx(548, 22, sc.k > 1 ? "bend drawn " + kTxt(sc.k) + "× larger" : "bend drawn to true scale", "mt-t mt-ts", "end"));
+		/* loads */
+		S.bd.loads.forEach(function (l, i) {
+			var sel = i === S.bd.sel ? " mt-bdld--sel" : "", nlab = "<tspan class='mt-bdn'>" + { P: "P", w: "w", M: "M" }[l.t] + "<tspan dy='0.3em' font-size='75%'>" + (i + 1) + "</tspan></tspan><tspan dy='-0.225em'> =</tspan>";
+			if (l.t === "P") {
+				var x = X(l.f * L), len = 26 + 40 * Math.abs(l.v) / sc.P, dn = l.v >= 0, y0 = dn ? BY - 8 - len : BY + 8 + len, y1 = dn ? BY - 8 : BY + 8;
+				h.push("<g class='mt-dragx mt-bdld" + sel + "' data-ld='" + i + "' data-h='x'><title>Drag along the beam</title><rect x='" + r1(x - 16) + "' y='" + r1(Math.min(y0, y1) - 22) + "' width='32' height='" + r1(len + 30) + "' fill='transparent'/>" + arrowSimpleC(x, y0, x, y1, "mt-bdla") + "<text x='" + r1(x) + "' y='" + r1(dn ? y0 - 6 : y0 + 18) + "' class='mt-t mt-ts mt-b' text-anchor='middle'>" + nlab + " " + esc(fmt(Math.abs(l.v), "force", 3)) + "</text></g>");
+			} else if (l.t === "w") {
+				var xa = X(Math.min(l.f1, l.f2) * L), xb = X(Math.max(l.f1, l.f2) * L), hh = 14 + 24 * Math.abs(l.v) / sc.w, dn2 = l.v >= 0, yt = dn2 ? BY - 8 - hh : BY + 8 + hh, yb = dn2 ? BY - 8 : BY + 8, n = Math.max(2, Math.round((xb - xa) / 22)), q;
+				var g = "<g class='mt-bdld" + sel + "'><g class='mt-dragx' data-ld='" + i + "' data-h='mid'><title>Drag to move the spread load</title><rect x='" + r1(xa) + "' y='" + r1(Math.min(yt, yb) - 4) + "' width='" + r1(Math.max(4, xb - xa)) + "' height='" + r1(hh + 8) + "' class='mt-bdwb'/>";
+				for (q = 0; q <= n; q++) { var xq = xa + (xb - xa) * q / n; g += arrowSimpleC(xq, yt, xq, yb, "mt-bdla mt-bdla--s"); }
+				g += line(xa, yt, xb, yt, "mt-bdwl") + "<text x='" + r1((xa + xb) / 2) + "' y='" + r1(dn2 ? yt - 6 : yt + 18) + "' class='mt-t mt-ts mt-b' text-anchor='middle'>" + nlab + " " + esc(fmt(Math.abs(l.v), "dist", 3)) + "</text></g>";
+				[["f1", xa], ["f2", xb]].forEach(function (e) { g += "<g class='mt-dragx' data-ld='" + i + "' data-h='" + e[0] + "'><title>Drag to stretch or shorten the spread load</title><circle cx='" + r1(e[1]) + "' cy='" + r1(yt) + "' r='8' class='mt-handle'/></g>"; });
+				h.push(g + "</g>");
+			} else {
+				var xm = X(l.f * L), cw = l.v >= 0, rr = 17, aS = cw ? -150 : -30, aE = cw ? 150 : 210, tip = [xm + rr * Math.cos(aE * PI / 180), BY + rr * Math.sin(aE * PI / 180)];
+				var tg = cw ? [-Math.sin(aE * PI / 180), Math.cos(aE * PI / 180)] : [Math.sin(aE * PI / 180), -Math.cos(aE * PI / 180)], nx = -tg[1], ny = tg[0], bx = tip[0] - 10 * tg[0], by = tip[1] - 10 * tg[1];
+				h.push("<g class='mt-dragx mt-bdld" + sel + "' data-ld='" + i + "' data-h='x'><title>Drag along the beam</title><circle cx='" + r1(xm) + "' cy='" + BY + "' r='26' fill='transparent'/><path d='M" + r1(xm + rr * Math.cos(aS * PI / 180)) + "," + r1(BY + rr * Math.sin(aS * PI / 180)) + " A" + rr + "," + rr + " 0 1 " + (cw ? 1 : 0) + " " + r1(tip[0]) + "," + r1(tip[1]) + "' class='mt-bdma'/><path d='M" + r1(tip[0] + 3 * tg[0]) + "," + r1(tip[1] + 3 * tg[1]) + " L" + r1(bx + 5 * nx) + "," + r1(by + 5 * ny) + " L" + r1(bx - 5 * nx) + "," + r1(by - 5 * ny) + " Z' class='mt-bdmh'/><text x='" + r1(xm) + "' y='" + (BY - 30) + "' class='mt-t mt-ts mt-b' text-anchor='middle'>" + nlab + " " + esc(fmt(Math.abs(l.v), "moment", 3)) + "</text></g>");
+			}
+		});
+		/* span dimension */
+		var yd = BY + 112; h.push(dimH(yd, BX0, BX1, "mt-bd-mk"), tx((BX0 + BX1) / 2, yd - 6, "L = " + fmt(L, "span"), "mt-t mt-ts", "middle"));
+		/* --- diagrams --- */
+		function panel(y0, hgt, key, scale, title, d, cls) {   /* scale = [largest +, largest −]: the zero line sits so both fit */
+			var pad = 18, k = (hgt - 2 * pad) / (scale[0] + scale[1]), z = y0 + pad + scale[0] * k, y = function (v) { return z - v * k; }, poly = [r1(X(0)) + "," + r1(y(0))];
+			y.top = y0 + 14; y.bot = y0 + hgt - 5;
+			pts.forEach(function (p) { poly.push(r1(X(p.x)) + "," + r1(clamp(y(p[key]), y0 + 2, y0 + hgt - 2))); }); poly.push(r1(X(L)) + "," + r1(y(0)));
+			h.push("<rect x='" + BX0 + "' y='" + y0 + "' width='" + W + "' height='" + hgt + "' class='mt-bdpn'/>", line(BX0, y(0), BX1, y(0), "mt-bdz"), "<polygon points='" + poly.join(" ") + "' class='" + cls + "'/>");
+			h.push(lab("mt-bd-svg:" + key, 12, y0 - 7, title, "mt-t mt-ts mt-b", "start"));
+			return y;
+		}
+		var yV = panel(292, 100, "V", sc.v, "Shear force V", "force", "mt-bdV"), yM = panel(428, 118, "M", sc.m, "Bending moment M (sagging +, drawn up)", "moment", "mt-bdM"), yY = panel(582, 90, "y", sc.y, "Deflection y", "small", "mt-bdY");
+		function mk(p, key, yf, d, below) {
+			var px = X(p.x), py = yf(p[key]), ly = py + (below ? 19 : -8), cl = clamp(ly, yf.top, yf.bot), sh = Math.abs(cl - ly) > 2, rt = px > BX1 - 120;   /* a label that would leave its panel goes beside the point instead */
+			h.push("<circle cx='" + r1(px) + "' cy='" + r1(py) + "' r='4.5' class='mt-tt-mk'/>", tx(sh ? px + (rt ? -10 : 10) : clamp(px, BX0 + 40, BX1 - 40), sh ? clamp(py + 5, yf.top, yf.bot) : cl, fmt(Math.abs(p[key]), d, 3), "mt-t mt-ts mt-b mt-bdmv", sh ? (rt ? "end" : "start") : "middle"));
+		}
+		mk(res.Vabs, "V", yV, "force", res.Vabs.V < 0); if (res.Mmax.M > 1e-9 * mmax) mk(res.Mmax, "M", yM, "moment", false); if (res.Mmin.M < -1e-9 * mmax) mk(res.Mmin, "M", yM, "moment", true); mk(res.Yabs, "y", yY, "small", res.Yabs.y < 0);
+		if (G.dl > 0 && G.dl < sc.ym * 1.5) { var yl = yY(-G.dl); h.push(line(BX0, yl, BX1, yl, "mt-bdlim"), tx(BX1 - 4, yl + 15, "limit L/" + G.lim, "mt-t mt-ts mt-bdlimt", "end")); }
+		h.push("<g id='mt-bd-hv'></g>");
+		svg.innerHTML = h.join(""); BD.g = { X: X, W: W, L: L, yV: yV, yM: yM, yY: yY }; bdHover(BD.hx);
+	}
+	function arrowSimpleC(x1, y1, x2, y2, cls) { var a = Math.atan2(y2 - y1, x2 - x1), hl = 10; return "<line x1='" + r1(x1) + "' y1='" + r1(y1) + "' x2='" + r1(x2 - Math.cos(a) * hl * 0.6) + "' y2='" + r1(y2 - Math.sin(a) * hl * 0.6) + "' class='" + cls + "'/><path d='M" + r1(x2) + "," + r1(y2) + " L" + r1(x2 - hl * Math.cos(a - 0.45)) + "," + r1(y2 - hl * Math.sin(a - 0.45)) + " L" + r1(x2 - hl * Math.cos(a + 0.45)) + "," + r1(y2 - hl * Math.sin(a + 0.45)) + " Z' class='" + cls + " mt-ah'/>"; }
+	/* hover readout: a line across the three diagrams with V, M and y at that point */
+	function bdHover(x) {
+		var g = $("mt-bd-hv"), B = BD.g, res = BD.res; if (!g) return; if (x == null || !B || !res || BD.drag) { g.innerHTML = ""; return; }
+		var p = res.at(clamp(x, 0, B.L), 1), px = B.X(p.x), txt = "x = " + fmt(p.x, "span", 3) + " · V = " + fmt(p.V, "force", 3) + " · M = " + fmt(p.M, "moment", 3) + " · y = " + fmt(p.y, "small", 3);
+		g.innerHTML = line(px, 285, px, 676, "mt-tt-hl") + "<circle cx='" + r1(px) + "' cy='" + r1(B.yV(p.V)) + "' r='3.5' class='mt-tt-dot'/><circle cx='" + r1(px) + "' cy='" + r1(B.yM(p.M)) + "' r='3.5' class='mt-tt-dot'/><circle cx='" + r1(px) + "' cy='" + r1(B.yY(p.y)) + "' r='3.5' class='mt-tt-dot'/>" + tx(280, 266, txt, "mt-t mt-ts mt-tt-hvt mt-bdhvt", "middle");
+	}
+	(function () {
+		var svg = $("mt-bd-svg");
+		function xAt(ev) { var B = BD.g; if (!B) return NaN; var p = svgPt(svg, ev); return (p.x - BX0) / B.W * B.L; }
+		function snap(x, ev) { var L = BD.g.L, st = stepOf(L, 40); return ev.shiftKey ? x : Math.round(x / st) * st; }
+		svg.addEventListener("pointerdown", function (ev) {
+			var d = ev.target.closest("[data-ld],[data-sup]"); if (!d || ev.target.closest(".mt-lab") || !BD.g) return; ev.preventDefault();
+			if (d.hasAttribute("data-sup")) BD.drag = { sup: true };
+			else { var i = +d.getAttribute("data-ld"), l = S.bd.loads[i]; if (!l) return; S.bd.sel = i; BD.drag = { i: i, h: d.getAttribute("data-h") || "x", x0: xAt(ev), f1: l.f1, f2: l.f2 }; }
+			BD.lock = true; bdHover(null); try { svg.setPointerCapture(ev.pointerId); } catch (e) { /* ignore */ }
+		});
+		svg.addEventListener("pointermove", function (ev) {
+			var x = xAt(ev); if (!isFinite(x)) return;
+			if (!BD.drag) { var p = svgPt(svg, ev); BD.hx = p.y > 280 && x >= 0 && x <= BD.g.L ? x : null; bdHover(BD.hx); return; }
+			var L = BD.g.L, D = BD.drag;
+			if (D.sup) { setFieldSI("bd-ob", clamp(snap(x, ev), 0.1 * L, 0.98 * L)); bdCompute(); return; }
+			var l = S.bd.loads[D.i]; if (!l) return;
+			if (D.h === "x") l.f = clamp(snap(x, ev) / L, 0, 1);
+			else if (D.h === "f1") l.f1 = clamp(snap(x, ev) / L, 0, l.f2 - 0.01);
+			else if (D.h === "f2") l.f2 = clamp(snap(x, ev) / L, l.f1 + 0.01, 1);
+			else { var w = D.f2 - D.f1, s = clamp(D.f1 + (snap(x, ev) - snap(D.x0, ev)) / L, 0, 1 - w); l.f1 = s; l.f2 = s + w; }
+			save(); bdCompute();
+		});
+		svg.addEventListener("pointerleave", function () { if (!BD.drag) { BD.hx = null; bdHover(null); } });
+		function end() { if (!BD.drag) return; BD.drag = null; BD.lock = false; bdRows(); bdCompute(); }
+		svg.addEventListener("pointerup", end); svg.addEventListener("pointercancel", end);
+		/* keyboard: the selected load moves with the arrow keys when the picture has the focus */
+		svg.setAttribute("tabindex", "0");
+		svg.addEventListener("keydown", function (e) {
+			var l = S.bd.loads[S.bd.sel]; if (!l || (e.key !== "ArrowLeft" && e.key !== "ArrowRight")) return; e.preventDefault(); var d = (e.key === "ArrowRight" ? 1 : -1) * (e.shiftKey ? 0.1 : 0.025);
+			if (l.t === "w") { var w = l.f2 - l.f1, s = clamp(l.f1 + d, 0, 1 - w); l.f1 = s; l.f2 = s + w; } else l.f = clamp(l.f + d, 0, 1); save(); bdCompute();
+		});
+	})();
+	/* the cross-section with its neutral axis and the bending stress across it (at the point of the largest moment) */
+	function drawSection(G) {
+		var svg = $("mt-bs-svg"), sec = G.sec, h = ["<defs>" + MARK.replace("@", "mt-bs-mk") + "</defs>"];
+		if (sec.err || !(sec.I > 0)) { svg.innerHTML = "<text x='280' y='160' class='mt-t mt-ts' text-anchor='middle'>" + esc(sec.err || "Type the section's sizes.") + "</text>"; $("mt-bs-cap").textContent = ""; return; }
+		var sh = S.bd.shape, d = bdDims(), cx = 150, cy = 170, hh = sec.h, bb = sh === "Ic" ? sec.h * 0.6 : sec.b, k = Math.min(220 / hh, 230 / bb), top = cy - hh * k / 2, bot = cy + hh * k / 2;
+		h.push(lab("mt-bs-svg:t1", 12, 22, "Cross-section", "mt-t mt-ts mt-b", "start"), lab("mt-bs-svg:t2", 330, 22, "Bending stress across it", "mt-t mt-ts mt-b", "start"));
+		function R(x, y, w, hgt, cls) { return "<rect x='" + r1(x) + "' y='" + r1(y) + "' width='" + r1(w) + "' height='" + r1(hgt) + "' class='" + (cls || "mt-bssec") + "'/>"; }
+		if (sh === "rect") h.push(R(cx - bb * k / 2, top, bb * k, hh * k));
+		else if (sh === "round") h.push("<circle cx='" + cx + "' cy='" + cy + "' r='" + r1(hh * k / 2) + "' class='mt-bssec'/>");
+		else if (sh === "tube") h.push("<circle cx='" + cx + "' cy='" + cy + "' r='" + r1(hh * k / 2) + "' class='mt-bssec'/><circle cx='" + cx + "' cy='" + cy + "' r='" + r1(Math.max(0, hh / 2 - d.t) * k) + "' class='mt-bshole'/>");
+		else if (sh === "rtube") h.push(R(cx - bb * k / 2, top, bb * k, hh * k), R(cx - (bb / 2 - d.t) * k, top + d.t * k, Math.max(0, bb - 2 * d.t) * k, Math.max(0, hh - 2 * d.t) * k, "mt-bshole"));
+		else if (sh === "ibeam" || sh === "chan") {
+			var ib = d.ib, tf = ib.tf * k, tw = ib.tw * k, wx = sh === "ibeam" ? cx - tw / 2 : cx - bb * k / 2;
+			h.push(R(cx - bb * k / 2, top, bb * k, tf), R(cx - bb * k / 2, bot - tf, bb * k, tf), R(wx, top + tf - 0.5, tw, hh * k - 2 * tf + 1));
+		} else h.push("<rect x='" + r1(cx - bb * k / 2) + "' y='" + r1(top) + "' width='" + r1(bb * k) + "' height='" + r1(hh * k) + "' class='mt-bssec mt-bsany' rx='10'/>", tx(cx, cy + 34, "your section", "mt-t mt-ts", "middle"));
+		/* neutral axis across both pictures, c dimension */
+		h.push(line(cx - 130, cy, 540, cy, "mt-bsna"), tx(cx + bb * k / 2 + 8, cy - 6, "neutral axis", "mt-t mt-ts", "start"));
+		h.push(dimV(cx - bb * k / 2 - 18, top, cy, "mt-bs-mk"), tx(cx - bb * k / 2 - 24, (top + cy) / 2 + 6, "c", "mt-t mt-b", "end"));
+		h.push(tx(cx, bot + 26, "I = " + fmtIn(sec.I, "inert", null, 3) + ", S = " + fmtIn(sec.S, "secmod", null, 3), "mt-t mt-ts", "middle"));
+		/* stress profile: compression on the left, tension on the right */
+		var res = G.res, Mx = res ? res.Mabs.M : 0, sig = res ? Math.abs(Mx) * sec.c / sec.I : 0, x0 = 420, sx = 75, sy = G.sy;
+		var smx = Math.max(sig, 1), kx = sx / Math.max(smx, sy > 0 && sy < 1.6 * smx ? sy : 0), tsg = Mx >= 0 ? -1 : 1;   /* sign of the stress at the top */
+		h.push(line(x0, top - 8, x0, bot + 8, "mt-bdz"));
+		if (sig > 0) {
+			var xt = x0 + tsg * sig * kx, xb = x0 - tsg * sig * kx;
+			h.push("<polygon points='" + x0 + "," + r1(top) + " " + r1(xt) + "," + r1(top) + " " + x0 + "," + cy + "' class='" + (tsg < 0 ? "mt-bscomp" : "mt-bsten") + "'/>", "<polygon points='" + x0 + "," + cy + " " + r1(xb) + "," + r1(bot) + " " + x0 + "," + r1(bot) + "' class='" + (tsg < 0 ? "mt-bsten" : "mt-bscomp") + "'/>");
+			for (var q = 1; q < 6; q++) { var yy = top + (cy - top) * (q - 0.5) / 5, xx = x0 + (xt - x0) * (cy - yy) / (cy - top); h.push(line(x0, yy, xx, yy, "mt-bsar")); var yy2 = cy + (bot - cy) * (q - 0.5) / 5, xx2 = x0 + (xb - x0) * (yy2 - cy) / (bot - cy); h.push(line(x0, yy2, xx2, yy2, "mt-bsar")); }
+			h.push(tx(clamp(xt, 330, 500), top - 8, (tsg < 0 ? "−" : "+") + fmt(sig, "stress", 3), "mt-t mt-ts mt-b", "middle"), tx(clamp(xb, 330, 500), bot + 20, (tsg < 0 ? "+" : "−") + fmt(sig, "stress", 3), "mt-t mt-ts mt-b", "middle"));
+			h.push(tx(x0 - tsg * 8, top + 18, tsg < 0 ? "squeezed" : "stretched", "mt-t mt-ts", tsg < 0 ? "start" : "end"), tx(x0 + tsg * 8, bot - 8, tsg < 0 ? "stretched" : "squeezed", "mt-t mt-ts", tsg < 0 ? "end" : "start"));
+			if (sy > 0 && sy * kx < 120) { [1, -1].forEach(function (s) { var xy = x0 + s * sy * kx; h.push(line(xy, top - 4, xy, bot + 4, "mt-bsy")); }); h.push(tx(x0, bot + 40, "dashed: ± yield " + fmt(sy, "stress", 3), "mt-t mt-ts mt-bsyt", "middle")); }
+		} else h.push(tx(x0, cy - 10, "no bending moment", "mt-t mt-ts", "middle"));
+		svg.innerHTML = h.join("");
+		$("mt-bs-cap").textContent = res && sig > 0 ? "At x = " + fmt(res.Mabs.x, "span") + ", where the moment is largest (" + fmt(Math.abs(Mx), "moment") + ", " + (Mx >= 0 ? "sagging" : "hogging") + "), the stress grows in a straight line from zero at the neutral axis to σ = Mc/I = " + fmt(sig, "stress") + " at the top and bottom faces. That is why material far from the axis does most of the work, and why I-beams and tubes are so efficient." : "";
+	}
+	/* examples (SI values; US pages show them converted) */
+	function bdSet(o) {
+		if (o.mat) setMat(o.mat, true); S.bd.sup = o.sup; paintSeg("mt-bd-sup", o.sup); S.bd.shape = o.sh; bdShapeSel.value = o.sh; bdShapeFields();
+		setFieldSI("bd-L", o.L); if (o.ob) setFieldSI("bd-ob", o.ob);
+		Object.keys(o.d).forEach(function (k) { setFieldSI("bd-" + k, o.d[k]); });
+		S.bd.loads = o.loads; S.bd.sel = 0; if (o.lim) { S.bd.lim = o.lim; $("mt-bd-lim").value = o.lim; } save(); bdRows(); bdCompute();
+	}
+	chipRow("mt-bd-ex", [
+		["Steel I-beam, 10 kN at midspan", function () { bdSet({ mat: "a36", sup: "ss", sh: "ibeam", L: 4, d: { fh: 0.2, fb: 0.1, tf: 0.0085, tw: 0.0056 }, loads: [{ t: "P", f: 0.5, v: 10e3 }], lim: "360" }); }],
+		["Floor joist (fir 38 × 235), 2 kN/m", function () { bdSet({ mat: "dfir", sup: "ss", sh: "rect", L: 4.2, d: { b: 0.038, h: 0.235 }, loads: [{ t: "w", f1: 0, f2: 1, v: 2e3 }], lim: "360" }); }],
+		["Shelf bracket: aluminium cantilever", function () { bdSet({ mat: "al6061", sup: "cant", sh: "rect", L: 0.3, d: { b: 0.01, h: 0.04 }, loads: [{ t: "P", f: 1, v: 500 }], lim: "180" }); }],
+		["Fixed-end steel beam, 10 kN/m", function () { bdSet({ mat: "a36", sup: "fixed", sh: "ibeam", L: 6, d: { fh: 0.3, fb: 0.15, tf: 0.0107, tw: 0.0071 }, loads: [{ t: "w", f1: 0, f2: 1, v: 10e3 }], lim: "360" }); }],
+		["Overhang (balcony): box beam", function () { bdSet({ mat: "a36", sup: "over", sh: "rtube", L: 5, ob: 3.8, d: { B: 0.1, H: 0.15, t: 0.006 }, loads: [{ t: "w", f1: 0, f2: 1, v: 2.5e3 }, { t: "P", f: 1, v: 3e3 }], lim: "240" }); }],
+		["Propped cantilever, two loads", function () { bdSet({ mat: "a36", sup: "prop", sh: "chan", L: 5, d: { fh: 0.16, fb: 0.065, tf: 0.0105, tw: 0.0075 }, loads: [{ t: "P", f: 0.3, v: 8e3 }, { t: "P", f: 0.7, v: 8e3 }], lim: "360" }); }]
+	], function (fn) { fn(); matNote(); });
+	/* the "five ways to load a bar" strip at the top of the hub (/materials only): each picture opens its tab */
+	(function () {
+		var lt = $("mt-lt"); if (!lt || PAGE !== "materials") return; lt.hidden = false;
+		lt.addEventListener("click", function (e) {
+			var b = e.target.closest("[data-go]"); if (!b) return; var g = b.getAttribute("data-go");
+			if (g === "tension" || g === "compression") { S.ax.dir = g === "tension" ? "t" : "c"; paintSeg("mt-ax-dir", S.ax.dir); save(); showTab("axial", true); }
+			else showTab(g, true);
+			var tb = root.querySelector(".mt-tabs [data-tab='" + CUR + "']"); if (tb) tb.focus();
+		});
+	})();
+
 	/* =========================== links =========================== */
 	function shareUrl() {
 		var t = CUR, q = ["tab=" + t, "m=" + encodeURIComponent(S.mat), "u=" + S.sys];
 		if (S.mat === "custom" && S.cu) q.push("cu=" + encodeURIComponent([S.cu.c, S.cu.E, S.cu.nu, S.cu.sy == null ? "" : S.cu.sy, S.cu.su, S.cu.el, S.cu.ra == null ? "" : S.cu.ra, S.cu.rho, S.cu.a == null ? "" : S.cu.a].join("~")));
 		(LINKF[t] || []).forEach(function (id) { if (!typed(id) || FL[id].div.hidden || FL[id].div.closest("[hidden]")) return; var f = FL[id], v = f.inp.value.trim(); if (v) q.push(pkey(id) + "=" + encodeURIComponent(v + (f.sel ? f.u : ""))); });
 		if (t === "axial") q.push("o=" + S.ax.ord.join(","), "sh=" + S.ax.shape, "dir=" + S.ax.dir);
-		if (t === "tensile") { if (S.tt.c2) q.push("c2=" + S.tt.c2); if (S.tt.c3) q.push("c3=" + S.tt.c3); if (S.tt.tr) q.push("tr=1"); if (S.tt.zoom !== "follow") q.push("z=" + S.tt.zoom); }
+		if (t === "tensile") { if (S.tt.c2) q.push("c2=" + S.tt.c2); if (S.tt.c3) q.push("c3=" + S.tt.c3); if (S.tt.tr) q.push("tr=1"); if (S.tt.zoom !== "follow") q.push("z=" + S.tt.zoom); if (S.tt.ser === false) q.push("ser=0"); }
+		if (t === "bending") q.push("sup=" + S.bd.sup, "sh=" + S.bd.shape, "lim=" + S.bd.lim, "ld=" + encodeURIComponent(S.bd.loads.map(function (l) { return [l.t].concat(l.t === "w" ? [l.f1, l.f2] : [l.f]).concat([l.v]).map(function (v) { return typeof v === "number" ? +v.toPrecision(6) : v; }).join("~"); }).join(";")));
 		if (t === "shear") q.push("md=" + S.sh.mode, "n=" + S.sh.n, "sf=" + encodeURIComponent(S.sh.sf), "rt=" + encodeURIComponent(S.sh.ratio));
 		if (t === "torsion") q.push("src=" + S.to.src, "hol=" + S.to.hol, "sf=" + encodeURIComponent(S.to.sf));
 		if (t === "poisson") q.push("md=" + S.po.mode, "by=" + S.po.by, "dir=" + S.po.dir, "pair=" + encodeURIComponent(S.po.pair));
@@ -1806,7 +2228,12 @@
 		var t = tab || VIEWS[0];
 		(LINKF[t] || []).forEach(function (id) { var v = p.get(pkey(id)); if (v != null) S.f[id] = { t: v, u: S.f[id] && S.f[id].u }; else if (MATF.indexOf(id) >= 0) S.f[id] = { t: "", u: S.f[id] && S.f[id].u }; });
 		if (t === "axial") { if (p.get("o")) S.ax.ord = p.get("o").split(",").filter(function (v) { return M.AX.indexOf(v) >= 0; }); if (p.get("sh")) S.ax.shape = p.get("sh"); if (p.get("dir")) S.ax.dir = p.get("dir") === "c" ? "c" : "t"; }
-		if (t === "tensile") { S.tt.c2 = M.mat(p.get("c2")) ? p.get("c2") : ""; S.tt.c3 = M.mat(p.get("c3")) ? p.get("c3") : ""; S.tt.tr = p.get("tr") === "1"; S.tt.zoom = p.get("z") === "el" ? "el" : p.get("z") === "all" ? "all" : "follow"; }
+		if (t === "tensile") { S.tt.c2 = M.mat(p.get("c2")) ? p.get("c2") : ""; S.tt.c3 = M.mat(p.get("c3")) ? p.get("c3") : ""; S.tt.tr = p.get("tr") === "1"; S.tt.zoom = p.get("z") === "el" ? "el" : p.get("z") === "all" ? "all" : "follow"; S.tt.ser = p.get("ser") !== "0"; }
+		if (t === "bending") {
+			if (/^(ss|cant|fixed|prop|over)$/.test(p.get("sup") || "")) S.bd.sup = p.get("sup"); if (M.BSHAPES.some(function (o) { return o[0] === p.get("sh"); })) S.bd.shape = p.get("sh"); if (/^\d+$/.test(p.get("lim") || "")) S.bd.lim = p.get("lim");
+			if (p.get("ld") != null) S.bd.loads = p.get("ld").split(";").map(function (r) { var a = r.split("~"), n = a.slice(1).map(Number); if (a[0] === "w" && n.length === 3) return { t: "w", f1: clamp(n[0], 0, 1), f2: clamp(n[1], 0, 1), v: n[2] }; if ((a[0] === "P" || a[0] === "M") && n.length === 2) return { t: a[0], f: clamp(n[0], 0, 1), v: n[1] }; return null; }).filter(function (l) { return l && isFinite(l.v); }).slice(0, 8);
+			S.bd.sel = 0;
+		}
 		if (t === "shear") { if (p.get("md")) S.sh.mode = p.get("md"); if (p.get("n")) S.sh.n = p.get("n") === "2" ? "2" : "1"; if (p.get("sf")) S.sh.sf = p.get("sf"); if (p.get("rt")) S.sh.ratio = p.get("rt"); }
 		if (t === "torsion") { if (p.get("src")) S.to.src = p.get("src") === "P" ? "P" : "T"; if (p.get("hol")) S.to.hol = p.get("hol") === "1" ? "1" : "0"; if (p.get("sf")) S.to.sf = p.get("sf"); }
 		if (t === "poisson") { if (p.get("md")) S.po.mode = p.get("md"); if (p.get("by")) S.po.by = p.get("by") === "e" ? "e" : "s"; if (p.get("dir")) S.po.dir = p.get("dir") === "e" ? "e" : "s"; if (p.get("pair")) S.po.pair = p.get("pair"); }
@@ -1820,6 +2247,7 @@
 		try { history.replaceState(null, "", location.pathname + (VIEWS.length > 1 && effTab !== VIEWS[0] ? "?tab=" + effTab : "")); } catch (e) { /* ignore */ }
 		save();
 	}
+	paintSeg("mt-bd-sup", S.bd.sup); bdShapeSel.value = S.bd.shape; $("mt-bd-lim").value = S.bd.lim || "360"; bdShapeFields();
 	["mt-sh-mode", "mt-sh-n", "mt-to-src", "mt-to-hol", "mt-po-mode", "mt-po-by", "mt-p3-dir", "mt-th-cond", "mt-ax-dir"].forEach(function (id) { var map = { "mt-sh-mode": S.sh.mode, "mt-sh-n": S.sh.n, "mt-to-src": S.to.src, "mt-to-hol": S.to.hol, "mt-po-mode": S.po.mode, "mt-po-by": S.po.by, "mt-p3-dir": S.po.dir, "mt-th-cond": S.th.cond, "mt-ax-dir": S.ax.dir }; paintSeg(id, map[id]); }); paintSeg("mt-th-sup", S.th.cond);
 	$("mt-sh-ratio").value = S.sh.ratio; $("mt-sh-sf").value = S.sh.sf; $("mt-to-sf").value = S.to.sf; $("mt-ec-pair").value = S.po.pair; $("mt-ax-sfv").value = S.ax.sf || "2"; shapeSel.value = S.ax.shape;
 	cmpOpts($("mt-tt-c2"), S.tt.c2); cmpOpts($("mt-tt-c3"), S.tt.c3); paintSeg("mt-tt-zoom", S.tt.zoom); $("mt-tt-true").checked = !!S.tt.tr;
@@ -1828,7 +2256,7 @@
 	axShapeFields();
 	matNote();
 	/* =========================== figures: Fill window / Full screen / Reset labels, draggable labels, equation layout =========================== */
-	var FIGT = { "mt-ax-svg": "Stress and strain", "mt-sh-svg": "Shear", "mt-to-svg": "Torsion", "mt-po-svg": "Poisson's ratio", "mt-p3-svg": "3D Hooke's law", "mt-th-svg": "Thermal stress", "mt-as": "" }, WIN = null, figs = [];
+	var FIGT = { "mt-bd-svg": "Beam", "mt-bs-svg": "Cross-section", "mt-ax-svg": "Stress and strain", "mt-sh-svg": "Shear", "mt-to-svg": "Torsion", "mt-po-svg": "Poisson's ratio", "mt-p3-svg": "3D Hooke's law", "mt-th-svg": "Thermal stress", "mt-as": "" }, WIN = null, figs = [];
 	function figInit(card) {
 		var svg = card.querySelector(".mt-svg"); if (!svg || card._bar) return;
 		var bar = document.createElement("div"); bar.className = "mt-figbar"; bar.setAttribute("role", "toolbar"); bar.setAttribute("aria-label", "View of the picture");

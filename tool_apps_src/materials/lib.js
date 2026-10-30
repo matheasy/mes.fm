@@ -12,7 +12,7 @@
 		area: [["mm²", 1e-6], ["cm²", 1e-4], ["m²", 1], ["in²", IN * IN], ["ft²", 0.3048 * 0.3048]],
 		stress: [["Pa", 1], ["kPa", 1e3], ["MPa", 1e6], ["GPa", 1e9], ["psi", PSI], ["ksi", PSI * 1e3], ["Msi", PSI * 1e6]],
 		strain: [["mm/mm", 1], ["%", 0.01], ["µε", 1e-6]],
-		torque: [["N·m", 1], ["kN·m", 1e3], ["N·mm", 1e-3], ["lbf·in", LBF * IN], ["lbf·ft", LBF * 0.3048], ["kip·in", LBF * IN * 1e3]],
+		torque: [["N·m", 1], ["kN·m", 1e3], ["N·mm", 1e-3], ["lbf·in", LBF * IN], ["lbf·ft", LBF * 0.3048], ["kip·in", LBF * IN * 1e3], ["kip·ft", LBF * 0.3048 * 1e3]],
 		angle: [["rad", 1], ["°", PI / 180], ["mrad", 1e-3]],
 		power: [["W", 1], ["kW", 1e3], ["MW", 1e6], ["hp", 745.69987158227022]],
 		speed: [["rpm", 2 * PI / 60], ["rad/s", 1], ["Hz", 2 * PI]],
@@ -20,7 +20,9 @@
 		alpha: [["µm/m·°C", 1e-6], ["µin/in·°F", 1.8e-6], ["1/°C", 1]],
 		density: [["kg/m³", 1], ["g/cm³", 1000], ["lb/ft³", LB / Math.pow(0.3048, 3)], ["lb/in³", LB / Math.pow(IN, 3)]],
 		energy: [["J/m³", 1], ["kJ/m³", 1e3], ["MJ/m³", 1e6], ["in·lbf/in³", PSI]],
-		inertia: [["mm⁴", 1e-12], ["cm⁴", 1e-8], ["m⁴", 1], ["in⁴", Math.pow(IN, 4)]]
+		inertia: [["mm⁴", 1e-12], ["cm⁴", 1e-8], ["m⁴", 1], ["in⁴", Math.pow(IN, 4)]],
+		dist: [["N/m", 1], ["kN/m", 1e3], ["N/mm", 1e3], ["lbf/ft", LBF / 0.3048], ["kip/ft", LBF * 1e3 / 0.3048], ["lbf/in", LBF / IN], ["kip/in", LBF * 1e3 / IN]],
+		secmod: [["mm³", 1e-9], ["cm³", 1e-6], ["m³", 1], ["in³", Math.pow(IN, 3)]]
 	};
 	var EXTRA = {   /* typed spellings -> unit name (after norm()) */
 		force: { n: "N", newton: "N", newtons: "N", kilonewton: "kN", kilonewtons: "kN", lb: "lbf", lbs: "lbf", pound: "lbf", pounds: "lbf", kips: "kip", klbf: "kip" },
@@ -28,7 +30,7 @@
 		area: { mm2: "mm²", sqmm: "mm²", cm2: "cm²", m2: "m²", in2: "in²", sqin: "in²", ft2: "ft²", sqft: "ft²" },
 		stress: { "n/mm2": "MPa", nmm2: "MPa", "kn/mm2": "GPa", "lb/in2": "psi", "lbf/in2": "psi", "n/m2": "Pa" },
 		strain: { "": "mm/mm", "-": "mm/mm", "m/m": "mm/mm", "in/in": "mm/mm", ue: "µε", "uε": "µε", microstrain: "µε", "με": "µε", percent: "%" },
-		torque: { nm: "N·m", "n-m": "N·m", knm: "kN·m", nmm: "N·mm", lbin: "lbf·in", inlb: "lbf·in", inlbf: "lbf·in", lbfin: "lbf·in", lbft: "lbf·ft", ftlb: "lbf·ft", ftlbf: "lbf·ft", lbfft: "lbf·ft", kipin: "kip·in", inkip: "kip·in" },
+		torque: { nm: "N·m", "n-m": "N·m", knm: "kN·m", nmm: "N·mm", lbin: "lbf·in", inlb: "lbf·in", inlbf: "lbf·in", lbfin: "lbf·in", lbft: "lbf·ft", ftlb: "lbf·ft", ftlbf: "lbf·ft", lbfft: "lbf·ft", kipin: "kip·in", inkip: "kip·in", kipft: "kip·ft", ftkip: "kip·ft", kipsft: "kip·ft" },
 		angle: { deg: "°", degree: "°", degrees: "°", radian: "rad", radians: "rad" },
 		power: { watt: "W", watts: "W", kilowatt: "kW", kilowatts: "kW", bhp: "hp", horsepower: "hp" },
 		speed: { "r/min": "rpm", revmin: "rpm", rads: "rad/s", hertz: "Hz", rps: "Hz", "rev/s": "Hz" },
@@ -36,7 +38,9 @@
 		alpha: { "um/m°c": "µm/m·°C", "um/mc": "µm/m·°C", "um/mk": "µm/m·°C", "ppm/°c": "µm/m·°C", "ppm/c": "µm/m·°C", "ppm/k": "µm/m·°C", "uin/in°f": "µin/in·°F", "uin/inf": "µin/in·°F", "ppm/°f": "µin/in·°F", "ppm/f": "µin/in·°F", "/°c": "1/°C", "/c": "1/°C", "1/k": "1/°C", "/k": "1/°C" },
 		density: { kgm3: "kg/m³", "kg/m3": "kg/m³", "g/cm3": "g/cm³", gcc: "g/cm³", "lb/ft3": "lb/ft³", pcf: "lb/ft³", "lb/in3": "lb/in³" },
 		energy: { "j/m3": "J/m³", "kj/m3": "kJ/m³", "mj/m3": "MJ/m³", "inlb/in3": "in·lbf/in³", "inlbf/in3": "in·lbf/in³" },
-		inertia: { mm4: "mm⁴", cm4: "cm⁴", m4: "m⁴", in4: "in⁴" }
+		inertia: { mm4: "mm⁴", cm4: "cm⁴", m4: "m⁴", in4: "in⁴" },
+		dist: { plf: "lbf/ft", klf: "kip/ft", "lb/ft": "lbf/ft", "lbs/ft": "lbf/ft", "kips/ft": "kip/ft", "k/ft": "kip/ft", "lb/in": "lbf/in" },
+		secmod: { mm3: "mm³", cm3: "cm³", m3: "m³", in3: "in³" }
 	};
 	function norm(s) { return String(s).toLowerCase().replace(/\s+/g, "").replace(/²/g, "2").replace(/³/g, "3").replace(/⁴/g, "4").replace(/\^/g, "").replace(/[μµ]/g, "u").replace(/[·*]/g, "").replace(/deg/g, "°").replace(/°°/g, "°"); }
 	var ALIAS = {};
@@ -244,8 +248,8 @@
 	   rho kg/m³; a = thermal expansion in µm/m·°C (10⁻⁶/K). c = curve model: duct | luders | brittle | polymer | rubber. sc = compressive strength. ---------- */
 	var FAMS = [["metal", "Metals"], ["polymer", "Plastics"], ["elastomer", "Rubber"], ["ceramic", "Concrete, stone & ceramics"], ["wood", "Wood"], ["composite", "Composites"], ["bio", "Bone"]];
 	var MATS = [
-		{ id: "a36", name: "Structural steel A36", fam: "metal", E: 200, G: 79.3, nu: 0.26, sy: 250, su: 400, el: 23, ra: 55, rho: 7850, a: 11.7, c: "luders", x: { uy: 1.12, eL: 0.016 }, note: "Yield and tensile strength are the ASTM A36 minimums; real plate is often 10 to 20% stronger. Mild steel has a yield point: the stress drops a little and the bar stretches at constant stress (Lüders bands) before it hardens." },
-		{ id: "s1020", name: "Carbon steel 1020, hot rolled", fam: "metal", E: 200, G: 77.5, nu: 0.29, sy: 210, su: 380, el: 25, ra: 50, rho: 7870, a: 11.7, c: "luders", x: { uy: 1.1, eL: 0.02 } },
+		{ id: "a36", name: "Structural steel A36", fam: "metal", E: 200, G: 79.3, nu: 0.26, sy: 250, su: 400, el: 23, ra: 55, rho: 7850, a: 11.7, c: "luders", x: { uy: 1.07, eL: 0.016 }, note: "Yield and tensile strength are the ASTM A36 minimums; real plate is often 10 to 20% stronger. Mild steel has a yield point: the stress peaks a few % above the lower yield (upper yield), drops, and the bar stretches at nearly constant stress (Lüders bands) for 1 to 3% before it hardens." },
+		{ id: "s1020", name: "Carbon steel 1020, hot rolled", fam: "metal", E: 200, G: 77.5, nu: 0.29, sy: 210, su: 380, el: 25, ra: 50, rho: 7870, a: 11.7, c: "luders", x: { uy: 1.06, eL: 0.02 } },
 		{ id: "s4140", name: "Alloy steel 4140, annealed", fam: "metal", E: 205, G: 80, nu: 0.29, sy: 417, su: 655, el: 25.7, ra: 56.9, rho: 7850, a: 12.3, c: "duct", note: "Quenched and tempered 4140 is two to three times stronger, with less elongation." },
 		{ id: "ss304", name: "Stainless steel 304, annealed", fam: "metal", E: 193, G: 75, nu: 0.29, sy: 215, su: 505, el: 60, ra: 65, rho: 8000, a: 17.3, c: "duct" },
 		{ id: "ss316", name: "Stainless steel 316, annealed", fam: "metal", E: 193, G: 75, nu: 0.29, sy: 290, su: 580, el: 50, ra: 65, rho: 8000, a: 16.0, c: "duct" },
@@ -362,7 +366,10 @@
 	}
 	function lin(a, b, k) { return a + (b - a) * k; }
 	/* p = {E (Pa), sy, su (Pa), el (%), ra (%), c, x}; returns the curve: arrays e, s (engineering), t (true stress), et (true strain), ph (phase), and key points */
-	function curve(m) {
+	/* Lüders-plateau serrations: a fixed, repeatable wiggle in -1..1 (two incommensurate waves plus a slow one), so the same material always draws the same curve */
+	function serration(e) { var w = 0.55 * Math.sin(2 * PI * e / 0.00118 + 0.4) + 0.3 * Math.sin(2 * PI * e / 0.00047 + 1.3) + 0.15 * Math.sin(2 * PI * e / 0.0043 + 2.1); return Math.max(-1, Math.min(1, w)); }
+	/* opt = {ser: false} draws the Lüders plateau of mild steel perfectly flat (no serrations) */
+	function curve(m, opt) {
 		var E = m.E * 1e9, sy = m.sy != null ? m.sy * 1e6 : null, su = m.su * 1e6, ef = m.el != null ? m.el / 100 : null, ra = m.ra != null ? m.ra / 100 : null;
 		var c = { type: m.c, E: E, e: [], s: [], t: [], et: [], ph: [], name: m.name, id: m.id, warn: "" };
 		function add(e, s, t, et, ph) { c.e.push(e); c.s.push(s); c.t.push(t != null ? t : s * (1 + e)); c.et.push(et != null ? et : Math.log(1 + e)); c.ph.push(ph); }
@@ -370,7 +377,7 @@
 		if ((type === "duct" || type === "luders") && !(sy > 0 && su > sy * 1.0005)) type = sy > 0 ? "duct" : "brittle";
 		if ((type === "duct" || type === "luders") && ef == null) ef = 0.2;
 		var fitL = null;
-		if (type === "luders") { fitL = fitLuders(E, sy, su, (m.x && m.x.eL) || 0.015, (m.x && m.x.eu) || 0.7 * ef); if (!fitL || !(fitL.epL > 1e-4) || !(fitL.K > 0) || !isFinite(fitL.K)) { fitL = null; type = "duct"; c.warn = "no plateau"; } }
+		if (type === "luders") { c.eL0 = Math.max((m.x && m.x.eL) || 0.015, 1.25 * sy / E + 0.002); fitL = fitLuders(E, sy, su, c.eL0, (m.x && m.x.eu) || 0.7 * ef); if (!fitL || !(fitL.epL > 1e-4) || !(fitL.K > 0) || !isFinite(fitL.K)) { fitL = null; type = "duct"; c.warn = "no plateau"; } }
 		if (type === "brittle") {
 			if (ef == null || ef < su / E) ef = su / E;
 			var mm = Math.max(1, E * ef / su); c.mExp = mm;
@@ -396,12 +403,20 @@
 		} else {
 			var nn = null;
 			if (type === "luders") {
-				var uy = (m.x && m.x.uy) || 1.1, eL = (m.x && m.x.eL) || 0.015; fit = fitL;
-				var suy = uy * sy, e1 = suy / E, law = swiftLaw(fit);
-				for (i = 0; i <= 40; i++) add(e1 * i / 40, suy * i / 40, null, null, "el");
-				for (i = 1; i <= 6; i++) add(e1 + 0.0004 * i / 6, lin(suy, sy, i / 6), null, null, "yp");
-				for (i = 1; i <= 40; i++) add(lin(e1 + 0.0004, eL, i / 40), sy, null, null, "lud");
-				c.suy = suy; c.eL = eL; c.yieldKind = "luders"; c.sy = sy;
+				/* the yield point, as a real test records it (2026-10-29): the straight line bends slightly into a ROUNDED upper yield (micro-yielding: the
+				   slope falls from E to zero over the last ~7% of the stress), the force drops smoothly to the lower yield (how sharply depends on the machine's
+				   stiffness and the speed), then the Lüders plateau at the lower yield with small serrations (each one a band nucleating / a pinned
+				   dislocation front breaking away) of about ±0.4% around the mean, faded in and out so the curve stays continuous. */
+				var uy = (m.x && m.x.uy) || 1.07, eL = c.eL0; fit = fitL;
+				uy = Math.max(1.005, Math.min(uy, 0.97 * su / sy));
+				var suy = uy * sy, law = swiftLaw(fit), sa = Math.max(sy * 0.6, suy - 0.07 * suy * (uy > 1.02 ? 1 : 0.5)), dE = (suy - sa) * PI / (2 * E), eyu = sa / E + dE;
+				var dD = Math.min(0.0006, Math.max(1e-5, (eL - eyu) * 0.25)), eD = eyu + dD, serOn = !opt || opt.ser !== false;
+				for (i = 0; i <= 40; i++) add(sa / E * i / 40, sa * i / 40, null, null, "el");
+				for (i = 1; i <= 14; i++) { var uu = i / 14; add(sa / E + dE * uu, sa + (suy - sa) * Math.sin(uu * PI / 2), null, null, "yp"); }
+				for (i = 1; i <= 12; i++) { var kd = i / 12; add(eyu + dD * kd, sy + (suy - sy) * (1 + Math.cos(PI * kd)) / 2, null, null, "yp"); }
+				var nP = serOn ? Math.max(40, Math.min(420, Math.round((eL - eD) / 0.00004))) : 40;
+				for (i = 1; i <= nP; i++) { var kp = i / nP, ep2 = lin(eD, eL, kp), w = serOn ? serration(ep2) * Math.pow(Math.sin(PI * kp), 0.35) : 0; add(ep2, sy * (1 + 0.004 * w), null, null, "lud"); }
+				c.suy = suy; c.eyu = eyu; c.eL = eL; c.yieldKind = "luders"; c.sy = sy; c.ser = serOn;
 				var nk = neckLaw(law, E, fit.epL, fit.epL + 6);
 				for (i = 1; i <= 220; i++) { var ep = lin(fit.epL, nk.ep, Math.pow(i / 220, 1.6)), sg = law.f(ep), et = sg / E + ep, eE = Math.exp(et) - 1; add(eE, sg / (1 + eE), sg, et, "pl"); }
 				nn = nk; c.law = law.f; c.e0 = fit.e0;
@@ -472,10 +487,122 @@
 	}
 	function permanentSet(c, e, s) { return c.elastic ? 0 : Math.max(0, e - s / c.E); }
 
+	/* ---------- bending of beams (2026-10-29) ----------
+	   Sections for bending about the strong (horizontal) axis; all are symmetric top / bottom, so c = h/2. Q = first moment of the area above the neutral
+	   axis and tw = the width there, for the largest shear stress tau = V Q / (I tw). Dims in m. */
+	var BSHAPES = [["rect", "Rectangle"], ["round", "Round bar"], ["tube", "Round tube (pipe)"], ["rtube", "Rectangular tube (box)"], ["ibeam", "I-beam (W / IPE shape)"], ["chan", "Channel (C shape)"], ["Ic", "I know I and c"]];
+	function beamSection(sh, d) {
+		var r = { A: NaN, I: NaN, c: NaN, h: NaN, b: NaN, Q: NaN, tw: NaN, err: "" };
+		function bad(m) { r.err = m; return r; }
+		function fin() { r.S = r.I / r.c; r.r = r.A > 0 ? Math.sqrt(r.I / r.A) : NaN; return r; }
+		if (sh === "rect") { if (!(d.b > 0) || !(d.h > 0)) return bad("Type the width b and the height h."); r.A = d.b * d.h; r.I = d.b * Math.pow(d.h, 3) / 12; r.c = d.h / 2; r.h = d.h; r.b = d.b; r.Q = d.b * d.h * d.h / 8; r.tw = d.b; return fin(); }
+		if (sh === "round") { if (!(d.d > 0)) return bad("Type the diameter."); r.A = PI * d.d * d.d / 4; r.I = PI * Math.pow(d.d, 4) / 64; r.c = d.d / 2; r.h = r.b = d.d; r.Q = Math.pow(d.d, 3) / 12; r.tw = d.d; return fin(); }
+		if (sh === "tube") {
+			if (!(d.D > 0) || !(d.t > 0)) return bad("Type the outside diameter and the wall thickness.");
+			var di = Math.max(0, d.D - 2 * d.t); r.A = PI * (d.D * d.D - di * di) / 4; r.I = PI * (Math.pow(d.D, 4) - Math.pow(di, 4)) / 64; r.c = d.D / 2; r.h = r.b = d.D; r.Q = (Math.pow(d.D, 3) - Math.pow(di, 3)) / 12; r.tw = d.D - di; if (di === 0) r.note = "The wall is half the diameter or more: a solid bar."; return fin();
+		}
+		if (sh === "rtube") {
+			if (!(d.B > 0) || !(d.H > 0) || !(d.t > 0)) return bad("Type the outside width, height and the wall thickness.");
+			var bi = Math.max(0, d.B - 2 * d.t), hi = Math.max(0, d.H - 2 * d.t); if (!(bi > 0) || !(hi > 0)) { bi = hi = 0; r.note = "The wall fills the whole tube: a solid bar."; }
+			r.A = d.B * d.H - bi * hi; r.I = (d.B * Math.pow(d.H, 3) - bi * Math.pow(hi, 3)) / 12; r.c = d.H / 2; r.h = d.H; r.b = d.B; r.Q = (d.B * d.H * d.H - bi * hi * hi) / 8; r.tw = d.B - bi; return fin();
+		}
+		if (sh === "ibeam" || sh === "chan") {
+			if (!(d.b > 0) || !(d.h > 0) || !(d.tf > 0) || !(d.tw > 0)) return bad("Type the flange width, the depth and both thicknesses.");
+			if (2 * d.tf >= d.h) return bad("The two flanges are thicker than the whole depth: check the flange thickness.");
+			if (d.tw > d.b) return bad("The web is wider than the flanges: check the web thickness.");
+			var hw = d.h - 2 * d.tf; r.A = 2 * d.b * d.tf + d.tw * hw; r.I = (d.b * Math.pow(d.h, 3) - (d.b - d.tw) * Math.pow(hw, 3)) / 12; r.c = d.h / 2; r.h = d.h; r.b = d.b;
+			r.Q = d.b * d.tf * (d.h - d.tf) / 2 + d.tw * hw * hw / 8; r.tw = d.tw; r.note = "Plain plates: the small rounded fillets of a rolled shape (a few % of I) are left out; use the table value of I for design."; return fin();
+		}
+		if (sh === "Ic") { if (!(d.I > 0) || !(d.c > 0)) return bad("Type I and c (half the depth for a symmetric shape)."); r.I = d.I; r.c = d.c; r.h = 2 * d.c; r.S = d.I / d.c; return r; }
+		return bad("Pick a cross-section.");
+	}
+	/* Beam on supports, solved exactly with singularity (Macaulay) functions: EI y'' = M(x), y up, M sagging +, V = dM/dx = upward forces to the left.
+	   def = {L, sup: "ss" | "cant" | "fixed" | "prop" | "over", b (2nd support of "over", default 0.75 L), EI (N·m²),
+	          loads: [{t: "P", x, P} (P > 0 down, N), {t: "w", x1, x2, w} (w > 0 down, N/m), {t: "M", x, M} (M > 0 clockwise, N·m)]}.
+	   Unknowns = the support reactions (a force at each support, a moment at a fixed end) + the two integration constants; equations = V(L+) = M(L+) = 0
+	   (equilibrium of the whole beam) + y = 0 at each support + y' = 0 at each fixed end. Works for the determinate and the indeterminate cases alike. */
+	var BSUP = [["ss", "Simply supported"], ["cant", "Cantilever"], ["fixed", "Fixed at both ends"], ["prop", "Propped cantilever"], ["over", "Overhang"]];
+	function beamSupports(def) {
+		var L = def.L, b = def.b > 0 && def.b <= L ? def.b : 0.75 * L;
+		return ({ ss: [[0, "pin"], [L, "roll"]], cant: [[0, "fix"]], fixed: [[0, "fix"], [L, "fix"]], prop: [[0, "fix"], [L, "roll"]], over: [[0, "pin"], [b, "roll"]] }[def.sup] || [[0, "pin"], [L, "roll"]]).map(function (s) { return { x: s[0], k: s[1] }; });
+	}
+	/* one term at x: [V, M, EI theta, EI y]; kind f = upward unit force, c = unit sagging couple, w = unit downward UDL from a to b. side > 0 counts a term sitting exactly at x */
+	function bterm(kind, a, b, x, side) {
+		var d = x - a; if (d < 0 || (d === 0 && !(side > 0))) return [0, 0, 0, 0];
+		if (kind === "f") return [1, d, d * d / 2, d * d * d / 6];
+		if (kind === "c") return [0, 1, d, d * d / 2];
+		var e = x - b, on = e > 0 || (e === 0 && side > 0), r = [-d, -d * d / 2, -d * d * d / 6, -d * d * d * d / 24];
+		if (on) { r[0] += e; r[1] += e * e / 2; r[2] += e * e * e / 6; r[3] += e * e * e * e / 24; }
+		return r;
+	}
+	function solveLin(A, y) {   /* Gaussian elimination with partial pivoting; null when singular */
+		var n = y.length, a = A.map(function (r, i) { return r.slice().concat([y[i]]); }), i, j, k;
+		for (i = 0; i < n; i++) {
+			var p = i; for (j = i + 1; j < n; j++) if (Math.abs(a[j][i]) > Math.abs(a[p][i])) p = j;
+			if (!(Math.abs(a[p][i]) > 1e-300)) return null; var t = a[i]; a[i] = a[p]; a[p] = t;
+			for (j = i + 1; j < n; j++) { var f = a[j][i] / a[i][i]; if (f) for (k = i; k <= n; k++) a[j][k] -= f * a[i][k]; }
+		}
+		var x = new Array(n); for (i = n - 1; i >= 0; i--) { var s = a[i][n]; for (j = i + 1; j < n; j++) s -= a[i][j] * x[j]; x[i] = s / a[i][i]; } return x;
+	}
+	function beamSolve(def) {
+		var L = def.L, EI = def.EI, sup = beamSupports(def), loads = (def.loads || []).filter(function (l) { return l && (l.t === "P" || l.t === "M" || l.t === "w"); });
+		if (!(L > 0)) return { err: "Type the span." };
+		var terms = [];   /* the known loads, as unit terms times a value */
+		loads.forEach(function (l) {
+			if (l.t === "P" && isFinite(l.P) && isFinite(l.x)) terms.push({ k: "f", a: Math.max(0, Math.min(L, l.x)), v: -l.P });
+			else if (l.t === "M" && isFinite(l.M) && isFinite(l.x)) terms.push({ k: "c", a: Math.max(0, Math.min(L, l.x)), v: l.M });
+			else if (l.t === "w" && isFinite(l.w) && isFinite(l.x1) && isFinite(l.x2)) { var a = Math.max(0, Math.min(L, Math.min(l.x1, l.x2))), b = Math.max(0, Math.min(L, Math.max(l.x1, l.x2))); if (b > a) terms.push({ k: "w", a: a, b: b, v: l.w }); }
+		});
+		var unk = []; sup.forEach(function (s, i) { unk.push({ k: "f", a: s.x, s: i }); if (s.k === "fix") unk.push({ k: "c", a: s.x, s: i }); });
+		var n = unk.length + 2, A = [], y = [];
+		function rowAt(x, side, comp) {   /* comp: 0 V, 1 M, 2 EI theta, 3 EI y; returns [coeffs over unknowns + C1, C2], known part */
+			var r = unk.map(function (u) { return bterm(u.k, u.a, u.b, x, side)[comp]; }), kn = 0;
+			terms.forEach(function (t) { kn += t.v * bterm(t.k, t.a, t.b, x, side)[comp]; });
+			r.push(comp === 3 ? 1 : 0, comp === 3 ? x : comp === 2 ? 1 : 0); return [r, kn];
+		}
+		function eq(x, side, comp) { var q = rowAt(x, side, comp); A.push(q[0]); y.push(-q[1]); }
+		eq(L, 1, 0); eq(L, 1, 1);
+		sup.forEach(function (s) { eq(s.x, 1, 3); if (s.k === "fix") eq(s.x, 1, 2); });
+		if (A.length !== n) return { err: "This support layout cannot be solved." };
+		var u = solveLin(A, y); if (!u) return { err: "These supports do not hold the beam up (it would move as a mechanism)." };
+		var all = terms.slice(); unk.forEach(function (q, i) { all.push({ k: q.k, a: q.a, b: q.b, v: u[i] }); });
+		var C1 = u[n - 2], C2 = u[n - 1];
+		function at(x, side) { var r = [0, 0, C2, C1 + C2 * x]; all.forEach(function (t) { var b = bterm(t.k, t.a, t.b, x, side); for (var j = 0; j < 4; j++) r[j] += t.v * b[j]; }); return { x: x, V: r[0], M: r[1], th: r[2] / EI, y: r[3] / EI }; }
+		/* sample points: a uniform grid plus both sides of every break */
+		var N = def.n || 400, xs = [], i, brk = [0, L];
+		for (i = 0; i <= N; i++) xs.push([L * i / N, 1]);
+		terms.concat(unk).forEach(function (t) { brk.push(t.a); if (t.b != null) brk.push(t.b); });
+		brk.forEach(function (x) { if (x >= 0 && x <= L) { xs.push([x, -1]); xs.push([x, 1]); } });
+		xs.sort(function (p, q) { return p[0] - q[0] || p[1] - q[1]; });
+		var pts = xs.map(function (p) { return at(p[0], p[0] === 0 ? 1 : p[0] === L ? -1 : p[1]); });
+		/* extremes: M has its peaks where V crosses zero (V is straight between samples, so the crossing is exact); y where theta crosses zero (bisection) */
+		var mmax = pts[0], mmin = pts[0], vmax = pts[0], ymax = pts[0];
+		function cand(p) { if (p.M > mmax.M) mmax = p; if (p.M < mmin.M) mmin = p; if (Math.abs(p.V) > Math.abs(vmax.V)) vmax = p; if (Math.abs(p.y) > Math.abs(ymax.y)) ymax = p; }
+		pts.forEach(cand);
+		for (i = 1; i < pts.length; i++) {
+			var p0 = pts[i - 1], p1 = pts[i]; if (!(p1.x > p0.x)) continue;
+			if (p0.V * p1.V < 0) { var xz = p0.x + (p1.x - p0.x) * p0.V / (p0.V - p1.V); cand(at(xz, 1)); }
+			if (p0.th * p1.th < 0) { var lo = p0.x, hi = p1.x, s0 = p0.th; for (var k = 0; k < 60; k++) { var mid = (lo + hi) / 2, tm = at(mid, 1).th; if (tm * s0 > 0) { lo = mid; } else hi = mid; } cand(at((lo + hi) / 2, 1)); }
+		}
+		var reac = sup.map(function (s, j) { var o = { x: s.x, k: s.k, R: 0, M: null }; unk.forEach(function (q, ii) { if (q.s === j) { if (q.k === "f") o.R = u[ii]; else o.M = u[ii]; } }); return o; });
+		var mAbs = Math.abs(mmax.M) >= Math.abs(mmin.M) ? mmax : mmin;
+		return { L: L, EI: EI, sup: sup, reac: reac, pts: pts, at: at, Mmax: mmax, Mmin: mmin, Mabs: mAbs, Vabs: vmax, Yabs: ymax, err: "" };
+	}
+	/* the textbook formulas (for the "check" line and the tests) */
+	var BEAMCASES = {
+		ssP: function (P, L, EI) { return { M: P * L / 4, y: P * L * L * L / (48 * EI) }; },
+		ssW: function (w, L, EI) { return { M: w * L * L / 8, y: 5 * w * Math.pow(L, 4) / (384 * EI) }; },
+		cantP: function (P, L, EI) { return { M: P * L, y: P * L * L * L / (3 * EI) }; },
+		cantW: function (w, L, EI) { return { M: w * L * L / 2, y: w * Math.pow(L, 4) / (8 * EI) }; },
+		fixW: function (w, L, EI) { return { M: w * L * L / 12, Mmid: w * L * L / 24, y: w * Math.pow(L, 4) / (384 * EI) }; },
+		fixP: function (P, L, EI) { return { M: P * L / 8, y: P * L * L * L / (192 * EI) }; }
+	};
+
 	var api = { UNITS: UNITS, factor: factor, toSI: toSI, fromSI: fromSI, conv: conv, unitOf: unitOf, parseNum: parseNum, parseQty: parseQty, sig: sig, pretty: pretty,
 		SHAPES: SHAPES, section: section, sizeFor: sizeFor, AX: AX, axialPropagate: axialPropagate, axialSolve: axialSolve, euler: euler,
 		shearPin: shearPin, pinSize: pinSize, gFrom: gFrom, kFrom: kFrom, torsion: torsion, shaftSize: shaftSize, torqueFromPower: torqueFromPower,
 		elastic: elastic, hooke: hooke, hookeInv: hookeInv, poissonBar: poissonBar, thermal: thermal, thermalDT: thermalDT, bucklingStress: bucklingStress, thermalSeries: thermalSeries, thermalState: thermalState, heatRGB: heatRGB, resilience: resilience,
-		FAMS: FAMS, MATS: MATS, mat: mat, curve: curve, saneCurveMat: saneCurveMat, stressAt: stressAt, idxAt: idxAt, measure: measure, permanentSet: permanentSet, roPoint: roPoint, neckOf: neckOf };
+		BSHAPES: BSHAPES, beamSection: beamSection, BSUP: BSUP, beamSupports: beamSupports, beamSolve: beamSolve, BEAMCASES: BEAMCASES, solveLin: solveLin,
+		FAMS: FAMS, MATS: MATS, mat: mat, curve: curve, serration: serration, saneCurveMat: saneCurveMat, stressAt: stressAt, idxAt: idxAt, measure: measure, permanentSet: permanentSet, roPoint: roPoint, neckOf: neckOf };
 	if (typeof module !== "undefined" && module.exports) module.exports = api; else root.MESMech = api;
 })(this);

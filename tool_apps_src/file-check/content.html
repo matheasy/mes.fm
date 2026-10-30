@@ -1,0 +1,166 @@
+	<script>try{if(!localStorage.getItem('pageMode')){document.documentElement.classList.add('page-wide')}}catch(e){}</script>
+	<div class="tu fc" id="fc">
+		<p class="fc-honest"><b>Honest first:</b> a web page can't scan your computer. It can't see your other programs, running processes or system files, and it has no virus database. What this page <em>can</em> do is look closely at files you give it, right here in your browser, and spot the tricks most malware relies on. For a real scan of your computer, see <a href="?tab=guide" data-tab-link="guide">How to really scan your computer</a>.</p>
+
+		<div class="tu-seg fc-tabs" id="fc-tabs" role="tablist" aria-label="What to check">
+			<button type="button" role="tab" data-tab="files" aria-pressed="true">📄 Check files</button><button type="button" role="tab" data-tab="link" aria-pressed="false">🔗 Check a link</button><button type="button" role="tab" data-tab="guide" aria-pressed="false">🛡 Really scan your computer</button>
+		</div>
+
+		<!-- ============ FILES ============ -->
+		<section id="fc-p-files" class="fc-panel" role="tabpanel">
+			<div class="tu-card">
+				<div class="fc-drop" id="fc-drop" tabindex="0" role="button" aria-label="Choose or drop files or a folder to check">
+					<div class="fc-drop__big">Drop files or a folder here</div>
+					<div class="fc-drop__sub">or use the buttons. Any kind of file: programs, documents, PDFs, zips, e-mail attachments, downloads.</div>
+				</div>
+				<div class="tu-row fc-pick">
+					<button type="button" class="tu-btn tu-btn--primary" id="fc-pickfiles">Choose files</button>
+					<button type="button" class="tu-btn tu-btn--ghost" id="fc-pickdir">Choose a folder</button>
+					<button type="button" class="tu-btn tu-btn--ghost" id="fc-eicar" title="Checks the harmless EICAR test file, made in memory here">Try the antivirus test file</button>
+					<button type="button" class="tu-btn tu-btn--ghost" id="fc-demo" title="Makes a few harmless example files that use common tricks">Try example tricks</button>
+					<input type="file" id="fc-files" multiple hidden>
+					<input type="file" id="fc-dir" webkitdirectory multiple hidden>
+				</div>
+				<label class="fc-check"><input type="checkbox" id="fc-hash" checked> Work out each file's fingerprint (SHA-256, SHA-1, MD5) for looking it up on VirusTotal</label>
+				<p class="tu-note">🔒 Private: files are read inside your browser and are never uploaded. Only if you click "Look up on VirusTotal" does that site receive the file's <em>fingerprint</em> (hash), never the file.</p>
+				<div class="fc-prog" id="fc-prog" hidden><div class="fc-prog__bar"><span id="fc-progbar"></span></div><span id="fc-progtxt" aria-live="polite"></span><button type="button" class="fc-link" id="fc-stop">Stop</button></div>
+			</div>
+
+			<div id="fc-out" hidden>
+				<div class="fc-sum" id="fc-sum" role="group" aria-label="Summary, click to filter"></div>
+				<section class="tu-card fc-res" id="fc-res" tabindex="-1">
+					<div class="fc-rhead"><h2 class="fc-h">Results</h2><span class="fc-pbar" id="fc-pbar"></span></div>
+					<div class="fc-tools">
+						<div class="tu-chips fc-filters" id="fc-filters" role="group" aria-label="Show">
+							<button type="button" class="tu-chip" data-f="all" aria-pressed="true">All</button><button type="button" class="tu-chip" data-f="3" aria-pressed="false">Danger</button><button type="button" class="tu-chip" data-f="2" aria-pressed="false">Caution</button><button type="button" class="tu-chip" data-f="0" aria-pressed="false">No red flags</button>
+						</div>
+						<input type="search" class="tu-input fc-find" id="fc-find" placeholder="Find a file…" aria-label="Find a file">
+						<select class="tu-select fc-sort" id="fc-sort" aria-label="Sort"><option value="risk">Riskiest first</option><option value="name">Name A-Z</option><option value="size">Biggest first</option><option value="type">Real type</option><option value="order">Order added</option></select>
+					</div>
+					<div class="fc-list" id="fc-list" role="list"></div>
+					<button type="button" class="tu-btn tu-btn--ghost fc-more" id="fc-more" hidden>Show more</button>
+					<div class="tu-row fc-exp">
+						<button type="button" class="tu-btn tu-btn--ghost" id="fc-copy">Copy report</button>
+						<button type="button" class="tu-btn tu-btn--ghost" id="fc-txt">Download report (.txt)</button>
+						<button type="button" class="tu-btn tu-btn--ghost" id="fc-csv">Download table (.csv)</button>
+						<button type="button" class="tu-btn tu-btn--ghost" id="fc-clear">Clear</button>
+					</div>
+					<p class="tu-note">"No red flags" only means none of the tricks this page knows about were found. It does not mean a file is safe: new malware can look completely normal. If you didn't expect a file, don't open it.</p>
+				</section>
+			</div>
+		</section>
+
+		<!-- ============ LINKS ============ -->
+		<section id="fc-p-link" class="fc-panel" role="tabpanel" hidden>
+			<div class="tu-card">
+				<form id="fc-uform" class="fc-uform" autocomplete="off">
+					<label class="tu-label" for="fc-url">Paste a link you're not sure about</label>
+					<div class="fc-urow"><input class="tu-input tu-input--big" id="fc-url" type="text" inputmode="url" spellcheck="false" placeholder="e.g. https://paypa1-secure.com/login"><button class="tu-btn tu-btn--primary" type="submit">Check</button></div>
+				</form>
+				<div class="tu-chips" id="fc-uex" aria-label="Examples">
+					<span class="fc-exl">Try:</span>
+					<button type="button" class="tu-chip" data-u="https://www.paypal.com.account-verify.net/signin">brand as a sub-part</button>
+					<button type="button" class="tu-chip" data-u="https://xn--pypal-4ve.com/">look-alike letters</button>
+					<button type="button" class="tu-chip" data-u="https://www.google.com@203.0.113.9/login">@ trick</button>
+					<button type="button" class="tu-chip" data-u="https://micros0ft-support.top/fix">typo + cheap ending</button>
+					<button type="button" class="tu-chip" data-u="https://bit.ly/3xYz">short link</button>
+					<button type="button" class="tu-chip" data-u="https://github.com/">a real site</button>
+				</div>
+				<p class="tu-note">Checking is done in your browser: the link is not visited and not sent anywhere until you press one of the VirusTotal, Google Safe Browsing or urlscan.io buttons that appear below.</p>
+			</div>
+			<div id="fc-uout" hidden></div>
+		</section>
+
+		<!-- ============ GUIDE ============ -->
+		<section id="fc-p-guide" class="fc-panel" role="tabpanel" hidden>
+			<div class="tu-card fc-guide">
+				<h2 class="fc-h">How to really scan your computer</h2>
+				<p>Only software running on the computer itself can scan it. The good news: Windows and macOS already include one, and it is free.</p>
+				<details open><summary>🪟 Windows 10 and 11: Microsoft Defender (built in)</summary>
+					<ol>
+						<li>Open <b>Start</b>, type <b>Windows Security</b> and open it.</li>
+						<li>Go to <b>Virus &amp; threat protection</b>. Under <i>Virus &amp; threat protection updates</i>, choose <b>Protection updates → Check for updates</b> first.</li>
+						<li>Back in Virus &amp; threat protection, choose <b>Scan options</b>, pick <b>Full scan</b> and press <b>Scan now</b>. It can take an hour or more; you can keep working.</li>
+						<li>If you think something is hiding, run the <b>Microsoft Defender Antivirus (offline scan)</b> from the same Scan options list. The computer restarts and scans before Windows starts (about 15 minutes), which finds malware that hides while Windows is running. Save your work first.</li>
+						<li>Afterwards check <b>Protection history</b> (same page) to see what was found and removed.</li>
+					</ol>
+					<p class="tu-note">Another antivirus may have turned Defender's real-time protection off; that is normal, but then run a full scan in that program instead. Microsoft also offers a free one-time scanner, the <b>Microsoft Safety Scanner</b>, as a second opinion.</p>
+				</details>
+				<details><summary>🍎 Mac</summary>
+					<ol>
+						<li>macOS has <b>XProtect</b> built in. It checks apps when you open them and removes known malware in the background. There is nothing to start: keep it current by keeping macOS updated (<b>System Settings → General → Software Update</b>, and turn on <b>Automatic updates</b> including "Install Security Responses and system files").</li>
+						<li>For a scan you can start yourself, the free version of <a href="https://www.malwarebytes.com/mac" target="_blank" rel="noopener">Malwarebytes for Mac</a> scans and removes adware and malware (the paid real-time protection is optional).</li>
+						<li>Check <b>System Settings → General → Login Items &amp; Extensions</b> for things that start by themselves that you don't recognise, and <b>Privacy &amp; Security → Profiles</b> (if present) for configuration profiles you didn't install.</li>
+					</ol>
+				</details>
+				<details><summary>🧩 Check your browser extensions (the most common hiding place for adware)</summary>
+					<ol>
+						<li>Open the extensions page: Chrome <code>chrome://extensions</code>, Edge <code>edge://extensions</code>, Brave <code>brave://extensions</code>, Firefox <code>about:addons</code>, Safari <b>Settings → Extensions</b>.</li>
+						<li>Remove anything you don't remember installing, don't use, or that asks to "read and change all your data on all websites" without a good reason.</li>
+						<li>Be wary of extensions that changed your search engine or new-tab page. Check <b>Settings → Search engine</b> and <b>On start-up</b> too.</li>
+						<li>Chrome and Edge have a <b>Safety Check</b> (Chrome: Settings → Privacy and security → Safety Check) that flags harmful extensions and leaked passwords.</li>
+						<li>If ads, pop-ups or redirects keep coming back, use <b>Settings → Reset settings</b> in the browser.</li>
+					</ol>
+				</details>
+				<details><summary>⚠ Signs that something may be wrong</summary>
+					<ul>
+						<li>Pop-ups or ads where there were none, or your searches going to an unfamiliar search engine.</li>
+						<li>New toolbars, extensions or programs you didn't install.</li>
+						<li>Antivirus or Windows Update turned off and you can't turn it back on.</li>
+						<li>Friends getting messages from you that you didn't send; password-reset e-mails you didn't ask for.</li>
+						<li>Files renamed with strange endings and a "pay to get them back" note (ransomware).</li>
+						<li>The computer is suddenly very slow, or the fan runs hard while it is idle (possible crypto mining). On its own this is usually something harmless.</li>
+					</ul>
+				</details>
+				<details><summary>🧯 What to do if you think you are infected</summary>
+					<ol>
+						<li>Disconnect from the internet (Wi-Fi off or cable out) so nothing more is sent or downloaded.</li>
+						<li>Run a full scan, then an offline scan (Windows) or Malwarebytes (Mac), as above.</li>
+						<li>From a <b>different, clean device</b>, change the passwords of your e-mail first, then banking, then everything else, and turn on two-step verification.</li>
+						<li>Tell your bank if you entered card or banking details anywhere suspicious.</li>
+						<li>If it is ransomware, or the scans keep finding things, back up your documents (not programs) and reinstall the operating system, or ask a professional.</li>
+						<li>Phones: on Android open the Play Store → your profile → <b>Play Protect</b> → Scan. On iPhone keep iOS updated and remove profiles you don't recognise (Settings → General → VPN &amp; Device Management).</li>
+					</ol>
+				</details>
+				<details><summary>✅ Habits that prevent most infections</summary>
+					<ul>
+						<li>Keep the operating system, browser and apps updated; most attacks use holes that are already fixed.</li>
+						<li>Install software only from the maker's own site or the official app store.</li>
+						<li>Don't open attachments or links you weren't expecting, even from people you know. Check them here first.</li>
+						<li>Never click "Enable content" / "Enable macros" in a document from an e-mail.</li>
+						<li>Turn on file name extensions (Windows File Explorer → View → Show → File name extensions) so "invoice.pdf.exe" can't hide.</li>
+						<li>Keep a backup that isn't always connected (an external drive you unplug, or a cloud backup with version history).</li>
+					</ul>
+				</details>
+				<details><summary>🧪 Test that your antivirus works</summary>
+					<p>The <b>EICAR test file</b> is a harmless 68-character text that every antivirus is designed to flag, so you can check it is switched on without touching real malware. Download it from <a href="https://www.eicar.org/download-anti-malware-testfile/" target="_blank" rel="noopener">eicar.org</a>: your antivirus should block or quarantine it. You can also drop it on this page (or press "Try the antivirus test file") to see it recognised.</p>
+				</details>
+			</div>
+		</section>
+
+		<div class="tu-toast" id="fc-toast" role="status" aria-live="polite"></div>
+
+		<div class="tu-seo">
+			<h2>Is this file safe? A private file check in your browser</h2>
+			<p>Most malware that reaches people arrives as an ordinary-looking file: an "invoice" that is really a program, a Word document that asks you to enable macros, a zip with a password in the e-mail, or a web page that pretends to be a login screen. This page reads each file you give it and explains, in plain words, what it really is and which of these tricks it uses. It works on whole folders too, and nothing leaves your computer.</p>
+			<h3>What it checks</h3>
+			<dl>
+				<dt>What the file really is</dt><dd>The first bytes of a file say what it is, whatever its name says. A Windows program (.exe), Mac or Linux program, shortcut or installer named like a PDF, picture or document is flagged as <strong>disguised</strong>.</dd>
+				<dt>Name tricks</dt><dd>Double endings (<code>invoice.pdf.exe</code>), invisible right-to-left characters that flip the end of a name, and long runs of spaces that push the real ending out of view.</dd>
+				<dt>Office documents</dt><dd>Macros (and whether they start by themselves), Excel 4.0 macro sheets, remote template injection, links that load objects from the internet, DDE fields, embedded programs and password protection.</dd>
+				<dt>PDFs</dt><dd>JavaScript, actions that run when the PDF opens, Launch actions, attached files, names disguised with #xx codes and object streams that hide them.</dd>
+				<dt>Archives and disk images</dt><dd>Every file inside a ZIP (including zips inside zips) is checked the same way; password-protected archives and zip bombs are flagged, and the top folder of ISO images is listed.</dd>
+				<dt>Web pages, pictures and shortcuts</dt><dd>Login forms in attachments (phishing), "HTML smuggling", scripts inside SVG pictures, and .url / .webloc / .lnk shortcuts that start programs or point at look-alike sites.</dd>
+			</dl>
+			<h3>Questions</h3>
+			<h4>Is this an antivirus?</h4>
+			<p>No. An antivirus compares files with millions of known threats and watches what programs do. This page has no virus list; it looks for warning signs in how a file is built. Use it as a second opinion before opening something, together with your antivirus, never instead of it.</p>
+			<h4>What does the VirusTotal button send?</h4>
+			<p>Only the SHA-256 fingerprint of the file, a 64-character code that can't be turned back into the file. VirusTotal then shows whether that exact file has been seen and what dozens of antivirus engines thought of it. If nobody has uploaded it before, it will say "not found", which tells you nothing either way. Uploading the file itself to VirusTotal shares it with security companies, so don't upload private documents.</p>
+			<h4>A program I downloaded on purpose shows "Caution". Is it bad?</h4>
+			<p>Not necessarily. Every program can change your computer, so they are always marked Caution. It is fine if it came from the maker's own website or an official store; "Danger" is kept for disguises and tricks that honest files don't use.</p>
+			<h4>Why can't a website scan my whole computer?</h4>
+			<p>Browsers deliberately keep web pages away from your files, programs and settings; that is what stops a malicious website from doing damage. A page can only read files you choose to give it.</p>
+		</div>
+	</div>
+	<script src="/main_js/panel-view.js?v=1" defer></script>
