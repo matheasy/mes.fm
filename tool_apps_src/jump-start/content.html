@@ -1,0 +1,228 @@
+<script>try{if(!localStorage.getItem('pageMode')){document.documentElement.classList.add('page-wide')}}catch(e){}</script>
+	<div class="tu jp" id="jp">
+		<p class="jp-safe"><strong>Safety first.</strong> This page teaches the usual method. Your car&rsquo;s owner&rsquo;s manual wins if it says something different (some cars have special jump points or forbid jump-starting). If a battery is cracked, leaking, swollen or frozen, do not jump it.</p>
+		<nav class="jp-toc" aria-label="On this page">
+			<a href="#jp-sim">Simulator</a><a href="#jp-age">Battery age</a><a href="#jp-why">Why batteries die</a><a href="#jp-volt">Voltage check</a><a href="#jp-opt">Options &amp; risks</a><a href="#jp-check">Checklist</a><a href="#jp-faq">Questions</a>
+		</nav>
+
+		<section class="tu-card jp-simcard" id="jp-sim" aria-labelledby="jp-sim-h">
+			<div class="jp-chead"><h2 id="jp-sim-h">Jump-start simulator</h2></div>
+			<div class="jp-tabs" role="tablist" aria-label="Way to start the car">
+				<button type="button" role="tab" id="jp-t-cables" aria-selected="true" data-mode="cables">🔌 Jumper cables</button>
+				<button type="button" role="tab" id="jp-t-pack" aria-selected="false" data-mode="pack">🔋 Jump pack</button>
+				<button type="button" role="tab" id="jp-t-push" aria-selected="false" data-mode="push">🚗 Push start (manual)</button>
+			</div>
+			<div class="jp-simwrap" id="jp-simwrap">
+				<div class="jp-stagebox">
+					<svg id="jp-svg" class="jp-svg" viewBox="0 0 1000 600" role="application" aria-label="Engine bays of a dead car and a helper car with jumper cable clamps you can drag"></svg>
+					<p class="jp-hint" id="jp-hint">Drag a clamp onto a glowing spot, or tap a clamp and then tap where it goes.</p>
+				</div>
+				<div class="jp-side">
+					<ol class="jp-steps" id="jp-steps"></ol>
+					<div class="jp-meters" id="jp-meters"></div>
+					<div class="jp-msg" id="jp-msg" role="status" aria-live="polite"></div>
+					<div class="jp-ctl" id="jp-ctl"></div>
+					<label class="jp-opt" id="jp-remote-l"><input type="checkbox" id="jp-remote"> The dead car has remote jump posts (battery in the trunk or under a seat)</label>
+				</div>
+			</div>
+			<div class="jp-push" id="jp-push" hidden>
+				<div class="jp-pushfig" aria-hidden="true">
+					<svg viewBox="0 0 640 170" class="jp-pushsvg"><line x1="10" y1="150" x2="630" y2="150" class="jp-road"/><g class="jp-pushcar"><rect x="250" y="80" width="230" height="50" rx="14" class="jp-carbody"/><path d="M290 80 L320 45 L420 45 L455 80 Z" class="jp-carbody"/><rect x="330" y="52" width="40" height="24" rx="4" class="jp-carwin"/><rect x="378" y="52" width="40" height="24" rx="4" class="jp-carwin"/><circle cx="295" cy="132" r="18" class="jp-wheel"/><circle cx="435" cy="132" r="18" class="jp-wheel"/></g><g class="jp-pusher"><circle cx="490" cy="62" r="11" class="jp-person"/><path d="M492 74 L520 110 L505 148 M518 108 L540 148 M494 84 L482 104" class="jp-personl"/></g><text x="150" y="40" class="jp-pushtxt">2nd gear, clutch in</text><text x="150" y="62" class="jp-pushtxt">at 8–16 km/h (5–10 mph): pop the clutch</text></svg>
+				</div>
+				<h3>Push-starting (bump-starting) a manual car</h3>
+				<p>Only for a car with a <strong>manual gearbox</strong>. An automatic, a hybrid or an electric car cannot be push-started, and many modern cars with keyless start or a start-stop system will not run with a very flat battery even if you get them rolling.</p>
+				<ol class="jp-list">
+					<li>Clear road ahead, ideally a gentle downhill slope, and one or two helpers to push. Never push on a busy road.</li>
+					<li>Driver: ignition <strong>on</strong> (dash lights on), clutch pedal <strong>fully down</strong>, select <strong>2nd gear</strong> (1st is too jerky).</li>
+					<li>Helpers push until the car rolls at a brisk walk to a jog, about 8&ndash;16 km/h (5&ndash;10 mph).</li>
+					<li>Release the clutch quickly. The wheels turn the engine; it should fire. Press the clutch again straight away and give it a little throttle so it doesn&rsquo;t stall.</li>
+					<li>Keep it running: drive for at least 30 minutes, then have the battery and alternator tested.</li>
+				</ol>
+				<p class="tu-note">If it doesn&rsquo;t fire after two or three tries, stop: repeated misfires pump unburnt fuel into the exhaust, which is hard on the catalytic converter. Never tow-start a car with an automatic gearbox.</p>
+			</div>
+		</section>
+
+		<section class="tu-card" id="jp-age" aria-labelledby="jp-age-h">
+			<h2 id="jp-age-h">How old is my battery?</h2>
+			<p>Most batteries carry a <strong>date code</strong>: a sticker on the side or top, a code heat-stamped into the plastic lid, or a shop&rsquo;s &ldquo;sold&rdquo; sticker. A very common format is <strong>a letter for the month and a number for the year</strong>: A = January, B = February &hellip; so <strong>F-15</strong> on a sticker or stamp is usually <strong>June 2015</strong>. Formats differ by maker, so the decoder lists every likely reading.</p>
+			<div class="tu-row" style="align-items:flex-end;">
+				<div class="tu-field" style="flex:2 1 14em;"><label for="jp-code">Type the code from your battery</label><input id="jp-code" class="tu-input tu-input--big" type="text" autocomplete="off" spellcheck="false" maxlength="24" placeholder="e.g. F-15, C3, 06/15, 4208"></div>
+				<div class="tu-field" style="flex:1 1 10em;"><label for="jp-clim">Where you live</label><select id="jp-clim" class="tu-input"><option value="hot">Hot (long hot summers)</option><option value="mild" selected>Mild / mixed</option><option value="cold">Cold (cool summers)</option></select></div>
+			</div>
+			<div class="jp-chips" id="jp-codechips" role="group" aria-label="Example codes"><span class="jp-cl">Try</span><button type="button" class="tu-chip" data-code="F-15">F-15</button><button type="button" class="tu-chip" data-code="C3">C3</button><button type="button" class="tu-chip" data-code="J3">J3</button><button type="button" class="tu-chip" data-code="06/15">06/15</button><button type="button" class="tu-chip" data-code="5F">5F</button><button type="button" class="tu-chip" data-code="4208">4208</button><button type="button" class="tu-chip" data-code="212">212</button></div>
+			<div id="jp-codeout" class="jp-codeout" aria-live="polite"></div>
+			<details class="jp-more">
+				<summary>Or pick the month and year yourself</summary>
+				<div class="tu-row" style="align-items:flex-end;margin-top:0.6em;">
+					<div class="tu-field" style="flex:1 1 9em;"><label for="jp-pm">Month</label><select id="jp-pm" class="tu-input"></select></div>
+					<div class="tu-field" style="flex:1 1 9em;"><label for="jp-py">Year</label><select id="jp-py" class="tu-input"></select></div>
+				</div>
+				<div id="jp-pickout" class="jp-codeout"></div>
+			</details>
+			<h3>Common date-code formats</h3>
+			<div class="tu-table-wrap"><table class="tu-table jp-table">
+				<thead><tr><th>Looks like</th><th>Usually means</th><th>Seen on (as commonly reported)</th></tr></thead>
+				<tbody>
+					<tr><td><b>F-15</b>, <b>F15</b>, <b>C3</b></td><td>Letter = month (A = Jan &hellip; L = Dec), number = year (one digit = the most recent year ending in it)</td><td>Shop and maker stickers, many heat stamps; Interstate stickers, Crown, Trojan, Duralast, EverStart</td></tr>
+					<tr><td><b>J3</b>, <b>M4</b></td><td>The same, but some makers skip the letter I (so J = September, M = December)</td><td>Deka / East Penn, some others. Letters A&ndash;H mean the same month either way</td></tr>
+					<tr><td><b>5F</b>, <b>3A</b></td><td>Year first, then the month letter</td><td>Continental and others</td></tr>
+					<tr><td><b>06/15</b>, <b>0326</b></td><td>Month / year</td><td>&ldquo;Sold&rdquo; and shop stickers, Duralast, Duracell, Odyssey top labels</td></tr>
+					<tr><td><b>4208</b></td><td>Year digit + day of the year (Julian date): 4208 = day 208 of 2024, late July</td><td>Optima</td></tr>
+					<tr><td><b>212</b></td><td>Year digit + two-digit month: 212 = December 2022</td><td>Reported for ACDelco and some Bosch</td></tr>
+					<tr><td>Long stamp like <b>E4J2&hellip;</b></td><td>Plant, line and date mixed; often a month letter and a year digit inside</td><td>Heat-stamped lids (Clarios / Johnson Controls, Exide, East Penn); check the maker or ask the seller</td></tr>
+				</tbody>
+			</table></div>
+			<p class="tu-note"><strong>&ldquo;Sold&rdquo; punch stickers</strong> have the months and years printed round the edge; the shop punches out the month and year it was sold. That is the sale date, not the build date: a battery can sit on a shelf for months, so a battery more than about 6 months old at sale is no longer fresh. A one-digit year repeats every ten years, which is why the decoder shows the most recent match. If two readings are possible, the sticker on the side and the stamp on the lid usually agree.</p>
+		</section>
+
+		<section class="tu-card" id="jp-why" aria-labelledby="jp-why-h">
+			<h2 id="jp-why-h">Why batteries die (and why it happens on the coldest morning)</h2>
+			<div class="jp-cold">
+				<div class="jp-coldctl">
+					<div class="jp-tempread"><span class="jp-wx" id="jp-wx" aria-hidden="true">☀️</span><span><b id="jp-temp-v">20 °C</b><br><small id="jp-wx-t">Mild</small></span></div>
+					<label for="jp-temp" class="tu-label">Outside temperature</label>
+					<input type="range" id="jp-temp" min="-35" max="45" step="1" value="20" class="jp-range">
+					<div class="jp-seg" role="group" aria-label="Temperature unit"><button type="button" data-u="c" aria-pressed="true">°C</button><button type="button" data-u="f" aria-pressed="false">°F</button></div>
+					<button type="button" class="tu-btn" id="jp-temp-reset">Reset</button>
+				</div>
+				<div class="jp-coldfig">
+					<svg id="jp-fuel" viewBox="0 0 360 200" class="jp-fuelsvg" style="overflow:visible" role="img" aria-label="Battery power available compared with what the engine needs"></svg>
+					<p class="jp-coldtxt" id="jp-coldtxt"></p>
+				</div>
+			</div>
+			<svg id="jp-coldchart" class="jp-chart" viewBox="0 0 640 260" role="img" aria-label="Chart of battery power and engine need against temperature"></svg>
+			<p class="tu-note">Battery makers&rsquo; rule of thumb (a fully charged battery): at 0 °C (32 °F) it can deliver about 65% of its warm-weather cranking power and at &minus;18 °C (0 °F) about 40%, while thick cold oil means the engine needs about 1.55&times; and 2.1&times; as much to turn over. Outside &minus;18 to 27 °C the lines are extended and only a rough guide.</p>
+
+			<div class="jp-causes">
+				<div class="jp-cause"><b>⏳ Age</b><p>Most car batteries last <strong>3 to 5 years</strong>. The lead plates slowly sulfate and shed, so the battery holds less and less charge. You often don&rsquo;t notice until the first cold morning.</p></div>
+				<div class="jp-cause"><b>🥶 Cold</b><p>The chemistry slows down and the oil thickens (see the slider). Cold reveals a weak battery; it rarely kills a healthy one by itself. A flat battery can also freeze.</p></div>
+				<div class="jp-cause"><b>🔥 Heat</b><p>Summer heat is the real killer: it speeds up corrosion and water loss inside. In hot climates batteries often last only 2&ndash;3 years. The damage is done in summer and shows up in winter.</p></div>
+				<div class="jp-cause"><b>🛣 Short trips</b><p>Starting uses a lot of charge and a 5-minute drive does not put it back. Lots of short trips (or a car that sits) leaves the battery part-charged, which sulfates it.</p></div>
+				<div class="jp-cause"><b>💡 Lights or doors left on</b><p>Headlights draw about 10 A: they can flatten a battery in a few hours. A dome light or a glovebox light that stays on can do it overnight.</p></div>
+				<div class="jp-cause"><b>🔌 Parasitic drain</b><p>Clocks, alarms and computers draw a little all the time (usually 20&ndash;50 mA). A faulty module or aftermarket gadget can draw 10 times that. Try the calculator below.</p></div>
+				<div class="jp-cause"><b>🧂 Loose or corroded terminals</b><p>White or green crust on the posts blocks current. Clean with a baking-soda solution and a brush (eye protection on), then tighten.</p></div>
+				<div class="jp-cause"><b>⚙️ Charging problem</b><p>If a new battery keeps going flat, the alternator or its belt may not be charging. The running-voltage check below tells you.</p></div>
+			</div>
+
+			<h3>How long until a parked car won&rsquo;t start?</h3>
+			<div class="jp-drain">
+				<div class="tu-row" style="align-items:flex-end;">
+					<div class="tu-field" style="flex:1 1 9em;"><label for="jp-ah">Battery size (Ah)</label><input id="jp-ah" class="tu-input" type="number" min="20" max="200" step="1" value="60"></div>
+					<div class="tu-field" style="flex:1 1 9em;"><label for="jp-soc0">Charge when parked</label><select id="jp-soc0" class="tu-input"><option value="100">Full (100%)</option><option value="80" selected>Typical (80%)</option><option value="60">Short trips (60%)</option></select></div>
+				</div>
+				<label for="jp-ma" class="tu-label" style="margin-top:0.7em;display:block;">Current draw: <b id="jp-ma-v">40 mA</b></label>
+				<input type="range" id="jp-ma" min="0" max="1000" step="1" value="210" class="jp-range" aria-describedby="jp-ma-v">
+				<div class="jp-chips" id="jp-machips" role="group" aria-label="Typical draws"><button type="button" class="tu-chip" data-ma="30">Normal car, parked (30 mA)</button><button type="button" class="tu-chip" data-ma="300">Faulty module (300 mA)</button><button type="button" class="tu-chip" data-ma="800">Dome light on (0.8 A)</button><button type="button" class="tu-chip" data-ma="10000">Headlights on (10 A)</button></div>
+				<p class="jp-drainout" id="jp-drainout"></p>
+			</div>
+		</section>
+
+		<section class="tu-card" id="jp-volt" aria-labelledby="jp-volt-h">
+			<h2 id="jp-volt-h">Voltage check: is my battery charged?</h2>
+			<p>A cheap multimeter on the 20 V DC range, red probe on +, black on &minus;. For the <strong>resting</strong> reading, the engine should have been off for a few hours (or switch the headlights on for a minute, then off, to remove the &ldquo;surface charge&rdquo; after driving).</p>
+			<div class="jp-voltwrap">
+				<svg id="jp-gauge" viewBox="0 0 320 190" class="jp-gauge" role="img" aria-label="Voltmeter"></svg>
+				<div class="jp-voltctl">
+					<div class="jp-seg" role="group" aria-label="Engine"><button type="button" data-vm="rest" aria-pressed="true">Engine off (resting)</button><button type="button" data-vm="run" aria-pressed="false">Engine running</button></div>
+					<div class="jp-seg" role="group" aria-label="Battery type"><button type="button" data-bt="flooded" aria-pressed="true">Ordinary (flooded)</button><button type="button" data-bt="agm" aria-pressed="false">AGM</button></div>
+					<label for="jp-v" class="tu-label">Reading: <b id="jp-v-v">12.40 V</b></label>
+					<input type="range" id="jp-v" min="10.5" max="15.5" step="0.05" value="12.4" class="jp-range">
+					<p class="jp-voltout" id="jp-voltout"></p>
+				</div>
+			</div>
+			<div class="tu-table-wrap"><table class="tu-table jp-table">
+				<thead><tr><th>Resting voltage (ordinary battery, ~25 °C)</th><th>Charge</th><th>What to do</th></tr></thead>
+				<tbody>
+					<tr><td>12.6 V or more</td><td>about 100%</td><td>Fine</td></tr>
+					<tr><td>12.4 V</td><td>about 75%</td><td>OK; a long drive or a charger tops it up</td></tr>
+					<tr><td>12.2 V</td><td>about 50%</td><td>Charge it soon: below this a battery sulfates and can freeze in a hard frost</td></tr>
+					<tr><td>12.0 V</td><td>about 25%</td><td>Weak; may not start in the cold</td></tr>
+					<tr><td>11.9 V or less</td><td>flat</td><td>Charge it, then have it load-tested</td></tr>
+				</tbody>
+			</table></div>
+			<p class="tu-note"><strong>Engine running</strong>, the alternator should show about <strong>13.7&ndash;14.7 V</strong>. Under 13 V it is probably not charging; over about 15 V it is overcharging. Many newer cars with &ldquo;smart&rdquo; charging let the voltage drop to 12.5&ndash;13 V for a while when the battery is full, so check twice. AGM batteries rest about 0.1&ndash;0.2 V higher than ordinary ones.</p>
+			<h3>CCA and the other numbers on the label</h3>
+			<div class="tu-table-wrap"><table class="tu-table jp-table">
+				<tbody>
+					<tr><th>CCA (cold cranking amps)</th><td>The current a 12 V battery can deliver for 30 seconds at &minus;18 °C (0 °F) while staying above 7.2 V. The number that matters for winter starts: pick at least what your manual asks for.</td></tr>
+					<tr><th>CA / MCA (cranking amps)</th><td>The same test at 0 °C (32 °F), so always a bigger number than CCA. Don&rsquo;t compare one battery&rsquo;s CA with another&rsquo;s CCA.</td></tr>
+					<tr><th>RC (reserve capacity)</th><td>Minutes the battery can supply 25 A (at 27 °C) before dropping to 10.5 V: how long you could run with a dead alternator.</td></tr>
+					<tr><th>Ah (amp-hours)</th><td>Total charge, usually at a 20-hour rate. Used for the drain calculator above.</td></tr>
+					<tr><th>Group size</th><td>Case size and post layout (for example 24F, 35, H6 / 48). It must fit the tray and the cables.</td></tr>
+				</tbody>
+			</table></div>
+		</section>
+
+		<section class="tu-card" id="jp-opt" aria-labelledby="jp-opt-h">
+			<h2 id="jp-opt-h">Options and risks</h2>
+			<div class="tu-table-wrap"><table class="tu-table jp-table">
+				<thead><tr><th></th><th>Jumper cables</th><th>Jump pack (booster)</th></tr></thead>
+				<tbody>
+					<tr><th>Needs a second car</th><td>Yes</td><td>No</td></tr>
+					<tr><th>Reverse-polarity risk</th><td>Real: a wrong clamp sparks and can damage electronics</td><td>Low: most packs block power and beep if the clamps are swapped</td></tr>
+					<tr><th>Must be charged</th><td>No</td><td>Yes: recharge every 3&ndash;6 months and after each use</td></tr>
+					<tr><th>Cost</th><td>About $20&ndash;50</td><td>About $60&ndash;200</td></tr>
+					<tr><th>Good for</th><td>Any car, very flat batteries (the donor also charges it a little)</td><td>Being alone, tight parking spots, roadside</td></tr>
+				</tbody>
+			</table></div>
+			<div class="jp-causes">
+				<div class="jp-cause"><b>🧵 Cable gauge</b><p>Lower number = thicker wire. <strong>6 gauge</strong> is fine for small cars, <strong>4 gauge</strong> for most cars and SUVs, <strong>2 or 1 gauge</strong> for trucks, V8s and diesels. 4&ndash;6 m (12&ndash;20 ft) long lets you reach without parking nose to nose. Thin cheap cables get hot and may not start a big engine.</p></div>
+				<div class="jp-cause"><b>⚡ Hybrids and electric cars</b><p>They still have a small 12 V battery that wakes the car up. Use the 12 V battery or the jump points under the hood shown in the manual, never the orange high-voltage parts. Many makers say <strong>not</strong> to use a hybrid or EV to jump another car (its small 12 V system and converter are not built for a starter motor): check the manual first.</p></div>
+				<div class="jp-cause"><b>🧊 Frozen battery</b><p>A flat battery can freeze at about &minus;8 °C (a full one only near &minus;58 °C). Bulging sides or ice in the cells means <strong>never jump or charge it</strong>: it can burst. Let it thaw indoors, away from people, then test it, or replace it.</p></div>
+				<div class="jp-cause"><b>🛑 Cracked, leaking, swollen</b><p>Don&rsquo;t jump it. The acid burns skin and eyes and eats paint. A rotten-egg smell or a hissing battery means stop and step away.</p></div>
+				<div class="jp-cause"><b>🔄 AGM and start-stop cars</b><p>Usually jumped the normal way, but many have a battery sensor on the &minus; post: clamp to the ground point the manual shows, not the post. Some have the battery in the trunk with jump posts under the hood. Replacement AGM batteries may need to be &ldquo;registered&rdquo; to the car.</p></div>
+				<div class="jp-cause"><b>💻 Protect the electronics</b><p>Turn off headlights, heater fan, radio and chargers in both cars before connecting. Don&rsquo;t rev the donor hard. Don&rsquo;t disconnect while cranking.</p></div>
+				<div class="jp-cause"><b>🥽 Safety gear</b><p>Safety glasses and gloves; no smoking, flames or sparks near the batteries; remove metal watches and rings; keep loose clothing and hair away from fans and belts (an electric fan can start by itself).</p></div>
+				<div class="jp-cause"><b>📞 Call roadside assistance when&hellip;</b><p>the battery is damaged or frozen, you can&rsquo;t find the jump points, it&rsquo;s a hybrid / EV you are unsure about, the car is on a busy road or shoulder, it won&rsquo;t start after 3&ndash;4 tries, or anything smokes, smells or melts.</p></div>
+			</div>
+		</section>
+
+		<section class="tu-card" id="jp-check" aria-labelledby="jp-check-h">
+			<div class="jp-chead"><h2 id="jp-check-h">Printable checklist: jumper cables</h2><button type="button" class="tu-btn" id="jp-print">🖨 Print</button><button type="button" class="tu-btn" id="jp-check-reset">Untick all</button></div>
+			<ol class="jp-checklist" id="jp-checklist">
+				<li><label><input type="checkbox"> Both cars off, in Park / Neutral, handbrakes on, keys out. Cars close but <strong>not touching</strong>.</label></li>
+				<li><label><input type="checkbox"> Lights, heater, radio and chargers off in both cars. Glasses and gloves on.</label></li>
+				<li><label><input type="checkbox"> Check the dead battery: not cracked, leaking, bulging or frozen. Find + and &minus; (and the manual&rsquo;s jump points).</label></li>
+				<li><label><input type="checkbox"> <span class="jp-red">Red</span> clamp on the <strong>dead</strong> battery&rsquo;s <strong>+</strong>.</label></li>
+				<li><label><input type="checkbox"> Other <span class="jp-red">red</span> clamp on the <strong>good</strong> battery&rsquo;s <strong>+</strong>.</label></li>
+				<li><label><input type="checkbox"> <b>Black</b> clamp on the <strong>good</strong> battery&rsquo;s <strong>&minus;</strong>.</label></li>
+				<li><label><input type="checkbox"> Last <b>black</b> clamp on <strong>bare, unpainted metal</strong> of the dead car&rsquo;s engine or its ground point, away from the battery.</label></li>
+				<li><label><input type="checkbox"> Start the good car; let it run 2&ndash;5 minutes.</label></li>
+				<li><label><input type="checkbox"> Start the dead car (5&ndash;10 seconds of cranking at most, then wait a minute or two before trying again).</label></li>
+				<li><label><input type="checkbox"> Remove in reverse order: black from metal, black from good &minus;, red from good +, red from dead +. Don&rsquo;t let clamps touch.</label></li>
+				<li><label><input type="checkbox"> Drive at least 30 minutes, then have the battery and charging system tested.</label></li>
+			</ol>
+		</section>
+
+		<div class="tu-seo" id="jp-faq">
+			<h2>How to jump-start a car</h2>
+			<p>Connect the cables in this order: red to the dead battery&rsquo;s +, red to the good battery&rsquo;s +, black to the good battery&rsquo;s &minus;, and the last black clamp to bare metal on the dead car&rsquo;s engine. Start the good car, wait a few minutes, start the dead car, then remove the clamps in the reverse order.</p>
+			<h3>Questions</h3>
+			<dl>
+				<dt>Why not put the last black clamp on the dead battery&rsquo;s &minus; post?</dt>
+				<dd>The last connection closes the circuit and can make a small spark. Lead-acid batteries can give off hydrogen gas from their vents, more so while being charged, and hydrogen ignites easily. Making that spark on engine metal away from the battery keeps it away from the gas. Some owner&rsquo;s manuals do allow &minus; to &minus;; follow yours.</dd>
+				<dt>Does the order really matter?</dt>
+				<dd>Yes. Connecting the dead car&rsquo;s + first means the only live clamp you handle early is the one you are about to clamp; and grounding last puts the unavoidable spark in the safest place. Removing in reverse order keeps a live red clamp from being waved around near metal.</dd>
+				<dt>What happens if I swap the clamps?</dt>
+				<dd>Reversed polarity sends a large current the wrong way. Expect sparks and hot or melted cables, blown fuses or fusible links, and possibly damage to the alternator&rsquo;s diodes and the car&rsquo;s computers. In the worst case a battery can burst. If you notice a mistake, remove the clamps (the last one first) and check fuses before trying again.</dd>
+				<dt>How long should I let the donor car run?</dt>
+				<dd>Two to five minutes before the first try. A very flat battery may need longer. Crank for no more than about 5&ndash;10 seconds at a time, with a minute or two between tries, so the starter doesn&rsquo;t overheat.</dd>
+				<dt>It started. Now what?</dt>
+				<dd>Keep it running and drive for at least 30 minutes (motorway driving is best) so the alternator can recharge it. A jump-start doesn&rsquo;t fix an old battery: if it was the battery&rsquo;s age, cold or a drain, have it tested. Many auto-parts shops test batteries for free.</dd>
+				<dt>It clicks but doesn&rsquo;t crank.</dt>
+				<dd>Fast clicking means not enough current: check that every clamp bites bare metal, let the donor run longer, or use thicker cables. A single click with full dash lights can be the starter motor.</dd>
+				<dt>How do I read the date on my battery?</dt>
+				<dd>Use the decoder above. A letter + number like F-15 is most often month + year: F is the 6th letter, so June 2015. Formats vary, so compare the sticker and the lid stamp, or ask the maker.</dd>
+			</dl>
+			<h3>Sources</h3>
+			<ul class="jp-src">
+				<li>Your vehicle&rsquo;s owner&rsquo;s manual (jump points, ground studs, hybrid and EV rules): it always overrides general advice.</li>
+				<li><a href="https://www.statefarm.com/simple-insights/auto-and-vehicles/how-to-jump-start-a-car" target="_blank" rel="noopener">State Farm: How to jump-start a car</a>; <a href="https://www.edmunds.com/how-to/jump-start.html" target="_blank" rel="noopener">Edmunds: How to jump-start a car</a>; <a href="https://www.kbb.com/car-advice/how-to-jump-start-battery/" target="_blank" rel="noopener">Kelley Blue Book: How to jump-start a battery</a> (connection order, ground point, removal order).</li>
+				<li><a href="https://batteryuniversity.com/article/bu-403-charging-lead-acid" target="_blank" rel="noopener">Battery University: Charging lead acid</a> (hydrogen gassing, voltage and state of charge) and <a href="https://batteryuniversity.com/article/bu-410-charging-at-high-and-low-temperatures" target="_blank" rel="noopener">Charging at high and low temperatures</a>.</li>
+				<li>Battery Council International and battery makers (<a href="https://www.clarios.com" target="_blank" rel="noopener">Clarios</a>, <a href="https://www.eastpennmanufacturing.com" target="_blank" rel="noopener">East Penn</a>, Interstate, Exide): CCA / CA / RC definitions, the cold-cranking chart (65% / 40% power, 155% / 210% need) and 3&ndash;5 year life.</li>
+				<li><a href="https://www.batteriesinaflash.com/how-to-read-battery-manufacturer-date-codes" target="_blank" rel="noopener">Batteries in a Flash: How to read battery date codes</a> (a retailer&rsquo;s per-brand list; makers change their codes, so treat brand rules as &ldquo;commonly reported&rdquo;).</li>
+			</ul>
+			<p class="tu-note">This page is general information, not professional advice. When in doubt, call roadside assistance.</p>
+		</div>
+	</div>
+	<script src="/main_js/panel-view.js?v=1" defer></script>
