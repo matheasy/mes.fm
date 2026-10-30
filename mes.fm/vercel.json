@@ -2,6 +2,7 @@
   "ignoreCommand": "if [ -n \"$VERCEL_GIT_PREVIOUS_SHA\" ] && git cat-file -e \"$VERCEL_GIT_PREVIOUS_SHA^{commit}\" 2>/dev/null && git diff --quiet \"$VERCEL_GIT_PREVIOUS_SHA\" HEAD -- ./; then exit 0; else exit 1; fi",
   "cleanUrls": true,
   "redirects": [
+    { "source": "/space-shuttle-columbia", "destination": "/em-304-problem-1-judy-wood", "permanent": true },
     { "source": "/feedback", "destination": "/ratings#feedback", "permanent": true },
     { "source": "/rating", "destination": "/ratings", "permanent": true },
     { "source": "/top-rated", "destination": "/ratings", "permanent": true },
