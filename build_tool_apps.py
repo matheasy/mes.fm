@@ -194,6 +194,14 @@ APPS = {
     # MES Debt Clock (2026-10-25, mes.fm/debt-clock): US / world / Canada government debt as running estimates (last official figure + average change over a stated window).
     # Data = mes.fm/api/debt.js (one aggregator, keyless: Treasury Fiscal Data, FRED, IMF DataMapper, Statistics Canada, Bank of Canada); lib.js is shared with the API as
     # mes.fm/api/_debt-lib.js (byte-identical copy). Snapshot mes.fm/debt-clock/data/sample.json (`node mes.fm/api/debt.js --write`). Tests: node tool_apps_src/debt-clock-tests.js.
+    # Jump-Start a Car (2026-10-29, mes.fm/jump-start): SVG simulator (drag the four clamps in order; wrong moves explained: reversed polarity, black on dead -,
+    # clamps touching), jump-pack and push-start modes, battery date-code decoder, cold-power slider + chart, drain calculator, voltmeter, options/risks, printable
+    # checklist. lib.js = MESJump (rules + maths; tests tool_apps_src/jump-start-tests.js). Fill window / Full screen via /main_js/panel-view.js. Keeps ads.
+    "jump-start": dict(title="MES Jump-Start a Car", page_title="How to Jump-Start a Car: Interactive Simulator, Battery Age and Voltage Check",
+                       tag="Practise the clamp order, read your battery's date code and see why it died.", accent="#b4261c", dark="#861b14", tint="#fbe7e5",
+                       desc="Free interactive guide to jump-starting a car: drag the jumper cable clamps in the right order on a simulated engine bay and see what goes wrong if you don't, use a jump pack, push-start a manual, decode your battery's date code (like F-15), see how cold cuts cranking power, and check the battery's voltage.",
+                       meta_desc="Jump-start a car step by step: drag the clamps in order on a simulator, decode your battery's date code, and check its voltage and cold cranking power.",
+                       js_v="1"),
     "debt-clock": dict(title="MES Debt Clock", page_title="Debt Clock: US National Debt, World Debt and Canada's Debt, Live Estimate",
                        tag="The national debt, ticking: from official figures, with the maths shown.", accent="#9b1c31", dark="#6b1220", tint="#f9e3e6",
                        desc="Free live debt clock: a running estimate of the US national debt from the Treasury's daily figures, plus world government debt and Canada's federal debt, the share per person, household and taxpayer, debt-to-GDP, interest per second, the deficit, and charts back to 1790. Every number shows its source and how it is estimated.",
