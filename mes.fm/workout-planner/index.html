@@ -1,0 +1,982 @@
+<!DOCTYPE html>    <html lang="en">
+<!-- MES Workout Planner -- mes.fm/workout-planner -->
+<!-- Added by HTTrack --><meta http-equiv="content-type" content="text/html;charset=UTF-8" /><!-- /Added by HTTrack -->
+<head>                    <link rel="icon" href="/workout-planner/img/logo.png?v=2" type="image/png" /><link rel="canonical" href="https://mes.fm/workout-planner" />                    <title>MES Workout Planner | Math Easy Solutions</title>
+        <meta name="viewport" content="width=device-width, initial-scale=1">	<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css" integrity="sha384-BVYiiSIFeK1dGmJRAkycuHAHRg32OmUcww7on3RYdg4Va+PmSTsz/K68vbdEjh4u" crossorigin="anonymous">
+        <style>html, body, div, span, applet, object, iframe, h1, h2, h3, h4, h5, h6, p, blockquote, pre, a, abbr, acronym, address, big, cite, code,del, dfn, em, img,
+ins, kbd, q, s, samp, small, strike, strong, sub, tt, var, u, i, center, dl, dt, dd, ol, ul, li, fieldset, form, label, legend, table, caption, tbody,
+tfoot, thead, tr, th, td, article, aside, canvas, details, embed, figure, figcaption, footer, header, hgroup, menu, nav, output, ruby, section, summary,
+time, mark, audio, video {margin:0;padding:0;border:0;font-size:100%;font-family:Helvetica,Arial,Optima,Sans Pro;vertical-align:baseline;color:#333333;}
+sup {margin:0;padding:0;border:0;font-size:100%;font-family:Helvetica,Arial,Optima,Sans Pro;vertical-align:super;color:black;}
+b {margin:0;padding:0;border:0;font-size:100%;font-family:Helvetica,Arial,Optima,Sans Pro;vertical-align:baseline;}
+/* HTML5 display-role reset for older browsers */
+article, aside, details, figcaption, figure, footer, header, hgroup, menu, nav, section {display:block;}
+body {background-color:#e2e2e2;line-height:1;}
+ol, ul {list-style:none;}
+blockquote, q {quotes:none;}
+blockquote:before, blockquote:after,
+q:before, q:after {content:'';content:none;}
+table {border-collapse:collapse;border-spacing:0;}
+a {text-decoration:none;}
+sub {vertical-align:sub;}        .warning-message {font-size:1em;text-align:center;padding:0.5em;background-color:#1d7a46;color:white;}
+        .button {color:#1d7a46;border:0.125em solid#1d7a46;margin:0.7em 0;padding:0.5em 0.2em;text-align:center;-moz-user-select:none; -webkit-user-select:none; -ms-user-select:none; user-select:none; cursor:pointer;}
+        .button--subscribe {line-height:1.2;}
+        .button--share-calc {display: inline-block;padding-left: 1em;padding-right: 1em;margin-top: 0.5em;margin-bottom: 0.5em;}
+        .italic {font-style:italic;}
+        .bold {font-weight:700;}
+        .list {list-style-type:disc;}
+        .list__indent {line-height:1.2;margin-left:2em;margin-top:0.4em;margin-bottom:0.2em;font-size: 0.95em;}
+        .time {font-style:italic;font-weight:100;color:#939393;}
+        .small-text {font-size:0.9em;}
+        .big-text {font-size:1.1em;}
+        .link {color:#1d7a46; font-weight:700;}
+        .link--dark {color: blue; font-weight: 700;}
+        .link--dark:hover {text-decoration: underline;}
+        .basic-table {margin:1em auto;}
+        .basic-table td, .basic-table th {border: 1px solid black; padding:0.5em 1em; text-align: center;}
+        .basic-table th {background-color: #ededed}
+        .basic-table--full {width:100%;}
+        .sponsored-ad {text-align:right;display:block;font-size:0.7em;margin-bottom:0.3em;font-style:italic;}
+        .box-border {border:0.1em solid#1d7a46; padding:1em;margin-bottom: 1.2em;}
+        .selected {background-color:#1d7a46;color:white;}
+        .right-arrow {font-size:2em;vertical-align:middle;margin:0 0.2em;display:inline-block;color:#1d7a46;}
+        .share-calc-url {border: 2px solid black;font-size:0.9em;display:inline-block;width:15.5em;padding:0.45em 0.8em;font-weight:700;vertical-align:middle;color:#1d7a46;background-color:#fdc010;}
+        .share-calc-url-container {margin-bottom: 0.5em;display: inline-block;}
+        .scissors-icon {vertical-align:middle;cursor: pointer;}
+        .hide {display:none;}
+        .crypto-container {background-color: #257bb6; padding: 10px; border-radius: 5px;}
+        .crypto-text {color: white; line-height: 1.4; padding: 5px;}.header2 {font-size:1.1em; margin-top:1.3em;margin-bottom:0.5em;}
+.header3 {font-size:1.0em; margin-top:1.0em;margin-bottom:0.3em;}
+.sentence {margin-top:0.5em; margin-bottom:0.5em;line-height:1.5}
+.sentence--indent {margin-left:1.5em;}
+
+.shadow {box-shadow:0.2em 0.2em 0.5em #999999;}
+.link:hover {color:#155c34;text-decoration:underline; cursor:pointer;}
+
+.outer-container {width:68.25em;margin:0 auto;}
+.inner-container {padding:1em 2em 1em 2em;overflow:hidden;background-color:white;box-shadow:0 0 1em #BBBBBB;}
+.header {position:relative;margin-bottom: 0.7em;}
+.logo-image-container {display:table-cell;}
+.logo {display:block;}
+.logo-text-container {display:table-cell;vertical-align:middle;padding-left:1.5em;}
+.calculator-title-link {display: block;}
+.calculator-title {margin-bottom:0.3em;font-size:1.8em;}
+.tag-line {font-size:1.2em;}
+
+.social-container {position:absolute;right:0;top:0;}
+.social-container--bottom {position:absolute;right:0;bottom:0;}
+.social {display: table-cell;}
+.social__text {display:table-cell;font-size:1.2em;vertical-align:middle;padding-right:0.6em;font-style:italic;color:#1d7a46;}.social__logo {float:left;}
+.social__logo:not(:last-child) {margin-right:0.5em;}
+.social__link {height:2em;width:2em;display:block;}
+.social__fb {background: url(https://mes.fm/main_img/social-sprites.png) 0 0;}
+.social__gplus {background: url(https://mes.fm/main_img/social-sprites.png) -2em 0;}
+.social__insta {background: url(https://mes.fm/main_img/social-sprites.png) -4em 0;}
+.social__pin {background: url(https://mes.fm/main_img/social-sprites.png) -6em 0;}
+.social__twitter {background: url(https://mes.fm/main_img/social-sprites.png) -8em 0;}
+.social__yt {background: url(https://mes.fm/main_img/social-sprites.png) -10em 0;}
+.social__patreon {background: url(https://mes.fm/main_img/social-sprites.png) -12em 0;}
+.social__steemit {background: url(https://mes.fm/main_img/social-sprites.png) -14em 0;}
+.social__hive {background: url(https://mes.fm/main_img/social-sprites.png) -16em 0;}
+.social__telegram {background: url(https://mes.fm/main_img/social-sprites.png) -18em 0;}
+
+.info-bar-container {display: table-cell;}
+.info-bar {display:inline-block;margin-left:-2em;padding-left:1.1em;overflow:hidden;}
+.info-bar__item {float:left;}
+.info-bar__item__text {display:block;text-align:center;padding:0.7em 1em 0.7em 1em;font-size:0.9em;color:white}
+.info-bar__logo-container {display: table-cell;vertical-align: middle;}
+.info-bar__logo {display: block; margin-left: 0.8em;}
+
+.outer-page-content {width:45.5em;display:inline-block;}
+.page-content {padding:1.2em 2.25em 0 0;}
+.color-box {width:1.2em;height:1.2em;display:inline-block;margin-right:0.5em;}
+.page-title {display:inline-block;font-size:1.5em;font-weight:400;margin-bottom:0.3em;}
+.page-description {line-height:1.3;}
+#main-content {margin:1.5em 0;position:relative;}
+
+.side-bar {width:18.75em;float:right;}
+.navbar-container {margin:2.1em 0.8em;}
+.navbar {margin-bottom:-1em;}
+.button--navbar {padding:0.7em 0.2em;font-size:1.2em;margin-bottom:0;color:#1d7a46;border:0.125em solid#1d7a46;}
+
+.navbar__item:hover {cursor:pointer;}
+.navbar__link  {display:block;color:white;padding:0.7em 1em 0.7em 1.4em;}
+.navbar__link--first {padding-top:0.8em;}
+.navbar__dropdown-item {color:#222222;}
+.navbar__dropdown-item:hover {text-decoration:underline;}
+.dropdown-symbol {margin-left:1em;color:white;}
+
+.latest-article {margin-top:1em;padding:0.5em;text-align:center;box-shadow:0 0 1em #BBBBBB;}
+.latest-article__tag:first-child {margin-bottom:0.5em;line-height:normal;}
+.latest-article__title:last-child {text-align:left;font-weight:700;}
+.latest-article__logo {vertical-align:bottom;margin-bottom:0.5em;}
+
+.footer {padding:2em;}
+.footer__item-container {display:table;width:100%;margin-bottom:1.6em;}
+.footer__item {display:table-cell;}
+.footer__item--extra-padding {padding-left:2.5em;}
+.footer__text {color:white;line-height:1.5;}
+.footer__text--title {display:inline-block;margin-bottom:1.6em;font-size:1.3em;font-style:italic;}
+.footer__text--extra-info {float:right;}
+.footer__text:not(.footer__text--copyright):hover {text-decoration:underline; cursor:pointer;}
+.footer__text--black {color:#000;}
+.footer__separator {color:white;}
+#copyright-year {color:white;}
+
+.active-tab {background-color:#fdc010;color: #222222;}
+.navbar__link:hover:not(.navbar__dropdown-item):not(.active-tab),.info-bar__item__text:hover:not(.active-tab) {background-color:#155c34;}
+        .info-bar,.color-box,.navbar,.footer {background-color:#1d7a46;}
+        .dropdown-symbol--dark {color:#1d7a46;}
+        .button--active {background-color:#1d7a46;color:white;}
+        .navbar__dropdown-container {color: #222222;background-color:#fdc010;}
+        .header2--top {margin-top: 0.5em;}
+        .basic-table td, .basic-table th {border: 1px solid black; padding:0.3em 0.5em; text-align: center;}
+        /* RESPONSIVE-FIX-INSERTED */
+@media (max-width: 768px) {
+  .outer-container { width: 100% !important; margin: 0 !important; }
+  .outer-page-content { width: 100% !important; display: block !important; }
+  .side-bar { width: 100% !important; float: none !important; }
+  .page-box { width: auto !important; display: block !important; margin: 0 auto 0.5em auto !important; }
+  img { max-width: 100% !important; height: auto !important; }
+  table { max-width: 100% !important; }
+
+  #info-bar > .info-bar__item:has(a[href$="index.html"]),
+  #info-bar > .info-bar__item:has(a[href*="donate"]),
+  #info-bar > .info-bar__item:has(a[href*="substack.com"]),
+  #info-bar > .info-bar__item:has(a[href*="mes.fm/links"]) { display: none !important; }
+}
+
+.inner-container { position: relative !important; }
+.header .social-container { display: none !important; }
+.side-bar { width: auto !important; float: none !important; }
+.navbar-container { margin: 0 !important; box-shadow: none !important; }
+.navbar__item--social { display: list-item; padding: 1em 1.6em 1em 1.4em; border-bottom: 1px solid rgba(255,255,255,0.25); }
+.navbar__item--social .social-container--navbar { position: static !important; display: flex; flex-wrap: wrap; align-items: center; gap: 0.6em; }
+.navbar__item--social .social__text { color: white; margin: 0; }
+.navbar__item--social .social { display: flex; flex-wrap: wrap; gap: 0.5em; margin: 0; padding: 0; }
+.navbar__item--social .info-bar__logo-container { display: block; margin-top: 0.4em; }
+#navbar-button {
+  position: absolute !important; top: 16px !important; right: 16px !important; z-index: 20;
+  width: 44px; height: 44px; padding: 0; margin: 0 !important;
+  background: transparent !important; border: none !important;
+  font-size: 0;
+}
+
+@media (max-width: 768px) {
+  .header { padding-right: 4em !important; box-sizing: border-box; }
+}
+#navbar-button::before {
+  content: ""; display: block; margin: 0 auto;
+  width: 26px; height: 4px; background: currentColor; border-radius: 1px;
+  box-shadow: 0 7px 0 currentColor, 0 -7px 0 currentColor;
+}
+#navbar { display: none; }
+#navbar.hide {
+  display: block !important; box-sizing: border-box;
+  position: absolute; top: 76px; right: 16px; z-index: 19;
+  width: 16em; max-width: 90vw; max-height: 75vh; overflow-y: auto;
+  scrollbar-gutter: stable;
+  box-shadow: 0 0.25em 1em rgba(0,0,0,0.3);
+  border-radius: 0.25em;
+}
+
+#navbar.hide { display: flex !important; flex-direction: column; }
+.navbar__item--social { order: 999; }
+.navbar__item--social .info-bar__logo-container { display: block !important; }
+
+.outer-container { width: auto !important; max-width: 50em; margin: 0 auto !important; }
+.outer-page-content { width: 100% !important; display: block !important; }
+.page-content { padding-right: 0 !important; }
+
+</style>	<style>
+	.hide {display:none;}
+	a,a:hover {text-decoration: none !important;color:white;}
+	a.active-tab:hover {color:#222222;}
+	.navbar {border:none;}
+
+	/* the tool itself (scoped to #main-content) */
+	/* shared widget kit for the calculator tool pages (build_tool_apps.py prepends this to each app's own CSS) */
+	.tu {margin:1em 0;--accent:#1d7a46;--accent-dark:#155c34;--tint:#e2f3e8;}
+	.tu *, .tu *::before, .tu *::after {box-sizing:border-box;}
+	.tu a {color:var(--accent);text-decoration:underline !important;}
+	.tu a:hover {color:var(--accent-dark);}
+	.tu button, .tu input, .tu select {font:inherit;}
+	.tu h2 {font-size:1.05em;color:#1e2733;margin:1.4em 0 0.6em;padding-bottom:0.3em;border-bottom:2px solid #e2f3e8;}
+	.tu h3 {font-size:0.98em;color:#1e2733;margin:1em 0 0.4em;}
+	.tu p {line-height:1.5;margin:0.5em 0;}
+	.tu-card {background:#fff;border:1px solid #dfe4ea;border-radius:0.55em;padding:1em 1.1em;}
+	.tu-card--tint {background:#e2f3e8;border-color:#e2f3e8;}
+	.tu-row {display:flex;flex-wrap:wrap;gap:0.9em 1.1em;align-items:flex-end;}
+	.tu-field {display:flex;flex-direction:column;gap:0.3em;flex:1 1 11em;min-width:0;}
+	.tu-field--sm {flex:0 1 8em;}
+	.tu-field > label, .tu-label {font-size:0.75em;font-weight:700;text-transform:uppercase;letter-spacing:0.04em;color:#667;}
+	.tu-input, .tu-select {width:100%;font-size:1.05em;padding:0.55em 0.65em;border:1px solid #b9c1cc;border-radius:0.4em;background:#fff;color:#222;}
+	.tu-input:focus, .tu-select:focus {outline:none;border-color:var(--accent);box-shadow:0 0 0 2px #e2f3e8;}
+	.tu-input--big {font-size:1.35em;padding:0.55em 0.7em;}
+	.tu-suffix {position:relative;}
+	.tu-suffix .tu-input {padding-right:3.2em;}
+	.tu-suffix span {position:absolute;right:0.7em;top:50%;transform:translateY(-50%);font-size:0.85em;color:#667085;pointer-events:none;}
+	.tu-btn {cursor:pointer;padding:0.5em 0.95em;border-radius:0.35em;border:0.125em solid var(--accent);background:#fff;color:var(--accent);font-size:0.9em;line-height:1.1;}
+	.tu-btn:hover {background:var(--accent);color:#fff;}
+	.tu-btn--primary {background:var(--accent);color:#fff;}
+	.tu-btn--primary:hover {background:var(--accent-dark);border-color:var(--accent-dark);}
+	.tu-btn--ghost {border-color:#c3c9d2;color:#555;}
+	.tu-btn--ghost:hover {background:#eef1f5;color:#222;border-color:#c3c9d2;}
+	.tu-seg {display:inline-flex;border:1px solid #b9c1cc;border-radius:0.4em;overflow:hidden;background:#fff;}
+	.tu-seg button {cursor:pointer;border:0;background:transparent;padding:0.55em 0.9em;color:#555;font-size:0.95em;border-right:1px solid #dfe4ea;}
+	.tu-seg button:last-child {border-right:0;}
+	.tu-seg button:hover {background:#f4f6f9;}
+	.tu-seg button[aria-pressed="true"] {background:var(--accent);color:#fff;}
+	.tu-chips {display:flex;flex-wrap:wrap;gap:0.4em;margin:0.6em 0 0;}
+	.tu-chip {cursor:pointer;font-size:0.82em;padding:0.35em 0.8em;border-radius:1.2em;border:1px solid #c3c9d2;background:#fff;color:#555;}
+	.tu-chip:hover {border-color:var(--accent);color:var(--accent);}
+	.tu-chip[aria-pressed="true"] {background:var(--accent);border-color:var(--accent);color:#fff;}
+	.tu-stats {display:grid;grid-template-columns:repeat(auto-fit,minmax(13em,1fr));gap:0.8em;margin:1em 0;}
+	.tu-stat {background:#fff;border:1px solid #dfe4ea;border-radius:0.55em;padding:0.8em 1em;}
+	.tu-stat--hero {background:#e2f3e8;border-color:#e2f3e8;}
+	.tu-stat__label {font-size:0.72em;font-weight:700;text-transform:uppercase;letter-spacing:0.05em;color:#667;}
+	.tu-stat__value {font-size:1.7em;font-weight:700;color:#1e2733;line-height:1.2;margin:0.15em 0;word-break:break-word;}
+	.tu-stat__sub {font-size:0.85em;color:#555d6b;line-height:1.35;}
+	.tu-pos {color:#1f7a3d !important;}
+	.tu-neg {color:#b3261e !important;}
+	.tu-table-wrap {overflow-x:auto;}
+	.tu-table {width:100%;border-collapse:collapse;font-size:0.95em;}
+	.tu-table th, .tu-table td {text-align:right;padding:0.5em 0.7em;border-bottom:1px solid #e3e7ec;color:#333;white-space:nowrap;}
+	.tu-table th:first-child, .tu-table td:first-child {text-align:left;}
+	.tu-table th {font-size:0.75em;text-transform:uppercase;letter-spacing:0.03em;color:#6a7280;background:#fff;}
+	.tu-table tr.is-active td {background:#e2f3e8;font-weight:700;}
+	.tu-note {font-size:0.85em;color:#6a7280;line-height:1.45;}
+	.tu-toast {position:fixed;left:50%;bottom:2em;transform:translateX(-50%) translateY(0.5em);background:#1e2733;color:#fff;padding:0.6em 1.1em;border-radius:2em;font-size:0.9em;box-shadow:0 0.4em 1.2em rgba(0,0,0,0.25);opacity:0;pointer-events:none;transition:opacity 0.15s, transform 0.15s;z-index:60;}
+	.tu-toast--show {opacity:1;transform:translateX(-50%) translateY(0);}
+	.tu-seo {margin-top:2em;border-top:1px solid #e3e3e3;padding-top:1.2em;}
+	/* SEO-HEADINGS: headlines and questions stand out from the body text (also added to built pages by add_seo_heading_style.py) */
+	body .tu-seo {font-size:1.04em;line-height:1.65;}
+	body .tu-seo h2 {font-size:1.45em;font-weight:800;line-height:1.25;margin:0 0 0.6em;color:#1e2733;border-bottom:0;padding-bottom:0;}
+	body .tu-seo h3 {font-size:1.2em;font-weight:800;line-height:1.3;margin:1.6em 0 0.5em;padding:0.15em 0 0.15em 0.65em;border-left:5px solid var(--accent,#4a6fa5);color:#1e2733;}
+	body .tu-seo h4, body .tu-seo dt {font-size:1.08em;font-weight:700;font-style:normal;line-height:1.35;margin:1.3em 0 0.3em;color:#1e2733;}
+	body .tu-seo dd {margin:0 0 0.6em;} body .tu-seo p, body .tu-seo li, body .tu-seo dd {line-height:1.65;}
+	body.dark-mode .tu-seo h2, body.dark-mode .tu-seo h3, body.dark-mode .tu-seo h4, body.dark-mode .tu-seo dt {color:#f2f2f2;}
+	.tu sup, .tu sub {font-size:0.72em !important;line-height:0;vertical-align:baseline;position:relative;} .tu sup {top:-0.5em;} .tu sub {top:0.3em;}
+	.tu div[class$="-eq"] {overflow-y:hidden;}
+	.tu-seo ul {list-style:disc;margin:0.5em 0 0.5em 1.5em;line-height:1.5;}
+	.tu-svg-line {fill:none;stroke:#1e2733;stroke-width:2;}
+	.tu-svg-accent {fill:none;stroke:var(--accent);stroke-width:3;}
+	.tu-svg-fill {fill:var(--accent);}
+	.tu-svg-tint {fill:#e2f3e8;}
+	.tu-svg-text {font-size:13px;fill:#333;}
+	.tu-svg-grid {stroke:#dfe4ea;stroke-width:1;fill:none;}
+	/* selected states: the derived dark theme would darken these, so restate them for dark mode */
+	/* the dark theme lightens --accent so it reads on dark; text on filled accent surfaces then has to be dark */
+	body.dark-mode .tu .tu-seg button[aria-pressed="true"], body.dark-mode .tu .tu-chip[aria-pressed="true"], body.dark-mode .tu .uc-cat[aria-selected="true"],
+	body.dark-mode .tu .tu-btn:hover, body.dark-mode .tu .tu-btn--primary, body.dark-mode .tu .tu-btn--primary:hover {background:var(--accent);border-color:var(--accent);color:#0b1416;}
+	body.dark-mode .tu .tu-btn--ghost:hover {background:#2e2e2e;border-color:#666;color:#eee;}
+	body.dark-mode .tu .uc-cat[aria-selected="true"] span {color:#0b1416;}
+	body.dark-mode .tu .tu-svg-tint {fill:rgba(255,255,255,0.09);}
+	body.dark-mode .tu .gm-card[aria-pressed="true"] {border-color:var(--accent);background:rgba(255,255,255,0.08);}
+	/* dark mode: the tool's accent lightened (same hue) so links, outlines and the text on filled buttons keep their contrast on the dark page */
+	body.dark-mode .tu {--accent:#2ab065 !important;--accent-dark:#2ab065 !important;}
+	@media (max-width:600px) {
+		.tu-stat__value {font-size:1.45em;}
+		.tu-field--sm {flex:1 1 7em;}
+	}
+	@media print {
+		.tu-btn, .tu-chips, .tu-seg {display:none !important;}
+	}
+
+/* row layout options on the grade / GPA / weighted-average calculators (names on-off, table layout) */
+.tu .rw-bar {display:flex;gap:0.4em;flex-wrap:wrap;margin:0.5em 0 0.1em;}
+.tu .gc-n {display:none;}
+.tu [data-names="0"] .rw-name {display:none !important;}
+.tu [data-names="0"] .rw-num, .tu [data-table="1"] .rw-num {display:block !important;flex:0 0 1.7em;text-align:right;color:#8a93a0;font-size:0.85em;padding-bottom:0.7em;}
+.tu [data-table="1"] .rw-head, .tu [data-table="1"] .rw-row {display:grid !important;grid-template-columns:var(--rw-cols);gap:0.3em;align-items:center;}
+.tu [data-table="1"] .rw-head {font-size:0.68em;font-weight:700;text-transform:uppercase;letter-spacing:0.03em;color:#667;padding:0.4em 0 0.2em;border-bottom:2px solid #d5dae1;} .tu [data-table="1"] .rw-head span {text-align:center;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;} .tu [data-table="1"] .rw-head span:first-child {text-align:right;}
+.tu [data-table="1"] .rw-row {padding:0.22em 0;border-bottom:1px solid #eceff3;}
+.tu [data-table="1"] .rw-row > * {order:0 !important;flex:none !important;margin:0 !important;min-width:0 !important;width:auto !important;}
+.tu [data-table="1"] .rw-row .rw-num {padding:0;}
+.tu [data-table="1"] .rw-f label {display:none;}
+.tu [data-table="1"] .rw-row .tu-input, .tu [data-table="1"] .rw-row .tu-select {padding:0.35em 0.2em;width:100%;min-width:0;text-align:center;}
+.tu [data-table="1"] .rw-row .rw-name .tu-input {text-align:left;padding-left:0.4em;}
+.tu [data-table="1"] .rw-del {padding:0.25em 0 !important;font-size:0.95em !important;}
+.tu [data-table="1"] .rw-pts {padding:0 !important;font-size:0.78em;text-align:center;}
+body.dark-mode .tu .rw-head {color:#a0a8b3;border-bottom-color:#555;} body.dark-mode .tu [data-table="1"] .rw-row {border-bottom-color:#333;}
+/* equation boxes typeset by main_js/mes-math.js (MathJax) */
+.tu [class$="-eq__f"].mes-tex {font-family:inherit;white-space:normal;display:inline-block;vertical-align:middle;max-width:100%;overflow-x:auto;overflow-y:hidden;}
+.tu [class$="-eq"] mjx-container {margin:0.15em 0 !important;}
+.tu [class$="-eq"] > div {margin:0.25em 0;}
+.tu [class$="-eq__n"] {vertical-align:middle;}
+
+	/* MES Workout Planner. Colours are custom properties on #wp (restated for dark mode at the end), so the derived TOOL-DARK block leaves them alone. */
+	#wp.wp {--wp-bg:#ffffff;--wp-fg:#1e2733;--wp-mut:#5b6472;--wp-line:#dfe4ea;--wp-cell:#f7f9fb;--wp-here:#fff4bf;--wp-hereb:#e0b100;--wp-today:#e7f1ff;--wp-todayb:#3b82f6;--wp-ind:#e11d48;--wp-pop:#ffffff;--wp-shadow:0 0.5em 1.6em rgba(15,23,42,0.22);color:var(--wp-fg);}
+	#wp [hidden] {display:none !important;}
+	#wp :is(section, div, span, p, ul, ol, li, dl, dt, dd, label, b, strong, em, i, small, table, thead, tbody, tr, td, th, details, h2, h3, h4) {color:inherit;}
+	#wp .wp-sr {position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);}
+	#wp .tu-card {background:var(--wp-bg);border-color:var(--wp-line);margin:0 0 1em;}
+	#wp h2 {color:var(--wp-fg);margin:0;border:0;padding:0;font-size:1.15em;}
+	#wp h3 {color:var(--wp-fg);margin:1.2em 0 0.5em;}
+	#wp .tu-note {color:var(--wp-mut);}
+	#wp .wp-banner {background:var(--wp-here);border:1px solid var(--wp-hereb);border-radius:0.55em;padding:0.8em 1em;margin-bottom:1em;display:flex;flex-wrap:wrap;gap:0.5em 1em;align-items:center;}
+	/* top bar */
+	#wp .wp-titlerow {display:flex;flex-wrap:wrap;align-items:center;gap:0.4em 1em;margin-bottom:0.7em;}
+	#wp .wp-title {flex:1 1 16em;min-width:0;font:inherit;font-size:1.35em;font-weight:800;color:var(--wp-fg);background:transparent;border:1px solid transparent;border-radius:0.35em;padding:0.2em 0.35em;margin-left:-0.35em;}
+	#wp .wp-title:hover, #wp .wp-title:focus {border-color:var(--wp-line);outline:none;background:var(--wp-cell);}
+	#wp .wp-saved {font-size:0.8em;color:var(--wp-mut);}
+	#wp .wp-tools {display:flex;flex-wrap:wrap;gap:0.5em;align-items:center;}
+	#wp .wp-tpl {display:inline-flex;align-items:center;gap:0.4em;flex-wrap:wrap;}
+	#wp .wp-tpl label {font-size:0.85em;font-weight:700;color:var(--wp-mut);}
+	#wp .wp-tpl .tu-select {width:auto;font-size:0.92em;padding:0.4em 0.5em;max-width:14em;}
+	#wp .wp-menu {position:relative;display:inline-block;}
+	#wp .wp-menu > summary {list-style:none;display:inline-block;}
+	#wp .wp-menu > summary::-webkit-details-marker {display:none;}
+	#wp .wp-menupop {position:absolute;z-index:40;top:calc(100% + 0.35em);left:0;min-width:17em;background:var(--wp-pop);border:1px solid var(--wp-line);border-radius:0.55em;box-shadow:var(--wp-shadow);padding:0.4em;display:flex;flex-direction:column;}
+	#wp #wp-imp .wp-menupop {right:auto;width:min(30em, calc(100vw - 2em));padding:0.8em;gap:0.5em;}
+	#wp .wp-menupop > button {font:inherit;font-size:0.92em;text-align:left;padding:0.55em 0.7em;border:0;border-radius:0.35em;background:transparent;color:var(--wp-fg);cursor:pointer;}
+	#wp .wp-menupop > button:hover, #wp .wp-menupop > button:focus-visible {background:var(--wp-cell);}
+	#wp .wp-imppop textarea {width:100%;font:inherit;font-size:0.85em;font-family:ui-monospace,Menlo,Consolas,monospace;padding:0.5em;border:1px solid var(--wp-line);border-radius:0.4em;background:var(--wp-cell);color:var(--wp-fg);tab-size:12;}
+	#wp .wp-improw {display:flex;flex-wrap:wrap;gap:0.4em;}
+	#wp .wp-file {cursor:pointer;}
+	#wp .wp-impmsg {font-size:0.88em;margin:0;}
+	#wp .wp-impmsg.is-bad {color:#b3261e;font-weight:700;}
+	/* Currently at */
+	#wp .wp-next {border-left:6px solid var(--wp-hereb);}
+	#wp .wp-nexthead {display:flex;flex-wrap:wrap;align-items:center;gap:0.4em 0.7em;}
+	#wp .wp-pin {font-size:0.78em;font-weight:800;text-transform:uppercase;letter-spacing:0.05em;color:var(--wp-mut);}
+	#wp .wp-nday {font-size:1.5em;}
+	#wp .wp-ntime {font-weight:700;color:var(--wp-mut);}
+	#wp .wp-nnav {margin-left:auto;display:inline-flex;gap:0.35em;}
+	#wp .wp-nlist {list-style:none;margin:0.7em 0;padding:0;display:flex;flex-direction:column;gap:0.35em;}
+	#wp .wp-nlist li label {display:flex;flex-wrap:wrap;align-items:center;gap:0.4em;cursor:pointer;padding:0.45em 0.6em;border-radius:0.45em;background:color-mix(in srgb, var(--c) 12%, var(--wp-bg));border-left:4px solid var(--c);font-size:1.05em;}
+	#wp .wp-nlist input {width:1.2em;height:1.2em;accent-color:var(--accent);}
+	#wp .wp-ndot {display:inline-block;width:0.7em;height:0.7em;border-radius:50%;background:var(--c);flex:0 0 auto;}
+	#wp .wp-ncat {font-size:0.78em;color:var(--wp-mut);border:1px solid var(--wp-line);border-radius:1em;padding:0.05em 0.55em;}
+	#wp .wp-nnote {font-size:0.85em;color:var(--wp-mut);font-style:italic;}
+	#wp .wp-rest {font-size:1.05em;color:var(--wp-mut);margin:0.7em 0;}
+	#wp .wp-nact {display:flex;flex-wrap:wrap;align-items:center;gap:0.6em 0.9em;}
+	#wp .wp-big {font-size:1.05em;padding:0.65em 1.2em;font-weight:700;}
+	#wp .wp-ndate {display:inline-flex;align-items:center;gap:0.4em;color:var(--wp-mut);font-size:0.92em;}
+	#wp .wp-ndate input {width:auto;font-size:0.95em;padding:0.35em 0.5em;background:var(--wp-bg);color:var(--wp-fg);border-color:var(--wp-line);}
+	#wp .wp-pnote {margin:0.7em 0 0;font-style:italic;color:var(--wp-mut);}
+	#wp .wp-after {margin:0.6em 0 0;}
+	#wp .wp-link {font:inherit;border:0;background:none;padding:0;color:var(--accent);text-decoration:underline;cursor:pointer;}
+	#wp .wp-nrot {margin-top:0.8em;padding-top:0.7em;border-top:1px dashed var(--wp-line);font-size:0.95em;}
+	#wp .wp-nrot ul {margin:0.3em 0 0;padding-left:1.1em;}
+	#wp .wp-nrot li {margin:0.3em 0;}
+	#wp .wp-lname2 {color:var(--wp-mut);}
+	#wp .wp-sm {font-size:0.82em;padding:0.3em 0.65em;}
+	/* section heads */
+	#wp .wp-head {display:flex;flex-wrap:wrap;align-items:center;gap:0.5em 1em;margin-bottom:0.7em;}
+	#wp .wp-headctl {display:flex;flex-wrap:wrap;gap:0.4em;align-items:center;margin-left:auto;}
+	#wp .wp-headctl .tu-seg button {padding:0.4em 0.7em;font-size:0.85em;}
+	#wp .tu-seg {background:var(--wp-bg);border-color:var(--wp-line);}
+	#wp .tu-seg button {color:var(--wp-fg);}
+	#wp .tu-seg button[aria-pressed="true"] {color:#fff;}
+	#wp .wp-wslab {font-size:0.85em;color:var(--wp-mut);display:inline-flex;align-items:center;gap:0.35em;}
+	#wp .wp-wslab .tu-select {width:auto;padding:0.3em 0.4em;font-size:0.95em;}
+	/* categories */
+	#wp .wp-cats {display:flex;flex-wrap:wrap;gap:0.4em;align-items:center;margin:0 0 0.8em;}
+	#wp .wp-catlab {font-size:0.75em;font-weight:700;text-transform:uppercase;letter-spacing:0.04em;color:var(--wp-mut);margin-right:0.2em;}
+	#wp .wp-cat {display:inline-flex;align-items:center;gap:0.25em;border:1px solid color-mix(in srgb, var(--c) 55%, var(--wp-line));background:color-mix(in srgb, var(--c) 12%, var(--wp-bg));border-radius:2em;padding:0.15em 0.3em 0.15em 0.25em;}
+	#wp .wp-cat input[type=color] {width:1.6em;height:1.6em;border:0;padding:0;background:none;cursor:pointer;border-radius:50%;}
+	#wp .wp-cname {font:inherit;font-size:0.9em;font-weight:700;border:0;background:transparent;color:var(--wp-fg);padding:0.2em 0.2em;min-width:3em;max-width:11em;}
+	#wp .wp-cname:focus {outline:2px solid var(--c);border-radius:0.3em;}
+	#wp .wp-x {font:inherit;font-size:0.8em;line-height:1;border:0;background:transparent;color:var(--wp-mut);cursor:pointer;padding:0.3em 0.4em;border-radius:0.3em;}
+	#wp .wp-x:hover {background:var(--wp-cell);color:#b3261e;}
+	#wp .wp-clab {display:inline-flex;align-items:center;gap:0.35em;font-weight:700;}
+	#wp .wp-clab::before {content:"";width:0.7em;height:0.7em;border-radius:50%;background:var(--c);}
+	/* the week table */
+	#wp .wp-tablewrap {overflow-x:auto;border:1px solid var(--wp-line);border-radius:0.55em;}
+	#wp .wp-table {width:100%;border-collapse:collapse;font-size:0.95em;}
+	#wp .wp-table th, #wp .wp-table td {border-bottom:1px solid var(--wp-line);border-right:1px solid var(--wp-line);padding:0.4em 0.5em;text-align:left;vertical-align:middle;color:var(--wp-fg);}
+	#wp .wp-table th:last-child, #wp .wp-table td:last-child {border-right:0;}
+	#wp .wp-table tbody tr:last-child > * {border-bottom:0;}
+	#wp .wp-table thead th {background:#ffe600;color:#1b1b1b;font-size:0.8em;text-transform:uppercase;letter-spacing:0.04em;white-space:nowrap;}
+	#wp .wp-table thead th .wp-clab {color:#1b1b1b;}
+	#wp .wp-table tbody th {white-space:nowrap;font-weight:700;}
+	#wp .wp-table tr.is-here > *, #wp .wp-table--cols td.is-here, #wp .wp-table--cols th.is-here {background:var(--wp-here);}
+	#wp .wp-table tr.is-today > th {box-shadow:inset 4px 0 0 var(--wp-todayb);}
+	#wp .wp-table--cols th.is-today {box-shadow:inset 0 -4px 0 var(--wp-todayb);}
+	#wp .wp-table--cols thead th:first-child {background:#ffe600;}
+	#wp .wp-table--cols td {min-width:8.5em;vertical-align:top;}
+	#wp .wp-colhead {display:flex;align-items:center;gap:0.3em;flex-wrap:wrap;}
+	#wp .wp-gcol {width:2.2em;padding:0.2em !important;text-align:center !important;}
+	#wp .wp-hcol {width:7em;}
+	#wp .wp-today {display:inline-block;margin-left:0.4em;font-size:0.7em;font-weight:800;text-transform:uppercase;letter-spacing:0.04em;background:var(--wp-todayb);color:#fff;border-radius:1em;padding:0.1em 0.5em;vertical-align:middle;}
+	#wp .wp-time {font:inherit;width:6.4em;padding:0.35em 0.4em;border:1px solid transparent;border-radius:0.35em;background:transparent;color:var(--wp-fg);}
+	#wp .wp-time:hover {border-color:var(--wp-line);}
+	#wp .wp-time:focus {border-color:var(--accent);outline:none;background:var(--wp-bg);}
+	#wp .wp-grip {font:inherit;font-size:1.1em;line-height:1;cursor:grab;border:0;background:transparent;color:var(--wp-mut);padding:0.35em 0.3em;border-radius:0.3em;touch-action:none;user-select:none;-webkit-user-select:none;}
+	#wp .wp-grip:hover, #wp .wp-grip:focus-visible {background:var(--wp-cell);color:var(--wp-fg);}
+	#wp .wp-here {font:inherit;font-size:0.82em;cursor:pointer;border:1px dashed var(--wp-line);background:transparent;color:var(--wp-mut);border-radius:1em;padding:0.3em 0.7em;white-space:nowrap;}
+	#wp .wp-here:hover {border-color:var(--wp-hereb);color:var(--wp-fg);}
+	#wp .wp-here.is-on {border:1px solid var(--wp-hereb);background:var(--wp-hereb);color:#1b1b1b;font-weight:800;}
+	/* cells and chips */
+	#wp .wp-cell {display:flex;flex-wrap:wrap;gap:0.3em;align-items:center;min-height:2.3em;border-radius:0.4em;padding:0.15em;}
+	#wp .wp-cell.wp-over, #wp .wp-gitems.wp-over {outline:2px dashed var(--accent);outline-offset:1px;background:color-mix(in srgb, var(--accent) 8%, transparent);}
+	#wp .wp-chip {position:relative;display:inline-flex;align-items:center;flex-wrap:wrap;gap:0.15em 0.45em;max-width:100%;cursor:grab;user-select:none;-webkit-user-select:none;-webkit-touch-callout:none;
+		background:color-mix(in srgb, var(--c) 16%, var(--wp-bg));border:1px solid color-mix(in srgb, var(--c) 45%, var(--wp-line));border-left:4px solid var(--c);border-radius:0.4em;padding:0.3em 0.55em;color:var(--wp-fg);font-size:0.95em;line-height:1.25;}
+	#wp .wp-chip:hover {background:color-mix(in srgb, var(--c) 26%, var(--wp-bg));}
+	#wp .wp-chip:focus-visible {outline:2px solid var(--accent);outline-offset:2px;}
+	#wp .wp-cn {font-weight:700;overflow-wrap:anywhere;}
+	#wp .wp-cm {font-size:0.82em;color:var(--wp-mut);font-variant-numeric:tabular-nums;white-space:nowrap;}
+	#wp .wp-cnote {font-size:0.8em;color:var(--wp-mut);}
+	#wp .wp-chip.wp-src {opacity:0.35;}
+	#wp.wp-dragging, #wp.wp-dragging * {cursor:grabbing !important;}
+	#wp.wp-dragging .wp-add {visibility:hidden;}
+	#wp .wp-add {font:inherit;font-size:0.9em;line-height:1;cursor:pointer;border:1px dashed var(--wp-line);background:transparent;color:var(--wp-mut);border-radius:0.4em;padding:0.35em 0.6em;opacity:0.65;}
+	#wp .wp-add:hover, #wp .wp-add:focus-visible {opacity:1;border-color:var(--accent);color:var(--accent);}
+	#wp .wp-addin {font:inherit;font-size:0.92em;min-width:8em;flex:1 1 8em;padding:0.35em 0.5em;border:1px solid var(--accent);border-radius:0.4em;background:var(--wp-bg);color:var(--wp-fg);}
+	.wp-ghost {position:fixed !important;left:0;top:0;z-index:2147483600;pointer-events:none;opacity:0.92;box-shadow:0 0.6em 1.6em rgba(0,0,0,0.3);transform-origin:0 0;
+		display:inline-flex;align-items:center;gap:0.45em;background:color-mix(in srgb, var(--c, #3b82f6) 22%, #fff);border:1px solid var(--c, #3b82f6);border-left:4px solid var(--c, #3b82f6);border-radius:0.4em;padding:0.3em 0.6em;color:#1e2733;font:inherit;font-size:0.95em;font-weight:700;max-width:22em;}
+	.wp-ghost .wp-cm, .wp-ghost .wp-stamp, .wp-ghost .wp-sethere, .wp-ghost .wp-herepill, .wp-ghost input {display:none;}
+	.wp-ghost.is-copy::after {content:"+ copy";font-size:0.75em;background:#16a34a;color:#fff;border-radius:1em;padding:0.05em 0.5em;}
+	.wp-ghostrow {white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+	.wp-ind {position:fixed;z-index:2147483500;display:none;background:#e11d48;border-radius:2px;pointer-events:none;box-shadow:0 0 0 2px rgba(255,255,255,0.7);}
+	.wp-toast {z-index:2147483640 !important;}
+	.wp-toast .wp-toastundo {font:inherit;margin-left:0.5em;background:none;border:1px solid rgba(255,255,255,0.6);color:#fff;border-radius:1em;padding:0.1em 0.7em;cursor:pointer;}
+	.wp-toast.tu-toast--show {pointer-events:auto;}
+	/* cards (phones) */
+	#wp .wp-cards {display:grid;grid-template-columns:repeat(auto-fill, minmax(16em, 1fr));gap:0.7em;}
+	#wp .wp-dcard {border:1px solid var(--wp-line);border-radius:0.6em;padding:0.35em 0.5em 0.4em;background:var(--wp-bg);}
+	#wp .wp-dcard.is-here {background:var(--wp-here);border-color:var(--wp-hereb);}
+	#wp .wp-dcard.is-today {box-shadow:inset 4px 0 0 var(--wp-todayb);}
+	#wp .wp-dhead {display:flex;flex-wrap:wrap;align-items:center;gap:0.25em 0.4em;margin-bottom:0.3em;}
+	#wp .wp-dhead .wp-dname {font-weight:800;font-size:1.05em;}
+	#wp .wp-dhead .wp-here {margin-left:auto;padding:0.25em 0.55em;}
+	#wp .wp-dhead .wp-time {width:5.4em;padding:0.3em 0.25em;}
+	#wp .wp-dhead .wp-today {margin-left:0;}
+	#wp .wp-crow {display:grid;grid-template-columns:6.5em 1fr;gap:0.4em;align-items:center;padding:0.2em 0;border-top:1px dashed var(--wp-line);}
+	#wp .wp-crow .wp-clab {font-size:0.82em;color:var(--wp-mut);overflow-wrap:anywhere;}
+	#wp .wp-noterow {display:flex;flex-wrap:wrap;gap:0.4em 0.8em;align-items:flex-start;margin-top:0.8em;}
+	#wp .wp-noterow label {font-size:0.75em;font-weight:700;text-transform:uppercase;letter-spacing:0.04em;color:var(--wp-mut);padding-top:0.6em;}
+	#wp .wp-noterow textarea, #wp .wp-lnote {flex:1 1 16em;font:inherit;font-style:italic;resize:vertical;min-height:2.3em;padding:0.45em 0.6em;border:1px solid var(--wp-line);border-radius:0.4em;background:var(--wp-cell);color:var(--wp-fg);}
+	#wp .wp-tip {margin-top:0.8em;}
+	#wp .wp-check {display:flex;align-items:center;gap:0.4em;margin-top:0.5em;color:var(--wp-fg);font-size:1.05em;cursor:pointer;}
+	/* lists */
+	#wp .wp-lists {display:grid;grid-template-columns:repeat(auto-fill, minmax(min(100%, 22em), 1fr));gap:0.9em;}
+	#wp .wp-list {border:1px solid var(--wp-line);border-radius:0.6em;padding:0.6em;background:var(--wp-cell);display:flex;flex-direction:column;gap:0.6em;}
+	#wp .wp-lhead, #wp .wp-ghead {display:flex;flex-wrap:wrap;align-items:center;gap:0.3em;}
+	#wp .wp-lname, #wp .wp-gtitle {font:inherit;flex:1 1 10em;min-width:0;border:1px solid transparent;border-radius:0.35em;background:transparent;color:var(--wp-fg);padding:0.25em 0.35em;}
+	#wp .wp-lname {font-size:1.08em;font-weight:800;}
+	#wp .wp-gtitle {font-weight:700;}
+	#wp .wp-lname:hover, #wp .wp-gtitle:hover, #wp .wp-lname:focus, #wp .wp-gtitle:focus {border-color:var(--wp-line);background:var(--wp-bg);outline:none;}
+	#wp .wp-gmode {font:inherit;font-size:0.82em;padding:0.25em 0.3em;border:1px solid var(--wp-line);border-radius:0.35em;background:var(--wp-bg);color:var(--wp-fg);}
+	#wp .wp-lbtns {display:inline-flex;gap:0.1em;}
+	#wp .wp-ib {font:inherit;font-size:0.85em;border:0;background:transparent;color:var(--wp-mut);cursor:pointer;border-radius:0.3em;padding:0.3em 0.45em;}
+	#wp .wp-ib:hover:not(:disabled) {background:var(--wp-bg);color:var(--wp-fg);}
+	#wp .wp-ib:disabled {opacity:0.3;cursor:default;}
+	#wp .wp-danger:hover {color:#b3261e !important;}
+	#wp .wp-grp {border:1px solid var(--wp-line);border-radius:0.5em;background:var(--wp-bg);padding:0.45em;}
+	#wp .wp-grp--one {border-style:dashed;border-color:var(--wp-hereb);}
+	#wp .wp-gitems {display:flex;flex-direction:column;gap:0.3em;min-height:2.4em;margin-top:0.35em;border-radius:0.4em;padding:0.1em;}
+	#wp .wp-chip--row {display:flex;width:100%;}
+	#wp .wp-chip--row.is-done .wp-cn {text-decoration:line-through;text-decoration-thickness:2px;opacity:0.7;}
+	#wp .wp-chip--row.is-here {box-shadow:0 0 0 2px var(--wp-hereb);background:var(--wp-here);}
+	#wp .wp-done {width:1.2em;height:1.2em;margin:0;accent-color:var(--accent);cursor:pointer;}
+	#wp .wp-stamp {margin-left:auto;font-size:0.78em;font-weight:700;color:#15803d;white-space:nowrap;}
+	#wp .wp-herepill {margin-left:auto;font-size:0.78em;font-weight:800;background:var(--wp-hereb);color:#1b1b1b;border-radius:1em;padding:0.1em 0.55em;}
+	#wp .wp-sethere {margin-left:auto;font:inherit;font-size:0.75em;border:1px dashed var(--wp-line);background:transparent;color:var(--wp-mut);border-radius:1em;padding:0.15em 0.55em;cursor:pointer;opacity:0;}
+	#wp .wp-chip--row:hover .wp-sethere, #wp .wp-sethere:focus-visible {opacity:1;}
+	@media (hover:none) {#wp .wp-sethere {opacity:0.75;}}
+	#wp .wp-add--row {align-self:flex-start;}
+	#wp .wp-gfoot {margin-top:0.4em;}
+	#wp .wp-lfoot .tu-chip, #wp .wp-cats .tu-chip {background:var(--wp-bg);color:var(--wp-fg);border-color:var(--wp-line);}
+	#wp .wp-empty {color:var(--wp-mut);}
+	/* history */
+	#wp .wp-stats {margin:0.4em 0 0;}
+	#wp .tu-stat {background:var(--wp-bg);border-color:var(--wp-line);}
+	#wp .tu-stat--hero {background:#e2f3e8;border-color:#e2f3e8;}
+	#wp .tu-stat__value {color:var(--wp-fg);}
+	#wp .tu-stat__label, #wp .tu-stat__sub {color:var(--wp-mut);}
+	#wp .wp-sumrow {display:grid;grid-template-columns:minmax(5em, 9em) 1fr auto;gap:0.6em;align-items:center;margin:0.35em 0;}
+	#wp .wp-sumlab {font-weight:700;overflow-wrap:anywhere;}
+	#wp .wp-sumbar {position:relative;height:1.1em;border-radius:0.55em;background:var(--wp-cell);border:1px solid var(--wp-line);overflow:hidden;}
+	#wp .wp-sumbar i {position:absolute;left:0;top:0;bottom:0;border-radius:0.55em;}
+	#wp .wp-sumplan {background:color-mix(in srgb, var(--c) 22%, transparent);}
+	#wp .wp-sumdone {background:var(--c);}
+	#wp .wp-sumnum {font-variant-numeric:tabular-nums;font-size:0.9em;white-space:nowrap;}
+	#wp .wp-heatwrap {overflow-x:auto;padding-bottom:0.2em;}
+	#wp .wp-heat {min-width:30em;}
+	#wp .wp-hmonths, #wp .wp-hgrid {display:grid;gap:3px;}
+	#wp .wp-hmonths span {font-size:0.72em;color:var(--wp-mut);white-space:nowrap;overflow:visible;height:1.3em;}
+	#wp .wp-hgrid {grid-template-rows:repeat(7, auto);}
+	#wp .wp-hc {aspect-ratio:1;min-width:0;width:100%;border:0;border-radius:3px;padding:0;cursor:pointer;background:var(--wp-l0);}
+	#wp .wp-hc.is-future {opacity:0.25;cursor:default;}
+	#wp .wp-hc.is-td {outline:2px solid var(--wp-todayb);outline-offset:1px;}
+	#wp .wp-hc.is-sel {outline:2px solid var(--wp-fg);outline-offset:1px;}
+	#wp {--wp-l0:#ebedf0;--wp-l1:color-mix(in srgb, var(--accent) 30%, #fff);--wp-l2:color-mix(in srgb, var(--accent) 55%, #fff);--wp-l3:color-mix(in srgb, var(--accent) 80%, #fff);--wp-l4:var(--accent);}
+	#wp .wp-l0 {background:var(--wp-l0);} #wp .wp-l1 {background:var(--wp-l1);} #wp .wp-l2 {background:var(--wp-l2);} #wp .wp-l3 {background:var(--wp-l3);} #wp .wp-l4 {background:var(--wp-l4);}
+	#wp .wp-legend {display:flex;align-items:center;gap:3px;justify-content:flex-end;font-size:0.75em;color:var(--wp-mut);margin:0.4em 0;}
+	#wp .wp-legend i {display:inline-block;width:0.95em;height:0.95em;border-radius:3px;}
+	#wp .wp-dd {background:var(--wp-cell);border:1px solid var(--wp-line);border-radius:0.5em;padding:0.6em 0.8em;margin:0.5em 0;}
+	#wp .wp-log {list-style:none;margin:0.4em 0 0;padding:0;}
+	#wp .wp-log li {display:flex;flex-wrap:wrap;align-items:center;gap:0.35em;padding:0.3em 0;border-bottom:1px solid var(--wp-line);}
+	#wp .wp-log li:last-child {border-bottom:0;}
+	#wp .wp-ld {font-variant-numeric:tabular-nums;color:var(--wp-mut);min-width:4.2em;}
+	#wp .wp-log .wp-x {margin-left:auto;}
+	/* editor popover */
+	#wp-ed.wp-ed {position:fixed;z-index:2147483300;width:min(26em, calc(100vw - 16px));background:var(--wp-pop);color:var(--wp-fg);border:1px solid var(--wp-line);border-radius:0.7em;box-shadow:var(--wp-shadow);padding:0.7em 0.8em 0.8em;}
+	#wp-ed.wp-ed--sheet {left:8px !important;right:8px;bottom:8px;top:auto !important;width:auto;max-height:80vh;overflow:auto;}
+	#wp .wp-edhead {display:flex;align-items:center;gap:0.5em;margin-bottom:0.5em;}
+	#wp .wp-edhead b {flex:1;}
+	#wp .wp-edgrid {display:grid;grid-template-columns:repeat(3, minmax(0, 1fr));gap:0.5em;}
+	#wp .wp-edgrid label {display:flex;flex-direction:column;gap:0.2em;font-size:0.72em;font-weight:700;text-transform:uppercase;letter-spacing:0.04em;color:var(--wp-mut);min-width:0;}
+	#wp .wp-edgrid .tu-input, #wp .wp-edgrid .tu-select {font-size:1.3em;text-transform:none;letter-spacing:0;font-weight:400;padding:0.4em 0.5em;background:var(--wp-bg);color:var(--wp-fg);border-color:var(--wp-line);}
+	#wp .wp-edwide {grid-column:1 / -1;}
+	#wp #wp-ecatl, #wp #wp-edonel {grid-column:span 1;}
+	#wp .wp-edbtns {display:flex;flex-wrap:wrap;gap:0.4em;margin-top:0.7em;}
+	#wp .wp-edbtns .wp-danger {margin-left:auto;}
+	/* Fill window */
+	#wp .mes-pfill .wp-tablewrap, #wp-weekcard.mes-pfill .wp-tablewrap {font-size:1.08em;}
+	#wp-weekcard.mes-pfill, #wp-listcard.mes-pfill {background:var(--wp-bg) !important;}
+	/* phones */
+	@media (max-width: 700px) {
+		#wp .wp-headctl {margin-left:0;}
+		#wp .wp-nnav {margin-left:0;}
+		#wp .wp-edgrid {grid-template-columns:repeat(2, minmax(0, 1fr));}
+		#wp .wp-sumrow {grid-template-columns:minmax(4em, 6em) 1fr;}
+		#wp .wp-sumnum {grid-column:2;}
+		#wp .wp-chip, #wp .wp-add, #wp .wp-grip {min-height:2.4em;}
+		#wp .wp-here {min-height:2.2em;}
+		#wp .wp-grip {min-width:2.4em;}
+	}
+	/* printing: only the plan (built into #wp-print, a child of <body>) */
+	#wp-print {display:none;}
+	@media print {
+		body > *:not(#wp-print) {display:none !important;}
+		#wp-print {display:block !important;color:#000;font:12pt/1.35 Arial, Helvetica, sans-serif;}
+		#wp-print h1 {font-size:18pt;margin:0 0 8pt;}
+		#wp-print h2 {font-size:14pt;margin:14pt 0 4pt;}
+		#wp-print h3 {font-size:11pt;margin:8pt 0 2pt;}
+		#wp-print table {border-collapse:collapse;width:100%;}
+		#wp-print th, #wp-print td {border:1px solid #444;padding:4pt 6pt;text-align:left;vertical-align:top;}
+		#wp-print th {background:#ffff00 !important;-webkit-print-color-adjust:exact;print-color-adjust:exact;}
+		#wp-print tr.is-here td {background:#fff4bf !important;-webkit-print-color-adjust:exact;print-color-adjust:exact;font-weight:bold;}
+		#wp-print ul {margin:2pt 0;padding-left:16pt;}
+		#wp-print .wp-plist {break-inside:avoid;}
+		#wp-print .wp-pfoot {margin-top:12pt;font-size:9pt;color:#555;}
+	}
+	/* dark mode */
+	body.dark-mode #wp.wp {--wp-bg:#22262c;--wp-fg:#e8ebef;--wp-mut:#aab2bd;--wp-line:#3c434c;--wp-cell:#2a2f36;--wp-here:#4a3f12;--wp-hereb:#e0b100;--wp-today:#1e3350;--wp-todayb:#60a5fa;--wp-pop:#2a2f36;--wp-shadow:0 0.5em 1.6em rgba(0,0,0,0.6);--wp-l0:#2f353d;--wp-l1:color-mix(in srgb, var(--accent) 35%, #22262c);--wp-l2:color-mix(in srgb, var(--accent) 60%, #22262c);--wp-l3:color-mix(in srgb, var(--accent) 82%, #22262c);--wp-l4:var(--accent);}
+	body.dark-mode #wp.wp .wp-table thead th, body.dark-mode #wp.wp .wp-table--cols thead th:first-child {background:#5a4f00;color:#fff6b0;}
+	body.dark-mode #wp.wp .wp-table thead th .wp-clab {color:#fff6b0;}
+	body.dark-mode #wp.wp .wp-stamp {color:#6ee7a0;}
+	body.dark-mode #wp.wp .wp-impmsg.is-bad {color:#ff8a80;}
+	body.dark-mode #wp.wp .tu-stat--hero {background:color-mix(in srgb, var(--accent) 25%, #22262c);border-color:transparent;}
+	body.dark-mode #wp.wp .tu-btn {background:transparent;}
+	body.dark-mode #wp.wp .tu-btn--primary {background:var(--accent);color:#0f1a12;}
+	body.dark-mode #wp.wp .tu-btn--ghost {color:var(--wp-fg);border-color:var(--wp-line);}
+	body.dark-mode #wp.wp .tu-seg button[aria-pressed="true"] {background:var(--accent);color:#0f1a12;}
+	body.dark-mode #wp.wp .tu-select, body.dark-mode #wp.wp .tu-input {background:var(--wp-bg);color:var(--wp-fg);border-color:var(--wp-line);}
+	body.dark-mode #wp.wp .wp-today {color:#0b1b33;}
+	body.dark-mode .wp-ghost {background:#2a2f36;color:#e8ebef;}
+	body.dark-mode #wp.wp .wp-here.is-on, body.dark-mode #wp.wp .wp-herepill {color:#1b1b1b;}
+
+
+	@media print {
+		.header, .info-bar-container, .side-bar, #footer, #comments-button, #comments-box, .color-box { display:none !important; }
+		.outer-container, .inner-container, .outer-page-content, .page-content { width:auto !important; box-shadow:none !important; padding:0 !important; margin:0 !important; }
+	}
+	/* Mobile layout: stack header/nav/footer, full-width calculator inputs */
+	@media (max-width: 600px) {
+		.inner-container { padding: 1em 0.75em; }
+
+		.header { display: flex; flex-wrap: wrap; align-items: center; }
+		.logo-image-container { flex: 0 0 auto; }
+		.logo-text-container { display: block; flex: 1 1 0; min-width: 0; padding-left: 0.75em; vertical-align: initial; }
+		.calculator-title { font-size: 1.3em; }
+		.tag-line { font-size: 1em; }
+		.social-container, .social-container--bottom { position: static; flex: 0 0 100%; margin-top: 0.5em; }
+		.social-container { display: flex; align-items: center; flex-wrap: wrap; gap: 0.5em; }
+		.social-container .social__text { margin: 0; font-size: 0.9em; }
+		.social { display: flex; gap: 0.4em; }
+		.social-container .info-bar__logo-container { margin-left: auto; }
+		#mes-logo { width: 110px; height: auto; }
+
+		.info-bar-container { display: block; width: 100%; }
+		.info-bar { display: flex; flex-wrap: wrap; margin-left: 0; padding-left: 0; width: 100%; }
+		.info-bar__item { float: none; flex: 1 1 33%; min-width: 0; }
+		.info-bar__item__text { padding: 0.5em 0.2em; font-size: 0.75em; text-align: center; white-space: normal; line-height: 1.2; }
+		.navbar-container { margin: 1em 0; width: 100%; box-sizing: border-box; }
+		.button--navbar { box-sizing: border-box; width: 100%; }
+		.navbar { width: 100%; }
+		.navbar__link { box-sizing: border-box; }
+
+		.page-content { padding: 1.2em 0 0 0; }
+
+		.footer { padding: 1.25em 0.75em; }
+		.footer__item-container { display: block; }
+		.footer__item { display: block; margin-bottom: 0.75em; }
+		.footer__item--extra-padding { padding-left: 0; }
+		.footer__text--extra-info { float: none; display: block; margin-top: 0.5em; }
+	}
+</style>
+        <meta property="fb:app_id" content="" />
+        <meta name="author" content="Math Easy Solutions Staff">
+        <meta property="og:type" content="website" />
+        <meta property="og:url" content="https://mes.fm/workout-planner" />            <meta property="og:title" content="MES Workout Planner | Math Easy Solutions" />        <meta property="og:image" content="https://mes.fm/workout-planner/img/logo-big.png" />
+        <meta property="og:description" content="Free workout routine planner: plan your week, rotate workouts with a Currently-at marker, drag and drop, track your streak, and import or export Excel." />
+
+        <meta name="description" content="Free workout routine planner: plan your week, rotate workouts with a Currently-at marker, drag and drop, track your streak, and import or export Excel.">            <meta name="twitter:card" content="summary">        <meta name="twitter:site" content="@MathEasySolns">
+        <meta name="twitter:title" content="MES Workout Planner">
+        <meta name="twitter:description" content="Free workout routine planner: plan your week, rotate workouts with a Currently-at marker, drag and drop, track your streak, and import or export Excel.">
+        <meta name="twitter:image" content="https://mes.fm/workout-planner/img/logo-big.png">
+        <meta name="twitter:image:alt" content="MES Workout Planner">
+        <script type="application/ld+json">
+        {"@context": "https://schema.org", "@type": "WebApplication", "name": "MES Workout Planner", "url": "https://mes.fm/workout-planner", "applicationCategory": "UtilitiesApplication", "operatingSystem": "Any", "offers": {"@type": "Offer", "price": "0", "priceCurrency": "USD"}, "description": "Free workout routine planner: plan each day of your week with times and activities in your own categories, keep a Currently-at marker that moves to the next workout when you finish one, run training lists and rotations, drag and drop everything, log workouts and see your streak and calendar. Import from Excel, print, share as a link. No sign-up."}
+        </script>            <!-- Google Tag Manager -->
+            <script>(function(w,d,s,l,i){w[l]=w[l]||[];w[l].push({'gtm.start':
+            new Date().getTime(),event:'gtm.js'});var f=d.getElementsByTagName(s)[0],
+            j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
+            'https://www.googletagmanager.com/gtm.js?id='+i+dl;f.parentNode.insertBefore(j,f);
+            })(window,document,'script','dataLayer','GTM-PL6QNQR');</script>
+            <!-- End Google Tag Manager -->
+<!-- Legacy Universal Analytics removed: every UA property stopped processing data in 2023; pageviews are tracked via main_js/track.js (+ GTM) -->
+    <!-- ADSENSE-DEFERRED: load adsbygoogle.js (auto ads + consent) on the first
+     real interaction (scroll / pointer / key), or after a 15s idle fallback,
+     so its ad + consent JS (doubleclick ads ~100KB, Funding Choices ~70KB,
+     sodar, osd) never runs during the page-load / Lighthouse trace window. -->
+    <script>
+    (function () {
+      var EVT = ['scroll', 'pointerdown', 'keydown', 'touchstart'];
+      var done = false;
+      function go() {
+        if (done) return;
+        done = true;
+        EVT.forEach(function (e) { removeEventListener(e, go); });
+        var s = document.createElement('script');
+        s.async = true;
+        s.crossOrigin = 'anonymous';
+        s.src = 'https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-1461238060884369';
+        document.head.appendChild(s);
+      }
+      EVT.forEach(function (e) { addEventListener(e, go, { passive: true }); });
+      setTimeout(go, 15000);
+    })();
+    </script>
+    <script>
+/* autoads-header-gap-guard: guards two gaps against Google Auto ads (in-page ad blocks,
+   class `google-auto-placed`), plus Google's separate "annotation" text-ad
+   formats, which are a different Auto ads mechanism than the in-page blocks
+   above. 1) Logo header <-> nav bar: on desktop, any in-page ad caught here
+   is relocated to just below the whole header+nav+logo-badge complex
+   (before .outer-page-content) and allowed to show if it fills; on mobile
+   (max-width: 768px, this repo's existing responsive breakpoint) it is
+   hidden outright instead -- no ad shows below the nav bar on mobile at
+   all. 2) Comments toggle (#comments-button) <-> comments widget
+   (#comments-box): on every device, any in-page ad caught here is relocated
+   to just after the comments box and allowed to show if it fills.
+   3) Annotation/related-entry chips -- any element carrying the
+   `google-anno-skip` class, which covers every chip variant Google serves
+   (`google-anno-sc` pill/badge tooltips, `goog-rentry` related-entry
+   tooltips, `google-anno-sa-qtx` tooltip text) -- and 4) in-text link ads
+   (`<a class="google-anno">` wrapping a `<span class="google-anno-t">`
+   around an ordinary word, e.g. turning "Calculate" into a
+   double-underlined, clickable ad): both are only guarded inside #header,
+   #footer, the top .info-bar-container nav, or the .side-bar "Site
+   Navigation" widget -- chips are hidden outright there, and in-text links
+   are unwrapped back to plain text there, so the word stays readable
+   without the ad behavior. Elsewhere in the actual page content both are
+   left alone on purpose. Unlike the in-page ad blocks, Google serves many
+   of these chips/links per page load, so removing the guarded-zone ones
+   doesn't cost the page its one shot at an ad the way deleting the in-page
+   block did -- no relocate/poll needed, just hide/unwrap on sight.
+   In the first two cases Google's own placeholder-collapse doesn't reliably
+   fire once we've moved the node, so we poll it: if no real ad iframe shows
+   up within ~2s, we force the reserved space to 0 ourselves, so an unfilled
+   slot never leaves a blank gap. */
+(function () {
+    function isMobile() {
+        return window.matchMedia('(max-width: 768px)').matches;
+    }
+    function isBetween(before, after, el) {
+        if (!before || !after) return false;
+        return !!(before.compareDocumentPosition(el) & Node.DOCUMENT_POSITION_FOLLOWING) &&
+               !!(after.compareDocumentPosition(el) & Node.DOCUMENT_POSITION_PRECEDING);
+    }
+    function collapseIfUnfilled(node) {
+        var attempts = 0;
+        var poll = setInterval(function () {
+            attempts++;
+            if (!node.isConnected) {
+                clearInterval(poll);
+                return;
+            }
+            if (node.querySelector('iframe')) {
+                clearInterval(poll);
+                return;
+            }
+            if (attempts >= 10) {
+                node.style.setProperty('display', 'none', 'important');
+                clearInterval(poll);
+            }
+        }, 200);
+    }
+    function handleHeaderNavZone(node) {
+        var header = document.getElementById('header');
+        var nav = document.querySelector('.info-bar-container');
+        if (!isBetween(header, nav, node)) return false;
+        if (isMobile()) {
+            node.style.setProperty('display', 'none', 'important');
+            return true;
+        }
+        var target = document.querySelector('.outer-page-content');
+        if (target) {
+            target.before(node);
+        } else if (nav) {
+            nav.after(node);
+        }
+        collapseIfUnfilled(node);
+        return true;
+    }
+    function handleCommentsZone(node) {
+        var button = document.getElementById('comments-button');
+        var box = document.getElementById('comments-box');
+        if (!isBetween(button, box, node)) return false;
+        box.after(node);
+        collapseIfUnfilled(node);
+        return true;
+    }
+    function inAnnotationGuardedZone(el) {
+        return !!(el.closest('#header') || el.closest('#footer') || el.closest('.side-bar') || el.closest('.info-bar-container'));
+    }
+    function handleAnnotationChip(node) {
+        if (node.classList && node.classList.contains('google-anno-skip') && inAnnotationGuardedZone(node)) {
+            node.style.setProperty('display', 'none', 'important');
+            return true;
+        }
+        return false;
+    }
+    function handleInTextLinkAd(node) {
+        if (node.classList && node.classList.contains('google-anno') && node.parentNode && inAnnotationGuardedZone(node)) {
+            node.replaceWith(document.createTextNode(node.textContent));
+            return true;
+        }
+        return false;
+    }
+    function handle(node) {
+        if (node.nodeType !== 1) return;
+        if (node.classList && node.classList.contains('google-auto-placed')) {
+            if (handleHeaderNavZone(node)) return;
+            handleCommentsZone(node);
+            return;
+        }
+        if (handleAnnotationChip(node)) return;
+        if (handleInTextLinkAd(node)) return;
+        if (node.querySelectorAll) {
+            node.querySelectorAll('.google-auto-placed').forEach(function (n) {
+                if (handleHeaderNavZone(n)) return;
+                handleCommentsZone(n);
+            });
+            node.querySelectorAll('.google-anno-skip').forEach(function (n) {
+                handleAnnotationChip(n);
+            });
+            node.querySelectorAll('.google-anno').forEach(function (n) {
+                handleInTextLinkAd(n);
+            });
+        }
+    }
+    new MutationObserver(function (mutations) {
+        mutations.forEach(function (m) {
+            m.addedNodes.forEach(handle);
+        });
+    }).observe(document.documentElement, {childList: true, subtree: true});
+})();
+</script>
+    </head>
+    <body>            <!-- Google Tag Manager (noscript) -->
+            <noscript><iframe src="https://www.googletagmanager.com/ns.html?id=GTM-PL6QNQR"
+            height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
+            <!-- End Google Tag Manager (noscript) -->        <div id="outer-container" class="outer-container">                <div class = "inner-container">                        <div id="header" class="header" role="banner">                                <a class="logo-image-container" href='/workout-planner'><img height="88" width="88" id="logo" class="logo lazyload" alt="MES Workout Planner logo" data-src="/workout-planner/img/logo.png?v=2"></a>
+                            <div class="logo-text-container">
+                                <a class="calculator-title-link" href='/workout-planner'>
+                                    <p class="calculator-title">MES Workout Planner</p>
+                                </a>
+                                <p class="tag-line">Plan your week, rotate your workouts, track your streak.</p>                            </div>
+
+                            <div class="social-container"><ul class="social">	<li class="social__logo social__hive"><a class="social__link" href="https://peakd.com/@mes" target="_blank"></a></li></a></li>
+    <li class="social__logo social__telegram"><a class="social__link" href="https://t.me/meslinks" target="_blank"></a></li></a></li></ul><a class="info-bar__logo-container" href="https://mes.fm/" title="Math Easy Solutions"><img id="mes-logo" class="info-bar__logo lazyload" alt="math easy solutions logo" height="29" width="126" data-src="https://mes.fm/main_img/mes-logo-small.png"></a>                            </div>                                                        </div>
+                        <div class="info-bar-container" role="navigation" aria-label="Primary">
+                            <ul id="info-bar" class="info-bar shadow">
+                                <li class="info-bar__item"><a class="info-bar__item__text" href='/workout-planner'>Home</a></li>                                    <li class="info-bar__item"><a class="info-bar__item__text" href='https://mes.fm/calculators'>Calculators</a></li><li class="info-bar__item"><a class="info-bar__item__text" href='https://mes.fm/tools'>Tools</a></li>                                    <li class="info-bar__item info-bar__item--utility" style="display:none !important;"><a class="info-bar__item__text" href='/contact'>Contact Us</a></li>
+                                    <li class="info-bar__item info-bar__item--utility" style="display:none !important;"><a class="info-bar__item__text" target='_blank' href='https://mes.fm/donate.html'>Donate</a></li><li class="info-bar__item info-bar__item--utility" style="display:none !important;"><a class="info-bar__item__text" target='_blank' rel="nofollow" href='https://matheasy.substack.com/'>Subscribe</a></li>
+                                    <li class="info-bar__item info-bar__item--mes"><a class="info-bar__item__text" href="/" style="font-weight:bold;">MES.fm</a></li></ul>
+                        </div>
+                                                        <!-- (Responsive) Horizontal -->
+                                                        <div class="outer-page-content">
+                            <div class="page-content" role="main">                                    <div class="color-box"></div>
+                                    <h1 class="page-title">Workout Routine Planner</h1>                                        <p class="page-description">Free workout routine planner: plan each day of your week with times and activities in your own categories, keep a Currently-at marker that moves to the next workout when you finish one, run training lists and rotations, drag and drop everything, log workouts and see your streak and calendar. Import from Excel, print, share as a link. No sign-up.</p>                                    	<div id="main-content">
+	<div class="tu wp" id="wp">
+		<div class="wp-banner" id="wp-sharebar" hidden>
+			<b>Someone shared a workout plan with you:</b> <span id="wp-sharename"></span>.
+			<span class="wp-banbtns"><button type="button" class="tu-btn tu-btn--primary" id="wp-shareuse">Use this plan</button> <button type="button" class="tu-btn tu-btn--ghost" id="wp-sharekeep">Keep mine</button></span>
+			<span class="tu-note">Your own history stays. You can undo.</span>
+		</div>
+
+		<div class="tu-card wp-top">
+			<div class="wp-titlerow">
+				<input id="wp-title" class="wp-title" type="text" maxlength="80" aria-label="Name of this plan" autocomplete="off">
+				<span class="wp-saved" id="wp-saved" aria-live="polite">Saved in this browser</span>
+			</div>
+			<div class="wp-tools">
+				<button type="button" class="tu-btn tu-btn--ghost" id="wp-undo" title="Undo (Ctrl+Z)" disabled>↶ Undo</button>
+				<span class="wp-tpl"><label for="wp-tplsel">Template</label> <select id="wp-tplsel" class="tu-select"></select> <button type="button" class="tu-btn" id="wp-tplgo">Load</button></span>
+				<button type="button" class="tu-btn" id="wp-share">🔗 Copy share link</button>
+				<details class="wp-menu" id="wp-exp"><summary class="tu-btn">⬇ Export</summary>
+					<div class="wp-menupop">
+						<button type="button" data-exp="excel">📋 Copy as a table (paste into Excel / Sheets)</button>
+						<button type="button" data-exp="csv">⬇ Download CSV</button>
+						<button type="button" data-exp="print">🖨 Print / save as PDF</button>
+						<button type="button" data-exp="json">💾 Download a backup (.json, with history)</button>
+					</div>
+				</details>
+				<details class="wp-menu" id="wp-imp"><summary class="tu-btn">⬆ Import</summary>
+					<div class="wp-menupop wp-imppop">
+						<label for="wp-imptext"><b>Paste a table</b> from Excel or Google Sheets (Day | Time | your categories | Currently At):</label>
+						<textarea id="wp-imptext" rows="5" placeholder="Day&#9;Time&#9;Cardio&#9;Workouts&#9;Currently At&#10;Sunday&#9;4:00 PM&#9;Running&#9;&#9;"></textarea>
+						<div class="wp-improw"><button type="button" class="tu-btn tu-btn--primary" id="wp-impgo">Import the week</button>
+						<label class="tu-btn tu-btn--ghost wp-file">Choose a CSV file<input type="file" id="wp-impfile" accept=".csv,.tsv,.txt,text/csv,text/plain" hidden></label>
+						<label class="tu-btn tu-btn--ghost wp-file">Restore a backup (.json)<input type="file" id="wp-impjson" accept=".json,application/json" hidden></label></div>
+						<p class="tu-note">Several activities in one cell: put each on its own line or separate them with <b>;</b>. "Squat 5x5" or "Run (30 min)" fill in sets, reps and minutes. Your lists and history are kept.</p>
+						<p class="wp-impmsg" id="wp-impmsg" aria-live="polite"></p>
+					</div>
+				</details>
+			</div>
+		</div>
+
+		<div class="tu-card wp-next" id="wp-next" aria-live="polite"></div>
+
+		<section class="tu-card wp-sec" id="wp-weekcard" tabindex="-1" aria-labelledby="wp-weekh">
+			<div class="wp-head" id="wp-weekbar">
+				<h2 id="wp-weekh">Weekly plan</h2>
+				<div class="wp-headctl">
+					<span class="tu-seg" id="wp-orient" role="group" aria-label="Table direction"><button type="button" data-o="rows">Days as rows</button><button type="button" data-o="cols">Days as columns</button></span>
+					<span class="tu-seg" id="wp-lay" role="group" aria-label="Layout"><button type="button" data-l="auto">Auto</button><button type="button" data-l="table">Table</button><button type="button" data-l="cards">Cards</button></span>
+				</div>
+			</div>
+			<div class="wp-cats" id="wp-cats"></div>
+			<div id="wp-week" class="wp-weekwrap"></div>
+			<div class="wp-noterow"><label for="wp-note">Note</label><textarea id="wp-note" rows="1" maxlength="600" placeholder="e.g. Pre-workout routine as needed."></textarea></div>
+			<p class="tu-note wp-tip"><b>Drag</b> an activity to another day, category or training list (on a phone: press and hold, then drag). Hold <b>Alt</b> while dropping to copy it. Drag <b>⠿</b> to reorder the days: the order is the order "Currently at" walks through. Keyboard: <b>Alt + arrow keys</b> move the focused activity, <b>Enter</b> edits it, <b>Delete</b> removes it; arrow keys on <b>⠿</b> move a day.
+				<label class="wp-check"><input type="checkbox" id="wp-skip"> "Done" skips rest days (days with nothing planned)</label></p>
+		</section>
+
+		<section class="tu-card wp-sec" id="wp-listcard" tabindex="-1" aria-labelledby="wp-listh">
+			<div class="wp-head" id="wp-listbar"><h2 id="wp-listh">Training lists</h2><button type="button" class="tu-btn" id="wp-addlist">+ New list</button></div>
+			<p class="tu-note">A list has groups: <b>Do all</b> (a checklist: each one gets a done date) or <b>Do one, in turn</b> (a rotation: do the one marked 📍, then it moves on). Drag activities between lists and the week.</p>
+			<div id="wp-lists" class="wp-lists"></div>
+		</section>
+
+		<section class="tu-card wp-sec" id="wp-histcard" tabindex="-1" aria-labelledby="wp-histh">
+			<div class="wp-head" id="wp-histbar"><h2 id="wp-histh">History</h2>
+				<div class="wp-headctl"><span class="tu-seg" id="wp-weeks" role="group" aria-label="Weeks shown"><button type="button" data-w="13">3 months</button><button type="button" data-w="26">6 months</button><button type="button" data-w="52">1 year</button></span>
+				<label class="wp-wslab">Week starts <select id="wp-ws" class="tu-select"><option value="0">Sunday</option><option value="1">Monday</option></select></label></div></div>
+			<div class="tu-stats wp-stats" id="wp-stats"></div>
+			<h3>This week</h3>
+			<div id="wp-sum" class="wp-sum"></div>
+			<h3>Calendar</h3>
+			<div class="wp-heatwrap"><div id="wp-heat" class="wp-heat" role="grid" aria-label="Workout calendar"></div></div>
+			<div class="wp-legend" aria-hidden="true">Less <i class="wp-l0"></i><i class="wp-l1"></i><i class="wp-l2"></i><i class="wp-l3"></i><i class="wp-l4"></i> More</div>
+			<div id="wp-daydet" class="wp-daydet" aria-live="polite"></div>
+		</section>
+
+		<div class="wp-ed" id="wp-ed" hidden role="dialog" aria-modal="false" aria-labelledby="wp-edh">
+			<div class="wp-edhead"><b id="wp-edh">Edit activity</b><button type="button" class="wp-x" id="wp-edx" aria-label="Close">✕</button></div>
+			<div class="wp-edgrid">
+				<label class="wp-edwide">Name<input id="wp-ename" class="tu-input" type="text" maxlength="120" autocomplete="off"></label>
+				<label id="wp-ecatl">Category<select id="wp-ecat" class="tu-select"></select></label>
+				<label>Sets<input id="wp-esets" class="tu-input" type="text" inputmode="numeric" maxlength="3" placeholder="e.g. 3"></label>
+				<label>Reps<input id="wp-ereps" class="tu-input" type="text" maxlength="20" placeholder="e.g. 10 or 8-12"></label>
+				<label>Minutes<input id="wp-edur" class="tu-input" type="text" inputmode="decimal" maxlength="5" placeholder="e.g. 30"></label>
+				<label id="wp-edonel">Done on<input id="wp-edone" class="tu-input" type="date"></label>
+				<label class="wp-edwide">Note<input id="wp-enote" class="tu-input" type="text" maxlength="300" placeholder="e.g. 3 targets, left foot"></label>
+				<label class="wp-edwide">Move to<select id="wp-emove" class="tu-select"></select></label>
+			</div>
+			<div class="wp-edbtns">
+				<button type="button" class="tu-btn tu-btn--primary" id="wp-elog">✓ Log done today</button>
+				<button type="button" class="tu-btn" id="wp-edup">Duplicate</button>
+				<button type="button" class="tu-btn tu-btn--ghost wp-danger" id="wp-edel">Delete</button>
+			</div>
+		</div>
+
+		<div class="tu-seo">
+			<h2>A workout planner that remembers where you are</h2>
+			<p>Most routines are not tied to a calendar day. You miss a day, and the next workout is still the one after the last one you did. This planner keeps a <b>Currently at</b> marker on your week: press <b>Done</b> and it moves to the next workout, whatever day it is. Your <b>training lists</b> work the same way: finish the checklist at the top, then do one item from the rotation below it, in turn.</p>
+			<h3>What you can do</h3>
+			<ul>
+				<li>Plan each day with a time and any number of activities in your own categories (Cardio, Workouts, Mobility, Skills ...), each with its own colour.</li>
+				<li>Add sets, reps, minutes and a note to any activity, or leave them blank.</li>
+				<li>Drag activities between days, categories and lists, and drag days to change their order. Everything also works from the keyboard.</li>
+				<li>Log what you did, then see your streak, a calendar of active days and a weekly summary of planned versus done.</li>
+				<li>Print the plan, copy it into Excel or Google Sheets, download a CSV, or paste a table from your spreadsheet to import it.</li>
+				<li>Share your plan as a link, or keep a backup file. Everything is saved in your browser; nothing is uploaded.</li>
+			</ul>
+			<h3>The templates</h3>
+			<p><b>Beginner full body</b> trains every major muscle group three times a week with a walk in between. <b>Push / Pull / Legs</b> splits the body over six days. <b>5×5 strength</b> alternates two barbell workouts, A (squat, bench press, row) and B (squat, overhead press, deadlift). <b>Start running</b> uses run/walk intervals in the style of the NHS Couch to 5K plan (its first week alternates 60 seconds of running with 90 seconds of walking). Change anything to fit you.</p>
+			<h3>How much exercise?</h3>
+			<p>The World Health Organization recommends that adults get at least 150-300 minutes of moderate activity or 75-150 minutes of vigorous activity a week, plus muscle-strengthening activities on two or more days (<a href="https://www.who.int/news-room/fact-sheets/detail/physical-activity" rel="noopener" target="_blank">WHO physical activity fact sheet</a>). Add minutes to your activities and the weekly summary adds them up for you. This page is a planner, not medical advice: check with a doctor before starting something much harder than you are used to.</p>
+			<h3>Questions</h3>
+			<dl>
+				<dt>Where is my plan saved?</dt><dd>In this browser only (localStorage). To move it to another device, copy the share link or download a backup and open it there.</dd>
+				<dt>What is in a share link?</dt><dd>Your week, categories, note and lists, packed into the link itself. Your history is never in a link, and no server stores anything.</dd>
+				<dt>Can I import my spreadsheet?</dt><dd>Yes. Select the table in Excel or Google Sheets (with the header row: Day, Time, your categories, Currently At), copy it, and paste it under Import. Lines under the table become the note.</dd>
+				<dt>What does "skip rest days" do?</dt><dd>When it is on, pressing Done moves the Currently at marker past days with nothing planned.</dd>
+			</dl>
+			<p>Related: <a href="/timer">Timer</a> &middot; <a href="/interval-timer">Interval Timer</a> &middot; <a href="/calories-burned-calculator">Calories Burned Calculator</a> &middot; <a href="/heart-rate-zone-calculator">Heart Rate Zones</a> &middot; <a href="/one-rep-max-calculator">One-Rep Max</a></p>
+		</div>
+	</div>
+	<script src="/main_js/panel-view.js?v=1" defer></script>
+	</div>                                    <!-- PC (Responsive/Rectangle) Matched Content -->
+                                                                        <div id="comments-button" class="hide-div-button button">Comments</div>
+                                    <div id="comments-box" class="hide">
+                                        <div id="fastcomments-widget"></div>                                    </div>                            </div>
+                        </div>
+
+                        <!-- side bar -->                            <div class="side-bar">                                    <div class="navbar-container shadow" role="navigation" aria-label="Site menu">
+                                        <div class="button button--navbar" id="navbar-button" style="position:relative;">Site Navigation<span class="dropdown-symbol dropdown-symbol--dark" style="position:absolute;right:0.75em;top:50%;transform:translateY(-50%);margin-left:0;">&#9660;</span></div>    <ul id="navbar" class="navbar">
+    <li class="navbar__item navbar__item--social"><div class="social-container social-container--navbar"><ul class="social">	<li class="social__logo social__hive"><a class="social__link" href="https://peakd.com/@mes" target="_blank"></a></li>
+    <li class="social__logo social__telegram"><a class="social__link" href="https://t.me/meslinks" target="_blank"></a></li></ul><a class="info-bar__logo-container" href="https://mes.fm/" title="Math Easy Solutions"><img id="mes-logo" class="info-bar__logo lazyload" alt="math easy solutions logo" height="29" width="126" data-src="https://mes.fm/main_img/mes-logo-small.png"></a></div></li>
+        <li class="navbar__item"><a class="navbar__link navbar__link--first" href="/workout-planner">Home</a></li>    <li class="navbar__item"><a class="navbar__link" href="/calculators">Calculators</a></li>
+    <li class="navbar__item"><a class="navbar__link" href="/tools">Tools</a></li>
+    <li class="navbar__item"><a class="navbar__link" href="/browser">Browser Extensions</a></li>
+    <!-- MOBILE-APPS-DROPDOWN-REMOVED: every linked app was a dead App Store / Play Store listing (lapsed developer account) -- add an entry back here for each app once it is relaunched -->
+    <li class="navbar__item"><a target="_blank" class="navbar__link" target='_blank' href="https://teespring.com/stores/mes-store">Store</a></li><li class="navbar__item"><a class="navbar__link" target="_blank" rel="nofollow" href="https://matheasy.substack.com/">Subscribe</a></li></ul>
+                                    </div>                                        <!-- (Responsive) Vertical -->
+
+                            </div>                            <!-- (Responsive) Horizontal -->
+                                            </div><div id="footer" class="footer" role="contentinfo">
+            <div class="footer__item-container">
+            <div class="footer__item">
+                <a class="footer__text footer__text--title" href="https://mes.fm/calculators.html">Calculators</a>
+            </div>
+
+            <div class="footer__item">
+                <a class="footer__text footer__text--title" href="https://mes.fm/tools">Tools</a>
+            </div>
+
+            <div class="footer__item footer__item--extra-padding">
+                <a class="footer__text footer__text--title" href="https://mes.fm/mobile-apps">Mobile Apps</a>
+            </div>
+
+            <div class="footer__item">
+                <a class="footer__text footer__text--title" href="https://mes.fm">MES.fm</a>
+            </div>
+        </div>
+        <a class="footer__text" href="/contact">Contact Us</a><span class="footer__separator"> | </span>
+        <a class="footer__text" href="/privacy-policy">Privacy Policy</a><span class="footer__separator"> | </span>
+        <a class="footer__text" target='_blank' href="https://mes.fm/donate.html">Donate</a><span class="footer__separator"> | </span><a class="footer__text" target='_blank' rel="nofollow" href="https://matheasy.substack.com/">Subscribe</a>
+        <div class="footer__text--extra-info"><span class="footer__text footer__text--copyright">Copyright &copy; <span id="copyright-year">2013</span>&nbsp;Math Easy Solutions</span></div>
+    </div>
+
+
+        </div>
+
+        <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.11.3/jquery.min.js"></script>
+        <script>
+        var MES_Vars = {
+            mobile:false,
+            hide_search:false,
+            current_tab:0
+        }        </script><!-- FASTCOMMENTS-LAZY: widget init moved to main_js/main.js -- it pulls embed.min.js only when #fastcomments-widget nears the viewport or on the first Comments-toggle click, so it no longer blocks first render -->                <script src="https://mes.fm/main_js/lazysizes.min.js?v=1.0.3" async></script>
+	<script src="/workout-planner/js/workout-planner.js?v=1" defer></script>
+            <script src="https://mes.fm/main_js/main.js?v=1.0.5"></script>    <!-- PAGEVIEW-TRACKING-INSERTED --><script src="https://mes.fm/main_js/track.js" defer></script><script>document.getElementById('copyright-year').textContent = new Date().getFullYear();</script><script src="/main_js/info-bar-fit.js" defer></script></body>
+
+</html>

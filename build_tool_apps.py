@@ -818,6 +818,13 @@ APPS = {
                      js_v="12", lib_from=["clock"],
                      nav_extra="<li class=\"info-bar__item\"><a class=\"info-bar__item__text\" href='/timezone'>Time Zones</a></li><li class=\"info-bar__item\"><a class=\"info-bar__item__text\" href='/timer'>Timer</a></li><li class=\"info-bar__item\"><a class=\"info-bar__item__text\" href='/calendar'>Calendar</a></li>",
                      menu_extra="<li class=\"navbar__item\"><a class=\"navbar__link\" href=\"/timezone\">Time Zone Converter</a></li><li class=\"navbar__item\"><a class=\"navbar__link\" href=\"/timer\">Timer</a></li><li class=\"navbar__item\"><a class=\"navbar__link\" href=\"/calendar\">Calendar</a></li>"),
+    # Workout Planner (2026-10-29, mes.fm/workout-planner): weekly plan with a rotating "Currently at" marker, training lists (checklists +
+    # rotations), drag and drop, history / streak / heatmap, CSV + Excel import / export, share links. lib.js = MESWP (tests tool_apps_src/workout-planner-tests.js).
+    "workout-planner": dict(title="MES Workout Planner", page_title="Workout Routine Planner",
+                            tag="Plan your week, rotate your workouts, track your streak.", accent="#1d7a46", dark="#155c34", tint="#e2f3e8",
+                            desc="Free workout routine planner: plan each day of your week with times and activities in your own categories, keep a Currently-at marker that moves to the next workout when you finish one, run training lists and rotations, drag and drop everything, log workouts and see your streak and calendar. Import from Excel, print, share as a link. No sign-up.",
+                            meta_desc="Free workout routine planner: plan your week, rotate workouts with a Currently-at marker, drag and drop, track your streak, and import or export Excel.",
+                            js_v="1"),
     # Famous Birthdays (new 2026-10-21, mes.fm/birthday; aliases /birthdays /celebrity-birthdays /famous-birthdays /born-today ...): who shares your birthday, born today,
     # name search, filters (field / country / era / living), same date + same year + nearest. Data = mes.fm/birthday/data/MM.json + index.json from Wikidata (CC0),
     # written by build_birthdays.py (+ birthday_extras.json). lib.js = BD (helpers + loader; tests tool_apps_src/birthday-tests.js); Sun sign / Chinese animal from the

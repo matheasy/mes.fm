@@ -1,0 +1,120 @@
+	<div class="tu wp" id="wp">
+		<div class="wp-banner" id="wp-sharebar" hidden>
+			<b>Someone shared a workout plan with you:</b> <span id="wp-sharename"></span>.
+			<span class="wp-banbtns"><button type="button" class="tu-btn tu-btn--primary" id="wp-shareuse">Use this plan</button> <button type="button" class="tu-btn tu-btn--ghost" id="wp-sharekeep">Keep mine</button></span>
+			<span class="tu-note">Your own history stays. You can undo.</span>
+		</div>
+
+		<div class="tu-card wp-top">
+			<div class="wp-titlerow">
+				<input id="wp-title" class="wp-title" type="text" maxlength="80" aria-label="Name of this plan" autocomplete="off">
+				<span class="wp-saved" id="wp-saved" aria-live="polite">Saved in this browser</span>
+			</div>
+			<div class="wp-tools">
+				<button type="button" class="tu-btn tu-btn--ghost" id="wp-undo" title="Undo (Ctrl+Z)" disabled>↶ Undo</button>
+				<span class="wp-tpl"><label for="wp-tplsel">Template</label> <select id="wp-tplsel" class="tu-select"></select> <button type="button" class="tu-btn" id="wp-tplgo">Load</button></span>
+				<button type="button" class="tu-btn" id="wp-share">🔗 Copy share link</button>
+				<details class="wp-menu" id="wp-exp"><summary class="tu-btn">⬇ Export</summary>
+					<div class="wp-menupop">
+						<button type="button" data-exp="excel">📋 Copy as a table (paste into Excel / Sheets)</button>
+						<button type="button" data-exp="csv">⬇ Download CSV</button>
+						<button type="button" data-exp="print">🖨 Print / save as PDF</button>
+						<button type="button" data-exp="json">💾 Download a backup (.json, with history)</button>
+					</div>
+				</details>
+				<details class="wp-menu" id="wp-imp"><summary class="tu-btn">⬆ Import</summary>
+					<div class="wp-menupop wp-imppop">
+						<label for="wp-imptext"><b>Paste a table</b> from Excel or Google Sheets (Day | Time | your categories | Currently At):</label>
+						<textarea id="wp-imptext" rows="5" placeholder="Day&#9;Time&#9;Cardio&#9;Workouts&#9;Currently At&#10;Sunday&#9;4:00 PM&#9;Running&#9;&#9;"></textarea>
+						<div class="wp-improw"><button type="button" class="tu-btn tu-btn--primary" id="wp-impgo">Import the week</button>
+						<label class="tu-btn tu-btn--ghost wp-file">Choose a CSV file<input type="file" id="wp-impfile" accept=".csv,.tsv,.txt,text/csv,text/plain" hidden></label>
+						<label class="tu-btn tu-btn--ghost wp-file">Restore a backup (.json)<input type="file" id="wp-impjson" accept=".json,application/json" hidden></label></div>
+						<p class="tu-note">Several activities in one cell: put each on its own line or separate them with <b>;</b>. "Squat 5x5" or "Run (30 min)" fill in sets, reps and minutes. Your lists and history are kept.</p>
+						<p class="wp-impmsg" id="wp-impmsg" aria-live="polite"></p>
+					</div>
+				</details>
+			</div>
+		</div>
+
+		<div class="tu-card wp-next" id="wp-next" aria-live="polite"></div>
+
+		<section class="tu-card wp-sec" id="wp-weekcard" tabindex="-1" aria-labelledby="wp-weekh">
+			<div class="wp-head" id="wp-weekbar">
+				<h2 id="wp-weekh">Weekly plan</h2>
+				<div class="wp-headctl">
+					<span class="tu-seg" id="wp-orient" role="group" aria-label="Table direction"><button type="button" data-o="rows">Days as rows</button><button type="button" data-o="cols">Days as columns</button></span>
+					<span class="tu-seg" id="wp-lay" role="group" aria-label="Layout"><button type="button" data-l="auto">Auto</button><button type="button" data-l="table">Table</button><button type="button" data-l="cards">Cards</button></span>
+				</div>
+			</div>
+			<div class="wp-cats" id="wp-cats"></div>
+			<div id="wp-week" class="wp-weekwrap"></div>
+			<div class="wp-noterow"><label for="wp-note">Note</label><textarea id="wp-note" rows="1" maxlength="600" placeholder="e.g. Pre-workout routine as needed."></textarea></div>
+			<p class="tu-note wp-tip"><b>Drag</b> an activity to another day, category or training list (on a phone: press and hold, then drag). Hold <b>Alt</b> while dropping to copy it. Drag <b>⠿</b> to reorder the days: the order is the order "Currently at" walks through. Keyboard: <b>Alt + arrow keys</b> move the focused activity, <b>Enter</b> edits it, <b>Delete</b> removes it; arrow keys on <b>⠿</b> move a day.
+				<label class="wp-check"><input type="checkbox" id="wp-skip"> "Done" skips rest days (days with nothing planned)</label></p>
+		</section>
+
+		<section class="tu-card wp-sec" id="wp-listcard" tabindex="-1" aria-labelledby="wp-listh">
+			<div class="wp-head" id="wp-listbar"><h2 id="wp-listh">Training lists</h2><button type="button" class="tu-btn" id="wp-addlist">+ New list</button></div>
+			<p class="tu-note">A list has groups: <b>Do all</b> (a checklist: each one gets a done date) or <b>Do one, in turn</b> (a rotation: do the one marked 📍, then it moves on). Drag activities between lists and the week.</p>
+			<div id="wp-lists" class="wp-lists"></div>
+		</section>
+
+		<section class="tu-card wp-sec" id="wp-histcard" tabindex="-1" aria-labelledby="wp-histh">
+			<div class="wp-head" id="wp-histbar"><h2 id="wp-histh">History</h2>
+				<div class="wp-headctl"><span class="tu-seg" id="wp-weeks" role="group" aria-label="Weeks shown"><button type="button" data-w="13">3 months</button><button type="button" data-w="26">6 months</button><button type="button" data-w="52">1 year</button></span>
+				<label class="wp-wslab">Week starts <select id="wp-ws" class="tu-select"><option value="0">Sunday</option><option value="1">Monday</option></select></label></div></div>
+			<div class="tu-stats wp-stats" id="wp-stats"></div>
+			<h3>This week</h3>
+			<div id="wp-sum" class="wp-sum"></div>
+			<h3>Calendar</h3>
+			<div class="wp-heatwrap"><div id="wp-heat" class="wp-heat" role="grid" aria-label="Workout calendar"></div></div>
+			<div class="wp-legend" aria-hidden="true">Less <i class="wp-l0"></i><i class="wp-l1"></i><i class="wp-l2"></i><i class="wp-l3"></i><i class="wp-l4"></i> More</div>
+			<div id="wp-daydet" class="wp-daydet" aria-live="polite"></div>
+		</section>
+
+		<div class="wp-ed" id="wp-ed" hidden role="dialog" aria-modal="false" aria-labelledby="wp-edh">
+			<div class="wp-edhead"><b id="wp-edh">Edit activity</b><button type="button" class="wp-x" id="wp-edx" aria-label="Close">✕</button></div>
+			<div class="wp-edgrid">
+				<label class="wp-edwide">Name<input id="wp-ename" class="tu-input" type="text" maxlength="120" autocomplete="off"></label>
+				<label id="wp-ecatl">Category<select id="wp-ecat" class="tu-select"></select></label>
+				<label>Sets<input id="wp-esets" class="tu-input" type="text" inputmode="numeric" maxlength="3" placeholder="e.g. 3"></label>
+				<label>Reps<input id="wp-ereps" class="tu-input" type="text" maxlength="20" placeholder="e.g. 10 or 8-12"></label>
+				<label>Minutes<input id="wp-edur" class="tu-input" type="text" inputmode="decimal" maxlength="5" placeholder="e.g. 30"></label>
+				<label id="wp-edonel">Done on<input id="wp-edone" class="tu-input" type="date"></label>
+				<label class="wp-edwide">Note<input id="wp-enote" class="tu-input" type="text" maxlength="300" placeholder="e.g. 3 targets, left foot"></label>
+				<label class="wp-edwide">Move to<select id="wp-emove" class="tu-select"></select></label>
+			</div>
+			<div class="wp-edbtns">
+				<button type="button" class="tu-btn tu-btn--primary" id="wp-elog">✓ Log done today</button>
+				<button type="button" class="tu-btn" id="wp-edup">Duplicate</button>
+				<button type="button" class="tu-btn tu-btn--ghost wp-danger" id="wp-edel">Delete</button>
+			</div>
+		</div>
+
+		<div class="tu-seo">
+			<h2>A workout planner that remembers where you are</h2>
+			<p>Most routines are not tied to a calendar day. You miss a day, and the next workout is still the one after the last one you did. This planner keeps a <b>Currently at</b> marker on your week: press <b>Done</b> and it moves to the next workout, whatever day it is. Your <b>training lists</b> work the same way: finish the checklist at the top, then do one item from the rotation below it, in turn.</p>
+			<h3>What you can do</h3>
+			<ul>
+				<li>Plan each day with a time and any number of activities in your own categories (Cardio, Workouts, Mobility, Skills ...), each with its own colour.</li>
+				<li>Add sets, reps, minutes and a note to any activity, or leave them blank.</li>
+				<li>Drag activities between days, categories and lists, and drag days to change their order. Everything also works from the keyboard.</li>
+				<li>Log what you did, then see your streak, a calendar of active days and a weekly summary of planned versus done.</li>
+				<li>Print the plan, copy it into Excel or Google Sheets, download a CSV, or paste a table from your spreadsheet to import it.</li>
+				<li>Share your plan as a link, or keep a backup file. Everything is saved in your browser; nothing is uploaded.</li>
+			</ul>
+			<h3>The templates</h3>
+			<p><b>Beginner full body</b> trains every major muscle group three times a week with a walk in between. <b>Push / Pull / Legs</b> splits the body over six days. <b>5×5 strength</b> alternates two barbell workouts, A (squat, bench press, row) and B (squat, overhead press, deadlift). <b>Start running</b> uses run/walk intervals in the style of the NHS Couch to 5K plan (its first week alternates 60 seconds of running with 90 seconds of walking). Change anything to fit you.</p>
+			<h3>How much exercise?</h3>
+			<p>The World Health Organization recommends that adults get at least 150-300 minutes of moderate activity or 75-150 minutes of vigorous activity a week, plus muscle-strengthening activities on two or more days (<a href="https://www.who.int/news-room/fact-sheets/detail/physical-activity" rel="noopener" target="_blank">WHO physical activity fact sheet</a>). Add minutes to your activities and the weekly summary adds them up for you. This page is a planner, not medical advice: check with a doctor before starting something much harder than you are used to.</p>
+			<h3>Questions</h3>
+			<dl>
+				<dt>Where is my plan saved?</dt><dd>In this browser only (localStorage). To move it to another device, copy the share link or download a backup and open it there.</dd>
+				<dt>What is in a share link?</dt><dd>Your week, categories, note and lists, packed into the link itself. Your history is never in a link, and no server stores anything.</dd>
+				<dt>Can I import my spreadsheet?</dt><dd>Yes. Select the table in Excel or Google Sheets (with the header row: Day, Time, your categories, Currently At), copy it, and paste it under Import. Lines under the table become the note.</dd>
+				<dt>What does "skip rest days" do?</dt><dd>When it is on, pressing Done moves the Currently at marker past days with nothing planned.</dd>
+			</dl>
+			<p>Related: <a href="/timer">Timer</a> &middot; <a href="/interval-timer">Interval Timer</a> &middot; <a href="/calories-burned-calculator">Calories Burned Calculator</a> &middot; <a href="/heart-rate-zone-calculator">Heart Rate Zones</a> &middot; <a href="/one-rep-max-calculator">One-Rep Max</a></p>
+		</div>
+	</div>
+	<script src="/main_js/panel-view.js?v=1" defer></script>
