@@ -118,7 +118,9 @@ const DRAFT_VIDEOS = JSON.parse(readFileSync(join(__dirname, "draft-videos.json"
 const draftItems = DRAFT_VIDEOS.map((v, i) => ({
   href: `https://www.youtube.com/watch?v=${v.id}`,
   title: v.title,
-  image: `https://i.ytimg.com/vi/${v.id}/mqdefault.jpg`,
+  // hqdefault, upgraded to maxresdefault by main_js/yt-thumbs.js where it exists (see math/build.mjs's mathYoutube)
+  image: `https://i.ytimg.com/vi/${v.id}/hqdefault.jpg`,
+  yt: v.id,
   listThumb: true,
   meta: `${fmtDuration(v.dur)} \u00b7 ${fmtViews(v.views)}`,
   sortKeys: { i, v: v.views, d: v.dur },
@@ -547,7 +549,7 @@ function buildCard(item, meta) {
   // "Open in:" switch (shared/link-pref.mjs): set on the items of a section that has it (see buildSection).
   const lp = item.lp ? lpAttrs(lpMap(buildLinksForItem(item, meta)), href) : "";
   return `<a class="link-card${lp ? " lp-a" : ""}"${catsAttr}${sortAttrs(item)}${lp} href="${escapeHtml(href)}"${external ? ' target="_blank" rel="noopener"' : ""}>
-      <span class="link-card-thumb"${thumbStyle}></span>
+      <span class="link-card-thumb"${thumbStyle}${item.yt ? ` data-yt="${escapeHtml(item.yt)}"` : ""}></span>
       <span class="link-card-body">
         <span class="link-card-title">${escapeHtml(item.title)}</span>
         ${item.meta ? `<span class="link-card-meta">${escapeHtml(item.meta)}</span>` : `<span class="link-card-readmore">${lp ? lpCaption(href) : "View &rarr;"}</span>`}
@@ -561,7 +563,7 @@ function buildRow(item, meta, linksBuilder) {
   const linksHtml = links
     .map((l) => `<a href="${escapeHtml(l.href)}" target="_blank" rel="noopener">${escapeHtml(l.label)}</a>`)
     .join(" - ");
-  const imgHtml = image && item.listThumb !== false ? `<img class="list-thumb" src="${escapeHtml(image)}" alt="${escapeHtml(item.title)}">` : "";
+  const imgHtml = image && item.listThumb !== false ? `<img class="list-thumb" src="${escapeHtml(image)}"${item.yt ? ` data-yt="${escapeHtml(item.yt)}"` : ""} alt="${escapeHtml(item.title)}">` : "";
   const catsAttr = item.cats !== undefined ? ` data-cats="${escapeHtml(item.cats)}"` : "";
   // A link-pref item's title links where its Grid View card goes (and follows the "Open in:" switch).
   const lpHref = item.lp ? itemHref(item) : "";
@@ -696,6 +698,8 @@ function buildPage(meta, page) {
     : sections.map((s) => buildSection(s, meta)).join("\n\n");
   const hasFilter = sections.some((s) => s.filter);
   const hasLinkPref = sections.some((s) => s.linkPref);
+  // YouTube thumbnails built as hqdefault get upgraded to maxresdefault where it exists (main_js/yt-thumbs.js)
+  const hasYt = sections.some((s) => s.items.some((it) => it.yt));
   const filterWiring = sections
     .filter((s) => s.filter)
     .map((s) => `  wireFilter('${s.id}');`)
@@ -2342,7 +2346,7 @@ var MES_Vars = {
 <script src="/main_js/main.js?v=1.0.3"></script>
 <script>document.getElementById('copyright-year').textContent = new Date().getFullYear();</script>
 <!-- PAGEVIEW-TRACKING-INSERTED --><script src="/main_js/track.js" defer></script><script src="/main_js/info-bar-fit.js" defer></script>
-<script src="/main_js/site-search.js?v=1" defer></script><!-- HUB-THEATRE-JS --><script src="/main_js/hub-theatre.js?v=1" defer></script><!-- /HUB-THEATRE-JS -->${hasLinkPref ? LP_SCRIPT : ""}</body>
+<script src="/main_js/site-search.js?v=1" defer></script><!-- HUB-THEATRE-JS --><script src="/main_js/hub-theatre.js?v=1" defer></script><!-- /HUB-THEATRE-JS -->${hasLinkPref ? LP_SCRIPT : ""}${hasYt ? '<script src="/main_js/yt-thumbs.js?v=1" defer></script>' : ""}</body>
 </html>
 `;
 }

@@ -67,7 +67,7 @@ function eq(a, b, msg) { ok(JSON.stringify(a) === JSON.stringify(b), msg + ' -> 
   const skip = new RegExp('^(?:MES Livestream \\d|MES Math Q\\/A \\d)', 'i');
   const y = T.ytItem({ id: 'DprWTjHTgEk', title: 'Problems Plus 7', published: '2026-10-21T19:44:35+00:00', views: 12345, short: false }, skip);
   eq(y.href, 'https://www.youtube.com/watch?v=DprWTjHTgEk', 'yt href');
-  eq(y.image, 'https://i.ytimg.com/vi/DprWTjHTgEk/mqdefault.jpg', 'yt thumb');
+  eq(y.image, 'https://i.ytimg.com/vi/DprWTjHTgEk/hqdefault.jpg', 'yt thumb');
   eq(y.meta, 'Uploaded Oct 21, 2026 · 12K views', 'yt meta');
   eq(y.v, 12345, 'yt views sort key');
   eq(T.ytItem({ id: 'DprWTjHTgEk', title: 'MES Math Q/A 73: X', short: false }, skip), null, 'livestream replay skipped');
