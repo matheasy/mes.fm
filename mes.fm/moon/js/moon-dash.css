@@ -1,0 +1,151 @@
+/* MES Moon: "Today in <place>" dashboard + Visual | Table switches (moon-dash.js). Theme = body.light / body.dark. */
+body.light { --dh-card: #f4f7fb; --dh-card2: #ffffff; --dh-line: rgba(30, 50, 90, 0.16); --dh-mut: #586174; --dh-seg: #e4e9f2; --dh-on: #1a6fb0;
+  --dh-night: rgba(40, 60, 120, 0.08); --dh-now: rgba(26, 111, 176, 0.10); --dh-line2: #d9772b; --dh-pop: #3d8fd6; --dh-axis: #4a5263;
+  --dh-moonbar: #9fb3d1; --dh-moontxt: #1d2a44; --dh-track: rgba(60, 80, 120, 0.10); --dh-sunc: #a8650a; --dh-moonc: #2f5f96; }
+body.dark { --dh-card: #161d2c; --dh-card2: #1b2334; --dh-line: rgba(160, 175, 205, 0.18); --dh-mut: #a9b2c4; --dh-seg: #232c3f; --dh-on: #2a6fb0;
+  --dh-night: rgba(0, 0, 0, 0.28); --dh-now: rgba(108, 182, 245, 0.12); --dh-line2: #f0a35a; --dh-pop: #5aa9f0; --dh-axis: #b9c1d1;
+  --dh-moonbar: #7f94b8; --dh-moontxt: #0d1424; --dh-track: rgba(160, 175, 205, 0.12); --dh-sunc: #f0b44c; --dh-moonc: #9cc0ec; }
+
+/* ---- Visual | Table switch ---- */
+.vt-block { margin: 0 0 1em; }
+.vt-bar { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 0.4em 0.8em; margin: 0 0 0.5em; }
+.vt-title { font-size: 1.02em; }
+.vt-ctl { display: inline-flex; flex-wrap: wrap; gap: 0.4em; margin-left: auto; }
+.vt-seg { display: inline-flex; border-radius: 999px; background: var(--dh-seg); padding: 2px; gap: 2px; }
+.vt-seg button { font: inherit; font-size: 0.78em; border: 0; background: transparent; color: inherit; padding: 0.22em 0.75em; border-radius: 999px; cursor: pointer; min-height: 28px; }
+.vt-seg button[aria-pressed="true"] { background: var(--dh-on); color: #fff; font-weight: bold; }
+@media (pointer: coarse) { .vt-seg button { min-height: 34px; } }
+.vt-block > .vt-table { display: none; }
+.vt-block.vt-is-table > .vt-table { display: block; }
+.vt-block.vt-is-table > .vt-visual { display: none; }
+.vt-scroll { overflow-x: auto; }
+body.dark .vt-scroll, body.dark .dh-hourly { color-scheme: dark; }
+table.dh-gtbl { width: 100%; font-size: 0.88em; }
+table.dh-gtbl th, table.dh-gtbl td { width: auto; white-space: nowrap; padding: 6px 9px; }
+table.dh-gtbl thead th { border-bottom: 2px solid rgba(128, 128, 128, 0.4); }
+table.dh-ctbl th { width: 34%; white-space: normal; }
+
+/* ---- dashboard ---- */
+.dash { margin: 0.3em 0 0.6em; }
+.dh-block { padding: 12px 14px 14px; border: 1px solid var(--dh-line); border-radius: 14px; background: var(--dh-card); margin: 0 0 0.9em; }
+.dh-sub { font-size: 0.8em; color: var(--dh-mut); margin: 0.7em 0 0.2em; font-weight: bold; }
+
+/* hero */
+.dh-hero { border-radius: 12px; padding: 14px 16px; color: #fff; text-shadow: 0 1px 3px rgba(0, 0, 0, 0.45); }
+.dh-hero a { color: #fff !important; text-decoration: underline; }
+.sky-clear { background: linear-gradient(135deg, #1663a8 0%, #2f8fd8 60%, #5db3ea 100%); }
+.sky-partly { background: linear-gradient(135deg, #2a5f93 0%, #4f85b6 60%, #8aa9c7 100%); }
+.sky-night { background: linear-gradient(135deg, #0b1330 0%, #1b2a5a 60%, #33467e 100%); }
+.sky-cloud { background: linear-gradient(135deg, #3e4a5c 0%, #5d6b80 60%, #7d8a9d 100%); }
+.sky-rain { background: linear-gradient(135deg, #1c2d45 0%, #2f4b70 60%, #4a6890 100%); }
+.sky-snow { background: linear-gradient(135deg, #3d5675 0%, #6584a6 60%, #8ea7c2 100%); }
+.sky-storm { background: linear-gradient(135deg, #1d1530 0%, #3a2a5c 60%, #574a7c 100%); }
+.sky-fog { background: linear-gradient(135deg, #4b5260 0%, #6b7381 60%, #8d94a0 100%); }
+.dh-hmain { display: flex; align-items: center; gap: 0.4em 1em; flex-wrap: wrap; }
+.dh-hicon { font-size: 3.4em; line-height: 1; filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.35)); }
+.dh-htxt { flex: 1 1 14em; min-width: 0; }
+.dh-htemp { font-size: 3.2em; font-weight: bold; line-height: 1; letter-spacing: -0.02em; }
+.dh-hunit { font-size: 0.4em; vertical-align: top; margin-left: 0.1em; font-weight: normal; }
+.dh-halt { font-size: 0.32em; font-weight: normal; opacity: 0.85; margin-left: 0.6em; }
+.dh-hcond { font-size: 1.05em; margin: 0.3em 0 0.1em; }
+.dh-hhl { font-size: 0.92em; opacity: 0.95; }
+.dh-range { display: flex; align-items: center; gap: 0.5em; margin: 0.45em 0 0; font-size: 0.82em; max-width: 22em; }
+.dh-rbar { position: relative; flex: 1; height: 6px; border-radius: 3px; background: linear-gradient(90deg, #7cc0ff, #ffd36b, #ff8a4c); }
+.dh-rbar i { position: absolute; top: 50%; width: 13px; height: 13px; margin: -6.5px 0 0 -6.5px; border-radius: 50%; background: #fff; box-shadow: 0 0 0 2px rgba(0, 0, 0, 0.35); }
+.dh-chips { display: grid; grid-template-columns: repeat(auto-fill, minmax(8.6em, 1fr)); gap: 6px; margin-top: 12px; }
+.dh-chip { display: grid; grid-template-columns: auto 1fr; grid-template-areas: "i l" "i v" "i s"; column-gap: 0.45em; align-items: center;
+  background: rgba(0, 0, 0, 0.22); border-radius: 9px; padding: 6px 8px; text-shadow: none; min-width: 0; }
+.dh-ci { grid-area: i; font-size: 1.25em; width: 1.3em; text-align: center; display: inline-flex; justify-content: center; }
+.dh-cl { grid-area: l; font-size: 0.72em; opacity: 0.85; }
+.dh-cv { grid-area: v; font-size: 1em; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.dh-cs { grid-area: s; font-size: 0.7em; opacity: 0.85; line-height: 1.25; }
+.dh-warr { width: 1.1em; height: 1.1em; }
+.dh-dot { display: inline-block; width: 0.8em; height: 0.8em; border-radius: 50%; box-shadow: 0 0 0 2px rgba(255, 255, 255, 0.7); }
+
+/* hourly strip */
+.dh-hourly { overflow-x: auto; -webkit-overflow-scrolling: touch; padding-bottom: 4px; }
+.dh-hourly svg { display: block; max-width: none; }
+.dh-hourly text { font-family: Arial, Helvetica, sans-serif; }
+.dh-hnight { fill: var(--dh-night); }
+.dh-hnow { fill: var(--dh-now); }
+.dh-hlab { font-size: 11px; fill: var(--dh-mut); }
+.dh-htv { font-size: 12px; font-weight: bold; fill: currentColor; }
+.dh-hline { fill: none; stroke: var(--dh-line2); stroke-width: 2.4; stroke-linejoin: round; }
+.dh-hdot { fill: var(--dh-line2); }
+.dh-hpop { fill: var(--dh-pop); opacity: 0.75; }
+.dh-hpt { font-size: 10px; fill: var(--dh-mut); }
+
+/* timeline */
+.dh-tl svg { width: 100%; height: auto; display: block; }
+.dh-tl text { font-family: Arial, Helvetica, sans-serif; }
+.dh-c-day { fill: #74bdf0; background: #74bdf0; }
+.dh-c-gold { fill: #f3c460; background: #f3c460; }
+.dh-c-civil { fill: #c77ea5; background: #c77ea5; }
+.dh-c-naut { fill: #4c4f8f; background: #4c4f8f; }
+.dh-c-night { fill: #1b2142; background: #1b2142; }
+.dh-track { fill: var(--dh-track); }
+.dh-moonbar { fill: var(--dh-moonbar); background: var(--dh-moonbar); }
+.dh-moontxt { fill: var(--dh-moontxt); font-weight: bold; }
+.dh-tick { stroke: var(--dh-axis); stroke-width: 1; opacity: 0.6; }
+.dh-axis { font-size: 11px; fill: var(--dh-axis); }
+.dh-evl { stroke-width: 1.3; stroke-dasharray: 3 2; }
+.dh-evl.dh-sunc { stroke: var(--dh-sunc); } .dh-evl.dh-moonc { stroke: var(--dh-moonc); }
+.dh-evt { font-size: 12px; font-weight: bold; }
+.dh-evt.dh-sunc { fill: var(--dh-sunc); } .dh-evt.dh-moonc { fill: var(--dh-moonc); }
+.dh-now { stroke: currentColor; stroke-width: 2; opacity: 0.8; }
+.dh-nowt { font-size: 11.5px; font-weight: bold; fill: currentColor; }
+.dh-sundot { fill: #ffd84a; stroke: #fff; stroke-width: 2; }
+.dh-legend { display: flex; flex-wrap: wrap; gap: 0.2em 0.9em; font-size: 0.74em; color: var(--dh-mut); margin: 0.3em 0 0.6em; }
+.dh-legend i { display: inline-block; width: 0.9em; height: 0.9em; border-radius: 3px; vertical-align: -0.12em; margin-right: 0.3em; }
+
+/* tiles */
+.dh-tiles { display: grid; grid-template-columns: repeat(auto-fill, minmax(10.5em, 1fr)); gap: 8px; }
+.dh-tile { background: var(--dh-card2); border: 1px solid var(--dh-line); border-radius: 10px; padding: 8px 10px; min-width: 0; }
+.dh-tile-hi { border-color: var(--dh-on); }
+.dh-ti { font-size: 1.25em; line-height: 1.1; }
+.dh-tt { font-size: 0.74em; color: var(--dh-mut); margin-top: 0.15em; }
+.dh-tv { font-size: 1.05em; font-weight: bold; overflow-wrap: anywhere; }
+.dh-ts { font-size: 0.74em; color: var(--dh-mut); line-height: 1.3; }
+.dh-mini svg { display: inline-block; vertical-align: middle; }
+.vt-block:not(.dh-block) > .vt-visual > .dh-tiles { margin: 0 0 0.6em; }
+
+/* tonight's sky */
+.dh-sky { display: flex; gap: 12px; align-items: flex-start; }
+.dh-sky figure.viz-moon { flex: 0 0 150px; width: 150px; margin: 0; }
+.dh-sky figure.viz-moon > .viz-scroll { max-width: 150px; }
+@media (max-width: 600px) { .dh-sky figure.viz-moon { width: 130px; } }
+.dh-planets { flex: 1; min-width: 0; }
+.dh-pgrid { display: grid; grid-template-columns: repeat(auto-fill, minmax(12em, 1fr)); gap: 8px; }
+.dh-pcard { background: var(--dh-card2); border: 1px solid var(--dh-line); border-radius: 10px; padding: 8px 10px; }
+.dh-pnight { background: linear-gradient(135deg, #0d1533, #23336b); color: #eef1f6; border-color: transparent; }
+.dh-pnight .dh-ps { color: #c9d2e6; }
+.dh-pt { font-size: 0.78em; font-weight: bold; display: flex; align-items: center; gap: 0.35em; }
+.dh-pv { font-size: 1.05em; font-weight: bold; margin: 0.1em 0; }
+.dh-ps { font-size: 0.76em; color: var(--dh-mut); line-height: 1.35; }
+.dh-pdot { display: inline-block; width: 0.75em; height: 0.75em; border-radius: 50%; box-shadow: 0 0 6px rgba(255, 230, 160, 0.8); }
+.dh-badge { display: inline-block; padding: 0 0.5em; border-radius: 999px; font-size: 0.85em; color: #fff; }
+.dh-ok { background: #2f9e57; } .dh-mid { background: #c98a12; } .dh-bad { background: #b8414a; }
+
+/* air quality */
+.dh-aqv { display: flex; align-items: baseline; gap: 0.5em; flex-wrap: wrap; }
+.dh-aqv b { font-size: 2em; line-height: 1; text-shadow: 0 0 1px rgba(0, 0, 0, 0.4); }
+.dh-aqbar { position: relative; display: flex; height: 12px; border-radius: 6px; overflow: visible; margin: 0.5em 0 0.15em; }
+.dh-aqbar span:first-child { border-radius: 6px 0 0 6px; } .dh-aqbar span:last-of-type { border-radius: 0 6px 6px 0; }
+.dh-aqbar i { position: absolute; top: -5px; width: 4px; height: 22px; margin-left: -2px; border-radius: 2px; background: currentColor; box-shadow: 0 0 0 2px var(--dh-card); }
+.dh-aqscale { display: flex; justify-content: space-between; font-size: 0.7em; color: var(--dh-mut); }
+.dh-aqchips { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 0.6em; }
+.dh-aqc { background: var(--dh-card2); border: 1px solid var(--dh-line); border-radius: 8px; padding: 4px 9px; font-size: 0.82em; }
+.dh-aqc span { color: var(--dh-mut); margin-right: 0.4em; }
+
+@media (max-width: 600px) {
+  .dh-block { padding: 10px 10px 12px; border-radius: 12px; }
+  .dh-hero { padding: 12px; }
+  .dh-htemp { font-size: 2.7em; }
+  .dh-hicon { font-size: 2.8em; }
+  .dh-chips { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .dh-tiles { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .dh-sky { flex-direction: column; align-items: stretch; }
+  .dh-sky figure.viz-moon { flex: none; align-self: center; }
+  .dh-pgrid { grid-template-columns: minmax(0, 1fr); }
+  .dh-tl svg { min-width: 0; }
+}
