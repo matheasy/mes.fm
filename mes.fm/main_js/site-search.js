@@ -605,4 +605,28 @@
         if (near()) go();
     }
     if (document.readyState === "loading") document.addEventListener("DOMContentLoaded", ratingLoader); else ratingLoader();
+
+    /* Paid ad-free (mes.fm/premium): localStorage "mes-adfree" = {user, until, how, checked, off?}. The AdSense loaders,
+       aside.js and bottom-ad.js skip ads while `until` is in the future. Re-check the payment on the chain once a day
+       (/api/premium, edge-cached), so a cancelled subscription brings the ads back and a renewal extends `until`.
+       Runs on idle, never on the premium page itself (it does its own check). */
+    (function adFreeRecheck() {
+        var rec;
+        try { rec = JSON.parse(localStorage.getItem("mes-adfree") || "null"); } catch (e) { return; }
+        if (!rec || !rec.user || !window.fetch || /^\/premium\/?$/.test(location.pathname)) return;
+        if (Date.now() - (+rec.checked || 0) < 864e5) return;
+        var run = function () {
+            fetch("/api/premium?u=" + encodeURIComponent(rec.user)).then(function (r) { return r.ok ? r.json() : null; }).then(function (d) {
+                if (!d || d.user !== rec.user) return;
+                var now;
+                try { now = JSON.parse(localStorage.getItem("mes-adfree") || "null"); } catch (e) { now = null; }
+                if (!now || now.user !== rec.user) return;
+                now.until = d.adFree ? +d.untilMs || 0 : 0;
+                now.how = d.how || null;
+                now.checked = Date.now();
+                localStorage.setItem("mes-adfree", JSON.stringify(now));
+            }).catch(function () {});
+        };
+        if (window.requestIdleCallback) requestIdleCallback(run, { timeout: 8000 }); else setTimeout(run, 4000);
+    })();
 })();

@@ -86,6 +86,86 @@
         }
     }
 
+    /* Hive comments tab. On a page that mirrors a Hive post (<meta name="mes:hive" content="author/permlink">, written by
+       add_hive_marker.py; else the "mirrored from the Hive blockchain" / "Originally posted on Hive" source link) the Comments
+       box gets two tabs: "Comments" (this FastComments widget, unchanged) and "Hive comments (N)" = the replies of the original
+       Hive post, which /main_js/hive-comments.js renders. Nothing of that loads until the bar is opened; the only early request
+       is the reply count (one bridge.get_post call when the bar nears the viewport), shown on the bar as "· Hive (N)" via a
+       data attribute (so main.js / the code above can keep setting the bar's text for the FastComments count). */
+    (function () {
+        var src = findHiveSource();
+        if (!src) return;
+        window.__mesHiveSrc = src;
+        button.setAttribute("data-hive-src", src.author + "/" + src.permlink);
+        if (!document.getElementById("mes-hive-bar-css")) {
+            var hc = document.createElement("style");
+            hc.id = "mes-hive-bar-css";
+            hc.textContent = "#comments-button[data-hive-count]::after{content:attr(data-hive-count)}";
+            document.head.appendChild(hc);
+        }
+        var loading = false;
+        function loadTabs() {
+            if (loading) return;
+            loading = true;
+            var s = document.createElement("script");
+            s.src = "/main_js/hive-comments.js?v=1";
+            document.head.appendChild(s);
+        }
+        /* after any click handler (main.js's jQuery toggle or ours above) has run */
+        button.addEventListener("click", function () { setTimeout(function () { if (!box.classList.contains("hide")) loadTabs(); }, 0); });
+        if (!box.classList.contains("hide")) loadTabs();
+        function count() {
+            if (!window.fetch) return;
+            var nodes = ["https://api.hive.blog", "https://api.deathwing.me", "https://api.openhive.network", "https://hive-api.arcange.eu"];
+            var body = JSON.stringify({ jsonrpc: "2.0", method: "bridge.get_post", params: { author: src.author, permlink: src.permlink }, id: 1 });
+            (function tryNode(i) {
+                if (i >= nodes.length) return;
+                fetch(nodes[i], { method: "POST", headers: { "Content-Type": "application/json" }, body: body })
+                    .then(function (r) { return r.ok ? r.json() : Promise.reject(); })
+                    .then(function (j) {
+                        if (!j || !j.result) { if (!j || !j.error) tryNode(i + 1); return; }
+                        var n = +j.result.children || 0;
+                        window.__mesHiveCount = n;
+                        if (n > 0 && !button.hasAttribute("data-hive-final")) button.setAttribute("data-hive-count", " · Hive (" + n.toLocaleString() + ")");
+                    })
+                    .catch(function () { tryNode(i + 1); });
+            })(0);
+        }
+        if ("IntersectionObserver" in window) {
+            var hio = new IntersectionObserver(function (entries) {
+                if (entries[0].isIntersecting) { hio.disconnect(); count(); }
+            }, { rootMargin: "400px" });
+            hio.observe(button);
+        } else {
+            count();
+        }
+    })();
+
+    function findHiveSource() {
+        var meta = document.querySelector('meta[name="mes:hive"]');
+        if (meta) {
+            var c = (meta.getAttribute("content") || "").split("/");
+            return c.length === 2 && /^[a-z][a-z0-9.-]{2,15}$/.test(c[0]) && /^[a-z0-9-]{1,255}$/.test(c[1]) ? { author: c[0], permlink: c[1] } : null;
+        }
+        /* fallback for pages the marker script has not seen yet: the mirror shell's source link */
+        var cand = [].slice.call(document.querySelectorAll("a.source-link, .page-subtitle a"));
+        [].forEach.call(document.querySelectorAll("a[href]"), function (a) {
+            var t = (a.textContent || "") + " " + ((a.parentNode && a.parentNode.textContent) || "").slice(0, 40);
+            if (/originally (posted|published) on (the )?hive|^\s*hive (article|post)\s*:/i.test(t)) cand.push(a);
+        });
+        for (var i = 0; i < cand.length; i++) {
+            if (cand[i].closest && cand[i].closest("aside, #footer, nav")) continue;
+            var p = parseHiveUrl(cand[i].getAttribute("href"));
+            if (p) return p;
+        }
+        return null;
+    }
+    function parseHiveUrl(u) {
+        var m = String(u || "").match(/^https?:\/\/(?:www\.)?(?:peakd\.com|hive\.blog|ecency\.com|inleo\.io|leofinance\.io)\/(?:threads\/view\/|[a-z0-9-]+\/)?@?([a-z][a-z0-9.-]{2,15})\/([a-z0-9-]{1,255})\/?(?:[?#].*)?$/i) ||
+            String(u || "").match(/^https?:\/\/(?:www\.)?3speak\.tv\/watch\?v=([a-z][a-z0-9.-]{2,15})\/([a-z0-9-]{1,255})/i);
+        return m ? { author: m[1].toLowerCase(), permlink: m[2].toLowerCase() } : null;
+    }
+
     if (window.__fcLazyInit) return;
     window.__fcLazyInit = true;
     var loaded = false;

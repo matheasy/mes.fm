@@ -996,6 +996,13 @@ APPS = {
     # site-search.js; votes = /api/rating, Upstash): Top rated (Bayesian average), Most rated, Recently rated, section chips, and a feedback box
     # that only sends by email / the contact form. Local preview falls back to ratings/data/sample.json. Wide, ad-free, no sidebar.
     # Tests: node tool_apps_src/rating-api-tests.js.
+    # MES Premium (mes.fm/premium, 2026-10-30): no ads on mes.fm for 1 HBD a month, crypto only, no accounts. Hive Keychain login + a recurrent
+    # transfer (or a one-time transfer) to @mes; /api/premium reads the chain; localStorage "mes-adfree" = {user, until} is respected by the AdSense
+    # loaders (add_adfree_guard.py), aside.js and bottom-ad.js. Uses main_js/hive.js (MESHive). Ad-free, no sidebar. Tests: tool_apps_src/premium-api-tests.js.
+    "premium": dict(title="MES Premium", page_title="Premium: No Ads on mes.fm for 1 HBD a Month",
+                tag="No ads on mes.fm for 1 HBD a month, paid on Hive.", accent="#8a6508", dark="#6b4e06", tint="#fbf3dc",
+                desc="Turn off every ad on mes.fm for 1 HBD a month: log in with Hive Keychain, subscribe with a Hive recurrent transfer or pay once, and the site shows no ads in your browser. No account, no card, checked on the Hive blockchain.",
+                js_v="1", no_ads=True, pre_js=["/main_js/hive.js?v=1"]),
     "ratings": dict(title="MES Ratings", page_title="MES Ratings: Top Rated Pages and Feedback",
                 tag="Top rated pages, by the people who use them.", accent="#b45309", dark="#8a3f07", tint="#fdf0dd",
                 desc="The top rated, most rated and recently rated mes.fm calculators, tools and tutorials, from the Rate this page stars at the bottom of every page. Fair Bayesian ranking, filter by section, and send us feedback through the contact form.",

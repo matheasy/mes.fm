@@ -20,6 +20,9 @@ import subprocess
 import sys
 from pathlib import Path
 
+sys.path.insert(0, str(Path(__file__).resolve().parent))
+from add_hive_marker import mark_html
+
 ROOT = Path(__file__).resolve().parent
 SITE = ROOT / "mes.fm"
 TEMPLATE = ROOT / "hive_mirror_template.html"
@@ -399,7 +402,7 @@ def main():
                 print("SKIPPED %-45s %s" % (name, why))
                 continue
             # already in the shell: still (re)apply the brand tab, so adding a BRAND_TABS entry reaches existing pages
-            branded = brand_nav(old)
+            branded = mark_html(brand_nav(old))[0]
             if branded != old:
                 done += 1
                 if VERBOSE:
@@ -408,7 +411,7 @@ def main():
                     p.write_text(branded, encoding="utf-8")
             continue
         done += 1
-        new = brand_nav(new)
+        new = mark_html(brand_nav(new))[0]   # <meta name="mes:hive"> for the Hive comments tab (add_hive_marker.py)
         if VERBOSE:
             print("convert %-45s %s" % (name, why))
         if APPLY:

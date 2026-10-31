@@ -299,6 +299,9 @@ if __name__ == "__main__":
     if "--fetch" in sys.argv:
         fetch()
     out, toc = build()
+    sys.path.insert(0, ROOT)
+    from add_hive_marker import mark_html
+    out = mark_html(out)[0]                # <meta name="mes:hive"> for the Hive comments tab
     apply = "--apply" in sys.argv
     print(f"{len(out)} bytes, {sum(1 for t in toc if not t[2])} chapters, {sum(1 for t in toc if t[2])} sub-folds -> "
           f"{os.path.relpath(OUT, ROOT)}" + ("" if apply else "   (dry run; pass --apply to write)"))
