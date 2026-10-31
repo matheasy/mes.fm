@@ -8,3 +8,4 @@
 	#ph .ph-t {font-size:1.2em;font-weight:700;} #ph .ph-d {color:#4a5565;flex:1;} #ph .ph-go {font-weight:700;color:#a82a31;}
 	body.dark-mode #ph .ph-card {background:#262a2e;border-color:#3a3f45;color:#ececec;} body.dark-mode #ph .ph-card--main {background:#33262a;border-color:#d9363e;} body.dark-mode #ph .ph-d {color:#b8bec7;} body.dark-mode #ph .ph-go {color:#ff8a90;}
 	#ph a.ph-card, #ph a.ph-card span {text-decoration:none !important;} #ph .ph-card .ph-t {color:inherit;}
+	#ph .ph-other {margin:1.1em 0 0;}
