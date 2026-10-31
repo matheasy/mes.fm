@@ -3,6 +3,21 @@
 <link rel="icon" href="data:,">
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1" id="wixDesktopViewport">
+<script id="layout-switch">(function(){try{
+var p=location.pathname.replace(/\/index(\.html)?$/,'/').replace(/\.html$/,'').replace(/(.)\/$/,'$1'),m=/^\/m(\/|$)/.test(p);
+var f=(location.search.match(/[?&]layout=(desktop|mobile)/)||[])[1];
+var c=(document.cookie.match(/(?:^|;\s*)karo_layout=(desktop|mobile)/)||[])[1];
+var auto=matchMedia('(max-width: 767px)').matches?'mobile':'desktop';
+var want=f||c||auto;
+if(f)document.cookie='karo_layout='+f+';path=/;max-age=2592000;samesite=lax';
+document.cookie='karo_wide=1;path=/;samesite=lax;max-age='+(want==='desktop'?86400:0);
+if((want==='mobile')===m)return;
+var n=Date.now(),g=(sessionStorage.getItem('karoSwitch')||'').split(',').filter(function(x){return n-x<10000;});
+if(g.length>=3)return;g.push(n);sessionStorage.setItem('karoSwitch',g.join(','));
+var rest=m?p.replace(/^\/m/,''):(p==='/'?'':p);
+var q=location.search.replace(/[?&]layout=(desktop|mobile)/,'').replace(/^&/,'?');
+location.replace((m?(rest||'/'):'/m'+rest)+q+location.hash);
+}catch(e){}})();</script>
 <link rel="stylesheet" href="/assets/css/site-d-98d9cb00.css">
 <link rel="stylesheet" href="/assets/css/video-d-b6547cd8.css">
 <link rel="stylesheet" href="/assets/mirror.css">
