@@ -2,9 +2,20 @@
    Same saved preferences as the "More like this" pages: localStorage "asideSide" -> html.aside-left, "pageWide" -> html.page-wide;
    plus "tocHidden" -> html.toc-hidden. Restored before first paint by the TOC-FLIP-HEAD inline script.
    Behaviour: main_js/toc-flip.js. Patched into pages by add_toc_flip.py. */
-:root { --toc-w: 760px; }
-html.page-wide { --toc-w: max(760px, min(1100px, calc(100vw - 520px))); }  /* article column; room left for the sidebar beside it */
-html.page-theatre { --toc-w: max(760px, min(2000px, calc(100vw - 520px))); }  /* theatre: most of the window, sidebar still beside it */
+/* Sidebar width (2026-10-30): --toc-swp = the reader's choice (drag handle on the sidebar's inner edge, toc-flip.js; localStorage
+   "tocWidth", restored by the TOC-FLIP-HEAD inline script), --toc-sw = that choice kept between 180px and what still leaves the
+   article >= ~600px. --toc-g = room the sidebar needs beside the article (box + 30px gap + margin), --toc-o = room needed on the
+   other side (20px, or the "More like this" rail: jump-aside.css). --toc-wd = the article width the mode asks for, --toc-w = what
+   it gets. --toc-shift moves the article (and footer) off centre when a wide sidebar would not fit beside a centred one; it is 0
+   at the default 210px on every screen that fitted before, so nothing moves for readers who never drag. */
+:root { --toc-o: 20px; --toc-sw: clamp(180px, var(--toc-swp, 210px), max(180px, min(520px, calc(100vw - 670px - var(--toc-o)))));
+  --toc-g: calc(var(--toc-sw) + 50px); --toc-wd: 760px; --toc-w: min(var(--toc-wd), calc(100vw - var(--toc-g) - var(--toc-o)));
+  --toc-c: calc((100vw - var(--toc-w)) / 2);
+  --toc-shift: clamp(calc(var(--toc-o) - var(--toc-c)), 0px, calc(var(--toc-c) - var(--toc-g))); }
+html.aside-left { --toc-shift: clamp(calc(var(--toc-g) - var(--toc-c)), 0px, calc(var(--toc-c) - var(--toc-o))); }
+html.page-wide { --toc-wd: max(760px, min(1100px, calc(100vw - 2 * var(--toc-g)))); }  /* article column; room left for the sidebar beside it */
+html.page-theatre { --toc-wd: max(760px, min(2000px, calc(100vw - 2 * var(--toc-g)))); --toc-shift: 0px; }  /* theatre: most of the window, sidebar still beside it */
+html.toc-hidden { --toc-w: var(--toc-wd); --toc-shift: 0px; }
 
 .toc-tools { display: none; flex-wrap: wrap; gap: 6px; margin: 0 0 .8em; }
 .toc-tools button { display: inline-flex; align-items: center; gap: .3em; padding: .2em .6em; border: 1px solid #b9c2cc; border-radius: 999px;
@@ -35,24 +46,40 @@ html.page-theatre { --toc-w: max(760px, min(2000px, calc(100vw - 520px))); }  /*
   html.toc-hidden .toc-mode .toc-reopen { display: inline-block; border-right: 1px solid #d5dbe2; }
   :is(body.dark-mode, body.dark) .toc-mode .toc-reopen { border-right-color: #555; }
   /* sidebar sits just outside the article column, whatever its width */
-  html .toc-sidebar { left: calc(50% + var(--toc-w) / 2 + 30px); }
-  html.aside-left .toc-sidebar { left: auto; right: calc(50% + var(--toc-w) / 2 + 30px); padding-right: 0; padding-left: 10px; }
-  html.page-wide .container { max-width: var(--toc-w); }
-  html.page-wide .footer { max-width: var(--toc-w); }
+  html .toc-sidebar { left: calc(50% + var(--toc-w) / 2 + 30px + var(--toc-shift)); width: var(--toc-sw); }
+  html.aside-left .toc-sidebar { left: auto; right: calc(50% + var(--toc-w) / 2 + 30px - var(--toc-shift)); padding-right: 0; padding-left: 10px; }
+  html.page-wide .container, html:not(.toc-hidden) .container { max-width: var(--toc-w); }
+  html.page-wide .footer, html:not(.toc-hidden) .footer { max-width: var(--toc-w); }
+  html:not(.toc-hidden):not(.page-theatre) .container, html:not(.toc-hidden):not(.page-theatre) .footer:not(.container .footer) { position: relative; left: var(--toc-shift); }
+  /* drag handle on the sidebar's inner edge (placed over it by toc-flip.js) */
+  .toc-resize { position: fixed; z-index: 13; width: 12px; margin-left: -6px; cursor: col-resize; touch-action: none; display: none; }
+  .toc-resize.on { display: block; }
+  .toc-resize::after { content: ""; position: absolute; left: 5px; top: 0; bottom: 0; width: 2px; border-radius: 2px; background: rgba(128, 128, 128, .28); transition: background .15s; }
+  .toc-resize::before { content: ""; position: absolute; left: 3px; top: 50%; width: 6px; height: 34px; margin-top: -17px; border-radius: 4px; background: rgba(128, 128, 128, .55); }
+  .toc-resize:hover::after, .toc-resize:focus-visible::after, .toc-resize.drag::after,
+  .toc-resize:hover::before, .toc-resize:focus-visible::before, .toc-resize.drag::before { background: #1479c7; }
+  .toc-resize:focus-visible { outline: 2px solid #1479c7; outline-offset: 1px; border-radius: 3px; }
+  :is(body.dark-mode, body.dark) .toc-resize:is(:hover, :focus-visible, .drag)::after,
+  :is(body.dark-mode, body.dark) .toc-resize:is(:hover, :focus-visible, .drag)::before { background: #6cb6f5; }
+  :is(body.dark-mode, body.dark) .toc-resize:focus-visible { outline-color: #6cb6f5; }
+  html.toc-resizing, html.toc-resizing * { cursor: col-resize !important; user-select: none !important; -webkit-user-select: none !important; }
   html.toc-hidden .toc-sidebar { display: none; }
   /* Theatre with the Jump-to list hidden: nothing to leave room for, so use nearly the whole window */
   html.page-theatre.toc-hidden { --toc-w: min(2000px, calc(100vw - 80px)); }
   /* Theatre with the sidebar showing: the centred layout reserves a sidebar-sized gutter on BOTH sides (so it equalled Wide below ~1800px).
      Instead lay article + 200px sidebar out as one centred group, so the article gets everything except the sidebar's own width. */
-  html.page-theatre:not(.toc-hidden) { --toc-w: min(2000px, calc(100vw - 300px)); --toc-ml: calc((100vw - var(--toc-w) - 230px) / 2); }
+  html.page-theatre:not(.toc-hidden) { --toc-w: min(2000px, calc(100vw - var(--toc-sw) - 90px)); --toc-ml: calc((100vw - var(--toc-w) - var(--toc-sw) - 20px) / 2); }
   html.page-theatre:not(.toc-hidden) .container { margin-left: var(--toc-ml); margin-right: auto; }
   html.page-theatre:not(.toc-hidden) .toc-sidebar { left: calc(var(--toc-ml) + var(--toc-w) + 30px); right: auto; }
-  html.page-theatre.aside-left:not(.toc-hidden) .container { margin-left: calc(var(--toc-ml) + 230px); }
+  html.page-theatre.aside-left:not(.toc-hidden) .container { margin-left: calc(var(--toc-ml) + var(--toc-sw) + 20px); }
   html.page-theatre.aside-left:not(.toc-hidden) .toc-sidebar { left: var(--toc-ml); right: auto; padding-left: 0; }
   /* ...and with the "More like this" rail on the other side (pages with .jump-rail, >= 1500px): rail + article + Jump-to as one group */
-  html.jump-rail.page-theatre.aside-hidden:not(.toc-hidden) { --toc-w: min(2000px, calc(100vw - 300px)); --toc-ml: calc((100vw - var(--toc-w) - 230px) / 2); }
-  html.jump-rail.page-theatre:not(.toc-hidden):not(.aside-hidden):not(.aside-left) { --toc-w: min(2000px, calc(100vw - 630px)); --toc-ml: calc((100vw - var(--toc-w) - 560px) / 2 + 330px); }
+  html.jump-rail.page-theatre.aside-hidden:not(.toc-hidden) { --toc-w: min(2000px, calc(100vw - var(--toc-sw) - 90px)); --toc-ml: calc((100vw - var(--toc-w) - var(--toc-sw) - 20px) / 2); }
+  html.jump-rail.page-theatre:not(.toc-hidden):not(.aside-hidden):not(.aside-left) { --toc-w: min(2000px, calc(100vw - var(--toc-sw) - 420px)); --toc-ml: calc((100vw - var(--toc-w) - var(--toc-sw) - 350px) / 2 + 330px); }
   html.jump-rail.page-theatre:not(.toc-hidden):not(.aside-hidden):not(.aside-left) .mes-aside--rail { left: calc(var(--toc-ml) - 330px); right: auto; }
+  /* the mirror image (Jump to on the left, rail on the right): it used to keep the centred rail, which then sat on the article / off screen */
+  html.jump-rail.page-theatre.aside-left:not(.toc-hidden):not(.aside-hidden) { --toc-w: min(2000px, calc(100vw - var(--toc-sw) - 420px)); --toc-ml: calc((100vw - var(--toc-w) - var(--toc-sw) - 350px) / 2); }
+  html.jump-rail.page-theatre.aside-left:not(.toc-hidden):not(.aside-hidden) .mes-aside--rail { left: calc(var(--toc-ml) + var(--toc-sw) + 50px + var(--toc-w)); right: auto; }
   html.page-theatre.toc-hidden > body > .toc-reopen { display: none; }
   /* small tab where the sidebar was, to bring it back */
   html.toc-hidden > body > .toc-reopen { display: inline-flex; align-items: center; gap: .35em; position: fixed; top: 90px; z-index: 12;

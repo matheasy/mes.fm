@@ -104,7 +104,7 @@
    panel above. The current section = the last target whose top has passed ~30% of the window (sections hidden inside
    a collapsed chapter are skipped, so their chapter stays lit); at the very bottom of the page the last visible target
    wins. The sidebar / panel scroll themselves to keep the lit link in view (only when it changes, so a reader scrolling
-   the list by hand is not fought). Runs on every page that loads this file and has a TOC; nothing to regenerate. */
+   the list by hand is not fought; not at all while the article search has text, html.mes-finding, 2026-10-30). Runs on every page that loads this file and has a TOC; nothing to regenerate. */
 (function () {
     "use strict";
     var lists = [".toc-sidebar", ".toc-mobile .toc-links"];
@@ -171,11 +171,16 @@
             a.classList.toggle("toc-parent", p);
             if (on) a.setAttribute("aria-current", "location"); else a.removeAttribute("aria-current");
         });
-        if (changed) {
-            keepVisible(document.querySelector(".toc-sidebar"), document.querySelector(".toc-sidebar a.toc-active"));
-            keepVisible(document.getElementById("compact-jump-panel"), document.querySelector("#compact-jump-panel a.toc-active"));
-        }
+        if (changed && !finding()) bringIntoView();
     }
+    /* while the article search (block below) has text, the lists are not scrolled: the results sit at the top of the sidebar and
+       the reader needs them (and Prev / Next) to stay put; the lit link still follows the page. Clearing the search brings it back. */
+    function finding() { return document.documentElement.classList.contains("mes-finding"); }
+    function bringIntoView() {
+        keepVisible(document.querySelector(".toc-sidebar"), document.querySelector(".toc-sidebar a.toc-active"));
+        keepVisible(document.getElementById("compact-jump-panel"), document.querySelector("#compact-jump-panel a.toc-active"));
+    }
+    document.addEventListener("mes-find-change", function () { if (!finding()) { paint(true); bringIntoView(); } });
     function later() { if (!raf) raf = requestAnimationFrame(function () { paint(false); }); }
     window.addEventListener("scroll", later, { passive: true });
     window.addEventListener("resize", later);
@@ -183,7 +188,7 @@
     /* the floating panel is built by the block above; when it opens, light its link and bring it into view */
     var panel = document.getElementById("compact-jump-panel");
     if (panel) new MutationObserver(function () {
-        if (panel.classList.contains("open")) { paint(true); keepVisible(panel, panel.querySelector("a.toc-active")); }
+        if (panel.classList.contains("open")) { paint(true); if (!finding()) keepVisible(panel, panel.querySelector("a.toc-active")); }
     }).observe(panel, { attributes: true, attributeFilter: ["class"] });
     paint(true);
     setTimeout(function () { paint(true); }, 800);       /* after images / lazy content settle */
@@ -383,6 +388,11 @@
             bx.el.classList.remove("mf-mini");
             if (bx.panel) bx.el.parentNode.classList.toggle("mf-searching", !!query.trim());
         });
+        var on = !!query.trim(), H = document.documentElement;
+        if (on !== H.classList.contains("mes-finding")) {
+            H.classList.toggle("mes-finding", on);   /* the scrollspy above stops scrolling the lists while this is set */
+            try { document.dispatchEvent(new Event("mes-find-change")); } catch (x) {}
+        }
     }
     function markCur() {
         boxes.forEach(function (bx) {

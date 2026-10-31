@@ -84,3 +84,108 @@
     if (wide.parentNode === nav || nav.contains(wide)) document.body.appendChild(reopen);
     else wide.insertBefore(reopen, wide.firstChild);
 })();
+
+/* Resizable "Jump to" sidebar (2026-10-30): a handle on the sidebar's INNER edge (the side facing the article; it follows the
+   sidebar when it flips sides). Drag it (mouse, touch, pen), or focus it and use Left / Right (Shift = bigger steps), Home / End
+   (narrowest / widest); Enter or a double-click goes back to the standard 210px. The width is the CSS variable --toc-swp on <html>
+   (toc-flip.css keeps it between 180px and what still leaves the article ~600px, and moves / shrinks the article and the "More
+   like this" rail instead of covering them), saved for every page in localStorage "tocWidth" and restored before first paint by
+   the TOC-FLIP-HEAD inline script. */
+(function () {
+    "use strict";
+    var nav = document.querySelector(".toc-sidebar");
+    if (!nav || document.querySelector(".toc-resize")) return;
+    var root = document.documentElement, DEF = 210, MIN = 180;
+    var h = document.createElement("div");
+    h.className = "toc-resize";
+    h.tabIndex = 0;
+    h.setAttribute("role", "separator");
+    h.setAttribute("aria-orientation", "vertical");
+    h.setAttribute("aria-label", "Resize the Jump to sidebar");
+    h.title = "Drag to make the Jump to list wider or narrower (double-click: standard width)";
+    document.body.appendChild(h);
+    function left() { return root.classList.contains("aside-left"); }
+    function width() { return Math.round(parseFloat(getComputedStyle(nav).width) || DEF); }
+    function maxW() {   /* same limit as toc-flip.css: min(520px, 100vw - 670px - room on the other side) */
+        var o = parseFloat(getComputedStyle(root).getPropertyValue("--toc-o")) || 20;
+        return Math.max(MIN, Math.min(520, Math.round(window.innerWidth - 670 - o)));
+    }
+    function setW(px, save) {
+        px = Math.round(Math.max(MIN, Math.min(maxW(), px)));
+        root.style.setProperty("--toc-swp", px + "px");
+        if (save) { try { if (px === DEF) localStorage.removeItem("tocWidth"); else localStorage.setItem("tocWidth", String(px)); } catch (e) {} }
+        place();
+        return px;
+    }
+    function done() { place(); try { window.dispatchEvent(new Event("resize")); } catch (e) {} }
+    function reset() {
+        root.style.removeProperty("--toc-swp");
+        try { localStorage.removeItem("tocWidth"); } catch (e) {}
+        done();
+    }
+    function place() {
+        var r = nav.getBoundingClientRect();
+        var shown = r.width > 0 && r.height > 0 && !root.classList.contains("toc-hidden");
+        h.classList.toggle("on", shown);
+        if (!shown) return;
+        /* the inner edge: the sidebar's left border when it is right of the article, its right border when it is left of it */
+        h.style.left = (left() ? r.right : r.left) + "px";
+        h.style.top = r.top + "px";
+        h.style.height = Math.max(40, r.height) + "px";
+        var w = width();
+        h.setAttribute("aria-valuenow", String(w));
+        h.setAttribute("aria-valuemin", String(MIN));
+        h.setAttribute("aria-valuemax", String(maxW()));
+        h.setAttribute("aria-valuetext", w + " pixels wide");
+    }
+    /* dragging: the width follows the pointer; the article re-lays out once per frame at most */
+    var drag = null, raf = 0, pending = 0;
+    h.addEventListener("pointerdown", function (e) {
+        if (e.button !== undefined && e.button !== 0) return;
+        e.preventDefault();
+        drag = { x: e.clientX, w: width(), id: e.pointerId };
+        pending = 0;
+        try { h.setPointerCapture(e.pointerId); } catch (x) {}
+        h.classList.add("drag"); root.classList.add("toc-resizing");
+    });
+    h.addEventListener("pointermove", function (e) {
+        if (!drag || e.pointerId !== drag.id) return;
+        var dx = e.clientX - drag.x;
+        pending = drag.w + (left() ? dx : -dx);
+        if (!raf) raf = requestAnimationFrame(function () { raf = 0; if (pending) setW(pending, false); });
+    });
+    function end(e) {
+        if (!drag || (e && e.pointerId !== drag.id)) return;
+        if (raf) { cancelAnimationFrame(raf); raf = 0; }
+        if (pending && Math.abs(pending - drag.w) >= 1) setW(pending, true);
+        drag = null; pending = 0;
+        h.classList.remove("drag"); root.classList.remove("toc-resizing");
+        done();
+    }
+    h.addEventListener("pointerup", end);
+    h.addEventListener("pointercancel", end);
+    h.addEventListener("lostpointercapture", end);
+    h.addEventListener("dblclick", function (e) { e.preventDefault(); reset(); });
+    h.addEventListener("keydown", function (e) {
+        var step = e.shiftKey ? 48 : 16, w = width(), k = e.key, n = null;
+        /* arrows move the edge itself: on a right-hand sidebar Left makes it wider, on a left-hand one Right does */
+        if (k === "ArrowLeft") n = w + (left() ? -step : step);
+        else if (k === "ArrowRight") n = w + (left() ? step : -step);
+        else if (k === "Home") n = MIN;
+        else if (k === "End") n = maxW();
+        else if (k === "Enter" || k === " ") { e.preventDefault(); reset(); return; }
+        if (n === null) return;
+        e.preventDefault();
+        setW(n, true); done();
+    });
+    /* keep the handle on the edge: window size, side / mode / hide changes, the sidebar's own height changing */
+    var q = 0;
+    function later() { if (!q) q = requestAnimationFrame(function () { q = 0; if (!drag) place(); }); }
+    window.addEventListener("resize", later);
+    window.addEventListener("scroll", later, { passive: true });
+    new MutationObserver(function () { if (!drag) place(); }).observe(root, { attributes: true, attributeFilter: ["class"] });
+    if (window.ResizeObserver) new ResizeObserver(later).observe(nav);
+    place();
+    setTimeout(place, 300);
+    setTimeout(place, 1200);
+})();

@@ -1559,8 +1559,8 @@ ${LP_CSS}.playlist-list-view h2 .lp-a { color: inherit; text-decoration: none; }
       setTimeout(go, 15000);
     })();
     </script>
-<!-- TOC-FLIP-HEAD --><link rel="stylesheet" href="/main_js/toc-flip.css?v=5"><script>try{var L=localStorage,H=document.documentElement.classList;if(L.getItem('asideSide')==='left')H.add('aside-left');if(L.getItem('pageWide')==='1')H.add('page-wide');if(L.getItem('pageMode')==='theatre')H.add('page-theatre');if(L.getItem('tocHidden')==='1')H.add('toc-hidden')}catch(e){}</script><!-- /TOC-FLIP-HEAD -->
-<!-- JUMP-ASIDE --><link rel="stylesheet" href="/main_js/jump-aside.css?v=1"><!-- /JUMP-ASIDE --></head>
+<!-- JUMP-ASIDE --><link rel="stylesheet" href="/main_js/jump-aside.css?v=1"><!-- /JUMP-ASIDE --><!-- TOC-FLIP-HEAD --><link rel="stylesheet" href="/main_js/toc-flip.css?v=6"><script>try{var L=localStorage,H=document.documentElement.classList;if(L.getItem('asideSide')==='left')H.add('aside-left');if(L.getItem('pageWide')==='1')H.add('page-wide');if(L.getItem('pageMode')==='theatre')H.add('page-theatre');if(L.getItem('tocHidden')==='1')H.add('toc-hidden');var w=+L.getItem('tocWidth');if(w>=120&&w<=900)document.documentElement.style.setProperty('--toc-swp',w+'px')}catch(e){}</script><!-- /TOC-FLIP-HEAD -->
+</head>
 <body class="dark">
 
   <div id="compact-nav" aria-hidden="true" style="display:none">
@@ -2170,7 +2170,7 @@ ${bodyHtml}
     update();
   })();
 </script>
-<script src="/main_js/site-search.js?v=1" defer></script><script src="/main_js/toc-flip.js?v=5" defer></script><!-- JUMP-ASIDE-JS --><script src="/main_js/jump-aside.js?v=1" defer></script><!-- /JUMP-ASIDE-JS -->${LP_SCRIPT}</body>
+<script src="/main_js/site-search.js?v=1" defer></script><!-- JUMP-ASIDE-JS --><script src="/main_js/jump-aside.js?v=1" defer></script><!-- /JUMP-ASIDE-JS -->${LP_SCRIPT}<script src="/main_js/toc-flip.js?v=6" defer></script></body>
 </html>
 `;
 }
