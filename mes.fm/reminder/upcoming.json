@@ -1,4 +1,13 @@
 {
- "generated": "2026-10-29",
- "streams": []
+ "generated": "2026-10-31",
+ "streams": [
+  {
+   "title": "MES Livestream 143: 9/11 Spooky Halloween Special + AI Vibe Coding",
+   "url": "https://mes.fm/livestream-143-911-spooks",
+   "page": "https://mes.fm/livestream-143-911-spooks",
+   "start": "2026-10-31T20:00:00Z",
+   "notes": "MES Livestream 143, a 9/11 Spooky Halloween special: MES deep dives into the haunted house of 9/11 spooks while vibe coding with Claude Code to update the 9/11 Spooks database and website. Live October 31, 2026 at 1 PM PCT.",
+   "len": 180
+  }
+ ]
 }

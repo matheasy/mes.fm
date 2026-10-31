@@ -123,6 +123,16 @@ const PAGES = [
     tileLabel: "Dr. Judy Wood's Rebuttal",
   },
   {
+    // Tile only: links to the mirror of MES Livestream 143 (9/11 Spooky Halloween Special, hand-made page, not generated here).
+    // Icon = img/livestream-143-911-spooks-icon.jpg, the stream thumbnail fitted whole onto a blurred 900x600 copy of itself;
+    // bump iconVersion if replaced.
+    slug: "livestream-143-911-spooks",
+    href: "/livestream-143-911-spooks",
+    iconVersion: 1,
+    tileOnly: true,
+    tileLabel: "Livestream 143: 9/11 Spooky Halloween Special",
+  },
+  {
     // Tile only: links to the mirror of MES Livestream 112 (9/11 Spooks Database, hand-made page, not generated here).
     // Icon = img/livestream-112-911-spooks-icon.jpg, a 900x600 crop of the stream thumbnail; bump iconVersion if replaced.
     slug: "livestream-112-911-spooks",

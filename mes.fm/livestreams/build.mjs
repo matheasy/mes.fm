@@ -64,6 +64,10 @@ const MIRRORS = {
     href: "https://mes.fm/livestream-142-amaterasu-solar-money",
     extra: [["Hive", "https://peakd.com/hive-106474/@mestruth/mes-livestream-142-amaterasu-solar-money-epb"]],
   },
+  "3F_dpWjc-TU": {
+    href: "https://mes.fm/livestream-143-911-spooks",
+    extra: [["Hive", "https://peakd.com/hive-113182/@mestruth/livestream-143-911-spooky-halloween-9gn"]],
+  },
   PF0kSCXvZwM: { href: "https://mes.fm/livestream-140-trailer-911-real-avengers", scrape: true },
   ddmBEjkVXb0: { href: "https://mes.fm/livestream-140-trailer-dust-plumes-911", scrape: true },
   WbvO8BbKIP0: { href: "https://mes.fm/livestream-66-trailer", scrape: true },
