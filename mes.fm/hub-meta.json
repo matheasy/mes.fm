@@ -218,7 +218,7 @@
 },
 "/docx":{
 "added":"2026-10-26",
-"updated":"2026-10-28",
+"updated":"2026-10-30",
 "type":"Tool"
 },
 "/domain-lookup":{
@@ -259,6 +259,11 @@
 "/enigma":{
 "added":"2026-10-06",
 "updated":"2026-10-14",
+"type":"Tool"
+},
+"/excel":{
+"added":"2026-10-30",
+"updated":"2026-10-30",
 "type":"Tool"
 },
 "/exif-viewer":{
@@ -523,12 +528,12 @@
 },
 "/pdf":{
 "added":"2026-10-15",
-"updated":"2026-10-28",
+"updated":"2026-10-30",
 "type":"Tool"
 },
 "/pdf-tools":{
 "added":"2026-10-15",
-"updated":"2026-10-16",
+"updated":"2026-10-30",
 "type":"Collection"
 },
 "/percentagecalculator":{

@@ -167,6 +167,7 @@ TOOLS = [  # (directory, compact-bar title[, home path of the site the page belo
     ("video", "MES Video Editor"),
     ("convert-video", "MES Video Converter"),
     ("docx", "MES Word Viewer"),
+    ("excel", "MES Spreadsheet Viewer"),
     ("fonts", "MES Font Preview and Finder"),
     ("llm-simulator", "MES Toy Language Model Simulator"),
     ("letter-recognition", "MES Letter and Digit Recognition"),

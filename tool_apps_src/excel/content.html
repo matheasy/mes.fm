@@ -1,0 +1,132 @@
+	<script>try{if(!localStorage.getItem('pageMode')){document.documentElement.classList.add('page-wide')}}catch(e){}</script>
+	<div class="tu xl" id="xl">
+		<div class="xl-app" id="xl-app">
+			<div class="xl-top">
+				<button type="button" class="xl-btn xl-btn--primary" id="xl-open" title="Open a spreadsheet (Ctrl+O)">Open</button>
+				<button type="button" class="xl-btn" id="xl-new" title="Start a new blank spreadsheet">New</button>
+				<input type="file" id="xl-input" accept=".xlsx,.xlsm,.xltx,.xltm,.xlsb,.xls,.ods,.fods,.csv,.tsv,.tab,.txt,.numbers,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet,application/vnd.ms-excel,application/vnd.oasis.opendocument.spreadsheet,text/csv,text/tab-separated-values" hidden>
+				<span class="xl-fname" id="xl-fname" title="">No file open</span>
+				<span class="xl-grow"></span>
+				<span class="xl-pv" id="xl-pv"></span>
+			</div>
+			<div class="xl-bar" id="xl-bar" role="toolbar" aria-label="Spreadsheet tools">
+				<button type="button" class="xl-ib" id="xl-undo" title="Undo (Ctrl+Z)" aria-label="Undo" disabled>&#8630;</button>
+				<button type="button" class="xl-ib" id="xl-redo" title="Redo (Ctrl+Y)" aria-label="Redo" disabled>&#8631;</button>
+				<span class="xl-sep"></span>
+				<div class="xl-dd">
+					<button type="button" class="xl-btn" id="xl-rcbtn" aria-haspopup="true" aria-expanded="false" title="Add or delete rows and columns">Rows &amp; columns &#9662;</button>
+					<div class="xl-menu" id="xl-rcmenu" hidden role="menu">
+						<button type="button" role="menuitem" data-rc="row-above"><b>Insert row above</b><small>Ctrl+Shift+= with a row selected</small></button>
+						<button type="button" role="menuitem" data-rc="row-below"><b>Insert row below</b></button>
+						<button type="button" role="menuitem" data-rc="row-del"><b>Delete selected rows</b><small>Ctrl+-</small></button>
+						<button type="button" role="menuitem" data-rc="col-left"><b>Insert column left</b></button>
+						<button type="button" role="menuitem" data-rc="col-right"><b>Insert column right</b></button>
+						<button type="button" role="menuitem" data-rc="col-del"><b>Delete selected columns</b></button>
+						<button type="button" role="menuitem" data-rc="sheet-add"><b>Add a sheet</b></button>
+						<button type="button" role="menuitem" data-rc="sheet-ren"><b>Rename this sheet</b><small>or double-click its tab</small></button>
+						<button type="button" role="menuitem" data-rc="sheet-del"><b>Delete this sheet</b></button>
+					</div>
+				</div>
+				<button type="button" class="xl-ib xl-ib--txt" id="xl-sasc" title="Sort the rows by the selected column, A to Z / smallest first (only the view: the file is not changed)">A&#8595;Z</button>
+				<button type="button" class="xl-ib xl-ib--txt" id="xl-sdesc" title="Sort by the selected column, Z to A / largest first">Z&#8595;A</button>
+				<button type="button" class="xl-ib xl-ib--txt" id="xl-filt" aria-pressed="false" title="Filter the rows by a column (only the view)">&#9660; <span class="xl-lbl">Filter</span></button>
+				<button type="button" class="xl-ib xl-ib--txt" id="xl-hdr" aria-pressed="true" title="Keep the first row at the top while scrolling, and out of sorting">&#9776; <span class="xl-lbl">Header row</span></button>
+				<span class="xl-sep"></span>
+				<div class="xl-find">
+					<input type="search" class="xl-in" id="xl-q" placeholder="Find in sheet" aria-label="Find in this sheet" autocomplete="off">
+					<button type="button" class="xl-ib" id="xl-qprev" title="Previous match (Shift+Enter)" aria-label="Previous match">&#8593;</button>
+					<button type="button" class="xl-ib" id="xl-qnext" title="Next match (Enter)" aria-label="Next match">&#8595;</button>
+					<span class="xl-qn" id="xl-qn" aria-live="polite"></span>
+				</div>
+				<span class="xl-grow"></span>
+				<button type="button" class="xl-btn" id="xl-print" title="Print this sheet, or choose Save as PDF in the print window (Ctrl+P)">Print / PDF</button>
+				<div class="xl-dd">
+					<button type="button" class="xl-btn xl-btn--primary" id="xl-save" aria-haspopup="true" aria-expanded="false" title="Save (Ctrl+S)">Save &#9662;</button>
+					<div class="xl-menu xl-menu--r" id="xl-savemenu" hidden role="menu">
+						<button type="button" role="menuitem" data-save="xlsx"><b>Excel workbook (.xlsx)</b><small>all sheets, formulas and number formats</small></button>
+						<button type="button" role="menuitem" data-save="xlsm" id="xl-save-xlsm" hidden><b>Workbook with macros (.xlsm)</b><small>keeps the file's macros</small></button>
+						<button type="button" role="menuitem" data-save="ods"><b>OpenDocument (.ods)</b><small>for LibreOffice</small></button>
+						<button type="button" role="menuitem" data-save="csv"><b>CSV of this sheet (.csv)</b><small>values as shown, comma separated</small></button>
+						<button type="button" role="menuitem" data-save="tsv"><b>Tab separated (.tsv)</b><small>this sheet</small></button>
+						<button type="button" role="menuitem" data-save="orig" id="xl-save-orig"><b>Original file</b><small>exactly as you opened it</small></button>
+					</div>
+				</div>
+			</div>
+			<div class="xl-filter" id="xl-filterbar" hidden>
+				<span class="xl-ftitle">Filter</span>
+				<select class="xl-in xl-sel" id="xl-fcol" aria-label="Column to filter"></select>
+				<select class="xl-in xl-sel" id="xl-fop" aria-label="Condition">
+					<option value="contains">contains</option><option value="notcontains">does not contain</option><option value="eq">equals</option><option value="neq">is not</option>
+					<option value="begins">begins with</option><option value="ends">ends with</option><option value="gt">&gt;</option><option value="ge">&ge;</option><option value="lt">&lt;</option><option value="le">&le;</option>
+					<option value="blank">is empty</option><option value="notblank">is not empty</option>
+				</select>
+				<input type="text" class="xl-in" id="xl-fval" placeholder="value" aria-label="Filter value" autocomplete="off">
+				<button type="button" class="xl-btn" id="xl-fadd">Add filter</button>
+				<span class="xl-fchips" id="xl-fchips"></span>
+				<button type="button" class="xl-link" id="xl-fclear">Clear sort and filters</button>
+			</div>
+			<div class="xl-fx">
+				<input type="text" class="xl-in xl-namebox" id="xl-name" aria-label="Cell address (type one to jump)" title="Type a cell address such as B12 and press Enter" autocomplete="off" spellcheck="false" value="A1">
+				<span class="xl-fxlbl" aria-hidden="true">f<i>x</i></span>
+				<input type="text" class="xl-in xl-fxin" id="xl-fxin" aria-label="Cell contents or formula" autocomplete="off" spellcheck="false" placeholder="Select a cell, then type here or in the cell">
+				<button type="button" class="xl-ib xl-ib--txt xl-editbtn" id="xl-editbtn" title="Edit the selected cell (F2)">&#9998; <span class="xl-lbl">Edit</span></button>
+			</div>
+			<div class="xl-note" id="xl-note" hidden role="status"></div>
+			<div class="xl-grid" id="xl-grid">
+				<div class="xl-corner" id="xl-corner" title="Select the whole sheet"></div>
+				<div class="xl-colh" id="xl-colh"><div class="xl-colh-in" id="xl-colh-in"></div></div>
+				<div class="xl-frzh" id="xl-frzh"></div>
+				<div class="xl-frz" id="xl-frz"><div class="xl-frz-in" id="xl-frz-in"></div></div>
+				<div class="xl-rowh" id="xl-rowh"><div class="xl-rowh-in" id="xl-rowh-in"></div></div>
+				<div class="xl-scroll" id="xl-scroll" tabindex="0" role="grid" aria-label="Spreadsheet cells" aria-readonly="false">
+					<div class="xl-sizer" id="xl-sizer"><div class="xl-cells" id="xl-cells"></div></div>
+				</div>
+				<textarea class="xl-ed" id="xl-ed" hidden spellcheck="false" aria-label="Edit cell"></textarea>
+				<div class="xl-empty" id="xl-empty">
+					<div class="xl-drop" id="xl-drop" tabindex="0" role="button" aria-label="Open a spreadsheet">
+						<div class="xl-drop-ic" aria-hidden="true"><span>A</span><span>B</span><span>C</span><span>1</span><span></span><span></span><span>2</span><span></span><span></span></div>
+						<div class="xl-drop-t">Drop a spreadsheet here</div>
+						<div class="xl-drop-s">.xlsx, .xlsm, .xls, .ods, .csv or .tsv. You can also paste a file or press Open.</div>
+						<div class="xl-drop-b"><button type="button" class="xl-btn xl-btn--primary xl-big" id="xl-e-open">Open a spreadsheet</button> <button type="button" class="xl-btn xl-big" id="xl-e-new">New blank sheet</button></div>
+						<p class="xl-priv">Private: the file is read and shown by your own browser. Nothing is uploaded.</p>
+					</div>
+					<div class="xl-recent" id="xl-recent" hidden>
+						<div class="xl-recent-h"><b>Recent files</b> <span class="xl-recent-s">kept on this device only</span> <button type="button" class="xl-link" id="xl-rclear">Forget all</button></div>
+						<div id="xl-rlist"></div>
+					</div>
+					<label class="xl-chk xl-remember"><input type="checkbox" id="xl-remember"> Remember files I open here and keep my edits (in this browser only)</label>
+				</div>
+			</div>
+			<div class="xl-sheets" id="xl-sheets">
+				<div class="xl-stabs" id="xl-stabs" role="tablist" aria-label="Sheets"></div>
+				<button type="button" class="xl-ib" id="xl-sadd" title="Add a sheet" aria-label="Add a sheet">+</button>
+			</div>
+			<div class="xl-status" id="xl-status" aria-live="polite"></div>
+		</div>
+		<div class="tu-card tu-card--tint xl-cross">
+			<b>Other document tools:</b> open Word files in the <a href="/docx">Word Viewer</a>, sign and fill in PDFs in the <a href="/pdf">PDF Editor</a>, and merge, split or compress PDFs with <a href="/pdf-tools">PDF Tools</a>.
+		</div>
+
+		<div class="tu-seo">
+			<h2>Open, view and edit Excel files online</h2>
+			<p>This viewer opens spreadsheets right in your browser: Excel <b>.xlsx</b>, <b>.xlsm</b> and older <b>.xls</b> files, LibreOffice <b>.ods</b> files and <b>.csv</b> / <b>.tsv</b> text files. Every sheet gets a tab at the bottom, with column letters and row numbers like Excel. It stays fast with big files (a hundred thousand rows or more), because only the cells on screen are drawn. Nothing is uploaded: the file is read by your own browser, so it is fine for budgets, marks and private lists.</p>
+			<h2>What can it do?</h2>
+			<dl>
+				<dt>View</dt><dd>Numbers, dates and percentages in the file's own formats, fill colours, wide columns you can drag wider or narrower, and a header row that stays at the top. Select cells with the mouse, a finger or the keyboard; the status bar shows the sum, average and count of a selection.</dd>
+				<dt>Formulas</dt><dd>The formula bar shows a cell's formula; the value comes from the file, as Excel last calculated it. When you change a number, the formulas that use it are worked out again: + &minus; &times; &divide; ^ %, &amp; to join text, comparisons, cell references and ranges (also on other sheets), and SUM, AVERAGE, MIN, MAX, COUNT, COUNTA, ROUND, IF, ABS, SQRT, plus AND, OR, NOT, IFERROR, PRODUCT, MOD, INT, ROUNDUP, ROUNDDOWN, POWER, LEN, UPPER, LOWER, TRIM, CONCAT. A formula with any other function (VLOOKUP, for example) keeps the value saved in the file and is marked, so you know it was not worked out again.</dd>
+				<dt>Edit</dt><dd>Type into a cell or the formula bar, paste a block of cells from Excel or Google Sheets (and copy back), insert and delete rows and columns (formulas follow the cells), add and rename sheets. Undo and redo everything.</dd>
+				<dt>Find, sort and filter</dt><dd>Find any text in the sheet. Sort by a column or filter the rows (contains, equals, greater than, empty ...): this only changes what you see, never the data, and Clear brings the rows back in their own order.</dd>
+				<dt>Save</dt><dd>Save as .xlsx (every sheet, with formulas and number formats), .ods, or the current sheet as .csv or .tsv. Print / PDF prints the current sheet; choose &ldquo;Save as PDF&rdquo; in the print window to make a PDF.</dd>
+			</dl>
+			<h2>Questions</h2>
+			<dl>
+				<dt>Is my spreadsheet uploaded anywhere?</dt><dd>No. The page and the open-source library that reads spreadsheets run in your browser. If you tick &ldquo;Remember files I open here&rdquo;, recent files and your unsaved edits are kept in this browser's own storage on this device, and you can forget them at any time.</dd>
+				<dt>What is kept when I save as .xlsx?</dt><dd>Every sheet, the values, formulas, number formats and column widths. Charts, pictures, pivot tables, conditional formatting, comments and most cell styles (fonts, borders, colours) are not written back, so keep your original file; <b>Save &rarr; Original file</b> always gives it back exactly.</dd>
+				<dt>Why does a formula show a small corner mark?</dt><dd>It uses a function this page cannot calculate. It shows the value Excel saved in the file, which may be out of date after you change the cells it uses. Open the saved file in Excel, LibreOffice or Google Sheets to recalculate it.</dd>
+				<dt>Does it work on a phone?</dt><dd>Yes. Open a file from your Files app, scroll the grid with your finger, tap a cell to select it and tap it again (or press Edit) to change it.</dd>
+				<dt>Can it open password-protected files?</dt><dd>No. Remove the password in Excel first (File &rarr; Info &rarr; Protect Workbook).</dd>
+			</dl>
+			<p class="xl-credit">Made with the open-source <a href="https://sheetjs.com/" rel="noopener">SheetJS Community Edition</a> library (Apache-2.0), served from mes.fm. Excel is a trademark of Microsoft; this page is not made by Microsoft.</p>
+		</div>
+	</div>
+	<script src="/main_js/panel-view.js?v=1" defer></script>

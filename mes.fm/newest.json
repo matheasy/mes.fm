@@ -100,6 +100,14 @@
  ],
  "tools": [
   {
+   "href": "/excel",
+   "title": "Spreadsheet Viewer (Excel files)",
+   "icon": "/img/excel-logo.png",
+   "desc": "Open .xlsx, .xls, .ods and CSV files, edit cells and formulas, sort and filter, save as .xlsx or CSV. Fast with big files, nothing is uploaded.",
+   "added": "2026-10-30",
+   "kind": "tool"
+  },
+  {
    "href": "/database",
    "title": "Video Database",
    "icon": "/img/database-logo.png",
@@ -186,17 +194,17 @@
    "desc": "Like ping -t in your browser: latency, jitter and packet loss to Cloudflare, Google DNS or any website, with a live chart and verdicts for gaming and calls.",
    "added": "2026-10-28",
    "kind": "tool"
-  },
-  {
-   "href": "/elections",
-   "title": "Elections",
-   "icon": "/img/elections-logo.png",
-   "desc": "2026 US midterms with every race’s market odds and a build-your-own seat map, Canada and BC results with seats-vs-votes tools, and a world election calendar. Neutral, sourced.",
-   "added": "2026-10-27",
-   "kind": "tool"
   }
  ],
  "latest": [
+  {
+   "href": "/excel",
+   "title": "Spreadsheet Viewer (Excel files)",
+   "icon": "/img/excel-logo.png",
+   "desc": "Open .xlsx, .xls, .ods and CSV files, edit cells and formulas, sort and filter, save as .xlsx or CSV. Fast with big files, nothing is uploaded.",
+   "added": "2026-10-30",
+   "kind": "tool"
+  },
   {
    "href": "/database",
    "title": "Video Database",
@@ -251,14 +259,6 @@
    "icon": "/img/storage-logo.png",
    "desc": "What is filling up your disk? Pick a folder and see it as a sunburst or treemap, with the largest files, file types, old files and duplicates. Nothing is uploaded.",
    "added": "2026-10-29",
-   "kind": "tool"
-  },
-  {
-   "href": "/video",
-   "title": "Video Editor",
-   "icon": "/img/video-logo.png",
-   "desc": "Cut, split and join videos on a multi-track timeline, add titles and pictures, cross-fade, remove background noise and export MP4 up to 4K. A free Camtasia-style editor; nothing is uploaded.",
-   "added": "2026-10-28",
    "kind": "tool"
   }
  ]

@@ -1025,6 +1025,14 @@ APPS = {
                  desc="Free online DOCX viewer and editor: open Word documents in your browser with the real page layout, zoom, outline, search, word count, comments and tracked changes. Print or save as PDF, edit the text and download a new .docx, or save as HTML, Markdown or text. Private: nothing is uploaded.",
                  meta_desc="Free DOCX viewer and editor: open Word files with the real page layout, search, word count and comments, edit, then save as .docx, PDF, HTML or text. No upload.",
                  js_v="2"),
+    # MES Spreadsheet Viewer & Editor (2026-10-30, mes.fm/excel): .xlsx / .xlsm / .xls / .ods / .csv / .tsv read and written by SheetJS CE 0.20.3 (Apache-2.0,
+    # self-hosted in /main_js/sheetjs/0.20.3/, loaded on first open), virtualised grid, own formula engine + dependency recalc in lib.js (MESXL, node tests
+    # tool_apps_src/excel-tests.js), sort / filter view, rows / columns / sheets, undo, print, recent files + autosave in IndexedDB "mes-excel". Nothing is uploaded.
+    "excel": dict(title="MES Spreadsheet Viewer", page_title="Excel Viewer and Editor: Open XLSX, XLS, ODS and CSV Files Online, No Upload",
+                  tag="Open, view and edit spreadsheets in your browser.", accent="#1e7145", dark="#155a36", tint="#e1f1e7",
+                  desc="Free online spreadsheet viewer and editor: open Excel files (.xlsx, .xlsm, .xls), LibreOffice .ods and CSV in your browser, with every sheet, number formats and formulas. Edit cells and simple formulas, find, sort and filter, add rows and columns, then save as .xlsx, .ods or CSV, or print to PDF. Fast with big files. Private: nothing is uploaded.",
+                  meta_desc="Free spreadsheet viewer and editor: open Excel .xlsx / .xls, .ods and CSV files, edit cells and formulas, sort, filter, save as .xlsx or CSV. No upload.",
+                  js_v="1"),
     "compress": dict(title="MES Compressor", page_title="Compressor: Compress Images, PDFs and Audio Online",
                        tag="Make pictures, PDFs and audio smaller.", accent="#4338ca", dark="#3730a3", tint="#e8e9fb",
                        desc="Free online compressor for pictures, PDFs and audio: shrink JPG, PNG and WebP to a quality or file size you choose, make PDFs smaller while keeping text selectable, and save audio as smaller MP3s. Before and after preview, ZIP download. Private: nothing is uploaded.",
