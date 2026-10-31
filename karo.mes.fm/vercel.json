@@ -1,7 +1,7 @@
 {
   "cleanUrls": true,
   "trailingSlash": false,
-  "rewrites": [
+  "redirects": [
     {
       "source": "/",
       "has": [
@@ -11,7 +11,12 @@
           "value": "(?i).*(iphone|ipod|android.*mobile|windows phone|blackberry|bb10|opera mini|iemobile).*"
         }
       ],
-      "destination": "/m/index"
+      "missing": [
+        { "type": "cookie", "key": "karo_layout", "value": "desktop" },
+        { "type": "cookie", "key": "karo_wide", "value": "1" }
+      ],
+      "destination": "/m",
+      "permanent": false
     },
     {
       "source": "/:page(contact-8|food-beverage|hotels-airbnbs|investment|product-branding|video)",
@@ -22,7 +27,12 @@
           "value": "(?i).*(iphone|ipod|android.*mobile|windows phone|blackberry|bb10|opera mini|iemobile).*"
         }
       ],
-      "destination": "/m/:page"
+      "missing": [
+        { "type": "cookie", "key": "karo_layout", "value": "desktop" },
+        { "type": "cookie", "key": "karo_wide", "value": "1" }
+      ],
+      "destination": "/m/:page",
+      "permanent": false
     }
   ],
   "headers": [
@@ -32,24 +42,6 @@
         {
           "key": "X-Robots-Tag",
           "value": "noindex, nofollow"
-        }
-      ]
-    },
-    {
-      "source": "/",
-      "headers": [
-        {
-          "key": "Vary",
-          "value": "User-Agent"
-        }
-      ]
-    },
-    {
-      "source": "/:page(contact-8|food-beverage|hotels-airbnbs|investment|product-branding|video)",
-      "headers": [
-        {
-          "key": "Vary",
-          "value": "User-Agent"
         }
       ]
     },

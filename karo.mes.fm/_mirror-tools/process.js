@@ -6,7 +6,9 @@ Run from a scratch folder with puppeteer-core + cheerio@1.0.0 installed (npm i p
   2. node process.js        strips the Wix runtime, rewrites links/assets, bundles CSS, writes the pages + jobs.json
   3. python3 fetch_assets.py  downloads original images from static.wixstatic.com and makes the exact sizes (WebP), fonts, videos
   4. python3 add_ratio.py     image aspect ratios for the masonry gallery re-flow
-  5. node serve.js (port 8441, mimics cleanUrls + the mobile rewrite), node shoot.js / cmp.py to compare screenshots.
+  5. python3 add_layout_switch.py --apply   phone/desktop switch script in every <head> + /m/ links inside the phone pages
+     (REQUIRED after every process.js run: without it phones whose user agent vercel.json misses get the shrunken desktop page)
+  6. PORT=8441 node serve.js (mimics cleanUrls + vercel.json's phone redirect), node shoot.js / cmp.py to compare screenshots.
 Behaviour Wix did with JavaScript is re-implemented in /assets/mirror.js.
 */
 // Turns the captured Wix DOMs (cap_d = desktop, cap_m = mobile) into static pages in OUT.
