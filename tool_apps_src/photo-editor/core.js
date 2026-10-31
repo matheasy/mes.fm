@@ -192,38 +192,41 @@
 		if (L.mask) { L.mask = null; } if (L.crop) L.crop = P.clampCrop(L.crop, W, H);
 	};
 
-	/* ---------- layer styles (L.fx): an outline and / or a drop shadow worked out from the layer's visible pixels (mask and crop included), never baked
-	   into the layer: change or remove them any time (Layer -> Layer style). Cached in the layer's own pixel space, so panning and zooming cost nothing.
-	   fx = { outline: {on, w (px on the image), c, pos: outside | center | inside, op (0-1)}, shadow: {on, c, op, blur, dx, dy (px on the image)} } */
-	PE.FXDEF = { outline: { on: false, w: 4, c: "#ffffff", pos: "outside", op: 1 }, shadow: { on: false, c: "#000000", op: 0.55, blur: 14, dx: 6, dy: 8 } };
-	function fxOn(L) { var f = L.fx; return !!(f && ((f.outline && f.outline.on && f.outline.w > 0) || (f.shadow && f.shadow.on))); }
+	/* ---------- layer styles (L.fx): Photoshop-style effects (bevel and emboss, stroke, inner / drop shadow, inner / outer glow, satin, colour and
+	   gradient overlay, fill opacity) worked out from the layer's visible pixels (mask and crop included), never baked into the layer: change or remove
+	   them any time (Layer -> Layer style). The maths is MESPixel.fxPlanes (lib.js); here each plane becomes a canvas in the layer's own pixel space
+	   (with a margin round it), cached per layer, so panning and zooming cost nothing. The image's global light (Photoshop's "Use Global Light") is
+	   PE.doc.light = {angle, alt}. */
+	PE.FXDEF = P.FXDEF;
+	function fxOn(L) { return !!(L && L.fx && P.fxAny(L.fx)); }
 	PE.hasFx = fxOn;
+	PE.light = function () { var d = PE.doc; return d && d.light ? d.light : { angle: 120, alt: 30 }; };
 	/* how far (image px) the style reaches past the layer's pixels: for bounding boxes (XCF export) */
-	PE.fxReach = function (L) { if (!fxOn(L)) return 0; var f = L.fx, r = 0; if (f.outline && f.outline.on && f.outline.pos !== "inside") r = f.outline.w; if (f.shadow && f.shadow.on) r = Math.max(r, f.shadow.blur * 2 + Math.max(Math.abs(f.shadow.dx), Math.abs(f.shadow.dy))); return Math.ceil(r) + 2; };
+	PE.fxReach = function (L) { return fxOn(L) ? P.fxReach(L.fx, PE.light()) : 0; };
 	function fxCanvases(L) {
-		var f = L.fx, cw = L.canvas.width, ch = L.canvas.height, sc = Math.max(0.01, Math.sqrt(Math.abs(L.sx * L.sy))), key = [L.rev, cw, ch, L.sx, L.sy, L.rot, JSON.stringify(L.crop), JSON.stringify(f), !!L.mask, !!L.maskOff].join("|"), k = L._fxc;
+		var f = L.fx, cw = L.canvas.width, ch = L.canvas.height, sc = Math.max(0.01, Math.sqrt(Math.abs(L.sx * L.sy))), lt = PE.light(), key = [L.rev, cw, ch, L.sx, L.sy, L.rot, JSON.stringify(L.crop), JSON.stringify(f), lt.angle, lt.alt, !!L.mask, !!L.maskOff].join("|"), k = L._fxc;
 		if (k && k.key === key && k.c === L.canvas) return k.r;
-		var ol = f.outline && f.outline.on && f.outline.w > 0 ? f.outline : null, sh = f.shadow && f.shadow.on ? f.shadow : null, olw = ol ? ol.w / sc : 0;
-		// the shadow offset is on the image (down-right stays down-right however the layer is turned): back into the layer's own axes
-		var co = Math.cos(L.rot), si = Math.sin(L.rot), sdx = sh ? (co * sh.dx + si * sh.dy) / L.sx : 0, sdy = sh ? (-si * sh.dx + co * sh.dy) / L.sy : 0, sbl = sh ? sh.blur / sc : 0;
-		var mg = Math.ceil(Math.max(ol && ol.pos !== "inside" ? olw : 0, sh ? sbl * 2 + Math.max(Math.abs(sdx), Math.abs(sdy)) : 0)) + 2, W = cw + mg * 2, H = ch + mg * 2, r = { mg: mg, under: null, over: null };
+		var reach = P.fxReach(f, lt) / sc, mg = Math.ceil((reach + 2) / 16) * 16, W = cw + mg * 2, H = ch + mg * 2, r = { mg: mg, under: [], over: [], fill: P.fxNorm(f).fill };
 		if (W * H > 24e6) { L._fxc = { key: key, c: L.canvas, r: r }; return r; }   // too big to work out in a browser: drawn without the style
-		var src = mk(W, H), sx = src.getContext("2d"); sx.drawImage(L.canvas, mg, mg);
-		if (L.mask && !L.maskOff) { sx.globalCompositeOperation = "destination-in"; sx.drawImage(L.mask, mg, mg); }
-		if (L.crop) { sx.globalCompositeOperation = "destination-in"; sx.fillStyle = "#000"; sx.fillRect(mg + L.crop.x, mg + L.crop.y, L.crop.w, L.crop.h); }
-		sx.globalCompositeOperation = "source-over";
-		var under = null, over = null;
-		if (sh) {
-			var rgb = P.hexToRgb(sh.c), sc2 = mk(W, H), q = sc2.getContext("2d"); q.shadowColor = "rgba(" + rgb[0] + "," + rgb[1] + "," + rgb[2] + "," + Math.max(0, Math.min(1, sh.op)) + ")"; q.shadowBlur = sbl; q.shadowOffsetX = 30000 + sdx; q.shadowOffsetY = sdy; q.drawImage(src, -30000, 0); under = sc2;
-		}
-		if (ol) {
+		// the shape (alpha) and its distance field only change when the pixels do: cached apart from the effect settings so dragging a slider is quick
+		var bkey = [L.rev, cw, ch, mg, JSON.stringify(L.crop), !!L.mask, !!L.maskOff].join("|"), b = L._fxb;
+		if (!b || b.key !== bkey || b.c !== L.canvas) {
+			var src = mk(W, H), sx = src.getContext("2d"); sx.drawImage(L.canvas, mg, mg);
+			if (L.mask && !L.maskOff) { sx.globalCompositeOperation = "destination-in"; sx.drawImage(L.mask, mg, mg); }
+			if (L.crop) { sx.globalCompositeOperation = "destination-in"; sx.fillStyle = "#000"; sx.fillRect(mg + L.crop.x, mg + L.crop.y, L.crop.w, L.crop.h); }
 			var id = sx.getImageData(0, 0, W, H), al = new Uint8Array(W * H); for (var i = 0; i < al.length; i++) al[i] = id.data[i * 4 + 3];
-			var oa = P.outlineAlpha(al, W, H, olw, ol.pos), c3 = P.hexToRgb(ol.c), oc = mk(W, H), ox = oc.getContext("2d"), od = ox.createImageData(W, H), opa = Math.max(0, Math.min(1, ol.op == null ? 1 : ol.op));
-			for (var j = 0; j < oa.length; j++) { if (!oa[j]) continue; od.data[j * 4] = c3[0]; od.data[j * 4 + 1] = c3[1]; od.data[j * 4 + 2] = c3[2]; od.data[j * 4 + 3] = Math.round(oa[j] * opa); }
-			ox.putImageData(od, 0, 0);
-			if (ol.pos === "outside") { if (under) { under.getContext("2d").drawImage(oc, 0, 0); } else under = oc; } else over = oc;
+			b = L._fxb = { key: bkey, c: L.canvas, alpha: al, sd: P.sdField(al, W, H) };
 		}
-		r.under = under; r.over = over; L._fxc = { key: key, c: L.canvas, r: r }; return r;
+		// an image vector in the layer's own axes (down-right on the image stays down-right however the layer is turned or flipped)
+		var co = Math.cos(L.rot), si = Math.sin(L.rot), geo = { sc: sc, light: lt, vec: function (vx, vy) { return { x: (co * vx + si * vy) / L.sx, y: (-si * vx + co * vy) / L.sy }; } };
+		var planes = P.fxPlanes(b.alpha, W, H, f, geo, b);
+		planes.forEach(function (pl) {
+			var c = mk(W, H), x = c.getContext("2d"), d = x.createImageData(W, H), dd = d.data, a = pl.a, n = W * H, any = false;
+			if (pl.rgba) { var g = pl.rgba; for (var j = 0; j < n; j++) { var v = a[j] * g[j * 4 + 3]; if (v < 0.5) continue; any = true; dd[j * 4] = g[j * 4]; dd[j * 4 + 1] = g[j * 4 + 1]; dd[j * 4 + 2] = g[j * 4 + 2]; dd[j * 4 + 3] = v; } }
+			else { var R = pl.rgb[0], G = pl.rgb[1], B = pl.rgb[2]; for (var q = 0; q < n; q++) { var w = a[q]; if (w < 0.002) continue; any = true; dd[q * 4] = R; dd[q * 4 + 1] = G; dd[q * 4 + 2] = B; dd[q * 4 + 3] = w * 255 + 0.5; } }
+			if (!any) return; x.putImageData(d, 0, 0); (pl.under ? r.under : r.over).push({ c: c, mode: pl.mode || "source-over", op: pl.op == null ? 1 : +pl.op, k: pl.k });
+		});
+		L._fxc = { key: key, c: L.canvas, r: r }; return r;
 	}
 	PE.fxCanvases = fxCanvases;
 
@@ -234,6 +237,11 @@
 		var src = L.preview || L.canvas, cw = L.canvas.width, ch = L.canvas.height, m = matrix(L), fx = fxOn(L) && !L.noFx ? fxCanvases(L) : null, msk = L.mask && !L.maskOff ? L.mask : null;
 		if (L.mask && L.viewMask && PE.maskView) { src = PE.maskView(L); msk = null; fx = null; }   // Alt-click on the mask box: show the mask itself (white = shown)
 		var needTmp = msk || L.live || fx;
+		if (fx && fx.under.length) {   // drop shadow, outer glow, outside stroke / bevel: under the layer, blended with what is below it (their own blend modes)
+			ctx.save(); ctx.setTransform(base[0] * m[0] + base[2] * m[1], base[1] * m[0] + base[3] * m[1], base[0] * m[2] + base[2] * m[3], base[1] * m[2] + base[3] * m[3], base[0] * m[4] + base[2] * m[5] + base[4], base[1] * m[4] + base[3] * m[5] + base[5]);
+			ctx.imageSmoothingQuality = "high";
+			fx.under.forEach(function (u) { ctx.globalAlpha = op * u.op; ctx.globalCompositeOperation = u.mode; ctx.drawImage(u.c, -cw / 2 - fx.mg, -ch / 2 - fx.mg); }); ctx.restore();
+		}
 		if (!needTmp) {
 			ctx.save(); ctx.globalAlpha = op; ctx.globalCompositeOperation = L.blend;
 			ctx.setTransform(base[0] * m[0] + base[2] * m[1], base[1] * m[0] + base[3] * m[1], base[0] * m[2] + base[2] * m[3], base[1] * m[2] + base[3] * m[3], base[0] * m[4] + base[2] * m[5] + base[4], base[1] * m[4] + base[3] * m[5] + base[5]);
@@ -243,7 +251,8 @@
 		tx.save(); tx.setTransform(base[0] * m[0] + base[2] * m[1], base[1] * m[0] + base[3] * m[1], base[0] * m[2] + base[2] * m[3], base[1] * m[2] + base[3] * m[3], base[0] * m[4] + base[2] * m[5] + base[4], base[1] * m[4] + base[3] * m[5] + base[5]);
 		tx.imageSmoothingQuality = "high"; tx.imageSmoothingEnabled = ctx.imageSmoothingEnabled;
 		clipCrop(tx, L);
-		tx.drawImage(src, -cw / 2, -ch / 2, cw, ch);
+		if (fx && fx.fill < 1) tx.globalAlpha = fx.fill;   // fill opacity fades the pixels, not the effects
+		tx.drawImage(src, -cw / 2, -ch / 2, cw, ch); tx.globalAlpha = 1;
 		if (L.live && L.live.target !== "mask") { tx.globalCompositeOperation = L.live.erase ? "destination-out" : "source-over"; tx.globalAlpha = L.live.alpha; tx.drawImage(L.live.buf, -cw / 2, -ch / 2); tx.globalAlpha = 1; }
 		if (msk) {
 			tx.globalCompositeOperation = "destination-in";
@@ -251,11 +260,10 @@
 			else tx.drawImage(L.mask, -cw / 2, -ch / 2);
 		}
 		tx.restore();
-		if (fx && (fx.under || fx.over)) {
+		if (fx && fx.over.length) {   // inner shadow / glow, satin, overlays, the inside of a bevel, an inside stroke: on the layer, clipped to its shape
 			tx.save(); tx.setTransform(base[0] * m[0] + base[2] * m[1], base[1] * m[0] + base[3] * m[1], base[0] * m[2] + base[2] * m[3], base[1] * m[2] + base[3] * m[3], base[0] * m[4] + base[2] * m[5] + base[4], base[1] * m[4] + base[3] * m[5] + base[5]);
 			tx.imageSmoothingQuality = "high"; tx.imageSmoothingEnabled = ctx.imageSmoothingEnabled;
-			if (fx.under) { tx.globalCompositeOperation = "destination-over"; tx.drawImage(fx.under, -cw / 2 - fx.mg, -ch / 2 - fx.mg); }
-			if (fx.over) { tx.globalCompositeOperation = "source-over"; tx.drawImage(fx.over, -cw / 2 - fx.mg, -ch / 2 - fx.mg); }
+			fx.over.forEach(function (o) { tx.globalAlpha = o.op; tx.globalCompositeOperation = o.mode; tx.drawImage(o.c, -cw / 2 - fx.mg, -ch / 2 - fx.mg); });
 			tx.restore();
 		}
 		ctx.save(); ctx.setTransform(1, 0, 0, 1, 0, 0); ctx.globalAlpha = op; ctx.globalCompositeOperation = L.blend; ctx.drawImage(t, 0, 0); ctx.restore();
@@ -373,7 +381,7 @@
 	function takeSnapshot(label) {
 		var d = PE.doc, sel = null;
 		if (PE.sel) { if (lastSel.obj && lastSel.ver === PE.sel.ver && lastSel.c === PE.sel.c) sel = lastSel.snap; else { sel = clone(PE.sel.c); lastSel = { ver: PE.sel.ver, c: PE.sel.c, snap: sel, obj: PE.sel }; } }
-		return { label: label, w: d.w, h: d.h, active: d.activeId, layers: d.layers.map(snapLayer), sel: sel, comps: JSON.stringify(d.comps || []), t: Date.now() };
+		return { label: label, w: d.w, h: d.h, active: d.activeId, layers: d.layers.map(snapLayer), sel: sel, comps: JSON.stringify(d.comps || []), light: d.light ? Object.assign({}, d.light) : null, t: Date.now() };
 	}
 	PE.commit = function (label) {
 		if (!PE.doc) return; PE.dirty = true;
@@ -386,7 +394,7 @@
 		var d = PE.doc; d.w = e.w; d.h = e.h; d.layers = e.layers.map(function (l) {
 			var L = PE.makeLayer({ canvas: clone(l.snap.c), type: l.meta.type, name: l.meta.name, text: l.meta.text }); for (var k in l.meta) if (k !== "text" && k !== "eq" && k !== "crop" && k !== "fx") L[k] = l.meta[k]; L.crop = l.meta.crop ? Object.assign({}, l.meta.crop) : null; L.fx = l.meta.fx ? JSON.parse(JSON.stringify(l.meta.fx)) : null; L.text = l.meta.text ? JSON.parse(JSON.stringify(l.meta.text)) : null; L.eq = l.meta.eq ? JSON.parse(JSON.stringify(l.meta.eq)) : null;
 			L.mask = l.snap.m ? clone(l.snap.m) : null; L.rev = l.snap.rev; L._snap = l.snap; return L; });
-		d.comps = JSON.parse(e.comps || "[]"); d.activeId = e.active; if (!PE.layerById(d.activeId) && d.layers.length) d.activeId = d.layers[d.layers.length - 1].id;
+		d.comps = JSON.parse(e.comps || "[]"); d.light = e.light ? Object.assign({}, e.light) : null; d.activeId = e.active; if (!PE.layerById(d.activeId) && d.layers.length) d.activeId = d.layers[d.layers.length - 1].id;
 		PE.sel = e.sel ? { c: clone(e.sel), ver: ++PE.selSeq } : null; PE.relink(); PE.emit("sel"); PE.emit("history"); PE.emit("layers"); PE.emit("comps"); PE.emit("docsize"); PE.invalidate(); PE.scheduleAutosave && PE.scheduleAutosave();
 	}
 	PE.selSeq = 1000;
@@ -566,7 +574,7 @@
 			if (L.mask) jobs.push(canvasBytes(L.mask).then(function (u) { files.push({ name: "mask-" + L.id + ".png", data: u }); }));
 		});
 		return Promise.all(jobs).then(function () {
-			files.unshift({ name: "project.json", data: new TextEncoder().encode(JSON.stringify({ app: "MES Photo Editor", v: 2, pid: d.pid || (d.pid = P.newProjectId()), w: d.w, h: d.h, name: d.name, active: d.activeId, next: d.next, layers: metas, comps: d.comps || [] })) });
+			files.unshift({ name: "project.json", data: new TextEncoder().encode(JSON.stringify({ app: "MES Photo Editor", v: 2, pid: d.pid || (d.pid = P.newProjectId()), w: d.w, h: d.h, name: d.name, active: d.activeId, next: d.next, layers: metas, comps: d.comps || [], light: d.light || null })) });
 			return new Blob([I.zipStore(files)], { type: "application/zip" });
 		});
 	};
@@ -593,7 +601,7 @@
 		return Promise.all(p.layers.map(function (m, i) {
 			return loadPng(by["layer-" + m.id + ".png"]).then(function (c) { var L = PE.makeLayer({ canvas: c, name: m.name, type: m.type, text: m.text }); L.id = m.id; L.eq = m.eq || null; L.src = m.src || (m.type === "group" ? null : { how: fileName === "autosave" ? "autosave" : "project", file: fileName === "autosave" ? "" : fileName || "" }); ["cx", "cy", "sx", "sy", "rot", "visible", "opacity", "blend", "locked", "group", "collapsed"].forEach(function (k) { if (m[k] !== undefined) L[k] = m[k]; }); L.crop = m.crop ? P.clampCrop(m.crop, c.width, c.height) : null; L.fx = m.fx && typeof m.fx === "object" ? m.fx : null; L.maskOff = !!m.maskOff; layers[i] = L; return m.hasMask ? loadPng(by["mask-" + m.id + ".png"]).then(function (mc) { L.mask = mc; }) : null; });
 		})).then(function () {
-			PE.doc = { w: p.w, h: p.h, layers: layers, activeId: p.active, next: p.next || 1000, name: p.name || "Untitled", comps: p.comps || [], pid: p.pid || opts.pid || P.newProjectId(), file: PE.mkSrc(fileName === "autosave" ? { how: "autosave" } : Object.assign({ how: "project", file: fileName }, meta || {}, { how: "project" })) }; PE.relink(); PE.sel = null; H.stack = []; H.idx = -1; lastSel = { ver: -1 };
+			PE.doc = { w: p.w, h: p.h, layers: layers, activeId: p.active, next: p.next || 1000, name: p.name || "Untitled", comps: p.comps || [], light: p.light && typeof p.light === "object" ? { angle: +p.light.angle || 120, alt: +p.light.alt || 30 } : null, pid: p.pid || opts.pid || P.newProjectId(), file: PE.mkSrc(fileName === "autosave" ? { how: "autosave" } : Object.assign({ how: "project", file: fileName }, meta || {}, { how: "project" })) }; PE.relink(); PE.sel = null; H.stack = []; H.idx = -1; lastSel = { ver: -1 };
 			PE.commit("Open project"); PE.dirty = false; PE.emit("docsize"); PE.emit("sel"); PE.fit();
 		});
 	}

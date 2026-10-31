@@ -107,33 +107,7 @@
 		if (pop && e.key === "Escape" && !(PE.toolId === "eyedropper" && e.target === PE.els.over)) { e.stopPropagation(); e.preventDefault(); PE.colorPopClose(); } }, true);
 	window.addEventListener("resize", function () { if (pop && pop.el.getBoundingClientRect().left > window.innerWidth - 40) place(findInput() || pop.el); });
 
-	/* ================= layer style: outline + drop shadow / glow (non-destructive) ================= */
-	function P2(k, label, min, max, val, step, unit) { return { k: k, label: label, type: "range", min: min, max: max, step: step || 1, val: val, unit: unit || "" }; }
-	PE.dlgLayerStyle = function (L, focus) {
-		L = L || PE.active(); if (!PE.doc || !L) { PE.toast("Open an image first"); return; }
-		if (PE.isGroup(L)) { PE.toast("Select a layer (not a group) to give it an outline or shadow"); return; }
-		if (L.locked) { PE.toast("This layer is locked"); return; }
-		var id = L.id, cur = function () { return PE.layerById(id); }, old = L.fx ? JSON.parse(JSON.stringify(L.fx)) : null, F = JSON.parse(JSON.stringify(PE.FXDEF)), o = Object.assign(F.outline, old && old.outline || {}), s = Object.assign(F.shadow, old && old.shadow || {});
-		if (focus === "outline" && !(old && old.outline && old.outline.on)) o.on = true; if (focus === "shadow" && !(old && old.shadow && old.shadow.on)) s.on = true;
-		if (focus === "glow" && !(old && old.shadow && old.shadow.on)) { s.on = true; s.dx = 0; s.dy = 0; s.blur = 18; s.c = "#ffffff"; s.op = 0.9; }
-		var wrap = el("div", "pe-lstyle"), done = false;
-		var f = PE.form([{ k: "oOn", label: "Outline", type: "check", val: o.on, help: "A line around the layer's visible pixels (a cut-out, a text, a logo...). It follows the shape and updates when you paint, crop or mask the layer." },
-			{ k: "oC", label: "Outline colour", type: "color", val: o.c }, P2("oW", "Outline width", 1, 80, o.w, 1, "px"),
-			{ k: "oPos", label: "Position", type: "seg", options: [["outside", "Outside"], ["center", "Centre"], ["inside", "Inside"]], val: o.pos, help: "<p><b>Outside</b>: around the edge, the layer is not covered.</p><p><b>Centre</b>: half outside, half over the edge.</p><p><b>Inside</b>: over the edge of the layer itself (nothing is added outside).</p>" },
-			P2("oOp", "Outline opacity", 5, 100, Math.round(o.op * 100), 1, "%"),
-			{ k: "sOn", label: "Shadow / glow", type: "check", val: s.on, help: "A soft shadow behind the layer. For a glow set X and Y to 0, choose a light colour and raise the blur." },
-			{ k: "sC", label: "Shadow colour", type: "color", val: s.c }, P2("sOp", "Shadow opacity", 5, 100, Math.round(s.op * 100), 1, "%"), P2("sB", "Blur", 0, 80, s.blur, 1, "px"), P2("sX", "Shadow X", -80, 80, s.dx, 1, "px"), P2("sY", "Shadow Y", -80, 80, s.dy, 1, "px")], function () { vis(); live(); });
-		wrap.appendChild(f.el); wrap.appendChild(el("p", "pe-hint2", "The style stays editable: open Layer → Layer style again (or the fx button on the layer) to change or remove it. Nothing in the layer itself is changed."));
-		function row(k) { return f.inputs[k] && (f.inputs[k].inp.closest(".pe-row") || f.inputs[k].inp.parentNode); }
-		function vis() { var v = f.get(); ["oC", "oW", "oPos", "oOp"].forEach(function (k) { var r = row(k); if (r) r.style.display = v.oOn ? "" : "none"; }); ["sC", "sOp", "sB", "sX", "sY"].forEach(function (k) { var r = row(k); if (r) r.style.display = v.sOn ? "" : "none"; }); }
-		function build() { var v = f.get(); return { outline: { on: !!v.oOn, w: +v.oW, c: v.oC, pos: v.oPos, op: v.oOp / 100 }, shadow: { on: !!v.sOn, c: v.sC, op: v.sOp / 100, blur: +v.sB, dx: +v.sX, dy: +v.sY } }; }
-		function live() { var Lc = cur(); if (!Lc) return; var fx = build(); Lc.fx = fx.outline.on || fx.shadow.on ? fx : null; PE.invalidate(); }
-		vis(); live();
-		PE.modal({ title: "Layer style: " + L.name, body: wrap, onClose: function () { if (!done) { var Lc = cur(); if (Lc) { Lc.fx = old; PE.invalidate(); } } }, buttons: [
-			{ label: "Remove style", act: function (m) { done = true; var Lc = cur(); if (Lc) { Lc.fx = null; PE.commit("Remove layer style"); } m.close(); } },
-			{ label: "Cancel", act: function (m) { m.close(); } },
-			{ label: "Apply", primary: true, act: function (m) { done = true; live(); PE.commit("Layer style"); PE.emit("layers"); m.close(); } }] });
-	};
+	/* the Layer Style dialog (PE.dlgLayerStyle) moved to layerstyle.js (round 8: the full Photoshop-style set of effects) */
 
 	/* ================= layer masks: the guide ================= */
 	var MASKHELP = "<ol class=\"pe-steps\"><li><b>Add a mask.</b> Select a layer and press <b>◑ Mask</b>. Nothing changes yet: a white box appears next to the layer's picture in the Layers list. That box is the mask.</li>"

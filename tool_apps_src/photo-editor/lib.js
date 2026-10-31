@@ -504,7 +504,226 @@ var MESPixel = (function () {
 	/* a random id for a project (kept in project.json, so autosaves of the same project from different files and sessions line up) */
 	function newProjectId(rand) { rand = rand || Math.random; var s = "p"; for (var i = 0; i < 12; i++) s += "abcdefghijklmnopqrstuvwxyz0123456789"[Math.floor(rand() * 36)]; return s; }
 
-	var api = { rgbToHsv: rgbToHsv, hsvToRgb: hsvToRgb, parseColor: parseColor, lightness: lightness, edt: edt, outlineAlpha: outlineAlpha, normToolLayout: normToolLayout, moveTool: moveTool, clampCrop: clampCrop, dragCrop: dragCrop, shiftCrop: shiftCrop, projectKind: projectKind, projectBase: projectBase, projectFileName: projectFileName, isZipBytes: isZipBytes, zipEntries: zipEntries, projectPrefix: projectPrefix, pruneRecent: pruneRecent, upsertRecent: upsertRecent, agoText: agoText, diskChanged: diskChanged, layerFileNames: layerFileNames, newProjectId: newProjectId,
+
+	/* ================= layer styles (Photoshop / Photopea style), pure maths =================
+	   A layer style is worked out from the layer's alpha (0-255, with a transparent margin round it) as a list of planes: each plane is a coverage
+	   (Float32 0-1) with one colour (or an RGBA picture for the gradient overlay), a blend mode and an opacity, drawn either UNDER the layer
+	   (drop shadow, outer glow, the outside of a bevel, an outside stroke) or OVER it (inner shadow, inner glow, satin, colour / gradient overlay, the
+	   inside of a bevel, an inside / centre stroke), already clipped to where they belong. Sizes are in the layer's own pixels (geo.sc converts from
+	   image pixels), angles are on the image (geo.vec turns an image vector into the layer's axes, so a rotated layer keeps its light from upper left).
+	   Blend modes are canvas globalCompositeOperation names ("source-over" = Normal, "lighter" = Linear Dodge). */
+	var FXDEF = {
+		fill: 1,
+		bevel: { on: false, style: "inner", tech: "smooth", depth: 100, dir: "up", size: 5, soften: 0, angle: 120, alt: 30, gl: true, hiMode: "screen", hiC: "#ffffff", hiOp: 0.75, shMode: "multiply", shC: "#000000", shOp: 0.75 },
+		outline: { on: false, w: 3, c: "#000000", pos: "outside", op: 1, mode: "source-over" },
+		ishadow: { on: false, c: "#000000", op: 0.75, mode: "multiply", angle: 120, dist: 5, choke: 0, size: 5, gl: true },
+		iglow: { on: false, c: "#ffffbe", op: 0.75, mode: "screen", size: 5, choke: 0, src: "edge" },
+		satin: { on: false, c: "#000000", op: 0.5, mode: "multiply", angle: 19, dist: 11, size: 14, invert: true },
+		color: { on: false, c: "#ff0000", op: 1, mode: "source-over" },
+		grad: { on: false, op: 1, mode: "source-over", type: "linear", angle: 90, scale: 100, reverse: false, stops: [{ p: 0, c: "#000000", a: 1 }, { p: 1, c: "#ffffff", a: 1 }] },
+		oglow: { on: false, c: "#ffffbe", op: 0.75, mode: "screen", size: 5, spread: 0 },
+		shadow: { on: false, c: "#000000", op: 0.75, mode: "multiply", angle: 120, dist: 5, spread: 0, blur: 5, gl: true, knock: true }
+	};
+	var FXKEYS = ["bevel", "outline", "ishadow", "iglow", "satin", "color", "grad", "oglow", "shadow"];
+	/* a complete style object from a stored one (older styles had outline {on,w,c,pos,op} and shadow {on,c,op,blur,dx,dy}) */
+	function fxNorm(fx) {
+		var o = { fill: fx && fx.fill != null ? clamp(+fx.fill, 0, 1) : 1 };
+		FXKEYS.forEach(function (k) { var d = FXDEF[k], s = fx && fx[k]; o[k] = Object.assign({}, d, s || {}); });
+		var sh = fx && fx.shadow;
+		if (sh && sh.angle == null && (sh.dx != null || sh.dy != null)) { var dx = +sh.dx || 0, dy = +sh.dy || 0; o.shadow.dist = Math.round(Math.hypot(dx, dy) * 10) / 10; o.shadow.angle = o.shadow.dist ? Math.round(Math.atan2(dy, -dx) * 180 / Math.PI) : 120; o.shadow.gl = false; if (!sh.mode) o.shadow.mode = "source-over"; if (sh.knock == null) o.shadow.knock = true; if (sh.spread == null) o.shadow.spread = 0; }
+		if (fx && fx.outline && !fx.outline.mode) o.outline.mode = "source-over";
+		o.grad.stops = (o.grad.stops && o.grad.stops.length >= 2 ? o.grad.stops : FXDEF.grad.stops).map(function (s) { return { p: clamp(+s.p || 0, 0, 1), c: parseColor(s.c) || "#000000", a: s.a == null ? 1 : clamp(+s.a, 0, 1) }; }).sort(function (a, b) { return a.p - b.p; });
+		return o;
+	}
+	function fxAny(fx) { if (!fx) return false; var o = fxNorm(fx); if (o.fill < 1) return true; for (var i = 0; i < FXKEYS.length; i++) { var e = o[FXKEYS[i]]; if (e.on && (FXKEYS[i] !== "outline" || e.w > 0)) return true; } return false; }
+	/* the angle a shadow-like effect uses (its own, or the image's global light) */
+	function fxAngle(e, light) { return e.gl && light && light.angle != null ? +light.angle : +e.angle; }
+	/* the offset (image px, y down) of a shadow cast away from a light at `angle` degrees (Photoshop: 120 = light from the upper left) */
+	function fxOffset(angle, dist) { var a = angle * Math.PI / 180; return { x: -Math.cos(a) * dist, y: Math.sin(a) * dist }; }
+	/* how far (image px) a style reaches past the layer's pixels */
+	function fxReach(fx, light) {
+		if (!fx) return 0; var o = fxNorm(fx), r = 0;
+		if (o.outline.on && o.outline.pos !== "inside") r = Math.max(r, o.outline.pos === "center" ? o.outline.w / 2 : o.outline.w);
+		if (o.shadow.on) r = Math.max(r, o.shadow.blur * 1.6 + o.shadow.dist + 2);
+		if (o.oglow.on) r = Math.max(r, o.oglow.size * 1.6 + 2);
+		if (o.bevel.on && o.bevel.style !== "inner") r = Math.max(r, o.bevel.size + o.bevel.soften * 2 + 2);
+		return Math.ceil(r) + 2;
+	}
+	/* signed distance to the shape's edge (+ inside, - outside), half-pixel accurate; anti-aliased edge pixels use their alpha */
+	function sdField(alpha, w, h) {
+		var n = w * h, ins = new Uint8Array(n), outs = new Uint8Array(n), sd = new Float32Array(n);
+		for (var i = 0; i < n; i++) { if (alpha[i] >= 128) ins[i] = 1; else outs[i] = 1; }
+		var dO = edt(outs, w, h), dI = edt(ins, w, h);
+		for (var j = 0; j < n; j++) { var a = alpha[j], s = ins[j] ? Math.sqrt(dO[j]) - 0.5 : 0.5 - Math.sqrt(dI[j]); if (a > 0 && a < 255 && Math.abs(s) <= 1) s = a / 255 - 0.5; sd[j] = s; }
+		return sd;
+	}
+	/* coverage of the shape grown (+) or shrunk (-) by `off` pixels */
+	function sdCover(sd, off) { var n = sd.length, o = new Float32Array(n); off = off || 0; for (var i = 0; i < n; i++) { var v = sd[i] + off + 0.5; o[i] = v <= 0 ? 0 : v >= 1 ? 1 : v; } return o; }
+	function boxPassF(src, dst, w, h, r, horiz) {
+		r = Math.max(0, Math.round(r)); if (r === 0) { dst.set(src); return; }
+		var len = horiz ? w : h, lines = horiz ? h : w, step = horiz ? 1 : w, lstep = horiz ? w : 1, div = 2 * r + 1;
+		for (var l = 0; l < lines; l++) {
+			var o = l * lstep, first = src[o], last = src[o + (len - 1) * step], sum = (r + 1) * first;
+			for (var j = 0; j < r; j++) sum += src[o + Math.min(j, len - 1) * step];
+			for (var i = 0; i < len; i++) { var ai = i + r, add = ai < len ? src[o + ai * step] : last, rem = i - r - 1 < 0 ? first : src[o + (i - r - 1) * step]; sum += add - rem; dst[o + i * step] = sum / div; }
+		}
+	}
+	/* gaussian-like blur of a Float32 plane (three box passes), in place; sigma in pixels */
+	function blurF(a, w, h, sigma) {
+		if (!(sigma > 0.3)) return a; var tmp = new Float32Array(a.length), bx = boxSizes(sigma, 3);
+		for (var p = 0; p < 3; p++) { boxPassF(a, tmp, w, h, bx[p], true); boxPassF(tmp, a, w, h, bx[p], false); }
+		return a;
+	}
+	/* move a plane by (dx, dy) whole pixels; what comes in from outside is `fill` */
+	function shiftF(a, w, h, dx, dy, fill) {
+		dx = Math.round(dx); dy = Math.round(dy); var o = new Float32Array(a.length); if (fill) o.fill(fill);
+		for (var y = 0; y < h; y++) { var sy = y - dy; if (sy < 0 || sy >= h) continue; for (var x = 0; x < w; x++) { var sx = x - dx; if (sx >= 0 && sx < w) o[y * w + x] = a[sy * w + sx]; } }
+		return o;
+	}
+	function mulF(a, b) { for (var i = 0; i < a.length; i++) a[i] *= b[i]; return a; }
+	function invF(a) { for (var i = 0; i < a.length; i++) a[i] = 1 - a[i]; return a; }
+	/* colour of a gradient (stops [{p 0-1, c hex, a 0-1}], sorted) at t: [r, g, b, a 0-1] */
+	function gradAt(stops, t) {
+		t = clamp(t, 0, 1); if (!stops.length) return [0, 0, 0, 1]; var s0 = stops[0], s1 = stops[stops.length - 1];
+		if (t <= s0.p) { var c0 = hexToRgb(s0.c); return [c0[0], c0[1], c0[2], s0.a]; } if (t >= s1.p) { var c1 = hexToRgb(s1.c); return [c1[0], c1[1], c1[2], s1.a]; }
+		for (var i = 1; i < stops.length; i++) { var b = stops[i]; if (t <= b.p) { var a = stops[i - 1], k = b.p > a.p ? (t - a.p) / (b.p - a.p) : 0, ca = hexToRgb(a.c), cb = hexToRgb(b.c); return [ca[0] + (cb[0] - ca[0]) * k, ca[1] + (cb[1] - ca[1]) * k, ca[2] + (cb[2] - ca[2]) * k, a.a + (b.a - a.a) * k]; } }
+		return [0, 0, 0, 1];
+	}
+	/* the gradient overlay's colour for every pixel (RGBA, straight alpha) over the box {x, y, w, h}; dir = unit vector (layer axes) start -> end */
+	function gradPlane(w, h, box, g, dir) {
+		var out = new Uint8ClampedArray(w * h * 4), cx = box.x + box.w / 2, cy = box.y + box.h / 2, sc = Math.max(0.1, (g.scale || 100) / 100), ux = dir.x, uy = dir.y, vx = -uy, vy = ux;
+		var half = Math.max(0.5, (Math.abs(ux) * box.w + Math.abs(uy) * box.h) / 2) * sc, rad = Math.max(0.5, Math.hypot(box.w, box.h) / 2 * sc), lut = [];
+		for (var q = 0; q <= 1024; q++) lut.push(gradAt(g.stops, q / 1024));
+		var a0 = Math.atan2(uy, ux);
+		for (var y = 0; y < h; y++) for (var x = 0; x < w; x++) {
+			var px = x + 0.5 - cx, py = y + 0.5 - cy, along = px * ux + py * uy, across = px * vx + py * vy, t;
+			if (g.type === "radial") t = Math.hypot(px, py) / rad; else if (g.type === "reflected") t = Math.abs(along) / half; else if (g.type === "diamond") t = (Math.abs(along) + Math.abs(across)) / rad;
+			else if (g.type === "angle") { var an = Math.atan2(py, px) - a0; t = ((an / (2 * Math.PI)) % 1 + 1) % 1; } else t = 0.5 + along / (2 * half);
+			if (g.reverse) t = 1 - t; var c = lut[Math.round(clamp(t, 0, 1) * 1024)], i = (y * w + x) * 4; out[i] = c[0]; out[i + 1] = c[1]; out[i + 2] = c[2]; out[i + 3] = Math.round(c[3] * 255);
+		}
+		return out;
+	}
+	/* Bevel and Emboss: highlight and shadow amounts (0-1) inside and outside the shape, from a height map built on the signed distance field and lit
+	   from `light` = {x, y} (unit vector toward the light in the layer's pixel axes) at `b.alt` degrees above the surface. */
+	function bevelPlanes(sd, w, h, b, light) {
+		var n = w * h, size = Math.max(0.5, +b.size || 1), H = new Float32Array(n), st = b.style || "inner", tech = b.tech || "smooth";
+		for (var i = 0; i < n; i++) {
+			var s = sd[i], t;
+			if (st === "outer") t = s >= 0 ? 1 : clamp(1 + s / size, 0, 1);
+			else if (st === "emboss" || st === "stroke") t = clamp(0.5 + s / size, 0, 1);
+			else if (st === "pillow") t = clamp(Math.abs(s) / (size / 2), 0, 1);
+			else t = s <= 0 ? 0 : clamp(s / size, 0, 1);
+			var f = tech === "smooth" ? 1 - (1 - t) * (1 - t) : t;
+			H[i] = f * size;
+		}
+		if (tech === "smooth") blurF(H, w, h, Math.max(0.6, size * 0.22)); else if (tech === "soft") blurF(H, w, h, 0.9);
+		if (b.soften > 0) blurF(H, w, h, b.soften / 2);
+		/* Shading like Photoshop's rather than a strict Lambert model (where a very steep slope turns away from a low light and goes dark again): how
+		   much a slope faces the light (cos of the angle between its downhill direction and the light) times how steep it is (saturating, so Depth
+		   raises the contrast until it is full), stronger for a low light (altitude 0) and faint for a light straight overhead (90). */
+		var k = (+b.depth || 100) / 100 * (b.dir === "down" ? -1 : 1), alt = clamp(+b.alt || 0, 0, 90) * Math.PI / 180, A = 0.15 + 1.35 * Math.cos(alt), lx = light.x, ly = light.y;
+		var inner = st !== "outer", outer = st !== "inner", hiIn = inner ? new Float32Array(n) : null, shIn = inner ? new Float32Array(n) : null, hiOut = outer ? new Float32Array(n) : null, shOut = outer ? new Float32Array(n) : null;
+		for (var y = 0; y < h; y++) for (var x = 0; x < w; x++) {
+			var j = y * w + x, gx = (H[x < w - 1 ? j + 1 : j] - H[x > 0 ? j - 1 : j]) / 2 * k, gy = (H[y < h - 1 ? j + w : j] - H[y > 0 ? j - w : j]) / 2 * k, gl = Math.sqrt(gx * gx + gy * gy);
+			if (gl < 1e-6) continue;
+			var v = (-gx * lx - gy * ly) / gl * (1 - Math.exp(-gl * 1.2)) * A, hi = v > 0 ? (v > 1 ? 1 : v) : 0, sh = v < 0 ? (v < -1 ? 1 : -v) : 0, cov = sd[j] + 0.5; cov = cov <= 0 ? 0 : cov >= 1 ? 1 : cov;
+			if (inner) { hiIn[j] = hi * cov; shIn[j] = sh * cov; } if (outer) { hiOut[j] = hi * (1 - cov); shOut[j] = sh * (1 - cov); }
+		}
+		return { hiIn: hiIn, shIn: shIn, hiOut: hiOut, shOut: shOut };
+	}
+	/* bounding box of the opaque part of an alpha plane (for the gradient overlay); the whole plane when empty */
+	function alphaBox(alpha, w, h) {
+		var x0 = w, y0 = h, x1 = -1, y1 = -1; for (var y = 0; y < h; y++) for (var x = 0; x < w; x++) if (alpha[y * w + x] > 8) { if (x < x0) x0 = x; if (x > x1) x1 = x; if (y < y0) y0 = y; if (y > y1) y1 = y; }
+		return x1 < 0 ? { x: 0, y: 0, w: w, h: h } : { x: x0, y: y0, w: x1 - x0 + 1, h: y1 - y0 + 1 };
+	}
+	/* every plane of a layer style. alpha = Uint8 (w x h, with margin); base = {sd} (cached signed distance, optional);
+	   geo = {sc: layer px per image px (1 = no scaling), vec(x, y) -> image vector in layer axes, light: {angle, alt} (global light)}.
+	   -> [{k, under, a (Float32 coverage), rgb [r,g,b] | rgba (Uint8ClampedArray), mode, op}] in drawing order (under first, bottom to top, then over). */
+	function fxPlanes(alpha, w, h, fx, geo, base) {
+		var o = fxNorm(fx), n = w * h, sc = geo && geo.sc > 0 ? geo.sc : 1, vec = geo && geo.vec || function (x, y) { return { x: x, y: y }; }, light = geo && geo.light || { angle: 120, alt: 30 };
+		var sd = base && base.sd && base.sd.length === n ? base.sd : sdField(alpha, w, h), cov = sdCover(sd, 0), under = [], over = [];
+		var px = function (v) { return (+v || 0) / sc; }, unit = function (x, y) { var v = vec(x, y), l = Math.hypot(v.x, v.y) || 1; return { x: v.x / l, y: v.y / l }; }, rgb = function (c) { return hexToRgb(c); };
+		var knock = o.fill < 1;
+		if (o.shadow.on) { var S = o.shadow, sz = px(S.blur), spr = clamp(+S.spread || 0, 0, 100) / 100, off = fxOffset(fxAngle(S, light), +S.dist || 0), v = vec(off.x, off.y), a = blurF(sdCover(sd, sz * spr), w, h, sz * (1 - spr) / 2); a = shiftF(a, w, h, v.x, v.y, 0); if (knock && S.knock !== false) mulF(a, invF(Float32Array.from(cov))); under.push({ k: "shadow", under: true, a: a, rgb: rgb(S.c), mode: S.mode, op: S.op }); }
+		if (o.oglow.on) { var G = o.oglow, gs = px(G.size), gp = clamp(+G.spread || 0, 0, 100) / 100, ga = blurF(sdCover(sd, gs * gp), w, h, gs * (1 - gp) / 2); if (knock) mulF(ga, invF(Float32Array.from(cov))); under.push({ k: "oglow", under: true, a: ga, rgb: rgb(G.c), mode: G.mode, op: G.op }); }
+		var bv = null; if (o.bevel.on) { var B = o.bevel, la = (B.gl ? light.angle : B.angle) * Math.PI / 180, alt = B.gl && light.alt != null ? light.alt : B.alt; bv = bevelPlanes(sd, w, h, { style: B.style, tech: B.tech, depth: B.depth, dir: B.dir, size: px(B.size), soften: px(B.soften), alt: alt }, unit(Math.cos(la), -Math.sin(la)));
+			if (bv.shOut) under.push({ k: "bevel-sh-out", under: true, a: bv.shOut, rgb: rgb(B.shC), mode: B.shMode, op: B.shOp }); if (bv.hiOut) under.push({ k: "bevel-hi-out", under: true, a: bv.hiOut, rgb: rgb(B.hiC), mode: B.hiMode, op: B.hiOp }); }
+		var ol = o.outline.on && o.outline.w > 0 ? o.outline : null, olA = null;
+		if (ol) {   // the shape grown minus the shape shrunk, from the distance field (exact, anti-aliased, no extra distance transform)
+			var ow = px(ol.w), g1 = sdCover(sd, ol.pos === "inside" ? 0 : ol.pos === "center" ? ow / 2 : ow), g0 = sdCover(sd, ol.pos === "outside" ? 0 : ol.pos === "center" ? -ow / 2 : -ow); olA = g1; for (var q = 0; q < n; q++) { var dv = g1[q] - g0[q]; olA[q] = dv > 0 ? dv : 0; } if (ol.pos === "outside") under.push({ k: "outline", under: true, a: olA, rgb: rgb(ol.c), mode: ol.mode, op: ol.op }); }
+		if (o.ishadow.on) { var I = o.ishadow, isz = px(I.size), ich = clamp(+I.choke || 0, 0, 100) / 100, io = fxOffset(fxAngle(I, light), +I.dist || 0), iv = vec(io.x, io.y), inv = invF(sdCover(sd, -isz * ich)); inv = shiftF(inv, w, h, iv.x, iv.y, 1); blurF(inv, w, h, isz * (1 - ich) / 2); mulF(inv, cov); over.push({ k: "ishadow", a: inv, rgb: rgb(I.c), mode: I.mode, op: I.op }); }
+		if (o.iglow.on) { var J = o.iglow, js = px(J.size), jc = clamp(+J.choke || 0, 0, 100) / 100, ed = blurF(invF(sdCover(sd, -js * jc)), w, h, js * (1 - jc) / 2); if (J.src === "center") invF(ed); mulF(ed, cov); over.push({ k: "iglow", a: ed, rgb: rgb(J.c), mode: J.mode, op: J.op }); }
+		if (o.satin.on) { var T = o.satin, sa = T.angle * Math.PI / 180, sv = vec(Math.cos(sa) * T.dist, -Math.sin(sa) * T.dist), s1 = blurF(shiftF(cov, w, h, sv.x, sv.y, 0), w, h, px(T.size) / 2), s2 = blurF(shiftF(cov, w, h, -sv.x, -sv.y, 0), w, h, px(T.size) / 2), sat = new Float32Array(n); for (var u = 0; u < n; u++) sat[u] = Math.abs(s1[u] - s2[u]); if (T.invert) invF(sat); mulF(sat, cov); over.push({ k: "satin", a: sat, rgb: rgb(T.c), mode: T.mode, op: T.op }); }
+		if (o.color.on) over.push({ k: "color", a: Float32Array.from(cov), rgb: rgb(o.color.c), mode: o.color.mode, op: o.color.op });
+		if (o.grad.on) { var g = o.grad, gaRad = g.angle * Math.PI / 180, dir = unit(Math.cos(gaRad), -Math.sin(gaRad)); over.push({ k: "grad", a: Float32Array.from(cov), rgba: gradPlane(w, h, alphaBox(alpha, w, h), g, dir), mode: g.mode, op: g.op }); }
+		if (bv && bv.shIn) { over.push({ k: "bevel-sh", a: bv.shIn, rgb: rgb(o.bevel.shC), mode: o.bevel.shMode, op: o.bevel.shOp }); over.push({ k: "bevel-hi", a: bv.hiIn, rgb: rgb(o.bevel.hiC), mode: o.bevel.hiMode, op: o.bevel.hiOp }); }
+		if (ol && ol.pos !== "outside") over.push({ k: "outline", a: olA, rgb: rgb(ol.c), mode: ol.mode, op: ol.op });
+		return under.concat(over.map(function (p) { p.under = false; return p; }));
+	}
+	/* ---- Photoshop (ag-psd) layer effects <-> our style ---- */
+	var PSD_MODES = { "normal": "source-over", "multiply": "multiply", "screen": "screen", "overlay": "overlay", "darken": "darken", "lighten": "lighten", "color dodge": "color-dodge", "color burn": "color-burn", "hard light": "hard-light", "soft light": "soft-light", "difference": "difference", "exclusion": "exclusion", "hue": "hue", "saturation": "saturation", "color": "color", "luminosity": "luminosity", "linear dodge": "lighter" };
+	function modeFromPsd(m, notes, what) { var k = String(m || "normal").toLowerCase(); if (PSD_MODES[k]) return PSD_MODES[k]; if (notes) notes.push(what + ": blend mode “" + m + "” is drawn as Normal"); return "source-over"; }
+	function modeToPsd(m) { for (var k in PSD_MODES) if (PSD_MODES[k] === m) return k; return "normal"; }
+	function colorFromPsd(c) {
+		if (!c) return "#000000"; if (c.r != null) return rgbToHex(c.r, c.g, c.b); if (c.fr != null) return rgbToHex(c.fr * 255, c.fg * 255, c.fb * 255);
+		if (c.k != null && c.c == null) { var g = 255 - clamp(c.k, 0, 100) * 2.55; return rgbToHex(g, g, g); }
+		if (c.h != null && c.s != null && c.b != null) { var rgb = hsvToRgb(c.h, c.s / 100, c.b / 100); return rgbToHex(rgb[0], rgb[1], rgb[2]); }
+		if (c.c != null && c.m != null) { var K = c.k / 100; return rgbToHex(255 * (1 - c.c / 100) * (1 - K), 255 * (1 - c.m / 100) * (1 - K), 255 * (1 - c.y / 100) * (1 - K)); }
+		return "#000000";
+	}
+	function colorToPsd(hex) { var c = hexToRgb(hex); return { r: c[0], g: c[1], b: c[2] }; }
+	/* a UnitsValue (or plain number) in pixels; scale = the effects' own scale (1 = 100%) */
+	function unitsPx(u, scale) { if (u == null) return 0; var v = typeof u === "number" ? u : +u.value || 0; if (u && u.units === "Percent") return v; return v * (scale || 1); }
+	function opac(v, d) { if (v == null) return d; v = +v; return v > 1 ? v / 100 : v; }
+	function pct(u) { if (u == null) return 0; var v = typeof u === "number" ? u : +u.value || 0; return clamp(v, 0, 100); }
+	function on(e) { return !!e && e.enabled !== false && e.present !== false; }
+	/* ag-psd's layer.effects (+ fillOpacity) -> {fx (our style or null), notes [strings: what could not be drawn]} */
+	function fxFromPsd(eff, fillOpacity, globalAngle, globalAlt) {
+		var notes = [], fx = JSON.parse(JSON.stringify(FXDEF)), any = false; if (fillOpacity != null && fillOpacity < 1) { fx.fill = clamp(fillOpacity, 0, 1); any = true; }
+		if (!eff || eff.disabled) { if (eff && eff.disabled) notes.push("the layer's effects were switched off in the file (kept off)"); return { fx: any ? fx : null, notes: notes, light: null }; }
+		var s = eff.scale || 1, gA = globalAngle == null ? 120 : globalAngle, gAlt = globalAlt == null ? 30 : globalAlt;
+		var ang = function (e, d) { return e.useGlobalLight ? gA : e.angle == null ? d : e.angle; };
+		var ds = (eff.dropShadow || []).filter(on); if (ds.length) { var d = ds[0]; Object.assign(fx.shadow, { on: true, c: colorFromPsd(d.color), op: opac(d.opacity, 0.75), mode: modeFromPsd(d.blendMode, notes, "Drop shadow"), angle: ang(d, 120), gl: !!d.useGlobalLight, dist: unitsPx(d.distance, s), blur: unitsPx(d.size, s), spread: pct(d.choke), knock: d.layerConceals !== false }); any = true; if (ds.length > 1) notes.push("Drop shadow: " + ds.length + " shadows, only the first is drawn"); if (d.contour && d.contour.name && !/linear/i.test(d.contour.name)) notes.push("Drop shadow: contour “" + d.contour.name + "” is drawn as Linear"); }
+		var is = (eff.innerShadow || []).filter(on); if (is.length) { var q = is[0]; Object.assign(fx.ishadow, { on: true, c: colorFromPsd(q.color), op: opac(q.opacity, 0.75), mode: modeFromPsd(q.blendMode, notes, "Inner shadow"), angle: ang(q, 120), gl: !!q.useGlobalLight, dist: unitsPx(q.distance, s), size: unitsPx(q.size, s), choke: pct(q.choke) }); any = true; if (is.length > 1) notes.push("Inner shadow: only the first of " + is.length + " is drawn"); }
+		if (on(eff.outerGlow)) { var g = eff.outerGlow; Object.assign(fx.oglow, { on: true, c: colorFromPsd(g.color), op: opac(g.opacity, 0.75), mode: modeFromPsd(g.blendMode, notes, "Outer glow"), size: unitsPx(g.size, s), spread: pct(g.choke) }); any = true; if (g.noise) notes.push("Outer glow: noise is left out"); }
+		if (on(eff.innerGlow)) { var ig = eff.innerGlow; Object.assign(fx.iglow, { on: true, c: colorFromPsd(ig.color), op: opac(ig.opacity, 0.75), mode: modeFromPsd(ig.blendMode, notes, "Inner glow"), size: unitsPx(ig.size, s), choke: pct(ig.choke), src: ig.source === "center" ? "center" : "edge" }); any = true; }
+		if (on(eff.bevel)) { var b = eff.bevel, ST = { "inner bevel": "inner", "outer bevel": "outer", "emboss": "emboss", "pillow emboss": "pillow", "stroke emboss": "stroke" }, TE = { "smooth": "smooth", "chisel hard": "hard", "chisel soft": "soft" };
+			Object.assign(fx.bevel, { on: true, style: ST[b.style] || "inner", tech: TE[b.technique] || "smooth", depth: b.strength == null ? 100 : Math.round(+b.strength * 1000) / 10, dir: b.direction === "down" ? "down" : "up", size: unitsPx(b.size, s), soften: unitsPx(b.soften, s), angle: ang(b, 120), alt: b.useGlobalLight ? gAlt : b.altitude == null ? 30 : b.altitude, gl: !!b.useGlobalLight,
+				hiMode: modeFromPsd(b.highlightBlendMode || "screen", notes, "Bevel highlight"), hiC: colorFromPsd(b.highlightColor || { r: 255, g: 255, b: 255 }), hiOp: opac(b.highlightOpacity, 0.75), shMode: modeFromPsd(b.shadowBlendMode || "multiply", notes, "Bevel shadow"), shC: colorFromPsd(b.shadowColor), shOp: opac(b.shadowOpacity, 0.75) }); any = true;
+			if (b.style === "stroke emboss") notes.push("Bevel and emboss: Stroke Emboss is drawn as Emboss"); if (b.contour && b.contour.name && !/linear/i.test(b.contour.name)) notes.push("Bevel and emboss: gloss contour “" + b.contour.name + "” is drawn as Linear"); if (b.useTexture) notes.push("Bevel and emboss: Texture is left out"); if (b.useShape) notes.push("Bevel and emboss: Contour (shape) is left out"); }
+		var sf = (eff.solidFill || []).filter(on); if (sf.length) { var f = sf[0]; Object.assign(fx.color, { on: true, c: colorFromPsd(f.color), op: opac(f.opacity, 1), mode: modeFromPsd(f.blendMode, notes, "Color overlay") }); any = true; }
+		var go = (eff.gradientOverlay || []).filter(on); if (go.length) { var gr = go[0], gd = gr.gradient || {}, stops = [];
+			if (gd.type === "noise" || !gd.colorStops) notes.push("Gradient overlay: a noise gradient is drawn black to white");
+			else { var ops = (gd.opacityStops || []).map(function (o) { return { p: clamp((o.location || 0) / 4096, 0, 1), a: opac(o.opacity, 1) }; }).sort(function (a, b) { return a.p - b.p; }), aAt = function (p) { if (!ops.length) return 1; if (p <= ops[0].p) return ops[0].a; for (var i = 1; i < ops.length; i++) if (p <= ops[i].p) { var A = ops[i - 1], Bq = ops[i], k = Bq.p > A.p ? (p - A.p) / (Bq.p - A.p) : 0; return A.a + (Bq.a - A.a) * k; } return ops[ops.length - 1].a; };
+				gd.colorStops.forEach(function (c) { var p = clamp((c.location || 0) / 4096, 0, 1); stops.push({ p: p, c: colorFromPsd(c.color), a: aAt(p) }); }); stops.sort(function (a, b) { return a.p - b.p; }); }
+			var GT = { linear: "linear", radial: "radial", angle: "angle", reflected: "reflected", diamond: "diamond" };
+			Object.assign(fx.grad, { on: true, op: opac(gr.opacity, 1), mode: modeFromPsd(gr.blendMode, notes, "Gradient overlay"), type: GT[gr.type] || "linear", angle: gr.angle == null ? 90 : gr.angle, scale: gr.scale == null ? 100 : Math.round(+gr.scale * 1000) / 10, reverse: !!gr.reverse }); if (stops.length >= 2) fx.grad.stops = stops; any = true; if (gr.align === false) notes.push("Gradient overlay: “Align with layer” off is drawn aligned"); }
+		var sk = (eff.stroke || []).filter(on); if (sk.length) { var k2 = sk[0], sc2 = colorFromPsd(k2.color); if (k2.fillType === "gradient" && k2.gradient && k2.gradient.colorStops && k2.gradient.colorStops[0]) { sc2 = colorFromPsd(k2.gradient.colorStops[0].color); notes.push("Stroke: a gradient stroke is drawn in its first colour"); } else if (k2.fillType === "pattern") notes.push("Stroke: a pattern stroke is drawn in one colour");
+			Object.assign(fx.outline, { on: true, w: unitsPx(k2.size, s), c: sc2, pos: k2.position || "outside", op: opac(k2.opacity, 1), mode: modeFromPsd(k2.blendMode, notes, "Stroke") }); any = true; if (sk.length > 1) notes.push("Stroke: only the first of " + sk.length + " strokes is drawn"); }
+		if (on(eff.satin)) { var sa = eff.satin; Object.assign(fx.satin, { on: true, c: colorFromPsd(sa.color), op: opac(sa.opacity, 0.5), mode: modeFromPsd(sa.blendMode, notes, "Satin"), angle: sa.angle == null ? 19 : sa.angle, dist: unitsPx(sa.distance, s), size: unitsPx(sa.size, s), invert: sa.invert !== false }); any = true; if (sa.contour && sa.contour.name && !/linear|gaussian/i.test(sa.contour.name)) notes.push("Satin: contour “" + sa.contour.name + "” is drawn as Gaussian"); }
+		if (on(eff.patternOverlay)) notes.push("Pattern overlay is left out (patterns are not supported yet)");
+		return { fx: any ? fx : null, notes: notes };
+	}
+	/* our style -> ag-psd layer.effects (only what is switched on) + fillOpacity. ag-psd keeps Depth (strength) and the gradient scale as fractions (3.39 =
+	   339%) and will not write a Percent unit for Spread / Choke (ag-psd 30.1.1 rejects it), so those are written as a plain number in Pixels units. */
+	function fxToPsd(fx, globalAngle) {
+		var o = fxNorm(fx), e = {}, U = function (v) { return { units: "Pixels", value: Math.round(v * 100) / 100 }; }, P = function (v) { return { units: "Pixels", value: Math.round(v) }; }, gA = globalAngle == null ? 120 : globalAngle, any = false;
+		if (o.shadow.on) { var S = o.shadow; e.dropShadow = [{ enabled: true, present: true, showInDialog: true, color: colorToPsd(S.c), opacity: S.op, blendMode: modeToPsd(S.mode), angle: S.gl ? gA : S.angle, useGlobalLight: !!S.gl, distance: U(S.dist), size: U(S.blur), choke: P(S.spread), layerConceals: S.knock !== false, antialiased: false }]; any = true; }
+		if (o.ishadow.on) { var I = o.ishadow; e.innerShadow = [{ enabled: true, present: true, showInDialog: true, color: colorToPsd(I.c), opacity: I.op, blendMode: modeToPsd(I.mode), angle: I.gl ? gA : I.angle, useGlobalLight: !!I.gl, distance: U(I.dist), size: U(I.size), choke: P(I.choke) }]; any = true; }
+		if (o.oglow.on) { var G = o.oglow; e.outerGlow = { enabled: true, present: true, showInDialog: true, color: colorToPsd(G.c), opacity: G.op, blendMode: modeToPsd(G.mode), size: U(G.size), choke: P(G.spread), source: "edge", range: 50, jitter: 0, noise: 0 }; any = true; }
+		if (o.iglow.on) { var J = o.iglow; e.innerGlow = { enabled: true, present: true, showInDialog: true, color: colorToPsd(J.c), opacity: J.op, blendMode: modeToPsd(J.mode), size: U(J.size), choke: P(J.choke), source: J.src === "center" ? "center" : "edge", range: 50, jitter: 0, noise: 0 }; any = true; }
+		if (o.bevel.on) { var B = o.bevel, ST = { inner: "inner bevel", outer: "outer bevel", emboss: "emboss", pillow: "pillow emboss", stroke: "stroke emboss" }, TE = { smooth: "smooth", hard: "chisel hard", soft: "chisel soft" };
+			e.bevel = { enabled: true, present: true, showInDialog: true, style: ST[B.style] || "inner bevel", technique: TE[B.tech] || "smooth", strength: Math.round(B.depth) / 100, direction: B.dir === "down" ? "down" : "up", size: U(B.size), soften: U(B.soften), angle: B.gl ? gA : B.angle, altitude: B.alt, useGlobalLight: !!B.gl,
+				highlightBlendMode: modeToPsd(B.hiMode), highlightColor: colorToPsd(B.hiC), highlightOpacity: B.hiOp, shadowBlendMode: modeToPsd(B.shMode), shadowColor: colorToPsd(B.shC), shadowOpacity: B.shOp }; any = true; }
+		if (o.satin.on) { var T = o.satin; e.satin = { enabled: true, present: true, showInDialog: true, color: colorToPsd(T.c), opacity: T.op, blendMode: modeToPsd(T.mode), angle: T.angle, distance: U(T.dist), size: U(T.size), invert: !!T.invert }; any = true; }
+		if (o.color.on) { e.solidFill = [{ enabled: true, present: true, showInDialog: true, color: colorToPsd(o.color.c), opacity: o.color.op, blendMode: modeToPsd(o.color.mode) }]; any = true; }
+		if (o.grad.on) { var g = o.grad; e.gradientOverlay = [{ enabled: true, present: true, showInDialog: true, opacity: g.op, blendMode: modeToPsd(g.mode), align: true, scale: g.scale / 100, reverse: !!g.reverse, type: g.type, angle: g.angle, dither: false,
+			gradient: { name: "Custom", type: "solid", smoothness: 4096, colorStops: g.stops.map(function (s) { return { color: colorToPsd(s.c), location: Math.round(s.p * 4096), midpoint: 50 }; }), opacityStops: g.stops.map(function (s) { return { opacity: s.a, location: Math.round(s.p * 4096), midpoint: 50 }; }) } }]; any = true; }
+		if (o.outline.on && o.outline.w > 0) { var L = o.outline; e.stroke = [{ enabled: true, present: true, showInDialog: true, size: U(L.w), position: L.pos === "center" ? "center" : L.pos === "inside" ? "inside" : "outside", fillType: "color", blendMode: modeToPsd(L.mode), opacity: L.op, color: colorToPsd(L.c) }]; any = true; }
+		return { effects: any ? Object.assign({ scale: 1 }, e) : null, fillOpacity: o.fill };
+	}
+
+	var api = { FXDEF: FXDEF, FXKEYS: FXKEYS, fxNorm: fxNorm, fxAny: fxAny, fxAngle: fxAngle, fxOffset: fxOffset, fxReach: fxReach, sdField: sdField, sdCover: sdCover, blurF: blurF, shiftF: shiftF, gradAt: gradAt, gradPlane: gradPlane, bevelPlanes: bevelPlanes, alphaBox: alphaBox, fxPlanes: fxPlanes, fxFromPsd: fxFromPsd, fxToPsd: fxToPsd, colorFromPsd: colorFromPsd, modeFromPsd: modeFromPsd, modeToPsd: modeToPsd, rgbToHsv: rgbToHsv, hsvToRgb: hsvToRgb, parseColor: parseColor, lightness: lightness, edt: edt, outlineAlpha: outlineAlpha, normToolLayout: normToolLayout, moveTool: moveTool, clampCrop: clampCrop, dragCrop: dragCrop, shiftCrop: shiftCrop, projectKind: projectKind, projectBase: projectBase, projectFileName: projectFileName, isZipBytes: isZipBytes, zipEntries: zipEntries, projectPrefix: projectPrefix, pruneRecent: pruneRecent, upsertRecent: upsertRecent, agoText: agoText, diskChanged: diskChanged, layerFileNames: layerFileNames, newProjectId: newProjectId,
 		unionBox: unionBox, boxesTouch: boxesTouch, rectFrom: rectFrom, snapTargets: snapTargets, snapAxis: snapAxis, snapBox: snapBox, guidesOn: guidesOn, linSolve: linSolve, scaleAbout: scaleAbout, wrapLines: wrapLines, richMask: richMask, richEdit: richEdit, richSet: richSet, richAll: richAll, richNorm: richNorm, richSegs: richSegs, fitFontSize: fitFontSize, folderProject: folderProject, caretLine: caretLine, hitInLine: hitInLine, wordAt: wordAt, describeSource: describeSource, bytesText: bytesText, panelClamp: panelClamp, panelKey: panelKey, clamp: clamp, hexToRgb: hexToRgb, rgbToHex: rgbToHex, rgbToHsl: rgbToHsl, hslToRgb: hslToRgb, histogram: histogram, identityLUT: identityLUT, applyLUT: applyLUT, levelsLUT: levelsLUT, curveLUT: curveLUT,
 		brightnessContrast: brightnessContrast, exposure: exposure, hueSat: hueSat, vibrance: vibrance, temperature: temperature, invert: invert, grayscale: grayscale, sepia: sepia, threshold: threshold, posterize: posterize,
 		gaussianBlur: gaussianBlur, boxBlur: boxBlur, unsharp: unsharp, noise: noise, pixelate: pixelate, vignette: vignette, convolve: convolve, floodMask: floodMask, growShrinkMask: growShrinkMask, featherMask: featherMask, invertMask: invertMask,
