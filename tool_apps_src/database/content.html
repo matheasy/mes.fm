@@ -1,0 +1,48 @@
+	<script>try{if(!localStorage.getItem('pageMode')){document.documentElement.classList.add('page-wide')}}catch(e){}</script>
+	<div class="tu vdb" id="vdb">
+		<p class="vdb-sum" id="vdb-sum" aria-live="polite">Loading the video list…</p>
+		<div class="tu-card vdb-ctl">
+			<div class="vdb-srow">
+				<label class="vdb-sr" for="vdb-q">Search the videos</label>
+				<input class="tu-input vdb-q" id="vdb-q" type="search" placeholder="Search titles, descriptions, series… (press / to start typing)" autocomplete="off" spellcheck="false">
+				<div class="tu-seg vdb-views" id="vdb-views" role="group" aria-label="View"><button type="button" data-v="grid" aria-pressed="true">▦ Grid</button><button type="button" data-v="list" aria-pressed="false">☰ List</button><button type="button" data-v="table" aria-pressed="false">▤ Table</button></div>
+			</div>
+			<div class="vdb-row">
+				<div class="tu-field tu-field--sm"><label class="tu-label" for="vdb-sort">Sort by</label>
+					<select class="tu-select" id="vdb-sort"><option value="date">Date</option><option value="title">Title</option><option value="views">Views</option><option value="length">Length</option></select></div>
+				<button type="button" class="tu-btn tu-btn--ghost vdb-dir" id="vdb-dir" aria-label="Sort direction">↓ Newest first</button>
+				<div class="tu-field tu-field--sm"><label class="tu-label" for="vdb-yr">Year</label><select class="tu-select" id="vdb-yr"><option value="">All years</option></select></div>
+				<div class="tu-field tu-field--sm"><label class="tu-label" for="vdb-live">Livestreams</label>
+					<select class="tu-select" id="vdb-live"><option value="">Include</option><option value="only">Only livestreams</option><option value="hide">Leave out</option></select></div>
+				<span class="vdb-grow"></span>
+				<button type="button" class="tu-btn tu-btn--ghost" id="vdb-share">🔗 Copy link to this list</button>
+				<button type="button" class="tu-btn tu-btn--ghost" id="vdb-csv">⬇ CSV</button>
+				<button type="button" class="tu-btn tu-btn--ghost" id="vdb-reset">Reset</button>
+			</div>
+			<div class="vdb-chipset"><div class="vdb-ct">Series</div><div class="tu-chips vdb-chips" id="vdb-series" role="group" aria-label="Series"></div></div>
+			<div class="vdb-chipset"><div class="vdb-ct">Math topics</div><div class="tu-chips vdb-chips" id="vdb-math" role="group" aria-label="Math topics"></div></div>
+			<div class="vdb-chipset"><div class="vdb-ct">Has a link on</div><div class="tu-chips vdb-chips" id="vdb-plat" role="group" aria-label="Platforms"></div></div>
+		</div>
+		<div class="vdb-res" id="vdb-res" aria-live="polite"></div>
+		<div class="vdb-pager" id="vdb-pager"></div>
+		<div class="tu-toast" id="vdb-toast" role="status" aria-live="polite"></div>
+
+		<div class="tu-seo">
+			<h2>Every MES video, with every place you can watch it</h2>
+			<p>This is the full list of Math Easy Solutions (MES) videos: the math tutorials from 2011 on, Problems Plus, MES Math Q/A, the livestreams, #911Truth, the Hutchison Effect, MES Experiments, Anti-Gravity, Free Energy, PizzaGate, MES Truth and more. For each video you get the date, the length, the YouTube views and a link to every copy: YouTube, the Hive post (with the written notes), 3Speak, Rumble, Odysee, BitChute, Telegram, the mes.fm page and the PDF notes where there are some.</p>
+			<h3>How to use it</h3>
+			<dl>
+				<dt>Search</dt><dd>Type any words: every word has to appear in the title, the description or the series name. <code>#250</code> finds video number 250.</dd>
+				<dt>Series, math topics and platforms</dt><dd>Click a chip to see only that series or topic. The numbers next to each chip are how many videos match everything else you picked. "Has a link on" keeps only videos that have a copy on that site, for example only the ones on 3Speak.</dd>
+				<dt>Grid, List and Table</dt><dd>Grid shows the thumbnails, List is compact, Table shows everything on one line. Copy links copies the title and every link of a video, ready to paste.</dd>
+				<dt>Share a list</dt><dd>Everything you pick is in the address bar, so "Copy link to this list" shares exactly what you see, for example all Hutchison Effect videos on Rumble, longest first. CSV downloads the list for a spreadsheet.</dd>
+			</dl>
+			<h3>Questions</h3>
+			<h4>Why does a video have no YouTube link?</h4>
+			<p>YouTube removed it, so the other copies (Hive, 3Speak, Rumble, Odysee, BitChute) are the way to watch it.</p>
+			<h4>How current are the views?</h4>
+			<p>They are the YouTube view counts from the last time the list was updated (the date is at the top). Views on the other sites are not counted.</p>
+			<h4>Are all videos here?</h4>
+			<p>Every public video of the MES and MES Truth channels: the videos and the livestreams. Shorts are not listed.</p>
+		</div>
+	</div>

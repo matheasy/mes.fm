@@ -1,5 +1,5 @@
 {
- "generated": "2026-10-29",
+ "generated": "2026-10-30",
  "calculators": [
   {
    "href": "/bending-stress-calculator",
@@ -100,6 +100,14 @@
  ],
  "tools": [
   {
+   "href": "/database",
+   "title": "Video Database",
+   "icon": "/img/database-logo.png",
+   "desc": "Every MES video since 2011 with its links on YouTube, Hive, 3Speak, Rumble, Odysee, BitChute and Telegram. Search, filter by series or site, sort and share.",
+   "added": "2026-10-30",
+   "kind": "tool"
+  },
+  {
    "href": "/kids",
    "title": "MES Kids",
    "icon": "/img/kids-logo.png",
@@ -186,17 +194,17 @@
    "desc": "2026 US midterms with every race’s market odds and a build-your-own seat map, Canada and BC results with seats-vs-votes tools, and a world election calendar. Neutral, sourced.",
    "added": "2026-10-27",
    "kind": "tool"
-  },
-  {
-   "href": "/la-liga-picks",
-   "title": "La Liga Picks",
-   "icon": "/img/la-liga-picks-logo.png",
-   "desc": "Predict the La Liga table and track it live: top 4, Europe, relegation, exact places, friends and a leaderboard.",
-   "added": "2026-10-27",
-   "kind": "tool"
   }
  ],
  "latest": [
+  {
+   "href": "/database",
+   "title": "Video Database",
+   "icon": "/img/database-logo.png",
+   "desc": "Every MES video since 2011 with its links on YouTube, Hive, 3Speak, Rumble, Odysee, BitChute and Telegram. Search, filter by series or site, sort and share.",
+   "added": "2026-10-30",
+   "kind": "tool"
+  },
   {
    "href": "/kids",
    "title": "MES Kids",
@@ -250,14 +258,6 @@
    "title": "Video Editor",
    "icon": "/img/video-logo.png",
    "desc": "Cut, split and join videos on a multi-track timeline, add titles and pictures, cross-fade, remove background noise and export MP4 up to 4K. A free Camtasia-style editor; nothing is uploaded.",
-   "added": "2026-10-28",
-   "kind": "tool"
-  },
-  {
-   "href": "/audio",
-   "title": "Audio Editor",
-   "icon": "/img/audio-logo.png",
-   "desc": "Remove background noise with AI, cut, fade and mix tracks, set the loudness for YouTube or podcasts and export WAV, MP3 or M4A. Nothing is uploaded.",
    "added": "2026-10-28",
    "kind": "tool"
   }

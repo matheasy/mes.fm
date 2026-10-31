@@ -166,6 +166,15 @@ APPS = {
                      tag="See your real microphone level.", accent="#7c3aed", dark="#5b21b6", tint="#efe7fd",
                      desc="Free online mic test: see your microphone's real input level in dBFS on an OBS-style meter, find out if you are too quiet or clipping, measure room noise, record and play back 10 seconds, and test your speakers left and right. Private.",
                      js_v="1"),
+    # MES Video Database (2026-10-30, mes.fm/database): every public MES video with its links on YouTube, Hive, 3Speak, Rumble, Odysee, BitChute,
+    # Telegram, mes.fm and the PDF notes; search, series / topic / platform chips, sort, Grid / List / Table, share links (?q=&s=&p=&yr=&sort=&view=).
+    # Data = mes.fm/database/data.json from update_video_database.py (the owner's xlsx + the repo's YouTube / Hive lists + yt-dlp); lib.js = MESVDB,
+    # tests tool_apps_src/database-tests.js.
+    "database": dict(title="MES Video Database", page_title="MES Video Database: Every Video and Where to Watch It",
+                     tag="Every MES video, every place to watch it.", accent="#1d5fa8", dark="#164a85", tint="#e2ecf8",
+                     desc="Search every Math Easy Solutions video since 2011: math tutorials, livestreams, #911Truth, Hutchison Effect, experiments and more, with links to YouTube, Hive, 3Speak, Rumble, Odysee, BitChute and Telegram. Filter by series, topic or site, sort by date, views or length.",
+                     meta_desc="Search every Math Easy Solutions video since 2011, with links to YouTube, Hive, 3Speak, Rumble, Odysee, BitChute and Telegram. Filter by series, topic or site.",
+                     js_v="1"),
     # MES Storage Analyzer (2026-10-29, mes.fm/storage): WinDirStat / DaisyDisk in the browser. lib.js = MESStorage (scan of a FileSystemDirectoryHandle,
     # also run as a Blob Web Worker from its own source; model in typed arrays, squarify, sunburst, lists, CSV/JSON), tests tool_apps_src/storage-tests.js.
     "storage": dict(title="MES Storage Analyzer", page_title="Storage Analyzer: See What Is Taking Up Space in a Folder",
