@@ -70,6 +70,7 @@ TOOLS = [  # (directory, compact-bar title[, home path of the site the page belo
     ("domain-lookup", "Domain Lookup"),
     ("site-traffic", "Site Traffic"),
     ("ping", "Ping Test"),
+    ("database", "Video Database"),
     ("mic-test", "Mic Test"),
     ("file-check", "File Safety Check"),
     ("storage", "Storage Analyzer"),
