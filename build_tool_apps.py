@@ -1278,6 +1278,42 @@ def build(slug, cfg, old, tpl):
     return page
 
 
+# iPhone apps (released 2026-10-30): pages whose calculator is also an App Store app get an "iPhone App" link in the info bar (hide-able
+# utility item after Tools), in the burger menu (before Browser Extensions: app links rank above extensions) and a small pill under the page
+# description. All three carry `mes-applink`, which the apps' build-www.py scripts never extract (they only take the tool's own block).
+_APP_FIT = ("MES Fitness Calculators", "https://apps.apple.com/us/app/id6824113713")
+APP_STORE = {
+    "bmicalculator": ("MES BMI Calculator", "https://apps.apple.com/us/app/id6824009307"),
+    "gradecalculator": ("MES Grade Calculator", "https://apps.apple.com/us/app/id6824035179"),
+    "weighted-average-calculator": ("MES Grade Calculator", "https://apps.apple.com/us/app/id6824035179"),
+    "gpacalculator": ("MES GPA Calculator", "https://apps.apple.com/us/app/id6824052607"),
+    **{s: _APP_FIT for s in ("bmr-calculator", "tdee-calculator", "body-fat-calculator", "ideal-weight-calculator", "waist-to-hip-ratio-calculator",
+                             "macro-calculator", "protein-intake-calculator", "water-intake-calculator", "heart-rate-zone-calculator",
+                             "calories-burned-calculator", "pace-calculator", "one-rep-max-calculator", "sleep-calculator")},
+}
+_PHONE = ('<svg viewBox="0 0 24 24" width="18" height="18" aria-hidden="true" focusable="false" style="width:1.1em;height:1.1em;vertical-align:-0.2em;margin-right:0.4em;" fill="none" '
+          'stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="6" y="2" width="12" height="20" rx="2.5"></rect><path d="M11 18.5h2"></path></svg>')
+
+
+def add_app_links(page, slug):
+    if slug not in APP_STORE or "mes-applink" in page:
+        return page
+    name, url = APP_STORE[slug]
+    title = "Get the free %s app on the App Store" % name
+    info = ('<li class="info-bar__item info-bar__item--utility mes-applink" style="display:none !important;"><a class="info-bar__item__text" href="%s" target="_blank" '
+            'rel="noopener" title="%s">%siPhone App</a></li>' % (url, title, _PHONE))
+    nav = '<li class="navbar__item mes-applink"><a class="navbar__link" href="%s" target="_blank" rel="noopener" title="%s">%siPhone App</a></li>' % (url, title, _PHONE)
+    pill = ('<p class="mes-applink mes-apppill"><a href="%s" target="_blank" rel="noopener">%sNew: get <b>%s</b> free on the App Store (iPhone &amp; iPad)</a></p>'
+            '<style>.mes-apppill{margin:.4em 0 .2em;font-size:.95em}.mes-apppill a{display:inline-flex;align-items:center;gap:.1em;padding:.35em .85em;border-radius:999px;'
+            'border:1px solid currentColor;text-decoration:none}.mes-apppill a:hover{text-decoration:underline}</style>' % (url, _PHONE, name))
+    tools = "<li class=\"info-bar__item\"><a class=\"info-bar__item__text\" href='https://mes.fm/tools.html'>Tools</a></li>"
+    be = '<li class="navbar__item"><a class="navbar__link" href="/browser">Browser Extensions</a></li>'
+    page = page.replace(tools, tools + info, 1).replace(be, nav + be, 1)
+    import re as _re
+    page = _re.sub(r'(<p class="page-description">.*?</p>)', lambda m: m.group(1) + pill, page, count=1, flags=_re.S)
+    return page
+
+
 def build_from_source(slug, cfg, tpl):
     d = SRC / cfg.get("src", slug)    # `src`: share another app's source folder (the Timer family: one script, several pages)
     css = (SRC / "_shared.css").read_text(encoding="utf-8")
@@ -1328,6 +1364,7 @@ def build_from_source(slug, cfg, tpl):
         page = page.replace('<meta name="twitter:title" content="%s">' % cfg["title"], '<meta name="twitter:title" content="%s">' % dt, 1)
     if cfg.get("logo_from"):          # the same brand's logo / favicon / share image, but this page's own name, links and Home
         page = page.replace("/%s/img/logo" % slug, "/%s/img/logo" % cfg["logo_from"])
+    page = add_app_links(page, slug)
     # these are calculators: the info bar reads Home | Calculators | Tools (cross-link both ways, see add_cross_links.py)
     tools_li = "<li class=\"info-bar__item\"><a class=\"info-bar__item__text\" href='https://mes.fm/tools.html'>Tools</a></li>"
     page = page.replace(tools_li, "<li class=\"info-bar__item\"><a class=\"info-bar__item__text\" href='https://mes.fm/calculators'>Calculators</a></li>" + tools_li.replace("tools.html", "tools"))
