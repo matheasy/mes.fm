@@ -35,6 +35,10 @@ BOOKS = {
     "911-holding-truth": dict(pdf=os.path.join(MES, "911-holding-truth-pdf", "9-11-holding-the-truth-andrew-johnson.pdf"),
                               title_page=1, skip_pages={2}),
 }
+# pictures swapped for higher-resolution copies found elsewhere (aj_books_src/hires-replacements.json): --apply never
+# overwrites them; the page keeps the PDF picture's width/height (same display size), the lightbox shows the big file
+HIRES = os.path.join(ROOT, "aj_books_src", "hires-replacements.json")
+HIRES_FILES = {r["file"] for r in json.load(open(HIRES, encoding="utf-8"))} if os.path.exists(HIRES) else set()
 esc = lambda t: html.escape(t, quote=False)
 attr = lambda t: html.escape(t, quote=True)
 CHAR_FIX = {"": "•", "": "▪", "": "➢", "": "✓", " ": " ", "": " "}
@@ -155,7 +159,7 @@ class Book:
         else:
             name += ".jpg"; buf = io.BytesIO(); im.save(buf, "JPEG", quality=80, optimize=True, progressive=True)
         self.img_bytes += buf.tell()
-        if self.apply:
+        if self.apply and name not in HIRES_FILES:
             os.makedirs(self.imgdir, exist_ok=True)
             open(os.path.join(self.imgdir, name), "wb").write(buf.getvalue())
         return dict(src=f"/{self.slug}/img/{name}", w=im.width, h=im.height)
