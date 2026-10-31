@@ -227,7 +227,7 @@ def build():
     T = sub1(r'  <script>\s*// playlist-view-toggle.*?</script>\n\n', "", T)
     T = sub1(r'  <script>\s*// view-mode:.*?</script>\n\n', "", T)
     T = sub1(r'  <script>\s*// auto-hide-controls:.*?</script>\n\n', "", T)
-    T = sub1(r'  <script src="https://cdn\.jsdelivr\.net/npm/hls\.js@1/dist/hls\.min\.js"></script>\n(?:  <script src="/main_js/video-speed-hold\.js[^"]*" defer></script>\n)?  <script>\s*// speak-video-hls:.*?</script>\n\n', "", T)
+    T = sub1(r'  <script src="https://cdn\.jsdelivr\.net/npm/hls\.js@1/dist/hls\.min\.js"></script>\n(?:  <script src="/main_js/video-speed-hold\.js[^"]*" defer></script>\n)?(?:  <script src="/main_js/video-chapters\.js[^"]*" defer></script>\n)?  <script>\s*// speak-video-hls:.*?</script>\n\n', "", T)
     # Jump-to / in-page links must also unfold a collapsed chapter
     T = sub1(r"'\.toc-sidebar a, \.toc-mobile a'", "'.toc-sidebar a, .toc-mobile a, .post-body a[href^=\"#\"]'", T)
     # Jumping to a folded section should open the section itself too, not just its ancestors

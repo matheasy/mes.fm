@@ -1872,6 +1872,7 @@ ${bodyHtml}
 
   <script src="https://cdn.jsdelivr.net/npm/hls.js@1/dist/hls.min.js"></script>
   <script src="/main_js/video-speed-hold.js?v=1" defer></script>
+  <script src="/main_js/video-chapters.js?v=1" defer></script>
   <script>
     // speak-video-hls: plays each 3Speak-hosted HLS stream embedded above directly
     // (via hls.js). Manifest URLs are resolved at build time (see resolve3Speak in

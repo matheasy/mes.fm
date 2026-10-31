@@ -1973,6 +1973,7 @@ Here is news footage of the Columbia disaster, note again that almost 40% of the
 
   <script src="https://cdn.jsdelivr.net/npm/hls.js@1/dist/hls.min.js"></script>
   <script src="/main_js/video-speed-hold.js?v=1" defer></script>
+  <script src="/main_js/video-chapters.js?v=1" defer></script>
   <script>
     // speak-video-hls (build_em304_article.py): the 3Speak manifest is resolved at RUNTIME from play.3speak.tv/api/embed
     // (a re-upload keeps working without a rebuild); if 3Speak fails, the player swaps itself for the YouTube embed.
@@ -1987,7 +1988,9 @@ Here is news footage of the Columbia disaster, note again that almost 40% of the
         if (fellBack) return;
         fellBack = true;
         frame = document.createElement('iframe');
-        frame.src = 'https://www.youtube-nocookie.com/embed/' + YT_ID + (start ? '?start=' + start + '&autoplay=1' : '');
+        // enablejsapi: main_js/video-chapters.js drives this iframe through the YouTube IFrame API (chapter bar, seeking)
+        frame.src = 'https://www.youtube-nocookie.com/embed/' + YT_ID + '?enablejsapi=1&origin=' + encodeURIComponent(location.origin) +
+          (start ? '&start=' + start + '&autoplay=1' : '');
         frame.title = 'YouTube video';
         frame.allow = 'accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture';
         frame.allowFullscreen = true;
@@ -2020,10 +2023,12 @@ Here is news footage of the Columbia disaster, note again that almost 40% of the
         if (!a || e.ctrlKey || e.metaKey || e.shiftKey || e.button) return;
         e.preventDefault();
         var t = parseInt(a.getAttribute('data-t'), 10) || 0;
+        // video-chapters.js seeks whichever player is showing (the <video> or the YouTube iframe, without reloading it)
+        if (window.MESChapters && window.MESChapters.seek(t, embed)) return;
         var y = embed.getBoundingClientRect().top + window.pageYOffset - 70;
         window.scrollTo({ top: Math.max(0, y), behavior: 'smooth' });
         if (fellBack) {
-          if (frame) frame.src = 'https://www.youtube-nocookie.com/embed/' + YT_ID + '?start=' + t + '&autoplay=1';
+          if (frame) frame.src = 'https://www.youtube-nocookie.com/embed/' + YT_ID + '?enablejsapi=1&start=' + t + '&autoplay=1';
           return;
         }
         try { video.currentTime = t; } catch (err) {}

@@ -204,6 +204,7 @@ def video_player_scripts(rec):
         '  </script>\n\n'
         '  <script src="https://cdn.jsdelivr.net/npm/hls.js@1/dist/hls.min.js"></script>\n'
         '  <script src="/main_js/video-speed-hold.js?v=1" defer></script>\n'
+        '  <script src="/main_js/video-chapters.js?v=1" defer></script>\n'
         '  <script>\n'
         '    // q-video: plays the 3Speak-hosted HLS stream for this livestream directly (via hls.js),\n'
         '    // like mes.fm/math-qa-71-conservation-angular-momentum. The manifest URL is resolved at\n'
