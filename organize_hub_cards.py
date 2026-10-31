@@ -16,7 +16,7 @@ from pathlib import Path
 
 SITE = Path(__file__).resolve().parent / "mes.fm"
 APPLY = "--apply" in sys.argv
-TAG = '<script src="/main_js/hub-filter.js?v=4" defer></script><script src="/main_js/newest.js" defer></script>'
+TAG = '<script src="/main_js/hub-filter.js?v=5" defer></script><script src="/main_js/newest.js" defer></script>'
 
 # "popular": slugs shown first, in this order, as a duplicate "Popular" section (only while no search / category is active).
 # Four cards on purpose: two columns (601-899px) fill two full rows, and the 4th carries `hub-pop-extra`, which
@@ -135,6 +135,7 @@ def main():
     if APPLY:
         import subprocess
         subprocess.run([sys.executable, str(Path(__file__).resolve().parent / "build_newest.py"), "--apply"])
+        subprocess.run([sys.executable, str(Path(__file__).resolve().parent / "build_hub_meta.py"), "--apply"])
     else:
         print("(dry run -- pass --apply)")
 
