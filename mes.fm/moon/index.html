@@ -483,21 +483,19 @@
   <meta name="twitter:card" content="summary_large_image">
   <meta name="twitter:image" content="https://mes.fm/moon/img/logo-big.png">
 <!-- JUMP-ASIDE --><link rel="stylesheet" href="/main_js/jump-aside.css?v=1"><!-- /JUMP-ASIDE -->
-<link rel="stylesheet" href="/moon/js/moon-weather.css?v=1"><!-- TOC-FLIP-HEAD --><link rel="stylesheet" href="/main_js/toc-flip.css?v=6"><script>try{var L=localStorage,H=document.documentElement.classList;if(L.getItem('asideSide')==='left')H.add('aside-left');if(L.getItem('pageWide')==='1')H.add('page-wide');if(L.getItem('pageMode')==='theatre')H.add('page-theatre');if(L.getItem('tocHidden')==='1')H.add('toc-hidden');var w=+L.getItem('tocWidth');if(w>=120&&w<=900)document.documentElement.style.setProperty('--toc-swp',w+'px')}catch(e){}</script><!-- /TOC-FLIP-HEAD -->
+<link rel="stylesheet" href="/moon/js/moon-weather.css?v=1"><link rel="stylesheet" href="/moon/js/moon-dash.css?v=1"><!-- TOC-FLIP-HEAD --><link rel="stylesheet" href="/main_js/toc-flip.css?v=6"><script>try{var L=localStorage,H=document.documentElement.classList;if(L.getItem('asideSide')==='left')H.add('aside-left');if(L.getItem('pageWide')==='1')H.add('page-wide');if(L.getItem('pageMode')==='theatre')H.add('page-theatre');if(L.getItem('tocHidden')==='1')H.add('toc-hidden');var w=+L.getItem('tocWidth');if(w>=120&&w<=900)document.documentElement.style.setProperty('--toc-swp',w+'px')}catch(e){}</script><!-- /TOC-FLIP-HEAD -->
 </head>
 <body class="dark">
   <nav class="toc-sidebar" aria-label="Jump to section">
     <div class="toc-title">Jump to</div>
-    <a href="#moon-phase">Moon phase</a>
+    <a href="#today">Today's weather</a>
     <a href="#tonight">Tonight's Moon</a>
-    <a href="#moon-weather">Moon weather</a>
-    <a href="#sky-times">Sun &amp; Moon times</a>
-    <a href="#conditions">Conditions &amp; air quality</a>
     <a href="#today-sky">Today's sky</a>
     <a href="#sun-now">The Sun right now</a>
-    <a href="#sun-year">The Sun's path this year</a>
     <a href="#moon-now">The Moon right now</a>
     <a href="#solar-system">Solar system today</a>
+    <a href="#sun-year">The Sun's path this year</a>
+    <a href="#moon-weather">Moon weather</a>
     <a href="#more-data">Planets &amp; live data</a>
     <a href="#coords">Reading the sky</a>
   </nav>
@@ -570,11 +568,9 @@
     <div class="part-of">Part of <a href="/tools">MES Tools</a> &middot; <a href="/science">MES Science</a></div>
 
     <h1>MES Moon, Sun, Planets &amp; Astronomy &#127765;&#9728;&#65039;</h1>
-    <div class="page-subtitle">A live sky dashboard. It opens on <strong>Richmond, British&nbsp;Columbia,
-      Canada</strong> by default &mdash; type another place below, or use your device's location,
-      to switch. Sun &amp; Moon positions, phase, rise/set times and the charts are computed in your
-      browser; conditions and air quality come from Open-Meteo. Your choice of location is remembered
-      on this device.</div>
+    <div class="page-subtitle">Your morning check: the weather where you are, sunrise and sunset, the Moon and
+      what is in the sky tonight. Opens on <strong>Richmond, BC</strong>; type another place or use your location
+      (remembered on this device). Sky figures are computed in your browser; weather and air quality come from Open-Meteo.</div>
 
     <div class="location-bar">
       <input id="locInput" type="text" autocomplete="off" spellcheck="false"
@@ -588,6 +584,104 @@
     <div class="refresh-bar">
       <button id="refreshBtn" class="refresh-btn" type="button">Refresh now</button>
       <span class="updated-line" id="updatedLine">Loading&hellip;</span>
+    </div>
+
+    <details class="toc-mobile">
+      <summary>Jump to section</summary>
+      <nav class="toc-links" aria-label="Jump to section">
+        <a href="#today">Today's weather</a>
+        <a href="#tonight">Tonight's Moon</a>
+        <a href="#today-sky">Today's sky</a>
+        <a href="#sun-now">The Sun right now</a>
+        <a href="#moon-now">The Moon right now</a>
+        <a href="#solar-system">Solar system today</a>
+        <a href="#sun-year">The Sun's path this year</a>
+        <a href="#moon-weather">Moon weather</a>
+        <a href="#more-data">Planets &amp; live data</a>
+        <a href="#coords">Reading the sky</a>
+      </nav>
+    </details>
+
+    <div class="sections-toolbar">
+      <button id="collapseAllBtn" class="loc-btn" type="button">Collapse all sections</button>
+    </div>
+
+    <h2 id="today">Today in <span id="locName">Richmond, BC</span></h2>
+    <div class="dash" id="dash">
+      <div class="vt-block dh-block" data-vt="now" data-vt-label="Weather now" id="conditions">
+        <div class="vt-visual">
+          <div class="dh-hero" id="dhHero"><p class="section-note">Loading the weather&hellip;</p></div>
+          <div class="dh-hourwrap"><div class="dh-sub">Next 24 hours</div><div class="dh-hourly" id="dhHourly"></div></div>
+        </div>
+        <div class="vt-table">
+          <p class="section-note">For <span id="locName2">Richmond, BC</span>. &ldquo;9&nbsp;AM&rdquo; rows are for 9&nbsp;AM local; the daily high/low, UV and
+          rain chance cover the whole day.</p>
+          <table>
+      <tbody>
+        <tr><th>Now</th><td class="big-value" id="wxNow">&mdash;</td></tr>
+        <tr><th>Today's high / low</th><td class="big-value" id="wxHiLo">&mdash;</td></tr>
+        <tr><th>Feels like (9&nbsp;AM)</th><td id="wxFeels">&mdash;</td></tr>
+        <tr><th>Humidity (9&nbsp;AM)</th><td id="wxHum">&mdash;</td></tr>
+        <tr><th>Wind (9&nbsp;AM)</th><td id="wxWind">&mdash;</td></tr>
+        <tr><th>Cloud cover (now)</th><td id="wxCloud">&mdash;</td></tr>
+        <tr><th>Max UV index today</th><td id="wxUv">&mdash;</td></tr>
+        <tr><th>Chance of rain today</th><td id="wxPop">&mdash;</td></tr>
+        <tr><th>Pressure (now)</th><td id="wxPress">&mdash;</td></tr>
+      </tbody>
+    </table>
+          <div class="vt-scroll" id="dhHourTbl"></div>
+        </div>
+      </div>
+
+      <div class="vt-block dh-block" data-vt="times" data-vt-label="Sun and Moon today" id="sky-times">
+        <div class="vt-visual"><div id="dhTimes"></div></div>
+        <div class="vt-table"><table>
+      <tbody>
+        <tr><th>Temperature now</th><td class="big-value" id="tempNow">&mdash;</td></tr>
+        <tr>
+          <th>Temperature at 9&nbsp;AM <span id="tempTzLabel" class="muted">local</span></th>
+          <td class="big-value" id="temp9am">&mdash;</td>
+        </tr>
+        <tr><th>Sunrise</th><td class="big-value" id="sunrise">&mdash;</td></tr>
+        <tr><th>Sunset</th><td class="big-value" id="sunset">&mdash;</td></tr>
+        <tr><th>Sun duration <span class="muted">(daylight)</span></th><td class="big-value" id="sunDuration">&mdash;</td></tr>
+        <tr><th>Moonrise</th><td class="big-value" id="moonrise">&mdash;</td></tr>
+        <tr><th>Moonset</th><td class="big-value" id="moonset">&mdash;</td></tr>
+        <tr><th>Moon duration <span class="muted">(above horizon)</span></th><td class="big-value" id="moonDuration">&mdash;</td></tr>
+        <tr><th>Moon phase</th><td class="big-value" id="moonphase">&mdash;</td></tr>
+      </tbody>
+    </table></div>
+      </div>
+
+      <div class="vt-block dh-block" data-vt="sky" data-vt-label="Tonight's sky" id="tonight-sky">
+        <div class="vt-visual">
+          <div class="dh-sky">
+            <figure class="viz viz-moon" id="moon-phase">
+              <div class="viz-scroll" id="moonViz"></div>
+              <figcaption class="viz-cap" id="moonVizCap">&mdash;</figcaption>
+            </figure>
+            <div class="dh-planets" id="dhPlanets"></div>
+          </div>
+        </div>
+        <div class="vt-table"><div class="vt-scroll" id="dhPlanetsTbl"></div></div>
+      </div>
+
+      <div class="vt-block dh-block" data-vt="air" data-vt-label="Air quality" id="air">
+        <div class="vt-visual"><div id="dhAir"></div></div>
+        <div class="vt-table"><table>
+      <tbody>
+        <tr><th>Air quality &mdash; US AQI</th><td class="big-value" id="aqUs">&mdash;</td></tr>
+        <tr><th>European AQI</th><td id="aqEu">&mdash;</td></tr>
+        <tr><th>PM2.5 / PM10</th><td id="aqPm">&mdash;</td></tr>
+        <tr><th>Ozone (O&#8323;)</th><td id="aqO3">&mdash;</td></tr>
+        <tr><th>Nitrogen dioxide (NO&#8322;)</th><td id="aqNo2">&mdash;</td></tr>
+      </tbody>
+    </table></div>
+      </div>
+      <p class="source-line">Weather: <a href="https://open-meteo.com/" target="_blank" rel="noopener">Open-Meteo</a> forecast
+        (compare with <a id="wxTodayLink" href="https://weather.com/weather/today/l/49.17,-123.14" target="_blank" rel="noopener">weather.com</a>);
+        air quality: Copernicus (CAMS) via Open-Meteo. Sun, Moon and planets: computed with
+        <a href="https://github.com/cosinekitty/astronomy" target="_blank" rel="noopener">Astronomy&nbsp;Engine</a>.</p>
     </div>
 
     <details class="row-builder" id="rowBuilder" open>
@@ -611,37 +705,78 @@
       <div class="row-preview-wrap"><table class="row-preview" id="rowPreview"></table></div>
     </details>
 
-    <details class="toc-mobile">
-      <summary>Jump to section</summary>
-      <nav class="toc-links" aria-label="Jump to section">
-        <a href="#moon-phase">Moon phase</a>
-        <a href="#tonight">Tonight's Moon</a>
-        <a href="#moon-weather">Moon weather</a>
-        <a href="#sky-times">Sun &amp; Moon times</a>
-        <a href="#conditions">Conditions &amp; air quality</a>
-        <a href="#today-sky">Today's sky</a>
-        <a href="#sun-now">The Sun right now</a>
-        <a href="#sun-year">The Sun's path this year</a>
-        <a href="#moon-now">The Moon right now</a>
-        <a href="#solar-system">Solar system today</a>
-        <a href="#more-data">Planets &amp; live data</a>
-        <a href="#coords">Reading the sky</a>
-      </nav>
-    </details>
-
-    <figure class="viz viz-moon" id="moon-phase">
-      <div class="viz-scroll" id="moonViz"></div>
-      <figcaption class="viz-cap" id="moonVizCap">&mdash;</figcaption>
-    </figure>
-
-    <div class="sections-toolbar">
-      <button id="collapseAllBtn" class="loc-btn" type="button">Collapse all sections</button>
-    </div>
-
     <h2 id="tonight">Tonight's Moon &mdash; <span id="mwTonightLoc">Richmond, BC</span></h2>
     <p class="section-note">The Moon in your own sky, weather-report style: phase, where it is now, rise and set, the best time to look
-    tonight (with the cloud cover from the conditions below) and the next phases. Computed on your device with Astronomy&nbsp;Engine.</p>
+    tonight (with the cloud cover from Today's weather above) and the next phases. Computed on your device with Astronomy&nbsp;Engine.</p>
     <div class="mw-tonight" id="mwTonight"><p class="section-note">Computing&hellip;</p></div>
+
+    <h2 id="today-sky">Today's Sky &mdash; Sun &amp; Moon Altitude</h2>
+    <p class="section-note">How high the Sun (solid) and Moon (dashed) climb above the horizon over the
+    local day. The shaded band is below the horizon; the vertical line marks now.</p>
+    <div class="vt-block" data-vt="daysky" data-vt-label="Sun and Moon altitude">
+      <div class="vt-visual"><figure class="viz viz-wide">
+      <div class="viz-scroll" id="dayViz"></div>
+      <figcaption class="viz-cap" id="dayVizCap">&mdash;</figcaption>
+    </figure></div>
+      <div class="vt-table"><div class="vt-scroll" id="daySkyTbl"></div></div>
+    </div>
+
+    <h2 id="sun-now">The Sun Right Now</h2>
+    <p class="section-note">Apparent geocentric coordinates for the moment shown above (the same
+    from anywhere on Earth). Compare with <a href="https://theskylive.com/sun-info" target="_blank" rel="noopener">theskylive.com/sun-info</a>.</p>
+    <div class="vt-block" data-vt="sun" data-vt-auto="tiles" data-vt-label="The Sun right now">
+      <div class="vt-visual"></div>
+      <div class="vt-table"><table>
+      <tbody>
+        <tr><th>Constellation</th><td class="big-value" id="sunConst">&mdash;</td></tr>
+        <tr><th>Distance from Earth</th><td class="big-value" id="sunDistKm">&mdash;</td></tr>
+        <tr><th>Distance from Earth (AU)</th><td id="sunDistAu">&mdash;</td></tr>
+        <tr><th>Right Ascension</th><td class="big-value" id="sunRa">&mdash;</td></tr>
+        <tr><th>Declination</th><td class="big-value" id="sunDec">&mdash;</td></tr>
+        <tr><th>Magnitude</th><td class="big-value" id="sunMag">&mdash;</td></tr>
+      </tbody>
+    </table></div>
+    </div>
+
+    <h2 id="moon-now">The Moon Right Now</h2>
+    <p class="section-note">Apparent geocentric coordinates for the moment shown above.
+    Compare with <a href="https://theskylive.com/moon-info" target="_blank" rel="noopener">theskylive.com/moon-info</a>.</p>
+    <div class="vt-block" data-vt="moon" data-vt-auto="tiles" data-vt-label="The Moon right now">
+      <div class="vt-visual"></div>
+      <div class="vt-table"><table>
+      <tbody>
+        <tr><th>Constellation</th><td class="big-value" id="moonConst">&mdash;</td></tr>
+        <tr><th>Illumination</th><td id="moonIllum">&mdash;</td></tr>
+        <tr><th>Distance from Earth</th><td class="big-value" id="moonDistKm">&mdash;</td></tr>
+        <tr><th>Distance from Earth (AU)</th><td id="moonDistAu">&mdash;</td></tr>
+        <tr><th>Right Ascension</th><td class="big-value" id="moonRa">&mdash;</td></tr>
+        <tr><th>Declination</th><td class="big-value" id="moonDec">&mdash;</td></tr>
+        <tr><th>Magnitude</th><td class="big-value" id="moonMag">&mdash;</td></tr>
+      </tbody>
+    </table></div>
+    </div>
+
+    <h2 id="solar-system">Earth, Moon &amp; the Solar System Right Now</h2>
+    <p class="section-note">Where the Moon is on its orbit today, and where Earth and the other planets are around the Sun. Press Play to watch time pass, or open the
+    <a href="/solar-system-today">full Solar System Today</a> for every planet, any date, eclipses and more. (Ctrl + scroll to zoom.)</p>
+    <div class="vt-block" data-vt="solar" data-vt-label="The solar system">
+      <div class="vt-visual"><div id="ssEmbed"></div></div>
+      <div class="vt-table"><div class="vt-scroll" id="solarTbl"></div></div>
+    </div>
+
+    <h2 id="sun-year">The Sun's Path This Year</h2>
+    <p class="section-note">The Sun's apparent declination (orange, left axis) and right ascension
+    (blue, right axis) across <span id="yearLabel">the year</span>. Declination swings &plusmn;23.4&deg;
+    between the solstices and is 0&deg; at the equinoxes &mdash; that tilt is what gives us seasons.
+    The four dotted verticals mark this year's equinoxes and solstices; see
+    <a href="#coords">Reading the Sky</a> below for what declination and right ascension mean.</p>
+    <div class="vt-block" data-vt="sunyear" data-vt-label="The Sun through the year">
+      <div class="vt-visual"><figure class="viz viz-wide">
+      <div class="viz-scroll" id="yearViz"></div>
+      <figcaption class="viz-cap" id="yearVizCap">&mdash;</figcaption>
+    </figure></div>
+      <div class="vt-table"><div class="vt-scroll" id="sunYearTbl"></div></div>
+    </div>
 
     <h2 id="moon-weather">Moon Weather &mdash; Conditions on the Moon Right Now</h2>
     <p class="section-note">If the Moon had a weather report: pick a landing site or crater (or click anywhere on the globe) to see
@@ -666,110 +801,8 @@
       water in Cabeus crater (<a href="https://doi.org/10.1126/science.1186986" target="_blank" rel="noopener">Colaprete et al. 2010, LCROSS</a>);
       about 12,500 moonquakes recorded by the Apollo seismometers (<a href="https://science.nasa.gov/moon/moonquakes/" target="_blank" rel="noopener">NASA</a>);
       Earth's temperature records from the <a href="https://wmo.asu.edu/" target="_blank" rel="noopener">WMO archive</a>.
-      Your local temperature is the same Open-Meteo reading shown in Conditions below.</p>
+      Your local temperature is the same Open-Meteo reading shown in Today's weather at the top of the page.</p>
     </details>
-
-    <h2 id="sky-times">Sun &amp; Moon Times &mdash; <span id="locName">Richmond, BC</span></h2>
-    <p class="section-note">Rise and set times for the chosen location's local calendar day.
-    Compare with <a id="wxTodayLink" href="https://weather.com/weather/today/l/49.17,-123.14" target="_blank" rel="noopener">weather.com</a>.</p>
-    <table>
-      <tbody>
-        <tr><th>Temperature now</th><td class="big-value" id="tempNow">&mdash;</td></tr>
-        <tr>
-          <th>Temperature at 9&nbsp;AM <span id="tempTzLabel" class="muted">local</span></th>
-          <td class="big-value" id="temp9am">&mdash;</td>
-        </tr>
-        <tr><th>Sunrise</th><td class="big-value" id="sunrise">&mdash;</td></tr>
-        <tr><th>Sunset</th><td class="big-value" id="sunset">&mdash;</td></tr>
-        <tr><th>Sun duration <span class="muted">(daylight)</span></th><td class="big-value" id="sunDuration">&mdash;</td></tr>
-        <tr><th>Moonrise</th><td class="big-value" id="moonrise">&mdash;</td></tr>
-        <tr><th>Moonset</th><td class="big-value" id="moonset">&mdash;</td></tr>
-        <tr><th>Moon duration <span class="muted">(above horizon)</span></th><td class="big-value" id="moonDuration">&mdash;</td></tr>
-        <tr><th>Moon phase</th><td class="big-value" id="moonphase">&mdash;</td></tr>
-      </tbody>
-    </table>
-    <p class="source-line">Temperature: <a href="https://open-meteo.com/" target="_blank" rel="noopener">Open-Meteo</a> forecast.
-      Rise / set / phase: computed with <a href="https://github.com/cosinekitty/astronomy" target="_blank" rel="noopener">Astronomy&nbsp;Engine</a>.</p>
-
-    <h2 id="conditions">Conditions &amp; Air Quality &mdash; <span id="locName2">Richmond, BC</span></h2>
-    <p class="section-note">&ldquo;9&nbsp;AM&rdquo; rows are for 9&nbsp;AM local; the daily high/low, UV and
-    rain chance cover the whole day. Forecast from <a href="https://open-meteo.com/" target="_blank" rel="noopener">Open-Meteo</a>;
-    air quality from the Copernicus (CAMS) model via Open-Meteo.</p>
-    <table>
-      <tbody>
-        <tr><th>Now</th><td class="big-value" id="wxNow">&mdash;</td></tr>
-        <tr><th>Today's high / low</th><td class="big-value" id="wxHiLo">&mdash;</td></tr>
-        <tr><th>Feels like (9&nbsp;AM)</th><td id="wxFeels">&mdash;</td></tr>
-        <tr><th>Humidity (9&nbsp;AM)</th><td id="wxHum">&mdash;</td></tr>
-        <tr><th>Wind (9&nbsp;AM)</th><td id="wxWind">&mdash;</td></tr>
-        <tr><th>Cloud cover (now)</th><td id="wxCloud">&mdash;</td></tr>
-        <tr><th>Max UV index today</th><td id="wxUv">&mdash;</td></tr>
-        <tr><th>Chance of rain today</th><td id="wxPop">&mdash;</td></tr>
-        <tr><th>Pressure (now)</th><td id="wxPress">&mdash;</td></tr>
-      </tbody>
-    </table>
-    <table>
-      <tbody>
-        <tr><th>Air quality &mdash; US AQI</th><td class="big-value" id="aqUs">&mdash;</td></tr>
-        <tr><th>European AQI</th><td id="aqEu">&mdash;</td></tr>
-        <tr><th>PM2.5 / PM10</th><td id="aqPm">&mdash;</td></tr>
-        <tr><th>Ozone (O&#8323;)</th><td id="aqO3">&mdash;</td></tr>
-        <tr><th>Nitrogen dioxide (NO&#8322;)</th><td id="aqNo2">&mdash;</td></tr>
-      </tbody>
-    </table>
-
-    <h2 id="today-sky">Today's Sky &mdash; Sun &amp; Moon Altitude</h2>
-    <p class="section-note">How high the Sun (solid) and Moon (dashed) climb above the horizon over the
-    local day. The shaded band is below the horizon; the vertical line marks now.</p>
-    <figure class="viz viz-wide">
-      <div class="viz-scroll" id="dayViz"></div>
-      <figcaption class="viz-cap" id="dayVizCap">&mdash;</figcaption>
-    </figure>
-
-    <h2 id="sun-now">The Sun Right Now</h2>
-    <p class="section-note">Apparent geocentric coordinates for the moment shown above (the same
-    from anywhere on Earth). Compare with <a href="https://theskylive.com/sun-info" target="_blank" rel="noopener">theskylive.com/sun-info</a>.</p>
-    <table>
-      <tbody>
-        <tr><th>Constellation</th><td class="big-value" id="sunConst">&mdash;</td></tr>
-        <tr><th>Distance from Earth</th><td class="big-value" id="sunDistKm">&mdash;</td></tr>
-        <tr><th>Distance from Earth (AU)</th><td id="sunDistAu">&mdash;</td></tr>
-        <tr><th>Right Ascension</th><td class="big-value" id="sunRa">&mdash;</td></tr>
-        <tr><th>Declination</th><td class="big-value" id="sunDec">&mdash;</td></tr>
-        <tr><th>Magnitude</th><td class="big-value" id="sunMag">&mdash;</td></tr>
-      </tbody>
-    </table>
-
-    <h2 id="sun-year">The Sun's Path This Year</h2>
-    <p class="section-note">The Sun's apparent declination (orange, left axis) and right ascension
-    (blue, right axis) across <span id="yearLabel">the year</span>. Declination swings &plusmn;23.4&deg;
-    between the solstices and is 0&deg; at the equinoxes &mdash; that tilt is what gives us seasons.
-    The four dotted verticals mark this year's equinoxes and solstices; see
-    <a href="#coords">Reading the Sky</a> below for what declination and right ascension mean.</p>
-    <figure class="viz viz-wide">
-      <div class="viz-scroll" id="yearViz"></div>
-      <figcaption class="viz-cap" id="yearVizCap">&mdash;</figcaption>
-    </figure>
-
-    <h2 id="moon-now">The Moon Right Now</h2>
-    <p class="section-note">Apparent geocentric coordinates for the moment shown above.
-    Compare with <a href="https://theskylive.com/moon-info" target="_blank" rel="noopener">theskylive.com/moon-info</a>.</p>
-    <table>
-      <tbody>
-        <tr><th>Constellation</th><td class="big-value" id="moonConst">&mdash;</td></tr>
-        <tr><th>Illumination</th><td id="moonIllum">&mdash;</td></tr>
-        <tr><th>Distance from Earth</th><td class="big-value" id="moonDistKm">&mdash;</td></tr>
-        <tr><th>Distance from Earth (AU)</th><td id="moonDistAu">&mdash;</td></tr>
-        <tr><th>Right Ascension</th><td class="big-value" id="moonRa">&mdash;</td></tr>
-        <tr><th>Declination</th><td class="big-value" id="moonDec">&mdash;</td></tr>
-        <tr><th>Magnitude</th><td class="big-value" id="moonMag">&mdash;</td></tr>
-      </tbody>
-    </table>
-
-    <h2 id="solar-system">Earth, Moon &amp; the Solar System Right Now</h2>
-    <p class="section-note">Where the Moon is on its orbit today, and where Earth and the other planets are around the Sun. Press Play to watch time pass, or open the
-    <a href="/solar-system-today">full Solar System Today</a> for every planet, any date, eclipses and more. (Ctrl + scroll to zoom.)</p>
-    <div id="ssEmbed"></div>
 
     <h2 id="more-data">Planets &amp; Live Sky Data</h2>
     <p class="section-note">External pages that also update in real time &mdash; handy for planning what to observe tonight.</p>
@@ -942,10 +975,13 @@
         var id = (location.hash || '').replace('#', '');
         if (!id) return;
         var t = document.getElementById(id);
-        if (!t || t.tagName !== 'H2') return;
-        var b = t.nextElementSibling;
-        if (b && b.classList.contains('section-body') && b.classList.contains('collapsed')) {
-          setOpen(t, b, true);
+        if (!t) return;
+        // an H2 opens its own body; anything else (e.g. #sky-times, #conditions inside the
+        // Today dashboard) opens the section it sits in
+        var b = t.tagName === 'H2' ? t.nextElementSibling : t.closest('.section-body');
+        var head = t.tagName === 'H2' ? t : b && b.previousElementSibling;
+        if (b && head && b.classList.contains('section-body') && b.classList.contains('collapsed')) {
+          setOpen(head, b, true);
           t.scrollIntoView();
         }
       }
@@ -958,6 +994,7 @@
   <script src="/moon/js/moon-row.js?v=3" defer></script>
   <script src="/moon/js/moon-weather-lib.js?v=1" defer></script>
   <script src="/moon/js/moon-weather.js?v=1" defer></script>
+  <script src="/moon/js/moon-dash.js?v=1" defer></script>
   <script src="/solar-system-today/js/orrery-embed.js?v=1" defer></script>
   <script>
     // Live Sun / Moon dashboard.
@@ -1208,10 +1245,12 @@
       function fetchForecast() {
         var url = 'https://api.open-meteo.com/v1/forecast?latitude=' + state.loc.lat +
           '&longitude=' + state.loc.lon +
-          '&current=temperature_2m,weather_code,cloud_cover,surface_pressure' +
-          '&hourly=temperature_2m,apparent_temperature,relative_humidity_2m,wind_speed_10m,wind_direction_10m' +
-          '&daily=temperature_2m_max,temperature_2m_min,uv_index_max,precipitation_probability_max' +
-          '&temperature_unit=fahrenheit&wind_speed_unit=mph&timezone=auto&forecast_days=1';
+          '&current=temperature_2m,apparent_temperature,relative_humidity_2m,weather_code,cloud_cover,surface_pressure,' +
+            'wind_speed_10m,wind_direction_10m,wind_gusts_10m,is_day,precipitation' +
+          '&hourly=temperature_2m,apparent_temperature,relative_humidity_2m,wind_speed_10m,wind_direction_10m,' +
+            'weather_code,precipitation_probability,cloud_cover,is_day' +
+          '&daily=temperature_2m_max,temperature_2m_min,uv_index_max,precipitation_probability_max,precipitation_sum' +
+          '&temperature_unit=fahrenheit&wind_speed_unit=mph&timezone=auto&forecast_days=2';
         return fetch(url)
           .then(function (r) { if (!r.ok) throw new Error(r.status); return r.json(); })
           .then(function (d) {
@@ -1233,7 +1272,18 @@
               curTempF: cur.temperature_2m, code: cur.weather_code,
               cloud: cur.cloud_cover, presshPa: cur.surface_pressure,
               hiF: d0(day.temperature_2m_max), loF: d0(day.temperature_2m_min),
-              uvMax: d0(day.uv_index_max), popMax: d0(day.precipitation_probability_max)
+              uvMax: d0(day.uv_index_max), popMax: d0(day.precipitation_probability_max),
+              precipSum: d0(day.precipitation_sum),
+              curTime: cur.time, feelsF: cur.apparent_temperature, hum: cur.relative_humidity_2m,
+              wind: cur.wind_speed_10m, windDir: cur.wind_direction_10m, gust: cur.wind_gusts_10m,
+              isDay: cur.is_day, precip: cur.precipitation,
+              // hourly series (local times, two days) for the dashboard's hourly strip (moon-dash.js)
+              hourly: d.hourly ? {
+                time: t, tF: d.hourly.temperature_2m, code: d.hourly.weather_code,
+                pop: d.hourly.precipitation_probability, cloud: d.hourly.cloud_cover,
+                day: d.hourly.is_day, wind: d.hourly.wind_speed_10m, windDir: d.hourly.wind_direction_10m,
+                feelsF: d.hourly.apparent_temperature
+              } : null
             };
           })
           .catch(function () { return { ok: false, tz: null, temp9F: null }; });
@@ -1294,8 +1344,10 @@
         // (a half-ellipse, x-radius |k|·r) back to the top. The sweep flags stay
         // constant per waxing/waning; only the ellipse width changes with phase, so
         // crescents and gibbous both come out right.
+        // the terminator bulges into the dark half for a crescent and into the lit half for a
+        // gibbous Moon, so its sweep flips once more than half is lit
         var limbSweep = waxing ? 0 : 1;
-        var termSweep = waxing ? 0 : 1;
+        var termSweep = k > 0 ? 1 - limbSweep : limbSweep;
         var shadow = 'M ' + cx + ' ' + top +
           ' A ' + r + ' ' + r + ' 0 0 ' + limbSweep + ' ' + cx + ' ' + bot +
           ' A ' + rx.toFixed(2) + ' ' + r + ' 0 0 ' + termSweep + ' ' + cx + ' ' + top + ' Z';
@@ -1654,7 +1706,7 @@
           drawVisuals(now, dayStart);
           try {
             window.MES_MOON_RAW = collectRaw(now, fc, aq);
-            window.MES_MOON_CTX = { loc: state.loc, tz: state.tz, fc: fc };
+            window.MES_MOON_CTX = { loc: state.loc, tz: state.tz, fc: fc, aq: aq, now: now };
             document.dispatchEvent(new CustomEvent('moon-data'));
           } catch (e) {}
 
