@@ -42,13 +42,13 @@
 		crow: ["Common Raven.ogg", "https://commons.wikimedia.org/wiki/File:Common_Raven.ogg", "G. McGrane", "Public domain", "a common raven"],
 		peacock: ["Pavo cristatus (call).ogg", "https://commons.wikimedia.org/wiki/File:Pavo_cristatus_(call).ogg", "Ke4roh", "Public domain"],
 		bison: ["Bison.ogg", "https://commons.wikimedia.org/wiki/File:Bison.ogg", "National Park Service", "Public domain"],
-		deer: ["American Elk Bugling.ogg", "https://commons.wikimedia.org/wiki/File:American_Elk_Bugling.ogg", "Jim Pisarowicz", "Public domain", "an elk bugling"],
+		deer: ["American Elk Bugling.ogg", "https://commons.wikimedia.org/wiki/File:American_Elk_Bugling.ogg", "Jim Pisarowicz", "Public domain", "an elk (a big deer) bugling"],
 		eagle: ["Bald Eagle Yellowstone National Park.ogg", "https://commons.wikimedia.org/wiki/File:Bald_Eagle_Yellowstone_National_Park.ogg", "National Park Service", "Public domain"],
 		snake: ["Rattlesnake.ogg", "https://commons.wikimedia.org/wiki/File:Rattlesnake.ogg", "not named (see the file page)", "Public domain", "a rattlesnake's rattle"],
-		cricket: ["Grasshoppers.ogg", "https://commons.wikimedia.org/wiki/File:Grasshoppers.ogg", "Mysid", "Public domain", "grasshoppers chirping"],
-		crocodile: ["Alligatorbellow1.ogg", "https://commons.wikimedia.org/wiki/File:Alligatorbellow1.ogg", "not named (see the file page)", "Public domain", "an alligator bellowing"],
+		cricket: ["Grasshoppers.ogg", "https://commons.wikimedia.org/wiki/File:Grasshoppers.ogg", "Mysid", "Public domain", "grasshoppers chirping, like a cricket"],
+		crocodile: ["Alligatorbellow1.ogg", "https://commons.wikimedia.org/wiki/File:Alligatorbellow1.ogg", "not named (see the file page)", "Public domain", "an alligator (a cousin of the crocodile) bellowing"],
 		bird: ["American Robin Yellowstone National Park.ogg", "https://commons.wikimedia.org/wiki/File:American_Robin_Yellowstone_National_Park.ogg", "National Park Service", "Public domain", "an American robin singing"],
-		monkey: ["Hylobates syndactylus calling 3588.ogg", "https://commons.wikimedia.org/wiki/File:Hylobates_syndactylus_calling_3588.ogg", "Dori", "Public domain", "siamangs (a kind of gibbon) calling"]
+		monkey: ["Hylobates syndactylus calling 3588.ogg", "https://commons.wikimedia.org/wiki/File:Hylobates_syndactylus_calling_3588.ogg", "Dori", "Public domain", "siamangs calling (an ape, a cousin of monkeys)"]
 	};
 
 	// ---------- Items ----------
@@ -64,11 +64,11 @@
 		["goose", "Goose", "🪿", { sw: "Honk honk", snd: "goose" }], ["turkey", "Turkey", "🦃", { sw: "Gobble gobble", snd: "turkey" }],
 		["owl", "Owl", "🦉", { sw: "Hoo hoo", snd: "owl" }], ["crow", "Raven", "🐦‍⬛", { sw: "Caw caw", snd: "crow" }], ["dove", "Dove", "🕊️", { sw: "Coo coo", snd: "dove" }],
 		["bird", "Bird", "🐦", { sw: "Tweet tweet", snd: "bird" }], ["peacock", "Peacock", "🦚", { sw: "Ee-awe", snd: "peacock" }], ["eagle", "Eagle", "🦅", { sw: "Kee kee", snd: "eagle" }],
-		["frog", "Frog", "🐸", { sw: "Ribbit", snd: "frog" }], ["bee", "Bee", "🐝", { sw: "Buzz", snd: "bee" }], ["cricket", "Grasshopper", "🦗", { sw: "Chirp chirp", snd: "cricket" }],
+		["frog", "Frog", "🐸", { sw: "Ribbit", snd: "frog" }], ["bee", "Bee", "🐝", { sw: "Buzz", snd: "bee" }], ["cricket", "Cricket", "🦗", { sw: "Chirp chirp", snd: "cricket" }],
 		["elephant", "Elephant", "🐘", { sw: "Toot toot", snd: "elephant" }], ["lion", "Lion", "🦁", { sw: "Roar", snd: "lion" }], ["tiger", "Tiger", "🐯", { sw: "Roar" }],
-		["bear", "Bear", "🐻", { sw: "Grrr", snd: "bear" }], ["wolf", "Wolf", "🐺", { sw: "Awoooo", snd: "wolf" }], ["monkey", "Gibbon", "🐒", { sw: "Hoo hoo hoo", snd: "monkey" }],
-		["whale", "Whale", "🐋", { sw: "Oooooo", snd: "whale" }], ["bison", "Bison", "🦬", { sw: "Hmmph", snd: "bison" }], ["deer", "Elk", "🦌", { sw: "Eee-ooo", snd: "deer" }],
-		["snake", "Snake", "🐍", { sw: "Hiss", snd: "snake" }], ["crocodile", "Alligator", "🐊", { sw: "Rumble", snd: "crocodile" }], ["mouse", "Mouse", "🐭", { sw: "Squeak squeak" }],
+		["bear", "Bear", "🐻", { sw: "Grrr", snd: "bear" }], ["wolf", "Wolf", "🐺", { sw: "Awoooo", snd: "wolf" }], ["monkey", "Monkey", "🐒", { sw: "Hoo hoo hoo", snd: "monkey" }],
+		["whale", "Whale", "🐋", { sw: "Oooooo", snd: "whale" }], ["bison", "Bison", "🦬", { sw: "Hmmph", snd: "bison" }], ["deer", "Deer", "🦌", { sw: "Eee-ooo", snd: "deer" }],
+		["snake", "Snake", "🐍", { sw: "Hiss", snd: "snake" }], ["crocodile", "Crocodile", "🐊", { sw: "Rumble", snd: "crocodile" }], ["mouse", "Mouse", "🐭", { sw: "Squeak squeak" }],
 		["rabbit", "Rabbit", "🐰"], ["fish", "Fish", "🐟"], ["turtle", "Turtle", "🐢"], ["giraffe", "Giraffe", "🦒"], ["zebra", "Zebra", "🦓"],
 		["penguin", "Penguin", "🐧"], ["butterfly", "Butterfly", "🦋"], ["octopus", "Octopus", "🐙"], ["fox", "Fox", "🦊"]
 	]);
@@ -84,7 +84,7 @@
 	]);
 	var ABC = [["a", "apple", "🍎"], ["b", "ball", "⚽"], ["c", "cat", "🐱"], ["d", "dog", "🐶"], ["e", "egg", "🥚"], ["f", "fish", "🐟"], ["g", "grapes", "🍇"],
 		["h", "hat", "🎩"], ["i", "ice cream", "🍦"], ["j", "juice", "🧃"], ["k", "kite", "🪁"], ["l", "lion", "🦁"], ["m", "moon", "🌙"], ["n", "nose", "👃"],
-		["o", "orange", "🍊"], ["p", "pig", "🐷"], ["q", "queen", "👸"], ["r", "rainbow", "🌈"], ["s", "sun", "☀️"], ["t", "tree", "🌳"], ["u", "umbrella", "☂️"],
+		["o", "orange", "🍊"], ["p", "pig", "🐷"], ["q", "queen", "👑"], ["r", "rainbow", "🌈"], ["s", "sun", "☀️"], ["t", "tree", "🌳"], ["u", "umbrella", "☂️"],
 		["v", "violin", "🎻"], ["w", "watermelon", "🍉"], ["x", "xylophone", "svg:xylophone"], ["y", "yo-yo", "🪀"], ["z", "zebra", "🦓"]];
 	add("letters", ABC.map(function (r) { return [r[0], r[0].toUpperCase(), r[2], { letter: r[0], ex: r[1] }]; }));
 	var NUMW = ["zero", "one", "two", "three", "four", "five", "six", "seven", "eight", "nine", "ten", "eleven", "twelve", "thirteen", "fourteen", "fifteen", "sixteen", "seventeen", "eighteen", "nineteen", "twenty"];
@@ -98,7 +98,7 @@
 		["pear", "Pear", "🍐"], ["cherries", "Cherries", "🍒"]
 	]);
 	add("things", [
-		["ball", "Ball", "⚽"], ["teddy", "Teddy bear", "🧸"], ["book", "Book", "📖"], ["cup", "Cup", "☕"], ["shoe", "Shoe", "👟"], ["hat", "Hat", "🧢"],
+		["ball", "Ball", "⚽"], ["teddy", "Teddy bear", "🧸"], ["book", "Book", "📖"], ["cup", "Cup", "🥤"], ["shoe", "Shoe", "👟"], ["hat", "Cap", "🧢"],
 		["sock", "Sock", "🧦"], ["spoon", "Spoon", "🥄"], ["bed", "Bed", "🛏️"], ["chair", "Chair", "🪑"], ["key", "Key", "🔑"], ["clock", "Clock", "⏰"],
 		["balloon", "Balloon", "🎈"], ["present", "Present", "🎁"], ["umbrella", "Umbrella", "☂️"], ["house", "House", "🏠"], ["tree", "Tree", "🌳"],
 		["flower", "Flower", "🌸"], ["sun", "Sun", "☀️"], ["moon", "Moon", "🌙"], ["rainbow", "Rainbow", "🌈"], ["star", "Star", "⭐"]
@@ -222,25 +222,76 @@
 		var t = norm(q).split(/\s+/).filter(Boolean);
 		return voices.filter(function (v) { var h = norm(v.name + " " + v.lang + (v.localService ? " device" : " online")); return t.every(function (w) { return h.indexOf(w) >= 0; }); });
 	}
-	// Default voice: the browser language's voices first, then English; prefer local voices and known friendly names
-	function pickVoice(voices, lang) {
+	// Default voice: the most natural-sounding one the device offers, in the browser's language first, then English.
+	// Neural / "Natural" voices (Edge: Microsoft Aria / Jenny / Ana Online (Natural)), Apple Premium / Enhanced voices, Google and Siri voices
+	// come first, warm female voices before male ones, novelty voices last. avoid = { voiceKey: 1 } = voices that did not speak here.
+	var WARM = /\b(ava|samantha|zoe|allison|susan|karen|moira|tessa|serena|kate|fiona|aria|jenny|ana|michelle|emma|libby|sonia|natasha|clara|joanna|salli|kimberly|ivy|kendra|nicky|zira|hazel|catherine|nora|evie|sara|female)\b/i;
+	var MALE = /\b(male|daniel|alex|fred|tom|aaron|arthur|guy|davis|eric|ryan|thomas|oliver|george|rishi|lee|mark|david|james|roger|brian|christopher|andrew|william|liam|steffan|jacob|tony|ralph|junior|gordon)\b/i;
+	var OLD = /\b(kathy|fred|junior|ralph|agnes|bruce|vicki|victoria|princess)\b/i;   // the 1990s Mac voices: clear but robotic
+	var NOVELTY = /novelty|whisper|bahh|bad news|good news|bells|boing|bubbles|cellos|zarvox|trinoids|albert|hysterical|jester|organ|superstar|wobble|grandpa|grandma|rocko|shelley|\bflo\b|eddy|reed|sandy|deranged/i;
+	function voiceScore(v, lang) {
 		lang = (lang || "en-US").toLowerCase();
-		var base = lang.split("-")[0];
-		function score(v) {
-			var l = (v.lang || "").toLowerCase().replace("_", "-"), s = 0;
-			if (l === lang) s += 40; else if (l.split("-")[0] === base) s += 30; else if (l.indexOf("en") === 0) s += 10; else return -1;
-			if (v.localService) s += 5;
-			if (/samantha|karen|moira|tessa|google us english|google uk english female|aria|jenny|zira|siri/i.test(v.name)) s += 4;
-			if (/novelty|whisper|bad news|bells|boing|bubbles|cellos|zarvox|trinoids|albert|hysterical|jester|organ|superstar|wobble|grandpa|grandma|rocko|shelley|flo|eddy|reed|sandy/i.test(v.name)) s -= 25;
-			return s;
-		}
+		var base = lang.split("-")[0], l = String(v.lang || "").toLowerCase().replace("_", "-"), n = String(v.name || ""), s = 0;
+		if (l === lang) s += 100; else if (l.split("-")[0] === base) s += 80; else if (l.indexOf("en") === 0) s += 20; else return -1;
+		if (/natural|neural/i.test(n)) s += 30;
+		if (/premium/i.test(n)) s += 26; else if (/enhanced/i.test(n)) s += 20;
+		if (/^google\b/i.test(n)) s += 14;
+		if (/siri/i.test(n)) s += 14;
+		if (/compact|espeak/i.test(n)) s -= 8;
+		if (MALE.test(n)) s -= 6; else if (WARM.test(n) || /^google us english$/i.test(n)) s += 8;
+		if (OLD.test(n)) s -= 24;
+		if (NOVELTY.test(n)) s -= 60;
+		if (v.localService) s += 1;
+		return s;
+	}
+	function vKey(v) { return (v.voiceURI || v.name) + "|" + v.lang; }
+	function pickVoice(voices, lang, avoid) {
 		var best = null, bs = -1;
-		voices.forEach(function (v) { var s = score(v); if (s > bs) { bs = s; best = v; } });
+		(voices || []).forEach(function (v) { if (avoid && avoid[vKey(v)]) return; var s = voiceScore(v, lang); if (s > bs) { bs = s; best = v; } });
 		return best;
 	}
 
+	// Voice styles for grown-ups: rate / pitch / volume and how the text is said. "teacher" = the default: warm, clear, a little sing-songy.
+	var STYLES = {
+		teacher: { name: "Teacher", icon: "🍎", rate: 0.82, pitch: 1.18 },
+		calm: { name: "Calm", icon: "🌙", rate: 0.72, pitch: 1.02 },
+		silly: { name: "Silly high", icon: "🐭", rate: 1.0, pitch: 1.95 },
+		giant: { name: "Giant deep", icon: "🦕", rate: 0.66, pitch: 0.5 },
+		robot: { name: "Robot", icon: "🤖", rate: 0.9, pitch: 0.62, robot: true },
+		whisper: { name: "Whisper", icon: "🤫", rate: 0.7, pitch: 1.12, volume: 0.35 }
+	};
+	// The text as the style says it: Teacher says a one-word card with a cheerful "!" ("Cow!"); Robot says every word on its own ("Cow. The. Cow. Says. Moo.").
+	function styleText(text, style) {
+		var st = STYLES[style] || STYLES.teacher;
+		text = String(text || "");
+		if (st.robot) return text.replace(/[!?,]/g, ".").split(/\s+/).map(function (w) { return w.replace(/\.+$/, ""); }).filter(Boolean).join(". ") + ".";
+		if (style === "teacher" || !STYLES[style]) return text.replace(/^([A-Z][a-z]{1,10}( [a-z]{2,10})?)\.$/, "$1!");
+		return text;
+	}
+
+	// Voices that don't speak (Android lists voices whose data is not installed): the same rules as the Speed Reader's SRLib.speechFailure.
+	var VOICE_ERRORS = { "synthesis-unavailable": 1, "synthesis-failed": 1, "voice-unavailable": 1, "language-unavailable": 1, "audio-hardware": 1 };
+	function speechFailure(o) {
+		o = o || {};
+		if (o.error) {
+			if (o.error === "interrupted" || o.error === "canceled" || o.error === "not-allowed") return "";
+			return VOICE_ERRORS[o.error] || !o.started ? "error" : "";
+		}
+		if (!o.started) return "nostart";
+		if (o.boundary) return "";
+		if ((o.words || 0) >= 3 && o.ms < Math.max(300, 0.2 * (o.expectMs || 0))) return "silent";
+		return "";
+	}
+	// remembered bad voices { key: { t, lang } }, forgotten after `days` (default 30: the voice data may get installed later)
+	function pruneBadVoices(map, now, days) {
+		var out = {}, max = (days || 30) * 864e5;
+		if (!map || typeof map !== "object") return out;
+		for (var k in map) if (map[k] && typeof map[k].t === "number" && now - map[k].t < max && now >= map[k].t - 6e4) out[k] = { t: map[k].t, lang: String(map[k].lang || "") };
+		return out;
+	}
+
 	// ---------- Settings ----------
-	var DEFAULTS = { rate: 0.8, pitch: 1.1, voice: "", auto: true, sw: true, snd: true, showWord: true, lcase: "title", maxNum: 10, count: true, adv: 0, quizN: 3, theme: "bright" };
+	var DEFAULTS = { rate: 0.82, pitch: 1.18, style: "teacher", voice: "", auto: true, sw: true, snd: true, showWord: true, lcase: "title", maxNum: 10, count: true, adv: 0, quizN: 3, theme: "bright" };
 	function clean(s) {
 		s = s && typeof s === "object" ? s : {};
 		var o = {};
@@ -248,6 +299,7 @@
 		function num(v, lo, hi, d) { v = Number(v); return isFinite(v) ? Math.min(hi, Math.max(lo, v)) : d; }
 		o.rate = num(s.rate, 0.4, 1.5, DEFAULTS.rate); o.pitch = num(s.pitch, 0.5, 2, DEFAULTS.pitch);
 		o.voice = typeof s.voice === "string" ? s.voice.slice(0, 300) : "";
+		if (STYLES[s.style]) o.style = s.style;
 		["auto", "sw", "snd", "showWord", "count"].forEach(function (k) { if (typeof s[k] === "boolean") o[k] = s[k]; });
 		if (["upper", "lower", "title", "both"].indexOf(s.lcase) >= 0) o.lcase = s.lcase;
 		o.ord = {};
@@ -267,7 +319,8 @@
 	var api = { orderFor: orderFor, CATS: CATS, ITEMS: ITEMS, BY_ID: BY_ID, SOUNDS: SOUNDS, MODES: MODES, NUMW: NUMW, DEFAULTS: DEFAULTS,
 		rng: rng, shuffle: shuffle, reshuffle: reshuffle, deck: deck, step: step, quizChoices: quizChoices, hasSound: hasSound,
 		caseWord: caseWord, label: label, subLabel: subLabel, speakText: speakText, findPrompt: findPrompt, praise: praise, gentle: gentle,
-		soundFor: soundFor, keyToId: keyToId, filterVoices: filterVoices, pickVoice: pickVoice, clean: clean };
+		soundFor: soundFor, keyToId: keyToId, filterVoices: filterVoices, pickVoice: pickVoice, voiceScore: voiceScore, vKey: vKey, STYLES: STYLES, styleText: styleText,
+		speechFailure: speechFailure, pruneBadVoices: pruneBadVoices, clean: clean };
 	if (typeof module !== "undefined" && module.exports) module.exports = api;
 	else root.MESKids = api;
 })(this);
@@ -348,23 +401,52 @@
 	// ---------- speech + sounds ----------
 	var synth = window.speechSynthesis || null, voices = [], token = 0, audio = null, unlocked = false;
 	function loadVoices() { if (!synth) return; try { voices = synth.getVoices() || []; } catch (e) { voices = []; } fillVoices(); }
-	function vKey(v) { return (v.voiceURI || v.name) + "|" + v.lang; }
+	var vKey = K.vKey;
+	// Voices that didn't speak on this device (Android lists voices whose data isn't installed): remembered for 30 days in "mes-kids:badvoices"
+	var BADKEY = "mes-kids:badvoices", bad = {}, strikes = {}, anySpoke = false;
+	try { bad = K.pruneBadVoices(JSON.parse(localStorage.getItem(BADKEY) || "{}"), Date.now()); } catch (e) { bad = {}; }
+	function saveBad() { try { localStorage.setItem(BADKEY, JSON.stringify(bad)); } catch (e) {} }
+	function autoVoice() { return K.pickVoice(voices, navigator.language || "en-US", bad); }
 	function voice() {
 		var v = null, i;
-		if (S.voice) for (i = 0; i < voices.length; i++) if (vKey(voices[i]) === S.voice) { v = voices[i]; break; }
-		return v || K.pickVoice(voices, navigator.language || "en-US");
+		if (S.voice && !bad[S.voice]) for (i = 0; i < voices.length; i++) if (vKey(voices[i]) === S.voice) { v = voices[i]; break; }
+		return v || autoVoice();
 	}
+	function markBad(v, why) {
+		if (!v) return;
+		var k = vKey(v); if (bad[k]) return;
+		bad[k] = { t: Date.now(), lang: v.lang || "" }; saveBad(); vsig = "";
+		var next = autoVoice();
+		hint("The voice " + v.name + " didn't speak on this device" + (next ? ", so we switched to " + next.name : "") + ".");
+		fillVoices();
+	}
+	function style() { return K.STYLES[S.style] || K.STYLES.teacher; }
 	function stopAll() { token++; try { if (synth) synth.cancel(); } catch (e) {} if (audio) { try { audio.pause(); } catch (e) {} audio = null; } }
-	// say(text) -> promise that resolves when speech ends (or right away without speech)
-	function say(text, tk) {
+	// say(text) -> promise that resolves when speech ends (or right away without speech). A voice that doesn't speak is marked bad and the text is said again with the next one.
+	function say(text, tk, retry) {
 		return new Promise(function (res) {
 			if (!synth || !text) return res();
-			var u = new SpeechSynthesisUtterance(text), v = voice(), done = false;
+			var spoken = K.styleText(text, S.style), st = style();
+			var u = new SpeechSynthesisUtterance(spoken), v = voice(), done = false, started = false, boundary = false, t0 = 0, err = "";
 			if (v) { u.voice = v; u.lang = v.lang; } else u.lang = "en-US";
-			u.rate = S.rate; u.pitch = S.pitch;
-			function fin() { if (done) return; done = true; res(); }
-			u.onend = fin; u.onerror = fin;
-			setTimeout(fin, 1500 + text.length * 160 / S.rate);   // never wait forever (some voices never fire onend)
+			u.rate = S.rate; u.pitch = S.pitch; u.volume = st.volume || 1;
+			var words = spoken.split(/\s+/).filter(Boolean).length, expect = words * 420 / S.rate;
+			function fin() {
+				if (done) return; done = true; clearTimeout(nt);
+				var why = tk === token && unlocked && !document.hidden ? K.speechFailure({ error: err, started: started, boundary: boundary, words: words, ms: t0 ? Date.now() - t0 : 0, expectMs: expect }) : "";
+				// a voice error marks the voice at once; "never started" / "too quick" only once some voice has really spoken on this page
+				// (else the device may simply have no sound output) and only on the second time for the same voice
+				var k = v ? vKey(v) : "";
+				if (why && why !== "error") { if (!anySpoke) why = ""; else { strikes[k] = (strikes[k] || 0) + 1; if (strikes[k] < 2) why = ""; } }
+				if (!why && started) strikes[k] = 0;
+				if (why && v && !retry) { markBad(v, why); if (voice() && voice() !== v) return say(text, tk, true).then(res); }
+				res();
+			}
+			u.onstart = function () { started = true; anySpoke = true; t0 = Date.now(); };
+			u.onboundary = function () { boundary = true; };
+			u.onend = fin; u.onerror = function (e) { err = (e && e.error) || "error"; fin(); };
+			// never wait forever (some voices never fire onend); a voice that never starts counts as not working
+			var nt = setTimeout(fin, Math.max(3500, 1500 + spoken.length * 160 / S.rate));
 			try { synth.speak(u); } catch (e) { fin(); }
 		});
 	}
@@ -631,6 +713,7 @@
 		seg("kd-o-adv", S.adv, function (v) { S.adv = +v; save(); });
 		seg("kd-o-qn", S.quizN, function (v) { S.quizN = +v; save(); if (play_ === "quiz") render(false); });
 		seg("kd-o-theme", S.theme, function (v) { S.theme = v; save(); root.setAttribute("data-theme", v); });
+		seg("kd-o-style", S.style, function (v) { var st = K.STYLES[v]; if (!st) return; S.style = v; S.rate = st.rate; S.pitch = st.pitch; save(); stopAll(); unlock(); say("Hello! Look, a cow. Moo!", token); });
 		$("kd-rate").value = S.rate; $("kd-rate-v").textContent = S.rate.toFixed(2) + "×";
 		$("kd-pitch").value = S.pitch; $("kd-pitch-v").textContent = S.pitch.toFixed(2);
 		fillVoices();
@@ -654,7 +737,9 @@
 	$("kd-rate").addEventListener("change", function () { stopAll(); say("Hello! Let's play.", token); });
 	$("kd-pitch").addEventListener("change", function () { stopAll(); say("Hello! Let's play.", token); });
 	$("kd-test").addEventListener("click", function () { unlock(); sayCard(cur()); });
-	$("kd-vreset").addEventListener("click", function () { S.rate = K.DEFAULTS.rate; S.pitch = K.DEFAULTS.pitch; save(); syncSet(); });
+	$("kd-vreset").addEventListener("click", function () { var st = style(); S.rate = st.rate; S.pitch = st.pitch; save(); syncSet(); });
+	// voice style buttons, from K.STYLES
+	(function () { var box = $("kd-o-style"); if (!box) return; Object.keys(K.STYLES).forEach(function (k) { var st = K.STYLES[k], b = document.createElement("button"); b.type = "button"; b.setAttribute("data-v", k); b.setAttribute("role", "radio"); b.innerHTML = '<span aria-hidden="true">' + st.icon + "</span> " + esc(st.name); box.appendChild(b); }); })();
 	$("kd-s-fill").addEventListener("click", function () { enterKiosk(false); });
 	$("kd-s-fs").addEventListener("click", function () { enterKiosk(true); });
 	$("kd-s-stars").addEventListener("click", function () { stars = 0; saveStars(); $("kd-stars").textContent = "0"; toast("Stars reset."); });
@@ -664,26 +749,26 @@
 	function fillVoices() {
 		if (!vsel) return;
 		if (!synth) { $("kd-vnote").textContent = "This browser can't speak, so the cards are silent. Animal recordings still play."; vsel.disabled = true; return; }
-		var sig = voices.map(vKey).join(",") + "#" + S.voice;
+		var sig = voices.map(vKey).join(",") + "#" + S.voice + "#" + Object.keys(bad).join(",");
 		if (sig === vsig) return; vsig = sig;
 		var bl = (navigator.language || "en").toLowerCase().split("-")[0];
 		var groups = { top: [], en: [], other: [] };
 		voices.forEach(function (v) { var b = (v.lang || "").toLowerCase().split(/[-_]/)[0]; (b === bl && bl !== "en" ? groups.top : b === "en" ? groups.en : groups.other).push(v); });
-		var auto = K.pickVoice(voices, navigator.language || "en-US");
+		var auto = autoVoice();
 		vsel.innerHTML = "";
 		var o = document.createElement("option"); o.value = ""; o.textContent = "Automatic" + (auto ? " (" + auto.name + ")" : ""); vsel.appendChild(o);
 		[["top", "Your language"], ["en", "English"], ["other", "Other languages"]].forEach(function (g) {
 			if (!groups[g[0]].length) return;
 			var og = document.createElement("optgroup"); og.label = g[1];
 			groups[g[0]].sort(function (a, b) { return a.lang === b.lang ? a.name.localeCompare(b.name) : a.lang.localeCompare(b.lang); }).forEach(function (v) {
-				var op = document.createElement("option"); op.value = vKey(v); op.textContent = v.name + " (" + v.lang + ")" + (v.localService ? "" : " · online"); og.appendChild(op);
+				var op = document.createElement("option"); op.value = vKey(v); op.textContent = (bad[vKey(v)] ? "⚠ " : "") + v.name + " (" + v.lang + ")" + (v.localService ? "" : " · online") + (bad[vKey(v)] ? " · didn't speak here" : ""); og.appendChild(op);
 			});
 			vsel.appendChild(og);
 		});
 		vsel.value = S.voice; if (vsel.value !== S.voice) vsel.value = "";
-		$("kd-vnote").textContent = voices.length ? voices.length + " voices on this device. The voice is your device's own: nothing is sent anywhere." : "Loading voices…";
+		$("kd-vnote").textContent = voices.length ? voices.length + " voices on this device. Automatic picks the most natural one it finds (voices named Natural, Premium, Enhanced or Google sound best; on an iPhone, iPad or Mac you can download more under Settings > Accessibility > Spoken Content > Voices). The voice is your device's own: nothing is sent anywhere." : "Loading voices…";
 	}
-	if (vsel) vsel.addEventListener("change", function () { S.voice = vsel.value; save(); vsig = ""; stopAll(); unlock(); say("Hello! This is " + (cur() ? cur().word.toLowerCase() : "a cat") + ".", token); });
+	if (vsel) vsel.addEventListener("change", function () { S.voice = vsel.value; if (bad[S.voice]) { delete bad[S.voice]; saveBad(); } save(); vsig = ""; stopAll(); unlock(); say("Hello! This is " + (cur() ? cur().word.toLowerCase() : "a cat") + ".", token); });
 	if (window.MESVoicePicker && vsel) window.MESVoicePicker.enhance(vsel, { sample: "Hello! Look, a cow. Moo!" });
 	if (synth) { loadVoices(); try { synth.addEventListener("voiceschanged", loadVoices); } catch (e) { synth.onvoiceschanged = loadVoices; } setTimeout(loadVoices, 600); }
 

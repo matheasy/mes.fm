@@ -78,14 +78,30 @@ ok(K.keyToId("c", K.deck("abc")) === "letters:c" && K.keyToId("0", K.deck("numbe
 const V = [{ name: "Zarvox", lang: "en-US", localService: true }, { name: "Samantha", lang: "en-US", localService: true }, { name: "Thomas", lang: "fr-FR", localService: true }, { name: "Google UK English Female", lang: "en-GB", localService: false }, { name: "Anna", lang: "de-DE", localService: true }];
 ok(K.pickVoice(V, "en-US").name === "Samantha", "default voice skips novelty voices");
 ok(K.pickVoice(V, "fr-CA").name === "Thomas", "browser language first");
-ok(K.pickVoice(V, "ja-JP").name === "Samantha", "falls back to English");
+ok(K.pickVoice(V, "ja-JP").name === "Google UK English Female", "falls back to the best English voice");
+const W = [{ name: "Microsoft David - English (United States)", lang: "en-US", localService: true }, { name: "Microsoft Zira - English (United States)", lang: "en-US", localService: true },
+	{ name: "Microsoft Guy Online (Natural) - English (United States)", lang: "en-US" }, { name: "Microsoft Aria Online (Natural) - English (United States)", lang: "en-US" },
+	{ name: "Google US English", lang: "en-US" }, { name: "Samantha", lang: "en-US", localService: true }, { name: "Ava (Premium)", lang: "en-US", localService: true }, { name: "Zarvox", lang: "en-US", localService: true }];
+ok(K.pickVoice(W.slice(0, 5), "en-US").name.indexOf("Aria") >= 0, "Edge: a Natural female voice first");
+ok(K.pickVoice([W[0], W[1], W[4]], "en-US").name === "Google US English", "Chrome: the Google voice before the basic ones");
+ok(K.pickVoice(W.slice(5), "en-US").name === "Ava (Premium)", "Apple: a Premium voice first");
+ok(K.pickVoice([W[0], W[1]], "en-US").name.indexOf("Zira") >= 0, "female before male");
+ok(K.pickVoice([{ name: "Bahh", lang: "en-US", localService: true }, { name: "Kathy", lang: "en-US", localService: true }, { name: "Karen", lang: "en-AU", localService: true }], "en-US").name === "Karen", "old and novelty Mac voices last");
+ok(K.pickVoice(W.slice(5), "en-US", { "Ava (Premium)|en-US": 1 }).name === "Samantha", "bad voices are skipped");
+ok(K.styleText("Cow.", "teacher") === "Cow!" && K.styleText("Cow. The cow says moo!", "robot") === "Cow. The. cow. says. moo." && K.styleText("Cow.", "giant") === "Cow.", "voice styles change the text");
+ok(Object.keys(K.STYLES).every(s => K.STYLES[s].rate >= 0.4 && K.STYLES[s].rate <= 1.5 && K.STYLES[s].pitch >= 0.5 && K.STYLES[s].pitch <= 2), "styles within the slider ranges");
+ok(K.clean({ style: "robot" }).style === "robot" && K.clean({ style: "x" }).style === "teacher", "clean style");
+ok(K.speechFailure({ error: "interrupted" }) === "" && K.speechFailure({ started: false }) === "nostart" && K.speechFailure({ started: true, words: 5, ms: 50, expectMs: 3000 }) === "silent" && K.speechFailure({ started: true, words: 5, ms: 2500, expectMs: 3000 }) === "", "bad voice detection");
+ok(Object.keys(K.pruneBadVoices({ a: { t: 0 }, b: { t: 1e12 } }, 1e12 + 1000)).join() === "b", "bad voices are forgotten after 30 days");
+// labels match the pictures
+ok(K.BY_ID["animals:monkey"].word === "Monkey" && K.BY_ID["animals:deer"].word === "Deer" && K.BY_ID["animals:crocodile"].word === "Crocodile" && K.BY_ID["animals:cricket"].word === "Cricket", "animal names match their emoji");
 ok(K.filterVoices(V, "uk female").length === 1 && K.filterVoices(V, "fr").length === 1 && K.filterVoices(V, "online").length === 1 && K.filterVoices(V, "").length === 5, "voice search");
 
 // settings
 const c = K.clean({ rate: 9, pitch: "x", lcase: "weird", maxNum: 7, adv: 6, quizN: 4, cats: { cards: ["food", "nope"], abc: "x" }, auto: false, voice: 5 });
 ok(c.rate === 1.5 && c.pitch === K.DEFAULTS.pitch && c.lcase === "title" && c.maxNum === 10 && c.adv === 6 && c.quizN === 4, "clean numbers");
 ok(c.cats.cards.join() === "food" && !c.cats.abc && c.auto === false && c.voice === "", "clean cats + flags");
-ok(K.clean(null).rate === 0.8, "slower default speech rate");
+ok(K.clean(null).rate === 0.82 && K.clean(null).style === "teacher", "slower default speech rate");
 
 ok(K.orderFor(K.clean({}), "abc") === "order" && K.orderFor(K.clean({}), "cards") === "shuffle" && K.orderFor(K.clean({ ord: { abc: "shuffle", x: "order" } }), "abc") === "shuffle", "order per page");
 

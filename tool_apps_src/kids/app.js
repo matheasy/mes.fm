@@ -74,23 +74,52 @@
 	// ---------- speech + sounds ----------
 	var synth = window.speechSynthesis || null, voices = [], token = 0, audio = null, unlocked = false;
 	function loadVoices() { if (!synth) return; try { voices = synth.getVoices() || []; } catch (e) { voices = []; } fillVoices(); }
-	function vKey(v) { return (v.voiceURI || v.name) + "|" + v.lang; }
+	var vKey = K.vKey;
+	// Voices that didn't speak on this device (Android lists voices whose data isn't installed): remembered for 30 days in "mes-kids:badvoices"
+	var BADKEY = "mes-kids:badvoices", bad = {}, strikes = {}, anySpoke = false;
+	try { bad = K.pruneBadVoices(JSON.parse(localStorage.getItem(BADKEY) || "{}"), Date.now()); } catch (e) { bad = {}; }
+	function saveBad() { try { localStorage.setItem(BADKEY, JSON.stringify(bad)); } catch (e) {} }
+	function autoVoice() { return K.pickVoice(voices, navigator.language || "en-US", bad); }
 	function voice() {
 		var v = null, i;
-		if (S.voice) for (i = 0; i < voices.length; i++) if (vKey(voices[i]) === S.voice) { v = voices[i]; break; }
-		return v || K.pickVoice(voices, navigator.language || "en-US");
+		if (S.voice && !bad[S.voice]) for (i = 0; i < voices.length; i++) if (vKey(voices[i]) === S.voice) { v = voices[i]; break; }
+		return v || autoVoice();
 	}
+	function markBad(v, why) {
+		if (!v) return;
+		var k = vKey(v); if (bad[k]) return;
+		bad[k] = { t: Date.now(), lang: v.lang || "" }; saveBad(); vsig = "";
+		var next = autoVoice();
+		hint("The voice " + v.name + " didn't speak on this device" + (next ? ", so we switched to " + next.name : "") + ".");
+		fillVoices();
+	}
+	function style() { return K.STYLES[S.style] || K.STYLES.teacher; }
 	function stopAll() { token++; try { if (synth) synth.cancel(); } catch (e) {} if (audio) { try { audio.pause(); } catch (e) {} audio = null; } }
-	// say(text) -> promise that resolves when speech ends (or right away without speech)
-	function say(text, tk) {
+	// say(text) -> promise that resolves when speech ends (or right away without speech). A voice that doesn't speak is marked bad and the text is said again with the next one.
+	function say(text, tk, retry) {
 		return new Promise(function (res) {
 			if (!synth || !text) return res();
-			var u = new SpeechSynthesisUtterance(text), v = voice(), done = false;
+			var spoken = K.styleText(text, S.style), st = style();
+			var u = new SpeechSynthesisUtterance(spoken), v = voice(), done = false, started = false, boundary = false, t0 = 0, err = "";
 			if (v) { u.voice = v; u.lang = v.lang; } else u.lang = "en-US";
-			u.rate = S.rate; u.pitch = S.pitch;
-			function fin() { if (done) return; done = true; res(); }
-			u.onend = fin; u.onerror = fin;
-			setTimeout(fin, 1500 + text.length * 160 / S.rate);   // never wait forever (some voices never fire onend)
+			u.rate = S.rate; u.pitch = S.pitch; u.volume = st.volume || 1;
+			var words = spoken.split(/\s+/).filter(Boolean).length, expect = words * 420 / S.rate;
+			function fin() {
+				if (done) return; done = true; clearTimeout(nt);
+				var why = tk === token && unlocked && !document.hidden ? K.speechFailure({ error: err, started: started, boundary: boundary, words: words, ms: t0 ? Date.now() - t0 : 0, expectMs: expect }) : "";
+				// a voice error marks the voice at once; "never started" / "too quick" only once some voice has really spoken on this page
+				// (else the device may simply have no sound output) and only on the second time for the same voice
+				var k = v ? vKey(v) : "";
+				if (why && why !== "error") { if (!anySpoke) why = ""; else { strikes[k] = (strikes[k] || 0) + 1; if (strikes[k] < 2) why = ""; } }
+				if (!why && started) strikes[k] = 0;
+				if (why && v && !retry) { markBad(v, why); if (voice() && voice() !== v) return say(text, tk, true).then(res); }
+				res();
+			}
+			u.onstart = function () { started = true; anySpoke = true; t0 = Date.now(); };
+			u.onboundary = function () { boundary = true; };
+			u.onend = fin; u.onerror = function (e) { err = (e && e.error) || "error"; fin(); };
+			// never wait forever (some voices never fire onend); a voice that never starts counts as not working
+			var nt = setTimeout(fin, Math.max(3500, 1500 + spoken.length * 160 / S.rate));
 			try { synth.speak(u); } catch (e) { fin(); }
 		});
 	}
@@ -357,6 +386,7 @@
 		seg("kd-o-adv", S.adv, function (v) { S.adv = +v; save(); });
 		seg("kd-o-qn", S.quizN, function (v) { S.quizN = +v; save(); if (play_ === "quiz") render(false); });
 		seg("kd-o-theme", S.theme, function (v) { S.theme = v; save(); root.setAttribute("data-theme", v); });
+		seg("kd-o-style", S.style, function (v) { var st = K.STYLES[v]; if (!st) return; S.style = v; S.rate = st.rate; S.pitch = st.pitch; save(); stopAll(); unlock(); say("Hello! Look, a cow. Moo!", token); });
 		$("kd-rate").value = S.rate; $("kd-rate-v").textContent = S.rate.toFixed(2) + "×";
 		$("kd-pitch").value = S.pitch; $("kd-pitch-v").textContent = S.pitch.toFixed(2);
 		fillVoices();
@@ -380,7 +410,9 @@
 	$("kd-rate").addEventListener("change", function () { stopAll(); say("Hello! Let's play.", token); });
 	$("kd-pitch").addEventListener("change", function () { stopAll(); say("Hello! Let's play.", token); });
 	$("kd-test").addEventListener("click", function () { unlock(); sayCard(cur()); });
-	$("kd-vreset").addEventListener("click", function () { S.rate = K.DEFAULTS.rate; S.pitch = K.DEFAULTS.pitch; save(); syncSet(); });
+	$("kd-vreset").addEventListener("click", function () { var st = style(); S.rate = st.rate; S.pitch = st.pitch; save(); syncSet(); });
+	// voice style buttons, from K.STYLES
+	(function () { var box = $("kd-o-style"); if (!box) return; Object.keys(K.STYLES).forEach(function (k) { var st = K.STYLES[k], b = document.createElement("button"); b.type = "button"; b.setAttribute("data-v", k); b.setAttribute("role", "radio"); b.innerHTML = '<span aria-hidden="true">' + st.icon + "</span> " + esc(st.name); box.appendChild(b); }); })();
 	$("kd-s-fill").addEventListener("click", function () { enterKiosk(false); });
 	$("kd-s-fs").addEventListener("click", function () { enterKiosk(true); });
 	$("kd-s-stars").addEventListener("click", function () { stars = 0; saveStars(); $("kd-stars").textContent = "0"; toast("Stars reset."); });
@@ -390,26 +422,26 @@
 	function fillVoices() {
 		if (!vsel) return;
 		if (!synth) { $("kd-vnote").textContent = "This browser can't speak, so the cards are silent. Animal recordings still play."; vsel.disabled = true; return; }
-		var sig = voices.map(vKey).join(",") + "#" + S.voice;
+		var sig = voices.map(vKey).join(",") + "#" + S.voice + "#" + Object.keys(bad).join(",");
 		if (sig === vsig) return; vsig = sig;
 		var bl = (navigator.language || "en").toLowerCase().split("-")[0];
 		var groups = { top: [], en: [], other: [] };
 		voices.forEach(function (v) { var b = (v.lang || "").toLowerCase().split(/[-_]/)[0]; (b === bl && bl !== "en" ? groups.top : b === "en" ? groups.en : groups.other).push(v); });
-		var auto = K.pickVoice(voices, navigator.language || "en-US");
+		var auto = autoVoice();
 		vsel.innerHTML = "";
 		var o = document.createElement("option"); o.value = ""; o.textContent = "Automatic" + (auto ? " (" + auto.name + ")" : ""); vsel.appendChild(o);
 		[["top", "Your language"], ["en", "English"], ["other", "Other languages"]].forEach(function (g) {
 			if (!groups[g[0]].length) return;
 			var og = document.createElement("optgroup"); og.label = g[1];
 			groups[g[0]].sort(function (a, b) { return a.lang === b.lang ? a.name.localeCompare(b.name) : a.lang.localeCompare(b.lang); }).forEach(function (v) {
-				var op = document.createElement("option"); op.value = vKey(v); op.textContent = v.name + " (" + v.lang + ")" + (v.localService ? "" : " · online"); og.appendChild(op);
+				var op = document.createElement("option"); op.value = vKey(v); op.textContent = (bad[vKey(v)] ? "⚠ " : "") + v.name + " (" + v.lang + ")" + (v.localService ? "" : " · online") + (bad[vKey(v)] ? " · didn't speak here" : ""); og.appendChild(op);
 			});
 			vsel.appendChild(og);
 		});
 		vsel.value = S.voice; if (vsel.value !== S.voice) vsel.value = "";
-		$("kd-vnote").textContent = voices.length ? voices.length + " voices on this device. The voice is your device's own: nothing is sent anywhere." : "Loading voices…";
+		$("kd-vnote").textContent = voices.length ? voices.length + " voices on this device. Automatic picks the most natural one it finds (voices named Natural, Premium, Enhanced or Google sound best; on an iPhone, iPad or Mac you can download more under Settings > Accessibility > Spoken Content > Voices). The voice is your device's own: nothing is sent anywhere." : "Loading voices…";
 	}
-	if (vsel) vsel.addEventListener("change", function () { S.voice = vsel.value; save(); vsig = ""; stopAll(); unlock(); say("Hello! This is " + (cur() ? cur().word.toLowerCase() : "a cat") + ".", token); });
+	if (vsel) vsel.addEventListener("change", function () { S.voice = vsel.value; if (bad[S.voice]) { delete bad[S.voice]; saveBad(); } save(); vsig = ""; stopAll(); unlock(); say("Hello! This is " + (cur() ? cur().word.toLowerCase() : "a cat") + ".", token); });
 	if (window.MESVoicePicker && vsel) window.MESVoicePicker.enhance(vsel, { sample: "Hello! Look, a cow. Moo!" });
 	if (synth) { loadVoices(); try { synth.addEventListener("voiceschanged", loadVoices); } catch (e) { synth.onvoiceschanged = loadVoices; } setTimeout(loadVoices, 600); }
 

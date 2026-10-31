@@ -26,26 +26,35 @@
 		remote: { dPos: [360, 196], dGnd: [440, 196], dPaint: [300, 404], gPos: [580, 150], gNeg: [660, 150] }
 	};
 	// landscape layout (dead car left, helper right); on narrow screens a portrait layout stacks the helper half under the dead one
-	var PARK_L = { r1: [365, 568], r2: [440, 568], b1: [560, 568], b2: [635, 568], pr: [625, 560], pb: [705, 560] };
-	var PARK_P = { r1: [110, 1010], r2: [185, 1010], b1: [315, 1010], b2: [390, 1010], pr: [180, 1000], pb: [320, 1000] };
+	// A jumper cable set = a red and a black cable bonded side by side; each END has one red + one black clamp (r1 + b1 = end 1, r2 + b2 = end 2).
+	var PARK_L = { r1: [345, 578], b1: [397, 578], r2: [643, 578], b2: [695, 578], pr: [625, 560], pb: [705, 560] };
+	var PARK_P = { r1: [80, 1026], b1: [132, 1026], r2: [368, 1026], b2: [420, 1026], pr: [180, 1000], pb: [320, 1000] };
+	var MATE = { r1: "b1", b1: "r1", r2: "b2", b2: "r2" };      // the other clamp at the same end of the set
 	var BAG_L = { x: 300, y: 456, w: 440, h: 136 }, BAG_P = { x: 30, y: 892, w: 440, h: 146 };
 	var portrait = false, PARK = PARK_L, BAG = BAG_L;
 	function M(p) { return portrait && p[0] >= 500 ? [p[0] - 490, p[1] + 430] : p; }
-	var LABEL = { r1: "Red clamp", r2: "Red clamp", b1: "Black clamp", b2: "Black clamp", pr: "Red clamp of the jump pack", pb: "Black clamp of the jump pack" };
+	var LABEL = { r1: "Red clamp (end 1)", r2: "Red clamp (end 2)", b1: "Black clamp (end 1)", b2: "Black clamp (end 2)", pr: "Red clamp of the jump pack", pb: "Black clamp of the jump pack" };
+	function carOf(t) { return t ? J.TARGETS[t].car : null; }
+	// which car an end of the set is at (its red or black clamp is on that car), or null while the end is in the bag
+	function endCar(c) { var m = MATE[c]; return carOf(S.conn[c]) || (m ? carOf(S.conn[m]) : null); }
+	function endName(c) { var car = endCar(c); return car === "dead" ? "dead-car end" : car === "good" ? "helper end" : (c.charAt(1) === "1" ? "end 1" : "end 2"); }
+	function labelOf(c) { if (S.mode === "pack" || !MATE[c]) return LABEL[c]; return (J.colourOf(c) === "red" ? "Red" : "Black") + " clamp at " + (endCar(c) ? "the " : "") + endName(c); }
 	var S = { mode: "cables", remote: false, conn: {}, phase: "connect", donorOn: false, deadOn: false, mins: 0, fails: 0, packOn: false, sel: null };
 	var G = {};       // svg layers
 	var MSG = {
-		step1: ["ok", "Step 1 done", "Red clamp on the dead battery's <b>+</b> post. Make sure it bites bare metal, not the plastic cover."],
-		step2: ["ok", "Step 2 done", "Red clamp on the good battery's <b>+</b>. The two + posts are now joined, so from now on keep the free black clamps away from the red ones and from any metal."],
-		step3: ["ok", "Step 3 done", "Black clamp on the good battery's <b>−</b> post. The last clamp is live now: don't let it touch anything until it goes on."],
-		step4: ["ok", "All four clamps on", "The last clamp is on bare, unpainted metal of the dead car's engine, well away from its battery. This last connection can make a small spark; here it is far from the hydrogen gas a battery can give off. Now start the helper car."],
-		"red-good-first": ["warn", "Start at the dead battery", "Guides connect the <b>dead</b> battery's + first. If you clamp the good battery first, the other red clamp in your hand is live: if it touches metal on either car it sparks, and can melt or weld itself on."],
+		step1: ["ok", "Step 1 done", "This end of the set is now the <b>dead-car end</b>: its red clamp is on the dead battery's <b>+</b> post (make sure it bites bare metal, not the plastic cover) and its black clamp hangs free. Carry the other end, the <b>helper end</b>, to the helper car."],
+		step2: ["ok", "Step 2 done", "The red clamp at the helper end is on the good battery's <b>+</b>. The two + posts are now joined, so from now on keep the two free black clamps away from the red ones and from any metal."],
+		step3: ["ok", "Step 3 done", "The black clamp at the helper end is on the good battery's <b>−</b> post. The black clamp still hanging at the dead-car end is live now: don't let it touch anything until it goes on."],
+		step4: ["ok", "All four clamps on", "The black clamp at the dead-car end is on bare, unpainted metal of the dead car's engine, well away from its battery. This last connection can make a small spark; here it is far from the hydrogen gas a battery can give off. Now start the helper car."],
+		"red-good-first": ["warn", "Start at the dead battery", "Guides connect the <b>dead</b> battery's + first. If you clamp the good battery first, the red clamp at the other end of the set is live: if it touches metal on either car it sparks, and can melt or weld itself on."],
 		"red-neg": ["bad", "Red never goes on − or on metal", "That would be <b>reversed polarity</b>. When the circuit closes, a big current flows the wrong way: sparks, hot or melted cables, blown fuses or fusible links, and possible damage to the alternator and the car's computers (ECU). In the worst case a battery can burst. Red goes on <b>+</b>."],
-		"red-neg-live": ["bad", "Red goes on +, not −", "The other red clamp is already on the dead battery's +, so this end is live. On − (or on metal) it would join the two batteries the wrong way round: when the circuit closes, a huge current flows, with sparks, melted cables, blown fuses and damaged electronics. The second red clamp goes on the <b>good battery's +</b>."],
+		"red-neg-live": ["bad", "Red goes on +, not −", "The red clamp at the other end of the set is already on the dead battery's +, so this red clamp is live. On − (or on metal) it would join the two batteries the wrong way round: when the circuit closes, a huge current flows, with sparks, melted cables, blown fuses and damaged electronics. The second red clamp goes on the <b>good battery's +</b>."],
 		"black-early": ["warn", "Both red clamps first", "Put both red clamps on before any black one. With a black clamp already on, a red clamp you are still moving can touch it or the car and short the battery."],
 		"black-pos": ["bad", "Black on + is reversed", "The black clamp belongs on − (or bare metal). Black on + reverses the polarity as soon as the circuit closes, with the same risks as a red clamp on −: sparks, blown fuses, damaged electronics."],
 		short: ["bad", "Dead short!", "With the red cable in place, black on + joins + straight to −. Expect a big spark, a red-hot or welded clamp, a hot cable and a real risk of a battery explosion. Black goes on the <b>good battery's −</b>."],
-		"black-dead-first": ["warn", "Black goes on the good battery first", "Clamp the black cable to the <b>good battery's −</b> first. The final connection belongs on the dead car, away from its battery, because that is where the spark happens."],
+		"wrong-end-good": ["warn", "Use the black clamp at the helper end", "Each end of the set has one red and one black clamp tied together. This black clamp is at the <b>dead-car end</b> (its red clamp is on the dead battery), so it can't reach the good battery: the cable would cross back over itself. Use the black clamp hanging at the <b>helper end</b>, next to the red clamp on the good battery."],
+		"wrong-end-dead": ["warn", "Use the black clamp at the dead-car end", "Each end of the set has one red and one black clamp tied together. This black clamp is at the <b>helper end</b> (its red clamp is on the good battery). The last clamp is the black one hanging at the <b>dead-car end</b>, next to the red clamp on the dead battery."],
+		"black-dead-first": ["warn", "Black goes on the good battery first", "Clamp the black clamp at the <b>helper end</b> to the <b>good battery's −</b> first. The final connection belongs on the dead car, away from its battery, because that is where the spark happens."],
 		"black-dead-neg": ["warn", "Not on the dead battery's − post", "It would usually work, but the last connection makes a small spark, and on the dead battery's − post that spark is right next to the vents where hydrogen gas can collect. Many cars also have a battery sensor on that post. Use the bare metal bolt on the engine (or the ground stud) instead. A few owner's manuals do say − to −: follow yours."],
 		paint: ["warn", "Paint doesn't conduct", "Paint and plastic insulate: the clamp may not make contact at all, or it arcs and gets hot. Pick a clean, unpainted bolt or bracket on the engine block."],
 		occupied: ["warn", "Already taken", "Something is already clamped there."],
@@ -66,7 +75,7 @@
 		poff2: ["ok", "Done", "Recharge the jump pack soon, and drive the car for at least 30 minutes. If it needed a jump for no clear reason, have the battery tested."]
 	};
 	var STEPS = {
-		cables: ["Red → dead battery +", "Red → good battery +", "Black → good battery −", "Black → bare metal on the dead car's engine", "Start the helper car, let it run 2–5 min", "Start the dead car (5–10 s cranks at most)", "Clamps off in reverse order", "Drive 30+ min, get the battery tested"],
+		cables: ["Dead-car end: red → dead battery +", "Helper end: red → good battery +", "Helper end: black → good battery −", "Dead-car end: black → bare metal on the dead car's engine", "Start the helper car, let it run 2–5 min", "Start the dead car (5–10 s cranks at most)", "Clamps off in reverse order", "Drive 30+ min, get the battery tested"],
 		pack: ["Pack off. Red → +", "Black → bare metal (or −)", "Switch the pack on", "Crank (up to 5 s; rest 2–3 min between tries)", "Car running: switch the pack off", "Black off, then red", "Recharge the pack"]
 	};
 
@@ -79,6 +88,8 @@
 	}
 	function tipOf(c) {
 		var t = S.conn[c]; if (t) { var p = targets()[t]; return [p[0], p[1] + 4]; }
+		var m = MATE[c];
+		if (S.mode === "cables" && m && S.conn[m]) { var q = targets()[S.conn[m]]; return [q[0] - 42, Math.min(q[1] + 156, portrait ? 1040 : 596)]; }
 		return PARK[c];
 	}
 	function attached() { return Object.keys(S.conn).filter(function (k) { return S.conn[k]; }); }
@@ -152,9 +163,9 @@
 			G.donorEng = engine(730, "jp-donoreng", g);
 		}
 		// bag
-		G.bag = el("g", { "class": "jp-baggrp", tabindex: 0, role: "button", "aria-label": "Cable bag: put a clamp here to take it off" }, svg);
+		G.bag = el("g", { "class": "jp-baggrp", tabindex: 0, role: "button", "aria-label": S.mode === "pack" ? "Pack clamps: put a clamp here to take it off" : "Cable bag: one jumper cable set, a red and a black cable joined side by side, with a red and a black clamp at each end. Put a clamp here to take it off" }, svg);
 		el("rect", { x: BAG.x, y: BAG.y, width: BAG.w, height: BAG.h, rx: 14, "class": "jp-bag" }, G.bag);
-		el("text", { x: BAG.x + BAG.w / 2, y: BAG.y + 22, "text-anchor": "middle", "class": "jp-bagtxt" }, G.bag, S.mode === "pack" ? "Pack clamps (drop here to take a clamp off)" : "Cable bag (drop a clamp here to take it off)");
+		el("text", { x: BAG.x + BAG.w / 2, y: BAG.y + 22, "text-anchor": "middle", "class": "jp-bagtxt" }, G.bag, S.mode === "pack" ? "Pack clamps (drop here to take a clamp off)" : (portrait ? "Cable set: red + black clamp at each end" : "Cable set: a red + black clamp at each end (drop one here to take it off)"));
 		G.bag.addEventListener("click", function () { if (S.sel && S.conn[S.sel]) doRemove(S.sel); });
 		G.bag.addEventListener("keydown", function (e) { if ((e.key === "Enter" || e.key === " ") && S.sel && S.conn[S.sel]) { e.preventDefault(); doRemove(S.sel); } });
 		// targets
@@ -185,9 +196,40 @@
 		G.fx = el("g", null, svg);
 		draw();
 	}
-	function cablePath(a, b, sag) {
-		var ay = a[1] - 76, by = b[1] - 76, s = sag || 150;
-		return "M" + a[0] + " " + ay + " C" + a[0] + " " + (ay + s) + " " + b[0] + " " + (by + s) + " " + b[0] + " " + by;
+	// ---- the bonded cable set: two leads at each end merge into one red + black pair that runs between the ends ----
+	function bz(p0, p1, p2, p3, t) { var u = 1 - t; return [u * u * u * p0[0] + 3 * u * u * t * p1[0] + 3 * u * t * t * p2[0] + t * t * t * p3[0], u * u * u * p0[1] + 3 * u * u * t * p1[1] + 3 * u * t * t * p2[1] + t * t * t * p3[1]]; }
+	function poly(pts) { return "M" + pts.map(function (p) { return p[0].toFixed(1) + " " + p[1].toFixed(1); }).join(" L"); }
+	function topOf(c) { var p = posOf(c); return [p[0], p[1] - 76]; }
+	function splitOf(r, b) { var a = topOf(r), c = topOf(b); return [(a[0] + c[0]) / 2, Math.max(a[1], c[1]) + 54]; }
+	function drawSet() {
+		var H = portrait ? 1046 : 600, A = splitOf("r1", "b1"), B = splitOf("r2", "b2");
+		// the pair sags below both ends (each end's control point stays inside the picture, so the curve does too)
+		var d = Math.hypot(B[0] - A[0], B[1] - A[1]), s = 70 + d * 0.3;
+		var c1 = [A[0], A[1] + Math.max(14, Math.min(s, H - 8 - A[1]))], c2 = [B[0], B[1] + Math.max(14, Math.min(s, H - 8 - B[1]))], n = 56, mid = [], i;
+		for (i = 0; i <= n; i++) mid.push(bz(A, c1, c2, B, i / n));
+		var off = 3.3, red = [], blk = [], nr = [];
+		for (i = 0; i <= n; i++) {
+			var p = mid[Math.max(0, i - 1)], q = mid[Math.min(n, i + 1)], dx = q[0] - p[0], dy = q[1] - p[1], L = Math.hypot(dx, dy) || 1, nx = -dy / L, ny = dx / L;
+			nr.push([nx, ny]); red.push([mid[i][0] + nx * off, mid[i][1] + ny * off]); blk.push([mid[i][0] - nx * off, mid[i][1] - ny * off]);
+		}
+		// leads: from the top of each clamp's handle down into the split
+		function lead(c, end, cls) { var t = topOf(c); el("path", { d: "M" + t[0] + " " + t[1] + " C" + t[0] + " " + (t[1] + 34) + " " + end[0] + " " + (end[1] - 34) + " " + end[0] + " " + end[1], "class": "jp-wire jp-lead " + cls }, G.cab); }
+		lead("r1", red[0], "jp-wr"); lead("b1", blk[0], "jp-wb"); lead("r2", red[n], "jp-wr"); lead("b2", blk[n], "jp-wb");
+		el("path", { d: poly(blk), "class": "jp-wire jp-pair jp-wb" }, G.cab);
+		el("path", { d: poly(red), "class": "jp-wire jp-pair jp-wr" }, G.cab);
+		// zip ties along the pair, and a moulded splitter where each end's two leads leave it
+		var len = 0, next = 46;
+		for (i = 1; i < n; i++) {
+			len += Math.hypot(mid[i][0] - mid[i - 1][0], mid[i][1] - mid[i - 1][1]);
+			if (len >= next && len < d * 3) { next += 62; var k = nr[i]; el("line", { x1: mid[i][0] + k[0] * 8, y1: mid[i][1] + k[1] * 8, x2: mid[i][0] - k[0] * 8, y2: mid[i][1] - k[1] * 8, "class": "jp-tie" }, G.cab); }
+		}
+		[[0, A, "r1"], [n, B, "r2"]].forEach(function (e) {
+			var k = nr[e[0]], m = mid[e[0]];
+			el("rect", { x: m[0] - 9, y: m[1] - 7, width: 18, height: 14, rx: 4, "class": "jp-split", transform: "rotate(" + (Math.atan2(k[1], k[0]) * 180 / Math.PI) + " " + m[0] + " " + m[1] + ")" }, G.cab);
+			if (dragging) return;
+			var free = !S.conn[e[2]] && !S.conn[MATE[e[2]]];     // in the bag: the end's name above its two clamps; on a car: under the splitter
+			el("text", { x: m[0], y: free ? topOf(e[2])[1] - 8 : m[1] + 26, "text-anchor": "middle", "class": "jp-endtxt" }, G.cab, endName(e[2]));
+		});
 	}
 	var dragPos = {};
 	function posOf(c) { return dragPos[c] || tipOf(c); }
@@ -198,15 +240,14 @@
 			el("path", { d: "M" + a1[0] + " " + a1[1] + " C" + a1[0] + " " + (a1[1] + 90) + " " + posOf("pr")[0] + " " + (posOf("pr")[1] + 40) + " " + posOf("pr")[0] + " " + (posOf("pr")[1] - 76), "class": "jp-wire jp-wr" }, G.cab);
 			el("path", { d: "M" + a2[0] + " " + a2[1] + " C" + a2[0] + " " + (a2[1] + 90) + " " + posOf("pb")[0] + " " + (posOf("pb")[1] + 40) + " " + posOf("pb")[0] + " " + (posOf("pb")[1] - 76), "class": "jp-wire jp-wb" }, G.cab);
 		} else {
-			el("path", { d: cablePath(posOf("r1"), posOf("r2")), "class": "jp-wire jp-wr" }, G.cab);
-			el("path", { d: cablePath(posOf("b1"), posOf("b2"), 190), "class": "jp-wire jp-wb" }, G.cab);
+			drawSet();
 		}
 		clamps().forEach(function (c) {
 			var p = posOf(c), g = G.cls[c];
 			g.setAttribute("transform", "translate(" + p[0] + " " + p[1] + ")");
 			g.classList.toggle("sel", S.sel === c);
 			g.classList.toggle("on", !!S.conn[c]);
-			g.setAttribute("aria-label", LABEL[c] + (S.conn[c] ? ", on " + J.TARGETS[S.conn[c]].name : ", in the bag") + (S.sel === c ? ", picked up" : ""));
+			g.setAttribute("aria-label", labelOf(c) + (S.conn[c] ? ", on " + J.TARGETS[S.conn[c]].name : S.mode === "cables" && MATE[c] && S.conn[MATE[c]] ? ", hanging free" : ", in the bag") + (S.sel === c ? ", picked up" : ""));
 		});
 		var show = !!(S.sel || dragging);
 		Object.keys(G.tgs).forEach(function (k) {
@@ -315,7 +356,7 @@
 	}
 	function reset() {
 		S.conn = {}; S.phase = "connect"; S.donorOn = false; S.deadOn = false; S.mins = 0; S.fails = 0; S.packOn = false; S.sel = null; dragPos = {};
-		say(null, '<span>' + (S.mode === "pack" ? "Jump pack: connect the red clamp to the dead battery's + first, with the pack switched off." : "Start with step 1: a red clamp on the dead battery's + post.") + "</span>");
+		say(null, '<span>' + (S.mode === "pack" ? "Jump pack: connect the red clamp to the dead battery's + first, with the pack switched off." : "Start with step 1: take one end of the cable set to the dead car and put its red clamp on the dead battery's + post.") + "</span>");
 		scene(); renderSteps();
 	}
 	function showNext() {
@@ -323,13 +364,16 @@
 		if (S.mode === "cables") {
 			if (S.deadOn) { var want = J.REMOVE_ORDER.filter(function (t) { return attached().some(function (c) { return S.conn[c] === t; }); })[0]; var c = attached().filter(function (k) { return S.conn[k] === want; })[0]; if (c) doRemove(c); return; }
 			var plan = [["r1", "dPos"], ["r2", "gPos"], ["b1", "gNeg"], ["b2", "dGnd"]];
-			var p = plan[n]; if (p) { var free = J.colourOf(p[0]) === "red" ? (S.conn.r1 ? "r2" : "r1") : (S.conn.b1 ? "b2" : "b1"); drop(free, p[1], targets()[p[1]]); }
+			var p = plan[n]; if (p) {
+				var free = J.colourOf(p[0]) === "red" ? (S.conn.r1 ? "r2" : "r1") : (["b1", "b2"].filter(function (k) { return !S.conn[k] && carOf(S.conn[MATE[k]]) === carOf(p[1]); })[0] || (S.conn.b1 ? "b2" : "b1"));
+				drop(free, p[1], targets()[p[1]]);
+			}
 		} else {
 			if (S.deadOn) { doRemove(S.conn.pb ? "pb" : "pr"); return; }
 			if (!S.conn.pr) drop("pr", "dPos", targets().dPos); else if (!S.conn.pb) drop("pb", "dGnd", targets().dGnd);
 		}
 	}
-	function select(c) { S.sel = c; draw(); if (c) $("jp-hint").textContent = LABEL[c] + " picked up: now tap where it goes" + (S.conn[c] ? " (or the bag to take it off)" : "") + "."; else $("jp-hint").textContent = "Drag a clamp onto a glowing spot, or tap a clamp and then tap where it goes."; }
+	function select(c) { S.sel = c; draw(); if (c) $("jp-hint").textContent = labelOf(c) + " picked up: now tap where it goes" + (S.conn[c] ? " (or the bag to take it off)" : "") + "."; else $("jp-hint").textContent = "Drag a clamp onto a glowing spot, or tap a clamp and then tap where it goes."; }
 
 	/* ---------- actions ---------- */
 	function drop(c, target, at) {
@@ -341,6 +385,7 @@
 			conn[c] = null;
 		}
 		var r = S.mode === "pack" ? J.placePack(conn, c, target, S.packOn) : J.placeCable(conn, c, target);
+		if (r.ok && S.mode === "cables" && MATE[c] && conn[MATE[c]] && carOf(conn[MATE[c]]) !== carOf(target)) r = { ok: false, code: carOf(target) === "good" ? "wrong-end-good" : "wrong-end-dead" };
 		if (!r.ok) {
 			say(r.code);
 			var lvl = (MSG[r.code] || [])[0];
@@ -359,7 +404,7 @@
 		// before the car runs, taking clamps off is just undoing (no message about driving)
 		S.conn[c] = null;
 		var left = attached().length;
-		if (!S.deadOn) { if (S.mode === "cables" && left < 4) S.mins = 0; if (S.mode === "pack" && left < 2) S.packOn = false; sayRaw("info", "Clamp off", "Back in the bag."); }
+		if (!S.deadOn) { if (S.mode === "cables" && left < 4) S.mins = 0; if (S.mode === "pack" && left < 2) S.packOn = false; sayRaw("info", "Clamp off", S.mode === "cables" && MATE[c] && S.conn[MATE[c]] ? "It hangs from its end of the set again." : "Back in the bag."); }
 		else { say(r.code); if (!left) S.phase = "done"; }
 		select(null); scene(); renderSteps();
 	}

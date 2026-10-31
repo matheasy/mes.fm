@@ -325,7 +325,7 @@ body.dark-mode .tu .rw-head {color:#a0a8b3;border-bottom-color:#555;} body.dark-
 
 	/* ---------- Player ---------- */
 	#kd .kd-wrap {background:var(--kd-bg);border:2px solid var(--kd-line);border-radius:1.4em;padding:.7em;font-family:var(--kd-font);display:flex;flex-direction:column;gap:.6em;
-		-webkit-tap-highlight-color:transparent;touch-action:manipulation;}
+		-webkit-tap-highlight-color:transparent;touch-action:manipulation;scroll-margin-top:64px;}
 	#kd .kd-top {display:flex;align-items:center;gap:.5em;flex-wrap:wrap;}
 	#kd .kd-modes {display:flex;gap:.35em;flex-wrap:wrap;}
 	#kd .kd-modes button, #kd .kd-tbtn, #kd .kd-hold {min-height:44px;border:2px solid var(--kd-btn-line);background:var(--kd-btn);color:var(--kd-btn-ink);border-radius:2em;padding:.3em .95em;font-size:1em;font-weight:700;cursor:pointer;display:inline-flex;align-items:center;gap:.35em;}
@@ -406,7 +406,7 @@ body.dark-mode .tu .rw-head {color:#a0a8b3;border-bottom-color:#555;} body.dark-
 	/* ---------- Fill window / full screen (kiosk) ---------- */
 	#kd .kd-wrap.kd-on {position:fixed;inset:0;z-index:2147483000;border-radius:0;border:0;margin:0;padding:max(.5em, env(safe-area-inset-top)) max(.6em, env(safe-area-inset-right)) max(.5em, env(safe-area-inset-bottom)) max(.6em, env(safe-area-inset-left));overflow:hidden;}
 	#kd .kd-wrap.kd-on .kd-stage {flex:1 1 auto;min-height:0;}
-	#kd .kd-wrap.kd-on .kd-pic {font-size:min(36vw, 40vh, 26rem);}
+	#kd .kd-wrap.kd-on .kd-pic {font-size:min(58vw, 40vh, 26rem);}
 	#kd .kd-wrap.kd-on .kd-word {font-size:clamp(2.6rem, min(10vw, 11vh), 8rem);}
 	#kd .kd-wrap.kd-on .kd-choice {font-size:min(22vw, 34vh, 14rem);}
 	#kd .kd-wrap.kd-on .kd-hint {display:none;}
@@ -420,9 +420,32 @@ body.dark-mode .tu .rw-head {color:#a0a8b3;border-bottom-color:#555;} body.dark-
 		#kd .kd-big {font-size:1em;padding:.3em .8em;}
 		#kd .kd-wrap {padding:.5em;}
 	}
-	@media (max-height:520px) and (orientation:landscape) {
-		#kd .kd-wrap.kd-on .kd-ctl {display:none;}
-		#kd .kd-wrap.kd-on .kd-card {flex-direction:row;gap:.5em;}
+	/* Landscape phones (and short landscape windows): the card on the left, the big buttons in a column on the right, the top row above both,
+	   so every control stays on screen without scrolling (in the page and in Fill window / Full screen). The side arrows are dropped there
+	   because Back / Next sit in the column. */
+	@media (orientation:landscape) and (max-height:620px) and (min-width:480px) {
+		#kd .kd-wrap {display:grid;grid-template-columns:minmax(0, 1fr) auto;grid-template-rows:auto minmax(0, 1fr) auto;grid-template-areas:"top top" "stage ctl" "hint hint";gap:.4em .5em;}
+		#kd .kd-wrap:not(.kd-on) {height:calc(100svh - 76px);min-height:17em;box-sizing:border-box;}
+		#kd .kd-top {grid-area:top;gap:.35em;}
+		#kd .kd-top .kd-modes button, #kd .kd-top .kd-tbtn, #kd .kd-top .kd-hold {min-height:40px;padding:.2em .7em;font-size:.9em;}
+		#kd .kd-stage {grid-area:stage;min-height:0;height:100%;}
+		#kd .kd-side {display:none;}
+		#kd .kd-ctl {grid-area:ctl;flex-direction:column;flex-wrap:nowrap;justify-content:center;gap:.3em;width:clamp(8.5em, 22vw, 12em);}
+		#kd .kd-big {min-height:0;flex:1 1 0;max-height:4em;font-size:clamp(.82em, 4.4vh, 1.05em);padding:.15em .6em;justify-content:center;border-radius:1em;}
+		#kd .kd-hint {grid-area:hint;font-size:.85em;min-height:0;}
+		#kd .kd-hint:empty {display:none;}
+		#kd .kd-card {display:grid;grid-template-columns:auto minmax(0, auto);grid-template-areas:"pic word" "pic sub";align-content:center;align-items:center;gap:0 .8em;padding:.4em 1em 1.6em;}
+		#kd .kd-card .kd-pic {grid-area:pic;}
+		#kd .kd-card .kd-word {grid-area:word;align-self:end;text-align:left;}
+		#kd .kd-card .kd-sub {grid-area:sub;align-self:start;text-align:left;}
+		#kd .kd-pic, #kd .kd-wrap.kd-on .kd-pic {font-size:min(26vw, 50vh, 18rem);}
+		#kd .kd-word, #kd .kd-wrap.kd-on .kd-word {font-size:clamp(2rem, min(8vw, 15vh), 6rem);}
+		#kd .kd-sub {font-size:clamp(1rem, 6vh, 2rem);}
+		#kd .kd-quiz {padding:.4em .8em 1.6em;gap:.4em;}
+		#kd .kd-qq {font-size:clamp(1rem, 6vh, 1.6rem);padding:.25em .8em;}
+		#kd .kd-choices, #kd .kd-choices[data-n="4"] {grid-template-columns:repeat(var(--kd-n, 3), minmax(0, 1fr));max-width:none;width:auto;}
+		#kd .kd-choice, #kd .kd-wrap.kd-on .kd-choice, #kd .kd-choices[data-n="4"] .kd-choice {font-size:min(13vw, 27vh, 9rem);}
+		#kd .kd-pos {bottom:.25em;font-size:.85em;}
 	}
 
 	/* ---------- Settings ---------- */
@@ -740,7 +763,7 @@ body.is-stuck #navbar.hide { position: fixed; top: 56px; right: 8px; }
             hide_search:false,
             current_tab:0
         }        </script><!-- FASTCOMMENTS-LAZY: widget init moved to main_js/main.js -- it pulls embed.min.js only when #fastcomments-widget nears the viewport or on the first Comments-toggle click, so it no longer blocks first render -->                <script src="https://mes.fm/main_js/lazysizes.min.js?v=1.0.3" async></script>
-	<script src="/kids/js/kids.js?v=1" defer></script>
+	<script src="/kids/js/kids.js?v=2" defer></script>
             <script src="https://mes.fm/main_js/main.js?v=1.0.5"></script>    <!-- PAGEVIEW-TRACKING-INSERTED --><script src="https://mes.fm/main_js/track.js" defer></script><script>document.getElementById('copyright-year').textContent = new Date().getFullYear();</script><script src="/main_js/info-bar-fit.js" defer></script><script>
   // Floating compact header bar (see #compact-nav CSS): appears once the
   // header + nav bar have scrolled off the top; nav links that don't fit
