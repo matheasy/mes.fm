@@ -332,7 +332,7 @@ qaSection.extraViews.forEach((view) => view.items.forEach((item) => { item.lp = 
 // ---------------------------------------------------------------------------
 // mes.fm/youtube: every video of https://www.youtube.com/@mes/videos (snapshot written by update_youtube_lists.py into
 // youtube-videos.json, newest first). Topic chips are title tests like QA_CATEGORIES (a video may carry several; "Everything else"
-// catches the rest). Thumbnails are YouTube's own mqdefault image, so no scraping is needed (items with an `image` skip resolveAllMeta).
+// catches the rest). Thumbnails are YouTube's own hqdefault image (yt-thumbs.js upgrades them to maxresdefault), so no scraping is needed (items with an `image` skip resolveAllMeta).
 // ---------------------------------------------------------------------------
 const YT_CATEGORIES = [
   { id: "limits", label: "Limits & Continuity", test: (t) => /\blimit|continuity|continuous|squeeze|asymptote|l'?hospital|indeterminate|intermediate value|direct substitution|epsilon/i.test(t) },
@@ -390,7 +390,10 @@ SECTIONS.push({
         href: hive || yt,
         links: hive ? [{ label: "Hive", href: hive }, { label: "YouTube", href: yt }] : [{ label: "YouTube", href: yt }],
         title: v.title,
-        image: `https://i.ytimg.com/vi/${v.id}/mqdefault.jpg`,
+        // hqdefault (480x360, always exists; its black bars are cropped by the 16:9 box), upgraded to the 1280px
+        // maxresdefault by main_js/yt-thumbs.js where YouTube has one (data-yt below). mqdefault (320x180) looked blurry.
+        image: `https://i.ytimg.com/vi/${v.id}/hqdefault.jpg`,
+        yt: v.id,
         listThumb: true,
         meta: `${fmtDuration(v.dur)} \u00b7 ${fmtViews(v.views)}`,
         sortKeys: { i, v: v.views, d: v.dur },
@@ -822,7 +825,7 @@ function buildCard(item, meta) {
   const external = item.image && /^https?:\/\/(?:www\.)?(?:youtube\.com|peakd\.com)\//.test(item.href);
   const lp = item.lp ? lpAttrs(lpMap(buildLinksForItem(item, meta)), item.href) : "";
   return `<a class="link-card${lp ? " lp-a" : ""}"${catsAttr}${sortAttrs(item)}${lp} href="${escapeHtml(item.href)}"${external ? ' target="_blank" rel="noopener"' : ""}>
-      <span class="link-card-thumb"${thumbStyle}></span>
+      <span class="link-card-thumb"${thumbStyle}${item.yt ? ` data-yt="${escapeHtml(item.yt)}"` : ""}></span>
       <span class="link-card-body">
         ${item.tag ? `<span class="link-card-tag link-card-tag--${escapeHtml(item.tag.toLowerCase())}">${escapeHtml(item.tag)}</span>` : ""}<span class="link-card-title">${escapeHtml(item.title)}</span>
         ${item.meta ? `<span class="link-card-meta">${escapeHtml(item.meta)}</span>` : `<span class="link-card-readmore">${lp ? lpCaption(item.href) : "View &rarr;"}</span>`}
@@ -838,7 +841,7 @@ function buildRow(item, meta, linksBuilder) {
     .join(" - ");
   const rowImage = item.image || m.image;
   // alt="" by default: the row's <h3> right above already says the title, so a screen reader would hear it twice.
-  const imgHtml = rowImage && item.listThumb !== false ? `<img class="list-thumb" src="${escapeHtml(rowImage)}" alt="${item.thumbAlt ? escapeHtml(item.title) : ""}">` : "";
+  const imgHtml = rowImage && item.listThumb !== false ? `<img class="list-thumb" src="${escapeHtml(rowImage)}"${item.yt ? ` data-yt="${escapeHtml(item.yt)}"` : ""} alt="${item.thumbAlt ? escapeHtml(item.title) : ""}">` : "";
   const catsAttr = item.cats !== undefined ? ` data-cats="${escapeHtml(item.cats)}"` : "";
   // A link-pref item's title links where its Grid View card goes (and follows the "Open in:" switch).
   const lp = item.lp ? lpAttrs(lpMap(links), item.href) : "";
@@ -2632,7 +2635,7 @@ var MES_Vars = {
 <script src="/main_js/main.js?v=1.0.3"></script>
 <script>document.getElementById('copyright-year').textContent = new Date().getFullYear();</script>
 <!-- PAGEVIEW-TRACKING-INSERTED --><script src="/main_js/track.js" defer></script><script src="/main_js/info-bar-fit.js" defer></script>
-${page.sectionId === "mathYoutube" ? YT_TOPUP_HTML + "\n" : ""}<script src="/main_js/site-search.js?v=1" defer></script><!-- HUB-THEATRE-JS --><script src="/main_js/hub-theatre.js?v=1" defer></script><!-- /HUB-THEATRE-JS -->${hasLinkPref ? LP_SCRIPT : ""}</body>
+${page.sectionId === "mathYoutube" ? YT_TOPUP_HTML + "\n" + '<script src="/main_js/yt-thumbs.js?v=1" defer></script>' + "\n" : ""}<script src="/main_js/site-search.js?v=1" defer></script><!-- HUB-THEATRE-JS --><script src="/main_js/hub-theatre.js?v=1" defer></script><!-- /HUB-THEATRE-JS -->${hasLinkPref ? LP_SCRIPT : ""}</body>
 </html>
 `;
 }

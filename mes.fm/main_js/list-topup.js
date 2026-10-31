@@ -90,7 +90,7 @@
     var views = typeof v.views === 'number' ? v.views : null;
     return {
       key: v.id, title: v.title || v.id, href: href, date: String(v.published || '').slice(0, 10), tags: [],
-      image: 'https://i.ytimg.com/vi/' + v.id + '/mqdefault.jpg',
+      image: 'https://i.ytimg.com/vi/' + v.id + '/hqdefault.jpg', yt: v.id,   // main_js/yt-thumbs.js upgrades it to maxresdefault
       meta: 'Uploaded ' + fmtDate(v.published) + (views != null ? ' · ' + fmtViews(views) : ''),
       v: views || 0, d: 0, links: [['YouTube', href]],
     };
@@ -107,7 +107,7 @@
   // never takes part in search or A-Z sorting).
   function cardHtml(it) {
     return '<a class="link-card lt-added"' + attrs(it) + ' href="' + esc(it.href) + '" target="_blank" rel="noopener">' +
-      '<span class="link-card-thumb" style="background-image:url(\'' + esc(it.image).replace(/'/g, '%27').replace(/\)/g, '%29') + '\')"></span>' +
+      '<span class="link-card-thumb" style="background-image:url(\'' + esc(it.image).replace(/'/g, '%27').replace(/\)/g, '%29') + '\')"' + (it.yt ? ' data-yt="' + esc(it.yt) + '"' : '') + '></span>' +
       '<span class="link-card-body">' + BADGE + '<span class="link-card-title">' + esc(it.title) + '</span>' +
       '<span class="link-card-meta">' + esc(it.meta) + '</span></span></a>';
   }
@@ -115,7 +115,7 @@
     var links = (it.links || []).map(function (l) { return '<a href="' + esc(l[1]) + '" target="_blank" rel="noopener">' + esc(l[0]) + '</a>'; }).join(' - ');
     return '<div class="list-row lt-added"' + attrs(it) + '><h3>' + esc(it.title) + '</h3><p>' + links +
       ' <span class="list-meta">&middot; ' + esc(it.meta) + '</span> ' + BADGE + '</p>' +
-      '<img class="list-thumb" src="' + esc(it.image) + '" alt="' + esc(it.title) + '"></div>';
+      '<img class="list-thumb" src="' + esc(it.image) + '"' + (it.yt ? ' data-yt="' + esc(it.yt) + '"' : '') + ' alt="' + esc(it.title) + '"></div>';
   }
   // Numbers the new items so "Newest first" (ascending data-i, the snapshot starts at 0) puts them on top, newest first.
   function number(items) { var n = items.length; items.forEach(function (it, k) { it.i = k - n; }); return items; }

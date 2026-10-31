@@ -9,7 +9,8 @@ Source: em304_src/post.md (the Hive markdown, cached so the build works offline)
 the same `marked` the Problems Plus build.mjs uses (mes.fm/vector-functions-problems-plus/node_modules; needs node).
 Structure: everything before the first heading = the "Full Video" chapter (3Speak video, "The original test (PDF)" box,
 description, timestamps, links); `##` headings before the first `#` and every `#` heading = top-level folds; `##` inside a
-`#` chapter = sub-folds (listed in Jump to); `###` stay plain headings. Timestamp links seek the video on the page.
+`#` chapter = sub-folds (listed in Jump to); `###` stay plain headings. Timestamp links seek the video on the page, and main_js/video-chapters.js (inherited from the shell's
+script tags) turns them into a chapter bar + Chapters list under the player.
 Video: 3Speak mes/ta0jgic7, its HLS manifest resolved at RUNTIME from play.3speak.tv/api/embed (hls.js), falling back to
 the YouTube embed (zNdifMfnqcs) if 3Speak fails. The box links Dr. Judy Wood's original test PDF page, mes.fm/em-304-problem-1-judy-wood
 (build_pdf_page.py), and its preview.jpg. Images: img/share.jpg (1200x630 og:image) and mes.fm/img/space-shuttle-columbia-icon.jpg
@@ -177,7 +178,9 @@ VIDEO_JS = r"""<script>
         if (fellBack) return;
         fellBack = true;
         frame = document.createElement('iframe');
-        frame.src = 'https://www.youtube-nocookie.com/embed/' + YT_ID + (start ? '?start=' + start + '&autoplay=1' : '');
+        // enablejsapi: main_js/video-chapters.js drives this iframe through the YouTube IFrame API (chapter bar, seeking)
+        frame.src = 'https://www.youtube-nocookie.com/embed/' + YT_ID + '?enablejsapi=1&origin=' + encodeURIComponent(location.origin) +
+          (start ? '&start=' + start + '&autoplay=1' : '');
         frame.title = 'YouTube video';
         frame.allow = 'accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture';
         frame.allowFullscreen = true;
@@ -210,10 +213,12 @@ VIDEO_JS = r"""<script>
         if (!a || e.ctrlKey || e.metaKey || e.shiftKey || e.button) return;
         e.preventDefault();
         var t = parseInt(a.getAttribute('data-t'), 10) || 0;
+        // video-chapters.js seeks whichever player is showing (the <video> or the YouTube iframe, without reloading it)
+        if (window.MESChapters && window.MESChapters.seek(t, embed)) return;
         var y = embed.getBoundingClientRect().top + window.pageYOffset - 70;
         window.scrollTo({ top: Math.max(0, y), behavior: 'smooth' });
         if (fellBack) {
-          if (frame) frame.src = 'https://www.youtube-nocookie.com/embed/' + YT_ID + '?start=' + t + '&autoplay=1';
+          if (frame) frame.src = 'https://www.youtube-nocookie.com/embed/' + YT_ID + '?enablejsapi=1&start=' + t + '&autoplay=1';
           return;
         }
         try { video.currentTime = t; } catch (err) {}
