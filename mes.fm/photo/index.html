@@ -561,6 +561,26 @@ body.dark-mode .tu .rw-head {color:#a0a8b3;border-bottom-color:#555;} body.dark-
 		#pe .pe-tgn, #pe .pe-tgc {display:none !important;} #pe .pe-tgfold {font-size:0.75em;padding:0 0.1em;} #pe .pe-tacts {flex:none;margin:0 0 0 0.3em;flex-wrap:nowrap;} #pe .pe-thint {display:none;} #pe .pe-thead {flex-wrap:nowrap;flex:none;}
 		#pe .pe-lfloat {position:fixed;left:8px;right:8px;top:8px;bottom:8px;z-index:55;}
 	}
+	/* round 8: movable dialogs, the floating Layer Style window, bottom sheets on phones */
+	#pe .pe-dlg-h {cursor:move;user-select:none;-webkit-user-select:none;touch-action:none;} #pe .pe-dlg.is-placed {position:absolute;margin:0;} #pe .pe-dlg.is-dragging {opacity:0.92;box-shadow:0 1.4em 3.5em var(--pe-shadow2);}
+	#pe .pe-modal--float, #pe .pe-modal--clear {background:transparent;} #pe .pe-modal--float {pointer-events:none;} #pe .pe-modal--float .pe-dlg {pointer-events:auto;}
+	#pe .pe-dlg--float {max-height:calc(100% - 32px);box-shadow:0 0.8em 2.4em var(--pe-shadow2), 0 0 0 1px var(--pe-line);} #pe .pe-dlg {transition:opacity 0.12s;} #pe .pe-dlg--peek {opacity:0.28;}
+	#pe .pe-dlg--lstyle {width:min(41.5em, calc(100% - 16px));} #pe .pe-dlg--lstyle .pe-dlg-b {padding:0;display:flex;min-height:0;} #pe .pe-dlg--lstyle .pe-dlg-f {justify-content:flex-end;}
+	#pe .pe-ls {display:flex;min-height:0;width:100%;}
+	#pe .pe-ls-list {flex:none;width:12.6em;border-right:1px solid var(--pe-line);padding:0.4em 0;overflow-y:auto;background:var(--pe-panel2);}
+	#pe .pe-ls-item {display:flex;align-items:center;gap:0.35em;padding:0 0.5em 0 0.6em;} #pe .pe-ls-item input {flex:none;width:1.05em;height:1.05em;accent-color:var(--pe-on);} #pe .pe-ls-sp {width:1.05em;flex:none;}
+	#pe .pe-ls-name {flex:1;text-align:left;background:none;border:0;border-radius:0.3em;padding:0.42em 0.5em;color:var(--pe-text);} #pe .pe-ls-name:hover {background:var(--pe-hover);}
+	#pe .pe-ls-item.is-sel .pe-ls-name {background:var(--pe-on);color:var(--pe-onfg);font-weight:600;}
+	#pe .pe-ls-pane {flex:1;min-width:0;padding:0.8em 1em;overflow-y:auto;display:flex;flex-direction:column;gap:0.7em;} #pe .pe-ls-ph {font-size:1.05em;color:var(--pe-text);} #pe .pe-ls-pane .pe-row-l {width:8.2em;} #pe .pe-ls-pane .pe-row .pe-num {width:4.2em;} #pe .pe-ls-reset {align-self:flex-start;}
+	#pe .pe-ls-presets {display:grid;grid-template-columns:repeat(auto-fill, minmax(11em, 1fr));gap:0.5em;} #pe .pe-ls-preset {display:flex;flex-direction:column;gap:0.2em;text-align:left;background:var(--pe-field);border:1px solid var(--pe-line);border-radius:0.4em;padding:0.55em 0.7em;color:var(--pe-text);} #pe .pe-ls-preset:hover {border-color:var(--pe-on);} #pe .pe-ls-preset span {color:var(--pe-dim);font-size:0.9em;}
+	#pe .pe-gred {display:flex;flex-direction:column;gap:0.45em;} #pe .pe-gred-bar {height:1.6em;border-radius:0.3em;border:1px solid var(--pe-line);}
+	#pe .pe-gred-row {display:flex;align-items:center;gap:0.35em;flex-wrap:wrap;} #pe .pe-gred-row .pe-num {width:4em;} #pe .pe-gred-l {color:var(--pe-dim);} #pe .pe-gred-tools {display:flex;flex-wrap:wrap;gap:0.3em;align-items:center;}
+	@media (max-width:640px) {
+		#pe .pe-modal {position:fixed;inset:0;z-index:2147483100;align-items:flex-end;padding:0;} #pe .pe-dlg, #pe .pe-dlg.is-placed {position:relative;left:auto !important;top:auto !important;width:100% !important;max-height:72%;border-radius:0.8em 0.8em 0 0;}
+		#pe .pe-modal--float .pe-dlg {max-height:52%;} #pe .pe-dlg-h {cursor:default;}
+		#pe .pe-ls {flex-direction:column;} #pe .pe-ls-list {width:auto;display:flex;overflow-x:auto;overflow-y:hidden;border-right:0;border-bottom:1px solid var(--pe-line);padding:0.3em;flex:none;} #pe .pe-ls-item {flex:none;padding:0 0.2em;} #pe .pe-ls-name {white-space:nowrap;padding:0.35em 0.45em;}
+		#pe .pe-ls-pane .pe-row-l {width:7.2em;} #pe .pe-ls-item {border:1px solid var(--pe-line);border-radius:1em;margin-right:0.35em;padding:0 0.15em 0 0.45em;}
+	}
 
 
 	@media print {
@@ -600,48 +620,6 @@ body.dark-mode .tu .rw-head {color:#a0a8b3;border-bottom-color:#555;} body.dark-
 		.footer__item--extra-padding { padding-left: 0; }
 		.footer__text--extra-info { float: none; display: block; margin-top: 0.5em; }
 	}
-/* Floating compact header bar: once the full header + nav scroll out of
-   view, a slim fixed bar (small logo, title, as many nav links as fit)
-   slides in, and the hamburger is pinned into its right end. Toggled by
-   the compact-nav script below. Ported from mes.fm/math's version (see
-   its build.mjs) -- display-controls.js pins the A-/A+/moon buttons into its right end.
-
-   Hidden by default via the inline style="display:none" on the element
-   itself (not just this stylesheet's "display: none" below) -- some
-   browser extensions strip or neutralize cosmetic-looking CSS for
-   elements named "sticky-*"/"*-bar" (a common ad/cookie-bar filter
-   pattern), which left an earlier version's raw unstyled markup visible
-   above the real header on mes.fm/math. The inline attribute is a
-   fallback the JS clears itself, independent of this stylesheet
-   surviving intact. */
-#compact-nav {
-  position: fixed; top: 0; left: 0; right: 0; height: 52px; z-index: 15;
-  display: none; align-items: center; gap: 12px;
-  padding: 0 80px 0 12px; box-sizing: border-box;
-  background: #ffffff; border-bottom: 3px solid #7c3aed;
-  box-shadow: 0 2px 8px rgba(0,0,0,0.18);
-  transform: translateY(-110%); transition: transform 0.2s ease;
-}
-#compact-nav.is-visible { display: flex; }
-body.is-stuck #compact-nav { transform: none; }
-#compact-nav .compact-nav-logo { display: block; width: 32px; height: 32px; border-radius: 6px; flex: 0 0 auto; }
-#compact-nav .compact-nav-title {
-  flex: 0 1 auto; min-width: 0; font-weight: 700; font-size: 1.05em; color: #1a1a1a;
-  text-decoration: none; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
-}
-#compact-nav .compact-nav-links { display: flex; flex: 1 1 0; min-width: 0; overflow: hidden; margin: 0 0 0 8px; padding: 0; list-style: none; }
-#compact-nav .compact-nav-links li { flex: 0 0 auto; }
-#compact-nav .compact-nav-links a { display: block; padding: 0 10px; line-height: 52px; font-size: 0.9em; color: #7c3aed; text-decoration: none; white-space: nowrap; }
-#compact-nav .compact-nav-links a:hover { background: rgba(124,58,237,0.12); }
-body.is-stuck #navbar-button { position: fixed !important; top: 4px !important; right: 8px !important; display: flex; align-items: center; }
-body.is-stuck #navbar.hide { position: fixed; top: 56px; right: 8px; }
-@media (max-width: 700px) {
-  #compact-nav .compact-nav-title { display: none; }
-  #compact-nav .compact-nav-logo { width: 36px; height: 36px; }
-}
-@media (max-width: 480px) {
-  #compact-nav { padding-right: 70px; gap: 8px; }
-}
 
 	/* TOOL-DARK:START -- generated by add_tool_page_controls.py, do not edit */
 	body.dark-mode .page-content :where(div,span,p,li,ul,ol,h1,h2,h3,h4,h5,h6,td,th,label,summary,small,strong,b,em,i,code,pre,legend,figcaption,dl,dt,dd,blockquote,caption,cite,button,input,select,textarea){color:#d8d8d8}
@@ -688,6 +666,48 @@ body.is-stuck #navbar.hide { position: fixed; top: 56px; right: 8px; }
 	body.dark-mode #pe .pe-cp-hk{border:2px solid #333333}
 	body.dark-mode #pe .pe-cp-hex.is-bad{border-color:#bf0909}
 	/* TOOL-DARK:END */
+/* Floating compact header bar: once the full header + nav scroll out of
+   view, a slim fixed bar (small logo, title, as many nav links as fit)
+   slides in, and the hamburger is pinned into its right end. Toggled by
+   the compact-nav script below. Ported from mes.fm/math's version (see
+   its build.mjs) -- display-controls.js pins the A-/A+/moon buttons into its right end.
+
+   Hidden by default via the inline style="display:none" on the element
+   itself (not just this stylesheet's "display: none" below) -- some
+   browser extensions strip or neutralize cosmetic-looking CSS for
+   elements named "sticky-*"/"*-bar" (a common ad/cookie-bar filter
+   pattern), which left an earlier version's raw unstyled markup visible
+   above the real header on mes.fm/math. The inline attribute is a
+   fallback the JS clears itself, independent of this stylesheet
+   surviving intact. */
+#compact-nav {
+  position: fixed; top: 0; left: 0; right: 0; height: 52px; z-index: 15;
+  display: none; align-items: center; gap: 12px;
+  padding: 0 80px 0 12px; box-sizing: border-box;
+  background: #ffffff; border-bottom: 3px solid #7c3aed;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.18);
+  transform: translateY(-110%); transition: transform 0.2s ease;
+}
+#compact-nav.is-visible { display: flex; }
+body.is-stuck #compact-nav { transform: none; }
+#compact-nav .compact-nav-logo { display: block; width: 32px; height: 32px; border-radius: 6px; flex: 0 0 auto; }
+#compact-nav .compact-nav-title {
+  flex: 0 1 auto; min-width: 0; font-weight: 700; font-size: 1.05em; color: #1a1a1a;
+  text-decoration: none; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+}
+#compact-nav .compact-nav-links { display: flex; flex: 1 1 0; min-width: 0; overflow: hidden; margin: 0 0 0 8px; padding: 0; list-style: none; }
+#compact-nav .compact-nav-links li { flex: 0 0 auto; }
+#compact-nav .compact-nav-links a { display: block; padding: 0 10px; line-height: 52px; font-size: 0.9em; color: #7c3aed; text-decoration: none; white-space: nowrap; }
+#compact-nav .compact-nav-links a:hover { background: rgba(124,58,237,0.12); }
+body.is-stuck #navbar-button { position: fixed !important; top: 4px !important; right: 8px !important; display: flex; align-items: center; }
+body.is-stuck #navbar.hide { position: fixed; top: 56px; right: 8px; }
+@media (max-width: 700px) {
+  #compact-nav .compact-nav-title { display: none; }
+  #compact-nav .compact-nav-logo { width: 36px; height: 36px; }
+}
+@media (max-width: 480px) {
+  #compact-nav { padding-right: 70px; gap: 8px; }
+}
 </style>
         <meta property="fb:app_id" content="" />
         <meta name="author" content="Math Easy Solutions Staff">
@@ -963,7 +983,7 @@ body.is-stuck #navbar.hide { position: fixed; top: 56px; right: 8px; }
 		<h2>A free online photo editor with layers</h2>
 		<p>MES Photo Editor runs entirely in your browser: pictures are never uploaded. Use layers, selections, the magic wand, a clone stamp, blur and sharpen, levels and curves, and add text labels, arrows, callouts, numbered steps and highlights to screenshots. Open PNG, JPEG, WebP, GIF, BMP, PSD and GIMP (.xcf) files, combine several images as layers, keep transparency, and export PNG, JPEG, WebP or a layered PSD.</p>
 		<dl>
-			<dt>Can I open Photoshop (PSD) files?</dt><dd>Yes. Layers, opacity, visibility and blend modes come across. Photoshop-only features (smart objects, layer styles, adjustment layers, live text) are flattened. You can also save a layered PSD.</dd>
+			<dt>Can I open Photoshop (PSD) files?</dt><dd>Yes. Layers, groups, masks, opacity, visibility, blend modes and layer effects come across: Bevel and Emboss, Stroke, Inner and Drop Shadow, Inner and Outer Glow, Satin, Color and Gradient Overlay and Fill opacity stay live, so you can change them in Layer → Layer style. Text and smart objects open as pixels, adjustment layers and pattern overlays are left out (you are told which). You can also save a layered PSD with its effects.</dd><dt>Does it have layer styles like Bevel and Emboss?</dt><dd>Yes: Layer → Layer style (or the fx button on a layer) opens a Photoshop-style dialog with Bevel and Emboss (inner / outer bevel, emboss, pillow emboss; smooth or chisel), Stroke, Inner Shadow, Inner Glow, Satin, Color Overlay, Gradient Overlay, Outer Glow and Drop Shadow, plus ready-made styles. It floats beside the picture so you can watch the change; drag it anywhere by its title. Copy and paste a style between layers from the layer's right-click menu.</dd>
 			<dt>Can I open GIMP (.xcf) files?</dt><dd>Yes, from GIMP 2.x and GIMP 3, including 16-bit and 32-bit images (shown in 8-bit), grayscale and indexed ones. Layers, layer groups, layer masks, positions, opacity, visibility and most layer modes come across; text layers open as pixels with the text as the layer name. GIMP's live filters and the few layer modes this editor does not have (for example Addition or Grain merge) are listed when the file opens. Drop an .xcf onto an open image to add it as a group of layers. File → Save as GIMP file writes an .xcf GIMP can open.</dd>
 			<dt>How do I make a background transparent?</dt><dd>Choose the Magic Wand, click the background, press Delete, then export as PNG or WebP. For soft edges use Adjust → Make a colour transparent.</dd>
 			<dt>How do I add labels and arrows to a screenshot?</dt><dd>Use the Text tool with its Background box option for labels, and the Shapes tool for arrows, boxes, callouts, numbered steps, highlights and blur/hide areas. Each lands on its own layer so you can move or delete it later.</dd>
@@ -1032,7 +1052,7 @@ body.is-stuck #navbar.hide { position: fixed; top: 56px; right: 8px; }
             hide_search:false,
             current_tab:0
         }        </script><!-- FASTCOMMENTS-LAZY: widget init moved to main_js/main.js -- it pulls embed.min.js only when #fastcomments-widget nears the viewport or on the first Comments-toggle click, so it no longer blocks first render -->                <script src="https://mes.fm/main_js/lazysizes.min.js?v=1.0.3" async></script>
-	<script src="/photo/js/photo.js?v=27" defer></script>
+	<script src="/photo/js/photo.js?v=28" defer></script>
             <script src="https://mes.fm/main_js/main.js?v=1.0.5"></script>    <!-- PAGEVIEW-TRACKING-INSERTED --><script src="https://mes.fm/main_js/track.js" defer></script><script>document.getElementById('copyright-year').textContent = new Date().getFullYear();</script><script src="/main_js/info-bar-fit.js" defer></script><script>
   // Floating compact header bar (see #compact-nav CSS): appears once the
   // header + nav bar have scrolled off the top; nav links that don't fit

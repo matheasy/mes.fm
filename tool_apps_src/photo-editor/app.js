@@ -273,7 +273,7 @@
 		}
 		row.appendChild(nm);
 		if (grp) { var xg = el("button", "pe-pen", "⬇"); xg.type = "button"; xg.title = "Export this group as its own image, on a canvas of any size"; xg.addEventListener("click", function (e) { e.stopPropagation(); var L = cur(); if (L) PE.dlgExportGroup(L); }); row.appendChild(xg); }
-		if (!grp) { var fxb = el("button", "pe-pen pe-fxb" + (PE.hasFx(L0) ? " is-on" : ""), "fx"); fxb.type = "button"; fxb.title = PE.hasFx(L0) ? "Layer style (outline / shadow) is on: click to change it" : "Add an outline or shadow (layer style)"; fxb.setAttribute("aria-label", "Layer style of " + L0.name); fxb.addEventListener("click", function (e) { e.stopPropagation(); PE.setActive(id); PE.dlgLayerStyle(cur()); }); row.appendChild(fxb);
+		if (!grp) { var fxb = el("button", "pe-pen pe-fxb" + (PE.hasFx(L0) ? " is-on" : ""), "fx"); fxb.type = "button"; fxb.title = PE.hasFx(L0) ? "Layer style is on (bevel, stroke, shadow, glow...): click to change it" : "Add a layer style: bevel and emboss, stroke, shadow, glow, overlay"; fxb.setAttribute("aria-label", "Layer style of " + L0.name); fxb.addEventListener("click", function (e) { e.stopPropagation(); PE.setActive(id); PE.dlgLayerStyle(cur()); }); row.appendChild(fxb);
 			if (L0.crop) { var cb = el("button", "pe-pen pe-cropb is-on", "⛶"); cb.type = "button"; cb.title = "This layer is cropped (its edges are hidden, not deleted): click to change the crop"; cb.setAttribute("aria-label", "Change the crop of " + L0.name); cb.addEventListener("click", function (e) { e.stopPropagation(); PE.setActive(id); PE.setTool("layercrop"); }); row.appendChild(cb); } }
 		var pen = el("button", "pe-pen", "✎"); pen.type = "button"; pen.title = "Rename"; pen.addEventListener("click", function (e) { e.stopPropagation(); renameLayer(id); }); row.appendChild(pen);
 		if (L0.locked) row.appendChild(el("span", "pe-lock", "🔒"));
@@ -316,16 +316,30 @@
 	}
 	function layerMenu(L, x, y) {
 		var grp = PE.isGroup(L), items = [{ label: "✎ Rename", act: function () { renameLayer(L.id); } }, { label: "⧉ Duplicate", act: function () { PE.duplicateLayer(L); } }];
-		if (!grp) items = items.concat(["-", { label: "fx Layer style: outline, shadow, glow…", act: function () { PE.dlgLayerStyle(L); } }, { label: "⛶ Crop this layer (hide edges)", act: function () { PE.setTool("layercrop"); } }]);
+		if (!grp) items = items.concat(["-", { label: "fx Layer style: bevel, stroke, shadow, glow…", act: function () { PE.dlgLayerStyle(L); } }, { label: "Copy layer style", dis: !PE.hasFx(L), act: function () { PE.copyLayerStyle(L); } }, { label: "Paste layer style", dis: !(PE.hasStyleClip && PE.hasStyleClip()), act: function () { PE.pasteLayerStyle(L); } }, { label: "Clear layer style", dis: !PE.hasFx(L), act: function () { L.fx = null; PE.commit("Remove layer style"); } }, { label: "⛶ Crop this layer (hide edges)", act: function () { PE.setTool("layercrop"); } }]);
 		if (!grp && L.crop) items.push({ label: "Show the whole layer (uncrop)", act: function () { PE.clearLayerCrop(L); } });
 		if (!grp) items = items.concat(["-"], maskItems(L));
 		items = items.concat(["-", { label: L.locked ? "🔓 Unlock" : "🔒 Lock", act: function () { L.locked = !L.locked; PE.commit(L.locked ? "Lock layer" : "Unlock layer"); } }, { label: "🗑 Delete layer", act: function () { PE.deleteLayer(); } }]);
 		popMenu(items, x, y);
 	}
+	/* The list keeps where it is scrolled to. It scrolls only to show the active layer when that changed from outside the list (picked on the picture,
+	 * a new layer, undo...) and is out of view: rows are replaced and moved while the list is reconciled, and the browser's scroll anchoring and the
+	 * History list's scrollIntoView() scrolled the whole side column (and the page) down to the History panel after every change, which looked like the
+	 * Layers list jumping back to its bottom (the background layer). */
+	var lastActId = null, pickedInList = 0;
+	/* scroll the nearest scrolling box (the list itself when it has a set height, else the side column) just enough to show el; never the page */
+	function revealIn(el, boxes) {
+		var sc = null; for (var i = 0; i < boxes.length; i++) { var b = boxes[i]; if (b && b.scrollHeight > b.clientHeight + 1 && /(auto|scroll)/.test(getComputedStyle(b).overflowY)) { sc = b; break; } } if (!sc) return;
+		var r = el.getBoundingClientRect(), c = sc.getBoundingClientRect(); if (r.top < c.top) sc.scrollTop -= c.top - r.top + 4; else if (r.bottom > c.bottom) sc.scrollTop += r.bottom - c.bottom + 4;
+	}
+	PE.revealIn = revealIn;
+	function revealRow(list, row) { revealIn(row, [list, $("pe-side")]); }
+	$("pe-layers").addEventListener("pointerdown", function () { pickedInList = Date.now(); }, true);
+	$("pe-layers").addEventListener("keydown", function () { pickedInList = Date.now(); }, true);
 	function buildLayers() {
 		var list = $("pe-layers"), d = PE.doc; if (!d) { list.innerHTML = ""; rowCache = {}; return; } var act = PE.active(), rows = rowsTopDown(); PE.relink();
 		if (list.querySelector(".is-renaming")) return;   // never pull a half-typed name out from under the keyboard
-		var keep = {}, at = 0;
+		var keep = {}, at = 0, st0 = list.scrollTop;
 		rows.forEach(function (r) {
 			var L = r.L, on = L === act || multi[L.id], sig = rowSig(L, r, on), c = rowCache[L.id];
 			if (!c || c.sig !== sig) { c = rowCache[L.id] = { sig: sig, row: makeRow(L.id, r.depth, on) }; }
@@ -335,6 +349,8 @@
 		});
 		while (list.children.length > at) list.removeChild(list.lastChild);
 		for (var k in rowCache) if (!keep[k]) delete rowCache[k];
+		list.scrollTop = st0;
+		var aid = act ? act.id : null; if (aid !== lastActId) { lastActId = aid; var ar = act && rowCache[aid] && rowCache[aid].row; if (ar && ar.parentNode === list && Date.now() - pickedInList > 600) revealRow(list, ar); }
 		syncLayerProps();
 	}
 	$("pe-layers").addEventListener("dragover", function (e) { if (dragId != null) e.preventDefault(); });
@@ -358,7 +374,7 @@
 			var node = list.children[at]; if (node !== r) list.insertBefore(r, node || null); at++;
 		});
 		while (list.children.length > at) list.removeChild(list.lastChild);
-		if (act) act.scrollIntoView({ block: "nearest" });
+		if (act) revealIn(act, [list]);   // only the History list itself (scrollIntoView also scrolled the side column and the page: the "jumping" Layers list)
 		$("pe-undo").disabled = H.idx <= 0; $("pe-redo").disabled = H.idx >= H.stack.length - 1;
 	}
 	PE.on("history", buildHistory);
@@ -457,26 +473,78 @@ $("pe-share").addEventListener("click", function () { if (needDoc()) PE.dlgShare
 	function needDoc() { if (!PE.doc) { PE.toast("Open or create an image first"); return false; } return true; }
 
 	/* ---------- files ---------- */
+	/* ---------- PSD (ag-psd): layers with their groups, masks, opacity, blend modes, fill opacity and layer effects (bevel and emboss, stroke, shadows,
+	   glows, satin, overlays: L.fx, drawn live here and written back as real Photoshop effects). What cannot be drawn is listed after opening. ---------- */
+	var PSD_LIB = "https://cdn.jsdelivr.net/npm/ag-psd@30.1.1/dist/bundle.js";
+	var PSD_BLEND = { "normal": "source-over", "multiply": "multiply", "screen": "screen", "overlay": "overlay", "darken": "darken", "lighten": "lighten", "color dodge": "color-dodge", "color burn": "color-burn", "hard light": "hard-light", "soft light": "soft-light", "difference": "difference", "exclusion": "exclusion", "hue": "hue", "saturation": "saturation", "color": "color", "luminosity": "luminosity", "linear dodge": "lighter" };
+	function psdMask(n, c) {
+		var mk0 = n.mask; if (!mk0 || !mk0.canvas || mk0.disabled) return null;
+		var w = c.width, h = c.height, m = PE.mk(w, h), x = m.getContext("2d"), dflt = mk0.defaultColor == null ? 255 : mk0.defaultColor;
+		if (dflt > 0) { x.fillStyle = "rgba(0,0,0," + (dflt / 255) + ")"; x.fillRect(0, 0, w, h); }
+		var mc = mk0.canvas, mw = mc.width, mh = mc.height, src = mc.getContext("2d").getImageData(0, 0, mw, mh), out = x.createImageData(mw, mh);
+		for (var i = 0; i < mw * mh; i++) out.data[i * 4 + 3] = src.data[i * 4];   // grey value = how much shows
+		var ox = (mk0.left || 0) - (n.left || 0), oy = (mk0.top || 0) - (n.top || 0), t = PE.mk(mw, mh); t.getContext("2d").putImageData(out, 0, 0);
+		x.clearRect(ox, oy, mw, mh); x.drawImage(t, ox, oy); return m;
+	}
 	function loadPsd(buf, name, meta) {
-		return loadScript("https://cdn.jsdelivr.net/npm/ag-psd@30.1.1/dist/bundle.js", function () { return window.agPsd; }).then(function (ag) {
-			var psd = ag.readPsd(new Uint8Array(buf), { skipThumbnail: true }), layers = [];
-			(function walk(list) { (list || []).forEach(function (n) { if (n.children) walk(n.children); else if (n.canvas) layers.push(n); }); })(psd.children);
-			if (!PE.newDoc(psd.width, psd.height, null, I.baseName(name))) return; var d = PE.doc; d.layers = []; var from = Object.assign({ file: name }, meta || {}, { how: "psd" }); d.file = PE.mkSrc(from);
-			var MAP = { "normal": "source-over", "multiply": "multiply", "screen": "screen", "overlay": "overlay", "darken": "darken", "lighten": "lighten", "color dodge": "color-dodge", "color burn": "color-burn", "hard light": "hard-light", "soft light": "soft-light", "difference": "difference", "exclusion": "exclusion", "hue": "hue", "saturation": "saturation", "color": "color", "luminosity": "luminosity" };
-			if (!layers.length && psd.canvas) layers.push({ name: "Background", canvas: psd.canvas, left: 0, top: 0 });
-			layers.forEach(function (n) { var c = PE.clone(n.canvas), L = PE.makeLayer({ canvas: c, name: n.name || "Layer", x: n.left || 0, y: n.top || 0, src: PE.mkSrc({ how: "psd", file: name }, c.width, c.height) }); L.visible = !n.hidden; L.opacity = n.opacity == null ? 1 : n.opacity; L.blend = MAP[n.blendMode] || "source-over"; d.layers.push(L); });
-			if (!d.layers.length) d.layers.push(PE.makeLayer({ name: "Layer 1" })); d.activeId = d.layers[d.layers.length - 1].id; PE.commit("Open PSD"); PE.dirty = false; PE.fit(); PE.emit("docsize"); PE.setTool("move");
-			if (layers.length) PE.toast("Opened " + layers.length + " layer" + (layers.length === 1 ? "" : "s") + " from the PSD (effects, text and adjustment layers are flattened)");
+		return loadScript(PSD_LIB, function () { return window.agPsd; }).then(function (ag) {
+			var psd = ag.readPsd(new Uint8Array(buf), { skipThumbnail: true }), out = [], notes = [], seen = {}, nFx = 0, ir = psd.imageResources || {};
+			var note = function (t) { if (!seen[t]) { seen[t] = 1; notes.push(t); } };
+			if (!PE.newDoc(psd.width, psd.height, null, I.baseName(name))) return; var d = PE.doc; d.layers = []; d.file = PE.mkSrc(Object.assign({ file: name }, meta || {}, { how: "psd" }));
+			if (ir.globalAngle != null || ir.globalAltitude != null) d.light = { angle: ir.globalAngle == null ? 120 : ir.globalAngle, alt: ir.globalAltitude == null ? 30 : ir.globalAltitude };
+			var lt = PE.light();
+			(function walk(list, gid) {   // ag-psd lists layers bottom first, like the editor; a group's header goes after its members
+				(list || []).forEach(function (n) {
+					if (n.children) {
+						var G = PE.makeGroup(n.name || "Group"); G.collapsed = !n.opened; G.visible = !n.hidden; G.opacity = n.opacity == null ? 1 : n.opacity; G.group = gid; walk(n.children, G.id); out.push(G);
+						if (n.effects && !n.effects.disabled && Object.keys(n.effects).some(function (k) { return k !== "scale" && k !== "disabled"; })) note("Effects on a group (“" + (n.name || "Group") + "”) are left out: put them on its layers");
+						if (n.blendMode && n.blendMode !== "pass through" && n.blendMode !== "normal") note("A group's blend mode (“" + n.name + "”: " + n.blendMode + ") is not used: groups mix their layers one by one");
+						return;
+					}
+					if (n.adjustment) { note("Adjustment layers (“" + (n.name || "") + "”, " + (n.adjustment.type || "adjustment") + ") are left out"); return; }
+					if (!n.canvas) return;
+					var c = PE.clone(n.canvas), L = PE.makeLayer({ canvas: c, name: n.name || "Layer", x: n.left || 0, y: n.top || 0, src: PE.mkSrc({ how: "psd", file: name }, c.width, c.height) });
+					L.visible = !n.hidden; L.opacity = n.opacity == null ? 1 : n.opacity; L.group = gid; L.blend = PSD_BLEND[n.blendMode] || "source-over";
+					if (n.blendMode && !PSD_BLEND[n.blendMode]) note("Blend mode “" + n.blendMode + "” is drawn as Normal");
+					var mm = psdMask(n, c); if (mm) L.mask = mm;
+					if (n.text) note("Text layers open as pixels (the look of the text, with its effects still live)");
+					if (n.placedLayer) note("Smart objects open as pixels");
+					if (n.clipping) note("Clipping masks (“" + (n.name || "") + "”) are drawn as normal layers");
+					var r = P.fxFromPsd(n.effects, n.fillOpacity, lt.angle, lt.alt); if (r.fx) { L.fx = r.fx; nFx++; } r.notes.forEach(function (t) { note("“" + (n.name || "Layer") + "”: " + t); });
+					out.push(L);
+				});
+			})(psd.children, null);
+			if (!out.length && psd.canvas) out.push(PE.makeLayer({ name: "Background", canvas: PE.clone(psd.canvas) }));
+			d.layers = out; if (!d.layers.some(function (L) { return !PE.isGroup(L); })) d.layers.push(PE.makeLayer({ name: "Layer 1" }));
+			d.activeId = d.layers[d.layers.length - 1].id; PE.relink(); PE.commit("Open PSD"); PE.dirty = false; PE.fit(); PE.emit("docsize"); PE.emit("layers"); PE.setTool("move");
+			var nl = d.layers.filter(function (L) { return !PE.isGroup(L); }).length, ng = d.layers.length - nl, msg = "Opened " + nl + " layer" + (nl === 1 ? "" : "s") + (ng ? " in " + ng + " group" + (ng === 1 ? "" : "s") : "") + " from the PSD" + (nFx ? ", " + nFx + " with layer effects (live: Layer → Layer style to change them)" : "");
+			if (!notes.length) { PE.toast(msg); return; }
+			var w = el("div", "pe-xcf-notes"); w.innerHTML = "<p>" + esc(msg) + ". A few things in it are drawn differently here:</p><ul>" + notes.map(function (t) { return "<li>" + esc(t) + "</li>"; }).join("") + "</ul>";
+			PE.modal({ title: "Opened “" + name + "”", body: w, buttons: [{ label: "OK", primary: true, act: function (m) { m.close(); } }] });
 		});
 	}
 	function loadScript(url, get) { return new Promise(function (res, rej) { if (get()) return res(get()); PE.toast("Loading PSD support…"); var s = document.createElement("script"); s.src = url; s.onload = function () { get() ? res(get()) : rej(new Error("PSD library failed")); }; s.onerror = function () { rej(new Error("Could not load the PSD library (offline?)")); }; document.head.appendChild(s); }); }
+	PE.psdTree = function () {   // the layers as ag-psd children (bottom first, groups nested); a layer with a style is written without it, plus the style as Photoshop effects
+		var d = PE.doc, MAP = {}, lt = PE.light(), nFx = 0; for (var k in PSD_BLEND) MAP[PSD_BLEND[k]] = k; PE.relink();
+		function node(L) {
+			if (PE.isGroup(L)) return { name: L.name, opened: !L.collapsed, hidden: !L.visible, opacity: L.opacity, blendMode: "pass through", children: d.layers.filter(function (x) { return x.group === L.id; }).map(node) };
+			var fx = PE.hasFx(L) ? P.fxToPsd(L.fx, lt.angle) : null, c = PE.mk(d.w, d.h), x = c.getContext("2d");
+			PE.drawLayer(x, Object.assign({}, L, { _p: null, opacity: 1, blend: "source-over", visible: true, noFx: !!fx, _fxc: null }), [1, 0, 0, 1, 0, 0], "psd", d.w, d.h);
+			var o = { name: L.name, canvas: c, left: 0, top: 0, opacity: L.opacity, hidden: !L.visible, blendMode: MAP[L.blend] || "normal" };
+			if (fx) { if (fx.effects) { o.effects = fx.effects; nFx++; } if (fx.fillOpacity < 1) o.fillOpacity = fx.fillOpacity; }
+			return o;
+		}
+		var kids = d.layers.filter(function (L) { return L.group == null; }).map(node);
+		return { width: d.w, height: d.h, children: kids, imageResources: { globalAngle: Math.round(lt.angle), globalAltitude: Math.round(lt.alt) }, nFx: nFx };
+	};
 	function savePsd() {
-		if (!needDoc()) return; loadScript("https://cdn.jsdelivr.net/npm/ag-psd@30.1.1/dist/bundle.js", function () { return window.agPsd; }).then(function (ag) {
-			var d = PE.doc, MAP = { "source-over": "normal", "color-dodge": "color dodge", "color-burn": "color burn", "hard-light": "hard light", "soft-light": "soft light" };
-			PE.relink(); var kids = d.layers.filter(function (L) { return !PE.isGroup(L); }).map(function (L) { var c = PE.mk(d.w, d.h), x = c.getContext("2d"); PE.drawLayer(x, Object.assign({}, L, { _p: null, opacity: 1, blend: "source-over" }), [1, 0, 0, 1, 0, 0], "psd", d.w, d.h); return { name: L.name, canvas: c, left: 0, top: 0, opacity: L.opacity, hidden: !PE.effVisible(L), blendMode: MAP[L.blend] || L.blend }; });
-			var comp = PE.flatten(), buf = ag.writePsd({ width: d.w, height: d.h, children: kids, canvas: comp }, { generateThumbnail: false }); PE.download(new Blob([buf], { type: "image/vnd.adobe.photoshop" }), I.cleanFileName(d.name) + ".psd"); PE.toast("Saved PSD with " + kids.length + " layers");
+		if (!needDoc()) return; loadScript(PSD_LIB, function () { return window.agPsd; }).then(function (ag) {
+			var d = PE.doc, t = PE.psdTree(), nFx = t.nFx; delete t.nFx; t.canvas = PE.flatten();
+			var buf = ag.writePsd(t, { generateThumbnail: false }), n = d.layers.filter(function (L) { return !PE.isGroup(L); }).length;
+			PE.download(new Blob([buf], { type: "image/vnd.adobe.photoshop" }), I.cleanFileName(d.name) + ".psd"); PE.toast("Saved PSD with " + n + " layer" + (n === 1 ? "" : "s") + (nFx ? " (" + nFx + " with live layer effects)" : ""));
 		}).catch(function (e) { PE.toast(e.message); });
 	}
+	PE.loadPsdBuffer = loadPsd; PE.savePsd = savePsd;
 	function openFiles(files, opts) {
 		opts = opts || {}; files = Array.prototype.slice.call(files); if (!files.length) return;
 		var proj = files.filter(function (f) { return /\.(mesproj|zip)$/i.test(f.name); })[0], psd = files.filter(function (f) { return /\.psd$/i.test(f.name); })[0], xcfs = files.filter(function (f) { return /\.xcf$/i.test(f.name); }), imgs = files.filter(function (f) { return /^image\//.test(f.type) || /\.(png|jpe?g|webp|gif|bmp|avif|svg|ico)$/i.test(f.name); });
@@ -559,7 +627,7 @@ $("pe-share").addEventListener("click", function () { if (needDoc()) PE.dlgShare
 		{ label: "Layer", items: [{ label: "Group layers", key: MOD + "G", act: function () { if (needDoc()) groupSelected(); } }, { label: "Ungroup", key: MOD + "Shift+G", act: function () { if (needDoc()) PE.ungroup(); } }, "-", { label: "New layer (empty)", key: MOD + "Shift+N", act: function () { if (needDoc()) PE.newRasterLayer(); } }, { label: "New solid colour layer… (white, black, any colour)", act: function () { PE.dlgFillLayer(); } }, { label: "Duplicate layer", key: MOD + "J", act: function () { if (needDoc()) PE.duplicateLayer(); } }, { label: "Delete layer", act: function () { if (needDoc()) PE.deleteLayer(); } }, { label: "Layer via copy (selection)", act: function () { if (needDoc()) PE.layerFromSelection(false); } }, { label: "Layer via cut (selection)", act: function () { if (needDoc()) PE.layerFromSelection(true); } }, "-",
 			{ label: "Merge down", key: MOD + "E", act: function () { if (needDoc()) PE.mergeDown(); } }, { label: "Merge visible", act: function () { if (needDoc()) PE.mergeVisible(); } }, "-", { label: "Remove background (AI)…", act: function () { PE.aiRemoveBackground(); } }, { label: "Add layer mask", act: function () { if (needDoc()) PE.addMask(PE.active(), true); } }, { label: "Apply layer mask", act: function () { if (needDoc()) PE.applyMask(); } }, { label: "Delete layer mask", act: function () { if (needDoc()) PE.deleteMask(); } }, { label: "How layer masks work", act: function () { PE.maskHelp(); } }, { label: "Rasterize text layer", act: function () { var L = PE.active(); if (L && L.type === "text") { PE.rasterize(L); PE.commit("Rasterize"); } } }, "-",
 			{ label: "Align: left", act: function () { align("left"); } }, { label: "Align: centre horizontally", act: function () { align("hcenter"); } }, { label: "Align: right", act: function () { align("right"); } }, { label: "Align: top", act: function () { align("top"); } }, { label: "Align: centre vertically", act: function () { align("vcenter"); } }, { label: "Align: bottom", act: function () { align("bottom"); } }, "-",
-			{ label: "Layer style: outline…", act: function () { PE.dlgLayerStyle(null, "outline"); }, title: "A live outline around the layer's visible pixels: change or remove it any time" }, { label: "Layer style: drop shadow…", act: function () { PE.dlgLayerStyle(null, "shadow"); } }, { label: "Layer style: glow…", act: function () { PE.dlgLayerStyle(null, "glow"); } }, { label: "Outline / shadow as a new layer (pixels)…", act: function () { PE.dlgEffect("outline"); } }, { label: "Crop layer (hide its edges)", key: "Y", act: function () { var L = PE.active(); if (needDoc() && L && !PE.isGroup(L)) PE.setTool("layercrop"); } }, { label: "Show the whole layer (uncrop)", act: function () { if (needDoc()) PE.clearLayerCrop(); } }, { label: "Round corners…", act: function () { PE.dlgRoundCorners(); } }, "-", { label: "Fit layer inside canvas", act: function () { fitLayer(false); } }, { label: "Fill canvas with layer", act: function () { fitLayer(true); } }, { label: "Reset layer scale / rotation", act: resetTransform }, { label: "Flip layer horizontally", act: function () { if (needDoc()) PE.flipLayer(true); } }, { label: "Flip layer vertically", act: function () { if (needDoc()) PE.flipLayer(false); } }, "-", { label: "Move layer up", act: function () { var L = PE.active(); if (L) PE.stepLayer(L, 1); } }, { label: "Move layer down", act: function () { var L = PE.active(); if (L) PE.stepLayer(L, -1); } }, { label: "Bring to front", act: function () { var L = PE.active(); if (L) PE.stepLayer(L, 999); } }, { label: "Send to back", act: function () { var L = PE.active(); if (L) PE.stepLayer(L, -999); } }] },
+			{ label: "Layer style…", act: function () { PE.dlgLayerStyle(); }, title: "Bevel and emboss, stroke, inner / drop shadow, inner / outer glow, satin, colour and gradient overlay: live, change or remove them any time" }, { label: "Layer style: bevel and emboss…", act: function () { PE.dlgLayerStyle(null, "bevel"); } }, { label: "Layer style: stroke (outline)…", act: function () { PE.dlgLayerStyle(null, "outline"); } }, { label: "Layer style: drop shadow…", act: function () { PE.dlgLayerStyle(null, "shadow"); } }, { label: "Layer style: glow…", act: function () { PE.dlgLayerStyle(null, "glow"); } }, { label: "Outline / shadow as a new layer (pixels)…", act: function () { PE.dlgEffect("outline"); } }, { label: "Crop layer (hide its edges)", key: "Y", act: function () { var L = PE.active(); if (needDoc() && L && !PE.isGroup(L)) PE.setTool("layercrop"); } }, { label: "Show the whole layer (uncrop)", act: function () { if (needDoc()) PE.clearLayerCrop(); } }, { label: "Round corners…", act: function () { PE.dlgRoundCorners(); } }, "-", { label: "Fit layer inside canvas", act: function () { fitLayer(false); } }, { label: "Fill canvas with layer", act: function () { fitLayer(true); } }, { label: "Reset layer scale / rotation", act: resetTransform }, { label: "Flip layer horizontally", act: function () { if (needDoc()) PE.flipLayer(true); } }, { label: "Flip layer vertically", act: function () { if (needDoc()) PE.flipLayer(false); } }, "-", { label: "Move layer up", act: function () { var L = PE.active(); if (L) PE.stepLayer(L, 1); } }, { label: "Move layer down", act: function () { var L = PE.active(); if (L) PE.stepLayer(L, -1); } }, { label: "Bring to front", act: function () { var L = PE.active(); if (L) PE.stepLayer(L, 999); } }, { label: "Send to back", act: function () { var L = PE.active(); if (L) PE.stepLayer(L, -999); } }] },
 		{ label: "Adjust", items: adj(PE.ADJUST) }, { label: "Filter", items: adj(PE.FILTERS) },
 		{ label: "View", items: [{ label: "Zoom in", key: MOD + "+", act: function () { PE.setZoom(PE.view.zoom * 1.25); } }, { label: "Zoom out", key: MOD + "−", act: function () { PE.setZoom(PE.view.zoom / 1.25); } }, { label: "Fit on screen", key: MOD + "0", act: function () { PE.fit(); } }, { label: "Actual pixels (100%)", key: MOD + "1", act: function () { PE.setZoom(1); } }, "-", { label: "Pixel grid (when zoomed in)", act: function () { PE.showGrid = !PE.showGrid; PE.invalidate(); } }, { label: "Full window mode", key: "F", act: function () { toggleWin(); } }] },
 		{ label: "Help", items: [{ label: "Keyboard shortcuts", act: shortcuts }, { label: "Tips for labels, arrows and callouts", act: tips }] }

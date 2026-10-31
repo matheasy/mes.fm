@@ -22,17 +22,56 @@
 	document.addEventListener("mousedown", function (e) { if (helpEl && !(e.target.closest && (e.target.closest(".pe-qpop") || e.target.closest(".pe-qh")))) closeHelp2(); }, true);
 	document.addEventListener("keydown", function (e) { if (e.key === "Escape" && helpEl) { closeHelp2(); e.stopPropagation(); } }, true);
 
-	/* ---------- modal ---------- */
-	var openModal = null;
+	/* ---------- modal ----------
+	   Every dialog can be dragged by its title bar (it stays inside the editor) and remembers where it was put for the rest of the session (per kind of
+	   dialog: o.key, else its class / title). o.float = a floating window: no dark backdrop, the picture stays usable (zoom, pan, pick) and it turns
+	   see-through while one of its sliders is dragged; o.clear = no dark backdrop but clicks outside do nothing (live-preview adjustments). On a phone
+	   every dialog is a bottom sheet. */
+	var openModal = null, dlgPos = {};
+	function isPhone() { return window.matchMedia && window.matchMedia("(max-width: 640px)").matches; }
 	PE.modal = function (o) {
 		if (openModal) openModal.close(true);
-		var back = el("div", "pe-modal"), box = el("div", "pe-dlg" + (o.wide ? " pe-dlg--wide" : "") + (o.cls ? " " + o.cls : "")), head = el("div", "pe-dlg-h"), body = el("div", "pe-dlg-b"), foot = el("div", "pe-dlg-f");
-		head.innerHTML = "<b>" + esc(o.title) + "</b>"; var x = el("button", "pe-x", "✕"); x.type = "button"; x.setAttribute("aria-label", "Close"); head.appendChild(x);
-		body.appendChild(o.body); (o.buttons || []).forEach(function (b) { var bt = el("button", "pe-btn" + (b.primary ? " pe-btn--primary" : ""), esc(b.label)); bt.type = "button"; bt.addEventListener("click", function () { b.act(m); }); foot.appendChild(bt); b.el = bt; });
+		var back = el("div", "pe-modal" + (o.float ? " pe-modal--float" : "") + (o.clear ? " pe-modal--clear" : "")), box = el("div", "pe-dlg" + (o.wide ? " pe-dlg--wide" : "") + (o.cls ? " " + o.cls : "") + (o.float ? " pe-dlg--float" : "")), head = el("div", "pe-dlg-h"), body = el("div", "pe-dlg-b"), foot = el("div", "pe-dlg-f");
+		box.setAttribute("role", "dialog"); box.setAttribute("aria-label", o.title);
+		head.innerHTML = "<b>" + esc(o.title) + "</b>"; head.title = "Drag to move this window"; var x = el("button", "pe-x", "✕"); x.type = "button"; x.setAttribute("aria-label", "Close"); head.appendChild(x);
+		body.appendChild(o.body); (o.buttons || []).forEach(function (b) { var bt = el("button", "pe-btn" + (b.primary ? " pe-btn--primary" : ""), esc(b.label)); bt.type = "button"; if (b.title) bt.title = b.title; bt.addEventListener("click", function () { b.act(m); }); foot.appendChild(bt); b.el = bt; });
 		box.appendChild(head); box.appendChild(body); if (o.buttons) box.appendChild(foot); back.appendChild(box); (PE.els.root || document.body).appendChild(back);
-		var m = { el: box, body: body, close: function (silent) { if (openModal !== m) return; openModal = null; back.remove(); document.removeEventListener("keydown", key, true); if (o.onClose) o.onClose(silent); } };
-		function key(e) { if (e.key === "Escape") { e.stopPropagation(); m.close(); } else if (e.key === "Enter" && e.target.tagName !== "TEXTAREA" && e.target.tagName !== "BUTTON" && o.buttons) { var p = o.buttons.filter(function (b) { return b.primary; })[0]; if (p) { e.preventDefault(); e.stopPropagation(); p.act(m); } } }
-		document.addEventListener("keydown", key, true); x.addEventListener("click", function () { m.close(); }); back.addEventListener("mousedown", function (e) { if (e.target === back && !o.sticky) m.close(); });
+		var key = o.key || (o.cls ? o.cls.split(" ")[0] : String(o.title).split(":")[0]);
+		function clampBox() {
+			if (!box.classList.contains("is-placed") || isPhone()) return; var bw = back.clientWidth, bh = back.clientHeight, w = box.offsetWidth, h = box.offsetHeight;
+			var l = P.clamp(parseFloat(box.style.left) || 0, 0, Math.max(0, bw - w)), t = P.clamp(parseFloat(box.style.top) || 0, 0, Math.max(0, bh - h));
+			box.style.left = l + "px"; box.style.top = t + "px";
+		}
+		/* the left or the right edge of the editor, whichever covers less of o.avoid (a viewport rectangle: the layer being styled) */
+		function sideFor() {
+			var bw0 = back.clientWidth, w = box.offsetWidth, right = Math.max(8, bw0 - w - 16), left = 16, a = o.avoid; if (!a) return right;
+			var br = back.getBoundingClientRect(), cover = function (x0) { return Math.max(0, Math.min(x0 + w, a.right - br.left) - Math.max(x0, a.left - br.left)); };
+			return cover(left) < cover(right) ? left : right;
+		}
+		function placeAt(l, t) { box.classList.add("is-placed"); box.style.left = l + "px"; box.style.top = t + "px"; clampBox(); }
+		if (!isPhone()) {
+			if (dlgPos[key]) placeAt(dlgPos[key].x, dlgPos[key].y);
+			else if (o.float) placeAt(sideFor(), 16);   // out of the way: beside what is being edited, so the picture stays in view
+		}
+		head.addEventListener("pointerdown", function (e) {
+			if (e.button > 0 || e.target.closest("button") || isPhone()) return; e.preventDefault();
+			var br = back.getBoundingClientRect(), r = box.getBoundingClientRect(), dx = e.clientX - r.left, dy = e.clientY - r.top; placeAt(r.left - br.left, r.top - br.top); box.classList.add("is-dragging");
+			try { head.setPointerCapture(e.pointerId); } catch (er) {}
+			var mv = function (ev) { box.style.left = (ev.clientX - br.left - dx) + "px"; box.style.top = (ev.clientY - br.top - dy) + "px"; clampBox(); },
+				up = function () { head.removeEventListener("pointermove", mv); head.removeEventListener("pointerup", up); head.removeEventListener("pointercancel", up); box.classList.remove("is-dragging"); dlgPos[key] = { x: parseFloat(box.style.left) || 0, y: parseFloat(box.style.top) || 0 }; };
+			head.addEventListener("pointermove", mv); head.addEventListener("pointerup", up); head.addEventListener("pointercancel", up);
+		});
+		head.addEventListener("dblclick", function (e) { if (e.target.closest("button")) return; delete dlgPos[key]; box.classList.remove("is-placed"); box.style.left = box.style.top = ""; if (o.float && !isPhone()) placeAt(sideFor(), 16); });
+		// see-through while a slider is dragged, so the picture under the window shows what the slider does
+		var peekOff = function () { box.classList.remove("pe-dlg--peek"); document.removeEventListener("pointerup", peekOff, true); document.removeEventListener("pointercancel", peekOff, true); };
+		if (o.float || o.clear) body.addEventListener("pointerdown", function (e) { if (e.target.tagName === "INPUT" && e.target.type === "range") { box.classList.add("pe-dlg--peek"); document.addEventListener("pointerup", peekOff, true); document.addEventListener("pointercancel", peekOff, true); } });
+		var onResize = function () { clampBox(); }; window.addEventListener("resize", onResize);
+		var m = { el: box, body: body, float: !!o.float, close: function (silent) { if (openModal !== m) return; openModal = null; back.remove(); window.removeEventListener("resize", onResize); document.removeEventListener("keydown", keyH, true); if (o.onClose) o.onClose(silent); } };
+		function keyH(e) {
+			if (o.float && !box.contains(e.target) && e.key !== "Escape") return;   // a floating window only takes Enter while you are in it
+			if (e.key === "Escape") { if (e.target.closest && e.target.closest(".pe-cpop")) return; e.stopPropagation(); m.close(); } else if (e.key === "Enter" && e.target.tagName !== "TEXTAREA" && e.target.tagName !== "BUTTON" && o.buttons) { var p = o.buttons.filter(function (b) { return b.primary; })[0]; if (p) { e.preventDefault(); e.stopPropagation(); p.act(m); } }
+		}
+		document.addEventListener("keydown", keyH, true); x.addEventListener("click", function () { m.close(); }); back.addEventListener("mousedown", function (e) { if (e.target === back && !o.sticky && !o.clear && !o.float) m.close(); });
 		openModal = m; var f = body.querySelector("input,select,button"); if (f && !o.noFocus) setTimeout(function () { f.focus(); }, 30); return m;
 	};
 	PE.modalOpen = function () { return !!openModal; };
@@ -79,7 +118,7 @@
 		pv = previewer(function (d, w, h, sc) { var p = f.get(); scaleKeys.forEach(function (k) { p[k] *= sc; }); def.fn(d, w, h, p, sc); });
 		if (!pv) return;
 		var done = false;
-		PE.modal({ title: def.title, body: wrap, noFocus: true, onClose: function () { if (!done) pv.cancel(); }, buttons: [
+		PE.modal({ title: def.title, body: wrap, noFocus: true, clear: true, onClose: function () { if (!done) pv.cancel(); }, buttons: [
 			{ label: "Reset", act: function () { def.params.forEach(function (p) { f.set(p.k, p.def != null ? p.def : p.val); }); pv.update(); } }, { label: "Cancel", act: function (m) { m.close(); } },
 			{ label: "Apply", primary: true, act: function (m) { done = true; PE.savedParams[def.id] = f.get(); pv.apply(def.title); m.close(); } }] });
 	}
