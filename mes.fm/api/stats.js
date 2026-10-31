@@ -99,7 +99,10 @@ module.exports = async (req, res) => {
   // ?slim=1 (homepage "Popular" section): leaderboard only -- no device/source
   // totals and no per-page breakdown round trip, so the Redis work is one union + one range.
   const slim = req.query.slim === '1';
-  const topN = slim ? 30 : TOP_N;
+  // &n=30..500 (slim only): a longer leaderboard, e.g. the Table view of /calculators and /tools needs the views of
+  // every hub card. Still one ZREVRANGE, so the cost barely changes.
+  const nAsked = parseInt(req.query.n, 10);
+  const topN = slim ? (nAsked >= 30 ? Math.min(nAsked, 500) : 30) : TOP_N;
 
   let commands;
   let leaderboardResultIndex;

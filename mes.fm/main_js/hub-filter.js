@@ -4,7 +4,13 @@
      <section class="hub-cat" data-cat="<cat>"><h2 class="hub-cat__title">..</h2><table class="tbl tbl--stack">..td.calc-container..</table></section> ..
      <p id="hub-empty" hidden>..</p>
    Typing filters cards by title + description (every word must match); a chip limits to one category; sections with no
-   visible card are hidden. #<cat> in the URL preselects a chip. Self-contained: injects its own CSS (incl. dark mode). */
+   visible card are hidden. #<cat> in the URL preselects a chip. Self-contained: injects its own CSS (incl. dark mode).
+   View switch (2026-10-30), under the chips: Cards (the generated markup) | List (one row per item: icon, title, short
+   description) | Compact (small icon + title pills in a dense grid) | Table (a generated sortable table: name, category,
+   type, added, updated, views in the last 30 days, rating). List / Compact only restyle the cards (class hub-v-<view> on the
+   host); Table hides the sections and fills #hub-tbox. Dates + type come from /hub-meta.json (build_hub_meta.py), views from
+   /api/stats?range=30d&slim=1&n=500, ratings from /api/rating?top=1 -- all fetched only when Table is first shown; on the
+   local preview (no /api) sample files are used and the page says so. View + sort saved in localStorage "mes-hubview:v1". */
 (function () {
     "use strict";
     var input = document.getElementById("hub-search"), chips = document.getElementById("hub-chips");
@@ -12,6 +18,15 @@
     var cards = Array.prototype.slice.call(document.querySelectorAll(".hub-cat td.calc-container"));
     var sections = Array.prototype.slice.call(document.querySelectorAll(".hub-cat"));
     var empty = document.getElementById("hub-empty");
+    var host = input.closest(".hub-filter").parentNode;
+    var view = "cards", sortKey = "name", sortDir = 1, tbox = null, tbody = null, tnote = null, rows = [], loaded = null;
+    try {
+        var sv = JSON.parse(localStorage.getItem("mes-hubview:v1") || "{}");
+        if (/^(cards|list|compact|table)$/.test(sv.view)) view = sv.view;
+        if (typeof sv.sort === "string") sortKey = sv.sort;
+        if (sv.dir === -1) sortDir = -1;
+    } catch (e) {}
+    function save() { try { localStorage.setItem("mes-hubview:v1", JSON.stringify({ view: view, sort: sortKey, dir: sortDir })); } catch (e) {} }
 
     var css = document.createElement("style");
     css.textContent =
@@ -32,7 +47,62 @@
         "body.dark-mode .hub-filter input{background:#2a2a2a;color:#eee;border-color:#555}" +
         "body.dark-mode .hub-chips button{background:#2a2a2a;color:#ddd;border-color:#555}" +
         "body.dark-mode .hub-chips button[aria-pressed=true]{background:#6cb6f5;border-color:#6cb6f5;color:#111}" +
-        "body.dark-mode .hub-cat__title{color:#eee;border-color:#3a4a5a}body.dark-mode #hub-empty{color:#aaa}";
+        "body.dark-mode .hub-cat__title{color:#eee;border-color:#3a4a5a}body.dark-mode #hub-empty{color:#aaa}" +
+        /* view switch */
+        ".hub-viewrow{display:flex;align-items:center;flex-wrap:wrap;gap:.3em .5em;margin-top:.7em}" +
+        ".hub-views__lbl{font-size:.85em;color:#555}" +
+        ".hub-views{display:inline-flex;border:1px solid #c3c9d2;border-radius:.5em;overflow:hidden}" +
+        ".hub-views button{font:inherit;font-size:.85em;cursor:pointer;padding:.4em .85em;border:0;border-left:1px solid #c3c9d2;background:#fff;color:#444;display:inline-flex;align-items:center;gap:.4em}" +
+        ".hub-views button:first-child{border-left:0}.hub-views button svg{width:1.05em;height:1.05em;fill:currentColor;flex:none}" +
+        ".hub-views button:hover{color:#1a5f94}.hub-views button:focus-visible{outline:2px solid #277bb6;outline-offset:-2px}" +
+        ".hub-views button[aria-pressed=true]{background:#277bb6;color:#fff}" +
+        "@media (max-width:700px),(pointer:coarse){.hub-views button{min-height:36px}}" +
+        "@media (max-width:400px){.hub-views button{padding:.4em .6em;gap:.3em}}" +
+        "body.dark-mode .hub-views,body.dark-mode .hub-views button{border-color:#555}body.dark-mode .hub-views button{background:#2a2a2a;color:#ddd}" +
+        "body.dark-mode .hub-views button[aria-pressed=true]{background:#6cb6f5;color:#111}body.dark-mode .hub-views__lbl{color:#bbb}" +
+        /* List + Compact: the card markup, restyled */
+        ".hub-v-list .hub-cat table.tbl,.hub-v-compact .hub-cat table.tbl{display:grid !important;gap:.4em !important;table-layout:auto}" +
+        ".hub-v-list .hub-cat table.tbl{grid-template-columns:1fr !important;gap:.35em !important}" +
+        ".hub-v-compact .hub-cat table.tbl{grid-template-columns:repeat(auto-fill,minmax(14em,1fr)) !important}" +
+        "@media (max-width:420px){.hub-v-compact .hub-cat table.tbl{grid-template-columns:1fr 1fr !important}}" +
+        ".hub-v-list .hub-cat .tbl tbody,.hub-v-list .hub-cat .calc-row,.hub-v-compact .hub-cat .tbl tbody,.hub-v-compact .hub-cat .calc-row{display:contents !important}" +
+        ".hub-v-list .hub-cat td.calc-container,.hub-v-compact .hub-cat td.calc-container{display:block !important;width:auto !important;min-width:0;margin:0 !important;border:0 !important;padding:0 !important}" +
+        ".hub-v-list .hub-cat .calc-link,.hub-v-compact .hub-cat .calc-link{display:flex !important;flex-direction:row !important;align-items:center !important;text-align:left !important;height:auto !important;gap:.8em;padding:.5em .7em !important;border-width:1px !important;border-radius:.45em}" +
+        ".hub-v-list .hub-cat .calc__img-container,.hub-v-compact .hub-cat .calc__img-container{display:block !important;flex:none;padding:0 !important}" +
+        ".hub-v-list .hub-cat .calc__img{width:2.9em !important;height:2.9em !important;max-width:2.9em !important;margin:0 !important;border-radius:.45em}" +
+        ".hub-v-list .hub-cat .calc__text,.hub-v-compact .hub-cat .calc__text{display:block !important;flex:1 1 auto;min-width:0}" +
+        ".hub-v-list .hub-cat .calc__text--title{margin:0 0 .15em !important;font-size:1em !important;font-weight:700}" +
+        ".hub-v-list .hub-cat .calc__text--desc{display:-webkit-box !important;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;line-height:1.35;font-size:.86em}" +
+        ".hub-v-compact .hub-cat .calc-link{border-radius:2em !important;padding:.3em .9em .3em .3em !important;gap:.55em}" +
+        ".hub-v-compact .hub-cat .calc__img{width:1.9em !important;height:1.9em !important;max-width:1.9em !important;margin:0 !important;border-radius:.4em}" +
+        ".hub-v-compact .hub-cat .calc__text--title{margin:0 !important;font-size:.95em !important;line-height:1.25;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}" +
+        ".hub-v-compact .hub-cat .calc__text--desc{display:none !important}" +
+        /* Table */
+        "#hub-tbox[hidden],.hub-v-table .hub-cat{display:none !important}" +
+        "#hub-tbox{margin:0 0 1.4em;min-width:0}" +
+        ".hub-tscroll{overflow-x:auto;-webkit-overflow-scrolling:touch;border:1px solid #d4d9e0;border-radius:.45em;max-width:100%}" +
+        ".hub-tscroll:focus-visible{outline:2px solid #277bb6;outline-offset:2px}" +
+        ".hub-table{border-collapse:collapse;width:100%;min-width:50em;font-size:.92em;table-layout:auto;margin:0}" +
+        ".hub-table th,.hub-table td{padding:.45em .6em;border-bottom:1px solid #e3e7ec;text-align:left;vertical-align:middle;color:#222;background:#fff}" +
+        ".hub-table td.num,.hub-table th.num{text-align:right;white-space:nowrap}.hub-table td.dt{white-space:nowrap}" +
+        ".hub-table thead th{background:#f2f5f9;padding:0}" +
+        ".hub-table th button{font:inherit;font-weight:700;color:#1e2733;background:none;border:0;cursor:pointer;width:100%;text-align:inherit;padding:.6em .6em;display:flex;gap:.3em;align-items:center;white-space:nowrap}" +
+        ".hub-table th.num button{justify-content:flex-end}.hub-table th button:focus-visible{outline:2px solid #277bb6;outline-offset:-2px}" +
+        ".hub-table th button .ar{opacity:.4;font-size:.8em}.hub-table th[aria-sort] button .ar{opacity:1;color:#1a5f94}" +
+        ".hub-table tbody tr:hover td{background:#f4f8fc}.hub-table tr[hidden]{display:none}" +
+        ".hub-table td.nm{min-width:14em}.hub-table td.nm a{display:flex;align-items:center;gap:.6em;color:#1a5f94;font-weight:700;text-decoration:none}.hub-table td.nm a:hover span{text-decoration:underline}" +
+        ".hub-table td.nm img{width:2em;height:2em;border-radius:.35em;flex:none;object-fit:cover;background:#e6edf5}" +
+        ".hub-table .stars{color:#b45309}.hub-table .muted{color:#5f6874}" +
+        "@media (max-width:700px){.hub-table th:first-child,.hub-table td.nm{position:sticky;left:0;z-index:1;min-width:10em;max-width:12em;box-shadow:1px 0 0 #e3e7ec}}" +
+        /* the page CSS paints every span #333 (and the derived dark theme #eee): let these follow their parent */
+        ".hub-views button span,.hub-table time,.hub-table td.nm a span,.hub-table th button span.ar{color:inherit !important}" +
+        ".hub-tnote{font-size:.85em;color:#5b6470;margin:.5em 0 0}.hub-tnote:empty{display:none}" +
+        "body.dark-mode .hub-tscroll{border-color:#444}body.dark-mode .hub-table th,body.dark-mode .hub-table td{border-color:#3a3a3a;color:#e6e6e6;background:#1e1e1e}" +
+        "body.dark-mode .hub-table thead th{background:#262c33}body.dark-mode .hub-table th button{color:#eee}" +
+        "body.dark-mode .hub-table th[aria-sort] button .ar{color:#6cb6f5}body.dark-mode .hub-table tbody tr:hover td{background:#25303a}" +
+        "body.dark-mode .hub-table td.nm a{color:#6cb6f5}body.dark-mode .hub-table td.nm img{background:#3a3a3a}" +
+        "body.dark-mode .hub-table .stars{color:#ffb454}body.dark-mode .hub-table .muted,body.dark-mode .hub-tnote{color:#aab2bd}" +
+        "@media (max-width:700px){body.dark-mode .hub-table td.nm,body.dark-mode .hub-table th:first-child{box-shadow:1px 0 0 #3a3a3a}}";
     document.head.appendChild(css);
 
     var cat = "all";
@@ -59,6 +129,16 @@
             var visible = Array.prototype.some.call(s.querySelectorAll("td.calc-container"), function (td) { return !td.hidden; });
             s.hidden = !visible;
         });
+        if (view === "table" && tbox) {
+            var shown = 0;
+            rows.forEach(function (r) {
+                var ok = cat === "popular" ? r.pop : (cat === "all" || r.cats.indexOf(cat) !== -1) && words.every(function (w) { return r.text.indexOf(w) !== -1; });
+                r.tr.hidden = !ok;
+                if (ok) shown++;
+            });
+            any = shown > 0;
+            tbox.hidden = !any;
+        } else if (tbox) tbox.hidden = true;
         if (empty) empty.hidden = any;
     }
     function setCat(c) {
@@ -66,10 +146,192 @@
         Array.prototype.forEach.call(chips.querySelectorAll("button"), function (b) { b.setAttribute("aria-pressed", b.getAttribute("data-c") === c ? "true" : "false"); });
         apply();
     }
+
+    /* ---- views ---- */
+    var ICON = {
+        cards: '<svg viewBox="0 0 16 16" aria-hidden="true"><path d="M1 1h6v6H1zM9 1h6v6H9zM1 9h6v6H1zM9 9h6v6H9z"/></svg>',
+        list: '<svg viewBox="0 0 16 16" aria-hidden="true"><path d="M1 2h3v3H1zM6 3h9v1.4H6zM1 6.5h3v3H1zM6 7.3h9v1.4H6zM1 11h3v3H1zM6 11.8h9v1.4H6z"/></svg>',
+        compact: '<svg viewBox="0 0 16 16" aria-hidden="true"><path d="M1 2h6.5v3H1zM8.5 2H15v3H8.5zM1 6.5h6.5v3H1zM8.5 6.5H15v3H8.5zM1 11h6.5v3H1zM8.5 11H15v3H8.5z"/></svg>',
+        table: '<svg viewBox="0 0 16 16" aria-hidden="true"><path d="M1 1h14v14H1zm1.5 1.5v2.5h11V2.5zm0 4v3h3v-3zm4.5 0v3h6.5v-3zm-4.5 4.5v2.5h3V11zm4.5 0v2.5h6.5V11z"/></svg>'
+    };
+    var NAMES = { cards: "Cards", list: "List", compact: "Compact", table: "Table" };
+    var vrow = document.createElement("div");
+    vrow.className = "hub-viewrow";
+    vrow.innerHTML = '<span class="hub-views__lbl" id="hub-views-lbl">View:</span><div class="hub-views" role="group" aria-labelledby="hub-views-lbl">' +
+        Object.keys(NAMES).map(function (k) { return '<button type="button" data-v="' + k + '" aria-pressed="false" title="' + NAMES[k] + ' view">' + ICON[k] + "<span>" + NAMES[k] + "</span></button>"; }).join("") + "</div>";
+    chips.parentNode.appendChild(vrow);
+
+    function esc(t) { return String(t == null ? "" : t).replace(/[&<>"]/g, function (c) { return { "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c]; }); }
+    /* same key as build_hub_meta.py / the stats + ratings paths: "/slug", no index.html / .html / trailing slash / query */
+    function norm(href) {
+        var p = String(href || "").replace(/^https?:\/\/(www\.)?mes\.fm/, "").split(/[?#]/)[0];
+        p = p.replace(/(^|\/)index\.html$/, "").replace(/\.html$/, "").replace(/\/+$/, "");
+        return p.charAt(0) === "/" ? p : "/" + p;
+    }
+    var popSet = {};
+    Array.prototype.forEach.call(document.querySelectorAll(".hub-cat--popular a.mini"), function (a) { popSet[norm(a.getAttribute("href"))] = 1; });
+    var CATNAME = {};
+    sections.forEach(function (s) { var t = s.querySelector(".hub-cat__title"); if (t) CATNAME[s.getAttribute("data-cat")] = t.textContent.trim(); });
+    var page = /calculator/i.test(input.getAttribute("placeholder") || "") ? "calculator" : "tool";
+
+    var COLS = [
+        { k: "name", l: "Name" }, { k: "cat", l: "Category" }, { k: "type", l: "Type" },
+        { k: "added", l: "Added" }, { k: "updated", l: "Updated" },
+        { k: "views", l: "Views (30 days)", num: 1 }, { k: "rating", l: "Rating", num: 1 }
+    ];
+    if (!COLS.some(function (c) { return c.k === sortKey; })) sortKey = "name";
+    var DESC_FIRST = /^(added|updated|views|rating)$/;   /* first click = newest / most first */
+
+    function fmtDate(d) {
+        if (!d) return '<span class="muted">&ndash;</span>';
+        var t = new Date(d + "T12:00:00");
+        return '<time datetime="' + esc(d) + '">' + esc(isNaN(t) ? d : t.toLocaleDateString(undefined, { year: "numeric", month: "short", day: "numeric" })) + "</time>";
+    }
+    function buildTable() {
+        tbox = document.createElement("div");
+        tbox.id = "hub-tbox";
+        tbox.hidden = true;
+        tbox.innerHTML = '<div class="hub-tscroll" tabindex="0" role="region" aria-label="Table of ' + page + 's (scrolls sideways)"><table class="hub-table"><thead><tr>' +
+            COLS.map(function (c) { return '<th scope="col" data-k="' + c.k + '"' + (c.num ? ' class="num"' : "") + '><button type="button">' + esc(c.l) + ' <span class="ar" aria-hidden="true">&#8597;</span></button></th>'; }).join("") +
+            '</tr></thead><tbody></tbody></table></div><p class="hub-tnote" aria-live="polite"></p>';
+        var anchor = empty || sections[sections.length - 1].nextSibling;
+        (empty || sections[sections.length - 1]).parentNode.insertBefore(tbox, anchor);
+        tbody = tbox.querySelector("tbody");
+        tnote = tbox.querySelector(".hub-tnote");
+        var byKey = {};
+        cards.forEach(function (td) {
+            var sec = td.closest(".hub-cat"), a = td.querySelector("a.calc-link");
+            if (!a || sec.classList.contains("hub-cat--mini")) return;
+            var href = a.getAttribute("href"), key = norm(href), c = sec.getAttribute("data-cat");
+            if (byKey[key]) {   /* the same page listed in two categories: one row, both categories */
+                var o = byKey[key];
+                if (o.cats.indexOf(c) === -1) { o.cats.push(c); o.catName += ", " + (CATNAME[c] || c); o.tr.children[1].textContent = o.catName; o.text += " " + (CATNAME[c] || c).toLowerCase(); }
+                return;
+            }
+            var img = td.querySelector("img"), t = td.querySelector(".calc__text--title"), d = td.querySelector(".calc__text--desc");
+            var title = t ? t.textContent.trim() : key;
+            var r = { key: key, name: title.replace(/^MES\s+/, "").toLowerCase(), cats: [c], catName: CATNAME[c] || c, pop: !!popSet[key],
+                type: "", added: "", updated: "", views: null, rating: null, text: textOf(td) };
+            r.text += " " + r.catName.toLowerCase();
+            var tr = document.createElement("tr");
+            tr.innerHTML = '<td class="nm"><a href="' + esc(href) + '"' + (d ? ' title="' + esc(d.textContent.trim()) + '"' : "") + '><img src="' + esc(img ? img.getAttribute("src") : "") + '" alt="" width="32" height="32" loading="lazy"><span>' + esc(title) + "</span></a></td>" +
+                "<td>" + esc(r.catName) + '</td><td></td><td class="dt"></td><td class="dt"></td><td class="num"></td><td class="num"></td>';
+            r.tr = tr;
+            byKey[key] = r;
+            rows.push(r);
+            tbody.appendChild(tr);
+        });
+        tbox.querySelector("thead").addEventListener("click", function (e) {
+            var th = e.target.closest("th");
+            if (!th) return;
+            var k = th.getAttribute("data-k");
+            if (k === sortKey) sortDir = -sortDir;
+            else { sortKey = k; sortDir = DESC_FIRST.test(k) ? -1 : 1; }
+            save();
+            sortRows();
+        });
+        fill();
+        sortRows();
+    }
+    function val(r) {
+        return sortKey === "rating" ? r.rb : sortKey === "cat" ? r.catName.toLowerCase() : sortKey === "type" ? (r.type || "").toLowerCase() : r[sortKey];
+    }
+    function cmp(a, b) {
+        var x = val(a), y = val(b);
+        var nx = x == null || x === "", ny = y == null || y === "";
+        if (nx || ny) return nx && ny ? (a.name < b.name ? -1 : 1) : nx ? 1 : -1;   /* missing values always last */
+        if (x < y) return -sortDir;
+        if (x > y) return sortDir;
+        return a.name < b.name ? -1 : a.name > b.name ? 1 : 0;
+    }
+    function sortRows() {
+        if (!tbox) return;
+        rows.slice().sort(cmp).forEach(function (r) { tbody.appendChild(r.tr); });
+        Array.prototype.forEach.call(tbox.querySelectorAll("thead th"), function (th) {
+            var on = th.getAttribute("data-k") === sortKey;
+            if (on) th.setAttribute("aria-sort", sortDir > 0 ? "ascending" : "descending");
+            else th.removeAttribute("aria-sort");
+            th.querySelector(".ar").innerHTML = on ? (sortDir > 0 ? "&#9650;" : "&#9660;") : "&#8597;";
+        });
+    }
+    function fill() {
+        var dash = '<span class="muted">&ndash;</span>';
+        rows.forEach(function (r) {
+            var c = r.tr.children;
+            c[2].textContent = r.type || (page === "calculator" ? "Calculator" : "Tool");
+            c[3].innerHTML = fmtDate(r.added);
+            c[4].innerHTML = fmtDate(r.updated);
+            c[5].innerHTML = r.views == null ? dash : r.viewsTxt;
+            c[6].innerHTML = r.rcount
+                ? (r.ravg ? '<span class="stars" aria-hidden="true">&#9733;</span> ' + r.ravg.toFixed(1) + ' <span class="muted">(' + r.rcount + ')</span><span class="sr-only" style="position:absolute;left:-9999px"> stars</span>'
+                          : '<span class="muted" title="The average shows from 5 ratings">' + r.rcount + (r.rcount === 1 ? " rating" : " ratings") + "</span>")
+                : dash;
+        });
+    }
+    function getJSON(u) { return fetch(u, { credentials: "same-origin" }).then(function (r) { if (!r.ok) throw new Error(r.status); return r.json(); }); }
+    function loadData() {
+        if (loaded) return;
+        var local = /^(localhost|127\.0\.0\.1|\[::1\])$/.test(location.hostname) || /[?&]sample=1\b/.test(location.search);
+        var miss = [], smp = [];
+        tnote.textContent = "Loading dates, views and ratings…";
+        var meta = getJSON("/hub-meta.json").then(function (d) {
+            var p = d.pages || {};
+            rows.forEach(function (r) { var m = p[r.key]; if (m) { r.type = m.type || ""; r.added = m.added || ""; r.updated = m.updated || ""; } });
+        }).catch(function () { miss.push("dates"); });
+        var N = 500;
+        var stats = (local ? Promise.reject(0) : getJSON("/api/stats?range=30d&slim=1&n=" + N)).catch(function () {
+            if (!local) throw 0;
+            return getJSON("/hub-views-sample.json").then(function (d) { smp.push("views"); return d; });
+        }).then(function (d) {
+            var sum = {}, list = d.topPages || [], low = Infinity;
+            list.forEach(function (x) {
+                if (x.views < low) low = x.views;
+                if (!/^(www\.)?mes\.fm$/.test(x.site || "mes.fm")) return;
+                var k = norm(x.path);
+                sum[k] = (sum[k] || 0) + x.views;
+            });
+            var cut = list.length >= N;   /* the list was cut off: a page not in it had fewer views than the last one */
+            rows.forEach(function (r) {
+                var v = sum[r.key];
+                if (v != null) { r.views = v; r.viewsTxt = v.toLocaleString(); }
+                else if (cut) { r.views = 0; r.viewsTxt = '<span class="muted" title="Not among the ' + N + ' most-viewed pages">&lt; ' + low.toLocaleString() + "</span>"; }
+                else { r.views = 0; r.viewsTxt = '<span class="muted">0</span>'; }
+            });
+        }).catch(function () { miss.push("views"); });
+        var rat = (local ? Promise.reject(0) : getJSON("/api/rating?top=1")).catch(function () {
+            if (!local) throw 0;
+            return getJSON("/ratings/data/sample.json").then(function (d) { smp.push("ratings"); return d; });
+        }).then(function (d) {
+            var by = {};
+            (d.pages || []).forEach(function (x) { by[norm(x.p)] = x; });
+            rows.forEach(function (r) { var x = by[r.key]; if (x) { r.rcount = x.n; r.ravg = x.avg || null; r.rb = x.b; } });
+        }).catch(function () { miss.push("ratings"); });
+        loaded = Promise.all([meta, stats, rat]).then(function () {
+            fill();
+            sortRows();
+            var msg = [];
+            if (miss.length) msg.push("The " + miss.join(" and ") + " could not be loaded right now, so " + (miss.length > 1 ? "those columns show" : "that column shows") + " –.");
+            if (smp.length) msg.push("Local preview: the " + smp.join(" and ") + " are sample numbers, not real ones.");
+            msg.push("Views = page views in the last 30 days. A rating average shows once a page has 5 ratings.");
+            tnote.innerHTML = esc(msg.join(" ")) + ' <a href="/ratings">Top rated pages</a>';
+        });
+    }
+    function setView(v) {
+        view = v;
+        ["list", "compact", "table"].forEach(function (k) { host.classList.toggle("hub-v-" + k, k === v); });
+        Array.prototype.forEach.call(vrow.querySelectorAll("button"), function (b) { b.setAttribute("aria-pressed", b.getAttribute("data-v") === v ? "true" : "false"); });
+        if (v === "table") { if (!tbox) buildTable(); loadData(); }
+        save();
+        apply();
+        if (v !== "table") try { window.dispatchEvent(new Event("resize")); } catch (e) {}   /* Newest / Popular pill rows re-fit their width */
+    }
+    vrow.addEventListener("click", function (e) { var b = e.target.closest("button[data-v]"); if (b) setView(b.getAttribute("data-v")); });
+
     input.addEventListener("input", apply);
     chips.addEventListener("click", function (e) { var b = e.target.closest("button"); if (b) setCat(b.getAttribute("data-c")); });
     input.addEventListener("keydown", function (e) { if (e.key === "Escape") { input.value = ""; setCat("all"); } });
     var h = (location.hash || "").slice(1);
-    if (h && chips.querySelector('button[data-c="' + h + '"]')) setCat(h);
-    else apply();
+    if (h && chips.querySelector('button[data-c="' + h + '"]')) cat = h;
+    setView(view);
+    setCat(cat);
 })();

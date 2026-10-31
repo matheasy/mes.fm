@@ -6,9 +6,9 @@ $(document).ready(function() {
            mes.fm's own pages has no "Home" item, so a page can override the
            info-bar index; -1 (or any out-of-range value) highlights nothing. */
         var info_bar_tab = (typeof MES_Vars.info_bar_tab === "number") ? MES_Vars.info_bar_tab : MES_Vars.current_tab;
-        /* The "Extensions" / "Browser Extensions" links (-> /browser) were added to both bars later; they are not counted, so every page's
+        /* The "Extensions" / "Browser Extensions" links (-> /browser), and the "★ My Favourites" (/fav) and "★ Top Rated Pages" (/ratings) items site-search.js adds to the menu, were added to both bars later; they are not counted, so every page's
            index keeps meaning what it did (add_browser_extensions_infobar.py, add_browser_extensions_nav.py). */
-        var notExt = function() { return !/^(https:\/\/mes\.fm)?\/(browser|fav)\/?$/.test(this.getAttribute("href") || ""); };
+        var notExt = function() { return !/^(https:\/\/mes\.fm)?\/(browser|fav|ratings)\/?$/.test(this.getAttribute("href") || ""); };
         if(info_bar_tab >= 0)
             $("#info-bar .info-bar__item__text").filter(notExt).eq(info_bar_tab).addClass("active-tab");
         $("#navbar>.navbar__item").not(".navbar__item--social").filter(function() { return notExt.call($(this).children(".navbar__link")[0] || this); }).eq(MES_Vars.current_tab).children(".navbar__link").addClass("active-tab");

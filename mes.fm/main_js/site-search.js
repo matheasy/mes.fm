@@ -223,10 +223,15 @@
     function favMenu() {
         Array.prototype.forEach.call(document.querySelectorAll("a.navbar__link"), function (a) {
             if (!/^(https:\/\/mes\.fm)?\/browser\/?$/.test(a.getAttribute("href") || "")) return;
-            var li = a.closest("li"); if (!li || li.previousElementSibling && li.previousElementSibling.getAttribute("data-fav")) return;
-            var n = li.cloneNode(true); n.setAttribute("data-fav", "1");
-            var l = n.querySelector("a.navbar__link"); l.setAttribute("href", "/fav"); l.textContent = "★ My Favourites"; l.removeAttribute("id");
-            li.parentNode.insertBefore(n, li);
+            var li = a.closest("li"); if (!li || li.previousElementSibling && li.previousElementSibling.getAttribute("data-top")) return;
+            /* "★ My Favourites" (/fav), then "★ Top Rated Pages" (/ratings), both just above Browser Extensions;
+               main.js skips /fav, /ratings and /browser when it counts the active tab, so no highlight shifts */
+            [["data-fav", "/fav", "★ My Favourites"], ["data-top", "/ratings", "★ Top Rated Pages"]].forEach(function (it) {
+                if (li.parentNode.querySelector("li[" + it[0] + "]")) return;
+                var n = li.cloneNode(true); n.setAttribute(it[0], "1");
+                var l = n.querySelector("a.navbar__link"); l.setAttribute("href", it[1]); l.textContent = it[2]; l.removeAttribute("id"); l.classList.remove("active-tab");
+                li.parentNode.insertBefore(n, li);
+            });
         });
     }
     if (document.readyState === "loading") document.addEventListener("DOMContentLoaded", favMenu); else favMenu();
