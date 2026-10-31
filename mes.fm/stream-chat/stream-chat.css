@@ -1,0 +1,83 @@
+/* MES Stream Chat widget (mes.fm/stream-chat + /stream-chat/dock + /stream-chat/overlay). Hand-written, served as-is; bump ?v= on the three pages after changes.
+   The chat box is always dark like a streaming dock; colours are custom properties so the site's dark-mode derivation leaves them alone. */
+#sc { --sc-bg: #18181b; --sc-bg2: #232329; --sc-line: #34343c; --sc-fg: #ececf1; --sc-dim: #a1a1aa; --sc-acc: #7c3aed; --sc-size: 1;
+	color: var(--sc-fg); font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; line-height: 1.35; }
+#sc :where(div, span, p, b, label, button, a) { color: inherit; }
+#sc[data-mode="page"], #sc[data-mode="dock"] { background: var(--sc-bg); border-radius: 10px; display: flex; flex-direction: column; overflow: hidden; }
+#sc[data-mode="page"] { height: min(78vh, 900px); min-height: 420px; border: 1px solid var(--sc-line); }
+#sc[data-mode="dock"] { position: fixed; inset: 0; border-radius: 0; }
+#sc .sc-bar, #sc .sc-foot { display: flex; align-items: center; gap: 6px; padding: 6px 8px; background: var(--sc-bg2); flex-wrap: wrap; }
+#sc .sc-bar { border-bottom: 1px solid var(--sc-line); }
+#sc .sc-foot { border-top: 1px solid var(--sc-line); font-size: 13px; color: var(--sc-dim); }
+#sc .sc-sp { flex: 1; }
+#sc .sc-chips { display: flex; gap: 4px; flex-wrap: wrap; }
+#sc .sc-btn { font: inherit; font-size: 13px; background: #2e2e36; color: var(--sc-fg); border: 1px solid #44444e; border-radius: 6px; padding: 4px 8px; cursor: pointer; display: inline-flex; align-items: center; gap: 5px; min-height: 30px; }
+#sc .sc-btn:hover { background: #3a3a44; }
+#sc .sc-btn[aria-pressed="true"] { background: var(--sc-acc); border-color: var(--sc-acc); color: #fff; }
+#sc .sc-btn--pf[aria-pressed="false"] { opacity: .45; }
+#sc .sc-btn--go { background: var(--sc-acc); border-color: var(--sc-acc); color: #fff; }
+#sc .sc-pf { width: 14px; height: 14px; border-radius: 3px; display: inline-block; flex: 0 0 auto; position: relative; vertical-align: -2px; }
+#sc .sc-pf--yt { background: #ff0033; }
+#sc .sc-pf--yt::after { content: ""; position: absolute; left: 5px; top: 3.5px; border-left: 5px solid #fff; border-top: 3.5px solid transparent; border-bottom: 3.5px solid transparent; }
+#sc .sc-pf--tw { background: #9146ff; }
+#sc .sc-pf--tw::after { content: ""; position: absolute; left: 4px; top: 3px; width: 2px; height: 5px; background: #fff; box-shadow: 4px 0 0 #fff; }
+#sc .sc-pf--od { background: linear-gradient(135deg, #ef1970, #f67a3c); border-radius: 50%; }
+#sc .sc-setup { padding: 10px; background: var(--sc-bg2); border-bottom: 1px solid var(--sc-line); display: grid; gap: 8px; }
+#sc .sc-src { display: grid; grid-template-columns: auto auto 5.2em minmax(0, 1fr); align-items: center; gap: 6px; font-size: 14px; }
+#sc .sc-in { font: inherit; font-size: 14px; background: #111114; color: var(--sc-fg); border: 1px solid #44444e; border-radius: 6px; padding: 6px 8px; min-width: 0; }
+#sc .sc-hint { margin: 0; font-size: 12.5px; color: var(--sc-dim); }
+#sc .sc-opts { display: flex; flex-wrap: wrap; gap: 6px 14px; align-items: center; font-size: 13.5px; }
+#sc .sc-opts .sc-btn { margin-left: auto; }
+#sc .sc-status { display: flex; flex-direction: column; gap: 2px; padding: 4px 8px; font-size: 12px; color: var(--sc-dim); border-bottom: 1px solid var(--sc-line); }
+#sc .sc-status:empty { display: none; }
+#sc .sc-st { display: flex; align-items: center; gap: 6px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+#sc .sc-st--on { color: #86efac; } #sc .sc-st--err { color: #fca5a5; } #sc .sc-st--off { color: var(--sc-dim); }
+#sc .sc-feedwrap { position: relative; flex: 1; min-height: 0; }
+#sc .sc-list { position: absolute; inset: 0; overflow-y: auto; padding: 4px 0; font-size: calc(15px * var(--sc-size)); overscroll-behavior: contain; }
+#sc .sc-newpill { position: absolute; left: 50%; bottom: 8px; transform: translateX(-50%); background: var(--sc-acc); color: #fff; border: 0; border-radius: 99px; padding: 6px 14px; font: inherit; font-size: 13px; cursor: pointer; box-shadow: 0 2px 8px #0008; }
+#sc .sc-m { padding: 4px 10px; cursor: pointer; border-left: 3px solid transparent; overflow-wrap: anywhere; }
+#sc .sc-m:hover { background: #ffffff0d; }
+#sc .sc-m--on { border-left-color: #facc15; background: #facc1514; }
+#sc .sc-mh { display: flex; align-items: center; gap: 6px; flex-wrap: wrap; }
+#sc .sc-m:not(.sc-m--paid):not(.sc-m--big) { display: block; }
+#sc .sc-m:not(.sc-m--paid):not(.sc-m--big) .sc-mh { display: inline-flex; margin-right: 6px; vertical-align: baseline; }
+#sc .sc-m:not(.sc-m--paid):not(.sc-m--big) .sc-tx { display: inline; }
+#sc .sc-av { width: 1.35em; height: 1.35em; border-radius: 50%; object-fit: cover; }
+#sc .sc-nm { font-weight: 700; color: #c4b5fd; }
+#sc .sc-m--yt .sc-nm { color: #a5b4fc; } #sc .sc-m--od .sc-nm { color: #f9a8d4; }
+#sc .sc-nm--mod { color: #5eead4 !important; } #sc .sc-nm--owner { color: #fde047 !important; }
+#sc .sc-mb { color: #86efac; font-size: .8em; }
+#sc .sc-tm { color: var(--sc-dim); font-size: .75em; }
+#sc .sc-emo { height: 1.4em; vertical-align: middle; }
+#sc .sc-stk { height: 4.5em; }
+#sc .sc-m--paid { --sc-paid: #1e88e5; margin: 6px 8px; padding: 0; border: 0; border-radius: 8px; overflow: hidden; background: color-mix(in srgb, var(--sc-paid) 30%, #18181b); box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--sc-paid) 70%, transparent); }
+#sc .sc-m--paid .sc-mh { background: color-mix(in srgb, var(--sc-paid) 75%, #000); padding: 6px 10px; color: #fff; }
+#sc .sc-m--paid .sc-nm { color: #fff; }
+#sc .sc-m--paid .sc-tx, #sc .sc-m--paid .sc-note { padding: 6px 10px; }
+#sc .sc-m--paid .sc-note + .sc-tx { padding-top: 0; }
+#sc .sc-k--bits { --sc-paid: #9146ff; } #sc .sc-k--sub, #sc .sc-k--gift, #sc .sc-k--member { --sc-paid: #0f9d58; } #sc .sc-k--tip { --sc-paid: #e50054; }
+#sc .sc-amt { margin-left: auto; font-weight: 800; background: #0006; color: #fff; border-radius: 99px; padding: 1px 9px; }
+#sc .sc-note { color: var(--sc-dim); font-style: italic; font-size: .92em; }
+#sc .sc-m--paid .sc-note { color: #fff; font-style: normal; font-weight: 600; }
+#sc .sc-m--new { animation: sc-in .35s ease-out; }
+@keyframes sc-in { from { opacity: 0; transform: translateY(6px); } }
+#sc .sc-tip { font-size: 12px; }
+#sc .sc-totals { font-weight: 700; color: #fde68a; }
+#sc .sc-featwrap { padding: 8px; border-top: 1px solid var(--sc-line); background: #0b0b0e; }
+#sc .sc-flabel { font-size: 12px; color: var(--sc-dim); margin-bottom: 4px; }
+#sc .sc-feat--preview:not(.sc-feat--on)::before { content: "Nothing yet: click any message above."; font-size: 13px; color: var(--sc-dim); }
+/* the featured card (overlay + preview) */
+#sc .sc-m--big { cursor: default; font-size: calc(26px * var(--sc-size)); background: #18181bee; border-radius: 14px; border: 0; padding: .55em .8em; box-shadow: 0 6px 24px #000a; max-width: 30em; animation: sc-pop .4s cubic-bezier(.2, 1.4, .4, 1); }
+#sc .sc-m--big .sc-av { width: 1.6em; height: 1.6em; }
+#sc .sc-m--big .sc-pf { width: .8em; height: .8em; }
+#sc .sc-m--big .sc-tx { margin-top: .25em; }
+#sc .sc-m--big.sc-m--paid { margin: 0; padding: 0; background: color-mix(in srgb, var(--sc-paid) 40%, #18181b); }
+#sc .sc-feat--preview .sc-m--big { font-size: calc(17px * var(--sc-size)); animation: none; }
+@keyframes sc-pop { from { opacity: 0; transform: translateY(20px) scale(.96); } }
+/* overlay page: transparent, card bottom-left, optional recent messages above it */
+html.sc-overlay-html, html.sc-overlay-html body { background: transparent !important; margin: 0; overflow: hidden; }
+#sc[data-mode="overlay"] { position: fixed; left: 24px; right: 24px; bottom: 24px; display: flex; flex-direction: column; gap: 12px; align-items: flex-start; }
+#sc .sc-ovlist { display: flex; flex-direction: column; gap: 6px; font-size: calc(22px * var(--sc-size)); }
+#sc .sc-ovlist--off { display: none; }
+#sc .sc-ovlist .sc-m { background: #18181bd9; border-radius: 10px; padding: .3em .6em; text-shadow: 0 1px 2px #000; max-width: 30em; }
+@media (max-width: 560px) { #sc .sc-src { grid-template-columns: auto auto minmax(0, 1fr); } #sc .sc-src .sc-in { grid-column: 1 / -1; } #sc[data-mode="page"] { height: 80vh; } }

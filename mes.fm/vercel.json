@@ -2,6 +2,12 @@
   "ignoreCommand": "if [ -n \"$VERCEL_GIT_PREVIOUS_SHA\" ] && git cat-file -e \"$VERCEL_GIT_PREVIOUS_SHA^{commit}\" 2>/dev/null && git diff --quiet \"$VERCEL_GIT_PREVIOUS_SHA\" HEAD -- ./; then exit 0; else exit 1; fi",
   "cleanUrls": true,
   "redirects": [
+    { "source": "/multichat", "destination": "/stream-chat", "permanent": true },
+    { "source": "/multi-chat", "destination": "/stream-chat", "permanent": true },
+    { "source": "/multistream-chat", "destination": "/stream-chat", "permanent": true },
+    { "source": "/stream-chat-overlay", "destination": "/stream-chat", "permanent": true },
+    { "source": "/obs-chat", "destination": "/stream-chat", "permanent": true },
+    { "source": "/live-chat", "destination": "/stream-chat", "permanent": true },
     { "source": "/feedback", "destination": "/ratings#feedback", "permanent": true },
     { "source": "/rating", "destination": "/ratings", "permanent": true },
     { "source": "/top-rated", "destination": "/ratings", "permanent": true },

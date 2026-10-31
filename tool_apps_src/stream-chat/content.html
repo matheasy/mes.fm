@@ -1,0 +1,37 @@
+<script>try{if(!localStorage.getItem('pageMode')){document.documentElement.classList.add('page-wide')}}catch(e){}</script>
+<link rel="stylesheet" href="/stream-chat/stream-chat.css?v=1">
+<div class="tu">
+	<p class="tu-note scp-intro">Your <b>YouTube</b>, <b>Twitch</b> and <b>Odysee</b> live chats in one window, Super Chats, stickers, memberships, bits, subs and tips included. Nothing to install: the page reads each chat directly. It finds your live (or scheduled) stream by itself, so just leave it open.</p>
+
+	<div id="sc" class="sc" data-mode="page"></div>
+
+	<div class="tu-card scp-obs">
+		<h2 class="scp-h">Use it in OBS</h2>
+		<ol class="scp-steps">
+			<li><b>Chat panel:</b> in OBS choose <b>Docks → Custom Browser Docks…</b>, name it <i>All Chats</i>, paste this address and press Apply:
+				<span class="scp-url"><code>https://mes.fm/stream-chat/dock</code> <button type="button" class="tu-btn tu-btn--ghost" data-sc-copy="https://mes.fm/stream-chat/dock">Copy</button></span></li>
+			<li><b>On screen:</b> in your scene add a <b>Browser</b> source, width 1920, height 1080, with this address:
+				<span class="scp-url"><code>https://mes.fm/stream-chat/overlay</code> <button type="button" class="tu-btn tu-btn--ghost" data-sc-copy="https://mes.fm/stream-chat/overlay">Copy</button></span>
+				It stays empty until you click a message in the OBS chat panel; that message then pops up on stream (click it again, or <i>Take off screen</i>, to remove it). To also show the latest messages on stream, use
+				<span class="scp-url"><code>https://mes.fm/stream-chat/overlay?chat=1</code> <button type="button" class="tu-btn tu-btn--ghost" data-sc-copy="https://mes.fm/stream-chat/overlay?chat=1">Copy</button></span></li>
+			<li>The panel and the overlay have to be in OBS together: clicking a message on this page in your normal browser does not reach OBS.</li>
+		</ol>
+		<p class="tu-note">The panel remembers its own channels (⚙ in the panel). Out of the box it reads YouTube @mestruth and @mes, Twitch matheasysolutions and Odysee @mestruth: change them for your own channels.</p>
+	</div>
+
+	<div class="tu-seo">
+		<h2>How it works</h2>
+		<p><b>YouTube:</b> mes.fm asks YouTube for the channel's live page and then reads the chat the same way YouTube's own pop-out chat does, every few seconds. No YouTube account, API key or permission is needed, and only public chat is read.</p>
+		<p><b>Twitch:</b> the page joins the channel's chat as an anonymous viewer, the way Twitch's own chat works when you are logged out, so messages arrive instantly.</p>
+		<p><b>Odysee:</b> the page looks up the channel's current livestream and listens to its comment feed, with a check every 20 seconds in case a message is missed.</p>
+		<p><b>X (Twitter):</b> not included yet. X has no public chat feed, so it would need a small MES browser extension that reads the X chat page; keep X's chat open next to this until then.</p>
+		<h2>Questions</h2>
+		<dl>
+			<dt>Can I reply from here?</dt><dd>Not yet: this window is for reading. Reply in each platform's own chat.</dd>
+			<dt>Are Super Chats shown?</dt><dd>Yes. Super Chats and Super Stickers show in their colour with the amount, as do new and gifted memberships, Twitch bits, subs, gift subs and raids, and Odysee tips. "$ Tips only" hides everything else, and the footer adds them up for the session.</dd>
+			<dt>Does it save the chat?</dt><dd>No. Messages live in this tab only and are gone when you close it. Settings (which channels, text size) are saved in this browser.</dd>
+			<dt>Why do some messages arrive a few seconds late?</dt><dd>YouTube chat is checked every few seconds (YouTube says how often); Twitch and Odysee are instant.</dd>
+		</dl>
+	</div>
+</div>
+<div class="tu-toast" id="sc-toast" role="status" aria-live="polite"></div>

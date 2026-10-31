@@ -1,0 +1,9 @@
+/* Page-only bits around the chat box; the chat itself is /stream-chat/stream-chat.css (shared with the OBS dock and overlay). */
+.tu .scp-intro { margin: 0 0 12px; font-size: 1.02em; }
+.tu .scp-obs { margin-top: 16px; }
+.tu .scp-h { margin: 0 0 8px; font-size: 1.25em; }
+.tu .scp-steps { margin: 0 0 8px 1.2em; padding: 0; line-height: 1.55; }
+.tu .scp-steps li { margin-bottom: 10px; }
+.tu .scp-url { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; margin: 6px 0; }
+.tu .scp-url code { background: #f1f1f4; color: #222; padding: 4px 8px; border-radius: 6px; overflow-wrap: anywhere; }
+body.dark-mode #main-content .tu .scp-url code { background: #2a2a30; color: #eee; }

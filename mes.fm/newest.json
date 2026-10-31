@@ -1,5 +1,5 @@
 {
- "generated": "2026-10-30",
+ "generated": "2026-10-31",
  "calculators": [
   {
    "href": "/bending-stress-calculator",
@@ -100,6 +100,14 @@
  ],
  "tools": [
   {
+   "href": "/stream-chat",
+   "title": "Stream Chat",
+   "icon": "/img/stream-chat-logo.png",
+   "desc": "Your YouTube, Twitch and Odysee live chats in one window, Super Chats and tips highlighted. Add it to OBS as a chat dock and on-screen overlay.",
+   "added": "2026-10-31",
+   "kind": "tool"
+  },
+  {
    "href": "/excel",
    "title": "Spreadsheet Viewer (Excel files)",
    "icon": "/img/excel-logo.png",
@@ -186,17 +194,17 @@
    "desc": "See your microphone's real level in dBFS on an OBS-style meter: too quiet, good or clipping. Noise floor, record and play back, speaker test.",
    "added": "2026-10-28",
    "kind": "tool"
-  },
-  {
-   "href": "/ping",
-   "title": "Ping Test",
-   "icon": "/img/ping-logo.png",
-   "desc": "Like ping -t in your browser: latency, jitter and packet loss to Cloudflare, Google DNS or any website, with a live chart and verdicts for gaming and calls.",
-   "added": "2026-10-28",
-   "kind": "tool"
   }
  ],
  "latest": [
+  {
+   "href": "/stream-chat",
+   "title": "Stream Chat",
+   "icon": "/img/stream-chat-logo.png",
+   "desc": "Your YouTube, Twitch and Odysee live chats in one window, Super Chats and tips highlighted. Add it to OBS as a chat dock and on-screen overlay.",
+   "added": "2026-10-31",
+   "kind": "tool"
+  },
   {
    "href": "/excel",
    "title": "Spreadsheet Viewer (Excel files)",
@@ -250,14 +258,6 @@
    "title": "Jump-Start a Car",
    "icon": "/img/jump-start-logo.png",
    "desc": "Practise the jumper-cable clamp order on an interactive engine bay, decode your battery’s date code, see how cold cuts cranking power and check its voltage.",
-   "added": "2026-10-29",
-   "kind": "tool"
-  },
-  {
-   "href": "/storage",
-   "title": "Storage Analyzer",
-   "icon": "/img/storage-logo.png",
-   "desc": "What is filling up your disk? Pick a folder and see it as a sunburst or treemap, with the largest files, file types, old files and duplicates. Nothing is uploaded.",
    "added": "2026-10-29",
    "kind": "tool"
   }

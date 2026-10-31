@@ -156,6 +156,13 @@ APPS = {
                               js_v="3"),
     # MES Ping Test (2026-10-28, mes.fm/ping): HTTP round-trip times (browsers can't send ICMP), several targets, chart, ping-style log. lib.js = MESPing, tests tool_apps_src/ping-tests.js.
     # mes.fm's own target is the static file mes.fm/ping/pong.txt (cache-busted), so no API is needed.
+    # MES Stream Chat (2026-10-31, mes.fm/stream-chat + bare OBS pages stream-chat/dock.html, overlay.html written by hand): YouTube (via api/yt-chat.js),
+    # Twitch (anonymous IRC WebSocket) and Odysee (comment WebSocket + comment.List) chats in one feed, read straight from the page. lib.js = MESChat,
+    # byte-identical copy at mes.fm/api/_stream-chat-lib.js; tests node tool_apps_src/stream-chat-tests.js. Widget CSS = mes.fm/stream-chat/stream-chat.css (shared, hand-written).
+    "stream-chat": dict(title="MES Stream Chat", page_title="Stream Chat: YouTube, Twitch and Odysee Live Chat in One Window (OBS Dock and Overlay)",
+                 tag="All your live chats in one place.", accent="#6d28d9", dark="#5b21b6", tint="#ede9fe",
+                 desc="Free multistream chat: see your YouTube, Twitch and Odysee live chats in one window with Super Chats, memberships, bits and tips highlighted, then add it to OBS as a chat dock and on-screen overlay. Nothing to install.",
+                 js_v="1"),
     "ping": dict(title="MES Ping Test", page_title="Ping Test: Continuous Latency, Jitter and Packet Loss Test",
                  tag="Like ping -t, in your browser.", accent="#0e7490", dark="#155e75", tint="#dcf1f6",
                  desc="Free continuous ping test: check latency, jitter and packet loss to Cloudflare 1.1.1.1, Google 8.8.8.8, mes.fm or any website, with a live chart, ping-style log and plain-word verdicts for gaming, calls and streaming. Nothing to install.",
