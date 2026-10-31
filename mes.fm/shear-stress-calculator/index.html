@@ -648,7 +648,7 @@ body.dark-mode .tu .rw-head {color:#a0a8b3;border-bottom-color:#555;} body.dark-
 	#mt .mt-bdla--s {stroke-width:2;}
 	#mt .mt-bdra {stroke:var(--mt-reac);stroke-width:3.5;} #mt .mt-bdra.mt-ah {fill:var(--mt-reac);stroke:none;}
 	#mt .mt-bdrt {fill:var(--mt-reac);font-weight:700;}
-	#mt .mt-bdwb {fill:var(--mt-load);opacity:0.1;} #mt .mt-bdwl {stroke:var(--mt-load);stroke-width:2.5;}
+	#mt .mt-bdwb {fill:var(--mt-load);fill-opacity:0.1;} #mt .mt-bdwl {stroke:var(--mt-load);stroke-width:2.5;}
 	#mt .mt-bdma {fill:none;stroke:var(--mt-load);stroke-width:3.5;} #mt .mt-bdmh {fill:var(--mt-load);}
 	#mt .mt-bdn {fill:var(--accent);font-weight:800;}
 	#mt .mt-bdld--sel .mt-bdla, #mt .mt-bdld--sel .mt-bdma, #mt .mt-bdld--sel .mt-bdwl {stroke-width:5;}
@@ -661,6 +661,24 @@ body.dark-mode .tu .rw-head {color:#a0a8b3;border-bottom-color:#555;} body.dark-
 	#mt .mt-bdlim {stroke:var(--mt-bad);stroke-width:1.5;stroke-dasharray:6 4;} #mt .mt-bdlimt {fill:var(--mt-bad);}
 	#mt .mt-bdhvt {font-weight:600;fill:var(--mt-ink);}
 	#mt .mt-bdfig .mt-svg:focus-visible {outline:3px solid var(--accent);outline-offset:2px;}
+	/* beam picture: sliders between the beam and the diagrams; size handles (load colour) and position handles; focus ring on the hit area of a focused handle */
+	#mt .mt-bdsl {margin:0.3em 0.2em 0.55em;padding:0.45em 0.7em 0.35em;border:1px solid var(--mt-grid);border-radius:0.6em;background:var(--mt-pn);}
+	#mt .mt-bdsl:empty {display:none;}
+	#mt .mt-bddg {margin-top:0.1em;}
+	#mt .mt-dragy {cursor:ns-resize;} #mt .mt-dragr {cursor:grab;} #mt .mt-dragr:active {cursor:grabbing;}
+	#mt .mt-bdsz {stroke:var(--mt-load);fill:var(--mt-card);stroke-width:3;}
+	#mt .mt-dragy:hover .mt-bdsz, #mt .mt-dragr:hover .mt-bdsz, #mt .mt-bdld--live .mt-bdsz {fill:var(--mt-load);}
+	#mt .mt-bdlv {paint-order:stroke;stroke:var(--mt-card);stroke-width:3.5px;stroke-linejoin:round;}
+	#mt .mt-bdld--live .mt-bdlv {font-size:1.12em;}
+	#mt .mt-bdla--z {stroke:var(--mt-load);stroke-width:2;stroke-dasharray:3 3;}
+	#mt .mt-bdsvg [tabindex]:focus {outline:none;}
+	#mt .mt-bdsvg g[tabindex]:focus-visible .mt-hit {stroke:var(--accent);stroke-width:2.5;stroke-dasharray:5 3;stroke-opacity:1;}
+	@media (min-width:1100px) {
+		#mt .mt-win.mt-bdfig {display:grid;grid-template-columns:minmax(0,1fr) minmax(18em,26em);column-gap:1.2em;align-items:center;align-content:start;}
+		#mt .mt-win.mt-bdfig > * {grid-column:1 / -1;}
+		#mt .mt-win.mt-bdfig > .mt-bdsvg {grid-column:1;}
+		#mt .mt-win.mt-bdfig > .mt-bdsl {grid-column:2;margin:0;max-width:none;}
+	}
 	#mt .mt-bssec {fill:var(--mt-bsfill);stroke:var(--mt-s3);stroke-width:1.5;} #mt .mt-bshole {fill:var(--mt-card);stroke:var(--mt-s3);stroke-width:1.5;}
 	#mt .mt-bsany {stroke-dasharray:6 4;fill-opacity:0.5;}
 	#mt .mt-bsna {stroke:var(--mt-mut);stroke-width:1.5;stroke-dasharray:8 5;}
@@ -1253,8 +1271,9 @@ body.is-stuck #navbar.hide { position: fixed; top: 56px; right: 8px; }
 		<section data-panel="bending" role="tabpanel" hidden>
 			<div class="mt-grid2">
 				<div class="tu-card mt-fig mt-bdfig">
-					<svg id="mt-bd-svg" class="mt-svg" viewBox="0 0 560 680" role="img" aria-label="The beam on its supports with the loads, its deflected shape, and the shear-force, bending-moment and deflection diagrams. Drag a load along the beam."></svg>
-					<div class="mt-sliders" id="mt-bd-sl"></div>
+					<svg id="mt-bd-svg" class="mt-svg mt-bdsvg" viewBox="0 0 560 258" role="group" aria-label="The beam on its supports with the loads and its deflected shape. Drag a load along the beam, drag the round handle at an arrow's tail (or a spread load's top edge, or a moment's arrowhead) to change its size; Tab to a handle and use the arrow keys."></svg>
+					<div class="mt-sliders mt-bdsl" id="mt-bd-sl"></div>
+					<svg id="mt-bd-dg" class="mt-svg mt-bddg" viewBox="0 256 560 424" role="img" aria-label="The shear-force, bending-moment and deflection diagrams along the beam"></svg>
 					<p class="mt-cap" id="mt-bd-cap"></p>
 				</div>
 				<div class="tu-card mt-inp">
@@ -1264,7 +1283,7 @@ body.is-stuck #navbar.hide { position: fixed; top: 56px; right: 8px; }
 						<div class="mt-f" data-f="bd-L" data-k="len" data-d="span" data-l="Beam length L"></div>
 						<div class="mt-f" data-f="bd-ob" data-k="len" data-d="span" data-l="Second support at" data-m="over"></div>
 					</div>
-					<h2 class="mt-h mt-bdh">Loads <span class="mt-bdhint">drag them along the beam</span></h2>
+					<h2 class="mt-h mt-bdh">Loads <span class="mt-bdhint">drag them along the beam; drag a handle to change the size</span></h2>
 					<div class="mt-bdloads" id="mt-bd-loads"></div>
 					<div class="mt-btns mt-bdadd"><button type="button" class="tu-btn" data-add="P">＋ Point load</button><button type="button" class="tu-btn" data-add="w">＋ Spread load (UDL)</button><button type="button" class="tu-btn" data-add="M">＋ Moment</button></div>
 					<div class="mt-sec">
@@ -1552,7 +1571,7 @@ body.is-stuck #navbar.hide { position: fixed; top: 56px; right: 8px; }
             hide_search:false,
             current_tab:3
         }        </script><!-- FASTCOMMENTS-LAZY: widget init moved to main_js/main.js -- it pulls embed.min.js only when #fastcomments-widget nears the viewport or on the first Comments-toggle click, so it no longer blocks first render -->                <script src="https://mes.fm/main_js/lazysizes.min.js?v=1.0.3" async></script>
-	<script src="/materials/js/materials.js?v=8" defer></script>
+	<script src="/materials/js/materials.js?v=9" defer></script>
             <script src="https://mes.fm/main_js/main.js?v=1.0.5"></script>    <!-- PAGEVIEW-TRACKING-INSERTED --><script src="https://mes.fm/main_js/track.js" defer></script><script>document.getElementById('copyright-year').textContent = new Date().getFullYear();</script><script src="/main_js/info-bar-fit.js" defer></script><script>
   // Floating compact header bar (see #compact-nav CSS): appears once the
   // header + nav bar have scrolled off the top; nav links that don't fit

@@ -131,6 +131,8 @@
 	.gs-chart:focus-visible {box-shadow:0 0 0 2px var(--accent);border-radius:4px;}
 	.gs-key--dash {border-top:3px dashed var(--gs-muted);}
 	.gs-key--dot {border-top:3px dotted var(--gs-muted);}
+	.gs-key--area {height:0.75em;border:0;border-radius:2px;vertical-align:-0.05em;}
+	#gs .tu-chip.gs-off {opacity:0.5;}
 	/* Fill window / Full screen (main_js/panel-view.js adds .mes-pfill) */
 	#gs .gs-sec.mes-pfill {background:var(--gs-card) !important;border:none;}
 	#gs .gs-sec.mes-pfill .gs-cbody {flex:1 1 auto;display:flex;flex-direction:column;min-height:0;}

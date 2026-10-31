@@ -232,5 +232,26 @@ var odd = M.curve({ id: "r", name: "odd", c: "duct", E: 68.9, sy: 3447, su: 4826
 	ok(M.beamSolve({ L: 4, sup: "ss", EI: 1, loads: [] }).Mabs.M === 0, "no load: no moment");
 })();
 
+/* dragging a load's size in the beam picture */
+(function () {
+	near(M.niceStep(10, 40), 0.5, 1e-12, "niceStep 10/40 = 0.5");
+	near(M.niceStep(100, 5), 20, 1e-12, "niceStep 100/5 = 20");
+	near(M.niceStep(7, 5), 2, 1e-12, "niceStep 7/5 -> 2");
+	ok(M.niceStep(0, 5) === 1 && M.niceStep(NaN, 5) === 1, "niceStep of nothing = 1");
+	near(M.snapTo(12.37, 0.5), 12.5, 1e-12, "snap 12.37 to 0.5");
+	ok(M.snapTo(0.1 + 0.2, 0.1) === 0.3, "snap is clean (0.3, not 0.30000000000000004)");
+	[5e3, -7.5e3, 12e3, 1].forEach(function (v) { var len = M.loadLen(v, 26, 40, 10e3); near(M.loadFromDist(v < 0 ? -len : len, 26, 40, 10e3), v, 1e-12, "load from its own arrow length " + v); });
+	ok(M.loadFromDist(20, 26, 40, 10e3) === 0 && M.loadFromDist(-3, 26, 40, 10e3) === 0, "inside the base zone = 0");
+	ok(M.loadFromDist(-60, 26, 40, 1e3) < 0, "below the beam = an upward (negative) load");
+	near(M.snapLoad(10310, "force", "kN", 10e3), 10.5e3, 1e-12, "10.31 kN snaps to 10.5 kN (steps of 0.5 kN)");
+	near(M.snapLoad(-4.48e3, "force", "kN", 10e3), -4.5e3, 1e-12, "negative loads snap too");
+	var lb = M.snapLoad(M.toSI("force", 2.013, "kip"), "force", "kip", M.toSI("force", 2, "kip"));
+	near(M.fromSI("force", lb, "kip"), 2, 1e-9, "2.013 kip snaps to 2 kip in US units (step 0.05 kip)");
+	near(M.snapLoad(2.04e3, "dist", "kN/m", 2e3), 2.05e3, 1e-12, "spread load snaps in kN/m");
+	near(M.angleDelta(3, -3), 2 * PI - 6, 1e-12, "angleDelta across ±π goes the short way");
+	near(M.angleDelta(0, 1), 1, 1e-12, "angleDelta 0 -> 1");
+	near(M.angleDelta(1, 0), -1, 1e-12, "angleDelta 1 -> 0");
+})();
+
 console.log(fails ? fails + " of " + n + " checks FAILED" : "all " + n + " checks passed");
 process.exit(fails ? 1 : 0);
