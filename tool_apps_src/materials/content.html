@@ -218,8 +218,9 @@
 		<section data-panel="bending" role="tabpanel" hidden>
 			<div class="mt-grid2">
 				<div class="tu-card mt-fig mt-bdfig">
-					<svg id="mt-bd-svg" class="mt-svg" viewBox="0 0 560 680" role="img" aria-label="The beam on its supports with the loads, its deflected shape, and the shear-force, bending-moment and deflection diagrams. Drag a load along the beam."></svg>
-					<div class="mt-sliders" id="mt-bd-sl"></div>
+					<svg id="mt-bd-svg" class="mt-svg mt-bdsvg" viewBox="0 0 560 258" role="group" aria-label="The beam on its supports with the loads and its deflected shape. Drag a load along the beam, drag the round handle at an arrow's tail (or a spread load's top edge, or a moment's arrowhead) to change its size; Tab to a handle and use the arrow keys."></svg>
+					<div class="mt-sliders mt-bdsl" id="mt-bd-sl"></div>
+					<svg id="mt-bd-dg" class="mt-svg mt-bddg" viewBox="0 256 560 424" role="img" aria-label="The shear-force, bending-moment and deflection diagrams along the beam"></svg>
 					<p class="mt-cap" id="mt-bd-cap"></p>
 				</div>
 				<div class="tu-card mt-inp">
@@ -229,7 +230,7 @@
 						<div class="mt-f" data-f="bd-L" data-k="len" data-d="span" data-l="Beam length L"></div>
 						<div class="mt-f" data-f="bd-ob" data-k="len" data-d="span" data-l="Second support at" data-m="over"></div>
 					</div>
-					<h2 class="mt-h mt-bdh">Loads <span class="mt-bdhint">drag them along the beam</span></h2>
+					<h2 class="mt-h mt-bdh">Loads <span class="mt-bdhint">drag them along the beam; drag a handle to change the size</span></h2>
 					<div class="mt-bdloads" id="mt-bd-loads"></div>
 					<div class="mt-btns mt-bdadd"><button type="button" class="tu-btn" data-add="P">＋ Point load</button><button type="button" class="tu-btn" data-add="w">＋ Spread load (UDL)</button><button type="button" class="tu-btn" data-add="M">＋ Moment</button></div>
 					<div class="mt-sec">

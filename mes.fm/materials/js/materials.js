@@ -598,11 +598,25 @@
 		fixP: function (P, L, EI) { return { M: P * L / 8, y: P * L * L * L / (192 * EI) }; }
 	};
 
+	/* dragging a load's size in the beam picture: an arrow's drawn length is base + perPx * |v| / scale (scale = the largest load of that kind, frozen while
+	   dragging), so the value follows from how far the pointer is from the beam (positive = above it = a downward load); a pointer inside the base zone gives 0 */
+	function niceStep(range, n) { if (!(range > 0) || !isFinite(range)) return 1; var raw = range / (n || 5), p = Math.pow(10, Math.floor(Math.log10(raw))), m = raw / p; return (m <= 1 ? 1 : m <= 2 ? 2 : m <= 5 ? 5 : 10) * p; }
+	function snapTo(x, step) { if (!(step > 0)) return x; return +(Math.round(x / step) * step).toPrecision(12); }
+	function loadLen(v, base, perPx, scale) { return base + perPx * Math.abs(v) / (scale > 0 ? scale : 1); }
+	function loadFromDist(dist, base, perPx, scale) { var a = Math.abs(dist) - base; if (!(a > 0)) return 0; return (dist < 0 ? -1 : 1) * a / perPx * (scale > 0 ? scale : 1); }
+	/* snap a load (SI) to a round number in the unit it is shown in: steps of about 1/40 of the largest load being drawn */
+	function snapLoad(vSI, kind, unit, maxSI) {
+		var d = fromSI(kind, vSI, unit), m = Math.abs(fromSI(kind, maxSI > 0 ? maxSI : Math.abs(vSI) || 1, unit)), st = niceStep(m, 40);
+		return toSI(kind, snapTo(d, st), unit);
+	}
+	/* change of angle from a0 to a1 (radians), the short way round (so dragging round a moment arc past ±180° does not jump) */
+	function angleDelta(a0, a1) { var d = (a1 - a0) % (2 * Math.PI); if (d > Math.PI) d -= 2 * Math.PI; else if (d <= -Math.PI) d += 2 * Math.PI; return d; }
+
 	var api = { UNITS: UNITS, factor: factor, toSI: toSI, fromSI: fromSI, conv: conv, unitOf: unitOf, parseNum: parseNum, parseQty: parseQty, sig: sig, pretty: pretty,
 		SHAPES: SHAPES, section: section, sizeFor: sizeFor, AX: AX, axialPropagate: axialPropagate, axialSolve: axialSolve, euler: euler,
 		shearPin: shearPin, pinSize: pinSize, gFrom: gFrom, kFrom: kFrom, torsion: torsion, shaftSize: shaftSize, torqueFromPower: torqueFromPower,
 		elastic: elastic, hooke: hooke, hookeInv: hookeInv, poissonBar: poissonBar, thermal: thermal, thermalDT: thermalDT, bucklingStress: bucklingStress, thermalSeries: thermalSeries, thermalState: thermalState, heatRGB: heatRGB, resilience: resilience,
-		BSHAPES: BSHAPES, beamSection: beamSection, BSUP: BSUP, beamSupports: beamSupports, beamSolve: beamSolve, BEAMCASES: BEAMCASES, solveLin: solveLin,
+		BSHAPES: BSHAPES, beamSection: beamSection, BSUP: BSUP, beamSupports: beamSupports, beamSolve: beamSolve, BEAMCASES: BEAMCASES, solveLin: solveLin, niceStep: niceStep, snapTo: snapTo, loadLen: loadLen, loadFromDist: loadFromDist, snapLoad: snapLoad, angleDelta: angleDelta,
 		FAMS: FAMS, MATS: MATS, mat: mat, curve: curve, serration: serration, saneCurveMat: saneCurveMat, stressAt: stressAt, idxAt: idxAt, measure: measure, permanentSet: permanentSet, roPoint: roPoint, neckOf: neckOf };
 	if (typeof module !== "undefined" && module.exports) module.exports = api; else root.MESMech = api;
 })(this);
@@ -2032,17 +2046,32 @@
 		}
 		sliders("mt-bd-sl", specs, { lock: function (on) { BD.lock = on; }, done: bdCompute });
 	}
-	var BX0 = 64, BX1 = 520, BY = 128;
+	/* The beam picture is two SVGs that share one coordinate system: #mt-bd-svg (y 0-258: beam, supports, loads) and #mt-bd-dg (viewBox from y 256: the V, M and
+	   y diagrams), with the sliders between them so the beam stays in sight while sliding. Each load has a position handle (the arrow / bar / arc: drag along the
+	   beam) and a size handle (round dot at a point load's tail, the top edge of a spread load, the head of a moment arc): drag it up / down (round for a moment)
+	   to change the size, through the beam to flip it. Handles are focusable (Tab): Left / Right move, Up / Down change the size, Shift = bigger steps / no snap. */
+	var BX0 = 64, BX1 = 520, BY = 140, LD_P = [26, 40], LD_W = [14, 24], LD_UP = 90, LD_DN = 76;
+	function ldScale(t) { var sc = BD.sc; return t === "P" ? sc.P : t === "w" ? sc.w : sc.M; }
+	function ldUnit(t) { return t === "P" ? ["force", U("force")] : t === "w" ? ["dist", U("dist")] : ["torque", U("moment")]; }
+	function ldVal(l) { var d = LDK[l.t][1]; return fmt(Math.abs(l.v), d, 3) + (l.v === 0 ? "" : l.t === "M" ? (l.v < 0 ? " anticlockwise" : " clockwise") : (l.v < 0 ? " up" : " down")); }
+	function ldAria(i, h, l) {
+		var n = "load " + (i + 1) + " (" + LDK[l.t][2].toLowerCase() + ")", L = BD.g ? BD.g.L : NaN, at = function (f) { return isFinite(L) ? fmt(f * L, "span", 3) : ""; };
+		var o = h === "pv" || h === "wv" || h === "mv" ? ["Size of " + n, ldVal(l) + ". Up and Down arrows change it, Left and Right move it."] :
+			h === "f1" ? ["Start of " + n, at(l.f1)] : h === "f2" ? ["End of " + n, at(l.f2)] : h === "mid" ? ["Position of " + n, at(l.f1) + " to " + at(l.f2)] : ["Position of " + n, at(l.f) + ". Left and Right arrows move it, Up and Down change its size."];
+		return " tabindex='0' role='slider' aria-label='" + esc(o[0]) + "' aria-valuetext='" + esc(o[1]) + "'";
+	}
 	function drawBeam(G) {
-		var svg = $("mt-bd-svg"), res = G.res, L = G.L, h = ["<defs>" + MARK.replace("@", "mt-bd-mk") + "</defs>"];
-		if (!res) { svg.innerHTML = "<text x='280' y='200' class='mt-t mt-ts' text-anchor='middle'>" + esc($("mt-bd-msg").textContent || "Type the numbers to see the beam.") + "</text>"; BD.g = null; return; }
+		var svg = $("mt-bd-svg"), dg = $("mt-bd-dg"), res = G.res, L = G.L, h = ["<defs>" + MARK.replace("@", "mt-bd-mk") + "</defs>"], hadF = svg.contains(document.activeElement);
+		if (!res) { svg.innerHTML = "<text x='280' y='130' class='mt-t mt-ts' text-anchor='middle'>" + esc($("mt-bd-msg").textContent || "Type the numbers to see the beam.") + "</text>"; dg.innerHTML = ""; BD.g = null; return; }
 		var W = BX1 - BX0, X = function (x) { return BX0 + W * x / L; }, pts = res.pts;
 		/* scales: frozen while something is dragged so the picture does not jump */
 		var vmax = 0, mmax = 0, ymax = 0, rg = { V: [0, 0], M: [0, 0], y: [0, 0] }; pts.forEach(function (p) { vmax = Math.max(vmax, Math.abs(p.V)); mmax = Math.max(mmax, Math.abs(p.M)); ymax = Math.max(ymax, Math.abs(p.y)); ["V", "M", "y"].forEach(function (k) { rg[k][0] = Math.max(rg[k][0], p[k]); rg[k][1] = Math.max(rg[k][1], -p[k]); }); });
 		["V", "M", "y"].forEach(function (k) { var a = rg[k][0] + rg[k][1]; if (!(a > 0)) rg[k] = [1, 1]; else { if (rg[k][0] < 0.08 * a) rg[k][0] = 0.08 * a; if (rg[k][1] < 0.08 * a) rg[k][1] = 0.08 * a; } });
 		var Pm = 0, Wm = 0, Mm = 0; S.bd.loads.forEach(function (l) { var a = Math.abs(l.v); if (l.t === "P") Pm = Math.max(Pm, a); else if (l.t === "w") Wm = Math.max(Wm, a); else Mm = Math.max(Mm, a); });
-		if (!BD.lock || !BD.sc) { var kd = exag(ymax / L, 36 / W); BD.sc = { v: rg.V, m: rg.M, y: rg.y, ym: ymax > 0 ? ymax : 1, k: kd, P: Pm || 1, w: Wm || 1, M: Mm || 1 }; }
+		var us = S.sys === "us", dP = M.toSI("force", us ? 2 : 10, U("force")), dW = M.toSI("dist", us ? 0.5 : 5, U("dist")), dM = M.toSI("torque", us ? 5 : 10, U("moment"));   /* scale when there is no load of that kind yet */
+		if (!BD.lock || !BD.sc) { var kd = exag(ymax / L, 36 / W); BD.sc = { v: rg.V, m: rg.M, y: rg.y, ym: ymax > 0 ? ymax : 1, k: kd, P: Pm || dP, w: Wm || dW, M: Mm || dM }; }
 		var sc = BD.sc, ky = sc.k * W / L;   /* px per m of deflection */
+		BD.g = { X: X, W: W, L: L };
 		/* --- beam panel --- */
 		h.push(lab("mt-bd-svg:t1", 12, 22, "Beam, loads and deflected shape", "mt-t mt-ts mt-b", "start"));
 		res.sup.forEach(function (s, j) {
@@ -2052,7 +2081,7 @@
 				var drag = S.bd.sup === "over" && j === 1, tri = "<path d='M" + r1(x) + "," + (BY + 7) + " l-13,22 h26 z' class='mt-sup'/>";
 				var grd = s.k === "roll" ? "<circle cx='" + r1(x - 7) + "' cy='" + (BY + 34) + "' r='4.5' class='mt-sup'/><circle cx='" + r1(x + 7) + "' cy='" + (BY + 34) + "' r='4.5' class='mt-sup'/>" : "";
 				var gy = BY + (s.k === "roll" ? 39 : 29), base = line(x - 20, gy, x + 20, gy, "mt-hatch");
-				h.push(drag ? "<g class='mt-dragx' data-sup='b'><title>Drag to move the support</title><rect x='" + r1(x - 22) + "' y='" + (BY + 4) + "' width='44' height='44' fill='transparent'/>" + tri + grd + base + "</g>" : tri + grd + base);
+				h.push(drag ? "<g class='mt-dragx' data-sup='b' tabindex='0' role='slider' aria-label='Second support' aria-valuetext='" + esc(fmt(s.x, "span", 3)) + "'><title>Drag to move the support</title><rect x='" + r1(x - 22) + "' y='" + (BY + 4) + "' width='44' height='44' fill='transparent' class='mt-hit'/>" + tri + grd + base + "</g>" : tri + grd + base);
 			}
 			/* reaction */
 			var o = res.reac[j], up = o.R >= 0, ry = BY + 50;
@@ -2066,26 +2095,32 @@
 		h.push(tx(548, 22, sc.k > 1 ? "bend drawn " + kTxt(sc.k) + "× larger" : "bend drawn to true scale", "mt-t mt-ts", "end"));
 		/* loads */
 		S.bd.loads.forEach(function (l, i) {
-			var sel = i === S.bd.sel ? " mt-bdld--sel" : "", nlab = "<tspan class='mt-bdn'>" + { P: "P", w: "w", M: "M" }[l.t] + "<tspan dy='0.3em' font-size='75%'>" + (i + 1) + "</tspan></tspan><tspan dy='-0.225em'> =</tspan>";
+			var sel = i === S.bd.sel ? " mt-bdld--sel" : "", live = BD.drag && BD.drag.i === i && /v$/.test(BD.drag.h) ? " mt-bdld--live" : "", nlab = "<tspan class='mt-bdn'>" + { P: "P", w: "w", M: "M" }[l.t] + "<tspan dy='0.3em' font-size='75%'>" + (i + 1) + "</tspan></tspan><tspan dy='-0.225em'> =</tspan>";
 			if (l.t === "P") {
-				var x = X(l.f * L), len = 26 + 40 * Math.abs(l.v) / sc.P, dn = l.v >= 0, y0 = dn ? BY - 8 - len : BY + 8 + len, y1 = dn ? BY - 8 : BY + 8;
-				h.push("<g class='mt-dragx mt-bdld" + sel + "' data-ld='" + i + "' data-h='x'><title>Drag along the beam</title><rect x='" + r1(x - 16) + "' y='" + r1(Math.min(y0, y1) - 22) + "' width='32' height='" + r1(len + 30) + "' fill='transparent'/>" + arrowSimpleC(x, y0, x, y1, "mt-bdla") + "<text x='" + r1(x) + "' y='" + r1(dn ? y0 - 6 : y0 + 18) + "' class='mt-t mt-ts mt-b' text-anchor='middle'>" + nlab + " " + esc(fmt(Math.abs(l.v), "force", 3)) + "</text></g>");
+				var x = X(l.f * L), len = Math.min(M.loadLen(l.v, LD_P[0], LD_P[1], sc.P), l.v >= 0 ? LD_UP : LD_DN), dn = l.v >= 0, y0 = dn ? BY - 8 - len : BY + 8 + len, y1 = dn ? BY - 8 : BY + 8;
+				h.push("<g class='mt-bdld" + sel + live + "'><g class='mt-dragx' data-ld='" + i + "' data-h='x'" + ldAria(i, "x", l) + "><title>Drag along the beam</title><rect x='" + r1(x - 16) + "' y='" + r1(Math.min(y0, y1) - 4) + "' width='32' height='" + r1(len + 8) + "' fill='transparent' class='mt-hit'/>" + (l.v === 0 ? line(x, y0, x, y1, "mt-bdla mt-bdla--z") : arrowSimpleC(x, y0, x, y1, "mt-bdla")) +
+					"<text x='" + r1(dn ? x : x + (x > 400 ? -13 : 13)) + "' y='" + r1(dn ? y0 - 13 : y0 + 5) + "' class='mt-t mt-ts mt-b mt-bdlv' text-anchor='" + (dn ? "middle" : x > 400 ? "end" : "start") + "'>" + nlab + " " + esc(fmt(Math.abs(l.v), "force", 3)) + "</text></g>" +
+					"<g class='mt-dragy' data-ld='" + i + "' data-h='pv'" + ldAria(i, "pv", l) + "><title>Drag up or down to change the size (through the beam turns it round)</title><circle cx='" + r1(x) + "' cy='" + r1(y0) + "' r='13' fill='transparent' class='mt-hit'/><circle cx='" + r1(x) + "' cy='" + r1(y0) + "' r='6.5' class='mt-handle mt-bdsz'/></g></g>");
 			} else if (l.t === "w") {
-				var xa = X(Math.min(l.f1, l.f2) * L), xb = X(Math.max(l.f1, l.f2) * L), hh = 14 + 24 * Math.abs(l.v) / sc.w, dn2 = l.v >= 0, yt = dn2 ? BY - 8 - hh : BY + 8 + hh, yb = dn2 ? BY - 8 : BY + 8, n = Math.max(2, Math.round((xb - xa) / 22)), q;
-				var g = "<g class='mt-bdld" + sel + "'><g class='mt-dragx' data-ld='" + i + "' data-h='mid'><title>Drag to move the spread load</title><rect x='" + r1(xa) + "' y='" + r1(Math.min(yt, yb) - 4) + "' width='" + r1(Math.max(4, xb - xa)) + "' height='" + r1(hh + 8) + "' class='mt-bdwb'/>";
-				for (q = 0; q <= n; q++) { var xq = xa + (xb - xa) * q / n; g += arrowSimpleC(xq, yt, xq, yb, "mt-bdla mt-bdla--s"); }
-				g += line(xa, yt, xb, yt, "mt-bdwl") + "<text x='" + r1((xa + xb) / 2) + "' y='" + r1(dn2 ? yt - 6 : yt + 18) + "' class='mt-t mt-ts mt-b' text-anchor='middle'>" + nlab + " " + esc(fmt(Math.abs(l.v), "dist", 3)) + "</text></g>";
-				[["f1", xa], ["f2", xb]].forEach(function (e) { g += "<g class='mt-dragx' data-ld='" + i + "' data-h='" + e[0] + "'><title>Drag to stretch or shorten the spread load</title><circle cx='" + r1(e[1]) + "' cy='" + r1(yt) + "' r='8' class='mt-handle'/></g>"; });
+				var xa = X(Math.min(l.f1, l.f2) * L), xb = X(Math.max(l.f1, l.f2) * L), hh = Math.min(M.loadLen(l.v, LD_W[0], LD_W[1], sc.w), l.v >= 0 ? LD_UP : LD_DN), dn2 = l.v >= 0, yt = dn2 ? BY - 8 - hh : BY + 8 + hh, yb = dn2 ? BY - 8 : BY + 8, n = Math.max(2, Math.round((xb - xa) / 22)), q;
+				var g = "<g class='mt-bdld" + sel + live + "'><g class='mt-dragx' data-ld='" + i + "' data-h='mid'" + ldAria(i, "mid", l) + "><title>Drag to move the spread load</title><rect x='" + r1(xa) + "' y='" + r1(Math.min(yt, yb) + (dn2 ? 6 : -4)) + "' width='" + r1(Math.max(4, xb - xa)) + "' height='" + r1(Math.max(4, hh + 2)) + "' class='mt-bdwb mt-hit'/>";
+				if (l.v !== 0) for (q = 0; q <= n; q++) { var xq = xa + (xb - xa) * q / n; g += arrowSimpleC(xq, yt, xq, yb, "mt-bdla mt-bdla--s"); }
+				var ws = dn2 ? "c" : xb < 420 ? "r" : xa > 140 ? "l" : "c";   /* an upward spread load's label sits beside its edge, clear of the span dimension */
+				g += "<text x='" + r1(ws === "r" ? xb + 14 : ws === "l" ? xa - 14 : (xa + xb) / 2) + "' y='" + r1(dn2 ? yt - 13 : ws === "c" ? Math.min(yt + 22, 226) : yt + 5) + "' class='mt-t mt-ts mt-b mt-bdlv mt-bdmv' text-anchor='" + (ws === "r" ? "start" : ws === "l" ? "end" : "middle") + "'>" + nlab + " " + esc(fmt(Math.abs(l.v), "dist", 3)) + "</text></g>";
+				g += "<g class='mt-dragy' data-ld='" + i + "' data-h='wv'" + ldAria(i, "wv", l) + "><title>Drag the top edge up or down to change how much load per metre</title><rect x='" + r1(xa) + "' y='" + r1(yt - 7) + "' width='" + r1(Math.max(4, xb - xa)) + "' height='14' fill='transparent' class='mt-hit'/>" + line(xa, yt, xb, yt, "mt-bdwl") + "<rect x='" + r1((xa + xb) / 2 - 11) + "' y='" + r1(yt - 4.5) + "' width='22' height='9' rx='4.5' class='mt-handle mt-bdsz'/></g>";
+				[["f1", xa], ["f2", xb]].forEach(function (e) { g += "<g class='mt-dragx' data-ld='" + i + "' data-h='" + e[0] + "'" + ldAria(i, e[0], l) + "><title>Drag to stretch or shorten the spread load</title><circle cx='" + r1(e[1]) + "' cy='" + r1(yt) + "' r='11' fill='transparent' class='mt-hit'/><circle cx='" + r1(e[1]) + "' cy='" + r1(yt) + "' r='7' class='mt-handle'/></g>"; });
 				h.push(g + "</g>");
 			} else {
 				var xm = X(l.f * L), cw = l.v >= 0, rr = 17, aS = cw ? -150 : -30, aE = cw ? 150 : 210, tip = [xm + rr * Math.cos(aE * PI / 180), BY + rr * Math.sin(aE * PI / 180)];
 				var tg = cw ? [-Math.sin(aE * PI / 180), Math.cos(aE * PI / 180)] : [Math.sin(aE * PI / 180), -Math.cos(aE * PI / 180)], nx = -tg[1], ny = tg[0], bx = tip[0] - 10 * tg[0], by = tip[1] - 10 * tg[1];
-				h.push("<g class='mt-dragx mt-bdld" + sel + "' data-ld='" + i + "' data-h='x'><title>Drag along the beam</title><circle cx='" + r1(xm) + "' cy='" + BY + "' r='26' fill='transparent'/><path d='M" + r1(xm + rr * Math.cos(aS * PI / 180)) + "," + r1(BY + rr * Math.sin(aS * PI / 180)) + " A" + rr + "," + rr + " 0 1 " + (cw ? 1 : 0) + " " + r1(tip[0]) + "," + r1(tip[1]) + "' class='mt-bdma'/><path d='M" + r1(tip[0] + 3 * tg[0]) + "," + r1(tip[1] + 3 * tg[1]) + " L" + r1(bx + 5 * nx) + "," + r1(by + 5 * ny) + " L" + r1(bx - 5 * nx) + "," + r1(by - 5 * ny) + " Z' class='mt-bdmh'/><text x='" + r1(xm) + "' y='" + (BY - 30) + "' class='mt-t mt-ts mt-b' text-anchor='middle'>" + nlab + " " + esc(fmt(Math.abs(l.v), "moment", 3)) + "</text></g>");
+				h.push("<g class='mt-bdld" + sel + live + "'><g class='mt-dragx' data-ld='" + i + "' data-h='x'" + ldAria(i, "x", l) + "><title>Drag along the beam</title><circle cx='" + r1(xm) + "' cy='" + BY + "' r='26' fill='transparent' class='mt-hit'/><path d='M" + r1(xm + rr * Math.cos(aS * PI / 180)) + "," + r1(BY + rr * Math.sin(aS * PI / 180)) + " A" + rr + "," + rr + " 0 1 " + (cw ? 1 : 0) + " " + r1(tip[0]) + "," + r1(tip[1]) + "' class='mt-bdma'/>" + (l.v === 0 ? "" : "<path d='M" + r1(tip[0] + 3 * tg[0]) + "," + r1(tip[1] + 3 * tg[1]) + " L" + r1(bx + 5 * nx) + "," + r1(by + 5 * ny) + " L" + r1(bx - 5 * nx) + "," + r1(by - 5 * ny) + " Z' class='mt-bdmh'/>") + "<text x='" + r1(xm) + "' y='" + (BY - 34) + "' class='mt-t mt-ts mt-b mt-bdlv' text-anchor='middle'>" + nlab + " " + esc(fmt(Math.abs(l.v), "moment", 3)) + "</text></g>" +
+					"<g class='mt-dragr' data-ld='" + i + "' data-h='mv'" + ldAria(i, "mv", l) + "><title>Drag round the arc to change the moment (past zero turns it the other way)</title><circle cx='" + r1(tip[0]) + "' cy='" + r1(tip[1]) + "' r='12' fill='transparent' class='mt-hit'/><circle cx='" + r1(tip[0]) + "' cy='" + r1(tip[1]) + "' r='6' class='mt-handle mt-bdsz'/></g></g>");
 			}
 		});
 		/* span dimension */
 		var yd = BY + 112; h.push(dimH(yd, BX0, BX1, "mt-bd-mk"), tx((BX0 + BX1) / 2, yd - 6, "L = " + fmt(L, "span"), "mt-t mt-ts", "middle"));
-		/* --- diagrams --- */
+		var cut = h.length;
+		/* --- diagrams (second SVG, same coordinates) --- */
 		function panel(y0, hgt, key, scale, title, d, cls) {   /* scale = [largest +, largest −]: the zero line sits so both fit */
 			var pad = 18, k = (hgt - 2 * pad) / (scale[0] + scale[1]), z = y0 + pad + scale[0] * k, y = function (v) { return z - v * k; }, poly = [r1(X(0)) + "," + r1(y(0))];
 			y.top = y0 + 14; y.bot = y0 + hgt - 5;
@@ -2102,45 +2137,73 @@
 		mk(res.Vabs, "V", yV, "force", res.Vabs.V < 0); if (res.Mmax.M > 1e-9 * mmax) mk(res.Mmax, "M", yM, "moment", false); if (res.Mmin.M < -1e-9 * mmax) mk(res.Mmin, "M", yM, "moment", true); mk(res.Yabs, "y", yY, "small", res.Yabs.y < 0);
 		if (G.dl > 0 && G.dl < sc.ym * 1.5) { var yl = yY(-G.dl); h.push(line(BX0, yl, BX1, yl, "mt-bdlim"), tx(BX1 - 4, yl + 15, "limit L/" + G.lim, "mt-t mt-ts mt-bdlimt", "end")); }
 		h.push("<g id='mt-bd-hv'></g>");
-		svg.innerHTML = h.join(""); BD.g = { X: X, W: W, L: L, yV: yV, yM: yM, yY: yY }; bdHover(BD.hx);
+		svg.innerHTML = h.slice(0, cut).join(""); dg.innerHTML = h.slice(cut).join(""); BD.g = { X: X, W: W, L: L, yV: yV, yM: yM, yY: yY }; bdHover(BD.hx);
+		if (hadF && BD.fk) { var fe = svg.querySelector(BD.fk); if (fe && fe.focus) try { fe.focus({ preventScroll: true }); } catch (e) { fe.focus(); } }
 	}
 	function arrowSimpleC(x1, y1, x2, y2, cls) { var a = Math.atan2(y2 - y1, x2 - x1), hl = 10; return "<line x1='" + r1(x1) + "' y1='" + r1(y1) + "' x2='" + r1(x2 - Math.cos(a) * hl * 0.6) + "' y2='" + r1(y2 - Math.sin(a) * hl * 0.6) + "' class='" + cls + "'/><path d='M" + r1(x2) + "," + r1(y2) + " L" + r1(x2 - hl * Math.cos(a - 0.45)) + "," + r1(y2 - hl * Math.sin(a - 0.45)) + " L" + r1(x2 - hl * Math.cos(a + 0.45)) + "," + r1(y2 - hl * Math.sin(a + 0.45)) + " Z' class='" + cls + " mt-ah'/>"; }
 	/* hover readout: a line across the three diagrams with V, M and y at that point */
 	function bdHover(x) {
-		var g = $("mt-bd-hv"), B = BD.g, res = BD.res; if (!g) return; if (x == null || !B || !res || BD.drag) { g.innerHTML = ""; return; }
+		var g = $("mt-bd-hv"), B = BD.g, res = BD.res; if (!g) return; if (x == null || !B || !res || BD.drag || !B.yV) { g.innerHTML = ""; return; }
 		var p = res.at(clamp(x, 0, B.L), 1), px = B.X(p.x), txt = "x = " + fmt(p.x, "span", 3) + " · V = " + fmt(p.V, "force", 3) + " · M = " + fmt(p.M, "moment", 3) + " · y = " + fmt(p.y, "small", 3);
 		g.innerHTML = line(px, 285, px, 676, "mt-tt-hl") + "<circle cx='" + r1(px) + "' cy='" + r1(B.yV(p.V)) + "' r='3.5' class='mt-tt-dot'/><circle cx='" + r1(px) + "' cy='" + r1(B.yM(p.M)) + "' r='3.5' class='mt-tt-dot'/><circle cx='" + r1(px) + "' cy='" + r1(B.yY(p.y)) + "' r='3.5' class='mt-tt-dot'/>" + tx(280, 266, txt, "mt-t mt-ts mt-tt-hvt mt-bdhvt", "middle");
 	}
 	(function () {
-		var svg = $("mt-bd-svg");
-		function xAt(ev) { var B = BD.g; if (!B) return NaN; var p = svgPt(svg, ev); return (p.x - BX0) / B.W * B.L; }
+		var svg = $("mt-bd-svg"), dg = $("mt-bd-dg");
+		function xAt(ev, s) { var B = BD.g; if (!B) return NaN; var p = svgPt(s || svg, ev); return (p.x - BX0) / B.W * B.L; }
 		function snap(x, ev) { var L = BD.g.L, st = stepOf(L, 40); return ev.shiftKey ? x : Math.round(x / st) * st; }
+		function sizeSet(l, v, free) { var u = ldUnit(l.t); l.v = free ? v : M.snapLoad(v, u[0], u[1], ldScale(l.t)); if (Math.abs(l.v) < 1e-12 * ldScale(l.t)) l.v = 0; }
+		function keyOf(el) { return el.hasAttribute("data-sup") ? "[data-sup]" : "[data-ld='" + el.getAttribute("data-ld") + "'][data-h='" + el.getAttribute("data-h") + "']"; }
 		svg.addEventListener("pointerdown", function (ev) {
 			var d = ev.target.closest("[data-ld],[data-sup]"); if (!d || ev.target.closest(".mt-lab") || !BD.g) return; ev.preventDefault();
 			if (d.hasAttribute("data-sup")) BD.drag = { sup: true };
-			else { var i = +d.getAttribute("data-ld"), l = S.bd.loads[i]; if (!l) return; S.bd.sel = i; BD.drag = { i: i, h: d.getAttribute("data-h") || "x", x0: xAt(ev), f1: l.f1, f2: l.f2 }; }
+			else {
+				var i = +d.getAttribute("data-ld"), l = S.bd.loads[i]; if (!l) return; S.bd.sel = i;
+				BD.drag = { i: i, h: d.getAttribute("data-h") || "x", x0: xAt(ev), f1: l.f1, f2: l.f2, v0: l.v };
+				if (BD.drag.h === "mv") { var p = svgPt(svg, ev), xm = BD.g.X(l.f * BD.g.L); BD.drag.xm = xm; BD.drag.a = Math.atan2(p.y - BY, p.x - xm); BD.drag.acc = 0; }
+			}
 			BD.lock = true; bdHover(null); try { svg.setPointerCapture(ev.pointerId); } catch (e) { /* ignore */ }
+			if (BD.drag.h && /v$/.test(BD.drag.h)) bdCompute();   /* draw the handle as active */
 		});
 		svg.addEventListener("pointermove", function (ev) {
-			var x = xAt(ev); if (!isFinite(x)) return;
-			if (!BD.drag) { var p = svgPt(svg, ev); BD.hx = p.y > 280 && x >= 0 && x <= BD.g.L ? x : null; bdHover(BD.hx); return; }
+			if (!BD.drag) return; var x = xAt(ev); if (!isFinite(x)) return;
 			var L = BD.g.L, D = BD.drag;
 			if (D.sup) { setFieldSI("bd-ob", clamp(snap(x, ev), 0.1 * L, 0.98 * L)); bdCompute(); return; }
 			var l = S.bd.loads[D.i]; if (!l) return;
-			if (D.h === "x") l.f = clamp(snap(x, ev) / L, 0, 1);
+			if (D.h === "pv" || D.h === "wv") {
+				var p = svgPt(svg, ev), dist = p.y < BY ? Math.min(BY - 8 - p.y, LD_UP) : -Math.min(p.y - BY - 8, LD_DN), k = D.h === "pv" ? LD_P : LD_W;
+				sizeSet(l, M.loadFromDist(dist, k[0], k[1], ldScale(l.t)), ev.shiftKey);
+			} else if (D.h === "mv") {
+				var q = svgPt(svg, ev), a = Math.atan2(q.y - BY, q.x - D.xm); D.acc += M.angleDelta(D.a, a); D.a = a;
+				sizeSet(l, D.v0 + D.acc / PI * BD.sc.M, ev.shiftKey);   /* half a turn = the largest moment drawn; clockwise (y down) = positive */
+			}
+			else if (D.h === "x") l.f = clamp(snap(x, ev) / L, 0, 1);
 			else if (D.h === "f1") l.f1 = clamp(snap(x, ev) / L, 0, l.f2 - 0.01);
 			else if (D.h === "f2") l.f2 = clamp(snap(x, ev) / L, l.f1 + 0.01, 1);
 			else { var w = D.f2 - D.f1, s = clamp(D.f1 + (snap(x, ev) - snap(D.x0, ev)) / L, 0, 1 - w); l.f1 = s; l.f2 = s + w; }
 			save(); bdCompute();
 		});
-		svg.addEventListener("pointerleave", function () { if (!BD.drag) { BD.hx = null; bdHover(null); } });
+		dg.addEventListener("pointermove", function (ev) { if (BD.drag || !BD.g) return; var x = xAt(ev, dg), p = svgPt(dg, ev); BD.hx = p.y > 280 && x >= 0 && x <= BD.g.L ? x : null; bdHover(BD.hx); });
+		dg.addEventListener("pointerleave", function () { BD.hx = null; bdHover(null); });
 		function end() { if (!BD.drag) return; BD.drag = null; BD.lock = false; bdRows(); bdCompute(); }
 		svg.addEventListener("pointerup", end); svg.addEventListener("pointercancel", end);
-		/* keyboard: the selected load moves with the arrow keys when the picture has the focus */
+		/* keyboard: a focused handle (Tab) or, when the picture itself has the focus, the selected load. Left / Right move, Up / Down change the size */
 		svg.setAttribute("tabindex", "0");
+		svg.addEventListener("focusin", function (e) {
+			var el = e.target.closest && e.target.closest("[data-ld],[data-sup]"); if (!el) return; BD.fk = keyOf(el);
+			if (el.hasAttribute("data-ld")) { var i = +el.getAttribute("data-ld"); if (i !== S.bd.sel && S.bd.loads[i]) { S.bd.sel = i; save(); bdRows(); bdCompute(); } }
+		});
 		svg.addEventListener("keydown", function (e) {
-			var l = S.bd.loads[S.bd.sel]; if (!l || (e.key !== "ArrowLeft" && e.key !== "ArrowRight")) return; e.preventDefault(); var d = (e.key === "ArrowRight" ? 1 : -1) * (e.shiftKey ? 0.1 : 0.025);
-			if (l.t === "w") { var w = l.f2 - l.f1, s = clamp(l.f1 + d, 0, 1 - w); l.f1 = s; l.f2 = s + w; } else l.f = clamp(l.f + d, 0, 1); save(); bdCompute();
+			var k = e.key, horiz = k === "ArrowLeft" || k === "ArrowRight", vert = k === "ArrowUp" || k === "ArrowDown"; if (!horiz && !vert) return;
+			var el = e.target.closest && e.target.closest("[data-ld],[data-sup]"), L = BD.g && BD.g.L; if (el) BD.fk = keyOf(el); var sg = k === "ArrowRight" || k === "ArrowUp" ? 1 : -1, df = sg * (e.shiftKey ? 0.1 : 0.025);
+			if (el && el.hasAttribute("data-sup")) { if (!horiz || !(L > 0)) return; e.preventDefault(); setFieldSI("bd-ob", clamp(fval("bd-ob") + df * L, 0.1 * L, 0.98 * L)); bdCompute(); return; }
+			var i = el ? +el.getAttribute("data-ld") : S.bd.sel, l = S.bd.loads[i], hd = el ? el.getAttribute("data-h") : null; if (!l) return; e.preventDefault();
+			if (vert) {
+				var u = ldUnit(l.t), sc = ldScale(l.t), st = M.niceStep(Math.abs(M.fromSI(u[0], sc, u[1])), 20) * (e.shiftKey ? 5 : 1), dv = M.fromSI(u[0], l.v, u[1]);
+				l.v = M.toSI(u[0], M.snapTo(dv + sg * st, st), u[1]); if (Math.abs(l.v) < 1e-12 * sc) l.v = 0;
+			} else if (l.t === "w" && (hd === "f1" || hd === "f2")) { if (hd === "f1") l.f1 = clamp(l.f1 + df, 0, l.f2 - 0.01); else l.f2 = clamp(l.f2 + df, l.f1 + 0.01, 1); }
+			else if (l.t === "w") { var w = l.f2 - l.f1, s = clamp(l.f1 + df, 0, 1 - w); l.f1 = s; l.f2 = s + w; }
+			else l.f = clamp(l.f + df, 0, 1);
+			S.bd.sel = i; save(); bdCompute();
 		});
 	})();
 	/* the cross-section with its neutral axis and the bending stress across it (at the point of the largest moment) */
@@ -2263,7 +2326,7 @@
 		bar.innerHTML = "<span class='mt-figt'>" + esc(FIGT[svg.id] || "") + "</span><button type='button' data-a='lab' hidden title='Put every label you dragged back in its own place'>↺ Reset labels</button>" +
 			"<button type='button' data-a='win' title='Fill the browser window with this picture (Esc leaves)'>⤢ Fill window</button>" +
 			(document.fullscreenEnabled ? "<button type='button' data-a='fs' title='Use the whole screen'>⛶ Full screen</button>" : "") + "<button type='button' data-a='close' hidden>✕ Close (Esc)</button>";
-		card.insertBefore(bar, card.firstChild); card._svg = svg; card._bar = bar; figs.push(card);
+		card.insertBefore(bar, card.firstChild); card._svg = svg; card._svg2 = card.querySelector("#mt-bd-dg"); card._bar = bar; figs.push(card);
 		bar.addEventListener("click", function (e) {
 			var b = e.target.closest("button"); if (!b) return; var a = b.getAttribute("data-a");
 			if (a === "win") winOn(card);
@@ -2284,16 +2347,17 @@
 	function winOff() {
 		var card = WIN; if (!card) return; WIN = null;
 		card.classList.remove("mt-win"); root.classList.remove("mt-winon"); if (!TT.win) document.documentElement.classList.remove("mt-noscroll");
-		card._svg.style.height = "";
+		card._svg.style.height = ""; if (card._svg2) card._svg2.style.height = "";
 		if (card._svg.id === "mt-as") { card._svg.setAttribute("viewBox", "0 0 720 480"); ashby(); }
 		figBtns(card);
 	}
 	/* the picture takes the window height that the bar, sliders and caption leave free; the materials chart is redrawn for the window's shape instead of being letterboxed */
 	function winFit() {
 		var card = WIN; if (!card) return; var svg = card._svg, cs = getComputedStyle(card), extra = parseFloat(cs.paddingTop) + parseFloat(cs.paddingBottom);
-		[].forEach.call(card.children, function (k) { if (k === svg) return; var c = getComputedStyle(k); if (c.display === "none" || c.position === "absolute" || c.position === "fixed") return; extra += k.offsetHeight + parseFloat(c.marginTop) + parseFloat(c.marginBottom); });
+		[].forEach.call(card.children, function (k) { if (k === svg || k === card._svg2) return; if (card._svg2 && k.offsetTop < card._svg2.offsetTop - 4 && k.offsetTop >= svg.offsetTop && k.offsetLeft > svg.offsetLeft + 20) return;   /* sliders beside the beam (wide window) take no height of their own */ var c = getComputedStyle(k); if (c.display === "none" || c.position === "absolute" || c.position === "fixed") return; extra += k.offsetHeight + parseFloat(c.marginTop) + parseFloat(c.marginBottom); });
 		var H = Math.max(220, (window.innerHeight || 600) - extra - 6);
 		if (svg.id === "mt-as") { var w = card.clientWidth - parseFloat(cs.paddingLeft) - parseFloat(cs.paddingRight); svg.setAttribute("viewBox", "0 0 " + Math.round(clamp(480 * w / H, 560, 1500)) + " 480"); ashby(); }
+		if (card._svg2) { var v1 = svg.viewBox.baseVal, v2 = card._svg2.viewBox.baseVal, f = v1.height / (v1.height + v2.height); svg.style.height = Math.round(H * f) + "px"; card._svg2.style.height = Math.round(H * (1 - f)) + "px"; return; }
 		svg.style.height = H + "px";
 	}
 	document.addEventListener("fullscreenchange", function () {

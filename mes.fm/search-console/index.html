@@ -438,6 +438,8 @@ body.dark-mode .tu .rw-head {color:#a0a8b3;border-bottom-color:#555;} body.dark-
 	.gs-chart:focus-visible {box-shadow:0 0 0 2px var(--accent);border-radius:4px;}
 	.gs-key--dash {border-top:3px dashed var(--gs-muted);}
 	.gs-key--dot {border-top:3px dotted var(--gs-muted);}
+	.gs-key--area {height:0.75em;border:0;border-radius:2px;vertical-align:-0.05em;}
+	#gs .tu-chip.gs-off {opacity:0.5;}
 	/* Fill window / Full screen (main_js/panel-view.js adds .mes-pfill) */
 	#gs .gs-sec.mes-pfill {background:var(--gs-card) !important;border:none;}
 	#gs .gs-sec.mes-pfill .gs-cbody {flex:1 1 auto;display:flex;flex-direction:column;min-height:0;}
@@ -790,6 +792,10 @@ body.is-stuck #navbar.hide { position: fixed; top: 56px; right: 8px; }
 				</div>
 				<div class="gs-tabs gs-tabs--sm" data-rangebar role="group" aria-label="Range"></div>
 				<button type="button" class="tu-chip gs-cmpbtn" aria-pressed="true" title="Dashed lines: the period just before">Compare</button>
+				<div class="gs-tabs gs-tabs--sm" id="gs-stack" role="group" aria-label="Chart style">
+					<button type="button" class="tu-chip" data-k="lines" aria-pressed="true" title="Each source and ticked row as its own line">Lines</button>
+					<button type="button" class="tu-chip" data-k="stack" aria-pressed="false" title="Stacked areas: ticked rows, the rest of the site and Bing on top of each other, adding up to the total (Clicks or Impressions only)">Stacked</button>
+				</div>
 			</div>
 			<div class="gs-cbody" id="gs-cbody">
 				<div class="gs-mtiles" id="gs-mtiles" role="group" aria-label="Lines to show (several at once)"></div>
@@ -909,7 +915,7 @@ body.is-stuck #navbar.hide { position: fixed; top: 56px; right: 8px; }
             hide_search:false,
             current_tab:0
         }        </script><!-- FASTCOMMENTS-LAZY: widget init moved to main_js/main.js -- it pulls embed.min.js only when #fastcomments-widget nears the viewport or on the first Comments-toggle click, so it no longer blocks first render -->                <script src="https://mes.fm/main_js/lazysizes.min.js?v=1.0.3" async></script>
-	<script src="/search-console/js/search-console.js?v=5" defer></script>
+	<script src="/search-console/js/search-console.js?v=6" defer></script>
             <script src="https://mes.fm/main_js/main.js?v=1.0.5"></script>    <!-- PAGEVIEW-TRACKING-INSERTED --><script src="https://mes.fm/main_js/track.js" defer></script><script>document.getElementById('copyright-year').textContent = new Date().getFullYear();</script><script src="/main_js/info-bar-fit.js" defer></script><script>
   // Floating compact header bar (see #compact-nav CSS): appears once the
   // header + nav bar have scrolled off the top; nav links that don't fit

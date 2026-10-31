@@ -350,6 +350,15 @@ const sum = (start, end, extra) => Object.assign({ start, end,
   const FIX = path.join(__dirname, 'search-console', 'fixtures');
   eq(L.parseCsv('a,b\n"x, y",2\r\n"he said ""hi""",3\n'), [['a', 'b'], ['x, y', '2'], ['he said "hi"', '3']], 'CSV: quotes, commas, CRLF');
   eq(L.parseCsv('a;b\n1;2'), [['a', 'b'], ['1', '2']], 'CSV: semicolons');
+  // stacked chart helpers
+  const st = L.stack([[1, 2, null], [3, 0, 4], [5, -1, 6]], 3);
+  eq(st.bands.map((b) => [b.lo, b.hi]), [[[0, 0, 0], [1, 2, 0]], [[1, 2, 0], [4, 2, 4]], [[4, 2, 4], [9, 2, 10]]], 'stack: each band sits on the ones under it (null and negative count 0)');
+  eq(st.top, [9, 2, 10], 'stack: the top is the sum');
+  eq(L.rest(100, [30, 20]), { v: 50, over: false }, 'rest of the site = total minus the rows');
+  eq(L.rest(100, [80, 40]), { v: 0, over: true }, 'rows that overlap: rest is 0 and flagged');
+  eq(L.rest(null, [5]), { v: 0, over: false }, 'no total: no rest band');
+  { const rows = [[3, 7], [2, 1]], tot = [10, 9], rb = tot.map((t, i) => L.rest(t, rows.map((r) => r[i])).v);
+    eq(L.stack(rows.concat([rb]), 2).top, tot, 'rows + rest add up to the total'); }
   eq([L.num('1,234'), L.num('12.5%'), L.num('1.234,5'), L.num('~'), L.num('-'), L.num('<10'), L.num('3,5')], [1234, 12.5, 1234.5, 0, 0, 10, 3.5], 'numbers');
   eq([L.parseDate('2026-10-20'), L.parseDate('10/21/2026'), L.parseDate('21/10/2026'), L.parseDate('Oct 20, 2026'), L.parseDate('20 Oct 2026'), L.parseDate(46315), L.parseDate('2026-02-30'), L.parseDate('2026-10-20T00:00:00')],
     ['2026-10-20', '2026-10-21', '2026-10-21', '2026-10-20', '2026-10-20', '2026-10-20', null, '2026-10-20'], 'dates');

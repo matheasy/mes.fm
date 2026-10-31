@@ -282,7 +282,24 @@
   var val = function (v, i) { return Array.isArray(v) ? (v[i || 0] || 0) : (i ? 0 : v || 0); };
   function sumOf(daily, dates, i) { var s = 0; dates.forEach(function (d) { s += val(daily[d], i); }); return s; }
 
-  var api = { parseCsv: parseCsv, num: num, parseDate: parseDate, classify: classify, parseTable: parseTable, unzip: unzip, xlsxSheets: xlsxSheets,
+  // Stacked chart: bands = arrays of values per point (null / missing = 0), bottom first -> each band's lower and upper edge and the stack's top
+  function stack(bands, n) {
+    var cum = [], out = [], i; for (i = 0; i < n; i++) cum.push(0);
+    bands.forEach(function (b) {
+      var lo = cum.slice();
+      for (i = 0; i < n; i++) { var v = +b[i]; cum[i] += isFinite(v) && v > 0 ? v : 0; }
+      out.push({ lo: lo, hi: cum.slice() });
+    });
+    return { bands: out, top: cum.slice() };
+  }
+  // "rest of the site" = total minus the ticked rows, never below 0; over = the rows add up to more than the total there (they overlap)
+  function rest(total, rows) {
+    if (total == null || !isFinite(total)) return { v: 0, over: false };
+    var s = 0; rows.forEach(function (r) { var v = +r; if (isFinite(v) && v > 0) s += v; });
+    return { v: Math.max(0, total - s), over: s > total * 1.001 + 0.5 };
+  }
+
+  var api = { stack: stack, rest: rest, parseCsv: parseCsv, num: num, parseDate: parseDate, classify: classify, parseTable: parseTable, unzip: unzip, xlsxSheets: xlsxSheets,
     parseFile: parseFile, combine: combine, oldSubdomain: oldSubdomain, periods: periods, sumOf: sumOf, val: val, KIND_NAMES: KIND_NAMES, MOVED: MOVED };
   if (typeof module !== 'undefined' && module.exports) module.exports = api;
   root.MESSCAI = api;
@@ -315,6 +332,8 @@
   if (!Array.isArray(LINES)) LINES = [];
   LINES = LINES.filter(function (l) { return l && /^(query|page|country|device)$/.test(l.dim) && typeof l.v === 'string' && typeof l.k === 'string' && typeof l.c === 'string'; }).slice(0, MAXL);
   var HIDETOT = LS('hidetot', '0') === '1';
+  // Lines | Stacked (clicks or impressions only) and the "rest of the site" band under / above the ticked rows
+  var STACK = LS('stack', 'lines', /^(lines|stack)$/), REST = LS('rest', '1') === '1';
   var lkey = function (l) { return l.dim + '\u0001' + l.k; };
   var ctxKey = function () { return RANGE + '|' + JSON.stringify(FILTERS); };
   function saveLines() { SAVE('lines', JSON.stringify(LINES)); }
@@ -396,6 +415,7 @@
     return set;
   }
   chips('gs-src', 's', CSRC, function (v) { CSRC = v; SAVE('csrc', v); if (DATA) drawChart(); });
+  chips('gs-stack', 'k', STACK, function (v) { STACK = v; SAVE('stack', v); if (DATA) drawChart(); });
   chips('gs-ttab', 't', TAB, function (v) { TAB = v; SAVE('tab', v); if (DATA) renderTable(true); });
   var setSrc = chips('gs-tsrc', 's', TSRC, function (v) { TSRC = v; SAVE('tsrc', v); if (DATA) renderTable(true); });
   function paintHide() {
@@ -760,6 +780,37 @@
       if (top === bot) top = bot + step;
       scales[m] = { top: top, bot: bot, y: function (v) { var f = (v - bot) / (top - bot); return m === 'p' ? padT + f * ih : padT + ih - f * ih; } };
     });
+    // Stacked: ticked rows at the bottom, then the rest of Google (total minus the rows), then Bing; only for one additive metric (clicks or impressions)
+    var canStack = mets.length === 1 && (mets[0] === 'c' || mets[0] === 'i'), stackOn = STACK === 'stack' && canStack, bands = [], m0 = mets[0];
+    $('gs-stack').querySelectorAll('button').forEach(function (b) {
+      var st = b.dataset.k === 'stack';
+      b.setAttribute('aria-pressed', (st ? stackOn : !stackOn) ? 'true' : 'false');
+      if (st) { b.classList.toggle('gs-off', !canStack); b.setAttribute('aria-disabled', canStack ? 'false' : 'true'); b.title = canStack ? 'Stacked areas: ticked rows, the rest of the site and Bing on top of each other, adding up to the total' : 'Stacking needs Clicks or Impressions alone: CTR and position are ratios and averages, they do not add up'; }
+    });
+    if (STACK === 'stack' && !canStack) notes.push('Stacked needs Clicks or Impressions on their own (CTR and position are a ratio and an average, so they cannot be added up): showing lines.');
+    if (stackOn) {
+      var gS = series.filter(function (sr) { return sr.src.id === 'g'; })[0], bS = series.filter(function (sr) { return sr.src.id === 'b'; })[0];
+      var rowsIn = gS || !series.length ? lseries : [], vOf = function (sr) { return xs.map(function (k) { return mval(sr.cur(k), m0) || 0; }); }, over = false;
+      if (lseries.length && !rowsIn.length) notes.push('The ticked rows are Google rows: pick Google or Both to stack them.');
+      rowsIn.forEach(function (sr) { bands.push({ name: sr.name, color: sr.color, op: 0.6, row: true, vals: vOf(sr) }); });
+      if (gS) {
+        if (rowsIn.length && REST) bands.push({ name: bS ? 'Rest of Google' : 'Rest of the site', color: cssv('--gs-g'), op: 0.22, rest: true, vals: xs.map(function (k) { var r = MESSCAI.rest(mval(gS.cur(k), m0), rowsIn.map(function (sr) { return mval(sr.cur(k), m0); })); if (r.over) over = true; return r.v; }) });
+        else if (!rowsIn.length) bands.push({ name: 'Google', color: cssv('--gs-g'), op: 0.45, vals: vOf(gS) });
+        else xs.forEach(function (k) { if (MESSCAI.rest(mval(gS.cur(k), m0), rowsIn.map(function (sr) { return mval(sr.cur(k), m0); })).over) over = true; });
+      }
+      if (bS) bands.push({ name: 'Bing', color: cssv('--gs-b'), op: 0.45, vals: vOf(bS) });
+      var stk = MESSCAI.stack(bands.map(function (b) { return b.vals; }), xs.length);
+      bands.forEach(function (b, j) { b.lo = stk.bands[j].lo; b.hi = stk.bands[j].hi; });
+      // the previous period's total (Google + Bing) as a dashed line on top
+      var prevTot = CMP && series.length ? xs.map(function (k) { var t = null; series.forEach(function (sr) { var v = mval(sr.prev(k), m0); if (v != null) t = (t || 0) + v; }); return t; }) : null;
+      var hiS = 0; stk.top.forEach(function (v) { hiS = Math.max(hiS, v); }); if (prevTot) prevTot.forEach(function (v) { if (v != null) hiS = Math.max(hiS, v); });
+      if (!(hiS > 0)) hiS = 1;
+      var stepS = Math.pow(10, Math.floor(Math.log10(hiS))) || 1, topS = Math.ceil(hiS / stepS) * stepS;
+      scales[m0] = { top: topS, bot: 0, y: function (v) { return padT + ih - v / topS * ih; } };
+      if (over) notes.push('Some ticked rows overlap (together they come to more than the total on some days, e.g. a page and a search that leads to it), so the stack counts those searches twice and the rest band is 0 there.');
+      if (rowsIn.length && gS) notes.push(REST ? 'Rows + rest of ' + (bS ? 'Google + Bing' : 'the site') + ' add up to the total.' : 'Rest of the site is hidden, so the stack is only the ticked rows.');
+      notes.push('Stacked: each band sits on the ones under it, so read a band by its thickness, not by its top edge.');
+    }
     var s = '';
     // fresh (incomplete) days shaded
     if (!model.hourly) {
@@ -794,7 +845,17 @@
       flush(); return out;
     };
     var legend = [];
-    mets.forEach(function (m) {
+    if (stackOn) {
+      var yS = scales[m0].y, bw = xs.length === 1 ? Math.min(60, iw / 3) : 0;
+      bands.forEach(function (b) {
+        if (xs.length === 1) { var y1 = yS(b.hi[0]), y0 = yS(b.lo[0]); s += '<rect x="' + (X(0) - bw / 2).toFixed(1) + '" y="' + y1.toFixed(1) + '" width="' + bw.toFixed(1) + '" height="' + Math.max(0, y0 - y1).toFixed(1) + '" fill="' + b.color + '" fill-opacity="' + b.op + '" stroke="' + b.color + '" stroke-width="1.2"/>'; return; }
+        var up = xs.map(function (k, i) { return X(i).toFixed(1) + ',' + yS(b.hi[i]).toFixed(1); }), dn = xs.map(function (k, i) { return X(i).toFixed(1) + ',' + yS(b.lo[i]).toFixed(1); }).reverse();
+        s += '<polygon points="' + up.concat(dn).join(' ') + '" fill="' + b.color + '" fill-opacity="' + b.op + '" stroke="none"/>' +
+          '<polyline points="' + up.join(' ') + '" fill="none" stroke="' + b.color + '" stroke-width="' + (b.rest ? 1.2 : 1.8) + '" stroke-linejoin="round"' + (b.rest ? ' stroke-dasharray="4 3"' : '') + '/>';
+      });
+      if (prevTot) s += poly(prevTot.map(function (v, i) { return v == null ? null : X(i).toFixed(1) + ',' + yS(v).toFixed(1); }), cMuted, 1.6, '5 4', 0.9);
+    }
+    if (!stackOn) mets.forEach(function (m) {
       series.forEach(function (sr) {
         if (m === 'p' && sr.src.id === 'b') return;
         var col = colorOf(sr, m), y = scales[m].y, bing = sr.src.id === 'b' && mets.length > 1;
@@ -809,7 +870,8 @@
     // chart notes: markers on the x axis (daily view)
     if (!model.hourly && window.MESNotes) s += window.MESNotes.marks({ days: xs, X: X, y0: padT + ih, y1: padT, size: 6 });
     // legend
-    if (mets.length === 1) series.forEach(function (sr) { legend.push('<span><i class="gs-key" style="border-color:' + colorOf(sr, mets[0]) + '"></i>' + sr.src.name + '</span>'); });
+    if (stackOn) bands.slice().reverse().forEach(function (b) { if (!b.row) legend.push('<span><i class="gs-key gs-key--area" style="background:' + b.color + ';opacity:' + Math.max(0.35, b.op) + '"></i>' + esc(b.name) + '</span>'); });
+    else if (mets.length === 1) series.forEach(function (sr) { legend.push('<span><i class="gs-key" style="border-color:' + colorOf(sr, mets[0]) + '"></i>' + sr.src.name + '</span>'); });
     else {
       mets.forEach(function (m) { var q = MET.filter(function (x) { return x[0] === m; })[0]; legend.push('<span><i class="gs-key" style="border-color:' + cssv(q[2]) + '"></i>' + q[1] + '</span>'); });
       if (series.some(function (sr) { return sr.src.id === 'b'; })) legend.push('<span><i class="gs-key gs-key--dot"></i>Bing (dotted), Google (solid)</span>');
@@ -817,6 +879,7 @@
     if (CMP && series.length) legend.push('<span><i class="gs-key gs-key--dash"></i>' + (isDay() ? 'the day before' : 'previous ' + rangeName(DATA.rangeUsed || RANGE)) + '</span>');
     if (lseries.length || LINES.length) {
       legend.push('<button type="button" class="gs-lchip gs-lchip--tot" data-tot aria-pressed="' + (showTot ? 'true' : 'false') + '" title="Show or hide the totals while rows are ticked">Total</button>');
+      if (stackOn && showTot && lseries.length) legend.push('<button type="button" class="gs-lchip gs-lchip--tot" data-rest aria-pressed="' + (REST ? 'true' : 'false') + '" title="A band for everything the ticked rows leave out (total minus the rows), so the stack adds up to the total">Rest of the site</button>');
       LINES.forEach(function (l) {
         legend.push('<span class="gs-lchip" style="--lc:' + l.c + '"><i class="gs-key" style="border-color:' + l.c + '"></i>' + esc(lname(l)) +
           '<button type="button" data-lrm="' + esc(lkey(l)) + '" aria-label="Remove the line for ' + esc(lname(l)) + '" title="Remove">×</button></span>');
@@ -847,11 +910,22 @@
           out += '<circle cx="' + x.toFixed(1) + '" cy="' + scales[m].y(v).toFixed(1) + '" r="4" fill="' + sr.color + '" stroke="' + cssv('--gs-card') + '" stroke-width="2"/>';
         });
       });
-      g.innerHTML = out;
       var narrow = W < 560;
       var lab = model.hourly ? fmtH(k) + (DATA.google.cur ? ', ' + fmtD(DATA.google.cur.start, true) : '') : fmtD(k, narrow);
       var html = '<b class="gs-read__d">' + esc(lab) + '</b>';
-      series.forEach(function (sr) {
+      if (stackOn) {   // dots on each band's top edge; the readout lists the bands top to bottom with their share, then the total
+        out = out.replace(/<circle[^>]*>/g, '');
+        var q0 = MET.filter(function (z) { return z[0] === m0; })[0], unit = narrow ? { c: 'cl', i: 'im' }[m0] : q0[1].toLowerCase(), tot = 0;
+        bands.forEach(function (b) { tot += b.vals[i]; out += '<circle cx="' + x.toFixed(1) + '" cy="' + scales[m0].y(b.hi[i]).toFixed(1) + '" r="4" fill="' + b.color + '" stroke="' + cssv('--gs-card') + '" stroke-width="2"/>'; });
+        bands.slice().reverse().forEach(function (b) {
+          var v = b.vals[i];
+          html += '<span class="gs-read__s gs-read__l"><i class="gs-dot" style="background:' + b.color + (b.rest ? ';opacity:0.55' : '') + '"></i><span class="gs-read__ln">' + esc(b.name) + '</span> <span class="gs-read__m on" style="--mc:var(' + q0[2] + ')">' + (m0 === 'i' && narrow ? short(v) : int(v)) + '<small> ' + unit + (tot > 0 && bands.length > 1 ? ' · ' + Math.round(v / tot * 100) + '%' : '') + '</small></span></span>';
+        });
+        if (bands.length > 1) html += '<span class="gs-read__s"><b>Total ' + (m0 === 'i' && narrow ? short(tot) : int(tot)) + '</b><small> ' + unit + '</small></span>';
+        if (prevTot && prevTot[i] != null) html += '<span class="gs-read__s gs-read__p">vs ' + (model.hourly ? 'the day before' : esc(fmtD(series[0].prevKey ? series[0].prevKey(k) : k, true))) + ': ' + int(prevTot[i]) + '<small> ' + unit + '</small></span>';
+      }
+      g.innerHTML = out;
+      if (!stackOn) series.forEach(function (sr) {
         var x2 = sr.cur(k);
         var part = function (xx) {
           if (!xx) return '<span class="gs-read__na">no data</span>';
@@ -868,7 +942,7 @@
           html += '<span class="gs-read__s gs-read__p">vs ' + (model.hourly ? 'the day before' : esc(fmtD(pk, true))) + ': ' + part(sr.prev(k)) + '</span>';
         }
       });
-      lseries.forEach(function (sr) {
+      if (!stackOn) lseries.forEach(function (sr) {
         var x3 = sr.cur(k);
         html += '<span class="gs-read__s gs-read__l"><i class="gs-dot" style="background:' + sr.color + '"></i><span class="gs-read__ln">' + esc(sr.name) + '</span> ' +
           (x3 ? mets.map(function (m) { var q = MET.filter(function (z) { return z[0] === m; })[0]; return '<span class="gs-read__m on" style="--mc:var(' + q[2] + ')">' + (m === 'c' ? int(x3.c) : m === 'i' ? (narrow ? short(x3.i) : int(x3.i)) : m === 'ctr' ? pctTxt(ctrOf(x3.c, x3.i)) : posTxt(x3.p)) + '<small> ' + (narrow ? { c: 'cl', i: 'im', ctr: 'ctr', p: 'pos' }[m] : q[1].toLowerCase()) + '</small></span>'; }).join('') : '<span class="gs-read__na">no data</span>') + '</span>';
@@ -914,6 +988,7 @@
     var rm = e.target.closest('button[data-lrm]'), tot = e.target.closest('button[data-tot]');
     if (rm) { LINES = LINES.filter(function (l) { return lkey(l) !== rm.dataset.lrm; }); saveLines(); renderTable(false); drawChart(); }
     if (tot) { HIDETOT = !HIDETOT; SAVE('hidetot', HIDETOT ? '1' : '0'); drawChart(); }
+    if (e.target.closest('button[data-rest]')) { REST = !REST; SAVE('rest', REST ? '1' : '0'); drawChart(); }
   });
   (function notesHook() {
     if (!window.MESNotes) { setTimeout(notesHook, 80); return; }

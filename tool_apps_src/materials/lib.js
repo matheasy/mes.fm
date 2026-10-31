@@ -598,11 +598,25 @@
 		fixP: function (P, L, EI) { return { M: P * L / 8, y: P * L * L * L / (192 * EI) }; }
 	};
 
+	/* dragging a load's size in the beam picture: an arrow's drawn length is base + perPx * |v| / scale (scale = the largest load of that kind, frozen while
+	   dragging), so the value follows from how far the pointer is from the beam (positive = above it = a downward load); a pointer inside the base zone gives 0 */
+	function niceStep(range, n) { if (!(range > 0) || !isFinite(range)) return 1; var raw = range / (n || 5), p = Math.pow(10, Math.floor(Math.log10(raw))), m = raw / p; return (m <= 1 ? 1 : m <= 2 ? 2 : m <= 5 ? 5 : 10) * p; }
+	function snapTo(x, step) { if (!(step > 0)) return x; return +(Math.round(x / step) * step).toPrecision(12); }
+	function loadLen(v, base, perPx, scale) { return base + perPx * Math.abs(v) / (scale > 0 ? scale : 1); }
+	function loadFromDist(dist, base, perPx, scale) { var a = Math.abs(dist) - base; if (!(a > 0)) return 0; return (dist < 0 ? -1 : 1) * a / perPx * (scale > 0 ? scale : 1); }
+	/* snap a load (SI) to a round number in the unit it is shown in: steps of about 1/40 of the largest load being drawn */
+	function snapLoad(vSI, kind, unit, maxSI) {
+		var d = fromSI(kind, vSI, unit), m = Math.abs(fromSI(kind, maxSI > 0 ? maxSI : Math.abs(vSI) || 1, unit)), st = niceStep(m, 40);
+		return toSI(kind, snapTo(d, st), unit);
+	}
+	/* change of angle from a0 to a1 (radians), the short way round (so dragging round a moment arc past ±180° does not jump) */
+	function angleDelta(a0, a1) { var d = (a1 - a0) % (2 * Math.PI); if (d > Math.PI) d -= 2 * Math.PI; else if (d <= -Math.PI) d += 2 * Math.PI; return d; }
+
 	var api = { UNITS: UNITS, factor: factor, toSI: toSI, fromSI: fromSI, conv: conv, unitOf: unitOf, parseNum: parseNum, parseQty: parseQty, sig: sig, pretty: pretty,
 		SHAPES: SHAPES, section: section, sizeFor: sizeFor, AX: AX, axialPropagate: axialPropagate, axialSolve: axialSolve, euler: euler,
 		shearPin: shearPin, pinSize: pinSize, gFrom: gFrom, kFrom: kFrom, torsion: torsion, shaftSize: shaftSize, torqueFromPower: torqueFromPower,
 		elastic: elastic, hooke: hooke, hookeInv: hookeInv, poissonBar: poissonBar, thermal: thermal, thermalDT: thermalDT, bucklingStress: bucklingStress, thermalSeries: thermalSeries, thermalState: thermalState, heatRGB: heatRGB, resilience: resilience,
-		BSHAPES: BSHAPES, beamSection: beamSection, BSUP: BSUP, beamSupports: beamSupports, beamSolve: beamSolve, BEAMCASES: BEAMCASES, solveLin: solveLin,
+		BSHAPES: BSHAPES, beamSection: beamSection, BSUP: BSUP, beamSupports: beamSupports, beamSolve: beamSolve, BEAMCASES: BEAMCASES, solveLin: solveLin, niceStep: niceStep, snapTo: snapTo, loadLen: loadLen, loadFromDist: loadFromDist, snapLoad: snapLoad, angleDelta: angleDelta,
 		FAMS: FAMS, MATS: MATS, mat: mat, curve: curve, serration: serration, saneCurveMat: saneCurveMat, stressAt: stressAt, idxAt: idxAt, measure: measure, permanentSet: permanentSet, roPoint: roPoint, neckOf: neckOf };
 	if (typeof module !== "undefined" && module.exports) module.exports = api; else root.MESMech = api;
 })(this);

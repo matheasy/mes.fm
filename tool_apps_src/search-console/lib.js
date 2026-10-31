@@ -282,7 +282,24 @@
   var val = function (v, i) { return Array.isArray(v) ? (v[i || 0] || 0) : (i ? 0 : v || 0); };
   function sumOf(daily, dates, i) { var s = 0; dates.forEach(function (d) { s += val(daily[d], i); }); return s; }
 
-  var api = { parseCsv: parseCsv, num: num, parseDate: parseDate, classify: classify, parseTable: parseTable, unzip: unzip, xlsxSheets: xlsxSheets,
+  // Stacked chart: bands = arrays of values per point (null / missing = 0), bottom first -> each band's lower and upper edge and the stack's top
+  function stack(bands, n) {
+    var cum = [], out = [], i; for (i = 0; i < n; i++) cum.push(0);
+    bands.forEach(function (b) {
+      var lo = cum.slice();
+      for (i = 0; i < n; i++) { var v = +b[i]; cum[i] += isFinite(v) && v > 0 ? v : 0; }
+      out.push({ lo: lo, hi: cum.slice() });
+    });
+    return { bands: out, top: cum.slice() };
+  }
+  // "rest of the site" = total minus the ticked rows, never below 0; over = the rows add up to more than the total there (they overlap)
+  function rest(total, rows) {
+    if (total == null || !isFinite(total)) return { v: 0, over: false };
+    var s = 0; rows.forEach(function (r) { var v = +r; if (isFinite(v) && v > 0) s += v; });
+    return { v: Math.max(0, total - s), over: s > total * 1.001 + 0.5 };
+  }
+
+  var api = { stack: stack, rest: rest, parseCsv: parseCsv, num: num, parseDate: parseDate, classify: classify, parseTable: parseTable, unzip: unzip, xlsxSheets: xlsxSheets,
     parseFile: parseFile, combine: combine, oldSubdomain: oldSubdomain, periods: periods, sumOf: sumOf, val: val, KIND_NAMES: KIND_NAMES, MOVED: MOVED };
   if (typeof module !== 'undefined' && module.exports) module.exports = api;
   root.MESSCAI = api;
