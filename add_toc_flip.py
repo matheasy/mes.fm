@@ -12,9 +12,9 @@ vector-functions-problems-plus shell (build_nancy_physics_article.py) inherit it
 Idempotent (TOC-FLIP-HEAD marker)."""
 import sys, pathlib, re
 ROOT = pathlib.Path(__file__).resolve().parent
-V = "5"
+V = "6"
 RESTORE = ("try{var L=localStorage,H=document.documentElement.classList;if(L.getItem('asideSide')==='left')H.add('aside-left');"
-           "if(L.getItem('pageWide')==='1')H.add('page-wide');if(L.getItem('pageMode')==='theatre')H.add('page-theatre');if(L.getItem('tocHidden')==='1')H.add('toc-hidden')}catch(e){}")
+           "if(L.getItem('pageWide')==='1')H.add('page-wide');if(L.getItem('pageMode')==='theatre')H.add('page-theatre');if(L.getItem('tocHidden')==='1')H.add('toc-hidden');var w=+L.getItem('tocWidth');if(w>=120&&w<=900)document.documentElement.style.setProperty('--toc-swp',w+'px')}catch(e){}")
 HEAD = ('<!-- TOC-FLIP-HEAD --><link rel="stylesheet" href="/main_js/toc-flip.css?v=' + V + '"><script>' + RESTORE + '</script><!-- /TOC-FLIP-HEAD -->\n')
 TAIL = '<script src="/main_js/toc-flip.js?v=' + V + '" defer></script>'
 
