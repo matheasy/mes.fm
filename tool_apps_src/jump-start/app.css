@@ -4,7 +4,7 @@
 		--jp-ok:#166534;--jp-okbg:#e7f6ec;--jp-okln:#9fd6b2;--jp-wa:#8a4b05;--jp-wabg:#fff4e0;--jp-waln:#f0c27a;--jp-ba:#a11919;--jp-babg:#fdecec;--jp-baln:#f2a7a7;--jp-in:#1d4e89;--jp-inbg:#eaf2fc;--jp-inln:#b5cdec;
 		--jp-bay:#3b4048;--jp-bayln:#262a30;--jp-eng:#8b919a;--jp-engd:#6d737c;--jp-plug:#c9ced5;--jp-bat:#2a2c30;--jp-batlid:#41444a;--jp-vent:#5d6168;--jp-postp:#d62828;--jp-postn:#15171a;
 		--jp-paint1:#2f6fb3;--jp-paint2:#2e8b57;--jp-metal:#d4d9df;--jp-bolt:#eef1f4;--jp-bag:#eef1f4;--jp-bagln:#b9c0c8;--jp-bagtx:#4b5260;--jp-scene:#f0f2f5;--jp-bayt:#1f2430;
-		--jp-rc:#d62828;--jp-rcd:#9f1d1d;--jp-bc:#23262b;--jp-bcd:#555b64;--jp-jaw:#c08a3e;--jp-glow:#ffcc33;--jp-wirer:#c62020;--jp-wireb:#1e2126;
+		--jp-rc:#d62828;--jp-rcd:#9f1d1d;--jp-bc:#23262b;--jp-bcd:#555b64;--jp-jaw:#c08a3e;--jp-glow:#ffcc33;--jp-wirer:#c62020;--jp-wireb:#1e2126;--jp-tie:#5f6670;
 		--jp-pow:#1c8a4a;--jp-need:#c2410c;--jp-gap:rgba(194,65,12,.12);--jp-grid:#e3e6ea;--jp-ax:#5a6170;--jp-fbody:#2a2c30;--jp-fneedbg:#f1e6df;
 		--jp-g-ok:#22a35a;--jp-g-ok2:#86c96a;--jp-g-wa:#e0a106;--jp-g-wa2:#e36a12;--jp-g-ba:#d33030;--jp-g-na:#a0a6ae;color:var(--jp-fg);}
 	:where(#jp) :is(div, span, p, li, td, th, b, small, strong, em, h2, h3, h4, label, summary, ol, dt, dd) {color:inherit;}
@@ -76,6 +76,9 @@
 	#jp .jp-tg:focus-visible, #jp .jp-clamp:focus-visible, #jp .jp-baggrp:focus-visible, #jp .jp-packpwr:focus-visible {outline:3px solid var(--jp-glow);outline-offset:2px;}
 	@keyframes jp-pulse {50% {stroke-opacity:.35;}}
 	#jp .jp-wire {fill:none;stroke-width:7;stroke-linecap:round;} #jp .jp-wr {stroke:var(--jp-wirer);} #jp .jp-wb {stroke:var(--jp-wireb);}
+	#jp .jp-pair {stroke-width:6.4;stroke-linejoin:round;} #jp .jp-lead {stroke-width:6;}
+	#jp .jp-tie {stroke:var(--jp-tie);stroke-width:3.5;stroke-linecap:round;} #jp .jp-split {fill:var(--jp-tie);stroke:var(--jp-bcd);stroke-width:1.5;}
+	#jp .jp-endtxt {fill:var(--jp-bagtx);font-size:14px;font-weight:700;pointer-events:none;paint-order:stroke;stroke:var(--jp-scene);stroke-width:4px;stroke-linejoin:round;}
 	#jp .jp-clamp {cursor:grab;touch-action:none;}
 	#jp .jp-clamp.drag {cursor:grabbing;}
 	#jp .jp-jaw {fill:var(--jp-jaw);stroke:#6e4a17;stroke-width:1.5;}
@@ -174,7 +177,7 @@
 	/* dark mode */
 	body.dark-mode #jp.jp {--jp-fg:#e8eaee;--jp-mut:#b3b9c4;--jp-card:#22252b;--jp-line:#3c4048;--jp-soft:#2a2d34;--jp-acc:#ff8a7a;
 		--jp-ok:#7fe0a3;--jp-okbg:#173524;--jp-okln:#2f6b46;--jp-wa:#ffc56b;--jp-wabg:#3a2a12;--jp-waln:#7a5a22;--jp-ba:#ff9a9a;--jp-babg:#3d1a1c;--jp-baln:#7a3036;--jp-in:#9cc4ff;--jp-inbg:#1b2a40;--jp-inln:#35507a;
-		--jp-scene:#16181c;--jp-bayt:#e8eaee;--jp-bag:#23262c;--jp-bagln:#555b64;--jp-bagtx:#c9ced5;--jp-bc:#30343a;--jp-bcd:#9aa1ab;--jp-wireb:#8d949e;
+		--jp-scene:#16181c;--jp-bayt:#e8eaee;--jp-bag:#23262c;--jp-bagln:#555b64;--jp-bagtx:#c9ced5;--jp-bc:#30343a;--jp-bcd:#9aa1ab;--jp-wireb:#8d949e;--jp-tie:#c9ced5;
 		--jp-pow:#4ade80;--jp-need:#fb923c;--jp-gap:rgba(251,146,60,.14);--jp-grid:#33373e;--jp-ax:#b3b9c4;--jp-fbody:#c9ced5;--jp-fneedbg:#3a2c24;color:var(--jp-fg);}
 	body.dark-mode #jp.jp .jp-seg button[aria-pressed="true"] {background:var(--jp-acc);color:#1a1a1a;}
 	body.dark-mode #jp.jp .jp-toc a {color:var(--jp-acc);background:var(--jp-card);}

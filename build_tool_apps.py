@@ -70,7 +70,7 @@ KIDS_PAGES = [("kids-flashcards", "Flashcards"), ("kids-animal-sounds", "Animal 
 KIDS_NAV_INFO = "".join("<li class=\"info-bar__item\"><a class=\"info-bar__item__text\" href='/%s'>%s</a></li>" % (sl, nm) for sl, nm in KIDS_PAGES)
 KIDS_NAV_MENU = "".join('<li class="navbar__item"><a class="navbar__link" href="/%s">%s</a></li>' % (sl, nm if nm != "Shapes" else "Shapes &amp; Colours") for sl, nm in KIDS_PAGES)
 def _kids(slug, mode, seo, title, page_title, desc, tab, accent, dark, tint):
-    d = dict(title=title, page_title=page_title, tag=KIDS_BRAND["tag"], accent=accent, dark=dark, tint=tint, desc=desc, js_v="1", no_ads=True,
+    d = dict(title=title, page_title=page_title, tag=KIDS_BRAND["tag"], accent=accent, dark=dark, tint=tint, desc=desc, js_v="2", no_ads=True,
              src="kids", vars={"MODE": mode, "BODY": "@hub.html" if mode == "hub" else "@player.html", "SEO": "@seo/%s.html" % seo},
              pre_js=[] if mode == "hub" else ["/main_js/voice-picker.js?v=1"], nav_extra=KIDS_NAV_INFO, menu_extra=KIDS_NAV_MENU)
     if slug != "kids":
@@ -214,7 +214,7 @@ APPS = {
                        tag="Practise the clamp order, read your battery's date code and see why it died.", accent="#b4261c", dark="#861b14", tint="#fbe7e5",
                        desc="Free interactive guide to jump-starting a car: drag the jumper cable clamps in the right order on a simulated engine bay and see what goes wrong if you don't, use a jump pack, push-start a manual, decode your battery's date code (like F-15), see how cold cuts cranking power, and check the battery's voltage.",
                        meta_desc="Jump-start a car step by step: drag the clamps in order on a simulator, decode your battery's date code, and check its voltage and cold cranking power.",
-                       js_v="1"),
+                       js_v="2"),
     "debt-clock": dict(title="MES Debt Clock", page_title="Debt Clock: US National Debt, World Debt and Canada's Debt, Live Estimate",
                        tag="The national debt, ticking: from official figures, with the maths shown.", accent="#9b1c31", dark="#6b1220", tint="#f9e3e6",
                        desc="Free live debt clock: a running estimate of the US national debt from the Treasury's daily figures, plus world government debt and Canada's federal debt, the share per person, household and taxpayer, debt-to-GDP, interest per second, the deficit, and charts back to 1790. Every number shows its source and how it is estimated.",
