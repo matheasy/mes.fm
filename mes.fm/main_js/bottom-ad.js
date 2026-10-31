@@ -9,6 +9,9 @@
     var AD_CLIENT = "ca-pub-1461238060884369";
     var boxes = document.querySelectorAll(".mes-bottom-ad[data-ad-slot]");
     if (!boxes.length) return;
+    /* paid ad-free (mes.fm/premium, localStorage "mes-adfree"): no box at all, nothing requested */
+    var adFree = (function () { try { var af = JSON.parse(localStorage.getItem("mes-adfree") || "null"); return !!(af && !af.off && +af.until > Date.now()); } catch (e) { return false; } })();
+    if (adFree) { Array.prototype.forEach.call(boxes, function (b) { b.style.display = "none"; b.setAttribute("data-adfree", "1"); }); return; }
 
     function load(box) {
         if (box.getAttribute("data-loaded")) return;

@@ -32,6 +32,8 @@ from datetime import datetime
 from pathlib import Path
 from zoneinfo import ZoneInfo
 
+from add_hive_marker import mark_html
+
 ROOT = Path(__file__).resolve().parent
 SITE = ROOT / "mes.fm"
 DATA = ROOT / "math_qa_mirrors.json"
@@ -392,6 +394,7 @@ def main():
     written = unchanged = 0
     for rec in sorted(records, key=lambda r: -r["n"]):
         slug, page, meta = build_page(rec, template)
+        page = mark_html(page)[0]          # <meta name="mes:hive"> for the Hive comments tab (add_hive_marker.py)
         path = SITE / slug / "index.html"
         old = path.read_text(encoding="utf8") if path.exists() else None
         link_meta["https://mes.fm/" + slug] = meta

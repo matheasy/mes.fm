@@ -1577,6 +1577,8 @@ ${hasLinkPref ? LP_CSS : ""}</style>
      sodar, osd) never runs during the page-load / Lighthouse trace window. -->
     <script>
     (function () {
+      /* MES-ADFREE: paid ad-free on mes.fm/premium (localStorage mes-adfree = {user, until}): never load AdSense */
+      try { var af = JSON.parse(localStorage.getItem('mes-adfree') || 'null'); if (af && !af.off && +af.until > Date.now()) { document.documentElement.classList.add('mes-adfree'); return; } } catch (e) {}
       var EVT = ['scroll', 'pointerdown', 'keydown', 'touchstart'];
       var done = false;
       function go() {

@@ -1,0 +1,39 @@
+#pm .pm-hero h2 { margin: 0 0 .5em; font-size: 1.35em; }
+#pm .pm-points { margin: .6em 0 0; padding-left: 1.4em; list-style: disc; }
+#pm .pm-points li { margin: .45em 0; line-height: 1.5; display: list-item; }
+#pm h3 { display: flex; align-items: center; gap: .5em; margin: 0 0 .7em; font-size: 1.15em; }
+#pm .pm-n { display: inline-flex; align-items: center; justify-content: center; width: 1.7em; height: 1.7em; border-radius: 50%; background: #b8860b; color: #fff; font-size: .85em; font-weight: 700; }
+#pm .pm-status p { margin: .5em 0; }
+#pm .pm-badge { display: inline-block; padding: .3em .8em; border-radius: 999px; background: #eef1f4; color: #3c4650; font-weight: 600; font-size: .92em; }
+#pm .pm-badge--on { background: #e2f5e8; color: #17663a; }
+#pm .pm-acts { display: flex; flex-wrap: wrap; gap: .5em; margin-top: .7em; }
+#pm .pm-user { display: flex; align-items: center; flex-wrap: wrap; gap: .7em; }
+#pm .pm-user img { border-radius: 50%; background: #dde5ee; }
+#pm .pm-loginrow { display: flex; flex-wrap: wrap; align-items: center; gap: .5em .7em; }
+#pm .pm-loginrow .tu-label { margin: 0; }
+#pm .pm-loginrow .tu-input { width: 14em; max-width: 100%; }
+#pm .mh-help { font-size: .92em; margin: .8em 0 0; padding: .7em .9em; border-left: 3px solid #e0a100; background: #fff8e6; border-radius: 0 6px 6px 0; }
+#pm .pm-opts { display: grid; grid-template-columns: repeat(auto-fit, minmax(16em, 1fr)); gap: 1em; }
+#pm .pm-opt { border: 1px solid #dfe3e8; border-radius: 10px; padding: .9em 1em; }
+#pm .pm-opt--main { border: 2px solid #b8860b; background: #fffbf0; }
+#pm .pm-opt h4 { margin: 0 0 .2em; font-size: 1.05em; }
+#pm .pm-opt p { margin: .4em 0; }
+#pm .pm-opt select { font: inherit; }
+#pm .pm-opt .tu-select { margin: 0 0 .6em; width: auto; }
+#pm .pm-price { font-size: 1.15em; }
+#pm .pm-dim .pm-opts { opacity: .55; }
+#pm .pm-msg { min-height: 1.3em; margin: .8em 0 .2em; font-weight: 600; }
+#pm .pm-msg.ok { color: #17663a; }
+#pm .pm-msg.err { color: #b42318; }
+#pm .pm-faq dt { font-weight: 700; margin: .9em 0 .2em; }
+#pm .pm-faq dd { margin: 0; }
+#pm code { background: #f0f2f5; padding: 0 .3em; border-radius: 3px; }
+body.dark-mode #pm .pm-badge { background: #2a3038; color: #d8dee5; }
+body.dark-mode #pm .pm-badge--on { background: #163a26; color: #8ee0ad; }
+body.dark-mode #pm .pm-opt { border-color: #3a424c; }
+body.dark-mode #pm .pm-opt--main { border-color: #d9a520; background: #2a2414; }
+body.dark-mode #pm .pm-msg.ok { color: #7bdc9c; }
+body.dark-mode #pm .pm-msg.err { color: #ff8f80; }
+body.dark-mode #pm .mh-help { background: #2b2412; border-color: #c99100; }
+body.dark-mode #pm code { background: #1d2329; }
+body.dark-mode #pm .pm-n { background: #c99100; color: #1a1a1a; }

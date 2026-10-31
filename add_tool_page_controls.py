@@ -153,6 +153,7 @@ TOOLS = [  # (directory, compact-bar title[, home path of the site the page belo
     ("search-console", "MES Search Console"),
     ("fav", "MES Favourites"),
     ("ratings", "MES Ratings"),
+    ("premium", "MES Premium"),
     ("kids", "MES Kids"),   # MES Kids hub + activities (ad-free; built by build_tool_apps.py)
     ("kids-flashcards", "MES Kids", "/kids"),
     ("kids-animal-sounds", "MES Kids", "/kids"),

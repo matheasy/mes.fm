@@ -1,0 +1,63 @@
+	<div class="tu pm" id="pm">
+		<div class="tu-card pm-hero">
+			<h2>No ads on mes.fm for 1 HBD a month</h2>
+			<p>Every calculator, tool, tutorial and article on mes.fm stays free for everyone. If the ads get in your way, pay <b>1 HBD a month</b> on the Hive blockchain and this browser shows mes.fm with <b>no ads at all</b>: no banners, no sidebar or bottom ads, no pop-up "auto ads", and Google's ad script is not even downloaded, so pages load faster too.</p>
+			<ul class="pm-points">
+				<li><b>No account, no email, no password.</b> You log in with Hive Keychain, which proves you own your Hive account by signing a message. Your keys never leave Keychain.</li>
+				<li><b>Crypto only.</b> Payment is HBD (Hive's dollar-pegged coin) sent to <a href="https://peakd.com/@mes/wallet" target="_blank" rel="noopener">@mes</a>. No card processor, no bank, nothing to cancel by phone.</li>
+				<li><b>Checked on the chain.</b> mes.fm reads the public Hive blockchain to see what you paid; nothing about you is stored on our server.</li>
+			</ul>
+		</div>
+
+		<div class="tu-card pm-status" id="pm-status" aria-live="polite">
+			<p class="tu-note">Checking this browser…</p>
+		</div>
+
+		<div class="tu-card pm-step" id="pm-login">
+			<h3><span class="pm-n">1</span> Log in with Hive Keychain</h3>
+			<div id="pm-acct"></div>
+			<div id="pm-help"></div>
+		</div>
+
+		<div class="tu-card pm-step" id="pm-pay">
+			<h3><span class="pm-n">2</span> Pay in HBD</h3>
+			<div class="pm-opts">
+				<div class="pm-opt pm-opt--main">
+					<h4>Subscribe</h4>
+					<p class="pm-price"><b>1 HBD</b> / month</p>
+					<p>A Hive <b>recurrent transfer</b>: Keychain sends 1 HBD to @mes now and again every 30 days, for <select id="pm-exec" aria-label="Number of months"><option value="12" selected>12 months</option><option value="6">6 months</option><option value="24">24 months</option></select>. Cancel any time below or in your wallet.</p>
+					<button type="button" class="tu-btn tu-btn--primary" id="pm-sub">Subscribe 1 HBD / month</button>
+				</div>
+				<div class="pm-opt">
+					<h4>Pay once</h4>
+					<p class="pm-price"><b><span id="pm-once-n">1</span> HBD</b> for <span id="pm-once-m">1 month</span></p>
+					<p>A normal transfer, nothing repeats. Each HBD adds 31 days.</p>
+					<label class="tu-label" for="pm-months">Months</label>
+					<select id="pm-months" class="tu-select"><option value="1" selected>1 month</option><option value="3">3 months</option><option value="6">6 months</option><option value="12">12 months</option></select>
+					<button type="button" class="tu-btn" id="pm-once">Pay 1 HBD for 1 month</button>
+				</div>
+			</div>
+			<p class="pm-msg" id="pm-msg" role="status"></p>
+			<p class="tu-note">The memo is <code>mes.fm ad-free</code>. Already paid from another computer or browser? Log in here with the same Hive account and press <b>Check my payment</b>: ad-free is kept per browser.</p>
+		</div>
+
+		<div class="tu-card pm-faq">
+			<h3>Questions</h3>
+			<dl>
+				<dt>Where do I get HBD?</dt>
+				<dd>On Hive: earn it from posts, convert HIVE to HBD in your wallet (PeakD, Ecency or Keychain), or buy HIVE / HBD on an exchange and send it to your Hive account. 1 HBD is meant to be worth about 1 US dollar.</dd>
+				<dt>Is my payment private?</dt>
+				<dd>No. Every Hive transfer is public: anyone can see that your account sent 1 HBD to @mes with the memo "mes.fm ad-free". If you would rather not show that, use another Hive account. See the <a href="/privacy-policy#adfree">privacy policy</a>.</dd>
+				<dt>How does mes.fm know I paid?</dt>
+				<dd>After you log in and pay, this page asks mes.fm's server, which reads your account's transfers to @mes from the blockchain (and your recurrent transfer, if you subscribed) and answers "ad-free until …". This browser remembers that date and checks again once a day, so when a subscription ends the ads come back by themselves.</dd>
+				<dt>What does it switch off?</dt>
+				<dd>All Google AdSense ads on every mes.fm page: Auto ads, the sidebar ads, the ad above the footer. The "More like this" cards and everything else stay.</dd>
+				<dt>Could someone fake it?</dt>
+				<dd>Ad-free is a setting in your own browser, so anyone could switch ads off without paying, the same way an ad blocker does. Paying is how you support mes.fm without seeing ads. Thank you!</dd>
+				<dt>How do I cancel?</dt>
+				<dd>Press <b>Cancel my subscription</b> above (Keychain sets the recurrent transfer to 0, which removes it), or remove it in Keychain / your PeakD wallet. What you already paid keeps counting until it runs out.</dd>
+				<dt>No Hive Keychain on my phone?</dt>
+				<dd>Use the Hive Keychain app and open mes.fm/premium in its built-in browser, or pay on a computer; then log in on the phone's Keychain browser to switch the ads off there.</dd>
+			</dl>
+		</div>
+	</div>

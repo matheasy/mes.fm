@@ -18,6 +18,9 @@ function asideImgFail() { this.onerror = null; this.src = "/img/logo-mark-64.png
     /* Second, taller ad in the column (a fixed 300x600 "half page" unit), placed after the 7th recommendation when the column is long enough for it: create an AdSense unit
        "Sidebar Half Page 300x600" (Display ads, Vertical, Responsive) and put its slot id here. Empty = the feature is off (nothing is requested or shown). ?aside-debug shows a placeholder. */
     var AD2_SLOT = "2932057652";
+    /* paid ad-free (mes.fm/premium, localStorage "mes-adfree" = {user, until}): no ad slots at all; the cards stay */
+    var AD_FREE = (function () { try { var af = JSON.parse(localStorage.getItem("mes-adfree") || "null"); return !!(af && !af.off && +af.until > Date.now()); } catch (e) { return false; } })();
+    if (AD_FREE) { aside.setAttribute("data-no-ads", ""); document.documentElement.classList.add("mes-adfree"); }
 
     if (/[?&]aside-debug\b/.test(location.search)) document.documentElement.classList.add("aside-debug");
 
@@ -107,8 +110,9 @@ function asideImgFail() { this.onerror = null; this.src = "/img/logo-mark-64.png
     /* 2. ad */
     var ad = aside.querySelector(".mes-aside__ad");
     var adDone = false;
+    if (AD_FREE && ad) ad.style.display = "none";
     function loadAd() {
-        if (adDone || !ad) return;
+        if (adDone || !ad || AD_FREE) return;
         var slot = ad.getAttribute("data-ad-slot");
         if (!slot || !ad.offsetParent) return;
         adDone = true;

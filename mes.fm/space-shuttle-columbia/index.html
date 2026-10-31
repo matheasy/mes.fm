@@ -939,6 +939,8 @@ body.dark-mode .lp button:focus-visible, body.dark .lp button:focus-visible { ou
      sodar, osd) never runs during the page-load / Lighthouse trace window. -->
     <script>
     (function () {
+      /* MES-ADFREE: paid ad-free on mes.fm/premium (localStorage mes-adfree = {user, until}): never load AdSense */
+      try { var af = JSON.parse(localStorage.getItem('mes-adfree') || 'null'); if (af && !af.off && +af.until > Date.now()) { document.documentElement.classList.add('mes-adfree'); return; } } catch (e) {}
       var EVT = ['scroll', 'pointerdown', 'keydown', 'touchstart'];
       var done = false;
       function go() {
@@ -956,7 +958,9 @@ body.dark-mode .lp button:focus-visible, body.dark .lp button:focus-visible { ou
     })();
     </script>
 <!-- TOC-FLIP-HEAD --><link rel="stylesheet" href="/main_js/toc-flip.css?v=5"><script>try{var L=localStorage,H=document.documentElement.classList;if(L.getItem('asideSide')==='left')H.add('aside-left');if(L.getItem('pageWide')==='1')H.add('page-wide');if(L.getItem('pageMode')==='theatre')H.add('page-theatre');if(L.getItem('tocHidden')==='1')H.add('toc-hidden')}catch(e){}</script><!-- /TOC-FLIP-HEAD -->
-<!-- JUMP-ASIDE --><link rel="stylesheet" href="/main_js/jump-aside.css?v=1"><!-- /JUMP-ASIDE --></head>
+<!-- JUMP-ASIDE --><link rel="stylesheet" href="/main_js/jump-aside.css?v=1"><!-- /JUMP-ASIDE -->
+  <meta name="mes:hive" content="mes/exam-problem-by-dr-judy-woo-59">
+</head>
 <body class="dark">
 
   <div id="compact-nav" aria-hidden="true" style="display:none">

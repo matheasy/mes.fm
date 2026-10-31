@@ -23,6 +23,7 @@
 //   npm run build
 
 import { writeFileSync, readFileSync, existsSync, mkdirSync } from "node:fs";
+import { execFileSync } from "node:child_process";
 import { fileURLToPath } from "node:url";
 import { dirname, join } from "node:path";
 import { marked } from "marked";
@@ -1543,6 +1544,8 @@ ${LP_CSS}.playlist-list-view h2 .lp-a { color: inherit; text-decoration: none; }
      sodar, osd) never runs during the page-load / Lighthouse trace window. -->
     <script>
     (function () {
+      /* MES-ADFREE: paid ad-free on mes.fm/premium (localStorage mes-adfree = {user, until}): never load AdSense */
+      try { var af = JSON.parse(localStorage.getItem('mes-adfree') || 'null'); if (af && !af.off && +af.until > Date.now()) { document.documentElement.classList.add('mes-adfree'); return; } } catch (e) {}
       var EVT = ['scroll', 'pointerdown', 'keydown', 'touchstart'];
       var done = false;
       function go() {
@@ -2508,7 +2511,12 @@ async function main() {
   console.log(`Wrote ${outPath}`);
 }
 
-main().catch((err) => {
+main().then(() => {
+  /* <meta name="mes:hive" content="author/permlink"> on the generated page(s), for the Hive comments tab (add_hive_marker.py) */
+  try {
+    execFileSync("python3", [join(__dirname, "..", "..", "add_hive_marker.py"), "--apply", "--only=cubic-formula,quadratic-formula-complete-square,quadratic-formula-pq-substitution,cubic-formula-step-1-pq-substitution,cubic-formula-step-2-vieta-substitution,cubic-formula-step-3-first-solution-y,cube-root-unity,cubic-formula-step-4-solutions-y-cube-root-unity,cubic-formula-step-5-solve-x"], { stdio: "inherit" });
+  } catch (e) { console.warn("add_hive_marker.py failed (pages work without the meta):", e.message); }
+}).catch((err) => {
   console.error(err);
   process.exit(1);
 });
