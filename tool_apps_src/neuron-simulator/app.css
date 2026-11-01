@@ -12,6 +12,8 @@
 	body.dark-mode #nr .nr-tabs button {color:#c9d0da;}
 	body.dark-mode #nr .nr-tabs button:hover {background:#262b33;}
 	body.dark-mode #nr .nr-tabs button[aria-selected="true"] {color:var(--accent);background:#20252c;}
+	#nr .tu-label, #nr .nr-check, #nr .tu-table th {text-transform:none;letter-spacing:0;}   /* uppercase would turn µ into M */
+	#nr sub, #nr sup {color:inherit;}
 	.nr-lead {margin:0 0 0.7em;font-size:0.95em;}
 	.nr-wrap {border-radius:0.6em;overflow:hidden;border:1px solid var(--nr-line);background:var(--nr-bg);}
 	.nr-wrap:fullscreen {display:flex;flex-direction:column;border-radius:0;border:0;justify-content:center;}
@@ -22,7 +24,7 @@
 	.nr-run button:hover {border-color:var(--accent);color:#fff;}
 	.nr-readouts {display:grid;grid-template-columns:repeat(auto-fit,minmax(9.5em,1fr));gap:0.5em;padding:0.6em;background:var(--nr-panel);border-top:1px solid var(--nr-line);}
 	.nr-ro {display:flex;flex-direction:column;gap:0.1em;min-width:0;}
-	.nr-ro span {font-size:0.68em;font-weight:700;text-transform:uppercase;letter-spacing:0.05em;color:var(--nr-dim);}
+	.nr-ro span {font-size:0.74em;font-weight:700;color:var(--nr-dim);}
 	.nr-ro b {font-size:1.2em;color:var(--nr-text);font-variant-numeric:tabular-nums;line-height:1.15;}
 	.nr-ro small {font-size:0.72em;color:var(--nr-dim);line-height:1.3;}
 	.nr-ro.is-bad b {color:#ff8a8a;}
@@ -56,6 +58,8 @@
 	.nr-h {margin:0 0 0.4em;font-size:1.05em;}
 	.nr-iot input {width:6.5em;font-size:0.95em;padding:0.35em 0.45em;border:1px solid #b9c1cc;border-radius:0.35em;background:#fff;color:#222;text-align:right;}
 	body.dark-mode #nr .nr-iot input {background:#1e2228;border-color:#4a515c;color:#eceff3;}
+	.nr-ion--K {color:#6d28d9;} .nr-ion--Na {color:#c2410c;} .nr-ion--Cl {color:#0f766e;} .nr-ion--Ca {color:#a16207;}
+	body.dark-mode #nr .nr-ion--K {color:#c4b5fd;} body.dark-mode #nr .nr-ion--Na {color:#ffb27a;} body.dark-mode #nr .nr-ion--Cl {color:#5eead4;} body.dark-mode #nr .nr-ion--Ca {color:#ffd166;}
 	.nr-iot td b {font-variant-numeric:tabular-nums;}
 	.nr-ioopts {margin-top:0.6em;}
 	.nr-wrap--io {margin-top:0.9em;}

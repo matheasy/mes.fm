@@ -245,6 +245,15 @@ const PAGES = [
     tileLabel: "Double Pendulum",
   },
   {
+    // Tile only: links to the Neuron Simulator. Icon = img/neuron-simulator-icon.jpg (placeholder until Grok tile art lands; same file name).
+    slug: "neuron-simulator",
+    section: "tools",
+    href: "/neuron-simulator",
+    iconVersion: 1,
+    tileOnly: true,
+    tileLabel: "Neuron Simulator",
+  },
+  {
     // Tile only: links to the Heart Simulator. Icon = img/heart-simulator-icon.jpg (placeholder until Grok tile art lands; same file name).
     slug: "heart-simulator",
     section: "tools",

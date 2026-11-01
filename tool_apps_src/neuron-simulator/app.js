@@ -41,10 +41,10 @@
 	function plot(c, r, o) {
 		var x0 = o.x0, x1 = o.x1, y0 = o.y0, y1 = o.y1, X = function (t) { return r.x + (t - x0) / (x1 - x0) * r.w; }, Y = function (v) { return r.y + r.h - (v - y0) / (y1 - y0) * r.h; };
 		c.save(); c.font = "11px system-ui,sans-serif"; c.lineWidth = 1;
-		var ys = niceStep(y1 - y0, Math.max(2, Math.floor(r.h / 34))); c.textAlign = "right"; c.textBaseline = "middle";
+		var ys = niceStep(y1 - y0, Math.max(2, Math.floor(r.h / 26))); c.textAlign = "right"; c.textBaseline = "middle";
 		for (var v = Math.ceil(y0 / ys) * ys; v <= y1 + 1e-9; v += ys) { c.strokeStyle = COL.grid; c.beginPath(); c.moveTo(r.x, Y(v) + 0.5); c.lineTo(r.x + r.w, Y(v) + 0.5); c.stroke(); c.fillStyle = COL.dim; c.fillText(String(+v.toFixed(3)).replace("-", "−"), r.x - 4, Y(v)); }
 		if (o.xt) { var xs = niceStep(x1 - x0, Math.max(2, Math.floor(r.w / 70))); c.textAlign = "center"; c.textBaseline = "top"; for (var t = Math.ceil(x0 / xs) * xs; t <= x1 + 1e-9; t += xs) { c.strokeStyle = COL.grid; c.beginPath(); c.moveTo(X(t) + 0.5, r.y); c.lineTo(X(t) + 0.5, r.y + r.h); c.stroke(); c.fillStyle = COL.dim; c.fillText(String(+t.toFixed(3)), X(t), r.y + r.h + 3); } if (o.xl) { c.textAlign = "right"; c.fillText(o.xl, r.x + r.w, r.y + r.h + 3 + 12); } }
-		(o.hl || []).forEach(function (h) { if (h.y < y0 || h.y > y1) return; c.strokeStyle = h.col; c.setLineDash(h.dash || [4, 4]); c.beginPath(); c.moveTo(r.x, Y(h.y) + 0.5); c.lineTo(r.x + r.w, Y(h.y) + 0.5); c.stroke(); c.setLineDash([]); if (h.lab) { c.fillStyle = h.col; c.textAlign = "left"; c.textBaseline = "bottom"; c.fillText(h.lab, r.x + 4, Y(h.y) - 1); } });
+		(o.hl || []).forEach(function (h) { if (h.y < y0 || h.y > y1) return; c.strokeStyle = h.col; c.setLineDash(h.dash || [4, 4]); c.beginPath(); c.moveTo(r.x, Y(h.y) + 0.5); c.lineTo(r.x + r.w, Y(h.y) + 0.5); c.stroke(); c.setLineDash([]); if (h.lab) { c.fillStyle = h.col; c.textAlign = "right"; c.textBaseline = "bottom"; c.fillText(h.lab, r.x + r.w - 4, Y(h.y) - 1); } });
 		c.strokeStyle = COL.axis; c.strokeRect(r.x + 0.5, r.y + 0.5, r.w, r.h);
 		c.beginPath(); c.rect(r.x, r.y, r.w, r.h); c.clip();
 		(o.series || []).forEach(function (s) {
@@ -183,11 +183,12 @@
 	function drawMembrane(c, r, V, m, h, n, iNa, iK, t, b) {
 		c.save(); c.beginPath(); c.rect(r.x, r.y, r.w, r.h); c.clip();
 		c.fillStyle = "#0b1120"; c.fillRect(r.x, r.y, r.w, r.h);
-		var cy = r.y + r.h * 0.52, th = Math.max(18, Math.min(34, r.h * 0.12)), x0 = r.x + 8, x1 = r.x + r.w - 8;
+		var cy = r.y + r.h * 0.5, th = clamp(r.h * 0.13, 18, 52), x0 = r.x + 8, x1 = r.x + r.w - 8;
 		c.font = "600 11px system-ui,sans-serif"; c.textBaseline = "top"; c.fillStyle = COL.dim; c.textAlign = "left";
 		c.fillText("OUTSIDE", x0, r.y + 6); c.textBaseline = "bottom"; c.fillText("INSIDE", x0, r.y + r.h - 6);
-		c.textAlign = "right"; c.textBaseline = "top"; c.fillStyle = COL.V; c.font = "700 14px system-ui,sans-serif"; c.fillText(f1(V) + " mV", x1, r.y + 6);
-		c.font = "11px system-ui,sans-serif"; c.fillStyle = COL.dim; c.fillText("t = " + t.toFixed(2) + " ms", x1, r.y + 24);
+		var low = r.w >= apW - 1, ly = low ? r.y + r.h - 38 : r.y + 6;   /* on a phone the run buttons sit over the top right: put the readout at the bottom */
+		c.textAlign = "right"; c.textBaseline = "top"; c.fillStyle = COL.V; c.font = "700 14px system-ui,sans-serif"; c.fillText(f1(V) + " mV", x1, ly);
+		c.font = "11px system-ui,sans-serif"; c.fillStyle = COL.dim; c.fillText("t = " + t.toFixed(2) + " ms", x1, ly + 18);
 		/* charges: inside negative at rest, positive at the spike peak */
 		var q = clamp(-V / 70, -1, 1), sgnOut = q > 0 ? "+" : "−", sgnIn = q > 0 ? "−" : "+", cnt = Math.round(Math.abs(q) * 8);
 		c.font = "700 12px system-ui,sans-serif"; c.textAlign = "center"; c.textBaseline = "middle";
@@ -195,7 +196,7 @@
 		/* bilayer */
 		c.fillStyle = "#3b4a66"; c.fillRect(x0, cy - th / 2, x1 - x0, th);
 		c.fillStyle = "#c9b27a"; var hd = th / 4; for (var xh = x0 + hd; xh < x1; xh += hd * 2.1) { c.beginPath(); c.arc(xh, cy - th / 2 + hd * 0.6, hd * 0.75, 0, 7); c.fill(); c.beginPath(); c.arc(xh, cy + th / 2 - hd * 0.6, hd * 0.75, 0, 7); c.fill(); }
-		var cw = Math.max(26, (x1 - x0) * 0.16), naX = x0 + (x1 - x0) * 0.3, kX = x0 + (x1 - x0) * 0.72;
+		var cw = clamp((x1 - x0) * 0.2, 26, 64), naX = x0 + (x1 - x0) * 0.3, kX = x0 + (x1 - x0) * 0.72;
 		function channel(cx, col, open, label) {
 			c.fillStyle = "#0b1120"; c.fillRect(cx - cw / 2, cy - th / 2 - 6, cw, th + 12);
 			c.fillStyle = col; c.globalAlpha = 0.9; c.fillRect(cx - cw / 2, cy - th / 2 - 6, cw * 0.32, th + 12); c.fillRect(cx + cw / 2 - cw * 0.32, cy - th / 2 - 6, cw * 0.32, th + 12); c.globalAlpha = 1;
@@ -212,7 +213,7 @@
 		c.fillText("m³h = " + (m * m * m * h).toFixed(2), naX, cy + th / 2 + 28); c.fillText("n⁴ = " + Math.pow(n, 4).toFixed(2), kX, cy + th / 2 + 28);
 		/* ion streams */
 		function stream(cx, I, col, label, inward) {
-			var a = Math.abs(I), cnt = Math.min(7, Math.round(a / 40)), len = th + 70;
+			var a = Math.abs(I), cnt = Math.min(7, Math.round(a / 40)), len = th + Math.min(r.h * 0.5, 140);
 			for (var j = 0; j < cnt; j++) {
 				var ph = (memT * (0.8 + a / 600) + j / cnt) % 1, y = inward ? cy - len / 2 + ph * len : cy + len / 2 - ph * len;
 				c.fillStyle = col; c.beginPath(); c.arc(cx + Math.sin(j * 2.3) * 3, y, 3.2, 0, 7); c.fill();
@@ -338,6 +339,7 @@
 		var r = M.runCable(condOpts(Cs.dmg, Cs.ct), 12); cv.run = r; cv.t = 0; cv.play = true; $("nr-cv-play").textContent = "❚❚ Pause";
 		var c = r.cable, act = []; for (var i = 0; i < c.N; i++) if (c.comp[i].active) act.push(i);
 		cv.act = act; cv.e1 = act[Math.round((act.length - 1) * 0.2)]; cv.e2 = act[Math.round((act.length - 1) * 0.85)];
+		var last = 0; for (i = 0; i < c.N; i++) if (!isNaN(r.cross[i])) last = Math.max(last, r.cross[i]); cv.tShow = Math.min(r.tEnd, last + 3.5); cv.wait = 0;
 		cv.vBefore = Cs.my ? M.speedOf(r, 0.05, 0.35) : M.speedOf(r, 0.3, 0.8); cv.vLes = Cs.my ? M.speedOf(r, 0.42, 0.68) : cv.vBefore; cv.reach = M.reached(r); cv.vRef = refSpeed(Cs.ct);
 		condReadouts(); condDraw(); sset({ cond: Cs });
 	}
@@ -402,15 +404,15 @@
 		plot(c, p2, { x0: 0, x1: Lx, y0: -90, y1: 60, series: [{ t: xsA, v: vsA, col: COL.V, w: 2 }], hl: [{ y: 0, col: "#3a4560", dash: [1, 3] }], title: "Voltage along the axon now (mV)" });
 		/* recordings */
 		var p3 = { x: mx, y: p2.y + p2.h + 12, w: aw, h: H - (p2.y + p2.h + 12) - 28 }, T1 = trace(cv.e1), T2 = trace(cv.e2), upto = fi + 1;
-		plot(c, p3, { x0: 0, x1: r.tEnd, y0: -90, y1: 60, series: [{ t: T1.t, v: T1.v, col: COL.r1, upto: upto, w: 1.8 }, { t: T2.t, v: T2.v, col: COL.r2, upto: upto, w: 1.8 }], cur: fi * r.dtFrame, xt: true, xl: "time after the stimulus (ms)", title: "Recordings (mV)", leg: [["electrode 1", COL.r1], ["electrode 2", COL.r2]] });
+		plot(c, p3, { x0: 0, x1: cv.tShow, y0: -90, y1: 60, series: [{ t: T1.t, v: T1.v, col: COL.r1, upto: upto, w: 1.8 }, { t: T2.t, v: T2.v, col: COL.r2, upto: upto, w: 1.8 }], cur: fi * r.dtFrame, xt: true, xl: "time after the stimulus (ms)", title: "Recordings (mV)", leg: [["electrode 1", COL.r1], ["electrode 2", COL.r2]] });
 	}
 	function roundRect(c, x, y, w, h, r) { r = Math.min(r, w / 2, h / 2); c.beginPath(); c.moveTo(x + r, y); c.arcTo(x + w, y, x + w, y + h, r); c.arcTo(x + w, y + h, x, y + h, r); c.arcTo(x, y + h, x, y, r); c.arcTo(x, y, x + w, y, r); c.fill(); }
-	function condFrame(dt) { if (!cv.run) return; if (cv.play) { cv.t += dt * Cs.spd; if (cv.t > cv.run.tEnd) { cv.t = cv.run.tEnd; cv.play = false; $("nr-cv-play").textContent = "▶ Play"; } } condDraw(); }
+	function condFrame(dt) { if (!cv.run) return; if (cv.play) { if (cv.t >= cv.tShow) { cv.wait += dt; if (cv.wait > 1.5) { cv.t = 0; cv.wait = 0; } } else cv.t = Math.min(cv.tShow, cv.t + dt * Cs.spd); } condDraw(); }
 	function condResize() { var s = fitStage(cvStage, function (w) { return w >= 640 ? Math.max(420, w / 1.9) : w * 1.25; }); cv.W = s.W; cv.H = s.H; condDraw(); }
-	$("nr-cv-play").onclick = function () { cv.play = !cv.play; if (cv.play && cv.run && cv.t >= cv.run.tEnd) cv.t = 0; this.textContent = cv.play ? "❚❚ Pause" : "▶ Play"; };
+	$("nr-cv-play").onclick = function () { cv.play = !cv.play; if (cv.play && cv.run && cv.t >= cv.tShow) cv.t = 0; this.textContent = cv.play ? "❚❚ Pause" : "▶ Play"; };
 	$("nr-cv-replay").onclick = function () { cv.t = 0; cv.play = true; $("nr-cv-play").textContent = "❚❚ Pause"; };
 	$("nr-cv-png").onclick = function () { png(cvC, "nerve-conduction"); };
-	cvC.addEventListener("pointerdown", function (ev) { if (!cv.run) return; var rct = cvC.getBoundingClientRect(), x = ev.clientX - rct.left, f = clamp((x - 52) / (cv.W - 66), 0, 1); if (ev.clientY - rct.top > cv.H * 0.6) { cv.t = f * cv.run.tEnd; cv.play = false; $("nr-cv-play").textContent = "▶ Play"; condDraw(); } });
+	cvC.addEventListener("pointerdown", function (ev) { if (!cv.run) return; var rct = cvC.getBoundingClientRect(), x = ev.clientX - rct.left, f = clamp((x - 52) / (cv.W - 66), 0, 1); if (ev.clientY - rct.top > cv.H * 0.6) { cv.t = f * cv.tShow; cv.play = false; $("nr-cv-play").textContent = "▶ Play"; condDraw(); } });
 	var dEl = $("nr-d"), myEl = $("nr-my"), dmgEl = $("nr-dmg"), ctEl = $("nr-ct");
 	function condUI() {
 		dEl.value = Cs.d > 30 ? 1.4 : Math.log10(Cs.d); $("nr-d-v").textContent = Cs.d < 10 ? Cs.d.toFixed(1) : f0(Cs.d); myEl.checked = Cs.my; dmgEl.value = Cs.dmg; $("nr-dmg-v").textContent = Cs.my ? f0(Cs.dmg * 100) + "%" : "needs myelin"; dmgEl.disabled = !Cs.my; ctEl.value = Cs.ct; $("nr-ct-v").textContent = Cs.ct.toFixed(1);
@@ -454,7 +456,7 @@
 		var W = sy.W, H = sy.H, wide = W >= 640, nr = wide ? { x: 0, y: 0, w: Math.round(W * 0.44), h: H } : { x: 0, y: 0, w: W, h: Math.round(H * 0.5) };
 		var pr = wide ? { x: nr.w + 46, y: 36, w: W - nr.w - 58, h: H - 66 } : { x: 46, y: nr.h + 30, w: W - 58, h: H - nr.h - 60 };
 		var sx = nr.x + nr.w * 0.55, syy = nr.y + nr.h * 0.5, R = Math.min(nr.w, nr.h) * 0.075 + 6, pos = {};
-		var len = function (d) { return R + 18 + d / 200 * Math.min(nr.w * 0.42, nr.h * 0.38); };
+		var scl = Math.max(30, Math.min(sx - nr.x - 34, nr.h * 0.42) - R - 18), len = function (d) { return R + 18 + d / 200 * scl; };
 		pos.E1 = ang(sx, syy, len(40), -2.4); pos.E2 = ang(sx, syy, len(100), 2.5); pos.E3 = ang(sx, syy, len(200), -3.1 + 0.15); pos.I1 = ang(sx, syy, R + 2, -1.6); pos.I2 = ang(sx, syy, len(80), 2.0 + 0.9);
 		return { nr: nr, pr: pr, sx: sx, sy: syy, R: R, pos: pos, len: len };
 	}
@@ -546,7 +548,7 @@
 			{ l: "First EPP", v: f0(a.epp) + " mV", s: "fibres need 10-20 mV" },
 			{ l: "Safety factor", v: sg(a.epp / 15, 1) + "×", s: "first EPP ÷ 15 mV (typical threshold)", c: a.epp / 15 >= 1.5 ? "is-good" : "is-bad" },
 			{ l: r.length > 1 ? "Last EPP" : "Twitch", v: r.length > 1 ? f0(z.epp) + " mV" : f0(a.twitch * 100) + "%", s: r.length > 1 ? (ch >= 0 ? "+" : "−") + f0(Math.abs(ch)) + "% (" + (ch < -10 ? "decrement" : ch > 40 ? "increment" : "small change") + ")" : "fibres that fire" },
-			{ l: nm.pat === "tof" ? "Train-of-four ratio" : "Twitch last ÷ first", v: r.length > 1 && a.twitch > 0 ? sg(r[Math.min(3, r.length - 1)].twitch / a.twitch, 2) : r.length > 1 ? "no response" : "–", s: nm.pat === "tof" ? "4th ÷ 1st twitch; < 0.9 = residual block" : "", c: r.length > 1 && a.twitch > 0 && r[Math.min(3, r.length - 1)].twitch / a.twitch < 0.9 ? "is-bad" : "" }
+			{ l: nm.pat === "tof" ? "Train-of-four ratio" : "Twitch last ÷ first", v: r.length > 1 && a.twitch > 0 ? sg((nm.pat === "tof" ? r[3] : z).twitch / a.twitch, 2) : r.length > 1 ? "no response" : "–", s: nm.pat === "tof" ? "4th ÷ 1st twitch; < 0.9 = residual block" : "", c: r.length > 1 && a.twitch > 0 && (nm.pat === "tof" ? r[3] : z).twitch / a.twitch < 0.9 ? "is-bad" : "" }
 		]);
 	}
 	function nmDraw() {
@@ -567,13 +569,15 @@
 		var nrec = Math.round(24 * cond.rec); for (i = 0; i < 24; i++) { var x = cx - Math.min(W * 0.36, 260) + i * Math.min(W * 0.72, 520) / 23; c.fillStyle = i < nrec ? (fl > 0.2 ? "#7ee2a8" : "#3fbf72") : "#3a3f4a"; c.fillRect(x - 3, my - 6, 6, 8); }
 		c.fillStyle = COL.dim; c.textAlign = "left"; c.textBaseline = "bottom"; c.font = "11px system-ui,sans-serif"; c.fillText("muscle endplate: " + nrec + "/24 receptors working · ✂ = AChE" + (cond.ache > 1 ? " (inhibited)" : ""), 8, my + topH * 0.22 + 14);
 		/* bars */
-		var pr = { x: 46, y: topH + 34, w: W - 58, h: (H - topH - 70) * 0.58 }, pr2 = { x: 46, y: pr.y + pr.h + 12, w: W - 58, h: (H - topH - 70) * 0.42 - 12 };
+		var pr = { x: 46, y: topH + 34, w: W - 58, h: (H - topH - 70) * 0.58 }, pr2 = { x: 46, y: pr.y + pr.h + 22, w: W - 58, h: (H - topH - 70) * 0.42 - 22 };
 		var n = r.length, bw = pr.w / n;
-		var p = plot(c, pr, { x0: 0, x1: n, y0: 0, y1: 80, hl: [], title: "Endplate potential per stimulus (mV)" });
-		c.save(); c.fillStyle = "rgba(255,107,107,0.14)"; c.fillRect(pr.x, p.Y(20), pr.w, p.Y(10) - p.Y(20)); c.fillStyle = COL.thr; c.font = "10px system-ui,sans-serif"; c.textAlign = "right"; c.textBaseline = "bottom"; c.fillText("fibre thresholds 10-20 mV", pr.x + pr.w - 4, p.Y(20) - 1); c.restore();
+		var p = plot(c, pr, { x0: 0, x1: n, y0: 0, y1: 80, hl: [] });
+		c.save(); c.fillStyle = "rgba(255,107,107,0.14)"; c.fillRect(pr.x, p.Y(20), pr.w, p.Y(10) - p.Y(20)); c.restore();
 		for (i = 0; i < Math.min(nm.shown, n); i++) { c.fillStyle = "#4cc9f0"; c.fillRect(pr.x + i * bw + bw * 0.15, p.Y(r[i].epp), bw * 0.7, p.Y(0) - p.Y(r[i].epp)); }
-		var p2 = plot(c, pr2, { x0: 0, x1: n, y0: 0, y1: 100, title: "Twitch (% of fibres that fire)" });
+		var p2 = plot(c, pr2, { x0: 0, x1: n, y0: 0, y1: 100 });
 		for (i = 0; i < Math.min(nm.shown, n); i++) { c.fillStyle = "#ff8c42"; c.fillRect(pr2.x + i * bw + bw * 0.15, p2.Y(r[i].twitch * 100), bw * 0.7, p2.Y(0) - p2.Y(r[i].twitch * 100)); }
+		c.save(); c.font = "600 11px system-ui,sans-serif"; c.textAlign = "left"; c.textBaseline = "top"; [[pr, "Endplate potential per stimulus (mV)"], [pr2, "Twitch (% of fibres that fire)"]].forEach(function (z) { var tw = c.measureText(z[1]).width; c.fillStyle = "rgba(6,10,18,0.8)"; c.fillRect(z[0].x + 3, z[0].y + 2, tw + 8, 16); c.fillStyle = COL.text; c.fillText(z[1], z[0].x + 7, z[0].y + 4); });
+		c.font = "10px system-ui,sans-serif"; c.textAlign = "right"; c.textBaseline = "bottom"; var lt = "fibre thresholds 10-20 mV", lw = c.measureText(lt).width; c.fillStyle = "rgba(6,10,18,0.8)"; c.fillRect(pr.x + pr.w - lw - 8, p.Y(20) - 14, lw + 6, 13); c.fillStyle = COL.thr; c.fillText(lt, pr.x + pr.w - 4, p.Y(20) - 1); c.restore();
 	}
 	function nmFrame(dt) {
 		if (!nm.res) return; nm.flash = Math.max(0, nm.flash - dt * 3);
@@ -591,7 +595,7 @@
 	var IO_KEYS = ["Ko", "Ki", "Nao", "Nai", "Clo", "Cli", "Cao", "Cai"];
 	if (q.get("tab") === "ion" && q.get("io")) { var iv = q.get("io").split(",").map(Number); IO_KEYS.forEach(function (kk, i) { if (iv[i] > 0) Io.c[kk] = iv[i]; }); if (iv[8] >= 0) Io.p.K = iv[8]; if (iv[9] >= 0) Io.p.Na = iv[9]; if (iv[10] >= 0) Io.p.Cl = iv[10]; if (isFinite(iv[11])) Io.T = iv[11]; }
 	var iot = $("nr-iot");
-	iot.innerHTML = "<thead><tr><th>Ion</th><th>Outside (mmol/L)</th><th>Inside (mmol/L)</th><th>z</th><th>Equilibrium potential</th><th>Driving force at rest</th><th>Would flow</th></tr></thead><tbody>" + IONS.map(function (x) { return '<tr><td><b style="color:' + x[5] + '">' + x[1] + '</b></td><td><input type="number" step="any" min="0" data-c="' + x[3] + '" aria-label="' + x[1] + ' outside"></td><td><input type="number" step="any" min="0" data-c="' + x[4] + '" aria-label="' + x[1] + ' inside"></td><td>' + (x[2] > 0 ? "+" : "−") + Math.abs(x[2]) + '</td><td><b data-e="' + x[0] + '"></b></td><td data-df="' + x[0] + '"></td><td data-fl="' + x[0] + '"></td></tr>'; }).join("") + "</tbody>";
+	iot.innerHTML = "<thead><tr><th>Ion</th><th>Outside (mmol/L)</th><th>Inside (mmol/L)</th><th>z</th><th>Equilibrium potential</th><th>Driving force at rest</th><th>Net flow</th></tr></thead><tbody>" + IONS.map(function (x) { return '<tr><td><b class="nr-ion nr-ion--' + x[0] + '">' + x[1] + '</b></td><td><input type="number" step="any" min="0" data-c="' + x[3] + '" aria-label="' + x[1] + ' outside"></td><td><input type="number" step="any" min="0" data-c="' + x[4] + '" aria-label="' + x[1] + ' inside"></td><td>' + (x[2] > 0 ? "+" : "−") + Math.abs(x[2]) + '</td><td><b data-e="' + x[0] + '"></b></td><td data-df="' + x[0] + '"></td><td data-fl="' + x[0] + '"></td></tr>'; }).join("") + "</tbody>";
 	Array.prototype.forEach.call(iot.querySelectorAll("input[data-c]"), function (inp) { inp.addEventListener("input", function () { var v = Number(inp.value); if (v > 0) { Io.c[inp.dataset.c] = v; ionCalc(); } }); });
 	[["it", "T"], ["pk", "K"], ["pna", "Na"], ["pcl", "Cl"]].forEach(function (pp) { var el = $("nr-" + pp[0]); el.addEventListener("input", function () { var v = Number(el.value); if (el.value === "" || !isFinite(v) || v < 0) return; if (pp[1] === "T") Io.T = v; else Io.p[pp[1]] = v; ionCalc(); }); });
 	function ionFill() { Array.prototype.forEach.call(iot.querySelectorAll("input[data-c]"), function (inp) { inp.value = Io.c[inp.dataset.c]; }); $("nr-it").value = Io.T; $("nr-pk").value = Io.p.K; $("nr-pna").value = Io.p.Na; $("nr-pcl").value = Io.p.Cl; }
@@ -601,7 +605,7 @@
 		var E = {}, Vm = M.ghk(Io.c, Io.p, Io.T); IONS.forEach(function (x) { E[x[0]] = M.nernst(x[2], Io.c[x[3]], Io.c[x[4]], Io.T); });
 		IONS.forEach(function (x) { var e = E[x[0]], df = Vm - e, into; iot.querySelector('[data-e="' + x[0] + '"]').textContent = f1(e) + " mV"; iot.querySelector('[data-df="' + x[0] + '"]').textContent = isFinite(df) ? (df >= 0 ? "+" : "−") + f1(Math.abs(df)) + " mV" : "–";
 			/* positive ion: flows in when Vm > E; negative ion (current direction opposite) */
-			into = x[2] > 0 ? df > 0 : df < 0; iot.querySelector('[data-fl="' + x[0] + '"]').textContent = Math.abs(df) < 0.5 ? "balanced" : into ? "into the cell" : "out of the cell"; });
+			into = x[2] > 0 ? df < 0 : df > 0;   /* cation enters when the inside is more negative than its E; anion the other way */ iot.querySelector('[data-fl="' + x[0] + '"]').textContent = Math.abs(df) < 0.5 ? "balanced" : into ? "into the cell" : "out of the cell"; });
 		io.E = E; io.Vm = Vm;
 		var base = M.ghk(M.ION_PRESETS.neuron.c, M.ION_PRESETS.neuron.p, 37);
 		ro($("nr-io-ro"), [
@@ -627,9 +631,10 @@
 		IONS.forEach(function (x, i) { var e = io.E[x[0]]; if (!isFinite(e)) return; var px = X(e), ly = 18 + i * 22; c.strokeStyle = x[5]; c.setLineDash([3, 3]); c.beginPath(); c.moveTo(px, ly + 14); c.lineTo(px, ay); c.stroke(); c.setLineDash([]); c.fillStyle = x[5]; c.font = "600 11px system-ui,sans-serif"; c.textAlign = px > W - 120 ? "right" : "left"; c.textBaseline = "top"; c.fillText("E" + x[1] + " " + f0(e) + (e > v1 ? " →" : ""), px + (px > W - 120 ? -3 : 3), ly);
 			/* arrow from Vm toward E: the way the voltage would move if only this ion flowed */
 			var a = X(io.Vm), b2 = X(e), yy = ay + 34 + i * 12; if (H < 220) return; c.strokeStyle = x[5]; c.lineWidth = 2; c.beginPath(); c.moveTo(a, yy); c.lineTo(b2, yy); c.stroke(); c.beginPath(); c.moveTo(b2, yy); c.lineTo(b2 + (b2 > a ? -6 : 6), yy - 4); c.lineTo(b2 + (b2 > a ? -6 : 6), yy + 4); c.fill(); c.lineWidth = 1; rows++; });
+		if (H >= 220) { c.font = "11px system-ui,sans-serif"; c.fillStyle = COL.dim; c.textAlign = "left"; c.textBaseline = "top"; c.fillText("Arrows: where the voltage would go if only that ion could cross", mx, H - 16); }
 		c.fillStyle = "#fff"; c.fillRect(X(io.Vm) - 1.5, ay - 26, 3, 30); c.font = "700 12px system-ui,sans-serif"; c.textAlign = "center"; c.textBaseline = "bottom"; c.fillText("rest " + f1(io.Vm), X(io.Vm), ay - 28);
 	}
-	function ionResize() { var s = fitStage(ioStage, function (w) { return w >= 640 ? 250 : 270; }); io.W = s.W; io.H = s.H; ionDraw(); }
+	function ionResize() { var s = fitStage(ioStage, function (w) { return w >= 640 ? 280 : 300; }); io.W = s.W; io.H = s.H; ionDraw(); }
 	$("nr-io-use").onclick = function () { A.ko = Math.round(clamp(Io.c.Ko, 1.5, 12) * 10) / 10; refreshAll(); setTab("ap"); apCompute(); toast("Outside potassium set to " + A.ko + " mmol/L"); };
 	$("nr-io-link").onclick = function () { copyLink(linkWith({ tab: "ion", io: IO_KEYS.map(function (k2) { return Io.c[k2]; }).concat([Io.p.K, Io.p.Na, Io.p.Cl, Io.T]).join(",") })); };
 	ionFill();
