@@ -1,0 +1,161 @@
+// node tool_apps_src/3d-studio-tests.js  -- pure maths of MES 3D Studio (lib.js = MES3D)
+'use strict';
+var M = require('./3d-studio/lib.js');
+var fails = 0, n = 0;
+function ok(c, msg) { n++; if (!c) { fails++; console.log('FAIL ' + msg); } }
+function near(a, b, tol, msg) { ok(Math.abs(a - b) <= (tol || 1e-6), msg + ' (got ' + a + ', want ' + b + ')'); }
+
+// a closed axis-aligned box as a triangle soup, outward facing
+function boxSoup(w, d, h, x0, y0, z0) {
+	x0 = x0 || 0; y0 = y0 || 0; z0 = z0 || 0;
+	var v = [[0, 0, 0], [w, 0, 0], [w, d, 0], [0, d, 0], [0, 0, h], [w, 0, h], [w, d, h], [0, d, h]].map(function (p) { return [p[0] + x0, p[1] + y0, p[2] + z0]; });
+	var f = [[0, 2, 1], [0, 3, 2], [4, 5, 6], [4, 6, 7], [0, 1, 5], [0, 5, 4], [1, 2, 6], [1, 6, 5], [2, 3, 7], [2, 7, 6], [3, 0, 4], [3, 4, 7]];
+	var out = [];
+	f.forEach(function (t) { t.forEach(function (i) { out.push(v[i][0], v[i][1], v[i][2]); }); });
+	return new Float32Array(out);
+}
+
+// lengths
+near(M.parseLength('20'), 20, 0, 'plain number is mm');
+near(M.parseLength('2 cm'), 20, 1e-9, 'cm');
+near(M.parseLength('1in'), 25.4, 1e-9, 'inch');
+near(M.parseLength('1"'), 25.4, 1e-9, 'inch mark');
+near(M.parseLength('1/2 in'), 12.7, 1e-9, 'fraction of an inch');
+near(M.parseLength('10*2 + 5'), 25, 1e-9, 'arithmetic');
+near(M.parseLength('-3,5'), -3.5, 1e-9, 'decimal comma and minus');
+near(M.parseLength('(10+5) cm'), 150, 1e-9, 'unit after brackets');
+near(M.parseLength('2', 'in'), 50.8, 1e-9, 'default unit inch');
+near(M.parseLength('1 cm + 5'), 15, 1e-9, 'mixed: unitless part uses the default unit');
+ok(isNaN(M.parseLength('abc')), 'garbage is NaN');
+ok(isNaN(M.parseLength('')), 'empty is NaN');
+ok(isNaN(M.parseLength('5 kg')), 'unknown unit is NaN');
+ok(M.fmtLength(12.5) === '12.5 mm', 'fmt mm');
+ok(M.fmtLength(25.4, 'in') === '1 in', 'fmt in: ' + M.fmtLength(25.4, 'in'));
+ok(M.fmtLength(20, 'cm') === '2 cm', 'fmt cm');
+near(M.snap(7.3, 5), 5, 0, 'snap'); near(M.snap(7.6, 0.5), 7.5, 1e-9, 'snap half');
+
+// volume / area / box
+var b = boxSoup(10, 20, 30);
+var va = M.volumeArea(b);
+near(va.volume, 6000, 1e-3, 'box volume');
+near(va.area, 2 * (200 + 300 + 600), 1e-3, 'box area');
+var bb = M.bboxOf(b);
+ok(bb.size[0] === 10 && bb.size[1] === 20 && bb.size[2] === 30, 'bbox size');
+var flipped = M.flipWinding(new Float32Array(b));
+near(M.volumeArea(flipped).volume, -6000, 1e-3, 'flipped volume is negative');
+
+// manifold check
+var mc = M.manifoldCheck(b);
+ok(mc.closed && mc.triangles === 12 && mc.vertices === 8 && mc.edges === 18 && mc.shells === 1, 'closed box: ' + JSON.stringify(mc));
+var open = b.slice(0, b.length - 9);
+var mo = M.manifoldCheck(open);
+ok(!mo.closed && mo.boundary === 3, 'one triangle missing leaves 3 open edges: ' + JSON.stringify(mo));
+var bad = new Float32Array(b); for (var k = 0; k < 3; k++) { var t = bad[3 + k]; bad[3 + k] = bad[6 + k]; bad[6 + k] = t; }
+var mf = M.manifoldCheck(bad);
+ok(!mf.closed && mf.flipped === 3 && mf.boundary === 0, 'one flipped triangle: ' + JSON.stringify(mf));
+var two = new Float32Array(b.length * 2); two.set(b); two.set(boxSoup(5, 5, 5, 50, 0, 0), b.length);
+var m2 = M.manifoldCheck(two);
+ok(m2.closed && m2.shells === 2, 'two separate boxes: two closed shells');
+var touching = new Float32Array(b.length * 2); touching.set(b); touching.set(boxSoup(10, 20, 30, 10, 0, 0), b.length);
+var mt = M.manifoldCheck(touching);
+ok(!mt.closed && mt.nonManifold > 0, 'boxes sharing a face are non-manifold');
+var withDeg = new Float32Array(b.length + 9); withDeg.set(b); withDeg.set([1, 1, 1, 1, 1, 1, 2, 2, 2], b.length);
+ok(M.manifoldCheck(withDeg).degenerate === 1 && M.manifoldCheck(withDeg).closed, 'degenerate triangles are ignored');
+var w = M.weld(new Float32Array([0, 0, 0, 0.00001, 0, 0, 1, 0, 0]), 1e-3);
+ok(w.verts.length === 6, 'weld merges near points');
+
+// overhangs: a box standing on the floor has none; lifted, its bottom is all overhang
+var oh = M.overhang(b, 45, 0);
+ok(oh.area === 0, 'box on the floor: no overhang');
+var lifted = boxSoup(10, 20, 30, 0, 0, 5);
+var oh2 = M.overhang(lifted, 45, 0);
+near(oh2.area, 200, 1e-3, 'floating box: bottom is overhang');
+ok(oh2.flags.reduce(function (a, v) { return a + v; }, 0) === 2, 'two bottom triangles flagged');
+// a 30 degree slope (from horizontal) facing down is an overhang at 45; at 70 degrees allowed it is not
+var s30 = Math.tan(30 * Math.PI / 180);
+var slope = new Float32Array([0, 0, 5, 0, 10, 5 + 10 * s30, 10, 0, 5]);
+ok(M.volumeArea(slope).area > 0 && M.overhang(slope, 45, 0).flags[0] === 1, 'slope 30 degrees below horizontal is an overhang');
+ok(M.overhang(slope, 70, 0).flags[0] === 0, '...but allowed when 70 degrees are allowed');
+
+// plate fit
+var plate = M.plateById('ender3');
+ok(plate.x === 220 && plate.z === 250, 'ender plate');
+ok(M.plateById('custom', { x: 100, y: 50, z: 30 }).y === 50, 'custom plate');
+var fit = M.plateFit({ min: [-50, -50, 0], max: [50, 50, 40] }, plate);
+ok(fit.fits && !fit.floating, 'fits');
+var tall = M.plateFit({ min: [-50, -50, 0], max: [50, 50, 300] }, plate);
+ok(!tall.fits && Math.abs(tall.over.top - 50) < 1e-9, 'too tall by 50');
+var off = M.plateFit({ min: [80, -10, 0], max: [130, 10, 10] }, plate);
+ok(!off.fits && off.fitsSize && Math.abs(off.over.right - 20) < 1e-9, 'fits in size but hangs over the right edge');
+var turn = M.plateFit({ min: [-120, -60, 0], max: [120, 60, 10] }, M.plateById('mk4'));
+ok(turn.fitsSize, 'mk4 240x120 fits');
+var turn2 = M.plateFit({ min: [-100, -120, 0], max: [100, 120, 10] }, M.plateById('mk4'));
+ok(!turn2.fitsSize && turn2.fitsIfTurned, 'mk4: 200 x 240 fits when turned 90 degrees');
+ok(M.plateFit({ min: [-5, -5, -2], max: [5, 5, 5] }, plate).below, 'below the floor');
+ok(M.plateFit({ min: [-5, -5, 2], max: [5, 5, 5] }, plate).floating, 'floating');
+
+// filament: a 20 mm solid cube at 100% infill = 8 cm3 = 9.92 g of PLA
+var cube = M.volumeArea(boxSoup(20, 20, 20));
+var f100 = M.filament(cube, { material: 'pla', infill: 100, diameter: 1.75, price: 20 });
+near(f100.used, 8000, 1e-6, 'solid cube volume');
+near(f100.grams, 9.92, 1e-9, 'PLA grams');
+near(f100.metres, 8000 / (Math.PI * 1.75 * 1.75 / 4) / 1000, 1e-9, 'filament metres');
+near(f100.cost, 9.92 / 1000 * 20, 1e-9, 'cost');
+var f15 = M.filament(cube, { material: 'pla', infill: 15, wall: 0.8 });
+near(f15.shell, 2400 * 0.8, 1e-9, 'shell = area x wall');
+near(f15.used, 1920 + (8000 - 1920) * 0.15, 1e-6, 'infill part');
+ok(M.filament({ volume: 10, area: 1000 }, { infill: 0 }).used === 10, 'shell never more than the volume');
+ok(M.filament(cube, { material: 'resin' }).metres === 0, 'resin has no filament length');
+ok(M.materialById('nope').id === 'pla', 'unknown material = PLA');
+
+// 2D shapes
+near(M.polyArea(M.roundedRect(40, 20, 0)), 800, 1e-9, 'rect area');
+ok(M.polyArea(M.roundedRect(40, 20, 5)) > 0 && M.polyArea(M.roundedRect(40, 20, 5)) < 800, 'rounded rect smaller, ccw');
+near(M.polyArea(M.roundedRect(40, 20, 5, 64)), 800 - (4 - Math.PI) * 25, 0.05, 'rounded rect area');
+near(M.polyArea(M.circlePts(10, 360)), Math.PI * 100, 0.1, 'circle area');
+ok(M.starPts(5, 10, 4).length === 10, 'star corners');
+var hb = M.bounds2(M.heartPts(30));
+near(Math.max(hb.w, hb.h), 30, 1e-6, 'heart size'); ok(M.polyArea(M.heartPts(30)) > 0, 'heart ccw');
+var g = M.gearPts(20, 2);
+ok(g.pitch === 20 && g.tip === 22 && Math.abs(g.root - 17.5) < 1e-9 && g.pts.length === 120, 'gear radii');
+ok(M.polyArea(M.ccw([[0, 0], [0, 1], [1, 1], [1, 0]])) > 0, 'ccw reorders');
+var sq = [[-5, -5], [5, -5], [5, 5], [-5, 5]];
+near(M.polyArea(M.offsetPolygon(sq, 1)), 144, 1e-9, 'offset square out by 1');
+near(M.polyArea(M.offsetPolygon(sq, -1)), 64, 1e-9, 'offset square in by 1');
+ok(M.cleanProfile([[-2, 3], [4, NaN], [5, 6]]).length === 2 && M.cleanProfile([[-2, 3]])[0][0] === 0, 'clean profile');
+near(M.polyArea(M.polygonPts(6, 10)), 3 * Math.sqrt(3) / 2 * 100, 1e-9, 'hexagon area');
+
+// 3MF
+var xml = M.threeMFModel([{ name: 'Box <1>', positions: boxSoup(10, 10, 10), color: '#ff0000' }, { name: 'B', positions: boxSoup(5, 5, 5, 20, 0, 0), color: 'bad' }], 'Test & co');
+ok(xml.indexOf('unit="millimeter"') > 0 && xml.indexOf('Box &lt;1&gt;') > 0 && xml.indexOf('Test &amp; co') > 0, '3mf escapes and units');
+ok((xml.match(/<vertex /g) || []).length === 16 && (xml.match(/<triangle /g) || []).length === 24, '3mf welds vertices');
+ok(xml.indexOf('displaycolor="#FF0000"') > 0 && xml.indexOf('displaycolor="#9CA3AF"') > 0, '3mf colours');
+ok((xml.match(/<item objectid/g) || []).length === 2, '3mf build items');
+
+// base64
+var f = new Float32Array([1.5, -2.25, 3e6, 0, 7]);
+var back = M.b64ToF32(M.f32ToB64(f));
+ok(back.length === 5 && back.every(function (v, i) { return v === f[i]; }), 'float32 base64 round trip');
+var bytes = new Uint8Array([1, 2, 3, 4, 250]);
+ok(M.bytesToB64(bytes) === Buffer.from(bytes).toString('base64'), 'base64 matches node');
+ok(M.b64ToBytes(Buffer.from('hi!!x').toString('base64')).length === 5, 'base64 decode length');
+
+// align / distribute
+var boxes = [{ min: [0, 0, 0], max: [10, 1, 1] }, { min: [20, 0, 0], max: [24, 1, 1] }, { min: [50, 0, 0], max: [60, 1, 1] }];
+var al = M.alignShifts(boxes, 0, 'min');
+ok(al[0] === 0 && al[1] === -20 && al[2] === -50, 'align left');
+var am = M.alignShifts(boxes, 0, 'mid');
+ok(am[0] === 25 && am[1] === 8 && am[2] === -25, 'align centre');
+var ds = M.distributeShifts(boxes, 0);
+ok(ds[0] === 0 && Math.abs(ds[1] - (30 - 22)) < 1e-9 && ds[2] === 0, 'distribute');
+
+// project validation
+var o1 = { type: 'box', pos: [0, 0, 5], rot: [0, 0, 0], scl: [1, 1, 1], p: {} };
+ok(M.validProject({ app: 'mes-3d-studio', objs: [o1, { type: 'group', pos: [0, 0, 0], rot: [0, 0, 0], scl: [1, 1, 1], children: [o1] }] }), 'valid project');
+ok(!M.validProject({ app: 'other', objs: [] }), 'wrong app');
+ok(!M.validProject({ app: 'mes-3d-studio', objs: [{ type: 'evil', pos: [0, 0, 0], rot: [0, 0, 0], scl: [1, 1, 1] }] }), 'unknown type');
+ok(!M.validProject({ app: 'mes-3d-studio', objs: [{ type: 'box', pos: [0, 0, 'x'], rot: [0, 0, 0], scl: [1, 1, 1] }] }), 'bad number');
+ok(M.safeName('a/b:c?') === 'a b c', 'safe name');
+
+console.log(fails ? fails + ' of ' + n + ' checks FAILED' : 'all ' + n + ' checks passed');
+process.exit(fails ? 1 : 0);
