@@ -100,16 +100,18 @@
 	function explainDownload() {
 		return new Promise(function (res) {
 			var br = isBrave(), w = el("div", "pe-fx"), done = false;
-			w.innerHTML = "<p><b>This browser can't save over the project file.</b> Each Save makes a new download of <i>" + esc(P.projectFileName(PE.doc.name || "Untitled", "mesproj")) + "</i>. If your browser asks where to save every download, you will see a Save dialog each time: that is the browser, not a new project.</p>"
-				+ (br ? "<p><b>In Brave you can switch it on:</b> open <code>" + BRAVE_FLAG + "</code> (copy it into the address bar), set it to <b>Enabled</b> and relaunch Brave. Then the first Save asks once where to put the file, and every later Save (" + PE.modKey() + "S) writes that same file silently, also in a OneDrive folder.</p>"
-					: "<p>Chrome and Edge on a computer can write to the same file with no questions. Safari and Firefox can't.</p>")
-				+ "<p class=\"pe-hint2\">To stop the Save dialog for downloads: browser Settings → Downloads → turn off “Ask where to save each file”. The project then goes straight to your Downloads folder.</p>"
-				+ '<label class="pe-chk"><input type="checkbox" id="pe-dlnoask"> Always download without showing this again</label>';
-			var fin = function (m, v) { if (done) return; done = true; if (w.querySelector("#pe-dlnoask").checked) sset({ dlNoAsk: true }); m.close(); res(v); };
+			var fn = esc(P.projectFileName(PE.doc.name || "Untitled", "mesproj")), ff = /firefox/i.test(navigator.userAgent);
+			w.innerHTML = "<p><b>Your project will be downloaded as a file:</b> <i>" + fn + "</i>. That file <b>is</b> your project: every layer, group and text stays editable.</p>"
+				+ "<p><b>To keep working later:</b> open the editor and drop that file on it (or File → Open). It is usually in your <b>Downloads</b> folder.</p>"
+				+ "<p>Every Save makes a new copy; the browser adds (1), (2)… to the name. The newest one is your latest work.</p>"
+				+ (br ? "<p><b>Brave can save into the same file instead:</b> open <code>" + BRAVE_FLAG + "</code> (paste it into the address bar), set it to <b>Enabled</b> and relaunch Brave.</p>"
+					: "<p class=\"pe-hint2\">Chrome and Edge on a computer can save over the same file each time; " + (ff ? "Firefox" : "this browser") + " can't. If a Save window pops up every time, that is the browser asking where to put the download: pick a folder and press Save.</p>")
+				+ '<label class="pe-chk"><input type="checkbox" id="pe-dlnoask" checked> Got it: next time just download, without this message</label>';
+			var fin = function (m, v) { if (done) return; done = true; if (v && w.querySelector("#pe-dlnoask").checked) sset({ dlNoAsk: true }); m.close(); res(v); };
 			var btns = [{ label: "Cancel", act: function (m) { fin(m, false); } }];
 			if (br) btns.push({ label: "Copy the Brave setting link", act: function () { try { navigator.clipboard.writeText(BRAVE_FLAG); PE.toast("Copied: paste it into the address bar"); } catch (x) {} } });
-			btns.push({ label: "⬇ Download the project", primary: true, act: function (m) { fin(m, true); } });
-			PE.modal({ title: "Saving in this browser", body: w, onClose: function () { if (!done) { done = true; res(false); } }, buttons: btns });
+			btns.push({ label: "Download my project", primary: true, act: function (m) { fin(m, true); } });
+			PE.modal({ title: "Save your project", body: w, onClose: function () { if (!done) { done = true; res(false); } }, buttons: btns });
 		});
 	}
 	PE.downloadProjectZip = function () {

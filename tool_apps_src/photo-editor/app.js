@@ -9,7 +9,7 @@
 	function sget() { try { return JSON.parse(localStorage.getItem(KEY) || "{}") || {}; } catch (e) { return {}; } }
 	function sset(o) { try { var c = sget(); for (var k in o) c[k] = o[k]; localStorage.setItem(KEY, JSON.stringify(c)); } catch (e) {} }
 	PE.els = { root: root, main: $("pe-main"), over: $("pe-over"), textedit: $("pe-textedit"), stage: $("pe-stage") };
-	PE.toast = function (t) { var e = document.querySelector(".tu-toast"); if (!e) { e = document.createElement("div"); e.className = "tu-toast"; document.body.appendChild(e); } e.textContent = t; e.classList.add("tu-toast--show"); clearTimeout(PE.toast.t); PE.toast.t = setTimeout(function () { e.classList.remove("tu-toast--show"); }, 2600); };
+	PE.toast = function (t) { var e = document.querySelector(".tu-toast"), host = document.fullscreenElement || document.webkitFullscreenElement || document.body; if (!e) { e = document.createElement("div"); e.className = "tu-toast"; } if (e.parentNode !== host) host.appendChild(e); e.textContent = t; e.classList.add("tu-toast--show"); clearTimeout(PE.toast.t); PE.toast.t = setTimeout(function () { e.classList.remove("tu-toast--show"); }, 2600); };
 	var S = sget();
 
 	/* ---------- colours ---------- */
@@ -48,7 +48,8 @@
 		zoom: "Click to zoom in, Alt-click to zoom out. Ctrl + mouse wheel also zooms, and Ctrl+0 fits the picture to the window.",
 		layercrop: "Crops ONE layer without deleting anything (like Camtasia): drag the edges or corners of the purple box to hide the sides of the selected layer, drag inside the box to slide what shows. The hidden part is kept, so Show whole layer brings it back any time. Then use the Move tool to place the layer; the crop moves with it."
 	};
-	var UI = S.ui || { tw: false, sw: 17.5, side: "r", hide: false }; if (!UI.tws) UI.tws = 15.5; if (!UI.tside) UI.tside = "l";
+	var UI = S.ui || { tw: true, sw: 17.5, side: "r", hide: false }; if (!UI.tws) UI.tws = 15.5; if (!UI.tside) UI.tside = "l";
+	if (UI.twv !== 8) { UI.tw = true; UI.twv = 8; }   // round 8: the tool names show by default (people could not tell the icons apart); collapsing is still one click
 	function saveUI() { sset({ ui: UI }); }
 	function closeHelp() { var h = root.querySelector(".pe-help"); if (h) h.remove(); }
 	function showHelp(id, anchor) {
@@ -63,7 +64,7 @@
 	function applyUI() {
 		var main = root.querySelector(".pe-main"), tools = $("pe-tools"), side = $("pe-side");
 		tools.classList.toggle("pe-tools--wide", !!UI.tw); main.classList.toggle("pe-main--sl", UI.side === "l"); main.classList.toggle("pe-main--tr", UI.tside === "r"); main.classList.toggle("pe-main--shide", !!UI.hide);
-		side.style.width = UI.sw + "em"; tools.style.width = UI.tw ? UI.tws + "em" : ""; var tg = $("pe-ttoggle"); if (tg) { tg.textContent = UI.tw ? "« Collapse" : "»"; tg.title = UI.tw ? "Show only the icons" : "Show the tool names and help"; tg.setAttribute("aria-pressed", UI.tw ? "true" : "false"); }
+		side.style.width = UI.sw + "em"; tools.style.width = UI.tw ? UI.tws + "em" : ""; var tg = $("pe-ttoggle"); if (tg) { tg.innerHTML = UI.tw ? "« Hide names" : '<span aria-hidden="true">»</span><small>Names</small>'; tg.title = UI.tw ? "Show only the icons (more room for the picture)" : "Show the tool names and help"; tg.setAttribute("aria-pressed", UI.tw ? "true" : "false"); }
 		var ts = $("pe-tswap"); if (ts) ts.title = UI.tside === "r" ? "Move the toolbox to the left" : "Move the toolbox to the right";
 		var sw = $("pe-sswap"); if (sw) sw.title = UI.side === "l" ? "Move the panels to the right" : "Move the panels to the left";
 		var sh = $("pe-sshow"); if (sh) { sh.hidden = !UI.hide; sh.textContent = UI.side === "l" ? "Panels ›" : "‹ Panels"; }
@@ -107,9 +108,19 @@
 	var arranging = false, tdrag = null;
 	function toolLayout() { return P.normToolLayout(UI.tl, ORDER.filter(function (id) { return PE.tools[id]; }), TL_DEF); }
 	function saveLayout(L) { UI.tl = L; saveUI(); drawTools(); }
+	/* collapsed toolbox: the tool's name pops up at once beside the icon on hover or keyboard focus (a title tooltip takes a second and is easy to miss) */
+	var ttip = null;
+	function tipOff() { if (ttip) { ttip.remove(); ttip = null; } }
+	function tipOn(b) {
+		tipOff(); if (UI.tw || !b || !b.dataset.t || !PE.tools[b.dataset.t] || window.matchMedia("(max-width: 900px)").matches) return; var t = PE.tools[b.dataset.t], r = b.getBoundingClientRect(), rr = root.getBoundingClientRect();
+		ttip = el("div", "pe-ttip", esc(t.name) + (t.key ? " <kbd>" + esc(t.key.toUpperCase()) + "</kbd>" : "")); ttip.setAttribute("role", "tooltip"); root.appendChild(ttip);
+		var left = UI.tside === "r" ? r.left - rr.left - ttip.offsetWidth - 8 : r.right - rr.left + 8; ttip.style.left = Math.max(4, left) + "px"; ttip.style.top = (r.top - rr.top + r.height / 2 - ttip.offsetHeight / 2) + "px";
+	}
+	$("pe-tools").addEventListener("mouseover", function (e) { var b = e.target.closest && e.target.closest(".pe-tool"); if (b) tipOn(b); else tipOff(); });
+	$("pe-tools").addEventListener("mouseleave", tipOff); $("pe-tools").addEventListener("focusin", function (e) { var b = e.target.closest && e.target.closest(".pe-tool"); if (b) tipOn(b); }); $("pe-tools").addEventListener("focusout", tipOff); $("pe-tools").addEventListener("scroll", tipOff);
 	function toolRow(id) {
 		var t = PE.tools[id], row = el("div", "pe-trow"), b = el("button", "pe-tool"); row.dataset.t = id; b.type = "button"; b.dataset.t = id; b.title = t.name + " (" + t.key.toUpperCase() + ")"; b.setAttribute("aria-label", t.name); b.setAttribute("aria-pressed", PE.toolId === id ? "true" : "false");
-		b.innerHTML = '<span class="pe-ticon">' + esc(t.icon) + '</span><span class="pe-tname">' + esc(t.name.replace(/ \(.*\)$/, "")) + '</span><kbd class="pe-tkey">' + esc(t.key.toUpperCase()) + "</kbd>"; b.addEventListener("click", function () { if (!arranging) PE.setTool(id); });
+		b.innerHTML = '<span class="pe-ticon">' + (PE.toolIcon ? PE.toolIcon(id, t.icon) : esc(t.icon)) + '</span><span class="pe-tname">' + esc(t.name.replace(/ \(.*\)$/, "")) + '</span><kbd class="pe-tkey">' + esc(t.key.toUpperCase()) + "</kbd>"; b.addEventListener("click", function () { if (!arranging) PE.setTool(id); });
 		row.appendChild(b);
 		if (arranging) {
 			row.draggable = true; row.classList.add("is-arr");
@@ -148,7 +159,7 @@
 		});
 		if (arranging) {
 			var hw = el("div", "pe-tgrp pe-tgrp--hidden"); hw.dataset.g = "hidden"; hw.appendChild(el("div", "pe-tgh", '<span class="pe-tgn">Hidden tools (' + L.hidden.length + ")</span>"));
-			L.hidden.forEach(function (id) { var t = PE.tools[id], r = el("div", "pe-trow is-arr"), sb = el("button", "pe-tool"); sb.type = "button"; sb.title = "Show " + t.name + " again"; sb.innerHTML = '<span class="pe-ticon">' + esc(t.icon) + '</span><span class="pe-tname">' + esc(t.name.replace(/ \(.*\)$/, "")) + "</span>"; sb.addEventListener("click", function () { saveLayout(P.moveTool(toolLayout(), id, toolLayout().groups[0].id, -1)); }); var sh = el("button", "pe-thide", "＋"); sh.type = "button"; sh.title = "Show this tool again"; sh.setAttribute("aria-label", "Show " + t.name); sh.addEventListener("click", function () { sb.click(); }); r.appendChild(sb); r.appendChild(sh); hw.appendChild(r); });
+			L.hidden.forEach(function (id) { var t = PE.tools[id], r = el("div", "pe-trow is-arr"), sb = el("button", "pe-tool"); sb.type = "button"; sb.title = "Show " + t.name + " again"; sb.innerHTML = '<span class="pe-ticon">' + (PE.toolIcon ? PE.toolIcon(id, t.icon) : esc(t.icon)) + '</span><span class="pe-tname">' + esc(t.name.replace(/ \(.*\)$/, "")) + "</span>"; sb.addEventListener("click", function () { saveLayout(P.moveTool(toolLayout(), id, toolLayout().groups[0].id, -1)); }); var sh = el("button", "pe-thide", "＋"); sh.type = "button"; sh.title = "Show this tool again"; sh.setAttribute("aria-label", "Show " + t.name); sh.addEventListener("click", function () { sb.click(); }); r.appendChild(sb); r.appendChild(sh); hw.appendChild(r); });
 			hw.addEventListener("dragover", function (e) { if (tdrag) e.preventDefault(); }); hw.addEventListener("drop", function (e) { if (!tdrag) return; e.preventDefault(); var src = tdrag; tdrag = null; saveLayout(P.moveTool(toolLayout(), src, "hidden")); });
 			box.appendChild(hw);
 			var acts = el("div", "pe-tacts"), ng = el("button", "pe-btn pe-btn--sm", "+ New group"), rs = el("button", "pe-btn pe-btn--sm", "Reset"); ng.type = rs.type = "button"; ng.title = "Add an empty group: drag tools into it"; rs.title = "Back to the standard tool groups, nothing hidden";
@@ -175,6 +186,7 @@
 			if (u.type === "button") { var b = el("button", "pe-btn pe-btn--sm", esc(u.label)); b.type = "button"; b.addEventListener("mousedown", function (e) { e.preventDefault(); }); b.addEventListener("click", u.act); box.appendChild(b); return; }
 			var w = el("label", "pe-opt"), v = PE.optGet(id, u.k), inp; w.appendChild(el("span", "pe-opt-l", esc(u.label)));
 			if (u.type === "check") { inp = el("input"); inp.type = "checkbox"; inp.checked = !!v; inp.addEventListener("change", function () { PE.optSet(id, u.k, inp.checked); rebuildOpts(); }); }
+			else if (u.type === "select" && u.options === "fonts" && PE.fontButton) { inp = PE.fontButton(v, function (val) { PE.optSet(id, u.k, val); rebuildOpts(); }); }
 			else if (u.type === "select") { inp = el("select"); var opts = u.options === "fonts" ? PE.FONTS : u.options; opts.forEach(function (o) { var op = el("option", null, esc(o[1])); op.value = o[0]; inp.appendChild(op); }); inp.value = v; inp.addEventListener("change", function () { PE.optSet(id, u.k, u.num ? +inp.value : inp.value); rebuildOpts(); }); }
 			else if (u.type === "seg") { inp = el("span", "pe-seg"); u.options.forEach(function (o) { var b = el("button", null, esc(o[1])); b.type = "button"; b.setAttribute("aria-pressed", String(v) === String(o[0]) ? "true" : "false"); b.addEventListener("mousedown", function (e) { e.preventDefault(); }); b.addEventListener("click", function () { PE.optSet(id, u.k, o[0]); rebuildOpts(); }); inp.appendChild(b); }); }
 			else if (u.type === "color") { inp = el("input"); inp.type = "color"; inp.dataset.ck = "opt:" + id + ":" + u.k; inp.dataset.cname = u.label; inp.value = v; inp.addEventListener("input", function () { PE.optSet(id, u.k, inp.value); });
@@ -258,7 +270,7 @@
 	function makeRow(id, depth, on) {
 		var L0 = PE.layerById(id), grp = PE.isGroup(L0), hidden = !PE.effVisible(L0) && !grp ? true : !L0.visible, cur = function () { return PE.layerById(id); };
 		var row = el("div", "pe-layer" + (on ? " is-active" : "") + (hidden ? " is-hidden" : "") + (grp ? " is-group" : "")); row.draggable = true; row.dataset.id = id; row.style.paddingLeft = (0.3 + depth * 1.1) + "em";
-		var eye = el("button", "pe-eye", L0.visible ? "👁" : "—"); eye.type = "button"; eye.title = "Show / hide"; eye.addEventListener("click", function (e) { e.stopPropagation(); var L = cur(); if (!L) return; L.visible = !L.visible; PE.touch(L); PE.commit("Toggle visibility"); });
+		var eye = el("button", "pe-eye", PE.icon ? PE.icon(L0.visible ? "eye" : "eyeoff") : (L0.visible ? "👁" : "—")); eye.setAttribute("aria-label", (L0.visible ? "Hide " : "Show ") + L0.name); eye.setAttribute("aria-pressed", L0.visible ? "true" : "false"); eye.type = "button"; eye.title = "Show / hide"; eye.addEventListener("click", function (e) { e.stopPropagation(); var L = cur(); if (!L) return; L.visible = !L.visible; PE.touch(L); PE.commit("Toggle visibility"); });
 		row.appendChild(eye);
 		if (grp) { var ar = el("button", "pe-arrow", L0.collapsed ? "▸" : "▾"); ar.type = "button"; ar.title = L0.collapsed ? "Expand group" : "Collapse group"; ar.addEventListener("click", function (e) { e.stopPropagation(); var L = cur(); if (!L) return; L.collapsed = !L.collapsed; buildLayers(); }); row.appendChild(ar); var th0 = el("span", "pe-th pe-th--grp", "📁"); row.appendChild(th0); }
 		else { var th = el("span", "pe-th" + (L0.mask && !L0.editMask ? " is-paint" : "")); th.appendChild(thumbFor(L0)); if (L0.mask) th.title = L0.editMask ? "Click to paint on the picture again" : "You are painting on the picture"; row.appendChild(th); }
@@ -692,6 +704,23 @@ $("pe-share").addEventListener("click", function () { if (needDoc()) PE.dlgShare
 	var autoWin = false;
 	function toggleWin(auto) { var on = !root.classList.contains("pe-win"); root.classList.toggle("pe-win", on); document.documentElement.classList.toggle("pe-win-on", on); $("pe-winbtn").setAttribute("aria-pressed", on ? "true" : "false"); $("pe-winbtn").textContent = on ? "⤡ Exit full window" : "⤢ Full window"; if (auto !== true) sset({ win: on }); setTimeout(function () { resize(); if (PE.doc) PE.fit(); }, 30); }
 	$("pe-winbtn").addEventListener("click", function () { toggleWin(); });
+	/* real full screen (round 8): the editor alone on the whole screen (no browser bars). It uses the Full window layout while it is on, and puts the
+	   window back the way it was when you leave (Esc, the button, or Shift+F). */
+	var fsAddedWin = false;
+	function fsEl() { return document.fullscreenElement || document.webkitFullscreenElement || null; }
+	function toggleFs() {
+		if (fsEl()) { (document.exitFullscreen || document.webkitExitFullscreen).call(document); return; }
+		var rq = root.requestFullscreen || root.webkitRequestFullscreen; if (!rq) { PE.toast("This browser has no full screen mode: use Full window (F) instead"); return; }
+		try { var pr = rq.call(root); if (pr && pr.catch) pr.catch(function () { PE.toast("The browser did not allow full screen here"); }); } catch (x) { PE.toast("The browser did not allow full screen here"); }
+	}
+	function onFs() {
+		var on = fsEl() === root; root.classList.toggle("pe-fs", on); var b = $("pe-fsbtn"); if (b) { b.setAttribute("aria-pressed", on ? "true" : "false"); b.lastChild.textContent = on ? " Exit full screen" : " Full screen"; b.title = on ? "Leave full screen (Esc or Shift+F)" : "Full screen: the editor fills the whole screen (Shift+F)"; }
+		if (on && !root.classList.contains("pe-win")) { fsAddedWin = true; toggleWin(true); } else if (!on && fsAddedWin) { fsAddedWin = false; if (root.classList.contains("pe-win")) toggleWin(true); }
+		setTimeout(function () { resize(); if (PE.doc) PE.fit(); }, 60);
+	}
+	document.addEventListener("fullscreenchange", onFs); document.addEventListener("webkitfullscreenchange", onFs);
+	if ($("pe-fsbtn")) $("pe-fsbtn").addEventListener("click", toggleFs);
+	PE.toggleFullscreen = toggleFs;
 	// no automatic Full window when a picture is opened (it hid the sidebar and the Standard | Wide | Theatre switch): Full window stays one click away (key F) and a manual choice is remembered
 
 	/* ---------- keyboard ---------- */
@@ -717,7 +746,7 @@ $("pe-share").addEventListener("click", function () { if (needDoc()) PE.dlgShare
 		if (k === "Delete" || k === "Backspace") { e.preventDefault(); if (PE.sel) clearSel(); else PE.deleteLayer(); return; }
 		if (k.indexOf("Arrow") === 0 && PE.toolId === "move") { e.preventDefault(); var n = e.shiftKey ? 10 : 1; PE.nudge(k === "ArrowLeft" ? -n : k === "ArrowRight" ? n : 0, k === "ArrowUp" ? -n : k === "ArrowDown" ? n : 0); return; }
 		if (k === "[") { PE.stepBrushSize(-1); return; } if (k === "]") { PE.stepBrushSize(1); return; }
-		if (k === ",") { stepComp(-1); return; } if (k === ".") { stepComp(1); return; } if (low === "x") { swapColors(); return; } if (low === "d") { PE.fg = "#000000"; PE.bg = "#ffffff"; PE.emit("color"); return; } if (low === "f") { toggleWin(); return; }
+		if (k === ",") { stepComp(-1); return; } if (k === ".") { stepComp(1); return; } if (low === "x") { swapColors(); return; } if (low === "d") { PE.fg = "#000000"; PE.bg = "#ffffff"; PE.emit("color"); return; } if (low === "f") { if (e.shiftKey) toggleFs(); else toggleWin(); return; }
 		for (var id in PE.tools) if (PE.tools[id].key === low) { PE.setTool(id); return; }
 	});
 	document.addEventListener("keyup", function (e) { if (e.key === " ") { PE.setSpace(false); PE.spaceHeld = false; setCursor(); PE.invalidateOverlay(); } });

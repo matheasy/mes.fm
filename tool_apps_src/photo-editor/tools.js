@@ -611,9 +611,12 @@
 	PE.on("view", placeBar);
 	function applyPick() {
 		var p = pk, r = pickReq; pk = null; hideBar(); PE.invalidateOverlay(); if (!p || !p.info) return;
-		if (r) { pickReq = null; r.apply(p.info.hex, p.alt); if (r.prev && PE.toolId === "eyedropper") PE.setTool(r.prev); PE.toast("Picked " + p.info.hex.toUpperCase() + (r.label ? " for the " + r.label : "")); }
+		// go back to the tool you had BEFORE handing over the colour: its option bar (and the colour well the pick was for) only exists again then (round 8: picking
+		// from the colour window of a Text / Shape colour did nothing, because the well was looked up while the Eyedropper's option bar was showing)
+		if (r) { pickReq = null; if (r.prev && PE.toolId === "eyedropper") PE.setTool(r.prev); r.apply(p.info.hex, p.alt); PE.toast("Picked " + p.info.hex.toUpperCase() + (r.label ? " for the " + r.label : "")); }
 		else if (p.alt) PE.setBg(p.info.hex); else PE.setFg(p.info.hex);
 	}
+	PE.pickPending = function () { return !!pickReq && PE.toolId === "eyedropper"; };
 	PE.pickColorFromImage = function (req) {
 		if (!PE.doc) return; var prev = PE.toolId === "eyedropper" ? (pickReq && pickReq.prev) || null : PE.toolId;
 		PE.setTool("eyedropper"); pickReq = Object.assign({}, req, { prev: prev }); PE.toast("Press and drag over the picture, let go to use the colour" + (req.label ? " (" + req.label + ")" : "") + ". Esc cancels.");

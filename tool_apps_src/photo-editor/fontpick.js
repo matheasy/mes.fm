@@ -1,0 +1,172 @@
+/* MES Photo Editor round 8 -- the font picker (PE.fontButton): a button showing the font in its own face; it opens a searchable list where every font
+ * is drawn in itself. Sources: the basic stacks (PE.FONTS), fonts found on this computer (a canvas width probe of ~290 common Windows / Mac / Linux /
+ * Office names, so Firefox and Opera users get theirs too; plus queryLocalFonts() in Chrome / Edge behind the "Show all fonts on my computer"
+ * button), fonts loaded from a file, and ~530 Google Fonts families. A Google family is fetched only when its row scrolls into view (a tiny preview
+ * with just the letters of its name, under a private alias so it never shadows the real font) or when it is picked (the whole family, bold and
+ * italic when it has them). Text layers re-render when their font finishes loading; projects keep the family name (PE.ensureFonts on load / undo). */
+(function () {
+	"use strict";
+	var PE = window.PE, F = window.MESFontCat; if (!PE || !F) return;
+	var KEY = "mes-photo-editor:v1";
+	function sget() { try { return JSON.parse(localStorage.getItem(KEY) || "{}") || {}; } catch (e) { return {}; } }
+	function sset(o) { try { var c = sget(); for (var k in o) c[k] = o[k]; localStorage.setItem(KEY, JSON.stringify(c)); } catch (e) {} }
+	function el(t, c, h) { var e = document.createElement(t); if (c) e.className = c; if (h != null) e.innerHTML = h; return e; }
+	function esc(s) { return String(s).replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;"); }
+
+	/* ---------- which fonts exist ---------- */
+	var fonts = null, byName = {};
+	function add(name, cat, src, value) { var k = name.toLowerCase(); if (byName[k]) return byName[k]; var f = { name: name, cat: cat, src: src, value: value || F.stack(name, cat) }; byName[k] = f; fonts.push(f); return f; }
+	var mctx = null, SAMPLE = "mmmmmmmmmmlli0OoWw@#", BASES = ["monospace", "sans-serif", "serif"], baseW = null;
+	function width(f) { mctx.font = f; return mctx.measureText(SAMPLE).width; }
+	function installed(name) { if (!mctx) { mctx = document.createElement("canvas").getContext("2d"); baseW = BASES.map(function (b) { return width("72px " + b); }); } for (var i = 0; i < BASES.length; i++) if (Math.abs(width("72px " + F.quote(name) + ", " + BASES[i]) - baseW[i]) > 0.01) return true; return false; }
+	function build() {
+		if (fonts) return; fonts = [];
+		(PE.FONTS || []).forEach(function (x) { var nm = x[1].replace(/ \(yours\)$/, ""), cat = /mono|courier/i.test(x[0]) ? "mono" : /cursive/i.test(x[0]) ? "hand" : /serif/.test(x[0]) && !/sans-serif/.test(x[0]) ? "serif" : /impact/i.test(x[0]) ? "display" : "sans"; add(nm, cat, / \(yours\)$/.test(x[1]) ? "file" : "basic", x[0]); });
+		F.LOCAL.forEach(function (x) { if (installed(x[0])) add(x[0], x[1], "local"); });
+		(sget().lfonts || []).forEach(function (n) { if (typeof n === "string" && n) add(n, F.guessCat(n), "local"); });
+		F.GOOGLE.forEach(function (x) { add(x[0], x[1], "google"); });
+	}
+	PE.fontList = function () { build(); return fonts; };
+	PE.on("fonts", function () { if (!fonts) return; (PE.FONTS || []).forEach(function (x) { if (/ \(yours\)$/.test(x[1])) { var f = add(x[1].replace(/ \(yours\)$/, ""), "sans", "file", x[0]); f.src = "file"; f.value = x[0]; } }); });
+	/* Chrome / Edge: every font on the computer (asks for permission once); the names are kept in this browser so the list is there next time */
+	function queryLocal() {
+		if (!window.queryLocalFonts) { PE.toast("This browser can't list every font. Fonts it can find on your computer are already in the list."); return Promise.resolve(0); }
+		return window.queryLocalFonts().then(function (fd) {
+			build(); var seen = {}, names = []; fd.forEach(function (d) { if (d.family && !seen[d.family]) { seen[d.family] = 1; names.push(d.family); } });
+			var n0 = fonts.length; names.forEach(function (n) { var f = byName[n.toLowerCase()]; if (f && f.src === "google") { f.src = "local"; f.pv = null; } else add(n, F.guessCat(n), "local"); }); sset({ lfonts: names.slice(0, 3000) });
+			PE.toast(names.length + " fonts on this computer" + (fonts.length > n0 ? " (" + (fonts.length - n0) + " new in the list)" : "")); return names.length;
+		}).catch(function (x) { PE.toast(x && x.name === "NotAllowedError" ? "The browser did not allow it (you can allow fonts in the site settings)" : "Could not read the fonts: " + (x && x.message || x)); return 0; });
+	}
+
+	/* ---------- Google Fonts: previews and the real thing ---------- */
+	var PV_ABC = "AaBbCcDdEeFfGgHhIiJjKkLlMmNnOoPpQqRrSsTtUuVvWwXxYyZz0123456789 .,:;!?'&-";   // a preview has the letters of a typed sample too
+	var pvQ = [], pvBusy = 0, loaded = {}, loading = {};
+	function pvAlias(f) { return "MESpv " + f.name.replace(/[^\w ]/g, ""); }
+	function previewFont(f, cb) {
+		if (f.src !== "google" || f.pv === "ok" || f.pv === "bad" || loaded[f.name.toLowerCase()]) { cb && cb(); return; }
+		if (f.pv === "q") return; f.pv = "q"; pvQ.push({ f: f, cb: cb }); pump();
+	}
+	function pump() {
+		while (pvBusy < 6 && pvQ.length) (function (job) {
+			pvBusy++; var f = job.f, done = function (ok) { f.pv = ok ? "ok" : "bad"; pvBusy--; if (job.cb) job.cb(); pump(); };
+			fetch(F.googleUrls(f.name, f.name + PV_ABC)[0]).then(function (r) { if (!r.ok) throw new Error(r.status); return r.text(); }).then(function (css) {
+				var u = F.firstFontUrl(css); if (!u || !window.FontFace) throw new Error("no font"); var ff = new FontFace(pvAlias(f), "url(" + u + ")"); return ff.load().then(function () { document.fonts.add(ff); done(true); });
+			}).catch(function () { done(false); });
+		})(pvQ.shift());
+	}
+	/* load a Google family for real (bold / italic too when the family has them); resolves true when it can be drawn */
+	PE.loadGoogleFont = function (name) {
+		var k = String(name).toLowerCase(); if (loaded[k]) return Promise.resolve(true); if (loading[k]) return loading[k];
+		var urls = F.googleUrls(name), i = 0;
+		function next() {
+			if (i >= urls.length) return Promise.resolve(false); var u = urls[i++];
+			return fetch(u).then(function (r) { if (!r.ok) return next(); return r.text().then(function (css) {
+				var st = el("style"); st.setAttribute("data-gfont", name); st.textContent = css; document.head.appendChild(st);
+				var q = F.quote(name); return Promise.all(["16px " + q, "bold 16px " + q, "italic 16px " + q].map(function (s) { return document.fonts.load(s).catch(function () {}); })).then(function () { return true; });
+			}); }).catch(function () { return next(); });
+		}
+		loading[k] = next().then(function (ok) { delete loading[k]; if (ok) { loaded[k] = true; rerender(name); } return ok; }); return loading[k];
+	};
+	/* a font finished loading: every text layer that uses it is drawn again (no undo step: the text itself did not change) */
+	function rerender(name) {
+		if (!PE.doc || !PE.renderText) return; var k = name.toLowerCase(), any = false;
+		PE.doc.layers.forEach(function (L) { if (L.type === "text" && L.text && F.familyOf(L.text.font).toLowerCase() === k) { L._lay = null; PE.renderText(L); L.rev++; any = true; } });
+		if (any) { PE.invalidate(); PE.emit("layers"); }
+		document.querySelectorAll(".pe-fbtn").forEach(function (b) { if (b.dataset.fam && b.dataset.fam.toLowerCase() === k) b.style.fontFamily = F.quote(name) + ", sans-serif"; });
+	}
+	/* make sure every Google font used by the text layers is loaded (after opening a project, undo, paste...) */
+	PE.ensureFonts = function () {
+		if (!PE.doc) return; var seen = {};
+		PE.doc.layers.forEach(function (L) { if (L.type !== "text" || !L.text) return; var n = F.familyOf(L.text.font), k = n.toLowerCase(); if (seen[k] || loaded[k] || loading[k] || !F.googleCat(n)) return; seen[k] = 1; if (installed(n)) { loaded[k] = true; return; } PE.loadGoogleFont(n); });
+	};
+	var ensT = 0; PE.on("layers", function () { clearTimeout(ensT); ensT = setTimeout(PE.ensureFonts, 50); });
+
+	function recent() { var r = sget().frecent; return Array.isArray(r) ? r.filter(function (x) { return typeof x === "string"; }) : []; }
+	function faceOf(f) { if (f.src === "google" && !loaded[f.name.toLowerCase()]) return f.pv === "ok" ? "'" + pvAlias(f) + "', sans-serif" : null; return f.value; }
+
+	/* ---------- the button in the option bar ---------- */
+	PE.fontButton = function (value, onPick) {
+		build(); var fam = F.familyOf(value), f = byName[fam.toLowerCase()];
+		var b = el("button", "pe-fbtn"); b.type = "button"; b.dataset.noico = "1"; b.dataset.fam = fam; b.setAttribute("aria-haspopup", "listbox"); b.title = "Font: " + fam + " (click for the list: search, preview, " + fonts.length + " fonts)";
+		b.innerHTML = '<span class="pe-fbtn-n"></span><span class="pe-fbtn-a" aria-hidden="true">▾</span>'; b.firstChild.textContent = fam;
+		var setFace = function () { var face = f ? faceOf(f) : value; b.firstChild.style.fontFamily = face || "inherit"; };
+		if (f && f.src === "google" && !loaded[f.name.toLowerCase()]) { previewFont(f, setFace); if (PE.doc) PE.loadGoogleFont(f.name); } setFace();
+		b.addEventListener("mousedown", function (e) { e.preventDefault(); });
+		b.addEventListener("click", function (e) { e.preventDefault(); openPicker(b, value, onPick); });
+		return b;
+	};
+
+	/* ---------- the list ---------- */
+	var pop = null;
+	function closePicker() { if (!pop) return; pop.el.remove(); document.removeEventListener("pointerdown", pop.out, true); var b = pop.btn; pop = null; if (b && b.isConnected) b.focus({ preventScroll: true }); }
+	PE.fontPickerClose = closePicker;
+	function openPicker(btn, value, onPick) {
+		if (pop) { var same = pop.btn === btn; closePicker(); if (same) return; }
+		build(); var ui = sget().fpick || {}, st = { q: "", cat: ui.cat || "all", src: ui.src || "all", hi: 0, list: [] };
+		var e = el("div", "pe-fpop"); e.setAttribute("role", "dialog"); e.setAttribute("aria-label", "Choose a font"); e.dataset.noico = "1";
+		e.innerHTML = '<div class="pe-fp-h"><input type="search" class="pe-fp-q" placeholder="Search ' + fonts.length + ' fonts…" aria-label="Search fonts" autocomplete="off" spellcheck="false"><button type="button" class="pe-fp-x" aria-label="Close" title="Close (Esc)">×</button></div>'
+			+ '<div class="pe-fp-chips pe-fp-cats" role="group" aria-label="Kind of font"></div><div class="pe-fp-chips pe-fp-srcs" role="group" aria-label="Where the font comes from"></div>'
+			+ '<div class="pe-fp-sample"><label>Sample <input type="text" class="pe-fp-st" maxlength="40" placeholder="(the font name)" aria-label="Sample text shown in every font"></label></div>'
+			+ '<div class="pe-fp-list" role="listbox" tabindex="-1" aria-label="Fonts"></div><div class="pe-fp-f"><span class="pe-fp-n"></span><span class="pe-fp-b"></span></div>';
+		(PE.els.root || document.body).appendChild(e);
+		var q = e.querySelector(".pe-fp-q"), listEl = e.querySelector(".pe-fp-list"), cnt = e.querySelector(".pe-fp-n"), sampleIn = e.querySelector(".pe-fp-st");
+		sampleIn.value = ui.sample || "";
+		var cats = e.querySelector(".pe-fp-cats"), srcs = e.querySelector(".pe-fp-srcs");
+		F.CATS.forEach(function (c) { var b = el("button", null, esc(c[1])); b.type = "button"; b.dataset.v = c[0]; cats.appendChild(b); });
+		[["all", "All"], ["recent", "Recent"], ["local", "On this computer"], ["google", "Google Fonts"]].forEach(function (c) { var b = el("button", null, esc(c[1])); b.type = "button"; b.dataset.v = c[0]; srcs.appendChild(b); });
+		var fb = e.querySelector(".pe-fp-b");
+		if (window.queryLocalFonts) { var lb = el("button", "pe-btn pe-btn--sm", "Show all fonts on my computer"); lb.type = "button"; lb.title = "Chrome and Edge can list every installed font (the browser asks once)"; lb.addEventListener("click", function () { queryLocal().then(function () { st.src = "local"; render(true); }); }); fb.appendChild(lb); }
+		var ff = el("button", "pe-btn pe-btn--sm", "Load a font file…"); ff.type = "button"; ff.title = "Use a .ttf, .otf or .woff file from your computer"; ff.addEventListener("click", function () { closePicker(); PE.pickFontFile && PE.pickFontFile(); }); fb.appendChild(ff);
+		// previews only for the rows on screen (and a few around them): measured on render and while scrolling (no IntersectionObserver: it does not run in some background tabs)
+		var io = null, scT = 0;
+		function scanVisible() { var lr = listEl.getBoundingClientRect(), top = lr.top - 200, bot = lr.bottom + 200, kids = listEl.children, lo = 0, hi = kids.length - 1;
+			while (lo < hi) { var mid = (lo + hi) >> 1; if (kids[mid].getBoundingClientRect().bottom < top) lo = mid + 1; else hi = mid; }
+			for (var i = lo; i < kids.length; i++) { var r = kids[i], b = r.getBoundingClientRect(); if (b.top > bot) break; if (r._f && r._f.src === "google" && !r._f.pv) (function (row) { previewFont(row._f, function () { paintRow(row); }); })(r); } }
+		listEl.addEventListener("scroll", function () { clearTimeout(scT); scT = setTimeout(scanVisible, 60); });
+		function paintRow(r) { var face = faceOf(r._f); r.firstChild.style.fontFamily = face || "inherit"; r.classList.toggle("is-wait", !face && r._f.pv !== "bad"); r.classList.toggle("is-bad", r._f.pv === "bad"); }
+		function pick(f) {
+			sset({ frecent: F.pushRecent(recent(), f.value, 12) }); closePicker(); onPick(f.value);
+			if (f.src === "google" && !loaded[f.name.toLowerCase()]) { PE.toast("Loading " + f.name + " from Google Fonts…"); PE.loadGoogleFont(f.name).then(function (ok) { if (!ok) PE.toast("Could not load " + f.name + " (offline?): a similar font is used for now"); }); }
+		}
+		function render(keepScroll) {
+			Array.prototype.forEach.call(cats.children, function (b) { b.setAttribute("aria-pressed", b.dataset.v === st.cat ? "true" : "false"); });
+			Array.prototype.forEach.call(srcs.children, function (b) { b.setAttribute("aria-pressed", b.dataset.v === st.src ? "true" : "false"); });
+			st.list = F.filter(fonts, st.q, st.cat, st.src, recent()); listEl.innerHTML = ""; if (!keepScroll) listEl.scrollTop = 0;
+			var cur = F.familyOf(value).toLowerCase(), sample = sampleIn.value.trim(), frag = document.createDocumentFragment();
+			st.list.forEach(function (f, i) {
+				var r = el("div", "pe-frow" + (f.name.toLowerCase() === cur ? " is-cur" : "")); r.setAttribute("role", "option"); r.id = "pe-fr-" + i; r._f = f; r.dataset.i = i;
+				var nm = el("span", "pe-frow-s"); nm.textContent = sample || f.name; r.appendChild(nm);
+				var meta = el("span", "pe-frow-m"); meta.textContent = (sample ? f.name + " · " : "") + (f.src === "google" ? "Google" : f.src === "file" ? "your file" : f.src === "basic" ? "basic" : "this computer"); r.appendChild(meta);
+				r.title = f.name + (f.src === "google" ? " (Google Fonts: loaded when you pick it)" : ""); paintRow(r); frag.appendChild(r);
+			});
+			listEl.appendChild(frag); if (!st.list.length) listEl.innerHTML = '<div class="pe-fp-none">No font matches. Try another word or "All".</div>';
+			cnt.textContent = st.list.length + (st.list.length === 1 ? " font" : " fonts"); st.hi = Math.max(0, Math.min(st.hi, st.list.length - 1)); hilite(false);
+			sset({ fpick: { cat: st.cat, src: st.src, sample: sampleIn.value.trim() } }); setTimeout(scanVisible, 0);
+		}
+		function hilite(scroll) { Array.prototype.forEach.call(listEl.querySelectorAll(".is-hi"), function (r) { r.classList.remove("is-hi"); r.setAttribute("aria-selected", "false"); }); var r = listEl.children[st.hi]; if (r && r._f) { r.classList.add("is-hi"); r.setAttribute("aria-selected", "true"); listEl.setAttribute("aria-activedescendant", r.id); if (scroll) r.scrollIntoView({ block: "nearest" }); } }
+		cats.addEventListener("click", function (ev) { var b = ev.target.closest("button"); if (!b) return; st.cat = b.dataset.v; st.hi = 0; render(); q.focus(); });
+		srcs.addEventListener("click", function (ev) { var b = ev.target.closest("button"); if (!b) return; st.src = b.dataset.v; st.hi = 0; render(); q.focus(); });
+		var qt = 0; q.addEventListener("input", function () { clearTimeout(qt); qt = setTimeout(function () { st.q = q.value; st.hi = 0; render(); }, 60); });
+		var stt = 0; sampleIn.addEventListener("input", function () { clearTimeout(stt); stt = setTimeout(function () { render(true); }, 150); });
+		listEl.addEventListener("click", function (ev) { var r = ev.target.closest(".pe-frow"); if (r && r._f) pick(r._f); });
+		e.addEventListener("keydown", function (ev) {
+			ev.stopPropagation(); var n = st.list.length;
+			if (ev.key === "Escape") { ev.preventDefault(); closePicker(); }
+			else if (ev.key === "ArrowDown" || ev.key === "ArrowUp") { ev.preventDefault(); if (n) { st.hi = (st.hi + (ev.key === "ArrowDown" ? 1 : -1) + n) % n; hilite(true); } }
+			else if (ev.key === "PageDown" || ev.key === "PageUp") { ev.preventDefault(); if (n) { st.hi = Math.max(0, Math.min(n - 1, st.hi + (ev.key === "PageDown" ? 10 : -10))); hilite(true); } }
+			else if (ev.key === "Enter" && ev.target !== sampleIn) { ev.preventDefault(); if (st.list[st.hi]) pick(st.list[st.hi]); }
+		});
+		e.querySelector(".pe-fp-x").addEventListener("click", closePicker);
+		var out = function (ev) { if (!pop || ev.target.closest(".pe-fpop") || ev.target.closest(".pe-fbtn") === btn) return; closePicker(); };
+		document.addEventListener("pointerdown", out, true);
+		pop = { el: e, btn: btn, io: io, out: out };
+		// place it under the button (fixed, so it works in Full window and full screen too); on a phone it fills the width
+		var r = btn.getBoundingClientRect(), w = Math.min(380, window.innerWidth - 16), h = Math.min(520, window.innerHeight - 16);
+		e.style.width = w + "px"; e.style.maxHeight = h + "px"; var x = Math.max(8, Math.min(r.left, window.innerWidth - w - 8)), y = r.bottom + 4; if (y + 260 > window.innerHeight) y = Math.max(8, window.innerHeight - h - 8);
+		e.style.left = x + "px"; e.style.top = y + "px"; e.style.maxHeight = Math.min(h, window.innerHeight - y - 8) + "px";
+		render(); var ci = st.list.findIndex(function (f) { return f.name.toLowerCase() === F.familyOf(value).toLowerCase(); }); if (ci >= 0) { st.hi = ci; hilite(true); }
+		q.focus({ preventScroll: true });
+	}
+	window.addEventListener("resize", function () { if (pop) closePicker(); });
+	window.addEventListener("scroll", function (e) { if (pop && !(e.target && e.target.closest && e.target.closest(".pe-fpop"))) closePicker(); }, true);   // the page scrolled away from the button
+})();

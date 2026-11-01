@@ -100,6 +100,7 @@
 	}, true);
 	document.addEventListener("pointerdown", function (e) {
 		if (!pop || e.target.closest(".pe-cpop") || (e.target.tagName === "INPUT" && e.target.type === "color")) return;
+		if (PE.pickPending && PE.pickPending()) return;   // picking a colour from the picture for this window: the click on the picture must not close it
 		if (!findInput()) { PE.colorPopClose(); return; }   // its colour well went away (a dialog was closed)
 		if (!pop.pinned) PE.colorPopClose();
 	}, true);

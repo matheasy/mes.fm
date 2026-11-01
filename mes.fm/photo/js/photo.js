@@ -375,6 +375,21 @@ var MESPixel = (function () {
 	function scaleAbout(p, a, f) { return a + (p - a) * f; }
 	/* word wrap that remembers where each line came from in the string: [{text, start, end}] (end = start + text.length; a wrapped line loses its trailing spaces).
 	 * measure(s, start) = width of s, which begins at string index start (rich text: bold / italic parts measure wider) */
+	/* a text layer re-rendered at a new size: how far its centre moves (in the layer's own pixels) so the text keeps its anchor: left-aligned text keeps
+	 * its left edge, centred text its centre, right-aligned text its right edge; the top stays put. o / n = {w, h, pad, mw} before / after (canvas size,
+	 * padding round the text, text box width); without an old pad / mw (first render) the canvas edges are used, as before round 8. */
+	function textAnchorShift(align, o, n) {
+		var f = align === "center" ? 0.5 : align === "right" ? 1 : 0, known = o.pad != null && o.mw != null;
+		var ax0 = known ? o.pad + f * o.mw : f * o.w, ax1 = known ? n.pad + f * n.mw : f * n.w, ay0 = known ? o.pad : 0, ay1 = known ? n.pad : 0;
+		return { dx: (ax0 - o.w / 2) - (ax1 - n.w / 2), dy: (ay0 - o.h / 2) - (ay1 - n.h / 2) };
+	}
+	/* layer-panel state that is not part of the picture (is a group folded?) survives undo / redo / history clicks: copy it, by layer id, from the
+	 * layers on screen onto the restored ones; layers that did not exist on screen keep what the snapshot had */
+	function carryUiState(cur, next, keys) {
+		var by = {}; (cur || []).forEach(function (L) { by[L.id] = L; });
+		(next || []).forEach(function (L) { var c = by[L.id]; if (!c) return; keys.forEach(function (k) { if (k in c) L[k] = c[k]; }); });
+		return next;
+	}
 	function wrapLines(str, lim, measure) {
 		str = String(str == null ? "" : str); var out = [], pos = 0;
 		str.split("\n").forEach(function (para) {
@@ -815,7 +830,7 @@ var MESPixel = (function () {
 	}
 
 	var api = { FXDEF: FXDEF, FXKEYS: FXKEYS, fxNorm: fxNorm, fxAny: fxAny, fxAngle: fxAngle, fxOffset: fxOffset, fxReach: fxReach, sdField: sdField, sdCover: sdCover, blurF: blurF, shiftF: shiftF, gradAt: gradAt, gradPlane: gradPlane, bevelPlanes: bevelPlanes, alphaBox: alphaBox, fxPlanes: fxPlanes, fxFromPsd: fxFromPsd, fxToPsd: fxToPsd, colorFromPsd: colorFromPsd, modeFromPsd: modeFromPsd, modeToPsd: modeToPsd, rgbToHsv: rgbToHsv, hsvToRgb: hsvToRgb, parseColor: parseColor, lightness: lightness, edt: edt, outlineAlpha: outlineAlpha, normToolLayout: normToolLayout, moveTool: moveTool, clampCrop: clampCrop, dragCrop: dragCrop, shiftCrop: shiftCrop, projectKind: projectKind, projectBase: projectBase, projectFileName: projectFileName, isZipBytes: isZipBytes, zipEntries: zipEntries, projectPrefix: projectPrefix, pruneRecent: pruneRecent, upsertRecent: upsertRecent, agoText: agoText, diskChanged: diskChanged, layerFileNames: layerFileNames, newProjectId: newProjectId,
-		unionBox: unionBox, boxesTouch: boxesTouch, rectFrom: rectFrom, snapTargets: snapTargets, snapAxis: snapAxis, snapBox: snapBox, guidesOn: guidesOn, linSolve: linSolve, scaleAbout: scaleAbout, wrapLines: wrapLines, richMask: richMask, richEdit: richEdit, richSet: richSet, richAll: richAll, richNorm: richNorm, richSegs: richSegs, fitFontSize: fitFontSize, folderProject: folderProject, caretLine: caretLine, hitInLine: hitInLine, wordAt: wordAt, describeSource: describeSource, bytesText: bytesText, panelClamp: panelClamp, panelKey: panelKey, clamp: clamp, hexToRgb: hexToRgb, rgbToHex: rgbToHex, rgbToHsl: rgbToHsl, hslToRgb: hslToRgb, histogram: histogram, identityLUT: identityLUT, applyLUT: applyLUT, levelsLUT: levelsLUT, curveLUT: curveLUT,
+		unionBox: unionBox, boxesTouch: boxesTouch, rectFrom: rectFrom, snapTargets: snapTargets, snapAxis: snapAxis, snapBox: snapBox, guidesOn: guidesOn, linSolve: linSolve, scaleAbout: scaleAbout, wrapLines: wrapLines, textAnchorShift: textAnchorShift, carryUiState: carryUiState, richMask: richMask, richEdit: richEdit, richSet: richSet, richAll: richAll, richNorm: richNorm, richSegs: richSegs, fitFontSize: fitFontSize, folderProject: folderProject, caretLine: caretLine, hitInLine: hitInLine, wordAt: wordAt, describeSource: describeSource, bytesText: bytesText, panelClamp: panelClamp, panelKey: panelKey, clamp: clamp, hexToRgb: hexToRgb, rgbToHex: rgbToHex, rgbToHsl: rgbToHsl, hslToRgb: hslToRgb, histogram: histogram, identityLUT: identityLUT, applyLUT: applyLUT, levelsLUT: levelsLUT, curveLUT: curveLUT,
 		brightnessContrast: brightnessContrast, exposure: exposure, hueSat: hueSat, vibrance: vibrance, temperature: temperature, invert: invert, grayscale: grayscale, sepia: sepia, threshold: threshold, posterize: posterize,
 		gaussianBlur: gaussianBlur, boxBlur: boxBlur, unsharp: unsharp, noise: noise, pixelate: pixelate, vignette: vignette, convolve: convolve, floodMask: floodMask, growShrinkMask: growShrinkMask, featherMask: featherMask, invertMask: invertMask,
 		maskBounds: maskBounds, opaqueBounds: opaqueBounds, blendByMask: blendByMask, autoLevels: autoLevels, premultiply: premultiply, unpremultiply: unpremultiply };
@@ -1012,7 +1027,9 @@ var MESPixel = (function () {
 			if (sw > 0) { x.strokeStyle = t.stroke; x.lineWidth = sw * 2; draw(function (g) { x.strokeText(g.txt, g.x, py); }); bars(function (a, b, w, h) { x.strokeRect(a, b, w, h); }); }
 			x.fillStyle = t.color; draw(function (g) { x.fillText(g.txt, g.x, py); }); bars(function (a, b, w, h) { x.fillRect(a, b, w, h); });
 		});
-		L._pad = pad; var dx = (W - oldW) / 2, dy = (H - oldH) / 2, m6 = matrix(L);      // keep the top-left corner where it was
+		// keep the text's anchor where it was (round 8): left-aligned = its left edge, centred = its centre, right-aligned = its right edge; the top stays put
+		var sh = P.textAnchorShift(t.align, { w: oldW, h: oldH, pad: L._pad, mw: L._amw }, { w: W, h: H, pad: pad, mw: mw }), dx = sh.dx, dy = sh.dy, m6 = matrix(L);
+		L._pad = pad; L._amw = mw;
 		L.cx += m6[0] * dx + m6[2] * dy; L.cy += m6[1] * dx + m6[3] * dy; L.canvas = c; L.rev++;
 		if (L.mask) { L.mask = null; } if (L.crop) L.crop = P.clampCrop(L.crop, W, H);
 	};
@@ -1200,7 +1217,7 @@ var MESPixel = (function () {
 	var H = PE.hist = { stack: [], idx: -1 };
 	function snapLayer(L) {
 		var s = L._snap; if (!s || s.rev !== L.rev || (L.mask ? !s.m : !!s.m)) { s = L._snap = { rev: L.rev, c: clone(L.canvas), m: L.mask ? clone(L.mask) : null }; }
-		return { meta: { id: L.id, group: L.group, collapsed: L.collapsed, name: L.name, type: L.type, cx: L.cx, cy: L.cy, sx: L.sx, sy: L.sy, rot: L.rot, visible: L.visible, opacity: L.opacity, blend: L.blend, locked: L.locked, text: L.text ? JSON.parse(JSON.stringify(L.text)) : null, eq: L.eq ? JSON.parse(JSON.stringify(L.eq)) : null, editMask: L.editMask, maskOff: !!L.maskOff, src: L.src || null, crop: L.crop ? Object.assign({}, L.crop) : null, fx: L.fx ? JSON.parse(JSON.stringify(L.fx)) : null }, snap: s };
+		return { meta: { id: L.id, _pad: L._pad, _amw: L._amw, group: L.group, collapsed: L.collapsed, name: L.name, type: L.type, cx: L.cx, cy: L.cy, sx: L.sx, sy: L.sy, rot: L.rot, visible: L.visible, opacity: L.opacity, blend: L.blend, locked: L.locked, text: L.text ? JSON.parse(JSON.stringify(L.text)) : null, eq: L.eq ? JSON.parse(JSON.stringify(L.eq)) : null, editMask: L.editMask, maskOff: !!L.maskOff, src: L.src || null, crop: L.crop ? Object.assign({}, L.crop) : null, fx: L.fx ? JSON.parse(JSON.stringify(L.fx)) : null }, snap: s };
 	}
 	var lastSel = { ver: -1, obj: null };
 	function takeSnapshot(label) {
@@ -1216,9 +1233,10 @@ var MESPixel = (function () {
 		PE.emit("history"); PE.emit("layers"); PE.invalidate(); PE.scheduleAutosave && PE.scheduleAutosave();
 	};
 	function restore(e) {
-		var d = PE.doc; d.w = e.w; d.h = e.h; d.layers = e.layers.map(function (l) {
+		var d = PE.doc, shown = d.layers; d.w = e.w; d.h = e.h; d.layers = e.layers.map(function (l) {
 			var L = PE.makeLayer({ canvas: clone(l.snap.c), type: l.meta.type, name: l.meta.name, text: l.meta.text }); for (var k in l.meta) if (k !== "text" && k !== "eq" && k !== "crop" && k !== "fx") L[k] = l.meta[k]; L.crop = l.meta.crop ? Object.assign({}, l.meta.crop) : null; L.fx = l.meta.fx ? JSON.parse(JSON.stringify(l.meta.fx)) : null; L.text = l.meta.text ? JSON.parse(JSON.stringify(l.meta.text)) : null; L.eq = l.meta.eq ? JSON.parse(JSON.stringify(l.meta.eq)) : null;
 			L.mask = l.snap.m ? clone(l.snap.m) : null; L.rev = l.snap.rev; L._snap = l.snap; return L; });
+		P.carryUiState(shown, d.layers, ["collapsed"]);   // undo / redo never folds or unfolds a group (round 8)
 		d.comps = JSON.parse(e.comps || "[]"); d.light = e.light ? Object.assign({}, e.light) : null; d.activeId = e.active; if (!PE.layerById(d.activeId) && d.layers.length) d.activeId = d.layers[d.layers.length - 1].id;
 		PE.sel = e.sel ? { c: clone(e.sel), ver: ++PE.selSeq } : null; PE.relink(); PE.emit("sel"); PE.emit("history"); PE.emit("layers"); PE.emit("comps"); PE.emit("docsize"); PE.invalidate(); PE.scheduleAutosave && PE.scheduleAutosave();
 	}
@@ -1259,7 +1277,7 @@ var MESPixel = (function () {
 	PE.duplicateLayer = function (L) {
 		L = L || PE.active(); if (!L) return; var d = PE.doc, block = PE.blockOf(L), map = {}, copies = block.map(function (B) {
 			var n = PE.makeLayer({ canvas: clone(B.canvas), type: B.type, name: B.name + (B === L ? " copy" : ""), text: B.text ? JSON.parse(JSON.stringify(B.text)) : null }); map[B.id] = n;
-			["cx", "cy", "sx", "sy", "rot", "visible", "opacity", "blend", "collapsed"].forEach(function (k) { n[k] = B[k]; }); if (B.eq) n.eq = JSON.parse(JSON.stringify(B.eq)); if (B.mask) n.mask = clone(B.mask); if (B.src) n.src = Object.assign({}, B.src, { copy: true }); if (B.crop) n.crop = Object.assign({}, B.crop); if (B.fx) n.fx = JSON.parse(JSON.stringify(B.fx)); return n; });
+			["cx", "cy", "sx", "sy", "rot", "visible", "opacity", "blend", "collapsed", "_pad", "_amw"].forEach(function (k) { n[k] = B[k]; }); if (B.eq) n.eq = JSON.parse(JSON.stringify(B.eq)); if (B.mask) n.mask = clone(B.mask); if (B.src) n.src = Object.assign({}, B.src, { copy: true }); if (B.crop) n.crop = Object.assign({}, B.crop); if (B.fx) n.fx = JSON.parse(JSON.stringify(B.fx)); return n; });
 		copies.forEach(function (n, i) { var B = block[i]; n.group = B === L ? L.group : (map[B.group] ? map[B.group].id : L.group); });
 		var at = d.layers.indexOf(L) + 1; Array.prototype.splice.apply(d.layers, [at, 0].concat(copies)); d.activeId = copies[copies.length - 1].id; PE.relink(); PE.commit("Duplicate " + (PE.isGroup(L) ? "group" : "layer"));
 	};
@@ -1424,7 +1442,7 @@ var MESPixel = (function () {
 		var by = {}; files.forEach(function (f) { by[f.name] = f.data; }); if (!by["project.json"]) return Promise.reject(new Error("Not a MES project file"));
 		var p = JSON.parse(new TextDecoder().decode(by["project.json"])), layers = [];
 		return Promise.all(p.layers.map(function (m, i) {
-			return loadPng(by["layer-" + m.id + ".png"]).then(function (c) { var L = PE.makeLayer({ canvas: c, name: m.name, type: m.type, text: m.text }); L.id = m.id; L.eq = m.eq || null; L.src = m.src || (m.type === "group" ? null : { how: fileName === "autosave" ? "autosave" : "project", file: fileName === "autosave" ? "" : fileName || "" }); ["cx", "cy", "sx", "sy", "rot", "visible", "opacity", "blend", "locked", "group", "collapsed"].forEach(function (k) { if (m[k] !== undefined) L[k] = m[k]; }); L.crop = m.crop ? P.clampCrop(m.crop, c.width, c.height) : null; L.fx = m.fx && typeof m.fx === "object" ? m.fx : null; L.maskOff = !!m.maskOff; layers[i] = L; return m.hasMask ? loadPng(by["mask-" + m.id + ".png"]).then(function (mc) { L.mask = mc; }) : null; });
+			return loadPng(by["layer-" + m.id + ".png"]).then(function (c) { var L = PE.makeLayer({ canvas: c, name: m.name, type: m.type, text: m.text }); L.id = m.id; L.eq = m.eq || null; L.src = m.src || (m.type === "group" ? null : { how: fileName === "autosave" ? "autosave" : "project", file: fileName === "autosave" ? "" : fileName || "" }); ["cx", "cy", "sx", "sy", "rot", "visible", "opacity", "blend", "locked", "group", "collapsed"].forEach(function (k) { if (m[k] !== undefined) L[k] = m[k]; }); L.crop = m.crop ? P.clampCrop(m.crop, c.width, c.height) : null; L.fx = m.fx && typeof m.fx === "object" ? m.fx : null; L.maskOff = !!m.maskOff; if (L.type === "text" && L.text) { try { var tl0 = PE.textLayout(L); L._pad = tl0.pad; L._amw = tl0.mw; } catch (x) {} } layers[i] = L; return m.hasMask ? loadPng(by["mask-" + m.id + ".png"]).then(function (mc) { L.mask = mc; }) : null; });
 		})).then(function () {
 			PE.doc = { w: p.w, h: p.h, layers: layers, activeId: p.active, next: p.next || 1000, name: p.name || "Untitled", comps: p.comps || [], light: p.light && typeof p.light === "object" ? { angle: +p.light.angle || 120, alt: +p.light.alt || 30 } : null, pid: p.pid || opts.pid || P.newProjectId(), file: PE.mkSrc(fileName === "autosave" ? { how: "autosave" } : Object.assign({ how: "project", file: fileName }, meta || {}, { how: "project" })) }; PE.relink(); PE.sel = null; H.stack = []; H.idx = -1; lastSel = { ver: -1 };
 			PE.commit("Open project"); PE.dirty = false; PE.emit("docsize"); PE.emit("sel"); PE.fit();
@@ -2045,9 +2063,12 @@ var MESPixel = (function () {
 	PE.on("view", placeBar);
 	function applyPick() {
 		var p = pk, r = pickReq; pk = null; hideBar(); PE.invalidateOverlay(); if (!p || !p.info) return;
-		if (r) { pickReq = null; r.apply(p.info.hex, p.alt); if (r.prev && PE.toolId === "eyedropper") PE.setTool(r.prev); PE.toast("Picked " + p.info.hex.toUpperCase() + (r.label ? " for the " + r.label : "")); }
+		// go back to the tool you had BEFORE handing over the colour: its option bar (and the colour well the pick was for) only exists again then (round 8: picking
+		// from the colour window of a Text / Shape colour did nothing, because the well was looked up while the Eyedropper's option bar was showing)
+		if (r) { pickReq = null; if (r.prev && PE.toolId === "eyedropper") PE.setTool(r.prev); r.apply(p.info.hex, p.alt); PE.toast("Picked " + p.info.hex.toUpperCase() + (r.label ? " for the " + r.label : "")); }
 		else if (p.alt) PE.setBg(p.info.hex); else PE.setFg(p.info.hex);
 	}
+	PE.pickPending = function () { return !!pickReq && PE.toolId === "eyedropper"; };
 	PE.pickColorFromImage = function (req) {
 		if (!PE.doc) return; var prev = PE.toolId === "eyedropper" ? (pickReq && pickReq.prev) || null : PE.toolId;
 		PE.setTool("eyedropper"); pickReq = Object.assign({}, req, { prev: prev }); PE.toast("Press and drag over the picture, let go to use the colour" + (req.label ? " (" + req.label + ")" : "") + ". Esc cancels.");
@@ -3793,16 +3814,18 @@ var MESPixel = (function () {
 	function explainDownload() {
 		return new Promise(function (res) {
 			var br = isBrave(), w = el("div", "pe-fx"), done = false;
-			w.innerHTML = "<p><b>This browser can't save over the project file.</b> Each Save makes a new download of <i>" + esc(P.projectFileName(PE.doc.name || "Untitled", "mesproj")) + "</i>. If your browser asks where to save every download, you will see a Save dialog each time: that is the browser, not a new project.</p>"
-				+ (br ? "<p><b>In Brave you can switch it on:</b> open <code>" + BRAVE_FLAG + "</code> (copy it into the address bar), set it to <b>Enabled</b> and relaunch Brave. Then the first Save asks once where to put the file, and every later Save (" + PE.modKey() + "S) writes that same file silently, also in a OneDrive folder.</p>"
-					: "<p>Chrome and Edge on a computer can write to the same file with no questions. Safari and Firefox can't.</p>")
-				+ "<p class=\"pe-hint2\">To stop the Save dialog for downloads: browser Settings → Downloads → turn off “Ask where to save each file”. The project then goes straight to your Downloads folder.</p>"
-				+ '<label class="pe-chk"><input type="checkbox" id="pe-dlnoask"> Always download without showing this again</label>';
-			var fin = function (m, v) { if (done) return; done = true; if (w.querySelector("#pe-dlnoask").checked) sset({ dlNoAsk: true }); m.close(); res(v); };
+			var fn = esc(P.projectFileName(PE.doc.name || "Untitled", "mesproj")), ff = /firefox/i.test(navigator.userAgent);
+			w.innerHTML = "<p><b>Your project will be downloaded as a file:</b> <i>" + fn + "</i>. That file <b>is</b> your project: every layer, group and text stays editable.</p>"
+				+ "<p><b>To keep working later:</b> open the editor and drop that file on it (or File → Open). It is usually in your <b>Downloads</b> folder.</p>"
+				+ "<p>Every Save makes a new copy; the browser adds (1), (2)… to the name. The newest one is your latest work.</p>"
+				+ (br ? "<p><b>Brave can save into the same file instead:</b> open <code>" + BRAVE_FLAG + "</code> (paste it into the address bar), set it to <b>Enabled</b> and relaunch Brave.</p>"
+					: "<p class=\"pe-hint2\">Chrome and Edge on a computer can save over the same file each time; " + (ff ? "Firefox" : "this browser") + " can't. If a Save window pops up every time, that is the browser asking where to put the download: pick a folder and press Save.</p>")
+				+ '<label class="pe-chk"><input type="checkbox" id="pe-dlnoask" checked> Got it: next time just download, without this message</label>';
+			var fin = function (m, v) { if (done) return; done = true; if (v && w.querySelector("#pe-dlnoask").checked) sset({ dlNoAsk: true }); m.close(); res(v); };
 			var btns = [{ label: "Cancel", act: function (m) { fin(m, false); } }];
 			if (br) btns.push({ label: "Copy the Brave setting link", act: function () { try { navigator.clipboard.writeText(BRAVE_FLAG); PE.toast("Copied: paste it into the address bar"); } catch (x) {} } });
-			btns.push({ label: "⬇ Download the project", primary: true, act: function (m) { fin(m, true); } });
-			PE.modal({ title: "Saving in this browser", body: w, onClose: function () { if (!done) { done = true; res(false); } }, buttons: btns });
+			btns.push({ label: "Download my project", primary: true, act: function (m) { fin(m, true); } });
+			PE.modal({ title: "Save your project", body: w, onClose: function () { if (!done) { done = true; res(false); } }, buttons: btns });
 		});
 	}
 	PE.downloadProjectZip = function () {
@@ -4183,6 +4206,7 @@ var MESPixel = (function () {
 	}, true);
 	document.addEventListener("pointerdown", function (e) {
 		if (!pop || e.target.closest(".pe-cpop") || (e.target.tagName === "INPUT" && e.target.type === "color")) return;
+		if (PE.pickPending && PE.pickPending()) return;   // picking a colour from the picture for this window: the click on the picture must not close it
 		if (!findInput()) { PE.colorPopClose(); return; }   // its colour well went away (a dialog was closed)
 		if (!pop.pinned) PE.colorPopClose();
 	}, true);
@@ -4408,6 +4432,361 @@ var MESPixel = (function () {
 	};
 })();
 
+/* MES Photo Editor round 8 -- the font catalogue (pure, no DOM): browser global `MESFontCat`, node: require('./tool_apps_src/photo-editor/fontcat.js').
+ * LOCAL = font names the page looks for on the visitor's own computer (Windows, Mac, Linux, Office; only the ones the canvas probe finds are listed),
+ * GOOGLE = popular Google Fonts families (loaded one by one, only when they are previewed or picked). Helpers: CSS stacks, the family name inside a
+ * stack, a category guess for names from queryLocalFonts(), search / filter, and the Google Fonts CSS URLs. fontpick.js is the picker UI. */
+(function (root) {
+	"use strict";
+	var CATS = [["all", "All"], ["sans", "Sans-serif"], ["serif", "Serif"], ["display", "Display"], ["hand", "Handwriting"], ["mono", "Monospace"]];
+	var GENERIC = { sans: "sans-serif", serif: "serif", display: "sans-serif", hand: "cursive", mono: "monospace" };
+	function list(cat, s) { return s.split("|").map(function (n) { return [n.trim(), cat]; }).filter(function (x) { return x[0]; }); }
+	var LOCAL = [].concat(
+		list("sans", "Arial|Arial Narrow|Arial Rounded MT Bold|Helvetica|Helvetica Neue|Verdana|Tahoma|Trebuchet MS|Segoe UI|Segoe UI Light|Segoe UI Semibold|Segoe UI Black|Calibri|Calibri Light|Candara|Corbel|Bahnschrift|Aptos|Grandview|Seaford|Tenorite|Gill Sans|Gill Sans MT|Optima|Futura|Avenir|Avenir Next|Avenir Next Condensed|Geneva|Century Gothic|Franklin Gothic Medium|Franklin Gothic Book|Lucida Grande|Lucida Sans|Lucida Sans Unicode|Microsoft Sans Serif|Tw Cen MT|Berlin Sans FB|Eras Medium ITC|Maiandra GD|Myriad Pro|Seravek|Skia|Gisha|Euphemia|Leelawadee UI|Nirmala UI|Gadugi|Ebrima|Malgun Gothic|Microsoft YaHei|Microsoft JhengHei|Yu Gothic|Meiryo|MS Gothic|MS PGothic|SimHei|Dotum|Gulim|Apple SD Gothic Neo|Hiragino Sans|PingFang SC|Arial Hebrew|Damascus|Thonburi|Sukhumvit Set|Kohinoor Devanagari|Dubai|Tajawal|Noto Sans|Ubuntu|Cantarell|DejaVu Sans|Liberation Sans|Droid Sans|FreeSans|Nimbus Sans|URW Gothic|Bitstream Vera Sans|Open Sans|Roboto|Lato|Fira Sans|Source Sans Pro|Carlito|Linux Biolinum O|PT Sans|Nanum Gothic|Montserrat|Poppins|Inter|Raleway"),
+		list("serif", "Times New Roman|Times|Georgia|Cambria|Constantia|Palatino Linotype|Palatino|Book Antiqua|Bookman Old Style|Garamond|Baskerville|Baskerville Old Face|Big Caslon|Bodoni 72|Bodoni MT|Didot|Hoefler Text|Iowan Old Style|Athelas|Charter|Cochin|Century|Century Schoolbook|Californian FB|Calisto MT|Centaur|Goudy Old Style|High Tower Text|Perpetua|Rockwell|Rockwell Condensed|Bell MT|Footlight MT Light|Lucida Bright|Lucida Fax|Modern No. 20|Elephant|Sitka Text|Sylfaen|Superclarendon|Kefa|Marion|SimSun|NSimSun|MS Mincho|Yu Mincho|Batang|Gungsuh|PMingLiU|Songti SC|Hiragino Mincho ProN|David|Miriam|Traditional Arabic|Simplified Arabic|Sakkal Majalla|Angsana New|Noto Serif|DejaVu Serif|Liberation Serif|Droid Serif|FreeSerif|Nimbus Roman|URW Bookman|C059|P052|Caladea|Gentium|Linux Libertine O|PT Serif|Merriweather|Playfair Display|Lora"),
+		list("mono", "Courier New|Courier|Consolas|Lucida Console|Monaco|Menlo|SF Mono|Andale Mono|OCR A Extended|Cascadia Code|Cascadia Mono|Fira Code|Fira Mono|JetBrains Mono|Source Code Pro|Roboto Mono|Inconsolata|Hack|DejaVu Sans Mono|Liberation Mono|Ubuntu Mono|Noto Mono|Droid Sans Mono|FreeMono|Nimbus Mono PS|PT Mono|IBM Plex Mono"),
+		list("display", "Impact|Arial Black|Haettenschweiler|Copperplate|Copperplate Gothic Bold|Papyrus|Chalkduster|Marker Felt|Comic Sans MS|Luminari|Phosphate|Herculanum|Trattatello|Party LET|American Typewriter|Stencil|Jokerman|Chiller|Ravie|Showcard Gothic|Algerian|Bauhaus 93|Broadway|Cooper Black|Gill Sans Ultra Bold|Rockwell Extra Bold|Bernard MT Condensed|Britannic Bold|Agency FB|Castellar|Playbill|Snap ITC|Curlz MT|Wide Latin|Goudy Stout|Engravers MT|Felix Titling|Colonna MT|Imprint MT Shadow|Magneto|Niagara Engraved|Niagara Solid|Old English Text MT|Onyx|Poor Richard|Harrington|Juice ITC|Gigi|Forte|Harlow Solid Italic|Elephant|Matura MT Script Capitals|Gloucester MT Extra Condensed|Blackadder ITC|Parchment|Academy Engraved LET|Bodoni 72 Smallcaps|Comfortaa|Webdings|Wingdings|Symbol"),
+		list("hand", "Brush Script MT|Segoe Script|Segoe Print|Lucida Handwriting|Lucida Calligraphy|Bradley Hand|Bradley Hand ITC|Snell Roundhand|Zapfino|Noteworthy|Chalkboard|Chalkboard SE|Ink Free|Mistral|Kristen ITC|Monotype Corsiva|Apple Chancery|Savoye LET|Edwardian Script ITC|Freestyle Script|French Script MT|Kunstler Script|Palace Script MT|Rage Italic|Script MT Bold|Vivaldi|Vladimir Script|Viner Hand ITC|Tempus Sans ITC|Pristina|Informal Roman|Gabriola|MV Boli|Purisa|Z003")
+	);
+	var GOOGLE = [].concat(
+		list("sans", "Roboto|Open Sans|Montserrat|Lato|Poppins|Inter|Noto Sans|Raleway|Nunito|Nunito Sans|Ubuntu|Rubik|Work Sans|Mulish|Kanit|Fira Sans|Quicksand|Barlow|Manrope|DM Sans|Heebo|PT Sans|Source Sans 3|Karla|Josefin Sans|Libre Franklin|Mukta|Hind|Titillium Web|Arimo|Cabin|Oxygen|Outfit|Figtree|Plus Jakarta Sans|Lexend|Inter Tight|Assistant|Prompt|IBM Plex Sans|Exo 2|Exo|Barlow Condensed|Barlow Semi Condensed|Oswald|Archivo|Archivo Narrow|Red Hat Display|Red Hat Text|Public Sans|Sora|Space Grotesk|Urbanist|Jost|Catamaran|Asap|Encode Sans|Overpass|Maven Pro|Signika|Varela Round|Varela|Abel|Dosis|M PLUS Rounded 1c|Questrial|Saira|Saira Condensed|Chivo|Be Vietnam Pro|Lexend Deca|Sarabun|Albert Sans|Onest|Golos Text|Commissioner|Epilogue|Schibsted Grotesk|Instrument Sans|Gothic A1|Noto Sans JP|Noto Sans KR|Yantramanav|Pathway Gothic One|Fjalla One|Teko|Antonio|League Spartan|Rajdhani|Khand|Russo One|Play|Ropa Sans|Cantarell|Didact Gothic|Mada|Tajawal|Cairo|Almarai|Alata|Sen|Kumbh Sans|Atkinson Hyperlegible|Hanken Grotesk|Wix Madefor Display|Readex Pro|Darker Grotesque|Familjen Grotesk|Tenor Sans|Montserrat Alternates|Nanum Gothic|Istok Web|Actor|Gudea|Magra|Armata|Carme|Telex|Average Sans|Belleza|Marvel|Jura|Advent Pro|Monda|Homenaje|Geologica|Unbounded|Bricolage Grotesque|Afacad|Reddit Sans|Noto Sans Display|Spline Sans|Anek Latin|Hind Siliguri|Ruda|Yanone Kaffeesatz|Archivo Black|Sofia Sans|Mona Sans|Geist"),
+		list("serif", "Playfair Display|Merriweather|Lora|Roboto Slab|PT Serif|Noto Serif|Libre Baskerville|EB Garamond|Crimson Text|Crimson Pro|Cormorant Garamond|Cormorant|Source Serif 4|Bitter|Arvo|Zilla Slab|Josefin Slab|Domine|Vollkorn|Alegreya|Spectral|Cardo|Old Standard TT|Libre Caslon Text|DM Serif Display|DM Serif Text|Frank Ruhl Libre|Noticia Text|Slabo 27px|Roboto Serif|IBM Plex Serif|Rokkitt|Tinos|Gelasio|Prata|Cinzel|Marcellus|Bodoni Moda|Abhaya Libre|Literata|Newsreader|Fraunces|Young Serif|Instrument Serif|Gloock|Rozha One|Yeseva One|Rufina|Neuton|Sorts Mill Goudy|Gentium Book Plus|Amiri|Lusitana|Martel|Halant|Kreon|Aleo|Brawler|Unna|Petrona|Trirong|Taviraj|Faustina|Eczar|Libre Bodoni|Bellefair|Quattrocento|Lustria|Ovo|Fanwood Text|Linden Hill|Judson|Esteban|Radley|Podkova|Copse|Sanchez|Glegoo|Crete Round|Alike|Coustard|Arapey|Rasa|Hahmlet|Noto Serif JP|Nanum Myeongjo|Lancelot|Gilda Display|Bentham|Caudex|Forum|Mate|Average|Adamina|Habibi|Kurale|Poly|Junge|Trocchi|Vidaloka|Playfair|Cormorant Infant|Della Respira|Noto Serif Display|Castoro|Brygada 1918|Piazzolla|Besley|Inknut Antiqua|Lustria"),
+		list("mono", "Roboto Mono|Source Code Pro|Fira Code|Fira Mono|JetBrains Mono|IBM Plex Mono|Space Mono|Inconsolata|Ubuntu Mono|PT Mono|Courier Prime|Anonymous Pro|Cousine|DM Mono|Red Hat Mono|Noto Sans Mono|Overpass Mono|Major Mono Display|Share Tech Mono|VT323|Nanum Gothic Coding|Sometype Mono|Martian Mono|Azeret Mono|Spline Sans Mono|Victor Mono|Xanh Mono|Syne Mono|B612 Mono|Cutive Mono|Oxygen Mono|Chivo Mono|Geist Mono|Kode Mono|Sono|Lekton"),
+		list("display", "Bebas Neue|Anton|Lobster|Abril Fatface|Alfa Slab One|Righteous|Bangers|Fredoka|Passion One|Titan One|Bungee|Bungee Inline|Bungee Shade|Bungee Hairline|Monoton|Press Start 2P|Orbitron|Audiowide|Black Ops One|Staatliches|Rubik Mono One|Shrikhand|Fascinate|Fascinate Inline|Chewy|Luckiest Guy|Creepster|Nosifer|Eater|Frijole|Bowlby One SC|Bowlby One|Lilita One|Paytone One|Ultra|Rammetto One|Sigmar One|Holtwood One SC|Bevan|Coda|Changa One|Racing Sans One|Faster One|Codystar|Lobster Two|Cinzel Decorative|Poiret One|Unica One|Limelight|Vast Shadow|Diplomata SC|Megrim|Wallpoet|Zen Dots|Syncopate|Michroma|Gruppo|Quantico|Iceland|Turret Road|Big Shoulders Display|Silkscreen|Rubik Glitch|Rubik Wet Paint|Rubik Puddles|Rubik Bubbles|Rubik Beastly|Rubik Moonrocks|Rubik Vinyl|Rubik Dirt|Climate Crisis|Bagel Fat One|Dela Gothic One|Grandstander|Baloo 2|Concert One|Boogaloo|Bubblegum Sans|Fredericka the Great|Rye|Special Elite|Calistoga|Coiny|Gravitas One|Erica One|Emblema One|Plaster|Sonsie One|Spicy Rice|Kavoon|Knewave|Lemon|Modak|Atomic Age|Monofett|Henny Penny|Butcherman|Metal Mania|New Rocker|UnifrakturMaguntia|Pirata One|Almendra Display|Uncial Antiqua|MedievalSharp|Germania One|Graduate|Squada One|Saira Stencil One|Stardos Stencil|Allerta Stencil|Oi|Tilt Warp|Tilt Prism|Krona One|Comfortaa|Yatra One|Lily Script One|Patua One|Oleo Script|Kumar One|Playfair Display SC|Carter One|Cherry Cream Soda|Fugaz One|Goblin One|Londrina Solid|Londrina Outline|Mystery Quest|Nova Square|Original Surfer|Ranchers|Sniglet|Stalinist One|Train One|Zilla Slab Highlight|Bigshot One|Abril Fatface"),
+		list("hand", "Dancing Script|Pacifico|Caveat|Satisfy|Great Vibes|Sacramento|Indie Flower|Shadows Into Light|Amatic SC|Kalam|Patrick Hand|Cookie|Yellowtail|Permanent Marker|Gloria Hallelujah|Courgette|Kaushan Script|Allura|Parisienne|Alex Brush|Tangerine|Pinyon Script|Marck Script|Homemade Apple|Rock Salt|Reenie Beanie|Covered By Your Grace|Architects Daughter|Handlee|Nothing You Could Do|Just Another Hand|Coming Soon|Neucha|Schoolbell|Sue Ellen Francisco|The Girl Next Door|Waiting for the Sunrise|Zeyada|La Belle Aurore|Mrs Saint Delafield|Monsieur La Doulaise|Herr Von Muellerhoff|Petit Formal Script|Mr Dafoe|Italianno|Arizonia|Rochester|Playball|Damion|Leckerli One|Grand Hotel|Merienda|Mali|Gochi Hand|Itim|Sriracha|Nanum Pen Script|Nanum Brush Script|Caveat Brush|Delius|Short Stack|Annie Use Your Telescope|Cedarville Cursive|Dawning of a New Day|Meddon|Over the Rainbow|Swanky and Moo Moo|Loved by the King|Kristi|Qwigley|Ruthie|Vibur|Bad Script|Calligraffitti|Crafty Girls|Mansalva|Square Peg|Birthstone|Ephesis|Imperial Script|Licorice|Love Light|Mea Culpa|Ole|Ms Madi|Corinthia|Water Brush|Whisper|Splash|Send Flowers|Comforter|Gwendolyn|Hurricane|Lavishly Yours|Moon Dance|Updock|Island Moments|Fuggles|Shadows Into Light Two|Bilbo Swash Caps|Charm|Niconne|Norican|Euphoria Script|Clicker Script|Lovers Quarrel|Seaweed Script|Sofia|Felipa|Montez|Engagement|Kalnia Glaze")
+	);
+	function dedupe(a) { var seen = {}; return a.filter(function (x) { var k = x[0].toLowerCase(); if (seen[k]) return false; seen[k] = 1; return true; }); }
+	LOCAL = dedupe(LOCAL); GOOGLE = dedupe(GOOGLE);
+	var GMAP = {}; GOOGLE.forEach(function (x) { GMAP[x[0].toLowerCase()] = x[1]; });
+	var SYMBOL = /^(webdings|wingdings|symbol|marlett)$/i;
+
+	/* "'Roboto', sans-serif" -> "Roboto"; "Arial, Helvetica, sans-serif" -> "Arial" */
+	function familyOf(stack) { var s = String(stack || "").split(",")[0].trim(); return s.replace(/^['"]|['"]$/g, "").trim(); }
+	function quote(name) { return /^[a-z-]+$/i.test(name) && /^(serif|sans-serif|monospace|cursive|fantasy|system-ui)$/i.test(name) ? name : "'" + String(name).replace(/['\\]/g, "") + "'"; }
+	/* the CSS value stored on a text layer (projects keep it, so the family name travels with the file) */
+	function stack(name, cat) { var g = GENERIC[cat] || "sans-serif"; return quote(name) + ", " + g; }
+	function googleCat(name) { return GMAP[String(name || "").toLowerCase()] || null; }
+	/* a category for a font name from queryLocalFonts() (no category comes with it) */
+	function guessCat(name) {
+		var n = String(name || "").toLowerCase(); var k = LOCAL.filter(function (x) { return x[0].toLowerCase() === n; })[0]; if (k) return k[1]; if (GMAP[n]) return GMAP[n];
+		if (/mono|code|console|courier|typewriter|terminal/.test(n)) return "mono";
+		if (/script|hand|brush|marker|chalk|calligraph|signature|pen\b|cursive|kristen|print/.test(n)) return "hand";
+		if (/sans/.test(n)) return "sans";
+		if (/serif|times|garamond|roman|georgia|antiqua|baskerville|bodoni|caslon|mincho|song|ming|batang|didot|slab|book\b|old style|cambria/.test(n)) return "serif";
+		if (/black|poster|display|stencil|shadow|outline|inline|titling|engraved|grunge|decor/.test(n)) return "display";
+		return "sans";
+	}
+	/* filter + order the picker's list: every word of q must be in the name (or the category name); cat "all" / a category; src "all" / "local" / "google" / "recent" */
+	var CATNAME = { sans: "sans serif", serif: "serif", display: "display decorative", hand: "handwriting script", mono: "monospace code" };
+	function filter(fonts, q, cat, src, recent) {
+		var words = String(q || "").toLowerCase().split(/\s+/).filter(Boolean), rec = recent || [];
+		var out = fonts.filter(function (f) {
+			if (cat && cat !== "all" && f.cat !== cat) return false;
+			if (src === "recent" && rec.indexOf(f.value) < 0 && rec.indexOf(f.name) < 0) return false;
+			if (src === "local" && f.src !== "local" && f.src !== "basic" && f.src !== "file") return false; if (src === "google" && f.src !== "google") return false;
+			var hay = (f.name + " " + (CATNAME[f.cat] || "")).toLowerCase(); return words.every(function (w) { return hay.indexOf(w) >= 0; });
+		});
+		if (src === "recent") out.sort(function (a, b) { return idx(a) - idx(b); });
+		else if (words.length) out.sort(function (a, b) { return score(b) - score(a) || a.name.localeCompare(b.name); });
+		function idx(f) { var i = rec.indexOf(f.value); if (i < 0) i = rec.indexOf(f.name); return i < 0 ? 999 : i; }
+		function score(f) { var n = f.name.toLowerCase(), w = words.join(" "); return (n === w ? 3 : 0) + (n.indexOf(w) === 0 ? 2 : 0) + (n.indexOf(w) >= 0 ? 1 : 0); }
+		return out;
+	}
+	/* the Google Fonts CSS API: a tiny preview (only the letters of `text`), or the whole family with bold and italic when it has them (try in this order) */
+	function googleUrls(name, text) {
+		var f = encodeURIComponent(name).replace(/%20/g, "+"), b = "https://fonts.googleapis.com/css2?family=";
+		if (text != null) return [b + f + "&text=" + encodeURIComponent(uniqChars(text)) + "&display=block"];
+		return [b + f + ":ital,wght@0,400;0,700;1,400;1,700&display=swap", b + f + ":wght@400;700&display=swap", b + f + "&display=swap"];
+	}
+	function uniqChars(s) { var seen = {}, o = ""; Array.from(String(s)).forEach(function (c) { if (!seen[c]) { seen[c] = 1; o += c; } }); return o; }
+	/* the first font file url in a Google Fonts CSS answer */
+	function firstFontUrl(css) { var m = /url\((['"]?)(https:\/\/[^)'"]+)\1\)/.exec(String(css || "")); return m ? m[2] : null; }
+	/* most recently used first, no duplicates, at most n */
+	function pushRecent(arr, v, n) { var a = (arr || []).filter(function (x) { return x !== v; }); a.unshift(v); return a.slice(0, n || 10); }
+
+	var api = { CATS: CATS, GENERIC: GENERIC, LOCAL: LOCAL, GOOGLE: GOOGLE, SYMBOL: SYMBOL, familyOf: familyOf, quote: quote, stack: stack, googleCat: googleCat, guessCat: guessCat, filter: filter, googleUrls: googleUrls, uniqChars: uniqChars, firstFontUrl: firstFontUrl, pushRecent: pushRecent };
+	if (typeof module !== "undefined" && module.exports) module.exports = api;
+	if (root) root.MESFontCat = api;
+})(typeof window !== "undefined" ? window : null);
+
+/* MES Photo Editor round 8 -- the font picker (PE.fontButton): a button showing the font in its own face; it opens a searchable list where every font
+ * is drawn in itself. Sources: the basic stacks (PE.FONTS), fonts found on this computer (a canvas width probe of ~290 common Windows / Mac / Linux /
+ * Office names, so Firefox and Opera users get theirs too; plus queryLocalFonts() in Chrome / Edge behind the "Show all fonts on my computer"
+ * button), fonts loaded from a file, and ~530 Google Fonts families. A Google family is fetched only when its row scrolls into view (a tiny preview
+ * with just the letters of its name, under a private alias so it never shadows the real font) or when it is picked (the whole family, bold and
+ * italic when it has them). Text layers re-render when their font finishes loading; projects keep the family name (PE.ensureFonts on load / undo). */
+(function () {
+	"use strict";
+	var PE = window.PE, F = window.MESFontCat; if (!PE || !F) return;
+	var KEY = "mes-photo-editor:v1";
+	function sget() { try { return JSON.parse(localStorage.getItem(KEY) || "{}") || {}; } catch (e) { return {}; } }
+	function sset(o) { try { var c = sget(); for (var k in o) c[k] = o[k]; localStorage.setItem(KEY, JSON.stringify(c)); } catch (e) {} }
+	function el(t, c, h) { var e = document.createElement(t); if (c) e.className = c; if (h != null) e.innerHTML = h; return e; }
+	function esc(s) { return String(s).replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;"); }
+
+	/* ---------- which fonts exist ---------- */
+	var fonts = null, byName = {};
+	function add(name, cat, src, value) { var k = name.toLowerCase(); if (byName[k]) return byName[k]; var f = { name: name, cat: cat, src: src, value: value || F.stack(name, cat) }; byName[k] = f; fonts.push(f); return f; }
+	var mctx = null, SAMPLE = "mmmmmmmmmmlli0OoWw@#", BASES = ["monospace", "sans-serif", "serif"], baseW = null;
+	function width(f) { mctx.font = f; return mctx.measureText(SAMPLE).width; }
+	function installed(name) { if (!mctx) { mctx = document.createElement("canvas").getContext("2d"); baseW = BASES.map(function (b) { return width("72px " + b); }); } for (var i = 0; i < BASES.length; i++) if (Math.abs(width("72px " + F.quote(name) + ", " + BASES[i]) - baseW[i]) > 0.01) return true; return false; }
+	function build() {
+		if (fonts) return; fonts = [];
+		(PE.FONTS || []).forEach(function (x) { var nm = x[1].replace(/ \(yours\)$/, ""), cat = /mono|courier/i.test(x[0]) ? "mono" : /cursive/i.test(x[0]) ? "hand" : /serif/.test(x[0]) && !/sans-serif/.test(x[0]) ? "serif" : /impact/i.test(x[0]) ? "display" : "sans"; add(nm, cat, / \(yours\)$/.test(x[1]) ? "file" : "basic", x[0]); });
+		F.LOCAL.forEach(function (x) { if (installed(x[0])) add(x[0], x[1], "local"); });
+		(sget().lfonts || []).forEach(function (n) { if (typeof n === "string" && n) add(n, F.guessCat(n), "local"); });
+		F.GOOGLE.forEach(function (x) { add(x[0], x[1], "google"); });
+	}
+	PE.fontList = function () { build(); return fonts; };
+	PE.on("fonts", function () { if (!fonts) return; (PE.FONTS || []).forEach(function (x) { if (/ \(yours\)$/.test(x[1])) { var f = add(x[1].replace(/ \(yours\)$/, ""), "sans", "file", x[0]); f.src = "file"; f.value = x[0]; } }); });
+	/* Chrome / Edge: every font on the computer (asks for permission once); the names are kept in this browser so the list is there next time */
+	function queryLocal() {
+		if (!window.queryLocalFonts) { PE.toast("This browser can't list every font. Fonts it can find on your computer are already in the list."); return Promise.resolve(0); }
+		return window.queryLocalFonts().then(function (fd) {
+			build(); var seen = {}, names = []; fd.forEach(function (d) { if (d.family && !seen[d.family]) { seen[d.family] = 1; names.push(d.family); } });
+			var n0 = fonts.length; names.forEach(function (n) { var f = byName[n.toLowerCase()]; if (f && f.src === "google") { f.src = "local"; f.pv = null; } else add(n, F.guessCat(n), "local"); }); sset({ lfonts: names.slice(0, 3000) });
+			PE.toast(names.length + " fonts on this computer" + (fonts.length > n0 ? " (" + (fonts.length - n0) + " new in the list)" : "")); return names.length;
+		}).catch(function (x) { PE.toast(x && x.name === "NotAllowedError" ? "The browser did not allow it (you can allow fonts in the site settings)" : "Could not read the fonts: " + (x && x.message || x)); return 0; });
+	}
+
+	/* ---------- Google Fonts: previews and the real thing ---------- */
+	var PV_ABC = "AaBbCcDdEeFfGgHhIiJjKkLlMmNnOoPpQqRrSsTtUuVvWwXxYyZz0123456789 .,:;!?'&-";   // a preview has the letters of a typed sample too
+	var pvQ = [], pvBusy = 0, loaded = {}, loading = {};
+	function pvAlias(f) { return "MESpv " + f.name.replace(/[^\w ]/g, ""); }
+	function previewFont(f, cb) {
+		if (f.src !== "google" || f.pv === "ok" || f.pv === "bad" || loaded[f.name.toLowerCase()]) { cb && cb(); return; }
+		if (f.pv === "q") return; f.pv = "q"; pvQ.push({ f: f, cb: cb }); pump();
+	}
+	function pump() {
+		while (pvBusy < 6 && pvQ.length) (function (job) {
+			pvBusy++; var f = job.f, done = function (ok) { f.pv = ok ? "ok" : "bad"; pvBusy--; if (job.cb) job.cb(); pump(); };
+			fetch(F.googleUrls(f.name, f.name + PV_ABC)[0]).then(function (r) { if (!r.ok) throw new Error(r.status); return r.text(); }).then(function (css) {
+				var u = F.firstFontUrl(css); if (!u || !window.FontFace) throw new Error("no font"); var ff = new FontFace(pvAlias(f), "url(" + u + ")"); return ff.load().then(function () { document.fonts.add(ff); done(true); });
+			}).catch(function () { done(false); });
+		})(pvQ.shift());
+	}
+	/* load a Google family for real (bold / italic too when the family has them); resolves true when it can be drawn */
+	PE.loadGoogleFont = function (name) {
+		var k = String(name).toLowerCase(); if (loaded[k]) return Promise.resolve(true); if (loading[k]) return loading[k];
+		var urls = F.googleUrls(name), i = 0;
+		function next() {
+			if (i >= urls.length) return Promise.resolve(false); var u = urls[i++];
+			return fetch(u).then(function (r) { if (!r.ok) return next(); return r.text().then(function (css) {
+				var st = el("style"); st.setAttribute("data-gfont", name); st.textContent = css; document.head.appendChild(st);
+				var q = F.quote(name); return Promise.all(["16px " + q, "bold 16px " + q, "italic 16px " + q].map(function (s) { return document.fonts.load(s).catch(function () {}); })).then(function () { return true; });
+			}); }).catch(function () { return next(); });
+		}
+		loading[k] = next().then(function (ok) { delete loading[k]; if (ok) { loaded[k] = true; rerender(name); } return ok; }); return loading[k];
+	};
+	/* a font finished loading: every text layer that uses it is drawn again (no undo step: the text itself did not change) */
+	function rerender(name) {
+		if (!PE.doc || !PE.renderText) return; var k = name.toLowerCase(), any = false;
+		PE.doc.layers.forEach(function (L) { if (L.type === "text" && L.text && F.familyOf(L.text.font).toLowerCase() === k) { L._lay = null; PE.renderText(L); L.rev++; any = true; } });
+		if (any) { PE.invalidate(); PE.emit("layers"); }
+		document.querySelectorAll(".pe-fbtn").forEach(function (b) { if (b.dataset.fam && b.dataset.fam.toLowerCase() === k) b.style.fontFamily = F.quote(name) + ", sans-serif"; });
+	}
+	/* make sure every Google font used by the text layers is loaded (after opening a project, undo, paste...) */
+	PE.ensureFonts = function () {
+		if (!PE.doc) return; var seen = {};
+		PE.doc.layers.forEach(function (L) { if (L.type !== "text" || !L.text) return; var n = F.familyOf(L.text.font), k = n.toLowerCase(); if (seen[k] || loaded[k] || loading[k] || !F.googleCat(n)) return; seen[k] = 1; if (installed(n)) { loaded[k] = true; return; } PE.loadGoogleFont(n); });
+	};
+	var ensT = 0; PE.on("layers", function () { clearTimeout(ensT); ensT = setTimeout(PE.ensureFonts, 50); });
+
+	function recent() { var r = sget().frecent; return Array.isArray(r) ? r.filter(function (x) { return typeof x === "string"; }) : []; }
+	function faceOf(f) { if (f.src === "google" && !loaded[f.name.toLowerCase()]) return f.pv === "ok" ? "'" + pvAlias(f) + "', sans-serif" : null; return f.value; }
+
+	/* ---------- the button in the option bar ---------- */
+	PE.fontButton = function (value, onPick) {
+		build(); var fam = F.familyOf(value), f = byName[fam.toLowerCase()];
+		var b = el("button", "pe-fbtn"); b.type = "button"; b.dataset.noico = "1"; b.dataset.fam = fam; b.setAttribute("aria-haspopup", "listbox"); b.title = "Font: " + fam + " (click for the list: search, preview, " + fonts.length + " fonts)";
+		b.innerHTML = '<span class="pe-fbtn-n"></span><span class="pe-fbtn-a" aria-hidden="true">▾</span>'; b.firstChild.textContent = fam;
+		var setFace = function () { var face = f ? faceOf(f) : value; b.firstChild.style.fontFamily = face || "inherit"; };
+		if (f && f.src === "google" && !loaded[f.name.toLowerCase()]) { previewFont(f, setFace); if (PE.doc) PE.loadGoogleFont(f.name); } setFace();
+		b.addEventListener("mousedown", function (e) { e.preventDefault(); });
+		b.addEventListener("click", function (e) { e.preventDefault(); openPicker(b, value, onPick); });
+		return b;
+	};
+
+	/* ---------- the list ---------- */
+	var pop = null;
+	function closePicker() { if (!pop) return; pop.el.remove(); document.removeEventListener("pointerdown", pop.out, true); var b = pop.btn; pop = null; if (b && b.isConnected) b.focus({ preventScroll: true }); }
+	PE.fontPickerClose = closePicker;
+	function openPicker(btn, value, onPick) {
+		if (pop) { var same = pop.btn === btn; closePicker(); if (same) return; }
+		build(); var ui = sget().fpick || {}, st = { q: "", cat: ui.cat || "all", src: ui.src || "all", hi: 0, list: [] };
+		var e = el("div", "pe-fpop"); e.setAttribute("role", "dialog"); e.setAttribute("aria-label", "Choose a font"); e.dataset.noico = "1";
+		e.innerHTML = '<div class="pe-fp-h"><input type="search" class="pe-fp-q" placeholder="Search ' + fonts.length + ' fonts…" aria-label="Search fonts" autocomplete="off" spellcheck="false"><button type="button" class="pe-fp-x" aria-label="Close" title="Close (Esc)">×</button></div>'
+			+ '<div class="pe-fp-chips pe-fp-cats" role="group" aria-label="Kind of font"></div><div class="pe-fp-chips pe-fp-srcs" role="group" aria-label="Where the font comes from"></div>'
+			+ '<div class="pe-fp-sample"><label>Sample <input type="text" class="pe-fp-st" maxlength="40" placeholder="(the font name)" aria-label="Sample text shown in every font"></label></div>'
+			+ '<div class="pe-fp-list" role="listbox" tabindex="-1" aria-label="Fonts"></div><div class="pe-fp-f"><span class="pe-fp-n"></span><span class="pe-fp-b"></span></div>';
+		(PE.els.root || document.body).appendChild(e);
+		var q = e.querySelector(".pe-fp-q"), listEl = e.querySelector(".pe-fp-list"), cnt = e.querySelector(".pe-fp-n"), sampleIn = e.querySelector(".pe-fp-st");
+		sampleIn.value = ui.sample || "";
+		var cats = e.querySelector(".pe-fp-cats"), srcs = e.querySelector(".pe-fp-srcs");
+		F.CATS.forEach(function (c) { var b = el("button", null, esc(c[1])); b.type = "button"; b.dataset.v = c[0]; cats.appendChild(b); });
+		[["all", "All"], ["recent", "Recent"], ["local", "On this computer"], ["google", "Google Fonts"]].forEach(function (c) { var b = el("button", null, esc(c[1])); b.type = "button"; b.dataset.v = c[0]; srcs.appendChild(b); });
+		var fb = e.querySelector(".pe-fp-b");
+		if (window.queryLocalFonts) { var lb = el("button", "pe-btn pe-btn--sm", "Show all fonts on my computer"); lb.type = "button"; lb.title = "Chrome and Edge can list every installed font (the browser asks once)"; lb.addEventListener("click", function () { queryLocal().then(function () { st.src = "local"; render(true); }); }); fb.appendChild(lb); }
+		var ff = el("button", "pe-btn pe-btn--sm", "Load a font file…"); ff.type = "button"; ff.title = "Use a .ttf, .otf or .woff file from your computer"; ff.addEventListener("click", function () { closePicker(); PE.pickFontFile && PE.pickFontFile(); }); fb.appendChild(ff);
+		// previews only for the rows on screen (and a few around them): measured on render and while scrolling (no IntersectionObserver: it does not run in some background tabs)
+		var io = null, scT = 0;
+		function scanVisible() { var lr = listEl.getBoundingClientRect(), top = lr.top - 200, bot = lr.bottom + 200, kids = listEl.children, lo = 0, hi = kids.length - 1;
+			while (lo < hi) { var mid = (lo + hi) >> 1; if (kids[mid].getBoundingClientRect().bottom < top) lo = mid + 1; else hi = mid; }
+			for (var i = lo; i < kids.length; i++) { var r = kids[i], b = r.getBoundingClientRect(); if (b.top > bot) break; if (r._f && r._f.src === "google" && !r._f.pv) (function (row) { previewFont(row._f, function () { paintRow(row); }); })(r); } }
+		listEl.addEventListener("scroll", function () { clearTimeout(scT); scT = setTimeout(scanVisible, 60); });
+		function paintRow(r) { var face = faceOf(r._f); r.firstChild.style.fontFamily = face || "inherit"; r.classList.toggle("is-wait", !face && r._f.pv !== "bad"); r.classList.toggle("is-bad", r._f.pv === "bad"); }
+		function pick(f) {
+			sset({ frecent: F.pushRecent(recent(), f.value, 12) }); closePicker(); onPick(f.value);
+			if (f.src === "google" && !loaded[f.name.toLowerCase()]) { PE.toast("Loading " + f.name + " from Google Fonts…"); PE.loadGoogleFont(f.name).then(function (ok) { if (!ok) PE.toast("Could not load " + f.name + " (offline?): a similar font is used for now"); }); }
+		}
+		function render(keepScroll) {
+			Array.prototype.forEach.call(cats.children, function (b) { b.setAttribute("aria-pressed", b.dataset.v === st.cat ? "true" : "false"); });
+			Array.prototype.forEach.call(srcs.children, function (b) { b.setAttribute("aria-pressed", b.dataset.v === st.src ? "true" : "false"); });
+			st.list = F.filter(fonts, st.q, st.cat, st.src, recent()); listEl.innerHTML = ""; if (!keepScroll) listEl.scrollTop = 0;
+			var cur = F.familyOf(value).toLowerCase(), sample = sampleIn.value.trim(), frag = document.createDocumentFragment();
+			st.list.forEach(function (f, i) {
+				var r = el("div", "pe-frow" + (f.name.toLowerCase() === cur ? " is-cur" : "")); r.setAttribute("role", "option"); r.id = "pe-fr-" + i; r._f = f; r.dataset.i = i;
+				var nm = el("span", "pe-frow-s"); nm.textContent = sample || f.name; r.appendChild(nm);
+				var meta = el("span", "pe-frow-m"); meta.textContent = (sample ? f.name + " · " : "") + (f.src === "google" ? "Google" : f.src === "file" ? "your file" : f.src === "basic" ? "basic" : "this computer"); r.appendChild(meta);
+				r.title = f.name + (f.src === "google" ? " (Google Fonts: loaded when you pick it)" : ""); paintRow(r); frag.appendChild(r);
+			});
+			listEl.appendChild(frag); if (!st.list.length) listEl.innerHTML = '<div class="pe-fp-none">No font matches. Try another word or "All".</div>';
+			cnt.textContent = st.list.length + (st.list.length === 1 ? " font" : " fonts"); st.hi = Math.max(0, Math.min(st.hi, st.list.length - 1)); hilite(false);
+			sset({ fpick: { cat: st.cat, src: st.src, sample: sampleIn.value.trim() } }); setTimeout(scanVisible, 0);
+		}
+		function hilite(scroll) { Array.prototype.forEach.call(listEl.querySelectorAll(".is-hi"), function (r) { r.classList.remove("is-hi"); r.setAttribute("aria-selected", "false"); }); var r = listEl.children[st.hi]; if (r && r._f) { r.classList.add("is-hi"); r.setAttribute("aria-selected", "true"); listEl.setAttribute("aria-activedescendant", r.id); if (scroll) r.scrollIntoView({ block: "nearest" }); } }
+		cats.addEventListener("click", function (ev) { var b = ev.target.closest("button"); if (!b) return; st.cat = b.dataset.v; st.hi = 0; render(); q.focus(); });
+		srcs.addEventListener("click", function (ev) { var b = ev.target.closest("button"); if (!b) return; st.src = b.dataset.v; st.hi = 0; render(); q.focus(); });
+		var qt = 0; q.addEventListener("input", function () { clearTimeout(qt); qt = setTimeout(function () { st.q = q.value; st.hi = 0; render(); }, 60); });
+		var stt = 0; sampleIn.addEventListener("input", function () { clearTimeout(stt); stt = setTimeout(function () { render(true); }, 150); });
+		listEl.addEventListener("click", function (ev) { var r = ev.target.closest(".pe-frow"); if (r && r._f) pick(r._f); });
+		e.addEventListener("keydown", function (ev) {
+			ev.stopPropagation(); var n = st.list.length;
+			if (ev.key === "Escape") { ev.preventDefault(); closePicker(); }
+			else if (ev.key === "ArrowDown" || ev.key === "ArrowUp") { ev.preventDefault(); if (n) { st.hi = (st.hi + (ev.key === "ArrowDown" ? 1 : -1) + n) % n; hilite(true); } }
+			else if (ev.key === "PageDown" || ev.key === "PageUp") { ev.preventDefault(); if (n) { st.hi = Math.max(0, Math.min(n - 1, st.hi + (ev.key === "PageDown" ? 10 : -10))); hilite(true); } }
+			else if (ev.key === "Enter" && ev.target !== sampleIn) { ev.preventDefault(); if (st.list[st.hi]) pick(st.list[st.hi]); }
+		});
+		e.querySelector(".pe-fp-x").addEventListener("click", closePicker);
+		var out = function (ev) { if (!pop || ev.target.closest(".pe-fpop") || ev.target.closest(".pe-fbtn") === btn) return; closePicker(); };
+		document.addEventListener("pointerdown", out, true);
+		pop = { el: e, btn: btn, io: io, out: out };
+		// place it under the button (fixed, so it works in Full window and full screen too); on a phone it fills the width
+		var r = btn.getBoundingClientRect(), w = Math.min(380, window.innerWidth - 16), h = Math.min(520, window.innerHeight - 16);
+		e.style.width = w + "px"; e.style.maxHeight = h + "px"; var x = Math.max(8, Math.min(r.left, window.innerWidth - w - 8)), y = r.bottom + 4; if (y + 260 > window.innerHeight) y = Math.max(8, window.innerHeight - h - 8);
+		e.style.left = x + "px"; e.style.top = y + "px"; e.style.maxHeight = Math.min(h, window.innerHeight - y - 8) + "px";
+		render(); var ci = st.list.findIndex(function (f) { return f.name.toLowerCase() === F.familyOf(value).toLowerCase(); }); if (ci >= 0) { st.hi = ci; hilite(true); }
+		q.focus({ preventScroll: true });
+	}
+	window.addEventListener("resize", function () { if (pop) closePicker(); });
+	window.addEventListener("scroll", function (e) { if (pop && !(e.target && e.target.closest && e.target.closest(".pe-fpop"))) closePicker(); }, true);   // the page scrolled away from the button
+})();
+
+/* MES Photo Editor round 8 -- icons that never depend on an emoji font. Windows 7 (Opera, older Firefox) has no colour emoji font and only a few of
+ * the symbol characters the editor used, so its buttons showed empty boxes. Every icon character in the editor's own chrome (tool list, menus, panel
+ * buttons, top bar, dialogs, toasts) is swapped for a small inline SVG drawn with the text colour: PE.icon(name) builds one, PE.icoize(node) swaps the
+ * characters inside a node, and a MutationObserver keeps doing it as the editor redraws itself. Typed text (inputs, layer names, the font list,
+ * anything with data-noico) is never touched. The tool list uses PE.toolIcon(id) directly. */
+(function () {
+	"use strict";
+	var PE = window.PE; if (!PE) return;
+	var R = function (x, y, w, h, rx, extra) { return '<rect x="' + x + '" y="' + y + '" width="' + w + '" height="' + h + '"' + (rx ? ' rx="' + rx + '"' : "") + (extra || "") + "/>"; };
+	var C = function (cx, cy, r, extra) { return '<circle cx="' + cx + '" cy="' + cy + '" r="' + r + '"' + (extra || "") + "/>"; };
+	var D = function (d, extra) { return '<path d="' + d + '"' + (extra || "") + "/>"; };
+	var FILL = ' fill="currentColor" stroke="none"';
+	var ICONS = {
+		move: D("M12 2v20M2 12h20M12 2 9 5M12 2l3 3M12 22l-3-3M12 22l3-3M2 12l3-3M2 12l3 3M22 12l-3-3M22 12l-3 3"),
+		marquee: R(4, 5, 16, 14, 0, ' stroke-dasharray="3 2.5"'),
+		lasso: D("M8 17.5C4.5 16 3 13.5 4.5 10.5 6.5 6.5 14 4.5 18 6.5s2.5 7-3 9c-2 .7-4.5.8-7 .3M8 17.5c-1 1.5-.5 3.5 1.5 4"),
+		wand: D("M4 20 15 9M13.5 7.5l3 3M17 3v3M15.5 4.5h3M20 9v2M19 10h2M10 3v2M9 4h2"),
+		crop: D("M6 2v16h16M2 6h16v16"),
+		layercrop: D("M6 2v16h16M2 6h16v16") + R(9, 9, 6, 6, 0, ' stroke-dasharray="2 1.5"'),
+		brush: D("M19.5 3.5l1 1L12 14l-2-2zM10 12c-2.5-.5-4.5 1-4.5 3.5 0 1.2-.8 2.3-2 2.5 2.5 2.5 7 2 8-1 .6-1.8 0-3.5-1.5-5"),
+		smudge: D("M9 11V5.5a1.5 1.5 0 0 1 3 0V11M12 10.5a1.5 1.5 0 0 1 3 0V12M15 11.5a1.5 1.5 0 0 1 3 0V14c0 4-2.7 7-6.5 7S5 18 5 14.5V13a1.5 1.5 0 0 1 3 0v.5"),
+		eraser: D("M20 20H9l-5-5a1.5 1.5 0 0 1 0-2.1l8.9-8.9a1.5 1.5 0 0 1 2.1 0l5 5a1.5 1.5 0 0 1 0 2.1L12 20M8.5 9.5l6 6"),
+		clone: D("M9.5 3h5v5l3 3.5h-11L9.5 8zM5 14.5h14v3H5zM7 21h10"),
+		retouch: D("M12 3c4 5 6 8 6 11a6 6 0 0 1-12 0c0-3 2-6 6-11z"),
+		objerase: R(3, 9, 15, 11, 3) + C(7.5, 13, 0.8, FILL) + C(12, 16, 0.8, FILL) + C(13.5, 12, 0.8, FILL) + D("M19.5 2.5v4M17.5 4.5h4"),
+		bucket: D("M5 11.5 12 4.5l7.5 7.5-7 7a1.5 1.5 0 0 1-2.1 0l-5.4-5.4a1.5 1.5 0 0 1 0-2.1zM5 11.5h14.5M20.5 15.5s1.5 2 1.5 3a1.5 1.5 0 0 1-3 0c0-1 1.5-3 1.5-3z"),
+		gradient: R(3, 3, 18, 18, 2) + D("M21 3 3 21h16a2 2 0 0 0 2-2z", ' fill="currentColor" stroke="none" opacity=".75"'),
+		eyedropper: D("M14.5 4.5l5 5M16 3a2.1 2.1 0 0 1 3 3l-2 2-3-3zM13 6.5l-8 8V19h4.5l8-8M5 19l-2 2"),
+		hand: D("M7.5 11.5V6a1.5 1.5 0 0 1 3 0v5M10.5 10.5V4.5a1.5 1.5 0 0 1 3 0v6M13.5 10.5V5.5a1.5 1.5 0 0 1 3 0V12M16.5 9a1.5 1.5 0 0 1 3 0v5c0 4-3 7-7 7-3 0-4.7-1.6-6-4l-2-3.8a1.5 1.5 0 0 1 2.5-1.6l1.5 2"),
+		zoom: C(10.5, 10.5, 6.5) + D("M15.5 15.5 21 21"),
+		text: D("M5 5h14M12 5v14M9 19h6"),
+		equation: D("M18 5H6.5l6 7-6 7H18"),
+		shape: R(3, 6, 18, 12, 1.5),
+		undo: D("M9 14 4 9l5-5M4 9h10.5a5.5 5.5 0 0 1 0 11H11"),
+		redo: D("M15 14l5-5-5-5M20 9H9.5a5.5 5.5 0 0 0 0 11H13"),
+		expand: D("M14 4h6v6M10 20H4v-6M20 4l-7 7M4 20l7-7"),
+		shrink: D("M4 14h6v6M20 10h-6V4M10 14l-7 7M14 10l7-7"),
+		fullscreen: D("M4 9V4h5M15 4h5v5M20 15v5h-5M9 20H4v-5"),
+		save: D("M5 3h11l4 4v13a1 1 0 0 1-1 1H5a1 1 0 0 1-1-1V4a1 1 0 0 1 1-1zM8 3v5h7V3M7.5 21v-7h9v7"),
+		copy: R(8, 8, 13, 13, 2) + D("M16 8V5a2 2 0 0 0-2-2H5a2 2 0 0 0-2 2v9a2 2 0 0 0 2 2h3"),
+		link: D("M10 14a4 4 0 0 0 5.7 0l3-3a4 4 0 0 0-5.7-5.7l-1 1M14 10a4 4 0 0 0-5.7 0l-3 3a4 4 0 0 0 5.7 5.7l1-1"),
+		download: D("M12 3v13M6.5 11l5.5 5.5 5.5-5.5M4 21h16"),
+		folder: D("M3 6.5A1.5 1.5 0 0 1 4.5 5H9l2 2h8.5A1.5 1.5 0 0 1 21 8.5v9a1.5 1.5 0 0 1-1.5 1.5h-15A1.5 1.5 0 0 1 3 17.5z"),
+		folderopen: D("M3 17.5v-11A1.5 1.5 0 0 1 4.5 5H9l2 2h7a1.5 1.5 0 0 1 1.5 1.5V10M3 17.5 5.6 11h16l-2.6 8H4.5A1.5 1.5 0 0 1 3 17.5z"),
+		pencil: D("M4 20h4L19 9l-4-4L4 16zM13.5 6.5l4 4"),
+		trash: D("M4 7h16M9.5 7V4h5v3M6 7l1 13h10l1-13M10 11v6M14 11v6"),
+		lock: R(5, 11, 14, 10, 2) + D("M8 11V8a4 4 0 0 1 8 0v3"),
+		unlock: R(5, 11, 14, 10, 2) + D("M8 11V8a4 4 0 0 1 7.6-1.7"),
+		mask: C(12, 12, 9) + D("M12 3a9 9 0 0 1 0 18z", FILL),
+		halfleft: C(12, 12, 9) + D("M12 3a9 9 0 0 0 0 18z", FILL),
+		swap: D("M4 8h14M14 4l4 4-4 4M20 16H6M10 12l-4 4 4 4"),
+		gear: C(12, 12, 3) + D("M12 2v3M12 19v3M2 12h3M19 12h3M4.9 4.9 7 7M17 17l2.1 2.1M4.9 19.1 7 17M17 7l2.1-2.1"),
+		pin: D("M9 3h6l-1 6 4 4H6l4-4zM12 13v8"),
+		close: D("M6 6l12 12M18 6 6 18"),
+		check: D("M4 12.5 9 17.5 20 6.5"),
+		eye: D("M2 12s3.6-7 10-7 10 7 10 7-3.6 7-10 7S2 12 2 12z") + C(12, 12, 3),
+		eyeoff: D("M3 3l18 18M10.6 5.1C11 5 11.5 5 12 5c6.4 0 10 7 10 7a17 17 0 0 1-3.2 4.1M6.6 6.6C3.7 8.4 2 12 2 12s3.6 7 10 7c1.9 0 3.5-.6 4.9-1.4M9.9 9.9a3 3 0 0 0 4.2 4.2"),
+		tall: D("M12 3v18M8 7l4-4 4 4M8 17l4 4 4-4"),
+		mergedown: D("M12 4v11M7 10.5l5 5 5-5M5 20h14"),
+		square: R(5, 5, 14, 14, 1.5, FILL),
+		plus: D("M12 5v14M5 12h14"),
+		warn: D("M12 3.5 22 20.5H2zM12 10v5M12 17.8v.4"),
+		picture: R(3, 4, 18, 16, 2) + C(8.5, 9.5, 1.8) + D("M21 16l-5-5L5 20"),
+		page: D("M6 3h8.5L19 7.5V20a1 1 0 0 1-1 1H6a1 1 0 0 1-1-1V4a1 1 0 0 1 1-1zM14 3v5h5"),
+		scissors: C(6, 6, 3) + C(6, 18, 3) + D("M8.1 8.1 20 20M8.1 15.9 20 4"),
+		rotl: D("M3 4v6h6M3.5 10A8.5 8.5 0 1 1 6 17"),
+		rotr: D("M21 4v6h-6M20.5 10A8.5 8.5 0 1 0 18 17"),
+		chevr: D("M9 6l6 6-6 6"), chevd: D("M6 9l6 6 6-6"), chevu: D("M6 15l6-6 6 6"),
+		search: C(10.5, 10.5, 6.5) + D("M15.5 15.5 21 21"),
+		sparkle: D("M12 3l2 5.5L19.5 10.5 14 12.5 12 18l-2-5.5L4.5 10.5 10 8.5zM19 16v4M17 18h4")
+	};
+	// character -> icon (VS16 after an emoji is dropped with it)
+	var GLYPH = { "✥": "move", "⬚": "marquee", "➰": "lasso", "✨": "sparkle", "⛶": "fullscreen", "🖌": "brush", "👆": "smudge", "◌": "eraser", "🧽": "objerase", "💧": "retouch", "🪣": "bucket", "◐": "halfleft", "💉": "eyedropper", "✋": "hand", "🔍": "search", "🔎": "search", "▭": "shape",
+		"↶": "undo", "↷": "redo", "⤢": "expand", "⤡": "shrink", "💾": "save", "⧉": "copy", "🔗": "link", "⬇": "download", "📥": "download", "📁": "folder", "📂": "folderopen", "✎": "pencil", "✏": "pencil", "🗑": "trash", "🔒": "lock", "🔓": "unlock", "◑": "mask", "⇄": "swap", "⚙": "gear", "📌": "pin",
+		"✕": "close", "✖": "close", "✓": "check", "✔": "check", "👁": "eye", "⇕": "tall", "⇩": "mergedown", "■": "square", "＋": "plus", "⚠": "warn", "🖼": "picture", "📄": "page", "✂": "scissors", "↺": "rotl", "⟲": "rotl", "⟳": "rotr", "↻": "rotr", "▸": "chevr", "▶": "chevr", "▾": "chevd", "▼": "chevd", "▲": "chevu" };
+	var TOOL = { move: "move", marquee: "marquee", lasso: "lasso", wand: "wand", crop: "crop", layercrop: "layercrop", brush: "brush", smudge: "smudge", eraser: "eraser", clone: "clone", retouch: "retouch", objerase: "objerase", bucket: "bucket", gradient: "gradient", eyedropper: "eyedropper", hand: "hand", zoom: "zoom", text: "text", equation: "equation", shape: "shape" };
+	var RE = new RegExp("(" + Object.keys(GLYPH).map(function (g) { return g.replace(/[.*+?^${}()|[\]\\]/g, "\\$&"); }).join("|") + ")️?", "g");
+	PE.icon = function (name, cls) { var b = ICONS[name]; if (!b) return ""; return '<svg class="pe-ico' + (cls ? " " + cls : "") + '" viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false">' + b + "</svg>"; };
+	PE.toolIcon = function (id, fallback) { var n = TOOL[id]; return n ? PE.icon(n) : '<span class="pe-ico-t">' + PE.esc(fallback || "?") + "</span>"; };
+	PE.ICONS = ICONS; PE.ICON_GLYPHS = GLYPH;
+	var SKIP = "input,textarea,select,option,script,style,code,svg,[data-noico],[contenteditable],.pe-lname,.pe-rec-n,.pe-rename,.pe-comp-name,.pe-help p";
+	function swapText(tn) {
+		var s = tn.nodeValue; RE.lastIndex = 0; if (!s || !RE.test(s)) return; var par = tn.parentNode; if (!par || (par.closest && par.closest(SKIP))) return;
+		RE.lastIndex = 0; var frag = document.createDocumentFragment(), last = 0, m;
+		while ((m = RE.exec(s))) { if (m.index > last) frag.appendChild(document.createTextNode(s.slice(last, m.index))); var t = document.createElement("template"); t.innerHTML = PE.icon(GLYPH[m[1]]); frag.appendChild(t.content.firstChild); last = m.index + m[0].length; }
+		if (last < s.length) frag.appendChild(document.createTextNode(s.slice(last)));
+		par.replaceChild(frag, tn);
+	}
+	PE.icoize = function (node) {
+		if (!node) return; if (node.nodeType === 3) { swapText(node); return; } if (node.nodeType !== 1 || (node.closest && node.closest(SKIP))) return;
+		var w = document.createTreeWalker(node, NodeFilter.SHOW_TEXT, null), list = [], n; while ((n = w.nextNode())) { RE.lastIndex = 0; if (RE.test(n.nodeValue)) list.push(n); } list.forEach(swapText);
+	};
+	function ours(n) { var e = n.nodeType === 1 ? n : n.parentNode; return !!(e && e.closest && e.closest("#pe, .tu-toast")); }
+	var queue = [], sched = false;
+	function flush() { sched = false; var q = queue; queue = []; q.forEach(function (n) { if (n.isConnected && ours(n)) PE.icoize(n); }); }
+	if (window.MutationObserver) {
+		new MutationObserver(function (ms) {
+			ms.forEach(function (m) { if (m.type === "characterData") queue.push(m.target); else for (var i = 0; i < m.addedNodes.length; i++) queue.push(m.addedNodes[i]); });
+			if (queue.length && !sched) { sched = true; flush(); }   // at once (a mutation callback is already a microtask: no box ever paints; rAF would not run in a background tab)
+		}).observe(document.body, { childList: true, subtree: true, characterData: true });
+	}
+	var root = document.getElementById("pe"); if (root) PE.icoize(root);
+	var srch = document.getElementById("pe-search"); if (srch) srch.placeholder = srch.placeholder.replace(/^\S+\s+/, "");
+})();
+
 /* MES Photo Editor -- mes.fm/photo-editor. UI: menus, tool + options bars, colour / layers / history panels, files (open, drop, paste, PSD, project),
  * shortcuts, autosave. Engine = core.js (layers, history, selection), tools.js / tools2.js, dialogs.js; pixel maths = lib.js (MESPixel, node-tested). */
 (function () {
@@ -4419,7 +4798,7 @@ var MESPixel = (function () {
 	function sget() { try { return JSON.parse(localStorage.getItem(KEY) || "{}") || {}; } catch (e) { return {}; } }
 	function sset(o) { try { var c = sget(); for (var k in o) c[k] = o[k]; localStorage.setItem(KEY, JSON.stringify(c)); } catch (e) {} }
 	PE.els = { root: root, main: $("pe-main"), over: $("pe-over"), textedit: $("pe-textedit"), stage: $("pe-stage") };
-	PE.toast = function (t) { var e = document.querySelector(".tu-toast"); if (!e) { e = document.createElement("div"); e.className = "tu-toast"; document.body.appendChild(e); } e.textContent = t; e.classList.add("tu-toast--show"); clearTimeout(PE.toast.t); PE.toast.t = setTimeout(function () { e.classList.remove("tu-toast--show"); }, 2600); };
+	PE.toast = function (t) { var e = document.querySelector(".tu-toast"), host = document.fullscreenElement || document.webkitFullscreenElement || document.body; if (!e) { e = document.createElement("div"); e.className = "tu-toast"; } if (e.parentNode !== host) host.appendChild(e); e.textContent = t; e.classList.add("tu-toast--show"); clearTimeout(PE.toast.t); PE.toast.t = setTimeout(function () { e.classList.remove("tu-toast--show"); }, 2600); };
 	var S = sget();
 
 	/* ---------- colours ---------- */
@@ -4458,7 +4837,8 @@ var MESPixel = (function () {
 		zoom: "Click to zoom in, Alt-click to zoom out. Ctrl + mouse wheel also zooms, and Ctrl+0 fits the picture to the window.",
 		layercrop: "Crops ONE layer without deleting anything (like Camtasia): drag the edges or corners of the purple box to hide the sides of the selected layer, drag inside the box to slide what shows. The hidden part is kept, so Show whole layer brings it back any time. Then use the Move tool to place the layer; the crop moves with it."
 	};
-	var UI = S.ui || { tw: false, sw: 17.5, side: "r", hide: false }; if (!UI.tws) UI.tws = 15.5; if (!UI.tside) UI.tside = "l";
+	var UI = S.ui || { tw: true, sw: 17.5, side: "r", hide: false }; if (!UI.tws) UI.tws = 15.5; if (!UI.tside) UI.tside = "l";
+	if (UI.twv !== 8) { UI.tw = true; UI.twv = 8; }   // round 8: the tool names show by default (people could not tell the icons apart); collapsing is still one click
 	function saveUI() { sset({ ui: UI }); }
 	function closeHelp() { var h = root.querySelector(".pe-help"); if (h) h.remove(); }
 	function showHelp(id, anchor) {
@@ -4473,7 +4853,7 @@ var MESPixel = (function () {
 	function applyUI() {
 		var main = root.querySelector(".pe-main"), tools = $("pe-tools"), side = $("pe-side");
 		tools.classList.toggle("pe-tools--wide", !!UI.tw); main.classList.toggle("pe-main--sl", UI.side === "l"); main.classList.toggle("pe-main--tr", UI.tside === "r"); main.classList.toggle("pe-main--shide", !!UI.hide);
-		side.style.width = UI.sw + "em"; tools.style.width = UI.tw ? UI.tws + "em" : ""; var tg = $("pe-ttoggle"); if (tg) { tg.textContent = UI.tw ? "« Collapse" : "»"; tg.title = UI.tw ? "Show only the icons" : "Show the tool names and help"; tg.setAttribute("aria-pressed", UI.tw ? "true" : "false"); }
+		side.style.width = UI.sw + "em"; tools.style.width = UI.tw ? UI.tws + "em" : ""; var tg = $("pe-ttoggle"); if (tg) { tg.innerHTML = UI.tw ? "« Hide names" : '<span aria-hidden="true">»</span><small>Names</small>'; tg.title = UI.tw ? "Show only the icons (more room for the picture)" : "Show the tool names and help"; tg.setAttribute("aria-pressed", UI.tw ? "true" : "false"); }
 		var ts = $("pe-tswap"); if (ts) ts.title = UI.tside === "r" ? "Move the toolbox to the left" : "Move the toolbox to the right";
 		var sw = $("pe-sswap"); if (sw) sw.title = UI.side === "l" ? "Move the panels to the right" : "Move the panels to the left";
 		var sh = $("pe-sshow"); if (sh) { sh.hidden = !UI.hide; sh.textContent = UI.side === "l" ? "Panels ›" : "‹ Panels"; }
@@ -4517,9 +4897,19 @@ var MESPixel = (function () {
 	var arranging = false, tdrag = null;
 	function toolLayout() { return P.normToolLayout(UI.tl, ORDER.filter(function (id) { return PE.tools[id]; }), TL_DEF); }
 	function saveLayout(L) { UI.tl = L; saveUI(); drawTools(); }
+	/* collapsed toolbox: the tool's name pops up at once beside the icon on hover or keyboard focus (a title tooltip takes a second and is easy to miss) */
+	var ttip = null;
+	function tipOff() { if (ttip) { ttip.remove(); ttip = null; } }
+	function tipOn(b) {
+		tipOff(); if (UI.tw || !b || !b.dataset.t || !PE.tools[b.dataset.t] || window.matchMedia("(max-width: 900px)").matches) return; var t = PE.tools[b.dataset.t], r = b.getBoundingClientRect(), rr = root.getBoundingClientRect();
+		ttip = el("div", "pe-ttip", esc(t.name) + (t.key ? " <kbd>" + esc(t.key.toUpperCase()) + "</kbd>" : "")); ttip.setAttribute("role", "tooltip"); root.appendChild(ttip);
+		var left = UI.tside === "r" ? r.left - rr.left - ttip.offsetWidth - 8 : r.right - rr.left + 8; ttip.style.left = Math.max(4, left) + "px"; ttip.style.top = (r.top - rr.top + r.height / 2 - ttip.offsetHeight / 2) + "px";
+	}
+	$("pe-tools").addEventListener("mouseover", function (e) { var b = e.target.closest && e.target.closest(".pe-tool"); if (b) tipOn(b); else tipOff(); });
+	$("pe-tools").addEventListener("mouseleave", tipOff); $("pe-tools").addEventListener("focusin", function (e) { var b = e.target.closest && e.target.closest(".pe-tool"); if (b) tipOn(b); }); $("pe-tools").addEventListener("focusout", tipOff); $("pe-tools").addEventListener("scroll", tipOff);
 	function toolRow(id) {
 		var t = PE.tools[id], row = el("div", "pe-trow"), b = el("button", "pe-tool"); row.dataset.t = id; b.type = "button"; b.dataset.t = id; b.title = t.name + " (" + t.key.toUpperCase() + ")"; b.setAttribute("aria-label", t.name); b.setAttribute("aria-pressed", PE.toolId === id ? "true" : "false");
-		b.innerHTML = '<span class="pe-ticon">' + esc(t.icon) + '</span><span class="pe-tname">' + esc(t.name.replace(/ \(.*\)$/, "")) + '</span><kbd class="pe-tkey">' + esc(t.key.toUpperCase()) + "</kbd>"; b.addEventListener("click", function () { if (!arranging) PE.setTool(id); });
+		b.innerHTML = '<span class="pe-ticon">' + (PE.toolIcon ? PE.toolIcon(id, t.icon) : esc(t.icon)) + '</span><span class="pe-tname">' + esc(t.name.replace(/ \(.*\)$/, "")) + '</span><kbd class="pe-tkey">' + esc(t.key.toUpperCase()) + "</kbd>"; b.addEventListener("click", function () { if (!arranging) PE.setTool(id); });
 		row.appendChild(b);
 		if (arranging) {
 			row.draggable = true; row.classList.add("is-arr");
@@ -4558,7 +4948,7 @@ var MESPixel = (function () {
 		});
 		if (arranging) {
 			var hw = el("div", "pe-tgrp pe-tgrp--hidden"); hw.dataset.g = "hidden"; hw.appendChild(el("div", "pe-tgh", '<span class="pe-tgn">Hidden tools (' + L.hidden.length + ")</span>"));
-			L.hidden.forEach(function (id) { var t = PE.tools[id], r = el("div", "pe-trow is-arr"), sb = el("button", "pe-tool"); sb.type = "button"; sb.title = "Show " + t.name + " again"; sb.innerHTML = '<span class="pe-ticon">' + esc(t.icon) + '</span><span class="pe-tname">' + esc(t.name.replace(/ \(.*\)$/, "")) + "</span>"; sb.addEventListener("click", function () { saveLayout(P.moveTool(toolLayout(), id, toolLayout().groups[0].id, -1)); }); var sh = el("button", "pe-thide", "＋"); sh.type = "button"; sh.title = "Show this tool again"; sh.setAttribute("aria-label", "Show " + t.name); sh.addEventListener("click", function () { sb.click(); }); r.appendChild(sb); r.appendChild(sh); hw.appendChild(r); });
+			L.hidden.forEach(function (id) { var t = PE.tools[id], r = el("div", "pe-trow is-arr"), sb = el("button", "pe-tool"); sb.type = "button"; sb.title = "Show " + t.name + " again"; sb.innerHTML = '<span class="pe-ticon">' + (PE.toolIcon ? PE.toolIcon(id, t.icon) : esc(t.icon)) + '</span><span class="pe-tname">' + esc(t.name.replace(/ \(.*\)$/, "")) + "</span>"; sb.addEventListener("click", function () { saveLayout(P.moveTool(toolLayout(), id, toolLayout().groups[0].id, -1)); }); var sh = el("button", "pe-thide", "＋"); sh.type = "button"; sh.title = "Show this tool again"; sh.setAttribute("aria-label", "Show " + t.name); sh.addEventListener("click", function () { sb.click(); }); r.appendChild(sb); r.appendChild(sh); hw.appendChild(r); });
 			hw.addEventListener("dragover", function (e) { if (tdrag) e.preventDefault(); }); hw.addEventListener("drop", function (e) { if (!tdrag) return; e.preventDefault(); var src = tdrag; tdrag = null; saveLayout(P.moveTool(toolLayout(), src, "hidden")); });
 			box.appendChild(hw);
 			var acts = el("div", "pe-tacts"), ng = el("button", "pe-btn pe-btn--sm", "+ New group"), rs = el("button", "pe-btn pe-btn--sm", "Reset"); ng.type = rs.type = "button"; ng.title = "Add an empty group: drag tools into it"; rs.title = "Back to the standard tool groups, nothing hidden";
@@ -4585,6 +4975,7 @@ var MESPixel = (function () {
 			if (u.type === "button") { var b = el("button", "pe-btn pe-btn--sm", esc(u.label)); b.type = "button"; b.addEventListener("mousedown", function (e) { e.preventDefault(); }); b.addEventListener("click", u.act); box.appendChild(b); return; }
 			var w = el("label", "pe-opt"), v = PE.optGet(id, u.k), inp; w.appendChild(el("span", "pe-opt-l", esc(u.label)));
 			if (u.type === "check") { inp = el("input"); inp.type = "checkbox"; inp.checked = !!v; inp.addEventListener("change", function () { PE.optSet(id, u.k, inp.checked); rebuildOpts(); }); }
+			else if (u.type === "select" && u.options === "fonts" && PE.fontButton) { inp = PE.fontButton(v, function (val) { PE.optSet(id, u.k, val); rebuildOpts(); }); }
 			else if (u.type === "select") { inp = el("select"); var opts = u.options === "fonts" ? PE.FONTS : u.options; opts.forEach(function (o) { var op = el("option", null, esc(o[1])); op.value = o[0]; inp.appendChild(op); }); inp.value = v; inp.addEventListener("change", function () { PE.optSet(id, u.k, u.num ? +inp.value : inp.value); rebuildOpts(); }); }
 			else if (u.type === "seg") { inp = el("span", "pe-seg"); u.options.forEach(function (o) { var b = el("button", null, esc(o[1])); b.type = "button"; b.setAttribute("aria-pressed", String(v) === String(o[0]) ? "true" : "false"); b.addEventListener("mousedown", function (e) { e.preventDefault(); }); b.addEventListener("click", function () { PE.optSet(id, u.k, o[0]); rebuildOpts(); }); inp.appendChild(b); }); }
 			else if (u.type === "color") { inp = el("input"); inp.type = "color"; inp.dataset.ck = "opt:" + id + ":" + u.k; inp.dataset.cname = u.label; inp.value = v; inp.addEventListener("input", function () { PE.optSet(id, u.k, inp.value); });
@@ -4668,7 +5059,7 @@ var MESPixel = (function () {
 	function makeRow(id, depth, on) {
 		var L0 = PE.layerById(id), grp = PE.isGroup(L0), hidden = !PE.effVisible(L0) && !grp ? true : !L0.visible, cur = function () { return PE.layerById(id); };
 		var row = el("div", "pe-layer" + (on ? " is-active" : "") + (hidden ? " is-hidden" : "") + (grp ? " is-group" : "")); row.draggable = true; row.dataset.id = id; row.style.paddingLeft = (0.3 + depth * 1.1) + "em";
-		var eye = el("button", "pe-eye", L0.visible ? "👁" : "—"); eye.type = "button"; eye.title = "Show / hide"; eye.addEventListener("click", function (e) { e.stopPropagation(); var L = cur(); if (!L) return; L.visible = !L.visible; PE.touch(L); PE.commit("Toggle visibility"); });
+		var eye = el("button", "pe-eye", PE.icon ? PE.icon(L0.visible ? "eye" : "eyeoff") : (L0.visible ? "👁" : "—")); eye.setAttribute("aria-label", (L0.visible ? "Hide " : "Show ") + L0.name); eye.setAttribute("aria-pressed", L0.visible ? "true" : "false"); eye.type = "button"; eye.title = "Show / hide"; eye.addEventListener("click", function (e) { e.stopPropagation(); var L = cur(); if (!L) return; L.visible = !L.visible; PE.touch(L); PE.commit("Toggle visibility"); });
 		row.appendChild(eye);
 		if (grp) { var ar = el("button", "pe-arrow", L0.collapsed ? "▸" : "▾"); ar.type = "button"; ar.title = L0.collapsed ? "Expand group" : "Collapse group"; ar.addEventListener("click", function (e) { e.stopPropagation(); var L = cur(); if (!L) return; L.collapsed = !L.collapsed; buildLayers(); }); row.appendChild(ar); var th0 = el("span", "pe-th pe-th--grp", "📁"); row.appendChild(th0); }
 		else { var th = el("span", "pe-th" + (L0.mask && !L0.editMask ? " is-paint" : "")); th.appendChild(thumbFor(L0)); if (L0.mask) th.title = L0.editMask ? "Click to paint on the picture again" : "You are painting on the picture"; row.appendChild(th); }
@@ -5102,6 +5493,23 @@ $("pe-share").addEventListener("click", function () { if (needDoc()) PE.dlgShare
 	var autoWin = false;
 	function toggleWin(auto) { var on = !root.classList.contains("pe-win"); root.classList.toggle("pe-win", on); document.documentElement.classList.toggle("pe-win-on", on); $("pe-winbtn").setAttribute("aria-pressed", on ? "true" : "false"); $("pe-winbtn").textContent = on ? "⤡ Exit full window" : "⤢ Full window"; if (auto !== true) sset({ win: on }); setTimeout(function () { resize(); if (PE.doc) PE.fit(); }, 30); }
 	$("pe-winbtn").addEventListener("click", function () { toggleWin(); });
+	/* real full screen (round 8): the editor alone on the whole screen (no browser bars). It uses the Full window layout while it is on, and puts the
+	   window back the way it was when you leave (Esc, the button, or Shift+F). */
+	var fsAddedWin = false;
+	function fsEl() { return document.fullscreenElement || document.webkitFullscreenElement || null; }
+	function toggleFs() {
+		if (fsEl()) { (document.exitFullscreen || document.webkitExitFullscreen).call(document); return; }
+		var rq = root.requestFullscreen || root.webkitRequestFullscreen; if (!rq) { PE.toast("This browser has no full screen mode: use Full window (F) instead"); return; }
+		try { var pr = rq.call(root); if (pr && pr.catch) pr.catch(function () { PE.toast("The browser did not allow full screen here"); }); } catch (x) { PE.toast("The browser did not allow full screen here"); }
+	}
+	function onFs() {
+		var on = fsEl() === root; root.classList.toggle("pe-fs", on); var b = $("pe-fsbtn"); if (b) { b.setAttribute("aria-pressed", on ? "true" : "false"); b.lastChild.textContent = on ? " Exit full screen" : " Full screen"; b.title = on ? "Leave full screen (Esc or Shift+F)" : "Full screen: the editor fills the whole screen (Shift+F)"; }
+		if (on && !root.classList.contains("pe-win")) { fsAddedWin = true; toggleWin(true); } else if (!on && fsAddedWin) { fsAddedWin = false; if (root.classList.contains("pe-win")) toggleWin(true); }
+		setTimeout(function () { resize(); if (PE.doc) PE.fit(); }, 60);
+	}
+	document.addEventListener("fullscreenchange", onFs); document.addEventListener("webkitfullscreenchange", onFs);
+	if ($("pe-fsbtn")) $("pe-fsbtn").addEventListener("click", toggleFs);
+	PE.toggleFullscreen = toggleFs;
 	// no automatic Full window when a picture is opened (it hid the sidebar and the Standard | Wide | Theatre switch): Full window stays one click away (key F) and a manual choice is remembered
 
 	/* ---------- keyboard ---------- */
@@ -5127,7 +5535,7 @@ $("pe-share").addEventListener("click", function () { if (needDoc()) PE.dlgShare
 		if (k === "Delete" || k === "Backspace") { e.preventDefault(); if (PE.sel) clearSel(); else PE.deleteLayer(); return; }
 		if (k.indexOf("Arrow") === 0 && PE.toolId === "move") { e.preventDefault(); var n = e.shiftKey ? 10 : 1; PE.nudge(k === "ArrowLeft" ? -n : k === "ArrowRight" ? n : 0, k === "ArrowUp" ? -n : k === "ArrowDown" ? n : 0); return; }
 		if (k === "[") { PE.stepBrushSize(-1); return; } if (k === "]") { PE.stepBrushSize(1); return; }
-		if (k === ",") { stepComp(-1); return; } if (k === ".") { stepComp(1); return; } if (low === "x") { swapColors(); return; } if (low === "d") { PE.fg = "#000000"; PE.bg = "#ffffff"; PE.emit("color"); return; } if (low === "f") { toggleWin(); return; }
+		if (k === ",") { stepComp(-1); return; } if (k === ".") { stepComp(1); return; } if (low === "x") { swapColors(); return; } if (low === "d") { PE.fg = "#000000"; PE.bg = "#ffffff"; PE.emit("color"); return; } if (low === "f") { if (e.shiftKey) toggleFs(); else toggleWin(); return; }
 		for (var id in PE.tools) if (PE.tools[id].key === low) { PE.setTool(id); return; }
 	});
 	document.addEventListener("keyup", function (e) { if (e.key === " ") { PE.setSpace(false); PE.spaceHeld = false; setCursor(); PE.invalidateOverlay(); } });

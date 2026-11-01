@@ -284,6 +284,21 @@ var MESPixel = (function () {
 	function scaleAbout(p, a, f) { return a + (p - a) * f; }
 	/* word wrap that remembers where each line came from in the string: [{text, start, end}] (end = start + text.length; a wrapped line loses its trailing spaces).
 	 * measure(s, start) = width of s, which begins at string index start (rich text: bold / italic parts measure wider) */
+	/* a text layer re-rendered at a new size: how far its centre moves (in the layer's own pixels) so the text keeps its anchor: left-aligned text keeps
+	 * its left edge, centred text its centre, right-aligned text its right edge; the top stays put. o / n = {w, h, pad, mw} before / after (canvas size,
+	 * padding round the text, text box width); without an old pad / mw (first render) the canvas edges are used, as before round 8. */
+	function textAnchorShift(align, o, n) {
+		var f = align === "center" ? 0.5 : align === "right" ? 1 : 0, known = o.pad != null && o.mw != null;
+		var ax0 = known ? o.pad + f * o.mw : f * o.w, ax1 = known ? n.pad + f * n.mw : f * n.w, ay0 = known ? o.pad : 0, ay1 = known ? n.pad : 0;
+		return { dx: (ax0 - o.w / 2) - (ax1 - n.w / 2), dy: (ay0 - o.h / 2) - (ay1 - n.h / 2) };
+	}
+	/* layer-panel state that is not part of the picture (is a group folded?) survives undo / redo / history clicks: copy it, by layer id, from the
+	 * layers on screen onto the restored ones; layers that did not exist on screen keep what the snapshot had */
+	function carryUiState(cur, next, keys) {
+		var by = {}; (cur || []).forEach(function (L) { by[L.id] = L; });
+		(next || []).forEach(function (L) { var c = by[L.id]; if (!c) return; keys.forEach(function (k) { if (k in c) L[k] = c[k]; }); });
+		return next;
+	}
 	function wrapLines(str, lim, measure) {
 		str = String(str == null ? "" : str); var out = [], pos = 0;
 		str.split("\n").forEach(function (para) {
@@ -724,7 +739,7 @@ var MESPixel = (function () {
 	}
 
 	var api = { FXDEF: FXDEF, FXKEYS: FXKEYS, fxNorm: fxNorm, fxAny: fxAny, fxAngle: fxAngle, fxOffset: fxOffset, fxReach: fxReach, sdField: sdField, sdCover: sdCover, blurF: blurF, shiftF: shiftF, gradAt: gradAt, gradPlane: gradPlane, bevelPlanes: bevelPlanes, alphaBox: alphaBox, fxPlanes: fxPlanes, fxFromPsd: fxFromPsd, fxToPsd: fxToPsd, colorFromPsd: colorFromPsd, modeFromPsd: modeFromPsd, modeToPsd: modeToPsd, rgbToHsv: rgbToHsv, hsvToRgb: hsvToRgb, parseColor: parseColor, lightness: lightness, edt: edt, outlineAlpha: outlineAlpha, normToolLayout: normToolLayout, moveTool: moveTool, clampCrop: clampCrop, dragCrop: dragCrop, shiftCrop: shiftCrop, projectKind: projectKind, projectBase: projectBase, projectFileName: projectFileName, isZipBytes: isZipBytes, zipEntries: zipEntries, projectPrefix: projectPrefix, pruneRecent: pruneRecent, upsertRecent: upsertRecent, agoText: agoText, diskChanged: diskChanged, layerFileNames: layerFileNames, newProjectId: newProjectId,
-		unionBox: unionBox, boxesTouch: boxesTouch, rectFrom: rectFrom, snapTargets: snapTargets, snapAxis: snapAxis, snapBox: snapBox, guidesOn: guidesOn, linSolve: linSolve, scaleAbout: scaleAbout, wrapLines: wrapLines, richMask: richMask, richEdit: richEdit, richSet: richSet, richAll: richAll, richNorm: richNorm, richSegs: richSegs, fitFontSize: fitFontSize, folderProject: folderProject, caretLine: caretLine, hitInLine: hitInLine, wordAt: wordAt, describeSource: describeSource, bytesText: bytesText, panelClamp: panelClamp, panelKey: panelKey, clamp: clamp, hexToRgb: hexToRgb, rgbToHex: rgbToHex, rgbToHsl: rgbToHsl, hslToRgb: hslToRgb, histogram: histogram, identityLUT: identityLUT, applyLUT: applyLUT, levelsLUT: levelsLUT, curveLUT: curveLUT,
+		unionBox: unionBox, boxesTouch: boxesTouch, rectFrom: rectFrom, snapTargets: snapTargets, snapAxis: snapAxis, snapBox: snapBox, guidesOn: guidesOn, linSolve: linSolve, scaleAbout: scaleAbout, wrapLines: wrapLines, textAnchorShift: textAnchorShift, carryUiState: carryUiState, richMask: richMask, richEdit: richEdit, richSet: richSet, richAll: richAll, richNorm: richNorm, richSegs: richSegs, fitFontSize: fitFontSize, folderProject: folderProject, caretLine: caretLine, hitInLine: hitInLine, wordAt: wordAt, describeSource: describeSource, bytesText: bytesText, panelClamp: panelClamp, panelKey: panelKey, clamp: clamp, hexToRgb: hexToRgb, rgbToHex: rgbToHex, rgbToHsl: rgbToHsl, hslToRgb: hslToRgb, histogram: histogram, identityLUT: identityLUT, applyLUT: applyLUT, levelsLUT: levelsLUT, curveLUT: curveLUT,
 		brightnessContrast: brightnessContrast, exposure: exposure, hueSat: hueSat, vibrance: vibrance, temperature: temperature, invert: invert, grayscale: grayscale, sepia: sepia, threshold: threshold, posterize: posterize,
 		gaussianBlur: gaussianBlur, boxBlur: boxBlur, unsharp: unsharp, noise: noise, pixelate: pixelate, vignette: vignette, convolve: convolve, floodMask: floodMask, growShrinkMask: growShrinkMask, featherMask: featherMask, invertMask: invertMask,
 		maskBounds: maskBounds, opaqueBounds: opaqueBounds, blendByMask: blendByMask, autoLevels: autoLevels, premultiply: premultiply, unpremultiply: unpremultiply };
