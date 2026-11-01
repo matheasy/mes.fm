@@ -169,7 +169,7 @@ APPS = {
                   tag="Ask a question, share one link, watch the votes come in.", accent="#3b5bdb", dark="#2c47b0", tint="#e7ecfb",
                   desc="Free online poll maker: type a question and up to 20 answers, choose one or several picks, when voting ends and who sees the results, then share one short link. Live result bars and a pie chart, one vote per person, no sign-up.",
                   meta_desc="Free poll maker: make a poll in seconds, share one short link and watch live results. Single or multiple choice, closing time, no sign-up.",
-                  js_v="1"),
+                  js_v="2"),
     "ping": dict(title="MES Ping Test", page_title="Ping Test: Continuous Latency, Jitter and Packet Loss Test",
                  tag="Like ping -t, in your browser.", accent="#0e7490", dark="#155e75", tint="#dcf1f6",
                  desc="Free continuous ping test: check latency, jitter and packet loss to Cloudflare 1.1.1.1, Google 8.8.8.8, mes.fm or any website, with a live chart, ping-style log and plain-word verdicts for gaming, calls and streaming. Nothing to install.",
