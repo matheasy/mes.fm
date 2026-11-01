@@ -64,6 +64,22 @@ ok(M.manifoldCheck(withDeg).degenerate === 1 && M.manifoldCheck(withDeg).closed,
 var w = M.weld(new Float32Array([0, 0, 0, 0.00001, 0, 0, 1, 0, 0]), 1e-3);
 ok(w.verts.length === 6, 'weld merges near points');
 
+// T-junction: a box whose top face is split along an edge on one side only (like a boolean result) is still closed
+(function () {
+	// unit cube; the front edge of the top (y=0, z=1) gets an extra vertex at x=0.5 on the top face only
+	var V = { a: [0, 0, 0], b: [1, 0, 0], c: [1, 1, 0], d: [0, 1, 0], e: [0, 0, 1], f: [1, 0, 1], g: [1, 1, 1], h: [0, 1, 1], m: [0.5, 0, 1] };
+	var F = [['a', 'c', 'b'], ['a', 'd', 'c'], ['a', 'b', 'f'], ['a', 'f', 'e'], ['b', 'c', 'g'], ['b', 'g', 'f'], ['c', 'd', 'h'], ['c', 'h', 'g'], ['d', 'a', 'e'], ['d', 'e', 'h'],
+		['e', 'm', 'h'], ['m', 'g', 'h'], ['m', 'f', 'g']];
+	var arr = []; F.forEach(function (t) { t.forEach(function (k) { arr.push.apply(arr, V[k]); }); });
+	var soupT = new Float32Array(arr);
+	near(M.volumeArea(soupT).volume, 1, 1e-6, 't-junction cube volume');
+	var r = M.manifoldCheck(soupT);
+	ok(r.boundary === 3 && r.tjunctions === 3 && r.gaps === 0 && r.closed, 't-junction is not a gap: ' + JSON.stringify(r));
+	var cut = soupT.slice(0, soupT.length - 9);   // now a real hole
+	var r2 = M.manifoldCheck(cut);
+	ok(!r2.closed && r2.gaps > 0, 'a missing triangle is still a gap: ' + JSON.stringify(r2));
+})();
+
 // overhangs: a box standing on the floor has none; lifted, its bottom is all overhang
 var oh = M.overhang(b, 45, 0);
 ok(oh.area === 0, 'box on the floor: no overhang');

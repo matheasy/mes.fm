@@ -1,0 +1,123 @@
+	<script>try{if(!localStorage.getItem('pageMode')){document.documentElement.classList.add('page-wide')}}catch(e){}</script>
+	<script type="importmap">{"imports":{"three":"https://cdn.jsdelivr.net/npm/three@0.170.0/build/three.module.min.js","three/addons/":"https://cdn.jsdelivr.net/npm/three@0.170.0/examples/jsm/","three-mesh-bvh":"https://cdn.jsdelivr.net/npm/three-mesh-bvh@0.8.3/build/index.module.js","three-bvh-csg":"https://cdn.jsdelivr.net/npm/three-bvh-csg@0.0.17/build/index.module.js"}}</script>
+	<div class="tu td" id="td">
+		<div class="td-bar" id="td-bar" role="toolbar" aria-label="3D Studio tools">
+			<div class="td-grp">
+				<button type="button" class="td-b td-b--pri" data-act="templates" title="Ready-made models to start from">📚 Templates</button>
+				<button type="button" class="td-b" data-act="open" title="Open a .mes3d project, or import STL, OBJ, GLB, 3MF or SVG (Ctrl+O)">📂 Open / Import</button>
+				<button type="button" class="td-b" data-act="save" title="Save the project as a .mes3d file (Ctrl+S)">💾 Save</button>
+				<button type="button" class="td-b td-b--exp" data-act="export" title="Export for your slicer: STL, 3MF, OBJ or GLB (Ctrl+E)">⬇ Export STL / 3MF</button>
+				<button type="button" class="td-b" data-act="new" title="Start a new, empty project">✚ New</button>
+			</div>
+			<div class="td-grp">
+				<button type="button" class="td-ib" data-act="undo" title="Undo (Ctrl+Z)" aria-label="Undo">↶</button>
+				<button type="button" class="td-ib" data-act="redo" title="Redo (Ctrl+Shift+Z or Ctrl+Y)" aria-label="Redo">↷</button>
+			</div>
+			<div class="td-grp" role="group" aria-label="What dragging the handles does">
+				<button type="button" class="td-b td-mode" data-mode="translate" aria-pressed="true" title="Move (G)">✥ Move</button>
+				<button type="button" class="td-b td-mode" data-mode="rotate" aria-pressed="false" title="Rotate (R)">⟳ Rotate</button>
+				<button type="button" class="td-b td-mode" data-mode="scale" aria-pressed="false" title="Scale (S)">⤡ Scale</button>
+				<label class="td-snap" title="Snap moves to the grid and turns to 15° steps (hold Shift while dragging to turn it off for a moment)"><input type="checkbox" id="td-snap"> Snap</label>
+				<select id="td-grid" aria-label="Grid size" title="Grid / snap size"><option value="0.1">0.1 mm</option><option value="0.5">0.5 mm</option><option value="1">1 mm</option><option value="2">2 mm</option><option value="5">5 mm</option><option value="10">10 mm</option></select>
+			</div>
+			<div class="td-grp">
+				<button type="button" class="td-b" data-act="hole" title="Make the selected shapes holes, or solid again (H)">◌ Hole</button>
+				<button type="button" class="td-b" data-act="group" title="Join the selected shapes into one; holes cut into the solids (Ctrl+G)">⧉ Group</button>
+				<button type="button" class="td-b" data-act="subtract" title="Cut the smaller selected shapes out of the biggest one">⊖ Subtract</button>
+				<button type="button" class="td-b" data-act="intersect" title="Keep only where the selected shapes overlap">⋂ Intersect</button>
+				<button type="button" class="td-b" data-act="ungroup" title="Split a group back into its shapes (Ctrl+Shift+G)">⧈ Ungroup</button>
+			</div>
+			<div class="td-grp">
+				<button type="button" class="td-b" data-act="dup" title="Duplicate (Ctrl+D)">⧉ Copy</button>
+				<button type="button" class="td-b" data-act="mirror" title="Mirror (flip) the selection">⇋ Mirror</button>
+				<button type="button" class="td-b" data-act="align" title="Line up or spread out the selected shapes">☰ Align</button>
+				<button type="button" class="td-b" data-act="drop" title="Drop the selection onto the build plate (D)">⤓ Drop</button>
+				<button type="button" class="td-ib" data-act="delete" title="Delete (Delete key)" aria-label="Delete">🗑</button>
+			</div>
+			<div class="td-grp td-grp--r">
+				<button type="button" class="td-b" data-act="shot" title="Save a PNG picture of the view">📷 PNG</button>
+				<button type="button" class="td-b" data-act="fill" id="td-fillbtn" aria-pressed="false" title="Fill the browser window (F)">⤢ Fill window</button>
+				<button type="button" class="td-b" data-act="full" title="Full screen (Shift+F)">⛶ Full screen</button>
+				<button type="button" class="td-b" data-act="help" title="How it works and keyboard shortcuts (?)">? Help</button>
+			</div>
+		</div>
+
+		<div class="td-main">
+			<aside class="td-left" aria-label="Shapes and parts list">
+				<div class="td-panel">
+					<div class="td-ph">Add a shape <label class="td-addhole" title="Add the next shape as a hole"><input type="checkbox" id="td-addhole"> as hole</label></div>
+					<div class="td-shapes" id="td-shapes"></div>
+				</div>
+				<div class="td-panel td-panel--grow">
+					<div class="td-ph">Parts <span class="td-count" id="td-ocount"></span></div>
+					<input type="search" class="td-in" id="td-osearch" placeholder="Find a part…" aria-label="Find a part by name">
+					<div class="td-outl" id="td-outl" role="tree"></div>
+				</div>
+			</aside>
+
+			<div class="td-stage" id="td-stage">
+				<div class="td-view" id="td-view" tabindex="0" aria-label="3D view: drag to turn the view, right-drag or two fingers to pan, wheel or pinch to zoom, click a shape to select it">
+					<div class="td-labels" id="td-labels" aria-hidden="true"></div>
+					<div class="td-vtools" role="group" aria-label="Views">
+						<button type="button" class="td-vb" data-view="iso" title="3D view (0)">3D</button>
+						<button type="button" class="td-vb" data-view="top" title="From the top (7)">Top</button>
+						<button type="button" class="td-vb" data-view="front" title="From the front (1)">Front</button>
+						<button type="button" class="td-vb" data-view="side" title="From the right side (3)">Side</button>
+						<button type="button" class="td-vb" data-view="frame" title="Zoom to the selection, or everything (.)">⌖ Fit</button>
+					</div>
+					<div class="td-empty" id="td-empty">
+						<div class="td-empty-in">
+							<b>Start your 3D model</b>
+							<span>Click a shape on the left to add it, or start from a ready-made model.</span>
+							<div><button type="button" class="td-b td-b--pri" data-act="templates">📚 Pick a template</button> <button type="button" class="td-b" data-act="open">📂 Open a file</button></div>
+							<small>Drag to turn the view · right-drag to pan · scroll to zoom</small>
+						</div>
+					</div>
+					<div class="td-loading" id="td-loading"><div><span class="td-spin"></span> Loading the 3D engine…</div></div>
+				</div>
+				<div class="td-status" id="td-status" aria-live="polite"></div>
+			</div>
+
+			<aside class="td-right" aria-label="Selected shape and print check">
+				<div class="td-tabs" role="tablist">
+					<button type="button" class="td-tab" data-tab="obj" aria-selected="true" role="tab">Shape</button>
+					<button type="button" class="td-tab" data-tab="print" aria-selected="false" role="tab">3D print</button>
+					<button type="button" class="td-tab" data-tab="set" aria-selected="false" role="tab">Settings</button>
+				</div>
+				<div class="td-tp" id="td-tp-obj" role="tabpanel"><div id="td-insp"></div></div>
+				<div class="td-tp" id="td-tp-print" role="tabpanel" hidden><div id="td-print"></div></div>
+				<div class="td-tp" id="td-tp-set" role="tabpanel" hidden><div id="td-set"></div></div>
+			</aside>
+		</div>
+		<input type="file" id="td-file" accept=".mes3d,.json,.stl,.obj,.glb,.gltf,.3mf,.svg" multiple hidden>
+		<div class="td-dlgw" id="td-dlgw" hidden><div class="td-dlg" id="td-dlg" role="dialog" aria-modal="true"></div></div>
+		<div class="td-toast" id="td-toast" role="status" aria-live="polite"></div>
+
+		<div class="tu-seo">
+			<h2>A free 3D modeler for beginners, made for 3D printing</h2>
+			<p>MES 3D Studio is a simple 3D design app that runs in your browser. Put shapes together like building blocks, turn some of them into holes to cut away, then export an STL or 3MF file for your slicer (Cura, PrusaSlicer, Bambu Studio, OrcaSlicer). Nothing is uploaded: your models stay on your computer.</p>
+			<h3>How to make your first model</h3>
+			<ol>
+				<li>Click a shape on the left (for example a Box). It appears on the build plate.</li>
+				<li>Drag the coloured arrows to move it, or type exact sizes in millimetres in the Shape panel on the right.</li>
+				<li>Add a Cylinder, press <b>Hole</b>, move it into the box, select both (Shift-click) and press <b>Group</b>: the cylinder is cut out of the box.</li>
+				<li>Open the <b>3D print</b> tab to check that it fits your printer, is watertight and see how much filament it needs.</li>
+				<li>Press <b>Export STL / 3MF</b> and open the file in your slicer.</li>
+			</ol>
+			<h3>Questions</h3>
+			<dl>
+				<dt>What does "watertight" mean?</dt>
+				<dd>A printable model has to be a closed skin with no gaps, like a balloon. The check counts every edge: in a closed model each edge is shared by exactly two triangles. Shapes made here are always closed; imported files sometimes are not.</dd>
+				<dt>What is an overhang?</dt>
+				<dd>A part of the model that faces down steeper than about 45° from upright. The printer would lay plastic on thin air, so it needs supports. Turn on "Show overhangs" in the 3D print tab to see them in red, then try turning the model so the flat side is down.</dd>
+				<dt>How is the filament estimated?</dt>
+				<dd>The outside skin (about the surface area times the wall thickness) is solid, the inside is filled at your infill percentage. Grams = that volume times the plastic's density (PLA 1.24 g/cm³), metres = volume divided by the filament's cross-section. Your slicer gives the exact numbers; this is a good first guess.</dd>
+				<dt>Which file should I export?</dt>
+				<dd>STL works with every slicer. 3MF keeps millimetres, colours and separate parts, and is the default of PrusaSlicer and Bambu Studio. OBJ and GLB are for other 3D programs, games and web viewers.</dd>
+				<dt>Can I open files from Thingiverse or Printables?</dt>
+				<dd>Yes: open STL, OBJ, GLB or 3MF files, then add text, holes or other shapes to them and export again. Group an imported model with a hole to cut it.</dd>
+				<dt>Is my work saved?</dt>
+				<dd>The last project is kept in this browser automatically. Use Save to keep a .mes3d file you can open on any computer.</dd>
+			</dl>
+		</div>
+	</div>

@@ -174,20 +174,60 @@
 			add(a, b); add(b, c); add(c, a);
 			union(a, b); union(b, c);
 		}
-		var boundary = 0, nonManifold = 0, flipped = 0;
-		edges.forEach(function (e) {
+		var boundary = 0, nonManifold = 0, flipped = 0, open = [];
+		edges.forEach(function (e, key) {
 			var n = e[0] + e[1];
-			if (n === 1) boundary++;
+			if (n === 1) { boundary++; var lo = Math.floor(key / 4294967296), hi = key - lo * 4294967296; open.push(e[0] ? [lo, hi] : [hi, lo]); }
 			else if (n > 2) nonManifold++;
 			else if (e[0] !== 1) flipped++;
 		});
+		var seams = open.length ? seamCover(open, w.verts, tol) : { gaps: 0, gapLength: 0 };
 		var roots = new Set();
 		for (var j = 0; j < idx.length; j += 3) {
 			if (idx[j] === idx[j + 1] || idx[j + 1] === idx[j + 2] || idx[j] === idx[j + 2]) continue;
 			roots.add(find(idx[j]));
 		}
 		return { triangles: tris, vertices: nv, edges: edges.size, boundary: boundary, nonManifold: nonManifold, flipped: flipped, degenerate: degenerate, shells: roots.size,
-			closed: tris > 0 && boundary === 0 && nonManifold === 0 && flipped === 0 };
+			tjunctions: boundary - seams.gaps, gaps: seams.gaps, gapLength: seams.gapLength,
+			closed: tris > 0 && seams.gaps === 0 && nonManifold === 0 && flipped === 0 };
+	}
+	/* Boolean (CSG) results often have "T-junctions": a long edge on one side of a seam meets two or more shorter edges on the
+	 * other side. Every one of those edges is used by one triangle only, yet the surface has no gap. This checks each straight
+	 * line of open edges: the edges running one way must cover exactly the same stretch as the edges running the other way.
+	 * open = directed edges [from, to] (vertex indices), verts = welded positions. Returns how many open edges are real gaps. */
+	function seamCover(open, verts, tol) {
+		var E = [], lens = [];
+		open.forEach(function (e) {
+			var a = [verts[e[0] * 3], verts[e[0] * 3 + 1], verts[e[0] * 3 + 2]], b = [verts[e[1] * 3], verts[e[1] * 3 + 1], verts[e[1] * 3 + 2]];
+			var d = [b[0] - a[0], b[1] - a[1], b[2] - a[2]], l = Math.sqrt(d[0] * d[0] + d[1] * d[1] + d[2] * d[2]);
+			if (l) { E.push({ a: a, b: b, d: [d[0] / l, d[1] / l, d[2] / l], l: l }); lens.push(l); }
+		});
+		lens.sort(function (x, y) { return x - y; });
+		var cell = Math.min(5, Math.max(0.25, lens[lens.length >> 1] || 1)), grid = new Map(), near = Math.max(1e-3, (tol || 1e-4) * 10);
+		function k(x, y, z) { return x + ',' + y + ',' + z; }
+		E.forEach(function (e, i) {
+			var lo = [0, 1, 2].map(function (j) { return Math.floor((Math.min(e.a[j], e.b[j]) - near) / cell); }), hi = [0, 1, 2].map(function (j) { return Math.floor((Math.max(e.a[j], e.b[j]) + near) / cell); });
+			var n = (hi[0] - lo[0] + 1) * (hi[1] - lo[1] + 1) * (hi[2] - lo[2] + 1);
+			if (n > 4000) { var keyL = 'L'; if (!grid.has(keyL)) grid.set(keyL, []); grid.get(keyL).push(i); return; }   // very long edge: checked against everything
+			for (var x = lo[0]; x <= hi[0]; x++) for (var y = lo[1]; y <= hi[1]; y++) for (var z = lo[2]; z <= hi[2]; z++) { var kk = k(x, y, z), c = grid.get(kk); if (!c) { c = []; grid.set(kk, c); } c.push(i); }
+		});
+		var longs = grid.get('L') || [];
+		function onSeg(p, f) {
+			var t = (p[0] - f.a[0]) * f.d[0] + (p[1] - f.a[1]) * f.d[1] + (p[2] - f.a[2]) * f.d[2];
+			if (t < -near || t > f.l + near) return false;
+			var qx = f.a[0] + f.d[0] * t - p[0], qy = f.a[1] + f.d[1] * t - p[1], qz = f.a[2] + f.d[2] * t - p[2];
+			return qx * qx + qy * qy + qz * qz < near * near;
+		}
+		var gaps = 0, gapLength = 0;
+		E.forEach(function (e, i) {
+			var covered = [0.15, 0.5, 0.85].every(function (t) {
+				var p = [e.a[0] + (e.b[0] - e.a[0]) * t, e.a[1] + (e.b[1] - e.a[1]) * t, e.a[2] + (e.b[2] - e.a[2]) * t];
+				var cand = (grid.get(k(Math.floor(p[0] / cell), Math.floor(p[1] / cell), Math.floor(p[2] / cell))) || []).concat(longs);
+				return cand.some(function (j) { if (j === i) return false; var f = E[j]; return e.d[0] * f.d[0] + e.d[1] * f.d[1] + e.d[2] * f.d[2] < -0.995 && onSeg(p, f); });
+			});
+			if (!covered) { gaps++; gapLength += e.l; }
+		});
+		return { gaps: gaps, gapLength: gapLength };
 	}
 	/* Faces that point down more steeply than `maxAngle` degrees from vertical need supports when printed (45° is the usual rule).
 	 * Faces lying on the floor (all three corners within floorTol of floorZ) are the first layer, not an overhang. */
