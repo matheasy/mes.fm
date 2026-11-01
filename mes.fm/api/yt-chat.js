@@ -22,12 +22,28 @@ async function get(url, ms) {
   } finally { clearTimeout(t); }
 }
 
+// The /live page names the live (or next scheduled) stream. YouTube sometimes serves servers a stripped-down page without it, so the
+// channel's public feed (newest uploads; live and scheduled streams appear there) is the fallback. A video counts as live when its
+// live chat opens (start() returns a continuation); an old upload has no live chat.
 async function channel(ch) {
   const path = ch[0] === '@' ? '/' + ch : '/channel/' + ch;
-  const info = C.ytLivePage(await get('https://www.youtube.com' + path + '/live'));
-  if (!info.v || (!info.live && !info.upcoming)) return { live: false, upcoming: false };
-  const out = await start(info.v);
-  return Object.assign({ live: info.live, upcoming: info.upcoming, title: info.title }, out);
+  const html = await get('https://www.youtube.com' + path + '/live');
+  const info = C.ytLivePage(html);
+  const tried = {};
+  const tryV = async (v, meta) => {
+    if (!v || tried[v]) return null;
+    tried[v] = 1;
+    const out = await start(v).catch(() => null);
+    return out && out.c ? Object.assign({ live: !!meta.live, upcoming: !meta.live, title: meta.title || '' }, out) : null;
+  };
+  let r = await tryV(info.v, info);
+  if (r) return r;
+  let cid = ch[0] === 'U' ? ch : ((html.match(/"(?:externalId|channelId)":"(UC[A-Za-z0-9_-]{22})"/) || [])[1] || (html.match(/<link rel="canonical" href="https:\/\/www\.youtube\.com\/channel\/(UC[A-Za-z0-9_-]{22})"/) || [])[1]);
+  if (cid) {
+    const ids = C.ytFeedIds(await get('https://www.youtube.com/feeds/videos.xml?channel_id=' + cid).catch(() => ''), 3);
+    for (const v of ids) { r = await tryV(v, { live: true }); if (r) { r.live = true; r.upcoming = false; return r; } }
+  }
+  return { live: false, upcoming: false, why: info.v ? 'chat-closed' : (cid ? 'not-live' : 'no-channel-id') };
 }
 
 async function start(v) {

@@ -131,10 +131,18 @@
 	/* a channel's /live page -> { v, live, upcoming, title } */
 	C.ytLivePage = function (html) {
 		html = String(html || '');
-		var v = (html.match(/<link rel="canonical" href="https:\/\/www\.youtube\.com\/watch\?v=([A-Za-z0-9_-]{11})"/) || [])[1];
+		var v = (html.match(/<link rel="canonical" href="https:\/\/www\.youtube\.com\/watch\?v=([A-Za-z0-9_-]{11})"/) || [])[1] ||
+			(html.match(/<meta property="og:url" content="https:\/\/www\.youtube\.com\/watch\?v=([A-Za-z0-9_-]{11})"/) || [])[1] ||
+			(html.match(/"videoDetails":\{"videoId":"([A-Za-z0-9_-]{11})"/) || [])[1];
 		if (!v) return { v: null };
 		var title = (html.match(/<meta name="title" content="([^"]*)"/) || [])[1] || '';
 		return { v: v, live: /"isLiveNow":true/.test(html), upcoming: /"isUpcoming":true/.test(html) && !/"isLiveNow":true/.test(html), title: C.unescapeHtml(title) };
+	};
+	/* a channel's public Atom feed -> newest video ids (live and scheduled streams are listed there too) */
+	C.ytFeedIds = function (xml, n) {
+		var out = [], re = /<yt:videoId>([A-Za-z0-9_-]{11})<\/yt:videoId>/g, m;
+		while ((m = re.exec(String(xml || ''))) && out.length < (n || 3)) out.push(m[1]);
+		return out;
 	};
 	C.unescapeHtml = function (s) { return String(s).replace(/&amp;/g, '&').replace(/&quot;/g, '"').replace(/&#39;/g, "'").replace(/&lt;/g, '<').replace(/&gt;/g, '>'); };
 
@@ -258,7 +266,7 @@
 	if (!root) return;
 	var MODE = root.getAttribute('data-mode') || 'page', KEY = 'mes-stream-chat:v1', FKEY = 'mes-stream-chat:feat';
 	var Q = {}; try { new URLSearchParams(location.search).forEach(function (v, k) { Q[k] = v; }); } catch (e) {}
-	var S = { yt: '@mestruth, @mes', tw: 'matheasysolutions', od: '@mestruth:9', on: { yt: true, tw: true, od: true }, show: { yt: true, tw: true, od: true },
+	var S = { yt: 'UCmYl-9bhOOotXaNpS-liNiQ, UCUUBq1GPBvvGNz7dpgO14Ow', tw: 'matheasysolutions', od: '@mestruth:9', on: { yt: true, tw: true, od: true }, show: { yt: true, tw: true, od: true },
 		paidOnly: false, size: 1, avatars: true, times: false, ding: true, setup: MODE === 'page' };
 	try { var sv = JSON.parse(localStorage.getItem(KEY) || 'null'); if (sv) for (var k in sv) if (k in S) S[k] = sv[k]; } catch (e) {}
 	['yt', 'tw', 'od'].forEach(function (p) { if (Q[p] != null) { S[p] = Q[p]; S.on[p] = !!Q[p]; } });
@@ -397,7 +405,7 @@
 				var q = src.v ? 'v=' + src.v : 'ch=' + encodeURIComponent(src.ch);
 				getJSON('/api/yt-chat?' + q).then(function (j) {
 					if (g !== gen) return;
-					if (src.ch && !j.live && !j.upcoming) { status(key, 'yt', label + ': not live, checking every minute', 'off'); later(poll, 60000); return; }
+					if (src.ch && !j.live && !j.upcoming) { status(key, 'yt', label + ': not live, checking every minute' + (j.why === 'no-channel-id' ? ' (tip: use the channel ID, UC…)' : ''), 'off'); later(poll, 60000); return; }
 					if (j.ended || !j.c) { status(key, 'yt', label + ': no chat on this video', 'off'); later(poll, 60000); return; }
 					if (ytVideos[j.v] && ytVideos[j.v] !== key) { status(key, 'yt', label + ': same stream as ' + ytVideos[j.v].slice(3), 'off'); later(poll, 120000); return; }
 					ytVideos[j.v] = key;
@@ -495,7 +503,7 @@
 		stop();
 		if (MODE === 'overlay' && !Q.chat) return;
 		var any = false;
-		if (S.on.yt) C.list(S.yt).forEach(function (s) { var src = C.ytSource(s); if (src) { any = true; ytRun(src, src.ch || src.v); } });
+		if (S.on.yt) C.list(S.yt).forEach(function (s) { var src = C.ytSource(s); if (src) { any = true; ytRun(src, ({ 'UCmYl-9bhOOotXaNpS-liNiQ': '@mestruth', 'UCUUBq1GPBvvGNz7dpgO14Ow': '@mes' })[src.ch] || src.ch || src.v); } });
 		if (S.on.tw) C.list(S.tw).forEach(function (s) { var c = C.twChannel(s); if (c) { any = true; twRun(c); } });
 		if (S.on.od) C.list(S.od).forEach(function (s) { var c = C.odChannel(s); if (c) { any = true; odRun(c); } });
 		if (!any) status('x', 'yt', 'Add a channel in Settings to start.', 'off');

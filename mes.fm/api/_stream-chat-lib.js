@@ -131,10 +131,18 @@
 	/* a channel's /live page -> { v, live, upcoming, title } */
 	C.ytLivePage = function (html) {
 		html = String(html || '');
-		var v = (html.match(/<link rel="canonical" href="https:\/\/www\.youtube\.com\/watch\?v=([A-Za-z0-9_-]{11})"/) || [])[1];
+		var v = (html.match(/<link rel="canonical" href="https:\/\/www\.youtube\.com\/watch\?v=([A-Za-z0-9_-]{11})"/) || [])[1] ||
+			(html.match(/<meta property="og:url" content="https:\/\/www\.youtube\.com\/watch\?v=([A-Za-z0-9_-]{11})"/) || [])[1] ||
+			(html.match(/"videoDetails":\{"videoId":"([A-Za-z0-9_-]{11})"/) || [])[1];
 		if (!v) return { v: null };
 		var title = (html.match(/<meta name="title" content="([^"]*)"/) || [])[1] || '';
 		return { v: v, live: /"isLiveNow":true/.test(html), upcoming: /"isUpcoming":true/.test(html) && !/"isLiveNow":true/.test(html), title: C.unescapeHtml(title) };
+	};
+	/* a channel's public Atom feed -> newest video ids (live and scheduled streams are listed there too) */
+	C.ytFeedIds = function (xml, n) {
+		var out = [], re = /<yt:videoId>([A-Za-z0-9_-]{11})<\/yt:videoId>/g, m;
+		while ((m = re.exec(String(xml || ''))) && out.length < (n || 3)) out.push(m[1]);
+		return out;
 	};
 	C.unescapeHtml = function (s) { return String(s).replace(/&amp;/g, '&').replace(/&quot;/g, '"').replace(/&#39;/g, "'").replace(/&lt;/g, '<').replace(/&gt;/g, '>'); };
 
