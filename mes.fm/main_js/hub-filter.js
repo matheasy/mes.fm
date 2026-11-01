@@ -102,7 +102,18 @@
         "body.dark-mode .hub-table th[aria-sort] button .ar{color:#6cb6f5}body.dark-mode .hub-table tbody tr:hover td{background:#25303a}" +
         "body.dark-mode .hub-table td.nm a{color:#6cb6f5}body.dark-mode .hub-table td.nm img{background:#3a3a3a}" +
         "body.dark-mode .hub-table .stars{color:#ffb454}body.dark-mode .hub-table .muted,body.dark-mode .hub-tnote{color:#aab2bd}" +
-        "@media (max-width:700px){body.dark-mode .hub-table td.nm,body.dark-mode .hub-table th:first-child{box-shadow:1px 0 0 #3a3a3a}}";
+        "@media (max-width:700px){body.dark-mode .hub-table td.nm,body.dark-mode .hub-table th:first-child{box-shadow:1px 0 0 #3a3a3a}}" +
+        /* short header labels on phones; first column resizable (same handle as /stats and /ads) */
+        ".hub-table .l-s{display:none}@media (max-width:700px){.hub-table .l-l{display:none}.hub-table .l-s{display:inline}.hub-table td.nm{min-width:8em;max-width:10em}}" +
+        ".hub-table thead th{position:relative}.hub-table thead th:first-child{overflow:visible}" +
+        ".hub-rsz{position:absolute;top:0;right:-1px;bottom:0;width:10px;cursor:col-resize;touch-action:none;user-select:none;-webkit-user-select:none;z-index:3}" +
+        ".hub-rsz::after{content:'';position:absolute;top:22%;bottom:22%;right:3px;width:3px;border-radius:2px;background:#1e2733;opacity:.28}" +
+        ".hub-rsz:hover::after,.hub-rsz:focus-visible::after,.hub-rsz.dragging::after{background:#277bb6;opacity:1}.hub-rsz:focus{outline:none}" +
+        "body.dark-mode .hub-rsz::after{background:#eee}body.dark-mode .hub-rsz:hover::after,body.dark-mode .hub-rsz:focus-visible::after,body.dark-mode .hub-rsz.dragging::after{background:#6cb6f5}" +
+        "body.hub-col-resizing{cursor:col-resize;user-select:none;-webkit-user-select:none}" +
+        "@media (pointer:coarse){.hub-rsz{width:24px;right:-9px}.hub-rsz::after{right:10px;width:4px}}" +
+        ".hub-table.w-set th:first-child,.hub-table.w-set td.nm{width:var(--hub-col-w);min-width:var(--hub-col-w);max-width:var(--hub-col-w);box-sizing:border-box}" +
+        ".hub-table.w-set td.nm a span{overflow-wrap:anywhere}";
     document.head.appendChild(css);
 
     var cat = "all";
@@ -175,9 +186,9 @@
     var page = /calculator/i.test(input.getAttribute("placeholder") || "") ? "calculator" : "tool";
 
     var COLS = [
-        { k: "name", l: "Name" }, { k: "cat", l: "Category" }, { k: "type", l: "Type" },
+        { k: "name", l: "Name" }, { k: "cat", l: "Category", s: "Cat." }, { k: "type", l: "Type" },
         { k: "added", l: "Added" }, { k: "updated", l: "Updated" },
-        { k: "views", l: "Views (30 days)", num: 1 }, { k: "rating", l: "Rating", num: 1 }
+        { k: "views", l: "Views (30 days)", s: "Views 30d", num: 1 }, { k: "rating", l: "Rating", num: 1 }
     ];
     if (!COLS.some(function (c) { return c.k === sortKey; })) sortKey = "name";
     var DESC_FIRST = /^(added|updated|views|rating)$/;   /* first click = newest / most first */
@@ -192,7 +203,7 @@
         tbox.id = "hub-tbox";
         tbox.hidden = true;
         tbox.innerHTML = '<div class="hub-tscroll" tabindex="0" role="region" aria-label="Table of ' + page + 's (scrolls sideways)"><table class="hub-table"><thead><tr>' +
-            COLS.map(function (c) { return '<th scope="col" data-k="' + c.k + '"' + (c.num ? ' class="num"' : "") + '><button type="button">' + esc(c.l) + ' <span class="ar" aria-hidden="true">&#8597;</span></button></th>'; }).join("") +
+            COLS.map(function (c) { return '<th scope="col" data-k="' + c.k + '"' + (c.num ? ' class="num"' : "") + '><button type="button">' + (c.s ? '<span class="l-l">' + esc(c.l) + '</span><span class="l-s" aria-hidden="true">' + esc(c.s) + '</span>' : esc(c.l)) + ' <span class="ar" aria-hidden="true">&#8597;</span></button></th>'; }).join("") +
             '</tr></thead><tbody></tbody></table></div><p class="hub-tnote" aria-live="polite"></p>';
         var anchor = empty || sections[sections.length - 1].nextSibling;
         (empty || sections[sections.length - 1]).parentNode.insertBefore(tbox, anchor);
@@ -221,7 +232,9 @@
             rows.push(r);
             tbody.appendChild(tr);
         });
+        attachResizer(tbox.querySelector(".hub-table"));
         tbox.querySelector("thead").addEventListener("click", function (e) {
+            if (e.target.closest(".hub-rsz")) return;
             var th = e.target.closest("th");
             if (!th) return;
             var k = th.getAttribute("data-k");
@@ -232,6 +245,58 @@
         });
         fill();
         sortRows();
+    }
+    /* First column resize, like the Page column on /stats and /ads: drag the handle on the header's right edge
+       (mouse / touch / pen), arrow keys when focused, double-click or double-tap resets. Saved per hub page. */
+    var COLW_KEY = "mes-hubview:colw:" + page, lastTap = 0;
+    function setColW(el, px, keep) {
+        if (px == null) {
+            el.classList.remove("w-set"); el.style.removeProperty("--hub-col-w");
+            if (keep) { try { localStorage.removeItem(COLW_KEY); } catch (e) {} }
+            return;
+        }
+        var max = Math.max(130, el.parentElement.clientWidth - 90);
+        var w = Math.round(Math.min(max, Math.max(70, px)));
+        el.style.setProperty("--hub-col-w", w + "px"); el.classList.add("w-set");
+        if (keep) { try { localStorage.setItem(COLW_KEY, String(w)); } catch (e) {} }
+    }
+    function attachResizer(el) {
+        var th = el.querySelector("thead th");
+        if (!th) return;
+        try { var sw = parseInt(localStorage.getItem(COLW_KEY), 10); if (sw > 0) setColW(el, sw, false); } catch (e) {}
+        var h = document.createElement("span");
+        h.className = "hub-rsz"; h.tabIndex = 0;
+        h.setAttribute("role", "separator"); h.setAttribute("aria-orientation", "vertical");
+        h.setAttribute("aria-label", "Resize the Name column (double-click to reset)");
+        h.title = "Drag to resize this column. Double-click to reset.";
+        th.appendChild(h);
+        h.addEventListener("click", function (e) { e.stopPropagation(); });
+        h.addEventListener("dblclick", function (e) { e.preventDefault(); e.stopPropagation(); setColW(el, null, true); });
+        h.addEventListener("keydown", function (e) {
+            if (e.key !== "ArrowLeft" && e.key !== "ArrowRight") return;
+            e.preventDefault(); e.stopPropagation();
+            setColW(el, th.getBoundingClientRect().width + (e.key === "ArrowRight" ? 16 : -16), true);
+        });
+        h.addEventListener("pointerdown", function (e) {
+            if (e.button !== undefined && e.button !== 0) return;
+            e.preventDefault(); e.stopPropagation();
+            var startX = e.clientX, startW = th.getBoundingClientRect().width;
+            try { h.setPointerCapture(e.pointerId); } catch (err) {}
+            document.body.classList.add("hub-col-resizing"); h.classList.add("dragging");
+            function move(ev) { setColW(el, startW + ev.clientX - startX, false); }
+            function up(ev) {
+                h.removeEventListener("pointermove", move); h.removeEventListener("pointerup", up); h.removeEventListener("pointercancel", up);
+                try { h.releasePointerCapture(ev.pointerId); } catch (err) {}
+                document.body.classList.remove("hub-col-resizing"); h.classList.remove("dragging");
+                if (Math.abs(ev.clientX - startX) < 4) {
+                    var now = Date.now();
+                    if (now - lastTap < 400) { lastTap = 0; setColW(el, null, true); } else lastTap = now;
+                    return;
+                }
+                setColW(el, th.getBoundingClientRect().width, true);
+            }
+            h.addEventListener("pointermove", move); h.addEventListener("pointerup", up); h.addEventListener("pointercancel", up);
+        });
     }
     function val(r) {
         return sortKey === "rating" ? r.rb : sortKey === "cat" ? r.catName.toLowerCase() : sortKey === "type" ? (r.type || "").toLowerCase() : r[sortKey];
