@@ -975,6 +975,13 @@ APPS = {
                 desc="Private dashboard: Google Search Console and Bing Webmaster clicks, impressions, CTR and average position for mes.fm, by day, query, page, country and device.",
                 js_v="6", no_ads=True,
                 head_extra='<meta name="robots" content="noindex, nofollow">' + PAGE3_HEAD),
+    # MES App Installs (public, mes.fm/installs): installs of the MES mobile apps on iPhone (App Store Connect Sales and Trends) and Android
+    # (Google Play installs CSVs in the developer's Cloud Storage bucket), read by api/installs.js (env APPSTORE_* / PLAY_*; lib.js = MESInst,
+    # byte-identical copy at api/_installs-lib.js). Wide, Standard | Wide | Theatre without a sidebar like /ads, ad-free. Tests: tool_apps_src/installs-tests.js.
+    "installs": dict(title="MES App Installs", page_title="MES App Installs: iPhone and Android Downloads",
+                tag="How many people install the MES apps.", accent="#1d6fd1", dark="#1557b0", tint="#e8f0fe",
+                desc="Live install numbers for the free MES mobile apps (Percentage, BMI, Grade, GPA and Fitness Calculators) on iPhone and Android: by day, app, country, device, Android version and app version, with updates, re-downloads, uninstalls and ratings.",
+                js_v="1", no_ads=True, head_extra=PAGE3_HEAD),
     # How much do YouTubers make?: leaderboard of big channels with ESTIMATED ad revenue (companion of /youtubemoney, ad-free like it). Data = mes.fm/how-much-do-youtubers-make/data/channels.json
     # (update_youtuber_snapshot.py), live refresh = mes.fm/api/youtuber-stats.js; lib.js = maths + a copy of the calculator's RPM tables (node-testable:
     # tool_apps_src/how-much-do-youtubers-make-tests.js), app.js = UI. Wide page, no sidebar.

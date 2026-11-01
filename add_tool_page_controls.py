@@ -154,6 +154,7 @@ TOOLS = [  # (directory, compact-bar title[, home path of the site the page belo
     ("site-index", "Site Index"),
     ("ads", "MES Ads"),
     ("search-console", "MES Search Console"),
+    ("installs", "MES App Installs"),
     ("fav", "MES Favourites"),
     ("ratings", "MES Ratings"),
     ("premium", "MES Premium"),

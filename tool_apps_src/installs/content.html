@@ -1,0 +1,76 @@
+	<div class="tu in" id="in" data-page-modes="3">
+		<div class="in-top">
+			<div class="in-tabs" id="in-range" role="group" aria-label="Range">
+				<button type="button" class="tu-chip" data-r="7d" aria-pressed="false">7 days</button>
+				<button type="button" class="tu-chip" data-r="30d" aria-pressed="true">30 days</button>
+				<button type="button" class="tu-chip" data-r="90d" aria-pressed="false">90 days</button>
+				<button type="button" class="tu-chip" data-r="365d" aria-pressed="false">365 days</button>
+				<button type="button" class="tu-chip" data-r="all" aria-pressed="false">All time</button>
+			</div>
+			<span class="in-links"><a href="/stats">Site stats</a> · <b>App installs</b> · <a href="/mobile-apps">Mobile apps</a></span>
+		</div>
+		<div class="in-filters">
+			<div class="in-tabs" id="in-app" role="group" aria-label="App"></div>
+			<div class="in-tabs" id="in-plat" role="group" aria-label="Platform">
+				<button type="button" class="tu-chip" data-p="" aria-pressed="true">iPhone + Android</button>
+				<button type="button" class="tu-chip" data-p="i" aria-pressed="false"><span class="in-dot in-dot--i"></span>iPhone &amp; iPad</button>
+				<button type="button" class="tu-chip" data-p="a" aria-pressed="false"><span class="in-dot in-dot--a"></span>Android</button>
+			</div>
+		</div>
+		<p class="tu-note in-meta" id="in-meta" role="status">Loading…</p>
+		<noscript><p class="tu-note">This page needs JavaScript.</p></noscript>
+		<div class="in-setup" id="in-setup"></div>
+		<div class="tu-stats in-tiles" id="in-tiles"></div>
+
+		<section class="tu-card in-sec" id="in-daysec">
+			<div class="in-head"><h2>Installs day by day</h2><span class="in-hbtns" id="in-hbtns"></span></div>
+			<div class="in-tabs in-split" id="in-split" role="group" aria-label="Split the bars by">
+				<span class="in-lab">Split by:</span>
+				<button type="button" class="tu-chip" data-s="plat" aria-pressed="true">Platform</button>
+				<button type="button" class="tu-chip" data-s="app" aria-pressed="false">App</button>
+			</div>
+			<div class="in-chart" id="in-chart"><svg id="in-svg" preserveAspectRatio="none" role="img" aria-label="Installs per day"></svg><div class="in-tip" id="in-tip"></div></div>
+			<div class="in-legend" id="in-legend"></div>
+			<p class="tu-note">Hover or tap a day for its numbers. Installs = first downloads + re-downloads on iPhone and iPad, and device installs on Android. Updates are not installs, so they are counted on their own.</p>
+		</section>
+
+		<section class="tu-card in-sec" id="in-appsec">
+			<div class="in-head"><h2>Per app</h2></div>
+			<div class="in-wrap"><table class="in-t" id="t-apps"></table></div>
+		</section>
+
+		<section class="tu-card in-sec" id="in-ccsec">
+			<div class="in-head"><h2>Countries</h2></div>
+			<div class="in-wrap"><table class="in-t" id="t-cc"></table></div><button type="button" class="tu-btn tu-btn--ghost in-more" id="m-cc" hidden></button>
+		</section>
+
+		<div class="in-grid">
+			<section class="tu-card in-sec" id="in-devsec">
+				<div class="in-head"><h2>Devices</h2></div>
+				<p class="tu-note">iPhone / iPad / Mac from Apple; phone models from Google Play.</p>
+				<div class="in-wrap"><table class="in-t" id="t-dev"></table></div><button type="button" class="tu-btn tu-btn--ghost in-more" id="m-dev" hidden></button>
+			</section>
+			<section class="tu-card in-sec" id="in-ossec">
+				<div class="in-head"><h2>Android versions</h2></div>
+				<p class="tu-note">Apple's reports don't say which iOS version.</p>
+				<div class="in-wrap"><table class="in-t" id="t-os"></table></div><button type="button" class="tu-btn tu-btn--ghost in-more" id="m-os" hidden></button>
+			</section>
+			<section class="tu-card in-sec" id="in-versec">
+				<div class="in-head"><h2>App versions</h2></div>
+				<p class="tu-note">Installs and updates per app version (Android shows the version code).</p>
+				<div class="in-wrap"><table class="in-t" id="t-ver"></table></div><button type="button" class="tu-btn tu-btn--ghost in-more" id="m-ver" hidden></button>
+			</section>
+		</div>
+
+		<section class="tu-card in-sec in-about">
+			<h2>Where the numbers come from</h2>
+			<ul>
+				<li><b>iPhone &amp; iPad:</b> Apple's daily Sales and Trends reports (App Store Connect). A day's report arrives the next morning (Pacific time), so the newest day is yesterday. Apple counts <b>first-time downloads</b>, <b>re-downloads</b> (the same Apple account installing again, e.g. on a new phone) and <b>updates</b>. Apple does not report uninstalls or how many phones still have the app.</li>
+				<li><b>Android:</b> Google Play's installs reports. Google writes them once a day and they run 1-3 days behind. <b>Uninstalls</b> and <b>active devices</b> (phones with the app installed now) come only from Google.</li>
+				<li><b>Ratings:</b> the App Store's public rating (US store) and Google Play's average rating.</li>
+				<li>Numbers are refreshed every few hours. Nothing about you is collected by this page; the counts are the stores' own totals.</li>
+			</ul>
+		</section>
+	</div>
+	<script src="/main_js/panel-view.js?v=1" defer></script>
+	<script src="/main_js/hub-theatre.js?v=2" defer></script>
