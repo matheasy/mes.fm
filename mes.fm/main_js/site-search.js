@@ -183,31 +183,48 @@
     function favSave(s) { try { localStorage.setItem(FKEY, JSON.stringify(s)); return true; } catch (e) { return false; } }
     function favIn(s, p) { return s.groups.filter(function (g) { return g.items && g.items.indexOf(p) !== -1; }); }
     function favPaint() { if (!fbtn) return; var on = favIn(favLoad(), favPath()).length > 0; fbtn.innerHTML = on ? STARON : STAR; fbtn.setAttribute("aria-pressed", on ? "true" : "false"); var t = on ? "In your favourites (click to remove)" : "Add this page to your favourites"; fbtn.title = t; fbtn.setAttribute("aria-label", t); }
+    /* Toast: big, upper-middle of the window (bottom / anchor ads used to cover a small one at the bottom), above everything,
+       light card in light mode / dark card in dark mode, hides itself after 6 s (paused while hovered or focused). */
     var favToastEl, favToastT;
-    function favToast(msg, actions) {
+    function favToast(msg, actions, kind) {
         if (favToastEl) favToastEl.remove(); clearTimeout(favToastT);
-        favToastEl = document.createElement("div"); favToastEl.setAttribute("role", "status");
-        favToastEl.style.cssText = "position:fixed;left:50%;bottom:1.1em;transform:translateX(-50%);z-index:2147483000;background:#222;color:#fff;border-radius:.6em;padding:.65em 1em;box-shadow:0 8px 22px rgba(0,0,0,.35);display:flex;gap:1em;align-items:center;max-width:92vw;font:14px/1.3 system-ui,sans-serif";
-        var sp = document.createElement("span"); sp.textContent = msg; sp.style.color = "inherit"; favToastEl.appendChild(sp);
+        var dark = document.body.classList.contains("dark-mode") || document.body.classList.contains("dark") || document.documentElement.classList.contains("dark-mode");
+        var bg = dark ? "#1f2430" : "#ffffff", fg = dark ? "#f3f4f6" : "#1a1a1a", ac = dark ? "#ffc552" : "#9a5b00", bd = dark ? "#3a4252" : "#e3c48a";
+        favToastEl = document.createElement("div"); favToastEl.id = "mesFavToast"; favToastEl.setAttribute("role", "status"); favToastEl.setAttribute("aria-live", "polite");
+        favToastEl.style.cssText = "position:fixed;left:50%;top:22vh;transform:translate(-50%,-8px);opacity:0;transition:opacity .18s,transform .18s;z-index:2147483647;" +
+            "background:" + bg + ";color:" + fg + ";border:2px solid " + bd + ";border-radius:14px;padding:16px 20px;box-shadow:0 18px 50px rgba(0,0,0,.35);" +
+            "display:flex;flex-wrap:wrap;gap:10px 18px;align-items:center;justify-content:center;width:max-content;max-width:min(92vw,520px);box-sizing:border-box;font:600 18px/1.35 system-ui,-apple-system,Segoe UI,sans-serif;text-align:center";
+        if (kind) { var ic = document.createElement("span"); ic.innerHTML = kind === "off" ? STAR.replace('width="21" height="21"', 'width="30" height="30"') : STARON.replace('width="21" height="21"', 'width="30" height="30"');
+        ic.style.cssText = "display:inline-flex;color:" + fg; favToastEl.appendChild(ic); }
+        var sp = document.createElement("span"); sp.textContent = msg; sp.style.cssText = "color:" + fg + ";font:inherit"; favToastEl.appendChild(sp);
         (actions || []).forEach(function (a) {
             var e = document.createElement(a.href ? "a" : "button"); e.textContent = a.label; if (a.href) e.href = a.href; else e.type = "button";
-            e.style.cssText = "color:#ffcc66;font-weight:700;text-decoration:underline;background:none;border:0;padding:0;cursor:pointer;font:inherit;font-weight:700";
-            if (a.run) e.addEventListener("click", function () { a.run(); favToastEl.remove(); });
+            e.style.cssText = "color:" + ac + ";font:inherit;font-weight:700;text-decoration:underline;background:none;border:0;padding:4px 2px;cursor:pointer;white-space:nowrap";
+            if (a.run) e.addEventListener("click", function () { a.run(); hide(); });
             favToastEl.appendChild(e);
         });
-        document.body.appendChild(favToastEl);
-        favToastT = setTimeout(function () { if (favToastEl) favToastEl.remove(); }, 5000);
+        var x = document.createElement("button"); x.type = "button"; x.textContent = "\u00d7"; x.setAttribute("aria-label", "Close");
+        x.style.cssText = "position:absolute;top:2px;right:6px;background:none;border:0;color:" + fg + ";opacity:.6;font:400 22px/1 system-ui,sans-serif;cursor:pointer;padding:4px";
+        x.addEventListener("click", hide); favToastEl.appendChild(x);
+        var el = favToastEl;
+        function hide() { clearTimeout(favToastT); el.style.opacity = "0"; setTimeout(function () { el.remove(); if (favToastEl === el) favToastEl = null; }, 200); }
+        function arm() { clearTimeout(favToastT); favToastT = setTimeout(hide, 6000); }
+        el.addEventListener("mouseenter", function () { clearTimeout(favToastT); }); el.addEventListener("mouseleave", arm);
+        el.addEventListener("focusin", function () { clearTimeout(favToastT); }); el.addEventListener("focusout", arm);
+        document.body.appendChild(el);
+        el.getBoundingClientRect(); el.style.opacity = "1"; el.style.transform = "translate(-50%,0)";
+        arm();
     }
     function favToggle() {
         var s = favLoad(), p = favPath(), had = favIn(s, p);
         if (had.length) {
             var snap = JSON.stringify(s);
             had.forEach(function (g) { g.items.splice(g.items.indexOf(p), 1); });
-            if (favSave(s)) favToast("Removed from your favourites", [{ label: "Undo", run: function () { try { localStorage.setItem(FKEY, snap); } catch (e) { /* ignore */ } favPaint(); } }]);
+            if (favSave(s)) favToast("Removed from your favourites", [{ label: "Undo", run: function () { try { localStorage.setItem(FKEY, snap); } catch (e) { /* ignore */ } favPaint(); } }], "off");
         } else {
             var g = s.groups.filter(function (x) { return x.id === s.to; })[0] || s.groups[0];
             g.items = g.items || []; g.items.push(p); g.open = true; s.to = g.id;
-            if (favSave(s)) favToast("Added to " + g.name, [{ label: "Open favourites", href: "/fav" }]); else favToast("Your browser would not save the favourite (private mode?)");
+            if (favSave(s)) favToast("Added to " + g.name, [{ label: "Open favourites", href: "/fav" }, { label: "Undo", run: function () { var t = favLoad(); t.groups.forEach(function (x) { var i = (x.items || []).indexOf(p); if (i !== -1) x.items.splice(i, 1); }); favSave(t); favPaint(); } }], "on"); else favToast("Your browser would not save the favourite (private mode?)");
         }
         favPaint();
     }
@@ -220,16 +237,23 @@
         fbtn.addEventListener("click", favToggle);
         window.addEventListener("storage", function (e) { if (e.key === FKEY) favPaint(); });
     }
+    var MENU_ICON = {
+        fav: '<svg viewBox="0 0 24 24" width="1.05em" height="1.05em" aria-hidden="true" focusable="false" style="vertical-align:-.15em"><path d="M12 3.2l2.6 5.5 6 .8-4.4 4.2 1.1 6-5.3-2.9-5.3 2.9 1.1-6L3.4 9.5l6-.8z" fill="#f5a623"/></svg>',
+        top: '<svg viewBox="0 0 24 24" width="1.05em" height="1.05em" aria-hidden="true" focusable="false" style="vertical-align:-.15em"><path d="M7 3h10v2h3.5v2.2c0 2.6-1.9 4.6-4.3 4.9A5.1 5.1 0 0 1 13 15.1V18h3v3H8v-3h3v-2.9a5.1 5.1 0 0 1-3.2-3c-2.4-.3-4.3-2.3-4.3-4.9V5H7zM5.5 7v.2c0 1.3.8 2.4 1.9 2.8A9 9 0 0 1 7 7.6V7zm13 0H17v.6a9 9 0 0 1-.4 2.4c1.1-.4 1.9-1.5 1.9-2.8z" fill="#e0a800"/></svg>',
+        prem: '<svg viewBox="0 0 24 24" width="1.05em" height="1.05em" aria-hidden="true" focusable="false" style="vertical-align:-.15em"><circle cx="12" cy="12" r="10.2" fill="#1f9d55"/><path d="M12 5.2v13.6M15.4 8.4c-.6-1-1.9-1.6-3.4-1.6-1.9 0-3.3 1-3.3 2.5 0 3.4 6.8 1.9 6.8 5.3 0 1.5-1.5 2.6-3.5 2.6-1.6 0-3-.7-3.6-1.8" fill="none" stroke="#fff" stroke-width="1.9" stroke-linecap="round"/></svg>'
+    };
     function favMenu() {
         Array.prototype.forEach.call(document.querySelectorAll("a.navbar__link"), function (a) {
             if (!/^(https:\/\/mes\.fm)?\/browser\/?$/.test(a.getAttribute("href") || "")) return;
-            var li = a.closest("li"); if (!li || li.previousElementSibling && li.previousElementSibling.getAttribute("data-top")) return;
-            /* "★ My Favourites" (/fav), then "★ Top Rated Pages" (/ratings), both just above Browser Extensions;
-               main.js skips /fav, /ratings and /browser when it counts the active tab, so no highlight shifts */
-            [["data-fav", "/fav", "★ My Favourites"], ["data-top", "/ratings", "★ Top Rated Pages"]].forEach(function (it) {
+            var li = a.closest("li"); if (!li || li.previousElementSibling && li.previousElementSibling.getAttribute("data-prem")) return;
+            /* "My Favourites" (/fav), "Top Rated Pages" (/ratings, gold trophy) and "Premium: No Ads" (/premium, dollar coin), just above
+               Browser Extensions (an app / Mobile Apps link, if one is ever restored, goes above Browser Extensions too);
+               main.js skips /fav, /ratings, /premium and /browser when it counts the active tab, so no highlight shifts */
+            [["data-fav", "/fav", "fav", "My Favourites"], ["data-top", "/ratings", "top", "Top Rated Pages"], ["data-prem", "/premium", "prem", "Premium: No Ads"]].forEach(function (it) {
                 if (li.parentNode.querySelector("li[" + it[0] + "]")) return;
                 var n = li.cloneNode(true); n.setAttribute(it[0], "1");
-                var l = n.querySelector("a.navbar__link"); l.setAttribute("href", it[1]); l.textContent = it[2]; l.removeAttribute("id"); l.classList.remove("active-tab");
+                var l = n.querySelector("a.navbar__link"); l.setAttribute("href", it[1]); l.innerHTML = MENU_ICON[it[2]] + " "; l.appendChild(document.createTextNode(it[3]));
+                l.removeAttribute("id"); l.classList.remove("active-tab");
                 li.parentNode.insertBefore(n, li);
             });
         });
