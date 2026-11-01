@@ -1,0 +1,143 @@
+	<script>try{if(!localStorage.getItem('pageMode')){document.documentElement.classList.add('page-wide')}}catch(e){}</script>
+	<div class="tu hs" id="hs">
+		<p class="hs-warn" role="note"><b>For learning only.</b> A teaching model of the heart and circulation: not a medical device, not for diagnosing anyone or making clinical decisions.</p>
+		<div class="hs-tabs" role="tablist" aria-label="Heart simulator tools">
+			<button type="button" role="tab" data-tab="cycle" aria-selected="true">Cardiac cycle</button>
+			<button type="button" role="tab" data-tab="pv" aria-selected="false">Pressure-volume loop</button>
+			<button type="button" role="tab" data-tab="ecg" aria-selected="false">ECG rhythms</button>
+			<button type="button" role="tab" data-tab="calc" aria-selected="false">Hemodynamics calculator</button>
+		</div>
+
+		<div class="hs-chips hs-presets" role="group" aria-label="Heart conditions" id="hs-pre"></div>
+		<p class="tu-note hs-pnote" id="hs-pnote"></p>
+
+		<section data-panel="cycle" role="tabpanel">
+			<p class="tu-note hs-lead">One heartbeat, slowed down. The heart on the left and the <b>Wiggers diagram</b> on the right are the same moment: watch the valves open and close exactly where the pressure lines cross. Click or drag on the diagram to move through the beat.</p>
+			<div class="hs-wrap"><div class="hs-stage" id="hs-cstage">
+				<canvas id="hs-cc" tabindex="0" role="img" aria-label="An animated heart beside a Wiggers diagram of pressures, volume, ECG and heart sounds over two beats. Click the diagram to move the time marker."></canvas>
+				<div class="hs-run"><button type="button" id="hs-cplay" aria-pressed="true">❚❚ Pause</button><button type="button" id="hs-snd" aria-pressed="false" title="Play the heart sounds (lub-dub)">🔇 Sound</button><button type="button" id="hs-cfull" title="Full screen" aria-label="Full screen">⛶</button></div>
+			</div>
+			<div class="hs-readouts" id="hs-cro"></div></div>
+			<div class="tu-card hs-controls">
+				<div class="hs-grid">
+					<div class="tu-field"><span class="tu-label" id="hs-hr-l">Heart rate: <b id="hs-hr-v"></b> per minute</span><input type="range" id="hs-hr" min="35" max="180" step="1" aria-labelledby="hs-hr-l"></div>
+					<div class="tu-field"><span class="tu-label" id="hs-spd-l">Speed: <b id="hs-spd-v"></b></span><input type="range" id="hs-spd" min="0" max="5" step="1" aria-labelledby="hs-spd-l"><span class="tu-note">Slow motion makes the short phases (the valves) easy to follow.</span></div>
+					<div class="tu-field"><span class="tu-label" id="hs-scrub-l">Moment in the beat: <b id="hs-scrub-v"></b></span><input type="range" id="hs-scrub" min="0" max="1000" step="1" aria-labelledby="hs-scrub-l"><span class="tu-note">Moving it pauses the animation.</span></div>
+				</div>
+				<div class="hs-checks">
+					<label class="hs-check"><input type="checkbox" id="hs-o-ph" checked> Phase names</label>
+					<label class="hs-check"><input type="checkbox" id="hs-o-ev" checked> Valve events</label>
+					<label class="hs-check"><input type="checkbox" id="hs-o-la" checked> Atrial pressure</label>
+					<button type="button" class="tu-btn tu-btn--ghost" id="hs-link1">🔗 Copy link</button>
+				</div>
+			</div>
+		</section>
+
+		<section data-panel="pv" role="tabpanel" hidden>
+			<p class="tu-note hs-lead">Each heartbeat traces a loop: <b>filling</b> along the bottom, <b>isovolumic contraction</b> straight up, <b>ejection</b> across the top and <b>relaxation</b> straight down. The width is the stroke volume, the area is the work the ventricle does. Move the sliders and watch the loop answer.</p>
+			<div class="hs-wrap"><div class="hs-stage" id="hs-pstage">
+				<canvas id="hs-pc" tabindex="0" role="img" aria-label="Left ventricular pressure-volume loop with the end-systolic and end-diastolic pressure-volume lines."></canvas>
+				<div class="hs-run"><button type="button" id="hs-occ" title="Squeeze off the blood coming back to the heart for 10 beats: the loops slide down the ESPVR line">⇲ Caval occlusion</button><button type="button" id="hs-ghost" title="Keep the current loop as a dashed outline to compare with">⧉ Keep loop</button><button type="button" id="hs-pfull" title="Full screen" aria-label="Full screen">⛶</button></div>
+			</div>
+			<div class="hs-readouts" id="hs-pro"></div></div>
+			<div class="tu-card hs-controls">
+				<div class="hs-grid">
+					<div class="tu-field"><span class="tu-label" id="hs-ees-l">Contractility (Ees): <b id="hs-ees-v"></b> mmHg/ml</span><input type="range" id="hs-ees" min="0.4" max="6" step="0.05" aria-labelledby="hs-ees-l"><span class="tu-note">The slope of the end-systolic line. Higher = a stronger squeeze.</span></div>
+					<div class="tu-field"><span class="tu-label" id="hs-vol-l">Preload (blood volume): <b id="hs-vol-v"></b> ml</span><input type="range" id="hs-vol" min="380" max="1200" step="5" aria-labelledby="hs-vol-l"><span class="tu-note">"Stressed" volume: more = more venous return = more filling.</span></div>
+					<div class="tu-field"><span class="tu-label" id="hs-svr-l">Afterload (SVR): <b id="hs-svr-v"></b></span><input type="range" id="hs-svr" min="0.3" max="2.5" step="0.01" aria-labelledby="hs-svr-l"><span class="tu-note">Resistance of the body's arteries.</span></div>
+					<div class="tu-field"><span class="tu-label" id="hs-hr2-l">Heart rate: <b id="hs-hr2-v"></b> per minute</span><input type="range" id="hs-hr2" min="35" max="180" step="1" aria-labelledby="hs-hr2-l"></div>
+				</div>
+				<details class="hs-more"><summary>Stiffness, arteries and valves</summary>
+					<div class="hs-grid hs-grid--small">
+						<div class="tu-field"><span class="tu-label" id="hs-edb-l">Ventricle stiffness (EDPVR): <b id="hs-edb-v"></b> /ml</span><input type="range" id="hs-edb" min="0.012" max="0.08" step="0.001" aria-labelledby="hs-edb-l"></div>
+						<div class="tu-field"><span class="tu-label" id="hs-ca-l">Arterial compliance: <b id="hs-ca-v"></b> ml/mmHg</span><input type="range" id="hs-ca" min="0.5" max="3" step="0.05" aria-labelledby="hs-ca-l"><span class="tu-note">Stiff arteries (low) = wide pulse pressure.</span></div>
+						<div class="tu-field"><span class="tu-label" id="hs-ava-l">Aortic valve area: <b id="hs-ava-v"></b> cm²</span><input type="range" id="hs-ava" min="0.4" max="4" step="0.05" aria-labelledby="hs-ava-l"><span class="tu-note">Normal 3-4. Severe stenosis &lt; 1.</span></div>
+						<div class="tu-field"><span class="tu-label" id="hs-mva-l">Mitral valve area: <b id="hs-mva-v"></b> cm²</span><input type="range" id="hs-mva" min="0.6" max="5" step="0.05" aria-labelledby="hs-mva-l"><span class="tu-note">Normal 4-6. Severe stenosis ≤ 1.5.</span></div>
+						<div class="tu-field"><span class="tu-label" id="hs-mr-l">Mitral leak (EROA): <b id="hs-mr-v"></b> cm²</span><input type="range" id="hs-mr" min="0" max="0.7" step="0.01" aria-labelledby="hs-mr-l"><span class="tu-note">Severe ≥ 0.4.</span></div>
+						<div class="tu-field"><span class="tu-label" id="hs-ar-l">Aortic leak (EROA): <b id="hs-ar-v"></b> cm²</span><input type="range" id="hs-ar" min="0" max="0.6" step="0.01" aria-labelledby="hs-ar-l"><span class="tu-note">Severe ≥ 0.3.</span></div>
+						<div class="tu-field"><span class="tu-label" id="hs-kick-l">Atrial kick: <b id="hs-kick-v"></b></span><input type="range" id="hs-kick" min="0" max="1.5" step="0.05" aria-labelledby="hs-kick-l"><span class="tu-note">0 = atrial fibrillation (no atrial contraction).</span></div>
+					</div>
+				</details>
+				<div class="hs-checks">
+					<label class="hs-check"><input type="checkbox" id="hs-o-lines" checked> ESPVR / EDPVR lines</label>
+					<label class="hs-check"><input type="checkbox" id="hs-o-ea" checked> Arterial elastance (Ea) line</label>
+					<button type="button" class="tu-btn tu-btn--ghost" id="hs-reset">↺ Back to the preset</button>
+					<button type="button" class="tu-btn tu-btn--ghost" id="hs-tocalc">Use these numbers in the calculator</button>
+					<button type="button" class="tu-btn tu-btn--ghost" id="hs-link2">🔗 Copy link</button>
+				</div>
+			</div>
+		</section>
+
+		<section data-panel="ecg" role="tabpanel" hidden>
+			<p class="tu-note hs-lead">A lead II rhythm strip on standard paper: <b>25 mm/s</b> and <b>10 mm/mV</b>, so one small square is 0.04 s and 0.1 mV, one big square 0.2 s. Pause it and use the <b>calipers</b> to measure the PR, QRS, QT and the rate, or try the quiz.</p>
+			<div class="hs-wrap"><div class="hs-stage" id="hs-estage">
+				<canvas id="hs-ec" tabindex="0" role="img" aria-label="A scrolling lead II ECG strip on ECG paper. When paused, drag the two caliper lines to measure an interval."></canvas>
+				<div class="hs-badge" id="hs-ebadge"></div>
+				<div class="hs-run"><button type="button" id="hs-eplay" aria-pressed="true">❚❚ Pause</button><button type="button" id="hs-cal" aria-pressed="false" title="Two lines you drag to measure an interval">📏 Calipers</button><button type="button" id="hs-efull" title="Full screen" aria-label="Full screen">⛶</button></div>
+			</div>
+			<div class="hs-readouts" id="hs-ero"></div></div>
+			<div class="tu-card hs-controls">
+				<div id="hs-rhythms"></div>
+				<div class="hs-quiz" id="hs-quiz" hidden>
+					<p class="hs-qq"><b>Which rhythm is this?</b> <span id="hs-qscore"></span></p>
+					<div class="hs-chips" id="hs-qopts" role="group" aria-label="Answers"></div>
+					<p class="tu-note" id="hs-qfb" aria-live="polite"></p>
+				</div>
+				<p class="tu-note hs-hint" id="hs-hint" aria-live="polite"></p>
+				<div class="hs-checks">
+					<button type="button" class="tu-btn" id="hs-qbtn">🎓 Quiz me</button>
+					<button type="button" class="tu-btn tu-btn--ghost" id="hs-truth">Show the measurements</button>
+					<label class="hs-check">Paper speed <select id="hs-esp" class="tu-select"><option value="25">25 mm/s</option><option value="50">50 mm/s</option></select></label>
+					<label class="hs-check">Gain <select id="hs-egain" class="tu-select"><option value="5">5 mm/mV</option><option value="10" selected>10 mm/mV</option><option value="20">20 mm/mV</option></select></label>
+					<label class="hs-check"><input type="checkbox" id="hs-mon"> Monitor look</label>
+					<button type="button" class="tu-btn tu-btn--ghost" id="hs-link3">🔗 Copy link</button>
+				</div>
+				<p class="tu-note" id="hs-truthbox" hidden></p>
+				<h3 class="hs-h3">QTc calculator</h3>
+				<div class="hs-grid hs-grid--small">
+					<div class="tu-field"><span class="tu-label">QT (ms)</span><input type="number" id="hs-qt" class="tu-input" min="150" max="800" step="1" value="400" inputmode="decimal"></div>
+					<div class="tu-field"><span class="tu-label">Heart rate (per minute)</span><input type="number" id="hs-qhr" class="tu-input" min="20" max="250" step="1" value="75" inputmode="decimal"></div>
+					<div class="tu-field"><span class="tu-label">RR interval (ms)</span><input type="number" id="hs-qrr" class="tu-input" min="240" max="3000" step="1" value="800" inputmode="decimal"></div>
+					<div class="tu-field"><span class="tu-label">Sex (for the limit)</span><select id="hs-qsex" class="tu-select"><option value="m">Male (≥ 450 ms prolonged)</option><option value="f">Female (≥ 460 ms prolonged)</option></select></div>
+				</div>
+				<div class="hs-checks"><button type="button" class="tu-btn tu-btn--ghost" id="hs-useqt">Use the calipers as QT</button><button type="button" class="tu-btn tu-btn--ghost" id="hs-userr">Use the calipers as RR</button></div>
+				<div class="hs-tablewrap"><table class="hs-table" id="hs-qtab"></table></div>
+			</div>
+		</section>
+
+		<section data-panel="calc" role="tabpanel" hidden>
+			<p class="tu-note hs-lead">Type the numbers you have; every result that can be worked out appears with its formula and the usual adult resting range. Leave a box empty if you do not know it.</p>
+			<div class="tu-card hs-controls">
+				<div class="hs-grid hs-grid--calc" id="hs-cin"></div>
+				<div class="hs-checks"><button type="button" class="tu-btn tu-btn--ghost" id="hs-fill">Fill from the heart simulator</button><button type="button" class="tu-btn tu-btn--ghost" id="hs-cclear">Clear</button><button type="button" class="tu-btn tu-btn--ghost" id="hs-ccopy">Copy results</button></div>
+				<div class="hs-tablewrap"><table class="hs-table" id="hs-cout"></table></div>
+				<p class="tu-note">Ranges are typical adult resting values from standard teaching texts; labs and units vary. Oxygen content uses 1.34 ml O₂ per g of haemoglobin and 0.003 ml/dl per mmHg of dissolved oxygen. Haemoglobin in g/L (over 30) is converted to g/dl automatically.</p>
+			</div>
+		</section>
+
+		<div class="tu-seo">
+			<h2>How the heart simulator works</h2>
+			<p>The <strong>Cardiac cycle</strong> and <strong>Pressure-volume loop</strong> tabs run the same model: a lumped (“0-D”) circulation of the kind used in physiology teaching and research. The left ventricle and left atrium are <em>time-varying elastances</em> (Suga and Sagawa): their stiffness rises as the muscle contracts and falls as it relaxes, so the pressure in them follows from their volume. The arteries are a three-element Windkessel (a characteristic impedance, a compliance and the systemic vascular resistance). The veins, lungs and right heart are lumped into one large compliant pool that refills the left atrium. The valves are one-way, with pressure drops from the simplified Bernoulli equation, so a narrow valve gives a realistic gradient and a leaking valve lets blood back through its hole.</p>
+			<div class="hs-eq" role="math" aria-label="Key equations">
+				<div><span class="hs-eq__n">ventricle</span> <span class="hs-eq__f mes-tex">\(\displaystyle P_{LV}(t)=e(t)\,E_{es}\,(V-V_0)+\big(1-e(t)\big)\,A\big(e^{B(V-V_0)}-1\big)\)</span></div>
+				<div><span class="hs-eq__n">valve</span> <span class="hs-eq__f mes-tex">\(\displaystyle \Delta P = 4v^2,\quad v=\frac{Q}{A_{valve}}\)</span></div>
+				<div><span class="hs-eq__n">arteries</span> <span class="hs-eq__f mes-tex">\(\displaystyle C\,\frac{dP}{dt}=Q_{ao}-\frac{P-P_{v}}{R_{SVR}}\)</span></div>
+				<div><span class="hs-eq__n">loop</span> <span class="hs-eq__f mes-tex">\(\displaystyle SV = EDV-ESV,\quad EF=\frac{SV}{EDV},\quad E_a=\frac{P_{es}}{SV},\quad SW=\oint P\,dV\)</span></div>
+				<div><span class="hs-eq__n">QTc</span> <span class="hs-eq__f mes-tex">\(\displaystyle QT_{c,B}=\frac{QT}{\sqrt{RR}},\quad QT_{c,F}=\frac{QT}{\sqrt[3]{RR}}\)</span></div>
+				<div><span class="hs-eq__n">hemodynamics</span> <span class="hs-eq__f mes-tex">\(\displaystyle SVR=\frac{80\,(MAP-CVP)}{CO},\quad DO_2=CO\times(1.34\,Hb\,S_aO_2+0.003\,P_aO_2)\times10\)</span></div>
+			</div>
+			<h3>What to look at</h3>
+			<ul>
+				<li><strong>The valves follow the pressures.</strong> The mitral valve shuts when ventricular pressure rises above atrial pressure (S1), the aortic valve opens when it rises above aortic pressure, and it shuts again (S2, with the small dicrotic notch) when the ventricle relaxes. Between them the volume does not change: the isovolumic phases.</li>
+				<li><strong>Frank-Starling.</strong> Raise the preload and the loop gets wider: a fuller ventricle ejects more. Press <em>Caval occlusion</em> to squeeze off the returning blood: the loops shrink and their top-left corners slide down one straight line, the ESPVR. That is how its slope (Ees, contractility) is measured in the lab.</li>
+				<li><strong>Afterload and coupling.</strong> Raising SVR makes the Ea line steeper: higher pressure, smaller stroke volume. Ees/Ea near 1-2 is the efficient range.</li>
+				<li><strong>Diseases change the shape.</strong> Stenosis makes the loop tall (aortic) or small and high-pressured in the atrium (mitral); regurgitation removes the straight isovolumic sides; a stiff ventricle rides up a steep EDPVR.</li>
+			</ul>
+			<h3>ECG rhythms</h3>
+			<p>The strip is drawn wave by wave (P, Q, R, S, T as smooth bumps, in the style of McSharry and colleagues' synthetic ECG) by a beat-by-beat generator that follows each rhythm's rule: the PR lengthening of Wenckebach, the sudden drop of Mobitz II, the independent atria and ventricles of complete block, the compensatory pause after a PVC. Rates: 300 ÷ big squares or 1500 ÷ small squares between two R waves. Normal values: PR 120-200 ms, QRS under 120 ms, QTc under 450 ms (men) or 460 ms (women), over 500 ms high risk (AHA/ACCF/HRS 2009). Only lead II is shown; real diagnosis needs all twelve leads and the patient.</p>
+			<h3>Sources and limits</h3>
+			<p>Elastance curve: Stergiopulos, Meister and Westerhof (1996), with its time to peak scaled so electromechanical systole follows Weissler's QS2 = 546 − 2.1 × HR ms. Pressure-volume concepts: Suga and Sagawa (1974); Klabunde, <em>Cardiovascular Physiology Concepts</em>; Guyton and Hall. Severity thresholds: 2020 ACC/AHA valvular heart disease guideline (severe aortic stenosis: area &lt; 1 cm², mean gradient ≥ 40 mmHg; severe mitral regurgitation: EROA ≥ 0.4 cm², regurgitant volume ≥ 60 ml, fraction ≥ 50%; severe aortic regurgitation: EROA ≥ 0.3 cm²; severe mitral stenosis: area ≤ 1.5 cm²). BSA: Mosteller (1987) and Du Bois. The model has no right ventricle of its own, no reflexes (baroreceptors) unless a preset sets them by hand, no coronary flow, and no blood viscosity or inertia except at the aortic valve; numbers are typical, not anyone's. The right side of the drawn heart follows the left side's timing.</p>
+			<p>Everything runs on your device and nothing is uploaded. <a href="/heart-rate-zone-calculator">Heart Rate Zones</a> · <a href="/body-surface-area-calculator">Body Surface Area</a> · <a href="/fluid-simulator">Fluid Simulator</a> · <a href="/tools">More MES tools</a></p>
+		</div>
+		<script src="/main_js/mes-math.js" defer></script>
+	</div>

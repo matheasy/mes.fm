@@ -214,6 +214,7 @@ TOOLS = [  # (directory, compact-bar title[, home path of the site the page belo
     ("magnetic-isopotentials", "Magnetic Isopotentials"),
     ("grounding-rod-simulator", "Ground Rod Simulator"),
     ("double-pendulum", "Double Pendulum"),
+    ("heart-simulator", "Heart Simulator"),
     ("hutchison-effect-simulator", "Hutchison Effect Simulator"),
     ("orbit-simulator", "Orbit Simulator"),
     ("redshift-simulator", "Redshift Simulator"),

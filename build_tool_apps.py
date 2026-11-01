@@ -36,7 +36,7 @@ EXT_TAB = "<li class=\"info-bar__item\"><a class=\"info-bar__item__text\" href='
 
 # simulator pages whose boxes (.fl-wrap, .lm-wrap, ...) get the shared View bar from main_js/stage-ctl.js
 STAGE_CTL = {"julia-set-explorer", "fluid-simulator", "light-in-a-medium", "black-hole-simulator", "mandelbrot", "buddhabrot", "time-dilation", "metric-tensor", "orbit-simulator", "double-pendulum", "electromagnetic-fields-simulator", "photoelectric-effect-simulator", "solar-system-today", "atomic-clock-simulator",
-             "michelson-morley-experiment", "faster-than-light-shadow-simulator", "fountain-clock", "magnetic-isopotentials", "hutchison-effect-simulator", "neuron-simulator"}
+             "michelson-morley-experiment", "faster-than-light-shadow-simulator", "fountain-clock", "magnetic-isopotentials", "hutchison-effect-simulator", "heart-simulator", "neuron-simulator"}
 
 # PDF family nav (2026-10-16): Home = the PDF Tools hub, then the editor and the six tools, ahead of Calculators / Tools
 PDF_NAV_INFO = '<li class="info-bar__item"><a class="info-bar__item__text" href=\'/pdf\'>Editor</a></li><li class="info-bar__item"><a class="info-bar__item__text" href=\'/merge-pdf\'>Merge</a></li><li class="info-bar__item"><a class="info-bar__item__text" href=\'/split-pdf\'>Split</a></li><li class="info-bar__item"><a class="info-bar__item__text" href=\'/organize-pdf\'>Organize</a></li><li class="info-bar__item"><a class="info-bar__item__text" href=\'/jpg-to-pdf\'>Images to PDF</a></li><li class="info-bar__item"><a class="info-bar__item__text" href=\'/pdf-to-jpg\'>PDF to images</a></li><li class="info-bar__item"><a class="info-bar__item__text" href=\'/compress-pdf\'>Compress</a></li>'
@@ -437,6 +437,12 @@ APPS = {
                                    desc="Free magnet simulator: drag and turn bar magnets and see their magnetic flux lines and isopotential lines (equal magnetic scalar potential) at once, with compasses, field strength colours, horseshoe and Halbach examples.",
                                    src="electromagnetic-fields-simulator", content="content-magnets.html", js_path="electromagnetic-fields-simulator/js/electromagnetic-fields-simulator.js",
                                    js_v="14", vars={"MAGNETS": "@panel-magnets.html"}),
+    # Heart Simulator (2026-10-31): time-varying elastance LV/LA + Bernoulli valves + Windkessel (Wiggers diagram, PV loop, presets), lead II rhythm trainer with calipers / quiz / QTc,
+    # hemodynamics calculator (lib.js = MESHeart, node-tested: tool_apps_src/heart-simulator-tests.js). Normal-width page in the tools sidebar collection, Wide by default, stage-ctl prefix hs.
+    "heart-simulator": dict(title="MES Heart Simulator", page_title="Heart Simulator: Cardiac Cycle, Wiggers Diagram, PV Loop and ECG Rhythms",
+                            tag="Every valve, every wave, every beat.", accent="#be123c", dark="#9f1239", tint="#ffe4e6",
+                            desc="A free heart and circulation simulator for students and health professionals: an animated heart synced to a Wiggers diagram, pressure-volume loops with preload, afterload and contractility sliders and disease presets, an ECG rhythm trainer with calipers, QTc and a quiz, and a hemodynamics calculator.",
+                            js_v="1"),
     # Hutchison Effect Simulator (2026-10-26): top-down lab floor of John Hutchison's apparatus (Tesla coils, Van de Graaff, RF, spark gaps, tanks, inductors, field shaper ...), field superposition
     # heat maps (drive / |E| / |B| / overlap / standing waves / glitch risk / animated), samples with best-estimate effect rates (levitation, jelly metal, fracturing ...), target camera, schematic + equipment views.
     # (lib.js = MESHut, node-tested: tool_apps_src/hutchison-effect-simulator-tests.js.) Normal-width page in the tools sidebar collection, Wide by default.

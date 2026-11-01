@@ -185,6 +185,7 @@
 	};
 	H.pwave = function (pa) { return [{ c: 0.045, a: pa == null ? 0.15 : pa, s: 0.02 }]; };   // relative to P onset
 	function gsum(waves, t0, t) { var y = 0; for (var i = 0; i < waves.length; i++) { var x = (t - t0 - waves[i].c) / waves[i].s; if (x > -6 && x < 6) y += waves[i].a * Math.exp(-0.5 * x * x); } return y; }
+	H.gsum = gsum;
 	H.RHYTHMS = [
 		{ id: "sinus", name: "Normal sinus rhythm", grp: "Sinus", hint: "Regular, 60-100 per minute, every P followed by a QRS, PR 120-200 ms, narrow QRS." },
 		{ id: "brady", name: "Sinus bradycardia", grp: "Sinus", hint: "Sinus rhythm slower than 60 per minute." },
