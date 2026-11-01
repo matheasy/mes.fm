@@ -361,9 +361,10 @@ APPS = {
                         js_v="4", pre_js=["/main_js/voice-picker.js?v=1"]),
     # Copy Text: a clipboard shelf (notes on boards, click to copy, localStorage only). Normal-width tool with the "More like this" sidebar.
     "copy-text": dict(title="MES Copy Text", page_title="Copy Text",
-                      tag="Save text once, copy it again anytime.", accent="#a16207", dark="#7a4a05", tint="#fbf1d9",
-                      desc="Free online copy and paste notepad: save the texts you paste again and again (replies, signatures, addresses, links, hashtags, prompts) on boards and copy any of them with one click. Private, stored only in your browser, with backup and restore.",
-                      js_v="4"),
+                      tag="Save text once, copy it anytime, back it up encrypted on Hive.", accent="#a16207", dark="#7a4a05", tint="#fbf1d9",
+                      desc="Free online copy and paste notepad: save the texts you paste again and again (replies, signatures, addresses, links, hashtags, prompts) on boards and copy any of them with one click. Private, kept in your browser, with file backups and optional encrypted backups to your Hive account.",
+                      meta_desc="Free copy and paste notepad: save texts you reuse on boards, copy any with one click. Private, in your browser, with encrypted Hive backups.",
+                      js_v="5", pre_js=["/main_js/hive.js?v=1", "/main_js/hive-store.js?v=1"]),
     # Typing Test: WPM / accuracy / consistency test (time, words, passage, own text; 5 difficulty levels; weak-key practice; challenge links). lib.js = word lists, seeded text,
     # typing state machine + results maths (node-testable: tool_apps_src/typing-test-tests.js), app.js = UI. Medium-wide page, no sidebar. localStorage "mes-typingtest:v1".
     "typing-test": dict(title="MES Typing Test", page_title="Typing Test",

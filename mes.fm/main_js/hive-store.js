@@ -84,7 +84,7 @@
         return parts.map(function (o) { o.c = parts.length; var j = JSON.stringify(o); if (j.length > JSON_MAX) throw new Error("chunk too big"); return j; });
     }
     function tooBig(n) {
-        var e = new Error("That is too much for one Hive save (about " + Math.round(n / 1024) + " KB after compression; the limit is about " +
+        var e = new Error("That is too much for one Hive save (about " + Math.round(n / 1024) + " KB once compressed and packed; the limit is about " +
             Math.round(MAX_CHUNKS * 7.9) + " KB)."); e.code = "toobig"; return e;
     }
     function customJson(account, json) {

@@ -1,7 +1,54 @@
+/* MESCopyText (CTLib): pure helpers shared by the JSON restore and the Hive backup of Copy Text. Node-testable
+   (tool_apps_src/hive-store-tests.js). snapshot() = what goes into a backup (no ids, no UI state); merge() adds what is new
+   (same board name = same board; a note with the same title + text is a duplicate); replace() builds a fresh state. */
+(function (root) {
+	"use strict";
+	var COLORS = ["", "y", "g", "b", "p", "r"];
+	function cleanNote(n, uid) {
+		return { id: uid(), title: String(n.title || "").slice(0, 80), text: n.text, c: COLORS.indexOf(n.c) >= 0 ? n.c : "", pin: !!n.pin, t: +n.t || Date.now() };
+	}
+	function valid(s) { if (!s || !Array.isArray(s.boards)) throw new Error("not a Copy Text backup"); return s; }
+	function snapshot(state) {
+		return { v: 1, boards: state.boards.map(function (b) {
+			return { name: b.name, notes: b.notes.map(function (n) { var o = { title: n.title || "", text: n.text }; if (n.c) o.c = n.c; if (n.pin) o.pin = 1; if (n.t) o.t = n.t; return o; }) };
+		}) };
+	}
+	function merge(state, incoming, uid) {
+		valid(incoming);
+		var added = 0, boards = 0;
+		incoming.boards.forEach(function (ib) {
+			if (!ib || !Array.isArray(ib.notes)) return;
+			var b = null; state.boards.forEach(function (x) { if (x.name === ib.name) b = x; });
+			if (!b) { b = { id: uid(), name: String(ib.name || "Imported").slice(0, 40), notes: [] }; state.boards.push(b); boards++; }
+			ib.notes.forEach(function (n) {
+				if (!n || typeof n.text !== "string") return;
+				if (b.notes.some(function (x) { return x.text === n.text && (x.title || "") === (n.title || ""); })) return;
+				b.notes.push(cleanNote(n, uid)); added++;
+			});
+		});
+		return { added: added, boards: boards };
+	}
+	function replace(incoming, uid) {
+		valid(incoming);
+		var st = { v: 1, boards: [], cur: null };
+		merge(st, incoming, uid);
+		if (!st.boards.length) st.boards.push({ id: uid(), name: "My texts", notes: [] });
+		st.cur = st.boards[0].id;
+		return st;
+	}
+	function count(s) { var n = 0; (s && s.boards || []).forEach(function (b) { n += Array.isArray(b.notes) ? b.notes.length : 0; }); return n; }
+	var api = { COLORS: COLORS, snapshot: snapshot, merge: merge, replace: replace, count: count };
+	if (typeof module !== "undefined" && module.exports) module.exports = api;
+	root.CTLib = api;
+})(typeof window !== "undefined" ? window : globalThis);
+
 /* MES Copy Text -- mes.fm/copy-text
  * A clipboard shelf: save texts as notes on boards, click a note to copy it. Pin, colour, drag to reorder, search across
  * boards, {date}/{time}/... placeholders filled in at copy time, undo for deletes, .txt / .json export, JSON restore.
  * Everything lives in localStorage ("mes-copytext:v1"); nothing leaves the browser. Other tabs stay in sync via the storage event.
+ * Optional "☁ Hive backup": CTLib.snapshot(state) saved through MESHiveStore (/main_js/hive-store.js, custom_json "mes_store",
+ * app "copy-text", name "boards"), encrypted to the person's own memo key by default; loading merges (CTLib.merge) or replaces.
+ * Encrypt choice: localStorage KEY + ":hiveenc" ("0" = off).
  */
 (function () {
 	"use strict";
@@ -286,6 +333,8 @@
 			download("mes-copy-text-backup-" + expand("{iso}") + ".json", JSON.stringify(state, null, 1), "application/json");
 		} else if (act === "import") {
 			$("cp-file").click();
+		} else if (act === "hive") {
+			openHive(true);
 		} else if (act === "examples") {
 			examples(); render(); toast("Added examples");
 		} else if (act === "delboard") {
@@ -310,20 +359,7 @@
 		var r = new FileReader();
 		r.onload = function () {
 			try {
-				var s = JSON.parse(r.result);
-				if (!s || !Array.isArray(s.boards)) throw 0;
-				var added = 0;
-				s.boards.forEach(function (ib) {
-					if (!ib || !Array.isArray(ib.notes)) return;
-					var b = null; state.boards.forEach(function (x) { if (x.name === ib.name) b = x; });
-					if (!b) { b = { id: uid(), name: String(ib.name || "Imported").slice(0, 40), notes: [] }; state.boards.push(b); }
-					ib.notes.forEach(function (n) {
-						if (!n || typeof n.text !== "string") return;
-						var dup = b.notes.some(function (x) { return x.text === n.text && (x.title || "") === (n.title || ""); });
-						if (dup) return;
-						b.notes.push({ id: uid(), title: String(n.title || "").slice(0, 80), text: n.text, c: COLORS.indexOf(n.c) >= 0 ? n.c : "", pin: !!n.pin, t: +n.t || Date.now() }); added++;
-					});
-				});
+				var added = CTLib.merge(state, JSON.parse(r.result), uid).added;
 				save(); render(); toast(added ? "Restored " + added + (added === 1 ? " text" : " texts") : "Nothing new in that file");
 			} catch (e) { toast("That doesn't look like a Copy Text backup"); }
 		};
@@ -606,6 +642,128 @@
 		var k = arr.indexOf(b.n); arr.splice(k >= 0 ? (a.i < b.i ? k + 1 : k) : arr.length, 0, a.n);
 		dragId = null; save(); render();
 	});
+
+
+	/* ---------- ☁ Hive backup (MESHive + MESHiveStore; both optional: the panel explains if they are missing) ---------- */
+	var HAPP = "copy-text", HNAME = "boards", ENC_KEY = KEY + ":hiveenc", hiveList = null, hiveBusy = false;
+	function HV() { return window.MESHive; }
+	function HS() { return window.MESHiveStore; }
+	function hmsg(t, cls) { var m = $("cp-hive-msg"); m.textContent = t || ""; m.className = "tu-note cp-hive-msg" + (cls ? " is-" + cls : ""); }
+	function encOn() { return $("cp-hive-encrypt").checked; }
+	function paintWarn() {
+		var w = $("cp-hive-warn");
+		if (encOn()) { w.className = "cp-hive-warn"; w.innerHTML = "🔒 Encrypted: only your memo key can open it. Others can still see that a backup exists, when, and its size. Saved permanently."; }
+		else { w.className = "cp-hive-warn is-open"; w.innerHTML = "⚠ <b>Not encrypted:</b> every text and title will be <b>public on the Hive blockchain, readable by anyone, forever</b>. It can't be deleted later."; }
+	}
+	function paintUser() {
+		var box = $("cp-hive-user"), u = HV() && HV().user();
+		if (!HV() || !HS()) { box.innerHTML = '<p class="cp-hive-warn is-open">The Hive scripts did not load (blocked or offline). Reload the page to try again.</p>'; $("cp-hive-main").hidden = true; return; }
+		if (u) {
+			box.innerHTML = '<span class="cp-hive-who"><img src="' + HV().avatar(u.name) + '" alt="" width="24" height="24" loading="lazy"> Logged in as <b>@' + esc(u.name) + '</b></span> <button type="button" class="tu-btn tu-btn--ghost" data-h="logout">Log out</button>';
+			$("cp-hive-main").hidden = false; $("cp-hive-help").innerHTML = "";
+		} else {
+			box.innerHTML = '<div class="cp-hive-login"><input class="tu-input" id="cp-hive-name" type="text" placeholder="Your Hive username" aria-label="Your Hive username" autocomplete="username" autocapitalize="none" spellcheck="false" maxlength="17">' +
+				' <button type="button" class="tu-btn tu-btn--primary" data-h="login">Log in with Keychain</button></div>';
+			$("cp-hive-main").hidden = true;
+			HV().keychain(1500).then(function (k) { if (!k && !HV().user()) $("cp-hive-help").innerHTML = HV().helpHtml(); });
+		}
+	}
+	function openHive(focus) {
+		var p = $("cp-hive"); p.hidden = false; $("cp-hivebtn").setAttribute("aria-expanded", "true");
+		try { $("cp-hive-encrypt").checked = localStorage.getItem(ENC_KEY) !== "0"; } catch (e) {}
+		paintWarn(); paintUser();
+		if (focus) { p.scrollIntoView({ block: "nearest", behavior: "smooth" }); var n = $("cp-hive-name"); (n || $("cp-hive-save")).focus(); }
+	}
+	function closeHive() { $("cp-hive").hidden = true; $("cp-hivebtn").setAttribute("aria-expanded", "false"); $("cp-hivebtn").focus(); }
+	$("cp-hivebtn").onclick = function () { if ($("cp-hive").hidden) openHive(true); else closeHive(); };
+	$("cp-hive-close").onclick = closeHive;
+	$("cp-hive-encrypt").onchange = function () { try { localStorage.setItem(ENC_KEY, this.checked ? "1" : "0"); } catch (e) {} paintWarn(); };
+	if (window.MESHive) MESHive.onChange(function () { if (!$("cp-hive").hidden) { hiveList = null; $("cp-hive-list").innerHTML = ""; paintUser(); } });
+	function kb(n) { return n < 1024 ? n + " bytes" : (n / 1024).toFixed(n < 10240 ? 1 : 0) + " KB"; }
+	function when(iso) { var d = new Date(/Z$/.test(iso) ? iso : iso + "Z"); return isNaN(d) ? "" : d.toLocaleString(undefined, { year: "numeric", month: "short", day: "numeric", hour: "numeric", minute: "2-digit" }); }
+	function errText(e) { return e && e.code === "cancel" ? "Cancelled in Keychain." : (e && e.message) || "Something went wrong."; }
+	function busy(on) { hiveBusy = on; ["cp-hive-save", "cp-hive-load"].forEach(function (id) { $(id).disabled = on; }); }
+	function hiveSave() {
+		if (hiveBusy) return;
+		var n = CTLib.count(state);
+		if (!n) { hmsg("There is nothing to save yet.", "err"); return; }
+		var enc = encOn();
+		if (!enc && !confirm("Save WITHOUT encryption?\n\nAll " + n + " texts will be public on the Hive blockchain, readable by anyone, and can never be deleted.")) return;
+		busy(true);
+		var u = HV().user();
+		HS().rcPercent(u.name).catch(function () { return null; }).then(function (rc) {
+			if (rc != null && rc < 3) throw new Error("Your account's Resource Credits are at " + rc.toFixed(0) + "%. They refill over about five days; try again later.");
+			return HS().save(HAPP, HNAME, CTLib.snapshot(state), { encrypt: enc, onProgress: function (m) { hmsg(m); } }).then(function (r) {
+				hmsg("Saved " + n + (n === 1 ? " text" : " texts") + " to @" + u.name + " on Hive (" + kb(r.bytes) + (enc ? ", encrypted" : ", NOT encrypted") + ")." +
+					(rc != null ? " Resource Credits before: " + rc.toFixed(0) + "%." : "") + " It shows up in the list within a few seconds.", "ok");
+				toast("Saved to Hive");
+				hiveList = null; setTimeout(function () { hiveLoad(true); }, 4000);
+			});
+		}).catch(function (e) { hmsg(errText(e), "err"); }).then(function () { busy(false); });
+	}
+	function hiveLoad(quiet) {
+		if (hiveBusy && !quiet) return;
+		var u = HV().user(); if (!u) return;
+		busy(true); if (!quiet) hmsg("Looking for your backups on Hive…");
+		HS().list(u.name, { app: HAPP, name: HNAME, pages: 30, onProgress: function (i, of) { if (!quiet && i > 1) hmsg("Looking for your backups on Hive… (checked " + i * 1000 + " app actions)"); } }).then(function (saves) {
+			hiveList = saves.slice(0, 12);
+			paintList();
+			if (!quiet) hmsg(saves.length ? "Found " + saves.length + (saves.length === 1 ? " backup" : " backups") + ". Pick one to load." : "No Copy Text backups found on @" + u.name + " yet.", saves.length ? "" : "err");
+		}).catch(function (e) { hmsg("Could not read from Hive: " + errText(e), "err"); }).then(function () { busy(false); });
+	}
+	function paintList() {
+		var box = $("cp-hive-list");
+		if (!hiveList || !hiveList.length) { box.innerHTML = ""; return; }
+		box.innerHTML = '<table class="tu-table cp-hive-tbl"><thead><tr><th scope="col">Saved</th><th scope="col">Type</th><th scope="col">Size</th><th scope="col"><span class="cp-sr">Actions</span></th></tr></thead><tbody>' +
+			hiveList.map(function (e, i) {
+				return "<tr><td>" + esc(when(e.time)) + (i === 0 ? ' <span class="cp-hive-new">newest</span>' : "") + "</td><td>" + (e.encrypted ? "🔒 Encrypted" : "👁 Public") + "</td><td>" + esc(kb(e.bytes)) + (e.complete ? "" : " (incomplete)") + "</td>" +
+					'<td class="cp-hive-rowacts">' + (e.complete ? '<button type="button" class="tu-btn tu-btn--primary" data-h="merge" data-i="' + i + '" title="Add the texts you don\'t have yet; keeps yours">Add to mine</button> <button type="button" class="tu-btn" data-h="replace" data-i="' + i + '" title="Replace everything here with this backup">Replace</button> ' : "") +
+					'<button type="button" class="tu-btn tu-btn--ghost" data-h="forget" data-i="' + i + '" title="Hide this backup from the list (the data stays on the blockchain)">Hide</button>' +
+					(e.trx ? ' <a href="' + HS().explorer(e.trx) + '" target="_blank" rel="noopener" class="cp-hive-tx">on chain</a>' : "") + "</td></tr>";
+			}).join("") + "</tbody></table>";
+	}
+	function restoreFrom(i, mode) {
+		var e = hiveList && hiveList[i]; if (!e || hiveBusy) return;
+		busy(true); hmsg(e.encrypted ? "Confirm in Keychain: decrypt the backup key with your memo key…" : "Opening the backup…");
+		HS().load(e).then(function (data) {
+			var snap = JSON.stringify(state), n = CTLib.count(data);
+			if (mode === "replace") {
+				if (!confirm("Replace everything here with this backup (" + n + " texts)?\nYou can undo right after.")) { hmsg(""); return; }
+				state = CTLib.replace(data, uid); save(); render();
+				toast("Replaced with the Hive backup", function () { state = JSON.parse(snap); save(); render(); });
+				hmsg("Loaded " + n + (n === 1 ? " text" : " texts") + " from the backup.", "ok");
+			} else {
+				var r = CTLib.merge(state, data, uid); save(); render();
+				toast(r.added ? "Added " + r.added + " from Hive" : "Nothing new in that backup", r.added ? function () { state = JSON.parse(snap); save(); render(); } : null);
+				hmsg(r.added ? "Added " + r.added + (r.added === 1 ? " text" : " texts") + (r.boards ? " and " + r.boards + (r.boards === 1 ? " board" : " boards") : "") + " you didn't have. Your own texts were kept." : "You already have every text in that backup.", "ok");
+			}
+		}).catch(function (x) { hmsg(errText(x), "err"); }).then(function () { busy(false); });
+	}
+	$("cp-hive").addEventListener("click", function (e) {
+		var b = e.target.closest("[data-h]"); if (!b) return;
+		var a = b.dataset.h;
+		if (a === "login") {
+			var name = ($("cp-hive-name").value || "").trim();
+			if (!name) { $("cp-hive-name").focus(); hmsg("Type your Hive username first.", "err"); return; }
+			hmsg("Confirm the login in Hive Keychain…");
+			HV().login(name).then(function () { hmsg(""); paintUser(); hiveLoad(true); }).catch(function (x) {
+				hmsg(x.code === "nokeychain" ? "Hive Keychain is not installed in this browser (see below)." : errText(x), "err");
+				if (x.code === "nokeychain") $("cp-hive-help").innerHTML = HV().helpHtml();
+			});
+		} else if (a === "logout") { HV().logout(); hiveList = null; $("cp-hive-list").innerHTML = ""; hmsg(""); paintUser(); }
+		else if (a === "merge" || a === "replace") restoreFrom(+b.dataset.i, a);
+		else if (a === "forget") {
+			var it = hiveList[+b.dataset.i];
+			if (!confirm("Hide this backup from the list?\n\nThis only adds a 'hidden' note on Hive: the backup itself stays in the blockchain's history forever" + (it.encrypted ? " (still encrypted)." : ", readable by anyone."))) return;
+			busy(true); hmsg("Confirm in Keychain…");
+			HS().forget(HAPP, HNAME, it.s).then(function () { hiveList.splice(+b.dataset.i, 1); paintList(); hmsg("Hidden from the list.", "ok"); })
+				.catch(function (x) { hmsg(errText(x), "err"); }).then(function () { busy(false); });
+		}
+	});
+	$("cp-hive").addEventListener("keydown", function (e) { if (e.key === "Enter" && e.target.id === "cp-hive-name") { e.preventDefault(); $("cp-hive").querySelector('[data-h="login"]').click(); } else if (e.key === "Escape") closeHive(); });
+	$("cp-hive-save").onclick = hiveSave;
+	$("cp-hive-load").onclick = function () { hiveLoad(false); };
+	if (/[?&]hive=1\b/.test(location.search) || location.hash === "#hive") openHive(false);
 
 	/* ---------- cross-tab sync ---------- */
 	window.addEventListener("storage", function (e) {

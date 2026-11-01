@@ -148,3 +148,49 @@
 	@media (pointer:coarse) {
 		.tu .cp-foot .tu-btn {min-height:40px;min-width:40px;}
 	}
+	/* ☁ Hive backup panel (hand-written dark rules use the #cp prefix so the derived TOOL-DARK block can't win) */
+	.tu .cp-hive {margin:0.6em 0 0.8em;border-left:5px solid var(--accent);}
+	.tu .cp-hive[hidden], .tu .cp-hive [hidden] {display:none !important;}
+	.tu .cp-hive-head {display:flex;align-items:center;gap:0.5em;}
+	.tu .cp-hive-title {font-size:1.2em;margin:0;flex:1;}
+	.tu .cp-hive-close {padding:0.3em 0.7em;}
+	.tu .cp-hive-intro {margin:0.5em 0 0.7em;line-height:1.5;}
+	.tu .cp-hive-user {display:flex;flex-wrap:wrap;gap:0.5em;align-items:center;margin-bottom:0.7em;}
+	.tu .cp-hive-who {display:inline-flex;align-items:center;gap:0.45em;}
+	.tu .cp-hive-who img {border-radius:50%;}
+	.tu .cp-hive-login {display:flex;flex-wrap:wrap;gap:0.5em;width:100%;}
+	.tu .cp-hive-login .tu-input {flex:1 1 12em;min-width:0;}
+	.tu .cp-hive-enc {display:flex;gap:0.5em;align-items:flex-start;cursor:pointer;line-height:1.4;}
+	.tu .cp-hive-enc input {width:1.2em;height:1.2em;margin-top:0.1em;flex:0 0 auto;cursor:pointer;}
+	.tu .cp-hive-warn {margin:0.6em 0;padding:0.55em 0.8em;border-radius:0 0.4em 0.4em 0;border-left:4px solid #2f8a4f;background:#eaf6ee;color:#1d4a2c;font-size:0.93em;line-height:1.45;}
+	.tu .cp-hive-warn.is-open {border-left-color:#c0392b;background:#fdecea;color:#7a1c13;}
+	.tu .cp-hive-acts {display:flex;flex-wrap:wrap;gap:0.5em;}
+	.tu .cp-hive-msg {min-height:1.2em;margin:0.6em 0 0.3em;}
+	.tu .cp-hive-msg.is-ok {color:#1d6b36;}
+	.tu .cp-hive-msg.is-err {color:#a3261b;}
+	.tu .cp-hive-list {overflow-x:auto;}
+	.tu .cp-hive-tbl {width:100%;font-size:0.92em;}
+	.tu .cp-hive-tbl td {vertical-align:middle;}
+	.tu .cp-hive-rowacts {white-space:normal;}
+	.tu .cp-hive-rowacts .tu-btn {padding:0.3em 0.65em;font-size:0.9em;margin:0.15em 0;}
+	.tu .cp-hive-new {font-size:0.8em;background:var(--tint);color:#5c3a04;border-radius:1em;padding:0.05em 0.5em;}
+	.tu .cp-hive-tx {font-size:0.85em;}
+	.tu .cp-hive-more {margin-top:0.6em;}
+	.tu .cp-hive-more summary {cursor:pointer;font-weight:600;}
+	.tu .cp-hive-more li {margin:0.35em 0;line-height:1.45;}
+	.tu .cp-sr {position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap;}
+	@media (max-width:760px) {
+		.tu .cp-hive-tbl thead {display:none;}
+		.tu .cp-hive-tbl tr {display:flex;flex-wrap:wrap;gap:0.2em 0.8em;padding:0.5em 0;border-bottom:1px solid #e3e7ec;}
+		.tu .cp-hive-tbl td {border:0;padding:0;}
+		.tu .cp-hive-tbl td.cp-hive-rowacts {flex:1 1 100%;}
+	}
+	body.dark-mode #cp .cp-hive-warn {background:#16301f;color:#bfe8cc;border-left-color:#4caf6e;}
+	body.dark-mode #cp .cp-hive-warn.is-open {background:#3a1714;color:#ffc9c2;border-left-color:#ff6b5c;}
+	body.dark-mode #cp .cp-hive-msg.is-ok {color:#8fe0a8;}
+	body.dark-mode #cp .cp-hive-msg.is-err {color:#ff9a8f;}
+	body.dark-mode #cp .cp-hive-new {background:#3d2e10;color:#f5d58a;}
+	body.dark-mode #cp .cp-hive-tbl tr {border-bottom-color:#3a3a3a;}
+	body.dark-mode #cp .cp-hive-intro, body.dark-mode #cp .cp-hive-more li, body.dark-mode #cp .cp-hive-enc, body.dark-mode #cp .cp-hive-title {color:#e4e4e4;}
+	.tu .cp-hive .mh-help {font-size:0.92em;margin:0.8em 0 0;padding:0.7em 0.9em;border-left:3px solid #e0a100;background:#fff8e6;border-radius:0 6px 6px 0;line-height:1.5;}
+	body.dark-mode #cp .cp-hive .mh-help {background:#2b2412;border-color:#c99100;color:#e4e4e4;}

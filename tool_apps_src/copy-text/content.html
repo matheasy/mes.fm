@@ -13,7 +13,7 @@
 					<button type="button" class="tu-btn tu-btn--ghost" id="cp-new-clear">Clear</button>
 				</div>
 			</div>
-			<p class="tu-note" style="margin-bottom:0;">Press <kbd>Ctrl</kbd>/<kbd>⌘</kbd> + <kbd>Enter</kbd> to save. Everything stays in this browser: nothing is uploaded.</p>
+			<p class="tu-note" style="margin-bottom:0;">Press <kbd>Ctrl</kbd>/<kbd>⌘</kbd> + <kbd>Enter</kbd> to save. Everything stays in this browser: nothing is uploaded, unless you choose <em>☁ Hive backup</em> (encrypted by default).</p>
 		</div>
 
 		<div class="tu-card cp-splitbox" id="cp-splitbox" hidden></div>
@@ -23,6 +23,7 @@
 		<div class="cp-bar">
 			<input id="cp-search" class="tu-input cp-search" type="search" placeholder="Search all your texts…" aria-label="Search all your texts" autocomplete="off">
 			<button type="button" class="tu-btn tu-btn--ghost" id="cp-copyall" title="Copy every text on this board, separated by blank lines">Copy all</button>
+			<button type="button" class="tu-btn tu-btn--ghost" id="cp-hivebtn" aria-expanded="false" aria-controls="cp-hive" title="Back up your texts to your Hive account (encrypted) and get them back on any device">☁ Hive backup</button>
 			<details class="cp-menu" id="cp-menu">
 				<summary class="tu-btn tu-btn--ghost">More ▾</summary>
 				<div class="cp-menu-box">
@@ -30,6 +31,7 @@
 					<button type="button" data-act="txt">⬇ Download this board (.txt)</button>
 					<button type="button" data-act="export">⬇ Back up everything (.json)</button>
 					<button type="button" data-act="import">⬆ Restore from a backup…</button>
+					<button type="button" data-act="hive">☁ Save to / load from Hive…</button>
 					<button type="button" data-act="examples">✚ Add a few example texts</button>
 					<button type="button" data-act="delboard" class="cp-danger">🗑 Delete this board</button>
 				</div>
@@ -37,6 +39,37 @@
 			<input type="file" id="cp-file" accept=".json,application/json" hidden>
 		</div>
 		<p class="tu-note cp-status" id="cp-status"></p>
+
+		<div class="tu-card cp-hive" id="cp-hive" hidden>
+			<div class="cp-hive-head">
+				<h2 class="cp-hive-title">☁ Back up to Hive</h2>
+				<button type="button" class="tu-btn tu-btn--ghost cp-hive-close" id="cp-hive-close" aria-label="Close the Hive backup panel">✕</button>
+			</div>
+			<p class="cp-hive-intro">Save all your boards to your own <a href="https://hive.io" target="_blank" rel="noopener">Hive</a> account and load them on any computer or phone that has <a href="https://hive-keychain.com/" target="_blank" rel="noopener">Hive Keychain</a>. No mes.fm account and no server: the backup is written to the Hive blockchain from your browser, signed in Keychain. Your keys never leave Keychain.</p>
+			<div class="cp-hive-user" id="cp-hive-user"></div>
+			<div id="cp-hive-main" hidden>
+				<label class="cp-hive-enc"><input type="checkbox" id="cp-hive-encrypt" checked> <span><b>Encrypt</b> (recommended): only you can read it, with your Hive memo key</span></label>
+				<p class="cp-hive-warn" id="cp-hive-warn" role="note"></p>
+				<div class="cp-hive-acts">
+					<button type="button" class="tu-btn tu-btn--primary" id="cp-hive-save">Save to Hive</button>
+					<button type="button" class="tu-btn" id="cp-hive-load">Load from Hive</button>
+				</div>
+				<p class="tu-note cp-hive-msg" id="cp-hive-msg" aria-live="polite"></p>
+				<div id="cp-hive-list" class="cp-hive-list"></div>
+				<details class="cp-hive-more">
+					<summary>What to know before you use it</summary>
+					<ul>
+						<li><strong>It is permanent.</strong> Anything written to Hive stays in the blockchain's history forever. "Hide" removes a backup from this list, but the data itself can never be deleted.</li>
+						<li><strong>It is public.</strong> Anyone can see that your account saved a Copy Text backup, when, and how big it is. With <em>Encrypt</em> on they can't read it: a fresh random key encrypts it in your browser and only that key is locked to your own memo key, which only you hold. With <em>Encrypt</em> off, <strong>anyone can read every text, forever</strong>.</li>
+						<li><strong>It needs your memo key</strong> in Keychain to encrypt and to open an encrypted backup (it is there if you imported your account with the master password). If you ever change your memo key, older encrypted backups can no longer be opened, so save a new one.</li>
+						<li><strong>It uses Resource Credits</strong>, not money: Hive's free allowance, which refills over about five days. A typical backup costs a small part of it; very new accounts with almost no Hive Power may have to wait. Saving uses your <em>posting</em> key; it can't move any funds.</li>
+						<li><strong>Size:</strong> up to about 150 KB after compression (thousands of short texts). Each 40 KB part is one Keychain confirmation.</li>
+						<li>Don't keep passwords or recovery phrases here, encrypted or not.</li>
+					</ul>
+				</details>
+			</div>
+			<div id="cp-hive-help"></div>
+		</div>
 
 		<div id="cp-out" class="cp-grid" aria-live="polite"></div>
 		<div class="tu-toast cp-undo" id="cp-toast" role="status"><span id="cp-toast-msg"></span><button type="button" id="cp-toast-undo" hidden>Undo</button></div>
@@ -52,11 +85,13 @@
 				<li><strong>Boards:</strong> keep different sets apart (Work, Home, Social, Code…). <em>+ Board</em> makes a new one. Search looks across every board.</li>
 				<li><strong>Pin, colour, reorder:</strong> pin your favourites to the top, colour-code notes, and drag the ⠿ handle to put them in your order.</li>
 				<li><strong>Edit:</strong> the ✎ button edits the title and text, changes the colour and moves the note to another board.</li>
-				<li><strong>Back up:</strong> <em>More ▾ → Back up everything</em> downloads a file you can restore on this or another device.</li>
+				<li><strong>Back up:</strong> <em>More ▾ → Back up everything</em> downloads a file you can restore on this or another device. Or press <em>☁ Hive backup</em> to save an <strong>encrypted backup to your Hive account</strong> and load it on any device with Hive Keychain.</li>
 			</ul>
 			<h3>Notes that fill themselves in</h3>
 			<p>Put <code>{date}</code>, <code>{time}</code>, <code>{weekday}</code>, <code>{year}</code> or <code>{iso}</code> in a note and it is replaced with the current value at the moment you copy it, so a reply that says &ldquo;as of {date}&rdquo; is always up to date. Type <code>{{date}}</code> if you want the literal text <code>{date}</code>.</p>
 			<h3>Is it private?</h3>
-			<p>Yes. Your notes are stored only in this browser (localStorage) and are never sent to a server, so don't keep anything here that you would not keep in a browser on that computer, such as passwords. Clearing your browser's site data deletes them, and they don't sync between devices, so use the backup file if they matter. <a href="/tools">More MES tools</a></p>
+			<p>Yes. Your notes are stored only in this browser (localStorage) and are never sent to a server, so don't keep anything here that you would not keep in a browser on that computer, such as passwords. Clearing your browser's site data deletes them, and they don't sync between devices, so use the backup file if they matter.</p>
+			<h3>Encrypted backups on Hive</h3>
+			<p>If you have a <a href="https://hive.io" target="_blank" rel="noopener">Hive</a> account, <em>☁ Hive backup</em> saves all your boards to it, so you can load them on another computer or your phone (in the Keychain app's browser). Nothing goes through mes.fm: your browser compresses the backup, encrypts it with a new random key, locks that key to your own Hive memo key in Hive Keychain, and Keychain signs it onto the blockchain. Only you can open it. Hive is permanent and public, so others can see that a backup exists and its size, but not what it says. You can also save without encryption, but then anyone can read it forever. <a href="/tools">More MES tools</a></p>
 		</div>
 	</div>
