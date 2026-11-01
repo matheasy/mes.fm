@@ -705,7 +705,7 @@ sub {vertical-align:sub;}
 /* Ten tiles = three full rows of 3 plus one orphan: centre the orphan in the
    3-column layout (generic -- applies whenever the last tile starts a row). */
 @media (min-width: 721px) {
-  .icon-grid__link:last-child:nth-child(3n + 1) { grid-column: 2; }
+  html:not(.page-theatre) .icon-grid__link:last-child:nth-child(3n + 1) { grid-column: 2; }   /* Theatre is auto-fill: forcing column 2 there left a gap and pushed the last tile onto its own row */
 }
 .icon-grid__thumb {
   display: block;
