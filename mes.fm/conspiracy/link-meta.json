@@ -379,6 +379,10 @@
     "image": "https://mes.fm/space-shuttle-columbia-disaster-shook-house/img/thumb.jpg",
     "watchLinks": [
       {
+        "label": "3Speak",
+        "href": "https://3speak.tv/watch?v=mestruth/ptavx40h"
+      },
+      {
         "label": "YouTube",
         "href": "https://youtu.be/YW05RC6MZj8"
       },
@@ -399,6 +403,10 @@
       {
         "label": "Source",
         "href": "https://youtu.be/hkrf8Jjv0tw?t=108"
+      },
+      {
+        "label": "Hive",
+        "href": "https://peakd.com/hive-106474/@mestruth/space-shuttle-columbia-disa-708"
       }
     ]
   },
