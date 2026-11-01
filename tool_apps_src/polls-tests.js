@@ -144,6 +144,59 @@ const P = { act: "new", q: "  Best   pizza topping? ", d: "Line 1\n\n\n\nLine 2"
   eq(L.problems({ q: "Q?", o: ["a", "b"], m: 1 }), [], "valid draft");
   eq(L.problems({ q: "Q?", o: ["a", "A"], m: 1 })[0], "Two options are the same: A", "duplicate in draft");
 
+  // ---- Hive Open Polls (lib.hive) against a real PeakD poll: tarazkp/is-hivefest-still-relevant, votes read from the chain
+  const H = L.hive, fx = require("./polls/fixtures/tarazkp-is-hivefest-still-relevant.json");
+  const hp = H.parse(fx.post);
+  eq([hp.question, hp.choices.length, hp.max, hp.changes, hp.ageDays, hp.end], ["Is HiveFest still Relevant?", 2, 1, true, 0, 1761516213000], "parse PeakD poll metadata");
+  eq(H.parse({ author: "a", permlink: "b", json_metadata: "{\"app\":\"peakd\"}" }), null, "a normal post is not a poll");
+  const hv = []; let nomatch = 0;
+  for (const a in fx.ops) for (const o of fx.ops[a]) { const v = H.parseVote(o, hp, fx.api.poll_trx_id); if (v) hv.push(v); else nomatch++; }
+  eq(nomatch, 0, "every recorded op parses (author/permlink and trx-id forms)");
+  const hr = H.count(hp, hv, fx.created);
+  eq(hr.n, fx.api.poll_choices.map((c) => c.votes ? c.votes.total_votes : 0), "our count = PeakD's open-polls node");
+  eq(hr.v, fx.api.poll_stats.total_voting_accounts_num, "voting accounts = PeakD's");
+  const apiBy = {}; fx.api.poll_voters.forEach((v) => apiBy[v.name] = v.choices.join());
+  eq(hr.voters.filter((v) => apiBy[v.a] !== v.choices.join()).length, 0, "every voter's choice = PeakD's");
+  const anti = hv.filter((v) => v.a === "antisocialist"); eq(anti.length >= 1, true, "antisocialist's votes present");
+  // rules on a made-up poll
+  const t0 = Date.parse("2026-01-01T00:00:00Z");
+  const mp = { author: "me", permlink: "p", choices: ["A", "B", "C"], created: t0, end: t0 + 864e5, max: 1, changes: true, ageDays: 0 };
+  const HV = (a, ch, mins) => ({ a, choices: ch, t: t0 + mins * 60000 });
+  eq(H.count(mp, [HV("x", [1], 1), HV("x", [2], 5)]).n, [0, 1, 0], "latest vote wins");
+  eq(H.count(Object.assign({}, mp, { changes: false }), [HV("x", [1], 1), HV("x", [2], 5)]).n, [1, 0, 0], "no changes: first vote wins");
+  eq(H.count(mp, [HV("x", [1], 1), HV("x", [], 5)]).v, 0, "[] removes the vote");
+  eq(H.count(mp, [HV("x", [1], 1), HV("x", [3], 60 * 25)]).n, [1, 0, 0], "votes after end_time ignored");
+  eq(H.count(mp, [HV("x", [1], -5)]).v, 0, "votes before the post ignored");
+  eq(H.count(mp, [HV("x", [1, 2], 1)]).v, 0, "two picks on a single-choice poll ignored");
+  eq(H.count(Object.assign({}, mp, { max: 2 }), [HV("x", [3, 1], 1)]).n, [1, 0, 1], "multiple choice up to max");
+  eq(H.count(mp, [HV("x", [4], 1), HV("y", [0], 1), HV("z", [1.5], 1), HV("w", ["1"], 1)]).v, 0, "bad choice numbers ignored");
+  eq(H.count(mp, [HV("x", [2], 1), HV("x", [9], 2)]).n, [0, 1, 0], "an invalid later vote does not replace a valid one");
+  const ag = Object.assign({}, mp, { ageDays: 30 });
+  const agr = H.count(ag, [HV("old", [1], 1), HV("new", [2], 1), HV("nobody", [3], 1)], { old: "2020-01-01T00:00:00", new: "2025-12-25T00:00:00" });
+  eq([agr.n, agr.skipped.map((x) => x.a).sort()], [[1, 0, 0], ["new", "nobody"]], "account_age filter at the time of the vote");
+  eq(H.parseVote({ json: "{\"poll\":\"me/p\",\"choice\":2}", t: t0, auths: ["q"] }, mp).choices, [2], "0.1 spec form {choice: n}");
+  eq(H.parseVote({ json: "{\"poll\":\"me/p\",\"choice\":0}", t: t0, auths: ["q"] }, mp).choices, [], "0.1 choice 0 = remove");
+  eq(H.parseVote({ json: "{\"poll\":\"me/other\",\"action\":\"vote\",\"choices\":[1]}", t: t0, auths: ["q"] }, mp), null, "other poll ignored");
+  eq(H.parseVote({ json: "not json", t: t0, auths: ["q"] }, mp), null, "bad json ignored");
+  eq(H.voteJson(mp, [2, 1]), "{\"poll\":\"me/p\",\"action\":\"vote\",\"choices\":[1,2]}", "vote json exactly like PeakD's");
+  eq(H.ref("https://peakd.com/hive-104500/@tarazkp/is-hivefest-still-relevant"), { author: "tarazkp", permlink: "is-hivefest-still-relevant" }, "ref from a PeakD link");
+  eq(H.ref("@mes.fm/x-1"), { author: "mes.fm", permlink: "x-1" }, "ref with a dot");
+  eq(H.ref("nope"), null, "no ref");
+  eq(H.tags("Polls, #Hive  fun!! fun"), ["polls", "hive", "fun"], "tags cleaned");
+  eq(/^which-day-[a-z0-9]+$/.test(H.permlink("Which day?", t0)), true, "permlink from title");
+  const now = t0;
+  const draft = { title: "Which day?", body: "text", question: "Which day?", choices: ["Mon", "Tue", ""], endMs: now + 3 * 864e5, tags: ["polls", "hive"], max: 2, changes: true, hide: false, ageDays: 7, description: "d" };
+  eq(H.problems(draft, now), [], "valid Hive draft");
+  eq(H.problems(Object.assign({}, draft, { endMs: now + 40 * 864e5 }), now).length, 1, "over 30 days refused");
+  eq(H.problems(Object.assign({}, draft, { endMs: NaN }), now)[0], "Hive polls need an end time.", "end time required");
+  eq(H.problems(Object.assign({}, draft, { tags: [], community: "" }), now).length, 1, "a tag or community needed");
+  const bp = H.buildPost(draft, now), bm = JSON.parse(bp.meta);
+  eq([bp.parentPermlink, bm.content_type, bm.version, bm.question, bm.choices, bm.preferred_interpretation, bm.end_time, bm.filters, bm.allow_vote_changes, bm.ui_hide_res_until_voted, bm.max_choices_voted],
+    ["polls", "poll", 0.8, "Which day?", ["Mon", "Tue"], "number_of_votes", Math.floor((now + 3 * 864e5) / 1000), { account_age: 7 }, true, false, 2], "post metadata like PeakD's");
+  eq(H.parse({ author: "me", permlink: bp.permlink, created: new Date(now).toISOString(), json_metadata: bp.meta }).choices, ["Mon", "Tue"], "our post parses back");
+  eq(H.buildPost(Object.assign({}, draft, { community: "hive-104500" }), now).parentPermlink, "hive-104500", "community is the parent");
+  eq("max_choices_voted" in JSON.parse(H.buildPost(Object.assign({}, draft, { max: 1 }), now).meta), false, "single choice leaves max out");
+
   delete process.env.UPSTASH_REDIS_REST_URL; r = await get(id); eq(r.code, 503, "503 without Redis");
   console.log(n + " checks, " + f + " failed"); process.exit(f ? 1 : 0);
 })();

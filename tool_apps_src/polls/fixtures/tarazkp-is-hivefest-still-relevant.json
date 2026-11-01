@@ -1,0 +1,772 @@
+{
+ "post": {
+  "author": "tarazkp",
+  "permlink": "is-hivefest-still-relevant",
+  "title": "Is HiveFest still Relevant?",
+  "created": "2025-10-19T22:03:33",
+  "json_metadata": "{\"app\":\"peakd/2025.10.3\",\"format\":\"markdown\",\"content_type\":\"poll\",\"version\":0.8,\"question\":\"Is HiveFest still Relevant?\",\"choices\":[\"Yes, HiveFest is relevant\",\"No, HiveFest is irrelevant\"],\"preferred_interpretation\":\"number_of_votes\",\"end_time\":1761516213,\"allow_vote_changes\":true,\"filters\":{\"account_age\":0},\"ui_hide_res_until_voted\":false,\"community_membership\":[],\"tags\":[\"hive\",\"community\",\"wellbeing\",\"reflect\",\"health\",\"family\",\"mindset\",\"psychology\",\"philosophy\"],\"users\":[\"blocktrades\"],\"image\":[\"https://files.peakd.com/file/peakd-hive/tarazkp/23tvpkHKiZJ2WAiNVkDViuX33h961qfncVwhjZzN7eYztRYEMKATNqLjhCwv249qV17FW.png\"]}",
+  "parent_permlink": "hive-126152",
+  "category": "hive-126152"
+ },
+ "api": {
+  "protocol_version": 0.8,
+  "end_time": "2025-10-26T22:03:33",
+  "allow_vote_changes": true,
+  "filter_account_age_days": 0,
+  "max_choices_voted": null,
+  "poll_trx_id": "55c74a64733204058303f74490ec5bf9b21f67",
+  "poll_choices": [
+   {
+    "choice_num": 1,
+    "choice_text": "Yes, HiveFest is relevant",
+    "votes": {
+     "total_votes": 24,
+     "hive_hp": null,
+     "hive_proxied_hp": null,
+     "hive_hp_incl_proxied": null,
+     "spl_spsp": null,
+     "he_token": null,
+     "colony_colonyp": null,
+     "glx_glxp": null
+    }
+   },
+   {
+    "choice_num": 2,
+    "choice_text": "No, HiveFest is irrelevant",
+    "votes": {
+     "total_votes": 5,
+     "hive_hp": null,
+     "hive_proxied_hp": null,
+     "hive_hp_incl_proxied": null,
+     "spl_spsp": null,
+     "he_token": null,
+     "colony_colonyp": null,
+     "glx_glxp": null
+    }
+   }
+  ],
+  "poll_stats": {
+   "total_voting_accounts_num": 29,
+   "total_hive_hp": null,
+   "total_hive_proxied_hp": null,
+   "total_hive_hp_incl_proxied": null,
+   "total_spl_spsp": null,
+   "total_he_token": null,
+   "total_colony_colonyp": null,
+   "total_glx_glxp": null
+  },
+  "poll_voters": [
+   {
+    "name": "santigs",
+    "choices": [
+     1
+    ]
+   },
+   {
+    "name": "meesterboom",
+    "choices": [
+     1
+    ]
+   },
+   {
+    "name": "seattlea",
+    "choices": [
+     2
+    ]
+   },
+   {
+    "name": "stayoutoftherz",
+    "choices": [
+     2
+    ]
+   },
+   {
+    "name": "meno",
+    "choices": [
+     1
+    ]
+   },
+   {
+    "name": "pardinus",
+    "choices": [
+     1
+    ]
+   },
+   {
+    "name": "azircon",
+    "choices": [
+     1
+    ]
+   },
+   {
+    "name": "ryivhnn",
+    "choices": [
+     1
+    ]
+   },
+   {
+    "name": "stresskiller",
+    "choices": [
+     1
+    ]
+   },
+   {
+    "name": "vcelier",
+    "choices": [
+     1
+    ]
+   },
+   {
+    "name": "louis88",
+    "choices": [
+     1
+    ]
+   },
+   {
+    "name": "daveks",
+    "choices": [
+     1
+    ]
+   },
+   {
+    "name": "madushanka",
+    "choices": [
+     1
+    ]
+   },
+   {
+    "name": "videoaddiction",
+    "choices": [
+     1
+    ]
+   },
+   {
+    "name": "shanibeer",
+    "choices": [
+     1
+    ]
+   },
+   {
+    "name": "greddyforce",
+    "choices": [
+     1
+    ]
+   },
+   {
+    "name": "seckorama",
+    "choices": [
+     1
+    ]
+   },
+   {
+    "name": "incublus",
+    "choices": [
+     1
+    ]
+   },
+   {
+    "name": "mciszczon",
+    "choices": [
+     2
+    ]
+   },
+   {
+    "name": "uwelang",
+    "choices": [
+     1
+    ]
+   },
+   {
+    "name": "xrayman",
+    "choices": [
+     1
+    ]
+   },
+   {
+    "name": "sorin.cristescu",
+    "choices": [
+     1
+    ]
+   },
+   {
+    "name": "unschool",
+    "choices": [
+     2
+    ]
+   },
+   {
+    "name": "bleujay",
+    "choices": [
+     1
+    ]
+   },
+   {
+    "name": "bozz",
+    "choices": [
+     1
+    ]
+   },
+   {
+    "name": "relf87",
+    "choices": [
+     1
+    ]
+   },
+   {
+    "name": "xmauron3",
+    "choices": [
+     1
+    ]
+   },
+   {
+    "name": "antisocialist",
+    "choices": [
+     1
+    ]
+   },
+   {
+    "name": "heretickitten",
+    "choices": [
+     2
+    ]
+   }
+  ]
+ },
+ "ops": {
+  "santigs": [
+   {
+    "t": "2025-10-19T22:51:36",
+    "trx": "a63edfa9fedb4718ee1a0e824553e11c5848fa89",
+    "json": "{\"poll\":\"tarazkp/is-hivefest-still-relevant\",\"action\":\"vote\",\"choices\":[1]}",
+    "auths": [
+     "santigs"
+    ]
+   }
+  ],
+  "meesterboom": [
+   {
+    "t": "2025-10-19T23:23:00",
+    "trx": "fea701abf79023b2ea6aeedbe5305fe6caecd7c9",
+    "json": "{\"poll\":\"tarazkp/is-hivefest-still-relevant\",\"action\":\"vote\",\"choices\":[1]}",
+    "auths": [
+     "meesterboom"
+    ]
+   }
+  ],
+  "seattlea": [
+   {
+    "t": "2025-10-19T23:28:18",
+    "trx": "3e56cfcafb883205e4fa82107d648510d3e9a4aa",
+    "json": "{\"poll\":\"55c74a64733204058303f74490ec5bf9b21f67\",\"action\":\"vote\",\"choices\":[2]}",
+    "auths": [
+     "seattlea"
+    ],
+    "block": 100440726
+   }
+  ],
+  "stayoutoftherz": [
+   {
+    "t": "2025-10-19T23:38:12",
+    "trx": "ca6d6aca48f9ceacc10c32879db2e2b6cfc10292",
+    "json": "{\"poll\":\"tarazkp/is-hivefest-still-relevant\",\"action\":\"vote\",\"choices\":[2]}",
+    "auths": [
+     "stayoutoftherz"
+    ]
+   }
+  ],
+  "meno": [
+   {
+    "t": "2025-10-19T23:49:39",
+    "trx": "62d00b8ffe595ba86d5eca7854e97f06f65db282",
+    "json": "{\"poll\":\"tarazkp/is-hivefest-still-relevant\",\"action\":\"vote\",\"choices\":[1]}",
+    "auths": [
+     "meno"
+    ]
+   }
+  ],
+  "pardinus": [
+   {
+    "t": "2025-10-20T00:11:51",
+    "trx": "452b13167e8d1dfcb694c0b64438652b57dda7d5",
+    "json": "{\"poll\":\"tarazkp/is-hivefest-still-relevant\",\"action\":\"vote\",\"choices\":[1]}",
+    "auths": [
+     "pardinus"
+    ],
+    "block": 100441596
+   }
+  ],
+  "azircon": [
+   {
+    "t": "2025-10-20T00:41:51",
+    "trx": "cb2d774c95c8a43c63502764818dceea524b040e",
+    "json": "{\"poll\":\"tarazkp/is-hivefest-still-relevant\",\"action\":\"vote\",\"choices\":[1]}",
+    "auths": [
+     "azircon"
+    ],
+    "block": 100442194
+   }
+  ],
+  "ryivhnn": [
+   {
+    "t": "2025-10-20T01:01:15",
+    "trx": "9013beb1de1afd00484cda0c03cfc0f7f9caf70d",
+    "json": "{\"poll\":\"tarazkp/is-hivefest-still-relevant\",\"action\":\"vote\",\"choices\":[1]}",
+    "auths": [
+     "ryivhnn"
+    ]
+   }
+  ],
+  "stresskiller": [
+   {
+    "t": "2025-10-20T01:35:27",
+    "trx": "fd987f6879a59532c229c9e75383c6ebf8440de2",
+    "json": "{\"poll\":\"tarazkp/is-hivefest-still-relevant\",\"action\":\"vote\",\"choices\":[1]}",
+    "auths": [
+     "stresskiller"
+    ],
+    "block": 100443265
+   }
+  ],
+  "vcelier": [
+   {
+    "t": "2025-10-20T02:36:12",
+    "trx": "e95b18287a6e4bed0f7d9dd1b8f7e909817f105e",
+    "json": "{\"poll\":\"tarazkp/is-hivefest-still-relevant\",\"action\":\"vote\",\"choices\":[1]}",
+    "auths": [
+     "vcelier"
+    ]
+   }
+  ],
+  "louis88": [
+   {
+    "t": "2025-10-20T03:05:42",
+    "trx": "f520b067c471bfb83b622a992f6cb1f7fb88230c",
+    "json": "{\"poll\":\"tarazkp/is-hivefest-still-relevant\",\"action\":\"vote\",\"choices\":[1]}",
+    "auths": [
+     "louis88"
+    ]
+   }
+  ],
+  "daveks": [
+   {
+    "t": "2025-10-20T03:21:39",
+    "trx": "8202810a597516bbe1bf3603a9c019ed06c27d05",
+    "json": "{\"poll\":\"tarazkp/is-hivefest-still-relevant\",\"action\":\"vote\",\"choices\":[1]}",
+    "auths": [
+     "daveks"
+    ]
+   }
+  ],
+  "madushanka": [
+   {
+    "t": "2025-10-20T03:59:30",
+    "trx": "e5f68a3dbdfca3a8b3c63b8002f6371d9d9709d7",
+    "json": "{\"poll\":\"tarazkp/is-hivefest-still-relevant\",\"action\":\"vote\",\"choices\":[1]}",
+    "auths": [
+     "madushanka"
+    ]
+   }
+  ],
+  "videoaddiction": [
+   {
+    "t": "2025-10-20T04:00:42",
+    "trx": "4593f81e5fdb209c49cfc47304527b6afa6a6d9c",
+    "json": "{\"poll\":\"55c74a64733204058303f74490ec5bf9b21f67\",\"action\":\"vote\",\"choices\":[1]}",
+    "auths": [
+     "videoaddiction"
+    ]
+   }
+  ],
+  "shanibeer": [
+   {
+    "t": "2025-10-20T04:53:51",
+    "trx": "8051ade6af88450c8c4b38298a718a47a9b30b6d",
+    "json": "{\"poll\":\"tarazkp/is-hivefest-still-relevant\",\"action\":\"vote\",\"choices\":[1]}",
+    "auths": [
+     "shanibeer"
+    ]
+   }
+  ],
+  "greddyforce": [
+   {
+    "t": "2025-10-20T08:03:48",
+    "trx": "a5008883b65fd7b6cce599820601eba08d33a3e9",
+    "json": "{\"poll\":\"tarazkp/is-hivefest-still-relevant\",\"action\":\"vote\",\"choices\":[1]}",
+    "auths": [
+     "greddyforce"
+    ]
+   }
+  ],
+  "seckorama": [
+   {
+    "t": "2025-10-20T08:34:24",
+    "trx": "539b3e106c2f5c22602ac6bf8e6f7d564af1c7a0",
+    "json": "{\"poll\":\"55c74a64733204058303f74490ec5bf9b21f67\",\"action\":\"vote\",\"choices\":[1]}",
+    "auths": [
+     "seckorama"
+    ],
+    "block": 100451637
+   }
+  ],
+  "incublus": [
+   {
+    "t": "2025-10-20T10:19:39",
+    "trx": "54ed33947333b5d1bb7d00ccf2176582d5228626",
+    "json": "{\"poll\":\"55c74a64733204058303f74490ec5bf9b21f67\",\"action\":\"vote\",\"choices\":[1]}",
+    "auths": [
+     "incublus"
+    ]
+   }
+  ],
+  "mciszczon": [
+   {
+    "t": "2025-10-20T10:20:45",
+    "trx": "13157bcf6ba972f003dd2cb11714cc77f9d557f4",
+    "json": "{\"poll\":\"tarazkp/is-hivefest-still-relevant\",\"action\":\"vote\",\"choices\":[2]}",
+    "auths": [
+     "mciszczon"
+    ]
+   }
+  ],
+  "uwelang": [
+   {
+    "t": "2025-10-20T10:31:00",
+    "trx": "e6aff9ddba1fa9f436b72d19a87b6a4fe904e184",
+    "json": "{\"poll\":\"tarazkp/is-hivefest-still-relevant\",\"action\":\"vote\",\"choices\":[1]}",
+    "auths": [
+     "uwelang"
+    ],
+    "block": 100453967
+   }
+  ],
+  "xrayman": [
+   {
+    "t": "2025-10-20T12:06:18",
+    "trx": "54ea1c71ef3732ef274409fa744067972300be48",
+    "json": "{\"poll\":\"tarazkp/is-hivefest-still-relevant\",\"action\":\"vote\",\"choices\":[1]}",
+    "auths": [
+     "xrayman"
+    ]
+   }
+  ],
+  "sorin.cristescu": [
+   {
+    "t": "2025-10-20T13:08:57",
+    "trx": "f210879f52facf58484541d884089cd0cdbea74e",
+    "json": "{\"poll\":\"55c74a64733204058303f74490ec5bf9b21f67\",\"action\":\"vote\",\"choices\":[1]}",
+    "auths": [
+     "sorin.cristescu"
+    ]
+   }
+  ],
+  "unschool": [
+   {
+    "t": "2025-10-20T16:30:42",
+    "trx": "e7b83a7f3ce6cb3442e43b05ab0d3fd12b5ff6c2",
+    "json": "{\"poll\":\"tarazkp/is-hivefest-still-relevant\",\"action\":\"vote\",\"choices\":[2]}",
+    "auths": [
+     "unschool"
+    ]
+   }
+  ],
+  "bleujay": [
+   {
+    "t": "2025-10-20T19:04:27",
+    "trx": "675b1f209a14765d0c35a720111585eda3e0027b",
+    "json": "{\"poll\":\"tarazkp/is-hivefest-still-relevant\",\"action\":\"vote\",\"choices\":[1]}",
+    "auths": [
+     "bleujay"
+    ]
+   }
+  ],
+  "bozz": [
+   {
+    "t": "2025-10-20T21:15:27",
+    "trx": "f5bd07640877f373a1d25e721c204fca38038b74",
+    "json": "{\"poll\":\"tarazkp/is-hivefest-still-relevant\",\"action\":\"vote\",\"choices\":[1]}",
+    "auths": [
+     "bozz"
+    ],
+    "block": 100466841
+   }
+  ],
+  "relf87": [
+   {
+    "t": "2025-10-21T12:47:09",
+    "trx": "a1f18bed92cb35e15176c4734a5dbfa9b7a14226",
+    "json": "{\"poll\":\"tarazkp/is-hivefest-still-relevant\",\"action\":\"vote\",\"choices\":[1]}",
+    "auths": [
+     "relf87"
+    ],
+    "block": 100485455
+   }
+  ],
+  "xmauron3": [
+   {
+    "t": "2025-10-21T19:19:30",
+    "trx": "d6183f0f4e4252d85a087167d7157c0be9f520d0",
+    "json": "{\"poll\":\"55c74a64733204058303f74490ec5bf9b21f67\",\"action\":\"vote\",\"choices\":[1]}",
+    "auths": [
+     "xmauron3"
+    ]
+   }
+  ],
+  "antisocialist": [
+   {
+    "t": "2025-10-23T01:11:27",
+    "trx": "b66919be47314bcab623c79234f797f6dc794cee",
+    "json": "{\"poll\":\"tarazkp/is-hivefest-still-relevant\",\"action\":\"vote\",\"choices\":[1]}",
+    "auths": [
+     "antisocialist"
+    ],
+    "block": 100529032
+   }
+  ],
+  "heretickitten": [
+   {
+    "t": "2025-10-23T13:02:03",
+    "trx": "2487a1d54539be9ca44003e1936f530757c5fc9f",
+    "json": "{\"poll\":\"tarazkp/is-hivefest-still-relevant\",\"action\":\"vote\",\"choices\":[2]}",
+    "auths": [
+     "heretickitten"
+    ]
+   }
+  ]
+ },
+ "created": {
+  "santigs": "2017-07-27T13:48:18",
+  "meesterboom": "2016-07-12T22:49:15",
+  "seattlea": "2021-08-01T13:27:12",
+  "stayoutoftherz": "2017-07-01T19:26:39",
+  "meno": "2017-08-31T17:34:39",
+  "pardinus": "2018-04-22T00:39:09",
+  "azircon": "2018-01-22T13:46:24",
+  "ryivhnn": "2017-01-04T04:21:39",
+  "stresskiller": "2017-06-16T15:59:12",
+  "vcelier": "2016-11-25T01:23:42",
+  "louis88": "2018-01-25T12:43:18",
+  "daveks": "2016-08-08T05:49:03",
+  "madushanka": "2017-09-21T01:27:57",
+  "videoaddiction": "2018-01-10T20:21:21",
+  "shanibeer": "2017-07-17T15:39:27",
+  "greddyforce": "2018-01-29T12:47:24",
+  "seckorama": "2016-08-13T09:26:30",
+  "incublus": "2022-05-10T18:10:09",
+  "mciszczon": "2017-12-18T08:33:33",
+  "uwelang": "2016-08-08T17:13:15",
+  "xrayman": "2021-01-30T17:53:06",
+  "sorin.cristescu": "2017-08-16T09:26:54",
+  "unschool": "2019-10-10T17:50:51",
+  "bleujay": "2016-09-09T20:44:00",
+  "bozz": "2018-01-08T18:47:42",
+  "relf87": "2021-09-25T15:40:39",
+  "xmauron3": "2018-07-05T14:39:18",
+  "antisocialist": "2018-01-22T01:30:39",
+  "heretickitten": "2016-08-09T04:44:45"
+ },
+ "api_votes": [
+  {
+   "account": "santigs",
+   "choices": [
+    1
+   ],
+   "voted_at": "2025-10-19T22:51:36"
+  },
+  {
+   "account": "meesterboom",
+   "choices": [
+    1
+   ],
+   "voted_at": "2025-10-19T23:23:00"
+  },
+  {
+   "account": "seattlea",
+   "choices": [
+    2
+   ],
+   "voted_at": "2025-10-19T23:28:18"
+  },
+  {
+   "account": "stayoutoftherz",
+   "choices": [
+    2
+   ],
+   "voted_at": "2025-10-19T23:38:12"
+  },
+  {
+   "account": "meno",
+   "choices": [
+    1
+   ],
+   "voted_at": "2025-10-19T23:49:39"
+  },
+  {
+   "account": "pardinus",
+   "choices": [
+    1
+   ],
+   "voted_at": "2025-10-20T00:11:51"
+  },
+  {
+   "account": "azircon",
+   "choices": [
+    1
+   ],
+   "voted_at": "2025-10-20T00:41:51"
+  },
+  {
+   "account": "ryivhnn",
+   "choices": [
+    1
+   ],
+   "voted_at": "2025-10-20T01:01:15"
+  },
+  {
+   "account": "stresskiller",
+   "choices": [
+    1
+   ],
+   "voted_at": "2025-10-20T01:35:27"
+  },
+  {
+   "account": "vcelier",
+   "choices": [
+    1
+   ],
+   "voted_at": "2025-10-20T02:36:12"
+  },
+  {
+   "account": "louis88",
+   "choices": [
+    1
+   ],
+   "voted_at": "2025-10-20T03:05:42"
+  },
+  {
+   "account": "daveks",
+   "choices": [
+    1
+   ],
+   "voted_at": "2025-10-20T03:21:39"
+  },
+  {
+   "account": "madushanka",
+   "choices": [
+    1
+   ],
+   "voted_at": "2025-10-20T03:59:30"
+  },
+  {
+   "account": "videoaddiction",
+   "choices": [
+    1
+   ],
+   "voted_at": "2025-10-20T04:00:42"
+  },
+  {
+   "account": "shanibeer",
+   "choices": [
+    1
+   ],
+   "voted_at": "2025-10-20T04:53:51"
+  },
+  {
+   "account": "greddyforce",
+   "choices": [
+    1
+   ],
+   "voted_at": "2025-10-20T08:03:48"
+  },
+  {
+   "account": "seckorama",
+   "choices": [
+    1
+   ],
+   "voted_at": "2025-10-20T08:34:24"
+  },
+  {
+   "account": "incublus",
+   "choices": [
+    1
+   ],
+   "voted_at": "2025-10-20T10:19:39"
+  },
+  {
+   "account": "mciszczon",
+   "choices": [
+    2
+   ],
+   "voted_at": "2025-10-20T10:20:45"
+  },
+  {
+   "account": "uwelang",
+   "choices": [
+    1
+   ],
+   "voted_at": "2025-10-20T10:31:00"
+  },
+  {
+   "account": "xrayman",
+   "choices": [
+    1
+   ],
+   "voted_at": "2025-10-20T12:06:18"
+  },
+  {
+   "account": "sorin.cristescu",
+   "choices": [
+    1
+   ],
+   "voted_at": "2025-10-20T13:08:57"
+  },
+  {
+   "account": "unschool",
+   "choices": [
+    2
+   ],
+   "voted_at": "2025-10-20T16:30:42"
+  },
+  {
+   "account": "bleujay",
+   "choices": [
+    1
+   ],
+   "voted_at": "2025-10-20T19:04:27"
+  },
+  {
+   "account": "bozz",
+   "choices": [
+    1
+   ],
+   "voted_at": "2025-10-20T21:15:27"
+  },
+  {
+   "account": "relf87",
+   "choices": [
+    1
+   ],
+   "voted_at": "2025-10-21T12:47:09"
+  },
+  {
+   "account": "xmauron3",
+   "choices": [
+    1
+   ],
+   "voted_at": "2025-10-21T19:19:30"
+  },
+  {
+   "account": "antisocialist",
+   "choices": [
+    1
+   ],
+   "voted_at": "2025-10-23T01:11:27"
+  },
+  {
+   "account": "heretickitten",
+   "choices": [
+    2
+   ],
+   "voted_at": "2025-10-23T13:02:03"
+  }
+ ]
+}
