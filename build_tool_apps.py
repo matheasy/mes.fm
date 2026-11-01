@@ -1089,6 +1089,13 @@ APPS = {
     # MES Video Editor (2026-10-28): Camtasia-lite timeline editor. lib.js = MESVed (pure timeline maths, node tests tool_apps_src/video-tests.js); js_parts = the converter's
     # engine (imports any format: AVI + H.264 remux / ffmpeg.wasm), core (state, IndexedDB, media analysis, compositor), preview, timeline, export (WebCodecs + mp4-muxer).
     # Noise removal comes from window.MESDenoise (/main_js/denoise.js, written for mes.fm/audio). Normal page in the tools sidebar collection, always-dark workspace (--vd-*).
+    # MES 3D Studio (2026-10-31): beginner 3D modeler for 3D printing. three.js 0.170.0 + addons and three-bvh-csg 0.0.17 via the page's import map (jsDelivr).
+    # lib.js = MES3D (lengths, plate fit, watertight check, overhangs, filament, 2D shapes, 3MF; node tests tool_apps_src/3d-studio-tests.js), templates.js = ready-made models.
+    "3d-studio": dict(title="MES 3D Studio", page_title="Free Online 3D Modeler for 3D Printing: Make STL and 3MF Files",
+                      tag="Build 3D models from shapes and print them. No sign-up.", accent="#2563eb", dark="#1d4ed8", tint="#e0ecff",
+                      desc="Free online 3D modeling app for beginners and 3D printing: add boxes, cylinders, spheres, 3D text and more, cut holes, group shapes, revolve and extrude your own drawings, start from templates like a name keychain, phone stand or gear, check that it fits your printer and is watertight, estimate filament and cost, and export STL, 3MF, OBJ or GLB. Runs in your browser: nothing is uploaded.",
+                      meta_desc="Free online 3D modeler for beginners: build models from shapes, holes and 3D text, check them for 3D printing and export STL or 3MF. Runs in your browser, nothing uploaded.",
+                      js_v="1", js_parts=["templates.js"], lib_from=["image-converter"]),
     "video": dict(title="MES Video Editor", page_title="Free Online Video Editor: Cut, Join, Add Titles, Clean Up Sound",
                        tag="Cut, join, add titles, clean up the sound. No upload.", accent="#be123c", dark="#9f1239", tint="#fde4ea",
                        desc="Free online video editor in your browser: put videos, sound and pictures on a multi-track timeline, trim and split clips, join many videos in order, add titles and overlays, cross-fade, remove background noise, even out the loudness and export MP4 up to 4K. Opens AVI, MKV, WMV and MOV too. Nothing is uploaded.",
