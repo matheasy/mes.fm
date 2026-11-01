@@ -346,6 +346,18 @@ sub {vertical-align:sub;}        .warning-message {font-size:1em;text-align:cent
 	app, or our contact form, which you then send yourself. What you write is not posted on the site.
 	</p>
 
+	<h2 class="mini-title">Polls</h2>
+
+	<p>
+	When you make a poll with <a href="https://mes.fm/polls">MES Polls</a>, we store its question, description, options and
+	settings, and the vote counts, on our server until 60 days after the poll closes; then they are deleted (the person who made a
+	poll can also delete it at any time). Anyone with a poll's link can see it. To let each browser vote only once, we keep a
+	scrambled form of a random number your browser makes up for itself together with the options it picked, and, to limit
+	votes from one network, a salted, one-way hash of your internet (IP) address with a count of votes from it; your IP address
+	itself is never stored, and nobody, including the poll's maker, can see who voted for what. The list of polls you made and
+	the secret keys that let you close or delete them are kept only in your own browser.
+	</p>
+
 	<h2 class="mini-title">Web browser cookies</h2>
 	
 	<p>

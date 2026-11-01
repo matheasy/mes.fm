@@ -100,6 +100,14 @@
  ],
  "tools": [
   {
+   "href": "/polls",
+   "title": "Polls",
+   "icon": "/img/polls-logo.png",
+   "desc": "Make a poll in seconds and share one short link: one or several picks, a closing time, live result bars and a pie chart. No sign-up.",
+   "added": "2026-10-31",
+   "kind": "tool"
+  },
+  {
    "href": "/stream-chat",
    "title": "Stream Chat",
    "icon": "/img/stream-chat-logo.png",
@@ -186,17 +194,17 @@
    "desc": "AVI, MKV, WMV, FLV, MOV and MPG to MP4 that Camtasia and every phone open. AVI screen recordings are copied without re-encoding, in seconds. Nothing is uploaded.",
    "added": "2026-10-28",
    "kind": "tool"
-  },
-  {
-   "href": "/mic-test",
-   "title": "Mic Test",
-   "icon": "/img/mic-test-logo.png",
-   "desc": "See your microphone's real level in dBFS on an OBS-style meter: too quiet, good or clipping. Noise floor, record and play back, speaker test.",
-   "added": "2026-10-28",
-   "kind": "tool"
   }
  ],
  "latest": [
+  {
+   "href": "/polls",
+   "title": "Polls",
+   "icon": "/img/polls-logo.png",
+   "desc": "Make a poll in seconds and share one short link: one or several picks, a closing time, live result bars and a pie chart. No sign-up.",
+   "added": "2026-10-31",
+   "kind": "tool"
+  },
   {
    "href": "/stream-chat",
    "title": "Stream Chat",
@@ -250,14 +258,6 @@
    "title": "Workout Planner",
    "icon": "/img/workout-planner-logo.png",
    "desc": "Plan your week of workouts, keep a Currently-at marker that moves on when you finish, run training rotations, drag and drop, and track your streak.",
-   "added": "2026-10-29",
-   "kind": "tool"
-  },
-  {
-   "href": "/jump-start",
-   "title": "Jump-Start a Car",
-   "icon": "/img/jump-start-logo.png",
-   "desc": "Practise the jumper-cable clamp order on an interactive engine bay, decode your battery’s date code, see how cold cuts cranking power and check its voltage.",
    "added": "2026-10-29",
    "kind": "tool"
   }
