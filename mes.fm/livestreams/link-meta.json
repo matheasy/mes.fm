@@ -122,6 +122,24 @@
       }
     ]
   },
+  "https://mes.fm/livestream-143-stats": {
+    "image": "https://mes.fm/livestream-143-stats/img/livestream-143-stats.jpg",
+    "watchLinks": [],
+    "namedLinks": [
+      {
+        "label": "Hive",
+        "href": "https://inleo.io/threads/view/mestruth/re-leothreads-dplckqz7"
+      },
+      {
+        "label": "Telegram",
+        "href": "https://t.me/meslinks/35670"
+      },
+      {
+        "label": "All livestreams",
+        "href": "https://mes.fm/livestreams"
+      }
+    ]
+  },
   "https://mes.fm/livestream-66-trailer": {
     "image": "https://images.3speak.tv/images/1788025782654-abd7668a2f2b9cb7.webp",
     "watchLinks": [
