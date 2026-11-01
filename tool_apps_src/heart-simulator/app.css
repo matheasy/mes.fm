@@ -61,10 +61,11 @@
 	body.dark-mode #hs .hs-tabs {border-bottom-color:#3a3f48;} body.dark-mode #hs .hs-tabs button {color:#c8ced8;} body.dark-mode #hs .hs-tabs button:hover {background:#2a2e35;}
 	body.dark-mode #hs .hs-tabs button[aria-selected="true"] {background:#262a31;color:#fff;}
 	body.dark-mode #hs .hs-chips button {background:#2b2f36;border-color:#454c58;color:#e6e8ec;}
-	body.dark-mode #hs .hs-chips button[aria-pressed="true"] {background:var(--accent);border-color:var(--accent);color:#fff;}
+	body.dark-mode #hs .hs-chips button[aria-pressed="true"] {background:#be123c;border-color:#e11d48;color:#fff;}
 	body.dark-mode #hs .hs-chips button.hs-right {background:#1f8a4c;color:#fff;} body.dark-mode #hs .hs-chips button.hs-wrong {background:#b42318;color:#fff;}
 	body.dark-mode #hs .hs-rgrp > span, body.dark-mode #hs .hs-table th, body.dark-mode #hs .hs-table small {color:#a0a8b3;}
 	body.dark-mode #hs .hs-table th, body.dark-mode #hs .hs-table td {border-bottom-color:#3a3f48;}
 	body.dark-mode #hs .hs-st--ok {background:#173d27;color:#b6f0c9;} body.dark-mode #hs .hs-st--lo {background:#1c2c4d;color:#c4d6ff;} body.dark-mode #hs .hs-st--hi {background:#4a2414;color:#ffd0b8;}
 	body.dark-mode #hs .hs-eq {background:#262626;border-color:#3a3a3a;} body.dark-mode #hs .hs-eq__n {color:#a0a8b3;}
 	.hs-check select.tu-select {width:auto;display:inline-block;margin-left:0.3em;} .hs-check {white-space:nowrap;}
+	body.dark-mode #hs.hs {--hs-bg:#0a0e16;--hs-line:#2a3040;--hs-text:#e8ecf5;--hs-dim:#9aa5bb;--hs-ro:#0e1118;}   /* restated: the derived dark block would lighten the stage background */
