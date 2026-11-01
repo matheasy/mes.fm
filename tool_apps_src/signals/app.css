@@ -168,3 +168,7 @@
 		#sg .sg-nlist--cards .sg-nc.has-img .sg-nc__a {flex-direction:row;} #sg .sg-nlist--cards .sg-nc__img {flex:0 0 7.5em;aspect-ratio:auto;min-height:5.2em;} #sg .sg-nlist--cards .sg-nc:not(.has-img) .sg-nc__img {display:none;}}
 	@media (max-width:420px) {#sg .sg-gqs {grid-template-columns:minmax(0, 1fr);} #sg .sg-nlist--cards .sg-nc__img {flex-basis:6em;}}
 	body.dark-mode #sg.sg .sg-ck__w {fill:rgba(255,123,138,0.35);} body.dark-mode #sg.sg .sg-dc__v {color:var(--sg-dn);} body.dark-mode #sg.sg .sg-nc__a:hover .sg-nc__t, body.dark-mode #sg.sg .sg-nsec__tg:hover {color:#8cc6f2;}
+
+#sg .sg-tw { overflow-x: auto; }
+#sg .sg-ptbl { min-width: 640px; }
+#sg .sg-ptbl td, #sg .sg-ptbl th { white-space: nowrap; }

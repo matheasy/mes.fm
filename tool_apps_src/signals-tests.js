@@ -38,6 +38,21 @@ async function t(name, fn) { try { await fn(); n++; } catch (e) { fail++; consol
 	});
 	await t('policy rates', () => {
 		const boc = S.policy(S.parseValet(fj('boc_valet.json'), 'V39079')); assert(boc.rate > 0 && boc.rate < 10);
+		// Valet answers newest first: the latest observation must win whatever the order
+		const vd = S.parseValet({ observations: [{ d: '2026-10-29', V1: { v: '2.50' } }, { d: '2026-10-26', V1: { v: '2.25' } }, { d: '2025-04-14', V1: { v: '2.75' } }] }, 'V1');
+		assert.deepStrictEqual(S.policy(vd), { rate: 2.5, date: '2026-10-29', since: '2026-10-29', prev: 2.25 });
+		// Hyperliquid perps: funding per hour in %, yearly, USD open interest, lean vs the 0.00125%/h baseline
+		const hl = S.parseHlPerps(fj('hl_meta.json'));
+		assert.deepStrictEqual(hl.map(x => x.sym), S.PERP_SYMS.filter(s => hl.some(x => x.sym === s)));
+		assert(hl.length >= 5 && hl.every(x => x.px > 0 && x.oi > 0 && typeof x.lean === 'string'));
+		const hb = hl.find(x => x.sym === 'BTC'); assert(hb.oi > 1e8, 'BTC OI in USD');
+		assert.strictEqual(S.fundingLean(0.00125), 'normal'); assert.strictEqual(S.fundingLean(-0.001), 'shorts paying');
+		assert.strictEqual(S.fundingLean(0.0001), 'below normal'); assert.strictEqual(S.fundingLean(0.01), 'longs very crowded');
+		assert.throws(() => S.parseHlPerps({}));
+		// Polymarket: decided (~100%) and past-end events are dropped
+		const pmE = (id, end, p) => ({ id, slug: 's' + id, title: 'T' + id, endDate: end, markets: [{ active: true, closed: false, outcomes: '["Yes","No"]', outcomePrices: JSON.stringify([String(p), String(1 - p)]) }] });
+		const pm = S.parsePolymarket([pmE(1, '2030-01-01T00:00:00Z', 0.4), pmE(2, '2030-01-01T00:00:00Z', 0.999), pmE(3, '2020-01-01T00:00:00Z', 0.4)], 'x', { now: Date.parse('2026-11-01') });
+		assert.deepStrictEqual(pm.map(x => x.id), ['pm1']);
 		const ecb = S.policy(S.parseEcbCsv(fx('ecb_dfr.csv'))); assert.strictEqual(ecb.rate, 2.5); assert.strictEqual(ecb.prev, 2.25); assert.strictEqual(ecb.since, '2026-09-16');
 		const boe = S.policy(S.parseBoeCsv(fx('boe_bankrate.csv'))); assert.strictEqual(boe.rate, 3.75); assert(boe.since < boe.date); assert.strictEqual(boe.prev, 4);
 		assert.deepStrictEqual(S.policy([['a', 1], ['b', 1], ['c', 2], ['d', 2]]), { rate: 2, date: 'd', since: 'c', prev: 1 });
@@ -191,7 +206,7 @@ async function t(name, fn) { try { await fn(); n++; } catch (e) { fail++; consol
 	// ---- the aggregator with a mocked fetch ----
 	const ROUTES = [
 		[/alternative\.me\/fng/, 'fng.json'], [/coins\/markets\?.*category=stablecoins/, 'coingecko_stables.json'], [/coins\/markets/, 'coingecko_markets.json'], [/api\/v3\/global/, 'coingecko_global.json'],
-		[/blocks\/tip\/height/, 'mempool_height.txt'], [/difficulty-adjustment/, 'mempool_difficulty.json'], [/finance\.yahoo\.com/, 'yahoo_gspc.json'],
+		[/api\.hyperliquid\.xyz\/info/, 'hl_meta.json'], [/blocks\/tip\/height/, 'mempool_height.txt'], [/difficulty-adjustment/, 'mempool_difficulty.json'], [/finance\.yahoo\.com/, 'yahoo_gspc.json'],
 		[/id=T10Y2Y/, 'fred_T10Y2Y_monthly.csv'], [/id=USREC/, 'fred_USREC.csv'], [/id=CPIAUCSL/, 'fred_CPIAUCSL.csv'], [/id=VIXCLS/, 'fred_VIXCLS.csv'], [/id=BAMLH0A0HYM2/, 'fred_BAMLH0A0HYM2.csv'],
 		[/fredgraph\.csv/, 'fred_SP500.csv'], [/bankofcanada/, 'boc_valet.json'], [/data-api\.ecb/, 'ecb_dfr.csv'], [/bankofengland/, 'boe_bankrate.csv'], [/federalreserve\.gov\/feeds/, 'fed_press_monetary.xml'],
 		[/tag_slug=geopolitics/, 'polymarket_geo_geopolitics.json'], [/tag_slug=middle-east/, 'polymarket_geo_middle-east.json'], [/tag_slug=ukraine/, 'polymarket_geo_ukraine.json'], [/tag_slug=china/, 'polymarket_geo_china.json'],
@@ -214,7 +229,7 @@ async function t(name, fn) { try { await fn(); n++; } catch (e) { fail++; consol
 		assert.strictEqual(res.code, 200); assert(/s-maxage=300, stale-while-revalidate=3600/.test(res.h['Cache-Control']));
 		const s = res.body.sources, bad = Object.keys(s).filter((k) => !s[k].ok);
 		assert.deepStrictEqual(bad, [], 'failed: ' + bad.map((k) => k + ' ' + s[k].error).join('; '));
-		assert.strictEqual(Object.keys(s).length, 21);
+		assert.strictEqual(Object.keys(s).length, 22);
 		['news', 'mnews', 'wnews'].forEach((k) => { assert(s[k].data.items.length >= 10, k); assert(!s[k].data.missing, k + ' missing ' + s[k].data.missing); s[k].data.items.forEach((i) => { assert(i.src && /^https?:\/\//.test(i.link)); if (i.img) assert(/^https:\/\//.test(i.img)); }); });
 		assert(s.mnews.data.items.some((i) => i.src === 'CNBC') && s.mnews.data.items.some((i) => i.img), 'markets section has CNBC and pictures');
 		assert(new Set(s.wnews.data.items.map((i) => i.src)).size === 5, 'all five world feeds');

@@ -25,20 +25,21 @@
 //            (all RSS, list in lib NEWS_FEEDS: titles, links, the feed's one-line summary and a thumbnail from the publisher's own image host)
 //   geo      gamma-api.polymarket.com /events (geopolitics, middle-east, ukraine, china tags), conflict questions only
 //   geok     Kalshi KXHORMUZNORM (Strait of Hormuz)
+//   perps    api.hyperliquid.xyz/info metaAndAssetCtxs (POST, keyless): funding, open interest, volume of a few perps
 const L = require('./_signals-lib.js');
 
 const UA = 'mes.fm-signals/1.0 (+https://mes.fm/signals)';
-async function get(url, ms, kind, headers) {
+async function get(url, ms, kind, headers, body) {
   const ctl = new AbortController(), t = setTimeout(() => ctl.abort(), ms || 7000);
   try {
-    const r = await fetch(url, { signal: ctl.signal, redirect: 'follow', headers: Object.assign({ 'user-agent': UA, accept: kind === 'json' ? 'application/json' : '*/*' }, headers || {}) });
+    const r = await fetch(url, { method: body ? 'POST' : 'GET', body: body || undefined, signal: ctl.signal, redirect: 'follow', headers: Object.assign({ 'user-agent': UA, accept: kind === 'json' ? 'application/json' : '*/*' }, headers || {}) });
     if (!r.ok) throw new Error('HTTP ' + r.status);
     return kind === 'json' ? await r.json() : await r.text();
   } catch (e) {
     throw new Error(e.name === 'AbortError' ? 'timed out' : String(e.message || e).slice(0, 120));
   } finally { clearTimeout(t); }
 }
-const json = (u, ms, h) => get(u, ms, 'json', h), text = (u, ms) => get(u, ms, 'text');
+const json = (u, ms, h, body) => get(u, ms, 'json', h, body), text = (u, ms) => get(u, ms, 'text');
 const daysAgo = (n) => L.ymd(Date.now() - n * 864e5);
 // FRED fredgraph.csv is keyless; one series per request (several ids at once come back as a zip)
 const fredCache = {};
@@ -65,6 +66,7 @@ const JOBS = {
   coins: async () => L.parseCoins(await json('https://api.coingecko.com/api/v3/coins/markets?vs_currency=usd&ids=bitcoin,ethereum,hive,ripple,solana&sparkline=true&price_change_percentage=24h,7d')),
   global: async () => L.parseGlobal(await json('https://api.coingecko.com/api/v3/global')),
   stables: async () => L.parseStables(await json('https://api.coingecko.com/api/v3/coins/markets?vs_currency=usd&category=stablecoins&order=market_cap_desc&per_page=20')),
+  perps: async () => L.parseHlPerps(await json('https://api.hyperliquid.xyz/info', 8000, { 'content-type': 'application/json' }, '{"type":"metaAndAssetCtxs"}')),
   halving: async () => {
     const [h, d] = await Promise.all([text('https://mempool.space/api/blocks/tip/height'), json('https://mempool.space/api/v1/difficulty-adjustment').catch(() => null)]);
     return L.halving(+h, d && d.timeAvg, Date.now());

@@ -86,6 +86,8 @@
 		var o = (j && j.observations) || [], out = [];
 		o.forEach(function (x) { var v = x[key] && num(x[key].v); if (x.d && v !== null) out.push([x.d, v]); });
 		if (!out.length) throw new Error('no Valet values');
+		// Valet sends `?recent=N` newest first; everything downstream (policy(), charts) wants oldest first
+		out.sort(function (a, b) { return a[0] < b[0] ? -1 : a[0] > b[0] ? 1 : 0; });
 		return out;
 	};
 	// ECB data API csvdata (key rate "date of changes" series) -> [[date, v]]
@@ -214,11 +216,44 @@
 			}
 			if (!dated) oc.sort(function (a, b) { return b.p - a.p; });
 			if (!oc.length) return;
+			// leave out events that are over in all but name: past their end date (still settling), or one answer already at ~100%
+			var tEnd = Date.parse(e.endDate || ''), tNow = opt && opt.now != null ? opt.now : Date.now();
+			if (isFinite(tEnd) && tEnd < tNow) return;
+			if (!dated && oc[0].p >= 99.5) return;
 			var o = { id: 'pm' + e.id, src: 'Polymarket', cat: cat || '', title: String(e.title || '').slice(0, 160), url: 'https://polymarket.com/event/' + encodeURIComponent(e.slug), vol24: round(num(e.volume24hr), 0), vol: round(num(e.volume), 0), end: e.endDate || null, outcomes: oc.slice(0, dated ? 6 : 5), more: Math.max(0, oc.length - (dated ? 6 : 5)) };
 			if (dated) o.dated = true;
 			if (ms.length === 1 && oc.some(function (x) { return /^yes$/i.test(x.label); })) o.binary = true;
 			out.push(o);
 		});
+		return out;
+	};
+	// ---------- perps (Hyperliquid metaAndAssetCtxs) ----------
+	// [meta, ctxs] -> [{sym, px, ch24, funding (per hour, %), apr (%/yr), oi (USD), vol (24h USD), lean}], in PERP_SYMS order.
+	// Hyperliquid pays funding every hour; its baseline (interest part, no premium) is 0.00125%/h = ~11%/yr paid by longs, so "lean"
+	// compares with that, not with zero. Description only: crowded positioning, not a forecast.
+	S.PERP_SYMS = ['BTC', 'ETH', 'SOL', 'XRP', 'HYPE', 'PAXG'];
+	S.PERP_BASE = 0.00125;
+	S.fundingLean = function (fh) {
+		if (fh == null || !isFinite(fh)) return '';
+		if (fh < 0) return 'shorts paying';
+		if (fh < S.PERP_BASE * 0.6) return 'below normal';
+		if (fh <= S.PERP_BASE * 1.6) return 'normal';
+		return fh > S.PERP_BASE * 4 ? 'longs very crowded' : 'longs paying more';
+	};
+	S.parseHlPerps = function (j, syms) {
+		if (!Array.isArray(j) || j.length < 2 || !j[0] || !Array.isArray(j[0].universe) || !Array.isArray(j[1])) throw new Error('not a Hyperliquid meta answer');
+		var u = j[0].universe, c = j[1], want = syms || S.PERP_SYMS, by = {};
+		u.forEach(function (a, i) { if (a && c[i] && !a.isDelisted) by[a.name] = c[i]; });
+		var out = [];
+		want.forEach(function (sym) {
+			var x = by[sym]; if (!x) return;
+			var px = num(x.markPx), prev = num(x.prevDayPx), f = num(x.funding), oi = num(x.openInterest), vol = num(x.dayNtlVlm);
+			if (px === null) return;
+			var fh = f === null ? null : f * 100;
+			out.push({ sym: sym, px: px, ch24: prev ? round((px / prev - 1) * 100, 2) : null, funding: fh === null ? null : round(fh, 5), apr: fh === null ? null : round(fh * 24 * 365, 1),
+				oi: oi === null ? null : round(oi * px, 0), vol: vol === null ? null : round(vol, 0), lean: S.fundingLean(fh) });
+		});
+		if (!out.length) throw new Error('no perps found');
 		return out;
 	};
 	// ---------- geopolitics ----------
@@ -400,7 +435,7 @@
 	S.money = function (v, opt) {
 		if (v === null || v === undefined || !isFinite(v)) return '—';
 		var a = Math.abs(v);
-		if (opt === 'big' || a >= 1e9) { var u = a >= 1e12 ? ['T', 1e12] : a >= 1e9 ? ['B', 1e9] : a >= 1e6 ? ['M', 1e6] : ['', 1]; return '$' + (v / u[1]).toFixed(a / u[1] >= 100 ? 0 : a / u[1] >= 10 ? 1 : 2) + u[0]; }
+		if (opt === 'big' || a >= 1e9) { var u = a >= 1e12 ? ['T', 1e12] : a >= 1e9 ? ['B', 1e9] : a >= 1e6 ? ['M', 1e6] : a >= 1e3 ? ['K', 1e3] : ['', 1]; return '$' + (v / u[1]).toFixed(a / u[1] >= 100 ? 0 : a / u[1] >= 10 ? 1 : 2) + u[0]; }
 		var d = a >= 1000 ? 0 : a >= 1 ? 2 : a >= 0.01 ? 4 : 6;
 		return '$' + v.toLocaleString('en-US', { minimumFractionDigits: a >= 1000 ? 0 : d, maximumFractionDigits: d });
 	};
@@ -444,6 +479,8 @@
 		mcap: ['Market cap', 'Price times the number of coins (or shares) in existence. The total crypto market cap adds this up for every coin CoinGecko tracks.'],
 		dominance: ['Bitcoin dominance', 'Bitcoin’s share of the total crypto market cap. Rising dominance usually means money is moving into Bitcoin from smaller coins (often in nervous times); falling dominance means other coins are gaining faster (sometimes called “alt season”).'],
 		stablecoin: ['Stablecoins', 'Tokens designed to stay worth one US dollar (or another currency), such as USDT and USDC, backed by cash, bonds or other assets. Their total supply is a rough measure of how much dollar money is sitting inside crypto, ready to be used.'],
+		funding: ['Funding rate', 'On perpetual futures (perps) the two sides pay each other every hour so the perp price stays near the real price. Positive funding = traders betting on a rise (longs) pay those betting on a fall (shorts). On Hyperliquid the normal level is 0.00125% an hour (about 11% a year, paid by longs); well above that means many people are leaning the same way with borrowed money, negative means shorts are the crowded side. Crowded positioning can unwind sharply in either direction; it is not a price forecast.'],
+		oi: ['Open interest', 'The total value of perp positions still open (counted once, not long plus short). Rising open interest with rising prices means new leveraged money is coming in; a sudden drop means positions were closed or liquidated.'],
 		halving: ['Bitcoin halving', 'Every 210,000 blocks (about every four years) the number of new bitcoins paid to miners for each block is cut in half. The 2024 halving cut it from 6.25 to 3.125 BTC. The countdown uses the current block height and the recent average time between blocks, so the date drifts a little.'],
 		spark: ['Sparkline', 'A tiny chart without axes that shows the shape of the price over the last 7 days (crypto) or 3 months (markets). Green if it ended higher than it started, red if lower.'],
 		sp500: ['S&P 500', 'An index of about 500 of the largest US companies, weighted by size. It is the most common yardstick for “the stock market”.'],
@@ -674,6 +711,10 @@
 		else o += stat('Total crypto market cap', '—', 'not available right now');
 		if (sb) o += stat('Stablecoin supply ' + q('stablecoin'), S.money(sb.total, 'big'), sb.top.slice(0, 3).map(function (t) { return esc(t[0]) + ' ' + esc(S.money(t[1], 'big')); }).join(' · '));
 		$('sg-cstats').innerHTML = o;
+		var pp = src('perps');
+		$('sg-perps').innerHTML = '<div class="sg-chead"><b>Perps: funding and open interest ' + q('funding') + '</b><span class="tu-note">Hyperliquid, live</span></div>' + (pp ? '<div class="sg-tw"><table class="tu-table sg-ptbl"><thead><tr><th>Market</th><th>Price</th><th>24h</th><th>Funding / hour</th><th>Per year</th><th>Reading</th><th>Open interest ' + q('oi') + '</th><th>24h volume</th></tr></thead><tbody>' +
+			pp.map(function (x) { var cls = /shorts/.test(x.lean) ? 'sg-ch down' : /crowded|more/.test(x.lean) ? 'sg-ch up' : 'tu-note'; return '<tr><td><b>' + esc(x.sym === 'PAXG' ? 'PAXG (gold)' : x.sym) + '</b></td><td>' + esc(S.money(x.px)) + '</td><td>' + chg(x.ch24, 1) + '</td><td>' + (x.funding == null ? '—' : esc(x.funding.toFixed(5) + '%')) + '</td><td>' + (x.apr == null ? '—' : esc(S.fmt(x.apr, 1) + '%')) + '</td><td><span class="' + cls + '">' + esc(x.lean) + '</span></td><td>' + (x.oi == null ? '—' : esc(S.money(x.oi, 'big'))) + '</td><td>' + (x.vol == null ? '—' : esc(S.money(x.vol, 'big'))) + '</td></tr>'; }).join('') +
+			'</tbody></table></div><p class="tu-note">Normal funding on Hyperliquid is 0.00125% an hour (about 11% a year, paid by longs). Above it, the bet-on-a-rise side is crowded; negative, the bet-on-a-fall side is. Data: <a href="https://app.hyperliquid.xyz" target="_blank" rel="noopener nofollow">Hyperliquid</a> public API.</p>' : err('perps'));
 		if (hv) {
 			var left = hv.eta - Date.now();
 			$('sg-halving').innerHTML = '<div class="sg-chead"><b>Next Bitcoin halving ' + q('halving') + '</b><span class="tu-note">block ' + esc(S.fmt(hv.target, 0)) + '</span></div><div class="sg-hv"><div class="sg-hv__big">' + esc(Math.floor(left / 864e5) + ' days') + '</div><div>about <b>' + esc(new Date(hv.eta).toLocaleDateString(undefined, { year: 'numeric', month: 'long', day: 'numeric' })) + '</b><br><span class="tu-note">' + esc(S.fmt(hv.left, 0)) + ' blocks to go at ' + esc((hv.avgSec / 60).toFixed(1)) + ' min per block (recent average)</span></div></div>' +
@@ -870,7 +911,7 @@
 	function drawTab(t) { ({ sent: drawSent, crypto: drawCrypto, mkts: drawMkts, rates: drawRates, pred: drawPred, geo: drawGeo, news: drawNews })[t](); rangeBtns(); }
 
 	// ---------- footer + loading ----------
-	var NAMES = { fng: 'Crypto Fear & Greed (alternative.me)', coins: 'Crypto prices (CoinGecko)', global: 'Crypto market (CoinGecko)', stables: 'Stablecoins (CoinGecko)', halving: 'Bitcoin blocks (mempool.space)', markets: 'Stocks, gold, oil, dollar (Yahoo Finance, FRED backup)', stockfg: 'Stock Fear & Greed inputs (FRED)', rates: 'US rates (FRED)', curve: 'Yield curve + recessions (FRED)', cpi: 'CPI (FRED)', boc: 'Bank of Canada (Valet)', ecb: 'ECB', boe: 'Bank of England', fed: 'Fed press releases (RSS)', poly: 'Polymarket', kalshi: 'Kalshi', news: 'Crypto news: CoinDesk, Cointelegraph (RSS)', mnews: 'Markets news: CNBC, MarketWatch, BBC Business (RSS)', wnews: 'World news: BBC, Al Jazeera, NPR, The Guardian, DW (RSS)', geo: 'Conflict markets (Polymarket)', geok: 'Conflict markets (Kalshi)' };
+	var NAMES = { fng: 'Crypto Fear & Greed (alternative.me)', coins: 'Crypto prices (CoinGecko)', global: 'Crypto market (CoinGecko)', stables: 'Stablecoins (CoinGecko)', halving: 'Bitcoin blocks (mempool.space)', perps: 'Perps funding and open interest (Hyperliquid)', markets: 'Stocks, gold, oil, dollar (Yahoo Finance, FRED backup)', stockfg: 'Stock Fear & Greed inputs (FRED)', rates: 'US rates (FRED)', curve: 'Yield curve + recessions (FRED)', cpi: 'CPI (FRED)', boc: 'Bank of Canada (Valet)', ecb: 'ECB', boe: 'Bank of England', fed: 'Fed press releases (RSS)', poly: 'Polymarket', kalshi: 'Kalshi', news: 'Crypto news: CoinDesk, Cointelegraph (RSS)', mnews: 'Markets news: CNBC, MarketWatch, BBC Business (RSS)', wnews: 'World news: BBC, Al Jazeera, NPR, The Guardian, DW (RSS)', geo: 'Conflict markets (Polymarket)', geok: 'Conflict markets (Kalshi)' };
 	function foot() {
 		$('sg-updated').innerHTML = (MOCK ? '<b>Sample data</b> saved ' : 'Updated ') + esc(ago(data.generated)) + ' · refreshes every 5 minutes';
 		$('sg-srcs').innerHTML = Object.keys(NAMES).map(function (k) { var s = data.sources[k]; return '<li class="' + (s && s.ok ? 'ok' : 'bad') + '">' + (s && s.ok ? '&#10003; ' : '&#10007; ') + esc(NAMES[k]) + (s && !s.ok ? ' <span class="tu-note">' + esc(s.error) + '</span>' : '') + '</li>'; }).join('');
