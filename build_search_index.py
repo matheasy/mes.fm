@@ -93,7 +93,7 @@ def category(path, doc):
         return "puzzles"
     if MATH.match(top):
         return "math"
-    if top.startswith("911") or top in ("1109-keo-meteor-music", "bg"):
+    if top.startswith("911") or top in ("1109-keo-meteor-music", "bg", "youtube-mestruth"):
         return "911"
     if top.startswith("hutchison") or top in HUTCHISON:
         return "hutchison"

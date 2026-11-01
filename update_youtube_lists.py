@@ -1,7 +1,8 @@
 #!/usr/bin/env python3
-"""Snapshot two YouTube lists into the JSON files read by the hub generators.
+"""Snapshot three YouTube lists into the JSON files read by the hub generators.
 
   * https://www.youtube.com/@mes/videos            -> mes.fm/math/youtube-videos.json      (page mes.fm/youtube, built by mes.fm/math/build.mjs)
+  * https://www.youtube.com/@mestruth/videos       -> mes.fm/math/youtube-mestruth-videos.json (page mes.fm/youtube-mestruth, same build)
   * playlist PLai3U8-WIK0FfZ_7hUuyO7xN8lp5oaDiu    -> mes.fm/experiments/draft-videos.json (page mes.fm/experiments-draft, mes.fm/experiments/build.mjs;
                                                       an unlisted "DRAFT experiments" playlist)
 
@@ -13,7 +14,7 @@ uploads:
     cd mes.fm/math && npm run build              # then diff, and `git checkout math/link-meta.json`
     cd mes.fm/experiments && npm run build
 
-Dry-runs by default (prints counts and what changed); --apply writes.
+Dry-runs by default (prints counts and what changed); --apply writes. --only=mes,mestruth,draft limits it to those lists.
 """
 import json
 import pathlib
@@ -23,8 +24,9 @@ import sys
 
 ROOT = pathlib.Path(__file__).resolve().parent / "mes.fm"
 LISTS = [
-    ("https://www.youtube.com/@mes/videos", ROOT / "math" / "youtube-videos.json"),
-    ("https://www.youtube.com/playlist?list=PLai3U8-WIK0FfZ_7hUuyO7xN8lp5oaDiu", ROOT / "experiments" / "draft-videos.json"),
+    ("mes", "https://www.youtube.com/@mes/videos", ROOT / "math" / "youtube-videos.json"),
+    ("mestruth", "https://www.youtube.com/@mestruth/videos", ROOT / "math" / "youtube-mestruth-videos.json"),
+    ("draft", "https://www.youtube.com/playlist?list=PLai3U8-WIK0FfZ_7hUuyO7xN8lp5oaDiu", ROOT / "experiments" / "draft-videos.json"),
 ]
 
 
@@ -47,7 +49,10 @@ def fetch(url):
 
 def main():
     apply = "--apply" in sys.argv
-    for url, path in LISTS:
+    only = next((a.split("=", 1)[1].split(",") for a in sys.argv if a.startswith("--only=")), None)
+    for key, url, path in LISTS:
+        if only and key not in only:
+            continue
         new = fetch(url)
         old = json.loads(path.read_text(encoding="utf-8")) if path.exists() else []
         oi = {v["id"] for v in old}; ni = {v["id"] for v in new}

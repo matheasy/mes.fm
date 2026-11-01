@@ -25,7 +25,7 @@
     function familyOf(s) {
         var top = s.split("/")[0];
         if (!top || top === "livestreams") return null;
-        if (/^911/.test(top) || top === "1109-keo-meteor-music") return "911";
+        if (/^911/.test(top) || top === "1109-keo-meteor-music" || top === "youtube-mestruth") return "911";
         if (/^hutchison/.test(top) || /^(highlights|articles|cold-fusion-lenr)$/.test(top)) return "hutchison";
         if (/^(conspiracy|mh370|bg|pg)/.test(top)) return "conspiracy";
         if (/^(science|physics|experiments|antigravity|free-energy)/.test(top)) return "science";

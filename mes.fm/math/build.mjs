@@ -101,6 +101,29 @@ const PAGES = [
     description:
       "Every video on the @mes YouTube channel (Math Easy Solutions) in one searchable list: calculus, vectors, series, differential equations and more, plus physics experiments, 9/11 and Hutchison Effect research. Search, filter by topic and sort by views or length.",
   },
+  {
+    // mes.fm/youtube-mestruth: the same list for the second channel, youtube.com/@mestruth (snapshot youtube-mestruth-videos.json, written by
+    // `python3 update_youtube_lists.py --only=mestruth --apply`). Not a /math tile (noTile): it is linked from the /911 and /conspiracy hubs.
+    // `brand` swaps the page's header / compact bar / favicon / share image / breadcrumb for the green MES Truth logo (img/mestruth-logo.png,
+    // img/mestruth-logo-big.jpg); everything else is the /youtube page's machinery (search, chips, sort, Grid/List, runtime top-up).
+    slug: "youtube-mestruth",
+    sectionId: "truthYoutube",
+    noTile: true,
+    tileLabel: "MES Truth YouTube: All Videos",
+    brand: {
+      name: "MES Truth",
+      home: "/911",
+      logo: "https://mes.fm/img/mestruth-logo.png",
+      favicon: "https://mes.fm/img/mestruth-logo.png",
+      ogImage: "https://mes.fm/img/mestruth-logo-big.jpg",
+      tagline: "9/11 Truth, conspiracy research and censored videos by MES.",
+      crumbs: [["/911", "9/11 Truth"], ["/conspiracy", "Conspiracy"]],
+      nav: [["/youtube-mestruth", "MES Truth YouTube"], ["/911", "9/11 Truth"], ["/conspiracy", "Conspiracy"]],
+      titleSuffix: "MES Truth",
+    },
+    description:
+      "Every video on the @mestruth YouTube channel (MES Truth) in one searchable list: 9/11 evidence and Dr. Judy Wood, the disinfo spooks, Pentagon and Shanksville, war and politics, health and censored documentaries. Search, filter by topic and sort by views or length.",
+  },
   // Tile only (no page written): MES math tools, shown as small square-logo links in the "Calculators & Tools" section under the tiles (img/<logo>); img/<slug>-icon.jpg (900x600 share-image crops) is kept for use as big tiles.
   { slug: "latex", href: "/latex", logo: "latex-logo.png", iconVersion: 1, tileOnly: true, tileLabel: "LaTeX Render" },
   { slug: "symbols", href: "/symbols", logo: "symbols-logo.png", iconVersion: 1, tileOnly: true, tileLabel: "Math Symbols Copier" },
@@ -412,6 +435,63 @@ checkCats(SECTIONS.find((s) => s.id === "mathYoutube").items.filter((i) => !i.st
 const YT_TOPUP_HTML = topupScripts({
   section: "mathYoutube", source: "yt", ch: "mes", noun: "video", nouns: "videos", count: YT_VIDEOS.length,
   known: YT_VIDEOS.slice(0, 60).map((v) => v.id), cats: YT_TOPUP_CATS,
+  skip: { re: "^(?:MES Livestream \\d|MES Math Q\\/A \\d)", fl: "i" },
+});
+
+// ---------------------------------------------------------------------------
+// mes.fm/youtube-mestruth: every video of https://www.youtube.com/@mestruth/videos (youtube-mestruth-videos.json, newest first), same markup as
+// mes.fm/youtube with its own topic table (title tests; a video may carry several, "Everything else" catches the rest) and the runtime top-up
+// from api/yt-latest.js?ch=mestruth.
+// ---------------------------------------------------------------------------
+const TRUTH_CATEGORIES = [
+  { id: "wood", label: "Dr. Judy Wood & DEW", test: (t) => /judy wood|hurricane erin|directed energy|\bdew\b|dustif|toasted car|what's it car|fum(e|es|ing)|silly string|rolled up carpet|star wars in iraq|evaporated|disintegrat|turned to dust|dust plume|dust baggie/i.test(t) },
+  { id: "s911", label: "9/11 Truth", test: (t) => /9\/11|\bwtc\b|towers?\b|ground zero|fema|sonnenfeld|jumper|hijacker|naudet|building [367]|bethlehem steel|millennium hilton|curt weldon|bernie kerik|praimnath|nist\b/i.test(t) },
+  { id: "pent", label: "Pentagon & Shanksville", test: (t) => /pentagon|shanksville|shanskville|flight 77/i.test(t) },
+  { id: "spooks", label: "Disinfo Spooks", test: (t) => /disinfo|spook|richard gage|\bgage\b|fetzer|chandler|eisenberg|tarpley|david hughes|ashton forbes|jonathan cole|blue bacon|energy vampire|nose out|debunk/i.test(t) },
+  { id: "occult", label: "Occult & Predictive Programming", test: (t) => /occult|predictive programming|simpsons|back to the future|pink panther|trackdown|they live|matrix|blue beam|end of the world/i.test(t) },
+  { id: "war", label: "War, Politics & Elections", test: (t) => /\biran\b|\bwar\b|wars\b|trump|election|senator|congressman|presidential|tucker carlson|wmd|bush|great reset|7\/7|space warfare|biometric|visa/i.test(t) },
+  { id: "health", label: "Health & Medicine", test: (t) => /hiv|aids|pcr|kary mullis|covid|koch|german new medicine|\bgnm\b|hamer|cancer|virus|epidemic|kaufman/i.test(t) },
+  { id: "cooper", label: "Bill Cooper", test: (t) => /bill cooper|hour of the time|silent weapons/i.test(t) },
+  { id: "sci", label: "Science & Free Energy", test: (t) => /laithwaite|hutchison|free energy|cold fusion|tesla|antigravity|physics/i.test(t) },
+  { id: "ufo", label: "UFOs & Aliens", test: (t) => /ufo|alien|extraterrestrial/i.test(t) },
+  { id: "censor", label: "Censorship & Platforms", test: (t) => /censor|reinstated|alternative platforms|muting|hate speech|silent protest/i.test(t) },
+  { id: "live", label: "Livestreams & Trailers", test: (t) => /livestream|trailer/i.test(t) },
+  { id: "docs", label: "Documentaries & Interviews", test: (t) => /documentary|mockumentary|interview|episode|radio show|testimony|broadcast|lectures/i.test(t) },
+];
+const TRUTH_VIDEOS = JSON.parse(readFileSync(join(__dirname, "youtube-mestruth-videos.json"), "utf8"));
+SECTIONS.push({
+  id: "truthYoutube",
+  thumbAlt: true,
+  title: "MES Truth YouTube: All Videos",
+  compactList: true,
+  sortable: true,
+  big: true,
+  filter: [...TRUTH_CATEGORIES, { id: "other", label: "Everything else" }],
+  filterPlaceholder: `Search all ${TRUTH_VIDEOS.length.toLocaleString("en-US")} videos\u2026`,
+  items: [
+    { href: "https://www.youtube.com/@mestruth/videos", title: "@mestruth on YouTube (all videos)", standalone: true },
+    ...TRUTH_VIDEOS.map((v, i) => {
+      const cats = TRUTH_CATEGORIES.filter((c) => c.test(v.title)).map((c) => c.id);
+      const yt = `https://www.youtube.com/watch?v=${v.id}`;
+      return {
+        href: yt,
+        links: [{ label: "YouTube", href: yt }],
+        title: v.title,
+        image: `https://i.ytimg.com/vi/${v.id}/hqdefault.jpg`,
+        yt: v.id,
+        listThumb: true,
+        meta: `${fmtDuration(v.dur)} \u00b7 ${fmtViews(v.views)}`,
+        sortKeys: { i, v: v.views, d: v.dur },
+        cats: (cats.length ? cats : ["other"]).join(" "),
+      };
+    }),
+  ],
+});
+const TRUTH_TOPUP_CATS = catSpec(TRUTH_CATEGORIES);
+checkCats(SECTIONS.find((s) => s.id === "truthYoutube").items.filter((i) => !i.standalone), TRUTH_TOPUP_CATS);
+const TRUTH_TOPUP_HTML = topupScripts({
+  section: "truthYoutube", source: "yt", ch: "mestruth", noun: "video", nouns: "videos", count: TRUTH_VIDEOS.length,
+  known: TRUTH_VIDEOS.slice(0, 60).map((v) => v.id), cats: TRUTH_TOPUP_CATS,
   skip: { re: "^(?:MES Livestream \\d|MES Math Q\\/A \\d)", fl: "i" },
 });
 
@@ -992,7 +1072,7 @@ function buildPage(meta, page) {
   const isHub = !!page.hub;
   const sections = isHub ? [] : SECTIONS.filter((s) => s.id === page.sectionId);
   const sectionsHtml = isHub
-    ? `<div class="icon-grid">\n${PAGES.filter((p) => !p.tileOnly).map(buildTile).join("\n")}\n</div>\n<h2 class="tool-heading">Calculators &amp; Tools</h2>\n<div class="tool-grid">\n${PAGES.filter((p) => p.tileOnly).map(buildToolLink).join("\n")}\n</div>\n<p class="hub-more">More from MES: <a href="/science">MES Science</a> &ndash; videos, posts, tutorials and physics</p>`
+    ? `<div class="icon-grid">\n${PAGES.filter((p) => !p.tileOnly && !p.noTile).map(buildTile).join("\n")}\n</div>\n<h2 class="tool-heading">Calculators &amp; Tools</h2>\n<div class="tool-grid">\n${PAGES.filter((p) => p.tileOnly).map(buildToolLink).join("\n")}\n</div>\n<p class="hub-more">More from MES: <a href="/science">MES Science</a> &ndash; videos, posts, tutorials and physics</p>`
     : sections.map((s) => buildSection(s, meta)).join("\n\n");
   const hasFilter = sections.some((s) => s.filter);
   const hasLinkPref = sections.some((s) => s.linkPref);
@@ -1011,19 +1091,26 @@ function buildPage(meta, page) {
   const CANONICAL = `https://mes.fm/${page.slug}`;
   const pageTitle = isHub ? "Math Tutorials" : page.tileLabel;
   const description = isHub ? HUB_DESCRIPTION : page.description;
-  const ogImage = isHub ? "https://mes.fm/img/logo-big.png" : `https://mes.fm/img/${page.slug}-icon.jpg`;
+  const brand = page.brand;
+  const ogImage = isHub ? "https://mes.fm/img/logo-big.png" : brand ? brand.ogImage : `https://mes.fm/img/${page.slug}-icon.jpg`;
   const breadcrumbHtml = isHub
     ? ""
-    : `<p class="page-breadcrumb"><a href="/math">&larr; Math Tutorials</a></p>\n        `;
+    : brand
+      ? `<p class="page-breadcrumb">${brand.crumbs.map(([h, l], k) => `<a href="${h}">${k ? "" : "&larr; "}${escapeHtml(l)}</a>`).join(' <span style="color:#888">&middot;</span> ')}</p>\n        `
+      : `<p class="page-breadcrumb"><a href="/math">&larr; Math Tutorials</a></p>\n        `;
+  // Header / compact bar / favicon: MES Math Tutorials unless the page has its own brand (see PAGES "youtube-mestruth").
+  const B = brand
+    ? { home: brand.home, logo: brand.logo, name: escapeHtml(brand.name), tagline: escapeHtml(brand.tagline), favicon: `<link rel="icon" href="${brand.favicon}" type="image/png" />`, suffix: brand.titleSuffix }
+    : { home: "/math", logo: "https://mes.fm/img/logo-mark.png", name: "MES Math Tutorials", tagline: "Free math tutorials by Math Easy Solutions.", favicon: `<link rel="icon" href="https://mes.fm/img/favicon.ico?v=1.0" type="image/x-icon" />`, suffix: "Math Easy Solutions" };
 
   return `
 <!DOCTYPE html>
 <html lang="en">
 <!-- Added by HTTrack --><meta http-equiv="content-type" content="text/html;charset=UTF-8" /><!-- /Added by HTTrack -->
 <head>
-  <link rel="icon" href="https://mes.fm/img/favicon.ico?v=1.0" type="image/x-icon" />
+  ${B.favicon}
   <link rel="canonical" href="${CANONICAL}" />
-  <title>${escapeHtml(pageTitle)} | Math Easy Solutions</title>
+  <title>${escapeHtml(pageTitle)} | ${B.suffix}</title>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <style>html, body, div, span, applet, object, iframe, h1, h2, h3, h4, h5, h6, p, blockquote, pre, a, abbr, acronym, address, big, cite, code,del, dfn, em, img,
@@ -2124,8 +2211,8 @@ ${hasFilter ? FILTER_CSS : ""}${hasLinkPref ? LP_CSS : ""}</style>
 <!-- HUB-THEATRE-HEAD --><link rel="stylesheet" href="/main_js/hub-theatre.css?v=1"><script>try{var m=localStorage.getItem('pageMode')||'wide',c=document.documentElement.classList;if(m==='theatre')c.add('page-theatre');if(m!=='std')c.add('page-wide');if(localStorage.getItem('asideHidden')==='1')c.add('aside-hidden');if(localStorage.getItem('asideSide')==='left')c.add('aside-left')}catch(e){}</script><!-- /HUB-THEATRE-HEAD --></head>
 <body>
 <div id="compact-nav" aria-hidden="true" style="display:none">
-  <a href="/math" tabindex="-1"><img class="compact-nav-logo" alt="" width="32" height="32" src="https://mes.fm/img/logo-mark.png"></a>
-  <a class="compact-nav-title" href="/math" tabindex="-1">MES Math Tutorials</a>
+  <a href="${B.home}" tabindex="-1"><img class="compact-nav-logo" alt="" width="32" height="32" src="${B.logo}"></a>
+  <a class="compact-nav-title" href="${B.home}" tabindex="-1">${B.name}</a>
   <ul class="compact-nav-links">
     <li><a href="/calculators" tabindex="-1">Calculators</a></li>
     <li><a href="/tools" tabindex="-1">Tools</a></li>
@@ -2143,12 +2230,12 @@ ${hasFilter ? FILTER_CSS : ""}${hasLinkPref ? LP_CSS : ""}</style>
         <button type="button" id="textSizeUpBtn" class="header-control-btn" aria-label="Increase text size" title="Increase text size">A+</button>
         <button type="button" id="themeToggleBtn" class="header-control-btn" aria-label="Toggle dark mode" title="Toggle dark mode">&#127769;</button>
       </div>
-      <a class="logo-image-container" href='/math'><img width="88" height="88" id="logo" class="logo lazyload" alt="MES Math Tutorials logo" data-src="https://mes.fm/img/logo-mark.png"></a>
+      <a class="logo-image-container" href='${B.home}'><img width="88" height="88" id="logo" class="logo lazyload" alt="${B.name} logo" data-src="${B.logo}"></a>
       <div class="logo-text-container">
-        <a class="calculator-title-link" href='/math'>
-          <p class="calculator-title">MES Math Tutorials</p>
+        <a class="calculator-title-link" href='${B.home}'>
+          <p class="calculator-title">${B.name}</p>
         </a>
-        <p class="tag-line">Free math tutorials by Math Easy Solutions.</p>
+        <p class="tag-line">${B.tagline}</p>
       </div>
 
       <div class="social-container"><p class="social__text">Follow us!</p><ul class="social">
@@ -2164,7 +2251,7 @@ ${hasFilter ? FILTER_CSS : ""}${hasLinkPref ? LP_CSS : ""}</style>
     </div>
     <div class="info-bar-container" role="navigation" aria-label="Primary">
       <ul id="info-bar" class="info-bar shadow">
-        <li class="info-bar__item"><a target="_self" class="info-bar__item__text" href='https://mes.fm/math'>Math Tutorials</a></li>
+        ${brand ? brand.nav.map(([h, l]) => `<li class="info-bar__item"><a target="_self" class="info-bar__item__text" href='${h}'>${escapeHtml(l)}</a></li>`).join("\n        ") : `<li class="info-bar__item"><a target="_self" class="info-bar__item__text" href='https://mes.fm/math'>Math Tutorials</a></li>`}
         <li class="info-bar__item"><a class="info-bar__item__text" href='/calculators'>Calculators</a></li>
         <li class="info-bar__item"><a class="info-bar__item__text" href='/tools'>Tools</a></li>
         <li class="info-bar__item"><a class="info-bar__item__text" href='/mobile-apps'>Mobile Apps</a></li>
@@ -2637,7 +2724,7 @@ var MES_Vars = {
 <script src="/main_js/main.js?v=1.0.3"></script>
 <script>document.getElementById('copyright-year').textContent = new Date().getFullYear();</script>
 <!-- PAGEVIEW-TRACKING-INSERTED --><script src="/main_js/track.js" defer></script><script src="/main_js/info-bar-fit.js" defer></script>
-${page.sectionId === "mathYoutube" ? YT_TOPUP_HTML + "\n" + '<script src="/main_js/yt-thumbs.js?v=1" defer></script>' + "\n" : ""}<script src="/main_js/site-search.js?v=1" defer></script><!-- HUB-THEATRE-JS --><script src="/main_js/hub-theatre.js?v=1" defer></script><!-- /HUB-THEATRE-JS -->${hasLinkPref ? LP_SCRIPT : ""}</body>
+${page.sectionId === "mathYoutube" ? YT_TOPUP_HTML + "\n" + '<script src="/main_js/yt-thumbs.js?v=1" defer></script>' + "\n" : ""}${page.sectionId === "truthYoutube" ? TRUTH_TOPUP_HTML + "\n" + '<script src="/main_js/yt-thumbs.js?v=1" defer></script>' + "\n" : ""}<script src="/main_js/site-search.js?v=1" defer></script><!-- HUB-THEATRE-JS --><script src="/main_js/hub-theatre.js?v=1" defer></script><!-- /HUB-THEATRE-JS -->${hasLinkPref ? LP_SCRIPT : ""}</body>
 </html>
 `;
 }
