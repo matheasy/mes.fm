@@ -1008,7 +1008,11 @@ var MESImg = (function () {
 		var t = orbit.target.clone(), P = plate();
 		t.x = Math.max(-P.x / 2 + 10, Math.min(P.x / 2 - 10, t.x)); t.y = Math.max(-P.y / 2 + 10, Math.min(P.y / 2 - 10, t.y));
 		var others = S.objs.filter(function (o) { return objs.indexOf(o) < 0 && !o.hidden; }), dx = t.x - c.x, dy = t.y - c.y;
-		if (others.length) {
+		var target = topSel().filter(function (o) { return objs.indexOf(o) < 0; });
+		if (objs.every(function (o) { return o.hole; }) && target.length) {
+			// a new hole goes straight into the selected shape, ready to be grouped
+			var tb = worldBox(target), tc2 = new T.Vector3(); tb.getCenter(tc2); dx = tc2.x - c.x; dy = tc2.y - c.y;
+		} else if (others.length) {
 			var ob = worldBox(others), sz = new T.Vector3(); b.getSize(sz);
 			for (var tries = 0; tries < 12; tries++) {
 				var test = b.clone().translate(new T.Vector3(dx, dy, 0));
@@ -1372,6 +1376,7 @@ var MESImg = (function () {
 			r.oh = L.overhang(pos, ST.ohAngle, 0, 0.05);
 			r.fil = L.filament(r.va, { material: ST.mat, diameter: ST.dia, infill: ST.infill, wall: ST.wall, price: ST.price, flow: ST.flow });
 			r.thin = thinCheck(ex.parts, pos);
+			r.float = ex.parts.map(function (p) { return [nameOf(p.o), L.bboxOf(p.g.attributes.position.array).min[2]]; }).filter(function (f) { return f[1] > 0.05; });
 		}
 		lastCheck = r;
 		printPanel(r);
@@ -1439,6 +1444,7 @@ var MESImg = (function () {
 			if (f.below) more.push('Part of it is below the plate: press Drop.');
 			h += ok(false, 'Does not fit the ' + esc(P.name) + ' (' + P.x + '×' + P.y + '×' + P.z + ')', more.join(' '));
 		}
+		if (!f.floating && r.float.length) h += ok('warn', r.float.length === 1 ? esc(r.float[0][0]) + ' floats ' + u(r.float[0][1]) + ' ' + uu() + ' above the plate' : r.float.length + ' parts float above the plate', 'Select it and press Drop (D), or it will print in mid-air.');
 		if (f.floating) h += ok('warn', 'The model is floating ' + u(r.bb.min[2]) + ' ' + uu() + ' above the plate', 'Press Drop (D) so it sits on the plate.');
 		var tiny = !r.mc.closed && !r.mc.flipped && r.mc.gapLength < 1 && r.mc.nonManifold <= 4;
 		if (tiny) h += ok('warn', 'Watertight, apart from ' + (r.mc.gaps + r.mc.nonManifold) + ' tiny seam' + (r.mc.gaps + r.mc.nonManifold > 1 ? 's' : ''), 'Leftovers from cutting shapes (under 1 mm in all). Slicers close these by themselves.');
