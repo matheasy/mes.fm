@@ -1018,7 +1018,7 @@ APPS = {
     "premium": dict(title="MES Premium", page_title="Premium: No Ads on mes.fm for 1 HBD a Month",
                 tag="No ads on mes.fm for 1 HBD a month, paid on Hive.", accent="#8a6508", dark="#6b4e06", tint="#fbf3dc",
                 desc="Turn off every ad on mes.fm for 1 HBD a month: log in with Hive Keychain, subscribe with a Hive recurrent transfer or pay once, and the site shows no ads in your browser. No account, no card, checked on the Hive blockchain.",
-                js_v="1", no_ads=True, pre_js=["/main_js/hive.js?v=1"]),
+                js_v="1", no_ads=True, pre_js=["/main_js/hive.js?v=1"], head_extra=PAGE3_HEAD),
     "ratings": dict(title="MES Ratings", page_title="MES Ratings: Top Rated Pages and Feedback",
                 tag="Top rated pages, by the people who use them.", accent="#b45309", dark="#8a3f07", tint="#fdf0dd",
                 desc="The top rated, most rated and recently rated mes.fm calculators, tools and tutorials, from the Rate this page stars at the bottom of every page. Fair Bayesian ranking, filter by section, and send us feedback through the contact form.",

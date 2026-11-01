@@ -1,7 +1,7 @@
 <!DOCTYPE html>    <html lang="en">
 <!-- MES Premium -- mes.fm/premium -->
 <!-- Added by HTTrack --><meta http-equiv="content-type" content="text/html;charset=UTF-8" /><!-- /Added by HTTrack -->
-<head>                    <link rel="icon" href="/premium/img/logo.png?v=2" type="image/png" /><link rel="canonical" href="https://mes.fm/premium" />                    <title>MES Premium | Math Easy Solutions</title>
+<head>                    <link rel="icon" href="/premium/img/logo.png?v=2" type="image/png" /><link rel="canonical" href="https://mes.fm/premium" />                    <title>MES Premium | Math Easy Solutions</title><!-- HUB-THEATRE-HEAD --><link rel="stylesheet" href="/main_js/hub-theatre.css?v=1"><script>try{var m=localStorage.getItem("pageMode")||"wide",c=document.documentElement.classList;if(m==="theatre")c.add("page-theatre");if(m!=="std")c.add("page-wide")}catch(e){}</script><!-- /HUB-THEATRE-HEAD -->
         <meta name="viewport" content="width=device-width, initial-scale=1">	<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css" integrity="sha384-BVYiiSIFeK1dGmJRAkycuHAHRg32OmUcww7on3RYdg4Va+PmSTsz/K68vbdEjh4u" crossorigin="anonymous">
         <style>html, body, div, span, applet, object, iframe, h1, h2, h3, h4, h5, h6, p, blockquote, pre, a, abbr, acronym, address, big, cite, code,del, dfn, em, img,
 ins, kbd, q, s, samp, small, strike, strong, sub, tt, var, u, i, center, dl, dt, dd, ol, ul, li, fieldset, form, label, legend, table, caption, tbody,
@@ -305,6 +305,9 @@ body.dark-mode .tu .rw-head {color:#a0a8b3;border-bottom-color:#555;} body.dark-
 .tu [class$="-eq"] > div {margin:0.25em 0;}
 .tu [class$="-eq__n"] {vertical-align:middle;}
 
+/* page width: Standard = the tool shell (50em), Wide (default) and Theatre via main_js/hub-theatre.js (data-page-modes="3"); no sidebar, no ads */
+html.page-wide body .outer-container {max-width:min(96vw,80em) !important;}
+html.page-theatre body .outer-container {max-width:min(98vw,2400px) !important;}
 #pm .pm-hero h2 { margin: 0 0 .5em; font-size: 1.35em; }
 #pm .pm-points { margin: .6em 0 0; padding-left: 1.4em; list-style: disc; }
 #pm .pm-points li { margin: .45em 0; line-height: 1.5; display: list-item; }
@@ -532,7 +535,7 @@ body.is-stuck #navbar.hide { position: fixed; top: 56px; right: 8px; }
                                                         <div class="outer-page-content">
                             <div class="page-content" role="main">                                    <div class="color-box"></div>
                                     <h1 class="page-title">Premium: No Ads on mes.fm for 1 HBD a Month</h1>                                        <p class="page-description">Turn off every ad on mes.fm for 1 HBD a month: log in with Hive Keychain, subscribe with a Hive recurrent transfer or pay once, and the site shows no ads in your browser. No account, no card, checked on the Hive blockchain.</p>                                    	<div id="main-content" data-tool data-text-scale>
-	<div class="tu pm" id="pm">
+	<div class="tu pm" id="pm" data-page-modes="3">
 		<div class="tu-card pm-hero">
 			<h2>No ads on mes.fm for 1 HBD a month</h2>
 			<p>Every calculator, tool, tutorial and article on mes.fm stays free for everyone. If the ads get in your way, pay <b>1 HBD a month</b> on the Hive blockchain and this browser shows mes.fm with <b>no ads at all</b>: no banners, no sidebar or bottom ads, no pop-up "auto ads", and Google's ad script is not even downloaded, so pages load faster too.</p>
@@ -595,6 +598,7 @@ body.is-stuck #navbar.hide { position: fixed; top: 56px; right: 8px; }
 			</dl>
 		</div>
 	</div>
+	<script src="/main_js/hub-theatre.js?v=2" defer></script>
 	</div>                                    <!-- PC (Responsive/Rectangle) Matched Content -->
                                                                         <div id="comments-button" class="hide-div-button button">Comments</div>
                                     <div id="comments-box" class="hide">

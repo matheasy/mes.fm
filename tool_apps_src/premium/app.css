@@ -1,3 +1,6 @@
+/* page width: Standard = the tool shell (50em), Wide (default) and Theatre via main_js/hub-theatre.js (data-page-modes="3"); no sidebar, no ads */
+html.page-wide body .outer-container {max-width:min(96vw,80em) !important;}
+html.page-theatre body .outer-container {max-width:min(98vw,2400px) !important;}
 #pm .pm-hero h2 { margin: 0 0 .5em; font-size: 1.35em; }
 #pm .pm-points { margin: .6em 0 0; padding-left: 1.4em; list-style: disc; }
 #pm .pm-points li { margin: .45em 0; line-height: 1.5; display: list-item; }
