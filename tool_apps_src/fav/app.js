@@ -144,10 +144,15 @@
             var on = key === k, sort = on ? (dir > 0 ? "ascending" : "descending") : "none";
             return '<th scope="col" aria-sort="' + sort + '"><button type="button" class="fv-sort" data-k="' + k + '" title="Sort by ' + label.toLowerCase() + ' (click again to reverse, a third time for your own order)">' + label + (on ? (dir > 0 ? " &#9650;" : " &#9660;") : "") + "</button></th>";
         }
-        return '<div class="fv-twrap"><table class="fv-table"><thead><tr>' + th("title", "Page") + th("sec", "Section") + th("url", "URL") + th("group", "Group") + (cleanView ? "" : '<th scope="col"><span class="fv-sr">Remove</span></th>') + "</tr></thead><tbody>" +
+        var canDrag = !cleanView, locked = !!key || terms.length > 0, SORTN = { title: "Page", sec: "Section", url: "URL", group: "Group" };
+        var note = !canDrag ? "" : terms.length ? '<p class="fv-tnote">Clear the search to drag rows into a new order.</p>' :
+            key ? '<p class="fv-tnote">Sorted by ' + SORTN[key] + '. Dragging uses your own order: <button type="button" class="fv-ownord">Use my own order</button> (or just grab a handle).</p>' :
+            '<p class="fv-tnote fv-tnote--tip">Drag the &#8942;&#8942; handle to move a row (into another group too). Keyboard: focus a handle, then Up / Down, Home / End.</p>';
+        return note + '<div class="fv-twrap"><table class="fv-table' + (locked ? " is-locked" : "") + '"><thead><tr>' + (canDrag ? '<th scope="col" class="fv-tgc"><span class="fv-sr">Move</span></th>' : "") + th("title", "Page") + th("sec", "Section") + th("url", "URL") + th("group", "Group") + (cleanView ? "" : '<th scope="col"><span class="fv-sr">Remove</span></th>') + "</tr></thead><tbody>" +
             rows.map(function (r) {
                 var it = byPath[r.p], title = it ? it.title : r.p.replace(/^\//, "") || "Home";
-                return '<tr><td class="fv-tdt"><a href="' + esc(r.p) + '">' + thumb(it, r.p) + "<span>" + esc(title) + "</span></a></td><td>" + esc(it ? it.catLabel || "" : "") + '</td><td class="fv-tdu">' + esc(r.p) + "</td><td>" + esc(r.g.name) + "</td>" +
+                var gl = !canDrag ? "" : '<td class="fv-tgc"><button type="button" class="fv-grip fv-tgrip"' + (locked ? ' aria-disabled="true"' : "") + ' aria-label="Move ' + esc(title) + (locked ? (terms.length ? ": clear the search first" : ": switches to your own order") : ": drag, or use the up and down arrow keys") + '" title="' + (locked ? (terms.length ? "Clear the search to reorder" : "Sorted: press to switch to your own order, then drag") : "Drag to move (also into another group). Up / Down keys also work.") + '">&#8942;&#8942;</button></td>';
+                return '<tr class="fv-trow" data-p="' + esc(r.p) + '" data-g="' + esc(r.g.id) + '">' + gl + '<td class="fv-tdt"><a href="' + esc(r.p) + '">' + thumb(it, r.p) + "<span>" + esc(title) + "</span></a></td><td>" + esc(it ? it.catLabel || "" : "") + '</td><td class="fv-tdu">' + esc(r.p) + "</td><td>" + esc(r.g.name) + "</td>" +
                     (cleanView ? "" : '<td><button type="button" class="fv-ib fv-trm" data-p="' + esc(r.p) + '" data-g="' + esc(r.g.id) + '" aria-label="Remove ' + esc(title) + " from " + esc(r.g.name) + '" title="Remove">&times;</button></td>') + "</tr>";
             }).join("") + "</tbody></table></div>";
     }
@@ -221,6 +226,8 @@
             lsSet("mes-fav:sort", sortBy); render();
             var nb = groupsEl.querySelector('.fv-sort[data-k="' + k + '"]'); if (nb) nb.focus(); return;
         }
+        var own = e.target.closest(".fv-ownord"), lg = e.target.closest('.fv-tgrip[aria-disabled="true"]');
+        if (own || (lg && !query.trim())) { useOwnOrder(lg && lg.closest(".fv-trow")); return; }
         var trm = e.target.closest(".fv-trm");
         if (trm) { removeFrom(trm.getAttribute("data-p"), trm.getAttribute("data-g")); return; }
         var tile = e.target.closest(".fv-tile"), grp = e.target.closest(".fv-group");
@@ -421,9 +428,90 @@
     function onCancel() { if (drag) finish(false); }
     function onDragKey(e) { if (e.key === "Escape" && drag) { e.stopPropagation(); finish(false); } }
 
+    /* ---------- table view: drag rows by their handle (own order only; a sorted table switches back to it first) ---------- */
+    function rowSel(p, g) { var e = window.CSS && CSS.escape ? CSS.escape : function (x) { return x; }; return '.fv-trow[data-p="' + e(p) + '"][data-g="' + e(g) + '"]'; }
+    function useOwnOrder(row) {
+        if (!sortBy) return; sortBy = ""; lsSet("mes-fav:sort", ""); render();
+        toast("Back to your own order: now drag the handles to rearrange");
+        if (row) { var n = groupsEl.querySelector(rowSel(row.getAttribute("data-p"), row.getAttribute("data-g")) + " .fv-tgrip"); if (n) n.focus(); }
+    }
+    var tdrag = null;
+    groupsEl.addEventListener("pointerdown", function (e) {
+        if (view !== "table" || e.button > 0 || cleanView || query.trim()) return;
+        var grip = e.target.closest(".fv-tgrip"); if (!grip) return;
+        var row = grip.closest(".fv-trow");
+        if (grip.getAttribute("aria-disabled") === "true") { e.preventDefault(); useOwnOrder(row); return; }
+        e.preventDefault();
+        tdrag = { row: row, tbody: row.parentNode, id: e.pointerId, sy: e.clientY, y: e.clientY, on: false, p: row.getAttribute("data-p"), from: row.getAttribute("data-g"), raf: 0 };
+        try { grip.setPointerCapture(e.pointerId); } catch (er) { /* ignore */ }
+        window.addEventListener("pointermove", tMove); window.addEventListener("pointerup", tUp); window.addEventListener("pointercancel", tCancel); window.addEventListener("keydown", tKey, true);
+    });
+    function tMove(e) {
+        if (!tdrag || e.pointerId !== tdrag.id) return;
+        tdrag.y = e.clientY;
+        if (!tdrag.on) {
+            if (Math.abs(e.clientY - tdrag.sy) < 5) return;
+            tdrag.on = true; tdrag.row.classList.add("is-drag"); document.body.style.userSelect = "none"; document.body.style.cursor = "grabbing"; suppressClick();
+            (function loop() { if (!tdrag || !tdrag.on) return; var y = tdrag.y, vh = window.innerHeight; if (y < 70) window.scrollBy(0, -Math.ceil((70 - y) / 4)); else if (y > vh - 70) window.scrollBy(0, Math.ceil((y - (vh - 70)) / 4)); tdrag.raf = requestAnimationFrame(loop); })();
+        }
+        e.preventDefault();
+        var rows = [].slice.call(tdrag.tbody.children), ot = null;
+        for (var i = 0; i < rows.length; i++) { var r = rows[i].getBoundingClientRect(); if (e.clientY >= r.top && e.clientY < r.bottom) { ot = rows[i]; break; } }
+        if (!ot || ot === tdrag.row) return;
+        var rr = ot.getBoundingClientRect(), after = e.clientY > rr.top + rr.height / 2;
+        tdrag.over = ot;
+        drag = { el: tdrag.row }; /* lets flip() skip the dragged row */
+        flip(tdrag.tbody, function () { tdrag.tbody.insertBefore(tdrag.row, after ? ot.nextSibling : ot); });
+        drag = null;
+        tdrag.row.setAttribute("data-dest", ot.getAttribute("data-g"));
+    }
+    function tFinish(commit) {
+        var d = tdrag; tdrag = null; cancelAnimationFrame(d.raf);
+        window.removeEventListener("pointermove", tMove); window.removeEventListener("pointerup", tUp); window.removeEventListener("pointercancel", tCancel); window.removeEventListener("keydown", tKey, true);
+        document.body.style.userSelect = ""; document.body.style.cursor = "";
+        if (!d.on) return;
+        if (commit) {
+            var destId = d.row.getAttribute("data-dest") || d.from, src = groupBy(d.from), dest = groupBy(destId);
+            if (src && dest) {
+                var idx = 0, kids = [].slice.call(d.tbody.children);
+                for (var i = 0; i < kids.length && kids[i] !== d.row; i++) if (kids[i].getAttribute("data-g") === destId) idx++;
+                if (dest === src) { src.items.splice(src.items.indexOf(d.p), 1); src.items.splice(idx, 0, d.p); }
+                else if (dest.items.indexOf(d.p) !== -1) { src.items.splice(src.items.indexOf(d.p), 1); toast("Merged into the copy already in " + dest.name); }
+                else { src.items.splice(src.items.indexOf(d.p), 1); dest.items.splice(idx, 0, d.p); toast("Moved to " + dest.name); }
+                save();
+            }
+        }
+        render();
+        var n = groupsEl.querySelector(rowSel(d.p, commit ? (d.row.getAttribute("data-dest") || d.from) : d.from) + " .fv-tgrip"); if (n) n.focus({ preventScroll: true });
+    }
+    function tUp(e) { if (tdrag && e.pointerId === tdrag.id) tFinish(true); }
+    function tCancel() { if (tdrag) tFinish(false); }
+    function tKey(e) { if (e.key === "Escape" && tdrag) { e.stopPropagation(); tFinish(false); } }
+    /* keyboard for table rows: Up / Down move within the group, past its first / last row into the next group; Home / End = top / bottom of the group */
+    function tableKey(e, grip) {
+        var k = e.key; if (["ArrowUp", "ArrowDown", "Home", "End"].indexOf(k) < 0) return;
+        e.preventDefault();
+        var row = grip.closest(".fv-trow");
+        if (grip.getAttribute("aria-disabled") === "true") { if (!query.trim()) useOwnOrder(row); return; }
+        var p = row.getAttribute("data-p"), G = groupBy(row.getAttribute("data-g")), ti = G.items.indexOf(p), gi = state.groups.indexOf(G), dest = G;
+        if (k === "Home" && ti > 0) { G.items.splice(ti, 1); G.items.unshift(p); }
+        else if (k === "End" && ti < G.items.length - 1) { G.items.splice(ti, 1); G.items.push(p); }
+        else if (k === "ArrowUp" && ti > 0) { G.items.splice(ti, 1); G.items.splice(ti - 1, 0, p); }
+        else if (k === "ArrowDown" && ti < G.items.length - 1) { G.items.splice(ti, 1); G.items.splice(ti + 1, 0, p); }
+        else if (k === "ArrowUp" || k === "ArrowDown") {
+            var D = state.groups[gi + (k === "ArrowDown" ? 1 : -1)]; if (!D) return;
+            G.items.splice(ti, 1);
+            if (D.items.indexOf(p) === -1) { if (k === "ArrowDown") D.items.unshift(p); else D.items.push(p); dest = D; toast("Moved to " + D.name); }
+            else { toast("Merged into the copy already in " + D.name); dest = D; }
+        } else return;
+        save(); render();
+        var n = groupsEl.querySelector(rowSel(p, dest.id) + " .fv-tgrip"); if (n) n.focus();
+    }
+
     /* keyboard: arrow keys on a focused grip move the tile / group */
     groupsEl.addEventListener("keydown", function (e) {
         var grip = e.target.closest && e.target.closest(".fv-grip"); if (!grip || query.trim()) return;
+        if (grip.classList.contains("fv-tgrip")) { tableKey(e, grip); return; }
         var k = e.key; if (["ArrowLeft", "ArrowRight", "ArrowUp", "ArrowDown", "Home", "End"].indexOf(k) < 0) return;
         e.preventDefault();
         if (grip.classList.contains("fv-ggrip")) {
@@ -447,7 +535,7 @@
         var f = groupsEl.querySelector('[data-g="' + sg + '"] .fv-tile[data-p="' + (window.CSS && CSS.escape ? CSS.escape(p) : p) + '"] .fv-grip'); if (f) f.focus();
     });
 
-    window.addEventListener("storage", function (e) { if (e.key === KEY && !drag) { state = load(); render(); updateLink(); } });
+    window.addEventListener("storage", function (e) { if (e.key === KEY && !drag && !tdrag) { state = load(); render(); updateLink(); } });
 
     /* ---------- start ---------- */
     render(); updateLink(); paintShort();

@@ -1007,7 +1007,7 @@ APPS = {
     "fav": dict(title="MES Favourites", page_title="MES Favourites: Your Own Calculators and Tools Page",
                 tag="Your favourite MES pages, your way.", accent="#a15c07", dark="#7a4505", tint="#fdf0d8",
                 desc="Make your own start page of favourite mes.fm calculators, tools and tutorials: search to add, drag tiles into groups you name and fold, and take the whole list to another browser or computer with one link. Private: it stays in your browser.",
-                js_v="3", pre_js=["/main_js/site-search.js?v=1"], no_ads=True),
+                js_v="4", pre_js=["/main_js/site-search.js?v=1"], no_ads=True),
     # MES Ratings (mes.fm/ratings): results of the "Rate this page" stars every public page carries (main_js/rating.js, loaded lazily by
     # site-search.js; votes = /api/rating, Upstash): Top rated (Bayesian average), Most rated, Recently rated, section chips, and a feedback box
     # that only sends by email / the contact form. Local preview falls back to ratings/data/sample.json. Wide, ad-free, no sidebar.

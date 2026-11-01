@@ -101,6 +101,17 @@
 	#fv .fv-table td:not(.fv-tdt):not(.fv-tdu) {color:var(--fv-mut);}
 	#fv .fv-table .fv-ib {min-width:32px;min-height:32px;}
 	#fv .fv-table tbody tr:hover td {background:var(--fv-hover);}
+	#fv .fv-table .fv-tgc {width:2.2em;padding:0 0.1em 0 0.3em;}
+	#fv .fv-table .fv-tgrip {min-height:34px;width:1.9em;font-size:1em;}
+	#fv .fv-table.is-locked .fv-tgrip {opacity:0.4;cursor:pointer;}
+	#fv .fv-table.is-locked .fv-tgrip:hover, #fv .fv-table.is-locked .fv-tgrip:focus-visible {opacity:1;}
+	#fv .fv-table tr.is-drag td {background:var(--fv-hover);box-shadow:inset 0 2px 0 var(--fv-acc), inset 0 -2px 0 var(--fv-acc);}
+	#fv .fv-table tr.is-drag .fv-tgrip {cursor:grabbing;color:var(--fv-acc);}
+	#fv .fv-tnote {margin:0 0 0.5em;font-size:0.88em;color:var(--fv-mut);}
+	#fv .fv-tnote--tip {font-size:0.82em;}
+	#fv .fv-ownord {all:unset;cursor:pointer;color:var(--fv-acc);font-weight:700;text-decoration:underline;}
+	#fv .fv-ownord:focus-visible {outline:2px solid var(--fv-acc);outline-offset:2px;}
+	@media (pointer:coarse) {#fv .fv-table .fv-tgrip {min-width:40px;min-height:40px;}}
 	/* phones: compact toolbar, smaller tiles */
 	@media (max-width:560px) {
 		#fv .fv-bar {gap:0.35em;margin:0.8em 0;}
