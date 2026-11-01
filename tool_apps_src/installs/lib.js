@@ -10,7 +10,7 @@
   // The MES apps. ios = App Store id (null until known: rows are then matched by title), android = Play package.
   I.APPS = [
     { k: 'pct', name: 'Percentage Calculator', bundle: 'fm.mes.percentagecalculator', ios: '6809222891', android: 'fm.mes.percentagecalculator', title: /percent/i, web: '/percentagecalculator' },
-    { k: 'bmi', name: 'BMI Calculator', bundle: 'fm.mes.bmicalculator', ios: null, android: 'fm.mes.bmicalculator', title: /\bbmi\b/i, web: '/bmicalculator' },
+    { k: 'bmi', name: 'BMI Calculator', bundle: 'fm.mes.bmicalculator', ios: '6824009307', android: 'fm.mes.bmicalculator', title: /\bbmi\b/i, web: '/bmicalculator' },
     { k: 'grade', name: 'Grade Calculator', bundle: 'fm.mes.gradecalculator', ios: '6824035179', android: 'fm.mes.gradecalculator', title: /grade/i, web: '/gradecalculator' },
     { k: 'gpa', name: 'GPA Calculator', bundle: 'fm.mes.gpacalculator', ios: '6824052607', android: 'fm.mes.gpacalculator', title: /\bgpa\b/i, web: '/gpacalculator' },
     { k: 'fit', name: 'Fitness Calculators', bundle: 'fm.mes.fitnesscalculators', ios: '6824113713', android: 'fm.mes.fitnesscalculators', title: /fitness/i, web: '/bmr-calculator' }
