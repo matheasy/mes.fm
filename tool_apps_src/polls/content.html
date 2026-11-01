@@ -1,0 +1,144 @@
+	<div class="tu pl" id="pl">
+		<p class="tu-card pl-msg" id="pl-msg" role="status" hidden></p>
+
+		<section class="tu-card pl-card" id="pl-view" hidden aria-labelledby="pl-q">
+			<div class="pl-bar" id="pl-vbar"><span class="pl-chips" id="pl-status"></span></div>
+			<div id="pl-poll"></div>
+			<div class="pl-actions" id="pl-vact">
+				<button type="button" class="tu-btn" id="pl-copy">🔗 Copy link</button>
+				<button type="button" class="tu-btn" id="pl-qrbtn">QR code</button>
+				<button type="button" class="tu-btn" id="pl-share" hidden>Share…</button>
+				<button type="button" class="tu-btn" id="pl-close" hidden>Close the poll now</button>
+				<button type="button" class="tu-btn pl-danger" id="pl-del" hidden>Delete the poll</button>
+			</div>
+			<div class="pl-qr" id="pl-qr" hidden></div>
+			<p class="tu-note" id="pl-vnote"></p>
+		</section>
+
+		<h2 id="pl-mine-h" hidden>My polls</h2>
+		<div class="tu-card" id="pl-mine-card" hidden>
+			<div id="pl-mine"></div>
+			<p class="tu-note" style="margin-bottom:0;">This list and the keys that let you close or delete your polls are kept only in this browser. To manage a poll from another computer, open it there with the link from <strong>Copy manager link</strong>.</p>
+		</div>
+
+		<h2 id="pl-make-h">Make a poll</h2>
+		<div class="pl-make-wrap">
+			<div class="tu-card pl-make" id="pl-make">
+				<div class="tu-field"><label for="pl-mq">Question</label><input id="pl-mq" class="tu-input pl-big" type="text" maxlength="200" autocomplete="off" placeholder="e.g. Where should we eat on Friday?"></div>
+				<details class="pl-det" id="pl-mddet"><summary>Add a description (optional)</summary>
+					<div class="tu-field"><label for="pl-md" class="pl-sr">Description</label><textarea id="pl-md" class="tu-input" rows="2" maxlength="600" placeholder="More detail, rules, a date..."></textarea></div>
+				</details>
+				<div class="pl-olab"><span class="pl-lab">Options</span><span class="pl-count" id="pl-ocount"></span></div>
+				<ol class="pl-olist" id="pl-olist"></ol>
+				<div class="pl-orow">
+					<button type="button" class="tu-btn" id="pl-oadd">+ Add an option</button>
+					<button type="button" class="tu-btn tu-btn--ghost" id="pl-opaste">Paste a list…</button>
+				</div>
+				<div class="pl-pastebox" id="pl-pastebox" hidden>
+					<label for="pl-ptext">One option per line (or separated by commas)</label>
+					<textarea id="pl-ptext" class="tu-input" rows="4" placeholder="Pizza&#10;Sushi&#10;Tacos"></textarea>
+					<div class="pl-orow"><button type="button" class="tu-btn tu-btn--primary" id="pl-puse">Use these options</button><button type="button" class="tu-btn tu-btn--ghost" id="pl-pcancel">Cancel</button></div>
+				</div>
+
+				<fieldset class="pl-fs">
+					<legend>How many can people pick?</legend>
+					<div class="pl-seg" role="radiogroup" aria-label="Single or multiple choice">
+						<label><input type="radio" name="pl-kind" value="one" checked> One option</label>
+						<label><input type="radio" name="pl-kind" value="many"> Several</label>
+					</div>
+					<div class="tu-field pl-inline" id="pl-maxwrap" hidden><label for="pl-max">At most</label><select id="pl-max" class="tu-input"></select></div>
+				</fieldset>
+
+				<fieldset class="pl-fs">
+					<legend>When does voting end?</legend>
+					<div class="pl-seg" role="radiogroup" aria-label="When voting ends">
+						<label><input type="radio" name="pl-end" value="manual" checked> When I close it</label>
+						<label><input type="radio" name="pl-end" value="after"> After a while</label>
+						<label><input type="radio" name="pl-end" value="at"> At a date and time</label>
+					</div>
+					<div class="tu-row pl-endrow" id="pl-afterrow" hidden>
+						<div class="tu-field" style="flex:0 1 7em;"><label for="pl-dur">Open for</label><input id="pl-dur" class="tu-input" type="number" min="1" max="999" step="1" value="1" inputmode="numeric"></div>
+						<div class="tu-field" style="flex:0 1 9em;"><label for="pl-unit">&nbsp;</label><select id="pl-unit" class="tu-input"><option value="min">minutes</option><option value="hour">hours</option><option value="day" selected>days</option><option value="week">weeks</option></select></div>
+						<div class="pl-chiprow"><button type="button" class="tu-chip" data-dur="15,min">15 min</button><button type="button" class="tu-chip" data-dur="1,hour">1 hour</button><button type="button" class="tu-chip" data-dur="1,day">1 day</button><button type="button" class="tu-chip" data-dur="1,week">1 week</button></div>
+					</div>
+					<div class="pl-endrow" id="pl-atrow" hidden>
+						<div class="tu-row">
+							<div class="tu-field" style="flex:1 1 10em;"><label for="pl-date">Date</label><input id="pl-date" class="tu-input" type="date"></div>
+							<div class="tu-field" style="flex:1 1 10em;"><label for="pl-time">Time</label><input id="pl-time" class="tu-input" type="time"></div>
+						</div>
+						<p class="tu-note pl-zone" id="pl-zone"></p>
+					</div>
+					<p class="tu-note pl-endnote" id="pl-endnote"></p>
+				</fieldset>
+
+				<fieldset class="pl-fs">
+					<legend>Who sees the results?</legend>
+					<div class="pl-seg pl-seg--wrap" role="radiogroup" aria-label="When results are shown">
+						<label><input type="radio" name="pl-sh" value="always" checked> Everyone, any time</label>
+						<label><input type="radio" name="pl-sh" value="voted"> People who have voted</label>
+						<label><input type="radio" name="pl-sh" value="closed"> Everyone, once it closes</label>
+					</div>
+					<label class="pl-check"><input type="checkbox" id="pl-ch"> Let people change their vote</label>
+				</fieldset>
+
+				<p class="pl-err" id="pl-err" role="alert" hidden></p>
+				<div class="pl-orow pl-create">
+					<button type="button" class="tu-btn tu-btn--primary pl-go" id="pl-go">Create the poll</button>
+					<button type="button" class="tu-btn tu-btn--ghost" id="pl-reset">Start again</button>
+				</div>
+				<p class="tu-note" style="margin-bottom:0;">Anyone with the link can vote. Polls are not listed anywhere and are not shown in search engines.</p>
+			</div>
+
+			<div class="tu-card pl-prev-card" id="pl-prev-card">
+				<div class="pl-bar"><span class="pl-lab">Preview</span>
+					<span class="pl-seg pl-seg--sm" role="group" aria-label="Preview"><button type="button" data-pv="vote" aria-pressed="true">Voting</button><button type="button" data-pv="res" aria-pressed="false">Results</button></span>
+				</div>
+				<div id="pl-prev"></div>
+			</div>
+		</div>
+
+		<div class="tu-card pl-done" id="pl-done" hidden>
+			<h3>Your poll is ready</h3>
+			<div class="pl-link"><input id="pl-dlink" class="tu-input" type="text" readonly aria-label="Link to the poll"><button type="button" class="tu-btn tu-btn--primary" id="pl-dcopy">Copy link</button></div>
+			<div class="pl-actions">
+				<a class="tu-btn" id="pl-dopen">Open the poll</a>
+				<button type="button" class="tu-btn" id="pl-dtext">Copy text for a post</button>
+				<button type="button" class="tu-btn" id="pl-dqr">QR code</button>
+				<button type="button" class="tu-btn" id="pl-dmgr">Copy manager link</button>
+				<button type="button" class="tu-btn tu-btn--ghost" id="pl-dnew">Make another poll</button>
+			</div>
+			<div class="pl-qr" id="pl-dqrbox" hidden></div>
+			<p class="tu-note" style="margin-bottom:0;">You can close or delete it from <strong>My polls</strong> on this page. The <strong>manager link</strong> carries your secret key: keep it to yourself, it lets anyone who has it close or delete the poll.</p>
+		</div>
+
+		<h2>Open a poll</h2>
+		<div class="tu-card">
+			<div class="pl-link"><input id="pl-goid" class="tu-input" type="text" autocomplete="off" placeholder="Paste a poll link, e.g. mes.fm/v/ab3defgh" aria-label="Poll link"><button type="button" class="tu-btn" id="pl-goopen">Open</button></div>
+		</div>
+
+		<div class="tu-seo">
+			<h2>A free poll maker with no sign-up</h2>
+			<p>Type a question and a few answers, press <strong>Create the poll</strong>, and share the short link (mes.fm/v/...). Anyone who opens it can vote with one tap and see the results as bars and a pie chart, updated live every few seconds while the poll is open. Use it in a group chat, a class, a livestream, a club or a family decision.</p>
+			<h3>Choices you can make</h3>
+			<dl>
+				<dt>One option or several</dt><dd>A single-choice poll takes one answer; a multiple-choice poll lets people tick up to the number you choose.</dd>
+				<dt>When voting ends</dt><dd>Keep it open until you close it yourself, close it after a set time (15 minutes, a day, a week ...), or at a date and time you pick. An open poll closes by itself after a year.</dd>
+				<dt>Who sees the results</dt><dd>Everyone at any time, only people who have voted (so nobody just follows the crowd), or nobody until voting ends.</dd>
+				<dt>Changing a vote</dt><dd>Off by default; turn it on if people may change their mind while the poll is open.</dd>
+			</dl>
+			<h3>How one vote per person works (and its limits)</h3>
+			<p>There are no accounts, so the page gives each browser a random number and lets it vote once per poll. A few votes are allowed from the same network (a school, an office or a phone network share one internet address), and then that network is full for that poll. This stops casual repeat voting. It cannot stop someone who clears their browser data or uses several devices or networks, so do not use these polls for anything that needs a real election.</p>
+			<h3>Privacy</h3>
+			<p>The poll (question, options, settings) and the vote counts are stored on our server until 60 days after the poll closes, then they are deleted. We keep which browser number picked which option (so it cannot vote twice) but never your name, and your internet address only as a scrambled code used to count votes per network. Your list of polls and the keys to manage them stay in your own browser. See the <a href="/privacy-policy">privacy policy</a>.</p>
+			<h3>Questions</h3>
+			<dl>
+				<dt>Can I edit a poll after making it?</dt><dd>No, so nobody can change the question under the voters. Close or delete it and make a new one.</dd>
+				<dt>Can I see who voted for what?</dt><dd>No. Only the totals are shown, to everyone including you.</dd>
+				<dt>Why does it say my network already voted?</dt><dd>Each poll takes a few votes per internet address. On shared Wi-Fi, try your phone's mobile data.</dd>
+			</dl>
+			<p>Counting down to the result? Make a <a href="/reminder">reminder link</a> for the closing time. Picking a winner at random instead? Try the <a href="/random-number-generator">random number generator</a> or the <a href="/dice-roller">dice roller</a>.</p>
+		</div>
+	</div>
+<script src="/main_js/panel-view.js?v=1" defer></script>
+<script src="/main_js/time-input.js?v=3" defer></script>
+<script src="/main_js/when-parse.js?v=1" defer></script>
