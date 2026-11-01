@@ -36,7 +36,7 @@ EXT_TAB = "<li class=\"info-bar__item\"><a class=\"info-bar__item__text\" href='
 
 # simulator pages whose boxes (.fl-wrap, .lm-wrap, ...) get the shared View bar from main_js/stage-ctl.js
 STAGE_CTL = {"julia-set-explorer", "fluid-simulator", "light-in-a-medium", "black-hole-simulator", "mandelbrot", "buddhabrot", "time-dilation", "metric-tensor", "orbit-simulator", "double-pendulum", "electromagnetic-fields-simulator", "photoelectric-effect-simulator", "solar-system-today", "atomic-clock-simulator",
-             "michelson-morley-experiment", "faster-than-light-shadow-simulator", "fountain-clock", "magnetic-isopotentials", "hutchison-effect-simulator"}
+             "michelson-morley-experiment", "faster-than-light-shadow-simulator", "fountain-clock", "magnetic-isopotentials", "hutchison-effect-simulator", "neuron-simulator"}
 
 # PDF family nav (2026-10-16): Home = the PDF Tools hub, then the editor and the six tools, ahead of Calculators / Tools
 PDF_NAV_INFO = '<li class="info-bar__item"><a class="info-bar__item__text" href=\'/pdf\'>Editor</a></li><li class="info-bar__item"><a class="info-bar__item__text" href=\'/merge-pdf\'>Merge</a></li><li class="info-bar__item"><a class="info-bar__item__text" href=\'/split-pdf\'>Split</a></li><li class="info-bar__item"><a class="info-bar__item__text" href=\'/organize-pdf\'>Organize</a></li><li class="info-bar__item"><a class="info-bar__item__text" href=\'/jpg-to-pdf\'>Images to PDF</a></li><li class="info-bar__item"><a class="info-bar__item__text" href=\'/pdf-to-jpg\'>PDF to images</a></li><li class="info-bar__item"><a class="info-bar__item__text" href=\'/compress-pdf\'>Compress</a></li>'
@@ -444,6 +444,13 @@ APPS = {
                                        tag="Cross the fields. Watch the samples.", accent="#b45309", dark="#92400e", tint="#fef3c7",
                                        desc="A free Hutchison Effect simulator: lay out John Hutchison's apparatus (Tesla coils, Van de Graaff, RF transmitters, spark gaps, tank circuits, inductors, field shaper), see where their fields cross, and watch samples levitate, bend like jelly, fracture, glow, smoke and bubble. Includes George Hathaway's LADS Phase I lab, a schematic view and an equipment guide for planning a replication.",
                                        js_v="3"),
+    # Neuron Simulator (2026-10-31): Hodgkin-Huxley action potential (RK4, current / voltage clamp, TTX / TEA / lidocaine / K+ / temperature), HH cable with myelin damage (MS slowing, block, Uhthoff),
+    # synaptic summation neuron + neuromuscular junction (train-of-four, myasthenia, blockers, Lambert-Eaton), Nernst / GHK calculator (lib.js = MESNeuro, node-tested: tool_apps_src/neuron-simulator-tests.js).
+    # Normal-width page in the tools sidebar collection, Wide by default; boxes .nr-wrap get the stage-ctl View bar.
+    "neuron-simulator": dict(title="MES Neuron Simulator", page_title="Neuron Simulator: Action Potential, Nerve Conduction and Synapses",
+                             tag="Spike, conduct, connect.", accent="#0e7490", dark="#155e75", tint="#cffafe",
+                             desc="A free neuron simulator: the Hodgkin-Huxley action potential with sodium and potassium gates, threshold and refractory periods, TTX, TEA, lidocaine, hyperkalaemia and temperature; saltatory conduction along myelinated and unmyelinated axons with multiple sclerosis demyelination and block; EPSP and IPSP summation; the neuromuscular junction with myasthenia gravis and train-of-four; and a Nernst and Goldman equation calculator.",
+                             js_v="1"),
     # Double Pendulum: live chaotic pendulum (RK4, copies for the butterfly effect, angle and divergence graphs, Lyapunov estimate) + a flip-time chaos map of every starting pair of angles
     # (lib.js node-tested: tool_apps_src/double-pendulum-tests.js). Normal-width page in the tools sidebar collection, Wide by default.
     "double-pendulum": dict(title="MES Double Pendulum", page_title="Double Pendulum Simulator: Chaos and the Butterfly Effect",

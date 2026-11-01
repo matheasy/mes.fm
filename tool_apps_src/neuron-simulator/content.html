@@ -1,0 +1,189 @@
+	<script>try{if(!localStorage.getItem('pageMode')){document.documentElement.classList.add('page-wide')}}catch(e){}</script>
+	<div class="tu nr" id="nr">
+		<p class="nr-warn" role="note"><b>For learning only.</b> These are teaching models (the classic Hodgkin-Huxley squid axon and simplified synapses), not patient models. Do not use them for clinical decisions or drug doses.</p>
+		<div class="nr-tabs" role="tablist" aria-label="Neuron simulator tools">
+			<button type="button" role="tab" data-tab="ap" aria-selected="true">Action potential</button>
+			<button type="button" role="tab" data-tab="cond" aria-selected="false">Nerve conduction</button>
+			<button type="button" role="tab" data-tab="syn" aria-selected="false">Synapses</button>
+			<button type="button" role="tab" data-tab="ion" aria-selected="false">Nernst &amp; Goldman</button>
+		</div>
+
+		<!-- ============================== 1. ACTION POTENTIAL ============================== -->
+		<section data-panel="ap" role="tabpanel">
+			<p class="tu-note nr-lead">The full <b>Hodgkin-Huxley model</b> of a nerve membrane (squid giant axon, 1952), solved step by step. Give the membrane a pulse of current and watch the voltage, the sodium gates (<b>m</b> opens fast, <b>h</b> closes slower), the potassium gate (<b>n</b>) and the currents that make the spike. The moving line replays it in slow motion; move the pointer over the graphs to read any moment.</p>
+			<div class="nr-wrap"><div class="nr-stage" id="nr-ap-stage">
+				<canvas id="nr-ap-c" tabindex="0" role="img" aria-label="Membrane voltage, gate openings and ion currents against time, with a picture of the membrane's sodium and potassium channels."></canvas>
+				<div class="nr-run"><button type="button" id="nr-ap-play" aria-pressed="true">❚❚ Pause</button><button type="button" id="nr-ap-replay" title="Replay from the start">↺ Replay</button><button type="button" id="nr-ap-png" title="Save as a picture" aria-label="Save as PNG">📷</button><button type="button" class="nr-fs" title="Full screen" aria-label="Full screen">⛶</button></div>
+			</div>
+			<div class="nr-readouts" id="nr-ap-ro"></div></div>
+			<div class="tu-card nr-controls">
+				<div class="nr-row"><div class="tu-seg" role="group" aria-label="Clamp mode"><button type="button" id="nr-m-cc" aria-pressed="true">Current clamp</button><button type="button" id="nr-m-vc" aria-pressed="false">Voltage clamp</button></div>
+					<span class="tu-note" id="nr-mode-note"></span></div>
+				<div class="nr-chips" id="nr-ap-pre" role="group" aria-label="Examples"></div>
+				<p class="tu-note nr-note" id="nr-ap-note" aria-live="polite"></p>
+				<div id="nr-cc-box">
+					<div class="nr-grid">
+						<div class="tu-field"><span class="tu-label" id="nr-amp-l">Pulse strength: <b id="nr-amp-v"></b> µA/cm²</span><input type="range" id="nr-amp" min="-40" max="100" step="0.5" aria-labelledby="nr-amp-l"><span class="tu-note">Negative = a pulse that pulls the voltage down.</span></div>
+						<div class="tu-field"><span class="tu-label" id="nr-dur-l">Pulse length: <b id="nr-dur-v"></b> ms</span><input type="range" id="nr-dur" min="0.1" max="60" step="0.1" aria-labelledby="nr-dur-l"></div>
+						<div class="tu-field"><span class="tu-label" id="nr-np-l">Number of pulses: <b id="nr-np-v"></b></span><input type="range" id="nr-np" min="1" max="30" step="1" aria-labelledby="nr-np-l"></div>
+						<div class="tu-field"><span class="tu-label" id="nr-gap-l">Time between pulse starts: <b id="nr-gap-v"></b> ms</span><input type="range" id="nr-gap" min="1" max="100" step="0.5" aria-labelledby="nr-gap-l"><span class="tu-note" id="nr-gap-hz"></span></div>
+						<div class="tu-field"><span class="tu-label" id="nr-hold-l">Steady background current: <b id="nr-hold-v"></b> µA/cm²</span><input type="range" id="nr-hold" min="-10" max="40" step="0.5" aria-labelledby="nr-hold-l"><span class="tu-note">About 6.3 or more makes the model fire again and again.</span></div>
+						<div class="tu-field"><span class="tu-label" id="nr-win-l">Time shown: <b id="nr-win-v"></b> ms</span><input type="range" id="nr-win" min="10" max="500" step="5" aria-labelledby="nr-win-l"></div>
+					</div>
+					<div class="nr-checks"><button type="button" class="tu-btn tu-btn--ghost" id="nr-thr">Find the threshold</button><button type="button" class="tu-btn tu-btn--ghost" id="nr-refr">Measure the refractory periods</button><span class="tu-note" id="nr-thr-out" aria-live="polite"></span></div>
+				</div>
+				<div id="nr-vc-box" hidden>
+					<div class="nr-grid">
+						<div class="tu-field"><span class="tu-label" id="nr-vh-l">Holding voltage: <b id="nr-vh-v"></b> mV</span><input type="range" id="nr-vh" min="-100" max="-40" step="1" aria-labelledby="nr-vh-l"></div>
+						<div class="tu-field"><span class="tu-label" id="nr-vs-l">Step to: <b id="nr-vs-v"></b> mV</span><input type="range" id="nr-vs" min="-120" max="80" step="1" aria-labelledby="nr-vs-l"></div>
+						<div class="tu-field"><span class="tu-label" id="nr-vd-l">Step length: <b id="nr-vd-v"></b> ms</span><input type="range" id="nr-vd" min="1" max="40" step="0.5" aria-labelledby="nr-vd-l"></div>
+					</div>
+					<p class="tu-note">The amplifier holds the voltage still and measures the current it has to inject; the current flowing through the channels is the opposite. Inward (Na⁺ entering) is drawn below zero, outward (K⁺ leaving) above. The panel on the left plots the peak sodium and late potassium current for every step voltage (the I-V curve).</p>
+				</div>
+				<details class="nr-more" open><summary>Drugs, potassium and temperature</summary>
+					<div class="nr-grid nr-grid--small">
+						<div class="tu-field"><span class="tu-label" id="nr-ttx-l">Tetrodotoxin (TTX): <b id="nr-ttx-v"></b> of Na channels blocked</span><input type="range" id="nr-ttx" min="0" max="1" step="0.01" aria-labelledby="nr-ttx-l"><span class="tu-note">Puffer-fish toxin; plugs the sodium channel pore.</span></div>
+						<div class="tu-field"><span class="tu-label" id="nr-tea-l">Tetraethylammonium (TEA): <b id="nr-tea-v"></b> of K channels blocked</span><input type="range" id="nr-tea" min="0" max="1" step="0.01" aria-labelledby="nr-tea-l"><span class="tu-note">Slows the return to rest; strong block makes this model fire by itself.</span></div>
+						<div class="tu-field"><span class="tu-label" id="nr-lido-l">Lidocaine (simplified): <b id="nr-lido-v"></b></span><input type="range" id="nr-lido" min="0" max="1" step="0.05" aria-labelledby="nr-lido-l"><span class="tu-note">Local anaesthetic: binds Na channels that have just opened or inactivated, so block builds up with every spike (use-dependent).</span></div>
+						<div class="tu-field"><span class="tu-label" id="nr-ko-l">Potassium outside the cell: <b id="nr-ko-v"></b> mmol/L</span><input type="range" id="nr-ko" min="1.5" max="12" step="0.1" aria-labelledby="nr-ko-l"><span class="tu-note" id="nr-ko-n"></span></div>
+						<div class="tu-field"><span class="tu-label" id="nr-temp-l">Temperature: <b id="nr-temp-v"></b> °C</span><input type="range" id="nr-temp" min="0" max="36" step="0.1" aria-labelledby="nr-temp-l"><span class="tu-note">The squid data are from 6.3 °C. Every 10 °C warmer makes the gates 3 times faster (Q10 = 3).</span></div>
+					</div>
+					<div class="nr-checks"><button type="button" class="tu-btn tu-btn--ghost" id="nr-normal">Back to normal (no drugs, K 4, 6.3 °C)</button></div>
+				</details>
+				<div class="nr-checks">
+					<span class="tu-label">Bottom graph:</span><div class="tu-seg" role="group" aria-label="Bottom graph"><button type="button" id="nr-b-i" aria-pressed="true">Currents</button><button type="button" id="nr-b-g" aria-pressed="false">Conductances</button></div>
+					<label class="nr-check"><input type="checkbox" id="nr-o-mem" checked> Membrane picture</label>
+					<span class="tu-label" id="nr-spd-l">Replay speed</span><select id="nr-spd" class="tu-select nr-sel" aria-labelledby="nr-spd-l"><option value="2">2 ms per second</option><option value="5" selected>5 ms per second</option><option value="15">15 ms per second</option><option value="60">60 ms per second</option><option value="0">Instant</option></select>
+					<button type="button" class="tu-btn tu-btn--ghost" id="nr-ap-link">🔗 Copy link</button>
+				</div>
+			</div>
+		</section>
+
+		<!-- ============================== 2. CONDUCTION ============================== -->
+		<section data-panel="cond" role="tabpanel" hidden>
+			<p class="tu-note nr-lead">A whole axon: one stretch of membrane after another, each running the Hodgkin-Huxley equations and passing current to its neighbours along the inside of the fibre (the cable equation). Stimulate the left end and watch the impulse travel. <b>Myelin</b> wraps the gaps between the nodes of Ranvier, so the impulse jumps from node to node (saltatory conduction). Damage the myelin in the middle stretch to see slowing and block, as in multiple sclerosis or Guillain-Barré.</p>
+			<div class="nr-wrap"><div class="nr-stage" id="nr-cv-stage">
+				<canvas id="nr-cv-c" tabindex="0" role="img" aria-label="The axon with its myelin and nodes, the voltage along it, and the recordings at two electrodes."></canvas>
+				<div class="nr-run"><button type="button" id="nr-cv-play" aria-pressed="true">❚❚ Pause</button><button type="button" id="nr-cv-replay" title="Stimulate again">⚡ Stimulate</button><button type="button" id="nr-cv-png" title="Save as a picture" aria-label="Save as PNG">📷</button><button type="button" class="nr-fs" title="Full screen" aria-label="Full screen">⛶</button></div>
+			</div>
+			<div class="nr-readouts" id="nr-cv-ro"></div></div>
+			<div class="tu-card nr-controls">
+				<div class="nr-chips" id="nr-cv-pre" role="group" aria-label="Fibre types"></div>
+				<p class="tu-note nr-note" id="nr-cv-note" aria-live="polite"></p>
+				<div class="nr-grid">
+					<div class="tu-field"><span class="tu-label" id="nr-d-l">Fibre diameter: <b id="nr-d-v"></b> µm</span><input type="range" id="nr-d" min="-0.7" max="1.4" step="0.01" aria-labelledby="nr-d-l"><span class="tu-note" id="nr-d-n"></span></div>
+					<div class="tu-field"><span class="tu-label">Myelin</span><label class="nr-check"><input type="checkbox" id="nr-my" checked> Myelinated (nodes of Ranvier)</label></div>
+					<div class="tu-field"><span class="tu-label" id="nr-dmg-l">Myelin damage in the middle stretch: <b id="nr-dmg-v"></b></span><input type="range" id="nr-dmg" min="0" max="1" step="0.01" aria-labelledby="nr-dmg-l"><span class="tu-note">Thinner myelin leaks current and has to charge more membrane, so each node is reached later and with less current.</span></div>
+					<div class="tu-field"><span class="tu-label" id="nr-ct-l">Warmth (model temperature): <b id="nr-ct-v"></b> °C</span><input type="range" id="nr-ct" min="6.3" max="30" step="0.1" aria-labelledby="nr-ct-l"><span class="tu-note">Warming shortens each spike. In a damaged fibre that can tip it into block: Uhthoff's phenomenon (symptoms worse in a hot bath or with fever).</span></div>
+				</div>
+				<div class="nr-checks">
+					<span class="tu-label" id="nr-cspd-l">Replay speed</span><select id="nr-cspd" class="tu-select nr-sel" aria-labelledby="nr-cspd-l"><option value="0.2">0.2 ms per second</option><option value="0.5" selected>0.5 ms per second</option><option value="2">2 ms per second</option></select>
+					<button type="button" class="tu-btn tu-btn--ghost" id="nr-cv-link">🔗 Copy link</button>
+				</div>
+			</div>
+			<div class="tu-card">
+				<h3 class="nr-h">Nerve conduction study, done on the model</h3>
+				<p class="tu-note">A clinical nerve conduction study stimulates a nerve and records it at two places. Speed = distance between the two places ÷ difference in arrival time; the size of the response tells how many fibres got through. A drop in size between the two places (more than about half) is <b>conduction block</b>; slowing with a normal size points to <b>demyelination</b>, a small response at both places to <b>axon loss</b>.</p>
+				<div class="tu-table-wrap"><table class="tu-table" id="nr-ncs"></table></div>
+				<p class="tu-note" id="nr-ncs-n"></p>
+			</div>
+			<div class="tu-card">
+				<h3 class="nr-h">Fibre types (Erlanger-Gasser classes)</h3>
+				<div class="tu-table-wrap"><table class="tu-table" id="nr-fib"></table></div>
+			</div>
+		</section>
+
+		<!-- ============================== 3. SYNAPSES ============================== -->
+		<section data-panel="syn" role="tabpanel" hidden>
+			<div class="nr-row"><div class="tu-seg" role="group" aria-label="Synapse view"><button type="button" id="nr-s-n" aria-pressed="true">Neuron: summation</button><button type="button" id="nr-s-j" aria-pressed="false">Neuromuscular junction</button></div></div>
+			<div id="nr-syn-n">
+				<p class="tu-note nr-lead">A neuron collects inputs on its dendrites. Each excitatory synapse (green) gives a small bump up, an <b>EPSP</b>; each inhibitory synapse (red) a small dip or a clamp near rest, an <b>IPSP</b>. One EPSP is far too small; the neuron fires only when enough of them add up at the <b>axon hillock</b> to reach threshold (about −55 mV): many at once (<b>spatial summation</b>) or quickly one after another (<b>temporal summation</b>). Click a synapse, or press 1 to 5.</p>
+				<div class="nr-wrap"><div class="nr-stage" id="nr-sy-stage">
+					<canvas id="nr-sy-c" tabindex="0" role="img" aria-label="A neuron with five synapses on its dendrites and the voltage at its axon hillock over the last 200 milliseconds."></canvas>
+					<div class="nr-run"><button type="button" id="nr-sy-play" aria-pressed="true">❚❚ Pause</button><button type="button" id="nr-sy-clear" title="Clear the trace">↺ Clear</button><button type="button" class="nr-fs" title="Full screen" aria-label="Full screen">⛶</button></div>
+				</div>
+				<div class="nr-readouts" id="nr-sy-ro"></div></div>
+				<div class="tu-card nr-controls">
+					<div class="nr-chips" id="nr-sy-fire" role="group" aria-label="Fire a synapse"></div>
+					<div class="nr-chips" id="nr-sy-pre" role="group" aria-label="Experiments"></div>
+					<p class="tu-note nr-note" id="nr-sy-note" aria-live="polite"></p>
+					<div class="nr-grid">
+						<div class="tu-field"><span class="tu-label" id="nr-we-l">Excitatory synapse strength: <b id="nr-we-v"></b></span><input type="range" id="nr-we" min="0.1" max="1.5" step="0.05" aria-labelledby="nr-we-l"></div>
+						<div class="tu-field"><span class="tu-label" id="nr-wi-l">Inhibitory synapse strength: <b id="nr-wi-v"></b></span><input type="range" id="nr-wi" min="0.1" max="3" step="0.05" aria-labelledby="nr-wi-l"></div>
+						<div class="tu-field"><span class="tu-label" id="nr-re-l">Random excitatory input: <b id="nr-re-v"></b> per second</span><input type="range" id="nr-re" min="0" max="400" step="5" aria-labelledby="nr-re-l"></div>
+						<div class="tu-field"><span class="tu-label" id="nr-ri-l">Random inhibitory input: <b id="nr-ri-v"></b> per second</span><input type="range" id="nr-ri" min="0" max="400" step="5" aria-labelledby="nr-ri-l"></div>
+						<div class="tu-field"><span class="tu-label" id="nr-ss-l">Slow motion</span><select id="nr-ss" class="tu-select" aria-labelledby="nr-ss-l"><option value="0.02">20 ms per second</option><option value="0.05" selected>50 ms per second</option><option value="0.2">200 ms per second</option></select></div>
+					</div>
+				</div>
+			</div>
+			<div id="nr-syn-j" hidden>
+				<p class="tu-note nr-lead">At the <b>neuromuscular junction</b> each nerve impulse releases a few hundred packets (quanta) of acetylcholine (ACh). ACh opens receptors on the muscle endplate and makes an <b>endplate potential</b> (EPP) that is normally 2-4 times bigger than needed to fire the muscle fibre: the <b>safety factor</b>. Acetylcholinesterase (AChE) breaks ACh down within a millisecond. With repeated stimulation each impulse releases a little less, which only matters when the safety factor is small: the <b>fade</b> seen with myasthenia gravis and with blocking drugs.</p>
+				<div class="nr-wrap"><div class="nr-stage" id="nr-nm-stage">
+					<canvas id="nr-nm-c" tabindex="0" role="img" aria-label="The nerve terminal, cleft and muscle endplate, and bars of the endplate potential and twitch for each stimulus."></canvas>
+					<div class="nr-run"><button type="button" id="nr-nm-run">⚡ Stimulate</button><button type="button" id="nr-nm-png" title="Save as a picture" aria-label="Save as PNG">📷</button><button type="button" class="nr-fs" title="Full screen" aria-label="Full screen">⛶</button></div>
+				</div>
+				<div class="nr-readouts" id="nr-nm-ro"></div></div>
+				<div class="tu-card nr-controls">
+					<div class="nr-chips" id="nr-nm-cond" role="group" aria-label="Condition"></div>
+					<div class="nr-row"><span class="tu-label">Stimulation:</span><div class="tu-seg" role="group" aria-label="Stimulation pattern" id="nr-nm-pat"></div></div>
+					<p class="tu-note nr-note" id="nr-nm-note" aria-live="polite"></p>
+				</div>
+			</div>
+		</section>
+
+		<!-- ============================== 4. ION CALCULATOR ============================== -->
+		<section data-panel="ion" role="tabpanel" hidden>
+			<p class="tu-note nr-lead">Each ion is pulled two ways: down its concentration gradient and by the voltage. The <b>Nernst equation</b> gives the voltage where the two balance for one ion (its equilibrium potential). The cell's real resting voltage is a weighted mix decided by how permeable the membrane is to each ion: the <b>Goldman-Hodgkin-Katz equation</b>. Type concentrations or pick a case.</p>
+			<div class="nr-chips" id="nr-io-pre" role="group" aria-label="Cases"></div>
+			<div class="tu-card">
+				<div class="tu-table-wrap"><table class="tu-table nr-iot" id="nr-iot"></table></div>
+				<div class="nr-grid nr-grid--small nr-ioopts">
+					<div class="tu-field"><span class="tu-label" id="nr-it-l">Temperature (°C)</span><input type="number" id="nr-it" class="tu-input" step="0.1" min="0" max="45" aria-labelledby="nr-it-l"></div>
+					<div class="tu-field"><span class="tu-label" id="nr-pk-l">Relative permeability K⁺</span><input type="number" id="nr-pk" class="tu-input" step="0.01" min="0" aria-labelledby="nr-pk-l"></div>
+					<div class="tu-field"><span class="tu-label" id="nr-pna-l">Relative permeability Na⁺</span><input type="number" id="nr-pna" class="tu-input" step="0.01" min="0" aria-labelledby="nr-pna-l"></div>
+					<div class="tu-field"><span class="tu-label" id="nr-pcl-l">Relative permeability Cl⁻</span><input type="number" id="nr-pcl" class="tu-input" step="0.01" min="0" aria-labelledby="nr-pcl-l"></div>
+				</div>
+			</div>
+			<div class="nr-wrap nr-wrap--io"><div class="nr-stage" id="nr-io-stage">
+				<canvas id="nr-io-c" role="img" aria-label="A voltage scale with every ion's equilibrium potential and the resting voltage, with arrows for the way each ion would flow."></canvas>
+			</div>
+			<div class="nr-readouts" id="nr-io-ro"></div></div>
+			<p class="tu-note" id="nr-io-n" aria-live="polite"></p>
+			<div class="nr-checks"><button type="button" class="tu-btn tu-btn--ghost" id="nr-io-use">Use this potassium in the Action potential tab</button><button type="button" class="tu-btn tu-btn--ghost" id="nr-io-link">🔗 Copy link</button></div>
+		</section>
+
+		<div class="tu-seo">
+			<h2>How the neuron simulator works</h2>
+			<p>Everything on this page runs in your browser from published equations; nothing is uploaded. It is a teaching tool for students of physiology, medicine, nursing, pharmacy and physiotherapy, and for anyone who wants to see why a nerve fires.</p>
+			<div class="nr-eq" role="math" aria-label="Key equations">
+				<div><span class="nr-eq__n">Hodgkin-Huxley membrane</span> <span class="nr-eq__f mes-tex">\(\displaystyle C_m\frac{dV}{dt} = I_{stim} - \bar g_{Na}\,m^3h\,(V-E_{Na}) - \bar g_K\,n^4\,(V-E_K) - g_L\,(V-E_L)\)</span></div>
+				<div><span class="nr-eq__n">each gate</span> <span class="nr-eq__f mes-tex">\(\displaystyle \frac{dx}{dt} = \phi\,\big[\alpha_x(V)\,(1-x) - \beta_x(V)\,x\big],\quad \phi = 3^{(T-6.3)/10}\)</span></div>
+				<div><span class="nr-eq__n">cable (axon)</span> <span class="nr-eq__f mes-tex">\(\displaystyle C_m\frac{\partial V}{\partial t} = \frac{a}{2R_i}\frac{\partial^2 V}{\partial x^2} - I_{ion}\)</span></div>
+				<div><span class="nr-eq__n">Nernst</span> <span class="nr-eq__f mes-tex">\(\displaystyle E_X = \frac{RT}{zF}\ln\frac{[X]_{out}}{[X]_{in}} \approx \frac{61.5\text{ mV}}{z}\log_{10}\frac{[X]_{out}}{[X]_{in}}\ \text{at } 37\,^\circ\text{C}\)</span></div>
+				<div><span class="nr-eq__n">Goldman-Hodgkin-Katz</span> <span class="nr-eq__f mes-tex">\(\displaystyle V_m = \frac{RT}{F}\ln\frac{P_K[K^+]_o + P_{Na}[Na^+]_o + P_{Cl}[Cl^-]_i}{P_K[K^+]_i + P_{Na}[Na^+]_i + P_{Cl}[Cl^-]_o}\)</span></div>
+			</div>
+			<h3>The action potential</h3>
+			<p>The model is the one Alan Hodgkin and Andrew Huxley fitted to their voltage-clamp recordings of the squid giant axon (J. Physiol. 117:500-544, 1952; Nobel Prize 1963), written in the modern convention with the resting voltage at −65 mV: maximal conductances 120 (Na⁺), 36 (K⁺) and 0.3 (leak) mS/cm², reversal potentials +50, −77 and −54.4 mV, capacitance 1 µF/cm². It is solved with a 4th-order Runge-Kutta method in 0.01 ms steps. Checks the page passes: rest −65 mV, a 1 ms threshold of about 7 µA/cm², a spike peak near +40 mV, an undershoot towards E<sub>K</sub>, an absolute refractory period of several milliseconds followed by a relative one, and a conduction speed of 18.6 m/s in the cable at 18.5 °C (Hodgkin and Huxley calculated 18.8 m/s and measured 21.2 m/s).</p>
+			<ul>
+				<li><strong>Threshold</strong> is not a fixed voltage: it is where the inward sodium current outruns the outward potassium and leak currents, so a short strong pulse and a long weak one both work (strength-duration). The page marks the voltage where the rise first exceeds 20 mV/ms.</li>
+				<li><strong>Refractory periods.</strong> Right after a spike most sodium channels are inactivated (h is low) and potassium channels are still open, so no stimulus can fire another spike (absolute refractory period, defined here as "not even at 20 times the normal threshold"), then only a stronger one can (relative refractory period).</li>
+				<li><strong>Potassium.</strong> The outside potassium moves E<sub>K</sub> by exactly what the Nernst equation predicts (26.7 mV × ln(K/4) at 37 °C). High potassium (hyperkalaemia) depolarises the resting membrane, which inactivates sodium channels: spikes get smaller and slower and can fail, the reason severe hyperkalaemia is dangerous for the heart. Low potassium hyperpolarises it.</li>
+				<li><strong>Drugs.</strong> TTX and TEA are modelled as a simple fraction of channels blocked. Lidocaine is a simplified "modulated receptor" sketch (after Hondeghem and Katzung, 1977): it binds sodium channels mainly while they are open or inactivated and lets go over about 300 ms, so the block grows with firing rate. The rates are chosen to show the idea, not fitted to a real dose.</li>
+				<li><strong>Temperature.</strong> Gate speeds scale with Q10 = 3 from 6.3 °C. The squid model stops firing above about 30 °C (heat block); a real mammalian nerve works at 37 °C with different channel kinetics, so times here are slower than in a human nerve.</li>
+			</ul>
+			<h3>Conduction</h3>
+			<p>The axon is a chain of short compartments (the cable equation, solved implicitly) with the squid axon's radius (238 µm) and axoplasm resistance (35.4 Ω·cm). In the myelinated version, short nodes with five times the channel density alternate with 1 cm internodes whose myelin divides the capacitance and leak by 200; damage lowers that factor towards bare membrane. The model gives the physics (how myelin speeds conduction, how damage slows and then blocks it, why warming a damaged fibre can block it), but it is a squid-sized fibre. The "human fibre" speed is therefore an estimate: Hursh's rule of about 6 m/s per µm of diameter for myelinated fibres (1939), and about 1.5 m/s × √(diameter in µm) for unmyelinated C fibres, multiplied by the slowing the model shows through the damaged stretch.</p>
+			<h3>Synapses</h3>
+			<p>The summation neuron is a conductance-based integrate-and-fire cell (membrane time constant 20 ms, rest −70 mV, threshold −55 mV, excitatory reversal 0 mV, inhibitory reversal −75 mV like a chloride synapse), with each synapse's effect at the soma reduced by e<sup>−distance/300 µm</sup> for a passive dendrite. A real neuron has active dendrites and thousands of synapses. The neuromuscular junction model releases a fraction of a vesicle pool per impulse (the pool refills over about 1.5 s, faster during high-frequency trains), with an endplate potential that saturates and a population of fibres with thresholds of 10-20 mV. The six conditions are illustrative settings chosen to reproduce the textbook patterns (normal train-of-four ratio 1, fade in myasthenia gravis and with non-depolarising blockers, improvement with an AChE inhibitor, increment at high rates in Lambert-Eaton syndrome), not fitted to patients.</p>
+			<h3>Sources</h3>
+			<ul>
+				<li>Hodgkin AL, Huxley AF (1952). A quantitative description of membrane current and its application to conduction and excitation in nerve. J Physiol 117:500-544.</li>
+				<li>Hursh JB (1939). Conduction velocity and diameter of nerve fibers. Am J Physiol 127:131-139. Rushton WAH (1951). A theory of the effects of fibre size in medullated nerve. J Physiol 115:101-122.</li>
+				<li>Goldman DE (1943). Potential, impedance and rectification in membranes. J Gen Physiol 27:37-60. Hodgkin AL, Katz B (1949). J Physiol 108:37-77.</li>
+				<li>Hondeghem LM, Katzung BG (1977). Time- and voltage-dependent interactions of antiarrhythmic drugs with cardiac sodium channels. Biochim Biophys Acta 472:373-398.</li>
+				<li>Hille B. Ion Channels of Excitable Membranes, 3rd ed. Kandel ER et al. Principles of Neural Science, 6th ed. Wood SJ, Slater CR (2001). Safety factor at the neuromuscular junction. Prog Neurobiol 64:393-429.</li>
+			</ul>
+			<p>Related: <a href="/heart-rate-zone-calculator">Heart Rate Zones</a> · <a href="/electromagnetic-fields-simulator">Electromagnetic Fields Simulator</a> · <a href="/neural-network-playground">Neural Network Playground</a> (artificial neurons) · <a href="/tools">More MES tools</a></p>
+		</div>
+		<script src="/main_js/mes-math.js" defer></script>
+	</div>
