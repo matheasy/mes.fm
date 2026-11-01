@@ -478,7 +478,7 @@
 },
 "/moon":{
 "added":"2026-08-30",
-"updated":"2026-10-30",
+"updated":"2026-10-31",
 "type":"Tool"
 },
 "/mortgagecalculator":{
@@ -570,6 +570,11 @@
 "added":"2026-10-23",
 "updated":"2026-10-23",
 "type":"Game"
+},
+"/polls":{
+"added":"2026-10-31",
+"updated":"2026-10-31",
+"type":"Tool"
 },
 "/pomodoro-timer":{
 "added":"2026-10-06",

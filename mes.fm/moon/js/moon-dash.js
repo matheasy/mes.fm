@@ -76,6 +76,46 @@
     [200, 'Unhealthy', '#e0393e'], [300, 'Very unhealthy', '#8f3f97'], [500, 'Hazardous', '#7e0023']];
   function aqiBand(v) { for (var i = 0; i < AQI.length; i++) if (v <= AQI[i][0]) return AQI[i]; return AQI[AQI.length - 1]; }
 
+  // ---------- table cell decorations (in-cell bars, colour scales, arrows) ----------
+  // Temperature colour on one fixed scale (°C), cold blue -> hot red, so 7° looks the same in every table.
+  var TSTOPS = [[-25, [91, 95, 240]], [-10, [63, 143, 240]], [0, [60, 198, 232]], [10, [76, 195, 138]], [18, [201, 207, 60]],
+    [25, [242, 163, 58]], [32, [236, 90, 60]], [40, [192, 42, 74]]];
+  function tempColF(f) {
+    var c = (f - 32) / 1.8;
+    if (c <= TSTOPS[0][0]) return 'rgb(' + TSTOPS[0][1] + ')';
+    for (var i = 1; i < TSTOPS.length; i++) {
+      if (c <= TSTOPS[i][0]) {
+        var a = TSTOPS[i - 1], b = TSTOPS[i], k = (c - a[0]) / (b[0] - a[0]);
+        return 'rgb(' + [0, 1, 2].map(function (j) { return Math.round(a[1][j] + (b[1][j] - a[1][j]) * k); }).join(',') + ')';
+      }
+    }
+    return 'rgb(' + TSTOPS[TSTOPS.length - 1][1] + ')';
+  }
+  var UVB = [[3, 'Low', '#2e7d38'], [6, 'Moderate', '#8a6d00'], [8, 'High', '#b85a0e'], [11, 'Very high', '#c0282f'], [99, 'Extreme', '#7d3aa0']];
+  function uvBand(v) { for (var i = 0; i < UVB.length; i++) if (v < UVB[i][0]) return UVB[i]; return UVB[UVB.length - 1]; }
+  function clamp01(x) { return Math.max(0, Math.min(1, x)); }
+  // a value with a small bar under / beside it; frac 0..1, from = start 0..1 (range bars)
+  function cbar(html, frac, col, cls, from) {
+    from = from || 0;
+    return '<span class="tb' + (cls ? ' ' + cls : '') + '"><span class="tb-v">' + html + '</span><span class="tb-t" aria-hidden="true"><i style="left:' +
+      (clamp01(from) * 100).toFixed(1) + '%;width:' + (Math.max(0.03, clamp01(frac)) * 100).toFixed(1) + '%;background:' + col + '"></i></span></span>';
+  }
+  // bar that grows left (negative) or right (positive) from a centre line; v / lim in -1..1
+  function cdiv(html, v, lim, colPos, colNeg) {
+    var k = Math.max(-1, Math.min(1, v / lim)), w = Math.abs(k) * 50, left = k >= 0 ? 50 : 50 - w;
+    return '<span class="tb tb-div"><span class="tb-v">' + html + '</span><span class="tb-t" aria-hidden="true"><b></b><i style="left:' + left.toFixed(1) +
+      '%;width:' + Math.max(1, w).toFixed(1) + '%;background:' + (k >= 0 ? colPos : colNeg) + '"></i></span></span>';
+  }
+  function windArrow(dir) {
+    if (dir == null || isNaN(dir)) return '';
+    return '<svg class="tb-arr" viewBox="0 0 20 20" aria-hidden="true" style="transform:rotate(' + Math.round(dir + 180) + 'deg)"><path d="M10 2 L15 16 L10 12.5 L5 16 Z" fill="currentColor"/></svg>';
+  }
+  function tempCell(f, lo, hi, txt) {
+    if (f == null || isNaN(f)) return '—';
+    var span = hi - lo > 0.5 ? hi - lo : 1;
+    return cbar('<span class="tb-dot" style="background:' + tempColF(f) + '"></span>' + (txt || tSU(f)), 0.12 + 0.88 * (f - lo) / span, tempColF(f));
+  }
+
   // ---------- time helpers (in the chosen place's time zone) ----------
   var tz = 'America/Vancouver';
   function parts(d) {
@@ -240,6 +280,7 @@
         '<div class="dh-hhl">High <b>' + tS(hi) + '</b> &nbsp; Low <b>' + tS(lo) + '</b></div>' + rng + '</div>' +
       '</div><div class="dh-chips">' + chips.join('') + '</div>';
     renderHourly(fc);
+    renderNowTable(fc);
   }
   function renderHourly(fc) {
     var el = $('dhHourly'), tb = $('dhHourTbl'), h = fc.hourly;
@@ -279,15 +320,72 @@
     for (i = 0; i < n; i++) if (temps[i] != null) s += '<circle class="dh-hdot" cx="' + X(i) + '" cy="' + Y(temps[i]).toFixed(1) + '" r="3"/>';
     s += '<text class="dh-hpt" x="4" y="120">rain</text></svg>';
     el.innerHTML = s;
-    // table form
-    var rows = '';
+    // table form: in-cell bars (temperature on the cold-blue -> hot-red scale, rain blue, cloud grey, wind with its arrow)
+    var rows = '', tlo = 1e9, thi = -1e9, wmax = 15;
     for (i = 0; i < n; i++) {
       k = i0 + i;
-      rows += '<tr><td>' + (i === 0 ? 'Now' : h12(h.time[k].slice(11, 13))) + '</td><td>' + esc(wText(h.code ? h.code[k] : null)) + '</td><td>' + tSU(h.tF[k]) +
-        '</td><td>' + (h.feelsF ? tS(h.feelsF[k]) : '—') + '</td><td>' + (h.pop && h.pop[k] != null ? Math.round(h.pop[k]) + '%' : '—') +
-        '</td><td>' + (h.cloud && h.cloud[k] != null ? Math.round(h.cloud[k]) + '%' : '—') + '</td><td>' + (h.wind ? wind(h.wind[k]) + ' ' + compass(h.windDir && h.windDir[k]) : '—') + '</td></tr>';
+      [h.tF[k], h.feelsF && h.feelsF[k]].forEach(function (v) { if (v != null) { tlo = Math.min(tlo, v); thi = Math.max(thi, v); } });
+      if (h.wind && h.wind[k] != null) wmax = Math.max(wmax, h.wind[k]);
     }
-    tb.innerHTML = '<table class="dh-gtbl"><thead><tr><th>Hour</th><th>Conditions</th><th>Temp</th><th>Feels</th><th>Rain</th><th>Cloud</th><th>Wind</th></tr></thead><tbody>' + rows + '</tbody></table>';
+    for (i = 0; i < n; i++) {
+      k = i0 + i;
+      var dayH = !h.day || h.day[k] !== 0, code = h.code ? h.code[k] : null;
+      var pp = h.pop && h.pop[k] != null ? h.pop[k] : null, cc = h.cloud && h.cloud[k] != null ? h.cloud[k] : null;
+      var wv = h.wind ? h.wind[k] : null, wd = h.windDir ? h.windDir[k] : null;
+      rows += '<tr class="' + (i === 0 ? 'tb-now' : '') + (dayH ? '' : ' tb-night') + '"><td class="tb-hour">' + (i === 0 ? 'Now' : h12(h.time[k].slice(11, 13))) + '</td>' +
+        '<td class="tb-cond"><span class="tb-ic" aria-hidden="true">' + wIcon(code, dayH) + '</span>' + esc(wText(code)) + '</td>' +
+        '<td>' + tempCell(h.tF[k], tlo, thi) + '</td>' +
+        '<td>' + (h.feelsF ? tempCell(h.feelsF[k], tlo, thi, tS(h.feelsF[k])) : '—') + '</td>' +
+        '<td>' + (pp != null ? cbar(Math.round(pp) + '%', pp / 100, 'var(--tb-rain)') : '—') + '</td>' +
+        '<td>' + (cc != null ? cbar(Math.round(cc) + '%', cc / 100, 'var(--tb-cloud)') : '—') + '</td>' +
+        '<td>' + (wv != null ? cbar(windArrow(wd) + wind(wv) + ' <span class="tb-mut">' + compass(wd) + '</span>', wv / wmax, 'var(--tb-wind)') : '—') + '</td></tr>';
+    }
+    tb.innerHTML = '<table class="dh-gtbl tb-rich"><thead><tr><th>Hour</th><th>Conditions</th><th>Temp</th><th>Feels</th><th>Rain</th><th>Cloud</th><th>Wind</th></tr></thead><tbody>' + rows + '</tbody></table>';
+  }
+
+  // the "Weather now" key-value table: same numbers as before, now with icons, bars and the °C / °F choice
+  function renderNowTable(fc) {
+    function put(id, html) { var e = $(id); if (e) e.innerHTML = html; }
+    if (!fc || !fc.ok) return;
+    var day = fc.isDay == null ? true : !!fc.isDay;
+    var lo = fc.loF, hi = fc.hiF, cur = fc.curTempF;
+    var l2 = Math.min(lo != null ? lo : 1e9, cur != null ? cur : 1e9, fc.feels9F != null ? fc.feels9F : 1e9);
+    var h2 = Math.max(hi != null ? hi : -1e9, cur != null ? cur : -1e9, fc.feels9F != null ? fc.feels9F : -1e9);
+    put('wxNow', '<span class="tb-ic tb-ic-big" aria-hidden="true">' + wIcon(fc.code, day) + '</span>' + esc(wText(fc.code)) +
+      (cur != null ? ' · <span class="tb-dot" style="background:' + tempColF(cur) + '"></span>' + tSU(cur) + ' <span class="tb-mut">(' + tOther(cur) + ')</span>' : ''));
+    if (hi != null && lo != null) {
+      var sp = h2 - l2 > 0.5 ? h2 - l2 : 1, a = (lo - l2) / sp, b = (hi - l2) / sp;
+      put('wxHiLo', '<span class="tb tb-range"><span class="tb-v">' + tSU(hi) + ' / ' + tSU(lo) + ' <span class="tb-mut">(' + tOther(hi) + ' / ' + tOther(lo) + ')</span></span>' +
+        '<span class="tb-t" aria-hidden="true"><i style="left:' + (a * 100).toFixed(1) + '%;width:' + Math.max(3, (b - a) * 100).toFixed(1) + '%;background:linear-gradient(90deg,' +
+        tempColF(lo) + ',' + tempColF(hi) + ')"></i>' + (cur != null ? '<u style="left:' + ((cur - l2) / sp * 100).toFixed(1) + '%" title="now"></u>' : '') + '</span></span>');
+    }
+    if (fc.feels9F != null) put('wxFeels', tempCell(fc.feels9F, l2, h2, tSU(fc.feels9F) + ' <span class="tb-mut">(' + tOther(fc.feels9F) + ')</span>'));
+    if (fc.hum9 != null) put('wxHum', cbar(Math.round(fc.hum9) + '%', fc.hum9 / 100, 'var(--tb-hum)'));
+    if (fc.wind9 != null) put('wxWind', cbar(windArrow(fc.windDir9) + wind(fc.wind9) + (fc.windDir9 != null ? ' <span class="tb-mut">from the ' + compass(fc.windDir9) + '</span>' : ''), fc.wind9 / 30, 'var(--tb-wind)'));
+    if (fc.cloud != null) put('wxCloud', cbar('<span class="tb-ic" aria-hidden="true">' + (fc.cloud < 20 ? (day ? '☀️' : '🌙') : fc.cloud < 70 ? '⛅' : '☁️') + '</span>' + Math.round(fc.cloud) + '%', fc.cloud / 100, 'var(--tb-cloud)'));
+    if (fc.uvMax != null) { var ub = uvBand(fc.uvMax); put('wxUv', cbar(fc.uvMax.toFixed(1) + ' <span class="tb-pill" style="background:' + ub[2] + '">' + ub[1] + '</span>', fc.uvMax / 11, ub[2])); }
+    if (fc.popMax != null) put('wxPop', cbar('<span class="tb-ic" aria-hidden="true">💧</span>' + Math.round(fc.popMax) + '%', fc.popMax / 100, 'var(--tb-rain)'));
+    if (fc.presshPa != null) {
+      var pw = fc.presshPa < 1000 ? 'low' : fc.presshPa > 1025 ? 'high' : 'normal';
+      put('wxPress', cdiv(Math.round(fc.presshPa) + ' hPa <span class="tb-mut">(' + (fc.presshPa * 0.02953).toFixed(2) + ' inHg, ' + pw + ')</span>', fc.presshPa - 1013, 35, 'var(--tb-hum)', 'var(--tb-wind)'));
+    }
+  }
+  // Sun / Moon / air-quality key-value tables are filled by the page's main script as plain text; add a bar
+  // behind a few of them (bars carry no text, so the tiles made from these tables are unchanged).
+  function addBar(id, frac, col, div) {
+    var e = $(id); if (!e || e.querySelector('.tb-t')) return;
+    var t = document.createElement('span'); t.className = 'tb-t tb-after' + (div ? ' tb-divt' : ''); t.setAttribute('aria-hidden', 'true');
+    if (div) { var k = Math.max(-1, Math.min(1, frac)), w = Math.abs(k) * 50; t.innerHTML = '<b></b><i style="left:' + (k >= 0 ? 50 : 50 - w).toFixed(1) + '%;width:' + Math.max(1, w).toFixed(1) + '%;background:' + col + '"></i>'; }
+    else t.innerHTML = '<i style="left:0;width:' + (clamp01(frac) * 100).toFixed(1) + '%;background:' + col + '"></i>';
+    e.appendChild(t);
+  }
+  function decorateKv() {
+    var num = function (id) { var e = $(id); if (!e) return NaN; return parseFloat((e.textContent || '').replace('−', '-')); };
+    var il = num('moonIllum'); if (!isNaN(il)) addBar('moonIllum', il / 100, 'var(--tb-moon)');
+    ['sunDec', 'moonDec'].forEach(function (id) { var v = num(id); if (!isNaN(v)) addBar(id, v / (id === 'sunDec' ? 23.44 : 29), id === 'sunDec' ? 'var(--tb-sun)' : 'var(--tb-moon)', true); });
+    var aq = ctx && ctx.aq;
+    if (aq && aq.ok && aq.us != null) { var ab = aqiBand(aq.us); addBar('aqUs', aq.us / 300, ab[2]); }
+    if (aq && aq.ok && aq.eu != null) addBar('aqEu', aq.eu / 100, aq.eu <= 20 ? '#50c8b4' : aq.eu <= 40 ? '#3fa34d' : aq.eu <= 60 ? '#d9b51c' : aq.eu <= 80 ? '#ee7d1f' : '#d8343c');
   }
 
   // ---------- sun & moon timeline ----------
@@ -407,18 +505,18 @@
       '<div class="dh-ps">Dark sky ' + winTxt + (frac > 0.6 && mb ? '. A bright Moon washes out faint stars.' : frac < 0.25 ? '. Little moonlight: good for faint stars.' : '') + '</div></div>');
     cards.push('<div class="dh-pcard"><div class="dh-pt"><span class="dh-mini">' + phaseSvg(frac, elong < 180, 18) + '</span> Moon</div><div class="dh-pv">in ' + esc(constOf(A.Body.Moon, now)) + '</div><div class="dh-ps">' +
       (mb ? 'Best ' + clockS(mb.t) + ', ' + Math.round(mb.alt) + '° up in the ' + compass(mb.az) : 'Not up after dark tonight') + ' · ' + Math.round(frac * 100) + '% lit</div></div>');
-    rows.push(['Moon', mb ? clock(mb.t) : '—', mb ? Math.round(mb.alt) + '°' : '—', mb ? compass(mb.az) : '—', constOf(A.Body.Moon, now), A.Illumination(A.Body.Moon, now).mag.toFixed(1), mb ? clockS(mb.first) + '–' + clockS(mb.last) : 'not up after dark']);
+    rows.push(['Moon', mb ? clock(mb.t) : '—', mb ? { h: cbar(Math.round(mb.alt) + '°', mb.alt / 90, 'var(--tb-moon)') } : '—', mb ? compass(mb.az) : '—', constOf(A.Body.Moon, now), A.Illumination(A.Body.Moon, now).mag.toFixed(1), mb ? clockS(mb.first) + '–' + clockS(mb.last) : 'not up after dark']);
     planets.forEach(function (p) {
       cards.push('<div class="dh-pcard"><div class="dh-pt"><span class="dh-pdot" style="background:' + p.col + '"></span> ' + p.name + '</div><div class="dh-pv">' + brightWord(p.mag) + '</div>' +
         '<div class="dh-ps">Best ' + clockS(p.b.t) + ', ' + Math.round(p.b.alt) + '° up in the ' + compass(p.b.az) + ' · in ' + esc(p.con) + '</div></div>');
-      rows.push([p.name, clock(p.b.t), Math.round(p.b.alt) + '°', compass(p.b.az), p.con, p.mag.toFixed(1), clockS(p.b.first) + '–' + clockS(p.b.last)]);
+      rows.push([p.name, clock(p.b.t), { h: cbar(Math.round(p.b.alt) + '°', p.b.alt / 90, 'var(--tb-sun)') }, compass(p.b.az), p.con, p.mag.toFixed(1), clockS(p.b.first) + '–' + clockS(p.b.last)]);
     });
     PLANETS.slice(0, 5).forEach(function (p) { if (!planets.some(function (q) { return q.name === p[0]; })) rows.push([p[0], '—', '—', '—', constOf(A.Body[p[0]], now), '', 'too close to the Sun or below the horizon']); });
     if (!planets.length) cards.push('<div class="dh-pcard"><div class="dh-pt">Planets</div><div class="dh-pv">None well placed</div><div class="dh-ps">No bright planet climbs above 8° while it is dark tonight.</div></div>');
     el.innerHTML = '<div class="dh-pgrid">' + cards.join('') + '</div>';
     tb.innerHTML = '<p class="section-note">Dark sky (Sun 6° or more below the horizon): ' + winTxt + (cloud != null ? '; forecast cloud ' + Math.round(cloud) + '%' : '') + '.</p>' +
-      '<table class="dh-gtbl"><thead><tr><th>Object</th><th>Best time</th><th>Height</th><th>Direction</th><th>Constellation</th><th>Magnitude</th><th>Above 8° after dark</th></tr></thead><tbody>' +
-      rows.map(function (r) { return '<tr>' + r.map(function (c) { return '<td>' + esc(c) + '</td>'; }).join('') + '</tr>'; }).join('') + '</tbody></table>';
+      '<table class="dh-gtbl tb-rich"><thead><tr><th>Object</th><th>Best time</th><th>Height</th><th>Direction</th><th>Constellation</th><th>Magnitude</th><th>Above 8° after dark</th></tr></thead><tbody>' +
+      rows.map(function (r) { return '<tr>' + r.map(function (c) { return '<td>' + (c && c.h != null ? c.h : esc(c)) + '</td>'; }).join('') + '</tr>'; }).join('') + '</tbody></table>';
   }
 
   // ---------- air quality ----------
@@ -442,8 +540,8 @@
   // ---------- tables for the chart sections ----------
   function tbl(el, head, rows, note) {
     if (!el) return;
-    el.innerHTML = (note ? '<p class="section-note">' + note + '</p>' : '') + '<table class="dh-gtbl"><thead><tr>' + head.map(function (x) { return '<th>' + x + '</th>'; }).join('') +
-      '</tr></thead><tbody>' + rows.map(function (r) { return '<tr>' + r.map(function (c) { return '<td>' + esc(c) + '</td>'; }).join('') + '</tr>'; }).join('') + '</tbody></table>';
+    el.innerHTML = (note ? '<p class="section-note">' + note + '</p>' : '') + '<table class="dh-gtbl tb-rich"><thead><tr>' + head.map(function (x) { return '<th>' + x + '</th>'; }).join('') +
+      '</tr></thead><tbody>' + rows.map(function (r) { return '<tr>' + r.map(function (c) { return '<td>' + (c && c.h != null ? c.h : esc(c)) + '</td>'; }).join('') + '</tr>'; }).join('') + '</tbody></table>';
   }
   function deg(a) { return (a < 0 ? '−' : '') + Math.abs(a).toFixed(1) + '°'; }
   function raS(h) { var m = Math.round(h * 60) % 1440; return Math.floor(m / 60) + 'h ' + ('0' + (m % 60)).slice(-2) + 'm'; }
@@ -451,7 +549,8 @@
     var ds = dayStart(new Date()), rows = [];
     for (var hh = 0; hh < 24; hh++) {
       var t = new Date(+ds + hh * HR), s = altAz(A.Body.Sun, t), m = altAz(A.Body.Moon, t);
-      rows.push([h12(hh), deg(s.altitude), compass(s.azimuth), deg(m.altitude), compass(m.azimuth)]);
+      rows.push([h12(hh), { h: cdiv((s.altitude > 0 ? '☀️ ' : '') + deg(s.altitude), s.altitude, 90, 'var(--tb-sun)', 'var(--tb-below)') }, compass(s.azimuth),
+        { h: cdiv((m.altitude > 0 ? '🌙 ' : '') + deg(m.altitude), m.altitude, 90, 'var(--tb-moon)', 'var(--tb-below)') }, compass(m.azimuth)]);
     }
     tbl($('daySkyTbl'), ['Hour', 'Sun height', 'Sun direction', 'Moon height', 'Moon direction'], rows, 'Height above the horizon (negative = below it) at the start of each hour, local time.');
   }
@@ -459,27 +558,32 @@
     var y = +parts(new Date()).year, rows = [];
     for (var m = 0; m < 12; m++) {
       var d = new Date(Date.UTC(y, m, 1, 12)), e = A.Equator(A.Body.Sun, d, ob, true, true);
-      rows.push([d.toLocaleDateString('en-US', { timeZone: 'UTC', month: 'short', day: 'numeric' }), deg(e.dec), raS(e.ra), constOf(A.Body.Sun, d)]);
+      rows.push([d.toLocaleDateString('en-US', { timeZone: 'UTC', month: 'short', day: 'numeric' }), { h: cdiv(deg(e.dec), e.dec, 23.44, 'var(--tb-sun)', 'var(--tb-wind)') }, { h: cbar(raS(e.ra), e.ra / 24, 'var(--tb-moon)') }, constOf(A.Body.Sun, d)]);
     }
     try {
       var se = A.Seasons(y);
       [['mar_equinox', 'March equinox'], ['jun_solstice', 'June solstice'], ['sep_equinox', 'September equinox'], ['dec_solstice', 'December solstice']].forEach(function (s) {
         var d = se[s[0]].date, e = A.Equator(A.Body.Sun, d, ob, true, true);
-        rows.push([s[1] + ', ' + d.toLocaleDateString('en-US', { timeZone: tz, month: 'short', day: 'numeric' }) + ' ' + clockS(d), deg(e.dec), raS(e.ra), constOf(A.Body.Sun, d)]);
+        rows.push([s[1] + ', ' + d.toLocaleDateString('en-US', { timeZone: tz, month: 'short', day: 'numeric' }) + ' ' + clockS(d), { h: cdiv(deg(e.dec), e.dec, 23.44, 'var(--tb-sun)', 'var(--tb-wind)') }, { h: cbar(raS(e.ra), e.ra / 24, 'var(--tb-moon)') }, constOf(A.Body.Sun, d)]);
       });
     } catch (e) {}
     tbl($('sunYearTbl'), ['Date', 'Declination', 'Right ascension', 'Constellation'], rows, 'The Sun on the 1st of each month of ' + y + ' (noon UTC), then this year\'s equinoxes and solstices.');
+  }
+  // brighter = longer bar (magnitude scale runs backwards: -13 full Moon ... +8 Neptune)
+  function magCell(m) { return { h: cbar(m.toFixed(1), (8 - m) / 21, 'var(--tb-sun)') }; }
+  function upCell(a) {
+    return { h: a.altitude > 0 ? '<span class="tb-pill tb-up">⬆ ' + Math.round(a.altitude) + '° up</span> <span class="tb-mut">' + compass(a.azimuth) + '</span>'
+      : '<span class="tb-pill tb-down">below</span>' };
   }
   function renderSolarTable() {
     var now = new Date(), rows = [];
     PLANETS.forEach(function (p) {
       var b = A.Body[p[0]], e = A.Equator(b, now, ob, true, true), a = A.Horizon(now, ob, e.ra, e.dec, 'normal');
       rows.push([p[0], A.HelioDistance(b, now).toFixed(3) + ' AU', e.dist.toFixed(3) + ' AU (' + Math.round(e.dist * 149.5978707).toLocaleString('en-US') + ' million km)',
-        constOf(b, now), A.Illumination(b, now).mag.toFixed(1), a.altitude > 0 ? Math.round(a.altitude) + '° up, ' + compass(a.azimuth) : 'below']);
+        constOf(b, now), magCell(A.Illumination(b, now).mag), upCell(a)]);
     });
     var md = A.Equator(A.Body.Moon, now, ob, true, true).dist;
-    rows.unshift(['Moon', '—', Math.round(md * 149597870.7).toLocaleString('en-US') + ' km', constOf(A.Body.Moon, now), A.Illumination(A.Body.Moon, now).mag.toFixed(1),
-      (function () { var a = altAz(A.Body.Moon, now); return a.altitude > 0 ? Math.round(a.altitude) + '° up, ' + compass(a.azimuth) : 'below'; })()]);
+    rows.unshift(['Moon', '—', Math.round(md * 149597870.7).toLocaleString('en-US') + ' km', constOf(A.Body.Moon, now), magCell(A.Illumination(A.Body.Moon, now).mag), upCell(altAz(A.Body.Moon, now))]);
     tbl($('solarTbl'), ['Body', 'From the Sun', 'From Earth', 'Constellation', 'Magnitude', 'In your sky now'], rows, 'Right now, for ' + esc((ctx && ctx.loc && ctx.loc.label) || 'this place') + '.');
   }
 
@@ -506,6 +610,7 @@
     try { renderAir(); } catch (e) { console.error(e); }
     try { renderDayTable(); renderYearTable(); renderSolarTable(); } catch (e) { console.error(e); }
     tileBlocks.forEach(tilesFromTable);
+    try { decorateKv(); } catch (e) {}
   }
   document.querySelectorAll('.vt-block[data-vt]').forEach(function (b) {
     vtInit(b);
@@ -528,5 +633,5 @@
     clearTimeout(rzT);
     rzT = setTimeout(function () { var e = $('dhTimes'); if (e && ob && Math.abs(e.clientWidth - lastW) > 30) { lastW = e.clientWidth; try { renderTimes(); } catch (x) {} } }, 150);
   });
-  setInterval(function () { if (!document.hidden && ob) { try { renderTimes(); } catch (e) {} tileBlocks.forEach(tilesFromTable); } }, 60000);
+  setInterval(function () { if (!document.hidden && ob) { try { renderTimes(); } catch (e) {} tileBlocks.forEach(tilesFromTable); try { decorateKv(); } catch (e) {} } }, 60000);
 })();
