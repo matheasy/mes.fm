@@ -45,6 +45,7 @@ export const SECTIONS = [
     id: "conspiracy-videos",
     title: "Videos",
     items: [
+  { href: "https://mes.fm/space-shuttle-columbia-disaster-shook-house", title: "Space Shuttle Columbia Disaster Shook a House on Earth 🌪️🏠🚀", image: "https://mes.fm/space-shuttle-columbia-disaster-shook-house/img/thumb.jpg" },
   { href: "https://mes.fm/energy-vampire", title: "Disinfo Agents Literally Are Energy Vampires 😂😅😳" },
   { href: "https://mes.fm/president-stephen-a-smith", title: "Stephen A. Smith Possibly Alluding to His Presidential Bid" },
   { href: "https://mes.fm/ashton-forbes-letter", title: "Highlights from the Letter that Ashton Forbes Totally Didn't Write to Himself" },

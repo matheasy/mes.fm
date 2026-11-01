@@ -97,7 +97,7 @@ const PAGES = [
     slug: "conspiracy-videos",
     sectionId: "conspiracy-videos",
     tileLabel: "Videos",
-    iconVersion: 1, // icon = crop of the newest video's thumbnail; bump when you refresh img/conspiracy-videos-icon.jpg
+    iconVersion: 2, // icon = crop of the newest video's thumbnail; bump when you refresh img/conspiracy-videos-icon.jpg
     title: "MES Conspiracy Videos",
     description:
       "MES conspiracy videos: disinfo agents as energy vampires, Stephen A. Smith's presidential bid, the one-armed twin in Star Wars, 9/11 and The Matrix, and Ashton Forbes' letter.",
