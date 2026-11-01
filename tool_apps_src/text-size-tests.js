@@ -41,4 +41,6 @@ eq([T.tabFinal(150, undefined, true), T.tabFinal(150, 150, true), T.tabFinal(150
 const tabs = {}; T.bgSet(tabs, '7', 'a.com', 150); eq(tabs, { 7: { h: 'a.com', l: 150 } }, 'bgSet'); eq(T.bgHello(tabs, '7', 'a.com', false), 150, 'bgHello same site');
 eq(T.bgHello(tabs, '7', 'b.com', true), null, 'frame of another host only reads'); eq(tabs['7'] != null, true, 'passive keeps the record');
 eq(T.bgHello(tabs, '7', 'b.com', false), null, 'tab left the site'); eq(tabs['7'], undefined, '... and the record is gone'); T.bgSet(tabs, '8', 'a.com', 150); T.bgSet(tabs, '8', 'a.com', null); eq(tabs['8'], undefined, 'bgSet null clears');
+eq([T.pageScaleOn(null), T.pageScaleOn(''), T.pageScaleOn('100'), T.pageScaleOn('off'), T.pageScaleOn('125'), T.pageScaleOn('87.5')], [false, false, false, false, true, true], 'pageScaleOn');
+eq([T.applied(E, 'a.com', 175, null), T.applied(E, 'a.com', 175, '125'), T.applied(E, 'x.org', null, '100'), T.applied(E, 'x.org', null, '150')], [175, 100, 120, 100], 'applied: page\'s own size wins');
 console.log(bad ? bad + ' FAILED of ' + n : 'all ' + n + ' checks passed'); process.exit(bad ? 1 : 0);

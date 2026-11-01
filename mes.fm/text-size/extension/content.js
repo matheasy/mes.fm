@@ -55,9 +55,16 @@
   hello();
   if (top) window.addEventListener('pagehide', function () { if (tabLevel != null) writeRec(); });   // refresh the record's time as the page goes
 
+  // ---- the page's own text size (mes.fm's header A- / A+): while it is on, stand down here ----------------------------------------------
+  function pageVal() { return document.documentElement ? document.documentElement.getAttribute('data-mes-text-scale') : null; }
+  if (window.MutationObserver && document.documentElement) {
+    new MutationObserver(function () { sync(); }).observe(document.documentElement, { attributes: true, attributeFilter: ['data-mes-text-scale'] });
+  }
+  document.addEventListener('mes-text-scale', function () { sync(); });
+
   function sync() {
     if (!ready) return;
-    var l = T.effective(S, host, tabLevel);
+    var l = T.applied(S, host, tabLevel, pageVal());
     if (l === level && (active || l === 100)) return;
     level = l;
     if (level === 100) restoreAll(); else { start(); relevel(); }
@@ -170,11 +177,11 @@
         tabLevel = typeof m.l === 'number' && isFinite(m.l) ? T.clampLevel(m.l, S.min, S.max) : null;
         if (top) { writeRec(); tellBg(tabLevel); }
         sync();
-        if (top) send({ level: level, src: T.sourceOf(S, host, tabLevel) });
+        if (top) send({ level: level, src: T.sourceOf(S, host, tabLevel), page: T.pageScaleOn(pageVal()) ? pageVal() : null });
         return;
       }
       if (!top) return;
-      if (m.mests === 'get') send({ level: level, host: host, tab: tabLevel, src: T.sourceOf(S, host, tabLevel), tracked: live.size });
+      if (m.mests === 'get') send({ level: level, host: host, tab: tabLevel, src: T.sourceOf(S, host, tabLevel), tracked: live.size, page: T.pageScaleOn(pageVal()) ? pageVal() : null });
     });
   } catch (e) { /* ignore */ }
 

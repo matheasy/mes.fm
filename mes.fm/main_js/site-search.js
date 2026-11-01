@@ -260,6 +260,23 @@
     }
     if (document.readyState === "loading") document.addEventListener("DOMContentLoaded", favMenu); else favMenu();
 
+    /* Page text size marker for the MES Text Size browser extension: on a page that has its own header A- / A+ (ids textSizeDown / textSizeUp,
+       textSizeDownBtn / textSizeUpBtn), <html data-mes-text-scale="125"> is set while the page's own size ("articleFontScale") is not 100, and a
+       "mes-text-scale" event fires on document whenever it changes. The extension (1.2.0+) stands down on that page while the attribute is there,
+       so the two never multiply each other (the extension used to undo / override the page's own A- / A+). Removed again at 100. */
+    function textScaleMark() {
+        var root = document.documentElement;
+        if (!document.querySelector('[id^="textSize"]')) { if (root.hasAttribute("data-mes-text-scale")) { root.removeAttribute("data-mes-text-scale"); fire(null); } return; }
+        var v = null; try { v = parseFloat(localStorage.getItem("articleFontScale")); } catch (e) { /* ignore */ }
+        var on = isFinite(v) && v > 0 && v !== 100, cur = root.getAttribute("data-mes-text-scale");
+        if (on && cur !== String(v)) { root.setAttribute("data-mes-text-scale", String(v)); fire(v); }
+        else if (!on && cur != null) { root.removeAttribute("data-mes-text-scale"); fire(null); }
+        function fire(x) { try { document.dispatchEvent(new CustomEvent("mes-text-scale", { detail: { scale: x || 100 } })); } catch (e) { /* ignore */ } }
+    }
+    document.addEventListener("click", function (e) { if (e.target.closest && e.target.closest('[id^="textSize"]')) setTimeout(textScaleMark, 0); }, true);
+    window.addEventListener("storage", function (e) { if (e.key === "articleFontScale") setTimeout(textScaleMark, 0); });
+    if (document.readyState === "loading") document.addEventListener("DOMContentLoaded", textScaleMark); else textScaleMark();
+
     /* burger / side menu: the wide "MES.fm ✓" wordmark under the Hive / Telegram icons (main_img/mes-logo-small.png, 126x29, which wrapped onto its
        own row and sat off-centre) becomes the small square MES mark + "MES.fm", on the same row as the icons and the same 2em height. One place for
        the ~1,000 classic pages that carry it (the markup stays as it is; the menu is closed while this runs, so nothing jumps). */

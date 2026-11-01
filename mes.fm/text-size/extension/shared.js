@@ -59,6 +59,10 @@
   // the size in force in a tab: the tab's own size (a number, set with "this tab only"), else the site's, else the all-sites size
   function effective(S, host, tabLevel) { return typeof tabLevel === 'number' && isFinite(tabLevel) ? clampLevel(tabLevel, S.min, S.max) : levelFor(S, host); }
   // where the size in force comes from: 'tab' | 'site' | 'all'
+  /* a page that scales its own text (mes.fm sets <html data-mes-text-scale="125"> while its header A- / A+ is not at 100%) wins: the extension stands
+     down there, so the two sizes never multiply. pageScaleOn(attribute value) -> true when that marker is set; applied() = the level to use. */
+  function pageScaleOn(v) { return v != null && String(v).trim() !== '' && String(v).trim() !== '100' && String(v).trim() !== 'off'; }
+  function applied(S, host, tabLevel, pageVal) { return pageScaleOn(pageVal) ? 100 : effective(S, host, tabLevel); }
   function sourceOf(S, host, tabLevel) { return typeof tabLevel === 'number' && isFinite(tabLevel) ? 'tab' : siteKey(S, host) !== null ? 'site' : 'all'; }
 
   /* ---- this tab's own size (same rules as MES Dark Mode 1.5.0) ----
@@ -104,7 +108,7 @@
   function scaled(px, level) { return px == null || px < 1 ? null : Math.round(px * level) / 100; }
 
   var api = { DEFAULTS: DEFAULTS, merge: merge, clampLevel: clampLevel, siteKey: siteKey, levelFor: levelFor, stepLevel: stepLevel, withLevel: withLevel, parsePx: parsePx, scaled: scaled,
-    effective: effective, sourceOf: sourceOf, TAB_AWAY: TAB_AWAY, tabRec: tabRec, parseTabRec: parseTabRec, tabKeep: tabKeep, tabFinal: tabFinal, bgHello: bgHello, bgSet: bgSet };
+    effective: effective, pageScaleOn: pageScaleOn, applied: applied, sourceOf: sourceOf, TAB_AWAY: TAB_AWAY, tabRec: tabRec, parseTabRec: parseTabRec, tabKeep: tabKeep, tabFinal: tabFinal, bgHello: bgHello, bgSet: bgSet };
   root.MESTS = api;
   if (typeof module !== 'undefined' && module.exports) module.exports = api;
 })(typeof self !== 'undefined' ? self : this);

@@ -2,7 +2,7 @@
 (function () {
   'use strict';
   var T = MESTS, $ = function (id) { return document.getElementById(id); };
-  var S = T.merge(null), host = '', tabId = null, tabLevel = null, reachable = false, timer = 0;
+  var S = T.merge(null), host = '', tabId = null, tabLevel = null, reachable = false, timer = 0, pageScale = null;
   var PRESETS = [80, 100, 125, 150, 200, 250];
 
   function level() { return T.effective(S, host, tabLevel); }
@@ -11,6 +11,8 @@
     $('level').textContent = l + '%'; $('slider').min = S.min; $('slider').max = S.max; $('slider').value = l; $('applyto').value = S.applyTo;
     $('presets').innerHTML = PRESETS.map(function (p) { return '<button data-l="' + p + '"' + (p === l ? ' class="on"' : '') + '>' + p + '%</button>'; }).join('');
     var site = T.levelFor(S, host);
+    $('paused').hidden = !pageScale;
+    if (pageScale) $('paused').textContent = 'This page\'s own A- / A+ is on (' + pageScale + '%), so Text Size is paused here. Set the page\'s A- / A+ back to 100% to use Text Size on it.';
     $('msg').textContent = !reachable ? 'Reload this page to use MES Text Size on it (pages open before the extension was installed or updated need a reload).'
       : src === 'tab' ? 'This tab has its own size' + (site !== l ? ' (the site\'s is ' + site + '%).' : '.')
       : src === 'site' ? 'This site has its own size, in every tab.'
@@ -48,7 +50,7 @@
       if (tabId == null) { draw(); return; }
       chrome.tabs.sendMessage(tabId, { mests: 'get' }, { frameId: 0 }, function (r) {
         void chrome.runtime.lastError;
-        if (r) { reachable = true; tabLevel = typeof r.tab === 'number' ? r.tab : null; if (r.host) host = r.host; }
+        if (r) { reachable = true; tabLevel = typeof r.tab === 'number' ? r.tab : null; if (r.host) host = r.host; pageScale = r.page || null; }
         draw();
       });
     });
