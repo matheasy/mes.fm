@@ -431,6 +431,35 @@ body.dark-mode .tu .rw-head {color:#a0a8b3;border-bottom-color:#555;} body.dark-
 	.pl-mbtns {grid-column:2;grid-row:1 / span 2;display:flex;flex-wrap:wrap;gap:0.35em;justify-content:flex-end;}
 	.pl-mbtns .tu-btn {font-size:0.88em;padding:0.35em 0.75em;}
 	.pl-gone .pl-mq {color:var(--pl-muted);text-decoration:line-through;}
+	/* Hive polls */
+	.pl-where {margin-top:0;}
+	.pl-wherenote {margin:0.45em 0 0;}
+	.pl-hive {margin-top:1.2em;padding:1em;border:2px solid #e3b2b2;border-radius:0.7em;background:#fff6f6;}
+	.pl-hwarn {margin:0 0 0.8em;line-height:1.5;}
+	.pl-hwho {display:flex;flex-wrap:wrap;align-items:center;gap:0.45em;margin:0.2em 0 0.6em;}
+	.pl-hav {border-radius:50%;vertical-align:middle;}
+	.pl .pl-hlo {font-size:0.85em;padding:0.25em 0.7em;}
+	.pl-hrow {margin:0.2em 0 0.3em;flex-wrap:wrap;}
+	.pl-hrow .tu-input {flex:1 1 12em;}
+	.pl-hnote {margin:0.2em 0 0.8em;}
+	#pl-hextra {margin-top:0.9em;}
+	#pl-hextra .pl-hlogin {padding:0.7em 0.9em;border:1px solid var(--pl-line);border-radius:0.6em;background:var(--pl-soft);margin-bottom:0.6em;}
+	#pl-hextra .pl-hlogin .tu-note {margin-bottom:0;}
+	.pl-hsrc {margin:0.4em 0;}
+	.pl-hlinks {display:flex;flex-wrap:wrap;gap:0.4em;margin:0.5em 0;}
+	.pl-hlinks .tu-btn {font-size:0.88em;padding:0.35em 0.8em;}
+	#pl a.pl-chip, #pl .pl-hlinks a {text-decoration:none;}
+	.pl-chip--hive {background:#fde8e8;border-color:#e3a3a3;color:#9b1c1c;font-weight:700;}
+	.pl-voters summary {cursor:pointer;font-weight:600;color:var(--pl-acc);}
+	.pl-vlist {list-style:none;margin:0.5em 0 0;padding:0;max-height:22em;overflow:auto;border:1px solid var(--pl-line);border-radius:0.5em;}
+	.pl-vlist li {display:grid;grid-template-columns:minmax(7em,auto) minmax(0,1fr) auto;gap:0.2em 0.8em;padding:0.45em 0.7em;border-bottom:1px solid var(--pl-line);align-items:baseline;}
+	.pl-vlist li:last-child {border-bottom:0;}
+	.pl-vname {font-weight:600;overflow-wrap:anywhere;}
+	.pl-vch {overflow-wrap:anywhere;}
+	.pl-vsrc {font-size:0.8em;color:var(--pl-muted);white-space:nowrap;}
+	.pl-vsrc--justsent {color:#8a5a00;font-weight:700;}
+	.pl-vskip {opacity:0.75;}
+	@media (max-width: 560px) { .pl-vlist li {grid-template-columns:minmax(0,1fr) auto;} .pl-vlist .pl-vch {grid-column:1 / -1;grid-row:2;} }
 	/* fill window / full screen */
 	#pl-view.mes-pfill {font-size:1.25em;}
 	#pl-view.mes-pfill .pl-q {font-size:2.1em;}
@@ -438,7 +467,7 @@ body.dark-mode .tu .rw-head {color:#a0a8b3;border-bottom-color:#555;} body.dark-
 	#pl-view.mes-pfill .pl-res {grid-template-columns:minmax(0,1fr) min(32vh, 18em);}
 	#pl-view.mes-pfill .pl-donut {max-width:none;}
 	#pl-view.mes-pfill .pl-track {height:1.4em;}
-	#pl-view.mes-pfill .pl-actions, #pl-view.mes-pfill .pl-vnote, #pl-view.mes-pfill #pl-vnote {display:none;}
+	#pl-view.mes-pfill .pl-actions, #pl-view.mes-pfill #pl-vnote, #pl-view.mes-pfill .pl-hlinks, #pl-view.mes-pfill .pl-hlogin {display:none;}
 	@media (max-width: 860px) {
 		.pl-make-wrap {grid-template-columns:minmax(0,1fr);}
 		.pl-prev-card {position:static;}
@@ -475,6 +504,9 @@ body.dark-mode .tu .rw-head {color:#a0a8b3;border-bottom-color:#555;} body.dark-
 	body.dark-mode #pl .pl-s7{stroke:#6aa312}body.dark-mode #pl .pl-b7{background:#6aa312}
 	body.dark-mode #pl .pl-s8{stroke:#c43fd0}body.dark-mode #pl .pl-b8{background:#c43fd0}
 	body.dark-mode #pl .pl-s9{stroke:#64748b}body.dark-mode #pl .pl-b9{background:#64748b}
+	body.dark-mode #pl .pl-hive {background:#2a1a1c;border-color:#7a3f45;}
+	body.dark-mode #pl .pl-chip--hive {background:#3a1f22;border-color:#7a3f45;color:#ffc2c2;}
+	body.dark-mode #pl .pl-vsrc--justsent {color:#f2c46b;}
 	body.dark-mode #pl-view.mes-pfill {background:#1a1a1a !important;}
 
 
@@ -515,6 +547,48 @@ body.dark-mode .tu .rw-head {color:#a0a8b3;border-bottom-color:#555;} body.dark-
 		.footer__item--extra-padding { padding-left: 0; }
 		.footer__text--extra-info { float: none; display: block; margin-top: 0.5em; }
 	}
+/* Floating compact header bar: once the full header + nav scroll out of
+   view, a slim fixed bar (small logo, title, as many nav links as fit)
+   slides in, and the hamburger is pinned into its right end. Toggled by
+   the compact-nav script below. Ported from mes.fm/math's version (see
+   its build.mjs) -- display-controls.js pins the A-/A+/moon buttons into its right end.
+
+   Hidden by default via the inline style="display:none" on the element
+   itself (not just this stylesheet's "display: none" below) -- some
+   browser extensions strip or neutralize cosmetic-looking CSS for
+   elements named "sticky-*"/"*-bar" (a common ad/cookie-bar filter
+   pattern), which left an earlier version's raw unstyled markup visible
+   above the real header on mes.fm/math. The inline attribute is a
+   fallback the JS clears itself, independent of this stylesheet
+   surviving intact. */
+#compact-nav {
+  position: fixed; top: 0; left: 0; right: 0; height: 52px; z-index: 15;
+  display: none; align-items: center; gap: 12px;
+  padding: 0 80px 0 12px; box-sizing: border-box;
+  background: #ffffff; border-bottom: 3px solid #3b5bdb;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.18);
+  transform: translateY(-110%); transition: transform 0.2s ease;
+}
+#compact-nav.is-visible { display: flex; }
+body.is-stuck #compact-nav { transform: none; }
+#compact-nav .compact-nav-logo { display: block; width: 32px; height: 32px; border-radius: 6px; flex: 0 0 auto; }
+#compact-nav .compact-nav-title {
+  flex: 0 1 auto; min-width: 0; font-weight: 700; font-size: 1.05em; color: #1a1a1a;
+  text-decoration: none; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+}
+#compact-nav .compact-nav-links { display: flex; flex: 1 1 0; min-width: 0; overflow: hidden; margin: 0 0 0 8px; padding: 0; list-style: none; }
+#compact-nav .compact-nav-links li { flex: 0 0 auto; }
+#compact-nav .compact-nav-links a { display: block; padding: 0 10px; line-height: 52px; font-size: 0.9em; color: #3b5bdb; text-decoration: none; white-space: nowrap; }
+#compact-nav .compact-nav-links a:hover { background: rgba(59,91,219,0.12); }
+body.is-stuck #navbar-button { position: fixed !important; top: 4px !important; right: 8px !important; display: flex; align-items: center; }
+body.is-stuck #navbar.hide { position: fixed; top: 56px; right: 8px; }
+@media (max-width: 700px) {
+  #compact-nav .compact-nav-title { display: none; }
+  #compact-nav .compact-nav-logo { width: 36px; height: 36px; }
+}
+@media (max-width: 480px) {
+  #compact-nav { padding-right: 70px; gap: 8px; }
+}
 
 	/* TOOL-DARK:START -- generated by add_tool_page_controls.py, do not edit */
 	body.dark-mode .page-content :where(div,span,p,li,ul,ol,h1,h2,h3,h4,h5,h6,td,th,label,summary,small,strong,b,em,i,code,pre,legend,figcaption,dl,dt,dd,blockquote,caption,cite,button,input,select,textarea){color:#d8d8d8}
@@ -574,49 +648,10 @@ body.dark-mode .tu .rw-head {color:#a0a8b3;border-bottom-color:#555;} body.dark-
 	body.dark-mode .pl .pl-danger{border-color:#7a2d22}
 	body.dark-mode .pl-qrimg{background:#1a1a1a}
 	body.dark-mode .pl-done{border:2px solid #388455;background:#141f18}
+	body.dark-mode .pl-hive{border:2px solid #722a2a;background:#250e0e}
+	body.dark-mode .pl-chip--hive{background:#261111;border-color:#832828;color:#e67575}
+	body.dark-mode .pl-vsrc--justsent{color:#ffc65c}
 	/* TOOL-DARK:END */
-/* Floating compact header bar: once the full header + nav scroll out of
-   view, a slim fixed bar (small logo, title, as many nav links as fit)
-   slides in, and the hamburger is pinned into its right end. Toggled by
-   the compact-nav script below. Ported from mes.fm/math's version (see
-   its build.mjs) -- display-controls.js pins the A-/A+/moon buttons into its right end.
-
-   Hidden by default via the inline style="display:none" on the element
-   itself (not just this stylesheet's "display: none" below) -- some
-   browser extensions strip or neutralize cosmetic-looking CSS for
-   elements named "sticky-*"/"*-bar" (a common ad/cookie-bar filter
-   pattern), which left an earlier version's raw unstyled markup visible
-   above the real header on mes.fm/math. The inline attribute is a
-   fallback the JS clears itself, independent of this stylesheet
-   surviving intact. */
-#compact-nav {
-  position: fixed; top: 0; left: 0; right: 0; height: 52px; z-index: 15;
-  display: none; align-items: center; gap: 12px;
-  padding: 0 80px 0 12px; box-sizing: border-box;
-  background: #ffffff; border-bottom: 3px solid #3b5bdb;
-  box-shadow: 0 2px 8px rgba(0,0,0,0.18);
-  transform: translateY(-110%); transition: transform 0.2s ease;
-}
-#compact-nav.is-visible { display: flex; }
-body.is-stuck #compact-nav { transform: none; }
-#compact-nav .compact-nav-logo { display: block; width: 32px; height: 32px; border-radius: 6px; flex: 0 0 auto; }
-#compact-nav .compact-nav-title {
-  flex: 0 1 auto; min-width: 0; font-weight: 700; font-size: 1.05em; color: #1a1a1a;
-  text-decoration: none; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
-}
-#compact-nav .compact-nav-links { display: flex; flex: 1 1 0; min-width: 0; overflow: hidden; margin: 0 0 0 8px; padding: 0; list-style: none; }
-#compact-nav .compact-nav-links li { flex: 0 0 auto; }
-#compact-nav .compact-nav-links a { display: block; padding: 0 10px; line-height: 52px; font-size: 0.9em; color: #3b5bdb; text-decoration: none; white-space: nowrap; }
-#compact-nav .compact-nav-links a:hover { background: rgba(59,91,219,0.12); }
-body.is-stuck #navbar-button { position: fixed !important; top: 4px !important; right: 8px !important; display: flex; align-items: center; }
-body.is-stuck #navbar.hide { position: fixed; top: 56px; right: 8px; }
-@media (max-width: 700px) {
-  #compact-nav .compact-nav-title { display: none; }
-  #compact-nav .compact-nav-logo { width: 36px; height: 36px; }
-}
-@media (max-width: 480px) {
-  #compact-nav { padding-right: 70px; gap: 8px; }
-}
 </style>
         <meta property="fb:app_id" content="" />
         <meta name="author" content="Math Easy Solutions Staff">
@@ -834,6 +869,7 @@ body.is-stuck #navbar.hide { position: fixed; top: 56px; right: 8px; }
 		<section class="tu-card pl-card" id="pl-view" hidden aria-labelledby="pl-q">
 			<div class="pl-bar" id="pl-vbar"><span class="pl-chips" id="pl-status"></span></div>
 			<div id="pl-poll"></div>
+			<div id="pl-hextra" hidden></div>
 			<div class="pl-actions" id="pl-vact">
 				<button type="button" class="tu-btn" id="pl-copy">🔗 Copy link</button>
 				<button type="button" class="tu-btn" id="pl-qrbtn">QR code</button>
@@ -854,6 +890,14 @@ body.is-stuck #navbar.hide { position: fixed; top: 56px; right: 8px; }
 		<h2 id="pl-make-h">Make a poll</h2>
 		<div class="pl-make-wrap">
 			<div class="tu-card pl-make" id="pl-make">
+				<fieldset class="pl-fs pl-where">
+					<legend>Where should the poll live?</legend>
+					<div class="pl-seg pl-seg--wrap" role="radiogroup" aria-label="Where the poll lives">
+						<label><input type="radio" name="pl-where" value="mes" checked> On mes.fm (no account needed)</label>
+						<label><input type="radio" name="pl-where" value="hive"> On Hive (Hive accounts vote)</label>
+					</div>
+					<p class="tu-note pl-wherenote" id="pl-wherenote">Anyone with the link can vote, no sign-up.</p>
+				</fieldset>
 				<div class="tu-field"><label for="pl-mq">Question</label><input id="pl-mq" class="tu-input pl-big" type="text" maxlength="200" autocomplete="off" placeholder="e.g. Where should we eat on Friday?"></div>
 				<details class="pl-det" id="pl-mddet"><summary>Add a description (optional)</summary>
 					<div class="tu-field"><label for="pl-md" class="pl-sr">Description</label><textarea id="pl-md" class="tu-input" rows="2" maxlength="600" placeholder="More detail, rules, a date..."></textarea></div>
@@ -882,7 +926,7 @@ body.is-stuck #navbar.hide { position: fixed; top: 56px; right: 8px; }
 				<fieldset class="pl-fs">
 					<legend>When does voting end?</legend>
 					<div class="pl-seg" role="radiogroup" aria-label="When voting ends">
-						<label><input type="radio" name="pl-end" value="manual" checked> When I close it</label>
+						<label id="pl-endmanual"><input type="radio" name="pl-end" value="manual" checked> When I close it</label>
 						<label><input type="radio" name="pl-end" value="after"> After a while</label>
 						<label><input type="radio" name="pl-end" value="at"> At a date and time</label>
 					</div>
@@ -906,17 +950,33 @@ body.is-stuck #navbar.hide { position: fixed; top: 56px; right: 8px; }
 					<div class="pl-seg pl-seg--wrap" role="radiogroup" aria-label="When results are shown">
 						<label><input type="radio" name="pl-sh" value="always" checked> Everyone, any time</label>
 						<label><input type="radio" name="pl-sh" value="voted"> People who have voted</label>
-						<label><input type="radio" name="pl-sh" value="closed"> Everyone, once it closes</label>
+						<label id="pl-shclosed"><input type="radio" name="pl-sh" value="closed"> Everyone, once it closes</label>
 					</div>
 					<label class="pl-check"><input type="checkbox" id="pl-ch"> Let people change their vote</label>
 				</fieldset>
+
+				<div class="pl-hive" id="pl-hive" hidden>
+					<p class="pl-hwarn"><strong>This publishes a real post on the Hive blockchain</strong> from your account, using the open polls format that PeakD, Ecency and HiveHub show as a poll. The question, choices and end time can never be changed afterwards (you can still edit the post text), and posts on Hive cannot be deleted.</p>
+					<div class="pl-hlogin" id="pl-hlogin"></div>
+					<div class="tu-field"><label for="pl-htitle">Post title</label><input id="pl-htitle" class="tu-input" type="text" maxlength="255" autocomplete="off"></div>
+					<div class="tu-row" style="align-items:flex-end;margin-top:0.6em;">
+						<div class="tu-field" style="flex:2 1 14em;"><label for="pl-htags">Tags (the first one is the main tag)</label><input id="pl-htags" class="tu-input" type="text" autocomplete="off" placeholder="polls hive"></div>
+						<div class="tu-field" style="flex:1 1 10em;"><label for="pl-hcomm">Community (optional)</label><input id="pl-hcomm" class="tu-input" type="text" autocomplete="off" placeholder="hive-123456"></div>
+					</div>
+					<div class="tu-row" style="align-items:center;margin-top:0.6em;">
+						<div class="tu-field pl-inline"><label for="pl-hage">Only count accounts at least</label><input id="pl-hage" class="tu-input" type="number" min="0" max="3650" step="1" value="0" inputmode="numeric" style="width:6em;"><span>days old</span></div>
+						<label class="pl-check"><input type="checkbox" id="pl-hdecline"> Decline payout for this post</label>
+					</div>
+					<div class="tu-field" style="margin-top:0.6em;"><label for="pl-hbody">Post text (markdown)</label><textarea id="pl-hbody" class="tu-input" rows="9"></textarea></div>
+					<div class="pl-orow"><button type="button" class="tu-btn tu-btn--ghost" id="pl-hbodyreset">Write the text for me again</button><span class="tu-note" id="pl-hbodynote" style="margin:0;"></span></div>
+				</div>
 
 				<p class="pl-err" id="pl-err" role="alert" hidden></p>
 				<div class="pl-orow pl-create">
 					<button type="button" class="tu-btn tu-btn--primary pl-go" id="pl-go">Create the poll</button>
 					<button type="button" class="tu-btn tu-btn--ghost" id="pl-reset">Start again</button>
 				</div>
-				<p class="tu-note" style="margin-bottom:0;">Anyone with the link can vote. Polls are not listed anywhere and are not shown in search engines.</p>
+				<p class="tu-note" id="pl-gonote" style="margin-bottom:0;">Anyone with the link can vote. Polls are not listed anywhere and are not shown in search engines.</p>
 			</div>
 
 			<div class="tu-card pl-prev-card" id="pl-prev-card">
@@ -928,22 +988,23 @@ body.is-stuck #navbar.hide { position: fixed; top: 56px; right: 8px; }
 		</div>
 
 		<div class="tu-card pl-done" id="pl-done" hidden>
-			<h3>Your poll is ready</h3>
+			<h3 id="pl-dh">Your poll is ready</h3>
 			<div class="pl-link"><input id="pl-dlink" class="tu-input" type="text" readonly aria-label="Link to the poll"><button type="button" class="tu-btn tu-btn--primary" id="pl-dcopy">Copy link</button></div>
 			<div class="pl-actions">
 				<a class="tu-btn" id="pl-dopen">Open the poll</a>
 				<button type="button" class="tu-btn" id="pl-dtext">Copy text for a post</button>
 				<button type="button" class="tu-btn" id="pl-dqr">QR code</button>
 				<button type="button" class="tu-btn" id="pl-dmgr">Copy manager link</button>
+				<a class="tu-btn" id="pl-dpeakd" target="_blank" rel="noopener" hidden>View on PeakD</a>
 				<button type="button" class="tu-btn tu-btn--ghost" id="pl-dnew">Make another poll</button>
 			</div>
 			<div class="pl-qr" id="pl-dqrbox" hidden></div>
-			<p class="tu-note" style="margin-bottom:0;">You can close or delete it from <strong>My polls</strong> on this page. The <strong>manager link</strong> carries your secret key: keep it to yourself, it lets anyone who has it close or delete the poll.</p>
+			<p class="tu-note" id="pl-dnote" style="margin-bottom:0;">You can close or delete it from <strong>My polls</strong> on this page. The <strong>manager link</strong> carries your secret key: keep it to yourself, it lets anyone who has it close or delete the poll.</p>
 		</div>
 
 		<h2>Open a poll</h2>
 		<div class="tu-card">
-			<div class="pl-link"><input id="pl-goid" class="tu-input" type="text" autocomplete="off" placeholder="Paste a poll link, e.g. mes.fm/v/ab3defgh" aria-label="Poll link"><button type="button" class="tu-btn" id="pl-goopen">Open</button></div>
+			<div class="pl-link"><input id="pl-goid" class="tu-input" type="text" autocomplete="off" placeholder="Paste a poll link: mes.fm/v/ab3defgh or a PeakD poll post" aria-label="Poll link"><button type="button" class="tu-btn" id="pl-goopen">Open</button></div>
 		</div>
 
 		<div class="tu-seo">
@@ -958,6 +1019,8 @@ body.is-stuck #navbar.hide { position: fixed; top: 56px; right: 8px; }
 			</dl>
 			<h3>How one vote per person works (and its limits)</h3>
 			<p>There are no accounts, so the page gives each browser a random number and lets it vote once per poll. A few votes are allowed from the same network (a school, an office or a phone network share one internet address), and then that network is full for that poll. This stops casual repeat voting. It cannot stop someone who clears their browser data or uses several devices or networks, so do not use these polls for anything that needs a real election.</p>
+			<h3>Polls on Hive</h3>
+			<p>Choose <strong>On Hive</strong> to publish the poll as a post from your Hive account in the open polls format that PeakD, Ecency and HiveHub use, so it shows up as a poll there too. Hive accounts vote with Hive Keychain (a free "custom_json" operation signed with the posting key, no fee). This page counts the votes itself: it asks PeakD's open polls node who voted, then reads each vote from its block on the Hive blockchain and applies the poll's rules (votes after the end time do not count, an account's latest vote wins unless changes are off, the minimum account age). You can open any Hive poll here by pasting its PeakD link.</p>
 			<h3>Privacy</h3>
 			<p>The poll (question, options, settings) and the vote counts are stored on our server until 60 days after the poll closes, then they are deleted. We keep which browser number picked which option (so it cannot vote twice) but never your name, and your internet address only as a scrambled code used to count votes per network. Your list of polls and the keys to manage them stay in your own browser. See the <a href="/privacy-policy">privacy policy</a>.</p>
 			<h3>Questions</h3>
@@ -969,6 +1032,7 @@ body.is-stuck #navbar.hide { position: fixed; top: 56px; right: 8px; }
 			<p>Counting down to the result? Make a <a href="/reminder">reminder link</a> for the closing time. Picking a winner at random instead? Try the <a href="/random-number-generator">random number generator</a> or the <a href="/dice-roller">dice roller</a>.</p>
 		</div>
 	</div>
+<script src="/main_js/hive.js?v=1" defer></script>
 <script src="/main_js/panel-view.js?v=1" defer></script>
 <script src="/main_js/time-input.js?v=3" defer></script>
 <script src="/main_js/when-parse.js?v=1" defer></script>
@@ -981,7 +1045,7 @@ body.is-stuck #navbar.hide { position: fixed; top: 56px; right: 8px; }
 <!-- /MES-BOTTOM-AD -->
                             </div>
                         <!-- MES-ASIDE -->
-<aside id="mes-aside" class="mes-aside" data-aside-family="tools" aria-label="More from MES Tools"><div class="mes-aside__sticky"><div class="mes-aside__ad" data-ad-slot="8429975111"></div><div class="mes-aside__head"><h2 class="mes-aside__title-h">More like this</h2><button type="button" class="mes-aside__flip" aria-label="Move this sidebar to the other side" title="Move sidebar to the other side">&#8644;</button></div><ul class="mes-aside__list"><li><a class="mes-aside__card" href="/mic-test"><img class="mes-aside__img mes-aside__img--logo" src="/mic-test/img/logo.png" width="56" height="56" loading="lazy" alt=""><span class="mes-aside__text"><span class="mes-aside__name">Mic Test: Check Your Microphone Level in dBFS (OBS, Yeti, Mac)</span><span class="mes-aside__tag">Tool</span></span></a></li><li><a class="mes-aside__card" href="/march-madness"><img class="mes-aside__img mes-aside__img--logo" src="/march-madness/img/logo.png" width="56" height="56" loading="lazy" alt=""><span class="mes-aside__text"><span class="mes-aside__name">March Madness Bracket Maker with Win Probability, Live Scores and a Leaderboard</span><span class="mes-aside__tag">Tool</span></span></a></li><li><a class="mes-aside__card" href="/tools"><img class="mes-aside__img" src="/img/tools-icon.jpg" width="56" height="56" loading="lazy" alt=""><span class="mes-aside__text"><span class="mes-aside__name">All MES Tools</span><span class="mes-aside__tag">Gallery</span></span></a></li><li><a class="mes-aside__card" href="/gpacalculator"><img class="mes-aside__img mes-aside__img--logo" src="/gpacalculator/img/logo.png" width="56" height="56" loading="lazy" alt=""><span class="mes-aside__text"><span class="mes-aside__name">GPA Calculator</span><span class="mes-aside__tag">Calculator</span></span></a></li></ul></div></aside>
+<aside id="mes-aside" class="mes-aside" data-aside-family="tools" aria-label="More from MES Tools"><div class="mes-aside__sticky"><div class="mes-aside__ad" data-ad-slot="8429975111"></div><div class="mes-aside__head"><h2 class="mes-aside__title-h">More like this</h2><button type="button" class="mes-aside__flip" aria-label="Move this sidebar to the other side" title="Move sidebar to the other side">&#8644;</button></div><ul class="mes-aside__list"><li><a class="mes-aside__card" href="/mic-test"><img class="mes-aside__img mes-aside__img--logo" src="/mic-test/img/logo.png" width="56" height="56" loading="lazy" alt=""><span class="mes-aside__text"><span class="mes-aside__name">Mic Test: Check Your Microphone Level in dBFS (OBS, Yeti, Mac)</span><span class="mes-aside__tag">Tool</span></span></a></li><li><a class="mes-aside__card" href="/march-madness"><img class="mes-aside__img mes-aside__img--logo" src="/march-madness/img/logo.png" width="56" height="56" loading="lazy" alt=""><span class="mes-aside__text"><span class="mes-aside__name">March Madness Bracket Maker with Win Probability, Live Scores and a Leaderboard</span><span class="mes-aside__tag">Tool</span></span></a></li><li><a class="mes-aside__card" href="/tools"><img class="mes-aside__img" src="/img/tools-icon.jpg" width="56" height="56" loading="lazy" alt=""><span class="mes-aside__text"><span class="mes-aside__name">All MES Tools</span><span class="mes-aside__tag">Gallery</span></span></a></li><li><a class="mes-aside__card" href="/bmicalculator"><img class="mes-aside__img mes-aside__img--logo" src="/bmicalculator/img/logo.png" width="56" height="56" loading="lazy" alt=""><span class="mes-aside__text"><span class="mes-aside__name">BMI Calculator</span><span class="mes-aside__tag">Calculator</span></span></a></li></ul></div></aside>
 <!-- /MES-ASIDE -->
 </div>
 
@@ -1031,7 +1095,7 @@ body.is-stuck #navbar.hide { position: fixed; top: 56px; right: 8px; }
             hide_search:false,
             current_tab:0
         }        </script><!-- FASTCOMMENTS-LAZY: widget init moved to main_js/main.js -- it pulls embed.min.js only when #fastcomments-widget nears the viewport or on the first Comments-toggle click, so it no longer blocks first render -->                <script src="https://mes.fm/main_js/lazysizes.min.js?v=1.0.3" async></script>
-	<script src="/polls/js/polls.js?v=1" defer></script>
+	<script src="/polls/js/polls.js?v=2" defer></script>
             <script src="https://mes.fm/main_js/main.js?v=1.0.5"></script>    <!-- PAGEVIEW-TRACKING-INSERTED --><script src="https://mes.fm/main_js/track.js" defer></script><script>document.getElementById('copyright-year').textContent = new Date().getFullYear();</script><script src="/main_js/info-bar-fit.js" defer></script><script>
   // Floating compact header bar (see #compact-nav CSS): appears once the
   // header + nav bar have scrolled off the top; nav links that don't fit

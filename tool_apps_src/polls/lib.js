@@ -161,7 +161,7 @@
 		o.choices.forEach(function (c, i) { lines.push((i + 1) + ". " + c); });
 		lines.push("");
 		if (o.endMs) lines.push("Voting ends " + new Date(o.endMs).toUTCString().replace(/:\d\d GMT$/, " UTC") + ".", "");
-		if (o.link) lines.push("Vote here on PeakD, or on mes.fm (with Hive Keychain): " + o.link);
+		if (o.link) lines.push("Vote on PeakD or Ecency, or on mes.fm with Hive Keychain: " + o.link);
 		return lines.join("\n").trim();
 	};
 	/** what is wrong with a Hive poll draft (empty = fine) */

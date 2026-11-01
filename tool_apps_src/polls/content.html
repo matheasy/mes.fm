@@ -4,6 +4,7 @@
 		<section class="tu-card pl-card" id="pl-view" hidden aria-labelledby="pl-q">
 			<div class="pl-bar" id="pl-vbar"><span class="pl-chips" id="pl-status"></span></div>
 			<div id="pl-poll"></div>
+			<div id="pl-hextra" hidden></div>
 			<div class="pl-actions" id="pl-vact">
 				<button type="button" class="tu-btn" id="pl-copy">🔗 Copy link</button>
 				<button type="button" class="tu-btn" id="pl-qrbtn">QR code</button>
@@ -24,6 +25,14 @@
 		<h2 id="pl-make-h">Make a poll</h2>
 		<div class="pl-make-wrap">
 			<div class="tu-card pl-make" id="pl-make">
+				<fieldset class="pl-fs pl-where">
+					<legend>Where should the poll live?</legend>
+					<div class="pl-seg pl-seg--wrap" role="radiogroup" aria-label="Where the poll lives">
+						<label><input type="radio" name="pl-where" value="mes" checked> On mes.fm (no account needed)</label>
+						<label><input type="radio" name="pl-where" value="hive"> On Hive (Hive accounts vote)</label>
+					</div>
+					<p class="tu-note pl-wherenote" id="pl-wherenote">Anyone with the link can vote, no sign-up.</p>
+				</fieldset>
 				<div class="tu-field"><label for="pl-mq">Question</label><input id="pl-mq" class="tu-input pl-big" type="text" maxlength="200" autocomplete="off" placeholder="e.g. Where should we eat on Friday?"></div>
 				<details class="pl-det" id="pl-mddet"><summary>Add a description (optional)</summary>
 					<div class="tu-field"><label for="pl-md" class="pl-sr">Description</label><textarea id="pl-md" class="tu-input" rows="2" maxlength="600" placeholder="More detail, rules, a date..."></textarea></div>
@@ -52,7 +61,7 @@
 				<fieldset class="pl-fs">
 					<legend>When does voting end?</legend>
 					<div class="pl-seg" role="radiogroup" aria-label="When voting ends">
-						<label><input type="radio" name="pl-end" value="manual" checked> When I close it</label>
+						<label id="pl-endmanual"><input type="radio" name="pl-end" value="manual" checked> When I close it</label>
 						<label><input type="radio" name="pl-end" value="after"> After a while</label>
 						<label><input type="radio" name="pl-end" value="at"> At a date and time</label>
 					</div>
@@ -76,17 +85,33 @@
 					<div class="pl-seg pl-seg--wrap" role="radiogroup" aria-label="When results are shown">
 						<label><input type="radio" name="pl-sh" value="always" checked> Everyone, any time</label>
 						<label><input type="radio" name="pl-sh" value="voted"> People who have voted</label>
-						<label><input type="radio" name="pl-sh" value="closed"> Everyone, once it closes</label>
+						<label id="pl-shclosed"><input type="radio" name="pl-sh" value="closed"> Everyone, once it closes</label>
 					</div>
 					<label class="pl-check"><input type="checkbox" id="pl-ch"> Let people change their vote</label>
 				</fieldset>
+
+				<div class="pl-hive" id="pl-hive" hidden>
+					<p class="pl-hwarn"><strong>This publishes a real post on the Hive blockchain</strong> from your account, using the open polls format that PeakD, Ecency and HiveHub show as a poll. The question, choices and end time can never be changed afterwards (you can still edit the post text), and posts on Hive cannot be deleted.</p>
+					<div class="pl-hlogin" id="pl-hlogin"></div>
+					<div class="tu-field"><label for="pl-htitle">Post title</label><input id="pl-htitle" class="tu-input" type="text" maxlength="255" autocomplete="off"></div>
+					<div class="tu-row" style="align-items:flex-end;margin-top:0.6em;">
+						<div class="tu-field" style="flex:2 1 14em;"><label for="pl-htags">Tags (the first one is the main tag)</label><input id="pl-htags" class="tu-input" type="text" autocomplete="off" placeholder="polls hive"></div>
+						<div class="tu-field" style="flex:1 1 10em;"><label for="pl-hcomm">Community (optional)</label><input id="pl-hcomm" class="tu-input" type="text" autocomplete="off" placeholder="hive-123456"></div>
+					</div>
+					<div class="tu-row" style="align-items:center;margin-top:0.6em;">
+						<div class="tu-field pl-inline"><label for="pl-hage">Only count accounts at least</label><input id="pl-hage" class="tu-input" type="number" min="0" max="3650" step="1" value="0" inputmode="numeric" style="width:6em;"><span>days old</span></div>
+						<label class="pl-check"><input type="checkbox" id="pl-hdecline"> Decline payout for this post</label>
+					</div>
+					<div class="tu-field" style="margin-top:0.6em;"><label for="pl-hbody">Post text (markdown)</label><textarea id="pl-hbody" class="tu-input" rows="9"></textarea></div>
+					<div class="pl-orow"><button type="button" class="tu-btn tu-btn--ghost" id="pl-hbodyreset">Write the text for me again</button><span class="tu-note" id="pl-hbodynote" style="margin:0;"></span></div>
+				</div>
 
 				<p class="pl-err" id="pl-err" role="alert" hidden></p>
 				<div class="pl-orow pl-create">
 					<button type="button" class="tu-btn tu-btn--primary pl-go" id="pl-go">Create the poll</button>
 					<button type="button" class="tu-btn tu-btn--ghost" id="pl-reset">Start again</button>
 				</div>
-				<p class="tu-note" style="margin-bottom:0;">Anyone with the link can vote. Polls are not listed anywhere and are not shown in search engines.</p>
+				<p class="tu-note" id="pl-gonote" style="margin-bottom:0;">Anyone with the link can vote. Polls are not listed anywhere and are not shown in search engines.</p>
 			</div>
 
 			<div class="tu-card pl-prev-card" id="pl-prev-card">
@@ -98,22 +123,23 @@
 		</div>
 
 		<div class="tu-card pl-done" id="pl-done" hidden>
-			<h3>Your poll is ready</h3>
+			<h3 id="pl-dh">Your poll is ready</h3>
 			<div class="pl-link"><input id="pl-dlink" class="tu-input" type="text" readonly aria-label="Link to the poll"><button type="button" class="tu-btn tu-btn--primary" id="pl-dcopy">Copy link</button></div>
 			<div class="pl-actions">
 				<a class="tu-btn" id="pl-dopen">Open the poll</a>
 				<button type="button" class="tu-btn" id="pl-dtext">Copy text for a post</button>
 				<button type="button" class="tu-btn" id="pl-dqr">QR code</button>
 				<button type="button" class="tu-btn" id="pl-dmgr">Copy manager link</button>
+				<a class="tu-btn" id="pl-dpeakd" target="_blank" rel="noopener" hidden>View on PeakD</a>
 				<button type="button" class="tu-btn tu-btn--ghost" id="pl-dnew">Make another poll</button>
 			</div>
 			<div class="pl-qr" id="pl-dqrbox" hidden></div>
-			<p class="tu-note" style="margin-bottom:0;">You can close or delete it from <strong>My polls</strong> on this page. The <strong>manager link</strong> carries your secret key: keep it to yourself, it lets anyone who has it close or delete the poll.</p>
+			<p class="tu-note" id="pl-dnote" style="margin-bottom:0;">You can close or delete it from <strong>My polls</strong> on this page. The <strong>manager link</strong> carries your secret key: keep it to yourself, it lets anyone who has it close or delete the poll.</p>
 		</div>
 
 		<h2>Open a poll</h2>
 		<div class="tu-card">
-			<div class="pl-link"><input id="pl-goid" class="tu-input" type="text" autocomplete="off" placeholder="Paste a poll link, e.g. mes.fm/v/ab3defgh" aria-label="Poll link"><button type="button" class="tu-btn" id="pl-goopen">Open</button></div>
+			<div class="pl-link"><input id="pl-goid" class="tu-input" type="text" autocomplete="off" placeholder="Paste a poll link: mes.fm/v/ab3defgh or a PeakD poll post" aria-label="Poll link"><button type="button" class="tu-btn" id="pl-goopen">Open</button></div>
 		</div>
 
 		<div class="tu-seo">
@@ -128,6 +154,8 @@
 			</dl>
 			<h3>How one vote per person works (and its limits)</h3>
 			<p>There are no accounts, so the page gives each browser a random number and lets it vote once per poll. A few votes are allowed from the same network (a school, an office or a phone network share one internet address), and then that network is full for that poll. This stops casual repeat voting. It cannot stop someone who clears their browser data or uses several devices or networks, so do not use these polls for anything that needs a real election.</p>
+			<h3>Polls on Hive</h3>
+			<p>Choose <strong>On Hive</strong> to publish the poll as a post from your Hive account in the open polls format that PeakD, Ecency and HiveHub use, so it shows up as a poll there too. Hive accounts vote with Hive Keychain (a free "custom_json" operation signed with the posting key, no fee). This page counts the votes itself: it asks PeakD's open polls node who voted, then reads each vote from its block on the Hive blockchain and applies the poll's rules (votes after the end time do not count, an account's latest vote wins unless changes are off, the minimum account age). You can open any Hive poll here by pasting its PeakD link.</p>
 			<h3>Privacy</h3>
 			<p>The poll (question, options, settings) and the vote counts are stored on our server until 60 days after the poll closes, then they are deleted. We keep which browser number picked which option (so it cannot vote twice) but never your name, and your internet address only as a scrambled code used to count votes per network. Your list of polls and the keys to manage them stay in your own browser. See the <a href="/privacy-policy">privacy policy</a>.</p>
 			<h3>Questions</h3>
@@ -139,6 +167,7 @@
 			<p>Counting down to the result? Make a <a href="/reminder">reminder link</a> for the closing time. Picking a winner at random instead? Try the <a href="/random-number-generator">random number generator</a> or the <a href="/dice-roller">dice roller</a>.</p>
 		</div>
 	</div>
+<script src="/main_js/hive.js?v=1" defer></script>
 <script src="/main_js/panel-view.js?v=1" defer></script>
 <script src="/main_js/time-input.js?v=3" defer></script>
 <script src="/main_js/when-parse.js?v=1" defer></script>
