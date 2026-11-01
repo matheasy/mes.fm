@@ -46,8 +46,9 @@ html.toc-hidden { --toc-w: var(--toc-wd); --toc-shift: 0px; }
   html.toc-hidden .toc-mode .toc-reopen { display: inline-block; border-right: 1px solid #d5dbe2; }
   :is(body.dark-mode, body.dark) .toc-mode .toc-reopen { border-right-color: #555; }
   /* sidebar sits just outside the article column, whatever its width */
-  html .toc-sidebar { left: calc(50% + var(--toc-w) / 2 + 30px + var(--toc-shift)); width: var(--toc-sw); }
-  html.aside-left .toc-sidebar { left: auto; right: calc(50% + var(--toc-w) / 2 + 30px - var(--toc-shift)); padding-right: 0; padding-left: 10px; }
+  /* padding: 16px on the inner edge (where the resize line sits) so text never touches it, 10px on the outer edge (2026-10-31) */
+  html .toc-sidebar { left: calc(50% + var(--toc-w) / 2 + 30px + var(--toc-shift)); width: var(--toc-sw); padding-left: 16px; padding-right: 10px; }
+  html.aside-left .toc-sidebar { left: auto; right: calc(50% + var(--toc-w) / 2 + 30px - var(--toc-shift)); padding-right: 16px; padding-left: 10px; }
   html.page-wide .container, html:not(.toc-hidden) .container { max-width: var(--toc-w); }
   html.page-wide .footer, html:not(.toc-hidden) .footer { max-width: var(--toc-w); }
   html:not(.toc-hidden):not(.page-theatre) .container, html:not(.toc-hidden):not(.page-theatre) .footer:not(.container .footer) { position: relative; left: var(--toc-shift); }
@@ -72,7 +73,7 @@ html.toc-hidden { --toc-w: var(--toc-wd); --toc-shift: 0px; }
   html.page-theatre:not(.toc-hidden) .container { margin-left: var(--toc-ml); margin-right: auto; }
   html.page-theatre:not(.toc-hidden) .toc-sidebar { left: calc(var(--toc-ml) + var(--toc-w) + 30px); right: auto; }
   html.page-theatre.aside-left:not(.toc-hidden) .container { margin-left: calc(var(--toc-ml) + var(--toc-sw) + 20px); }
-  html.page-theatre.aside-left:not(.toc-hidden) .toc-sidebar { left: var(--toc-ml); right: auto; padding-left: 0; }
+  html.page-theatre.aside-left:not(.toc-hidden) .toc-sidebar { left: var(--toc-ml); right: auto; padding-left: 0; padding-right: 16px; }
   /* ...and with the "More like this" rail on the other side (pages with .jump-rail, >= 1500px): rail + article + Jump-to as one group */
   html.jump-rail.page-theatre.aside-hidden:not(.toc-hidden) { --toc-w: min(2000px, calc(100vw - var(--toc-sw) - 90px)); --toc-ml: calc((100vw - var(--toc-w) - var(--toc-sw) - 20px) / 2); }
   html.jump-rail.page-theatre:not(.toc-hidden):not(.aside-hidden):not(.aside-left) { --toc-w: min(2000px, calc(100vw - var(--toc-sw) - 420px)); --toc-ml: calc((100vw - var(--toc-w) - var(--toc-sw) - 350px) / 2 + 330px); }

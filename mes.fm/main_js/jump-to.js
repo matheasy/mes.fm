@@ -534,3 +534,66 @@
         make(panel, title ? title.nextSibling : panel.firstChild, { panel: true });
     }
 })();
+
+/* "Comments" at the bottom of every "Jump to" list (2026-10-31): the fixed .toc-sidebar, the in-page "Jump to section" list
+   (.toc-mobile .toc-links) and the floating bar's panel. Only on pages that have the Comments bar (#comments-button). A <button>
+   (not an <a href="#...">) so the scrollspy, the article search and the pages' own TOC click handlers leave it alone; muted and set
+   apart by a line so it does not read as an article section. Click = scroll to the bar and, if the comments are collapsed, click the
+   bar the way a reader would, so FastComments loads. */
+(function () {
+    "use strict";
+    var bar = document.getElementById("comments-button");
+    if (!bar || document.getElementById("mes-toc-comments-css")) return;
+    var css = document.createElement("style");
+    css.id = "mes-toc-comments-css";
+    css.textContent =
+        ".toc-comments{display:flex !important;align-items:center;gap:.5em;width:100%;box-sizing:border-box;margin:.7em 0 .2em;padding:.65em 0 .3em;" +
+        "border:0;border-top:1px solid rgba(128,128,128,.35);background:none;color:inherit;font:inherit;font-size:.9em;line-height:1.3;text-align:left;" +
+        "cursor:pointer;opacity:.7;border-radius:0}" +
+        ".toc-comments:hover,.toc-comments:focus-visible{opacity:1;text-decoration:underline}" +
+        ".toc-comments svg{width:1.05em;height:1.05em;flex:0 0 auto;display:block}" +
+        "#compact-jump-panel .toc-comments{margin:.35em 0 0;padding:.75em 1em .5em}" +
+        "#compact-jump-panel .toc-comments:hover,#compact-jump-panel .toc-comments:focus-visible{background:rgba(128,128,128,.18);outline:none;text-decoration:none}" +
+        "#compact-jump-panel.mf-searching>.toc-comments{display:none !important}";
+    document.head.appendChild(css);
+    var ICON = '<svg viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round" stroke-linecap="round">' +
+        '<path d="M4 5.5A2.5 2.5 0 0 1 6.5 3h11A2.5 2.5 0 0 1 20 5.5v8a2.5 2.5 0 0 1-2.5 2.5H10l-4.5 4v-4h0A1.5 1.5 0 0 1 4 14.5z"/>' +
+        '<path d="M8 8.5h8M8 12h5"/></svg>';
+    function collapsed() {
+        var box = document.getElementById("comments-box");
+        return !!box && (box.classList.contains("hide") || getComputedStyle(box).display === "none");
+    }
+    function go(e) {
+        e.preventDefault();
+        e.stopPropagation();
+        var panel = document.getElementById("compact-jump-panel");
+        if (panel) { panel.classList.remove("open"); var b = document.getElementById("compact-jump"); if (b) b.setAttribute("aria-expanded", "false"); }
+        if (collapsed()) bar.click();
+        function off() { return Math.max(80, window.innerHeight * 0.25); }
+        window.scrollTo({ top: Math.max(0, bar.getBoundingClientRect().top + window.pageYOffset - off()), behavior: "smooth" });
+        /* lazy images / embeds above the bar can still grow while we scroll: re-aim a few times, unless the reader takes over */
+        var stop = false;
+        function quit() { stop = true; }
+        ["wheel", "touchstart", "keydown"].forEach(function (t) { window.addEventListener(t, quit, { once: true, passive: true }); });
+        [700, 1400, 2300, 3500].forEach(function (ms) {
+            setTimeout(function () {
+                if (stop) return;
+                var d = bar.getBoundingClientRect().top - off();
+                if (Math.abs(d) > 40) window.scrollTo({ top: Math.max(0, window.pageYOffset + d), behavior: "auto" });
+            }, ms);
+        });
+    }
+    function make() {
+        var b = document.createElement("button");
+        b.type = "button";
+        b.className = "toc-comments";
+        b.title = "Go to the comments";
+        b.innerHTML = ICON + "<span>Comments</span>";
+        b.addEventListener("click", go);
+        return b;
+    }
+    ["#compact-jump-panel", ".toc-sidebar", ".toc-mobile .toc-links"].forEach(function (sel) {
+        var host = document.querySelector(sel);
+        if (host && !host.querySelector(".toc-comments")) host.appendChild(make());
+    });
+})();
