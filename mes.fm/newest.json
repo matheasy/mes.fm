@@ -100,6 +100,30 @@
  ],
  "tools": [
   {
+   "href": "/3d-studio",
+   "title": "3D Studio (3D modeler for 3D printing)",
+   "icon": "/img/3d-studio-logo.png",
+   "desc": "Build 3D models from boxes, cylinders, text and holes, start from templates, check them for 3D printing and export STL or 3MF. Nothing is uploaded.",
+   "added": "2026-10-31",
+   "kind": "tool"
+  },
+  {
+   "href": "/neuron-simulator",
+   "title": "Neuron Simulator",
+   "icon": "/img/neuron-simulator-logo.png",
+   "desc": "The Hodgkin-Huxley action potential, nerve conduction with myelin and MS, EPSP summation, the neuromuscular junction and a Nernst / Goldman calculator.",
+   "added": "2026-10-31",
+   "kind": "tool"
+  },
+  {
+   "href": "/heart-simulator",
+   "title": "Heart Simulator",
+   "icon": "/img/heart-simulator-logo.png",
+   "desc": "An animated heart synced to a Wiggers diagram, pressure-volume loops with disease presets, an ECG rhythm trainer with calipers and a hemodynamics calculator.",
+   "added": "2026-10-31",
+   "kind": "tool"
+  },
+  {
    "href": "/polls",
    "title": "Polls",
    "icon": "/img/polls-logo.png",
@@ -170,33 +194,33 @@
    "desc": "What is filling up your disk? Pick a folder and see it as a sunburst or treemap, with the largest files, file types, old files and duplicates. Nothing is uploaded.",
    "added": "2026-10-29",
    "kind": "tool"
-  },
-  {
-   "href": "/video",
-   "title": "Video Editor",
-   "icon": "/img/video-logo.png",
-   "desc": "Cut, split and join videos on a multi-track timeline, add titles and pictures, cross-fade, remove background noise and export MP4 up to 4K. A free Camtasia-style editor; nothing is uploaded.",
-   "added": "2026-10-28",
-   "kind": "tool"
-  },
-  {
-   "href": "/audio",
-   "title": "Audio Editor",
-   "icon": "/img/audio-logo.png",
-   "desc": "Remove background noise with AI, cut, fade and mix tracks, set the loudness for YouTube or podcasts and export WAV, MP3 or M4A. Nothing is uploaded.",
-   "added": "2026-10-28",
-   "kind": "tool"
-  },
-  {
-   "href": "/convert-video",
-   "title": "Video Converter",
-   "icon": "/img/convert-video-logo.png",
-   "desc": "AVI, MKV, WMV, FLV, MOV and MPG to MP4 that Camtasia and every phone open. AVI screen recordings are copied without re-encoding, in seconds. Nothing is uploaded.",
-   "added": "2026-10-28",
-   "kind": "tool"
   }
  ],
  "latest": [
+  {
+   "href": "/3d-studio",
+   "title": "3D Studio (3D modeler for 3D printing)",
+   "icon": "/img/3d-studio-logo.png",
+   "desc": "Build 3D models from boxes, cylinders, text and holes, start from templates, check them for 3D printing and export STL or 3MF. Nothing is uploaded.",
+   "added": "2026-10-31",
+   "kind": "tool"
+  },
+  {
+   "href": "/neuron-simulator",
+   "title": "Neuron Simulator",
+   "icon": "/img/neuron-simulator-logo.png",
+   "desc": "The Hodgkin-Huxley action potential, nerve conduction with myelin and MS, EPSP summation, the neuromuscular junction and a Nernst / Goldman calculator.",
+   "added": "2026-10-31",
+   "kind": "tool"
+  },
+  {
+   "href": "/heart-simulator",
+   "title": "Heart Simulator",
+   "icon": "/img/heart-simulator-logo.png",
+   "desc": "An animated heart synced to a Wiggers diagram, pressure-volume loops with disease presets, an ECG rhythm trainer with calipers and a hemodynamics calculator.",
+   "added": "2026-10-31",
+   "kind": "tool"
+  },
   {
    "href": "/polls",
    "title": "Polls",
@@ -234,30 +258,6 @@
    "title": "MES Kids",
    "icon": "/img/kids-logo.png",
    "desc": "Talking flashcards for toddlers: animals with real animal sounds, ABC, shapes, colours and counting, with a gentle What’s this? game. Kid-proof full screen, no ads.",
-   "added": "2026-10-29",
-   "kind": "tool"
-  },
-  {
-   "href": "/bending-stress-calculator",
-   "title": "Bending Stress & Beam Calculator",
-   "icon": "/img/bending-stress-calculator-logo.png",
-   "desc": "Drag loads along a beam: shear and moment diagrams, deflection and σ = Mc/I for I-beams, tubes and more.",
-   "added": "2026-10-29",
-   "kind": "calculator"
-  },
-  {
-   "href": "/file-check",
-   "title": "File Safety Check",
-   "icon": "/img/file-check-logo.png",
-   "desc": "Is this file safe? Spot disguised programs, macros, PDF JavaScript, password zips and phishing files, get hashes for VirusTotal and check links. Nothing uploaded.",
-   "added": "2026-10-29",
-   "kind": "tool"
-  },
-  {
-   "href": "/workout-planner",
-   "title": "Workout Planner",
-   "icon": "/img/workout-planner-logo.png",
-   "desc": "Plan your week of workouts, keep a Currently-at marker that moves on when you finish, run training rotations, drag and drop, and track your streak.",
    "added": "2026-10-29",
    "kind": "tool"
   }
