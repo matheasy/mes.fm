@@ -27,8 +27,8 @@
 	};
 	// landscape layout (dead car left, helper right); on narrow screens a portrait layout stacks the helper half under the dead one
 	// A jumper cable set = a red and a black cable bonded side by side; each END has one red + one black clamp (r1 + b1 = end 1, r2 + b2 = end 2).
-	var PARK_L = { r1: [345, 578], b1: [397, 578], r2: [643, 578], b2: [695, 578], pr: [625, 560], pb: [705, 560] };
-	var PARK_P = { r1: [80, 1026], b1: [132, 1026], r2: [368, 1026], b2: [420, 1026], pr: [180, 1000], pb: [320, 1000] };
+	var PARK_L = { r1: [345, 578], b1: [397, 578], r2: [643, 578], b2: [695, 578], pr: [625, 590], pb: [705, 590] };
+	var PARK_P = { r1: [80, 1026], b1: [132, 1026], r2: [368, 1026], b2: [420, 1026], pr: [180, 1034], pb: [320, 1034] };
 	var MATE = { r1: "b1", b1: "r1", r2: "b2", b2: "r2" };      // the other clamp at the same end of the set
 	var BAG_L = { x: 300, y: 456, w: 440, h: 136 }, BAG_P = { x: 30, y: 892, w: 440, h: 146 };
 	var portrait = false, PARK = PARK_L, BAG = BAG_L;
@@ -138,8 +138,8 @@
 		el("text", { x: 190, y: 409, "text-anchor": "middle", "class": "jp-small" }, g, "painted body panel");
 		if (S.remote) {
 			el("rect", { x: 315, y: 158, width: 150, height: 104, rx: 10, "class": "jp-remotebox" }, g);
-			el("text", { x: 390, y: 236, "text-anchor": "middle", "class": "jp-small" }, g, "battery is in the trunk");
-			el("text", { x: 390, y: 252, "text-anchor": "middle", "class": "jp-small" }, g, "jump posts under the hood");
+			el("text", { x: 390, y: 236, "text-anchor": "middle", "class": "jp-small" }, g, "battery in the trunk:");
+			el("text", { x: 390, y: 252, "text-anchor": "middle", "class": "jp-small" }, g, "jump posts here");
 			el("rect", { x: 348, y: 180, width: 24, height: 22, rx: 5, "class": "jp-postp" }, g);
 			el("text", { x: 360, y: 174, "text-anchor": "middle", "class": "jp-poslbl" }, g, "+");
 			el("rect", { x: 428, y: 180, width: 24, height: 22, rx: 5, "class": "jp-bracket" }, g);
@@ -165,7 +165,6 @@
 		// bag
 		G.bag = el("g", { "class": "jp-baggrp", tabindex: 0, role: "button", "aria-label": S.mode === "pack" ? "Pack clamps: put a clamp here to take it off" : "Cable bag: one jumper cable set, a red and a black cable joined side by side, with a red and a black clamp at each end. Put a clamp here to take it off" }, svg);
 		el("rect", { x: BAG.x, y: BAG.y, width: BAG.w, height: BAG.h, rx: 14, "class": "jp-bag" }, G.bag);
-		el("text", { x: BAG.x + BAG.w / 2, y: BAG.y + 22, "text-anchor": "middle", "class": "jp-bagtxt" }, G.bag, S.mode === "pack" ? "Pack clamps (drop here to take a clamp off)" : (portrait ? "Cable set: red + black clamp at each end" : "Cable set: a red + black clamp at each end (drop one here to take it off)"));
 		G.bag.addEventListener("click", function () { if (S.sel && S.conn[S.sel]) doRemove(S.sel); });
 		G.bag.addEventListener("keydown", function (e) { if ((e.key === "Enter" || e.key === " ") && S.sel && S.conn[S.sel]) { e.preventDefault(); doRemove(S.sel); } });
 		// targets
@@ -180,6 +179,7 @@
 			G.tgs[k] = c;
 		});
 		G.cab = el("g", { "class": "jp-cables" }, svg);
+		el("text", { x: BAG.x + BAG.w / 2, y: BAG.y + 22, "text-anchor": "middle", "class": "jp-bagtxt jp-baglbl" , "pointer-events": "none" }, svg, S.mode === "pack" ? "Pack clamps (drop here to take a clamp off)" : (portrait ? "Cable set: red + black clamp at each end" : "Cable set: a red + black clamp at each end (drop one here to take it off)"));
 		G.cl = el("g", null, svg); G.cls = {};
 		clamps().forEach(function (c) {
 			var red = J.colourOf(c) === "red";
@@ -538,14 +538,15 @@
 		el("rect", { x: 20, y: 40, width: 120, height: 140, rx: 12, "class": "jp-fb" }, f);
 		el("rect", { x: 48, y: 28, width: 22, height: 14, rx: 3, "class": "jp-fbt" }, f); el("rect", { x: 92, y: 28, width: 22, height: 14, rx: 3, "class": "jp-fbt" }, f);
 		var h = 126 * p / 100; el("rect", { x: 27, y: 173 - h, width: 106, height: h, rx: 7, "class": "jp-ff jp-f-" + cls }, f);
-		el("text", { x: 80, y: 115, "text-anchor": "middle", "class": "jp-fnum" }, f, Math.round(p) + "%");
+		el("text", { x: 80, y: 216, "text-anchor": "middle", "class": "jp-fnum jp-fv-" + cls }, f, Math.round(p) + "%");
 		el("text", { x: 80, y: 18, "text-anchor": "middle", "class": "jp-flbl" }, f, "Battery can give");
 		// engine need bar (0..250 %)
 		el("text", { x: 260, y: 18, "text-anchor": "middle", "class": "jp-flbl" }, f, "Engine needs");
 		el("rect", { x: 220, y: 40, width: 80, height: 140, rx: 8, "class": "jp-fneedbg" }, f);
 		var nh = 140 * Math.min(n, 250) / 250; el("rect", { x: 220, y: 180 - nh, width: 80, height: nh, rx: 8, "class": "jp-fneed" }, f);
-		var hy = 180 - 140 * 100 / 250; el("line", { x1: 212, y1: hy, x2: 308, y2: hy, "class": "jp-f100" }, f); el("text", { x: 314, y: hy + 4, "class": "jp-fsm" }, f, "warm");
-		el("text", { x: 260, y: 115, "text-anchor": "middle", "class": "jp-fnum2" }, f, Math.round(n) + "%");
+		var hy = 180 - 140 * 100 / 250; el("line", { x1: 212, y1: hy, x2: 308, y2: hy, "class": "jp-f100" }, f);
+		el("text", { x: 312, y: hy - 3, "class": "jp-fsm" }, f, "warm"); el("text", { x: 312, y: hy + 11, "class": "jp-fsm" }, f, "day");
+		el("text", { x: 260, y: 216, "text-anchor": "middle", "class": "jp-fnum jp-fv-need" }, f, Math.round(n) + "%");
 		var freeze = t <= -8 ? " At this temperature a <b>flat</b> battery can freeze (a full one is safe to about −58 °C / −72 °F): never jump a frozen one." : "";
 		var heat = t >= 30 ? " Heat doesn't stop a car starting, but it ages the battery fastest: water loss and grid corrosion now are what fail you next winter." : "";
 		$("jp-coldtxt").innerHTML = '<span class="jp-v jp-' + cls + '">Starting reserve: ' + Math.round(m * 100) + "% of a warm day.</span> " +
@@ -555,10 +556,13 @@
 	}
 	function chart(t) {
 		var c = $("jp-coldchart"); c.textContent = "";
-		var X0 = 52, X1 = 620, Y0 = 220, Y1 = 20, tx = function (v) { return X0 + (v + 35) / 80 * (X1 - X0); }, ty = function (v) { return Y0 - v / 300 * (Y0 - Y1); };
+		var cw = c.clientWidth || 640, fs = Math.max(12, Math.round(11 * 640 / cw)), lh = Math.round(fs * 1.35), narrow = cw < 520;
+		var X0 = 18 + fs * 3, X1 = 620, Y1 = 14 + lh * 2, Y0 = Y1 + 200;
+		c.setAttribute("viewBox", "0 0 640 " + (Y0 + fs * 3 + 6)); c.style.setProperty("--jp-cfs", fs + "px");
+		var tx = function (v) { return X0 + (v + 35) / 80 * (X1 - X0); }, ty = function (v) { return Y0 - v / 300 * (Y0 - Y1); };
 		for (var v = 0; v <= 300; v += 50) { el("line", { x1: X0, y1: ty(v), x2: X1, y2: ty(v), "class": "jp-grid" }, c); el("text", { x: X0 - 6, y: ty(v) + 4, "text-anchor": "end", "class": "jp-ax" }, c, v + "%"); }
-		for (var d = -30; d <= 40; d += 10) { var lab = unit === "f" ? Math.round(J.cToF(d)) + "°" : d + "°"; el("text", { x: tx(d), y: Y0 + 18, "text-anchor": "middle", "class": "jp-ax" }, c, lab); }
-		el("text", { x: X1, y: Y0 + 36, "text-anchor": "end", "class": "jp-ax" }, c, "temperature (" + (unit === "f" ? "°F" : "°C") + ")");
+		for (var d = -30; d <= 40; d += 10) { var lab = unit === "f" ? Math.round(J.cToF(d)) + "°" : d + "°"; el("text", { x: tx(d), y: Y0 + fs * 1.4, "text-anchor": "middle", "class": "jp-ax" }, c, lab); }
+		el("text", { x: X1, y: Y0 + fs * 2.9, "text-anchor": "end", "class": "jp-ax" }, c, "temperature (" + (unit === "f" ? "°F" : "°C") + ")");
 		var pp = [], nn = [], area = [];
 		for (var s = -35; s <= 45; s += 1) { pp.push(tx(s) + "," + ty(J.powerAt(s))); nn.push(tx(s) + "," + ty(J.needAt(s))); }
 		el("polygon", { points: pp.join(" ") + " " + nn.slice().reverse().join(" "), "class": "jp-gap" }, c);
@@ -566,14 +570,16 @@
 		el("polyline", { points: pp.join(" "), "class": "jp-lpow" }, c);
 		el("line", { x1: tx(t), y1: Y1, x2: tx(t), y2: Y0, "class": "jp-mark" }, c);
 		el("circle", { cx: tx(t), cy: ty(J.powerAt(t)), r: 6, "class": "jp-dpow" }, c); el("circle", { cx: tx(t), cy: ty(J.needAt(t)), r: 6, "class": "jp-dneed" }, c);
-		el("text", { x: 380, y: Y1 + 14, "class": "jp-lg jp-lgp" }, c, "— battery power available");
-		el("text", { x: 380, y: Y1 + 32, "class": "jp-lg jp-lgn" }, c, "— power the engine needs to crank");
+		el("text", { x: X0, y: lh, "class": "jp-lg jp-lgp" }, c, "— battery power available");
+		el("text", { x: X0, y: lh * 2, "class": "jp-lg jp-lgn" }, c, narrow ? "– – engine needs to crank" : "– – power the engine needs to crank");
 		// click / drag on the chart sets the temperature
 		function at(e) { var r = c.getBoundingClientRect(), x = (e.clientX - r.left) / r.width * 640; tempEl.value = Math.round(Math.max(-35, Math.min(45, (x - X0) / (X1 - X0) * 80 - 35))); cold(); }
 		c.onpointerdown = function (e) { at(e); c.setPointerCapture(e.pointerId); c.onpointermove = at; };
 		c.onpointerup = function () { c.onpointermove = null; };
 	}
 	tempEl.addEventListener("input", cold);
+	(function () { var cc = $("jp-coldchart"), lw = 0; function rs() { var w = cc.clientWidth; if (w && Math.abs(w - lw) > 4) { lw = w; chart(+tempEl.value); } }
+		if (window.ResizeObserver) new ResizeObserver(rs).observe(cc); else window.addEventListener("resize", rs); })();
 	root.querySelectorAll("[data-u]").forEach(function (b) {
 		b.setAttribute("aria-pressed", b.getAttribute("data-u") === unit ? "true" : "false");
 		b.addEventListener("click", function () { unit = b.getAttribute("data-u"); root.querySelectorAll("[data-u]").forEach(function (x) { x.setAttribute("aria-pressed", x === b ? "true" : "false"); }); cold(); });

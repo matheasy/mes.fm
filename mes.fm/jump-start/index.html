@@ -312,7 +312,7 @@ body.dark-mode .tu .rw-head {color:#a0a8b3;border-bottom-color:#555;} body.dark-
 		--jp-bay:#3b4048;--jp-bayln:#262a30;--jp-eng:#8b919a;--jp-engd:#6d737c;--jp-plug:#c9ced5;--jp-bat:#2a2c30;--jp-batlid:#41444a;--jp-vent:#5d6168;--jp-postp:#d62828;--jp-postn:#15171a;
 		--jp-paint1:#2f6fb3;--jp-paint2:#2e8b57;--jp-metal:#d4d9df;--jp-bolt:#eef1f4;--jp-bag:#eef1f4;--jp-bagln:#b9c0c8;--jp-bagtx:#4b5260;--jp-scene:#f0f2f5;--jp-bayt:#1f2430;
 		--jp-rc:#d62828;--jp-rcd:#9f1d1d;--jp-bc:#23262b;--jp-bcd:#555b64;--jp-jaw:#c08a3e;--jp-glow:#ffcc33;--jp-wirer:#c62020;--jp-wireb:#1e2126;--jp-tie:#5f6670;
-		--jp-pow:#1c8a4a;--jp-need:#c2410c;--jp-gap:rgba(194,65,12,.12);--jp-grid:#e3e6ea;--jp-ax:#5a6170;--jp-fbody:#2a2c30;--jp-fneedbg:#f1e6df;
+		--jp-pow:#1c8a4a;--jp-need:#c2410c;--jp-needtx:#9a3412;--jp-gap:rgba(194,65,12,.12);--jp-grid:#e3e6ea;--jp-ax:#5a6170;--jp-fbody:#2a2c30;--jp-fneedbg:#f1e6df;
 		--jp-g-ok:#22a35a;--jp-g-ok2:#86c96a;--jp-g-wa:#e0a106;--jp-g-wa2:#e36a12;--jp-g-ba:#d33030;--jp-g-na:#a0a6ae;color:var(--jp-fg);}
 	:where(#jp) :is(div, span, p, li, td, th, b, small, strong, em, h2, h3, h4, label, summary, ol, dt, dd) {color:inherit;}
 	#jp [hidden] {display:none !important;}
@@ -375,7 +375,7 @@ body.dark-mode .tu .rw-head {color:#a0a8b3;border-bottom-color:#555;} body.dark-
 	#jp .jp-bay ~ text.jp-small {fill:#e7e9ec;}
 	#jp .jp-pack {fill:#f2b705;stroke:#a47b00;stroke-width:3;} #jp .jp-packscr {fill:#1d2a1f;} #jp .jp-packnum {fill:#7dff9a;font:700 20px ui-monospace,monospace;}
 	#jp .jp-packpwr {fill:#3b3f45;stroke:#20242a;stroke-width:3;cursor:pointer;} #jp .jp-packpwr.on {fill:#22a35a;} #jp .jp-packpwrt {fill:#fff;font-size:22px;pointer-events:none;}
-	#jp .jp-bag {fill:var(--jp-bag);stroke:var(--jp-bagln);stroke-width:2;stroke-dasharray:7 6;} #jp .jp-bagtxt {fill:var(--jp-bagtx);font-size:17px;}
+	#jp .jp-bag {fill:var(--jp-bag);stroke:var(--jp-bagln);stroke-width:2;stroke-dasharray:7 6;} #jp .jp-bagtxt {fill:var(--jp-bagtx);font-size:17px;} #jp .jp-baglbl {paint-order:stroke;stroke:var(--jp-bag);stroke-width:6px;stroke-linejoin:round;}
 	#jp .jp-baggrp.on .jp-bag {stroke:var(--jp-glow);stroke-width:4;stroke-dasharray:none;}
 	#jp .jp-tg {fill:transparent;stroke:transparent;stroke-width:4;cursor:pointer;}
 	#jp .jp-tg.on {stroke:var(--jp-glow);fill:rgba(255,204,51,.18);animation:jp-pulse 1.2s ease-in-out infinite;}
@@ -443,17 +443,17 @@ body.dark-mode .tu .rw-head {color:#a0a8b3;border-bottom-color:#555;} body.dark-
 	#jp .jp-fuelsvg {width:100%;max-width:400px;height:auto;display:block;}
 	#jp .jp-fb {fill:none;stroke:var(--jp-fbody);stroke-width:5;} #jp .jp-fbt {fill:var(--jp-fbody);}
 	#jp .jp-ff {transition:height .2s,y .2s;} #jp .jp-f-ok {fill:var(--jp-g-ok);} #jp .jp-f-warn {fill:var(--jp-g-wa);} #jp .jp-f-bad {fill:var(--jp-g-ba);}
-	#jp .jp-fnum {fill:var(--jp-fg);font-size:26px;font-weight:800;paint-order:stroke;stroke:var(--jp-card);stroke-width:5px;}
-	#jp .jp-fnum2 {fill:var(--jp-fg);font-size:22px;font-weight:800;paint-order:stroke;stroke:var(--jp-card);stroke-width:5px;}
-	#jp .jp-flbl {fill:var(--jp-mut);font-size:14px;font-weight:600;} #jp .jp-fsm {fill:var(--jp-mut);font-size:11px;}
+	#jp .jp-fnum {fill:var(--jp-fg);font-size:26px;font-weight:800;}
+	#jp .jp-fv-ok {fill:var(--jp-ok);} #jp .jp-fv-warn {fill:var(--jp-wa);} #jp .jp-fv-bad {fill:var(--jp-ba);} #jp .jp-fv-need {fill:var(--jp-needtx);}
+	#jp .jp-flbl {fill:var(--jp-fg);font-size:15px;font-weight:700;} #jp .jp-fsm {fill:var(--jp-fg);font-size:13px;font-weight:600;}
 	#jp .jp-fneedbg {fill:var(--jp-fneedbg);} #jp .jp-fneed {fill:var(--jp-need);opacity:.85;} #jp .jp-f100 {stroke:var(--jp-fg);stroke-width:2;stroke-dasharray:5 4;}
 	#jp .jp-coldtxt {line-height:1.5;margin:0.5em 0 0;}
 	#jp .jp-chart {width:100%;height:auto;display:block;margin:1em 0 0.3em;cursor:crosshair;touch-action:pan-y;}
-	#jp .jp-grid {stroke:var(--jp-grid);} #jp .jp-ax {fill:var(--jp-ax);font-size:12px;}
+	#jp .jp-grid {stroke:var(--jp-grid);} #jp .jp-ax {fill:var(--jp-ax);font-size:var(--jp-cfs,12px);}
 	#jp .jp-lpow {fill:none;stroke:var(--jp-pow);stroke-width:3.5;} #jp .jp-lneed {fill:none;stroke:var(--jp-need);stroke-width:3.5;stroke-dasharray:9 5;}
 	#jp .jp-gap {fill:var(--jp-gap);} #jp .jp-mark {stroke:var(--jp-fg);stroke-width:1.5;stroke-dasharray:4 4;}
 	#jp .jp-dpow {fill:var(--jp-pow);stroke:var(--jp-card);stroke-width:2;} #jp .jp-dneed {fill:var(--jp-need);stroke:var(--jp-card);stroke-width:2;}
-	#jp .jp-lg {font-size:13px;font-weight:600;} #jp .jp-lgp {fill:var(--jp-pow);} #jp .jp-lgn {fill:var(--jp-need);}
+	#jp .jp-lg {font-size:calc(var(--jp-cfs,12px) * 1.1);font-weight:700;} #jp .jp-lgp {fill:var(--jp-pow);} #jp .jp-lgn {fill:var(--jp-need);}
 	#jp .jp-causes {display:grid;grid-template-columns:repeat(auto-fill,minmax(15em,1fr));gap:0.7em;margin:1em 0;}
 	#jp .jp-cause {padding:0.7em 0.9em;border:1px solid var(--jp-line);border-radius:0.6em;background:var(--jp-soft);}
 	#jp .jp-cause b {display:block;margin-bottom:0.25em;} #jp .jp-cause p {margin:0;line-height:1.5;font-size:0.95em;}
@@ -485,10 +485,25 @@ body.dark-mode .tu .rw-head {color:#a0a8b3;border-bottom-color:#555;} body.dark-
 	body.dark-mode #jp.jp {--jp-fg:#e8eaee;--jp-mut:#b3b9c4;--jp-card:#22252b;--jp-line:#3c4048;--jp-soft:#2a2d34;--jp-acc:#ff8a7a;
 		--jp-ok:#7fe0a3;--jp-okbg:#173524;--jp-okln:#2f6b46;--jp-wa:#ffc56b;--jp-wabg:#3a2a12;--jp-waln:#7a5a22;--jp-ba:#ff9a9a;--jp-babg:#3d1a1c;--jp-baln:#7a3036;--jp-in:#9cc4ff;--jp-inbg:#1b2a40;--jp-inln:#35507a;
 		--jp-scene:#16181c;--jp-bayt:#e8eaee;--jp-bag:#23262c;--jp-bagln:#555b64;--jp-bagtx:#c9ced5;--jp-bc:#30343a;--jp-bcd:#9aa1ab;--jp-wireb:#8d949e;--jp-tie:#c9ced5;
-		--jp-pow:#4ade80;--jp-need:#fb923c;--jp-gap:rgba(251,146,60,.14);--jp-grid:#33373e;--jp-ax:#b3b9c4;--jp-fbody:#c9ced5;--jp-fneedbg:#3a2c24;color:var(--jp-fg);}
+		--jp-pow:#4ade80;--jp-need:#fb923c;--jp-needtx:#fdba74;--jp-gap:rgba(251,146,60,.14);--jp-grid:#33373e;--jp-ax:#b3b9c4;--jp-fbody:#c9ced5;--jp-fneedbg:#3a2c24;color:var(--jp-fg);}
 	body.dark-mode #jp.jp .jp-seg button[aria-pressed="true"] {background:var(--jp-acc);color:#1a1a1a;}
 	body.dark-mode #jp.jp .jp-toc a {color:var(--jp-acc);background:var(--jp-card);}
 	body.dark-mode #jp.jp .jp-msg > span, body.dark-mode #jp.jp .jp-cause p {color:var(--jp-fg);}
+	/* SVG scene in dark mode: the derived TOOL-DARK block rewrites these literal colours (light pack screen, light engine
+	   lettering on the grey engine, pale remote box under pale text). The scene shows real objects, so keep their light-mode
+	   colours; #jp.jp beats the generated body.dark-mode #jp rules. */
+	body.dark-mode #jp.jp .jp-engtxt {fill:#2b2f36;}
+	body.dark-mode #jp.jp .jp-battxt {fill:#f2f3f5;} body.dark-mode #jp.jp .jp-batsub {fill:#c9ccd2;}
+	body.dark-mode #jp.jp .jp-postp {stroke:#7a1010;} body.dark-mode #jp.jp .jp-postn {stroke:#8a8f97;}
+	body.dark-mode #jp.jp .jp-poslbl {fill:#ff6b6b;} body.dark-mode #jp.jp .jp-neglbl, body.dark-mode #jp.jp .jp-gndlbl, body.dark-mode #jp.jp .jp-small {fill:#e7e9ec;}
+	body.dark-mode #jp.jp .jp-bracket {stroke:#8a9099;} body.dark-mode #jp.jp .jp-bolt {stroke:#7a8089;}
+	body.dark-mode #jp.jp .jp-remotebox {fill:#30343a;stroke:#5d6168;}
+	body.dark-mode #jp.jp .jp-pack {fill:#f2b705;stroke:#a47b00;} body.dark-mode #jp.jp .jp-packscr {fill:#1d2a1f;} body.dark-mode #jp.jp .jp-packnum {fill:#7dff9a;}
+	body.dark-mode #jp.jp .jp-packpwr {fill:#3b3f45;stroke:#20242a;} body.dark-mode #jp.jp .jp-packpwr.on {fill:#22a35a;} body.dark-mode #jp.jp .jp-packpwrt {fill:#fff;}
+	body.dark-mode #jp.jp .jp-jaw {stroke:#6e4a17;} body.dark-mode #jp.jp .jp-gripl {stroke:rgba(255,255,255,.35);} body.dark-mode #jp.jp .jp-cltxt {fill:#fff;}
+	body.dark-mode #jp.jp .jp-puff circle {fill:#c9ccd2;} body.dark-mode #jp.jp .jp-spark line {stroke:#ffd23f;} body.dark-mode #jp.jp .jp-spark.big line {stroke:#ff8c1a;}
+	body.dark-mode #jp.jp .jp-carwin {fill:#cfe3f5;} body.dark-mode #jp.jp .jp-wheel {fill:#23262b;stroke:#888;}
+	body.dark-mode #jp.jp .jp-packarea {stroke:#5d6168;}
 
 
 	@media print {
@@ -528,66 +543,6 @@ body.dark-mode .tu .rw-head {color:#a0a8b3;border-bottom-color:#555;} body.dark-
 		.footer__item--extra-padding { padding-left: 0; }
 		.footer__text--extra-info { float: none; display: block; margin-top: 0.5em; }
 	}
-
-	/* TOOL-DARK:START -- generated by add_tool_page_controls.py, do not edit */
-	body.dark-mode .page-content :where(div,span,p,li,ul,ol,h1,h2,h3,h4,h5,h6,td,th,label,summary,small,strong,b,em,i,code,pre,legend,figcaption,dl,dt,dd,blockquote,caption,cite,button,input,select,textarea){color:#d8d8d8}
-	body.dark-mode .page-content code{background-color:#33363d;color:#f0a8bd}
-	body.dark-mode .page-content .btn-default{background-color:#2e2e2e;background-image:none;color:#ddd;border-color:#555}
-	body.dark-mode .tu{--accent:#de372b;--accent-dark:#df352a}
-	body.dark-mode .tu h2{color:#d1d6dc;border-bottom:2px solid #46100b}
-	body.dark-mode .tu h3{color:#d1d6dc}
-	body.dark-mode .tu-card{background:#1a1a1a;border:1px solid #28323e}
-	body.dark-mode .tu-card--tint{background:#281614;border-color:#46100b}
-	body.dark-mode .tu-field > label,body.dark-mode .tu-label{color:#9a9aa2}
-	body.dark-mode .tu-input,body.dark-mode .tu-select{border:1px solid #404a58;background:#1a1a1a;color:#dddddd}
-	body.dark-mode .tu-suffix span{color:#989ca4}
-	body.dark-mode .tu-btn{background:#1a1a1a}
-	body.dark-mode .tu-btn--ghost{border-color:#3a424d;color:#aaaaaa}
-	body.dark-mode .tu-btn--ghost:hover{background:#191c20;color:#dddddd;border-color:#3a424d}
-	body.dark-mode .tu-seg{border:1px solid #404a58;background:#1a1a1a}
-	body.dark-mode .tu-seg button{color:#aaaaaa;border-right:1px solid #28323e}
-	body.dark-mode .tu-seg button:hover{background:#16191d}
-	body.dark-mode .tu-chip{border:1px solid #3a424d;background:#1a1a1a;color:#aaaaaa}
-	body.dark-mode .tu-stat{background:#1a1a1a;border:1px solid #28323e}
-	body.dark-mode .tu-stat--hero{background:#281614;border-color:#46100b}
-	body.dark-mode .tu-stat__label{color:#9a9aa2}
-	body.dark-mode .tu-stat__value{color:#d1d6dc}
-	body.dark-mode .tu-stat__sub{color:#9a9ea4}
-	body.dark-mode .tu-pos{color:#7dde9d !important}
-	body.dark-mode .tu-neg{color:#e87973 !important}
-	body.dark-mode .tu-table th,body.dark-mode .tu-table td{border-bottom:1px solid #29323d;color:#cccccc}
-	body.dark-mode .tu-table th{color:#9a9da3;background:#1a1a1a}
-	body.dark-mode .tu-table tr.is-active td{background:#281614}
-	body.dark-mode .tu-note{color:#9a9da3}
-	body.dark-mode .tu-toast{background:#3c4f67}
-	body.dark-mode .tu-seo{border-top:1px solid #333333}
-	body.dark-mode .tu-svg-line{stroke:#394a60}
-	body.dark-mode .tu-svg-text{fill:#cccccc}
-	body.dark-mode .tu-svg-grid{stroke:#28323e}
-	body.dark-mode .tu [data-names="0"] .rw-num,body.dark-mode .tu [data-table="1"] .rw-num{color:#999da3}
-	body.dark-mode .tu [data-table="1"] .rw-head{color:#9a9aa2;border-bottom:2px solid #2b323c}
-	body.dark-mode .tu [data-table="1"] .rw-row{border-bottom:1px solid #27313f}
-	body.dark-mode #jp{--jp-acc:#de372b;--jp-ok:#36d372;--jp-wa:#f68b13;--jp-ba:#de2b2b;--jp-in:#357dd4;--jp-postp:#d83131;--jp-paint1:#3d82cc;--jp-paint2:#47c27d;--jp-rc:#d83131;--jp-rcd:#d93030;--jp-jaw:#c38f46;--jp-wirer:#dd2c2c;--jp-pow:#33d677;--jp-need:#f15718;--jp-gap:rgba(241,87,24,0.12);--jp-g-ok:#34d57a;--jp-g-wa:#f9b611;--jp-g-wa2:#ed741c;--jp-g-ba:#d43535}
-	body.dark-mode #jp .jp-engtxt{fill:#ccced1}
-	body.dark-mode #jp .jp-batsub{fill:#9a9da3}
-	body.dark-mode #jp .jp-postp{stroke:#e11e1e}
-	body.dark-mode #jp .jp-postn{stroke:#656a71}
-	body.dark-mode #jp .jp-bracket{stroke:#646a72}
-	body.dark-mode #jp .jp-bolt{stroke:#656a72}
-	body.dark-mode #jp .jp-remotebox{fill:#c8cacc}
-	body.dark-mode #jp .jp-pack{fill:#fcd55f;stroke:#ffbf00}
-	body.dark-mode #jp .jp-packscr{fill:#d8dfd9}
-	body.dark-mode #jp .jp-packpwr{fill:#bcbec2;stroke:#424a57}
-	body.dark-mode #jp .jp-packpwr.on{fill:#78e3a6}
-	body.dark-mode #jp .jp-tg.on{fill:rgba(255,214,92,0.18)}
-	body.dark-mode #jp .jp-tg.near{fill:rgba(255,214,92,0.50)}
-	body.dark-mode #jp .jp-jaw{stroke:#d38e2c}
-	body.dark-mode #jp .jp-gripl{stroke:rgba(51,51,51,0.35)}
-	body.dark-mode #jp .jp-puff circle{fill:#9a9da3}
-	body.dark-mode #jp .jp-spark line{stroke:#cc9c00}
-	body.dark-mode #jp .jp-spark.big line{stroke:#cc6600}
-	body.dark-mode #jp .jp-wheel{fill:#d6d8da;stroke:#6b6b6b}
-	/* TOOL-DARK:END */
 /* Floating compact header bar: once the full header + nav scroll out of
    view, a slim fixed bar (small logo, title, as many nav links as fit)
    slides in, and the hamburger is pinned into its right end. Toggled by
@@ -630,6 +585,66 @@ body.is-stuck #navbar.hide { position: fixed; top: 56px; right: 8px; }
 @media (max-width: 480px) {
   #compact-nav { padding-right: 70px; gap: 8px; }
 }
+
+	/* TOOL-DARK:START -- generated by add_tool_page_controls.py, do not edit */
+	body.dark-mode .page-content :where(div,span,p,li,ul,ol,h1,h2,h3,h4,h5,h6,td,th,label,summary,small,strong,b,em,i,code,pre,legend,figcaption,dl,dt,dd,blockquote,caption,cite,button,input,select,textarea){color:#d8d8d8}
+	body.dark-mode .page-content code{background-color:#33363d;color:#f0a8bd}
+	body.dark-mode .page-content .btn-default{background-color:#2e2e2e;background-image:none;color:#ddd;border-color:#555}
+	body.dark-mode .tu{--accent:#de372b;--accent-dark:#df352a}
+	body.dark-mode .tu h2{color:#d1d6dc;border-bottom:2px solid #46100b}
+	body.dark-mode .tu h3{color:#d1d6dc}
+	body.dark-mode .tu-card{background:#1a1a1a;border:1px solid #28323e}
+	body.dark-mode .tu-card--tint{background:#281614;border-color:#46100b}
+	body.dark-mode .tu-field > label,body.dark-mode .tu-label{color:#9a9aa2}
+	body.dark-mode .tu-input,body.dark-mode .tu-select{border:1px solid #404a58;background:#1a1a1a;color:#dddddd}
+	body.dark-mode .tu-suffix span{color:#989ca4}
+	body.dark-mode .tu-btn{background:#1a1a1a}
+	body.dark-mode .tu-btn--ghost{border-color:#3a424d;color:#aaaaaa}
+	body.dark-mode .tu-btn--ghost:hover{background:#191c20;color:#dddddd;border-color:#3a424d}
+	body.dark-mode .tu-seg{border:1px solid #404a58;background:#1a1a1a}
+	body.dark-mode .tu-seg button{color:#aaaaaa;border-right:1px solid #28323e}
+	body.dark-mode .tu-seg button:hover{background:#16191d}
+	body.dark-mode .tu-chip{border:1px solid #3a424d;background:#1a1a1a;color:#aaaaaa}
+	body.dark-mode .tu-stat{background:#1a1a1a;border:1px solid #28323e}
+	body.dark-mode .tu-stat--hero{background:#281614;border-color:#46100b}
+	body.dark-mode .tu-stat__label{color:#9a9aa2}
+	body.dark-mode .tu-stat__value{color:#d1d6dc}
+	body.dark-mode .tu-stat__sub{color:#9a9ea4}
+	body.dark-mode .tu-pos{color:#7dde9d !important}
+	body.dark-mode .tu-neg{color:#e87973 !important}
+	body.dark-mode .tu-table th,body.dark-mode .tu-table td{border-bottom:1px solid #29323d;color:#cccccc}
+	body.dark-mode .tu-table th{color:#9a9da3;background:#1a1a1a}
+	body.dark-mode .tu-table tr.is-active td{background:#281614}
+	body.dark-mode .tu-note{color:#9a9da3}
+	body.dark-mode .tu-toast{background:#3c4f67}
+	body.dark-mode .tu-seo{border-top:1px solid #333333}
+	body.dark-mode .tu-svg-line{stroke:#394a60}
+	body.dark-mode .tu-svg-text{fill:#cccccc}
+	body.dark-mode .tu-svg-grid{stroke:#28323e}
+	body.dark-mode .tu [data-names="0"] .rw-num,body.dark-mode .tu [data-table="1"] .rw-num{color:#999da3}
+	body.dark-mode .tu [data-table="1"] .rw-head{color:#9a9aa2;border-bottom:2px solid #2b323c}
+	body.dark-mode .tu [data-table="1"] .rw-row{border-bottom:1px solid #27313f}
+	body.dark-mode #jp{--jp-acc:#de372b;--jp-ok:#36d372;--jp-wa:#f68b13;--jp-ba:#de2b2b;--jp-in:#357dd4;--jp-postp:#d83131;--jp-paint1:#3d82cc;--jp-paint2:#47c27d;--jp-rc:#d83131;--jp-rcd:#d93030;--jp-jaw:#c38f46;--jp-wirer:#dd2c2c;--jp-pow:#33d677;--jp-need:#f15718;--jp-needtx:#e55424;--jp-gap:rgba(241,87,24,0.12);--jp-g-ok:#34d57a;--jp-g-wa:#f9b611;--jp-g-wa2:#ed741c;--jp-g-ba:#d43535}
+	body.dark-mode #jp .jp-engtxt{fill:#ccced1}
+	body.dark-mode #jp .jp-batsub{fill:#9a9da3}
+	body.dark-mode #jp .jp-postp{stroke:#e11e1e}
+	body.dark-mode #jp .jp-postn{stroke:#656a71}
+	body.dark-mode #jp .jp-bracket{stroke:#646a72}
+	body.dark-mode #jp .jp-bolt{stroke:#656a72}
+	body.dark-mode #jp .jp-remotebox{fill:#c8cacc}
+	body.dark-mode #jp .jp-pack{fill:#fcd55f;stroke:#ffbf00}
+	body.dark-mode #jp .jp-packscr{fill:#d8dfd9}
+	body.dark-mode #jp .jp-packpwr{fill:#bcbec2;stroke:#424a57}
+	body.dark-mode #jp .jp-packpwr.on{fill:#78e3a6}
+	body.dark-mode #jp .jp-tg.on{fill:rgba(255,214,92,0.18)}
+	body.dark-mode #jp .jp-tg.near{fill:rgba(255,214,92,0.50)}
+	body.dark-mode #jp .jp-jaw{stroke:#d38e2c}
+	body.dark-mode #jp .jp-gripl{stroke:rgba(51,51,51,0.35)}
+	body.dark-mode #jp .jp-puff circle{fill:#9a9da3}
+	body.dark-mode #jp .jp-spark line{stroke:#cc9c00}
+	body.dark-mode #jp .jp-spark.big line{stroke:#cc6600}
+	body.dark-mode #jp .jp-wheel{fill:#d6d8da;stroke:#6b6b6b}
+	/* TOOL-DARK:END */
 </style>
         <meta property="fb:app_id" content="" />
         <meta name="author" content="Math Easy Solutions Staff">
@@ -929,7 +944,7 @@ body.is-stuck #navbar.hide { position: fixed; top: 56px; right: 8px; }
 					<button type="button" class="tu-btn" id="jp-temp-reset">Reset</button>
 				</div>
 				<div class="jp-coldfig">
-					<svg id="jp-fuel" viewBox="0 0 360 200" class="jp-fuelsvg" style="overflow:visible" role="img" aria-label="Battery power available compared with what the engine needs"></svg>
+					<svg id="jp-fuel" viewBox="0 0 360 228" class="jp-fuelsvg" style="overflow:visible" role="img" aria-label="Battery power available compared with what the engine needs"></svg>
 					<p class="jp-coldtxt" id="jp-coldtxt"></p>
 				</div>
 			</div>
@@ -1078,7 +1093,7 @@ body.is-stuck #navbar.hide { position: fixed; top: 56px; right: 8px; }
 <!-- /MES-BOTTOM-AD -->
                             </div>
                         <!-- MES-ASIDE -->
-<aside id="mes-aside" class="mes-aside" data-aside-family="tools" aria-label="More from MES Tools"><div class="mes-aside__sticky"><div class="mes-aside__ad" data-ad-slot="8429975111"></div><div class="mes-aside__head"><h2 class="mes-aside__title-h">More like this</h2><button type="button" class="mes-aside__flip" aria-label="Move this sidebar to the other side" title="Move sidebar to the other side">&#8644;</button></div><ul class="mes-aside__list"><li><a class="mes-aside__card" href="/workout-planner"><img class="mes-aside__img mes-aside__img--logo" src="/workout-planner/img/logo.png" width="56" height="56" loading="lazy" alt=""><span class="mes-aside__text"><span class="mes-aside__name">Workout Routine Planner</span><span class="mes-aside__tag">Tool</span></span></a></li><li><a class="mes-aside__card" href="/ovulation-calculator"><img class="mes-aside__img mes-aside__img--logo" src="/ovulation-calculator/img/logo.png" width="56" height="56" loading="lazy" alt=""><span class="mes-aside__text"><span class="mes-aside__name">Ovulation Calculator: Fertile Window and Ovulation Date</span><span class="mes-aside__tag">Calculator</span></span></a></li><li><a class="mes-aside__card" href="/tools"><img class="mes-aside__img" src="/img/tools-icon.jpg" width="56" height="56" loading="lazy" alt=""><span class="mes-aside__text"><span class="mes-aside__name">All MES Tools</span><span class="mes-aside__tag">Gallery</span></span></a></li><li><a class="mes-aside__card" href="/gpacalculator"><img class="mes-aside__img mes-aside__img--logo" src="/gpacalculator/img/logo.png" width="56" height="56" loading="lazy" alt=""><span class="mes-aside__text"><span class="mes-aside__name">GPA Calculator</span><span class="mes-aside__tag">Calculator</span></span></a></li></ul></div></aside>
+<aside id="mes-aside" class="mes-aside" data-aside-family="tools" aria-label="More from MES Tools"><div class="mes-aside__sticky"><div class="mes-aside__ad" data-ad-slot="8429975111"></div><div class="mes-aside__head"><h2 class="mes-aside__title-h">More like this</h2><button type="button" class="mes-aside__flip" aria-label="Move this sidebar to the other side" title="Move sidebar to the other side">&#8644;</button></div><ul class="mes-aside__list"><li><a class="mes-aside__card" href="/workout-planner"><img class="mes-aside__img mes-aside__img--logo" src="/workout-planner/img/logo.png" width="56" height="56" loading="lazy" alt=""><span class="mes-aside__text"><span class="mes-aside__name">Workout Routine Planner</span><span class="mes-aside__tag">Tool</span></span></a></li><li><a class="mes-aside__card" href="/period-calculator"><img class="mes-aside__img mes-aside__img--logo" src="/period-calculator/img/logo.png" width="56" height="56" loading="lazy" alt=""><span class="mes-aside__text"><span class="mes-aside__name">Period Calculator and Cycle Tracker</span><span class="mes-aside__tag">Calculator</span></span></a></li><li><a class="mes-aside__card" href="/tools"><img class="mes-aside__img" src="/img/tools-icon.jpg" width="56" height="56" loading="lazy" alt=""><span class="mes-aside__text"><span class="mes-aside__name">All MES Tools</span><span class="mes-aside__tag">Gallery</span></span></a></li><li><a class="mes-aside__card" href="/bmicalculator"><img class="mes-aside__img mes-aside__img--logo" src="/bmicalculator/img/logo.png" width="56" height="56" loading="lazy" alt=""><span class="mes-aside__text"><span class="mes-aside__name">BMI Calculator</span><span class="mes-aside__tag">Calculator</span></span></a></li></ul></div></aside>
 <!-- /MES-ASIDE -->
 </div>
 
@@ -1128,7 +1143,7 @@ body.is-stuck #navbar.hide { position: fixed; top: 56px; right: 8px; }
             hide_search:false,
             current_tab:0
         }        </script><!-- FASTCOMMENTS-LAZY: widget init moved to main_js/main.js -- it pulls embed.min.js only when #fastcomments-widget nears the viewport or on the first Comments-toggle click, so it no longer blocks first render -->                <script src="https://mes.fm/main_js/lazysizes.min.js?v=1.0.3" async></script>
-	<script src="/jump-start/js/jump-start.js?v=2" defer></script>
+	<script src="/jump-start/js/jump-start.js?v=3" defer></script>
             <script src="https://mes.fm/main_js/main.js?v=1.0.5"></script>    <!-- PAGEVIEW-TRACKING-INSERTED --><script src="https://mes.fm/main_js/track.js" defer></script><script>document.getElementById('copyright-year').textContent = new Date().getFullYear();</script><script src="/main_js/info-bar-fit.js" defer></script><script>
   // Floating compact header bar (see #compact-nav CSS): appears once the
   // header + nav bar have scrolled off the top; nav links that don't fit
