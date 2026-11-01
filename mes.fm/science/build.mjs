@@ -245,6 +245,15 @@ const PAGES = [
     tileLabel: "Double Pendulum",
   },
   {
+    // Tile only: links to the Heart Simulator. Icon = img/heart-simulator-icon.jpg (placeholder until Grok tile art lands; same file name).
+    slug: "heart-simulator",
+    section: "tools",
+    href: "/heart-simulator",
+    iconVersion: 1,
+    tileOnly: true,
+    tileLabel: "Heart Simulator",
+  },
+  {
     // Tile only: no page is written; links to the tool. Icon = img/time-dilation-icon.jpg (a placeholder until the user's Grok tile art lands; same file name).
     slug: "time-dilation",
     section: "tools",
