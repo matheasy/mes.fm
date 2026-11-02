@@ -720,10 +720,26 @@
     return '<label class="gs-lck"' + (on ? ' style="--lc:' + on.c + '"' : '') + ' title="' + (off ? 'At most ' + MAXL + ' lines: untick one first' : on ? 'Remove its line from the chart' : 'Draw this row as its own line in the chart') + '">' +
       '<input type="checkbox" data-lk="1"' + (on ? ' checked' : '') + (off ? ' disabled' : '') + ' aria-label="Line in the chart"></label>';
   }
+  /* The note above the table: a short tip with an (i) button that shows the full explanation (open state remembered). */
+  function tableNote(note, tip) {
+    var el = $('gs-tnote');
+    if (!tip) { el.textContent = note; return; }
+    var open = false;
+    try { open = localStorage.getItem('mes-gsc:tnote') === '1'; } catch (e) {}
+    el.innerHTML = '';
+    var s = document.createElement('span'); s.className = 'gs-tn-s'; s.textContent = tip;
+    var b = document.createElement('button'); b.type = 'button'; b.className = 'gs-tn-i'; b.textContent = 'i';
+    b.setAttribute('aria-label', 'More about this table'); b.title = 'More about this table';
+    var l = document.createElement('span'); l.className = 'gs-tn-l'; l.id = 'gs-tn-l'; l.textContent = note; b.setAttribute('aria-controls', 'gs-tn-l');
+    function set(o) { open = o; l.hidden = !o; s.hidden = o; b.setAttribute('aria-expanded', o ? 'true' : 'false'); b.classList.toggle('on', o); }
+    b.addEventListener('click', function () { set(!open); try { localStorage.setItem('mes-gsc:tnote', open ? '1' : '0'); } catch (e) {} });
+    el.appendChild(s); el.appendChild(l); el.appendChild(document.createTextNode(' ')); el.appendChild(b);
+    set(open);
+  }
   function renderTable(resetPage) {
     var s = TSRC === 'bing' ? DATA.bing : DATA.google;
     var label = { queries: 'Query', pages: 'Page', countries: 'Country', devices: 'Device' }[TAB];
-    var note = '', rows = [], noPrev = !!(s && s.prevPartial);
+    var note = '', tip = '', rows = [], noPrev = !!(s && s.prevPartial);
     if (!s || !s.setup || s.error) note = (TSRC === 'bing' ? 'Bing' : 'Google') + ' is not set up yet (see above).';
     else if (TSRC === 'bing' && (TAB === 'countries' || TAB === 'devices')) note = 'Bing Webmaster’s API has no country or device split. Switch to Google for these.';
     else if (TSRC === 'bing' && isDay()) note = 'Bing counts queries and pages in weekly buckets only, so it has no table for a single day. Choose 7 days or more.';
@@ -735,9 +751,10 @@
         if (TAB === 'queries') note = 'Search Console hides rare queries for privacy, so these add up to less than the totals.';
         if (noPrev && CMP && !isDay()) note += (note ? ' ' : '') + 'No changes shown: Search Console keeps 16 months, so the ' + rangeName(DATA.rangeUsed || RANGE) + ' before this range are not complete.';
       }
+      tip = TSRC === 'google' ? 'Click a row to filter · tick it to chart it.' : 'Click a row to filter.';
       note += (note ? ' ' : '') + 'Click a row to filter the whole page by it' + (TSRC === 'google' ? '; tick its box to draw it as its own line in the chart (up to ' + MAXL + ').' : '.');
     }
-    $('gs-tnote').textContent = note;
+    tableNote(note, tip);
     var all = rows.length;
     if (TFILTER) {
       var words = TFILTER.split(/\s+/);

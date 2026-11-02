@@ -986,7 +986,7 @@ APPS = {
     "search-console": dict(title="MES Search Console", page_title="Search Console: Google and Bing Search Performance",
                 tag="Google and Bing search clicks, impressions and positions.", accent="#1a73e8", dark="#1557b0", tint="#e8f0fe",
                 desc="Private dashboard: Google Search Console and Bing Webmaster clicks, impressions, CTR and average position for mes.fm, by day, query, page, country and device.",
-                js_v="6", no_ads=True,
+                js_v="7", no_ads=True,
                 head_extra='<meta name="robots" content="noindex, nofollow">' + PAGE3_HEAD),
     # MES App Installs (public, mes.fm/installs): installs of the MES mobile apps on iPhone (App Store Connect Sales and Trends) and Android
     # (Google Play installs CSVs in the developer's Cloud Storage bucket), read by api/installs.js (env APPSTORE_* / PLAY_*; lib.js = MESInst,

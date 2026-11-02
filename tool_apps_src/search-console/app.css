@@ -37,6 +37,11 @@
 	.gs-filter input {max-width:22em;flex:1 1 12em;}
 	.gs-sr {position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);}
 	.gs-tnote {margin:0 0 0.5em;}
+	#gs .gs-tn-i {display:inline-flex;align-items:center;justify-content:center;width:1.45em;height:1.45em;margin-left:0.25em;padding:0;border:1px solid #1a73e8;border-radius:50%;background:transparent;color:#1a73e8;font:italic 700 0.85em/1 Georgia,serif;cursor:pointer;vertical-align:middle;}
+	#gs .gs-tn-i.on {background:#1a73e8;color:#fff;}
+	#gs .gs-tn-i:focus-visible {outline:2px solid #1a73e8;outline-offset:2px;}
+	body.dark-mode #gs .gs-tn-i {border-color:#8ab4f8;color:#8ab4f8;}
+	body.dark-mode #gs .gs-tn-i.on {background:#8ab4f8;color:#111;}
 	.gs-wrap {overflow-x:auto;}
 	.gs-t {width:100%;border-collapse:collapse;font-size:0.9em;}
 	.gs-t th, .gs-t td {padding:0.45em 0.6em;border-bottom:1px solid var(--gs-line);text-align:right;white-space:nowrap;color:var(--gs-ink);}

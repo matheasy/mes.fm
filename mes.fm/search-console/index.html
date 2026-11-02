@@ -344,6 +344,11 @@ body.dark-mode .tu .rw-head {color:#a0a8b3;border-bottom-color:#555;} body.dark-
 	.gs-filter input {max-width:22em;flex:1 1 12em;}
 	.gs-sr {position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);}
 	.gs-tnote {margin:0 0 0.5em;}
+	#gs .gs-tn-i {display:inline-flex;align-items:center;justify-content:center;width:1.45em;height:1.45em;margin-left:0.25em;padding:0;border:1px solid #1a73e8;border-radius:50%;background:transparent;color:#1a73e8;font:italic 700 0.85em/1 Georgia,serif;cursor:pointer;vertical-align:middle;}
+	#gs .gs-tn-i.on {background:#1a73e8;color:#fff;}
+	#gs .gs-tn-i:focus-visible {outline:2px solid #1a73e8;outline-offset:2px;}
+	body.dark-mode #gs .gs-tn-i {border-color:#8ab4f8;color:#8ab4f8;}
+	body.dark-mode #gs .gs-tn-i.on {background:#8ab4f8;color:#111;}
 	.gs-wrap {overflow-x:auto;}
 	.gs-t {width:100%;border-collapse:collapse;font-size:0.9em;}
 	.gs-t th, .gs-t td {padding:0.45em 0.6em;border-bottom:1px solid var(--gs-line);text-align:right;white-space:nowrap;color:var(--gs-ink);}
@@ -669,6 +674,8 @@ body.is-stuck #navbar.hide { position: fixed; top: 56px; right: 8px; }
 	body.dark-mode .tu [data-table="1"] .rw-row{border-bottom:1px solid #27313f}
 	body.dark-mode #gs{--gs-g:#2177e9;--gs-b:#0ad2ff;--gs-good:#2ddc67;--gs-bad:#de2f2b;--gs-link:#2476e5;--gs-mc:#2177e9;--gs-mi:#6e43c7;--gs-mt:#0affe3;--gs-mp:#ff770a;--gs-fresh:rgba(33,119,233,0.07)}
 	body.dark-mode .gs-setup{border-left:4px solid #b76115}
+	body.dark-mode #gs .gs-tn-i{border:1px solid #135bb9;color:#6ba4f0}
+	body.dark-mode #gs .gs-tn-i:focus-visible{outline:2px solid #135bb9}
 	body.dark-mode .gs-bar{background:rgba(82,82,82,0.20)}
 	body.dark-mode .gs-db .gs-db__bar{background:rgba(82,82,82,0.15)}
 	body.dark-mode #gs .gs-fchip button:hover{background:rgba(82,82,82,0.20)}
@@ -703,7 +710,7 @@ body.is-stuck #navbar.hide { position: fixed; top: 56px; right: 8px; }
             <noscript><iframe src="https://www.googletagmanager.com/ns.html?id=GTM-PL6QNQR"
             height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
             <!-- End Google Tag Manager (noscript) -->        <div id="compact-nav" aria-hidden="true" style="display:none">
-  <a href="/search-console" tabindex="-1"><img class="compact-nav-logo" alt="" width="32" height="32" src="/search-console/img/logo.png?v=2"></a>
+  <a href="/search-console" tabindex="-1"><img class="compact-nav-logo" alt="" width="32" height="32" src="https://mes.fm/img/logo-mark.png"></a>
   <a class="compact-nav-title" href="/search-console" tabindex="-1">MES Search Console</a>
   <ul class="compact-nav-links">
     <li><a href="/math" tabindex="-1">Math Tutorials</a></li>
@@ -915,7 +922,7 @@ body.is-stuck #navbar.hide { position: fixed; top: 56px; right: 8px; }
             hide_search:false,
             current_tab:0
         }        </script><!-- FASTCOMMENTS-LAZY: widget init moved to main_js/main.js -- it pulls embed.min.js only when #fastcomments-widget nears the viewport or on the first Comments-toggle click, so it no longer blocks first render -->                <script src="https://mes.fm/main_js/lazysizes.min.js?v=1.0.3" async></script>
-	<script src="/search-console/js/search-console.js?v=6" defer></script>
+	<script src="/search-console/js/search-console.js?v=7" defer></script>
             <script src="https://mes.fm/main_js/main.js?v=1.0.5"></script>    <!-- PAGEVIEW-TRACKING-INSERTED --><script src="https://mes.fm/main_js/track.js" defer></script><script>document.getElementById('copyright-year').textContent = new Date().getFullYear();</script><script src="/main_js/info-bar-fit.js" defer></script><script>
   // Floating compact header bar (see #compact-nav CSS): appears once the
   // header + nav bar have scrolled off the top; nav links that don't fit
