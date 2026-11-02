@@ -21,7 +21,7 @@ REPO = APP.parent
 SITE = REPO / "mes.fm"
 WWW = APP / "www"
 EXT = "https://mes.fm"
-VERSION = "1.0"
+VERSION = "1.1"
 
 # slug, group, title, one-line description
 TOOLS = [
@@ -93,6 +93,10 @@ def rewrite_links(tool: str) -> str:
 
 
 def clean_tool(tool: str) -> str:
+    # the shared 12 h / 24 h time field script (sleep, pace) is bundled once as js/time-input.js
+    tool = re.sub(r'\s*<script src="/main_js/time-input\.js[^"]*"[^>]*></script>', "", tool)
+    # the BMI page's language menu leads to the translated web pages; this app is English only
+    tool = re.sub(r'\s*<nav class="bm-lang".*?</nav>', "", tool, flags=re.S)
     tool, n = re.subn(r'\s*<button[^>]*(?:\bbm-print\b|id="\w\w-print")[^>]*>Print</button>', "", tool)
     assert n == 1, "Print button not found"
     return tool.replace("saved in this browser", "saved on this device").replace("Saved in this browser", "Saved on this device")
@@ -352,7 +356,10 @@ def main() -> None:
         extra = ""
         if slug == "bmicalculator":
             extra = ('<div class="tu-card promo"><b>Just want BMI?</b> There is a separate, lighter <b>MES BMI Calculator</b> app with only this calculator. '
-                     '<a href="%s/mobile-apps" target="_blank" rel="noopener">Get the BMI app</a></div>' % EXT)
+                     '<a id="bmi-app-link" href="%s/mobile-apps" target="_blank" rel="noopener">Get the BMI app</a></div>'
+                     # on iPhone / iPad go straight to the App Store listing (the Play listing is still a closed test)
+                     '<script>if(/iPhone|iPad|iPod|Macintosh/.test(navigator.userAgent)&&"ontouchend" in document)'
+                     'document.getElementById("bmi-app-link").href="https://apps.apple.com/us/app/mes-bmi-calculator/id6824009307";</script>' % EXT)
         panes.append(
             '<section id="pane-%s" class="pane tool" hidden>\n<a class="back" href="#home" data-go="home">&#8249; All calculators</a>\n<h1 class="tool-title">%s</h1>\n%s\n%s\n'
             '<p class="tool-src"><a href="%s/%s" target="_blank" rel="noopener">Method, formulas and sources on mes.fm &rsaquo;</a></p>\n</section>'
@@ -360,6 +367,8 @@ def main() -> None:
         js = clean_js((SITE / slug / "js" / ("%s.js" % slug)).read_text(encoding="utf-8"), slug)
         (WWW / "js" / ("%s.js" % slug)).write_text(js, encoding="utf-8")
         scripts.append('<script src="js/%s.js"></script>' % slug)
+        if "time-input" in (SITE / slug / "index.html").read_text(encoding="utf-8") and '<script src="js/time-input.js"></script>' not in scripts:
+            scripts.append('<script src="js/time-input.js"></script>')
         tiles.setdefault(group, []).append(
             '<a class="tile" href="#%s" data-go="%s" data-k="%s"><img src="%s" alt="" width="56" height="56"><span class="tt">%s</span><span class="td">%s</span></a>'
             % (slug, slug, (title + " " + desc + " " + kws).lower(), tile_img(slug), title, desc))
@@ -368,13 +377,14 @@ def main() -> None:
         home.append('<h2 class="grp">%s</h2><div class="grid">%s</div>' % (g, "".join(items)))
     home.append("</section>")
 
+    shutil.copy(SITE / "main_js" / "time-input.js", WWW / "js" / "time-input.js")
     from PIL import Image
     Image.open(APP / "assets" / "icon.png").convert("RGB").resize((192, 192), Image.LANCZOS).save(WWW / "img" / "logo.png", optimize=True)
 
     css = base_css + "\n" + "\n".join(css_parts)
     (WWW / "index.html").write_text(page(css, "\n".join(home), "\n".join(panes), "\n".join(scripts)), encoding="utf-8")
     out = (WWW / "index.html").read_text(encoding="utf-8")
-    bad = [p for p in ("googletagmanager", "adsbygoogle", "fastcomments", "googlesyndication", 'href="/', "data-src=") if p in out]
+    bad = [p for p in ("googletagmanager", "adsbygoogle", "fastcomments", "googlesyndication", 'href="/', 'src="/', "data-src=", "main_js/time") if p in out]
     ids = re.findall(r'\bid="([^"]+)"', out)
     dup = sorted({i for i in ids if ids.count(i) > 1})
     print("  index.html %d bytes, %d tools%s%s" % (len(out), len(TOOLS), ("  <-- CHECK: " + ", ".join(bad)) if bad else "", ("  <-- duplicate ids: " + ", ".join(dup)) if dup else ""))

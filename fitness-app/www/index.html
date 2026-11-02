@@ -218,7 +218,7 @@ sub {vertical-align:sub;}        .warning-message {font-size:1em;text-align:cent
 	.tu-input--big {font-size:1.35em;padding:0.55em 0.7em;}
 	.tu-suffix {position:relative;}
 	.tu-suffix .tu-input {padding-right:3.2em;}
-	.tu-suffix span {position:absolute;right:0.7em;top:50%;transform:translateY(-50%);font-size:0.85em;color:#8a93a0;pointer-events:none;}
+	.tu-suffix span {position:absolute;right:0.7em;top:50%;transform:translateY(-50%);font-size:0.85em;color:#667085;pointer-events:none;}
 	.tu-btn {cursor:pointer;padding:0.5em 0.95em;border-radius:0.35em;border:0.125em solid var(--accent);background:#fff;color:var(--accent);font-size:0.9em;line-height:1.1;}
 	.tu-btn:hover {background:var(--accent);color:#fff;}
 	.tu-btn--primary {background:var(--accent);color:#fff;}
@@ -239,7 +239,7 @@ sub {vertical-align:sub;}        .warning-message {font-size:1em;text-align:cent
 	.tu-stat--hero {background:#f8e2ed;border-color:#f8e2ed;}
 	.tu-stat__label {font-size:0.72em;font-weight:700;text-transform:uppercase;letter-spacing:0.05em;color:#667;}
 	.tu-stat__value {font-size:1.7em;font-weight:700;color:#1e2733;line-height:1.2;margin:0.15em 0;word-break:break-word;}
-	.tu-stat__sub {font-size:0.85em;color:#6a7280;line-height:1.35;}
+	.tu-stat__sub {font-size:0.85em;color:#555d6b;line-height:1.35;}
 	.tu-pos {color:#1f7a3d !important;}
 	.tu-neg {color:#b3261e !important;}
 	.tu-table-wrap {overflow-x:auto;}
@@ -252,7 +252,15 @@ sub {vertical-align:sub;}        .warning-message {font-size:1em;text-align:cent
 	.tu-toast {position:fixed;left:50%;bottom:2em;transform:translateX(-50%) translateY(0.5em);background:#1e2733;color:#fff;padding:0.6em 1.1em;border-radius:2em;font-size:0.9em;box-shadow:0 0.4em 1.2em rgba(0,0,0,0.25);opacity:0;pointer-events:none;transition:opacity 0.15s, transform 0.15s;z-index:60;}
 	.tu-toast--show {opacity:1;transform:translateX(-50%) translateY(0);}
 	.tu-seo {margin-top:2em;border-top:1px solid #e3e3e3;padding-top:1.2em;}
-	.tu-seo h2 {border-bottom:0;padding-bottom:0;font-size:1.2em;}
+	/* SEO-HEADINGS: headlines and questions stand out from the body text (also added to built pages by add_seo_heading_style.py) */
+	body .tu-seo {font-size:1.04em;line-height:1.65;}
+	body .tu-seo h2 {font-size:1.45em;font-weight:800;line-height:1.25;margin:0 0 0.6em;color:#1e2733;border-bottom:0;padding-bottom:0;}
+	body .tu-seo h3 {font-size:1.2em;font-weight:800;line-height:1.3;margin:1.6em 0 0.5em;padding:0.15em 0 0.15em 0.65em;border-left:5px solid var(--accent,#4a6fa5);color:#1e2733;}
+	body .tu-seo h4, body .tu-seo dt {font-size:1.08em;font-weight:700;font-style:normal;line-height:1.35;margin:1.3em 0 0.3em;color:#1e2733;}
+	body .tu-seo dd {margin:0 0 0.6em;} body .tu-seo p, body .tu-seo li, body .tu-seo dd {line-height:1.65;}
+	body.dark-mode .tu-seo h2, body.dark-mode .tu-seo h3, body.dark-mode .tu-seo h4, body.dark-mode .tu-seo dt {color:#f2f2f2;}
+	.tu sup, .tu sub {font-size:0.72em !important;line-height:0;vertical-align:baseline;position:relative;} .tu sup {top:-0.5em;} .tu sub {top:0.3em;}
+	.tu div[class$="-eq"] {overflow-y:hidden;}
 	.tu-seo ul {list-style:disc;margin:0.5em 0 0.5em 1.5em;line-height:1.5;}
 	.tu-svg-line {fill:none;stroke:#1e2733;stroke-width:2;}
 	.tu-svg-accent {fill:none;stroke:var(--accent);stroke-width:3;}
@@ -294,6 +302,11 @@ sub {vertical-align:sub;}        .warning-message {font-size:1em;text-align:cent
 .tu [data-table="1"] .rw-del {padding:0.25em 0 !important;font-size:0.95em !important;}
 .tu [data-table="1"] .rw-pts {padding:0 !important;font-size:0.78em;text-align:center;}
 body.dark-mode .tu .rw-head {color:#a0a8b3;border-bottom-color:#555;} body.dark-mode .tu [data-table="1"] .rw-row {border-bottom-color:#333;}
+/* equation boxes typeset by main_js/mes-math.js (MathJax) */
+.tu [class$="-eq__f"].mes-tex {font-family:inherit;white-space:normal;display:inline-block;vertical-align:middle;max-width:100%;overflow-x:auto;overflow-y:hidden;}
+.tu [class$="-eq"] mjx-container {margin:0.15em 0 !important;}
+.tu [class$="-eq"] > div {margin:0.25em 0;}
+.tu [class$="-eq__n"] {vertical-align:middle;}
 
 	/* BMI Calculator 2.0 */
 	.tu [hidden] {display:none !important;}
@@ -343,6 +356,58 @@ body.dark-mode .tu .rw-head {color:#a0a8b3;border-bottom-color:#555;} body.dark-
 	.tu .bm-opts {display:flex;flex-wrap:wrap;gap:0.6em 1.4em;align-items:flex-end;margin:0.5em 0 0.2em;} .tu .bm-opts[hidden] {display:none;}
 	.tu .bm-opt {display:flex;flex-direction:column;gap:0.25em;min-width:0;} .tu .bm-opt .tu-label {margin:0;font-size:0.8em;}
 	.tu #bm-ref th, .tu #bm-ref td {white-space:normal;padding:0.45em 0.5em;} .tu #bm-ref th:not(:first-child), .tu #bm-ref td:not(:first-child) {text-align:right;}
+
+/* languages: switcher above the calculator, the kg/cm pages' pounds toggle, the Asian-scale hint (id / vi) */
+.tu .bm-lang {display:flex; justify-content:flex-end; margin:0 0 0.6em;}
+.tu .bm-lang details {position:relative; font-size:0.92em;}
+.tu .bm-lang summary {cursor:pointer; list-style:none; padding:0.3em 0.75em; border:1px solid #d8c4d2; border-radius:999px; background:#fff; color:#5a2d50; font-weight:600; user-select:none;}
+.tu .bm-lang summary::-webkit-details-marker {display:none;}
+.tu .bm-lang summary::after {content:" \25BE";}
+.tu .bm-lang ul {position:absolute; right:0; top:calc(100% + 4px); z-index:30; margin:0; padding:0.35em 0; list-style:none; min-width:13em; background:#fff; border:1px solid #d8c4d2; border-radius:10px; box-shadow:0 8px 24px rgba(0,0,0,0.14);}
+.tu .bm-lang li a {display:block; padding:0.45em 1em; color:#333 !important; text-decoration:none !important;}
+.tu .bm-lang li a:hover, .tu .bm-lang li a:focus {background:#f8e2ed;}
+.tu .bm-lang li a[aria-current] {font-weight:700; color:#8a3d79 !important;}
+.tu .bm-scalehint {flex-basis:100%; margin:0.2em 0 0;}
+.tu .bm-scalehint:empty {display:none;}
+body.dark-mode #bm .bm-lang summary, body.dark-mode #bm .bm-lang ul {background:#262626; border-color:#5a4554; color:#f0d4e6;}
+body.dark-mode #bm .bm-lang li a {color:#e6e6e6 !important;}
+body.dark-mode #bm .bm-lang li a:hover, body.dark-mode #bm .bm-lang li a:focus {background:#3a2a35;}
+body.dark-mode #bm .bm-lang li a[aria-current] {color:#f0a6d8 !important;}
+/* right-to-left pages (Arabic): the calculator box carries dir="rtl"; the page title and intro follow; the gauge, like any number line, stays left to right */
+html[lang="ar"] .page-title, html[lang="ar"] .page-description {direction:rtl; text-align:right;}
+.tu .bm-gauge, .tu .bm-chart {direction:ltr;}
+#bm[dir="rtl"] .tu-suffix span {right:auto; left:0.7em;}
+#bm[dir="rtl"] .tu-suffix .tu-input {padding-right:0.7em; padding-left:3.2em;}
+@media (max-width: 600px) { #bm[dir="rtl"] .tu-suffix .tu-input {padding-right:0.55em; padding-left:2.2em;} }
+/* the India guideline's own small table (English and Hindi pages) */
+.tu .bm-ref-india {margin-top:0.6em;}
+.tu .bm-ref-india caption {caption-side:top; text-align:start; font-weight:700; padding:0 0 0.4em;}
+
+/* weight-for-height chart (BM.chartSvg) */
+.tu .bm-chartbox {margin-top:1em;}
+.tu .bm-chart {display:block;width:100%;height:auto;font-size:13px;}
+.tu .bm-reg--under {fill:#f6dd9a;} .tu .bm-reg--normal {fill:#a7dcb7;} .tu .bm-reg--over {fill:#f5c597;} .tu .bm-reg--obese {fill:#efa7a3;}
+.tu .bm-iso {fill:none;stroke:rgba(0,0,0,0.18);stroke-width:1;stroke-dasharray:3 3;}
+.tu .bm-isot {fill:rgba(0,0,0,0.5);font-size:11px;}
+.tu .bm-regt {fill:#2b2b2b;font-weight:700;font-size:14px;}
+.tu .bm-frame {stroke:#9aa3ad;}
+.tu .bm-chart .bm-gl {stroke:rgba(0,0,0,0.08);}
+.tu .bm-ct {fill:#5b6570;font-size:12px;} .tu .bm-axt {font-weight:700;}
+.tu .bm-you {fill:#1e2733;stroke:#fff;stroke-width:2.5;} .tu .bm-you-l {stroke:#1e2733;stroke-width:1.2;stroke-dasharray:4 3;}
+.tu .bm-yout {fill:#1e2733;font-weight:800;font-size:15px;paint-order:stroke;stroke:#fff;stroke-width:4px;}
+.tu .bm-chartlink {margin:0.6em 0 0;font-size:0.95em;}
+body.dark-mode #bm .bm-reg--under {fill:#6b5a24;} body.dark-mode #bm .bm-reg--normal {fill:#2f6040;} body.dark-mode #bm .bm-reg--over {fill:#6e4423;} body.dark-mode #bm .bm-reg--obese {fill:#6c2c29;}
+body.dark-mode #bm .bm-iso {stroke:rgba(255,255,255,0.22);} body.dark-mode #bm .bm-isot {fill:rgba(255,255,255,0.6);}
+body.dark-mode #bm .bm-regt {fill:#f2f2f2;} body.dark-mode #bm .bm-chart .bm-gl {stroke:rgba(255,255,255,0.08);} body.dark-mode #bm .bm-ct {fill:#b8c0c8;}
+body.dark-mode #bm .bm-you {fill:#fff;stroke:#1a1a1a;} body.dark-mode #bm .bm-you-l {stroke:#e8e8e8;}
+body.dark-mode #bm .bm-yout {fill:#fff;stroke:#1a1a1a;}
+
+	/* interactive weight-for-height chart */
+	.bm-chartbar {display:flex;flex-wrap:wrap;gap:0.4em 0.6em;align-items:center;margin:0.8em 0 0.4em;}
+	.bm-chartread {font-size:0.95em;} .bm-charthint {font-size:0.88em;color:#5d6673;}
+	#bm-wchart svg.is-live {cursor:crosshair;touch-action:none;}
+	#bm-wchart svg.is-live .bm-you {r:9px;}
+	body.dark-mode #bm .bm-charthint {color:#aab3bf;}
 
 
 	@media print {
@@ -436,7 +501,7 @@ body.is-stuck #navbar.hide { position: fixed; top: 56px; right: 8px; }
 	body.dark-mode .tu-card--tint{background:#2a1821;border-color:#46112c}
 	body.dark-mode .tu-field > label,body.dark-mode .tu-label{color:#9a9aa2}
 	body.dark-mode .tu-input,body.dark-mode .tu-select{border:1px solid #404a58;background:#1a1a1a;color:#dddddd}
-	body.dark-mode .tu-suffix span{color:#999da3}
+	body.dark-mode .tu-suffix span{color:#989ca4}
 	body.dark-mode .tu-btn{background:#1a1a1a}
 	body.dark-mode .tu-btn--ghost{border-color:#3a424d;color:#aaaaaa}
 	body.dark-mode .tu-btn--ghost:hover{background:#191c20;color:#dddddd;border-color:#3a424d}
@@ -448,7 +513,7 @@ body.is-stuck #navbar.hide { position: fixed; top: 56px; right: 8px; }
 	body.dark-mode .tu-stat--hero{background:#2a1821;border-color:#46112c}
 	body.dark-mode .tu-stat__label{color:#9a9aa2}
 	body.dark-mode .tu-stat__value{color:#d1d6dc}
-	body.dark-mode .tu-stat__sub{color:#9a9da3}
+	body.dark-mode .tu-stat__sub{color:#9a9ea4}
 	body.dark-mode .tu-pos{color:#7dde9d !important}
 	body.dark-mode .tu-neg{color:#e87973 !important}
 	body.dark-mode .tu-table th,body.dark-mode .tu-table td{border-bottom:1px solid #29323d;color:#cccccc}
@@ -489,6 +554,21 @@ body.is-stuck #navbar.hide { position: fixed; top: 56px; right: 8px; }
 	body.dark-mode .tu .bm-del:hover{color:#e0827b}
 	body.dark-mode .tu .tu-btn.bm-copied{border-color:#45ba4b !important}
 	body.dark-mode .tu .bm-optbar{border-top:1px solid #29323d}
+	body.dark-mode .tu .bm-lang summary{border:1px solid #4d3346;background:#1a1a1a;color:#c992bd}
+	body.dark-mode .tu .bm-lang ul{background:#1a1a1a;border:1px solid #4d3346}
+	body.dark-mode .tu .bm-lang li a{color:#cccccc !important}
+	body.dark-mode .tu .bm-lang li a:hover,body.dark-mode .tu .bm-lang li a:focus{background:#2a1821}
+	body.dark-mode .tu .bm-lang li a[aria-current]{color:#cd8ebf !important}
+	body.dark-mode .tu .bm-iso{stroke:rgba(76,76,76,0.18)}
+	body.dark-mode .tu .bm-isot{fill:rgba(242,242,242,0.50)}
+	body.dark-mode .tu .bm-regt{fill:#d4d4d4}
+	body.dark-mode .tu .bm-frame{stroke:#606a76}
+	body.dark-mode .tu .bm-chart .bm-gl{stroke:rgba(76,76,76,0.08)}
+	body.dark-mode .tu .bm-ct{fill:#999ea3}
+	body.dark-mode .tu .bm-you{fill:#d1d6dc;stroke:#333333}
+	body.dark-mode .tu .bm-you-l{stroke:#394a60}
+	body.dark-mode .tu .bm-yout{fill:#d1d6dc;stroke:#333333}
+	body.dark-mode .bm-charthint{color:#999da3}
 	/* TOOL-DARK:END */
 
 :where(body.dark-mode #bm) :is(div,span,b,strong,p,li,small,label,td,th,output,h1,h2,h3,h4,dt,dd,em,i,summary){color:#e6e6e6;}
@@ -519,7 +599,7 @@ body.is-stuck #navbar.hide { position: fixed; top: 56px; right: 8px; }
 	.tu-input--big {font-size:1.35em;padding:0.55em 0.7em;}
 	.tu-suffix {position:relative;}
 	.tu-suffix .tu-input {padding-right:3.2em;}
-	.tu-suffix span {position:absolute;right:0.7em;top:50%;transform:translateY(-50%);font-size:0.85em;color:#8a93a0;pointer-events:none;}
+	.tu-suffix span {position:absolute;right:0.7em;top:50%;transform:translateY(-50%);font-size:0.85em;color:#667085;pointer-events:none;}
 	.tu-btn {cursor:pointer;padding:0.5em 0.95em;border-radius:0.35em;border:0.125em solid var(--accent);background:#fff;color:var(--accent);font-size:0.9em;line-height:1.1;}
 	.tu-btn:hover {background:var(--accent);color:#fff;}
 	.tu-btn--primary {background:var(--accent);color:#fff;}
@@ -540,7 +620,7 @@ body.is-stuck #navbar.hide { position: fixed; top: 56px; right: 8px; }
 	.tu-stat--hero {background:#ede7fb;border-color:#ede7fb;}
 	.tu-stat__label {font-size:0.72em;font-weight:700;text-transform:uppercase;letter-spacing:0.05em;color:#667;}
 	.tu-stat__value {font-size:1.7em;font-weight:700;color:#1e2733;line-height:1.2;margin:0.15em 0;word-break:break-word;}
-	.tu-stat__sub {font-size:0.85em;color:#6a7280;line-height:1.35;}
+	.tu-stat__sub {font-size:0.85em;color:#555d6b;line-height:1.35;}
 	.tu-pos {color:#1f7a3d !important;}
 	.tu-neg {color:#b3261e !important;}
 	.tu-table-wrap {overflow-x:auto;}
@@ -642,6 +722,7 @@ body.dark-mode .tu .rw-head {color:#a0a8b3;border-bottom-color:#555;} body.dark-
 	body.dark-mode #bf #bf-units button, body.dark-mode #bf #bf-sex button {border-bottom-color:#444;}
 	@media (max-width:600px) {.tu .bf-slidebox output {min-width:3.6em;}}
 	@media print {.tu .bf-btns, .tu #bf-setup {display:none;}}
+	.tu .bf-c0 {color:#1b1b1b;}
 
 
 	@media print {
@@ -681,62 +762,6 @@ body.dark-mode .tu .rw-head {color:#a0a8b3;border-bottom-color:#555;} body.dark-
 		.footer__item--extra-padding { padding-left: 0; }
 		.footer__text--extra-info { float: none; display: block; margin-top: 0.5em; }
 	}
-
-	/* TOOL-DARK:START -- generated by add_tool_page_controls.py, do not edit */
-	body.dark-mode .page-content :where(div,span,p,li,ul,ol,h1,h2,h3,h4,h5,h6,td,th,label,summary,small,strong,b,em,i,code,pre,legend,figcaption,dl,dt,dd,blockquote,caption,cite,button,input,select,textarea){color:#d8d8d8}
-	body.dark-mode .page-content code{background-color:#33363d;color:#f0a8bd}
-	body.dark-mode .page-content .btn-default{background-color:#2e2e2e;background-image:none;color:#ddd;border-color:#555}
-	body.dark-mode #bf.tu{--accent:#7230d9;--accent-dark:#6f2edb}
-	body.dark-mode .tu h2{color:#d1d6dc;border-bottom:2px solid #1c0b44}
-	body.dark-mode .tu h3{color:#d1d6dc}
-	body.dark-mode .tu-card{background:#1a1a1a;border:1px solid #28323e}
-	body.dark-mode .tu-card--tint{background:#1a1427;border-color:#1c0b44}
-	body.dark-mode .tu-field > label,body.dark-mode .tu-label{color:#9a9aa2}
-	body.dark-mode .tu-input,body.dark-mode .tu-select{border:1px solid #404a58;background:#1a1a1a;color:#dddddd}
-	body.dark-mode .tu-suffix span{color:#999da3}
-	body.dark-mode .tu-btn{background:#1a1a1a}
-	body.dark-mode .tu-btn--ghost{border-color:#3a424d;color:#aaaaaa}
-	body.dark-mode .tu-btn--ghost:hover{background:#191c20;color:#dddddd;border-color:#3a424d}
-	body.dark-mode .tu-seg{border:1px solid #404a58;background:#1a1a1a}
-	body.dark-mode .tu-seg button{color:#aaaaaa;border-right:1px solid #28323e}
-	body.dark-mode .tu-seg button:hover{background:#16191d}
-	body.dark-mode .tu-chip{border:1px solid #3a424d;background:#1a1a1a;color:#aaaaaa}
-	body.dark-mode .tu-stat{background:#1a1a1a;border:1px solid #28323e}
-	body.dark-mode .tu-stat--hero{background:#1a1427;border-color:#1c0b44}
-	body.dark-mode .tu-stat__label{color:#9a9aa2}
-	body.dark-mode .tu-stat__value{color:#d1d6dc}
-	body.dark-mode .tu-stat__sub{color:#9a9da3}
-	body.dark-mode .tu-pos{color:#7dde9d !important}
-	body.dark-mode .tu-neg{color:#e87973 !important}
-	body.dark-mode .tu-table th,body.dark-mode .tu-table td{border-bottom:1px solid #29323d;color:#cccccc}
-	body.dark-mode .tu-table th{color:#9a9da3;background:#1a1a1a}
-	body.dark-mode .tu-table tr.is-active td{background:#1a1427}
-	body.dark-mode .tu-note{color:#9a9da3}
-	body.dark-mode .tu-toast{background:#3c4f67}
-	body.dark-mode .tu-seo{border-top:1px solid #333333}
-	body.dark-mode .tu-svg-line{stroke:#394a60}
-	body.dark-mode .tu-svg-text{fill:#cccccc}
-	body.dark-mode .tu-svg-grid{stroke:#28323e}
-	body.dark-mode .tu [data-names="0"] .rw-num,body.dark-mode .tu [data-table="1"] .rw-num{color:#999da3}
-	body.dark-mode .tu [data-table="1"] .rw-head{color:#9a9aa2;border-bottom:2px solid #2b323c}
-	body.dark-mode .tu [data-table="1"] .rw-row{border-bottom:1px solid #27313f}
-	body.dark-mode .tu .bf-small{color:#9a9da3}
-	body.dark-mode .tu .bf-warn{color:#e1837a}
-	body.dark-mode .tu .bf-band--low{background:#24292e}
-	body.dark-mode .tu .bf-pin{background:#3c4f67}
-	body.dark-mode .tu .bf-pin span{background:#3c4f67}
-	body.dark-mode .tu .bf-ticks{color:#9a9da3}
-	body.dark-mode .tu .bf-cat{border-left:4px solid #424242;color:#bbbbbb}
-	body.dark-mode .tu .bf-cat--low{border-left-color:#5b6876}
-	body.dark-mode .tu .bf-cat--ess{border-left-color:#e3a41c}
-	body.dark-mode .tu .bf-cat--ath{border-left-color:#4eb171}
-	body.dark-mode .tu .bf-cat--fit{border-left-color:#3e8e4e}
-	body.dark-mode .tu .bf-cat--avg{border-left-color:#ba6212}
-	body.dark-mode .tu .bf-cat--obese{border-left-color:#ac2720}
-	body.dark-mode .tu .bf-cat.is-on{background:#1a1427;color:#d1d6dc}
-	body.dark-mode .tu .bf-lbl{border-top:1px solid #29323d}
-	body.dark-mode .tu .bf-split{background:#202326}
-	/* TOOL-DARK:END */
 /* Floating compact header bar: once the full header + nav scroll out of
    view, a slim fixed bar (small logo, title, as many nav links as fit)
    slides in, and the hamburger is pinned into its right end. Toggled by
@@ -780,6 +805,63 @@ body.is-stuck #navbar.hide { position: fixed; top: 56px; right: 8px; }
   #compact-nav { padding-right: 70px; gap: 8px; }
 }
 
+	/* TOOL-DARK:START -- generated by add_tool_page_controls.py, do not edit */
+	body.dark-mode .page-content :where(div,span,p,li,ul,ol,h1,h2,h3,h4,h5,h6,td,th,label,summary,small,strong,b,em,i,code,pre,legend,figcaption,dl,dt,dd,blockquote,caption,cite,button,input,select,textarea){color:#d8d8d8}
+	body.dark-mode .page-content code{background-color:#33363d;color:#f0a8bd}
+	body.dark-mode .page-content .btn-default{background-color:#2e2e2e;background-image:none;color:#ddd;border-color:#555}
+	body.dark-mode #bf.tu{--accent:#7230d9;--accent-dark:#6f2edb}
+	body.dark-mode .tu h2{color:#d1d6dc;border-bottom:2px solid #1c0b44}
+	body.dark-mode .tu h3{color:#d1d6dc}
+	body.dark-mode .tu-card{background:#1a1a1a;border:1px solid #28323e}
+	body.dark-mode .tu-card--tint{background:#1a1427;border-color:#1c0b44}
+	body.dark-mode .tu-field > label,body.dark-mode .tu-label{color:#9a9aa2}
+	body.dark-mode .tu-input,body.dark-mode .tu-select{border:1px solid #404a58;background:#1a1a1a;color:#dddddd}
+	body.dark-mode .tu-suffix span{color:#989ca4}
+	body.dark-mode .tu-btn{background:#1a1a1a}
+	body.dark-mode .tu-btn--ghost{border-color:#3a424d;color:#aaaaaa}
+	body.dark-mode .tu-btn--ghost:hover{background:#191c20;color:#dddddd;border-color:#3a424d}
+	body.dark-mode .tu-seg{border:1px solid #404a58;background:#1a1a1a}
+	body.dark-mode .tu-seg button{color:#aaaaaa;border-right:1px solid #28323e}
+	body.dark-mode .tu-seg button:hover{background:#16191d}
+	body.dark-mode .tu-chip{border:1px solid #3a424d;background:#1a1a1a;color:#aaaaaa}
+	body.dark-mode .tu-stat{background:#1a1a1a;border:1px solid #28323e}
+	body.dark-mode .tu-stat--hero{background:#1a1427;border-color:#1c0b44}
+	body.dark-mode .tu-stat__label{color:#9a9aa2}
+	body.dark-mode .tu-stat__value{color:#d1d6dc}
+	body.dark-mode .tu-stat__sub{color:#9a9ea4}
+	body.dark-mode .tu-pos{color:#7dde9d !important}
+	body.dark-mode .tu-neg{color:#e87973 !important}
+	body.dark-mode .tu-table th,body.dark-mode .tu-table td{border-bottom:1px solid #29323d;color:#cccccc}
+	body.dark-mode .tu-table th{color:#9a9da3;background:#1a1a1a}
+	body.dark-mode .tu-table tr.is-active td{background:#1a1427}
+	body.dark-mode .tu-note{color:#9a9da3}
+	body.dark-mode .tu-toast{background:#3c4f67}
+	body.dark-mode .tu-seo{border-top:1px solid #333333}
+	body.dark-mode .tu-svg-line{stroke:#394a60}
+	body.dark-mode .tu-svg-text{fill:#cccccc}
+	body.dark-mode .tu-svg-grid{stroke:#28323e}
+	body.dark-mode .tu [data-names="0"] .rw-num,body.dark-mode .tu [data-table="1"] .rw-num{color:#999da3}
+	body.dark-mode .tu [data-table="1"] .rw-head{color:#9a9aa2;border-bottom:2px solid #2b323c}
+	body.dark-mode .tu [data-table="1"] .rw-row{border-bottom:1px solid #27313f}
+	body.dark-mode .tu .bf-small{color:#9a9da3}
+	body.dark-mode .tu .bf-warn{color:#e1837a}
+	body.dark-mode .tu .bf-band--low{background:#24292e}
+	body.dark-mode .tu .bf-pin{background:#3c4f67}
+	body.dark-mode .tu .bf-pin span{background:#3c4f67}
+	body.dark-mode .tu .bf-ticks{color:#9a9da3}
+	body.dark-mode .tu .bf-cat{border-left:4px solid #424242;color:#bbbbbb}
+	body.dark-mode .tu .bf-cat--low{border-left-color:#5b6876}
+	body.dark-mode .tu .bf-cat--ess{border-left-color:#e3a41c}
+	body.dark-mode .tu .bf-cat--ath{border-left-color:#4eb171}
+	body.dark-mode .tu .bf-cat--fit{border-left-color:#3e8e4e}
+	body.dark-mode .tu .bf-cat--avg{border-left-color:#ba6212}
+	body.dark-mode .tu .bf-cat--obese{border-left-color:#ac2720}
+	body.dark-mode .tu .bf-cat.is-on{background:#1a1427;color:#d1d6dc}
+	body.dark-mode .tu .bf-lbl{border-top:1px solid #29323d}
+	body.dark-mode .tu .bf-split{background:#202326}
+	body.dark-mode .tu .bf-c0{color:#e4e4e4}
+	/* TOOL-DARK:END */
+
 :where(body.dark-mode #bf) :is(div,span,b,strong,p,li,small,label,td,th,output,h1,h2,h3,h4,dt,dd,em,i,summary){color:#e6e6e6;}
 
 	.hide {display:none;}
@@ -808,7 +890,7 @@ body.is-stuck #navbar.hide { position: fixed; top: 56px; right: 8px; }
 	.tu-input--big {font-size:1.35em;padding:0.55em 0.7em;}
 	.tu-suffix {position:relative;}
 	.tu-suffix .tu-input {padding-right:3.2em;}
-	.tu-suffix span {position:absolute;right:0.7em;top:50%;transform:translateY(-50%);font-size:0.85em;color:#8a93a0;pointer-events:none;}
+	.tu-suffix span {position:absolute;right:0.7em;top:50%;transform:translateY(-50%);font-size:0.85em;color:#667085;pointer-events:none;}
 	.tu-btn {cursor:pointer;padding:0.5em 0.95em;border-radius:0.35em;border:0.125em solid var(--accent);background:#fff;color:var(--accent);font-size:0.9em;line-height:1.1;}
 	.tu-btn:hover {background:var(--accent);color:#fff;}
 	.tu-btn--primary {background:var(--accent);color:#fff;}
@@ -829,7 +911,7 @@ body.is-stuck #navbar.hide { position: fixed; top: 56px; right: 8px; }
 	.tu-stat--hero {background:#dff1f6;border-color:#dff1f6;}
 	.tu-stat__label {font-size:0.72em;font-weight:700;text-transform:uppercase;letter-spacing:0.05em;color:#667;}
 	.tu-stat__value {font-size:1.7em;font-weight:700;color:#1e2733;line-height:1.2;margin:0.15em 0;word-break:break-word;}
-	.tu-stat__sub {font-size:0.85em;color:#6a7280;line-height:1.35;}
+	.tu-stat__sub {font-size:0.85em;color:#555d6b;line-height:1.35;}
 	.tu-pos {color:#1f7a3d !important;}
 	.tu-neg {color:#b3261e !important;}
 	.tu-table-wrap {overflow-x:auto;}
@@ -955,61 +1037,6 @@ body.dark-mode .tu .rw-head {color:#a0a8b3;border-bottom-color:#555;} body.dark-
 		.footer__item--extra-padding { padding-left: 0; }
 		.footer__text--extra-info { float: none; display: block; margin-top: 0.5em; }
 	}
-
-	/* TOOL-DARK:START -- generated by add_tool_page_controls.py, do not edit */
-	body.dark-mode .page-content :where(div,span,p,li,ul,ol,h1,h2,h3,h4,h5,h6,td,th,label,summary,small,strong,b,em,i,code,pre,legend,figcaption,dl,dt,dd,blockquote,caption,cite,button,input,select,textarea){color:#d8d8d8}
-	body.dark-mode .page-content code{background-color:#33363d;color:#f0a8bd}
-	body.dark-mode .page-content .btn-default{background-color:#2e2e2e;background-image:none;color:#ddd;border-color:#555}
-	body.dark-mode #iw.tu{--accent:#20bee9;--accent-dark:#20c3ea}
-	body.dark-mode .tu h2{color:#d1d6dc;border-bottom:2px solid #143d48}
-	body.dark-mode .tu h3{color:#d1d6dc}
-	body.dark-mode .tu-card{background:#1a1a1a;border:1px solid #28323e}
-	body.dark-mode .tu-card--tint{background:#1b292d;border-color:#143d48}
-	body.dark-mode .tu-field > label,body.dark-mode .tu-label{color:#9a9aa2}
-	body.dark-mode .tu-input,body.dark-mode .tu-select{border:1px solid #404a58;background:#1a1a1a;color:#dddddd}
-	body.dark-mode .tu-suffix span{color:#999da3}
-	body.dark-mode .tu-btn{background:#1a1a1a}
-	body.dark-mode .tu-btn--ghost{border-color:#3a424d;color:#aaaaaa}
-	body.dark-mode .tu-btn--ghost:hover{background:#191c20;color:#dddddd;border-color:#3a424d}
-	body.dark-mode .tu-seg{border:1px solid #404a58;background:#1a1a1a}
-	body.dark-mode .tu-seg button{color:#aaaaaa;border-right:1px solid #28323e}
-	body.dark-mode .tu-seg button:hover{background:#16191d}
-	body.dark-mode .tu-chip{border:1px solid #3a424d;background:#1a1a1a;color:#aaaaaa}
-	body.dark-mode .tu-stat{background:#1a1a1a;border:1px solid #28323e}
-	body.dark-mode .tu-stat--hero{background:#1b292d;border-color:#143d48}
-	body.dark-mode .tu-stat__label{color:#9a9aa2}
-	body.dark-mode .tu-stat__value{color:#d1d6dc}
-	body.dark-mode .tu-stat__sub{color:#9a9da3}
-	body.dark-mode .tu-pos{color:#7dde9d !important}
-	body.dark-mode .tu-neg{color:#e87973 !important}
-	body.dark-mode .tu-table th,body.dark-mode .tu-table td{border-bottom:1px solid #29323d;color:#cccccc}
-	body.dark-mode .tu-table th{color:#9a9da3;background:#1a1a1a}
-	body.dark-mode .tu-table tr.is-active td{background:#1b292d}
-	body.dark-mode .tu-note{color:#9a9da3}
-	body.dark-mode .tu-toast{background:#3c4f67}
-	body.dark-mode .tu-seo{border-top:1px solid #333333}
-	body.dark-mode .tu-svg-line{stroke:#394a60}
-	body.dark-mode .tu-svg-text{fill:#cccccc}
-	body.dark-mode .tu-svg-grid{stroke:#28323e}
-	body.dark-mode .tu [data-names="0"] .rw-num,body.dark-mode .tu [data-table="1"] .rw-num{color:#999da3}
-	body.dark-mode .tu [data-table="1"] .rw-head{color:#9a9aa2;border-bottom:2px solid #2b323c}
-	body.dark-mode .tu [data-table="1"] .rw-row{border-bottom:1px solid #27313f}
-	body.dark-mode .tu .iw-small{color:#9a9da3}
-	body.dark-mode .tu .iw-gl{stroke:#2c333c}
-	body.dark-mode .tu .iw-ct{fill:#9a9da3}
-	body.dark-mode .tu .iw-lbl{fill:#d1d6dc}
-	body.dark-mode .tu .iw-band{fill:#8dcda2}
-	body.dark-mode .tu .iw-bandl{stroke:#3e8e58}
-	body.dark-mode .tu .iw-mk{stroke:#333333}
-	body.dark-mode .tu .iw-me{stroke:#394a60}
-	body.dark-mode .tu .iw-meT{fill:#d1d6dc}
-	body.dark-mode .tu .iw-cross{stroke:#606976}
-	body.dark-mode .tu .iw-c0{fill:#639bf8;stroke:#0950c3}
-	body.dark-mode .tu .iw-c1{fill:#f0c46b;stroke:#ba8212}
-	body.dark-mode .tu .iw-c2{fill:#9164f6;stroke:#420bc1}
-	body.dark-mode .tu .iw-c3{fill:#f0796a;stroke:#ba2412}
-	body.dark-mode .tu .iw-readout{color:#a4a8b0}
-	/* TOOL-DARK:END */
 /* Floating compact header bar: once the full header + nav scroll out of
    view, a slim fixed bar (small logo, title, as many nav links as fit)
    slides in, and the hamburger is pinned into its right end. Toggled by
@@ -1053,6 +1080,61 @@ body.is-stuck #navbar.hide { position: fixed; top: 56px; right: 8px; }
   #compact-nav { padding-right: 70px; gap: 8px; }
 }
 
+	/* TOOL-DARK:START -- generated by add_tool_page_controls.py, do not edit */
+	body.dark-mode .page-content :where(div,span,p,li,ul,ol,h1,h2,h3,h4,h5,h6,td,th,label,summary,small,strong,b,em,i,code,pre,legend,figcaption,dl,dt,dd,blockquote,caption,cite,button,input,select,textarea){color:#d8d8d8}
+	body.dark-mode .page-content code{background-color:#33363d;color:#f0a8bd}
+	body.dark-mode .page-content .btn-default{background-color:#2e2e2e;background-image:none;color:#ddd;border-color:#555}
+	body.dark-mode #iw.tu{--accent:#20bee9;--accent-dark:#20c3ea}
+	body.dark-mode .tu h2{color:#d1d6dc;border-bottom:2px solid #143d48}
+	body.dark-mode .tu h3{color:#d1d6dc}
+	body.dark-mode .tu-card{background:#1a1a1a;border:1px solid #28323e}
+	body.dark-mode .tu-card--tint{background:#1b292d;border-color:#143d48}
+	body.dark-mode .tu-field > label,body.dark-mode .tu-label{color:#9a9aa2}
+	body.dark-mode .tu-input,body.dark-mode .tu-select{border:1px solid #404a58;background:#1a1a1a;color:#dddddd}
+	body.dark-mode .tu-suffix span{color:#989ca4}
+	body.dark-mode .tu-btn{background:#1a1a1a}
+	body.dark-mode .tu-btn--ghost{border-color:#3a424d;color:#aaaaaa}
+	body.dark-mode .tu-btn--ghost:hover{background:#191c20;color:#dddddd;border-color:#3a424d}
+	body.dark-mode .tu-seg{border:1px solid #404a58;background:#1a1a1a}
+	body.dark-mode .tu-seg button{color:#aaaaaa;border-right:1px solid #28323e}
+	body.dark-mode .tu-seg button:hover{background:#16191d}
+	body.dark-mode .tu-chip{border:1px solid #3a424d;background:#1a1a1a;color:#aaaaaa}
+	body.dark-mode .tu-stat{background:#1a1a1a;border:1px solid #28323e}
+	body.dark-mode .tu-stat--hero{background:#1b292d;border-color:#143d48}
+	body.dark-mode .tu-stat__label{color:#9a9aa2}
+	body.dark-mode .tu-stat__value{color:#d1d6dc}
+	body.dark-mode .tu-stat__sub{color:#9a9ea4}
+	body.dark-mode .tu-pos{color:#7dde9d !important}
+	body.dark-mode .tu-neg{color:#e87973 !important}
+	body.dark-mode .tu-table th,body.dark-mode .tu-table td{border-bottom:1px solid #29323d;color:#cccccc}
+	body.dark-mode .tu-table th{color:#9a9da3;background:#1a1a1a}
+	body.dark-mode .tu-table tr.is-active td{background:#1b292d}
+	body.dark-mode .tu-note{color:#9a9da3}
+	body.dark-mode .tu-toast{background:#3c4f67}
+	body.dark-mode .tu-seo{border-top:1px solid #333333}
+	body.dark-mode .tu-svg-line{stroke:#394a60}
+	body.dark-mode .tu-svg-text{fill:#cccccc}
+	body.dark-mode .tu-svg-grid{stroke:#28323e}
+	body.dark-mode .tu [data-names="0"] .rw-num,body.dark-mode .tu [data-table="1"] .rw-num{color:#999da3}
+	body.dark-mode .tu [data-table="1"] .rw-head{color:#9a9aa2;border-bottom:2px solid #2b323c}
+	body.dark-mode .tu [data-table="1"] .rw-row{border-bottom:1px solid #27313f}
+	body.dark-mode .tu .iw-small{color:#9a9da3}
+	body.dark-mode .tu .iw-gl{stroke:#2c333c}
+	body.dark-mode .tu .iw-ct{fill:#9a9da3}
+	body.dark-mode .tu .iw-lbl{fill:#d1d6dc}
+	body.dark-mode .tu .iw-band{fill:#8dcda2}
+	body.dark-mode .tu .iw-bandl{stroke:#3e8e58}
+	body.dark-mode .tu .iw-mk{stroke:#333333}
+	body.dark-mode .tu .iw-me{stroke:#394a60}
+	body.dark-mode .tu .iw-meT{fill:#d1d6dc}
+	body.dark-mode .tu .iw-cross{stroke:#606976}
+	body.dark-mode .tu .iw-c0{fill:#639bf8;stroke:#0950c3}
+	body.dark-mode .tu .iw-c1{fill:#f0c46b;stroke:#ba8212}
+	body.dark-mode .tu .iw-c2{fill:#9164f6;stroke:#420bc1}
+	body.dark-mode .tu .iw-c3{fill:#f0796a;stroke:#ba2412}
+	body.dark-mode .tu .iw-readout{color:#a4a8b0}
+	/* TOOL-DARK:END */
+
 :where(body.dark-mode #iw) :is(div,span,b,strong,p,li,small,label,td,th,output,h1,h2,h3,h4,dt,dd,em,i,summary){color:#e6e6e6;}
 
 	.hide {display:none;}
@@ -1081,7 +1163,7 @@ body.is-stuck #navbar.hide { position: fixed; top: 56px; right: 8px; }
 	.tu-input--big {font-size:1.35em;padding:0.55em 0.7em;}
 	.tu-suffix {position:relative;}
 	.tu-suffix .tu-input {padding-right:3.2em;}
-	.tu-suffix span {position:absolute;right:0.7em;top:50%;transform:translateY(-50%);font-size:0.85em;color:#8a93a0;pointer-events:none;}
+	.tu-suffix span {position:absolute;right:0.7em;top:50%;transform:translateY(-50%);font-size:0.85em;color:#667085;pointer-events:none;}
 	.tu-btn {cursor:pointer;padding:0.5em 0.95em;border-radius:0.35em;border:0.125em solid var(--accent);background:#fff;color:var(--accent);font-size:0.9em;line-height:1.1;}
 	.tu-btn:hover {background:var(--accent);color:#fff;}
 	.tu-btn--primary {background:var(--accent);color:#fff;}
@@ -1102,7 +1184,7 @@ body.is-stuck #navbar.hide { position: fixed; top: 56px; right: 8px; }
 	.tu-stat--hero {background:#f0e4f3;border-color:#f0e4f3;}
 	.tu-stat__label {font-size:0.72em;font-weight:700;text-transform:uppercase;letter-spacing:0.05em;color:#667;}
 	.tu-stat__value {font-size:1.7em;font-weight:700;color:#1e2733;line-height:1.2;margin:0.15em 0;word-break:break-word;}
-	.tu-stat__sub {font-size:0.85em;color:#6a7280;line-height:1.35;}
+	.tu-stat__sub {font-size:0.85em;color:#555d6b;line-height:1.35;}
 	.tu-pos {color:#1f7a3d !important;}
 	.tu-neg {color:#b3261e !important;}
 	.tu-table-wrap {overflow-x:auto;}
@@ -1227,64 +1309,6 @@ body.dark-mode .tu .rw-head {color:#a0a8b3;border-bottom-color:#555;} body.dark-
 		.footer__item--extra-padding { padding-left: 0; }
 		.footer__text--extra-info { float: none; display: block; margin-top: 0.5em; }
 	}
-
-	/* TOOL-DARK:START -- generated by add_tool_page_controls.py, do not edit */
-	body.dark-mode .page-content :where(div,span,p,li,ul,ol,h1,h2,h3,h4,h5,h6,td,th,label,summary,small,strong,b,em,i,code,pre,legend,figcaption,dl,dt,dd,blockquote,caption,cite,button,input,select,textarea){color:#d8d8d8}
-	body.dark-mode .page-content code{background-color:#33363d;color:#f0a8bd}
-	body.dark-mode .page-content .btn-default{background-color:#2e2e2e;background-image:none;color:#ddd;border-color:#555}
-	body.dark-mode #wh.tu{--accent:#a553b7;--accent-dark:#a550b9}
-	body.dark-mode .tu h2{color:#d1d6dc;border-bottom:2px solid #371c3e}
-	body.dark-mode .tu h3{color:#d1d6dc}
-	body.dark-mode .tu-card{background:#1a1a1a;border:1px solid #28323e}
-	body.dark-mode .tu-card--tint{background:#261d29;border-color:#371c3e}
-	body.dark-mode .tu-field > label,body.dark-mode .tu-label{color:#9a9aa2}
-	body.dark-mode .tu-input,body.dark-mode .tu-select{border:1px solid #404a58;background:#1a1a1a;color:#dddddd}
-	body.dark-mode .tu-suffix span{color:#999da3}
-	body.dark-mode .tu-btn{background:#1a1a1a}
-	body.dark-mode .tu-btn--ghost{border-color:#3a424d;color:#aaaaaa}
-	body.dark-mode .tu-btn--ghost:hover{background:#191c20;color:#dddddd;border-color:#3a424d}
-	body.dark-mode .tu-seg{border:1px solid #404a58;background:#1a1a1a}
-	body.dark-mode .tu-seg button{color:#aaaaaa;border-right:1px solid #28323e}
-	body.dark-mode .tu-seg button:hover{background:#16191d}
-	body.dark-mode .tu-chip{border:1px solid #3a424d;background:#1a1a1a;color:#aaaaaa}
-	body.dark-mode .tu-stat{background:#1a1a1a;border:1px solid #28323e}
-	body.dark-mode .tu-stat--hero{background:#261d29;border-color:#371c3e}
-	body.dark-mode .tu-stat__label{color:#9a9aa2}
-	body.dark-mode .tu-stat__value{color:#d1d6dc}
-	body.dark-mode .tu-stat__sub{color:#9a9da3}
-	body.dark-mode .tu-pos{color:#7dde9d !important}
-	body.dark-mode .tu-neg{color:#e87973 !important}
-	body.dark-mode .tu-table th,body.dark-mode .tu-table td{border-bottom:1px solid #29323d;color:#cccccc}
-	body.dark-mode .tu-table th{color:#9a9da3;background:#1a1a1a}
-	body.dark-mode .tu-table tr.is-active td{background:#261d29}
-	body.dark-mode .tu-note{color:#9a9da3}
-	body.dark-mode .tu-toast{background:#3c4f67}
-	body.dark-mode .tu-seo{border-top:1px solid #333333}
-	body.dark-mode .tu-svg-line{stroke:#394a60}
-	body.dark-mode .tu-svg-text{fill:#cccccc}
-	body.dark-mode .tu-svg-grid{stroke:#28323e}
-	body.dark-mode .tu [data-names="0"] .rw-num,body.dark-mode .tu [data-table="1"] .rw-num{color:#999da3}
-	body.dark-mode .tu [data-table="1"] .rw-head{color:#9a9aa2;border-bottom:2px solid #2b323c}
-	body.dark-mode .tu [data-table="1"] .rw-row{border-bottom:1px solid #27313f}
-	body.dark-mode .tu .wh-verdict{border-left:5px solid #4f5966}
-	body.dark-mode .tu .wh-verdict.is-low{border-left-color:#3ac56e}
-	body.dark-mode .tu .wh-verdict.is-mid{border-left-color:#e3a41c}
-	body.dark-mode .tu .wh-verdict.is-high{border-left-color:#a52f27}
-	body.dark-mode .tu .wh-small{color:#9a9da3}
-	body.dark-mode .tu .wh-warn{color:#e1837a}
-	body.dark-mode .tu .wh-gt span{color:#9a9da3}
-	body.dark-mode .tu .wh-band--under{background:#24292e}
-	body.dark-mode .tu .wh-pin{background:#3c4f67}
-	body.dark-mode .tu .wh-pin span{background:#3c4f67}
-	body.dark-mode .tu .wh-ticks{color:#9a9da3}
-	body.dark-mode .tu .wh-gl{stroke:#2c333c}
-	body.dark-mode .tu .wh-ct{fill:#9a9da3}
-	body.dark-mode .tu .wh-dot{stroke:#333333}
-	body.dark-mode .tu .wh-bd--low{fill:#8dcda2}
-	body.dark-mode .tu .wh-bd--mid{fill:#f1aa6a}
-	body.dark-mode .tu .wh-bd--high{fill:#e57b76}
-	body.dark-mode .tu .wh-bd--under{fill:#989ea4}
-	/* TOOL-DARK:END */
 /* Floating compact header bar: once the full header + nav scroll out of
    view, a slim fixed bar (small logo, title, as many nav links as fit)
    slides in, and the hamburger is pinned into its right end. Toggled by
@@ -1327,6 +1351,64 @@ body.is-stuck #navbar.hide { position: fixed; top: 56px; right: 8px; }
 @media (max-width: 480px) {
   #compact-nav { padding-right: 70px; gap: 8px; }
 }
+
+	/* TOOL-DARK:START -- generated by add_tool_page_controls.py, do not edit */
+	body.dark-mode .page-content :where(div,span,p,li,ul,ol,h1,h2,h3,h4,h5,h6,td,th,label,summary,small,strong,b,em,i,code,pre,legend,figcaption,dl,dt,dd,blockquote,caption,cite,button,input,select,textarea){color:#d8d8d8}
+	body.dark-mode .page-content code{background-color:#33363d;color:#f0a8bd}
+	body.dark-mode .page-content .btn-default{background-color:#2e2e2e;background-image:none;color:#ddd;border-color:#555}
+	body.dark-mode #wh.tu{--accent:#a553b7;--accent-dark:#a550b9}
+	body.dark-mode .tu h2{color:#d1d6dc;border-bottom:2px solid #371c3e}
+	body.dark-mode .tu h3{color:#d1d6dc}
+	body.dark-mode .tu-card{background:#1a1a1a;border:1px solid #28323e}
+	body.dark-mode .tu-card--tint{background:#261d29;border-color:#371c3e}
+	body.dark-mode .tu-field > label,body.dark-mode .tu-label{color:#9a9aa2}
+	body.dark-mode .tu-input,body.dark-mode .tu-select{border:1px solid #404a58;background:#1a1a1a;color:#dddddd}
+	body.dark-mode .tu-suffix span{color:#989ca4}
+	body.dark-mode .tu-btn{background:#1a1a1a}
+	body.dark-mode .tu-btn--ghost{border-color:#3a424d;color:#aaaaaa}
+	body.dark-mode .tu-btn--ghost:hover{background:#191c20;color:#dddddd;border-color:#3a424d}
+	body.dark-mode .tu-seg{border:1px solid #404a58;background:#1a1a1a}
+	body.dark-mode .tu-seg button{color:#aaaaaa;border-right:1px solid #28323e}
+	body.dark-mode .tu-seg button:hover{background:#16191d}
+	body.dark-mode .tu-chip{border:1px solid #3a424d;background:#1a1a1a;color:#aaaaaa}
+	body.dark-mode .tu-stat{background:#1a1a1a;border:1px solid #28323e}
+	body.dark-mode .tu-stat--hero{background:#261d29;border-color:#371c3e}
+	body.dark-mode .tu-stat__label{color:#9a9aa2}
+	body.dark-mode .tu-stat__value{color:#d1d6dc}
+	body.dark-mode .tu-stat__sub{color:#9a9ea4}
+	body.dark-mode .tu-pos{color:#7dde9d !important}
+	body.dark-mode .tu-neg{color:#e87973 !important}
+	body.dark-mode .tu-table th,body.dark-mode .tu-table td{border-bottom:1px solid #29323d;color:#cccccc}
+	body.dark-mode .tu-table th{color:#9a9da3;background:#1a1a1a}
+	body.dark-mode .tu-table tr.is-active td{background:#261d29}
+	body.dark-mode .tu-note{color:#9a9da3}
+	body.dark-mode .tu-toast{background:#3c4f67}
+	body.dark-mode .tu-seo{border-top:1px solid #333333}
+	body.dark-mode .tu-svg-line{stroke:#394a60}
+	body.dark-mode .tu-svg-text{fill:#cccccc}
+	body.dark-mode .tu-svg-grid{stroke:#28323e}
+	body.dark-mode .tu [data-names="0"] .rw-num,body.dark-mode .tu [data-table="1"] .rw-num{color:#999da3}
+	body.dark-mode .tu [data-table="1"] .rw-head{color:#9a9aa2;border-bottom:2px solid #2b323c}
+	body.dark-mode .tu [data-table="1"] .rw-row{border-bottom:1px solid #27313f}
+	body.dark-mode .tu .wh-verdict{border-left:5px solid #4f5966}
+	body.dark-mode .tu .wh-verdict.is-low{border-left-color:#3ac56e}
+	body.dark-mode .tu .wh-verdict.is-mid{border-left-color:#e3a41c}
+	body.dark-mode .tu .wh-verdict.is-high{border-left-color:#a52f27}
+	body.dark-mode .tu .wh-small{color:#9a9da3}
+	body.dark-mode .tu .wh-warn{color:#e1837a}
+	body.dark-mode .tu .wh-gt span{color:#9a9da3}
+	body.dark-mode .tu .wh-band--under{background:#24292e}
+	body.dark-mode .tu .wh-pin{background:#3c4f67}
+	body.dark-mode .tu .wh-pin span{background:#3c4f67}
+	body.dark-mode .tu .wh-ticks{color:#9a9da3}
+	body.dark-mode .tu .wh-gl{stroke:#2c333c}
+	body.dark-mode .tu .wh-ct{fill:#9a9da3}
+	body.dark-mode .tu .wh-dot{stroke:#333333}
+	body.dark-mode .tu .wh-bd--low{fill:#8dcda2}
+	body.dark-mode .tu .wh-bd--mid{fill:#f1aa6a}
+	body.dark-mode .tu .wh-bd--high{fill:#e57b76}
+	body.dark-mode .tu .wh-bd--under{fill:#989ea4}
+	/* TOOL-DARK:END */
 
 :where(body.dark-mode #wh) :is(div,span,b,strong,p,li,small,label,td,th,output,h1,h2,h3,h4,dt,dd,em,i,summary){color:#e6e6e6;}
 
@@ -1523,6 +1605,48 @@ body.dark-mode .tu .rw-head {color:#a0a8b3;border-bottom-color:#555;} body.dark-
 		.footer__item--extra-padding { padding-left: 0; }
 		.footer__text--extra-info { float: none; display: block; margin-top: 0.5em; }
 	}
+/* Floating compact header bar: once the full header + nav scroll out of
+   view, a slim fixed bar (small logo, title, as many nav links as fit)
+   slides in, and the hamburger is pinned into its right end. Toggled by
+   the compact-nav script below. Ported from mes.fm/math's version (see
+   its build.mjs) -- display-controls.js pins the A-/A+/moon buttons into its right end.
+
+   Hidden by default via the inline style="display:none" on the element
+   itself (not just this stylesheet's "display: none" below) -- some
+   browser extensions strip or neutralize cosmetic-looking CSS for
+   elements named "sticky-*"/"*-bar" (a common ad/cookie-bar filter
+   pattern), which left an earlier version's raw unstyled markup visible
+   above the real header on mes.fm/math. The inline attribute is a
+   fallback the JS clears itself, independent of this stylesheet
+   surviving intact. */
+#compact-nav {
+  position: fixed; top: 0; left: 0; right: 0; height: 52px; z-index: 15;
+  display: none; align-items: center; gap: 12px;
+  padding: 0 80px 0 12px; box-sizing: border-box;
+  background: #ffffff; border-bottom: 3px solid #237a35;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.18);
+  transform: translateY(-110%); transition: transform 0.2s ease;
+}
+#compact-nav.is-visible { display: flex; }
+body.is-stuck #compact-nav { transform: none; }
+#compact-nav .compact-nav-logo { display: block; width: 32px; height: 32px; border-radius: 6px; flex: 0 0 auto; }
+#compact-nav .compact-nav-title {
+  flex: 0 1 auto; min-width: 0; font-weight: 700; font-size: 1.05em; color: #1a1a1a;
+  text-decoration: none; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+}
+#compact-nav .compact-nav-links { display: flex; flex: 1 1 0; min-width: 0; overflow: hidden; margin: 0 0 0 8px; padding: 0; list-style: none; }
+#compact-nav .compact-nav-links li { flex: 0 0 auto; }
+#compact-nav .compact-nav-links a { display: block; padding: 0 10px; line-height: 52px; font-size: 0.9em; color: #237a35; text-decoration: none; white-space: nowrap; }
+#compact-nav .compact-nav-links a:hover { background: rgba(35,122,53,0.12); }
+body.is-stuck #navbar-button { position: fixed !important; top: 4px !important; right: 8px !important; display: flex; align-items: center; }
+body.is-stuck #navbar.hide { position: fixed; top: 56px; right: 8px; }
+@media (max-width: 700px) {
+  #compact-nav .compact-nav-title { display: none; }
+  #compact-nav .compact-nav-logo { width: 36px; height: 36px; }
+}
+@media (max-width: 480px) {
+  #compact-nav { padding-right: 70px; gap: 8px; }
+}
 
 	/* TOOL-DARK:START -- generated by add_tool_page_controls.py, do not edit */
 	body.dark-mode .page-content :where(div,span,p,li,ul,ol,h1,h2,h3,h4,h5,h6,td,th,label,summary,small,strong,b,em,i,code,pre,legend,figcaption,dl,dt,dd,blockquote,caption,cite,button,input,select,textarea){color:#d8d8d8}
@@ -1578,48 +1702,6 @@ body.dark-mode .tu .rw-head {color:#a0a8b3;border-bottom-color:#555;} body.dark-
 	body.dark-mode .tu .br-target{stroke:#ba8212}
 	body.dark-mode .tu .br-c1,body.dark-mode .tu .br-c2{color:#e4e4e4}
 	/* TOOL-DARK:END */
-/* Floating compact header bar: once the full header + nav scroll out of
-   view, a slim fixed bar (small logo, title, as many nav links as fit)
-   slides in, and the hamburger is pinned into its right end. Toggled by
-   the compact-nav script below. Ported from mes.fm/math's version (see
-   its build.mjs) -- display-controls.js pins the A-/A+/moon buttons into its right end.
-
-   Hidden by default via the inline style="display:none" on the element
-   itself (not just this stylesheet's "display: none" below) -- some
-   browser extensions strip or neutralize cosmetic-looking CSS for
-   elements named "sticky-*"/"*-bar" (a common ad/cookie-bar filter
-   pattern), which left an earlier version's raw unstyled markup visible
-   above the real header on mes.fm/math. The inline attribute is a
-   fallback the JS clears itself, independent of this stylesheet
-   surviving intact. */
-#compact-nav {
-  position: fixed; top: 0; left: 0; right: 0; height: 52px; z-index: 15;
-  display: none; align-items: center; gap: 12px;
-  padding: 0 80px 0 12px; box-sizing: border-box;
-  background: #ffffff; border-bottom: 3px solid #237a35;
-  box-shadow: 0 2px 8px rgba(0,0,0,0.18);
-  transform: translateY(-110%); transition: transform 0.2s ease;
-}
-#compact-nav.is-visible { display: flex; }
-body.is-stuck #compact-nav { transform: none; }
-#compact-nav .compact-nav-logo { display: block; width: 32px; height: 32px; border-radius: 6px; flex: 0 0 auto; }
-#compact-nav .compact-nav-title {
-  flex: 0 1 auto; min-width: 0; font-weight: 700; font-size: 1.05em; color: #1a1a1a;
-  text-decoration: none; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
-}
-#compact-nav .compact-nav-links { display: flex; flex: 1 1 0; min-width: 0; overflow: hidden; margin: 0 0 0 8px; padding: 0; list-style: none; }
-#compact-nav .compact-nav-links li { flex: 0 0 auto; }
-#compact-nav .compact-nav-links a { display: block; padding: 0 10px; line-height: 52px; font-size: 0.9em; color: #237a35; text-decoration: none; white-space: nowrap; }
-#compact-nav .compact-nav-links a:hover { background: rgba(35,122,53,0.12); }
-body.is-stuck #navbar-button { position: fixed !important; top: 4px !important; right: 8px !important; display: flex; align-items: center; }
-body.is-stuck #navbar.hide { position: fixed; top: 56px; right: 8px; }
-@media (max-width: 700px) {
-  #compact-nav .compact-nav-title { display: none; }
-  #compact-nav .compact-nav-logo { width: 36px; height: 36px; }
-}
-@media (max-width: 480px) {
-  #compact-nav { padding-right: 70px; gap: 8px; }
-}
 
 :where(body.dark-mode #br) :is(div,span,b,strong,p,li,small,label,td,th,output,h1,h2,h3,h4,dt,dd,em,i,summary){color:#e6e6e6;}
 
@@ -1799,6 +1881,48 @@ body.dark-mode .tu .rw-head {color:#a0a8b3;border-bottom-color:#555;} body.dark-
 		.footer__item--extra-padding { padding-left: 0; }
 		.footer__text--extra-info { float: none; display: block; margin-top: 0.5em; }
 	}
+/* Floating compact header bar: once the full header + nav scroll out of
+   view, a slim fixed bar (small logo, title, as many nav links as fit)
+   slides in, and the hamburger is pinned into its right end. Toggled by
+   the compact-nav script below. Ported from mes.fm/math's version (see
+   its build.mjs) -- display-controls.js pins the A-/A+/moon buttons into its right end.
+
+   Hidden by default via the inline style="display:none" on the element
+   itself (not just this stylesheet's "display: none" below) -- some
+   browser extensions strip or neutralize cosmetic-looking CSS for
+   elements named "sticky-*"/"*-bar" (a common ad/cookie-bar filter
+   pattern), which left an earlier version's raw unstyled markup visible
+   above the real header on mes.fm/math. The inline attribute is a
+   fallback the JS clears itself, independent of this stylesheet
+   surviving intact. */
+#compact-nav {
+  position: fixed; top: 0; left: 0; right: 0; height: 52px; z-index: 15;
+  display: none; align-items: center; gap: 12px;
+  padding: 0 80px 0 12px; box-sizing: border-box;
+  background: #ffffff; border-bottom: 3px solid #1f6a2f;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.18);
+  transform: translateY(-110%); transition: transform 0.2s ease;
+}
+#compact-nav.is-visible { display: flex; }
+body.is-stuck #compact-nav { transform: none; }
+#compact-nav .compact-nav-logo { display: block; width: 32px; height: 32px; border-radius: 6px; flex: 0 0 auto; }
+#compact-nav .compact-nav-title {
+  flex: 0 1 auto; min-width: 0; font-weight: 700; font-size: 1.05em; color: #1a1a1a;
+  text-decoration: none; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+}
+#compact-nav .compact-nav-links { display: flex; flex: 1 1 0; min-width: 0; overflow: hidden; margin: 0 0 0 8px; padding: 0; list-style: none; }
+#compact-nav .compact-nav-links li { flex: 0 0 auto; }
+#compact-nav .compact-nav-links a { display: block; padding: 0 10px; line-height: 52px; font-size: 0.9em; color: #1f6a2f; text-decoration: none; white-space: nowrap; }
+#compact-nav .compact-nav-links a:hover { background: rgba(31,106,47,0.12); }
+body.is-stuck #navbar-button { position: fixed !important; top: 4px !important; right: 8px !important; display: flex; align-items: center; }
+body.is-stuck #navbar.hide { position: fixed; top: 56px; right: 8px; }
+@media (max-width: 700px) {
+  #compact-nav .compact-nav-title { display: none; }
+  #compact-nav .compact-nav-logo { width: 36px; height: 36px; }
+}
+@media (max-width: 480px) {
+  #compact-nav { padding-right: 70px; gap: 8px; }
+}
 
 	/* TOOL-DARK:START -- generated by add_tool_page_controls.py, do not edit */
 	body.dark-mode .page-content :where(div,span,p,li,ul,ol,h1,h2,h3,h4,h5,h6,td,th,label,summary,small,strong,b,em,i,code,pre,legend,figcaption,dl,dt,dd,blockquote,caption,cite,button,input,select,textarea){color:#d8d8d8}
@@ -1847,48 +1971,6 @@ body.dark-mode .tu .rw-head {color:#a0a8b3;border-bottom-color:#555;} body.dark-
 	body.dark-mode .tu .mx-donut .mx-sm{fill:#9a9da3}
 	body.dark-mode .tu #mx-cmp tr.is-on td,body.dark-mode .tu #mx-meals-t tr.is-total td{background:#1f2c22}
 	/* TOOL-DARK:END */
-/* Floating compact header bar: once the full header + nav scroll out of
-   view, a slim fixed bar (small logo, title, as many nav links as fit)
-   slides in, and the hamburger is pinned into its right end. Toggled by
-   the compact-nav script below. Ported from mes.fm/math's version (see
-   its build.mjs) -- display-controls.js pins the A-/A+/moon buttons into its right end.
-
-   Hidden by default via the inline style="display:none" on the element
-   itself (not just this stylesheet's "display: none" below) -- some
-   browser extensions strip or neutralize cosmetic-looking CSS for
-   elements named "sticky-*"/"*-bar" (a common ad/cookie-bar filter
-   pattern), which left an earlier version's raw unstyled markup visible
-   above the real header on mes.fm/math. The inline attribute is a
-   fallback the JS clears itself, independent of this stylesheet
-   surviving intact. */
-#compact-nav {
-  position: fixed; top: 0; left: 0; right: 0; height: 52px; z-index: 15;
-  display: none; align-items: center; gap: 12px;
-  padding: 0 80px 0 12px; box-sizing: border-box;
-  background: #ffffff; border-bottom: 3px solid #1f6a2f;
-  box-shadow: 0 2px 8px rgba(0,0,0,0.18);
-  transform: translateY(-110%); transition: transform 0.2s ease;
-}
-#compact-nav.is-visible { display: flex; }
-body.is-stuck #compact-nav { transform: none; }
-#compact-nav .compact-nav-logo { display: block; width: 32px; height: 32px; border-radius: 6px; flex: 0 0 auto; }
-#compact-nav .compact-nav-title {
-  flex: 0 1 auto; min-width: 0; font-weight: 700; font-size: 1.05em; color: #1a1a1a;
-  text-decoration: none; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
-}
-#compact-nav .compact-nav-links { display: flex; flex: 1 1 0; min-width: 0; overflow: hidden; margin: 0 0 0 8px; padding: 0; list-style: none; }
-#compact-nav .compact-nav-links li { flex: 0 0 auto; }
-#compact-nav .compact-nav-links a { display: block; padding: 0 10px; line-height: 52px; font-size: 0.9em; color: #1f6a2f; text-decoration: none; white-space: nowrap; }
-#compact-nav .compact-nav-links a:hover { background: rgba(31,106,47,0.12); }
-body.is-stuck #navbar-button { position: fixed !important; top: 4px !important; right: 8px !important; display: flex; align-items: center; }
-body.is-stuck #navbar.hide { position: fixed; top: 56px; right: 8px; }
-@media (max-width: 700px) {
-  #compact-nav .compact-nav-title { display: none; }
-  #compact-nav .compact-nav-logo { width: 36px; height: 36px; }
-}
-@media (max-width: 480px) {
-  #compact-nav { padding-right: 70px; gap: 8px; }
-}
 
 :where(body.dark-mode #mx) :is(div,span,b,strong,p,li,small,label,td,th,output,h1,h2,h3,h4,dt,dd,em,i,summary){color:#e6e6e6;}
 
@@ -1918,7 +2000,7 @@ body.is-stuck #navbar.hide { position: fixed; top: 56px; right: 8px; }
 	.tu-input--big {font-size:1.35em;padding:0.55em 0.7em;}
 	.tu-suffix {position:relative;}
 	.tu-suffix .tu-input {padding-right:3.2em;}
-	.tu-suffix span {position:absolute;right:0.7em;top:50%;transform:translateY(-50%);font-size:0.85em;color:#8a93a0;pointer-events:none;}
+	.tu-suffix span {position:absolute;right:0.7em;top:50%;transform:translateY(-50%);font-size:0.85em;color:#667085;pointer-events:none;}
 	.tu-btn {cursor:pointer;padding:0.5em 0.95em;border-radius:0.35em;border:0.125em solid var(--accent);background:#fff;color:var(--accent);font-size:0.9em;line-height:1.1;}
 	.tu-btn:hover {background:var(--accent);color:#fff;}
 	.tu-btn--primary {background:var(--accent);color:#fff;}
@@ -1939,7 +2021,7 @@ body.is-stuck #navbar.hide { position: fixed; top: 56px; right: 8px; }
 	.tu-stat--hero {background:#f7e3dc;border-color:#f7e3dc;}
 	.tu-stat__label {font-size:0.72em;font-weight:700;text-transform:uppercase;letter-spacing:0.05em;color:#667;}
 	.tu-stat__value {font-size:1.7em;font-weight:700;color:#1e2733;line-height:1.2;margin:0.15em 0;word-break:break-word;}
-	.tu-stat__sub {font-size:0.85em;color:#6a7280;line-height:1.35;}
+	.tu-stat__sub {font-size:0.85em;color:#555d6b;line-height:1.35;}
 	.tu-pos {color:#1f7a3d !important;}
 	.tu-neg {color:#b3261e !important;}
 	.tu-table-wrap {overflow-x:auto;}
@@ -2066,61 +2148,6 @@ body.dark-mode .tu .rw-head {color:#a0a8b3;border-bottom-color:#555;} body.dark-
 		.footer__item--extra-padding { padding-left: 0; }
 		.footer__text--extra-info { float: none; display: block; margin-top: 0.5em; }
 	}
-
-	/* TOOL-DARK:START -- generated by add_tool_page_controls.py, do not edit */
-	body.dark-mode .page-content :where(div,span,p,li,ul,ol,h1,h2,h3,h4,h5,h6,td,th,label,summary,small,strong,b,em,i,code,pre,legend,figcaption,dl,dt,dd,blockquote,caption,cite,button,input,select,textarea){color:#d8d8d8}
-	body.dark-mode .page-content code{background-color:#33363d;color:#f0a8bd}
-	body.dark-mode .page-content .btn-default{background-color:#2e2e2e;background-image:none;color:#ddd;border-color:#555}
-	body.dark-mode #pi.tu{--accent:#cd5a3c;--accent-dark:#d05839}
-	body.dark-mode .tu h2{color:#d1d6dc;border-bottom:2px solid #4d2111}
-	body.dark-mode .tu h3{color:#d1d6dc}
-	body.dark-mode .tu-card{background:#1a1a1a;border:1px solid #28323e}
-	body.dark-mode .tu-card--tint{background:#2f201a;border-color:#4d2111}
-	body.dark-mode .tu-field > label,body.dark-mode .tu-label{color:#9a9aa2}
-	body.dark-mode .tu-input,body.dark-mode .tu-select{border:1px solid #404a58;background:#1a1a1a;color:#dddddd}
-	body.dark-mode .tu-suffix span{color:#999da3}
-	body.dark-mode .tu-btn{background:#1a1a1a}
-	body.dark-mode .tu-btn--ghost{border-color:#3a424d;color:#aaaaaa}
-	body.dark-mode .tu-btn--ghost:hover{background:#191c20;color:#dddddd;border-color:#3a424d}
-	body.dark-mode .tu-seg{border:1px solid #404a58;background:#1a1a1a}
-	body.dark-mode .tu-seg button{color:#aaaaaa;border-right:1px solid #28323e}
-	body.dark-mode .tu-seg button:hover{background:#16191d}
-	body.dark-mode .tu-chip{border:1px solid #3a424d;background:#1a1a1a;color:#aaaaaa}
-	body.dark-mode .tu-stat{background:#1a1a1a;border:1px solid #28323e}
-	body.dark-mode .tu-stat--hero{background:#2f201a;border-color:#4d2111}
-	body.dark-mode .tu-stat__label{color:#9a9aa2}
-	body.dark-mode .tu-stat__value{color:#d1d6dc}
-	body.dark-mode .tu-stat__sub{color:#9a9da3}
-	body.dark-mode .tu-pos{color:#7dde9d !important}
-	body.dark-mode .tu-neg{color:#e87973 !important}
-	body.dark-mode .tu-table th,body.dark-mode .tu-table td{border-bottom:1px solid #29323d;color:#cccccc}
-	body.dark-mode .tu-table th{color:#9a9da3;background:#1a1a1a}
-	body.dark-mode .tu-table tr.is-active td{background:#2f201a}
-	body.dark-mode .tu-note{color:#9a9da3}
-	body.dark-mode .tu-toast{background:#3c4f67}
-	body.dark-mode .tu-seo{border-top:1px solid #333333}
-	body.dark-mode .tu-svg-line{stroke:#394a60}
-	body.dark-mode .tu-svg-text{fill:#cccccc}
-	body.dark-mode .tu-svg-grid{stroke:#28323e}
-	body.dark-mode .tu [data-names="0"] .rw-num,body.dark-mode .tu [data-table="1"] .rw-num{color:#999da3}
-	body.dark-mode .tu [data-table="1"] .rw-head{color:#9a9aa2;border-bottom:2px solid #2b323c}
-	body.dark-mode .tu [data-table="1"] .rw-row{border-bottom:1px solid #27313f}
-	body.dark-mode .tu .pi-small{color:#9a9da3}
-	body.dark-mode .tu .pi-warn{color:#e1837a}
-	body.dark-mode .tu .pi-gl{stroke:#2c333c}
-	body.dark-mode .tu .pi-ct{fill:#9a9da3}
-	body.dark-mode .tu .pi-lbl{fill:#d1d6dc}
-	body.dark-mode .tu .pi-dot{stroke:#394a60}
-	body.dark-mode .tu .pi-mark{stroke:#ba8212}
-	body.dark-mode .tu .pi-track{background:#202326}
-	body.dark-mode .tu .pi-food{border:1px solid #29323d;background:#1a1a1a}
-	body.dark-mode .tu .pi-food.has{background:#2f201a}
-	body.dark-mode .tu .pi-fn small{color:#9a9da3}
-	body.dark-mode .tu .pi-step button{border:1px solid #343d48;background:#1a1a1a}
-	body.dark-mode .tu .pi-tag--vegan{background:#203224;color:#81da94}
-	body.dark-mode .tu .pi-tag--veg{background:#3b3218;color:#ffd65c}
-	body.dark-mode .tu #pi-ref tr.is-on td{background:#2f201a}
-	/* TOOL-DARK:END */
 /* Floating compact header bar: once the full header + nav scroll out of
    view, a slim fixed bar (small logo, title, as many nav links as fit)
    slides in, and the hamburger is pinned into its right end. Toggled by
@@ -2164,6 +2191,61 @@ body.is-stuck #navbar.hide { position: fixed; top: 56px; right: 8px; }
   #compact-nav { padding-right: 70px; gap: 8px; }
 }
 
+	/* TOOL-DARK:START -- generated by add_tool_page_controls.py, do not edit */
+	body.dark-mode .page-content :where(div,span,p,li,ul,ol,h1,h2,h3,h4,h5,h6,td,th,label,summary,small,strong,b,em,i,code,pre,legend,figcaption,dl,dt,dd,blockquote,caption,cite,button,input,select,textarea){color:#d8d8d8}
+	body.dark-mode .page-content code{background-color:#33363d;color:#f0a8bd}
+	body.dark-mode .page-content .btn-default{background-color:#2e2e2e;background-image:none;color:#ddd;border-color:#555}
+	body.dark-mode #pi.tu{--accent:#cd5a3c;--accent-dark:#d05839}
+	body.dark-mode .tu h2{color:#d1d6dc;border-bottom:2px solid #4d2111}
+	body.dark-mode .tu h3{color:#d1d6dc}
+	body.dark-mode .tu-card{background:#1a1a1a;border:1px solid #28323e}
+	body.dark-mode .tu-card--tint{background:#2f201a;border-color:#4d2111}
+	body.dark-mode .tu-field > label,body.dark-mode .tu-label{color:#9a9aa2}
+	body.dark-mode .tu-input,body.dark-mode .tu-select{border:1px solid #404a58;background:#1a1a1a;color:#dddddd}
+	body.dark-mode .tu-suffix span{color:#989ca4}
+	body.dark-mode .tu-btn{background:#1a1a1a}
+	body.dark-mode .tu-btn--ghost{border-color:#3a424d;color:#aaaaaa}
+	body.dark-mode .tu-btn--ghost:hover{background:#191c20;color:#dddddd;border-color:#3a424d}
+	body.dark-mode .tu-seg{border:1px solid #404a58;background:#1a1a1a}
+	body.dark-mode .tu-seg button{color:#aaaaaa;border-right:1px solid #28323e}
+	body.dark-mode .tu-seg button:hover{background:#16191d}
+	body.dark-mode .tu-chip{border:1px solid #3a424d;background:#1a1a1a;color:#aaaaaa}
+	body.dark-mode .tu-stat{background:#1a1a1a;border:1px solid #28323e}
+	body.dark-mode .tu-stat--hero{background:#2f201a;border-color:#4d2111}
+	body.dark-mode .tu-stat__label{color:#9a9aa2}
+	body.dark-mode .tu-stat__value{color:#d1d6dc}
+	body.dark-mode .tu-stat__sub{color:#9a9ea4}
+	body.dark-mode .tu-pos{color:#7dde9d !important}
+	body.dark-mode .tu-neg{color:#e87973 !important}
+	body.dark-mode .tu-table th,body.dark-mode .tu-table td{border-bottom:1px solid #29323d;color:#cccccc}
+	body.dark-mode .tu-table th{color:#9a9da3;background:#1a1a1a}
+	body.dark-mode .tu-table tr.is-active td{background:#2f201a}
+	body.dark-mode .tu-note{color:#9a9da3}
+	body.dark-mode .tu-toast{background:#3c4f67}
+	body.dark-mode .tu-seo{border-top:1px solid #333333}
+	body.dark-mode .tu-svg-line{stroke:#394a60}
+	body.dark-mode .tu-svg-text{fill:#cccccc}
+	body.dark-mode .tu-svg-grid{stroke:#28323e}
+	body.dark-mode .tu [data-names="0"] .rw-num,body.dark-mode .tu [data-table="1"] .rw-num{color:#999da3}
+	body.dark-mode .tu [data-table="1"] .rw-head{color:#9a9aa2;border-bottom:2px solid #2b323c}
+	body.dark-mode .tu [data-table="1"] .rw-row{border-bottom:1px solid #27313f}
+	body.dark-mode .tu .pi-small{color:#9a9da3}
+	body.dark-mode .tu .pi-warn{color:#e1837a}
+	body.dark-mode .tu .pi-gl{stroke:#2c333c}
+	body.dark-mode .tu .pi-ct{fill:#9a9da3}
+	body.dark-mode .tu .pi-lbl{fill:#d1d6dc}
+	body.dark-mode .tu .pi-dot{stroke:#394a60}
+	body.dark-mode .tu .pi-mark{stroke:#ba8212}
+	body.dark-mode .tu .pi-track{background:#202326}
+	body.dark-mode .tu .pi-food{border:1px solid #29323d;background:#1a1a1a}
+	body.dark-mode .tu .pi-food.has{background:#2f201a}
+	body.dark-mode .tu .pi-fn small{color:#9a9da3}
+	body.dark-mode .tu .pi-step button{border:1px solid #343d48;background:#1a1a1a}
+	body.dark-mode .tu .pi-tag--vegan{background:#203224;color:#81da94}
+	body.dark-mode .tu .pi-tag--veg{background:#3b3218;color:#ffd65c}
+	body.dark-mode .tu #pi-ref tr.is-on td{background:#2f201a}
+	/* TOOL-DARK:END */
+
 :where(body.dark-mode #pi) :is(div,span,b,strong,p,li,small,label,td,th,output,h1,h2,h3,h4,dt,dd,em,i,summary){color:#e6e6e6;}
 
 	.hide {display:none;}
@@ -2192,7 +2274,7 @@ body.is-stuck #navbar.hide { position: fixed; top: 56px; right: 8px; }
 	.tu-input--big {font-size:1.35em;padding:0.55em 0.7em;}
 	.tu-suffix {position:relative;}
 	.tu-suffix .tu-input {padding-right:3.2em;}
-	.tu-suffix span {position:absolute;right:0.7em;top:50%;transform:translateY(-50%);font-size:0.85em;color:#8a93a0;pointer-events:none;}
+	.tu-suffix span {position:absolute;right:0.7em;top:50%;transform:translateY(-50%);font-size:0.85em;color:#667085;pointer-events:none;}
 	.tu-btn {cursor:pointer;padding:0.5em 0.95em;border-radius:0.35em;border:0.125em solid var(--accent);background:#fff;color:var(--accent);font-size:0.9em;line-height:1.1;}
 	.tu-btn:hover {background:var(--accent);color:#fff;}
 	.tu-btn--primary {background:var(--accent);color:#fff;}
@@ -2213,7 +2295,7 @@ body.is-stuck #navbar.hide { position: fixed; top: 56px; right: 8px; }
 	.tu-stat--hero {background:#e0f0fb;border-color:#e0f0fb;}
 	.tu-stat__label {font-size:0.72em;font-weight:700;text-transform:uppercase;letter-spacing:0.05em;color:#667;}
 	.tu-stat__value {font-size:1.7em;font-weight:700;color:#1e2733;line-height:1.2;margin:0.15em 0;word-break:break-word;}
-	.tu-stat__sub {font-size:0.85em;color:#6a7280;line-height:1.35;}
+	.tu-stat__sub {font-size:0.85em;color:#555d6b;line-height:1.35;}
 	.tu-pos {color:#1f7a3d !important;}
 	.tu-neg {color:#b3261e !important;}
 	.tu-table-wrap {overflow-x:auto;}
@@ -2299,6 +2381,7 @@ body.dark-mode .tu .rw-head {color:#a0a8b3;border-bottom-color:#555;} body.dark-
 	.tu .wi-cum {fill:none;stroke:#e8a317;stroke-width:2;}
 	body.dark-mode #wi .wi-split {background:#3a3f45;} body.dark-mode #wi .wi-ring .wi-trk {stroke:#3a3f45;} body.dark-mode #wi .wi-ring text {fill:#e8e8e8;} body.dark-mode #wi .wi-ring .wi-sm, body.dark-mode #wi .wi-ct, body.dark-mode #wi .wi-small {fill:#a0a8b3;color:#a0a8b3;} body.dark-mode #wi .wi-gl {stroke:#3f464f;} body.dark-mode #wi .wi-bar.is-today {stroke:#e8e8e8;}
 	@media print {.tu .wi-btns, .tu #wi-setup, .tu .wi-trackbtns, .tu .wi-addrow, .tu .wi-custom {display:none;}}
+	.tu .wi-c1, .tu .wi-c2 {color:#1b1b1b;}
 
 
 	@media print {
@@ -2338,61 +2421,6 @@ body.dark-mode .tu .rw-head {color:#a0a8b3;border-bottom-color:#555;} body.dark-
 		.footer__item--extra-padding { padding-left: 0; }
 		.footer__text--extra-info { float: none; display: block; margin-top: 0.5em; }
 	}
-
-	/* TOOL-DARK:START -- generated by add_tool_page_controls.py, do not edit */
-	body.dark-mode .page-content :where(div,span,p,li,ul,ol,h1,h2,h3,h4,h5,h6,td,th,label,summary,small,strong,b,em,i,code,pre,legend,figcaption,dl,dt,dd,blockquote,caption,cite,button,input,select,textarea){color:#d8d8d8}
-	body.dark-mode .page-content code{background-color:#33363d;color:#f0a8bd}
-	body.dark-mode .page-content .btn-default{background-color:#2e2e2e;background-image:none;color:#ddd;border-color:#555}
-	body.dark-mode #wi.tu{--accent:#0fa7fb;--accent-dark:#16a6f3}
-	body.dark-mode .tu h2{color:#d1d6dc;border-bottom:2px solid #0a314c}
-	body.dark-mode .tu h3{color:#d1d6dc}
-	body.dark-mode .tu-card{background:#1a1a1a;border:1px solid #28323e}
-	body.dark-mode .tu-card--tint{background:#15232c;border-color:#0a314c}
-	body.dark-mode .tu-field > label,body.dark-mode .tu-label{color:#9a9aa2}
-	body.dark-mode .tu-input,body.dark-mode .tu-select{border:1px solid #404a58;background:#1a1a1a;color:#dddddd}
-	body.dark-mode .tu-suffix span{color:#999da3}
-	body.dark-mode .tu-btn{background:#1a1a1a}
-	body.dark-mode .tu-btn--ghost{border-color:#3a424d;color:#aaaaaa}
-	body.dark-mode .tu-btn--ghost:hover{background:#191c20;color:#dddddd;border-color:#3a424d}
-	body.dark-mode .tu-seg{border:1px solid #404a58;background:#1a1a1a}
-	body.dark-mode .tu-seg button{color:#aaaaaa;border-right:1px solid #28323e}
-	body.dark-mode .tu-seg button:hover{background:#16191d}
-	body.dark-mode .tu-chip{border:1px solid #3a424d;background:#1a1a1a;color:#aaaaaa}
-	body.dark-mode .tu-stat{background:#1a1a1a;border:1px solid #28323e}
-	body.dark-mode .tu-stat--hero{background:#15232c;border-color:#0a314c}
-	body.dark-mode .tu-stat__label{color:#9a9aa2}
-	body.dark-mode .tu-stat__value{color:#d1d6dc}
-	body.dark-mode .tu-stat__sub{color:#9a9da3}
-	body.dark-mode .tu-pos{color:#7dde9d !important}
-	body.dark-mode .tu-neg{color:#e87973 !important}
-	body.dark-mode .tu-table th,body.dark-mode .tu-table td{border-bottom:1px solid #29323d;color:#cccccc}
-	body.dark-mode .tu-table th{color:#9a9da3;background:#1a1a1a}
-	body.dark-mode .tu-table tr.is-active td{background:#15232c}
-	body.dark-mode .tu-note{color:#9a9da3}
-	body.dark-mode .tu-toast{background:#3c4f67}
-	body.dark-mode .tu-seo{border-top:1px solid #333333}
-	body.dark-mode .tu-svg-line{stroke:#394a60}
-	body.dark-mode .tu-svg-text{fill:#cccccc}
-	body.dark-mode .tu-svg-grid{stroke:#28323e}
-	body.dark-mode .tu [data-names="0"] .rw-num,body.dark-mode .tu [data-table="1"] .rw-num{color:#999da3}
-	body.dark-mode .tu [data-table="1"] .rw-head{color:#9a9aa2;border-bottom:2px solid #2b323c}
-	body.dark-mode .tu [data-table="1"] .rw-row{border-bottom:1px solid #27313f}
-	body.dark-mode .tu .wi-small{color:#9a9da3}
-	body.dark-mode .tu .wi-split{background:#202326}
-	body.dark-mode .tu .wi-c0{fill:#6ad4f1;stroke:#17bbe8}
-	body.dark-mode .tu .wi-c1{fill:#73cfe7}
-	body.dark-mode .tu .wi-c2{fill:#f0c46b}
-	body.dark-mode .tu .wi-c3{fill:#ed6e8d}
-	body.dark-mode .tu .wi-ring .wi-trk{stroke:#28363e}
-	body.dark-mode .tu .wi-ring text{fill:#d1d6dc}
-	body.dark-mode .tu .wi-ring .wi-sm{fill:#9a9da3}
-	body.dark-mode .tu .wi-gl{stroke:#2c333c}
-	body.dark-mode .tu .wi-ct{fill:#9a9da3}
-	body.dark-mode .tu .wi-goal{stroke:#ba8212}
-	body.dark-mode .tu .wi-bar.is-hit{fill:#81daa2}
-	body.dark-mode .tu .wi-bar.is-today{stroke:#394a60}
-	body.dark-mode .tu .wi-cum{stroke:#ba8212}
-	/* TOOL-DARK:END */
 /* Floating compact header bar: once the full header + nav scroll out of
    view, a slim fixed bar (small logo, title, as many nav links as fit)
    slides in, and the hamburger is pinned into its right end. Toggled by
@@ -2436,6 +2464,62 @@ body.is-stuck #navbar.hide { position: fixed; top: 56px; right: 8px; }
   #compact-nav { padding-right: 70px; gap: 8px; }
 }
 
+	/* TOOL-DARK:START -- generated by add_tool_page_controls.py, do not edit */
+	body.dark-mode .page-content :where(div,span,p,li,ul,ol,h1,h2,h3,h4,h5,h6,td,th,label,summary,small,strong,b,em,i,code,pre,legend,figcaption,dl,dt,dd,blockquote,caption,cite,button,input,select,textarea){color:#d8d8d8}
+	body.dark-mode .page-content code{background-color:#33363d;color:#f0a8bd}
+	body.dark-mode .page-content .btn-default{background-color:#2e2e2e;background-image:none;color:#ddd;border-color:#555}
+	body.dark-mode #wi.tu{--accent:#0fa7fb;--accent-dark:#16a6f3}
+	body.dark-mode .tu h2{color:#d1d6dc;border-bottom:2px solid #0a314c}
+	body.dark-mode .tu h3{color:#d1d6dc}
+	body.dark-mode .tu-card{background:#1a1a1a;border:1px solid #28323e}
+	body.dark-mode .tu-card--tint{background:#15232c;border-color:#0a314c}
+	body.dark-mode .tu-field > label,body.dark-mode .tu-label{color:#9a9aa2}
+	body.dark-mode .tu-input,body.dark-mode .tu-select{border:1px solid #404a58;background:#1a1a1a;color:#dddddd}
+	body.dark-mode .tu-suffix span{color:#989ca4}
+	body.dark-mode .tu-btn{background:#1a1a1a}
+	body.dark-mode .tu-btn--ghost{border-color:#3a424d;color:#aaaaaa}
+	body.dark-mode .tu-btn--ghost:hover{background:#191c20;color:#dddddd;border-color:#3a424d}
+	body.dark-mode .tu-seg{border:1px solid #404a58;background:#1a1a1a}
+	body.dark-mode .tu-seg button{color:#aaaaaa;border-right:1px solid #28323e}
+	body.dark-mode .tu-seg button:hover{background:#16191d}
+	body.dark-mode .tu-chip{border:1px solid #3a424d;background:#1a1a1a;color:#aaaaaa}
+	body.dark-mode .tu-stat{background:#1a1a1a;border:1px solid #28323e}
+	body.dark-mode .tu-stat--hero{background:#15232c;border-color:#0a314c}
+	body.dark-mode .tu-stat__label{color:#9a9aa2}
+	body.dark-mode .tu-stat__value{color:#d1d6dc}
+	body.dark-mode .tu-stat__sub{color:#9a9ea4}
+	body.dark-mode .tu-pos{color:#7dde9d !important}
+	body.dark-mode .tu-neg{color:#e87973 !important}
+	body.dark-mode .tu-table th,body.dark-mode .tu-table td{border-bottom:1px solid #29323d;color:#cccccc}
+	body.dark-mode .tu-table th{color:#9a9da3;background:#1a1a1a}
+	body.dark-mode .tu-table tr.is-active td{background:#15232c}
+	body.dark-mode .tu-note{color:#9a9da3}
+	body.dark-mode .tu-toast{background:#3c4f67}
+	body.dark-mode .tu-seo{border-top:1px solid #333333}
+	body.dark-mode .tu-svg-line{stroke:#394a60}
+	body.dark-mode .tu-svg-text{fill:#cccccc}
+	body.dark-mode .tu-svg-grid{stroke:#28323e}
+	body.dark-mode .tu [data-names="0"] .rw-num,body.dark-mode .tu [data-table="1"] .rw-num{color:#999da3}
+	body.dark-mode .tu [data-table="1"] .rw-head{color:#9a9aa2;border-bottom:2px solid #2b323c}
+	body.dark-mode .tu [data-table="1"] .rw-row{border-bottom:1px solid #27313f}
+	body.dark-mode .tu .wi-small{color:#9a9da3}
+	body.dark-mode .tu .wi-split{background:#202326}
+	body.dark-mode .tu .wi-c0{fill:#6ad4f1;stroke:#17bbe8}
+	body.dark-mode .tu .wi-c1{fill:#73cfe7}
+	body.dark-mode .tu .wi-c2{fill:#f0c46b}
+	body.dark-mode .tu .wi-c3{fill:#ed6e8d}
+	body.dark-mode .tu .wi-ring .wi-trk{stroke:#28363e}
+	body.dark-mode .tu .wi-ring text{fill:#d1d6dc}
+	body.dark-mode .tu .wi-ring .wi-sm{fill:#9a9da3}
+	body.dark-mode .tu .wi-gl{stroke:#2c333c}
+	body.dark-mode .tu .wi-ct{fill:#9a9da3}
+	body.dark-mode .tu .wi-goal{stroke:#ba8212}
+	body.dark-mode .tu .wi-bar.is-hit{fill:#81daa2}
+	body.dark-mode .tu .wi-bar.is-today{stroke:#394a60}
+	body.dark-mode .tu .wi-cum{stroke:#ba8212}
+	body.dark-mode .tu .wi-c1,body.dark-mode .tu .wi-c2{color:#e4e4e4}
+	/* TOOL-DARK:END */
+
 :where(body.dark-mode #wi) :is(div,span,b,strong,p,li,small,label,td,th,output,h1,h2,h3,h4,dt,dd,em,i,summary){color:#e6e6e6;}
 
 	.hide {display:none;}
@@ -2464,7 +2548,7 @@ body.is-stuck #navbar.hide { position: fixed; top: 56px; right: 8px; }
 	.tu-input--big {font-size:1.35em;padding:0.55em 0.7em;}
 	.tu-suffix {position:relative;}
 	.tu-suffix .tu-input {padding-right:3.2em;}
-	.tu-suffix span {position:absolute;right:0.7em;top:50%;transform:translateY(-50%);font-size:0.85em;color:#8a93a0;pointer-events:none;}
+	.tu-suffix span {position:absolute;right:0.7em;top:50%;transform:translateY(-50%);font-size:0.85em;color:#667085;pointer-events:none;}
 	.tu-btn {cursor:pointer;padding:0.5em 0.95em;border-radius:0.35em;border:0.125em solid var(--accent);background:#fff;color:var(--accent);font-size:0.9em;line-height:1.1;}
 	.tu-btn:hover {background:var(--accent);color:#fff;}
 	.tu-btn--primary {background:var(--accent);color:#fff;}
@@ -2485,7 +2569,7 @@ body.is-stuck #navbar.hide { position: fixed; top: 56px; right: 8px; }
 	.tu-stat--hero {background:#fbe4e1;border-color:#fbe4e1;}
 	.tu-stat__label {font-size:0.72em;font-weight:700;text-transform:uppercase;letter-spacing:0.05em;color:#667;}
 	.tu-stat__value {font-size:1.7em;font-weight:700;color:#1e2733;line-height:1.2;margin:0.15em 0;word-break:break-word;}
-	.tu-stat__sub {font-size:0.85em;color:#6a7280;line-height:1.35;}
+	.tu-stat__sub {font-size:0.85em;color:#555d6b;line-height:1.35;}
 	.tu-pos {color:#1f7a3d !important;}
 	.tu-neg {color:#b3261e !important;}
 	.tu-table-wrap {overflow-x:auto;}
@@ -2608,59 +2692,6 @@ body.dark-mode .tu .rw-head {color:#a0a8b3;border-bottom-color:#555;} body.dark-
 		.footer__item--extra-padding { padding-left: 0; }
 		.footer__text--extra-info { float: none; display: block; margin-top: 0.5em; }
 	}
-
-	/* TOOL-DARK:START -- generated by add_tool_page_controls.py, do not edit */
-	body.dark-mode .page-content :where(div,span,p,li,ul,ol,h1,h2,h3,h4,h5,h6,td,th,label,summary,small,strong,b,em,i,code,pre,legend,figcaption,dl,dt,dd,blockquote,caption,cite,button,input,select,textarea){color:#d8d8d8}
-	body.dark-mode .page-content code{background-color:#33363d;color:#f0a8bd}
-	body.dark-mode .page-content .btn-default{background-color:#2e2e2e;background-image:none;color:#ddd;border-color:#555}
-	body.dark-mode #hr.tu{--accent-dark:#cd453c}
-	body.dark-mode .tu h2{color:#d1d6dc;border-bottom:2px solid #4b120a}
-	body.dark-mode .tu h3{color:#d1d6dc}
-	body.dark-mode .tu-card{background:#1a1a1a;border:1px solid #28323e}
-	body.dark-mode .tu-card--tint{background:#2b1815;border-color:#4b120a}
-	body.dark-mode .tu-field > label,body.dark-mode .tu-label{color:#9a9aa2}
-	body.dark-mode .tu-input,body.dark-mode .tu-select{border:1px solid #404a58;background:#1a1a1a;color:#dddddd}
-	body.dark-mode .tu-suffix span{color:#999da3}
-	body.dark-mode .tu-btn{background:#1a1a1a}
-	body.dark-mode .tu-btn--ghost{border-color:#3a424d;color:#aaaaaa}
-	body.dark-mode .tu-btn--ghost:hover{background:#191c20;color:#dddddd;border-color:#3a424d}
-	body.dark-mode .tu-seg{border:1px solid #404a58;background:#1a1a1a}
-	body.dark-mode .tu-seg button{color:#aaaaaa;border-right:1px solid #28323e}
-	body.dark-mode .tu-seg button:hover{background:#16191d}
-	body.dark-mode .tu-chip{border:1px solid #3a424d;background:#1a1a1a;color:#aaaaaa}
-	body.dark-mode .tu-stat{background:#1a1a1a;border:1px solid #28323e}
-	body.dark-mode .tu-stat--hero{background:#2b1815;border-color:#4b120a}
-	body.dark-mode .tu-stat__label{color:#9a9aa2}
-	body.dark-mode .tu-stat__value{color:#d1d6dc}
-	body.dark-mode .tu-stat__sub{color:#9a9da3}
-	body.dark-mode .tu-pos{color:#7dde9d !important}
-	body.dark-mode .tu-neg{color:#e87973 !important}
-	body.dark-mode .tu-table th,body.dark-mode .tu-table td{border-bottom:1px solid #29323d;color:#cccccc}
-	body.dark-mode .tu-table th{color:#9a9da3;background:#1a1a1a}
-	body.dark-mode .tu-table tr.is-active td{background:#2b1815}
-	body.dark-mode .tu-note{color:#9a9da3}
-	body.dark-mode .tu-toast{background:#3c4f67}
-	body.dark-mode .tu-seo{border-top:1px solid #333333}
-	body.dark-mode .tu-svg-line{stroke:#394a60}
-	body.dark-mode .tu-svg-text{fill:#cccccc}
-	body.dark-mode .tu-svg-grid{stroke:#28323e}
-	body.dark-mode .tu [data-names="0"] .rw-num,body.dark-mode .tu [data-table="1"] .rw-num{color:#999da3}
-	body.dark-mode .tu [data-table="1"] .rw-head{color:#9a9aa2;border-bottom:2px solid #2b323c}
-	body.dark-mode .tu [data-table="1"] .rw-row{border-bottom:1px solid #27313f}
-	body.dark-mode .tu .hr-small{color:#9a9da3}
-	body.dark-mode .tu .hr-gl{stroke:#2c333c}
-	body.dark-mode .tu .hr-ct{fill:#9a9da3}
-	body.dark-mode .tu .hr-bpm{fill:#d1d6dc}
-	body.dark-mode .tu .hr-z1{fill:#90a1ad;background:#1d2b35}
-	body.dark-mode .tu .hr-z2{fill:#8dcead}
-	body.dark-mode .tu .hr-z3{fill:#eace71}
-	body.dark-mode .tu .hr-z4{fill:#f2a569}
-	body.dark-mode .tu .hr-z5{fill:#e47d76}
-	body.dark-mode .tu .hr-pin{stroke:#394a60}
-	body.dark-mode .tu .hr-pint{fill:#d1d6dc}
-	body.dark-mode .tu .hr-ageline{stroke:#394a60}
-	body.dark-mode .tu #hr-table tr.is-on td,body.dark-mode .tu #hr-cmp tr.is-on td{background:#2b1815}
-	/* TOOL-DARK:END */
 /* Floating compact header bar: once the full header + nav scroll out of
    view, a slim fixed bar (small logo, title, as many nav links as fit)
    slides in, and the hamburger is pinned into its right end. Toggled by
@@ -2704,6 +2735,59 @@ body.is-stuck #navbar.hide { position: fixed; top: 56px; right: 8px; }
   #compact-nav { padding-right: 70px; gap: 8px; }
 }
 
+	/* TOOL-DARK:START -- generated by add_tool_page_controls.py, do not edit */
+	body.dark-mode .page-content :where(div,span,p,li,ul,ol,h1,h2,h3,h4,h5,h6,td,th,label,summary,small,strong,b,em,i,code,pre,legend,figcaption,dl,dt,dd,blockquote,caption,cite,button,input,select,textarea){color:#d8d8d8}
+	body.dark-mode .page-content code{background-color:#33363d;color:#f0a8bd}
+	body.dark-mode .page-content .btn-default{background-color:#2e2e2e;background-image:none;color:#ddd;border-color:#555}
+	body.dark-mode #hr.tu{--accent-dark:#cd453c}
+	body.dark-mode .tu h2{color:#d1d6dc;border-bottom:2px solid #4b120a}
+	body.dark-mode .tu h3{color:#d1d6dc}
+	body.dark-mode .tu-card{background:#1a1a1a;border:1px solid #28323e}
+	body.dark-mode .tu-card--tint{background:#2b1815;border-color:#4b120a}
+	body.dark-mode .tu-field > label,body.dark-mode .tu-label{color:#9a9aa2}
+	body.dark-mode .tu-input,body.dark-mode .tu-select{border:1px solid #404a58;background:#1a1a1a;color:#dddddd}
+	body.dark-mode .tu-suffix span{color:#989ca4}
+	body.dark-mode .tu-btn{background:#1a1a1a}
+	body.dark-mode .tu-btn--ghost{border-color:#3a424d;color:#aaaaaa}
+	body.dark-mode .tu-btn--ghost:hover{background:#191c20;color:#dddddd;border-color:#3a424d}
+	body.dark-mode .tu-seg{border:1px solid #404a58;background:#1a1a1a}
+	body.dark-mode .tu-seg button{color:#aaaaaa;border-right:1px solid #28323e}
+	body.dark-mode .tu-seg button:hover{background:#16191d}
+	body.dark-mode .tu-chip{border:1px solid #3a424d;background:#1a1a1a;color:#aaaaaa}
+	body.dark-mode .tu-stat{background:#1a1a1a;border:1px solid #28323e}
+	body.dark-mode .tu-stat--hero{background:#2b1815;border-color:#4b120a}
+	body.dark-mode .tu-stat__label{color:#9a9aa2}
+	body.dark-mode .tu-stat__value{color:#d1d6dc}
+	body.dark-mode .tu-stat__sub{color:#9a9ea4}
+	body.dark-mode .tu-pos{color:#7dde9d !important}
+	body.dark-mode .tu-neg{color:#e87973 !important}
+	body.dark-mode .tu-table th,body.dark-mode .tu-table td{border-bottom:1px solid #29323d;color:#cccccc}
+	body.dark-mode .tu-table th{color:#9a9da3;background:#1a1a1a}
+	body.dark-mode .tu-table tr.is-active td{background:#2b1815}
+	body.dark-mode .tu-note{color:#9a9da3}
+	body.dark-mode .tu-toast{background:#3c4f67}
+	body.dark-mode .tu-seo{border-top:1px solid #333333}
+	body.dark-mode .tu-svg-line{stroke:#394a60}
+	body.dark-mode .tu-svg-text{fill:#cccccc}
+	body.dark-mode .tu-svg-grid{stroke:#28323e}
+	body.dark-mode .tu [data-names="0"] .rw-num,body.dark-mode .tu [data-table="1"] .rw-num{color:#999da3}
+	body.dark-mode .tu [data-table="1"] .rw-head{color:#9a9aa2;border-bottom:2px solid #2b323c}
+	body.dark-mode .tu [data-table="1"] .rw-row{border-bottom:1px solid #27313f}
+	body.dark-mode .tu .hr-small{color:#9a9da3}
+	body.dark-mode .tu .hr-gl{stroke:#2c333c}
+	body.dark-mode .tu .hr-ct{fill:#9a9da3}
+	body.dark-mode .tu .hr-bpm{fill:#d1d6dc}
+	body.dark-mode .tu .hr-z1{fill:#90a1ad;background:#1d2b35}
+	body.dark-mode .tu .hr-z2{fill:#8dcead}
+	body.dark-mode .tu .hr-z3{fill:#eace71}
+	body.dark-mode .tu .hr-z4{fill:#f2a569}
+	body.dark-mode .tu .hr-z5{fill:#e47d76}
+	body.dark-mode .tu .hr-pin{stroke:#394a60}
+	body.dark-mode .tu .hr-pint{fill:#d1d6dc}
+	body.dark-mode .tu .hr-ageline{stroke:#394a60}
+	body.dark-mode .tu #hr-table tr.is-on td,body.dark-mode .tu #hr-cmp tr.is-on td{background:#2b1815}
+	/* TOOL-DARK:END */
+
 :where(body.dark-mode #hr) :is(div,span,b,strong,p,li,small,label,td,th,output,h1,h2,h3,h4,dt,dd,em,i,summary){color:#e6e6e6;}
 
 	.hide {display:none;}
@@ -2732,7 +2816,7 @@ body.is-stuck #navbar.hide { position: fixed; top: 56px; right: 8px; }
 	.tu-input--big {font-size:1.35em;padding:0.55em 0.7em;}
 	.tu-suffix {position:relative;}
 	.tu-suffix .tu-input {padding-right:3.2em;}
-	.tu-suffix span {position:absolute;right:0.7em;top:50%;transform:translateY(-50%);font-size:0.85em;color:#8a93a0;pointer-events:none;}
+	.tu-suffix span {position:absolute;right:0.7em;top:50%;transform:translateY(-50%);font-size:0.85em;color:#667085;pointer-events:none;}
 	.tu-btn {cursor:pointer;padding:0.5em 0.95em;border-radius:0.35em;border:0.125em solid var(--accent);background:#fff;color:var(--accent);font-size:0.9em;line-height:1.1;}
 	.tu-btn:hover {background:var(--accent);color:#fff;}
 	.tu-btn--primary {background:var(--accent);color:#fff;}
@@ -2753,7 +2837,7 @@ body.is-stuck #navbar.hide { position: fixed; top: 56px; right: 8px; }
 	.tu-stat--hero {background:#fbe6d8;border-color:#fbe6d8;}
 	.tu-stat__label {font-size:0.72em;font-weight:700;text-transform:uppercase;letter-spacing:0.05em;color:#667;}
 	.tu-stat__value {font-size:1.7em;font-weight:700;color:#1e2733;line-height:1.2;margin:0.15em 0;word-break:break-word;}
-	.tu-stat__sub {font-size:0.85em;color:#6a7280;line-height:1.35;}
+	.tu-stat__sub {font-size:0.85em;color:#555d6b;line-height:1.35;}
 	.tu-pos {color:#1f7a3d !important;}
 	.tu-neg {color:#b3261e !important;}
 	.tu-table-wrap {overflow-x:auto;}
@@ -2831,7 +2915,7 @@ body.dark-mode .tu .rw-head {color:#a0a8b3;border-bottom-color:#555;} body.dark-
 	.tu .cb-an {flex:1 1 auto;min-width:0;line-height:1.3;} .tu .cb-an small {display:block;color:#6a7280;} .tu .cb-ak {flex:0 0 auto;text-align:right;font-variant-numeric:tabular-nums;font-weight:700;line-height:1.2;} .tu .cb-ak small {display:block;font-weight:400;color:#6a7280;}
 	.tu .cb-add {flex:0 0 auto;} .tu .cb-int {display:inline-block;font-size:0.72em;font-weight:700;border-radius:0.6em;padding:0.05em 0.5em;margin-left:0.3em;vertical-align:middle;} .tu .cb-int--light {background:#e6eef7;color:#37506e;} .tu .cb-int--moderate {background:#fdf0cc;color:#7a5b00;} .tu .cb-int--vigorous {background:#fbdcd9;color:#8f2b22;}
 	.tu .cb-rows {display:grid;gap:0.5em;} .tu .cb-row {display:grid;grid-template-columns:1fr auto auto auto auto;gap:0.6em 0.8em;align-items:center;padding:0.5em 0.7em;border:1px solid #e3e7ec;border-radius:0.5em;background:#fff;}
-	.tu .cb-row .cb-rn {line-height:1.3;} .tu .cb-row .cb-rn small {display:block;color:#6a7280;} .tu .cb-min {display:flex;align-items:center;gap:0.2em;} .tu .cb-min input {width:4.2em;text-align:center;} .tu .cb-min button, .tu .cb-del {width:2.1em;height:2.1em;border:1px solid #c9d0d8;background:#fff;border-radius:0.4em;cursor:pointer;line-height:1;} .tu .cb-del {border:0;color:#8a93a0;} .tu .cb-del:hover {color:#d1453b;}
+	.tu .cb-row .cb-rn {line-height:1.3;} .tu .cb-row .cb-rn small {display:block;color:#6a7280;} .tu .cb-min {display:flex;align-items:center;gap:0.2em;} .tu .cb-min input {width:4.2em;min-height:40px;text-align:center;} .tu .cb-min button, .tu .cb-del {width:2.1em;height:2.1em;border:1px solid #c9d0d8;background:#fff;border-radius:0.4em;cursor:pointer;line-height:1;} .tu .cb-del {border:0;color:#667085;} .tu .cb-del:hover {color:#d1453b;}
 	.tu .cb-rk {text-align:right;font-variant-numeric:tabular-nums;font-weight:700;line-height:1.2;} .tu .cb-rk small {display:block;font-weight:400;color:#6a7280;}
 	.tu .cb-prog {margin-top:0.6em;} .tu .cb-track {height:1.5em;border-radius:0.75em;background:#e8ecef;overflow:hidden;} .tu .cb-fill {height:100%;background:var(--accent);border-radius:0.75em;transition:width .25s;} .tu .cb-fill.is-done {background:#2e9b57;} .tu .cb-progtxt {display:flex;justify-content:space-between;flex-wrap:wrap;gap:0.6em;margin-top:0.4em;font-weight:600;}
 	.tu .cb-chart svg {width:100%;height:auto;display:block;} .tu .cb-gl {stroke:#d5dae0;stroke-width:0.6;} .tu .cb-ct {fill:#6a7280;font-size:11px;} .tu .cb-lbl {fill:#1e2733;font-size:11.5px;} .tu .cb-lbl.is-on {font-weight:700;} .tu .cb-bar {fill:#a7b9d6;} .tu .cb-bar.is-on {fill:var(--accent);} .tu .cb-val {fill:#1e2733;font-size:11px;font-weight:700;}
@@ -2880,66 +2964,6 @@ body.dark-mode .tu .rw-head {color:#a0a8b3;border-bottom-color:#555;} body.dark-
 		.footer__item--extra-padding { padding-left: 0; }
 		.footer__text--extra-info { float: none; display: block; margin-top: 0.5em; }
 	}
-
-	/* TOOL-DARK:START -- generated by add_tool_page_controls.py, do not edit */
-	body.dark-mode .page-content :where(div,span,p,li,ul,ol,h1,h2,h3,h4,h5,h6,td,th,label,summary,small,strong,b,em,i,code,pre,legend,figcaption,dl,dt,dd,blockquote,caption,cite,button,input,select,textarea){color:#d8d8d8}
-	body.dark-mode .page-content code{background-color:#33363d;color:#f0a8bd}
-	body.dark-mode .page-content .btn-default{background-color:#2e2e2e;background-image:none;color:#ddd;border-color:#555}
-	body.dark-mode #cb.tu{--accent:#f15718;--accent-dark:#f25617}
-	body.dark-mode .tu h2{color:#d1d6dc;border-bottom:2px solid #552709}
-	body.dark-mode .tu h3{color:#d1d6dc}
-	body.dark-mode .tu-card{background:#1a1a1a;border:1px solid #28323e}
-	body.dark-mode .tu-card--tint{background:#322217;border-color:#552709}
-	body.dark-mode .tu-field > label,body.dark-mode .tu-label{color:#9a9aa2}
-	body.dark-mode .tu-input,body.dark-mode .tu-select{border:1px solid #404a58;background:#1a1a1a;color:#dddddd}
-	body.dark-mode .tu-suffix span{color:#999da3}
-	body.dark-mode .tu-btn{background:#1a1a1a}
-	body.dark-mode .tu-btn--ghost{border-color:#3a424d;color:#aaaaaa}
-	body.dark-mode .tu-btn--ghost:hover{background:#191c20;color:#dddddd;border-color:#3a424d}
-	body.dark-mode .tu-seg{border:1px solid #404a58;background:#1a1a1a}
-	body.dark-mode .tu-seg button{color:#aaaaaa;border-right:1px solid #28323e}
-	body.dark-mode .tu-seg button:hover{background:#16191d}
-	body.dark-mode .tu-chip{border:1px solid #3a424d;background:#1a1a1a;color:#aaaaaa}
-	body.dark-mode .tu-stat{background:#1a1a1a;border:1px solid #28323e}
-	body.dark-mode .tu-stat--hero{background:#322217;border-color:#552709}
-	body.dark-mode .tu-stat__label{color:#9a9aa2}
-	body.dark-mode .tu-stat__value{color:#d1d6dc}
-	body.dark-mode .tu-stat__sub{color:#9a9da3}
-	body.dark-mode .tu-pos{color:#7dde9d !important}
-	body.dark-mode .tu-neg{color:#e87973 !important}
-	body.dark-mode .tu-table th,body.dark-mode .tu-table td{border-bottom:1px solid #29323d;color:#cccccc}
-	body.dark-mode .tu-table th{color:#9a9da3;background:#1a1a1a}
-	body.dark-mode .tu-table tr.is-active td{background:#322217}
-	body.dark-mode .tu-note{color:#9a9da3}
-	body.dark-mode .tu-toast{background:#3c4f67}
-	body.dark-mode .tu-seo{border-top:1px solid #333333}
-	body.dark-mode .tu-svg-line{stroke:#394a60}
-	body.dark-mode .tu-svg-text{fill:#cccccc}
-	body.dark-mode .tu-svg-grid{stroke:#28323e}
-	body.dark-mode .tu [data-names="0"] .rw-num,body.dark-mode .tu [data-table="1"] .rw-num{color:#999da3}
-	body.dark-mode .tu [data-table="1"] .rw-head{color:#9a9aa2;border-bottom:2px solid #2b323c}
-	body.dark-mode .tu [data-table="1"] .rw-row{border-bottom:1px solid #27313f}
-	body.dark-mode .tu .cb-list{border:1px solid #29323d}
-	body.dark-mode .tu .cb-act{border-bottom:1px solid #2a313c}
-	body.dark-mode .tu .cb-act:hover{background:#322217}
-	body.dark-mode .tu .cb-an small{color:#9a9da3}
-	body.dark-mode .tu .cb-ak small{color:#9a9da3}
-	body.dark-mode .tu .cb-int--light{background:#181f27;color:#92abc9}
-	body.dark-mode .tu .cb-int--moderate{background:#3b3218;color:#ffd65c}
-	body.dark-mode .tu .cb-int--vigorous{background:#321917;color:#e0837b}
-	body.dark-mode .tu .cb-row{border:1px solid #29323d;background:#1a1a1a}
-	body.dark-mode .tu .cb-row .cb-rn small{color:#9a9da3}
-	body.dark-mode .tu .cb-min button,body.dark-mode .tu .cb-del{border:1px solid #343d48;background:#1a1a1a}
-	body.dark-mode .tu .cb-del{color:#999da3}
-	body.dark-mode .tu .cb-del:hover{color:#e0827b}
-	body.dark-mode .tu .cb-rk small{color:#9a9da3}
-	body.dark-mode .tu .cb-track{background:#202326}
-	body.dark-mode .tu .cb-gl{stroke:#2c333c}
-	body.dark-mode .tu .cb-ct{fill:#9a9da3}
-	body.dark-mode .tu .cb-lbl{fill:#d1d6dc}
-	body.dark-mode .tu .cb-val{fill:#d1d6dc}
-	body.dark-mode .tu #cb-howlong tr.is-on td{background:#322217}
-	/* TOOL-DARK:END */
 /* Floating compact header bar: once the full header + nav scroll out of
    view, a slim fixed bar (small logo, title, as many nav links as fit)
    slides in, and the hamburger is pinned into its right end. Toggled by
@@ -2983,6 +3007,66 @@ body.is-stuck #navbar.hide { position: fixed; top: 56px; right: 8px; }
   #compact-nav { padding-right: 70px; gap: 8px; }
 }
 
+	/* TOOL-DARK:START -- generated by add_tool_page_controls.py, do not edit */
+	body.dark-mode .page-content :where(div,span,p,li,ul,ol,h1,h2,h3,h4,h5,h6,td,th,label,summary,small,strong,b,em,i,code,pre,legend,figcaption,dl,dt,dd,blockquote,caption,cite,button,input,select,textarea){color:#d8d8d8}
+	body.dark-mode .page-content code{background-color:#33363d;color:#f0a8bd}
+	body.dark-mode .page-content .btn-default{background-color:#2e2e2e;background-image:none;color:#ddd;border-color:#555}
+	body.dark-mode #cb.tu{--accent:#f15718;--accent-dark:#f25617}
+	body.dark-mode .tu h2{color:#d1d6dc;border-bottom:2px solid #552709}
+	body.dark-mode .tu h3{color:#d1d6dc}
+	body.dark-mode .tu-card{background:#1a1a1a;border:1px solid #28323e}
+	body.dark-mode .tu-card--tint{background:#322217;border-color:#552709}
+	body.dark-mode .tu-field > label,body.dark-mode .tu-label{color:#9a9aa2}
+	body.dark-mode .tu-input,body.dark-mode .tu-select{border:1px solid #404a58;background:#1a1a1a;color:#dddddd}
+	body.dark-mode .tu-suffix span{color:#989ca4}
+	body.dark-mode .tu-btn{background:#1a1a1a}
+	body.dark-mode .tu-btn--ghost{border-color:#3a424d;color:#aaaaaa}
+	body.dark-mode .tu-btn--ghost:hover{background:#191c20;color:#dddddd;border-color:#3a424d}
+	body.dark-mode .tu-seg{border:1px solid #404a58;background:#1a1a1a}
+	body.dark-mode .tu-seg button{color:#aaaaaa;border-right:1px solid #28323e}
+	body.dark-mode .tu-seg button:hover{background:#16191d}
+	body.dark-mode .tu-chip{border:1px solid #3a424d;background:#1a1a1a;color:#aaaaaa}
+	body.dark-mode .tu-stat{background:#1a1a1a;border:1px solid #28323e}
+	body.dark-mode .tu-stat--hero{background:#322217;border-color:#552709}
+	body.dark-mode .tu-stat__label{color:#9a9aa2}
+	body.dark-mode .tu-stat__value{color:#d1d6dc}
+	body.dark-mode .tu-stat__sub{color:#9a9ea4}
+	body.dark-mode .tu-pos{color:#7dde9d !important}
+	body.dark-mode .tu-neg{color:#e87973 !important}
+	body.dark-mode .tu-table th,body.dark-mode .tu-table td{border-bottom:1px solid #29323d;color:#cccccc}
+	body.dark-mode .tu-table th{color:#9a9da3;background:#1a1a1a}
+	body.dark-mode .tu-table tr.is-active td{background:#322217}
+	body.dark-mode .tu-note{color:#9a9da3}
+	body.dark-mode .tu-toast{background:#3c4f67}
+	body.dark-mode .tu-seo{border-top:1px solid #333333}
+	body.dark-mode .tu-svg-line{stroke:#394a60}
+	body.dark-mode .tu-svg-text{fill:#cccccc}
+	body.dark-mode .tu-svg-grid{stroke:#28323e}
+	body.dark-mode .tu [data-names="0"] .rw-num,body.dark-mode .tu [data-table="1"] .rw-num{color:#999da3}
+	body.dark-mode .tu [data-table="1"] .rw-head{color:#9a9aa2;border-bottom:2px solid #2b323c}
+	body.dark-mode .tu [data-table="1"] .rw-row{border-bottom:1px solid #27313f}
+	body.dark-mode .tu .cb-list{border:1px solid #29323d}
+	body.dark-mode .tu .cb-act{border-bottom:1px solid #2a313c}
+	body.dark-mode .tu .cb-act:hover{background:#322217}
+	body.dark-mode .tu .cb-an small{color:#9a9da3}
+	body.dark-mode .tu .cb-ak small{color:#9a9da3}
+	body.dark-mode .tu .cb-int--light{background:#181f27;color:#92abc9}
+	body.dark-mode .tu .cb-int--moderate{background:#3b3218;color:#ffd65c}
+	body.dark-mode .tu .cb-int--vigorous{background:#321917;color:#e0837b}
+	body.dark-mode .tu .cb-row{border:1px solid #29323d;background:#1a1a1a}
+	body.dark-mode .tu .cb-row .cb-rn small{color:#9a9da3}
+	body.dark-mode .tu .cb-min button,body.dark-mode .tu .cb-del{border:1px solid #343d48;background:#1a1a1a}
+	body.dark-mode .tu .cb-del{color:#989ca4}
+	body.dark-mode .tu .cb-del:hover{color:#e0827b}
+	body.dark-mode .tu .cb-rk small{color:#9a9da3}
+	body.dark-mode .tu .cb-track{background:#202326}
+	body.dark-mode .tu .cb-gl{stroke:#2c333c}
+	body.dark-mode .tu .cb-ct{fill:#9a9da3}
+	body.dark-mode .tu .cb-lbl{fill:#d1d6dc}
+	body.dark-mode .tu .cb-val{fill:#d1d6dc}
+	body.dark-mode .tu #cb-howlong tr.is-on td{background:#322217}
+	/* TOOL-DARK:END */
+
 :where(body.dark-mode #cb) :is(div,span,b,strong,p,li,small,label,td,th,output,h1,h2,h3,h4,dt,dd,em,i,summary){color:#e6e6e6;}
 
 	.hide {display:none;}
@@ -3011,7 +3095,7 @@ body.is-stuck #navbar.hide { position: fixed; top: 56px; right: 8px; }
 	.tu-input--big {font-size:1.35em;padding:0.55em 0.7em;}
 	.tu-suffix {position:relative;}
 	.tu-suffix .tu-input {padding-right:3.2em;}
-	.tu-suffix span {position:absolute;right:0.7em;top:50%;transform:translateY(-50%);font-size:0.85em;color:#8a93a0;pointer-events:none;}
+	.tu-suffix span {position:absolute;right:0.7em;top:50%;transform:translateY(-50%);font-size:0.85em;color:#667085;pointer-events:none;}
 	.tu-btn {cursor:pointer;padding:0.5em 0.95em;border-radius:0.35em;border:0.125em solid var(--accent);background:#fff;color:var(--accent);font-size:0.9em;line-height:1.1;}
 	.tu-btn:hover {background:var(--accent);color:#fff;}
 	.tu-btn--primary {background:var(--accent);color:#fff;}
@@ -3032,7 +3116,7 @@ body.is-stuck #navbar.hide { position: fixed; top: 56px; right: 8px; }
 	.tu-stat--hero {background:#dcf2ea;border-color:#dcf2ea;}
 	.tu-stat__label {font-size:0.72em;font-weight:700;text-transform:uppercase;letter-spacing:0.05em;color:#667;}
 	.tu-stat__value {font-size:1.7em;font-weight:700;color:#1e2733;line-height:1.2;margin:0.15em 0;word-break:break-word;}
-	.tu-stat__sub {font-size:0.85em;color:#6a7280;line-height:1.35;}
+	.tu-stat__sub {font-size:0.85em;color:#555d6b;line-height:1.35;}
 	.tu-pos {color:#1f7a3d !important;}
 	.tu-neg {color:#b3261e !important;}
 	.tu-table-wrap {overflow-x:auto;}
@@ -3151,54 +3235,6 @@ body.dark-mode .tu .rw-head {color:#a0a8b3;border-bottom-color:#555;} body.dark-
 		.footer__item--extra-padding { padding-left: 0; }
 		.footer__text--extra-info { float: none; display: block; margin-top: 0.5em; }
 	}
-
-	/* TOOL-DARK:START -- generated by add_tool_page_controls.py, do not edit */
-	body.dark-mode .page-content :where(div,span,p,li,ul,ol,h1,h2,h3,h4,h5,h6,td,th,label,summary,small,strong,b,em,i,code,pre,legend,figcaption,dl,dt,dd,blockquote,caption,cite,button,input,select,textarea){color:#d8d8d8}
-	body.dark-mode .page-content code{background-color:#33363d;color:#f0a8bd}
-	body.dark-mode .page-content .btn-default{background-color:#2e2e2e;background-image:none;color:#ddd;border-color:#555}
-	body.dark-mode #pc.tu{--accent:#25e4ab;--accent-dark:#22e7ad}
-	body.dark-mode .tu h2{color:#d1d6dc;border-bottom:2px solid #1b4838}
-	body.dark-mode .tu h3{color:#d1d6dc}
-	body.dark-mode .tu-card{background:#1a1a1a;border:1px solid #28323e}
-	body.dark-mode .tu-card--tint{background:#1f2f2a;border-color:#1b4838}
-	body.dark-mode .tu-field > label,body.dark-mode .tu-label{color:#9a9aa2}
-	body.dark-mode .tu-input,body.dark-mode .tu-select{border:1px solid #404a58;background:#1a1a1a;color:#dddddd}
-	body.dark-mode .tu-suffix span{color:#999da3}
-	body.dark-mode .tu-btn{background:#1a1a1a}
-	body.dark-mode .tu-btn--ghost{border-color:#3a424d;color:#aaaaaa}
-	body.dark-mode .tu-btn--ghost:hover{background:#191c20;color:#dddddd;border-color:#3a424d}
-	body.dark-mode .tu-seg{border:1px solid #404a58;background:#1a1a1a}
-	body.dark-mode .tu-seg button{color:#aaaaaa;border-right:1px solid #28323e}
-	body.dark-mode .tu-seg button:hover{background:#16191d}
-	body.dark-mode .tu-chip{border:1px solid #3a424d;background:#1a1a1a;color:#aaaaaa}
-	body.dark-mode .tu-stat{background:#1a1a1a;border:1px solid #28323e}
-	body.dark-mode .tu-stat--hero{background:#1f2f2a;border-color:#1b4838}
-	body.dark-mode .tu-stat__label{color:#9a9aa2}
-	body.dark-mode .tu-stat__value{color:#d1d6dc}
-	body.dark-mode .tu-stat__sub{color:#9a9da3}
-	body.dark-mode .tu-pos{color:#7dde9d !important}
-	body.dark-mode .tu-neg{color:#e87973 !important}
-	body.dark-mode .tu-table th,body.dark-mode .tu-table td{border-bottom:1px solid #29323d;color:#cccccc}
-	body.dark-mode .tu-table th{color:#9a9da3;background:#1a1a1a}
-	body.dark-mode .tu-table tr.is-active td{background:#1f2f2a}
-	body.dark-mode .tu-note{color:#9a9da3}
-	body.dark-mode .tu-toast{background:#3c4f67}
-	body.dark-mode .tu-seo{border-top:1px solid #333333}
-	body.dark-mode .tu-svg-line{stroke:#394a60}
-	body.dark-mode .tu-svg-text{fill:#cccccc}
-	body.dark-mode .tu-svg-grid{stroke:#28323e}
-	body.dark-mode .tu [data-names="0"] .rw-num,body.dark-mode .tu [data-table="1"] .rw-num{color:#999da3}
-	body.dark-mode .tu [data-table="1"] .rw-head{color:#9a9aa2;border-bottom:2px solid #2b323c}
-	body.dark-mode .tu [data-table="1"] .rw-row{border-bottom:1px solid #27313f}
-	body.dark-mode .tu .pc-small{color:#9a9da3}
-	body.dark-mode .tu .pc-calc{background:#1f2f2a !important}
-	body.dark-mode .tu .pc-gl{stroke:#2c333c}
-	body.dark-mode .tu .pc-ct{fill:#9a9da3}
-	body.dark-mode .tu .pc-avg{stroke:#ba8212}
-	body.dark-mode .tu .pc-b.is-fast{fill:#81daa2}
-	body.dark-mode .tu .pc-b.is-slow{fill:#e47d76}
-	body.dark-mode .tu #pc-races-t tr.is-on td{background:#1f2f2a}
-	/* TOOL-DARK:END */
 /* Floating compact header bar: once the full header + nav scroll out of
    view, a slim fixed bar (small logo, title, as many nav links as fit)
    slides in, and the hamburger is pinned into its right end. Toggled by
@@ -3242,6 +3278,54 @@ body.is-stuck #navbar.hide { position: fixed; top: 56px; right: 8px; }
   #compact-nav { padding-right: 70px; gap: 8px; }
 }
 
+	/* TOOL-DARK:START -- generated by add_tool_page_controls.py, do not edit */
+	body.dark-mode .page-content :where(div,span,p,li,ul,ol,h1,h2,h3,h4,h5,h6,td,th,label,summary,small,strong,b,em,i,code,pre,legend,figcaption,dl,dt,dd,blockquote,caption,cite,button,input,select,textarea){color:#d8d8d8}
+	body.dark-mode .page-content code{background-color:#33363d;color:#f0a8bd}
+	body.dark-mode .page-content .btn-default{background-color:#2e2e2e;background-image:none;color:#ddd;border-color:#555}
+	body.dark-mode #pc.tu{--accent:#25e4ab;--accent-dark:#22e7ad}
+	body.dark-mode .tu h2{color:#d1d6dc;border-bottom:2px solid #1b4838}
+	body.dark-mode .tu h3{color:#d1d6dc}
+	body.dark-mode .tu-card{background:#1a1a1a;border:1px solid #28323e}
+	body.dark-mode .tu-card--tint{background:#1f2f2a;border-color:#1b4838}
+	body.dark-mode .tu-field > label,body.dark-mode .tu-label{color:#9a9aa2}
+	body.dark-mode .tu-input,body.dark-mode .tu-select{border:1px solid #404a58;background:#1a1a1a;color:#dddddd}
+	body.dark-mode .tu-suffix span{color:#989ca4}
+	body.dark-mode .tu-btn{background:#1a1a1a}
+	body.dark-mode .tu-btn--ghost{border-color:#3a424d;color:#aaaaaa}
+	body.dark-mode .tu-btn--ghost:hover{background:#191c20;color:#dddddd;border-color:#3a424d}
+	body.dark-mode .tu-seg{border:1px solid #404a58;background:#1a1a1a}
+	body.dark-mode .tu-seg button{color:#aaaaaa;border-right:1px solid #28323e}
+	body.dark-mode .tu-seg button:hover{background:#16191d}
+	body.dark-mode .tu-chip{border:1px solid #3a424d;background:#1a1a1a;color:#aaaaaa}
+	body.dark-mode .tu-stat{background:#1a1a1a;border:1px solid #28323e}
+	body.dark-mode .tu-stat--hero{background:#1f2f2a;border-color:#1b4838}
+	body.dark-mode .tu-stat__label{color:#9a9aa2}
+	body.dark-mode .tu-stat__value{color:#d1d6dc}
+	body.dark-mode .tu-stat__sub{color:#9a9ea4}
+	body.dark-mode .tu-pos{color:#7dde9d !important}
+	body.dark-mode .tu-neg{color:#e87973 !important}
+	body.dark-mode .tu-table th,body.dark-mode .tu-table td{border-bottom:1px solid #29323d;color:#cccccc}
+	body.dark-mode .tu-table th{color:#9a9da3;background:#1a1a1a}
+	body.dark-mode .tu-table tr.is-active td{background:#1f2f2a}
+	body.dark-mode .tu-note{color:#9a9da3}
+	body.dark-mode .tu-toast{background:#3c4f67}
+	body.dark-mode .tu-seo{border-top:1px solid #333333}
+	body.dark-mode .tu-svg-line{stroke:#394a60}
+	body.dark-mode .tu-svg-text{fill:#cccccc}
+	body.dark-mode .tu-svg-grid{stroke:#28323e}
+	body.dark-mode .tu [data-names="0"] .rw-num,body.dark-mode .tu [data-table="1"] .rw-num{color:#999da3}
+	body.dark-mode .tu [data-table="1"] .rw-head{color:#9a9aa2;border-bottom:2px solid #2b323c}
+	body.dark-mode .tu [data-table="1"] .rw-row{border-bottom:1px solid #27313f}
+	body.dark-mode .tu .pc-small{color:#9a9da3}
+	body.dark-mode .tu .pc-calc{background:#1f2f2a !important}
+	body.dark-mode .tu .pc-gl{stroke:#2c333c}
+	body.dark-mode .tu .pc-ct{fill:#9a9da3}
+	body.dark-mode .tu .pc-avg{stroke:#ba8212}
+	body.dark-mode .tu .pc-b.is-fast{fill:#81daa2}
+	body.dark-mode .tu .pc-b.is-slow{fill:#e47d76}
+	body.dark-mode .tu #pc-races-t tr.is-on td{background:#1f2f2a}
+	/* TOOL-DARK:END */
+
 :where(body.dark-mode #pc) :is(div,span,b,strong,p,li,small,label,td,th,output,h1,h2,h3,h4,dt,dd,em,i,summary){color:#e6e6e6;}
 
 	.hide {display:none;}
@@ -3270,7 +3354,7 @@ body.is-stuck #navbar.hide { position: fixed; top: 56px; right: 8px; }
 	.tu-input--big {font-size:1.35em;padding:0.55em 0.7em;}
 	.tu-suffix {position:relative;}
 	.tu-suffix .tu-input {padding-right:3.2em;}
-	.tu-suffix span {position:absolute;right:0.7em;top:50%;transform:translateY(-50%);font-size:0.85em;color:#8a93a0;pointer-events:none;}
+	.tu-suffix span {position:absolute;right:0.7em;top:50%;transform:translateY(-50%);font-size:0.85em;color:#667085;pointer-events:none;}
 	.tu-btn {cursor:pointer;padding:0.5em 0.95em;border-radius:0.35em;border:0.125em solid var(--accent);background:#fff;color:var(--accent);font-size:0.9em;line-height:1.1;}
 	.tu-btn:hover {background:var(--accent);color:#fff;}
 	.tu-btn--primary {background:var(--accent);color:#fff;}
@@ -3291,7 +3375,7 @@ body.is-stuck #navbar.hide { position: fixed; top: 56px; right: 8px; }
 	.tu-stat--hero {background:#fbe1e1;border-color:#fbe1e1;}
 	.tu-stat__label {font-size:0.72em;font-weight:700;text-transform:uppercase;letter-spacing:0.05em;color:#667;}
 	.tu-stat__value {font-size:1.7em;font-weight:700;color:#1e2733;line-height:1.2;margin:0.15em 0;word-break:break-word;}
-	.tu-stat__sub {font-size:0.85em;color:#6a7280;line-height:1.35;}
+	.tu-stat__sub {font-size:0.85em;color:#555d6b;line-height:1.35;}
 	.tu-pos {color:#1f7a3d !important;}
 	.tu-neg {color:#b3261e !important;}
 	.tu-table-wrap {overflow-x:auto;}
@@ -3367,7 +3451,7 @@ body.dark-mode .tu .rw-head {color:#a0a8b3;border-bottom-color:#555;} body.dark-
 	.tu .rm-more summary {cursor:pointer;color:var(--accent);font-weight:600;} .tu .rm-btns {display:flex;gap:0.5em;flex-wrap:wrap;margin:1em 0;}
 	.tu .rm-verdict {font-size:1.05em;line-height:1.5;border-left:5px solid var(--accent);} .tu .rm-small {color:#6a7280;font-size:0.82em;} .tu .rm-warn {color:#c0392b;font-weight:600;}
 	.tu .rm-chart svg, .tu .rm-bar-svg svg {width:100%;height:auto;display:block;} .tu .rm-gl {stroke:#d5dae0;stroke-width:0.6;} .tu .rm-ct {fill:#6a7280;font-size:11px;} .tu .rm-lbl {fill:#1e2733;font-size:12px;} .tu .rm-val {fill:#1e2733;font-size:11.5px;font-weight:700;}
-	.tu .rm-bar {fill:#a7b9d6;} .tu .rm-bar.is-top {fill:var(--accent);} .tu .rm-avg {stroke:#e8a317;stroke-width:1.8;stroke-dasharray:6 4;} .tu .rm-line {fill:none;stroke:var(--accent);stroke-width:2.6;stroke-linejoin:round;} .tu .rm-dot {fill:var(--accent);stroke:#fff;stroke-width:2;} .tu .rm-cross {stroke:#8a93a0;stroke-width:1;stroke-dasharray:3 3;}
+	.tu .rm-bar {fill:#a7b9d6;} .tu .rm-bar.is-top {fill:var(--accent);} .tu .rm-avg {stroke:#e8a317;stroke-width:1.8;stroke-dasharray:6 4;} .tu .rm-line {fill:none;stroke:var(--accent);stroke-width:2.6;stroke-linejoin:round;} .tu .rm-dot {fill:var(--accent);stroke:#fff;stroke-width:2;} .tu .rm-cross {stroke:#667085;stroke-width:1;stroke-dasharray:3 3;}
 	.tu .rm-z-str {fill:#d9453b;opacity:0.16;} .tu .rm-z-hyp {fill:#e8a317;opacity:0.18;} .tu .rm-z-end {fill:#2e9b57;opacity:0.16;}
 	.tu .rm-readout {min-height:1.6em;font-size:0.92em;color:#4a5260;margin:0.3em 0 0.8em;}
 	.tu #rm-table td, .tu #rm-zones td, .tu #rm-ref td {font-variant-numeric:tabular-nums;} .tu #rm-table tr.rm-r-str td:first-child {border-left:4px solid #d9453b;} .tu #rm-table tr.rm-r-hyp td:first-child {border-left:4px solid #e8a317;} .tu #rm-table tr.rm-r-end td:first-child {border-left:4px solid #2e9b57;}
@@ -3416,72 +3500,6 @@ body.dark-mode .tu .rw-head {color:#a0a8b3;border-bottom-color:#555;} body.dark-
 		.footer__item--extra-padding { padding-left: 0; }
 		.footer__text--extra-info { float: none; display: block; margin-top: 0.5em; }
 	}
-
-	/* TOOL-DARK:START -- generated by add_tool_page_controls.py, do not edit */
-	body.dark-mode .page-content :where(div,span,p,li,ul,ol,h1,h2,h3,h4,h5,h6,td,th,label,summary,small,strong,b,em,i,code,pre,legend,figcaption,dl,dt,dd,blockquote,caption,cite,button,input,select,textarea){color:#d8d8d8}
-	body.dark-mode .page-content code{background-color:#33363d;color:#f0a8bd}
-	body.dark-mode .page-content .btn-default{background-color:#2e2e2e;background-image:none;color:#ddd;border-color:#555}
-	body.dark-mode #rm.tu{--accent:#df2a2a;--accent-dark:#e12828}
-	body.dark-mode .tu h2{color:#d1d6dc;border-bottom:2px solid #4b0a0a}
-	body.dark-mode .tu h3{color:#d1d6dc}
-	body.dark-mode .tu-card{background:#1a1a1a;border:1px solid #28323e}
-	body.dark-mode .tu-card--tint{background:#2b1515;border-color:#4b0a0a}
-	body.dark-mode .tu-field > label,body.dark-mode .tu-label{color:#9a9aa2}
-	body.dark-mode .tu-input,body.dark-mode .tu-select{border:1px solid #404a58;background:#1a1a1a;color:#dddddd}
-	body.dark-mode .tu-suffix span{color:#999da3}
-	body.dark-mode .tu-btn{background:#1a1a1a}
-	body.dark-mode .tu-btn--ghost{border-color:#3a424d;color:#aaaaaa}
-	body.dark-mode .tu-btn--ghost:hover{background:#191c20;color:#dddddd;border-color:#3a424d}
-	body.dark-mode .tu-seg{border:1px solid #404a58;background:#1a1a1a}
-	body.dark-mode .tu-seg button{color:#aaaaaa;border-right:1px solid #28323e}
-	body.dark-mode .tu-seg button:hover{background:#16191d}
-	body.dark-mode .tu-chip{border:1px solid #3a424d;background:#1a1a1a;color:#aaaaaa}
-	body.dark-mode .tu-stat{background:#1a1a1a;border:1px solid #28323e}
-	body.dark-mode .tu-stat--hero{background:#2b1515;border-color:#4b0a0a}
-	body.dark-mode .tu-stat__label{color:#9a9aa2}
-	body.dark-mode .tu-stat__value{color:#d1d6dc}
-	body.dark-mode .tu-stat__sub{color:#9a9da3}
-	body.dark-mode .tu-pos{color:#7dde9d !important}
-	body.dark-mode .tu-neg{color:#e87973 !important}
-	body.dark-mode .tu-table th,body.dark-mode .tu-table td{border-bottom:1px solid #29323d;color:#cccccc}
-	body.dark-mode .tu-table th{color:#9a9da3;background:#1a1a1a}
-	body.dark-mode .tu-table tr.is-active td{background:#2b1515}
-	body.dark-mode .tu-note{color:#9a9da3}
-	body.dark-mode .tu-toast{background:#3c4f67}
-	body.dark-mode .tu-seo{border-top:1px solid #333333}
-	body.dark-mode .tu-svg-line{stroke:#394a60}
-	body.dark-mode .tu-svg-text{fill:#cccccc}
-	body.dark-mode .tu-svg-grid{stroke:#28323e}
-	body.dark-mode .tu [data-names="0"] .rw-num,body.dark-mode .tu [data-table="1"] .rw-num{color:#999da3}
-	body.dark-mode .tu [data-table="1"] .rw-head{color:#9a9aa2;border-bottom:2px solid #2b323c}
-	body.dark-mode .tu [data-table="1"] .rw-row{border-bottom:1px solid #27313f}
-	body.dark-mode .tu .rm-rep button{border:1px solid #343d48;background:#1a1a1a}
-	body.dark-mode .tu .rm-small{color:#9a9da3}
-	body.dark-mode .tu .rm-warn{color:#e1837a}
-	body.dark-mode .tu .rm-gl{stroke:#2c333c}
-	body.dark-mode .tu .rm-ct{fill:#9a9da3}
-	body.dark-mode .tu .rm-lbl{fill:#d1d6dc}
-	body.dark-mode .tu .rm-val{fill:#d1d6dc}
-	body.dark-mode .tu .rm-avg{stroke:#ba8212}
-	body.dark-mode .tu .rm-dot{stroke:#333333}
-	body.dark-mode .tu .rm-cross{stroke:#606976}
-	body.dark-mode .tu .rm-z-str{fill:#e47d76}
-	body.dark-mode .tu .rm-z-hyp{fill:#f0c46b}
-	body.dark-mode .tu .rm-z-end{fill:#81daa2}
-	body.dark-mode .tu .rm-readout{color:#a4a8b0}
-	body.dark-mode .tu #rm-table tr.rm-r-str td:first-child{border-left:4px solid #ab2a21}
-	body.dark-mode .tu #rm-table tr.rm-r-hyp td:first-child{border-left:4px solid #ba8212}
-	body.dark-mode .tu #rm-table tr.rm-r-end td:first-child{border-left:4px solid #3ac56e}
-	body.dark-mode .tu .rm-pl25{fill:#e47d76}
-	body.dark-mode .tu .rm-pl20{fill:#77a1e4}
-	body.dark-mode .tu .rm-pl15{fill:#eace71}
-	body.dark-mode .tu .rm-pl10{fill:#81daa2}
-	body.dark-mode .tu .rm-pl2{fill:#999da3}
-	body.dark-mode .tu .rm-pl1{fill:#979da5}
-	body.dark-mode .tu .rm-pl0{fill:#979ea6}
-	body.dark-mode .tu .rm-lv span{background:#191c20}
-	body.dark-mode .tu .rm-lv span.is-past{background:#2b1515}
-	/* TOOL-DARK:END */
 /* Floating compact header bar: once the full header + nav scroll out of
    view, a slim fixed bar (small logo, title, as many nav links as fit)
    slides in, and the hamburger is pinned into its right end. Toggled by
@@ -3525,6 +3543,71 @@ body.is-stuck #navbar.hide { position: fixed; top: 56px; right: 8px; }
   #compact-nav { padding-right: 70px; gap: 8px; }
 }
 
+	/* TOOL-DARK:START -- generated by add_tool_page_controls.py, do not edit */
+	body.dark-mode .page-content :where(div,span,p,li,ul,ol,h1,h2,h3,h4,h5,h6,td,th,label,summary,small,strong,b,em,i,code,pre,legend,figcaption,dl,dt,dd,blockquote,caption,cite,button,input,select,textarea){color:#d8d8d8}
+	body.dark-mode .page-content code{background-color:#33363d;color:#f0a8bd}
+	body.dark-mode .page-content .btn-default{background-color:#2e2e2e;background-image:none;color:#ddd;border-color:#555}
+	body.dark-mode #rm.tu{--accent:#df2a2a;--accent-dark:#e12828}
+	body.dark-mode .tu h2{color:#d1d6dc;border-bottom:2px solid #4b0a0a}
+	body.dark-mode .tu h3{color:#d1d6dc}
+	body.dark-mode .tu-card{background:#1a1a1a;border:1px solid #28323e}
+	body.dark-mode .tu-card--tint{background:#2b1515;border-color:#4b0a0a}
+	body.dark-mode .tu-field > label,body.dark-mode .tu-label{color:#9a9aa2}
+	body.dark-mode .tu-input,body.dark-mode .tu-select{border:1px solid #404a58;background:#1a1a1a;color:#dddddd}
+	body.dark-mode .tu-suffix span{color:#989ca4}
+	body.dark-mode .tu-btn{background:#1a1a1a}
+	body.dark-mode .tu-btn--ghost{border-color:#3a424d;color:#aaaaaa}
+	body.dark-mode .tu-btn--ghost:hover{background:#191c20;color:#dddddd;border-color:#3a424d}
+	body.dark-mode .tu-seg{border:1px solid #404a58;background:#1a1a1a}
+	body.dark-mode .tu-seg button{color:#aaaaaa;border-right:1px solid #28323e}
+	body.dark-mode .tu-seg button:hover{background:#16191d}
+	body.dark-mode .tu-chip{border:1px solid #3a424d;background:#1a1a1a;color:#aaaaaa}
+	body.dark-mode .tu-stat{background:#1a1a1a;border:1px solid #28323e}
+	body.dark-mode .tu-stat--hero{background:#2b1515;border-color:#4b0a0a}
+	body.dark-mode .tu-stat__label{color:#9a9aa2}
+	body.dark-mode .tu-stat__value{color:#d1d6dc}
+	body.dark-mode .tu-stat__sub{color:#9a9ea4}
+	body.dark-mode .tu-pos{color:#7dde9d !important}
+	body.dark-mode .tu-neg{color:#e87973 !important}
+	body.dark-mode .tu-table th,body.dark-mode .tu-table td{border-bottom:1px solid #29323d;color:#cccccc}
+	body.dark-mode .tu-table th{color:#9a9da3;background:#1a1a1a}
+	body.dark-mode .tu-table tr.is-active td{background:#2b1515}
+	body.dark-mode .tu-note{color:#9a9da3}
+	body.dark-mode .tu-toast{background:#3c4f67}
+	body.dark-mode .tu-seo{border-top:1px solid #333333}
+	body.dark-mode .tu-svg-line{stroke:#394a60}
+	body.dark-mode .tu-svg-text{fill:#cccccc}
+	body.dark-mode .tu-svg-grid{stroke:#28323e}
+	body.dark-mode .tu [data-names="0"] .rw-num,body.dark-mode .tu [data-table="1"] .rw-num{color:#999da3}
+	body.dark-mode .tu [data-table="1"] .rw-head{color:#9a9aa2;border-bottom:2px solid #2b323c}
+	body.dark-mode .tu [data-table="1"] .rw-row{border-bottom:1px solid #27313f}
+	body.dark-mode .tu .rm-rep button{border:1px solid #343d48;background:#1a1a1a}
+	body.dark-mode .tu .rm-small{color:#9a9da3}
+	body.dark-mode .tu .rm-warn{color:#e1837a}
+	body.dark-mode .tu .rm-gl{stroke:#2c333c}
+	body.dark-mode .tu .rm-ct{fill:#9a9da3}
+	body.dark-mode .tu .rm-lbl{fill:#d1d6dc}
+	body.dark-mode .tu .rm-val{fill:#d1d6dc}
+	body.dark-mode .tu .rm-avg{stroke:#ba8212}
+	body.dark-mode .tu .rm-dot{stroke:#333333}
+	body.dark-mode .tu .rm-z-str{fill:#e47d76}
+	body.dark-mode .tu .rm-z-hyp{fill:#f0c46b}
+	body.dark-mode .tu .rm-z-end{fill:#81daa2}
+	body.dark-mode .tu .rm-readout{color:#a4a8b0}
+	body.dark-mode .tu #rm-table tr.rm-r-str td:first-child{border-left:4px solid #ab2a21}
+	body.dark-mode .tu #rm-table tr.rm-r-hyp td:first-child{border-left:4px solid #ba8212}
+	body.dark-mode .tu #rm-table tr.rm-r-end td:first-child{border-left:4px solid #3ac56e}
+	body.dark-mode .tu .rm-pl25{fill:#e47d76}
+	body.dark-mode .tu .rm-pl20{fill:#77a1e4}
+	body.dark-mode .tu .rm-pl15{fill:#eace71}
+	body.dark-mode .tu .rm-pl10{fill:#81daa2}
+	body.dark-mode .tu .rm-pl2{fill:#999da3}
+	body.dark-mode .tu .rm-pl1{fill:#979da5}
+	body.dark-mode .tu .rm-pl0{fill:#979ea6}
+	body.dark-mode .tu .rm-lv span{background:#191c20}
+	body.dark-mode .tu .rm-lv span.is-past{background:#2b1515}
+	/* TOOL-DARK:END */
+
 :where(body.dark-mode #rm) :is(div,span,b,strong,p,li,small,label,td,th,output,h1,h2,h3,h4,dt,dd,em,i,summary){color:#e6e6e6;}
 
 	.hide {display:none;}
@@ -3553,7 +3636,7 @@ body.is-stuck #navbar.hide { position: fixed; top: 56px; right: 8px; }
 	.tu-input--big {font-size:1.35em;padding:0.55em 0.7em;}
 	.tu-suffix {position:relative;}
 	.tu-suffix .tu-input {padding-right:3.2em;}
-	.tu-suffix span {position:absolute;right:0.7em;top:50%;transform:translateY(-50%);font-size:0.85em;color:#8a93a0;pointer-events:none;}
+	.tu-suffix span {position:absolute;right:0.7em;top:50%;transform:translateY(-50%);font-size:0.85em;color:#667085;pointer-events:none;}
 	.tu-btn {cursor:pointer;padding:0.5em 0.95em;border-radius:0.35em;border:0.125em solid var(--accent);background:#fff;color:var(--accent);font-size:0.9em;line-height:1.1;}
 	.tu-btn:hover {background:var(--accent);color:#fff;}
 	.tu-btn--primary {background:var(--accent);color:#fff;}
@@ -3574,7 +3657,7 @@ body.is-stuck #navbar.hide { position: fixed; top: 56px; right: 8px; }
 	.tu-stat--hero {background:#e6e5f8;border-color:#e6e5f8;}
 	.tu-stat__label {font-size:0.72em;font-weight:700;text-transform:uppercase;letter-spacing:0.05em;color:#667;}
 	.tu-stat__value {font-size:1.7em;font-weight:700;color:#1e2733;line-height:1.2;margin:0.15em 0;word-break:break-word;}
-	.tu-stat__sub {font-size:0.85em;color:#6a7280;line-height:1.35;}
+	.tu-stat__sub {font-size:0.85em;color:#555d6b;line-height:1.35;}
 	.tu-pos {color:#1f7a3d !important;}
 	.tu-neg {color:#b3261e !important;}
 	.tu-table-wrap {overflow-x:auto;}
@@ -3703,67 +3786,6 @@ body.dark-mode .tu .rw-head {color:#a0a8b3;border-bottom-color:#555;} body.dark-
 		.footer__item--extra-padding { padding-left: 0; }
 		.footer__text--extra-info { float: none; display: block; margin-top: 0.5em; }
 	}
-
-	/* TOOL-DARK:START -- generated by add_tool_page_controls.py, do not edit */
-	body.dark-mode .page-content :where(div,span,p,li,ul,ol,h1,h2,h3,h4,h5,h6,td,th,label,summary,small,strong,b,em,i,code,pre,legend,figcaption,dl,dt,dd,blockquote,caption,cite,button,input,select,textarea){color:#d8d8d8}
-	body.dark-mode .page-content code{background-color:#33363d;color:#f0a8bd}
-	body.dark-mode .page-content .btn-default{background-color:#2e2e2e;background-image:none;color:#ddd;border-color:#555}
-	body.dark-mode #sl.tu{--accent:#4a42c7;--accent-dark:#4941c8}
-	body.dark-mode .tu h2{color:#d1d6dc;border-bottom:2px solid #141242}
-	body.dark-mode .tu h3{color:#d1d6dc}
-	body.dark-mode .tu-card{background:#1a1a1a;border:1px solid #28323e}
-	body.dark-mode .tu-card--tint{background:#181828;border-color:#141242}
-	body.dark-mode .tu-field > label,body.dark-mode .tu-label{color:#9a9aa2}
-	body.dark-mode .tu-input,body.dark-mode .tu-select{border:1px solid #404a58;background:#1a1a1a;color:#dddddd}
-	body.dark-mode .tu-suffix span{color:#999da3}
-	body.dark-mode .tu-btn{background:#1a1a1a}
-	body.dark-mode .tu-btn--ghost{border-color:#3a424d;color:#aaaaaa}
-	body.dark-mode .tu-btn--ghost:hover{background:#191c20;color:#dddddd;border-color:#3a424d}
-	body.dark-mode .tu-seg{border:1px solid #404a58;background:#1a1a1a}
-	body.dark-mode .tu-seg button{color:#aaaaaa;border-right:1px solid #28323e}
-	body.dark-mode .tu-seg button:hover{background:#16191d}
-	body.dark-mode .tu-chip{border:1px solid #3a424d;background:#1a1a1a;color:#aaaaaa}
-	body.dark-mode .tu-stat{background:#1a1a1a;border:1px solid #28323e}
-	body.dark-mode .tu-stat--hero{background:#181828;border-color:#141242}
-	body.dark-mode .tu-stat__label{color:#9a9aa2}
-	body.dark-mode .tu-stat__value{color:#d1d6dc}
-	body.dark-mode .tu-stat__sub{color:#9a9da3}
-	body.dark-mode .tu-pos{color:#7dde9d !important}
-	body.dark-mode .tu-neg{color:#e87973 !important}
-	body.dark-mode .tu-table th,body.dark-mode .tu-table td{border-bottom:1px solid #29323d;color:#cccccc}
-	body.dark-mode .tu-table th{color:#9a9da3;background:#1a1a1a}
-	body.dark-mode .tu-table tr.is-active td{background:#181828}
-	body.dark-mode .tu-note{color:#9a9da3}
-	body.dark-mode .tu-toast{background:#3c4f67}
-	body.dark-mode .tu-seo{border-top:1px solid #333333}
-	body.dark-mode .tu-svg-line{stroke:#394a60}
-	body.dark-mode .tu-svg-text{fill:#cccccc}
-	body.dark-mode .tu-svg-grid{stroke:#28323e}
-	body.dark-mode .tu [data-names="0"] .rw-num,body.dark-mode .tu [data-table="1"] .rw-num{color:#999da3}
-	body.dark-mode .tu [data-table="1"] .rw-head{color:#9a9aa2;border-bottom:2px solid #2b323c}
-	body.dark-mode .tu [data-table="1"] .rw-row{border-bottom:1px solid #27313f}
-	body.dark-mode .tu .sl-card{border:2px solid #28323e;background:#1a1a1a}
-	body.dark-mode .tu .sl-card.is-sel{background:#181828}
-	body.dark-mode .tu .sl-time{color:#d1d6dc}
-	body.dark-mode .tu .sl-sub{color:#a4a8b0}
-	body.dark-mode .tu .sl-badge--good{background:#203224;color:#81da94}
-	body.dark-mode .tu .sl-badge--short{background:#3b3218;color:#ffd65c}
-	body.dark-mode .tu .sl-badge--veryshort{background:#321917;color:#e0837b}
-	body.dark-mode .tu .sl-badge--long{background:#1b202b;color:#8fa0cb}
-	body.dark-mode .tu .sl-small{color:#9a9da3}
-	body.dark-mode .tu .sl-gl{stroke:#2c333c}
-	body.dark-mode .tu .sl-ct{fill:#9a9da3}
-	body.dark-mode .tu .sl-yl{fill:#d1d6dc}
-	body.dark-mode .tu .sl-s-W{fill:#f1aa6a}
-	body.dark-mode .tu .sl-s-REM{fill:#9164f6}
-	body.dark-mode .tu .sl-s-N2{fill:#82afd9}
-	body.dark-mode .tu .sl-s-N3{fill:#7aa0e1}
-	body.dark-mode .tu .sl-step{background:#181828}
-	body.dark-mode .tu .sl-day label{color:#9a9aa2}
-	body.dark-mode .tu .sl-bar.is-short{fill:#e47d76}
-	body.dark-mode .tu .sl-need{stroke:#ba8212}
-	body.dark-mode .tu #sl-ref tr.is-on td{background:#181828}
-	/* TOOL-DARK:END */
 /* Floating compact header bar: once the full header + nav scroll out of
    view, a slim fixed bar (small logo, title, as many nav links as fit)
    slides in, and the hamburger is pinned into its right end. Toggled by
@@ -3806,6 +3828,67 @@ body.is-stuck #navbar.hide { position: fixed; top: 56px; right: 8px; }
 @media (max-width: 480px) {
   #compact-nav { padding-right: 70px; gap: 8px; }
 }
+
+	/* TOOL-DARK:START -- generated by add_tool_page_controls.py, do not edit */
+	body.dark-mode .page-content :where(div,span,p,li,ul,ol,h1,h2,h3,h4,h5,h6,td,th,label,summary,small,strong,b,em,i,code,pre,legend,figcaption,dl,dt,dd,blockquote,caption,cite,button,input,select,textarea){color:#d8d8d8}
+	body.dark-mode .page-content code{background-color:#33363d;color:#f0a8bd}
+	body.dark-mode .page-content .btn-default{background-color:#2e2e2e;background-image:none;color:#ddd;border-color:#555}
+	body.dark-mode #sl.tu{--accent:#4a42c7;--accent-dark:#4941c8}
+	body.dark-mode .tu h2{color:#d1d6dc;border-bottom:2px solid #141242}
+	body.dark-mode .tu h3{color:#d1d6dc}
+	body.dark-mode .tu-card{background:#1a1a1a;border:1px solid #28323e}
+	body.dark-mode .tu-card--tint{background:#181828;border-color:#141242}
+	body.dark-mode .tu-field > label,body.dark-mode .tu-label{color:#9a9aa2}
+	body.dark-mode .tu-input,body.dark-mode .tu-select{border:1px solid #404a58;background:#1a1a1a;color:#dddddd}
+	body.dark-mode .tu-suffix span{color:#989ca4}
+	body.dark-mode .tu-btn{background:#1a1a1a}
+	body.dark-mode .tu-btn--ghost{border-color:#3a424d;color:#aaaaaa}
+	body.dark-mode .tu-btn--ghost:hover{background:#191c20;color:#dddddd;border-color:#3a424d}
+	body.dark-mode .tu-seg{border:1px solid #404a58;background:#1a1a1a}
+	body.dark-mode .tu-seg button{color:#aaaaaa;border-right:1px solid #28323e}
+	body.dark-mode .tu-seg button:hover{background:#16191d}
+	body.dark-mode .tu-chip{border:1px solid #3a424d;background:#1a1a1a;color:#aaaaaa}
+	body.dark-mode .tu-stat{background:#1a1a1a;border:1px solid #28323e}
+	body.dark-mode .tu-stat--hero{background:#181828;border-color:#141242}
+	body.dark-mode .tu-stat__label{color:#9a9aa2}
+	body.dark-mode .tu-stat__value{color:#d1d6dc}
+	body.dark-mode .tu-stat__sub{color:#9a9ea4}
+	body.dark-mode .tu-pos{color:#7dde9d !important}
+	body.dark-mode .tu-neg{color:#e87973 !important}
+	body.dark-mode .tu-table th,body.dark-mode .tu-table td{border-bottom:1px solid #29323d;color:#cccccc}
+	body.dark-mode .tu-table th{color:#9a9da3;background:#1a1a1a}
+	body.dark-mode .tu-table tr.is-active td{background:#181828}
+	body.dark-mode .tu-note{color:#9a9da3}
+	body.dark-mode .tu-toast{background:#3c4f67}
+	body.dark-mode .tu-seo{border-top:1px solid #333333}
+	body.dark-mode .tu-svg-line{stroke:#394a60}
+	body.dark-mode .tu-svg-text{fill:#cccccc}
+	body.dark-mode .tu-svg-grid{stroke:#28323e}
+	body.dark-mode .tu [data-names="0"] .rw-num,body.dark-mode .tu [data-table="1"] .rw-num{color:#999da3}
+	body.dark-mode .tu [data-table="1"] .rw-head{color:#9a9aa2;border-bottom:2px solid #2b323c}
+	body.dark-mode .tu [data-table="1"] .rw-row{border-bottom:1px solid #27313f}
+	body.dark-mode .tu .sl-card{border:2px solid #28323e;background:#1a1a1a}
+	body.dark-mode .tu .sl-card.is-sel{background:#181828}
+	body.dark-mode .tu .sl-time{color:#d1d6dc}
+	body.dark-mode .tu .sl-sub{color:#a4a8b0}
+	body.dark-mode .tu .sl-badge--good{background:#203224;color:#81da94}
+	body.dark-mode .tu .sl-badge--short{background:#3b3218;color:#ffd65c}
+	body.dark-mode .tu .sl-badge--veryshort{background:#321917;color:#e0837b}
+	body.dark-mode .tu .sl-badge--long{background:#1b202b;color:#8fa0cb}
+	body.dark-mode .tu .sl-small{color:#9a9da3}
+	body.dark-mode .tu .sl-gl{stroke:#2c333c}
+	body.dark-mode .tu .sl-ct{fill:#9a9da3}
+	body.dark-mode .tu .sl-yl{fill:#d1d6dc}
+	body.dark-mode .tu .sl-s-W{fill:#f1aa6a}
+	body.dark-mode .tu .sl-s-REM{fill:#9164f6}
+	body.dark-mode .tu .sl-s-N2{fill:#82afd9}
+	body.dark-mode .tu .sl-s-N3{fill:#7aa0e1}
+	body.dark-mode .tu .sl-step{background:#181828}
+	body.dark-mode .tu .sl-day label{color:#9a9aa2}
+	body.dark-mode .tu .sl-bar.is-short{fill:#e47d76}
+	body.dark-mode .tu .sl-need{stroke:#ba8212}
+	body.dark-mode .tu #sl-ref tr.is-on td{background:#181828}
+	/* TOOL-DARK:END */
 
 :where(body.dark-mode #sl) :is(div,span,b,strong,p,li,small,label,td,th,output,h1,h2,h3,h4,dt,dd,em,i,summary){color:#e6e6e6;}</style>
 <style>
@@ -3942,7 +4025,7 @@ body.dark-mode .srch{background:#202428 !important;color:#e6e6e6;border-color:#3
 <section id="pane-bmicalculator" class="pane tool" hidden>
 <a class="back" href="#home" data-go="home">&#8249; All calculators</a>
 <h1 class="tool-title">BMI Calculator</h1>
-<div class="tu" id="bm">
+<div class="tu" id="bm" data-lang="en" dir="ltr">
 		<div id="bm-notice" class="tu-card tu-card--tint" hidden style="margin-bottom:1em;"></div>
 
 		<div class="tu-card" id="bm-setup">
@@ -3965,7 +4048,8 @@ body.dark-mode .srch{background:#202428 !important;color:#e6e6e6;border-color:#3
 						<button type="button" data-u="i" aria-pressed="false">US</button>
 					</div></div>
 				<div class="bm-opt"><label for="bm-scale" class="tu-label">BMI scale</label>
-					<select id="bm-scale" class="tu-select"><option value="who">WHO standard (overweight from 25)</option><option value="asia">Asian (overweight from 23)</option></select></div>
+					<select id="bm-scale" class="tu-select"><option value="who">WHO standard (overweight from 25)</option><option value="asia">Asian (overweight from 23)</option><option value="india">India (2009 guideline: overweight from 23, obese from 25)</option></select></div>
+				<p class="tu-note bm-scalehint" id="bm-scalehint"></p>
 			</div>
 			<p class="tu-note" style="margin-bottom:0;">Every field stays in step with its twin. Adults 20 and over only; see the notes below.</p>
 		</div>
@@ -3980,6 +4064,7 @@ body.dark-mode .srch{background:#202428 !important;color:#e6e6e6;border-color:#3
 				<div class="tu-label">Where you are on the scale</div>
 				<div class="bm-gauge" id="bm-gauge" aria-hidden="true"></div>
 				<ul class="bm-cats" id="bm-cats"></ul>
+				<div class="bm-chartbox" id="bm-wchart"></div>
 			</div>
 			<div class="bm-btns">
 				<button type="button" class="tu-btn tu-btn--primary" id="bm-link">Copy link to this result</button>
@@ -4012,14 +4097,14 @@ body.dark-mode .srch{background:#202428 !important;color:#e6e6e6;border-color:#3
 			<p>For example, 65.8 kg at 182.9 cm is 65.8 &divide; (1.829 &times; 1.829) = <b>19.7</b>, in the normal range.</p>
 			<h3>BMI categories for adults</h3>
 			<div class="tu-table-wrap"><table class="tu-table" id="bm-ref"></table></div>
-			<p class="tu-note">The WHO standard cut-offs are used by most countries. The WHO Asia-Pacific cut-offs (overweight from 23, obese from 27.5) reflect the higher health risk at lower BMI in many Asian populations. Switch the <em>BMI scale</em> above to use them.</p>
+			<p class="tu-note">The WHO standard cut-offs are used by most countries. The WHO Asia-Pacific cut-offs (overweight from 23, obese from 27.5) reflect the higher health risk at lower BMI in many Asian populations. Switch the <em>BMI scale</em> above to use them. Doctors in India use the 2009 consensus guideline for Asian Indians (normal 18 to 22.9, overweight 23 to 24.9, obese from 25), also in the <em>BMI scale</em> menu; its bands are in the small table below.</p>
 			<h3>Important notes on BMI</h3>
 			<p>BMI is a general screening tool, not a diagnosis. It assumes a &ldquo;normal&rdquo; proportion of weight to height for people of average build and activity, which has some limits:</p>
 			<ul>
 				<li>It does not tell muscle from fat: athletes and bodybuilders can have a high BMI with low body fat.</li>
 				<li>Body shape, bone structure, age, sex and ethnicity all change what a healthy weight looks like.</li>
 				<li>It does not show where fat is carried; a larger waist measurement is a separate risk marker.</li>
-				<li><strong>Children and teens</strong> (2&ndash;19) are judged with BMI-for-age percentiles, not these cut-offs: use a growth chart such as the <a href="https://www.cdc.gov/bmi/child-teen-calculator/index.html" rel="nofollow noopener" target="_blank">CDC child and teen BMI calculator</a>.</li>
+				<li><strong>Children and teens</strong> (2&ndash;19) are judged with BMI-for-age percentiles, not these cut-offs: use our <a href="https://mes.fm/bmi-calculator-kids" target="_blank" rel="noopener">BMI Calculator for Kids and Teens</a> (CDC BMI-for-age percentiles, with a growth chart).</li>
 			</ul>
 			<p>BMI is still popular because it is the simplest index to compute and has decades of research behind it. Talk to a doctor or dietitian before starting a new diet or fitness plan. <a href="https://mes.fm/bmicalculator/body-mass-index" target="_blank" rel="noopener">What is BMI?</a> &middot; <a href="https://mes.fm/bmicalculator/bmi-chart" target="_blank" rel="noopener">BMI chart</a> &middot; <a href="https://mes.fm/bmicalculator/bmi-formula" target="_blank" rel="noopener">BMI formula</a> &middot; <a href="https://mes.fm/bmicalculator/health-tips" target="_blank" rel="noopener">Health tips</a></p>
 			<h3>Is my data private?</h3>
@@ -4027,7 +4112,7 @@ body.dark-mode .srch{background:#202428 !important;color:#e6e6e6;border-color:#3
 		</div>
 	</div>
 	
-<div class="tu-card promo"><b>Just want BMI?</b> There is a separate, lighter <b>MES BMI Calculator</b> app with only this calculator. <a href="https://mes.fm/mobile-apps" target="_blank" rel="noopener">Get the BMI app</a></div>
+<div class="tu-card promo"><b>Just want BMI?</b> There is a separate, lighter <b>MES BMI Calculator</b> app with only this calculator. <a id="bmi-app-link" href="https://mes.fm/mobile-apps" target="_blank" rel="noopener">Get the BMI app</a></div><script>if(/iPhone|iPad|iPod|Macintosh/.test(navigator.userAgent)&&"ontouchend" in document)document.getElementById("bmi-app-link").href="https://apps.apple.com/us/app/mes-bmi-calculator/id6824009307";</script>
 <p class="tool-src"><a href="https://mes.fm/bmicalculator" target="_blank" rel="noopener">Method, formulas and sources on mes.fm &rsaquo;</a></p>
 </section>
 <section id="pane-body-fat-calculator" class="pane tool" hidden>
@@ -4107,7 +4192,7 @@ body.dark-mode .srch{background:#202428 !important;color:#e6e6e6;border-color:#3
 				<dt>Why do my two estimates differ?</dt><dd>The BMI method cannot tell muscle from fat, so it reads high for muscular people and low for people who carry little muscle. Trust the tape method more, and look at the trend.</dd>
 				<dt>Is my data private?</dt><dd>Yes. Everything stays in your browser. Nothing is uploaded unless you copy a link and share it yourself.</dd>
 			</dl>
-			<p>Related: <a href="#bmr-calculator" data-go="bmr-calculator">BMR Calculator</a> (use your body-fat % for the Katch-McArdle equation) &middot; <a href="#bmicalculator" data-go="bmicalculator">BMI Calculator</a></p>
+			<p>Related: <a href="#bmicalculator" data-go="bmicalculator">BMI Calculator</a></p>
 		</div>
 	</div>
 	
@@ -4515,7 +4600,7 @@ body.dark-mode .srch{background:#202428 !important;color:#e6e6e6;border-color:#3
 				<div class="wi-ring" id="wi-ring" role="img"></div>
 				<div class="wi-trackside">
 					<div class="wi-addrow" id="wi-add"></div>
-					<div class="wi-custom"><input id="wi-cust" class="tu-input" type="text" inputmode="decimal" autocomplete="off" placeholder="custom amount"><button type="button" class="tu-btn tu-btn--ghost" id="wi-custadd">Add</button></div>
+					<div class="wi-custom"><input id="wi-cust" aria-label="Custom amount" class="tu-input" type="text" inputmode="decimal" autocomplete="off" placeholder="custom amount"><button type="button" class="tu-btn tu-btn--ghost" id="wi-custadd">Add</button></div>
 					<div class="wi-trackbtns"><button type="button" class="tu-btn tu-btn--ghost" id="wi-undo">Undo last</button><button type="button" class="tu-btn tu-btn--ghost" id="wi-reset">Reset today</button></div>
 					<p class="wi-streak" id="wi-streak" aria-live="polite"></p>
 				</div>
@@ -4570,7 +4655,7 @@ body.dark-mode .srch{background:#202428 !important;color:#e6e6e6;border-color:#3
 			<h2>Your zones</h2>
 			<div class="tu-card"><div class="hr-chart" id="hr-bands" role="img"></div><div class="hr-now" id="hr-nowbox"><label for="hr-now" class="tu-label">Check a heart rate now</label>
 				<div class="hr-nowrow"><div class="tu-suffix"><input id="hr-now" class="tu-input" type="text" inputmode="numeric" autocomplete="off" placeholder="bpm"><span>bpm</span></div><span class="hr-nowtxt" id="hr-nowtxt" aria-live="polite"></span></div>
-				<details style="margin-top:0.6em;"><summary>Count your pulse instead</summary><div class="hr-count"><label>Beats counted in <select id="hr-sec" class="tu-select" style="width:auto;display:inline-block;"><option value="10">10 sec</option><option value="15">15 sec</option><option value="30">30 sec</option><option value="60">60 sec</option></select></label> <input id="hr-beats" class="tu-input" style="width:6em;" type="text" inputmode="numeric" placeholder="beats"> <span id="hr-counted"></span></div></details></div></div>
+				<details style="margin-top:0.6em;"><summary>Count your pulse instead</summary><div class="hr-count"><label>Beats counted in <select id="hr-sec" class="tu-select" style="width:auto;display:inline-block;"><option value="10">10 sec</option><option value="15">15 sec</option><option value="30">30 sec</option><option value="60">60 sec</option></select></label> <input id="hr-beats" aria-label="Beats counted" class="tu-input" style="width:6em;" type="text" inputmode="numeric" placeholder="beats"> <span id="hr-counted"></span></div></details></div></div>
 			<h2>What each zone is for</h2>
 			<div class="tu-card"><div class="tu-table-wrap"><table class="tu-table" id="hr-table"></table></div><p class="tu-note" style="margin-bottom:0;">Most people get the best results with about 80% of training in zones 1&ndash;2 and 20% in zones 4&ndash;5 (the &ldquo;polarised&rdquo; approach), and little in zone 3.</p></div>
 			<h2>Your zones through the years</h2>
@@ -4871,7 +4956,7 @@ body.dark-mode .srch{background:#202428 !important;color:#e6e6e6;border-color:#3
   <p><strong>How each result is worked out.</strong> Every calculator shows its formula on the screen, and the full method with sources (WHO, CDC, NIH / Institute of Medicine, American College of Sports Medicine, published equations such as Mifflin-St Jeor, Tanaka and Epley) is on its page at mes.fm, linked under the calculator.</p>
   <p><strong>Your data stays on this device.</strong> Weights, measurements and logs are stored only on this device, inside the app. There are no accounts, no ads and no tracking, and nothing you enter is sent anywhere.</p>
   <p class="links"><a href="https://mes.fm/privacy-policy" target="_blank" rel="noopener">Privacy Policy</a><a href="https://mes.fm/contact" target="_blank" rel="noopener">Contact</a><a href="https://mes.fm" target="_blank" rel="noopener">mes.fm</a></p>
-  <p>Version 1.0 &middot; Math Easy Solutions &middot; mes.fm</p>
+  <p>Version 1.1 &middot; Math Easy Solutions &middot; mes.fm</p>
 </div>
 <script src="js/bmicalculator.js"></script>
 <script src="js/body-fat-calculator.js"></script>
@@ -4884,6 +4969,7 @@ body.dark-mode .srch{background:#202428 !important;color:#e6e6e6;border-color:#3
 <script src="js/heart-rate-zone-calculator.js"></script>
 <script src="js/calories-burned-calculator.js"></script>
 <script src="js/pace-calculator.js"></script>
+<script src="js/time-input.js"></script>
 <script src="js/one-rep-max-calculator.js"></script>
 <script src="js/sleep-calculator.js"></script>
 <script>
