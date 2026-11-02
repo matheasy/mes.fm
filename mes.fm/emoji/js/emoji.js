@@ -8,7 +8,8 @@
  * upscales the same fixed-resolution glyph) if that emoji has no Twemoji
  * artwork or the fetch fails.
  * Each entry: c = emoji character(s), n = display name (also searched),
- * k = extra search keywords (optional).
+ * k = extra search keywords (optional), note = a line shown in the tooltip and
+ * under the builder when the tile is copied (optional).
  */
 (function () {
 	"use strict";
@@ -243,7 +244,6 @@
 				{ c: "👻", n: "ghost" },
 				{ c: "💀", n: "skull" },
 				{ c: "☠️", n: "skull and crossbones" },
-				{ c: "👽", n: "alien" },
 				{ c: "👾", n: "alien monster", k: "space invader" },
 				{ c: "🤖", n: "robot" },
 				{ c: "🎃", n: "jack-o-lantern", k: "pumpkin halloween" },
@@ -290,7 +290,6 @@
 				{ c: "👺", n: "goblin" },
 				{ c: "🥷", n: "ninja" },
 				{ c: "🧑‍🎄", n: "mx claus" },
-				{ c: "🧑‍🚀", n: "astronaut" },
 				{ c: "🐉", n: "dragon" },
 				{ c: "🐲", n: "dragon face" },
 				{ c: "🪄", n: "magic wand" },
@@ -482,39 +481,46 @@
 			]
 		},
 		{
-			name: "Sun, Moon & Space",
+			name: "Space",
 			items: [
-				{ c: "🌙", n: "crescent moon", k: "moon" },
-				{ c: "🌛", n: "first quarter moon face" },
-				{ c: "🌜", n: "last quarter moon face" },
-				{ c: "🌚", n: "new moon face" },
-				{ c: "🌝", n: "full moon face" },
-				{ c: "🌞", n: "sun with face" },
-				{ c: "🌕", n: "full moon" },
-				{ c: "🌖", n: "waning gibbous moon" },
-				{ c: "🌗", n: "last quarter moon" },
-				{ c: "🌘", n: "waning crescent moon" },
-				{ c: "🌑", n: "new moon" },
-				{ c: "🌒", n: "waxing crescent moon" },
-				{ c: "🌓", n: "first quarter moon" },
-				{ c: "🌔", n: "waxing gibbous moon" },
-				{ c: "🌎", n: "earth globe americas", k: "planet earth" },
-				{ c: "🌍", n: "earth globe europe-africa", k: "planet earth" },
-				{ c: "🌏", n: "earth globe asia-australia", k: "planet earth" },
-				{ c: "🪐", n: "ringed planet", k: "saturn" },
-				{ c: "⭐", n: "star" },
-				{ c: "🌟", n: "glowing star" },
-				{ c: "✨", n: "sparkles" },
-				{ c: "💫", n: "dizzy star" },
-				{ c: "🌠", n: "shooting star" },
-				{ c: "☄️", n: "comet" },
-				{ c: "🚀", n: "rocket" },
-				{ c: "🛸", n: "flying saucer", k: "ufo" },
-				{ c: "🛰️", n: "satellite" },
-				{ c: "👨‍🚀", n: "astronaut" },
-				{ c: "🌌", n: "milky way", k: "galaxy" },
-				{ c: "🔭", n: "telescope" },
-				{ c: "👩‍🚀", n: "woman astronaut" },
+				{ c: "🚀", n: "rocket", k: "space shuttle spaceship spacecraft space ship launch nasa spacex rocket ship blast off", note: "Unicode has no space shuttle emoji, so the rocket is the one to use for a shuttle or spaceship." },
+				{ c: "🛸", n: "flying saucer", k: "ufo alien spaceship space ship spacecraft space" },
+				{ c: "🛰️", n: "satellite", k: "space orbit nasa spacecraft" },
+				{ c: "🧑‍🚀", n: "astronaut", k: "space spaceman cosmonaut nasa space shuttle" },
+				{ c: "👨‍🚀", n: "man astronaut", k: "space spaceman cosmonaut nasa space shuttle" },
+				{ c: "👩‍🚀", n: "woman astronaut", k: "space spacewoman cosmonaut nasa space shuttle" },
+				{ c: "👽", n: "alien", k: "space extraterrestrial ufo et" },
+				{ c: "🪐", n: "ringed planet", k: "space saturn astronomy" },
+				{ c: "🌌", n: "milky way", k: "space galaxy universe stars night sky astronomy" },
+				{ c: "🌠", n: "shooting star", k: "space meteor wish astronomy" },
+				{ c: "☄️", n: "comet", k: "space meteor asteroid astronomy" },
+				{ c: "🔭", n: "telescope", k: "space astronomy observatory" },
+				{ c: "🌍", n: "earth globe europe-africa", k: "space planet earth world" },
+				{ c: "🌎", n: "earth globe americas", k: "space planet earth world" },
+				{ c: "🌏", n: "earth globe asia-australia", k: "space planet earth world" },
+				{ c: "🌞", n: "sun with face", k: "space sun star" },
+				{ c: "🌙", n: "crescent moon", k: "space moon night" },
+				{ c: "🌑", n: "new moon", k: "space moon phase" },
+				{ c: "🌒", n: "waxing crescent moon", k: "space moon phase" },
+				{ c: "🌓", n: "first quarter moon", k: "space moon phase half" },
+				{ c: "🌔", n: "waxing gibbous moon", k: "space moon phase" },
+				{ c: "🌕", n: "full moon", k: "space moon phase" },
+				{ c: "🌖", n: "waning gibbous moon", k: "space moon phase" },
+				{ c: "🌗", n: "last quarter moon", k: "space moon phase half" },
+				{ c: "🌘", n: "waning crescent moon", k: "space moon phase" },
+				{ c: "🌛", n: "first quarter moon face", k: "space moon" },
+				{ c: "🌜", n: "last quarter moon face", k: "space moon" },
+				{ c: "🌚", n: "new moon face", k: "space moon" },
+				{ c: "🌝", n: "full moon face", k: "space moon" },
+				{ c: "⭐", n: "star", k: "space night sky" },
+				{ c: "🌟", n: "glowing star", k: "space shine" },
+				{ c: "💫", n: "dizzy star", k: "space" },
+				{ c: "✨", n: "sparkles", k: "space stars glitter" }
+			]
+		},
+		{
+			name: "Science & Zodiac",
+			items: [
 				{ c: "🪨", n: "rock" },
 				{ c: "⚛️", n: "atom symbol", k: "physics" },
 				{ c: "🧬", n: "dna" },
@@ -1393,7 +1399,7 @@
 		var c = toned(item.c);
 		var pl = PLAIN[item.c];
 		return '<div class="emo__tile-wrap">' +
-			'<button type="button" class="emo__tile" data-emoji="' + esc(c) + '" data-name="' + esc(item.n) + '" title="' + esc(item.n) + (pl ? " · plain symbol " + esc(pl[0]) + " on the Symbol Copier" : "") + '">' +
+			'<button type="button" class="emo__tile" data-emoji="' + esc(c) + '" data-name="' + esc(item.n) + '" title="' + esc(item.n) + (item.note ? " · " + esc(item.note) : "") + (pl ? " · plain symbol " + esc(pl[0]) + " on the Symbol Copier" : "") + '">' +
 			'<span class="emo__tile-glyph">' + c + '</span>' +
 			'<span class="emo__tile-name">' + esc(item.n) + '</span></button>' +
 			'<button type="button" class="emo__tile-expand" data-expand="' + esc(c) + '" data-expand-name="' + esc(item.n) + '" title="Expand to large PNG" aria-label="Expand ' + esc(item.n) + ' to large PNG">' + EXPAND_ICON + '</button>' +
@@ -1478,7 +1484,7 @@
 			for (var j = 0; j < cat.items.length; j++) {
 				var item = cat.items[j];
 				var hay = norm(item.n + " " + (item.k || "") + " " + item.c);
-				var match = !q || hay.indexOf(q) !== -1;
+				var match = !q || hay.indexOf(q) !== -1 || q.split(/\s+/).every(function (w) { return hay.indexOf(w) !== -1; });
 				wraps[j].hidden = !match;
 				if (match) catHasMatch = true;
 			}
@@ -1577,6 +1583,7 @@
 	function showPlainHint(item) {
 		if (!symHint) return;
 		var pl = PLAIN[item.c];
+		if (!pl && item.note) { symHint.textContent = item.note; symHint.classList.remove("hide"); return; }
 		if (!pl) { symHint.classList.add("hide"); return; }
 		symHint.innerHTML = 'Need it in plain text (one colour, fits in equations)? ' +
 			'<span class="emo__symhint-glyph">' + esc(pl[0]) + '</span> ' +
