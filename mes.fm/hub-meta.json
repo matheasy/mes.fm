@@ -103,7 +103,7 @@
 },
 "/body-surface-area-calculator":{
 "added":"2026-10-15",
-"updated":"2026-10-15",
+"updated":"2026-11-01",
 "type":"Calculator"
 },
 "/browser":{
@@ -636,7 +636,7 @@
 },
 "/read-aloud":{
 "added":"2026-10-11",
-"updated":"2026-10-28",
+"updated":"2026-11-01",
 "type":"Browser extension"
 },
 "/redshift-simulator":{
@@ -766,7 +766,7 @@
 },
 "/text-size":{
 "added":"2026-10-11",
-"updated":"2026-10-31",
+"updated":"2026-11-01",
 "type":"Browser extension"
 },
 "/time-calculator":{
@@ -841,7 +841,7 @@
 },
 "/volume-booster":{
 "added":"2026-10-11",
-"updated":"2026-10-14",
+"updated":"2026-11-01",
 "type":"Browser extension"
 },
 "/waist-to-hip-ratio-calculator":{
