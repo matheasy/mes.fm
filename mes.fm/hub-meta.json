@@ -28,7 +28,7 @@
 },
 "/alarm-clock":{
 "added":"2026-10-06",
-"updated":"2026-10-28",
+"updated":"2026-11-01",
 "type":"Tool"
 },
 "/archive":{
@@ -178,12 +178,12 @@
 },
 "/countdown-timer":{
 "added":"2026-10-06",
-"updated":"2026-10-28",
+"updated":"2026-11-01",
 "type":"Tool"
 },
 "/countdown-to-date":{
 "added":"2026-10-06",
-"updated":"2026-10-28",
+"updated":"2026-11-01",
 "type":"Tool"
 },
 "/dark-mode":{
@@ -388,7 +388,7 @@
 },
 "/interval-timer":{
 "added":"2026-10-06",
-"updated":"2026-10-28",
+"updated":"2026-11-01",
 "type":"Tool"
 },
 "/julia-set-explorer":{
@@ -593,7 +593,7 @@
 },
 "/pomodoro-timer":{
 "added":"2026-10-06",
-"updated":"2026-10-28",
+"updated":"2026-11-01",
 "type":"Tool"
 },
 "/pregnancy-calorie-calculator":{
@@ -723,7 +723,7 @@
 },
 "/stopwatch":{
 "added":"2026-10-06",
-"updated":"2026-10-28",
+"updated":"2026-11-01",
 "type":"Tool"
 },
 "/storage":{
@@ -773,7 +773,7 @@
 },
 "/timer":{
 "added":"2026-08-31",
-"updated":"2026-10-28",
+"updated":"2026-11-01",
 "type":"Tool"
 },
 "/timezone":{

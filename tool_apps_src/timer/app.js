@@ -633,15 +633,25 @@
 	// the line after each name in "Choose timers", so six alarms (or timers) can be told apart
 	function pickDetail(i) {
 		var m = /^([tsae]):(.+)$/.exec(i.key);
-		if (m && m[1] === "a") { var a = findAlarm(m[2]); if (!a) return ""; return at12(a.time) + (a.daily ? ", daily" : ", once") + (a.on ? "" : " · off"); }
+		if (m && m[1] === "a") { var a = findAlarm(m[2]); if (!a) return ""; return (a.daily ? "daily" : "once") + (function () { var nx = a.on && a.time ? alarmNext(a) : 0; return nx ? " · rings in " + alarmCd(a, true) : ""; })(); }
 		if (m && m[1] === "t") { var t = findTimer(m[2]); if (!t) return ""; var len = t.total > 0 ? plain(t.total, true) : "no time set"; return t.st === "run" || t.st === "pause" ? len + " · " + i.time + " left" + (t.st === "pause" ? " (paused)" : "") : t.st === "done" ? len + " · done" : len; }
 		if (m && m[1] === "s") return i.time + (i.state === "run" ? " · running" : i.state === "pause" ? " · paused" : "");
 		if (m && m[1] === "e") return i.time;
 		return i.kind + " · " + i.time + (i.state === "pause" ? " (paused)" : "");
 	}
+	// alarms: "Alarm 1 · 12:00 PM" (their label, or the default name, plus the set time) and "Alarm (on)" / "Alarm (off)"
+	function pickName(i) {
+		var m = /^a:(.+)$/.exec(i.key), a = m && findAlarm(m[1]);
+		return a ? i.label + " · " + at12(a.time) : i.label;
+	}
+	function pickKind(i) {
+		var m = /^a:(.+)$/.exec(i.key), a = m && findAlarm(m[1]);
+		if (a) return "Alarm (" + (a.on && a.time && alarmNext(a) ? "on" : "off") + ")";
+		return (i.kind === "Countdown" || i.kind === "Stopwatch" || i.kind === "Countdown to a date" ? i.kind : (i.key === "po" ? "Pomodoro" : "Interval")) + (i.state === "idle" ? " (not started)" : "");
+	}
 	function drawPick() {
 		var items = dpItems(), sel = dpSelected(items);
-		$("tm-dp-pick").innerHTML = '<div class="tm-dp__pt">Choose what the display shows<button type="button" class="tm-dp__px" data-d="pickclose" aria-label="Close this list" title="Close (Esc)">✕</button></div>' + items.map(function (i) { return '<label><input type="checkbox" data-k="' + esc(i.key) + '"' + (sel.indexOf(i.key) >= 0 ? " checked" : "") + '> <span class="tm-dp__pn"><b>' + esc(i.label) + '</b> <span class="tm-dp__pd" data-pd="' + esc(i.key) + '">' + esc(pickDetail(i)) + '</span></span><small>' + esc(i.kind === "Countdown" || i.kind === "Stopwatch" || i.kind === "Alarm" || i.kind === "Countdown to a date" ? i.kind : (i.key === "po" ? "Pomodoro" : "Interval")) + (i.state === "idle" ? " (not started)" : "") + "</small></label>"; }).join("");
+		$("tm-dp-pick").innerHTML = '<div class="tm-dp__pt">Choose what the display shows<button type="button" class="tm-dp__px" data-d="pickclose" aria-label="Close this list" title="Close (Esc)">✕</button></div>' + items.map(function (i) { return '<label><input type="checkbox" data-k="' + esc(i.key) + '"' + (sel.indexOf(i.key) >= 0 ? " checked" : "") + '> <span class="tm-dp__pn"><b>' + esc(pickName(i)) + '</b> <span class="tm-dp__pd" data-pd="' + esc(i.key) + '">' + esc(pickDetail(i)) + '</span></span><small>' + esc(pickKind(i)) + "</small></label>"; }).join("");
 	}
 	function pickLive(items) {
 		var pk = $("tm-dp-pick"); if (!pk || pk.hidden) return;
