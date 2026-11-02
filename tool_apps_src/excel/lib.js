@@ -637,13 +637,14 @@
 		}
 		return true;
 	}
-	// opts: {nrows, header (true = row 0 stays first and is never filtered), sort: {c, dir: 1|-1} | null, filters: [{c, op, v}],
+	// opts: {nrows, header (true = row 0 / a number n = rows 0..n-1 stay first and are never filtered), hidden(r) (rows left out), sort: {c, dir: 1|-1} | null, filters: [{c, op, v}],
 	//        value(r, c), text(r, c)}. Returns the row indexes to show, in order (null when there is nothing to do).
 	function viewRows(opts) {
-		var hasF = opts.filters && opts.filters.length, hasS = opts.sort && opts.sort.c != null;
-		if (!hasF && !hasS) return null;
-		var start = opts.header ? 1 : 0, rows = [];
+		var hasF = opts.filters && opts.filters.length, hasS = opts.sort && opts.sort.c != null, hid = opts.hidden;
+		if (!hasF && !hasS && !hid) return null;
+		var start = opts.header === true ? 1 : Math.max(0, opts.header | 0), rows = [];
 		for (var r = start; r < opts.nrows; r++) {
+			if (hid && hid(r)) continue;
 			var ok = true;
 			if (hasF) for (var i = 0; i < opts.filters.length; i++) { var f = opts.filters[i]; if (!matchFilter(opts.value(r, f.c), opts.text(r, f.c), f)) { ok = false; break; } }
 			if (ok) rows.push(r);
@@ -657,7 +658,7 @@
 				return (cmpValues(x, y) * d) || (a - b);
 			});
 		}
-		if (opts.header && opts.nrows > 0) rows.unshift(0);
+		for (var h = Math.min(start, opts.nrows) - 1; h >= 0; h--) rows.unshift(h);
 		return rows;
 	}
 

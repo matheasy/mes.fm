@@ -30,7 +30,18 @@
 				<button type="button" class="xl-ib xl-ib--txt" id="xl-sasc" title="Sort the rows by the selected column, A to Z / smallest first (only the view: the file is not changed)">A&#8595;Z</button>
 				<button type="button" class="xl-ib xl-ib--txt" id="xl-sdesc" title="Sort by the selected column, Z to A / largest first">Z&#8595;A</button>
 				<button type="button" class="xl-ib xl-ib--txt" id="xl-filt" aria-pressed="false" title="Filter the rows by a column (only the view)">&#9660; <span class="xl-lbl">Filter</span></button>
-				<button type="button" class="xl-ib xl-ib--txt" id="xl-hdr" aria-pressed="true" title="Keep the first row at the top while scrolling, and out of sorting">&#9776; <span class="xl-lbl">Header row</span></button>
+				<div class="xl-dd">
+					<button type="button" class="xl-ib xl-ib--txt" id="xl-hdr" aria-pressed="true" aria-haspopup="true" aria-expanded="false" title="Freeze panes: keep rows at the top and columns at the left while scrolling (frozen rows also stay out of sorting)">&#9776; <span class="xl-lbl" id="xl-frzl">Freeze</span> &#9662;</button>
+					<div class="xl-menu" id="xl-frzmenu" hidden role="menu">
+						<button type="button" role="menuitem" data-frz="top"><b>Freeze top row</b><small>row 1 stays at the top and out of sorting</small></button>
+						<button type="button" role="menuitem" data-frz="col"><b>Freeze first column</b></button>
+						<button type="button" role="menuitem" data-frz="sel"><b>Freeze panes at the selected cell</b><small>rows above it and columns left of it</small></button>
+						<button type="button" role="menuitem" data-frz="file" id="xl-frzfile" hidden><b>As in the file</b><small></small></button>
+						<button type="button" role="menuitem" data-frz="none"><b>Unfreeze</b></button>
+					</div>
+				</div>
+				<button type="button" class="xl-ib xl-ib--txt" id="xl-hid" aria-pressed="false" hidden>&#9680; <span class="xl-lbl">Hidden: <span id="xl-hidn"></span></span></button>
+				<button type="button" class="xl-ib xl-ib--txt" id="xl-objbtn" aria-pressed="true" hidden title="Show or hide the charts and pictures of this sheet">&#128200; <span class="xl-lbl">Charts</span></button>
 				<span class="xl-sep"></span>
 				<div class="xl-find">
 					<input type="search" class="xl-in" id="xl-q" placeholder="Find in sheet" aria-label="Find in this sheet" autocomplete="off">
@@ -74,12 +85,14 @@
 			<div class="xl-note" id="xl-note" hidden role="status"></div>
 			<div class="xl-grid" id="xl-grid">
 				<div class="xl-corner" id="xl-corner" title="Select the whole sheet"></div>
-				<div class="xl-colh" id="xl-colh"><div class="xl-colh-in" id="xl-colh-in"></div></div>
+				<div class="xl-colh" id="xl-colh"><div class="xl-colh-in" id="xl-colh-in"></div><div class="xl-colhf" id="xl-colhf"></div></div>
 				<div class="xl-frzh" id="xl-frzh"></div>
+				<div class="xl-frzc" id="xl-frzc"></div>
 				<div class="xl-frz" id="xl-frz"><div class="xl-frz-in" id="xl-frz-in"></div></div>
+				<div class="xl-fcols" id="xl-fcols"><div class="xl-fcol-in" id="xl-fcol-in"></div></div>
 				<div class="xl-rowh" id="xl-rowh"><div class="xl-rowh-in" id="xl-rowh-in"></div></div>
 				<div class="xl-scroll" id="xl-scroll" tabindex="0" role="grid" aria-label="Spreadsheet cells" aria-readonly="false">
-					<div class="xl-sizer" id="xl-sizer"><div class="xl-cells" id="xl-cells"></div></div>
+					<div class="xl-sizer" id="xl-sizer"><div class="xl-cells" id="xl-cells"></div><div class="xl-objs" id="xl-objs"></div></div>
 				</div>
 				<textarea class="xl-ed" id="xl-ed" hidden spellcheck="false" aria-label="Edit cell"></textarea>
 				<div class="xl-empty" id="xl-empty">
@@ -112,11 +125,11 @@
 			<p>This viewer opens spreadsheets right in your browser: Excel <b>.xlsx</b>, <b>.xlsm</b> and older <b>.xls</b> files, LibreOffice <b>.ods</b> files and <b>.csv</b> / <b>.tsv</b> text files. Every sheet gets a tab at the bottom, with column letters and row numbers like Excel. It stays fast with big files (a hundred thousand rows or more), because only the cells on screen are drawn. Nothing is uploaded: the file is read by your own browser, so it is fine for budgets, marks and private lists.</p>
 			<h2>What can it do?</h2>
 			<dl>
-				<dt>View</dt><dd>Numbers, dates and percentages in the file's own formats, fill colours, wide columns you can drag wider or narrower, and a header row that stays at the top. Select cells with the mouse, a finger or the keyboard; the status bar shows the sum, average and count of a selection.</dd>
+				<dt>View</dt><dd>Numbers, dates and percentages in the file's own formats, the file's fonts, fill colours, borders, alignment and merged cells, Excel table styles (banded rows, header and total rows), conditional formatting (colour scales, data bars, highlight rules) and column widths. Frozen rows and columns stay put like in Excel, and you can freeze the top row, the first column or at any cell. Charts (column, bar, line, area, pie, doughnut, scatter, radar) and pictures show where they sit in the file, drawn from the cells, so they change when you edit a number. Hidden sheets are listed and marked, and hidden rows and columns stay hidden until you press Hidden to show them. Select cells with the mouse, a finger or the keyboard; the status bar shows the sum, average and count of a selection.</dd>
 				<dt>Formulas</dt><dd>The formula bar shows a cell's formula; the value comes from the file, as Excel last calculated it. When you change a number, the formulas that use it are worked out again: + &minus; &times; &divide; ^ %, &amp; to join text, comparisons, cell references and ranges (also on other sheets), and SUM, AVERAGE, MIN, MAX, COUNT, COUNTA, ROUND, IF, ABS, SQRT, plus AND, OR, NOT, IFERROR, PRODUCT, MOD, INT, ROUNDUP, ROUNDDOWN, POWER, LEN, UPPER, LOWER, TRIM, CONCAT. A formula with any other function (VLOOKUP, for example) keeps the value saved in the file and is marked, so you know it was not worked out again.</dd>
 				<dt>Edit</dt><dd>Type into a cell or the formula bar, paste a block of cells from Excel or Google Sheets (and copy back), insert and delete rows and columns (formulas follow the cells), add and rename sheets. Undo and redo everything.</dd>
 				<dt>Find, sort and filter</dt><dd>Find any text in the sheet. Sort by a column or filter the rows (contains, equals, greater than, empty ...): this only changes what you see, never the data, and Clear brings the rows back in their own order.</dd>
-				<dt>Save</dt><dd>Save as .xlsx (every sheet, with formulas and number formats), .ods, or the current sheet as .csv or .tsv. Print / PDF prints the current sheet; choose &ldquo;Save as PDF&rdquo; in the print window to make a PDF.</dd>
+				<dt>Save</dt><dd>Save as .xlsx (every sheet, with formulas, number formats, cell styles, freeze panes and hidden sheets, rows and columns; charts, pictures, tables and conditional formatting are kept too as long as you did not insert or delete rows, columns or sheets), .ods, or the current sheet as .csv or .tsv. Print / PDF prints the current sheet; choose &ldquo;Save as PDF&rdquo; in the print window to make a PDF.</dd>
 			</dl>
 			<h2>Questions</h2>
 			<dl>
