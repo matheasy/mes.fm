@@ -1223,14 +1223,38 @@
 	function setFill(on) {
 		root.classList.toggle('td-fill', on); document.documentElement.classList.toggle('td-noscroll', on);
 		$('#td-fillbtn').setAttribute('aria-pressed', on ? 'true' : 'false');
-		setTimeout(resize, 30);
+		paintShort(); setTimeout(resize, 30);
 	}
+	// Fill window / Full screen on a short, wide screen (a phone held sideways): .td-short makes the 3D view fill the window,
+	// the toolbar becomes one row of small icon buttons floating on it, the side panels float narrow on the left / right,
+	// and "Hide controls" (key C, remembered) leaves only one small button
+	var SHORT = window.matchMedia ? window.matchMedia('(max-height:560px) and (min-aspect-ratio:4/3)') : null, NOCTL = 'mes-3d-studio:noctl';
+	function noCtl() { try { return localStorage.getItem(NOCTL) === '1'; } catch (e) { return false; } }
+	$$('#td-bar .td-b').forEach(function (b) {   // icon + label spans, so short mode can show the icon alone (the full name stays in aria-label / title)
+		var m = /^(\S+)\s+(.+)$/.exec(b.textContent.trim()); if (!m || b.querySelector('.td-bl')) return;
+		b.textContent = ''; var i = document.createElement('span'); i.className = 'td-bi'; i.textContent = m[1];
+		var l = document.createElement('span'); l.className = 'td-bl'; l.textContent = ' ' + m[2]; b.appendChild(i); b.appendChild(l);
+		if (!b.hasAttribute('aria-label')) b.setAttribute('aria-label', m[2]);
+	});
+	var ctlBtn = document.createElement('button'); ctlBtn.type = 'button'; ctlBtn.className = 'td-ctlbtn'; ctlBtn.id = 'td-ctlbtn'; root.appendChild(ctlBtn);
+	function isShort() { return (root.classList.contains('td-fill') || document.fullscreenElement === root) && !!SHORT && SHORT.matches; }
+	function paintShort() {
+		var sh = isShort(), off = noCtl();
+		root.classList.toggle('td-short', sh); root.classList.toggle('td-noctl', sh && off);
+		ctlBtn.setAttribute('aria-pressed', off ? 'true' : 'false');
+		ctlBtn.innerHTML = off ? '☰ <span>Controls</span>' : '✕ <span>Hide controls</span>';
+		ctlBtn.title = off ? 'Show the tools and panels again (C)' : 'Hide the tools and panels so the 3D view fills the screen (C)';
+	}
+	function toggleCtl() { try { localStorage.setItem(NOCTL, noCtl() ? '0' : '1'); } catch (e) {} paintShort(); setTimeout(resize, 30); }
+	ctlBtn.addEventListener('click', toggleCtl);
+	if (SHORT && SHORT.addEventListener) SHORT.addEventListener('change', function () { paintShort(); setTimeout(resize, 30); });
+	paintShort();
 	function fullScreen() {
 		if (document.fullscreenElement) { document.exitFullscreen(); return; }
 		var p = root.requestFullscreen ? root.requestFullscreen() : root.webkitRequestFullscreen ? root.webkitRequestFullscreen() : null;
 		if (p && p.catch) p.catch(function () { setFill(true); });
 	}
-	document.addEventListener('fullscreenchange', function () { root.classList.toggle('td-fs', document.fullscreenElement === root); setTimeout(resize, 50); });
+	document.addEventListener('fullscreenchange', function () { root.classList.toggle('td-fs', document.fullscreenElement === root); paintShort(); setTimeout(resize, 50); });
 
 	// ---------- actions + keys ----------
 	var ACTS = {
@@ -1307,6 +1331,7 @@
 		else if (k === 'h') toggleHole();
 		else if (k === 'd') drop();
 		else if (k === 'm') mirror(0);
+		else if (k === 'c' && isShort()) toggleCtl();
 		else if (k === 'f') e.shiftKey ? fullScreen() : setFill(!root.classList.contains('td-fill'));
 		else if (k === '?' || (e.shiftKey && k === '/')) helpDlg();
 		else if (k === '7') setView('top'); else if (k === '1') setView('front'); else if (k === '3') setView('side'); else if (k === '0') setView('iso'); else if (k === '.') setView('frame');

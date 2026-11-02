@@ -169,3 +169,36 @@ body.dark-mode #td .tu-seo h2, body.dark-mode #td .tu-seo h3, body.dark-mode #td
 	#td #td-skc {height:44vh;}
 	#td .td-vtools {max-width:100%;left:8px;justify-content:flex-start;}
 }
+
+/* Fill window / full screen on a short, wide screen (a phone held sideways): app.js adds .td-short. The 3D view fills the
+   window, the toolbar is one row of small icon buttons on top of it, the two side panels float narrow on the left / right,
+   and .td-noctl ("Hide controls", key C) leaves only one small round button. */
+#td .td-ctlbtn {display:none;}
+#td.td-short {padding:0;}
+#td.td-short .td-main {position:absolute;inset:0;display:block;height:auto;min-height:0;overflow:visible;}
+#td.td-short .td-stage {position:absolute;inset:0;height:auto;min-height:0;gap:0;}
+#td.td-short .td-view {border:0;border-radius:0;}
+#td.td-short .td-bar {position:absolute;top:4px;left:4px;right:4px;z-index:6;flex-wrap:nowrap;overflow-x:auto;gap:4px 6px;padding:0;-webkit-mask-image:none;mask-image:none;scrollbar-width:none;}
+#td.td-short .td-grp {flex-wrap:nowrap;gap:3px;}
+#td.td-short .td-grp--r {order:-1;margin-left:0;padding-right:6px;border-right:1px solid var(--td-line);}   /* Close / Full screen / Help first, so leaving never needs a scroll */
+#td.td-short .td-bl {display:none;}
+#td.td-short .td-b, #td.td-short .td-ib {min-height:32px;min-width:32px;padding:0.2em 0.42em;font-size:0.8em;background:var(--td-glass);}
+#td.td-short .td-b[aria-pressed="true"], #td.td-short .td-b--pri {background:var(--td-accd);}
+#td.td-short .td-b--exp {background:var(--td-gbg);}
+#td.td-short .td-snap {font-size:0.75em;padding:0 2px;}
+#td.td-short .td-bar select {min-height:30px;font-size:0.75em;padding:0.2em 0.3em;background:var(--td-glass2);}
+#td.td-short .td-left, #td.td-short .td-right, #td.td-short .td-tp {color-scheme:dark;scrollbar-width:thin;}
+#td.td-short .td-left {position:absolute;overflow-x:hidden;left:4px;top:42px;bottom:4px;width:min(10.5em, 23vw);z-index:5;overflow:auto;font-size:0.8em;gap:4px;}
+#td.td-short .td-right {position:absolute;right:4px;top:42px;bottom:4px;width:min(14em, 29vw);z-index:5;font-size:0.8em;gap:4px;}
+#td.td-short .td-panel, #td.td-short .td-tp {background:var(--td-glass);padding:6px;}
+#td.td-short .td-shapes {grid-template-columns:minmax(0, 1fr);grid-auto-flow:row;overflow:visible;}
+#td.td-short .td-outl {max-height:none;}
+#td.td-short .td-vtools {top:auto;bottom:6px;left:calc(min(10.5em, 23vw) + 12px);right:auto;max-width:none;flex-wrap:nowrap;}
+#td.td-short .td-vb {min-height:30px;font-size:0.75em;padding:0.2em 0.5em;}
+#td.td-short .td-status {position:absolute;left:calc(min(10.5em, 23vw) + 12px);right:calc(min(14em, 29vw) + 12px);bottom:42px;z-index:5;font-size:0.72em;background:var(--td-glass2);border-radius:6px;padding:2px 6px;pointer-events:none;}
+#td.td-short .td-status:empty {display:none;}
+#td.td-short .td-ctlbtn {display:inline-flex;align-items:center;gap:0.3em;position:absolute;right:calc(min(14em, 29vw) + 12px);bottom:6px;z-index:7;font:inherit;font-size:0.78em;font-weight:600;min-height:32px;padding:0 0.75em;border-radius:999px;border:1px solid var(--td-line);background:var(--td-glass2);color:var(--td-text);cursor:pointer;}
+#td.td-short .td-ctlbtn:focus-visible {outline:2px solid var(--td-acc);outline-offset:2px;}
+#td.td-short.td-noctl .td-bar, #td.td-short.td-noctl .td-left, #td.td-short.td-noctl .td-right, #td.td-short.td-noctl .td-vtools, #td.td-short.td-noctl .td-status {display:none;}
+#td.td-short.td-noctl .td-ctlbtn {right:6px;bottom:auto;top:6px;width:40px;height:40px;min-height:0;padding:0;justify-content:center;font-size:1.05em;opacity:0.85;}
+#td.td-short.td-noctl .td-ctlbtn span {position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);}
