@@ -18,6 +18,8 @@ to find MES posts about the person) are picked up by name if you add them). This
 
 Usage:  python3 build_spooks_database.py --fetch            (dry run: prints what changed)
         python3 build_spooks_database.py --fetch --apply
+  5. syncs the "Spooks" tab of the OneDrive Excel copy (EXCEL_PATH) to the Sheet (skip with --no-excel; skipped while the
+               file is open in Excel). Only that sheet's XML is rewritten, so the workbook's other tabs, pivot table and chart stay.
 Then, after a run that added people: build_sitemap.py / build_search_index.py are not needed (the page is already listed);
 update the Hive post with the new spooks-hive.md. Set HIVE_POST below once the Hive post exists.
 """
@@ -32,6 +34,8 @@ SHEET_ID = "1-pBVHR4KCT2nVngaWkUhjpHOw0KoJIqehDT3ah5yCSk"
 SHEET_GID = "686862064"  # the "Spooks" tab
 SHEET_URL = f"https://docs.google.com/spreadsheets/d/{SHEET_ID}/edit?gid={SHEET_GID}"
 EXCEL_URL = "https://1drv.ms/x/s!As32ynv0LoaIi6UOFw7QTWr1sVrCtA"
+# Banner of the Hive post, uploaded through PeakD's image button (files.peakd.com) so it shows on Hive without mes.fm.
+HIVE_BANNER = "https://files.peakd.com/file/peakd-hive/mestruth/23tGc14jFf9N7X9Tf5YhRjzfx4bxcxNeaNuftBT9pMRnsE5z7a8zw48xUyuoWG82LgDdr.jpg"
 HIVE_POST = ""  # e.g. "https://peakd.com/hive-113182/@mestruth/911-spooks-database" once published
 STREAM_PAGE = "/livestream-112-911-spooks"
 SLUG = "911spooks-database"
@@ -230,6 +234,7 @@ def main():
     write(OUT / "index.html", page(recs, today), ignore=r'data-updated="[^"]*"[^<]*')
     n_img = sum(1 for r in recs if r["img"])
     print(f"{len(recs)} people, {n_img} with a picture, {sum(1 for r in recs if r['posts'])} with MES posts")
+    return people
 
 
 def write(path, text, ignore=None):
@@ -539,39 +544,146 @@ def md_cell(t):
 
 
 def hive_md(recs, today):
+    """Hive post body: text only (pictures live on mes.fm), one small table per group so PeakD's column stays readable."""
     d = date.fromisoformat(today)
     nice = f"{d.strftime('%B')} {d.day}, {d.year}"
-    rows = []
-    for r in recs:
-        links = " · ".join(f"[{link_label(u)[1]}]({u})" for u in r["links"])
-        posts = "<br>".join(f"[{md_cell(p['title'])}]({abs_url(p['href'])})" for p in r["posts"][:4])
-        note = md_cell(r["note"])
-        rows.append(f"| **{md_cell(r['name'])}** | {GLABEL[r['group']]} | {note} | {links} | {posts} |")
+    floor = len(recs) // 10 * 10
+    parts = []
+    for k, label in GROUPS:
+        rs = sorted((r for r in recs if r["group"] == k), key=lambda r: r["name"].lower())
+        if not rs:
+            continue
+        lines = [f"## {label} ({len(rs)})", "", "| Name | Notes | Links |", "|---|---|---|"]
+        for r in rs:
+            links = [f"[{link_label(u)[1]}]({u})" for u in r["links"]]
+            if r["posts"]:
+                links.append(f"[MES posts ({len(r['posts'])})](https://mes.fm/{SLUG}#{r['id']})")
+            lines.append(f"| **{md_cell(r['name'])}** | {md_cell(r['note'])} | {' · '.join(links)} |")
+        parts.append("\n".join(lines))
     return f"""<center>
 
-![9/11 Spooks Database](https://mes.fm/img/{SLUG}-share.jpg)
+![9/11 Spooks Database]({HIVE_BANNER})
 
 </center>
 
-The MES list of 9/11 disinfo agents, spooks and controlled opposition: **{len(recs)} people**, with notes and links. Search their names in the [MES Links Telegram](https://t.me/meslinks) for many more posts.
+The MES list of 9/11 disinfo agents, spooks and controlled opposition: **{floor}+ and counting** ({len(recs)} as of {nice}), with notes and links. Search their names in the [MES Links Telegram](https://t.me/meslinks) for many more posts.
 
-**Searchable version with filters and pictures:** https://mes.fm/{SLUG}
+**Searchable version with filters, pictures and the MES posts about each person:** https://mes.fm/{SLUG}
 
 Kept in: [Google Sheet]({SHEET_URL}) · [Excel (OneDrive)]({EXCEL_URL}) · [mes.fm](https://mes.fm/{SLUG}) · Download: [CSV](https://mes.fm/{SLUG}/spooks.csv) · [JSON](https://mes.fm/{SLUG}/spooks.json)
 
 First shown on [MES Livestream 112: 9/11 Spooks Database](https://mes.fm/livestream-112-911-spooks). Last updated: {nice}.
 
-| Disinfo Agent | Group | Notes | Links | MES posts |
-|---|---|---|---|---|
-{chr(10).join(rows)}
-
-Pictures of each person are on the [mes.fm version](https://mes.fm/{SLUG}).
-
+{chr(10).join(chr(10) + p_ + chr(10) for p_ in parts)}
 ---
 
 [MES 9/11 Spooks](https://mes.fm/911spooks) · [MES 9/11 Truth](https://mes.fm/911) · [MES Links](https://mes.fm/links)
 """
 
 
+# --------------------------------------------------------------------------- the OneDrive Excel copy
+EXCEL_PATH = Path.home() / "Library/CloudStorage/OneDrive-Personal/MathEasySolutions/YouTube/Video Files/MES Livestreams/55 911 Passengers/911 Passengers.xlsx"
+EXCEL_SHEET = "Spooks"
+
+
+def xesc(t):
+    return html.escape(t, quote=False).replace('"', "&quot;")
+
+
+def sync_excel(people):
+    """Rewrite the Spooks table of the OneDrive workbook from the Sheet, editing only that sheet's XML (plus its hyperlink
+    relationships, its table range and one calcChain entry) so the other tabs, the pivot table, chart and conditional
+    formatting are left byte-for-byte alone (openpyxl would drop them). Data rows keep the first data row's cell styles."""
+    import zipfile
+    if not EXCEL_PATH.exists():
+        print(f"Excel copy not found, skipped: {EXCEL_PATH}")
+        return
+    if (EXCEL_PATH.parent / ("~$" + EXCEL_PATH.name)).exists():
+        print("Excel copy is open in Excel (lock file present): close it and re-run to sync it")
+        return
+    zin = zipfile.ZipFile(EXCEL_PATH)
+    files = {i.filename: zin.read(i.filename) for i in zin.infolist()}
+    infos = zin.infolist()
+    zin.close()
+    wb = files["xl/workbook.xml"].decode()
+    m = re.search(r'<sheet name="' + EXCEL_SHEET + r'" sheetId="(\d+)"[^>]*r:id="(rId\d+)"', wb)
+    sheet_id, rid = m.group(1), m.group(2)
+    target = re.search(r'Id="' + rid + r'"[^>]*Target="([^"]+)"', files["xl/_rels/workbook.xml.rels"].decode()).group(1)
+    sp = "xl/" + target.lstrip("/").replace("xl/", "")
+    rp = sp.replace("worksheets/", "worksheets/_rels/") + ".rels"
+    s, rels = files[sp].decode(), files[rp].decode()
+    allrows = re.findall(r'<row r="(\d+)"[^>]*>.*?</row>', s, re.S)
+    rowxml = dict(zip(allrows, re.findall(r'<row r="\d+"[^>]*>.*?</row>', s, re.S)))
+    shared = files.get("xl/sharedStrings.xml", b"").decode()
+    head_row = next(int(r) for r, x in rowxml.items() if ">Disinfo Agent<" in x or _is_header(x, shared))
+    first = rowxml[str(head_row + 1)]
+    sty = {c: (re.search(r'<c r="' + c + str(head_row + 1) + r'"[^>]*?s="(\d+)"', first) or [None, None])[1] for c in "BCD"}
+    tot_old = next(r for r, x in rowxml.items() if "SUBTOTAL(" in x)
+    st = lambda c: f' s="{sty[c]}"' if sty[c] else ""
+
+    def cell(ref, c, text):
+        if not text:
+            return f'<c r="{ref}"{st(c)}/>'
+        return f'<c r="{ref}"{st(c)} t="inlineStr"><is><t xml:space="preserve">{xesc(text)}</t></is></c>'
+
+    new_rows, links = [], []
+    for k, p in enumerate(people):
+        r = head_row + 1 + k
+        new_rows.append(f'<row r="{r}" spans="2:4">' + cell(f"B{r}", "B", p["name"]) + cell(f"C{r}", "C", p["note"])
+                        + cell(f"D{r}", "D", "\n".join(p["links"])) + "</row>")
+        if p["links"]:
+            links.append((f"D{r}", p["links"][0]))
+    last = head_row + len(people)
+    tot = last + 1
+    tot_cell = re.search(r'<c r="B' + tot_old + r'".*?</c>', rowxml[tot_old], re.S).group(0)
+    tot_cell = tot_cell.replace(f'r="B{tot_old}"', f'r="B{tot}"')
+    tot_cell = re.sub(r"<v>\d+</v>", f"<v>{len(people)}</v>", tot_cell)
+    new_rows.append(f'<row r="{tot}" spans="2:4">{tot_cell}<c r="C{tot}"{st("C")}/></row>')
+    keep = [x for r, x in rowxml.items() if int(r) <= head_row]
+    s = re.sub(r"<sheetData>.*?</sheetData>|<sheetData/>", lambda _: "<sheetData>" + "".join(keep + new_rows) + "</sheetData>", s, 1, re.S)
+    s = re.sub(r'<dimension ref="[^"]*"/>', f'<dimension ref="B2:D{tot}"/>', s, 1)
+    rels = re.sub(r'<Relationship Id="[^"]*" Type="[^"]*/hyperlink"[^>]*/>', "", rels)
+    hl = "".join(f'<hyperlink ref="{ref}" r:id="rIdMesH{i}"/>' for i, (ref, _) in enumerate(links, 1))
+    rels = rels.replace("</Relationships>", "".join(
+        f'<Relationship Id="rIdMesH{i}" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/hyperlink" Target="{xesc(u)}" TargetMode="External"/>'
+        for i, (_, u) in enumerate(links, 1)) + "</Relationships>")
+    s = re.sub(r"<hyperlinks>.*?</hyperlinks>", "", s, 1, re.S)
+    if hl:
+        s = s.replace("<pageMargins", f"<hyperlinks>{hl}</hyperlinks><pageMargins", 1)
+    tp = "xl/" + re.search(r'Type="[^"]*/table" Target="\.\./([^"]+)"', rels).group(1)
+    t = files[tp].decode()
+    t = re.sub(r'(<table [^>]*ref=")[^"]*', lambda m: m.group(1) + f"B{head_row}:D{tot}", t, 1)
+    t = re.sub(r'(<autoFilter ref=")[^"]*', lambda m: m.group(1) + f"B{head_row}:D{last}", t, 1)
+    t = re.sub(r'<sortState .*?</sortState>', "", t, 1, re.S)  # the Sheet's own order wins
+    new = dict(files)
+    new[sp], new[rp], new[tp] = s.encode(), rels.encode(), t.encode()
+    if "xl/calcChain.xml" in files:
+        cc = files["xl/calcChain.xml"].decode()
+        new["xl/calcChain.xml"] = cc.replace(f'<c r="B{tot_old}" i="{sheet_id}"', f'<c r="B{tot}" i="{sheet_id}"').encode()
+    changed = [n for n in (sp, rp, tp, "xl/calcChain.xml") if n in files and new[n] != files[n]]
+    if not changed:
+        print("unchanged Excel copy")
+        return
+    print(f"{'synced' if APPLY else 'would sync'} the Excel copy's {EXCEL_SHEET} tab ({len(people)} rows): {EXCEL_PATH.name}")
+    if not APPLY:
+        return
+    buf = io.BytesIO()
+    with zipfile.ZipFile(buf, "w", zipfile.ZIP_DEFLATED) as z:
+        for i in infos:
+            z.writestr(i, new[i.filename])
+    data = buf.getvalue()
+    zipfile.ZipFile(io.BytesIO(data)).testzip()
+    with open(EXCEL_PATH, "wb") as f:  # write in place (same file for OneDrive and its share link)
+        f.write(data)
+
+
+def _is_header(rowxml, shared):
+    ids = re.findall(r't="s"><v>(\d+)</v>', rowxml)
+    strings = re.findall(r"<si>(.*?)</si>", shared, re.S)
+    return any(re.sub("<[^>]+>", "", strings[int(i)]).strip() == "Disinfo Agent" for i in ids if int(i) < len(strings))
+
+
 if __name__ == "__main__":
-    main()
+    ppl = main()
+    if "--no-excel" not in sys.argv:
+        sync_excel(ppl)
