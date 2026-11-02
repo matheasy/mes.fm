@@ -4,9 +4,9 @@
 	"use strict";
 	var VE = window.VE; if (!VE) return;
 	var V = VE.V, $ = function (id) { return document.getElementById(id); };
-	var HEAD = 128, RULER = 26, ROWH = { v: 62, a: 46 };
+	var HEAD = 150, RULER = 26;
 	var sc = $("vd-tlscroll"), inner = $("vd-tlinner"), rulerC = $("vd-ruler"), rows = $("vd-rows"), ph = $("vd-playhead"), markEl = $("vd-markzone");
-	var T = VE.tl = { snap: true };
+	var T = VE.tl = { snap: true, wave: "db" };
 	function x2t(clientX) { var b = sc.getBoundingClientRect(); return Math.max(0, (clientX - b.left + sc.scrollLeft - HEAD) / VE.pps); }
 	function t2x(t) { return HEAD + t * VE.pps; }
 	T.x2t = x2t;
@@ -18,22 +18,23 @@
 		var html = "", sel = {}; VE.sel.forEach(function (i) { sel[i] = 1; });
 		var nV = p.tracks.filter(function (t) { return t.kind === "v"; }).length, nA = p.tracks.length - nV;
 		p.tracks.forEach(function (tr) {
-			var h = ROWH[tr.kind], canDel = (tr.kind === "v" ? nV : nA) > 1 && !p.clips.some(function (c) { return c.track === tr.id; });
-			html += '<div class="vd-row vd-row--' + tr.kind + (tr.hide || tr.mute ? " is-off" : "") + (tr.lock ? " is-lock" : "") + '" data-track="' + tr.id + '" style="height:' + h + 'px">' +
+			var h = V.rowH(tr), canDel = (tr.kind === "v" ? nV : nA) > 1 && !p.clips.some(function (c) { return c.track === tr.id; });
+			html += '<div class="vd-trow vd-trow--' + tr.kind + (tr.hide || tr.mute ? " is-off" : "") + (tr.lock ? " is-lock" : "") + (tr.mag ? " is-mag" : "") + '" data-track="' + tr.id + '" style="height:' + h + 'px">' +
 				'<div class="vd-thead"><span class="vd-tname" title="Double-click to rename">' + VE.esc(tr.name) + "</span><span class=\"vd-tbtns\">" +
 				(tr.kind === "v" ? '<button type="button" data-tact="hide" aria-pressed="' + !!tr.hide + '" title="' + (tr.hide ? "Show" : "Hide") + ' this track">' + (tr.hide ? "&#128065;&#824;" : "&#128065;") + "</button>" : "") +
 				'<button type="button" data-tact="mute" aria-pressed="' + !!tr.mute + '" title="' + (tr.mute ? "Unmute" : "Mute") + ' this track">' + (tr.mute ? "&#128263;" : "&#128266;") + "</button>" +
 				'<button type="button" data-tact="lock" aria-pressed="' + !!tr.lock + '" title="' + (tr.lock ? "Unlock" : "Lock") + ' this track">' + (tr.lock ? "&#128274;" : "&#128275;") + "</button>" +
-				(canDel ? '<button type="button" data-tact="del" title="Delete this empty track">&times;</button>' : "") + "</span></div><div class=\"vd-lane\">";
+				'<button type="button" data-tact="mag" aria-pressed="' + !!tr.mag + '" title="' + (tr.mag ? "Magnetic track: clips close up with no gaps (click to turn off)" : "Make this track magnetic: clips close up to the left with no gaps") + '"><svg viewBox="0 0 16 16" width="14" height="14" aria-hidden="true"><path d="M3 2h3v6a2 2 0 0 0 4 0V2h3v6a5 5 0 0 1-10 0z" fill="currentColor"/><path d="M3 2h3v2H3zM10 2h3v2h-3z" fill="#f87171"/></svg></button>' +
+				(canDel ? '<button type="button" data-tact="del" title="Delete this empty track">&times;</button>' : "") + "</span>" + (h >= 70 && tr.kind === "a" ? '<span class="vd-tsub">' + (T.wave === "db" ? "dB scale" : "linear scale") + "</span>" : "") + "</div><div class=\"vd-lane\">";
 			V.onTrack(p, tr.id).forEach(function (c) {
 				var m = VE.media(c.media), x = c.start * VE.pps, w = Math.max(4, V.dur(c) * VE.pps), label = c.type === "text" ? "T  " + (c.text && c.text.s || "").split("\n")[0] : m ? m.name : "(missing)";
-				var badges = (c.speed && c.speed !== 1 ? c.speed + "×  " : "") + (c.clean && c.clean.key ? "✓ clean  " : "") + (c.mute ? "muted  " : "");
+				var badges = (c.link ? "🔗 " : "") + (c.speed && c.speed !== 1 ? c.speed + "×  " : "") + (c.clean && c.clean.key ? "✓ clean  " : "") + (V.afxOn(c) ? "fx  " : "") + (c.mute ? "muted  " : "") + (c.type === "video" && c.noAudio ? "no sound  " : "");
 				html += '<div class="vd-clip vd-clip--' + c.type + (sel[c.id] ? " is-sel" : "") + (m && m.state === "missing" ? " is-missing" : "") + '" data-id="' + c.id + '" style="left:' + x + "px;width:" + w + 'px" title="' + VE.esc(label) + " · " + V.short(V.dur(c)) + '">' +
 					(c.xin > 0 ? '<i class="vd-xf" style="width:' + c.xin * VE.pps + 'px"></i>' : "") +
 					'<canvas class="vd-cc" width="' + Math.min(4000, Math.ceil(w)) + '" height="' + (h - 4) + '"></canvas><span class="vd-cl">' + VE.esc(badges + label) + "</span>" +
 					(c.fin > 0 ? '<i class="vd-fade vd-fade--in" style="width:' + c.fin * VE.pps + 'px"></i>' : "") + (c.fout > 0 ? '<i class="vd-fade vd-fade--out" style="width:' + c.fout * VE.pps + 'px"></i>' : "") + "</div>";
 			});
-			html += "</div></div>";
+			html += '</div><i class="vd-rgrip" data-rgrip="' + tr.id + '" title="Drag to make this track taller or shorter (double-click: normal height)"></i></div>';
 		});
 		rows.innerHTML = html;
 		rows.querySelectorAll(".vd-clip").forEach(function (el) { paintClip(el); });
@@ -47,7 +48,7 @@
 		var cv = el.querySelector("canvas"), g = cv.getContext("2d"), W = cv.width, H = cv.height, m = VE.media(c.media), k = W / Math.max(1, V.dur(c) * VE.pps);
 		g.clearRect(0, 0, W, H);
 		if (c.type === "video" && m && m.thumbImg && m.thumbTimes) {
-			var th = H - (m.hasAudio ? 14 : 0), tw = Math.max(8, th * m.thumbW / m.thumbH);
+			var th = H - (VE.hasSound(c) ? 18 : 0), tw = Math.max(8, th * m.thumbW / m.thumbH);
 			for (var x = 0; x < W; x += tw) {
 				var s = V.srcAt(c, c.start + (x + tw / 2) / k / VE.pps), idx = nearest(m.thumbTimes, s);
 				g.drawImage(m.thumbImg, idx * m.thumbW, 0, m.thumbW, m.thumbH, x, 0, tw, th);
@@ -55,14 +56,39 @@
 		} else if (c.type === "image" && m && m.bitmap) {
 			var ih = H, iw = ih * m.w / m.h; for (var x2 = 0; x2 < W; x2 += iw + 6) g.drawImage(m.bitmap, x2, 0, iw, ih);
 		}
-		if ((c.type === "video" || c.type === "audio") && m && m.peaks) {
-			var top = c.type === "audio" ? 0 : H - 14, hh = c.type === "audio" ? H : 14, mid = top + hh / 2, gain = Math.min(2, c.vol == null ? 1 : c.vol);
-			g.fillStyle = c.type === "audio" ? "rgba(255,255,255,0.75)" : "rgba(15,23,42,0.75)"; if (c.type !== "audio") { g.fillStyle = "rgba(2,6,23,0.55)"; g.fillRect(0, top, W, hh); g.fillStyle = "#7dd3fc"; } else g.fillStyle = "rgba(255,255,255,0.8)";
-			for (var px = 0; px < W; px++) {
-				var s0 = V.srcAt(c, c.start + px / k / VE.pps), s1 = V.srcAt(c, c.start + (px + 1) / k / VE.pps), i0 = Math.floor(s0 * 50), i1 = Math.max(i0 + 1, Math.floor(s1 * 50)), mx = 0;
-				for (var i = i0; i < i1 && i < m.peaks.length; i++) if (m.peaks[i] > mx) mx = m.peaks[i];
-				var a = Math.min(1, mx / 255 * gain) * hh / 2 * (c.mute ? 0.25 : 1); if (a > 0.3) g.fillRect(px, mid - a, 1, a * 2);
-			}
+		if (VE.hasSound(c) && m && (m.wave || m.peaks)) {
+			var big = c.type === "audio", hh = big ? H : 18, top = big ? 0 : H - 18;
+			if (!big) { g.fillStyle = "rgba(2,6,23,0.6)"; g.fillRect(0, top, W, hh); }
+			paintWave(g, c, m, W, top, hh, k, big);
+		}
+	}
+	// peak (light) and RMS (solid) of the clip's sound, mirrored; dB scale by default so quiet parts show too. With audio effects on, the
+	// original is drawn faint and the processed sound over it; red ticks where it would clip
+	function paintWave(g, c, m, W, top, hh, k, big) {
+		var mode = T.wave, mid = top + hh / 2, half = hh / 2 - 1, vdb = V.db(c.vol == null ? 1 : c.vol), env = V.afxOn(c) ? VE.fxEnv(c) : null, w = m.wave, dim = c.mute ? 0.35 : 1;
+		if (!isFinite(vdb)) vdb = -120;
+		if (big && hh >= 56) {
+			g.save(); g.font = "9px Arial, sans-serif"; g.textBaseline = "middle";
+			(mode === "db" ? [0, -6, -12, -24, -48] : [0, -6, -12]).forEach(function (d) {
+				var y = V.waveY(d, mode) * half; g.fillStyle = d === 0 ? "rgba(248,113,113,0.35)" : "rgba(255,255,255,0.10)";
+				g.fillRect(0, Math.round(mid - y), W, 1); g.fillRect(0, Math.round(mid + y), W, 1);
+				if (d < 0 && y > 9 && y < half - 4) { g.fillStyle = "rgba(255,255,255,0.5)"; g.fillText(String(d), 3, mid - y + 6); }
+			});
+			g.restore();
+		}
+		g.fillStyle = "rgba(255,255,255,0.14)"; g.fillRect(0, Math.round(mid), W, 1);
+		var cols = env ? ["rgba(255,255,255,0.16)", "rgba(110,231,183,0.75)", "#d1fae5"] : big ? [null, "rgba(110,231,183,0.62)", "#a7f3d0"] : [null, "rgba(125,211,252,0.55)", "#7dd3fc"];
+		for (var px = 0; px < W; px++) {
+			var s0 = V.srcAt(c, c.start + px / k / VE.pps), s1 = V.srcAt(c, c.start + (px + 1) / k / VE.pps), i0 = Math.max(0, Math.floor(s0 * 50)), i1 = Math.max(i0 + 1, Math.floor(s1 * 50)), pk = -Infinity, rm = -Infinity;
+			if (w) { for (var i = i0; i < i1 && i < w.pk.length; i++) { var a = V.decDb(w.pk[i]), b = V.decDb(w.rms[i]); if (a > pk) pk = a; if (b > rm) rm = b; } }
+			else { var mx = 0; for (var i2 = i0; i2 < i1 && i2 < m.peaks.length; i2++) if (m.peaks[i2] > mx) mx = m.peaks[i2]; pk = V.db(Math.pow(mx / 255, 2)); rm = pk - 9; }
+			if (!isFinite(pk)) continue;
+			pk += vdb; rm += vdb;
+			var eg = env ? V.db(V.envAt(env, (s0 + s1) / 2)) : 0, ph = V.waveY(pk + eg, mode) * half * dim, rh = V.waveY(rm + eg, mode) * half * dim;
+			if (env) { var oh = V.waveY(pk, mode) * half * dim; g.fillStyle = cols[0]; g.fillRect(px, mid - oh, 1, oh * 2); }
+			if (ph > 0.3) { g.fillStyle = cols[1]; g.fillRect(px, mid - ph, 1, ph * 2); }
+			if (rh > 0.3) { g.fillStyle = cols[2]; g.fillRect(px, mid - rh, 1, rh * 2); }
+			if (big && pk + eg > -0.5) { g.fillStyle = "#ef4444"; g.fillRect(px, top, 1, 3); g.fillRect(px, top + hh - 3, 1, 3); }
 		}
 	}
 	function nearest(arr, v) { var lo = 0, hi = arr.length - 1; while (lo < hi) { var mid = (lo + hi) >> 1; if (arr[mid] < v) lo = mid + 1; else hi = mid; } if (lo > 0 && Math.abs(arr[lo - 1] - v) < Math.abs(arr[lo] - v)) lo--; return lo; }
@@ -98,12 +124,15 @@
 		e.preventDefault(); T.zoom(VE.pps * Math.pow(1.0015, -e.deltaY), e.clientX);
 	}, { passive: false });
 
-	/* ---------- pointer: playhead, select, move, trim ---------- */
+	/* ---------- pointer: playhead, select, move, trim, track height ---------- */
 	var drag = null;
 	function snapPts(ignore) { return V.snapPoints(VE.P, ignore, [VE.t]); }
+	function unlocked(c) { var q = V.track(VE.P, c.track); return !(q && q.lock); }
 	inner.addEventListener("pointerdown", function (e) {
 		if (e.button > 0) return;
 		var tb = e.target.closest("[data-tact]"); if (tb) return trackAction(tb);
+		var rg = e.target.closest("[data-rgrip]");
+		if (rg) { var rtr = V.track(VE.P, rg.getAttribute("data-rgrip")); drag = { mode: "rowh", tr: rtr, y0: e.clientY, h0: V.rowH(rtr), moved: false }; inner.setPointerCapture(e.pointerId); e.preventDefault(); return; }
 		if (e.target.closest(".vd-thead")) return;
 		var clipEl = e.target.closest(".vd-clip"), t = x2t(e.clientX);
 		if (e.target.closest("#vd-rulerwrap") || !clipEl) {
@@ -118,58 +147,77 @@
 		if (tr && tr.lock) return;
 		var r = clipEl.getBoundingClientRect(), edge = e.clientX - r.left < 7 ? "l" : r.right - e.clientX < 7 ? "r" : null;
 		if (r.width < 22) edge = null;
-		var group = VE.selected().filter(function (x) { var q = V.track(VE.P, x.track); return !(q && q.lock); });
-		drag = { mode: edge ? "trim" : "move", edge: edge, c: c, x0: e.clientX, t0: t, orig: group.map(function (x) { return { c: x, start: x.start, in: x.in, out: x.out, track: x.track }; }), moved: false, el: clipEl };
+		var prim = VE.selected().filter(unlocked), ids = e.altKey ? prim.map(function (x) { return x.id; }) : V.withLinks(VE.P, prim.map(function (x) { return x.id; }));   // linked partners move along (Alt: just this clip)
+		var group = ids.map(function (id) { return V.clip(VE.P, id); }).filter(function (x) { return x && unlocked(x); });
+		drag = { mode: edge ? "trim" : "move", edge: edge, c: c, x0: e.clientX, t0: t, snap: JSON.stringify(VE.P), prim: prim.length, orig: group.map(function (x) { return { c: x, start: x.start, in: x.in, out: x.out, track: x.track }; }), moved: false, el: clipEl };
 		inner.setPointerCapture(e.pointerId); e.preventDefault();
 	});
+	function mag(id) { var q = V.track(VE.P, id); return !!(q && q.mag); }
 	inner.addEventListener("pointermove", function (e) {
 		if (!drag) { var ce = e.target.closest && e.target.closest(".vd-clip"); if (ce) { var r = ce.getBoundingClientRect(); ce.style.cursor = (r.width >= 22 && (e.clientX - r.left < 7 || r.right - e.clientX < 7)) ? "ew-resize" : "grab"; } return; }
 		if (drag.mode === "scrub") { VE.preview.seek(x2t(e.clientX)); return; }
+		if (drag.mode === "rowh") { drag.moved = true; drag.tr.h = V.clamp(Math.round(drag.h0 + e.clientY - drag.y0), V.ROW_MIN, V.ROW_MAX); T.render(); return; }
 		var dx = e.clientX - drag.x0; if (!drag.moved && Math.abs(dx) < 3 && drag.mode === "move" && !rowAt(e.clientY, drag.c)) return;
 		drag.moved = true; var dt = dx / VE.pps, ign = {}; drag.orig.forEach(function (o) { ign[o.c.id] = 1; });
 		if (drag.mode === "trim") {
 			var c = drag.c, o = drag.orig.filter(function (q) { return q.c === c; })[0] || { start: c.start, in: c.in, out: c.out };
 			Object.assign(c, { start: o.start, in: o.in, out: o.out });
-			var want = (drag.edge === "l" ? o.start : V.end(c)) + dt;
+			var want = (drag.edge === "l" ? o.start : V.end(c)) + dt, isMag = mag(c.track);
 			if (T.snap && !e.altKey) want = V.snap(want, snapPts(ign), 8 / VE.pps).t;
 			var nb = V.onTrack(VE.P, c.track).filter(function (x) { return x !== c; }), lo = 0, hi = Infinity;
-			nb.forEach(function (x) { if (V.end(x) <= o.start + 1e-4) lo = Math.max(lo, V.end(x)); if (x.start >= V.end(c) - 1e-4) hi = Math.min(hi, x.start); });
+			if (!isMag) nb.forEach(function (x) { if (V.end(x) <= o.start + 1e-4) lo = Math.max(lo, V.end(x)); if (x.start >= V.end(c) - 1e-4) hi = Math.min(hi, x.start); });
 			Object.assign(c, V.trim(c, drag.edge, want, { mediaDur: VE.mediaDur(c), lo: lo, hi: hi, minDur: 1 / VE.P.fps }));
+			// linked partners get the same trim
+			drag.orig.forEach(function (q) { if (q.c !== c && c.link && q.c.link === c.link) { q.c.start = c.start; q.c.in = c.in; q.c.out = c.out; } });
+			drag.bad = drag.orig.some(function (q) { return q.c !== c && !mag(q.c.track) && !V.canPlace(VE.P, q.c.track, q.c.start, V.dur(q.c), ign); });
+			if (isMag) V.pack(VE.P, c.track);
+			V.syncLinks(VE.P);
 		} else {
-			// move: the clip under the pointer snaps, the others keep their distance; a single clip may change track
+			// move: the clip under the pointer snaps, the others keep their distance; the clip under the pointer may change track
 			var p0 = drag.orig.filter(function (q) { return q.c === drag.c; })[0], ns = Math.max(0, p0.start + dt);
 			if (T.snap && !e.altKey) { var d = V.dur(drag.c), pts = snapPts(ign), a = V.snap(ns, pts, 8 / VE.pps), b = V.snap(ns + d, pts, 8 / VE.pps); if (a.snapped) ns = a.t; else if (b.snapped) ns = b.t - d; }
 			var shift = ns - p0.start; drag.orig.forEach(function (o) { if (o.start + shift < 0) shift = -o.start; });
-			var newTrack = drag.orig.length === 1 ? rowAt(e.clientY, drag.c) : null;
-			drag.orig.forEach(function (o) { o.c.start = o.start + shift; o.c.track = newTrack || o.track; });
-			drag.bad = drag.orig.some(function (o) { return !V.canPlace(VE.P, o.c.track, o.c.start, V.dur(o.c), ign); });
+			var newTrack = drag.prim === 1 ? rowAt(e.clientY, drag.c) : null;
+			// magnetic tracks: start from the state before the drag so their clips do not drift while the pointer moves
+			var keep = JSON.parse(drag.snap), byId = {}; keep.clips.forEach(function (x) { byId[x.id] = x; });
+			VE.P.clips.forEach(function (x) { if (!ign[x.id] && byId[x.id] && mag(x.track)) x.start = byId[x.id].start; });
+			drag.orig.forEach(function (o) { o.c.start = o.start + shift; o.c.track = o.c === drag.c && newTrack ? newTrack : o.track; });
+			var touched = {};
+			drag.orig.forEach(function (o) { touched[o.track] = 1; touched[o.c.track] = 1; });
+			Object.keys(touched).forEach(function (tid) { if (!mag(tid)) return; var ms = drag.orig.filter(function (o) { return o.c.track === tid; }); if (ms.length === 1) V.magnetInsert(VE.P, tid, ms[0].c.id, ms[0].c.start); else V.pack(VE.P, tid); });
+			if (drag.orig.some(function (o) { return mag(o.c.track); })) V.syncLinks(VE.P);
+			drag.bad = drag.orig.some(function (o) { return !mag(o.c.track) && !V.canPlace(VE.P, o.c.track, o.c.start, V.dur(o.c), ign); });
 			if (drag.bad && drag.orig.length === 1) { var f = V.fitOnTrack(VE.P, drag.c.track, drag.c.start, V.dur(drag.c), ign); if (f != null && Math.abs(f - drag.c.start) < 2.5 * Math.max(1, V.dur(drag.c))) { drag.c.start = f; drag.bad = false; } }
 		}
 		T.render(); var el = rows.querySelector('.vd-clip[data-id="' + drag.c.id + '"]'); if (el && drag.bad) el.classList.add("is-bad");
 		VE.emit("live");
 	});
 	function rowAt(clientY, c) {
-		var row = null; rows.querySelectorAll(".vd-row").forEach(function (r) { var b = r.getBoundingClientRect(); if (clientY >= b.top && clientY < b.bottom) row = r; });
+		var row = null; rows.querySelectorAll(".vd-trow").forEach(function (r) { var b = r.getBoundingClientRect(); if (clientY >= b.top && clientY < b.bottom) row = r; });
 		if (!row) return null; var tr = V.track(VE.P, row.getAttribute("data-track"));
 		return tr && !tr.lock && tr.kind === V.kindFor(c.type) ? tr.id : null;
 	}
 	function finish() {
 		if (!drag) return;
 		var d = drag; drag = null;
+		if (d.mode === "rowh") { if (d.moved) VE.commit("Track height"); return; }
 		if (d.mode === "scrub" || !d.moved) { T.render(); return; }
-		if (d.bad) { d.orig.forEach(function (o) { Object.assign(o.c, { start: o.start, in: o.in, out: o.out, track: o.track }); }); T.render(); VE.emit("notice", "There is no room there: clips on one track cannot overlap."); return; }
+		if (d.bad) { VE.P = JSON.parse(d.snap); T.render(); VE.emit("live"); VE.emit("notice", "There is no room there: clips on one track cannot overlap (turn on the magnet of a track to have clips close up instead)."); return; }
 		VE.commit(d.mode === "trim" ? "Trim" : "Move");
 	}
 	inner.addEventListener("pointerup", finish); inner.addEventListener("pointercancel", finish);
 	function markSel() { var s = {}; VE.sel.forEach(function (i) { s[i] = 1; }); rows.querySelectorAll(".vd-clip").forEach(function (el) { el.classList.toggle("is-sel", !!s[el.getAttribute("data-id")]); }); }
 	T.markSel = markSel;
 	function trackAction(b) {
-		var row = b.closest(".vd-row"), tr = V.track(VE.P, row.getAttribute("data-track")), a = b.getAttribute("data-tact");
+		var row = b.closest(".vd-trow"), tr = V.track(VE.P, row.getAttribute("data-track")), a = b.getAttribute("data-tact");
 		if (a === "del") { VE.P.tracks = VE.P.tracks.filter(function (x) { return x !== tr; }); VE.commit("Delete track"); return; }
-		tr[a] = !tr[a]; VE.commit(a === "hide" ? "Hide track" : a === "mute" ? "Mute track" : "Lock track");
+		tr[a] = !tr[a];
+		if (a === "mag" && tr.mag) VE.emit("notice", tr.name + " is magnetic: its clips close up to the left with no gaps.");
+		VE.commit(a === "hide" ? "Hide track" : a === "mute" ? "Mute track" : a === "mag" ? (tr.mag ? "Magnetic track on" : "Magnetic track off") : "Lock track");
 	}
 	rows.addEventListener("dblclick", function (e) {
-		var n = e.target.closest(".vd-tname"); if (n) { var tr = V.track(VE.P, n.closest(".vd-row").getAttribute("data-track")), nm = window.prompt("Track name", tr.name); if (nm) { tr.name = nm.slice(0, 40); VE.commit("Rename track"); } return; }
+		var rg = e.target.closest("[data-rgrip]"); if (rg) { var gt = V.track(VE.P, rg.getAttribute("data-rgrip")); delete gt.h; VE.commit("Track height"); return; }
+		var n = e.target.closest(".vd-tname"); if (n) { var tr = V.track(VE.P, n.closest(".vd-trow").getAttribute("data-track")), nm = window.prompt("Track name", tr.name); if (nm) { tr.name = nm.slice(0, 40); VE.commit("Rename track"); } return; }
 		var ce = e.target.closest(".vd-clip"); if (ce) { var c = V.clip(VE.P, ce.getAttribute("data-id")); if (c && c.type === "text") VE.emit("editText", c); }
 	});
 
@@ -178,15 +226,19 @@
 	T.placeMedia = function (m, clientX, clientY, atTime) {
 		var type = m.kind === "image" ? "image" : m.kind === "audio" ? "audio" : "video", kind = V.kindFor(type);
 		var t = atTime != null ? atTime : clientX != null ? x2t(clientX) : VE.t, tr = null;
-		if (clientY != null) { var row = null; rows.querySelectorAll(".vd-row").forEach(function (r) { var b = r.getBoundingClientRect(); if (clientY >= b.top && clientY < b.bottom) row = r; }); if (row) { var q = V.track(VE.P, row.getAttribute("data-track")); if (q && q.kind === kind && !q.lock) tr = q; } }
+		if (clientY != null) { var row = null; rows.querySelectorAll(".vd-trow").forEach(function (r) { var b = r.getBoundingClientRect(); if (clientY >= b.top && clientY < b.bottom) row = r; }); if (row) { var q = V.track(VE.P, row.getAttribute("data-track")); if (q && q.kind === kind && !q.lock) tr = q; } }
 		var dur = type === "image" ? 5 : m.dur;
 		var tracks = tr ? [tr] : VE.P.tracks.filter(function (x) { return x.kind === kind && !x.lock; });
 		if (kind === "v" && !tr) tracks = tracks.slice().reverse();   // pictures go on the lowest free video track first
 		var c = V.clipDefaults({ id: V.uid("c"), type: type, media: m.id, track: null, start: 0, in: 0, out: dur });
-		for (var j = 0; j < tracks.length; j++) { var s = V.fitOnTrack(VE.P, tracks[j].id, Math.max(0, t), dur); if (s != null && (tr || Math.abs(s - t) < 1e-6)) { c.track = tracks[j].id; c.start = s; break; } }
+		for (var j = 0; j < tracks.length; j++) {
+			if (tracks[j].mag) { c.track = tracks[j].id; c.start = Math.max(0, t); break; }
+			var s = V.fitOnTrack(VE.P, tracks[j].id, Math.max(0, t), dur); if (s != null && (tr || Math.abs(s - t) < 1e-6)) { c.track = tracks[j].id; c.start = s; break; }
+		}
 		if (!c.track) { var nt = VE.addTrack(kind); c.track = nt.id; c.start = Math.max(0, t); }
 		if (type === "image" && m.w && m.h) c.scale = Math.min(1, 1 / Math.min(VE.P.w / m.w, VE.P.h / m.h));   // a picture comes in at its own pixel size (at most the frame)
 		VE.P.clips.push(c); VE.sel = [c.id];
+		if (V.track(VE.P, c.track).mag) V.magnetInsert(VE.P, c.track, c.id, c.start);
 		if (VE.P.clips.length === 1 && type === "video" && m.w) setProjectFromMedia(m);
 		VE.commit("Add " + m.name);
 		return c;

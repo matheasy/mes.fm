@@ -45,7 +45,7 @@
 		for (var j = 0; j < p.clips.length; j++) {
 			var c = p.clips[j]; if (!VE.hasSound(c)) continue;
 			if (t1 <= c.start - (c.xin || 0) || t0 >= V.end(c)) continue;
-			var g = V.gainCurve(p, c, t0, n, RATE), any = false; for (var k = 0; k < n; k += 64) if (g[k] > 0) { any = true; break; }
+			var g = V.gainCurve(p, c, t0, n, RATE, VE.fxFn(c)), any = false; for (var k = 0; k < n; k += 64) if (g[k] > 0) { any = true; break; }
 			if (!any) continue;
 			var sp = c.speed || 1, s0 = V.srcAt(c, t0), s1 = V.srcAt(c, t1), buf = await VE.clipPcm(c, Math.max(0, s0 - 0.02), Math.max(0, s1) + 0.02);
 			if (buf) V.mixInto(out, 0, n, buf, s0, sp / RATE, g);
@@ -61,6 +61,7 @@
 		await VE.loadScript(VE.LIB.mp4);
 		var p = VE.P, W = o.w, H = o.h, fps = o.fps, a = o.a || 0, b = o.b || V.duration(p), N = Math.max(1, Math.round((b - a) * fps)), failed = null, t00 = performance.now();
 		if (!(b > a)) throw new Error("There is nothing to export: the timeline is empty.");
+		if (o.onProgress) o.onProgress(0, "Analysing the sound for the audio effects..."); await VE.ensureAllFx();
 		var missing = p.clips.filter(function (c) { if (c.type === "text") return false; var m = VE.media(c.media); return !m || m.state !== "ready"; });
 		if (missing.length) throw new Error("Some clips' media is missing or still being prepared (" + missing.map(function (c) { var m = VE.media(c.media); return m ? m.name : "?"; }).filter(function (x, i, s) { return s.indexOf(x) === i; }).slice(0, 3).join(", ") + "). Wait for it, or add the file again.");
 		var cfg = { codec: V.avcCodec(W, H, fps), width: W, height: H, bitrate: V.bitrate(W, H, fps, o.quality), bitrateMode: "variable", framerate: fps, latencyMode: "quality", avc: { format: "avc" } }, sup = null;

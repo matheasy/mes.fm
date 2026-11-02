@@ -16,7 +16,7 @@
 			tracks: [{ id: "v1", kind: "v", name: "Video 1" }, { id: "v2", kind: "v", name: "Video 2" }, { id: "a1", kind: "a", name: "Audio 1" }], clips: [], marks: { in: null, out: null } };
 	};
 	V.clipDefaults = function (c) {
-		var d = { speed: 1, vol: 1, mute: false, fin: 0, fout: 0, xin: 0, x: 0.5, y: 0.5, scale: 1, op: 1, crop: { l: 0, t: 0, r: 0, b: 0 }, clean: null, lufs: null };
+		var d = { speed: 1, vol: 1, mute: false, fin: 0, fout: 0, xin: 0, x: 0.5, y: 0.5, scale: 1, op: 1, crop: { l: 0, t: 0, r: 0, b: 0 }, clean: null, lufs: null, link: null, noAudio: false, afx: null };
 		for (var k in d) if (c[k] == null) c[k] = typeof d[k] === "object" && d[k] ? JSON.parse(JSON.stringify(d[k])) : d[k];
 		if (c.type === "text") { c.text = Object.assign({}, V.TEXT_DEFAULT, c.text || {}); }
 		return c;
@@ -27,12 +27,14 @@
 		var q = V.newProject(p);
 		q.name = String(p.name || q.name).slice(0, 120); q.bg = /^#[0-9a-f]{6}$/i.test(p.bg || "") ? p.bg : "#000000";
 		q.w = V.clamp(Math.round(+p.w || 1920), 16, 7680) & ~1; q.h = V.clamp(Math.round(+p.h || 1080), 16, 4320) & ~1; q.fps = V.clamp(+p.fps || 30, 1, 120);
-		if (Array.isArray(p.tracks) && p.tracks.length) q.tracks = p.tracks.filter(function (t) { return t && t.id && (t.kind === "v" || t.kind === "a"); }).map(function (t) { return { id: String(t.id), kind: t.kind, name: String(t.name || "Track").slice(0, 40), mute: !!t.mute, hide: !!t.hide, lock: !!t.lock }; });
+		if (Array.isArray(p.tracks) && p.tracks.length) q.tracks = p.tracks.filter(function (t) { return t && t.id && (t.kind === "v" || t.kind === "a"); }).map(function (t) { var o = { id: String(t.id), kind: t.kind, name: String(t.name || "Track").slice(0, 40), mute: !!t.mute, hide: !!t.hide, lock: !!t.lock, mag: !!t.mag }; if (isFinite(t.h) && t.h > 0) o.h = V.clamp(Math.round(t.h), V.ROW_MIN, V.ROW_MAX); return o; });
 		var ids = {}; q.tracks.forEach(function (t) { ids[t.id] = t; });
 		q.clips = (Array.isArray(p.clips) ? p.clips : []).filter(function (c) { return c && c.id && ids[c.track] && isFinite(c.start) && isFinite(c.in) && isFinite(c.out) && c.out > c.in; }).map(function (c) { return V.clipDefaults(JSON.parse(JSON.stringify(c))); });
 		q.marks = { in: p.marks && isFinite(p.marks.in) ? p.marks.in : null, out: p.marks && isFinite(p.marks.out) ? p.marks.out : null };
 		return q;
 	};
+	V.ROW_MIN = 28; V.ROW_MAX = 420; V.ROW_DEFAULT = { v: 62, a: 84 };
+	V.rowH = function (tr) { return tr && tr.h ? V.clamp(tr.h, V.ROW_MIN, V.ROW_MAX) : V.ROW_DEFAULT[tr && tr.kind === "a" ? "a" : "v"]; };
 	V.track = function (p, id) { for (var j = 0; j < p.tracks.length; j++) if (p.tracks[j].id === id) return p.tracks[j]; return null; };
 	V.clip = function (p, id) { for (var j = 0; j < p.clips.length; j++) if (p.clips[j].id === id) return p.clips[j]; return null; };
 	V.kindFor = function (type) { return type === "audio" ? "a" : "v"; };
@@ -172,7 +174,7 @@
 	// gain of a clip's sound at t (volume x fades x cross-fades in and out); 0 when silent
 	V.gainAt = function (p, c, t) {
 		var tr = V.track(p, c.track); if (!tr || tr.mute || c.mute) return 0;
-		if (c.type !== "audio" && c.type !== "video") return 0;
+		if ((c.type !== "audio" && c.type !== "video") || c.noAudio) return 0;
 		var g = V.envelope(c, t) * (c.vol == null ? 1 : c.vol);
 		var nx = V.nextTouching(p, c);
 		if (nx && nx.xin > 0) { var e = V.end(c); if (t > e - nx.xin) g *= V.clamp((e - t) / nx.xin, 0, 1); }
@@ -182,9 +184,10 @@
 		return p.clips.filter(function (c) { return (c.type === "audio" || c.type === "video") && (!hasAudio || hasAudio(c)) && V.active(c, t) && V.gainAt(p, c, t) > 0; });
 	};
 	// gain for n output samples at rate starting at t0 (one value per sample)
-	V.gainCurve = function (p, c, t0, n, rate) {
+	// extra(t) (optional) = a further gain at timeline time t (the clip's audio effects: leveler, compressor, ducking)
+	V.gainCurve = function (p, c, t0, n, rate, extra) {
 		var g = new Float32Array(n), step = Math.max(1, Math.floor(rate / 400));   // envelope sampled every 2.5 ms and held: smooth enough, cheap
-		for (var i = 0; i < n; i += step) { var v = V.gainAt(p, c, t0 + i / rate); for (var k = i; k < Math.min(n, i + step); k++) g[k] = v; }
+		for (var i = 0; i < n; i += step) { var tt = t0 + i / rate, v = V.gainAt(p, c, tt); if (v > 0 && extra) v *= extra(tt); for (var k = i; k < Math.min(n, i + step); k++) g[k] = v; }
 		return g;
 	};
 
@@ -302,6 +305,206 @@
 		var mbs = Math.ceil(w / 16) * Math.ceil(h / 16), rate = mbs * fps, lv = [[11880, 396, "15"], [40500, 1620, "1e"], [108000, 3600, "1f"], [216000, 5120, "20"], [245760, 8192, "28"], [522240, 8704, "2a"], [589824, 22080, "32"], [983040, 36864, "33"], [2073600, 36864, "34"], [4177920, 139264, "3c"], [8355840, 139264, "3d"], [16711680, 139264, "3e"]];
 		for (var j = 0; j < lv.length; j++) if (rate <= lv[j][0] && mbs <= lv[j][1]) return "avc1.6400" + lv[j][2];
 		return "avc1.64003e";
+	};
+
+
+	/* ---------- magnetic tracks (clips close up to the left, no gaps) ---------- */
+	// lay the clips of one track end to end from 0, in their current order (by start; ties keep array order)
+	V.pack = function (p, trackId) {
+		var t = 0; V.onTrack(p, trackId).forEach(function (c) { c.start = t; t = V.end(c); });
+		return p;
+	};
+	// put clip id on a magnetic track at the place nearest "want": the others are packed as if it were not there, it goes before the first
+	// clip whose middle is after its own middle, then the track is packed again
+	V.magnetInsert = function (p, trackId, id, want) {
+		var c = V.clip(p, id); if (!c) return p;
+		c.track = trackId;
+		var ign = {}; ign[id] = 1;
+		var others = V.onTrack(p, trackId, ign), t = 0, d = V.dur(c), mid = want + d / 2, k = others.length;
+		others.forEach(function (o) { o.start = t; t = V.end(o); });
+		for (var j = 0; j < others.length; j++) if (others[j].start + V.dur(others[j]) / 2 >= mid) { k = j; break; }
+		var order = others.slice(0, k).concat([c], others.slice(k)); t = 0;
+		order.forEach(function (o) { o.start = t; t = V.end(o); });
+		return p;
+	};
+	// pack every magnetic track, then let linked partners follow (called on every edit)
+	V.applyMagnets = function (p) {
+		p.tracks.forEach(function (tr) { if (tr.mag) V.pack(p, tr.id); });
+		V.syncLinks(p);
+		return p;
+	};
+
+	/* ---------- linked clips (a video and its separated sound) ---------- */
+	V.partners = function (p, c) { return c && c.link ? p.clips.filter(function (x) { return x !== c && x.link === c.link; }) : []; };
+	// ids plus the ids of every clip linked to them
+	V.withLinks = function (p, ids) {
+		var set = {}, links = {}; ids.forEach(function (i) { set[i] = 1; var c = V.clip(p, i); if (c && c.link) links[c.link] = 1; });
+		p.clips.forEach(function (c) { if (c.link && links[c.link]) set[c.id] = 1; });
+		return Object.keys(set);
+	};
+	// partners keep the leader's timing: the leader is the video clip (else the first); a partner on a magnetic track is left where the track put it
+	V.syncLinks = function (p) {
+		var groups = {};
+		p.clips.forEach(function (c) { if (c.link) (groups[c.link] = groups[c.link] || []).push(c); });
+		Object.keys(groups).forEach(function (k) {
+			var g = groups[k]; if (g.length < 2) { g[0].link = null; return; }
+			var lead = g.filter(function (c) { return c.type === "video"; })[0] || g[0];
+			g.forEach(function (c) {
+				if (c === lead) return; var tr = V.track(p, c.track); if (tr && tr.mag && !(V.track(p, lead.track) || {}).mag) return;
+				c.start = lead.start; c.in = lead.in; c.out = lead.out; c.speed = lead.speed; c.xin = lead.xin || 0;
+			});
+		});
+		return p;
+	};
+	// "Separate video and audio": the video's sound becomes its own clip on an audio track (one where it fits, else makeTrack()), linked to it
+	V.separateAudio = function (p, id, newId, linkId, makeTrack) {
+		var c = V.clip(p, id); if (!c || c.type !== "video" || c.noAudio) return null;
+		var d = V.dur(c), tr = null, as = p.tracks.filter(function (t) { return t.kind === "a" && !t.lock; });
+		for (var j = 0; j < as.length; j++) if (as[j].mag ? !V.onTrack(p, as[j].id).length : V.canPlace(p, as[j].id, c.start, d)) { tr = as[j]; break; }
+		if (!tr) tr = makeTrack ? makeTrack() : null; if (!tr) return null;
+		var a = V.clipDefaults({ id: newId, type: "audio", media: c.media, track: tr.id, start: c.start, in: c.in, out: c.out, speed: c.speed, vol: c.vol, mute: c.mute, fin: c.fin, fout: c.fout, xin: c.xin,
+			clean: c.clean ? JSON.parse(JSON.stringify(c.clean)) : null, lufs: c.lufs, afx: c.afx ? JSON.parse(JSON.stringify(c.afx)) : null, link: linkId });
+		c.link = linkId; c.noAudio = true; c.clean = null; c.afx = null; c.lufs = null;
+		p.clips.push(a);
+		return a;
+	};
+	// put the sound back into the video clip (the separated audio clips of the group are removed)
+	V.joinAudio = function (p, id) {
+		var c = V.clip(p, id); if (!c) return null;
+		var g = [c].concat(V.partners(p, c)), v = g.filter(function (x) { return x.type === "video"; })[0], a = g.filter(function (x) { return x.type === "audio" && x.media === (v && v.media); })[0];
+		if (!v) return null;
+		if (a) { v.vol = a.vol; v.mute = a.mute; v.clean = a.clean; v.afx = a.afx; v.lufs = a.lufs; p.clips = p.clips.filter(function (x) { return x !== a; }); }
+		v.noAudio = false; if (!V.partners(p, v).length) v.link = null;
+		return v;
+	};
+	V.unlink = function (p, id) { var c = V.clip(p, id); if (!c || !c.link) return p; var k = c.link; p.clips.forEach(function (x) { if (x.link === k) x.link = null; }); return p; };
+	// split clips ids (and their partners) at t; a split pair gets a new link for its right halves. -> ids of the right halves
+	V.splitAt = function (p, ids, t, newId, minDur) {
+		var all = V.withLinks(p, ids), right = [], relink = {};
+		all.forEach(function (id) {
+			var c = V.clip(p, id); if (!c) return;
+			var r = V.split(c, t, newId(), minDur); if (!r) return;
+			if (c.link) { relink[c.link] = relink[c.link] || newId(); r[1].link = relink[c.link]; }
+			p.clips.splice(p.clips.indexOf(c), 1, r[0], r[1]); right.push(r[1].id);
+		});
+		return right;
+	};
+
+	/* ---------- audio effects (non-destructive: a gain envelope worked out from the clip's own sound) ---------- */
+	V.AFX_DEFAULT = {
+		level: { on: false, target: -20, maxUp: 12, maxDown: 12, win: 3, gate: -50 },   // leveler: brings the loudness over a few seconds to the target (dBFS RMS)
+		comp: { on: false, thr: -24, ratio: 3, knee: 6, att: 0.01, rel: 0.2, makeup: null },   // compressor (makeup null = automatic)
+		duck: { on: false, amt: 12, gate: -45 }   // ducking: this clip is lowered while other clips have sound (music under a voice)
+	};
+	V.afxOf = function (c) {
+		var a = (c && c.afx) || {}, o = {};
+		Object.keys(V.AFX_DEFAULT).forEach(function (k) { o[k] = Object.assign({}, V.AFX_DEFAULT[k], a[k] || {}); });
+		return o;
+	};
+	V.afxOn = function (c) { var a = c && c.afx; return !!(a && ((a.level && a.level.on) || (a.comp && a.comp.on) || (a.duck && a.duck.on))); };
+	// streaming level meter: RMS and peak (dBFS) of every hop-second block of the (summed) channels
+	V.LevelMeter = function (rate, hop) { this.rate = rate; this.hop = hop || 0.01; this.n = Math.max(1, Math.round(rate * this.hop)); this.acc = 0; this.pk = 0; this.cnt = 0; this.rms = []; this.peak = []; };
+	V.LevelMeter.prototype.push = function (chs) {
+		var nc = chs.length, len = chs[0].length;
+		for (var i = 0; i < len; i++) {
+			var e = 0, m = 0; for (var c = 0; c < nc; c++) { var x = chs[c][i]; e += x * x; if (x > m) m = x; else if (-x > m) m = -x; }
+			this.acc += e / nc; if (m > this.pk) this.pk = m;
+			if (++this.cnt === this.n) { this.rms.push(V.db(Math.sqrt(this.acc / this.n))); this.peak.push(V.db(this.pk)); this.acc = 0; this.pk = 0; this.cnt = 0; }
+		}
+	};
+	V.LevelMeter.prototype.result = function (start) {
+		var f = function (a) { var o = new Float32Array(a.length); for (var i = 0; i < a.length; i++) o[i] = isFinite(a[i]) ? Math.max(-120, a[i]) : -120; return o; };
+		return { start: start || 0, hop: this.hop, rms: f(this.rms), peak: f(this.peak) };
+	};
+	V.levels = function (chs, rate, hop, start) { var m = new V.LevelMeter(rate, hop); m.push(chs); return m.result(start); };
+	// compressor gain change (dB, <= 0) for an input level x (dB): threshold T, ratio R, soft knee W dB
+	V.compStatic = function (x, T, R, W) {
+		var s = 1 / R - 1, d = x - T; W = W || 0;
+		if (2 * d < -W) return 0;
+		if (W > 0 && 2 * Math.abs(d) <= W) return s * (d + W / 2) * (d + W / 2) / (2 * W);
+		return s * d;
+	};
+	// automatic make-up gain: what the compressor takes off a sound at the reference level (the leveler's target, else -18 dBFS, a usual
+	// speech level), so the average loudness stays about where it was and only the peaks come down
+	V.compMakeup = function (o, ref) { return o.makeup != null && isFinite(o.makeup) ? o.makeup : -V.compStatic(ref == null ? -18 : ref, o.thr, o.ratio, o.knee); };
+	// gain (dB) per block: static curve on the block level, smoothed with attack (gain going down) and release (gain coming back)
+	V.compGain = function (lv, o, hop) {
+		var n = lv.length, out = new Float32Array(n), aA = Math.exp(-hop / Math.max(1e-4, o.att)), aR = Math.exp(-hop / Math.max(1e-4, o.rel)), g = 0;
+		for (var i = 0; i < n; i++) { var want = V.compStatic(lv[i], o.thr, o.ratio, o.knee), a = want < g ? aA : aR; g = a * g + (1 - a) * want; out[i] = g; }
+		return out;
+	};
+	// leveler gain (dB) per block: target minus the loudness of the blocks above the gate within +-win/2 s (centred, so it looks ahead);
+	// in silence the gain is held; then smoothed both ways (no lag) and limited to -maxDown..+maxUp
+	V.levelGain = function (rms, o, hop) {
+		var n = rms.length, E = new Float64Array(n + 1), N = new Float64Array(n + 1), w = Math.max(1, Math.round(o.win / 2 / hop)), raw = new Float32Array(n), last = 0, i;
+		for (i = 0; i < n; i++) { var on = rms[i] > o.gate; E[i + 1] = E[i] + (on ? Math.pow(10, rms[i] / 10) : 0); N[i + 1] = N[i] + (on ? 1 : 0); }
+		var have = false;
+		for (i = 0; i < n; i++) {
+			var a = Math.max(0, i - w), b = Math.min(n, i + w + 1), cnt = N[b] - N[a];
+			if (cnt >= Math.max(1, 0.1 * (b - a))) { var L = 10 * Math.log10((E[b] - E[a]) / cnt); last = V.clamp(o.target - L, -o.maxDown, o.maxUp); if (!have) { for (var k = 0; k < i; k++) raw[k] = last; have = true; } }
+			raw[i] = last;
+		}
+		var al = Math.exp(-hop / 0.25), y = 0;
+		for (i = 0; i < n; i++) { y = i ? al * y + (1 - al) * raw[i] : raw[i]; raw[i] = y; }
+		for (i = n - 1; i >= 0; i--) { y = i < n - 1 ? al * y + (1 - al) * raw[i] : raw[i]; raw[i] = y; }
+		return raw;
+	};
+	// the whole envelope of a clip: { start, hop, g: linear gain per block } (leveler first, then the compressor on the levelled sound)
+	V.fxEnvelope = function (lev, afx) {
+		var n = lev.rms.length, tot = new Float32Array(n), A = afx, i;
+		var lg = A.level && A.level.on ? V.levelGain(lev.rms, A.level, lev.hop) : null;
+		if (A.comp && A.comp.on) {
+			var x = new Float32Array(n); for (i = 0; i < n; i++) x[i] = lev.rms[i] + (lg ? lg[i] : 0);
+			var cg = V.compGain(x, A.comp, lev.hop), mk = V.compMakeup(A.comp, A.level && A.level.on ? A.level.target : -18);
+			for (i = 0; i < n; i++) tot[i] = (lg ? lg[i] : 0) + cg[i] + mk;
+		} else if (lg) tot.set(lg);
+		var g = new Float32Array(n); for (i = 0; i < n; i++) g[i] = Math.pow(10, Math.min(24, tot[i]) / 20);
+		return { start: lev.start, hop: lev.hop, g: g };
+	};
+	// envelope value at source time s (linear between blocks; outside it the nearest end)
+	V.envAt = function (env, s) {
+		var g = env.g, n = g.length; if (!n) return 1;
+		var x = (s - env.start) / env.hop - 0.5, k = Math.floor(x);
+		if (k < 0) return g[0]; if (k >= n - 1) return g[n - 1];
+		var f = x - k; return g[k] + (g[k + 1] - g[k]) * f;
+	};
+	// share (0..1) of the blocks within +-hw seconds of s that are above gate, doubled and capped: a smooth "is someone talking" signal
+	V.activePrefix = function (lev, gate) { var r = lev.rms, a = new Uint32Array(r.length + 1); for (var i = 0; i < r.length; i++) a[i + 1] = a[i] + (r[i] > gate ? 1 : 0); return a; };
+	V.presenceAt = function (lev, pre, s, hw) {
+		var n = lev.rms.length, a = Math.max(0, Math.floor((s - hw - lev.start) / lev.hop)), b = Math.min(n, Math.ceil((s + hw - lev.start) / lev.hop));
+		if (b <= a) return 0;
+		return Math.min(1, 2 * (pre[b] - pre[a]) / (b - a));
+	};
+
+	/* ---------- waveform data ---------- */
+	// levels stored as bytes: 0 = -96 dBFS or less, 255 = 0 dBFS (0.38 dB steps)
+	V.encDb = function (a) { var d = V.db(a); return !isFinite(d) || d <= -96 ? 0 : Math.min(255, Math.round((d + 96) / 96 * 255)); };
+	V.decDb = function (b) { return b <= 0 ? -Infinity : b / 255 * 96 - 96; };
+	// peak and RMS per bin (perSec bins a second) -> { pk, rms } byte arrays (encDb)
+	V.wave = function (chs, rate, perSec) {
+		var bin = Math.max(1, Math.round(rate / perSec)), n = Math.ceil(chs[0].length / bin), pk = new Uint8Array(n), rm = new Uint8Array(n);
+		for (var b = 0; b < n; b++) {
+			var m = 0, e = 0, cnt = 0;
+			for (var c = 0; c < chs.length; c++) { var x = chs[c]; for (var i = b * bin, en = Math.min(x.length, i + bin); i < en; i++) { var v = x[i]; e += v * v; cnt++; if (v > m) m = v; else if (-v > m) m = -v; } }
+			pk[b] = V.encDb(m); rm[b] = V.encDb(cnt ? Math.sqrt(e / cnt) : 0);
+		}
+		return { pk: pk, rms: rm };
+	};
+	// height (0..1) a level (dB) is drawn at: "db" = a -54..0 dB scale (quiet parts visible), "lin" = amplitude
+	V.waveY = function (db, mode) {
+		if (!isFinite(db)) return 0;
+		if (mode === "lin") return V.clamp(Math.pow(10, db / 20), 0, 1);
+		return V.clamp((db + 54) / 54, 0, 1);
+	};
+
+	/* ---------- canvas size ---------- */
+	V.CANVAS_PRESETS = [["1920x1080", "1080p (16:9)"], ["1280x720", "720p"], ["2560x1440", "1440p"], ["3840x2160", "4K (2160p)"], ["1080x1920", "Vertical 1080×1920 (Shorts, Reels)"], ["1080x1080", "Square 1080×1080"], ["1080x1350", "Portrait 4:5"]];
+	V.presetOf = function (w, h) { var k = w + "x" + h; for (var j = 0; j < V.CANVAS_PRESETS.length; j++) if (V.CANVAS_PRESETS[j][0] === k) return k; return "custom"; };
+	// "1280x720", "1280 × 720", "1280,720" -> { w, h } (even, 16..7680 x 16..4320) or null
+	V.parseSize = function (s) {
+		var m = /^\s*(\d{2,5})\s*[x×*,: ]\s*(\d{2,5})\s*$/i.exec(String(s || "")); if (!m) return null;
+		var w = +m[1], h = +m[2]; if (w < 16 || h < 16 || w > 7680 || h > 4320) return null;
+		return { w: Math.round(w / 2) * 2, h: Math.round(h / 2) * 2 };
 	};
 
 	/* ---------- time ---------- */

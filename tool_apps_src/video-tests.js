@@ -137,5 +137,80 @@ function proj(clips) { const p = V.newProject(); p.clips = clips; return p; }
 	ok(wv.getUint16(22, true) === 2 && wv.getUint32(24, true) === 48000 && wv.getUint16(34, true) === 16, "2 channels, 48 kHz, 16-bit");
 	ok(wv.getInt16(44, true) === 0 && wv.getInt16(46, true) === 32767 && wv.getInt16(48, true) === 16384 && wv.getInt16(52, true) === -32768 && wv.getInt16(56, true) === 32767, "interleaved, clipped to the 16-bit range");
 }
+
+/* magnetic tracks */
+{
+	const a = clip({ id: "a", start: 3, out: 5 }), b = clip({ id: "b", start: 12, out: 4 }), c = clip({ id: "c", start: 20, out: 2 }), p = proj([b, a, c]);
+	V.pack(p, "v1"); eq([a.start, b.start, c.start], [0, 5, 9], "pack closes every gap, keeping the order");
+	V.removeClips(p, ["b"], false); V.pack(p, "v1"); eq([a.start, c.start], [0, 5], "after a delete the clips close up");
+	const d = clip({ id: "d", out: 3 }); p.clips.push(d);
+	V.magnetInsert(p, "v1", "d", 1); eq([d.start, a.start, c.start], [0, 3, 8], "dropped near the start: goes first");
+	V.magnetInsert(p, "v1", "d", 4.5); eq([a.start, d.start, c.start], [0, 5, 8], "dropped past a's middle: goes after a");
+	V.magnetInsert(p, "v1", "d", 50); eq([a.start, c.start, d.start], [0, 5, 7], "dropped far right: last, no gap");
+	V.magnetInsert(p, "v1", "d", 50); eq([a.start, c.start, d.start], [0, 5, 7], "same place again: stable");
+	const q = proj([clip({ id: "x", start: 4, out: 2 }), clip({ id: "y", start: 9, out: 2, track: "v2" })]); q.tracks[0].mag = true;
+	V.applyMagnets(q); eq([V.clip(q, "x").start, V.clip(q, "y").start], [0, 9], "only magnetic tracks are packed");
+	const n = V.normalize({ tracks: [{ id: "v1", kind: "v", mag: true, h: 9999 }, { id: "a1", kind: "a", h: 120 }], clips: [] });
+	eq([n.tracks[0].mag, n.tracks[0].h, n.tracks[1].mag, n.tracks[1].h], [true, V.ROW_MAX, false, 120], "magnet and track height are kept (height clamped)");
+	eq([V.rowH({ kind: "a" }), V.rowH({ kind: "v", h: 10 })], [V.ROW_DEFAULT.a, V.ROW_MIN], "row heights");
+}
+/* separated audio + links */
+{
+	const v = clip({ id: "v", start: 2, in: 1, out: 9, vol: 0.5, afx: { level: { on: true } } }), p = proj([v]);
+	let made = 0;
+	const a = V.separateAudio(p, "v", "a", "L1", () => { made++; const t = { id: "a9", kind: "a", name: "Audio 9" }; p.tracks.push(t); return t; });
+	ok(a && a.type === "audio" && a.track === "a1" && made === 0, "the sound goes to the free audio track");
+	eq([a.start, a.in, a.out, a.vol, a.link, v.link, v.noAudio, !!a.afx, v.afx], [2, 1, 9, 0.5, "L1", "L1", true, true, null], "audio clip copies timing, volume and effects; video goes silent");
+	near(V.gainAt(p, v, 3), 0, 0, "the video clip itself makes no sound now"); near(V.gainAt(p, a, 3), 0.5, 1e-9, "the audio clip does");
+	eq(V.withLinks(p, ["v"]).sort(), ["a", "v"], "selecting one selects its partner");
+	v.start = 5; V.syncLinks(p); near(a.start, 5, 0, "partner follows the video");
+	const r = V.splitAt(p, ["a"], 7, (() => { let k = 0; return () => "n" + (++k); })(), 1 / 30);
+	eq(r.length, 2, "splitting one splits both"); const rv = p.clips.filter(c => r.indexOf(c.id) >= 0);
+	ok(rv[0].link && rv[0].link === rv[1].link && rv[0].link !== "L1", "right halves share a new link"); eq(V.partners(p, V.clip(p, "v")).map(c => c.id), ["a"], "left halves keep theirs");
+	const b2 = V.clip(p, "a"); b2.vol = 0.8; p.clips = p.clips.filter(c => r.indexOf(c.id) < 0); V.joinAudio(p, "v"); const v2 = V.clip(p, "v"); ok(!V.clip(p, "a") && !v2.noAudio && v2.vol === 0.8 && v2.link === null, "join puts the sound back");
+	ok(V.separateAudio(p, "v", "z", "L2") && V.unlink(p, "v") && v2.link === null && V.clip(p, "z").link === null, "unlink");
+	const q = proj([clip({ id: "v", start: 0, out: 4 }), clip({ id: "o", type: "audio", track: "a1", start: 1, out: 2 })]);
+	const a2 = V.separateAudio(q, "v", "a", "L", () => { const t = { id: "a2", kind: "a" }; q.tracks.push(t); return t; });
+	eq(a2.track, "a2", "audio track busy there: a new one is made");
+	const m = proj([clip({ id: "v", start: 3, out: 4 }), clip({ id: "w", start: 0, out: 2 })]); m.tracks[0].mag = true;
+	V.separateAudio(m, "v", "va", "LL"); V.applyMagnets(m); eq([V.clip(m, "v").start, V.clip(m, "va").start], [2, 2], "partner follows a packed video");
+}
+/* audio effects */
+{
+	near(V.compStatic(-30, -24, 4, 0), 0, 1e-9, "below the threshold: no change"); near(V.compStatic(-12, -24, 4, 0), -9, 1e-9, "12 dB over at 4:1 -> 9 dB less");
+	near(V.compStatic(-24, -24, 4, 6), -0.75 * 9 / 12, 1e-9, "soft knee at the threshold"); ok(V.compStatic(-27.1, -24, 4, 6) === 0, "below the knee");
+	near(V.compMakeup({ thr: -24, ratio: 1, knee: 0, makeup: null }), 0, 1e-12, "no compression, no make-up"); near(V.compMakeup({ thr: -20, ratio: 2, knee: 0, makeup: null }, -10), 5, 1e-9, "auto make-up = the reduction at the reference level"); near(V.compMakeup({ thr: -24, ratio: 3, knee: 0, makeup: null }), 4, 1e-9, "default reference -18 dBFS"); near(V.compMakeup({ thr: -24, ratio: 3, knee: 0, makeup: -2 }), -2, 0, "manual make-up");
+	const hop = 0.01, lv = new Float32Array(300).fill(-6), cg = V.compGain(lv, { thr: -24, ratio: 3, knee: 0, att: 0.01, rel: 0.2 }, hop);
+	near(cg[299], -12, 0.01, "steady state 18 dB over at 3:1 -> -12 dB"); ok(cg[0] > -12 && cg[0] < 0, "attack takes a moment");
+	const rel = V.compGain(new Float32Array(400).map((x, i) => i < 200 ? -6 : -40), { thr: -24, ratio: 3, knee: 0, att: 0.01, rel: 0.2 }, hop);
+	ok(rel[205] < -6 && rel[399] > -0.1, "release brings the gain back slowly");
+	// leveler: 5 s quiet speech (-35), 3 s silence, 5 s loud (-12): both end near the target, the silence is not boosted further
+	const rms = new Float32Array(1300).map((x, i) => i < 500 ? -35 : i < 800 ? -90 : -12), o = Object.assign({}, V.AFX_DEFAULT.level, { target: -20, maxUp: 20, maxDown: 20 });
+	const lg = V.levelGain(rms, o, hop);
+	near(rms[250] + lg[250], -20, 0.3, "quiet part raised to the target"); near(rms[1050] + lg[1050], -20, 0.3, "loud part lowered to the target");
+	ok(Math.abs(lg[650] - lg[490]) < 4, "gain held through the silence"); ok(lg.every(g => g <= 20 && g >= -20), "within the limits");
+	const lim = V.levelGain(new Float32Array(200).fill(-60), Object.assign({}, o, { gate: -70, maxUp: 6 }), hop); near(lim[100], 6, 1e-6, "max boost caps it");
+	const lev = V.levels([new Float32Array(4800).map((x, i) => i < 2400 ? 0.5 : 0.05)], 48000, 0.01, 2);
+	eq([lev.rms.length, lev.start], [10, 2], "10 ms blocks"); near(lev.rms[0], V.db(0.5), 1e-4, "RMS of a constant"); near(lev.peak[9], V.db(0.05), 1e-4, "peak");
+	const env = V.fxEnvelope({ start: 1, hop: hop, rms: rms, peak: rms }, V.afxOf({ afx: { level: { on: true, target: -20, maxUp: 20, maxDown: 20 } } }));
+	near(V.db(V.envAt(env, 1 + 2.5)), lg[250], 0.05, "envelope = the leveler alone"); near(V.envAt(env, -5), env.g[0], 0, "before the start: first value");
+	const env1 = V.fxEnvelope({ start: 0, hop: hop, rms: rms, peak: rms }, V.afxOf({})); ok(env1.g.every(g => g === 1), "no effect on: unity");
+	const both = V.fxEnvelope({ start: 0, hop: hop, rms: rms, peak: rms }, V.afxOf({ afx: { level: { on: true, maxUp: 20, maxDown: 20 }, comp: { on: true, thr: -30, ratio: 2, knee: 0, makeup: 0 } } }));
+	near(rms[250] + V.db(both.g[250]), -25, 0.4, "leveler to -20 then 2:1 above -30 -> -25");
+	const pre = V.activePrefix({ rms: rms }, -45);
+	near(V.presenceAt({ start: 0, hop: hop, rms: rms }, pre, 2, 0.25), 1, 0, "voice present"); near(V.presenceAt({ start: 0, hop: hop, rms: rms }, pre, 6.5, 0.25), 0, 0, "silence");
+	near(V.presenceAt({ start: 0, hop: hop, rms: rms }, pre, 5, 0.25), 1, 0, "edge ramps (half the window active = full)");
+	ok(V.afxOn({ afx: { duck: { on: true } } }) && !V.afxOn({ afx: { comp: { on: false } } }) && !V.afxOn({}), "afxOn");
+	const p = proj([clip({ id: "a", type: "audio", track: "a1", vol: 0.5, out: 4 })]), g = V.gainCurve(p, p.clips[0], 1, 10, 48000, () => 2); near(g[5], 1, 1e-9, "extra gain multiplies the curve");
+}
+/* waveform + canvas size */
+{
+	eq([V.encDb(1), V.encDb(0), V.encDb(1e-6)], [255, 0, 0], "byte levels"); near(V.decDb(V.encDb(0.5)), V.db(0.5), 0.2, "round trip");
+	const w = V.wave([new Float32Array(960).map((x, i) => i < 480 ? (i % 2 ? 0.5 : -0.5) : 0)], 48000, 100);
+	eq(w.pk.length, 2, "two bins"); near(V.decDb(w.pk[0]), V.db(0.5), 0.2, "peak of bin 0"); near(V.decDb(w.rms[0]), V.db(0.5), 0.2, "RMS of a square wave"); ok(w.pk[1] === 0, "silent bin");
+	eq([V.waveY(0), V.waveY(-27), V.waveY(-80), V.waveY(-6, "lin") > 0.49 && V.waveY(-6, "lin") < 0.51], [1, 0.5, 0, true], "wave heights");
+	eq([V.presetOf(1080, 1920), V.presetOf(1000, 700)], ["1080x1920", "custom"], "preset of a size");
+	eq([V.parseSize("1281 x 721"), V.parseSize("1280×720"), V.parseSize("abc"), V.parseSize("9000x100")], [{ w: 1282, h: 722 }, { w: 1280, h: 720 }, null, null], "custom size text");
+}
 console.log(pass + " passed, " + fail + " failed");
 process.exit(fail ? 1 : 0);

@@ -99,10 +99,10 @@
 				var fps = (m && m.fps) || 30;
 				if (Math.abs(e.el.currentTime - src) > 0.5 / fps && !e.el.seeking) e.el.currentTime = src;
 			}
-			if (e.gain && ac) { var g = playing && active && !(c.clean && c.clean.key && cleanOn(c)) ? V.gainAt(p, c, t) : 0; e.gain.gain.setTargetAtTime(g, ac.currentTime, 0.012); }
+			if (e.gain && ac) { var g = playing && active && !(c.clean && c.clean.key && cleanOn(c)) ? V.gainAt(p, c, t) * VE.fxGainAt(c, t + 0.015) : 0; e.gain.gain.setTargetAtTime(g, ac.currentTime, 0.012); }
 		});
 		Object.keys(els).forEach(function (k) { if (!want[k] && now - els[k].used > 4000) release(k); else if (!want[k]) { els[k].el.pause(); if (els[k].gain && ac) els[k].gain.gain.setTargetAtTime(0, ac.currentTime, 0.01); } });
-		cleanNodes.forEach(function (n) { var c = V.clip(p, n.id); if (!c || !ac) return; n.gain.gain.setTargetAtTime(V.gainAt(p, c, t), ac.currentTime, 0.012); });
+		cleanNodes.forEach(function (n) { var c = V.clip(p, n.id); if (!c || !ac) return; n.gain.gain.setTargetAtTime(V.gainAt(p, c, t) * VE.fxGainAt(c, t + 0.015), ac.currentTime, 0.012); });
 	}
 	P.sync = sync;
 	function cleanOn(c) { return !!cleanBufs[c.clean.key]; }

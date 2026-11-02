@@ -21,22 +21,39 @@
 				<button type="button" class="vd-btn vd-ico" id="vd-redo" title="Redo (Ctrl+Shift+Z)" aria-label="Redo">&#8631;</button>
 				<input type="text" class="vd-name" id="vd-name" aria-label="Project name" maxlength="120">
 				<span class="vd-saved" id="vd-saved" aria-live="polite"></span>
+				<label class="vd-cvs" title="Canvas size: the picture size of the video you make"><span>Canvas</span><select id="vd-cvsize" aria-label="Canvas size"></select></label>
 				<span class="vd-sp"></span>
+				<button type="button" class="vd-btn vd-ico" id="vd-tgl-left" aria-pressed="true" title="Show or hide the library on the left (media, titles, effects)" aria-label="Library panel"><svg viewBox="0 0 16 16" width="16" height="16" aria-hidden="true"><rect x="1.5" y="2.5" width="13" height="11" rx="1.5" fill="none" stroke="currentColor"/><rect x="2" y="3" width="4" height="10" fill="currentColor"/></svg></button>
+				<button type="button" class="vd-btn vd-ico" id="vd-tgl-right" aria-pressed="true" title="Show or hide the properties on the right" aria-label="Properties panel"><svg viewBox="0 0 16 16" width="16" height="16" aria-hidden="true"><rect x="1.5" y="2.5" width="13" height="11" rx="1.5" fill="none" stroke="currentColor"/><rect x="10" y="3" width="4" height="10" fill="currentColor"/></svg></button>
 				<button type="button" class="vd-btn" id="vd-help" aria-expanded="false" title="Keyboard shortcuts">Keys</button>
 				<button type="button" class="vd-btn" id="vd-win" aria-pressed="false" title="Fill the browser window (W)">&#10530; Fill window</button>
 				<button type="button" class="vd-btn vd-primary" id="vd-export">Export MP4</button>
 			</div>
 			<div class="vd-main">
-				<aside class="vd-bin" aria-label="Media">
-					<div class="vd-binhead"><b>Media</b><span class="vd-sp"></span><button type="button" class="vd-btn vd-sm" id="vd-import">+ Import</button></div>
-					<input type="search" class="vd-search" id="vd-binsearch" placeholder="Search media" aria-label="Search media">
-					<div class="vd-binlist" id="vd-binlist" role="listbox" aria-label="Media files" aria-multiselectable="true"></div>
-					<div class="vd-binfoot">
-						<button type="button" class="vd-btn vd-sm" id="vd-addsel" disabled title="Put the selected files one after another at the end of the timeline">Add selected in order</button>
-						<button type="button" class="vd-btn vd-sm" id="vd-addtitle">+ Title</button>
-					</div>
-					<p class="vd-hint" id="vd-binhint">Drop files here or anywhere in the editor. Drag them onto the timeline, or double-click to put one at the playhead. AVI, MKV, WMV and other formats are converted to MP4 first.</p>
+				<nav class="vd-rail" id="vd-rail" role="tablist" aria-label="Library" aria-orientation="vertical">
+					<button type="button" role="tab" data-cat="media" aria-selected="true"><i aria-hidden="true">&#127902;</i><span>Media</span></button>
+					<button type="button" role="tab" data-cat="titles" aria-selected="false"><i aria-hidden="true" class="vd-ri-t">T</i><span>Titles</span></button>
+					<button type="button" role="tab" data-cat="trans" aria-selected="false"><i aria-hidden="true">&#10697;</i><span>Transitions</span></button>
+					<button type="button" role="tab" data-cat="afx" aria-selected="false"><i aria-hidden="true">&#128266;</i><span>Audio effects</span></button>
+					<button type="button" role="tab" data-cat="vfx" aria-selected="false"><i aria-hidden="true">&#10024;</i><span>Visual effects</span></button>
+				</nav>
+				<aside class="vd-left" id="vd-left" aria-label="Library">
+					<section class="vd-pane vd-bin" data-pane="media" role="tabpanel" aria-label="Media">
+						<div class="vd-binhead"><b>Media</b><span class="vd-sp"></span><button type="button" class="vd-btn vd-sm" id="vd-import">+ Import</button></div>
+						<input type="search" class="vd-search" id="vd-binsearch" placeholder="Search media" aria-label="Search media">
+						<div class="vd-binlist" id="vd-binlist" role="listbox" aria-label="Media files" aria-multiselectable="true"></div>
+						<div class="vd-binfoot">
+							<button type="button" class="vd-btn vd-sm" id="vd-addsel" disabled title="Put the selected files one after another at the end of the timeline">Add selected in order</button>
+							<button type="button" class="vd-btn vd-sm" id="vd-addtitle">+ Title</button>
+						</div>
+						<p class="vd-hint" id="vd-binhint">Drop files here or anywhere in the editor. Drag them onto the timeline, or double-click to put one at the playhead. AVI, MKV, WMV and other formats are converted to MP4 first.</p>
+					</section>
+					<section class="vd-pane" data-pane="titles" role="tabpanel" aria-label="Titles" hidden><div class="vd-panehead"><b>Titles &amp; annotations</b></div><p class="vd-hint">Click to put one at the playhead, or drag it onto the timeline.</p><div class="vd-cards" data-cards="titles"></div></section>
+					<section class="vd-pane" data-pane="trans" role="tabpanel" aria-label="Transitions" hidden><div class="vd-panehead"><b>Transitions</b><span class="vd-sp"></span><label class="vd-chk">Length <select id="vd-trdur" aria-label="Transition length"><option value="0.5">0.5 s</option><option value="1" selected>1 s</option><option value="2">2 s</option><option value="3">3 s</option></select></label></div><p class="vd-hint">Click to use it on the selected clips, or drag it onto a clip.</p><div class="vd-cards" data-cards="trans"></div></section>
+					<section class="vd-pane" data-pane="afx" role="tabpanel" aria-label="Audio effects" hidden><div class="vd-panehead"><b>Audio effects</b></div><p class="vd-hint">Click to use it on the selected clips, or drag it onto a clip. Nothing is changed in your files: the effects are worked out as you play and export, and you can change or remove them in the properties.</p><div class="vd-cards" data-cards="afx"></div></section>
+					<section class="vd-pane" data-pane="vfx" role="tabpanel" aria-label="Visual effects" hidden><div class="vd-panehead"><b>Visual effects</b></div><p class="vd-hint">Click to use it on the selected clips, or drag it onto a clip.</p><div class="vd-cards" data-cards="vfx"></div></section>
 				</aside>
+				<div class="vd-vgrip" id="vd-lgrip" role="separator" aria-orientation="vertical" aria-label="Library width" tabindex="0" title="Drag to change the width (double-click: normal)"></div>
 				<div class="vd-center">
 					<div class="vd-stagewrap" id="vd-stagewrap"><canvas id="vd-canvas" width="640" height="360" aria-label="Preview"></canvas></div>
 					<div class="vd-transport" role="toolbar" aria-label="Playback">
@@ -49,11 +66,14 @@
 						<span class="vd-time" id="vd-time" aria-live="off">0:00;00 / 0:00;00</span>
 						<span class="vd-sp"></span>
 						<button type="button" class="vd-btn vd-sm" id="vd-snap" title="Save this frame as a PNG picture">PNG</button>
-						<button type="button" class="vd-btn vd-sm" id="vd-fs" title="Preview full screen">&#9974; Full screen</button>
+						<button type="button" class="vd-btn vd-sm" id="vd-pvwin" aria-pressed="false" title="Play the preview filling the browser window (F; Esc leaves)">&#10530; Fill window</button>
+						<button type="button" class="vd-btn vd-sm" id="vd-fs" title="Preview full screen (Shift+F)">&#9974; Full screen</button>
 					</div>
 				</div>
+				<div class="vd-vgrip" id="vd-rgrip" role="separator" aria-orientation="vertical" aria-label="Properties width" tabindex="0" title="Drag to change the width (double-click: normal)"></div>
 				<aside class="vd-insp" id="vd-insp" aria-label="Properties"></aside>
 			</div>
+			<div class="vd-hgrip" id="vd-tlgrip" role="separator" aria-orientation="horizontal" aria-label="Timeline height" tabindex="0" title="Drag to make the preview or the timeline bigger (double-click: normal)"><i></i></div>
 			<div class="vd-tools" role="toolbar" aria-label="Timeline tools">
 				<button type="button" class="vd-btn vd-sm" id="vd-split" title="Split at the playhead (S)">&#9986; Split</button>
 				<button type="button" class="vd-btn vd-sm" id="vd-del" title="Delete (Delete)">Delete</button>
@@ -66,6 +86,8 @@
 				<span class="vd-div"></span>
 				<button type="button" class="vd-btn vd-sm" id="vd-addv" title="Add a video track">+ Video track</button>
 				<button type="button" class="vd-btn vd-sm" id="vd-adda" title="Add an audio track">+ Audio track</button>
+				<button type="button" class="vd-btn vd-sm" id="vd-sep" title="Put the sound of the selected video clips on its own audio track, linked to the video (Ctrl+Shift+A)">Separate video and audio</button>
+				<button type="button" class="vd-btn vd-sm" id="vd-wavemode" title="Waveform scale: dB shows quiet parts too, linear shows the spikes in proportion">Waveform: dB</button>
 				<span class="vd-sp"></span>
 				<label class="vd-chk" title="Clips snap to the playhead, marks and each other (hold Alt to drag freely)"><input type="checkbox" id="vd-snapchk" checked> Snap</label>
 				<button type="button" class="vd-btn vd-ico vd-sm" id="vd-zout" title="Zoom out (-)" aria-label="Zoom out">&minus;</button>
@@ -93,7 +115,7 @@
 					<dt>S</dt><dd>Split at the playhead (the selected clips, or every clip there)</dd><dt>Delete</dt><dd>Delete; Shift+Delete closes the gap</dd>
 					<dt>I / O</dt><dd>Mark in / out; then &ldquo;Cut out marked&rdquo;, or export only that part</dd><dt>T</dt><dd>Add a title</dd>
 					<dt>Ctrl+Z / Ctrl+Shift+Z</dt><dd>Undo / redo</dd><dt>Ctrl+D</dt><dd>Duplicate</dd><dt>+ / &minus;</dt><dd>Zoom the timeline (Ctrl + wheel too)</dd>
-					<dt>W</dt><dd>Fill the browser window (Esc leaves)</dd><dt>Ctrl+S / Ctrl+E</dt><dd>Save project file / export</dd><dt>Alt + drag</dt><dd>Move without snapping</dd>
+					<dt>W</dt><dd>The whole editor fills the browser window (Esc leaves)</dd><dt>F / Shift+F</dt><dd>Preview fills the window / full screen</dd><dt>Ctrl+Shift+A</dt><dd>Separate video and audio</dd><dt>Alt + drag a linked clip</dt><dd>Move it without its partner</dd><dt>Ctrl+S / Ctrl+E</dt><dd>Save project file / export</dd><dt>Alt + drag</dt><dd>Move without snapping</dd>
 				</dl>
 			</div>
 			<div class="vd-modal" id="vd-modal" hidden><div class="vd-dlg" id="vd-dlg" role="dialog" aria-modal="true"></div></div>
@@ -108,9 +130,12 @@
 				<dt>What it does</dt><dd>Put videos, sound and pictures on a timeline with as many video and audio tracks as you need, trim the ends, split at the playhead, delete parts and close the gap, join many clips in order, add titles and picture overlays, cross-fade between clips, fade in and out, change the speed, set the volume of each clip, remove background noise and even out the loudness. Then export an MP4 (H.264 and AAC) that plays everywhere, from 480p to 4K.</dd>
 				<dt>Made to replace the everyday parts of Camtasia</dt><dd>Screen recordings and lessons usually need the same few steps: cut out the mistakes, join the parts, put a title on top, make the voice clear and loud enough, export. Those are all here, with the familiar keys (S to split, I and O to mark, J K L to play). AVI, MKV, WMV and other files are converted to MP4 when you import them; an AVI screen recording with H.264 is only re-packed, so it takes seconds.</dd>
 				<dt>Clean up the sound</dt><dd>Select a clip and press <b>Remove noise</b> to take out fan hum, hiss and room noise (AI noise removal running in your browser), and <b>Normalize loudness</b> to bring each clip to the same loudness (-16 LUFS for videos and podcasts, -14 for YouTube) without clipping.</dd>
+				<dt>Laid out like Camtasia</dt><dd>The library on the left has Media, Titles, Transitions, Audio effects and Visual effects: click a card to use it on the selected clips, or drag it onto a clip. The properties of the selected clip are on the right. Hide either panel or drag its edge to make it wider, and drag the bar above the timeline to give the preview or the timeline more room. The editor remembers the sizes.</dd>
+				<dt>Magnetic tracks and separated sound</dt><dd>Press the magnet on a track and its clips close up to the left with no gaps: delete or move a clip and the rest slide along. <b>Separate video and audio</b> puts a clip's sound on its own audio track, linked to the video, so you can see a tall waveform (peaks and average level, on a dB scale so quiet parts show too) and work on the sound alone. Drag the bottom edge of any track to make it taller.</dd>
+				<dt>Audio effects that even out the sound</dt><dd>The <b>Leveler</b> brings quiet and loud parts to the same loudness over a few seconds, the <b>Compressor</b> tames the loudest moments, and <b>Ducking</b> lowers music while a voice speaks. They never change your files: they are worked out from the sound as you play and export, the waveform shows the result over the original, and you can change or remove them any time.</dd>
 				<dt>Your work is saved as you go</dt><dd>The project and its media are kept in this browser, so closing the tab loses nothing. <b>Save project file</b> writes a small .mesvideo file you can open again later; the media files are matched by name, so keep them.</dd>
 				<dt>How the export works</dt><dd>Every frame is decoded with your computer's video decoder (WebCodecs), drawn with the titles and overlays, and encoded again with its H.264 encoder, usually on the graphics chip; the sound is mixed and encoded to AAC. In Chrome, Edge and Brave (with the File System Access API on) the MP4 can be written straight to disk, so even long exports do not fill the memory.</dd>
-				<dt>Limits of this first version</dt><dd>No keyframe animation, no green screen, no cursor effects or zoom-and-pan yet, and the speed change also changes the pitch of the sound. Firefox and Safari cannot export (no H.264 encoder there yet); use Chrome, Edge or Brave on a computer.</dd>
+				<dt>Limits of this first version</dt><dd>No keyframe animation, no green screen, no cursor effects or zoom-and-pan yet, and the speed change also changes the pitch of the sound. The compressor works on 10 ms steps, so it evens out speech rather than catching every single sharp peak (the export's limiter stops clipping). Firefox and Safari cannot export (no H.264 encoder there yet); use Chrome, Edge or Brave on a computer.</dd>
 			</dl>
 			<h2>Is it private?</h2>
 			<p>Yes. Your videos, sound and pictures stay on your computer; nothing is uploaded to mes.fm or anywhere else. The only downloads are the open-source libraries the editor uses (mp4box.js, mp4-muxer, and ffmpeg.wasm when a file needs converting) and the noise-removal model the first time you use it.</p>

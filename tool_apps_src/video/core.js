@@ -18,6 +18,7 @@
 	/* ---------- edits + undo ---------- */
 	// every change to the project goes through commit(): it records an undo step, saves (debounced) and redraws
 	VE.commit = function (label) {
+		V.applyMagnets(VE.P);
 		VE.hist.push(JSON.stringify(VE.P)); VE.dirty = true; VE.lastLabel = label || "";
 		VE.save(); VE.emit("change", label);
 	};
@@ -42,7 +43,7 @@
 	VE.idbDel = function (store, k) { return tx(store, "readwrite", function (s) { s.delete(k); }); };
 	function binMeta() {
 		return VE.bin.filter(function (m) { return m.state === "ready" || m.state === "working"; }).map(function (m) {
-			return { id: m.id, name: m.name, size: m.size, kind: m.kind, dur: m.dur, w: m.w, h: m.h, fps: m.fps, rot: m.rot || 0, hasAudio: !!m.hasAudio, converted: !!m.converted, note: m.note || "", peaks: m.peaks || null, thumbTimes: m.thumbTimes || null, thumbW: m.thumbW || 0, thumbH: m.thumbH || 0, origName: m.origName || "" };
+			return { id: m.id, name: m.name, size: m.size, kind: m.kind, dur: m.dur, w: m.w, h: m.h, fps: m.fps, rot: m.rot || 0, hasAudio: !!m.hasAudio, converted: !!m.converted, note: m.note || "", peaks: m.peaks || null, wave: m.wave || null, thumbTimes: m.thumbTimes || null, thumbW: m.thumbW || 0, thumbH: m.thumbH || 0, origName: m.origName || "" };
 		});
 	}
 	var saveTimer = null;
@@ -78,7 +79,7 @@
 				status(m, "Decoding the sound...");
 				var buf = await m.file.arrayBuffer(), ctx = new OfflineAudioContext(2, 1, 48000), ab = await ctx.decodeAudioData(buf);
 				m.pcm = { start: 0, rate: ab.sampleRate, ch: [] }; for (var c = 0; c < Math.min(2, ab.numberOfChannels); c++) m.pcm.ch.push(ab.getChannelData(c));
-				m.dur = ab.duration; m.hasAudio = true; m.peaks = V.peaks(m.pcm.ch, m.pcm.rate, 50);
+				m.dur = ab.duration; m.hasAudio = true; m.peaks = V.peaks(m.pcm.ch, m.pcm.rate, 50); m.wave = V.wave(m.pcm.ch, m.pcm.rate, 50);
 			} else {
 				await VE.loadScript(VE.LIB.box);
 				var info = /\.(mp4|m4v|mov|3gp)$/i.test(m.file.name) || /mp4|quicktime/.test(m.file.type) || m.converted ? await VE.analyzeMp4(m.file).catch(function () { return null; }) : null;
@@ -98,7 +99,7 @@
 			VE.emit("binItem", m); VE.emit("mediaReady", m); VE.save();
 			if (m.kind === "video" && !m.thumbTimes) VE.makeThumbs(m).catch(function () { /* thumbnails are optional */ });
 			else if (m.kind === "video" && m.thumbTimes) VE.loadThumbs(m);
-			if (m.kind === "video" && m.hasAudio && !m.peaks) VE.makePeaks(m).catch(function () { /* optional */ });
+			if (m.kind === "video" && m.hasAudio && (!m.peaks || !m.wave)) VE.makePeaks(m).catch(function () { /* optional */ });
 		} catch (e) {
 			m.state = "error"; m.status = (e && e.message) || "This file could not be used."; if (window.console) console.error("[video editor]", e);
 			VE.emit("binItem", m);
@@ -255,10 +256,11 @@
 		return out;
 	};
 	VE.makePeaks = async function (m) {
-		var parts = [], total = 0;
-		for (var w = 0; w * WIN < m.dur; w++) { var p = await win(m, w); var pk = V.peaks(p.ch, p.rate, 50); parts.push(pk); total += pk.length; }
-		var out = new Uint8Array(total), o = 0; parts.forEach(function (p) { out.set(p, o); o += p.length; });
-		m.peaks = out; VE.save(); VE.emit("thumbs", m);
+		var parts = [], wp = [], total = 0;
+		for (var w = 0; w * WIN < m.dur; w++) { var p = await win(m, w); var pk = V.peaks(p.ch, p.rate, 50); parts.push(pk); wp.push(V.wave(p.ch, p.rate, 50)); total += pk.length; }
+		var out = new Uint8Array(total), wpk = new Uint8Array(total), wrm = new Uint8Array(total), o = 0;
+		parts.forEach(function (p, k) { out.set(p, o); wpk.set(wp[k].pk, o); wrm.set(wp[k].rms, o); o += p.length; });
+		m.peaks = out; m.wave = { pk: wpk, rms: wrm }; VE.save(); VE.emit("thumbs", m);
 	};
 
 	/* ---------- noise-removed sound ---------- */
@@ -274,6 +276,70 @@
 		if (c.clean && c.clean.key) { var cp = await VE.cleanPcm(c.clean.key); if (cp && s0 >= cp.start - 0.01 && s1 <= cp.start + cp.ch[0].length / cp.rate + 0.35) return cp; }   // a little past the end = silence (the decoded sound can be a few frames shorter than the clip)
 		return VE.pcm(m, s0, s1);
 	};
+
+
+	/* ---------- audio effects: sound levels (10 ms blocks) per media / noise-removed version, and the gain envelopes made from them ---------- */
+	VE.levelCache = {}; var levelJobs = {}, envCache = {}, preCache = {};
+	function lkey(c) { return c.media + "|" + (c.clean && c.clean.key ? c.clean.key : "o"); }
+	VE.levelsFor = function (c) { return VE.levelCache[lkey(c)] || null; };
+	// work out (once, then from IndexedDB) the levels of the sound a clip plays; resolves to them (null when there is no sound)
+	VE.ensureLevels = function (c, onProgress) {
+		var k = lkey(c); if (VE.levelCache[k]) return Promise.resolve(VE.levelCache[k]);
+		if (levelJobs[k]) return levelJobs[k];
+		var job = levelJobs[k] = (async function () {
+			var saved = await VE.idbGet("blobs", "l:" + k).catch(function () { return null; });
+			var lev = null;
+			if (saved && saved.rms) lev = { start: saved.start, hop: saved.hop, rms: new Float32Array(saved.rms), peak: new Float32Array(saved.peak) };
+			else {
+				var m = VE.media(c.media); if (!m || !m.hasAudio) return null;
+				var meter = new V.LevelMeter(48000, 0.01), start = 0, cp = c.clean && c.clean.key ? await VE.cleanPcm(c.clean.key) : null;
+				if (cp) {
+					start = cp.start; var n = cp.ch[0].length, step = 480000;
+					for (var i = 0; i < n; i += step) { meter.push(cp.ch.map(function (x) { return x.subarray(i, Math.min(n, i + step)); })); if (onProgress) onProgress(i / n); await new Promise(function (r) { setTimeout(r, 0); }); }
+				} else {
+					for (var s = 0; s < m.dur; s += 10) { meter.push(await VE.pcmRange(m, s, Math.min(m.dur, s + 10))); if (onProgress) onProgress(s / m.dur); }
+				}
+				lev = meter.result(start);
+				VE.idbPut("blobs", "l:" + k, { start: lev.start, hop: lev.hop, rms: lev.rms.buffer, peak: lev.peak.buffer }).catch(function () { /* kept in memory only */ });
+			}
+			VE.levelCache[k] = lev; VE.emit("levels", k);
+			return lev;
+		})();
+		job.then(function () { delete levelJobs[k]; }, function () { delete levelJobs[k]; });
+		return job;
+	};
+	// make sure every clip that needs levels has them (clips with effects on, and the clips a ducked clip listens to)
+	VE.ensureAllFx = async function (onProgress) {
+		var p = VE.P, need = [], duck = p.clips.some(function (c) { return VE.hasSound(c) && c.afx && c.afx.duck && c.afx.duck.on; });
+		p.clips.forEach(function (c) { if (VE.hasSound(c) && (V.afxOn(c) || duck)) need.push(c); });
+		for (var j = 0; j < need.length; j++) { try { await VE.ensureLevels(need[j], onProgress ? function (x) { onProgress((j + x) / need.length); } : null); } catch (e) { if (window.console) console.warn("[video editor] levels", e); } }
+	};
+	VE.fxBusy = function () { return Object.keys(levelJobs).length > 0; };
+	VE.fxEnv = function (c) {
+		var lev = VE.levelsFor(c); if (!lev) return null;
+		var A = V.afxOf(c), key = lkey(c) + JSON.stringify([A.level.on ? A.level : 0, A.comp.on ? A.comp : 0]);
+		if (envCache[key]) return envCache[key];
+		var ks = Object.keys(envCache); if (ks.length > 60) envCache = {};
+		return (envCache[key] = V.fxEnvelope(lev, A));
+	};
+	function prefixFor(o, lev, gate) { var k = lkey(o) + "@" + gate; return preCache[k] || (preCache[k] = V.activePrefix(lev, gate)); }
+	// the effects' gain for clip c at timeline time t (1 when it has none, or its levels are not ready yet)
+	VE.fxGainAt = function (c, t) {
+		if (!V.afxOn(c)) return 1;
+		var A = V.afxOf(c), g = 1, p = VE.P;
+		if (A.level.on || A.comp.on) { var env = VE.fxEnv(c); if (env) g *= V.envAt(env, V.srcAt(c, t)); }
+		if (A.duck.on) {
+			var pres = 0;
+			for (var j = 0; j < p.clips.length; j++) {
+				var o = p.clips[j]; if (o === c || !VE.hasSound(o) || (o.afx && o.afx.duck && o.afx.duck.on) || !V.active(o, t)) continue;
+				var lv = VE.levelsFor(o); if (!lv || V.gainAt(p, o, t) <= 0) continue;
+				pres = Math.max(pres, V.presenceAt(lv, prefixFor(o, lv, A.duck.gate), V.srcAt(o, t), 0.25));
+			}
+			if (pres > 0) g *= V.fromDb(-A.duck.amt * pres);
+		}
+		return g;
+	};
+	VE.fxFn = function (c) { return V.afxOn(c) ? function (t) { return VE.fxGainAt(c, t); } : null; };
 
 	/* ---------- the compositor ---------- */
 	// draw the frame at t onto ctx (W x H). src(clip) -> { img, w, h, rot } for video / image clips (rot only for raw decoded frames)
@@ -331,7 +397,7 @@
 		return V.place(m.w, m.h, c, W, H);
 	};
 	VE.mediaDur = function (c) { if (c.type === "text") return Infinity; var m = VE.media(c.media); return !m ? Infinity : m.kind === "image" ? Infinity : m.dur; };
-	VE.hasSound = function (c) { if (c.type !== "video" && c.type !== "audio") return false; var m = VE.media(c.media); return !!(m && m.hasAudio); };
+	VE.hasSound = function (c) { if ((c.type !== "video" && c.type !== "audio") || c.noAudio) return false; var m = VE.media(c.media); return !!(m && m.hasAudio); };
 
 	/* ---------- restore the last session ---------- */
 	VE.restore = async function () {
@@ -360,7 +426,7 @@
 	};
 	VE.clearAll = async function () {
 		VE.bin.forEach(function (m) { if (m.url) try { URL.revokeObjectURL(m.url); } catch (e) { /* ignore */ } });
-		VE.bin = []; VE.P = V.newProject(); VE.sel = []; VE.t = 0; VE.hist = new V.History(200); VE.hist.push(JSON.stringify(VE.P)); VE.cleanCache = {};
+		VE.bin = []; VE.P = V.newProject(); VE.sel = []; VE.t = 0; VE.hist = new V.History(200); VE.hist.push(JSON.stringify(VE.P)); VE.cleanCache = {}; VE.levelCache = {}; envCache = {}; preCache = {};
 		try { await tx("blobs", "readwrite", function (s) { s.clear(); }); await tx("kv", "readwrite", function (s) { s.clear(); }); } catch (e) { /* ignore */ }
 		VE.emit("bin"); VE.emit("change", "new");
 	};
