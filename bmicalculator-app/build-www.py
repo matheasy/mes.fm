@@ -24,7 +24,7 @@ REPO = APP.parent
 SRC = REPO / "mes.fm" / "bmicalculator"
 WWW = APP / "www"
 EXT = "https://mes.fm"
-VERSION = "1.0"
+VERSION = "1.1"
 
 
 def balanced(fragment: str) -> str:
@@ -39,19 +39,30 @@ def balanced(fragment: str) -> str:
     return fragment
 
 
-def extract(html: str):
+# Since 1.1 (2026-11-01) the app also carries the 11 translated BMI pages (one www/<code>.html each, same script: it reads the
+# language from <div id="bm" data-lang>) and the Kids & Teens calculator (www/kids.html, mes.fm/bmi-calculator-kids).
+LANGS = {"es": "calculadora-imc", "pt-BR": "calculadora-imc-pt", "id": "kalkulator-bmi", "fr": "calcul-imc", "de": "bmi-rechner",
+         "it": "calcolo-bmi", "tr": "vucut-kitle-indeksi", "vi": "tinh-chi-so-bmi", "pl": "kalkulator-bmi-pl",
+         "ar": "hasibat-kutlat-al-jism", "hi": "bmi-calculator-hindi"}
+LOCAL = {"/bmicalculator": "index.html", "/bmi-calculator-kids": "kids.html"}
+LOCAL.update({"/" + slug: code + ".html" for code, slug in LANGS.items()})
+
+
+def extract(html: str, rid: str = "bm"):
     head = html.split("<body", 1)[0]
     styles = re.findall(r"<style>(.*?)</style>", head, flags=re.S)
     # first two are the shell reset + the page's own CSS (tool shell, _shared.css, app.css, derived dark block);
     # later ones are the web sidebar's (MES-ASIDE-HEAD)
     css = "\n".join(styles[:2])
-    start = html.index('<div class="tu" id="bm">')
+    start = re.search(r'<div class="tu[^"]*" id="%s"' % rid, html).start()
     end = html.index("<!-- PC (Responsive/Rectangle)", start)
     tool = balanced(html[start:end].rstrip())
     return css, tool
 
 
 def rewrite_links(tool: str) -> str:
+    # the language menu and the Kids & Teens link stay inside the app
+    tool = re.sub(r'href="(/[^"?#]*)"', lambda m: 'href="%s"' % LOCAL[m.group(1)] if m.group(1) in LOCAL else m.group(0), tool)
     # site-relative links -> the real site, opened in the system browser
     tool = re.sub(r'href="/([^"]*)"', r'href="%s/\1" target="_blank" rel="noopener"' % EXT, tool)
     tool = re.sub(r"href='/([^']*)'", r'href="%s/\1" target="_blank" rel="noopener"' % EXT, tool)
@@ -61,7 +72,17 @@ def rewrite_links(tool: str) -> str:
     return tool
 
 
+TAG_EN = "Body mass index, healthy weight range and progress. Free, private, works offline."
+
 APP_CSS = """
+/* Adults | Kids & Teens switch (1.1) */
+.app-tabs{display:flex;gap:.4em;margin:0 0 1em;padding:.3em;background:#f6edf4;border-radius:999px;}
+.app-tabs a{flex:1;text-align:center;padding:.55em .6em;border-radius:999px;font-weight:700;color:#8a3d79;text-decoration:none;font-size:.95em;}
+.app-tabs a[aria-current]{background:#b3529d;color:#fff;}
+body.dark-mode .app-tabs{background:#2a2230;}
+body.dark-mode .app-tabs a{color:#e7a5d7;}
+body.dark-mode .app-tabs a[aria-current]{background:#8a3d79;color:#fff;}
+:where(body.dark-mode #kb) :is(div,span,b,strong,p,li,small,label,td,th,output,h2,h3,dt,dd){color:#e6e6e6;}
 html,body{margin:0;padding:0;background:#fff;overscroll-behavior-y:none;}
 body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Helvetica,Arial,sans-serif;color:#222;
   -webkit-text-size-adjust:100%;padding-left:env(safe-area-inset-left);padding-right:env(safe-area-inset-right);}
@@ -140,6 +161,8 @@ BURGER = '<svg viewBox="0 0 24 24" fill="none" stroke-width="2.2" stroke-linecap
 
 CONTROLS_JS = """
 (function(){
+  try{ sessionStorage.setItem("mes-bmi-app:started","1"); }catch(e){}
+  [].slice.call(document.querySelectorAll(".bm-lang a")).forEach(function(a){ a.addEventListener("click",function(){ try{ localStorage.setItem("mes-bmi-app:lang",a.getAttribute("href")); }catch(e){} }); });
   var b=document.body, KS="mes-bmi-app:textscale", KT="mes-bmi-app:theme", KH="mes-bmi-app:cbarhide";
   var steps=[0.85,1,1.15,1.3,1.5,1.75], i=1;
   try{ var v=parseInt(localStorage.getItem(KS),10); if(v>=0&&v<steps.length) i=v; }catch(e){}
@@ -170,14 +193,14 @@ CONTROLS_JS = """
 """
 
 
-def page(css: str, tool: str) -> str:
+def page(css: str, tool: str, lang="en", name="BMI Calculator", tag=TAG_EN, tabs="", scripts='<script src="js/bmicalculator.js"></script>', headjs="") -> str:
     return """<!DOCTYPE html>
-<html lang="en">
+<html lang="%(lang)s">
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <meta name="color-scheme" content="light dark">
-<title>BMI Calculator</title>
+<title>%(name)s</title>%(headjs)s
 <style>%(css)s</style>
 <style>%(app_css)s</style>
 </head>
@@ -185,12 +208,12 @@ def page(css: str, tool: str) -> str:
 <div id="status-cover"></div>
 <header id="app-bar" role="banner">
   <img src="img/logo.png" alt="" width="64" height="64">
-  <div class="t"><div class="name">BMI Calculator</div><div class="tag">Body mass index, healthy weight range and progress. Free, private, works offline.</div></div>
+  <div class="t"><div class="name">%(name)s</div><div class="tag">%(tag)s</div></div>
   <button id="menu-btn" class="hb js-menu" type="button" aria-label="Menu">%(burger)s</button>
 </header>
 <div id="cbar" role="toolbar" aria-label="Quick controls">
   <img src="img/logo.png" alt="" width="28" height="28">
-  <div class="cn">BMI Calculator</div>
+  <div class="cn">%(name)s</div>
   <button class="hb js-down" type="button" aria-label="Smaller text">A&minus;</button>
   <button class="hb js-up" type="button" aria-label="Larger text">A+</button>
   <button class="hb ic js-theme" type="button" aria-label="Switch between light and dark mode">%(theme_btn)s</button>
@@ -213,20 +236,44 @@ def page(css: str, tool: str) -> str:
   <a href="%(ext)s/contact" target="_blank" rel="noopener">Contact us</a>
 </nav>
 <main id="app-main">
-%(tool)s
+%(tabs)s%(tool)s
 </main>
 <div id="app-foot">
-  <p><strong>Not medical advice.</strong> BMI is a screening number, not a diagnosis: it does not measure body fat, muscle, age, sex or fitness. Talk to a doctor or dietitian before starting a diet or exercise plan, and before making any medical decision. Children and teens (2&ndash;19) are judged with BMI-for-age percentiles, not these cut-offs.</p>
+  <p><strong>Not medical advice.</strong> BMI is a screening number, not a diagnosis: it does not measure body fat, muscle, age, sex or fitness. Talk to a doctor or dietitian before starting a diet or exercise plan, and before making any medical decision. Children and teens (2&ndash;19) are judged with BMI-for-age percentiles, not these cut-offs: use the <a href="kids.html">Kids &amp; Teens</a> calculator.</p>
   <p><strong>How it is calculated.</strong> BMI = weight (kg) &divide; height (m)&sup2;. Categories follow the World Health Organization adult classification (underweight below 18.5, normal 18.5&ndash;24.9, overweight 25&ndash;29.9, obese 30 and over) or, if you choose it, the WHO Asia-Pacific cut-offs (overweight from 23, obese from 27.5). Healthy weight range = the weights that give a BMI of 18.5 to 24.9 at your height. Source: <a href="https://www.who.int/data/gho/data/themes/topics/topic-details/GHO/body-mass-index" target="_blank" rel="noopener">WHO Body mass index</a>; <a href="https://www.cdc.gov/bmi/adult-calculator/index.html" target="_blank" rel="noopener">CDC adult BMI</a>.</p>
   <p><strong>Your data stays on this device.</strong> Weight, height and saved measurements are stored only in the app on your phone. There are no accounts, no ads and no tracking, and nothing you enter is sent anywhere.</p>
   <p class="links"><a href="%(ext)s/privacy-policy" target="_blank" rel="noopener">Privacy Policy</a><a href="%(ext)s/contact" target="_blank" rel="noopener">Contact</a><a href="%(ext)s/bmicalculator" target="_blank" rel="noopener">Website</a></p>
   <p>Version %(version)s &middot; Math Easy Solutions &middot; mes.fm</p>
 </div>
-<script src="js/bmicalculator.js"></script>
+%(scripts)s
 <script>%(controls)s</script>
 </body>
 </html>
-""" % dict(css=css, app_css=APP_CSS, tool=tool, ext=EXT, version=VERSION, controls=CONTROLS_JS, burger=BURGER, theme_btn=THEME_BTN)
+""" % dict(css=css, app_css=APP_CSS, tool=tool, ext=EXT, version=VERSION, controls=CONTROLS_JS, burger=BURGER, theme_btn=THEME_BTN,
+                lang=lang, name=name, tag=tag, tabs=tabs, scripts=scripts, headjs=headjs)
+
+
+# cold start: reopen the language the person last picked in the language menu
+HEAD_REDIRECT = ('<script>try{var _l=localStorage.getItem("mes-bmi-app:lang");'
+                 'if(_l&&_l!=="index.html"&&/^[a-zA-Z-]+\.html$/.test(_l)&&!sessionStorage.getItem("mes-bmi-app:started"))location.replace(_l);}catch(e){}</script>')
+
+
+def tabs(cur: str) -> str:
+    a = lambda href, label, on: '<a href="%s"%s>%s</a>' % (href, ' aria-current="page"' if on else "", label)
+    return '<nav class="app-tabs" aria-label="Calculator">%s%s</nav>\n' % (
+        a("index.html", "Adults (20+)", cur == "adult"), a("kids.html", "Kids &amp; Teens (2&ndash;19)", cur == "kids"))
+
+
+def drop_print(tool: str, rid: str) -> str:
+    # window.print() does nothing inside the iOS / Android WebView, so a Print button would be a dead control (App Review 2.1)
+    tool, n = re.subn(r'\s*<button[^>]*(?:\b%s-print\b)[^>]*>[^<]*</button>' % rid, "", tool)
+    assert n == 1, "Print button not found in #%s: page markup changed" % rid
+    return tool
+
+
+def short_title(html: str) -> str:
+    h1 = re.search(r'<h1 class="page-title">([^<]*)', html).group(1).strip()
+    return re.sub(r"\s*\([^)]*\)\s*$", "", h1)
 
 
 def main() -> None:
@@ -237,12 +284,30 @@ def main() -> None:
     (WWW / "js").mkdir(parents=True)
     (WWW / "img").mkdir()
 
-    css, tool = extract((SRC / "index.html").read_text(encoding="utf-8"))
-    tool = rewrite_links(tool)
-    # window.print() does nothing inside the iOS / Android WebView, so a Print button would be a dead control (App Review 2.1)
-    tool, n_print = re.subn(r'\s*<button[^>]*\bbm-print\b[^>]*>Print</button>', "", tool)
-    assert n_print == 1, "Print button not found: page markup changed"
-    (WWW / "index.html").write_text(page(css, tool), encoding="utf-8")
+    pages = []
+    # adult calculator: English + 11 languages (same script, the block's data-lang picks the strings)
+    for code, folder in [("en", "bmicalculator")] + list(LANGS.items()):
+        html = (REPO / "mes.fm" / folder / "index.html").read_text(encoding="utf-8")
+        css, tool = extract(html)
+        tool = drop_print(rewrite_links(tool), "bm")
+        tool = tool.replace("stay in this browser", "stay on this device")
+        name = "BMI Calculator" if code == "en" else short_title(html)
+        fn = "index.html" if code == "en" else code + ".html"
+        out = page(css, tool, lang=code, name=name, tag=TAG_EN if code == "en" else "",
+                   tabs=tabs("adult") if code == "en" else "", headjs=HEAD_REDIRECT if code == "en" else "")
+        if code != "en":
+            out = out.replace('<div class="tag"></div>', "")
+        (WWW / fn).write_text(out, encoding="utf-8")
+        pages.append(fn)
+
+    # Kids & Teens (CDC BMI-for-age), English only
+    kh = (REPO / "mes.fm" / "bmi-calculator-kids" / "index.html").read_text(encoding="utf-8")
+    kcss, ktool = extract(kh, "kb")
+    ktool = drop_print(rewrite_links(ktool), "kb")
+    ktool = ktool.replace("stay in this browser", "stay on this device").replace("in this browser", "on this device")
+    (WWW / "kids.html").write_text(page(kcss, ktool, name="BMI for Kids &amp; Teens", tag="BMI-for-age percentile for ages 2 to 19 (CDC growth charts).",
+                                        tabs=tabs("kids"), scripts='<script src="js/bmi-calculator-kids.js"></script>'), encoding="utf-8")
+    pages.append("kids.html")
 
     js = (SRC / "js" / "bmicalculator.js").read_text(encoding="utf-8")
     # share links must point at the website (the app's own origin is capacitor://localhost)
@@ -254,13 +319,21 @@ def main() -> None:
     assert "var _pb" in js, "print handler line changed"
     (WWW / "js" / "bmicalculator.js").write_text(js, encoding="utf-8")
 
+    kjs = (REPO / "mes.fm" / "bmi-calculator-kids" / "js" / "bmi-calculator-kids.js").read_text(encoding="utf-8")
+    a = "$('kb-print').onclick = function () { window.print(); };"
+    assert kjs.count(a) == 1, "kids print handler line changed"
+    kjs = kjs.replace(a, "if ($('kb-print')) " + a)
+    assert "location.origin" not in kjs and "fetch(" not in kjs
+    (WWW / "js" / "bmi-calculator-kids.js").write_text(kjs, encoding="utf-8")
+
     shutil.copy(SRC / "img" / "logo-512.png", WWW / "img" / "logo.png")
 
-    out = (WWW / "index.html").read_text(encoding="utf-8")
-    bad = [p for p in ("googletagmanager", "adsbygoogle", "fastcomments", "main_js/", "googlesyndication",
-                       'href="/', "data-src=") if p in out]
-    print("  index.html  %d bytes, js %d bytes, location.origin patched x%d%s"
-          % (len(out), len(js), n, ("  <-- CHECK: " + ", ".join(bad)) if bad else ""))
+    for fn in pages:
+        out = (WWW / fn).read_text(encoding="utf-8")
+        bad = [p for p in ("googletagmanager", "adsbygoogle", "fastcomments", "main_js/", "googlesyndication",
+                           'href="/', 'src="/', "data-src=") if p in out]
+        print("  %-12s %7d bytes%s" % (fn, len(out), ("  <-- CHECK: " + ", ".join(bad)) if bad else ""))
+    print("  js patched: location.origin x%d" % n)
     print("done -> %s" % WWW)
 
 

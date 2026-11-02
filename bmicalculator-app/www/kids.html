@@ -1,0 +1,763 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="color-scheme" content="light dark">
+<title>BMI for Kids &amp; Teens</title>
+<style>html, body, div, span, applet, object, iframe, h1, h2, h3, h4, h5, h6, p, blockquote, pre, a, abbr, acronym, address, big, cite, code,del, dfn, em, img,
+ins, kbd, q, s, samp, small, strike, strong, sub, tt, var, u, i, center, dl, dt, dd, ol, ul, li, fieldset, form, label, legend, table, caption, tbody,
+tfoot, thead, tr, th, td, article, aside, canvas, details, embed, figure, figcaption, footer, header, hgroup, menu, nav, output, ruby, section, summary,
+time, mark, audio, video {margin:0;padding:0;border:0;font-size:100%;font-family:Helvetica,Arial,Optima,Sans Pro;vertical-align:baseline;color:#333333;}
+sup {margin:0;padding:0;border:0;font-size:100%;font-family:Helvetica,Arial,Optima,Sans Pro;vertical-align:super;color:black;}
+b {margin:0;padding:0;border:0;font-size:100%;font-family:Helvetica,Arial,Optima,Sans Pro;vertical-align:baseline;}
+/* HTML5 display-role reset for older browsers */
+article, aside, details, figcaption, figure, footer, header, hgroup, menu, nav, section {display:block;}
+body {background-color:#e2e2e2;line-height:1;}
+ol, ul {list-style:none;}
+blockquote, q {quotes:none;}
+blockquote:before, blockquote:after,
+q:before, q:after {content:'';content:none;}
+table {border-collapse:collapse;border-spacing:0;}
+a {text-decoration:none;}
+sub {vertical-align:sub;}        .warning-message {font-size:1em;text-align:center;padding:0.5em;background-color:#b3529d;color:white;}
+        .button {color:#b3529d;border:0.125em solid#b3529d;margin:0.7em 0;padding:0.5em 0.2em;text-align:center;-moz-user-select:none; -webkit-user-select:none; -ms-user-select:none; user-select:none; cursor:pointer;}
+        .button--subscribe {line-height:1.2;}
+        .button--share-calc {display: inline-block;padding-left: 1em;padding-right: 1em;margin-top: 0.5em;margin-bottom: 0.5em;}
+        .italic {font-style:italic;}
+        .bold {font-weight:700;}
+        .list {list-style-type:disc;}
+        .list__indent {line-height:1.2;margin-left:2em;margin-top:0.4em;margin-bottom:0.2em;font-size: 0.95em;}
+        .time {font-style:italic;font-weight:100;color:#939393;}
+        .small-text {font-size:0.9em;}
+        .big-text {font-size:1.1em;}
+        .link {color:#b3529d; font-weight:700;}
+        .link--dark {color: blue; font-weight: 700;}
+        .link--dark:hover {text-decoration: underline;}
+        .basic-table {margin:1em auto;}
+        .basic-table td, .basic-table th {border: 1px solid black; padding:0.5em 1em; text-align: center;}
+        .basic-table th {background-color: #ededed}
+        .basic-table--full {width:100%;}
+        .sponsored-ad {text-align:right;display:block;font-size:0.7em;margin-bottom:0.3em;font-style:italic;}
+        .box-border {border:0.1em solid#b3529d; padding:1em;margin-bottom: 1.2em;}
+        .selected {background-color:#b3529d;color:white;}
+        .right-arrow {font-size:2em;vertical-align:middle;margin:0 0.2em;display:inline-block;color:#b3529d;}
+        .share-calc-url {border: 2px solid black;font-size:0.9em;display:inline-block;width:15.5em;padding:0.45em 0.8em;font-weight:700;vertical-align:middle;color:#b3529d;background-color:#fdc010;}
+        .share-calc-url-container {margin-bottom: 0.5em;display: inline-block;}
+        .scissors-icon {vertical-align:middle;cursor: pointer;}
+        .hide {display:none;}
+        .crypto-container {background-color: #257bb6; padding: 10px; border-radius: 5px;}
+        .crypto-text {color: white; line-height: 1.4; padding: 5px;}.header2 {font-size:1.1em; margin-top:1.3em;margin-bottom:0.5em;}
+.header3 {font-size:1.0em; margin-top:1.0em;margin-bottom:0.3em;}
+.sentence {margin-top:0.5em; margin-bottom:0.5em;line-height:1.5}
+.sentence--indent {margin-left:1.5em;}
+
+.shadow {box-shadow:0.2em 0.2em 0.5em #999999;}
+.link:hover {color:#8a3d79;text-decoration:underline; cursor:pointer;}
+
+.outer-container {width:68.25em;margin:0 auto;}
+.inner-container {padding:1em 2em 1em 2em;overflow:hidden;background-color:white;box-shadow:0 0 1em #BBBBBB;}
+.header {position:relative;margin-bottom: 0.7em;}
+.logo-image-container {display:table-cell;}
+.logo {display:block;}
+.logo-text-container {display:table-cell;vertical-align:middle;padding-left:1.5em;}
+.calculator-title-link {display: block;}
+.calculator-title {margin-bottom:0.3em;font-size:1.8em;}
+.tag-line {font-size:1.2em;}
+
+.social-container {position:absolute;right:0;top:0;}
+.social-container--bottom {position:absolute;right:0;bottom:0;}
+.social {display: table-cell;}
+.social__text {display:table-cell;font-size:1.2em;vertical-align:middle;padding-right:0.6em;font-style:italic;color:#b3529d;}.social__logo {float:left;}
+.social__logo:not(:last-child) {margin-right:0.5em;}
+.social__link {height:2em;width:2em;display:block;}
+.social__fb {background: url(https://mes.fm/main_img/social-sprites.png) 0 0;}
+.social__gplus {background: url(https://mes.fm/main_img/social-sprites.png) -2em 0;}
+.social__insta {background: url(https://mes.fm/main_img/social-sprites.png) -4em 0;}
+.social__pin {background: url(https://mes.fm/main_img/social-sprites.png) -6em 0;}
+.social__twitter {background: url(https://mes.fm/main_img/social-sprites.png) -8em 0;}
+.social__yt {background: url(https://mes.fm/main_img/social-sprites.png) -10em 0;}
+.social__patreon {background: url(https://mes.fm/main_img/social-sprites.png) -12em 0;}
+.social__steemit {background: url(https://mes.fm/main_img/social-sprites.png) -14em 0;}
+.social__hive {background: url(https://mes.fm/main_img/social-sprites.png) -16em 0;}
+.social__telegram {background: url(https://mes.fm/main_img/social-sprites.png) -18em 0;}
+
+.info-bar-container {display: table-cell;}
+.info-bar {display:inline-block;margin-left:-2em;padding-left:1.1em;overflow:hidden;}
+.info-bar__item {float:left;}
+.info-bar__item__text {display:block;text-align:center;padding:0.7em 1em 0.7em 1em;font-size:0.9em;color:white}
+.info-bar__logo-container {display: table-cell;vertical-align: middle;}
+.info-bar__logo {display: block; margin-left: 0.8em;}
+
+.outer-page-content {width:45.5em;display:inline-block;}
+.page-content {padding:1.2em 2.25em 0 0;}
+.color-box {width:1.2em;height:1.2em;display:inline-block;margin-right:0.5em;}
+.page-title {display:inline-block;font-size:1.5em;font-weight:400;margin-bottom:0.3em;}
+.page-description {line-height:1.3;}
+#main-content {margin:1.5em 0;position:relative;}
+
+.side-bar {width:18.75em;float:right;}
+.navbar-container {margin:2.1em 0.8em;}
+.navbar {margin-bottom:-1em;}
+.button--navbar {padding:0.7em 0.2em;font-size:1.2em;margin-bottom:0;color:#b3529d;border:0.125em solid#b3529d;}
+
+.navbar__item:hover {cursor:pointer;}
+.navbar__link  {display:block;color:white;padding:0.7em 1em 0.7em 1.4em;}
+.navbar__link--first {padding-top:0.8em;}
+.navbar__dropdown-item {color:#222222;}
+.navbar__dropdown-item:hover {text-decoration:underline;}
+.dropdown-symbol {margin-left:1em;color:white;}
+
+.latest-article {margin-top:1em;padding:0.5em;text-align:center;box-shadow:0 0 1em #BBBBBB;}
+.latest-article__tag:first-child {margin-bottom:0.5em;line-height:normal;}
+.latest-article__title:last-child {text-align:left;font-weight:700;}
+.latest-article__logo {vertical-align:bottom;margin-bottom:0.5em;}
+
+.footer {padding:2em;}
+.footer__item-container {display:table;width:100%;margin-bottom:1.6em;}
+.footer__item {display:table-cell;}
+.footer__item--extra-padding {padding-left:2.5em;}
+.footer__text {color:white;line-height:1.5;}
+.footer__text--title {display:inline-block;margin-bottom:1.6em;font-size:1.3em;font-style:italic;}
+.footer__text--extra-info {float:right;}
+.footer__text:not(.footer__text--copyright):hover {text-decoration:underline; cursor:pointer;}
+.footer__text--black {color:#000;}
+.footer__separator {color:white;}
+#copyright-year {color:white;}
+
+.active-tab {background-color:#fdc010;color: #222222;}
+.navbar__link:hover:not(.navbar__dropdown-item):not(.active-tab),.info-bar__item__text:hover:not(.active-tab) {background-color:#8a3d79;}
+        .info-bar,.color-box,.navbar,.footer {background-color:#b3529d;}
+        .dropdown-symbol--dark {color:#b3529d;}
+        .button--active {background-color:#b3529d;color:white;}
+        .navbar__dropdown-container {color: #222222;background-color:#fdc010;}
+        .header2--top {margin-top: 0.5em;}
+        .basic-table td, .basic-table th {border: 1px solid black; padding:0.3em 0.5em; text-align: center;}
+        /* RESPONSIVE-FIX-INSERTED */
+@media (max-width: 768px) {
+  .outer-container { width: 100% !important; margin: 0 !important; }
+  .outer-page-content { width: 100% !important; display: block !important; }
+  .side-bar { width: 100% !important; float: none !important; }
+  .page-box { width: auto !important; display: block !important; margin: 0 auto 0.5em auto !important; }
+  img { max-width: 100% !important; height: auto !important; }
+  table { max-width: 100% !important; }
+
+  #info-bar > .info-bar__item:has(a[href$="index.html"]),
+  #info-bar > .info-bar__item:has(a[href*="donate"]),
+  #info-bar > .info-bar__item:has(a[href*="substack.com"]),
+  #info-bar > .info-bar__item:has(a[href*="mes.fm/links"]) { display: none !important; }
+}
+
+.inner-container { position: relative !important; }
+.header .social-container { display: none !important; }
+.side-bar { width: auto !important; float: none !important; }
+.navbar-container { margin: 0 !important; box-shadow: none !important; }
+.navbar__item--social { display: list-item; padding: 1em 1.6em 1em 1.4em; border-bottom: 1px solid rgba(255,255,255,0.25); }
+.navbar__item--social .social-container--navbar { position: static !important; display: flex; flex-wrap: wrap; align-items: center; gap: 0.6em; }
+.navbar__item--social .social__text { color: white; margin: 0; }
+.navbar__item--social .social { display: flex; flex-wrap: wrap; gap: 0.5em; margin: 0; padding: 0; }
+.navbar__item--social .info-bar__logo-container { display: block; margin-top: 0.4em; }
+#navbar-button {
+  position: absolute !important; top: 16px !important; right: 16px !important; z-index: 20;
+  width: 44px; height: 44px; padding: 0; margin: 0 !important;
+  background: transparent !important; border: none !important;
+  font-size: 0;
+}
+
+@media (max-width: 768px) {
+  .header { padding-right: 4em !important; box-sizing: border-box; }
+}
+#navbar-button::before {
+  content: ""; display: block; margin: 0 auto;
+  width: 26px; height: 4px; background: currentColor; border-radius: 1px;
+  box-shadow: 0 7px 0 currentColor, 0 -7px 0 currentColor;
+}
+#navbar { display: none; }
+#navbar.hide {
+  display: block !important; box-sizing: border-box;
+  position: absolute; top: 76px; right: 16px; z-index: 19;
+  width: 16em; max-width: 90vw; max-height: 75vh; overflow-y: auto;
+  scrollbar-gutter: stable;
+  box-shadow: 0 0.25em 1em rgba(0,0,0,0.3);
+  border-radius: 0.25em;
+}
+
+#navbar.hide { display: flex !important; flex-direction: column; }
+.navbar__item--social { order: 999; }
+.navbar__item--social .info-bar__logo-container { display: block !important; }
+
+.outer-container { width: auto !important; max-width: 50em; margin: 0 auto !important; }
+.outer-page-content { width: 100% !important; display: block !important; }
+.page-content { padding-right: 0 !important; }
+
+
+
+	.hide {display:none;}
+	a,a:hover {text-decoration: none !important;color:white;}
+	a.active-tab:hover {color:#222222;}
+	.navbar {border:none;}
+
+	/* the tool itself (scoped to #main-content) */
+	/* shared widget kit for the calculator tool pages (build_tool_apps.py prepends this to each app's own CSS) */
+	.tu {margin:1em 0;--accent:#b3529d;--accent-dark:#8a3d79;--tint:#f8e2ed;}
+	.tu *, .tu *::before, .tu *::after {box-sizing:border-box;}
+	.tu a {color:var(--accent);text-decoration:underline !important;}
+	.tu a:hover {color:var(--accent-dark);}
+	.tu button, .tu input, .tu select {font:inherit;}
+	.tu h2 {font-size:1.05em;color:#1e2733;margin:1.4em 0 0.6em;padding-bottom:0.3em;border-bottom:2px solid #f8e2ed;}
+	.tu h3 {font-size:0.98em;color:#1e2733;margin:1em 0 0.4em;}
+	.tu p {line-height:1.5;margin:0.5em 0;}
+	.tu-card {background:#fff;border:1px solid #dfe4ea;border-radius:0.55em;padding:1em 1.1em;}
+	.tu-card--tint {background:#f8e2ed;border-color:#f8e2ed;}
+	.tu-row {display:flex;flex-wrap:wrap;gap:0.9em 1.1em;align-items:flex-end;}
+	.tu-field {display:flex;flex-direction:column;gap:0.3em;flex:1 1 11em;min-width:0;}
+	.tu-field--sm {flex:0 1 8em;}
+	.tu-field > label, .tu-label {font-size:0.75em;font-weight:700;text-transform:uppercase;letter-spacing:0.04em;color:#667;}
+	.tu-input, .tu-select {width:100%;font-size:1.05em;padding:0.55em 0.65em;border:1px solid #b9c1cc;border-radius:0.4em;background:#fff;color:#222;}
+	.tu-input:focus, .tu-select:focus {outline:none;border-color:var(--accent);box-shadow:0 0 0 2px #f8e2ed;}
+	.tu-input--big {font-size:1.35em;padding:0.55em 0.7em;}
+	.tu-suffix {position:relative;}
+	.tu-suffix .tu-input {padding-right:3.2em;}
+	.tu-suffix span {position:absolute;right:0.7em;top:50%;transform:translateY(-50%);font-size:0.85em;color:#667085;pointer-events:none;}
+	.tu-btn {cursor:pointer;padding:0.5em 0.95em;border-radius:0.35em;border:0.125em solid var(--accent);background:#fff;color:var(--accent);font-size:0.9em;line-height:1.1;}
+	.tu-btn:hover {background:var(--accent);color:#fff;}
+	.tu-btn--primary {background:var(--accent);color:#fff;}
+	.tu-btn--primary:hover {background:var(--accent-dark);border-color:var(--accent-dark);}
+	.tu-btn--ghost {border-color:#c3c9d2;color:#555;}
+	.tu-btn--ghost:hover {background:#eef1f5;color:#222;border-color:#c3c9d2;}
+	.tu-seg {display:inline-flex;border:1px solid #b9c1cc;border-radius:0.4em;overflow:hidden;background:#fff;}
+	.tu-seg button {cursor:pointer;border:0;background:transparent;padding:0.55em 0.9em;color:#555;font-size:0.95em;border-right:1px solid #dfe4ea;}
+	.tu-seg button:last-child {border-right:0;}
+	.tu-seg button:hover {background:#f4f6f9;}
+	.tu-seg button[aria-pressed="true"] {background:var(--accent);color:#fff;}
+	.tu-chips {display:flex;flex-wrap:wrap;gap:0.4em;margin:0.6em 0 0;}
+	.tu-chip {cursor:pointer;font-size:0.82em;padding:0.35em 0.8em;border-radius:1.2em;border:1px solid #c3c9d2;background:#fff;color:#555;}
+	.tu-chip:hover {border-color:var(--accent);color:var(--accent);}
+	.tu-chip[aria-pressed="true"] {background:var(--accent);border-color:var(--accent);color:#fff;}
+	.tu-stats {display:grid;grid-template-columns:repeat(auto-fit,minmax(13em,1fr));gap:0.8em;margin:1em 0;}
+	.tu-stat {background:#fff;border:1px solid #dfe4ea;border-radius:0.55em;padding:0.8em 1em;}
+	.tu-stat--hero {background:#f8e2ed;border-color:#f8e2ed;}
+	.tu-stat__label {font-size:0.72em;font-weight:700;text-transform:uppercase;letter-spacing:0.05em;color:#667;}
+	.tu-stat__value {font-size:1.7em;font-weight:700;color:#1e2733;line-height:1.2;margin:0.15em 0;word-break:break-word;}
+	.tu-stat__sub {font-size:0.85em;color:#555d6b;line-height:1.35;}
+	.tu-pos {color:#1f7a3d !important;}
+	.tu-neg {color:#b3261e !important;}
+	.tu-table-wrap {overflow-x:auto;}
+	.tu-table {width:100%;border-collapse:collapse;font-size:0.95em;}
+	.tu-table th, .tu-table td {text-align:right;padding:0.5em 0.7em;border-bottom:1px solid #e3e7ec;color:#333;white-space:nowrap;}
+	.tu-table th:first-child, .tu-table td:first-child {text-align:left;}
+	.tu-table th {font-size:0.75em;text-transform:uppercase;letter-spacing:0.03em;color:#6a7280;background:#fff;}
+	.tu-table tr.is-active td {background:#f8e2ed;font-weight:700;}
+	.tu-note {font-size:0.85em;color:#6a7280;line-height:1.45;}
+	.tu-toast {position:fixed;left:50%;bottom:2em;transform:translateX(-50%) translateY(0.5em);background:#1e2733;color:#fff;padding:0.6em 1.1em;border-radius:2em;font-size:0.9em;box-shadow:0 0.4em 1.2em rgba(0,0,0,0.25);opacity:0;pointer-events:none;transition:opacity 0.15s, transform 0.15s;z-index:60;}
+	.tu-toast--show {opacity:1;transform:translateX(-50%) translateY(0);}
+	.tu-seo {margin-top:2em;border-top:1px solid #e3e3e3;padding-top:1.2em;}
+	/* SEO-HEADINGS: headlines and questions stand out from the body text (also added to built pages by add_seo_heading_style.py) */
+	body .tu-seo {font-size:1.04em;line-height:1.65;}
+	body .tu-seo h2 {font-size:1.45em;font-weight:800;line-height:1.25;margin:0 0 0.6em;color:#1e2733;border-bottom:0;padding-bottom:0;}
+	body .tu-seo h3 {font-size:1.2em;font-weight:800;line-height:1.3;margin:1.6em 0 0.5em;padding:0.15em 0 0.15em 0.65em;border-left:5px solid var(--accent,#4a6fa5);color:#1e2733;}
+	body .tu-seo h4, body .tu-seo dt {font-size:1.08em;font-weight:700;font-style:normal;line-height:1.35;margin:1.3em 0 0.3em;color:#1e2733;}
+	body .tu-seo dd {margin:0 0 0.6em;} body .tu-seo p, body .tu-seo li, body .tu-seo dd {line-height:1.65;}
+	body.dark-mode .tu-seo h2, body.dark-mode .tu-seo h3, body.dark-mode .tu-seo h4, body.dark-mode .tu-seo dt {color:#f2f2f2;}
+	.tu sup, .tu sub {font-size:0.72em !important;line-height:0;vertical-align:baseline;position:relative;} .tu sup {top:-0.5em;} .tu sub {top:0.3em;}
+	.tu div[class$="-eq"] {overflow-y:hidden;}
+	.tu-seo ul {list-style:disc;margin:0.5em 0 0.5em 1.5em;line-height:1.5;}
+	.tu-svg-line {fill:none;stroke:#1e2733;stroke-width:2;}
+	.tu-svg-accent {fill:none;stroke:var(--accent);stroke-width:3;}
+	.tu-svg-fill {fill:var(--accent);}
+	.tu-svg-tint {fill:#f8e2ed;}
+	.tu-svg-text {font-size:13px;fill:#333;}
+	.tu-svg-grid {stroke:#dfe4ea;stroke-width:1;fill:none;}
+	/* selected states: the derived dark theme would darken these, so restate them for dark mode */
+	/* the dark theme lightens --accent so it reads on dark; text on filled accent surfaces then has to be dark */
+	body.dark-mode .tu .tu-seg button[aria-pressed="true"], body.dark-mode .tu .tu-chip[aria-pressed="true"], body.dark-mode .tu .uc-cat[aria-selected="true"],
+	body.dark-mode .tu .tu-btn:hover, body.dark-mode .tu .tu-btn--primary, body.dark-mode .tu .tu-btn--primary:hover {background:var(--accent);border-color:var(--accent);color:#0b1416;}
+	body.dark-mode .tu .tu-btn--ghost:hover {background:#2e2e2e;border-color:#666;color:#eee;}
+	body.dark-mode .tu .uc-cat[aria-selected="true"] span {color:#0b1416;}
+	body.dark-mode .tu .tu-svg-tint {fill:rgba(255,255,255,0.09);}
+	body.dark-mode .tu .gm-card[aria-pressed="true"] {border-color:var(--accent);background:rgba(255,255,255,0.08);}
+	/* dark mode: the tool's accent lightened (same hue) so links, outlines and the text on filled buttons keep their contrast on the dark page */
+	body.dark-mode .tu {--accent:#c984b9 !important;--accent-dark:#c984b9 !important;}
+	@media (max-width:600px) {
+		.tu-stat__value {font-size:1.45em;}
+		.tu-field--sm {flex:1 1 7em;}
+	}
+	@media print {
+		.tu-btn, .tu-chips, .tu-seg {display:none !important;}
+	}
+
+/* row layout options on the grade / GPA / weighted-average calculators (names on-off, table layout) */
+.tu .rw-bar {display:flex;gap:0.4em;flex-wrap:wrap;margin:0.5em 0 0.1em;}
+.tu .gc-n {display:none;}
+.tu [data-names="0"] .rw-name {display:none !important;}
+.tu [data-names="0"] .rw-num, .tu [data-table="1"] .rw-num {display:block !important;flex:0 0 1.7em;text-align:right;color:#8a93a0;font-size:0.85em;padding-bottom:0.7em;}
+.tu [data-table="1"] .rw-head, .tu [data-table="1"] .rw-row {display:grid !important;grid-template-columns:var(--rw-cols);gap:0.3em;align-items:center;}
+.tu [data-table="1"] .rw-head {font-size:0.68em;font-weight:700;text-transform:uppercase;letter-spacing:0.03em;color:#667;padding:0.4em 0 0.2em;border-bottom:2px solid #d5dae1;} .tu [data-table="1"] .rw-head span {text-align:center;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;} .tu [data-table="1"] .rw-head span:first-child {text-align:right;}
+.tu [data-table="1"] .rw-row {padding:0.22em 0;border-bottom:1px solid #eceff3;}
+.tu [data-table="1"] .rw-row > * {order:0 !important;flex:none !important;margin:0 !important;min-width:0 !important;width:auto !important;}
+.tu [data-table="1"] .rw-row .rw-num {padding:0;}
+.tu [data-table="1"] .rw-f label {display:none;}
+.tu [data-table="1"] .rw-row .tu-input, .tu [data-table="1"] .rw-row .tu-select {padding:0.35em 0.2em;width:100%;min-width:0;text-align:center;}
+.tu [data-table="1"] .rw-row .rw-name .tu-input {text-align:left;padding-left:0.4em;}
+.tu [data-table="1"] .rw-del {padding:0.25em 0 !important;font-size:0.95em !important;}
+.tu [data-table="1"] .rw-pts {padding:0 !important;font-size:0.78em;text-align:center;}
+body.dark-mode .tu .rw-head {color:#a0a8b3;border-bottom-color:#555;} body.dark-mode .tu [data-table="1"] .rw-row {border-bottom-color:#333;}
+/* equation boxes typeset by main_js/mes-math.js (MathJax) */
+.tu [class$="-eq__f"].mes-tex {font-family:inherit;white-space:normal;display:inline-block;vertical-align:middle;max-width:100%;overflow-x:auto;overflow-y:hidden;}
+.tu [class$="-eq"] mjx-container {margin:0.15em 0 !important;}
+.tu [class$="-eq"] > div {margin:0.25em 0;}
+.tu [class$="-eq__n"] {vertical-align:middle;}
+
+	#kb [hidden] {display:none !important;}
+	#kb .kb-private {margin:0 0 0.6em;}
+	#kb .kb-layout {display:grid;grid-template-columns:minmax(0,1fr);gap:1em;align-items:start;}
+	@media (min-width:1100px) {#kb .kb-layout {grid-template-columns:minmax(0,31em) minmax(0,1fr);}}
+	#kb .kb-in {padding:0.9em 1em;}
+	#kb .kb-line {display:flex;flex-wrap:wrap;gap:0.7em 1.4em;align-items:flex-end;margin-bottom:0.8em;}
+	#kb .kb-f {min-width:0;} #kb .tu-label {display:block;margin-bottom:0.3em;}
+	#kb .tu-seg {display:inline-flex;} #kb .tu-seg button {padding:0.45em 0.9em;}
+	#kb .kb-sel {width:5em;} #kb .kb-date {width:10.5em;}
+	#kb .kb-pair {display:flex;gap:0.35em;align-items:center;flex-wrap:wrap;} #kb .kb-pair span {color:#5d6673;font-size:0.9em;} #kb .kb-pair i {color:#6f7782;font-size:0.85em;font-style:normal;margin:0 0.25em;}
+	#kb .kb-num {width:5em;flex:none;padding:0.45em 0.5em;font-size:1.05em;} #kb .kb-num--s {width:3.6em;}
+	#kb .kb-unitnote {margin:0 0 0.4em;} #kb .kb-meas {flex-direction:column;align-items:flex-start;gap:0.8em;}
+	#kb .kb-acts0 {gap:0.5em;align-items:center;margin-top:0.3em;} #kb .kb-acts0 .tu-chips {margin:0;}
+	#kb .kb-msg:empty {display:none;} #kb .kb-empty {padding:1.2em;border:1px dashed #c3c9d2;border-radius:0.55em;text-align:center;color:#4a5260;}
+	#kb .kb-res .tu-stats {margin:0 0 0.7em;grid-template-columns:repeat(auto-fit,minmax(11em,1fr));}
+	#kb .kb-cat {font-size:1.35em !important;line-height:1.2;}
+	#kb .kb-cat--under {color:#8a6400;} #kb .kb-cat--healthy {color:#1f7a3d;} #kb .kb-cat--over {color:#b4540a;} #kb .kb-cat--obese, #kb .kb-cat--severe {color:#b3261e;}
+	#kb .kb-verdict {margin:0 0 0.8em;line-height:1.5;border-left:0.3em solid #9aa3ad;} #kb .kb-verdict p {margin:0;} #kb .kb-verdict p + p {margin-top:0.5em;}
+	#kb .kb-verdict--healthy {border-left-color:#2f9a55;} #kb .kb-verdict--under {border-left-color:#d4a72c;} #kb .kb-verdict--over {border-left-color:#e08a3c;} #kb .kb-verdict--obese, #kb .kb-verdict--severe {border-left-color:#d0574d;}
+	#kb .kb-bar {margin:0.2em 0 1.6em;} #kb .kb-bar__track {position:relative;display:flex;height:0.9em;border-radius:0.45em;overflow:visible;}
+	#kb .kb-z {display:block;height:100%;} #kb .kb-z:first-child {border-radius:0.45em 0 0 0.45em;} #kb .kb-z--obese {border-radius:0 0.45em 0.45em 0;}
+	#kb .kb-z--under {background:#f1d98a;} #kb .kb-z--healthy {background:#a9dbb7;} #kb .kb-z--over {background:#f4c08f;} #kb .kb-z--obese {background:#eb9a92;}
+	#kb .kb-bar__pin {position:absolute;top:-0.35em;width:0.25em;height:1.6em;margin-left:-0.125em;background:#1e2733;border-radius:0.2em;box-shadow:0 0 0 2px #fff;}
+	#kb .kb-bar__ticks {position:relative;height:1.2em;font-size:0.8em;color:#5d6673;} #kb .kb-bar__ticks span {position:absolute;top:0.3em;transform:translateX(-50%);}
+	#kb .kb-acts {gap:0.5em;}
+	#kb .kb-p95 {font-size:0.95em;}
+	#kb .kb-chart svg {width:100%;height:auto;display:block;margin-top:0.4em;user-select:none;-webkit-user-select:none;}
+	#kb .kb-reg--under {fill:#f6e7b4;} #kb .kb-reg--healthy {fill:#d5efdc;} #kb .kb-reg--over {fill:#f9dcc0;} #kb .kb-reg--obese {fill:#f4c6c1;} #kb .kb-reg--severe {fill:#eaa8a1;}
+	#kb .kb-gl {stroke:rgba(0,0,0,0.07);stroke-width:1;} #kb .kb-ct {fill:#4f5864;font-size:12px;} #kb .kb-axt {font-weight:700;}
+	#kb .kb-l {fill:none;stroke:#6b7480;stroke-width:1;} #kb .kb-lcut {stroke:#3b4450;stroke-width:1.6;} #kb .kb-l50 {stroke:#1e2733;stroke-width:2;} #kb .kb-l120 {stroke:#8b1f18;stroke-width:1.6;stroke-dasharray:6 4;}
+	#kb .kb-pl {fill:#3b4450;font-size:11px;font-weight:700;}
+	#kb .kb-you {fill:#1e2733;stroke:#fff;stroke-width:2.5;} #kb .kb-you-l {stroke:#1e2733;stroke-width:1.2;stroke-dasharray:4 3;} #kb .kb-ghost {fill:none;stroke:#1e2733;stroke-width:1.5;stroke-dasharray:2 2;}
+	#kb .kb-chart svg.is-live {cursor:crosshair;touch-action:none;}
+	#kb .kb-chartbar {display:flex;flex-wrap:wrap;gap:0.4em 0.6em;align-items:center;margin:0.2em 0 0.4em;} #kb .kb-chartread {font-size:0.95em;} #kb .kb-charthint {font-size:0.88em;color:#5d6673;}
+	#kb .kb-legend {margin:0.6em 0 0;line-height:1.6;} #kb .kb-sw {display:inline-block;width:0.9em;height:0.9em;border-radius:0.2em;vertical-align:-0.1em;border:1px solid rgba(0,0,0,0.15);}
+	#kb .kb-sw--under {background:#f6e7b4;} #kb .kb-sw--healthy {background:#d5efdc;} #kb .kb-sw--over {background:#f9dcc0;} #kb .kb-sw--obese {background:#f4c6c1;} #kb .kb-sw--severe {background:#eaa8a1;}
+	#kb .kb-care {margin-top:1.2em;line-height:1.55;} #kb .kb-care p {margin:0;} #kb .kb-care p + p {margin-top:0.6em;}
+	#kb .tu-seo dt {margin-top:0.8em;}
+	@media (max-width:560px) {#kb .kb-num {width:4.4em;} #kb .kb-num--s {width:3.2em;} #kb .kb-date {width:9.6em;} #kb .tu-seg button {padding:0.45em 0.7em;}}
+	@media print {#kb .kb-in, #kb .kb-acts, #kb .kb-chartbar {display:none !important;}}
+	/* dark mode (the #kb prefix keeps these ahead of the generated TOOL-DARK block) */
+	body.dark-mode #kb .kb-pair span, body.dark-mode #kb .kb-charthint, body.dark-mode #kb .kb-bar__ticks {color:#aeb6c1;} body.dark-mode #kb .kb-pair i {color:#9aa3ae;}
+	body.dark-mode #kb .kb-empty {border-color:#555;color:#c9cfd6;}
+	body.dark-mode #kb .kb-cat--under {color:#f0c955;} body.dark-mode #kb .kb-cat--healthy {color:#6fd391;} body.dark-mode #kb .kb-cat--over {color:#f5a764;} body.dark-mode #kb .kb-cat--obese, body.dark-mode #kb .kb-cat--severe {color:#ff9a92;}
+	body.dark-mode #kb .kb-z--under {background:#8a7426;} body.dark-mode #kb .kb-z--healthy {background:#2f7a49;} body.dark-mode #kb .kb-z--over {background:#93582a;} body.dark-mode #kb .kb-z--obese {background:#8f3a33;}
+	body.dark-mode #kb .kb-bar__pin {background:#fff;box-shadow:0 0 0 2px #1a1a1a;}
+	body.dark-mode #kb .kb-reg--under, body.dark-mode #kb .kb-sw--under {fill:#4f4420;background:#4f4420;} body.dark-mode #kb .kb-reg--healthy, body.dark-mode #kb .kb-sw--healthy {fill:#24452f;background:#24452f;}
+	body.dark-mode #kb .kb-reg--over, body.dark-mode #kb .kb-sw--over {fill:#54381f;background:#54381f;} body.dark-mode #kb .kb-reg--obese, body.dark-mode #kb .kb-sw--obese {fill:#5a2723;background:#5a2723;} body.dark-mode #kb .kb-reg--severe, body.dark-mode #kb .kb-sw--severe {fill:#74302a;background:#74302a;}
+	body.dark-mode #kb .kb-gl {stroke:rgba(255,255,255,0.08);} body.dark-mode #kb .kb-ct {fill:#b8c0c8;} body.dark-mode #kb .kb-pl {fill:#d5dbe1;}
+	body.dark-mode #kb .kb-l {stroke:#8d96a1;} body.dark-mode #kb .kb-lcut {stroke:#c3cad2;} body.dark-mode #kb .kb-l50 {stroke:#f2f2f2;} body.dark-mode #kb .kb-l120 {stroke:#ff9a92;}
+	body.dark-mode #kb .kb-you {fill:#fff;stroke:#1a1a1a;} body.dark-mode #kb .kb-you-l, body.dark-mode #kb .kb-ghost {stroke:#e8e8e8;}
+	#kb .kb-here td {font-weight:700;}
+	#kb #kb-ref td, #kb #kb-ref th {white-space:normal;} #kb #kb-ref td:last-child {min-width:9em;}
+
+
+	@media print {
+		.header, .info-bar-container, .side-bar, #footer, #comments-button, #comments-box, .color-box { display:none !important; }
+		.outer-container, .inner-container, .outer-page-content, .page-content { width:auto !important; box-shadow:none !important; padding:0 !important; margin:0 !important; }
+	}
+	/* Mobile layout: stack header/nav/footer, full-width calculator inputs */
+	@media (max-width: 600px) {
+		.inner-container { padding: 1em 0.75em; }
+
+		.header { display: flex; flex-wrap: wrap; align-items: center; }
+		.logo-image-container { flex: 0 0 auto; }
+		.logo-text-container { display: block; flex: 1 1 0; min-width: 0; padding-left: 0.75em; vertical-align: initial; }
+		.calculator-title { font-size: 1.3em; }
+		.tag-line { font-size: 1em; }
+		.social-container, .social-container--bottom { position: static; flex: 0 0 100%; margin-top: 0.5em; }
+		.social-container { display: flex; align-items: center; flex-wrap: wrap; gap: 0.5em; }
+		.social-container .social__text { margin: 0; font-size: 0.9em; }
+		.social { display: flex; gap: 0.4em; }
+		.social-container .info-bar__logo-container { margin-left: auto; }
+		#mes-logo { width: 110px; height: auto; }
+
+		.info-bar-container { display: block; width: 100%; }
+		.info-bar { display: flex; flex-wrap: wrap; margin-left: 0; padding-left: 0; width: 100%; }
+		.info-bar__item { float: none; flex: 1 1 33%; min-width: 0; }
+		.info-bar__item__text { padding: 0.5em 0.2em; font-size: 0.75em; text-align: center; white-space: normal; line-height: 1.2; }
+		.navbar-container { margin: 1em 0; width: 100%; box-sizing: border-box; }
+		.button--navbar { box-sizing: border-box; width: 100%; }
+		.navbar { width: 100%; }
+		.navbar__link { box-sizing: border-box; }
+
+		.page-content { padding: 1.2em 0 0 0; }
+
+		.footer { padding: 1.25em 0.75em; }
+		.footer__item-container { display: block; }
+		.footer__item { display: block; margin-bottom: 0.75em; }
+		.footer__item--extra-padding { padding-left: 0; }
+		.footer__text--extra-info { float: none; display: block; margin-top: 0.5em; }
+	}
+/* Floating compact header bar: once the full header + nav scroll out of
+   view, a slim fixed bar (small logo, title, as many nav links as fit)
+   slides in, and the hamburger is pinned into its right end. Toggled by
+   the compact-nav script below. Ported from mes.fm/math's version (see
+   its build.mjs) -- display-controls.js pins the A-/A+/moon buttons into its right end.
+
+   Hidden by default via the inline style="display:none" on the element
+   itself (not just this stylesheet's "display: none" below) -- some
+   browser extensions strip or neutralize cosmetic-looking CSS for
+   elements named "sticky-*"/"*-bar" (a common ad/cookie-bar filter
+   pattern), which left an earlier version's raw unstyled markup visible
+   above the real header on mes.fm/math. The inline attribute is a
+   fallback the JS clears itself, independent of this stylesheet
+   surviving intact. */
+#compact-nav {
+  position: fixed; top: 0; left: 0; right: 0; height: 52px; z-index: 15;
+  display: none; align-items: center; gap: 12px;
+  padding: 0 80px 0 12px; box-sizing: border-box;
+  background: #ffffff; border-bottom: 3px solid #b3529d;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.18);
+  transform: translateY(-110%); transition: transform 0.2s ease;
+}
+#compact-nav.is-visible { display: flex; }
+body.is-stuck #compact-nav { transform: none; }
+#compact-nav .compact-nav-logo { display: block; width: 32px; height: 32px; border-radius: 6px; flex: 0 0 auto; }
+#compact-nav .compact-nav-title {
+  flex: 0 1 auto; min-width: 0; font-weight: 700; font-size: 1.05em; color: #1a1a1a;
+  text-decoration: none; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+}
+#compact-nav .compact-nav-links { display: flex; flex: 1 1 0; min-width: 0; overflow: hidden; margin: 0 0 0 8px; padding: 0; list-style: none; }
+#compact-nav .compact-nav-links li { flex: 0 0 auto; }
+#compact-nav .compact-nav-links a { display: block; padding: 0 10px; line-height: 52px; font-size: 0.9em; color: #b3529d; text-decoration: none; white-space: nowrap; }
+#compact-nav .compact-nav-links a:hover { background: rgba(179,82,157,0.12); }
+body.is-stuck #navbar-button { position: fixed !important; top: 4px !important; right: 8px !important; display: flex; align-items: center; }
+body.is-stuck #navbar.hide { position: fixed; top: 56px; right: 8px; }
+@media (max-width: 700px) {
+  #compact-nav .compact-nav-title { display: none; }
+  #compact-nav .compact-nav-logo { width: 36px; height: 36px; }
+}
+@media (max-width: 480px) {
+  #compact-nav { padding-right: 70px; gap: 8px; }
+}
+
+	/* TOOL-DARK:START -- generated by add_tool_page_controls.py, do not edit */
+	body.dark-mode .page-content :where(div,span,p,li,ul,ol,h1,h2,h3,h4,h5,h6,td,th,label,summary,small,strong,b,em,i,code,pre,legend,figcaption,dl,dt,dd,blockquote,caption,cite,button,input,select,textarea){color:#d8d8d8}
+	body.dark-mode .page-content code{background-color:#33363d;color:#f0a8bd}
+	body.dark-mode .page-content .btn-default{background-color:#2e2e2e;background-image:none;color:#ddd;border-color:#555}
+	body.dark-mode .tu{--accent:#b4559f;--accent-dark:#b4559f}
+	body.dark-mode .tu h2{color:#d1d6dc;border-bottom:2px solid #46112c}
+	body.dark-mode .tu h3{color:#d1d6dc}
+	body.dark-mode .tu-card{background:#1a1a1a;border:1px solid #28323e}
+	body.dark-mode .tu-card--tint{background:#2a1821;border-color:#46112c}
+	body.dark-mode .tu-field > label,body.dark-mode .tu-label{color:#9a9aa2}
+	body.dark-mode .tu-input,body.dark-mode .tu-select{border:1px solid #404a58;background:#1a1a1a;color:#dddddd}
+	body.dark-mode .tu-suffix span{color:#989ca4}
+	body.dark-mode .tu-btn{background:#1a1a1a}
+	body.dark-mode .tu-btn--ghost{border-color:#3a424d;color:#aaaaaa}
+	body.dark-mode .tu-btn--ghost:hover{background:#191c20;color:#dddddd;border-color:#3a424d}
+	body.dark-mode .tu-seg{border:1px solid #404a58;background:#1a1a1a}
+	body.dark-mode .tu-seg button{color:#aaaaaa;border-right:1px solid #28323e}
+	body.dark-mode .tu-seg button:hover{background:#16191d}
+	body.dark-mode .tu-chip{border:1px solid #3a424d;background:#1a1a1a;color:#aaaaaa}
+	body.dark-mode .tu-stat{background:#1a1a1a;border:1px solid #28323e}
+	body.dark-mode .tu-stat--hero{background:#2a1821;border-color:#46112c}
+	body.dark-mode .tu-stat__label{color:#9a9aa2}
+	body.dark-mode .tu-stat__value{color:#d1d6dc}
+	body.dark-mode .tu-stat__sub{color:#9a9ea4}
+	body.dark-mode .tu-pos{color:#7dde9d !important}
+	body.dark-mode .tu-neg{color:#e87973 !important}
+	body.dark-mode .tu-table th,body.dark-mode .tu-table td{border-bottom:1px solid #29323d;color:#cccccc}
+	body.dark-mode .tu-table th{color:#9a9da3;background:#1a1a1a}
+	body.dark-mode .tu-table tr.is-active td{background:#2a1821}
+	body.dark-mode .tu-note{color:#9a9da3}
+	body.dark-mode .tu-toast{background:#3c4f67}
+	body.dark-mode .tu-seo{border-top:1px solid #333333}
+	body.dark-mode .tu-svg-line{stroke:#394a60}
+	body.dark-mode .tu-svg-text{fill:#cccccc}
+	body.dark-mode .tu-svg-grid{stroke:#28323e}
+	body.dark-mode .tu [data-names="0"] .rw-num,body.dark-mode .tu [data-table="1"] .rw-num{color:#999da3}
+	body.dark-mode .tu [data-table="1"] .rw-head{color:#9a9aa2;border-bottom:2px solid #2b323c}
+	body.dark-mode .tu [data-table="1"] .rw-row{border-bottom:1px solid #27313f}
+	body.dark-mode #kb .kb-pair span{color:#999da3}
+	body.dark-mode #kb .kb-pair i{color:#9a9da2}
+	body.dark-mode #kb .kb-empty{border:1px dashed #3a424d;color:#a4a8b0}
+	body.dark-mode #kb .kb-cat--under{color:#ffd25c}
+	body.dark-mode #kb .kb-cat--healthy{color:#7dde9d}
+	body.dark-mode #kb .kb-cat--over{color:#f6a464}
+	body.dark-mode #kb .kb-cat--obese,body.dark-mode #kb .kb-cat--severe{color:#e87973}
+	body.dark-mode #kb .kb-verdict{border-left:0.3em solid #606a76}
+	body.dark-mode #kb .kb-verdict--healthy{border-left-color:#3cc36c}
+	body.dark-mode #kb .kb-verdict--under{border-left-color:#a98523}
+	body.dark-mode #kb .kb-verdict--over{border-left-color:#b0621c}
+	body.dark-mode #kb .kb-verdict--obese,body.dark-mode #kb .kb-verdict--severe{border-left-color:#a1342b}
+	body.dark-mode #kb .kb-z--under{background:#534928}
+	body.dark-mode #kb .kb-z--healthy{background:#324838}
+	body.dark-mode #kb .kb-z--over{background:#543d27}
+	body.dark-mode #kb .kb-z--obese{background:#502e2a}
+	body.dark-mode #kb .kb-bar__pin{background:#3c4f67}
+	body.dark-mode #kb .kb-bar__ticks{color:#999da3}
+	body.dark-mode #kb .kb-gl{stroke:rgba(76,76,76,0.07)}
+	body.dark-mode #kb .kb-ct{fill:#a0a5ab}
+	body.dark-mode #kb .kb-lcut{stroke:#414b58}
+	body.dark-mode #kb .kb-l50{stroke:#394a60}
+	body.dark-mode #kb .kb-l120{stroke:#d93026}
+	body.dark-mode #kb .kb-pl{fill:#b4b9bf}
+	body.dark-mode #kb .kb-you{fill:#d1d6dc;stroke:#333333}
+	body.dark-mode #kb .kb-you-l{stroke:#394a60}
+	body.dark-mode #kb .kb-ghost{stroke:#394a60}
+	body.dark-mode #kb .kb-charthint{color:#999da3}
+	body.dark-mode #kb .kb-sw{border:1px solid rgba(76,76,76,0.15)}
+	body.dark-mode #kb .kb-sw--under{background:#4e4425}
+	body.dark-mode #kb .kb-sw--healthy{background:#233528}
+	body.dark-mode #kb .kb-sw--over{background:#44311f}
+	body.dark-mode #kb .kb-sw--obese{background:#442724}
+	body.dark-mode #kb .kb-sw--severe{background:#4f2f2c}
+	/* TOOL-DARK:END */
+</style>
+<style>
+/* Adults | Kids & Teens switch (1.1) */
+.app-tabs{display:flex;gap:.4em;margin:0 0 1em;padding:.3em;background:#f6edf4;border-radius:999px;}
+.app-tabs a{flex:1;text-align:center;padding:.55em .6em;border-radius:999px;font-weight:700;color:#8a3d79;text-decoration:none;font-size:.95em;}
+.app-tabs a[aria-current]{background:#b3529d;color:#fff;}
+body.dark-mode .app-tabs{background:#2a2230;}
+body.dark-mode .app-tabs a{color:#e7a5d7;}
+body.dark-mode .app-tabs a[aria-current]{background:#8a3d79;color:#fff;}
+:where(body.dark-mode #kb) :is(div,span,b,strong,p,li,small,label,td,th,output,h2,h3,dt,dd){color:#e6e6e6;}
+html,body{margin:0;padding:0;background:#fff;overscroll-behavior-y:none;}
+body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Helvetica,Arial,sans-serif;color:#222;
+  -webkit-text-size-adjust:100%;padding-left:env(safe-area-inset-left);padding-right:env(safe-area-inset-right);}
+#status-cover{position:fixed;top:0;left:0;right:0;height:env(safe-area-inset-top);background:#b3529d;z-index:2147483000;pointer-events:none;}
+body.dark-mode #status-cover{background:#5b2a50;}
+/* full header (scrolls away) */
+#app-bar{display:flex;align-items:center;gap:.8em;background:#b3529d;color:#fff;
+  padding:calc(env(safe-area-inset-top) + .8em) 1em .9em 1em;box-shadow:0 1px 6px rgba(0,0,0,.25);}
+#app-bar img{width:64px;height:64px;border-radius:15px;background:#fff;flex:none;}
+#app-bar .t{flex:1;min-width:0;color:#fff;}
+#app-bar .name{font-size:1.45em;font-weight:700;line-height:1.1;color:#fff;}
+#app-bar .tag{font-size:.82em;line-height:1.3;margin-top:.25em;opacity:.95;color:#fff;}
+.hb{all:unset;cursor:pointer;color:#fff;font-weight:600;text-align:center;box-sizing:border-box;}
+#menu-btn{width:44px;height:44px;border:1.5px solid rgba(255,255,255,.75);border-radius:12px;display:flex;align-items:center;justify-content:center;flex:none;}
+#menu-btn svg{width:22px;height:22px;stroke:#fff;}
+/* floating compact bar: appears once the full header has scrolled away; can be hidden */
+#cbar{position:fixed;left:0;right:0;top:env(safe-area-inset-top);z-index:2147482000;display:flex;align-items:center;gap:.4em;
+  background:#b3529d;color:#fff;padding:.4em .6em .4em .8em;box-shadow:0 2px 8px rgba(0,0,0,.3);
+  transform:translateY(-140%);transition:transform .2s ease;visibility:hidden;}
+#cbar.show{transform:translateY(0);visibility:visible;}
+body.dark-mode #cbar{background:#5b2a50;}
+#cbar img{width:28px;height:28px;border-radius:7px;background:#fff;flex:none;}
+#cbar .cn{flex:1;min-width:0;font-weight:700;font-size:1em;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;color:#fff;}
+#cbar .hb{border:1.5px solid rgba(255,255,255,.7);border-radius:999px;padding:.35em .6em;min-width:2.1em;font-size:.88em;}
+#cbar .hb.ic{padding:.3em;width:2.2em;height:2.2em;display:flex;align-items:center;justify-content:center;border-radius:10px;}
+#cbar .hb.ic svg{width:18px;height:18px;stroke:#fff;}
+.js-theme .sun{display:none;}
+body.dark-mode .js-theme .sun{display:inline-flex;}
+body.dark-mode .js-theme .moon{display:none;}
+.js-theme span{display:inline-flex;align-items:center;justify-content:center;}
+#menu .btn.ic{padding:.3em .75em;}
+#menu .btn.ic svg{width:20px;height:20px;stroke:#8a3d79;}
+body.dark-mode #menu .btn.ic svg{stroke:#e7a5d7;}
+#ctab{position:fixed;right:10px;top:calc(env(safe-area-inset-top) + 4px);z-index:2147482000;background:#b3529d;color:#fff;border-radius:0 0 10px 10px;
+  padding:.2em 1.1em .3em;font-size:.95em;font-weight:700;box-shadow:0 2px 6px rgba(0,0,0,.3);display:none;cursor:pointer;}
+body.dark-mode #ctab{background:#5b2a50;}
+body.cbar-hidden.past #ctab{display:block;}
+body.cbar-hidden #cbar{display:none;}
+/* burger menu */
+#menu{position:fixed;right:10px;top:calc(env(safe-area-inset-top) + 66px);z-index:2147483001;width:min(20em,calc(100vw - 20px));background:#fff;color:#222;border-radius:14px;
+  box-shadow:0 8px 28px rgba(0,0,0,.35);padding:.5em 0;display:none;max-height:calc(100vh - env(safe-area-inset-top) - 90px);overflow:auto;}
+#menu.open{display:block;}
+#menu .row{display:flex;align-items:center;justify-content:space-between;padding:.6em 1em;gap:.6em;font-size:.95em;color:#222;}
+#menu .row b{color:#222;}
+#menu .btn{border:1.5px solid #b3529d;color:#8a3d79;border-radius:999px;padding:.35em .8em;font-weight:700;}
+#menu a{display:block;padding:.7em 1em;color:#8a3d79;font-weight:600;text-decoration:none;border-top:1px solid #eee;font-size:.95em;}
+#menu .sec{padding:.5em 1em .2em;font-size:.72em;letter-spacing:.06em;text-transform:uppercase;color:#777;border-top:1px solid #eee;}
+#menu-scrim{position:fixed;inset:0;z-index:2147483000;display:none;}
+#menu-scrim.open{display:block;}
+body.dark-mode #menu{background:#23262b;color:#e6e6e6;}
+body.dark-mode #menu .row,body.dark-mode #menu .row b{color:#e6e6e6;}
+body.dark-mode #menu a{color:#e7a5d7;border-top-color:#3a3e45;}
+body.dark-mode #menu .sec{color:#9aa0a8;border-top-color:#3a3e45;}
+body.dark-mode #menu .btn{border-color:#e7a5d7;color:#e7a5d7;}
+#app-main{max-width:46em;margin:0 auto;padding:1em 1em 0 1em;}
+#app-foot{max-width:46em;margin:0 auto;padding:1.2em 1em calc(env(safe-area-inset-bottom) + 2em) 1em;font-size:.85em;line-height:1.5;color:#555;}
+#app-foot p{margin:0 0 .8em 0;color:inherit;}
+#app-foot a{color:#8a3d79;font-weight:600;}
+#app-foot .links a{margin-right:1.1em;}
+body.dark-mode{background:#16181c;color:#e6e6e6;}
+body.dark-mode #app-bar{background:#5b2a50;}
+body.dark-mode #app-foot,body.dark-mode #app-foot p{color:#b9bdc4;}
+body.dark-mode #app-foot a{color:#e7a5d7;}
+.tu .tu-seo{display:none;}
+#app-foot strong{color:inherit;}
+/* the page's reset paints every bare div/span/b/strong #333, and the web build leaves dark mode to display-controls.js;
+   :where() keeps this at type-selector specificity so any class that sets its own colour (category colours, chips) still wins */
+:where(body.dark-mode #bm) :is(div,span,b,strong,p,li,small,label,td,th){color:#e6e6e6;}
+</style>
+</head>
+<body>
+<div id="status-cover"></div>
+<header id="app-bar" role="banner">
+  <img src="img/logo.png" alt="" width="64" height="64">
+  <div class="t"><div class="name">BMI for Kids &amp; Teens</div><div class="tag">BMI-for-age percentile for ages 2 to 19 (CDC growth charts).</div></div>
+  <button id="menu-btn" class="hb js-menu" type="button" aria-label="Menu"><svg viewBox="0 0 24 24" fill="none" stroke-width="2.2" stroke-linecap="round"><path d="M4 7h16M4 12h16M4 17h16"/></svg></button>
+</header>
+<div id="cbar" role="toolbar" aria-label="Quick controls">
+  <img src="img/logo.png" alt="" width="28" height="28">
+  <div class="cn">BMI for Kids &amp; Teens</div>
+  <button class="hb js-down" type="button" aria-label="Smaller text">A&minus;</button>
+  <button class="hb js-up" type="button" aria-label="Larger text">A+</button>
+  <button class="hb ic js-theme" type="button" aria-label="Switch between light and dark mode"><span class="moon"><svg viewBox="0 0 24 24" fill="none" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12.8A9 9 0 1 1 11.2 3a7 7 0 0 0 9.8 9.8z"/></svg></span><span class="sun"><svg viewBox="0 0 24 24" fill="none" stroke-width="2.2" stroke-linecap="round"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M2 12h2M20 12h2M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4"/></svg></span></button>
+  <button class="hb ic js-menu" type="button" aria-label="Menu"><svg viewBox="0 0 24 24" fill="none" stroke-width="2.2" stroke-linecap="round"><path d="M4 7h16M4 12h16M4 17h16"/></svg></button>
+  <button id="cbar-hide" class="hb" type="button" aria-label="Hide this bar">&#9650;</button>
+</div>
+<div id="ctab" role="button" aria-label="Show the quick controls bar">&#9660;</div>
+<div id="menu-scrim"></div>
+<nav id="menu" aria-label="Menu">
+  <div class="row"><b>Text size</b><span><button class="hb btn js-down" type="button">A&minus;</button> <button class="hb btn js-up" type="button">A+</button></span></div>
+  <div class="row"><b>Theme</b><button class="hb btn ic js-theme" type="button" aria-label="Switch between light and dark mode"><span class="moon"><svg viewBox="0 0 24 24" fill="none" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12.8A9 9 0 1 1 11.2 3a7 7 0 0 0 9.8 9.8z"/></svg></span><span class="sun"><svg viewBox="0 0 24 24" fill="none" stroke-width="2.2" stroke-linecap="round"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M2 12h2M20 12h2M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4"/></svg></span></button></div>
+  <div class="sec">Learn more</div>
+  <a href="https://mes.fm/bmicalculator/body-mass-index" target="_blank" rel="noopener">What is BMI?</a>
+  <a href="https://mes.fm/bmicalculator/bmi-chart" target="_blank" rel="noopener">BMI chart</a>
+  <a href="https://mes.fm/bmicalculator/bmi-formula" target="_blank" rel="noopener">BMI formula</a>
+  <a href="https://mes.fm/bmicalculator/health-tips" target="_blank" rel="noopener">Health tips</a>
+  <div class="sec">About</div>
+  <a href="https://mes.fm/bmicalculator" target="_blank" rel="noopener">BMI Calculator website</a>
+  <a href="https://mes.fm/privacy-policy" target="_blank" rel="noopener">Privacy Policy</a>
+  <a href="https://mes.fm/contact" target="_blank" rel="noopener">Contact us</a>
+</nav>
+<main id="app-main">
+<nav class="app-tabs" aria-label="Calculator"><a href="index.html">Adults (20+)</a><a href="kids.html" aria-current="page">Kids &amp; Teens (2&ndash;19)</a></nav>
+<div class="tu kb" id="kb">
+		<p class="tu-note kb-private">&#128274; Private: nothing is uploaded. The numbers stay on this device.</p>
+		<div class="kb-layout">
+			<div class="tu-card kb-in">
+				<div class="kb-line">
+					<div class="kb-f"><span class="tu-label" id="kb-sex-l">Child is a</span><div class="tu-seg" id="kb-sex" role="group" aria-labelledby="kb-sex-l"><button type="button" data-v="f" aria-pressed="true">Girl</button><button type="button" data-v="m" aria-pressed="false">Boy</button></div></div>
+					<div class="kb-f"><span class="tu-label" id="kb-mode-l">Age</span><div class="tu-seg" id="kb-mode" role="group" aria-labelledby="kb-mode-l"><button type="button" data-v="age" aria-pressed="true">Years + months</button><button type="button" data-v="dates" aria-pressed="false">Birth date</button></div></div>
+				</div>
+				<div class="kb-line" id="kb-agerow">
+					<div class="kb-f"><label class="tu-label" for="kb-y">Years</label><select id="kb-y" class="tu-select kb-sel"></select></div>
+					<div class="kb-f"><label class="tu-label" for="kb-m">Months</label><select id="kb-m" class="tu-select kb-sel"></select></div>
+				</div>
+				<div class="kb-line" id="kb-daterow" hidden>
+					<div class="kb-f"><label class="tu-label" for="kb-birth">Date of birth</label><input id="kb-birth" class="tu-input kb-date" type="date"></div>
+					<div class="kb-f"><label class="tu-label" for="kb-on">Measured on</label><input id="kb-on" class="tu-input kb-date" type="date"></div>
+				</div>
+				<p class="tu-note kb-unitnote">Type in either unit: the other one fills itself in.</p>
+				<div class="kb-line kb-meas">
+					<div class="kb-f"><label class="tu-label" for="kb-kg">Weight</label><div class="kb-pair"><input id="kb-kg" class="tu-input kb-num" type="text" inputmode="decimal" autocomplete="off" placeholder="32"><span>kg</span><i>or</i><input id="kb-lb" class="tu-input kb-num" type="text" inputmode="decimal" autocomplete="off" placeholder="70.5" aria-label="Weight in pounds"><span>lb</span></div></div>
+					<div class="kb-f"><label class="tu-label" for="kb-cm">Height</label><div class="kb-pair"><input id="kb-cm" class="tu-input kb-num" type="text" inputmode="decimal" autocomplete="off" placeholder="138"><span>cm</span><i>or</i><input id="kb-ft" class="tu-input kb-num kb-num--s" type="text" inputmode="numeric" autocomplete="off" placeholder="4" aria-label="Height, feet"><span>ft</span><input id="kb-in" class="tu-input kb-num kb-num--s" type="text" inputmode="decimal" autocomplete="off" placeholder="6.3" aria-label="Height, inches"><span>in</span></div></div>
+				</div>
+				<div class="tu-row kb-acts0"><button type="button" class="tu-btn tu-btn--ghost" id="kb-clear">Clear</button><span class="tu-chips" id="kb-examples"></span></div>
+			</div>
+			<div class="kb-res">
+				<p class="tu-note kb-msg" id="kb-msg" role="status" aria-live="polite"></p>
+				<div class="kb-empty" id="kb-empty">Enter the age, weight and height to see the BMI percentile.</div>
+				<div id="kb-out" hidden>
+					<div class="tu-stats" id="kb-hero" aria-live="polite"></div>
+					<div class="tu-card kb-verdict" id="kb-verdict"></div>
+					<div class="kb-bar" id="kb-bar" aria-hidden="true"></div>
+					<div class="tu-row kb-acts"><button type="button" class="tu-btn tu-btn--ghost" id="kb-copy">Copy result</button></div>
+				</div>
+			</div>
+		</div>
+
+		<h2>BMI-for-age chart</h2>
+		<div class="tu-card">
+			<div id="kb-chart" class="kb-chart"></div>
+			<p class="tu-note kb-legend">Curves are the CDC percentiles for the chosen sex (5th, 10th, 25th, 50th, 75th, 85th, 90th, 95th), the dashed line is 120% of the 95th percentile. Coloured bands: <span class="kb-sw kb-sw--under"></span> underweight, <span class="kb-sw kb-sw--healthy"></span> healthy weight, <span class="kb-sw kb-sw--over"></span> overweight, <span class="kb-sw kb-sw--obese"></span> obesity, <span class="kb-sw kb-sw--severe"></span> severe obesity.</p>
+		</div>
+
+		<div id="kb-refbox" hidden>
+			<h2>BMI cut-offs at this age</h2>
+			<div class="tu-card"><div class="tu-table-wrap"><table class="tu-table" id="kb-ref"></table></div><p class="tu-note" id="kb-refnote"></p></div>
+		</div>
+
+		<div class="tu-card tu-card--tint kb-care">
+			<p><strong>A number, not a verdict.</strong> BMI is a quick screening check. It cannot tell muscle from fat, and children's bodies change a lot during growth spurts and puberty. Only a doctor or nurse who knows your child can say what a result means, usually by looking at growth over several visits.</p>
+			<p>Please don't put a child on a diet without medical advice, and keep weight talk out of everyday life: regular family meals, active play, enough sleep and less screen time help every child, whatever the number.</p>
+		</div>
+		<div class="tu-toast" id="kb-toast" role="status" aria-live="polite"></div>
+
+		<div class="tu-seo">
+			<h2>BMI calculator for kids and teens</h2>
+			<p>For children and teens aged <strong>2 to 19</strong>, BMI is read differently from adults. The number itself is worked out the same way (weight in kilograms divided by height in metres squared), but because body fat changes as children grow, and differs between girls and boys, the BMI is compared with other children of the <strong>same age and sex</strong>. The result is a <strong>BMI-for-age percentile</strong>. This calculator uses the <strong>CDC 2000 growth charts</strong>, the reference used by doctors in the United States and many other countries, and the <strong>CDC 2022 extended BMI charts</strong> for BMIs above the 95th percentile.</p>
+			<h3>What the percentile means</h3>
+			<p>A BMI at the <strong>60th percentile</strong> means that, in the CDC reference group, 60 out of 100 children of the same age and sex had a lower BMI. It is not a score or a grade.</p>
+			<div class="tu-table-wrap"><table class="tu-table">
+				<tr><th>BMI-for-age percentile</th><th>Category (CDC)</th></tr>
+				<tr><td>Below the 5th</td><td>Underweight</td></tr>
+				<tr><td>5th to less than the 85th</td><td>Healthy weight</td></tr>
+				<tr><td>85th to less than the 95th</td><td>Overweight</td></tr>
+				<tr><td>95th or higher</td><td>Obesity</td></tr>
+				<tr><td>120% of the 95th percentile or higher</td><td>Severe obesity (class 2; class 3 from 140%)</td></tr>
+			</table></div>
+			<h3>Why the same BMI can mean different things</h3>
+			<p>A BMI of 18 is above the 90th percentile for a 6-year-old girl but only at about the 30th for a 14-year-old girl. Children's BMI usually falls from age 2 until about age 5 or 6 and then rises through the teen years (doctors call the turning point the <em>adiposity rebound</em>). That is why the adult cut-offs (18.5, 25, 30) are never used for children. Turn on <strong>Try other numbers on the chart</strong> and drag the point sideways to see it.</p>
+			<h3>Questions</h3>
+			<dl>
+				<dt>Which age do I enter?</dt>
+				<dd>Use the child's age on the day they were weighed and measured: years and completed months, or the birth date and the date of the measurement. The calculator uses the middle of the month, as CDC's own programs do for whole months.</dd>
+				<dt>What if my child is under 2?</dt>
+				<dd>Under 2, doctors use the WHO growth standards and weight-for-length rather than BMI. Use the <a href="https://mes.fm/baby-growth-percentile-calculator" target="_blank" rel="noopener">Baby Growth Percentile Calculator</a>.</dd>
+				<dt>What about 20 and older?</dt>
+				<dd>From age 20 the adult categories apply: use the <a href="index.html">BMI Calculator</a>.</dd>
+				<dt>What are the "extended" percentiles?</dt>
+				<dd>The original 2000 charts stop at the 97th percentile and are not accurate above it. In 2022 the CDC added extended BMI-for-age charts: above the 95th percentile the percentile is placed on a curve fitted to newer data, and very high BMIs are also described as a percentage of the 95th percentile. 120% of the 95th percentile or more is called severe obesity.</dd>
+				<dt>My child plays a lot of sport. Is BMI fair for them?</dt>
+				<dd>Muscle is heavier than fat, so a very muscular or tall-for-age child can have a high BMI without extra body fat. The reverse is also possible. A health professional can use other checks if the BMI seems not to fit the child.</dd>
+				<dt>I am a teen checking my own BMI. What should I do with it?</dt>
+				<dd>Bodies change fast during the teen years and grow in different ways and at different times. If the result worries you, talk to a parent, school nurse or doctor rather than cutting food or skipping meals. Your body needs fuel to grow.</dd>
+				<dt>Is my child's data stored?</dt>
+				<dd>No. Everything is worked out in your browser; the last numbers you typed are kept only on this device so they are there next time, and <em>Clear</em> removes them.</dd>
+			</dl>
+			<p class="tu-note">Sources: CDC 2000 growth charts (Kuczmarski et al., 2002), BMI-for-age LMS parameters as published by the CDC; CDC extended BMI-for-age growth charts (2022; Wei et al., 2020; Hales et al., 2022). Public domain data. This page is for information only and is not medical advice.</p>
+			<p class="tu-note">Related: <a href="index.html">BMI Calculator for adults</a>, <a href="https://mes.fm/bmicalculator/bmi-formula" target="_blank" rel="noopener">BMI formula</a>, <a href="https://mes.fm/bmicalculator/bmi-chart" target="_blank" rel="noopener">BMI chart</a>, <a href="https://mes.fm/baby-growth-percentile-calculator" target="_blank" rel="noopener">Baby Growth Percentile Calculator</a>.</p>
+		</div>
+	</div>
+	
+</main>
+<div id="app-foot">
+  <p><strong>Not medical advice.</strong> BMI is a screening number, not a diagnosis: it does not measure body fat, muscle, age, sex or fitness. Talk to a doctor or dietitian before starting a diet or exercise plan, and before making any medical decision. Children and teens (2&ndash;19) are judged with BMI-for-age percentiles, not these cut-offs: use the <a href="kids.html">Kids &amp; Teens</a> calculator.</p>
+  <p><strong>How it is calculated.</strong> BMI = weight (kg) &divide; height (m)&sup2;. Categories follow the World Health Organization adult classification (underweight below 18.5, normal 18.5&ndash;24.9, overweight 25&ndash;29.9, obese 30 and over) or, if you choose it, the WHO Asia-Pacific cut-offs (overweight from 23, obese from 27.5). Healthy weight range = the weights that give a BMI of 18.5 to 24.9 at your height. Source: <a href="https://www.who.int/data/gho/data/themes/topics/topic-details/GHO/body-mass-index" target="_blank" rel="noopener">WHO Body mass index</a>; <a href="https://www.cdc.gov/bmi/adult-calculator/index.html" target="_blank" rel="noopener">CDC adult BMI</a>.</p>
+  <p><strong>Your data stays on this device.</strong> Weight, height and saved measurements are stored only in the app on your phone. There are no accounts, no ads and no tracking, and nothing you enter is sent anywhere.</p>
+  <p class="links"><a href="https://mes.fm/privacy-policy" target="_blank" rel="noopener">Privacy Policy</a><a href="https://mes.fm/contact" target="_blank" rel="noopener">Contact</a><a href="https://mes.fm/bmicalculator" target="_blank" rel="noopener">Website</a></p>
+  <p>Version 1.1 &middot; Math Easy Solutions &middot; mes.fm</p>
+</div>
+<script src="js/bmi-calculator-kids.js"></script>
+<script>
+(function(){
+  try{ sessionStorage.setItem("mes-bmi-app:started","1"); }catch(e){}
+  [].slice.call(document.querySelectorAll(".bm-lang a")).forEach(function(a){ a.addEventListener("click",function(){ try{ localStorage.setItem("mes-bmi-app:lang",a.getAttribute("href")); }catch(e){} }); });
+  var b=document.body, KS="mes-bmi-app:textscale", KT="mes-bmi-app:theme", KH="mes-bmi-app:cbarhide";
+  var steps=[0.85,1,1.15,1.3,1.5,1.75], i=1;
+  try{ var v=parseInt(localStorage.getItem(KS),10); if(v>=0&&v<steps.length) i=v; }catch(e){}
+  var m=document.getElementById("app-main"), f=document.getElementById("app-foot");
+  function all(sel){ return Array.prototype.slice.call(document.querySelectorAll(sel)); }
+  function applyScale(){ m.style.zoom=f.style.zoom=steps[i];
+    all(".js-down").forEach(function(e){ e.style.opacity=i===0?".4":"1"; }); all(".js-up").forEach(function(e){ e.style.opacity=i===steps.length-1?".4":"1"; });
+    try{localStorage.setItem(KS,i);}catch(e){} }
+  all(".js-down").forEach(function(e){ e.addEventListener("click",function(){ if(i>0){i--;applyScale();} }); });
+  all(".js-up").forEach(function(e){ e.addEventListener("click",function(){ if(i<steps.length-1){i++;applyScale();} }); });
+  applyScale();
+  function pref(){ try{ var v=localStorage.getItem(KT); if(v) return v; }catch(e){} return window.matchMedia&&matchMedia("(prefers-color-scheme: dark)").matches?"dark":"light"; }
+  function applyTheme(v){ b.classList.toggle("dark-mode",v==="dark"); b.classList.toggle("dark",v==="dark"); }
+  applyTheme(pref());
+  all(".js-theme").forEach(function(e){ e.addEventListener("click",function(){ var v=b.classList.contains("dark-mode")?"light":"dark"; try{localStorage.setItem(KT,v);}catch(e){} applyTheme(v); }); });
+  var menu=document.getElementById("menu"), scrim=document.getElementById("menu-scrim");
+  function toggleMenu(open){ menu.classList.toggle("open",open); scrim.classList.toggle("open",open); }
+  all(".js-menu").forEach(function(e){ e.addEventListener("click",function(ev){ ev.stopPropagation(); toggleMenu(!menu.classList.contains("open")); }); });
+  scrim.addEventListener("click",function(){ toggleMenu(false); });
+  menu.addEventListener("click",function(ev){ if(ev.target.tagName==="A") toggleMenu(false); });
+  var cbar=document.getElementById("cbar"), bar=document.getElementById("app-bar");
+  try{ if(localStorage.getItem(KH)==="1") b.classList.add("cbar-hidden"); }catch(e){}
+  document.getElementById("cbar-hide").addEventListener("click",function(){ b.classList.add("cbar-hidden"); try{localStorage.setItem(KH,"1");}catch(e){} });
+  document.getElementById("ctab").addEventListener("click",function(){ b.classList.remove("cbar-hidden"); try{localStorage.setItem(KH,"0");}catch(e){} });
+  function onScroll(){ var past=bar.getBoundingClientRect().bottom<0; cbar.classList.toggle("show",past); b.classList.toggle("past",past); }
+  window.addEventListener("scroll",onScroll,{passive:true}); onScroll();
+})();
+</script>
+</body>
+</html>

@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <meta name="color-scheme" content="light dark">
-<title>BMI Calculator</title>
+<title>BMI Calculator</title><script>try{var _l=localStorage.getItem("mes-bmi-app:lang");if(_l&&_l!=="index.html"&&/^[a-zA-Z-]+\.html$/.test(_l)&&!sessionStorage.getItem("mes-bmi-app:started"))location.replace(_l);}catch(e){}</script>
 <style>html, body, div, span, applet, object, iframe, h1, h2, h3, h4, h5, h6, p, blockquote, pre, a, abbr, acronym, address, big, cite, code,del, dfn, em, img,
 ins, kbd, q, s, samp, small, strike, strong, sub, tt, var, u, i, center, dl, dt, dd, ol, ul, li, fieldset, form, label, legend, table, caption, tbody,
 tfoot, thead, tr, th, td, article, aside, canvas, details, embed, figure, figcaption, footer, header, hgroup, menu, nav, output, ruby, section, summary,
@@ -218,7 +218,7 @@ sub {vertical-align:sub;}        .warning-message {font-size:1em;text-align:cent
 	.tu-input--big {font-size:1.35em;padding:0.55em 0.7em;}
 	.tu-suffix {position:relative;}
 	.tu-suffix .tu-input {padding-right:3.2em;}
-	.tu-suffix span {position:absolute;right:0.7em;top:50%;transform:translateY(-50%);font-size:0.85em;color:#8a93a0;pointer-events:none;}
+	.tu-suffix span {position:absolute;right:0.7em;top:50%;transform:translateY(-50%);font-size:0.85em;color:#667085;pointer-events:none;}
 	.tu-btn {cursor:pointer;padding:0.5em 0.95em;border-radius:0.35em;border:0.125em solid var(--accent);background:#fff;color:var(--accent);font-size:0.9em;line-height:1.1;}
 	.tu-btn:hover {background:var(--accent);color:#fff;}
 	.tu-btn--primary {background:var(--accent);color:#fff;}
@@ -239,7 +239,7 @@ sub {vertical-align:sub;}        .warning-message {font-size:1em;text-align:cent
 	.tu-stat--hero {background:#f8e2ed;border-color:#f8e2ed;}
 	.tu-stat__label {font-size:0.72em;font-weight:700;text-transform:uppercase;letter-spacing:0.05em;color:#667;}
 	.tu-stat__value {font-size:1.7em;font-weight:700;color:#1e2733;line-height:1.2;margin:0.15em 0;word-break:break-word;}
-	.tu-stat__sub {font-size:0.85em;color:#6a7280;line-height:1.35;}
+	.tu-stat__sub {font-size:0.85em;color:#555d6b;line-height:1.35;}
 	.tu-pos {color:#1f7a3d !important;}
 	.tu-neg {color:#b3261e !important;}
 	.tu-table-wrap {overflow-x:auto;}
@@ -252,7 +252,15 @@ sub {vertical-align:sub;}        .warning-message {font-size:1em;text-align:cent
 	.tu-toast {position:fixed;left:50%;bottom:2em;transform:translateX(-50%) translateY(0.5em);background:#1e2733;color:#fff;padding:0.6em 1.1em;border-radius:2em;font-size:0.9em;box-shadow:0 0.4em 1.2em rgba(0,0,0,0.25);opacity:0;pointer-events:none;transition:opacity 0.15s, transform 0.15s;z-index:60;}
 	.tu-toast--show {opacity:1;transform:translateX(-50%) translateY(0);}
 	.tu-seo {margin-top:2em;border-top:1px solid #e3e3e3;padding-top:1.2em;}
-	.tu-seo h2 {border-bottom:0;padding-bottom:0;font-size:1.2em;}
+	/* SEO-HEADINGS: headlines and questions stand out from the body text (also added to built pages by add_seo_heading_style.py) */
+	body .tu-seo {font-size:1.04em;line-height:1.65;}
+	body .tu-seo h2 {font-size:1.45em;font-weight:800;line-height:1.25;margin:0 0 0.6em;color:#1e2733;border-bottom:0;padding-bottom:0;}
+	body .tu-seo h3 {font-size:1.2em;font-weight:800;line-height:1.3;margin:1.6em 0 0.5em;padding:0.15em 0 0.15em 0.65em;border-left:5px solid var(--accent,#4a6fa5);color:#1e2733;}
+	body .tu-seo h4, body .tu-seo dt {font-size:1.08em;font-weight:700;font-style:normal;line-height:1.35;margin:1.3em 0 0.3em;color:#1e2733;}
+	body .tu-seo dd {margin:0 0 0.6em;} body .tu-seo p, body .tu-seo li, body .tu-seo dd {line-height:1.65;}
+	body.dark-mode .tu-seo h2, body.dark-mode .tu-seo h3, body.dark-mode .tu-seo h4, body.dark-mode .tu-seo dt {color:#f2f2f2;}
+	.tu sup, .tu sub {font-size:0.72em !important;line-height:0;vertical-align:baseline;position:relative;} .tu sup {top:-0.5em;} .tu sub {top:0.3em;}
+	.tu div[class$="-eq"] {overflow-y:hidden;}
 	.tu-seo ul {list-style:disc;margin:0.5em 0 0.5em 1.5em;line-height:1.5;}
 	.tu-svg-line {fill:none;stroke:#1e2733;stroke-width:2;}
 	.tu-svg-accent {fill:none;stroke:var(--accent);stroke-width:3;}
@@ -294,6 +302,11 @@ sub {vertical-align:sub;}        .warning-message {font-size:1em;text-align:cent
 .tu [data-table="1"] .rw-del {padding:0.25em 0 !important;font-size:0.95em !important;}
 .tu [data-table="1"] .rw-pts {padding:0 !important;font-size:0.78em;text-align:center;}
 body.dark-mode .tu .rw-head {color:#a0a8b3;border-bottom-color:#555;} body.dark-mode .tu [data-table="1"] .rw-row {border-bottom-color:#333;}
+/* equation boxes typeset by main_js/mes-math.js (MathJax) */
+.tu [class$="-eq__f"].mes-tex {font-family:inherit;white-space:normal;display:inline-block;vertical-align:middle;max-width:100%;overflow-x:auto;overflow-y:hidden;}
+.tu [class$="-eq"] mjx-container {margin:0.15em 0 !important;}
+.tu [class$="-eq"] > div {margin:0.25em 0;}
+.tu [class$="-eq__n"] {vertical-align:middle;}
 
 	/* BMI Calculator 2.0 */
 	.tu [hidden] {display:none !important;}
@@ -343,6 +356,58 @@ body.dark-mode .tu .rw-head {color:#a0a8b3;border-bottom-color:#555;} body.dark-
 	.tu .bm-opts {display:flex;flex-wrap:wrap;gap:0.6em 1.4em;align-items:flex-end;margin:0.5em 0 0.2em;} .tu .bm-opts[hidden] {display:none;}
 	.tu .bm-opt {display:flex;flex-direction:column;gap:0.25em;min-width:0;} .tu .bm-opt .tu-label {margin:0;font-size:0.8em;}
 	.tu #bm-ref th, .tu #bm-ref td {white-space:normal;padding:0.45em 0.5em;} .tu #bm-ref th:not(:first-child), .tu #bm-ref td:not(:first-child) {text-align:right;}
+
+/* languages: switcher above the calculator, the kg/cm pages' pounds toggle, the Asian-scale hint (id / vi) */
+.tu .bm-lang {display:flex; justify-content:flex-end; margin:0 0 0.6em;}
+.tu .bm-lang details {position:relative; font-size:0.92em;}
+.tu .bm-lang summary {cursor:pointer; list-style:none; padding:0.3em 0.75em; border:1px solid #d8c4d2; border-radius:999px; background:#fff; color:#5a2d50; font-weight:600; user-select:none;}
+.tu .bm-lang summary::-webkit-details-marker {display:none;}
+.tu .bm-lang summary::after {content:" \25BE";}
+.tu .bm-lang ul {position:absolute; right:0; top:calc(100% + 4px); z-index:30; margin:0; padding:0.35em 0; list-style:none; min-width:13em; background:#fff; border:1px solid #d8c4d2; border-radius:10px; box-shadow:0 8px 24px rgba(0,0,0,0.14);}
+.tu .bm-lang li a {display:block; padding:0.45em 1em; color:#333 !important; text-decoration:none !important;}
+.tu .bm-lang li a:hover, .tu .bm-lang li a:focus {background:#f8e2ed;}
+.tu .bm-lang li a[aria-current] {font-weight:700; color:#8a3d79 !important;}
+.tu .bm-scalehint {flex-basis:100%; margin:0.2em 0 0;}
+.tu .bm-scalehint:empty {display:none;}
+body.dark-mode #bm .bm-lang summary, body.dark-mode #bm .bm-lang ul {background:#262626; border-color:#5a4554; color:#f0d4e6;}
+body.dark-mode #bm .bm-lang li a {color:#e6e6e6 !important;}
+body.dark-mode #bm .bm-lang li a:hover, body.dark-mode #bm .bm-lang li a:focus {background:#3a2a35;}
+body.dark-mode #bm .bm-lang li a[aria-current] {color:#f0a6d8 !important;}
+/* right-to-left pages (Arabic): the calculator box carries dir="rtl"; the page title and intro follow; the gauge, like any number line, stays left to right */
+html[lang="ar"] .page-title, html[lang="ar"] .page-description {direction:rtl; text-align:right;}
+.tu .bm-gauge, .tu .bm-chart {direction:ltr;}
+#bm[dir="rtl"] .tu-suffix span {right:auto; left:0.7em;}
+#bm[dir="rtl"] .tu-suffix .tu-input {padding-right:0.7em; padding-left:3.2em;}
+@media (max-width: 600px) { #bm[dir="rtl"] .tu-suffix .tu-input {padding-right:0.55em; padding-left:2.2em;} }
+/* the India guideline's own small table (English and Hindi pages) */
+.tu .bm-ref-india {margin-top:0.6em;}
+.tu .bm-ref-india caption {caption-side:top; text-align:start; font-weight:700; padding:0 0 0.4em;}
+
+/* weight-for-height chart (BM.chartSvg) */
+.tu .bm-chartbox {margin-top:1em;}
+.tu .bm-chart {display:block;width:100%;height:auto;font-size:13px;}
+.tu .bm-reg--under {fill:#f6dd9a;} .tu .bm-reg--normal {fill:#a7dcb7;} .tu .bm-reg--over {fill:#f5c597;} .tu .bm-reg--obese {fill:#efa7a3;}
+.tu .bm-iso {fill:none;stroke:rgba(0,0,0,0.18);stroke-width:1;stroke-dasharray:3 3;}
+.tu .bm-isot {fill:rgba(0,0,0,0.5);font-size:11px;}
+.tu .bm-regt {fill:#2b2b2b;font-weight:700;font-size:14px;}
+.tu .bm-frame {stroke:#9aa3ad;}
+.tu .bm-chart .bm-gl {stroke:rgba(0,0,0,0.08);}
+.tu .bm-ct {fill:#5b6570;font-size:12px;} .tu .bm-axt {font-weight:700;}
+.tu .bm-you {fill:#1e2733;stroke:#fff;stroke-width:2.5;} .tu .bm-you-l {stroke:#1e2733;stroke-width:1.2;stroke-dasharray:4 3;}
+.tu .bm-yout {fill:#1e2733;font-weight:800;font-size:15px;paint-order:stroke;stroke:#fff;stroke-width:4px;}
+.tu .bm-chartlink {margin:0.6em 0 0;font-size:0.95em;}
+body.dark-mode #bm .bm-reg--under {fill:#6b5a24;} body.dark-mode #bm .bm-reg--normal {fill:#2f6040;} body.dark-mode #bm .bm-reg--over {fill:#6e4423;} body.dark-mode #bm .bm-reg--obese {fill:#6c2c29;}
+body.dark-mode #bm .bm-iso {stroke:rgba(255,255,255,0.22);} body.dark-mode #bm .bm-isot {fill:rgba(255,255,255,0.6);}
+body.dark-mode #bm .bm-regt {fill:#f2f2f2;} body.dark-mode #bm .bm-chart .bm-gl {stroke:rgba(255,255,255,0.08);} body.dark-mode #bm .bm-ct {fill:#b8c0c8;}
+body.dark-mode #bm .bm-you {fill:#fff;stroke:#1a1a1a;} body.dark-mode #bm .bm-you-l {stroke:#e8e8e8;}
+body.dark-mode #bm .bm-yout {fill:#fff;stroke:#1a1a1a;}
+
+	/* interactive weight-for-height chart */
+	.bm-chartbar {display:flex;flex-wrap:wrap;gap:0.4em 0.6em;align-items:center;margin:0.8em 0 0.4em;}
+	.bm-chartread {font-size:0.95em;} .bm-charthint {font-size:0.88em;color:#5d6673;}
+	#bm-wchart svg.is-live {cursor:crosshair;touch-action:none;}
+	#bm-wchart svg.is-live .bm-you {r:9px;}
+	body.dark-mode #bm .bm-charthint {color:#aab3bf;}
 
 
 	@media print {
@@ -436,7 +501,7 @@ body.is-stuck #navbar.hide { position: fixed; top: 56px; right: 8px; }
 	body.dark-mode .tu-card--tint{background:#2a1821;border-color:#46112c}
 	body.dark-mode .tu-field > label,body.dark-mode .tu-label{color:#9a9aa2}
 	body.dark-mode .tu-input,body.dark-mode .tu-select{border:1px solid #404a58;background:#1a1a1a;color:#dddddd}
-	body.dark-mode .tu-suffix span{color:#999da3}
+	body.dark-mode .tu-suffix span{color:#989ca4}
 	body.dark-mode .tu-btn{background:#1a1a1a}
 	body.dark-mode .tu-btn--ghost{border-color:#3a424d;color:#aaaaaa}
 	body.dark-mode .tu-btn--ghost:hover{background:#191c20;color:#dddddd;border-color:#3a424d}
@@ -448,7 +513,7 @@ body.is-stuck #navbar.hide { position: fixed; top: 56px; right: 8px; }
 	body.dark-mode .tu-stat--hero{background:#2a1821;border-color:#46112c}
 	body.dark-mode .tu-stat__label{color:#9a9aa2}
 	body.dark-mode .tu-stat__value{color:#d1d6dc}
-	body.dark-mode .tu-stat__sub{color:#9a9da3}
+	body.dark-mode .tu-stat__sub{color:#9a9ea4}
 	body.dark-mode .tu-pos{color:#7dde9d !important}
 	body.dark-mode .tu-neg{color:#e87973 !important}
 	body.dark-mode .tu-table th,body.dark-mode .tu-table td{border-bottom:1px solid #29323d;color:#cccccc}
@@ -489,9 +554,32 @@ body.is-stuck #navbar.hide { position: fixed; top: 56px; right: 8px; }
 	body.dark-mode .tu .bm-del:hover{color:#e0827b}
 	body.dark-mode .tu .tu-btn.bm-copied{border-color:#45ba4b !important}
 	body.dark-mode .tu .bm-optbar{border-top:1px solid #29323d}
+	body.dark-mode .tu .bm-lang summary{border:1px solid #4d3346;background:#1a1a1a;color:#c992bd}
+	body.dark-mode .tu .bm-lang ul{background:#1a1a1a;border:1px solid #4d3346}
+	body.dark-mode .tu .bm-lang li a{color:#cccccc !important}
+	body.dark-mode .tu .bm-lang li a:hover,body.dark-mode .tu .bm-lang li a:focus{background:#2a1821}
+	body.dark-mode .tu .bm-lang li a[aria-current]{color:#cd8ebf !important}
+	body.dark-mode .tu .bm-iso{stroke:rgba(76,76,76,0.18)}
+	body.dark-mode .tu .bm-isot{fill:rgba(242,242,242,0.50)}
+	body.dark-mode .tu .bm-regt{fill:#d4d4d4}
+	body.dark-mode .tu .bm-frame{stroke:#606a76}
+	body.dark-mode .tu .bm-chart .bm-gl{stroke:rgba(76,76,76,0.08)}
+	body.dark-mode .tu .bm-ct{fill:#999ea3}
+	body.dark-mode .tu .bm-you{fill:#d1d6dc;stroke:#333333}
+	body.dark-mode .tu .bm-you-l{stroke:#394a60}
+	body.dark-mode .tu .bm-yout{fill:#d1d6dc;stroke:#333333}
+	body.dark-mode .bm-charthint{color:#999da3}
 	/* TOOL-DARK:END */
 </style>
 <style>
+/* Adults | Kids & Teens switch (1.1) */
+.app-tabs{display:flex;gap:.4em;margin:0 0 1em;padding:.3em;background:#f6edf4;border-radius:999px;}
+.app-tabs a{flex:1;text-align:center;padding:.55em .6em;border-radius:999px;font-weight:700;color:#8a3d79;text-decoration:none;font-size:.95em;}
+.app-tabs a[aria-current]{background:#b3529d;color:#fff;}
+body.dark-mode .app-tabs{background:#2a2230;}
+body.dark-mode .app-tabs a{color:#e7a5d7;}
+body.dark-mode .app-tabs a[aria-current]{background:#8a3d79;color:#fff;}
+:where(body.dark-mode #kb) :is(div,span,b,strong,p,li,small,label,td,th,output,h2,h3,dt,dd){color:#e6e6e6;}
 html,body{margin:0;padding:0;background:#fff;overscroll-behavior-y:none;}
 body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Helvetica,Arial,sans-serif;color:#222;
   -webkit-text-size-adjust:100%;padding-left:env(safe-area-inset-left);padding-right:env(safe-area-inset-right);}
@@ -594,7 +682,9 @@ body.dark-mode #app-foot a{color:#e7a5d7;}
   <a href="https://mes.fm/contact" target="_blank" rel="noopener">Contact us</a>
 </nav>
 <main id="app-main">
-<div class="tu" id="bm">
+<nav class="app-tabs" aria-label="Calculator"><a href="index.html" aria-current="page">Adults (20+)</a><a href="kids.html">Kids &amp; Teens (2&ndash;19)</a></nav>
+<div class="tu" id="bm" data-lang="en" dir="ltr">
+		<nav class="bm-lang" aria-label="Language"><details><summary>&#127760; English</summary><ul><li><a href="index.html" hreflang="en" lang="en" aria-current="page">English</a></li><li><a href="es.html" hreflang="es" lang="es">Español</a></li><li><a href="pt-BR.html" hreflang="pt-BR" lang="pt-BR">Português (Brasil)</a></li><li><a href="id.html" hreflang="id" lang="id">Bahasa Indonesia</a></li><li><a href="fr.html" hreflang="fr" lang="fr">Français</a></li><li><a href="de.html" hreflang="de" lang="de">Deutsch</a></li><li><a href="it.html" hreflang="it" lang="it">Italiano</a></li><li><a href="tr.html" hreflang="tr" lang="tr">Türkçe</a></li><li><a href="vi.html" hreflang="vi" lang="vi">Tiếng Việt</a></li><li><a href="pl.html" hreflang="pl" lang="pl">Polski</a></li><li><a href="ar.html" hreflang="ar" lang="ar">العربية</a></li><li><a href="hi.html" hreflang="hi" lang="hi">हिन्दी</a></li></ul></details></nav>
 		<div id="bm-notice" class="tu-card tu-card--tint" hidden style="margin-bottom:1em;"></div>
 
 		<div class="tu-card" id="bm-setup">
@@ -617,7 +707,8 @@ body.dark-mode #app-foot a{color:#e7a5d7;}
 						<button type="button" data-u="i" aria-pressed="false">US</button>
 					</div></div>
 				<div class="bm-opt"><label for="bm-scale" class="tu-label">BMI scale</label>
-					<select id="bm-scale" class="tu-select"><option value="who">WHO standard (overweight from 25)</option><option value="asia">Asian (overweight from 23)</option></select></div>
+					<select id="bm-scale" class="tu-select"><option value="who">WHO standard (overweight from 25)</option><option value="asia">Asian (overweight from 23)</option><option value="india">India (2009 guideline: overweight from 23, obese from 25)</option></select></div>
+				<p class="tu-note bm-scalehint" id="bm-scalehint"></p>
 			</div>
 			<p class="tu-note" style="margin-bottom:0;">Every field stays in step with its twin. Adults 20 and over only; see the notes below.</p>
 		</div>
@@ -632,6 +723,7 @@ body.dark-mode #app-foot a{color:#e7a5d7;}
 				<div class="tu-label">Where you are on the scale</div>
 				<div class="bm-gauge" id="bm-gauge" aria-hidden="true"></div>
 				<ul class="bm-cats" id="bm-cats"></ul>
+				<div class="bm-chartbox" id="bm-wchart"></div>
 			</div>
 			<div class="bm-btns">
 				<button type="button" class="tu-btn tu-btn--primary" id="bm-link">Copy link to this result</button>
@@ -664,32 +756,34 @@ body.dark-mode #app-foot a{color:#e7a5d7;}
 			<p>For example, 65.8 kg at 182.9 cm is 65.8 &divide; (1.829 &times; 1.829) = <b>19.7</b>, in the normal range.</p>
 			<h3>BMI categories for adults</h3>
 			<div class="tu-table-wrap"><table class="tu-table" id="bm-ref"></table></div>
-			<p class="tu-note">The WHO standard cut-offs are used by most countries. The WHO Asia-Pacific cut-offs (overweight from 23, obese from 27.5) reflect the higher health risk at lower BMI in many Asian populations. Switch the <em>BMI scale</em> above to use them.</p>
+			<p class="tu-note">The WHO standard cut-offs are used by most countries. The WHO Asia-Pacific cut-offs (overweight from 23, obese from 27.5) reflect the higher health risk at lower BMI in many Asian populations. Switch the <em>BMI scale</em> above to use them. Doctors in India use the 2009 consensus guideline for Asian Indians (normal 18 to 22.9, overweight 23 to 24.9, obese from 25), also in the <em>BMI scale</em> menu; its bands are in the small table below.</p>
 			<h3>Important notes on BMI</h3>
 			<p>BMI is a general screening tool, not a diagnosis. It assumes a &ldquo;normal&rdquo; proportion of weight to height for people of average build and activity, which has some limits:</p>
 			<ul>
 				<li>It does not tell muscle from fat: athletes and bodybuilders can have a high BMI with low body fat.</li>
 				<li>Body shape, bone structure, age, sex and ethnicity all change what a healthy weight looks like.</li>
 				<li>It does not show where fat is carried; a larger waist measurement is a separate risk marker.</li>
-				<li><strong>Children and teens</strong> (2&ndash;19) are judged with BMI-for-age percentiles, not these cut-offs: use a growth chart such as the <a href="https://www.cdc.gov/bmi/child-teen-calculator/index.html" rel="nofollow noopener" target="_blank">CDC child and teen BMI calculator</a>.</li>
+				<li><strong>Children and teens</strong> (2&ndash;19) are judged with BMI-for-age percentiles, not these cut-offs: use our <a href="kids.html">BMI Calculator for Kids and Teens</a> (CDC BMI-for-age percentiles, with a growth chart).</li>
 			</ul>
 			<p>BMI is still popular because it is the simplest index to compute and has decades of research behind it. Talk to a doctor or dietitian before starting a new diet or fitness plan. <a href="https://mes.fm/bmicalculator/body-mass-index" target="_blank" rel="noopener">What is BMI?</a> &middot; <a href="https://mes.fm/bmicalculator/bmi-chart" target="_blank" rel="noopener">BMI chart</a> &middot; <a href="https://mes.fm/bmicalculator/bmi-formula" target="_blank" rel="noopener">BMI formula</a> &middot; <a href="https://mes.fm/bmicalculator/health-tips" target="_blank" rel="noopener">Health tips</a></p>
 			<h3>Is my data private?</h3>
-			<p>Yes. Your numbers and saved measurements stay in this browser. Nothing is uploaded unless you copy a link and share it yourself.</p>
+			<p>Yes. Your numbers and saved measurements stay on this device. Nothing is uploaded unless you copy a link and share it yourself.</p>
 		</div>
 	</div>
 	
 </main>
 <div id="app-foot">
-  <p><strong>Not medical advice.</strong> BMI is a screening number, not a diagnosis: it does not measure body fat, muscle, age, sex or fitness. Talk to a doctor or dietitian before starting a diet or exercise plan, and before making any medical decision. Children and teens (2&ndash;19) are judged with BMI-for-age percentiles, not these cut-offs.</p>
+  <p><strong>Not medical advice.</strong> BMI is a screening number, not a diagnosis: it does not measure body fat, muscle, age, sex or fitness. Talk to a doctor or dietitian before starting a diet or exercise plan, and before making any medical decision. Children and teens (2&ndash;19) are judged with BMI-for-age percentiles, not these cut-offs: use the <a href="kids.html">Kids &amp; Teens</a> calculator.</p>
   <p><strong>How it is calculated.</strong> BMI = weight (kg) &divide; height (m)&sup2;. Categories follow the World Health Organization adult classification (underweight below 18.5, normal 18.5&ndash;24.9, overweight 25&ndash;29.9, obese 30 and over) or, if you choose it, the WHO Asia-Pacific cut-offs (overweight from 23, obese from 27.5). Healthy weight range = the weights that give a BMI of 18.5 to 24.9 at your height. Source: <a href="https://www.who.int/data/gho/data/themes/topics/topic-details/GHO/body-mass-index" target="_blank" rel="noopener">WHO Body mass index</a>; <a href="https://www.cdc.gov/bmi/adult-calculator/index.html" target="_blank" rel="noopener">CDC adult BMI</a>.</p>
   <p><strong>Your data stays on this device.</strong> Weight, height and saved measurements are stored only in the app on your phone. There are no accounts, no ads and no tracking, and nothing you enter is sent anywhere.</p>
   <p class="links"><a href="https://mes.fm/privacy-policy" target="_blank" rel="noopener">Privacy Policy</a><a href="https://mes.fm/contact" target="_blank" rel="noopener">Contact</a><a href="https://mes.fm/bmicalculator" target="_blank" rel="noopener">Website</a></p>
-  <p>Version 1.0 &middot; Math Easy Solutions &middot; mes.fm</p>
+  <p>Version 1.1 &middot; Math Easy Solutions &middot; mes.fm</p>
 </div>
 <script src="js/bmicalculator.js"></script>
 <script>
 (function(){
+  try{ sessionStorage.setItem("mes-bmi-app:started","1"); }catch(e){}
+  [].slice.call(document.querySelectorAll(".bm-lang a")).forEach(function(a){ a.addEventListener("click",function(){ try{ localStorage.setItem("mes-bmi-app:lang",a.getAttribute("href")); }catch(e){} }); });
   var b=document.body, KS="mes-bmi-app:textscale", KT="mes-bmi-app:theme", KH="mes-bmi-app:cbarhide";
   var steps=[0.85,1,1.15,1.3,1.5,1.75], i=1;
   try{ var v=parseInt(localStorage.getItem(KS),10); if(v>=0&&v<steps.length) i=v; }catch(e){}
