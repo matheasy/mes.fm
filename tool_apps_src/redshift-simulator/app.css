@@ -33,3 +33,9 @@
 	@media print {#rs .rs-run, #rs .rs-controls {display:none;}}
 	#rs .rs-scrubrow {display:flex;flex-wrap:wrap;align-items:center;gap:0.5em 0.8em;margin-top:0.4em;} #rs .rs-scrubrow input[type=range] {flex:1 1 12em;min-width:8em;} #rs .rs-scrubrow label {font-weight:600;}
 	#rs .rs-scrubrow .rs-pill {color:#f2f4f8;}
+	/* tab "pot": gravity as refraction */
+	#rs .rs-pgrid {display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,22em),1fr));gap:0.8em;margin-top:0.2em;}
+	#rs .rs-pstage {position:relative;background:var(--rs-bg);border-radius:0.7em;overflow:hidden;line-height:0;} #rs .rs-pstage canvas, #rs .rs-stage--pot canvas {width:100%;display:block;touch-action:none;}
+	#rs #rs-p-1d {touch-action:pan-y;}
+	#rs .rs-cap {margin:0.3em 0 0;font-size:0.88em;} #rs .rs-unit {align-self:center;color:var(--rs-mut);} #rs .rs-chk2 {display:inline-flex;gap:0.35em;align-items:center;margin:0.4em 0.8em 0 0;}
+	#rs .rs-ul {margin:0.3em 0 0;padding-left:1.2em;} #rs .rs-ul li {margin:0.3em 0;}

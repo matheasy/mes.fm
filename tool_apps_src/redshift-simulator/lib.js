@@ -93,7 +93,44 @@
 		{ name: "Virgo Cluster", z: 0.0038 }, { name: "Coma Cluster", z: 0.0231 }, { name: "Quasar 3C 273", z: 0.158 }, { name: "Quasar 3C 48", z: 0.367 }, { name: "Supernova of 1998 (acceleration)", z: 0.83 },
 		{ name: "A quasar at the edge of reionisation", z: 7.54 }, { name: "GN-z11 (Hubble, JWST)", z: 10.6 }, { name: "JADES-GS-z14-0 (JWST)", z: 14.32 }, { name: "Cosmic microwave background", z: 1089 }
 	];
-	var R = { C: C, G: G, MSUN: MSUN, LY: LY, PC: PC, GYR: GYR, gamma: gamma, dopplerFactor: dopplerFactor, zFromFactor: zFromFactor, factorFromZ: factorFromZ, zFromBeta: zFromBeta, betaFromZ: betaFromZ,
+	/* ---------- gravitational potential of a uniform sphere, and its optical analogue (tab "pot") ----------
+	 * Outside: Phi = -GM/r. Inside (uniform density): Phi = -GM (3R^2 - r^2) / (2R^3), so the centre is 1.5 x deeper than the surface. g = GM/r^2 outside, GM r / R^3 inside.
+	 * Weak-field optical analogue (isotropic coordinates): light moves as in a medium of index n = 1 - 2 Phi / c^2. It gives the full general-relativity deflection 4GM/(c^2 b)
+	 * outside the body (Newton's corpuscle gets half of it); it is only valid while |Phi| << c^2. In units of R with k = GM/(R c^2): n = 1 + 2k u(rho), u = 1/rho or (3 - rho^2)/2. */
+	function phiSphere(M, Rb, r) { var gm = G * M; return r >= Rb ? -gm / r : -gm * (3 * Rb * Rb - r * r) / (2 * Rb * Rb * Rb); }
+	function gSphere(M, Rb, r) { var gm = G * M; return r >= Rb ? gm / (r * r) : gm * r / (Rb * Rb * Rb); }
+	function vEscSphere(M, Rb, r) { return Math.sqrt(-2 * phiSphere(M, Rb, r)); }
+	function nPot(M, Rb, r) { return 1 - 2 * phiSphere(M, Rb, r) / (C * C); }
+	function compactness(M, Rb) { return G * M / (Rb * C * C); }
+	function uRho(rho) { return rho >= 1 ? 1 / rho : (3 - rho * rho) / 2; }
+	function duRho(rho) { return rho >= 1 ? -1 / (rho * rho) : -rho; }
+	/* weak-field (first order in k) deflection of a ray with impact parameter b (units of R): (4k/b)(1 - s) + 4k b s, s = sqrt(1 - b^2) inside; 4k/b outside */
+	function weakDeflection(k, b) { b = Math.abs(b); if (b >= 1) return 4 * k / b; var s = Math.sqrt(1 - b * b); return (b === 0 ? 0 : 4 * k / b * (1 - s)) + 4 * k * b * s; }
+	/* ray through n(rho) = 1 + 2k u(rho): start at x = -X, height b, moving +x. Eikonal d/ds (n dr/ds) = grad n, RK4 with a step that grows with distance.
+	 * Returns { pts (every few steps, units of R), defl (radians, positive = toward the mass), closest } */
+	function traceRay(k, b, X, maxPts) {
+		X = X || 2000; var st = [-X, b, 1 + 2 * k * uRho(Math.hypot(X, b)), 0], pts = [st[0], st[1]], closest = Infinity, n = 0;
+		function f(s) { var rho = Math.hypot(s[0], s[1]) || 1e-12, nn = 1 + 2 * k * uRho(rho), gr = 2 * k * duRho(rho) / rho; return [s[2] / nn, s[3] / nn, gr * s[0], gr * s[1]]; }
+		while (st[0] < X && n < 400000) {
+			var rho = Math.hypot(st[0], st[1]); closest = Math.min(closest, rho);
+			var h = Math.min(0.004 + 0.02 * rho, 20), a = f(st), q = function (d, c) { return [st[0] + d[0] * c, st[1] + d[1] * c, st[2] + d[2] * c, st[3] + d[3] * c]; };
+			var b2 = f(q(a, h / 2)), c2 = f(q(b2, h / 2)), d2 = f(q(c2, h));
+			for (var i = 0; i < 4; i++) st[i] += h / 6 * (a[i] + 2 * b2[i] + 2 * c2[i] + d2[i]);
+			if (st[2] < 0 && Math.abs(st[0]) > 10) break;   // turned back (only for absurdly strong lenses)
+			n++; if (n % 3 === 0 && Math.abs(st[0]) < 12) pts.push(st[0], st[1]);
+		}
+		pts.push(st[0], st[1]);
+		return { pts: pts, defl: -Math.atan2(st[3], st[2]) * (b >= 0 ? 1 : -1), closest: closest };
+	}
+	var POT_BODIES = [
+		{ id: "earth", name: "Earth", M: 5.9722e24, R: 6.371e6, note: "Uniform density is a simplification: Earth's core is denser, so its real centre is a little deeper than 1.5× the surface value." },
+		{ id: "sun", name: "The Sun", M: MSUN, R: 6.957e8, note: "Real stars are far denser at the centre than at the surface; the uniform sphere is the classroom model." },
+		{ id: "wd", name: "White dwarf (Sirius B)", M: 1.018 * MSUN, R: 5.84e6, note: "About the Sun's mass in Earth's size." },
+		{ id: "ns", name: "Neutron star", M: 1.4 * MSUN, R: 1.2e4, note: "12 km radius: |Φ|/c² is about 0.17 at the surface, so the weak-field analogue is only a rough guide here." },
+		{ id: "sun2", name: "The Sun squeezed to R = 2 km", M: MSUN, R: 2000, note: "The example from the talk. 2 km is smaller than the Sun's Schwarzschild radius (2.95 km): in general relativity this is a black hole. The Newtonian potential still draws a funnel, but |Φ|/c² ≈ 0.74 at the surface and the escape speed exceeds c, far outside where n = 1 − 2Φ/c² holds." },
+		{ id: "custom", name: "Custom", M: MSUN, R: 7e8, note: "Type a mass and a radius." }
+	];
+	var R = { C: C, G: G, phiSphere: phiSphere, gSphere: gSphere, vEscSphere: vEscSphere, nPot: nPot, compactness: compactness, uRho: uRho, duRho: duRho, weakDeflection: weakDeflection, traceRay: traceRay, POT_BODIES: POT_BODIES, MSUN: MSUN, LY: LY, PC: PC, GYR: GYR, gamma: gamma, dopplerFactor: dopplerFactor, zFromFactor: zFromFactor, factorFromZ: factorFromZ, zFromBeta: zFromBeta, betaFromZ: betaFromZ,
 		rs: rs, gravLn: gravLn, gravFactor: gravFactor, gravZ: gravZ, weakZ: weakZ, clockRate: clockRate, indexOf: indexOf, gps: gps, Cosmo: Cosmo, wlToRgb: wlToRgb, bandOf: bandOf, shiftWl: shiftWl,
 		LINES: LINES, SETS: SETS, linesOf: linesOf, exaggerate: exaggerate, autoK: autoK, sig: sig, fmtWl: fmtWl, BODIES: BODIES, EXAMPLES_Z: EXAMPLES_Z };
 	if (typeof module !== "undefined" && module.exports) module.exports = R; else root.MESRed = R;

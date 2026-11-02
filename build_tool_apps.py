@@ -1147,7 +1147,7 @@ APPS = {
     "redshift-simulator": dict(title="MES Redshift & Blueshift Simulator", page_title="Redshift and Blueshift Simulator: Doppler, Gravitational and Cosmological",
                                tag="Why light changes colour.", accent="#be123c", dark="#9f1239", tint="#ffe4e8",
                                desc="Free redshift and blueshift simulator: watch light shift near and far from a heavy mass (gravitational redshift, clocks and refractive-index view), moving sources with relativistic Doppler wavefronts, a spectrum shifter that combines motion, gravity and cosmic expansion, and an expanding-universe calculator with lookback time and distance.",
-                               js_v="6"),
+                               js_v="7"),
     # Round 2026-10-23: SEO checker, birthday personality, random / dice, statistics, backgammon, poker (see CLAUDE.md for each).
     "seo": dict(title="MES SEO Checker", page_title="SEO Checker: Free On-Page SEO Audit for Any Page",
                 tag="What search engines see on a page.", accent="#1d4ed8", dark="#1e3a8a", tint="#e0e9ff",

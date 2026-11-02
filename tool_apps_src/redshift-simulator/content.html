@@ -5,6 +5,7 @@
 			<button type="button" role="tab" data-tab="dop" aria-selected="false">Moving source</button>
 			<button type="button" role="tab" data-tab="spec" aria-selected="false">Spectrum &amp; calculator</button>
 			<button type="button" role="tab" data-tab="cos" aria-selected="false">Expanding universe</button>
+			<button type="button" role="tab" data-tab="pot" aria-selected="false">Gravity as refraction</button>
 		</div>
 
 		<section data-panel="grav" role="tabpanel">
@@ -70,6 +71,30 @@
 			<div class="tu-card" id="rs-c-res"></div>
 		</section>
 
+		<section data-panel="pot" role="tabpanel" hidden>
+			<p class="tu-note rs-lead">The <b>gravitational potential</b> &Phi; of a ball of mass M: inside a uniform ball it is &Phi; = &minus;GM(3R&sup2; &minus; r&sup2;)/(2R&sup3;), outside &Phi; = &minus;GM/r. Its slope is the pull of gravity, &radic;(&minus;2&Phi;) is the escape speed, and in the weak-field <b>optical analogy</b> light moves as if space were glass with refractive index <b>n = 1 &minus; 2&Phi;/c&sup2;</b>: slower and bent toward the mass.</p>
+			<div class="tu-card rs-controls"><div class="rs-grid">
+				<div class="tu-field"><label class="tu-label" for="rs-p-body">Object</label><select id="rs-p-body" class="tu-select"></select><span class="tu-note" id="rs-p-bnote"></span></div>
+				<div class="tu-field" id="rs-p-custom"><span class="tu-label">Custom mass and radius</span><div class="rs-two"><input id="rs-p-m" class="tu-input" type="text" inputmode="decimal" aria-label="Mass in solar masses"><span class="rs-unit">M☉</span><input id="rs-p-r" class="tu-input" type="text" inputmode="decimal" aria-label="Radius in kilometres"><span class="rs-unit">km</span></div></div>
+				<div class="tu-field"><span class="tu-label">Colour the map by</span><div class="rs-seg" id="rs-p-col" role="group" aria-label="Map colour"><button type="button" data-v="phi" aria-pressed="true">Potential &Phi;</button><button type="button" data-v="g" aria-pressed="false">Pull |g|</button></div>
+					<label class="rs-chk2"><input type="checkbox" id="rs-p-cont" checked> contours</label> <label class="rs-chk2"><input type="checkbox" id="rs-p-lines" checked> field lines</label></div>
+				<div class="tu-field"><span class="tu-label" id="rs-p-b-l">Light ray passing at: <b id="rs-p-b-v"></b></span><input type="range" id="rs-p-b" min="0" max="4" step="0.01" aria-labelledby="rs-p-b-l"><span class="tu-note" id="rs-p-bx"></span></div>
+			</div></div>
+			<div class="rs-pgrid">
+				<div><div class="rs-stage rs-stage--pot"><canvas id="rs-p-map" tabindex="0" role="img" aria-label="Colour map of the gravitational potential in a slice through the centre of the ball, with contours, field lines and a bent light ray."></canvas></div><p class="tu-note rs-cap">Slice through the centre (±4 R). Move the pointer for readouts; drag up and down to move the light ray.</p></div>
+				<div><div class="rs-pstage"><canvas id="rs-p-3d" tabindex="0" role="img" aria-label="Three-dimensional surface of the potential: a funnel that is deepest at the centre. Drag to turn it."></canvas></div><p class="tu-note rs-cap">&Phi; as a height: the "funnel". Drag to turn it; the flat bottom inside the ball is a parabola, not a spike.</p></div>
+			</div>
+			<div class="rs-cards" id="rs-p-cards"></div>
+			<div class="rs-pstage"><canvas id="rs-p-1d" tabindex="0" role="img" aria-label="Four graphs along the line through the centre: horizontal pull, potential, escape speed and the optical index n."></canvas></div>
+			<div class="tu-card" id="rs-p-res"></div>
+			<div class="tu-card rs-facts"><h3>What this analogy is, and is not</h3><ul class="rs-ul">
+				<li>n = 1 &minus; 2&Phi;/c&sup2; is the <b>weak-field</b> optical analogue of general relativity (isotropic coordinates). Outside the ball it gives the full Einstein deflection 4GM/(c&sup2;b) &mdash; twice what a Newtonian particle of light would get &mdash; and the Shapiro time delay. The numerical ray on the map is traced through this index and checked against 4GM/(c&sup2;b) in the page's tests.</li>
+				<li>It is only accurate while |&Phi;|/c&sup2; &#8810; 1. For a neutron star it is rough; for the Sun squeezed to 2 km it fails completely (that object would be inside its own Schwarzschild radius, a black hole). The <a href="/black-hole-simulator">Black Hole Simulator</a> uses the exact strong-field index.</li>
+				<li>The ball has uniform density. Real planets and stars are denser at the centre, which makes their centre deeper than 1.5&times; the surface value.</li>
+				<li>The index describes light as seen by a far-away observer. Locally, every observer still measures light passing at c. Compare the &ldquo;Near / far from a mass&rdquo; tab, which uses the related index 1/(clock rate), and the <a href="/negative-index">Light &amp; Metamaterials Lab</a> for real refraction.</li>
+			</ul></div>
+		</section>
+
 		<div class="tu-seo">
 			<h2>Redshift and blueshift explained</h2>
 			<p>A <b>redshift</b> lengthens the wavelength of light, a <b>blueshift</b> shortens it. Astronomers measure it as <b>z = (&lambda;<sub>observed</sub> &minus; &lambda;<sub>emitted</sub>) / &lambda;<sub>emitted</sub></b>; a positive z is red, a negative z is blue. There are three physical causes, and this page simulates all of them:</p>
@@ -80,6 +105,8 @@
 			</ul>
 			<h3>The refractive-index picture</h3>
 			<p>Because clocks tick slower near a mass, a wave whose frequency is fixed in far-away time has a shorter wavelength nearby, just as light entering glass keeps its frequency and shortens its wavelength. Treating gravity as a medium with index n = 1 / (clock rate) reproduces the redshift, the slowing of light near a mass (the Shapiro delay) and light bending. It is an analogy for the Schwarzschild geometry, not a separate theory, and the animation exaggerates the tiny real numbers so you can see them (switch to True scale for the real picture).</p>
+			<h3>Gravity as refraction</h3>
+			<p>The <b>Gravity as refraction</b> tab draws the gravitational potential of a uniform ball (&minus;GM(3R&sup2; &minus; r&sup2;)/(2R&sup3;) inside, &minus;GM/r outside) as a colour map with contours and field lines, as a 3D funnel, and along a line through the centre together with the pull of gravity, the escape speed and the weak-field optical index n = 1 &minus; 2&Phi;/c&sup2;. A light ray traced through that index bends by 4GM/(c&sup2;b), the general-relativity value (1.75 arcseconds for a ray grazing the Sun).</p>
 			<h3>Questions</h3>
 			<dl>
 				<dt>Is a cosmological redshift a Doppler shift?</dt><dd>Not exactly. Galaxies are nearly at rest in their own patch of space; the space between them grows. For small z the two agree (z &approx; v/c); for large z they differ, and the recession speed in the table can even pass the speed of light, which is allowed because nothing moves through space that fast.</dd>

@@ -299,6 +299,15 @@ const PAGES = [
     tileLabel: "Light in a Medium Simulator",
   },
   {
+    // Tile only: links to the Light & Metamaterials Lab (negative refraction, flat lens, diffraction). Icon = img/negative-index-icon.jpg (PIL placeholder until Grok tile art lands; same file name).
+    slug: "negative-index",
+    section: "tools",
+    href: "/negative-index",
+    iconVersion: 1,
+    tileOnly: true,
+    tileLabel: "Light & Metamaterials Lab",
+  },
+  {
     // Tile only: no page is written; links to the tool. Icon = img/atomic-clock-simulator-icon.jpg (900x600 crop of the tool's share image).
     slug: "atomic-clock-simulator",
     section: "tools",

@@ -1,0 +1,114 @@
+	<script>try{if(!localStorage.getItem('pageMode')){document.documentElement.classList.add('page-wide')}}catch(e){}</script>
+	<div class="tu ni" id="ni">
+		<div class="ni-tabs" role="tablist" aria-label="Light and metamaterials tools">
+			<button type="button" role="tab" data-tab="neg" aria-selected="true">Negative refraction &amp; flat lens</button>
+			<button type="button" role="tab" data-tab="wave" aria-selected="false">Wave simulation</button>
+			<button type="button" role="tab" data-tab="diff" aria-selected="false">Diffraction</button>
+			<button type="button" role="tab" data-tab="light" aria-selected="false">What light can do</button>
+		</div>
+
+		<!-- ============ 1. NEGATIVE REFRACTION (rays) ============ -->
+		<section data-panel="neg" role="tabpanel">
+			<p class="tu-note ni-lead">In glass, a ray bends <b>toward</b> the normal but stays on the other side of it. In a material with a <b>negative refractive index</b> the ray bends to the <b>same side</b> of the normal it came from. Snell's law still holds, <i>n₁ sin θ₁ = n₂ sin θ₂</i>, with a negative n₂, so θ₂ comes out negative. Such materials do not occur in nature; they are built as <b>metamaterials</b> (tiny wires and split rings, smaller than the wavelength) and were first made for microwaves in 2000-2001.</p>
+			<div class="ni-seg ni-segbar" id="ni-r-mode" role="group" aria-label="What to show"><button type="button" data-v="iface" aria-pressed="true">One surface</button><button type="button" data-v="lens" aria-pressed="false">Flat lens (Veselago)</button></div>
+			<div class="ni-wrap"><div class="ni-stage"><canvas id="ni-r" tabindex="0" role="img" aria-label="Light rays meeting a material. Drag on the picture to change the angle of the ray or move the light source."></canvas>
+				<div class="ni-hint" id="ni-r-hint">Drag on the picture</div></div></div>
+			<div class="ni-cards" id="ni-r-cards"></div>
+			<div class="tu-card ni-controls"><div class="ni-grid">
+				<div class="tu-field"><span class="tu-label" id="ni-r-n-l">Refractive index of the material: <b id="ni-r-n-v"></b></span><input type="range" id="ni-r-n" min="-3" max="3" step="0.01" aria-labelledby="ni-r-n-l"><div class="ni-chips" id="ni-r-nch" role="group" aria-label="Index examples"></div></div>
+				<div class="tu-field" data-only="iface"><span class="tu-label" id="ni-r-a-l">Angle of the incoming ray: <b id="ni-r-a-v"></b></span><input type="range" id="ni-r-a" min="0" max="85" step="0.5" aria-labelledby="ni-r-a-l"></div>
+				<div class="tu-field" data-only="lens"><span class="tu-label" id="ni-r-d-l">Slab thickness: <b id="ni-r-d-v"></b></span><input type="range" id="ni-r-d" min="0.5" max="4" step="0.05" aria-labelledby="ni-r-d-l"></div>
+				<div class="tu-field" data-only="lens"><span class="tu-label" id="ni-r-s-l">Source distance from the slab: <b id="ni-r-s-v"></b></span><input type="range" id="ni-r-s" min="0.1" max="4" step="0.05" aria-labelledby="ni-r-s-l"><span class="tu-note">Or drag the source on the picture.</span></div>
+			</div></div>
+			<div class="tu-card" id="ni-r-res"></div>
+			<div class="tu-card"><h3>The perfect lens (Pendry, 2000)</h3>
+				<p class="tu-note">An ordinary lens can never show details finer than about half a wavelength: the fine detail is carried by <b>evanescent waves</b>, which die away within a wavelength of the object. Pendry showed that a slab with ε = μ = −1 <b>amplifies</b> evanescent waves by exactly the amount they decay, so in principle every detail reaches the image. The plot is the exact transfer function of the slab (one plane-wave component at a time): <b>1 means that detail is copied perfectly</b>. Real metamaterials have loss, and loss is what limits the resolution.</p>
+				<div class="ni-grid">
+					<div class="tu-field"><span class="tu-label" id="ni-p-d-l">Slab thickness: <b id="ni-p-d-v"></b></span><input type="range" id="ni-p-d" min="0.05" max="1" step="0.01" aria-labelledby="ni-p-d-l"></div>
+					<div class="tu-field"><span class="tu-label" id="ni-p-l-l">Loss (imaginary part of ε and μ): <b id="ni-p-l-v"></b></span><input type="range" id="ni-p-l" min="-6" max="-0.3" step="0.05" aria-labelledby="ni-p-l-l"><span class="tu-note">Log scale, from one part in a million to half.</span></div>
+				</div>
+				<div class="ni-stage ni-stage--plot"><canvas id="ni-p" role="img" aria-label="Transfer function of the slab: how much of each level of detail reaches the image."></canvas></div>
+				<div id="ni-p-res" class="ni-out"></div></div>
+		</section>
+
+		<!-- ============ 2. WAVE SIMULATION (FDTD with Drude eps and mu) ============ -->
+		<section data-panel="wave" role="tabpanel" hidden>
+			<p class="tu-note ni-lead">A live solution of Maxwell's equations on a grid (2D, electric field pointing out of the screen). A plain "n = −1" cannot be simulated directly: a negative index only makes sense at one frequency, so the material is modelled the honest way, as a <b>Drude medium</b> for both ε and μ, tuned so that <b>ε = μ = −1 at the source frequency</b>. Watch the wavefronts inside the slab move <b>toward</b> the source (the phase runs backwards) while the energy still flows away from it.</p>
+			<div class="ni-top">
+				<label class="ni-pick"><span class="tu-label">Scene</span><select id="ni-w-scene" class="tu-select" aria-label="Scene"><option value="lens">Flat lens: a point source</option><option value="beam">A beam hits the surface at an angle</option></select></label>
+				<label class="ni-pick"><span class="tu-label">Material in the slab</span><select id="ni-w-mat" class="tu-select" aria-label="Material"></select></label>
+				<div class="ni-run" role="group" aria-label="Simulation controls"><button type="button" class="tu-btn tu-btn--primary" id="ni-w-play" aria-pressed="true">❚❚ Pause</button><button type="button" class="tu-btn tu-btn--ghost" id="ni-w-step">Step ▸</button><button type="button" class="tu-btn tu-btn--ghost" id="ni-w-reset">↺ Restart</button></div>
+			</div>
+			<div class="ni-wrap"><div class="ni-stage"><canvas id="ni-w" tabindex="0" role="img" aria-label="Live electromagnetic wave around a slab of metamaterial. Drag to move the source."></canvas>
+				<div class="ni-views" role="group" aria-label="What to show"><button type="button" data-view="field" aria-pressed="true">Field</button><button type="button" data-view="int" aria-pressed="false">Brightness</button><button type="button" id="ni-w-full" title="Full screen" aria-label="Full screen">⛶</button></div>
+				<div class="ni-hint" id="ni-w-hint">Drag to move the source</div></div></div>
+			<div class="ni-cards" id="ni-w-cards"></div>
+			<div class="tu-card ni-controls"><div class="ni-grid">
+				<div class="tu-field"><span class="tu-label" id="ni-w-loss-l">Loss in the metamaterial: <b id="ni-w-loss-v"></b></span><input type="range" id="ni-w-loss" min="0" max="0.2" step="0.002" aria-labelledby="ni-w-loss-l"><span class="tu-note">Collision rate γ as a fraction of the light's frequency. Real metamaterials lose energy; with no loss the slab's surfaces ring for a long time.</span></div>
+				<div class="tu-field"><span class="tu-label" id="ni-w-br-l">Brightness: <b id="ni-w-br-v"></b></span><input type="range" id="ni-w-br" min="0.3" max="4" step="0.05" aria-labelledby="ni-w-br-l"></div>
+				<div class="tu-field"><span class="tu-label">Speed</span><select id="ni-w-speed" class="tu-select" aria-label="Simulation speed"><option value="2">Slow</option><option value="5">Normal</option><option value="10">Fast</option></select></div>
+			</div></div>
+			<div class="tu-card ni-honest"><h3>What is modelled, and what is not</h3><ul>
+				<li><b>Modelled:</b> Maxwell's equations in 2D (E<sub>z</sub>, H<sub>x</sub>, H<sub>y</sub>, Yee grid, 20 cells per wavelength). The slab has Drude currents in both the electric and the magnetic equation: ε(ω) = 1 − ω<sub>p</sub>²/(ω(ω + iγ)), and the same form for μ. That is causal and stable, and it gives ε = μ = −1 only near the source frequency (it is positive again above ω<sub>p</sub>).</li>
+				<li><b>Not modelled:</b> the wires and rings a real metamaterial is made of (it is treated as a smooth medium), 3D, other polarisations. The grid shifts ε and μ a little from their target values, and the corners of the slab start a surface wave (a surface plasmon, a real effect at ε = −1) that the loss slider calms down.</li>
+				<li><b>The foci</b> (dashed marks) are where ray optics puts the two images of an n = −1 slab: inside it, and as far behind it as the source is in front. Switch to <i>Brightness</i> to see them as two bright spots.</li>
+			</ul></div>
+		</section>
+
+		<!-- ============ 3. DIFFRACTION ============ -->
+		<section data-panel="diff" role="tabpanel" hidden>
+			<p class="tu-note ni-lead">Light that passes through narrow openings spreads out (<b>diffraction</b>) and the waves from different openings add up or cancel (<b>interference</b>). Far from the slits (the <b>Fraunhofer</b> limit) the brightness at angle θ is a single-slit envelope times an interference pattern: <span class="mes-tex">\(I(\theta) = I_0\,\mathrm{sinc}^2\beta\,\left(\dfrac{\sin N\alpha}{N\sin\alpha}\right)^2\)</span> with <span class="mes-tex">\(\beta = \pi a\sin\theta/\lambda\)</span> and <span class="mes-tex">\(\alpha = \pi d\sin\theta/\lambda\)</span>.</p>
+			<div class="ni-chips" id="ni-d-pre" role="group" aria-label="Examples"></div>
+			<div class="ni-wrap"><div class="ni-stage ni-stage--plot"><canvas id="ni-d" tabindex="0" role="img" aria-label="Diffraction pattern: the light on a screen and the brightness curve."></canvas></div></div>
+			<div class="tu-card ni-controls"><div class="ni-grid">
+				<div class="tu-field"><span class="tu-label" id="ni-d-lam-l">Wavelength: <b id="ni-d-lam-v"></b></span><input type="range" id="ni-d-lam" min="380" max="780" step="1" aria-labelledby="ni-d-lam-l"><label class="ni-check"><input type="checkbox" id="ni-d-white"> White light (all colours together)</label></div>
+				<div class="tu-field"><label class="tu-label" for="ni-d-a">Slit width a (µm)</label><input id="ni-d-a" class="tu-input" type="text" inputmode="decimal"></div>
+				<div class="tu-field"><label class="tu-label" for="ni-d-N">Number of slits N</label><input id="ni-d-N" class="tu-input" type="number" min="1" max="2000" step="1"><span class="tu-note">1 = single slit, 2 = double slit, more = a grating.</span></div>
+				<div class="tu-field"><label class="tu-label" for="ni-d-d">Slit spacing d, centre to centre (µm)</label><input id="ni-d-d" class="tu-input" type="text" inputmode="decimal"><span class="tu-note" id="ni-d-lpm"></span></div>
+				<div class="tu-field"><label class="tu-label" for="ni-d-L">Distance to the screen L (m)</label><input id="ni-d-L" class="tu-input" type="text" inputmode="decimal"></div>
+				<div class="tu-field"><span class="tu-label">Horizontal axis</span><div class="ni-seg" id="ni-d-ax" role="group" aria-label="Axis"><button type="button" data-v="y" aria-pressed="true">Position on the screen</button><button type="button" data-v="t" aria-pressed="false">Angle</button></div><span class="tu-label" id="ni-d-z-l">Zoom: <b id="ni-d-z-v"></b></span><input type="range" id="ni-d-z" min="-2" max="0" step="0.01" aria-labelledby="ni-d-z-l"></div>
+			</div><p class="tu-note" id="ni-d-note"></p></div>
+			<div class="tu-card" id="ni-d-res"></div>
+			<p class="tu-note">Want to watch the waves themselves go through slits? The <a href="/light-in-a-medium">Light in a Medium Simulator</a> has single slit, double slit and grating scenes that solve the wave equation live.</p>
+		</section>
+
+		<!-- ============ 4. WHAT LIGHT CAN DO ============ -->
+		<section data-panel="light" role="tabpanel" hidden>
+			<p class="tu-note ni-lead">Ten things light does, each one live: change the sliders and the picture follows the physics.</p>
+			<div class="ni-chips ni-chips--demo" id="ni-l-list" role="tablist" aria-label="Behaviours of light"></div>
+			<div class="ni-wrap"><div class="ni-stage"><canvas id="ni-l" tabindex="0" role="img" aria-label="Demonstration of a behaviour of light."></canvas></div></div>
+			<div class="ni-cards" id="ni-l-cards"></div>
+			<div class="tu-card ni-controls"><h3 id="ni-l-title"></h3><p class="tu-note" id="ni-l-text"></p><div class="ni-grid" id="ni-l-ctl"></div></div>
+		</section>
+
+		<div class="tu-seo">
+			<h2>Negative refraction, metamaterials and what light can do</h2>
+			<p>The refractive index <i>n</i> says how much a material slows light down and how much it bends a ray. For every natural transparent material <i>n</i> is bigger than 1. In 1968 Victor Veselago asked what would happen if both the permittivity ε and the permeability μ of a material were negative at the same time. The answer is a material with <b>n = −√(εμ)</b>, a negative refractive index: rays bend the "wrong" way, the phase of a wave moves backward while its energy moves forward, and a <b>flat slab acts as a lens</b>. Nobody could test it until John Pendry showed how to make negative ε (thin wires) and negative μ (split-ring resonators) from structures smaller than the wavelength, and David Smith's group measured negative refraction of microwaves in 2001. Such engineered structures are called <b>metamaterials</b>.</p>
+			<div class="ni-eq" role="math" aria-label="Key equations">
+				<div><span class="ni-eq__n">Snell's law (any sign of n)</span> <span class="ni-eq__f mes-tex">\(\displaystyle n_1\sin\theta_1 = n_2\sin\theta_2\)</span></div>
+				<div><span class="ni-eq__n">negative index</span> <span class="ni-eq__f mes-tex">\(\displaystyle \varepsilon<0,\ \mu<0 \;\Rightarrow\; n = -\sqrt{\varepsilon\mu}\)</span></div>
+				<div><span class="ni-eq__n">Drude model</span> <span class="ni-eq__f mes-tex">\(\displaystyle \varepsilon(\omega) = 1 - \frac{\omega_p^2}{\omega(\omega + i\gamma)}\)</span></div>
+				<div><span class="ni-eq__n">flat lens images</span> <span class="ni-eq__f mes-tex">\(\displaystyle n=-1:\ \text{inside at } a,\ \text{behind at } d-a\)</span></div>
+				<div><span class="ni-eq__n">grating maxima</span> <span class="ni-eq__f mes-tex">\(\displaystyle d\sin\theta = m\lambda\)</span></div>
+				<div><span class="ni-eq__n">Malus's law</span> <span class="ni-eq__f mes-tex">\(\displaystyle I = I_0\cos^2\theta\)</span></div>
+			</div>
+			<h3>Things to try</h3>
+			<ul>
+				<li><b>One surface:</b> slide the index from +1.5 down through 0 to −1.5 and watch the refracted ray swing across the normal.</li>
+				<li><b>Flat lens:</b> with n = −1 every ray from the source meets again inside the slab and again behind it, at the same points whatever the angle. Try n = −2: the images move and blur (aberration), because only n = −1 is perfect.</li>
+				<li><b>Wave simulation:</b> run the flat lens, wait a few periods and switch to Brightness to see the two bright images. Then pick "Only ε negative": a single negative quantity just reflects the light, like a metal mirror.</li>
+				<li><b>Perfect lens:</b> make the loss tiny and the slab thin and the transfer function stays near 1 far beyond k<sub>x</sub> = k₀, the classical limit.</li>
+				<li><b>Diffraction:</b> load the double slit with missing orders, then increase N to see the fringes sharpen into grating lines.</li>
+				<li><b>Cloaking:</b> in "What light can do", rays bend around the hidden core and come out exactly where they would have gone, so the core is invisible (for one colour, in ray optics).</li>
+			</ul>
+			<h3>Things people ask</h3>
+			<ul>
+				<li><b>Is negative refraction real?</b> Yes, it has been measured many times for microwaves and, with more loss, for infrared and visible light. Photonic crystals can also refract negatively without a negative index.</li>
+				<li><b>Does it break causality or let anything go faster than light?</b> No. The energy (group velocity and Poynting vector) still moves away from the source; only the wavefronts (phase) run backward. A negative index also needs dispersion: it cannot be negative at every frequency, which is why the simulation uses the Drude model.</li>
+				<li><b>Why is there no perfect lens on the market?</b> Loss. The amplified evanescent waves are very sensitive to any absorption, and making ε and μ both −1 at the same frequency with low loss is hard, especially for visible light. Near-field "superlenses" using silver (ε ≈ −1 only, for one polarisation) have imaged details of about λ/6.</li>
+				<li><b>Is the invisibility cloak real?</b> Transformation-optics cloaks have been demonstrated for microwaves (2006) and as carpet cloaks for light, but only for a narrow band of colours and in a limited range of directions.</li>
+			</ul>
+			<p>Everything runs on your device; nothing is uploaded. <a href="/light-in-a-medium">Light in a Medium</a> · <a href="/electromagnetic-fields-simulator?tab=wv">Electromagnetic Fields Simulator</a> · <a href="/redshift-simulator?tab=pot">Gravity as refraction</a> · <a href="/black-hole-simulator">Black Hole Simulator</a> · <a href="/tools">More MES tools</a></p>
+		</div>
+		<script src="/main_js/mes-math.js" defer></script>
+	</div>

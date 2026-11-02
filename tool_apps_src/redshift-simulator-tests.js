@@ -27,4 +27,20 @@ eq(R.bandOf(550), "green", "550"); eq(R.bandOf(121.6), "far ultraviolet", "Lyman
 eq(R.linesOf("H").map(l => l[1]).includes("Hα"), true, "H lines"); eq(R.linesOf("gal").length > 12, true, "galaxy set"); eq(R.sets === undefined, true, "no stray export");
 near(R.exaggerate(1 + 1e-9, 1e8), 1.1, 1e-7, "exaggerate"); near(R.autoK(1.001, 1, 1.5) * 0.001, 0.5, 1e-9, "autoK targets the ratio"); eq(R.autoK(1, 1, 1.5), 1, "no difference -> 1");
 eq(R.fmtWl(656.28), "656.3 nm", "fmtWl nm"); eq(R.fmtWl(1500), "1.5 µm", "fmtWl um"); eq(R.sig(2.12e-6, 3), "2.12 × 10⁻⁶", "sig sci"); eq(R.sig(0.2363, 3), "0.236", "sig plain");
+// gravitational potential of a uniform sphere + optical analogue (tab "pot")
+{ const ME = 5.9722e24, RE = 6.371e6, phiS = R.phiSphere(ME, RE, RE);
+  near(phiS, -R.G * ME / RE, 1e-12, "surface potential -GM/R"); near(R.phiSphere(ME, RE, 0), 1.5 * phiS, 1e-12, "centre is 1.5x the surface");
+  near(R.phiSphere(ME, RE, RE * (1 - 1e-9)), phiS, 1e-8, "potential continuous at R"); near(R.gSphere(ME, RE, RE * (1 - 1e-9)), R.gSphere(ME, RE, RE * (1 + 1e-9)), 1e-8, "g continuous at R");
+  near(R.gSphere(ME, RE, RE), 9.82, 2e-3, "Earth surface g 9.82"); near(R.gSphere(ME, RE, RE / 2), R.gSphere(ME, RE, RE) / 2, 1e-12, "g linear inside"); eq(R.gSphere(ME, RE, 0), 0, "g zero at centre");
+  near(R.vEscSphere(ME, RE, RE) / 1000, 11.186, 1e-3, "Earth escape 11.19 km/s"); near(R.vEscSphere(R.MSUN, 6.957e8, 6.957e8) / 1000, 617.7, 1e-3, "Sun escape 617.7 km/s");
+  near(R.vEscSphere(ME, RE, 0), Math.sqrt(1.5) * R.vEscSphere(ME, RE, RE), 1e-12, "centre escape sqrt(1.5) x surface");
+  near(R.nPot(ME, RE, RE) - 1, 2 * R.G * ME / (RE * R.C * R.C), 1e-6, "n - 1 = 2GM/(R c^2) at Earth's surface"); near((R.nPot(ME, RE, RE) - 1) / 1e-9, 1.39, 0.01, "about 1.39e-9");
+  near(R.compactness(R.MSUN, 2000), 0.738, 2e-3, "Sun at 2 km: GM/(R c^2) = 0.74"); eq(R.nPot(1, 1, Infinity), 1, "n = 1 far away");
+  // numerical rays vs the weak-field formula (outside: 4k/b, the GR value; inside: the uniform-sphere formula)
+  const k = 1e-6; [1.0, 1.5, 3, 8].forEach(b => near(R.traceRay(k, b).defl, 4 * k / b, 2e-3, "ray deflection 4GM/(c^2 b), b = " + b + " R"));
+  [0.2, 0.5, 0.9].forEach(b => near(R.traceRay(k, b).defl, R.weakDeflection(k, b), 2e-3, "ray through the sphere, b = " + b + " R"));
+  near(R.weakDeflection(k, 1), 4 * k, 1e-12, "weak formula continuous at b = R"); eq(R.weakDeflection(k, 0), 0, "straight through the centre");
+  near(R.traceRay(1e-6, 1).defl * 2.0626e5 * R.G * R.MSUN / (6.957e8 * R.C * R.C) / 1e-6, 1.75, 0.01, "grazing the Sun: 1.75 arcseconds");
+  eq(R.traceRay(0.05, 0.5).closest < 0.5, true, "a strong lens pulls the ray in"); eq(R.POT_BODIES.length, 6, "six presets");
+}
 console.log(n + " checks, " + f + " failed"); process.exit(f ? 1 : 0);

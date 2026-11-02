@@ -6,7 +6,7 @@
 	var R = window.MESRed, root = document.getElementById("rs"); if (!R || !root) return;
 	var $ = function (id) { return document.getElementById(id); }, KEY = "mes-redshift-simulator:v1", TAU = Math.PI * 2;
 	var DEF = { tab: "grav", g: { body: "earth", near: "1", nearU: "R", far: "1.0000035", farU: "R", wl: 550, ex: "auto", dir: "in", sp: 1, rep: true },
-		d: { b: 0.5, wl: 550, sp: 1 }, s: { set: "H", mode: "em", scale: "ext", b: 0, a: 0, zc: 0 }, c: { z: 1, H0: 67.4, Om: 0.315, line: "ha" } };
+		d: { b: 0.5, wl: 550, sp: 1 }, s: { set: "H", mode: "em", scale: "ext", b: 0, a: 0, zc: 0 }, c: { z: 1, H0: 67.4, Om: 0.315, line: "ha" }, p: { body: "sun2", m: "1", r: "2", col: "phi", cont: true, lines: true, b: 1.5, yaw: -0.65, pitch: 0.6 } };
 	var S = JSON.parse(JSON.stringify(DEF));
 	try { var sv = JSON.parse(localStorage.getItem(KEY)); if (sv) for (var k in DEF) { if (typeof DEF[k] === "object") { for (var j in DEF[k]) if (sv[k] && sv[k][j] != null) S[k][j] = sv[k][j]; } else if (sv[k] != null) S[k] = sv[k]; } } catch (e) { /* ignore */ }
 	function save() { try { localStorage.setItem(KEY, JSON.stringify(S)); } catch (e) { /* ignore */ } }
@@ -297,9 +297,137 @@
 	$("rs-c-line").addEventListener("change", function (e) { K.line = e.target.value; save(); cUpdate(true); });
 	chips("rs-c-pre", R.EXAMPLES_Z, function (p) { K.z = String(p.z); save(); cUpdate(false); });
 
+	/* =========================== 5. GRAVITY AS REFRACTION =========================== */
+	var P = S.p, pE = 4, pHov = null, p1x = null, pRay = null;
+	var pCmapStops = [[0, [12, 14, 46]], [0.22, [52, 34, 120]], [0.45, [150, 48, 130]], [0.68, [232, 100, 72]], [0.86, [250, 182, 70]], [1, [252, 246, 196]]];
+	function pCmap(t) { t = Math.max(0, Math.min(1, t)); for (var i = 1; i < pCmapStops.length; i++) if (t <= pCmapStops[i][0]) { var a = pCmapStops[i - 1], b = pCmapStops[i], f = (t - a[0]) / (b[0] - a[0]); return [0, 1, 2].map(function (j) { return Math.round(a[1][j] + (b[1][j] - a[1][j]) * f); }); } return pCmapStops[pCmapStops.length - 1][1]; }
+	$("rs-p-body").innerHTML = R.POT_BODIES.map(function (b) { return "<option value='" + b.id + "'>" + esc(b.name) + "</option>"; }).join("");
+	function pBody() {
+		var b = R.POT_BODIES.filter(function (q) { return q.id === P.body; })[0] || R.POT_BODIES[0];
+		if (b.id !== "custom") return { M: b.M, R: b.R, name: b.name, note: b.note };
+		var m = num(P.m), r = num(P.r); if (!(m > 0) || !(r > 0)) return { err: "Type a mass (in solar masses) and a radius (in km), both bigger than 0." };
+		return { M: m * R.MSUN, R: r * 1000, name: "Custom: " + fmt(m, 4) + " M☉, R = " + fmt(r, 5) + " km", note: b.note };
+	}
+	var pSegPaint = (function () { var el = $("rs-p-col"); function paint() { [].forEach.call(el.querySelectorAll("button"), function (b) { b.setAttribute("aria-pressed", P.col === b.getAttribute("data-v") ? "true" : "false"); }); } el.addEventListener("click", function (e) { var b = e.target.closest("button"); if (!b) return; P.col = b.getAttribute("data-v"); paint(); save(); pUpdate(); }); return paint; })();
+	function pSync() { $("rs-p-body").value = P.body; $("rs-p-m").value = P.m; $("rs-p-r").value = P.r; $("rs-p-cont").checked = !!P.cont; $("rs-p-lines").checked = !!P.lines; $("rs-p-b").value = P.b; $("rs-p-custom").hidden = P.body !== "custom"; pSegPaint(); }
+	$("rs-p-body").addEventListener("change", function (e) { P.body = e.target.value; var b = R.POT_BODIES.filter(function (q) { return q.id === P.body; })[0]; if (b && b.id !== "custom") { P.m = String(+(b.M / R.MSUN).toPrecision(4)); P.r = String(+(b.R / 1000).toPrecision(5)); } pSync(); save(); pUpdate(); });
+	["rs-p-m", "rs-p-r"].forEach(function (id, i) { $(id).addEventListener("input", function (e) { P[i ? "r" : "m"] = e.target.value; save(); pUpdate(); }); });
+	$("rs-p-cont").addEventListener("change", function (e) { P.cont = e.target.checked; save(); pUpdate(); }); $("rs-p-lines").addEventListener("change", function (e) { P.lines = e.target.checked; save(); pUpdate(); });
+	$("rs-p-b").addEventListener("input", function (e) { P.b = +e.target.value; save(); pUpdate(); });
+	function pFmtU(v, unit) { return fmt(v, 4) + " " + unit; }
+	function pAt(B, rho) { var r = rho * B.R, phi = R.phiSphere(B.M, B.R, r); return { phi: phi, g: R.gSphere(B.M, B.R, r), v: Math.sqrt(-2 * phi), n1: -2 * phi / (R.C * R.C) }; }
+	function pUpdate() {
+		var B = pBody(); $("rs-p-bnote").textContent = B.note || ""; $("rs-p-b-v").textContent = fmt(P.b, 3) + " R from the centre";
+		if (B.err) { $("rs-p-res").innerHTML = "<p class='rs-red'>" + esc(B.err) + "</p>"; $("rs-p-cards").innerHTML = ""; return; }
+		var k = R.compactness(B.M, B.R), kDraw = 4 * k < 0.08 ? 0.02 : k, ex = kDraw / k;
+		pRay = { k: k, kDraw: kDraw, ex: ex, draw: R.traceRay(kDraw, P.b, 400), real: R.traceRay(k, P.b) };
+		$("rs-p-bx").textContent = ex > 1.5 ? "The real bending is tiny: the ray on the map is bent " + fmt(ex, 3) + "× more than life. The numbers below are true." : "Drawn at its true strength.";
+		pMap(B); p3d(B); p1d(B);
+		var s = pAt(B, 1), c0 = pAt(B, 0), rs = R.rs(B.M), wk = k < 0.01 ? "weak: the analogy is accurate" : k < 0.3 ? "moderate: the analogy is only a rough guide" : B.R <= rs ? "inside its own Schwarzschild radius: a black hole, the analogy fails" : "strong: the analogy fails";
+		var dl = pRay.real.defl, gr = P.b >= 1 ? 4 * k / P.b : R.weakDeflection(k, P.b), as = 180 / Math.PI * 3600;
+		$("rs-p-cards").innerHTML =
+			"<div class='rs-card'><h4>Pull at the surface</h4><span class='rs-big'>" + pFmtU(s.g, "m/s²") + "</span><small>" + fmt(s.g / 9.80665, 4) + " × Earth's g; zero at the centre</small></div>" +
+			"<div class='rs-card'><h4>Potential Φ: surface / centre</h4><span class='rs-big'>" + fmt(s.phi, 4) + "</span><small>centre " + fmt(c0.phi, 4) + " J/kg (1.5 ×)</small></div>" +
+			"<div class='rs-card'><h4>Escape speed: surface / centre</h4><span class='rs-big'>" + (s.v >= R.C ? "&gt; c" : fmt(s.v / 1000, 5) + " km/s") + "</span><small>centre " + (c0.v >= R.C ? "&gt; c (" + fmt(c0.v / R.C, 3) + " c)" : fmt(c0.v / 1000, 5) + " km/s") + "</small></div>" +
+			"<div class='rs-card'><h4>Index n = 1 − 2Φ/c²</h4><span class='rs-big'>" + (s.n1 < 1e-3 ? "1 + " + fmt(s.n1, 4) : fmt(1 + s.n1, 5)) + "</span><small>at the surface; centre " + (c0.n1 < 1e-3 ? "1 + " + fmt(c0.n1, 4) : fmt(1 + c0.n1, 5)) + "</small></div>" +
+			"<div class='rs-card'><h4>|Φ| / c² at the surface</h4><span class='rs-big" + (k >= 0.3 ? " rs-red" : "") + "'>" + fmt(k, 4) + "</span><small>" + wk + "</small></div>" +
+			"<div class='rs-card'><h4>Bending of the ray (b = " + fmt(P.b, 3) + " R)</h4><span class='rs-big'>" + (dl * as < 3600 ? fmt(dl * as, 4) + "″" : fmt(dl * 180 / Math.PI, 4) + "°") + "</span><small>weak-field formula " + (gr * as < 3600 ? fmt(gr * as, 4) + "″" : fmt(gr * 180 / Math.PI, 4) + "°") + "; Newton gets half</small></div>";
+		$("rs-p-res").innerHTML = "<h3>" + esc(B.name) + "</h3><div class='rs-tw'><table class='rs-table'><tbody>" +
+			"<tr><th>Mass, radius</th><td>" + fmt(B.M, 4) + " kg (" + fmt(B.M / R.MSUN, 4) + " M☉), " + fmt(B.R / 1000, 5) + " km</td></tr>" +
+			"<tr><th>Schwarzschild radius 2GM/c²</th><td>" + (rs < 1 ? fmt(rs * 1000, 4) + " mm" : rs < 1e4 ? fmt(rs, 5) + " m" : fmt(rs / 1000, 5) + " km") + (B.R <= rs ? " <b class='rs-red'>(bigger than the ball: this would be a black hole)</b>" : "") + "</td></tr>" +
+			"<tr><th>Potential inside / outside</th><td>Φ = −GM(3R² − r²)/(2R³) for r &lt; R, Φ = −GM/r outside; both give " + fmt(s.phi, 5) + " J/kg at r = R</td></tr>" +
+			"<tr><th>Pull inside / outside</th><td>g = GM r / R³ (grows linearly from 0) inside, GM/r² outside</td></tr>" +
+			"<tr><th>Light: grazing deflection 4GM/(c²R)</th><td>" + fmt(4 * k * as, 5) + " arcseconds (Newtonian particle: " + fmt(2 * k * as, 5) + ")</td></tr>" +
+			"<tr><th>Extra time for light crossing the ball through its centre</th><td>" + fmt(16 * k * B.R / (3 * R.C), 4) + " s (∫(n − 1) dx / c inside the ball = 16GM/(3c³); the part outside grows with distance, like the Shapiro delay)</td></tr></tbody></table></div>";
+		save();
+	}
+	function pMap(B) {
+		var c = $("rs-p-map"), f = fitCanvas(c, 0.92, 240), x = f.x, w = f.w, h = f.h, s = Math.min(w, h) / (2 * pE), cx = w / 2, cy = h / 2;
+		var gw = 150, gh = Math.round(gw * h / w), oc = pMap.oc || (pMap.oc = document.createElement("canvas")); oc.width = gw; oc.height = gh; var oxc = oc.getContext("2d"), id = oxc.createImageData(gw, gh);
+		for (var j = 0; j < gh; j++) for (var i = 0; i < gw; i++) {
+			var X = ((i + 0.5) / gw * w - cx) / s, Y = ((j + 0.5) / gh * h - cy) / s, rho = Math.hypot(X, Y), t = P.col === "g" ? (rho < 1 ? rho : 1 / (rho * rho)) : R.uRho(rho) / 1.5, col = pCmap(P.col === "g" ? Math.sqrt(t) : t), q = (j * gw + i) * 4;
+			id.data[q] = col[0]; id.data[q + 1] = col[1]; id.data[q + 2] = col[2]; id.data[q + 3] = 255;
+		}
+		oxc.putImageData(id, 0, 0); x.imageSmoothingEnabled = true; x.drawImage(oc, 0, 0, w, h);
+		if (P.lines) for (var a = 0; a < 16; a++) { var th = a / 16 * TAU, ca = Math.cos(th), sa = Math.sin(th), r0 = pE * 1.5, x0 = cx + ca * r0 * s, y0 = cy + sa * r0 * s;
+			x.beginPath(); x.moveTo(x0, y0); x.lineTo(cx + ca * 0.08 * s, cy + sa * 0.08 * s); x.strokeStyle = "rgba(255,255,255,0.28)"; x.lineWidth = 1; x.stroke();
+			[2.6, 1.5, 0.55].forEach(function (rr) { var px = cx + ca * rr * s, py = cy + sa * rr * s, hl = 6; x.beginPath(); x.moveTo(px, py); x.lineTo(px + (ca * Math.cos(0.5) - sa * Math.sin(0.5)) * hl, py + (sa * Math.cos(0.5) + ca * Math.sin(0.5)) * hl); x.moveTo(px, py); x.lineTo(px + (ca * Math.cos(-0.5) - sa * Math.sin(-0.5)) * hl, py + (sa * Math.cos(-0.5) + ca * Math.sin(-0.5)) * hl); x.strokeStyle = "rgba(255,255,255,0.55)"; x.stroke(); }); }
+		if (P.cont) [[0.25, 4], [1 / 3, 3], [0.5, 2], [0.75, 4 / 3], [1, 1], [1.2, Math.sqrt(3 - 2.4)], [1.4, Math.sqrt(3 - 2.8)]].forEach(function (L) {
+			x.beginPath(); x.arc(cx, cy, L[1] * s, 0, TAU); x.strokeStyle = L[0] === 1 ? "rgba(255,255,255,0.95)" : "rgba(255,255,255,0.5)"; x.lineWidth = L[0] === 1 ? 2 : 1; x.setLineDash(L[0] === 1 ? [] : [4, 4]); x.stroke(); x.setLineDash([]);
+			if (L[1] * s < Math.min(w, h) / 2 - 4) text(x, (L[0] === 1 ? "surface: " : "") + fmt(L[0], 2) + " Φ(R)", cx + L[1] * s * 0.71 + 3, cy - L[1] * s * 0.71 - 6, 10, "#fff");
+		});
+		else { x.beginPath(); x.arc(cx, cy, s, 0, TAU); x.strokeStyle = "#fff"; x.lineWidth = 2; x.stroke(); }
+		if (pRay) {   // straight reference + traced ray
+			var by = cy - P.b * s; x.beginPath(); x.moveTo(0, by); x.lineTo(w, by); x.strokeStyle = "rgba(160,220,255,0.45)"; x.setLineDash([6, 5]); x.lineWidth = 1; x.stroke(); x.setLineDash([]);
+			var pts = pRay.draw.pts; x.beginPath(); var first = true; for (var q2 = 0; q2 < pts.length; q2 += 2) { if (Math.abs(pts[q2]) > pE * 1.6) continue; var px = cx + pts[q2] * s, py = cy - pts[q2 + 1] * s; if (first) { x.moveTo(px, py); first = false; } else x.lineTo(px, py); }
+			x.strokeStyle = "#7fe3ff"; x.lineWidth = 2.6; x.stroke(); text(x, pRay.ex > 1.5 ? "light ray (bending ×" + fmt(pRay.ex, 3) + ")" : "light ray", 8, Math.max(14, by - 12), 12, "#7fe3ff");
+		}
+		if (pHov) { var hp = pAt(B, Math.hypot(pHov.x, pHov.y)), hx = cx + pHov.x * s, hy = cy - pHov.y * s; x.beginPath(); x.arc(hx, hy, 4, 0, TAU); x.fillStyle = "#fff"; x.fill();
+			var lines = ["r = " + fmt(Math.hypot(pHov.x, pHov.y), 3) + " R", "Φ = " + fmt(hp.phi, 4) + " J/kg", "g = " + fmt(hp.g, 4) + " m/s²", "v esc = " + (hp.v >= R.C ? "> c" : fmt(hp.v / 1000, 4) + " km/s"), "n − 1 = " + fmt(hp.n1, 4)];
+			x.fillStyle = "rgba(8,10,24,0.78)"; x.fillRect(6, 6, 168, lines.length * 16 + 8); lines.forEach(function (l, i) { text(x, l, 12, 18 + i * 16, 12, "#f2f4f8"); }); }
+		text(x, P.col === "g" ? "colour: strength of the pull |g|" : "colour: depth of the potential (bright = deep)", w - 8, h - 12, 11, "#dfe5f2", "right");
+	}
+	(function () {
+		var c = $("rs-p-map"), drag = false;
+		function at(e) { var r = c.getBoundingClientRect(), w = r.width, h = r.height, s = Math.min(w, h) / (2 * pE); return { x: (e.clientX - r.left - w / 2) / s, y: -(e.clientY - r.top - h / 2) / s }; }
+		c.addEventListener("pointerdown", function (e) { drag = true; c.setPointerCapture(e.pointerId); var p = at(e); P.b = Math.round(Math.max(0, Math.min(4, Math.abs(p.y))) * 100) / 100; $("rs-p-b").value = P.b; pUpdate(); });
+		c.addEventListener("pointermove", function (e) { var p = at(e); pHov = p; if (drag) { P.b = Math.round(Math.max(0, Math.min(4, Math.abs(p.y))) * 100) / 100; $("rs-p-b").value = P.b; pUpdate(); } else { var B = pBody(); if (!B.err) pMap(B); } });
+		c.addEventListener("pointerup", function () { drag = false; }); c.addEventListener("pointerleave", function () { pHov = null; var B = pBody(); if (!B.err) pMap(B); });
+	})();
+	function p3d(B) {
+		var c = $("rs-p-3d"), f = fitCanvas(c, 0.92, 240), x = f.x, w = f.w, h = f.h, N = 40, yaw = P.yaw, pit = P.pitch, cy0 = Math.cos(yaw), sy0 = Math.sin(yaw), cp = Math.cos(pit), sp = Math.sin(pit), depthScale = 2.4;
+		x.fillStyle = "#0b0f1a"; x.fillRect(0, 0, w, h);
+		function zOf(X, Y) { return -R.uRho(Math.hypot(X, Y)) / 1.5 * depthScale; }
+		function proj(X, Y, Z) { var x1 = X * cy0 - Y * sy0, y1 = X * sy0 + Y * cy0; return [x1, Z * cp + y1 * sp, y1 * cp - Z * sp]; }
+		var sc = Math.min(w, h) / (pE * 2 * 1.45), ox = w / 2, oy = h * 0.42, quads = [], grid = [];
+		for (var j = 0; j <= N; j++) { grid.push([]); for (var i = 0; i <= N; i++) { var X = -pE + 2 * pE * i / N, Y = -pE + 2 * pE * j / N, Z = zOf(X, Y), p = proj(X, Y, Z); grid[j].push([ox + p[0] * sc, oy - p[1] * sc, p[2], Z]); } }
+		for (j = 0; j < N; j++) for (i = 0; i < N; i++) { var a = grid[j][i], b = grid[j][i + 1], cc = grid[j + 1][i + 1], d = grid[j + 1][i]; quads.push([a, b, cc, d, (a[2] + b[2] + cc[2] + d[2]) / 4, (a[3] + b[3] + cc[3] + d[3]) / 4]); }
+		quads.sort(function (q1, q2) { return q2[4] - q1[4]; });
+		quads.forEach(function (q) { var col = pCmap(-q[5] / depthScale); x.beginPath(); x.moveTo(q[0][0], q[0][1]); x.lineTo(q[1][0], q[1][1]); x.lineTo(q[2][0], q[2][1]); x.lineTo(q[3][0], q[3][1]); x.closePath(); x.fillStyle = "rgb(" + col.join(",") + ")"; x.fill(); x.strokeStyle = "rgba(0,0,0,0.35)"; x.lineWidth = 0.6; x.stroke(); });
+		x.beginPath(); for (var a2 = 0; a2 <= 64; a2++) { var th = a2 / 64 * TAU, p2 = proj(Math.cos(th), Math.sin(th), zOf(Math.cos(th), Math.sin(th))); if (a2) x.lineTo(ox + p2[0] * sc, oy - p2[1] * sc); else x.moveTo(ox + p2[0] * sc, oy - p2[1] * sc); } x.strokeStyle = "#fff"; x.lineWidth = 2; x.stroke();
+		text(x, "surface of the ball", 10, h - 30, 11, "#fff"); text(x, "deepest: Φ = 1.5 Φ(R) at the centre", 10, h - 14, 11, "#dfe5f2");
+	}
+	(function () {
+		var c = $("rs-p-3d"), drag = null;
+		c.addEventListener("pointerdown", function (e) { drag = { x: e.clientX, y: e.clientY, yaw: P.yaw, pitch: P.pitch }; c.setPointerCapture(e.pointerId); });
+		c.addEventListener("pointermove", function (e) { if (!drag) return; P.yaw = drag.yaw + (e.clientX - drag.x) * 0.01; P.pitch = Math.max(0.12, Math.min(1.5, drag.pitch + (e.clientY - drag.y) * 0.008)); var B = pBody(); if (!B.err) p3d(B); });
+		c.addEventListener("pointerup", function () { drag = null; save(); }); c.addEventListener("pointercancel", function () { drag = null; });
+		c.addEventListener("keydown", function (e) { var d = { ArrowLeft: [-0.1, 0], ArrowRight: [0.1, 0], ArrowUp: [0, -0.06], ArrowDown: [0, 0.06] }[e.key]; if (!d) return; P.yaw += d[0]; P.pitch = Math.max(0.12, Math.min(1.5, P.pitch + d[1])); var B = pBody(); if (!B.err) p3d(B); save(); e.preventDefault(); });
+	})();
+	function p1d(B) {
+		var c = $("rs-p-1d"), w0 = Math.max(280, c.parentNode.clientWidth || 600), f = fitCanvas(c, 0, Math.min(560, Math.max(420, Math.round(w0 * 0.42)))), x = f.x, w = f.w, h = f.h, L = 64, Rm = 12, panes = 4, ph = h / panes, NS = 480;
+		x.fillStyle = "#0b0f1a"; x.fillRect(0, 0, w, h);
+		var defs = [
+			{ name: "horizontal pull gₓ (m/s², + = to the right)", f: function (X) { var r = Math.abs(X); return X === 0 ? 0 : -Math.sign(X) * pAt(B, r).g; }, col: "#ffd166" },
+			{ name: "potential Φ (J/kg)", f: function (X) { return pAt(B, Math.abs(X)).phi; }, col: "#ff8fb1" },
+			{ name: "escape speed (km/s)", f: function (X) { return pAt(B, Math.abs(X)).v / 1000; }, col: "#9ef0a8", cLine: R.C / 1000 },
+			{ name: "index n − 1 = −2Φ/c²", f: function (X) { return pAt(B, Math.abs(X)).n1; }, col: "#7fe3ff" }];
+		defs.forEach(function (d, k) {
+			var top = k * ph + 18, bot = (k + 1) * ph - 14, vals = [], mn = Infinity, mx = -Infinity;
+			for (var i = 0; i <= NS; i++) { var X = -pE + 2 * pE * i / NS, v = d.f(X); vals.push(v); mn = Math.min(mn, v); mx = Math.max(mx, v); }
+			if (mn > 0 && k > 1) mn = 0; if (mx < 0) mx = 0; var pad = (mx - mn) * 0.06 || 1; mn -= pad; mx += pad;
+			function Y(v) { return bot - (bot - top) * (v - mn) / (mx - mn); } function Xp(X) { return L + (w - L - Rm) * (X + pE) / (2 * pE); }
+			x.fillStyle = "rgba(255,255,255,0.04)"; x.fillRect(L, top, w - L - Rm, bot - top);
+			[-1, 1].forEach(function (sg) { x.fillStyle = "rgba(255,255,255,0.05)"; }); x.fillStyle = "rgba(255,255,255,0.07)"; x.fillRect(Xp(-1), top, Xp(1) - Xp(-1), bot - top);
+			if (mn < 0 && mx > 0) line0(x, L, Y(0), w - Rm, Y(0));
+			text(x, d.name, L + 4, top - 8, 11, d.col); text(x, fmt(mx - pad, 3), L - 4, top + 6, 10, "#9aa6bb", "right"); text(x, fmt(mn + pad, 3), L - 4, bot - 4, 10, "#9aa6bb", "right");
+			if (d.cLine && d.cLine < mx) { x.beginPath(); x.moveTo(L, Y(d.cLine)); x.lineTo(w - Rm, Y(d.cLine)); x.strokeStyle = "rgba(255,120,120,0.8)"; x.setLineDash([4, 4]); x.stroke(); x.setLineDash([]); text(x, "speed of light", w - Rm - 4, Y(d.cLine) - 8, 10, "#ff9b9b", "right"); }
+			x.beginPath(); vals.forEach(function (v, i) { var px = L + (w - L - Rm) * i / NS; if (i) x.lineTo(px, Y(v)); else x.moveTo(px, Y(v)); }); x.strokeStyle = d.col; x.lineWidth = 2; x.stroke();
+			if (p1x != null) { var vx = d.f(p1x); x.beginPath(); x.arc(Xp(p1x), Y(vx), 3.5, 0, TAU); x.fillStyle = d.col; x.fill(); text(x, fmt(vx, 4), Math.min(w - 60, Xp(p1x) + 6), Math.max(top + 6, Y(vx) - 9), 11, "#fff"); }
+			if (k === panes - 1) [-4, -2, -1, 0, 1, 2, 4].forEach(function (t) { text(x, (t === 0 ? "0" : t + " R"), Xp(t), h - 5, 10, "#9aa6bb", "center"); });
+		});
+		if (p1x != null) { var xx = L + (w - L - Rm) * (p1x + pE) / (2 * pE); x.beginPath(); x.moveTo(xx, 0); x.lineTo(xx, h); x.strokeStyle = "rgba(255,255,255,0.35)"; x.lineWidth = 1; x.stroke(); }
+	}
+	function line0(x, a, b, c, d) { x.beginPath(); x.moveTo(a, b); x.lineTo(c, d); x.strokeStyle = "rgba(255,255,255,0.25)"; x.lineWidth = 1; x.stroke(); }
+	(function () {
+		var c = $("rs-p-1d");
+		function upd(e) { var r = c.getBoundingClientRect(), L = 64, Rm = 12, X = ((e.clientX - r.left) - L) / (r.width - L - Rm) * 2 * pE - pE; p1x = X < -pE || X > pE ? null : X; var B = pBody(); if (!B.err) p1d(B); }
+		c.addEventListener("pointermove", upd); c.addEventListener("pointerdown", upd); c.addEventListener("pointerleave", function () { p1x = null; var B = pBody(); if (!B.err) p1d(B); });
+	})();
+
 	/* ---------- loop ---------- */
 	var last = 0;
-	function redrawAll() { if (S.tab === "grav") gDraw(0); else if (S.tab === "dop") dDraw(0); else if (S.tab === "spec") sDraw(); else cDraw(); }
+	function redrawAll() { if (S.tab === "grav") gDraw(0); else if (S.tab === "dop") dDraw(0); else if (S.tab === "spec") sDraw(); else if (S.tab === "pot") pUpdate(); else cDraw(); }
 	function frame(ts) {
 		requestAnimationFrame(frame); if (document.hidden) { last = 0; return; }
 		var dt = last ? Math.min(0.05, (ts - last) / 1000) : 0; last = ts;
@@ -308,7 +436,7 @@
 	if (window.ResizeObserver) new ResizeObserver(function () { redrawAll(); }).observe(root); else window.addEventListener("resize", redrawAll);
 	/* ---------- links ---------- */
 	(function fromUrl() {
-		var q = new URLSearchParams(location.search); if (q.get("tab") && ["grav", "dop", "spec", "cos"].indexOf(q.get("tab")) >= 0) S.tab = q.get("tab");
+		var q = new URLSearchParams(location.search); if (q.get("tab") && ["grav", "dop", "spec", "cos", "pot"].indexOf(q.get("tab")) >= 0) S.tab = q.get("tab");
 		if (q.get("z") && isFinite(+q.get("z"))) { K.z = q.get("z"); S.tab = q.get("tab") || "cos"; } if (q.get("b") && isFinite(+q.get("b")) && Math.abs(+q.get("b")) < 0.96) { D.b = +q.get("b"); S.tab = q.get("tab") || "dop"; }
 	})();
 
@@ -325,5 +453,5 @@
 		root.addEventListener("click", function (e) { var p = e.target.closest(".rs-pb-pin"), h = e.target.closest(".rs-pb-hide"); if (p) { pinned = !pinned; try { localStorage.setItem(KEY + ":pin", pinned ? "1" : ""); } catch (x) {} apply(); } else if (h) { hid = !hid; apply(); window.dispatchEvent(new Event("resize")); } });
 		apply();
 	})();
-	gSync(); gUpdate(); dUpdate(); sUpdate(); qUpdate(); cUpdate(false); showTab(S.tab, true); emit(); requestAnimationFrame(frame);
+	gSync(); gUpdate(); dUpdate(); sUpdate(); qUpdate(); cUpdate(false); pSync(); showTab(S.tab, true); emit(); requestAnimationFrame(frame);
 })();
