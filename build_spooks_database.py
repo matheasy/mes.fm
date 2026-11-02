@@ -36,7 +36,7 @@ SHEET_URL = f"https://docs.google.com/spreadsheets/d/{SHEET_ID}/edit?gid={SHEET_
 EXCEL_URL = "https://1drv.ms/x/s!As32ynv0LoaIi6UOFw7QTWr1sVrCtA"
 # Banner of the Hive post, uploaded through PeakD's image button (files.peakd.com) so it shows on Hive without mes.fm.
 HIVE_BANNER = "https://files.peakd.com/file/peakd-hive/mestruth/23tGc14jFf9N7X9Tf5YhRjzfx4bxcxNeaNuftBT9pMRnsE5z7a8zw48xUyuoWG82LgDdr.jpg"
-HIVE_POST = ""  # e.g. "https://peakd.com/hive-113182/@mestruth/911-spooks-database" once published
+HIVE_POST = "https://peakd.com/hive-113182/@mestruth/911-spooks-database-ayc"
 STREAM_PAGE = "/livestream-112-911-spooks"
 SLUG = "911spooks-database"
 OUT = ROOT / SLUG
@@ -570,14 +570,14 @@ The MES list of 9/11 disinfo agents, spooks and controlled opposition: **{floor}
 
 **Searchable version with filters, pictures and the MES posts about each person:** https://mes.fm/{SLUG}
 
-Kept in: [Google Sheet]({SHEET_URL}) · [Excel (OneDrive)]({EXCEL_URL}) · [mes.fm](https://mes.fm/{SLUG}) · Download: [CSV](https://mes.fm/{SLUG}/spooks.csv) · [JSON](https://mes.fm/{SLUG}/spooks.json)
+Kept in: [Google Sheet]({SHEET_URL}) · [Excel (OneDrive)]({EXCEL_URL}) · [mes.fm](https://mes.fm/{SLUG}) · [Hive]({HIVE_POST}) · Download: [CSV](https://mes.fm/{SLUG}/spooks.csv) · [JSON](https://mes.fm/{SLUG}/spooks.json)
 
 First shown on [MES Livestream 112: 9/11 Spooks Database](https://mes.fm/livestream-112-911-spooks). Last updated: {nice}.
 
 {chr(10).join(chr(10) + p_ + chr(10) for p_ in parts)}
 ---
 
-[MES 9/11 Spooks](https://mes.fm/911spooks) · [MES 9/11 Truth](https://mes.fm/911) · [MES Links](https://mes.fm/links)
+[MES 9/11 Spooks](https://mes.fm/911spooks) · [MES 9/11 Truth](https://mes.fm/911) · [MES Conspiracy](https://mes.fm/conspiracy)
 """
 
 
@@ -639,7 +639,21 @@ def sync_excel(people):
     tot_cell = tot_cell.replace(f'r="B{tot_old}"', f'r="B{tot}"')
     tot_cell = re.sub(r"<v>\d+</v>", f"<v>{len(people)}</v>", tot_cell)
     new_rows.append(f'<row r="{tot}" spans="2:4">{tot_cell}<c r="C{tot}"{st("C")}/></row>')
-    keep = [x for r, x in rowxml.items() if int(r) <= head_row]
+    # the info rows above the table: title row kept as is, then note / mes.fm / Hive / Google Sheet (blank row before the table)
+    title_row = min(rowxml, key=int)
+    info = [("Search their names in MES Links Telegram for many posts.", ""), ("mes.fm:", f"https://mes.fm/{SLUG}"),
+            ("Hive:", HIVE_POST), ("Google Sheet:", SHEET_URL)]
+    csty = (re.search(r'<c r="C\d+" s="(\d+)"', "".join(x for r, x in rowxml.items() if int(r) < head_row)) or [None, None])[1]
+    keep = [rowxml[title_row]]
+    for i, (label, url) in enumerate(info):
+        r = int(title_row) + 1 + i
+        if r >= head_row - 1:
+            break
+        c = f'<c r="C{r}"' + (f' s="{csty}"' if csty else "") + (f' t="inlineStr"><is><t>{xesc(url)}</t></is></c>' if url else "/>")
+        keep.append(f'<row r="{r}" spans="2:4"><c r="B{r}" t="inlineStr"><is><t>{xesc(label)}</t></is></c>{c}</row>')
+        if url:
+            links.append((f"C{r}", url))
+    keep.append(rowxml[str(head_row)])
     s = re.sub(r"<sheetData>.*?</sheetData>|<sheetData/>", lambda _: "<sheetData>" + "".join(keep + new_rows) + "</sheetData>", s, 1, re.S)
     s = re.sub(r'<dimension ref="[^"]*"/>', f'<dimension ref="B2:D{tot}"/>', s, 1)
     rels = re.sub(r'<Relationship Id="[^"]*" Type="[^"]*/hyperlink"[^>]*/>', "", rels)
