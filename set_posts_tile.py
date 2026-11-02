@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Set the "Posts" tile image of a hub: mes.fm/911, mes.fm/911spooks, mes.fm/bg, mes.fm/conspiracy, mes.fm/mh370
+"""Set the "Posts" tile image of a hub: mes.fm/911, mes.fm/911spooks, mes.fm/bg, mes.fm/conspiracy, mes.fm/mh370, mes.fm/science
 (img/<hub>-posts-icon.jpg, 900x600).
 
 Run it whenever a new post is mirrored into those Posts lists. Default = the FIRST IMAGE of the mirrored page,
@@ -12,7 +12,7 @@ picture or crop reads better (e.g. a screenshot where the punchline sits at the 
   python3 set_posts_tile.py --image https://.../pic.jpg --anchor bottom --apply
   python3 set_posts_tile.py --image ~/Downloads/a.png --box 28,782,680,840 --apply   # red box (source pixels), crop follows it
 
---hubs 911,bg (default both; also 911spooks, conspiracy, mh370). --fit shows the whole picture on a blurred copy of itself
+--hubs 911,bg (default both; also 911spooks, conspiracy, mathiew, mh370, science). --fit shows the whole picture on a blurred copy of itself
 instead of cropping (for a wide multi-panel meme whose sides would be cut off). With --apply: writes the icon(s), bumps `iconVersion` of the posts
 page in each hub's build.mjs (so cached tiles refresh) and runs `npm run build` there. Dry-runs by default.
 
@@ -28,7 +28,7 @@ from PIL import Image, ImageDraw, ImageFilter
 
 ROOT = os.path.dirname(os.path.abspath(__file__))
 SITE = os.path.join(ROOT, "mes.fm")
-HUBS = {"911": "911-posts", "911spooks": "911spooks-posts", "bg": "bg-posts", "conspiracy": "conspiracy-posts", "mathiew": "mathiew-posts", "mh370": "mh370-posts"}
+HUBS = {"911": "911-posts", "911spooks": "911spooks-posts", "bg": "bg-posts", "conspiracy": "conspiracy-posts", "mathiew": "mathiew-posts", "mh370": "mh370-posts", "science": "science-posts"}
 STAMP = os.path.join(SITE, "img", "posts-tiles.json")
 
 

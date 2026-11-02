@@ -82,10 +82,10 @@ const PAGES = [
     slug: "science-posts",
     sectionId: "science-posts",
     tileLabel: "Posts",
-    iconVersion: 2, // icon = crop of the newest post's thumbnail; bump when you refresh img/science-posts-icon.jpg
+    iconVersion: 3, // icon = crop of the newest post's thumbnail; bump when you refresh img/science-posts-icon.jpg
     title: "MES Science Posts",
     description:
-      "MES science posts, newest first: the America.gov AI chat site, Mendeleev's periodic table dream, Martin Fleischmann's cold fusion and corn starch, and the ferrocell.",
+      "MES science posts, newest first: the Space Shuttle Columbia disaster that shook a house on Earth, the America.gov AI chat site, Mendeleev's periodic table dream, Martin Fleischmann's cold fusion and corn starch, and the ferrocell.",
   },
   {
     slug: "science-videos",

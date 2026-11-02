@@ -18,5 +18,10 @@
     "key": "https://mes.fm/richmond-elections-sticker-2026",
     "src": "/richmond-elections-sticker-2026/img/i-voted-sticker.jpg",
     "v": 2
+  },
+  "science-posts": {
+    "key": "https://mes.fm/space-shuttle-columbia-disaster-shook-house",
+    "src": "/space-shuttle-columbia-disaster-shook-house/img/thumb.jpg",
+    "v": 3
   }
 }
