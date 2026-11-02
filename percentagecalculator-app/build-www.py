@@ -41,27 +41,43 @@ EXT = "https://mes.fm"
 
 PAGES = ["index.html", "tutorial.html", "how-do-you-calculate-percentages.html"]
 
+# Since v1.3 (2026-11-01): the five translated calculator pages (generated on the site by build_percentage_translations.py,
+# same script, strings in window.PC_I18N) are bundled as www/<code>.html, and "Type it in words" (main_js/mes-ask.js) works offline.
+LANGS = {"es": "calculadora-de-porcentaje", "pt-BR": "calculadora-de-porcentagem", "id": "kalkulator-persen",
+         "fr": "calcul-pourcentage", "de": "prozentrechner"}
+LANG_FILES = {code + ".html": slug for code, slug in LANGS.items()}
+
 # index/tutorial/how-to map 1:1 to the three #info-bar tabs (see app-nav.js's
 # active-tab highlight, which reads MES_Vars.current_tab) -- must stay in the
 # same order as PAGES above.
 TAB_INDEX = {name: i for i, name in enumerate(PAGES)}
+TAB_INDEX.update({fn: 0 for fn in LANG_FILES})
 
 
-def script_tail(page_name: str) -> str:
+def script_tail(page_name: str, i18n: str = "", ask: str = "") -> str:
     return (
         '<script src="vendor/jquery.min.js"></script>\n'
         "<script>var MES_Vars={mobile:false,hide_search:true,current_tab:%d};"
         "</script>\n"
         '<script src="vendor/app-migrate.js"></script>\n'
-        '<script src="js/calculator.js?v=3.2"></script>\n'
+        + i18n.replace("%", "%%") +
+        '<script src="js/calculator.js?v=3.3"></script>\n'
         '<script src="vendor/app-nav.js"></script>\n'
         '<script src="vendor/app-features.js"></script>\n'
         '<script>var _y=document.getElementById("copyright-year");'
         "if(_y)_y.textContent=new Date().getFullYear();</script>\n"
+        + ask.replace("%", "%%") + LANG_JS +
         "</body>"
     ) % TAB_INDEX[page_name]
 
-ROOT_LINKS = ("contact", "privacy-policy", "calculators.html", "tools.html",
+# remember the language picked in the language menu and reopen it on the next cold start
+LANG_JS = ('<script>try{sessionStorage.setItem("mes-pc-app:started","1");}catch(e){}'
+           '[].slice.call(document.querySelectorAll(".pc-lang a")).forEach(function(a){a.addEventListener("click",function(){'
+           'try{localStorage.setItem("mes-pc-app:lang",a.getAttribute("href"));}catch(e){}});});</script>\n')
+HEAD_REDIRECT = ('<script>try{var _l=localStorage.getItem("mes-pc-app:lang");'
+                 'if(_l&&_l!=="index.html"&&/^[a-zA-Z-]+\\.html$/.test(_l)&&!sessionStorage.getItem("mes-pc-app:started"))location.replace(_l);}catch(e){}</script>')
+
+ROOT_LINKS = ("contact", "privacy-policy", "calculators.html", "tools.html", "calculators", "tools",
               "mobile-apps.html", "links", "donate.html")
 
 # every real external link is already marked target="_blank" by the rules
@@ -88,6 +104,10 @@ def clean(html: str, page_name: str) -> str:
                   html, flags=re.S)
     html = re.sub(r"<base\b[^>]*>", "", html)
     html = re.sub(r'<link rel="canonical"[^>]*>', "", html)
+    html = re.sub(r"<!-- PC-HREFLANG -->.*?<!-- /PC-HREFLANG -->", "", html, flags=re.S)
+    # language menu (PC-LANGS): the other languages are bundled pages
+    for fn, slug in LANG_FILES.items():
+        html = html.replace('href="/%s"' % slug, 'href="%s"' % fn)
 
     # the web's "More like this" side column (add_sidebar.py): ad slot + links to
     # web-only pages, none of which belongs in the app
@@ -199,6 +219,8 @@ def clean(html: str, page_name: str) -> str:
     # that now leaves the app (they stay reachable from the hamburger menu)
     html = re.sub(r'<li class="info-bar__item"><a [^>]*\btarget="_blank"[^>]*>'
                   r'[^<]*</a></li>\s*', "", html)
+    # the always-visible "MES.fm" item (add_mes_home_link.py) pointed at "/", which is nothing inside the app
+    html = re.sub(r'<li class="info-bar__item info-bar__item--mes">.*?</li>', "", html, flags=re.S)
     # the web nav cross-links to the Tools hub (add_cross_links.py) -- not part of the app
     html = re.sub(r'<li class="info-bar__item"><a class="info-bar__item__text" href=\'https://mes\.fm/tools\'>Tools</a></li>\s*', "", html)
     html = re.sub(r'<li class="(?:navbar__item|info-bar__item)[^"]*pc-applink"[^>]*>.*?</li>\s*', "", html, flags=re.S)   # the website's iPhone App links (add_percentage_app_link.py)
@@ -247,8 +269,15 @@ def clean(html: str, page_name: str) -> str:
                   r"<!-- /ANDROID-TESTERS-BANNER -->", "", html, flags=re.S)
 
     # --- script tail ------------------------------------------------------
+    m = re.search(r"<script>window\.PC_I18N = .*?</script>", html, flags=re.S)
+    i18n = m.group(0) + "\n" if m else ""
+    m = re.search(r"<!-- PC-ASK-JS -->(.*?)<!-- /PC-ASK-JS -->", html, flags=re.S)
+    ask = m.group(1).replace('src="/main_js/mes-ask.js?v=1" defer', 'src="js/mes-ask.js"') + "\n" if m else ""
+    assert (page_name not in ("index.html",) + tuple(LANG_FILES)) or ("js/mes-ask.js" in ask), "PC-ASK-JS block not found in " + page_name
     html = re.sub(r'<script src="https://ajax\.googleapis\.com/ajax/libs/'
-                  r"jquery.*?</body>", script_tail(page_name), html, flags=re.S)
+                  r"jquery.*?</body>", lambda _m: script_tail(page_name, i18n, ask), html, flags=re.S)
+    if page_name == "index.html":
+        html = html.replace('<meta charset="utf-8">', '<meta charset="utf-8">' + HEAD_REDIRECT, 1)
 
     return html
 
@@ -270,9 +299,11 @@ def main() -> None:
     shutil.copy(WWW / "vendor" / "mes-logo-small.png",
                 WWW / "img" / "mes-logo-small.png")
 
+    shutil.copy(REPO / "mes.fm" / "main_js" / "mes-ask.js", WWW / "js" / "mes-ask.js")
     pages = {}
-    for name in PAGES:
-        out = clean((SRC / name).read_text(encoding="utf-8"), name)
+    for name in PAGES + list(LANG_FILES):
+        src = SRC / name if name in PAGES else REPO / "mes.fm" / LANG_FILES[name] / "index.html"
+        out = clean(src.read_text(encoding="utf-8"), name)
         (WWW / name).write_text(out, encoding="utf-8")
         pages[name] = out
 

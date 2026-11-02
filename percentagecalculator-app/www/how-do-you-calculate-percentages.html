@@ -54,7 +54,7 @@ sub {vertical-align:sub;}        .warning-message {font-size:1em;text-align:cent
 
 .outer-container {width:68.25em;margin:0 auto;}
 .inner-container {padding:1em 2em 1em 2em;overflow:hidden;background-color:white;box-shadow:0 0 1em #BBBBBB;}
-.header {position:relative;margin-bottom: 0.7em;}
+.header {position:relative;margin-bottom: 0.7em;} /* PADTOP-EARLY: same strip display-controls.js adds later; set at first paint so the header does not jump */ @media (max-width:768px),(pointer:coarse){#header{position:relative;padding-top:3.7em}}
 .logo-image-container {display:table-cell;}
 .logo {display:block;}
 .logo-text-container {display:table-cell;vertical-align:middle;padding-left:1.5em;}
@@ -89,7 +89,7 @@ sub {vertical-align:sub;}        .warning-message {font-size:1em;text-align:cent
 .outer-page-content {width:45.5em;display:inline-block;}
 .page-content {padding:1.2em 2.25em 0 0;}
 .color-box {width:1.2em;height:1.2em;display:inline-block;margin-right:0.5em;}
-.page-title {display:inline-block;font-size:1.5em;font-weight:100;margin-bottom:0.3em;}
+.page-title {display:inline-block;font-size:1.5em;font-weight:400;margin-bottom:0.3em;}
 .page-description {line-height:1.3;}
 #main-content {margin:1.5em 0;position:relative;}
 
@@ -271,13 +271,13 @@ sub {vertical-align:sub;}        .warning-message {font-size:1em;text-align:cent
         <meta property="fb:app_id" content="1398196443773284" />
         <meta name="author" content="Percentage Calculator Staff">
         <meta property="og:type" content="website" />
-        <meta property="og:url" content="https://mes.fm/percentagecalculator/how-do-you-calculate-percentages" />            <meta property="og:title" content="How Do You Calculate Percentages?" />        <meta property="og:image" content="https://mes.fm/percentagecalculator/img/logo-big.png" />
+        <meta property="og:url" content="https://mes.fm/percentagecalculator/how-do-you-calculate-percentages" />            <meta property="og:title" content="How Do You Calculate Percentages?" />        <meta property="og:image" content="https://mes.fm/percentagecalculator/img/share.jpg" />        <meta property="og:image:width" content="1200" />        <meta property="og:image:height" content="630" />
         <meta property="og:description" content="Some of the most frequently asked questions regarding what percentages are and how to calculate them in terms of percentage change, percentage increase, and working out percentages on a calcualtor are covered in this article." />
 
-        <meta name="description" content="Some of the most frequently asked questions regarding what percentages are and how to calculate them in terms of percentage change, percentage increase, and working out percentages on a calcualtor are covered in this article.">            <meta name="twitter:card" content="summary">        <meta name="twitter:site" content="@Percentage_Calc">
+        <meta name="description" content="Some of the most frequently asked questions regarding what percentages are and how to calculate them in terms of percentage change, percentage increase, and working out percentages on a calcualtor are covered in this article.">            <meta name="twitter:card" content="summary_large_image">        <meta name="twitter:site" content="@Percentage_Calc">
         <meta name="twitter:title" content="How Do You Calculate Percentages?">
         <meta name="twitter:description" content="Some of the most frequently asked questions regarding what percentages are and how to calculate them in terms of percentage change, percentage increase, and working out percentages on a calcualtor are covered in this article.">
-        <meta name="twitter:image" content="https://mes.fm/percentagecalculator/img/logo-big.png">
+        <meta name="twitter:image" content="https://mes.fm/percentagecalculator/img/share.jpg">
         <meta name="twitter:image:alt" content="How Do You Calculate Percentages?"><style>a[target="_blank"]:not(.social__link):not(.info-bar__logo-container)::after{content:"\00a0\2197";font-size:0.75em;opacity:0.6;}</style>
 <link rel="stylesheet" href="vendor/app-features.css">
 </head>
@@ -293,7 +293,7 @@ sub {vertical-align:sub;}        .warning-message {font-size:1em;text-align:cent
                         <div class="info-bar-container" role="navigation" aria-label="Primary">
                             <ul id="info-bar" class="info-bar shadow">
                                 <li class="info-bar__item"><a class="info-bar__item__text" href="index.html">Home</a></li>                                    <li class="info-bar__item"><a class="info-bar__item__text" href="tutorial.html">Tutorial</a></li>                                    <li class="info-bar__item"><a class="info-bar__item__text" href="how-do-you-calculate-percentages.html">How-To</a></li>                                    <li class="info-bar__item info-bar__item--utility" style="display:none !important;"><a class="info-bar__item__text" href="https://mes.fm/contact" target="_blank" rel="noopener">Contact Us</a></li>
-                                    <li class="info-bar__item info-bar__item--mes"><a class="info-bar__item__text" href="/" style="font-weight:bold;">MES.fm</a></li></ul>
+                                    </ul>
                         </div>
                                                         <!-- (Responsive) Horizontal -->
                                                         <div class="outer-page-content">
@@ -349,15 +349,15 @@ sub {vertical-align:sub;}        .warning-message {font-size:1em;text-align:cent
 </div>                                    
                                                                         
 <!-- MES-BOTTOM-AD -->
-<div class="mes-bottom-ad" data-ad-slot="1532113018" data-ad-mode="rect" style="clear:both;text-align:center;margin:1.5em auto 1.75em;min-height:330px;"><span style="display:block;font-size:11px;line-height:16px;color:#777777;margin-bottom:4px;">Advertisement</span><div class="mes-bottom-ad__slot" style="width:100%;min-height:310px;margin:0 auto;"></div></div>
+<div class="mes-bottom-ad" data-ad-slot="1532113018" data-ad-mode="rect" style="clear:both;text-align:center;margin:1.5em auto 1.75em;min-height:330px;"><span style="display:block;font-size:11px;line-height:16px;color:#595959;margin-bottom:4px;">Advertisement</span><div class="mes-bottom-ad__slot" style="width:100%;min-height:310px;margin:0 auto;"></div></div>
 <!-- /MES-BOTTOM-AD -->
                                                                     </div>
                         </div>
 
                         <!-- side bar -->                            <div class="side-bar">                                    <div class="navbar-container shadow" role="navigation" aria-label="Site menu">
                                         <div class="button button--navbar" id="navbar-button" style="position:relative;">Site Navigation<span class="dropdown-symbol dropdown-symbol--dark" style="position:absolute;right:0.75em;top:50%;transform:translateY(-50%);margin-left:0;">&#9660;</span></div>    <ul id="navbar" class="navbar"><li class="navbar__item navbar__item--social"><div class="social-container social-container--navbar"><p class="social__text">Follow us!</p><ul class="social">	<li class="social__logo social__hive"><a class="social__link" href="https://peakd.com/@mes" target="_blank"></a></li></a></li>
-    <li class="social__logo social__telegram"><a class="social__link" href="https://t.me/meslinks" target="_blank"></a></li></a></li><li class="social__logo social__fb"><a class="social__link" href="https://www.facebook.com/PercentCalculator" target="_blank"></a></li><li class="social__logo social__twitter"><a class="social__link" href="https://twitter.com/Percentage_Calc" target="_blank"></a></li><li class="social__logo social__insta"><a class="social__link" href="https://instagram.com/percentagecalculator" target="_blank"></a></li><li class="social__logo social__pin"><a class="social__link" href="https://www.pinterest.com/percentagecalc" target="_blank"></a></li></ul><a target="_blank" rel="noopener" class="info-bar__logo-container" href="https://mes.fm/" title="Math Easy Solutions"><img id="mes-logo" class="info-bar__logo" alt="math easy solutions logo" height="29" width="126" src="img/mes-logo-small.png"></a></div></li>    <li class="navbar__item"><a class="navbar__link navbar__link--first" href="index.html">Percentage Calculator</a></li>            <li class="navbar__item"><a class="navbar__link" href="https://mes.fm/percentagecalculator/interesting-facts" target="_blank" rel="noopener">Interesting Facts</a></li>            <li class="navbar__item"><a class="navbar__link" href="https://mes.fm/percentagecalculator/memes" target="_blank" rel="noopener">Memes</a></li>            <li class="navbar__item"><a class="navbar__link" href="tutorial.html">Tutorial</a></li>            <li class="navbar__item"><a class="navbar__link" href="how-do-you-calculate-percentages.html">Percentages How-To</a></li>    <li class="navbar__item"><a class="navbar__link" href="/calculators">Calculators</a></li>
-    <li class="navbar__item"><a class="navbar__link" href="/tools">Tools</a></li>
+    <li class="social__logo social__telegram"><a class="social__link" href="https://t.me/meslinks" target="_blank"></a></li></a></li><li class="social__logo social__fb"><a class="social__link" href="https://www.facebook.com/PercentCalculator" target="_blank"></a></li><li class="social__logo social__twitter"><a class="social__link" href="https://twitter.com/Percentage_Calc" target="_blank"></a></li><li class="social__logo social__insta"><a class="social__link" href="https://instagram.com/percentagecalculator" target="_blank"></a></li><li class="social__logo social__pin"><a class="social__link" href="https://www.pinterest.com/percentagecalc" target="_blank"></a></li></ul><a target="_blank" rel="noopener" class="info-bar__logo-container" href="https://mes.fm/" title="Math Easy Solutions"><img id="mes-logo" class="info-bar__logo" alt="math easy solutions logo" height="29" width="126" src="img/mes-logo-small.png"></a></div></li>    <li class="navbar__item"><a class="navbar__link navbar__link--first" href="index.html">Percentage Calculator</a></li>            <li class="navbar__item"><a class="navbar__link" href="https://mes.fm/percentagecalculator/interesting-facts" target="_blank" rel="noopener">Interesting Facts</a></li>            <li class="navbar__item"><a class="navbar__link" href="https://mes.fm/percentagecalculator/memes" target="_blank" rel="noopener">Memes</a></li>            <li class="navbar__item"><a class="navbar__link" href="tutorial.html">Tutorial</a></li>            <li class="navbar__item"><a class="navbar__link" href="how-do-you-calculate-percentages.html">Percentages How-To</a></li>    <li class="navbar__item"><a class="navbar__link" href="https://mes.fm/calculators" target="_blank" rel="noopener">Calculators</a></li>
+    <li class="navbar__item"><a class="navbar__link" href="https://mes.fm/tools" target="_blank" rel="noopener">Tools</a></li>
     <!-- MOBILE-APPS-DROPDOWN-REMOVED: every linked app was a dead App Store / Play Store listing (lapsed developer account) -- add an entry back here for each app once it is relaunched -->
     </ul>
                                     </div>                                                                            <!-- (Responsive) Vertical -->
@@ -370,11 +370,11 @@ sub {vertical-align:sub;}        .warning-message {font-size:1em;text-align:cent
             </div>
 
             <div class="footer__item">
-                <a target="_blank" rel="noopener" class="footer__text footer__text--title" href="https://mes.fm/tools.html">Tools</a>
+                <a target="_blank" rel="noopener" class="footer__text footer__text--title" href="https://mes.fm/tools">Tools</a>
             </div>
 
             <div class="footer__item footer__item--extra-padding">
-                <a target="_blank" rel="noopener" class="footer__text footer__text--title" href="https://mes.fm/mobile-apps.html">Mobile Apps</a>
+                <a target="_blank" rel="noopener" class="footer__text footer__text--title" href="https://mes.fm/mobile-apps">Mobile Apps</a>
             </div>
 
             <div class="footer__item">
@@ -393,10 +393,11 @@ sub {vertical-align:sub;}        .warning-message {font-size:1em;text-align:cent
         <script src="vendor/jquery.min.js"></script>
 <script>var MES_Vars={mobile:false,hide_search:true,current_tab:2};</script>
 <script src="vendor/app-migrate.js"></script>
-<script src="js/calculator.js?v=3.2"></script>
+<script src="js/calculator.js?v=3.3"></script>
 <script src="vendor/app-nav.js"></script>
 <script src="vendor/app-features.js"></script>
 <script>var _y=document.getElementById("copyright-year");if(_y)_y.textContent=new Date().getFullYear();</script>
+<script>try{sessionStorage.setItem("mes-pc-app:started","1");}catch(e){}[].slice.call(document.querySelectorAll(".pc-lang a")).forEach(function(a){a.addEventListener("click",function(){try{localStorage.setItem("mes-pc-app:lang",a.getAttribute("href"));}catch(e){}});});</script>
 </body>
 
 </html>

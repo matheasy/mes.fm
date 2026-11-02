@@ -1,5 +1,10 @@
 $(document).ready(function(){
 
+	// Translated pages (/calculadora-de-porcentaje, /prozentrechner ...) set window.PC_I18N = { "English text": "translation", __dec: ",", __path: "/slug" }
+	// before this script loads; the English page (and the app build) set nothing, so every string below stays as written.
+	var I18N = window.PC_I18N || {}, T = function (s) { return I18N[s] || s; }, TF = function (s, n) { return T(s).replace('{n}', n); };
+	var DEC = I18N.__dec || '.', PATH = I18N.__path || '/percentagecalculator';
+
 	var CALCULATOR = (function() {
 
 		return {
@@ -251,6 +256,7 @@ $(document).ready(function(){
 					case 9: CALCULATOR.calcAnswer8(inputs); break;
 					case 10: CALCULATOR.calcAnswer9(inputs); break;
 				}
+				if (DEC !== '.') [inputs['answer'], inputs['formula']].forEach(function ($e) { $e.html($e.html().replace(/(\d)\.(\d)/g, '$1' + DEC + '$2')); });   // 12.5 -> 12,5
 			},
 			calcAll: function () { $('.input-row').each(function () { CALCULATOR.calcRow(this); }); },
 
@@ -305,7 +311,7 @@ $(document).ready(function(){
 			},
 			b64e: function (s) { return btoa(unescape(encodeURIComponent(s))).replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/, ''); },
 			b64d: function (s) { s = String(s).replace(/-/g, '+').replace(/_/g, '/'); while (s.length % 4) s += '='; return decodeURIComponent(escape(atob(s))); },
-			shareLink: function () { var l = CALCULATOR.labels, has = Object.keys(l).some(function (k) { return l[k]; }), d = CALCULATOR.collect(); return window.location.origin + '/percentagecalculator?s=1' + CALCULATOR.b64e(JSON.stringify(has ? { d: d, l: l } : d)); },
+			shareLink: function () { var l = CALCULATOR.labels, has = Object.keys(l).some(function (k) { return l[k]; }), d = CALCULATOR.collect(); return window.location.origin + PATH + '?s=1' + CALCULATOR.b64e(JSON.stringify(has ? { d: d, l: l } : d)); },
 			decodeLink: function (s) { try { if (String(s).charAt(0) !== '1') return null; var d = JSON.parse(CALCULATOR.b64d(String(s).slice(1))); if (Array.isArray(d)) return { d: d, l: {} }; return d && Array.isArray(d.d) ? { d: d.d, l: d.l || {} } : null; } catch (e) { return null; } },
 
 			toast: function (msg, undo) {
@@ -320,7 +326,7 @@ $(document).ready(function(){
 				clearTimeout(CALCULATOR._tt); CALCULATOR._tt = setTimeout(function () { t.style.opacity = '0'; t.style.pointerEvents = 'none'; }, undo ? 6000 : 2600);
 			},
 			copyText: function (text, msg) {
-				function fb() { var ta = document.createElement('textarea'); ta.value = text; ta.style.cssText = 'position:fixed;left:-9999px;top:0'; document.body.appendChild(ta); ta.select(); var ok = false; try { ok = document.execCommand('copy'); } catch (e) {} document.body.removeChild(ta); CALCULATOR.toast(ok ? msg : 'Copy failed'); }
+				function fb() { var ta = document.createElement('textarea'); ta.value = text; ta.style.cssText = 'position:fixed;left:-9999px;top:0'; document.body.appendChild(ta); ta.select(); var ok = false; try { ok = document.execCommand('copy'); } catch (e) {} document.body.removeChild(ta); CALCULATOR.toast(ok ? msg : T('Copy failed')); }
 				if (navigator.clipboard && navigator.clipboard.writeText && window.isSecureContext) navigator.clipboard.writeText(text).then(function () { CALCULATOR.toast(msg); }, fb); else fb();
 			},
 
@@ -329,7 +335,7 @@ $(document).ready(function(){
 				var q = new URLSearchParams(window.location.search), match = window.location.pathname.match(/^\/percentagecalculator\/s\/([A-Za-z0-9]+)\/?$/);
 				if (q.get('s')) {
 					var d = CALCULATOR.decodeLink(q.get('s'));
-					if (d && CALCULATOR.apply(d.d)) { if (Object.keys(d.l).length) { CALCULATOR.setLabels(d.l); CALCULATOR.showLabels(true); } CALCULATOR.save(); CALCULATOR.toast('Shared calculations loaded'); }
+					if (d && CALCULATOR.apply(d.d)) { if (Object.keys(d.l).length) { CALCULATOR.setLabels(d.l); CALCULATOR.showLabels(true); } CALCULATOR.save(); CALCULATOR.toast(T('Shared calculations loaded')); }
 					history.replaceState(null, '', window.location.pathname);
 					return true;
 				}
@@ -347,34 +353,34 @@ $(document).ready(function(){
 			showLabels: function (on) {
 				document.body.classList.toggle('pc-show-labels', !!on);
 				CALCULATOR.writeJ(CALCULATOR.LSHOW, on ? 1 : 0);
-				$('#pc-labels').attr('aria-pressed', on ? 'true' : 'false').text(on ? 'Hide labels' : 'Labels');
+				$('#pc-labels').attr('aria-pressed', on ? 'true' : 'false').text(on ? T('Hide labels') : T('Labels'));
 			},
 			// named saves: several scenarios side by side (taxes, a discount, a tip...), each with its labels
 			renderSaves: function () {
 				var $strip = $('#pc-saved-strip').empty(), all = CALCULATOR.readJ(CALCULATOR.SAVES, {});
 				Object.keys(all).forEach(function (name) {
 					var $chip = $('<span class="pc-chip"></span>');
-					$('<button type="button" class="pc-chip-open"></button>').text(name).attr('title', "Open '" + name + "'").appendTo($chip).on('click', function () {
+					$('<button type="button" class="pc-chip-open"></button>').text(name).attr('title', TF("Open '{n}'", name)).appendTo($chip).on('click', function () {
 						var e = CALCULATOR.readJ(CALCULATOR.SAVES, {})[name]; if (!e) return;
 						CALCULATOR.clearRows();
 						CALCULATOR.setLabels(e.l || {}); if (Object.keys(e.l || {}).length) CALCULATOR.showLabels(true);
-						CALCULATOR.apply(e.d); CALCULATOR.save(); CALCULATOR.toast("Opened '" + name + "'");
+						CALCULATOR.apply(e.d); CALCULATOR.save(); CALCULATOR.toast(TF("Opened '{n}'", name));
 					});
-					$('<button type="button" class="pc-chip-del">&times;</button>').attr({ title: "Delete '" + name + "'", 'aria-label': "Delete saved calculation " + name }).appendTo($chip).on('click', function () {
+					$('<button type="button" class="pc-chip-del">&times;</button>').attr({ title: TF("Delete '{n}'", name), 'aria-label': TF("Delete saved calculation {n}", name) }).appendTo($chip).on('click', function () {
 						var cur = CALCULATOR.readJ(CALCULATOR.SAVES, {}), snap = cur[name]; delete cur[name]; CALCULATOR.writeJ(CALCULATOR.SAVES, cur); CALCULATOR.renderSaves();
-						CALCULATOR.toast("Deleted '" + name + "' (click here to undo)", function () { var c2 = CALCULATOR.readJ(CALCULATOR.SAVES, {}); c2[name] = snap; CALCULATOR.writeJ(CALCULATOR.SAVES, c2); CALCULATOR.renderSaves(); });
+						CALCULATOR.toast(TF("Deleted '{n}' (click here to undo)", name), function () { var c2 = CALCULATOR.readJ(CALCULATOR.SAVES, {}); c2[name] = snap; CALCULATOR.writeJ(CALCULATOR.SAVES, c2); CALCULATOR.renderSaves(); });
 					});
 					$strip.append($chip);
 				});
 			},
 			saveCurrent: function () {
-				if (CALCULATOR.isEmpty(CALCULATOR.collect())) { CALCULATOR.toast('Type some numbers into a calculation first, then press Save'); return; }
-				var raw = window.prompt('Name this saved calculation (up to 20 characters):', ''); if (raw == null) return;
+				if (CALCULATOR.isEmpty(CALCULATOR.collect())) { CALCULATOR.toast(T('Type some numbers into a calculation first, then press Save')); return; }
+				var raw = window.prompt(T('Name this saved calculation (up to 20 characters):'), ''); if (raw == null) return;
 				var name = raw.trim().slice(0, 20); if (!name) return;
 				var all = CALCULATOR.readJ(CALCULATOR.SAVES, {});
-				if (all[name] && !window.confirm("Replace the existing '" + name + "'?")) return;
+				if (all[name] && !window.confirm(TF("Replace the existing '{n}'?", name))) return;
 				all[name] = { d: CALCULATOR.collect(), l: CALCULATOR.labels, ts: Date.now() };
-				CALCULATOR.writeJ(CALCULATOR.SAVES, all); CALCULATOR.renderSaves(); CALCULATOR.toast("Saved '" + name + "'");
+				CALCULATOR.writeJ(CALCULATOR.SAVES, all); CALCULATOR.renderSaves(); CALCULATOR.toast(TF("Saved '{n}'", name));
 			},
 			clearRows: function () {
 				$('.equation').each(function () { $(this).find('.input-row').not(':first').remove(); });
@@ -386,7 +392,7 @@ $(document).ready(function(){
 				$('.input').val(''); $('.answer').html('');
 				$('.formula').each(function () { $(this).html($(this).closest('.box-container').data('f') || ''); });
 				CALCULATOR.calcAll(); CALCULATOR.save();
-				CALCULATOR.toast('Cleared');
+				CALCULATOR.toast(T('Cleared'));
 			}
 		}
 	})();
@@ -421,7 +427,7 @@ $(document).ready(function(){
 		var f = $new.find('.formula'); f.html($row.closest('.equation').find('.input-row').first().find('.formula').data('f') || f.html());
 		$new.find('.box-container').addClass('hide'); $new.find('.question-mark-button, .button-icon--mixed-fraction').removeClass('selected');
 		$new.appendTo($eq);
-		$eq.find('.plus-sign-button').last().html('x').addClass('x-sign-button').attr('title', 'Remove this row').attr('aria-label', 'Remove this row');
+		$eq.find('.plus-sign-button').last().html('x').addClass('x-sign-button').attr('title', T('Remove this row')).attr('aria-label', T('Remove this row'));
 		CALCULATOR.calcRow($new[0]); CALCULATOR.save();
 	});
 	$(document).on('click', '.x-sign-button', function () { $(this).closest('.input-row').remove(); CALCULATOR.save(); });
@@ -429,25 +435,25 @@ $(document).ready(function(){
 	// click an answer to copy it
 	$(document).on('click', '.answer', function () {
 		var t = $(this).text().replace(/ /g, ' ').trim(); if (!t) return;
-		CALCULATOR.copyText(t, 'Copied ' + t);
+		CALCULATOR.copyText(t, TF('Copied {n}', t));
 	});
 
 	// share: no server any more, the link itself holds the numbers; the box shows it and the scissors copy it
 	$("#share-calc-button").click(function () {
 		var d = CALCULATOR.collect();
-		if (CALCULATOR.isEmpty(d)) { $("#url-to-share").val("https://mes.fm/percentagecalculator"); }
+		if (CALCULATOR.isEmpty(d)) { $("#url-to-share").val("https://mes.fm" + PATH); }
 		else $("#url-to-share").val(CALCULATOR.shareLink());
 		if ($("#share-calc-url-container").hasClass("hide")) {
 			$("#share-calc-url-container").fadeIn(500).removeClass("hide").css("display", "inline-block");
 		}
-		$(this).html("Update Calculations");
-		if (!CALCULATOR.isEmpty(d)) CALCULATOR.copyText($("#url-to-share").val(), 'Link copied');
+		$(this).html(T("Update Calculations"));
+		if (!CALCULATOR.isEmpty(d)) CALCULATOR.copyText($("#url-to-share").val(), T('Link copied'));
 	});
-	$("#copy-link-button").click(function () { CALCULATOR.copyText($("#url-to-share").val(), 'Link copied'); });
+	$("#copy-link-button").click(function () { CALCULATOR.copyText($("#url-to-share").val(), T('Link copied')); });
 
 	// accessibility + phone keyboards
 	$('.input').attr('inputmode', 'decimal');
-	$('.answer').attr({ 'aria-live': 'polite', title: 'Click to copy' });
+	$('.answer').attr({ 'aria-live': 'polite', title: T('Click to copy') });
 	$('.formula').each(function () { $(this).closest('.box-container').data('f', $(this).text()); $(this).data('f', $(this).text()); });
 
 	/* ---- Layout: collapse / expand and reorder calculations (saved per browser) ---- */
@@ -473,7 +479,7 @@ $(document).ready(function(){
 
 		function label(eq) {
 			var box = eq.querySelector('.eq-text');
-			if (!box) return 'Percentage of the mixed fraction';
+			if (!box) return T('Percentage of the mixed fraction');
 			var out = '';
 			box.childNodes.forEach(function (n) {
 				if (n.nodeType === 3) out += n.textContent;
@@ -496,7 +502,7 @@ $(document).ready(function(){
 		function build(eq) {
 			var bar = document.createElement('div');
 			bar.className = 'pc-eq-tools pc-move';
-			bar.innerHTML = '<button type="button" class="pc-tool pc-grip" title="Drag to reorder" aria-label="Reorder this calculation: drag, or use the up and down arrow keys">' + GRIP + '</button>';
+			bar.innerHTML = '<button type="button" class="pc-tool pc-grip" title="' + T('Drag to reorder') + '" aria-label="' + T('Reorder this calculation: drag, or use the up and down arrow keys') + '">' + GRIP + '</button>';
 			var fold = document.createElement('div');
 			fold.className = 'pc-eq-tools pc-fold';
 			fold.innerHTML = '<button type="button" class="pc-tool pc-toggle"></button>';
@@ -505,7 +511,7 @@ $(document).ready(function(){
 			var sum = document.createElement('button');
 			sum.type = 'button';
 			sum.className = 'pc-summary';
-			sum.setAttribute('aria-label', 'Expand: ' + label(eq));
+			sum.setAttribute('aria-label', TF('Expand: {n}', label(eq)));
 			sum.innerHTML = '<span class="pc-summary-text"></span>';
 			sum.querySelector('.pc-summary-text').textContent = label(eq);
 			eq.insertBefore(sum, fold.nextSibling);
@@ -531,13 +537,13 @@ $(document).ready(function(){
 				eq.classList.toggle('pc-collapsed', c);
 				var t = eq.querySelector('.pc-toggle');
 				t.innerHTML = c ? FOLD_OUT : FOLD_IN;
-				t.title = c ? 'Expand' : 'Collapse';
-				t.setAttribute('aria-label', (c ? 'Expand' : 'Collapse') + ' this calculation');
+				t.title = c ? T('Expand') : T('Collapse');
+				t.setAttribute('aria-label', c ? T('Expand this calculation') : T('Collapse this calculation'));
 				t.setAttribute('aria-expanded', c ? 'false' : 'true');
 			});
 			var all = state.collapsed.length === DEFAULT.length;
 			var b = document.getElementById('pc-collapse-all');
-			if (b) b.textContent = all ? 'Expand all' : 'Collapse all';
+			if (b) b.textContent = all ? T('Expand all') : T('Collapse all');
 			var r = document.getElementById('pc-reset');
 			if (r) r.style.display = (state.order.join() === DEFAULT.join() && !state.collapsed.length) ? 'none' : '';
 		}
@@ -657,14 +663,14 @@ $(document).ready(function(){
 		// toolbar
 		var bar = document.createElement('div');
 		bar.className = 'pc-toolbar';
-		bar.innerHTML = '<button type="button" id="pc-clear" class="pc-link" title="Empty every calculation">Clear all</button><button type="button" id="pc-custom" class="pc-link" aria-pressed="false">Custom layout</button><button type="button" id="pc-reset" class="pc-link" style="display:none">Reset layout</button><button type="button" id="pc-collapse-all" class="pc-link">Collapse all</button>';
+		bar.innerHTML = '<button type="button" id="pc-clear" class="pc-link" title="' + T('Empty every calculation') + '">' + T('Clear all') + '</button><button type="button" id="pc-custom" class="pc-link" aria-pressed="false">' + T('Custom layout') + '</button><button type="button" id="pc-reset" class="pc-link" style="display:none">' + T('Reset layout') + '</button><button type="button" id="pc-collapse-all" class="pc-link">' + T('Collapse all') + '</button>';
 		parent.insertBefore(bar, first);
 		// the move arrows and fold chevrons are hidden until "Custom layout" is clicked; the link then reads "Hide icons"
 		document.getElementById('pc-clear').addEventListener('click', function () { CALCULATOR.clearAll(); });
 		document.getElementById('pc-custom').addEventListener('click', function () {
 			var on = !parent.classList.contains('pc-customizing');
 			parent.classList.toggle('pc-customizing', on);
-			this.textContent = on ? 'Hide icons' : 'Custom layout';
+			this.textContent = on ? T('Hide icons') : T('Custom layout');
 			this.setAttribute('aria-pressed', on ? 'true' : 'false');
 		});
 		document.getElementById('pc-collapse-all').addEventListener('click', function () {
@@ -684,7 +690,7 @@ $(document).ready(function(){
 			refreshSummaries: function () {
 				DEFAULT.forEach(function (id) {
 					var eq = el(id), t = eq.querySelector('.pc-summary-text'), sum = eq.querySelector('.pc-summary');
-					if (t) { t.textContent = label(eq); if (sum) sum.setAttribute('aria-label', 'Expand: ' + label(eq)); }
+					if (t) { t.textContent = label(eq); if (sum) sum.setAttribute('aria-label', TF('Expand: {n}', label(eq))); }
 				});
 			}
 		};
@@ -698,14 +704,14 @@ $(document).ready(function(){
 		CALCULATOR.labels = CALCULATOR.readJ(CALCULATOR.LABELS, {});
 		$('.equation').each(function () {
 			var key = this.id.replace('equation-', ''), $f = $('<div class="calc-label-field"></div>'), $i = $('<input type="text" maxlength="40" autocomplete="off">');
-			$i.attr({ 'data-eq': key, placeholder: 'Label: e.g. Personal taxes, Business, Discount', 'aria-label': 'Label for calculation ' + key }).val(CALCULATOR.labels[key] || '');
+			$i.attr({ 'data-eq': key, placeholder: T('Label: e.g. Personal taxes, Business, Discount'), 'aria-label': TF('Label for calculation {n}', key) }).val(CALCULATOR.labels[key] || '');
 			$i.on('input', function () { var l = $.extend({}, CALCULATOR.labels); l[key] = this.value; CALCULATOR.labels = l; CALCULATOR.writeJ(CALCULATOR.LABELS, l); if (window.PCLayout) window.PCLayout.refreshSummaries(); });
 			$f.append($i); var first = $(this).find('.input-row').first(); if (first.length) $f.insertBefore(first); else $(this).append($f);
 		});
-		var $labels = $('<button type="button" id="pc-labels" class="pc-link" aria-pressed="false">Labels</button>').on('click', function () { CALCULATOR.showLabels(!document.body.classList.contains('pc-show-labels')); });
-		var $save = $('<button type="button" id="pc-save" class="pc-link" title="Keep the current numbers under a name">Save</button>').on('click', CALCULATOR.saveCurrent);
+		var $labels = $('<button type="button" id="pc-labels" class="pc-link" aria-pressed="false">' + T('Labels') + '</button>').on('click', function () { CALCULATOR.showLabels(!document.body.classList.contains('pc-show-labels')); });
+		var $save = $('<button type="button" id="pc-save" class="pc-link" title="' + T('Keep the current numbers under a name') + '">' + T('Save') + '</button>').on('click', CALCULATOR.saveCurrent);
 		$(bar).prepend($save).prepend($labels);
-		$('<div id="pc-saved-strip" class="pc-saved-strip" aria-label="Saved calculations"></div>').insertAfter(bar);
+		$('<div id="pc-saved-strip" class="pc-saved-strip" aria-label="' + T('Saved calculations') + '"></div>').insertAfter(bar);
 		CALCULATOR.showLabels(CALCULATOR.readJ(CALCULATOR.LSHOW, 0) == 1);
 		CALCULATOR.renderSaves();
 		if (window.PCLayout) window.PCLayout.refreshSummaries();
