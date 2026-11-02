@@ -24,7 +24,7 @@ REPO = APP.parent
 SRC = REPO / "mes.fm" / "gpacalculator"
 WWW = APP / "www"
 EXT = "https://mes.fm"
-VERSION = "1.0"
+VERSION = "1.0.1"
 
 
 def balanced(fragment: str) -> str:
@@ -136,7 +136,7 @@ body.dark-mode #app-foot a{color:#b5d98a;}
 .tu label.gp-check small{text-transform:none;letter-spacing:normal;font-weight:400;color:inherit;opacity:.75;}
 /* the page's reset paints every bare div/span/b/strong #333, and the web build leaves dark mode to display-controls.js;
    :where() keeps this at type-selector specificity so any class that sets its own colour (category colours, chips) still wins */
-:where(body.dark-mode #gp) :is(div,span,b,strong,p,li,small,label,td,th){color:#e6e6e6;}
+:where(body.dark-mode #gp) :is(div,span,b,strong,p,li,small,label,td,th,i,em,output){color:#e6e6e6;}
 """
 
 MOON = '<svg viewBox="0 0 24 24" fill="none" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12.8A9 9 0 1 1 11.2 3a7 7 0 0 0 9.8 9.8z"/></svg>'

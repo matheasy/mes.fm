@@ -218,7 +218,7 @@ sub {vertical-align:sub;}        .warning-message {font-size:1em;text-align:cent
 	.tu-input--big {font-size:1.35em;padding:0.55em 0.7em;}
 	.tu-suffix {position:relative;}
 	.tu-suffix .tu-input {padding-right:3.2em;}
-	.tu-suffix span {position:absolute;right:0.7em;top:50%;transform:translateY(-50%);font-size:0.85em;color:#8a93a0;pointer-events:none;}
+	.tu-suffix span {position:absolute;right:0.7em;top:50%;transform:translateY(-50%);font-size:0.85em;color:#667085;pointer-events:none;}
 	.tu-btn {cursor:pointer;padding:0.5em 0.95em;border-radius:0.35em;border:0.125em solid var(--accent);background:#fff;color:var(--accent);font-size:0.9em;line-height:1.1;}
 	.tu-btn:hover {background:var(--accent);color:#fff;}
 	.tu-btn--primary {background:var(--accent);color:#fff;}
@@ -239,7 +239,7 @@ sub {vertical-align:sub;}        .warning-message {font-size:1em;text-align:cent
 	.tu-stat--hero {background:#edf3dc;border-color:#edf3dc;}
 	.tu-stat__label {font-size:0.72em;font-weight:700;text-transform:uppercase;letter-spacing:0.05em;color:#667;}
 	.tu-stat__value {font-size:1.7em;font-weight:700;color:#1e2733;line-height:1.2;margin:0.15em 0;word-break:break-word;}
-	.tu-stat__sub {font-size:0.85em;color:#6a7280;line-height:1.35;}
+	.tu-stat__sub {font-size:0.85em;color:#555d6b;line-height:1.35;}
 	.tu-pos {color:#1f7a3d !important;}
 	.tu-neg {color:#b3261e !important;}
 	.tu-table-wrap {overflow-x:auto;}
@@ -252,7 +252,15 @@ sub {vertical-align:sub;}        .warning-message {font-size:1em;text-align:cent
 	.tu-toast {position:fixed;left:50%;bottom:2em;transform:translateX(-50%) translateY(0.5em);background:#1e2733;color:#fff;padding:0.6em 1.1em;border-radius:2em;font-size:0.9em;box-shadow:0 0.4em 1.2em rgba(0,0,0,0.25);opacity:0;pointer-events:none;transition:opacity 0.15s, transform 0.15s;z-index:60;}
 	.tu-toast--show {opacity:1;transform:translateX(-50%) translateY(0);}
 	.tu-seo {margin-top:2em;border-top:1px solid #e3e3e3;padding-top:1.2em;}
-	.tu-seo h2 {border-bottom:0;padding-bottom:0;font-size:1.2em;}
+	/* SEO-HEADINGS: headlines and questions stand out from the body text (also added to built pages by add_seo_heading_style.py) */
+	body .tu-seo {font-size:1.04em;line-height:1.65;}
+	body .tu-seo h2 {font-size:1.45em;font-weight:800;line-height:1.25;margin:0 0 0.6em;color:#1e2733;border-bottom:0;padding-bottom:0;}
+	body .tu-seo h3 {font-size:1.2em;font-weight:800;line-height:1.3;margin:1.6em 0 0.5em;padding:0.15em 0 0.15em 0.65em;border-left:5px solid var(--accent,#4a6fa5);color:#1e2733;}
+	body .tu-seo h4, body .tu-seo dt {font-size:1.08em;font-weight:700;font-style:normal;line-height:1.35;margin:1.3em 0 0.3em;color:#1e2733;}
+	body .tu-seo dd {margin:0 0 0.6em;} body .tu-seo p, body .tu-seo li, body .tu-seo dd {line-height:1.65;}
+	body.dark-mode .tu-seo h2, body.dark-mode .tu-seo h3, body.dark-mode .tu-seo h4, body.dark-mode .tu-seo dt {color:#f2f2f2;}
+	.tu sup, .tu sub {font-size:0.72em !important;line-height:0;vertical-align:baseline;position:relative;} .tu sup {top:-0.5em;} .tu sub {top:0.3em;}
+	.tu div[class$="-eq"] {overflow-y:hidden;}
 	.tu-seo ul {list-style:disc;margin:0.5em 0 0.5em 1.5em;line-height:1.5;}
 	.tu-svg-line {fill:none;stroke:#1e2733;stroke-width:2;}
 	.tu-svg-accent {fill:none;stroke:var(--accent);stroke-width:3;}
@@ -294,6 +302,11 @@ sub {vertical-align:sub;}        .warning-message {font-size:1em;text-align:cent
 .tu [data-table="1"] .rw-del {padding:0.25em 0 !important;font-size:0.95em !important;}
 .tu [data-table="1"] .rw-pts {padding:0 !important;font-size:0.78em;text-align:center;}
 body.dark-mode .tu .rw-head {color:#a0a8b3;border-bottom-color:#555;} body.dark-mode .tu [data-table="1"] .rw-row {border-bottom-color:#333;}
+/* equation boxes typeset by main_js/mes-math.js (MathJax) */
+.tu [class$="-eq__f"].mes-tex {font-family:inherit;white-space:normal;display:inline-block;vertical-align:middle;max-width:100%;overflow-x:auto;overflow-y:hidden;}
+.tu [class$="-eq"] mjx-container {margin:0.15em 0 !important;}
+.tu [class$="-eq"] > div {margin:0.25em 0;}
+.tu [class$="-eq__n"] {vertical-align:middle;}
 
 	/* GPA Calculator 2.0 */
 	.tu [hidden] {display:none !important;}
@@ -443,7 +456,7 @@ body.is-stuck #navbar.hide { position: fixed; top: 56px; right: 8px; }
 	body.dark-mode .tu-card--tint{background:#2b2f1e;border-color:#3c4919}
 	body.dark-mode .tu-field > label,body.dark-mode .tu-label{color:#9a9aa2}
 	body.dark-mode .tu-input,body.dark-mode .tu-select{border:1px solid #404a58;background:#1a1a1a;color:#dddddd}
-	body.dark-mode .tu-suffix span{color:#999da3}
+	body.dark-mode .tu-suffix span{color:#989ca4}
 	body.dark-mode .tu-btn{background:#1a1a1a}
 	body.dark-mode .tu-btn--ghost{border-color:#3a424d;color:#aaaaaa}
 	body.dark-mode .tu-btn--ghost:hover{background:#191c20;color:#dddddd;border-color:#3a424d}
@@ -455,7 +468,7 @@ body.is-stuck #navbar.hide { position: fixed; top: 56px; right: 8px; }
 	body.dark-mode .tu-stat--hero{background:#2b2f1e;border-color:#3c4919}
 	body.dark-mode .tu-stat__label{color:#9a9aa2}
 	body.dark-mode .tu-stat__value{color:#d1d6dc}
-	body.dark-mode .tu-stat__sub{color:#9a9da3}
+	body.dark-mode .tu-stat__sub{color:#9a9ea4}
 	body.dark-mode .tu-pos{color:#7dde9d !important}
 	body.dark-mode .tu-neg{color:#e87973 !important}
 	body.dark-mode .tu-table th,body.dark-mode .tu-table td{border-bottom:1px solid #29323d;color:#cccccc}
@@ -559,7 +572,7 @@ body.dark-mode #app-foot a{color:#b5d98a;}
 .tu label.gp-check small{text-transform:none;letter-spacing:normal;font-weight:400;color:inherit;opacity:.75;}
 /* the page's reset paints every bare div/span/b/strong #333, and the web build leaves dark mode to display-controls.js;
    :where() keeps this at type-selector specificity so any class that sets its own colour (category colours, chips) still wins */
-:where(body.dark-mode #gp) :is(div,span,b,strong,p,li,small,label,td,th){color:#e6e6e6;}
+:where(body.dark-mode #gp) :is(div,span,b,strong,p,li,small,label,td,th,i,em,output){color:#e6e6e6;}
 </style>
 </head>
 <body>
@@ -690,7 +703,7 @@ body.dark-mode #app-foot a{color:#b5d98a;}
   <p><strong>How it is calculated.</strong> GPA = &Sigma;(grade points &times; credits) &divide; &Sigma;credits. Percentages are rounded to a whole number and turned into points with the scale&rsquo;s table; honors adds 0.5 and AP / IB adds 1.0 when Weighted GPA is on (never to an F).</p>
   <p><strong>Your data stays on this device.</strong> Terms, courses and grades are stored only on this device, inside the app. There are no accounts, no ads and no tracking, and nothing you enter is sent anywhere.</p>
   <p class="links"><a href="https://mes.fm/privacy-policy" target="_blank" rel="noopener">Privacy Policy</a><a href="https://mes.fm/contact" target="_blank" rel="noopener">Contact</a><a href="https://mes.fm/gpacalculator" target="_blank" rel="noopener">Website</a></p>
-  <p>Version 1.0 &middot; Math Easy Solutions &middot; mes.fm</p>
+  <p>Version 1.0.1 &middot; Math Easy Solutions &middot; mes.fm</p>
 </div>
 <script src="js/gpacalculator.js"></script>
 <script>
