@@ -14,7 +14,7 @@ to find MES posts about the person) are picked up by name if you add them). This
                the "aka" regex in the title) and maps Hive / PeakD links to their mes.fm mirror where one exists.
   4. writes   mes.fm/911spooks-database/index.html (shell = the built mes.fm/911spooks-posts page, so header, nav, sidebar,
                comments and footer match), spooks.json, spooks.csv, and mes.fm/911spooks/spooks-hive.md = the body of the
-               Hive "9/11 Spooks Database" post (paste it into PeakD's editor when updating the post).
+               Hive "9/11 Spooks Database" post (@mestruth; no per-person pictures there, they live on mes.fm) (paste it into PeakD's editor when updating the post).
 
 Usage:  python3 build_spooks_database.py --fetch            (dry run: prints what changed)
         python3 build_spooks_database.py --fetch --apply
@@ -543,11 +543,10 @@ def hive_md(recs, today):
     nice = f"{d.strftime('%B')} {d.day}, {d.year}"
     rows = []
     for r in recs:
-        pic = f"![{md_cell(r['name'])}](https://images.hive.blog/80x80/{abs_url(r['img'])})" if r["img"] else ""
         links = " · ".join(f"[{link_label(u)[1]}]({u})" for u in r["links"])
         posts = "<br>".join(f"[{md_cell(p['title'])}]({abs_url(p['href'])})" for p in r["posts"][:4])
         note = md_cell(r["note"])
-        rows.append(f"| {pic} | **{md_cell(r['name'])}** | {GLABEL[r['group']]} | {note} | {links} | {posts} |")
+        rows.append(f"| **{md_cell(r['name'])}** | {GLABEL[r['group']]} | {note} | {links} | {posts} |")
     return f"""<center>
 
 ![9/11 Spooks Database](https://mes.fm/img/{SLUG}-share.jpg)
@@ -562,11 +561,11 @@ Kept in: [Google Sheet]({SHEET_URL}) · [Excel (OneDrive)]({EXCEL_URL}) · [mes.
 
 First shown on [MES Livestream 112: 9/11 Spooks Database](https://mes.fm/livestream-112-911-spooks). Last updated: {nice}.
 
-| | Disinfo Agent | Group | Notes | Links | MES posts |
-|---|---|---|---|---|---|
+| Disinfo Agent | Group | Notes | Links | MES posts |
+|---|---|---|---|---|
 {chr(10).join(rows)}
 
-Pictures: Wikimedia Commons (credits on mes.fm/{SLUG}), the people's own YouTube channel or Hive profile pictures.
+Pictures of each person are on the [mes.fm version](https://mes.fm/{SLUG}).
 
 ---
 
