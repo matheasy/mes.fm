@@ -47,9 +47,41 @@ function fred(id, since, extra) { const k = id + since + (extra || ''); return f
 const YAHOO = { spx: ['^GSPC', 'S&P 500', 'SP500'], nasdaq: ['^IXIC', 'Nasdaq Composite', 'NASDAQCOM'], dow: ['^DJI', 'Dow Jones', 'DJIA'], gold: ['GC=F', 'Gold (oz)', null], oil: ['CL=F', 'Oil (WTI barrel)', 'DCOILWTICO'], dxy: ['DX-Y.NYB', 'US Dollar Index', null] };
 // Yahoo first (same-day prices), FRED when Yahoo refuses (it is unofficial and sometimes blocks cloud addresses)
 // one News-tab section: every feed of L.NEWS_FEEDS with that sec, in parallel; titles, links, one-line summaries and thumbnails only
+// og:image of an article page (feeds with `og`): reads at most ~350 KB of the page, 4 s, never fatal; kept per link while the
+// function instance is warm, so a refresh only reads pages of new headlines.
+const ogCache = new Map();
+async function ogImage(link, f) {
+  if (!L.ogOk(link, f)) return null;
+  if (ogCache.has(link)) return ogCache.get(link);
+  const ctl = new AbortController(), t = setTimeout(() => ctl.abort(), 4000);
+  let img = null;
+  try {
+    const r = await fetch(link, { signal: ctl.signal, redirect: 'follow', headers: { 'user-agent': UA, accept: 'text/html' } });
+    if (r.ok && L.ogOk(r.url || link, f)) {
+      const rd = r.body.getReader(), dec = new TextDecoder();
+      let html = '';
+      while (html.length < 350000) {
+        const { done, value } = await rd.read();
+        if (done) break;
+        html += dec.decode(value, { stream: true });
+        if (/<\/head>/i.test(html)) break;
+      }
+      try { ctl.abort(); } catch (e) {}
+      img = L.ogImage(html, f.img);
+    }
+  } catch (e) { img = null; } finally { clearTimeout(t); }
+  if (ogCache.size > 600) ogCache.clear();
+  ogCache.set(link, img);
+  return img;
+}
+async function feedItems(f) {
+  const items = L.parseRss(await text(f.url, 7000), 12, { sum: true, imgHosts: f.img });
+  if (f.og) await Promise.all(items.slice(0, 10).map(async (i) => { if (!i.img) { const im = await ogImage(i.link, f); if (im) i.img = im; } }));
+  return items.map((i) => Object.assign({ src: f.name, sid: f.id }, i));
+}
 async function feeds(sec) {
   const list = L.NEWS_FEEDS.filter((f) => f.sec === sec);
-  const got = await Promise.allSettled(list.map((f) => text(f.url, 7000).then((x) => L.parseRss(x, 12, { sum: true, imgHosts: f.img }).map((i) => Object.assign({ src: f.name, sid: f.id }, i)))));
+  const got = await Promise.allSettled(list.map(feedItems));
   const errs = []; got.forEach((g, i) => { if (g.status !== 'fulfilled') errs.push(list[i].name + ': ' + g.reason.message); });
   const items = L.mergeNews(got.map((g) => (g.status === 'fulfilled' ? g.value : [])), 12);
   if (!items.length) throw new Error(errs.join('; ') || 'no feed answered');

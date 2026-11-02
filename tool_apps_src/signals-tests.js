@@ -103,6 +103,18 @@ async function t(name, fn) { try { await fn(); n++; } catch (e) { fail++; consol
 		assert(/^Hello & welcome/.test(evil.sum));
 		assert.strictEqual(S.parseRss('<item><title>T</title><link>https://ex.com/a</link><enclosure url="http://ex.com/a.jpg" type="image/jpeg"/></item>', 1, { imgHosts: ['ex.com'] })[0].img, undefined, 'http images are dropped');
 		assert(!S.imgOk('https://notex.com/a.jpg', ['ex.com']) && S.imgOk('https://a.ex.com/a.jpg', ['ex.com']) && !S.imgOk('javascript:alert(1)', ['ex.com']));
+		// og:image for feeds with no pictures: content before / after property, the feed's image hosts only, no site defaults
+		assert.strictEqual(S.ogImage('<meta data-rh="true" content="https://static.dw.com/image/1_6.jpg" property="og:image"/>', ['dw.com']), 'https://static.dw.com/image/1_6.jpg');
+		assert.strictEqual(S.ogImage('<meta property="og:image" content="https://evil.example/x.jpg"><meta name="twitter:image" content="https://img.ex.com/t.jpg?a=1&amp;b=2">', ['ex.com']), 'https://img.ex.com/t.jpg?a=1&b=2');
+		assert.strictEqual(S.ogImage('<meta property="og:image" content="https://media.npr.org/include/images/facebook-default-wide-s1400-c85.jpg" />', ['media.npr.org']), null, 'NPR default picture');
+		assert.strictEqual(S.smallImg('https://image.cnbcfm.com/api/v1/image/1.jpeg?v=2&w=1920&h=1080'), 'https://image.cnbcfm.com/api/v1/image/1.jpeg?v=2&w=640&h=360');
+		assert.strictEqual(S.smallImg('https://www.aljazeera.com/wp-content/uploads/a.jpg?resize=1626%2C1080&quality=80'), 'https://www.aljazeera.com/wp-content/uploads/a.jpg?resize=640%2C425&quality=80');
+		const og = S.NEWS_FEEDS.filter((f) => f.og);
+		assert.deepStrictEqual(og.map((f) => f.id).sort(), ['aljazeera', 'cnbc', 'dw', 'npr']);
+		og.forEach((f) => assert(f.img.length, f.id + ' has image hosts'));
+		const dw = S.NEWS_FEEDS.find((f) => f.id === 'dw');
+		assert(S.ogOk('https://www.dw.com/en/x/a-1', dw) && !S.ogOk('https://evil.example/x', dw) && !S.ogOk('http://www.dw.com/en/x', dw) && !S.ogOk('https://dw.com.evil.example/', dw));
+		assert(!S.ogOk('https://www.coindesk.com/x', S.NEWS_FEEDS.find((f) => f.id === 'coindesk')), 'feeds with pictures are never read');
 		assert.strictEqual(S.rssSummary('Same headline here', 'Same headline here'), '');
 		const long = S.rssSummary('word '.repeat(80), 'x'); assert(long.length <= 201 && /…$/.test(long));
 		const m = S.mergeNews([[{ date: '2026-01-01' }, { date: '2026-01-03' }], [{ date: '2026-01-02' }]], 12); assert.deepStrictEqual(m.map((x) => x.date), ['2026-01-03', '2026-01-02', '2026-01-01']);

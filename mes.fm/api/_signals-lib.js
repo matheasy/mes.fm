@@ -157,6 +157,35 @@
 		if (t.length > 200) { t = t.slice(0, 200); t = t.slice(0, Math.max(120, t.lastIndexOf(' '))).replace(/[\s,;:.\-–—]+$/, '') + '…'; }
 		return t;
 	};
+	// Feeds with no picture in the feed itself (NPR, Al Jazeera, DW, CNBC: see `og` in NEWS_FEEDS): the server reads the start of the
+	// article page and takes its og:image / twitter:image, still only from that feed's image hosts (imgOk), and never a site-wide
+	// default picture (NPR's "facebook-default", logos). ogOk(link, feed) = may this article page be read (its host is the feed's own site).
+	S.ogImage = function (html, hosts) {
+		var tags = String(html || '').match(/<meta\b[^>]*>/gi) || [], best = { 'og:image': null, 'og:image:url': null, 'og:image:secure_url': null, 'twitter:image': null, 'twitter:image:src': null };
+		for (var i = 0; i < tags.length; i++) {
+			var t = tags[i], k = /\b(?:property|name)\s*=\s*["']([^"']+)["']/i.exec(t), c = /\bcontent\s*=\s*["']([^"']+)["']/i.exec(t);
+			if (!k || !c) continue;
+			k = k[1].toLowerCase();
+			if (k in best && !best[k]) best[k] = unent(c[1]).trim();
+		}
+		var order = ['og:image:secure_url', 'og:image', 'og:image:url', 'twitter:image', 'twitter:image:src'];
+		for (var j = 0; j < order.length; j++) {
+			var u = best[order[j]];
+			if (u && S.imgOk(u, hosts) && !/default|placeholder|\/logos?\b|\blogo[-_.]/i.test(u)) return S.smallImg(u);
+		}
+		return null;
+	};
+	// card-sized copy where the image host resizes by URL (og:images are often 1600-1920 px wide)
+	S.smallImg = function (u) {
+		if (/^https:\/\/image\.cnbcfm\.com\//.test(u)) return u.replace(/([?&])w=\d+/, '$1w=640').replace(/([?&])h=\d+/, '$1h=360');
+		if (/^https:\/\/(www\.)?aljazeera\.com\/wp-content\//.test(u)) return u.replace(/([?&])resize=[^&]*/, '$1resize=640%2C425');
+		return u;
+	};
+	S.ogOk = function (link, feed) {
+		if (!feed || !feed.og || !/^https:\/\//i.test(link || '')) return false;
+		var h = S.hostOf(link);
+		return feed.og.some(function (x) { return h === x || h.slice(-x.length - 1) === '.' + x; });
+	};
 	S.parseRss = function (xml, n, opt) {
 		opt = opt || {};
 		var items = String(xml || '').match(/<(item|entry)\b[\s\S]*?<\/\1>/g) || [], out = [];
@@ -171,19 +200,20 @@
 		});
 		return out.slice(0, n || 8);
 	};
-	// The news feeds (all keyless; each checked from a server 2026-10-25). sec = News tab section; img = the hosts its thumbnails may come from.
+	// The news feeds (all keyless; each checked from a server 2026-10-25). sec = News tab section; img = the hosts its thumbnails may come from;
+	// og = the feed has no pictures, so the server reads its article pages (on these hosts only) for og:image (checked 2026-11-01).
 	S.NEWS_SECTIONS = [['crypto', 'Crypto'], ['markets', 'Stocks & markets'], ['world', 'World'], ['fed', 'Federal Reserve (monetary policy)']];
 	S.NEWS_FEEDS = [
 		{ id: 'coindesk', name: 'CoinDesk', sec: 'crypto', url: 'https://www.coindesk.com/arc/outboundfeeds/rss/', img: ['cdn.sanity.io', 'coindesk.com'] },
 		{ id: 'cointelegraph', name: 'Cointelegraph', sec: 'crypto', url: 'https://cointelegraph.com/rss', img: ['ctmedia.io', 'cointelegraph.com'] },
-		{ id: 'cnbc', name: 'CNBC', sec: 'markets', url: 'https://www.cnbc.com/id/20910258/device/rss/rss.html', img: ['cnbcfm.com'] },
+		{ id: 'cnbc', name: 'CNBC', sec: 'markets', url: 'https://www.cnbc.com/id/20910258/device/rss/rss.html', img: ['cnbcfm.com'], og: ['cnbc.com'] },
 		{ id: 'marketwatch', name: 'MarketWatch', sec: 'markets', url: 'https://feeds.content.dowjones.io/public/rss/mw_topstories', img: ['mktw.net'] },
 		{ id: 'bbcbiz', name: 'BBC Business', sec: 'markets', url: 'https://feeds.bbci.co.uk/news/business/rss.xml', img: ['bbci.co.uk'] },
 		{ id: 'bbcworld', name: 'BBC World', sec: 'world', url: 'https://feeds.bbci.co.uk/news/world/rss.xml', img: ['bbci.co.uk'] },
-		{ id: 'aljazeera', name: 'Al Jazeera', sec: 'world', url: 'https://www.aljazeera.com/xml/rss/all.xml', img: ['aljazeera.com'] },
-		{ id: 'npr', name: 'NPR World', sec: 'world', url: 'https://feeds.npr.org/1004/rss.xml', img: [] },
+		{ id: 'aljazeera', name: 'Al Jazeera', sec: 'world', url: 'https://www.aljazeera.com/xml/rss/all.xml', img: ['aljazeera.com'], og: ['aljazeera.com'] },
+		{ id: 'npr', name: 'NPR World', sec: 'world', url: 'https://feeds.npr.org/1004/rss.xml', img: ['media.npr.org'], og: ['npr.org'] },
 		{ id: 'guardian', name: 'The Guardian', sec: 'world', url: 'https://www.theguardian.com/world/rss', img: ['guim.co.uk'] },
-		{ id: 'dw', name: 'DW', sec: 'world', url: 'https://rss.dw.com/rdf/rss-en-world', img: ['dw.com'] }];
+		{ id: 'dw', name: 'DW', sec: 'world', url: 'https://rss.dw.com/rdf/rss-en-world', img: ['dw.com'], og: ['dw.com'] }];
 	// newest first, at most n per source so one busy feed cannot fill a section
 	S.mergeNews = function (lists, n) {
 		var out = []; lists.forEach(function (l) { out.push.apply(out, (l || []).slice(0, n || 12)); });
