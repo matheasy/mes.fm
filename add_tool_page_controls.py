@@ -217,8 +217,8 @@ TOOLS = [  # (directory, compact-bar title[, home path of the site the page belo
     ("double-pendulum", "Double Pendulum"),
     ("neuron-simulator", "Neuron Simulator"),
     ("spin-simulator", "Spin Simulator"),
-    ("negative-index", "Light & Metamaterials Lab"),
     ("gnm", "German New Medicine"),
+    ("negative-index", "Light & Metamaterials Lab"),
     ("heart-simulator", "Heart Simulator"),
     ("hutchison-effect-simulator", "Hutchison Effect Simulator"),
     ("orbit-simulator", "Orbit Simulator"),
@@ -418,7 +418,11 @@ def patch(text, dirname, title, home=None):
     span = tool_style_span(text)
     if not span:
         return None, ["tool <style> not found"]
-    logo = re.search(r'data-src="(/[^"]*/logo\.png[^"]*)"', text)
+    # the header logo: fix_header_first_paint.py turned its lazy data-src into a plain src
+    tag = re.search(r'<img[^>]*\bid="logo"[^>]*>', text)
+    logo = re.search(r'\b(?:data-)?src="(/[^"]*/logo\.png[^"]*)"', tag.group(0) if tag else "")
+    if not logo:
+        logo = re.search(r'data-src="(/[^"]*/logo\.png[^"]*)"', text)
     logo = logo.group(1) if logo else "https://mes.fm/img/logo-mark.png"
 
     # -- 3. generated dark block (strip any previous copy first so the derivation sees only hand-written CSS)
