@@ -775,10 +775,23 @@
 			render(); renderRules();
 		});
 	});
-	$("bgm-new").addEventListener("click", function () {
-		if (G && ["over", "matchOver", "opening"].indexOf(G.phase) < 0 && !confirm("Start a new game? The game in progress is not counted.")) return;
-		newMatch(); syncSettings();
-	});
+	// "New game" (settings card) and "↺ New game" (board bar, reachable on phones and in Fill window):
+	// starts the game or match over; asks first while a game is being played or a score would be lost
+	function askNew() {
+		if (G) {
+			var sc = G.match.score, scored = (sc[0] || sc[1]) && G.phase !== "matchOver",
+				playing = ["over", "matchOver", "opening"].indexOf(G.phase) < 0;
+			if (playing || scored) {
+				var q = G.match.to
+					? (scored ? "Start a new match? The match in progress (you " + sc[0] + " – computer " + sc[1] + ") is not finished" + (playing ? " and this game is not counted." : ".") : "Start a new match? The game in progress is not counted.")
+					: "Start over? " + (playing ? "The game in progress is not counted" : "Nothing is lost from your statistics") + (scored ? " and the score goes back to 0 – 0." : ".");
+				if (!confirm(q)) return;
+			}
+		}
+		newMatch(); syncSettings(); toast(G.match.to ? "New match to " + G.match.to + "." : "New game.");
+	}
+	$("bgm-new").addEventListener("click", askNew);
+	$("bgm-newtop").addEventListener("click", askNew);
 
 	/* ---------- tabs ---------- */
 	function showTab(t) {

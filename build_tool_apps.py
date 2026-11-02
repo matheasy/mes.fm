@@ -36,7 +36,7 @@ EXT_TAB = "<li class=\"info-bar__item\"><a class=\"info-bar__item__text\" href='
 
 # simulator pages whose boxes (.fl-wrap, .lm-wrap, ...) get the shared View bar from main_js/stage-ctl.js
 STAGE_CTL = {"julia-set-explorer", "fluid-simulator", "light-in-a-medium", "black-hole-simulator", "mandelbrot", "buddhabrot", "time-dilation", "metric-tensor", "orbit-simulator", "double-pendulum", "electromagnetic-fields-simulator", "photoelectric-effect-simulator", "solar-system-today", "atomic-clock-simulator",
-             "michelson-morley-experiment", "faster-than-light-shadow-simulator", "fountain-clock", "magnetic-isopotentials", "hutchison-effect-simulator", "heart-simulator", "neuron-simulator"}
+             "michelson-morley-experiment", "faster-than-light-shadow-simulator", "fountain-clock", "magnetic-isopotentials", "hutchison-effect-simulator", "heart-simulator", "neuron-simulator", "negative-index"}
 
 # PDF family nav (2026-10-16): Home = the PDF Tools hub, then the editor and the six tools, ahead of Calculators / Tools
 PDF_NAV_INFO = '<li class="info-bar__item"><a class="info-bar__item__text" href=\'/pdf\'>Editor</a></li><li class="info-bar__item"><a class="info-bar__item__text" href=\'/merge-pdf\'>Merge</a></li><li class="info-bar__item"><a class="info-bar__item__text" href=\'/split-pdf\'>Split</a></li><li class="info-bar__item"><a class="info-bar__item__text" href=\'/organize-pdf\'>Organize</a></li><li class="info-bar__item"><a class="info-bar__item__text" href=\'/jpg-to-pdf\'>Images to PDF</a></li><li class="info-bar__item"><a class="info-bar__item__text" href=\'/pdf-to-jpg\'>PDF to images</a></li><li class="info-bar__item"><a class="info-bar__item__text" href=\'/compress-pdf\'>Compress</a></li>'
@@ -417,7 +417,14 @@ APPS = {
     "light-in-a-medium": dict(title="MES Light in a Medium Simulator", page_title="Light in a Medium: Refraction and Slow Light Simulator",
                               tag="Paint glass. Watch light bend.", accent="#be185d", dark="#9d174d", tint="#fce7f3",
                               desc="A free simulator of light moving through a medium: paint glass, water or any refractive index and watch a live wave slow down, bend (Snell's law), focus in a lens, reflect inside a fibre or curve through a mirage. Compare the wave with rays, draw mirror walls for a double slit, or try a gravity-lens analogue.",
-                              js_v="1"),
+                              js_v="2"),
+    # Light & Metamaterials Lab (2026-11-01, mes.fm/negative-index): negative refraction (Snell with signed n, Veselago flat lens), the perfect-lens transfer function,
+    # a 2D TMz FDTD with Drude eps AND mu (ADE currents), Fraunhofer diffraction (slit / double slit / grating / white light) and ten "what light can do" demos
+    # (lib.js = MESMeta, node-tested: tool_apps_src/negative-index-tests.js). Normal-width page in the tools sidebar collection, Wide by default, stage-ctl prefix ni.
+    "negative-index": dict(title="MES Light & Metamaterials Lab", page_title="Negative Refraction, Metamaterials and Diffraction: What Light Can Do",
+                           tag="Bend light the wrong way.", accent="#4f46e5", dark="#4338ca", tint="#e0e7ff",
+                           desc="A free light and metamaterials lab: see negative refraction and the Veselago flat lens with rays, the perfect lens and its loss limit, a live Maxwell simulation of a material with negative permittivity and permeability, a diffraction calculator for slits and gratings, and ten live demos of reflection, refraction, dispersion, interference, polarization, slow light and cloaking.",
+                           js_v="1"),
     # Black Hole Simulator: Schwarzschild light rays (shadow, photon sphere, optical analogue), orbits (precession, ISCO, plunge, clocks), a ray-traced picture (lensed stars + thin disk) and SI numbers
     # (lib.js node-tested: tool_apps_src/black-hole-simulator-tests.js). Four tabs. Normal-width page in the tools sidebar collection, Wide by default, own fullscreen button for the picture.
     "black-hole-simulator": dict(title="MES Black Hole Simulator", page_title="Black Hole Simulator: Light Bending, Orbits and Shadow",
@@ -450,9 +457,22 @@ APPS = {
                                        tag="Cross the fields. Watch the samples.", accent="#b45309", dark="#92400e", tint="#fef3c7",
                                        desc="A free Hutchison Effect simulator: lay out John Hutchison's apparatus (Tesla coils, Van de Graaff, RF transmitters, spark gaps, tank circuits, inductors, field shaper), see where their fields cross, and watch samples levitate, bend like jelly, fracture, glow, smoke and bubble. Includes George Hathaway's LADS Phase I lab, a schematic view and an equipment guide for planning a replication.",
                                        js_v="3"),
+    # Spin & Angular Momentum Simulator (2026-11-01): neutron interferometer (the 720 degree spinor turn, Rauch / Werner 1975: live Poisson counts, Larmor dial, field scan + period fit),
+    # Einstein-de Haas (rod on a torsion fibre, AC resonance, g' readout, angular-momentum bookkeeping) and Barnett (magnetization by rotation). lib.js = MESSpin (node: tool_apps_src/spin-simulator-tests.js).
+    # Normal-width page in the tools sidebar collection, Wide by default; boxes .sn-wrap get the stage-ctl View bar.
+    "spin-simulator": dict(title="MES Spin & Angular Momentum Simulator", page_title="Spin Simulator: Neutron 720° Rotation, Einstein-de Haas and Barnett Effects",
+                           tag="Turn it twice. Spin is real.", accent="#6d28d9", dark="#5b21b6", tint="#ede9fe",
+                           desc="A free spin simulator: a neutron interferometer where the spin must turn 720 degrees, not 360, to come back (Rauch and Werner, 1975), with live counts and a field scan; the Einstein-de Haas effect, where flipping a hanging iron rod's magnetization makes it turn; and the Barnett effect, where spinning iron magnetizes it.",
+                           js_v="1"),
     # Neuron Simulator (2026-10-31): Hodgkin-Huxley action potential (RK4, current / voltage clamp, TTX / TEA / lidocaine / K+ / temperature), HH cable with myelin damage (MS slowing, block, Uhthoff),
     # synaptic summation neuron + neuromuscular junction (train-of-four, myasthenia, blockers, Lambert-Eaton), Nernst / GHK calculator (lib.js = MESNeuro, node-tested: tool_apps_src/neuron-simulator-tests.js).
     # Normal-width page in the tools sidebar collection, Wide by default; boxes .nr-wrap get the stage-ctl View bar.
+    # German New Medicine explorer (2026-11-01): Hamer's two-phase chart with a draggable marker (classic / hanging healing / recurrence / unresolved), "describe your symptoms"
+    # keyword matcher (no AI), organs by germ layer with body + brain-relay diagrams, the Five Biological Laws with diagrams, glossary popovers (lib.js = MESGNM, node-tested: tool_apps_src/gnm-tests.js).
+    "gnm": dict(title="MES German New Medicine Explorer", page_title="German New Medicine (GNM): Interactive Chart of the 5 Biological Laws",
+                tag="Two phases. Three levels. Five laws.", accent="#4d7c0f", dark="#3f6212", tint="#ecfccb",
+                desc="An interactive, visual guide to German New Medicine (GNM) by Dr. Ryke Geerd Hamer: drag a marker along the two-phase chart (DHS, conflict-active phase, conflictolysis, PCL-A, epileptoid crisis, PCL-B), see what GNM expects for psyche, brain relay and organ by germ layer, describe your symptoms in plain words, and explore the Five Biological Laws and a glossary.",
+                js_v="1"),
     "neuron-simulator": dict(title="MES Neuron Simulator", page_title="Neuron Simulator: Action Potential, Nerve Conduction and Synapses",
                              tag="Spike, conduct, connect.", accent="#0e7490", dark="#155e75", tint="#cffafe",
                              desc="A free neuron simulator: the Hodgkin-Huxley action potential with sodium and potassium gates, threshold and refractory periods, TTX, TEA, lidocaine, hyperkalaemia and temperature; saltatory conduction along myelinated and unmyelinated axons with multiple sclerosis demyelination and block; EPSP and IPSP summation; the neuromuscular junction with myasthenia gravis and train-of-four; and a Nernst and Goldman equation calculator.",
@@ -510,7 +530,7 @@ APPS = {
     "photo": dict(title="MES Photo Editor", src="photo-editor", page_title="Free Online Photo Editor with Layers",
                          tag="Pro tools. No upload. No sign-up.", accent="#7c3aed", dark="#5b21b6", tint="#f1eafe",
                          desc="Free online photo editor with layers, selections, magic wand, clone stamp, levels and curves. Add text labels, arrows, callouts and blur boxes to screenshots, combine images, keep transparency, open PSD and GIMP (.xcf) files and export PNG, JPEG or WebP. Private: nothing is uploaded.",
-                         js_v="29", js_parts=["core.js", "tools.js", "tools2.js", "dialogs.js", "ai.js", "aiort.js", "erase.js", "upscale.js", "equation.js", "xcf.js", "files.js", "projects.js", "round7.js", "layerstyle.js", "fontcat.js", "fontpick.js", "icons.js"], lib_from=["image-converter"]),
+                         js_v="30", js_parts=["core.js", "tools.js", "tools2.js", "dialogs.js", "ai.js", "aiort.js", "erase.js", "upscale.js", "equation.js", "xcf.js", "files.js", "projects.js", "psd.js", "round7.js", "layerstyle.js", "fontcat.js", "fontpick.js", "icons.js"], lib_from=["image-converter"]),
     # MES Audio Editor (mes.fm/audio): Audacity-style multi-track editor with AI noise removal. lib.js = MESAudio (clip model, edits, mixdown, peaks, fades, EQ,
     # BS.1770 loudness / true peak, limiter, compressor, de-click, WAV; node-tested with the shared denoiser: tool_apps_src/audio-tests.js), app.js = UI.
     # The noise removal is the shared /main_js/denoise.js (MESDenoise: DeepFilterNet3 ONNX + RNNoise wasm + spectral gate), also used by the video editor.
@@ -1099,7 +1119,7 @@ APPS = {
     "video": dict(title="MES Video Editor", page_title="Free Online Video Editor: Cut, Join, Add Titles, Clean Up Sound",
                        tag="Cut, join, add titles, clean up the sound. No upload.", accent="#be123c", dark="#9f1239", tint="#fde4ea",
                        desc="Free online video editor in your browser: put videos, sound and pictures on a multi-track timeline, trim and split clips, join many videos in order, add titles and overlays, cross-fade, remove background noise, even out the loudness and export MP4 up to 4K. Opens AVI, MKV, WMV and MOV too. Nothing is uploaded.",
-                       js_v="2", lib_from=["convert-video"], js_parts=["../convert-video/engine.js", "core.js", "preview.js", "timeline.js", "export.js"]),
+                       js_v="3", lib_from=["convert-video"], js_parts=["../convert-video/engine.js", "core.js", "preview.js", "timeline.js", "export.js"]),
     # MES Font Preview and Finder (2026-10-19): text in every font the browser really has (+ optional Google Fonts), effects, PNG / CSS export, compare, and a picture matcher. lib.js = MESFont (node tests tool_apps_src/fonts-tests.js).
     "fonts": dict(title="MES Font Preview and Finder", page_title="Font Preview: See Your Text in Every Font, and Find a Font from a Picture",
                   tag="See your text in every font.", accent="#7c2d92", dark="#5f2070", tint="#f3e5f8",
@@ -1157,7 +1177,7 @@ APPS = {
     "backgammon": dict(title="MES Backgammon", page_title="Backgammon: Play Free Online Against the Computer",
                 tag="Play backgammon, learn the odds.", accent="#7c2d12", dark="#5c210d", tint="#fbeadf",
                 desc="Play backgammon free in your browser against the computer at three levels, with legal-move hints, the doubling cube, undo, a pip count, the odds of every roll and your win / loss statistics kept on your device.",
-                js_v="3"),
+                js_v="4"),
     "poker": dict(title="MES Poker", page_title="Texas Hold'em Poker: Play Free and Calculate Your Odds",
                 tag="Play Hold'em, see your odds.", accent="#166534", dark="#14532d", tint="#dcf3e3",
                 desc="Play Texas Hold'em poker free against computer players with play money, plus a poker odds calculator: your chance to win against random hands, outs, pot odds and hand rankings, and your session statistics kept on your device.",
