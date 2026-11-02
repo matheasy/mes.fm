@@ -237,7 +237,7 @@ APPS = {
                        tag="Practise the clamp order, read your battery's date code and see why it died.", accent="#b4261c", dark="#861b14", tint="#fbe7e5",
                        desc="Free interactive guide to jump-starting a car: drag the jumper cable clamps in the right order on a simulated engine bay and see what goes wrong if you don't, use a jump pack, push-start a manual, decode your battery's date code (like F-15), see how cold cuts cranking power, and check the battery's voltage.",
                        meta_desc="Jump-start a car step by step: drag the clamps in order on a simulator, decode your battery's date code, and check its voltage and cold cranking power.",
-                       js_v="3"),
+                       js_v="4"),
     "debt-clock": dict(title="MES Debt Clock", page_title="Debt Clock: US National Debt, World Debt and Canada's Debt, Live Estimate",
                        tag="The national debt, ticking: from official figures, with the maths shown.", accent="#9b1c31", dark="#6b1220", tint="#f9e3e6",
                        desc="Free live debt clock: a running estimate of the US national debt from the Treasury's daily figures, plus world government debt and Canada's federal debt, the share per person, household and taxpayer, debt-to-GDP, interest per second, the deficit, and charts back to 1790. Every number shows its source and how it is estimated.",

@@ -315,7 +315,7 @@
 
 	function targets() { var T = S.remote ? PT.remote : PT.normal, o = {}; Object.keys(T).forEach(function (k) { o[k] = M(T[k]); }); return o; }
 	function setLayout() {
-		var w = svg.parentNode.clientWidth || 800, p = w > 0 && w < 620;
+		var w = svg.parentNode.clientWidth || 800, p = w > 0 && w < 620 && !compact();
 		portrait = p; PARK = p ? PARK_P : PARK_L; BAG = p ? BAG_P : BAG_L;
 		svg.setAttribute("viewBox", p ? "0 0 500 1046" : "0 0 1000 600");
 		svg.classList.toggle("portrait", p);
@@ -722,9 +722,29 @@
 	$("jp-remote").addEventListener("change", function () { S.remote = this.checked; reset(); });
 	document.addEventListener("keydown", function (e) { if (e.key === "Escape" && S.sel) select(null); });
 	var lastP = null;
-	function relayout() { var w = svg.parentNode.clientWidth, p = w > 0 && w < 620; if (lastP !== null && p !== lastP && !dragging) scene(); lastP = p; }
+	function relayout() { var w = svg.parentNode.clientWidth, p = w > 0 && w < 620 && !compact(); if (lastP !== null && p !== lastP && !dragging) scene(); lastP = p; }
 	if (window.ResizeObserver) new ResizeObserver(relayout).observe(svg.parentNode); else window.addEventListener("resize", relayout);
-	function panel() { if (window.MESPanel) window.MESPanel.add($("jp-sim"), { bar: $("jp-sim").querySelector(".jp-chead") }); else setTimeout(panel, 80); }
+	// Fill window / Full screen on a short screen (a phone held sideways): the picture fills the window and the controls float on it
+	// (compact tabs + buttons top left, steps / messages in a see-through column on the right); "Hide controls" leaves one small button
+	var simCard = $("jp-sim"), SHORT = window.matchMedia ? window.matchMedia("(max-height:560px) and (min-aspect-ratio:4/3)") : null;
+	function compact() { return simCard.classList.contains("mes-pfill") && !!SHORT && SHORT.matches; }
+	var ctlBtn = document.createElement("button"); ctlBtn.type = "button"; ctlBtn.className = "jp-ctlbtn"; ctlBtn.id = "jp-ctlbtn";
+	simCard.appendChild(ctlBtn);
+	function paintCtl() {
+		var off = !!store.noctl;
+		simCard.classList.toggle("jp-noctl", off); simCard.classList.toggle("jp-compact", compact());
+		ctlBtn.setAttribute("aria-pressed", off ? "true" : "false");
+		ctlBtn.innerHTML = off ? "☰ <span>Controls</span>" : "✕ <span>Hide controls</span>";
+		ctlBtn.title = off ? "Show the controls again (H)" : "Hide the controls so the picture fills the screen (H)";
+	}
+	ctlBtn.addEventListener("click", function () { store.noctl = !store.noctl; save(); paintCtl(); });
+	document.addEventListener("keydown", function (e) {
+		if ((e.key === "h" || e.key === "H") && compact() && !e.ctrlKey && !e.metaKey && !e.altKey && !/^(input|textarea|select)$/i.test((e.target && e.target.tagName) || "")) { e.preventDefault(); ctlBtn.click(); }
+	});
+	function onView() { paintCtl(); relayout(); }
+	if (SHORT && SHORT.addEventListener) SHORT.addEventListener("change", onView);
+	paintCtl();
+	function panel() { if (window.MESPanel) window.MESPanel.add(simCard, { bar: simCard.querySelector(".jp-chead"), onChange: function () { setTimeout(onView, 0); } }); else setTimeout(panel, 80); }
 	panel();
 
 	/* =============================== battery age =============================== */

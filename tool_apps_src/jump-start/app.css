@@ -197,3 +197,39 @@
 	body.dark-mode #jp.jp .jp-puff circle {fill:#c9ccd2;} body.dark-mode #jp.jp .jp-spark line {stroke:#ffd23f;} body.dark-mode #jp.jp .jp-spark.big line {stroke:#ff8c1a;}
 	body.dark-mode #jp.jp .jp-carwin {fill:#cfe3f5;} body.dark-mode #jp.jp .jp-wheel {fill:#23262b;stroke:#888;}
 	body.dark-mode #jp.jp .jp-packarea {stroke:#5d6168;}
+	/* Fill window / Full screen on a short screen (a phone held sideways): app.js adds .jp-compact. The picture fills the
+	   window; tabs float top left as icons, Close / Full screen and the steps sit in a narrow column on the right, and
+	   "Hide controls" (.jp-noctl) leaves only one small floating button. */
+	#jp .jp-ctlbtn {display:none;}
+	#jp #jp-sim.jp-compact {--jp-sidew:min(13em, 27vw);padding:0 !important;overflow:hidden !important;background:var(--jp-scene) !important;}
+	#jp #jp-sim.jp-compact .jp-simwrap {position:absolute;inset:0;display:block;}
+	#jp #jp-sim.jp-compact .jp-stagebox {position:absolute;top:0;bottom:0;left:0;right:var(--jp-sidew);display:flex;align-items:center;justify-content:center;}
+	#jp #jp-sim.jp-compact .jp-svg {width:100%;height:100%;max-width:none;max-height:none;margin:0;border-radius:0;}
+	#jp #jp-sim.jp-compact .jp-hint {display:none;}
+	#jp #jp-sim.jp-compact .jp-side {position:absolute;top:0;right:0;bottom:0;width:var(--jp-sidew);box-sizing:border-box;overflow:auto;padding:44px 7px 52px;gap:0.4em;font-size:0.8em;background:var(--jp-card);border-left:1px solid var(--jp-line);}
+	#jp #jp-sim.jp-compact .jp-side > * {flex-shrink:0;}
+	#jp #jp-sim.jp-compact .jp-steps li:not(.cur) {display:none;}
+	#jp #jp-sim.jp-compact .jp-steps li {padding:0.25em 0.35em;}
+	#jp #jp-sim.jp-compact .jp-msg {min-height:0;padding:0.4em 0.55em;font-size:0.95em;}
+	#jp #jp-sim.jp-compact .jp-meter {font-size:0.8em;padding:0.15em 0.45em;}
+	#jp #jp-sim.jp-compact .jp-ctl {gap:0.3em;}
+	#jp #jp-sim.jp-compact .jp-ctl .tu-btn {min-height:34px;padding:0.3em 0.6em;font-size:0.9em;}
+	#jp #jp-sim.jp-compact .jp-opt {font-size:0.85em;}
+	#jp #jp-sim.jp-compact .jp-chead {position:absolute;top:6px;right:6px;z-index:3;width:calc(var(--jp-sidew) - 12px);justify-content:flex-end;}
+	#jp #jp-sim.jp-compact .jp-chead h2 {display:none;}
+	#jp #jp-sim.jp-compact .mes-pbtns {flex-wrap:nowrap;gap:0.25em;}
+	#jp #jp-sim.jp-compact .mes-pbtn {font-size:0.72em;padding:0.4em 0.6em;min-height:32px;background:var(--jp-card);}
+	#jp #jp-sim.jp-compact .mes-pbtn[aria-pressed="true"] {background:#1d6fd1;}
+	body.dark-mode #jp #jp-sim.jp-compact .mes-pbtn[aria-pressed="true"] {background:#6ea8fe;}
+	#jp #jp-sim.jp-compact .jp-tabs {position:absolute;top:6px;left:6px;z-index:3;margin:0;border:0;gap:5px;flex-wrap:nowrap;}
+	#jp #jp-sim.jp-compact .jp-tabs [role=tab] {flex:0 0 auto;min-height:38px;min-width:38px;padding:0 0.45em;margin:0;font-size:1.05em;line-height:1;border:1px solid var(--jp-line);border-radius:999px;background:var(--jp-card);box-shadow:0 1px 4px rgba(0,0,0,.25);}
+	#jp #jp-sim.jp-compact .jp-tabs [role=tab][aria-selected="true"] {border:2px solid var(--jp-acc);}
+	#jp #jp-sim.jp-compact .jp-tl {display:none;}
+	#jp #jp-sim.jp-compact .jp-push {position:absolute;inset:50px 0 0 0;overflow:auto;padding:0 14px 56px;background:var(--jp-card);}
+	#jp #jp-sim.jp-compact .jp-ctlbtn {display:inline-flex;align-items:center;gap:0.3em;position:absolute;left:6px;bottom:6px;z-index:4;font:inherit;font-size:0.8em;font-weight:600;min-height:36px;padding:0 0.8em;border-radius:999px;border:1px solid var(--jp-line);background:var(--jp-card);color:var(--jp-fg);cursor:pointer;box-shadow:0 1px 4px rgba(0,0,0,.25);}
+	#jp #jp-sim.jp-compact .jp-ctlbtn:focus-visible {outline:2px solid var(--jp-acc);outline-offset:2px;}
+	#jp #jp-sim.jp-compact.jp-noctl .jp-tabs, #jp #jp-sim.jp-compact.jp-noctl .jp-chead, #jp #jp-sim.jp-compact.jp-noctl .jp-side {display:none;}
+	#jp #jp-sim.jp-compact.jp-noctl .jp-stagebox {right:0;}
+	#jp #jp-sim.jp-compact.jp-noctl .jp-push {top:0;}
+	#jp #jp-sim.jp-compact.jp-noctl .jp-ctlbtn {width:40px;height:40px;min-height:0;padding:0;justify-content:center;font-size:1.1em;opacity:0.85;}
+	#jp #jp-sim.jp-compact.jp-noctl .jp-ctlbtn span {position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);}
