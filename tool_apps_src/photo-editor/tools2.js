@@ -3,7 +3,7 @@
 	"use strict";
 	var PE = window.PE, P = window.MESPixel, mk = PE.mk, rgba = PE.rgba;
 	PE.optGet = function (id, k) { var t = PE.tools[id]; if (t.optGet) { var ov = t.optGet(k); if (ov !== undefined) return ov; } if (t.optsTarget) { var tg = t.optsTarget(); if (tg) return tg[k]; } return PE.opt[id][k]; };
-	PE.optSet = function (id, k, v) { var t = PE.tools[id]; PE.opt[id][k] = v; if (t.optsTarget) { var tg = t.optsTarget(); if (tg && tg !== PE.opt[id]) { tg[k] = v; if (t.onopt) t.onopt(k, v); } } PE.emit("opts", id); PE.invalidateOverlay(); };
+	PE.optSet = function (id, k, v) { var t = PE.tools[id]; PE.opt[id][k] = v; if (t.optsTarget) { var tg = t.optsTarget(); if (tg && tg !== PE.opt[id]) { if (t.beforeopt) t.beforeopt(k, v); tg[k] = v; if (t.onopt) t.onopt(k, v); } } PE.emit("opts", id); PE.invalidateOverlay(); };
 
 	/* ---------- fonts ---------- */
 	PE.FONTS = [["Arial, Helvetica, sans-serif", "Arial"], ["system-ui, -apple-system, 'Segoe UI', sans-serif", "System UI"], ["Verdana, Geneva, sans-serif", "Verdana"], ["'Trebuchet MS', sans-serif", "Trebuchet"], ["Tahoma, sans-serif", "Tahoma"], ["Impact, 'Arial Black', sans-serif", "Impact"], ["Georgia, serif", "Georgia"], ["'Times New Roman', Times, serif", "Times New Roman"], ["'Palatino Linotype', Palatino, serif", "Palatino"], ["'Courier New', Courier, monospace", "Courier New"], ["ui-monospace, Menlo, Consolas, monospace", "Monospace"], ["'Comic Sans MS', 'Comic Neue', cursive", "Comic Sans"], ["'Brush Script MT', cursive", "Brush Script"]];
@@ -28,7 +28,7 @@
 	PE.placeTextEditor = placeEditor;
 	function poke() { blinkOn = true; PE.invalidateOverlay(); }
 	function hitText(e, prefer) {   // the text layer under a point: its whole text box counts (clicking between letters edits, it does not start a new text)
-		if (prefer && PE.effVisible(prefer) && PE.layerAtPoint(prefer, e.x, e.y)) return prefer;
+		if (prefer && prefer.type === "text" && prefer.text && PE.effVisible(prefer) && PE.layerAtPoint(prefer, e.x, e.y)) return prefer;   // only a text layer (the active picture under the click is not "a text to edit")
 		var ls = PE.doc.layers; for (var i = ls.length - 1; i >= 0; i--) { var L = ls[i]; if (L.type !== "text" || !L.text || !PE.effVisible(L) || L.locked) continue; if (PE.layerAtPoint(L, e.x, e.y)) return L; }
 		return null;
 	}
@@ -51,10 +51,18 @@
 	PE.endTextEdit = function (cancel) {
 		if (!te) return; var e = te; te = null; tdrag = null; clearInterval(blinkT); var ta = editor(); ta.style.display = "none"; if (document.activeElement === ta) ta.blur(); var L = e.L;
 		if (PE.doc.layers.indexOf(L) < 0) { PE.invalidateOverlay(); return; }   // gone meanwhile (undo, delete)
+		setTimeout(function () { PE.emit("opts", "text"); }, 0);   // the Done / Cancel buttons go away
 		if (e.isNew && (cancel || !L.text.str.trim())) { dropLayer(L); return; }
 		var nm = L.text.str.split("\n")[0].slice(0, 24) || "Text";
 		if (e.isNew) { L.name = nm; PE.commit("Add text"); } else if (JSON.stringify(L.text) !== e.orig) { if (L.text.str !== JSON.parse(e.orig).str) L.name = nm; PE.commit("Edit text"); }
 		PE.invalidate();
+	};
+	/* round 9: write what has changed in the open text as one undo step and keep editing (font / size / bold / box changes each undo on their own) */
+	PE.textCheckpoint = function (label) {
+		if (!te) return false; var L = te.L; if (PE.doc.layers.indexOf(L) < 0) return false; var now = JSON.stringify(L.text); if (now === te.orig) return false;
+		if (te.isNew) { if (!L.text.str.trim()) return false; L.name = L.text.str.split("\n")[0].slice(0, 24) || "Text"; te.isNew = false; PE.commit("Add text"); }
+		else { if (L.text.str !== JSON.parse(te.orig).str) L.name = L.text.str.split("\n")[0].slice(0, 24) || "Text"; PE.commit(label || "Edit text"); }
+		te.orig = now; te.typed = false; return true;
 	};
 	PE.textEditing = function () { return !!te; };
 	PE.focusText = function () { if (te) { var ta = editor(); if (document.activeElement !== ta) ta.focus({ preventScroll: true }); } };
@@ -70,6 +78,9 @@
 		ta.addEventListener("keydown", function (e) {
 			e.stopPropagation(); if (!te) return; var mod = e.ctrlKey || e.metaKey;
 			if (e.key === "Escape" || (e.key === "Enter" && mod)) { e.preventDefault(); PE.endTextEdit(false); return; }
+			if (mod && !e.altKey && (e.key.toLowerCase() === "z" || e.key.toLowerCase() === "y")) {   // round 9: Undo / Redo while a text is open = the editor's own history (the letters typed since the last step are a step too)
+				e.preventDefault(); var redo = e.key.toLowerCase() === "y" || e.shiftKey; PE.textCheckpoint("Type text"); PE.endTextEdit(false); redo ? PE.redo() : PE.undo(); return;
+			}
 			if (mod && !e.altKey && !e.shiftKey) { var kb = e.key.toLowerCase(), bit = kb === "b" ? 1 : kb === "i" ? 2 : kb === "u" ? 4 : 0; if (bit) { e.preventDefault(); PE.textToggleStyle(bit); return; } }   // Ctrl / Cmd + B, I, U: bold / italic / underline the selected letters (all of the text when nothing is selected)
 			if ((e.key === "ArrowUp" || e.key === "ArrowDown") && !mod && !e.altKey) { e.preventDefault(); lineMove(e.key === "ArrowUp" ? -1 : 1, e.shiftKey, ta); return; }
 			if ((e.key === "Home" || e.key === "End") && !mod) { e.preventDefault(); lineMove(e.key === "Home" ? "home" : "end", e.shiftKey, ta); return; }
@@ -96,7 +107,6 @@
 		};
 		PE.on("history", function () { if (te && PE.doc.layers.indexOf(te.L) < 0) { te = null; clearInterval(blinkT); ta.style.display = "none"; } });   // undo / redo replaced the layer objects
 	};
-	var ctimer = 0;
 	/* ---------- bold / italic / underline of a range (rich text) ---------- */
 	function normFlags(t, m) { t.bold = !!(m & 1); t.italic = !!(m & 2); t.underline = !!(m & 4); }
 	var BITS = { bold: 1, italic: 2, underline: 4 };
@@ -114,7 +124,7 @@
 	PE.textToggleStyle = function (bit) {
 		var L = te ? te.L : PE.active(); if (!L || L.type !== "text" || !L.text) return false; var rg = selRange();
 		styleRange(L, bit, rg ? rg[0] : null, rg ? rg[1] : null, null); PE.renderText(L); PE.touch(L);
-		if (te) { placeEditor(); poke(); } else PE.commit(bit === 1 ? "Bold" : bit === 2 ? "Italic" : "Underline");
+		if (te) { placeEditor(); poke(); PE.textCheckpoint(bit === 1 ? "Bold" : bit === 2 ? "Italic" : "Underline"); } else PE.commit(bit === 1 ? "Bold" : bit === 2 ? "Italic" : "Underline");
 		lastSig = ""; PE.emit("opts", "text"); return true;
 	};
 	/* the B / I / U ticks in the option bar show the selected letters while a text is open */
@@ -134,13 +144,17 @@
 	function scrOf(e) { var r = PE.els.over.getBoundingClientRect(); return { x: e.sx - r.left, y: e.sy - r.top }; }
 	/* the handle under the pointer: a dot within 9 px, or anywhere along a left / right edge (5 px) */
 	PE.textBoxHit = function (L, e) {
-		var hs = boxHandles(L); if (!hs.length) return null; var sp = scrOf(e), best = null, bd = 9.5;
+		var hs = boxHandles(L); if (!hs.length) return null; var sp = scrOf(e), best = null, bd = 12;
 		hs.forEach(function (h) { var d = Math.hypot(h.s.x - sp.x, h.s.y - sp.y); if (d < bd) { bd = d; best = h; } }); if (best) return best;
-		var lay = PE.textLayout(L), p = lay.pad;
-		for (var i = 0; i < hs.length; i++) { var h = hs[i]; if (h.hy !== 0.5) continue; var a = PE.toScreen.apply(null, xy(locToDoc(L, p + h.hx * lay.mw, p))), b = PE.toScreen.apply(null, xy(locToDoc(L, p + h.hx * lay.mw, p + lay.bh))), vx = b.x - a.x, vy = b.y - a.y, ll = vx * vx + vy * vy || 1, tt = ((sp.x - a.x) * vx + (sp.y - a.y) * vy) / ll; if (tt < 0 || tt > 1) continue; if (Math.hypot(a.x + vx * tt - sp.x, a.y + vy * tt - sp.y) < 5) return h; }
+		var lay = PE.textLayout(L), p = lay.pad, f = frameOf(L);
+		// round 9: anywhere along a left / right edge counts: from the box edge out to the drawn frame line and the grip, 9 px either side
+		for (var i = 0; i < hs.length; i++) { var h = hs[i]; if (h.hy !== 0.5) continue; var uu = [p + h.hx * lay.mw, h.hx ? f.u1 : f.u0];
+			for (var j = 0; j < 2; j++) { var a = PE.toScreen.apply(null, xy(locToDoc(L, uu[j], f.v0))), b = PE.toScreen.apply(null, xy(locToDoc(L, uu[j], f.v1))), vx = b.x - a.x, vy = b.y - a.y, ll = vx * vx + vy * vy || 1, tt = ((sp.x - a.x) * vx + (sp.y - a.y) * vy) / ll; if (tt < -0.05 || tt > 1.05) continue; var dd = Math.hypot(a.x + vx * tt - sp.x, a.y + vy * tt - sp.y), out = ((sp.x - a.x) * (h.hx ? 1 : -1) * Math.cos(L.rot) + (sp.y - a.y) * (h.hx ? 1 : -1) * Math.sin(L.rot)) * (L.sx < 0 ? -1 : 1); if (dd < 9 || (out > 0 && dd < 13)) return h; } }
 		return null;
 	};
 	function xy(d) { return [d.x, d.y]; }
+	/* is the point within px screen pixels of the text's frame? */
+	function nearFrame(L, e, px) { var f = frameOf(L), q = PE.toLayerPt(L, e.x, e.y), k = px / Math.max(1e-6, PE.view.zoom * Math.abs(L.sx)); return q.x >= f.u0 - k && q.x <= f.u1 + k && q.y >= f.v0 - k && q.y <= f.v1 + k; }
 	function unit(x, y) { var l = Math.hypot(x, y) || 1; return [x / l, y / l]; }
 	PE.textBoxCursor = function (h, L) { if (!h) return ""; var r = ((L.rot % Math.PI) + Math.PI) % Math.PI, turned = r > Math.PI / 4 && r < Math.PI * 3 / 4; if (h.hy === 0.5) return turned ? "ns-resize" : "ew-resize"; if (h.hx === 0.5) return turned ? "ew-resize" : "ns-resize"; return (h.hx === h.hy) !== turned ? "nwse-resize" : "nesw-resize"; };
 	PE.textBoxStart = function (L, h) {
@@ -180,7 +194,9 @@
 		x.restore();
 	}
 	PE.defTool({ id: "text", name: "Text / Label", key: "t", icon: "T", opts: JSON.parse(JSON.stringify(PE.TEXTDEF)), hint: "Click empty canvas to add text, click a text to edit it (caret where you click, drag to select, double-click a word, triple-click a line). Ctrl/Cmd+B, I, U = bold, italic, underline of the selected letters. Drag the purple handles on the box edges to wrap the text (with Auto-fit text: the corners too, and the size follows). Enter = new line, Ctrl+Enter, Esc or a click outside = done.",
-		ui: [{ k: "font", label: "Font", type: "select", options: "fonts" }, { k: "size", label: "Size", type: "range", min: 6, max: 400, step: 1, unit: "px" }, { k: "wrapW", label: "Box width (0 = auto)", type: "range", min: 0, max: 4000, step: 10, unit: "px" }, { k: "fit", label: "Auto-fit text", type: "check" }, { k: "boxH", label: "Box height", type: "range", min: 0, max: 4000, step: 10, unit: "px", show: "fit" }, { k: "bold", label: "Bold", type: "check" }, { k: "italic", label: "Italic", type: "check" }, { k: "underline", label: "Underline", type: "check" }, { k: "align", label: "Align", type: "seg", options: [["left", "Left"], ["center", "Centre"], ["right", "Right"]] }, { k: "lh", label: "Line height", type: "range", min: 0.8, max: 3, step: 0.05 }, { k: "ls", label: "Letter spacing", type: "range", min: -10, max: 60, step: 1, unit: "px" }, { k: "color", label: "Colour", type: "color" },
+		ui: [{ type: "button", label: "✓ Done", cls: "pe-btn--primary", title: "Finish this text (Ctrl+Enter or Esc)", when: function () { return !!te; }, act: function () { PE.endTextEdit(false); PE.emit("opts", "text"); } },
+			{ type: "button", label: "✕ Cancel", title: "Throw away the changes made since the last step of this text", when: function () { return !!te; }, act: function () { if (!te) return; var L = te.L, o = te.orig, isNew = te.isNew; L.text = JSON.parse(o); PE.renderText(L); PE.touch(L); PE.endTextEdit(isNew); PE.emit("opts", "text"); } },
+			{ k: "font", label: "Font", type: "select", options: "fonts" }, { k: "size", label: "Size", type: "range", min: 6, max: 400, step: 1, unit: "px" }, { k: "wrapW", label: "Box width (0 = auto)", type: "range", min: 0, max: 4000, step: 10, unit: "px" }, { k: "fit", label: "Auto-fit text", type: "check" }, { k: "boxH", label: "Box height", type: "range", min: 0, max: 4000, step: 10, unit: "px", show: "fit" }, { k: "bold", label: "Bold", type: "check" }, { k: "italic", label: "Italic", type: "check" }, { k: "underline", label: "Underline", type: "check" }, { k: "align", label: "Align", type: "seg", options: [["left", "Left"], ["center", "Centre"], ["right", "Right"]] }, { k: "lh", label: "Line height", type: "range", min: 0.8, max: 3, step: 0.05 }, { k: "ls", label: "Letter spacing", type: "range", min: -10, max: 60, step: 1, unit: "px" }, { k: "color", label: "Colour", type: "color" },
 			{ k: "bgOn", label: "Background box", type: "check" }, { k: "bgColor", label: "Box colour", type: "color", show: "bgOn" }, { k: "bgPad", label: "Padding", type: "range", min: 0, max: 80, step: 1, unit: "px", show: "bgOn" }, { k: "bgRadius", label: "Corners", type: "range", min: 0, max: 80, step: 1, unit: "px", show: "bgOn" },
 			{ k: "strokeOn", label: "Outline", type: "check" }, { k: "stroke", label: "Outline colour", type: "color", show: "strokeOn" }, { k: "strokeW", label: "Outline width", type: "range", min: 0, max: 40, step: 1, unit: "px", show: "strokeOn" },
 			{ k: "shadowOn", label: "Shadow", type: "check" }, { k: "shadow", label: "Shadow colour", type: "color", show: "shadowOn" }, { k: "shadowBlur", label: "Blur", type: "range", min: 0, max: 60, step: 1, unit: "px", show: "shadowOn" }, { k: "shadowDx", label: "Shadow X", type: "range", min: -60, max: 60, step: 1, unit: "px", show: "shadowOn" }, { k: "shadowDy", label: "Shadow Y", type: "range", min: -60, max: 60, step: 1, unit: "px", show: "shadowOn" },
@@ -190,11 +206,13 @@
 			if (!BITS[k]) return undefined; var L = te ? te.L : PE.active(); if (!L || L.type !== "text" || !L.text) return undefined; var t = L.text, r = PE.textRich(t), rg = selRange();
 			if (rg) return P.richAll(r || String(PE.textMask(t)).repeat(t.str.length), rg[0], rg[1], BITS[k]); return undefined;
 		},
+		beforeopt: function () { if (te && !PE.hasPendingKey("textstyle")) PE.textCheckpoint("Type text"); },   // round 9: what was typed before a style change is its own undo step
 		onopt: function (k, v) { var L = PE.active(); if (!L || L.type !== "text") return; var t = L.text;
 			if (BITS[k]) { var rg = te && te.L === L ? selRange() : null; if (rg) styleRange(L, BITS[k], rg[0], rg[1], v); else if (PE.textRich(t)) styleRange(L, BITS[k], 0, t.str.length, v); lastSig = ""; }
 			if (k === "fit" && v) { var ly = PE.textLayout(L); if (!(t.wrapW > 0)) t.wrapW = Math.round(ly.mw); if (!(t.boxH > 0)) t.boxH = Math.round(ly.bh); setTimeout(function () { PE.emit("opts", "text"); }, 0); }
 			if (k === "size" && t.fit) { t.fit = false; PE.opt.text.fit = false; PE.toast("Auto-fit text is off now, so the size you set is kept"); setTimeout(function () { PE.emit("opts", "text"); }, 0); }
-			PE.renderText(L); PE.touch(L); if (te) { placeEditor(); poke(); return; } clearTimeout(ctimer); ctimer = setTimeout(function () { PE.commit("Text style"); }, 450); },   // while editing, the style change is part of the edit's one undo step
+			PE.renderText(L); PE.touch(L); if (te) { placeEditor(); poke(); }
+			PE.later("textstyle", function () { if (te) PE.textCheckpoint("Text style"); else PE.commit("Text style"); }, 450); },   // round 9: a style change is its own undo step, also while the text is open (a slider drag = one step)
 		overlay: function (x, v) {
 			var A = PE.active();
 			if (hoverT && hoverT !== A && PE.doc.layers.indexOf(hoverT) >= 0 && !te) drawFrame(x, hoverT, false);
@@ -206,7 +224,7 @@
 			if (bw) { PE.textBoxMove(bw, e); return; }
 			if (tdrag && te) { setSel(tdrag.a, indexAt(te.L, e.x, e.y)); }
 		},
-		up: function () { if (bw) { var w0 = bw; bw = null; if (w0.moved && !te) PE.commit("Text box"); } tdrag = null; },
+		up: function () { if (bw) { var w0 = bw; bw = null; if (w0.moved) { if (te) PE.textCheckpoint("Text box"); else PE.commit("Text box"); } } tdrag = null; },
 		dbl: function (e) { if (!te || !PE.layerAtPoint(te.L, e.x, e.y)) return; var w = P.wordAt(te.L.text.str, indexAt(te.L, e.x, e.y)); setSel(w[0], w[1]); tdrag = null; lastDbl = { t: Date.now(), x: e.sx, y: e.sy }; },
 		down: function (e) {
 			var A0 = te ? te.L : PE.active(), hh = A0 && A0.type === "text" ? PE.textBoxHit(A0, e) : null; if (hh) { bw = PE.textBoxStart(A0, hh); return; }
@@ -216,6 +234,8 @@
 				if (Date.now() - lastDbl.t < 450 && Math.hypot(e.sx - lastDbl.x, e.sy - lastDbl.y) < 6) { var lay = PE.textLayout(hit), ln = lay.lines[P.caretLine(lay.lines, idx).line]; setSel(ln.start, ln.end); lastDbl.t = 0; return; }   // triple-click = the whole line
 				var a = e.shift ? anchorIdx(ta) : idx; setSel(a, idx); tdrag = { a: a }; PE.focusText(); return;
 			}
+			if (!hit) { var nearL = te ? te.L : PE.active(); if (nearL && nearL.type === "text" && nearL.text && nearFrame(nearL, e, 14)) hit = nearL; }   // round 9: a click just outside the text's box (aiming for its edge) stays with that text instead of starting a new, default one
+			if (te && hit === te.L) { var ik = indexAt(hit, e.x, e.y); setSel(ik, ik); tdrag = { a: ik }; PE.focusText(); return; }
 			if (te) { PE.endTextEdit(false); if (!hit) return; }   // a click outside finishes the edit; the next click on empty canvas starts a new text
 			if (hit) { PE.setActive(hit.id); var i2 = indexAt(hit, e.x, e.y); openEdit(hit, false, i2); tdrag = { a: i2 }; return; }
 			var o = JSON.parse(JSON.stringify(PE.opt.text)); o.str = ""; var L = PE.makeLayer({ type: "text", name: "Text", text: o, w: 4, h: 4 }); PE.renderText(L); var pd = PE.textLayout(L).pad; L.cx = e.x - pd + L.canvas.width / 2; L.cy = e.y - pd + L.canvas.height / 2;

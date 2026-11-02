@@ -369,4 +369,29 @@ t("font filter / search / recent", () => { const fs = [{ name: "Roboto", cat: "s
 	assert.deepStrictEqual(FC.filter(fs, "", "all", "recent", ["'Caveat', cursive", "Arial"]).map((f) => f.name), ["Caveat", "Arial"]); assert.deepStrictEqual(FC.pushRecent(["a", "b", "c"], "b", 2), ["b", "a"]); });
 t("Google Fonts URLs", () => { const u = FC.googleUrls("Open Sans", "Open Sans"); assert.strictEqual(u.length, 1); assert(/family=Open\+Sans&text=Open%20Sa/.test(u[0]), u[0]); const full = FC.googleUrls("Open Sans"); assert.strictEqual(full.length, 3); assert(/ital,wght@0,400;0,700;1,400;1,700/.test(full[0])); assert(/family=Open\+Sans&display=swap$/.test(full[2]));
 	assert.strictEqual(FC.firstFontUrl("src: url(https://fonts.gstatic.com/l/font?kit=x&v=1) format('woff2');"), "https://fonts.gstatic.com/l/font?kit=x&v=1"); assert.strictEqual(FC.uniqChars("aabca"), "abc"); });
+/* ---------- round 9 ---------- */
+t("angles: degrees in (-180, 180], radians back, snapping", () => {
+	assert.strictEqual(P.angleDeg(Math.PI), 180); assert.strictEqual(P.angleDeg(-Math.PI), 180); assert.strictEqual(P.angleDeg(-Math.PI / 2), -90); assert.strictEqual(P.angleDeg(4 * Math.PI + 0.1), 5.7); assert.strictEqual(P.angleDeg(1e-9), 0);
+	assert(Math.abs(P.degToRot(270) + Math.PI / 2) < 1e-12, "270 = -90"); assert(Math.abs(P.degToRot(45) - Math.PI / 4) < 1e-12); assert.strictEqual(P.angleDeg(P.degToRot(-33.3)), -33.3);
+	const d = (r) => Math.round(r * 180 / Math.PI * 1000) / 1000; assert.strictEqual(d(P.snapAngle(P.degToRot(22), 15, 0)), 15); assert.strictEqual(d(P.snapAngle(P.degToRot(89), 0, 2)), 90, "pulled to 90");
+	assert.strictEqual(d(P.snapAngle(P.degToRot(85), 0, 2)), 85, "outside the magnet stays"); assert.strictEqual(d(P.snapAngle(P.degToRot(-178.5), 0, 2)), -180); });
+t("PSD download names: versions instead of the browser's (1)", () => {
+	assert.strictEqual(P.versionedName("header", "psd", 1), "header.psd"); assert.strictEqual(P.versionedName("header", "psd", 2), "header-v2.psd"); assert.strictEqual(P.versionedName("header-v7", "psd", 8), "header-v8.psd", "no double version");
+	assert.strictEqual(P.versionedName("header (3)", "psd", 4), "header-v4.psd");
+	assert.deepStrictEqual(P.nameVersion("header.psd"), { base: "header", n: 1 }); assert.deepStrictEqual(P.nameVersion("header-v12.psd"), { base: "header", n: 12 }); assert.deepStrictEqual(P.nameVersion("header (2).psd"), { base: "header", n: 3 }, "the browser's (2) is the 3rd copy");
+	assert.deepStrictEqual(P.nameVersion("My v2 file.psd"), { base: "My v2 file", n: 1 }, "a v in the middle is part of the name"); assert.deepStrictEqual(P.nameVersion("noext"), { base: "noext", n: 1 }); });
+t("PSD text layers: metadata round trip through XMP, fingerprint is alpha-only", () => {
+	const list = [{ i: 3, name: "Title", sig: "8x8:abc", text: { str: "A <b> & \"q\"", font: "'Open Sans', sans-serif", size: 64 }, cx: 10.5, cy: 20, sx: 1, sy: 1, rot: 0.2 }];
+	const x = P.psdXmp(P.psdMetaEncode(list)); assert(/<x:xmpmeta/.test(x) && !/<b>/.test(x), "escaped inside XMP"); assert.deepStrictEqual(P.psdMetaDecode(x), list);
+	assert.deepStrictEqual(P.psdMetaDecode("<x:xmpmeta>something else</x:xmpmeta>"), []); assert.deepStrictEqual(P.psdMetaDecode(P.psdXmp(JSON.stringify({ app: "other", layers: list }))), [], "not ours");
+	assert.deepStrictEqual(P.psdMetaDecode(P.psdXmp(P.psdMetaEncode([{ i: 1, sig: "x", text: {}, cx: 0, cy: 0 }]))), [], "a text without a string is dropped");
+	const a = new Uint8ClampedArray(16 * 16 * 4); for (let i = 0; i < 256; i++) { a[i * 4] = i; a[i * 4 + 3] = i % 7 ? 255 : 0; } const b = a.slice(); b[0] = 99; b[40] = 3;
+	assert.strictEqual(P.pixelSig(a, 16, 16), P.pixelSig(b, 16, 16), "colour changes from premultiplying do not count"); const c = a.slice(); c[3] = 17; assert.notStrictEqual(P.pixelSig(a, 16, 16), P.pixelSig(c, 16, 16), "a changed shape does");
+	assert.notStrictEqual(P.pixelSig(a, 16, 16), P.pixelSig(a, 8, 32), "size is part of it"); });
+t("font picker: fonts on this computer before Google, Google can be hidden", () => {
+	const fs = [{ name: "Roboto", cat: "sans", src: "google" }, { name: "Arial", cat: "sans", src: "basic" }, { name: "Lato", cat: "sans", src: "google" }, { name: "Calibri", cat: "sans", src: "local" }];
+	assert.deepStrictEqual(FC.filter(fs, "", "all", "all").map((f) => f.name), ["Arial", "Calibri", "Roboto", "Lato"], "local first, list order kept");
+	assert.deepStrictEqual(FC.filter(fs, "", "all", "all", [], { google: false }).map((f) => f.name), ["Arial", "Calibri"]);
+	assert.deepStrictEqual(FC.filter(fs, "", "all", "google", [], { google: false }).map((f) => f.name), ["Roboto", "Lato"], "the Google chip still lists them");
+	assert.deepStrictEqual(FC.filter(fs.concat([{ name: "Lato Local", cat: "sans", src: "local" }]), "lato", "all", "all").map((f) => f.name), ["Lato", "Lato Local"], "a search ranks by match first"); });
 console.log(n + " checks ok");

@@ -42,13 +42,16 @@
 	var PV_ABC = "AaBbCcDdEeFfGgHhIiJjKkLlMmNnOoPpQqRrSsTtUuVvWwXxYyZz0123456789 .,:;!?'&-";   // a preview has the letters of a typed sample too
 	var pvQ = [], pvBusy = 0, loaded = {}, loading = {};
 	function pvAlias(f) { return "MESpv " + f.name.replace(/[^\w ]/g, ""); }
-	function previewFont(f, cb) {
+	/* round 9: every row that shows a font is repainted when its preview arrives (the list may have been rebuilt meanwhile: search, chips), the rows
+	 * on screen jump the queue (urgent = true puts them first), and a failed preview is tried once more before the row is marked */
+	function previewFont(f, cb, urgent) {
 		if (f.src !== "google" || f.pv === "ok" || f.pv === "bad" || loaded[f.name.toLowerCase()]) { cb && cb(); return; }
-		if (f.pv === "q") return; f.pv = "q"; pvQ.push({ f: f, cb: cb }); pump();
+		if (f.pv === "q") { if (urgent) { var j = -1; for (var i = 0; i < pvQ.length; i++) if (pvQ[i].f === f) { j = i; break; } if (j > 0) pvQ.unshift(pvQ.splice(j, 1)[0]); } return; }
+		f.pv = "q"; var job = { f: f, cb: cb }; if (urgent) pvQ.unshift(job); else pvQ.push(job); pump();
 	}
 	function pump() {
 		while (pvBusy < 6 && pvQ.length) (function (job) {
-			pvBusy++; var f = job.f, done = function (ok) { f.pv = ok ? "ok" : "bad"; pvBusy--; if (job.cb) job.cb(); pump(); };
+			pvBusy++; var f = job.f, done = function (ok) { pvBusy--; if (!ok && !f.retry) { f.retry = 1; f.pv = "q"; pvQ.push(job); pump(); return; } f.pv = ok ? "ok" : "bad"; if (job.cb) job.cb(); if (pop && pop.repaint) pop.repaint(f); pump(); };
 			fetch(F.googleUrls(f.name, f.name + PV_ABC)[0]).then(function (r) { if (!r.ok) throw new Error(r.status); return r.text(); }).then(function (css) {
 				var u = F.firstFontUrl(css); if (!u || !window.FontFace) throw new Error("no font"); var ff = new FontFace(pvAlias(f), "url(" + u + ")"); return ff.load().then(function () { document.fonts.add(ff); done(true); });
 			}).catch(function () { done(false); });
@@ -102,13 +105,15 @@
 	PE.fontPickerClose = closePicker;
 	function openPicker(btn, value, onPick) {
 		if (pop) { var same = pop.btn === btn; closePicker(); if (same) return; }
-		build(); var ui = sget().fpick || {}, st = { q: "", cat: ui.cat || "all", src: ui.src || "all", hi: 0, list: [] };
+		build(); var ui = sget().fpick || {}, st = { q: "", cat: ui.cat || "all", src: ui.src || "all", hi: 0, list: [], g: ui.g !== false };
 		var e = el("div", "pe-fpop"); e.setAttribute("role", "dialog"); e.setAttribute("aria-label", "Choose a font"); e.dataset.noico = "1";
 		e.innerHTML = '<div class="pe-fp-h"><input type="search" class="pe-fp-q" placeholder="Search ' + fonts.length + ' fonts…" aria-label="Search fonts" autocomplete="off" spellcheck="false"><button type="button" class="pe-fp-x" aria-label="Close" title="Close (Esc)">×</button></div>'
 			+ '<div class="pe-fp-chips pe-fp-cats" role="group" aria-label="Kind of font"></div><div class="pe-fp-chips pe-fp-srcs" role="group" aria-label="Where the font comes from"></div>'
 			+ '<div class="pe-fp-sample"><label>Sample <input type="text" class="pe-fp-st" maxlength="40" placeholder="(the font name)" aria-label="Sample text shown in every font"></label></div>'
 			+ '<div class="pe-fp-list" role="listbox" tabindex="-1" aria-label="Fonts"></div><div class="pe-fp-f"><span class="pe-fp-n"></span><span class="pe-fp-b"></span></div>';
 		(PE.els.root || document.body).appendChild(e);
+		var gtl = el("label", "pe-fp-gt"), gt = el("input"); gt.type = "checkbox"; gtl.appendChild(gt); gtl.appendChild(document.createTextNode(" Show Google Fonts")); gtl.title = "Untick to list only the fonts on this computer (Google Fonts are downloaded only when you pick one)"; e.querySelector(".pe-fp-sample").appendChild(gtl);
+		gt.addEventListener("change", function () { st.g = gt.checked; st.hi = 0; render(); });
 		var q = e.querySelector(".pe-fp-q"), listEl = e.querySelector(".pe-fp-list"), cnt = e.querySelector(".pe-fp-n"), sampleIn = e.querySelector(".pe-fp-st");
 		sampleIn.value = ui.sample || "";
 		var cats = e.querySelector(".pe-fp-cats"), srcs = e.querySelector(".pe-fp-srcs");
@@ -121,7 +126,8 @@
 		var io = null, scT = 0;
 		function scanVisible() { var lr = listEl.getBoundingClientRect(), top = lr.top - 200, bot = lr.bottom + 200, kids = listEl.children, lo = 0, hi = kids.length - 1;
 			while (lo < hi) { var mid = (lo + hi) >> 1; if (kids[mid].getBoundingClientRect().bottom < top) lo = mid + 1; else hi = mid; }
-			for (var i = lo; i < kids.length; i++) { var r = kids[i], b = r.getBoundingClientRect(); if (b.top > bot) break; if (r._f && r._f.src === "google" && !r._f.pv) (function (row) { previewFont(row._f, function () { paintRow(row); }); })(r); } }
+			var vis = []; for (var i = lo; i < kids.length; i++) { var r = kids[i], b = r.getBoundingClientRect(); if (b.top > bot) break; if (r._f && r._f.src === "google" && (!r._f.pv || r._f.pv === "q")) vis.push(r._f); }
+			for (var k = vis.length - 1; k >= 0; k--) previewFont(vis[k], null, true); }   // in reverse, so the top row ends up first in the queue
 		listEl.addEventListener("scroll", function () { clearTimeout(scT); scT = setTimeout(scanVisible, 60); });
 		function paintRow(r) { var face = faceOf(r._f); r.firstChild.style.fontFamily = face || "inherit"; r.classList.toggle("is-wait", !face && r._f.pv !== "bad"); r.classList.toggle("is-bad", r._f.pv === "bad"); }
 		function pick(f) {
@@ -131,9 +137,12 @@
 		function render(keepScroll) {
 			Array.prototype.forEach.call(cats.children, function (b) { b.setAttribute("aria-pressed", b.dataset.v === st.cat ? "true" : "false"); });
 			Array.prototype.forEach.call(srcs.children, function (b) { b.setAttribute("aria-pressed", b.dataset.v === st.src ? "true" : "false"); });
-			st.list = F.filter(fonts, st.q, st.cat, st.src, recent()); listEl.innerHTML = ""; if (!keepScroll) listEl.scrollTop = 0;
+			st.list = F.filter(fonts, st.q, st.cat, st.src, recent(), { google: st.g }); listEl.innerHTML = ""; if (!keepScroll) listEl.scrollTop = 0;
+			gt.checked = st.g; gtl.hidden = st.src === "google" || st.src === "recent";
 			var cur = F.familyOf(value).toLowerCase(), sample = sampleIn.value.trim(), frag = document.createDocumentFragment();
+			var divDone = false;
 			st.list.forEach(function (f, i) {
+				if (!divDone && f.src === "google" && st.src === "all" && i > 0) { divDone = true; var dv = el("div", "pe-fp-div"); dv.setAttribute("role", "presentation"); dv.textContent = "Google Fonts (downloaded only when you pick one)"; frag.appendChild(dv); }
 				var r = el("div", "pe-frow" + (f.name.toLowerCase() === cur ? " is-cur" : "")); r.setAttribute("role", "option"); r.id = "pe-fr-" + i; r._f = f; r.dataset.i = i;
 				var nm = el("span", "pe-frow-s"); nm.textContent = sample || f.name; r.appendChild(nm);
 				var meta = el("span", "pe-frow-m"); meta.textContent = (sample ? f.name + " · " : "") + (f.src === "google" ? "Google" : f.src === "file" ? "your file" : f.src === "basic" ? "basic" : "this computer"); r.appendChild(meta);
@@ -141,9 +150,9 @@
 			});
 			listEl.appendChild(frag); if (!st.list.length) listEl.innerHTML = '<div class="pe-fp-none">No font matches. Try another word or "All".</div>';
 			cnt.textContent = st.list.length + (st.list.length === 1 ? " font" : " fonts"); st.hi = Math.max(0, Math.min(st.hi, st.list.length - 1)); hilite(false);
-			sset({ fpick: { cat: st.cat, src: st.src, sample: sampleIn.value.trim() } }); setTimeout(scanVisible, 0);
+			sset({ fpick: { cat: st.cat, src: st.src, sample: sampleIn.value.trim(), g: st.g } }); setTimeout(scanVisible, 0);
 		}
-		function hilite(scroll) { Array.prototype.forEach.call(listEl.querySelectorAll(".is-hi"), function (r) { r.classList.remove("is-hi"); r.setAttribute("aria-selected", "false"); }); var r = listEl.children[st.hi]; if (r && r._f) { r.classList.add("is-hi"); r.setAttribute("aria-selected", "true"); listEl.setAttribute("aria-activedescendant", r.id); if (scroll) r.scrollIntoView({ block: "nearest" }); } }
+		function hilite(scroll) { Array.prototype.forEach.call(listEl.querySelectorAll(".is-hi"), function (r) { r.classList.remove("is-hi"); r.setAttribute("aria-selected", "false"); }); var r = document.getElementById("pe-fr-" + st.hi); if (r && r._f) { r.classList.add("is-hi"); r.setAttribute("aria-selected", "true"); listEl.setAttribute("aria-activedescendant", r.id); if (scroll) r.scrollIntoView({ block: "nearest" }); } }
 		cats.addEventListener("click", function (ev) { var b = ev.target.closest("button"); if (!b) return; st.cat = b.dataset.v; st.hi = 0; render(); q.focus(); });
 		srcs.addEventListener("click", function (ev) { var b = ev.target.closest("button"); if (!b) return; st.src = b.dataset.v; st.hi = 0; render(); q.focus(); });
 		var qt = 0; q.addEventListener("input", function () { clearTimeout(qt); qt = setTimeout(function () { st.q = q.value; st.hi = 0; render(); }, 60); });
@@ -159,7 +168,7 @@
 		e.querySelector(".pe-fp-x").addEventListener("click", closePicker);
 		var out = function (ev) { if (!pop || ev.target.closest(".pe-fpop") || ev.target.closest(".pe-fbtn") === btn) return; closePicker(); };
 		document.addEventListener("pointerdown", out, true);
-		pop = { el: e, btn: btn, io: io, out: out };
+		pop = { el: e, btn: btn, io: io, out: out, repaint: function (f) { Array.prototype.forEach.call(listEl.children, function (r) { if (r._f === f) paintRow(r); }); } };
 		// place it under the button (fixed, so it works in Full window and full screen too); on a phone it fills the width
 		var r = btn.getBoundingClientRect(), w = Math.min(380, window.innerWidth - 16), h = Math.min(520, window.innerHeight - 16);
 		e.style.width = w + "px"; e.style.maxHeight = h + "px"; var x = Math.max(8, Math.min(r.left, window.innerWidth - w - 8)), y = r.bottom + 4; if (y + 260 > window.innerHeight) y = Math.max(8, window.innerHeight - h - 8);

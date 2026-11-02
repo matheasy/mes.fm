@@ -18,7 +18,7 @@
 },
 "/3d-studio":{
 "added":"2026-10-31",
-"updated":"2026-10-31",
+"updated":"2026-11-01",
 "type":"Tool"
 },
 "/age-calculator":{
@@ -428,7 +428,7 @@
 },
 "/light-in-a-medium":{
 "added":"2026-10-12",
-"updated":"2026-10-14",
+"updated":"2026-11-01",
 "type":"Simulation"
 },
 "/llm-simulator":{
@@ -573,7 +573,7 @@
 },
 "/photo":{
 "added":"2026-10-16",
-"updated":"2026-10-31",
+"updated":"2026-11-01",
 "type":"Tool"
 },
 "/photoelectric-effect-simulator":{
@@ -643,7 +643,7 @@
 },
 "/redshift-simulator":{
 "added":"2026-10-16",
-"updated":"2026-10-19",
+"updated":"2026-11-01",
 "type":"Simulation"
 },
 "/reminder":{

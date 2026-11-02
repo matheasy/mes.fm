@@ -76,7 +76,7 @@
 	}
 	/* before "Open theirs" replaces it, what is open here goes into Recent projects as its own autosave ("… (my version)"), not linked to the file */
 	function keepMineAsCopy() { var d = PE.doc; if (!d) return Promise.resolve(); d.pid = P.newProjectId(); d.name = (d.name || "Untitled") + " (my version)"; return autosaveNow({ fh: null, file: null }, true); }
-	PE.saveProject = function () { if (!needDoc()) return; var L = cur(); if (L) return saveToLink(true); return PE.saveProjectAs(); };
+	PE.saveProject = function () { if (!needDoc()) return; var L = cur(); if (L) return saveToLink(true); if (PE.psdHome && PE.psdHome()) return PE.savePsdNow(); return PE.saveProjectAs(); };   // round 9: a PSD you work in saves to that PSD
 	PE.saveProjectAs = function (kind) {
 		if (!needDoc()) return; var L = cur(), base = PE.doc.name || "Untitled";
 		if (!canSavePicker()) {
@@ -243,6 +243,8 @@
 	function drawBar() {
 		bar = bar || document.getElementById("pe-projst"); if (!bar) return; var d = PE.doc, L = cur();
 		if (!d) { bar.hidden = true; return; } bar.hidden = false;
+		var PL = !L && PE.psdHome && PE.psdHome() ? PE.psdLink() : null;
+		if (PL) { var pd = PE.psdDirty(); bar.className = "pe-projst" + (pd ? " is-dirty" : ""); bar.innerHTML = '<span class="pe-projst-f">🖼 ' + esc(PL.handle ? PL.name : PL.base + ".psd") + '</span><span class="pe-projst-s">' + esc(pd ? (PL.handle ? "unsaved changes" : "Save = " + PE.psdWhere().replace(/^Downloads \((.*) next\)$/, "download $1")) : PL.savedAt ? "saved " + P.agoText(PL.savedAt) : "opened") + "</span>"; bar.title = PL.handle ? "This picture is linked to " + PL.name + ". " + PE.modKey() + "S writes the layers back into it." : "This browser can't write into the PSD you opened: " + PE.modKey() + "S downloads a new copy (" + PE.psdWhere() + ")."; return; }
 		var dirty = !!(PE.dirty && PE.hist.stack.length > 1), st = !L && !canSavePicker() ? (dirty ? "Save = new download" : "") : L ? (L.conflict ? "changed on disk" : L.needPerm && dirty ? "press Save to allow saving" : dirty ? "unsaved changes" : L.savedAt ? "saved " + P.agoText(L.savedAt) : "opened") : dirty ? "not saved to a file" : "";
 		var af = PE.autoFileOn(), title = L ? "This project is linked to the file " + whereText(L) + ". " + PE.modKey() + "S writes it there." + (af ? " Auto-save writes changes there " + AUTO_FILE_MS / 1000 + " s after you stop." : "") : "This project is not saved in a file yet: Save project makes one (in a folder you choose, or your Downloads).";
 		bar.className = "pe-projst" + (dirty ? " is-dirty" : "") + (L && L.conflict ? " is-warn" : "");
@@ -250,7 +252,7 @@
 			+ (L ? '<label class="pe-projst-a" title="Write changes to ' + esc(whereText(L)) + " " + AUTO_FILE_MS / 1000 + ' s after you stop editing (handy when the folder is synced by OneDrive)"><input type="checkbox"' + (af ? " checked" : "") + "> Auto-save</label>" : "");
 		bar.title = title; var cb = bar.querySelector("input"); if (cb) cb.addEventListener("change", function () { PE.setAutoFile(cb.checked); });
 	}
-	PE.drawProjectBar = drawBar;
+	PE.drawProjectBar = drawBar; PE.on("psdlink", function () { setTimeout(drawBar, 0); }); PE.on("history", function () { if (PE.psdLink && PE.psdLink()) setTimeout(drawBar, 0); });
 	setInterval(drawBar, 30000); PE.on("docsize", function () { setTimeout(drawBar, 0); });
 
 	/* ---------- Export every layer as PNG (ZIP) ---------- */

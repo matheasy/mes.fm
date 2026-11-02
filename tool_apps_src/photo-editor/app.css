@@ -296,3 +296,11 @@
 	#pe.pe:fullscreen {width:100vw;height:100vh;max-height:none;border-radius:0;border:0;} #pe.pe:-webkit-full-screen {width:100vw;height:100vh;}
 	@media (max-width: 1100px) { #pe #pe-fsbtn span, #pe #pe-winbtn {font-size:0.95em;} }
 	@media (max-width: 760px) { #pe #pe-fsbtn span {display:none;} }
+	/* round 9: font picker -- Google Fonts after the fonts on this computer, with a divider and an on / off switch */
+	#pe .pe-fp-div {padding:0.45em 0.7em 0.3em;font-size:0.78em;font-weight:600;letter-spacing:0.02em;color:var(--pe-dim);background:var(--pe-panel2);border-top:1px solid var(--pe-line);border-bottom:1px solid var(--pe-line);position:sticky;top:0;z-index:1;}
+	#pe .pe-fp-gt {display:inline-flex;align-items:center;gap:0.3em;margin-left:0.8em;white-space:nowrap;cursor:pointer;}
+	/* round 9: clearer selection in the Layers list: the active layer has a bright bar and bold name, layers picked with it are blue, layers inside a selected group are tinted */
+	#pe .pe-layer.is-active {box-shadow:inset 3px 0 0 #9ccaff;}
+	#pe .pe-layer.is-primary {box-shadow:inset 4px 0 0 #ffffff, 0 0 0 1px rgba(255,255,255,0.35);}
+	#pe .pe-layer.is-primary .pe-lname {font-weight:700;}
+	#pe .pe-layer.is-ingroup {background:rgba(59,155,255,0.16);box-shadow:inset 3px 0 0 rgba(59,155,255,0.55);}

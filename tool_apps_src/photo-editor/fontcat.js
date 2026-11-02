@@ -44,16 +44,21 @@
 	}
 	/* filter + order the picker's list: every word of q must be in the name (or the category name); cat "all" / a category; src "all" / "local" / "google" / "recent" */
 	var CATNAME = { sans: "sans serif", serif: "serif", display: "display decorative", hand: "handwriting script", mono: "monospace code" };
-	function filter(fonts, q, cat, src, recent) {
-		var words = String(q || "").toLowerCase().split(/\s+/).filter(Boolean), rec = recent || [];
+	/* opts.google === false hides the Google Fonts in the "All" view (they are still listed under "Google Fonts"); in "All" the fonts that need
+	 * no download (basic, this computer, your files) come first, Google families after them, unless a search ranks the matches */
+	function filter(fonts, q, cat, src, recent, opts) {
+		var noG = opts && opts.google === false && (src === "all" || !src), words = String(q || "").toLowerCase().split(/\s+/).filter(Boolean), rec = recent || [];
 		var out = fonts.filter(function (f) {
 			if (cat && cat !== "all" && f.cat !== cat) return false;
 			if (src === "recent" && rec.indexOf(f.value) < 0 && rec.indexOf(f.name) < 0) return false;
+			if (noG && f.src === "google") return false;
 			if (src === "local" && f.src !== "local" && f.src !== "basic" && f.src !== "file") return false; if (src === "google" && f.src !== "google") return false;
 			var hay = (f.name + " " + (CATNAME[f.cat] || "")).toLowerCase(); return words.every(function (w) { return hay.indexOf(w) >= 0; });
 		});
 		if (src === "recent") out.sort(function (a, b) { return idx(a) - idx(b); });
-		else if (words.length) out.sort(function (a, b) { return score(b) - score(a) || a.name.localeCompare(b.name); });
+		else if (words.length) out.sort(function (a, b) { return score(b) - score(a) || g(a) - g(b) || a.name.localeCompare(b.name); });
+		else { out = out.map(function (f, i) { return [f, i]; }); out.sort(function (a, b) { return g(a[0]) - g(b[0]) || a[1] - b[1]; }); out = out.map(function (x) { return x[0]; }); }
+		function g(f) { return f.src === "google" ? 1 : 0; }
 		function idx(f) { var i = rec.indexOf(f.value); if (i < 0) i = rec.indexOf(f.name); return i < 0 ? 999 : i; }
 		function score(f) { var n = f.name.toLowerCase(), w = words.join(" "); return (n === w ? 3 : 0) + (n.indexOf(w) === 0 ? 2 : 0) + (n.indexOf(w) >= 0 ? 1 : 0); }
 		return out;

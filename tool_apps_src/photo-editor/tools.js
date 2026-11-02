@@ -68,21 +68,24 @@
 		var v = PE.view, s = PE.sel; if (!s) return null; var key = [s.ver, v.zoom, v.px, v.py, v.w, v.h, v.dpr].join(","); if (ants.key === key) return ants;
 		var W = Math.round(v.w * v.dpr), Hh = Math.round(v.h * v.dpr), t = PE.tmp("ants", W, Hh), x = t.getContext("2d"), z = v.zoom * v.dpr;
 		x.setTransform(z, 0, 0, z, v.px * v.dpr, v.py * v.dpr); x.imageSmoothingEnabled = z < 2; x.drawImage(s.c, 0, 0);
-		var src = x.getImageData(0, 0, W, Hh).data, ia = new ImageData(W, Hh), ib = new ImageData(W, Hh), da = ia.data, db = ib.data;
+		var src = x.getImageData(0, 0, W, Hh).data, ia = new ImageData(W, Hh), ib = new ImageData(W, Hh), da = ia.data, db = ib.data, T = v.dpr >= 1.5 ? 2 : 1, dl = Math.round(4 * T);   // round 9: ants 2 device px wide on hi-dpi screens (1 px was hard to see)
+		var out = function (xx, y) { return xx < 0 || y < 0 || xx >= W || y >= Hh || src[(y * W + xx) * 4 + 3] <= 127; };
 		for (var y = 0; y < Hh; y++) for (var xx = 0; xx < W; xx++) {
 			var i = (y * W + xx) * 4; if (src[i + 3] <= 127) continue;
-			var edge = xx === 0 || y === 0 || xx === W - 1 || y === Hh - 1 || src[i - 4 + 3] <= 127 || src[i + 4 + 3] <= 127 || src[i - W * 4 + 3] <= 127 || src[i + W * 4 + 3] <= 127; if (!edge) continue;
-			var on = ((xx + y) >> 2) & 1, o = on ? 255 : 0, o2 = on ? 0 : 255;
+			var edge = false; for (var k = 1; k <= T && !edge; k++) edge = out(xx - k, y) || out(xx + k, y) || out(xx, y - k) || out(xx, y + k); if (!edge) continue;
+			var on = (Math.floor((xx + y) / dl)) & 1, o = on ? 255 : 0, o2 = on ? 0 : 255;
 			da[i] = da[i + 1] = da[i + 2] = o; da[i + 3] = 255; db[i] = db[i + 1] = db[i + 2] = o2; db[i + 3] = 255;
 		}
-		var ca = mk(W, Hh), cb = mk(W, Hh); ca.getContext("2d").putImageData(ia, 0, 0); cb.getContext("2d").putImageData(ib, 0, 0); ants = { key: key, a: ca, b: cb }; return ants;
+		var ca = mk(W, Hh), cb = mk(W, Hh), ct = mk(W, Hh), tx = ct.getContext("2d"); ca.getContext("2d").putImageData(ia, 0, 0); cb.getContext("2d").putImageData(ib, 0, 0);
+		tx.drawImage(t, 0, 0); tx.globalCompositeOperation = "source-in"; tx.fillStyle = "rgba(66,140,255,0.16)"; tx.fillRect(0, 0, W, Hh);   // a light blue wash over what is selected (shown while a selection tool is in hand)
+		ants = { key: key, a: ca, b: cb, tint: ct }; return ants;
 	}
 	setInterval(function () { if (PE.sel && !document.hidden) { phase ^= 1; PE.invalidateOverlay(); } }, 450);
 	PE.drawOverlay = function () {
 		var c = PE.els.over, v = PE.view; if (!c || !v.w) return; var W = Math.round(v.w * v.dpr), Hh = Math.round(v.h * v.dpr);
 		if (c.width !== W || c.height !== Hh) { c.width = W; c.height = Hh; }
 		var x = c.getContext("2d"); x.setTransform(1, 0, 0, 1, 0, 0); x.clearRect(0, 0, W, Hh); if (!PE.doc) return;
-		if (PE.sel) { var a = buildAnts(); if (a) x.drawImage(phase ? a.b : a.a, 0, 0); }
+		if (PE.sel) { var a = buildAnts(); if (a) { if (/^(marquee|lasso|wand)$/.test(PE.toolId) || PE.selTint) x.drawImage(a.tint, 0, 0); x.drawImage(phase ? a.b : a.a, 0, 0); } }
 		x.setTransform(v.dpr, 0, 0, v.dpr, 0, 0);
 		var t = PE.tool(); if (t && t.overlay) t.overlay(x, v);
 		if (PE.guides && PE.guides.length) {   // snap guides: magenta = the canvas (edges, centre), cyan = another layer
@@ -91,6 +94,17 @@
 		if (PE.ptr.inside && t && t.cursorSize && !PE.spaceHeld) {
 			var r = t.cursorSize() * v.zoom / 2; if (r > 1) { x.lineWidth = 1; x.strokeStyle = "rgba(0,0,0,0.85)"; x.beginPath(); x.arc(PE.ptr.x, PE.ptr.y, r, 0, 6.2832); x.stroke(); x.strokeStyle = "rgba(255,255,255,0.9)"; x.beginPath(); x.arc(PE.ptr.x, PE.ptr.y, r + 1, 0, 6.2832); x.stroke(); }
 		}
+	};
+	/* round 9: the outline of a selected layer: a dark line under a bright blue one, so it shows on light and dark pictures alike */
+	PE.selOutline = function (x, pts, faint) {
+		x.save(); x.lineJoin = "round"; x.beginPath(); pts.forEach(function (p, i) { i ? x.lineTo(p.x, p.y) : x.moveTo(p.x, p.y); }); x.closePath();
+		x.strokeStyle = "rgba(0,0,0,0.55)"; x.lineWidth = faint ? 2.5 : 3.5; x.stroke(); x.strokeStyle = faint ? "rgba(77,163,255,0.8)" : "#3b9bff"; x.lineWidth = faint ? 1 : 1.75; x.stroke(); x.restore();
+	};
+	/* a small name tag above a box (screen points), e.g. "Title text" or "3 layers" */
+	PE.selTag = function (x, pts, label, col) {
+		var minY = Infinity, lx = 0; pts.forEach(function (p) { if (p.y < minY - 0.5 || (Math.abs(p.y - minY) < 0.5 && p.x < lx)) { minY = p.y; lx = p.x; } });
+		x.save(); x.font = "600 11px system-ui,sans-serif"; var t = label.length > 40 ? label.slice(0, 39) + "…" : label, w = x.measureText(t).width + 12, y = Math.max(2, minY - 20);
+		x.fillStyle = col || "rgba(26,115,232,0.95)"; x.beginPath(); if (x.roundRect) x.roundRect(lx, y, w, 17, 4); else x.rect(lx, y, w, 17); x.fill(); x.fillStyle = "#fff"; x.fillText(t, lx + 6, y + 12.5); x.restore();
 	};
 	PE.handleBox = function (x, cx, cy, s) { x.fillStyle = "#fff"; x.strokeStyle = "#1a73e8"; x.lineWidth = 1.5; x.beginPath(); x.rect(cx - s, cy - s, s * 2, s * 2); x.fill(); x.stroke(); };
 
@@ -121,7 +135,28 @@
 	}
 	function boxHandle(b, hd) { return PE.toScreen(b.x + (hd[0] + 1) / 2 * b.w, b.y + (hd[1] + 1) / 2 * b.h); }
 	function scr(e) { var r = PE.els.over.getBoundingClientRect(); return { x: e.sx - r.left, y: e.sy - r.top }; }
-	var mv = null, hoverTM = null;
+	/* round 9: the round rotate handle on a stem above the layer's top edge (it turns with the layer) */
+	var angleBox = {};
+	function rotHandle(L) { var T = handleScreen(L, [0, -1]), C = PE.toScreen(L.cx, L.cy), dx = T.x - C.x, dy = T.y - C.y, l = Math.hypot(dx, dy); if (l < 1) { dx = Math.sin(L.rot); dy = -Math.cos(L.rot); l = 1; } return { x: T.x + dx / l * 28, y: T.y + dy / l * 28, tx: T.x, ty: T.y }; }
+	function drawRotHandle(x, L, rot) {
+		var h = rotHandle(L); x.save(); x.strokeStyle = "#1a73e8"; x.lineWidth = 1.5; x.beginPath(); x.moveTo(h.tx, h.ty); x.lineTo(h.x, h.y); x.stroke();
+		x.fillStyle = rot ? "#1a73e8" : "#fff"; x.beginPath(); x.arc(h.x, h.y, 7, 0, Math.PI * 2); x.fill(); x.stroke();
+		x.strokeStyle = rot ? "#fff" : "#1a73e8"; x.lineWidth = 1.4; x.beginPath(); x.arc(h.x, h.y, 3.6, -Math.PI * 0.9, Math.PI * 0.55); x.stroke();   // a little turning arrow
+		var ax = h.x + 3.6 * Math.cos(Math.PI * 0.55), ay = h.y + 3.6 * Math.sin(Math.PI * 0.55); x.beginPath(); x.moveTo(ax - 2.6, ay + 0.4); x.lineTo(ax + 0.6, ay - 2.4); x.lineTo(ax + 1.2, ay + 1.6); x.closePath(); x.fillStyle = rot ? "#fff" : "#1a73e8"; x.fill();
+		if (rot && rot.at) { var lbl = P.angleDeg(L.rot) + "°", sp = PE.toScreen(rot.at.x, rot.at.y); x.font = "600 12px system-ui,sans-serif"; var w = x.measureText(lbl).width + 12; x.fillStyle = "rgba(20,20,28,0.88)"; x.fillRect(sp.x + 14, sp.y + 10, w, 20); x.fillStyle = "#fff"; x.fillText(lbl, sp.x + 20, sp.y + 24); }
+		x.restore();
+	}
+	var ROT_CUR = "url(\"data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='24' height='24' viewBox='0 0 24 24'><path d='M12 4a8 8 0 1 1-7.4 5' fill='none' stroke='white' stroke-width='4'/><path d='M12 4a8 8 0 1 1-7.4 5' fill='none' stroke='black' stroke-width='2'/><path d='M1 6l4.5 4.5L8 5z' fill='black' stroke='white'/></svg>\") 12 12, crosshair";
+	function handleCursor(A, e) {
+		var o = PE.opt.move; if (!A || !o.handles || PE.moveSet().length !== 1 || PE.isGroup(A) || A.locked || !A.visible) return "default"; var sp = scr(e), i;
+		var rh = rotHandle(A); if (Math.hypot(rh.x - sp.x, rh.y - sp.y) < 11) return ROT_CUR;
+		var isText = A.type === "text" && A.text;
+		for (i = 0; i < 8; i++) { if (isText && (A.text.fit || i % 2)) continue; var s = handleScreen(A, HANDLES[i]); if (Math.hypot(s.x - sp.x, s.y - sp.y) < 9) { var ang = Math.atan2(s.y - PE.toScreen(A.cx, A.cy).y, s.x - PE.toScreen(A.cx, A.cy).x) * 180 / Math.PI, q = ((Math.round(ang / 45) % 4) + 4) % 4; return ["ew-resize", "nwse-resize", "ns-resize", "nesw-resize"][q]; } }
+		for (i = 0; i < 4; i++) { var c = handleScreen(A, HANDLES[i * 2]), dd = Math.hypot(c.x - sp.x, c.y - sp.y); if (dd >= 9 && dd < 30 && !PE.layerAtPoint(A, e.x, e.y)) return ROT_CUR; }
+		return PE.layerAtPoint(A, e.x, e.y) ? "move" : "default";
+	}
+	PE.rotateLayerBy = function (deg) { var L = PE.active(); if (!L) return; if (PE.isGroup(L)) { PE.toast("Groups can't be turned yet: select a layer inside it"); return; } if (L.locked) { PE.toast("This layer is locked"); return; } L.rot = P.degToRot(P.angleDeg(L.rot) + deg); PE.invalidate(); PE.commit("Rotate layer " + (deg > 0 ? "right" : "left") + " 90°"); PE.emit("opts", "move"); };
+	var mv = null, hoverTM = null, hoverPick = null;
 	function pickTarget(hit, L, groupsOn) {
 		if (!groupsOn) return hit; var anc = PE.ancestorsOf(hit); if (!anc.length) return hit; if (L === hit) return hit; if (L && anc.indexOf(L) >= 0) return L;
 		if (L && PE.topGroupOf(L) === PE.topGroupOf(hit)) return hit; return PE.topGroupOf(hit);
@@ -184,8 +219,13 @@
 		return best;
 	}
 	PE.defTool({ id: "move", name: "Move / Transform", key: "v", icon: "✥", opts: { auto: true, handles: true, snap: true, snapLayers: true, groups: true },
-		ui: [{ k: "auto", label: "Pick layer on click", type: "check" }, { k: "groups", label: "Pick the whole group", type: "check" }, { k: "handles", label: "Transform handles", type: "check" }, { k: "snap", label: "Snap to canvas edges", type: "check" }, { k: "snapLayers", label: "Snap to other layers", type: "check" }, { type: "button", label: "✎ Edit text / equation", act: function () { var L = PE.active(); if (L && L.type === "text") PE.editActiveText(); else if (L && L.eq) PE.dlgEquation(L); else PE.toast("Select a text or equation layer first (click it on the picture)"); } }, { type: "button", label: "✂ Remove background (AI)", act: function () { PE.aiRemoveBackground(); } }],
-		hint: "Drag to move. Shift / Ctrl-click adds or removes layers; drag on empty canvas to box-select several. Handles resize (Shift = other proportions), just outside a corner rotates. On a text: the purple side handles wrap it (with Auto-fit text the purple corners resize the box; Alt+corner scales). Hold Ctrl (or Alt) while dragging = no snapping. Arrows nudge.",
+		ui: [{ k: "angle", label: "Angle", type: "number", step: 1, unit: "°", help: "Turn the selected layer to an exact angle (0 = straight). You can also drag the round handle above the layer, or just outside a corner. Hold Shift while dragging to turn in 15° steps." },
+			{ type: "button", label: "⟲ 90°", title: "Turn the layer 90° to the left", act: function () { PE.rotateLayerBy(-90); } }, { type: "button", label: "⟳ 90°", title: "Turn the layer 90° to the right", act: function () { PE.rotateLayerBy(90); } }, { type: "button", label: "⇋ Flip H", title: "Flip the layer left to right", act: function () { PE.flipLayer(true); } }, { type: "button", label: "⇵ Flip V", title: "Flip the layer upside down", act: function () { PE.flipLayer(false); } },
+			{ k: "auto", label: "Pick layer on click", type: "check" }, { k: "groups", label: "Pick the whole group", type: "check" }, { k: "handles", label: "Transform handles", type: "check" }, { k: "snap", label: "Snap to canvas edges", type: "check" }, { k: "snapLayers", label: "Snap to other layers", type: "check" }, { type: "button", label: "✎ Edit text / equation", act: function () { var L = PE.active(); if (L && L.type === "text") PE.editActiveText(); else if (L && L.eq) PE.dlgEquation(L); else PE.toast("Select a text or equation layer first (click it on the picture)"); } }, { type: "button", label: "✂ Remove background (AI)", act: function () { PE.aiRemoveBackground(); } }],
+		optsTarget: function () { var L = PE.active(); return L && !PE.isGroup(L) ? angleBox : null; },
+		optGet: function (k) { if (k !== "angle") return undefined; var L = PE.active(); return L && !PE.isGroup(L) ? P.angleDeg(L.rot) : 0; },
+		onopt: function (k, v) { if (k !== "angle") return; var L = PE.active(); if (!L || PE.isGroup(L) || L.locked) return; L.rot = P.degToRot(v); PE.invalidate(); PE.later("angle", function () { PE.commit("Rotate layer"); }, 500); },
+		hint: "Drag to move. Drag the round handle above the layer to rotate it (Shift = 15° steps), or type an Angle. Shift / Ctrl-click adds or removes layers; drag on empty canvas to box-select several. Handles resize (Shift = other proportions), just outside a corner rotates. On a text: the purple side handles wrap it (with Auto-fit text the purple corners resize the box; Alt+corner scales). Hold Ctrl (or Alt) while dragging = no snapping. Arrows nudge.",
 		down: function (e) {
 			var o = PE.opt.move, A = PE.active(), set = PE.moveSet(), multi = set.length > 1, sp = scr(e), i;
 			mv = null; PE.guides = [];
@@ -195,6 +235,7 @@
 						var its = leaves(set).filter(function (k) { return !k.locked; }); if (its.length !== leaves(set).length) { PE.toast("A locked layer is in the selection"); return; }
 						mv = { kind: "mscale", set: set, b0: b, vb0: P.unionBox(its.filter(PE.effVisible).map(PE.visBox)) || b, h: HANDLES[i], items: its.map(function (k) { return [k, k.cx, k.cy, k.sx, k.sy, k.rot]; }), tg: targetsFor(its) }; return; } }
 				} else if (A && A.visible && !PE.isGroup(A) && !A.locked) {
+					var rh = rotHandle(A); if (Math.hypot(rh.x - sp.x, rh.y - sp.y) < 11) { mv = { kind: "rot", L: A, a0: Math.atan2(e.y - A.cy, e.x - A.cx), rot0: A.rot }; return; }
 					var isText = A.type === "text" && A.text && PE.textBoxHit;
 					if (isText) {   // a text layer: the purple handles on its box change the wrap width (and, with Auto-fit text, the box height); Alt on a box corner = scale
 						var tbh = PE.textBoxHit(A, e);
@@ -232,7 +273,7 @@
 				}
 				mv.items.forEach(function (g) { g[0].cx = g[1] + dx; g[0].cy = g[2] + dy; }); mv.moved = mv.moved || dx !== 0 || dy !== 0; PE.invalidate(); return;
 			}
-			if (mv.kind === "rot") { var a = Math.atan2(e.y - L.cy, e.x - L.cx), rr = mv.rot0 + (a - mv.a0); if (e.shift) rr = Math.round(rr / (Math.PI / 12)) * (Math.PI / 12); L.rot = rr; mv.moved = true; PE.invalidate(); return; }
+			if (mv.kind === "rot") { var a = Math.atan2(e.y - L.cy, e.x - L.cx), rr = mv.rot0 + (a - mv.a0); rr = P.snapAngle(rr, e.shift ? 15 : 0, e.ctrl ? 0 : 2); L.rot = rr; mv.moved = true; mv.at = e; PE.invalidate(); PE.invalidateOverlay(); return; }
 			if (mv.kind === "scale") {
 				var d = scaleDims(mv, e), nw = d.nw, nh = d.nh; applyDims(mv, d, nw, nh, e.alt); PE.guides = [];
 				var vr = visLocal(L);
@@ -272,6 +313,7 @@
 			if (m && m.kind === "band") { bandSelect(m, e); PE.invalidateOverlay(); return; }
 			if (m && m.moved) {
 				var n = m.set ? m.set.length : 1, grp = m.set && n === 1 && PE.isGroup(m.set[0]);
+				if (m.kind === "rot") PE.emit("opts", "move");
 				PE.commit(m.kind === "tbox" ? "Text box" : m.kind === "move" ? (n > 1 ? "Move " + n + " layers" : grp ? "Move group" : "Move layer") : m.kind === "rot" ? "Rotate layer" : m.kind === "mscale" ? "Resize " + n + " layers" : "Resize layer");
 			}
 			PE.invalidateOverlay();
@@ -284,26 +326,35 @@
 			else if (m.kind === "scale") { m.L.cx = m.cx0; m.L.cy = m.cy0; m.L.sx = m.sx0; m.L.sy = m.sy0; } else if (m.kind === "rot") m.L.rot = m.rot0;
 			PE.invalidate();
 		},
-		cancel: function () { if (mv && mv.kind !== "band") this.abort(); mv = null; hoverTM = null; },
+		cancel: function () { if (mv && mv.kind !== "band") this.abort(); mv = null; hoverTM = null; hoverPick = null; },
 		hover: function (e) {   // a text layer under the pointer shows its box; the cursor tells when a box edge can be dragged
 			if (!PE.doc) return; var A = PE.active(), h = null; if (PE.opt.move.handles && PE.moveSet().length === 1 && A && A.type === "text" && A.text) h = PE.textBoxHit(A, e);
-			PE.els.over.style.cursor = h ? PE.textBoxCursor(h, A) : "default"; var ht = PE.textAt ? PE.textAt(e) : null; if (ht === A) ht = null; if (ht !== hoverTM) { hoverTM = ht; PE.invalidateOverlay(); }
+			PE.els.over.style.cursor = h ? PE.textBoxCursor(h, A) : handleCursor(A, e);
+			var raw = PE.opt.move.auto ? PE.layerAt(e.x, e.y) : null; if (raw && PE.isBackdrop(raw)) raw = null; var hp2 = raw ? pickTarget(raw, PE.moveSet().length > 1 ? null : A, PE.opt.move.groups) : null; if (hp2 !== hoverPick) { hoverPick = hp2; PE.invalidateOverlay(); } var ht = PE.textAt ? PE.textAt(e) : null; if (ht === A) ht = null; if (ht !== hoverTM) { hoverTM = ht; PE.invalidateOverlay(); }
 		},
 		overlay: function (x, v) {
 			if (hoverTM && PE.doc.layers.indexOf(hoverTM) >= 0 && PE.drawTextFrame) PE.drawTextFrame(x, hoverTM, false);
+			if (!mv && hoverPick && PE.ptr.inside && PE.doc.layers.indexOf(hoverPick) >= 0 && PE.moveSet().indexOf(hoverPick) < 0) {   // round 9: the layer a click would pick, outlined thinly while you hover
+				var hb = PE.isGroup(hoverPick) ? PE.groupBounds(hoverPick) : null, hp = hb ? [[hb.x, hb.y], [hb.x + hb.w, hb.y], [hb.x + hb.w, hb.y + hb.h], [hb.x, hb.y + hb.h]] : PE.corners(hoverPick);
+				x.save(); x.setLineDash([3, 3]); x.beginPath(); hp.map(function (p) { return PE.toScreen(p[0], p[1]); }).forEach(function (p, i) { i ? x.lineTo(p.x, p.y) : x.moveTo(p.x, p.y); }); x.closePath(); x.strokeStyle = "rgba(0,0,0,0.5)"; x.lineWidth = 2.5; x.stroke(); x.strokeStyle = "rgba(120,190,255,0.95)"; x.lineWidth = 1; x.stroke(); x.restore();
+			}
 			if (mv && mv.kind === "band") { var a = PE.toScreen(mv.a.x, mv.a.y), b = PE.toScreen(mv.b.x, mv.b.y), r = P.rectFrom(a.x, a.y, b.x, b.y); x.fillStyle = "rgba(26,115,232,0.12)"; x.fillRect(r.x, r.y, r.w, r.h); x.lineWidth = 1; [["#000", 0], ["#fff", 4]].forEach(function (p) { x.setLineDash([4, 4]); x.lineDashOffset = p[1]; x.strokeStyle = p[0]; x.strokeRect(r.x + 0.5, r.y + 0.5, r.w, r.h); }); x.setLineDash([]); x.lineDashOffset = 0; }
 			var set = PE.moveSet(), o = PE.opt.move; if (!set.length) return;
 			if (set.length > 1) {
-				x.strokeStyle = "rgba(26,115,232,0.75)"; x.lineWidth = 1;
-				set.forEach(function (L) { var pts = PE.corners(L).map(function (p) { return PE.toScreen(p[0], p[1]); }); x.beginPath(); pts.forEach(function (p, i) { i ? x.lineTo(p.x, p.y) : x.moveTo(p.x, p.y); }); x.closePath(); x.stroke(); });
+				set.forEach(function (L) { if (PE.isGroup(L)) { var g = PE.groupBounds(L); if (!g) return; var q = [[g.x, g.y], [g.x + g.w, g.y], [g.x + g.w, g.y + g.h], [g.x, g.y + g.h]].map(function (p) { return PE.toScreen(p[0], p[1]); }); PE.selOutline(x, q); return; } PE.selOutline(x, PE.corners(L).map(function (p) { return PE.toScreen(p[0], p[1]); })); });
 				var bb = setBox(set); if (!bb) return; var s0 = PE.toScreen(bb.x, bb.y), s1 = PE.toScreen(bb.x + bb.w, bb.y + bb.h); x.strokeStyle = "#1a73e8"; x.lineWidth = 1.5; x.setLineDash([6, 4]); x.strokeRect(s0.x, s0.y, s1.x - s0.x, s1.y - s0.y); x.setLineDash([]);
 				if (o.handles) for (var k = 0; k < 8; k++) { var hs = boxHandle(bb, HANDLES[k]); PE.handleBox(x, hs.x, hs.y, 4.5); }
 				x.font = "11px system-ui,sans-serif"; var lbl = set.length + " layers"; x.fillStyle = "rgba(26,115,232,0.9)"; x.fillRect(s0.x, s0.y - 18, x.measureText(lbl).width + 10, 16); x.fillStyle = "#fff"; x.fillText(lbl, s0.x + 5, s0.y - 6);
 				return;
 			}
 			var L = set[0]; if (!o.handles || !L.visible) return;
-			if (PE.isGroup(L)) { var gb = PE.groupBounds(L), g0 = PE.toScreen(gb.x, gb.y), g1 = PE.toScreen(gb.x + gb.w, gb.y + gb.h); x.setLineDash([6, 4]); x.strokeStyle = "#1a73e8"; x.lineWidth = 1.5; x.strokeRect(g0.x, g0.y, g1.x - g0.x, g1.y - g0.y); x.setLineDash([]); return; }
-			var pts = PE.corners(L).map(function (p) { return PE.toScreen(p[0], p[1]); }); x.strokeStyle = "#1a73e8"; x.lineWidth = 1.5; x.beginPath(); pts.forEach(function (p, i) { i ? x.lineTo(p.x, p.y) : x.moveTo(p.x, p.y); }); x.closePath(); x.stroke();
+			if (PE.isGroup(L)) { var gb = PE.groupBounds(L); if (!gb) return; var g0 = PE.toScreen(gb.x, gb.y), g1 = PE.toScreen(gb.x + gb.w, gb.y + gb.h);
+				PE.descendants(L).forEach(function (k) { if (!PE.isGroup(k) && PE.effVisible(k)) PE.selOutline(x, PE.corners(k).map(function (p) { return PE.toScreen(p[0], p[1]); }), true); });   // round 9: every layer in the group, faint
+				x.save(); x.setLineDash([6, 4]); x.strokeStyle = "rgba(0,0,0,0.55)"; x.lineWidth = 3.5; x.strokeRect(g0.x, g0.y, g1.x - g0.x, g1.y - g0.y); x.strokeStyle = "#3b9bff"; x.lineWidth = 1.75; x.strokeRect(g0.x, g0.y, g1.x - g0.x, g1.y - g0.y); x.restore();
+				PE.selTag(x, [g0, { x: g1.x, y: g0.y }], "▸ " + L.name + " (group)"); return; }
+			var pts = PE.corners(L).map(function (p) { return PE.toScreen(p[0], p[1]); }); PE.selOutline(x, pts);
+			if (!L.locked) drawRotHandle(x, L, mv && mv.kind === "rot" ? mv : null);
+			if (!mv && PE.opt.move.tags !== false) PE.selTag(x, pts, L.name + (L.locked ? " 🔒" : ""));
 			if (L.type === "text" && L.text && PE.drawTextBoxHandles) {   // corners = scale (not with Auto-fit text: there the box corners resize the box), purple = the text box
 				if (!L.text.fit) for (var j = 0; j < 8; j += 2) { var sj = handleScreen(L, HANDLES[j]); PE.handleBox(x, sj.x, sj.y, 4.5); }
 				PE.drawTextFrame(x, L, true); PE.drawTextBoxHandles(x, L); return;
@@ -330,7 +381,7 @@
 	PE.nudge = function (dx, dy) {
 		var set = PE.moveSet().filter(function (L) { return !L.locked; }); if (!set.length) { if (PE.active() && PE.active().locked) PE.toast("This layer is locked"); return; }
 		set.forEach(function (L) { PE.translate(L, dx, dy); }); PE.invalidate(); var n = set.length;
-		clearTimeout(PE._nt); PE._nt = setTimeout(function () { PE.commit(n > 1 ? "Move " + n + " layers" : "Move layer"); }, 350);
+		PE.later("nudge", function () { PE.commit(n > 1 ? "Move " + n + " layers" : "Move layer"); }, 350);
 	};
 
 	/* ---------- selection tools ---------- */

@@ -287,6 +287,35 @@ var MESPixel = (function () {
 	/* a text layer re-rendered at a new size: how far its centre moves (in the layer's own pixels) so the text keeps its anchor: left-aligned text keeps
 	 * its left edge, centred text its centre, right-aligned text its right edge; the top stays put. o / n = {w, h, pad, mw} before / after (canvas size,
 	 * padding round the text, text box width); without an old pad / mw (first render) the canvas edges are used, as before round 8. */
+	/* ---------- round 9: angles for the Move tool (rotate handle, Angle field, 90° buttons) ---------- */
+	/* a layer's rotation (radians) as degrees in (-180, 180], rounded to 0.1 */
+	function angleDeg(rot) { var d = (rot || 0) * 180 / Math.PI; d = ((d % 360) + 360) % 360; if (d > 180) d -= 360; d = Math.round(d * 10) / 10; return d === -180 ? 180 : (Object.is && Object.is(d, -0)) ? 0 : d; }
+	function degToRot(deg) { var d = ((+deg || 0) % 360 + 360) % 360; if (d > 180) d -= 360; return d * Math.PI / 180; }
+	/* while dragging: step > 0 = only multiples of step degrees (Shift); else multiples of 90 pull the angle within magnet degrees */
+	function snapAngle(rot, step, magnet) {
+		var d = rot * 180 / Math.PI; if (step > 0) return Math.round(d / step) * step * Math.PI / 180;
+		if (magnet > 0) { var q = Math.round(d / 90) * 90; if (Math.abs(d - q) <= magnet) return q * Math.PI / 180; }
+		return rot;
+	}
+	/* ---------- round 9: saving a PSD (or a picture) again and again without a file picker ----------
+	 * The browser decides the name of a download; when a file of that name is already in Downloads it adds " (1)", " (2)"... We cannot overwrite it,
+	 * so the editor keeps a version number in the name instead, the way people name drafts: "header.psd", then "header-v2.psd", "header-v3.psd". */
+	function versionedName(base, ext, n) { base = String(base || "image").replace(/[-_ ]v\d+$/i, "").replace(/ \(\d+\)$/, ""); return n > 1 ? base + "-v" + n + "." + ext : base + "." + ext; }
+	/* the version a file name already carries ("header-v3.psd" -> {base: "header", n: 3}); "header (2).psd" made by the browser counts as version 2 */
+	function nameVersion(name) { var m = /^(.*?)(?:[-_ ]v(\d+)| \((\d+)\))?(\.[^.]+)?$/i.exec(String(name || "")); if (!m) return { base: String(name || ""), n: 1 }; return { base: m[1], n: m[2] ? +m[2] : m[3] ? +m[3] + 1 : 1 }; }
+	/* a small fingerprint of a layer's pixels (an RGBA byte array; only the alpha, which survives the premultiplied-alpha round trip of a canvas exactly), so a PSD written by this editor can tell whether Photoshop changed a text layer's pixels */
+	function pixelSig(data, w, h) { var hsh = 2166136261 >>> 0, n = w * h, step = Math.max(1, Math.floor(n / 4096)); for (var i = 0; i < n; i += step) { var k = i * 4; hsh ^= data[k + 3]; hsh = Math.imul(hsh, 16777619) >>> 0; } return w + "x" + h + ":" + hsh.toString(36); }
+	/* our layer details stored inside a PSD (XMP), read back: [{i, name, sig, text, cx, cy, sx, sy, rot}]; anything that does not look right is dropped */
+	var PSD_MARK = "mes-photo-editor";
+	function psdMetaEncode(list) { return JSON.stringify({ app: PSD_MARK, v: 1, layers: list }); }
+	function psdMetaDecode(str) {
+		var m = /<mes:layers>([\s\S]*?)<\/mes:layers>/.exec(String(str || "")), raw = m ? m[1] : String(str || ""), o;
+		raw = raw.replace(/&lt;/g, "<").replace(/&gt;/g, ">").replace(/&quot;/g, '"').replace(/&amp;/g, "&");
+		try { o = JSON.parse(raw); } catch (e) { return []; } if (!o || o.app !== PSD_MARK || !Array.isArray(o.layers)) return [];
+		return o.layers.filter(function (l) { return l && typeof l.i === "number" && typeof l.sig === "string" && l.text && typeof l.text.str === "string" && isFinite(l.cx) && isFinite(l.cy); });
+	}
+	function psdXmp(json) { var esc = String(json).replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
+		return '<?xpacket begin="" id="W5M0MpCehiHzreSzNTczkc9d"?><x:xmpmeta xmlns:x="adobe:ns:meta/"><rdf:RDF xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#"><rdf:Description rdf:about="" xmlns:mes="https://mes.fm/photo/ns/1.0/"><mes:layers>' + esc + '</mes:layers></rdf:Description></rdf:RDF></x:xmpmeta><?xpacket end="w"?>'; }
 	function textAnchorShift(align, o, n) {
 		var f = align === "center" ? 0.5 : align === "right" ? 1 : 0, known = o.pad != null && o.mw != null;
 		var ax0 = known ? o.pad + f * o.mw : f * o.w, ax1 = known ? n.pad + f * n.mw : f * n.w, ay0 = known ? o.pad : 0, ay1 = known ? n.pad : 0;
@@ -739,7 +768,7 @@ var MESPixel = (function () {
 	}
 
 	var api = { FXDEF: FXDEF, FXKEYS: FXKEYS, fxNorm: fxNorm, fxAny: fxAny, fxAngle: fxAngle, fxOffset: fxOffset, fxReach: fxReach, sdField: sdField, sdCover: sdCover, blurF: blurF, shiftF: shiftF, gradAt: gradAt, gradPlane: gradPlane, bevelPlanes: bevelPlanes, alphaBox: alphaBox, fxPlanes: fxPlanes, fxFromPsd: fxFromPsd, fxToPsd: fxToPsd, colorFromPsd: colorFromPsd, modeFromPsd: modeFromPsd, modeToPsd: modeToPsd, rgbToHsv: rgbToHsv, hsvToRgb: hsvToRgb, parseColor: parseColor, lightness: lightness, edt: edt, outlineAlpha: outlineAlpha, normToolLayout: normToolLayout, moveTool: moveTool, clampCrop: clampCrop, dragCrop: dragCrop, shiftCrop: shiftCrop, projectKind: projectKind, projectBase: projectBase, projectFileName: projectFileName, isZipBytes: isZipBytes, zipEntries: zipEntries, projectPrefix: projectPrefix, pruneRecent: pruneRecent, upsertRecent: upsertRecent, agoText: agoText, diskChanged: diskChanged, layerFileNames: layerFileNames, newProjectId: newProjectId,
-		unionBox: unionBox, boxesTouch: boxesTouch, rectFrom: rectFrom, snapTargets: snapTargets, snapAxis: snapAxis, snapBox: snapBox, guidesOn: guidesOn, linSolve: linSolve, scaleAbout: scaleAbout, wrapLines: wrapLines, textAnchorShift: textAnchorShift, carryUiState: carryUiState, richMask: richMask, richEdit: richEdit, richSet: richSet, richAll: richAll, richNorm: richNorm, richSegs: richSegs, fitFontSize: fitFontSize, folderProject: folderProject, caretLine: caretLine, hitInLine: hitInLine, wordAt: wordAt, describeSource: describeSource, bytesText: bytesText, panelClamp: panelClamp, panelKey: panelKey, clamp: clamp, hexToRgb: hexToRgb, rgbToHex: rgbToHex, rgbToHsl: rgbToHsl, hslToRgb: hslToRgb, histogram: histogram, identityLUT: identityLUT, applyLUT: applyLUT, levelsLUT: levelsLUT, curveLUT: curveLUT,
+		unionBox: unionBox, boxesTouch: boxesTouch, rectFrom: rectFrom, snapTargets: snapTargets, snapAxis: snapAxis, snapBox: snapBox, guidesOn: guidesOn, linSolve: linSolve, scaleAbout: scaleAbout, wrapLines: wrapLines, textAnchorShift: textAnchorShift, angleDeg: angleDeg, degToRot: degToRot, snapAngle: snapAngle, versionedName: versionedName, nameVersion: nameVersion, pixelSig: pixelSig, psdMetaEncode: psdMetaEncode, psdMetaDecode: psdMetaDecode, psdXmp: psdXmp, carryUiState: carryUiState, richMask: richMask, richEdit: richEdit, richSet: richSet, richAll: richAll, richNorm: richNorm, richSegs: richSegs, fitFontSize: fitFontSize, folderProject: folderProject, caretLine: caretLine, hitInLine: hitInLine, wordAt: wordAt, describeSource: describeSource, bytesText: bytesText, panelClamp: panelClamp, panelKey: panelKey, clamp: clamp, hexToRgb: hexToRgb, rgbToHex: rgbToHex, rgbToHsl: rgbToHsl, hslToRgb: hslToRgb, histogram: histogram, identityLUT: identityLUT, applyLUT: applyLUT, levelsLUT: levelsLUT, curveLUT: curveLUT,
 		brightnessContrast: brightnessContrast, exposure: exposure, hueSat: hueSat, vibrance: vibrance, temperature: temperature, invert: invert, grayscale: grayscale, sepia: sepia, threshold: threshold, posterize: posterize,
 		gaussianBlur: gaussianBlur, boxBlur: boxBlur, unsharp: unsharp, noise: noise, pixelate: pixelate, vignette: vignette, convolve: convolve, floodMask: floodMask, growShrinkMask: growShrinkMask, featherMask: featherMask, invertMask: invertMask,
 		maskBounds: maskBounds, opaqueBounds: opaqueBounds, blendByMask: blendByMask, autoLevels: autoLevels, premultiply: premultiply, unpremultiply: unpremultiply };

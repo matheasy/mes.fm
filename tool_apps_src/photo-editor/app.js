@@ -182,8 +182,9 @@
 	function buildOpts() {
 		var box = $("pe-opts"), t = PE.tool(), id = t.id, kind = PE.opt[id] && PE.opt[id].kind; box.innerHTML = ""; var name = el("span", "pe-opt-name", esc(t.name)); box.appendChild(name);
 		(t.ui || []).forEach(function (u) {
+			if (u.when && !u.when()) return;
 			if (u.showFor && u.showFor.indexOf(kind) < 0) return; if (u.hideFor && u.hideFor.indexOf(kind) >= 0) return; if (u.show && !PE.optGet(id, u.show)) return;
-			if (u.type === "button") { var b = el("button", "pe-btn pe-btn--sm", esc(u.label)); b.type = "button"; b.addEventListener("mousedown", function (e) { e.preventDefault(); }); b.addEventListener("click", u.act); box.appendChild(b); return; }
+			if (u.type === "button") { var b = el("button", "pe-btn pe-btn--sm" + (u.cls ? " " + u.cls : ""), esc(u.label)); if (u.title) b.title = u.title; b.type = "button"; b.addEventListener("mousedown", function (e) { e.preventDefault(); }); b.addEventListener("click", u.act); box.appendChild(b); return; }
 			var w = el("label", "pe-opt"), v = PE.optGet(id, u.k), inp; w.appendChild(el("span", "pe-opt-l", esc(u.label)));
 			if (u.type === "check") { inp = el("input"); inp.type = "checkbox"; inp.checked = !!v; inp.addEventListener("change", function () { PE.optSet(id, u.k, inp.checked); rebuildOpts(); }); }
 			else if (u.type === "select" && u.options === "fonts" && PE.fontButton) { inp = PE.fontButton(v, function (val) { PE.optSet(id, u.k, val); rebuildOpts(); }); }
@@ -194,7 +195,8 @@
 				var dp = el("button", "pe-mini pe-dropbtn", "💉"); dp.type = "button"; dp.title = "Pick " + u.label.toLowerCase() + " from the picture: press and drag over it, let go to use the colour"; dp.setAttribute("aria-label", dp.title);
 				dp.addEventListener("mousedown", function (e) { e.preventDefault(); }); dp.addEventListener("click", function () { if (!needDoc()) return; PE.pickColorFromImage({ label: u.label, apply: function (hex) { PE.optSet(id, u.k, hex); rebuildOpts(); } }); });
 				w.appendChild(inp); w.appendChild(dp); var hq3 = optHelp(u); if (hq3) w.appendChild(hq3); box.appendChild(w); return; }
-			else if (u.type === "number") { inp = el("input", "pe-num"); inp.type = "number"; inp.value = v; inp.addEventListener("input", function () { PE.optSet(id, u.k, +inp.value); }); }
+			else if (u.type === "number") { inp = el("input", "pe-num"); inp.type = "number"; if (u.step != null) inp.step = u.step; if (u.min != null) inp.min = u.min; if (u.max != null) inp.max = u.max; inp.value = v; inp.addEventListener("input", function () { if (inp.value === "" || isNaN(+inp.value)) return; PE.optSet(id, u.k, +inp.value); }); inp.addEventListener("keydown", function (e) { e.stopPropagation(); if (e.key === "Enter") inp.blur(); });
+				if (u.unit) { w.appendChild(inp); w.appendChild(el("span", "pe-opt-v", esc(u.unit))); var hq4 = optHelp(u); if (hq4) w.appendChild(hq4); box.appendChild(w); return; } }
 			else {
 				inp = el("input"); inp.type = "range"; inp.min = u.min; inp.max = u.max; inp.step = u.step; inp.value = v;
 				var num = el("input", "pe-num pe-num--opt"); num.type = "number"; num.min = u.min; num.max = u.max; num.step = u.step; num.value = (+v).toFixed(u.step < 1 ? 2 : 0); num.title = "Type an exact value" + (u.unit ? " (" + u.unit + ")" : "");
@@ -211,8 +213,9 @@
 	var OPTHELP = { "Hardness": "How sharp the edge of the brush is. 100% is a crisp hard circle; lower values fade softly towards the edge, like an airbrush.", "Opacity": "How see-through the paint is. 100% covers fully; 30% lets what is underneath show through. Overlapping strokes in one drag do not stack.", "Smoothing": "Steadies a shaky hand: the brush lags a little behind the pointer and draws smoother curves. 0% = follows the pointer exactly.", "Pen pressure": "With a drawing tablet or pen, pressing harder makes the stroke bigger. Has no effect with a mouse.", "Tolerance": "How different a colour can be and still count as the same area. Low = only almost identical colours; high = spreads into similar colours.", "Strength": "How strong the effect is each time you paint over it.", "Aligned": "On: the copy source moves along with your brush. Off: every stroke starts again from the same source point.", "Contiguous": "On: only connected areas are filled. Off: every matching colour in the whole layer.", "Sample all layers": "Look at the merged picture instead of only the selected layer when deciding what is the same colour.", "Pick the layer under the click": "On: clicking a letter or shape picks the layer that is actually showing there, so the selection (and a following Delete) acts on that layer and not on the picture behind it. Off: always use the selected layer.", "Box width (0 = auto)": "How wide the text box is before words wrap onto the next line. 0 = as wide as the text needs (up to the image width). You can also drag the purple handles on the left and right edges of the text box (Text tool or Move tool).", "Auto-fit text": "On: the font size changes by itself so the text fills the box. Drag the box's edges or corners (purple handles) and the words re-wrap and grow or shrink to fit. Off: dragging the box's sides only re-wraps the words, and the box is as tall as the text.", "Box height": "With Auto-fit text: how tall the text box is. The font size is the largest one that fits the box's width and height.", "Underline": "Underlines the text. While you are typing in a text, Ctrl/Cmd+U (and B, I) changes only the selected letters; with nothing selected, the whole text.", "Outline width": "How thick the outline around the letters is. 0 = no outline.", "Letter spacing": "Extra space between letters (negative = tighter).", };
 	function optHelp(u) { var t = u.help || OPTHELP[u.label]; return t ? PE.helpBtn(u.label, esc(t)) : null; }
 	function fmtV(v, u) { return (u.step < 1 ? (+v).toFixed(2) : Math.round(v)) + (u.unit || ""); }
-	var optsTimer = 0; PE.on("opts", function (id) { if (id === PE.toolId) { clearTimeout(optsTimer); optsTimer = setTimeout(function () { if (!document.activeElement || document.activeElement.type !== "range") buildOpts(); }, 10); } sset({ opt: PE.opt }); });
-	PE.on("active", function () { if (PE.toolId === "text") buildOpts(); });
+	var optsTimer = 0; PE.on("opts", function (id) { if (id === PE.toolId) { clearTimeout(optsTimer); optsTimer = setTimeout(function () { var ae = document.activeElement; if (!ae || !(ae.type === "range" || ((ae.type === "number" || ae.type === "text") && $("pe-opts").contains(ae)))) buildOpts(); }, 10); } sset({ opt: PE.opt }); });
+	PE.on("active", function () { if (PE.toolId === "text" || PE.toolId === "move") buildOpts(); });
+	PE.on("history", function () { if (PE.toolId === "move") { var ae = document.activeElement; if (!(ae && $("pe-opts").contains(ae) && ae.type === "number")) buildOpts(); } });   // round 9: the Angle field follows the layer after a rotate / undo
 	PE.on("fonts", buildOpts);
 
 	/* ---------- colour panel ---------- */
@@ -266,10 +269,12 @@
 	 * layer up / down only moves rows. Rebuilding every row on every step made the list flash, and fought with page-zoom / text-size extensions that
 	 * restyle new elements a moment after they appear. Handlers look the layer up by id at click time (undo / redo replace the layer objects). */
 	var rowCache = {};
+	/* round 9: a layer inside a selected group (or picked with others) is tinted in the list too, so it is clear what a move / delete will take */
+	function inSel(L) { var A = PE.active(); if (!A) return false; var set = PE.moveSet ? PE.moveSet() : [A]; return PE.ancestorsOf(L).some(function (g) { return set.indexOf(g) >= 0; }); }
 	function rowSig(L, r, on) { return [L.name, L.type, L.visible, PE.effVisible(L), on ? 1 : 0, r.depth, L.collapsed, L.locked, L.mask ? 1 : 0, L.editMask ? 1 : 0, L.maskOff ? 1 : 0, L.viewMask ? 1 : 0, PE.hasFx(L) ? 1 : 0, L.crop ? 1 : 0, L.rev, L.canvas.width, L.canvas.height, PE.isGroup(L) ? PE.descendants(L).filter(function (k) { return !PE.isGroup(k); }).length : -1].join("|"); }
 	function makeRow(id, depth, on) {
 		var L0 = PE.layerById(id), grp = PE.isGroup(L0), hidden = !PE.effVisible(L0) && !grp ? true : !L0.visible, cur = function () { return PE.layerById(id); };
-		var row = el("div", "pe-layer" + (on ? " is-active" : "") + (hidden ? " is-hidden" : "") + (grp ? " is-group" : "")); row.draggable = true; row.dataset.id = id; row.style.paddingLeft = (0.3 + depth * 1.1) + "em";
+		var row = el("div", "pe-layer" + (on === 1 || on === 2 ? " is-active" : "") + (on === 2 ? " is-primary" : "") + (on === 3 ? " is-ingroup" : "") + (hidden ? " is-hidden" : "") + (grp ? " is-group" : "")); row.draggable = true; row.dataset.id = id; row.style.paddingLeft = (0.3 + depth * 1.1) + "em";
 		var eye = el("button", "pe-eye", PE.icon ? PE.icon(L0.visible ? "eye" : "eyeoff") : (L0.visible ? "👁" : "—")); eye.setAttribute("aria-label", (L0.visible ? "Hide " : "Show ") + L0.name); eye.setAttribute("aria-pressed", L0.visible ? "true" : "false"); eye.type = "button"; eye.title = "Show / hide"; eye.addEventListener("click", function (e) { e.stopPropagation(); var L = cur(); if (!L) return; L.visible = !L.visible; PE.touch(L); PE.commit("Toggle visibility"); });
 		row.appendChild(eye);
 		if (grp) { var ar = el("button", "pe-arrow", L0.collapsed ? "▸" : "▾"); ar.type = "button"; ar.title = L0.collapsed ? "Expand group" : "Collapse group"; ar.addEventListener("click", function (e) { e.stopPropagation(); var L = cur(); if (!L) return; L.collapsed = !L.collapsed; buildLayers(); }); row.appendChild(ar); var th0 = el("span", "pe-th pe-th--grp", "📁"); row.appendChild(th0); }
@@ -353,7 +358,7 @@
 		if (list.querySelector(".is-renaming")) return;   // never pull a half-typed name out from under the keyboard
 		var keep = {}, at = 0, st0 = list.scrollTop;
 		rows.forEach(function (r) {
-			var L = r.L, on = L === act || multi[L.id], sig = rowSig(L, r, on), c = rowCache[L.id];
+			var L = r.L, on = L === act ? 2 : multi[L.id] ? 1 : inSel(L) ? 3 : 0, sig = rowSig(L, r, on), c = rowCache[L.id];
 			if (!c || c.sig !== sig) { c = rowCache[L.id] = { sig: sig, row: makeRow(L.id, r.depth, on) }; }
 			keep[L.id] = 1; var node = list.children[at];
 			if (node !== c.row) list.insertBefore(c.row, node || null);
@@ -409,7 +414,7 @@
 	function stepComp(dir) { var d = PE.doc; if (!d || !(d.comps || []).length) return; var i = -1; d.comps.forEach(function (c, k) { if (PE.compMatches(c)) i = k; }); var j = i < 0 ? (dir > 0 ? 0 : d.comps.length - 1) : (i + dir + d.comps.length) % d.comps.length; PE.compApply(d.comps[j]); PE.toast(d.comps[j].name); }
 	$("pe-blend").innerHTML = PE.BLENDS.map(function (b) { return '<option value="' + b[0] + '">' + b[1] + "</option>"; }).join("");
 	$("pe-blend").addEventListener("change", function () { var L = PE.active(); if (L) { L.blend = this.value; PE.touch(L); PE.commit("Blend mode"); } });
-	var opTimer = 0; $("pe-opacity").addEventListener("input", function () { var L = PE.active(); if (!L) return; L.opacity = this.value / 100; $("pe-opacity-v").textContent = this.value + "%"; PE.invalidate(); clearTimeout(opTimer); opTimer = setTimeout(function () { PE.commit("Layer opacity"); }, 400); });
+	var opTimer = 0; $("pe-opacity").addEventListener("input", function () { var L = PE.active(); if (!L) return; L.opacity = this.value / 100; $("pe-opacity-v").textContent = this.value + "%"; PE.invalidate(); PE.later("opacity", function () { PE.commit("Layer opacity"); }, 400); });
 	function lbtn(id, fn) { $(id).addEventListener("click", function () { if (PE.doc) fn(); }); }
 	lbtn("pe-lrename", function () { var L = PE.active(); if (L) renameLayer(L.id); }); lbtn("pe-lnew", function () { PE.newRasterLayer(); }); lbtn("pe-lfill", function () { PE.dlgFillLayer(); }); lbtn("pe-lgroup", function () { groupSelected(); }); lbtn("pe-ldup", function () { PE.duplicateLayer(); }); lbtn("pe-ldel", function () { PE.deleteLayer(); }); lbtn("pe-lmerge", function () { PE.mergeDown(); });
 	lbtn("pe-lock", function () { var L = PE.active(); L.locked = !L.locked; PE.commit(L.locked ? "Lock layer" : "Unlock layer"); });
@@ -504,7 +509,7 @@ $("pe-share").addEventListener("click", function () { if (needDoc()) PE.dlgShare
 			var note = function (t) { if (!seen[t]) { seen[t] = 1; notes.push(t); } };
 			if (!PE.newDoc(psd.width, psd.height, null, I.baseName(name))) return; var d = PE.doc; d.layers = []; d.file = PE.mkSrc(Object.assign({ file: name }, meta || {}, { how: "psd" }));
 			if (ir.globalAngle != null || ir.globalAltitude != null) d.light = { angle: ir.globalAngle == null ? 120 : ir.globalAngle, alt: ir.globalAltitude == null ? 30 : ir.globalAltitude };
-			var lt = PE.light();
+			var lt = PE.light(), tmeta = PE.psdTextMeta ? PE.psdTextMeta(psd) : {}, li = -1, nText = 0;
 			(function walk(list, gid) {   // ag-psd lists layers bottom first, like the editor; a group's header goes after its members
 				(list || []).forEach(function (n) {
 					if (n.children) {
@@ -513,13 +518,15 @@ $("pe-share").addEventListener("click", function () { if (needDoc()) PE.dlgShare
 						if (n.blendMode && n.blendMode !== "pass through" && n.blendMode !== "normal") note("A group's blend mode (“" + n.name + "”: " + n.blendMode + ") is not used: groups mix their layers one by one");
 						return;
 					}
+					li++;
 					if (n.adjustment) { note("Adjustment layers (“" + (n.name || "") + "”, " + (n.adjustment.type || "adjustment") + ") are left out"); return; }
 					if (!n.canvas) return;
-					var c = PE.clone(n.canvas), L = PE.makeLayer({ canvas: c, name: n.name || "Layer", x: n.left || 0, y: n.top || 0, src: PE.mkSrc({ how: "psd", file: name }, c.width, c.height) });
+					var TL = tmeta[li] && PE.psdTextLayer(tmeta[li], n), c = PE.clone(n.canvas), L = TL || PE.makeLayer({ canvas: c, name: n.name || "Layer", x: n.left || 0, y: n.top || 0 }); L.src = PE.mkSrc({ how: "psd", file: name }, c.width, c.height); if (TL) nText++;
 					L.visible = !n.hidden; L.opacity = n.opacity == null ? 1 : n.opacity; L.group = gid; L.blend = PSD_BLEND[n.blendMode] || "source-over";
 					if (n.blendMode && !PSD_BLEND[n.blendMode]) note("Blend mode “" + n.blendMode + "” is drawn as Normal");
 					var mm = psdMask(n, c); if (mm) L.mask = mm;
-					if (n.text) note("Text layers open as pixels (the look of the text, with its effects still live)");
+					if (n.text && !TL) note("Text layers open as pixels (the look of the text, with its effects still live)");
+					if (!n.text && !TL && tmeta[li]) note("A text layer (“" + (n.name || "") + "”) was changed in another program, so it opens as pixels");
 					if (n.placedLayer) note("Smart objects open as pixels");
 					if (n.clipping) note("Clipping masks (“" + (n.name || "") + "”) are drawn as normal layers");
 					var r = P.fxFromPsd(n.effects, n.fillOpacity, lt.angle, lt.alt); if (r.fx) { L.fx = r.fx; nFx++; } r.notes.forEach(function (t) { note("“" + (n.name || "Layer") + "”: " + t); });
@@ -528,8 +535,8 @@ $("pe-share").addEventListener("click", function () { if (needDoc()) PE.dlgShare
 			})(psd.children, null);
 			if (!out.length && psd.canvas) out.push(PE.makeLayer({ name: "Background", canvas: PE.clone(psd.canvas) }));
 			d.layers = out; if (!d.layers.some(function (L) { return !PE.isGroup(L); })) d.layers.push(PE.makeLayer({ name: "Layer 1" }));
-			d.activeId = d.layers[d.layers.length - 1].id; PE.relink(); PE.commit("Open PSD"); PE.dirty = false; PE.fit(); PE.emit("docsize"); PE.emit("layers"); PE.setTool("move");
-			var nl = d.layers.filter(function (L) { return !PE.isGroup(L); }).length, ng = d.layers.length - nl, msg = "Opened " + nl + " layer" + (nl === 1 ? "" : "s") + (ng ? " in " + ng + " group" + (ng === 1 ? "" : "s") : "") + " from the PSD" + (nFx ? ", " + nFx + " with layer effects (live: Layer → Layer style to change them)" : "");
+			d.activeId = d.layers[d.layers.length - 1].id; PE.relink(); PE.commit("Open PSD"); PE.historyStartHere(); PE.dirty = false; PE.fit(); PE.emit("docsize"); PE.emit("layers"); PE.setTool("move");
+			var nl = d.layers.filter(function (L) { return !PE.isGroup(L); }).length, ng = d.layers.length - nl, msg = "Opened " + nl + " layer" + (nl === 1 ? "" : "s") + (ng ? " in " + ng + " group" + (ng === 1 ? "" : "s") : "") + " from the PSD" + (nText ? ", " + nText + " text" + (nText === 1 ? "" : "s") + " still editable" : "") + (nFx ? ", " + nFx + " with layer effects (live: Layer → Layer style to change them)" : "");
 			if (!notes.length) { PE.toast(msg); return; }
 			var w = el("div", "pe-xcf-notes"); w.innerHTML = "<p>" + esc(msg) + ". A few things in it are drawn differently here:</p><ul>" + notes.map(function (t) { return "<li>" + esc(t) + "</li>"; }).join("") + "</ul>";
 			PE.modal({ title: "Opened “" + name + "”", body: w, buttons: [{ label: "OK", primary: true, act: function (m) { m.close(); } }] });
@@ -537,32 +544,33 @@ $("pe-share").addEventListener("click", function () { if (needDoc()) PE.dlgShare
 	}
 	function loadScript(url, get) { return new Promise(function (res, rej) { if (get()) return res(get()); PE.toast("Loading PSD support…"); var s = document.createElement("script"); s.src = url; s.onload = function () { get() ? res(get()) : rej(new Error("PSD library failed")); }; s.onerror = function () { rej(new Error("Could not load the PSD library (offline?)")); }; document.head.appendChild(s); }); }
 	PE.psdTree = function () {   // the layers as ag-psd children (bottom first, groups nested); a layer with a style is written without it, plus the style as Photoshop effects
-		var d = PE.doc, MAP = {}, lt = PE.light(), nFx = 0; for (var k in PSD_BLEND) MAP[PSD_BLEND[k]] = k; PE.relink();
+		var d = PE.doc, MAP = {}, lt = PE.light(), nFx = 0, nodes = []; for (var k in PSD_BLEND) MAP[PSD_BLEND[k]] = k; PE.relink();
 		function node(L) {
 			if (PE.isGroup(L)) return { name: L.name, opened: !L.collapsed, hidden: !L.visible, opacity: L.opacity, blendMode: "pass through", children: d.layers.filter(function (x) { return x.group === L.id; }).map(node) };
 			var fx = PE.hasFx(L) ? P.fxToPsd(L.fx, lt.angle) : null, c = PE.mk(d.w, d.h), x = c.getContext("2d");
 			PE.drawLayer(x, Object.assign({}, L, { _p: null, opacity: 1, blend: "source-over", visible: true, noFx: !!fx, _fxc: null }), [1, 0, 0, 1, 0, 0], "psd", d.w, d.h);
-			var o = { name: L.name, canvas: c, left: 0, top: 0, opacity: L.opacity, hidden: !L.visible, blendMode: MAP[L.blend] || "normal" };
+			var o = { name: L.name, canvas: c, left: 0, top: 0, opacity: L.opacity, hidden: !L.visible, blendMode: MAP[L.blend] || "normal" }; nodes.push([L, o]);
 			if (fx) { if (fx.effects) { o.effects = fx.effects; nFx++; } if (fx.fillOpacity < 1) o.fillOpacity = fx.fillOpacity; }
 			return o;
 		}
 		var kids = d.layers.filter(function (L) { return L.group == null; }).map(node);
-		return { width: d.w, height: d.h, children: kids, imageResources: { globalAngle: Math.round(lt.angle), globalAltitude: Math.round(lt.alt) }, nFx: nFx };
+		return { width: d.w, height: d.h, children: kids, imageResources: { globalAngle: Math.round(lt.angle), globalAltitude: Math.round(lt.alt) }, nFx: nFx, nodes: nodes };
 	};
-	function savePsd() {
-		if (!needDoc()) return; loadScript(PSD_LIB, function () { return window.agPsd; }).then(function (ag) {
-			var d = PE.doc, t = PE.psdTree(), nFx = t.nFx; delete t.nFx; t.canvas = PE.flatten();
-			var buf = ag.writePsd(t, { generateThumbnail: false }), n = d.layers.filter(function (L) { return !PE.isGroup(L); }).length;
-			PE.download(new Blob([buf], { type: "image/vnd.adobe.photoshop" }), I.cleanFileName(d.name) + ".psd"); PE.toast("Saved PSD with " + n + " layer" + (n === 1 ? "" : "s") + (nFx ? " (" + nFx + " with live layer effects)" : ""));
-		}).catch(function (e) { PE.toast(e.message); });
-	}
+	function savePsd() { if (needDoc()) PE.savePsdNow(); }   // round 9: psd.js (linked PSD file / numbered downloads)
 	PE.loadPsdBuffer = loadPsd; PE.savePsd = savePsd;
 	function openFiles(files, opts) {
 		opts = opts || {}; files = Array.prototype.slice.call(files); if (!files.length) return;
 		var proj = files.filter(function (f) { return /\.(mesproj|zip)$/i.test(f.name); })[0], psd = files.filter(function (f) { return /\.psd$/i.test(f.name); })[0], xcfs = files.filter(function (f) { return /\.xcf$/i.test(f.name); }), imgs = files.filter(function (f) { return /^image\//.test(f.type) || /\.(png|jpe?g|webp|gif|bmp|avif|svg|ico)$/i.test(f.name); });
 		var meta = function (f) { return { how: opts.how || "open", file: f.name, path: f.webkitRelativePath || "", bytes: f.size || 0, dir: opts.dir || "", hk: opts.hk || "" }; };
 		if (proj) { openProjectFile(proj, opts, meta(proj)); return; }
-		if (psd && !opts.place) { if (!confirmReplace()) return; psd.arrayBuffer().then(function (b) { return loadPsd(b, psd.name, meta(psd)); }).catch(function (e) { PE.toast(e.message); }); return; }
+		if (psd) {   // a PSD is opened as the image (also when dropped on an open one: you are asked first); with a file handle, Save writes back into it
+			if (!confirmReplace()) return; var hpp = opts.fh ? Promise.resolve(opts.fh) : opts.handles ? Promise.resolve(opts.handles).then(function (hs) { return (hs || []).filter(function (h) { return h && h.kind === "file" && h.name === psd.name; })[0] || null; }, function () { return null; }) : Promise.resolve(null);
+			psd.arrayBuffer().then(function (b) { return loadPsd(b, psd.name, meta(psd)); }).then(function () { return hpp; }).then(function (h) {
+				if (!PE.doc || !PE.linkPsd) return; PE.linkPsd(h, psd.name, { lm: psd.lastModified, opened: true });
+				if (h) PE.toast("Opened " + psd.name + ": " + MOD + "S saves back into this PSD");
+			}).catch(function (e) { PE.toast(e && e.message || String(e)); }); return;
+		}
+		imgs = imgs.filter(function (f) { return !/\.(psd|xcf)$/i.test(f.name); });
 		if (xcfs.length) {   // GIMP files: open the first as the image (or, when placing into an open image, add each as a group of layers), then any pictures as layers
 			var place = !!(opts.place && PE.doc); if (!place && !confirmReplace()) return;
 			var xc = Promise.resolve(); xcfs.forEach(function (f, i) { xc = xc.then(function () { return f.arrayBuffer(); }).then(function (b) { PE.loadXcf(b, f.name, meta(f), place || i > 0); }).catch(function (e) { PE.toast("Can't read " + f.name + ": " + (e && e.message || e)); }); });
@@ -628,7 +636,7 @@ $("pe-share").addEventListener("click", function () { if (needDoc()) PE.dlgShare
 	function adj(list) { return list.map(function (a) { return { label: a.title, act: function () { if (needDoc()) PE.runAdjust(a.id); } }; }); }
 	var MENUS = [
 		{ label: "File", items: [{ label: "New image…", act: function () { PE.dlgNew(); } }, { label: "Open image / PSD / GIMP / project…", key: MOD + "O", act: pickOpen }, { label: "Open project file…", icon: "📂", title: "Open a .mesproj (or a .zip with a project in it) so that Save writes back to the same file", act: function () { PE.openProjectPicker(); } }, { label: "Open project folder…", icon: "📁", title: "Open an unzipped project: a folder with project.json and the layer PNGs in it (Chrome / Edge: Save then writes back into that folder)", act: function () { PE.openProjectFolderPicker(); } }, { label: "Open recent…", act: function () { PE.dlgRecent(); }, title: "Projects autosaved in this browser and project files opened or saved here" }, { label: "Insert equation (LaTeX)…", act: function () { PE.dlgEquation(null, null); } }, { label: "Place image(s) as layers…", act: function () { if (!needDoc()) return; pickFiles("image/*,.xcf", true, function (fs) { openFiles(fs, { place: true }); }); } }, "-",
-			{ label: "Save project", tag: "keeps layers", icon: "💾", hi: true, key: MOD + "S", act: saveProject, title: "A .mesproj file with every layer, group, mask, text and comp: open it again here to keep working. Once it is in a file, this writes to that same file" }, { label: "Save project as…", key: MOD + "Alt+Shift+S", act: function () { PE.saveProjectAs(); }, title: "Save the project under a new name or in another folder" }, { label: function () { return (PE.autoFileOn() ? "✓ " : "") + "Auto-save to the project file"; }, act: function () { PE.setAutoFile(!PE.autoFileOn()); }, title: "Write changes into the linked project file 20 s after you stop editing, so a synced folder (OneDrive…) always has the latest" }, { label: "Download project as .zip", act: function () { PE.downloadProjectZip(); }, title: "The same project as a normal .zip file (project.json + one PNG per layer): drop it on the editor to keep working" }, "-", { label: "Export as PNG / JPEG / WebP…", key: MOD + "Shift+S", act: function () { if (needDoc()) PE.dlgExport(); } }, { label: "Export the selected group as its own image…", act: function () { if (needDoc()) PE.dlgExportGroup(); } }, { label: "Export all comps as pictures (ZIP)…", act: function () { if (needDoc()) PE.dlgExportComps(); } }, { label: "Export every layer as PNG (ZIP)…", act: function () { PE.dlgExportLayers(); }, title: "One PNG per layer plus layers.json with the positions, for other apps" }, { label: "Save as PSD (Photoshop)", act: savePsd }, { label: "Save as GIMP file (.xcf)", act: function () { PE.saveXcf(); } }, "-",
+			{ label: function () { var L = PE.psdHome && PE.psdHome() && PE.psdLink(); return L ? "Save " + (L.handle ? L.name : "PSD") : "Save project"; }, tag: "keeps layers", icon: "💾", hi: true, key: MOD + "S", act: saveProject, title: "Saves every layer, group, mask and text. A picture opened from a PSD (or saved as one) saves to that PSD; otherwise a .mesproj project file. Once it is in a file, this writes to that same file" }, { label: "Save project as…", key: MOD + "Alt+Shift+S", act: function () { PE.saveProjectAs(); }, title: "Save the project under a new name or in another folder" }, { label: function () { return (PE.autoFileOn() ? "✓ " : "") + "Auto-save to the project file"; }, act: function () { PE.setAutoFile(!PE.autoFileOn()); }, title: "Write changes into the linked project file 20 s after you stop editing, so a synced folder (OneDrive…) always has the latest" }, { label: "Download project as .zip", act: function () { PE.downloadProjectZip(); }, title: "The same project as a normal .zip file (project.json + one PNG per layer): drop it on the editor to keep working" }, "-", { label: "Export as PNG / JPEG / WebP…", key: MOD + "Shift+S", act: function () { if (needDoc()) PE.dlgExport(); } }, { label: "Export the selected group as its own image…", act: function () { if (needDoc()) PE.dlgExportGroup(); } }, { label: "Export all comps as pictures (ZIP)…", act: function () { if (needDoc()) PE.dlgExportComps(); } }, { label: "Export every layer as PNG (ZIP)…", act: function () { PE.dlgExportLayers(); }, title: "One PNG per layer plus layers.json with the positions, for other apps" }, { label: function () { var L = PE.psdLink && PE.psdLink(); return L && L.handle ? "Save to " + L.name : "Save as PSD (Photoshop)"; }, act: savePsd, title: "A Photoshop file with the layers. Once saved (or opened from a PSD), this writes to the same PSD again" }, { label: "Save as a new PSD…", act: function () { if (needDoc()) PE.savePsdAs(); }, title: "Pick a new name or folder for the PSD; later saves go there" }, { label: "Save as GIMP file (.xcf)", act: function () { PE.saveXcf(); } }, "-",
 			{ label: "Where are my images? (files, folder, autosave)…", act: function () { PE.dlgFolder("where"); } }, { label: "Keep working on another computer…", act: function () { PE.dlgFolder("move"); } }, { label: "Connect a folder on this computer…", act: function () { PE.dlgFolder("folder"); } }, "-", { label: "Copy merged image to clipboard", act: function () { if (needDoc()) copyMerged(); } }, { label: "Share as a link (temporary upload)…", act: function () { if (needDoc()) PE.dlgShare(); } }, "-", { label: "Bulk convert images…", act: function () { window.open("/image-converter", "_blank"); } }] },
 		{ label: "Edit", items: [{ label: "Undo", key: MOD + "Z", act: function () { PE.undo(); } }, { label: "Redo", key: MOD + "Shift+Z", act: function () { PE.redo(); } }, "-", { label: "Cut", key: MOD + "X", act: function () { copySel(true); } }, { label: "Copy", key: MOD + "C", act: function () { copySel(false); } }, { label: "Copy merged", act: function () { if (needDoc()) copyMerged(); } }, { label: "Paste as new layer", key: MOD + "V", act: pasteInternal }, "-",
 			{ label: "Erase selection with AI (remove object)", act: function () { if (needSel()) PE.aiEraseRun(); } }, { label: "Clear selection (transparent)", key: "Del", act: clearSel }, { label: "Fill with foreground colour", key: "Alt+Backspace", act: function () { if (needDoc()) fillSel(PE.fg); } }, { label: "Fill with background colour", key: MOD + "Backspace", act: function () { if (needDoc()) fillSel(PE.bg); } }, "-",

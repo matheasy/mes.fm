@@ -144,6 +144,22 @@
 			return (cache[key] = w);
 		};
 	}
+	/* how far the ink of the letters reaches outside the text box (left of a line, right of its advance width, above the ascent we allow, below the line) */
+	function inkOver(t, lines, lw, ctx) {
+		var rich = PE.textRich(t), base = PE.textMask(t), worst = 0, top = t.size * 0.92, lhp = t.size * t.lh;
+		if (!ctx.measureText || !("actualBoundingBoxRight" in (ctx.measureText("x") || {}))) return 0;
+		lines.forEach(function (ln, i) {
+			if (!ln.text) return; var segs = P.richSegs(rich, ln.start, ln.end, base), x0 = 0;
+			segs.forEach(function (g, k) {
+				ctx.font = fontFor(t, g.m); var tx = ln.text.slice(g.s - ln.start, g.e - ln.start), mm = ctx.measureText(tx);
+				if (k === 0) worst = Math.max(worst, mm.actualBoundingBoxLeft || 0);
+				if (k === segs.length - 1) worst = Math.max(worst, x0 + (mm.actualBoundingBoxRight || 0) - lw[i]);
+				worst = Math.max(worst, (mm.actualBoundingBoxAscent || 0) - top, i === lines.length - 1 ? (mm.actualBoundingBoxDescent || 0) - (t.size * 0.3 + Math.max(0, lhp - t.size)) : 0);
+				x0 += mm.width;
+			});
+		});
+		return Math.max(0, Math.ceil(worst));
+	}
 	/* Auto-fit text: the font size that fills the box (Box width x box height) */
 	PE.fitTextSize = function (L) {
 		var t = L.text; if (!t || !t.fit || !(t.wrapW > 0) || !(t.boxH > 0)) return null; var m = lmc || (lmc = mk(8, 8).getContext("2d"));
@@ -161,7 +177,8 @@
 		// word wrap: an explicit box width (Box width option / the handles on the box), else never wider than 90% of the image so pasted text stays reasonable
 		var lim = t.wrapW > 0 ? t.wrapW : Math.max(160, dw * 0.9), lines = P.wrapLines(t.str, lim, measure);
 		var lw = lines.map(function (s) { return measure(s.text, s.start); }), mw = t.wrapW > 0 ? t.wrapW : Math.max.apply(null, lw.concat([1])), lhp = t.size * t.lh;
-		var sw = t.strokeOn ? Math.max(0, t.strokeW || 0) : 0, bgp = t.bgOn ? t.bgPad : 0, pad = Math.ceil(bgp + sw + (t.shadowOn ? t.shadowBlur * 2 + Math.max(Math.abs(t.shadowDx), Math.abs(t.shadowDy)) : 0) + t.size * 0.15 + 2);
+		var ink = inkOver(t, lines, lw, m);   // round 9: letters that reach past their own width (italics, script fonts, big sizes) get room so they are never cut off
+		var sw = t.strokeOn ? Math.max(0, t.strokeW || 0) : 0, bgp = t.bgOn ? t.bgPad : 0, pad = Math.ceil(bgp + sw + (t.shadowOn ? t.shadowBlur * 2 + Math.max(Math.abs(t.shadowDx), Math.abs(t.shadowDy)) : 0) + Math.max(t.size * 0.15, ink) + 2);
 		var lx = lw.map(function (w) { return t.align === "center" ? pad + mw / 2 - w / 2 : t.align === "right" ? pad + mw - w : pad; }), base = lines.map(function (s, i) { return pad + lhp * i + t.size * 0.92; });
 		var th = lhp * lines.length + t.size * 0.25, bh = fit ? Math.max(t.boxH, th) : th;
 		L._lay = { key: key, font: f, rich: rich, lines: lines, lw: lw, lx: lx, base: base, mw: mw, lhp: lhp, pad: pad, bgp: bgp, bh: bh, fit: fit, W: Math.ceil(mw) + pad * 2, H: Math.ceil(Math.max(lhp * lines.length + t.size * 0.3, bh + t.size * 0.05)) + pad * 2, size: t.size, measure: measure };
@@ -385,9 +402,16 @@
 		if (PE.sel) { if (lastSel.obj && lastSel.ver === PE.sel.ver && lastSel.c === PE.sel.c) sel = lastSel.snap; else { sel = clone(PE.sel.c); lastSel = { ver: PE.sel.ver, c: PE.sel.c, snap: sel, obj: PE.sel }; } }
 		return { label: label, w: d.w, h: d.h, active: d.activeId, layers: d.layers.map(snapLayer), sel: sel, comps: JSON.stringify(d.comps || []), light: d.light ? Object.assign({}, d.light) : null, t: Date.now() };
 	}
+	function sameState(a, b) {   // round 9: a commit that changes nothing (a style set back to what it was, a flush right after a step) adds no undo step
+		if (!a || !b || a.w !== b.w || a.h !== b.h || a.active !== b.active || a.sel !== b.sel || a.comps !== b.comps || JSON.stringify(a.light) !== JSON.stringify(b.light) || a.layers.length !== b.layers.length) return false;
+		for (var i = 0; i < a.layers.length; i++) { var x = a.layers[i], y = b.layers[i]; if (x.snap !== y.snap) return false; if (JSON.stringify(x.meta) !== JSON.stringify(y.meta)) return false; }
+		return true;
+	}
 	PE.commit = function (label) {
-		if (!PE.doc) return; PE.dirty = true;
-		H.stack.length = H.idx + 1; H.stack.push(takeSnapshot(label)); H.idx = H.stack.length - 1;
+		if (!PE.doc) return; var snap = takeSnapshot(label);
+		if (H.idx >= 0 && H.idx === H.stack.length - 1 && sameState(H.stack[H.idx], snap)) { PE.emit("layers"); PE.invalidate(); return; }
+		PE.dirty = true;
+		H.stack.length = H.idx + 1; H.stack.push(snap); H.idx = H.stack.length - 1;
 		var budget = 700e6, total = function () { var seen = new Set(), t = 0; H.stack.forEach(function (e) { e.layers.forEach(function (l) { if (!seen.has(l.snap)) { seen.add(l.snap); t += l.snap.c.width * l.snap.c.height * 4 + (l.snap.m ? l.snap.m.width * l.snap.m.height * 4 : 0); } }); }); return t; };
 		while (H.stack.length > 2 && (H.stack.length > 100 || total() > budget)) { H.stack.shift(); H.idx--; }
 		PE.emit("history"); PE.emit("layers"); PE.invalidate(); PE.scheduleAutosave && PE.scheduleAutosave();
@@ -401,9 +425,23 @@
 		PE.sel = e.sel ? { c: clone(e.sel), ver: ++PE.selSeq } : null; PE.relink(); PE.emit("sel"); PE.emit("history"); PE.emit("layers"); PE.emit("comps"); PE.emit("docsize"); PE.invalidate(); PE.scheduleAutosave && PE.scheduleAutosave();
 	}
 	PE.selSeq = 1000;
-	PE.undo = function () { if (H.idx > 0) { H.idx--; restore(H.stack[H.idx]); } };
-	PE.redo = function () { if (H.idx < H.stack.length - 1) { H.idx++; restore(H.stack[H.idx]); } };
-	PE.gotoHistory = function (i) { if (i >= 0 && i < H.stack.length && i !== H.idx) { H.idx = i; restore(H.stack[i]); } };
+	/* round 9: changes that are written to the history a moment later (a text being typed, a style slider, arrow-key nudges, the opacity slider)
+	 * are registered here, and Undo / Redo / a click in History first writes them. Before, Undo jumped over them: it threw away the unsaved
+	 * change AND the step before it (with a text open since the picture was opened, that was straight back to the opened file). */
+	var pending = {};
+	PE.later = function (key, fn, ms) { var p = pending[key]; if (p) clearTimeout(p.t); var job = { fn: fn }; job.t = setTimeout(function () { if (pending[key] === job) delete pending[key]; fn(); }, ms); pending[key] = job; };
+	PE.cancelLater = function (key) { var p = pending[key]; if (p) { clearTimeout(p.t); delete pending[key]; } };
+	PE.flushPending = function () {
+		Object.keys(pending).forEach(function (k) { var p = pending[k]; delete pending[k]; clearTimeout(p.t); try { p.fn(); } catch (e) {} });
+		if (PE.textEditing && PE.textEditing()) PE.endTextEdit(false);
+	};
+	PE.hasPending = function () { return Object.keys(pending).length > 0; };
+	PE.hasPendingKey = function (k) { return !!pending[k]; };
+	PE.undo = function () { if (PE.pointerBusy && PE.pointerBusy()) return; PE.flushPending(); if (H.idx > 0) { H.idx--; restore(H.stack[H.idx]); } };
+	PE.redo = function () { if (PE.pointerBusy && PE.pointerBusy()) return; PE.flushPending(); if (H.idx < H.stack.length - 1) { H.idx++; restore(H.stack[H.idx]); } };
+	PE.gotoHistory = function (i) { PE.flushPending(); if (i >= 0 && i < H.stack.length && i !== H.idx) { H.idx = i; restore(H.stack[i]); } };
+	/* opening a file is the first step of its history: "New document" (the empty canvas made on the way) is not something to undo back to */
+	PE.historyStartHere = function () { if (H.idx >= 0) { H.stack = [H.stack[H.idx]]; H.idx = 0; PE.emit("history"); } };
 
 	/* ---------- documents ---------- */
 	PE.newDoc = function (w, h, bg, name) {
@@ -416,7 +454,7 @@
 		var w = src.naturalWidth || src.width, h = src.naturalHeight || src.height, w0 = w, h0 = h;
 		if (w > PE.MAXPX || h > PE.MAXPX || w * h > PE.MAXAREA) { var s = Math.min(PE.MAXPX / w, PE.MAXPX / h, Math.sqrt(PE.MAXAREA / (w * h))), c = mk(w * s, h * s), x = c.getContext("2d"); x.imageSmoothingQuality = "high"; x.drawImage(src, 0, 0, c.width, c.height); src = c; w = c.width; h = c.height; PE.toast("Very large image: scaled down to " + w + " × " + h + " to fit the browser"); }
 		if (!PE.newDoc(w, h, null, I.baseName(name || "image"))) return false;
-		var L = PE.doc.layers[0]; L.name = "Background"; L.canvas.getContext("2d").drawImage(src, 0, 0); L.rev++; L.src = PE.mkSrc(meta || { how: "open", file: name }, w0, h0); PE.doc.file = L.src; PE.commit("Open " + (name || "image")); PE.dirty = false; PE.fit(); return true;
+		var L = PE.doc.layers[0]; L.name = "Background"; L.canvas.getContext("2d").drawImage(src, 0, 0); L.rev++; L.src = PE.mkSrc(meta || { how: "open", file: name }, w0, h0); PE.doc.file = L.src; PE.commit("Open " + (name || "image")); PE.historyStartHere(); PE.dirty = false; PE.fit(); return true;
 	};
 	PE.decodeFile = function (file) {
 		if (window.createImageBitmap && !/svg/.test(file.type)) return createImageBitmap(file).catch(function () { return viaImg(file); });

@@ -46,7 +46,7 @@
 			list.forEach(function (L) { if (L.group == null) L.group = G.id; }); list.push(G);
 			Array.prototype.push.apply(d.layers, list); d.activeId = G.id; PE.relink(); PE.commit("Add GIMP file " + name); PE.emit("layers"); PE.invalidate();
 		} else {
-			d.layers = list; d.activeId = list[list.length - 1].id; PE.relink(); PE.commit("Open GIMP file"); PE.dirty = false; PE.fit(); PE.emit("docsize"); PE.emit("layers");
+			d.layers = list; d.activeId = list[list.length - 1].id; PE.relink(); PE.commit("Open GIMP file"); PE.historyStartHere(); PE.dirty = false; PE.fit(); PE.emit("docsize"); PE.emit("layers");
 		}
 		PE.setTool("move");
 		var nl = list.filter(function (L) { return !PE.isGroup(L); }).length, ng = list.length - nl - (place ? 1 : 0);
