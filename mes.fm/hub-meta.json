@@ -719,6 +719,11 @@
 "updated":"2026-10-23",
 "type":"Tool"
 },
+"/spin-simulator":{
+"added":"2026-11-01",
+"updated":"2026-11-01",
+"type":"Simulation"
+},
 "/statistics-calculator":{
 "added":"2026-10-23",
 "updated":"2026-10-23",

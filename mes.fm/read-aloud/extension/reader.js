@@ -523,7 +523,8 @@
     '.p.pip,.p.pip.moved{zoom:1;position:static;left:auto;top:auto;bottom:auto;transform:none;width:100%;border:0;border-radius:0;box-shadow:none}.p.pip .grip,.p.pip .mini{display:none}.pip-b.on{background:#1a4d6b}' +
     '.tp{display:none;margin:0 0 8px;border:1px solid #3a3c41;border-radius:10px;background:#17181a;overflow:hidden}.tp.on{display:block}.p.pip .tp,.p.min .tp{display:none}' +
     '.th{display:flex;align-items:center;gap:4px;padding:3px 6px;background:#25272b;color:#aab0b8;font-size:12px}.th b{flex:1;font-weight:600}.th button{min-width:28px;height:24px;font-size:13px;border-radius:6px;padding:0 6px}.tpb.on{background:#1a4d6b}' +
-    '.tb{position:relative;height:150px;min-height:56px;max-height:60vh;overflow:auto;resize:vertical;padding:8px 12px;font-size:calc(16px * var(--tf,1));line-height:1.55;white-space:pre-wrap;overflow-wrap:anywhere;color:#e6e6e6;user-select:text}.tb .w{cursor:pointer;border-radius:3px}.tb .w:hover{text-decoration:underline}.tb .s.cur{background:var(--sc);color:var(--sct);border-radius:3px}.tb .w.cur{background:var(--wc);color:var(--wct)}' +
+    '.tb{position:relative;height:var(--tbh,150px);min-height:56px;overflow:auto;padding:8px 12px;font-size:calc(16px * var(--tf,1));line-height:1.55;white-space:pre-wrap;overflow-wrap:anywhere;color:#e6e6e6;user-select:text}.tb .w{cursor:pointer;border-radius:3px}.tb .w:hover{text-decoration:underline}.tb .s.cur{background:var(--sc);color:var(--sct);border-radius:3px}.tb .w.cur{background:var(--wc);color:var(--wct)}' +
+    '.tgr{height:14px;cursor:ns-resize;touch-action:none;display:flex;align-items:center;justify-content:center;background:#25272b;border-top:1px solid #3a3c41}.tgr::before{content:"";width:44px;height:4px;border-radius:2px;background:#6a7078}.tgr:hover::before,.tgr:focus-visible::before,.tgr.on::before{background:#cfd3d8}.tgr:focus-visible{outline:none;background:#2f3237}.tpe.on{background:#1a4d6b}.tp.on{display:flex;flex-direction:column}.p.tgu .tgr{order:-1;border-top:0;border-bottom:1px solid #3a3c41}' +
     '.rap{max-width:200px;min-width:120px}.p.min .rap{display:none}' + (window.MESRAPick ? MESRAPick.css : '') +
     '.p.min{width:auto;padding:6px 8px}.p.min .bar,.p.min .row>*:not(.grip):not(.pl):not(.mini):not(.x){display:none}.p.min .row{flex-wrap:nowrap}';
 
@@ -533,7 +534,7 @@
     h.style.cssText = 'all:initial';
     var sh = h.attachShadow({ mode: 'closed' });
     sh.innerHTML = '<style>' + CSS_UI + '</style><div class="p ' + (P.playerPosition === 'top' ? 'top' : 'bottom') + '" role="region" aria-label="MES Read Aloud">' +
-      '<div class="tp" role="region" aria-label="Text being read"><div class="th"><b class="tl">Text being read</b><button class="tsm2" title="Smaller text in this box" aria-label="Smaller text in the box">A&minus;</button><button class="tsp2" title="Larger text in this box" aria-label="Larger text in the box">A+</button><button class="tpx" title="Hide this box" aria-label="Hide the text box">&times;</button></div><div class="tb" tabindex="0"></div></div>' +
+      '<div class="tp" role="region" aria-label="Text being read"><div class="th"><b class="tl">Text being read</b><button class="tsm2" title="Smaller text in this box" aria-label="Smaller text in the box">A&minus;</button><button class="tsp2" title="Larger text in this box" aria-label="Larger text in the box">A+</button><button class="tpe" title="Taller box: see more of the text" aria-label="Make the text box taller" aria-pressed="false"><svg viewBox="0 0 24 24" width="15" height="15" aria-hidden="true"><path d="M12 3v18M7 8l5-5 5 5M7 16l5 5 5-5" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" fill="none"/></svg></button><button class="tpx" title="Hide this box" aria-label="Hide the text box">&times;</button></div><div class="tb" tabindex="0"></div><div class="tgr" role="separator" aria-orientation="horizontal" aria-label="Text box height: drag, or use the Up and Down arrow keys" title="Drag to make the text box taller or shorter (double-click: normal height)" tabindex="0"></div></div>' +
       '<div class="bar" title="Click to jump"><div class="fill"></div></div>' +
       '<div class="rz" title="Drag to resize the player (double-click for normal size)" aria-label="Resize the player"></div>' +
       '<div class="row"><button class="grip" title="Drag to move the player (double-click to put it back)">&#8942;&#8942;</button><button class="prev" title="Previous sentence (Left arrow)">&#9198;</button><button class="pl" title="Pause / resume (Space)">&#9654;</button><button class="next" title="Next sentence (Right arrow)">&#9197;</button>' +
@@ -560,6 +561,37 @@
     q('.tpx').onclick = function () { st.panelOver = false; panelApply(); };
     q('.tsm2').onclick = function () { setPanelScale(P.panelScale - 0.1); };
     q('.tsp2').onclick = function () { setPanelScale(P.panelScale + 0.1); };
+    // the text box height: drag the grip under it (or Up / Down on the focused grip), or the expand button for a tall box
+    ui.tpe = q('.tpe'); ui.tgr = q('.tgr');
+    ui.tpe.onclick = function () { uiTbBig = !uiTbBig; tbApply(); saveUi(); };
+    var tg0 = null;
+    ui.tgr.addEventListener('pointerdown', function (e) {
+      if (e.button > 0) return;
+      tg0 = { y: e.clientY, h: ui.tb.getBoundingClientRect().height / uiZoom, up: tbUp() };
+      ui.tgr.classList.add('on');
+      try { ui.tgr.setPointerCapture(e.pointerId); } catch (x) { /* ignore */ }
+      e.preventDefault();
+    });
+    ui.tgr.addEventListener('pointermove', function (e) {
+      if (!tg0) return;
+      if (!(e.buttons & 1)) { endTg(); return; }
+      // a player docked at the bottom grows upward, so dragging the grip up makes the box taller there
+      var d = (e.clientY - tg0.y) / uiZoom;
+      uiTbH = tbClamp(tg0.h + (tg0.up ? -d : d)); uiTbBig = false; tbApply();
+    });
+    function endTg() { if (tg0) { tg0 = null; ui.tgr.classList.remove('on'); saveUi(); } }
+    ui.tgr.addEventListener('pointerup', endTg);
+    ui.tgr.addEventListener('pointercancel', endTg);
+    ui.tgr.addEventListener('lostpointercapture', endTg);
+    ui.tgr.ondblclick = function () { uiTbH = null; uiTbBig = false; tbApply(); saveUi(); };
+    ui.tgr.addEventListener('keydown', function (e) {
+      var k = e.key, cur = ui.tb.getBoundingClientRect().height / uiZoom, n = null;
+      if (k === 'ArrowUp' || k === 'ArrowDown') n = cur + ((k === 'ArrowDown') !== tbUp() ? 1 : -1) * (e.shiftKey ? 80 : 24);
+      else if (k === 'Home') n = TB_MIN; else if (k === 'End') n = tbMax();
+      else if (k === 'Enter') { uiTbBig = !uiTbBig; tbApply(); saveUi(); e.preventDefault(); e.stopPropagation(); return; }
+      if (n == null) return;
+      e.preventDefault(); e.stopPropagation(); uiTbH = tbClamp(n); uiTbBig = false; tbApply(); saveUi();
+    });
     ['wheel', 'touchmove'].forEach(function (t) { ui.tb.addEventListener(t, function () { panelUserAt = Date.now(); }, { passive: true }); });
     ui.tb.onclick = function (e) {
       var w = e.target.closest && e.target.closest('.w');
@@ -593,7 +625,7 @@
     // drag the player anywhere by its grip or any empty part of it
     var drag = null;
     ui.p.addEventListener('pointerdown', function (e) {
-      if (e.button > 0 || (e.target.closest && e.target.closest('button:not(.grip),select,input,a,.bar,.rz'))) return;
+      if (e.button > 0 || (e.target.closest && e.target.closest('button:not(.grip),select,input,a,.bar,.rz,.tb,.tgr'))) return;
       var r = ui.p.getBoundingClientRect();
       drag = { dx: e.clientX - r.left, dy: e.clientY - r.top, moved: false };
       try { ui.p.setPointerCapture(e.pointerId); } catch (x) { /* ignore */ }
@@ -628,7 +660,7 @@
     rz.ondblclick = function () { setZoom(1); saveUi(); };
     ['click', 'mousedown', 'mouseup', 'pointerdown', 'dblclick', 'keydown', 'keyup'].forEach(function (t) { h.addEventListener(t, function (e) { e.stopPropagation(); }); });
     (document.body || document.documentElement).appendChild(h);
-    applyZoom(); place(uiPos, true); ui.p.classList.toggle('min', uiMin); fillMini();
+    applyZoom(); tbApply(); place(uiPos, true); ui.p.classList.toggle('min', uiMin); fillMini();
     if (pipWin) mountPip();
   }
 
@@ -685,6 +717,23 @@
     if (st.words && ui.wEls && !ui.curW && !ui.curS) panelMark(st.idx);
   }
   function setPanelScale(k) { P.panelScale = Math.round(Math.min(2.5, Math.max(0.7, k)) * 10) / 10; saveSettings(); panelApply(); }
+  // text box height (px, before the player's own zoom): uiTbH = the height the reader dragged to (null = normal 150px),
+  // uiTbBig = the expand button's tall box (about 60% of the window); both are kept with the player's position in mesraUi
+  var TB_MIN = 56, TB_DEF = 150;
+  function tbMax() { return Math.max(TB_DEF, Math.round(window.innerHeight * 0.85 / uiZoom) - 90); }
+  function tbClamp(h) { return Math.round(Math.max(TB_MIN, Math.min(tbMax(), h))); }
+  function tbHeight() { return uiTbBig ? tbClamp(Math.max(window.innerHeight * 0.6 / uiZoom, (uiTbH || TB_DEF) + 120)) : tbClamp(uiTbH || TB_DEF); }
+  function tbUp() { return !!ui && !ui.p.classList.contains('moved') && !ui.p.classList.contains('top'); }
+  function tbApply() {
+    if (!ui || !ui.tpe) return;
+    var h = tbHeight();
+    ui.p.style.setProperty('--tbh', h + 'px');
+    ui.p.classList.toggle('tgu', tbUp());   // the grip sits on the edge that moves: the top one while the player is docked at the bottom
+    ui.tpe.classList.toggle('on', uiTbBig); ui.tpe.setAttribute('aria-pressed', uiTbBig ? 'true' : 'false');
+    ui.tpe.title = uiTbBig ? 'Back to the normal box height' : 'Taller box: see more of the text';
+    ui.tgr.setAttribute('aria-valuenow', String(h)); ui.tgr.setAttribute('aria-valuemin', String(TB_MIN)); ui.tgr.setAttribute('aria-valuemax', String(tbMax()));
+    if (uiPos) place(uiPos, true);   // a moved player keeps on screen as the box grows
+  }
 
   // ---- pop out: Document Picture-in-Picture gives a real, always-on-top window that can be dragged anywhere on the screen ----
   var pipWin = null;
@@ -731,19 +780,19 @@
   }
 
   // player position + minimised state, remembered per browser (not per site)
-  var uiPos = null, uiZoom = 1, uiMin = false, hlPrev = null, uiDark = {};
+  var uiPos = null, uiZoom = 1, uiMin = false, hlPrev = null, uiDark = {}, uiTbH = null, uiTbBig = false;
   function loadUi(cb) {
-    try { chrome.storage.local.get('mesraUi', function (a) { var u = a && a.mesraUi; if (u) { uiPos = u.pos || null; uiMin = !!u.min; uiZoom = Math.max(0.5, Math.min(2, Number(u.zoom) || 1)); uiDark = u.dark || {}; } setDark(!!uiDark[location.hostname], false); if (cb) cb(); }); } catch (e) { if (cb) cb(); }
+    try { chrome.storage.local.get('mesraUi', function (a) { var u = a && a.mesraUi; if (u) { uiPos = u.pos || null; uiMin = !!u.min; uiZoom = Math.max(0.5, Math.min(2, Number(u.zoom) || 1)); uiDark = u.dark || {}; uiTbH = Number(u.tbh) > 0 ? Number(u.tbh) : null; uiTbBig = !!u.tbBig; } tbApply(); setDark(!!uiDark[location.hostname], false); if (cb) cb(); }); } catch (e) { if (cb) cb(); }
   }
   loadUi();
-  function saveUi() { try { chrome.storage.local.set({ mesraUi: { pos: uiPos, zoom: uiZoom, min: uiMin, dark: uiDark } }); } catch (e) { /* ignore */ } }
+  function saveUi() { try { chrome.storage.local.set({ mesraUi: { pos: uiPos, zoom: uiZoom, min: uiMin, dark: uiDark, tbh: uiTbH, tbBig: uiTbBig } }); } catch (e) { /* ignore */ } }
   function place(pt, keep) {
     if (!ui || pipWin) return;
-    if (!pt) { uiPos = null; ui.p.classList.remove('moved'); if (!keep) saveUi(); return; }
+    if (!pt) { uiPos = null; ui.p.classList.remove('moved'); ui.p.classList.toggle('tgu', tbUp()); if (!keep) saveUi(); return; }
     var br = ui.p.getBoundingClientRect(), w = br.width || 300, h2 = br.height || 60;
     var x = Math.max(8, Math.min(window.innerWidth - w - 8, pt.x)), y = Math.max(8, Math.min(window.innerHeight - h2 - 8, pt.y));
     uiPos = { x: x, y: y };
-    ui.p.style.setProperty('--x', x / uiZoom + 'px'); ui.p.style.setProperty('--y', y / uiZoom + 'px'); ui.p.classList.add('moved');
+    ui.p.style.setProperty('--x', x / uiZoom + 'px'); ui.p.style.setProperty('--y', y / uiZoom + 'px'); ui.p.classList.add('moved'); ui.p.classList.remove('tgu');
   }
   function applyZoom() { if (ui) ui.p.style.setProperty('--z', String(uiZoom)); }
   function setZoom(z) {
@@ -751,7 +800,7 @@
     if (!ui) return;
     var oldPos = uiPos; applyZoom(); if (oldPos) place(oldPos, true);
   }
-  window.addEventListener('resize', function () { if (ui && uiPos) place(uiPos, true); });
+  window.addEventListener('resize', function () { if (ui) tbApply(); if (ui && uiPos) place(uiPos, true); });
   function fillMini() { if (ui) { ui.mini.innerHTML = uiMin ? '&#9652;' : '&#9662;'; ui.mini.title = uiMin ? 'Show the full player (M)' : 'Minimise to a small bar (M)'; } }
   function toggleMini() { uiMin = !uiMin; if (ui) { ui.p.classList.toggle('min', uiMin); fillMini(); if (uiPos) place(uiPos, true); } saveUi(); }
   // dark / light page: one stylesheet that inverts the page (hue kept) and flips pictures, video and our own player back, while the player is open.
