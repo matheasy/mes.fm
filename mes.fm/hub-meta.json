@@ -1,5 +1,5 @@
 {
-"generated":"2026-11-01",
+"generated":"2026-11-02",
 "pages":{
 "/2d-graphing-calculator":{
 "added":"2026-10-02",
@@ -663,7 +663,7 @@
 },
 "/search":{
 "added":"2026-09-28",
-"updated":"2026-11-01",
+"updated":"2026-11-02",
 "type":"Tool"
 },
 "/search-engines":{
@@ -698,7 +698,7 @@
 },
 "/site-index":{
 "added":"2026-10-03",
-"updated":"2026-11-01",
+"updated":"2026-11-02",
 "type":"Tool"
 },
 "/site-traffic":{
