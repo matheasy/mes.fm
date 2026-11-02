@@ -256,6 +256,92 @@
 		if (!out.length) throw new Error('no perps found');
 		return out;
 	};
+	// ---------- overview: market mood by sector ----------
+	// Fixed rules turn the page's own numbers into one row per sector (what the data shows + a mood word). Descriptive only:
+	// the words say how things ARE (fearful, falling, tightening ...), never where they are going. Every rule is listed in
+	// S.MOOD_RULES (shown under the table) and tested. d = {sourceName: data|null}; now = ms.
+	S.MOOD_RULES = [
+		['Fear & Greed', 'below 25 extreme fear, 25-44 fear, 45-55 neutral, 56-75 greed, above 75 extreme greed (same scale as the gauges)'],
+		['Price trend', 'change over the period shown: below -5% falling, -5% to -1.5% slipping, -1.5% to +1.5% flat, +1.5% to +5% rising, above +5% climbing (crypto uses 7 days, the rest 3 months)'],
+		['Oil, gold, dollar', 'the same trend words, but over 3 months, where -/+3% is flat for gold and the dollar and -/+8% for oil; oil above +20% is surging'],
+		['Fed', 'tightening when the last change of the target range was a rise, easing when it was a cut'],
+		['Yield curve', '10-year minus 2-year: below 0 inverted, 0 to +0.25 points flat, above that normal'],
+		['Inflation', 'US CPI over the last year: above 3% high, 2-3% near target, below 2% low; rising or falling compared with 6 months earlier'],
+		['Recession odds', 'Kalshi chance of a US recession next year: below 15% low, 15-35% elevated, above 35% high'],
+		['Perps funding', 'compared with Hyperliquid\'s normal 0.00125% an hour (see the Crypto tab)'],
+		['Geopolitics', 'Doomsday Clock under 100 seconds = very high tension; plus the busiest conflict market\'s price']
+	];
+	S.trendWord = function (pct, flat) {
+		if (pct == null || !isFinite(pct)) return null; flat = flat || 1.5;
+		var big = Math.max(5, flat * 2.5);
+		return pct < -big ? 'Falling' : pct < -flat ? 'Slipping' : pct <= flat ? 'Flat' : pct <= big ? 'Rising' : 'Climbing';
+	};
+	// tone: -2 .. +2 for colour only (red = stressed / falling, green = calm / rising); 0 = neutral
+	function trendTone(w) { return { Falling: -2, Slipping: -1, Flat: 0, Rising: 1, Climbing: 2, Surging: 2 }[w] || 0; }
+	function fgTone(v) { return v < 25 ? -2 : v < 45 ? -1 : v <= 55 ? 0 : v <= 75 ? 1 : 2; }
+	function spanPct(sp) { var a = (sp || []).filter(function (x) { return x && x[1] != null; }); return a.length > 1 ? (a[a.length - 1][1] / a[0][1] - 1) * 100 : null; }
+	function vals(sp) { return (sp || []).map(function (x) { return Array.isArray(x) ? x[1] : x; }).filter(function (v) { return v != null && isFinite(v); }); }
+	var MN = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+	S.humanDate = function (s) { var m = /^(\d{4})-(\d\d)(?:-(\d\d))?/.exec(String(s || '')); return m ? MN[+m[2] - 1] + ' ' + (m[3] ? +m[3] + ', ' : '') + m[1] : String(s || ''); };
+	S.sectorMood = function (d, now) {
+		d = d || {}; now = now == null ? Date.now() : now;
+		var rows = [], coins = d.coins || [], by = {}, perps = {}, mk = d.markets || {};
+		coins.forEach(function (c) { by[c.sym] = c; });
+		(d.perps || []).forEach(function (p) { perps[p.sym] = p; });
+		function pf(sym) { var p = perps[sym]; return p && p.lean ? 'funding ' + p.lean : null; }
+		if (d.fng) {
+			var g = d.global, v = d.fng.now.v, h = d.fng.hist || [], wk = h.length > 7 ? h[h.length - 8][1] : null;
+			rows.push({ key: 'crypto', tab: 'crypto', name: 'Crypto market', mood: S.fgLabel(v), tone: fgTone(v), meter: { v: v, min: 0, max: 100, kind: 'fg' },
+				facts: ['Fear & Greed ' + v + (wk != null ? ' (' + (v - wk >= 0 ? '+' : '−') + Math.abs(v - wk) + ' in a week)' : '')].concat(g ? ['market cap ' + S.money(g.mcap, 'big') + ' (' + S.pct(g.mcapCh24, 1) + ' 24h)', 'BTC dominance ' + S.fmt(g.btcDom, 1) + '%'] : []),
+				spark: vals(h.slice(-30)) });
+		}
+		[['BTC', 'bitcoin', 'Bitcoin'], ['ETH', 'ethereum', 'Ethereum']].forEach(function (x) {
+			var c = by[x[0]]; if (!c) return; var w = S.trendWord(c.ch7);
+			rows.push({ key: x[1], tab: 'crypto', name: x[2], mood: w, tone: trendTone(w), meter: { v: c.ch7, min: -15, max: 15, kind: 'pct' },
+				facts: [S.money(c.price) + ', ' + S.pct(c.ch7, 1) + ' in 7 days', S.pct(c.athPct, 0) + ' from its high'].concat(pf(x[0]) ? [pf(x[0])] : []), spark: vals(c.spark) });
+		});
+		var alts = ['SOL', 'XRP'].map(function (k) { return by[k]; }).filter(Boolean);
+		if (alts.length) {
+			var avg = alts.reduce(function (a, c) { return a + c.ch7; }, 0) / alts.length, wa = S.trendWord(avg);
+			rows.push({ key: 'alts', tab: 'crypto', name: 'Large altcoins (SOL, XRP)', mood: wa, tone: trendTone(wa), meter: { v: avg, min: -15, max: 15, kind: 'pct' },
+				facts: alts.map(function (c) { return c.sym + ' ' + S.pct(c.ch7, 1) + ' (7d), ' + S.pct(c.athPct, 0) + ' from high'; }).concat(pf('SOL') ? ['SOL ' + pf('SOL')] : []), spark: vals((by.SOL || alts[0]).spark) });
+		}
+		if (d.stables) rows.push({ key: 'stables', tab: 'crypto', name: 'Stablecoins', mood: 'Info', tone: 0, facts: ['supply ' + S.money(d.stables.total, 'big'), d.stables.top.slice(0, 2).map(function (t) { return t[0] + ' ' + S.money(t[1], 'big'); }).join(', ')] });
+		if (d.stockfg || mk.spx) {
+			var sf = d.stockfg, spx = mk.spx, s3 = spx ? spanPct(spx.spark) : null;
+			rows.push({ key: 'stocks', tab: 'mkts', name: 'US stocks', mood: sf ? S.fgLabel(sf.score) : S.trendWord(s3), tone: sf ? fgTone(sf.score) : trendTone(S.trendWord(s3)), meter: sf ? { v: sf.score, min: 0, max: 100, kind: 'fg' } : null,
+				facts: (sf ? ['MES Stock F&G ' + sf.score] : []).concat(spx ? ['S&P 500 ' + S.fmt(spx.price, 0) + ' (' + S.pct(spx.chPct, 1) + ' day, ' + S.pct(s3, 1) + ' 3 months)'] : []).concat(mk.nasdaq ? ['Nasdaq ' + S.pct(spanPct(mk.nasdaq.spark), 1) + ' 3 months'] : []),
+				spark: spx ? vals(spx.spark) : [] });
+		}
+		[['gold', 'Gold', 3, ''], ['oil', 'Oil (WTI)', 8, 'surge'], ['dxy', 'US dollar (DXY)', 3, '']].forEach(function (x) {
+			var q = mk[x[0]]; if (!q) return; var c3 = spanPct(q.spark), w = S.trendWord(c3, x[2]);
+			if (x[3] && c3 > 20) w = 'Surging';
+			rows.push({ key: x[0], tab: 'mkts', name: x[1], mood: w, tone: x[0] === 'oil' ? -Math.abs(trendTone(w)) : trendTone(w), meter: { v: c3, min: -30, max: 30, kind: 'pct' },
+				facts: [(x[0] === 'dxy' ? S.fmt(q.price, 2) : S.money(q.price)) + ', ' + S.pct(c3, 1) + ' in 3 months', S.pct(q.chPct, 1) + ' last day'], spark: vals(q.spark) });
+		});
+		if (d.rates && d.rates.target) {
+			var t = d.rates.target, lo = d.rates.lower, up = t.prev != null && t.rate > t.prev, dn = t.prev != null && t.rate < t.prev, l = d.rates.latest || {};
+			var mf = up ? 'Tightening' : dn ? 'Easing' : 'On hold';
+			var dec = (d.poly || []).filter(function (e) { return /^Fed Decision in/i.test(e.title); })[0];
+			rows.push({ key: 'fed', tab: 'rates', name: 'Fed and US rates', mood: mf, tone: up ? -1 : dn ? 1 : 0,
+				facts: ['target ' + (lo ? S.fmt(lo[1], 2) + '–' : '') + S.fmt(t.rate, 2) + '% (' + (up ? 'raised' : dn ? 'cut' : 'set') + ' ' + S.humanDate(t.since) + ')'].concat(l.dgs10 ? ['10-year ' + S.fmt(l.dgs10[1], 2) + '%' + (d.rates.yearAgo && d.rates.yearAgo.dgs10 ? ' (' + (l.dgs10[1] >= d.rates.yearAgo.dgs10[1] ? '+' : '−') + Math.round(Math.abs(l.dgs10[1] - d.rates.yearAgo.dgs10[1]) * 100) + ' bp in a year)' : '')] : []).concat(dec && dec.outcomes[0] ? [dec.title.replace(/\?$/, '') + ': ' + dec.outcomes[0].label + ' ' + Math.round(dec.outcomes[0].p) + '% (Polymarket)'] : []) });
+			if (l.spread) { var spd = l.spread[1], cw = spd < 0 ? 'Inverted' : spd <= 0.25 ? 'Flat' : 'Normal'; rows.push({ key: 'curve', tab: 'rates', name: 'Yield curve', mood: cw, tone: spd < 0 ? -2 : spd <= 0.25 ? -1 : 0, meter: { v: spd, min: -1.5, max: 1.5, kind: 'pp' }, facts: ['10y − 2y ' + (spd >= 0 ? '+' : '−') + Math.round(Math.abs(spd) * 100) + ' bp'] }); }
+		}
+		if (d.cpi && d.cpi.latest) {
+			var cv = d.cpi.latest[1], y = d.cpi.yoy || [], six = y.length > 6 ? y[y.length - 7][1] : null, iw = cv > 3 ? 'High' : cv >= 2 ? 'Near target' : 'Low';
+			var dir = six == null ? '' : cv > six + 0.2 ? ', rising' : cv < six - 0.2 ? ', falling' : ', steady';
+			rows.push({ key: 'cpi', tab: 'rates', name: 'US inflation', mood: iw + dir, tone: cv > 3 ? -1 - (dir === ', rising' ? 1 : 0) : 0, meter: { v: cv, min: 0, max: 8, kind: 'cpi' },
+				facts: ['CPI ' + S.fmt(cv, 1) + '% a year (' + S.humanDate(d.cpi.latest[0]) + ')'].concat(six != null ? ['6 months earlier ' + S.fmt(six, 1) + '%'] : []), spark: vals(y.slice(-24)) });
+		}
+		var rec = (d.kalshi || []).filter(function (e) { return /recession in \d{4}/i.test(e.title); })[0];
+		if (rec && rec.outcomes[0]) { var rp = rec.outcomes[0].p; rows.push({ key: 'rec', tab: 'pred', name: 'US recession odds', mood: rp < 15 ? 'Low' : rp <= 35 ? 'Elevated' : 'High', tone: rp < 15 ? 0 : rp <= 35 ? -1 : -2, meter: { v: rp, min: 0, max: 100, kind: 'odds' }, facts: [rec.title.replace(/\?$/, '') + ': ' + Math.round(rp) + '% (Kalshi)'] }); }
+		if (S.DOOMSDAY_LATEST) {
+			var cs = S.DOOMSDAY_LATEST.seconds, top = S.conflictOdds(S.geoMarkets([d.geo, d.geok]), 1)[0];
+			rows.push({ key: 'geo', tab: 'geo', name: 'Geopolitics', mood: cs < 100 ? 'Very high tension' : cs < 180 ? 'High tension' : 'Tense', tone: cs < 100 ? -2 : -1,
+				facts: ['Doomsday Clock ' + S.clockText(cs) + ' to midnight'].concat(top ? [top.title.replace(/\?$/, '').slice(0, 70) + ': Yes ' + Math.round(top.yes) + '%'] : []).concat(mk.oil ? ['oil ' + S.money(mk.oil.price)] : []) });
+		}
+		return rows;
+	};
 	// ---------- geopolitics ----------
 	// a prediction market counts as "conflict" when its title is about war, ceasefires, invasions, strikes, blockades, nuclear tests ...
 	// (elections, leaders' approval and trade deals are left out). Neutral wording only: this is a filter, not a forecast.
@@ -479,6 +565,7 @@
 		mcap: ['Market cap', 'Price times the number of coins (or shares) in existence. The total crypto market cap adds this up for every coin CoinGecko tracks.'],
 		dominance: ['Bitcoin dominance', 'Bitcoin’s share of the total crypto market cap. Rising dominance usually means money is moving into Bitcoin from smaller coins (often in nervous times); falling dominance means other coins are gaining faster (sometimes called “alt season”).'],
 		stablecoin: ['Stablecoins', 'Tokens designed to stay worth one US dollar (or another currency), such as USDT and USDC, backed by cash, bonds or other assets. Their total supply is a rough measure of how much dollar money is sitting inside crypto, ready to be used.'],
+		mood: ['Market mood by sector', 'One line per area of the markets, worked out from this page\u2019s own numbers with fixed rules (listed under the table): fear and greed readings for crypto and stocks, the recent price trend for coins, gold, oil and the dollar, the direction of the Fed, the shape of the yield curve, inflation, the recession odds markets give, and how tense the world is. Red = stressed or falling, green = calm or rising, grey = neutral. It describes now; it is not a forecast. Click a row to see the details on its tab.'],
 		funding: ['Funding rate', 'On perpetual futures (perps) the two sides pay each other every hour so the perp price stays near the real price. Positive funding = traders betting on a rise (longs) pay those betting on a fall (shorts). On Hyperliquid the normal level is 0.00125% an hour (about 11% a year, paid by longs); well above that means many people are leaning the same way with borrowed money, negative means shorts are the crowded side. Crowded positioning can unwind sharply in either direction; it is not a price forecast.'],
 		oi: ['Open interest', 'The total value of perp positions still open (counted once, not long plus short). Rising open interest with rising prices means new leveraged money is coming in; a sudden drop means positions were closed or liquidated.'],
 		halving: ['Bitcoin halving', 'Every 210,000 blocks (about every four years) the number of new bitcoins paid to miners for each block is cut in half. The 2024 halving cut it from 6.25 to 3.125 BTC. The countdown uses the current block height and the recent average time between blocks, so the date drifts a little.'],
@@ -521,8 +608,8 @@
 	'use strict';
 	var S = window.MESSig, $ = function (id) { return document.getElementById(id); }, root = $('sg');
 	if (!S || !root) return;
-	var KEY = 'mes-signals:v1', st = { tab: 'sent', fg: 90, rates: 1100, curve: 9999, qk: 'spx', pcat: 'All', nview: 'cards', ncols: 'auto', nshow: 10, nclosed: {}, nsrc: {}, gconf: 1 }, data = null, snaps = null, loading = false;
-	var SKEYS = ['tab', 'fg', 'rates', 'curve', 'qk', 'pcat', 'nview', 'ncols', 'nshow', 'nclosed', 'nsrc', 'gconf'];
+	var KEY = 'mes-signals:v1', st = { tab: 'over', cxd: 30, fg: 90, rates: 1100, curve: 9999, qk: 'spx', pcat: 'All', nview: 'cards', ncols: 'auto', nshow: 10, nclosed: {}, nsrc: {}, gconf: 1 }, data = null, snaps = null, loading = false;
+	var SKEYS = ['tab', 'cxd', 'fg', 'rates', 'curve', 'qk', 'pcat', 'nview', 'ncols', 'nshow', 'nclosed', 'nsrc', 'gconf'];
 	try { var sv = JSON.parse(localStorage.getItem(KEY) || '{}'); SKEYS.forEach(function (k) { if (sv[k] != null) st[k] = sv[k]; }); } catch (e) {}
 	var qs = new URLSearchParams(location.search), MOCK = qs.get('mock') === '1' || /^(127\.0\.0\.1|localhost)$/.test(location.hostname);
 	if (qs.get('tab')) st.tab = qs.get('tab');
@@ -537,8 +624,8 @@
 	function ago(iso) { var ms = Date.now() - Date.parse(iso); return isFinite(ms) ? S.ago(Math.max(0, ms)) + ' ago' : ''; }
 
 	// ---------- tabs ----------
-	var TABS = ['sent', 'crypto', 'mkts', 'rates', 'pred', 'geo', 'news'];
-	if (TABS.indexOf(st.tab) < 0) st.tab = 'sent';
+	var TABS = ['over', 'sent', 'crypto', 'mkts', 'rates', 'pred', 'geo', 'news'];
+	if (TABS.indexOf(st.tab) < 0) st.tab = 'over';
 	function showTab(t, focus) {
 		st.tab = t; save();
 		[].forEach.call($('sg-tabs').querySelectorAll('[role=tab]'), function (b) { var on = b.getAttribute('data-tab') === t; b.setAttribute('aria-selected', on); b.tabIndex = on ? 0 : -1; if (on && focus) b.focus(); });
@@ -703,18 +790,28 @@
 	function drawCrypto() {
 		var c = src('coins'), g = src('global'), sb = src('stables'), hv = src('halving');
 		$('sg-coins').innerHTML = c ? c.map(function (x) {
-			return '<div class="sg-coin"><div class="sg-coin__h"><b>' + esc(x.name) + '</b><span>' + esc(x.sym) + (x.rank ? ' · #' + x.rank : '') + '</span></div><div class="sg-coin__p">' + esc(S.money(x.price)) + '</div>' +
+			return '<div class="sg-coin sg-coin--x" role="button" tabindex="0" data-cx="' + esc(x.id) + '" aria-label="' + esc('Bigger chart and links for ' + x.name) + '"><div class="sg-coin__h"><b>' + esc(x.name) + '</b><span>' + esc(x.sym) + (x.rank ? ' · #' + x.rank : '') + '</span></div><div class="sg-coin__p">' + esc(S.money(x.price)) + '</div>' +
 				'<div class="sg-coin__c"><span>24h ' + chg(x.ch24, 1) + '</span><span>7d ' + chg(x.ch7, 1) + '</span></div>' + spark(x.spark, 150, 36) + '<div class="tu-note">' + (x.athPct != null ? esc(S.pct(x.athPct, 0)) + ' from its all-time high' : '') + '</div></div>';
-		}).join('') + '<p class="tu-note sg-wide">7-day sparklines ' + q('spark') + ' · prices by <a href="https://www.coingecko.com" target="_blank" rel="noopener">CoinGecko</a>, in US dollars.</p>' : err('coins');
+		}).join('') + '<p class="tu-note sg-wide">Click a coin for a bigger chart (24 hours to 1 year) and links to CoinGecko, CoinMarketCap, TradingView and Hyperliquid. 7-day sparklines ' + q('spark') + ' · prices by <a href="https://www.coingecko.com" target="_blank" rel="noopener">CoinGecko</a>, in US dollars.</p>' : err('coins');
 		var o = '';
 		if (g) o += stat('Total crypto market cap ' + q('mcap'), S.money(g.mcap, 'big'), '24h ' + chg(g.mcapCh24, 1), true) + stat('Bitcoin dominance ' + q('dominance'), S.fmt(g.btcDom, 1) + '%', 'Ether ' + S.fmt(g.ethDom, 1) + '%') + stat('24h trading volume', S.money(g.vol, 'big'), esc(S.fmt(g.coins, 0)) + ' coins tracked');
 		else o += stat('Total crypto market cap', '—', 'not available right now');
 		if (sb) o += stat('Stablecoin supply ' + q('stablecoin'), S.money(sb.total, 'big'), sb.top.slice(0, 3).map(function (t) { return esc(t[0]) + ' ' + esc(S.money(t[1], 'big')); }).join(' · '));
 		$('sg-cstats').innerHTML = o;
 		var pp = src('perps');
-		$('sg-perps').innerHTML = '<div class="sg-chead"><b>Perps: funding and open interest ' + q('funding') + '</b><span class="tu-note">Hyperliquid, live</span></div>' + (pp ? '<div class="sg-tw"><table class="tu-table sg-ptbl"><thead><tr><th>Market</th><th>Price</th><th>24h</th><th>Funding / hour</th><th>Per year</th><th>Reading</th><th>Open interest ' + q('oi') + '</th><th>24h volume</th></tr></thead><tbody>' +
-			pp.map(function (x) { var cls = /shorts/.test(x.lean) ? 'sg-ch down' : /crowded|more/.test(x.lean) ? 'sg-ch up' : 'tu-note'; return '<tr><td><b>' + esc(x.sym === 'PAXG' ? 'PAXG (gold)' : x.sym) + '</b></td><td>' + esc(S.money(x.px)) + '</td><td>' + chg(x.ch24, 1) + '</td><td>' + (x.funding == null ? '—' : esc(x.funding.toFixed(5) + '%')) + '</td><td>' + (x.apr == null ? '—' : esc(S.fmt(x.apr, 1) + '%')) + '</td><td><span class="' + cls + '">' + esc(x.lean) + '</span></td><td>' + (x.oi == null ? '—' : esc(S.money(x.oi, 'big'))) + '</td><td>' + (x.vol == null ? '—' : esc(S.money(x.vol, 'big'))) + '</td></tr>'; }).join('') +
-			'</tbody></table></div><p class="tu-note">Normal funding on Hyperliquid is 0.00125% an hour (about 11% a year, paid by longs). Above it, the bet-on-a-rise side is crowded; negative, the bet-on-a-fall side is. Data: <a href="https://app.hyperliquid.xyz" target="_blank" rel="noopener nofollow">Hyperliquid</a> public API.</p>' : err('perps'));
+		if (pp) {
+			var fMax = Math.max(S.PERP_BASE * 4, Math.max.apply(null, pp.map(function (x) { return Math.abs(x.funding || 0); }))), oMax = Math.max.apply(null, pp.map(function (x) { return x.oi || 0; })), vMax = Math.max.apply(null, pp.map(function (x) { return x.vol || 0; }));
+			var fbar = function (f) { if (f == null) return ''; var w = Math.min(50, Math.abs(f) / fMax * 50), base = S.PERP_BASE / fMax * 50; return '<span class="sg-dbar" aria-hidden="true"><i class="sg-dbar__b' + (f < 0 ? ' neg' : f > S.PERP_BASE * 1.6 ? ' hot' : '') + '" style="' + (f < 0 ? 'right:50%' : 'left:50%') + ';width:' + w.toFixed(1) + '%"></i><i class="sg-dbar__base" style="left:' + (50 + base).toFixed(1) + '%"></i></span>'; };
+			var hbar = function (v, m, c) { return v == null || !m ? '' : '<span class="sg-hbar ' + (c || '') + '" aria-hidden="true"><i style="width:' + Math.max(2, v / m * 100).toFixed(1) + '%"></i></span>'; };
+			$('sg-perps').innerHTML = '<div class="sg-chead"><b>Perps: funding and open interest ' + q('funding') + '</b><span class="tu-note">Hyperliquid, live</span></div><div class="sg-tw"><table class="tu-table sg-ptbl"><thead><tr><th>Market</th><th class="r">Price · 24h</th><th>Funding (per hour · per year)</th><th>Reading</th><th>Open interest ' + q('oi') + '</th><th>24h volume</th></tr></thead><tbody>' +
+				pp.map(function (x) {
+					var lc = /shorts/.test(x.lean) ? 'neg' : /crowded|more/.test(x.lean) ? 'hot' : /below/.test(x.lean) ? 'low' : 'ok';
+					return '<tr><td><b>' + esc(x.sym === 'PAXG' ? 'PAXG (gold)' : x.sym) + '</b></td><td class="r">' + esc(S.money(x.px)) + '<br>' + chg(x.ch24, 1) + '</td>' +
+						'<td>' + fbar(x.funding) + '<span class="sg-cellv">' + (x.funding == null ? '—' : esc(x.funding.toFixed(5) + '%') + ' · ' + esc(S.fmt(x.apr, 1) + '%/yr')) + '</span></td>' +
+						'<td><span class="sg-lean ' + lc + '">' + esc(x.lean) + '</span></td>' +
+						'<td>' + hbar(x.oi, oMax) + '<span class="sg-cellv">' + esc(S.money(x.oi, 'big')) + '</span></td><td>' + hbar(x.vol, vMax, 'v') + '<span class="sg-cellv">' + esc(S.money(x.vol, 'big')) + '</span></td></tr>';
+				}).join('') + '</tbody></table></div><p class="tu-note">Funding bar: centre line = zero, thin mark = Hyperliquid&rsquo;s normal 0.00125% an hour (about 11% a year, paid by longs). Longer to the right = the bet-on-a-rise side is more crowded; to the left = shorts are paying. Bars for open interest and volume compare the markets with each other. Data: <a href="https://app.hyperliquid.xyz" target="_blank" rel="noopener nofollow">Hyperliquid</a> public API.</p>';
+		} else $('sg-perps').innerHTML = '<b>Perps: funding and open interest</b>' + err('perps');
 		if (hv) {
 			var left = hv.eta - Date.now();
 			$('sg-halving').innerHTML = '<div class="sg-chead"><b>Next Bitcoin halving ' + q('halving') + '</b><span class="tu-note">block ' + esc(S.fmt(hv.target, 0)) + '</span></div><div class="sg-hv"><div class="sg-hv__big">' + esc(Math.floor(left / 864e5) + ' days') + '</div><div>about <b>' + esc(new Date(hv.eta).toLocaleDateString(undefined, { year: 'numeric', month: 'long', day: 'numeric' })) + '</b><br><span class="tu-note">' + esc(S.fmt(hv.left, 0)) + ' blocks to go at ' + esc((hv.avgSec / 60).toFixed(1)) + ' min per block (recent average)</span></div></div>' +
@@ -908,7 +1005,81 @@
 		$('sg-gnews').innerHTML = '<div class="tu-chips"><button type="button" class="tu-chip" data-gconf="1" aria-pressed="' + !!st.gconf + '">Only war, ceasefire &amp; security stories</button></div>' + newsSection('geoworld', 'World headlines', items, 'wnews', filt) +
 			'<p class="tu-note">View, columns and how many to show follow the <a href="?tab=news" data-goto="news">News</a> tab&rsquo;s settings.</p>';
 	}
-	function drawTab(t) { ({ sent: drawSent, crypto: drawCrypto, mkts: drawMkts, rates: drawRates, pred: drawPred, geo: drawGeo, news: drawNews })[t](); rangeBtns(); }
+	// ---------- overview: market mood by sector (rules in lib S.sectorMood / S.MOOD_RULES) ----------
+	function allSrc() { var d = {}; if (data) Object.keys(data.sources).forEach(function (k) { d[k] = src(k); }); return d; }
+	function meter(m) {
+		if (!m || m.v == null || !isFinite(m.v)) return '<span class="sg-mt sg-mt--none"></span>';
+		var p = Math.max(0, Math.min(100, (m.v - m.min) / (m.max - m.min) * 100));
+		if (m.kind === 'fg') return '<span class="sg-mt sg-mt--fg" title="' + esc(m.v + ' of 100') + '"><i class="sg-mt__pin" style="left:' + p.toFixed(1) + '%"></i></span>';
+		if (m.kind === 'pct' || m.kind === 'pp') { var z = (0 - m.min) / (m.max - m.min) * 100, a = Math.min(p, z), w = Math.abs(p - z); return '<span class="sg-mt sg-mt--c" title="' + esc(m.kind === 'pct' ? S.pct(m.v, 1) : (m.v >= 0 ? '+' : '') + Math.round(m.v * 100) + ' bp') + '"><i class="sg-mt__z" style="left:' + z.toFixed(1) + '%"></i><i class="sg-mt__b ' + (m.v < 0 ? 'dn' : 'up') + '" style="left:' + a.toFixed(1) + '%;width:' + Math.max(1.5, w).toFixed(1) + '%"></i></span>'; }
+		return '<span class="sg-mt sg-mt--f ' + m.kind + '" title="' + esc(S.fmt(m.v, 1) + '%') + '"><i style="width:' + Math.max(2, p).toFixed(1) + '%"></i>' + (m.kind === 'cpi' ? '<i class="sg-mt__tg" style="left:' + (2 / m.max * 100).toFixed(1) + '%"></i>' : '') + '</span>';
+	}
+	var TAB_NAMES = { crypto: 'Crypto', mkts: 'Stocks & commodities', rates: 'Rates & the Fed', pred: 'Prediction markets', geo: 'Geopolitics' };
+	function drawOver() {
+		var rows = S.sectorMood(allSrc()), counts = { s: 0, c: 0 };
+		rows.forEach(function (r) { if (r.tone < 0) counts.s++; else if (r.tone > 0) counts.c++; });
+		$('sg-over').innerHTML = '<div class="sg-chead"><b>Market mood by sector ' + q('mood') + '</b><span class="tu-note">' + rows.length + ' sectors · ' + counts.s + ' stressed or falling · ' + counts.c + ' calm or rising</span></div>' +
+			'<div class="sg-ov" role="list">' + rows.map(function (r) {
+				return '<div class="sg-ov__r t' + r.tone + '" role="listitem"><button type="button" class="sg-ov__go" data-goto="' + r.tab + '" title="' + esc('Open the ' + TAB_NAMES[r.tab] + ' tab') + '">' +
+					'<span class="sg-ov__n">' + esc(r.name) + '</span><span class="sg-mood t' + r.tone + '">' + esc(r.mood) + '</span>' +
+					'<span class="sg-ov__v">' + meter(r.meter) + (r.spark && r.spark.length > 1 ? spark(r.spark, 96, 26) : '') + '</span>' +
+					'<span class="sg-ov__f">' + r.facts.map(esc).join(' <span class="sg-sep">·</span> ') + '</span><span class="sg-ov__arr" aria-hidden="true">&#8250;</span></button></div>';
+			}).join('') + '</div>' +
+			'<details class="sg-rules"><summary>How the mood words are worked out</summary><ul>' + S.MOOD_RULES.map(function (r) { return '<li><b>' + esc(r[0]) + ':</b> ' + esc(r[1]) + '</li>'; }).join('') + '</ul><p class="tu-note">Fixed rules applied to the numbers on this page, recalculated on every refresh. The words describe how things are now; they are not forecasts and say nothing about what to buy or sell.</p></details>';
+	}
+
+	// ---------- coin window: bigger chart + links ----------
+	var CX = { bitcoin: { cmc: 'bitcoin', tv: 'BITSTAMP:BTCUSD', hl: 'BTC' }, ethereum: { cmc: 'ethereum', tv: 'BITSTAMP:ETHUSD', hl: 'ETH' }, ripple: { cmc: 'xrp', tv: 'BITSTAMP:XRPUSD', hl: 'XRP' }, solana: { cmc: 'solana', tv: 'COINBASE:SOLUSD', hl: 'SOL' }, hive: { cmc: 'hive-blockchain', tv: 'BINANCE:HIVEUSDT', hl: null } };
+	var cxCache = {}, cxId = null, cxLast = null;
+	function cxCoin(id) { return (src('coins') || []).filter(function (c) { return c.id === id; })[0]; }
+	function openCx(id, from) {
+		var c = cxCoin(id); if (!c) return; cxId = id; if (from) cxLast = from;
+		var box = $('sg-cx'), m = CX[id] || {}, pp = (src('perps') || []).filter(function (p) { return p.sym === m.hl; })[0];
+		box.hidden = false; document.documentElement.classList.add('sg-cx-open');
+		$('sg-cx-t').innerHTML = '<b>' + esc(c.name) + '</b> <span class="tu-note">' + esc(c.sym) + (c.rank ? ' · #' + c.rank : '') + '</span>';
+		$('sg-cx-sub').innerHTML = '<span class="sg-cx__p">' + esc(S.money(c.price)) + '</span><span>24h ' + chg(c.ch24, 1) + '</span><span>7d ' + chg(c.ch7, 1) + '</span>';
+		var stats = [['Market cap', S.money(c.mcap, 'big')], ['All-time high', S.money(c.high) + ' (' + S.pct(c.athPct, 0) + ' from it)']];
+		if (pp) stats.push(['Perp funding (Hyperliquid)', pp.funding.toFixed(5) + '%/h · ' + pp.lean], ['Perp open interest', S.money(pp.oi, 'big')]);
+		$('sg-cx-stats').innerHTML = stats.map(function (x) { return '<div><span>' + esc(x[0]) + '</span><b>' + esc(x[1]) + '</b></div>'; }).join('');
+		var L = [['CoinGecko', 'https://www.coingecko.com/en/coins/' + id], m.cmc && ['CoinMarketCap', 'https://coinmarketcap.com/currencies/' + m.cmc + '/'], m.tv && ['TradingView chart', 'https://www.tradingview.com/chart/?symbol=' + encodeURIComponent(m.tv)], m.hl && ['Hyperliquid', 'https://app.hyperliquid.xyz/trade/' + m.hl]].filter(Boolean);
+		$('sg-cx-links').innerHTML = '<span class="tu-note">Open on:</span> ' + L.map(function (x) { return '<a class="tu-chip" href="' + esc(x[1]) + '" target="_blank" rel="noopener nofollow">' + esc(x[0]) + ' &#8599;</a>'; }).join(' ');
+		cxDraw(); setTimeout(function () { $('sg-cx-x').focus(); }, 0);
+	}
+	function cxH() { var b = $('sg-cx-chart'); return Math.max(200, Math.min(620, window.innerHeight - b.getBoundingClientRect().top - 150)); }
+	function cxDraw() {
+		var id = cxId, days = st.cxd || 30, c = cxCoin(id), box = $('sg-cx-chart'), k = id + ':' + days;
+		[].forEach.call($('sg-cx-rng').querySelectorAll('button'), function (b) { b.setAttribute('aria-pressed', String(+b.getAttribute('data-d') === days)); });
+		var draw = function (pts, note) {
+			if (cxId !== id) return;
+			var first = pts[0] && pts[0][1], last = pts.length && pts[pts.length - 1][1], up = last >= first;
+			chart(box, { series: [{ name: c.name, cls: up ? 's1' : 's2', pts: pts, fill: true }], h: cxH(), label: c.name + ' price', fy: function (v) { return S.money(v); } });
+			$('sg-cx-note').innerHTML = (pts.length > 1 ? 'Over this range: ' + chg((last / first - 1) * 100, 1) + ' · ' : '') + note;
+		};
+		if (cxCache[k]) return draw(cxCache[k], 'Prices by <a href="https://www.coingecko.com" target="_blank" rel="noopener">CoinGecko</a>, US dollars.');
+		var sp = (c.spark || []).map(function (v, i, a) { return [new Date(Date.now() - (a.length - 1 - i) * 3 * 3600e3).toISOString(), v]; });
+		box.innerHTML = '<p class="tu-note">Loading the chart&hellip;</p>';
+		fetch('https://api.coingecko.com/api/v3/coins/' + encodeURIComponent(id) + '/market_chart?vs_currency=usd&days=' + days).then(function (r) { if (!r.ok) throw new Error('HTTP ' + r.status); return r.json(); }).then(function (j) {
+			var p = (j && j.prices) || [], step = Math.max(1, Math.ceil(p.length / 260)), pts = [];
+			p.forEach(function (x, i) { if (i % step === 0 || i === p.length - 1) pts.push([new Date(x[0]).toISOString(), x[1]]); });
+			if (pts.length < 2) throw new Error('empty');
+			cxCache[k] = pts; draw(pts, 'Prices by <a href="https://www.coingecko.com" target="_blank" rel="noopener">CoinGecko</a>, US dollars.');
+		}).catch(function () { draw(sp, 'Could not load the longer history right now (CoinGecko limits free requests); showing the last 7 days.'); });
+	}
+	function closeCx() { var b = $('sg-cx'); if (b.hidden) return; if (document.fullscreenElement === b) document.exitFullscreen().catch(function () {}); b.hidden = true; cxId = null; document.documentElement.classList.remove('sg-cx-open'); if (cxLast) cxLast.focus(); }
+	$('sg-coins').addEventListener('click', function (e) { if (e.target.closest('.sg-q, a')) return; var b = e.target.closest('[data-cx]'); if (b) openCx(b.getAttribute('data-cx'), b); });
+	$('sg-coins').addEventListener('keydown', function (e) { if ((e.key === 'Enter' || e.key === ' ') && e.target.matches('[data-cx]')) { e.preventDefault(); openCx(e.target.getAttribute('data-cx'), e.target); } });
+	$('sg-cx-rng').addEventListener('click', function (e) { var b = e.target.closest('button'); if (!b) return; st.cxd = +b.getAttribute('data-d'); save(); cxDraw(); });
+	$('sg-cx-x').onclick = closeCx;
+	$('sg-cx').addEventListener('click', function (e) { if (e.target === $('sg-cx')) closeCx(); var n = e.target.closest('[data-cxnav]'); if (n) { var ids = (src('coins') || []).map(function (c) { return c.id; }), i = ids.indexOf(cxId); openCx(ids[(i + +n.getAttribute('data-cxnav') + ids.length) % ids.length]); } });
+	$('sg-cx-fs').onclick = function () { var b = $('sg-cx'); if (document.fullscreenElement) document.exitFullscreen(); else if (b.requestFullscreen) b.requestFullscreen().then(function () { setTimeout(cxDraw, 120); }).catch(function () {}); };
+	if (!document.documentElement.requestFullscreen) $('sg-cx-fs').hidden = true;
+	document.addEventListener('fullscreenchange', function () { $('sg-cx-fs').innerHTML = document.fullscreenElement ? '&#10005; Exit full screen' : '&#9974; Full screen'; if (cxId) setTimeout(cxDraw, 120); });
+	document.addEventListener('keydown', function (e) {
+		if ($('sg-cx').hidden) return;
+		if (e.key === 'Escape' && !document.fullscreenElement) { e.preventDefault(); closeCx(); }
+		else if ((e.key === 'ArrowLeft' || e.key === 'ArrowRight') && !e.target.closest('input, textarea')) { var ids = (src('coins') || []).map(function (c) { return c.id; }), i = ids.indexOf(cxId); openCx(ids[(i + (e.key === 'ArrowRight' ? 1 : -1) + ids.length) % ids.length]); }
+	});
+	function drawTab(t) { ({ over: drawOver, sent: drawSent, crypto: drawCrypto, mkts: drawMkts, rates: drawRates, pred: drawPred, geo: drawGeo, news: drawNews })[t](); rangeBtns(); }
 
 	// ---------- footer + loading ----------
 	var NAMES = { fng: 'Crypto Fear & Greed (alternative.me)', coins: 'Crypto prices (CoinGecko)', global: 'Crypto market (CoinGecko)', stables: 'Stablecoins (CoinGecko)', halving: 'Bitcoin blocks (mempool.space)', perps: 'Perps funding and open interest (Hyperliquid)', markets: 'Stocks, gold, oil, dollar (Yahoo Finance, FRED backup)', stockfg: 'Stock Fear & Greed inputs (FRED)', rates: 'US rates (FRED)', curve: 'Yield curve + recessions (FRED)', cpi: 'CPI (FRED)', boc: 'Bank of Canada (Valet)', ecb: 'ECB', boe: 'Bank of England', fed: 'Fed press releases (RSS)', poly: 'Polymarket', kalshi: 'Kalshi', news: 'Crypto news: CoinDesk, Cointelegraph (RSS)', mnews: 'Markets news: CNBC, MarketWatch, BBC Business (RSS)', wnews: 'World news: BBC, Al Jazeera, NPR, The Guardian, DW (RSS)', geo: 'Conflict markets (Polymarket)', geok: 'Conflict markets (Kalshi)' };
@@ -932,7 +1103,7 @@
 		var fo = S.nextFomc(Date.now()); if (fo) { var t = fo.live ? 'this week' : S.countdown(fo.at - Date.now()); if ($('sg-fomc-cd')) $('sg-fomc-cd').textContent = t; if ($('sg-fomc-big')) $('sg-fomc-big').textContent = fo.live ? 'This week' : t; }
 	}, 30000);
 	setInterval(function () { if (!document.hidden && data && Date.now() - Date.parse(data.generated) > 5 * 60e3) load(); }, 60000);
-	var rz; window.addEventListener('resize', function () { clearTimeout(rz); rz = setTimeout(function () { [].forEach.call(root.querySelectorAll('.sg-chart'), function (b) { if (b._redraw && b.offsetParent) b._redraw(); }); }, 150); });
+	var rz; window.addEventListener('resize', function () { clearTimeout(rz); rz = setTimeout(function () { if (cxId) cxDraw(); [].forEach.call(root.querySelectorAll('.sg-chart'), function (b) { if (b._redraw && b.offsetParent) b._redraw(); }); }, 150); });
 	if (window.ResizeObserver) { var lastW = root.clientWidth; new ResizeObserver(function () { if (Math.abs(root.clientWidth - lastW) > 4) { lastW = root.clientWidth; clearTimeout(rz); rz = setTimeout(function () { if (data) drawTab(st.tab); }, 120); } }).observe(root); }
 	showTab(st.tab); rangeBtns(); load();
 })();

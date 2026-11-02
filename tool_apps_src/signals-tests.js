@@ -49,6 +49,21 @@ async function t(name, fn) { try { await fn(); n++; } catch (e) { fail++; consol
 		assert.strictEqual(S.fundingLean(0.00125), 'normal'); assert.strictEqual(S.fundingLean(-0.001), 'shorts paying');
 		assert.strictEqual(S.fundingLean(0.0001), 'below normal'); assert.strictEqual(S.fundingLean(0.01), 'longs very crowded');
 		assert.throws(() => S.parseHlPerps({}));
+		// Overview: rule words
+		assert.strictEqual(S.trendWord(-7), 'Falling'); assert.strictEqual(S.trendWord(-3), 'Slipping'); assert.strictEqual(S.trendWord(1), 'Flat');
+		assert.strictEqual(S.trendWord(3), 'Rising'); assert.strictEqual(S.trendWord(9), 'Climbing'); assert.strictEqual(S.trendWord(-4.5, 3), 'Slipping'); assert.strictEqual(S.trendWord(null), null);
+		assert.strictEqual(S.humanDate('2026-09-17'), 'Sep 17, 2026'); assert.strictEqual(S.humanDate('2026-09'), 'Sep 2026');
+		const smp = JSON.parse(fs.readFileSync(path.join(__dirname, '..', 'mes.fm', 'signals', 'data', 'sample.json'), 'utf8')), sd = {};
+		for (const k in smp.sources) sd[k] = smp.sources[k].ok ? smp.sources[k].data : null;
+		const rows = S.sectorMood(sd);
+		assert(rows.length >= 12, 'overview rows ' + rows.length);
+		const TABS = ['crypto', 'mkts', 'rates', 'pred', 'geo'];
+		rows.forEach((r) => { assert(r.key && r.name && r.mood && Array.isArray(r.facts) && r.facts.length, r.key); assert(TABS.includes(r.tab), r.key + ' tab'); assert(r.tone >= -2 && r.tone <= 2, r.key + ' tone');
+			assert(!/\b(buy|sell|should|will (rise|fall)|expect|forecast|outlook|bullish|bearish|undervalued|overvalued)\b/i.test(r.mood + ' ' + r.facts.join(' ')), 'neutral wording: ' + r.key);
+			r.facts.forEach((f) => assert(!/NaN|undefined|null/.test(f), r.key + ': ' + f)); });
+		assert.strictEqual(rows.find((r) => r.key === 'fed').mood, 'Tightening');
+		assert.deepStrictEqual(S.sectorMood({}).map((r) => r.key), ['geo']);
+		assert(S.MOOD_RULES.length >= 8);
 		// Polymarket: decided (~100%) and past-end events are dropped
 		const pmE = (id, end, p) => ({ id, slug: 's' + id, title: 'T' + id, endDate: end, markets: [{ active: true, closed: false, outcomes: '["Yes","No"]', outcomePrices: JSON.stringify([String(p), String(1 - p)]) }] });
 		const pm = S.parsePolymarket([pmE(1, '2030-01-01T00:00:00Z', 0.4), pmE(2, '2030-01-01T00:00:00Z', 0.999), pmE(3, '2020-01-01T00:00:00Z', 0.4)], 'x', { now: Date.parse('2026-11-01') });

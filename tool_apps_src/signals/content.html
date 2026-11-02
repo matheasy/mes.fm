@@ -4,7 +4,8 @@
 		<div class="sg-changes" id="sg-changes" hidden></div>
 		<div class="sg-status" id="sg-status" role="status" aria-live="polite" hidden></div>
 		<div class="sg-tabs" role="tablist" id="sg-tabs">
-			<button type="button" role="tab" data-tab="sent" aria-selected="true">Sentiment</button>
+			<button type="button" role="tab" data-tab="over" aria-selected="true">Overview</button>
+			<button type="button" role="tab" data-tab="sent" aria-selected="false">Sentiment</button>
 			<button type="button" role="tab" data-tab="crypto" aria-selected="false">Crypto</button>
 			<button type="button" role="tab" data-tab="mkts" aria-selected="false">Stocks &amp; commodities</button>
 			<button type="button" role="tab" data-tab="rates" aria-selected="false">Rates &amp; the Fed</button>
@@ -13,7 +14,11 @@
 			<button type="button" role="tab" data-tab="news" aria-selected="false">News</button>
 		</div>
 
-		<section class="sg-panel" id="sg-p-sent" role="tabpanel">
+		<section class="sg-panel" id="sg-p-over" role="tabpanel">
+			<div class="tu-card sg-over" id="sg-over"></div>
+		</section>
+
+		<section class="sg-panel" id="sg-p-sent" role="tabpanel" hidden>
 			<div class="sg-two">
 				<div class="tu-card sg-gcard" id="sg-cfg"></div>
 				<div class="tu-card sg-gcard" id="sg-sfg"></div>
@@ -24,6 +29,25 @@
 				<div class="sg-chart" id="sg-fg-chart"></div>
 			</div>
 		</section>
+
+		<div class="sg-cx" id="sg-cx" role="dialog" aria-modal="true" aria-labelledby="sg-cx-t" hidden>
+			<div class="sg-cx__box">
+				<div class="sg-cx__bar">
+					<button type="button" class="sg-cx__nav" data-cxnav="-1" aria-label="Previous coin">&#8249;</button>
+					<div class="sg-cx__h" id="sg-cx-t"></div>
+					<button type="button" class="sg-cx__nav" data-cxnav="1" aria-label="Next coin">&#8250;</button>
+					<span class="sg-cx__sp"></span>
+					<button type="button" class="tu-btn tu-btn--ghost sg-cx__fs" id="sg-cx-fs">&#9974; Full screen</button>
+					<button type="button" class="tu-btn tu-btn--ghost" id="sg-cx-x" aria-label="Close">&#10005; Close</button>
+				</div>
+				<div class="sg-cx__sub" id="sg-cx-sub"></div>
+				<div class="tu-seg sg-cx__rng" id="sg-cx-rng" role="group" aria-label="Chart range"><button type="button" data-d="1">24h</button><button type="button" data-d="7">7d</button><button type="button" data-d="30">30d</button><button type="button" data-d="90">90d</button><button type="button" data-d="365">1y</button></div>
+				<div class="sg-chart sg-cx__chart" id="sg-cx-chart"></div>
+				<p class="tu-note" id="sg-cx-note"></p>
+				<div class="sg-cx__stats" id="sg-cx-stats"></div>
+				<div class="sg-cx__links" id="sg-cx-links"></div>
+			</div>
+		</div>
 
 		<section class="sg-panel" id="sg-p-crypto" role="tabpanel" hidden>
 			<div class="sg-coins" id="sg-coins"></div>

@@ -4,8 +4,8 @@
 	'use strict';
 	var S = window.MESSig, $ = function (id) { return document.getElementById(id); }, root = $('sg');
 	if (!S || !root) return;
-	var KEY = 'mes-signals:v1', st = { tab: 'sent', fg: 90, rates: 1100, curve: 9999, qk: 'spx', pcat: 'All', nview: 'cards', ncols: 'auto', nshow: 10, nclosed: {}, nsrc: {}, gconf: 1 }, data = null, snaps = null, loading = false;
-	var SKEYS = ['tab', 'fg', 'rates', 'curve', 'qk', 'pcat', 'nview', 'ncols', 'nshow', 'nclosed', 'nsrc', 'gconf'];
+	var KEY = 'mes-signals:v1', st = { tab: 'over', cxd: 30, fg: 90, rates: 1100, curve: 9999, qk: 'spx', pcat: 'All', nview: 'cards', ncols: 'auto', nshow: 10, nclosed: {}, nsrc: {}, gconf: 1 }, data = null, snaps = null, loading = false;
+	var SKEYS = ['tab', 'cxd', 'fg', 'rates', 'curve', 'qk', 'pcat', 'nview', 'ncols', 'nshow', 'nclosed', 'nsrc', 'gconf'];
 	try { var sv = JSON.parse(localStorage.getItem(KEY) || '{}'); SKEYS.forEach(function (k) { if (sv[k] != null) st[k] = sv[k]; }); } catch (e) {}
 	var qs = new URLSearchParams(location.search), MOCK = qs.get('mock') === '1' || /^(127\.0\.0\.1|localhost)$/.test(location.hostname);
 	if (qs.get('tab')) st.tab = qs.get('tab');
@@ -20,8 +20,8 @@
 	function ago(iso) { var ms = Date.now() - Date.parse(iso); return isFinite(ms) ? S.ago(Math.max(0, ms)) + ' ago' : ''; }
 
 	// ---------- tabs ----------
-	var TABS = ['sent', 'crypto', 'mkts', 'rates', 'pred', 'geo', 'news'];
-	if (TABS.indexOf(st.tab) < 0) st.tab = 'sent';
+	var TABS = ['over', 'sent', 'crypto', 'mkts', 'rates', 'pred', 'geo', 'news'];
+	if (TABS.indexOf(st.tab) < 0) st.tab = 'over';
 	function showTab(t, focus) {
 		st.tab = t; save();
 		[].forEach.call($('sg-tabs').querySelectorAll('[role=tab]'), function (b) { var on = b.getAttribute('data-tab') === t; b.setAttribute('aria-selected', on); b.tabIndex = on ? 0 : -1; if (on && focus) b.focus(); });
@@ -186,18 +186,28 @@
 	function drawCrypto() {
 		var c = src('coins'), g = src('global'), sb = src('stables'), hv = src('halving');
 		$('sg-coins').innerHTML = c ? c.map(function (x) {
-			return '<div class="sg-coin"><div class="sg-coin__h"><b>' + esc(x.name) + '</b><span>' + esc(x.sym) + (x.rank ? ' · #' + x.rank : '') + '</span></div><div class="sg-coin__p">' + esc(S.money(x.price)) + '</div>' +
+			return '<div class="sg-coin sg-coin--x" role="button" tabindex="0" data-cx="' + esc(x.id) + '" aria-label="' + esc('Bigger chart and links for ' + x.name) + '"><div class="sg-coin__h"><b>' + esc(x.name) + '</b><span>' + esc(x.sym) + (x.rank ? ' · #' + x.rank : '') + '</span></div><div class="sg-coin__p">' + esc(S.money(x.price)) + '</div>' +
 				'<div class="sg-coin__c"><span>24h ' + chg(x.ch24, 1) + '</span><span>7d ' + chg(x.ch7, 1) + '</span></div>' + spark(x.spark, 150, 36) + '<div class="tu-note">' + (x.athPct != null ? esc(S.pct(x.athPct, 0)) + ' from its all-time high' : '') + '</div></div>';
-		}).join('') + '<p class="tu-note sg-wide">7-day sparklines ' + q('spark') + ' · prices by <a href="https://www.coingecko.com" target="_blank" rel="noopener">CoinGecko</a>, in US dollars.</p>' : err('coins');
+		}).join('') + '<p class="tu-note sg-wide">Click a coin for a bigger chart (24 hours to 1 year) and links to CoinGecko, CoinMarketCap, TradingView and Hyperliquid. 7-day sparklines ' + q('spark') + ' · prices by <a href="https://www.coingecko.com" target="_blank" rel="noopener">CoinGecko</a>, in US dollars.</p>' : err('coins');
 		var o = '';
 		if (g) o += stat('Total crypto market cap ' + q('mcap'), S.money(g.mcap, 'big'), '24h ' + chg(g.mcapCh24, 1), true) + stat('Bitcoin dominance ' + q('dominance'), S.fmt(g.btcDom, 1) + '%', 'Ether ' + S.fmt(g.ethDom, 1) + '%') + stat('24h trading volume', S.money(g.vol, 'big'), esc(S.fmt(g.coins, 0)) + ' coins tracked');
 		else o += stat('Total crypto market cap', '—', 'not available right now');
 		if (sb) o += stat('Stablecoin supply ' + q('stablecoin'), S.money(sb.total, 'big'), sb.top.slice(0, 3).map(function (t) { return esc(t[0]) + ' ' + esc(S.money(t[1], 'big')); }).join(' · '));
 		$('sg-cstats').innerHTML = o;
 		var pp = src('perps');
-		$('sg-perps').innerHTML = '<div class="sg-chead"><b>Perps: funding and open interest ' + q('funding') + '</b><span class="tu-note">Hyperliquid, live</span></div>' + (pp ? '<div class="sg-tw"><table class="tu-table sg-ptbl"><thead><tr><th>Market</th><th>Price</th><th>24h</th><th>Funding / hour</th><th>Per year</th><th>Reading</th><th>Open interest ' + q('oi') + '</th><th>24h volume</th></tr></thead><tbody>' +
-			pp.map(function (x) { var cls = /shorts/.test(x.lean) ? 'sg-ch down' : /crowded|more/.test(x.lean) ? 'sg-ch up' : 'tu-note'; return '<tr><td><b>' + esc(x.sym === 'PAXG' ? 'PAXG (gold)' : x.sym) + '</b></td><td>' + esc(S.money(x.px)) + '</td><td>' + chg(x.ch24, 1) + '</td><td>' + (x.funding == null ? '—' : esc(x.funding.toFixed(5) + '%')) + '</td><td>' + (x.apr == null ? '—' : esc(S.fmt(x.apr, 1) + '%')) + '</td><td><span class="' + cls + '">' + esc(x.lean) + '</span></td><td>' + (x.oi == null ? '—' : esc(S.money(x.oi, 'big'))) + '</td><td>' + (x.vol == null ? '—' : esc(S.money(x.vol, 'big'))) + '</td></tr>'; }).join('') +
-			'</tbody></table></div><p class="tu-note">Normal funding on Hyperliquid is 0.00125% an hour (about 11% a year, paid by longs). Above it, the bet-on-a-rise side is crowded; negative, the bet-on-a-fall side is. Data: <a href="https://app.hyperliquid.xyz" target="_blank" rel="noopener nofollow">Hyperliquid</a> public API.</p>' : err('perps'));
+		if (pp) {
+			var fMax = Math.max(S.PERP_BASE * 4, Math.max.apply(null, pp.map(function (x) { return Math.abs(x.funding || 0); }))), oMax = Math.max.apply(null, pp.map(function (x) { return x.oi || 0; })), vMax = Math.max.apply(null, pp.map(function (x) { return x.vol || 0; }));
+			var fbar = function (f) { if (f == null) return ''; var w = Math.min(50, Math.abs(f) / fMax * 50), base = S.PERP_BASE / fMax * 50; return '<span class="sg-dbar" aria-hidden="true"><i class="sg-dbar__b' + (f < 0 ? ' neg' : f > S.PERP_BASE * 1.6 ? ' hot' : '') + '" style="' + (f < 0 ? 'right:50%' : 'left:50%') + ';width:' + w.toFixed(1) + '%"></i><i class="sg-dbar__base" style="left:' + (50 + base).toFixed(1) + '%"></i></span>'; };
+			var hbar = function (v, m, c) { return v == null || !m ? '' : '<span class="sg-hbar ' + (c || '') + '" aria-hidden="true"><i style="width:' + Math.max(2, v / m * 100).toFixed(1) + '%"></i></span>'; };
+			$('sg-perps').innerHTML = '<div class="sg-chead"><b>Perps: funding and open interest ' + q('funding') + '</b><span class="tu-note">Hyperliquid, live</span></div><div class="sg-tw"><table class="tu-table sg-ptbl"><thead><tr><th>Market</th><th class="r">Price · 24h</th><th>Funding (per hour · per year)</th><th>Reading</th><th>Open interest ' + q('oi') + '</th><th>24h volume</th></tr></thead><tbody>' +
+				pp.map(function (x) {
+					var lc = /shorts/.test(x.lean) ? 'neg' : /crowded|more/.test(x.lean) ? 'hot' : /below/.test(x.lean) ? 'low' : 'ok';
+					return '<tr><td><b>' + esc(x.sym === 'PAXG' ? 'PAXG (gold)' : x.sym) + '</b></td><td class="r">' + esc(S.money(x.px)) + '<br>' + chg(x.ch24, 1) + '</td>' +
+						'<td>' + fbar(x.funding) + '<span class="sg-cellv">' + (x.funding == null ? '—' : esc(x.funding.toFixed(5) + '%') + ' · ' + esc(S.fmt(x.apr, 1) + '%/yr')) + '</span></td>' +
+						'<td><span class="sg-lean ' + lc + '">' + esc(x.lean) + '</span></td>' +
+						'<td>' + hbar(x.oi, oMax) + '<span class="sg-cellv">' + esc(S.money(x.oi, 'big')) + '</span></td><td>' + hbar(x.vol, vMax, 'v') + '<span class="sg-cellv">' + esc(S.money(x.vol, 'big')) + '</span></td></tr>';
+				}).join('') + '</tbody></table></div><p class="tu-note">Funding bar: centre line = zero, thin mark = Hyperliquid&rsquo;s normal 0.00125% an hour (about 11% a year, paid by longs). Longer to the right = the bet-on-a-rise side is more crowded; to the left = shorts are paying. Bars for open interest and volume compare the markets with each other. Data: <a href="https://app.hyperliquid.xyz" target="_blank" rel="noopener nofollow">Hyperliquid</a> public API.</p>';
+		} else $('sg-perps').innerHTML = '<b>Perps: funding and open interest</b>' + err('perps');
 		if (hv) {
 			var left = hv.eta - Date.now();
 			$('sg-halving').innerHTML = '<div class="sg-chead"><b>Next Bitcoin halving ' + q('halving') + '</b><span class="tu-note">block ' + esc(S.fmt(hv.target, 0)) + '</span></div><div class="sg-hv"><div class="sg-hv__big">' + esc(Math.floor(left / 864e5) + ' days') + '</div><div>about <b>' + esc(new Date(hv.eta).toLocaleDateString(undefined, { year: 'numeric', month: 'long', day: 'numeric' })) + '</b><br><span class="tu-note">' + esc(S.fmt(hv.left, 0)) + ' blocks to go at ' + esc((hv.avgSec / 60).toFixed(1)) + ' min per block (recent average)</span></div></div>' +
@@ -391,7 +401,81 @@
 		$('sg-gnews').innerHTML = '<div class="tu-chips"><button type="button" class="tu-chip" data-gconf="1" aria-pressed="' + !!st.gconf + '">Only war, ceasefire &amp; security stories</button></div>' + newsSection('geoworld', 'World headlines', items, 'wnews', filt) +
 			'<p class="tu-note">View, columns and how many to show follow the <a href="?tab=news" data-goto="news">News</a> tab&rsquo;s settings.</p>';
 	}
-	function drawTab(t) { ({ sent: drawSent, crypto: drawCrypto, mkts: drawMkts, rates: drawRates, pred: drawPred, geo: drawGeo, news: drawNews })[t](); rangeBtns(); }
+	// ---------- overview: market mood by sector (rules in lib S.sectorMood / S.MOOD_RULES) ----------
+	function allSrc() { var d = {}; if (data) Object.keys(data.sources).forEach(function (k) { d[k] = src(k); }); return d; }
+	function meter(m) {
+		if (!m || m.v == null || !isFinite(m.v)) return '<span class="sg-mt sg-mt--none"></span>';
+		var p = Math.max(0, Math.min(100, (m.v - m.min) / (m.max - m.min) * 100));
+		if (m.kind === 'fg') return '<span class="sg-mt sg-mt--fg" title="' + esc(m.v + ' of 100') + '"><i class="sg-mt__pin" style="left:' + p.toFixed(1) + '%"></i></span>';
+		if (m.kind === 'pct' || m.kind === 'pp') { var z = (0 - m.min) / (m.max - m.min) * 100, a = Math.min(p, z), w = Math.abs(p - z); return '<span class="sg-mt sg-mt--c" title="' + esc(m.kind === 'pct' ? S.pct(m.v, 1) : (m.v >= 0 ? '+' : '') + Math.round(m.v * 100) + ' bp') + '"><i class="sg-mt__z" style="left:' + z.toFixed(1) + '%"></i><i class="sg-mt__b ' + (m.v < 0 ? 'dn' : 'up') + '" style="left:' + a.toFixed(1) + '%;width:' + Math.max(1.5, w).toFixed(1) + '%"></i></span>'; }
+		return '<span class="sg-mt sg-mt--f ' + m.kind + '" title="' + esc(S.fmt(m.v, 1) + '%') + '"><i style="width:' + Math.max(2, p).toFixed(1) + '%"></i>' + (m.kind === 'cpi' ? '<i class="sg-mt__tg" style="left:' + (2 / m.max * 100).toFixed(1) + '%"></i>' : '') + '</span>';
+	}
+	var TAB_NAMES = { crypto: 'Crypto', mkts: 'Stocks & commodities', rates: 'Rates & the Fed', pred: 'Prediction markets', geo: 'Geopolitics' };
+	function drawOver() {
+		var rows = S.sectorMood(allSrc()), counts = { s: 0, c: 0 };
+		rows.forEach(function (r) { if (r.tone < 0) counts.s++; else if (r.tone > 0) counts.c++; });
+		$('sg-over').innerHTML = '<div class="sg-chead"><b>Market mood by sector ' + q('mood') + '</b><span class="tu-note">' + rows.length + ' sectors · ' + counts.s + ' stressed or falling · ' + counts.c + ' calm or rising</span></div>' +
+			'<div class="sg-ov" role="list">' + rows.map(function (r) {
+				return '<div class="sg-ov__r t' + r.tone + '" role="listitem"><button type="button" class="sg-ov__go" data-goto="' + r.tab + '" title="' + esc('Open the ' + TAB_NAMES[r.tab] + ' tab') + '">' +
+					'<span class="sg-ov__n">' + esc(r.name) + '</span><span class="sg-mood t' + r.tone + '">' + esc(r.mood) + '</span>' +
+					'<span class="sg-ov__v">' + meter(r.meter) + (r.spark && r.spark.length > 1 ? spark(r.spark, 96, 26) : '') + '</span>' +
+					'<span class="sg-ov__f">' + r.facts.map(esc).join(' <span class="sg-sep">·</span> ') + '</span><span class="sg-ov__arr" aria-hidden="true">&#8250;</span></button></div>';
+			}).join('') + '</div>' +
+			'<details class="sg-rules"><summary>How the mood words are worked out</summary><ul>' + S.MOOD_RULES.map(function (r) { return '<li><b>' + esc(r[0]) + ':</b> ' + esc(r[1]) + '</li>'; }).join('') + '</ul><p class="tu-note">Fixed rules applied to the numbers on this page, recalculated on every refresh. The words describe how things are now; they are not forecasts and say nothing about what to buy or sell.</p></details>';
+	}
+
+	// ---------- coin window: bigger chart + links ----------
+	var CX = { bitcoin: { cmc: 'bitcoin', tv: 'BITSTAMP:BTCUSD', hl: 'BTC' }, ethereum: { cmc: 'ethereum', tv: 'BITSTAMP:ETHUSD', hl: 'ETH' }, ripple: { cmc: 'xrp', tv: 'BITSTAMP:XRPUSD', hl: 'XRP' }, solana: { cmc: 'solana', tv: 'COINBASE:SOLUSD', hl: 'SOL' }, hive: { cmc: 'hive-blockchain', tv: 'BINANCE:HIVEUSDT', hl: null } };
+	var cxCache = {}, cxId = null, cxLast = null;
+	function cxCoin(id) { return (src('coins') || []).filter(function (c) { return c.id === id; })[0]; }
+	function openCx(id, from) {
+		var c = cxCoin(id); if (!c) return; cxId = id; if (from) cxLast = from;
+		var box = $('sg-cx'), m = CX[id] || {}, pp = (src('perps') || []).filter(function (p) { return p.sym === m.hl; })[0];
+		box.hidden = false; document.documentElement.classList.add('sg-cx-open');
+		$('sg-cx-t').innerHTML = '<b>' + esc(c.name) + '</b> <span class="tu-note">' + esc(c.sym) + (c.rank ? ' · #' + c.rank : '') + '</span>';
+		$('sg-cx-sub').innerHTML = '<span class="sg-cx__p">' + esc(S.money(c.price)) + '</span><span>24h ' + chg(c.ch24, 1) + '</span><span>7d ' + chg(c.ch7, 1) + '</span>';
+		var stats = [['Market cap', S.money(c.mcap, 'big')], ['All-time high', S.money(c.high) + ' (' + S.pct(c.athPct, 0) + ' from it)']];
+		if (pp) stats.push(['Perp funding (Hyperliquid)', pp.funding.toFixed(5) + '%/h · ' + pp.lean], ['Perp open interest', S.money(pp.oi, 'big')]);
+		$('sg-cx-stats').innerHTML = stats.map(function (x) { return '<div><span>' + esc(x[0]) + '</span><b>' + esc(x[1]) + '</b></div>'; }).join('');
+		var L = [['CoinGecko', 'https://www.coingecko.com/en/coins/' + id], m.cmc && ['CoinMarketCap', 'https://coinmarketcap.com/currencies/' + m.cmc + '/'], m.tv && ['TradingView chart', 'https://www.tradingview.com/chart/?symbol=' + encodeURIComponent(m.tv)], m.hl && ['Hyperliquid', 'https://app.hyperliquid.xyz/trade/' + m.hl]].filter(Boolean);
+		$('sg-cx-links').innerHTML = '<span class="tu-note">Open on:</span> ' + L.map(function (x) { return '<a class="tu-chip" href="' + esc(x[1]) + '" target="_blank" rel="noopener nofollow">' + esc(x[0]) + ' &#8599;</a>'; }).join(' ');
+		cxDraw(); setTimeout(function () { $('sg-cx-x').focus(); }, 0);
+	}
+	function cxH() { var b = $('sg-cx-chart'); return Math.max(200, Math.min(620, window.innerHeight - b.getBoundingClientRect().top - 150)); }
+	function cxDraw() {
+		var id = cxId, days = st.cxd || 30, c = cxCoin(id), box = $('sg-cx-chart'), k = id + ':' + days;
+		[].forEach.call($('sg-cx-rng').querySelectorAll('button'), function (b) { b.setAttribute('aria-pressed', String(+b.getAttribute('data-d') === days)); });
+		var draw = function (pts, note) {
+			if (cxId !== id) return;
+			var first = pts[0] && pts[0][1], last = pts.length && pts[pts.length - 1][1], up = last >= first;
+			chart(box, { series: [{ name: c.name, cls: up ? 's1' : 's2', pts: pts, fill: true }], h: cxH(), label: c.name + ' price', fy: function (v) { return S.money(v); } });
+			$('sg-cx-note').innerHTML = (pts.length > 1 ? 'Over this range: ' + chg((last / first - 1) * 100, 1) + ' · ' : '') + note;
+		};
+		if (cxCache[k]) return draw(cxCache[k], 'Prices by <a href="https://www.coingecko.com" target="_blank" rel="noopener">CoinGecko</a>, US dollars.');
+		var sp = (c.spark || []).map(function (v, i, a) { return [new Date(Date.now() - (a.length - 1 - i) * 3 * 3600e3).toISOString(), v]; });
+		box.innerHTML = '<p class="tu-note">Loading the chart&hellip;</p>';
+		fetch('https://api.coingecko.com/api/v3/coins/' + encodeURIComponent(id) + '/market_chart?vs_currency=usd&days=' + days).then(function (r) { if (!r.ok) throw new Error('HTTP ' + r.status); return r.json(); }).then(function (j) {
+			var p = (j && j.prices) || [], step = Math.max(1, Math.ceil(p.length / 260)), pts = [];
+			p.forEach(function (x, i) { if (i % step === 0 || i === p.length - 1) pts.push([new Date(x[0]).toISOString(), x[1]]); });
+			if (pts.length < 2) throw new Error('empty');
+			cxCache[k] = pts; draw(pts, 'Prices by <a href="https://www.coingecko.com" target="_blank" rel="noopener">CoinGecko</a>, US dollars.');
+		}).catch(function () { draw(sp, 'Could not load the longer history right now (CoinGecko limits free requests); showing the last 7 days.'); });
+	}
+	function closeCx() { var b = $('sg-cx'); if (b.hidden) return; if (document.fullscreenElement === b) document.exitFullscreen().catch(function () {}); b.hidden = true; cxId = null; document.documentElement.classList.remove('sg-cx-open'); if (cxLast) cxLast.focus(); }
+	$('sg-coins').addEventListener('click', function (e) { if (e.target.closest('.sg-q, a')) return; var b = e.target.closest('[data-cx]'); if (b) openCx(b.getAttribute('data-cx'), b); });
+	$('sg-coins').addEventListener('keydown', function (e) { if ((e.key === 'Enter' || e.key === ' ') && e.target.matches('[data-cx]')) { e.preventDefault(); openCx(e.target.getAttribute('data-cx'), e.target); } });
+	$('sg-cx-rng').addEventListener('click', function (e) { var b = e.target.closest('button'); if (!b) return; st.cxd = +b.getAttribute('data-d'); save(); cxDraw(); });
+	$('sg-cx-x').onclick = closeCx;
+	$('sg-cx').addEventListener('click', function (e) { if (e.target === $('sg-cx')) closeCx(); var n = e.target.closest('[data-cxnav]'); if (n) { var ids = (src('coins') || []).map(function (c) { return c.id; }), i = ids.indexOf(cxId); openCx(ids[(i + +n.getAttribute('data-cxnav') + ids.length) % ids.length]); } });
+	$('sg-cx-fs').onclick = function () { var b = $('sg-cx'); if (document.fullscreenElement) document.exitFullscreen(); else if (b.requestFullscreen) b.requestFullscreen().then(function () { setTimeout(cxDraw, 120); }).catch(function () {}); };
+	if (!document.documentElement.requestFullscreen) $('sg-cx-fs').hidden = true;
+	document.addEventListener('fullscreenchange', function () { $('sg-cx-fs').innerHTML = document.fullscreenElement ? '&#10005; Exit full screen' : '&#9974; Full screen'; if (cxId) setTimeout(cxDraw, 120); });
+	document.addEventListener('keydown', function (e) {
+		if ($('sg-cx').hidden) return;
+		if (e.key === 'Escape' && !document.fullscreenElement) { e.preventDefault(); closeCx(); }
+		else if ((e.key === 'ArrowLeft' || e.key === 'ArrowRight') && !e.target.closest('input, textarea')) { var ids = (src('coins') || []).map(function (c) { return c.id; }), i = ids.indexOf(cxId); openCx(ids[(i + (e.key === 'ArrowRight' ? 1 : -1) + ids.length) % ids.length]); }
+	});
+	function drawTab(t) { ({ over: drawOver, sent: drawSent, crypto: drawCrypto, mkts: drawMkts, rates: drawRates, pred: drawPred, geo: drawGeo, news: drawNews })[t](); rangeBtns(); }
 
 	// ---------- footer + loading ----------
 	var NAMES = { fng: 'Crypto Fear & Greed (alternative.me)', coins: 'Crypto prices (CoinGecko)', global: 'Crypto market (CoinGecko)', stables: 'Stablecoins (CoinGecko)', halving: 'Bitcoin blocks (mempool.space)', perps: 'Perps funding and open interest (Hyperliquid)', markets: 'Stocks, gold, oil, dollar (Yahoo Finance, FRED backup)', stockfg: 'Stock Fear & Greed inputs (FRED)', rates: 'US rates (FRED)', curve: 'Yield curve + recessions (FRED)', cpi: 'CPI (FRED)', boc: 'Bank of Canada (Valet)', ecb: 'ECB', boe: 'Bank of England', fed: 'Fed press releases (RSS)', poly: 'Polymarket', kalshi: 'Kalshi', news: 'Crypto news: CoinDesk, Cointelegraph (RSS)', mnews: 'Markets news: CNBC, MarketWatch, BBC Business (RSS)', wnews: 'World news: BBC, Al Jazeera, NPR, The Guardian, DW (RSS)', geo: 'Conflict markets (Polymarket)', geok: 'Conflict markets (Kalshi)' };
@@ -415,7 +499,7 @@
 		var fo = S.nextFomc(Date.now()); if (fo) { var t = fo.live ? 'this week' : S.countdown(fo.at - Date.now()); if ($('sg-fomc-cd')) $('sg-fomc-cd').textContent = t; if ($('sg-fomc-big')) $('sg-fomc-big').textContent = fo.live ? 'This week' : t; }
 	}, 30000);
 	setInterval(function () { if (!document.hidden && data && Date.now() - Date.parse(data.generated) > 5 * 60e3) load(); }, 60000);
-	var rz; window.addEventListener('resize', function () { clearTimeout(rz); rz = setTimeout(function () { [].forEach.call(root.querySelectorAll('.sg-chart'), function (b) { if (b._redraw && b.offsetParent) b._redraw(); }); }, 150); });
+	var rz; window.addEventListener('resize', function () { clearTimeout(rz); rz = setTimeout(function () { if (cxId) cxDraw(); [].forEach.call(root.querySelectorAll('.sg-chart'), function (b) { if (b._redraw && b.offsetParent) b._redraw(); }); }, 150); });
 	if (window.ResizeObserver) { var lastW = root.clientWidth; new ResizeObserver(function () { if (Math.abs(root.clientWidth - lastW) > 4) { lastW = root.clientWidth; clearTimeout(rz); rz = setTimeout(function () { if (data) drawTab(st.tab); }, 120); } }).observe(root); }
 	showTab(st.tab); rangeBtns(); load();
 })();

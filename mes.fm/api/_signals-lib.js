@@ -256,6 +256,92 @@
 		if (!out.length) throw new Error('no perps found');
 		return out;
 	};
+	// ---------- overview: market mood by sector ----------
+	// Fixed rules turn the page's own numbers into one row per sector (what the data shows + a mood word). Descriptive only:
+	// the words say how things ARE (fearful, falling, tightening ...), never where they are going. Every rule is listed in
+	// S.MOOD_RULES (shown under the table) and tested. d = {sourceName: data|null}; now = ms.
+	S.MOOD_RULES = [
+		['Fear & Greed', 'below 25 extreme fear, 25-44 fear, 45-55 neutral, 56-75 greed, above 75 extreme greed (same scale as the gauges)'],
+		['Price trend', 'change over the period shown: below -5% falling, -5% to -1.5% slipping, -1.5% to +1.5% flat, +1.5% to +5% rising, above +5% climbing (crypto uses 7 days, the rest 3 months)'],
+		['Oil, gold, dollar', 'the same trend words, but over 3 months, where -/+3% is flat for gold and the dollar and -/+8% for oil; oil above +20% is surging'],
+		['Fed', 'tightening when the last change of the target range was a rise, easing when it was a cut'],
+		['Yield curve', '10-year minus 2-year: below 0 inverted, 0 to +0.25 points flat, above that normal'],
+		['Inflation', 'US CPI over the last year: above 3% high, 2-3% near target, below 2% low; rising or falling compared with 6 months earlier'],
+		['Recession odds', 'Kalshi chance of a US recession next year: below 15% low, 15-35% elevated, above 35% high'],
+		['Perps funding', 'compared with Hyperliquid\'s normal 0.00125% an hour (see the Crypto tab)'],
+		['Geopolitics', 'Doomsday Clock under 100 seconds = very high tension; plus the busiest conflict market\'s price']
+	];
+	S.trendWord = function (pct, flat) {
+		if (pct == null || !isFinite(pct)) return null; flat = flat || 1.5;
+		var big = Math.max(5, flat * 2.5);
+		return pct < -big ? 'Falling' : pct < -flat ? 'Slipping' : pct <= flat ? 'Flat' : pct <= big ? 'Rising' : 'Climbing';
+	};
+	// tone: -2 .. +2 for colour only (red = stressed / falling, green = calm / rising); 0 = neutral
+	function trendTone(w) { return { Falling: -2, Slipping: -1, Flat: 0, Rising: 1, Climbing: 2, Surging: 2 }[w] || 0; }
+	function fgTone(v) { return v < 25 ? -2 : v < 45 ? -1 : v <= 55 ? 0 : v <= 75 ? 1 : 2; }
+	function spanPct(sp) { var a = (sp || []).filter(function (x) { return x && x[1] != null; }); return a.length > 1 ? (a[a.length - 1][1] / a[0][1] - 1) * 100 : null; }
+	function vals(sp) { return (sp || []).map(function (x) { return Array.isArray(x) ? x[1] : x; }).filter(function (v) { return v != null && isFinite(v); }); }
+	var MN = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+	S.humanDate = function (s) { var m = /^(\d{4})-(\d\d)(?:-(\d\d))?/.exec(String(s || '')); return m ? MN[+m[2] - 1] + ' ' + (m[3] ? +m[3] + ', ' : '') + m[1] : String(s || ''); };
+	S.sectorMood = function (d, now) {
+		d = d || {}; now = now == null ? Date.now() : now;
+		var rows = [], coins = d.coins || [], by = {}, perps = {}, mk = d.markets || {};
+		coins.forEach(function (c) { by[c.sym] = c; });
+		(d.perps || []).forEach(function (p) { perps[p.sym] = p; });
+		function pf(sym) { var p = perps[sym]; return p && p.lean ? 'funding ' + p.lean : null; }
+		if (d.fng) {
+			var g = d.global, v = d.fng.now.v, h = d.fng.hist || [], wk = h.length > 7 ? h[h.length - 8][1] : null;
+			rows.push({ key: 'crypto', tab: 'crypto', name: 'Crypto market', mood: S.fgLabel(v), tone: fgTone(v), meter: { v: v, min: 0, max: 100, kind: 'fg' },
+				facts: ['Fear & Greed ' + v + (wk != null ? ' (' + (v - wk >= 0 ? '+' : '−') + Math.abs(v - wk) + ' in a week)' : '')].concat(g ? ['market cap ' + S.money(g.mcap, 'big') + ' (' + S.pct(g.mcapCh24, 1) + ' 24h)', 'BTC dominance ' + S.fmt(g.btcDom, 1) + '%'] : []),
+				spark: vals(h.slice(-30)) });
+		}
+		[['BTC', 'bitcoin', 'Bitcoin'], ['ETH', 'ethereum', 'Ethereum']].forEach(function (x) {
+			var c = by[x[0]]; if (!c) return; var w = S.trendWord(c.ch7);
+			rows.push({ key: x[1], tab: 'crypto', name: x[2], mood: w, tone: trendTone(w), meter: { v: c.ch7, min: -15, max: 15, kind: 'pct' },
+				facts: [S.money(c.price) + ', ' + S.pct(c.ch7, 1) + ' in 7 days', S.pct(c.athPct, 0) + ' from its high'].concat(pf(x[0]) ? [pf(x[0])] : []), spark: vals(c.spark) });
+		});
+		var alts = ['SOL', 'XRP'].map(function (k) { return by[k]; }).filter(Boolean);
+		if (alts.length) {
+			var avg = alts.reduce(function (a, c) { return a + c.ch7; }, 0) / alts.length, wa = S.trendWord(avg);
+			rows.push({ key: 'alts', tab: 'crypto', name: 'Large altcoins (SOL, XRP)', mood: wa, tone: trendTone(wa), meter: { v: avg, min: -15, max: 15, kind: 'pct' },
+				facts: alts.map(function (c) { return c.sym + ' ' + S.pct(c.ch7, 1) + ' (7d), ' + S.pct(c.athPct, 0) + ' from high'; }).concat(pf('SOL') ? ['SOL ' + pf('SOL')] : []), spark: vals((by.SOL || alts[0]).spark) });
+		}
+		if (d.stables) rows.push({ key: 'stables', tab: 'crypto', name: 'Stablecoins', mood: 'Info', tone: 0, facts: ['supply ' + S.money(d.stables.total, 'big'), d.stables.top.slice(0, 2).map(function (t) { return t[0] + ' ' + S.money(t[1], 'big'); }).join(', ')] });
+		if (d.stockfg || mk.spx) {
+			var sf = d.stockfg, spx = mk.spx, s3 = spx ? spanPct(spx.spark) : null;
+			rows.push({ key: 'stocks', tab: 'mkts', name: 'US stocks', mood: sf ? S.fgLabel(sf.score) : S.trendWord(s3), tone: sf ? fgTone(sf.score) : trendTone(S.trendWord(s3)), meter: sf ? { v: sf.score, min: 0, max: 100, kind: 'fg' } : null,
+				facts: (sf ? ['MES Stock F&G ' + sf.score] : []).concat(spx ? ['S&P 500 ' + S.fmt(spx.price, 0) + ' (' + S.pct(spx.chPct, 1) + ' day, ' + S.pct(s3, 1) + ' 3 months)'] : []).concat(mk.nasdaq ? ['Nasdaq ' + S.pct(spanPct(mk.nasdaq.spark), 1) + ' 3 months'] : []),
+				spark: spx ? vals(spx.spark) : [] });
+		}
+		[['gold', 'Gold', 3, ''], ['oil', 'Oil (WTI)', 8, 'surge'], ['dxy', 'US dollar (DXY)', 3, '']].forEach(function (x) {
+			var q = mk[x[0]]; if (!q) return; var c3 = spanPct(q.spark), w = S.trendWord(c3, x[2]);
+			if (x[3] && c3 > 20) w = 'Surging';
+			rows.push({ key: x[0], tab: 'mkts', name: x[1], mood: w, tone: x[0] === 'oil' ? -Math.abs(trendTone(w)) : trendTone(w), meter: { v: c3, min: -30, max: 30, kind: 'pct' },
+				facts: [(x[0] === 'dxy' ? S.fmt(q.price, 2) : S.money(q.price)) + ', ' + S.pct(c3, 1) + ' in 3 months', S.pct(q.chPct, 1) + ' last day'], spark: vals(q.spark) });
+		});
+		if (d.rates && d.rates.target) {
+			var t = d.rates.target, lo = d.rates.lower, up = t.prev != null && t.rate > t.prev, dn = t.prev != null && t.rate < t.prev, l = d.rates.latest || {};
+			var mf = up ? 'Tightening' : dn ? 'Easing' : 'On hold';
+			var dec = (d.poly || []).filter(function (e) { return /^Fed Decision in/i.test(e.title); })[0];
+			rows.push({ key: 'fed', tab: 'rates', name: 'Fed and US rates', mood: mf, tone: up ? -1 : dn ? 1 : 0,
+				facts: ['target ' + (lo ? S.fmt(lo[1], 2) + '–' : '') + S.fmt(t.rate, 2) + '% (' + (up ? 'raised' : dn ? 'cut' : 'set') + ' ' + S.humanDate(t.since) + ')'].concat(l.dgs10 ? ['10-year ' + S.fmt(l.dgs10[1], 2) + '%' + (d.rates.yearAgo && d.rates.yearAgo.dgs10 ? ' (' + (l.dgs10[1] >= d.rates.yearAgo.dgs10[1] ? '+' : '−') + Math.round(Math.abs(l.dgs10[1] - d.rates.yearAgo.dgs10[1]) * 100) + ' bp in a year)' : '')] : []).concat(dec && dec.outcomes[0] ? [dec.title.replace(/\?$/, '') + ': ' + dec.outcomes[0].label + ' ' + Math.round(dec.outcomes[0].p) + '% (Polymarket)'] : []) });
+			if (l.spread) { var spd = l.spread[1], cw = spd < 0 ? 'Inverted' : spd <= 0.25 ? 'Flat' : 'Normal'; rows.push({ key: 'curve', tab: 'rates', name: 'Yield curve', mood: cw, tone: spd < 0 ? -2 : spd <= 0.25 ? -1 : 0, meter: { v: spd, min: -1.5, max: 1.5, kind: 'pp' }, facts: ['10y − 2y ' + (spd >= 0 ? '+' : '−') + Math.round(Math.abs(spd) * 100) + ' bp'] }); }
+		}
+		if (d.cpi && d.cpi.latest) {
+			var cv = d.cpi.latest[1], y = d.cpi.yoy || [], six = y.length > 6 ? y[y.length - 7][1] : null, iw = cv > 3 ? 'High' : cv >= 2 ? 'Near target' : 'Low';
+			var dir = six == null ? '' : cv > six + 0.2 ? ', rising' : cv < six - 0.2 ? ', falling' : ', steady';
+			rows.push({ key: 'cpi', tab: 'rates', name: 'US inflation', mood: iw + dir, tone: cv > 3 ? -1 - (dir === ', rising' ? 1 : 0) : 0, meter: { v: cv, min: 0, max: 8, kind: 'cpi' },
+				facts: ['CPI ' + S.fmt(cv, 1) + '% a year (' + S.humanDate(d.cpi.latest[0]) + ')'].concat(six != null ? ['6 months earlier ' + S.fmt(six, 1) + '%'] : []), spark: vals(y.slice(-24)) });
+		}
+		var rec = (d.kalshi || []).filter(function (e) { return /recession in \d{4}/i.test(e.title); })[0];
+		if (rec && rec.outcomes[0]) { var rp = rec.outcomes[0].p; rows.push({ key: 'rec', tab: 'pred', name: 'US recession odds', mood: rp < 15 ? 'Low' : rp <= 35 ? 'Elevated' : 'High', tone: rp < 15 ? 0 : rp <= 35 ? -1 : -2, meter: { v: rp, min: 0, max: 100, kind: 'odds' }, facts: [rec.title.replace(/\?$/, '') + ': ' + Math.round(rp) + '% (Kalshi)'] }); }
+		if (S.DOOMSDAY_LATEST) {
+			var cs = S.DOOMSDAY_LATEST.seconds, top = S.conflictOdds(S.geoMarkets([d.geo, d.geok]), 1)[0];
+			rows.push({ key: 'geo', tab: 'geo', name: 'Geopolitics', mood: cs < 100 ? 'Very high tension' : cs < 180 ? 'High tension' : 'Tense', tone: cs < 100 ? -2 : -1,
+				facts: ['Doomsday Clock ' + S.clockText(cs) + ' to midnight'].concat(top ? [top.title.replace(/\?$/, '').slice(0, 70) + ': Yes ' + Math.round(top.yes) + '%'] : []).concat(mk.oil ? ['oil ' + S.money(mk.oil.price)] : []) });
+		}
+		return rows;
+	};
 	// ---------- geopolitics ----------
 	// a prediction market counts as "conflict" when its title is about war, ceasefires, invasions, strikes, blockades, nuclear tests ...
 	// (elections, leaders' approval and trade deals are left out). Neutral wording only: this is a filter, not a forecast.
@@ -479,6 +565,7 @@
 		mcap: ['Market cap', 'Price times the number of coins (or shares) in existence. The total crypto market cap adds this up for every coin CoinGecko tracks.'],
 		dominance: ['Bitcoin dominance', 'Bitcoin’s share of the total crypto market cap. Rising dominance usually means money is moving into Bitcoin from smaller coins (often in nervous times); falling dominance means other coins are gaining faster (sometimes called “alt season”).'],
 		stablecoin: ['Stablecoins', 'Tokens designed to stay worth one US dollar (or another currency), such as USDT and USDC, backed by cash, bonds or other assets. Their total supply is a rough measure of how much dollar money is sitting inside crypto, ready to be used.'],
+		mood: ['Market mood by sector', 'One line per area of the markets, worked out from this page\u2019s own numbers with fixed rules (listed under the table): fear and greed readings for crypto and stocks, the recent price trend for coins, gold, oil and the dollar, the direction of the Fed, the shape of the yield curve, inflation, the recession odds markets give, and how tense the world is. Red = stressed or falling, green = calm or rising, grey = neutral. It describes now; it is not a forecast. Click a row to see the details on its tab.'],
 		funding: ['Funding rate', 'On perpetual futures (perps) the two sides pay each other every hour so the perp price stays near the real price. Positive funding = traders betting on a rise (longs) pay those betting on a fall (shorts). On Hyperliquid the normal level is 0.00125% an hour (about 11% a year, paid by longs); well above that means many people are leaning the same way with borrowed money, negative means shorts are the crowded side. Crowded positioning can unwind sharply in either direction; it is not a price forecast.'],
 		oi: ['Open interest', 'The total value of perp positions still open (counted once, not long plus short). Rising open interest with rising prices means new leveraged money is coming in; a sudden drop means positions were closed or liquidated.'],
 		halving: ['Bitcoin halving', 'Every 210,000 blocks (about every four years) the number of new bitcoins paid to miners for each block is cut in half. The 2024 halving cut it from 6.25 to 3.125 BTC. The countdown uses the current block height and the recent average time between blocks, so the date drifts a little.'],

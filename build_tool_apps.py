@@ -224,7 +224,7 @@ APPS = {
     "signals": dict(title="MES Market Signals", page_title="Market Signals: Fear & Greed, Fed Rate, Yield Curve and Crypto Dashboard",
                     tag="Fear & greed, prices, rates, the Fed and the odds, free in one place.", accent="#277bb6", dark="#1b5c8a", tint="#e3eef8",
                     desc="Free market signals dashboard: the Crypto Fear & Greed Index, a stock-market fear & greed reading, Bitcoin and crypto prices, the S&P 500, gold and oil, the fed funds rate, Treasury yields and the yield curve, the next Fed meeting, prediction-market odds on the economy and on wars and ceasefires, the Doomsday Clock and the day's headlines, each explained in plain English. Not financial advice.",
-                    js_v="3",
+                    js_v="4",
                     nav_extra="<li class=\"info-bar__item\"><a class=\"info-bar__item__text\" href='/crypto'>Crypto</a></li>",
                     menu_extra="<li class=\"navbar__item\"><a class=\"navbar__link\" href=\"/crypto\">MES Crypto</a></li>"),
     # MES Debt Clock (2026-10-25, mes.fm/debt-clock): US / world / Canada government debt as running estimates (last official figure + average change over a stated window).
