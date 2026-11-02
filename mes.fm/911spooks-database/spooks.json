@@ -1,0 +1,993 @@
+{
+ "title": "9/11 Spooks Database",
+ "updated": "2026-11-02",
+ "source": "https://docs.google.com/spreadsheets/d/1-pBVHR4KCT2nVngaWkUhjpHOw0KoJIqehDT3ah5yCSk/edit?gid=686862064",
+ "count": 80,
+ "groups": {
+  "ae911": "AE911Truth & thermite",
+  "truth": "9/11 Truth circles",
+  "media": "Podcasts & alt media",
+  "science": "UFOs, MH370 & fringe science",
+  "flat": "Flat Earth & Moon",
+  "debunk": "Mainstream debunkers",
+  "online": "Online spammers"
+ },
+ "people": [
+  {
+   "name": "Abby Martin",
+   "group": "media",
+   "note": "",
+   "links": [
+    "https://mes.fm/abby-martin-911-spook"
+   ],
+   "img": "/911spooks-database/img/abby-martin.jpg",
+   "posts": [
+    {
+     "title": "Abby Martin Outed Herself as a 9/11 Spook as Far Back as 2012",
+     "href": "https://mes.fm/abby-martin-911-spook"
+    }
+   ]
+  },
+  {
+   "name": "Ace Baker",
+   "group": "truth",
+   "note": "",
+   "links": [
+    "https://mes.fm/hutchison-debunking-debunkers"
+   ],
+   "img": "/911spooks-database/img/ace-baker.jpg",
+   "posts": []
+  },
+  {
+   "name": "Adam Eisenberg",
+   "group": "truth",
+   "note": "Alleged 9/11 Pentagon Old Guard responder",
+   "links": [
+    "https://youtu.be/nQ7cUEVqq-I"
+   ],
+   "img": null,
+   "posts": []
+  },
+  {
+   "name": "Alex Jones",
+   "group": "media",
+   "note": "Info Wars",
+   "links": [
+    "https://peakd.com/hive-113182/@mes/yaiugjff"
+   ],
+   "img": "/911spooks-database/img/alex-jones.jpg",
+   "posts": [
+    {
+     "title": "Part 7: How Controlled Opposition Works: Alex Jones, Cali DEW Fires, Flat Earth + MORE",
+     "href": "https://peakd.com/terrorism/@mes/911truth-part-7-how-controlled-opposition-works-alex-jones-cali-dew-fires-flat-earth-more"
+    },
+    {
+     "title": "Alex Jones Teams Up with UFO Expert Steven Greer",
+     "href": "https://mes.fm/alex-jones-steven-greer-live"
+    },
+    {
+     "title": "Ashton Forbes and Alex Jones Team Up to Become the Most Unstoppable Clownish Force",
+     "href": "https://mes.fm/alex-jones-ashton-forbes-clowns"
+    }
+   ]
+  },
+  {
+   "name": "Ashton Forbes",
+   "group": "science",
+   "note": "MH370 Grift",
+   "links": [
+    "https://t.me/meslinks/29685"
+   ],
+   "img": "/911spooks-database/img/ashton-forbes.jpg",
+   "posts": [
+    {
+     "title": "Highlights from the Letter that Ashton Forbes Totally Didn't Write to Himself",
+     "href": "https://mes.fm/ashton-forbes-letter"
+    },
+    {
+     "title": "Is Drew Ponder Ashton Forbes' AI MH370 Spam Bot?",
+     "href": "https://mes.fm/mh370-drew-ponder-spammer"
+    },
+    {
+     "title": "Ashton Forbes and Alex Jones Team Up to Become the Most Unstoppable Clownish Force",
+     "href": "https://mes.fm/alex-jones-ashton-forbes-clowns"
+    }
+   ]
+  },
+  {
+   "name": "Bart Sibrel",
+   "group": "flat",
+   "note": "Moon Man",
+   "links": [
+    "https://t.me/meslinks/31405"
+   ],
+   "img": "/911spooks-database/img/bart-sibrel.jpg",
+   "posts": []
+  },
+  {
+   "name": "Bret Weinstein",
+   "group": "media",
+   "note": "",
+   "links": [
+    "https://t.me/meslinks/32596"
+   ],
+   "img": "/911spooks-database/img/bret-weinstein.jpg",
+   "posts": []
+  },
+  {
+   "name": "Bob Greenyer",
+   "group": "science",
+   "note": "\"Cold Fusion Engineer\"",
+   "links": [
+    "https://mes.fm/bg-wildin"
+   ],
+   "img": "/911spooks-database/img/bob-greenyer.jpg",
+   "posts": [
+    {
+     "title": "Bob Greenyer's Claims About Dr. Judy Wood & 9/11",
+     "href": "https://mes.fm/bg-notes"
+    },
+    {
+     "title": "Bob Greenyer's Subscriber Calls Him a Rich Fake Con Man",
+     "href": "https://mes.fm/bob-greenyer-con-man-subscriber"
+    },
+    {
+     "title": "Bob Greenyer \"analyzing\" MH370 cartoons vs MES analyzing MH370 cartoons",
+     "href": "https://www.youtube.com/watch?v=FKKwdsbacQ8"
+    },
+    {
+     "title": "Bob Greenyer says steel firetruck is made of aluminum",
+     "href": "https://www.youtube.com/watch?v=DjkS-1Yo12Q"
+    },
+    {
+     "title": "Bob Greenyer makes a complete clown of himself as he tries to \"explain\" Dr. Judy Wood's book cover 🤡",
+     "href": "https://www.youtube.com/watch?v=m5PK60A2ztA"
+    },
+    {
+     "title": "Bob Greenyer says if Germany won WW2, we would have time distortion ⏳ anti-gravity 🛸  free energy 🔋",
+     "href": "https://www.youtube.com/watch?v=2r32XRWxcoQ"
+    },
+    {
+     "title": "Bob Greenyer says the yoga pose creates micro-ball lightning 💥🧘💥",
+     "href": "https://www.youtube.com/watch?v=l4nigZVgchQ"
+    },
+    {
+     "title": "Bob Greenyer makin' stuff up about atomic clocks and the Global Consciousness Project on 9/11...",
+     "href": "https://www.youtube.com/watch?v=TEKiweBqQRo"
+    },
+    {
+     "title": "Bob Greenyer discussin' his high level Freemason father and grandfather",
+     "href": "https://www.youtube.com/watch?v=uIRTb4p3vuo"
+    },
+    {
+     "title": "Bob Greenyer discussin' the MH370 teleportation cartoons...",
+     "href": "https://www.youtube.com/watch?v=958uIfIgjQY"
+    }
+   ]
+  },
+  {
+   "name": "Casey Pfeifer",
+   "group": "ae911",
+   "note": "AE911Truth",
+   "links": [
+    "https://t.me/meslinks/32410"
+   ],
+   "img": null,
+   "posts": []
+  },
+  {
+   "name": "Catherine Austin Fitts",
+   "group": "media",
+   "note": "",
+   "links": [
+    "https://t.me/meslinks/29630"
+   ],
+   "img": "/911spooks-database/img/catherine-austin-fitts.jpg",
+   "posts": []
+  },
+  {
+   "name": "Charlie Sheen",
+   "group": "media",
+   "note": "Tiger Blood",
+   "links": [
+    "https://t.me/meslinks/31890"
+   ],
+   "img": "/911spooks-database/img/charlie-sheen.jpg",
+   "posts": []
+  },
+  {
+   "name": "Christopher Bollyn",
+   "group": "truth",
+   "note": "",
+   "links": [
+    "https://t.me/meslinks/30626"
+   ],
+   "img": "/911spooks-database/img/christopher-bollyn.jpg",
+   "posts": []
+  },
+  {
+   "name": "Chuck Huber",
+   "group": "science",
+   "note": "Agent 17 Voice Actor",
+   "links": [
+    "https://x.com/MathEasySolns/status/1997454968316661774"
+   ],
+   "img": "/911spooks-database/img/chuck-huber.jpg",
+   "posts": []
+  },
+  {
+   "name": "Dan Noel",
+   "group": "truth",
+   "note": "French Santa Claus",
+   "links": [
+    "https://t.me/meslinks/29024"
+   ],
+   "img": null,
+   "posts": []
+  },
+  {
+   "name": "Dane Wigington",
+   "group": "media",
+   "note": "GeoEngienering Watch",
+   "links": [
+    "https://t.me/meslinks/32413"
+   ],
+   "img": "/911spooks-database/img/dane-wigington.jpg",
+   "posts": []
+  },
+  {
+   "name": "Flat Earth Dave",
+   "group": "flat",
+   "note": "Talks lasers from space, Dr. Judy WoodS, blasting nonsense music.",
+   "links": [
+    "https://www.youtube.com/watch?v=ae7llqNAG-s"
+   ],
+   "img": "/911spooks-database/img/flat-earth-dave.jpg",
+   "posts": [
+    {
+     "title": "Tim Pool Interviews Flat Earth Dave — Not Even His Lowest Interview",
+     "href": "https://mes.fm/tim-pool-flat-earth-dave-clowns"
+    }
+   ]
+  },
+  {
+   "name": "Dave McKeegan",
+   "group": "debunk",
+   "note": "Flat Earth Debunker",
+   "links": [
+    "https://t.me/meslinks/32207"
+   ],
+   "img": "/911spooks-database/img/dave-mckeegan.jpg",
+   "posts": []
+  },
+  {
+   "name": "Dave von Kleist",
+   "group": "truth",
+   "note": "",
+   "links": [
+    "https://t.me/meslinks/32464"
+   ],
+   "img": null,
+   "posts": []
+  },
+  {
+   "name": "David Chandler",
+   "group": "ae911",
+   "note": "AE911Truth",
+   "links": [
+    "https://t.me/meslinks/27245"
+   ],
+   "img": "/911spooks-database/img/david-chandler.jpg",
+   "posts": []
+  },
+  {
+   "name": "David Hughes",
+   "group": "truth",
+   "note": "Jim Fetzer 2.0",
+   "links": [
+    "https://mes.fm/david-hughes-fetzer-2.0",
+    "https://peakd.com/hive-113182/@mes/dear-dr-david-a-fetzer-j1c"
+   ],
+   "img": null,
+   "posts": [
+    {
+     "title": "Dear Dr. David A. Fetzer...",
+     "href": "https://mes.fm/david-hughes-fetzer-2.0"
+    },
+    {
+     "title": "9/11 Brings Out the Spooks: David Hughes, 9/11 Revisionist, Ryan Bannister",
+     "href": "https://mes.fm/hughes-911-spammer-ryan-spooks"
+    }
+   ]
+  },
+  {
+   "name": "David Icke",
+   "group": "media",
+   "note": "",
+   "links": [
+    "https://t.me/meslinks/30626"
+   ],
+   "img": "/911spooks-database/img/david-icke.jpg",
+   "posts": []
+  },
+  {
+   "name": "David Mack",
+   "group": "ae911",
+   "note": "AE911Truth",
+   "links": [
+    "https://t.me/meslinks/32410"
+   ],
+   "img": null,
+   "posts": []
+  },
+  {
+   "name": "David Ray Griffin",
+   "group": "truth",
+   "note": "",
+   "links": [
+    "https://t.me/meslinks/17185"
+   ],
+   "img": "/911spooks-database/img/david-ray-griffin.jpg",
+   "posts": []
+  },
+  {
+   "name": "Denis Rancourt",
+   "group": "truth",
+   "note": "Not necessarily an agent, but hides from 9/11 DEW.",
+   "links": [
+    "https://911revision.substack.com/p/denis-rancourt-2010-death-blows-to"
+   ],
+   "img": "/911spooks-database/img/denis-rancourt.jpg",
+   "posts": []
+  },
+  {
+   "name": "Dollar Vigilante",
+   "group": "media",
+   "note": "",
+   "links": [
+    "https://t.me/meslinks/32060"
+   ],
+   "img": "/911spooks-database/img/dollar-vigilante.jpg",
+   "posts": []
+  },
+  {
+   "name": "Eddie Bravo",
+   "group": "media",
+   "note": "",
+   "links": [
+    "https://t.me/meslinks/10630"
+   ],
+   "img": null,
+   "posts": []
+  },
+  {
+   "name": "Eric Dubay",
+   "group": "flat",
+   "note": "Flat Earther",
+   "links": [
+    "https://t.me/meslinks/32284"
+   ],
+   "img": "/911spooks-database/img/eric-dubay.jpg",
+   "posts": []
+  },
+  {
+   "name": "Francis O'Neill",
+   "group": "truth",
+   "note": "",
+   "links": [
+    "https://t.me/meslinks/32134"
+   ],
+   "img": null,
+   "posts": []
+  },
+  {
+   "name": "Gail Gage",
+   "group": "ae911",
+   "note": "Richard Gage Wifey",
+   "links": [
+    "https://t.me/meslinks/32410"
+   ],
+   "img": null,
+   "posts": []
+  },
+  {
+   "name": "Gene Laratonda",
+   "group": "truth",
+   "note": "9/11 War Room",
+   "links": [
+    "https://t.me/meslinks/31161"
+   ],
+   "img": "/911spooks-database/img/gene-laratonda.jpg",
+   "posts": []
+  },
+  {
+   "name": "Greg Jenkins",
+   "group": "truth",
+   "note": "Ambush interview",
+   "links": [
+    "https://t.me/meslinks/24621"
+   ],
+   "img": null,
+   "posts": []
+  },
+  {
+   "name": "Ian Carroll",
+   "group": "media",
+   "note": "",
+   "links": [
+    "https://t.me/meslinks/32060"
+   ],
+   "img": "/911spooks-database/img/ian-carroll.jpg",
+   "posts": []
+  },
+  {
+   "name": "James Corbett",
+   "group": "media",
+   "note": "The Corbett Report",
+   "links": [
+    "https://peakd.com/hive-113182/@mes/yaiugjff"
+   ],
+   "img": "/911spooks-database/img/james-corbett.jpg",
+   "posts": []
+  },
+  {
+   "name": "James Feulner",
+   "group": "media",
+   "note": "Blue Bacon",
+   "links": [
+    "https://t.me/meslinks/28608"
+   ],
+   "img": null,
+   "posts": []
+  },
+  {
+   "name": "Jamie Andrews",
+   "group": "media",
+   "note": "Anti-virologist",
+   "links": [
+    "https://t.me/meslinks/30969"
+   ],
+   "img": "/911spooks-database/img/jamie-andrews.jpg",
+   "posts": []
+  },
+  {
+   "name": "Jeremy Rys",
+   "group": "science",
+   "note": "Alien Scientist",
+   "links": [
+    "https://peakd.com/hive-113182/@mes/yaiugjff"
+   ],
+   "img": null,
+   "posts": []
+  },
+  {
+   "name": "Jim Fetzer",
+   "group": "truth",
+   "note": "",
+   "links": [
+    "https://t.me/meslinks/31553"
+   ],
+   "img": "/911spooks-database/img/jim-fetzer.jpg",
+   "posts": [
+    {
+     "title": "Dear Dr. David A. Fetzer...",
+     "href": "https://mes.fm/david-hughes-fetzer-2.0"
+    }
+   ]
+  },
+  {
+   "name": "Jimmy Dore",
+   "group": "media",
+   "note": "The Jimmy Dore Show",
+   "links": [
+    "https://t.me/meslinks/29703"
+   ],
+   "img": "/911spooks-database/img/jimmy-dore.jpg",
+   "posts": [
+    {
+     "title": "Former Congressman Curt Weldon Brings Up Dr. Judy Wood and Directed Energy on the Jimmy Dore Show",
+     "href": "https://mes.fm/curt-weldon-jimmy-dore-dew"
+    }
+   ]
+  },
+  {
+   "name": "Joe Rogan",
+   "group": "media",
+   "note": "",
+   "links": [
+    "https://t.me/meslinks/10630"
+   ],
+   "img": "/911spooks-database/img/joe-rogan.jpg",
+   "posts": []
+  },
+  {
+   "name": "John Olooney",
+   "group": "truth",
+   "note": "",
+   "links": [
+    "https://t.me/meslinks/32464"
+   ],
+   "img": null,
+   "posts": []
+  },
+  {
+   "name": "Jonathan Cole",
+   "group": "ae911",
+   "note": "",
+   "links": [
+    "https://t.me/meslinks/31868"
+   ],
+   "img": null,
+   "posts": []
+  },
+  {
+   "name": "Julian Assange",
+   "group": "media",
+   "note": "Wikileaks",
+   "links": [
+    "https://t.me/meslinkschat/46383"
+   ],
+   "img": "/911spooks-database/img/julian-assange.jpg",
+   "posts": []
+  },
+  {
+   "name": "Kamal Obeid",
+   "group": "ae911",
+   "note": "AE911Truth",
+   "links": [
+    "https://t.me/meslinks/32410"
+   ],
+   "img": null,
+   "posts": []
+  },
+  {
+   "name": "Kevin Barrett",
+   "group": "truth",
+   "note": "",
+   "links": [
+    "https://t.me/meslinks/32464"
+   ],
+   "img": null,
+   "posts": []
+  },
+  {
+   "name": "Kurt Weldon",
+   "group": "truth",
+   "note": "Former Congressman",
+   "links": [
+    "https://t.me/meslinks/29784"
+   ],
+   "img": "/911spooks-database/img/kurt-weldon.jpg",
+   "posts": [
+    {
+     "title": "YouTube Removed My Curt Weldon 9/11 Video for \"Hate Speech\" (Appeal Rejected)",
+     "href": "https://mes.fm/youtube-removed-curt-weldon-911"
+    },
+    {
+     "title": "YouTube Reinstated My Curt Weldon Video After Muting the \"Hate Speech\" Part 🤐▶️",
+     "href": "https://mes.fm/curt-weldon-911-dew-muted"
+    },
+    {
+     "title": "Former Congressman Curt Weldon & Firefighters testimony: Towers turned to dust on 9/11",
+     "href": "https://mes.fm/curt-weldon-firefighters-911-dustification"
+    },
+    {
+     "title": "Patrick Bet David Asks Former Congressman Curt Weldon About Dr. Judy Wood and Hurricane Erin",
+     "href": "https://mes.fm/curt-weldon-pbd-podcast-dew"
+    },
+    {
+     "title": "Former Congressman Curt Weldon Brings Up Dr. Judy Wood and Directed Energy on the Jimmy Dore Show",
+     "href": "https://mes.fm/curt-weldon-jimmy-dore-dew"
+    }
+   ]
+  },
+  {
+   "name": "Luke Rudkowski",
+   "group": "media",
+   "note": "We Are Change",
+   "links": [
+    "https://t.me/meslinks/22949"
+   ],
+   "img": "/911spooks-database/img/luke-rudkowski.jpg",
+   "posts": []
+  },
+  {
+   "name": "Mark Lillie",
+   "group": "ae911",
+   "note": "AE911Truth",
+   "links": [
+    "https://t.me/meslinks/32410"
+   ],
+   "img": null,
+   "posts": []
+  },
+  {
+   "name": "Massimo Mazzucco",
+   "group": "truth",
+   "note": "The New Pearl Harbor, American Moon",
+   "links": [
+    "https://t.me/meslinks/29650"
+   ],
+   "img": "/911spooks-database/img/massimo-mazzucco.jpg",
+   "posts": []
+  },
+  {
+   "name": "Matt Campbell",
+   "group": "truth",
+   "note": "Brother of Geophrey that died on 9/11. Krusty the Clown.",
+   "links": [
+    "https://t.me/meslinks/17479"
+   ],
+   "img": null,
+   "posts": []
+  },
+  {
+   "name": "Michael Shermer",
+   "group": "debunk",
+   "note": "Mainstream debunker",
+   "links": [
+    "https://peakd.com/hive-113182/@mes/yaiugjff"
+   ],
+   "img": "/911spooks-database/img/michael-shermer.jpg",
+   "posts": []
+  },
+  {
+   "name": "Miles Mathis",
+   "group": "truth",
+   "note": "",
+   "links": [
+    "https://t.me/meslinks/32026"
+   ],
+   "img": null,
+   "posts": []
+  },
+  {
+   "name": "Myles Power",
+   "group": "debunk",
+   "note": "Mainstream debunker",
+   "links": [
+    "https://peakd.com/hive-113182/@mes/yaiugjff"
+   ],
+   "img": "/911spooks-database/img/myles-power.jpg",
+   "posts": []
+  },
+  {
+   "name": "Neils Harrit",
+   "group": "ae911",
+   "note": "Thermite Guru",
+   "links": [
+    "https://t.me/meslinkschat/46895"
+   ],
+   "img": null,
+   "posts": []
+  },
+  {
+   "name": "Norman Swaneopoel",
+   "group": "truth",
+   "note": "9/11 Revisionist",
+   "links": [
+    "https://peakd.com/hive-113182/@mestruth/911-jersey-girl-patricia-casazzas-bizarre-ai-email-ddr"
+   ],
+   "img": null,
+   "posts": [
+    {
+     "title": "MH370 Teleportation Cartoons are a Litmus Test for Spooks",
+     "href": "https://mes.fm/mh370-litmus-spooks"
+    },
+    {
+     "title": "9/11 Revisionist Slanders MES",
+     "href": "https://mes.fm/911-revisionist-slander-mes"
+    },
+    {
+     "title": "9/11 Revisionist Spammin' Dust Baggie Nonsense",
+     "href": "https://mes.fm/911-spammer-dust-baggie"
+    },
+    {
+     "title": "9/11 Brings Out the Spooks: David Hughes, 9/11 Revisionist, Ryan Bannister",
+     "href": "https://mes.fm/hughes-911-spammer-ryan-spooks"
+    },
+    {
+     "title": "9/11 Revisionist = 9/11 Spammer",
+     "href": "https://mes.fm/911-revisionist-spammer"
+    },
+    {
+     "title": "Norman aka 9/11 Revisited Blocked MES on X",
+     "href": "https://mes.fm/911revisited-blocks-mes"
+    },
+    {
+     "title": "Building 7: The TRUTH Cut by 9/11 Revisionist",
+     "href": "https://youtu.be/QH6Q230711E"
+    },
+    {
+     "title": "Building 7: The TRUTH Cut 2.0 by 9/11 Revisionist",
+     "href": "https://youtu.be/o3mr0Y6QrN0"
+    },
+    {
+     "title": "EPIC Edit by 9/11 Revisionist: Where Did The Towers Go? (Corrected Version)",
+     "href": "https://youtu.be/EIUNza56F6E"
+    }
+   ]
+  },
+  {
+   "name": "Patrick Bet David",
+   "group": "media",
+   "note": "PBD Podcast",
+   "links": [
+    "https://t.me/meslinks/31856"
+   ],
+   "img": "/911spooks-database/img/patrick-bet-david.jpg",
+   "posts": [
+    {
+     "title": "Patrick Bet David Asks Former Congressman Curt Weldon About Dr. Judy Wood and Hurricane Erin",
+     "href": "https://mes.fm/curt-weldon-pbd-podcast-dew"
+    }
+   ]
+  },
+  {
+   "name": "Peggy Carter?",
+   "group": "truth",
+   "note": "Mark Conlin mentioned this I think?",
+   "links": [
+    "https://en.wikipedia.org/wiki/Peggy_Carter"
+   ],
+   "img": null,
+   "posts": []
+  },
+  {
+   "name": "Petra Liverani",
+   "group": "truth",
+   "note": "Psyop Detective",
+   "links": [
+    "https://substack.com/@petraliverani/p-150440529"
+   ],
+   "img": null,
+   "posts": []
+  },
+  {
+   "name": "ReallyGraceful",
+   "group": "media",
+   "note": "Avoids discussing 9/11 DEW but is made aware of it.",
+   "links": [
+    "https://t.me/meslinks/19193",
+    "https://t.me/meslinks/13843"
+   ],
+   "img": "/911spooks-database/img/reallygraceful.jpg",
+   "posts": []
+  },
+  {
+   "name": "Rebekah Roth",
+   "group": "truth",
+   "note": "Methodical Deception",
+   "links": [
+    "https://t.me/meslinks/26647"
+   ],
+   "img": null,
+   "posts": []
+  },
+  {
+   "name": "Richard Gage",
+   "group": "ae911",
+   "note": "AE911Truth",
+   "links": [
+    "https://t.me/meslinks/31553"
+   ],
+   "img": "/911spooks-database/img/richard-gage.jpg",
+   "posts": [
+    {
+     "title": "Mr. Richard Gage Doesn't Know if the Earth Is Round or Flat",
+     "href": "https://mes.fm/richard-gage-flat-earth"
+    }
+   ]
+  },
+  {
+   "name": "Richard Wallace",
+   "group": "ae911",
+   "note": "AE911Truth",
+   "links": [
+    "https://t.me/meslinks/32410"
+   ],
+   "img": null,
+   "posts": []
+  },
+  {
+   "name": "Robert Murray Smith",
+   "group": "science",
+   "note": "Covers up Hutchison Effect",
+   "links": [
+    "https://t.me/meslinks/26237"
+   ],
+   "img": "/911spooks-database/img/robert-murray-smith.jpg",
+   "posts": []
+  },
+  {
+   "name": "Ryan Christian",
+   "group": "media",
+   "note": "Last American Vagabond",
+   "links": [
+    "https://t.me/meslinkschat/46375"
+   ],
+   "img": null,
+   "posts": []
+  },
+  {
+   "name": "Ryan Dawson",
+   "group": "truth",
+   "note": "Anti-Necon Report",
+   "links": [
+    "https://911revision.substack.com/p/unmasking-ryan-dawsons-empire-unmasked"
+   ],
+   "img": null,
+   "posts": []
+  },
+  {
+   "name": "Sabin Mathew",
+   "group": "debunk",
+   "note": "Sabin Civil Engineering",
+   "links": [
+    "https://t.me/meslinks/30369"
+   ],
+   "img": "/911spooks-database/img/sabin-mathew.jpg",
+   "posts": []
+  },
+  {
+   "name": "Sam Tripoli",
+   "group": "media",
+   "note": "Tin Foil Hat Podcast",
+   "links": [
+    "https://t.me/meslinks/29714"
+   ],
+   "img": "/911spooks-database/img/sam-tripoli.jpg",
+   "posts": []
+  },
+  {
+   "name": "Samuel William",
+   "group": "truth",
+   "note": "Says towers disintegrated in 2017 video: https://t.me/meslinkschat/47823",
+   "links": [
+    "https://t.me/meslinks/32464"
+   ],
+   "img": null,
+   "posts": []
+  },
+  {
+   "name": "SGT Report",
+   "group": "media",
+   "note": "",
+   "links": [
+    "https://peakd.com/conspiracy/@mes/911truth-part-6-controlled-opposition-mini-nukes-building-7-ae911truth-hoax"
+   ],
+   "img": "/911spooks-database/img/sgt-report.jpg",
+   "posts": []
+  },
+  {
+   "name": "Simon Holl",
+   "group": "truth",
+   "note": "Professor Simon Holl (or Holland?)",
+   "links": [
+    "https://t.me/meslinks/23938"
+   ],
+   "img": null,
+   "posts": []
+  },
+  {
+   "name": "Simon Shack",
+   "group": "truth",
+   "note": "September Clues",
+   "links": [
+    "https://t.me/meslinks/30373"
+   ],
+   "img": "/911spooks-database/img/simon-shack.jpg",
+   "posts": []
+  },
+  {
+   "name": "Steve De'Ak",
+   "group": "truth",
+   "note": "Search his name on Mark Conlon's substack.",
+   "links": [
+    "https://911planesresearch.substack.com/p/analysis-of-steve-deaks-frozen-smoke"
+   ],
+   "img": null,
+   "posts": []
+  },
+  {
+   "name": "Steven Dusterwald",
+   "group": "ae911",
+   "note": "AE911Truth",
+   "links": [
+    "https://t.me/meslinks/32410"
+   ],
+   "img": null,
+   "posts": []
+  },
+  {
+   "name": "Steven Greer",
+   "group": "science",
+   "note": "",
+   "links": [
+    "https://t.me/meslinks/24558"
+   ],
+   "img": "/911spooks-database/img/steven-greer.jpg",
+   "posts": [
+    {
+     "title": "Alex Jones Teams Up with UFO Expert Steven Greer",
+     "href": "https://mes.fm/alex-jones-steven-greer-live"
+    }
+   ]
+  },
+  {
+   "name": "Steven Jones",
+   "group": "ae911",
+   "note": "AE911Truth",
+   "links": [
+    "https://peakd.com/hive-113182/@mes/yaiugjff"
+   ],
+   "img": null,
+   "posts": []
+  },
+  {
+   "name": "Ted Walter",
+   "group": "ae911",
+   "note": "",
+   "links": [
+    "https://t.me/meslinks/31868"
+   ],
+   "img": null,
+   "posts": []
+  },
+  {
+   "name": "Tucker Carlson",
+   "group": "media",
+   "note": "",
+   "links": [
+    "https://t.me/meslinks/31817"
+   ],
+   "img": "/911spooks-database/img/tucker-carlson.jpg",
+   "posts": [
+    {
+     "title": "Tucker Carlson Jumps on the MH370 Teleportation Cartoons Bandwagon",
+     "href": "https://mes.fm/tucker-carlson-mh370-cartoons"
+    }
+   ]
+  },
+  {
+   "name": "valued-customer",
+   "group": "online",
+   "note": "Disinfo spam agent on the Hive blockchain.",
+   "links": [
+    "https://peakd.com/c/hive-113182/roles"
+   ],
+   "img": "/911spooks-database/img/valued-customer.jpg",
+   "posts": []
+  },
+  {
+   "name": "Wayne Coste",
+   "group": "ae911",
+   "note": "Boston 9/11 Truth",
+   "links": [
+    "https://t.me/meslinks/27460"
+   ],
+   "img": "/911spooks-database/img/wayne-coste.jpg",
+   "posts": []
+  },
+  {
+   "name": "Webster Tarpley",
+   "group": "truth",
+   "note": "",
+   "links": [
+    "https://t.me/meslinks/30974"
+   ],
+   "img": "/911spooks-database/img/webster-tarpley.jpg",
+   "posts": []
+  },
+  {
+   "name": "Witney Webb",
+   "group": "media",
+   "note": "",
+   "links": [
+    "https://t.me/meslinkschat/46701"
+   ],
+   "img": "/911spooks-database/img/witney-webb.jpg",
+   "posts": []
+  }
+ ]
+}
