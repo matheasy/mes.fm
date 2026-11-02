@@ -55,7 +55,7 @@ First shown on [MES Livestream 112: 9/11 Spooks Database](https://mes.fm/livestr
 | **Massimo Mazzucco** | The New Pearl Harbor, American Moon | [Telegram](https://t.me/meslinks/29650) |
 | **Matt Campbell** | Brother of Geophrey that died on 9/11. Krusty the Clown. | [Telegram](https://t.me/meslinks/17479) |
 | **Miles Mathis** |  | [Telegram](https://t.me/meslinks/32026) |
-| **Norman Swaneopoel** | 9/11 Revisionist | [Hive](https://peakd.com/hive-113182/@mestruth/911-jersey-girl-patricia-casazzas-bizarre-ai-email-ddr) · [MES posts (9)](https://mes.fm/911spooks-database#norman-swaneopoel) |
+| **Norman Swaneopoel** | 9/11 Revisionist | [MES.fm](https://mes.fm/norman-patricia-ai-email) · [Hive](https://peakd.com/hive-113182/@mestruth/911-jersey-girl-patricia-casazzas-bizarre-ai-email-ddr) · [MES posts (9)](https://mes.fm/911spooks-database#norman-swaneopoel) |
 | **Peggy Carter?** | Mark Conlin mentioned this I think? | [Wikipedia](https://en.wikipedia.org/wiki/Peggy_Carter) |
 | **Petra Liverani** | Psyop Detective | [Substack](https://substack.com/@petraliverani/p-150440529) |
 | **Rebekah Roth** | Methodical Deception | [Telegram](https://t.me/meslinks/26647) |

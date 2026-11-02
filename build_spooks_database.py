@@ -130,6 +130,19 @@ def mirror_map():
                 k = hive_key(l.get("href", "")) if isinstance(l, dict) else None
                 if k:
                     out.setdefault(k, page.replace("https://mes.fm", ""))
+    # mirror pages name their own Hive post: "Originally published on Hive", "Mirrored from the Hive blockchain", "Posted Using INLEO"
+    own = re.compile(r'<a [^>]*href="([^"]+)"[^>]*>\s*(?:Originally published on Hive|Hive blockchain|INLEO)', re.I)
+    for f in ROOT.glob("*/index.html"):
+        if f.parent.name in (SLUG, "_http_", "_https_"):
+            continue
+        try:
+            text = f.read_text(errors="ignore")
+        except Exception:
+            continue
+        for u in own.findall(text):
+            k = hive_key(u)
+            if k:
+                out.setdefault(k, "/" + f.parent.name)
     return out
 
 
