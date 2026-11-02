@@ -108,7 +108,7 @@
 },
 "/browser":{
 "added":"2026-10-10",
-"updated":"2026-10-22",
+"updated":"2026-11-01",
 "type":"Collection"
 },
 "/buddhabrot":{
@@ -118,7 +118,7 @@
 },
 "/calculator":{
 "added":"2026-10-01",
-"updated":"2026-10-23",
+"updated":"2026-11-01",
 "type":"Calculator"
 },
 "/calendar":{
@@ -198,7 +198,7 @@
 },
 "/days-between-dates-calculator":{
 "added":"2026-10-01",
-"updated":"2026-10-23",
+"updated":"2026-11-01",
 "type":"Calculator"
 },
 "/debt-clock":{
@@ -423,7 +423,7 @@
 },
 "/letter-recognition":{
 "added":"2026-10-19",
-"updated":"2026-10-19",
+"updated":"2026-11-01",
 "type":"Simulation"
 },
 "/light-in-a-medium":{
@@ -483,7 +483,7 @@
 },
 "/michelson-morley-experiment":{
 "added":"2026-10-09",
-"updated":"2026-10-13",
+"updated":"2026-11-01",
 "type":"Simulation"
 },
 "/mlb-picks":{
