@@ -29,6 +29,7 @@ export const SECTIONS = [
     id: "911spooks-videos",
     title: "Videos",
     items: [
+      { href: "https://mes.fm/richard-gage-gatekeeper", title: "Richard Gage: \"We Are Necessarily Gatekeepers\" of 9/11 Truth 🤡" },
       { href: "https://mes.fm/richard-gage-flat-earth", title: "Mr. Richard Gage Doesn't Know if the Earth Is Round or Flat" },
       { href: "https://mes.fm/ashton-forbes-letter", title: "Highlights from the Letter that Ashton Forbes Totally Didn't Write to Himself" },
     ],
