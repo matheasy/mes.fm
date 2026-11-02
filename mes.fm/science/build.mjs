@@ -254,6 +254,15 @@ const PAGES = [
     tileLabel: "Neuron Simulator",
   },
   {
+    // Tile only: links to the Spin & Angular Momentum Simulator. Icon = img/spin-simulator-icon.jpg (placeholder until Grok tile art lands; same file name).
+    slug: "spin-simulator",
+    section: "tools",
+    href: "/spin-simulator",
+    iconVersion: 1,
+    tileOnly: true,
+    tileLabel: "Spin Simulator",
+  },
+  {
     // Tile only: links to the Heart Simulator. Icon = img/heart-simulator-icon.jpg (placeholder until Grok tile art lands; same file name).
     slug: "heart-simulator",
     section: "tools",

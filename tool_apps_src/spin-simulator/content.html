@@ -1,0 +1,151 @@
+	<script>try{if(!localStorage.getItem('pageMode')){document.documentElement.classList.add('page-wide')}}catch(e){}</script>
+	<div class="tu sn" id="sn">
+		<div class="sn-tabs" role="tablist" aria-label="Spin simulator experiments">
+			<button type="button" role="tab" data-tab="neutron" aria-selected="true">Neutrons: the 720° turn</button>
+			<button type="button" role="tab" data-tab="edh" aria-selected="false">Einstein-de Haas</button>
+			<button type="button" role="tab" data-tab="barnett" aria-selected="false">Barnett effect</button>
+		</div>
+
+		<!-- ============================== 1. NEUTRON INTERFEROMETER ============================== -->
+		<section data-panel="neutron" role="tabpanel">
+			<p class="tu-note sn-lead">A slow neutron beam hits a <b>silicon crystal interferometer</b> cut from one block: the first plate splits each neutron into two paths, the middle plate bends them back together and the last plate makes them interfere. One path runs through a magnetic field that turns (precesses) the neutron's spin by an angle <b>α</b>. Turn it by <b>360°</b> and the forward detector goes <b>dark</b>: the neutron's wave has changed sign. Only at <b>720°</b> is it back to normal. Drag the picture to turn it.</p>
+			<div class="sn-wrap"><div class="sn-stage" id="sn-n-stage">
+				<canvas id="sn-n-c" tabindex="0" role="img" aria-label="A three-plate silicon neutron interferometer in 3D. Neutrons split into two paths; one passes between magnet poles where its spin arrow turns; the beams recombine and reach the O and H detectors."></canvas>
+				<div class="sn-run"><button type="button" id="sn-n-play" aria-pressed="true">❚❚ Pause</button><button type="button" id="sn-n-zero" title="Start counting again from zero">↺ Reset counts</button><button type="button" id="sn-n-view" title="Back to the starting view">⟲ View</button><button type="button" id="sn-n-png" aria-label="Save as PNG" title="Save as a picture">📷</button><button type="button" class="sn-fs" aria-label="Full screen" title="Full screen">⛶</button></div>
+			</div>
+			<div class="sn-readouts" id="sn-n-ro"></div></div>
+			<div class="sn-wrap sn-wrap--2"><div class="sn-stage" id="sn-d-stage">
+				<canvas id="sn-d-c" role="img" aria-label="Left: a dial with the spin's turn angle and the half angle that the neutron's wave picks up. Right: counts per second in the two detectors over time."></canvas>
+			</div></div>
+			<div class="tu-card sn-controls">
+				<div class="sn-chips" id="sn-n-pre" role="group" aria-label="Examples"></div>
+				<div class="sn-grid">
+					<div class="tu-field"><span class="tu-label" id="sn-b-l">Magnetic field: <b id="sn-b-v"></b></span><input type="range" id="sn-b" min="0" max="250" step="0.1" aria-labelledby="sn-b-l"><span class="tu-note" id="sn-b-n"></span></div>
+					<div class="tu-field"><span class="tu-label" id="sn-l-l">Length of the field region: <b id="sn-l-v"></b> cm</span><input type="range" id="sn-l" min="0.5" max="10" step="0.01" aria-labelledby="sn-l-l"></div>
+					<div class="tu-field"><span class="tu-label" id="sn-w-l">Neutron wavelength: <b id="sn-w-v"></b></span><input type="range" id="sn-w" min="0.5" max="6" step="0.005" aria-labelledby="sn-w-l"><span class="tu-note" id="sn-w-n"></span></div>
+					<div class="tu-field"><span class="tu-label" id="sn-x-l">Phase shifter in the other path: <b id="sn-x-v"></b></span><input type="range" id="sn-x" min="-180" max="180" step="1" aria-labelledby="sn-x-l"><span class="tu-note">A thin plate (aluminium in the real experiments) that shifts path I's wave.</span></div>
+					<div class="tu-field"><span class="tu-label" id="sn-vis-l">Contrast of the fringes: <b id="sn-vis-v"></b></span><input type="range" id="sn-vis" min="0.05" max="1" step="0.01" aria-labelledby="sn-vis-l"><span class="tu-note">Real interferometers of 1975 managed about 20-40%.</span></div>
+					<div class="tu-field"><span class="tu-label" id="sn-r-l">Count rate: <b id="sn-r-v"></b> neutrons per second</span><input type="range" id="sn-r" min="1" max="500" step="1" aria-labelledby="sn-r-l"><span class="tu-note">Counts come in at random (Poisson), so the numbers jitter like real data.</span></div>
+				</div>
+				<div class="sn-checks"><label class="sn-check"><input type="checkbox" id="sn-cl"> Pretend the neutron were a classical spinning top (a vector: back to normal after 360°)</label>
+					<span class="tu-field sn-inline"><span class="tu-label" id="sn-sp-l">Animation speed: <b id="sn-sp-v"></b></span><input type="range" id="sn-sp" min="0.25" max="10" step="0.25" aria-labelledby="sn-sp-l"></span></div>
+				<p class="tu-note sn-note" id="sn-n-note" aria-live="polite"></p>
+			</div>
+			<h3 class="sn-h">Scan the field, like the 1975 experiments</h3>
+			<div class="sn-wrap"><div class="sn-stage" id="sn-s-stage">
+				<canvas id="sn-s-c" tabindex="0" role="img" aria-label="Counts in the O detector against the magnetic field, with error bars, the spin-1/2 prediction and the classical vector prediction."></canvas>
+				<div class="sn-run"><button type="button" id="sn-s-png" aria-label="Save as PNG" title="Save as a picture">📷</button><button type="button" class="sn-fs" aria-label="Full screen" title="Full screen">⛶</button></div>
+			</div>
+			<div class="sn-readouts" id="sn-s-ro"></div></div>
+			<div class="tu-card sn-controls">
+				<div class="sn-grid">
+					<div class="tu-field"><span class="tu-label" id="sn-smax-l">Scan up to: <b id="sn-smax-v"></b></span><input type="range" id="sn-smax" min="360" max="2160" step="30" aria-labelledby="sn-smax-l"></div>
+					<div class="tu-field"><span class="tu-label" id="sn-sn-l">Number of field settings: <b id="sn-sn-v"></b></span><input type="range" id="sn-sn" min="8" max="80" step="1" aria-labelledby="sn-sn-l"></div>
+					<div class="tu-field"><span class="tu-label" id="sn-st-l">Counting time per setting: <b id="sn-st-v"></b></span><input type="range" id="sn-st" min="1" max="600" step="1" aria-labelledby="sn-st-l"></div>
+					<div class="tu-field"><span class="tu-label" id="sn-sbg-l">Background: <b id="sn-sbg-v"></b> counts/s</span><input type="range" id="sn-sbg" min="0" max="100" step="1" aria-labelledby="sn-sbg-l"></div>
+				</div>
+				<div class="sn-checks"><button type="button" class="tu-btn" id="sn-s-run">▶ Run the scan</button><button type="button" class="tu-btn tu-btn--ghost" id="sn-s-csv">Copy the data</button>
+					<label class="sn-check"><input type="checkbox" id="sn-s-cl" checked> Show the classical vector prediction</label><label class="sn-check"><input type="checkbox" id="sn-s-x"> Plot against the turn angle instead of the field</label></div>
+				<p class="tu-note sn-note" id="sn-s-note" aria-live="polite"></p>
+			</div>
+		</section>
+
+		<!-- ============================== 2. EINSTEIN-DE HAAS ============================== -->
+		<section data-panel="edh" role="tabpanel" hidden>
+			<p class="tu-note sn-lead">An iron rod hangs on a thin fibre inside a coil. Switch the field on and the electrons' tiny magnets (their <b>spins</b>) line up. Each spin carries angular momentum, and angular momentum cannot appear from nothing, so the <b>whole rod turns the other way</b>. Reverse the field and it turns back. This is the <b>Einstein-de Haas effect</b> (1915): proof that magnetism is angular momentum. Drag the picture to look around it.</p>
+			<div class="sn-wrap"><div class="sn-stage" id="sn-e-stage">
+				<canvas id="sn-e-c" tabindex="0" role="img" aria-label="An iron rod hanging on a fibre inside a coil, with a small mirror on the fibre reflecting a light beam onto a scale. Arrows inside the rod show the electron spins."></canvas>
+				<div class="sn-run sn-run--left" role="group" aria-label="Field"><button type="button" id="sn-e-up" class="sn-fb">⬆ Field up</button><button type="button" id="sn-e-off" class="sn-fb">Off</button><button type="button" id="sn-e-dn" class="sn-fb">⬇ Field down</button></div>
+				<div class="sn-run"><button type="button" id="sn-e-play" aria-pressed="true">❚❚ Pause</button><button type="button" id="sn-e-reset" title="Start again: rod at rest, no field">↺ Reset</button><button type="button" id="sn-e-view" title="Back to the starting view">⟲ View</button><button type="button" id="sn-e-png" aria-label="Save as PNG" title="Save as a picture">📷</button><button type="button" class="sn-fs" aria-label="Full screen" title="Full screen">⛶</button></div>
+			</div>
+			<div class="sn-readouts" id="sn-e-ro"></div></div>
+			<div class="sn-wrap sn-wrap--2"><div class="sn-stage" id="sn-ep-stage">
+				<canvas id="sn-ep-c" role="img" aria-label="Angular momentum of the rod, of the electrons, of what the fibre passed to the room, and their total (always zero) against time."></canvas>
+			</div></div>
+			<div class="tu-card sn-controls">
+				<div class="sn-chips" id="sn-e-pre" role="group" aria-label="Examples"></div>
+				<div class="sn-grid">
+					<div class="tu-field"><label class="tu-label" for="sn-e-mat">Material (sets g′)</label><select id="sn-e-mat" class="tu-select"></select></div>
+					<div class="tu-field"><span class="tu-label">How it hangs</span><div class="tu-seg" role="group" aria-label="How it hangs"><button type="button" id="sn-e-fib" aria-pressed="true">Torsion fibre</button><button type="button" id="sn-e-free" aria-pressed="false">Free (no twist)</button></div></div>
+					<div class="tu-field"><span class="tu-label" id="sn-e-per-l">Fibre's swing period: <b id="sn-e-per-v"></b> s</span><input type="range" id="sn-e-per" min="0.5" max="30" step="0.1" aria-labelledby="sn-e-per-l"><span class="tu-note" id="sn-e-per-n"></span></div>
+					<div class="tu-field"><span class="tu-label" id="sn-e-q-l">Damping (quality factor Q): <b id="sn-e-q-v"></b></span><input type="range" id="sn-e-q" min="0" max="3" step="0.01" aria-labelledby="sn-e-q-l"><span class="tu-note">How many swings it takes to die away (far right = almost none).</span></div>
+					<div class="tu-field"><span class="tu-label" id="sn-e-r-l">Rod radius: <b id="sn-e-r-v"></b> mm</span><input type="range" id="sn-e-r" min="0.2" max="10" step="0.05" aria-labelledby="sn-e-r-l"></div>
+					<div class="tu-field"><span class="tu-label" id="sn-e-len-l">Rod length: <b id="sn-e-len-v"></b> cm</span><input type="range" id="sn-e-len" min="1" max="30" step="0.1" aria-labelledby="sn-e-len-l"></div>
+					<div class="tu-field"><span class="tu-label" id="sn-e-nz-l">Disturbances (draughts, stray fields): <b id="sn-e-nz-v"></b></span><input type="range" id="sn-e-nz" min="0" max="100" step="1" aria-labelledby="sn-e-nz-l"></div>
+					<div class="tu-field"><span class="tu-label" id="sn-e-sp-l">Time speed: <b id="sn-e-sp-v"></b></span><input type="range" id="sn-e-sp" min="0.25" max="8" step="0.25" aria-labelledby="sn-e-sp-l"></div>
+				</div>
+				<div class="sn-checks"><label class="sn-check"><input type="checkbox" id="sn-e-ac"> Reverse the field again and again (AC), like Einstein and de Haas</label>
+					<span class="tu-field sn-inline"><span class="tu-label" id="sn-e-f-l">every <b id="sn-e-f-v"></b> s</span><input type="range" id="sn-e-f" min="0.25" max="15" step="0.05" aria-labelledby="sn-e-f-l"></span>
+					<button type="button" class="tu-btn tu-btn--ghost" id="sn-e-tune">Match the fibre (resonance)</button></div>
+				<div class="sn-checks"><span class="tu-label">Turn in the picture</span><div class="tu-seg" role="group" aria-label="Exaggeration"><button type="button" id="sn-e-ex" aria-pressed="true">Exaggerated so you can see it</button><button type="button" id="sn-e-true" aria-pressed="false">True angle</button></div><span class="tu-note" id="sn-e-exn"></span></div>
+				<p class="tu-note sn-note" id="sn-e-note" aria-live="polite"></p>
+			</div>
+		</section>
+
+		<!-- ============================== 3. BARNETT ============================== -->
+		<section data-panel="barnett" role="tabpanel" hidden>
+			<p class="tu-note sn-lead">The same law the other way round: <b>spin an iron rod and it magnetizes itself</b>. In the rotating rod the electron spins feel as if a magnetic field <b>B = ω / γ′</b> were there, and a few of them line up. Because electrons are negative, the rod's north pole points <b>against</b> the way it spins. Samuel Barnett found this in 1915 with a rod spun by a motor and a sensitive magnetometer.</p>
+			<div class="sn-wrap"><div class="sn-stage" id="sn-b-stage">
+				<canvas id="sn-bc-c" tabindex="0" role="img" aria-label="An iron rod spun by a motor, with spin arrows inside that slowly line up, and a magnetometer needle beside it."></canvas>
+				<div class="sn-run sn-run--left" role="group" aria-label="Motor"><button type="button" id="sn-b-ccw" class="sn-fb">⟲ Spin</button><button type="button" id="sn-b-stop" class="sn-fb">Stop</button><button type="button" id="sn-b-cw" class="sn-fb">⟳ Reverse</button></div>
+				<div class="sn-run"><button type="button" id="sn-b-play" aria-pressed="true">❚❚ Pause</button><button type="button" id="sn-b-view" title="Back to the starting view">⟲ View</button><button type="button" id="sn-b-png" aria-label="Save as PNG" title="Save as a picture">📷</button><button type="button" class="sn-fs" aria-label="Full screen" title="Full screen">⛶</button></div>
+			</div>
+			<div class="sn-readouts" id="sn-b-ro"></div></div>
+			<div class="sn-wrap sn-wrap--2"><div class="sn-stage" id="sn-bp-stage">
+				<canvas id="sn-bp-c" role="img" aria-label="Spin rate and the magnetization it causes, against time."></canvas>
+			</div></div>
+			<div class="tu-card sn-controls">
+				<div class="sn-grid">
+					<div class="tu-field"><span class="tu-label" id="sn-b-rpm-l">Motor speed: <b id="sn-b-rpm-v"></b> rpm</span><input type="range" id="sn-b-rpm" min="0" max="20000" step="50" aria-labelledby="sn-b-rpm-l"></div>
+					<div class="tu-field"><label class="tu-label" for="sn-b-mat">Material (sets g′)</label><select id="sn-b-mat" class="tu-select"></select></div>
+					<div class="tu-field"><span class="tu-label" id="sn-b-chi-l">Effective susceptibility χ: <b id="sn-b-chi-v"></b></span><input type="range" id="sn-b-chi" min="0" max="4" step="0.01" aria-labelledby="sn-b-chi-l"><span class="tu-note">How easily the rod magnetizes, its shape included (a long thin rod magnetizes far more easily than a short fat one).</span></div>
+					<div class="tu-field"><span class="tu-label" id="sn-b-r-l">Rod radius: <b id="sn-b-r-v"></b> cm</span><input type="range" id="sn-b-r" min="0.2" max="5" step="0.05" aria-labelledby="sn-b-r-l"></div>
+					<div class="tu-field"><span class="tu-label" id="sn-b-len-l">Rod length: <b id="sn-b-len-v"></b> cm</span><input type="range" id="sn-b-len" min="2" max="60" step="0.5" aria-labelledby="sn-b-len-l"></div>
+					<div class="tu-field"><span class="tu-label" id="sn-b-d-l">Magnetometer distance from the rod: <b id="sn-b-d-v"></b> cm</span><input type="range" id="sn-b-d" min="2" max="100" step="0.5" aria-labelledby="sn-b-d-l"></div>
+				</div>
+				<p class="tu-note sn-note" id="sn-b-note" aria-live="polite"></p>
+			</div>
+		</section>
+
+		<div class="tu-seo">
+			<h2>How the spin simulator works</h2>
+			<p>Everything runs in your browser from the textbook equations; nothing is uploaded. The three experiments all show that <strong>spin is real angular momentum</strong>, and the first one shows that an electron-like or neutron-like particle is not a little spinning ball: its wave must turn twice before it is back to where it started.</p>
+			<div class="sn-eq" role="math" aria-label="Key equations">
+				<div><span class="sn-eq__n">Larmor precession</span> <span class="sn-eq__f mes-tex">\(\displaystyle \alpha = \gamma_n B\,\frac{L}{v},\qquad \gamma_n = 1.832\times10^{8}\ \text{rad s}^{-1}\text{T}^{-1},\qquad v = \frac{h}{m_n\lambda}\)</span></div>
+				<div><span class="sn-eq__n">the spinor after turning</span> <span class="sn-eq__f mes-tex">\(\displaystyle \psi \to e^{-i\alpha\sigma_z/2}\,\psi,\qquad \alpha = 2\pi:\ \psi \to -\psi\)</span></div>
+				<div><span class="sn-eq__n">forward (O) beam</span> <span class="sn-eq__f mes-tex">\(\displaystyle I_O \propto 1 + V\cos\!\left(\frac{\alpha}{2} + \chi\right)\quad\text{(spin }\tfrac12\text{)},\qquad 1 + V\cos(\alpha + \chi)\quad\text{(a classical vector)}\)</span></div>
+				<div><span class="sn-eq__n">magnetism is angular momentum</span> <span class="sn-eq__f mes-tex">\(\displaystyle \mu = -g'\frac{e}{2m_e}\,L_e,\qquad \Delta L_{\text{rod}} = -\Delta L_e = \frac{\Delta\mu}{\gamma'},\quad \gamma' = g'\frac{e}{2m_e}\)</span></div>
+				<div><span class="sn-eq__n">rod on a torsion fibre</span> <span class="sn-eq__f mes-tex">\(\displaystyle I\ddot\theta = -\kappa\theta - c\dot\theta - \frac{dL_e}{dt},\qquad \theta_{\max} = \frac{\Delta L}{\sqrt{I\kappa}}\)</span></div>
+				<div><span class="sn-eq__n">Barnett: rotation as a field</span> <span class="sn-eq__f mes-tex">\(\displaystyle B_{\text{eq}} = \frac{\omega}{\gamma'},\qquad M = -\chi\,\frac{\omega}{\mu_0\gamma'}\)</span></div>
+			</div>
+			<h3>The neutron interferometer and the 720° turn</h3>
+			<p>A perfect silicon crystal, cut so that three parallel plates stand on one base (the Laue-Laue-Laue or "LLL" interferometer of Bonse and Hart, used for neutrons by Rauch, Treimer and Bonse in 1974), splits a neutron's wave by Bragg diffraction, sends the two halves about 4 cm apart and brings them together again. Where they meet, the waves add: if both halves arrive in step, most neutrons go into the forward beam (O); if one half has changed sign, they go into the other beam (H). A magnetic field across one path makes the neutron's spin precess (turn) at the Larmor frequency, 29.16 MHz per tesla, so the turn angle is the field times the time spent in it. Quantum mechanics says the state of a spin-½ particle turned by α gets the factor e<sup>−iασ/2</sup>: after one full turn it is multiplied by −1. The page uses an unpolarized beam (both spin states give the same intensity) with the given fringe contrast V and a flat background.</p>
+			<ul>
+				<li><strong>Rauch et al. 1975</strong> and <strong>Werner et al. 1975</strong> did this almost at the same time. Werner's group, using 1.445 Å neutrons at the University of Missouri reactor, found the intensity came back after a precession of 704 ± 38°, against 720° predicted and 360° for anything that behaves like an ordinary vector. Later runs (Rauch et al. 1978) gave 716.8 ± 3.8°.</li>
+				<li><strong>The scan</strong> uses the same steps: set a field, count for a while, move on. The fit is a weighted least-squares fit of a + b cos(2πB/P) + c sin(2πB/P), with the period P found by searching, and its error where χ² rises by one (scaled up when the fit is poor). The period is then turned into degrees of precession with the same α = γBL/v the apparatus uses.</li>
+				<li>"Classical spinning top" means a vector that turns with the field. It is back to its old self after 360°, so it would show a period of 360°. The neutron does not.</li>
+			</ul>
+			<h3>Einstein-de Haas</h3>
+			<p>Ampère thought magnetism came from tiny loops of current inside iron. A loop of moving electrons has angular momentum as well as a magnetic moment, so lining the loops up (magnetizing the rod) should make the rest of the rod turn the other way. Albert Einstein and Wander de Haas measured it in 1915 by reversing the field in time with the swing of the fibre so the tiny kicks added up, and reported g′ ≈ 1, the value for orbiting electrons. Careful later work (Barnett, Beck, Scott and others, up to the 1960s) found g′ ≈ 1.9 for iron: almost all of iron's magnetism comes from electron <em>spin</em>, whose g is 2.0023. The 1915 result is a famous case of an experiment agreeing with the expected answer for the wrong reason.</p>
+			<ul>
+				<li>The rod is a solid cylinder, moment of inertia I = ½mr², fully magnetized (iron 1.71 MA/m) with a 10 ms response. The fibre's stiffness κ comes from the period you choose (κ = I(2π/T)²).</li>
+				<li>The g′ readout is what an experimenter would get: the measured kick to the rod (with the fibre's own torque added back and any disturbances left in), divided into the change of moment.</li>
+				<li>The plot keeps a full account: rod + electrons + what the fibre passed to the room = 0 at every moment.</li>
+			</ul>
+			<h3>Barnett effect</h3>
+			<p>In a frame turning at ω, a magnetic moment that comes with angular momentum behaves as if a field ω/γ′ were added (Larmor's theorem). The rod's electrons therefore magnetize it as a field of ω/γ′ would: about 4 nanotesla at 6000 rpm for iron, more than ten thousand times weaker than the Earth's field, which is why Barnett had to cancel the Earth's field with great care. The magnetization is χ times the equivalent H; χ here is the rod's effective susceptibility, which for a real rod is limited by its shape (the demagnetizing field). The magnetometer reading is the field of a point dipole at the chosen distance, side-on.</p>
+			<div class="sn-further"><h3>Further</h3>
+				<ul>
+					<li>Chantal Roth's talks on spin and spinors: <a href="https://youtu.be/p4s5CRSihNM" target="_blank" rel="noopener">youtu.be/p4s5CRSihNM</a> and <a href="https://youtu.be/q15Zem6zqcI" target="_blank" rel="noopener">youtu.be/q15Zem6zqcI</a>, and her interactive jsfiddles <a href="https://jsfiddle.net/Chenopdodium/a7kLuhx0/" target="_blank" rel="noopener">a7kLuhx0</a> and <a href="https://jsfiddle.net/Chenopdodium/p7cx23sk/" target="_blank" rel="noopener">p7cx23sk</a>. The ideas for this page came from them.</li>
+					<li>H. Rauch, A. Zeilinger, G. Badurek, A. Wilfing, W. Bauspiess, U. Bonse (1975). Verification of coherent spinor rotation of fermions. Physics Letters A 54, 425-427.</li>
+					<li>S. A. Werner, R. Colella, A. W. Overhauser, C. F. Eagen (1975). Observation of the phase shift of a neutron due to precession in a magnetic field. Physical Review Letters 35, 1053-1055.</li>
+					<li>H. Rauch, A. Wilfing, W. Bauspiess, U. Bonse (1978). Precise determination of the 4π-periodicity factor of a spinor wave function. Zeitschrift für Physik B 29, 281-284.</li>
+					<li>A. Einstein, W. J. de Haas (1915). Experimenteller Nachweis der Ampèreschen Molekularströme. Verhandlungen der Deutschen Physikalischen Gesellschaft 17, 152-170.</li>
+					<li>S. J. Barnett (1915). Magnetization by rotation. Physical Review 6, 239-270. S. J. Barnett (1935). Gyromagnetic and electron-inertia effects. Reviews of Modern Physics 7, 129-166.</li>
+					<li>G. G. Scott (1962). Review of gyromagnetic ratio experiments. Reviews of Modern Physics 34, 102-109.</li>
+				</ul>
+			</div>
+			<p>Related: <a href="/electromagnetic-fields-simulator">Electromagnetic Fields Simulator</a> · <a href="/magnetic-isopotentials">Magnetic Isopotentials</a> · <a href="/atomic-clock-simulator">Atomic Clock Simulator</a> · <a href="/michelson-morley-experiment">Michelson-Morley Experiment</a> · <a href="/physics">MES Physics</a> · <a href="/tools">More MES tools</a></p>
+		</div>
+		<script src="/main_js/mes-math.js" defer></script>
+	</div>
