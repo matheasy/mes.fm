@@ -1,0 +1,87 @@
+	<script>try{if(!localStorage.getItem('pageMode')){document.documentElement.classList.add('page-wide')}}catch(e){}</script>
+	<div class="tu gn" id="gn">
+		<p class="gn-lead">An interactive guide to <b>German New Medicine</b> <button type="button" class="gn-q" data-g="gnm" aria-label="What is German New Medicine?">?</button> (GNM), the model of health and disease that <b>Dr. Ryke Geerd Hamer</b> <button type="button" class="gn-q" data-g="hamer" aria-label="Who was Ryke Geerd Hamer?">?</button> set out in his Five Biological Laws. Everything here explains what GNM teaches, in its own terms: drag the marker along the two-phase curve, pick an organ, describe what you notice, and see how GNM reads it on the levels of psyche, brain and organ.</p>
+		<nav class="gn-jump" aria-label="On this page"><a href="#gn-chartcard">Two-phase chart</a><a href="#gn-askcard">Describe your symptoms</a><a href="#gn-orgcard">Organs &amp; brain relays</a><a href="#gn-laws">The 5 Biological Laws</a><a href="#gn-gloss">Glossary</a></nav>
+
+		<!-- ============================== 1. THE TWO-PHASE CHART ============================== -->
+		<section class="tu-card gn-card" id="gn-chartcard" aria-labelledby="gn-ch-h">
+			<div class="gn-chead"><h2 id="gn-ch-h">The two-phase chart</h2><span class="gn-pv" id="gn-ch-pv"></span></div>
+			<p class="tu-note gn-sub">In GNM every Significant Biological Special Program <button type="button" class="gn-q" data-g="sbs" aria-label="What is an SBS?">?</button> runs the same course: <b>normotonia</b> → <b>DHS</b> → <b>conflict-active phase</b> (sympathicotonia <button type="button" class="gn-q" data-g="sympathicotonia" aria-label="What is sympathicotonia?">?</button>) → <b>conflictolysis</b> → <b>PCL-A</b> → <b>epileptoid crisis</b> → <b>PCL-B</b> → normotonia. Above the line is stress mode, below it rest-and-repair mode (vagotonia <button type="button" class="gn-q" data-g="vagotonia" aria-label="What is vagotonia?">?</button>). <b>Click or drag anywhere on the curve</b> (or use the arrow keys) to see what GNM says is expected at that point.</p>
+			<div class="gn-ctl">
+				<div class="tu-field"><span class="tu-label">Course</span><div class="tu-seg gn-seg" role="group" aria-label="Course of the program" id="gn-scen"></div></div>
+				<div class="gn-sliders">
+					<div class="tu-field"><span class="tu-label" id="gn-a-l">Conflict intensity: <b id="gn-a-v"></b></span><input type="range" id="gn-a" min="0.2" max="1" step="0.05" aria-labelledby="gn-a-l"></div>
+					<div class="tu-field"><span class="tu-label" id="gn-d-l">Time the conflict stays active: <b id="gn-d-v"></b></span><input type="range" id="gn-d" min="0.2" max="1" step="0.05" aria-labelledby="gn-d-l"></div>
+					<p class="tu-note gn-mass" id="gn-mass" aria-live="polite"></p>
+				</div>
+			</div>
+			<div class="gn-cwrap">
+				<div class="gn-cbox">
+					<svg id="gn-chart" class="gn-chart" viewBox="0 0 1000 400" tabindex="0" role="slider" aria-label="Position on the two-phase curve" aria-valuemin="0" aria-valuemax="100"></svg>
+					<div class="gn-strip" id="gn-strip" role="group" aria-label="Jump to a phase"></div>
+				</div>
+				<div class="gn-info" id="gn-info" aria-live="polite"></div>
+			</div>
+		</section>
+
+		<!-- ============================== 2. DESCRIBE YOUR SYMPTOMS ============================== -->
+		<section class="tu-card gn-card" id="gn-askcard" aria-labelledby="gn-ask-h">
+			<div class="gn-chead"><h2 id="gn-ask-h">Describe your symptoms</h2></div>
+			<p class="tu-note gn-sub">Type what you notice in plain words. A simple word-and-phrase matcher (no AI, nothing leaves your browser) reads it the GNM way: signs of sympathicotonia or vagotonia, crisis signs, and words that point to an organ. It places the marker on the chart and says why. Words after "no", "not" or "without" are left out.</p>
+			<label class="tu-label" for="gn-ask-in">What do you notice?</label>
+			<textarea id="gn-ask-in" class="tu-input gn-ask-in" rows="3" placeholder="e.g. cold hands, can't sleep, losing weight"></textarea>
+			<div class="gn-askrow"><button type="button" class="tu-btn tu-btn--primary" id="gn-ask-go">Read it the GNM way</button><button type="button" class="tu-btn tu-btn--ghost" id="gn-ask-clr">Clear</button></div>
+			<div class="tu-chips gn-ex" id="gn-ask-ex" role="group" aria-label="Examples"></div>
+			<div id="gn-ask-out" class="gn-ask-out" aria-live="polite"></div>
+		</section>
+
+		<!-- ============================== 3. ORGANS AND BRAIN RELAYS ============================== -->
+		<section class="tu-card gn-card" id="gn-orgcard" aria-labelledby="gn-org-h">
+			<div class="gn-chead"><h2 id="gn-org-h">Organs by germ layer and brain relay</h2><span class="gn-pv" id="gn-org-pv"></span></div>
+			<p class="tu-note gn-sub">GNM orders every organ by the germ layer <button type="button" class="gn-q" data-g="germ" aria-label="What is a germ layer?">?</button> it grows from, and each germ layer by the part of the brain that, in GNM, controls it. Pick an organ on the body, in the list, or click a part of the brain to see its organs. The selected organ is also used by the chart above.</p>
+			<div class="gn-layers" id="gn-layerchips" role="group" aria-label="Filter by germ layer"></div>
+			<div class="gn-orgsearch"><label class="tu-label" for="gn-org-q">Find an organ</label><input type="search" id="gn-org-q" class="tu-input" placeholder="Type: skin, bone, lung, bladder…" autocomplete="off"></div>
+			<div class="gn-orggrid">
+				<div class="gn-figs">
+					<figure class="gn-fig"><svg id="gn-body" viewBox="0 0 220 440" role="group" aria-label="Body with organs coloured by germ layer"></svg><figcaption>Organs (dots coloured by germ layer)</figcaption></figure>
+					<figure class="gn-fig"><svg id="gn-brain" viewBox="0 0 320 250" role="group" aria-label="Brain parts by germ layer"></svg><figcaption>Brain parts (side view, front on the left)</figcaption></figure>
+				</div>
+				<div class="gn-orgside">
+					<div class="gn-orglist" id="gn-org-list" role="listbox" aria-label="Organs"></div>
+					<div class="gn-orgdetail" id="gn-org-detail" aria-live="polite"></div>
+				</div>
+			</div>
+		</section>
+
+		<!-- ============================== 4. THE FIVE BIOLOGICAL LAWS ============================== -->
+		<section class="tu-card gn-card" id="gn-laws" aria-labelledby="gn-law-h">
+			<div class="gn-chead"><h2 id="gn-law-h">The 5 Biological Laws</h2></div>
+			<div class="gn-lawtabs" id="gn-lawtabs" role="tablist" aria-label="The five laws"></div>
+			<div class="gn-lawpanel" id="gn-lawpanel" role="tabpanel"></div>
+		</section>
+
+		<!-- ============================== 5. GLOSSARY ============================== -->
+		<section class="tu-card gn-card" id="gn-gloss" aria-labelledby="gn-gl-h">
+			<div class="gn-chead"><h2 id="gn-gl-h">Glossary</h2></div>
+			<div class="gn-orgsearch"><label class="tu-label" for="gn-gl-q">Search the terms</label><input type="search" id="gn-gl-q" class="tu-input" placeholder="DHS, track, constellation…" autocomplete="off"></div>
+			<dl class="gn-gl" id="gn-gl-list"></dl>
+		</section>
+
+		<div class="tu-seo">
+			<h2>What is German New Medicine?</h2>
+			<p>German New Medicine (GNM) is the system that the German physician Dr. Ryke Geerd Hamer (1935-2017) developed from 1981. Hamer described every illness as a <b>Significant Biological Special Program</b> (SBS) that starts with a sudden, isolating conflict shock, the <b>DHS</b> (Dirk Hamer Syndrome, named after his son), and runs on three levels at once: the psyche, the brain and the organ. He summed the system up in <b>five biological laws</b>.</p>
+			<h3>The two phases of every program</h3>
+			<p>In GNM a program has a <b>conflict-active phase</b> of constant sympathicotonia (cold hands, poor sleep, little appetite, constant thinking about the conflict) and, once the conflict is resolved (<b>conflictolysis</b>), a <b>healing phase</b> of vagotonia (fatigue, warmth, often fever, swelling and pain). The healing phase is split by the <b>epileptoid crisis</b> into PCL-A, with edema, and PCL-B, when the edema leaves and scar tissue forms. Hamer said the length and strength of the healing phase follow the <b>conflict mass</b>, and that recurrences triggered by <b>tracks</b> can keep a healing "hanging".</p>
+			<h3>Germ layers and brain relays</h3>
+			<p>The third law sorts every tissue by its embryonic germ layer. In GNM the <b>brain stem</b> controls the endodermal organs and the <b>cerebellum</b> the old-mesodermal ones; both make cells multiply in the active phase and break them down in healing. The <b>cerebral medulla</b> (new mesoderm) and the <b>cerebral cortex</b> (ectoderm) do the opposite: cell loss or loss of function in the active phase, rebuilding in healing. The mark a program leaves in its brain relay is the <b>Hamer focus</b>.</p>
+			<h3>Questions</h3>
+			<dl>
+				<dt>How does the "Describe your symptoms" box work?</dt><dd>It looks for words and phrases from a fixed list (for example "cold hands", "fever", "cough", "chills", "peeing a lot") and adds up which GNM phase each one belongs to, and which organ words appear. It is a keyword matcher, not artificial intelligence, and nothing you type is sent anywhere or saved.</dd>
+				<dt>What decides the side of the body?</dt><dd>In GNM, a person's handedness decides on which side of the cerebellum and cortex a conflict lands. Hamer used the clapping test: the hand on top is the leading hand.</dd>
+				<dt>Why do microbes appear only in the healing phase?</dt><dd>Hamer's fourth law says the brain switches on the microbes of each germ layer after conflictolysis to break down or rebuild tissue, so in GNM they are helpers of the healing phase.</dd>
+				<dt>Where does the information come from?</dt><dd>From Hamer's own descriptions of the Five Biological Laws and the GNM teaching material based on them (for example the scientific chart of GNM and learninggnm.com). The organ list here is a short selection.</dd>
+			</dl>
+			<p>Related: <a href="/heart-simulator">Heart Simulator</a> · <a href="/neuron-simulator">Neuron Simulator</a> · <a href="/tools">More MES tools</a></p>
+		</div>
+		<script src="/main_js/panel-view.js?v=1" defer></script>
+	</div>

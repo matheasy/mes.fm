@@ -216,6 +216,7 @@ TOOLS = [  # (directory, compact-bar title[, home path of the site the page belo
     ("grounding-rod-simulator", "Ground Rod Simulator"),
     ("double-pendulum", "Double Pendulum"),
     ("neuron-simulator", "Neuron Simulator"),
+    ("gnm", "German New Medicine"),
     ("heart-simulator", "Heart Simulator"),
     ("hutchison-effect-simulator", "Hutchison Effect Simulator"),
     ("orbit-simulator", "Orbit Simulator"),
