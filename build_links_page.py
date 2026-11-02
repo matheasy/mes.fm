@@ -633,8 +633,8 @@ def build():
     s = s.replace('<a href="/conspiracy" tabindex="-1"><img class="compact-nav-logo" alt="" width="32" height="32" src="https://mes.fm/img/conspiracy-logo.jpg"></a>',
                   '<a href="/links" tabindex="-1"><img class="compact-nav-logo" alt="" width="32" height="32" src="https://mes.fm/img/links-logo.png"></a>')
     s = s.replace('<a class="compact-nav-title" href="/conspiracy" tabindex="-1">MES Conspiracy</a>', '<a class="compact-nav-title" href="/links" tabindex="-1">MES Links</a>')
-    s = s.replace("""<a class="logo-image-container" href='/conspiracy'><img width="88" height="88" id="logo" class="logo lazyload" alt="MES Conspiracy logo" data-src="https://mes.fm/img/conspiracy-logo.jpg"></a>""",
-                  """<a class="logo-image-container" href='/links'><img width="88" height="88" id="logo" class="logo lazyload" alt="MES Links logo" data-src="https://mes.fm/img/links-logo.png"></a>""")
+    s = s.replace("""<a class="logo-image-container" href='/conspiracy'><img width="88" height="88" id="logo" class="logo" alt="MES Conspiracy logo" src="https://mes.fm/img/conspiracy-logo.jpg"></a>""",
+                  """<a class="logo-image-container" href='/links'><img width="88" height="88" id="logo" class="logo" alt="MES Links logo" src="https://mes.fm/img/links-logo.png"></a>""")
     s = s.replace("""<a class="calculator-title-link" href='/conspiracy'>
           <p class="calculator-title">MES Conspiracy</p>""", """<a class="calculator-title-link" href='/links'>
           <p class="calculator-title">MES Links</p>""")

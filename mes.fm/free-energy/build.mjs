@@ -1609,7 +1609,7 @@ ${hasLinkPref ? LP_CSS : ""}</style>
         <button type="button" id="textSizeUpBtn" class="header-control-btn" aria-label="Increase text size" title="Increase text size">A+</button>
         <button type="button" id="themeToggleBtn" class="header-control-btn" aria-label="Toggle dark mode" title="Toggle dark mode">&#127769;</button>
       </div>
-      <a class="logo-image-container" href='/free-energy'><img width="88" height="88" id="logo" class="logo lazyload" alt="MES Free Energy logo" data-src="https://mes.fm/img/free-energy-logo.jpg"></a>
+      <a class="logo-image-container" href='/free-energy'><img width="88" height="88" id="logo" class="logo" alt="MES Free Energy logo" src="https://mes.fm/img/free-energy-logo.jpg"></a>
       <div class="logo-text-container">
         <a class="calculator-title-link" href='/free-energy'>
           <p class="calculator-title">⚡ #FreeEnergy Video Research Series</p>

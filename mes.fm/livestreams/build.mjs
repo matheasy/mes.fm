@@ -1761,7 +1761,7 @@ body.is-stuck #header-controls { transform: none; bottom: auto; }
         <button type="button" id="textSizeUpBtn" class="header-control-btn" aria-label="Increase text size" title="Increase text size">A+</button>
         <button type="button" id="themeToggleBtn" class="header-control-btn" aria-label="Toggle dark mode" title="Toggle dark mode">&#127769;</button>
       </div>
-      <a class="logo-image-container" href='/livestreams'><img width="88" height="88" id="logo" class="logo lazyload" alt="MES Livestreams logo" data-src="https://mes.fm/img/logo-mark.png"></a>
+      <a class="logo-image-container" href='/livestreams'><img width="88" height="88" id="logo" class="logo" alt="MES Livestreams logo" src="https://mes.fm/img/logo-mark.png"></a>
       <div class="logo-text-container">
         <a class="calculator-title-link" href='/livestreams'>
           <p class="calculator-title">MES Livestreams</p>

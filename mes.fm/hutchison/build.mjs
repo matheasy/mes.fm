@@ -1793,7 +1793,7 @@ ${hasFilter ? FILTER_CSS : ""}${hasLinkPref ? LP_CSS : ""}</style>
         <button type="button" id="textSizeUpBtn" class="header-control-btn" aria-label="Increase text size" title="Increase text size">A+</button>
         <button type="button" id="themeToggleBtn" class="header-control-btn" aria-label="Toggle dark mode" title="Toggle dark mode">&#127769;</button>
       </div>
-      <a class="logo-image-container" href='/hutchison'><img width="88" height="88" id="logo" class="logo lazyload" alt="MES Hutchison Effect logo" data-src="https://mes.fm/img/hutchison-logo.jpg"></a>
+      <a class="logo-image-container" href='/hutchison'><img width="88" height="88" id="logo" class="logo" alt="MES Hutchison Effect logo" src="https://mes.fm/img/hutchison-logo.jpg"></a>
       <div class="logo-text-container">
         <a class="calculator-title-link" href='/hutchison'>
           <p class="calculator-title">MES Hutchison Effect</p>

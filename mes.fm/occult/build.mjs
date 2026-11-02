@@ -1617,7 +1617,7 @@ ${hasLinkPref ? LP_CSS : ""}</style>
         <button type="button" id="textSizeUpBtn" class="header-control-btn" aria-label="Increase text size" title="Increase text size">A+</button>
         <button type="button" id="themeToggleBtn" class="header-control-btn" aria-label="Toggle dark mode" title="Toggle dark mode">&#127769;</button>
       </div>
-      <a class="logo-image-container" href='/occult'><img width="88" height="88" id="logo" class="logo lazyload" alt="MES Occult logo" data-src="https://mes.fm/img/occult-logo.jpg"></a>
+      <a class="logo-image-container" href='/occult'><img width="88" height="88" id="logo" class="logo" alt="MES Occult logo" src="https://mes.fm/img/occult-logo.jpg"></a>
       <div class="logo-text-container">
         <a class="calculator-title-link" href='/occult'>
           <p class="calculator-title">MES Occult Video Series</p>

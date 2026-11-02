@@ -1659,7 +1659,7 @@ ${hasFilter ? FILTER_CSS : ""}${hasLinkPref ? LP_CSS : ""}</style>
         <button type="button" id="textSizeUpBtn" class="header-control-btn" aria-label="Increase text size" title="Increase text size">A+</button>
         <button type="button" id="themeToggleBtn" class="header-control-btn" aria-label="Toggle dark mode" title="Toggle dark mode">&#127769;</button>
       </div>
-      <a class="logo-image-container" href='/bg'><img width="88" height="88" id="logo" class="logo lazyload" alt="Bob Greenyer says the darnedest things logo" data-src="https://mes.fm/img/bg-logo.jpg"></a>
+      <a class="logo-image-container" href='/bg'><img width="88" height="88" id="logo" class="logo" alt="Bob Greenyer says the darnedest things logo" src="https://mes.fm/img/bg-logo.jpg"></a>
       <div class="logo-text-container">
         <a class="calculator-title-link" href='/bg'>
           <p class="calculator-title">🗣 Bob Greenyer says the darnedest things 😹</p>

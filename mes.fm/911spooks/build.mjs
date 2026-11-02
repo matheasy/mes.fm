@@ -1731,7 +1731,7 @@ ${hasFilter ? FILTER_CSS : ""}${hasLinkPref ? LP_CSS : ""}</style>
         <button type="button" id="textSizeUpBtn" class="header-control-btn" aria-label="Increase text size" title="Increase text size">A+</button>
         <button type="button" id="themeToggleBtn" class="header-control-btn" aria-label="Toggle dark mode" title="Toggle dark mode">&#127769;</button>
       </div>
-      <a class="logo-image-container" href='/911spooks'><img width="88" height="88" id="logo" class="logo lazyload" alt="9/11 Spooks logo" data-src="https://mes.fm/img/911spooks-logo.jpg"></a>
+      <a class="logo-image-container" href='/911spooks'><img width="88" height="88" id="logo" class="logo" alt="9/11 Spooks logo" src="https://mes.fm/img/911spooks-logo.jpg"></a>
       <div class="logo-text-container">
         <a class="calculator-title-link" href='/911spooks'>
           <p class="calculator-title">9/11 Spooks</p>
