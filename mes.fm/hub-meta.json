@@ -328,7 +328,7 @@
 },
 "/go":{
 "added":"2026-10-06",
-"updated":"2026-10-29",
+"updated":"2026-11-01",
 "type":"Tool"
 },
 "/gpacalculator":{
@@ -698,7 +698,7 @@
 },
 "/site-index":{
 "added":"2026-10-03",
-"updated":"2026-10-29",
+"updated":"2026-11-01",
 "type":"Tool"
 },
 "/site-traffic":{
