@@ -65,6 +65,71 @@ const HUB_FILTERS = {
         "offguardian",
         "Off Guardian",
         "off ?guardian"
+      ],
+      [
+        "gage",
+        "Richard Gage",
+        "richard gage"
+      ],
+      [
+        "ashton",
+        "Ashton Forbes",
+        "ashton forbes"
+      ]
+    ]
+  },
+  "911spooks-videos": {
+    "placeholder": "Search the videos…",
+    "chips": [
+      [
+        "bob",
+        "Bob Greenyer",
+        "greenyer"
+      ],
+      [
+        "revisionist",
+        "9/11 Revisionist",
+        "revisionist|norman"
+      ],
+      [
+        "abby",
+        "Abby Martin",
+        "abby martin"
+      ],
+      [
+        "hughes",
+        "David Hughes",
+        "hughes"
+      ],
+      [
+        "fetzer",
+        "Jim Fetzer",
+        "fetzer"
+      ],
+      [
+        "ryan",
+        "Ryan Bannister",
+        "ryan ban+ister"
+      ],
+      [
+        "mason",
+        "Andrew Mason",
+        "andrew mason"
+      ],
+      [
+        "offguardian",
+        "Off Guardian",
+        "off ?guardian"
+      ],
+      [
+        "gage",
+        "Richard Gage",
+        "richard gage"
+      ],
+      [
+        "ashton",
+        "Ashton Forbes",
+        "ashton forbes"
       ]
     ]
   }
@@ -74,8 +139,8 @@ for (const [sid, cfg] of Object.entries(HUB_FILTERS)) {
   if (!sec) continue;
   const cats = cfg.chips.map(([id, label, re]) => ({ id, label, test: (t) => new RegExp(re, "i").test(t) }));
   withCats(sec.items, cats);
-  sec.filter = cats.map(({ id, label }) => ({ id, label }));
-  if (cats.length) sec.filter.push({ id: "other", label: "Everything else" });
+  sec.filter = cats.filter((c) => sec.items.some((i) => (i.cats || "").split(" ").includes(c.id))).map(({ id, label }) => ({ id, label }));
+  if (sec.items.some((i) => i.cats === "other")) sec.filter.push({ id: "other", label: "Everything else" });
   sec.filterPlaceholder = cfg.placeholder;
 }
 // MES-HUB-FILTER:END
@@ -160,7 +225,7 @@ const PAGES = [
     tileLabel: "Andrew Johnson's 9/11 Books",
   },
 ];
-addAllPage(SECTIONS, PAGES, { hub: "911spooks", name: "9/11 Spooks" });
+addAllPage(SECTIONS, PAGES, { hub: "911spooks", name: "9/11 Spooks", withSectionChips: true });
 
 // ---------------------------------------------------------------------------
 // Scraping: og:image / "Watch on: ..." row per item, with a committed cache.

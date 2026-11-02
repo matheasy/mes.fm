@@ -19,6 +19,19 @@ ROOT = Path(__file__).resolve().parent / "mes.fm"
 APPLY = "--apply" in sys.argv
 
 # hub -> section id -> (placeholder, [(chip id, label, JS regex)])
+SPOOK_CHIPS = [
+    ("bob", "Bob Greenyer", r"greenyer"),
+    ("revisionist", "9/11 Revisionist", r"revisionist|norman"),
+    ("abby", "Abby Martin", r"abby martin"),
+    ("hughes", "David Hughes", r"hughes"),
+    ("fetzer", "Jim Fetzer", r"fetzer"),
+    ("ryan", "Ryan Bannister", r"ryan ban+ister"),
+    ("mason", "Andrew Mason", r"andrew mason"),
+    ("offguardian", "Off Guardian", r"off ?guardian"),
+    ("gage", "Richard Gage", r"richard gage"),
+    ("ashton", "Ashton Forbes", r"ashton forbes"),
+]
+
 HUB_FILTERS = {
     "911": {
         "911-posts": ("Search the posts\u2026", [
@@ -60,16 +73,10 @@ HUB_FILTERS = {
         ]),
     },
     "911spooks": {
-        "911spooks-posts": ("Search the spooks\u2026", [
-            ("bob", "Bob Greenyer", r"greenyer"),
-            ("revisionist", "9/11 Revisionist", r"revisionist|norman"),
-            ("abby", "Abby Martin", r"abby martin"),
-            ("hughes", "David Hughes", r"hughes"),
-            ("fetzer", "Jim Fetzer", r"fetzer"),
-            ("ryan", "Ryan Bannister", r"ryan ban+ister"),
-            ("mason", "Andrew Mason", r"andrew mason"),
-            ("offguardian", "Off Guardian", r"off ?guardian"),
-        ]),
+        # One people list for Posts and Videos (a chip that matches nothing on a page is dropped there by the generated block);
+        # the All Content page (addAllPage withSectionChips) shows them too.
+        "911spooks-posts": ("Search the spooks\u2026", SPOOK_CHIPS),
+        "911spooks-videos": ("Search the videos\u2026", SPOOK_CHIPS),
     },
     "crypto": {
         "crypto-tutorials": ("Search the tutorials\u2026", []),
@@ -121,8 +128,8 @@ def block(hub):
         "  if (!sec) continue;\n"
         "  const cats = cfg.chips.map(([id, label, re]) => ({ id, label, test: (t) => new RegExp(re, \"i\").test(t) }));\n"
         "  withCats(sec.items, cats);\n"
-        "  sec.filter = cats.map(({ id, label }) => ({ id, label }));\n"
-        "  if (cats.length) sec.filter.push({ id: \"other\", label: \"Everything else\" });\n"
+        "  sec.filter = cats.filter((c) => sec.items.some((i) => (i.cats || \"\").split(\" \").includes(c.id))).map(({ id, label }) => ({ id, label }));\n"
+        "  if (sec.items.some((i) => i.cats === \"other\")) sec.filter.push({ id: \"other\", label: \"Everything else\" });\n"
         "  sec.filterPlaceholder = cfg.placeholder;\n"
         "}\n"
         "// MES-HUB-FILTER:END\n"
@@ -173,5 +180,8 @@ def patch(hub):
         p.write_text(s)
 
 
+ONLY = next((a.split("=", 1)[1].split(",") for a in sys.argv if a.startswith("--only=")), None)
 for h in HUB_FILTERS:
+    if ONLY and h not in ONLY:
+        continue
     patch(h)

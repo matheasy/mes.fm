@@ -154,7 +154,9 @@ export function buildFilter(section, escapeHtml, lpHtml = "") {
 // the search box and one chip per section (an item listed in two sections gets both chips). Call it right after the PAGES
 // array: it appends a section `<hub>-all` to SECTIONS and puts its page first in PAGES (tile = img/<hub>-all-icon.jpg, a copy
 // of the hub's own homepage tile). Items are shallow copies, so the section pages' own cats are untouched.
-export function addAllPage(SECTIONS, PAGES, { hub, name, iconVersion = 1 }) {
+// withSectionChips (2026-11-02, 911spooks): also keep each item's own topic / people chips from its section filter (not
+// "other" / "all") and add those chips after the per-section ones, so the All page can filter by person too.
+export function addAllPage(SECTIONS, PAGES, { hub, name, iconVersion = 1, withSectionChips = false }) {
   const pages = PAGES.filter((p) => !p.tileOnly && p.sectionId && SECTIONS.some((s) => s.id === p.sectionId));
   const byKey = new Map();
   const chips = [];
@@ -173,6 +175,25 @@ export function addAllPage(SECTIONS, PAGES, { hub, name, iconVersion = 1 }) {
     if (n) chips.push(chip);
   }
   const items = [...byKey.values()];
+  if (withSectionChips) {
+    const extra = [];
+    for (const p of pages) {
+      const sec = SECTIONS.find((s) => s.id === p.sectionId);
+      for (const item of sec.items) {
+        if (item.standalone || !item.cats) continue;
+        const key = item.href || (item.links && item.links[0] && item.links[0][1]) || item.title;
+        const have = byKey.get(key);
+        for (const c of item.cats.split(" ")) {
+          if (c === "other" || c === "all") continue;
+          if (!have.cats.split(" ").includes(c)) have.cats += " " + c;
+          const f = (sec.filter || []).find((x) => x.id === c);
+          if (f && !extra.some((x) => x.id === c)) extra.push(f);
+        }
+      }
+    }
+    const order = pages.flatMap((p) => (SECTIONS.find((s) => s.id === p.sectionId).filter || []).map((f) => f.id));
+    chips.push(...extra.sort((a, b) => order.indexOf(a.id) - order.indexOf(b.id)));
+  }
   SECTIONS.push({ id: `${hub}-all`, title: "All Content", items, filter: chips, filterPlaceholder: `Search everything in ${name}…`, lpAlways: true });
   PAGES.unshift({
     slug: `${hub}-all`,
