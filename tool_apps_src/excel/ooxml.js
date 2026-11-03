@@ -1078,6 +1078,23 @@
 		s = s.replace(/<cellXfs\b[^>]*>([\s\S]*?)<\/cellXfs>/, function (m, inner) { var n = (inner.match(/<xf\b/g) || []).length + xfs.length; return '<cellXfs count="' + n + '">' + inner + xfs.join("") + "</cellXfs>"; });
 		return s;
 	}
+	// append fonts / fills / borders / dxfs (XML strings) to styles.xml: more = {fonts: [], fills: [], borders: [], dxfs: []}
+	function stylesAdd(raw, more) {
+		if (!more) return raw;
+		var s = raw;
+		[["fonts", "font"], ["fills", "fill"], ["borders", "border"], ["dxfs", "dxf"]].forEach(function (p) {
+			var list = more[p[0]]; if (!list || !list.length) return;
+			var re = new RegExp("<" + p[0] + "\\b[^>]*?(?:/>|>([\\s\\S]*?)</" + p[0] + ">)");
+			if (re.test(s)) s = s.replace(re, function (m, inner) { inner = (inner || "") + list.join(""); return "<" + p[0] + ' count="' + (inner.match(new RegExp("<" + p[1] + "\\b", "g")) || []).length + '">' + inner + "</" + p[0] + ">"; });
+			else {
+				var after = { fonts: /<\/numFmts>|(<styleSheet\b[^>]*>)/, fills: /<\/fonts>/, borders: /<\/fills>/, dxfs: /<\/cellStyles>|<\/cellXfs>/ }[p[0]];
+				s = s.replace(after, function (m) { return m + "<" + p[0] + ' count="' + list.length + '">' + list.join("") + "</" + p[0] + ">"; });
+			}
+		});
+		return s;
+	}
+	function countOf(raw, tag) { var m = new RegExp("<" + tag + "s\\b[^>]*?(?:/>|>([\\s\\S]*?)</" + tag + "s>)").exec(raw || ""); return m && m[1] ? (m[1].match(new RegExp("<" + tag + "\\b", "g")) || []).length : 0; }
+	function rawList(raw, tag) { var m = new RegExp("<" + tag + "s\\b[^>]*>([\\s\\S]*?)</" + tag + "s>").exec(raw || ""); if (!m) return []; return m[1].match(new RegExp("<" + tag + "\\b[^>]*/>|<" + tag + "\\b[^>]*>[\\s\\S]*?</" + tag + ">", "g")) || []; }
 	function rawXfs(raw) { var m = /<cellXfs\b[^>]*>([\s\S]*?)<\/cellXfs>/.exec(raw || ""); if (!m) return []; return m[1].match(/<xf\b[^>]*\/>|<xf\b[^>]*>[\s\S]*?<\/xf>/g) || []; }
 	function maxFmtId(raw) { var mx = 163, re = /numFmtId="(\d+)"/g, m; while ((m = re.exec(raw || ""))) mx = Math.max(mx, +m[1]); return mx; }
 	function ctAdd(ct, part, type) {
@@ -1118,7 +1135,7 @@
 			var stylesPart = null, themePart = null; for (var k in W.rels) { if (W.rels[k].type === "styles") stylesPart = W.rels[k].target; if (W.rels[k].type === "theme") themePart = W.rels[k].target; }
 			var jobs = [];
 			// styles + theme
-			if (model && model.styles.raw && stylesPart) write[stylesPart] = enc(stylesWithXfs(model.styles.raw, info.extraXfs || []));
+			if (model && model.styles.raw && stylesPart) write[stylesPart] = enc(stylesAdd(stylesWithXfs(model.styles.raw, info.extraXfs || []), info.moreStyles));
 			if (model && model.themeRaw && themePart) write[themePart] = enc(model.themeRaw);
 			sheetParts.forEach(function (part, i) {
 				var si = info.sheets[i]; if (!part || !si) return;
@@ -1161,6 +1178,21 @@
 						}
 						if (newRels.length && !/xmlns:r=/.test(s.slice(0, 600))) s = s.replace(/<worksheet\b/, '<worksheet xmlns:r="http://schemas.openxmlformats.org/officeDocument/2006/relationships"');
 					}
+					// parts made in the editor: new tables, a new drawing with its charts, new conditional formatting (si.add / si.cfXml)
+					if (si.cfXml) s = insertBefore(s, AFTER_CF, si.cfXml);
+					(si.add || []).forEach(function (a, k) {
+						var id = "rIdMesN" + (k + 1);
+						while (relsRaw && relsRaw.indexOf('Id="' + id + '"') >= 0) id += "x";
+						newRels.push('<Relationship Id="' + id + '" Type="' + a.relType + '" Target="' + relRel(part, a.part) + '"/>');
+						write[a.part] = enc(a.xml); ct = ctAdd(ct, a.part, a.ctType);
+						(a.sub || []).forEach(function (sb) { write[sb.part] = enc(sb.xml); ct = ctAdd(ct, sb.part, sb.ctType); });
+						if (a.rels) write[relsPath(a.part)] = enc('<?xml version="1.0" encoding="UTF-8" standalone="yes"?>\n<Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships">' + a.rels.map(function (r) { return '<Relationship Id="' + r.id + '" Type="' + r.type + '" Target="' + relRel(a.part, r.target) + '"/>'; }).join("") + "</Relationships>");
+						if (a.tag === "tablePart") {
+							if (/<tableParts\b[^>]*>/.test(s)) s = s.replace(/<tableParts\b[^>]*>([\s\S]*?)<\/tableParts>/, function (m, inner) { inner += '<tablePart r:id="' + id + '"/>'; return '<tableParts count="' + (inner.match(/<tablePart\b/g) || []).length + '">' + inner + "</tableParts>"; });
+							else s = insertBefore(s, ["extLst"], '<tableParts count="1"><tablePart r:id="' + id + '"/></tableParts>');
+						} else if (a.tag === "drawing" && !/<drawing\b/.test(s)) s = insertBefore(s, AFTER_DRAWING, '<drawing r:id="' + id + '"/>');
+					});
+					if (newRels.length && !/xmlns:r=/.test(s.slice(0, 600))) s = s.replace(/<worksheet\b/, '<worksheet xmlns:r="http://schemas.openxmlformats.org/officeDocument/2006/relationships"');
 					write[part] = enc(s);
 					if (newRels.length) {
 						var rr2 = relsRaw || '<?xml version="1.0" encoding="UTF-8" standalone="yes"?>\n<Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships"></Relationships>';
@@ -1203,8 +1235,8 @@
 		parseRange: parseRange, sqref: sqref, parseRefs: parseRefs, shiftFormula: shiftFormula, colName: colName, colIndex: colIndex,
 		parseSheet: parseSheet, parseDrawing: parseDrawing, parseChart: parseChart, readPackage: readPackage,
 		mergeLook: mergeLook, lookCss: lookCss, ruleStats: ruleStats, cfFor: cfFor, seriesColor: seriesColor, nice: nice, chartSvg: chartSvg,
-		addStubCells: addStubCells, paneXml: paneXml, sheetViewsXml: sheetViewsXml, stylesWithXfs: stylesWithXfs, rawXfs: rawXfs, maxFmtId: maxFmtId, graft: graft
+		addStubCells: addStubCells, paneXml: paneXml, sheetViewsXml: sheetViewsXml, stylesWithXfs: stylesWithXfs, stylesAdd: stylesAdd, countOf: countOf, rawList: rawList, rawXfs: rawXfs, escX: escX, maxFmtId: maxFmtId, graft: graft
 	};
-	if (typeof module === "object" && module.exports) module.exports = api;
+	if (typeof module === "object" && module.exports) { module.exports = api; require("./parts.js").install(api); }
 	else root.MESXLO = api;
 })(typeof window !== "undefined" ? window : this);
