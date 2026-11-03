@@ -1319,7 +1319,7 @@
 	// =============================== TEST PAGE ===============================
 	var GRADE = +root.getAttribute("data-grade"), SUBJ = root.getAttribute("data-subject"), PK = GRADE + "-" + SUBJ, LIT = SUBJ === "literacy";
 	var sw = document.querySelector('.pt-switch a[data-k="' + PK + '"]'); if (sw) sw.setAttribute("aria-current", "page");
-	var prefs = S.prefs[PK] || (S.prefs[PK] = { mode: "full", diff: "mixed", topics: [], timer: true, fb: false });
+	var prefs = S.prefs[PK] || (S.prefs[PK] = { mode: "full", diff: "mixed", topics: [], timer: true, fb: true });
 	var params = new URLSearchParams(location.search);
 	if (/^(full|quick|topic)$/.test(params.get("mode") || "")) prefs.mode = params.get("mode");
 	if (/^(mixed|easy|medium|hard)$/.test(params.get("diff") || "")) prefs.diff = params.get("diff");

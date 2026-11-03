@@ -83,7 +83,7 @@ PT_PAGES = [("fsa-grade-4-numeracy", "Gr 4 Numeracy"), ("fsa-grade-4-literacy", 
 PT_NAV_INFO = "".join("<li class=\"info-bar__item\"><a class=\"info-bar__item__text\" href='/%s'>%s</a></li>" % (sl, nm) for sl, nm in PT_PAGES)
 PT_NAV_MENU = "".join('<li class="navbar__item"><a class="navbar__link" href="/%s">%s</a></li>' % (sl, nm.replace("Gr ", "Grade ")) for sl, nm in PT_PAGES)
 def _pt(slug, grade, subj, title, page_title, desc, tab):
-    d = dict(title=title, page_title=page_title, tag=PT_BRAND["tag"], accent="#0f6e8c", dark="#0b5670", tint="#e0f1f6", desc=desc, js_v="1",
+    d = dict(title=title, page_title=page_title, tag=PT_BRAND["tag"], accent="#0f6e8c", dark="#0b5670", tint="#e0f1f6", desc=desc, js_v="2",
              src="practice-tests", js_parts=["passages.js"], nav_extra=PT_NAV_INFO, menu_extra=PT_NAV_MENU,
              vars={"PAGE": "hub" if not grade else "test", "GRADE": str(grade or ""), "SUBJ": subj or "", "BODY": "@hub.html" if not grade else "@test.html",
                    "SEO": "@seo/%s.html" % ("hub" if not grade else "g%d-%s" % (grade, subj))})
