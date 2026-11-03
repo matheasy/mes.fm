@@ -73,6 +73,7 @@ TOOLS = [  # (directory, compact-bar title[, home path of the site the page belo
     ("polls", "Polls"),
     ("stream-chat", "Stream Chat"),
     ("database", "Video Database"),
+    ("telegram", "Telegram Archive"),
     ("mic-test", "Mic Test"),
     ("file-check", "File Safety Check"),
     ("storage", "Storage Analyzer"),

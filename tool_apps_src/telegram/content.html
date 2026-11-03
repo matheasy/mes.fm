@@ -1,0 +1,49 @@
+	<script>try{if(!localStorage.getItem('pageMode')){document.documentElement.classList.add('page-wide')}}catch(e){}</script>
+	<div class="tu tga" id="tga">
+		<p class="tga-sum" id="tga-sum" aria-live="polite">Loading the archive…</p>
+		<div class="tu-card tga-ctl">
+			<div class="tga-srow">
+				<label class="tga-sr" for="tga-q">Search the posts</label>
+				<input class="tu-input tga-q" id="tga-q" type="search" placeholder="Search every post… (press / to start typing)" autocomplete="off" spellcheck="false">
+				<div class="tu-seg tga-views" id="tga-views" role="group" aria-label="View"><button type="button" data-v="grid" aria-pressed="true">▦ Grid</button><button type="button" data-v="list" aria-pressed="false">☰ List</button></div>
+			</div>
+			<div class="tga-row">
+				<div class="tu-field tu-field--sm"><label class="tu-label" for="tga-sort">Sort by</label>
+					<select class="tu-select" id="tga-sort"><option value="new">Newest first</option><option value="old">Oldest first</option><option value="views">Most viewed</option></select></div>
+				<div class="tu-field tu-field--sm"><label class="tu-label" for="tga-yr">Year</label><select class="tu-select" id="tga-yr"><option value="">All years</option></select></div>
+				<div class="tu-field tu-field--sm"><label class="tu-label" for="tga-media">Kind of post</label><select class="tu-select" id="tga-media"><option value="">Everything</option></select></div>
+				<span class="tga-grow"></span>
+				<button type="button" class="tu-btn tu-btn--ghost" id="tga-share">🔗 Copy link to this list</button>
+				<button type="button" class="tu-btn tu-btn--ghost" id="tga-reset">Reset</button>
+			</div>
+			<div class="tga-chipset"><div class="tga-ct">Topics</div><div class="tu-chips tga-chips" id="tga-cats" role="group" aria-label="Topics"></div></div>
+			<div class="tga-chipset"><div class="tga-ct">Links to</div><div class="tu-chips tga-chips" id="tga-sites" role="group" aria-label="Posts that link to"></div></div>
+			<div class="tga-load" id="tga-load" hidden><div class="tga-bar"><span id="tga-barin"></span></div><span id="tga-loadt">Loading every post…</span></div>
+		</div>
+		<div class="tga-new" id="tga-new">
+			<button type="button" class="tu-btn tu-btn--ghost" id="tga-check">↻ Check for new posts</button>
+			<span class="tga-newt" id="tga-newt" aria-live="polite"></span>
+		</div>
+		<div class="tga-res" id="tga-res" aria-live="polite"></div>
+		<div class="tga-pager" id="tga-pager"></div>
+		<div class="tu-toast" id="tga-toast" role="status" aria-live="polite"></div>
+
+		<div class="tu-seo">
+			<h2>Every post of the MES Links Telegram channel</h2>
+			<p><a href="https://t.me/meslinks" target="_blank" rel="noopener">MES Links</a> (@meslinks) is the Telegram channel of Math Easy Solutions: new videos and livestreams, #911Truth, the Hutchison Effect, MES Experiments, math, crypto and Hive, memes and whatever else came up, every day since 2021. Telegram's own search only goes so far back on a phone, so this page keeps the whole channel in one place you can search.</p>
+			<h3>How to use it</h3>
+			<dl>
+				<dt>Search</dt><dd>Type any words: every word has to appear in the post, the forwarded-from name or the link preview. <code>#20000</code> finds post number 20000. The newest posts load first; the rest load (with a progress bar) the first time you search or filter.</dd>
+				<dt>Topics, links and kinds of post</dt><dd>Click a topic chip to see only those posts. The numbers are how many posts match everything else you picked. "Links to" keeps only posts with a link to that site, for example only posts linking a mes.fm page or a YouTube video. "Kind of post" picks photos, videos, files, polls or text only.</dd>
+				<dt>Open in</dt><dd>Every post links to itself on Telegram (t.me/meslinks/&lt;number&gt;) and has a button for each mes.fm, YouTube, Hive, X, Rumble, Odysee or BitChute link it contains.</dd>
+				<dt>Share a list</dt><dd>Everything you pick is in the address bar, so "Copy link to this list" shares exactly what you see.</dd>
+			</dl>
+			<h3>Questions</h3>
+			<h4>How current is it?</h4>
+			<p>The archive is a snapshot (the date is at the top). When the page opens it also asks Telegram for the newest posts and puts any that came after the snapshot at the top, marked "New".</p>
+			<h4>Why do some posts show no picture?</h4>
+			<p>Telegram's picture addresses stop working after a while, so they can't be stored. Posts with a YouTube link show the video's thumbnail, the newest posts with a picture have a small copy here, and every post links to Telegram, where the full picture or video is.</p>
+			<h4>Why are some post numbers missing?</h4>
+			<p>Deleted posts leave a gap, and an album of several pictures uses one number per picture but shows as one post.</p>
+		</div>
+	</div>
