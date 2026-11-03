@@ -121,7 +121,8 @@
 		animals: { cats: ["animals"], def: ["animals"], onlySound: true },
 		abc: { cats: ["letters"], def: ["letters"], order: true },
 		shapes: { cats: ["shapes", "colours"], def: ["shapes", "colours"] },
-		numbers: { cats: ["numbers"], def: ["numbers"], order: true }
+		numbers: { cats: ["numbers"], def: ["numbers"], order: true },
+		math: { cats: ["numbers"], def: ["numbers"], math: true }
 	};
 
 	// ---------- Random ----------
@@ -205,6 +206,7 @@
 	}
 	var PRAISE = ["Yes! Well done!", "Great job!", "You found it!", "Super!", "Hooray!", "Amazing!", "That's right!", "Brilliant!"];
 	function praise(it, r) { var p = PRAISE[Math.floor((r || Math.random)() * PRAISE.length)]; return p + " " + (it.cat === "letters" ? "That's " + it.letter.toUpperCase() + "." : it.cat === "numbers" ? "That's " + it.nw + "." : it.cat === "colours" ? "That's " + it.word.toLowerCase() + "." : "That's the " + it.word.toLowerCase() + "."); }
+	function cheer(r) { return PRAISE[Math.floor((r || Math.random)() * PRAISE.length)]; }
 	function gentle(it) { return "That's " + (it.cat === "letters" ? "the letter " + it.letter.toUpperCase() : it.cat === "numbers" ? it.nw : it.cat === "colours" ? it.word.toLowerCase() : "the " + it.word.toLowerCase()) + ". Try again!"; }
 
 	function soundFor(it) { return it && it.snd && SOUNDS[it.snd] ? "/kids/sounds/" + it.snd + ".mp3" : ""; }
@@ -290,8 +292,142 @@
 		return out;
 	}
 
+
+	// ---------- Math (the /kids-math page) ----------
+	// mathQ(age, r, lastKind) -> one question. age 1 = toddlers (2-3), 2 = ages 4-5, 3 = ages 6-7. No fail state: every choice has a kind "no" line.
+	// q = { kind, key, say (spoken), text (shown), parts (the picture: [{t:"group", e, n, gone}, {t:"op", s}, {t:"num", v}, {t:"q"}, {t:"shape", name}]),
+	//       choices: [{show: {t:"num", v} | {t:"group", e, n} | {t:"shape", name}, say, no}], ans (index into choices), right (spoken when right) }
+	var MATH_AGES = [{ id: 1, name: "Ages 2-3", icon: "👶" }, { id: 2, name: "Ages 4-5", icon: "🧒" }, { id: 3, name: "Ages 6-7", icon: "🎒" }];
+	var MATH_KINDS = { 1: ["count", "count", "more"], 2: ["add", "take", "after", "before", "count10"], 3: ["add20", "sub20", "skip", "pattern", "sides"] };
+	var MPICS = [["🍎", "apple", "apples"], ["⭐", "star", "stars"], ["🐞", "ladybug", "ladybugs"], ["🎈", "balloon", "balloons"], ["🐟", "fish", "fish"], ["🌸", "flower", "flowers"],
+		["🍓", "strawberry", "strawberries"], ["🚗", "car", "cars"], ["🐥", "chick", "chicks"], ["🍪", "cookie", "cookies"], ["🦆", "duck", "ducks"], ["🧁", "cupcake", "cupcakes"]];
+	var SIDES = [["triangle", 3], ["square", 4], ["pentagon", 5], ["hexagon", 6]];
+	function ri(r, lo, hi) { return lo + Math.floor(r() * (hi - lo + 1)); }
+	function nw(n) { return NUMW[n] || String(n); }
+	function cap(s) { return s.charAt(0).toUpperCase() + s.slice(1); }
+	function countWords(n) { var c = []; for (var i = 1; i <= n; i++) c.push(nw(i)); return c.join(", "); }
+	// n number choices around the answer (all >= lo, distinct), answer at a random place
+	function numChoices(ans, n, lo, hi, r) {
+		var set = [ans], tries = 0;
+		while (set.length < n && tries++ < 200) { var d = ri(r, 1, 3) * (r() < 0.5 ? -1 : 1), v = ans + d; if (v >= lo && v <= hi && set.indexOf(v) < 0) set.push(v); }
+		for (var v2 = lo; set.length < n && v2 <= hi + 10; v2++) if (set.indexOf(v2) < 0) set.push(v2);
+		return shuffle(set, r);
+	}
+	function numQ(q, ans, vals, noFn) {
+		q.choices = vals.map(function (v) { return { show: { t: "num", v: v }, v: v, say: nw(v), no: v === ans ? "" : noFn(v) }; });
+		q.ans = vals.indexOf(ans);
+		return q;
+	}
+	function mathQ(age, r, last, nc) {
+		r = r || Math.random; age = [1, 2, 3].indexOf(+age) >= 0 ? +age : 2;
+		nc = Math.max(2, Math.min(4, nc || 3)); if (age === 1) nc = Math.min(nc, 3);
+		var kinds = MATH_KINDS[age], kind = kinds[Math.floor(r() * kinds.length)], tries = 0, q;
+		do { q = makeQ(kind, r, nc); kind = kinds[Math.floor(r() * kinds.length)]; } while (last && q.key === last && tries++ < 8);
+		q.age = age;
+		return q;
+	}
+	function makeQ(kind, r, nc) {
+		var p = MPICS[Math.floor(r() * MPICS.length)], e = p[0], one = p[1], many = p[2];
+		function nm(n) { return nw(n) + " " + (n === 1 ? one : many); }
+		var q = { kind: kind, parts: [] }, a, b, n, i;
+		if (kind === "count" || kind === "count10") {
+			n = kind === "count" ? ri(r, 1, 5) : ri(r, 5, 10);
+			q.key = kind + n + e; q.say = "How many " + many + "? Let's count them!"; q.text = "How many?";
+			q.parts = [{ t: "group", e: e, n: n }];
+			q.right = cap(countWords(n)) + ". " + cap(nm(n)) + "!";
+			return numQ(q, n, numChoices(n, nc, 1, kind === "count" ? 6 : 12, r), function (v) { return "That's " + nw(v) + ". Let's count together: " + countWords(n) + ". Try again!"; });
+		}
+		if (kind === "more") {
+			a = ri(r, 1, 5); do { b = ri(r, 1, 5); } while (b === a || Math.abs(a - b) < (a + b > 6 ? 2 : 1));
+			q.key = "more" + a + "-" + b; q.say = "Which group has more " + many + "?"; q.text = "Which has more?";
+			q.choices = [a, b].map(function (v) { return { show: { t: "group", e: e, n: v }, v: v, say: nm(v), no: "That group has " + nm(v) + ". The other group has more. Try again!" }; });
+			q.ans = a > b ? 0 : 1; q.choices[q.ans].no = "";
+			q.right = cap(nw(Math.max(a, b))) + " is more than " + nw(Math.min(a, b)) + "!";
+			return q;
+		}
+		if (kind === "add") {
+			a = ri(r, 1, 5); b = ri(r, 1, Math.min(5, 10 - a)); n = a + b;
+			q.key = "add" + a + "+" + b; q.say = cap(nm(a)) + " and " + nm(b) + ". How many " + many + " altogether?"; q.text = a + " + " + b + " = ?";
+			q.parts = [{ t: "group", e: e, n: a }, { t: "op", s: "+" }, { t: "group", e: e, n: b }];
+			q.right = cap(nw(a)) + " plus " + nw(b) + " is " + nw(n) + "!";
+			return numQ(q, n, numChoices(n, nc, 1, 10, r), function (v) { return "That's " + nw(v) + ". Count all the " + many + " together. Try again!"; });
+		}
+		if (kind === "take") {
+			a = ri(r, 3, 9); b = ri(r, 1, a - 1); n = a - b;
+			var go = /balloon/.test(one) ? " fly away" : /duck|chick|ladybug/.test(one) ? " go away" : /cookie|cupcake|apple|strawberry/.test(one) ? " get eaten" : " go away";
+			q.key = "take" + a + "-" + b; q.say = "There are " + nm(a) + ". " + cap(nw(b)) + go + ". How many are left?"; q.text = a + " − " + b + " = ?";
+			q.parts = [{ t: "group", e: e, n: a, gone: b }];
+			q.right = cap(nw(a)) + " take away " + nw(b) + " is " + nw(n) + "!";
+			return numQ(q, n, numChoices(n, nc, 0, 9, r), function (v) { return "That's " + nw(v) + ". Count the " + many + " that are still there. Try again!"; });
+		}
+		if (kind === "after" || kind === "before") {
+			n = kind === "after" ? ri(r, 1, 9) : ri(r, 2, 10);
+			var ans = kind === "after" ? n + 1 : n - 1;
+			q.key = kind + n; q.say = "What number comes " + kind + " " + nw(n) + "?"; q.text = "What comes " + kind + " " + n + "?";
+			q.parts = kind === "after" ? [{ t: "num", v: n - 1 }, { t: "num", v: n }, { t: "q" }] : [{ t: "q" }, { t: "num", v: n }, { t: "num", v: n + 1 }];
+			if (kind === "after" && n - 1 < 1) q.parts.shift();
+			q.right = cap(nw(ans)) + " comes " + kind + " " + nw(n) + "!";
+			return numQ(q, ans, numChoices(ans, nc, 1, 11, r), function (v) { return "That's " + nw(v) + ". Count up: " + (kind === "after" ? nw(n) + ", ..." : "..., " + nw(n)) + " Try again!"; });
+		}
+		if (kind === "add20") {
+			a = ri(r, 2, 12); b = ri(r, 2, Math.min(9, 20 - a)); n = a + b;
+			q.key = "add20" + a + "+" + b; q.say = "What is " + nw(a) + " plus " + nw(b) + "?"; q.text = a + " + " + b + " = ?";
+			q.parts = [{ t: "num", v: a }, { t: "op", s: "+" }, { t: "num", v: b }, { t: "op", s: "=" }, { t: "q" }];
+			q.right = cap(nw(a)) + " plus " + nw(b) + " is " + nw(n) + "!";
+			var tip = a >= b ? "Start at " + nw(a) + " and count up " + nw(b) + "." : "Start at " + nw(b) + " and count up " + nw(a) + ".";
+			return numQ(q, n, numChoices(n, nc, 2, 20, r), function (v) { return "That's " + nw(v) + ". " + tip + " Try again!"; });
+		}
+		if (kind === "sub20") {
+			a = ri(r, 6, 20); b = ri(r, 1, Math.min(9, a - 1)); n = a - b;
+			q.key = "sub20" + a + "-" + b; q.say = "What is " + nw(a) + " take away " + nw(b) + "?"; q.text = a + " − " + b + " = ?";
+			q.parts = [{ t: "num", v: a }, { t: "op", s: "−" }, { t: "num", v: b }, { t: "op", s: "=" }, { t: "q" }];
+			q.right = cap(nw(a)) + " take away " + nw(b) + " is " + nw(n) + "!";
+			return numQ(q, n, numChoices(n, nc, 0, 20, r), function (v) { return "That's " + nw(v) + ". Start at " + nw(a) + " and count back " + nw(b) + ". Try again!"; });
+		}
+		if (kind === "skip") {
+			var stp = [2, 5, 10][Math.floor(r() * 3)], start = stp * ri(r, 1, stp === 10 ? 5 : stp === 5 ? 6 : 6), seq = [];
+			for (i = 0; i < 4; i++) seq.push(start + i * stp);
+			n = seq[3];
+			var byW = stp === 2 ? "twos" : stp === 5 ? "fives" : "tens", sayN = function (v) { return v <= 20 ? nw(v) : String(v); };
+			q.key = "skip" + stp + "-" + start; q.say = "Count by " + byW + ": " + seq.slice(0, 3).map(sayN).join(", ") + ". What comes next?"; q.text = "Count by " + stp + "s";
+			q.parts = seq.slice(0, 3).map(function (v) { return { t: "num", v: v }; }).concat([{ t: "q" }]);
+			q.right = cap(seq.map(sayN).join(", ")) + "! Counting by " + byW + "!";
+			var vals = [n], cands = [n + stp, n - 1, n + 1, n - stp + 1, n + 2];
+			for (i = 0; i < cands.length && vals.length < nc; i++) if (cands[i] > 0 && vals.indexOf(cands[i]) < 0 && cands[i] !== seq[2]) vals.push(cands[i]);
+			q.choices = shuffle(vals, r).map(function (v) { return { show: { t: "num", v: v }, v: v, say: sayN(v), no: v === n ? "" : "That's " + sayN(v) + ". Add " + nw(stp) + " to " + sayN(seq[2]) + ". Try again!" }; });
+			q.choices.forEach(function (c, k) { if (c.v === n) q.ans = k; });
+			return q;
+		}
+		if (kind === "pattern") {
+			var SH = shuffle(["circle", "square", "triangle", "star", "heart", "diamond"], r), unit = r() < 0.5 ? [SH[0], SH[1]] : r() < 0.5 ? [SH[0], SH[1], SH[1]] : [SH[0], SH[1], SH[2]];
+			var len = unit.length === 2 ? 5 : 5, row = [];
+			for (i = 0; i < len; i++) row.push(unit[i % unit.length]);
+			var nxt = unit[len % unit.length], opts = unit.filter(function (x, k, arr) { return arr.indexOf(x) === k; });
+			for (i = 0; opts.length < Math.min(nc, 3) && i < SH.length; i++) if (opts.indexOf(SH[i]) < 0) opts.push(SH[i]);
+			if (opts.length > nc) opts = [nxt].concat(shuffle(opts.filter(function (x) { return x !== nxt; }), r).slice(0, nc - 1));
+			opts = shuffle(opts, r);
+			q.key = "pattern" + row.join(","); q.say = "Look at the pattern. Which shape comes next?"; q.text = "What comes next?";
+			q.parts = row.map(function (s) { return { t: "shape", name: s }; }).concat([{ t: "q" }]);
+			q.choices = opts.map(function (s) { return { show: { t: "shape", name: s }, v: s, say: "the " + s, no: s === nxt ? "" : "That's the " + s + ". Say the pattern out loud: " + row.join(", ") + ". Try again!" }; });
+			q.ans = opts.indexOf(nxt);
+			q.right = "Yes, the " + nxt + " comes next! " + cap(row.concat([nxt]).join(", ")) + ".";
+			return q;
+		}
+		if (kind === "sides") {
+			var pick = SIDES[Math.floor(r() * SIDES.length)], others = shuffle(SIDES.filter(function (x) { return x !== pick; }), r).slice(0, nc - 1);
+			var all = shuffle([pick].concat(others), r);
+			q.key = "sides" + pick[0]; q.say = "Which shape has " + nw(pick[1]) + " sides?"; q.text = pick[1] + " sides";
+			q.parts = [];
+			q.choices = all.map(function (x) { return { show: { t: "shape", name: x[0] }, v: x[0], say: "the " + x[0], no: x === pick ? "" : "That's a " + x[0] + ". It has " + nw(x[1]) + " sides. Try again!" }; });
+			q.ans = all.indexOf(pick);
+			q.right = "Yes! A " + pick[0] + " has " + nw(pick[1]) + " sides!";
+			return q;
+		}
+		return makeQ("count", r, nc);
+	}
+
 	// ---------- Settings ----------
-	var DEFAULTS = { rate: 0.82, pitch: 1.18, style: "teacher", voice: "", auto: true, sw: true, snd: true, showWord: true, lcase: "title", maxNum: 10, count: true, adv: 0, quizN: 3, theme: "bright" };
+	var DEFAULTS = { rate: 0.82, pitch: 1.18, style: "teacher", voice: "", auto: true, sw: true, snd: true, showWord: true, lcase: "title", maxNum: 10, count: true, adv: 0, quizN: 3, theme: "bright", age: 2 };
 	function clean(s) {
 		s = s && typeof s === "object" ? s : {};
 		var o = {};
@@ -308,6 +444,7 @@
 		o.adv = [0, 4, 6, 10, 15].indexOf(Number(s.adv)) >= 0 ? Number(s.adv) : 0;
 		o.quizN = [2, 3, 4].indexOf(Number(s.quizN)) >= 0 ? Number(s.quizN) : 3;
 		if (["bright", "calm"].indexOf(s.theme) >= 0) o.theme = s.theme;
+		o.age = [1, 2, 3].indexOf(Number(s.age)) >= 0 ? Number(s.age) : 2;
 		o.cats = {};
 		if (s.cats && typeof s.cats === "object") for (var m in MODES) if (Array.isArray(s.cats[m])) o.cats[m] = s.cats[m].filter(function (c) { return MODES[m].cats.indexOf(c) >= 0; });
 		return o;
@@ -318,9 +455,10 @@
 
 	var api = { orderFor: orderFor, CATS: CATS, ITEMS: ITEMS, BY_ID: BY_ID, SOUNDS: SOUNDS, MODES: MODES, NUMW: NUMW, DEFAULTS: DEFAULTS,
 		rng: rng, shuffle: shuffle, reshuffle: reshuffle, deck: deck, step: step, quizChoices: quizChoices, hasSound: hasSound,
-		caseWord: caseWord, label: label, subLabel: subLabel, speakText: speakText, findPrompt: findPrompt, praise: praise, gentle: gentle,
+		caseWord: caseWord, label: label, subLabel: subLabel, speakText: speakText, findPrompt: findPrompt, praise: praise, cheer: cheer, gentle: gentle,
 		soundFor: soundFor, keyToId: keyToId, filterVoices: filterVoices, pickVoice: pickVoice, voiceScore: voiceScore, vKey: vKey, STYLES: STYLES, styleText: styleText,
-		speechFailure: speechFailure, pruneBadVoices: pruneBadVoices, clean: clean };
+		speechFailure: speechFailure, pruneBadVoices: pruneBadVoices, clean: clean,
+		MATH_AGES: MATH_AGES, MATH_KINDS: MATH_KINDS, mathQ: mathQ, makeQ: makeQ };
 	if (typeof module !== "undefined" && module.exports) module.exports = api;
 	else root.MESKids = api;
 })(this);
@@ -365,7 +503,7 @@
 			case "diamond": b = '<polygon points="50,4 88,50 50,96 12,50"' + st + '/>'; break;
 			case "pentagon": b = '<polygon points="' + poly(5, 46, -Math.PI / 2) + '"' + st + '/>'; break;
 			case "hexagon": b = '<polygon points="' + poly(6, 46, 0) + '"' + st + '/>'; break;
-			case "crescent": b = '<path d="M64 6 A44 44 0 1 0 64 94 A34 34 0 1 1 64 6 Z"' + st + '/>'; break;
+			case "crescent": b = '<path d="M47.5 6 A44 44 0 1 0 83.8 72.6 A38 38 0 0 1 47.5 6 Z"' + st + '/>'; break;   // outer circle (46,50) r44 minus circle (68,38) r38
 			case "arrow": b = '<polygon points="4,38 56,38 56,16 96,50 56,84 56,62 4,62"' + st + '/>'; break;
 			case "xylophone":
 				b = '<rect x="6" y="66" width="88" height="8" rx="3" fill="#8d6e63"/><rect x="6" y="28" width="88" height="8" rx="3" fill="#8d6e63"/>';
@@ -391,6 +529,27 @@
 		if (p.indexOf("col:") === 0) return blobSvg(p.slice(4));
 		if (p.indexOf("num:") === 0) return countHtml(it);
 		return esc(p);
+	}
+	// math page: a group of pictures to count (gone = the last ones crossed out), a number, an operator, a "?" box or a shape
+	function groupHtml(e, n, gone) {
+		var s = ""; for (var i = 0; i < n; i++) s += gone && i >= n - gone ? '<span class="kd-gone"><i>' + esc(e) + "</i></span>" : "<span>" + esc(e) + "</span>";
+		var cols = n <= 3 ? n : n <= 4 ? 2 : n <= 6 ? 3 : n <= 10 ? 5 : 5;
+		return '<span class="kd-grp" style="grid-template-columns:repeat(' + cols + ',1fr)">' + s + "</span>";
+	}
+	function partHtml(p) {
+		if (p.t === "group") return groupHtml(p.e, p.n, p.gone);
+		if (p.t === "op") return '<span class="kd-mop">' + esc(p.s) + "</span>";
+		if (p.t === "num") return '<span class="kd-mnum">' + p.v + "</span>";
+		if (p.t === "q") return '<span class="kd-mnum kd-mq-q">?</span>';
+		if (p.t === "shape") return '<span class="kd-mshape">' + shapeSvg(p.name) + "</span>";
+		return "";
+	}
+	function mchoiceHtml(c) {
+		var w = c.show;
+		if (w.t === "num") return '<span class="kd-cnum">' + w.v + "</span>";
+		if (w.t === "group") return groupHtml(w.e, w.n).replace('class="kd-grp"', 'class="kd-grp" data-fs="' + (w.n <= 1 ? 1 : w.n <= 2 ? 2 : w.n <= 4 ? 3 : 4) + '"');
+		if (w.t === "shape") return shapeSvg(w.name);
+		return "";
 	}
 	function choiceHtml(it) {
 		if (it.cat === "letters") return '<span style="font-family:var(--kd-font);font-weight:900">' + esc(K.label(it, S.lcase === "both" ? "upper" : S.lcase === "lower" ? "lower" : "upper")) + "</span>";
@@ -495,7 +654,8 @@
 	function render(speak) {
 		var it = cur(); if (!it) return;
 		paintBg();
-		stage.classList.toggle("kd-qmode", play_ === "quiz");
+		stage.classList.toggle("kd-qmode", play_ === "quiz" || play_ === "math");
+		if (play_ === "math") return renderMath(speak);
 		if (play_ === "quiz") return renderQuiz(speak);
 		$("kd-qz").hidden = true; cardEl.hidden = false;
 		picEl.innerHTML = picHtml(it);
@@ -510,7 +670,7 @@
 		if (speak && S.auto && unlocked) sayCard(it);
 		armAdv();
 	}
-	function go(d) { if (!order.length) return; lastDir = d; idx = K.step(idx, d, order.length); if (d > 0 && idx === 0 && K.orderFor(S, mode) === "shuffle") { order = K.reshuffle(pool, order[order.length - 1]); } render(true); }
+	function go(d) { if (play_ === "math") { lastDir = d; render(true); return; } if (!order.length) return; lastDir = d; idx = K.step(idx, d, order.length); if (d > 0 && idx === 0 && K.orderFor(S, mode) === "shuffle") { order = K.reshuffle(pool, order[order.length - 1]); } render(true); }
 	function shuffleNow() { order = K.reshuffle(pool, order[idx]); idx = 0; lastDir = 0; render(true); toast("Shuffled!"); }
 
 	// slideshow
@@ -521,7 +681,7 @@
 	var quiz = null;
 	function renderQuiz(speak) {
 		var it = cur();
-		cardEl.hidden = true; $("kd-qz").hidden = false; $("kd-snd").hidden = true;
+		cardEl.hidden = true; $("kd-qz").hidden = false; $("kd-snd").hidden = true; $("kd-mq").hidden = true;
 		var ids = K.quizChoices(it.id, pool, S.quizN);
 		quiz = { ans: it.id, solved: false };
 		var box = $("kd-choices"); box.innerHTML = ""; box.style.setProperty("--kd-n", ids.length); box.setAttribute("data-n", ids.length);
@@ -536,7 +696,47 @@
 		posEl.textContent = "";
 		if (speak && unlocked) askAgain();
 	}
-	function askAgain() { var it = cur(); stopAll(); var tk = token; say(K.findPrompt(it), tk).then(function () { if (tk === token && it.cat === "animals" && it.snd && S.snd) play(K.soundFor(it)); }); }
+	// ---------- math ----------
+	var mq = null, lastKey = "";
+	function renderMath(speak) {
+		cardEl.hidden = true; $("kd-qz").hidden = false; $("kd-snd").hidden = true;
+		mq = K.mathQ(S.age, null, lastKey, S.quizN); lastKey = mq.key; mq.solved = false;
+		var pic = $("kd-mq"); pic.innerHTML = mq.parts.map(partHtml).join(""); pic.hidden = !mq.parts.length;
+		pic.setAttribute("data-kind", mq.kind);
+		var box = $("kd-choices"); box.innerHTML = ""; box.style.setProperty("--kd-n", mq.choices.length); box.setAttribute("data-n", mq.choices.length);
+		box.setAttribute("data-kind", mq.kind);
+		mq.choices.forEach(function (c, i) {
+			var b = document.createElement("button");
+			b.type = "button"; b.className = "kd-choice kd-mchoice"; b.setAttribute("aria-label", c.say);
+			b.innerHTML = mchoiceHtml(c);
+			b.addEventListener("click", function () { mpick(b, i); });
+			box.appendChild(b);
+		});
+		$("kd-qq").textContent = "🔊 " + mq.text;
+		$("kd-qq").setAttribute("aria-label", mq.say + " Tap to hear it again.");
+		posEl.textContent = "";
+		if (speak && unlocked) askAgain();
+	}
+	function mpick(btn, i) {
+		if (!mq || mq.solved) return;
+		unlocked = true;
+		var c = mq.choices[i];
+		if (i === mq.ans) {
+			mq.solved = true; btn.classList.add("kd-yes");
+			stars++; saveStars(); $("kd-stars").textContent = stars; burst();
+			stopAll(); var tk = token;
+			say(K.cheer() + " " + mq.right, tk).then(function () { return new Promise(function (r) { setTimeout(r, 600); }); }).then(function () { if (tk === token && play_ === "math") go(1); });
+		} else {
+			btn.classList.remove("kd-no"); void btn.offsetWidth; btn.classList.add("kd-no");
+			stopAll(); say(c.no, token);
+		}
+	}
+	function setAge(a, user) {
+		S.age = a; save();
+		Array.prototype.forEach.call($("kd-ages").children, function (b) { b.setAttribute("aria-selected", String(+b.getAttribute("data-age") === a)); });
+		if (user) { unlock(); lastKey = ""; render(true); }
+	}
+	function askAgain() { if (play_ === "math") { if (mq) { stopAll(); say(mq.say, token); } return; } var it = cur(); stopAll(); var tk = token; say(K.findPrompt(it), tk).then(function () { if (tk === token && it.cat === "animals" && it.snd && S.snd) play(K.soundFor(it)); }); }
 	function pick(btn, it) {
 		if (!quiz || quiz.solved) return;
 		unlocked = true;
@@ -575,7 +775,7 @@
 	startBtn.style.cssText = "position:absolute;left:50%;bottom:2.2em;transform:translateX(-50%);z-index:4;font-size:1.4em;box-shadow:var(--kd-shadow)";
 	stage.appendChild(startBtn);
 	function unlock() { if (unlocked) return; unlocked = true; startBtn.remove(); }
-	startBtn.addEventListener("click", function (e) { e.stopPropagation(); unlock(); if (play_ === "quiz") askAgain(); else sayCard(cur()); stage.focus({ preventScroll: true }); });
+	startBtn.addEventListener("click", function (e) { e.stopPropagation(); unlock(); if (play_ === "quiz" || play_ === "math") askAgain(); else sayCard(cur()); stage.focus({ preventScroll: true }); });
 
 	// ---------- buttons, swipe, keys ----------
 	var swiped = false;
@@ -586,7 +786,7 @@
 	$("kd-back").addEventListener("click", function () { unlock(); go(-1); });
 	$("kd-fwd").addEventListener("click", function () { unlock(); go(1); });
 	$("kd-shuf").addEventListener("click", function () { unlock(); shuffleNow(); });
-	$("kd-say").addEventListener("click", function () { unlock(); if (play_ === "quiz") askAgain(); else sayCard(cur()); armAdv(); });
+	$("kd-say").addEventListener("click", function () { unlock(); if (play_ === "quiz" || play_ === "math") askAgain(); else sayCard(cur()); armAdv(); });
 	$("kd-qq").addEventListener("click", function () { unlock(); askAgain(); });
 	$("kd-snd").addEventListener("click", function () { unlock(); sayCard(cur(), { soundOnly: true }); armAdv(); });
 	$("kd-m-learn").addEventListener("click", function () { setPlay("learn", true); });
@@ -613,10 +813,11 @@
 		if (k === "Tab") { if (kiosk) { /* keep focus inside the kiosk */ var f = Array.prototype.slice.call($("kd-wrap").querySelectorAll("button:not([hidden])")).filter(function (b) { return b.offsetParent; }); if (f.length && !$("kd-wrap").contains(document.activeElement)) { e.preventDefault(); f[0].focus(); } } return; }
 		if (e.target && tag === "BUTTON" && (k === "Enter" || k === " ") && !t.classList.contains("kd-stage")) return;   // a focused button handles its own key
 		unlock();
-		if (play_ === "quiz" && /^[1-4]$/.test(k)) { var bs = $("kd-choices").children; if (bs[+k - 1]) bs[+k - 1].click(); e.preventDefault(); return; }
+		if ((play_ === "quiz" || play_ === "math") && /^[1-4]$/.test(k)) { var bs = $("kd-choices").children; if (bs[+k - 1]) bs[+k - 1].click(); e.preventDefault(); return; }
 		if (k === "ArrowRight" || k === "PageDown" || k === "Enter") { e.preventDefault(); go(1); return; }
 		if (k === "ArrowLeft" || k === "PageUp" || k === "Backspace") { e.preventDefault(); go(-1); return; }
-		if (k === " " || k === "ArrowUp" || k === "ArrowDown") { e.preventDefault(); if (play_ === "quiz") askAgain(); else sayCard(cur()); return; }
+		if (k === " " || k === "ArrowUp" || k === "ArrowDown") { e.preventDefault(); if (play_ === "quiz" || play_ === "math") askAgain(); else sayCard(cur()); return; }
+		if (k.length === 1 && play_ === "math") return;
 		if (k.length === 1) {   // a typed letter / digit jumps to that card; any other key just shows the next card (keyboard bashing is part of the fun)
 			e.preventDefault();
 			var id = play_ === "learn" ? K.keyToId(k, order) : "";
@@ -704,7 +905,8 @@
 		$("kd-count").textContent = pool.length + " cards";
 		var hasLetters = on.indexOf("letters") >= 0, hasNum = on.indexOf("numbers") >= 0, hasAnimals = on.indexOf("animals") >= 0;
 		$("kd-row-num").hidden = !hasNum; $("kd-row-count").hidden = !hasNum; $("kd-sec-snd").hidden = !hasAnimals;
-		$("kd-row-case").hidden = mode === "numbers";
+		$("kd-row-case").hidden = mode === "numbers" || !!MODE.math;
+		if (MODE.math) { $("kd-row-num").hidden = true; $("kd-row-count").hidden = true; }
 		chk("kd-o-word", "showWord", function () { render(false); });
 		chk("kd-o-count", "count"); chk("kd-o-snd", "snd"); chk("kd-o-sw", "sw"); chk("kd-o-auto", "auto");
 		seg("kd-o-case", S.lcase, function (v) { S.lcase = v; save(); render(false); });
@@ -789,6 +991,17 @@
 	rebuild();
 	render(false);
 	var q = /[?&]play=quiz\b/.test(location.search);
-	if (q) setPlay("quiz");
+	if (MODE.math) {
+		play_ = "math";
+		var am = /[?&]age=([123])\b/.exec(location.search); if (am) S.age = +am[1];
+		$("kd-ages").hidden = false; $("kd-modes").hidden = true;
+		$("kd-score").hidden = false; $("kd-stars").textContent = stars;
+		$("kd-say").innerHTML = '<span aria-hidden="true">🔊</span> Ask again';
+		$("kd-shuf").hidden = true; $("kd-back").hidden = true; $("kd-prev").hidden = true;
+		$("kd-fwd").innerHTML = 'New one <span aria-hidden="true">▶</span>';
+		Array.prototype.forEach.call($("kd-ages").children, function (b) { b.addEventListener("click", function () { setAge(+b.getAttribute("data-age"), true); }); });
+		setAge(S.age, false);
+		render(false);
+	} else if (q) setPlay("quiz");
 	if (!synth) hint("This browser can't speak. Pictures and animal recordings still work.");
 })();

@@ -164,6 +164,7 @@ TOOLS = [  # (directory, compact-bar title[, home path of the site the page belo
     ("kids-abc", "MES Kids", "/kids"),
     ("kids-shapes", "MES Kids", "/kids"),
     ("kids-numbers", "MES Kids", "/kids"),
+    ("kids-math", "MES Kids", "/kids"),
     ("contact.html", "Contact MES"),   # built by build_tool_apps.py (out=contact.html)
     ("compress", "MES Compressor"),
     ("compress-video", "MES Video Compressor"),

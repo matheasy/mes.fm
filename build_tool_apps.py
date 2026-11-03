@@ -65,12 +65,12 @@ PAGE3_HEAD = ('<!-- HUB-THEATRE-HEAD --><link rel="stylesheet" href="/main_js/hu
               'c=document.documentElement.classList;if(m==="theatre")c.add("page-theatre");if(m!=="std")c.add("page-wide")}catch(e){}</script><!-- /HUB-THEATRE-HEAD -->')
 # MES Kids (2026-10-29): one source (tool_apps_src/kids, lib = MESKids) for the hub /kids and five activity pages; data-mode on #kd picks the page.
 # Ad-free (no_ads) on purpose: children's pages. Animal recordings = public-domain / CC0 Wikimedia Commons files in mes.fm/kids/sounds (credits in lib.js SOUNDS).
-KIDS_BRAND = dict(slug="kids", title="MES Kids", tag="Talking flashcards, animal sounds, ABC and counting.")
-KIDS_PAGES = [("kids-flashcards", "Flashcards"), ("kids-animal-sounds", "Animal Sounds"), ("kids-abc", "ABC"), ("kids-shapes", "Shapes"), ("kids-numbers", "Numbers")]
+KIDS_BRAND = dict(slug="kids", title="MES Kids", tag="Talking flashcards, animal sounds, ABC, counting and math.")
+KIDS_PAGES = [("kids-flashcards", "Flashcards"), ("kids-animal-sounds", "Animal Sounds"), ("kids-abc", "ABC"), ("kids-shapes", "Shapes"), ("kids-numbers", "Numbers"), ("kids-math", "Math")]
 KIDS_NAV_INFO = "".join("<li class=\"info-bar__item\"><a class=\"info-bar__item__text\" href='/%s'>%s</a></li>" % (sl, nm) for sl, nm in KIDS_PAGES)
 KIDS_NAV_MENU = "".join('<li class="navbar__item"><a class="navbar__link" href="/%s">%s</a></li>' % (sl, nm if nm != "Shapes" else "Shapes &amp; Colours") for sl, nm in KIDS_PAGES)
 def _kids(slug, mode, seo, title, page_title, desc, tab, accent, dark, tint):
-    d = dict(title=title, page_title=page_title, tag=KIDS_BRAND["tag"], accent=accent, dark=dark, tint=tint, desc=desc, js_v="2", no_ads=True,
+    d = dict(title=title, page_title=page_title, tag=KIDS_BRAND["tag"], accent=accent, dark=dark, tint=tint, desc=desc, js_v="3", no_ads=True,
              src="kids", vars={"MODE": mode, "BODY": "@hub.html" if mode == "hub" else "@player.html", "SEO": "@seo/%s.html" % seo},
              pre_js=[] if mode == "hub" else ["/main_js/voice-picker.js?v=1"], nav_extra=KIDS_NAV_INFO, menu_extra=KIDS_NAV_MENU)
     if slug != "kids":
@@ -1033,7 +1033,7 @@ APPS = {
                     menu_extra=PDF_NAV_MENU),
     # MES Favourites: personal groups of page tiles (drag / copy / rename / fold), stored in localStorage, moved between devices by a link that contains the list.
     # Wide + ad-free like the Site Index; the page index and search engine come from /main_js/site-search.js (pre_js).
-    # MES Kids hub + activities (ad-free; see KIDS_BRAND above). Rebuild all six together and bump js_v on all of them when app.js / lib.js change.
+    # MES Kids hub + activities (ad-free; see KIDS_BRAND above). Rebuild all seven together and bump js_v on all of them when app.js / lib.js change.
     "kids": _kids("kids", "hub", "hub", "MES Kids", "MES Kids: Free Learning Games for Toddlers (No Ads)",
                   "Free talking flashcards for toddlers and young kids: animals with real animal sounds, ABC, shapes and colours, numbers and counting, with a gentle What's this? game. Big bright cards, kid-proof full screen, no ads, nothing uploaded.",
                   0, "#c2410c", "#9a3412", "#fff0e0"),
@@ -1052,6 +1052,9 @@ APPS = {
     "kids-numbers": _kids("kids-numbers", "numbers", "numbers", "Numbers for Kids", "Numbers for Toddlers: Count 1 to 10 or 20 Out Loud (Free, No Ads)",
                   "Counting flashcards for toddlers and preschoolers: each number from 1 to 10 (or 20) big, with that many pictures to count, said and counted out loud, plus a Find the number game. Free, no ads.",
                   5, "#c2410c", "#9a3412", "#fff0e0"),
+    "kids-math": _kids("kids-math", "math", "math", "Math for Kids", "Math Games for Kids Ages 2 to 7: Count, Add and Take Away (Free, No Ads)",
+                  "Free talking math games for toddlers and young kids: count pictures, which has more, add and take away with pictures, before and after, sums to 20, skip counting and patterns. Pick ages 2-3, 4-5 or 6-7. No ads.",
+                  6, "#c2410c", "#9a3412", "#fff0e0"),
     "fav": dict(title="MES Favourites", page_title="MES Favourites: Your Own Calculators and Tools Page",
                 tag="Your favourite MES pages, your way.", accent="#a15c07", dark="#7a4505", tint="#fdf0d8",
                 desc="Make your own start page of favourite mes.fm calculators, tools and tutorials: search to add, drag tiles into groups you name and fold, and take the whole list to another browser or computer with one link. Private: it stays in your browser.",

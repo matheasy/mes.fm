@@ -38,7 +38,7 @@
 			case "diamond": b = '<polygon points="50,4 88,50 50,96 12,50"' + st + '/>'; break;
 			case "pentagon": b = '<polygon points="' + poly(5, 46, -Math.PI / 2) + '"' + st + '/>'; break;
 			case "hexagon": b = '<polygon points="' + poly(6, 46, 0) + '"' + st + '/>'; break;
-			case "crescent": b = '<path d="M64 6 A44 44 0 1 0 64 94 A34 34 0 1 1 64 6 Z"' + st + '/>'; break;
+			case "crescent": b = '<path d="M47.5 6 A44 44 0 1 0 83.8 72.6 A38 38 0 0 1 47.5 6 Z"' + st + '/>'; break;   // outer circle (46,50) r44 minus circle (68,38) r38
 			case "arrow": b = '<polygon points="4,38 56,38 56,16 96,50 56,84 56,62 4,62"' + st + '/>'; break;
 			case "xylophone":
 				b = '<rect x="6" y="66" width="88" height="8" rx="3" fill="#8d6e63"/><rect x="6" y="28" width="88" height="8" rx="3" fill="#8d6e63"/>';
@@ -64,6 +64,27 @@
 		if (p.indexOf("col:") === 0) return blobSvg(p.slice(4));
 		if (p.indexOf("num:") === 0) return countHtml(it);
 		return esc(p);
+	}
+	// math page: a group of pictures to count (gone = the last ones crossed out), a number, an operator, a "?" box or a shape
+	function groupHtml(e, n, gone) {
+		var s = ""; for (var i = 0; i < n; i++) s += gone && i >= n - gone ? '<span class="kd-gone"><i>' + esc(e) + "</i></span>" : "<span>" + esc(e) + "</span>";
+		var cols = n <= 3 ? n : n <= 4 ? 2 : n <= 6 ? 3 : n <= 10 ? 5 : 5;
+		return '<span class="kd-grp" style="grid-template-columns:repeat(' + cols + ',1fr)">' + s + "</span>";
+	}
+	function partHtml(p) {
+		if (p.t === "group") return groupHtml(p.e, p.n, p.gone);
+		if (p.t === "op") return '<span class="kd-mop">' + esc(p.s) + "</span>";
+		if (p.t === "num") return '<span class="kd-mnum">' + p.v + "</span>";
+		if (p.t === "q") return '<span class="kd-mnum kd-mq-q">?</span>';
+		if (p.t === "shape") return '<span class="kd-mshape">' + shapeSvg(p.name) + "</span>";
+		return "";
+	}
+	function mchoiceHtml(c) {
+		var w = c.show;
+		if (w.t === "num") return '<span class="kd-cnum">' + w.v + "</span>";
+		if (w.t === "group") return groupHtml(w.e, w.n).replace('class="kd-grp"', 'class="kd-grp" data-fs="' + (w.n <= 1 ? 1 : w.n <= 2 ? 2 : w.n <= 4 ? 3 : 4) + '"');
+		if (w.t === "shape") return shapeSvg(w.name);
+		return "";
 	}
 	function choiceHtml(it) {
 		if (it.cat === "letters") return '<span style="font-family:var(--kd-font);font-weight:900">' + esc(K.label(it, S.lcase === "both" ? "upper" : S.lcase === "lower" ? "lower" : "upper")) + "</span>";
@@ -168,7 +189,8 @@
 	function render(speak) {
 		var it = cur(); if (!it) return;
 		paintBg();
-		stage.classList.toggle("kd-qmode", play_ === "quiz");
+		stage.classList.toggle("kd-qmode", play_ === "quiz" || play_ === "math");
+		if (play_ === "math") return renderMath(speak);
 		if (play_ === "quiz") return renderQuiz(speak);
 		$("kd-qz").hidden = true; cardEl.hidden = false;
 		picEl.innerHTML = picHtml(it);
@@ -183,7 +205,7 @@
 		if (speak && S.auto && unlocked) sayCard(it);
 		armAdv();
 	}
-	function go(d) { if (!order.length) return; lastDir = d; idx = K.step(idx, d, order.length); if (d > 0 && idx === 0 && K.orderFor(S, mode) === "shuffle") { order = K.reshuffle(pool, order[order.length - 1]); } render(true); }
+	function go(d) { if (play_ === "math") { lastDir = d; render(true); return; } if (!order.length) return; lastDir = d; idx = K.step(idx, d, order.length); if (d > 0 && idx === 0 && K.orderFor(S, mode) === "shuffle") { order = K.reshuffle(pool, order[order.length - 1]); } render(true); }
 	function shuffleNow() { order = K.reshuffle(pool, order[idx]); idx = 0; lastDir = 0; render(true); toast("Shuffled!"); }
 
 	// slideshow
@@ -194,7 +216,7 @@
 	var quiz = null;
 	function renderQuiz(speak) {
 		var it = cur();
-		cardEl.hidden = true; $("kd-qz").hidden = false; $("kd-snd").hidden = true;
+		cardEl.hidden = true; $("kd-qz").hidden = false; $("kd-snd").hidden = true; $("kd-mq").hidden = true;
 		var ids = K.quizChoices(it.id, pool, S.quizN);
 		quiz = { ans: it.id, solved: false };
 		var box = $("kd-choices"); box.innerHTML = ""; box.style.setProperty("--kd-n", ids.length); box.setAttribute("data-n", ids.length);
@@ -209,7 +231,47 @@
 		posEl.textContent = "";
 		if (speak && unlocked) askAgain();
 	}
-	function askAgain() { var it = cur(); stopAll(); var tk = token; say(K.findPrompt(it), tk).then(function () { if (tk === token && it.cat === "animals" && it.snd && S.snd) play(K.soundFor(it)); }); }
+	// ---------- math ----------
+	var mq = null, lastKey = "";
+	function renderMath(speak) {
+		cardEl.hidden = true; $("kd-qz").hidden = false; $("kd-snd").hidden = true;
+		mq = K.mathQ(S.age, null, lastKey, S.quizN); lastKey = mq.key; mq.solved = false;
+		var pic = $("kd-mq"); pic.innerHTML = mq.parts.map(partHtml).join(""); pic.hidden = !mq.parts.length;
+		pic.setAttribute("data-kind", mq.kind);
+		var box = $("kd-choices"); box.innerHTML = ""; box.style.setProperty("--kd-n", mq.choices.length); box.setAttribute("data-n", mq.choices.length);
+		box.setAttribute("data-kind", mq.kind);
+		mq.choices.forEach(function (c, i) {
+			var b = document.createElement("button");
+			b.type = "button"; b.className = "kd-choice kd-mchoice"; b.setAttribute("aria-label", c.say);
+			b.innerHTML = mchoiceHtml(c);
+			b.addEventListener("click", function () { mpick(b, i); });
+			box.appendChild(b);
+		});
+		$("kd-qq").textContent = "🔊 " + mq.text;
+		$("kd-qq").setAttribute("aria-label", mq.say + " Tap to hear it again.");
+		posEl.textContent = "";
+		if (speak && unlocked) askAgain();
+	}
+	function mpick(btn, i) {
+		if (!mq || mq.solved) return;
+		unlocked = true;
+		var c = mq.choices[i];
+		if (i === mq.ans) {
+			mq.solved = true; btn.classList.add("kd-yes");
+			stars++; saveStars(); $("kd-stars").textContent = stars; burst();
+			stopAll(); var tk = token;
+			say(K.cheer() + " " + mq.right, tk).then(function () { return new Promise(function (r) { setTimeout(r, 600); }); }).then(function () { if (tk === token && play_ === "math") go(1); });
+		} else {
+			btn.classList.remove("kd-no"); void btn.offsetWidth; btn.classList.add("kd-no");
+			stopAll(); say(c.no, token);
+		}
+	}
+	function setAge(a, user) {
+		S.age = a; save();
+		Array.prototype.forEach.call($("kd-ages").children, function (b) { b.setAttribute("aria-selected", String(+b.getAttribute("data-age") === a)); });
+		if (user) { unlock(); lastKey = ""; render(true); }
+	}
+	function askAgain() { if (play_ === "math") { if (mq) { stopAll(); say(mq.say, token); } return; } var it = cur(); stopAll(); var tk = token; say(K.findPrompt(it), tk).then(function () { if (tk === token && it.cat === "animals" && it.snd && S.snd) play(K.soundFor(it)); }); }
 	function pick(btn, it) {
 		if (!quiz || quiz.solved) return;
 		unlocked = true;
@@ -248,7 +310,7 @@
 	startBtn.style.cssText = "position:absolute;left:50%;bottom:2.2em;transform:translateX(-50%);z-index:4;font-size:1.4em;box-shadow:var(--kd-shadow)";
 	stage.appendChild(startBtn);
 	function unlock() { if (unlocked) return; unlocked = true; startBtn.remove(); }
-	startBtn.addEventListener("click", function (e) { e.stopPropagation(); unlock(); if (play_ === "quiz") askAgain(); else sayCard(cur()); stage.focus({ preventScroll: true }); });
+	startBtn.addEventListener("click", function (e) { e.stopPropagation(); unlock(); if (play_ === "quiz" || play_ === "math") askAgain(); else sayCard(cur()); stage.focus({ preventScroll: true }); });
 
 	// ---------- buttons, swipe, keys ----------
 	var swiped = false;
@@ -259,7 +321,7 @@
 	$("kd-back").addEventListener("click", function () { unlock(); go(-1); });
 	$("kd-fwd").addEventListener("click", function () { unlock(); go(1); });
 	$("kd-shuf").addEventListener("click", function () { unlock(); shuffleNow(); });
-	$("kd-say").addEventListener("click", function () { unlock(); if (play_ === "quiz") askAgain(); else sayCard(cur()); armAdv(); });
+	$("kd-say").addEventListener("click", function () { unlock(); if (play_ === "quiz" || play_ === "math") askAgain(); else sayCard(cur()); armAdv(); });
 	$("kd-qq").addEventListener("click", function () { unlock(); askAgain(); });
 	$("kd-snd").addEventListener("click", function () { unlock(); sayCard(cur(), { soundOnly: true }); armAdv(); });
 	$("kd-m-learn").addEventListener("click", function () { setPlay("learn", true); });
@@ -286,10 +348,11 @@
 		if (k === "Tab") { if (kiosk) { /* keep focus inside the kiosk */ var f = Array.prototype.slice.call($("kd-wrap").querySelectorAll("button:not([hidden])")).filter(function (b) { return b.offsetParent; }); if (f.length && !$("kd-wrap").contains(document.activeElement)) { e.preventDefault(); f[0].focus(); } } return; }
 		if (e.target && tag === "BUTTON" && (k === "Enter" || k === " ") && !t.classList.contains("kd-stage")) return;   // a focused button handles its own key
 		unlock();
-		if (play_ === "quiz" && /^[1-4]$/.test(k)) { var bs = $("kd-choices").children; if (bs[+k - 1]) bs[+k - 1].click(); e.preventDefault(); return; }
+		if ((play_ === "quiz" || play_ === "math") && /^[1-4]$/.test(k)) { var bs = $("kd-choices").children; if (bs[+k - 1]) bs[+k - 1].click(); e.preventDefault(); return; }
 		if (k === "ArrowRight" || k === "PageDown" || k === "Enter") { e.preventDefault(); go(1); return; }
 		if (k === "ArrowLeft" || k === "PageUp" || k === "Backspace") { e.preventDefault(); go(-1); return; }
-		if (k === " " || k === "ArrowUp" || k === "ArrowDown") { e.preventDefault(); if (play_ === "quiz") askAgain(); else sayCard(cur()); return; }
+		if (k === " " || k === "ArrowUp" || k === "ArrowDown") { e.preventDefault(); if (play_ === "quiz" || play_ === "math") askAgain(); else sayCard(cur()); return; }
+		if (k.length === 1 && play_ === "math") return;
 		if (k.length === 1) {   // a typed letter / digit jumps to that card; any other key just shows the next card (keyboard bashing is part of the fun)
 			e.preventDefault();
 			var id = play_ === "learn" ? K.keyToId(k, order) : "";
@@ -377,7 +440,8 @@
 		$("kd-count").textContent = pool.length + " cards";
 		var hasLetters = on.indexOf("letters") >= 0, hasNum = on.indexOf("numbers") >= 0, hasAnimals = on.indexOf("animals") >= 0;
 		$("kd-row-num").hidden = !hasNum; $("kd-row-count").hidden = !hasNum; $("kd-sec-snd").hidden = !hasAnimals;
-		$("kd-row-case").hidden = mode === "numbers";
+		$("kd-row-case").hidden = mode === "numbers" || !!MODE.math;
+		if (MODE.math) { $("kd-row-num").hidden = true; $("kd-row-count").hidden = true; }
 		chk("kd-o-word", "showWord", function () { render(false); });
 		chk("kd-o-count", "count"); chk("kd-o-snd", "snd"); chk("kd-o-sw", "sw"); chk("kd-o-auto", "auto");
 		seg("kd-o-case", S.lcase, function (v) { S.lcase = v; save(); render(false); });
@@ -462,6 +526,17 @@
 	rebuild();
 	render(false);
 	var q = /[?&]play=quiz\b/.test(location.search);
-	if (q) setPlay("quiz");
+	if (MODE.math) {
+		play_ = "math";
+		var am = /[?&]age=([123])\b/.exec(location.search); if (am) S.age = +am[1];
+		$("kd-ages").hidden = false; $("kd-modes").hidden = true;
+		$("kd-score").hidden = false; $("kd-stars").textContent = stars;
+		$("kd-say").innerHTML = '<span aria-hidden="true">🔊</span> Ask again';
+		$("kd-shuf").hidden = true; $("kd-back").hidden = true; $("kd-prev").hidden = true;
+		$("kd-fwd").innerHTML = 'New one <span aria-hidden="true">▶</span>';
+		Array.prototype.forEach.call($("kd-ages").children, function (b) { b.addEventListener("click", function () { setAge(+b.getAttribute("data-age"), true); }); });
+		setAge(S.age, false);
+		render(false);
+	} else if (q) setPlay("quiz");
 	if (!synth) hint("This browser can't speak. Pictures and animal recordings still work.");
 })();

@@ -105,5 +105,47 @@ ok(K.clean(null).rate === 0.82 && K.clean(null).style === "teacher", "slower def
 
 ok(K.orderFor(K.clean({}), "abc") === "order" && K.orderFor(K.clean({}), "cards") === "shuffle" && K.orderFor(K.clean({ ord: { abc: "shuffle", x: "order" } }), "abc") === "shuffle", "order per page");
 
+// math page: every question for every age is well formed, the answer is right, no fail state (every wrong choice explains itself)
+const NW = K.NUMW;
+const seen = { 1: new Set(), 2: new Set(), 3: new Set() };
+for (const age of [1, 2, 3]) for (let s = 0; s < 1500; s++) {
+	const nc = 2 + (s % 3), q = K.mathQ(age, K.rng(s * 7 + age), null, nc);
+	seen[age].add(q.kind);
+	ok(K.MATH_KINDS[age].includes(q.kind), "kind fits the age " + age + q.kind);
+	ok(q.say && q.text && q.right && q.key, "texts " + q.key);
+	ok(q.ans >= 0 && q.ans < q.choices.length, "answer index " + q.key);
+	ok(q.choices.length === (q.kind === "more" ? 2 : age === 1 ? Math.min(nc, 3) : q.kind === "pattern" ? Math.min(nc, 3) : nc), "choice count " + q.key + " " + q.choices.length + " nc " + nc);
+	ok(new Set(q.choices.map(c => String(c.v))).size === q.choices.length, "distinct choices " + q.key);
+	q.choices.forEach((c, i) => { ok(i === q.ans ? c.no === "" : /Try again!$/.test(c.no), "gentle wrong line " + q.key); ok(c.say, "choice spoken " + q.key); });
+	const A = q.choices[q.ans].v;
+	const m = /^(\d+) ([+−]) (\d+) = \?$/.exec(q.text);
+	if (m) ok(A === (m[2] === "+" ? +m[1] + +m[3] : +m[1] - +m[3]), "sum right " + q.text + " -> " + A);
+	if (q.kind === "count" || q.kind === "count10") { ok(A === q.parts[0].n, "count right " + q.key); ok(q.kind === "count" ? A <= 5 : A <= 10, "count range"); }
+	if (q.kind === "more") ok(q.choices[q.ans].v > q.choices[1 - q.ans].v, "more right " + q.key);
+	if (q.kind === "take") ok(A === q.parts[0].n - q.parts[0].gone && A >= 1, "take away right " + q.key);
+	if (q.kind === "after" || q.kind === "before") { const n = +/\d+/.exec(q.text)[0]; ok(A === n + (q.kind === "after" ? 1 : -1), "before/after right " + q.key); }
+	if (q.kind === "add") ok(A <= 10, "pictures add up to at most ten");
+	if (q.kind === "add20" || q.kind === "sub20") ok(A >= 0 && A <= 20, "within 20 " + q.key);
+	if (q.kind === "skip") { const v = q.parts.filter(p => p.t === "num").map(p => p.v); ok(A - v[2] === v[2] - v[1] && v[1] - v[0] === v[2] - v[1], "skip counting right " + q.key); }
+	if (q.kind === "pattern") { const row = q.parts.filter(p => p.t === "shape").map(p => p.name); ok(row.length === 5, "pattern length"); ok(q.choices.some(c => c.v === A), "pattern answer offered");
+		// the answer continues the repeating unit (period 2 or 3)
+		const per = [2, 3].find(L => row.every((x, i) => i < L || x === row[i - L])); ok(per && A === row[5 % per], "pattern next " + q.key); }
+	if (q.kind === "sides") ok({ triangle: 3, square: 4, pentagon: 5, hexagon: 6 }[A] === +/\d/.exec(q.text)[0], "sides right " + q.key);
+	q.choices.forEach(c => { if (c.show.t === "shape") ok(["circle", "square", "triangle", "star", "heart", "diamond", "pentagon", "hexagon"].includes(c.show.name), "known shape " + c.show.name); });
+	ok(!/undefined|NaN/.test(JSON.stringify(q)), "no undefined " + q.key);
+	ok(/^[A-Z0-9]/.test(q.right) && /^[A-Z]/.test(q.say), "sentences start with a capital " + q.key);
+}
+for (const age of [1, 2, 3]) ok(seen[age].size === new Set(K.MATH_KINDS[age]).size, "every kind appears for age " + age);
+ok(K.mathQ(9, K.rng(1)).age === 2 && K.clean({ age: 3 }).age === 3 && K.clean({ age: 7 }).age === 2, "age defaults to 4-5");
+// no immediate repeats
+let rep = 0; for (let s = 0; s < 300; s++) { const r = K.rng(s), a = K.mathQ(1, r), b = K.mathQ(1, r, a.key); if (a.key === b.key) rep++; } ok(rep < 3, "same question twice in a row is rare: " + rep);
+ok(/^(Yes|Great|You|Super|Hooray|Amazing|That's|Brilliant)/.test(K.cheer(K.rng(2))), "cheer");
+ok(K.MODES.math && K.deck("math").length > 0, "math mode exists");
+// the crescent shape is a real filled shape (its inner arc fits between the two points), so it isn't drawn as a thin outline
+const appJs = fs.readFileSync(path.join(__dirname, "kids", "app.js"), "utf8"), cres = /case "crescent": b = '<path d="([^"]+)"/.exec(appJs)[1];
+const nums = cres.match(/-?\d+(\.\d+)?/g).map(Number); // M x y A r r 0 1 0 x y A r r 0 0 1 x y
+const [mx, my, r1, , , , , x2, y2, r2] = nums, chord = Math.hypot(x2 - mx, y2 - my);
+ok(2 * r1 >= chord && 2 * r2 >= chord && Math.abs(r1 - r2) > 2, "crescent arcs fit their chord and differ in size (" + cres + ")");
+
 console.log(bad ? bad + " of " + n + " checks FAILED" : "all " + n + " checks passed");
 process.exit(bad ? 1 : 0);

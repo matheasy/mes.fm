@@ -1,8 +1,13 @@
 		<div class="kd-wrap" id="kd-wrap">
 			<div class="kd-top">
-				<div class="kd-modes" role="tablist" aria-label="Activity">
+				<div class="kd-modes" id="kd-modes" role="tablist" aria-label="Activity">
 					<button type="button" role="tab" id="kd-m-learn" data-play="learn" aria-selected="true"><span aria-hidden="true">📖</span> Look &amp; listen</button>
 					<button type="button" role="tab" id="kd-m-quiz" data-play="quiz" aria-selected="false"><span aria-hidden="true">❓</span> What's this?</button>
+				</div>
+				<div class="kd-modes kd-ages" id="kd-ages" role="tablist" aria-label="Age" hidden>
+					<button type="button" role="tab" data-age="1" aria-selected="false"><span aria-hidden="true">👶</span> Ages 2-3</button>
+					<button type="button" role="tab" data-age="2" aria-selected="true"><span aria-hidden="true">🧒</span> Ages 4-5</button>
+					<button type="button" role="tab" data-age="3" aria-selected="false"><span aria-hidden="true">🎒</span> Ages 6-7</button>
 				</div>
 				<span class="kd-score" id="kd-score" aria-label="Stars collected" hidden>⭐ <b id="kd-stars">0</b></span>
 				<div class="kd-grown">
@@ -21,6 +26,7 @@
 				</div>
 				<div class="kd-quiz" id="kd-qz" hidden>
 					<button type="button" class="kd-qq" id="kd-qq" title="Hear it again"></button>
+					<div class="kd-mq" id="kd-mq" aria-hidden="true" hidden></div>
 					<div class="kd-choices" id="kd-choices"></div>
 				</div>
 				<button type="button" class="kd-side kd-side--next" id="kd-next" aria-label="Next"><span aria-hidden="true">▶</span></button>
@@ -46,23 +52,23 @@
 					</div>
 					<div class="kd-sec">
 						<h3>Cards</h3>
-						<label class="kd-chk"><input type="checkbox" id="kd-o-word"> Show the word (untick to quiz: "what's this?")</label>
+						<label class="kd-chk kd-nomath"><input type="checkbox" id="kd-o-word"> Show the word (untick to quiz: "what's this?")</label>
 						<div class="kd-row" id="kd-row-case"><span>Letters</span>
 							<div class="kd-seg" id="kd-o-case" role="radiogroup" aria-label="Letter case">
 								<button type="button" data-v="title" role="radio">Cat</button><button type="button" data-v="upper" role="radio">CAT</button><button type="button" data-v="lower" role="radio">cat</button><button type="button" data-v="both" role="radio">Aa</button>
 							</div>
 						</div>
-						<div class="kd-row"><span>Order</span>
+						<div class="kd-row kd-nomath"><span>Order</span>
 							<div class="kd-seg" id="kd-o-order" role="radiogroup" aria-label="Order"><button type="button" data-v="shuffle" role="radio">🔀 Shuffled</button><button type="button" data-v="order" role="radio">In order</button></div>
 						</div>
 						<div class="kd-row" id="kd-row-num"><span>Numbers up to</span>
 							<div class="kd-seg" id="kd-o-num" role="radiogroup" aria-label="Numbers up to"><button type="button" data-v="5" role="radio">5</button><button type="button" data-v="10" role="radio">10</button><button type="button" data-v="20" role="radio">20</button></div>
 						</div>
 						<label class="kd-chk" id="kd-row-count"><input type="checkbox" id="kd-o-count"> Count out loud on number cards</label>
-						<div class="kd-row"><span>Slideshow</span>
+						<div class="kd-row kd-nomath"><span>Slideshow</span>
 							<div class="kd-seg" id="kd-o-adv" role="radiogroup" aria-label="Next card by itself"><button type="button" data-v="0" role="radio">Off</button><button type="button" data-v="4" role="radio">4 s</button><button type="button" data-v="6" role="radio">6 s</button><button type="button" data-v="10" role="radio">10 s</button><button type="button" data-v="15" role="radio">15 s</button></div>
 						</div>
-						<div class="kd-row"><span>"What's this?" pictures</span>
+						<div class="kd-row"><span>"What's this?" / math answers</span>
 							<div class="kd-seg" id="kd-o-qn" role="radiogroup" aria-label="Pictures to choose from"><button type="button" data-v="2" role="radio">2</button><button type="button" data-v="3" role="radio">3</button><button type="button" data-v="4" role="radio">4</button></div>
 						</div>
 						<div class="kd-row"><span>Colours</span>
@@ -76,7 +82,7 @@
 					</div>
 					<div class="kd-sec">
 						<h3>Voice</h3>
-						<label class="kd-chk"><input type="checkbox" id="kd-o-auto"> Say the word when a card appears</label>
+						<label class="kd-chk kd-nomath"><input type="checkbox" id="kd-o-auto"> Say the word when a card appears</label>
 						<div class="kd-field"><label for="kd-voice">Voice</label><select id="kd-voice"></select></div>
 						<div class="kd-row kd-row--style"><span>Voice style</span>
 							<div class="kd-seg" id="kd-o-style" role="radiogroup" aria-label="Voice style"></div>

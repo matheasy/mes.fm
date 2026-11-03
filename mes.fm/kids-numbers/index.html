@@ -501,6 +501,28 @@ body.dark-mode .tu .rw-head {color:#a0a8b3;border-bottom-color:#555;} body.dark-
 	#kd .kd-hubinfo h2 {font-size:1.25em;margin:.4em 0;}
 	#kd .kd-hubinfo li {margin:.35em 0;}
 
+	/* ---------- Math page (/kids-math): a problem picture over the answer buttons ---------- */
+	#kd .kd-mq {display:flex;flex-wrap:wrap;align-items:center;justify-content:center;gap:clamp(.15em, 1.2vw, .45em);font-size:clamp(1.9rem, min(8vw, 8.5vh), 4.6rem);line-height:1;max-width:100%;}
+	#kd .kd-grp {display:inline-grid;gap:.06em;padding:.12em .16em;border-radius:.3em;background:var(--kd-card);box-shadow:var(--kd-shadow);font-family:"Apple Color Emoji","Segoe UI Emoji","Noto Color Emoji",sans-serif;}
+	#kd .kd-grp span {position:relative;display:inline-block;}
+	#kd .kd-grp span.kd-gone i {font-style:normal;opacity:.3;}
+	#kd .kd-grp span.kd-gone::after {content:"";position:absolute;left:-4%;right:-4%;top:44%;height:.13em;background:var(--kd-no);border-radius:.1em;transform:rotate(-40deg);box-shadow:0 0 0 .02em rgba(0,0,0,.25);}
+	#kd .kd-mop {font-family:var(--kd-font);font-weight:900;color:var(--kd-ink);padding:0 .05em;}
+	#kd .kd-mnum {font-family:var(--kd-font);font-weight:900;color:var(--kd-word);background:var(--kd-card);border-radius:.25em;padding:.08em .3em;min-width:.9em;text-align:center;box-shadow:var(--kd-shadow);}
+	#kd .kd-mq-q {border:.07em dashed var(--kd-sel);color:var(--kd-sel);background:transparent;box-shadow:none;}
+	#kd .kd-mshape svg {width:1em;height:1em;display:block;}
+	#kd .kd-quiz .kd-choices .kd-choice.kd-mchoice {font-size:min(17vw, 15vh, 7rem);}
+	#kd .kd-mchoice .kd-cnum {font-family:var(--kd-font);font-weight:900;color:var(--kd-word);font-size:.85em;}
+	#kd .kd-mchoice .kd-grp {font-size:.3em;box-shadow:none;background:transparent;}
+	#kd .kd-mchoice .kd-grp[data-fs="1"] {font-size:.62em;} #kd .kd-mchoice .kd-grp[data-fs="2"] {font-size:.46em;} #kd .kd-mchoice .kd-grp[data-fs="3"] {font-size:.38em;}
+	#kd .kd-wrap.kd-on .kd-quiz .kd-choices .kd-choice.kd-mchoice {font-size:min(18vw, 24vh, 11rem);}
+	#kd .kd-wrap.kd-on .kd-mq {font-size:clamp(2rem, min(9vw, 11vh), 6.5rem);}
+	#kd .kd-ages button {font-size:.95em;}
+	#kd[data-mode="math"] .kd-nomath {display:none !important;}
+	@media (max-width:640px) {#kd .kd-quiz .kd-choices .kd-choice.kd-mchoice {font-size:min(24vw, 14vh, 6rem);} #kd .kd-quiz .kd-choices[data-n="4"] .kd-choice.kd-mchoice {font-size:min(28vw, 12vh, 6rem);}}
+	@media (max-width:420px) {#kd .kd-ages button {padding:.25em .55em;font-size:.85em;}}
+	#kd .kd-t6 {background:var(--kd-c6);}
+
 
 	@media print {
 		.header, .info-bar-container, .side-bar, #footer, #comments-button, #comments-box, .color-box { display:none !important; }
@@ -666,13 +688,13 @@ body.is-stuck #navbar.hide { position: fixed; top: 56px; right: 8px; }
                                 <a class="calculator-title-link" href='/kids'>
                                     <p class="calculator-title">MES Kids</p>
                                 </a>
-                                <p class="tag-line">Talking flashcards, animal sounds, ABC and counting.</p>                            </div>
+                                <p class="tag-line">Talking flashcards, animal sounds, ABC, counting and math.</p>                            </div>
 
                             <div class="social-container"><ul class="social">	<li class="social__logo social__hive"><a class="social__link" href="https://peakd.com/@mes" target="_blank"></a></li></a></li>
     <li class="social__logo social__telegram"><a class="social__link" href="https://t.me/meslinks" target="_blank"></a></li></a></li></ul><a class="info-bar__logo-container" href="https://mes.fm/" title="Math Easy Solutions"><img id="mes-logo" class="info-bar__logo lazyload" alt="math easy solutions logo" height="29" width="126" data-src="https://mes.fm/main_img/mes-logo-small.png"></a>                            </div>                                                        </div>
                         <div class="info-bar-container" role="navigation" aria-label="Primary">
                             <ul id="info-bar" class="info-bar shadow">
-                                <li class="info-bar__item"><a class="info-bar__item__text" href='/kids'>Home</a></li><li class="info-bar__item"><a class="info-bar__item__text" href='/kids-flashcards'>Flashcards</a></li><li class="info-bar__item"><a class="info-bar__item__text" href='/kids-animal-sounds'>Animal Sounds</a></li><li class="info-bar__item"><a class="info-bar__item__text" href='/kids-abc'>ABC</a></li><li class="info-bar__item"><a class="info-bar__item__text" href='/kids-shapes'>Shapes</a></li><li class="info-bar__item"><a class="info-bar__item__text" href='/kids-numbers'>Numbers</a></li>                                    <li class="info-bar__item"><a class="info-bar__item__text" href='https://mes.fm/calculators'>Calculators</a></li><li class="info-bar__item"><a class="info-bar__item__text" href='https://mes.fm/tools'>Tools</a></li>                                    <li class="info-bar__item info-bar__item--utility" style="display:none !important;"><a class="info-bar__item__text" href='/contact'>Contact Us</a></li>
+                                <li class="info-bar__item"><a class="info-bar__item__text" href='/kids'>Home</a></li><li class="info-bar__item"><a class="info-bar__item__text" href='/kids-flashcards'>Flashcards</a></li><li class="info-bar__item"><a class="info-bar__item__text" href='/kids-animal-sounds'>Animal Sounds</a></li><li class="info-bar__item"><a class="info-bar__item__text" href='/kids-abc'>ABC</a></li><li class="info-bar__item"><a class="info-bar__item__text" href='/kids-shapes'>Shapes</a></li><li class="info-bar__item"><a class="info-bar__item__text" href='/kids-numbers'>Numbers</a></li><li class="info-bar__item"><a class="info-bar__item__text" href='/kids-math'>Math</a></li>                                    <li class="info-bar__item"><a class="info-bar__item__text" href='https://mes.fm/calculators'>Calculators</a></li><li class="info-bar__item"><a class="info-bar__item__text" href='https://mes.fm/tools'>Tools</a></li>                                    <li class="info-bar__item info-bar__item--utility" style="display:none !important;"><a class="info-bar__item__text" href='/contact'>Contact Us</a></li>
                                     <li class="info-bar__item info-bar__item--utility" style="display:none !important;"><a class="info-bar__item__text" target='_blank' href='https://mes.fm/donate.html'>Donate</a></li><li class="info-bar__item info-bar__item--utility" style="display:none !important;"><a class="info-bar__item__text" target='_blank' rel="nofollow" href='https://matheasy.substack.com/'>Subscribe</a></li>
                                     <li class="info-bar__item info-bar__item--mes"><a class="info-bar__item__text" href="/" style="font-weight:bold;">MES.fm</a></li></ul>
                         </div>
@@ -683,9 +705,14 @@ body.is-stuck #navbar.hide { position: fixed; top: 56px; right: 8px; }
 	<div class="tu kd" id="kd" data-mode="numbers">
 		<div class="kd-wrap" id="kd-wrap">
 			<div class="kd-top">
-				<div class="kd-modes" role="tablist" aria-label="Activity">
+				<div class="kd-modes" id="kd-modes" role="tablist" aria-label="Activity">
 					<button type="button" role="tab" id="kd-m-learn" data-play="learn" aria-selected="true"><span aria-hidden="true">📖</span> Look &amp; listen</button>
 					<button type="button" role="tab" id="kd-m-quiz" data-play="quiz" aria-selected="false"><span aria-hidden="true">❓</span> What's this?</button>
+				</div>
+				<div class="kd-modes kd-ages" id="kd-ages" role="tablist" aria-label="Age" hidden>
+					<button type="button" role="tab" data-age="1" aria-selected="false"><span aria-hidden="true">👶</span> Ages 2-3</button>
+					<button type="button" role="tab" data-age="2" aria-selected="true"><span aria-hidden="true">🧒</span> Ages 4-5</button>
+					<button type="button" role="tab" data-age="3" aria-selected="false"><span aria-hidden="true">🎒</span> Ages 6-7</button>
 				</div>
 				<span class="kd-score" id="kd-score" aria-label="Stars collected" hidden>⭐ <b id="kd-stars">0</b></span>
 				<div class="kd-grown">
@@ -704,6 +731,7 @@ body.is-stuck #navbar.hide { position: fixed; top: 56px; right: 8px; }
 				</div>
 				<div class="kd-quiz" id="kd-qz" hidden>
 					<button type="button" class="kd-qq" id="kd-qq" title="Hear it again"></button>
+					<div class="kd-mq" id="kd-mq" aria-hidden="true" hidden></div>
 					<div class="kd-choices" id="kd-choices"></div>
 				</div>
 				<button type="button" class="kd-side kd-side--next" id="kd-next" aria-label="Next"><span aria-hidden="true">▶</span></button>
@@ -729,23 +757,23 @@ body.is-stuck #navbar.hide { position: fixed; top: 56px; right: 8px; }
 					</div>
 					<div class="kd-sec">
 						<h3>Cards</h3>
-						<label class="kd-chk"><input type="checkbox" id="kd-o-word"> Show the word (untick to quiz: "what's this?")</label>
+						<label class="kd-chk kd-nomath"><input type="checkbox" id="kd-o-word"> Show the word (untick to quiz: "what's this?")</label>
 						<div class="kd-row" id="kd-row-case"><span>Letters</span>
 							<div class="kd-seg" id="kd-o-case" role="radiogroup" aria-label="Letter case">
 								<button type="button" data-v="title" role="radio">Cat</button><button type="button" data-v="upper" role="radio">CAT</button><button type="button" data-v="lower" role="radio">cat</button><button type="button" data-v="both" role="radio">Aa</button>
 							</div>
 						</div>
-						<div class="kd-row"><span>Order</span>
+						<div class="kd-row kd-nomath"><span>Order</span>
 							<div class="kd-seg" id="kd-o-order" role="radiogroup" aria-label="Order"><button type="button" data-v="shuffle" role="radio">🔀 Shuffled</button><button type="button" data-v="order" role="radio">In order</button></div>
 						</div>
 						<div class="kd-row" id="kd-row-num"><span>Numbers up to</span>
 							<div class="kd-seg" id="kd-o-num" role="radiogroup" aria-label="Numbers up to"><button type="button" data-v="5" role="radio">5</button><button type="button" data-v="10" role="radio">10</button><button type="button" data-v="20" role="radio">20</button></div>
 						</div>
 						<label class="kd-chk" id="kd-row-count"><input type="checkbox" id="kd-o-count"> Count out loud on number cards</label>
-						<div class="kd-row"><span>Slideshow</span>
+						<div class="kd-row kd-nomath"><span>Slideshow</span>
 							<div class="kd-seg" id="kd-o-adv" role="radiogroup" aria-label="Next card by itself"><button type="button" data-v="0" role="radio">Off</button><button type="button" data-v="4" role="radio">4 s</button><button type="button" data-v="6" role="radio">6 s</button><button type="button" data-v="10" role="radio">10 s</button><button type="button" data-v="15" role="radio">15 s</button></div>
 						</div>
-						<div class="kd-row"><span>"What's this?" pictures</span>
+						<div class="kd-row"><span>"What's this?" / math answers</span>
 							<div class="kd-seg" id="kd-o-qn" role="radiogroup" aria-label="Pictures to choose from"><button type="button" data-v="2" role="radio">2</button><button type="button" data-v="3" role="radio">3</button><button type="button" data-v="4" role="radio">4</button></div>
 						</div>
 						<div class="kd-row"><span>Colours</span>
@@ -759,7 +787,7 @@ body.is-stuck #navbar.hide { position: fixed; top: 56px; right: 8px; }
 					</div>
 					<div class="kd-sec">
 						<h3>Voice</h3>
-						<label class="kd-chk"><input type="checkbox" id="kd-o-auto"> Say the word when a card appears</label>
+						<label class="kd-chk kd-nomath"><input type="checkbox" id="kd-o-auto"> Say the word when a card appears</label>
 						<div class="kd-field"><label for="kd-voice">Voice</label><select id="kd-voice"></select></div>
 						<div class="kd-row kd-row--style"><span>Voice style</span>
 							<div class="kd-seg" id="kd-o-style" role="radiogroup" aria-label="Voice style"></div>
@@ -801,7 +829,7 @@ body.is-stuck #navbar.hide { position: fixed; top: 56px; right: 8px; }
                                         <div class="button button--navbar" id="navbar-button" style="position:relative;">Site Navigation<span class="dropdown-symbol dropdown-symbol--dark" style="position:absolute;right:0.75em;top:50%;transform:translateY(-50%);margin-left:0;">&#9660;</span></div>    <ul id="navbar" class="navbar">
     <li class="navbar__item navbar__item--social"><div class="social-container social-container--navbar"><ul class="social">	<li class="social__logo social__hive"><a class="social__link" href="https://peakd.com/@mes" target="_blank"></a></li>
     <li class="social__logo social__telegram"><a class="social__link" href="https://t.me/meslinks" target="_blank"></a></li></ul><a class="info-bar__logo-container" href="https://mes.fm/" title="Math Easy Solutions"><img id="mes-logo" class="info-bar__logo lazyload" alt="math easy solutions logo" height="29" width="126" data-src="https://mes.fm/main_img/mes-logo-small.png"></a></div></li>
-        <li class="navbar__item"><a class="navbar__link navbar__link--first" href="/kids">Home</a></li><li class="navbar__item"><a class="navbar__link" href="/kids-flashcards">Flashcards</a></li><li class="navbar__item"><a class="navbar__link" href="/kids-animal-sounds">Animal Sounds</a></li><li class="navbar__item"><a class="navbar__link" href="/kids-abc">ABC</a></li><li class="navbar__item"><a class="navbar__link" href="/kids-shapes">Shapes &amp; Colours</a></li><li class="navbar__item"><a class="navbar__link" href="/kids-numbers">Numbers</a></li>    <li class="navbar__item"><a class="navbar__link" href="/calculators">Calculators</a></li>
+        <li class="navbar__item"><a class="navbar__link navbar__link--first" href="/kids">Home</a></li><li class="navbar__item"><a class="navbar__link" href="/kids-flashcards">Flashcards</a></li><li class="navbar__item"><a class="navbar__link" href="/kids-animal-sounds">Animal Sounds</a></li><li class="navbar__item"><a class="navbar__link" href="/kids-abc">ABC</a></li><li class="navbar__item"><a class="navbar__link" href="/kids-shapes">Shapes &amp; Colours</a></li><li class="navbar__item"><a class="navbar__link" href="/kids-numbers">Numbers</a></li><li class="navbar__item"><a class="navbar__link" href="/kids-math">Math</a></li>    <li class="navbar__item"><a class="navbar__link" href="/calculators">Calculators</a></li>
     <li class="navbar__item"><a class="navbar__link" href="/tools">Tools</a></li>
     <li class="navbar__item"><a class="navbar__link" href="/browser">Browser Extensions</a></li>
     <!-- MOBILE-APPS-DROPDOWN-REMOVED: every linked app was a dead App Store / Play Store listing (lapsed developer account) -- add an entry back here for each app once it is relaunched -->
@@ -843,7 +871,7 @@ body.is-stuck #navbar.hide { position: fixed; top: 56px; right: 8px; }
             hide_search:false,
             current_tab:5
         }        </script><!-- FASTCOMMENTS-LAZY: widget init moved to main_js/main.js -- it pulls embed.min.js only when #fastcomments-widget nears the viewport or on the first Comments-toggle click, so it no longer blocks first render -->                <script src="https://mes.fm/main_js/lazysizes.min.js?v=1.0.3" async></script>
-	<script src="/main_js/voice-picker.js?v=1" defer></script><script src="/kids/js/kids.js?v=2" defer></script>
+	<script src="/main_js/voice-picker.js?v=1" defer></script><script src="/kids/js/kids.js?v=3" defer></script>
             <script src="https://mes.fm/main_js/main.js?v=1.0.5"></script>    <!-- PAGEVIEW-TRACKING-INSERTED --><script src="https://mes.fm/main_js/track.js" defer></script><script>document.getElementById('copyright-year').textContent = new Date().getFullYear();</script><script src="/main_js/info-bar-fit.js" defer></script><script>
   // Floating compact header bar (see #compact-nav CSS): appears once the
   // header + nav bar have scrolled off the top; nav links that don't fit
