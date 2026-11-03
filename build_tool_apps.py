@@ -472,7 +472,7 @@ APPS = {
     "gnm": dict(title="MES German New Medicine Explorer", page_title="German New Medicine (GNM): Interactive Chart of the 5 Biological Laws",
                 tag="Two phases. Three levels. Five laws.", accent="#4d7c0f", dark="#3f6212", tint="#ecfccb",
                 desc="An interactive, visual guide to German New Medicine (GNM) by Dr. Ryke Geerd Hamer: drag a marker along the two-phase chart (DHS, conflict-active phase, conflictolysis, PCL-A, epileptoid crisis, PCL-B), see what GNM expects for psyche, brain relay and organ by germ layer, describe your symptoms in plain words, and explore the Five Biological Laws and a glossary.",
-                js_v="7"),
+                js_v="8"),
     "neuron-simulator": dict(title="MES Neuron Simulator", page_title="Neuron Simulator: Action Potential, Nerve Conduction and Synapses",
                              tag="Spike, conduct, connect.", accent="#0e7490", dark="#155e75", tint="#cffafe",
                              desc="A free neuron simulator: the Hodgkin-Huxley action potential with sodium and potassium gates, threshold and refractory periods, TTX, TEA, lidocaine, hyperkalaemia and temperature; saltatory conduction along myelinated and unmyelinated axons with multiple sclerosis demyelination and block; EPSP and IPSP summation; the neuromuscular junction with myasthenia gravis and train-of-four; and a Nernst and Goldman equation calculator.",
@@ -530,7 +530,7 @@ APPS = {
     "photo": dict(title="MES Photo Editor", src="photo-editor", page_title="Free Online Photo Editor with Layers",
                          tag="Pro tools. No upload. No sign-up.", accent="#7c3aed", dark="#5b21b6", tint="#f1eafe",
                          desc="Free online photo editor with layers, selections, magic wand, clone stamp, levels and curves. Add text labels, arrows, callouts and blur boxes to screenshots, combine images, keep transparency, open PSD and GIMP (.xcf) files and export PNG, JPEG or WebP. Private: nothing is uploaded.",
-                         js_v="30", js_parts=["core.js", "tools.js", "tools2.js", "dialogs.js", "ai.js", "aiort.js", "erase.js", "upscale.js", "equation.js", "xcf.js", "files.js", "projects.js", "psd.js", "round7.js", "layerstyle.js", "fontcat.js", "fontpick.js", "icons.js"], lib_from=["image-converter"]),
+                         js_v="31", js_parts=["core.js", "tools.js", "tools2.js", "dialogs.js", "ai.js", "aiort.js", "erase.js", "upscale.js", "equation.js", "xcf.js", "files.js", "projects.js", "psd.js", "round7.js", "layerstyle.js", "fontcat.js", "fontpick.js", "icons.js"], lib_from=["image-converter"]),
     # MES Audio Editor (mes.fm/audio): Audacity-style multi-track editor with AI noise removal. lib.js = MESAudio (clip model, edits, mixdown, peaks, fades, EQ,
     # BS.1770 loudness / true peak, limiter, compressor, de-click, WAV; node-tested with the shared denoiser: tool_apps_src/audio-tests.js), app.js = UI.
     # The noise removal is the shared /main_js/denoise.js (MESDenoise: DeepFilterNet3 ONNX + RNNoise wasm + spectral gate), also used by the video editor.

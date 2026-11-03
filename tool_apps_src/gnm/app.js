@@ -31,50 +31,116 @@
 	function txt(parent, x, y, s, cls, extra) { var a = { x: x, y: y, "class": cls || "gn-st" }; if (extra) for (var k in extra) a[k] = extra[k]; var e = el("text", a, parent); e.textContent = s; return e; }
 
 	/* ---------------------------------------------------------------- chart */
-	var CH = $("gn-chart"), W = 1000, H = 400, L = 104, R = 16, TOP = 22, BOT = 30, Y1 = 1.18, Y0 = -1.08;
+	/* The classic two-phase chart (after Dr. Ryke Geerd Hamer): day phase / sympathicotonia above the normotonia line (blue), night phase /
+	   vagotonia below (red), DHS and CL triangles on the line, the epileptoid crisis spike with its box, PCL-A / PCL-B labels in the troughs,
+	   dashed phase dividers, and the "Conflict-active phase" / "Healing phase" bars underneath. Drawn from the same MESGNM model, so the
+	   course buttons and sliders reshape it. */
+	var CH = $("gn-chart"), W = 1000, H = 560, L = 150, R = 16, TOP = 62, PB = 400, Y1 = 1.18, Y0 = -1.08;
 	function X(t) { return L + (W - L - R) * t / M.T; }
-	function Y(v) { return TOP + (H - TOP - BOT) * (Y1 - v) / (Y1 - Y0); }
+	function Y(v) { return TOP + (PB - TOP) * (Y1 - v) / (Y1 - Y0); }
 	function tOfX(x) { return clamp((x - L) / (W - L - R), 0, 1) * M.T; }
 	var mk = {};
-	function drawChart() {
-		W = (CH.getBoundingClientRect().width || 900) < 640 ? 620 : 1000; L = W < 1000 ? 96 : 104; CH.setAttribute("viewBox", "0 0 " + W + " " + H);   /* phones: a narrower drawing, so the text stays readable */
-		CH.innerHTML = "";
-		var defs = el("defs", {}, CH), gr = el("linearGradient", { id: "gn-grad", x1: 0, y1: Y(1), x2: 0, y2: Y(-1), gradientUnits: "userSpaceOnUse" }, defs);
-		el("stop", { offset: "0", "stop-color": "#dc2626", "stop-opacity": "0.42" }, gr); el("stop", { offset: "0.5", "stop-color": "#dc2626", "stop-opacity": "0.04" }, gr);
-		el("stop", { offset: "0.5", "stop-color": "#2563eb", "stop-opacity": "0.04" }, gr); el("stop", { offset: "1", "stop-color": "#2563eb", "stop-opacity": "0.42" }, gr);
-		el("rect", { x: L, y: TOP, width: W - L - R, height: Y(0) - TOP, "class": "gn-band-up" }, CH);
-		el("rect", { x: L, y: Y(0), width: W - L - R, height: H - BOT - Y(0), "class": "gn-band-dn" }, CH);
-		/* phase background stripes */
+	/* spans of the bars underneath: active = DHS .. CL, healing = CL .. back to normotonia (or the next DHS) */
+	function spans() {
+		var out = [], cur = null;
 		M.segs.forEach(function (s) {
-			if (s.p === "norm") return;
-			var r = el("rect", { x: X(s.t0), y: TOP, width: Math.max(1, X(s.t1) - X(s.t0)), height: H - TOP - BOT, fill: G.PHASES[s.p].color, "fill-opacity": s.p === "dhs" || s.p === "cl" || s.p === "ec" ? 0.16 : 0.06 }, CH);
-			el("title", {}, r).textContent = G.PHASES[s.p].name;
+			var kind = s.p === "norm" ? null : (s.p === "dhs" || s.p === "ca") ? "act" : "heal";
+			if (cur && cur.k === kind) { cur.t1 = s.t1; cur.open = cur.open || !!s.open; return; }
+			if (cur) out.push(cur);
+			cur = kind ? { k: kind, t0: s.t0, t1: s.t1, open: !!s.open } : null;
 		});
-		el("line", { x1: L, x2: W - R, y1: Y(0), y2: Y(0), "class": "gn-base" }, CH);
-		var nar = W < 1000; CH.classList.toggle("gn-chart--n", nar);
-		if (nar) {
-			txt(CH, L - 8, Y(0) + 6, "Normal", "gn-st gn-ax", { "text-anchor": "end" });
-			txt(CH, L - 8, Y(0.7), "Stress", "gn-st gn-ax gn-ax--up", { "text-anchor": "end" }); txt(CH, L - 8, Y(0.7) + 22, "mode ↑", "gn-st gn-small", { "text-anchor": "end" });
-			txt(CH, L - 8, Y(-0.55), "Rest", "gn-st gn-ax gn-ax--dn", { "text-anchor": "end" }); txt(CH, L - 8, Y(-0.55) + 22, "mode ↓", "gn-st gn-small", { "text-anchor": "end" });
-		} else {
-			txt(CH, L - 8, Y(0) + 4, "Normotonia", "gn-st gn-ax", { "text-anchor": "end" });
-			txt(CH, L - 8, Y(0.75), "Sympathi-", "gn-st gn-ax gn-ax--up", { "text-anchor": "end" }); txt(CH, L - 8, Y(0.75) + 15, "cotonia", "gn-st gn-ax gn-ax--up", { "text-anchor": "end" });
-			txt(CH, L - 8, Y(0.4) + 4, "(stress)", "gn-st gn-ax gn-small", { "text-anchor": "end" });
-			txt(CH, L - 8, Y(-0.6), "Vagotonia", "gn-st gn-ax gn-ax--dn", { "text-anchor": "end" }); txt(CH, L - 8, Y(-0.6) + 15, "(rest)", "gn-st gn-ax gn-small", { "text-anchor": "end" });
-		}
-		var pts = G.sample(M, 500), d = "", a = "M" + X(0) + "," + Y(0);
-		pts.forEach(function (p, i) { var s = X(p[0]).toFixed(1) + "," + Y(p[1]).toFixed(1); d += (i ? "L" : "M") + s; a += "L" + s; });
-		a += "L" + X(M.T) + "," + Y(0) + "Z";
-		el("path", { d: a, fill: "url(#gn-grad)" }, CH);
+		if (cur) out.push(cur);
+		return out;
+	}
+	function drawChart() {
+		var nar = (CH.getBoundingClientRect().width || 900) < 720;   /* phones: a narrower drawing, so the text stays readable */
+		W = nar ? 640 : 1000; H = nar ? 640 : 560; L = nar ? 112 : 150; TOP = nar ? 78 : 62; PB = nar ? 450 : 400;
+		CH.setAttribute("viewBox", "0 0 " + W + " " + H); CH.classList.toggle("gn-chart--n", nar);
+		CH.innerHTML = "";
+		var fs = nar ? 1.45 : 1, uid = "gnc", defs = el("defs", {}, CH), y0 = Y(0), bot = H - (nar ? 6 : 4);
+		/* clip regions: program phases above / below the line, normotonia stretches on their own */
+		var cUp = el("clipPath", { id: uid + "u" }, defs), cDn = el("clipPath", { id: uid + "d" }, defs), cN = el("clipPath", { id: uid + "n" }, defs);
+		M.segs.forEach(function (sg) {
+			var x0 = X(sg.t0), w = Math.max(0.5, X(sg.t1) - x0);
+			if (sg.p === "norm") el("rect", { x: x0, y: 0, width: w, height: H }, cN);
+			else { el("rect", { x: x0, y: 0, width: w, height: y0 }, cUp); el("rect", { x: x0, y: y0, width: w, height: H }, cDn); }
+		});
+		/* axis labels */
+		var ax = function (y, a, b, cls) { txt(CH, L - 10, y, a, "gn-st gn-ax " + cls, { "text-anchor": "end" }); if (b) txt(CH, L - 10, y + 17 * fs, b, "gn-st gn-ax " + cls, { "text-anchor": "end" }); };
+		if (nar) { ax(Y(0.72), "Day", "phase ↑", "gn-ax--up"); ax(y0 + 7, "Normal", "", ""); ax(Y(-0.5), "Night", "phase ↓", "gn-ax--dn"); }
+		else { ax(Y(0.78), "Day phase:", "Sympathicotonia", "gn-ax--up"); ax(y0 + 5, "Normotonia", "", ""); ax(Y(-0.5), "Night phase:", "Vagotonia", "gn-ax--dn"); }
+		/* the curve and its fills */
+		var pts = G.sample(M, 700), d = "", a = "M" + X(0) + "," + y0;
+		pts.forEach(function (p, i) { var c = X(p[0]).toFixed(1) + "," + Y(p[1]).toFixed(1); d += (i ? "L" : "M") + c; a += "L" + c; });
+		a += "L" + X(M.T) + "," + y0 + "Z";
+		el("path", { d: a, "class": "gn-fill-n", "clip-path": "url(#" + uid + "n)" }, CH);
+		el("path", { d: a, "class": "gn-fill-act", "clip-path": "url(#" + uid + "u)" }, CH);
+		el("path", { d: a, "class": "gn-fill-heal", "clip-path": "url(#" + uid + "d)" }, CH);
+		el("line", { x1: L, x2: W - R, y1: y0, y2: y0, "class": "gn-base" }, CH);
+		/* dashed dividers at every phase change of a program (DHS, CL, crisis start / end, end of healing) */
+		var vx = {};
+		M.segs.forEach(function (sg, i) {
+			var prev = M.segs[i - 1];
+			if (sg.p === "dhs" || sg.p === "cl" || sg.p === "ec") vx[X(sg.t0).toFixed(1)] = 1;
+			if (sg.p === "ec") vx[X(sg.t1).toFixed(1)] = 1;
+			if (sg.p === "norm" && prev && prev.p !== "norm") vx[X(sg.t0).toFixed(1)] = 1;
+		});
+		Object.keys(vx).forEach(function (x) { el("line", { x1: x, x2: x, y1: TOP - 30 * fs, y2: bot - (nar ? 74 : 60), "class": "gn-vdash" }, CH); });
 		el("path", { d: d, "class": "gn-curve" }, CH);
-		M.events.forEach(function (e) {
-			var x = X(e.t), y = Y(G.levelAt(M, e.t)), up = e.id === "ec" || e.id === "dhs" || e.id === "rec" || e.id === "open";
-			var ly = up ? Math.max(TOP + 12, y - 12) : Math.min(H - BOT - 6, y + 20);
-			if (e.id === "cl") ly = Math.max(TOP + 12, Y(G.levelAt(M, e.t)) - 12);
-			txt(CH, x + (e.id === "cl" ? 6 : 0), ly, e.label, "gn-st gn-ev", { "text-anchor": e.id === "cl" ? "start" : "middle" });
+		/* trough / spike labels */
+		M.segs.forEach(function (sg) {
+			var xm = (X(sg.t0) + X(sg.t1)) / 2, w = X(sg.t1) - X(sg.t0);
+			if (sg.p === "pcla" || sg.p === "pclb") {
+				txt(CH, xm, y0 - 8, sg.p === "pcla" ? "PCL-A" : "PCL-B", "gn-st gn-ph", { "text-anchor": "middle" });
+				var lw = (sg.p === "pcla" ? 76 : 66) * (nar ? 1.08 : 1), tl = (sg.t1 - sg.t0) * lw / 2 / Math.max(1, w), sh = -1, best = (sg.t0 + sg.t1) / 2;
+				/* put the label where the trough is deepest across its whole width, so it never crosses the curve */
+				for (var k = 0; k <= 16; k++) {
+					var tc = sg.t0 + tl + (sg.t1 - sg.t0 - 2 * tl) * k / 16;
+					var dd = Math.min(Y(G.levelAt(M, tc - tl)), Y(G.levelAt(M, tc + tl)), Y(G.levelAt(M, tc))) - y0;
+					if (dd > sh) { sh = dd; best = tc; }
+				}
+				xm = X(best);
+				if (w > lw + 6 && sh > 30 * (nar ? 1.2 : 1)) {
+					var two = sg.p === "pcla" && sh > 56 * (nar ? 1.2 : 1), yy = y0 + (two ? sh * 0.42 : sh * 0.6) + 2;
+					if (sg.p === "pcla") { txt(CH, xm, yy, "Exudation", "gn-st gn-in", { "text-anchor": "middle" }); if (two) txt(CH, xm, yy + 18 * (nar ? 1.2 : 1), "edema", "gn-st gn-in gn-in--b", { "text-anchor": "middle" }); }
+					else if (!sg.hang) txt(CH, xm, yy, "Scarring", "gn-st gn-in", { "text-anchor": "middle" });
+				}
+			}
 		});
-		txt(CH, (L + W - R) / 2, H - 9, "time →", "gn-st gn-small", { "text-anchor": "middle" });
-		mk.line = el("line", { y1: TOP, y2: H - BOT, "class": "gn-mline" }, CH);
+		/* DHS / CL triangles on the line, the crisis box with an arrow at its peak */
+		var tw = 62 * (nar ? 1.25 : 1), th = 40 * (nar ? 1.25 : 1);
+		M.events.forEach(function (e) {
+			var x = X(e.t);
+			if (e.id === "dhs" || e.id === "rec" || e.id === "cl") {
+				var g = el("g", { "class": "gn-tri" + (e.id === "cl" ? " gn-tri--cl" : "") }, CH);
+				el("path", { d: "M" + (x - tw / 2) + "," + (y0 - th) + "L" + (x + tw / 2) + "," + (y0 - th) + "L" + x + "," + y0 + "Z" }, g);
+				txt(g, x, y0 - th + 15 * fs + 1, e.id === "cl" ? "CL" : "DHS", "gn-st gn-tri-t", { "text-anchor": "middle" });
+				if (e.id === "rec" || /track/.test(e.label)) txt(CH, x, y0 + 20 * fs, "track", "gn-st gn-small", { "text-anchor": "middle" });
+			} else if (e.id === "ec") {
+				var py = Y(G.levelAt(M, e.t)), bw = nar ? 230 : 190, bh = nar ? 38 : 30, by = TOP - (nar ? 72 : 58), bx = clamp(x - bw / 2, L, W - R - bw);
+				el("line", { x1: x, x2: x, y1: by + bh, y2: py - 14, "class": "gn-ecline" }, CH);
+				el("path", { d: "M" + (x - 9) + "," + (py - 2) + "L" + (x + 9) + "," + (py - 2) + "L" + x + "," + (py - 22) + "Z", "class": "gn-ecarrow" }, CH);
+				var gg = el("g", { "class": "gn-ecbox" }, CH); el("rect", { x: bx, y: by, width: bw, height: bh, rx: 4 }, gg);
+				txt(gg, bx + bw / 2, by + bh / 2 + 5 * fs, "Epileptoid crisis", "gn-st gn-ecbox-t", { "text-anchor": "middle" });
+			} else {
+				var ly = e.id === "open" || e.id === "hang" ? Y(G.levelAt(M, e.t)) + (e.id === "open" ? -14 : 26) : y0 - 12;
+				txt(CH, X(e.t), ly, e.label, "gn-st gn-ev", { "text-anchor": "end" });
+			}
+		});
+		/* the phase bars underneath */
+		var barY = PB + (nar ? 44 : 36), barH = nar ? 52 : 44;
+		spans().forEach(function (sp) {
+			var x0 = X(sp.t0) + 3, x1 = X(sp.t1) - 3, w = x1 - x0; if (w < 6) return;
+			var g = el("g", { "class": sp.k === "act" ? "gn-bar gn-bar--act" : "gn-bar gn-bar--heal" }, CH);
+			el("rect", { x: x0, y: barY, width: w, height: barH, rx: 3 }, g);
+			var big = sp.k === "act" ? ["Conflict-active", "phase"] : ["Healing", "phase"], cm = (x0 + x1) / 2;
+			if (w > 150 * fs) txt(g, cm, barY + barH / 2 + 5 * fs, big.join(" "), "gn-st gn-bar-t", { "text-anchor": "middle" });
+			else if (w > 66 * fs) { txt(g, cm, barY + barH / 2 - 2, big[0], "gn-st gn-bar-t gn-bar-t--s", { "text-anchor": "middle" }); txt(g, cm, barY + barH / 2 + 14 * fs - 2, big[1], "gn-st gn-bar-t gn-bar-t--s", { "text-anchor": "middle" }); }
+			var cap = sp.k === "act" ? (sp.open ? ["Prolonged", "sympathicotonia (no CL yet)"] : ["Prolonged", "sympathicotonia"]) : ["Prolonged", "vagotonia"];
+			var cpx = nar ? 17 : 14;      /* caption font size: show it only where its longest line fits under the bar */
+			if (w > 0.56 * cpx * Math.max(cap[0].length, cap[1].length)) { txt(CH, cm, barY + barH + cpx * 1.5, cap[0], "gn-st gn-cap", { "text-anchor": "middle" }); txt(CH, cm, barY + barH + cpx * 2.85, cap[1], "gn-st gn-cap", { "text-anchor": "middle" }); }
+		});
+		mk.line = el("line", { y1: TOP - 20, y2: PB + 20, "class": "gn-mline" }, CH);
 		mk.halo = el("circle", { r: 15, "class": "gn-mhalo" }, CH);
 		mk.dot = el("circle", { r: 8, "class": "gn-mdot" }, CH);
 		mk.lab = txt(CH, 0, 0, "", "gn-st gn-mlab", { "text-anchor": "middle" });
@@ -95,17 +161,26 @@
 		[mk.halo, mk.dot].forEach(function (c) { c.setAttribute("cx", x); c.setAttribute("cy", y); });
 		mk.dot.setAttribute("fill", P.color); mk.halo.setAttribute("stroke", P.color);
 		mk.lab.textContent = P.short + (ph.rec ? " (recurrence)" : "");
-		mk.lab.setAttribute("x", clamp(x, L + 40, W - R - 50)); mk.lab.setAttribute("y", ph.y > 0.6 ? y + 32 : y - 20);
+		mk.lab.setAttribute("x", clamp(x, L + 50, W - R - 60)); mk.lab.setAttribute("y", ph.y > 0.6 ? y + 34 : ph.y < -0.6 ? y - 20 : y - 22);
 		CH.setAttribute("aria-valuenow", Math.round(S.t * 100)); CH.setAttribute("aria-valuetext", P.name);
 		[].forEach.call($("gn-strip").children, function (b) { var s = M.segs[+b.getAttribute("data-i")]; b.classList.toggle("is-on", s === ph.seg); });
 		renderInfo(ph); save();
 	}
 	function setT(f) { S.t = clamp(f, 0, 1); placeMarker(); }
 	function pointerT(ev) { var pt = CH.createSVGPoint(); pt.x = ev.clientX; pt.y = ev.clientY; var m = CH.getScreenCTM(); if (!m) return; var p = pt.matrixTransform(m.inverse()); setT(tOfX(p.x) / M.T); }
-	var dragging = false;
-	CH.addEventListener("pointerdown", function (ev) { dragging = true; try { CH.setPointerCapture(ev.pointerId); } catch (e) {} pointerT(ev); ev.preventDefault(); });
-	CH.addEventListener("pointermove", function (ev) { if (dragging) pointerT(ev); });
-	["pointerup", "pointercancel"].forEach(function (n) { CH.addEventListener(n, function () { dragging = false; }); });
+	/* mouse / pen drag at once; a finger only once the move is clearly sideways (or on a tap), so an up/down swipe scrolls the page */
+	(function () {
+		var id = null, on = false, sx = 0, sy = 0;
+		function begin(ev) { on = true; try { CH.setPointerCapture(ev.pointerId); } catch (e) {} pointerT(ev); }
+		CH.addEventListener("pointerdown", function (ev) { if (ev.button > 0) return; id = ev.pointerId; sx = ev.clientX; sy = ev.clientY; on = false; if (ev.pointerType !== "touch") { begin(ev); ev.preventDefault(); } });
+		CH.addEventListener("pointermove", function (ev) {
+			if (ev.pointerId !== id) return; if (on) { pointerT(ev); return; }
+			var dx = Math.abs(ev.clientX - sx), dy = Math.abs(ev.clientY - sy);
+			if (dx > 9 && dx > dy * 1.4) begin(ev); else if (dy > 12) id = null;
+		});
+		CH.addEventListener("pointerup", function (ev) { if (ev.pointerId !== id) return; if (!on && Math.abs(ev.clientX - sx) < 9 && Math.abs(ev.clientY - sy) < 9) pointerT(ev); on = false; id = null; });
+		CH.addEventListener("pointercancel", function () { on = false; id = null; });
+	})();
 	function segIndexAt() { var t = S.t * M.T; for (var i = 0; i < M.segs.length; i++) if (t >= M.segs[i].t0 && t < M.segs[i].t1) return i; return M.segs.length - 1; }
 	function goSeg(i) { i = clamp(i, 0, M.segs.length - 1); var s = M.segs[i], w = s.t1 - s.t0; setT((s.t0 + w * (w < 2 ? 0.5 : 0.45)) / M.T); }
 	CH.addEventListener("keydown", function (ev) {
@@ -135,7 +210,7 @@
 	}
 	aIn.addEventListener("input", function () { S.A = +aIn.value; rebuild(); });
 	dIn.addEventListener("input", function () { S.D = +dIn.value; rebuild(); });
-	function reflow() { var w = CH.getBoundingClientRect().width; if (w && (w < 640) !== (W < 1000)) drawChart(); }
+	function reflow() { var w = CH.getBoundingClientRect().width; if (w && (w < 720) !== (W < 1000)) drawChart(); }
 	if (window.ResizeObserver) new ResizeObserver(reflow).observe(CH.parentNode); else window.addEventListener("resize", reflow);
 	function rebuild() { M = G.build({ scenario: S.sc, intensity: S.A, duration: S.D }); paintScen(); paintSliders(); drawChart(); }
 

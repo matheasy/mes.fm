@@ -30,7 +30,7 @@
 			body: "Cold hands and feet, little appetite, losing weight, trouble sleeping (often waking in the early hours), more energy for the problem, higher stress levels.",
 			brain: "The Hamer focus shows sharp, concentric rings (the 'shooting target' configuration) in the relay of the affected organ.",
 			microbes: "Microbes are inactive for this program. In GNM, mycobacteria multiply in this phase (brain-stem and cerebellum programs) in step with the tumour.",
-			color: "#dc2626" },
+			color: "#2563eb" },
 		cl: { name: "Conflictolysis (CL)", short: "CL", g: "cl",
 			sum: "Conflictolysis (CL) is the moment the conflict is resolved. In GNM it is the turning point: the program switches from the active phase to the healing phase.",
 			psyche: "Relief: the problem is solved, the danger is over, the separation has ended, the territory is back.",
@@ -44,21 +44,21 @@
 			body: "Deep fatigue, warm hands and feet, good appetite, often fever, headaches, inflammation, swelling and pain at the healing organ.",
 			brain: "The Hamer focus fills with edema: the rings are blurred and swollen.",
 			microbes: "In GNM, fungi, mycobacteria, bacteria or (as Hamer put it) viruses work now, each on the tissue of its own germ layer.",
-			color: "#2563eb" },
+			color: "#dc2626" },
 		ec: { name: "Epileptoid crisis (EC)", short: "EC", g: "ec",
 			sum: "Hamer described the epileptic or epileptoid crisis (EC) as a short return to sympathicotonia at the deepest point of the healing phase, which squeezes the edema out of the brain relay.",
 			psyche: "The conflict is briefly relived, as if once more; restless, tense for hours.",
 			body: "Chills, cold sweat, cold hands, palpitations, sometimes cramps, intense pain or a seizure-like attack, depending on the germ layer.",
 			brain: "In GNM, the edema of the Hamer focus is pressed out; the focus contracts.",
 			microbes: "Microbes keep working; the crisis is the peak of the program in GNM.",
-			color: "#ea580c" },
+			color: "#0891b2" },
 		pclb: { name: "Healing phase PCL-B", short: "PCL-B", g: "pclb",
 			sum: "PCL-B is the second half of healing in GNM: the edema leaves the body (urinary phase), scar tissue forms and the rhythm returns towards normotonia.",
 			psyche: "Energy returns, the mood lifts, the episode feels finished.",
 			body: "Passing a lot of urine as the fluid leaves (the 'pee phase'), swelling goes down, scars or indurations may remain, strength comes back.",
 			brain: "Glia (connective tissue of the brain) is laid down in the Hamer focus; on CT it shows white.",
 			microbes: "Microbial work comes to an end.",
-			color: "#0891b2" }
+			color: "#b45309" }
 	};
 	var ORDER = ["norm", "dhs", "ca", "cl", "pcla", "ec", "pclb"];
 
@@ -279,8 +279,8 @@
 			seg("cl", t, t + 1.2); events.push({ t: t, id: "cl", label: "CL" }); k(t + 1.2, a * 0.1); t += 1.2;
 			var P = (caLen + 6) * (0.6 + 0.6 * a), depth = -a * (0.55 + 0.4 * d);
 			var aLen = P * 0.5; seg("pcla", t, t + aLen); k(t + aLen * 0.55, depth * 0.85); k(t + aLen, depth); t += aLen;
-			seg("ec", t, t + 4); events.push({ t: t + 1.6, id: "ec", label: "EC" }); k(t + 1.6, a * 0.35); k(t + 3.2, depth * 0.7); k(t + 4, depth * 0.62); t += 4;
-			var bLen = P * 0.5; seg("pclb", t, t + bLen); k(t + bLen * 0.5, depth * 0.3); t += bLen; k(t, 0);
+			seg("ec", t, t + 4); events.push({ t: t + 1.6, id: "ec", label: "EC" }); k(t + 1.6, a * 0.92); k(t + 3.2, depth * 0.7); k(t + 4, depth * 0.62); t += 4;
+			var bLen = P * 0.5; seg("pclb", t, t + bLen); k(t + bLen * 0.45, depth * 0.52); t += bLen; k(t, 0);
 			return dhs;
 		}
 		if (sc === "classic") { norm(10); cycle(A, D, false); norm(10); }
@@ -315,6 +315,10 @@
 		var y = a[1] + (b[1] - a[1]) * s;
 		var sg = segAt(m, t);
 		if (sg && sg.p === "norm") y += 0.07 * Math.sin((t - sg.t0) * 1.3);    /* day / night swing */
+		else if (sg && sg.p === "ca") {      /* the wavy plateau of the classic chart: stress keeps flaring up while the conflict is active */
+			var u2 = (t - sg.t0) / Math.max(1e-9, sg.t1 - sg.t0), env = Math.min(1, u2 * 8, (1 - u2) * 8);
+			y += env * (0.05 * Math.sin((t - sg.t0) * 1.9) + 0.025 * Math.sin((t - sg.t0) * 3.7 + 1));
+		}
 		return y;
 	}
 	function segAt(m, t) {

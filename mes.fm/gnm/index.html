@@ -337,20 +337,43 @@ body.dark-mode .tu .rw-head {color:#a0a8b3;border-bottom-color:#555;} body.dark-
 	/* chart */
 	.gn-cwrap {display:grid;grid-template-columns:minmax(0,1fr);gap:0.8em;}
 	.gn-cbox {border:1px solid var(--gn-line);border-radius:0.6em;background:var(--gn-card);padding:0.3em;}
-	.gn-chart {display:block;width:100%;height:auto;touch-action:none;cursor:ew-resize;outline:none;user-select:none;-webkit-user-select:none;}
+	.gn-chart {display:block;width:100%;height:auto;touch-action:pan-y;cursor:ew-resize;outline:none;user-select:none;-webkit-user-select:none;}
 	.gn-chart:focus-visible {box-shadow:0 0 0 3px var(--accent);border-radius:0.4em;}
 	.gn-band-up {fill:var(--gn-up);} .gn-band-dn {fill:var(--gn-dn);}
 	.gn-base {stroke:var(--gn-dim);stroke-width:1.5;stroke-dasharray:6 4;}
 	.gn-curve {fill:none;stroke:var(--gn-curve);stroke-width:3;stroke-linejoin:round;}
 	.gn-st {fill:var(--gn-ink);font-family:inherit;font-size:15px;}
-	.gn-ax {font-weight:700;font-size:14px;} .gn-ax--up {fill:#c81e1e;} .gn-ax--dn {fill:#1d4ed8;}
-	body.dark-mode #gn .gn-ax--up {fill:#fca5a5;} body.dark-mode #gn .gn-ax--dn {fill:#93c5fd;}
+	.gn-ax {font-weight:700;font-size:14px;} .gn-ax--up {fill:#2f5fa8;} .gn-ax--dn {fill:#b8442b;}
+	body.dark-mode #gn .gn-ax--up {fill:#93c5fd;} body.dark-mode #gn .gn-ax--dn {fill:#fca5a5;}
 	.gn-small {font-size:12px;fill:var(--gn-dim);}
 	.gn-ev {font-size:13px;font-weight:700;}
 	.gn-mline {stroke:var(--gn-ink);stroke-width:1.5;stroke-opacity:0.55;}
 	.gn-mhalo {fill:none;stroke-width:3;stroke-opacity:0.45;}
 	.gn-mdot {stroke:#fff;stroke-width:2.5;}
 	.gn-mlab {font-weight:700;font-size:15px;paint-order:stroke;stroke:var(--gn-card);stroke-width:4px;}
+	/* classic two-phase chart (after Hamer): blue = sympathicotonia / conflict-active, red = vagotonia / healing */
+	.gn {--gn-act:#7ea6dc;--gn-actb:#3f6fb3;--gn-heal:#e46a4c;--gn-healb:#b8442b;--gn-nfill:#b8bec8;--gn-tri:#ffffff;--gn-trik:#111827;--gn-bar-ink:#0f172a;}
+	body.dark-mode #gn.gn {--gn-act:#3d679f;--gn-actb:#8db4ea;--gn-heal:#a8452f;--gn-healb:#f19a82;--gn-nfill:#59616d;--gn-tri:#1f2329;--gn-trik:#f3f4f6;--gn-bar-ink:#f8fafc;}
+	.gn-fill-act {fill:var(--gn-act);} .gn-fill-heal {fill:var(--gn-heal);} .gn-fill-n {fill:var(--gn-nfill);fill-opacity:0.7;}
+	.gn-vdash {stroke:var(--gn-ink);stroke-width:1.4;stroke-dasharray:5 5;stroke-opacity:0.55;}
+	.gn-tri path {fill:var(--gn-tri);stroke:var(--gn-trik);stroke-width:2;stroke-linejoin:round;}
+	.gn-tri-t {font-size:13px;font-weight:700;fill:var(--gn-trik);}
+	.gn-ph {font-size:13px;font-weight:700;}
+	.gn-in {font-size:13px;font-weight:700;fill:#3b0d02;} .gn-in--b {font-weight:800;}
+	body.dark-mode #gn .gn-in {fill:#fff1ec;}
+	.gn-ecbox rect {fill:var(--gn-act);stroke:var(--gn-actb);stroke-width:1.5;} .gn-ecbox-t {font-size:14px;font-weight:800;fill:var(--gn-bar-ink);letter-spacing:0.02em;}
+	.gn-ecline {stroke:var(--gn-curve);stroke-width:2.5;} .gn-ecarrow {fill:var(--gn-curve);}
+	.gn-bar--act rect {fill:var(--gn-act);stroke:var(--gn-actb);stroke-width:1.5;} .gn-bar--heal rect {fill:var(--gn-heal);stroke:var(--gn-healb);stroke-width:1.5;}
+	.gn-bar-t {font-size:15px;font-weight:800;fill:var(--gn-bar-ink);letter-spacing:0.02em;} .gn-bar-t--s {font-size:13px;}
+	.gn-bar--heal .gn-bar-t {fill:#fff;}
+	.gn-cap {font-size:14px;font-weight:700;}
+	.gn-legend {display:flex;flex-wrap:wrap;gap:0.3em 1.6em;margin:0.6em 0 0;font-size:0.88em;color:var(--gn-dim);} .gn-legend b {color:var(--gn-ink);}
+	.gn-credit {margin:0.35em 0 0;font-size:0.82em;color:var(--gn-dim);}
+	.gn-refs ul {margin:0.4em 0 0;padding-left:1.2em;} .gn-refs li {margin:0.35em 0;}
+	.gn-vids {display:grid;grid-template-columns:repeat(auto-fill,minmax(15em,1fr));gap:0.9em;margin-top:0.8em;}
+	.gn-vid {display:block;text-decoration:none;color:var(--gn-ink);border:1px solid var(--gn-line);border-radius:0.5em;overflow:hidden;background:var(--gn-soft);}
+	.gn-vid img {display:block;width:100%;aspect-ratio:16/9;object-fit:cover;} .gn-vid span {display:block;padding:0.5em 0.7em;font-size:0.92em;font-weight:600;}
+	.gn-vid:hover, .gn-vid:focus-visible {border-color:var(--accent);}
 	.gn-strip {display:flex;gap:2px;margin-top:0.35em;}
 	#gn .gn-sp {min-width:0;border:0;background:var(--gn-soft);border-radius:0.3em;padding:0.25em 0.1em;cursor:pointer;font:inherit;font-size:0.72em;display:flex;flex-direction:column;align-items:center;gap:0.15em;color:var(--gn-ink);overflow:hidden;}
 	#gn .gn-sp i {display:block;width:100%;height:5px;border-radius:3px;}
@@ -485,7 +508,7 @@ body.dark-mode .tu .rw-head {color:#a0a8b3;border-bottom-color:#555;} body.dark-
 	.gn-gi dd {margin:0;font-size:0.92em;}
 	@media (max-width:520px){ .gn-figs {grid-template-columns:minmax(0,0.8fr) minmax(0,1fr);} .gn-oh {display:none;} #gn .gn-orow {grid-template-columns:minmax(0,1fr) minmax(0,1fr);} .gn-mrow {grid-template-columns:minmax(0,1fr);} }
 	body.dark-mode #gn .gn-oi.is-on, body.dark-mode #gn .gn-lawtabs button[aria-selected="true"] b, body.dark-mode #gn .gn-q:hover, body.dark-mode #gn .gn-q[aria-expanded="true"] {color:#111827;}
-	.gn-chart--n .gn-st {font-size:22px;} .gn-chart--n .gn-small {font-size:17px;} .gn-chart--n .gn-ax {font-size:22px;} .gn-chart--n .gn-ev {font-size:19px;} .gn-chart--n .gn-mlab {font-size:22px;}
+	.gn-chart--n .gn-st {font-size:22px;} .gn-chart--n .gn-tri-t, .gn-chart--n .gn-ph {font-size:19px;} .gn-chart--n .gn-in {font-size:14.5px;} .gn-chart--n .gn-cap {font-size:17px;} .gn-chart--n .gn-ecbox-t {font-size:20px;} .gn-chart--n .gn-bar-t {font-size:21px;} .gn-chart--n .gn-bar-t--s {font-size:18px;} .gn-chart--n .gn-small {font-size:17px;} .gn-chart--n .gn-ax {font-size:22px;} .gn-chart--n .gn-ev {font-size:19px;} .gn-chart--n .gn-mlab {font-size:22px;}
 
 
 	@media print {
@@ -525,6 +548,55 @@ body.dark-mode .tu .rw-head {color:#a0a8b3;border-bottom-color:#555;} body.dark-
 		.footer__item--extra-padding { padding-left: 0; }
 		.footer__text--extra-info { float: none; display: block; margin-top: 0.5em; }
 	}
+
+	/* TOOL-DARK:START -- generated by add_tool_page_controls.py, do not edit */
+	body.dark-mode .page-content :where(div,span,p,li,ul,ol,h1,h2,h3,h4,h5,h6,td,th,label,summary,small,strong,b,em,i,code,pre,legend,figcaption,dl,dt,dd,blockquote,caption,cite,button,input,select,textarea){color:#d8d8d8}
+	body.dark-mode .page-content code{background-color:#33363d;color:#f0a8bd}
+	body.dark-mode .page-content .btn-default{background-color:#2e2e2e;background-image:none;color:#ddd;border-color:#555}
+	body.dark-mode .tu{--accent:#92e525;--accent-dark:#8fd930}
+	body.dark-mode .tu h2{color:#d1d6dc;border-bottom:2px solid #456406}
+	body.dark-mode .tu h3{color:#d1d6dc}
+	body.dark-mode .tu-card{background:#1a1a1a;border:1px solid #28323e}
+	body.dark-mode .tu-card--tint{background:#313c1a;border-color:#456406}
+	body.dark-mode .tu-field > label,body.dark-mode .tu-label{color:#9a9aa2}
+	body.dark-mode .tu-input,body.dark-mode .tu-select{border:1px solid #404a58;background:#1a1a1a;color:#dddddd}
+	body.dark-mode .tu-suffix span{color:#989ca4}
+	body.dark-mode .tu-btn{background:#1a1a1a}
+	body.dark-mode .tu-btn--ghost{border-color:#3a424d;color:#aaaaaa}
+	body.dark-mode .tu-btn--ghost:hover{background:#191c20;color:#dddddd;border-color:#3a424d}
+	body.dark-mode .tu-seg{border:1px solid #404a58;background:#1a1a1a}
+	body.dark-mode .tu-seg button{color:#aaaaaa;border-right:1px solid #28323e}
+	body.dark-mode .tu-seg button:hover{background:#16191d}
+	body.dark-mode .tu-chip{border:1px solid #3a424d;background:#1a1a1a;color:#aaaaaa}
+	body.dark-mode .tu-stat{background:#1a1a1a;border:1px solid #28323e}
+	body.dark-mode .tu-stat--hero{background:#313c1a;border-color:#456406}
+	body.dark-mode .tu-stat__label{color:#9a9aa2}
+	body.dark-mode .tu-stat__value{color:#d1d6dc}
+	body.dark-mode .tu-stat__sub{color:#9a9ea4}
+	body.dark-mode .tu-pos{color:#7dde9d !important}
+	body.dark-mode .tu-neg{color:#e87973 !important}
+	body.dark-mode .tu-table th,body.dark-mode .tu-table td{border-bottom:1px solid #29323d;color:#cccccc}
+	body.dark-mode .tu-table th{color:#9a9da3;background:#1a1a1a}
+	body.dark-mode .tu-table tr.is-active td{background:#313c1a}
+	body.dark-mode .tu-note{color:#9a9da3}
+	body.dark-mode .tu-toast{background:#3c4f67}
+	body.dark-mode .tu-seo{border-top:1px solid #333333}
+	body.dark-mode .tu-svg-line{stroke:#394a60}
+	body.dark-mode .tu-svg-text{fill:#cccccc}
+	body.dark-mode .tu-svg-grid{stroke:#28323e}
+	body.dark-mode .tu [data-names="0"] .rw-num,body.dark-mode .tu [data-table="1"] .rw-num{color:#999da3}
+	body.dark-mode .tu [data-table="1"] .rw-head{color:#9a9aa2;border-bottom:2px solid #2b323c}
+	body.dark-mode .tu [data-table="1"] .rw-row{border-bottom:1px solid #27313f}
+	body.dark-mode .gn{--gn-curve:#5573b5}
+	body.dark-mode .gn-ax--up{fill:#7fa4db}
+	body.dark-mode .gn-ax--dn{fill:#e08d7b}
+	body.dark-mode .gn-mdot{stroke:#333333}
+	body.dark-mode .gn{--gn-actb:#4a7abf;--gn-healb:#d15439;--gn-trik:#5573b5;--gn-bar-ink:#4b6dbf}
+	body.dark-mode .gn-in{fill:#fa7f61}
+	body.dark-mode .gn-odot{stroke:#333333}
+	body.dark-mode .gn-bfocus{stroke:#333333}
+	body.dark-mode #gn .gn-star{color:#fbb360}
+	/* TOOL-DARK:END */
 /* Floating compact header bar: once the full header + nav scroll out of
    view, a slim fixed bar (small logo, title, as many nav links as fit)
    slides in, and the hamburger is pinned into its right end. Toggled by
@@ -567,53 +639,6 @@ body.is-stuck #navbar.hide { position: fixed; top: 56px; right: 8px; }
 @media (max-width: 480px) {
   #compact-nav { padding-right: 70px; gap: 8px; }
 }
-
-	/* TOOL-DARK:START -- generated by add_tool_page_controls.py, do not edit */
-	body.dark-mode .page-content :where(div,span,p,li,ul,ol,h1,h2,h3,h4,h5,h6,td,th,label,summary,small,strong,b,em,i,code,pre,legend,figcaption,dl,dt,dd,blockquote,caption,cite,button,input,select,textarea){color:#d8d8d8}
-	body.dark-mode .page-content code{background-color:#33363d;color:#f0a8bd}
-	body.dark-mode .page-content .btn-default{background-color:#2e2e2e;background-image:none;color:#ddd;border-color:#555}
-	body.dark-mode .tu{--accent:#92e525;--accent-dark:#8fd930}
-	body.dark-mode .tu h2{color:#d1d6dc;border-bottom:2px solid #456406}
-	body.dark-mode .tu h3{color:#d1d6dc}
-	body.dark-mode .tu-card{background:#1a1a1a;border:1px solid #28323e}
-	body.dark-mode .tu-card--tint{background:#313c1a;border-color:#456406}
-	body.dark-mode .tu-field > label,body.dark-mode .tu-label{color:#9a9aa2}
-	body.dark-mode .tu-input,body.dark-mode .tu-select{border:1px solid #404a58;background:#1a1a1a;color:#dddddd}
-	body.dark-mode .tu-suffix span{color:#989ca4}
-	body.dark-mode .tu-btn{background:#1a1a1a}
-	body.dark-mode .tu-btn--ghost{border-color:#3a424d;color:#aaaaaa}
-	body.dark-mode .tu-btn--ghost:hover{background:#191c20;color:#dddddd;border-color:#3a424d}
-	body.dark-mode .tu-seg{border:1px solid #404a58;background:#1a1a1a}
-	body.dark-mode .tu-seg button{color:#aaaaaa;border-right:1px solid #28323e}
-	body.dark-mode .tu-seg button:hover{background:#16191d}
-	body.dark-mode .tu-chip{border:1px solid #3a424d;background:#1a1a1a;color:#aaaaaa}
-	body.dark-mode .tu-stat{background:#1a1a1a;border:1px solid #28323e}
-	body.dark-mode .tu-stat--hero{background:#313c1a;border-color:#456406}
-	body.dark-mode .tu-stat__label{color:#9a9aa2}
-	body.dark-mode .tu-stat__value{color:#d1d6dc}
-	body.dark-mode .tu-stat__sub{color:#9a9ea4}
-	body.dark-mode .tu-pos{color:#7dde9d !important}
-	body.dark-mode .tu-neg{color:#e87973 !important}
-	body.dark-mode .tu-table th,body.dark-mode .tu-table td{border-bottom:1px solid #29323d;color:#cccccc}
-	body.dark-mode .tu-table th{color:#9a9da3;background:#1a1a1a}
-	body.dark-mode .tu-table tr.is-active td{background:#313c1a}
-	body.dark-mode .tu-note{color:#9a9da3}
-	body.dark-mode .tu-toast{background:#3c4f67}
-	body.dark-mode .tu-seo{border-top:1px solid #333333}
-	body.dark-mode .tu-svg-line{stroke:#394a60}
-	body.dark-mode .tu-svg-text{fill:#cccccc}
-	body.dark-mode .tu-svg-grid{stroke:#28323e}
-	body.dark-mode .tu [data-names="0"] .rw-num,body.dark-mode .tu [data-table="1"] .rw-num{color:#999da3}
-	body.dark-mode .tu [data-table="1"] .rw-head{color:#9a9aa2;border-bottom:2px solid #2b323c}
-	body.dark-mode .tu [data-table="1"] .rw-row{border-bottom:1px solid #27313f}
-	body.dark-mode .gn{--gn-curve:#5573b5}
-	body.dark-mode .gn-ax--up{fill:#ea7171}
-	body.dark-mode .gn-ax--dn{fill:#6f90ec}
-	body.dark-mode .gn-mdot{stroke:#333333}
-	body.dark-mode .gn-odot{stroke:#333333}
-	body.dark-mode .gn-bfocus{stroke:#333333}
-	body.dark-mode #gn .gn-star{color:#fbb360}
-	/* TOOL-DARK:END */
 </style>
         <meta property="fb:app_id" content="" />
         <meta name="author" content="Math Easy Solutions Staff">
@@ -828,7 +853,7 @@ body.is-stuck #navbar.hide { position: fixed; top: 56px; right: 8px; }
 	<script>try{if(!localStorage.getItem('pageMode')){document.documentElement.classList.add('page-wide')}}catch(e){}</script>
 	<div class="tu gn" id="gn">
 		<p class="gn-lead">An interactive guide to <b>German New Medicine</b> <button type="button" class="gn-q" data-g="gnm" aria-label="What is German New Medicine?">?</button> (GNM), the model of health and disease that <b>Dr. Ryke Geerd Hamer</b> <button type="button" class="gn-q" data-g="hamer" aria-label="Who was Ryke Geerd Hamer?">?</button> set out in his Five Biological Laws. Everything here explains what GNM teaches, in its own terms: drag the marker along the two-phase curve, pick an organ, describe what you notice, and see how GNM reads it on the levels of psyche, brain and organ.</p>
-		<nav class="gn-jump" aria-label="On this page"><a href="#gn-chartcard">Two-phase chart</a><a href="#gn-askcard">Describe your symptoms</a><a href="#gn-orgcard">Organs &amp; brain relays</a><a href="#gn-laws">The 5 Biological Laws</a><a href="#gn-gloss">Glossary</a></nav>
+		<nav class="gn-jump" aria-label="On this page"><a href="#gn-chartcard">Two-phase chart</a><a href="#gn-askcard">Describe your symptoms</a><a href="#gn-orgcard">Organs &amp; brain relays</a><a href="#gn-laws">The 5 Biological Laws</a><a href="#gn-gloss">Glossary</a><a href="#gn-refs">Learn more</a></nav>
 
 		<!-- ============================== 1. THE TWO-PHASE CHART ============================== -->
 		<section class="tu-card gn-card" id="gn-chartcard" aria-labelledby="gn-ch-h">
@@ -846,6 +871,8 @@ body.is-stuck #navbar.hide { position: fixed; top: 56px; right: 8px; }
 				<div class="gn-cbox">
 					<svg id="gn-chart" class="gn-chart" viewBox="0 0 1000 400" tabindex="0" role="slider" aria-label="Position on the two-phase curve" aria-valuemin="0" aria-valuemax="100"></svg>
 					<div class="gn-strip" id="gn-strip" role="group" aria-label="Jump to a phase"></div>
+					<p class="gn-legend"><span><b>DHS</b> (Dirk Hamer Syndrome): the biological conflict shock</span><span><b>CL</b> (conflictolysis): conflict resolution</span><span><b>PCL</b> (post-conflictolysis): the healing phase, A before and B after the <b>epileptoid crisis</b> (EC)</span></p>
+					<p class="gn-credit">The two-phase pattern of every Significant Biological Special Program, as described by Dr. med. Mag. theol. Ryke Geerd Hamer. Drag the marker or use the course buttons to reshape it.</p>
 				</div>
 				<div class="gn-info" id="gn-info" aria-live="polite"></div>
 			</div>
@@ -892,6 +919,19 @@ body.is-stuck #navbar.hide { position: fixed; top: 56px; right: 8px; }
 			<div class="gn-chead"><h2 id="gn-gl-h">Glossary</h2></div>
 			<div class="gn-orgsearch"><label class="tu-label" for="gn-gl-q">Search the terms</label><input type="search" id="gn-gl-q" class="tu-input" placeholder="DHS, track, constellation…" autocomplete="off"></div>
 			<dl class="gn-gl" id="gn-gl-list"></dl>
+		</section>
+
+		<!-- ============================== 6. LEARN MORE ============================== -->
+		<section class="tu-card gn-card gn-refs" id="gn-refs" aria-labelledby="gn-ref-h">
+			<div class="gn-chead"><h2 id="gn-ref-h">Learn more about GNM</h2></div>
+			<ul>
+				<li><a href="https://learninggnm.com/" target="_blank" rel="noopener">Learning GNM (learninggnm.com)</a>: Caroline Markolin's detailed GNM teaching site, based on Dr. Hamer's work, with the Five Biological Laws and organ-by-organ explanations.</li>
+				<li><a href="https://www.youtube.com/@mestruth" target="_blank" rel="noopener">MES Truth on YouTube</a>: the GNM videos below, and more.</li>
+			</ul>
+			<div class="gn-vids">
+				<a class="gn-vid" href="https://www.youtube.com/watch?v=I7viSVL3twA" target="_blank" rel="noopener"><img src="https://i.ytimg.com/vi/I7viSVL3twA/mqdefault.jpg" alt="" loading="lazy" width="320" height="180"><span>Overview of German New Medicine (GNM) by EyesIsWatchin</span></a>
+				<a class="gn-vid" href="https://www.youtube.com/watch?v=Mz_oAnyPxxs" target="_blank" rel="noopener"><img src="https://i.ytimg.com/vi/Mz_oAnyPxxs/mqdefault.jpg" alt="" loading="lazy" width="320" height="180"><span>RICHPLANET Show 280: Dr. Ryke Geerd Hamer and the Psychological Link of Cancer</span></a>
+			</div>
 		</section>
 
 		<div class="tu-seo">
@@ -971,7 +1011,7 @@ body.is-stuck #navbar.hide { position: fixed; top: 56px; right: 8px; }
             hide_search:false,
             current_tab:0
         }        </script><!-- FASTCOMMENTS-LAZY: widget init moved to main_js/main.js -- it pulls embed.min.js only when #fastcomments-widget nears the viewport or on the first Comments-toggle click, so it no longer blocks first render -->                <script src="https://mes.fm/main_js/lazysizes.min.js?v=1.0.3" async></script>
-	<script src="/gnm/js/gnm.js?v=7" defer></script>
+	<script src="/gnm/js/gnm.js?v=8" defer></script>
             <script src="https://mes.fm/main_js/main.js?v=1.0.5"></script>    <!-- PAGEVIEW-TRACKING-INSERTED --><script src="https://mes.fm/main_js/track.js" defer></script><script>document.getElementById('copyright-year').textContent = new Date().getFullYear();</script><script src="/main_js/info-bar-fit.js" defer></script><script>
   // Floating compact header bar (see #compact-nav CSS): appears once the
   // header + nav bar have scrolled off the top; nav links that don't fit
