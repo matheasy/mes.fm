@@ -1001,11 +1001,23 @@ var MESPixel = (function () {
 	/* rich text (MESPixel.rich*): t.rich = one style digit per character (1 bold, 2 italic, 4 underline) or null = the layer's own bold / italic / underline */
 	PE.textRich = function (t) { return t && typeof t.rich === "string" && t.rich.length === String(t.str).length && t.rich.length ? t.rich : null; };
 	PE.textMask = function (t) { return P.richMask(t.bold, t.italic, t.underline); };
-	function fontFor(t, m, size) { return (m & 2 ? "italic " : "") + (m & 1 ? "bold " : "") + (size == null ? t.size : size) + "px " + t.font; }
+	/* round 10: built by MESFontCat.fontShorthand, which quotes family names Firefox would reject (the reason a font "went back to default") */
+	function fontFor(t, m, size) { var F = window.MESFontCat; var sz = size == null ? t.size : size; return F ? F.fontShorthand(m, sz, t.font) : (m & 2 ? "italic " : "") + (m & 1 ? "bold " : "") + sz + "px " + t.font; }
 	PE.textFont = fontFor;
+	/* round 10: set ctx.font and notice when the browser silently refuses it (it then keeps the old / default font): retry with the first family
+	 * alone, then the generic family, and say once which font could not be used, instead of quietly drawing in the default font */
+	var fontWarned = {};
+	function setFont(ctx, fn) {
+		ctx._mesFont = fn; ctx.font = "1px serif"; var probe = ctx.font; ctx.font = fn; if (ctx.font !== probe || /^1px serif$/.test(fn)) return true;
+		var F = window.MESFontCat, m = /^((?:italic |bold )*)([\d.]+px) (.*)$/.exec(fn), alt = m && F ? [m[1] + m[2] + " " + F.normStack(F.familyOf(m[3])) + ", sans-serif", m[1] + m[2] + " sans-serif"] : [];
+		for (var i = 0; i < alt.length; i++) { ctx.font = alt[i]; if (ctx.font !== probe) break; }
+		if (!fontWarned[fn]) { fontWarned[fn] = 1; if (window.console) console.warn("MES Photo Editor: the browser refused the font", fn); }
+		return false;
+	}
+	PE.setCtxFont = setFont;
 	/* a measure(s, start) for a text at a given size: rich parts are measured with their own font */
 	function measurer(t, size, ctx) {
-		var rich = PE.textRich(t), base = PE.textMask(t), ls = (t.ls || 0) + "px", cache = {}, set = function (fn) { if (ctx.font !== fn) ctx.font = fn; if ("letterSpacing" in ctx && ctx.letterSpacing !== ls) ctx.letterSpacing = ls; };
+		var rich = PE.textRich(t), base = PE.textMask(t), ls = (t.ls || 0) + "px", cache = {}, set = function (fn) { if (ctx._mesFont !== fn) setFont(ctx, fn); if ("letterSpacing" in ctx && ctx.letterSpacing !== ls) ctx.letterSpacing = ls; };
 		if (!rich) { var f = fontFor(t, base, size); return function (s) { var w = cache[s]; if (w == null) { set(f); w = cache[s] = ctx.measureText(s).width; } return w; }; }
 		return function (s, st) {
 			st = st || 0; var key = st + "|" + s, w = cache[key]; if (w != null) return w; w = 0;
@@ -1020,7 +1032,7 @@ var MESPixel = (function () {
 		lines.forEach(function (ln, i) {
 			if (!ln.text) return; var segs = P.richSegs(rich, ln.start, ln.end, base), x0 = 0;
 			segs.forEach(function (g, k) {
-				ctx.font = fontFor(t, g.m); var tx = ln.text.slice(g.s - ln.start, g.e - ln.start), mm = ctx.measureText(tx);
+				setFont(ctx, fontFor(t, g.m)); var tx = ln.text.slice(g.s - ln.start, g.e - ln.start), mm = ctx.measureText(tx);
 				if (k === 0) worst = Math.max(worst, mm.actualBoundingBoxLeft || 0);
 				if (k === segs.length - 1) worst = Math.max(worst, x0 + (mm.actualBoundingBoxRight || 0) - lw[i]);
 				worst = Math.max(worst, (mm.actualBoundingBoxAscent || 0) - top, i === lines.length - 1 ? (mm.actualBoundingBoxDescent || 0) - (t.size * 0.3 + Math.max(0, lhp - t.size)) : 0);
@@ -1067,7 +1079,7 @@ var MESPixel = (function () {
 			segs.forEach(function (g) { g.x = x0 + lay.measure(ln.text.slice(0, g.s - ln.start), ln.start); g.txt = ln.text.slice(g.s - ln.start, g.e - ln.start); });
 			segs.forEach(function (g) { if (!(g.m & 4)) return; var xe = x0 + lay.measure(ln.text.slice(0, g.e - ln.start), ln.start) - (ls > 0 ? ls : 0), last = ul[ul.length - 1]; if (last && last.e === g.s) { last.e = g.e; last.x1 = xe; } else ul.push({ s: g.s, e: g.e, x0: g.x, x1: xe }); });
 			ul = ul.filter(function (u) { return u.x1 > u.x0; });
-			var draw = function (fn) { segs.forEach(function (g) { x.font = fontFor(t, g.m); fn(g); }); };
+			var draw = function (fn) { segs.forEach(function (g) { setFont(x, fontFor(t, g.m)); fn(g); }); };
 			var bars = function (fn) { ul.forEach(function (u) { fn(u.x0, py + uOff, u.x1 - u.x0, uTh); }); };
 			if (t.shadowOn) { x.save(); x.shadowColor = t.shadow; x.shadowBlur = t.shadowBlur; x.shadowOffsetX = t.shadowDx; x.shadowOffsetY = t.shadowDy; x.fillStyle = t.color; draw(function (g) { x.fillText(g.txt, g.x, py); }); bars(function (a, b, w, h) { x.fillRect(a, b, w, h); }); x.restore(); }
 			if (sw > 0) { x.strokeStyle = t.stroke; x.lineWidth = sw * 2; draw(function (g) { x.strokeText(g.txt, g.x, py); }); bars(function (a, b, w, h) { x.strokeRect(a, b, w, h); }); }
@@ -1652,11 +1664,15 @@ var MESPixel = (function () {
 		var c = Math.cos(L.rot), s = Math.sin(L.rot), hw = L.canvas.width * L.sx / 2, hh = L.canvas.height * L.sy / 2, lx = hd[0] * hw, ly = hd[1] * hh;
 		return PE.toScreen(L.cx + c * lx - s * ly, L.cy + s * lx + c * ly);
 	}
+	/* round 10: a text layer's box is the frame round its words (PE.textFramePt), not the padded layer canvas: one box, no second bigger one */
+	function isTxt(L) { return !!(L && L.type === "text" && L.text && PE.textFramePt); }
+	function hScreen(L, hd) { if (isTxt(L)) { var d = PE.textFramePt(L, hd[0], hd[1]); return PE.toScreen(d.x, d.y); } return handleScreen(L, hd); }
+	function boxCorners(L) { return isTxt(L) ? PE.textFrameCorners(L) : PE.corners(L); }
 	function boxHandle(b, hd) { return PE.toScreen(b.x + (hd[0] + 1) / 2 * b.w, b.y + (hd[1] + 1) / 2 * b.h); }
 	function scr(e) { var r = PE.els.over.getBoundingClientRect(); return { x: e.sx - r.left, y: e.sy - r.top }; }
 	/* round 9: the round rotate handle on a stem above the layer's top edge (it turns with the layer) */
 	var angleBox = {};
-	function rotHandle(L) { var T = handleScreen(L, [0, -1]), C = PE.toScreen(L.cx, L.cy), dx = T.x - C.x, dy = T.y - C.y, l = Math.hypot(dx, dy); if (l < 1) { dx = Math.sin(L.rot); dy = -Math.cos(L.rot); l = 1; } return { x: T.x + dx / l * 28, y: T.y + dy / l * 28, tx: T.x, ty: T.y }; }
+	function rotHandle(L) { var T = hScreen(L, [0, -1]), C = PE.toScreen(L.cx, L.cy), dx = T.x - C.x, dy = T.y - C.y, l = Math.hypot(dx, dy); if (l < 1) { dx = Math.sin(L.rot); dy = -Math.cos(L.rot); l = 1; } return { x: T.x + dx / l * 28, y: T.y + dy / l * 28, tx: T.x, ty: T.y }; }
 	function drawRotHandle(x, L, rot) {
 		var h = rotHandle(L); x.save(); x.strokeStyle = "#1a73e8"; x.lineWidth = 1.5; x.beginPath(); x.moveTo(h.tx, h.ty); x.lineTo(h.x, h.y); x.stroke();
 		x.fillStyle = rot ? "#1a73e8" : "#fff"; x.beginPath(); x.arc(h.x, h.y, 7, 0, Math.PI * 2); x.fill(); x.stroke();
@@ -1670,8 +1686,9 @@ var MESPixel = (function () {
 		var o = PE.opt.move; if (!A || !o.handles || PE.moveSet().length !== 1 || PE.isGroup(A) || A.locked || !A.visible) return "default"; var sp = scr(e), i;
 		var rh = rotHandle(A); if (Math.hypot(rh.x - sp.x, rh.y - sp.y) < 11) return ROT_CUR;
 		var isText = A.type === "text" && A.text;
-		for (i = 0; i < 8; i++) { if (isText && (A.text.fit || i % 2)) continue; var s = handleScreen(A, HANDLES[i]); if (Math.hypot(s.x - sp.x, s.y - sp.y) < 9) { var ang = Math.atan2(s.y - PE.toScreen(A.cx, A.cy).y, s.x - PE.toScreen(A.cx, A.cy).x) * 180 / Math.PI, q = ((Math.round(ang / 45) % 4) + 4) % 4; return ["ew-resize", "nwse-resize", "ns-resize", "nesw-resize"][q]; } }
-		for (i = 0; i < 4; i++) { var c = handleScreen(A, HANDLES[i * 2]), dd = Math.hypot(c.x - sp.x, c.y - sp.y); if (dd >= 9 && dd < 30 && !PE.layerAtPoint(A, e.x, e.y)) return ROT_CUR; }
+		if (isText) { for (i = 0; i < 8; i += 2) { if (A.text.fit) break; var st = hScreen(A, HANDLES[i]); if (Math.hypot(st.x - sp.x, st.y - sp.y) < 10) { var C0 = hScreen(A, [0, 0]), q0 = ((Math.round(Math.atan2(st.y - C0.y, st.x - C0.x) * 180 / Math.PI / 45) % 4) + 4) % 4; return ["ew-resize", "nwse-resize", "ns-resize", "nesw-resize"][q0]; } } }
+		else for (i = 0; i < 8; i++) { var s = handleScreen(A, HANDLES[i]); if (Math.hypot(s.x - sp.x, s.y - sp.y) < 9) { var ang = Math.atan2(s.y - PE.toScreen(A.cx, A.cy).y, s.x - PE.toScreen(A.cx, A.cy).x) * 180 / Math.PI, q = ((Math.round(ang / 45) % 4) + 4) % 4; return ["ew-resize", "nwse-resize", "ns-resize", "nesw-resize"][q]; } }
+		for (i = 0; i < 4; i++) { var c = hScreen(A, HANDLES[i * 2]), dd = Math.hypot(c.x - sp.x, c.y - sp.y); if (dd >= 10 && dd < 30 && !PE.layerAtPoint(A, e.x, e.y)) return ROT_CUR; }
 		return PE.layerAtPoint(A, e.x, e.y) ? "move" : "default";
 	}
 	PE.rotateLayerBy = function (deg) { var L = PE.active(); if (!L) return; if (PE.isGroup(L)) { PE.toast("Groups can't be turned yet: select a layer inside it"); return; } if (L.locked) { PE.toast("This layer is locked"); return; } L.rot = P.degToRot(P.angleDeg(L.rot) + deg); PE.invalidate(); PE.commit("Rotate layer " + (deg > 0 ? "right" : "left") + " 90°"); PE.emit("opts", "move"); };
@@ -1744,7 +1761,7 @@ var MESPixel = (function () {
 		optsTarget: function () { var L = PE.active(); return L && !PE.isGroup(L) ? angleBox : null; },
 		optGet: function (k) { if (k !== "angle") return undefined; var L = PE.active(); return L && !PE.isGroup(L) ? P.angleDeg(L.rot) : 0; },
 		onopt: function (k, v) { if (k !== "angle") return; var L = PE.active(); if (!L || PE.isGroup(L) || L.locked) return; L.rot = P.degToRot(v); PE.invalidate(); PE.later("angle", function () { PE.commit("Rotate layer"); }, 500); },
-		hint: "Drag to move. Drag the round handle above the layer to rotate it (Shift = 15° steps), or type an Angle. Shift / Ctrl-click adds or removes layers; drag on empty canvas to box-select several. Handles resize (Shift = other proportions), just outside a corner rotates. On a text: the purple side handles wrap it (with Auto-fit text the purple corners resize the box; Alt+corner scales). Hold Ctrl (or Alt) while dragging = no snapping. Arrows nudge.",
+		hint: "Drag to move. Drag the round handle above the layer to rotate it (Shift = 15° steps), or type an Angle. Shift / Ctrl-click adds or removes layers; drag on empty canvas to box-select several. Handles resize (Shift = other proportions), just outside a corner rotates. On a text: the corners make the text bigger or smaller (it stays sharp), the side pills change the box width so the words re-wrap. Hold Ctrl (or Alt) while dragging = no snapping. Arrows nudge.",
 		down: function (e) {
 			var o = PE.opt.move, A = PE.active(), set = PE.moveSet(), multi = set.length > 1, sp = scr(e), i;
 			mv = null; PE.guides = [];
@@ -1758,11 +1775,13 @@ var MESPixel = (function () {
 					var isText = A.type === "text" && A.text && PE.textBoxHit;
 					if (isText) {   // a text layer: the purple handles on its box change the wrap width (and, with Auto-fit text, the box height); Alt on a box corner = scale
 						var tbh = PE.textBoxHit(A, e);
-						if (tbh) { if (e.alt && tbh.hx !== 0.5 && tbh.hy !== 0.5) { mv = { kind: "scale", L: A, h: [tbh.hx * 2 - 1, tbh.hy * 2 - 1], sx0: A.sx, sy0: A.sy, cx0: A.cx, cy0: A.cy, rot: A.rot, p0: e, tg: targetsFor([A]) }; return; } mv = { kind: "tbox", tb: PE.textBoxStart(A, tbh) }; return; }
+						if (tbh) { if (e.alt && tbh.hx !== 0.5 && tbh.hy !== 0.5) { mv = { kind: "tscale", tb: PE.textScaleStart(A, tbh.hx * 2 - 1, tbh.hy * 2 - 1, e, false) }; return; } mv = { kind: "tbox", tb: PE.textBoxStart(A, tbh) }; return; }
+						// round 10: the corners of the one text box make the whole text bigger / smaller (font size, so it stays sharp); Alt = about the centre
+						if (!A.text.fit) for (i = 0; i < 8; i += 2) { var tc = hScreen(A, HANDLES[i]); if (Math.hypot(tc.x - sp.x, tc.y - sp.y) < 10) { mv = { kind: "tscale", tb: PE.textScaleStart(A, HANDLES[i][0], HANDLES[i][1], e, e.alt) }; return; } }
 					}
-					for (i = 0; i < 8; i++) { if (isText && (A.text.fit || i % 2)) continue; var s = handleScreen(A, HANDLES[i]); if (Math.hypot(s.x - sp.x, s.y - sp.y) < 9) { mv = { kind: "scale", L: A, h: HANDLES[i], sx0: A.sx, sy0: A.sy, cx0: A.cx, cy0: A.cy, rot: A.rot, p0: e, tg: targetsFor([A]) }; return; } }
-					var corners = [0, 2, 4, 6].map(function (k) { return handleScreen(A, HANDLES[k]); });
-					for (i = 0; i < 4; i++) { var dd = Math.hypot(corners[i].x - sp.x, corners[i].y - sp.y); if (dd >= 9 && dd < 30 && !PE.layerAtPoint(A, e.x, e.y)) { mv = { kind: "rot", L: A, a0: Math.atan2(e.y - A.cy, e.x - A.cx), rot0: A.rot }; return; } }
+					if (!isText) for (i = 0; i < 8; i++) { var s = handleScreen(A, HANDLES[i]); if (Math.hypot(s.x - sp.x, s.y - sp.y) < 9) { mv = { kind: "scale", L: A, h: HANDLES[i], sx0: A.sx, sy0: A.sy, cx0: A.cx, cy0: A.cy, rot: A.rot, p0: e, tg: targetsFor([A]) }; return; } }
+					var corners = [0, 2, 4, 6].map(function (k) { return hScreen(A, HANDLES[k]); });
+					for (i = 0; i < 4; i++) { var dd = Math.hypot(corners[i].x - sp.x, corners[i].y - sp.y); if (dd >= 10 && dd < 30 && !PE.layerAtPoint(A, e.x, e.y)) { mv = { kind: "rot", L: A, a0: Math.atan2(e.y - A.cy, e.x - A.cx), rot0: A.rot }; return; } }
 				}
 			}
 			var raw = o.auto ? PE.layerAt(e.x, e.y) : null; if (raw && raw !== A && PE.isBackdrop(raw)) raw = null;
@@ -1783,6 +1802,7 @@ var MESPixel = (function () {
 			if (!mv) return; var L = mv.L, T = th();
 			if (mv.kind === "band") { mv.b = e; PE.invalidateOverlay(); return; }
 			if (mv.kind === "tbox") { PE.textBoxMove(mv.tb, e); mv.moved = mv.tb.moved; return; }
+			if (mv.kind === "tscale") { PE.textScaleMove(mv.tb, e); mv.moved = mv.tb.moved; return; }
 			if (mv.kind === "move") {
 				var dx = Math.round(e.x - mv.p0.x), dy = Math.round(e.y - mv.p0.y); if (e.shift) { if (Math.abs(dx) > Math.abs(dy)) dy = 0; else dx = 0; }
 				PE.guides = [];
@@ -1833,7 +1853,7 @@ var MESPixel = (function () {
 			if (m && m.moved) {
 				var n = m.set ? m.set.length : 1, grp = m.set && n === 1 && PE.isGroup(m.set[0]);
 				if (m.kind === "rot") PE.emit("opts", "move");
-				PE.commit(m.kind === "tbox" ? "Text box" : m.kind === "move" ? (n > 1 ? "Move " + n + " layers" : grp ? "Move group" : "Move layer") : m.kind === "rot" ? "Rotate layer" : m.kind === "mscale" ? "Resize " + n + " layers" : "Resize layer");
+				PE.commit(m.kind === "tbox" ? "Text box" : m.kind === "tscale" ? "Text size" : m.kind === "move" ? (n > 1 ? "Move " + n + " layers" : grp ? "Move group" : "Move layer") : m.kind === "rot" ? "Rotate layer" : m.kind === "mscale" ? "Resize " + n + " layers" : "Resize layer");
 			}
 			PE.invalidateOverlay();
 		},
@@ -1841,14 +1861,17 @@ var MESPixel = (function () {
 			var m = mv; mv = null; PE.guides = []; if (!m) return;
 			if (m.kind === "move") m.items.forEach(function (g) { g[0].cx = g[1]; g[0].cy = g[2]; });
 			else if (m.kind === "mscale") m.items.forEach(function (it) { var k = it[0]; k.cx = it[1]; k.cy = it[2]; k.sx = it[3]; k.sy = it[4]; });
-			else if (m.kind === "tbox") PE.textBoxAbort(m.tb);
+			else if (m.kind === "tbox" || m.kind === "tscale") PE.textBoxAbort(m.tb);
 			else if (m.kind === "scale") { m.L.cx = m.cx0; m.L.cy = m.cy0; m.L.sx = m.sx0; m.L.sy = m.sy0; } else if (m.kind === "rot") m.L.rot = m.rot0;
 			PE.invalidate();
 		},
 		cancel: function () { if (mv && mv.kind !== "band") this.abort(); mv = null; hoverTM = null; hoverPick = null; },
 		hover: function (e) {   // a text layer under the pointer shows its box; the cursor tells when a box edge can be dragged
 			if (!PE.doc) return; var A = PE.active(), h = null; if (PE.opt.move.handles && PE.moveSet().length === 1 && A && A.type === "text" && A.text) h = PE.textBoxHit(A, e);
-			PE.els.over.style.cursor = h ? PE.textBoxCursor(h, A) : handleCursor(A, e);
+			var cur = h ? PE.textBoxCursor(h, A) : handleCursor(A, e); PE.els.over.style.cursor = cur;
+			// round 10: say what a text box handle does (a tooltip on the canvas)
+			var tip = ""; if (isTxt(A)) { if (h) tip = h.hx !== 0.5 && h.hy !== 0.5 ? "Drag to resize the text box (Auto-fit text: the size follows)" : h.hy === 0.5 ? "Drag to change the box width: the words re-wrap, the size stays" : "Drag to change the box height (Auto-fit text)"; else if (/resize/.test(cur)) tip = "Drag the corner to make the text bigger or smaller (Alt: from the centre)"; else if (cur === ROT_CUR) tip = "Drag to rotate"; }
+			if (PE.els.over.title !== tip) PE.els.over.title = tip;
 			var raw = PE.opt.move.auto ? PE.layerAt(e.x, e.y) : null; if (raw && PE.isBackdrop(raw)) raw = null; var hp2 = raw ? pickTarget(raw, PE.moveSet().length > 1 ? null : A, PE.opt.move.groups) : null; if (hp2 !== hoverPick) { hoverPick = hp2; PE.invalidateOverlay(); } var ht = PE.textAt ? PE.textAt(e) : null; if (ht === A) ht = null; if (ht !== hoverTM) { hoverTM = ht; PE.invalidateOverlay(); }
 		},
 		overlay: function (x, v) {
@@ -1871,12 +1894,12 @@ var MESPixel = (function () {
 				PE.descendants(L).forEach(function (k) { if (!PE.isGroup(k) && PE.effVisible(k)) PE.selOutline(x, PE.corners(k).map(function (p) { return PE.toScreen(p[0], p[1]); }), true); });   // round 9: every layer in the group, faint
 				x.save(); x.setLineDash([6, 4]); x.strokeStyle = "rgba(0,0,0,0.55)"; x.lineWidth = 3.5; x.strokeRect(g0.x, g0.y, g1.x - g0.x, g1.y - g0.y); x.strokeStyle = "#3b9bff"; x.lineWidth = 1.75; x.strokeRect(g0.x, g0.y, g1.x - g0.x, g1.y - g0.y); x.restore();
 				PE.selTag(x, [g0, { x: g1.x, y: g0.y }], "▸ " + L.name + " (group)"); return; }
-			var pts = PE.corners(L).map(function (p) { return PE.toScreen(p[0], p[1]); }); PE.selOutline(x, pts);
+			var pts = boxCorners(L).map(function (p) { return PE.toScreen(p[0], p[1]); }); PE.selOutline(x, pts);
 			if (!L.locked) drawRotHandle(x, L, mv && mv.kind === "rot" ? mv : null);
 			if (!mv && PE.opt.move.tags !== false) PE.selTag(x, pts, L.name + (L.locked ? " 🔒" : ""));
-			if (L.type === "text" && L.text && PE.drawTextBoxHandles) {   // corners = scale (not with Auto-fit text: there the box corners resize the box), purple = the text box
-				if (!L.text.fit) for (var j = 0; j < 8; j += 2) { var sj = handleScreen(L, HANDLES[j]); PE.handleBox(x, sj.x, sj.y, 4.5); }
-				PE.drawTextFrame(x, L, true); PE.drawTextBoxHandles(x, L); return;
+			if (isTxt(L) && PE.drawTextBoxHandles) {   // round 10: one box. Corners = text size (not with Auto-fit text: there the corners resize the box), side pills = box width
+				if (!L.text.fit && !L.locked) for (var j = 0; j < 8; j += 2) { var sj = hScreen(L, HANDLES[j]); PE.handleBox(x, sj.x, sj.y, 4.5); }
+				if (!L.locked) PE.drawTextBoxHandles(x, L); return;
 			}
 			for (var i = 0; i < 8; i++) { var s = handleScreen(L, HANDLES[i]); PE.handleBox(x, s.x, s.y, 4.5); }
 		} });
@@ -2222,8 +2245,9 @@ var MESPixel = (function () {
 	/* ---------- fonts ---------- */
 	PE.FONTS = [["Arial, Helvetica, sans-serif", "Arial"], ["system-ui, -apple-system, 'Segoe UI', sans-serif", "System UI"], ["Verdana, Geneva, sans-serif", "Verdana"], ["'Trebuchet MS', sans-serif", "Trebuchet"], ["Tahoma, sans-serif", "Tahoma"], ["Impact, 'Arial Black', sans-serif", "Impact"], ["Georgia, serif", "Georgia"], ["'Times New Roman', Times, serif", "Times New Roman"], ["'Palatino Linotype', Palatino, serif", "Palatino"], ["'Courier New', Courier, monospace", "Courier New"], ["ui-monospace, Menlo, Consolas, monospace", "Monospace"], ["'Comic Sans MS', 'Comic Neue', cursive", "Comic Sans"], ["'Brush Script MT', cursive", "Brush Script"]];
 	PE.loadFontFile = function (file) {
-		var name = file.name.replace(/\.[^.]+$/, "").replace(/[^\w \-]/g, "");
-		return file.arrayBuffer().then(function (ab) { var ff = new FontFace(name, ab); return ff.load().then(function () { document.fonts.add(ff); PE.FONTS.push(["'" + name + "', sans-serif", name + " (yours)"]); PE.emit("fonts"); PE.optSet("text", "font", "'" + name + "', sans-serif"); }); });
+		// round 10: the label keeps the file's name; the family is a plain identifier every browser accepts in FontFace() and ctx.font (Firefox rejected "8bit Font")
+		var name = file.name.replace(/\.[^.]+$/, "").replace(/[^\w \-]/g, "").trim() || "My font", fam = window.MESFontCat ? MESFontCat.safeFamily("MESfile", name) : name.replace(/[^A-Za-z]/g, "") || "MESfile";
+		return file.arrayBuffer().then(function (ab) { var ff = new FontFace(fam, ab); return ff.load().then(function () { document.fonts.add(ff); var v = "'" + fam + "', sans-serif"; PE.FONTS.push([v, name + " (yours)"]); PE.emit("fonts"); PE.optSet("text", "font", v); }); });
 	};
 
 	/* ---------- text: edited in place on the canvas, like GIMP ----------
@@ -2233,11 +2257,16 @@ var MESPixel = (function () {
 	var te = null, hoverT = null, blinkOn = true, blinkT = 0, tdrag = null, lastDbl = { t: 0, x: 0, y: 0 };
 	function editor() { return PE.els.textedit; }
 	function locToDoc(L, u, v) { var c = Math.cos(L.rot), s = Math.sin(L.rot), lx = (u - L.canvas.width / 2) * L.sx, ly = (v - L.canvas.height / 2) * L.sy; return { x: L.cx + c * lx - s * ly, y: L.cy + s * lx + c * ly }; }
-	function frameOf(L) { var lay = PE.textLayout(L), p = lay.pad, g = Math.max(2, lay.size * 0.06); return { u0: p - g, v0: p - g, u1: p + lay.mw + g, v1: p + lay.bh + g }; }
+	function frameOf(L) { var lay = PE.textLayout(L), p = lay.pad, g = Math.max(2, lay.size * 0.06); return { u0: p - g, v0: p - g, u1: p + lay.mw + g, v1: p + lay.bh + g, g: g }; }
+	/* round 10: ONE box for a text layer: the frame round the words. The Move tool draws its outline, corners and rotate handle on it (not on the
+	 * padded layer canvas), so there is no second, bigger box. hx / hy = -1, 0 or 1 across / down the frame -> a point in the image */
+	PE.textFramePt = function (L, hx, hy) { var f = frameOf(L); return locToDoc(L, f.u0 + (hx + 1) / 2 * (f.u1 - f.u0), f.v0 + (hy + 1) / 2 * (f.v1 - f.v0)); };
+	PE.textFrameCorners = function (L) { return [[-1, -1], [1, -1], [1, 1], [-1, 1]].map(function (q) { var d = PE.textFramePt(L, q[0], q[1]); return [d.x, d.y]; }); };
+	PE.textLocToDoc = function (L, u, v) { return locToDoc(L, u, v); };
 	function placeEditor() {   // the (invisible) key catcher sits over the text so an IME pop-up opens next to it
 		if (!te) return; var L = te.L, ta = editor(), t = L.text, v = PE.view, c = Math.cos(L.rot), s = Math.sin(L.rot), lay = PE.textLayout(L), pad = lay.pad;
 		var dp = locToDoc(L, pad, pad), sp = PE.toScreen(dp.x, dp.y), z = v.zoom;
-		ta.style.cssText = "display:block;left:0;top:0;transform-origin:0 0;transform:matrix(" + (c * L.sx * z) + "," + (s * L.sx * z) + "," + (-s * L.sy * z) + "," + (c * L.sy * z) + "," + sp.x + "," + sp.y + ");font:" + (t.italic ? "italic " : "") + (t.bold ? "bold " : "") + t.size + "px/" + (t.size * t.lh) + "px " + t.font + ";text-align:" + t.align + ";white-space:pre-wrap;overflow:hidden;width:" + Math.max(20, lay.mw + 4) + "px;height:" + (lay.lhp * lay.lines.length + t.size * 0.2) + "px;letter-spacing:" + (t.ls || 0) + "px;";
+		ta.style.cssText = "display:block;left:0;top:0;transform-origin:0 0;transform:matrix(" + (c * L.sx * z) + "," + (s * L.sx * z) + "," + (-s * L.sy * z) + "," + (c * L.sy * z) + "," + sp.x + "," + sp.y + ");font:" + (t.italic ? "italic " : "") + (t.bold ? "bold " : "") + t.size + "px/" + (t.size * t.lh) + "px " + (window.MESFontCat ? MESFontCat.normStack(t.font) : t.font) + ";text-align:" + t.align + ";white-space:pre-wrap;overflow:hidden;width:" + Math.max(20, lay.mw + 4) + "px;height:" + (lay.lhp * lay.lines.length + t.size * 0.2) + "px;letter-spacing:" + (t.ls || 0) + "px;";
 	}
 	PE.placeTextEditor = placeEditor;
 	function poke() { blinkOn = true; PE.invalidateOverlay(); }
@@ -2351,9 +2380,9 @@ var MESPixel = (function () {
 	var SIDES = [[0, 0.5], [1, 0.5]], ALL8 = [[0, 0], [0.5, 0], [1, 0], [1, 0.5], [1, 1], [0.5, 1], [0, 1], [0, 0.5]];
 	function boxHandles(L) {
 		if (!L || L.type !== "text" || !L.text || L.locked || !PE.effVisible(L)) return []; var lay = PE.textLayout(L), p = lay.pad;
-		var o0 = PE.toScreen.apply(null, xy(locToDoc(L, 0, 0))), oX = PE.toScreen.apply(null, xy(locToDoc(L, 1, 0))), oY = PE.toScreen.apply(null, xy(locToDoc(L, 0, 1))), ux = unit(oX.x - o0.x, oX.y - o0.y), uy = unit(oY.x - o0.x, oY.y - o0.y);
-		// the grips sit 8 px outside the box so they never cover the first / last letter
-		return (lay.fit || L.text.fit ? ALL8 : SIDES).map(function (h) { var d = locToDoc(L, p + h[0] * lay.mw, p + h[1] * lay.bh), sc = PE.toScreen(d.x, d.y), kx = (h[0] - 0.5) * 2 * 8, ky = (h[1] - 0.5) * 2 * 8; return { hx: h[0], hy: h[1], x: d.x, y: d.y, s: { x: sc.x + ux[0] * kx + uy[0] * ky, y: sc.y + ux[1] * kx + uy[1] * ky } }; });
+		// round 10: the grips sit ON the one box (the frame round the words), like Canva: left / right = box width, with Auto-fit text also corners / top / bottom
+		var f = frameOf(L);
+		return (lay.fit || L.text.fit ? ALL8 : SIDES).map(function (h) { var d = locToDoc(L, f.u0 + h[0] * (f.u1 - f.u0), f.v0 + h[1] * (f.v1 - f.v0)), sc = PE.toScreen(d.x, d.y); return { hx: h[0], hy: h[1], x: d.x, y: d.y, s: { x: sc.x, y: sc.y } }; });
 	}
 	function scrOf(e) { var r = PE.els.over.getBoundingClientRect(); return { x: e.sx - r.left, y: e.sy - r.top }; }
 	/* the handle under the pointer: a dot within 9 px, or anywhere along a left / right edge (5 px) */
@@ -2363,7 +2392,7 @@ var MESPixel = (function () {
 		var lay = PE.textLayout(L), p = lay.pad, f = frameOf(L);
 		// round 9: anywhere along a left / right edge counts: from the box edge out to the drawn frame line and the grip, 9 px either side
 		for (var i = 0; i < hs.length; i++) { var h = hs[i]; if (h.hy !== 0.5) continue; var uu = [p + h.hx * lay.mw, h.hx ? f.u1 : f.u0];
-			for (var j = 0; j < 2; j++) { var a = PE.toScreen.apply(null, xy(locToDoc(L, uu[j], f.v0))), b = PE.toScreen.apply(null, xy(locToDoc(L, uu[j], f.v1))), vx = b.x - a.x, vy = b.y - a.y, ll = vx * vx + vy * vy || 1, tt = ((sp.x - a.x) * vx + (sp.y - a.y) * vy) / ll; if (tt < -0.05 || tt > 1.05) continue; var dd = Math.hypot(a.x + vx * tt - sp.x, a.y + vy * tt - sp.y), out = ((sp.x - a.x) * (h.hx ? 1 : -1) * Math.cos(L.rot) + (sp.y - a.y) * (h.hx ? 1 : -1) * Math.sin(L.rot)) * (L.sx < 0 ? -1 : 1); if (dd < 9 || (out > 0 && dd < 13)) return h; } }
+			for (var j = 0; j < 2; j++) { var a = PE.toScreen.apply(null, xy(locToDoc(L, uu[j], f.v0))), b = PE.toScreen.apply(null, xy(locToDoc(L, uu[j], f.v1))), vx = b.x - a.x, vy = b.y - a.y, ll = vx * vx + vy * vy || 1, tt = ((sp.x - a.x) * vx + (sp.y - a.y) * vy) / ll; if (tt < -0.05 || tt > 1.05) continue; if (Math.hypot(sp.x - a.x, sp.y - a.y) < 12 || Math.hypot(sp.x - b.x, sp.y - b.y) < 12) continue;   /* round 10: the corners belong to the size handles */ var dd = Math.hypot(a.x + vx * tt - sp.x, a.y + vy * tt - sp.y), out = ((sp.x - a.x) * (h.hx ? 1 : -1) * Math.cos(L.rot) + (sp.y - a.y) * (h.hx ? 1 : -1) * Math.sin(L.rot)) * (L.sx < 0 ? -1 : 1); if (dd < 9 || (out > 0 && dd < 13)) return h; } }
 		return null;
 	};
 	function xy(d) { return [d.x, d.y]; }
@@ -2372,24 +2401,49 @@ var MESPixel = (function () {
 	function unit(x, y) { var l = Math.hypot(x, y) || 1; return [x / l, y / l]; }
 	PE.textBoxCursor = function (h, L) { if (!h) return ""; var r = ((L.rot % Math.PI) + Math.PI) % Math.PI, turned = r > Math.PI / 4 && r < Math.PI * 3 / 4; if (h.hy === 0.5) return turned ? "ns-resize" : "ew-resize"; if (h.hx === 0.5) return turned ? "ew-resize" : "ns-resize"; return (h.hx === h.hy) !== turned ? "nwse-resize" : "nesw-resize"; };
 	PE.textBoxStart = function (L, h) {
-		var lay = PE.textLayout(L), p = lay.pad, f = locToDoc(L, p + (1 - h.hx) * lay.mw, p + (1 - h.hy) * lay.bh);
-		return { L: L, h: h, fixed: f, orig: JSON.stringify(L.text), cx: L.cx, cy: L.cy, moved: false };
+		var lay = PE.textLayout(L), p = lay.pad, f = locToDoc(L, p + (1 - h.hx) * lay.mw, p + (1 - h.hy) * lay.bh), g = frameOf(L).g;
+		// the narrowest box that still fits the longest word (Canva does the same: words are never cut in the middle by dragging the box)
+		var minW = 20; if (!L.text.fit) String(L.text.str).split(/\s+/).forEach(function (w) { if (w) minW = Math.max(minW, Math.ceil(lay.measure(w, 0))); });
+		return { L: L, h: h, fixed: f, g: g, minW: minW, orig: JSON.stringify(L.text), cx: L.cx, cy: L.cy, moved: false };
 	};
 	PE.textBoxMove = function (b, e) {
 		var L = b.L, t = L.text, h = b.h, c = Math.cos(L.rot), s = Math.sin(L.rot), dx = e.x - b.fixed.x, dy = e.y - b.fixed.y, du = (c * dx + s * dy) / L.sx, dv = (-s * dx + c * dy) / L.sy;
-		if (h.hx !== 0.5) t.wrapW = Math.max(20, Math.round(h.hx === 1 ? du : -du));
-		if (h.hy !== 0.5 && t.fit) { t.boxH = Math.max(12, Math.round(h.hy === 1 ? dv : -dv)); if (!(t.wrapW > 0)) t.wrapW = Math.round(PE.textLayout(L).mw); }
+		if (h.hx !== 0.5) t.wrapW = Math.max(b.minW || 20, Math.round((h.hx === 1 ? du : -du) - (b.g || 0)));   // the grip is on the frame line, g outside the text box
+		if (h.hy !== 0.5 && t.fit) { t.boxH = Math.max(12, Math.round((h.hy === 1 ? dv : -dv) - (b.g || 0))); if (!(t.wrapW > 0)) t.wrapW = Math.round(PE.textLayout(L).mw); }
 		PE.renderText(L); var lay = PE.textLayout(L), p = lay.pad, n = locToDoc(L, p + (1 - h.hx) * lay.mw, p + (1 - h.hy) * lay.bh); L.cx += b.fixed.x - n.x; L.cy += b.fixed.y - n.y;   // the opposite side stays put
 		b.moved = true; PE.touch(L); if (te && te.L === L) placeEditor(); PE.emit("opts", PE.toolId === "text" ? "text" : PE.toolId);
 	};
+	/* round 10: a corner of a text box makes the text bigger / smaller by changing its font size (and the box width, outline, shadow, padding with it),
+	 * so the letters stay sharp, instead of stretching the picture of the text. The opposite corner stays put (Alt: the centre). hx / hy = -1 or 1. */
+	var SCALEK = ["size", "wrapW", "boxH", "strokeW", "shadowBlur", "shadowDx", "shadowDy", "bgPad", "bgRadius", "ls"];
+	PE.textScaleStart = function (L, hx, hy, p0, alt) {
+		var a = alt ? PE.textFramePt(L, 0, 0) : PE.textFramePt(L, -hx, -hy), t0 = {}; SCALEK.forEach(function (k) { t0[k] = L.text[k]; });
+		return { L: L, hx: hx, hy: hy, alt: !!alt, a: a, d0: { x: p0.x - a.x, y: p0.y - a.y }, t0: t0, orig: JSON.stringify(L.text), cx: L.cx, cy: L.cy, moved: false };
+	};
+	PE.textScaleMove = function (b, e) {
+		var L = b.L, t = L.text, d0 = b.d0, l2 = d0.x * d0.x + d0.y * d0.y; if (l2 < 1) return;
+		var f = ((e.x - b.a.x) * d0.x + (e.y - b.a.y) * d0.y) / l2; f = Math.max(4 / Math.max(1, b.t0.size), Math.min(1000 / Math.max(1, b.t0.size), f));
+		SCALEK.forEach(function (k) { var v = b.t0[k]; if (typeof v !== "number" || !v) return; t[k] = k === "size" ? Math.max(4, Math.round(v * f)) : Math.round(v * f * 10) / 10; });
+		PE.renderText(L); var n = b.alt ? PE.textFramePt(L, 0, 0) : PE.textFramePt(L, -b.hx, -b.hy); L.cx += b.a.x - n.x; L.cy += b.a.y - n.y;
+		b.moved = true; PE.touch(L); if (te && te.L === L) placeEditor(); PE.emit("opts", PE.toolId === "text" ? "text" : PE.toolId);
+	};
 	PE.textBoxAbort = function (b) { b.L.text = JSON.parse(b.orig); PE.renderText(b.L); b.L.cx = b.cx; b.L.cy = b.cy; PE.touch(b.L); };
-	PE.drawTextBoxHandles = function (x, L) { boxHandles(L).forEach(function (h) { var sp = h.s; x.fillStyle = "#a78bfa"; x.strokeStyle = "#fff"; x.lineWidth = 2; x.beginPath(); if (h.hy === 0.5) x.rect(sp.x - 5, sp.y - 11, 10, 22); else if (h.hx === 0.5) x.rect(sp.x - 11, sp.y - 5, 22, 10); else x.rect(sp.x - 6, sp.y - 6, 12, 12); x.fill(); x.stroke(); }); };
+	/* round 10: the box-width grips are white pills with a blue rim on the one blue box (the old purple inner box with its own grips was confusing next to
+	 * the blue transform box); turned with the layer */
+	PE.drawTextBoxHandles = function (x, L) {
+		var r = L.rot + (L.sx < 0 ? Math.PI : 0);
+		boxHandles(L).forEach(function (h) { var sp = h.s; x.save(); x.translate(sp.x, sp.y); x.rotate(r); x.fillStyle = "#fff"; x.strokeStyle = "#1a73e8"; x.lineWidth = 1.75; x.beginPath();
+			var w = h.hy === 0.5 ? 8 : h.hx === 0.5 ? 22 : 11, hh = h.hy === 0.5 ? 22 : h.hx === 0.5 ? 8 : 11, rr = Math.min(w, hh) / 2;
+			if (x.roundRect && (h.hy === 0.5 || h.hx === 0.5)) x.roundRect(-w / 2, -hh / 2, w, hh, rr); else x.rect(-w / 2, -hh / 2, w, hh); x.fill(); x.stroke();
+			if (h.hy === 0.5 || h.hx === 0.5) { x.strokeStyle = "#1a73e8"; x.lineWidth = 1; x.beginPath(); if (h.hy === 0.5) { x.moveTo(-1.5, -4); x.lineTo(-1.5, 4); x.moveTo(1.5, -4); x.lineTo(1.5, 4); } else { x.moveTo(-4, -1.5); x.lineTo(4, -1.5); x.moveTo(-4, 1.5); x.lineTo(4, 1.5); } x.stroke(); }
+			x.restore(); });
+	};
 	PE.textAt = function (e) { return hitText(e, null); };
 	PE.drawTextFrame = function (x, L, solid) { drawFrame(x, L, solid); };
 	function drawFrame(x, L, solid) {
 		var f = frameOf(L), pts = [[f.u0, f.v0], [f.u1, f.v0], [f.u1, f.v1], [f.u0, f.v1]].map(function (q) { var d = locToDoc(L, q[0], q[1]); return PE.toScreen(d.x, d.y); });
 		x.save(); x.lineWidth = 1; x.setLineDash(solid ? [] : [4, 3]); x.strokeStyle = "rgba(0,0,0,0.65)"; x.beginPath(); pts.forEach(function (p, i) { i ? x.lineTo(p.x + 0.5, p.y + 0.5) : x.moveTo(p.x + 0.5, p.y + 0.5); }); x.closePath(); x.stroke();
-		x.lineDashOffset = solid ? 0 : 3.5; x.strokeStyle = solid ? "#a78bfa" : "rgba(255,255,255,0.85)"; x.lineWidth = solid ? 1.5 : 1; x.stroke(); x.restore();
+		x.lineDashOffset = solid ? 0 : 3.5; x.strokeStyle = solid ? "#3b9bff" : "rgba(255,255,255,0.85)"; x.lineWidth = solid ? 1.75 : 1; x.stroke(); x.restore();
 	}
 	function drawCaret(x, v) {
 		var L = te.L, ta = editor(), lay = PE.textLayout(L), a = ta.selectionStart, b = ta.selectionEnd, sz = lay.size, sc = v.zoom * Math.max(1e-6, Math.abs(L.sx));
@@ -2407,7 +2461,7 @@ var MESPixel = (function () {
 		}
 		x.restore();
 	}
-	PE.defTool({ id: "text", name: "Text / Label", key: "t", icon: "T", opts: JSON.parse(JSON.stringify(PE.TEXTDEF)), hint: "Click empty canvas to add text, click a text to edit it (caret where you click, drag to select, double-click a word, triple-click a line). Ctrl/Cmd+B, I, U = bold, italic, underline of the selected letters. Drag the purple handles on the box edges to wrap the text (with Auto-fit text: the corners too, and the size follows). Enter = new line, Ctrl+Enter, Esc or a click outside = done.",
+	PE.defTool({ id: "text", name: "Text / Label", key: "t", icon: "T", opts: JSON.parse(JSON.stringify(PE.TEXTDEF)), hint: "Click empty canvas to add text, click a text to edit it (caret where you click, drag to select, double-click a word, triple-click a line). Ctrl/Cmd+B, I, U = bold, italic, underline of the selected letters. Drag the white pills on the sides of the box to change its width so the words re-wrap (with Auto-fit text: the corners too, and the size follows). Enter = new line, Ctrl+Enter, Esc or a click outside = done.",
 		ui: [{ type: "button", label: "✓ Done", cls: "pe-btn--primary", title: "Finish this text (Ctrl+Enter or Esc)", when: function () { return !!te; }, act: function () { PE.endTextEdit(false); PE.emit("opts", "text"); } },
 			{ type: "button", label: "✕ Cancel", title: "Throw away the changes made since the last step of this text", when: function () { return !!te; }, act: function () { if (!te) return; var L = te.L, o = te.orig, isNew = te.isNew; L.text = JSON.parse(o); PE.renderText(L); PE.touch(L); PE.endTextEdit(isNew); PE.emit("opts", "text"); } },
 			{ k: "font", label: "Font", type: "select", options: "fonts" }, { k: "size", label: "Size", type: "range", min: 6, max: 400, step: 1, unit: "px" }, { k: "wrapW", label: "Box width (0 = auto)", type: "range", min: 0, max: 4000, step: 10, unit: "px" }, { k: "fit", label: "Auto-fit text", type: "check" }, { k: "boxH", label: "Box height", type: "range", min: 0, max: 4000, step: 10, unit: "px", show: "fit" }, { k: "bold", label: "Bold", type: "check" }, { k: "italic", label: "Italic", type: "check" }, { k: "underline", label: "Underline", type: "check" }, { k: "align", label: "Align", type: "seg", options: [["left", "Left"], ["center", "Centre"], ["right", "Right"]] }, { k: "lh", label: "Line height", type: "range", min: 0.8, max: 3, step: 0.05 }, { k: "ls", label: "Letter spacing", type: "range", min: -10, max: 60, step: 1, unit: "px" }, { k: "color", label: "Colour", type: "color" },
@@ -4775,13 +4829,49 @@ var MESPixel = (function () {
 		if (text != null) return [b + f + "&text=" + encodeURIComponent(uniqChars(text)) + "&display=block"];
 		return [b + f + ":ital,wght@0,400;0,700;1,400;1,700&display=swap", b + f + ":wght@400;700&display=swap", b + f + "&display=swap"];
 	}
+	/* ---- font strings for canvas (round 10). Firefox (and old Chromium such as Opera on Windows 7) is strict: one bad family name in a stack, e.g.
+	 * an unquoted word that starts with a digit ("Press Start 2P"), makes ctx.font = ... silently do nothing, so the text drew in the previous /
+	 * default font. normStack() rewrites a stack so every family that is not a plain run of CSS identifiers is double-quoted, generic names stay
+	 * bare, broken quotes are repaired; fontShorthand() builds "italic bold 64px <stack>" with a finite size. Both are pure (node-tested). */
+	var GENERICS = /^(serif|sans-serif|monospace|cursive|fantasy|system-ui|ui-serif|ui-sans-serif|ui-monospace|ui-rounded|emoji|math|fangsong|-apple-system|BlinkMacSystemFont)$/i;
+	var CSSWIDE = /^(inherit|initial|unset|revert|revert-layer|default)$/i;
+	var IDENT = /^-?(?:[A-Za-z_]|[^\x00-\x7f])(?:[\w-]|[^\x00-\x7f])*$/;
+	function splitStack(stack) {
+		var out = [], cur = "", q = null, s = String(stack == null ? "" : stack);
+		for (var i = 0; i < s.length; i++) { var c = s[i]; if (q) { if (c === "\\" && i + 1 < s.length) { cur += s[++i]; continue; } if (c === q) { q = null; continue; } cur += c; continue; } if (c === "'" || c === '"') { q = c; continue; } if (c === ",") { out.push(cur); cur = ""; continue; } cur += c; }
+		out.push(cur); return out.map(function (x) { return x.replace(/\s+/g, " ").trim(); }).filter(Boolean);
+	}
+	function famToken(name, wasGeneric) {
+		var n = String(name).replace(/[\u0000-\u001f]/g, "").trim(); if (!n) return "";
+		if (wasGeneric && GENERICS.test(n)) return n.toLowerCase() === "blinkmacsystemfont" ? "BlinkMacSystemFont" : n.toLowerCase() === "-apple-system" ? "-apple-system" : n.toLowerCase();
+		var words = n.split(" "), plain = words.every(function (w) { return IDENT.test(w) && !/^--/.test(w); }) && !(words.length === 1 && (CSSWIDE.test(n) || GENERICS.test(n)));
+		return plain ? n : '"' + n.replace(/\\/g, "\\\\").replace(/"/g, '\\"') + '"';
+	}
+	/* "Arial, 'Press Start 2P', cursive" -> 'Arial, "Press Start 2P", cursive'; a quoted generic ('serif') stays a family name, like CSS */
+	var NSMEMO = {}, NSN = 0;
+	function normStack(stack) { var k = String(stack == null ? "" : stack); if (Object.prototype.hasOwnProperty.call(NSMEMO, k)) return NSMEMO[k]; if (++NSN > 500) { NSMEMO = {}; NSN = 0; } return (NSMEMO[k] = normStack0(k)); }
+	function normStack0(stack) {
+		var raw = String(stack == null ? "" : stack), parts = [], q = false, cur = "", gen = true;
+		for (var i = 0; i < raw.length; i++) { var c = raw[i]; if (c === "'" || c === '"') gen = false; if (c === ",") { parts.push([cur, gen]); cur = ""; gen = true; continue; } cur += c; }
+		parts.push([cur, gen]);
+		var names = splitStack(raw), toks = names.map(function (n, k) { var g = parts[k] ? parts[k][1] : true; return famToken(n, g); }).filter(Boolean);
+		var seen = {}; toks = toks.filter(function (t) { var k = t.toLowerCase(); if (seen[k]) return false; seen[k] = 1; return true; });
+		return toks.length ? toks.join(", ") : "sans-serif";
+	}
+	/* the canvas / CSS font shorthand for a text: style bits (1 bold, 2 italic), size in px (rounded to 1/100, at least 1) */
+	function fontShorthand(bits, size, stack) {
+		var sz = +size; if (!isFinite(sz) || sz <= 0) sz = 16; sz = Math.max(1, Math.round(sz * 100) / 100);
+		return (bits & 2 ? "italic " : "") + (bits & 1 ? "bold " : "") + sz + "px " + normStack(stack);
+	}
+	/* a FontFace family name that every browser accepts (Firefox parses it as CSS: "MESpv Press Start 2P" threw there, so previews failed) */
+	function safeFamily(prefix, name) { var h = 0, s = String(name || ""); for (var i = 0; i < s.length; i++) h = (h * 31 + s.charCodeAt(i)) >>> 0; var l = s.replace(/[^A-Za-z]+/g, ""); return (prefix || "MES") + (l || "Font") + "x" + h.toString(36).replace(/[0-9]/g, function (d) { return "abcdefghij"[+d]; }); }
 	function uniqChars(s) { var seen = {}, o = ""; Array.from(String(s)).forEach(function (c) { if (!seen[c]) { seen[c] = 1; o += c; } }); return o; }
 	/* the first font file url in a Google Fonts CSS answer */
 	function firstFontUrl(css) { var m = /url\((['"]?)(https:\/\/[^)'"]+)\1\)/.exec(String(css || "")); return m ? m[2] : null; }
 	/* most recently used first, no duplicates, at most n */
 	function pushRecent(arr, v, n) { var a = (arr || []).filter(function (x) { return x !== v; }); a.unshift(v); return a.slice(0, n || 10); }
 
-	var api = { CATS: CATS, GENERIC: GENERIC, LOCAL: LOCAL, GOOGLE: GOOGLE, SYMBOL: SYMBOL, familyOf: familyOf, quote: quote, stack: stack, googleCat: googleCat, guessCat: guessCat, filter: filter, googleUrls: googleUrls, uniqChars: uniqChars, firstFontUrl: firstFontUrl, pushRecent: pushRecent };
+	var api = { CATS: CATS, GENERIC: GENERIC, LOCAL: LOCAL, GOOGLE: GOOGLE, SYMBOL: SYMBOL, familyOf: familyOf, quote: quote, stack: stack, googleCat: googleCat, guessCat: guessCat, filter: filter, googleUrls: googleUrls, uniqChars: uniqChars, firstFontUrl: firstFontUrl, pushRecent: pushRecent, splitStack: splitStack, normStack: normStack, fontShorthand: fontShorthand, safeFamily: safeFamily };
 	if (typeof module !== "undefined" && module.exports) module.exports = api;
 	if (root) root.MESFontCat = api;
 })(typeof window !== "undefined" ? window : null);
@@ -4829,7 +4919,7 @@ var MESPixel = (function () {
 	/* ---------- Google Fonts: previews and the real thing ---------- */
 	var PV_ABC = "AaBbCcDdEeFfGgHhIiJjKkLlMmNnOoPpQqRrSsTtUuVvWwXxYyZz0123456789 .,:;!?'&-";   // a preview has the letters of a typed sample too
 	var pvQ = [], pvBusy = 0, loaded = {}, loading = {};
-	function pvAlias(f) { return "MESpv " + f.name.replace(/[^\w ]/g, ""); }
+	function pvAlias(f) { return F.safeFamily("MESpv", f.name); }   // round 10: no spaces / digits (Firefox parses a FontFace family as CSS and threw on "MESpv Press Start 2P")
 	/* round 9: every row that shows a font is repainted when its preview arrives (the list may have been rebuilt meanwhile: search, chips), the rows
 	 * on screen jump the queue (urgent = true puts them first), and a failed preview is tried once more before the row is marked */
 	function previewFont(f, cb, urgent) {
@@ -4865,6 +4955,17 @@ var MESPixel = (function () {
 		if (any) { PE.invalidate(); PE.emit("layers"); }
 		document.querySelectorAll(".pe-fbtn").forEach(function (b) { if (b.dataset.fam && b.dataset.fam.toLowerCase() === k) b.style.fontFamily = F.quote(name) + ", sans-serif"; });
 	}
+	/* round 10: a catch-all for fonts that arrive late (Firefox loads a bold / italic face only when it is first drawn; a project opened before its
+	 * fonts): whenever the browser finishes loading font faces, every text layer using one of those families is measured and drawn again */
+	if (document.fonts && document.fonts.addEventListener) {
+		var lateFams = {}, lateT = 0;
+		document.fonts.addEventListener("loadingdone", function (ev) {
+			(ev.fontfaces || []).forEach(function (ff) { var n = String(ff.family || "").replace(/^['"]|['"]$/g, "").toLowerCase(); if (n && n.indexOf("mespv") !== 0) lateFams[n] = 1; });
+			clearTimeout(lateT); lateT = setTimeout(function () { var fams = lateFams; lateFams = {}; if (!PE.doc || !PE.renderText) return; var any = false;
+				PE.doc.layers.forEach(function (L) { if (L.type === "text" && L.text && fams[F.familyOf(L.text.font).toLowerCase()]) { L._lay = null; PE.renderText(L); L.rev++; any = true; } });
+				if (any) { PE.invalidate(); PE.invalidateOverlay && PE.invalidateOverlay(); } }, 30);
+		});
+	}
 	/* make sure every Google font used by the text layers is loaded (after opening a project, undo, paste...) */
 	PE.ensureFonts = function () {
 		if (!PE.doc) return; var seen = {};
@@ -4878,6 +4979,8 @@ var MESPixel = (function () {
 	/* ---------- the button in the option bar ---------- */
 	PE.fontButton = function (value, onPick) {
 		build(); var fam = F.familyOf(value), f = byName[fam.toLowerCase()];
+		if (!f) for (var fi = 0; fi < fonts.length; fi++) if (fonts[fi].value === value) { f = fonts[fi]; break; }   // a font file of your own: shown by its file name, not the internal family
+		if (f) fam = f.name;
 		var b = el("button", "pe-fbtn"); b.type = "button"; b.dataset.noico = "1"; b.dataset.fam = fam; b.setAttribute("aria-haspopup", "listbox"); b.title = "Font: " + fam + " (click for the list: search, preview, " + fonts.length + " fonts)";
 		b.innerHTML = '<span class="pe-fbtn-n"></span><span class="pe-fbtn-a" aria-hidden="true">▾</span>'; b.firstChild.textContent = fam;
 		var setFace = function () { var face = f ? faceOf(f) : value; b.firstChild.style.fontFamily = face || "inherit"; };
@@ -5116,7 +5219,7 @@ var MESPixel = (function () {
 		bucket: "Click an area to fill it with the foreground colour. Tolerance decides how similar a colour must be to be filled. With a selection active, only the selection is filled.",
 		gradient: "Drag from where the gradient should start to where it should end. It blends the foreground and background colours and respects any selection.",
 		eyedropper: "Press and drag over the picture: a magnifier follows the pointer and shows the pixels, the colour and its hex code; let go to use it as the foreground colour (Alt = background). Sample = 1 pixel or the average of a 3 × 3 / 5 × 5 area; All layers = the colour you see, off = only the selected layer. With Confirm with a button, letting go leaves a Use this colour / Cancel bar and you can drag again to move the sample point. The 💉 buttons next to the colour wells and the option bar colours do the same for one pick.",
-		text: "Click empty canvas to add a text; click an existing text to edit it right on the picture. The caret goes where you click; drag to select, double-click selects a word, triple-click a line, Shift-click extends. Enter starts a new line; Ctrl+Enter, Esc or a click outside finishes. The option bar (font, size, colour, outline, box...) changes the selected text layer live, also while you type, and the whole edit is one undo step. Drag the purple handle on the right of the frame to wrap the text to a width. Each text is its own layer, so you can move, scale and rotate it later.",
+		text: "Click empty canvas to add a text; click an existing text to edit it right on the picture. The caret goes where you click; drag to select, double-click selects a word, triple-click a line, Shift-click extends. Enter starts a new line; Ctrl+Enter, Esc or a click outside finishes. The option bar (font, size, colour, outline, box...) changes the selected text layer live, also while you type, and the whole edit is one undo step. Drag the white pills on the sides of the blue box to change its width (the words re-wrap); with the Move tool the corners make the text bigger or smaller. Each text is its own layer, so you can move, scale and rotate it later.",
 		equation: "Insert a maths equation. Click where it goes, type LaTeX (a live preview appears), then Insert. Click an existing equation to edit it. Equations stay sharp when enlarged.",
 		shape: "Draw rectangles, rounded boxes, ellipses, lines, arrows, callouts, numbered step badges, highlights and blur / hide areas. Shift = square or straight line. Outline uses the foreground colour, fill uses the background colour. Each shape lands on its own layer.",
 		hand: "Drag to pan around a zoomed-in picture. You can also hold Space with any tool, or use the middle mouse button.",
@@ -5285,7 +5388,7 @@ var MESPixel = (function () {
 		if (id === "text" || id === "shape") { }
 	}
 	function rebuildOpts() { buildOpts(); if (PE.textEditing && PE.textEditing()) setTimeout(PE.focusText, 0); }   // a change in the option bar while typing: keep typing into the text
-	var OPTHELP = { "Hardness": "How sharp the edge of the brush is. 100% is a crisp hard circle; lower values fade softly towards the edge, like an airbrush.", "Opacity": "How see-through the paint is. 100% covers fully; 30% lets what is underneath show through. Overlapping strokes in one drag do not stack.", "Smoothing": "Steadies a shaky hand: the brush lags a little behind the pointer and draws smoother curves. 0% = follows the pointer exactly.", "Pen pressure": "With a drawing tablet or pen, pressing harder makes the stroke bigger. Has no effect with a mouse.", "Tolerance": "How different a colour can be and still count as the same area. Low = only almost identical colours; high = spreads into similar colours.", "Strength": "How strong the effect is each time you paint over it.", "Aligned": "On: the copy source moves along with your brush. Off: every stroke starts again from the same source point.", "Contiguous": "On: only connected areas are filled. Off: every matching colour in the whole layer.", "Sample all layers": "Look at the merged picture instead of only the selected layer when deciding what is the same colour.", "Pick the layer under the click": "On: clicking a letter or shape picks the layer that is actually showing there, so the selection (and a following Delete) acts on that layer and not on the picture behind it. Off: always use the selected layer.", "Box width (0 = auto)": "How wide the text box is before words wrap onto the next line. 0 = as wide as the text needs (up to the image width). You can also drag the purple handles on the left and right edges of the text box (Text tool or Move tool).", "Auto-fit text": "On: the font size changes by itself so the text fills the box. Drag the box's edges or corners (purple handles) and the words re-wrap and grow or shrink to fit. Off: dragging the box's sides only re-wraps the words, and the box is as tall as the text.", "Box height": "With Auto-fit text: how tall the text box is. The font size is the largest one that fits the box's width and height.", "Underline": "Underlines the text. While you are typing in a text, Ctrl/Cmd+U (and B, I) changes only the selected letters; with nothing selected, the whole text.", "Outline width": "How thick the outline around the letters is. 0 = no outline.", "Letter spacing": "Extra space between letters (negative = tighter).", };
+	var OPTHELP = { "Hardness": "How sharp the edge of the brush is. 100% is a crisp hard circle; lower values fade softly towards the edge, like an airbrush.", "Opacity": "How see-through the paint is. 100% covers fully; 30% lets what is underneath show through. Overlapping strokes in one drag do not stack.", "Smoothing": "Steadies a shaky hand: the brush lags a little behind the pointer and draws smoother curves. 0% = follows the pointer exactly.", "Pen pressure": "With a drawing tablet or pen, pressing harder makes the stroke bigger. Has no effect with a mouse.", "Tolerance": "How different a colour can be and still count as the same area. Low = only almost identical colours; high = spreads into similar colours.", "Strength": "How strong the effect is each time you paint over it.", "Aligned": "On: the copy source moves along with your brush. Off: every stroke starts again from the same source point.", "Contiguous": "On: only connected areas are filled. Off: every matching colour in the whole layer.", "Sample all layers": "Look at the merged picture instead of only the selected layer when deciding what is the same colour.", "Pick the layer under the click": "On: clicking a letter or shape picks the layer that is actually showing there, so the selection (and a following Delete) acts on that layer and not on the picture behind it. Off: always use the selected layer.", "Box width (0 = auto)": "How wide the text box is before words wrap onto the next line. 0 = as wide as the text needs (up to the image width). You can also drag the white pills on the left and right sides of the blue text box (Text tool or Move tool).", "Auto-fit text": "On: the font size changes by itself so the text fills the box. Drag the box's sides or corners and the words re-wrap and grow or shrink to fit. Off: dragging the box's sides only re-wraps the words, and the box is as tall as the text.", "Box height": "With Auto-fit text: how tall the text box is. The font size is the largest one that fits the box's width and height.", "Underline": "Underlines the text. While you are typing in a text, Ctrl/Cmd+U (and B, I) changes only the selected letters; with nothing selected, the whole text.", "Outline width": "How thick the outline around the letters is. 0 = no outline.", "Letter spacing": "Extra space between letters (negative = tighter).", };
 	function optHelp(u) { var t = u.help || OPTHELP[u.label]; return t ? PE.helpBtn(u.label, esc(t)) : null; }
 	function fmtV(v, u) { return (u.step < 1 ? (+v).toFixed(2) : Math.round(v)) + (u.unit || ""); }
 	var optsTimer = 0; PE.on("opts", function (id) { if (id === PE.toolId) { clearTimeout(optsTimer); optsTimer = setTimeout(function () { var ae = document.activeElement; if (!ae || !(ae.type === "range" || ((ae.type === "number" || ae.type === "text") && $("pe-opts").contains(ae)))) buildOpts(); }, 10); } sset({ opt: PE.opt }); });

@@ -69,13 +69,49 @@
 		if (text != null) return [b + f + "&text=" + encodeURIComponent(uniqChars(text)) + "&display=block"];
 		return [b + f + ":ital,wght@0,400;0,700;1,400;1,700&display=swap", b + f + ":wght@400;700&display=swap", b + f + "&display=swap"];
 	}
+	/* ---- font strings for canvas (round 10). Firefox (and old Chromium such as Opera on Windows 7) is strict: one bad family name in a stack, e.g.
+	 * an unquoted word that starts with a digit ("Press Start 2P"), makes ctx.font = ... silently do nothing, so the text drew in the previous /
+	 * default font. normStack() rewrites a stack so every family that is not a plain run of CSS identifiers is double-quoted, generic names stay
+	 * bare, broken quotes are repaired; fontShorthand() builds "italic bold 64px <stack>" with a finite size. Both are pure (node-tested). */
+	var GENERICS = /^(serif|sans-serif|monospace|cursive|fantasy|system-ui|ui-serif|ui-sans-serif|ui-monospace|ui-rounded|emoji|math|fangsong|-apple-system|BlinkMacSystemFont)$/i;
+	var CSSWIDE = /^(inherit|initial|unset|revert|revert-layer|default)$/i;
+	var IDENT = /^-?(?:[A-Za-z_]|[^\x00-\x7f])(?:[\w-]|[^\x00-\x7f])*$/;
+	function splitStack(stack) {
+		var out = [], cur = "", q = null, s = String(stack == null ? "" : stack);
+		for (var i = 0; i < s.length; i++) { var c = s[i]; if (q) { if (c === "\\" && i + 1 < s.length) { cur += s[++i]; continue; } if (c === q) { q = null; continue; } cur += c; continue; } if (c === "'" || c === '"') { q = c; continue; } if (c === ",") { out.push(cur); cur = ""; continue; } cur += c; }
+		out.push(cur); return out.map(function (x) { return x.replace(/\s+/g, " ").trim(); }).filter(Boolean);
+	}
+	function famToken(name, wasGeneric) {
+		var n = String(name).replace(/[\u0000-\u001f]/g, "").trim(); if (!n) return "";
+		if (wasGeneric && GENERICS.test(n)) return n.toLowerCase() === "blinkmacsystemfont" ? "BlinkMacSystemFont" : n.toLowerCase() === "-apple-system" ? "-apple-system" : n.toLowerCase();
+		var words = n.split(" "), plain = words.every(function (w) { return IDENT.test(w) && !/^--/.test(w); }) && !(words.length === 1 && (CSSWIDE.test(n) || GENERICS.test(n)));
+		return plain ? n : '"' + n.replace(/\\/g, "\\\\").replace(/"/g, '\\"') + '"';
+	}
+	/* "Arial, 'Press Start 2P', cursive" -> 'Arial, "Press Start 2P", cursive'; a quoted generic ('serif') stays a family name, like CSS */
+	var NSMEMO = {}, NSN = 0;
+	function normStack(stack) { var k = String(stack == null ? "" : stack); if (Object.prototype.hasOwnProperty.call(NSMEMO, k)) return NSMEMO[k]; if (++NSN > 500) { NSMEMO = {}; NSN = 0; } return (NSMEMO[k] = normStack0(k)); }
+	function normStack0(stack) {
+		var raw = String(stack == null ? "" : stack), parts = [], q = false, cur = "", gen = true;
+		for (var i = 0; i < raw.length; i++) { var c = raw[i]; if (c === "'" || c === '"') gen = false; if (c === ",") { parts.push([cur, gen]); cur = ""; gen = true; continue; } cur += c; }
+		parts.push([cur, gen]);
+		var names = splitStack(raw), toks = names.map(function (n, k) { var g = parts[k] ? parts[k][1] : true; return famToken(n, g); }).filter(Boolean);
+		var seen = {}; toks = toks.filter(function (t) { var k = t.toLowerCase(); if (seen[k]) return false; seen[k] = 1; return true; });
+		return toks.length ? toks.join(", ") : "sans-serif";
+	}
+	/* the canvas / CSS font shorthand for a text: style bits (1 bold, 2 italic), size in px (rounded to 1/100, at least 1) */
+	function fontShorthand(bits, size, stack) {
+		var sz = +size; if (!isFinite(sz) || sz <= 0) sz = 16; sz = Math.max(1, Math.round(sz * 100) / 100);
+		return (bits & 2 ? "italic " : "") + (bits & 1 ? "bold " : "") + sz + "px " + normStack(stack);
+	}
+	/* a FontFace family name that every browser accepts (Firefox parses it as CSS: "MESpv Press Start 2P" threw there, so previews failed) */
+	function safeFamily(prefix, name) { var h = 0, s = String(name || ""); for (var i = 0; i < s.length; i++) h = (h * 31 + s.charCodeAt(i)) >>> 0; var l = s.replace(/[^A-Za-z]+/g, ""); return (prefix || "MES") + (l || "Font") + "x" + h.toString(36).replace(/[0-9]/g, function (d) { return "abcdefghij"[+d]; }); }
 	function uniqChars(s) { var seen = {}, o = ""; Array.from(String(s)).forEach(function (c) { if (!seen[c]) { seen[c] = 1; o += c; } }); return o; }
 	/* the first font file url in a Google Fonts CSS answer */
 	function firstFontUrl(css) { var m = /url\((['"]?)(https:\/\/[^)'"]+)\1\)/.exec(String(css || "")); return m ? m[2] : null; }
 	/* most recently used first, no duplicates, at most n */
 	function pushRecent(arr, v, n) { var a = (arr || []).filter(function (x) { return x !== v; }); a.unshift(v); return a.slice(0, n || 10); }
 
-	var api = { CATS: CATS, GENERIC: GENERIC, LOCAL: LOCAL, GOOGLE: GOOGLE, SYMBOL: SYMBOL, familyOf: familyOf, quote: quote, stack: stack, googleCat: googleCat, guessCat: guessCat, filter: filter, googleUrls: googleUrls, uniqChars: uniqChars, firstFontUrl: firstFontUrl, pushRecent: pushRecent };
+	var api = { CATS: CATS, GENERIC: GENERIC, LOCAL: LOCAL, GOOGLE: GOOGLE, SYMBOL: SYMBOL, familyOf: familyOf, quote: quote, stack: stack, googleCat: googleCat, guessCat: guessCat, filter: filter, googleUrls: googleUrls, uniqChars: uniqChars, firstFontUrl: firstFontUrl, pushRecent: pushRecent, splitStack: splitStack, normStack: normStack, fontShorthand: fontShorthand, safeFamily: safeFamily };
 	if (typeof module !== "undefined" && module.exports) module.exports = api;
 	if (root) root.MESFontCat = api;
 })(typeof window !== "undefined" ? window : null);

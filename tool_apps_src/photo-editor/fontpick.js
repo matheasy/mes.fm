@@ -41,7 +41,7 @@
 	/* ---------- Google Fonts: previews and the real thing ---------- */
 	var PV_ABC = "AaBbCcDdEeFfGgHhIiJjKkLlMmNnOoPpQqRrSsTtUuVvWwXxYyZz0123456789 .,:;!?'&-";   // a preview has the letters of a typed sample too
 	var pvQ = [], pvBusy = 0, loaded = {}, loading = {};
-	function pvAlias(f) { return "MESpv " + f.name.replace(/[^\w ]/g, ""); }
+	function pvAlias(f) { return F.safeFamily("MESpv", f.name); }   // round 10: no spaces / digits (Firefox parses a FontFace family as CSS and threw on "MESpv Press Start 2P")
 	/* round 9: every row that shows a font is repainted when its preview arrives (the list may have been rebuilt meanwhile: search, chips), the rows
 	 * on screen jump the queue (urgent = true puts them first), and a failed preview is tried once more before the row is marked */
 	function previewFont(f, cb, urgent) {
@@ -77,6 +77,17 @@
 		if (any) { PE.invalidate(); PE.emit("layers"); }
 		document.querySelectorAll(".pe-fbtn").forEach(function (b) { if (b.dataset.fam && b.dataset.fam.toLowerCase() === k) b.style.fontFamily = F.quote(name) + ", sans-serif"; });
 	}
+	/* round 10: a catch-all for fonts that arrive late (Firefox loads a bold / italic face only when it is first drawn; a project opened before its
+	 * fonts): whenever the browser finishes loading font faces, every text layer using one of those families is measured and drawn again */
+	if (document.fonts && document.fonts.addEventListener) {
+		var lateFams = {}, lateT = 0;
+		document.fonts.addEventListener("loadingdone", function (ev) {
+			(ev.fontfaces || []).forEach(function (ff) { var n = String(ff.family || "").replace(/^['"]|['"]$/g, "").toLowerCase(); if (n && n.indexOf("mespv") !== 0) lateFams[n] = 1; });
+			clearTimeout(lateT); lateT = setTimeout(function () { var fams = lateFams; lateFams = {}; if (!PE.doc || !PE.renderText) return; var any = false;
+				PE.doc.layers.forEach(function (L) { if (L.type === "text" && L.text && fams[F.familyOf(L.text.font).toLowerCase()]) { L._lay = null; PE.renderText(L); L.rev++; any = true; } });
+				if (any) { PE.invalidate(); PE.invalidateOverlay && PE.invalidateOverlay(); } }, 30);
+		});
+	}
 	/* make sure every Google font used by the text layers is loaded (after opening a project, undo, paste...) */
 	PE.ensureFonts = function () {
 		if (!PE.doc) return; var seen = {};
@@ -90,6 +101,8 @@
 	/* ---------- the button in the option bar ---------- */
 	PE.fontButton = function (value, onPick) {
 		build(); var fam = F.familyOf(value), f = byName[fam.toLowerCase()];
+		if (!f) for (var fi = 0; fi < fonts.length; fi++) if (fonts[fi].value === value) { f = fonts[fi]; break; }   // a font file of your own: shown by its file name, not the internal family
+		if (f) fam = f.name;
 		var b = el("button", "pe-fbtn"); b.type = "button"; b.dataset.noico = "1"; b.dataset.fam = fam; b.setAttribute("aria-haspopup", "listbox"); b.title = "Font: " + fam + " (click for the list: search, preview, " + fonts.length + " fonts)";
 		b.innerHTML = '<span class="pe-fbtn-n"></span><span class="pe-fbtn-a" aria-hidden="true">▾</span>'; b.firstChild.textContent = fam;
 		var setFace = function () { var face = f ? faceOf(f) : value; b.firstChild.style.fontFamily = face || "inherit"; };

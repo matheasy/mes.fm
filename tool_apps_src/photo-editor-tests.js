@@ -394,4 +394,28 @@ t("font picker: fonts on this computer before Google, Google can be hidden", () 
 	assert.deepStrictEqual(FC.filter(fs, "", "all", "all", [], { google: false }).map((f) => f.name), ["Arial", "Calibri"]);
 	assert.deepStrictEqual(FC.filter(fs, "", "all", "google", [], { google: false }).map((f) => f.name), ["Roboto", "Lato"], "the Google chip still lists them");
 	assert.deepStrictEqual(FC.filter(fs.concat([{ name: "Lato Local", cat: "sans", src: "local" }]), "lato", "all", "all").map((f) => f.name), ["Lato", "Lato Local"], "a search ranks by match first"); });
+/* ---------- round 10: font strings (Firefox / old Chromium refuse a whole ctx.font when one family is not quoted right) ---------- */
+t("normStack quotes families that are not plain identifiers", () => {
+	assert.strictEqual(FC.normStack("'Press Start 2P', cursive"), '"Press Start 2P", cursive');
+	assert.strictEqual(FC.normStack("Press Start 2P, cursive"), '"Press Start 2P", cursive', "unquoted digit word gets quoted");
+	assert.strictEqual(FC.normStack("Arial, Helvetica, sans-serif"), "Arial, Helvetica, sans-serif");
+	assert.strictEqual(FC.normStack("system-ui, -apple-system, 'Segoe UI', sans-serif"), "system-ui, -apple-system, Segoe UI, sans-serif");
+	assert.strictEqual(FC.normStack("'Comic Sans MS', 'Comic Neue', cursive"), "Comic Sans MS, Comic Neue, cursive");
+	assert.strictEqual(FC.normStack('"serif"'), '"serif"', "a quoted generic stays a family name"); assert.strictEqual(FC.normStack("'inherit'"), '"inherit"');
+	assert.strictEqual(FC.normStack("Font, , serif"), "Font, serif"); assert.strictEqual(FC.normStack(""), "sans-serif"); assert.strictEqual(FC.normStack(undefined), "sans-serif");
+	assert.strictEqual(FC.normStack("'unterminated"), "unterminated"); assert.strictEqual(FC.normStack("'A & B', serif"), '"A & B", serif');
+	assert.strictEqual(FC.normStack('"Say \\"hi\\"", serif'), '"Say \\"hi\\"", serif', "escaped quote kept"); assert.strictEqual(FC.normStack("Arial, arial, sans-serif"), "Arial, sans-serif", "duplicates dropped");
+	assert.strictEqual(FC.normStack("'8bit Wonder'"), '"8bit Wonder"'); assert.strictEqual(FC.normStack("Font-Name_2"), "Font-Name_2"); assert.strictEqual(FC.normStack("--x"), '"--x"'); });
+t("fontShorthand: style, finite size, normalised stack", () => {
+	assert.strictEqual(FC.fontShorthand(3, 64, "'Press Start 2P', cursive"), 'italic bold 64px "Press Start 2P", cursive');
+	assert.strictEqual(FC.fontShorthand(1, "40", "Arial"), "bold 40px Arial"); assert.strictEqual(FC.fontShorthand(0, 37.456, "Arial"), "37.46px Arial");
+	assert.strictEqual(FC.fontShorthand(0, NaN, "Arial"), "16px Arial", "NaN size must not make the whole font invalid"); assert.strictEqual(FC.fontShorthand(0, -5, "Arial"), "16px Arial"); assert.strictEqual(FC.fontShorthand(0, 0.2, "Arial"), "1px Arial");
+	// changing size / bold / italic never touches the family
+	const st = "'Bungee Shade', sans-serif"; for (const b of [0, 1, 2, 3]) for (const sz of [6, 64, 400]) assert(FC.fontShorthand(b, sz, st).endsWith('px Bungee Shade, sans-serif'));
+	// every stack the picker can produce is a valid font shorthand family list: only identifiers, double-quoted strings and commas
+	const ok = /^(?:(?:[A-Za-z_-][\w-]*(?: [A-Za-z_-][\w-]*)*|"(?:[^"\\]|\\.)*")(?:, |$))+$/;
+	for (const [name, cat] of FC.GOOGLE.concat(FC.LOCAL)) { const v = FC.normStack(FC.stack(name, cat)); assert(ok.test(v), name + " -> " + v); assert.strictEqual(FC.familyOf(FC.stack(name, cat)), name); } });
+t("safeFamily: FontFace names Firefox accepts", () => { const a = FC.safeFamily("MESpv", "Press Start 2P"), b = FC.safeFamily("MESpv", "Press Start 2P "), c = FC.safeFamily("MESfile", "8bit Wonder 2");
+	for (const x of [a, c]) assert(/^[A-Za-z]+$/.test(x), x); assert.notStrictEqual(a, b, "different names, different aliases"); assert.strictEqual(a, FC.safeFamily("MESpv", "Press Start 2P"), "stable"); assert(/^[A-Za-z]+$/.test(FC.safeFamily("x", "")));
+	assert(/^[A-Za-z]+$/.test(FC.safeFamily("x", "日本語 フォント"))); });
 console.log(n + " checks ok");

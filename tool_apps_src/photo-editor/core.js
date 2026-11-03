@@ -132,11 +132,23 @@
 	/* rich text (MESPixel.rich*): t.rich = one style digit per character (1 bold, 2 italic, 4 underline) or null = the layer's own bold / italic / underline */
 	PE.textRich = function (t) { return t && typeof t.rich === "string" && t.rich.length === String(t.str).length && t.rich.length ? t.rich : null; };
 	PE.textMask = function (t) { return P.richMask(t.bold, t.italic, t.underline); };
-	function fontFor(t, m, size) { return (m & 2 ? "italic " : "") + (m & 1 ? "bold " : "") + (size == null ? t.size : size) + "px " + t.font; }
+	/* round 10: built by MESFontCat.fontShorthand, which quotes family names Firefox would reject (the reason a font "went back to default") */
+	function fontFor(t, m, size) { var F = window.MESFontCat; var sz = size == null ? t.size : size; return F ? F.fontShorthand(m, sz, t.font) : (m & 2 ? "italic " : "") + (m & 1 ? "bold " : "") + sz + "px " + t.font; }
 	PE.textFont = fontFor;
+	/* round 10: set ctx.font and notice when the browser silently refuses it (it then keeps the old / default font): retry with the first family
+	 * alone, then the generic family, and say once which font could not be used, instead of quietly drawing in the default font */
+	var fontWarned = {};
+	function setFont(ctx, fn) {
+		ctx._mesFont = fn; ctx.font = "1px serif"; var probe = ctx.font; ctx.font = fn; if (ctx.font !== probe || /^1px serif$/.test(fn)) return true;
+		var F = window.MESFontCat, m = /^((?:italic |bold )*)([\d.]+px) (.*)$/.exec(fn), alt = m && F ? [m[1] + m[2] + " " + F.normStack(F.familyOf(m[3])) + ", sans-serif", m[1] + m[2] + " sans-serif"] : [];
+		for (var i = 0; i < alt.length; i++) { ctx.font = alt[i]; if (ctx.font !== probe) break; }
+		if (!fontWarned[fn]) { fontWarned[fn] = 1; if (window.console) console.warn("MES Photo Editor: the browser refused the font", fn); }
+		return false;
+	}
+	PE.setCtxFont = setFont;
 	/* a measure(s, start) for a text at a given size: rich parts are measured with their own font */
 	function measurer(t, size, ctx) {
-		var rich = PE.textRich(t), base = PE.textMask(t), ls = (t.ls || 0) + "px", cache = {}, set = function (fn) { if (ctx.font !== fn) ctx.font = fn; if ("letterSpacing" in ctx && ctx.letterSpacing !== ls) ctx.letterSpacing = ls; };
+		var rich = PE.textRich(t), base = PE.textMask(t), ls = (t.ls || 0) + "px", cache = {}, set = function (fn) { if (ctx._mesFont !== fn) setFont(ctx, fn); if ("letterSpacing" in ctx && ctx.letterSpacing !== ls) ctx.letterSpacing = ls; };
 		if (!rich) { var f = fontFor(t, base, size); return function (s) { var w = cache[s]; if (w == null) { set(f); w = cache[s] = ctx.measureText(s).width; } return w; }; }
 		return function (s, st) {
 			st = st || 0; var key = st + "|" + s, w = cache[key]; if (w != null) return w; w = 0;
@@ -151,7 +163,7 @@
 		lines.forEach(function (ln, i) {
 			if (!ln.text) return; var segs = P.richSegs(rich, ln.start, ln.end, base), x0 = 0;
 			segs.forEach(function (g, k) {
-				ctx.font = fontFor(t, g.m); var tx = ln.text.slice(g.s - ln.start, g.e - ln.start), mm = ctx.measureText(tx);
+				setFont(ctx, fontFor(t, g.m)); var tx = ln.text.slice(g.s - ln.start, g.e - ln.start), mm = ctx.measureText(tx);
 				if (k === 0) worst = Math.max(worst, mm.actualBoundingBoxLeft || 0);
 				if (k === segs.length - 1) worst = Math.max(worst, x0 + (mm.actualBoundingBoxRight || 0) - lw[i]);
 				worst = Math.max(worst, (mm.actualBoundingBoxAscent || 0) - top, i === lines.length - 1 ? (mm.actualBoundingBoxDescent || 0) - (t.size * 0.3 + Math.max(0, lhp - t.size)) : 0);
@@ -198,7 +210,7 @@
 			segs.forEach(function (g) { g.x = x0 + lay.measure(ln.text.slice(0, g.s - ln.start), ln.start); g.txt = ln.text.slice(g.s - ln.start, g.e - ln.start); });
 			segs.forEach(function (g) { if (!(g.m & 4)) return; var xe = x0 + lay.measure(ln.text.slice(0, g.e - ln.start), ln.start) - (ls > 0 ? ls : 0), last = ul[ul.length - 1]; if (last && last.e === g.s) { last.e = g.e; last.x1 = xe; } else ul.push({ s: g.s, e: g.e, x0: g.x, x1: xe }); });
 			ul = ul.filter(function (u) { return u.x1 > u.x0; });
-			var draw = function (fn) { segs.forEach(function (g) { x.font = fontFor(t, g.m); fn(g); }); };
+			var draw = function (fn) { segs.forEach(function (g) { setFont(x, fontFor(t, g.m)); fn(g); }); };
 			var bars = function (fn) { ul.forEach(function (u) { fn(u.x0, py + uOff, u.x1 - u.x0, uTh); }); };
 			if (t.shadowOn) { x.save(); x.shadowColor = t.shadow; x.shadowBlur = t.shadowBlur; x.shadowOffsetX = t.shadowDx; x.shadowOffsetY = t.shadowDy; x.fillStyle = t.color; draw(function (g) { x.fillText(g.txt, g.x, py); }); bars(function (a, b, w, h) { x.fillRect(a, b, w, h); }); x.restore(); }
 			if (sw > 0) { x.strokeStyle = t.stroke; x.lineWidth = sw * 2; draw(function (g) { x.strokeText(g.txt, g.x, py); }); bars(function (a, b, w, h) { x.strokeRect(a, b, w, h); }); }
