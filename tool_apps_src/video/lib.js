@@ -393,7 +393,16 @@
 		return own;
 	};
 	// set prop k to v as seen at rel: on the animation that decides it there, else on the clip (moving text at an animation's end moves that keyframe)
+	// the animation that ends at rel (within tol), the latest-starting one when several do
+	V.animEndingAt = function (c, rel, tol) {
+		tol = tol == null ? 1e-3 : tol; var best = null;
+		(c.anims || []).forEach(function (a) { if (Math.abs(a.t + a.d - rel) <= tol && (!best || a.t > best.t)) best = a; });
+		return best;
+	};
+	// with the playhead at an animation's end, a change goes into that animation's end values (adding the prop if it had none: Camtasia's
+	// "move it at the end of the arrow"); elsewhere it goes to whoever decides the value there
 	V.setPropAt = function (c, rel, k, v, tol) {
+		var e = V.animEndingAt(c, rel, tol); if (e) { e.to = e.to || {}; e.to[k] = v; return e; }
 		var a = V.propOwner(c, rel, k, tol);
 		if (a) { a.to[k] = v; return a; }
 		var b = V.baseState(c); b[k] = v; V.setBase(c, b); return null;

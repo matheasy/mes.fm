@@ -36,6 +36,7 @@
 					<button type="button" role="tab" data-cat="trans" aria-selected="false"><i aria-hidden="true">&#10697;</i><span>Transitions</span></button>
 					<button type="button" role="tab" data-cat="afx" aria-selected="false"><i aria-hidden="true">&#128266;</i><span>Audio effects</span></button>
 					<button type="button" role="tab" data-cat="vfx" aria-selected="false"><i aria-hidden="true">&#10024;</i><span>Visual effects</span></button>
+					<button type="button" role="tab" data-cat="anim" aria-selected="false"><i aria-hidden="true">&#10148;</i><span>Animations</span></button>
 				</nav>
 				<aside class="vd-left" id="vd-left" aria-label="Library">
 					<section class="vd-pane vd-bin" data-pane="media" role="tabpanel" aria-label="Media">
@@ -52,10 +53,23 @@
 					<section class="vd-pane" data-pane="trans" role="tabpanel" aria-label="Transitions" hidden><div class="vd-panehead"><b>Transitions</b><span class="vd-sp"></span><label class="vd-chk">Length <select id="vd-trdur" aria-label="Transition length"><option value="0.5">0.5 s</option><option value="1" selected>1 s</option><option value="2">2 s</option><option value="3">3 s</option></select></label></div><p class="vd-hint">Click to use it on the selected clips, or drag it onto a clip.</p><div class="vd-cards" data-cards="trans"></div></section>
 					<section class="vd-pane" data-pane="afx" role="tabpanel" aria-label="Audio effects" hidden><div class="vd-panehead"><b>Audio effects</b></div><p class="vd-hint">Click to use it on the selected clips, or drag it onto a clip. Nothing is changed in your files: the effects are worked out as you play and export, and you can change or remove them in the properties.</p><div class="vd-cards" data-cards="afx"></div></section>
 					<section class="vd-pane" data-pane="vfx" role="tabpanel" aria-label="Visual effects" hidden><div class="vd-panehead"><b>Visual effects</b></div><p class="vd-hint">Click to use it on the selected clips, or drag it onto a clip.</p><div class="vd-cards" data-cards="vfx"></div></section>
+					<section class="vd-pane" data-pane="anim" role="tabpanel" aria-label="Animations" hidden><div class="vd-panehead"><b>Animations</b><span class="vd-sp"></span><label class="vd-chk">Length <select id="vd-andur" aria-label="Animation length"><option value="0.5">0.5 s</option><option value="1" selected>1 s</option><option value="1.5">1.5 s</option><option value="2">2 s</option><option value="3">3 s</option><option value="5">5 s</option></select></label></div>
+						<label class="vd-chk vd-anease">Easing <select id="vd-anease" aria-label="Easing of new animations"></select></label>
+						<p class="vd-hint">Click to add one to the selected clip at the playhead (slide in and fade in go at its start, slide out and fade out at its end), or drag it onto a clip. Each animation shows as an arrow on the clip: drag it to move it, drag its ends to change its length, click it to jump to its end. With the playhead at an animation's end, drag the clip in the preview to change where it ends up.</p>
+						<div class="vd-cards" data-cards="anim"></div></section>
 				</aside>
 				<div class="vd-vgrip" id="vd-lgrip" role="separator" aria-orientation="vertical" aria-label="Library width" tabindex="0" title="Drag to change the width (double-click: normal)"></div>
 				<div class="vd-center">
-					<div class="vd-stagewrap" id="vd-stagewrap"><canvas id="vd-canvas" width="640" height="360" aria-label="Preview"></canvas></div>
+					<div class="vd-stagewrap" id="vd-stagewrap"><canvas id="vd-canvas" width="640" height="360" aria-label="Preview"></canvas>
+						<div class="vd-vz" id="vd-vz" role="toolbar" aria-label="Preview zoom">
+							<button type="button" class="vd-btn vd-sm" id="vd-vzfit" title="Fit the whole frame in the preview, with a margin around it">Fit</button>
+							<button type="button" class="vd-btn vd-sm vd-ico" id="vd-vzout" title="Zoom the preview out (Ctrl + wheel, pinch)" aria-label="Zoom the preview out">&minus;</button>
+							<select id="vd-vzsel" aria-label="Preview zoom" title="Preview zoom: 100% = one video pixel per screen pixel"></select>
+							<button type="button" class="vd-btn vd-sm vd-ico" id="vd-vzin" title="Zoom the preview in (Ctrl + wheel, pinch)" aria-label="Zoom the preview in">+</button>
+							<button type="button" class="vd-btn vd-sm" id="vd-vzguide" aria-pressed="false" title="Safe-area guides (title safe 80%, action safe 90%), thirds and the centre (G)">Guides</button>
+							<button type="button" class="vd-btn vd-sm" id="vd-vzdim" aria-pressed="true" title="Darken what is outside the frame (it is never in the video)">Dim outside</button>
+						</div>
+					</div>
 					<div class="vd-transport" role="toolbar" aria-label="Playback">
 						<button type="button" class="vd-btn vd-ico" data-tp="start" title="To the start (Home)" aria-label="To the start">&#9198;</button>
 						<button type="button" class="vd-btn vd-ico" data-tp="back" title="One frame back (Left arrow; Shift = 1 s)" aria-label="One frame back">&#9664;&#9646;</button>
@@ -115,7 +129,7 @@
 					<dt>S</dt><dd>Split at the playhead (the selected clips, or every clip there)</dd><dt>Delete</dt><dd>Delete; Shift+Delete closes the gap</dd>
 					<dt>I / O</dt><dd>Mark in / out; then &ldquo;Cut out marked&rdquo;, or export only that part</dd><dt>T</dt><dd>Add a title</dd>
 					<dt>Ctrl+Z / Ctrl+Shift+Z</dt><dd>Undo / redo</dd><dt>Ctrl+D</dt><dd>Duplicate</dd><dt>+ / &minus;</dt><dd>Zoom the timeline (Ctrl + wheel too)</dd>
-					<dt>W</dt><dd>The whole editor fills the browser window (Esc leaves)</dd><dt>F / Shift+F</dt><dd>Preview fills the window / full screen</dd><dt>Ctrl+Shift+A</dt><dd>Separate video and audio</dd><dt>Alt + drag a linked clip</dt><dd>Move it without its partner</dd><dt>Ctrl+S / Ctrl+E</dt><dd>Save project file / export</dd><dt>Alt + drag</dt><dd>Move without snapping</dd>
+					<dt>W</dt><dd>The whole editor fills the browser window (Esc leaves)</dd><dt>F / Shift+F</dt><dd>Preview fills the window / full screen</dd><dt>Ctrl + wheel / pinch</dt><dd>Zoom the preview (drag the grey area around the frame, the middle button, or Space + drag, to move it)</dd><dt>G</dt><dd>Safe-area guides on the preview</dd><dt>Ctrl+Shift+A</dt><dd>Separate video and audio</dd><dt>Alt + drag a linked clip</dt><dd>Move it without its partner</dd><dt>Ctrl+S / Ctrl+E</dt><dd>Save project file / export</dd><dt>Alt + drag</dt><dd>Move without snapping</dd>
 				</dl>
 			</div>
 			<div class="vd-modal" id="vd-modal" hidden><div class="vd-dlg" id="vd-dlg" role="dialog" aria-modal="true"></div></div>
@@ -135,7 +149,9 @@
 				<dt>Audio effects that even out the sound</dt><dd>The <b>Leveler</b> brings quiet and loud parts to the same loudness over a few seconds, the <b>Compressor</b> tames the loudest moments, and <b>Ducking</b> lowers music while a voice speaks. They never change your files: they are worked out from the sound as you play and export, the waveform shows the result over the original, and you can change or remove them any time.</dd>
 				<dt>Your work is saved as you go</dt><dd>The project and its media are kept in this browser, so closing the tab loses nothing. <b>Save project file</b> writes a small .mesvideo file you can open again later; the media files are matched by name, so keep them.</dd>
 				<dt>How the export works</dt><dd>Every frame is decoded with your computer's video decoder (WebCodecs), drawn with the titles and overlays, and encoded again with its H.264 encoder, usually on the graphics chip; the sound is mixed and encoded to AAC. In Chrome, Edge and Brave (with the File System Access API on) the MP4 can be written straight to disk, so even long exports do not fill the memory.</dd>
-				<dt>Limits of this first version</dt><dd>No keyframe animation, no green screen, no cursor effects or zoom-and-pan yet, and the speed change also changes the pitch of the sound. The compressor works on 10 ms steps, so it evens out speech rather than catching every single sharp peak (the export's limiter stops clipping). Firefox and Safari cannot export (no H.264 encoder there yet); use Chrome, Edge or Brave on a computer.</dd>
+				<dt>Animations, like Camtasia</dt><dd>Open <b>Animations</b> in the library: zoom in or out, <b>zoom-n-pan</b> to a box you draw on the preview, slide in and out, fade, scale, pop in, spin or a custom move. Each one is an arrow on the clip in the timeline: drag it to move it, drag its ends to change how long it takes, and pick the easing in the properties. Put the playhead at the end of an animation and drag the clip, its corner or its turn handle in the preview to change where it ends up. Animations work on videos, pictures and titles, go into the export exactly as you see them, and are saved in the project.</dd>
+				<dt>See the whole frame</dt><dd>The preview shows the frame with a grey margin around it: anything that hangs over the edge is drawn there, darkened, so you can see what is cut off. Zoom out to see more, zoom in to check the edges (Ctrl + wheel, pinch, or the zoom menu), drag the grey area to move around, and press Fit to see it all again. Guides show the title-safe and action-safe areas.</dd>
+				<dt>Limits of this version</dt><dd>No green screen or cursor effects yet, and the speed change also changes the pitch of the sound. The compressor works on 10 ms steps, so it evens out speech rather than catching every single sharp peak (the export's limiter stops clipping). Firefox and Safari cannot export (no H.264 encoder there yet); use Chrome, Edge or Brave on a computer.</dd>
 			</dl>
 			<h2>Is it private?</h2>
 			<p>Yes. Your videos, sound and pictures stay on your computer; nothing is uploaded to mes.fm or anywhere else. The only downloads are the open-source libraries the editor uses (mp4box.js, mp4-muxer, and ffmpeg.wasm when a file needs converting) and the noise-removal model the first time you use it.</p>

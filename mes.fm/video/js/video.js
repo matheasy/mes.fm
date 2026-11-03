@@ -405,9 +405,10 @@
 			tracks: [{ id: "v1", kind: "v", name: "Video 1" }, { id: "v2", kind: "v", name: "Video 2" }, { id: "a1", kind: "a", name: "Audio 1" }], clips: [], marks: { in: null, out: null } };
 	};
 	V.clipDefaults = function (c) {
-		var d = { speed: 1, vol: 1, mute: false, fin: 0, fout: 0, xin: 0, x: 0.5, y: 0.5, scale: 1, op: 1, crop: { l: 0, t: 0, r: 0, b: 0 }, clean: null, lufs: null, link: null, noAudio: false, afx: null };
+		var d = { speed: 1, vol: 1, mute: false, fin: 0, fout: 0, xin: 0, x: 0.5, y: 0.5, scale: 1, op: 1, crop: { l: 0, t: 0, r: 0, b: 0 }, rot: 0, anims: null, clean: null, lufs: null, link: null, noAudio: false, afx: null };
 		for (var k in d) if (c[k] == null) c[k] = typeof d[k] === "object" && d[k] ? JSON.parse(JSON.stringify(d[k])) : d[k];
 		if (c.type === "text") { c.text = Object.assign({}, V.TEXT_DEFAULT, c.text || {}); }
+		c.anims = V.cleanAnims(c.anims); c.rot = isFinite(+c.rot) ? +c.rot : 0;
 		return c;
 	};
 	// a project read from a file / storage: fill in defaults, drop clips whose track is gone, keep numbers sane
@@ -476,6 +477,7 @@
 		L.out = s; R.id = newId; R.in = s; R.start = t;
 		if (c.type === "text" || c.type === "image") { L.in = 0; L.out = s - c.in; R.in = 0; R.out = c.out - s; }
 		L.fout = 0; L.fin = Math.min(c.fin || 0, V.dur(L)); R.fin = 0; R.xin = 0; R.fout = Math.min(c.fout || 0, V.dur(R));
+		if (c.anims && c.anims.length) { var sa = V.splitAnims(c, t - c.start); L.anims = sa.left; V.setBase(R, sa.base); R.anims = sa.right; }
 		return [L, R];
 	};
 	// drag an edge: edge "l" moves the start (and the in point), "r" the end. t = wanted timeline time of that edge.
@@ -492,6 +494,8 @@
 			var e = V.clamp(t, c.start + min, hi);
 			o.out = c.in + (e - c.start) * sp;
 		}
+		// animations keep their place on the timeline (they belong to the picture), so a left trim shifts them inside the clip
+		if (c.anims && c.anims.length) o.anims = V.shiftAnims(c.anims, c.start - o.start);
 		return o;
 	};
 	// remove clips; ripple = move the later clips of the same track left by the removed length
@@ -515,8 +519,8 @@
 			var s = c.start, e = V.end(c);
 			if (e <= a + 1e-6) { out.push(c); return; }
 			if (s >= b - 1e-6) { c.start = s - (b - a); out.push(c); return; }
-			if (s < a) { var L = JSON.parse(JSON.stringify(c)); L.out = V.srcAt(c, a); L.fout = 0; if (c.type === "text" || c.type === "image") { L.in = 0; L.out = (a - s) * (c.speed || 1); } out.push(L); }
-			if (e > b) { var R = JSON.parse(JSON.stringify(c)); R.id = newId ? newId() : c.id + "r"; R.in = V.srcAt(c, b); R.start = a; R.fin = 0; R.xin = 0; if (c.type === "text" || c.type === "image") { R.in = 0; R.out = (e - b) * (c.speed || 1); } if (s >= a) R.id = c.id; out.push(R); }
+			if (s < a) { var L = JSON.parse(JSON.stringify(c)); L.out = V.srcAt(c, a); L.fout = 0; if (c.type === "text" || c.type === "image") { L.in = 0; L.out = (a - s) * (c.speed || 1); } if (c.anims && c.anims.length) L.anims = V.splitAnims(c, a - s).left; out.push(L); }
+			if (e > b) { var R = JSON.parse(JSON.stringify(c)); R.id = newId ? newId() : c.id + "r"; R.in = V.srcAt(c, b); R.start = a; R.fin = 0; R.xin = 0; if (c.type === "text" || c.type === "image") { R.in = 0; R.out = (e - b) * (c.speed || 1); } if (s >= a) R.id = c.id; if (c.anims && c.anims.length) { var sr = V.splitAnims(c, b - s); V.setBase(R, sr.base); R.anims = sr.right; } out.push(R); }
 		});
 		p.clips = out;
 		return p;
@@ -554,8 +558,8 @@
 			var cs = V.onTrack(p, tr.id);
 			for (var k = 0; k < cs.length; k++) {
 				var c = cs[k]; if (!V.active(c, t)) continue;
-				var a = V.envelope(c, t) * (c.op == null ? 1 : c.op); if (a <= 0.001) continue;
-				out.push({ clip: c, src: Math.max(0, V.srcAt(c, t)), alpha: Math.min(1, a) });
+				var pos = V.posAt(c, t), a = V.envelope(c, t) * pos.op; if (a <= 0.001) continue;
+				out.push({ clip: c, src: Math.max(0, V.srcAt(c, t)), alpha: Math.min(1, a), pos: pos });
 			}
 		}
 		return out;
@@ -696,6 +700,172 @@
 		return "avc1.64003e";
 	};
 
+
+	/* ---------- animations (Camtasia-style: each one moves the clip from where it is to new values over a stretch of time) ---------- */
+	// an animation: { id, t (start, seconds after the clip's start), d (length), ease, to: {props at its end}, from: {props at its start, optional},
+	// kind (the preset it came from, for its name) }. Props: x, y (centre as a share of the frame), scale, rot (degrees), op (0..1), cl ct cr cb (crop).
+	// The state before the first animation is the clip's own values; after an animation its "to" values hold. "from" values only apply while it
+	// runs (a slide in starts off the frame and ends where the clip is). Preview and export both draw through posAt, so they always agree.
+	V.ANIM_PROPS = ["x", "y", "scale", "rot", "op", "cl", "ct", "cr", "cb"];
+	V.EASES = [["inout", "Smooth (ease in and out)"], ["linear", "Linear (steady)"], ["out", "Ease out (slows down at the end)"], ["in", "Ease in (speeds up)"], ["back", "Overshoot (bounces past, then settles)"]];
+	V.ease = function (name, u) {
+		u = V.clamp(u, 0, 1);
+		switch (name) {
+			case "linear": return u;
+			case "in": return u * u * u;
+			case "out": return 1 - Math.pow(1 - u, 3);
+			case "back": var k = 1.70158, v = u - 1; return 1 + (k + 1) * v * v * v + k * v * v;
+			default: return u < 0.5 ? 4 * u * u * u : 1 - Math.pow(-2 * u + 2, 3) / 2;
+		}
+	};
+	function num(x, d) { x = +x; return isFinite(x) ? x : d; }
+	function cleanProps(o) {
+		if (!o || typeof o !== "object") return null;
+		var r = {}, any = false;
+		V.ANIM_PROPS.forEach(function (k) {
+			if (o[k] == null || !isFinite(+o[k])) return;
+			var v = +o[k];
+			if (k === "scale") v = V.clamp(v, 0.01, 40); else if (k === "op") v = V.clamp(v, 0, 1); else if (k.length === 2 && k[0] === "c") v = V.clamp(v, 0, 0.95); else if (k === "rot") v = V.clamp(v, -36000, 36000); else v = V.clamp(v, -20, 20);
+			r[k] = v; any = true;
+		});
+		return any ? r : null;
+	}
+	// animations read from a file / storage: keep only sane ones, sorted by start
+	V.cleanAnims = function (arr) {
+		if (!Array.isArray(arr) || !arr.length) return null;
+		var out = arr.filter(function (a) { return a && typeof a === "object"; }).map(function (a) {
+			var o = { id: String(a.id || V.uid("a")).slice(0, 40), t: num(a.t, 0), d: V.clamp(num(a.d, 1), 0.02, 3600), ease: V.EASES.some(function (e) { return e[0] === a.ease; }) ? a.ease : "inout", kind: String(a.kind || "custom").slice(0, 20) };
+			var to = cleanProps(a.to), from = cleanProps(a.from); if (to) o.to = to; if (from) o.from = from;
+			return o;
+		}).filter(function (a) { return a.to || a.from; });
+		out.sort(function (x, y) { return x.t - y.t; });
+		return out.length ? out : null;
+	};
+	// the clip's own (un-animated) values
+	V.baseState = function (c) {
+		var cr = c.crop || {};
+		return { x: c.x == null ? 0.5 : c.x, y: c.y == null ? 0.5 : c.y, scale: c.scale == null ? 1 : c.scale, rot: c.rot || 0, op: c.op == null ? 1 : c.op, cl: cr.l || 0, ct: cr.t || 0, cr: cr.r || 0, cb: cr.b || 0 };
+	};
+	V.setBase = function (c, s) { c.x = s.x; c.y = s.y; c.scale = s.scale; c.rot = s.rot; c.op = s.op; c.crop = { l: s.cl, t: s.ct, r: s.cr, b: s.cb }; return c; };
+	function sortedAnims(c) { return (c.anims || []).slice().sort(function (a, b) { return a.t - b.t; }); }
+	function lerpState(s, a, u) {
+		var f = Object.assign({}, s, a.from || {}), g = Object.assign({}, s, a.to || {}), o = {};
+		V.ANIM_PROPS.forEach(function (k) { o[k] = f[k] + (g[k] - f[k]) * u; });
+		return o;
+	}
+	// state at rel seconds after the clip's start (flat props)
+	V.stateAt = function (c, rel) {
+		var s = V.baseState(c), L = sortedAnims(c);
+		for (var j = 0; j < L.length; j++) {
+			var a = L[j];
+			if (rel >= a.t + a.d - EPS) { if (a.to) s = Object.assign(s, a.to); continue; }
+			if (rel < a.t) break;
+			s = lerpState(s, a, V.ease(a.ease, (rel - a.t) / a.d));
+		}
+		return s;
+	};
+	// what the compositor needs at timeline time t: { x, y, scale, rot, op, crop }
+	V.posAt = function (c, t) {
+		var s = c.anims && c.anims.length ? V.stateAt(c, t - c.start) : V.baseState(c);
+		return { x: s.x, y: s.y, scale: s.scale, rot: s.rot, op: s.op, crop: { l: s.cl, t: s.ct, r: s.cr, b: s.cb } };
+	};
+	// the animation running at rel (strictly inside it, more than tol from both ends), or null
+	V.animRunning = function (c, rel, tol) {
+		tol = tol == null ? 1e-3 : tol; var L = c.anims || [];
+		for (var j = 0; j < L.length; j++) if (rel > L[j].t + tol && rel < L[j].t + L[j].d - tol) return L[j];
+		return null;
+	};
+	// who decides prop k at rel: the last animation that has ended by then and sets k in its "to" (edit that one's end value), else the clip itself
+	V.propOwner = function (c, rel, k, tol) {
+		tol = tol == null ? 1e-3 : tol; var L = sortedAnims(c), own = null;
+		L.forEach(function (a) { if (a.t + a.d <= rel + tol && a.to && a.to[k] != null) { if (!own || a.t + a.d >= own.t + own.d) own = a; } });
+		return own;
+	};
+	// set prop k to v as seen at rel: on the animation that decides it there, else on the clip (moving text at an animation's end moves that keyframe)
+	// the animation that ends at rel (within tol), the latest-starting one when several do
+	V.animEndingAt = function (c, rel, tol) {
+		tol = tol == null ? 1e-3 : tol; var best = null;
+		(c.anims || []).forEach(function (a) { if (Math.abs(a.t + a.d - rel) <= tol && (!best || a.t > best.t)) best = a; });
+		return best;
+	};
+	// with the playhead at an animation's end, a change goes into that animation's end values (adding the prop if it had none: Camtasia's
+	// "move it at the end of the arrow"); elsewhere it goes to whoever decides the value there
+	V.setPropAt = function (c, rel, k, v, tol) {
+		var e = V.animEndingAt(c, rel, tol); if (e) { e.to = e.to || {}; e.to[k] = v; return e; }
+		var a = V.propOwner(c, rel, k, tol);
+		if (a) { a.to[k] = v; return a; }
+		var b = V.baseState(c); b[k] = v; V.setBase(c, b); return null;
+	};
+	// shift all animations by dt (seconds inside the clip)
+	V.shiftAnims = function (anims, dt) { return (anims || []).map(function (a) { var o = JSON.parse(JSON.stringify(a)); o.t = Math.round((o.t + dt) * 1e6) / 1e6; return o; }); };
+	// cut a clip's animations at rel: left = those starting before it, right = those still going (times from the cut; a running one keeps a
+	// negative start so it carries on exactly), base = the right half's own values (everything that had ended by then)
+	V.splitAnims = function (c, rel) {
+		var L = sortedAnims(c), b = V.baseState(c), left = [], right = [];
+		L.forEach(function (a) {
+			if (a.t < rel - EPS) left.push(JSON.parse(JSON.stringify(a)));
+			if (a.t + a.d <= rel + EPS) { if (a.to) Object.assign(b, a.to); }
+			else { var o = JSON.parse(JSON.stringify(a)); o.t = Math.round((a.t - rel) * 1e6) / 1e6; right.push(o); }
+		});
+		return { left: left.length ? left : null, right: right.length ? right : null, base: b };
+	};
+	// zoom-n-pan: the values that make the frame show rect (frame pixels, as it looks with state s) filling the W x H frame
+	V.zoomToRect = function (s, rect, W, H) {
+		var z = Math.min(W / Math.max(1, rect.w), H / Math.max(1, rect.h)), rx = rect.x + rect.w / 2, ry = rect.y + rect.h / 2;
+		return { x: (W / 2 + (s.x * W - rx) * z) / W, y: (H / 2 + (s.y * H - ry) * z) / H, scale: V.clamp(s.scale * z, 0.01, 40) };
+	};
+	// a rectangle of the frame's shape centred at (cx, cy), w wide, kept inside the frame where it fits
+	V.frameRect = function (cx, cy, w, W, H) { w = V.clamp(w, 8, W); var h = w * H / W, x = V.clamp(cx - w / 2, 0, W - w), y = V.clamp(cy - h / 2, 0, H - h); return { x: x, y: y, w: w, h: h }; };
+	V.ANIM_PRESETS = [
+		{ id: "zoomin", name: "Zoom in", desc: "1.5× bigger", at: "here" }, { id: "zoomout", name: "Zoom out", desc: "Back to the full frame", at: "here" },
+		{ id: "zoompan", name: "Zoom-n-pan", desc: "Draw a box on the preview", at: "here", rect: true },
+		{ id: "slidein-l", name: "Slide in", desc: "From the left", at: "start" }, { id: "slidein-r", name: "Slide in", desc: "From the right", at: "start" },
+		{ id: "slidein-b", name: "Slide in", desc: "From below", at: "start" }, { id: "slideout-l", name: "Slide out", desc: "To the left", at: "end" },
+		{ id: "slideout-r", name: "Slide out", desc: "To the right", at: "end" }, { id: "fadein", name: "Fade in", desc: "From see-through", at: "start" },
+		{ id: "fadeout", name: "Fade out", desc: "To see-through", at: "end" }, { id: "scaleup", name: "Scale up", desc: "1.25× bigger", at: "here" },
+		{ id: "scaledown", name: "Scale down", desc: "0.8× smaller", at: "here" }, { id: "popin", name: "Pop in", desc: "Grows from nothing", at: "start" },
+		{ id: "spin", name: "Spin", desc: "One full turn", at: "here" }, { id: "tilt", name: "Tilt", desc: "Turn 10°", at: "here" },
+		{ id: "custom", name: "Custom", desc: "Then move it in the preview", at: "here" }
+	];
+	V.animPreset = function (id) { for (var j = 0; j < V.ANIM_PRESETS.length; j++) if (V.ANIM_PRESETS[j].id === id) return V.ANIM_PRESETS[j]; return null; };
+	// make the animation for a preset: s = the clip's state where it starts, box = { w, h } of the clip on the frame (frame pixels), W x H frame,
+	// o = { rect (zoom-n-pan) }. -> { to, from } (either may be missing)
+	V.animValues = function (id, s, box, W, H, o) {
+		o = o || {}; var bw = box ? box.w : W, bh = box ? box.h : H;
+		switch (id) {
+			case "zoomin": return { to: { scale: s.scale * 1.5 } };
+			case "zoomout": return { to: { x: 0.5, y: 0.5, scale: 1, rot: 0 } };
+			case "zoompan": return o.rect ? { to: V.zoomToRect(s, o.rect, W, H) } : null;
+			case "scaleup": return { to: { scale: s.scale * 1.25 } };
+			case "scaledown": return { to: { scale: s.scale * 0.8 } };
+			case "slidein-l": return { from: { x: -(bw / 2) / W - 0.01 } };
+			case "slidein-r": return { from: { x: 1 + (bw / 2) / W + 0.01 } };
+			case "slidein-b": return { from: { y: 1 + (bh / 2) / H + 0.01 } };
+			case "slideout-l": return { to: { x: -(bw / 2) / W - 0.01 } };
+			case "slideout-r": return { to: { x: 1 + (bw / 2) / W + 0.01 } };
+			case "fadein": return { from: { op: 0 } };
+			case "fadeout": return { to: { op: 0 } };
+			case "popin": return { from: { scale: Math.max(0.01, s.scale * 0.02), op: 0 } };
+			case "spin": return { to: { rot: s.rot + 360 } };
+			case "tilt": return { to: { rot: s.rot + 10 } };
+			default: return { to: { x: s.x, y: s.y, scale: s.scale, rot: s.rot, op: s.op } };
+		}
+	};
+	// where a new animation of length d goes inside a clip of length len: "start", "end", or at rel ("here"), kept inside the clip
+	V.animSlot = function (at, rel, d, len) { d = Math.min(d, Math.max(0.05, len)); var t = at === "start" ? 0 : at === "end" ? len - d : V.clamp(rel, 0, Math.max(0, len - d)); return { t: Math.round(t * 1e6) / 1e6, d: d }; };
+	V.animName = function (a) { var p = V.animPreset(a.kind); return p ? p.name + (/^slide/.test(p.id) ? " " + p.desc.toLowerCase() : "") : "Animation"; };
+
+	/* ---------- preview view: zoom and pan of the canvas inside the stage ---------- */
+	// fit the W x H frame into a cw x ch stage with margin pixels around it -> { k (stage px per frame px), ox, oy (frame origin) }
+	V.viewFit = function (cw, ch, W, H, margin) {
+		margin = margin == null ? 12 : margin; var k = Math.max(1e-4, Math.min((cw - 2 * margin) / W, (ch - 2 * margin) / H));
+		return { k: k, ox: (cw - W * k) / 2, oy: (ch - H * k) / 2 };
+	};
+	// zoom to k2 keeping the stage point (px, py) over the same frame point
+	V.viewZoomAt = function (v, k2, px, py) { var fx = (px - v.ox) / v.k, fy = (py - v.oy) / v.k; return { k: k2, ox: px - fx * k2, oy: py - fy * k2 }; };
+	V.ZOOM_STEPS = [0.1, 0.25, 0.33, 0.5, 0.67, 0.75, 1, 1.25, 1.5, 2, 3, 4, 6, 8];
+	// rotate point (x, y) by deg degrees about (cx, cy)
+	V.rotPt = function (x, y, cx, cy, deg) { var a = deg * Math.PI / 180, c = Math.cos(a), s = Math.sin(a), dx = x - cx, dy = y - cy; return { x: cx + dx * c - dy * s, y: cy + dx * s + dy * c }; };
 
 	/* ---------- magnetic tracks (clips close up to the left, no gaps) ---------- */
 	// lay the clips of one track end to end from 0, in their current order (by start; ties keep array order)
@@ -887,7 +1057,10 @@
 	};
 
 	/* ---------- canvas size ---------- */
-	V.CANVAS_PRESETS = [["1920x1080", "1080p (16:9)"], ["1280x720", "720p"], ["2560x1440", "1440p"], ["3840x2160", "4K (2160p)"], ["1080x1920", "Vertical 1080×1920 (Shorts, Reels)"], ["1080x1080", "Square 1080×1080"], ["1080x1350", "Portrait 4:5"]];
+	// [value, name, group]: the canvas size menu groups them
+	V.CANVAS_PRESETS = [["854x480", "480p (854×480)", "16:9"], ["1280x720", "720p (1280×720)", "16:9"], ["1920x1080", "1080p Full HD (1920×1080)", "16:9"], ["2560x1440", "1440p (2560×1440)", "16:9"], ["3840x2160", "4K (3840×2160)", "16:9"],
+		["1080x1920", "Vertical 9:16, 1080×1920 (Shorts, Reels, TikTok)", "Vertical and square"], ["720x1280", "Vertical 9:16, 720×1280", "Vertical and square"], ["1080x1080", "Square 1080×1080", "Vertical and square"], ["1080x1350", "Portrait 4:5, 1080×1350", "Vertical and square"],
+		["640x480", "4:3, 640×480", "4:3"], ["1440x1080", "4:3, 1440×1080", "4:3"]];
 	V.presetOf = function (w, h) { var k = w + "x" + h; for (var j = 0; j < V.CANVAS_PRESETS.length; j++) if (V.CANVAS_PRESETS[j][0] === k) return k; return "custom"; };
 	// "1280x720", "1280 × 720", "1280,720" -> { w, h } (even, 16..7680 x 16..4320) or null
 	V.parseSize = function (s) {
@@ -1616,18 +1789,21 @@
 	VE.draw = function (ctx, W, H, t, src, opt) {
 		opt = opt || {};
 		ctx.save(); ctx.globalAlpha = 1; ctx.fillStyle = VE.P.bg || "#000"; ctx.fillRect(0, 0, W, H);
+		if (opt.clip) { ctx.beginPath(); ctx.rect(0, 0, W, H); ctx.clip(); }
 		var L = V.layersAt(VE.P, t);
 		for (var j = 0; j < L.length; j++) {
-			var c = L[j].clip; ctx.globalAlpha = L[j].alpha;
-			if (c.type === "text") { drawText(ctx, c, W, H); continue; }
+			var c = L[j].clip, pos = L[j].pos || V.posAt(c, t); ctx.globalAlpha = L[j].alpha;
+			if (c.type === "text") { drawText(ctx, c, W, H, pos); continue; }
 			var s = src(c, L[j].src); if (!s || !s.img) continue;
-			var r = V.place(s.w, s.h, c, W, H);
+			var r = V.place(s.w, s.h, pos, W, H), turned = !!pos.rot;
+			if (turned) { ctx.save(); ctx.translate(r.dx + r.dw / 2, r.dy + r.dh / 2); ctx.rotate(pos.rot * Math.PI / 180); ctx.translate(-(r.dx + r.dw / 2), -(r.dy + r.dh / 2)); }
 			try {
 				if (s.rot) {   // a raw decoded frame of a turned phone video: crop in the turned picture, then draw
 					var tmp = VE.tmpCanvas("rot", s.w, s.h); tmp.ctx.setTransform(1, 0, 0, 1, 0, 0); tmp.ctx.clearRect(0, 0, s.w, s.h); drawFrame(tmp.ctx, s.img, s.rot, 0, 0, s.w, s.h);
 					ctx.drawImage(tmp.canvas, r.sx, r.sy, r.sw, r.sh, r.dx, r.dy, r.dw, r.dh);
 				} else ctx.drawImage(s.img, r.sx, r.sy, r.sw, r.sh, r.dx, r.dy, r.dw, r.dh);
 			} catch (e) { /* a frame that is not ready yet */ }
+			if (turned) ctx.restore();
 		}
 		ctx.restore();
 		return L;
@@ -1639,15 +1815,17 @@
 		return t;
 	};
 	// a title: lines of text in a rounded box, centred at (x, y); returns its rectangle on the frame
-	function textBox(ctx, c, W, H) {
-		var T = c.text || V.TEXT_DEFAULT, px = Math.max(4, T.size * H * (c.scale || 1)), lines = String(T.s || "").split("\n");
+	function textBox(ctx, c, W, H, pos) {
+		pos = pos || c;
+		var T = c.text || V.TEXT_DEFAULT, px = Math.max(4, T.size * H * (pos.scale || 1)), lines = String(T.s || "").split("\n");
 		ctx.font = (T.italic ? "italic " : "") + (T.bold ? "700 " : "400 ") + px + "px " + (T.font || "Arial, sans-serif");
 		var wmax = 0; lines.forEach(function (l) { wmax = Math.max(wmax, ctx.measureText(l).width); });
 		var lh = px * 1.22, pad = px * 0.4, bw = wmax + pad * 2, bh = lines.length * lh + pad * 1.2;
-		return { px: px, lines: lines, lh: lh, pad: pad, dx: c.x * W - bw / 2, dy: c.y * H - bh / 2, dw: bw, dh: bh, T: T };
+		return { px: px, lines: lines, lh: lh, pad: pad, dx: pos.x * W - bw / 2, dy: pos.y * H - bh / 2, dw: bw, dh: bh, T: T };
 	}
-	function drawText(ctx, c, W, H) {
-		var b = textBox(ctx, c, W, H), T = b.T;
+	function drawText(ctx, c, W, H, pos) {
+		var b = textBox(ctx, c, W, H, pos), T = b.T, rot = pos && pos.rot;
+		if (rot) { ctx.save(); ctx.translate(b.dx + b.dw / 2, b.dy + b.dh / 2); ctx.rotate(rot * Math.PI / 180); ctx.translate(-(b.dx + b.dw / 2), -(b.dy + b.dh / 2)); }
 		if (T.bgOn) { ctx.save(); ctx.globalAlpha *= T.bgOp == null ? 0.55 : T.bgOp; ctx.fillStyle = T.bg || "#000"; roundRect(ctx, b.dx, b.dy, b.dw, b.dh, b.px * 0.25); ctx.fill(); ctx.restore(); }
 		ctx.textBaseline = "middle"; ctx.textAlign = T.align || "center";
 		var x = T.align === "left" ? b.dx + b.pad : T.align === "right" ? b.dx + b.dw - b.pad : b.dx + b.dw / 2;
@@ -1657,14 +1835,19 @@
 			if (T.outline > 0) { ctx.lineWidth = T.outline * b.px * 0.08; ctx.strokeStyle = T.ocolor || "#000"; ctx.lineJoin = "round"; ctx.strokeText(l, x, y); }
 			ctx.fillStyle = T.color || "#fff"; ctx.fillText(l, x, y);
 		});
+		if (rot) ctx.restore();
 		return b;
 	}
 	function roundRect(ctx, x, y, w, h, r) { ctx.beginPath(); ctx.moveTo(x + r, y); ctx.arcTo(x + w, y, x + w, y + h, r); ctx.arcTo(x + w, y + h, x, y + h, r); ctx.arcTo(x, y + h, x, y, r); ctx.arcTo(x, y, x + w, y, r); ctx.closePath(); }
 	// rectangle of a clip on a W x H frame (for selecting / dragging in the preview)
-	VE.rectOf = function (ctx, c, W, H) {
-		if (c.type === "text") return textBox(ctx, c, W, H);
-		var m = VE.media(c.media); if (!m || !m.w) return null;
-		return V.place(m.w, m.h, c, W, H);
+	// pos = the animated position to use (default: the one at the playhead); the result carries .rot (degrees, about its centre)
+	VE.rectOf = function (ctx, c, W, H, pos) {
+		pos = pos || V.posAt(c, VE.t);
+		var r;
+		if (c.type === "text") r = textBox(ctx, c, W, H, pos);
+		else { var m = VE.media(c.media); if (!m || !m.w) return null; r = V.place(m.w, m.h, pos, W, H); }
+		r.rot = pos.rot || 0; r.pos = pos;
+		return r;
 	};
 	VE.mediaDur = function (c) { if (c.type === "text") return Infinity; var m = VE.media(c.media); return !m ? Infinity : m.kind === "image" ? Infinity : m.dur; };
 	VE.hasSound = function (c) { if ((c.type !== "video" && c.type !== "audio") || c.noAudio) return false; var m = VE.media(c.media); return !!(m && m.hasAudio); };
@@ -1843,7 +2026,9 @@
 	function stopClean() { cleanNodes.forEach(function (n) { try { n.node.stop(); n.node.disconnect(); n.gain.disconnect(); } catch (e) { /* ignore */ } }); cleanNodes = []; }
 	P.forgetClean = function (key) { delete cleanBufs[key]; if (cleanUrls[key]) { URL.revokeObjectURL(cleanUrls[key]); delete cleanUrls[key]; } };
 
-	/* ---------- drawing ---------- */
+	/* ---------- drawing: the frame on a zoomable, movable pasteboard ---------- */
+	// The canvas covers the whole stage. view = { k (canvas px per frame px), ox, oy (frame origin in canvas px) }; fit = keep the frame
+	// fitted with a margin. Parts of clips that hang outside the frame are drawn on the pasteboard, dimmed, so it is obvious what is cut off.
 	function source(c) {
 		var m = VE.media(c.media); if (!m) return null;
 		if (m.kind === "image") return m.bitmap ? { img: m.bitmap, w: m.w, h: m.h } : null;
@@ -1851,72 +2036,183 @@
 		return { img: e.el, w: m.w, h: m.h };
 	}
 	P.lastFrame = function () { return null; };
+	var VKEY = "mes-video-editor:view", VS = { guides: false, dim: true };
+	try { Object.assign(VS, JSON.parse(localStorage.getItem(VKEY)) || {}); } catch (e) { /* ignore */ }
+	function saveVS() { try { localStorage.setItem(VKEY, JSON.stringify({ guides: VS.guides, dim: VS.dim })); } catch (e) { /* ignore */ } }
+	var view = { k: 1, ox: 0, oy: 0 }, isFit = true, dpr = 1, pattern = null, pick = null;
+	P.view = function () { return { k: view.k, ox: view.ox, oy: view.oy, fit: isFit, dpr: dpr, pct: Math.round(view.k / dpr * 1000) / 10 }; };
 	function draw() { needDraw = true; if (!P.playing) requestAnimationFrame(paint); else paint(); }
 	P.draw = draw;
+	function pasteboard() {
+		if (pattern && pattern.d === dpr) return pattern.p;
+		var s = Math.round(10 * dpr), t = document.createElement("canvas"); t.width = t.height = s * 2; var g = t.getContext("2d");
+		g.fillStyle = "#14181f"; g.fillRect(0, 0, s * 2, s * 2); g.fillStyle = "#1b2029"; g.fillRect(0, 0, s, s); g.fillRect(s, s, s, s);
+		pattern = { d: dpr, p: ctx.createPattern(t, "repeat") }; return pattern.p;
+	}
+	// the 4 corners of a clip's rectangle (frame px), turned by its rotation, in canvas px
+	function corners(r) {
+		var cx = r.dx + r.dw / 2, cy = r.dy + r.dh / 2;
+		return [[r.dx, r.dy], [r.dx + r.dw, r.dy], [r.dx + r.dw, r.dy + r.dh], [r.dx, r.dy + r.dh]].map(function (q) { var p = V.rotPt(q[0], q[1], cx, cy, r.rot || 0); return { x: view.ox + p.x * view.k, y: view.oy + p.y * view.k }; });
+	}
+	function rotHandle(r) { var cx = r.dx + r.dw / 2, cy = r.dy + r.dh / 2, p = V.rotPt(cx, r.dy - 28 * dpr / view.k, cx, cy, r.rot || 0); return { x: view.ox + p.x * view.k, y: view.oy + p.y * view.k }; }
 	function paint() {
 		if (!needDraw) return; needDraw = false;
-		var W = cv.width, H = cv.height;
-		VE.draw(ctx, W, H, VE.t, source);
-		// selection frame
+		var CW = cv.width, CH = cv.height, PW = VE.P.w, PH = VE.P.h, k = view.k, fx = view.ox, fy = view.oy, fw = PW * k, fh = PH * k;
+		ctx.setTransform(1, 0, 0, 1, 0, 0); ctx.globalAlpha = 1; ctx.fillStyle = pasteboard(); ctx.fillRect(0, 0, CW, CH);
+		ctx.setTransform(k, 0, 0, k, fx, fy); ctx.imageSmoothingQuality = k < 0.6 ? "medium" : "high";
+		VE.draw(ctx, PW, PH, VE.t, source);
+		ctx.setTransform(1, 0, 0, 1, 0, 0);
+		// dim everything outside the frame: what hangs over the edge is still visible, but clearly not in the video
+		ctx.save(); ctx.beginPath(); ctx.rect(0, 0, CW, CH); ctx.rect(fx, fy, fw, fh); ctx.fillStyle = VS.dim ? "rgba(6,8,12,0.66)" : "rgba(6,8,12,0.25)"; ctx.fill("evenodd");
+		// frame edge: a thin light line with a dark line outside it, so it shows on any picture
+		ctx.lineWidth = Math.max(1, dpr); ctx.strokeStyle = "rgba(0,0,0,0.85)"; ctx.strokeRect(Math.round(fx) - 1.5 * dpr, Math.round(fy) - 1.5 * dpr, Math.round(fw) + 3 * dpr, Math.round(fh) + 3 * dpr);
+		ctx.strokeStyle = "rgba(226,232,240,0.85)"; ctx.strokeRect(Math.round(fx) - 0.5 * dpr, Math.round(fy) - 0.5 * dpr, Math.round(fw) + dpr, Math.round(fh) + dpr);
+		if (VS.guides) {
+			ctx.setLineDash([6 * dpr, 5 * dpr]); ctx.lineWidth = dpr;
+			[[0.05, "rgba(250,204,21,0.8)"], [0.1, "rgba(56,189,248,0.8)"]].forEach(function (q) { ctx.strokeStyle = q[1]; ctx.strokeRect(fx + fw * q[0], fy + fh * q[0], fw * (1 - 2 * q[0]), fh * (1 - 2 * q[0])); });
+			ctx.setLineDash([]); ctx.strokeStyle = "rgba(255,255,255,0.5)"; ctx.beginPath();
+			var mx = fx + fw / 2, my = fy + fh / 2, a = 12 * dpr; ctx.moveTo(mx - a, my); ctx.lineTo(mx + a, my); ctx.moveTo(mx, my - a); ctx.lineTo(mx, my + a);
+			for (var g = 1; g < 3; g++) { ctx.moveTo(fx + fw * g / 3, fy); ctx.lineTo(fx + fw * g / 3, fy + fh); ctx.moveTo(fx, fy + fh * g / 3); ctx.lineTo(fx + fw, fy + fh * g / 3); }
+			ctx.strokeStyle = "rgba(255,255,255,0.22)"; ctx.stroke();
+			ctx.font = Math.round(10 * dpr) + "px Arial, sans-serif"; ctx.fillStyle = "rgba(250,204,21,0.9)"; ctx.textBaseline = "top"; ctx.fillText("action safe 90%", fx + fw * 0.05 + 4 * dpr, fy + fh * 0.05 + 3 * dpr);
+			ctx.fillStyle = "rgba(56,189,248,0.95)"; ctx.fillText("title safe 80%", fx + fw * 0.1 + 4 * dpr, fy + fh * 0.1 + 3 * dpr);
+		}
+		ctx.restore();
+		// selection frame (turned with the clip), corner handles and the turn handle
 		var sel = VE.selected().filter(function (c) { return c.type !== "audio" && V.active(c, VE.t); });
-		if (sel.length && !P.playing) {
-			var c = sel[0], k = W / VE.P.w, r = VE.rectOf(ctx, c, VE.P.w, VE.P.h);
+		if (sel.length && !P.playing && !pick) {
+			var c = sel[0], r = VE.rectOf(ctx, c, PW, PH);
 			if (r) {
-				ctx.save(); ctx.strokeStyle = "#38bdf8"; ctx.lineWidth = 2; ctx.setLineDash([6, 4]); ctx.strokeRect(r.dx * k, r.dy * k, r.dw * k, r.dh * k); ctx.setLineDash([]);
-				ctx.fillStyle = "#38bdf8"; [[0, 0], [1, 0], [0, 1], [1, 1]].forEach(function (q) { ctx.fillRect(r.dx * k + q[0] * r.dw * k - 6, r.dy * k + q[1] * r.dh * k - 6, 12, 12); });
+				var cs = corners(r), rh = rotHandle(r), top = { x: (cs[0].x + cs[1].x) / 2, y: (cs[0].y + cs[1].y) / 2 }, hs = 6 * dpr;
+				ctx.save(); ctx.lineWidth = 2 * dpr; ctx.strokeStyle = "#38bdf8"; ctx.setLineDash([6 * dpr, 4 * dpr]);
+				ctx.beginPath(); cs.forEach(function (q, i) { if (i) ctx.lineTo(q.x, q.y); else ctx.moveTo(q.x, q.y); }); ctx.closePath(); ctx.stroke(); ctx.setLineDash([]);
+				ctx.beginPath(); ctx.moveTo(top.x, top.y); ctx.lineTo(rh.x, rh.y); ctx.stroke();
+				ctx.fillStyle = "#38bdf8"; cs.forEach(function (q) { ctx.fillRect(q.x - hs, q.y - hs, hs * 2, hs * 2); });
+				ctx.beginPath(); ctx.arc(rh.x, rh.y, hs, 0, Math.PI * 2); ctx.fillStyle = "#0c4a6e"; ctx.fill(); ctx.stroke();
+				var rel = VE.t - c.start, run = c.anims && V.animRunning(c, rel, 0.5 / VE.P.fps), own = c.anims && !run && V.animEndingAt(c, rel, 0.5 / VE.P.fps);
+				if (run || own) { ctx.font = "700 " + Math.round(11 * dpr) + "px Arial, sans-serif"; ctx.textBaseline = "bottom"; var tx = run ? "Inside an animation: move the playhead to its start or end to change it" : "At the end of \u201c" + V.animName(own) + "\u201d: moving it sets where the animation ends"; var tw = ctx.measureText(tx).width; var bx = 10 * dpr, by = CH - 8 * dpr;   // bottom left of the stage, clear of the zoom bar ctx.fillStyle = "rgba(2,6,23,0.85)"; ctx.fillRect(bx - 4 * dpr, by - 15 * dpr, tw + 8 * dpr, 17 * dpr); ctx.fillStyle = run ? "#fca5a5" : "#fde68a"; ctx.fillText(tx, bx, by); }
 				ctx.restore();
 			}
 		}
-		if (!VE.P.clips.length) {
-			ctx.save(); ctx.fillStyle = "#94a3b8"; ctx.font = Math.round(H / 18) + "px Arial, sans-serif"; ctx.textAlign = "center"; ctx.textBaseline = "middle";
-			ctx.fillText("Add videos, sound or pictures, then drag them onto the timeline", W / 2, H / 2); ctx.restore();
+		if (pick) {
+			ctx.save(); ctx.fillStyle = "rgba(2,6,23,0.35)"; ctx.fillRect(fx, fy, fw, fh);
+			if (pick.r) { var R = pick.r; ctx.clearRect(0, 0, 0, 0); ctx.strokeStyle = "#facc15"; ctx.lineWidth = 2 * dpr; ctx.setLineDash([8 * dpr, 5 * dpr]); ctx.strokeRect(fx + R.x * k, fy + R.y * k, R.w * k, R.h * k); }
+			ctx.font = "700 " + Math.round(13 * dpr) + "px Arial, sans-serif"; ctx.textAlign = "center"; ctx.textBaseline = "top"; var msg = "Drag a box over the part to zoom to · Esc cancels", mw = ctx.measureText(msg).width;
+			ctx.fillStyle = "rgba(2,6,23,0.85)"; ctx.fillRect(CW / 2 - mw / 2 - 8 * dpr, 8 * dpr, mw + 16 * dpr, 22 * dpr); ctx.fillStyle = "#fde68a"; ctx.fillText(msg, CW / 2, 12 * dpr); ctx.restore();
 		}
+		if (!VE.P.clips.length) {
+			ctx.save(); ctx.fillStyle = "#94a3b8"; ctx.font = Math.round(Math.min(fh / 18, 22 * dpr)) + "px Arial, sans-serif"; ctx.textAlign = "center"; ctx.textBaseline = "middle";
+			ctx.fillText("Add videos, sound or pictures, then drag them onto the timeline", fx + fw / 2, fy + fh / 2); ctx.restore();
+		}
+		VE.emit("view");
 	}
-	// canvas size follows the stage box and the project's shape
+	// the canvas covers the stage; the frame is fitted (with a margin) or kept where it was, zoomed
 	function fit() {
-		var bw = wrap.clientWidth || 640, bh = wrap.clientHeight || 360, a = VE.P.w / VE.P.h, w = bw, h = w / a;
-		if (h > bh) { h = bh; w = h * a; }
-		var dpr = Math.min(2, window.devicePixelRatio || 1), pw = Math.max(2, Math.min(VE.P.w, Math.round(w * dpr))), ph = Math.max(2, Math.round(pw / a));
-		cv.style.width = Math.round(w) + "px"; cv.style.height = Math.round(h) + "px";
+		var bw = Math.max(2, wrap.clientWidth || 640), bh = Math.max(2, wrap.clientHeight || 360), d = Math.min(2, window.devicePixelRatio || 1);
+		var pw = Math.round(bw * d), ph = Math.round(bh * d), ow = cv.width, oh = cv.height;
+		var cxF = ow ? (ow / 2 - view.ox) / view.k : 0, cyF = oh ? (oh / 2 - view.oy) / view.k : 0;
+		cv.style.width = bw + "px"; cv.style.height = bh + "px";
 		if (cv.width !== pw || cv.height !== ph) { cv.width = pw; cv.height = ph; }
-		draw();
+		if (isFit || !ow) view = V.viewFit(pw, ph, VE.P.w, VE.P.h, Math.round(14 * d));
+		else { view.k = view.k / dpr * d; view.ox = pw / 2 - cxF * view.k; view.oy = ph / 2 - cyF * view.k; }
+		dpr = d; draw();
 	}
 	P.fit = fit;
 	if (window.ResizeObserver) new ResizeObserver(fit).observe(wrap); else window.addEventListener("resize", fit);
+	P.zoomFit = function () { isFit = true; fit(); };
+	// zoom to pct (100 = one frame pixel per screen pixel) around a stage point (canvas px; default the middle)
+	P.zoomTo = function (pct, px, py) {
+		var k2 = V.clamp(pct / 100 * dpr, 0.02, 40); isFit = false;
+		view = V.viewZoomAt(view, k2, px == null ? cv.width / 2 : px, py == null ? cv.height / 2 : py); draw();
+	};
+	P.zoomStep = function (dir, px, py) {
+		var cur = view.k / dpr, L = V.ZOOM_STEPS, n = dir > 0 ? L.filter(function (z) { return z > cur * 1.01; })[0] : L.filter(function (z) { return z < cur / 1.01; }).pop();
+		if (n) P.zoomTo(n * 100, px, py);
+	};
+	P.guides = function (on) { if (on != null) { VS.guides = !!on; saveVS(); draw(); } return VS.guides; };
+	P.dimOutside = function (on) { if (on != null) { VS.dim = !!on; saveVS(); draw(); } return VS.dim; };
+	// zoom-n-pan: let the person draw a box of the frame's shape on the preview; cb(rect in frame px) or cb(null) when cancelled
+	P.pickRect = function (cb) { if (P.playing) P.pause(); pick = { cb: cb, r: null }; cv.style.cursor = "crosshair"; draw(); };
+	P.picking = function () { return !!pick; };
+	P.cancelPick = function () { if (!pick) return; var cb = pick.cb; pick = null; cv.style.cursor = ""; draw(); cb(null); };
 
-	/* ---------- move / resize in the preview ---------- */
-	var drag = null;
-	function toProject(e) { var b = cv.getBoundingClientRect(); return { x: (e.clientX - b.left) / b.width * VE.P.w, y: (e.clientY - b.top) / b.height * VE.P.h }; }
+	/* ---------- pointer: move / resize / turn clips, pan (middle button, Space, empty pasteboard, two fingers), pinch and Ctrl+wheel zoom ---------- */
+	var drag = null, touches = {}, pinch = null;
+	function canvasPt(e) { var b = cv.getBoundingClientRect(); return { x: (e.clientX - b.left) * cv.width / Math.max(1, b.width), y: (e.clientY - b.top) * cv.height / Math.max(1, b.height) }; }
+	function toFrame(e) { var q = canvasPt(e); return { x: (q.x - view.ox) / view.k, y: (q.y - view.oy) / view.k, cx: q.x, cy: q.y }; }
+	// is frame point pt inside clip rect r (turned about its centre)?
+	function inside(r, pt) { var p = V.rotPt(pt.x, pt.y, r.dx + r.dw / 2, r.dy + r.dh / 2, -(r.rot || 0)); return V.hit(r, p.x, p.y); }
+	P.hover = false; P.space = null;
+	wrap.addEventListener("pointerenter", function () { P.hover = true; }); wrap.addEventListener("pointerleave", function () { P.hover = false; });
+	P.spaceDown = function () { if (!P.space) { P.space = { used: false }; cv.style.cursor = "grab"; } };
+	document.addEventListener("keyup", function (e) { if (e.key !== " " || !P.space) return; var used = P.space.used; P.space = null; cv.style.cursor = ""; if (!used) P.toggle(); });
+	function startPan(e) { drag = { pan: true, x: e.clientX, y: e.clientY, ox: view.ox, oy: view.oy }; isFit = false; cv.style.cursor = "grabbing"; cv.setPointerCapture(e.pointerId); e.preventDefault(); }
 	cv.addEventListener("pointerdown", function (e) {
+		if (e.pointerType === "touch") { touches[e.pointerId] = canvasPt(e); var ids = Object.keys(touches); if (ids.length === 2) { if (drag && drag.c && drag.moved) VE.commit(drag.corner ? "Resize" : "Move"); drag = null; var a = touches[ids[0]], b = touches[ids[1]]; pinch = { d: Math.max(10, Math.hypot(a.x - b.x, a.y - b.y)), m: { x: (a.x + b.x) / 2, y: (a.y + b.y) / 2 }, v: Object.assign({}, view) }; isFit = false; cv.setPointerCapture(e.pointerId); e.preventDefault(); return; } }
+		if (e.button === 1 || (P.space && e.button === 0)) { if (P.space) P.space.used = true; startPan(e); return; }
+		if (e.button > 0) return;
+		var pt = toFrame(e);
+		if (pick) { pick.p0 = pt; pick.r = null; cv.setPointerCapture(e.pointerId); e.preventDefault(); return; }
 		if (P.playing) P.pause();
-		var pt = toProject(e), L = V.layersAt(VE.P, VE.t), hitC = null, corner = false, sel = VE.selected()[0];
+		var PW = VE.P.w, PH = VE.P.h, L = V.layersAt(VE.P, VE.t), hitC = null, mode = "move", sel = VE.selected()[0], tol = 9 * dpr;
 		if (sel && sel.type !== "audio" && V.active(sel, VE.t)) {
-			var r0 = VE.rectOf(ctx, sel, VE.P.w, VE.P.h), tol = 14 * VE.P.w / cv.getBoundingClientRect().width;
-			if (r0) [[0, 0], [1, 0], [0, 1], [1, 1]].forEach(function (q) { if (Math.abs(pt.x - (r0.dx + q[0] * r0.dw)) < tol && Math.abs(pt.y - (r0.dy + q[1] * r0.dh)) < tol) { hitC = sel; corner = true; } });
+			var r0 = VE.rectOf(ctx, sel, PW, PH);
+			if (r0) {
+				var rh = rotHandle(r0); if (Math.hypot(pt.cx - rh.x, pt.cy - rh.y) < tol * 1.4) { hitC = sel; mode = "turn"; }
+				if (!hitC) corners(r0).forEach(function (q) { if (Math.abs(pt.cx - q.x) < tol && Math.abs(pt.cy - q.y) < tol) { hitC = sel; mode = "corner"; } });
+			}
 		}
-		if (!hitC) for (var j = L.length - 1; j >= 0; j--) { var c = L[j].clip, tr = V.track(VE.P, c.track); if (tr && tr.lock) continue; var r = VE.rectOf(ctx, c, VE.P.w, VE.P.h); if (r && V.hit(r, pt.x, pt.y)) { hitC = c; break; } }
-		if (!hitC) { VE.sel = []; VE.emit("select"); draw(); return; }
+		if (!hitC) for (var j = L.length - 1; j >= 0; j--) { var c = L[j].clip, tr = V.track(VE.P, c.track); if (tr && tr.lock) continue; var r = VE.rectOf(ctx, c, PW, PH, L[j].pos); if (r && inside(r, pt)) { hitC = c; break; } }
+		if (!hitC) {
+			VE.sel = []; VE.emit("select"); draw();
+			if (pt.x < 0 || pt.y < 0 || pt.x > PW || pt.y > PH || !isFit) startPan(e);   // drag the empty pasteboard (or a zoomed view) to move it
+			return;
+		}
 		if (VE.sel.indexOf(hitC.id) < 0) { VE.sel = [hitC.id]; VE.emit("select"); }
-		var rr = VE.rectOf(ctx, hitC, VE.P.w, VE.P.h), cx = hitC.x * VE.P.w, cy = hitC.y * VE.P.h;
-		drag = { c: hitC, corner: corner, x0: hitC.x, y0: hitC.y, s0: hitC.scale || 1, p0: pt, d0: Math.max(4, Math.hypot(pt.x - cx, pt.y - cy)), moved: false };
+		var rel = VE.t - hitC.start, fpsTol = 0.5 / VE.P.fps;
+		if (hitC.anims && V.animRunning(hitC, rel, fpsTol)) { VE.emit("notice", "The playhead is inside an animation. Move it to the animation's start or end (double-click its arrow on the timeline) to move the clip there."); draw(); return; }
+		var pos = V.posAt(hitC, VE.t), cxp = pos.x * PW, cyp = pos.y * PH;
+		drag = { c: hitC, mode: mode, rel: rel, tol: fpsTol, x0: pos.x, y0: pos.y, s0: pos.scale, r0: pos.rot, p0: pt, d0: Math.max(4, Math.hypot(pt.x - cxp, pt.y - cyp)), a0: Math.atan2(pt.y - cyp, pt.x - cxp), cx: cxp, cy: cyp, moved: false };
 		cv.setPointerCapture(e.pointerId); e.preventDefault(); draw();
 	});
 	cv.addEventListener("pointermove", function (e) {
-		if (!drag) { if (!P.playing) cv.style.cursor = "default"; return; }
-		var pt = toProject(e), c = drag.c; drag.moved = true;
-		if (drag.corner) {
-			var cx = c.x * VE.P.w, cy = c.y * VE.P.h, d = Math.hypot(pt.x - cx, pt.y - cy);
-			c.scale = V.clamp(Math.round(drag.s0 * d / drag.d0 * 1000) / 1000, 0.05, 8);
-		} else {
+		if (e.pointerType === "touch" && touches[e.pointerId]) touches[e.pointerId] = canvasPt(e);
+		if (pinch) {
+			var ids = Object.keys(touches); if (ids.length < 2) return; var a = touches[ids[0]], b = touches[ids[1]], d = Math.max(10, Math.hypot(a.x - b.x, a.y - b.y)), m = { x: (a.x + b.x) / 2, y: (a.y + b.y) / 2 };
+			view = V.viewZoomAt(pinch.v, V.clamp(pinch.v.k * d / pinch.d, 0.02, 40), pinch.m.x, pinch.m.y); view.ox += m.x - pinch.m.x; view.oy += m.y - pinch.m.y; draw(); return;
+		}
+		if (pick && pick.p0) {
+			var q = toFrame(e), W = VE.P.w, H = VE.P.h, w = Math.max(Math.abs(q.x - pick.p0.x), Math.abs(q.y - pick.p0.y) * W / H);
+			pick.r = V.frameRect(Math.min(q.x, pick.p0.x) + Math.abs(q.x - pick.p0.x) / 2, Math.min(q.y, pick.p0.y) + Math.abs(q.y - pick.p0.y) / 2, Math.max(8, w), W, H); draw(); return;
+		}
+		if (!drag) { if (!P.playing && !pick) cv.style.cursor = P.space ? "grab" : ""; return; }
+		if (drag.pan) { var b2 = cv.getBoundingClientRect(), sx = cv.width / Math.max(1, b2.width); view.ox = drag.ox + (e.clientX - drag.x) * sx; view.oy = drag.oy + (e.clientY - drag.y) * sx; draw(); return; }
+		var pt = toFrame(e), c = drag.c, rel = drag.rel, tol = drag.tol; drag.moved = true;
+		if (drag.mode === "corner") V.setPropAt(c, rel, "scale", V.clamp(Math.round(drag.s0 * Math.hypot(pt.x - drag.cx, pt.y - drag.cy) / drag.d0 * 1000) / 1000, 0.02, 20), tol);
+		else if (drag.mode === "turn") { var ang = drag.r0 + (Math.atan2(pt.y - drag.cy, pt.x - drag.cx) - drag.a0) * 180 / Math.PI; if (!e.shiftKey) ang = Math.round(ang / 5) * 5; if (!e.shiftKey && Math.abs(ang % 90) < 3) ang = Math.round(ang / 90) * 90; V.setPropAt(c, rel, "rot", Math.round(ang * 100) / 100, tol); }
+		else {
 			var nx = drag.x0 + (pt.x - drag.p0.x) / VE.P.w, ny = drag.y0 + (pt.y - drag.p0.y) / VE.P.h;
 			if (!e.altKey) { if (Math.abs(nx - 0.5) < 0.012) nx = 0.5; if (Math.abs(ny - 0.5) < 0.012) ny = 0.5; }
-			c.x = Math.round(nx * 10000) / 10000; c.y = Math.round(ny * 10000) / 10000;
+			V.setPropAt(c, rel, "x", Math.round(nx * 10000) / 10000, tol); V.setPropAt(c, rel, "y", Math.round(ny * 10000) / 10000, tol);
 		}
 		VE.emit("live"); draw();
 	});
-	function end() { if (drag && drag.moved) VE.commit(drag.corner ? "Resize" : "Move"); drag = null; }
+	function end(e) {
+		if (e && e.pointerType === "touch") { delete touches[e.pointerId]; if (pinch && Object.keys(touches).length < 2) pinch = null; }
+		if (pick && pick.p0) { var r = pick.r, cb = pick.cb; pick = null; cv.style.cursor = ""; draw(); cb(r && r.w > 8 ? r : null); return; }
+		if (drag && drag.pan) { drag = null; cv.style.cursor = P.space ? "grab" : ""; return; }
+		if (drag && drag.moved) { var a = V.animEndingAt(drag.c, drag.rel, drag.tol) || V.propOwner(drag.c, drag.rel, drag.mode === "corner" ? "scale" : drag.mode === "turn" ? "rot" : "x", drag.tol); VE.commit((drag.mode === "corner" ? "Resize" : drag.mode === "turn" ? "Turn" : "Move") + (a ? " (animation end)" : "")); }
+		drag = null;
+	}
 	cv.addEventListener("pointerup", end); cv.addEventListener("pointercancel", end);
 	cv.addEventListener("dblclick", function () { var c = VE.selected()[0]; if (c && c.type === "text") VE.emit("editText", c); });
+	cv.addEventListener("wheel", function (e) {
+		var q = canvasPt(e);
+		if (e.ctrlKey || e.metaKey) { e.preventDefault(); isFit = false; view = V.viewZoomAt(view, V.clamp(view.k * Math.pow(1.0018, -e.deltaY), 0.02, 40), q.x, q.y); draw(); return; }   // trackpad pinch arrives as Ctrl + wheel
+		if (isFit) return;   // fitted: the page scrolls as usual
+		e.preventDefault(); var s = cv.width / Math.max(1, cv.getBoundingClientRect().width); view.ox -= e.deltaX * s; view.oy -= e.deltaY * s; draw();
+	}, { passive: false });
+	cv.addEventListener("auxclick", function (e) { if (e.button === 1) e.preventDefault(); });
 
 	VE.on("change", function () { if (P.playing && !P.rev) { stopClean(); scheduleClean(); } fit(); sync(); draw(); });
 	VE.on("select", draw); VE.on("mediaReady", function () { sync(); draw(); }); VE.on("thumbs", function () { });
@@ -1957,7 +2253,7 @@
 				html += '<div class="vd-clip vd-clip--' + c.type + (sel[c.id] ? " is-sel" : "") + (m && m.state === "missing" ? " is-missing" : "") + '" data-id="' + c.id + '" style="left:' + x + "px;width:" + w + 'px" title="' + VE.esc(label) + " · " + V.short(V.dur(c)) + '">' +
 					(c.xin > 0 ? '<i class="vd-xf" style="width:' + c.xin * VE.pps + 'px"></i>' : "") +
 					'<canvas class="vd-cc" width="' + Math.min(4000, Math.ceil(w)) + '" height="' + (h - 4) + '"></canvas><span class="vd-cl">' + VE.esc(badges + label) + "</span>" +
-					(c.fin > 0 ? '<i class="vd-fade vd-fade--in" style="width:' + c.fin * VE.pps + 'px"></i>' : "") + (c.fout > 0 ? '<i class="vd-fade vd-fade--out" style="width:' + c.fout * VE.pps + 'px"></i>' : "") + "</div>";
+					(c.fin > 0 ? '<i class="vd-fade vd-fade--in" style="width:' + c.fin * VE.pps + 'px"></i>' : "") + (c.fout > 0 ? '<i class="vd-fade vd-fade--out" style="width:' + c.fout * VE.pps + 'px"></i>' : "") + animMarks(c, w) + "</div>";
 			});
 			html += '</div><i class="vd-rgrip" data-rgrip="' + tr.id + '" title="Drag to make this track taller or shorter (double-click: normal height)"></i></div>';
 		});
@@ -1968,6 +2264,14 @@
 		else markEl.hidden = true;
 		drawRuler(); T.playhead();
 	};
+	// each animation is an arrow along the top of its clip: a dot at its start, an arrowhead at its end
+	function animMarks(c, w) {
+		if (!c.anims || c.type === "audio") return "";
+		return c.anims.map(function (a, i) {
+			var x = a.t * VE.pps, aw = Math.max(10, a.d * VE.pps); if (x + aw < 0 || x > w) return "";
+			return '<i class="vd-an-mk' + (VE.animSel === a.id ? " is-sel" : "") + '" data-aid="' + VE.esc(a.id) + '" style="left:' + x + "px;width:" + aw + "px;top:" + (2 + (i % 2) * 13) + 'px" title="' + VE.esc(V.animName(a)) + " · " + (Math.round(a.d * 100) / 100) + ' s. Drag to move, drag an end to change its length, click to jump to its end."><u></u><s></s><b></b></i>';
+		}).join("");
+	}
 	function paintClip(el) {
 		var c = V.clip(VE.P, el.getAttribute("data-id")); if (!c) return;
 		var cv = el.querySelector("canvas"), g = cv.getContext("2d"), W = cv.width, H = cv.height, m = VE.media(c.media), k = W / Math.max(1, V.dur(c) * VE.pps);
@@ -2059,6 +2363,16 @@
 		var rg = e.target.closest("[data-rgrip]");
 		if (rg) { var rtr = V.track(VE.P, rg.getAttribute("data-rgrip")); drag = { mode: "rowh", tr: rtr, y0: e.clientY, h0: V.rowH(rtr), moved: false }; inner.setPointerCapture(e.pointerId); e.preventDefault(); return; }
 		if (e.target.closest(".vd-thead")) return;
+		var mk = e.target.closest(".vd-an-mk");
+		if (mk) {
+			var mc = V.clip(VE.P, mk.closest(".vd-clip").getAttribute("data-id")), ma = mc && (mc.anims || []).filter(function (x) { return x.id === mk.getAttribute("data-aid"); })[0];
+			if (ma) {
+				VE.sel = [mc.id]; VE.animSel = ma.id; VE.emit("select");
+				var mr = mk.getBoundingClientRect(), medge = mr.width >= 18 && e.clientX - mr.left < 6 ? "l" : mr.width >= 18 && mr.right - e.clientX < 7 ? "r" : null, mtr = V.track(VE.P, mc.track);
+				drag = { mode: "anim", c: mc, a: ma, edge: medge, x0: e.clientX, t0: ma.t, d0: ma.d, moved: false, locked: !!(mtr && mtr.lock) };
+				inner.setPointerCapture(e.pointerId); e.preventDefault(); return;
+			}
+		}
 		var clipEl = e.target.closest(".vd-clip"), t = x2t(e.clientX);
 		if (e.target.closest("#vd-rulerwrap") || !clipEl) {
 			if (!e.target.closest("#vd-rulerwrap") && !e.shiftKey) { VE.sel = []; VE.emit("select"); }
@@ -2074,19 +2388,29 @@
 		if (r.width < 22) edge = null;
 		var prim = VE.selected().filter(unlocked), ids = e.altKey ? prim.map(function (x) { return x.id; }) : V.withLinks(VE.P, prim.map(function (x) { return x.id; }));   // linked partners move along (Alt: just this clip)
 		var group = ids.map(function (id) { return V.clip(VE.P, id); }).filter(function (x) { return x && unlocked(x); });
-		drag = { mode: edge ? "trim" : "move", edge: edge, c: c, x0: e.clientX, t0: t, snap: JSON.stringify(VE.P), prim: prim.length, orig: group.map(function (x) { return { c: x, start: x.start, in: x.in, out: x.out, track: x.track }; }), moved: false, el: clipEl };
+		drag = { mode: edge ? "trim" : "move", edge: edge, c: c, x0: e.clientX, t0: t, snap: JSON.stringify(VE.P), prim: prim.length, orig: group.map(function (x) { return { c: x, start: x.start, in: x.in, out: x.out, track: x.track, anims: x.anims ? JSON.stringify(x.anims) : null }; }), moved: false, el: clipEl };
 		inner.setPointerCapture(e.pointerId); e.preventDefault();
 	});
 	function mag(id) { var q = V.track(VE.P, id); return !!(q && q.mag); }
 	inner.addEventListener("pointermove", function (e) {
 		if (!drag) { var ce = e.target.closest && e.target.closest(".vd-clip"); if (ce) { var r = ce.getBoundingClientRect(); ce.style.cursor = (r.width >= 22 && (e.clientX - r.left < 7 || r.right - e.clientX < 7)) ? "ew-resize" : "grab"; } return; }
 		if (drag.mode === "scrub") { VE.preview.seek(x2t(e.clientX)); return; }
+		if (drag.mode === "anim") {
+			var ddx = e.clientX - drag.x0; if (drag.locked || (!drag.moved && Math.abs(ddx) < 3)) return; drag.moved = true;
+			var ac = drag.c, aa = drag.a, len = V.dur(ac), dta = ddx / VE.pps, lo = Math.min(0, drag.t0), sn = T.snap && !e.altKey ? 8 / VE.pps : 0;
+			function snapRel(r) { if (!sn) return r; var pts = [VE.t - ac.start, 0, len]; (ac.anims || []).forEach(function (o) { if (o !== aa) pts.push(o.t, o.t + o.d); }); return V.snap(r, pts, sn).t; }
+			if (drag.edge === "l") { var end = drag.t0 + drag.d0, nt = V.clamp(snapRel(drag.t0 + dta), lo, end - 0.05); aa.t = nt; aa.d = end - nt; }
+			else if (drag.edge === "r") { var ne = V.clamp(snapRel(drag.t0 + drag.d0 + dta), drag.t0 + 0.05, Math.max(len, drag.t0 + drag.d0)); aa.d = ne - drag.t0; }
+			else { var st = drag.t0 + dta, s1 = snapRel(st), s2 = snapRel(st + drag.d0) - drag.d0; st = Math.abs(s1 - st) <= Math.abs(s2 - st) ? s1 : s2; aa.t = V.clamp(st, lo, Math.max(lo, len - drag.d0)); }
+			aa.t = Math.round(aa.t * 1e4) / 1e4; aa.d = Math.round(aa.d * 1e4) / 1e4;
+			T.render(); VE.preview.draw(); VE.emit("live"); return;
+		}
 		if (drag.mode === "rowh") { drag.moved = true; drag.tr.h = V.clamp(Math.round(drag.h0 + e.clientY - drag.y0), V.ROW_MIN, V.ROW_MAX); T.render(); return; }
 		var dx = e.clientX - drag.x0; if (!drag.moved && Math.abs(dx) < 3 && drag.mode === "move" && !rowAt(e.clientY, drag.c)) return;
 		drag.moved = true; var dt = dx / VE.pps, ign = {}; drag.orig.forEach(function (o) { ign[o.c.id] = 1; });
 		if (drag.mode === "trim") {
-			var c = drag.c, o = drag.orig.filter(function (q) { return q.c === c; })[0] || { start: c.start, in: c.in, out: c.out };
-			Object.assign(c, { start: o.start, in: o.in, out: o.out });
+			var c = drag.c, o = drag.orig.filter(function (q) { return q.c === c; })[0] || { start: c.start, in: c.in, out: c.out, anims: c.anims ? JSON.stringify(c.anims) : null };
+			Object.assign(c, { start: o.start, in: o.in, out: o.out, anims: o.anims ? JSON.parse(o.anims) : null });
 			var want = (drag.edge === "l" ? o.start : V.end(c)) + dt, isMag = mag(c.track);
 			if (T.snap && !e.altKey) want = V.snap(want, snapPts(ign), 8 / VE.pps).t;
 			var nb = V.onTrack(VE.P, c.track).filter(function (x) { return x !== c; }), lo = 0, hi = Infinity;
@@ -2126,12 +2450,17 @@
 		if (!drag) return;
 		var d = drag; drag = null;
 		if (d.mode === "rowh") { if (d.moved) VE.commit("Track height"); return; }
+		if (d.mode === "anim") {
+			if (d.moved) { d.c.anims = V.cleanAnims(d.c.anims); VE.commit(d.edge ? "Animation length" : "Move animation"); }
+			else VE.preview.seek(Math.min(V.end(d.c) - 1e-3, d.c.start + d.a.t + d.a.d));   // a click jumps to its end, ready to drag the clip there in the preview
+			return;
+		}
 		if (d.mode === "scrub" || !d.moved) { T.render(); return; }
 		if (d.bad) { VE.P = JSON.parse(d.snap); T.render(); VE.emit("live"); VE.emit("notice", "There is no room there: clips on one track cannot overlap (turn on the magnet of a track to have clips close up instead)."); return; }
 		VE.commit(d.mode === "trim" ? "Trim" : "Move");
 	}
 	inner.addEventListener("pointerup", finish); inner.addEventListener("pointercancel", finish);
-	function markSel() { var s = {}; VE.sel.forEach(function (i) { s[i] = 1; }); rows.querySelectorAll(".vd-clip").forEach(function (el) { el.classList.toggle("is-sel", !!s[el.getAttribute("data-id")]); }); }
+	function markSel() { var s = {}; VE.sel.forEach(function (i) { s[i] = 1; }); rows.querySelectorAll(".vd-clip").forEach(function (el) { el.classList.toggle("is-sel", !!s[el.getAttribute("data-id")]); }); rows.querySelectorAll(".vd-an-mk").forEach(function (el) { el.classList.toggle("is-sel", el.getAttribute("data-aid") === VE.animSel); }); }
 	T.markSel = markSel;
 	function trackAction(b) {
 		var row = b.closest(".vd-trow"), tr = V.track(VE.P, row.getAttribute("data-track")), a = b.getAttribute("data-tact");
@@ -2605,14 +2934,18 @@
 			h += '<div class="vd-grid"><label class="vd-f"><span>Box colour</span><input type="color" id="vd-t-bg" value="' + esc(T.bg) + '"></label>' + num("vd-t-bgop", "Box opacity", Math.round((T.bgOp == null ? 0.55 : T.bgOp) * 100), 5, 0, 100, "%") + num("vd-t-outline", "Outline", T.outline || 0, 0.5, 0, 10) + '<label class="vd-f"><span>Outline colour</span><input type="color" id="vd-t-ocolor" value="' + esc(T.ocolor || "#000000") + '"></label></div></div>';
 		}
 		if (c.type !== "audio") {
-			h += '<div class="vd-sec"><b>Position</b><p class="vd-sub">Or drag it in the preview; drag a corner to resize.</p><div class="vd-grid">' + num("vd-i-x", "Left / right", Math.round(c.x * 1000) / 10, 0.5, -100, 200, "%") + num("vd-i-y", "Up / down", Math.round(c.y * 1000) / 10, 0.5, -100, 200, "%") + num("vd-i-scale", "Size", Math.round((c.scale || 1) * 1000) / 10, 1, 5, 800, "%") + num("vd-i-op", "Opacity", Math.round((c.op == null ? 1 : c.op) * 100), 5, 0, 100, "%") + "</div>";
-			if (c.type !== "text") h += '<div class="vd-grid">' + num("vd-i-cl", "Crop left", Math.round(c.crop.l * 1000) / 10, 0.5, 0, 95, "%") + num("vd-i-cr", "Crop right", Math.round(c.crop.r * 1000) / 10, 0.5, 0, 95, "%") + num("vd-i-ct", "Crop top", Math.round(c.crop.t * 1000) / 10, 0.5, 0, 95, "%") + num("vd-i-cb", "Crop bottom", Math.round(c.crop.b * 1000) / 10, 0.5, 0, 95, "%") + "</div>";
+			var rel = VE.t - c.start, ptol = 0.5 / VE.P.fps, run = c.anims && V.active(c, VE.t) ? V.animRunning(c, rel, ptol) : null, st = V.active(c, VE.t) ? V.stateAt(c, rel) : V.baseState(c);
+			var ownA = !run && c.anims && V.active(c, VE.t) ? V.animEndingAt(c, rel, ptol) || ["x", "y", "scale", "rot", "op"].map(function (k) { return V.propOwner(c, rel, k, ptol); }).filter(Boolean)[0] : null;
+			h += '<div class="vd-sec"><b>Position</b><p class="vd-sub">' + (run ? "The playhead is inside the animation &ldquo;" + esc(V.animName(run)) + "&rdquo;: move it to the animation's start or end to change these." : ownA ? "At the playhead: the end of &ldquo;" + esc(V.animName(ownA)) + "&rdquo;. Changes here (or dragging in the preview) move where that animation ends." : "Or drag it in the preview: a corner resizes, the round handle turns it.") + '</p><fieldset class="vd-fs"' + (run ? " disabled" : "") + '><div class="vd-grid">' + num("vd-i-x", "Left / right", Math.round(st.x * 1000) / 10, 0.5, -500, 500, "%") + num("vd-i-y", "Up / down", Math.round(st.y * 1000) / 10, 0.5, -500, 500, "%") + num("vd-i-scale", "Size", Math.round(st.scale * 1000) / 10, 1, 1, 4000, "%") + num("vd-i-rot", "Turn", Math.round(st.rot * 10) / 10, 1, -3600, 3600, "°") + num("vd-i-op", "Opacity", Math.round(st.op * 100), 5, 0, 100, "%") + "</div>";
+			if (c.type !== "text") h += '<div class="vd-grid">' + num("vd-i-cl", "Crop left", Math.round(st.cl * 1000) / 10, 0.5, 0, 95, "%") + num("vd-i-cr", "Crop right", Math.round(st.cr * 1000) / 10, 0.5, 0, 95, "%") + num("vd-i-ct", "Crop top", Math.round(st.ct * 1000) / 10, 0.5, 0, 95, "%") + num("vd-i-cb", "Crop bottom", Math.round(st.cb * 1000) / 10, 0.5, 0, 95, "%") + "</div>";
+			h += "</fieldset>";
 			h += '<div class="vd-row"><button type="button" class="vd-btn vd-sm" data-pos="center">Centre</button><button type="button" class="vd-btn vd-sm" data-pos="fit">Fit the frame</button>' + (c.type !== "text" ? '<button type="button" class="vd-btn vd-sm" data-pos="fill">Fill the frame</button><button type="button" class="vd-btn vd-sm" data-pos="pip">Corner (picture in picture)</button>' : "") + "</div></div>";
 		}
+		if (c.type !== "audio") h += animSection(c);
 		h += linkSection(c);
 		if (VE.hasSound(c)) h += soundSection([c]);
 		h += '<div class="vd-row vd-acts"><button type="button" class="vd-btn vd-sm" data-ca="split">Split at playhead</button><button type="button" class="vd-btn vd-sm" data-ca="dup">Duplicate</button><button type="button" class="vd-btn vd-sm" data-ca="del">Delete</button></div>';
-		insp.innerHTML = h; bindInsp(c); bindLink(c);
+		insp.innerHTML = h; bindInsp(c); bindLink(c); bindAnims(c);
 	}
 	function soundSection(list) {
 		var c = list[0], db = Math.round(V.db(c.vol == null ? 1 : c.vol) * 10) / 10;
@@ -2655,8 +2988,11 @@
 		setNum("vd-i-fin", function (v) { c.fin = V.clamp(v, 0, V.dur(c)); }, "Fade in"); setNum("vd-i-fout", function (v) { c.fout = V.clamp(v, 0, V.dur(c)); }, "Fade out");
 		setNum("vd-i-xin", function (v) { var prev = V.prevTouching(VE.P, c); c.xin = prev ? V.clamp(v, 0, Math.min(V.dur(prev), V.dur(c))) : 0; if (!prev && v > 0) toast("Put this clip right after another clip on the same track first."); }, "Cross-fade");
 		on("vd-i-speed", "change", function () { var s = +this.value, d = V.dur(c), endS = c.in + d * s; c.speed = s; var md = VE.mediaDur(c); c.out = Math.min(md, endS); var ign = {}; ign[c.id] = 1; if (!V.canPlace(VE.P, c.track, c.start, V.dur(c), ign)) { var hi = nextStart(c); if (hi < Infinity) c.out = c.in + (hi - c.start) * s; } VE.commit("Speed"); });
-		setNum("vd-i-x", function (v) { c.x = v / 100; }, "Position"); setNum("vd-i-y", function (v) { c.y = v / 100; }, "Position"); setNum("vd-i-scale", function (v) { c.scale = V.clamp(v / 100, 0.05, 8); }, "Size"); setNum("vd-i-op", function (v) { c.op = V.clamp(v / 100, 0, 1); }, "Opacity");
-		["l", "r", "t", "b"].forEach(function (k) { setNum("vd-i-c" + k, function (v) { c.crop[k] = V.clamp(v / 100, 0, 0.95); }, "Crop"); });
+		// position values are the ones seen at the playhead: at an animation's end they change that animation, else the clip itself
+		function setP(k, v) { if (V.active(c, VE.t)) V.setPropAt(c, VE.t - c.start, k, v, 0.5 / VE.P.fps); else { var b = V.baseState(c); b[k] = v; V.setBase(c, b); } }
+		setNum("vd-i-x", function (v) { setP("x", v / 100); }, "Position"); setNum("vd-i-y", function (v) { setP("y", v / 100); }, "Position"); setNum("vd-i-scale", function (v) { setP("scale", V.clamp(v / 100, 0.01, 40)); }, "Size"); setNum("vd-i-op", function (v) { setP("op", V.clamp(v / 100, 0, 1)); }, "Opacity");
+		setNum("vd-i-rot", function (v) { setP("rot", V.clamp(v, -3600, 3600)); }, "Turn");
+		["l", "r", "t", "b"].forEach(function (k) { setNum("vd-i-c" + k, function (v) { setP("c" + k, V.clamp(v / 100, 0, 0.95)); }, "Crop"); });
 		insp.querySelectorAll("[data-pos]").forEach(function (b) { b.onclick = function () { var a = b.getAttribute("data-pos"), m = VE.media(c.media); c.x = 0.5; c.y = 0.5; if (a === "fit") c.scale = 1; if (a === "fill" && m && m.w) c.scale = Math.max(VE.P.w / m.w, VE.P.h / m.h) / Math.min(VE.P.w / m.w, VE.P.h / m.h); if (a === "pip") { c.scale = 0.3; c.x = 0.82; c.y = 0.8; } if (a === "center" && c.type === "text") c.y = 0.5; VE.commit("Position"); }; });
 		if (c.type === "text") {
 			var T = c.text, live = function () { VE.preview.draw(); };
@@ -2694,6 +3030,8 @@
 	VE.on("select", function () { renderInsp(); VE.tl.markSel(); });
 	VE.on("change", function () { if (!insp.contains(document.activeElement) || document.activeElement.type === "button") renderInsp(); updateButtons(); timeText(); });
 	VE.on("live", function () { clearTimeout(inspTimer); inspTimer = setTimeout(function () { if (!insp.contains(document.activeElement)) renderInsp(); }, 120); });
+	var tInsp = 0;
+	VE.on("time", function () { if (VE.preview.playing) return; var c = VE.selected()[0]; if (!c || c.type === "audio" || !c.anims) return; clearTimeout(tInsp); tInsp = setTimeout(function () { if (!insp.contains(document.activeElement) || document.activeElement.type === "button") renderInsp(); }, 90); });
 	VE.on("editText", function (c) { VE.sel = [c.id]; renderInsp(); var ta = $("vd-ttext"); if (ta) { ta.focus(); ta.select(); } });
 	function updateButtons() {
 		$("vd-undo").disabled = !VE.hist.canUndo(); $("vd-redo").disabled = !VE.hist.canRedo();
@@ -2820,7 +3158,8 @@
 		if (mod || e.altKey) return;
 		var h = true;
 		switch (k) {
-			case " ": P.toggle(); break;
+			case " ": if (e.repeat) break; if (P.hover && !P.playing) P.spaceDown(); else P.toggle(); break;   // over the preview: hold Space and drag to move the view
+			case "g": case "G": $("vd-vzguide").click(); break;
 			case "k": case "K": P.pause(); break;
 			case "<": case ",": if (k === "<" || e.shiftKey) P.stepSpeed(-1); else h = false; break;
 			case ">": case ".": if (k === ">" || e.shiftKey) P.stepSpeed(1); else h = false; break;
@@ -2836,7 +3175,7 @@
 			case "f": case "F": if (e.shiftKey) $("vd-fs").click(); else setPv(!app.classList.contains("vd-pvfill")); break;
 			case "+": case "=": VE.tl.zoom(VE.pps * 1.5); break; case "-": case "_": VE.tl.zoom(VE.pps / 1.5); break;
 			case "w": case "W": setWin(!UI.win); break;
-			case "Escape": if (app.classList.contains("vd-pvfill")) setPv(false); else if (UI.win) setWin(false); else { VE.sel = []; VE.emit("select"); } break;
+			case "Escape": if (P.picking()) P.cancelPick(); else if (app.classList.contains("vd-pvfill")) setPv(false); else if (UI.win) setWin(false); else { VE.sel = []; VE.emit("select"); } break;
 			default: h = false;
 		}
 		if (h) e.preventDefault();
@@ -2939,15 +3278,27 @@
 	VE.on("change", fxKick); VE.on("mediaReady", fxKick);
 
 	/* ---------- canvas size ---------- */
+	// size of the first video or picture on the timeline (else in the media list), even numbers
+	function firstClipSize() {
+		var cs = VE.P.clips.filter(function (c) { return c.type === "video" || c.type === "image"; }).sort(function (a, b) { return a.start - b.start; }), m = null;
+		for (var j = 0; j < cs.length && !m; j++) { var q = VE.media(cs[j].media); if (q && q.w) m = q; }
+		if (!m) m = VE.bin.filter(function (q) { return (q.kind === "video" || q.kind === "image") && q.w; })[0];
+		return m ? { w: V.clamp(Math.round(m.w / 2) * 2, 16, 7680), h: V.clamp(Math.round(m.h / 2) * 2, 16, 4320), name: m.name } : null;
+	}
+	VE.on("mediaReady", function () { renderCvs(); });
 	VE.setCanvas = function (w, h) { VE.P.w = V.clamp(Math.round(w / 2) * 2, 16, 7680); VE.P.h = V.clamp(Math.round(h / 2) * 2, 16, 4320); VE.commit("Canvas size"); };
 	function renderCvs() {
 		var sel = $("vd-cvsize"), pre = V.presetOf(VE.P.w, VE.P.h);
-		sel.innerHTML = V.CANVAS_PRESETS.map(function (o) { return '<option value="' + o[0] + '">' + o[1] + "</option>"; }).join("") + (pre === "custom" ? '<option value="cur">' + VE.P.w + "×" + VE.P.h + " (custom)</option>" : "") + '<option value="custom">Custom size&hellip;</option>';
+		var groups = [], first = firstClipSize();
+		V.CANVAS_PRESETS.forEach(function (o) { var g = groups.filter(function (x) { return x.n === o[2]; })[0]; if (!g) groups.push(g = { n: o[2], o: [] }); g.o.push(o); });
+		sel.innerHTML = groups.map(function (g) { return '<optgroup label="' + esc(g.n) + '">' + g.o.map(function (o) { return '<option value="' + o[0] + '">' + o[1] + "</option>"; }).join("") + "</optgroup>"; }).join("") +
+			'<optgroup label="Other">' + (pre === "custom" ? '<option value="cur">' + VE.P.w + "×" + VE.P.h + " (custom)</option>" : "") + (first ? '<option value="match">Match first clip (' + first.w + "×" + first.h + ")</option>" : '<option value="match" disabled>Match first clip (add a video or picture first)</option>') + '<option value="custom">Custom size&hellip;</option></optgroup>';
 		sel.value = pre === "custom" ? "cur" : pre;
 	}
 	$("vd-cvsize").onchange = function () {
 		var v = this.value;
 		if (v === "cur") return;
+		if (v === "match") { var f = firstClipSize(); if (f) { VE.setCanvas(f.w, f.h); toast("The canvas is now " + f.w + "×" + f.h + ", like " + f.name + "."); } renderCvs(); return; }
 		if (v === "custom") { var r = V.parseSize(window.prompt("Canvas size in pixels, width × height (for example 1280x720):", VE.P.w + "x" + VE.P.h)); if (r) VE.setCanvas(r.w, r.h); else { toast("Type it as width x height, for example 1280x720 (16 to 7680 by 16 to 4320)."); } renderCvs(); return; }
 		var q = V.parseSize(v); if (q) VE.setCanvas(q.w, q.h);
 	};
@@ -3020,6 +3371,7 @@
 		{ id: "step", name: "Step label", desc: "Top left corner", x: 0.14, y: 0.1, text: { s: "Step 1", size: 0.055, bg: "#1d4ed8", bgOp: 0.95 } },
 		{ id: "end", name: "End card", desc: "Centred, 5 s", y: 0.5, dur: 5, text: { s: "Thanks for watching!\nmes.fm", size: 0.08, bgOp: 0.7 } }
 	];
+	var ANIM_ICO = { zoomin: "&#8853;", zoomout: "&#8854;", zoompan: "&#11034;", "slidein-l": "&#8680;", "slidein-r": "&#8678;", "slidein-b": "&#8679;", "slideout-l": "&#8678;", "slideout-r": "&#8680;", fadein: "&#9680;", fadeout: "&#9681;", scaleup: "&#10530;", scaledown: "&#10529;", popin: "&#10040;", spin: "&#10227;", tilt: "&#8635;", custom: "&#10148;" };
 	var CARDS = {
 		titles: TITLES.map(function (t) { return { id: t.id, name: t.name, desc: t.desc, title: t }; }),
 		trans: [
@@ -3039,7 +3391,8 @@
 			{ id: "pip", ico: "&#9703;", name: "Picture in picture", desc: "Small, bottom right" }, { id: "pipl", ico: "&#9702;", name: "Picture in picture", desc: "Small, bottom left" },
 			{ id: "centre", ico: "&#10753;", name: "Centre", desc: "Back to the middle" }, { id: "half", ico: "&#9681;", name: "Half see-through", desc: "Opacity 50%" },
 			{ id: "solid", ico: "&#9679;", name: "Solid", desc: "Opacity 100%" }, { id: "nocrop", ico: "&#8862;", name: "Reset crop", desc: "Show it all again" }
-		]
+		],
+		anim: V.ANIM_PRESETS.map(function (q) { return { id: q.id, name: q.name, desc: q.desc, ico: ANIM_ICO[q.id] || "&#10148;" }; })
 	};
 	function cardHtml(cat, c) {
 		var vis = cat === "titles" ? '<span style="font:' + (c.title.text.bold === false ? "400" : "700") + " " + Math.round(10 + (c.title.text.size || 0.09) * 70) + "px Arial,sans-serif;color:#fff;padding:0 0.3em;border-radius:3px;" + (c.title.text.bgOn === false ? "text-shadow:0 0 3px #000,0 0 1px #000;" : "background:" + (c.title.text.bg || "#000") + ";") + '">' + esc(c.name.split(" ")[0]) + "</span>" : c.ico;
@@ -3052,6 +3405,11 @@
 	function applyCard(key, clips, drop) {
 		var q = cardOf(key), cat = q.cat, cd = q.c; if (!cd) return;
 		if (cat === "titles") { VE.addTitle(cd.title, drop ? drop.t : null, drop ? drop.track : null); return; }
+		if (cat === "anim") {
+			var tgt = (clips || VE.selected()).filter(function (c) { var tr = V.track(VE.P, c.track); return c.type !== "audio" && !(tr && tr.lock); })[0];
+			if (!tgt) { toast("Select a video, picture or title first (or drag the animation onto one)."); return; }
+			VE.addAnim(cd.id, tgt, drop && drop.t != null ? drop.t : null); return;
+		}
 		var list = (clips || VE.selected()).filter(function (c) { var tr = V.track(VE.P, c.track); return !(tr && tr.lock); });
 		if (cd.snd) list = list.filter(VE.hasSound);
 		if (cat === "vfx") list = list.filter(function (c) { return c.type !== "audio"; });
@@ -3109,10 +3467,87 @@
 		if (!d.on) { applyCard(d.key); return; }
 		var el = document.elementFromPoint(e.clientX, e.clientY), ce = el && el.closest && el.closest(".vd-clip");
 		if (d.key.indexOf("titles:") === 0) { if (VE.tl.inside(e.clientX, e.clientY)) { var row = el && el.closest && el.closest(".vd-trow"); applyCard(d.key, null, { t: VE.tl.x2t(e.clientX), track: row ? row.getAttribute("data-track") : null }); } return; }
-		if (ce) { var c = V.clip(VE.P, ce.getAttribute("data-id")); if (c) applyCard(d.key, [c]); }
+		if (ce) { var c = V.clip(VE.P, ce.getAttribute("data-id")); if (c) applyCard(d.key, [c], d.key.indexOf("anim:") === 0 ? { t: VE.tl.x2t(e.clientX) } : null); }
 	});
 	app.addEventListener("keydown", function (e) { var cb = e.target.closest && e.target.closest(".vd-card"); if (cb && (e.key === "Enter" || e.key === " ")) { e.preventDefault(); e.stopPropagation(); applyCard(cb.getAttribute("data-card")); } }, true);
 	applyLayout();
+
+	/* ---------- animations ---------- */
+	var ad = $("vd-andur"), ae = $("vd-anease");
+	ae.innerHTML = V.EASES.map(function (q) { return '<option value="' + q[0] + '">' + q[1] + "</option>"; }).join("");
+	ad.value = String(UI.anDur || 1); ae.value = UI.anEase || "inout";
+	ad.onchange = function () { UI.anDur = +ad.value; saveUI(); }; ae.onchange = function () { UI.anEase = ae.value; saveUI(); };
+	var measure = document.createElement("canvas").getContext("2d"), anStop = null;
+	VE.on("time", function () { if (anStop != null && P.playing && VE.t >= anStop) { anStop = null; P.pause(); } });
+	VE.on("pause", function () { anStop = null; });
+	function posOf(s) { return { x: s.x, y: s.y, scale: s.scale, rot: s.rot, op: s.op, crop: { l: s.cl, t: s.ct, r: s.cr, b: s.cb } }; }
+	// add preset id to clip c (at timeline time "at", else the playhead); zoom-n-pan first asks for a box on the preview. Then it plays the new
+	// animation once (custom / zoom-n-pan leave the playhead at its end instead, ready to drag the clip there)
+	VE.addAnim = function (id, c, at) {
+		var pre = V.animPreset(id); if (!pre || !c) return;
+		var len = V.dur(c), d = UI.anDur || 1, here = (at != null ? at : VE.t) - c.start, slot = V.animSlot(pre.at, here, d, len);
+		VE.sel = [c.id]; VE.emit("select");
+		function make(rect) {
+			var s = V.stateAt(c, slot.t), r = VE.rectOf(measure, c, VE.P.w, VE.P.h, posOf(s)), vals = V.animValues(id, s, r ? { w: r.dw, h: r.dh } : null, VE.P.w, VE.P.h, { rect: rect });
+			if (!vals) return;
+			var a = { id: V.uid("a"), t: slot.t, d: slot.d, ease: UI.anEase || "inout", kind: id }; if (vals.to) a.to = vals.to; if (vals.from) a.from = vals.from;
+			c.anims = V.cleanAnims((c.anims || []).concat([a])); VE.animSel = a.id;
+			VE.commit("Animation: " + V.animName(a));
+			if (id === "custom" || id === "zoompan") { P.seek(Math.min(V.end(c) - 1e-3, c.start + slot.t + slot.d)); toast(id === "custom" ? "The playhead is at the end of the new animation: drag the clip in the preview (a corner resizes, the round handle turns it) to where it should end up." : "Zoom-n-pan added. The playhead is at its end: drag or resize the clip in the preview to fine-tune the framing.", 7000); }
+			else { P.seek(c.start + slot.t); anStop = c.start + slot.t + slot.d + 0.3; P.play(1); }
+		}
+		if (pre.rect) {
+			if (P.picking()) return;
+			P.seek(c.start + slot.t); toast("Drag a box on the preview over the part to zoom to. Esc cancels.", 6000);
+			P.pickRect(function (r) { if (r) make(r); });
+		} else make(null);
+	};
+	function animSection(c) {
+		var L = (c.anims || []).slice().sort(function (a, b) { return a.t - b.t; }), rel = VE.t - c.start, tol = 0.5 / VE.P.fps;
+		var h = '<div class="vd-sec"><b>Animations</b>';
+		if (!L.length) return h + '<p class="vd-sub">None yet. Open <i>Animations</i> in the library on the left: zoom in, zoom-n-pan, slide in, fade, spin&hellip;</p><div class="vd-row"><button type="button" class="vd-btn vd-sm" data-an-open>Show the animations</button></div></div>';
+		var NAMES = { x: "left/right", y: "up/down", scale: "size", rot: "turn", op: "opacity", cl: "crop left", ct: "crop top", cr: "crop right", cb: "crop bottom" };
+		L.forEach(function (a) {
+			var at = Math.abs(rel - (a.t + a.d)) <= tol ? "end" : Math.abs(rel - a.t) <= tol ? "start" : rel > a.t && rel < a.t + a.d ? "in" : "", keys = Object.keys(a.to || {});
+			h += '<div class="vd-an' + (VE.animSel === a.id ? " is-sel" : "") + '" data-aid="' + esc(a.id) + '"><div class="vd-anh"><b>' + esc(V.animName(a)) + '</b><small>' + (at === "end" ? "playhead at its end" : at === "start" ? "playhead at its start" : at === "in" ? "playhead inside it" : "") + '</small><span class="vd-sp"></span><button type="button" class="vd-btn vd-sm vd-ico" data-anact="start" title="Playhead to its start" aria-label="Playhead to its start">&#8676;</button><button type="button" class="vd-btn vd-sm vd-ico" data-anact="end" title="Playhead to its end (then drag the clip in the preview to change where it ends up)" aria-label="Playhead to its end">&#8677;</button><button type="button" class="vd-btn vd-sm vd-ico" data-anact="del" title="Delete this animation" aria-label="Delete this animation">&times;</button></div>' +
+				'<div class="vd-grid">' + num("vd-an-t-" + a.id, "Starts", Math.round(a.t * 100) / 100, 0.05, null, null, "s", "Seconds after the clip starts") + num("vd-an-d-" + a.id, "Takes", Math.round(a.d * 100) / 100, 0.05, 0.05, 600, "s") +
+				'<label class="vd-f vd-wide"><span>Easing</span><select data-anease aria-label="Easing">' + V.EASES.map(function (q) { return '<option value="' + q[0] + '"' + (a.ease === q[0] ? " selected" : "") + ">" + q[1] + "</option>"; }).join("") + "</select></label></div>" +
+				(keys.length ? '<p class="vd-sub">Ends with ' + keys.map(function (k) { var v = a.to[k]; return NAMES[k] + " " + (k === "rot" ? Math.round(v * 10) / 10 + "°" : Math.round(v * 1000) / 10 + "%"); }).join(", ") + ".</p>" : "") +
+				(a.from ? '<p class="vd-sub">Starts from ' + Object.keys(a.from).map(function (k) { var v = a.from[k]; return k === "op" ? "opacity " + Math.round(v * 100) + "%" : k === "x" ? (v < 0.5 ? "off the left" : "off the right") : k === "y" ? (v > 0.5 ? "below the frame" : "above the frame") : k === "scale" ? "tiny" : NAMES[k]; }).join(", ") + ".</p>" : "") + "</div>";
+		});
+		return h + '<div class="vd-row"><button type="button" class="vd-btn vd-sm" data-an-open>+ Add an animation</button><button type="button" class="vd-btn vd-sm" data-an-clear>Remove all</button></div></div>';
+	}
+	function bindAnims(c) {
+		insp.querySelectorAll("[data-an-open]").forEach(function (b) { b.onclick = function () { UI.cat = "anim"; UI.noLeft = false; relayout(); }; });
+		var cl = insp.querySelector("[data-an-clear]"); if (cl) cl.onclick = function () { c.anims = null; VE.animSel = null; VE.commit("Remove animations"); };
+		insp.querySelectorAll(".vd-an").forEach(function (box) {
+			var id = box.getAttribute("data-aid"), a = (c.anims || []).filter(function (x) { return x.id === id; })[0]; if (!a) return;
+			box.addEventListener("focusin", function () { if (VE.animSel !== id) { VE.animSel = id; insp.querySelectorAll(".vd-an").forEach(function (x) { x.classList.toggle("is-sel", x === box); }); VE.tl.markSel(); } });
+			box.querySelectorAll("[data-anact]").forEach(function (b) { b.onclick = function () { var k = b.getAttribute("data-anact"); VE.animSel = id; if (k === "del") { c.anims = V.cleanAnims(c.anims.filter(function (x) { return x !== a; })); VE.animSel = null; VE.commit("Delete animation"); } else { P.seek(Math.min(V.end(c) - 1e-3, Math.max(c.start, c.start + a.t + (k === "end" ? a.d : 0)))); renderInsp(); VE.tl.markSel(); } }; });
+			var ti = $("vd-an-t-" + id), di = $("vd-an-d-" + id), es = box.querySelector("[data-anease]");
+			if (ti) ti.onchange = function () { var v = parseFloat(ti.value); if (!isFinite(v)) return renderInsp(); a.t = V.clamp(v, -a.d + 0.02, V.dur(c)); c.anims = V.cleanAnims(c.anims); VE.commit("Animation timing"); };
+			if (di) di.onchange = function () { var v = parseFloat(di.value); if (!isFinite(v)) return renderInsp(); a.d = V.clamp(v, 0.05, 600); VE.commit("Animation length"); };
+			if (es) es.onchange = function () { a.ease = es.value; VE.commit("Easing"); };
+		});
+	}
+
+	/* ---------- preview zoom ---------- */
+	var vzs = $("vd-vzsel");
+	function vzRender() {
+		var v = P.view(), opts = V.ZOOM_STEPS.map(function (z) { return z * 100; }), cur = v.pct, near = opts.filter(function (z) { return Math.abs(z - cur) < 0.6; })[0];
+		var html = '<option value="fit">Fit' + (v.fit ? " (" + Math.round(cur) + "%)" : "") + "</option>" + (!v.fit && near == null ? '<option value="cur">' + Math.round(cur) + "%</option>" : "") + opts.map(function (z) { return '<option value="' + z + '">' + Math.round(z) + "%</option>"; }).join("");
+		if (vzs.getAttribute("data-h") !== html) { vzs.innerHTML = html; vzs.setAttribute("data-h", html); }
+		vzs.value = v.fit ? "fit" : near != null ? String(near) : "cur";
+		$("vd-vzfit").setAttribute("aria-pressed", v.fit); $("vd-vzguide").setAttribute("aria-pressed", P.guides()); $("vd-vzdim").setAttribute("aria-pressed", P.dimOutside());
+	}
+	var vzLast = "";
+	VE.on("view", function () { var v = P.view(), k = v.fit + "|" + v.pct; if (k !== vzLast) { vzLast = k; vzRender(); } });
+	vzs.onchange = function () { if (vzs.value === "fit") P.zoomFit(); else if (vzs.value !== "cur") P.zoomTo(+vzs.value); };
+	$("vd-vzfit").onclick = function () { P.zoomFit(); };
+	$("vd-vzin").onclick = function () { P.zoomStep(1); }; $("vd-vzout").onclick = function () { P.zoomStep(-1); };
+	$("vd-vzguide").onclick = function () { P.guides(!P.guides()); vzRender(); };
+	$("vd-vzdim").onclick = function () { P.dimOutside(!P.dimOutside()); vzRender(); };
+	vzRender();
 
 	/* ---------- start ---------- */
 	VE.hist.push(JSON.stringify(VE.P));

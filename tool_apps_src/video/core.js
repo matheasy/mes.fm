@@ -346,18 +346,21 @@
 	VE.draw = function (ctx, W, H, t, src, opt) {
 		opt = opt || {};
 		ctx.save(); ctx.globalAlpha = 1; ctx.fillStyle = VE.P.bg || "#000"; ctx.fillRect(0, 0, W, H);
+		if (opt.clip) { ctx.beginPath(); ctx.rect(0, 0, W, H); ctx.clip(); }
 		var L = V.layersAt(VE.P, t);
 		for (var j = 0; j < L.length; j++) {
-			var c = L[j].clip; ctx.globalAlpha = L[j].alpha;
-			if (c.type === "text") { drawText(ctx, c, W, H); continue; }
+			var c = L[j].clip, pos = L[j].pos || V.posAt(c, t); ctx.globalAlpha = L[j].alpha;
+			if (c.type === "text") { drawText(ctx, c, W, H, pos); continue; }
 			var s = src(c, L[j].src); if (!s || !s.img) continue;
-			var r = V.place(s.w, s.h, c, W, H);
+			var r = V.place(s.w, s.h, pos, W, H), turned = !!pos.rot;
+			if (turned) { ctx.save(); ctx.translate(r.dx + r.dw / 2, r.dy + r.dh / 2); ctx.rotate(pos.rot * Math.PI / 180); ctx.translate(-(r.dx + r.dw / 2), -(r.dy + r.dh / 2)); }
 			try {
 				if (s.rot) {   // a raw decoded frame of a turned phone video: crop in the turned picture, then draw
 					var tmp = VE.tmpCanvas("rot", s.w, s.h); tmp.ctx.setTransform(1, 0, 0, 1, 0, 0); tmp.ctx.clearRect(0, 0, s.w, s.h); drawFrame(tmp.ctx, s.img, s.rot, 0, 0, s.w, s.h);
 					ctx.drawImage(tmp.canvas, r.sx, r.sy, r.sw, r.sh, r.dx, r.dy, r.dw, r.dh);
 				} else ctx.drawImage(s.img, r.sx, r.sy, r.sw, r.sh, r.dx, r.dy, r.dw, r.dh);
 			} catch (e) { /* a frame that is not ready yet */ }
+			if (turned) ctx.restore();
 		}
 		ctx.restore();
 		return L;
@@ -369,15 +372,17 @@
 		return t;
 	};
 	// a title: lines of text in a rounded box, centred at (x, y); returns its rectangle on the frame
-	function textBox(ctx, c, W, H) {
-		var T = c.text || V.TEXT_DEFAULT, px = Math.max(4, T.size * H * (c.scale || 1)), lines = String(T.s || "").split("\n");
+	function textBox(ctx, c, W, H, pos) {
+		pos = pos || c;
+		var T = c.text || V.TEXT_DEFAULT, px = Math.max(4, T.size * H * (pos.scale || 1)), lines = String(T.s || "").split("\n");
 		ctx.font = (T.italic ? "italic " : "") + (T.bold ? "700 " : "400 ") + px + "px " + (T.font || "Arial, sans-serif");
 		var wmax = 0; lines.forEach(function (l) { wmax = Math.max(wmax, ctx.measureText(l).width); });
 		var lh = px * 1.22, pad = px * 0.4, bw = wmax + pad * 2, bh = lines.length * lh + pad * 1.2;
-		return { px: px, lines: lines, lh: lh, pad: pad, dx: c.x * W - bw / 2, dy: c.y * H - bh / 2, dw: bw, dh: bh, T: T };
+		return { px: px, lines: lines, lh: lh, pad: pad, dx: pos.x * W - bw / 2, dy: pos.y * H - bh / 2, dw: bw, dh: bh, T: T };
 	}
-	function drawText(ctx, c, W, H) {
-		var b = textBox(ctx, c, W, H), T = b.T;
+	function drawText(ctx, c, W, H, pos) {
+		var b = textBox(ctx, c, W, H, pos), T = b.T, rot = pos && pos.rot;
+		if (rot) { ctx.save(); ctx.translate(b.dx + b.dw / 2, b.dy + b.dh / 2); ctx.rotate(rot * Math.PI / 180); ctx.translate(-(b.dx + b.dw / 2), -(b.dy + b.dh / 2)); }
 		if (T.bgOn) { ctx.save(); ctx.globalAlpha *= T.bgOp == null ? 0.55 : T.bgOp; ctx.fillStyle = T.bg || "#000"; roundRect(ctx, b.dx, b.dy, b.dw, b.dh, b.px * 0.25); ctx.fill(); ctx.restore(); }
 		ctx.textBaseline = "middle"; ctx.textAlign = T.align || "center";
 		var x = T.align === "left" ? b.dx + b.pad : T.align === "right" ? b.dx + b.dw - b.pad : b.dx + b.dw / 2;
@@ -387,14 +392,19 @@
 			if (T.outline > 0) { ctx.lineWidth = T.outline * b.px * 0.08; ctx.strokeStyle = T.ocolor || "#000"; ctx.lineJoin = "round"; ctx.strokeText(l, x, y); }
 			ctx.fillStyle = T.color || "#fff"; ctx.fillText(l, x, y);
 		});
+		if (rot) ctx.restore();
 		return b;
 	}
 	function roundRect(ctx, x, y, w, h, r) { ctx.beginPath(); ctx.moveTo(x + r, y); ctx.arcTo(x + w, y, x + w, y + h, r); ctx.arcTo(x + w, y + h, x, y + h, r); ctx.arcTo(x, y + h, x, y, r); ctx.arcTo(x, y, x + w, y, r); ctx.closePath(); }
 	// rectangle of a clip on a W x H frame (for selecting / dragging in the preview)
-	VE.rectOf = function (ctx, c, W, H) {
-		if (c.type === "text") return textBox(ctx, c, W, H);
-		var m = VE.media(c.media); if (!m || !m.w) return null;
-		return V.place(m.w, m.h, c, W, H);
+	// pos = the animated position to use (default: the one at the playhead); the result carries .rot (degrees, about its centre)
+	VE.rectOf = function (ctx, c, W, H, pos) {
+		pos = pos || V.posAt(c, VE.t);
+		var r;
+		if (c.type === "text") r = textBox(ctx, c, W, H, pos);
+		else { var m = VE.media(c.media); if (!m || !m.w) return null; r = V.place(m.w, m.h, pos, W, H); }
+		r.rot = pos.rot || 0; r.pos = pos;
+		return r;
 	};
 	VE.mediaDur = function (c) { if (c.type === "text") return Infinity; var m = VE.media(c.media); return !m ? Infinity : m.kind === "image" ? Infinity : m.dur; };
 	VE.hasSound = function (c) { if ((c.type !== "video" && c.type !== "audio") || c.noAudio) return false; var m = VE.media(c.media); return !!(m && m.hasAudio); };

@@ -147,3 +147,31 @@
 	html body.dark-mode #vd .vd-modal {background:rgba(0,0,0,0.6);} html body.dark-mode #vd .vd-ghost {color:#00131f;}
 	html body.dark-mode #vd .vd-fx.is-on {border-color:#047857;} html body.dark-mode #vd .vd-linkrow {border:1px solid #1e4f72;}
 	#vd .vd-vgrip::after {content:"";position:absolute;top:0;bottom:0;left:-4px;right:-4px;}
+	/* preview: the canvas covers the stage; the frame sits on a pasteboard that can be zoomed and moved */
+	#vd .vd-stagewrap #vd-canvas {position:absolute;left:0;top:0;background:#14181f;}
+	html body.dark-mode #vd #vd-canvas {background:#14181f;}
+	#vd .vd-vz {position:absolute;top:6px;right:6px;z-index:2;display:flex;align-items:center;gap:0.25em;flex-wrap:wrap;justify-content:flex-end;max-width:calc(100% - 12px);background:rgba(13,17,23,0.78);border:1px solid var(--vd-line);border-radius:0.5em;padding:0.2em;opacity:0.55;transition:opacity .15s;}
+	#vd .vd-vz:hover, #vd .vd-vz:focus-within, #vd .vd-stagewrap:hover .vd-vz {opacity:1;}
+	#vd .vd-vz .vd-btn {min-height:28px;padding:0.15em 0.5em;font-size:0.8em;} #vd .vd-vz .vd-ico {min-width:28px;}
+	#vd .vd-vz select {min-height:28px;padding:0.1em 0.3em;font-size:0.8em;}
+	html body.dark-mode #vd .vd-vz {background:rgba(13,17,23,0.78);}
+	#vd .vd.vd-pvfill .vd-vz {top:8px;right:8px;}
+	@media (max-width:560px) { #vd .vd-vz #vd-vzdim, #vd .vd-vz #vd-vz100 {display:none;} }
+	/* animations: arrows on the timeline clips */
+	#vd .vd-an-mk {position:absolute;height:12px;z-index:3;cursor:grab;display:block;touch-action:none;}
+	#vd .vd-an-mk s {position:absolute;left:5px;right:6px;top:5px;height:2px;background:#fde047;box-shadow:0 0 0 1px rgba(0,0,0,0.55);}
+	#vd .vd-an-mk u {position:absolute;left:0;top:2px;width:8px;height:8px;border-radius:50%;background:#fde047;box-shadow:0 0 0 1px rgba(0,0,0,0.6);cursor:ew-resize;}
+	#vd .vd-an-mk b {position:absolute;right:0;top:0;width:0;height:0;border-top:6px solid transparent;border-bottom:6px solid transparent;border-left:9px solid #fde047;cursor:ew-resize;}
+	#vd .vd-an-mk.is-sel s, #vd .vd-an-mk.is-sel u {background:#38bdf8;} #vd .vd-an-mk.is-sel b {border-left-color:#38bdf8;}
+	#vd .vd-an-mk:hover s {height:3px;top:4px;}
+	html body.dark-mode #vd .vd-an-mk s, html body.dark-mode #vd .vd-an-mk u {background:#fde047;} html body.dark-mode #vd .vd-an-mk b {border-left:9px solid #fde047;border-top:6px solid transparent;border-bottom:6px solid transparent;}
+	html body.dark-mode #vd .vd-an-mk.is-sel s, html body.dark-mode #vd .vd-an-mk.is-sel u {background:#38bdf8;} html body.dark-mode #vd .vd-an-mk.is-sel b {border-left-color:#38bdf8;}
+	/* animations: the list in the properties */
+	#vd .vd-fs {border:0;margin:0;padding:0;min-width:0;} #vd .vd-fs:disabled {opacity:0.55;}
+	#vd .vd-an {background:var(--vd-panel2);border:1px solid transparent;border-radius:0.45em;padding:0.35em 0.5em;margin:0.4em 0;}
+	#vd .vd-an.is-sel {border-color:var(--vd-sel);}
+	#vd .vd-anh {display:flex;align-items:center;gap:0.35em;flex-wrap:wrap;} #vd .vd-anh b {font-size:0.9em;} #vd .vd-anh small {font-size:0.75em;color:#fde68a;}
+	#vd .vd-anh .vd-btn {min-height:28px;min-width:28px;padding:0.1em 0.3em;}
+	#vd .vd-anease {display:flex;align-items:center;gap:0.4em;font-size:0.82em;color:var(--vd-dim);margin-bottom:0.2em;} #vd .vd-anease select {flex:1;min-width:0;}
+	html body.dark-mode #vd .vd-an.is-sel {border-color:#38bdf8;}
+	#vd .vd-an .vd-f.vd-wide {grid-column:1 / -1;margin:0;}

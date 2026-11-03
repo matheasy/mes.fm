@@ -454,6 +454,34 @@ body.dark-mode .tu .rw-head {color:#a0a8b3;border-bottom-color:#555;} body.dark-
 	html body.dark-mode #vd .vd-modal {background:rgba(0,0,0,0.6);} html body.dark-mode #vd .vd-ghost {color:#00131f;}
 	html body.dark-mode #vd .vd-fx.is-on {border-color:#047857;} html body.dark-mode #vd .vd-linkrow {border:1px solid #1e4f72;}
 	#vd .vd-vgrip::after {content:"";position:absolute;top:0;bottom:0;left:-4px;right:-4px;}
+	/* preview: the canvas covers the stage; the frame sits on a pasteboard that can be zoomed and moved */
+	#vd .vd-stagewrap #vd-canvas {position:absolute;left:0;top:0;background:#14181f;}
+	html body.dark-mode #vd #vd-canvas {background:#14181f;}
+	#vd .vd-vz {position:absolute;top:6px;right:6px;z-index:2;display:flex;align-items:center;gap:0.25em;flex-wrap:wrap;justify-content:flex-end;max-width:calc(100% - 12px);background:rgba(13,17,23,0.78);border:1px solid var(--vd-line);border-radius:0.5em;padding:0.2em;opacity:0.55;transition:opacity .15s;}
+	#vd .vd-vz:hover, #vd .vd-vz:focus-within, #vd .vd-stagewrap:hover .vd-vz {opacity:1;}
+	#vd .vd-vz .vd-btn {min-height:28px;padding:0.15em 0.5em;font-size:0.8em;} #vd .vd-vz .vd-ico {min-width:28px;}
+	#vd .vd-vz select {min-height:28px;padding:0.1em 0.3em;font-size:0.8em;}
+	html body.dark-mode #vd .vd-vz {background:rgba(13,17,23,0.78);}
+	#vd .vd.vd-pvfill .vd-vz {top:8px;right:8px;}
+	@media (max-width:560px) { #vd .vd-vz #vd-vzdim, #vd .vd-vz #vd-vz100 {display:none;} }
+	/* animations: arrows on the timeline clips */
+	#vd .vd-an-mk {position:absolute;height:12px;z-index:3;cursor:grab;display:block;touch-action:none;}
+	#vd .vd-an-mk s {position:absolute;left:5px;right:6px;top:5px;height:2px;background:#fde047;box-shadow:0 0 0 1px rgba(0,0,0,0.55);}
+	#vd .vd-an-mk u {position:absolute;left:0;top:2px;width:8px;height:8px;border-radius:50%;background:#fde047;box-shadow:0 0 0 1px rgba(0,0,0,0.6);cursor:ew-resize;}
+	#vd .vd-an-mk b {position:absolute;right:0;top:0;width:0;height:0;border-top:6px solid transparent;border-bottom:6px solid transparent;border-left:9px solid #fde047;cursor:ew-resize;}
+	#vd .vd-an-mk.is-sel s, #vd .vd-an-mk.is-sel u {background:#38bdf8;} #vd .vd-an-mk.is-sel b {border-left-color:#38bdf8;}
+	#vd .vd-an-mk:hover s {height:3px;top:4px;}
+	html body.dark-mode #vd .vd-an-mk s, html body.dark-mode #vd .vd-an-mk u {background:#fde047;} html body.dark-mode #vd .vd-an-mk b {border-left:9px solid #fde047;border-top:6px solid transparent;border-bottom:6px solid transparent;}
+	html body.dark-mode #vd .vd-an-mk.is-sel s, html body.dark-mode #vd .vd-an-mk.is-sel u {background:#38bdf8;} html body.dark-mode #vd .vd-an-mk.is-sel b {border-left-color:#38bdf8;}
+	/* animations: the list in the properties */
+	#vd .vd-fs {border:0;margin:0;padding:0;min-width:0;} #vd .vd-fs:disabled {opacity:0.55;}
+	#vd .vd-an {background:var(--vd-panel2);border:1px solid transparent;border-radius:0.45em;padding:0.35em 0.5em;margin:0.4em 0;}
+	#vd .vd-an.is-sel {border-color:var(--vd-sel);}
+	#vd .vd-anh {display:flex;align-items:center;gap:0.35em;flex-wrap:wrap;} #vd .vd-anh b {font-size:0.9em;} #vd .vd-anh small {font-size:0.75em;color:#fde68a;}
+	#vd .vd-anh .vd-btn {min-height:28px;min-width:28px;padding:0.1em 0.3em;}
+	#vd .vd-anease {display:flex;align-items:center;gap:0.4em;font-size:0.82em;color:var(--vd-dim);margin-bottom:0.2em;} #vd .vd-anease select {flex:1;min-width:0;}
+	html body.dark-mode #vd .vd-an.is-sel {border-color:#38bdf8;}
+	#vd .vd-an .vd-f.vd-wide {grid-column:1 / -1;margin:0;}
 
 
 	@media print {
@@ -493,48 +521,6 @@ body.dark-mode .tu .rw-head {color:#a0a8b3;border-bottom-color:#555;} body.dark-
 		.footer__item--extra-padding { padding-left: 0; }
 		.footer__text--extra-info { float: none; display: block; margin-top: 0.5em; }
 	}
-/* Floating compact header bar: once the full header + nav scroll out of
-   view, a slim fixed bar (small logo, title, as many nav links as fit)
-   slides in, and the hamburger is pinned into its right end. Toggled by
-   the compact-nav script below. Ported from mes.fm/math's version (see
-   its build.mjs) -- display-controls.js pins the A-/A+/moon buttons into its right end.
-
-   Hidden by default via the inline style="display:none" on the element
-   itself (not just this stylesheet's "display: none" below) -- some
-   browser extensions strip or neutralize cosmetic-looking CSS for
-   elements named "sticky-*"/"*-bar" (a common ad/cookie-bar filter
-   pattern), which left an earlier version's raw unstyled markup visible
-   above the real header on mes.fm/math. The inline attribute is a
-   fallback the JS clears itself, independent of this stylesheet
-   surviving intact. */
-#compact-nav {
-  position: fixed; top: 0; left: 0; right: 0; height: 52px; z-index: 15;
-  display: none; align-items: center; gap: 12px;
-  padding: 0 80px 0 12px; box-sizing: border-box;
-  background: #ffffff; border-bottom: 3px solid #be123c;
-  box-shadow: 0 2px 8px rgba(0,0,0,0.18);
-  transform: translateY(-110%); transition: transform 0.2s ease;
-}
-#compact-nav.is-visible { display: flex; }
-body.is-stuck #compact-nav { transform: none; }
-#compact-nav .compact-nav-logo { display: block; width: 32px; height: 32px; border-radius: 6px; flex: 0 0 auto; }
-#compact-nav .compact-nav-title {
-  flex: 0 1 auto; min-width: 0; font-weight: 700; font-size: 1.05em; color: #1a1a1a;
-  text-decoration: none; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
-}
-#compact-nav .compact-nav-links { display: flex; flex: 1 1 0; min-width: 0; overflow: hidden; margin: 0 0 0 8px; padding: 0; list-style: none; }
-#compact-nav .compact-nav-links li { flex: 0 0 auto; }
-#compact-nav .compact-nav-links a { display: block; padding: 0 10px; line-height: 52px; font-size: 0.9em; color: #be123c; text-decoration: none; white-space: nowrap; }
-#compact-nav .compact-nav-links a:hover { background: rgba(190,18,60,0.12); }
-body.is-stuck #navbar-button { position: fixed !important; top: 4px !important; right: 8px !important; display: flex; align-items: center; }
-body.is-stuck #navbar.hide { position: fixed; top: 56px; right: 8px; }
-@media (max-width: 700px) {
-  #compact-nav .compact-nav-title { display: none; }
-  #compact-nav .compact-nav-logo { width: 36px; height: 36px; }
-}
-@media (max-width: 480px) {
-  #compact-nav { padding-right: 70px; gap: 8px; }
-}
 
 	/* TOOL-DARK:START -- generated by add_tool_page_controls.py, do not edit */
 	body.dark-mode .page-content :where(div,span,p,li,ul,ol,h1,h2,h3,h4,h5,h6,td,th,label,summary,small,strong,b,em,i,code,pre,legend,figcaption,dl,dt,dd,blockquote,caption,cite,button,input,select,textarea){color:#d8d8d8}
@@ -598,7 +584,53 @@ body.is-stuck #navbar.hide { position: fixed; top: 56px; right: 8px; }
 	body.dark-mode #vd .vd-ghost{color:#5cc0ff}
 	body.dark-mode #vd .vd-fx.is-on{border-color:#08f7b3}
 	body.dark-mode #vd .vd-linkrow{border:1px solid #358cca}
+	body.dark-mode #vd .vd-stagewrap #vd-canvas{background:#404d63}
+	body.dark-mode #vd .vd-vz{background:rgba(59,77,104,0.78)}
+	body.dark-mode #vd .vd-an-mk b{border-left:9px solid #caaa02}
+	body.dark-mode #vd .vd-an-mk.is-sel b{border-left-color:#078bc5}
 	/* TOOL-DARK:END */
+/* Floating compact header bar: once the full header + nav scroll out of
+   view, a slim fixed bar (small logo, title, as many nav links as fit)
+   slides in, and the hamburger is pinned into its right end. Toggled by
+   the compact-nav script below. Ported from mes.fm/math's version (see
+   its build.mjs) -- display-controls.js pins the A-/A+/moon buttons into its right end.
+
+   Hidden by default via the inline style="display:none" on the element
+   itself (not just this stylesheet's "display: none" below) -- some
+   browser extensions strip or neutralize cosmetic-looking CSS for
+   elements named "sticky-*"/"*-bar" (a common ad/cookie-bar filter
+   pattern), which left an earlier version's raw unstyled markup visible
+   above the real header on mes.fm/math. The inline attribute is a
+   fallback the JS clears itself, independent of this stylesheet
+   surviving intact. */
+#compact-nav {
+  position: fixed; top: 0; left: 0; right: 0; height: 52px; z-index: 15;
+  display: none; align-items: center; gap: 12px;
+  padding: 0 80px 0 12px; box-sizing: border-box;
+  background: #ffffff; border-bottom: 3px solid #be123c;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.18);
+  transform: translateY(-110%); transition: transform 0.2s ease;
+}
+#compact-nav.is-visible { display: flex; }
+body.is-stuck #compact-nav { transform: none; }
+#compact-nav .compact-nav-logo { display: block; width: 32px; height: 32px; border-radius: 6px; flex: 0 0 auto; }
+#compact-nav .compact-nav-title {
+  flex: 0 1 auto; min-width: 0; font-weight: 700; font-size: 1.05em; color: #1a1a1a;
+  text-decoration: none; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+}
+#compact-nav .compact-nav-links { display: flex; flex: 1 1 0; min-width: 0; overflow: hidden; margin: 0 0 0 8px; padding: 0; list-style: none; }
+#compact-nav .compact-nav-links li { flex: 0 0 auto; }
+#compact-nav .compact-nav-links a { display: block; padding: 0 10px; line-height: 52px; font-size: 0.9em; color: #be123c; text-decoration: none; white-space: nowrap; }
+#compact-nav .compact-nav-links a:hover { background: rgba(190,18,60,0.12); }
+body.is-stuck #navbar-button { position: fixed !important; top: 4px !important; right: 8px !important; display: flex; align-items: center; }
+body.is-stuck #navbar.hide { position: fixed; top: 56px; right: 8px; }
+@media (max-width: 700px) {
+  #compact-nav .compact-nav-title { display: none; }
+  #compact-nav .compact-nav-logo { width: 36px; height: 36px; }
+}
+@media (max-width: 480px) {
+  #compact-nav { padding-right: 70px; gap: 8px; }
+}
 </style>
         <meta property="fb:app_id" content="" />
         <meta name="author" content="Math Easy Solutions Staff">
@@ -848,6 +880,7 @@ body.is-stuck #navbar.hide { position: fixed; top: 56px; right: 8px; }
 					<button type="button" role="tab" data-cat="trans" aria-selected="false"><i aria-hidden="true">&#10697;</i><span>Transitions</span></button>
 					<button type="button" role="tab" data-cat="afx" aria-selected="false"><i aria-hidden="true">&#128266;</i><span>Audio effects</span></button>
 					<button type="button" role="tab" data-cat="vfx" aria-selected="false"><i aria-hidden="true">&#10024;</i><span>Visual effects</span></button>
+					<button type="button" role="tab" data-cat="anim" aria-selected="false"><i aria-hidden="true">&#10148;</i><span>Animations</span></button>
 				</nav>
 				<aside class="vd-left" id="vd-left" aria-label="Library">
 					<section class="vd-pane vd-bin" data-pane="media" role="tabpanel" aria-label="Media">
@@ -864,10 +897,23 @@ body.is-stuck #navbar.hide { position: fixed; top: 56px; right: 8px; }
 					<section class="vd-pane" data-pane="trans" role="tabpanel" aria-label="Transitions" hidden><div class="vd-panehead"><b>Transitions</b><span class="vd-sp"></span><label class="vd-chk">Length <select id="vd-trdur" aria-label="Transition length"><option value="0.5">0.5 s</option><option value="1" selected>1 s</option><option value="2">2 s</option><option value="3">3 s</option></select></label></div><p class="vd-hint">Click to use it on the selected clips, or drag it onto a clip.</p><div class="vd-cards" data-cards="trans"></div></section>
 					<section class="vd-pane" data-pane="afx" role="tabpanel" aria-label="Audio effects" hidden><div class="vd-panehead"><b>Audio effects</b></div><p class="vd-hint">Click to use it on the selected clips, or drag it onto a clip. Nothing is changed in your files: the effects are worked out as you play and export, and you can change or remove them in the properties.</p><div class="vd-cards" data-cards="afx"></div></section>
 					<section class="vd-pane" data-pane="vfx" role="tabpanel" aria-label="Visual effects" hidden><div class="vd-panehead"><b>Visual effects</b></div><p class="vd-hint">Click to use it on the selected clips, or drag it onto a clip.</p><div class="vd-cards" data-cards="vfx"></div></section>
+					<section class="vd-pane" data-pane="anim" role="tabpanel" aria-label="Animations" hidden><div class="vd-panehead"><b>Animations</b><span class="vd-sp"></span><label class="vd-chk">Length <select id="vd-andur" aria-label="Animation length"><option value="0.5">0.5 s</option><option value="1" selected>1 s</option><option value="1.5">1.5 s</option><option value="2">2 s</option><option value="3">3 s</option><option value="5">5 s</option></select></label></div>
+						<label class="vd-chk vd-anease">Easing <select id="vd-anease" aria-label="Easing of new animations"></select></label>
+						<p class="vd-hint">Click to add one to the selected clip at the playhead (slide in and fade in go at its start, slide out and fade out at its end), or drag it onto a clip. Each animation shows as an arrow on the clip: drag it to move it, drag its ends to change its length, click it to jump to its end. With the playhead at an animation's end, drag the clip in the preview to change where it ends up.</p>
+						<div class="vd-cards" data-cards="anim"></div></section>
 				</aside>
 				<div class="vd-vgrip" id="vd-lgrip" role="separator" aria-orientation="vertical" aria-label="Library width" tabindex="0" title="Drag to change the width (double-click: normal)"></div>
 				<div class="vd-center">
-					<div class="vd-stagewrap" id="vd-stagewrap"><canvas id="vd-canvas" width="640" height="360" aria-label="Preview"></canvas></div>
+					<div class="vd-stagewrap" id="vd-stagewrap"><canvas id="vd-canvas" width="640" height="360" aria-label="Preview"></canvas>
+						<div class="vd-vz" id="vd-vz" role="toolbar" aria-label="Preview zoom">
+							<button type="button" class="vd-btn vd-sm" id="vd-vzfit" title="Fit the whole frame in the preview, with a margin around it">Fit</button>
+							<button type="button" class="vd-btn vd-sm vd-ico" id="vd-vzout" title="Zoom the preview out (Ctrl + wheel, pinch)" aria-label="Zoom the preview out">&minus;</button>
+							<select id="vd-vzsel" aria-label="Preview zoom" title="Preview zoom: 100% = one video pixel per screen pixel"></select>
+							<button type="button" class="vd-btn vd-sm vd-ico" id="vd-vzin" title="Zoom the preview in (Ctrl + wheel, pinch)" aria-label="Zoom the preview in">+</button>
+							<button type="button" class="vd-btn vd-sm" id="vd-vzguide" aria-pressed="false" title="Safe-area guides (title safe 80%, action safe 90%), thirds and the centre (G)">Guides</button>
+							<button type="button" class="vd-btn vd-sm" id="vd-vzdim" aria-pressed="true" title="Darken what is outside the frame (it is never in the video)">Dim outside</button>
+						</div>
+					</div>
 					<div class="vd-transport" role="toolbar" aria-label="Playback">
 						<button type="button" class="vd-btn vd-ico" data-tp="start" title="To the start (Home)" aria-label="To the start">&#9198;</button>
 						<button type="button" class="vd-btn vd-ico" data-tp="back" title="One frame back (Left arrow; Shift = 1 s)" aria-label="One frame back">&#9664;&#9646;</button>
@@ -927,7 +973,7 @@ body.is-stuck #navbar.hide { position: fixed; top: 56px; right: 8px; }
 					<dt>S</dt><dd>Split at the playhead (the selected clips, or every clip there)</dd><dt>Delete</dt><dd>Delete; Shift+Delete closes the gap</dd>
 					<dt>I / O</dt><dd>Mark in / out; then &ldquo;Cut out marked&rdquo;, or export only that part</dd><dt>T</dt><dd>Add a title</dd>
 					<dt>Ctrl+Z / Ctrl+Shift+Z</dt><dd>Undo / redo</dd><dt>Ctrl+D</dt><dd>Duplicate</dd><dt>+ / &minus;</dt><dd>Zoom the timeline (Ctrl + wheel too)</dd>
-					<dt>W</dt><dd>The whole editor fills the browser window (Esc leaves)</dd><dt>F / Shift+F</dt><dd>Preview fills the window / full screen</dd><dt>Ctrl+Shift+A</dt><dd>Separate video and audio</dd><dt>Alt + drag a linked clip</dt><dd>Move it without its partner</dd><dt>Ctrl+S / Ctrl+E</dt><dd>Save project file / export</dd><dt>Alt + drag</dt><dd>Move without snapping</dd>
+					<dt>W</dt><dd>The whole editor fills the browser window (Esc leaves)</dd><dt>F / Shift+F</dt><dd>Preview fills the window / full screen</dd><dt>Ctrl + wheel / pinch</dt><dd>Zoom the preview (drag the grey area around the frame, the middle button, or Space + drag, to move it)</dd><dt>G</dt><dd>Safe-area guides on the preview</dd><dt>Ctrl+Shift+A</dt><dd>Separate video and audio</dd><dt>Alt + drag a linked clip</dt><dd>Move it without its partner</dd><dt>Ctrl+S / Ctrl+E</dt><dd>Save project file / export</dd><dt>Alt + drag</dt><dd>Move without snapping</dd>
 				</dl>
 			</div>
 			<div class="vd-modal" id="vd-modal" hidden><div class="vd-dlg" id="vd-dlg" role="dialog" aria-modal="true"></div></div>
@@ -947,7 +993,9 @@ body.is-stuck #navbar.hide { position: fixed; top: 56px; right: 8px; }
 				<dt>Audio effects that even out the sound</dt><dd>The <b>Leveler</b> brings quiet and loud parts to the same loudness over a few seconds, the <b>Compressor</b> tames the loudest moments, and <b>Ducking</b> lowers music while a voice speaks. They never change your files: they are worked out from the sound as you play and export, the waveform shows the result over the original, and you can change or remove them any time.</dd>
 				<dt>Your work is saved as you go</dt><dd>The project and its media are kept in this browser, so closing the tab loses nothing. <b>Save project file</b> writes a small .mesvideo file you can open again later; the media files are matched by name, so keep them.</dd>
 				<dt>How the export works</dt><dd>Every frame is decoded with your computer's video decoder (WebCodecs), drawn with the titles and overlays, and encoded again with its H.264 encoder, usually on the graphics chip; the sound is mixed and encoded to AAC. In Chrome, Edge and Brave (with the File System Access API on) the MP4 can be written straight to disk, so even long exports do not fill the memory.</dd>
-				<dt>Limits of this first version</dt><dd>No keyframe animation, no green screen, no cursor effects or zoom-and-pan yet, and the speed change also changes the pitch of the sound. The compressor works on 10 ms steps, so it evens out speech rather than catching every single sharp peak (the export's limiter stops clipping). Firefox and Safari cannot export (no H.264 encoder there yet); use Chrome, Edge or Brave on a computer.</dd>
+				<dt>Animations, like Camtasia</dt><dd>Open <b>Animations</b> in the library: zoom in or out, <b>zoom-n-pan</b> to a box you draw on the preview, slide in and out, fade, scale, pop in, spin or a custom move. Each one is an arrow on the clip in the timeline: drag it to move it, drag its ends to change how long it takes, and pick the easing in the properties. Put the playhead at the end of an animation and drag the clip, its corner or its turn handle in the preview to change where it ends up. Animations work on videos, pictures and titles, go into the export exactly as you see them, and are saved in the project.</dd>
+				<dt>See the whole frame</dt><dd>The preview shows the frame with a grey margin around it: anything that hangs over the edge is drawn there, darkened, so you can see what is cut off. Zoom out to see more, zoom in to check the edges (Ctrl + wheel, pinch, or the zoom menu), drag the grey area to move around, and press Fit to see it all again. Guides show the title-safe and action-safe areas.</dd>
+				<dt>Limits of this version</dt><dd>No green screen or cursor effects yet, and the speed change also changes the pitch of the sound. The compressor works on 10 ms steps, so it evens out speech rather than catching every single sharp peak (the export's limiter stops clipping). Firefox and Safari cannot export (no H.264 encoder there yet); use Chrome, Edge or Brave on a computer.</dd>
 			</dl>
 			<h2>Is it private?</h2>
 			<p>Yes. Your videos, sound and pictures stay on your computer; nothing is uploaded to mes.fm or anywhere else. The only downloads are the open-source libraries the editor uses (mp4box.js, mp4-muxer, and ffmpeg.wasm when a file needs converting) and the noise-removal model the first time you use it.</p>
@@ -1012,7 +1060,7 @@ body.is-stuck #navbar.hide { position: fixed; top: 56px; right: 8px; }
             hide_search:false,
             current_tab:0
         }        </script><!-- FASTCOMMENTS-LAZY: widget init moved to main_js/main.js -- it pulls embed.min.js only when #fastcomments-widget nears the viewport or on the first Comments-toggle click, so it no longer blocks first render -->                <script src="https://mes.fm/main_js/lazysizes.min.js?v=1.0.3" async></script>
-	<script src="/video/js/video.js?v=3" defer></script>
+	<script src="/video/js/video.js?v=4" defer></script>
             <script src="https://mes.fm/main_js/main.js?v=1.0.5"></script>    <!-- PAGEVIEW-TRACKING-INSERTED --><script src="https://mes.fm/main_js/track.js" defer></script><script>document.getElementById('copyright-year').textContent = new Date().getFullYear();</script><script src="/main_js/info-bar-fit.js" defer></script><script>
   // Floating compact header bar (see #compact-nav CSS): appears once the
   // header + nav bar have scrolled off the top; nav links that don't fit

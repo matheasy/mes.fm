@@ -242,6 +242,8 @@ function proj(clips) { const p = V.newProject(); p.clips = clips; return p; }
 	eq(V.propOwner(c, 8, "x").id, "a", "later: still a"); eq(V.propOwner(c, 8, "y"), null, "a never set y");
 	ok(V.animRunning(c, 2, 0.01) && !V.animRunning(c, 3, 0.01), "running inside, not at the end");
 	V.setPropAt(c, 3, "x", 0.7); near(c.anims[0].to.x, 0.7, 0, "moved the keyframe"); near(c.x, 0.5, 0, "clip value untouched");
+	const e = V.setPropAt(c, 6, "x", 0.9, 0.01); eq(e.id, "b", "at the end of b: the change goes into b"); near(c.anims[1].to.x, 0.9, 0, "b now also moves x"); near(V.stateAt(c, 5.5).x, (0.7 + 0.9) / 2, 1e-9, "and moves it during b");
+	delete c.anims[1].to.x;
 	V.setPropAt(c, 0.2, "x", 0.6); near(c.x, 0.6, 0, "before any animation: the clip's own value"); near(V.stateAt(c, 2).x, 0.65, 1e-12, "the animation now runs from the new start");
 }
 // animations: split, left trim and cutting a range keep every frame where it was

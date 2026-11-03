@@ -32,7 +32,7 @@
 				html += '<div class="vd-clip vd-clip--' + c.type + (sel[c.id] ? " is-sel" : "") + (m && m.state === "missing" ? " is-missing" : "") + '" data-id="' + c.id + '" style="left:' + x + "px;width:" + w + 'px" title="' + VE.esc(label) + " · " + V.short(V.dur(c)) + '">' +
 					(c.xin > 0 ? '<i class="vd-xf" style="width:' + c.xin * VE.pps + 'px"></i>' : "") +
 					'<canvas class="vd-cc" width="' + Math.min(4000, Math.ceil(w)) + '" height="' + (h - 4) + '"></canvas><span class="vd-cl">' + VE.esc(badges + label) + "</span>" +
-					(c.fin > 0 ? '<i class="vd-fade vd-fade--in" style="width:' + c.fin * VE.pps + 'px"></i>' : "") + (c.fout > 0 ? '<i class="vd-fade vd-fade--out" style="width:' + c.fout * VE.pps + 'px"></i>' : "") + "</div>";
+					(c.fin > 0 ? '<i class="vd-fade vd-fade--in" style="width:' + c.fin * VE.pps + 'px"></i>' : "") + (c.fout > 0 ? '<i class="vd-fade vd-fade--out" style="width:' + c.fout * VE.pps + 'px"></i>' : "") + animMarks(c, w) + "</div>";
 			});
 			html += '</div><i class="vd-rgrip" data-rgrip="' + tr.id + '" title="Drag to make this track taller or shorter (double-click: normal height)"></i></div>';
 		});
@@ -43,6 +43,14 @@
 		else markEl.hidden = true;
 		drawRuler(); T.playhead();
 	};
+	// each animation is an arrow along the top of its clip: a dot at its start, an arrowhead at its end
+	function animMarks(c, w) {
+		if (!c.anims || c.type === "audio") return "";
+		return c.anims.map(function (a, i) {
+			var x = a.t * VE.pps, aw = Math.max(10, a.d * VE.pps); if (x + aw < 0 || x > w) return "";
+			return '<i class="vd-an-mk' + (VE.animSel === a.id ? " is-sel" : "") + '" data-aid="' + VE.esc(a.id) + '" style="left:' + x + "px;width:" + aw + "px;top:" + (2 + (i % 2) * 13) + 'px" title="' + VE.esc(V.animName(a)) + " · " + (Math.round(a.d * 100) / 100) + ' s. Drag to move, drag an end to change its length, click to jump to its end."><u></u><s></s><b></b></i>';
+		}).join("");
+	}
 	function paintClip(el) {
 		var c = V.clip(VE.P, el.getAttribute("data-id")); if (!c) return;
 		var cv = el.querySelector("canvas"), g = cv.getContext("2d"), W = cv.width, H = cv.height, m = VE.media(c.media), k = W / Math.max(1, V.dur(c) * VE.pps);
@@ -134,6 +142,16 @@
 		var rg = e.target.closest("[data-rgrip]");
 		if (rg) { var rtr = V.track(VE.P, rg.getAttribute("data-rgrip")); drag = { mode: "rowh", tr: rtr, y0: e.clientY, h0: V.rowH(rtr), moved: false }; inner.setPointerCapture(e.pointerId); e.preventDefault(); return; }
 		if (e.target.closest(".vd-thead")) return;
+		var mk = e.target.closest(".vd-an-mk");
+		if (mk) {
+			var mc = V.clip(VE.P, mk.closest(".vd-clip").getAttribute("data-id")), ma = mc && (mc.anims || []).filter(function (x) { return x.id === mk.getAttribute("data-aid"); })[0];
+			if (ma) {
+				VE.sel = [mc.id]; VE.animSel = ma.id; VE.emit("select");
+				var mr = mk.getBoundingClientRect(), medge = mr.width >= 18 && e.clientX - mr.left < 6 ? "l" : mr.width >= 18 && mr.right - e.clientX < 7 ? "r" : null, mtr = V.track(VE.P, mc.track);
+				drag = { mode: "anim", c: mc, a: ma, edge: medge, x0: e.clientX, t0: ma.t, d0: ma.d, moved: false, locked: !!(mtr && mtr.lock) };
+				inner.setPointerCapture(e.pointerId); e.preventDefault(); return;
+			}
+		}
 		var clipEl = e.target.closest(".vd-clip"), t = x2t(e.clientX);
 		if (e.target.closest("#vd-rulerwrap") || !clipEl) {
 			if (!e.target.closest("#vd-rulerwrap") && !e.shiftKey) { VE.sel = []; VE.emit("select"); }
@@ -149,19 +167,29 @@
 		if (r.width < 22) edge = null;
 		var prim = VE.selected().filter(unlocked), ids = e.altKey ? prim.map(function (x) { return x.id; }) : V.withLinks(VE.P, prim.map(function (x) { return x.id; }));   // linked partners move along (Alt: just this clip)
 		var group = ids.map(function (id) { return V.clip(VE.P, id); }).filter(function (x) { return x && unlocked(x); });
-		drag = { mode: edge ? "trim" : "move", edge: edge, c: c, x0: e.clientX, t0: t, snap: JSON.stringify(VE.P), prim: prim.length, orig: group.map(function (x) { return { c: x, start: x.start, in: x.in, out: x.out, track: x.track }; }), moved: false, el: clipEl };
+		drag = { mode: edge ? "trim" : "move", edge: edge, c: c, x0: e.clientX, t0: t, snap: JSON.stringify(VE.P), prim: prim.length, orig: group.map(function (x) { return { c: x, start: x.start, in: x.in, out: x.out, track: x.track, anims: x.anims ? JSON.stringify(x.anims) : null }; }), moved: false, el: clipEl };
 		inner.setPointerCapture(e.pointerId); e.preventDefault();
 	});
 	function mag(id) { var q = V.track(VE.P, id); return !!(q && q.mag); }
 	inner.addEventListener("pointermove", function (e) {
 		if (!drag) { var ce = e.target.closest && e.target.closest(".vd-clip"); if (ce) { var r = ce.getBoundingClientRect(); ce.style.cursor = (r.width >= 22 && (e.clientX - r.left < 7 || r.right - e.clientX < 7)) ? "ew-resize" : "grab"; } return; }
 		if (drag.mode === "scrub") { VE.preview.seek(x2t(e.clientX)); return; }
+		if (drag.mode === "anim") {
+			var ddx = e.clientX - drag.x0; if (drag.locked || (!drag.moved && Math.abs(ddx) < 3)) return; drag.moved = true;
+			var ac = drag.c, aa = drag.a, len = V.dur(ac), dta = ddx / VE.pps, lo = Math.min(0, drag.t0), sn = T.snap && !e.altKey ? 8 / VE.pps : 0;
+			function snapRel(r) { if (!sn) return r; var pts = [VE.t - ac.start, 0, len]; (ac.anims || []).forEach(function (o) { if (o !== aa) pts.push(o.t, o.t + o.d); }); return V.snap(r, pts, sn).t; }
+			if (drag.edge === "l") { var end = drag.t0 + drag.d0, nt = V.clamp(snapRel(drag.t0 + dta), lo, end - 0.05); aa.t = nt; aa.d = end - nt; }
+			else if (drag.edge === "r") { var ne = V.clamp(snapRel(drag.t0 + drag.d0 + dta), drag.t0 + 0.05, Math.max(len, drag.t0 + drag.d0)); aa.d = ne - drag.t0; }
+			else { var st = drag.t0 + dta, s1 = snapRel(st), s2 = snapRel(st + drag.d0) - drag.d0; st = Math.abs(s1 - st) <= Math.abs(s2 - st) ? s1 : s2; aa.t = V.clamp(st, lo, Math.max(lo, len - drag.d0)); }
+			aa.t = Math.round(aa.t * 1e4) / 1e4; aa.d = Math.round(aa.d * 1e4) / 1e4;
+			T.render(); VE.preview.draw(); VE.emit("live"); return;
+		}
 		if (drag.mode === "rowh") { drag.moved = true; drag.tr.h = V.clamp(Math.round(drag.h0 + e.clientY - drag.y0), V.ROW_MIN, V.ROW_MAX); T.render(); return; }
 		var dx = e.clientX - drag.x0; if (!drag.moved && Math.abs(dx) < 3 && drag.mode === "move" && !rowAt(e.clientY, drag.c)) return;
 		drag.moved = true; var dt = dx / VE.pps, ign = {}; drag.orig.forEach(function (o) { ign[o.c.id] = 1; });
 		if (drag.mode === "trim") {
-			var c = drag.c, o = drag.orig.filter(function (q) { return q.c === c; })[0] || { start: c.start, in: c.in, out: c.out };
-			Object.assign(c, { start: o.start, in: o.in, out: o.out });
+			var c = drag.c, o = drag.orig.filter(function (q) { return q.c === c; })[0] || { start: c.start, in: c.in, out: c.out, anims: c.anims ? JSON.stringify(c.anims) : null };
+			Object.assign(c, { start: o.start, in: o.in, out: o.out, anims: o.anims ? JSON.parse(o.anims) : null });
 			var want = (drag.edge === "l" ? o.start : V.end(c)) + dt, isMag = mag(c.track);
 			if (T.snap && !e.altKey) want = V.snap(want, snapPts(ign), 8 / VE.pps).t;
 			var nb = V.onTrack(VE.P, c.track).filter(function (x) { return x !== c; }), lo = 0, hi = Infinity;
@@ -201,12 +229,17 @@
 		if (!drag) return;
 		var d = drag; drag = null;
 		if (d.mode === "rowh") { if (d.moved) VE.commit("Track height"); return; }
+		if (d.mode === "anim") {
+			if (d.moved) { d.c.anims = V.cleanAnims(d.c.anims); VE.commit(d.edge ? "Animation length" : "Move animation"); }
+			else VE.preview.seek(Math.min(V.end(d.c) - 1e-3, d.c.start + d.a.t + d.a.d));   // a click jumps to its end, ready to drag the clip there in the preview
+			return;
+		}
 		if (d.mode === "scrub" || !d.moved) { T.render(); return; }
 		if (d.bad) { VE.P = JSON.parse(d.snap); T.render(); VE.emit("live"); VE.emit("notice", "There is no room there: clips on one track cannot overlap (turn on the magnet of a track to have clips close up instead)."); return; }
 		VE.commit(d.mode === "trim" ? "Trim" : "Move");
 	}
 	inner.addEventListener("pointerup", finish); inner.addEventListener("pointercancel", finish);
-	function markSel() { var s = {}; VE.sel.forEach(function (i) { s[i] = 1; }); rows.querySelectorAll(".vd-clip").forEach(function (el) { el.classList.toggle("is-sel", !!s[el.getAttribute("data-id")]); }); }
+	function markSel() { var s = {}; VE.sel.forEach(function (i) { s[i] = 1; }); rows.querySelectorAll(".vd-clip").forEach(function (el) { el.classList.toggle("is-sel", !!s[el.getAttribute("data-id")]); }); rows.querySelectorAll(".vd-an-mk").forEach(function (el) { el.classList.toggle("is-sel", el.getAttribute("data-aid") === VE.animSel); }); }
 	T.markSel = markSel;
 	function trackAction(b) {
 		var row = b.closest(".vd-trow"), tr = V.track(VE.P, row.getAttribute("data-track")), a = b.getAttribute("data-tact");
