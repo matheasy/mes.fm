@@ -103,8 +103,8 @@ eq(X.fmtGeneral(1e12), "1E+12", "general big");
 throws(function () { X.parse("1+"); }, "incomplete formula");
 throws(function () { X.parse("SUM(1,2"); }, "unclosed bracket");
 throws(function () { X.parse("\"abc"); }, "unclosed text");
-try { X.calc("VLOOKUP(1,A1:B2,2)", get); fail++; console.log("FAIL unknown function should throw"); } catch (e) { eq(e instanceof X.Unknown && e.name, "VLOOKUP", "unknown function reported"); }
-eq(X.unknownFunctions(X.parse("SUM(A1)+XLOOKUP(1,A:A,B:B)+MyName")), ["XLOOKUP", "MyName"], "unknownFunctions");
+try { X.calc("FOOBAR(1,A1:B2,2)", get); fail++; console.log("FAIL unknown function should throw"); } catch (e) { eq(e instanceof X.Unknown && e.name, "FOOBAR", "unknown function reported"); }
+eq(X.unknownFunctions(X.parse("SUM(A1)+NOSUCHFN(1,A:A,B:B)+MyName")), ["NOSUCHFN", "MyName"], "unknownFunctions");
 eq(X.refsOf(X.parse("SUM(A1:B2)+Other!C3")).map(function (r) { return [r.sheet, X.rangeA1(r.g)]; }), [[null, "A1:B2"], ["Other", "C3"]], "refsOf");
 eq(X.FUNCTIONS.indexOf("SUM") >= 0 && X.FUNCTIONS.indexOf("IF") >= 0, true, "FUNCTIONS list");
 
@@ -128,7 +128,7 @@ eq(X.renameSheetRefs("Data!A1+'Data'!B2+A1", "Data", "My data"), "'My data'!A1+'
 /* Calc: dependency recalculation */
 function book() {
 	return { sheets: [
-		{ name: "S1", data: [[{ t: "n", v: 1 }, { t: "n", v: 2 }, { t: "n", v: 3, f: "A1+B1" }], [{ t: "n", v: 6, f: "SUM(A1:C1)" }, { t: "n", v: 12, f: "A2*2" }, { t: "n", v: 99, f: "VLOOKUP(1,A1:B1,2)" }]] },
+		{ name: "S1", data: [[{ t: "n", v: 1 }, { t: "n", v: 2 }, { t: "n", v: 3, f: "A1+B1" }], [{ t: "n", v: 6, f: "SUM(A1:C1)" }, { t: "n", v: 12, f: "A2*2" }, { t: "n", v: 99, f: "NOSUCHFN(1,A1:B1,2)" }]] },
 		{ name: "S2", data: [[{ t: "n", v: 7, f: "S1!B2+1" }]] }
 	] };
 }
@@ -138,7 +138,7 @@ bk.sheets[0].data[0][0] = { t: "n", v: 10 };
 var res = cc.recalc([{ si: 0, r: 0, c: 0 }]);
 eq([bk.sheets[0].data[0][2].v, bk.sheets[0].data[1][0].v, bk.sheets[0].data[1][1].v, bk.sheets[1].data[0][0].v], [12, 24, 48, 49], "chain recalculated in order across sheets");
 eq(bk.sheets[0].data[1][2].v, 99, "unknown function keeps cached value");
-eq(res.stale.map(function (s) { return s.unknown[0]; }), ["VLOOKUP"], "stale reported");
+eq(res.stale.map(function (s) { return s.unknown[0]; }), ["NOSUCHFN"], "stale reported");
 eq(bk.sheets[0].data[0][2].f, "A1+B1", "formula kept");
 // new formula + cycle
 bk.sheets[0].data[0][0] = { t: "n", v: 0, f: "C1" }; cc.add(0, 0, 0, "C1");

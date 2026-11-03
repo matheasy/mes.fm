@@ -189,6 +189,14 @@ APPS = {
                      desc="Search every Math Easy Solutions video since 2011: math tutorials, livestreams, #911Truth, Hutchison Effect, experiments and more, with links to YouTube, Hive, 3Speak, Rumble, Odysee, BitChute and Telegram. Filter by series, topic or site, sort by date, views or length.",
                      meta_desc="Search every Math Easy Solutions video since 2011, with links to YouTube, Hive, 3Speak, Rumble, Odysee, BitChute and Telegram. Filter by series, topic or site.",
                      js_v="1"),
+    # MES Telegram Archive (2026-11-02, mes.fm/telegram): every post of t.me/meslinks. Data = mes.fm/telegram/data/index.json + c<k>.json from
+    # update_telegram_archive.py (t.me/s web preview, parsed by lib.js = MESTg through cli.js); newer posts at runtime from api/tg-latest.js
+    # (_tg-lib.js = byte-identical copy of lib.js). Tests: node tool_apps_src/telegram-tests.js.
+    "telegram": dict(title="MES Telegram Archive", page_title="MES Links Telegram Archive: Search Every Post of t.me/meslinks",
+                     tag="Every post of the MES Links channel, searchable.", accent="#0e6f9e", dark="#0b5679", tint="#e1f2fb",
+                     desc="Search every post of the MES Links Telegram channel (t.me/meslinks) since 2021: new videos and livestreams, #911Truth, the Hutchison Effect, math, science, crypto and Hive, memes and more. Filter by topic, year, kind of post or the site a post links to.",
+                     meta_desc="Search every post of the MES Links Telegram channel (t.me/meslinks): videos, livestreams, 9/11 Truth, Hutchison Effect, math, crypto and memes.",
+                     js_v="1"),
     # MES Storage Analyzer (2026-10-29, mes.fm/storage): WinDirStat / DaisyDisk in the browser. lib.js = MESStorage (scan of a FileSystemDirectoryHandle,
     # also run as a Blob Web Worker from its own source; model in typed arrays, squarify, sunburst, lists, CSV/JSON), tests tool_apps_src/storage-tests.js.
     "storage": dict(title="MES Storage Analyzer", page_title="Storage Analyzer: See What Is Taking Up Space in a Folder",
@@ -204,6 +212,15 @@ APPS = {
                        desc="Free file safety check: drop files or a whole folder to see what each one really is and spot the tricks malware uses, like programs disguised as PDFs, double endings, Office macros, PDF JavaScript, password-protected zips and phishing pages. Get SHA-256 hashes to look up on VirusTotal, check suspicious links, and learn how to really scan your computer. Nothing is uploaded.",
                        meta_desc="Free file safety check: spot disguised programs, macros, PDF JavaScript, zip bombs and phishing files, get hashes for VirusTotal and check links. Nothing is uploaded.",
                        js_v="1", lib_from=["image-converter"]),
+    # MES Gallery (2026-11-02, mes.fm/gallery): view your own photos and videos from a folder, nothing uploaded. lib.js = MESGallery (types, header sizes, EXIF dates,
+    # sort / filter / group, justified / square / masonry / list layout, viewer fit maths, video speed + A-B loop; node tests tool_apps_src/gallery-tests.js);
+    # MESExif (exif-viewer) for dates and the details panel. PWA manifest gallery/manifest.webmanifest (file_handlers -> launchQueue).
+    "gallery": dict(title="MES Gallery", page_title="Photo and Video Viewer for Your Folders, Private and Fast",
+                    tag="Your photos and videos, beautifully, nothing uploaded.", accent="#7c3aed", dark="#5b21b6", tint="#ede7fd",
+                    desc="Free photo and video viewer in your browser: open a folder (with subfolders) and see thousands of pictures and videos in rows, squares, masonry or a list, grouped by day, month, folder or type. Big viewer with zoom, slideshow, rotation, favourites and star ratings, and video speed controls from 0.25x to 4x with frame steps and A-B loops. Nothing is uploaded.",
+                    meta_desc="Free photo and video viewer for your own folders: fast thumbnails, rows / masonry / list, slideshow, zoom, video speed 0.25x-4x and A-B loops. Nothing is uploaded.",
+                    js_v="1", lib_from=["exif-viewer"],
+                    head_extra='<link rel="manifest" href="/gallery/manifest.webmanifest"><meta name="theme-color" content="#5b21b6">'),
     "exif-viewer": dict(title="MES EXIF Viewer", page_title="EXIF Viewer: Photo Metadata, GPS Location and AI Flags",
                         tag="See the hidden data in a photo.", accent="#0f766e", dark="#0a5750", tint="#dcf2ef",
                         desc="Free EXIF viewer: drop a photo to see the camera, date, settings, GPS location, editing software and AI / Content Credentials flags hidden in it, and save a clean copy with all metadata removed. Private: the photo never leaves your browser.",
@@ -1008,6 +1025,15 @@ APPS = {
                 desc="Private dashboard: Google Search Console and Bing Webmaster clicks, impressions, CTR and average position for mes.fm, by day, query, page, country and device.",
                 js_v="7", no_ads=True,
                 head_extra='<meta name="robots" content="noindex, nofollow">' + PAGE3_HEAD),
+    # MES Dashboard (private, mes.fm/dashboard, behind the middleware.js password like /ads): stats, comments and notifications of @mes and
+    # @mestruth on YouTube, Rumble, Odysee, BitChute, 3Speak and Hive, read by api/dashboard.js (one adapter per platform; optional env
+    # YOUTUBE_API_KEY / ODYSEE_AUTH_TOKEN; daily history in Upstash). lib.js = MESDash, byte-identical copy at api/_dash-lib.js. Wide, ad-free,
+    # no sidebar, noindex. Tests: tool_apps_src/dashboard-tests.js.
+    "dashboard": dict(title="MES Dashboard", page_title="MES Dashboard: Channels, Comments and Notifications",
+                tag="Every MES channel in one place.", accent="#4f46e5", dark="#3730a3", tint="#eef2ff",
+                desc="Private dashboard: followers, views, uploads, comments and notifications of the MES channels on YouTube, Rumble, Odysee, BitChute, 3Speak and Hive.",
+                js_v="1", no_ads=True, no_comments=True,
+                head_extra='<meta name="robots" content="noindex, nofollow">' + PAGE3_HEAD),
     # MES App Installs (public, mes.fm/installs): installs of the MES mobile apps on iPhone (App Store Connect Sales and Trends) and Android
     # (Google Play installs CSVs in the developer's Cloud Storage bucket), read by api/installs.js (env APPSTORE_* / PLAY_*; lib.js = MESInst,
     # byte-identical copy at api/_installs-lib.js). Wide, Standard | Wide | Theatre without a sidebar like /ads, ad-free. Tests: tool_apps_src/installs-tests.js.
@@ -1091,7 +1117,7 @@ APPS = {
                   tag="Open, view and edit spreadsheets in your browser.", accent="#1e7145", dark="#155a36", tint="#e1f1e7",
                   desc="Free online spreadsheet viewer and editor: open Excel files (.xlsx, .xlsm, .xls), LibreOffice .ods and CSV in your browser, with every sheet, number formats and formulas. Edit cells and simple formulas, find, sort and filter, add rows and columns, then save as .xlsx, .ods or CSV, or print to PDF. Fast with big files. Private: nothing is uploaded.",
                   meta_desc="Free spreadsheet viewer and editor: open Excel .xlsx / .xls, .ods and CSV files, edit cells and formulas, sort, filter, save as .xlsx or CSV. No upload.",
-                  js_v="2", js_parts=["ooxml.js"]),
+                  js_v="3", js_parts=["formulas.js", "edit.js", "ooxml.js"]),
     "compress": dict(title="MES Compressor", page_title="Compressor: Compress Images, PDFs and Audio Online",
                        tag="Make pictures, PDFs and audio smaller.", accent="#4338ca", dark="#3730a3", tint="#e8e9fb",
                        desc="Free online compressor for pictures, PDFs and audio: shrink JPG, PNG and WebP to a quality or file size you choose, make PDFs smaller while keeping text selectable, and save audio as smaller MP3s. Before and after preview, ZIP download. Private: nothing is uploaded.",
@@ -1123,7 +1149,7 @@ APPS = {
     "video": dict(title="MES Video Editor", page_title="Free Online Video Editor: Cut, Join, Add Titles, Clean Up Sound",
                        tag="Cut, join, add titles, clean up the sound. No upload.", accent="#be123c", dark="#9f1239", tint="#fde4ea",
                        desc="Free online video editor in your browser: put videos, sound and pictures on a multi-track timeline, trim and split clips, join many videos in order, add titles and overlays, cross-fade, remove background noise, even out the loudness and export MP4 up to 4K. Opens AVI, MKV, WMV and MOV too. Nothing is uploaded.",
-                       js_v="3", lib_from=["convert-video"], js_parts=["../convert-video/engine.js", "core.js", "preview.js", "timeline.js", "export.js"]),
+                       js_v="4", lib_from=["convert-video"], js_parts=["../convert-video/engine.js", "core.js", "preview.js", "timeline.js", "export.js"]),
     # MES Font Preview and Finder (2026-10-19): text in every font the browser really has (+ optional Google Fonts), effects, PNG / CSS export, compare, and a picture matcher. lib.js = MESFont (node tests tool_apps_src/fonts-tests.js).
     "fonts": dict(title="MES Font Preview and Finder", page_title="Font Preview: See Your Text in Every Font, and Find a Font from a Picture",
                   tag="See your text in every font.", accent="#7c2d92", dark="#5f2070", tint="#f3e5f8",
