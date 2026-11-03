@@ -68,7 +68,7 @@
 				var q = F.quote(name); return Promise.all(["16px " + q, "bold 16px " + q, "italic 16px " + q].map(function (s) { return document.fonts.load(s).catch(function () {}); })).then(function () { return true; });
 			}); }).catch(function () { return next(); });
 		}
-		loading[k] = next().then(function (ok) { delete loading[k]; if (ok) { loaded[k] = true; rerender(name); } return ok; }); return loading[k];
+		loading[k] = next().then(function (ok) { delete loading[k]; if (PE.fontFailed) PE.fontFailed(name, !ok); if (PE.fontForget) PE.fontForget(); if (ok) { loaded[k] = true; } rerender(name); return ok; }); return loading[k];   // round 11: a failed load lets held texts fall back (P.textHold)
 	};
 	/* a font finished loading: every text layer that uses it is drawn again (no undo step: the text itself did not change) */
 	function rerender(name) {

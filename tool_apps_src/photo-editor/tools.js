@@ -136,12 +136,14 @@
 	/* round 10: a text layer's box is the frame round its words (PE.textFramePt), not the padded layer canvas: one box, no second bigger one */
 	function isTxt(L) { return !!(L && L.type === "text" && L.text && PE.textFramePt); }
 	function hScreen(L, hd) { if (isTxt(L)) { var d = PE.textFramePt(L, hd[0], hd[1]); return PE.toScreen(d.x, d.y); } return handleScreen(L, hd); }
+	PE.rotHandlePt = function (L) { var h = rotHandle(L); return { x: h.x, y: h.y }; };
 	function boxCorners(L) { return isTxt(L) ? PE.textFrameCorners(L) : PE.corners(L); }
 	function boxHandle(b, hd) { return PE.toScreen(b.x + (hd[0] + 1) / 2 * b.w, b.y + (hd[1] + 1) / 2 * b.h); }
 	function scr(e) { var r = PE.els.over.getBoundingClientRect(); return { x: e.sx - r.left, y: e.sy - r.top }; }
 	/* round 9: the round rotate handle on a stem above the layer's top edge (it turns with the layer) */
 	var angleBox = {};
-	function rotHandle(L) { var T = hScreen(L, [0, -1]), C = PE.toScreen(L.cx, L.cy), dx = T.x - C.x, dy = T.y - C.y, l = Math.hypot(dx, dy); if (l < 1) { dx = Math.sin(L.rot); dy = -Math.cos(L.rot); l = 1; } return { x: T.x + dx / l * 28, y: T.y + dy / l * 28, tx: T.x, ty: T.y }; }
+	/* round 11: for a text layer the handle stands on the middle of its box (the box is not always centred on the layer: a shadow to one side) */
+	function rotHandle(L) { var T = hScreen(L, [0, -1]), C = isTxt(L) ? hScreen(L, [0, 0]) : PE.toScreen(L.cx, L.cy), dx = T.x - C.x, dy = T.y - C.y, l = Math.hypot(dx, dy); if (l < 1) { dx = Math.sin(L.rot); dy = -Math.cos(L.rot); l = 1; } return { x: T.x + dx / l * 28, y: T.y + dy / l * 28, tx: T.x, ty: T.y }; }
 	function drawRotHandle(x, L, rot) {
 		var h = rotHandle(L); x.save(); x.strokeStyle = "#1a73e8"; x.lineWidth = 1.5; x.beginPath(); x.moveTo(h.tx, h.ty); x.lineTo(h.x, h.y); x.stroke();
 		x.fillStyle = rot ? "#1a73e8" : "#fff"; x.beginPath(); x.arc(h.x, h.y, 7, 0, Math.PI * 2); x.fill(); x.stroke();

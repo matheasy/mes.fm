@@ -316,6 +316,30 @@ var MESPixel = (function () {
 	}
 	function psdXmp(json) { var esc = String(json).replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
 		return '<?xpacket begin="" id="W5M0MpCehiHzreSzNTczkc9d"?><x:xmpmeta xmlns:x="adobe:ns:meta/"><rdf:RDF xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#"><rdf:Description rdf:about="" xmlns:mes="https://mes.fm/photo/ns/1.0/"><mes:layers>' + esc + '</mes:layers></rdf:Description></rdf:RDF></x:xmpmeta><?xpacket end="w"?>'; }
+	/* round 11: the Move tool's box round a text layer = the text box (lay = {pad, mw, bh}, plus a gap g) grown to take in every drawn pixel (ink =
+	 * {x, y, w, h} in layer px: outline, shadow, letters that reach past their advance, the layer style), so it always surrounds what you see, also
+	 * when the pixels were drawn in a font that this browser cannot measure yet (a reopened project). gl / gr / gt / gb = how far each frame edge
+	 * sits outside the text box (the side pills keep that offset while dragging). */
+	function textFrameBox(lay, ink, g) {
+		var p = lay.pad, u0 = p - g, v0 = p - g, u1 = p + lay.mw + g, v1 = p + lay.bh + g;
+		if (ink && ink.w > 0 && ink.h > 0) { u0 = Math.min(u0, ink.x - 2); v0 = Math.min(v0, ink.y - 2); u1 = Math.max(u1, ink.x + ink.w + 2); v1 = Math.max(v1, ink.y + ink.h + 2); }
+		return { u0: u0, v0: v0, u1: u1, v1: v1, g: g, gl: p - u0, gr: u1 - (p + lay.mw), gt: p - v0, gb: v1 - (p + lay.bh) };
+	}
+	/* round 11: should a text layer keep its pixels instead of being drawn again? Only when its font is a web font (Google / a font file) that this browser
+	 * cannot draw right now and the pixels on the layer are worth keeping: drawn in this very font (drawn = the font string they were drawn with, undefined
+	 * = not known, e.g. a reopened project, undo, PSD: assumed to be this font), or in another real font while the new one is still loading (a font just
+	 * picked: the old look stays until it arrives; once its load has failed the fallback is used). drawn === "" = drawn in a fallback already: no loss.
+	 * Without this the text silently switched to the browser's default font when the box was dragged. o = {web, available, failed, real, drawn, font} */
+	function textHold(o) {
+		if (!o || !o.web || o.available || !o.real || o.drawn === "") return false;
+		return o.drawn === undefined || o.drawn === o.font || !o.failed;
+	}
+	/* round 11: the font families of a text stack that are the same font as a font file named `name` (old projects stored the file's own name, round 10
+	 * a letters-only alias plus the name): used to point those texts at the file again when it is loaded */
+	function fontFileMatch(stackNames, name, alias) {
+		var n = String(name || "").toLowerCase(), a = String(alias || "").toLowerCase();
+		return (stackNames || []).some(function (x, i) { var k = String(x).toLowerCase(); return k === a || (k === n && (i === 0 || /^mesfile/i.test(stackNames[0]))); });
+	}
 	function textAnchorShift(align, o, n) {
 		var f = align === "center" ? 0.5 : align === "right" ? 1 : 0, known = o.pad != null && o.mw != null;
 		var ax0 = known ? o.pad + f * o.mw : f * o.w, ax1 = known ? n.pad + f * n.mw : f * n.w, ay0 = known ? o.pad : 0, ay1 = known ? n.pad : 0;
@@ -823,7 +847,7 @@ var MESPixel = (function () {
 	}
 
 	var api = { FXDEF: FXDEF, FXKEYS: FXKEYS, fxNorm: fxNorm, fxAny: fxAny, fxAngle: fxAngle, fxOffset: fxOffset, fxReach: fxReach, sdField: sdField, sdCover: sdCover, blurF: blurF, shiftF: shiftF, gradAt: gradAt, gradPlane: gradPlane, bevelPlanes: bevelPlanes, alphaBox: alphaBox, fxPlanes: fxPlanes, fxFromPsd: fxFromPsd, fxToPsd: fxToPsd, colorFromPsd: colorFromPsd, modeFromPsd: modeFromPsd, modeToPsd: modeToPsd, rgbToHsv: rgbToHsv, hsvToRgb: hsvToRgb, parseColor: parseColor, lightness: lightness, edt: edt, outlineAlpha: outlineAlpha, normToolLayout: normToolLayout, moveTool: moveTool, clampCrop: clampCrop, dragCrop: dragCrop, shiftCrop: shiftCrop, projectKind: projectKind, projectBase: projectBase, projectFileName: projectFileName, isZipBytes: isZipBytes, zipEntries: zipEntries, projectPrefix: projectPrefix, pruneRecent: pruneRecent, upsertRecent: upsertRecent, agoText: agoText, diskChanged: diskChanged, layerFileNames: layerFileNames, newProjectId: newProjectId,
-		unionBox: unionBox, boxesTouch: boxesTouch, rectFrom: rectFrom, snapTargets: snapTargets, snapAxis: snapAxis, snapBox: snapBox, guidesOn: guidesOn, linSolve: linSolve, scaleAbout: scaleAbout, wrapLines: wrapLines, textAnchorShift: textAnchorShift, angleDeg: angleDeg, degToRot: degToRot, snapAngle: snapAngle, versionedName: versionedName, nameVersion: nameVersion, pixelSig: pixelSig, psdMetaEncode: psdMetaEncode, psdMetaDecode: psdMetaDecode, psdXmp: psdXmp, carryUiState: carryUiState, richMask: richMask, richEdit: richEdit, richSet: richSet, richAll: richAll, richNorm: richNorm, richSegs: richSegs, fitFontSize: fitFontSize, folderProject: folderProject, caretLine: caretLine, hitInLine: hitInLine, wordAt: wordAt, describeSource: describeSource, bytesText: bytesText, panelClamp: panelClamp, panelKey: panelKey, clamp: clamp, hexToRgb: hexToRgb, rgbToHex: rgbToHex, rgbToHsl: rgbToHsl, hslToRgb: hslToRgb, histogram: histogram, identityLUT: identityLUT, applyLUT: applyLUT, levelsLUT: levelsLUT, curveLUT: curveLUT,
+		unionBox: unionBox, boxesTouch: boxesTouch, rectFrom: rectFrom, snapTargets: snapTargets, snapAxis: snapAxis, snapBox: snapBox, guidesOn: guidesOn, linSolve: linSolve, scaleAbout: scaleAbout, wrapLines: wrapLines, textAnchorShift: textAnchorShift, textFrameBox: textFrameBox, textHold: textHold, fontFileMatch: fontFileMatch, angleDeg: angleDeg, degToRot: degToRot, snapAngle: snapAngle, versionedName: versionedName, nameVersion: nameVersion, pixelSig: pixelSig, psdMetaEncode: psdMetaEncode, psdMetaDecode: psdMetaDecode, psdXmp: psdXmp, carryUiState: carryUiState, richMask: richMask, richEdit: richEdit, richSet: richSet, richAll: richAll, richNorm: richNorm, richSegs: richSegs, fitFontSize: fitFontSize, folderProject: folderProject, caretLine: caretLine, hitInLine: hitInLine, wordAt: wordAt, describeSource: describeSource, bytesText: bytesText, panelClamp: panelClamp, panelKey: panelKey, clamp: clamp, hexToRgb: hexToRgb, rgbToHex: rgbToHex, rgbToHsl: rgbToHsl, hslToRgb: hslToRgb, histogram: histogram, identityLUT: identityLUT, applyLUT: applyLUT, levelsLUT: levelsLUT, curveLUT: curveLUT,
 		brightnessContrast: brightnessContrast, exposure: exposure, hueSat: hueSat, vibrance: vibrance, temperature: temperature, invert: invert, grayscale: grayscale, sepia: sepia, threshold: threshold, posterize: posterize,
 		gaussianBlur: gaussianBlur, boxBlur: boxBlur, unsharp: unsharp, noise: noise, pixelate: pixelate, vignette: vignette, convolve: convolve, floodMask: floodMask, growShrinkMask: growShrinkMask, featherMask: featherMask, invertMask: invertMask,
 		maskBounds: maskBounds, opaqueBounds: opaqueBounds, ADJKEYS: ADJKEYS, QFILTERS: QFILTERS, adjNorm: adjNorm, adjAny: adjAny, quickAdjust: quickAdjust, blendByMask: blendByMask, autoLevels: autoLevels, premultiply: premultiply, unpremultiply: unpremultiply };

@@ -439,4 +439,27 @@ t("quickAdjust filters + intensity, alpha kept, transparent skipped", () => {
 	const tr = px([10, 20, 30, 0]); P.quickAdjust(tr, { bright: 90, sat: 50 }); assert.deepStrictEqual(Array.from(tr), [10, 20, 30, 0]);
 	const n = P.adjNorm({ sat: 500, temp: "x", filter: { id: "nope", amt: 5 } }); assert.strictEqual(n.sat, 100); assert.strictEqual(n.temp, 0); assert.strictEqual(n.filter, null);
 	assert.deepStrictEqual(P.adjNorm({ filter: { id: "sepia" } }).filter, { id: "sepia", amt: 100 }); });
+t("round 11: text box encloses the drawn pixels (textFrameBox)", () => {
+	const lay = { pad: 40, mw: 300, bh: 70 }, f0 = P.textFrameBox(lay, null, 3);
+	assert.deepStrictEqual([f0.u0, f0.v0, f0.u1, f0.v1], [37, 37, 343, 113], "no ink: the text box plus the gap");
+	const f = P.textFrameBox(lay, { x: 30, y: 25, w: 340, h: 100 }, 3);
+	assert.deepStrictEqual([f.u0, f.v0, f.u1, f.v1], [28, 23, 372, 127], "grown to every drawn pixel (+2)");
+	assert.deepStrictEqual([f.gl, f.gr, f.gt, f.gb], [12, 32, 17, 17], "per-side offsets from the text box");
+	const small = P.textFrameBox(lay, { x: 50, y: 50, w: 10, h: 10 }, 3); assert.deepStrictEqual([small.u0, small.u1], [37, 343], "ink inside the box: box unchanged");
+	assert.strictEqual(P.textFrameBox(lay, { x: 0, y: 0, w: 0, h: 0 }, 3).u0, 37, "empty ink ignored"); });
+t("round 11: textHold keeps a text drawn in a font this browser cannot draw", () => {
+	const base = { web: true, available: false, failed: false, real: true, font: "'Press Start 2P', cursive" };
+	assert.strictEqual(P.textHold(Object.assign({}, base, { drawn: undefined })), true, "reopened project: pixels assumed in its font");
+	assert.strictEqual(P.textHold(Object.assign({}, base, { drawn: base.font, failed: true })), true, "drawn in this very font: kept even when loading failed");
+	assert.strictEqual(P.textHold(Object.assign({}, base, { drawn: "Georgia, serif" })), true, "font just picked, still loading: old look kept");
+	assert.strictEqual(P.textHold(Object.assign({}, base, { drawn: "Georgia, serif", failed: true })), false, "just picked and failed: fallback");
+	assert.strictEqual(P.textHold(Object.assign({}, base, { drawn: "" })), false, "already a fallback: redraw is no loss");
+	assert.strictEqual(P.textHold(Object.assign({}, base, { available: true })), false); assert.strictEqual(P.textHold(Object.assign({}, base, { web: false })), false, "installed fonts are never held");
+	assert.strictEqual(P.textHold(Object.assign({}, base, { real: false })), false, "a new text (4x4 canvas) is drawn"); assert.strictEqual(P.textHold(null), false); });
+t("round 11: fontFileMatch finds texts that used a font file", () => {
+	assert(P.fontFileMatch(["8bit Font", "sans-serif"], "8bit Font", "MESfilebitFontxa"), "pre-round-10 projects stored the file name");
+	assert(P.fontFileMatch(["MESfilebitFontxa", "8bit Font", "sans-serif"], "8bit font", "MESfilebitFontxa"), "round 10 alias");
+	assert(P.fontFileMatch(["MESfileOldxb", "8bit Font", "sans-serif"], "8bit Font", "MESfilebitFontxa"), "another alias, same file name");
+	assert(!P.fontFileMatch(["Georgia", "8bit Font"], "8bit Font", "MESfilebitFontxa"), "only a fallback entry of an unrelated stack");
+	assert(!P.fontFileMatch(["Arial", "sans-serif"], "8bit Font", "MESfilebitFontxa")); });
 console.log(n + " checks ok");

@@ -146,6 +146,55 @@
 		return false;
 	}
 	PE.setCtxFont = setFont;
+	/* ---- round 11: is a text's font really drawable right now? ----
+	 * document.fonts.check() is no help (it answers true for a family with no faces at all), so the font is measured: a probe string in "<family>, monospace"
+	 * against plain monospace (and serif, sans-serif). Same widths for all three = the browser falls back = the font is not available. Cached per family,
+	 * forgotten whenever fonts finish loading. Only web fonts (Google Fonts, font files, faces added to document.fonts) are checked: an installed font
+	 * does not come and go between two drawings. */
+	var avail = {}, webFam = {}, pctx = null, fontFailed = {};
+	function famKey(n) { return String(n || "").toLowerCase(); }
+	function probeFam(name) {
+		var k = famKey(name); if (Object.prototype.hasOwnProperty.call(avail, k)) return avail[k]; var F = window.MESFontCat; if (!F) return (avail[k] = true);
+		var c = pctx || (pctx = mk(4, 4).getContext("2d")), s = "mmmmmmmmmlliWWWQ@#0123AaBbYyZz", fam = F.normStack('"' + String(name).replace(/["\\]/g, "") + '"'), ok = false;
+		["monospace", "serif", "sans-serif"].forEach(function (g) { if (ok) return; c.font = "40px " + g; var w0 = c.measureText(s).width; c.font = "40px " + fam + ", " + g; if (Math.abs(c.measureText(s).width - w0) > 0.05) ok = true; });
+		// a loaded face counts too (a font with no Latin letters measures like the fallback with the probe string)
+		if (!ok && document.fonts && document.fonts.forEach) document.fonts.forEach(function (ff) { if (!ok && ff.status === "loaded" && famKey(String(ff.family).replace(/^['"]|['"]$/g, "")) === k) ok = true; });
+		return (avail[k] = ok);
+	}
+	function isWebFam(name) {
+		var k = famKey(name), F = window.MESFontCat; if (!k) return false; if (Object.prototype.hasOwnProperty.call(webFam, k)) return webFam[k];
+		var w = /^mesfile/.test(k) || !!(F && F.googleCat && F.googleCat(name));
+		if (!w && document.fonts && document.fonts.forEach) document.fonts.forEach(function (ff) { if (famKey(String(ff.family).replace(/^['"]|['"]$/g, "")) === k) w = true; });
+		return (webFam[k] = w);
+	}
+	PE.fontAvailable = function (stack) { var F = window.MESFontCat; if (!F) return true; var fam = F.familyOf(stack); return !isWebFam(fam) || probeFam(fam) || F.splitStack(stack).slice(1).some(function (n) { return !/^(serif|sans-serif|monospace|cursive|fantasy|system-ui)$/i.test(n) && probeFam(n); }); };
+	PE.fontForget = function () { avail = {}; webFam = {}; };
+	PE.fontFailed = function (name, yes) { if (yes === undefined) return !!fontFailed[famKey(name)]; if (yes) fontFailed[famKey(name)] = 1; else delete fontFailed[famKey(name)]; };
+	if (document.fonts && document.fonts.addEventListener) ["loadingdone", "loadingerror"].forEach(function (ev) { document.fonts.addEventListener(ev, function () { PE.fontForget(); }); });
+	/* the family to wait for when a text layer must keep its pixels (P.textHold), else null */
+	PE.textFontHold = function (L) {
+		var t = L && L.text, F = window.MESFontCat; if (!t || !F) return null; var fam = F.familyOf(t.font), c = L.canvas;
+		return P.textHold({ web: isWebFam(fam), available: PE.fontAvailable(t.font), failed: !!fontFailed[famKey(fam)], real: !!(c && c.width > 4 && c.height > 4), drawn: L._drawnFont, font: t.font }) ? fam : null;
+	};
+	/* say (at most every few seconds) why the text cannot change yet, and start loading a Google font */
+	var needT = {};
+	PE.fontNeeded = function (fam) {
+		var F = window.MESFontCat, k = famKey(fam), now = Date.now(), google = F && F.googleCat && F.googleCat(fam); if (google && PE.loadGoogleFont) PE.loadGoogleFont(fam);
+		if (needT[k] && now - needT[k] < 4000) return; needT[k] = now;
+		var nm = fam; if (/^mesfile/i.test(fam)) { PE.doc && PE.doc.layers.some(function (L) { if (L.text && F.familyOf(L.text.font) === fam) { var n2 = F.splitStack(L.text.font)[1]; if (n2 && !/^(serif|sans-serif|monospace|cursive)$/i.test(n2)) nm = n2; return true; } }); }
+		PE.toast(google ? "Loading the font \u201c" + fam + "\u201d\u2026 the text keeps its look and changes as soon as it arrives" : "This text uses the font \u201c" + nm + "\u201d, which is not loaded in this browser. Load it again (Text tool \u2192 Load font file\u2026) or pick another font to change the text; until then it keeps its look", 6000);
+	};
+	/* every pixel the layer shows round its text: its own pixels (outline, shadow, overhanging letters) and the layer style, in layer px (cached) */
+	PE.textInkBox = function (L) {
+		var c = L.canvas, fx = fxOn(L) && !L.noFx ? fxCanvases(L) : null, fk = fx && L._fxc ? L._fxc.key : "", k = L._inkb;
+		if (k && k.c === c && k.rev === L.rev && k.fk === fk) return k.b;
+		var b = null; if (c.width * c.height <= 16e6) { try { b = P.opaqueBounds(c.getContext("2d").getImageData(0, 0, c.width, c.height).data, c.width, c.height, 24); } catch (x) { b = null; } }
+		if (fx) [].concat(fx.under, fx.over).forEach(function (pl) {
+			if (pl.bb === undefined) { pl.bb = null; try { var r = P.opaqueBounds(pl.c.getContext("2d").getImageData(0, 0, pl.c.width, pl.c.height).data, pl.c.width, pl.c.height, 24); if (r) pl.bb = { x: r.x - fx.mg, y: r.y - fx.mg, w: r.w, h: r.h }; } catch (x) { } }
+			if (pl.bb) b = b ? P.unionBox([b, pl.bb]) : pl.bb;
+		});
+		L._inkb = { c: c, rev: L.rev, fk: fk, b: b }; return b;
+	};
 	/* a measure(s, start) for a text at a given size: rich parts are measured with their own font */
 	function measurer(t, size, ctx) {
 		var rich = PE.textRich(t), base = PE.textMask(t), ls = (t.ls || 0) + "px", cache = {}, set = function (fn) { if (ctx._mesFont !== fn) setFont(ctx, fn); if ("letterSpacing" in ctx && ctx.letterSpacing !== ls) ctx.letterSpacing = ls; };
@@ -183,7 +232,7 @@
 	var lmc = null;
 	PE.textLayout = function (L) {
 		var t = L.text; if (!t) return null; var rich = PE.textRich(t), f = fontFor(t, PE.textMask(t)), dw = PE.doc ? PE.doc.w : 1200, fit = !!(t.fit && t.wrapW > 0 && t.boxH > 0);
-		var key = JSON.stringify([t.str, f, rich, t.ls || 0, t.wrapW, t.lh, t.align, t.bgOn && t.bgPad, t.strokeOn && t.strokeW, t.shadowOn && [t.shadowBlur, t.shadowDx, t.shadowDy], t.wrapW > 0 ? 0 : dw, fit && t.boxH]);
+		var key = JSON.stringify([PE.fontAvailable(t.font), t.str, f, rich, t.ls || 0, t.wrapW, t.lh, t.align, t.bgOn && t.bgPad, t.strokeOn && t.strokeW, t.shadowOn && [t.shadowBlur, t.shadowDx, t.shadowDy], t.wrapW > 0 ? 0 : dw, fit && t.boxH]);
 		if (L._lay && L._lay.key === key) return L._lay;
 		var m = lmc || (lmc = mk(8, 8).getContext("2d")), measure = measurer(t, t.size, m);
 		// word wrap: an explicit box width (Box width option / the handles on the box), else never wider than 90% of the image so pasted text stays reasonable
@@ -197,6 +246,8 @@
 		return L._lay;
 	};
 	PE.renderText = function (L) {
+		// round 11: a text whose pixels were drawn in a web font this browser has not got (yet) keeps them: drawing it again now would switch it to the default font
+		var held = PE.textFontHold(L); if (held) { PE.fontNeeded(held); return false; }
 		var t = L.text; if (t.fit) { var fs = PE.fitTextSize(L); if (fs) t.size = fs; }
 		var lay = PE.textLayout(L), lines = lay.lines, mw = lay.mw, lhp = lay.lhp, bgp = lay.bgp, pad = lay.pad, rich = lay.rich, base = PE.textMask(t), sz = t.size;
 		var W = lay.W, H = lay.H; if (W * H > PE.MAXAREA) return;
@@ -220,6 +271,7 @@
 		var sh = P.textAnchorShift(t.align, { w: oldW, h: oldH, pad: L._pad, mw: L._amw }, { w: W, h: H, pad: pad, mw: mw }), dx = sh.dx, dy = sh.dy, m6 = matrix(L);
 		L._pad = pad; L._amw = mw;
 		L.cx += m6[0] * dx + m6[2] * dy; L.cy += m6[1] * dx + m6[3] * dy; L.canvas = c; L.rev++;
+		L._drawnFont = PE.fontAvailable(t.font) ? t.font : "";   // round 11: what the pixels were drawn in ("" = a fallback: drawing it again later is no loss)
 		if (L.mask) { L.mask = null; } if (L.crop) L.crop = P.clampCrop(L.crop, W, H);
 	};
 

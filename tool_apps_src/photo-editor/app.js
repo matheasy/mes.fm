@@ -9,7 +9,7 @@
 	function sget() { try { return JSON.parse(localStorage.getItem(KEY) || "{}") || {}; } catch (e) { return {}; } }
 	function sset(o) { try { var c = sget(); for (var k in o) c[k] = o[k]; localStorage.setItem(KEY, JSON.stringify(c)); } catch (e) {} }
 	PE.els = { root: root, main: $("pe-main"), over: $("pe-over"), textedit: $("pe-textedit"), stage: $("pe-stage") };
-	PE.toast = function (t) { var e = document.querySelector(".tu-toast"), host = document.fullscreenElement || document.webkitFullscreenElement || document.body; if (!e) { e = document.createElement("div"); e.className = "tu-toast"; } if (e.parentNode !== host) host.appendChild(e); e.textContent = t; e.classList.add("tu-toast--show"); clearTimeout(PE.toast.t); PE.toast.t = setTimeout(function () { e.classList.remove("tu-toast--show"); }, 2600); };
+	PE.toast = function (t, ms) { var e = document.querySelector(".tu-toast"), host = document.fullscreenElement || document.webkitFullscreenElement || document.body; if (!e) { e = document.createElement("div"); e.className = "tu-toast"; } if (e.parentNode !== host) host.appendChild(e); e.textContent = t; e.classList.add("tu-toast--show"); clearTimeout(PE.toast.t); PE.toast.t = setTimeout(function () { e.classList.remove("tu-toast--show"); }, ms || 2600); };
 	var S = sget();
 
 	/* ---------- colours ---------- */
