@@ -532,6 +532,15 @@ sub {vertical-align:sub;}        .warning-message {font-size:1em;text-align:cent
 	website, and cannot be fully deleted. mes.fm does not store them.
 	</p>
 
+	<p id="hiveauth">
+	If your browser has no Keychain extension (for example on a phone), you can log in with the Hive Keychain phone app instead
+	(HiveAuth). Your browser then talks to the public HiveAuth relay server wss://hive-auth.arcange.eu, run by a Hive community member,
+	not by mes.fm. The relay sees your Hive username and when a request is made; what you are asked to sign is encrypted with a random key
+	that only your browser and the app know. Your keys stay in the app. That key, the session and your username are kept in your browser's
+	local storage ("mes-hive-has", "mes-hive-user") until the app's login expires or you log out. This login cannot use your memo key, so
+	encrypted Copy Text backups are not available with it.
+	</p>
+
 	<p>
 	On <a href="https://mes.fm/premium">mes.fm/premium</a> you can turn off the ads for 1 HBD a month, paid to the Hive account @mes.
 	Payments on Hive are public: anyone can see that your account sent HBD to @mes and the memo ("mes.fm ad-free"). To check a payment,
