@@ -3,7 +3,7 @@
   'use strict';
   var R = MESRA, SR = SRLib, $ = function (id) { return document.getElementById(id); };
   var S = R.merge(null), tab = null, host = '', timer = 0;
-  var FILES = ['srlib.js', 'shared.js', 'reader.js'];
+  var FILES = ['srlib.js', 'shared.js', 'vpick.js', 'reader.js'];   // vpick.js = the searchable voice list in the player (without it the player fell back to a long native select)
 
   function save() { clearTimeout(timer); timer = setTimeout(function () { chrome.storage.sync.set({ mesra: S }); }, 200); }
   function cfg() { return R.resolveProfile(S, host).config; }

@@ -159,17 +159,20 @@
   function fillVoices(sel, voices, o) {
     o = o || {};
     var RA = root.MESRA, bad = o.bad || function () { return false; };
-    var groups = RA.voiceGroups(voices || [], o.textLang || '', navigator.language || '', langName, bad);
+    // macOS lists some voices twice under one voiceURI (Harley and Samantha are both "Samantha"): only the first can ever be chosen
+    var seen = {};
+    voices = (voices || []).filter(function (v) { if (seen[v.voiceURI]) return false; seen[v.voiceURI] = 1; return true; });
+    var groups = RA.voiceGroups(voices, o.textLang || '', navigator.language || '', langName, bad);
     var doc = sel.ownerDocument;
     sel.innerHTML = '';
     if (o.auto) { var a = doc.createElement('option'); a.value = ''; a.textContent = o.auto; sel.appendChild(a); }
     groups.forEach(function (g) {
       var og = doc.createElement('optgroup'); og.label = g.label;
       g.voices.forEach(function (v) {
-        var op = doc.createElement('option'), b = bad(v), rg = region(v.lang);
+        var op = doc.createElement('option'), b = bad(v), rg = region(v.lang), kind = RA.voiceKind ? RA.voiceKind(v.name) : '';
         op.value = v.voiceURI;
-        op.textContent = (b ? '⚠ ' : '') + v.name + (rg && v.name.indexOf(rg) < 0 ? ' (' + rg + ')' : '') + (v.localService === false ? ' · online' : '') + (b ? ' · did not speak here' : '');
-        op.setAttribute('data-k', v.lang + ' ' + langName(v.lang) + ' ' + rg + (v.localService === false ? ' online' : ' on device'));
+        op.textContent = (b ? '⚠ ' : '') + v.name + (rg && v.name.indexOf(rg) < 0 ? ' (' + rg + ')' : '') + (v.localService === false ? ' · online' : '') + (kind === 'novelty' ? ' · novelty' : '') + (b ? ' · did not speak here' : '');
+        op.setAttribute('data-k', v.lang + ' ' + langName(v.lang) + ' ' + rg + (v.localService === false ? ' online' : ' on device') + (kind ? ' ' + kind : ''));
         og.appendChild(op);
       });
       sel.appendChild(og);

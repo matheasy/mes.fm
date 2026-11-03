@@ -2,7 +2,7 @@
    which is why the extension needs no "read all your data on all websites" permission. */
 'use strict';
 importScripts('shared.js');
-var FILES = ['srlib.js', 'shared.js', 'reader.js'];
+var FILES = ['srlib.js', 'shared.js', 'vpick.js', 'reader.js'];   // vpick.js = the searchable voice list in the player (without it the player fell back to a long native select)
 
 async function ensure(tabId, frameId) {
   var opt = { frameId: frameId || 0 };

@@ -78,4 +78,15 @@ eq(R.pdfParas([]), [], 'pdfParas empty');
   eq(g[1].voices.map(v => v.name), ['Ann', 'Zed', 'Bad'], 'voices A-Z inside a group, voices that did not speak last');
   const g2 = R.voiceGroups(V, '', 'de', c => names[c.split('-')[0]]); eq(g2[0].label, 'German', 'no text language: browser language first'); }
 ok(R.voiceMatches('eng kingdom', 'Daniel en-GB English United Kingdom') && R.voiceMatches('', 'x') && !R.voiceMatches('french', 'Daniel en-GB English') && R.voiceMatches('amelie', 'Amélie fr-CA'), 'voiceMatches: every word, accents ignored');
+// 1.9.2: macOS novelty / Eloquence voices, device-specific help
+eq(['Grandma (English (United Kingdom))', 'Rocko (English (United States))', 'Bells', 'Bad News', 'Zarvox', 'Daniel', 'Samantha', 'Google UK English Female'].map(R.voiceKind), ['eloquence', 'eloquence', 'novelty', 'novelty', 'novelty', '', '', ''], 'voiceKind');
+{ const V = [{ name: 'Bells', lang: 'en-US' }, { name: 'Samantha', lang: 'en-US' }, { name: 'Grandma (English (United Kingdom))', lang: 'en-GB' }, { name: 'Albert', lang: 'en-US' }, { name: 'Bad', lang: 'en-US' }, { name: 'Daniel', lang: 'en-GB' }];
+  eq(R.voiceGroups(V, 'en', 'en-US', () => 'English', v => v.name === 'Bad')[0].voices.map(v => v.name), ['Daniel', 'Samantha', 'Grandma (English (United Kingdom))', 'Albert', 'Bells', 'Bad'], 'Eloquence then novelty voices after normal ones, failed voices last');
+  const grand = { name: 'Grandma (English (United Kingdom))', lang: 'en-GB', localService: true }, dan = { name: 'Daniel', lang: 'en-GB', localService: true };
+  eq(SR.pickVoice([grand, dan], 'en', 'en-GB').name, 'Daniel', 'automatic choice skips Eloquence voices');
+  eq(SR.pickVoice([grand, dan], 'en', 'en-GB', { [SR.voiceKey(dan)]: 1 }).name, grand.name, 'but still uses one when nothing else is left'); }
+eq(/Android/.test(R.speechHelp('Mozilla/5.0 (Linux; Android 14; Pixel 8) Chrome/130 Mobile')), true, 'Android tip on Android');
+eq(/Android/.test(R.speechHelp('Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) Chrome/130')), false, 'no Android tip on a Mac');
+eq(/Spoken Content/.test(R.speechHelp('Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) Chrome/130')), true, 'macOS tip');
+eq(/Speech/.test(R.speechHelp('Mozilla/5.0 (Windows NT 10.0; Win64; x64) Chrome/130')), true, 'Windows tip');
 console.log(bad ? bad + ' FAILED of ' + n : 'all ' + n + ' checks passed'); process.exit(bad ? 1 : 0);

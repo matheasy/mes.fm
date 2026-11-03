@@ -334,7 +334,8 @@ var SRLib = (function () {
 		if (/natural|neural|premium|enhanced|online/i.test(v.name)) s += 12;
 		if (v["default"]) s += 3;
 		if (v.localService) s += 4;      // local voices report word boundaries; many online ones do not
-		if (/novelty|whisper|bubbles|bells|boing|cellos|jester|organ|trinoids|zarvox|bad news|good news|albert|fred|junior|ralph|superstar/i.test(v.name)) s -= 40;
+		if (/novelty|whisper|bubbles|bells|boing|cellos|jester|organ|trinoids|zarvox|bad news|good news|albert|fred|junior|ralph|superstar|bahh|wobble/i.test(v.name)) s -= 40;
+		else if (/^(eddy|flo|grandma|grandpa|reed|rocko|sandy|shelley)\b/i.test(v.name)) s -= 15;   // macOS Eloquence voices: robotic, keep them off the automatic choice
 		return s;
 	}
 	// the key a voice is remembered by (same as the speed reader's <option> values)

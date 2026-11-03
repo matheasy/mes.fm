@@ -360,7 +360,8 @@ var SRLib = (function () {
 		if (/natural|neural|premium|enhanced|online/i.test(v.name)) s += 12;
 		if (v["default"]) s += 3;
 		if (v.localService) s += 4;      // local voices report word boundaries; many online ones do not
-		if (/novelty|whisper|bubbles|bells|boing|cellos|jester|organ|trinoids|zarvox|bad news|good news|albert|fred|junior|ralph|superstar/i.test(v.name)) s -= 40;
+		if (/novelty|whisper|bubbles|bells|boing|cellos|jester|organ|trinoids|zarvox|bad news|good news|albert|fred|junior|ralph|superstar|bahh|wobble/i.test(v.name)) s -= 40;
+		else if (/^(eddy|flo|grandma|grandpa|reed|rocko|sandy|shelley)\b/i.test(v.name)) s -= 15;   // macOS Eloquence voices: robotic, keep them off the automatic choice
 		return s;
 	}
 	// the key a voice is remembered by (same as the speed reader's <option> values)
@@ -667,9 +668,28 @@ if (typeof module !== "undefined" && module.exports) module.exports = SRLib;
     order.sort(function (a, b) { return a.rank - b.rank || a.name.localeCompare(b.name); });
     order.forEach(function (g) {
       g.label = (g.rank >= 2 ? 'Other languages: ' : '') + g.name;
-      g.voices.sort(function (a, b) { return (isBad(a) ? 1 : 0) - (isBad(b) ? 1 : 0) || a.name.localeCompare(b.name); });
+      // inside a language: normal voices A-Z, then macOS's Eloquence voices (Grandma, Rocko...), then its novelty / sound-effect voices
+      // (Bells, Bubbles, Zarvox...), then voices that did not speak here
+      var w = function (v) { var k = voiceKind(v.name); return (isBad(v) ? 4 : 0) + (k === 'novelty' ? 2 : k === 'eloquence' ? 1 : 0); };
+      g.voices.sort(function (a, b) { return w(a) - w(b) || a.name.localeCompare(b.name); });
     });
     return order;
+  }
+  // macOS ships two families of odd English voices that Chrome / Brave list with the real ones:
+  // 'novelty' = sound-effect voices (Bells, Bubbles, Zarvox, Bad News...), fun but not for reading; 'eloquence' = the Eloquence engine's
+  // voices (Grandma, Rocko, Flo...: robotic, often listed once per accent). '' = an ordinary voice.
+  var NOVELTY = /^(albert|bad news|bahh|bells|boing|bubbles|cellos|good news|jester|organ|superstar|trinoids|whisper|wobble|zarvox|deranged|hysterical|pipe organ)\b/i;
+  var ELOQUENCE = /^(eddy|flo|grandma|grandpa|reed|rocko|sandy|shelley)\b/i;
+  function voiceKind(name) { name = String(name || '').trim(); return NOVELTY.test(name) ? 'novelty' : ELOQUENCE.test(name) ? 'eloquence' : ''; }
+  // the device-specific part of "speech did not start" help (the Android tip only on Android)
+  function speechHelp(ua) {
+    ua = String(ua || '');
+    if (/Android/i.test(ua)) return 'Check that a text-to-speech voice for this language is installed (Android: Settings > Text-to-speech).';
+    if (/iPhone|iPad|iPod/i.test(ua)) return 'Check Settings > Accessibility > Spoken Content > Voices, and that the ring / silent switch is off.';
+    if (/CrOS/i.test(ua)) return 'Check Settings > Accessibility > Text-to-Speech, or reload the tab.';
+    if (/Mac OS X|Macintosh/i.test(ua)) return 'Reload this tab and try again; if it still says this, quit and reopen the browser (macOS voices: System Settings > Accessibility > Spoken Content).';
+    if (/Windows/i.test(ua)) return 'Reload this tab and try again; if it still says this, check Settings > Time & language > Speech.';
+    return 'Reload this tab and try again, or restart the browser.';
   }
   // words of a search box against a voice's name, language code and group label (every word must match, case and accents ignored)
   function fold(s) { return String(s || '').normalize('NFD').replace(/[̀-ͯ]/g, '').toLowerCase(); }
@@ -680,7 +700,7 @@ if (typeof module !== "undefined" && module.exports) module.exports = SRLib;
   }
 
   var api = { docsId: docsId, docsItems: docsItems, docsInfo: docsInfo, docsUrls: docsUrls, docsHtmlParas: docsHtmlParas, parasToItems: parasToItems, decodeEntities: decodeEntities,
-              isPdfUrl: isPdfUrl, isDocxUrl: isDocxUrl, pdfParas: pdfParas, pdfRepeats: pdfRepeats, voiceGroups: voiceGroups, voiceMatches: voiceMatches, fold: fold, defaultConfig: defaultConfig, builtins: builtins, normConfig: normConfig, merge: merge, profileById: profileById, resolveProfile: resolveProfile,
+              isPdfUrl: isPdfUrl, isDocxUrl: isDocxUrl, pdfParas: pdfParas, pdfRepeats: pdfRepeats, voiceGroups: voiceGroups, voiceKind: voiceKind, speechHelp: speechHelp, voiceMatches: voiceMatches, fold: fold, defaultConfig: defaultConfig, builtins: builtins, normConfig: normConfig, merge: merge, profileById: profileById, resolveProfile: resolveProfile,
               uid: uid, contrastText: contrastText, buildText: buildText, locate: locate, posOf: posOf };
   root.MESRA = api;
   if (typeof module !== 'undefined' && module.exports) module.exports = api;
@@ -848,17 +868,20 @@ if (typeof module !== "undefined" && module.exports) module.exports = SRLib;
   function fillVoices(sel, voices, o) {
     o = o || {};
     var RA = root.MESRA, bad = o.bad || function () { return false; };
-    var groups = RA.voiceGroups(voices || [], o.textLang || '', navigator.language || '', langName, bad);
+    // macOS lists some voices twice under one voiceURI (Harley and Samantha are both "Samantha"): only the first can ever be chosen
+    var seen = {};
+    voices = (voices || []).filter(function (v) { if (seen[v.voiceURI]) return false; seen[v.voiceURI] = 1; return true; });
+    var groups = RA.voiceGroups(voices, o.textLang || '', navigator.language || '', langName, bad);
     var doc = sel.ownerDocument;
     sel.innerHTML = '';
     if (o.auto) { var a = doc.createElement('option'); a.value = ''; a.textContent = o.auto; sel.appendChild(a); }
     groups.forEach(function (g) {
       var og = doc.createElement('optgroup'); og.label = g.label;
       g.voices.forEach(function (v) {
-        var op = doc.createElement('option'), b = bad(v), rg = region(v.lang);
+        var op = doc.createElement('option'), b = bad(v), rg = region(v.lang), kind = RA.voiceKind ? RA.voiceKind(v.name) : '';
         op.value = v.voiceURI;
-        op.textContent = (b ? '⚠ ' : '') + v.name + (rg && v.name.indexOf(rg) < 0 ? ' (' + rg + ')' : '') + (v.localService === false ? ' · online' : '') + (b ? ' · did not speak here' : '');
-        op.setAttribute('data-k', v.lang + ' ' + langName(v.lang) + ' ' + rg + (v.localService === false ? ' online' : ' on device'));
+        op.textContent = (b ? '⚠ ' : '') + v.name + (rg && v.name.indexOf(rg) < 0 ? ' (' + rg + ')' : '') + (v.localService === false ? ' · online' : '') + (kind === 'novelty' ? ' · novelty' : '') + (b ? ' · did not speak here' : '');
+        op.setAttribute('data-k', v.lang + ' ' + langName(v.lang) + ' ' + rg + (v.localService === false ? ' online' : ' on device') + (kind ? ' ' + kind : ''));
         og.appendChild(op);
       });
       sel.appendChild(og);
@@ -916,15 +939,42 @@ if (typeof module !== "undefined" && module.exports) module.exports = SRLib;
   }
   // voices that did not speak here (Android lists voices whose data is not installed, or that cannot read the text, e.g. "Bodo India"
   // for English): skipped by the automatic choice and marked in the player's list for the rest of this page's life
-  var badVoices = {}, voiceFails = 0;
+  var badVoices = {}, voiceFails = 0, noStarts = [], clickFrom = -1;
+  function speechHelp() { return RA.speechHelp ? RA.speechHelp(navigator.userAgent) : ''; }
+  // Chrome and Brave let a page speak only after it has been clicked or typed in once: before that speak() does nothing at all (no error,
+  // no events). Starting from the toolbar button, the shortcut or the menu does not count as a click in the page, so on a page you have
+  // only scrolled (a Telegram chat, say) every voice "did not start" and each one used to be blamed in turn.
+  function activated() { var a = navigator.userActivation; return !a || a.hasBeenActive !== false; }
+  function waitForClick(from) {
+    st.playing = false; stopSpeech(); clickFrom = from;
+    setStatus('Click anywhere on the page (or press \u25b6) to start: the browser lets a page speak only after you have clicked in it.', true);
+    fillUi();
+  }
+  window.addEventListener('pointerup', function (e) {
+    if (clickFrom < 0 || !st.active || st.playing) return;
+    if (ui && e.composedPath && e.composedPath().indexOf(ui.host) >= 0) return;   // the player's own buttons handle their click
+    var from = clickFrom; clickFrom = -1;
+    setTimeout(function () { if (st.active && !st.playing) speakFrom(from); }, 0);
+  }, true);
   function voiceFailed(from, why) {
     var v = chooseVoice();
+    if (why === 'nostart' && !activated()) return waitForClick(from);
     voiceFails++;
-    if (!v || voiceFails > 4) return fail('Speech did not start on this device. Check that a text-to-speech voice for this language is installed (Android: Settings > Text-to-speech).');
-    badVoices[SR.voiceKey(v)] = { t: Date.now(), lang: st.lang || '' };
+    if (why === 'nostart') {
+      noStarts.push(v ? SR.voiceKey(v) : '');
+      if (noStarts.length === 2) { try { synth.cancel(); synth.resume(); } catch (e) { /* ignore */ } }   // a stuck queue or a paused engine
+      if (noStarts.length >= 3) {
+        // three different voices did not even start: the tab's speech engine is stuck, not the voices; do not keep blaming them
+        noStarts.forEach(function (k) { if (badVoices[k] && badVoices[k].why === 'nostart') delete badVoices[k]; });
+        noStarts = []; voiceFails = 0;
+        return fail('Speech did not start in this tab (three voices were tried). ' + speechHelp());
+      }
+    } else noStarts = [];
+    if (!v || voiceFails > 6) return fail('Speech did not start on this device. ' + speechHelp());
+    badVoices[SR.voiceKey(v)] = { t: Date.now(), lang: st.lang || '', why: why };
     P.voice = ''; saveSettings();                 // back to the automatic choice, which now skips this voice
     var nv = chooseVoice();
-    if (!nv) return fail('The voice "' + v.name + '" did not speak on this device, and no other voice is left to try.');
+    if (!nv) return fail('The voice "' + v.name + '" did not speak on this device, and no other voice is left to try. ' + speechHelp());
     setStatus('The voice "' + v.name + '" did not speak on this device' + (why === 'error' ? '' : ' (its voice data is probably not installed, or it cannot read this language)') + ', so it was switched to "' + nv.name + '".');
     st.noticeUntil = Date.now() + 10000;
     speakFrom(from);
@@ -1153,6 +1203,9 @@ if (typeof module !== "undefined" && module.exports) module.exports = SRLib;
 
   function speakFrom(i, retry) {
     if (!synth) return fail('This browser has no speech synthesis.');
+    if (!activated()) return waitForClick(i);
+    clickFrom = -1;
+    try { if (synth.paused) synth.resume(); } catch (e) { /* ignore */ }   // a paused engine queues new speech forever
     var gen = ++st.gen;
     clearTimers(); try { synth.cancel(); } catch (e) { /* ignore */ }
     keep = [];
@@ -1171,7 +1224,7 @@ if (typeof module !== "undefined" && module.exports) module.exports = SRLib;
 
     u.onstart = function () {
       if (gen !== st.gen) return;
-      heard = true; startedAt = Date.now(); st.chunk = chunk; st.idx = chunk.a; st.estimated = false;
+      heard = true; noStarts = []; startedAt = Date.now(); st.chunk = chunk; st.idx = chunk.a; st.estimated = false;
       clearTimeout(timers.watch);
       highlight(chunk.a); fillUi();
       if (chunk.b < st.words.length) queueChunk(chunk.b, gen, false, 0);   // the next sentence waits in the queue: no gap
@@ -1196,6 +1249,7 @@ if (typeof module !== "undefined" && module.exports) module.exports = SRLib;
     u.onerror = function (e) {
       if (gen !== st.gen) return;
       if (e && (e.error === 'interrupted' || e.error === 'canceled')) return;
+      if (e && e.error === 'not-allowed') return waitForClick(chunk.a);
       if (SR.speechFailure({ error: e && e.error, started: heard })) return voiceFailed(chunk.a, 'error');
       fail('The voice stopped (' + (e && e.error || 'error') + '). Try another voice in the player.');
     };

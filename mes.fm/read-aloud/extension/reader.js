@@ -44,15 +44,42 @@
   }
   // voices that did not speak here (Android lists voices whose data is not installed, or that cannot read the text, e.g. "Bodo India"
   // for English): skipped by the automatic choice and marked in the player's list for the rest of this page's life
-  var badVoices = {}, voiceFails = 0;
+  var badVoices = {}, voiceFails = 0, noStarts = [], clickFrom = -1;
+  function speechHelp() { return RA.speechHelp ? RA.speechHelp(navigator.userAgent) : ''; }
+  // Chrome and Brave let a page speak only after it has been clicked or typed in once: before that speak() does nothing at all (no error,
+  // no events). Starting from the toolbar button, the shortcut or the menu does not count as a click in the page, so on a page you have
+  // only scrolled (a Telegram chat, say) every voice "did not start" and each one used to be blamed in turn.
+  function activated() { var a = navigator.userActivation; return !a || a.hasBeenActive !== false; }
+  function waitForClick(from) {
+    st.playing = false; stopSpeech(); clickFrom = from;
+    setStatus('Click anywhere on the page (or press \u25b6) to start: the browser lets a page speak only after you have clicked in it.', true);
+    fillUi();
+  }
+  window.addEventListener('pointerup', function (e) {
+    if (clickFrom < 0 || !st.active || st.playing) return;
+    if (ui && e.composedPath && e.composedPath().indexOf(ui.host) >= 0) return;   // the player's own buttons handle their click
+    var from = clickFrom; clickFrom = -1;
+    setTimeout(function () { if (st.active && !st.playing) speakFrom(from); }, 0);
+  }, true);
   function voiceFailed(from, why) {
     var v = chooseVoice();
+    if (why === 'nostart' && !activated()) return waitForClick(from);
     voiceFails++;
-    if (!v || voiceFails > 4) return fail('Speech did not start on this device. Check that a text-to-speech voice for this language is installed (Android: Settings > Text-to-speech).');
-    badVoices[SR.voiceKey(v)] = { t: Date.now(), lang: st.lang || '' };
+    if (why === 'nostart') {
+      noStarts.push(v ? SR.voiceKey(v) : '');
+      if (noStarts.length === 2) { try { synth.cancel(); synth.resume(); } catch (e) { /* ignore */ } }   // a stuck queue or a paused engine
+      if (noStarts.length >= 3) {
+        // three different voices did not even start: the tab's speech engine is stuck, not the voices; do not keep blaming them
+        noStarts.forEach(function (k) { if (badVoices[k] && badVoices[k].why === 'nostart') delete badVoices[k]; });
+        noStarts = []; voiceFails = 0;
+        return fail('Speech did not start in this tab (three voices were tried). ' + speechHelp());
+      }
+    } else noStarts = [];
+    if (!v || voiceFails > 6) return fail('Speech did not start on this device. ' + speechHelp());
+    badVoices[SR.voiceKey(v)] = { t: Date.now(), lang: st.lang || '', why: why };
     P.voice = ''; saveSettings();                 // back to the automatic choice, which now skips this voice
     var nv = chooseVoice();
-    if (!nv) return fail('The voice "' + v.name + '" did not speak on this device, and no other voice is left to try.');
+    if (!nv) return fail('The voice "' + v.name + '" did not speak on this device, and no other voice is left to try. ' + speechHelp());
     setStatus('The voice "' + v.name + '" did not speak on this device' + (why === 'error' ? '' : ' (its voice data is probably not installed, or it cannot read this language)') + ', so it was switched to "' + nv.name + '".');
     st.noticeUntil = Date.now() + 10000;
     speakFrom(from);
@@ -281,6 +308,9 @@
 
   function speakFrom(i, retry) {
     if (!synth) return fail('This browser has no speech synthesis.');
+    if (!activated()) return waitForClick(i);
+    clickFrom = -1;
+    try { if (synth.paused) synth.resume(); } catch (e) { /* ignore */ }   // a paused engine queues new speech forever
     var gen = ++st.gen;
     clearTimers(); try { synth.cancel(); } catch (e) { /* ignore */ }
     keep = [];
@@ -299,7 +329,7 @@
 
     u.onstart = function () {
       if (gen !== st.gen) return;
-      heard = true; startedAt = Date.now(); st.chunk = chunk; st.idx = chunk.a; st.estimated = false;
+      heard = true; noStarts = []; startedAt = Date.now(); st.chunk = chunk; st.idx = chunk.a; st.estimated = false;
       clearTimeout(timers.watch);
       highlight(chunk.a); fillUi();
       if (chunk.b < st.words.length) queueChunk(chunk.b, gen, false, 0);   // the next sentence waits in the queue: no gap
@@ -324,6 +354,7 @@
     u.onerror = function (e) {
       if (gen !== st.gen) return;
       if (e && (e.error === 'interrupted' || e.error === 'canceled')) return;
+      if (e && e.error === 'not-allowed') return waitForClick(chunk.a);
       if (SR.speechFailure({ error: e && e.error, started: heard })) return voiceFailed(chunk.a, 'error');
       fail('The voice stopped (' + (e && e.error || 'error') + '). Try another voice in the player.');
     };

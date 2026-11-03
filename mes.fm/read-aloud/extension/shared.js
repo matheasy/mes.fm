@@ -222,9 +222,28 @@
     order.sort(function (a, b) { return a.rank - b.rank || a.name.localeCompare(b.name); });
     order.forEach(function (g) {
       g.label = (g.rank >= 2 ? 'Other languages: ' : '') + g.name;
-      g.voices.sort(function (a, b) { return (isBad(a) ? 1 : 0) - (isBad(b) ? 1 : 0) || a.name.localeCompare(b.name); });
+      // inside a language: normal voices A-Z, then macOS's Eloquence voices (Grandma, Rocko...), then its novelty / sound-effect voices
+      // (Bells, Bubbles, Zarvox...), then voices that did not speak here
+      var w = function (v) { var k = voiceKind(v.name); return (isBad(v) ? 4 : 0) + (k === 'novelty' ? 2 : k === 'eloquence' ? 1 : 0); };
+      g.voices.sort(function (a, b) { return w(a) - w(b) || a.name.localeCompare(b.name); });
     });
     return order;
+  }
+  // macOS ships two families of odd English voices that Chrome / Brave list with the real ones:
+  // 'novelty' = sound-effect voices (Bells, Bubbles, Zarvox, Bad News...), fun but not for reading; 'eloquence' = the Eloquence engine's
+  // voices (Grandma, Rocko, Flo...: robotic, often listed once per accent). '' = an ordinary voice.
+  var NOVELTY = /^(albert|bad news|bahh|bells|boing|bubbles|cellos|good news|jester|organ|superstar|trinoids|whisper|wobble|zarvox|deranged|hysterical|pipe organ)\b/i;
+  var ELOQUENCE = /^(eddy|flo|grandma|grandpa|reed|rocko|sandy|shelley)\b/i;
+  function voiceKind(name) { name = String(name || '').trim(); return NOVELTY.test(name) ? 'novelty' : ELOQUENCE.test(name) ? 'eloquence' : ''; }
+  // the device-specific part of "speech did not start" help (the Android tip only on Android)
+  function speechHelp(ua) {
+    ua = String(ua || '');
+    if (/Android/i.test(ua)) return 'Check that a text-to-speech voice for this language is installed (Android: Settings > Text-to-speech).';
+    if (/iPhone|iPad|iPod/i.test(ua)) return 'Check Settings > Accessibility > Spoken Content > Voices, and that the ring / silent switch is off.';
+    if (/CrOS/i.test(ua)) return 'Check Settings > Accessibility > Text-to-Speech, or reload the tab.';
+    if (/Mac OS X|Macintosh/i.test(ua)) return 'Reload this tab and try again; if it still says this, quit and reopen the browser (macOS voices: System Settings > Accessibility > Spoken Content).';
+    if (/Windows/i.test(ua)) return 'Reload this tab and try again; if it still says this, check Settings > Time & language > Speech.';
+    return 'Reload this tab and try again, or restart the browser.';
   }
   // words of a search box against a voice's name, language code and group label (every word must match, case and accents ignored)
   function fold(s) { return String(s || '').normalize('NFD').replace(/[̀-ͯ]/g, '').toLowerCase(); }
@@ -235,7 +254,7 @@
   }
 
   var api = { docsId: docsId, docsItems: docsItems, docsInfo: docsInfo, docsUrls: docsUrls, docsHtmlParas: docsHtmlParas, parasToItems: parasToItems, decodeEntities: decodeEntities,
-              isPdfUrl: isPdfUrl, isDocxUrl: isDocxUrl, pdfParas: pdfParas, pdfRepeats: pdfRepeats, voiceGroups: voiceGroups, voiceMatches: voiceMatches, fold: fold, defaultConfig: defaultConfig, builtins: builtins, normConfig: normConfig, merge: merge, profileById: profileById, resolveProfile: resolveProfile,
+              isPdfUrl: isPdfUrl, isDocxUrl: isDocxUrl, pdfParas: pdfParas, pdfRepeats: pdfRepeats, voiceGroups: voiceGroups, voiceKind: voiceKind, speechHelp: speechHelp, voiceMatches: voiceMatches, fold: fold, defaultConfig: defaultConfig, builtins: builtins, normConfig: normConfig, merge: merge, profileById: profileById, resolveProfile: resolveProfile,
               uid: uid, contrastText: contrastText, buildText: buildText, locate: locate, posOf: posOf };
   root.MESRA = api;
   if (typeof module !== 'undefined' && module.exports) module.exports = api;
