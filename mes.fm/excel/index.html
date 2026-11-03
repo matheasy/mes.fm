@@ -464,6 +464,26 @@ html body.dark-mode #xl .xl-c.f-fill { color: #111; }   /* fills come from the f
 	#xl .xl-find .xl-in { flex: 1; width: auto; }
 }
 
+/* formula entry, clipboard, fill, tables, charts (2026-11-03) */
+#xl .xl-refbox { position: absolute; border: 2px solid; pointer-events: none; z-index: 3; box-sizing: border-box; }
+#xl .xl-act.is-ed { border-style: dashed; }
+#xl .xl-spill { position: absolute; border: 2px solid #2a6df4; pointer-events: none; z-index: 2; box-sizing: border-box; }
+#xl .xl-clip { position: absolute; pointer-events: none; z-index: 3; box-sizing: border-box; border: 2px dashed #1e7145; animation: xl-ants .6s linear infinite; }
+@keyframes xl-ants { to { border-color: #1e7145 transparent; } }
+#xl .xl-fillprev { position: absolute; pointer-events: none; z-index: 3; box-sizing: border-box; border: 2px dashed var(--xl-selb); }
+#xl .xl-fh { position: absolute; width: 9px; height: 9px; background: var(--xl-selb); border: 1px solid var(--xl-cell); box-sizing: border-box; z-index: 5; cursor: crosshair; touch-action: none; }
+#xl .xl-edhl { position: absolute; z-index: 5; box-sizing: border-box; margin: 0; border: 2px solid var(--xl-selb); padding: 1px 3px; font: inherit; font-size: 13.5px; line-height: 19px; background: var(--xl-cell); color: var(--xl-ink); white-space: pre-wrap; overflow-wrap: anywhere; overflow: hidden; pointer-events: none; }
+#xl .xl-ed.xl-ed--hl { background: transparent; color: transparent; caret-color: var(--xl-ink); z-index: 6; }
+html body.dark-mode #xl .xl-edhl span { filter: brightness(1.45); }
+#xl .xl-tfb { position: absolute; right: 1px; top: 50%; transform: translateY(-50%); width: 17px; height: 17px; padding: 0; border: 1px solid rgba(255,255,255,.7); background: rgba(255,255,255,.92); color: #333; border-radius: 3px; font-size: 10px; line-height: 15px; cursor: pointer; z-index: 3; }
+#xl .xl-tfb.is-on { background: #fff3c4; }
+#xl .has-tfb { padding-right: 22px; }
+#xl .xl-mychart { cursor: move; }
+#xl .xl-mychart.is-sel { outline: 2px solid var(--xl-selb); }
+#xl .xl-mcx { position: absolute; right: 3px; top: 3px; width: 22px; height: 22px; border: 0; border-radius: 11px; background: rgba(0,0,0,.55); color: #fff; font-size: 15px; line-height: 20px; padding: 0; cursor: pointer; display: none; }
+#xl .xl-mychart:hover .xl-mcx, #xl .xl-mychart:focus .xl-mcx, #xl .xl-mychart.is-sel .xl-mcx { display: block; }
+#xl .xl-fxin.is-ghost { color: var(--xl-mute); }
+
 
 	@media print {
 		.header, .info-bar-container, .side-bar, #footer, #comments-button, #comments-box, .color-box { display:none !important; }
@@ -544,6 +564,11 @@ html body.dark-mode #xl .xl-c.f-fill { color: #111; }   /* fills come from the f
 	body.dark-mode #xl.xl{--xl-acc:#3ecc80;--xl-acc2:#39d181;--xl-sel:rgba(62,204,128,0.12);--xl-selb:#3ecc80;--xl-noteink:#ffbc0a;--xl-err:#e23427;--xl-stale:#f88d11}
 	body.dark-mode #xl .xl-ch.is-hid,body.dark-mode #xl .xl-rh.is-hid{background-image:repeating-linear-gradient(135deg, transparent 0 4px, rgba(82,82,82,0.22) 4px 7px)}
 	body.dark-mode #xl .xl-c.f-fill{color:#eeeeee}
+	body.dark-mode #xl .xl-spill{border:2px solid #0a47c2}
+	body.dark-mode #xl .xl-clip{border:2px dashed #35ca7b}
+	body.dark-mode #xl .xl-tfb{border:1px solid rgba(51,51,51,0.70);background:rgba(26,26,26,0.92);color:#cccccc}
+	body.dark-mode #xl .xl-tfb.is-on{background:#413919}
+	body.dark-mode #xl .xl-mcx{background:rgba(82,82,82,0.55)}
 	/* TOOL-DARK:END */
 /* Floating compact header bar: once the full header + nav scroll out of
    view, a slim fixed bar (small logo, title, as many nav links as fit)
@@ -827,6 +852,20 @@ body.is-stuck #navbar.hide { position: fixed; top: 56px; right: 8px; }
 						<button type="button" role="menuitem" data-rc="sheet-del"><b>Delete this sheet</b></button>
 					</div>
 				</div>
+				<div class="xl-dd">
+					<button type="button" class="xl-btn" id="xl-insbtn" aria-haspopup="true" aria-expanded="false" title="Insert a table or a chart from the selected cells, or fill cells">Insert &#9662;</button>
+					<div class="xl-menu" id="xl-insmenu" hidden role="menu">
+						<button type="button" role="menuitem" data-ins="table"><b>Table</b><small>banded rows with sort / filter arrows, from the selected cells</small></button>
+						<button type="button" role="menuitem" data-ins="chart:column"><b>Column chart</b><small>from the selected cells</small></button>
+						<button type="button" role="menuitem" data-ins="chart:bar"><b>Bar chart</b></button>
+						<button type="button" role="menuitem" data-ins="chart:line"><b>Line chart</b></button>
+						<button type="button" role="menuitem" data-ins="chart:pie"><b>Pie chart</b></button>
+						<button type="button" role="menuitem" data-ins="chart:scatter"><b>Scatter chart</b><small>first column = x</small></button>
+						<button type="button" role="menuitem" data-ins="chart:area"><b>Area chart</b></button>
+						<button type="button" role="menuitem" data-ins="fill-down"><b>Fill down</b><small>Ctrl+D (drag the square at the corner of a selection to fill)</small></button>
+						<button type="button" role="menuitem" data-ins="fill-right"><b>Fill right</b><small>Ctrl+R</small></button>
+					</div>
+				</div>
 				<button type="button" class="xl-ib xl-ib--txt" id="xl-sasc" title="Sort the rows by the selected column, A to Z / smallest first (only the view: the file is not changed)">A&#8595;Z</button>
 				<button type="button" class="xl-ib xl-ib--txt" id="xl-sdesc" title="Sort by the selected column, Z to A / largest first">Z&#8595;A</button>
 				<button type="button" class="xl-ib xl-ib--txt" id="xl-filt" aria-pressed="false" title="Filter the rows by a column (only the view)">&#9660; <span class="xl-lbl">Filter</span></button>
@@ -952,7 +991,7 @@ body.is-stuck #navbar.hide { position: fixed; top: 56px; right: 8px; }
 <!-- /MES-BOTTOM-AD -->
                             </div>
                         <!-- MES-ASIDE -->
-<aside id="mes-aside" class="mes-aside" data-aside-family="tools" aria-label="More from MES Tools"><div class="mes-aside__sticky"><div class="mes-aside__ad" data-ad-slot="8429975111"></div><div class="mes-aside__head"><h2 class="mes-aside__title-h">More like this</h2><button type="button" class="mes-aside__flip" aria-label="Move this sidebar to the other side" title="Move sidebar to the other side">&#8644;</button></div><ul class="mes-aside__list"><li><a class="mes-aside__card" href="/fonts"><img class="mes-aside__img mes-aside__img--logo" src="/fonts/img/logo.png" width="56" height="56" loading="lazy" alt=""><span class="mes-aside__text"><span class="mes-aside__name">Font Preview: See Your Text in Every Font, and Find a Font from a Picture</span><span class="mes-aside__tag">Tool</span></span></a></li><li><a class="mes-aside__card" href="/shear-stress-calculator"><img class="mes-aside__img mes-aside__img--logo" src="/shear-stress-calculator/img/logo.png" width="56" height="56" loading="lazy" alt=""><span class="mes-aside__text"><span class="mes-aside__name">Shear Stress Calculator: Bolts, Pins, Punching and Shaft Torsion</span><span class="mes-aside__tag">Calculator</span></span></a></li><li><a class="mes-aside__card" href="/tools"><img class="mes-aside__img" src="/img/tools-icon.jpg" width="56" height="56" loading="lazy" alt=""><span class="mes-aside__text"><span class="mes-aside__name">All MES Tools</span><span class="mes-aside__tag">Gallery</span></span></a></li><li><a class="mes-aside__card" href="/gpacalculator"><img class="mes-aside__img mes-aside__img--logo" src="/gpacalculator/img/logo.png" width="56" height="56" loading="lazy" alt=""><span class="mes-aside__text"><span class="mes-aside__name">GPA Calculator</span><span class="mes-aside__tag">Calculator</span></span></a></li></ul></div></aside>
+<aside id="mes-aside" class="mes-aside" data-aside-family="tools" aria-label="More from MES Tools"><div class="mes-aside__sticky"><div class="mes-aside__ad" data-ad-slot="8429975111"></div><div class="mes-aside__head"><h2 class="mes-aside__title-h">More like this</h2><button type="button" class="mes-aside__flip" aria-label="Move this sidebar to the other side" title="Move sidebar to the other side">&#8644;</button></div><ul class="mes-aside__list"><li><a class="mes-aside__card" href="/fonts"><img class="mes-aside__img mes-aside__img--logo" src="/fonts/img/logo.png" width="56" height="56" loading="lazy" alt=""><span class="mes-aside__text"><span class="mes-aside__name">Font Preview: See Your Text in Every Font, and Find a Font from a Picture</span><span class="mes-aside__tag">Tool</span></span></a></li><li><a class="mes-aside__card" href="/fsa-grade-4-literacy"><img class="mes-aside__img mes-aside__img--logo" src="/fsa-grade-4-literacy/img/logo.png" width="56" height="56" loading="lazy" alt=""><span class="mes-aside__text"><span class="mes-aside__name">Grade 4 Reading Practice Test (FSA Style Literacy): Free Passages and Questions</span><span class="mes-aside__tag">Tool</span></span></a></li><li><a class="mes-aside__card" href="/tools"><img class="mes-aside__img" src="/img/tools-icon.jpg" width="56" height="56" loading="lazy" alt=""><span class="mes-aside__text"><span class="mes-aside__name">All MES Tools</span><span class="mes-aside__tag">Gallery</span></span></a></li><li><a class="mes-aside__card" href="/gpacalculator"><img class="mes-aside__img mes-aside__img--logo" src="/gpacalculator/img/logo.png" width="56" height="56" loading="lazy" alt=""><span class="mes-aside__text"><span class="mes-aside__name">GPA Calculator</span><span class="mes-aside__tag">Calculator</span></span></a></li></ul></div></aside>
 <!-- /MES-ASIDE -->
 </div>
 
@@ -1002,7 +1041,7 @@ body.is-stuck #navbar.hide { position: fixed; top: 56px; right: 8px; }
             hide_search:false,
             current_tab:0
         }        </script><!-- FASTCOMMENTS-LAZY: widget init moved to main_js/main.js -- it pulls embed.min.js only when #fastcomments-widget nears the viewport or on the first Comments-toggle click, so it no longer blocks first render -->                <script src="https://mes.fm/main_js/lazysizes.min.js?v=1.0.3" async></script>
-	<script src="/excel/js/excel.js?v=2" defer></script>
+	<script src="/excel/js/excel.js?v=4" defer></script>
             <script src="https://mes.fm/main_js/main.js?v=1.0.5"></script>    <!-- PAGEVIEW-TRACKING-INSERTED --><script src="https://mes.fm/main_js/track.js" defer></script><script>document.getElementById('copyright-year').textContent = new Date().getFullYear();</script><script src="/main_js/info-bar-fit.js" defer></script><script>
   // Floating compact header bar (see #compact-nav CSS): appears once the
   // header + nav bar have scrolled off the top; nav links that don't fit

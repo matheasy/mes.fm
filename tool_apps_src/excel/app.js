@@ -21,7 +21,7 @@
 		if (window.XLSX) return Promise.resolve(window.XLSX);
 		if (!lib) lib = new Promise(function (res, rej) {
 			var s = document.createElement("script"); s.src = SHEETJS; s.async = true;
-			s.onload = function () { window.XLSX ? res(window.XLSX) : rej(new Error("The spreadsheet library did not start.")); };
+			s.onload = function () { if (window.XLSX) { X.ssf = window.XLSX.SSF; res(window.XLSX); } else rej(new Error("The spreadsheet library did not start.")); };
 			s.onerror = function () { lib = null; rej(new Error("Could not load the spreadsheet library. Check your connection and try again.")); };
 			document.head.appendChild(s);
 		});
@@ -84,6 +84,7 @@
 	function editText(cell) {
 		if (!cell) return "";
 		if (cell.f) return "=" + cell.f;
+		if (cell.sp && wb) { var C = ensureCalc(), k = C.spilledBy[si + ":" + actualRow(sel.ar) + ":" + sel.ac], p = k && k.split(":"), an = p && C.getCell(+p[0], +p[1], +p[2]); if (an && an.f) return "=" + an.f; }
 		if (cell.t === "n" && typeof cell.v === "number") {
 			if (cell.z && /%/.test(cell.z) && !/"[^"]*%/.test(cell.z)) return X.fmtGeneral(+(cell.v * 100).toPrecision(15)) + "%";
 			if (cell.z && /[dy]/i.test(cell.z.replace(/"[^"]*"/g, "")) && !/\[/.test(cell.z) && window.XLSX) { try { return window.XLSX.SSF.format("yyyy-mm-dd", cell.v) + (cell.v % 1 ? " " + window.XLSX.SSF.format("hh:mm:ss", cell.v) : ""); } catch (e) { /* ignore */ } }
@@ -121,17 +122,21 @@
 	var cfc = null, cfcV = -1, cfcS = -1;
 	// -> {css: {css, fill, ha, wrap, va}, bar, fmtColor} | null for cell (ar, c)
 	function styleAt(ar, c, cell) {
-		var x = sx(), L = null, key = null;
+		var x = sx(), w = ws(), L = null, key = null, nt = w["!mestables"], mcf = w["!mescf"], cfs = null, ml = cell && cell.ml;
 		if (x) {
 			var xs = cell && cell.xs != null ? cell.xs : (x.rowXf[ar] != null ? x.rowXf[ar] : x.colXf[c]);
 			L = xs ? xfLook(xs) : null; key = xs ? "x" + xs : "";
 			for (var i = 0; i < x.tables.length; i++) { var t = x.tables[i]; if (t.els && ar >= t.g.s.r && ar <= t.g.e.r && c >= t.g.s.c && c <= t.g.e.c) { L = O.mergeLook(O.tableLook(t, ar, c, t.els), L); key = null; break; } }
-			if (x.cf.length && ar != null) {
-				if (!cfc || cfcV !== dver || cfcS !== si) { cfc = cfCtx(); cfcV = dver; cfcS = si; }
-				var res = O.cfFor(x.cf, ar, c, cfc);
-				if (res) { if (res.look) { L = O.mergeLook(L, res.look); key = null; } if (res.bar) { key = null; var out0 = { css: O.lookCss(L, isDark()), bar: res.bar }; return out0; } }
-			}
+			if (x.cf.length) cfs = x.cf;
 		} else { var f = fillOf(cell); if (f) L = { fill: { c: f.slice(1) } }; key = f ? "f" + f : ""; }
+		if (nt && nt.length) for (var j = 0; j < nt.length; j++) { var t2 = nt[j]; if (ar >= t2.g.s.r && ar <= t2.g.e.r && c >= t2.g.s.c && c <= t2.g.e.c) { L = O.mergeLook(O.tableLook(t2, ar, c, tableEls(t2)), L); key = null; break; } }
+		if (ml) { L = withMl(L, ml); key = null; }
+		if (mcf && mcf.length) cfs = cfs ? cfs.concat(mcf) : mcf;
+		if (cfs && ar != null) {
+			if (!cfc || cfcV !== dver || cfcS !== si) { cfc = cfCtx(); cfcV = dver; cfcS = si; }
+			var res = O.cfFor(cfs, ar, c, cfc);
+			if (res) { if (res.look) { L = O.mergeLook(L, res.look); key = null; } if (res.bar) { key = null; return { css: O.lookCss(L, isDark()), bar: res.bar }; } }
+		}
 		if (!L) return null;
 		if (key) { var k2 = key + (isDark() ? "d" : ""); return cssCache[k2] || (cssCache[k2] = { css: O.lookCss(L, isDark()) }); }
 		return { css: O.lookCss(L, isDark()) };
@@ -242,7 +247,9 @@
 		var box = height > RH || (sa && sa.css.wrap);
 		if (height > RH && !(sa && sa.css.wrap)) cls += " tall";
 		if (hitSet && hitSet.has(ar + ":" + c)) cls += " hit";
-		return '<div class="' + cls + '" style="' + st + '">' + (box ? '<span class="xl-ct">' + esc(t) + "</span>" : esc(t)) + "</div>";
+		var tb = "";
+		if (ar != null && ws()["!mestables"]) { var tt = tableAt(ar, c); if (tt && tt.header && tt.filterBtn !== false && ar === tt.g.s.r) { var vv = views[wb.SheetNames[si]], on = vv && vv.filters && vv.filters.some(function (f) { return f.c === c && f.t === tt.name; }); tb = '<button type="button" class="xl-tfb' + (on ? " is-on" : "") + '" data-tf="' + ar + ":" + c + '" aria-label="Sort and filter ' + esc(t) + '" tabindex="-1">' + (on ? "&#9660;&#8226;" : "&#9662;") + "</button>"; cls += " has-tfb"; } }
+		return '<div class="' + cls + '" style="' + st + '">' + (box ? '<span class="xl-ct">' + esc(t) + "</span>" : esc(t)) + tb + "</div>";
 	}
 	// one quadrant of the grid. rows: [{dr, ar, y}], cols: [{c, x, w}], dom: {r0, r1 (display rows), c0, c1 (columns)} it may draw in,
 	// yOf(dr) / xOf(c) give positions inside the quadrant's container
@@ -292,8 +299,9 @@
 			var aw = colX[sel.ac + 1] - colX[sel.ac], ah = RH, ax = xOf(sel.ac), ay = yOf(sel.ar);
 			var am = M && M.at.get(actualRow(sel.ar) * 16384 + sel.ac);
 			if (am != null) { var gg = M.list[am]; ax = xOf(Math.max(gg.s.c, dom.c0)); aw = colX[Math.min(gg.e.c, dom.c1) + 1] - colX[Math.max(gg.s.c, dom.c0)]; var t0 = displayRow(gg.s.r), t1 = displayRow(gg.e.r); if (t0 != null && t1 != null) { ay = yOf(Math.max(t0, dom.r0)); ah = (Math.min(t1, dom.r1) - Math.max(t0, dom.r0) + 1) * RH; } }
-			h.push('<div class="xl-act" style="left:' + ax + "px;top:" + ay + "px;width:" + aw + "px;height:" + ah + 'px"></div>');
+			if (!(editing && editing.si !== si)) h.push('<div class="xl-act' + (editing && isFormulaText(edText()) ? " is-ed" : "") + '" style="left:' + ax + "px;top:" + ay + "px;width:" + aw + "px;height:" + ah + 'px"></div>');
 		}
+		h.push(spillBox(dom, yOf, xOf, rows), clipBox(dom, yOf, xOf, rows), refBoxes(dom, yOf, xOf, rows), fillPrevBox(dom, yOf, xOf, rows), fillHandle(dom, xOf, yOf, rows));
 		return h.join("");
 	}
 	function draw() {
@@ -399,9 +407,10 @@
 		if (!now) { clearTimeout(objT); objT = setTimeout(function () { drawObjects(true); }, 60); return; }
 		var box = $("xl-objs"); if (!box) return;
 		var x = wb && sx();
-		if (!x || !x.objects.length || !S.objs || isSF() || NR * RH > MAXH) { box.innerHTML = ""; return; }
+		var mine = ws()["!mescharts"];
+		if ((!x || !x.objects.length) && !(mine && mine.length) || !S.objs || isSF() || NR * RH > MAXH) { box.innerHTML = ""; return; }
 		var html = [], dark = isDark();
-		x.objects.forEach(function (o, i) {
+		(x ? x.objects : []).forEach(function (o, i) {
 			if (o.hidden) return;
 			var r = rectOf(o.anchor); if (!r || r.w < 6 || r.h < 6) return;
 			var pos = "left:" + r.x.toFixed(1) + "px;top:" + r.y.toFixed(1) + "px;width:" + r.w.toFixed(1) + "px;height:" + r.h.toFixed(1) + "px";
@@ -410,6 +419,7 @@
 			try { svg = O.chartSvg(o.chart, chartModel(o.chart), { w: Math.round(r.w), h: Math.round(r.h), dark: dark, fmt: fmtVal }); } catch (e) { svg = ""; if (window.console) console.warn("[excel] chart", e); }
 			if (svg) html.push('<div class="xl-obj xl-chart" data-oi="' + i + '" role="img" aria-label="' + esc((o.name || "Chart") + (o.chart.title ? ": " + o.chart.title : "")) + '" style="' + pos + '">' + svg + "</div>");
 		});
+		drawMyCharts(html, dark);
 		box.innerHTML = html.join("");
 	}
 	// toolbar buttons that depend on the sheet (hidden rows / columns, charts, freeze)
@@ -420,7 +430,7 @@
 		hb.setAttribute("aria-pressed", String(!!S.showHidden));
 		$("xl-hidn").textContent = (hc.r ? hc.r + " row" + (hc.r > 1 ? "s" : "") : "") + (hc.r && hc.c ? ", " : "") + (hc.c ? hc.c + " col" + (hc.c > 1 ? "s" : "") : "");
 		hb.title = (S.showHidden ? "Showing" : "Show") + " the hidden rows and columns of this sheet (they stay hidden in the file)";
-		ob.hidden = !(x && x.objects.length);
+		ob.hidden = !((x && x.objects.length) || (ws()["!mescharts"] || []).length);
 		ob.setAttribute("aria-pressed", String(!!S.objs));
 		grid.classList.toggle("xl-nogrid", !!(x && x.view && x.view.showGridLines === false));
 		var hd = $("xl-hdr"); hd.setAttribute("aria-pressed", String(!!(f.r || f.c)));
@@ -459,8 +469,9 @@
 		if (!wb) return;
 		var ar = actualRow(sel.ar), cell = getCell(ar, sel.ac), R = selRect();
 		nameBox.value = R.r1 === R.r2 && R.c1 === R.c2 ? X.a1(ar, sel.ac) : X.a1(actualRow(R.r1), R.c1) + ":" + X.a1(actualRow(R.r2), R.c2);
-		if (!(editing && editing.where === "bar")) fxin.value = editText(cell);
-		status();
+		if (!editing) fxin.value = editText(cell);
+		fxin.classList.toggle("is-ghost", !!(cell && cell.sp && !editing));
+		status(); fmtState();
 	}
 	function selectedActualRows() { var R = selRect(), out = []; for (var r = R.r1; r <= R.r2; r++) out.push(actualRow(r)); return out; }
 
@@ -499,31 +510,36 @@
 	/* ---------- editing ---------- */
 	function placeEditor() {
 		var I = scrollInfo(), dr = editing.dr, c = editing.c;
+		ed.style.visibility = editing.si != null && editing.si !== si ? "hidden" : "";
 		var top = dr < 0 ? CHH + (dr + base) * RH : CHH + FR + dr * RH - I.P, left = c < FC ? HW + colX[c] : HW + colX[c] - I.sl;
 		ed.style.left = left + "px"; ed.style.top = top + "px";
 		ed.style.minWidth = (colX[c + 1] - colX[c] + 1) + "px"; ed.style.height = "auto";
 		ed.style.width = "1px"; ed.style.width = Math.min(grid.clientWidth - left - 4, Math.max(colX[c + 1] - colX[c] + 1, ed.scrollWidth + 6)) + "px";
 		ed.style.height = Math.max(RH + 1, ed.scrollHeight + 2) + "px";
+		paintEdHL();
 	}
 	function startEdit(text, where) {
 		if (!wb) return;
 		if (editing) commitEdit();
 		var ar = actualRow(sel.ar), cell = getCell(ar, sel.ac);
-		editing = { dr: sel.ar, c: sel.ac, ar: ar, where: where || "cell", orig: editText(cell) };
+		editing = { dr: sel.ar, c: sel.ac, ar: ar, si: si, where: where || "cell", orig: cell && cell.sp ? "" : editText(cell), mode: text != null ? "enter" : "edit", pick: null };
 		if (editing.where === "cell") {
-			ed.hidden = false; ed.value = text != null ? text : editing.orig;
+			ed.hidden = false; ed.value = text != null ? text : (cell && cell.sp ? "" : editing.orig);
 			placeEditor(); ed.focus(); var n = ed.value.length; ed.setSelectionRange(n, n);
 			fxin.value = ed.value;
 		}
+		refHL(); status();
 	}
-	function cancelEdit() { if (!editing) return; var w = editing.where; editing = null; ed.hidden = true; fxin.value = editText(getCell(actualRow(sel.ar), sel.ac)); if (w === "cell") scroll.focus({ preventScroll: true }); }
+	function cancelEdit() { if (!editing) return; backToEditSheet(); var w = editing.where; editing = null; ed.hidden = true; hlRefs = []; paintEdHL(); fxin.value = editText(getCell(actualRow(sel.ar), sel.ac)); if (w === "cell") scroll.focus({ preventScroll: true }); note(""); render(); status(); }
 	function commitEdit() {
 		if (!editing) return true;
 		var e = editing, val = e.where === "cell" ? ed.value : fxin.value;
-		if (val === e.orig) { editing = null; ed.hidden = true; return true; }
+		if (isFormulaText(val)) val = autoClose(val);
+		backToEditSheet();
+		if (val === e.orig) { editing = null; ed.hidden = true; hlRefs = []; paintEdHL(); render(); return true; }
 		try { setCells([{ r: e.ar, c: e.c, text: val }], "Edit " + X.a1(e.ar, e.c)); }
-		catch (err) { note(esc(err.message || "That formula can't be read."), true); if (e.where === "cell") ed.focus(); return false; }
-		editing = null; ed.hidden = true; note("");
+		catch (err) { note(esc(err.message || "That formula can't be read."), true); if (e.where === "cell") ed.focus(); else fxin.focus(); return false; }
+		editing = null; ed.hidden = true; hlRefs = []; paintEdHL(); note(""); render();
 		return true;
 	}
 	function buildCell(text, old) {
@@ -532,10 +548,10 @@
 			var ast;
 			try { ast = X.parse(p.f); } catch (e) { throw new Error("That formula can't be read: " + e.message + " (start with an apostrophe, like '=, to type it as text)"); }
 			var unk = X.unknownFunctions(ast);
-			cell = unk.length ? { t: "e", v: 29, w: "#NAME?", f: p.f } : { t: "n", v: 0, f: p.f };
+			cell = unk.length ? { t: "e", v: 29, w: "#NAME?", f: p.f, da: 1 } : { t: "n", v: 0, f: p.f, da: 1 };
 			if (old && old.z) cell.z = old.z;
 		} else if (p.t === "z") {
-			if (old && (old.s || old.xs != null)) { var stub = { t: "z" }; if (old.s) stub.s = old.s; if (old.xs != null) { stub.xs = old.xs; stub.xz = old.xz; } return stub; }
+			if (old && (old.s || old.xs != null || old.ml || old.z)) { var stub = { t: "z" }; if (old.s) stub.s = old.s; if (old.ml) stub.ml = old.ml; if (old.z) stub.z = old.z; if (old.xs != null) { stub.xs = old.xs; stub.xz = old.xz; } return stub; }
 			return undefined;
 		} else {
 			cell = { t: p.t, v: p.v };
@@ -544,11 +560,12 @@
 			else if (p.t === "n" && old && old.z && old.t === "n") cell.z = old.z;
 		}
 		if (old && old.s) cell.s = old.s;
+		if (old && old.ml) cell.ml = old.ml;
 		if (old && old.xs != null) { cell.xs = old.xs; cell.xz = old.xz; if (!cell.z && old.xz && old.t === "z" && p.t === "n") cell.z = old.xz; }
 		return cell;
 	}
 	function ensureCalc() {
-		if (!calc) calc = new X.Calc({ sheets: wb.SheetNames.map(function (n) { return { name: n, get data() { var w = wb.Sheets[n]; if (!w["!data"]) w["!data"] = []; return w["!data"]; } }; }) });
+		if (!calc) calc = new X.Calc({ sheets: wb.SheetNames.map(function (n) { return { name: n, get data() { var w = wb.Sheets[n]; if (!w["!data"]) w["!data"] = []; return w["!data"]; } }; }), names: bookNames, tables: calcTables });
 		return calc;
 	}
 	function resetCalc() { calc = null; }
@@ -564,15 +581,16 @@
 		});
 		var res = C.recalc(changed);
 		res.stale.forEach(function (p) { stale[p.si + ":" + p.r + ":" + p.c] = p.unknown; });
-		if (res.cycles) note("A formula refers to itself (a circular reference), so it shows #CYCLE!.", true);
+		if (res.cycles) { var cc = res.cycleCells[0]; note("Circular reference: a formula refers to its own cell" + (cc ? " (" + esc((cc.si !== s ? wb.SheetNames[cc.si] + "!" : "") + X.a1(cc.r, cc.c)) + ")" : "") + ", directly or through other cells, so it shows #CYCLE!.", true); }
+		return res;
 	}
 	function setCells(list, label) {
 		var s = si, ch = [];
 		list.forEach(function (x) { var b = getCell(x.r, x.c); var a = buildCell(x.text, b); if (!b && !a) return; ch.push({ r: x.r, c: x.c, b: b, a: a }); });
 		if (!ch.length) return;
-		writeCells(s, ch, "a");
+		var res = writeCells(s, ch, "a");
 		pushUndo({ k: "cells", si: s, ch: ch, label: label });
-		afterChange(ch.some(function (x) { return x.r >= nRows || x.c >= nCols; }) || ch.some(function (x) { return !x.a; }));
+		afterChange(ch.some(function (x) { return x.r >= nRows || x.c >= nCols; }) || ch.some(function (x) { return !x.a; }) || !!(res && res.spilled.length));
 	}
 	function afterChange(redim) {
 		if (redim) { var r0 = NR, c0 = NC; dims(); setRef(); layout(); if (NR !== r0 || NC !== c0) clampSel(); }
@@ -587,7 +605,8 @@
 		if (!op) return;
 		if (op.k === "cells") {
 			if (op.si !== si) showSheet(op.si);
-			writeCells(op.si, op.ch, isRedo ? "a" : "b");
+			if (op.nocalc) { var d0 = wb.Sheets[wb.SheetNames[op.si]]["!data"]; op.ch.forEach(function (x) { if (!d0[x.r]) d0[x.r] = []; d0[x.r][x.c] = isRedo ? x.a : x.b; }); cssCache = {}; }
+			else writeCells(op.si, op.ch, isRedo ? "a" : "b");
 			var f = op.ch[0], dr = displayRow(f.r);
 			if (dr != null) { sel.ar = sel.fr = dr; sel.ac = sel.fc = f.c; }
 		} else if (op.k === "struct") {
@@ -606,7 +625,8 @@
 		wb.SheetNames.forEach(function (n) {
 			var w = wb.Sheets[n];
 			snap.sheets[n] = { ws: w, data: (w["!data"] || []).map(function (r) { return r && r.slice(); }), cols: w["!cols"] ? w["!cols"].map(function (o) { return o && Object.assign({}, o); }) : null, ref: w["!ref"],
-				rows: w["!rows"] ? w["!rows"].slice() : null, merges: w["!merges"] ? w["!merges"].map(function (g) { return { s: Object.assign({}, g.s), e: Object.assign({}, g.e) }; }) : null };
+				rows: w["!rows"] ? w["!rows"].slice() : null, merges: w["!merges"] ? w["!merges"].map(function (g) { return { s: Object.assign({}, g.s), e: Object.assign({}, g.e) }; }) : null,
+				mine: JSON.stringify({ t: (w["!mestables"] || []).map(function (t) { var o = Object.assign({}, t); delete o.els; return o; }), c: (w["!mescharts"] || []).map(function (c) { return { id: c.id, m: c.m, range: c.range, byRow: c.byRow, at: c.at, name: c.name }; }), f: w["!mescf"] || [] }) };
 		});
 		return snap;
 	}
@@ -620,15 +640,16 @@
 			if (s.rows) w["!rows"] = s.rows.slice(); else delete w["!rows"];
 			if (s.merges) w["!merges"] = s.merges.map(function (g) { return { s: Object.assign({}, g.s), e: Object.assign({}, g.e) }; }); else delete w["!merges"];
 			w["!ref"] = s.ref; wb.Sheets[n] = w;
+			var mine = JSON.parse(s.mine || "{}"); w["!mestables"] = mine.t || []; w["!mescharts"] = (mine.c || []).map(function (c) { chartBuild(c); return c; }); w["!mescf"] = mine.f || [];
 		});
-		stale = {};
+		stale = {}; cssCache = {}; cfc = null;
 	}
 	function afterStruct() { resetCalc(); views = {}; si = Math.min(si, wb.SheetNames.length - 1); dims(); layout(); ensureView(); renderSheets(); clampSel(); }
-	function struct(label, fn) {
+	function struct(label, fn, soft) {
 		if (editing) commitEdit();
 		var hadView = isSF();
 		if (view()) { views[wb.SheetNames[si]] = null; layout(); }
-		if (file) file.structN = (file.structN || 0) + 1;
+		if (file && !soft) file.structN = (file.structN || 0) + 1;
 		var before = snapshot(), s0 = si;
 		var changedF = fn(); stale = {};
 		var after = snapshot();
@@ -661,7 +682,7 @@
 			if (n > 0) { while (d.length < at) d.push(undefined); var add = []; for (var i = 0; i < n; i++) add.push(undefined); Array.prototype.splice.apply(d, [at, 0].concat(add)); }
 			else d.splice(at, -n);
 			var rm = ws()["!rows"]; if (rm && rm.length > at) { if (n > 0) Array.prototype.splice.apply(rm, [at, 0].concat(new Array(n))); else rm.splice(at, -n); }
-			shiftMerges("r", at, n);
+			shiftMerges("r", at, n); shiftObjects("r", at, n, name);
 			return finalPositions(adjustAll({ axis: "r", at: at, n: n, sheet: name }));
 		});
 	}
@@ -671,7 +692,7 @@
 			var spl = function (arr) { if (!arr) return; if (n > 0) { if (arr.length < at) return; var add = []; for (var i = 0; i < n; i++) add.push(undefined); Array.prototype.splice.apply(arr, [at, 0].concat(add)); } else arr.splice(at, -n); };
 			d.forEach(function (row, i) { if (row) spl(row); });
 			if (w["!cols"]) spl(w["!cols"]);
-			shiftMerges("c", at, n);
+			shiftMerges("c", at, n); shiftObjects("c", at, n, name);
 			return finalPositions(adjustAll({ axis: "c", at: at, n: n, sheet: name }));
 		});
 	}
@@ -718,6 +739,7 @@
 			wb.SheetNames[i] = nn; wb.Sheets[nn] = wb.Sheets[old]; delete wb.Sheets[old];
 			if (wb.Workbook && wb.Workbook.Sheets && wb.Workbook.Sheets[i]) wb.Workbook.Sheets[i].name = nn;
 			wb.SheetNames.forEach(function (n, s) { var d = wb.Sheets[n]["!data"] || []; d.forEach(function (row, r) { if (row) row.forEach(function (cell, c) { if (cell && cell.f) { var f2 = X.renameSheetRefs(cell.f, old, nn); if (f2 !== cell.f) { row[c] = Object.assign({}, cell, { f: f2 }); changed.push({ si: s, r: r, c: c }); } } }); }); });
+			wb.SheetNames.forEach(function (n) { (wb.Sheets[n]["!mescharts"] || []).forEach(function (ch) { if (ch.m.sheet === old) ch.m.sheet = nn; ch.m.series.forEach(function (sr) { ["name", "cat", "val"].forEach(function (k) { if (sr[k] && sr[k].sheet === old) sr[k].sheet = nn; }); }); chartBuild(ch); }); });
 			return [];
 		});
 	}
@@ -742,8 +764,8 @@
 			return '<button type="button" class="xl-stab' + (i === si ? " is-on" : "") + (h ? " is-hid" : "") + '" role="tab" aria-selected="' + (i === si) + '" data-si="' + i + '" title="' + esc(n) + (h === 2 ? " (very hidden: Excel only shows it through VBA)" : h ? " (hidden in Excel: right-click a tab and choose Unhide there)" : "") + ' (double-click to rename)"' + (tc ? ' style="box-shadow:inset 0 -3px 0 #' + tc + '"' : "") + ">" + (h ? '<span class="xl-eye" aria-hidden="true">&#9680;</span> ' : "") + esc(n) + (lab ? ' <small class="xl-hidl">(' + lab + ")</small>" : "") + "</button>";
 		}).join("");
 	}
-	function showSheet(i) {
-		if (editing) commitEdit();
+	function showSheet(i, keepEdit) {
+		if (editing && !keepEdit) commitEdit();
 		if (wb.SheetNames[si]) views["@" + wb.SheetNames[si]] = { st: scroll.scrollTop, sl: scroll.scrollLeft, sel: Object.assign({}, sel) };
 		si = i; hits = []; hitSet = null; hitIx = -1; $("xl-qn").textContent = "";
 		dims(); layout(); renderSheets();
@@ -758,7 +780,8 @@
 		if ($("xl-q").value) runFind(true);
 		var b = $("xl-stabs").querySelector(".is-on"); if (b && b.scrollIntoView) b.scrollIntoView({ block: "nearest", inline: "nearest" });
 	}
-	$("xl-stabs").addEventListener("click", function (e) { var b = e.target.closest("[data-si]"); if (b && +b.getAttribute("data-si") !== si) showSheet(+b.getAttribute("data-si")); });
+	$("xl-stabs").addEventListener("pointerdown", function (e) { if (editing && isFormulaText(edText()) && e.target.closest("[data-si]")) e.preventDefault(); });
+	$("xl-stabs").addEventListener("click", function (e) { var b = e.target.closest("[data-si]"); if (!b) return; var i = +b.getAttribute("data-si"); if (editing && isFormulaText(edText())) { if (i !== si) editSheetSwitch(i); else (editing.where === "bar" ? fxin : ed).focus(); return; } if (i !== si) showSheet(i); });
 	$("xl-stabs").addEventListener("dblclick", function (e) { var b = e.target.closest("[data-si]"); if (b) renameSheet(+b.getAttribute("data-si")); });
 	$("xl-sadd").onclick = function () { if (!wb) newBook(); else addSheet(); };
 
@@ -800,7 +823,7 @@
 		$("xl-fcol").innerHTML = opts.join("");
 		var chips = [];
 		if (v && v.sort) chips.push('<span class="xl-chip">Sorted by ' + esc(X.colName(v.sort.c)) + (v.sort.dir > 0 ? " ↑" : " ↓") + '<button type="button" data-rm="sort" aria-label="Remove the sort">&times;</button></span>');
-		(v && v.filters || []).forEach(function (f, i) { chips.push('<span class="xl-chip">' + esc(X.colName(f.c)) + " " + esc(X.FILTER_OPS[f.op]) + (f.op === "blank" || f.op === "notblank" ? "" : " “" + esc(f.v) + "”") + '<button type="button" data-rm="' + i + '" aria-label="Remove this filter">&times;</button></span>'); });
+		(v && v.filters || []).forEach(function (f, i) { chips.push('<span class="xl-chip">' + esc(X.colName(f.c)) + " " + esc(X.FILTER_OPS[f.op]) + (f.op === "blank" || f.op === "notblank" ? "" : f.op === "in" ? " " + esc(f.v) + (f.t ? " (" + esc(f.t) + ")" : "") : " “" + esc(f.v) + "”") + '<button type="button" data-rm="' + i + '" aria-label="Remove this filter">&times;</button></span>'); });
 		$("xl-fchips").innerHTML = chips.join("");
 		$("xl-fclear").hidden = !chips.length;
 		if (chips.length && bar.hidden) bar.hidden = false;
@@ -876,6 +899,8 @@
 		if (!wb || e.button > 0) return;
 		var p = hitCell(e, scroll);
 		if (e.clientX - scroll.getBoundingClientRect().left > scroll.clientWidth || e.clientY - scroll.getBoundingClientRect().top > scroll.clientHeight) return;  // scroll bars
+		if (e.target.closest && (e.target.closest(".xl-fh") || e.target.closest(".xl-tfb"))) return;
+		if (editing && tryPoint(p, e)) return;
 		if (editing) { if (!commitEdit()) return; }
 		if (e.pointerType === "touch" || e.pointerType === "pen") { drag = { touch: true, x: e.clientX, y: e.clientY, p: p }; return; }
 		e.preventDefault(); scroll.focus({ preventScroll: true });
@@ -886,6 +911,7 @@
 	scroll.addEventListener("pointermove", function (e) {
 		if (!drag || drag.touch || drag.el !== scroll) return;
 		var rect = scroll.getBoundingClientRect();
+		if (drag.point) { if (!editing || !editing.pick) return; var pp = hitCell(e, scroll), pk = editing.pick; if (pp.dr !== pk.dr1 || pp.c !== pk.c1) pointSet(pk.dr0, pk.c0, pp.dr, pp.c); return; }
 		if (e.clientY > rect.bottom - 6) scroll.scrollTop += RH; else if (e.clientY < rect.top + 6) scroll.scrollTop -= RH;
 		if (e.clientX > rect.right - 6) scroll.scrollLeft += 40; else if (e.clientX < rect.left + 6) scroll.scrollLeft -= 40;
 		var p = hitCell(e, scroll);
@@ -906,6 +932,7 @@
 		var r = this.getBoundingClientRect(), id = this.id, x = e.clientX - r.left, y = e.clientY - r.top, dr, c;
 		if (id === "xl-fcols") { dr = Math.min(NR - 1, Math.max(0, Math.floor((y + scrollInfo().P) / RH))); c = Math.min(FC - 1, colAt(x)); }
 		else { dr = Math.min(-1, Math.floor(y / RH) - base); c = id === "xl-frzc" ? Math.min(FC - 1, colAt(x)) : Math.max(FC, colAt(x + scroll.scrollLeft + FW)); }
+		if (editing && tryPoint({ dr: dr, c: c }, e)) return;
 		if (editing && !commitEdit()) return;
 		e.preventDefault(); scroll.focus({ preventScroll: true });
 		if (e.detail > 1) { select(dr, c); startEdit(); return; }
@@ -975,6 +1002,9 @@
 		if (k === "Tab") return mv(sel.ar, sel.ac + (e.shiftKey ? -1 : 1));
 		if (k === "Enter") return mv(sel.ar + (e.shiftKey ? -1 : 1), sel.ac);
 		if (k === "F2") { e.preventDefault(); startEdit(); return; }
+		if (k === "Escape" && clip) { clip = null; render(); return; }
+		if (mod && k.toLowerCase() === "d") { e.preventDefault(); fillDown(); return; }
+		if (mod && k.toLowerCase() === "r") { e.preventDefault(); fillRight(); return; }
 		if (k === "Delete" || k === "Backspace") { e.preventDefault(); clearSel(); return; }
 		if (mod && k.toLowerCase() === "a") { e.preventDefault(); $("xl-corner").dispatchEvent(new PointerEvent("pointerdown", { bubbles: true })); return; }
 		if (mod && (k === "-" )) { e.preventDefault(); rowsCols(sel.mode === "col" ? "col-del" : "row-del"); return; }
@@ -992,17 +1022,22 @@
 	}
 	ed.addEventListener("keydown", function (e) {
 		var k = e.key;
+		if (f4Key(e)) return;
+		if (editing && editing.mode === "enter" && /^Arrow(Up|Down|Left|Right)$/.test(k) && !e.ctrlKey && !e.metaKey && !e.altKey && pointable()) { e.preventDefault(); e.stopPropagation(); arrowPoint(k, e.shiftKey); return; }
+		if (/^(Arrow|Home|End)/.test(k) && editing) editing.pick = null;
 		if (k === "Enter" && !e.altKey) { e.preventDefault(); e.stopPropagation(); var d = e.shiftKey ? -1 : 1; if (commitEdit()) { scroll.focus({ preventScroll: true }); select(sel.ar + d, sel.ac); } return; }
 		if (k === "Enter" && e.altKey) { e.preventDefault(); var s = ed.selectionStart; ed.value = ed.value.slice(0, s) + "\n" + ed.value.slice(ed.selectionEnd); ed.setSelectionRange(s + 1, s + 1); placeEditor(); return; }
 		if (k === "Tab") { e.preventDefault(); e.stopPropagation(); if (commitEdit()) { scroll.focus({ preventScroll: true }); select(sel.ar, sel.ac + (e.shiftKey ? -1 : 1)); } return; }
 		if (k === "Escape") { e.preventDefault(); e.stopPropagation(); cancelEdit(); return; }
 		e.stopPropagation();
 	});
-	ed.addEventListener("input", function () { fxin.value = ed.value; placeEditor(); });
+	ed.addEventListener("input", function () { fxin.value = ed.value; placeEditor(); if (editing) { editing.pick = null; refHL(); } });
 	ed.addEventListener("blur", function () { setTimeout(function () { if (editing && editing.where === "cell" && document.activeElement !== ed && document.activeElement !== fxin) commitEdit(); render(); }, 0); });
-	fxin.addEventListener("focus", function () { if (!wb) return; if (editing && editing.where === "cell") { var v = ed.value; editing.where = "bar"; ed.hidden = true; fxin.value = v; return; } editing = { dr: sel.ar, c: sel.ac, ar: actualRow(sel.ar), where: "bar", orig: editText(getCell(actualRow(sel.ar), sel.ac)) }; });
+	fxin.addEventListener("focus", function () { if (!wb) return; if (editing && editing.where === "cell") { var v = ed.value; editing.where = "bar"; ed.hidden = true; fxin.value = v; return; } editing = { dr: sel.ar, c: sel.ac, ar: actualRow(sel.ar), si: si, where: "bar", mode: "edit", pick: null, orig: editText(getCell(actualRow(sel.ar), sel.ac)) }; refHL(); });
+	fxin.addEventListener("input", function () { if (!editing) return; editing.pick = null; refHL(); });
 	fxin.addEventListener("keydown", function (e) {
 		if (!editing) return;
+		if (f4Key(e)) return;
 		if (e.key === "Enter") { e.preventDefault(); e.stopPropagation(); if (commitEdit()) { scroll.focus({ preventScroll: true }); select(sel.ar + (e.shiftKey ? -1 : 1), sel.ac); } }
 		else if (e.key === "Escape") { e.preventDefault(); e.stopPropagation(); cancelEdit(); scroll.focus({ preventScroll: true }); }
 		else if (e.key === "Tab") { e.preventDefault(); if (commitEdit()) { scroll.focus({ preventScroll: true }); select(sel.ar, sel.ac + (e.shiftKey ? -1 : 1)); } }
@@ -1031,8 +1066,14 @@
 		return X.toDelimited(rows, "\t", "\n");
 	}
 	function inGridFocus() { var a = document.activeElement; return a === scroll || (a && a.closest && a.closest("#xl-grid") && a !== ed); }
-	document.addEventListener("copy", function (e) { if (!wb || editing || !inGridFocus()) return; var t = selTSV(); if (t == null) return; e.preventDefault(); e.clipboardData.setData("text/plain", t); var R = selRect(); toast("Copied " + nf((R.r2 - R.r1 + 1) * (R.c2 - R.c1 + 1)) + " cell" + ((R.r2 - R.r1 + R.c2 - R.c1) ? "s" : "")); });
-	document.addEventListener("cut", function (e) { if (!wb || editing || !inGridFocus()) return; var t = selTSV(); if (t == null) return; e.preventDefault(); e.clipboardData.setData("text/plain", t); clearSel(); });
+	function copyEvent(e, cut) {
+		if (!wb || editing || !inGridFocus()) return;
+		var o = doCopy(cut); if (!o) return;
+		e.preventDefault(); e.clipboardData.setData("text/plain", o.text); e.clipboardData.setData("text/html", o.html);
+		var R = selRect(); toast((cut ? "Cut " : "Copied ") + nf((R.r2 - R.r1 + 1) * (R.c2 - R.c1 + 1)) + " cell" + ((R.r2 - R.r1 + R.c2 - R.c1) ? "s" : "") + (cut ? ": select where it goes and paste" : ""));
+	}
+	document.addEventListener("copy", function (e) { copyEvent(e, false); });
+	document.addEventListener("cut", function (e) { copyEvent(e, true); });
 	function pasteText(text) {
 		if (!wb || text == null) return;
 		var rows = X.parseDelimited(text.replace(/\r?\n$/, ""), text.indexOf("\t") >= 0 || text.indexOf("\n") < 0 ? "\t" : null);
@@ -1056,7 +1097,9 @@
 		var fs = [].filter.call((e.clipboardData && e.clipboardData.files) || [], function (f) { return /\.(xlsx|xlsm|xls|ods|csv|tsv|xlsb|numbers)$/i.test(f.name || ""); });
 		if (fs.length && !(document.activeElement && /input|textarea/i.test(document.activeElement.tagName) && document.activeElement !== scroll)) { e.preventDefault(); openFile(fs[0]); return; }
 		if (!wb || editing || !inGridFocus()) return;
-		e.preventDefault(); pasteText(e.clipboardData.getData("text/plain"));
+		e.preventDefault();
+		var txt = e.clipboardData.getData("text/plain");
+		if (clipSame(txt)) pasteInternal(); else pasteText(txt);
 	});
 
 	/* ---------- global shortcuts ---------- */
@@ -1288,9 +1331,9 @@
 		btn.addEventListener("click", function (e) { e.stopPropagation(); var open = m.hidden; closeMenus(); if (open && wb) { m.hidden = false; btn.setAttribute("aria-expanded", "true"); var f = m.querySelector("button:not([hidden])"); if (f) f.focus(); } });
 		m.addEventListener("keydown", function (e) { if (e.key === "Escape") { e.stopPropagation(); closeMenus(); btn.focus(); } });
 	}
-	function closeMenus() { [["xl-rcbtn", "xl-rcmenu"], ["xl-save", "xl-savemenu"], ["xl-hdr", "xl-frzmenu"]].forEach(function (p) { $(p[1]).hidden = true; $(p[0]).setAttribute("aria-expanded", "false"); }); }
+	function closeMenus() { [["xl-rcbtn", "xl-rcmenu"], ["xl-insbtn", "xl-insmenu"], ["xl-save", "xl-savemenu"], ["xl-hdr", "xl-frzmenu"]].forEach(function (p) { $(p[1]).hidden = true; $(p[0]).setAttribute("aria-expanded", "false"); }); }
 	document.addEventListener("click", function (e) { if (!e.target.closest(".xl-dd")) closeMenus(); });
-	menu($("xl-rcbtn"), $("xl-rcmenu")); menu($("xl-save"), $("xl-savemenu")); menu($("xl-hdr"), $("xl-frzmenu"));
+	menu($("xl-rcbtn"), $("xl-rcmenu")); menu($("xl-insbtn"), $("xl-insmenu")); menu($("xl-save"), $("xl-savemenu")); menu($("xl-hdr"), $("xl-frzmenu"));
 	$("xl-rcmenu").addEventListener("click", function (e) { var b = e.target.closest("[data-rc]"); if (!b) return; closeMenus(); rowsCols(b.getAttribute("data-rc")); });
 	$("xl-savemenu").addEventListener("click", function (e) { var b = e.target.closest("[data-save]"); if (!b) return; closeMenus(); saveAs(b.getAttribute("data-save")); });
 	$("xl-undo").onclick = function () { doUndo(false); };
@@ -1353,7 +1396,9 @@
 				if (sm && !info.structOk) { if (sm.objects && sm.objects.some(function (o) { return o.type === "chart"; })) lost.charts = 1; if (sm.objects && sm.objects.some(function (o) { return o.type === "pic"; })) lost.pictures = 1; if (sm.tables && sm.tables.length) lost["table formats"] = 1; if (sm.cfRaw && sm.cfRaw.length) lost["conditional formatting"] = 1; }
 			}
 			var rm = w["!rows"]; if (rm) for (var hr = 0; hr < rm.length; hr++) if (rm[hr] && rm[hr].hidden) (rowAttrs || (rowAttrs = {}))[hr] = ' hidden="1"';
-			info.sheets.push({ model: sm, freeze: w["!mesfrz"] || (sm && sm.pane ? { r: sm.pane.r, c: sm.pane.c } : null), cells: cells, stubs: stubs, rowAttrs: rowAttrs });
+			var add = mineParts(w, info.sheets.length);
+			if (sm && sm.drawingPart && add.some(function (a) { return a.tag === "drawing"; })) { add = add.filter(function (a) { return a.tag !== "drawing"; }); lost["new charts (this sheet already has a drawing)"] = 1; }
+			info.sheets.push({ model: sm, freeze: w["!mesfrz"] || (sm && sm.pane ? { r: sm.pane.r, c: sm.pane.c } : null), cells: cells, stubs: stubs, rowAttrs: rowAttrs, add: add });
 		});
 		info.lost = Object.keys(lost);
 		return info;
@@ -1365,7 +1410,7 @@
 		prepWrite();
 		if (!canGraft()) return Promise.resolve({ bytes: window.XLSX.write(wb, { bookType: bt, type: "array", compression: true, bookVBA: vba }) });
 		var info = graftInfo();
-		if (!pkgOf() && !info.sheets.some(function (s) { return s.freeze && (s.freeze.r || s.freeze.c); })) return Promise.resolve({ bytes: window.XLSX.write(wb, { bookType: bt, type: "array", compression: true, bookVBA: vba }) });
+		if (!pkgOf() && !info.sheets.some(function (s) { return (s.freeze && (s.freeze.r || s.freeze.c)) || (s.add && s.add.length); })) return Promise.resolve({ bytes: window.XLSX.write(wb, { bookType: bt, type: "array", compression: true, bookVBA: vba }) });
 		var raw = window.XLSX.write(wb, { bookType: bt, type: "array", compression: false, bookVBA: vba });
 		return O.graft(new Uint8Array(raw), pkgOf(), info, inflateRaw, deflateRaw).then(function (res) { res.lost = info.lost; return res; });
 	}
@@ -1393,6 +1438,559 @@
 		toast("In the print window, choose “Save as PDF” to make a PDF.");
 	}
 	$("xl-print").onclick = printSheet;
+
+	/* ---------- formula entry: click / drag cells to insert references, coloured outlines, F4 ---------- */
+	var hlRefs = [], hlEl = null, clip = null, fillDrag = null, tfMenuEl = null, bookNamesCache = null;
+	function isFormulaText(t) { return typeof t === "string" && t.length > 0 && t.charAt(0) === "="; }
+	function edEl() { return editing && editing.where === "bar" ? fxin : ed; }
+	function edText() { return editing ? edEl().value : ""; }
+	function autoClose(v) {
+		var q = false, depth = 0;
+		for (var i = 0; i < v.length; i++) { var ch = v.charAt(i); if (ch === '"') q = !q; else if (!q) { if (ch === "(") depth++; else if (ch === ")" && depth > 0) depth--; } }
+		if (q) v += '"';
+		while (depth-- > 0) v += ")";
+		return v;
+	}
+	function setEdText(v, a, b) {
+		var el = edEl(); el.value = v;
+		if (el === fxin) ed.value = v; else fxin.value = v;
+		if (a != null) { try { el.setSelectionRange(a, b == null ? a : b); } catch (e) { /* ignore */ } }
+		if (editing.where === "cell") placeEditor();
+		refHL();
+	}
+	function refHL() {
+		var t = edText(), was = hlRefs.length;
+		hlRefs = editing && isFormulaText(t) ? X.refSpans(t) : [];
+		paintEdHL();
+		if (was || hlRefs.length) render();
+	}
+	// the cell editor is a textarea, which cannot colour parts of its text: a copy of the text sits behind it with the references coloured
+	function paintEdHL() {
+		if (!hlEl) { hlEl = document.createElement("div"); hlEl.className = "xl-edhl"; hlEl.setAttribute("aria-hidden", "true"); hlEl.hidden = true; grid.appendChild(hlEl); }
+		var on = !!(editing && editing.where === "cell" && !ed.hidden && hlRefs.length && editing.si === si);
+		ed.classList.toggle("xl-ed--hl", on); hlEl.hidden = !on;
+		if (!on) return;
+		var t = ed.value, h = "", p = 0;
+		hlRefs.forEach(function (s) { h += esc(t.slice(p, s.start)) + '<span style="color:' + s.color + '">' + esc(t.slice(s.start, s.end)) + "</span>"; p = s.end; });
+		h += esc(t.slice(p)); if (/\n$/.test(t)) h += " ";
+		hlEl.innerHTML = h;
+		hlEl.style.left = ed.style.left; hlEl.style.top = ed.style.top; hlEl.style.width = ed.style.width; hlEl.style.height = ed.style.height; hlEl.style.minWidth = ed.style.minWidth;
+	}
+	function backToEditSheet() { if (editing && editing.si != null && editing.si !== si && editing.si < wb.SheetNames.length) showSheet(editing.si, true); }
+	function editSheetSwitch(i) {
+		if (editing.pick) editing.pick = null;
+		showSheet(i, true);
+		var el = edEl(); el.focus({ preventScroll: true });
+		render();
+	}
+	// is a click / arrow key now "pointing" (inserting a reference) rather than ending the edit?
+	function pointable() {
+		if (!editing || !isFormulaText(edText())) return false;
+		var el = edEl(), t = el.value, p = editing.pick;
+		if (p && p.si === si && t.slice(p.start, p.end) === p.text) return true;
+		var s = el.selectionStart, e = el.selectionEnd;
+		return X.canPoint(t.slice(0, s) + t.slice(e), s);
+	}
+	function pointSet(dr0, c0, dr1, c1) {
+		var el = edEl(), t = el.value, p = editing.pick, s, e;
+		if (p && p.si === si && t.slice(p.start, p.end) === p.text) { s = p.start; e = p.end; } else { s = el.selectionStart; e = el.selectionEnd; }
+		var a = actualRow(Math.min(dr0, dr1)), b = actualRow(Math.max(dr0, dr1));
+		if (a == null || b == null) return;
+		var g = { s: { r: a, c: Math.min(c0, c1) }, e: { r: b, c: Math.max(c0, c1) } };
+		var text = X.refText(g, si !== editing.si ? wb.SheetNames[si] : null);
+		editing.pick = { start: s, end: s + text.length, text: text, si: si, dr0: dr0, c0: c0, dr1: dr1, c1: c1 };
+		setEdText(t.slice(0, s) + text + t.slice(e), s + text.length);
+	}
+	function tryPoint(p, e) {
+		if (!pointable()) return false;
+		e.preventDefault();
+		edEl().focus({ preventScroll: true });
+		var pk = editing.pick && editing.pick.si === si ? editing.pick : null;
+		if (e.shiftKey && pk) pointSet(pk.dr0, pk.c0, p.dr, p.c); else pointSet(p.dr, p.c, p.dr, p.c);
+		if (e.pointerType !== "touch") { drag = { el: scroll, point: true }; try { scroll.setPointerCapture(e.pointerId); } catch (x) { /* ignore */ } }
+		return true;
+	}
+	function arrowPoint(k, shift) {
+		var p = editing.pick && editing.pick.si === si ? editing.pick : null, dy = k === "ArrowDown" ? 1 : k === "ArrowUp" ? -1 : 0, dx = k === "ArrowRight" ? 1 : k === "ArrowLeft" ? -1 : 0;
+		var cur = p ? { dr0: p.dr0, c0: p.c0, dr1: p.dr1, c1: p.c1 } : (editing.si === si ? { dr0: editing.dr, c0: editing.c, dr1: editing.dr, c1: editing.c } : { dr0: sel.ar, c0: sel.ac, dr1: sel.ar, c1: sel.ac });
+		cur.dr1 = Math.max(minRow(), Math.min(NR - 1, cur.dr1 + dy)); cur.c1 = Math.max(0, Math.min(NC - 1, cur.c1 + dx));
+		if (!shift) { cur.dr0 = cur.dr1; cur.c0 = cur.c1; }
+		pointSet(cur.dr0, cur.c0, cur.dr1, cur.c1);
+		reveal(cur.dr1, cur.c1);
+	}
+	function f4Key(e) {
+		if (e.key !== "F4" || !editing || !isFormulaText(edText())) return false;
+		e.preventDefault(); e.stopPropagation();
+		var el = edEl(), r = X.f4At(el.value, el.selectionStart, el.selectionEnd);
+		if (r) {
+			var pk = editing.pick;
+			if (pk) editing.pick = Object.assign({}, pk, { start: r.start, end: r.end, text: r.text.slice(r.start, r.end) });
+			setEdText(r.text, r.caret);
+		}
+		return true;
+	}
+	// outlines of the references being typed, in the colours the formula text uses
+	function boxOf(g, dom, yOf, xOf) {
+		var r0 = g.s.r, r1 = Math.min(g.e.r, Math.max(nRows - 1, g.s.r, 0));
+		var d0 = displayRow(r0), d1 = displayRow(r1);
+		if (d0 == null || d1 == null) return null;
+		var a = Math.max(d0, dom.r0), b = Math.min(d1, dom.r1), c0 = Math.max(g.s.c, dom.c0), c1 = Math.min(g.e.c, dom.c1);
+		if (a > b || c0 > c1) return null;
+		return { l: xOf(c0), t: yOf(a), w: colX[c1 + 1] - colX[c0], h: (b - a + 1) * RH };
+	}
+	function boxDiv(b, cls, extra) { return b ? '<div class="' + cls + '" style="left:' + b.l + "px;top:" + b.t + "px;width:" + b.w + "px;height:" + b.h + "px;" + (extra || "") + '"></div>' : ""; }
+	function refBoxes(dom, yOf, xOf) {
+		if (!editing || !hlRefs.length) return "";
+		var out = [];
+		hlRefs.forEach(function (s) {
+			var onSheet = s.sheet ? String(s.sheet).toLowerCase() === wb.SheetNames[si].toLowerCase() : editing.si === si;
+			if (onSheet) out.push(boxDiv(boxOf(s.g, dom, yOf, xOf), "xl-refbox", "border-color:" + s.color + ";background:" + s.color + "1f"));
+		});
+		return out.join("");
+	}
+	function spillBox(dom, yOf, xOf) {
+		if (!wb || !calc || editing || sel.mode) return "";
+		var ar = actualRow(sel.ar); if (ar == null) return "";
+		var g = calc.spillOf(si, ar, sel.ac);
+		if (!g) { var k = calc.spilledBy[si + ":" + ar + ":" + sel.ac], p = k && k.split(":"); if (p && +p[0] === si) g = calc.spillOf(si, +p[1], +p[2]); }
+		if (!g || (g.s.r === g.e.r && g.s.c === g.e.c)) return "";
+		return boxDiv(boxOf(g, dom, yOf, xOf), "xl-spill");
+	}
+	function clipBox(dom, yOf, xOf) {
+		if (!clip || clip.si !== si || editing) return "";
+		var g = { s: { r: Math.min.apply(null, clip.ar), c: clip.c1 }, e: { r: Math.max.apply(null, clip.ar), c: clip.c2 } };
+		return boxDiv(boxOf(g, dom, yOf, xOf), "xl-clip");
+	}
+	function fillPrevBox(dom, yOf, xOf) {
+		if (!fillDrag || !fillDrag.prev) return "";
+		var p = fillDrag.prev, a = Math.max(p.r1, dom.r0), b = Math.min(p.r2, dom.r1), c0 = Math.max(p.c1, dom.c0), c1 = Math.min(p.c2, dom.c1);
+		if (a > b || c0 > c1) return "";
+		return boxDiv({ l: xOf(c0), t: yOf(a), w: colX[c1 + 1] - colX[c0], h: (b - a + 1) * RH }, "xl-fillprev");
+	}
+	function fillHandle(dom, xOf, yOf) {
+		if (!wb || editing || sel.mode === "all") return "";
+		var R = selRect();
+		if (R.r2 < dom.r0 || R.r2 > dom.r1 || R.c2 < dom.c0 || R.c2 > dom.c1 || R.c2 >= NC) return "";
+		var w = colX[R.c2 + 1] - colX[R.c2]; if (!w) return "";
+		return '<div class="xl-fh" data-fh="1" title="Drag to fill (double-click: fill down to the end of the data)" style="left:' + (xOf(R.c2) + w - 5) + "px;top:" + (yOf(R.r2) + RH - 5) + 'px"></div>';
+	}
+	function withMl(L, ml) { return O ? O.mergeLook(L, ml) : L; }
+	function fmtState() { /* cell format toolbar: not built */ }
+
+	/* ---------- internal clipboard (copy / cut / paste keep formulas and formats; relative references shift like Excel) ---------- */
+	function isDateZ(z) { return !!(z && /[dy]/i.test(String(z).replace(/"[^"]*"/g, "")) && !/\[/.test(z)); }
+	function cloneFor(cell, dr, dc) {
+		if (!cell) return undefined;
+		var n = Object.assign({}, cell); delete n.w; delete n.sp;
+		if (n.f) { n.f = X.shiftFormula(n.f, dr, dc); n.t = n.t === "e" ? "n" : n.t; }
+		return n;
+	}
+	function setCellObjs(list, label) {
+		var s = si, ch = [];
+		list.forEach(function (x) { var b = getCell(x.r, x.c); if (!b && !x.a) return; ch.push({ r: x.r, c: x.c, b: b, a: x.a }); });
+		if (!ch.length) return;
+		var res = writeCells(s, ch, "a");
+		pushUndo({ k: "cells", si: s, ch: ch, label: label });
+		afterChange(ch.some(function (x) { return x.r >= nRows || x.c >= nCols; }) || ch.some(function (x) { return !x.a; }) || !!(res && res.spilled && res.spilled.length));
+	}
+	function doCopy(cut) {
+		if (!wb) return null;
+		var R = selRect(), r2 = Math.min(R.r2, Math.max(dataN() - 1, R.r1)), c2 = Math.min(R.c2, Math.max(nCols - 1, R.c1));
+		if ((r2 - R.r1 + 1) * (c2 - R.c1 + 1) > 500000) { toast("That is too many cells to copy at once."); return null; }
+		var ars = [], cells = [], tsv = [], htm = [];
+		for (var r = R.r1; r <= Math.max(r2, R.r1); r++) {
+			var ar = actualRow(r), row = ar == null ? null : data()[ar], cr = [], tr = [], hr = [];
+			for (var c = R.c1; c <= c2; c++) {
+				var cell = row ? row[c] : undefined, t = disp(cell), css = "";
+				try { var sa = cell ? styleAt(ar, c, cell) : null; css = sa && sa.css && sa.css.css || ""; } catch (e) { css = ""; }
+				cr.push(cell ? Object.assign({}, cell) : undefined); tr.push(t); hr.push({ text: t, css: css, num: !!(cell && cell.t === "n") });
+			}
+			ars.push(ar); cells.push(cr); tsv.push(tr); htm.push(hr);
+		}
+		var text = X.toDelimited(tsv, "\t", "\n");
+		clip = { si: si, ar: ars, c1: R.c1, c2: c2, cells: cells, text: text, cut: !!cut };
+		render();
+		return { text: text, html: X.htmlTable(htm) };
+	}
+	function clipSame(text) { return !!clip && String(text).replace(/\r?\n$/, "") === clip.text.replace(/\r?\n$/, ""); }
+	function pasteInternal() {
+		var R = selRect(), h = clip.ar.length, w = clip.c2 - clip.c1 + 1;
+		var tr = R.r2 - R.r1 + 1, tc = R.c2 - R.c1 + 1;
+		var nH = !clip.cut && tr > h && tr % h === 0 ? tr : h, nW = !clip.cut && tc > w && tc % w === 0 ? tc : w;
+		if (nH * nW > 300000) { toast("That is too much to paste at once (" + nf(nH * nW) + " cells)."); return; }
+		var t0 = actualRow(R.r1); if (t0 == null) return;
+		if (clip.cut) return pasteCut(R, t0);
+		var list = [], cutShort = false;
+		for (var i = 0; i < nH; i++) {
+			var trow = actualRow(R.r1 + i); if (trow == null) { cutShort = true; break; }
+			for (var j = 0; j < nW; j++) {
+				var sr = clip.ar[i % h], sc = clip.c1 + (j % w), tcol = R.c1 + j;
+				if (sr == null) continue;
+				list.push({ r: trow, c: tcol, a: cloneFor(clip.cells[i % h][j % w], trow - sr, tcol - sc) });
+			}
+		}
+		try { setCellObjs(list, "Paste"); } catch (err) { note(esc(err.message), true); return; }
+		sel.fr = Math.min(NR - 1, R.r1 + nH - 1); sel.fc = R.c1 + nW - 1; clampSel(); showActive(); render();
+		if (cutShort) note("Only the rows showing in the sorted / filtered view were filled.");
+	}
+	function pasteCut(R, t0) {
+		var srcName = wb.SheetNames[clip.si], dstName = wb.SheetNames[si], h = clip.ar.length, w = clip.c2 - clip.c1 + 1;
+		var a0 = clip.ar[0], dr = t0 - a0, dc = R.c1 - clip.c1;
+		var g = { s: { r: Math.min.apply(null, clip.ar), c: clip.c1 }, e: { r: Math.max.apply(null, clip.ar), c: clip.c2 } }, from = { sheet: srcName, g: g };
+		var s0 = clip.si, dst = si;
+		struct("Move cells", function () {
+			var changed = [];
+			// references (anywhere in the book) to cells that are moving follow them
+			wb.SheetNames.forEach(function (n, s) {
+				var d = wb.Sheets[n]["!data"] || [];
+				for (var r = 0; r < d.length; r++) { var row = d[r]; if (!row) continue; for (var c = 0; c < row.length; c++) { var cell = row[c]; if (!cell || !cell.f) continue; var f2 = X.moveRefs(cell.f, from, dr, dc, n, dstName); if (f2 !== cell.f) { var nc = Object.assign({}, cell, { f: f2 }); delete nc.w; row[c] = nc; changed.push({ si: s, r: r, c: c }); } } }
+			});
+			var sd = wb.Sheets[srcName]["!data"] || (wb.Sheets[srcName]["!data"] = []), dd = wb.Sheets[dstName]["!data"] || (wb.Sheets[dstName]["!data"] = []), moved = [];
+			for (var i = 0; i < h; i++) { var sr = clip.ar[i]; for (var j = 0; j < w; j++) { var cc = clip.c1 + j, cell2 = sd[sr] && sd[sr][cc]; moved.push({ r: sr + dr, c: cc + dc, cell: cell2 ? Object.assign({}, cell2) : undefined }); if (sd[sr]) sd[sr][cc] = undefined; changed.push({ si: s0, r: sr, c: cc }); } }
+			moved.forEach(function (m) { if (m.cell) { delete m.cell.w; delete m.cell.sp; } if (!dd[m.r]) dd[m.r] = []; dd[m.r][m.c] = m.cell; changed.push({ si: dst, r: m.r, c: m.c }); });
+			return changed;
+		}, true);
+		clip = null;
+		sel.ar = Math.max(minRow(), R.r1); sel.ac = R.c1; sel.fr = Math.min(NR - 1, R.r1 + h - 1); sel.fc = R.c1 + w - 1; clampSel(); showActive(); render();
+	}
+
+	/* ---------- fill handle, Ctrl+D / Ctrl+R ---------- */
+	function seriesVals(cells, n) {
+		var src = cells.map(function (c) {
+			if (!c) return { v: null };
+			if (c.t === "n" && typeof c.v === "number") return { v: c.v, date: isDateZ(c.z) };
+			if ((c.t === "s" || c.t === "str") && c.v != null) return { v: String(c.v) };
+			if (c.t === "b") return { v: !!c.v };
+			return { v: null };
+		});
+		if (src.some(function (x) { return x.v === null; })) return null;
+		return X.fillSeries(src, n, {});
+	}
+	function fromVal(base, r) {
+		var n = Object.assign({}, base || {}); delete n.f; delete n.w; delete n.sp; delete n.da; delete n.v; delete n.t;
+		if (typeof r.v === "number") { n.t = "n"; n.v = r.v; } else if (typeof r.v === "boolean") { n.t = "b"; n.v = r.v; } else { n.t = "s"; n.v = String(r.v); }
+		return n;
+	}
+	// R: selection (display rows); dir d / u / r / l; n = how many cells to add beyond it; copy = copy instead of making a series
+	function fillCells(R, dir, n, copy, label) {
+		var vert = dir === "d" || dir === "u", fwd = dir === "d" || dir === "r", ch = [], rows = [];
+		for (var r = R.r1; r <= R.r2; r++) rows.push(actualRow(r));
+		var nLines = vert ? R.c2 - R.c1 + 1 : rows.length, m = vert ? rows.length : R.c2 - R.c1 + 1;
+		for (var L = 0; L < nLines; L++) {
+			var src = [], pos = [];
+			for (var i = 0; i < m; i++) { var ar = vert ? rows[i] : rows[L], c = vert ? R.c1 + L : R.c1 + i; if (ar == null) continue; src.push(getCell(ar, c)); pos.push({ r: ar, c: c }); }
+			if (!src.length) continue;
+			m = src.length;
+			var ord = fwd ? src.slice() : src.slice().reverse(), ordPos = fwd ? pos : pos.slice().reverse();
+			var hasF = ord.some(function (x) { return x && x.f; }), vals = !hasF && !copy ? seriesVals(ord, n) : null;
+			for (var k = 0; k < n; k++) {
+				var tr, tc;
+				if (vert) { tc = R.c1 + L; tr = actualRow(fwd ? R.r2 + 1 + k : R.r1 - 1 - k); } else { tr = rows[L]; tc = fwd ? R.c2 + 1 + k : R.c1 - 1 - k; }
+				if (tr == null || tr < 0 || tc < 0 || tc >= 16384) continue;
+				var q = k % m, a = vals ? fromVal(ord[q], vals[k]) : cloneFor(ord[q], tr - ordPos[q].r, tc - ordPos[q].c);
+				ch.push({ r: tr, c: tc, a: a });
+			}
+		}
+		if (!ch.length) return false;
+		try { setCellObjs(ch, label || "Fill"); } catch (err) { note(esc(err.message), true); return false; }
+		return true;
+	}
+	function fillDown(copy) {
+		var R = selRect(); if (!wb) return;
+		if (R.r2 > R.r1) fillCells({ r1: R.r1, r2: R.r1, c1: R.c1, c2: R.c2 }, "d", R.r2 - R.r1, true, "Fill down");
+		else if (R.r1 > minRow()) fillCells({ r1: R.r1 - 1, r2: R.r1 - 1, c1: R.c1, c2: R.c2 }, "d", 1, true, "Fill down");
+		render(); void copy;
+	}
+	function fillRight() {
+		var R = selRect(); if (!wb) return;
+		if (R.c2 > R.c1) fillCells({ r1: R.r1, r2: R.r2, c1: R.c1, c2: R.c1 }, "r", R.c2 - R.c1, true, "Fill right");
+		else if (R.c1 > 0) fillCells({ r1: R.r1, r2: R.r2, c1: R.c1 - 1, c2: R.c1 - 1 }, "r", 1, true, "Fill right");
+		render();
+	}
+	function fillTarget(p) {
+		var R = fillDrag.R, dv = p.dr > R.r2 ? p.dr - R.r2 : p.dr < R.r1 ? p.dr - R.r1 : 0, dh = p.c > R.c2 ? p.c - R.c2 : p.c < R.c1 ? p.c - R.c1 : 0;
+		if (!dv && !dh) return { dir: null, n: 0, prev: null };
+		if (Math.abs(dv) >= Math.abs(dh) * (dh ? 1 : 1) && dv) return dv > 0 ? { dir: "d", n: dv, prev: { r1: R.r1, r2: R.r2 + dv, c1: R.c1, c2: R.c2 } } : { dir: "u", n: -dv, prev: { r1: R.r1 + dv, r2: R.r2, c1: R.c1, c2: R.c2 } };
+		return dh > 0 ? { dir: "r", n: dh, prev: { r1: R.r1, r2: R.r2, c1: R.c1, c2: R.c2 + dh } } : { dir: "l", n: -dh, prev: { r1: R.r1, r2: R.r2, c1: R.c1 + dh, c2: R.c2 } };
+	}
+	grid.addEventListener("pointerdown", function (e) {
+		if (!wb || e.button > 0) return;
+		var tf = e.target.closest && e.target.closest(".xl-tfb");
+		if (tf) { e.preventDefault(); e.stopPropagation(); if (editing && !commitEdit()) return; tfMenu(tf); return; }
+		var fh = e.target.closest && e.target.closest(".xl-fh");
+		if (fh) {
+			e.preventDefault(); e.stopPropagation();
+			fillDrag = { R: selRect(), prev: null, dir: null, n: 0 };
+			try { fh.setPointerCapture(e.pointerId); } catch (x) { /* ignore */ }
+			var mv = function (ev) {
+				var rect = scroll.getBoundingClientRect();
+				if (ev.clientY > rect.bottom - 6) scroll.scrollTop += RH; else if (ev.clientY < rect.top + 6) scroll.scrollTop -= RH;
+				if (ev.clientX > rect.right - 6) scroll.scrollLeft += 40; else if (ev.clientX < rect.left + 6) scroll.scrollLeft -= 40;
+				var t = fillTarget(hitCell(ev, scroll)); fillDrag.dir = t.dir; fillDrag.n = t.n; fillDrag.prev = t.prev; render();
+			};
+			var up = function (ev) {
+				document.removeEventListener("pointermove", mv); document.removeEventListener("pointerup", up); document.removeEventListener("pointercancel", up);
+				var fd = fillDrag; if (fd && !fd.dir && ev.type === "pointerup") { var t2 = fillTarget(hitCell(ev, scroll)); fd.dir = t2.dir; fd.n = t2.n; fd.prev = t2.prev; } fillDrag = null;
+				if (fd && fd.dir && fd.n > 0 && ev.type === "pointerup") {
+					if (fillCells(fd.R, fd.dir, fd.n, ev.ctrlKey || ev.metaKey)) { var p = fd.prev; sel.ar = p.r1; sel.fr = p.r2; sel.ac = p.c1; sel.fc = p.c2; sel.mode = ""; clampSel(); showActive(); }
+				}
+				render();
+			};
+			document.addEventListener("pointermove", mv); document.addEventListener("pointerup", up); document.addEventListener("pointercancel", up);
+		}
+	}, true);
+	grid.addEventListener("dblclick", function (e) {
+		var fh = e.target.closest && e.target.closest(".xl-fh"); if (!fh || !wb) return;
+		e.preventDefault(); e.stopPropagation();
+		var R = selRect(), nc = R.c1 > 0 ? R.c1 - 1 : R.c2 + 1, n = 0;
+		for (var dr = R.r2 + 1; dr < NR && n < 100000; dr++) { var ar = actualRow(dr); var cl = ar == null ? null : getCell(ar, nc); if (!cl || cl.t === "z" || disp(cl) === "") break; n++; }
+		if (n > 0 && fillCells(R, "d", n, false)) { sel.fr = R.r2 + n; clampSel(); showActive(); render(); }
+	}, true);
+
+	/* ---------- Excel tables (Insert > Table): banded rows, header sort / filter buttons ---------- */
+	function myTables(w) { w = w || ws(); return w["!mestables"] || (w["!mestables"] = []); }
+	function tableEls(t) { if (!t.els) { var p = pkgOf(); t.els = O.tableElements(t, p ? p.styles : null, p ? p.theme : null) || null; } return t.els; }
+	function tableAt(ar, c) {
+		var l = ws()["!mestables"]; if (!l) return null;
+		for (var i = 0; i < l.length; i++) { var t = l[i]; if (ar >= t.g.s.r && ar <= t.g.e.r && c >= t.g.s.c && c <= t.g.e.c) return t; }
+		return null;
+	}
+	function allTables() {
+		var out = [];
+		wb.SheetNames.forEach(function (n) {
+			var w = wb.Sheets[n], x = sx(w);
+			(x && x.tables || []).forEach(function (t) { out.push({ name: t.name, sheet: n, g: t.g, header: t.header, totals: t.totals, cols: t.columns || [] }); });
+			(w["!mestables"] || []).forEach(function (t) { out.push({ name: t.name, sheet: n, g: t.g, header: t.header, totals: t.totals, cols: t.columns || [] }); });
+		});
+		return out;
+	}
+	var calcTables = function () { return allTables(); };
+	var bookNames = function () {
+		var o = {}, nm = wb && wb.Workbook && wb.Workbook.Names || [];
+		nm.forEach(function (n) { if (n && n.Name && n.Ref && n.Sheet == null) o[String(n.Name).toUpperCase()] = n.Ref; });
+		return o;
+	};
+	// the block of filled cells around (r, c) (what Excel selects for a one-cell selection)
+	function region(r, c) {
+		var d = data(), has = function (rr, cc) { var cl = d[rr] && d[rr][cc]; return !!(cl && cl.t !== "z" && disp(cl) !== ""); };
+		var r1 = r, r2 = r, c1 = c, c2 = c, grew = true, guard = 0;
+		while (grew && guard++ < 500) {
+			grew = false;
+			var rowHas = function (rr) { for (var cc = c1 - 1; cc <= c2 + 1; cc++) if (cc >= 0 && has(rr, cc)) return true; return false; };
+			var colHas = function (cc) { for (var rr = r1 - 1; rr <= r2 + 1; rr++) if (rr >= 0 && has(rr, cc)) return true; return false; };
+			if (r1 > 0 && rowHas(r1 - 1)) { r1--; grew = true; }
+			if (r2 + 1 < nRows && rowHas(r2 + 1)) { r2++; grew = true; }
+			if (c1 > 0 && colHas(c1 - 1)) { c1--; grew = true; }
+			if (c2 + 1 < nCols && colHas(c2 + 1)) { c2++; grew = true; }
+		}
+		return { s: { r: r1, c: c1 }, e: { r: r2, c: c2 } };
+	}
+	function selGrid() {
+		var R = selRect(), a = actualRow(R.r1), b = actualRow(Math.min(R.r2, Math.max(dataN() - 1, R.r1)));
+		if (a == null || b == null) return null;
+		var g = { s: { r: Math.min(a, b), c: R.c1 }, e: { r: Math.max(a, b), c: Math.min(R.c2, Math.max(nCols - 1, R.c1)) } };
+		if (g.s.r === g.e.r && g.s.c === g.e.c) { var cl = getCell(g.s.r, g.s.c); if (!cl || cl.t === "z") return null; g = region(g.s.r, g.s.c); }
+		return g;
+	}
+	function insertTable() {
+		if (!wb) return;
+		var g = selGrid();
+		if (!g || g.e.r === g.s.r) { toast("Select the cells for the table first (a header row and at least one row of data)."); return; }
+		var clash = (ws()["!mestables"] || []).some(function (t) { return !(g.e.r < t.g.s.r || g.s.r > t.g.e.r || g.e.c < t.g.s.c || g.s.c > t.g.e.c); });
+		if (clash) { toast("Those cells are already in a table."); return; }
+		var names = {}; allTables().forEach(function (t) { names[String(t.name).toLowerCase()] = 1; });
+		var k = 1; while (names["table" + k]) k++;
+		var id = 1; wb.SheetNames.forEach(function (n) { (wb.Sheets[n]["!mestables"] || []).forEach(function (t) { id = Math.max(id, t.id + 1); }); });
+		struct("Insert table", function () {
+			var d = data(), texts = [], c;
+			for (c = g.s.c; c <= g.e.c; c++) texts.push(disp(d[g.s.r] && d[g.s.r][c]));
+			var cols = O.tableColNames(texts), changed = [];
+			if (!d[g.s.r]) d[g.s.r] = [];
+			cols.forEach(function (nm, i) { var cc = g.s.c + i, old = d[g.s.r][cc]; if (!old || old.t === "n" || disp(old) !== nm) { d[g.s.r][cc] = Object.assign({}, old || {}, { t: "s", v: nm }); delete d[g.s.r][cc].w; delete d[g.s.r][cc].f; changed.push({ si: si, r: g.s.r, c: cc }); } });
+			myTables().push({ id: id, name: "Table" + k, g: { s: { r: g.s.r, c: g.s.c }, e: { r: g.e.r, c: g.e.c } }, header: true, totals: false, style: "TableStyleMedium2", rowStripes: true, colStripes: false, firstCol: false, lastCol: false, columns: cols, cols: cols });
+			return changed;
+		}, true);
+		toast("Made Table" + k + ". Use the arrows in the header row to sort it.");
+	}
+	function sortTable(t, c, dir) {
+		var first = t.g.s.r + (t.header ? 1 : 0), last = t.g.e.r - (t.totals ? 1 : 0);
+		if (last <= first) return;
+		struct("Sort table", function () {
+			var d = data(), rows = [], changed = [], i;
+			for (i = first; i <= last; i++) rows.push({ i: i, row: d[i] ? d[i].slice() : [], key: X.cellValue(d[i] ? d[i][c] : undefined) });
+			var rank = function (v) { return v == null || v === "" ? 3 : typeof v === "number" ? 0 : typeof v === "boolean" ? 2 : 1; };
+			rows.sort(function (a, b) {
+				var ra = rank(a.key), rb = rank(b.key); if (ra === 3 || rb === 3) return ra === rb ? a.i - b.i : ra === 3 ? 1 : -1;
+				if (ra !== rb) return ra - rb;
+				var cmp = ra === 1 ? String(a.key).toLowerCase().localeCompare(String(b.key).toLowerCase()) : (a.key < b.key ? -1 : a.key > b.key ? 1 : 0);
+				return cmp ? cmp * dir : a.i - b.i;
+			});
+			rows.forEach(function (o, k) {
+				var tr = first + k; if (!d[tr]) d[tr] = [];
+				for (var cc = t.g.s.c; cc <= t.g.e.c; cc++) { var src = o.row[cc]; d[tr][cc] = o.i === tr ? src : cloneFor(src, tr - o.i, 0); changed.push({ si: si, r: tr, c: cc }); }
+			});
+			return changed;
+		}, true);
+		toast("Sorted " + t.name + " by " + (t.columns[c - t.g.s.c] || X.colName(c)) + (dir > 0 ? ", A to Z." : ", Z to A."));
+	}
+	function closeTf() { if (tfMenuEl) { tfMenuEl.remove(); tfMenuEl = null; } }
+	function tfMenu(btn) {
+		closeTf();
+		var parts = btn.getAttribute("data-tf").split(":"), ar = +parts[0], c = +parts[1], t = tableAt(ar, c); if (!t) return;
+		var m = document.createElement("div"); m.className = "xl-menu xl-tfmenu"; m.setAttribute("role", "menu");
+		var v = views[wb.SheetNames[si]], on = v && v.filters && v.filters.some(function (f) { return f.c === c && f.t === t.name; });
+		m.innerHTML = '<button type="button" role="menuitem" data-a="asc"><b>Sort A to Z</b><small>smallest first</small></button><button type="button" role="menuitem" data-a="desc"><b>Sort Z to A</b><small>largest first</small></button>' +
+			'<button type="button" role="menuitem" data-a="filter"><b>Show only rows that contain…</b><small>a view: the file is not changed</small></button>' + (on ? '<button type="button" role="menuitem" data-a="clear"><b>Clear this filter</b></button>' : "");
+		var r = btn.getBoundingClientRect(), ar0 = app.getBoundingClientRect();
+		m.style.position = "fixed"; m.style.left = Math.max(4, Math.min(r.left, window.innerWidth - 280)) + "px"; m.style.top = (r.bottom + 4) + "px"; m.style.width = "260px"; m.style.zIndex = 2147483000;
+		(app.classList.contains("mes-pfill") ? app : document.body).appendChild(m); tfMenuEl = m; void ar0;
+		m.addEventListener("click", function (e) {
+			var b = e.target.closest("[data-a]"); if (!b) return; var a = b.getAttribute("data-a"); closeTf();
+			if (a === "asc") sortTable(t, c, 1); else if (a === "desc") sortTable(t, c, -1);
+			else if (a === "filter") { var val = window.prompt("Show only the rows where " + (t.columns[c - t.g.s.c] || X.colName(c)) + " contains:", ""); if (val) { var vs = vstate(); vs.filters.push({ c: c, op: "contains", v: val, t: t.name }); computeView(); } }
+			else if (a === "clear") { var v2 = vstate(); v2.filters = v2.filters.filter(function (f) { return !(f.c === c && f.t === t.name); }); computeView(); }
+		});
+		setTimeout(function () { var f = m.querySelector("button"); if (f) f.focus(); }, 0);
+		m.addEventListener("keydown", function (e) { if (e.key === "Escape") { closeTf(); scroll.focus({ preventScroll: true }); } });
+	}
+	document.addEventListener("pointerdown", function (e) { if (tfMenuEl && !e.target.closest(".xl-tfmenu") && !e.target.closest(".xl-tfb")) closeTf(); }, true);
+	// rows / columns inserted or deleted: tables and charts of this sheet follow (a table grows when rows go inside it; a deleted one goes)
+	function shiftIdx(i, at, n, isEnd) {
+		if (n > 0) return i >= at ? i + n : i;
+		var m = -n; if (i >= at + m) return i + n; if (i >= at) return isEnd ? at - 1 : at; return i;
+	}
+	function shiftObjects(axis, at, n, name) {
+		void name;
+		var w = ws(), k = axis, tl = w["!mestables"], cl = w["!mescharts"];
+		if (tl) w["!mestables"] = tl.filter(function (t) {
+			var s0 = t.g.s[k], e0 = t.g.e[k], s1 = shiftIdx(s0, at, n, false), e1 = shiftIdx(e0, at, n, true);
+			if (n < 0 && s0 >= at && e0 < at - n) return false;
+			if (e1 < s1) return false;
+			t.g = { s: Object.assign({}, t.g.s), e: Object.assign({}, t.g.e) }; t.g.s[k] = s1; t.g.e[k] = e1; delete t.els;
+			if (k === "c") {
+				var d = w["!data"] || [], cols = t.columns.slice();
+				if (n > 0 && at > s0 && at <= e0) { for (var j = 0; j < n; j++) { var nm = "Column" + (cols.length + 1); while (cols.indexOf(nm) >= 0) nm += "x"; cols.splice(at - s0 + j, 0, nm); if (!d[t.g.s.r]) d[t.g.s.r] = []; d[t.g.s.r][at + j] = { t: "s", v: nm }; } }
+				else if (n < 0) cols.splice(Math.max(0, at - s0), Math.min(cols.length, Math.max(0, Math.min(e0, at - n - 1) - Math.max(s0, at) + 1)));
+				t.columns = cols; t.cols = cols;
+			}
+			return true;
+		});
+		if (cl) w["!mescharts"] = cl.filter(function (c) {
+			var key = k === "r" ? "r" : "c", f = c.at.from, t2 = c.at.to;
+			f[key] = shiftIdx(f[key], at, n, false); t2[key] = shiftIdx(t2[key], at, n, true); if (t2[key] < f[key]) t2[key] = f[key];
+			["s", "e"].forEach(function (_) { /* data refs follow through the series ranges below */ });
+			(c.m.series || []).forEach(function (s) { ["name", "cat", "val"].forEach(function (q) { var o = s[q]; if (o && o.g) { o.g = { s: Object.assign({}, o.g.s), e: Object.assign({}, o.g.e) }; o.g.s[k] = shiftIdx(o.g.s[k], at, n, false); o.g.e[k] = shiftIdx(o.g.e[k], at, n, true); } }); });
+			chartBuild(c);
+			return true;
+		});
+	}
+
+	/* ---------- charts (Insert > Chart): drawn from the selection, saved into the .xlsx ---------- */
+	function myCharts(w) { w = w || ws(); return w["!mescharts"] || (w["!mescharts"] = []); }
+	function chartBuild(c) {
+		c.xml = O.chartXml(c.m);
+		var p = pkgOf();
+		c.chart = O.parseChart(c.xml, p ? p.theme : null);
+		return c;
+	}
+	function drawMyCharts(html, dark) {
+		var l = ws()["!mescharts"]; if (!l) return;
+		l.forEach(function (c, i) {
+			var r = rectOf({ from: c.at.from, to: c.at.to }); if (!r || r.w < 30 || r.h < 30) return;
+			var svg = "";
+			try { svg = O.chartSvg(c.chart, chartModel(c.chart), { w: Math.round(r.w), h: Math.round(r.h), dark: dark, fmt: fmtVal }); } catch (e) { svg = ""; if (window.console) console.warn("[excel] chart", e); }
+			if (svg) html.push('<div class="xl-obj xl-chart xl-mychart' + (i === mcSel ? " is-sel" : "") + '" data-mc="' + i + '" tabindex="0" role="img" aria-label="' + esc("Chart" + (c.m.title ? ": " + c.m.title : "")) + '" style="left:' + r.x.toFixed(1) + "px;top:" + r.y.toFixed(1) + "px;width:" + r.w.toFixed(1) + "px;height:" + r.h.toFixed(1) + 'px">' + svg + '<button type="button" class="xl-mcx" data-mcx="' + i + '" aria-label="Delete this chart" title="Delete this chart">&times;</button></div>');
+		});
+	}
+	var mcSel = -1;
+	function numCell(c) { return !!(c && c.t === "n" && typeof c.v === "number"); }
+	function textCell(c) { return !!(c && (c.t === "s" || c.t === "str") && String(c.v == null ? "" : c.v) !== ""); }
+	function chartModelFor(type) {
+		var g = selGrid();
+		if (!g || (g.e.r === g.s.r && g.e.c === g.s.c)) { toast("Select the cells to chart first (for example a column of labels and a column of numbers)."); return null; }
+		var d = data(), rows = g.e.r - g.s.r + 1, cols = g.e.c - g.s.c + 1;
+		var cell = function (r, c) { return d[r] && d[r][c]; };
+		// header row: the first row has text where the rows below have numbers
+		var dataC0 = g.s.c, hasCat = false;
+		var body0 = g.s.r + 1;
+		var firstColText = 0, firstColNum = 0; for (var r = body0; r <= g.e.r; r++) { var q = cell(r, g.s.c); if (textCell(q)) firstColText++; else if (numCell(q)) firstColNum++; }
+		var scatter = type === "scatter";
+		if (cols > 1 && (scatter ? firstColNum > 0 && firstColText === 0 : firstColText > firstColNum || (firstColNum === 0 && firstColText === 0))) hasCat = true;
+		if (hasCat) dataC0 = g.s.c + 1;
+		var header = false;
+		for (var c = dataC0; c <= g.e.c; c++) if (textCell(cell(g.s.r, c))) header = true;
+		if (!header && rows > 1 && numCell(cell(g.s.r, dataC0)) === false && !textCell(cell(g.s.r, dataC0))) header = false;
+		var r0 = header ? g.s.r + 1 : g.s.r;
+		if (r0 > g.e.r) { toast("Select at least one row of numbers under the headings."); return null; }
+		var series = [];
+		for (var cc = dataC0; cc <= g.e.c; cc++) {
+			var nums = 0; for (var rr = r0; rr <= g.e.r; rr++) if (numCell(cell(rr, cc))) nums++;
+			if (!nums) continue;
+			var s = { name: header && textCell(cell(g.s.r, cc)) ? { g: { s: { r: g.s.r, c: cc }, e: { r: g.s.r, c: cc } } } : "Series " + (series.length + 1), val: { g: { s: { r: r0, c: cc }, e: { r: g.e.r, c: cc } } } };
+			if (hasCat) s.cat = { g: { s: { r: r0, c: g.s.c }, e: { r: g.e.r, c: g.s.c } } };
+			series.push(s);
+		}
+		if (!series.length) { toast("No numbers in the selection to chart."); return null; }
+		if (type === "pie" || type === "doughnut") series = series.slice(0, 1);
+		var title = series.length === 1 && header && textCell(cell(g.s.r, dataC0)) ? String(cell(g.s.r, dataC0).v) : "";
+		return { type: type, sheet: wb.SheetNames[si], title: title, legend: series.length > 1 || type === "pie" || type === "doughnut" ? "r" : null, series: series, grid: g };
+	}
+	function insertChart(type) {
+		if (!wb) return;
+		var m = chartModelFor(type); if (!m) return;
+		var g = m.grid; delete m.grid;
+		var from = { c: g.e.c + 2, co: 0, r: g.s.r, ro: 0 }, to = { c: g.e.c + 10, co: 0, r: g.s.r + 15, ro: 0 };
+		var ch = chartBuild({ m: m, at: { from: from, to: to }, id: Date.now() });
+		struct("Insert chart", function () { myCharts().push(ch); return []; }, true);
+		S.objs = true; save(); toolState(); drawObjects(true);
+		toast("Added a " + type + " chart. Drag it to move it; the × deletes it.");
+	}
+	function deleteChart(i) { struct("Delete chart", function () { myCharts().splice(i, 1); return []; }, true); mcSel = -1; drawObjects(true); }
+	var mcDrag = null;
+	$("xl-objs").addEventListener("pointerdown", function (e) {
+		var x = e.target.closest("[data-mcx]"); if (x) { e.preventDefault(); e.stopPropagation(); deleteChart(+x.getAttribute("data-mcx")); return; }
+		var o = e.target.closest("[data-mc]"); if (!o || e.button > 0) return;
+		var i = +o.getAttribute("data-mc"), c = ws()["!mescharts"][i]; if (!c) return;
+		mcSel = i; var p = hitCell(e, scroll);
+		mcDrag = { i: i, dr: p.dr, c: p.c, from: JSON.parse(JSON.stringify(c.at)), moved: false };
+		try { o.setPointerCapture(e.pointerId); } catch (er) { /* ignore */ }
+		e.preventDefault(); drawObjects(true);
+	});
+	$("xl-objs").addEventListener("pointermove", function (e) {
+		if (!mcDrag) return;
+		var p = hitCell(e, scroll), dr = actualRow(p.dr) - actualRow(mcDrag.dr), dc = p.c - mcDrag.c, c = ws()["!mescharts"][mcDrag.i]; if (!c) return;
+		if (!dr && !dc && !mcDrag.moved) return;
+		mcDrag.moved = true;
+		var f0 = mcDrag.from.from, t0 = mcDrag.from.to, nr = Math.max(0, f0.r + dr), nc = Math.max(0, f0.c + dc);
+		c.at = { from: { c: nc, co: f0.co, r: nr, ro: f0.ro }, to: { c: t0.c + (nc - f0.c), co: t0.co, r: t0.r + (nr - f0.r), ro: t0.ro } };
+		drawObjects(true);
+	});
+	$("xl-objs").addEventListener("pointerup", function () { if (mcDrag && mcDrag.moved && file) { file.dirty = true; renderName(); autosave(); } mcDrag = null; });
+	$("xl-objs").addEventListener("keydown", function (e) { var o = e.target.closest && e.target.closest("[data-mc]"); if (o && (e.key === "Delete" || e.key === "Backspace")) { e.preventDefault(); deleteChart(+o.getAttribute("data-mc")); scroll.focus({ preventScroll: true }); } });
+	// the editor's own tables and charts, as new parts for the .xlsx
+	function mineParts(w, k) {
+		var add = [], tl = w["!mestables"] || [], cl = w["!mescharts"] || [], d = w["!data"] || [];
+		tl.forEach(function (t) {
+			var texts = []; for (var c = t.g.s.c; c <= t.g.e.c; c++) texts.push(disp(d[t.g.s.r] && d[t.g.s.r][c]));
+			t.cols = O.tableColNames(texts);
+			add.push({ tag: "tablePart", relType: O.REL.table, part: "xl/tables/tableMes" + t.id + ".xml", xml: O.tableXml(t), ctType: O.CT.table });
+		});
+		if (cl.length) {
+			var list = cl.map(function (c, i) { return { from: c.at.from, to: c.at.to, name: "Chart " + (i + 1), rid: "rId" + (i + 1) }; });
+			add.push({ tag: "drawing", relType: O.REL.drawing, part: "xl/drawings/drawingMes" + (k + 1) + ".xml", xml: O.drawingXml(list), ctType: O.CT.drawing,
+				rels: cl.map(function (c, i) { return { id: "rId" + (i + 1), type: O.REL.chart, target: "xl/charts/chartMes" + (k + 1) + "_" + (i + 1) + ".xml" }; }),
+				sub: cl.map(function (c, i) { return { part: "xl/charts/chartMes" + (k + 1) + "_" + (i + 1) + ".xml", xml: O.chartXml(c.m), ctType: O.CT.chart }; }) });
+		}
+		return add;
+	}
+
+	/* ---------- Insert menu ---------- */
+	if ($("xl-insmenu")) $("xl-insmenu").addEventListener("click", function (e) {
+		var b = e.target.closest("[data-ins]"); if (!b) return; closeMenus();
+		var w = b.getAttribute("data-ins");
+		if (w === "table") insertTable(); else if (w.indexOf("chart:") === 0) insertChart(w.slice(6));
+		else if (w === "fill-down") fillDown(); else if (w === "fill-right") fillRight();
+	});
 
 	/* ---------- fill window / full screen ---------- */
 	function addPanel() { if (window.MESPanel) window.MESPanel.add(app, { bar: $("xl-pv"), onChange: function () { layout(); render(); } }); }

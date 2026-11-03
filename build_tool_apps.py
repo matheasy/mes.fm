@@ -1148,7 +1148,7 @@ APPS = {
                   tag="Open, view and edit spreadsheets in your browser.", accent="#1e7145", dark="#155a36", tint="#e1f1e7",
                   desc="Free online spreadsheet viewer and editor: open Excel files (.xlsx, .xlsm, .xls), LibreOffice .ods and CSV in your browser, with every sheet, number formats and formulas. Edit cells and simple formulas, find, sort and filter, add rows and columns, then save as .xlsx, .ods or CSV, or print to PDF. Fast with big files. Private: nothing is uploaded.",
                   meta_desc="Free spreadsheet viewer and editor: open Excel .xlsx / .xls, .ods and CSV files, edit cells and formulas, sort, filter, save as .xlsx or CSV. No upload.",
-                  js_v="3", js_parts=["formulas.js", "edit.js", "ooxml.js", "parts.js"]),
+                  js_v="4", js_parts=["formulas.js", "edit.js", "ooxml.js", "parts.js"]),
     "compress": dict(title="MES Compressor", page_title="Compressor: Compress Images, PDFs and Audio Online",
                        tag="Make pictures, PDFs and audio smaller.", accent="#4338ca", dark="#3730a3", tint="#e8e9fb",
                        desc="Free online compressor for pictures, PDFs and audio: shrink JPG, PNG and WebP to a quality or file size you choose, make PDFs smaller while keeping text selectable, and save audio as smaller MP3s. Before and after preview, ZIP download. Private: nothing is uploaded.",

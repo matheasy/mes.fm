@@ -156,3 +156,23 @@ html body.dark-mode #xl .xl-c.f-fill { color: #111; }   /* fills come from the f
 	#xl .xl-find { flex-basis: 100%; }
 	#xl .xl-find .xl-in { flex: 1; width: auto; }
 }
+
+/* formula entry, clipboard, fill, tables, charts (2026-11-03) */
+#xl .xl-refbox { position: absolute; border: 2px solid; pointer-events: none; z-index: 3; box-sizing: border-box; }
+#xl .xl-act.is-ed { border-style: dashed; }
+#xl .xl-spill { position: absolute; border: 2px solid #2a6df4; pointer-events: none; z-index: 2; box-sizing: border-box; }
+#xl .xl-clip { position: absolute; pointer-events: none; z-index: 3; box-sizing: border-box; border: 2px dashed #1e7145; animation: xl-ants .6s linear infinite; }
+@keyframes xl-ants { to { border-color: #1e7145 transparent; } }
+#xl .xl-fillprev { position: absolute; pointer-events: none; z-index: 3; box-sizing: border-box; border: 2px dashed var(--xl-selb); }
+#xl .xl-fh { position: absolute; width: 9px; height: 9px; background: var(--xl-selb); border: 1px solid var(--xl-cell); box-sizing: border-box; z-index: 5; cursor: crosshair; touch-action: none; }
+#xl .xl-edhl { position: absolute; z-index: 5; box-sizing: border-box; margin: 0; border: 2px solid var(--xl-selb); padding: 1px 3px; font: inherit; font-size: 13.5px; line-height: 19px; background: var(--xl-cell); color: var(--xl-ink); white-space: pre-wrap; overflow-wrap: anywhere; overflow: hidden; pointer-events: none; }
+#xl .xl-ed.xl-ed--hl { background: transparent; color: transparent; caret-color: var(--xl-ink); z-index: 6; }
+html body.dark-mode #xl .xl-edhl span { filter: brightness(1.45); }
+#xl .xl-tfb { position: absolute; right: 1px; top: 50%; transform: translateY(-50%); width: 17px; height: 17px; padding: 0; border: 1px solid rgba(255,255,255,.7); background: rgba(255,255,255,.92); color: #333; border-radius: 3px; font-size: 10px; line-height: 15px; cursor: pointer; z-index: 3; }
+#xl .xl-tfb.is-on { background: #fff3c4; }
+#xl .has-tfb { padding-right: 22px; }
+#xl .xl-mychart { cursor: move; }
+#xl .xl-mychart.is-sel { outline: 2px solid var(--xl-selb); }
+#xl .xl-mcx { position: absolute; right: 3px; top: 3px; width: 22px; height: 22px; border: 0; border-radius: 11px; background: rgba(0,0,0,.55); color: #fff; font-size: 15px; line-height: 20px; padding: 0; cursor: pointer; display: none; }
+#xl .xl-mychart:hover .xl-mcx, #xl .xl-mychart:focus .xl-mcx, #xl .xl-mychart.is-sel .xl-mcx { display: block; }
+#xl .xl-fxin.is-ghost { color: var(--xl-mute); }

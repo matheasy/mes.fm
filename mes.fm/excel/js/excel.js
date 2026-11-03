@@ -118,9 +118,9 @@
 	/* ---------- errors ---------- */
 	function Err(code) { this.code = code; }
 	Err.prototype.toString = function () { return this.code; };
-	var E = {}; ["#NULL!", "#DIV/0!", "#VALUE!", "#REF!", "#NAME?", "#NUM!", "#N/A", "#CYCLE!"].forEach(function (c) { E[c] = new Err(c); });
+	var E = {}; ["#NULL!", "#DIV/0!", "#VALUE!", "#REF!", "#NAME?", "#NUM!", "#N/A", "#CYCLE!", "#SPILL!", "#CALC!"].forEach(function (c) { E[c] = new Err(c); });
 	var ERRCODE = { 0: "#NULL!", 7: "#DIV/0!", 15: "#VALUE!", 23: "#REF!", 29: "#NAME?", 36: "#NUM!", 42: "#N/A" };
-	var ERRNUM = { "#NULL!": 0, "#DIV/0!": 7, "#VALUE!": 15, "#REF!": 23, "#NAME?": 29, "#NUM!": 36, "#N/A": 42, "#CYCLE!": 15 };
+	var ERRNUM = { "#NULL!": 0, "#DIV/0!": 7, "#VALUE!": 15, "#REF!": 23, "#NAME?": 29, "#NUM!": 36, "#N/A": 42, "#CYCLE!": 15, "#SPILL!": 15, "#CALC!": 15 };
 	function isErr(x) { return x instanceof Err; }
 	function err(code) { return E[code] || new Err(code); }
 	function Unknown(name) { this.name = name; this.message = "Unknown function " + name; }
@@ -141,15 +141,17 @@
 			// sheet-qualified reference: 'My sheet'!A1 or Sheet1!A1:B2
 			if ((m = /^'((?:[^']|'')+)'!/.exec(rest)) || (m = /^([A-Za-z_À-￿][A-Za-z0-9_.À-￿]*)!/.exec(rest))) {
 				var sheet = m[1].replace(/''/g, "'"), after = rest.slice(m[0].length);
-				var rm = /^(\$?[A-Za-z]{1,3}\$?\d+(?::\$?[A-Za-z]{1,3}\$?\d+)?|\$?[A-Za-z]{1,3}:\$?[A-Za-z]{1,3}|\$?\d+:\$?\d+)(?![A-Za-z0-9_(])/.exec(after);
+				var rm = /^(\$?[A-Za-z]{1,3}\$?\d+(?::\$?[A-Za-z]{1,3}\$?\d+|#)?|\$?[A-Za-z]{1,3}:\$?[A-Za-z]{1,3}|\$?\d+:\$?\d+)(?![A-Za-z0-9_(])/.exec(after);
 				if (!rm) throw new SyntaxError("Unreadable reference after " + m[0]);
 				push("ref", { sheet: sheet, text: rm[1] }, m[0] + rm[1]); i += m[0].length + rm[1].length; continue;
 			}
-			if ((m = /^#(NULL!|DIV\/0!|VALUE!|REF!|NAME\?|NUM!|N\/A)/i.exec(rest))) { push("err", "#" + m[1].toUpperCase(), m[0]); i += m[0].length; continue; }
+			if ((m = /^#(NULL!|DIV\/0!|VALUE!|REF!|NAME\?|NUM!|N\/A|SPILL!|CALC!)/i.exec(rest))) { push("err", "#" + m[1].toUpperCase(), m[0]); i += m[0].length; continue; }
 			if ((m = /^(\$?[A-Za-z]{1,3}\$?\d+:\$?[A-Za-z]{1,3}\$?\d+|\$?[A-Za-z]{1,3}:\$?[A-Za-z]{1,3}|\$?\d+:\$?\d+)(?![A-Za-z0-9_(!])/.exec(rest)) && !/^\d+(\.\d*)?$/.test(m[1])) {
 				push("ref", { sheet: null, text: m[1] }, m[1]); i += m[1].length; continue;
 			}
-			if ((m = /^\$?[A-Za-z]{1,3}\$?\d+(?![A-Za-z0-9_(!.])/.exec(rest)) && parseA1(m[0])) { push("ref", { sheet: null, text: m[0] }, m[0]); i += m[0].length; continue; }
+			if ((m = /^\$?[A-Za-z]{1,3}\$?\d+(?![A-Za-z0-9_(!.\[])#?/.exec(rest)) && parseA1(m[0].replace(/#$/, "")) && !/^#[A-Za-z]/.test(rest.slice(m[0].length - (/#$/.test(m[0]) ? 1 : 0)))) { push("ref", { sheet: null, text: m[0] }, m[0]); i += m[0].length; continue; }
+			// structured reference: Table1[Col], Table1[[#Headers],[Col]], [@Col]
+			if ((m = /^([A-Za-z_\\][A-Za-z0-9_.\\]*)?\[((?:[^\[\]']|'.|\[(?:[^\]']|'.)*\])*)\]/.exec(rest)) && (m[1] || /^\[@|^\[\[|^\[#/.test(m[0]))) { push("sref", { table: m[1] || null, spec: m[2] }, m[0]); i += m[0].length; continue; }
 			if ((m = /^(\d+\.?\d*|\.\d+)([eE][-+]?\d+)?/.exec(rest))) { push("num", parseFloat(m[0]), m[0]); i += m[0].length; continue; }
 			if ((m = FUNC_RE.exec(rest))) { push("func", m[0].toUpperCase(), m[0]); i += m[0].length; continue; }
 			if ((m = /^(TRUE|FALSE)(?![A-Za-z0-9_.(])/i.exec(rest))) { push("bool", m[1].toUpperCase() === "TRUE", m[0]); i += m[0].length; continue; }
@@ -163,12 +165,14 @@
 	/* ---------- parser (Excel precedence: negation > % > ^ > * / > + - > & > comparison) ---------- */
 	function refNode(tok) {
 		var t = tok.v.text, sheet = tok.v.sheet, m;
+		if (/#$/.test(t)) { var a0 = parseA1(t.slice(0, -1)); if (!a0) throw new SyntaxError("Unreadable reference " + t); return { k: "ref", sheet: sheet, g: { s: { r: a0.r, c: a0.c }, e: { r: a0.r, c: a0.c } }, single: true, spill: true }; }
 		var g = parseRange(t);
 		if (g) return { k: "ref", sheet: sheet, g: g, single: t.indexOf(":") < 0 };
 		if ((m = /^\$?([A-Za-z]{1,3}):\$?([A-Za-z]{1,3})$/.exec(t))) { var c1 = colIndex(m[1]), c2 = colIndex(m[2]); return { k: "ref", sheet: sheet, g: { s: { r: 0, c: Math.min(c1, c2) }, e: { r: MAXR - 1, c: Math.max(c1, c2) } }, single: false, whole: "c" }; }
 		if ((m = /^\$?(\d+):\$?(\d+)$/.exec(t))) { var r1 = +m[1] - 1, r2 = +m[2] - 1; return { k: "ref", sheet: sheet, g: { s: { r: Math.min(r1, r2), c: 0 }, e: { r: Math.max(r1, r2), c: MAXC - 1 } }, single: false, whole: "r" }; }
 		throw new SyntaxError("Unreadable reference " + t);
 	}
+	function normFn(n) { n = String(n).toUpperCase(); while (/^_(XLFN|XLWS|XLUDF)\./.test(n)) n = n.replace(/^_(XLFN|XLWS|XLUDF)\./, ""); return n; }
 	function parse(src) {
 		var all = tokenize(src), toks = all.filter(function (t) { return t.type !== "ws"; }), p = 0;
 		function peek() { return toks[p]; }
@@ -198,9 +202,11 @@
 			if (t.type === "bool") return { k: "bool", v: t.v };
 			if (t.type === "err") return { k: "err", v: t.v };
 			if (t.type === "ref") return refNode(t);
+			if (t.type === "sref") return { k: "sref", table: t.v.table, spec: t.v.spec };
 			if (t.type === "name") return { k: "name", v: t.v };
 			if (t.type === "(") { var e = cmp(); expect(")"); return e; }
 			if (t.type === "func") {
+				t = { v: normFn(t.v) };
 				expect("(");
 				var args = [];
 				if (peek() && peek().type === ")") { next(); return { k: "call", name: t.v, args: args }; }
@@ -215,7 +221,27 @@
 				}
 				return { k: "call", name: t.v, args: args };
 			}
-			if (t.type === "op" && t.v === "{") throw new SyntaxError("Array constants are not supported.");
+			if (t.type === "op" && t.v === "{") {
+				var rowsA = [[]];
+				for (;;) {
+					var x = next(); if (!x) throw new SyntaxError("Expected } to close the array.");
+					var neg = false;
+					if (x.type === "op" && x.v === "-") { neg = true; x = next(); }
+					else if (x.type === "op" && x.v === "+") x = next();
+					if (!x) throw new SyntaxError("Expected } to close the array.");
+					var v0;
+					if (x.type === "num") v0 = neg ? -x.v : x.v; else if (x.type === "str") v0 = x.v; else if (x.type === "bool") v0 = x.v; else if (x.type === "err") v0 = err(x.v);
+					else throw new SyntaxError("Arrays can only hold numbers, text, TRUE / FALSE and errors.");
+					rowsA[rowsA.length - 1].push(v0);
+					var sp = next(); if (!sp) throw new SyntaxError("Expected } to close the array.");
+					if (sp.type === "op" && sp.v === "}") break;
+					if (sp.type === ",") continue;
+					if (sp.type === ";") { rowsA.push([]); continue; }
+					throw new SyntaxError("Unexpected “" + (sp.raw || sp.v) + "” in an array.");
+				}
+				var w0 = rowsA[0].length; if (rowsA.some(function (r) { return r.length !== w0; })) throw new SyntaxError("Every row of an array needs the same number of values.");
+				return { k: "arr", v: rowsA };
+			}
 			throw new SyntaxError("Unexpected “" + (t.raw || t.v) + "”");
 		}
 		if (!toks.length) throw new SyntaxError("The formula is empty.");
@@ -225,31 +251,104 @@
 	}
 	function walk(ast, fn) { if (!ast) return; fn(ast); if (ast.a) walk(ast.a, fn); if (ast.b) walk(ast.b, fn); if (ast.args) ast.args.forEach(function (x) { walk(x, fn); }); }
 	function refsOf(ast) { var out = []; walk(ast, function (n) { if (n.k === "ref") out.push({ sheet: n.sheet, g: n.g }); }); return out; }
-	function unknownFunctions(ast) {
-		var out = [];
+	// function names this engine does not know, and names that are not LET variables / defined names (known(name) -> true)
+	function unknownFunctions(ast, known) {
+		var out = [], bound = {};
+		walk(ast, function (n) { if (n.k === "call" && (n.name === "LET" || n.name === "LAMBDA")) n.args.forEach(function (x, i) { if (x.k === "name" && (n.name === "LAMBDA" ? i < n.args.length - 1 : i % 2 === 0 && i < n.args.length - 1)) bound[x.v.toUpperCase()] = 1; }); });
 		walk(ast, function (n) {
-			if (n.k === "call" && !FN[n.name] && out.indexOf(n.name) < 0) out.push(n.name);
-			if (n.k === "name" && out.indexOf(n.v) < 0) out.push(n.v);
+			if (n.k === "call" && !FN[n.name] && !LAZY[n.name] && out.indexOf(n.name) < 0) out.push(n.name);
+			if (n.k === "name" && !bound[n.v.toUpperCase()] && !(known && known(n.v)) && out.indexOf(n.v) < 0) out.push(n.v);
 		});
 		return out;
 	}
 
 	/* ---------- evaluation ---------- */
+	// Values: number | string | boolean | null (blank) | Err | Range (a reference) | Arr (an array, from {1,2;3,4}, a range used in a
+	// calculation, or a function such as SORT / FILTER / SEQUENCE). A formula whose result is an array "spills" into the cells below
+	// and to the right (Calc does that); a formula from an older file that is not an array formula takes the value in its own row or
+	// column instead (implicit intersection, like Excel).
 	function Range(sheet, g, ctx) { this.sheet = sheet; this.g = g; this.ctx = ctx; }
+	Range.prototype.isCell = function () { return this.g.s.r === this.g.e.r && this.g.s.c === this.g.e.c; };
 	Range.prototype.each = function (fn) {
 		var g = this.g, b = this.ctx.bounds ? this.ctx.bounds(this.sheet) : null;
 		var r2 = g.e.r, c2 = g.e.c;
 		if (b) { r2 = Math.min(r2, b.r); c2 = Math.min(c2, b.c); }
 		for (var r = g.s.r; r <= r2; r++) for (var c = g.s.c; c <= c2; c++) { if (fn(this.ctx.get(this.sheet, r, c), r, c) === false) return; }
 	};
+	// the rows / columns actually read when the range is used as an array: a range reaching far past the data (A:A, A2:A1048576)
+	// is cut at the last row / column with data, so two such ranges keep the same size
+	Range.prototype.box = function () {
+		var g = this.g, b = this.ctx.bounds ? this.ctx.bounds(this.sheet) : null, r2 = g.e.r, c2 = g.e.c;
+		if (b) { if (r2 > b.r + 1000) r2 = Math.max(g.s.r, b.r); if (c2 > b.c + 200) c2 = Math.max(g.s.c, b.c); }
+		return { r1: g.s.r, r2: r2, c1: g.s.c, c2: c2 };
+	};
+	Range.prototype.toArr = function () {
+		var B = this.box(), rows = [];
+		if ((B.r2 - B.r1 + 1) * (B.c2 - B.c1 + 1) > 5e6) throw new RangeError("That range is too big to use as an array.");
+		for (var r = B.r1; r <= B.r2; r++) { var row = []; for (var c = B.c1; c <= B.c2; c++) row.push(this.ctx.get(this.sheet, r, c)); rows.push(row); }
+		return new Arr(rows);
+	};
+	function Arr(rows) { this.rows = rows; this.h = rows.length; this.w = rows.length ? rows[0].length : 0; }
+	Arr.prototype.each = function (fn) { for (var i = 0; i < this.h; i++) for (var j = 0; j < this.w; j++) if (fn(this.rows[i][j], i, j) === false) return; };
+	Arr.prototype.at = function (i, j) { var ii = this.h === 1 ? 0 : i, jj = this.w === 1 ? 0 : j; return ii < this.h && jj < this.w ? this.rows[ii][jj] : E["#N/A"]; };
+	function isMulti(x) { return (x instanceof Range && !x.isCell()) || (x instanceof Arr && (x.h > 1 || x.w > 1)); }
+	function toArr(x) { if (x instanceof Arr) return x; if (x instanceof Range) return x.toArr(); return new Arr([[x]]); }
+	function mapArr(a, fn) { return new Arr(a.rows.map(function (row, i) { return row.map(function (v, j) { return fn(v, i, j); }); })); }
+	// element-wise over arrays of any size: a single row / column / value is repeated, cells outside the smaller array are #N/A
+	function broadcast(list, fn) {
+		var arrs = list.map(toArr), h = 1, w = 1;
+		arrs.forEach(function (a) { if (a.h > h) h = a.h; if (a.w > w) w = a.w; });
+		var rows = [];
+		for (var i = 0; i < h; i++) { var row = []; for (var j = 0; j < w; j++) row.push(fn.apply(null, arrs.map(function (a) { return a.at(i, j); }))); rows.push(row); }
+		return new Arr(rows);
+	}
+	// implicit intersection: a range in a place that wants one value takes the cell in the formula's own row (a column range) or column (a row range)
+	function intersect(x, ctx) {
+		var g = x.g;
+		if (ctx && ctx.r != null) {
+			if (g.s.c === g.e.c && ctx.r >= g.s.r && ctx.r <= g.e.r) return x.ctx.get(x.sheet, ctx.r, g.s.c);
+			if (g.s.r === g.e.r && ctx.c >= g.s.c && ctx.c <= g.e.c) return x.ctx.get(x.sheet, g.s.r, ctx.c);
+		}
+		return E["#VALUE!"];
+	}
+	function scalar(x) {
+		if (x instanceof Range) { if (x.isCell()) return x.ctx.get(x.sheet, x.g.s.r, x.g.s.c); return intersect(x, x.ctx.cur); }
+		if (x instanceof Arr) return x.h && x.w ? x.rows[0][0] : E["#VALUE!"];
+		return x;
+	}
 	function num(x) {
+		if (x instanceof Range || x instanceof Arr) x = scalar(x);
 		if (isErr(x)) return x;
 		if (x == null) return 0;
 		if (typeof x === "number") return x;
 		if (typeof x === "boolean") return x ? 1 : 0;
-		if (x instanceof Range) return x.g.s.r === x.g.e.r && x.g.s.c === x.g.e.c ? num(x.ctx.get(x.sheet, x.g.s.r, x.g.s.c)) : E["#VALUE!"];
 		var t = String(x).trim(); if (t === "") return E["#VALUE!"];
-		var n = parseNumberText(t); return n ? n.v : E["#VALUE!"];
+		var n = parseNumberText(t); if (n) return n.v;
+		var d = dateText(t); return d != null ? d : E["#VALUE!"];
+	}
+	// "2026-01-15", "1/15/2026", "15 Jan 2026", "12:30", "2026-01-15 08:00" -> serial number (null when it is not a date / time)
+	var MONTHS = ["jan", "feb", "mar", "apr", "may", "jun", "jul", "aug", "sep", "oct", "nov", "dec"];
+	function ymdSerial(y, m, d) { var t = Date.UTC(y, m - 1, d); var s = (t - Date.UTC(1899, 11, 30)) / 864e5; return s < 61 ? s - 1 : s; }
+	function timeText(t) {
+		var m = /^(\d{1,2}):(\d{2})(?::(\d{2}(?:\.\d+)?))?\s*([ap]\.?m\.?)?$/i.exec(t);
+		if (!m) return null;
+		var h = +m[1], mi = +m[2], se = m[3] ? +m[3] : 0;
+		if (m[4]) { if (h > 12) return null; var pm = /^p/i.test(m[4]); if (h === 12) h = 0; if (pm) h += 12; }
+		if (h > 23 || mi > 59 || se >= 60) return null;
+		return (h * 3600 + mi * 60 + se) / 86400;
+	}
+	function dateText(t) {
+		t = String(t).trim(); var m, y, mo, d, rest = "";
+		if ((m = /^(\d{4})[-\/.](\d{1,2})[-\/.](\d{1,2})(?:[ T](.+))?$/.exec(t))) { y = +m[1]; mo = +m[2]; d = +m[3]; rest = m[4] || ""; }
+		else if ((m = /^(\d{1,2})[\/.-](\d{1,2})[\/.-](\d{2,4})(?:\s+(.+))?$/.exec(t))) { mo = +m[1]; d = +m[2]; y = +m[3]; if (y < 100) y += y < 30 ? 2000 : 1900; rest = m[4] || ""; if (mo > 12 && d <= 12) { var x0 = mo; mo = d; d = x0; } }
+		else if ((m = /^(\d{1,2})[\s-]+([A-Za-z]{3,9})\.?[\s,-]+(\d{2,4})(?:\s+(.+))?$/.exec(t)) && MONTHS.indexOf(m[2].slice(0, 3).toLowerCase()) >= 0) { d = +m[1]; mo = MONTHS.indexOf(m[2].slice(0, 3).toLowerCase()) + 1; y = +m[3]; if (y < 100) y += y < 30 ? 2000 : 1900; rest = m[4] || ""; }
+		else if ((m = /^([A-Za-z]{3,9})\.?\s+(\d{1,2}),?\s+(\d{2,4})(?:\s+(.+))?$/.exec(t)) && MONTHS.indexOf(m[1].slice(0, 3).toLowerCase()) >= 0) { mo = MONTHS.indexOf(m[1].slice(0, 3).toLowerCase()) + 1; d = +m[2]; y = +m[3]; if (y < 100) y += y < 30 ? 2000 : 1900; rest = m[4] || ""; }
+		else { var tt = timeText(t); return tt; }
+		var dt = new Date(Date.UTC(y, mo - 1, d));
+		if (mo < 1 || mo > 12 || dt.getUTCDate() !== d || y < 1900 || y > 9999) return null;
+		var s = ymdSerial(y, mo, d);
+		if (rest) { var tm = timeText(rest); if (tm == null) return null; s += tm; }
+		return s;
 	}
 	function fmtGeneral(v) {
 		if (typeof v !== "number") return String(v);
@@ -262,23 +361,22 @@
 		return s;
 	}
 	function txt(x) {
+		if (x instanceof Range || x instanceof Arr) x = scalar(x);
 		if (isErr(x)) return x;
 		if (x == null) return "";
 		if (typeof x === "boolean") return x ? "TRUE" : "FALSE";
 		if (typeof x === "number") return fmtGeneral(x);
-		if (x instanceof Range) return x.g.s.r === x.g.e.r && x.g.s.c === x.g.e.c ? txt(x.ctx.get(x.sheet, x.g.s.r, x.g.s.c)) : E["#VALUE!"];
 		return String(x);
 	}
 	function bool(x) {
+		if (x instanceof Range || x instanceof Arr) x = scalar(x);
 		if (isErr(x)) return x;
 		if (x == null) return false;
 		if (typeof x === "boolean") return x;
 		if (typeof x === "number") return x !== 0;
-		if (x instanceof Range) return x.g.s.r === x.g.e.r && x.g.s.c === x.g.e.c ? bool(x.ctx.get(x.sheet, x.g.s.r, x.g.s.c)) : E["#VALUE!"];
 		var u = String(x).toUpperCase(); if (u === "TRUE") return true; if (u === "FALSE") return false;
 		return E["#VALUE!"];
 	}
-	function scalar(x) { if (x instanceof Range) { var g = x.g; if (g.s.r === g.e.r && g.s.c === g.e.c) return x.ctx.get(x.sheet, g.s.r, g.s.c); return E["#VALUE!"]; } return x; }
 	function typeRank(x) { return typeof x === "number" ? 0 : typeof x === "string" ? 1 : typeof x === "boolean" ? 2 : 3; }
 	function compare(a, b) {
 		if (a == null) a = typeof b === "string" ? "" : typeof b === "boolean" ? false : 0;
@@ -296,13 +394,13 @@
 		if (!isFinite(r)) { var f = Math.pow(10, d); r = Math.round(a * f) / f; }
 		return s * r;
 	}
-	// Each argument is either a Range (from a reference) or a scalar. Excel rules: numbers inside ranges are counted, text and
-	// TRUE/FALSE inside ranges are skipped; typed-in arguments are converted ("3" -> 3, TRUE -> 1), other text = #VALUE!.
+	// Each argument is either a Range / Arr or a scalar. Excel rules: numbers inside ranges and arrays are counted, text and
+	// TRUE/FALSE inside them are skipped; typed-in arguments are converted ("3" -> 3, TRUE -> 1), other text = #VALUE!.
 	function numbersOf(args, opts) {
 		var out = [], e = null;
 		for (var i = 0; i < args.length && !e; i++) {
 			var a = args[i];
-			if (a instanceof Range) a.each(function (v) { if (isErr(v)) { e = v; return false; } if (typeof v === "number") out.push(v); });
+			if (a instanceof Range || a instanceof Arr) a.each(function (v) { if (isErr(v)) { e = v; return false; } if (typeof v === "number") out.push(v); });
 			else if (a === undefined) continue;
 			else if (isErr(a)) e = a;
 			else if (typeof a === "number") out.push(a);
@@ -312,109 +410,81 @@
 		}
 		return e || out;
 	}
-	var FN = {
-		SUM: function (a) { var n = numbersOf(a); if (isErr(n)) return n; var s = 0; n.forEach(function (x) { s += x; }); return s; },
-		AVERAGE: function (a) { var n = numbersOf(a); if (isErr(n)) return n; if (!n.length) return E["#DIV/0!"]; var s = 0; n.forEach(function (x) { s += x; }); return s / n.length; },
-		MIN: function (a) { var n = numbersOf(a); if (isErr(n)) return n; return n.length ? Math.min.apply(null, n) : 0; },
-		MAX: function (a) { var n = numbersOf(a); if (isErr(n)) return n; return n.length ? Math.max.apply(null, n) : 0; },
-		PRODUCT: function (a) { var n = numbersOf(a); if (isErr(n)) return n; if (!n.length) return 0; var s = 1; n.forEach(function (x) { s *= x; }); return s; },
-		COUNT: function (a) {
-			var k = 0;
-			a.forEach(function (x) {
-				if (x instanceof Range) x.each(function (v) { if (typeof v === "number") k++; });
-				else if (typeof x === "number" || typeof x === "boolean" || (typeof x === "string" && parseNumberText(x))) k++;
-			});
-			return k;
-		},
-		COUNTA: function (a) {
-			var k = 0;
-			a.forEach(function (x) {
-				if (x instanceof Range) x.each(function (v) { if (v != null) k++; });
-				else if (x !== undefined) k++;
-			});
-			return k;
-		},
-		COUNTBLANK: function (a) { var k = 0; a.forEach(function (x) { if (x instanceof Range) x.each(function (v) { if (v == null || v === "") k++; }); }); return k; },
-		ROUND: function (a) { var x = num(scalar(a[0])), d = a.length > 1 ? num(scalar(a[1])) : 0; if (isErr(x)) return x; if (isErr(d)) return d; return roundHalfAway(x, d); },
-		ROUNDUP: function (a) { var x = num(scalar(a[0])), d = a.length > 1 ? num(scalar(a[1])) : 0; if (isErr(x)) return x; if (isErr(d)) return d; var f = Math.pow(10, Math.trunc(d)), y = Math.abs(x) * f; y = Math.abs(y - Math.round(y)) < 1e-9 ? Math.round(y) : Math.ceil(y); return (x < 0 ? -1 : 1) * y / f; },
-		ROUNDDOWN: function (a) { var x = num(scalar(a[0])), d = a.length > 1 ? num(scalar(a[1])) : 0; if (isErr(x)) return x; if (isErr(d)) return d; var f = Math.pow(10, Math.trunc(d)), y = Math.abs(x) * f; y = Math.abs(y - Math.round(y)) < 1e-9 ? Math.round(y) : Math.floor(y); return (x < 0 ? -1 : 1) * y / f; },
-		INT: function (a) { var x = num(scalar(a[0])); return isErr(x) ? x : Math.floor(x); },
-		MOD: function (a) { var x = num(scalar(a[0])), y = num(scalar(a[1])); if (isErr(x)) return x; if (isErr(y)) return y; if (y === 0) return E["#DIV/0!"]; return x - y * Math.floor(x / y); },
-		POWER: function (a) { var x = num(scalar(a[0])), y = num(scalar(a[1])); if (isErr(x)) return x; if (isErr(y)) return y; var r = Math.pow(x, y); return isFinite(r) ? r : E["#NUM!"]; },
-		ABS: function (a) { var x = num(scalar(a[0])); return isErr(x) ? x : Math.abs(x); },
-		SQRT: function (a) { var x = num(scalar(a[0])); if (isErr(x)) return x; return x < 0 ? E["#NUM!"] : Math.sqrt(x); },
-		PI: function () { return Math.PI; },
-		AND: function (a) { var any = false, res = true, e = null; a.forEach(function (x) { if (e) return; if (x instanceof Range) x.each(function (v) { if (isErr(v)) { e = v; return false; } if (typeof v === "number" || typeof v === "boolean") { any = true; if (!v) res = false; } }); else { var b = bool(x); if (isErr(b)) e = b; else { any = true; if (!b) res = false; } } }); return e || (any ? res : E["#VALUE!"]); },
-		OR: function (a) { var any = false, res = false, e = null; a.forEach(function (x) { if (e) return; if (x instanceof Range) x.each(function (v) { if (isErr(v)) { e = v; return false; } if (typeof v === "number" || typeof v === "boolean") { any = true; if (v) res = true; } }); else { var b = bool(x); if (isErr(b)) e = b; else { any = true; if (b) res = true; } } }); return e || (any ? res : E["#VALUE!"]); },
-		NOT: function (a) { var b = bool(scalar(a[0])); return isErr(b) ? b : !b; },
-		LEN: function (a) { var t = txt(scalar(a[0])); return isErr(t) ? t : t.length; },
-		UPPER: function (a) { var t = txt(scalar(a[0])); return isErr(t) ? t : t.toUpperCase(); },
-		LOWER: function (a) { var t = txt(scalar(a[0])); return isErr(t) ? t : t.toLowerCase(); },
-		TRIM: function (a) { var t = txt(scalar(a[0])); return isErr(t) ? t : t.replace(/ +/g, " ").trim(); },
-		CONCATENATE: function (a) { var s = ""; for (var i = 0; i < a.length; i++) { var t = txt(scalar(a[i])); if (isErr(t)) return t; s += t; } return s; },
-		CONCAT: function (a) { var s = "", e = null; a.forEach(function (x) { if (e) return; if (x instanceof Range) x.each(function (v) { if (isErr(v)) { e = v; return false; } s += txt(v); }); else { var t = txt(x); if (isErr(t)) e = t; else s += t; } }); return e || s; }
-	};
-	var LAZY = {
-		IF: function (args, ev) {
-			if (!args.length) return E["#VALUE!"];
-			var c = bool(scalar(ev(args[0])));
-			if (isErr(c)) return c;
-			if (c) return args.length > 1 && args[1].k !== "missing" ? ev(args[1]) : (args.length > 1 ? 0 : true);
-			return args.length > 2 ? (args[2].k === "missing" ? 0 : ev(args[2])) : false;
-		},
-		IFERROR: function (args, ev) { var v = scalar(ev(args[0])); return isErr(v) ? (args.length > 1 ? ev(args[1]) : 0) : v; }
-	};
-	var FUNCTIONS = Object.keys(FN).concat(Object.keys(LAZY)).sort();
+	function binScalar(op, a, b) {
+		if (isErr(a)) return a; if (isErr(b)) return b;
+		if (op === "&") { var ta = txt(a), tb = txt(b); return isErr(ta) ? ta : isErr(tb) ? tb : ta + tb; }
+		if (op === "=" || op === "<>" || op === "<" || op === ">" || op === "<=" || op === ">=") {
+			var c = compare(a, b);
+			return op === "=" ? c === 0 : op === "<>" ? c !== 0 : op === "<" ? c < 0 : op === ">" ? c > 0 : op === "<=" ? c <= 0 : c >= 0;
+		}
+		var p = num(a), q = num(b);
+		if (isErr(p)) return p; if (isErr(q)) return q;
+		var r;
+		if (op === "+") r = p + q; else if (op === "-") r = p - q; else if (op === "*") r = p * q;
+		else if (op === "/") { if (q === 0) return E["#DIV/0!"]; r = p / q; }
+		else if (op === "^") { if (p === 0 && q === 0) return E["#NUM!"]; r = Math.pow(p, q); }
+		return isFinite(r) ? r : E["#NUM!"];
+	}
+	var FN = {}, LAZY = {}, VOLATILE = { NOW: 1, TODAY: 1, RAND: 1, RANDBETWEEN: 1, RANDARRAY: 1, OFFSET: 1, INDIRECT: 1 };
+	var FUNCTIONS = [];
+	function refreshFunctions() { FUNCTIONS.length = 0; Object.keys(FN).concat(Object.keys(LAZY)).sort().forEach(function (k) { FUNCTIONS.push(k); }); return FUNCTIONS; }
+	function Env(parent) { this.p = parent; this.v = {}; }
+	Env.prototype.get = function (n) { var e = this; n = n.toUpperCase(); while (e) { if (n in e.v) return { v: e.v[n] }; e = e.p; } return null; };
 	function evaluate(ast, ctx) {
-		function ev(n) {
+		var cur = { r: ctx.r, c: ctx.c };
+		var self = Object.create(ctx); self.cur = cur;
+		function ev(n, env) {
 			switch (n.k) {
 				case "num": case "str": case "bool": return n.v;
 				case "err": return err(n.v);
+				case "arr": return new Arr(n.v);
 				case "missing": return undefined;
-				case "name": throw new Unknown(n.v);
+				case "name": {
+					var b = env && env.get(n.v); if (b) return b.v;
+					if (ctx.name) { var nv = ctx.name(n.v, self); if (nv !== undefined) return nv; }
+					throw new Unknown(n.v);
+				}
 				case "ref": {
 					var sh = n.sheet == null ? ctx.sheet : n.sheet;
 					if (ctx.hasSheet && !ctx.hasSheet(sh)) return E["#REF!"];
-					return new Range(sh, n.g, ctx);
+					if (n.spill) { var sg = ctx.spillRange ? ctx.spillRange(sh, n.g.s.r, n.g.s.c) : null; return sg ? new Range(sh, sg, self) : E["#REF!"]; }
+					return new Range(sh, n.g, self);
 				}
-				case "neg": { var x = num(scalar(ev(n.a))); return isErr(x) ? x : -x; }
-				case "pct": { var y = num(scalar(ev(n.a))); return isErr(y) ? y : y / 100; }
+				case "sref": { var sr = ctx.sref ? ctx.sref(n.table, n.spec, self) : null; return sr ? new Range(sr.sheet, sr.g, self) : E["#REF!"]; }
+				case "neg": case "pct": {
+					var a0 = ev(n.a, env), f0 = function (x) { var y = num(x); return isErr(y) ? y : n.k === "neg" ? -y : y / 100; };
+					return isMulti(a0) ? mapArr(toArr(a0), f0) : f0(scalar(a0));
+				}
 				case "bin": {
-					var a = scalar(ev(n.a)), b = scalar(ev(n.b));
-					if (isErr(a)) return a; if (isErr(b)) return b;
-					if (n.op === "&") return txt(a) + txt(b);
-					if (/^(=|<>|<|>|<=|>=)$/.test(n.op)) {
-						var c = compare(a, b);
-						return n.op === "=" ? c === 0 : n.op === "<>" ? c !== 0 : n.op === "<" ? c < 0 : n.op === ">" ? c > 0 : n.op === "<=" ? c <= 0 : c >= 0;
-					}
-					var p = num(a), q = num(b);
-					if (isErr(p)) return p; if (isErr(q)) return q;
-					var r;
-					if (n.op === "+") r = p + q; else if (n.op === "-") r = p - q; else if (n.op === "*") r = p * q;
-					else if (n.op === "/") { if (q === 0) return E["#DIV/0!"]; r = p / q; }
-					else if (n.op === "^") { if (p === 0 && q === 0) return E["#NUM!"]; r = Math.pow(p, q); }
-					return isFinite(r) ? r : E["#NUM!"];
+					var a = ev(n.a, env), b2 = ev(n.b, env);
+					if (isMulti(a) || isMulti(b2)) return broadcast([a, b2], function (x, y) { return binScalar(n.op, x, y); });
+					return binScalar(n.op, scalar(a), scalar(b2));
 				}
 				case "call": {
-					if (LAZY[n.name]) return LAZY[n.name](n.args, ev);
+					if (LAZY[n.name]) return LAZY[n.name](n.args, function (x, e2) { return ev(x, e2 === undefined ? env : e2); }, self, env);
 					var f = FN[n.name];
 					if (!f) throw new Unknown(n.name);
-					return f(n.args.map(function (x) { return x.k === "missing" ? undefined : ev(x); }));
+					return f(n.args.map(function (x) { return x.k === "missing" ? undefined : ev(x, env); }), self);
 				}
 			}
 			return E["#VALUE!"];
 		}
-		var out = ev(ast);
-		out = scalar(out);
-		if (out === undefined) out = 0;
-		if (out == null) out = 0;
+		var out = ev(ast, null);
+		if (out instanceof Range) out = out.isCell() ? out.ctx.get(out.sheet, out.g.s.r, out.g.s.c) : (ctx.dyn ? out.toArr() : intersect(out, cur));
+		if (out instanceof Arr) {
+			if (out.h === 1 && out.w === 1) out = out.rows[0][0];
+			else if (!ctx.dyn) out = out.h && out.w ? out.rows[0][0] : E["#VALUE!"];
+			else out = mapArr(out, function (v) { return v == null ? 0 : (typeof v === "number" && !isFinite(v)) ? E["#NUM!"] : v; });
+		}
+		if (out === undefined || out == null) out = 0;
 		if (typeof out === "number" && !isFinite(out)) out = E["#NUM!"];
 		return out;
 	}
-	// One-shot helper: evaluate a formula text with a get(sheet, r, c) function.
-	function calc(formula, get, sheet) {
+	// One-shot helper: evaluate a formula text with a get(sheet, r, c) function. opts: {r, c (the formula's cell), dyn (keep arrays)}
+	function calc(formula, get, sheet, opts) {
 		var ast = parse(String(formula).replace(/^=/, ""));
-		return evaluate(ast, { get: get, sheet: sheet || "Sheet1" });
+		var o = opts || {};
+		return evaluate(ast, { get: get, sheet: sheet || "Sheet1", r: o.r, c: o.c, dyn: !!o.dyn, now: o.now, bounds: o.bounds, name: o.name, sref: o.sref });
 	}
 
 	/* ---------- insert / delete rows and columns: rewrite references ---------- */
@@ -496,6 +566,8 @@
 		var c = { f: old && old.f };
 		if (old && old.z && typeof v === "number") c.z = old.z;
 		if (old && old.s) c.s = old.s;
+		if (old && old.xs != null) { c.xs = old.xs; if (old.xz) c.xz = old.xz; }
+		if (old && old.ml) c.ml = old.ml;
 		if (isErr(v)) { c.t = "e"; c.v = ERRNUM[v.code] != null ? ERRNUM[v.code] : 15; c.w = v.code; }
 		else if (typeof v === "number") { c.t = "n"; c.v = v; }
 		else if (typeof v === "boolean") { c.t = "b"; c.v = v; }
@@ -505,7 +577,10 @@
 	}
 
 	/* ---------- dependency index + recalculation ---------- */
-	// book = {sheets: [{name, data: [[cell, ...], ...]}]}. Calc reads book.sheets each time, so the app can swap data.
+	// book = {sheets: [{name, data: [[cell, ...], ...]}], names (optional): {NAME: "Sheet1!$A$1:$A$9"}, tables (optional): [{name, sheet,
+	// g (the whole table incl. header / total rows), header (bool), totals (bool), cols: [column names]}]}. Calc reads book.sheets each time.
+	// Spills: a dynamic formula (typed here, or an array formula in the file) whose result is an array writes it into the cells below /
+	// right; those cells get sp: 1 and belong to the formula (this.spilledBy). A value in the way gives #SPILL!.
 	function Calc(book) { this.book = book; this.reindex(); }
 	Calc.prototype.sheetIndex = function (name) {
 		var ss = this.book.sheets;
@@ -515,38 +590,98 @@
 		return -1;
 	};
 	Calc.prototype.reindex = function () {
-		this.entries = {}; this.single = {}; this.ranges = {}; this.count = 0;
+		this.entries = {}; this.single = {}; this.ranges = {}; this.count = 0; this.vol = {};
+		this.spills = {}; this.spilledBy = {}; this.blocked = {}; this.pending = []; this.nameAst = {};
 		var ss = this.book.sheets;
 		for (var si = 0; si < ss.length; si++) {
 			var data = ss[si].data || [];
-			for (var r = 0; r < data.length; r++) { var row = data[r]; if (!row) continue; for (var c = 0; c < row.length; c++) { var cell = row[c]; if (cell && cell.f) this.add(si, r, c, cell.f); } }
+			for (var r = 0; r < data.length; r++) {
+				var row = data[r]; if (!row) continue;
+				for (var c = 0; c < row.length; c++) {
+					var cell = row[c]; if (!cell || !cell.f) continue;
+					var own = colName(c) + (r + 1), F = cell.F ? String(cell.F).replace(/\$/g, "") : null, dyn = !!cell.da || (F != null && F.split(":")[0] === own);
+					this.add(si, r, c, cell.f, dyn);
+					if (dyn && F && F.indexOf(":") > 0) {         // an array formula from the file: its other cells are its spill
+						var g = parseRange(F); if (!g) continue;
+						var k = this.key(si, r, c), h = g.e.r - g.s.r + 1, w = g.e.c - g.s.c + 1;
+						this.spills[k] = { si: si, r: r, c: c, h: h, w: w };
+						for (var i = 0; i < h; i++) for (var j = 0; j < w; j++) if (i || j) { var gc = (data[r + i] || [])[c + j]; if (gc && !gc.f) { gc.sp = 1; this.spilledBy[this.key(si, r + i, c + j)] = k; } }
+					}
+				}
+			}
 		}
 	};
 	Calc.prototype.key = function (si, r, c) { return si + ":" + r + ":" + c; };
-	Calc.prototype.add = function (si, r, c, f) {
-		var k = this.key(si, r, c), self = this, ent = { si: si, r: r, c: c, f: f, ast: null, refs: [], unknown: [], bad: null };
-		if (this.entries[k]) this.remove(si, r, c);
-		try { ent.ast = parse(f); ent.unknown = unknownFunctions(ent.ast); } catch (e) { ent.bad = e.message || "Unreadable formula"; }
-		if (ent.ast) refsOf(ent.ast).forEach(function (x) {
-			var tsi = x.sheet == null ? si : self.sheetIndex(x.sheet);
+	Calc.prototype.tableList = function () { var t = this.book.tables; return typeof t === "function" ? t() : (t || []); };
+	Calc.prototype.findTable = function (name, si, r, c) {
+		var list = this.tableList(), self = this;
+		for (var i = 0; i < list.length; i++) {
+			var t = list[i];
+			if (name ? String(t.name).toLowerCase() === String(name).toLowerCase() : (self.sheetIndex(t.sheet) === si && r >= t.g.s.r && r <= t.g.e.r && c >= t.g.s.c && c <= t.g.e.c)) return t;
+		}
+		return null;
+	};
+	Calc.prototype.nameRef = function (n) {
+		var nm = this.book.names; if (typeof nm === "function") nm = nm();
+		if (!nm) return null;
+		var ref = nm[String(n).toUpperCase()];
+		if (ref == null) return null;
+		if (!this.nameAst[ref]) { try { this.nameAst[ref] = parse(String(ref).replace(/^=/, "")); } catch (e) { this.nameAst[ref] = { k: "err", v: "#NAME?" }; } }
+		return this.nameAst[ref];
+	};
+	Calc.prototype.add = function (si, r, c, f, dyn) {
+		var k = this.key(si, r, c), self = this, ent = { si: si, r: r, c: c, f: f, ast: null, refs: [], unknown: [], bad: null, dyn: !!dyn };
+		if (this.entries[k]) this.remove(si, r, c, true);
+		try { ent.ast = parse(f); ent.unknown = unknownFunctions(ent.ast, function (n) { return !!self.nameRef(n); }); } catch (e) { ent.bad = e.message || "Unreadable formula"; }
+		var link = function (sheetName, g) {
+			var tsi = sheetName == null ? si : self.sheetIndex(sheetName);
 			if (tsi < 0) return;
-			var ref = { si: tsi, g: x.g, ent: ent };
+			var ref = { si: tsi, g: g, ent: ent };
 			ent.refs.push(ref);
-			var sz = (x.g.e.r - x.g.s.r + 1) * (x.g.e.c - x.g.s.c + 1);
-			if (sz <= 64) { for (var rr = x.g.s.r; rr <= x.g.e.r; rr++) for (var cc = x.g.s.c; cc <= x.g.e.c; cc++) { var kk = self.key(tsi, rr, cc); (self.single[kk] = self.single[kk] || []).push(ent); } ref.small = true; }
+			var sz = (g.e.r - g.s.r + 1) * (g.e.c - g.s.c + 1);
+			if (sz <= 64) { for (var rr = g.s.r; rr <= g.e.r; rr++) for (var cc = g.s.c; cc <= g.e.c; cc++) { var kk = self.key(tsi, rr, cc); (self.single[kk] = self.single[kk] || []).push(ent); } ref.small = true; }
 			else (self.ranges[tsi] = self.ranges[tsi] || []).push(ref);
+		};
+		if (ent.ast) walk(ent.ast, function (n) {
+			if (n.k === "ref") {
+				if (n.spill) link(n.sheet, { s: { r: n.g.s.r, c: n.g.s.c }, e: { r: Math.min(MAXR - 1, n.g.s.r + 5000), c: Math.min(MAXC - 1, n.g.s.c + 100) } });
+				else link(n.sheet, n.g);
+			}
+			else if (n.k === "sref") { var t = self.findTable(n.table, si, r, c); if (t) link(t.sheet, t.g); }
+			else if (n.k === "name") { var na = self.nameRef(n.v); if (na) refsOf(na).forEach(function (x) { link(x.sheet, x.g); }); }
+			else if (n.k === "call" && VOLATILE[n.name]) self.vol[k] = ent;
 		});
 		this.entries[k] = ent; this.count++;
 		return ent;
 	};
-	Calc.prototype.remove = function (si, r, c) {
+	// keep: the formula is replaced right away (add), so its spill stays until the new result is known
+	Calc.prototype.remove = function (si, r, c, keep) {
 		var k = this.key(si, r, c), ent = this.entries[k], self = this;
 		if (!ent) return;
-		delete this.entries[k]; this.count--;
+		delete this.entries[k]; delete this.vol[k]; this.count--;
 		ent.refs.forEach(function (ref) {
 			if (ref.small) { for (var rr = ref.g.s.r; rr <= ref.g.e.r; rr++) for (var cc = ref.g.s.c; cc <= ref.g.e.c; cc++) { var kk = self.key(ref.si, rr, cc), a = self.single[kk]; if (a) { var i = a.indexOf(ent); if (i >= 0) a.splice(i, 1); if (!a.length) delete self.single[kk]; } } }
 			else { var l = self.ranges[ref.si]; if (l) { var j = l.indexOf(ref); if (j >= 0) l.splice(j, 1); } }
 		});
+		if (!keep) { this.clearSpill(k, null); delete this.blocked[k]; }
+	};
+	// empty the spilled cells of anchor k that are outside rect `keep` ({h, w} from the anchor) -> pending changes
+	Calc.prototype.clearSpill = function (k, keep) {
+		var sp = this.spills[k]; if (!sp) return [];
+		var out = [];
+		for (var i = 0; i < sp.h; i++) for (var j = 0; j < sp.w; j++) {
+			if (!i && !j) continue;
+			if (keep && i < keep.h && j < keep.w) continue;
+			var kk = this.key(sp.si, sp.r + i, sp.c + j);
+			if (this.spilledBy[kk] !== k) continue;
+			delete this.spilledBy[kk];
+			var old = this.getCell(sp.si, sp.r + i, sp.c + j);
+			if (old && old.sp) { var stub; if (old.xs != null || old.s) { stub = { t: "z" }; if (old.xs != null) { stub.xs = old.xs; if (old.xz) { stub.xz = old.xz; stub.z = old.xz; } } if (old.s) stub.s = old.s; } this.setCell(sp.si, sp.r + i, sp.c + j, stub); }
+			out.push({ si: sp.si, r: sp.r + i, c: sp.c + j });
+		}
+		if (keep) this.spills[k] = { si: sp.si, r: sp.r, c: sp.c, h: Math.min(sp.h, keep.h), w: Math.min(sp.w, keep.w) }; else delete this.spills[k];
+		this.pending = this.pending.concat(out);
+		return out;
 	};
 	Calc.prototype.entry = function (si, r, c) { return this.entries[this.key(si, r, c)] || null; };
 	Calc.prototype.dependents = function (si, r, c) {
@@ -561,29 +696,50 @@
 		if (!d[r]) d[r] = [];
 		d[r][c] = cell;
 	};
+	// the area a spilling formula at (r, c) covers now, for the A1# reference
+	Calc.prototype.spillOf = function (si, r, c) { var sp = this.spills[this.key(si, r, c)]; return sp ? { s: { r: r, c: c }, e: { r: r + sp.h - 1, c: c + sp.w - 1 } } : null; };
 	// changed = [{si, r, c}] cells whose value or formula just changed (formulas already registered with add()).
-	// Recalculates everything that depends on them, in order. Returns {updated: [{si, r, c}], stale: [{si, r, c, unknown}], cycles: n}.
-	Calc.prototype.recalc = function (changed) {
-		var self = this, dirty = {}, order = [], queue = [];
-		changed.forEach(function (p) { var e = self.entry(p.si, p.r, p.c); if (e) queue.push(e); queue = queue.concat(self.dependents(p.si, p.r, p.c)); });
-		while (queue.length) {
-			var e = queue.shift(), k = self.key(e.si, e.r, e.c);
+	// Recalculates everything that depends on them, in dependency order. Returns {updated: [{si, r, c}], stale: [{si, r, c, unknown}],
+	// cycles: n, cycleCells: [{si, r, c}], spilled: [{si, r, c}] (cells written or emptied by spills)}.
+	Calc.prototype.recalc = function (changed, opts) {
+		opts = opts || {};
+		var self = this, dirty = {}, order = [], queue = [], all = changed.concat(this.pending);
+		this.pending = [];
+		all.forEach(function (p) {
+			var k0 = self.key(p.si, p.r, p.c);
+			if (!opts.fromSpill && self.spilledBy[k0]) { var an = self.spilledBy[k0]; delete self.spilledBy[k0]; var ae = self.entries[an]; if (ae) queue.push(ae); }
+			for (var bk in self.blocked) { var b = self.blocked[bk]; if (b.si === p.si && p.r >= b.r && p.r < b.r + b.h && p.c >= b.c && p.c < b.c + b.w && self.entries[bk]) queue.push(self.entries[bk]); }
+			var e = self.entry(p.si, p.r, p.c); if (e) queue.push(e);
+			queue = queue.concat(self.dependents(p.si, p.r, p.c));
+		});
+		if (!opts.fromSpill) for (var vk in this.vol) queue.push(this.vol[vk]);
+		for (var qi = 0; qi < queue.length; qi++) {
+			var e = queue[qi], k = self.key(e.si, e.r, e.c);
 			if (dirty[k]) continue;
 			dirty[k] = e; order.push(e);
 			var ds = self.dependents(e.si, e.r, e.c);
 			for (var i = 0; i < ds.length; i++) if (!dirty[self.key(ds[i].si, ds[i].r, ds[i].c)]) queue.push(ds[i]);
+			var sp0 = self.spills[k];       // formulas reading this one's spilled cells
+			if (sp0) for (var a = 0; a < sp0.h; a++) for (var b2 = 0; b2 < sp0.w; b2++) if (a || b2) { var d2 = self.dependents(e.si, e.r + a, e.c + b2); for (var i2 = 0; i2 < d2.length; i2++) if (!dirty[self.key(d2[i2].si, d2[i2].r, d2[i2].c)]) queue.push(d2[i2]); }
+			if (queue.length > 2e6) break;
 		}
-		var state = {}, updated = [], stale = [], cycles = 0, bmemo = {};
+		order = this.topo(order, dirty);
+		var state = {}, updated = [], stale = [], cycles = 0, cycleCells = [], bmemo = {}, spilled = [], now = opts.now != null ? opts.now : Date.now();
 		var sheetName = function (si) { return self.book.sheets[si].name; };
 		var ctx = {
-			sheet: null,
+			sheet: null, now: now, dyn: false,
 			hasSheet: function (n) { return self.sheetIndex(n) >= 0; },
 			bounds: function (n) { if (bmemo[n]) return bmemo[n]; var si = self.sheetIndex(n), d = self.book.sheets[si].data || []; var mc = 0; for (var i = 0; i < d.length; i++) if (d[i] && d[i].length > mc) mc = d[i].length; return (bmemo[n] = { r: d.length - 1, c: mc - 1 }); },
 			get: function (n, r, c) {
 				var si = self.sheetIndex(n), k = self.key(si, r, c);
-				if (dirty[k] && state[k] !== 2) { if (state[k] === 1) { cycles++; return E["#CYCLE!"]; } compute(dirty[k]); }
+				if (dirty[k] && state[k] !== 2) { if (state[k] === 1) { cycles++; if (cycleCells.length < 50) cycleCells.push({ si: si, r: r, c: c }); return E["#CYCLE!"]; } compute(dirty[k]); }
+				else { var an = self.spilledBy[k]; if (an && dirty[an] && state[an] !== 2) { if (state[an] === 1) { cycles++; return E["#CYCLE!"]; } compute(dirty[an]); } }
 				return cellValue(self.getCell(si, r, c));
-			}
+			},
+			cellAt: function (n, r, c) { return self.getCell(self.sheetIndex(n), r, c); },
+			spillRange: function (n, r, c) { var si = self.sheetIndex(n), k = self.key(si, r, c); if (dirty[k] && state[k] !== 2 && state[k] !== 1) compute(dirty[k]); return self.spillOf(si, r, c); },
+			sref: function (table, spec, cur) { return srefRange(self, table, spec, cur); },
+			name: function (n, cur) { var na = self.nameRef(n); if (!na) return undefined; return evaluateRaw(na, cur); }
 		};
 		function compute(e) {
 			var k = self.key(e.si, e.r, e.c);
@@ -591,18 +747,136 @@
 			state[k] = 1;
 			var old = self.getCell(e.si, e.r, e.c);
 			if (!e.ast || e.unknown.length) { state[k] = 2; stale.push({ si: e.si, r: e.r, c: e.c, unknown: e.ast ? e.unknown : [], bad: e.bad }); return; }
-			var saved = ctx.sheet; ctx.sheet = sheetName(e.si);
+			var saved = [ctx.sheet, ctx.r, ctx.c, ctx.dyn, ctx.si]; ctx.sheet = sheetName(e.si); ctx.r = e.r; ctx.c = e.c; ctx.dyn = e.dyn; ctx.si = e.si;
 			var v;
-			try { v = evaluate(e.ast, ctx); } catch (x) { if (x instanceof Unknown) { state[k] = 2; ctx.sheet = saved; stale.push({ si: e.si, r: e.r, c: e.c, unknown: [x.name] }); return; } v = E["#VALUE!"]; }
-			ctx.sheet = saved;
-			var cell = resultCell(v, old); cell.f = e.f;
+			try { v = evaluate(e.ast, ctx); } catch (x) {
+				ctx.sheet = saved[0]; ctx.r = saved[1]; ctx.c = saved[2]; ctx.dyn = saved[3]; ctx.si = saved[4];
+				if (x instanceof Unknown) { state[k] = 2; stale.push({ si: e.si, r: e.r, c: e.c, unknown: [x.name] }); return; }
+				if (x instanceof RangeError && /stack/i.test(x.message)) throw x;
+				v = E["#VALUE!"];
+			}
+			ctx.sheet = saved[0]; ctx.r = saved[1]; ctx.c = saved[2]; ctx.dyn = saved[3]; ctx.si = saved[4];
+			if (v instanceof Arr) v = self.spill(e, v, spilled);
+			else if (self.spills[k] || self.blocked[k]) { spilled.push.apply(spilled, self.clearSpill(k, null)); self.pending = []; delete self.blocked[k]; }
+			var cell = resultCell(v, old); cell.f = e.f; if (e.dyn) cell.da = 1;
+			if (self.spills[k]) { var sp = self.spills[k]; cell.F = colName(e.c) + (e.r + 1) + ":" + colName(e.c + sp.w - 1) + (e.r + sp.h); } else delete cell.F;
 			self.setCell(e.si, e.r, e.c, cell);
 			state[k] = 2;
 			updated.push({ si: e.si, r: e.r, c: e.c });
 		}
-		order.forEach(compute);
-		return { updated: updated, stale: stale, cycles: cycles };
+		function evaluateRaw(ast, cur) {   // a defined name: evaluated in the calling formula's context, references stay references
+			var c2 = Object.create(ctx); c2.r = cur && cur.cur ? cur.cur.r : ctx.r; c2.c = cur && cur.cur ? cur.cur.c : ctx.c; c2.dyn = true;
+			if (ast.k === "ref" && !ast.spill) { var sh = ast.sheet == null ? ctx.sheet : ast.sheet; return self.sheetIndex(sh) < 0 ? E["#REF!"] : new Range(sh, ast.g, cur || c2); }
+			return evaluate(ast, c2);
+		}
+		for (var oi = 0; oi < order.length; oi++) compute(order[oi]);
+		var res = { updated: updated, stale: stale, cycles: cycles, cycleCells: cycleCells, spilled: spilled };
+		// cells a spill just wrote or emptied: what reads them (and was not already worked out after the spill) goes again
+		if (spilled.length && (opts.depth || 0) < 8) {
+			var more = this.recalc(spilled, { fromSpill: true, depth: (opts.depth || 0) + 1, now: now });
+			res.updated = res.updated.concat(more.updated); res.stale = res.stale.concat(more.stale); res.cycles += more.cycles; res.spilled = res.spilled.concat(more.spilled);
+		}
+		return res;
 	};
+	// write an array result: returns the anchor's own value (or #SPILL!)
+	Calc.prototype.spill = function (e, arr, changed) {
+		var k = this.key(e.si, e.r, e.c), h = arr.h, w = arr.w, self = this;
+		if (e.r + h > MAXR || e.c + w > MAXC || h * w > 2e6) { changed.push.apply(changed, this.clearSpill(k, null)); this.pending = []; return E["#SPILL!"]; }
+		var blockedBy = null;
+		for (var i = 0; i < h && !blockedBy; i++) for (var j = 0; j < w; j++) {
+			if (!i && !j) continue;
+			var kk = this.key(e.si, e.r + i, e.c + j), cell = this.getCell(e.si, e.r + i, e.c + j), own = this.spilledBy[kk];
+			if (this.entries[kk] || (cell && cell.t !== "z" && !(cell.sp && (own == null || own === k)))) { blockedBy = { r: e.r + i, c: e.c + j }; break; }
+			if (own && own !== k && self.entries[own]) { blockedBy = { r: e.r + i, c: e.c + j }; break; }
+		}
+		if (blockedBy) {
+			changed.push.apply(changed, this.clearSpill(k, null)); this.pending = [];
+			this.blocked[k] = { si: e.si, r: e.r, c: e.c, h: h, w: w, at: blockedBy };
+			return E["#SPILL!"];
+		}
+		delete this.blocked[k];
+		changed.push.apply(changed, this.clearSpill(k, { h: h, w: w })); this.pending = [];
+		for (var a = 0; a < h; a++) for (var b = 0; b < w; b++) {
+			if (!a && !b) continue;
+			var key2 = this.key(e.si, e.r + a, e.c + b), old = this.getCell(e.si, e.r + a, e.c + b), v = arr.rows[a][b];
+			var cell = resultCell(v == null ? 0 : v, old && (old.sp || old.t === "z") ? { z: old.z, s: old.s } : null); cell.sp = 1;
+			if (old && old.xs != null) { cell.xs = old.xs; cell.xz = old.xz; }
+			var same = old && old.sp && old.t === cell.t && old.v === cell.v && this.spilledBy[key2] === k;
+			this.setCell(e.si, e.r + a, e.c + b, cell); this.spilledBy[key2] = k;
+			if (!same) changed.push({ si: e.si, r: e.r + a, c: e.c + b });
+		}
+		this.spills[k] = { si: e.si, r: e.r, c: e.c, h: h, w: w };
+		return arr.rows[0][0] == null ? 0 : arr.rows[0][0];
+	};
+	// order the dirty formulas so each comes after the dirty formulas it reads (iterative depth-first search, no deep recursion)
+	Calc.prototype.topo = function (order, dirty) {
+		if (order.length < 2) return order;
+		var self = this, byCol = {}, anchors = [];
+		order.forEach(function (e) { var kc = e.si + ":" + e.c; (byCol[kc] = byCol[kc] || []).push(e); if (self.spills[self.key(e.si, e.r, e.c)]) anchors.push(e); });
+		for (var kc in byCol) byCol[kc].sort(function (a, b) { return a.r - b.r; });
+		var colsOf = {}; for (var kc2 in byCol) { var p = kc2.split(":"); (colsOf[p[0]] = colsOf[p[0]] || []).push(+p[1]); }
+		function precedents(e) {
+			var out = [];
+			e.refs.forEach(function (ref) {
+				var g = ref.g;
+				if (ref.small) { for (var r = g.s.r; r <= g.e.r; r++) for (var c = g.s.c; c <= g.e.c; c++) { var k = self.key(ref.si, r, c); if (dirty[k]) out.push(dirty[k]); else { var an = self.spilledBy[k]; if (an && dirty[an]) out.push(dirty[an]); } } }
+				else (colsOf[ref.si] || []).forEach(function (c) {
+					if (c < g.s.c || c > g.e.c) return;
+					var list = byCol[ref.si + ":" + c], lo = 0, hi = list.length;
+					while (lo < hi) { var m = (lo + hi) >> 1; if (list[m].r < g.s.r) lo = m + 1; else hi = m; }
+					for (var i = lo; i < list.length && list[i].r <= g.e.r; i++) out.push(list[i]);
+				});
+				anchors.forEach(function (a) { var sp = self.spills[self.key(a.si, a.r, a.c)]; if (sp && a.si === ref.si && !(a.r + sp.h - 1 < g.s.r || a.r > g.e.r || a.c + sp.w - 1 < g.s.c || a.c > g.e.c)) out.push(a); });
+			});
+			return out;
+		}
+		var mark = {}, out = [];
+		order.forEach(function (start) {
+			var k0 = self.key(start.si, start.r, start.c);
+			if (mark[k0]) return;
+			var stack = [[start, null, 0]]; mark[k0] = 1;
+			while (stack.length) {
+				var top = stack[stack.length - 1];
+				if (!top[1]) top[1] = precedents(top[0]);
+				if (top[2] < top[1].length) {
+					var nx = top[1][top[2]++], kn = self.key(nx.si, nx.r, nx.c);
+					if (!mark[kn]) { mark[kn] = 1; stack.push([nx, null, 0]); }
+				} else { stack.pop(); mark[self.key(top[0].si, top[0].r, top[0].c)] = 2; out.push(top[0]); }
+			}
+		});
+		return out;
+	};
+	// Table1[Col] / [@Col] / Table1[[#Headers],[A]:[C]] / Table1[#All] -> {sheet, g}
+	function srefRange(calc, table, spec, cur) {
+		var si = cur && cur.si != null ? cur.si : calc.sheetIndex(cur && cur.sheet), t = calc.findTable(table, si, cur && cur.cur ? cur.cur.r : cur && cur.r, cur && cur.cur ? cur.cur.c : cur && cur.c);
+		if (!t) return null;
+		var g = t.g, top = g.s.r + (t.header ? 1 : 0), bot = g.e.r - (t.totals ? 1 : 0), items = [], s = String(spec).trim();
+		if (s === "") items = [];
+		else if (s[0] === "[" || s[0] === "@" && s[1] === "[") {
+			var at = s[0] === "@"; if (at) { items.push("#This Row"); s = s.slice(1); }
+			var re = /\[((?:[^\]']|'.)*)\]|(:)|,\s*/g, m, cols = [], colon = false;
+			while ((m = re.exec(s))) { if (m[2]) colon = true; else if (m[1] != null) { var name = m[1].replace(/'(.)/g, "$1"); if (name[0] === "#") items.push(name); else { if (colon && cols.length) cols[cols.length - 1] = [cols[cols.length - 1][0], name]; else cols.push([name, name]); colon = false; } } }
+			items.cols = cols;
+		} else if (s[0] === "@") { items.push("#This Row"); items.cols = [[s.slice(1).replace(/'(.)/g, "$1"), s.slice(1).replace(/'(.)/g, "$1")]]; }
+		else if (s[0] === "#") items.push(s);
+		else items.cols = [[s.replace(/'(.)/g, "$1"), s.replace(/'(.)/g, "$1")]];
+		var r1 = top, r2 = bot, kinds = items.filter(function (x) { return typeof x === "string"; }).map(function (x) { return x.toLowerCase(); });
+		if (kinds.indexOf("#all") >= 0) { r1 = g.s.r; r2 = g.e.r; }
+		else if (kinds.length) {
+			var hs = kinds.indexOf("#headers") >= 0, ds = kinds.indexOf("#data") >= 0, ts = kinds.indexOf("#totals") >= 0, tr = kinds.indexOf("#this row") >= 0;
+			if (tr) { var rr = cur && cur.cur ? cur.cur.r : null; if (rr == null || rr < top || rr > bot) return null; r1 = r2 = rr; }
+			else { r1 = hs ? (t.header ? g.s.r : top) : ds ? top : (t.totals ? g.e.r : bot + 1); r2 = ts ? (t.totals ? g.e.r : null) : ds ? bot : hs ? (t.header ? g.s.r : null) : bot; if (r2 == null || r2 < r1) return null; }
+		}
+		var c1 = g.s.c, c2 = g.e.c;
+		if (items.cols && items.cols.length) {
+			var idx = function (n) { var low = n.toLowerCase(); for (var i = 0; i < t.cols.length; i++) if (String(t.cols[i]).toLowerCase() === low) return g.s.c + i; return -1; };
+			var a = idx(items.cols[0][0]), b = idx(items.cols[items.cols.length - 1][1]);
+			if (a < 0 || b < 0) return null;
+			c1 = Math.min(a, b); c2 = Math.max(a, b);
+		}
+		if (r2 < r1) return null;
+		return { sheet: t.sheet, g: { s: { r: r1, c: c1 }, e: { r: r2, c: c2 } } };
+	}
 
 	/* ---------- sort / filter view (the data is never changed) ---------- */
 	function cmpValues(a, b) {
@@ -689,15 +963,1093 @@
 		detectDelimiter: detectDelimiter, parseDelimited: parseDelimited, toDelimited: toDelimited,
 		parseNumberText: parseNumberText, parseInput: parseInput,
 		Err: Err, isErr: isErr, err: err, ERRCODE: ERRCODE, ERRNUM: ERRNUM, Unknown: Unknown,
-		tokenize: tokenize, parse: parse, refsOf: refsOf, unknownFunctions: unknownFunctions, evaluate: evaluate, calc: calc, FUNCTIONS: FUNCTIONS,
+		tokenize: tokenize, parse: parse, refsOf: refsOf, unknownFunctions: unknownFunctions, evaluate: evaluate, calc: calc, FUNCTIONS: FUNCTIONS, refreshFunctions: refreshFunctions,
+		FN: FN, LAZY: LAZY, VOLATILE: VOLATILE, Range: Range, Arr: Arr, isMulti: isMulti, toArr: toArr, mapArr: mapArr, broadcast: broadcast, scalar: scalar,
+		num: num, txt: txt, bool: bool, numbersOf: numbersOf, binScalar: binScalar, Env: Env, E: E, dateText: dateText, timeText: timeText, ymdSerial: ymdSerial, normFn: normFn, walk: walk,
 		fmtGeneral: fmtGeneral, roundHalfAway: roundHalfAway, compare: compare,
 		adjust: adjust, renameSheetRefs: renameSheetRefs, shiftIdx: shiftIdx,
 		cellValue: cellValue, resultCell: resultCell, Calc: Calc,
 		cmpValues: cmpValues, matchFilter: matchFilter, viewRows: viewRows, FILTER_OPS: FILTER_OPS,
 		fmtBytes: fmtBytes, kindOf: kindOf, baseName: baseName, safeSheetName: safeSheetName
 	};
-	if (typeof module === "object" && module.exports) module.exports = api;
+	if (typeof module === "object" && module.exports) { module.exports = api; require("./formulas.js").install(api); require("./edit.js").install(api); }
 	else root.MESXL = api;
+})(typeof window !== "undefined" ? window : this);
+
+/* MES Spreadsheet Viewer & Editor (mes.fm/excel): the worksheet function library (about 250 Excel functions) for the formula engine in
+   lib.js. install(MESXL) registers them in MESXL.FN (arguments already worked out) and MESXL.LAZY (arguments worked out on demand:
+   IF, IFS, IFERROR, SWITCH, CHOOSE, LET, AND / OR short cuts...). Results are checked against Excel in tool_apps_src/excel-tests.js.
+   Conventions: an argument is a Range (a reference), an Arr (an array) or a scalar (number, text, boolean, null = blank, Err).
+   Functions that take single values are "lifted": given a range or array they work on every cell and return an array (spill). */
+(function (root) {
+	"use strict";
+	function install(X) {
+		var FN = X.FN, LAZY = X.LAZY, E = X.E, isErr = X.isErr, Range = X.Range, Arr = X.Arr, num = X.num, txt = X.txt, bool = X.bool;
+		var scalar = X.scalar, isMulti = X.isMulti, toArr = X.toArr, mapArr = X.mapArr, broadcast = X.broadcast, numbersOf = X.numbersOf;
+		var compare = X.compare, parseNumberText = X.parseNumberText, roundHalfAway = X.roundHalfAway, fmtGeneral = X.fmtGeneral;
+		var NA = E["#N/A"], VAL = E["#VALUE!"], NUM = E["#NUM!"], DIV = E["#DIV/0!"], REF = E["#REF!"];
+
+		/* ---------- helpers ---------- */
+		// lift(fn, n): fn(a, b, ...) gets single values; when any of the first n arguments (all when n is omitted) is a range / array the
+		// result is an array of fn over every cell (sizes broadcast like Excel).
+		function lift(fn, n) {
+			return function (args, ctx) {
+				var m = n == null ? args.length : Math.min(n, args.length), multi = false;
+				for (var i = 0; i < m; i++) if (isMulti(args[i])) { multi = true; break; }
+				if (!multi) return fn.apply(ctx, args.map(function (a, i2) { return i2 < m || !(a instanceof Range || a instanceof Arr) ? scalar(a) : a; }));
+				var lifted = [], pos = [];
+				for (var j = 0; j < m; j++) if (isMulti(args[j])) { lifted.push(args[j]); pos.push(j); }
+				return broadcast(lifted, function () {
+					var vals = arguments, a2 = args.map(function (a, i3) { var p = pos.indexOf(i3); return p >= 0 ? vals[p] : (i3 < m ? scalar(a) : a); });
+					return fn.apply(ctx, a2);
+				});
+			};
+		}
+		function N1(x) { var v = num(x); return v; }
+		function optNum(x, d) { return x === undefined || x === null && false ? d : (x === undefined ? d : num(x)); }
+		function firstErr() { for (var i = 0; i < arguments.length; i++) if (isErr(arguments[i])) return arguments[i]; return null; }
+		function isBlank(v) { return v == null; }
+		function flat(args, keep) {   // every value of every argument (ranges / arrays read cell by cell), keep(v) filters
+			var out = [];
+			args.forEach(function (a) { if (a instanceof Range || a instanceof Arr) a.each(function (v) { if (!keep || keep(v)) out.push(v); }); else if (a !== undefined && (!keep || keep(a))) out.push(a); });
+			return out;
+		}
+		function sum(a) { var s = 0; for (var i = 0; i < a.length; i++) s += a[i]; return s; }
+		function nums(args) { return numbersOf(args); }
+		function statNums(args) { var n = numbersOf(args); return n; }
+		function mean(a) { return sum(a) / a.length; }
+		function variance(a, sample) { if (a.length < (sample ? 2 : 1)) return DIV; var m = mean(a), s = 0; a.forEach(function (x) { s += (x - m) * (x - m); }); return s / (a.length - (sample ? 1 : 0)); }
+		function sortNum(a) { return a.slice().sort(function (x, y) { return x - y; }); }
+		function percentile(a, p, exc) {
+			var s = sortNum(a), n = s.length;
+			if (!n) return NUM;
+			if (exc) { var h = p * (n + 1) - 1; if (h < 0 || h > n - 1) return NUM; var lo = Math.floor(h); return s[lo] + (h - lo) * ((s[lo + 1] != null ? s[lo + 1] : s[lo]) - s[lo]); }
+			if (p < 0 || p > 1) return NUM;
+			var x = p * (n - 1), l = Math.floor(x); return l + 1 < n ? s[l] + (x - l) * (s[l + 1] - s[l]) : s[l];
+		}
+		function int(x) { return x < 0 ? Math.ceil(x) : Math.floor(x); }
+		function ret(v) { return typeof v === "number" && !isFinite(v) ? NUM : v; }
+		function arrOf(x) { return x instanceof Range || x instanceof Arr ? toArr(x) : new Arr([[x]]); }
+		function dimsOf(x) { if (x instanceof Range) { var b = x.box(); return { h: b.r2 - b.r1 + 1, w: b.c2 - b.c1 + 1 }; } if (x instanceof Arr) return { h: x.h, w: x.w }; return { h: 1, w: 1 }; }
+
+		/* ---------- criteria (COUNTIF, SUMIF ...) ---------- */
+		function wild(s) { return new RegExp("^" + s.replace(/~([*?~])|([*?])|([.+^${}()|[\]\\\/])/g, function (m, esc, w, sp) { return esc ? "\\" + esc : w ? (w === "*" ? "[\\s\\S]*" : "[\\s\\S]") : "\\" + sp; }) + "$", "i"); }
+		function criterion(c) {
+			if (c instanceof Range || c instanceof Arr) c = scalar(c);
+			if (isErr(c)) return function (v) { return isErr(v) && v.code === c.code; };
+			if (typeof c === "number") return function (v) { if (typeof v === "number") return v === c; if (typeof v === "string") { var n = parseNumberText(v); return !!n && n.v === c; } return false; };
+			if (typeof c === "boolean") return function (v) { return v === c; };
+			if (c == null) return function (v) { return v === 0; };
+			var s = String(c), m = /^(<=|>=|<>|<|>|=)?([\s\S]*)$/.exec(s), op = m[1] || "=", rest = m[2];
+			if (rest === "") { if (op === "=") return function (v) { return v == null || v === ""; }; if (op === "<>") return function (v) { return !(v == null || v === ""); }; }
+			var n = parseNumberText(rest), d = n ? null : X.dateText(rest);
+			var target = n ? n.v : d;
+			var up = rest.toUpperCase();
+			if (target != null) {
+				return function (v) {
+					var x = typeof v === "number" ? v : null;
+					if (x == null && typeof v === "string" && (op === "=" || op === "<>")) { var pv = parseNumberText(v); x = pv ? pv.v : null; }
+					if (op === "<>") return x == null || x !== target;
+					if (x == null) return false;
+					return op === "=" ? x === target : op === "<" ? x < target : op === ">" ? x > target : op === "<=" ? x <= target : x >= target;
+				};
+			}
+			if (up === "TRUE" || up === "FALSE") { var bv = up === "TRUE"; return function (v) { return op === "<>" ? v !== bv : op === "=" ? v === bv : false; }; }
+			if (/^#/.test(up)) return function (v) { var same = isErr(v) && v.code === up; return op === "<>" ? !same : same; };
+			if (op === "=" || op === "<>") {
+				var re = /[*?~]/.test(rest) ? wild(rest) : null, low = rest.toLowerCase();
+				return function (v) { var same = typeof v === "string" && (re ? re.test(v) : v.toLowerCase() === low); return op === "<>" ? !same : same; };
+			}
+			return function (v) { if (typeof v !== "string") return false; var k = compare(v, rest); return op === "<" ? k < 0 : op === ">" ? k > 0 : op === "<=" ? k <= 0 : k >= 0; };
+		}
+		// [range, criteria] pairs -> array of booleans over the shape of the first range (other ranges are read at the same offsets)
+		function matches(pairs, ctx) {
+			var first = pairs[0][0];
+			if (!(first instanceof Range || first instanceof Arr)) first = new Arr([[first]]);
+			var D = first instanceof Range ? first.box() : { r1: 0, r2: first.h - 1, c1: 0, c2: first.w - 1 }, h = D.r2 - D.r1 + 1, w = D.c2 - D.c1 + 1;
+			var tests = pairs.map(function (p) { return criterion(p[1]); }), ok = [];
+			var readers = pairs.map(function (p) {
+				var rg = p[0];
+				if (rg instanceof Range) { var r0 = rg.g.s.r, c0 = rg.g.s.c; return function (i, j) { return rg.ctx.get(rg.sheet, r0 + i, c0 + j); }; }
+				if (rg instanceof Arr) return function (i, j) { return i < rg.h && j < rg.w ? rg.rows[i][j] : null; };
+				return function () { return rg; };
+			});
+			for (var i = 0; i < h; i++) { var row = []; for (var j = 0; j < w; j++) { var all = true; for (var t = 0; t < tests.length && all; t++) if (!tests[t](readers[t](i, j))) all = false; row.push(all); } ok.push(row); }
+			return { ok: ok, h: h, w: w };
+		}
+		function pairsOf(args, from) { var p = []; for (var i = from; i + 1 < args.length; i += 2) p.push([args[i], args[i + 1]]); return p; }
+		function valuesAt(rg, ok) {   // the cells of rg (from its top-left) where ok is true
+			var out = [];
+			for (var i = 0; i < ok.h; i++) for (var j = 0; j < ok.w; j++) if (ok.ok[i][j]) {
+				var v = rg instanceof Range ? rg.ctx.get(rg.sheet, rg.g.s.r + i, rg.g.s.c + j) : rg instanceof Arr ? (i < rg.h && j < rg.w ? rg.rows[i][j] : null) : rg;
+				out.push(v);
+			}
+			return out;
+		}
+		function numsOnly(vals) { var out = []; for (var i = 0; i < vals.length; i++) { if (isErr(vals[i])) return vals[i]; if (typeof vals[i] === "number") out.push(vals[i]); } return out; }
+		X.criterion = criterion;
+
+		/* ---------- dates ---------- */
+		var EPOCH = Date.UTC(1899, 11, 30);
+		function toDate(s) { s = Math.floor(s); if (s < 61) s += 1; return new Date(EPOCH + s * 864e5); }       // 1900 leap-year bug: serial 60 = 29 Feb 1900
+		function fromYMD(y, m, d) { var t = Date.UTC(y, m - 1, d), s = Math.round((t - EPOCH) / 864e5); return s < 61 ? s - 1 : s; }
+		function serialArg(x) { var v = num(x); if (isErr(v)) return v; if (v < 0) return NUM; return v; }
+		function ymd(s) { if (s === 60) return { y: 1900, m: 2, d: 29 }; var dt = toDate(s); return { y: dt.getUTCFullYear(), m: dt.getUTCMonth() + 1, d: dt.getUTCDate(), wd: dt.getUTCDay() }; }
+		function wdOf(s) { return toDate(s).getUTCDay(); }
+		function lastDay(y, m) { return new Date(Date.UTC(y, m, 0)).getUTCDate(); }
+		function holidaySet(h) { var set = {}; if (h === undefined) return set; flat([h]).forEach(function (v) { if (typeof v === "number") set[Math.floor(v)] = 1; }); return set; }
+		function weekendMask(w) {   // NETWORKDAYS.INTL / WORKDAY.INTL weekend: 1 = Sat+Sun ... or "0000011"
+			if (w === undefined || w == null) w = 1;
+			if (typeof w === "string") { if (!/^[01]{7}$/.test(w) || w === "1111111") return null; return [w[6], w[0], w[1], w[2], w[3], w[4], w[5]].map(function (c) { return c === "1"; }); }
+			var m = { 1: [6, 0], 2: [0, 1], 3: [1, 2], 4: [2, 3], 5: [3, 4], 6: [4, 5], 7: [5, 6], 11: [0], 12: [1], 13: [2], 14: [3], 15: [4], 16: [5], 17: [6] }[w];
+			if (!m) return null;
+			var out = [false, false, false, false, false, false, false]; m.forEach(function (d) { out[d] = true; }); return out;
+		}
+		function networkdays(a, b, hol, wk) {
+			a = Math.floor(a); b = Math.floor(b);
+			var sign = 1; if (b < a) { var t = a; a = b; b = t; sign = -1; }
+			var n = 0; for (var s = a; s <= b; s++) if (!wk[wdOf(s)] && !hol[s]) n++;
+			return sign * n;
+		}
+		function workday(a, days, hol, wk) {
+			var s = Math.floor(a), step = days < 0 ? -1 : 1, left = Math.abs(Math.trunc(days)), guard = 0;
+			while (left > 0 && guard++ < 1e6) { s += step; if (!wk[wdOf(s)] && !hol[s]) left--; }
+			return s;
+		}
+		function addMonths(s, m) { var d = ymd(Math.floor(s)), y = d.y, mo = d.m + m; y += Math.floor((mo - 1) / 12); mo = ((mo - 1) % 12 + 12) % 12 + 1; return fromYMD(y, mo, Math.min(d.d, lastDay(y, mo))); }
+		function days360(a, b, eu) {
+			var A = ymd(a), B = ymd(b), d1 = A.d, d2 = B.d;
+			if (eu) { if (d1 === 31) d1 = 30; if (d2 === 31) d2 = 30; }
+			else { var lastFebA = A.m === 2 && A.d === lastDay(A.y, 2); if (lastFebA) d1 = 30; if (d1 === 31) d1 = 30; if (d2 === 31 && d1 === 30) d2 = 30; if (lastFebA && B.m === 2 && B.d === lastDay(B.y, 2)) d2 = 30; }
+			return (B.y - A.y) * 360 + (B.m - A.m) * 30 + d2 - d1;
+		}
+		function isLeap(y) { return (y % 4 === 0 && y % 100 !== 0) || y % 400 === 0; }
+		X.ymd = ymd; X.fromYMD = fromYMD;
+
+		/* ---------- number formatting for TEXT() (SheetJS's SSF when the page has loaded it) ---------- */
+		function textFormat(v, fmt) {
+			if (X.ssf && typeof v === "number") { try { return X.ssf.format(fmt, v); } catch (e) { /* fall back */ } }
+			if (typeof v !== "number") return txt(v);
+			var f = String(fmt);
+			if (/^general$/i.test(f)) return fmtGeneral(v);
+			if (/[ymdhs]/i.test(f.replace(/"[^"]*"/g, "")) && !/[0#]/.test(f.replace(/"[^"]*"/g, ""))) return dateFormat(v, f);
+			var secs = f.split(";"), sec = v < 0 && secs[1] != null ? secs[1] : v === 0 && secs[2] != null ? secs[2] : secs[0], neg = v < 0 && secs[1] == null;
+			var a = Math.abs(v), pct = /%/.test(sec.replace(/"[^"]*"/g, ""));
+			if (pct) a *= 100;
+			var core = /[0#?,.]+/.exec(sec.replace(/"[^"]*"/g, "")); if (!core) return sec.replace(/"/g, "");
+			var p = core[0], dp = p.indexOf("."), decs = dp >= 0 ? p.slice(dp + 1).replace(/[^0#]/g, "").length : 0, comma = p.indexOf(",") >= 0 && /,[0#]/.test(p);
+			var minDec = dp >= 0 ? (p.slice(dp + 1).match(/0/g) || []).length : 0;
+			var s = roundHalfAway(a, decs).toFixed(decs);
+			if (decs > minDec) { s = s.replace(/0+$/, function (z) { return z.slice(0, Math.max(0, z.length - (decs - minDec))); }); s = s.replace(/\.$/, minDec ? "." : ""); }
+			var ip = s.split(".")[0], dpart = s.split(".")[1];
+			var minInt = ((dp >= 0 ? p.slice(0, dp) : p).match(/0/g) || []).length;
+			while (ip.length < minInt) ip = "0" + ip;
+			if (ip === "0" && minInt === 0) ip = "";
+			if (comma) ip = ip.replace(/\B(?=(\d{3})+(?!\d))/g, ",");
+			var body = ip + (dpart != null && dpart !== "" ? "." + dpart : "");
+			var out = sec.replace(/"([^"]*)"/g, "\u0001$1\u0002"), idx = out.search(/[0#?,.]+/);
+			out = out.slice(0, idx) + body + out.slice(idx).replace(/^[0#?,.]+/, "");
+			out = out.replace(/\u0001([^\u0002]*)\u0002/g, "$1").replace(/\\(.)/g, "$1").replace(/_./g, " ").replace(/\[[^\]]*\]/g, "");
+			return (neg ? "-" : "") + out;
+		}
+		var DAYN = ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"], MONN = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"];
+		function dateFormat(v, f) {
+			var d = ymd(Math.floor(v)), secs = Math.round((v - Math.floor(v)) * 86400), H = Math.floor(secs / 3600), Mi = Math.floor(secs % 3600 / 60), Se = secs % 60, ampm = /AM\/PM|A\/P/i.test(f);
+			var hh = ampm ? (H % 12 || 12) : H, pad = function (n) { return (n < 10 ? "0" : "") + n; };
+			var toks = f.match(/"[^"]*"|\\.|yyyy|yy|mmmmm|mmmm|mmm|mm|m|dddd|ddd|dd|d|hh|h|ss|s|AM\/PM|am\/pm|A\/P|a\/p|[^"\\ymdhsAa]+|./gi) || [], out = "", lastH = false;
+			toks.forEach(function (t, i) {
+				var low = t.toLowerCase();
+				if (t[0] === '"') out += t.slice(1, -1); else if (t[0] === "\\") out += t[1];
+				else if (low === "yyyy") out += d.y; else if (low === "yy") out += pad(d.y % 100);
+				else if (low === "mmmmm") out += MONN[d.m - 1][0]; else if (low === "mmmm") out += MONN[d.m - 1]; else if (low === "mmm") out += MONN[d.m - 1].slice(0, 3);
+				else if (low === "mm" || low === "m") { var next = toks.slice(i + 1).join("").toLowerCase(); var isMin = lastH || /^[^a-z]*s/.test(next); out += isMin ? (low === "mm" ? pad(Mi) : Mi) : (low === "mm" ? pad(d.m) : d.m); }
+				else if (low === "dddd") out += DAYN[wdOf(Math.floor(v))]; else if (low === "ddd") out += DAYN[wdOf(Math.floor(v))].slice(0, 3);
+				else if (low === "dd") out += pad(d.d); else if (low === "d") out += d.d;
+				else if (low === "hh") out += pad(hh); else if (low === "h") out += hh;
+				else if (low === "ss") out += pad(Se); else if (low === "s") out += Se;
+				else if (low === "am/pm") out += H < 12 ? "AM" : "PM"; else if (low === "a/p") out += H < 12 ? "A" : "P";
+				else out += t;
+				if (/^[a-z]/i.test(t)) lastH = low === "hh" || low === "h";
+			});
+			return out;
+		}
+		X.textFormat = textFormat;
+
+		/* ---------- math and statistics ---------- */
+		var M = {
+			SUM: function (a) { var n = nums(a); return isErr(n) ? n : sum(n); },
+			SUMSQ: function (a) { var n = nums(a); if (isErr(n)) return n; var s = 0; n.forEach(function (x) { s += x * x; }); return s; },
+			AVERAGE: function (a) { var n = nums(a); if (isErr(n)) return n; return n.length ? mean(n) : DIV; },
+			AVERAGEA: function (a) { var v = flat(a, function (x) { return x != null; }), n = []; for (var i = 0; i < v.length; i++) { if (isErr(v[i])) return v[i]; n.push(typeof v[i] === "number" ? v[i] : v[i] === true ? 1 : 0); } return n.length ? mean(n) : DIV; },
+			MIN: function (a) { var n = nums(a); if (isErr(n)) return n; return n.length ? Math.min.apply(null, n) : 0; },
+			MAX: function (a) { var n = nums(a); if (isErr(n)) return n; return n.length ? Math.max.apply(null, n) : 0; },
+			MINA: function (a) { var v = flat(a, function (x) { return x != null; }).map(function (x) { return typeof x === "number" ? x : x === true ? 1 : 0; }); return v.length ? Math.min.apply(null, v) : 0; },
+			MAXA: function (a) { var v = flat(a, function (x) { return x != null; }).map(function (x) { return typeof x === "number" ? x : x === true ? 1 : 0; }); return v.length ? Math.max.apply(null, v) : 0; },
+			PRODUCT: function (a) { var n = nums(a); if (isErr(n)) return n; if (!n.length) return 0; var s = 1; n.forEach(function (x) { s *= x; }); return ret(s); },
+			COUNT: function (a) { var k = 0; a.forEach(function (x) { if (x instanceof Range || x instanceof Arr) x.each(function (v) { if (typeof v === "number") k++; }); else if (typeof x === "number" || typeof x === "boolean" || (typeof x === "string" && parseNumberText(x))) k++; }); return k; },
+			COUNTA: function (a) { var k = 0; a.forEach(function (x) { if (x instanceof Range || x instanceof Arr) x.each(function (v) { if (v != null) k++; }); else if (x !== undefined) k++; }); return k; },
+			COUNTBLANK: function (a) { var k = 0; a.forEach(function (x) { if (x instanceof Range) { var g = x.g, B = x.box(); var total = (B.r2 - B.r1 + 1) * (B.c2 - B.c1 + 1); var filled = 0; x.each(function (v) { if (v != null && v !== "") filled++; }); k += total - filled; } else if (x instanceof Arr) x.each(function (v) { if (v == null || v === "") k++; }); }); return k; },
+			MEDIAN: function (a) { var n = nums(a); if (isErr(n)) return n; if (!n.length) return NUM; var s = sortNum(n), h = s.length >> 1; return s.length % 2 ? s[h] : (s[h - 1] + s[h]) / 2; },
+			MODE: function (a) { var n = nums(a); if (isErr(n)) return n; var cnt = {}, best = null, bc = 1; n.forEach(function (x) { cnt[x] = (cnt[x] || 0) + 1; if (cnt[x] > bc) { bc = cnt[x]; best = x; } }); return best == null ? NA : best; },
+			"STDEV.S": function (a) { var n = nums(a); if (isErr(n)) return n; var v = variance(n, true); return isErr(v) ? v : Math.sqrt(v); },
+			"STDEV.P": function (a) { var n = nums(a); if (isErr(n)) return n; var v = variance(n, false); return isErr(v) ? v : Math.sqrt(v); },
+			"VAR.S": function (a) { var n = nums(a); return isErr(n) ? n : variance(n, true); },
+			"VAR.P": function (a) { var n = nums(a); return isErr(n) ? n : variance(n, false); },
+			LARGE: function (a) { var n = nums([a[0]]), k = num(scalar(a[1])); if (isErr(n)) return n; if (isErr(k)) return k; k = Math.ceil(k); if (k < 1 || k > n.length) return NUM; return sortNum(n)[n.length - k]; },
+			SMALL: function (a) { var n = nums([a[0]]), k = num(scalar(a[1])); if (isErr(n)) return n; if (isErr(k)) return k; k = Math.ceil(k); if (k < 1 || k > n.length) return NUM; return sortNum(n)[k - 1]; },
+			"RANK.EQ": lift(function (x, ref, ord) { x = num(x); if (isErr(x)) return x; var n = nums([ref]); if (isErr(n)) return n; if (n.indexOf(x) < 0) return NA; var o = ord === undefined ? 0 : num(ord); var k = 1; n.forEach(function (y) { if (o ? y < x : y > x) k++; }); return k; }, 1),
+			"RANK.AVG": lift(function (x, ref, ord) { x = num(x); if (isErr(x)) return x; var n = nums([ref]); if (isErr(n)) return n; var o = ord === undefined ? 0 : num(ord), k = 1, same = 0; n.forEach(function (y) { if (o ? y < x : y > x) k++; if (y === x) same++; }); return same ? k + (same - 1) / 2 : NA; }, 1),
+			"PERCENTILE.INC": function (a) { var n = nums([a[0]]), p = num(scalar(a[1])); if (isErr(n)) return n; if (isErr(p)) return p; return percentile(n, p, false); },
+			"PERCENTILE.EXC": function (a) { var n = nums([a[0]]), p = num(scalar(a[1])); if (isErr(n)) return n; if (isErr(p)) return p; return percentile(n, p, true); },
+			"QUARTILE.INC": function (a) { var n = nums([a[0]]), q = num(scalar(a[1])); if (isErr(n)) return n; if (isErr(q)) return q; q = Math.floor(q); if (q < 0 || q > 4) return NUM; return percentile(n, q / 4, false); },
+			"QUARTILE.EXC": function (a) { var n = nums([a[0]]), q = num(scalar(a[1])); if (isErr(n)) return n; if (isErr(q)) return q; q = Math.floor(q); if (q < 1 || q > 3) return NUM; return percentile(n, q / 4, true); },
+			CORREL: function (a) { var x = arrOf(a[0]), y = arrOf(a[1]), xs = [], ys = []; x.each(function (v, i, j) { var w = y.at(i, j); if (typeof v === "number" && typeof w === "number") { xs.push(v); ys.push(w); } }); if (xs.length < 2) return DIV; var mx = mean(xs), my = mean(ys), sxy = 0, sxx = 0, syy = 0; xs.forEach(function (v, i) { sxy += (v - mx) * (ys[i] - my); sxx += (v - mx) * (v - mx); syy += (ys[i] - my) * (ys[i] - my); }); return sxx && syy ? sxy / Math.sqrt(sxx * syy) : DIV; },
+			SUMPRODUCT: function (a) {
+				if (!a.length) return VAL;
+				var arrs = a.map(arrOf), h = arrs[0].h, w = arrs[0].w;
+				if (arrs.some(function (x) { return x.h !== h || x.w !== w; })) return VAL;
+				var s = 0;
+				for (var i = 0; i < h; i++) for (var j = 0; j < w; j++) {
+					var p = 1;
+					for (var k = 0; k < arrs.length; k++) { var v = arrs[k].rows[i][j]; if (isErr(v)) return v; p *= typeof v === "number" ? v : 0; }
+					s += p;
+				}
+				return s;
+			},
+			SUBTOTAL: function (a, ctx) {
+				var f = num(scalar(a[0])); if (isErr(f)) return f;
+				var fn = { 1: "AVERAGE", 2: "COUNT", 3: "COUNTA", 4: "MAX", 5: "MIN", 6: "PRODUCT", 7: "STDEV.S", 8: "STDEV.P", 9: "SUM", 10: "VAR.S", 11: "VAR.P" }[f % 100];
+				if (!fn) return VAL;
+				var rest = a.slice(1).map(function (x) {
+					if (!(x instanceof Range) || !ctx.cellAt) return x;
+					var B = x.box(), rows = [];
+					for (var r = B.r1; r <= B.r2; r++) { var row = []; for (var c = B.c1; c <= B.c2; c++) { var cl = ctx.cellAt(x.sheet, r, c); row.push(cl && cl.f && /SUBTOTAL\s*\(|AGGREGATE\s*\(/i.test(cl.f) ? null : x.ctx.get(x.sheet, r, c)); } rows.push(row); }
+					return new Arr(rows);
+				});
+				return FN[fn](rest, ctx);
+			},
+			ROUND: lift(function (x, d) { x = num(x); d = d === undefined ? 0 : num(d); return firstErr(x, d) || roundHalfAway(x, d); }),
+			ROUNDUP: lift(function (x, d) { x = num(x); d = d === undefined ? 0 : num(d); if (firstErr(x, d)) return firstErr(x, d); var f = Math.pow(10, Math.trunc(d)), y = Math.abs(x) * f; y = Math.abs(y - Math.round(y)) < 1e-9 ? Math.round(y) : Math.ceil(y); return (x < 0 ? -1 : 1) * y / f; }),
+			ROUNDDOWN: lift(function (x, d) { x = num(x); d = d === undefined ? 0 : num(d); if (firstErr(x, d)) return firstErr(x, d); var f = Math.pow(10, Math.trunc(d)), y = Math.abs(x) * f; y = Math.abs(y - Math.round(y)) < 1e-9 ? Math.round(y) : Math.floor(y); return (x < 0 ? -1 : 1) * y / f; }),
+			TRUNC: lift(function (x, d) { x = num(x); d = d === undefined ? 0 : num(d); if (firstErr(x, d)) return firstErr(x, d); var f = Math.pow(10, Math.trunc(d)); return int(roundHalfAway(x * f, 9)) / f; }),
+			MROUND: lift(function (x, m) { x = num(x); m = num(m); if (firstErr(x, m)) return firstErr(x, m); if (m === 0) return 0; if (x * m < 0) return NUM; return roundHalfAway(x / m, 0) * m; }),
+			CEILING: lift(function (x, s) { x = num(x); s = s === undefined ? 1 : num(s); if (firstErr(x, s)) return firstErr(x, s); if (s === 0) return 0; if (x > 0 && s < 0) return NUM; return Math.ceil(roundHalfAway(x / s, 9)) * s; }),
+			"CEILING.MATH": lift(function (x, s, mode) { x = num(x); s = s === undefined ? 1 : Math.abs(num(s)); mode = mode === undefined ? 0 : num(mode); if (firstErr(x, s, mode)) return firstErr(x, s, mode); if (s === 0) return 0; var q = roundHalfAway(x / s, 9); return (x < 0 && mode ? Math.floor(q) : Math.ceil(q)) * s; }),
+			FLOOR: lift(function (x, s) { x = num(x); s = s === undefined ? 1 : num(s); if (firstErr(x, s)) return firstErr(x, s); if (s === 0) return DIV; if (x > 0 && s < 0) return NUM; return Math.floor(roundHalfAway(x / s, 9)) * s; }),
+			"FLOOR.MATH": lift(function (x, s, mode) { x = num(x); s = s === undefined ? 1 : Math.abs(num(s)); mode = mode === undefined ? 0 : num(mode); if (firstErr(x, s, mode)) return firstErr(x, s, mode); if (s === 0) return 0; var q = roundHalfAway(x / s, 9); return (x < 0 && mode ? Math.ceil(q) : Math.floor(q)) * s; }),
+			INT: lift(function (x) { x = num(x); return isErr(x) ? x : Math.floor(x); }),
+			MOD: lift(function (x, y) { x = num(x); y = num(y); if (firstErr(x, y)) return firstErr(x, y); if (y === 0) return DIV; var r = x - y * Math.floor(x / y); return Math.abs(r) < 1e-12 ? 0 : roundHalfAway(r, 12); }),
+			QUOTIENT: lift(function (x, y) { x = num(x); y = num(y); if (firstErr(x, y)) return firstErr(x, y); if (y === 0) return DIV; return int(x / y); }),
+			POWER: lift(function (x, y) { x = num(x); y = num(y); if (firstErr(x, y)) return firstErr(x, y); if (x === 0 && y === 0) return NUM; var r = Math.pow(x, y); return isFinite(r) ? r : (x === 0 ? DIV : NUM); }),
+			ABS: lift(function (x) { x = num(x); return isErr(x) ? x : Math.abs(x); }),
+			SIGN: lift(function (x) { x = num(x); return isErr(x) ? x : x > 0 ? 1 : x < 0 ? -1 : 0; }),
+			SQRT: lift(function (x) { x = num(x); if (isErr(x)) return x; return x < 0 ? NUM : Math.sqrt(x); }),
+			SQRTPI: lift(function (x) { x = num(x); if (isErr(x)) return x; return x < 0 ? NUM : Math.sqrt(x * Math.PI); }),
+			EXP: lift(function (x) { x = num(x); return isErr(x) ? x : ret(Math.exp(x)); }),
+			LN: lift(function (x) { x = num(x); if (isErr(x)) return x; return x <= 0 ? NUM : Math.log(x); }),
+			LOG: lift(function (x, b) { x = num(x); b = b === undefined ? 10 : num(b); if (firstErr(x, b)) return firstErr(x, b); if (x <= 0 || b <= 0) return NUM; if (b === 1) return DIV; return Math.log(x) / Math.log(b); }),
+			LOG10: lift(function (x) { x = num(x); if (isErr(x)) return x; return x <= 0 ? NUM : Math.log10(x); }),
+			PI: function () { return Math.PI; },
+			SIN: lift(function (x) { x = num(x); return isErr(x) ? x : Math.sin(x); }), COS: lift(function (x) { x = num(x); return isErr(x) ? x : Math.cos(x); }),
+			TAN: lift(function (x) { x = num(x); return isErr(x) ? x : Math.tan(x); }),
+			ASIN: lift(function (x) { x = num(x); if (isErr(x)) return x; return Math.abs(x) > 1 ? NUM : Math.asin(x); }), ACOS: lift(function (x) { x = num(x); if (isErr(x)) return x; return Math.abs(x) > 1 ? NUM : Math.acos(x); }),
+			ATAN: lift(function (x) { x = num(x); return isErr(x) ? x : Math.atan(x); }),
+			ATAN2: lift(function (x, y) { x = num(x); y = num(y); if (firstErr(x, y)) return firstErr(x, y); if (x === 0 && y === 0) return DIV; return Math.atan2(y, x); }),
+			SINH: lift(function (x) { x = num(x); return isErr(x) ? x : Math.sinh(x); }), COSH: lift(function (x) { x = num(x); return isErr(x) ? x : Math.cosh(x); }), TANH: lift(function (x) { x = num(x); return isErr(x) ? x : Math.tanh(x); }),
+			DEGREES: lift(function (x) { x = num(x); return isErr(x) ? x : x * 180 / Math.PI; }), RADIANS: lift(function (x) { x = num(x); return isErr(x) ? x : x * Math.PI / 180; }),
+			FACT: lift(function (x) { x = num(x); if (isErr(x)) return x; x = Math.floor(x); if (x < 0) return NUM; var r = 1; for (var i = 2; i <= x; i++) r *= i; return ret(r); }),
+			FACTDOUBLE: lift(function (x) { x = num(x); if (isErr(x)) return x; x = Math.floor(x); if (x < -1) return NUM; var r = 1; for (var i = x; i > 1; i -= 2) r *= i; return ret(r); }),
+			COMBIN: lift(function (n, k) { n = num(n); k = num(k); if (firstErr(n, k)) return firstErr(n, k); n = Math.floor(n); k = Math.floor(k); if (n < 0 || k < 0 || k > n) return NUM; var r = 1; for (var i = 1; i <= k; i++) r = r * (n - k + i) / i; return Math.round(r); }),
+			PERMUT: lift(function (n, k) { n = num(n); k = num(k); if (firstErr(n, k)) return firstErr(n, k); n = Math.floor(n); k = Math.floor(k); if (n < 0 || k < 0 || k > n) return NUM; var r = 1; for (var i = 0; i < k; i++) r *= n - i; return r; }),
+			GCD: function (a) { var n = nums(a); if (isErr(n)) return n; if (n.some(function (x) { return x < 0; })) return NUM; var g = function (x, y) { x = Math.floor(x); y = Math.floor(y); while (y) { var t = y; y = x % y; x = t; } return x; }; return n.reduce(g, 0); },
+			LCM: function (a) { var n = nums(a); if (isErr(n)) return n; if (n.some(function (x) { return x < 0; })) return NUM; var g = function (x, y) { while (y) { var t = y; y = x % y; x = t; } return x; }; return n.reduce(function (acc, x) { x = Math.floor(x); return acc === 0 || x === 0 ? 0 : acc * x / g(acc, x); }, 1); },
+			EVEN: lift(function (x) { x = num(x); if (isErr(x)) return x; var s = x < 0 ? -1 : 1, a = Math.ceil(Math.abs(x)); return s * (a % 2 ? a + 1 : a); }),
+			ODD: lift(function (x) { x = num(x); if (isErr(x)) return x; var s = x < 0 ? -1 : 1, a = Math.ceil(Math.abs(x)); return s * (a % 2 ? a : a + 1); }),
+			RAND: function () { return Math.random(); },
+			RANDBETWEEN: function (a) { var lo = num(scalar(a[0])), hi = num(scalar(a[1])); if (firstErr(lo, hi)) return firstErr(lo, hi); lo = Math.ceil(lo); hi = Math.floor(hi); if (hi < lo) return NUM; return lo + Math.floor(Math.random() * (hi - lo + 1)); }
+		};
+		M.MEDIAN = M.MEDIAN; M["MODE.SNGL"] = M.MODE; M.STDEV = M["STDEV.S"]; M.STDEVP = M["STDEV.P"]; M.VAR = M["VAR.S"]; M.VARP = M["VAR.P"]; M.RANK = M["RANK.EQ"];
+		M.PERCENTILE = M["PERCENTILE.INC"]; M.QUARTILE = M["QUARTILE.INC"]; M.PEARSON = M.CORREL; M["CEILING.PRECISE"] = M["CEILING.MATH"]; M["FLOOR.PRECISE"] = M["FLOOR.MATH"]; M["ISO.CEILING"] = M["CEILING.MATH"];
+
+		/* ---------- conditional sums and counts ---------- */
+		M.COUNTIF = function (a) { var m = matches([[a[0], a[1]]]), k = 0; m.ok.forEach(function (r) { r.forEach(function (x) { if (x) k++; }); }); return k; };
+		M.COUNTIFS = function (a) { if (a.length < 2 || a.length % 2) return VAL; var m = matches(pairsOf(a, 0)), k = 0; m.ok.forEach(function (r) { r.forEach(function (x) { if (x) k++; }); }); return k; };
+		M.SUMIF = function (a) { var m = matches([[a[0], a[1]]]), v = numsOnly(valuesAt(a.length > 2 && a[2] !== undefined ? a[2] : a[0], m)); return isErr(v) ? v : sum(v); };
+		M.SUMIFS = function (a) { if (a.length < 3 || a.length % 2 === 0) return VAL; var m = matches(pairsOf(a, 1)), v = numsOnly(valuesAt(a[0], m)); return isErr(v) ? v : sum(v); };
+		M.AVERAGEIF = function (a) { var m = matches([[a[0], a[1]]]), v = numsOnly(valuesAt(a.length > 2 && a[2] !== undefined ? a[2] : a[0], m)); return isErr(v) ? v : v.length ? mean(v) : DIV; };
+		M.AVERAGEIFS = function (a) { if (a.length < 3 || a.length % 2 === 0) return VAL; var m = matches(pairsOf(a, 1)), v = numsOnly(valuesAt(a[0], m)); return isErr(v) ? v : v.length ? mean(v) : DIV; };
+		M.MAXIFS = function (a) { if (a.length < 3 || a.length % 2 === 0) return VAL; var m = matches(pairsOf(a, 1)), v = numsOnly(valuesAt(a[0], m)); return isErr(v) ? v : v.length ? Math.max.apply(null, v) : 0; };
+		M.MINIFS = function (a) { if (a.length < 3 || a.length % 2 === 0) return VAL; var m = matches(pairsOf(a, 1)), v = numsOnly(valuesAt(a[0], m)); return isErr(v) ? v : v.length ? Math.min.apply(null, v) : 0; };
+
+		/* ---------- logic and information ---------- */
+		function logic(a, op) {
+			var any = false, res = op === "and", cnt = 0, e = null;
+			a.forEach(function (x) {
+				if (e) return;
+				if (x instanceof Range || x instanceof Arr) x.each(function (v) { if (isErr(v)) { e = v; return false; } if (typeof v === "number" || typeof v === "boolean") { any = true; if (op === "and" && !v) res = false; if (op === "or" && v) res = true; if (v) cnt++; } });
+				else if (x !== undefined) { var b = bool(x); if (isErr(b)) e = b; else { any = true; if (op === "and" && !b) res = false; if (op === "or" && b) res = true; if (b) cnt++; } }
+			});
+			if (e) return e; if (!any) return VAL;
+			return op === "xor" ? cnt % 2 === 1 : res;
+		}
+		M.AND = function (a) { return logic(a, "and"); }; M.OR = function (a) { return logic(a, "or"); }; M.XOR = function (a) { return logic(a, "xor"); };
+		M.NOT = lift(function (x) { var b = bool(x); return isErr(b) ? b : !b; });
+		M.TRUE = function () { return true; }; M.FALSE = function () { return false; };
+		M.NA = function () { return NA; };
+		M.ISBLANK = lift(function (x) { return x == null; });
+		M.ISNUMBER = lift(function (x) { return typeof x === "number"; });
+		M.ISTEXT = lift(function (x) { return typeof x === "string"; });
+		M.ISNONTEXT = lift(function (x) { return typeof x !== "string"; });
+		M.ISLOGICAL = lift(function (x) { return typeof x === "boolean"; });
+		M.ISERROR = lift(function (x) { return isErr(x); });
+		M.ISERR = lift(function (x) { return isErr(x) && x.code !== "#N/A"; });
+		M.ISNA = lift(function (x) { return isErr(x) && x.code === "#N/A"; });
+		M.ISEVEN = lift(function (x) { x = num(x); return isErr(x) ? x : Math.floor(Math.abs(x)) % 2 === 0; });
+		M.ISODD = lift(function (x) { x = num(x); return isErr(x) ? x : Math.floor(Math.abs(x)) % 2 === 1; });
+		M.ISREF = function (a) { return a[0] instanceof Range; };
+		M.ISFORMULA = function (a, ctx) { var r = a[0]; if (!(r instanceof Range)) return VAL; var cl = ctx.cellAt ? ctx.cellAt(r.sheet, r.g.s.r, r.g.s.c) : null; return !!(cl && cl.f); };
+		M.N = function (a) { var x = scalar(a[0]); return typeof x === "number" ? x : x === true ? 1 : isErr(x) ? x : 0; };
+		M.T = function (a) { var x = scalar(a[0]); return typeof x === "string" ? x : isErr(x) ? x : ""; };
+		M.TYPE = function (a) { var x = a[0]; if (x instanceof Arr || isMulti(x)) return 64; x = scalar(x); return typeof x === "number" || x == null ? 1 : typeof x === "string" ? 2 : typeof x === "boolean" ? 4 : isErr(x) ? 16 : 1; };
+		M["ERROR.TYPE"] = function (a) { var x = scalar(a[0]); if (!isErr(x)) return NA; return { "#NULL!": 1, "#DIV/0!": 2, "#VALUE!": 3, "#REF!": 4, "#NAME?": 5, "#NUM!": 6, "#N/A": 7, "#SPILL!": 9, "#CALC!": 14 }[x.code] || NA; };
+
+		/* ---------- text ---------- */
+		function T1(fn) { return lift(function () { for (var i = 0; i < arguments.length; i++) if (isErr(arguments[i])) return arguments[i]; return fn.apply(null, arguments); }); }
+		M.LEN = T1(function (s) { return txt(s).length; });
+		M.UPPER = T1(function (s) { return txt(s).toUpperCase(); });
+		M.LOWER = T1(function (s) { return txt(s).toLowerCase(); });
+		M.PROPER = T1(function (s) { return txt(s).toLowerCase().replace(/(^|[^A-Za-zÀ-ÿ'])([a-zà-ÿ])/g, function (m, p, c) { return p + c.toUpperCase(); }).replace(/([A-Za-zÀ-ÿ])'([a-z])/g, function (m, a, b) { return a + "'" + b.toUpperCase(); }); });
+		M.TRIM = T1(function (s) { return txt(s).replace(/ +/g, " ").trim(); });
+		M.CLEAN = T1(function (s) { return txt(s).replace(/[\x00-\x1f]/g, ""); });
+		M.LEFT = T1(function (s, n) { n = n === undefined ? 1 : num(n); if (isErr(n)) return n; if (n < 0) return VAL; return txt(s).slice(0, Math.floor(n)); });
+		M.RIGHT = T1(function (s, n) { n = n === undefined ? 1 : num(n); if (isErr(n)) return n; if (n < 0) return VAL; var t = txt(s); n = Math.floor(n); return n ? t.slice(-n) : ""; });
+		M.MID = T1(function (s, st, n) { st = num(st); n = num(n); if (firstErr(st, n)) return firstErr(st, n); if (st < 1 || n < 0) return VAL; return txt(s).substr(Math.floor(st) - 1, Math.floor(n)); });
+		M.REPT = T1(function (s, n) { n = num(n); if (isErr(n)) return n; if (n < 0) return VAL; var t = txt(s); if (t.length * n > 32767) return VAL; return new Array(Math.floor(n) + 1).join(t); });
+		M.EXACT = T1(function (a, b) { return txt(a) === txt(b); });
+		M.FIND = T1(function (f, s, st) { st = st === undefined ? 1 : num(st); if (isErr(st)) return st; var t = txt(s); if (st < 1 || st > t.length + 1) return VAL; var i = t.indexOf(txt(f), Math.floor(st) - 1); return i < 0 ? VAL : i + 1; });
+		M.SEARCH = T1(function (f, s, st) {
+			st = st === undefined ? 1 : num(st); if (isErr(st)) return st;
+			var t = txt(s), q = txt(f); if (st < 1 || st > t.length + 1) return VAL;
+			if (/[*?]/.test(q)) { var re = new RegExp(wild(q).source.slice(1, -1), "i"), sub = t.slice(Math.floor(st) - 1), m = re.exec(sub); return m ? m.index + Math.floor(st) : VAL; }
+			var i = t.toLowerCase().indexOf(q.toLowerCase(), Math.floor(st) - 1); return i < 0 ? VAL : i + 1;
+		});
+		M.SUBSTITUTE = T1(function (s, o, n, inst) {
+			var t = txt(s), a = txt(o), b = txt(n); if (a === "") return t;
+			if (inst === undefined) return t.split(a).join(b);
+			inst = num(inst); if (isErr(inst)) return inst; if (inst < 1) return VAL;
+			var i = -1; for (var k = 0; k < Math.floor(inst); k++) { i = t.indexOf(a, i + 1); if (i < 0) return t; }
+			return t.slice(0, i) + b + t.slice(i + a.length);
+		});
+		M.REPLACE = T1(function (s, st, n, nw) { st = num(st); n = num(n); if (firstErr(st, n)) return firstErr(st, n); if (st < 1 || n < 0) return VAL; var t = txt(s); return t.slice(0, Math.floor(st) - 1) + txt(nw) + t.slice(Math.floor(st) - 1 + Math.floor(n)); });
+		M.CHAR = T1(function (n) { n = num(n); if (isErr(n)) return n; n = Math.floor(n); if (n < 1 || n > 255) return VAL; return n < 128 ? String.fromCharCode(n) : new TextDecoder("windows-1252").decode(new Uint8Array([n])); });
+		M.UNICHAR = T1(function (n) { n = num(n); if (isErr(n)) return n; n = Math.floor(n); if (n < 1 || n > 0x10FFFF) return VAL; return String.fromCodePoint(n); });
+		M.CODE = T1(function (s) { var t = txt(s); return t ? t.charCodeAt(0) : VAL; });
+		M.UNICODE = T1(function (s) { var t = txt(s); return t ? t.codePointAt(0) : VAL; });
+		M.VALUE = T1(function (s) { if (typeof s === "number") return s; if (typeof s === "boolean") return VAL; var t = txt(s).trim(); if (t === "") return 0; var n = parseNumberText(t); if (n) return n.v; var d = X.dateText(t); return d != null ? d : VAL; });
+		M.NUMBERVALUE = T1(function (s, dec, grp) { var t = txt(s).replace(/\s/g, ""), d = dec === undefined ? "." : txt(dec), g = grp === undefined ? "," : txt(grp); if (g) t = t.split(g).join(""); if (d !== ".") t = t.split(d).join("."); var pct = 0; while (/%$/.test(t)) { pct++; t = t.slice(0, -1); } if (!/^[-+]?(\d+\.?\d*|\.\d+)([eE][-+]?\d+)?$/.test(t)) return VAL; return +t / Math.pow(100, pct); });
+		M.TEXT = T1(function (v, f) { var x = v; if (typeof x === "string") { var n = parseNumberText(x); if (n) x = n.v; else { var d = X.dateText(x); if (d != null) x = d; } } if (typeof x === "boolean") return txt(x); return textFormat(x, txt(f)); });
+		M.FIXED = T1(function (v, d, nc) { v = num(v); d = d === undefined ? 2 : num(d); if (firstErr(v, d)) return firstErr(v, d); var r = roundHalfAway(v, d), s = Math.abs(r).toFixed(Math.max(0, d)); if (!(nc !== undefined && bool(nc) === true)) s = s.replace(/^(\d+)/, function (m) { return m.replace(/\B(?=(\d{3})+(?!\d))/g, ","); }); return (r < 0 ? "-" : "") + s; });
+		M.DOLLAR = T1(function (v, d) { v = num(v); d = d === undefined ? 2 : num(d); if (firstErr(v, d)) return firstErr(v, d); var r = roundHalfAway(v, d), s = Math.abs(r).toFixed(Math.max(0, d)).replace(/^(\d+)/, function (m) { return m.replace(/\B(?=(\d{3})+(?!\d))/g, ","); }); return r < 0 ? "($" + s + ")" : "$" + s; });
+		M.CONCATENATE = function (a) { var s = ""; for (var i = 0; i < a.length; i++) { if (isMulti(a[i])) return lift(function () { return Array.prototype.map.call(arguments, txt).join(""); })(a); var t = txt(a[i]); if (isErr(t)) return t; s += t; } return s; };
+		M.CONCAT = function (a) { var s = "", e = null; a.forEach(function (x) { if (e) return; if (x instanceof Range || x instanceof Arr) x.each(function (v) { if (isErr(v)) { e = v; return false; } s += txt(v); }); else if (x !== undefined) { var t = txt(x); if (isErr(t)) e = t; else s += t; } }); return e || (s.length > 32767 ? VAL : s); };
+		M.TEXTJOIN = function (a) {
+			var d = arrOf(a[0]), ign = bool(scalar(a[1])); if (isErr(ign)) return ign;
+			var parts = [], e = null;
+			a.slice(2).forEach(function (x) { if (e) return; if (x instanceof Range || x instanceof Arr) x.each(function (v) { if (isErr(v)) { e = v; return false; } var t = txt(v); if (!(ign && t === "")) parts.push(t); }); else if (x !== undefined) { if (isErr(x)) { e = x; return; } var t = txt(x); if (!(ign && t === "")) parts.push(t); } });
+			if (e) return e;
+			var ds = []; d.each(function (v) { ds.push(txt(v)); }); if (!ds.length) ds = [""];
+			var out = ""; parts.forEach(function (p, i) { out += (i ? ds[(i - 1) % ds.length] : "") + p; });
+			return out.length > 32767 ? VAL : out;
+		};
+		function beforeAfter(after) {
+			return lift(function (s, dl, inst, mm, me, nf) {
+				var t = txt(s), d = txt(dl), n = inst === undefined ? 1 : num(inst), ci = mm !== undefined && num(mm) === 1, end = me !== undefined && num(me) === 1;
+				if (isErr(n)) return n; if (n === 0) return VAL;
+				var hay = ci ? t.toLowerCase() : t, nd = ci ? d.toLowerCase() : d, pos = -1;
+				if (n > 0) { var from = 0; for (var k = 0; k < n; k++) { pos = hay.indexOf(nd, from); if (pos < 0) break; from = pos + Math.max(1, nd.length); } if (pos < 0 && end && k === n - 1) pos = t.length; }
+				else { var from2 = hay.length; for (var k2 = 0; k2 < -n; k2++) { pos = hay.lastIndexOf(nd, from2); if (pos < 0) break; from2 = pos - 1; } if (pos < 0 && end && k2 === -n - 1) pos = 0; }
+				if (pos < 0) return nf === undefined ? NA : nf;
+				return after ? t.slice(pos + d.length) : t.slice(0, pos);
+			}, 1);
+		}
+		M.TEXTBEFORE = beforeAfter(false); M.TEXTAFTER = beforeAfter(true);
+		M.TEXTSPLIT = function (a) {
+			var t = txt(scalar(a[0])); if (isErr(t)) return t;
+			var cd = a[1] === undefined ? [] : flat([a[1]]).map(txt), rd = a[2] === undefined ? [] : flat([a[2]]).map(txt), ign = a[3] !== undefined && bool(scalar(a[3])) === true, pad = a[5] === undefined ? NA : scalar(a[5]);
+			var esc = function (s) { return s.replace(/[.*+?^${}()|[\]\\]/g, "\\$&"); };
+			var split = function (s, ds) { if (!ds.length) return [s]; var parts = s.split(new RegExp(ds.filter(Boolean).map(esc).join("|"))); return ign ? parts.filter(function (p) { return p !== ""; }) : parts; };
+			var rows = split(t, rd).map(function (r) { return split(r, cd); }), w = Math.max.apply(null, rows.map(function (r) { return r.length; }));
+			return new Arr(rows.map(function (r) { while (r.length < w) r.push(pad); return r; }));
+		};
+
+		/* ---------- dates and times ---------- */
+		M.DATE = lift(function (y, m, d) {
+			y = num(y); m = num(m); d = num(d); if (firstErr(y, m, d)) return firstErr(y, m, d);
+			y = Math.floor(y); m = Math.floor(m); d = Math.floor(d);
+			if (y < 1900) y += 1900; if (y < 1900 || y > 9999) return NUM;
+			var t = Date.UTC(y, m - 1, 1) + (d - 1) * 864e5, dt = new Date(t), s = fromYMD(dt.getUTCFullYear(), dt.getUTCMonth() + 1, dt.getUTCDate());
+			return s < 0 ? NUM : s;
+		});
+		M.TIME = lift(function (h, mi, s) { h = num(h); mi = num(mi); s = num(s); if (firstErr(h, mi, s)) return firstErr(h, mi, s); var t = (Math.floor(h) * 3600 + Math.floor(mi) * 60 + Math.floor(s)) / 86400; return t < 0 ? NUM : t - Math.floor(t); });
+		M.TODAY = function (a, ctx) { var d = new Date(ctx && ctx.now != null ? ctx.now : Date.now()); return fromYMD(d.getFullYear(), d.getMonth() + 1, d.getDate()); };
+		M.NOW = function (a, ctx) { var d = new Date(ctx && ctx.now != null ? ctx.now : Date.now()); return fromYMD(d.getFullYear(), d.getMonth() + 1, d.getDate()) + (d.getHours() * 3600 + d.getMinutes() * 60 + d.getSeconds()) / 86400; };
+		M.YEAR = lift(function (s) { s = serialArg(s); return isErr(s) ? s : ymd(Math.floor(s)).y; });
+		M.MONTH = lift(function (s) { s = serialArg(s); return isErr(s) ? s : ymd(Math.floor(s)).m; });
+		M.DAY = lift(function (s) { s = serialArg(s); return isErr(s) ? s : ymd(Math.floor(s)).d; });
+		M.HOUR = lift(function (s) { s = serialArg(s); return isErr(s) ? s : Math.floor(Math.round((s - Math.floor(s)) * 86400) / 3600) % 24; });
+		M.MINUTE = lift(function (s) { s = serialArg(s); return isErr(s) ? s : Math.floor(Math.round((s - Math.floor(s)) * 86400) % 3600 / 60); });
+		M.SECOND = lift(function (s) { s = serialArg(s); return isErr(s) ? s : Math.round((s - Math.floor(s)) * 86400) % 60; });
+		M.WEEKDAY = lift(function (s, t) {
+			s = serialArg(s); t = t === undefined ? 1 : num(t); if (firstErr(s, t)) return firstErr(s, t);
+			var w = wdOf(Math.floor(s));
+			if (t === 1 || t === 17) return w + 1; if (t === 2 || t === 11) return (w + 6) % 7 + 1; if (t === 3) return (w + 6) % 7;
+			if (t >= 12 && t <= 16) return (w - (t - 10) + 7) % 7 + 1;
+			return NUM;
+		});
+		M.WEEKNUM = lift(function (s, t) {
+			s = serialArg(s); t = t === undefined ? 1 : num(t); if (firstErr(s, t)) return firstErr(s, t);
+			if (t === 21) return M.ISOWEEKNUM([s]);
+			var start = { 1: 0, 17: 0, 2: 1, 11: 1, 12: 2, 13: 3, 14: 4, 15: 5, 16: 6 }[t]; if (start == null) return NUM;
+			var d = ymd(Math.floor(s)), jan1 = fromYMD(d.y, 1, 1), off = (wdOf(jan1) - start + 7) % 7;
+			return Math.floor((Math.floor(s) - jan1 + off) / 7) + 1;
+		});
+		M.ISOWEEKNUM = lift(function (s) { s = serialArg(s); if (isErr(s)) return s; var dt = toDate(Math.floor(s)), day = (dt.getUTCDay() + 6) % 7; dt.setUTCDate(dt.getUTCDate() - day + 3); var fy = new Date(Date.UTC(dt.getUTCFullYear(), 0, 4)); return 1 + Math.round(((dt - fy) / 864e5 - 3 + ((fy.getUTCDay() + 6) % 7)) / 7); });
+		M.EOMONTH = lift(function (s, m) { s = serialArg(s); m = num(m); if (firstErr(s, m)) return firstErr(s, m); var d = ymd(Math.floor(s)), mo = d.m + Math.trunc(m), y = d.y + Math.floor((mo - 1) / 12); mo = ((mo - 1) % 12 + 12) % 12 + 1; return fromYMD(y, mo, lastDay(y, mo)); });
+		M.EDATE = lift(function (s, m) { s = serialArg(s); m = num(m); if (firstErr(s, m)) return firstErr(s, m); return addMonths(s, Math.trunc(m)); });
+		M.DAYS = lift(function (b, a) { b = num(b); a = num(a); if (firstErr(a, b)) return firstErr(a, b); return Math.floor(b) - Math.floor(a); });
+		M.DAYS360 = lift(function (a, b, m) { a = num(a); b = num(b); if (firstErr(a, b)) return firstErr(a, b); return days360(Math.floor(a), Math.floor(b), m !== undefined && bool(m) === true); });
+		M.DATEVALUE = T1(function (s) { var d = X.dateText(txt(s)); return d == null ? VAL : Math.floor(d); });
+		M.TIMEVALUE = T1(function (s) { var t = txt(s).trim(), d = X.timeText(t); if (d == null) { var dd = X.dateText(t); if (dd == null) return VAL; d = dd - Math.floor(dd); } return d; });
+		M.NETWORKDAYS = function (a) { var s = num(scalar(a[0])), e = num(scalar(a[1])); if (firstErr(s, e)) return firstErr(s, e); return networkdays(s, e, holidaySet(a[2]), weekendMask(1)); };
+		M["NETWORKDAYS.INTL"] = function (a) { var s = num(scalar(a[0])), e = num(scalar(a[1])); if (firstErr(s, e)) return firstErr(s, e); var w = weekendMask(a[2] === undefined ? 1 : scalar(a[2])); if (!w) return NUM; return networkdays(s, e, holidaySet(a[3]), w); };
+		M.WORKDAY = function (a) { var s = num(scalar(a[0])), d = num(scalar(a[1])); if (firstErr(s, d)) return firstErr(s, d); return workday(s, d, holidaySet(a[2]), weekendMask(1)); };
+		M["WORKDAY.INTL"] = function (a) { var s = num(scalar(a[0])), d = num(scalar(a[1])); if (firstErr(s, d)) return firstErr(s, d); var w = weekendMask(a[2] === undefined ? 1 : scalar(a[2])); if (!w) return NUM; return workday(s, d, holidaySet(a[3]), w); };
+		M.DATEDIF = lift(function (a, b, u) {
+			a = num(a); b = num(b); if (firstErr(a, b)) return firstErr(a, b); a = Math.floor(a); b = Math.floor(b); if (b < a) return NUM;
+			var A = ymd(a), B = ymd(b), unit = txt(u).toUpperCase();
+			var months = (B.y - A.y) * 12 + B.m - A.m - (B.d < A.d ? 1 : 0);
+			if (unit === "D") return b - a; if (unit === "M") return months; if (unit === "Y") return Math.floor(months / 12);
+			if (unit === "YM") return months % 12;
+			if (unit === "MD") { var pm = B.m - 1, py = B.y; if (pm < 1) { pm = 12; py--; } return B.d >= A.d ? B.d - A.d : (lastDay(py, pm) - A.d + B.d < 0 ? 0 : Math.max(0, lastDay(py, pm) - A.d) + B.d); }
+			if (unit === "YD") { var y2 = B.m > A.m || (B.m === A.m && B.d >= A.d) ? B.y : B.y - 1; return b - fromYMD(y2, A.m, Math.min(A.d, lastDay(y2, A.m))); }
+			return NUM;
+		});
+		M.YEARFRAC = lift(function (a, b, basis) {
+			a = num(a); b = num(b); basis = basis === undefined ? 0 : Math.floor(num(basis)); if (firstErr(a, b, basis)) return firstErr(a, b, basis);
+			a = Math.floor(a); b = Math.floor(b); if (a > b) { var t = a; a = b; b = t; }
+			if (basis === 0) return days360(a, b, false) / 360;
+			if (basis === 2) return (b - a) / 360; if (basis === 3) return (b - a) / 365; if (basis === 4) return days360(a, b, true) / 360;
+			if (basis === 1) {
+				var A = ymd(a), B = ymd(b);
+				if (A.y === B.y) return (b - a) / (isLeap(A.y) ? 366 : 365);
+				var oneYear = B.y === A.y + 1 && (B.m < A.m || (B.m === A.m && B.d <= A.d));
+				if (oneYear) { var leap = (isLeap(A.y) && (A.m < 3)) || (isLeap(B.y) && (B.m > 2 || (B.m === 2 && B.d === 29))); return (b - a) / (leap ? 366 : 365); }
+				var total = 0; for (var y = A.y; y <= B.y; y++) total += isLeap(y) ? 366 : 365;
+				return (b - a) / (total / (B.y - A.y + 1));
+			}
+			return NUM;
+		});
+
+		/* ---------- financial ---------- */
+		function pmt(r, n, pv, fv, t) { if (r === 0) return -(pv + fv) / n; var q = Math.pow(1 + r, n); return -(r * (fv + pv * q)) / ((1 + r * t) * (q - 1)); }
+		function fvf(r, n, p, pv, t) { if (r === 0) return -(pv + p * n); var q = Math.pow(1 + r, n); return -(pv * q + p * (1 + r * t) * (q - 1) / r); }
+		function pvf(r, n, p, fv, t) { if (r === 0) return -(fv + p * n); var q = Math.pow(1 + r, n); return -(fv + p * (1 + r * t) * (q - 1) / r) / q; }
+		function ipmt(r, per, n, pv, fv, t) { var p = pmt(r, n, pv, fv, t), i; if (per === 1) i = t === 1 ? 0 : -pv; else i = t === 1 ? fvf(r, per - 2, p, pv, 1) - p : fvf(r, per - 1, p, pv, 0); return i * r; }
+		function fin(fn, req) { return lift(function () { var a = []; for (var i = 0; i < arguments.length; i++) { if (arguments[i] === undefined) { a.push(undefined); continue; } var v = num(arguments[i]); if (isErr(v)) return v; a.push(v); } if (a.length < req) return VAL; var r = fn.apply(null, a); return typeof r === "number" && !isFinite(r) ? NUM : r; }); }
+		M.PMT = fin(function (r, n, pv, fv, t) { return n === 0 ? NUM : pmt(r, n, pv, fv || 0, t ? 1 : 0); }, 3);
+		M.FV = fin(function (r, n, p, pv, t) { return fvf(r, n, p, pv || 0, t ? 1 : 0); }, 3);
+		M.PV = fin(function (r, n, p, fv, t) { return pvf(r, n, p, fv || 0, t ? 1 : 0); }, 3);
+		M.NPER = fin(function (r, p, pv, fv, t) { fv = fv || 0; t = t ? 1 : 0; if (r === 0) return p === 0 ? NUM : -(pv + fv) / p; var a = p * (1 + r * t) - fv * r, b = pv * r + p * (1 + r * t); if (a / b <= 0) return NUM; return Math.log(a / b) / Math.log(1 + r); }, 3);
+		M.IPMT = fin(function (r, per, n, pv, fv, t) { t = t ? 1 : 0; if (per < 1 || per > n) return NUM; return ipmt(r, per, n, pv, fv || 0, t); }, 4);
+		M.PPMT = fin(function (r, per, n, pv, fv, t) { t = t ? 1 : 0; fv = fv || 0; if (per < 1 || per > n) return NUM; return pmt(r, n, pv, fv, t) - ipmt(r, per, n, pv, fv, t); }, 4);
+		M.RATE = fin(function (n, p, pv, fv, t, g) {
+			fv = fv || 0; t = t ? 1 : 0; var r = g === undefined ? 0.1 : g;
+			for (var i = 0; i < 100; i++) {
+				var f = r === 0 ? pv + p * n + fv : pv * Math.pow(1 + r, n) + p * (1 + r * t) * (Math.pow(1 + r, n) - 1) / r + fv;
+				var h = 1e-7 * Math.max(1, Math.abs(r)), r2 = r + h, f2 = r2 === 0 ? pv + p * n + fv : pv * Math.pow(1 + r2, n) + p * (1 + r2 * t) * (Math.pow(1 + r2, n) - 1) / r2 + fv;
+				var d = (f2 - f) / h; if (!d || !isFinite(d)) return NUM;
+				var nr = r - f / d; if (!isFinite(nr)) return NUM;
+				if (Math.abs(nr - r) < 1e-10) return nr;
+				r = nr; if (r <= -1) r = -0.999999;
+			}
+			return NUM;
+		}, 3);
+		M.NPV = function (a) { var r = num(scalar(a[0])); if (isErr(r)) return r; var n = nums(a.slice(1)); if (isErr(n)) return n; var s = 0; n.forEach(function (v, i) { s += v / Math.pow(1 + r, i + 1); }); return s; };
+		function irr(vals, guess) {
+			var npv = function (r) { var s = 0; for (var i = 0; i < vals.length; i++) s += vals[i] / Math.pow(1 + r, i); return s; };
+			var dnpv = function (r) { var s = 0; for (var i = 1; i < vals.length; i++) s -= i * vals[i] / Math.pow(1 + r, i + 1); return s; };
+			var r = guess;
+			for (var k = 0; k < 100; k++) { var f = npv(r), d = dnpv(r); if (!d) break; var nr = r - f / d; if (!isFinite(nr)) break; if (Math.abs(nr - r) < 1e-12) return nr; r = nr <= -1 ? (r - 1) / 2 : nr; }
+			var lo = -0.9999, hi = 10, flo = npv(lo), fhi = npv(hi); if (flo * fhi > 0) return NUM;
+			for (var j = 0; j < 300; j++) { var mid = (lo + hi) / 2, fm = npv(mid); if (Math.abs(fm) < 1e-10) return mid; if (fm * flo < 0) { hi = mid; } else { lo = mid; flo = fm; } }
+			return (lo + hi) / 2;
+		}
+		M.IRR = function (a) { var n = nums([a[0]]); if (isErr(n)) return n; var g = a[1] === undefined ? 0.1 : num(scalar(a[1])); if (!n.some(function (v) { return v > 0; }) || !n.some(function (v) { return v < 0; })) return NUM; return irr(n, g); };
+		function xnpv(r, v, d) { var s = 0; for (var i = 0; i < v.length; i++) s += v[i] / Math.pow(1 + r, (d[i] - d[0]) / 365); return s; }
+		M.XNPV = function (a) { var r = num(scalar(a[0])), v = nums([a[1]]), d = nums([a[2]]); if (firstErr(r, v, d)) return firstErr(r, v, d); if (v.length !== d.length) return NUM; return xnpv(r, v, d.map(Math.floor)); };
+		M.XIRR = function (a) {
+			var v = nums([a[0]]), d = nums([a[1]]); if (firstErr(v, d)) return firstErr(v, d); if (v.length !== d.length) return NUM; d = d.map(Math.floor);
+			var r = a[2] === undefined ? 0.1 : num(scalar(a[2]));
+			for (var k = 0; k < 100; k++) { var f = xnpv(r, v, d), h = 1e-7, df = (xnpv(r + h, v, d) - f) / h; if (!df) break; var nr = r - f / df; if (Math.abs(nr - r) < 1e-12) return nr; r = nr <= -1 ? -0.99 : nr; }
+			return NUM;
+		};
+		M.SLN = fin(function (c, s, l) { return l === 0 ? DIV : (c - s) / l; }, 3);
+		M.SYD = fin(function (c, s, l, p) { return l === 0 ? DIV : (c - s) * (l - p + 1) * 2 / (l * (l + 1)); }, 4);
+		M.DDB = fin(function (c, s, l, p, f) { f = f === undefined ? 2 : f; var v = c, d = 0; for (var i = 1; i <= p; i++) { d = Math.min(v * f / l, Math.max(0, v - s)); v -= d; } return d; }, 4);
+		M.EFFECT = fin(function (r, n) { n = Math.floor(n); if (r <= 0 || n < 1) return NUM; return Math.pow(1 + r / n, n) - 1; }, 2);
+		M.NOMINAL = fin(function (r, n) { n = Math.floor(n); if (r <= 0 || n < 1) return NUM; return n * (Math.pow(1 + r, 1 / n) - 1); }, 2);
+		M.RRI = fin(function (n, pv, fv) { if (n <= 0) return NUM; return Math.pow(fv / pv, 1 / n) - 1; }, 3);
+		M.CUMIPMT = fin(function (r, n, pv, s, e, t) { var x = 0; for (var p = Math.ceil(s); p <= Math.floor(e); p++) x += ipmt(r, p, n, pv, 0, t ? 1 : 0); return x; }, 6);
+		M.CUMPRINC = fin(function (r, n, pv, s, e, t) { var x = 0, P = pmt(r, n, pv, 0, t ? 1 : 0); for (var p = Math.ceil(s); p <= Math.floor(e); p++) x += P - ipmt(r, p, n, pv, 0, t ? 1 : 0); return x; }, 6);
+
+		/* ---------- lookup and reference ---------- */
+		function lookCmp(a, b) { return compare(a, b); }
+		function eqLook(needle, wildOk) {
+			if (typeof needle === "string" && wildOk && /[*?~]/.test(needle)) { var re = wild(needle); return function (v) { return typeof v === "string" && re.test(v); }; }
+			return function (v) { if (v == null) v = typeof needle === "string" ? null : v; return v != null && typeRank0(v) === typeRank0(needle) && lookCmp(v, needle) === 0; };
+		}
+		function typeRank0(x) { return typeof x === "number" ? 0 : typeof x === "string" ? 1 : typeof x === "boolean" ? 2 : 3; }
+		function vector(x) { var a = arrOf(x); if (a.h === 1) return a.rows[0].slice(); if (a.w === 1) return a.rows.map(function (r) { return r[0]; }); return null; }
+		// sorted (approximate) search like Excel: the last position whose value is <= needle (asc) / >= needle (desc), same type only
+		function approx(vals, needle, desc) {
+			var lo = 0, hi = vals.length - 1, best = -1, t = typeRank0(needle);
+			while (lo <= hi) {
+				var mid = (lo + hi) >> 1, v = vals[mid], m2 = mid;
+				while (m2 >= lo && (v == null || typeRank0(v) !== t)) { m2--; v = vals[m2]; }
+				if (m2 < lo) { lo = mid + 1; continue; }
+				var c = lookCmp(v, needle);
+				if (desc ? c >= 0 : c <= 0) { best = m2; lo = mid + 1; } else hi = m2 - 1;
+			}
+			return best;
+		}
+		function findIn(vals, needle, mode, search) {   // XLOOKUP / XMATCH: mode 0 exact, -1 exact or next smaller, 1 exact or next larger, 2 wildcard
+			var n = vals.length, order = [];
+			if (search === 2 || search === -2) {
+				var asc = search === 2, lo = 0, hi = n - 1, hit = -1;
+				while (lo <= hi) { var mid = (lo + hi) >> 1, c = lookCmp(vals[mid], needle); if (c === 0) { hit = mid; if (asc) hi = mid - 1; else lo = mid + 1; } else if (asc ? c < 0 : c > 0) lo = mid + 1; else hi = mid - 1; }
+				if (hit >= 0 || mode === 0 || mode === 2) return hit;
+				// next smaller / larger in a sorted list
+				var cand = -1; for (var q = 0; q < n; q++) { var v = vals[q]; if (v == null || typeRank0(v) !== typeRank0(needle)) continue; var cc = lookCmp(v, needle); if ((mode === -1 && cc < 0 && (cand < 0 || lookCmp(v, vals[cand]) > 0)) || (mode === 1 && cc > 0 && (cand < 0 || lookCmp(v, vals[cand]) < 0))) cand = q; } return cand;
+			}
+			for (var i = 0; i < n; i++) order.push(search === -1 ? n - 1 - i : i);
+			var eq = eqLook(needle, mode === 2), best = -1;
+			for (var k = 0; k < n; k++) { var j = order[k], x = vals[j]; if (eq(x)) return j; if (mode === -1 || mode === 1) { if (x == null || typeRank0(x) !== typeRank0(needle)) continue; var c2 = lookCmp(x, needle); if ((mode === -1 && c2 < 0 && (best < 0 || lookCmp(x, vals[best]) > 0)) || (mode === 1 && c2 > 0 && (best < 0 || lookCmp(x, vals[best]) < 0))) best = j; } }
+			return best;
+		}
+		function sliceOf(x, i, byRow) {   // row i (byRow) or column i of x, as a Range when x is one
+			if (x instanceof Range) { var g = x.g, B = x.box(); return byRow ? new Range(x.sheet, { s: { r: g.s.r + i, c: g.s.c }, e: { r: g.s.r + i, c: B.c2 } }, x.ctx) : new Range(x.sheet, { s: { r: g.s.r, c: g.s.c + i }, e: { r: B.r2, c: g.s.c + i } }, x.ctx); }
+			var a = arrOf(x); return byRow ? new Arr([a.rows[i]]) : new Arr(a.rows.map(function (r) { return [r[i]]; }));
+		}
+		function cellOf(x, i, j) { if (x instanceof Range) return new Range(x.sheet, { s: { r: x.g.s.r + i, c: x.g.s.c + j }, e: { r: x.g.s.r + i, c: x.g.s.c + j } }, x.ctx); var a = arrOf(x); return i < a.h && j < a.w ? a.rows[i][j] : REF; }
+		function lookupRV(horiz) {
+			return lift(function (needle, table, idx, rl) {
+				if (isErr(needle)) return needle;
+				idx = num(idx); if (isErr(idx)) return idx;
+				var exact = rl !== undefined && rl !== null && !(bool(rl) === true), t = arrOf(table);
+				if (idx < 1) return VAL;
+				var keys = horiz ? t.rows[0] : t.rows.map(function (r) { return r[0]; }), lim = horiz ? t.h : t.w;
+				if (Math.floor(idx) > lim) return REF;
+				var pos = exact ? findIn(keys, needle, 2, 1) : approx(keys, needle, false);
+				if (pos < 0) return NA;
+				var v = horiz ? t.rows[Math.floor(idx) - 1][pos] : t.rows[pos][Math.floor(idx) - 1];
+				return v == null ? 0 : v;
+			}, 1);
+		}
+		M.VLOOKUP = lookupRV(false); M.HLOOKUP = lookupRV(true);
+		M.LOOKUP = function (a) {
+			var needle = scalar(a[0]); if (isErr(needle)) return needle;
+			var lv = vector(a[0 + 1]), rv = a[2] !== undefined ? vector(a[2]) : null;
+			if (!lv) { var t = arrOf(a[1]); var horiz = t.w > t.h; lv = horiz ? t.rows[0] : t.rows.map(function (r) { return r[0]; }); rv = horiz ? t.rows[t.h - 1] : t.rows.map(function (r) { return r[t.w - 1]; }); }
+			var pos = approx(lv, needle, false); if (pos < 0) return NA;
+			var out = (rv || lv)[pos]; return out == null ? 0 : out;
+		};
+		M.MATCH = lift(function (needle, arr, type) {
+			if (isErr(needle)) return needle;
+			var t = type === undefined ? 1 : num(type), v = vector(arr); if (!v) return NA; if (isErr(t)) return t;
+			var pos = t === 0 ? findIn(v, needle, 2, 1) : approx(v, needle, t < 0);
+			return pos < 0 ? NA : pos + 1;
+		}, 1);
+		M.XMATCH = lift(function (needle, arr, mode, search) {
+			if (isErr(needle)) return needle;
+			var v = vector(arr); if (!v) return VAL;
+			var m = mode === undefined ? 0 : num(mode), s = search === undefined ? 1 : num(search);
+			var pos = findIn(v, needle, m, s); return pos < 0 ? NA : pos + 1;
+		}, 1);
+		M.XLOOKUP = function (a) {
+			var la = a[1], ra = a[2], nf = a[3], mode = a[4] === undefined ? 0 : num(scalar(a[4])), search = a[5] === undefined ? 1 : num(scalar(a[5]));
+			var D = dimsOf(la), byRow = D.h === 1 && D.w > 1, keys = vector(la); if (!keys) return VAL;
+			var one = function (needle) {
+				if (isErr(needle)) return needle;
+				var pos = findIn(keys, needle, mode, search);
+				if (pos < 0) return nf === undefined ? NA : scalar(nf);
+				var R = dimsOf(ra);
+				if (byRow ? R.w !== keys.length : R.h !== keys.length) return VAL;
+				return byRow ? sliceOf(ra, pos, false) : sliceOf(ra, pos, true);
+			};
+			if (isMulti(a[0])) return mapArr(toArr(a[0]), function (v) { var r = one(v); return r instanceof Range || r instanceof Arr ? scalar(r) : r; });
+			var r = one(scalar(a[0]));
+			if (r instanceof Range && r.isCell()) return r;
+			return r;
+		};
+		M.INDEX = function (a) {
+			var x = a[0], D = dimsOf(x), r = a[1] === undefined ? 0 : num(scalar(a[1])), c = a[2] === undefined ? (D.h === 1 && a[1] !== undefined ? null : 0) : num(scalar(a[2]));
+			if (firstErr(r, c)) return firstErr(r, c);
+			if (c === null) { c = r; r = 1; }
+			if (D.w === 1 && a[2] === undefined) c = 1;
+			r = Math.floor(r); c = Math.floor(c);
+			if (r < 0 || c < 0) return VAL;
+			if (x instanceof Range) { if (r > x.g.e.r - x.g.s.r + 1 || c > x.g.e.c - x.g.s.c + 1) return REF; }
+			else if (r > D.h || c > D.w) return REF;
+			if (r === 0 && c === 0) return x;
+			if (r === 0) return sliceOf(x, c - 1, false);
+			if (c === 0) return sliceOf(x, r - 1, true);
+			return cellOf(x, r - 1, c - 1);
+		};
+		M.ROW = function (a, ctx) { var x = a[0]; if (x === undefined) return ctx.cur ? ctx.cur.r + 1 : VAL; if (!(x instanceof Range)) return VAL; if (x.g.s.r === x.g.e.r || !ctx.dyn) return x.g.s.r + 1; var rows = []; for (var r = x.g.s.r; r <= x.g.e.r; r++) rows.push([r + 1]); return new Arr(rows); };
+		M.COLUMN = function (a, ctx) { var x = a[0]; if (x === undefined) return ctx.cur ? ctx.cur.c + 1 : VAL; if (!(x instanceof Range)) return VAL; if (x.g.s.c === x.g.e.c || !ctx.dyn) return x.g.s.c + 1; var row = []; for (var c = x.g.s.c; c <= x.g.e.c; c++) row.push(c + 1); return new Arr([row]); };
+		M.ROWS = function (a) { var x = a[0]; if (x instanceof Range) return x.g.e.r - x.g.s.r + 1; if (x instanceof Arr) return x.h; return isErr(x) ? x : 1; };
+		M.COLUMNS = function (a) { var x = a[0]; if (x instanceof Range) return x.g.e.c - x.g.s.c + 1; if (x instanceof Arr) return x.w; return isErr(x) ? x : 1; };
+		M.OFFSET = function (a) {
+			var x = a[0]; if (!(x instanceof Range)) return VAL;
+			var dr = num(scalar(a[1])), dc = num(scalar(a[2])), h = a[3] === undefined ? x.g.e.r - x.g.s.r + 1 : num(scalar(a[3])), w = a[4] === undefined ? x.g.e.c - x.g.s.c + 1 : num(scalar(a[4]));
+			if (firstErr(dr, dc, h, w)) return firstErr(dr, dc, h, w);
+			h = Math.floor(h); w = Math.floor(w); if (h === 0 || w === 0) return REF;
+			var r1 = x.g.s.r + Math.floor(dr), c1 = x.g.s.c + Math.floor(dc), r2 = r1 + h - (h > 0 ? 1 : -1), c2 = c1 + w - (w > 0 ? 1 : -1);
+			var g = { s: { r: Math.min(r1, r2), c: Math.min(c1, c2) }, e: { r: Math.max(r1, r2), c: Math.max(c1, c2) } };
+			if (g.s.r < 0 || g.s.c < 0 || g.e.r >= X.MAXR || g.e.c >= X.MAXC) return REF;
+			return new Range(x.sheet, g, x.ctx);
+		};
+		M.INDIRECT = function (a, ctx) {
+			var t = txt(scalar(a[0])); if (isErr(t)) return t;
+			var a1 = a[1] === undefined || bool(scalar(a[1])) === true;
+			t = t.trim();
+			var sheet = ctx.sheet, m = /^(?:'((?:[^']|'')+)'|([^!]+))!(.+)$/.exec(t);
+			if (m) { sheet = m[1] != null ? m[1].replace(/''/g, "'") : m[2]; t = m[3]; }
+			if (ctx.hasSheet && !ctx.hasSheet(sheet)) return REF;
+			var g = null;
+			if (a1) g = X.parseRange(t.replace(/\$/g, ""));
+			else { var rc = /^R(\d+)C(\d+)(?::R(\d+)C(\d+))?$/i.exec(t); if (rc) g = { s: { r: +rc[1] - 1, c: +rc[2] - 1 }, e: { r: +(rc[3] || rc[1]) - 1, c: +(rc[4] || rc[2]) - 1 } }; }
+			if (!g && a1 && ctx.name) { var nv = ctx.name(t, ctx); if (nv instanceof Range) return nv; }
+			if (!g && a1 && ctx.sref) { var mm = /^([A-Za-z_][\w.]*)\[(.*)\]$/.exec(t); if (mm) { var sr = ctx.sref(mm[1], mm[2], ctx); if (sr) return new Range(sr.sheet, sr.g, ctx); } }
+			return g ? new Range(sheet, g, ctx) : REF;
+		};
+		M.ADDRESS = lift(function (r, c, abs, a1, sh) {
+			r = num(r); c = num(c); abs = abs === undefined ? 1 : num(abs); if (firstErr(r, c, abs)) return firstErr(r, c, abs);
+			r = Math.floor(r); c = Math.floor(c); if (r < 1 || c < 1) return VAL;
+			var style = a1 === undefined || bool(a1) === true, out;
+			if (style) out = (abs === 1 || abs === 3 ? "$" : "") + X.colName(c - 1) + (abs === 1 || abs === 2 ? "$" : "") + r;
+			else out = "R" + (abs === 1 || abs === 2 ? r : "[" + r + "]") + "C" + (abs === 1 || abs === 3 ? c : "[" + c + "]");
+			if (sh !== undefined && sh !== null) { var s = txt(sh); out = (/^[A-Za-z_][\w.]*$/.test(s) ? s : "'" + s.replace(/'/g, "''") + "'") + "!" + out; }
+			return out;
+		});
+		M.TRANSPOSE = function (a) { var x = arrOf(a[0]), rows = []; for (var j = 0; j < x.w; j++) { var row = []; for (var i = 0; i < x.h; i++) row.push(x.rows[i][j]); rows.push(row); } return new Arr(rows); };
+		M.SINGLE = function (a, ctx) { var x = a[0]; return x instanceof Range && !x.isCell() ? scalar(x) : x instanceof Arr ? scalar(x) : x; };
+		M.ANCHORARRAY = function (a, ctx) { var x = a[0]; if (!(x instanceof Range)) return REF; var g = ctx.spillRange ? ctx.spillRange(x.sheet, x.g.s.r, x.g.s.c) : null; return g ? new Range(x.sheet, g, x.ctx) : REF; };
+
+		/* ---------- dynamic arrays ---------- */
+		function rowsOf(a, byCol) { return byCol ? a.rows[0].map(function (_, j) { return a.rows.map(function (r) { return r[j]; }); }) : a.rows.map(function (r) { return r.slice(); }); }
+		function fromRows(list, byCol) { if (!byCol) return new Arr(list); var rows = []; for (var i = 0; i < (list[0] || []).length; i++) rows.push(list.map(function (c) { return c[i]; })); return new Arr(rows); }
+		function keyOf(r) { return r.map(function (v) { return v == null ? "\u0000" : isErr(v) ? "#" + v.code : typeof v === "string" ? "s" + v.toLowerCase() : typeof v + String(v); }).join("\u0001"); }
+		M.UNIQUE = function (a) {
+			var x = arrOf(a[0]), byCol = a[1] !== undefined && bool(scalar(a[1])) === true, once = a[2] !== undefined && bool(scalar(a[2])) === true;
+			var list = rowsOf(x, byCol), cnt = {}, first = [];
+			list.forEach(function (r) { var k = keyOf(r); if (!(k in cnt)) { cnt[k] = 0; first.push(r); } cnt[k]++; });
+			var out = first.filter(function (r) { return !once || cnt[keyOf(r)] === 1; });
+			return out.length ? fromRows(out, byCol) : E["#CALC!"];
+		};
+		function sortCmp(a, b) { var ea = a == null, eb = b == null; if (ea || eb) return ea === eb ? 0 : ea ? 1 : -1; if (isErr(a) || isErr(b)) return isErr(a) === isErr(b) ? 0 : isErr(a) ? 1 : -1; return compare(a, b); }
+		M.SORT = function (a) {
+			var x = arrOf(a[0]), idx = a[1] === undefined ? [1] : flat([a[1]]).map(function (v) { return num(v); }), ord = a[2] === undefined ? [1] : flat([a[2]]).map(function (v) { return num(v); }), byCol = a[3] !== undefined && bool(scalar(a[3])) === true;
+			var list = rowsOf(x, byCol), w = list[0] ? list[0].length : 0;
+			for (var i = 0; i < idx.length; i++) if (isErr(idx[i]) || idx[i] < 1 || idx[i] > w) return VAL;
+			var keyed = list.map(function (r, i) { return { r: r, i: i }; });
+			keyed.sort(function (p, q) { for (var k = 0; k < idx.length; k++) { var o = ord[k] != null ? ord[k] : ord[0], c = sortCmp(p.r[idx[k] - 1], q.r[idx[k] - 1]); if (c) return o < 0 ? -c : c; } return p.i - q.i; });
+			return fromRows(keyed.map(function (k) { return k.r; }), byCol);
+		};
+		M.SORTBY = function (a) {
+			var x = arrOf(a[0]), list = x.rows.map(function (r, i) { return { r: r, i: i }; }), keys = [];
+			for (var i = 1; i < a.length; i += 2) { var by = arrOf(a[i]), o = a[i + 1] === undefined ? 1 : num(scalar(a[i + 1])); if (by.h !== x.h && by.w === x.h && by.h === 1) by = new Arr(by.rows[0].map(function (v) { return [v]; })); if (by.h !== x.h) return VAL; keys.push({ v: by.rows.map(function (r) { return r[0]; }), o: o }); }
+			list.sort(function (p, q) { for (var k = 0; k < keys.length; k++) { var c = sortCmp(keys[k].v[p.i], keys[k].v[q.i]); if (c) return keys[k].o < 0 ? -c : c; } return p.i - q.i; });
+			return new Arr(list.map(function (p) { return p.r; }));
+		};
+		M.FILTER = function (a) {
+			var x = arrOf(a[0]), inc = arrOf(a[1]), out;
+			if (inc.w === 1 && inc.h === x.h) { out = []; for (var i = 0; i < x.h; i++) { var v = inc.rows[i][0]; if (isErr(v)) return v; if (bool(v) === true) out.push(x.rows[i]); } if (!out.length) return a[2] === undefined ? E["#CALC!"] : a[2]; return new Arr(out); }
+			if (inc.h === 1 && inc.w === x.w) { var keep = []; for (var j = 0; j < x.w; j++) { var v2 = inc.rows[0][j]; if (isErr(v2)) return v2; if (bool(v2) === true) keep.push(j); } if (!keep.length) return a[2] === undefined ? E["#CALC!"] : a[2]; return new Arr(x.rows.map(function (r) { return keep.map(function (j2) { return r[j2]; }); })); }
+			return VAL;
+		};
+		M.SEQUENCE = function (a) {
+			var r = num(scalar(a[0])), c = a[1] === undefined ? 1 : num(scalar(a[1])), s = a[2] === undefined ? 1 : num(scalar(a[2])), st = a[3] === undefined ? 1 : num(scalar(a[3]));
+			if (firstErr(r, c, s, st)) return firstErr(r, c, s, st);
+			r = Math.floor(r); c = Math.floor(c); if (r < 1 || c < 1) return E["#CALC!"]; if (r * c > 1e6) return NUM;
+			var rows = []; for (var i = 0; i < r; i++) { var row = []; for (var j = 0; j < c; j++) row.push(s + (i * c + j) * st); rows.push(row); }
+			return new Arr(rows);
+		};
+		M.RANDARRAY = function (a) {
+			var r = a[0] === undefined ? 1 : num(scalar(a[0])), c = a[1] === undefined ? 1 : num(scalar(a[1])), lo = a[2] === undefined ? 0 : num(scalar(a[2])), hi = a[3] === undefined ? 1 : num(scalar(a[3])), whole = a[4] !== undefined && bool(scalar(a[4])) === true;
+			if (firstErr(r, c, lo, hi)) return firstErr(r, c, lo, hi); if (hi < lo) return VAL; if (r * c > 1e6) return NUM;
+			var rows = []; for (var i = 0; i < r; i++) { var row = []; for (var j = 0; j < c; j++) row.push(whole ? Math.ceil(lo) + Math.floor(Math.random() * (Math.floor(hi) - Math.ceil(lo) + 1)) : lo + Math.random() * (hi - lo)); rows.push(row); }
+			return new Arr(rows);
+		};
+		function stack(a, horiz) {
+			var parts = a.filter(function (x) { return x !== undefined; }).map(arrOf), rows = [];
+			if (horiz) { var h = Math.max.apply(null, parts.map(function (p) { return p.h; })); for (var i = 0; i < h; i++) { var row = []; parts.forEach(function (p) { for (var j = 0; j < p.w; j++) row.push(i < p.h ? p.rows[i][j] : NA); }); rows.push(row); } }
+			else { var w = Math.max.apply(null, parts.map(function (p) { return p.w; })); parts.forEach(function (p) { p.rows.forEach(function (r) { var row = r.slice(); while (row.length < w) row.push(NA); rows.push(row); }); }); }
+			return new Arr(rows);
+		}
+		M.HSTACK = function (a) { return stack(a, true); }; M.VSTACK = function (a) { return stack(a, false); };
+		function takeDrop(drop) {
+			return function (a) {
+				var x = arrOf(a[0]), r = a[1] === undefined ? null : num(scalar(a[1])), c = a[2] === undefined ? null : num(scalar(a[2])); if (firstErr(r, c)) return firstErr(r, c);
+				var rs = 0, re = x.h, cs = 0, ce = x.w;
+				if (r != null) { r = Math.trunc(r); if (drop) { if (r >= 0) rs = Math.min(x.h, r); else re = Math.max(0, x.h + r); } else { if (r >= 0) re = Math.min(x.h, r); else rs = Math.max(0, x.h + r); } }
+				if (c != null) { c = Math.trunc(c); if (drop) { if (c >= 0) cs = Math.min(x.w, c); else ce = Math.max(0, x.w + c); } else { if (c >= 0) ce = Math.min(x.w, c); else cs = Math.max(0, x.w + c); } }
+				if (re <= rs || ce <= cs) return E["#CALC!"];
+				return new Arr(x.rows.slice(rs, re).map(function (row) { return row.slice(cs, ce); }));
+			};
+		}
+		M.TAKE = takeDrop(false); M.DROP = takeDrop(true);
+		function choose(cols) {
+			return function (a) {
+				var x = arrOf(a[0]), n = cols ? x.w : x.h, idx = flat(a.slice(1)).map(function (v) { return num(v); }), out = [];
+				for (var i = 0; i < idx.length; i++) { if (isErr(idx[i])) return idx[i]; var k = Math.trunc(idx[i]); if (k < 0) k = n + k + 1; if (k < 1 || k > n) return VAL; out.push(k - 1); }
+				return cols ? new Arr(x.rows.map(function (r) { return out.map(function (k) { return r[k]; }); })) : new Arr(out.map(function (k) { return x.rows[k].slice(); }));
+			};
+		}
+		M.CHOOSECOLS = choose(true); M.CHOOSEROWS = choose(false);
+		M.TOCOL = function (a) { var x = arrOf(a[0]), out = []; x.each(function (v) { out.push([v]); }); return new Arr(out); };
+		M.TOROW = function (a) { var x = arrOf(a[0]), out = []; x.each(function (v) { out.push(v); }); return new Arr([out]); };
+
+		Object.keys(M).forEach(function (k) { FN[k] = M[k]; });
+
+		/* ---------- functions whose arguments are worked out only when needed ---------- */
+		var LZ = {
+			IF: function (args, ev, ctx, env) {
+				if (!args.length) return VAL;
+				var c0 = ev(args[0]);
+				if (isMulti(c0)) {
+					var thenV = args.length > 1 && args[1].k !== "missing" ? ev(args[1]) : (args.length > 1 ? 0 : true), elseV = args.length > 2 ? (args[2].k === "missing" ? 0 : ev(args[2])) : false;
+					return broadcast([c0, thenV, elseV], function (c, t, e) { var b = bool(c); return isErr(b) ? b : b ? t : e; });
+				}
+				var c = bool(scalar(c0));
+				if (isErr(c)) return c;
+				if (c) return args.length > 1 && args[1].k !== "missing" ? ev(args[1]) : (args.length > 1 ? 0 : true);
+				return args.length > 2 ? (args[2].k === "missing" ? 0 : ev(args[2])) : false;
+			},
+			IFS: function (args, ev) {
+				for (var i = 0; i + 1 < args.length; i += 2) { var c = bool(scalar(ev(args[i]))); if (isErr(c)) return c; if (c) return ev(args[i + 1]); }
+				return NA;
+			},
+			IFERROR: function (args, ev) { var v0 = ev(args[0]); if (isMulti(v0)) { var alt = args.length > 1 ? ev(args[1]) : 0; return broadcast([v0, alt], function (v, a) { return isErr(v) ? a : v; }); } var v = scalar(v0); return isErr(v) ? (args.length > 1 ? ev(args[1]) : 0) : v0; },
+			IFNA: function (args, ev) { var v0 = ev(args[0]); if (isMulti(v0)) { var alt = ev(args[1]); return broadcast([v0, alt], function (v, a) { return isErr(v) && v.code === "#N/A" ? a : v; }); } var v = scalar(v0); return isErr(v) && v.code === "#N/A" ? ev(args[1]) : v0; },
+			SWITCH: function (args, ev) {
+				var x = scalar(ev(args[0])); if (isErr(x)) return x;
+				var i = 1; for (; i + 1 < args.length; i += 2) { var v = scalar(ev(args[i])); if (!isErr(v) && compare(x, v) === 0 && typeRank0(x == null ? 0 : x) === typeRank0(v == null ? 0 : v)) return ev(args[i + 1]); }
+				return i < args.length ? ev(args[i]) : NA;
+			},
+			CHOOSE: function (args, ev) {
+				var i0 = ev(args[0]);
+				if (isMulti(i0)) { var opts = args.slice(1).map(function (a) { return ev(a); }); return mapArr(toArr(i0), function (v) { var k = num(v); if (isErr(k)) return k; k = Math.floor(k); return k < 1 || k > opts.length ? VAL : scalar(opts[k - 1]); }); }
+				var i = num(scalar(i0)); if (isErr(i)) return i; i = Math.floor(i);
+				if (i < 1 || i >= args.length) return VAL;
+				return ev(args[i]);
+			},
+			LET: function (args, ev, ctx, env) {
+				if (args.length < 3 || args.length % 2 === 0) return VAL;
+				var e = new X.Env(env);
+				for (var i = 0; i + 1 < args.length; i += 2) { if (args[i].k !== "name") return VAL; e.v[args[i].v.toUpperCase()] = ev(args[i + 1], e); }
+				return ev(args[args.length - 1], e);
+			}
+		};
+		Object.keys(LZ).forEach(function (k) { LAZY[k] = LZ[k]; });
+		X.refreshFunctions();
+		X.lift = lift;
+	}
+	if (typeof module === "object" && module.exports) module.exports = { install: install };
+	else if (root.MESXL) install(root.MESXL);
+})(typeof window !== "undefined" ? window : this);
+
+/* MES Spreadsheet Viewer & Editor (mes.fm/excel): pure editing helpers, installed into MESXL (node tests: tool_apps_src/excel-tests.js).
+   - shiftFormula: copy / paste / fill a formula by (dr, dc): relative references move, $ parts stay, references pushed off the
+     sheet become #REF! (like Excel)
+   - moveRefs: after cutting and pasting a block, references to cells inside it follow it
+   - formula entry: refSpans (references with their position, for the coloured outlines), canPoint (is the caret where a click inserts
+     a reference?), cycleAbs / f4At (F4: A1 -> $A$1 -> A$1 -> $A1), refText (a range as text, with the sheet when needed)
+   - fillSeries: what the fill handle writes (1, 2, 3 / dates / "Item 1", "Item 2" / Mon, Tue / Jan, Feb / copies)
+   - clipboard: htmlTable (an Excel / Google Sheets compatible HTML table) and parseHtmlTable (cells from a pasted HTML table)
+   - futureFns / toFile / fromFile: _xlfn. prefixes for the newer functions when a formula is written to .xlsx */
+(function (root) {
+	"use strict";
+	function install(X) {
+		var MAXR = X.MAXR, MAXC = X.MAXC, colName = X.colName, colIndex = X.colIndex;
+
+		/* ---------- reference text <-> parts ---------- */
+		// one side of a reference: {c, r, ac, ar} (c or r null for whole rows / columns)
+		function partsOf(t) {
+			var m = /^(\$?)([A-Za-z]{1,3})?(\$?)(\d+)?$/.exec(t);
+			if (!m || (!m[2] && !m[4])) return null;
+			return { c: m[2] ? colIndex(m[2]) : null, ac: !!m[1] && !!m[2], r: m[4] ? +m[4] - 1 : null, ar: m[2] ? !!m[3] && !!m[4] : !!m[1] && !!m[4] };
+		}
+		function partText(p) { return (p.c != null ? (p.ac ? "$" : "") + colName(p.c) : "") + (p.r != null ? (p.ar ? "$" : "") + (p.r + 1) : ""); }
+		function sheetPrefix(name) { if (name == null) return ""; return (/^[A-Za-z_][A-Za-z0-9_.]*$/.test(name) && !X.parseA1(name) && !/^(TRUE|FALSE|R\d*C\d*)$/i.test(name) ? name : "'" + String(name).replace(/'/g, "''") + "'") + "!"; }
+		// a range as typed in a formula: refText({s, e}, sheet?) -> "A5" / "A5:C9" / "Sheet2!B3"
+		function refText(g, sheet) {
+			var body;
+			if (g.s.r === 0 && g.e.r === MAXR - 1) body = colName(g.s.c) + ":" + colName(g.e.c);
+			else if (g.s.c === 0 && g.e.c === MAXC - 1) body = (g.s.r + 1) + ":" + (g.e.r + 1);
+			else { var a = colName(g.s.c) + (g.s.r + 1), b = colName(g.e.c) + (g.e.r + 1); body = a === b ? a : a + ":" + b; }
+			return sheetPrefix(sheet) + body;
+		}
+
+		/* ---------- copy / fill: shift relative references ---------- */
+		function shiftPart(p, dr, dc) {
+			var q = { c: p.c, r: p.r, ac: p.ac, ar: p.ar };
+			if (q.c != null && !q.ac) q.c += dc;
+			if (q.r != null && !q.ar) q.r += dr;
+			if ((q.c != null && (q.c < 0 || q.c >= MAXC)) || (q.r != null && (q.r < 0 || q.r >= MAXR))) return null;
+			return q;
+		}
+		function shiftFormula(f, dr, dc) {
+			if (!dr && !dc) return f;
+			var toks; try { toks = X.tokenize(f); } catch (e) { return f; }
+			return toks.map(function (t) {
+				if (t.type !== "ref") return t.raw;
+				var text = t.v.text, prefix = t.raw.slice(0, t.raw.length - text.length), hash = /#$/.test(text) ? "#" : "";
+				if (hash) text = text.slice(0, -1);
+				var sides = text.split(":"), out = [];
+				for (var i = 0; i < sides.length; i++) { var p = partsOf(sides[i]); if (!p) return t.raw; var q = shiftPart(p, dr, dc); if (!q) return prefix + "#REF!"; out.push(partText(q)); }
+				return prefix + out.join(":") + hash;
+			}).join("");
+		}
+		// cut + paste: every reference to a range entirely inside `from` (sheet name + {s, e}) moves by (dr, dc) to `toSheet`
+		// (absolute or not). here = the sheet of the formula being rewritten.
+		function moveRefs(f, from, dr, dc, here, toSheet) {
+			var toks; try { toks = X.tokenize(f); } catch (e) { return f; }
+			var changed = false;
+			var out = toks.map(function (t) {
+				if (t.type !== "ref") return t.raw;
+				var sheet = t.v.sheet == null ? here : t.v.sheet;
+				if (String(sheet).toLowerCase() !== String(from.sheet).toLowerCase()) return t.raw;
+				var text = t.v.text, hash = /#$/.test(text) ? "#" : ""; if (hash) text = text.slice(0, -1);
+				var sides = text.split(":").map(partsOf); if (sides.some(function (p) { return !p || p.r == null || p.c == null; })) return t.raw;
+				var r1 = Math.min.apply(null, sides.map(function (p) { return p.r; })), r2 = Math.max.apply(null, sides.map(function (p) { return p.r; }));
+				var c1 = Math.min.apply(null, sides.map(function (p) { return p.c; })), c2 = Math.max.apply(null, sides.map(function (p) { return p.c; }));
+				if (r1 < from.g.s.r || r2 > from.g.e.r || c1 < from.g.s.c || c2 > from.g.e.c) return t.raw;
+				var moved = sides.map(function (p) { return partText({ c: p.c + dc, r: p.r + dr, ac: p.ac, ar: p.ar }); });
+				changed = true;
+				var ts = toSheet == null ? sheet : toSheet, pre = t.v.sheet != null || ts !== here ? sheetPrefix(ts) : "";
+				return pre + moved.join(":") + hash;
+			});
+			return changed ? out.join("") : f;
+		}
+
+		/* ---------- formula entry ---------- */
+		var PALETTE = ["#1f6feb", "#d1242f", "#7b3fe4", "#1a7f37", "#bf5af2", "#c4570f", "#0a8fa0", "#b0186d"];
+		// the references in a formula ("=..." with the "=") with their character positions and a colour each (same text = same colour)
+		function refSpans(text) {
+			var s = String(text || ""); if (s[0] !== "=") return [];
+			var toks; try { toks = X.tokenize(s.slice(1)); } catch (e) { toks = tolerant(s.slice(1)); }
+			var out = [], colors = {}, n = 0;
+			toks.forEach(function (t) {
+				if (t.type !== "ref") return;
+				var text2 = t.v.text.replace(/#$/, ""), g = X.parseRange(text2.replace(/\$/g, ""));
+				if (!g) { var m = /^\$?([A-Za-z]{1,3}):\$?([A-Za-z]{1,3})$/.exec(text2), m2 = /^\$?(\d+):\$?(\d+)$/.exec(text2); if (m) g = { s: { r: 0, c: Math.min(colIndex(m[1]), colIndex(m[2])) }, e: { r: MAXR - 1, c: Math.max(colIndex(m[1]), colIndex(m[2])) } }; else if (m2) g = { s: { r: +m2[1] - 1, c: 0 }, e: { r: +m2[2] - 1, c: MAXC - 1 } }; }
+				if (!g) return;
+				var key = (t.v.sheet || "").toLowerCase() + "!" + X.rangeA1(g);
+				if (!(key in colors)) colors[key] = PALETTE[n++ % PALETTE.length];
+				out.push({ start: t.pos + 1, end: t.pos + 1 + t.raw.length, text: t.raw, sheet: t.v.sheet, g: g, color: colors[key] });
+			});
+			return out;
+		}
+		// tokenize as far as the formula can be read (while typing, "=SUM(A1:B2" is not finished)
+		function tolerant(s) {
+			for (var cut = s.length; cut > 0; cut--) { try { return X.tokenize(s.slice(0, cut)); } catch (e) { /* shorter */ } }
+			return [];
+		}
+		// is the caret at a place where clicking a cell should insert its reference? (after =, an operator, "(", "," ...)
+		function canPoint(text, caret) {
+			var s = String(text || ""); if (s[0] !== "=") return false;
+			if (caret == null) caret = s.length;
+			var before = s.slice(0, caret).replace(/\s+$/, ""), after = s.slice(caret);
+			if (/^[A-Za-z0-9_$("']/.test(after)) return false;
+			var q = (before.match(/"/g) || []).length; if (q % 2) return false;
+			var last = before[before.length - 1];
+			return before.length === 1 || /[=+\-*\/^&(,;<>:%{]/.test(last);
+		}
+		// F4: A1 -> $A$1 -> A$1 -> $A1 -> A1 (a range changes both ends together)
+		function cycleAbs(ref) {
+			var m = /^((?:'(?:[^']|'')+'|[^'!]+)!)?(.+)$/.exec(ref), pre = m[1] || "", body = m[2], hash = /#$/.test(body) ? "#" : "";
+			if (hash) body = body.slice(0, -1);
+			var sides = body.split(":").map(partsOf); if (sides.some(function (p) { return !p; })) return ref;
+			var p0 = sides[0], state = p0.c != null && p0.r != null ? (p0.ac && p0.ar ? 1 : p0.ar ? 2 : p0.ac ? 3 : 0) : ((p0.c != null ? p0.ac : p0.ar) ? 1 : 0);
+			var next = p0.c != null && p0.r != null ? (state + 1) % 4 : (state + 1) % 2;
+			sides.forEach(function (p) {
+				if (p.c != null && p.r != null) { p.ac = next === 1 || next === 3; p.ar = next === 1 || next === 2; }
+				else if (p.c != null) p.ac = next === 1; else p.ar = next === 1;
+			});
+			return pre + sides.map(partText).join(":") + hash;
+		}
+		// F4 in a formula being typed: the reference at / just before the caret -> {text, caret} (null when there is none)
+		function f4At(text, caret, selEnd) {
+			var spans = refSpans(text), hit = null;
+			for (var i = 0; i < spans.length; i++) { var sp = spans[i]; if (caret >= sp.start && caret <= sp.end) { hit = sp; break; } if (selEnd != null && sp.start >= caret && sp.end <= selEnd) { hit = sp; break; } }
+			if (!hit) return null;
+			var nt = cycleAbs(hit.text);
+			return { text: text.slice(0, hit.start) + nt + text.slice(hit.end), caret: hit.start + nt.length, start: hit.start, end: hit.start + nt.length };
+		}
+
+		/* ---------- fill handle ---------- */
+		var DAYS = ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"], MONTHS = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"];
+		function listMatch(s) {
+			var t = String(s), low = t.toLowerCase(), lists = [DAYS, MONTHS];
+			for (var l = 0; l < lists.length; l++) for (var i = 0; i < lists[l].length; i++) {
+				var full = lists[l][i], short = full.slice(0, 3);
+				if (low === full.toLowerCase()) return { list: lists[l], i: i, form: "full", cap: caseOf(t) };
+				if (low === short.toLowerCase()) return { list: lists[l], i: i, form: "short", cap: caseOf(t) };
+			}
+			var q = /^(Q|Qtr|Quarter )([1-4])$/i.exec(t);
+			if (q) return { quarter: q[1], i: +q[2] - 1 };
+			return null;
+		}
+		function caseOf(t) { return t === t.toUpperCase() ? "up" : t === t.toLowerCase() ? "low" : "title"; }
+		function applyCase(s, c) { return c === "up" ? s.toUpperCase() : c === "low" ? s.toLowerCase() : s; }
+		// src: [{v (number | string | boolean | null), date: bool}] in fill order; n: how many to make.
+		// opts.copy: copy instead of making a series (Ctrl while dragging, like Excel). Returns [{v, date}]
+		function fillSeries(src, n, opts) {
+			opts = opts || {};
+			var out = [];
+			if (!src.length) return out;
+			if (opts.copy) { for (var k = 0; k < n; k++) out.push(src[k % src.length]); return out; }
+			var allNum = src.every(function (x) { return typeof x.v === "number"; });
+			if (allNum) {
+				var isDate = src[0].date, step;
+				if (src.length === 1) step = isDate ? 1 : 0;
+				else if (isDate && src.length >= 2 && monthStep(src)) return monthSeries(src, n);
+				else {   // least-squares line like Excel's linear trend (exact for an even step)
+					var m = src.length, sx = 0, sy = 0, sxx = 0, sxy = 0;
+					src.forEach(function (p, i) { sx += i; sy += p.v; sxx += i * i; sxy += i * p.v; });
+					step = (m * sxy - sx * sy) / (m * sxx - sx * sx);
+					var b = (sy - step * sx) / m;
+					for (var j = 0; j < n; j++) out.push({ v: clean(b + step * (m + j)), date: isDate });
+					return out;
+				}
+				for (var j2 = 0; j2 < n; j2++) out.push({ v: clean(src[src.length - 1].v + step * (j2 + 1)), date: isDate });
+				return out;
+			}
+			// text with a number at the end ("Item 1", "Week 2"), or day / month names; otherwise the cells repeat
+			var lm = src.map(function (x) { return typeof x.v === "string" ? listMatch(x.v) : null; });
+			if (lm.every(Boolean)) {
+				var last = lm[lm.length - 1], st = src.length > 1 ? ((lm[lm.length - 1].i - lm[lm.length - 2].i) || 1) : 1;
+				for (var a = 0; a < n; a++) {
+					if (last.quarter) { var qi = ((last.i + st * (a + 1)) % 4 + 4) % 4; out.push({ v: last.quarter + (qi + 1) }); continue; }
+					var len = last.list.length, idx = ((last.i + st * (a + 1)) % len + len) % len, word = last.list[idx];
+					out.push({ v: applyCase(last.form === "short" ? word.slice(0, 3) : word, last.cap) });
+				}
+				return out;
+			}
+			var tn = src.map(function (x) { return typeof x.v === "string" ? /^(.*?)(\d+)(\D*)$/.exec(x.v) : null; });
+			if (tn.every(Boolean) && tn.every(function (m) { return m[1] === tn[0][1] && m[3] === tn[0][3]; })) {
+				var lastN = +tn[tn.length - 1][2], width = tn[tn.length - 1][2].length, st2 = src.length > 1 ? (lastN - +tn[tn.length - 2][2]) || 1 : 1;
+				for (var b2 = 0; b2 < n; b2++) { var v = Math.abs(lastN + st2 * (b2 + 1)), s = String(v); if (/^0/.test(tn[0][2]) && s.length < width) s = new Array(width - s.length + 1).join("0") + s; out.push({ v: tn[0][1] + s + tn[0][3] }); }
+				return out;
+			}
+			for (var c = 0; c < n; c++) out.push(src[c % src.length]);
+			return out;
+		}
+		function clean(v) { return +v.toPrecision(15); }
+		function monthStep(src) {   // dates on the same day of the month, a whole number of months apart
+			if (!X.ymd) return false;
+			var d = src.map(function (x) { return X.ymd(Math.floor(x.v)); });
+			if (d.some(function (x) { return x.d !== d[0].d; }) || d[0].d === 1 && false) return false;
+			var steps = []; for (var i = 1; i < d.length; i++) steps.push((d[i].y - d[i - 1].y) * 12 + d[i].m - d[i - 1].m);
+			return steps.length && steps.every(function (s) { return s === steps[0] && s !== 0; }) && d.some(function (x, i) { return i && Math.floor(src[i].v) - Math.floor(src[i - 1].v) !== 7 && Math.floor(src[i].v) - Math.floor(src[i - 1].v) !== 1; });
+		}
+		function monthSeries(src, n) {
+			var d = src.map(function (x) { return X.ymd(Math.floor(x.v)); }), step = (d[1].y - d[0].y) * 12 + d[1].m - d[0].m, last = d[d.length - 1], out = [];
+			for (var i = 1; i <= n; i++) { var m = last.m + step * i, y = last.y + Math.floor((m - 1) / 12); m = ((m - 1) % 12 + 12) % 12 + 1; var ld = new Date(Date.UTC(y, m, 0)).getUTCDate(); out.push({ v: X.fromYMD(y, m, Math.min(d[0].d, ld)), date: true }); }
+			return out;
+		}
+
+		/* ---------- clipboard HTML ---------- */
+		function escH(s) { return String(s == null ? "" : s).replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;"); }
+		// rows: [[{text, css, num, f}]] -> an HTML table Excel and Google Sheets read (styles inline)
+		function htmlTable(rows) {
+			var h = ['<meta charset="utf-8"><table style="border-collapse:collapse">'];
+			rows.forEach(function (r) {
+				h.push("<tr>");
+				r.forEach(function (c) { var st = (c && c.css ? c.css.replace(/box-shadow:[^;]*;/g, "") : "") + (c && c.num ? "text-align:right;" : ""); h.push("<td" + (st ? ' style="' + escH(st) + '"' : "") + (c && c.span ? ' colspan="' + c.span[1] + '" rowspan="' + c.span[0] + '"' : "") + ">" + escH(c ? c.text : "").replace(/\n/g, "<br>") + "</td>"); });
+				h.push("</tr>");
+			});
+			h.push("</table>");
+			return h.join("");
+		}
+		var ENT = { amp: "&", lt: "<", gt: ">", quot: '"', apos: "'", nbsp: " " };
+		function unent(s) { return s.replace(/&(#x[0-9a-f]+|#\d+|[a-z]+);/gi, function (m, e) { if (e[0] === "#") return String.fromCodePoint(e[1] === "x" || e[1] === "X" ? parseInt(e.slice(2), 16) : +e.slice(1)); return ENT[e.toLowerCase()] != null ? ENT[e.toLowerCase()] : m; }); }
+		// a pasted HTML table (from Excel, Google Sheets, a web page) -> [[{text, style: {b, i, u, color, fill, ha}}]] | null
+		function parseHtmlTable(html) {
+			var s = String(html || ""), t0 = s.search(/<table\b/i); if (t0 < 0) return null;
+			var t1 = s.search(/<\/table>/i); var body = s.slice(t0, t1 < 0 ? s.length : t1);
+			var classes = {}; (s.match(/<style[^>]*>[\s\S]*?<\/style>/gi) || []).forEach(function (st) { var re = /\.([\w-]+)\s*\{([^}]*)\}/g, m; while ((m = re.exec(st))) classes[m[1]] = m[2]; });
+			var rows = [], occupied = {}, ri = 0, trRe = /<tr\b[^>]*>([\s\S]*?)(?=<tr\b|$)/gi, tm;
+			while ((tm = trRe.exec(body))) {
+				var cellRe = /<t([dh])\b([^>]*)>([\s\S]*?)(?=<t[dh]\b|<\/tr>|$)/gi, cm, ci = 0, row = rows[ri] || (rows[ri] = []);
+				while ((cm = cellRe.exec(tm[1]))) {
+					while (occupied[ri + ":" + ci]) ci++;
+					var attrs = cm[2], inner = cm[3].replace(/<\/t[dh]>[\s\S]*$/i, "");
+					var cls = /class\s*=\s*"?([\w-]+)/i.exec(attrs), css = ((/style\s*=\s*"([^"]*)"/i.exec(attrs) || [])[1] || "") + ";" + (cls && classes[cls[1]] || "");
+					var text = unent(inner.replace(/<br\s*\/?>/gi, "\n").replace(/<\/(p|div)>/gi, "\n").replace(/<[^>]+>/g, "")).replace(/\n+$/, "").replace(/ /g, " ");
+					if (/<b\b|<strong\b/i.test(inner)) css += ";font-weight:bold";
+					var cs = +((/colspan\s*=\s*"?(\d+)/i.exec(attrs) || [])[1] || 1), rs = +((/rowspan\s*=\s*"?(\d+)/i.exec(attrs) || [])[1] || 1);
+					row[ci] = { text: text, style: styleOf(css, cm[1] === "h") };
+					if (cs > 1 || rs > 1) { row[ci].span = [rs, cs]; for (var a = 0; a < rs; a++) for (var b = 0; b < cs; b++) if (a || b) occupied[(ri + a) + ":" + (ci + b)] = 1; }
+					ci += cs;
+				}
+				ri++;
+			}
+			var w = 0; rows.forEach(function (r) { if (r.length > w) w = r.length; });
+			return rows.length ? rows.map(function (r) { var o = []; for (var i = 0; i < w; i++) o.push(r[i] || { text: "" }); return o; }) : null;
+		}
+		function hexOf(c) {
+			c = String(c || "").trim().toLowerCase(); var m;
+			if ((m = /^#([0-9a-f]{6})$/.exec(c))) return m[1].toUpperCase();
+			if ((m = /^#([0-9a-f])([0-9a-f])([0-9a-f])$/.exec(c))) return (m[1] + m[1] + m[2] + m[2] + m[3] + m[3]).toUpperCase();
+			if ((m = /^rgba?\((\d+),\s*(\d+),\s*(\d+)(?:,\s*([\d.]+))?\)$/.exec(c))) { if (m[4] != null && +m[4] === 0) return null; return [m[1], m[2], m[3]].map(function (v) { v = (+v).toString(16); return v.length < 2 ? "0" + v : v; }).join("").toUpperCase(); }
+			var named = { black: "000000", white: "FFFFFF", red: "FF0000", blue: "0000FF", green: "008000", yellow: "FFFF00" };
+			return named[c] || null;
+		}
+		function styleOf(css, th) {
+			var st = {}, get = function (k) { var re = new RegExp("(?:^|;)\\s*" + k + "\\s*:\\s*([^;]+)", "i"), m = re.exec(css); return m ? m[1].trim() : null; };
+			var fw = get("font-weight"); if ((fw && (/bold/i.test(fw) || +fw >= 600)) || (th && !fw)) st.b = true;
+			if (/italic/i.test(get("font-style") || "")) st.i = true;
+			if (/underline/i.test(get("text-decoration") || "")) st.u = true;
+			var col = hexOf(get("color")); if (col && col !== "000000") st.color = col;
+			var bg = hexOf(get("background-color") || get("background")); if (bg && bg !== "FFFFFF") st.fill = bg;
+			var ta = get("text-align"); if (ta && /^(center|right|left)$/i.test(ta)) st.ha = ta.toLowerCase();
+			return Object.keys(st).length ? st : null;
+		}
+
+		/* ---------- formulas written to .xlsx: newer functions need the _xlfn. prefix or Excel shows #NAME? ---------- */
+		var FUTURE = ("XLOOKUP XMATCH CONCAT TEXTJOIN IFS SWITCH MAXIFS MINIFS IFNA UNIQUE SEQUENCE RANDARRAY LET SORTBY XOR DAYS ISOWEEKNUM " +
+			"STDEV.S STDEV.P VAR.S VAR.P MODE.SNGL PERCENTILE.INC PERCENTILE.EXC QUARTILE.INC QUARTILE.EXC RANK.EQ RANK.AVG CEILING.MATH FLOOR.MATH " +
+			"CEILING.PRECISE FLOOR.PRECISE ISO.CEILING NETWORKDAYS.INTL WORKDAY.INTL NUMBERVALUE UNICHAR UNICODE TEXTBEFORE TEXTAFTER TEXTSPLIT " +
+			"HSTACK VSTACK TAKE DROP CHOOSECOLS CHOOSEROWS TOCOL TOROW ISFORMULA RRI SHEET SHEETS ANCHORARRAY SINGLE").split(" ");
+		var XLWS = { SORT: 1, FILTER: 1 };
+		function toFile(f) {
+			var toks; try { toks = X.tokenize(f); } catch (e) { return f; }
+			return toks.map(function (t) {
+				if (t.type === "func") { if (/^_XL/i.test(t.v)) return t.raw; var n = X.normFn(t.v); if (XLWS[n]) return "_xlfn._xlws." + t.raw; if (FUTURE.indexOf(n) >= 0) return "_xlfn." + t.raw; return t.raw; }
+				if (t.type === "ref" && /#$/.test(t.v.text)) return "_xlfn.ANCHORARRAY(" + t.raw.slice(0, -1) + ")";
+				return t.raw;
+			}).join("");
+		}
+		function fromFile(f) { return String(f).replace(/_xlfn\.ANCHORARRAY\(((?:'(?:[^']|'')+'!|[A-Za-z_][\w.]*!)?\$?[A-Za-z]{1,3}\$?\d+)\)/gi, "$1#").replace(/_xlfn\.(_xlws\.)?/gi, ""); }
+
+		X.shiftFormula = shiftFormula; X.moveRefs = moveRefs; X.refSpans = refSpans; X.canPoint = canPoint; X.cycleAbs = cycleAbs; X.f4At = f4At;
+		X.refText = refText; X.sheetPrefix = sheetPrefix; X.fillSeries = fillSeries; X.htmlTable = htmlTable; X.parseHtmlTable = parseHtmlTable;
+		X.REF_COLORS = PALETTE; X.toFile = toFile; X.fromFile = fromFile; X.hexOf = hexOf;
+	}
+	if (typeof module === "object" && module.exports) module.exports = { install: install };
+	else if (root.MESXL) install(root.MESXL);
 })(typeof window !== "undefined" ? window : this);
 
 /* MES Spreadsheet Viewer (mes.fm/excel): the parts of an .xlsx that SheetJS Community Edition does not read or write.
@@ -1780,6 +3132,23 @@
 		s = s.replace(/<cellXfs\b[^>]*>([\s\S]*?)<\/cellXfs>/, function (m, inner) { var n = (inner.match(/<xf\b/g) || []).length + xfs.length; return '<cellXfs count="' + n + '">' + inner + xfs.join("") + "</cellXfs>"; });
 		return s;
 	}
+	// append fonts / fills / borders / dxfs (XML strings) to styles.xml: more = {fonts: [], fills: [], borders: [], dxfs: []}
+	function stylesAdd(raw, more) {
+		if (!more) return raw;
+		var s = raw;
+		[["fonts", "font"], ["fills", "fill"], ["borders", "border"], ["dxfs", "dxf"]].forEach(function (p) {
+			var list = more[p[0]]; if (!list || !list.length) return;
+			var re = new RegExp("<" + p[0] + "\\b[^>]*?(?:/>|>([\\s\\S]*?)</" + p[0] + ">)");
+			if (re.test(s)) s = s.replace(re, function (m, inner) { inner = (inner || "") + list.join(""); return "<" + p[0] + ' count="' + (inner.match(new RegExp("<" + p[1] + "\\b", "g")) || []).length + '">' + inner + "</" + p[0] + ">"; });
+			else {
+				var after = { fonts: /<\/numFmts>|(<styleSheet\b[^>]*>)/, fills: /<\/fonts>/, borders: /<\/fills>/, dxfs: /<\/cellStyles>|<\/cellXfs>/ }[p[0]];
+				s = s.replace(after, function (m) { return m + "<" + p[0] + ' count="' + list.length + '">' + list.join("") + "</" + p[0] + ">"; });
+			}
+		});
+		return s;
+	}
+	function countOf(raw, tag) { var m = new RegExp("<" + tag + "s\\b[^>]*?(?:/>|>([\\s\\S]*?)</" + tag + "s>)").exec(raw || ""); return m && m[1] ? (m[1].match(new RegExp("<" + tag + "\\b", "g")) || []).length : 0; }
+	function rawList(raw, tag) { var m = new RegExp("<" + tag + "s\\b[^>]*>([\\s\\S]*?)</" + tag + "s>").exec(raw || ""); if (!m) return []; return m[1].match(new RegExp("<" + tag + "\\b[^>]*/>|<" + tag + "\\b[^>]*>[\\s\\S]*?</" + tag + ">", "g")) || []; }
 	function rawXfs(raw) { var m = /<cellXfs\b[^>]*>([\s\S]*?)<\/cellXfs>/.exec(raw || ""); if (!m) return []; return m[1].match(/<xf\b[^>]*\/>|<xf\b[^>]*>[\s\S]*?<\/xf>/g) || []; }
 	function maxFmtId(raw) { var mx = 163, re = /numFmtId="(\d+)"/g, m; while ((m = re.exec(raw || ""))) mx = Math.max(mx, +m[1]); return mx; }
 	function ctAdd(ct, part, type) {
@@ -1820,7 +3189,7 @@
 			var stylesPart = null, themePart = null; for (var k in W.rels) { if (W.rels[k].type === "styles") stylesPart = W.rels[k].target; if (W.rels[k].type === "theme") themePart = W.rels[k].target; }
 			var jobs = [];
 			// styles + theme
-			if (model && model.styles.raw && stylesPart) write[stylesPart] = enc(stylesWithXfs(model.styles.raw, info.extraXfs || []));
+			if (model && model.styles.raw && stylesPart) write[stylesPart] = enc(stylesAdd(stylesWithXfs(model.styles.raw, info.extraXfs || []), info.moreStyles));
 			if (model && model.themeRaw && themePart) write[themePart] = enc(model.themeRaw);
 			sheetParts.forEach(function (part, i) {
 				var si = info.sheets[i]; if (!part || !si) return;
@@ -1863,6 +3232,21 @@
 						}
 						if (newRels.length && !/xmlns:r=/.test(s.slice(0, 600))) s = s.replace(/<worksheet\b/, '<worksheet xmlns:r="http://schemas.openxmlformats.org/officeDocument/2006/relationships"');
 					}
+					// parts made in the editor: new tables, a new drawing with its charts, new conditional formatting (si.add / si.cfXml)
+					if (si.cfXml) s = insertBefore(s, AFTER_CF, si.cfXml);
+					(si.add || []).forEach(function (a, k) {
+						var id = "rIdMesN" + (k + 1);
+						while (relsRaw && relsRaw.indexOf('Id="' + id + '"') >= 0) id += "x";
+						newRels.push('<Relationship Id="' + id + '" Type="' + a.relType + '" Target="' + relRel(part, a.part) + '"/>');
+						write[a.part] = enc(a.xml); ct = ctAdd(ct, a.part, a.ctType);
+						(a.sub || []).forEach(function (sb) { write[sb.part] = enc(sb.xml); ct = ctAdd(ct, sb.part, sb.ctType); });
+						if (a.rels) write[relsPath(a.part)] = enc('<?xml version="1.0" encoding="UTF-8" standalone="yes"?>\n<Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships">' + a.rels.map(function (r) { return '<Relationship Id="' + r.id + '" Type="' + r.type + '" Target="' + relRel(a.part, r.target) + '"/>'; }).join("") + "</Relationships>");
+						if (a.tag === "tablePart") {
+							if (/<tableParts\b[^>]*>/.test(s)) s = s.replace(/<tableParts\b[^>]*>([\s\S]*?)<\/tableParts>/, function (m, inner) { inner += '<tablePart r:id="' + id + '"/>'; return '<tableParts count="' + (inner.match(/<tablePart\b/g) || []).length + '">' + inner + "</tableParts>"; });
+							else s = insertBefore(s, ["extLst"], '<tableParts count="1"><tablePart r:id="' + id + '"/></tableParts>');
+						} else if (a.tag === "drawing" && !/<drawing\b/.test(s)) s = insertBefore(s, AFTER_DRAWING, '<drawing r:id="' + id + '"/>');
+					});
+					if (newRels.length && !/xmlns:r=/.test(s.slice(0, 600))) s = s.replace(/<worksheet\b/, '<worksheet xmlns:r="http://schemas.openxmlformats.org/officeDocument/2006/relationships"');
 					write[part] = enc(s);
 					if (newRels.length) {
 						var rr2 = relsRaw || '<?xml version="1.0" encoding="UTF-8" standalone="yes"?>\n<Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships"></Relationships>';
@@ -1905,10 +3289,175 @@
 		parseRange: parseRange, sqref: sqref, parseRefs: parseRefs, shiftFormula: shiftFormula, colName: colName, colIndex: colIndex,
 		parseSheet: parseSheet, parseDrawing: parseDrawing, parseChart: parseChart, readPackage: readPackage,
 		mergeLook: mergeLook, lookCss: lookCss, ruleStats: ruleStats, cfFor: cfFor, seriesColor: seriesColor, nice: nice, chartSvg: chartSvg,
-		addStubCells: addStubCells, paneXml: paneXml, sheetViewsXml: sheetViewsXml, stylesWithXfs: stylesWithXfs, rawXfs: rawXfs, maxFmtId: maxFmtId, graft: graft
+		addStubCells: addStubCells, paneXml: paneXml, sheetViewsXml: sheetViewsXml, stylesWithXfs: stylesWithXfs, stylesAdd: stylesAdd, countOf: countOf, rawList: rawList, rawXfs: rawXfs, escX: escX, maxFmtId: maxFmtId, graft: graft
 	};
-	if (typeof module === "object" && module.exports) module.exports = api;
+	if (typeof module === "object" && module.exports) { module.exports = api; require("./parts.js").install(api); }
 	else root.MESXLO = api;
+})(typeof window !== "undefined" ? window : this);
+
+/* MES Spreadsheet Viewer & Editor (mes.fm/excel): XML for what is made in the editor and saved into the .xlsx (installed into MESXLO,
+   node tests in tool_apps_src/excel-tests.js):
+   - tableXml: an Excel table part (header, banded rows, total row functions, style)
+   - chartXml + drawingXml: a chart part (column, bar, line, area, pie, doughnut, scatter) and the drawing that places it on the sheet.
+     The page draws a new chart by reading its own chartXml back with MESXLO.parseChart, so what you see is what is saved.
+   - fontXml / fillXml / borderXml / alignXml: cell formats from a "look" ({b, i, u, s, color, sz, font, fill: {c}, bd: {l, r, t, b},
+     ha, vaAlign, wrap}), used to append new cellXfs to styles.xml
+   - cfXml + dxfXml: conditional formatting rules made here */
+(function (root) {
+	"use strict";
+	function install(O) {
+		var esc = O.escX, colName = O.colName;
+		var NS_C = "http://schemas.openxmlformats.org/drawingml/2006/chart", NS_A = "http://schemas.openxmlformats.org/drawingml/2006/main", NS_R = "http://schemas.openxmlformats.org/officeDocument/2006/relationships";
+		var HDR = '<?xml version="1.0" encoding="UTF-8" standalone="yes"?>\n';
+		function a1(r, c, abs) { return abs ? "$" + colName(c) + "$" + (r + 1) : colName(c) + (r + 1); }
+		function sheetRef(sheet, g) { var q = /^[A-Za-z_][A-Za-z0-9_.]*$/.test(sheet) ? sheet : "'" + String(sheet).replace(/'/g, "''") + "'"; var a = a1(g.s.r, g.s.c, true), b = a1(g.e.r, g.e.c, true); return q + "!" + (a === b ? a : a + ":" + b); }
+
+		/* ---------- tables ---------- */
+		// t = {id, name, g, header, totals, style, rowStripes, colStripes, firstCol, lastCol, cols: [names], totalFns: [null | "sum" | "average" | "count" | "countNums" | "max" | "min" | "stdDev" | "var"], totalLabel: [text]}
+		function tableXml(t) {
+			var ref = a1(t.g.s.r, t.g.s.c) + ":" + a1(t.g.e.r, t.g.e.c), af = t.header ? a1(t.g.s.r, t.g.s.c) + ":" + a1(t.totals ? t.g.e.r - 1 : t.g.e.r, t.g.e.c) : null;
+			var cols = t.cols.map(function (n, i) {
+				var fn = t.totals && t.totalFns && t.totalFns[i], lab = t.totals && t.totalLabel && t.totalLabel[i];
+				return '<tableColumn id="' + (i + 1) + '" name="' + esc(n) + '"' + (lab ? ' totalsRowLabel="' + esc(lab) + '"' : "") + (fn ? ' totalsRowFunction="' + fn + '"' : "") + "/>";
+			});
+			return HDR + '<table xmlns="http://schemas.openxmlformats.org/spreadsheetml/2006/main" id="' + t.id + '" name="' + esc(t.name) + '" displayName="' + esc(t.name) + '" ref="' + ref + '"' +
+				(t.header ? "" : ' headerRowCount="0"') + (t.totals ? ' totalsRowCount="1"' : ' totalsRowShown="0"') + ">" +
+				(af ? '<autoFilter ref="' + af + '"/>' : "") +
+				'<tableColumns count="' + cols.length + '">' + cols.join("") + "</tableColumns>" +
+				'<tableStyleInfo name="' + esc(t.style || "TableStyleMedium2") + '" showFirstColumn="' + (t.firstCol ? 1 : 0) + '" showLastColumn="' + (t.lastCol ? 1 : 0) + '" showRowStripes="' + (t.rowStripes === false ? 0 : 1) + '" showColumnStripes="' + (t.colStripes ? 1 : 0) + '"/></table>';
+		}
+		// unique, non-empty column names (Excel needs them to match the header cells)
+		function tableColNames(texts) {
+			var seen = {}, out = [];
+			texts.forEach(function (t, i) {
+				var n = String(t == null ? "" : t).replace(/[\r\n]+/g, " ").trim() || "Column" + (i + 1), base = n, k = 2;
+				while (seen[n.toLowerCase()]) n = base + k++;
+				seen[n.toLowerCase()] = 1; out.push(n);
+			});
+			return out;
+		}
+
+		/* ---------- charts ---------- */
+		// m = {type: column|bar|line|area|pie|doughnut|scatter, stacked: bool, title, legend: "r"|"b"|null, sheet, series: [{name: {s, g} | text,
+		//      cat: {g} (categories / x values), val: {g}}], labels: bool}
+		function dataRef(tag, sheet, ref, num) {
+			if (!ref) return "";
+			if (typeof ref === "string") return "<c:" + tag + "><c:v>" + esc(ref) + "</c:v></c:" + tag + ">";
+			var f = sheetRef(ref.sheet || sheet, ref.g);
+			return "<c:" + tag + "><c:" + (num ? "numRef" : "strRef") + "><c:f>" + esc(f) + "</c:f></c:" + (num ? "numRef" : "strRef") + "></c:" + tag + ">";
+		}
+		function chartXml(m) {
+			var t = m.type, kind = t === "column" || t === "bar" ? "barChart" : t === "line" ? "lineChart" : t === "area" ? "areaChart" : t === "pie" ? "pieChart" : t === "doughnut" ? "doughnutChart" : "scatterChart";
+			var round = t === "pie" || t === "doughnut", sc = t === "scatter", ax1 = 50010, ax2 = 50020;
+			var ser = m.series.map(function (s, i) {
+				var x = "<c:ser><c:idx val=\"" + i + "\"/><c:order val=\"" + i + "\"/>" + (s.name ? (typeof s.name === "string" ? "<c:tx><c:v>" + esc(s.name) + "</c:v></c:tx>" : dataRef("tx", m.sheet, s.name, false)) : "");
+				if (t === "line" || sc) x += sc && !m.lines ? '<c:spPr><a:ln w="19050"><a:noFill/></a:ln></c:spPr><c:marker><c:symbol val="circle"/><c:size val="6"/></c:marker>' : '<c:marker><c:symbol val="none"/></c:marker>';
+				if (t === "column" || t === "bar") x += '<c:invertIfNegative val="0"/>';
+				if (m.labels) x += '<c:dLbls><c:showLegendKey val="0"/><c:showVal val="' + (round ? 0 : 1) + '"/><c:showCatName val="0"/><c:showSerName val="0"/><c:showPercent val="' + (round ? 1 : 0) + '"/><c:showBubbleSize val="0"/></c:dLbls>';
+				if (sc) x += dataRef("xVal", m.sheet, s.cat, true) + dataRef("yVal", m.sheet, s.val, true) + '<c:smooth val="0"/>';
+				else x += dataRef("cat", m.sheet, s.cat, false) + dataRef("val", m.sheet, s.val, true) + (t === "line" ? '<c:smooth val="0"/>' : "");
+				return x + "</c:ser>";
+			}).join("");
+			var grouping = m.stacked ? (m.stacked === "percent" ? "percentStacked" : "stacked") : (t === "line" || t === "area" ? "standard" : "clustered");
+			var plot = "<c:" + kind + ">";
+			if (kind === "barChart") plot += '<c:barDir val="' + (t === "bar" ? "bar" : "col") + '"/><c:grouping val="' + grouping + '"/>';
+			else if (kind === "lineChart" || kind === "areaChart") plot += '<c:grouping val="' + grouping + '"/>';
+			else if (sc) plot += '<c:scatterStyle val="lineMarker"/>';
+			plot += '<c:varyColors val="' + (round ? 1 : 0) + '"/>' + ser;
+			if (kind === "barChart") plot += '<c:gapWidth val="150"/>' + (m.stacked ? '<c:overlap val="100"/>' : "");
+			if (kind === "lineChart") plot += '<c:marker val="1"/>';
+			if (t === "pie") plot += '<c:firstSliceAng val="0"/>';
+			if (t === "doughnut") plot += '<c:firstSliceAng val="0"/><c:holeSize val="50"/>';
+			if (!round) plot += '<c:axId val="' + ax1 + '"/><c:axId val="' + ax2 + '"/>';
+			plot += "</c:" + kind + ">";
+			var axes = "";
+			if (!round) {
+				var catPos = t === "bar" ? "l" : "b", valPos = t === "bar" ? "b" : "l";
+				var common = function (id, cross, pos, grid, isCat) { return '<c:axId val="' + id + '"/><c:scaling><c:orientation val="minMax"/></c:scaling><c:delete val="0"/><c:axPos val="' + pos + '"/>' + (grid ? "<c:majorGridlines/>" : "") + '<c:numFmt formatCode="General" sourceLinked="1"/><c:majorTickMark val="out"/><c:minorTickMark val="none"/><c:tickLblPos val="nextTo"/><c:crossAx val="' + cross + '"/><c:crosses val="autoZero"/>' + (isCat ? '<c:auto val="1"/><c:lblAlgn val="ctr"/><c:lblOffset val="100"/><c:noMultiLvlLbl val="0"/>' : '<c:crossBetween val="' + (t === "area" ? "midCat" : "between") + '"/>'); };
+				if (sc) axes = "<c:valAx>" + common(ax1, ax2, "b", false, false) + "</c:valAx><c:valAx>" + common(ax2, ax1, "l", true, false) + "</c:valAx>";
+				else axes = "<c:catAx>" + common(ax1, ax2, catPos, false, true) + "</c:catAx><c:valAx>" + common(ax2, ax1, valPos, true, false) + "</c:valAx>";
+			}
+			var title = m.title ? '<c:title><c:tx><c:rich><a:bodyPr/><a:lstStyle/><a:p><a:pPr><a:defRPr sz="1400" b="0"/></a:pPr><a:r><a:t>' + esc(m.title) + "</a:t></a:r></a:p></c:rich></c:tx><c:overlay val=\"0\"/></c:title>" : "";
+			var legend = m.legend ? '<c:legend><c:legendPos val="' + m.legend + '"/><c:overlay val="0"/></c:legend>' : "";
+			return HDR + '<c:chartSpace xmlns:c="' + NS_C + '" xmlns:a="' + NS_A + '" xmlns:r="' + NS_R + '"><c:roundedCorners val="0"/><c:chart>' + title +
+				'<c:autoTitleDeleted val="' + (m.title ? 0 : 1) + '"/><c:plotArea><c:layout/>' + plot + axes + "</c:plotArea>" + legend + '<c:plotVisOnly val="1"/><c:dispBlanksAs val="gap"/></c:chart></c:chartSpace>';
+		}
+		// charts = [{from: {c, co, r, ro}, to: {...} (Excel cells + offsets in pixels), name, rid}]
+		function drawingXml(charts) {
+			var pos = function (tag, p) { return "<xdr:" + tag + "><xdr:col>" + p.c + "</xdr:col><xdr:colOff>" + Math.round((p.co || 0) * 9525) + "</xdr:colOff><xdr:row>" + p.r + "</xdr:row><xdr:rowOff>" + Math.round((p.ro || 0) * 9525) + "</xdr:rowOff></xdr:" + tag + ">"; };
+			return HDR + '<xdr:wsDr xmlns:xdr="http://schemas.openxmlformats.org/drawingml/2006/spreadsheetDrawing" xmlns:a="' + NS_A + '">' + charts.map(function (ch, i) {
+				return '<xdr:twoCellAnchor editAs="oneCell">' + pos("from", ch.from) + pos("to", ch.to) + '<xdr:graphicFrame macro=""><xdr:nvGraphicFramePr><xdr:cNvPr id="' + (i + 2) + '" name="' + esc(ch.name || "Chart " + (i + 1)) + '"/><xdr:cNvGraphicFramePr/></xdr:nvGraphicFramePr><xdr:xfrm><a:off x="0" y="0"/><a:ext cx="0" cy="0"/></xdr:xfrm><a:graphic><a:graphicData uri="' + NS_C + '"><c:chart xmlns:c="' + NS_C + '" xmlns:r="' + NS_R + '" r:id="' + ch.rid + '"/></a:graphicData></a:graphic></xdr:graphicFrame><xdr:clientData/></xdr:twoCellAnchor>';
+			}).join("") + "</xdr:wsDr>";
+		}
+
+		/* ---------- cell formats ---------- */
+		function argb(h) { return "FF" + String(h || "000000").replace(/^#/, "").slice(-6).toUpperCase(); }
+		// base = the font XML of the cell's current format (or null); look = what to change
+		function fontXml(base, look) {
+			var b = base || "<font><sz val=\"11\"/><color theme=\"1\"/><name val=\"Calibri\"/><family val=\"2\"/><scheme val=\"minor\"/></font>";
+			var get = function (tag) { var m = new RegExp("<" + tag + "\\b[^>]*/>|<" + tag + "\\b[^>]*>[\\s\\S]*?</" + tag + ">").exec(b); return m ? m[0] : null; };
+			var flag = function (tag, on, cur) { if (on === undefined) return cur ? "<" + tag + "/>" : ""; return on ? "<" + tag + "/>" : ""; };
+			var has = function (tag) { var x = get(tag); return !!x && !/val="(0|false)"/.test(x); };
+			var size = look.sz != null ? '<sz val="' + look.sz + '"/>' : (get("sz") || "");
+			var col = look.color !== undefined ? (look.color ? '<color rgb="' + argb(look.color) + '"/>' : '<color theme="1"/>') : (get("color") || "");
+			var name = look.font ? '<name val="' + esc(look.font) + '"/>' : (get("name") || "");
+			var fam = look.font ? "" : (get("family") || ""), scheme = look.font ? "" : (get("scheme") || "");
+			return "<font>" + flag("b", look.b, has("b")) + flag("i", look.i, has("i")) + flag("strike", look.s, has("strike")) + (look.u !== undefined ? (look.u ? "<u/>" : "") : (get("u") || "")) + size + col + name + fam + get_("charset", get) + scheme + "</font>";
+		}
+		function get_(t, get) { return get(t) || ""; }
+		function fillXml(look) { if (!look.fill || !look.fill.c) return '<fill><patternFill patternType="none"/></fill>'; return '<fill><patternFill patternType="solid"><fgColor rgb="' + argb(look.fill.c) + '"/><bgColor indexed="64"/></patternFill></fill>'; }
+		var BS = { 1: "thin", 2: "medium", 3: "thick" };
+		function borderXml(bd) {
+			bd = bd || {};
+			var side = function (tag, e) { if (!e) return "<" + tag + "/>"; var st = e.st || BS[e.w] || "thin"; if (st === "double" && e.w === 3) st = "double"; return "<" + tag + ' style="' + st + '"><color rgb="' + argb(e.c || "000000") + '"/></' + tag + ">"; };
+			return "<border>" + side("left", bd.l) + side("right", bd.r) + side("top", bd.t) + side("bottom", bd.b) + "<diagonal/></border>";
+		}
+		function alignXml(look) {
+			var a = "";
+			if (look.ha) a += ' horizontal="' + look.ha + '"';
+			if (look.vaAlign) a += ' vertical="' + look.vaAlign + '"';
+			if (look.wrap) a += ' wrapText="1"';
+			if (look.indent) a += ' indent="' + look.indent + '"';
+			if (look.rot) a += ' textRotation="' + look.rot + '"';
+			return a ? "<alignment" + a + "/>" : "";
+		}
+		// a differential format (conditional formatting): font colour / bold / italic and a fill
+		function dxfXml(look) {
+			var f = "";
+			if (look.b || look.i || look.u || look.color) f = "<font>" + (look.b ? "<b/>" : "") + (look.i ? "<i/>" : "") + (look.u ? "<u/>" : "") + (look.color ? '<color rgb="' + argb(look.color) + '"/>' : "") + "</font>";
+			var fl = look.fill && look.fill.c ? '<fill><patternFill><bgColor rgb="' + argb(look.fill.c) + '"/></patternFill></fill>' : "";
+			return "<dxf>" + f + fl + "</dxf>";
+		}
+		// rules = [{type, op, formulas, text, look, colors, color, cfvo, ranges}]; dxf0 = the dxfs already in styles.xml
+		// -> {xml (for the sheet), dxfs: [xml], next}
+		function cfXml(rules, dxf0, prio0) {
+			var dxfs = [], out = [], prio = prio0 || 1;
+			rules.forEach(function (R) {
+				var sq = R.ranges.map(function (g) { var a = a1(g.s.r, g.s.c), b = a1(g.e.r, g.e.c); return a === b ? a : a + ":" + b; }).join(" ");
+				var body = "", attrs = ' type="' + R.type + '" priority="' + (prio++) + '"';
+				if (R.type === "colorScale") body = "<colorScale>" + (R.colors.length === 3 ? '<cfvo type="min"/><cfvo type="percentile" val="50"/><cfvo type="max"/>' : '<cfvo type="min"/><cfvo type="max"/>') + R.colors.map(function (c) { return '<color rgb="' + argb(c) + '"/>'; }).join("") + "</colorScale>";
+				else if (R.type === "dataBar") body = '<dataBar><cfvo type="min"/><cfvo type="max"/><color rgb="' + argb(R.color) + '"/></dataBar>';
+				else {
+					if (R.dxf) { attrs += ' dxfId="' + (dxf0 + dxfs.length) + '"'; dxfs.push(dxfXml(R.dxf)); }
+					if (R.type === "cellIs") { attrs += ' operator="' + R.op + '"'; body = R.formulas.map(function (f) { return "<formula>" + esc(f) + "</formula>"; }).join(""); }
+					else if (R.type === "containsText") { attrs += ' operator="containsText" text="' + esc(R.text) + '"'; var tl = a1(R.ranges[0].s.r, R.ranges[0].s.c); body = '<formula>NOT(ISERROR(SEARCH("' + esc(String(R.text).replace(/"/g, '""')) + '",' + tl + ")))</formula>"; }
+					else if (R.type === "duplicateValues" || R.type === "uniqueValues") body = "";
+					else if (R.type === "top10") { attrs += ' rank="' + (R.rank || 10) + '"' + (R.bottom ? ' bottom="1"' : "") + (R.percent ? ' percent="1"' : ""); }
+					else if (R.type === "aboveAverage") { if (!R.above) attrs += ' aboveAverage="0"'; }
+					else if (R.type === "expression") body = "<formula>" + esc(R.formulas[0]) + "</formula>";
+				}
+				out.push('<conditionalFormatting sqref="' + sq + '"><cfRule' + attrs + (body ? ">" + body + "</cfRule>" : "/>") + "</conditionalFormatting>");
+			});
+			return { xml: out.join(""), dxfs: dxfs, next: prio };
+		}
+
+		O.tableXml = tableXml; O.tableColNames = tableColNames; O.chartXml = chartXml; O.drawingXml = drawingXml; O.sheetRef = sheetRef;
+		O.fontXml = fontXml; O.fillXml = fillXml; O.borderXml = borderXml; O.alignXml = alignXml; O.dxfXml = dxfXml; O.cfXml = cfXml;
+		O.CT = { table: "application/vnd.openxmlformats-officedocument.spreadsheetml.table+xml", drawing: "application/vnd.openxmlformats-officedocument.drawing+xml", chart: "application/vnd.openxmlformats-officedocument.drawingml.chart+xml" };
+		O.REL = { table: "http://schemas.openxmlformats.org/officeDocument/2006/relationships/table", drawing: "http://schemas.openxmlformats.org/officeDocument/2006/relationships/drawing", chart: "http://schemas.openxmlformats.org/officeDocument/2006/relationships/chart" };
+	}
+	if (typeof module === "object" && module.exports) module.exports = { install: install };
+	else if (root.MESXLO) install(root.MESXLO);
 })(typeof window !== "undefined" ? window : this);
 
 /* MES Spreadsheet Viewer & Editor (mes.fm/excel): open .xlsx / .xlsm / .xls / .ods / .csv / .tsv in the browser, view them in a
@@ -1934,7 +3483,7 @@
 		if (window.XLSX) return Promise.resolve(window.XLSX);
 		if (!lib) lib = new Promise(function (res, rej) {
 			var s = document.createElement("script"); s.src = SHEETJS; s.async = true;
-			s.onload = function () { window.XLSX ? res(window.XLSX) : rej(new Error("The spreadsheet library did not start.")); };
+			s.onload = function () { if (window.XLSX) { X.ssf = window.XLSX.SSF; res(window.XLSX); } else rej(new Error("The spreadsheet library did not start.")); };
 			s.onerror = function () { lib = null; rej(new Error("Could not load the spreadsheet library. Check your connection and try again.")); };
 			document.head.appendChild(s);
 		});
@@ -1997,6 +3546,7 @@
 	function editText(cell) {
 		if (!cell) return "";
 		if (cell.f) return "=" + cell.f;
+		if (cell.sp && wb) { var C = ensureCalc(), k = C.spilledBy[si + ":" + actualRow(sel.ar) + ":" + sel.ac], p = k && k.split(":"), an = p && C.getCell(+p[0], +p[1], +p[2]); if (an && an.f) return "=" + an.f; }
 		if (cell.t === "n" && typeof cell.v === "number") {
 			if (cell.z && /%/.test(cell.z) && !/"[^"]*%/.test(cell.z)) return X.fmtGeneral(+(cell.v * 100).toPrecision(15)) + "%";
 			if (cell.z && /[dy]/i.test(cell.z.replace(/"[^"]*"/g, "")) && !/\[/.test(cell.z) && window.XLSX) { try { return window.XLSX.SSF.format("yyyy-mm-dd", cell.v) + (cell.v % 1 ? " " + window.XLSX.SSF.format("hh:mm:ss", cell.v) : ""); } catch (e) { /* ignore */ } }
@@ -2034,17 +3584,21 @@
 	var cfc = null, cfcV = -1, cfcS = -1;
 	// -> {css: {css, fill, ha, wrap, va}, bar, fmtColor} | null for cell (ar, c)
 	function styleAt(ar, c, cell) {
-		var x = sx(), L = null, key = null;
+		var x = sx(), w = ws(), L = null, key = null, nt = w["!mestables"], mcf = w["!mescf"], cfs = null, ml = cell && cell.ml;
 		if (x) {
 			var xs = cell && cell.xs != null ? cell.xs : (x.rowXf[ar] != null ? x.rowXf[ar] : x.colXf[c]);
 			L = xs ? xfLook(xs) : null; key = xs ? "x" + xs : "";
 			for (var i = 0; i < x.tables.length; i++) { var t = x.tables[i]; if (t.els && ar >= t.g.s.r && ar <= t.g.e.r && c >= t.g.s.c && c <= t.g.e.c) { L = O.mergeLook(O.tableLook(t, ar, c, t.els), L); key = null; break; } }
-			if (x.cf.length && ar != null) {
-				if (!cfc || cfcV !== dver || cfcS !== si) { cfc = cfCtx(); cfcV = dver; cfcS = si; }
-				var res = O.cfFor(x.cf, ar, c, cfc);
-				if (res) { if (res.look) { L = O.mergeLook(L, res.look); key = null; } if (res.bar) { key = null; var out0 = { css: O.lookCss(L, isDark()), bar: res.bar }; return out0; } }
-			}
+			if (x.cf.length) cfs = x.cf;
 		} else { var f = fillOf(cell); if (f) L = { fill: { c: f.slice(1) } }; key = f ? "f" + f : ""; }
+		if (nt && nt.length) for (var j = 0; j < nt.length; j++) { var t2 = nt[j]; if (ar >= t2.g.s.r && ar <= t2.g.e.r && c >= t2.g.s.c && c <= t2.g.e.c) { L = O.mergeLook(O.tableLook(t2, ar, c, tableEls(t2)), L); key = null; break; } }
+		if (ml) { L = withMl(L, ml); key = null; }
+		if (mcf && mcf.length) cfs = cfs ? cfs.concat(mcf) : mcf;
+		if (cfs && ar != null) {
+			if (!cfc || cfcV !== dver || cfcS !== si) { cfc = cfCtx(); cfcV = dver; cfcS = si; }
+			var res = O.cfFor(cfs, ar, c, cfc);
+			if (res) { if (res.look) { L = O.mergeLook(L, res.look); key = null; } if (res.bar) { key = null; return { css: O.lookCss(L, isDark()), bar: res.bar }; } }
+		}
 		if (!L) return null;
 		if (key) { var k2 = key + (isDark() ? "d" : ""); return cssCache[k2] || (cssCache[k2] = { css: O.lookCss(L, isDark()) }); }
 		return { css: O.lookCss(L, isDark()) };
@@ -2155,7 +3709,9 @@
 		var box = height > RH || (sa && sa.css.wrap);
 		if (height > RH && !(sa && sa.css.wrap)) cls += " tall";
 		if (hitSet && hitSet.has(ar + ":" + c)) cls += " hit";
-		return '<div class="' + cls + '" style="' + st + '">' + (box ? '<span class="xl-ct">' + esc(t) + "</span>" : esc(t)) + "</div>";
+		var tb = "";
+		if (ar != null && ws()["!mestables"]) { var tt = tableAt(ar, c); if (tt && tt.header && tt.filterBtn !== false && ar === tt.g.s.r) { var vv = views[wb.SheetNames[si]], on = vv && vv.filters && vv.filters.some(function (f) { return f.c === c && f.t === tt.name; }); tb = '<button type="button" class="xl-tfb' + (on ? " is-on" : "") + '" data-tf="' + ar + ":" + c + '" aria-label="Sort and filter ' + esc(t) + '" tabindex="-1">' + (on ? "&#9660;&#8226;" : "&#9662;") + "</button>"; cls += " has-tfb"; } }
+		return '<div class="' + cls + '" style="' + st + '">' + (box ? '<span class="xl-ct">' + esc(t) + "</span>" : esc(t)) + tb + "</div>";
 	}
 	// one quadrant of the grid. rows: [{dr, ar, y}], cols: [{c, x, w}], dom: {r0, r1 (display rows), c0, c1 (columns)} it may draw in,
 	// yOf(dr) / xOf(c) give positions inside the quadrant's container
@@ -2205,8 +3761,9 @@
 			var aw = colX[sel.ac + 1] - colX[sel.ac], ah = RH, ax = xOf(sel.ac), ay = yOf(sel.ar);
 			var am = M && M.at.get(actualRow(sel.ar) * 16384 + sel.ac);
 			if (am != null) { var gg = M.list[am]; ax = xOf(Math.max(gg.s.c, dom.c0)); aw = colX[Math.min(gg.e.c, dom.c1) + 1] - colX[Math.max(gg.s.c, dom.c0)]; var t0 = displayRow(gg.s.r), t1 = displayRow(gg.e.r); if (t0 != null && t1 != null) { ay = yOf(Math.max(t0, dom.r0)); ah = (Math.min(t1, dom.r1) - Math.max(t0, dom.r0) + 1) * RH; } }
-			h.push('<div class="xl-act" style="left:' + ax + "px;top:" + ay + "px;width:" + aw + "px;height:" + ah + 'px"></div>');
+			if (!(editing && editing.si !== si)) h.push('<div class="xl-act' + (editing && isFormulaText(edText()) ? " is-ed" : "") + '" style="left:' + ax + "px;top:" + ay + "px;width:" + aw + "px;height:" + ah + 'px"></div>');
 		}
+		h.push(spillBox(dom, yOf, xOf, rows), clipBox(dom, yOf, xOf, rows), refBoxes(dom, yOf, xOf, rows), fillPrevBox(dom, yOf, xOf, rows), fillHandle(dom, xOf, yOf, rows));
 		return h.join("");
 	}
 	function draw() {
@@ -2312,9 +3869,10 @@
 		if (!now) { clearTimeout(objT); objT = setTimeout(function () { drawObjects(true); }, 60); return; }
 		var box = $("xl-objs"); if (!box) return;
 		var x = wb && sx();
-		if (!x || !x.objects.length || !S.objs || isSF() || NR * RH > MAXH) { box.innerHTML = ""; return; }
+		var mine = ws()["!mescharts"];
+		if ((!x || !x.objects.length) && !(mine && mine.length) || !S.objs || isSF() || NR * RH > MAXH) { box.innerHTML = ""; return; }
 		var html = [], dark = isDark();
-		x.objects.forEach(function (o, i) {
+		(x ? x.objects : []).forEach(function (o, i) {
 			if (o.hidden) return;
 			var r = rectOf(o.anchor); if (!r || r.w < 6 || r.h < 6) return;
 			var pos = "left:" + r.x.toFixed(1) + "px;top:" + r.y.toFixed(1) + "px;width:" + r.w.toFixed(1) + "px;height:" + r.h.toFixed(1) + "px";
@@ -2323,6 +3881,7 @@
 			try { svg = O.chartSvg(o.chart, chartModel(o.chart), { w: Math.round(r.w), h: Math.round(r.h), dark: dark, fmt: fmtVal }); } catch (e) { svg = ""; if (window.console) console.warn("[excel] chart", e); }
 			if (svg) html.push('<div class="xl-obj xl-chart" data-oi="' + i + '" role="img" aria-label="' + esc((o.name || "Chart") + (o.chart.title ? ": " + o.chart.title : "")) + '" style="' + pos + '">' + svg + "</div>");
 		});
+		drawMyCharts(html, dark);
 		box.innerHTML = html.join("");
 	}
 	// toolbar buttons that depend on the sheet (hidden rows / columns, charts, freeze)
@@ -2333,7 +3892,7 @@
 		hb.setAttribute("aria-pressed", String(!!S.showHidden));
 		$("xl-hidn").textContent = (hc.r ? hc.r + " row" + (hc.r > 1 ? "s" : "") : "") + (hc.r && hc.c ? ", " : "") + (hc.c ? hc.c + " col" + (hc.c > 1 ? "s" : "") : "");
 		hb.title = (S.showHidden ? "Showing" : "Show") + " the hidden rows and columns of this sheet (they stay hidden in the file)";
-		ob.hidden = !(x && x.objects.length);
+		ob.hidden = !((x && x.objects.length) || (ws()["!mescharts"] || []).length);
 		ob.setAttribute("aria-pressed", String(!!S.objs));
 		grid.classList.toggle("xl-nogrid", !!(x && x.view && x.view.showGridLines === false));
 		var hd = $("xl-hdr"); hd.setAttribute("aria-pressed", String(!!(f.r || f.c)));
@@ -2372,8 +3931,9 @@
 		if (!wb) return;
 		var ar = actualRow(sel.ar), cell = getCell(ar, sel.ac), R = selRect();
 		nameBox.value = R.r1 === R.r2 && R.c1 === R.c2 ? X.a1(ar, sel.ac) : X.a1(actualRow(R.r1), R.c1) + ":" + X.a1(actualRow(R.r2), R.c2);
-		if (!(editing && editing.where === "bar")) fxin.value = editText(cell);
-		status();
+		if (!editing) fxin.value = editText(cell);
+		fxin.classList.toggle("is-ghost", !!(cell && cell.sp && !editing));
+		status(); fmtState();
 	}
 	function selectedActualRows() { var R = selRect(), out = []; for (var r = R.r1; r <= R.r2; r++) out.push(actualRow(r)); return out; }
 
@@ -2412,31 +3972,36 @@
 	/* ---------- editing ---------- */
 	function placeEditor() {
 		var I = scrollInfo(), dr = editing.dr, c = editing.c;
+		ed.style.visibility = editing.si != null && editing.si !== si ? "hidden" : "";
 		var top = dr < 0 ? CHH + (dr + base) * RH : CHH + FR + dr * RH - I.P, left = c < FC ? HW + colX[c] : HW + colX[c] - I.sl;
 		ed.style.left = left + "px"; ed.style.top = top + "px";
 		ed.style.minWidth = (colX[c + 1] - colX[c] + 1) + "px"; ed.style.height = "auto";
 		ed.style.width = "1px"; ed.style.width = Math.min(grid.clientWidth - left - 4, Math.max(colX[c + 1] - colX[c] + 1, ed.scrollWidth + 6)) + "px";
 		ed.style.height = Math.max(RH + 1, ed.scrollHeight + 2) + "px";
+		paintEdHL();
 	}
 	function startEdit(text, where) {
 		if (!wb) return;
 		if (editing) commitEdit();
 		var ar = actualRow(sel.ar), cell = getCell(ar, sel.ac);
-		editing = { dr: sel.ar, c: sel.ac, ar: ar, where: where || "cell", orig: editText(cell) };
+		editing = { dr: sel.ar, c: sel.ac, ar: ar, si: si, where: where || "cell", orig: cell && cell.sp ? "" : editText(cell), mode: text != null ? "enter" : "edit", pick: null };
 		if (editing.where === "cell") {
-			ed.hidden = false; ed.value = text != null ? text : editing.orig;
+			ed.hidden = false; ed.value = text != null ? text : (cell && cell.sp ? "" : editing.orig);
 			placeEditor(); ed.focus(); var n = ed.value.length; ed.setSelectionRange(n, n);
 			fxin.value = ed.value;
 		}
+		refHL(); status();
 	}
-	function cancelEdit() { if (!editing) return; var w = editing.where; editing = null; ed.hidden = true; fxin.value = editText(getCell(actualRow(sel.ar), sel.ac)); if (w === "cell") scroll.focus({ preventScroll: true }); }
+	function cancelEdit() { if (!editing) return; backToEditSheet(); var w = editing.where; editing = null; ed.hidden = true; hlRefs = []; paintEdHL(); fxin.value = editText(getCell(actualRow(sel.ar), sel.ac)); if (w === "cell") scroll.focus({ preventScroll: true }); note(""); render(); status(); }
 	function commitEdit() {
 		if (!editing) return true;
 		var e = editing, val = e.where === "cell" ? ed.value : fxin.value;
-		if (val === e.orig) { editing = null; ed.hidden = true; return true; }
+		if (isFormulaText(val)) val = autoClose(val);
+		backToEditSheet();
+		if (val === e.orig) { editing = null; ed.hidden = true; hlRefs = []; paintEdHL(); render(); return true; }
 		try { setCells([{ r: e.ar, c: e.c, text: val }], "Edit " + X.a1(e.ar, e.c)); }
-		catch (err) { note(esc(err.message || "That formula can't be read."), true); if (e.where === "cell") ed.focus(); return false; }
-		editing = null; ed.hidden = true; note("");
+		catch (err) { note(esc(err.message || "That formula can't be read."), true); if (e.where === "cell") ed.focus(); else fxin.focus(); return false; }
+		editing = null; ed.hidden = true; hlRefs = []; paintEdHL(); note(""); render();
 		return true;
 	}
 	function buildCell(text, old) {
@@ -2445,10 +4010,10 @@
 			var ast;
 			try { ast = X.parse(p.f); } catch (e) { throw new Error("That formula can't be read: " + e.message + " (start with an apostrophe, like '=, to type it as text)"); }
 			var unk = X.unknownFunctions(ast);
-			cell = unk.length ? { t: "e", v: 29, w: "#NAME?", f: p.f } : { t: "n", v: 0, f: p.f };
+			cell = unk.length ? { t: "e", v: 29, w: "#NAME?", f: p.f, da: 1 } : { t: "n", v: 0, f: p.f, da: 1 };
 			if (old && old.z) cell.z = old.z;
 		} else if (p.t === "z") {
-			if (old && (old.s || old.xs != null)) { var stub = { t: "z" }; if (old.s) stub.s = old.s; if (old.xs != null) { stub.xs = old.xs; stub.xz = old.xz; } return stub; }
+			if (old && (old.s || old.xs != null || old.ml || old.z)) { var stub = { t: "z" }; if (old.s) stub.s = old.s; if (old.ml) stub.ml = old.ml; if (old.z) stub.z = old.z; if (old.xs != null) { stub.xs = old.xs; stub.xz = old.xz; } return stub; }
 			return undefined;
 		} else {
 			cell = { t: p.t, v: p.v };
@@ -2457,11 +4022,12 @@
 			else if (p.t === "n" && old && old.z && old.t === "n") cell.z = old.z;
 		}
 		if (old && old.s) cell.s = old.s;
+		if (old && old.ml) cell.ml = old.ml;
 		if (old && old.xs != null) { cell.xs = old.xs; cell.xz = old.xz; if (!cell.z && old.xz && old.t === "z" && p.t === "n") cell.z = old.xz; }
 		return cell;
 	}
 	function ensureCalc() {
-		if (!calc) calc = new X.Calc({ sheets: wb.SheetNames.map(function (n) { return { name: n, get data() { var w = wb.Sheets[n]; if (!w["!data"]) w["!data"] = []; return w["!data"]; } }; }) });
+		if (!calc) calc = new X.Calc({ sheets: wb.SheetNames.map(function (n) { return { name: n, get data() { var w = wb.Sheets[n]; if (!w["!data"]) w["!data"] = []; return w["!data"]; } }; }), names: bookNames, tables: calcTables });
 		return calc;
 	}
 	function resetCalc() { calc = null; }
@@ -2477,15 +4043,16 @@
 		});
 		var res = C.recalc(changed);
 		res.stale.forEach(function (p) { stale[p.si + ":" + p.r + ":" + p.c] = p.unknown; });
-		if (res.cycles) note("A formula refers to itself (a circular reference), so it shows #CYCLE!.", true);
+		if (res.cycles) { var cc = res.cycleCells[0]; note("Circular reference: a formula refers to its own cell" + (cc ? " (" + esc((cc.si !== s ? wb.SheetNames[cc.si] + "!" : "") + X.a1(cc.r, cc.c)) + ")" : "") + ", directly or through other cells, so it shows #CYCLE!.", true); }
+		return res;
 	}
 	function setCells(list, label) {
 		var s = si, ch = [];
 		list.forEach(function (x) { var b = getCell(x.r, x.c); var a = buildCell(x.text, b); if (!b && !a) return; ch.push({ r: x.r, c: x.c, b: b, a: a }); });
 		if (!ch.length) return;
-		writeCells(s, ch, "a");
+		var res = writeCells(s, ch, "a");
 		pushUndo({ k: "cells", si: s, ch: ch, label: label });
-		afterChange(ch.some(function (x) { return x.r >= nRows || x.c >= nCols; }) || ch.some(function (x) { return !x.a; }));
+		afterChange(ch.some(function (x) { return x.r >= nRows || x.c >= nCols; }) || ch.some(function (x) { return !x.a; }) || !!(res && res.spilled.length));
 	}
 	function afterChange(redim) {
 		if (redim) { var r0 = NR, c0 = NC; dims(); setRef(); layout(); if (NR !== r0 || NC !== c0) clampSel(); }
@@ -2500,7 +4067,8 @@
 		if (!op) return;
 		if (op.k === "cells") {
 			if (op.si !== si) showSheet(op.si);
-			writeCells(op.si, op.ch, isRedo ? "a" : "b");
+			if (op.nocalc) { var d0 = wb.Sheets[wb.SheetNames[op.si]]["!data"]; op.ch.forEach(function (x) { if (!d0[x.r]) d0[x.r] = []; d0[x.r][x.c] = isRedo ? x.a : x.b; }); cssCache = {}; }
+			else writeCells(op.si, op.ch, isRedo ? "a" : "b");
 			var f = op.ch[0], dr = displayRow(f.r);
 			if (dr != null) { sel.ar = sel.fr = dr; sel.ac = sel.fc = f.c; }
 		} else if (op.k === "struct") {
@@ -2519,7 +4087,8 @@
 		wb.SheetNames.forEach(function (n) {
 			var w = wb.Sheets[n];
 			snap.sheets[n] = { ws: w, data: (w["!data"] || []).map(function (r) { return r && r.slice(); }), cols: w["!cols"] ? w["!cols"].map(function (o) { return o && Object.assign({}, o); }) : null, ref: w["!ref"],
-				rows: w["!rows"] ? w["!rows"].slice() : null, merges: w["!merges"] ? w["!merges"].map(function (g) { return { s: Object.assign({}, g.s), e: Object.assign({}, g.e) }; }) : null };
+				rows: w["!rows"] ? w["!rows"].slice() : null, merges: w["!merges"] ? w["!merges"].map(function (g) { return { s: Object.assign({}, g.s), e: Object.assign({}, g.e) }; }) : null,
+				mine: JSON.stringify({ t: (w["!mestables"] || []).map(function (t) { var o = Object.assign({}, t); delete o.els; return o; }), c: (w["!mescharts"] || []).map(function (c) { return { id: c.id, m: c.m, range: c.range, byRow: c.byRow, at: c.at, name: c.name }; }), f: w["!mescf"] || [] }) };
 		});
 		return snap;
 	}
@@ -2533,15 +4102,16 @@
 			if (s.rows) w["!rows"] = s.rows.slice(); else delete w["!rows"];
 			if (s.merges) w["!merges"] = s.merges.map(function (g) { return { s: Object.assign({}, g.s), e: Object.assign({}, g.e) }; }); else delete w["!merges"];
 			w["!ref"] = s.ref; wb.Sheets[n] = w;
+			var mine = JSON.parse(s.mine || "{}"); w["!mestables"] = mine.t || []; w["!mescharts"] = (mine.c || []).map(function (c) { chartBuild(c); return c; }); w["!mescf"] = mine.f || [];
 		});
-		stale = {};
+		stale = {}; cssCache = {}; cfc = null;
 	}
 	function afterStruct() { resetCalc(); views = {}; si = Math.min(si, wb.SheetNames.length - 1); dims(); layout(); ensureView(); renderSheets(); clampSel(); }
-	function struct(label, fn) {
+	function struct(label, fn, soft) {
 		if (editing) commitEdit();
 		var hadView = isSF();
 		if (view()) { views[wb.SheetNames[si]] = null; layout(); }
-		if (file) file.structN = (file.structN || 0) + 1;
+		if (file && !soft) file.structN = (file.structN || 0) + 1;
 		var before = snapshot(), s0 = si;
 		var changedF = fn(); stale = {};
 		var after = snapshot();
@@ -2574,7 +4144,7 @@
 			if (n > 0) { while (d.length < at) d.push(undefined); var add = []; for (var i = 0; i < n; i++) add.push(undefined); Array.prototype.splice.apply(d, [at, 0].concat(add)); }
 			else d.splice(at, -n);
 			var rm = ws()["!rows"]; if (rm && rm.length > at) { if (n > 0) Array.prototype.splice.apply(rm, [at, 0].concat(new Array(n))); else rm.splice(at, -n); }
-			shiftMerges("r", at, n);
+			shiftMerges("r", at, n); shiftObjects("r", at, n, name);
 			return finalPositions(adjustAll({ axis: "r", at: at, n: n, sheet: name }));
 		});
 	}
@@ -2584,7 +4154,7 @@
 			var spl = function (arr) { if (!arr) return; if (n > 0) { if (arr.length < at) return; var add = []; for (var i = 0; i < n; i++) add.push(undefined); Array.prototype.splice.apply(arr, [at, 0].concat(add)); } else arr.splice(at, -n); };
 			d.forEach(function (row, i) { if (row) spl(row); });
 			if (w["!cols"]) spl(w["!cols"]);
-			shiftMerges("c", at, n);
+			shiftMerges("c", at, n); shiftObjects("c", at, n, name);
 			return finalPositions(adjustAll({ axis: "c", at: at, n: n, sheet: name }));
 		});
 	}
@@ -2631,6 +4201,7 @@
 			wb.SheetNames[i] = nn; wb.Sheets[nn] = wb.Sheets[old]; delete wb.Sheets[old];
 			if (wb.Workbook && wb.Workbook.Sheets && wb.Workbook.Sheets[i]) wb.Workbook.Sheets[i].name = nn;
 			wb.SheetNames.forEach(function (n, s) { var d = wb.Sheets[n]["!data"] || []; d.forEach(function (row, r) { if (row) row.forEach(function (cell, c) { if (cell && cell.f) { var f2 = X.renameSheetRefs(cell.f, old, nn); if (f2 !== cell.f) { row[c] = Object.assign({}, cell, { f: f2 }); changed.push({ si: s, r: r, c: c }); } } }); }); });
+			wb.SheetNames.forEach(function (n) { (wb.Sheets[n]["!mescharts"] || []).forEach(function (ch) { if (ch.m.sheet === old) ch.m.sheet = nn; ch.m.series.forEach(function (sr) { ["name", "cat", "val"].forEach(function (k) { if (sr[k] && sr[k].sheet === old) sr[k].sheet = nn; }); }); chartBuild(ch); }); });
 			return [];
 		});
 	}
@@ -2655,8 +4226,8 @@
 			return '<button type="button" class="xl-stab' + (i === si ? " is-on" : "") + (h ? " is-hid" : "") + '" role="tab" aria-selected="' + (i === si) + '" data-si="' + i + '" title="' + esc(n) + (h === 2 ? " (very hidden: Excel only shows it through VBA)" : h ? " (hidden in Excel: right-click a tab and choose Unhide there)" : "") + ' (double-click to rename)"' + (tc ? ' style="box-shadow:inset 0 -3px 0 #' + tc + '"' : "") + ">" + (h ? '<span class="xl-eye" aria-hidden="true">&#9680;</span> ' : "") + esc(n) + (lab ? ' <small class="xl-hidl">(' + lab + ")</small>" : "") + "</button>";
 		}).join("");
 	}
-	function showSheet(i) {
-		if (editing) commitEdit();
+	function showSheet(i, keepEdit) {
+		if (editing && !keepEdit) commitEdit();
 		if (wb.SheetNames[si]) views["@" + wb.SheetNames[si]] = { st: scroll.scrollTop, sl: scroll.scrollLeft, sel: Object.assign({}, sel) };
 		si = i; hits = []; hitSet = null; hitIx = -1; $("xl-qn").textContent = "";
 		dims(); layout(); renderSheets();
@@ -2671,7 +4242,8 @@
 		if ($("xl-q").value) runFind(true);
 		var b = $("xl-stabs").querySelector(".is-on"); if (b && b.scrollIntoView) b.scrollIntoView({ block: "nearest", inline: "nearest" });
 	}
-	$("xl-stabs").addEventListener("click", function (e) { var b = e.target.closest("[data-si]"); if (b && +b.getAttribute("data-si") !== si) showSheet(+b.getAttribute("data-si")); });
+	$("xl-stabs").addEventListener("pointerdown", function (e) { if (editing && isFormulaText(edText()) && e.target.closest("[data-si]")) e.preventDefault(); });
+	$("xl-stabs").addEventListener("click", function (e) { var b = e.target.closest("[data-si]"); if (!b) return; var i = +b.getAttribute("data-si"); if (editing && isFormulaText(edText())) { if (i !== si) editSheetSwitch(i); else (editing.where === "bar" ? fxin : ed).focus(); return; } if (i !== si) showSheet(i); });
 	$("xl-stabs").addEventListener("dblclick", function (e) { var b = e.target.closest("[data-si]"); if (b) renameSheet(+b.getAttribute("data-si")); });
 	$("xl-sadd").onclick = function () { if (!wb) newBook(); else addSheet(); };
 
@@ -2713,7 +4285,7 @@
 		$("xl-fcol").innerHTML = opts.join("");
 		var chips = [];
 		if (v && v.sort) chips.push('<span class="xl-chip">Sorted by ' + esc(X.colName(v.sort.c)) + (v.sort.dir > 0 ? " ↑" : " ↓") + '<button type="button" data-rm="sort" aria-label="Remove the sort">&times;</button></span>');
-		(v && v.filters || []).forEach(function (f, i) { chips.push('<span class="xl-chip">' + esc(X.colName(f.c)) + " " + esc(X.FILTER_OPS[f.op]) + (f.op === "blank" || f.op === "notblank" ? "" : " “" + esc(f.v) + "”") + '<button type="button" data-rm="' + i + '" aria-label="Remove this filter">&times;</button></span>'); });
+		(v && v.filters || []).forEach(function (f, i) { chips.push('<span class="xl-chip">' + esc(X.colName(f.c)) + " " + esc(X.FILTER_OPS[f.op]) + (f.op === "blank" || f.op === "notblank" ? "" : f.op === "in" ? " " + esc(f.v) + (f.t ? " (" + esc(f.t) + ")" : "") : " “" + esc(f.v) + "”") + '<button type="button" data-rm="' + i + '" aria-label="Remove this filter">&times;</button></span>'); });
 		$("xl-fchips").innerHTML = chips.join("");
 		$("xl-fclear").hidden = !chips.length;
 		if (chips.length && bar.hidden) bar.hidden = false;
@@ -2789,6 +4361,8 @@
 		if (!wb || e.button > 0) return;
 		var p = hitCell(e, scroll);
 		if (e.clientX - scroll.getBoundingClientRect().left > scroll.clientWidth || e.clientY - scroll.getBoundingClientRect().top > scroll.clientHeight) return;  // scroll bars
+		if (e.target.closest && (e.target.closest(".xl-fh") || e.target.closest(".xl-tfb"))) return;
+		if (editing && tryPoint(p, e)) return;
 		if (editing) { if (!commitEdit()) return; }
 		if (e.pointerType === "touch" || e.pointerType === "pen") { drag = { touch: true, x: e.clientX, y: e.clientY, p: p }; return; }
 		e.preventDefault(); scroll.focus({ preventScroll: true });
@@ -2799,6 +4373,7 @@
 	scroll.addEventListener("pointermove", function (e) {
 		if (!drag || drag.touch || drag.el !== scroll) return;
 		var rect = scroll.getBoundingClientRect();
+		if (drag.point) { if (!editing || !editing.pick) return; var pp = hitCell(e, scroll), pk = editing.pick; if (pp.dr !== pk.dr1 || pp.c !== pk.c1) pointSet(pk.dr0, pk.c0, pp.dr, pp.c); return; }
 		if (e.clientY > rect.bottom - 6) scroll.scrollTop += RH; else if (e.clientY < rect.top + 6) scroll.scrollTop -= RH;
 		if (e.clientX > rect.right - 6) scroll.scrollLeft += 40; else if (e.clientX < rect.left + 6) scroll.scrollLeft -= 40;
 		var p = hitCell(e, scroll);
@@ -2819,6 +4394,7 @@
 		var r = this.getBoundingClientRect(), id = this.id, x = e.clientX - r.left, y = e.clientY - r.top, dr, c;
 		if (id === "xl-fcols") { dr = Math.min(NR - 1, Math.max(0, Math.floor((y + scrollInfo().P) / RH))); c = Math.min(FC - 1, colAt(x)); }
 		else { dr = Math.min(-1, Math.floor(y / RH) - base); c = id === "xl-frzc" ? Math.min(FC - 1, colAt(x)) : Math.max(FC, colAt(x + scroll.scrollLeft + FW)); }
+		if (editing && tryPoint({ dr: dr, c: c }, e)) return;
 		if (editing && !commitEdit()) return;
 		e.preventDefault(); scroll.focus({ preventScroll: true });
 		if (e.detail > 1) { select(dr, c); startEdit(); return; }
@@ -2888,6 +4464,9 @@
 		if (k === "Tab") return mv(sel.ar, sel.ac + (e.shiftKey ? -1 : 1));
 		if (k === "Enter") return mv(sel.ar + (e.shiftKey ? -1 : 1), sel.ac);
 		if (k === "F2") { e.preventDefault(); startEdit(); return; }
+		if (k === "Escape" && clip) { clip = null; render(); return; }
+		if (mod && k.toLowerCase() === "d") { e.preventDefault(); fillDown(); return; }
+		if (mod && k.toLowerCase() === "r") { e.preventDefault(); fillRight(); return; }
 		if (k === "Delete" || k === "Backspace") { e.preventDefault(); clearSel(); return; }
 		if (mod && k.toLowerCase() === "a") { e.preventDefault(); $("xl-corner").dispatchEvent(new PointerEvent("pointerdown", { bubbles: true })); return; }
 		if (mod && (k === "-" )) { e.preventDefault(); rowsCols(sel.mode === "col" ? "col-del" : "row-del"); return; }
@@ -2905,17 +4484,22 @@
 	}
 	ed.addEventListener("keydown", function (e) {
 		var k = e.key;
+		if (f4Key(e)) return;
+		if (editing && editing.mode === "enter" && /^Arrow(Up|Down|Left|Right)$/.test(k) && !e.ctrlKey && !e.metaKey && !e.altKey && pointable()) { e.preventDefault(); e.stopPropagation(); arrowPoint(k, e.shiftKey); return; }
+		if (/^(Arrow|Home|End)/.test(k) && editing) editing.pick = null;
 		if (k === "Enter" && !e.altKey) { e.preventDefault(); e.stopPropagation(); var d = e.shiftKey ? -1 : 1; if (commitEdit()) { scroll.focus({ preventScroll: true }); select(sel.ar + d, sel.ac); } return; }
 		if (k === "Enter" && e.altKey) { e.preventDefault(); var s = ed.selectionStart; ed.value = ed.value.slice(0, s) + "\n" + ed.value.slice(ed.selectionEnd); ed.setSelectionRange(s + 1, s + 1); placeEditor(); return; }
 		if (k === "Tab") { e.preventDefault(); e.stopPropagation(); if (commitEdit()) { scroll.focus({ preventScroll: true }); select(sel.ar, sel.ac + (e.shiftKey ? -1 : 1)); } return; }
 		if (k === "Escape") { e.preventDefault(); e.stopPropagation(); cancelEdit(); return; }
 		e.stopPropagation();
 	});
-	ed.addEventListener("input", function () { fxin.value = ed.value; placeEditor(); });
+	ed.addEventListener("input", function () { fxin.value = ed.value; placeEditor(); if (editing) { editing.pick = null; refHL(); } });
 	ed.addEventListener("blur", function () { setTimeout(function () { if (editing && editing.where === "cell" && document.activeElement !== ed && document.activeElement !== fxin) commitEdit(); render(); }, 0); });
-	fxin.addEventListener("focus", function () { if (!wb) return; if (editing && editing.where === "cell") { var v = ed.value; editing.where = "bar"; ed.hidden = true; fxin.value = v; return; } editing = { dr: sel.ar, c: sel.ac, ar: actualRow(sel.ar), where: "bar", orig: editText(getCell(actualRow(sel.ar), sel.ac)) }; });
+	fxin.addEventListener("focus", function () { if (!wb) return; if (editing && editing.where === "cell") { var v = ed.value; editing.where = "bar"; ed.hidden = true; fxin.value = v; return; } editing = { dr: sel.ar, c: sel.ac, ar: actualRow(sel.ar), si: si, where: "bar", mode: "edit", pick: null, orig: editText(getCell(actualRow(sel.ar), sel.ac)) }; refHL(); });
+	fxin.addEventListener("input", function () { if (!editing) return; editing.pick = null; refHL(); });
 	fxin.addEventListener("keydown", function (e) {
 		if (!editing) return;
+		if (f4Key(e)) return;
 		if (e.key === "Enter") { e.preventDefault(); e.stopPropagation(); if (commitEdit()) { scroll.focus({ preventScroll: true }); select(sel.ar + (e.shiftKey ? -1 : 1), sel.ac); } }
 		else if (e.key === "Escape") { e.preventDefault(); e.stopPropagation(); cancelEdit(); scroll.focus({ preventScroll: true }); }
 		else if (e.key === "Tab") { e.preventDefault(); if (commitEdit()) { scroll.focus({ preventScroll: true }); select(sel.ar, sel.ac + (e.shiftKey ? -1 : 1)); } }
@@ -2944,8 +4528,14 @@
 		return X.toDelimited(rows, "\t", "\n");
 	}
 	function inGridFocus() { var a = document.activeElement; return a === scroll || (a && a.closest && a.closest("#xl-grid") && a !== ed); }
-	document.addEventListener("copy", function (e) { if (!wb || editing || !inGridFocus()) return; var t = selTSV(); if (t == null) return; e.preventDefault(); e.clipboardData.setData("text/plain", t); var R = selRect(); toast("Copied " + nf((R.r2 - R.r1 + 1) * (R.c2 - R.c1 + 1)) + " cell" + ((R.r2 - R.r1 + R.c2 - R.c1) ? "s" : "")); });
-	document.addEventListener("cut", function (e) { if (!wb || editing || !inGridFocus()) return; var t = selTSV(); if (t == null) return; e.preventDefault(); e.clipboardData.setData("text/plain", t); clearSel(); });
+	function copyEvent(e, cut) {
+		if (!wb || editing || !inGridFocus()) return;
+		var o = doCopy(cut); if (!o) return;
+		e.preventDefault(); e.clipboardData.setData("text/plain", o.text); e.clipboardData.setData("text/html", o.html);
+		var R = selRect(); toast((cut ? "Cut " : "Copied ") + nf((R.r2 - R.r1 + 1) * (R.c2 - R.c1 + 1)) + " cell" + ((R.r2 - R.r1 + R.c2 - R.c1) ? "s" : "") + (cut ? ": select where it goes and paste" : ""));
+	}
+	document.addEventListener("copy", function (e) { copyEvent(e, false); });
+	document.addEventListener("cut", function (e) { copyEvent(e, true); });
 	function pasteText(text) {
 		if (!wb || text == null) return;
 		var rows = X.parseDelimited(text.replace(/\r?\n$/, ""), text.indexOf("\t") >= 0 || text.indexOf("\n") < 0 ? "\t" : null);
@@ -2969,7 +4559,9 @@
 		var fs = [].filter.call((e.clipboardData && e.clipboardData.files) || [], function (f) { return /\.(xlsx|xlsm|xls|ods|csv|tsv|xlsb|numbers)$/i.test(f.name || ""); });
 		if (fs.length && !(document.activeElement && /input|textarea/i.test(document.activeElement.tagName) && document.activeElement !== scroll)) { e.preventDefault(); openFile(fs[0]); return; }
 		if (!wb || editing || !inGridFocus()) return;
-		e.preventDefault(); pasteText(e.clipboardData.getData("text/plain"));
+		e.preventDefault();
+		var txt = e.clipboardData.getData("text/plain");
+		if (clipSame(txt)) pasteInternal(); else pasteText(txt);
 	});
 
 	/* ---------- global shortcuts ---------- */
@@ -3201,9 +4793,9 @@
 		btn.addEventListener("click", function (e) { e.stopPropagation(); var open = m.hidden; closeMenus(); if (open && wb) { m.hidden = false; btn.setAttribute("aria-expanded", "true"); var f = m.querySelector("button:not([hidden])"); if (f) f.focus(); } });
 		m.addEventListener("keydown", function (e) { if (e.key === "Escape") { e.stopPropagation(); closeMenus(); btn.focus(); } });
 	}
-	function closeMenus() { [["xl-rcbtn", "xl-rcmenu"], ["xl-save", "xl-savemenu"], ["xl-hdr", "xl-frzmenu"]].forEach(function (p) { $(p[1]).hidden = true; $(p[0]).setAttribute("aria-expanded", "false"); }); }
+	function closeMenus() { [["xl-rcbtn", "xl-rcmenu"], ["xl-insbtn", "xl-insmenu"], ["xl-save", "xl-savemenu"], ["xl-hdr", "xl-frzmenu"]].forEach(function (p) { $(p[1]).hidden = true; $(p[0]).setAttribute("aria-expanded", "false"); }); }
 	document.addEventListener("click", function (e) { if (!e.target.closest(".xl-dd")) closeMenus(); });
-	menu($("xl-rcbtn"), $("xl-rcmenu")); menu($("xl-save"), $("xl-savemenu")); menu($("xl-hdr"), $("xl-frzmenu"));
+	menu($("xl-rcbtn"), $("xl-rcmenu")); menu($("xl-insbtn"), $("xl-insmenu")); menu($("xl-save"), $("xl-savemenu")); menu($("xl-hdr"), $("xl-frzmenu"));
 	$("xl-rcmenu").addEventListener("click", function (e) { var b = e.target.closest("[data-rc]"); if (!b) return; closeMenus(); rowsCols(b.getAttribute("data-rc")); });
 	$("xl-savemenu").addEventListener("click", function (e) { var b = e.target.closest("[data-save]"); if (!b) return; closeMenus(); saveAs(b.getAttribute("data-save")); });
 	$("xl-undo").onclick = function () { doUndo(false); };
@@ -3266,7 +4858,9 @@
 				if (sm && !info.structOk) { if (sm.objects && sm.objects.some(function (o) { return o.type === "chart"; })) lost.charts = 1; if (sm.objects && sm.objects.some(function (o) { return o.type === "pic"; })) lost.pictures = 1; if (sm.tables && sm.tables.length) lost["table formats"] = 1; if (sm.cfRaw && sm.cfRaw.length) lost["conditional formatting"] = 1; }
 			}
 			var rm = w["!rows"]; if (rm) for (var hr = 0; hr < rm.length; hr++) if (rm[hr] && rm[hr].hidden) (rowAttrs || (rowAttrs = {}))[hr] = ' hidden="1"';
-			info.sheets.push({ model: sm, freeze: w["!mesfrz"] || (sm && sm.pane ? { r: sm.pane.r, c: sm.pane.c } : null), cells: cells, stubs: stubs, rowAttrs: rowAttrs });
+			var add = mineParts(w, info.sheets.length);
+			if (sm && sm.drawingPart && add.some(function (a) { return a.tag === "drawing"; })) { add = add.filter(function (a) { return a.tag !== "drawing"; }); lost["new charts (this sheet already has a drawing)"] = 1; }
+			info.sheets.push({ model: sm, freeze: w["!mesfrz"] || (sm && sm.pane ? { r: sm.pane.r, c: sm.pane.c } : null), cells: cells, stubs: stubs, rowAttrs: rowAttrs, add: add });
 		});
 		info.lost = Object.keys(lost);
 		return info;
@@ -3278,7 +4872,7 @@
 		prepWrite();
 		if (!canGraft()) return Promise.resolve({ bytes: window.XLSX.write(wb, { bookType: bt, type: "array", compression: true, bookVBA: vba }) });
 		var info = graftInfo();
-		if (!pkgOf() && !info.sheets.some(function (s) { return s.freeze && (s.freeze.r || s.freeze.c); })) return Promise.resolve({ bytes: window.XLSX.write(wb, { bookType: bt, type: "array", compression: true, bookVBA: vba }) });
+		if (!pkgOf() && !info.sheets.some(function (s) { return (s.freeze && (s.freeze.r || s.freeze.c)) || (s.add && s.add.length); })) return Promise.resolve({ bytes: window.XLSX.write(wb, { bookType: bt, type: "array", compression: true, bookVBA: vba }) });
 		var raw = window.XLSX.write(wb, { bookType: bt, type: "array", compression: false, bookVBA: vba });
 		return O.graft(new Uint8Array(raw), pkgOf(), info, inflateRaw, deflateRaw).then(function (res) { res.lost = info.lost; return res; });
 	}
@@ -3306,6 +4900,559 @@
 		toast("In the print window, choose “Save as PDF” to make a PDF.");
 	}
 	$("xl-print").onclick = printSheet;
+
+	/* ---------- formula entry: click / drag cells to insert references, coloured outlines, F4 ---------- */
+	var hlRefs = [], hlEl = null, clip = null, fillDrag = null, tfMenuEl = null, bookNamesCache = null;
+	function isFormulaText(t) { return typeof t === "string" && t.length > 0 && t.charAt(0) === "="; }
+	function edEl() { return editing && editing.where === "bar" ? fxin : ed; }
+	function edText() { return editing ? edEl().value : ""; }
+	function autoClose(v) {
+		var q = false, depth = 0;
+		for (var i = 0; i < v.length; i++) { var ch = v.charAt(i); if (ch === '"') q = !q; else if (!q) { if (ch === "(") depth++; else if (ch === ")" && depth > 0) depth--; } }
+		if (q) v += '"';
+		while (depth-- > 0) v += ")";
+		return v;
+	}
+	function setEdText(v, a, b) {
+		var el = edEl(); el.value = v;
+		if (el === fxin) ed.value = v; else fxin.value = v;
+		if (a != null) { try { el.setSelectionRange(a, b == null ? a : b); } catch (e) { /* ignore */ } }
+		if (editing.where === "cell") placeEditor();
+		refHL();
+	}
+	function refHL() {
+		var t = edText(), was = hlRefs.length;
+		hlRefs = editing && isFormulaText(t) ? X.refSpans(t) : [];
+		paintEdHL();
+		if (was || hlRefs.length) render();
+	}
+	// the cell editor is a textarea, which cannot colour parts of its text: a copy of the text sits behind it with the references coloured
+	function paintEdHL() {
+		if (!hlEl) { hlEl = document.createElement("div"); hlEl.className = "xl-edhl"; hlEl.setAttribute("aria-hidden", "true"); hlEl.hidden = true; grid.appendChild(hlEl); }
+		var on = !!(editing && editing.where === "cell" && !ed.hidden && hlRefs.length && editing.si === si);
+		ed.classList.toggle("xl-ed--hl", on); hlEl.hidden = !on;
+		if (!on) return;
+		var t = ed.value, h = "", p = 0;
+		hlRefs.forEach(function (s) { h += esc(t.slice(p, s.start)) + '<span style="color:' + s.color + '">' + esc(t.slice(s.start, s.end)) + "</span>"; p = s.end; });
+		h += esc(t.slice(p)); if (/\n$/.test(t)) h += " ";
+		hlEl.innerHTML = h;
+		hlEl.style.left = ed.style.left; hlEl.style.top = ed.style.top; hlEl.style.width = ed.style.width; hlEl.style.height = ed.style.height; hlEl.style.minWidth = ed.style.minWidth;
+	}
+	function backToEditSheet() { if (editing && editing.si != null && editing.si !== si && editing.si < wb.SheetNames.length) showSheet(editing.si, true); }
+	function editSheetSwitch(i) {
+		if (editing.pick) editing.pick = null;
+		showSheet(i, true);
+		var el = edEl(); el.focus({ preventScroll: true });
+		render();
+	}
+	// is a click / arrow key now "pointing" (inserting a reference) rather than ending the edit?
+	function pointable() {
+		if (!editing || !isFormulaText(edText())) return false;
+		var el = edEl(), t = el.value, p = editing.pick;
+		if (p && p.si === si && t.slice(p.start, p.end) === p.text) return true;
+		var s = el.selectionStart, e = el.selectionEnd;
+		return X.canPoint(t.slice(0, s) + t.slice(e), s);
+	}
+	function pointSet(dr0, c0, dr1, c1) {
+		var el = edEl(), t = el.value, p = editing.pick, s, e;
+		if (p && p.si === si && t.slice(p.start, p.end) === p.text) { s = p.start; e = p.end; } else { s = el.selectionStart; e = el.selectionEnd; }
+		var a = actualRow(Math.min(dr0, dr1)), b = actualRow(Math.max(dr0, dr1));
+		if (a == null || b == null) return;
+		var g = { s: { r: a, c: Math.min(c0, c1) }, e: { r: b, c: Math.max(c0, c1) } };
+		var text = X.refText(g, si !== editing.si ? wb.SheetNames[si] : null);
+		editing.pick = { start: s, end: s + text.length, text: text, si: si, dr0: dr0, c0: c0, dr1: dr1, c1: c1 };
+		setEdText(t.slice(0, s) + text + t.slice(e), s + text.length);
+	}
+	function tryPoint(p, e) {
+		if (!pointable()) return false;
+		e.preventDefault();
+		edEl().focus({ preventScroll: true });
+		var pk = editing.pick && editing.pick.si === si ? editing.pick : null;
+		if (e.shiftKey && pk) pointSet(pk.dr0, pk.c0, p.dr, p.c); else pointSet(p.dr, p.c, p.dr, p.c);
+		if (e.pointerType !== "touch") { drag = { el: scroll, point: true }; try { scroll.setPointerCapture(e.pointerId); } catch (x) { /* ignore */ } }
+		return true;
+	}
+	function arrowPoint(k, shift) {
+		var p = editing.pick && editing.pick.si === si ? editing.pick : null, dy = k === "ArrowDown" ? 1 : k === "ArrowUp" ? -1 : 0, dx = k === "ArrowRight" ? 1 : k === "ArrowLeft" ? -1 : 0;
+		var cur = p ? { dr0: p.dr0, c0: p.c0, dr1: p.dr1, c1: p.c1 } : (editing.si === si ? { dr0: editing.dr, c0: editing.c, dr1: editing.dr, c1: editing.c } : { dr0: sel.ar, c0: sel.ac, dr1: sel.ar, c1: sel.ac });
+		cur.dr1 = Math.max(minRow(), Math.min(NR - 1, cur.dr1 + dy)); cur.c1 = Math.max(0, Math.min(NC - 1, cur.c1 + dx));
+		if (!shift) { cur.dr0 = cur.dr1; cur.c0 = cur.c1; }
+		pointSet(cur.dr0, cur.c0, cur.dr1, cur.c1);
+		reveal(cur.dr1, cur.c1);
+	}
+	function f4Key(e) {
+		if (e.key !== "F4" || !editing || !isFormulaText(edText())) return false;
+		e.preventDefault(); e.stopPropagation();
+		var el = edEl(), r = X.f4At(el.value, el.selectionStart, el.selectionEnd);
+		if (r) {
+			var pk = editing.pick;
+			if (pk) editing.pick = Object.assign({}, pk, { start: r.start, end: r.end, text: r.text.slice(r.start, r.end) });
+			setEdText(r.text, r.caret);
+		}
+		return true;
+	}
+	// outlines of the references being typed, in the colours the formula text uses
+	function boxOf(g, dom, yOf, xOf) {
+		var r0 = g.s.r, r1 = Math.min(g.e.r, Math.max(nRows - 1, g.s.r, 0));
+		var d0 = displayRow(r0), d1 = displayRow(r1);
+		if (d0 == null || d1 == null) return null;
+		var a = Math.max(d0, dom.r0), b = Math.min(d1, dom.r1), c0 = Math.max(g.s.c, dom.c0), c1 = Math.min(g.e.c, dom.c1);
+		if (a > b || c0 > c1) return null;
+		return { l: xOf(c0), t: yOf(a), w: colX[c1 + 1] - colX[c0], h: (b - a + 1) * RH };
+	}
+	function boxDiv(b, cls, extra) { return b ? '<div class="' + cls + '" style="left:' + b.l + "px;top:" + b.t + "px;width:" + b.w + "px;height:" + b.h + "px;" + (extra || "") + '"></div>' : ""; }
+	function refBoxes(dom, yOf, xOf) {
+		if (!editing || !hlRefs.length) return "";
+		var out = [];
+		hlRefs.forEach(function (s) {
+			var onSheet = s.sheet ? String(s.sheet).toLowerCase() === wb.SheetNames[si].toLowerCase() : editing.si === si;
+			if (onSheet) out.push(boxDiv(boxOf(s.g, dom, yOf, xOf), "xl-refbox", "border-color:" + s.color + ";background:" + s.color + "1f"));
+		});
+		return out.join("");
+	}
+	function spillBox(dom, yOf, xOf) {
+		if (!wb || !calc || editing || sel.mode) return "";
+		var ar = actualRow(sel.ar); if (ar == null) return "";
+		var g = calc.spillOf(si, ar, sel.ac);
+		if (!g) { var k = calc.spilledBy[si + ":" + ar + ":" + sel.ac], p = k && k.split(":"); if (p && +p[0] === si) g = calc.spillOf(si, +p[1], +p[2]); }
+		if (!g || (g.s.r === g.e.r && g.s.c === g.e.c)) return "";
+		return boxDiv(boxOf(g, dom, yOf, xOf), "xl-spill");
+	}
+	function clipBox(dom, yOf, xOf) {
+		if (!clip || clip.si !== si || editing) return "";
+		var g = { s: { r: Math.min.apply(null, clip.ar), c: clip.c1 }, e: { r: Math.max.apply(null, clip.ar), c: clip.c2 } };
+		return boxDiv(boxOf(g, dom, yOf, xOf), "xl-clip");
+	}
+	function fillPrevBox(dom, yOf, xOf) {
+		if (!fillDrag || !fillDrag.prev) return "";
+		var p = fillDrag.prev, a = Math.max(p.r1, dom.r0), b = Math.min(p.r2, dom.r1), c0 = Math.max(p.c1, dom.c0), c1 = Math.min(p.c2, dom.c1);
+		if (a > b || c0 > c1) return "";
+		return boxDiv({ l: xOf(c0), t: yOf(a), w: colX[c1 + 1] - colX[c0], h: (b - a + 1) * RH }, "xl-fillprev");
+	}
+	function fillHandle(dom, xOf, yOf) {
+		if (!wb || editing || sel.mode === "all") return "";
+		var R = selRect();
+		if (R.r2 < dom.r0 || R.r2 > dom.r1 || R.c2 < dom.c0 || R.c2 > dom.c1 || R.c2 >= NC) return "";
+		var w = colX[R.c2 + 1] - colX[R.c2]; if (!w) return "";
+		return '<div class="xl-fh" data-fh="1" title="Drag to fill (double-click: fill down to the end of the data)" style="left:' + (xOf(R.c2) + w - 5) + "px;top:" + (yOf(R.r2) + RH - 5) + 'px"></div>';
+	}
+	function withMl(L, ml) { return O ? O.mergeLook(L, ml) : L; }
+	function fmtState() { /* cell format toolbar: not built */ }
+
+	/* ---------- internal clipboard (copy / cut / paste keep formulas and formats; relative references shift like Excel) ---------- */
+	function isDateZ(z) { return !!(z && /[dy]/i.test(String(z).replace(/"[^"]*"/g, "")) && !/\[/.test(z)); }
+	function cloneFor(cell, dr, dc) {
+		if (!cell) return undefined;
+		var n = Object.assign({}, cell); delete n.w; delete n.sp;
+		if (n.f) { n.f = X.shiftFormula(n.f, dr, dc); n.t = n.t === "e" ? "n" : n.t; }
+		return n;
+	}
+	function setCellObjs(list, label) {
+		var s = si, ch = [];
+		list.forEach(function (x) { var b = getCell(x.r, x.c); if (!b && !x.a) return; ch.push({ r: x.r, c: x.c, b: b, a: x.a }); });
+		if (!ch.length) return;
+		var res = writeCells(s, ch, "a");
+		pushUndo({ k: "cells", si: s, ch: ch, label: label });
+		afterChange(ch.some(function (x) { return x.r >= nRows || x.c >= nCols; }) || ch.some(function (x) { return !x.a; }) || !!(res && res.spilled && res.spilled.length));
+	}
+	function doCopy(cut) {
+		if (!wb) return null;
+		var R = selRect(), r2 = Math.min(R.r2, Math.max(dataN() - 1, R.r1)), c2 = Math.min(R.c2, Math.max(nCols - 1, R.c1));
+		if ((r2 - R.r1 + 1) * (c2 - R.c1 + 1) > 500000) { toast("That is too many cells to copy at once."); return null; }
+		var ars = [], cells = [], tsv = [], htm = [];
+		for (var r = R.r1; r <= Math.max(r2, R.r1); r++) {
+			var ar = actualRow(r), row = ar == null ? null : data()[ar], cr = [], tr = [], hr = [];
+			for (var c = R.c1; c <= c2; c++) {
+				var cell = row ? row[c] : undefined, t = disp(cell), css = "";
+				try { var sa = cell ? styleAt(ar, c, cell) : null; css = sa && sa.css && sa.css.css || ""; } catch (e) { css = ""; }
+				cr.push(cell ? Object.assign({}, cell) : undefined); tr.push(t); hr.push({ text: t, css: css, num: !!(cell && cell.t === "n") });
+			}
+			ars.push(ar); cells.push(cr); tsv.push(tr); htm.push(hr);
+		}
+		var text = X.toDelimited(tsv, "\t", "\n");
+		clip = { si: si, ar: ars, c1: R.c1, c2: c2, cells: cells, text: text, cut: !!cut };
+		render();
+		return { text: text, html: X.htmlTable(htm) };
+	}
+	function clipSame(text) { return !!clip && String(text).replace(/\r?\n$/, "") === clip.text.replace(/\r?\n$/, ""); }
+	function pasteInternal() {
+		var R = selRect(), h = clip.ar.length, w = clip.c2 - clip.c1 + 1;
+		var tr = R.r2 - R.r1 + 1, tc = R.c2 - R.c1 + 1;
+		var nH = !clip.cut && tr > h && tr % h === 0 ? tr : h, nW = !clip.cut && tc > w && tc % w === 0 ? tc : w;
+		if (nH * nW > 300000) { toast("That is too much to paste at once (" + nf(nH * nW) + " cells)."); return; }
+		var t0 = actualRow(R.r1); if (t0 == null) return;
+		if (clip.cut) return pasteCut(R, t0);
+		var list = [], cutShort = false;
+		for (var i = 0; i < nH; i++) {
+			var trow = actualRow(R.r1 + i); if (trow == null) { cutShort = true; break; }
+			for (var j = 0; j < nW; j++) {
+				var sr = clip.ar[i % h], sc = clip.c1 + (j % w), tcol = R.c1 + j;
+				if (sr == null) continue;
+				list.push({ r: trow, c: tcol, a: cloneFor(clip.cells[i % h][j % w], trow - sr, tcol - sc) });
+			}
+		}
+		try { setCellObjs(list, "Paste"); } catch (err) { note(esc(err.message), true); return; }
+		sel.fr = Math.min(NR - 1, R.r1 + nH - 1); sel.fc = R.c1 + nW - 1; clampSel(); showActive(); render();
+		if (cutShort) note("Only the rows showing in the sorted / filtered view were filled.");
+	}
+	function pasteCut(R, t0) {
+		var srcName = wb.SheetNames[clip.si], dstName = wb.SheetNames[si], h = clip.ar.length, w = clip.c2 - clip.c1 + 1;
+		var a0 = clip.ar[0], dr = t0 - a0, dc = R.c1 - clip.c1;
+		var g = { s: { r: Math.min.apply(null, clip.ar), c: clip.c1 }, e: { r: Math.max.apply(null, clip.ar), c: clip.c2 } }, from = { sheet: srcName, g: g };
+		var s0 = clip.si, dst = si;
+		struct("Move cells", function () {
+			var changed = [];
+			// references (anywhere in the book) to cells that are moving follow them
+			wb.SheetNames.forEach(function (n, s) {
+				var d = wb.Sheets[n]["!data"] || [];
+				for (var r = 0; r < d.length; r++) { var row = d[r]; if (!row) continue; for (var c = 0; c < row.length; c++) { var cell = row[c]; if (!cell || !cell.f) continue; var f2 = X.moveRefs(cell.f, from, dr, dc, n, dstName); if (f2 !== cell.f) { var nc = Object.assign({}, cell, { f: f2 }); delete nc.w; row[c] = nc; changed.push({ si: s, r: r, c: c }); } } }
+			});
+			var sd = wb.Sheets[srcName]["!data"] || (wb.Sheets[srcName]["!data"] = []), dd = wb.Sheets[dstName]["!data"] || (wb.Sheets[dstName]["!data"] = []), moved = [];
+			for (var i = 0; i < h; i++) { var sr = clip.ar[i]; for (var j = 0; j < w; j++) { var cc = clip.c1 + j, cell2 = sd[sr] && sd[sr][cc]; moved.push({ r: sr + dr, c: cc + dc, cell: cell2 ? Object.assign({}, cell2) : undefined }); if (sd[sr]) sd[sr][cc] = undefined; changed.push({ si: s0, r: sr, c: cc }); } }
+			moved.forEach(function (m) { if (m.cell) { delete m.cell.w; delete m.cell.sp; } if (!dd[m.r]) dd[m.r] = []; dd[m.r][m.c] = m.cell; changed.push({ si: dst, r: m.r, c: m.c }); });
+			return changed;
+		}, true);
+		clip = null;
+		sel.ar = Math.max(minRow(), R.r1); sel.ac = R.c1; sel.fr = Math.min(NR - 1, R.r1 + h - 1); sel.fc = R.c1 + w - 1; clampSel(); showActive(); render();
+	}
+
+	/* ---------- fill handle, Ctrl+D / Ctrl+R ---------- */
+	function seriesVals(cells, n) {
+		var src = cells.map(function (c) {
+			if (!c) return { v: null };
+			if (c.t === "n" && typeof c.v === "number") return { v: c.v, date: isDateZ(c.z) };
+			if ((c.t === "s" || c.t === "str") && c.v != null) return { v: String(c.v) };
+			if (c.t === "b") return { v: !!c.v };
+			return { v: null };
+		});
+		if (src.some(function (x) { return x.v === null; })) return null;
+		return X.fillSeries(src, n, {});
+	}
+	function fromVal(base, r) {
+		var n = Object.assign({}, base || {}); delete n.f; delete n.w; delete n.sp; delete n.da; delete n.v; delete n.t;
+		if (typeof r.v === "number") { n.t = "n"; n.v = r.v; } else if (typeof r.v === "boolean") { n.t = "b"; n.v = r.v; } else { n.t = "s"; n.v = String(r.v); }
+		return n;
+	}
+	// R: selection (display rows); dir d / u / r / l; n = how many cells to add beyond it; copy = copy instead of making a series
+	function fillCells(R, dir, n, copy, label) {
+		var vert = dir === "d" || dir === "u", fwd = dir === "d" || dir === "r", ch = [], rows = [];
+		for (var r = R.r1; r <= R.r2; r++) rows.push(actualRow(r));
+		var nLines = vert ? R.c2 - R.c1 + 1 : rows.length, m = vert ? rows.length : R.c2 - R.c1 + 1;
+		for (var L = 0; L < nLines; L++) {
+			var src = [], pos = [];
+			for (var i = 0; i < m; i++) { var ar = vert ? rows[i] : rows[L], c = vert ? R.c1 + L : R.c1 + i; if (ar == null) continue; src.push(getCell(ar, c)); pos.push({ r: ar, c: c }); }
+			if (!src.length) continue;
+			m = src.length;
+			var ord = fwd ? src.slice() : src.slice().reverse(), ordPos = fwd ? pos : pos.slice().reverse();
+			var hasF = ord.some(function (x) { return x && x.f; }), vals = !hasF && !copy ? seriesVals(ord, n) : null;
+			for (var k = 0; k < n; k++) {
+				var tr, tc;
+				if (vert) { tc = R.c1 + L; tr = actualRow(fwd ? R.r2 + 1 + k : R.r1 - 1 - k); } else { tr = rows[L]; tc = fwd ? R.c2 + 1 + k : R.c1 - 1 - k; }
+				if (tr == null || tr < 0 || tc < 0 || tc >= 16384) continue;
+				var q = k % m, a = vals ? fromVal(ord[q], vals[k]) : cloneFor(ord[q], tr - ordPos[q].r, tc - ordPos[q].c);
+				ch.push({ r: tr, c: tc, a: a });
+			}
+		}
+		if (!ch.length) return false;
+		try { setCellObjs(ch, label || "Fill"); } catch (err) { note(esc(err.message), true); return false; }
+		return true;
+	}
+	function fillDown(copy) {
+		var R = selRect(); if (!wb) return;
+		if (R.r2 > R.r1) fillCells({ r1: R.r1, r2: R.r1, c1: R.c1, c2: R.c2 }, "d", R.r2 - R.r1, true, "Fill down");
+		else if (R.r1 > minRow()) fillCells({ r1: R.r1 - 1, r2: R.r1 - 1, c1: R.c1, c2: R.c2 }, "d", 1, true, "Fill down");
+		render(); void copy;
+	}
+	function fillRight() {
+		var R = selRect(); if (!wb) return;
+		if (R.c2 > R.c1) fillCells({ r1: R.r1, r2: R.r2, c1: R.c1, c2: R.c1 }, "r", R.c2 - R.c1, true, "Fill right");
+		else if (R.c1 > 0) fillCells({ r1: R.r1, r2: R.r2, c1: R.c1 - 1, c2: R.c1 - 1 }, "r", 1, true, "Fill right");
+		render();
+	}
+	function fillTarget(p) {
+		var R = fillDrag.R, dv = p.dr > R.r2 ? p.dr - R.r2 : p.dr < R.r1 ? p.dr - R.r1 : 0, dh = p.c > R.c2 ? p.c - R.c2 : p.c < R.c1 ? p.c - R.c1 : 0;
+		if (!dv && !dh) return { dir: null, n: 0, prev: null };
+		if (Math.abs(dv) >= Math.abs(dh) * (dh ? 1 : 1) && dv) return dv > 0 ? { dir: "d", n: dv, prev: { r1: R.r1, r2: R.r2 + dv, c1: R.c1, c2: R.c2 } } : { dir: "u", n: -dv, prev: { r1: R.r1 + dv, r2: R.r2, c1: R.c1, c2: R.c2 } };
+		return dh > 0 ? { dir: "r", n: dh, prev: { r1: R.r1, r2: R.r2, c1: R.c1, c2: R.c2 + dh } } : { dir: "l", n: -dh, prev: { r1: R.r1, r2: R.r2, c1: R.c1 + dh, c2: R.c2 } };
+	}
+	grid.addEventListener("pointerdown", function (e) {
+		if (!wb || e.button > 0) return;
+		var tf = e.target.closest && e.target.closest(".xl-tfb");
+		if (tf) { e.preventDefault(); e.stopPropagation(); if (editing && !commitEdit()) return; tfMenu(tf); return; }
+		var fh = e.target.closest && e.target.closest(".xl-fh");
+		if (fh) {
+			e.preventDefault(); e.stopPropagation();
+			fillDrag = { R: selRect(), prev: null, dir: null, n: 0 };
+			try { fh.setPointerCapture(e.pointerId); } catch (x) { /* ignore */ }
+			var mv = function (ev) {
+				var rect = scroll.getBoundingClientRect();
+				if (ev.clientY > rect.bottom - 6) scroll.scrollTop += RH; else if (ev.clientY < rect.top + 6) scroll.scrollTop -= RH;
+				if (ev.clientX > rect.right - 6) scroll.scrollLeft += 40; else if (ev.clientX < rect.left + 6) scroll.scrollLeft -= 40;
+				var t = fillTarget(hitCell(ev, scroll)); fillDrag.dir = t.dir; fillDrag.n = t.n; fillDrag.prev = t.prev; render();
+			};
+			var up = function (ev) {
+				document.removeEventListener("pointermove", mv); document.removeEventListener("pointerup", up); document.removeEventListener("pointercancel", up);
+				var fd = fillDrag; if (fd && !fd.dir && ev.type === "pointerup") { var t2 = fillTarget(hitCell(ev, scroll)); fd.dir = t2.dir; fd.n = t2.n; fd.prev = t2.prev; } fillDrag = null;
+				if (fd && fd.dir && fd.n > 0 && ev.type === "pointerup") {
+					if (fillCells(fd.R, fd.dir, fd.n, ev.ctrlKey || ev.metaKey)) { var p = fd.prev; sel.ar = p.r1; sel.fr = p.r2; sel.ac = p.c1; sel.fc = p.c2; sel.mode = ""; clampSel(); showActive(); }
+				}
+				render();
+			};
+			document.addEventListener("pointermove", mv); document.addEventListener("pointerup", up); document.addEventListener("pointercancel", up);
+		}
+	}, true);
+	grid.addEventListener("dblclick", function (e) {
+		var fh = e.target.closest && e.target.closest(".xl-fh"); if (!fh || !wb) return;
+		e.preventDefault(); e.stopPropagation();
+		var R = selRect(), nc = R.c1 > 0 ? R.c1 - 1 : R.c2 + 1, n = 0;
+		for (var dr = R.r2 + 1; dr < NR && n < 100000; dr++) { var ar = actualRow(dr); var cl = ar == null ? null : getCell(ar, nc); if (!cl || cl.t === "z" || disp(cl) === "") break; n++; }
+		if (n > 0 && fillCells(R, "d", n, false)) { sel.fr = R.r2 + n; clampSel(); showActive(); render(); }
+	}, true);
+
+	/* ---------- Excel tables (Insert > Table): banded rows, header sort / filter buttons ---------- */
+	function myTables(w) { w = w || ws(); return w["!mestables"] || (w["!mestables"] = []); }
+	function tableEls(t) { if (!t.els) { var p = pkgOf(); t.els = O.tableElements(t, p ? p.styles : null, p ? p.theme : null) || null; } return t.els; }
+	function tableAt(ar, c) {
+		var l = ws()["!mestables"]; if (!l) return null;
+		for (var i = 0; i < l.length; i++) { var t = l[i]; if (ar >= t.g.s.r && ar <= t.g.e.r && c >= t.g.s.c && c <= t.g.e.c) return t; }
+		return null;
+	}
+	function allTables() {
+		var out = [];
+		wb.SheetNames.forEach(function (n) {
+			var w = wb.Sheets[n], x = sx(w);
+			(x && x.tables || []).forEach(function (t) { out.push({ name: t.name, sheet: n, g: t.g, header: t.header, totals: t.totals, cols: t.columns || [] }); });
+			(w["!mestables"] || []).forEach(function (t) { out.push({ name: t.name, sheet: n, g: t.g, header: t.header, totals: t.totals, cols: t.columns || [] }); });
+		});
+		return out;
+	}
+	var calcTables = function () { return allTables(); };
+	var bookNames = function () {
+		var o = {}, nm = wb && wb.Workbook && wb.Workbook.Names || [];
+		nm.forEach(function (n) { if (n && n.Name && n.Ref && n.Sheet == null) o[String(n.Name).toUpperCase()] = n.Ref; });
+		return o;
+	};
+	// the block of filled cells around (r, c) (what Excel selects for a one-cell selection)
+	function region(r, c) {
+		var d = data(), has = function (rr, cc) { var cl = d[rr] && d[rr][cc]; return !!(cl && cl.t !== "z" && disp(cl) !== ""); };
+		var r1 = r, r2 = r, c1 = c, c2 = c, grew = true, guard = 0;
+		while (grew && guard++ < 500) {
+			grew = false;
+			var rowHas = function (rr) { for (var cc = c1 - 1; cc <= c2 + 1; cc++) if (cc >= 0 && has(rr, cc)) return true; return false; };
+			var colHas = function (cc) { for (var rr = r1 - 1; rr <= r2 + 1; rr++) if (rr >= 0 && has(rr, cc)) return true; return false; };
+			if (r1 > 0 && rowHas(r1 - 1)) { r1--; grew = true; }
+			if (r2 + 1 < nRows && rowHas(r2 + 1)) { r2++; grew = true; }
+			if (c1 > 0 && colHas(c1 - 1)) { c1--; grew = true; }
+			if (c2 + 1 < nCols && colHas(c2 + 1)) { c2++; grew = true; }
+		}
+		return { s: { r: r1, c: c1 }, e: { r: r2, c: c2 } };
+	}
+	function selGrid() {
+		var R = selRect(), a = actualRow(R.r1), b = actualRow(Math.min(R.r2, Math.max(dataN() - 1, R.r1)));
+		if (a == null || b == null) return null;
+		var g = { s: { r: Math.min(a, b), c: R.c1 }, e: { r: Math.max(a, b), c: Math.min(R.c2, Math.max(nCols - 1, R.c1)) } };
+		if (g.s.r === g.e.r && g.s.c === g.e.c) { var cl = getCell(g.s.r, g.s.c); if (!cl || cl.t === "z") return null; g = region(g.s.r, g.s.c); }
+		return g;
+	}
+	function insertTable() {
+		if (!wb) return;
+		var g = selGrid();
+		if (!g || g.e.r === g.s.r) { toast("Select the cells for the table first (a header row and at least one row of data)."); return; }
+		var clash = (ws()["!mestables"] || []).some(function (t) { return !(g.e.r < t.g.s.r || g.s.r > t.g.e.r || g.e.c < t.g.s.c || g.s.c > t.g.e.c); });
+		if (clash) { toast("Those cells are already in a table."); return; }
+		var names = {}; allTables().forEach(function (t) { names[String(t.name).toLowerCase()] = 1; });
+		var k = 1; while (names["table" + k]) k++;
+		var id = 1; wb.SheetNames.forEach(function (n) { (wb.Sheets[n]["!mestables"] || []).forEach(function (t) { id = Math.max(id, t.id + 1); }); });
+		struct("Insert table", function () {
+			var d = data(), texts = [], c;
+			for (c = g.s.c; c <= g.e.c; c++) texts.push(disp(d[g.s.r] && d[g.s.r][c]));
+			var cols = O.tableColNames(texts), changed = [];
+			if (!d[g.s.r]) d[g.s.r] = [];
+			cols.forEach(function (nm, i) { var cc = g.s.c + i, old = d[g.s.r][cc]; if (!old || old.t === "n" || disp(old) !== nm) { d[g.s.r][cc] = Object.assign({}, old || {}, { t: "s", v: nm }); delete d[g.s.r][cc].w; delete d[g.s.r][cc].f; changed.push({ si: si, r: g.s.r, c: cc }); } });
+			myTables().push({ id: id, name: "Table" + k, g: { s: { r: g.s.r, c: g.s.c }, e: { r: g.e.r, c: g.e.c } }, header: true, totals: false, style: "TableStyleMedium2", rowStripes: true, colStripes: false, firstCol: false, lastCol: false, columns: cols, cols: cols });
+			return changed;
+		}, true);
+		toast("Made Table" + k + ". Use the arrows in the header row to sort it.");
+	}
+	function sortTable(t, c, dir) {
+		var first = t.g.s.r + (t.header ? 1 : 0), last = t.g.e.r - (t.totals ? 1 : 0);
+		if (last <= first) return;
+		struct("Sort table", function () {
+			var d = data(), rows = [], changed = [], i;
+			for (i = first; i <= last; i++) rows.push({ i: i, row: d[i] ? d[i].slice() : [], key: X.cellValue(d[i] ? d[i][c] : undefined) });
+			var rank = function (v) { return v == null || v === "" ? 3 : typeof v === "number" ? 0 : typeof v === "boolean" ? 2 : 1; };
+			rows.sort(function (a, b) {
+				var ra = rank(a.key), rb = rank(b.key); if (ra === 3 || rb === 3) return ra === rb ? a.i - b.i : ra === 3 ? 1 : -1;
+				if (ra !== rb) return ra - rb;
+				var cmp = ra === 1 ? String(a.key).toLowerCase().localeCompare(String(b.key).toLowerCase()) : (a.key < b.key ? -1 : a.key > b.key ? 1 : 0);
+				return cmp ? cmp * dir : a.i - b.i;
+			});
+			rows.forEach(function (o, k) {
+				var tr = first + k; if (!d[tr]) d[tr] = [];
+				for (var cc = t.g.s.c; cc <= t.g.e.c; cc++) { var src = o.row[cc]; d[tr][cc] = o.i === tr ? src : cloneFor(src, tr - o.i, 0); changed.push({ si: si, r: tr, c: cc }); }
+			});
+			return changed;
+		}, true);
+		toast("Sorted " + t.name + " by " + (t.columns[c - t.g.s.c] || X.colName(c)) + (dir > 0 ? ", A to Z." : ", Z to A."));
+	}
+	function closeTf() { if (tfMenuEl) { tfMenuEl.remove(); tfMenuEl = null; } }
+	function tfMenu(btn) {
+		closeTf();
+		var parts = btn.getAttribute("data-tf").split(":"), ar = +parts[0], c = +parts[1], t = tableAt(ar, c); if (!t) return;
+		var m = document.createElement("div"); m.className = "xl-menu xl-tfmenu"; m.setAttribute("role", "menu");
+		var v = views[wb.SheetNames[si]], on = v && v.filters && v.filters.some(function (f) { return f.c === c && f.t === t.name; });
+		m.innerHTML = '<button type="button" role="menuitem" data-a="asc"><b>Sort A to Z</b><small>smallest first</small></button><button type="button" role="menuitem" data-a="desc"><b>Sort Z to A</b><small>largest first</small></button>' +
+			'<button type="button" role="menuitem" data-a="filter"><b>Show only rows that contain…</b><small>a view: the file is not changed</small></button>' + (on ? '<button type="button" role="menuitem" data-a="clear"><b>Clear this filter</b></button>' : "");
+		var r = btn.getBoundingClientRect(), ar0 = app.getBoundingClientRect();
+		m.style.position = "fixed"; m.style.left = Math.max(4, Math.min(r.left, window.innerWidth - 280)) + "px"; m.style.top = (r.bottom + 4) + "px"; m.style.width = "260px"; m.style.zIndex = 2147483000;
+		(app.classList.contains("mes-pfill") ? app : document.body).appendChild(m); tfMenuEl = m; void ar0;
+		m.addEventListener("click", function (e) {
+			var b = e.target.closest("[data-a]"); if (!b) return; var a = b.getAttribute("data-a"); closeTf();
+			if (a === "asc") sortTable(t, c, 1); else if (a === "desc") sortTable(t, c, -1);
+			else if (a === "filter") { var val = window.prompt("Show only the rows where " + (t.columns[c - t.g.s.c] || X.colName(c)) + " contains:", ""); if (val) { var vs = vstate(); vs.filters.push({ c: c, op: "contains", v: val, t: t.name }); computeView(); } }
+			else if (a === "clear") { var v2 = vstate(); v2.filters = v2.filters.filter(function (f) { return !(f.c === c && f.t === t.name); }); computeView(); }
+		});
+		setTimeout(function () { var f = m.querySelector("button"); if (f) f.focus(); }, 0);
+		m.addEventListener("keydown", function (e) { if (e.key === "Escape") { closeTf(); scroll.focus({ preventScroll: true }); } });
+	}
+	document.addEventListener("pointerdown", function (e) { if (tfMenuEl && !e.target.closest(".xl-tfmenu") && !e.target.closest(".xl-tfb")) closeTf(); }, true);
+	// rows / columns inserted or deleted: tables and charts of this sheet follow (a table grows when rows go inside it; a deleted one goes)
+	function shiftIdx(i, at, n, isEnd) {
+		if (n > 0) return i >= at ? i + n : i;
+		var m = -n; if (i >= at + m) return i + n; if (i >= at) return isEnd ? at - 1 : at; return i;
+	}
+	function shiftObjects(axis, at, n, name) {
+		void name;
+		var w = ws(), k = axis, tl = w["!mestables"], cl = w["!mescharts"];
+		if (tl) w["!mestables"] = tl.filter(function (t) {
+			var s0 = t.g.s[k], e0 = t.g.e[k], s1 = shiftIdx(s0, at, n, false), e1 = shiftIdx(e0, at, n, true);
+			if (n < 0 && s0 >= at && e0 < at - n) return false;
+			if (e1 < s1) return false;
+			t.g = { s: Object.assign({}, t.g.s), e: Object.assign({}, t.g.e) }; t.g.s[k] = s1; t.g.e[k] = e1; delete t.els;
+			if (k === "c") {
+				var d = w["!data"] || [], cols = t.columns.slice();
+				if (n > 0 && at > s0 && at <= e0) { for (var j = 0; j < n; j++) { var nm = "Column" + (cols.length + 1); while (cols.indexOf(nm) >= 0) nm += "x"; cols.splice(at - s0 + j, 0, nm); if (!d[t.g.s.r]) d[t.g.s.r] = []; d[t.g.s.r][at + j] = { t: "s", v: nm }; } }
+				else if (n < 0) cols.splice(Math.max(0, at - s0), Math.min(cols.length, Math.max(0, Math.min(e0, at - n - 1) - Math.max(s0, at) + 1)));
+				t.columns = cols; t.cols = cols;
+			}
+			return true;
+		});
+		if (cl) w["!mescharts"] = cl.filter(function (c) {
+			var key = k === "r" ? "r" : "c", f = c.at.from, t2 = c.at.to;
+			f[key] = shiftIdx(f[key], at, n, false); t2[key] = shiftIdx(t2[key], at, n, true); if (t2[key] < f[key]) t2[key] = f[key];
+			["s", "e"].forEach(function (_) { /* data refs follow through the series ranges below */ });
+			(c.m.series || []).forEach(function (s) { ["name", "cat", "val"].forEach(function (q) { var o = s[q]; if (o && o.g) { o.g = { s: Object.assign({}, o.g.s), e: Object.assign({}, o.g.e) }; o.g.s[k] = shiftIdx(o.g.s[k], at, n, false); o.g.e[k] = shiftIdx(o.g.e[k], at, n, true); } }); });
+			chartBuild(c);
+			return true;
+		});
+	}
+
+	/* ---------- charts (Insert > Chart): drawn from the selection, saved into the .xlsx ---------- */
+	function myCharts(w) { w = w || ws(); return w["!mescharts"] || (w["!mescharts"] = []); }
+	function chartBuild(c) {
+		c.xml = O.chartXml(c.m);
+		var p = pkgOf();
+		c.chart = O.parseChart(c.xml, p ? p.theme : null);
+		return c;
+	}
+	function drawMyCharts(html, dark) {
+		var l = ws()["!mescharts"]; if (!l) return;
+		l.forEach(function (c, i) {
+			var r = rectOf({ from: c.at.from, to: c.at.to }); if (!r || r.w < 30 || r.h < 30) return;
+			var svg = "";
+			try { svg = O.chartSvg(c.chart, chartModel(c.chart), { w: Math.round(r.w), h: Math.round(r.h), dark: dark, fmt: fmtVal }); } catch (e) { svg = ""; if (window.console) console.warn("[excel] chart", e); }
+			if (svg) html.push('<div class="xl-obj xl-chart xl-mychart' + (i === mcSel ? " is-sel" : "") + '" data-mc="' + i + '" tabindex="0" role="img" aria-label="' + esc("Chart" + (c.m.title ? ": " + c.m.title : "")) + '" style="left:' + r.x.toFixed(1) + "px;top:" + r.y.toFixed(1) + "px;width:" + r.w.toFixed(1) + "px;height:" + r.h.toFixed(1) + 'px">' + svg + '<button type="button" class="xl-mcx" data-mcx="' + i + '" aria-label="Delete this chart" title="Delete this chart">&times;</button></div>');
+		});
+	}
+	var mcSel = -1;
+	function numCell(c) { return !!(c && c.t === "n" && typeof c.v === "number"); }
+	function textCell(c) { return !!(c && (c.t === "s" || c.t === "str") && String(c.v == null ? "" : c.v) !== ""); }
+	function chartModelFor(type) {
+		var g = selGrid();
+		if (!g || (g.e.r === g.s.r && g.e.c === g.s.c)) { toast("Select the cells to chart first (for example a column of labels and a column of numbers)."); return null; }
+		var d = data(), rows = g.e.r - g.s.r + 1, cols = g.e.c - g.s.c + 1;
+		var cell = function (r, c) { return d[r] && d[r][c]; };
+		// header row: the first row has text where the rows below have numbers
+		var dataC0 = g.s.c, hasCat = false;
+		var body0 = g.s.r + 1;
+		var firstColText = 0, firstColNum = 0; for (var r = body0; r <= g.e.r; r++) { var q = cell(r, g.s.c); if (textCell(q)) firstColText++; else if (numCell(q)) firstColNum++; }
+		var scatter = type === "scatter";
+		if (cols > 1 && (scatter ? firstColNum > 0 && firstColText === 0 : firstColText > firstColNum || (firstColNum === 0 && firstColText === 0))) hasCat = true;
+		if (hasCat) dataC0 = g.s.c + 1;
+		var header = false;
+		for (var c = dataC0; c <= g.e.c; c++) if (textCell(cell(g.s.r, c))) header = true;
+		if (!header && rows > 1 && numCell(cell(g.s.r, dataC0)) === false && !textCell(cell(g.s.r, dataC0))) header = false;
+		var r0 = header ? g.s.r + 1 : g.s.r;
+		if (r0 > g.e.r) { toast("Select at least one row of numbers under the headings."); return null; }
+		var series = [];
+		for (var cc = dataC0; cc <= g.e.c; cc++) {
+			var nums = 0; for (var rr = r0; rr <= g.e.r; rr++) if (numCell(cell(rr, cc))) nums++;
+			if (!nums) continue;
+			var s = { name: header && textCell(cell(g.s.r, cc)) ? { g: { s: { r: g.s.r, c: cc }, e: { r: g.s.r, c: cc } } } : "Series " + (series.length + 1), val: { g: { s: { r: r0, c: cc }, e: { r: g.e.r, c: cc } } } };
+			if (hasCat) s.cat = { g: { s: { r: r0, c: g.s.c }, e: { r: g.e.r, c: g.s.c } } };
+			series.push(s);
+		}
+		if (!series.length) { toast("No numbers in the selection to chart."); return null; }
+		if (type === "pie" || type === "doughnut") series = series.slice(0, 1);
+		var title = series.length === 1 && header && textCell(cell(g.s.r, dataC0)) ? String(cell(g.s.r, dataC0).v) : "";
+		return { type: type, sheet: wb.SheetNames[si], title: title, legend: series.length > 1 || type === "pie" || type === "doughnut" ? "r" : null, series: series, grid: g };
+	}
+	function insertChart(type) {
+		if (!wb) return;
+		var m = chartModelFor(type); if (!m) return;
+		var g = m.grid; delete m.grid;
+		var from = { c: g.e.c + 2, co: 0, r: g.s.r, ro: 0 }, to = { c: g.e.c + 10, co: 0, r: g.s.r + 15, ro: 0 };
+		var ch = chartBuild({ m: m, at: { from: from, to: to }, id: Date.now() });
+		struct("Insert chart", function () { myCharts().push(ch); return []; }, true);
+		S.objs = true; save(); toolState(); drawObjects(true);
+		toast("Added a " + type + " chart. Drag it to move it; the × deletes it.");
+	}
+	function deleteChart(i) { struct("Delete chart", function () { myCharts().splice(i, 1); return []; }, true); mcSel = -1; drawObjects(true); }
+	var mcDrag = null;
+	$("xl-objs").addEventListener("pointerdown", function (e) {
+		var x = e.target.closest("[data-mcx]"); if (x) { e.preventDefault(); e.stopPropagation(); deleteChart(+x.getAttribute("data-mcx")); return; }
+		var o = e.target.closest("[data-mc]"); if (!o || e.button > 0) return;
+		var i = +o.getAttribute("data-mc"), c = ws()["!mescharts"][i]; if (!c) return;
+		mcSel = i; var p = hitCell(e, scroll);
+		mcDrag = { i: i, dr: p.dr, c: p.c, from: JSON.parse(JSON.stringify(c.at)), moved: false };
+		try { o.setPointerCapture(e.pointerId); } catch (er) { /* ignore */ }
+		e.preventDefault(); drawObjects(true);
+	});
+	$("xl-objs").addEventListener("pointermove", function (e) {
+		if (!mcDrag) return;
+		var p = hitCell(e, scroll), dr = actualRow(p.dr) - actualRow(mcDrag.dr), dc = p.c - mcDrag.c, c = ws()["!mescharts"][mcDrag.i]; if (!c) return;
+		if (!dr && !dc && !mcDrag.moved) return;
+		mcDrag.moved = true;
+		var f0 = mcDrag.from.from, t0 = mcDrag.from.to, nr = Math.max(0, f0.r + dr), nc = Math.max(0, f0.c + dc);
+		c.at = { from: { c: nc, co: f0.co, r: nr, ro: f0.ro }, to: { c: t0.c + (nc - f0.c), co: t0.co, r: t0.r + (nr - f0.r), ro: t0.ro } };
+		drawObjects(true);
+	});
+	$("xl-objs").addEventListener("pointerup", function () { if (mcDrag && mcDrag.moved && file) { file.dirty = true; renderName(); autosave(); } mcDrag = null; });
+	$("xl-objs").addEventListener("keydown", function (e) { var o = e.target.closest && e.target.closest("[data-mc]"); if (o && (e.key === "Delete" || e.key === "Backspace")) { e.preventDefault(); deleteChart(+o.getAttribute("data-mc")); scroll.focus({ preventScroll: true }); } });
+	// the editor's own tables and charts, as new parts for the .xlsx
+	function mineParts(w, k) {
+		var add = [], tl = w["!mestables"] || [], cl = w["!mescharts"] || [], d = w["!data"] || [];
+		tl.forEach(function (t) {
+			var texts = []; for (var c = t.g.s.c; c <= t.g.e.c; c++) texts.push(disp(d[t.g.s.r] && d[t.g.s.r][c]));
+			t.cols = O.tableColNames(texts);
+			add.push({ tag: "tablePart", relType: O.REL.table, part: "xl/tables/tableMes" + t.id + ".xml", xml: O.tableXml(t), ctType: O.CT.table });
+		});
+		if (cl.length) {
+			var list = cl.map(function (c, i) { return { from: c.at.from, to: c.at.to, name: "Chart " + (i + 1), rid: "rId" + (i + 1) }; });
+			add.push({ tag: "drawing", relType: O.REL.drawing, part: "xl/drawings/drawingMes" + (k + 1) + ".xml", xml: O.drawingXml(list), ctType: O.CT.drawing,
+				rels: cl.map(function (c, i) { return { id: "rId" + (i + 1), type: O.REL.chart, target: "xl/charts/chartMes" + (k + 1) + "_" + (i + 1) + ".xml" }; }),
+				sub: cl.map(function (c, i) { return { part: "xl/charts/chartMes" + (k + 1) + "_" + (i + 1) + ".xml", xml: O.chartXml(c.m), ctType: O.CT.chart }; }) });
+		}
+		return add;
+	}
+
+	/* ---------- Insert menu ---------- */
+	if ($("xl-insmenu")) $("xl-insmenu").addEventListener("click", function (e) {
+		var b = e.target.closest("[data-ins]"); if (!b) return; closeMenus();
+		var w = b.getAttribute("data-ins");
+		if (w === "table") insertTable(); else if (w.indexOf("chart:") === 0) insertChart(w.slice(6));
+		else if (w === "fill-down") fillDown(); else if (w === "fill-right") fillRight();
+	});
 
 	/* ---------- fill window / full screen ---------- */
 	function addPanel() { if (window.MESPanel) window.MESPanel.add(app, { bar: $("xl-pv"), onChange: function () { layout(); render(); } }); }

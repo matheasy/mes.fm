@@ -187,6 +187,22 @@ eq(X.viewRows({ nrows: 6, header: 2, sort: null, filters: [], hidden: function (
 eq(X.viewRows({ nrows: 4, header: true, sort: null, filters: [], value: function () { return 0; }, text: function () { return ""; } }), null, "viewRows nothing to do");
 
 /* ---------- ooxml.js (MESXLO): the parts SheetJS CE does not read ---------- */
+/* copy / paste / fill / formula entry helpers (edit.js) */
+require("./excel/edit.js").install(X);
+eq(X.shiftFormula("SUM(A1:B2)+$C$3+D$4+$E5+Sheet2!F6", 1, 1), "SUM(B2:C3)+$C$3+E$4+$E6+Sheet2!G7", "paste shifts relative parts only");
+eq(X.shiftFormula("A1", -1, 0), "#REF!", "pushed off the sheet = #REF!");
+eq(X.shiftFormula('"A1"&A1', 0, 1), '"A1"&B1', "text in quotes untouched");
+eq(["A5", "$A$5", "A$5", "$A5", "A5:C9"].map(X.cycleAbs), ["$A$5", "A$5", "$A5", "A5", "$A$5:$C$9"], "F4 cycles");
+eq(X.f4At("=SUM(A1:B2)", 9, 9).text, "=SUM($A$1:$B$2)", "F4 inside a formula");
+eq([X.canPoint("=", 1), X.canPoint("=A1", 3), X.canPoint("=SUM(", 5), X.canPoint('="x', 3), X.canPoint("=1+", 3)], [true, false, true, false, true], "where a click inserts a reference");
+eq(X.refText({ s: { r: 4, c: 0 }, e: { r: 8, c: 2 } }), "A5:C9", "range text");
+eq(X.refText({ s: { r: 0, c: 1 }, e: { r: 0, c: 1 } }, "My Sheet"), "'My Sheet'!B1", "sheet prefix");
+eq(X.moveRefs("A1+SUM(B2:B3)+Z9", { sheet: "S", g: { s: { r: 0, c: 0 }, e: { r: 2, c: 2 } } }, 5, 5, "S", "S"), "F6+SUM(G7:G8)+Z9", "cut + paste: references into the block follow it");
+eq(X.fillSeries([{ v: 1 }, { v: 2 }], 3, {}).map(function (x) { return x.v; }), [3, 4, 5], "fill series");
+eq(X.fillSeries([{ v: "Mon" }], 2, {}).map(function (x) { return x.v; }), ["Tue", "Wed"], "fill weekdays");
+eq(adj("A5+SUM(A1:A9)", "r", 2, 1), "A6+SUM(A1:A10)", "insert a row: references follow");
+eq(adj("A3", "r", 2, -1), "#REF!", "delete the row a reference points at: #REF!");
+
 var O = require("./excel/ooxml.js"), zlib = require("zlib"), fs = require("fs");
 var inflate = function (u) { return new Uint8Array(zlib.inflateRawSync(u)); }, deflate = function (u) { return new Uint8Array(zlib.deflateRawSync(u)); };
 var x0 = O.xml('<a:root xmlns:a="x"><a:b val="1"/>t&amp;x<c r:id="rId3"><a:t>hi</a:t></c><!-- no --><![CDATA[<z>]]></a:root>');

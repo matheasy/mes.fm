@@ -27,6 +27,20 @@
 						<button type="button" role="menuitem" data-rc="sheet-del"><b>Delete this sheet</b></button>
 					</div>
 				</div>
+				<div class="xl-dd">
+					<button type="button" class="xl-btn" id="xl-insbtn" aria-haspopup="true" aria-expanded="false" title="Insert a table or a chart from the selected cells, or fill cells">Insert &#9662;</button>
+					<div class="xl-menu" id="xl-insmenu" hidden role="menu">
+						<button type="button" role="menuitem" data-ins="table"><b>Table</b><small>banded rows with sort / filter arrows, from the selected cells</small></button>
+						<button type="button" role="menuitem" data-ins="chart:column"><b>Column chart</b><small>from the selected cells</small></button>
+						<button type="button" role="menuitem" data-ins="chart:bar"><b>Bar chart</b></button>
+						<button type="button" role="menuitem" data-ins="chart:line"><b>Line chart</b></button>
+						<button type="button" role="menuitem" data-ins="chart:pie"><b>Pie chart</b></button>
+						<button type="button" role="menuitem" data-ins="chart:scatter"><b>Scatter chart</b><small>first column = x</small></button>
+						<button type="button" role="menuitem" data-ins="chart:area"><b>Area chart</b></button>
+						<button type="button" role="menuitem" data-ins="fill-down"><b>Fill down</b><small>Ctrl+D (drag the square at the corner of a selection to fill)</small></button>
+						<button type="button" role="menuitem" data-ins="fill-right"><b>Fill right</b><small>Ctrl+R</small></button>
+					</div>
+				</div>
 				<button type="button" class="xl-ib xl-ib--txt" id="xl-sasc" title="Sort the rows by the selected column, A to Z / smallest first (only the view: the file is not changed)">A&#8595;Z</button>
 				<button type="button" class="xl-ib xl-ib--txt" id="xl-sdesc" title="Sort by the selected column, Z to A / largest first">Z&#8595;A</button>
 				<button type="button" class="xl-ib xl-ib--txt" id="xl-filt" aria-pressed="false" title="Filter the rows by a column (only the view)">&#9660; <span class="xl-lbl">Filter</span></button>
