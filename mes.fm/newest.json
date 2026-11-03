@@ -1,5 +1,5 @@
 {
- "generated": "2026-11-01",
+ "generated": "2026-11-02",
  "calculators": [
   {
    "href": "/bending-stress-calculator",
@@ -100,6 +100,14 @@
  ],
  "tools": [
   {
+   "href": "/gallery",
+   "title": "Gallery",
+   "icon": "/img/gallery-logo.png",
+   "desc": "View the photos and videos in your folders: fast thumbnails, rows, masonry or list, slideshow, zoom, favourites, and video speed 0.25x to 4x with A-B loops. Nothing is uploaded.",
+   "added": "2026-11-02",
+   "kind": "tool"
+  },
+  {
    "href": "/spin-simulator",
    "title": "Spin Simulator",
    "icon": "/img/spin-simulator-logo.png",
@@ -186,17 +194,17 @@
    "desc": "Talking flashcards for toddlers: animals with real animal sounds, ABC, shapes, colours and counting, with a gentle What’s this? game. Kid-proof full screen, no ads.",
    "added": "2026-10-29",
    "kind": "tool"
-  },
-  {
-   "href": "/file-check",
-   "title": "File Safety Check",
-   "icon": "/img/file-check-logo.png",
-   "desc": "Is this file safe? Spot disguised programs, macros, PDF JavaScript, password zips and phishing files, get hashes for VirusTotal and check links. Nothing uploaded.",
-   "added": "2026-10-29",
-   "kind": "tool"
   }
  ],
  "latest": [
+  {
+   "href": "/gallery",
+   "title": "Gallery",
+   "icon": "/img/gallery-logo.png",
+   "desc": "View the photos and videos in your folders: fast thumbnails, rows, masonry or list, slideshow, zoom, favourites, and video speed 0.25x to 4x with A-B loops. Nothing is uploaded.",
+   "added": "2026-11-02",
+   "kind": "tool"
+  },
   {
    "href": "/spin-simulator",
    "title": "Spin Simulator",
@@ -250,14 +258,6 @@
    "title": "Polls",
    "icon": "/img/polls-logo.png",
    "desc": "Make a poll in seconds and share one short link: one or several picks, a closing time, live result bars and a pie chart. No sign-up.",
-   "added": "2026-10-31",
-   "kind": "tool"
-  },
-  {
-   "href": "/stream-chat",
-   "title": "Stream Chat",
-   "icon": "/img/stream-chat-logo.png",
-   "desc": "Your YouTube, Twitch and Odysee live chats in one window, Super Chats and tips highlighted. Add it to OBS as a chat dock and on-screen overlay.",
    "added": "2026-10-31",
    "kind": "tool"
   }

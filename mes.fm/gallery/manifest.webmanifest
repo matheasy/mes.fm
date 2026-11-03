@@ -1,0 +1,20 @@
+{
+  "name": "MES Gallery",
+  "short_name": "Gallery",
+  "description": "View the photos and videos in your folders. Nothing is uploaded.",
+  "id": "/gallery",
+  "start_url": "/gallery",
+  "scope": "/gallery",
+  "display": "standalone",
+  "background_color": "#1d222b",
+  "theme_color": "#5b21b6",
+  "icons": [
+    { "src": "/gallery/img/logo.png", "sizes": "512x512", "type": "image/png", "purpose": "any" }
+  ],
+  "file_handlers": [
+    { "action": "/gallery", "accept": {
+      "image/*": [".jpg", ".jpeg", ".png", ".gif", ".webp", ".avif", ".bmp", ".svg", ".heic"],
+      "video/*": [".mp4", ".m4v", ".mov", ".webm", ".mkv"] } }
+  ],
+  "launch_handler": { "client_mode": "focus-existing" }
+}

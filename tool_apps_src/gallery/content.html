@@ -1,0 +1,111 @@
+	<script>try{if(!localStorage.getItem('pageMode')){document.documentElement.classList.add('page-wide')}}catch(e){}</script>
+	<div class="tu mg" id="mg">
+		<p class="mg-honest"><b>Private:</b> your photos and videos never leave this computer. The page reads them straight from the folder you open, in this browser tab; small thumbnails are kept in this browser so the next visit is instant. Nothing is uploaded.</p>
+
+		<section class="tu-card mg-start" id="mg-start">
+			<div class="mg-drop" id="mg-drop">
+				<div class="mg-dropart" aria-hidden="true"><span></span><span></span><span></span></div>
+				<h2 class="mg-droph">Drop a folder of photos and videos here</h2>
+				<div class="mg-pickbtns">
+					<button type="button" class="tu-btn tu-btn--primary mg-big" id="mg-folder">📁 Open a folder</button>
+					<button type="button" class="tu-btn mg-big2" id="mg-files">🖼️ Open photos or videos</button>
+				</div>
+				<div class="mg-pickbtns">
+					<button type="button" class="tu-btn tu-btn--ghost" id="mg-reopen" hidden></button>
+					<button type="button" class="tu-btn tu-btn--ghost" id="mg-demo">✨ Try it with sample pictures</button>
+				</div>
+				<label class="mg-chk"><input type="checkbox" id="mg-sub" checked> Include subfolders</label>
+				<p class="mg-how" id="mg-how"></p>
+			</div>
+		</section>
+
+		<div class="mg-app" id="mg-app" hidden>
+			<div class="mg-bar" id="mg-bar">
+				<div class="mg-row mg-row1">
+					<div class="mg-title"><b id="mg-name">Photos</b> <span id="mg-stats" class="mg-stats"></span></div>
+					<div class="mg-acts">
+						<button type="button" class="tu-btn tu-btn--primary mg-sm" id="mg-play" title="Slideshow of what is showing (P)">▶ Slideshow</button>
+						<button type="button" class="tu-btn mg-sm" id="mg-more" aria-haspopup="true" aria-expanded="false">📁 Open ▾</button>
+						<button type="button" class="tu-btn tu-btn--ghost mg-sm mg-ico" id="mg-fill" title="Fill the browser window (W)">⤢ <span>Fill window</span></button>
+						<button type="button" class="tu-btn tu-btn--ghost mg-sm mg-ico" id="mg-fs" title="Full screen">⛶ <span>Full screen</span></button>
+					</div>
+					<div class="mg-menu" id="mg-menu" hidden role="menu">
+						<button type="button" role="menuitem" data-act="folder">📁 Open another folder</button>
+						<button type="button" role="menuitem" data-act="files">🖼️ Open photos or videos</button>
+						<button type="button" role="menuitem" data-act="add">➕ Add more files to this view</button>
+						<button type="button" role="menuitem" data-act="rescan" id="mg-rescan">🔄 Look for new files</button>
+						<button type="button" role="menuitem" data-act="close">✕ Close this folder</button>
+						<button type="button" role="menuitem" data-act="clearcache">🧹 Forget saved thumbnails</button>
+					</div>
+				</div>
+				<div class="mg-row mg-row2">
+					<div class="mg-search"><input class="tu-input" type="search" id="mg-q" placeholder="Search names and folders…" autocomplete="off" spellcheck="false" aria-label="Search names and folders"></div>
+					<div class="tu-seg mg-seg" role="group" aria-label="Show" id="mg-kind">
+						<button type="button" data-kind="all" aria-pressed="true">All</button><button type="button" data-kind="image" aria-pressed="false">Photos</button><button type="button" data-kind="video" aria-pressed="false">Videos</button><button type="button" data-kind="fav" aria-pressed="false" title="Favourites">♥</button>
+					</div>
+					<label class="mg-sel">Group <select class="tu-input" id="mg-group">
+						<option value="none">None</option><option value="day">Day</option><option value="month">Month</option><option value="year">Year</option><option value="folder">Folder</option><option value="type">Photos / videos</option>
+					</select></label>
+					<label class="mg-sel">Sort <select class="tu-input" id="mg-sort">
+						<option value="date">Date</option><option value="name">Name</option><option value="size">Size</option><option value="type">Type</option><option value="folder">Folder</option><option value="rating">Rating</option><option value="dims">Picture size</option><option value="duration">Video length</option><option value="random">Shuffle</option>
+					</select></label>
+					<button type="button" class="tu-btn tu-btn--ghost mg-sm mg-dir" id="mg-dir" title="Reverse the order">↓ Newest first</button>
+				</div>
+				<div class="mg-row mg-row3">
+					<div class="tu-seg mg-seg" role="group" aria-label="Layout" id="mg-view">
+						<button type="button" data-view="justified" aria-pressed="true" title="Rows that fill the width (J)">▤ Rows</button><button type="button" data-view="square" aria-pressed="false" title="Square tiles">▦ Squares</button><button type="button" data-view="masonry" aria-pressed="false" title="Columns, whole pictures">▥ Masonry</button><button type="button" data-view="list" aria-pressed="false" title="List with details">☰ List</button>
+					</div>
+					<label class="mg-size" id="mg-sizelab"><span aria-hidden="true">▫</span><input type="range" id="mg-size" min="80" max="440" step="10" value="200" aria-label="Thumbnail size"><span aria-hidden="true">◻</span></label>
+					<label class="mg-chk mg-chk2"><input type="checkbox" id="mg-names"> Names</label>
+				</div>
+				<div class="mg-prog" id="mg-prog" hidden><span class="mg-progbar"><span id="mg-progfill"></span></span><span id="mg-progtext"></span></div>
+			</div>
+			<div class="mg-scroll" id="mg-scroll" tabindex="-1">
+				<div class="mg-canvas" id="mg-canvas" role="list" aria-label="Photos and videos"></div>
+				<div class="mg-empty" id="mg-empty" hidden></div>
+			</div>
+		</div>
+
+		<input type="file" id="mg-dirinput" webkitdirectory directory multiple hidden>
+		<input type="file" id="mg-fileinput" accept="image/*,video/*,.heic,.heif,.mkv,.avi,.mov" multiple hidden>
+
+		<div class="tu-seo">
+			<h2>A photo and video viewer for your own folders</h2>
+			<p>MES Gallery shows the photos and videos on your computer the way a good photo app does: rows of thumbnails that fill the screen, grouped by day, month, folder or type, and a big viewer with zoom, slideshow and proper video speed controls. It works on folders with thousands of files, and everything stays on your computer.</p>
+			<h3>How to use it</h3>
+			<ol>
+				<li><b>Open a folder</b> (subfolders included) or pick some files. You can also drag a folder or files onto the page.</li>
+				<li>Choose a layout: <b>Rows</b> (every row fills the width, like Google Photos), <b>Squares</b>, <b>Masonry</b> (whole pictures in columns) or <b>List</b> with the details. The slider sets the thumbnail size.</li>
+				<li><b>Group</b> by day, month, year, folder or photos / videos, <b>sort</b> by date, name, size, type, rating or picture size, and <b>search</b> by name or folder (<code>beach -2019</code> leaves out names with 2019, <code>.mp4</code> shows one file type).</li>
+				<li>Click a picture to open it. Use the arrow keys or swipe, scroll or pinch to zoom, drag to look around, and press <b>P</b> or Space for a slideshow.</li>
+			</ol>
+			<h3>Keyboard shortcuts in the viewer</h3>
+			<dl>
+				<dt>← → / Home End</dt><dd>Previous / next, first / last</dd>
+				<dt>+ − 0 1</dt><dd>Zoom in, out, fit to the window, 100%</dd>
+				<dt>R / Shift+R</dt><dd>Rotate a photo right / left (for videos R resets the speed)</dd>
+				<dt>P or Space</dt><dd>Slideshow on / off (Space plays and pauses a video)</dd>
+				<dt>F / I / T</dt><dd>Full screen, details panel, strip of thumbnails</dd>
+				<dt>S / D / R</dt><dd>Video slower / faster by 0.1× (0.25× to 4×), back to normal speed</dd>
+				<dt>G</dt><dd>Switch between normal speed and the last speed you used</dd>
+				<dt>Z / X, J / L</dt><dd>Back / forward 5 seconds, 10 seconds</dd>
+				<dt>, / .</dt><dd>One frame back / forward (pauses the video)</dd>
+				<dt>A / B / C</dt><dd>Set the start and end of a repeating A-B loop, clear it</dd>
+				<dt>M, ↑ ↓</dt><dd>Mute, volume</dd>
+				<dt>Esc</dt><dd>Close the viewer</dd>
+			</dl>
+			<h3>Questions</h3>
+			<h4>Is anything uploaded?</h4>
+			<p>No. The browser reads the files you open directly from your disk. Thumbnails, your favourites and star ratings are stored in this browser only (clear them with "Forget saved thumbnails" in the Open menu, or by clearing the site's data).</p>
+			<h4>Which browsers work best?</h4>
+			<p><b>Chrome, Edge and Opera</b> on a computer can open a folder and remember it, so next time one click ("Open … again") brings your photos back. <b>Firefox, Safari and Brave</b> open folders with the browser's own "upload a folder" window instead (nothing is actually uploaded, the word is just the browser's); they have to be picked again on each visit. In Brave you can turn on the better way at <code>brave://flags/#file-system-access-api</code>. On phones, use "Open photos or videos".</p>
+			<h4>Why does a file show a plain tile?</h4>
+			<p>Browsers can only show the picture and video formats they understand. JPEG, PNG, GIF, WebP, AVIF, MP4, MOV (H.264) and WebM work everywhere; HEIC photos only show in Safari, and AVI, WMV or FLV videos need converting first, for example with the <a href="/convert-video">MES Video Converter</a>.</p>
+			<h4>Where does the date come from?</h4>
+			<p>From the "date taken" saved in the photo by the camera (EXIF) when there is one, else a date in the file name (like <code>IMG_20240501_…</code>), else the date the file was last changed.</p>
+			<h4>Can I edit a photo?</h4>
+			<p>Yes: "Edit in Photo Editor" in the viewer copies the photo and opens the <a href="/photo">MES Photo Editor</a> in a new tab; press Ctrl+V (⌘V on a Mac) there to paste it in.</p>
+			<h4>Can I install it like an app?</h4>
+			<p>Yes, in Chrome or Edge use "Install" (or "Add to Home screen") in the browser menu. The installed app opens in its own window and can be chosen in "Open with" for pictures and videos.</p>
+		</div>
+	</div>

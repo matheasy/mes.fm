@@ -77,6 +77,7 @@ TOOLS = [  # (directory, compact-bar title[, home path of the site the page belo
     ("mic-test", "Mic Test"),
     ("file-check", "File Safety Check"),
     ("storage", "Storage Analyzer"),
+    ("gallery", "Gallery"),
     ("signals", "Market Signals"),
     ("elections", "Elections"),
     ("debt-clock", "Debt Clock"),
