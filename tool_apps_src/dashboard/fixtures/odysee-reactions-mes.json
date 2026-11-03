@@ -1,0 +1,56 @@
+{
+  "success": true,
+  "error": null,
+  "data": {
+    "others_reactions": {
+      "0d84136aa5de9e9a45bf4f443ef339918493024b": {
+        "dislike": 0,
+        "like": 2
+      },
+      "2ac601cb9b62c1c722ff0eff72a9272e601a76b9": {
+        "dislike": 0,
+        "like": 1
+      },
+      "318ebc574b5596606bf0e7d214421c0a5339bdd7": {
+        "dislike": 0,
+        "like": 1
+      },
+      "32867a910b56a42286a85a21a7d3906cabf161d3": {
+        "dislike": 0,
+        "like": 2
+      },
+      "389a341c64bc592babe15550f708d4006f0a149e": {
+        "dislike": 0,
+        "like": 4
+      },
+      "396f2edc4c8255cfe170cb14a59fa21425d6d462": {
+        "dislike": 0,
+        "like": 4
+      },
+      "9ef2ad92b3f4e0e6d46bddc397c44b0a5898da15": {
+        "dislike": 0,
+        "like": 2
+      },
+      "abcb260170d93ed8f068884ab69362bd92c2ee6a": {
+        "dislike": 0,
+        "like": 2
+      },
+      "acbb7de8e1aac2f1b532548e12812ee20cb502e8": {
+        "dislike": 0,
+        "like": 2
+      },
+      "c03b407456fc64dee53c6ff1553afeb460ad33fd": {
+        "dislike": 4,
+        "like": 9
+      },
+      "ca2fa5ca5bf8d4d6bb346d3e8c08ef3ce3f34b91": {
+        "dislike": 0,
+        "like": 2
+      },
+      "cfb91f3bdf9268cc4f8f1e5a348ef7ce09c28c98": {
+        "dislike": 0,
+        "like": 0
+      }
+    }
+  }
+}

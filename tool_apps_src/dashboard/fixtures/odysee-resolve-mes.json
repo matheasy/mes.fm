@@ -1,0 +1,66 @@
+{
+  "jsonrpc": "2.0",
+  "result": {
+    "lbry://@mes#8": {
+      "address": "bDKLK6hYiGWi1N3Q34h5twM5HC4uxtgN3h",
+      "amount": "32000.0",
+      "canonical_url": "lbry://@mes#8",
+      "claim_id": "8c11ce96daacbbccc877c6dc9525f8067f968b59",
+      "claim_op": "update",
+      "confirmations": 748593,
+      "has_signing_key": false,
+      "height": 1472600,
+      "meta": {
+        "activation_height": 1472600,
+        "claims_in_channel": 2020,
+        "creation_height": 724527,
+        "creation_timestamp": 1583059159,
+        "effective_amount": "32000.2",
+        "expiration_height": 3575000,
+        "is_controlling": true,
+        "reposted": 0,
+        "support_amount": "0.2",
+        "take_over_height": 1171508
+      },
+      "name": "@mes",
+      "normalized_name": "@mes",
+      "nout": 0,
+      "permanent_url": "lbry://@mes#8c11ce96daacbbccc877c6dc9525f8067f968b59",
+      "short_url": "lbry://@mes#8",
+      "timestamp": 1702353984,
+      "txid": "d76d64bd51674c5ceb2f547fd1403dc94e10fff2f16370d3988b351bd80bc3b4",
+      "type": "claim",
+      "value": {
+        "cover": {
+          "url": "https://thumbnails.lbry.com/banner-UCUUBq1GPBvvGNz7dpgO14Ow"
+        },
+        "description": "Watch easy to understand math proofs and explanations as well as tutorials for many other topics such as online calculators, how bowling works, Skype Trouble shooting and even Engineering topics. Also, I am actively researching into developing #FreeEnergy Technology!\n\nLike, Comment, Favourite and Subscribe to my channel!\n\nGot Questions?? Email Us at contact@mes.fm\n\n---\n\n3Speak.Online Creator Verification: mes\n\n--",
+        "email": "contact@mes.fm",
+        "languages": [
+          "en"
+        ],
+        "locations": [
+          {
+            "country": "CA"
+          }
+        ],
+        "public_key": "029e665c5a0b2a01060d0e49551fabb8eb041c85b47664f464a1f9e3fba9696381",
+        "public_key_id": "bVCUcKfpJtBhrFzhvcWB4keJQiU9Zhbj2N",
+        "tags": [
+          "education",
+          "conspiracy",
+          "9/11 truth",
+          "technology",
+          "mathematics"
+        ],
+        "thumbnail": {
+          "url": "https://thumbnails.lbry.com/UCUUBq1GPBvvGNz7dpgO14Ow"
+        },
+        "title": "Math Easy Solutions",
+        "website_url": "https://www.youtube.com/@mes"
+      },
+      "value_type": "channel"
+    }
+  },
+  "id": 1
+}

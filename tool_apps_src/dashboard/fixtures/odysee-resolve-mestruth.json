@@ -1,0 +1,55 @@
+{
+  "jsonrpc": "2.0",
+  "result": {
+    "lbry://@mestruth#9": {
+      "address": "bLT6eLAnComLXZwpgfQJa2Gohw2pP2fbth",
+      "amount": "32000.0",
+      "canonical_url": "lbry://@mestruth#9",
+      "claim_id": "9edc879ee73a302f1c9f8110053ed725a2eeb256",
+      "claim_op": "update",
+      "confirmations": 801018,
+      "has_signing_key": false,
+      "height": 1420175,
+      "meta": {
+        "activation_height": 1420175,
+        "claims_in_channel": 33,
+        "creation_height": 1170549,
+        "creation_timestamp": 1654291820,
+        "effective_amount": "32000.0",
+        "expiration_height": 3522575,
+        "is_controlling": true,
+        "reposted": 0,
+        "support_amount": "0.0",
+        "take_over_height": 1170549
+      },
+      "name": "@mestruth",
+      "normalized_name": "@mestruth",
+      "nout": 0,
+      "permanent_url": "lbry://@mestruth#9edc879ee73a302f1c9f8110053ed725a2eeb256",
+      "short_url": "lbry://@mestruth#9",
+      "timestamp": 1693949496,
+      "txid": "5f907f70c4c283df625736bb030b78e8ace07bac724810ff3a8bcc45565b27b2",
+      "type": "claim",
+      "value": {
+        "cover": {
+          "url": "https://thumbs.odycdn.com/68694d29f574d534023994ccb23d4b41.jpeg"
+        },
+        "description": "The truth can be known and will be known.",
+        "public_key": "03877627cc29b5a083973d9d8f80369ef6a81ba1e50b9be8e328e08007d32b8778",
+        "public_key_id": "bRqC15B3P9tkWDwXcUtDwuWdponR6PaM8a",
+        "tags": [
+          "suppressed information",
+          "news",
+          "truth",
+          "nwo"
+        ],
+        "thumbnail": {
+          "url": "https://thumbs.odycdn.com/faa9e0fac006e49d6b96be539443555e.jpeg"
+        },
+        "title": "MES Truth"
+      },
+      "value_type": "channel"
+    }
+  },
+  "id": 1
+}

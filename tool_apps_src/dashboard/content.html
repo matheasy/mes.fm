@@ -1,0 +1,71 @@
+	<div class="tu db" id="db" data-page-modes="3">
+		<div class="db-top">
+			<span class="db-links"><a href="/stats">Site stats</a> · <a href="/ads">Ad money</a> · <a href="/search-console">Search Console</a> · <a href="/installs">App installs</a> · <b>Channels</b></span>
+			<span class="db-act">
+				<button type="button" class="tu-btn db-refresh" id="db-refresh" title="Collect every source again now (R)"><span class="db-spin" aria-hidden="true"></span><span class="db-rlab">↻ Refresh</span></button>
+			</span>
+		</div>
+		<p class="tu-note db-meta" id="db-meta" role="status" aria-live="polite">Loading…</p>
+		<noscript><p class="tu-note">This page needs JavaScript.</p></noscript>
+		<div id="db-setup"></div>
+		<div id="db-changes" class="db-changes" hidden></div>
+		<div class="tu-stats db-tiles" id="db-tiles"></div>
+		<div class="db-ptiles" id="db-ptiles"></div>
+
+		<section class="tu-card db-sec" id="db-inboxsec">
+			<div class="db-head"><h2>Inbox <small id="db-icount"></small></h2><span class="db-hbtns" id="db-ibtns"><button type="button" class="tu-chip" id="db-markall">✓ Mark all read</button></span></div>
+			<div class="db-filters">
+				<div class="db-tabs" id="db-fplat" role="group" aria-label="Platform"></div>
+				<div class="db-tabs" id="db-facct" role="group" aria-label="Account">
+					<button type="button" class="tu-chip" data-a="" aria-pressed="true">Both accounts</button>
+					<button type="button" class="tu-chip" data-a="mes" aria-pressed="false">@mes</button>
+					<button type="button" class="tu-chip" data-a="mestruth" aria-pressed="false">@mestruth</button>
+				</div>
+				<div class="db-tabs" id="db-fkind" role="group" aria-label="Kind">
+					<button type="button" class="tu-chip" data-k="novote" aria-pressed="true">All but votes</button>
+					<button type="button" class="tu-chip" data-k="" aria-pressed="false">Everything</button>
+					<button type="button" class="tu-chip" data-k="comment" aria-pressed="false">Comments</button>
+					<button type="button" class="tu-chip" data-k="note" aria-pressed="false">Notifications</button>
+					<button type="button" class="tu-chip" data-k="vote" aria-pressed="false">Votes</button>
+				</div>
+				<div class="db-tabs db-tog">
+					<label><input type="checkbox" id="db-unread"> Unread only</label>
+					<label><input type="checkbox" id="db-own" checked> Hide my own</label>
+					<input type="search" id="db-q" class="tu-input db-q" placeholder="Search the inbox…" aria-label="Search the inbox">
+				</div>
+			</div>
+			<ul class="db-inbox" id="db-inbox" aria-live="polite"></ul>
+			<p class="db-more" id="db-morewrap" hidden><button type="button" class="tu-chip" id="db-more">Show more</button></p>
+			<p class="tu-note">Newest first, across every platform. A dot marks what is new since you last marked it read. YouTube comment times without an API key are YouTube's own rounded "3 days ago". Rumble and BitChute comments need a signed-in session, so only their counts show (on the uploads below).</p>
+		</section>
+
+		<section class="tu-card db-sec" id="db-histsec">
+			<div class="db-head"><h2>History</h2><span class="db-hbtns" id="db-hbtns"></span></div>
+			<div class="db-filters">
+				<div class="db-tabs" id="db-hmet" role="group" aria-label="Number">
+					<button type="button" class="tu-chip" data-m="f" aria-pressed="true">Followers</button>
+					<button type="button" class="tu-chip" data-m="v" aria-pressed="false">Views</button>
+					<button type="button" class="tu-chip" data-m="n" aria-pressed="false">Uploads</button>
+				</div>
+				<div class="db-tabs" id="db-hsplit" role="group" aria-label="Lines">
+					<button type="button" class="tu-chip" data-s="plat" aria-pressed="true">Per platform</button>
+					<button type="button" class="tu-chip" data-s="acct" aria-pressed="false">Per account</button>
+					<button type="button" class="tu-chip" data-s="all" aria-pressed="false">Total</button>
+				</div>
+				<div class="db-tabs" id="db-hrange" role="group" aria-label="Range">
+					<button type="button" class="tu-chip" data-r="30" aria-pressed="false">30 days</button>
+					<button type="button" class="tu-chip" data-r="90" aria-pressed="true">90 days</button>
+					<button type="button" class="tu-chip" data-r="365" aria-pressed="false">Year</button>
+				</div>
+				<label class="db-tog"><input type="checkbox" id="db-hchg"> Change from the first day</label>
+			</div>
+			<div class="db-chart" id="db-chart"><svg id="db-svg" role="img" aria-label="History chart"></svg><div class="db-tip" id="db-tip"></div></div>
+			<div class="db-legend" id="db-legend"></div>
+			<p class="tu-note" id="db-hnote">One point per day: the numbers of the last collection that day. The history starts the first day the page is used and fills in from there.</p>
+		</section>
+
+		<h2 class="db-h2">Platforms</h2>
+		<div class="db-cards" id="db-cards"></div>
+	</div>
+	<script src="/main_js/panel-view.js?v=1" defer></script>
+	<script src="/main_js/hub-theatre.js?v=2" defer></script>

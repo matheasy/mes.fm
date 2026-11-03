@@ -40,6 +40,10 @@ export const config = {
     '/api/search-console-ai',
     // chart notes shared by the /search-console and /ads charts
     '/api/chart-notes',
+    // the private creator dashboard (stats, comments and notifications of @mes and @mestruth on every video platform) and its data
+    '/dashboard',
+    '/dashboard/:path*',
+    '/api/dashboard',
   ],
 };
 

@@ -1,0 +1,56 @@
+{
+  "success": true,
+  "error": null,
+  "data": {
+    "others_reactions": {
+      "53716506499db4d232609718404219db7dff21b8": {
+        "dislike": 0,
+        "like": 1
+      },
+      "69bff76af238364c55552361681478d3d2b23fd1": {
+        "dislike": 0,
+        "like": 0
+      },
+      "76060554e0518a35439bc2c058fd7cfa764790f1": {
+        "dislike": 0,
+        "like": 0
+      },
+      "83ed499eff49d84a650a151ee327343af5308eb1": {
+        "dislike": 0,
+        "like": 1
+      },
+      "84ccbf279826791d8c1c53e2acceaf234b8f2e7d": {
+        "dislike": 0,
+        "like": 2
+      },
+      "8be86ccb245cdb0f800d97b9d93ee16fd39dff15": {
+        "dislike": 0,
+        "like": 1
+      },
+      "9ffccbca5c71826cd137d0ecbd6703b93c205dd6": {
+        "dislike": 0,
+        "like": 2
+      },
+      "ad5ee6b391b8ddfba0fc32d8a0497a4f38ef1f98": {
+        "dislike": 0,
+        "like": 1
+      },
+      "af16f753104e8a8e1943d5e4c69c7aa065fd2e7c": {
+        "dislike": 0,
+        "like": 0
+      },
+      "b0ffc342ecb811507e1f1bd1b36bfa276dd0f962": {
+        "dislike": 0,
+        "like": 0
+      },
+      "d7f69a26e65657ad9e5b7f49e3212de596381388": {
+        "dislike": 0,
+        "like": 0
+      },
+      "f9f332e7f7eb8d3f89f33619156537b7478745f9": {
+        "dislike": 0,
+        "like": 0
+      }
+    }
+  }
+}
