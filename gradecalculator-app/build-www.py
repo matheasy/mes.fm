@@ -42,6 +42,7 @@ def balanced(fragment: str) -> str:
 
 
 def extract(html: str):
+    html = re.sub(r"\s*<!-- ANDROID-TESTERS-BANNER -->.*?<!-- /ANDROID-TESTERS-BANNER -->", "", html, flags=re.S)  # web-only tester note (main_js/android-testers.js)
     head = html.split("<body", 1)[0]
     styles = re.findall(r"<style>(.*?)</style>", head, flags=re.S)
     # first two are the shell reset + the page's own CSS (tool shell, _shared.css, app.css, derived dark block);
@@ -54,6 +55,7 @@ def extract(html: str):
 
 
 def extract_wa(html: str):
+    html = re.sub(r"\s*<!-- ANDROID-TESTERS-BANNER -->.*?<!-- /ANDROID-TESTERS-BANNER -->", "", html, flags=re.S)  # web-only tester note (main_js/android-testers.js)
     head = html.split("<body", 1)[0]
     styles = re.findall(r"<style>(.*?)</style>", head, flags=re.S)
     start = html.index('<div class="tu" id="wa">')

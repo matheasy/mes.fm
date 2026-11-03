@@ -67,6 +67,7 @@ def scope_accent(css: str, rid: str) -> str:
 
 def extract(slug: str):
     html = (SITE / slug / "index.html").read_text(encoding="utf-8")
+    html = re.sub(r"\s*<!-- ANDROID-TESTERS-BANNER -->.*?<!-- /ANDROID-TESTERS-BANNER -->", "", html, flags=re.S)  # web-only tester note (main_js/android-testers.js)
     head = html.split("<body", 1)[0]
     styles = re.findall(r"<style>(.*?)</style>", head, flags=re.S)
     start = html.index('<div class="tu"')
