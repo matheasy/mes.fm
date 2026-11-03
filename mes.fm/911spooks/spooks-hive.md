@@ -25,7 +25,7 @@ First shown on [MES Livestream 112: 9/11 Spooks Database](https://mes.fm/livestr
 | **Kamal Obeid** | AE911Truth | [Telegram](https://t.me/meslinks/32410) |
 | **Mark Lillie** | AE911Truth | [Telegram](https://t.me/meslinks/32410) |
 | **Neils Harrit** | Thermite Guru | [Telegram chat](https://t.me/meslinkschat/46895) |
-| **Richard Gage** | AE911Truth | [Telegram](https://t.me/meslinks/31553) · [MES posts (1)](https://mes.fm/911spooks-database#richard-gage) |
+| **Richard Gage** | AE911Truth | [Telegram](https://t.me/meslinks/31553) · [MES posts (2)](https://mes.fm/911spooks-database#richard-gage) |
 | **Richard Wallace** | AE911Truth | [Telegram](https://t.me/meslinks/32410) |
 | **Steven Dusterwald** | AE911Truth | [Telegram](https://t.me/meslinks/32410) |
 | **Steven Jones** | AE911Truth | [Hive](https://peakd.com/hive-113182/@mes/yaiugjff) |

@@ -381,6 +381,12 @@ body.dark-mode #main-content .sp-db { color:#ddd; }
 .sp-credits summary { cursor:pointer; }
 .sp-credits ul { columns:2 20em; margin:.5em 0 0 1.1em; }
 .sp-credits li { break-inside:avoid; margin:.15em 0; }
+/* collage of the database's pictures (the hub tile) at the bottom of the page */
+.sp-fig { margin:2em auto .5em; max-width:900px; text-align:center; }
+.sp-fig img { display:block; width:100%; height:auto; border-radius:14px; box-shadow:0 6px 24px rgba(0,0,0,.18); border:1px solid #e1e4e8; }
+#main-content .sp-fig figcaption { margin-top:.6em; font-size:.92em; color:#555; font-style:italic; }
+body.dark-mode .sp-fig img { border-color:#3a3a3a; box-shadow:0 6px 24px rgba(0,0,0,.6); }
+body.dark-mode #main-content .sp-fig figcaption { color:#bbb; }
 body.dark-mode .sp-meta, body.dark-mode .sp-bar label, body.dark-mode .sp-count, body.dark-mode .sp-credits { color:#bbb; }
 body.dark-mode .sp-meta b { color:#eee; }
 body.dark-mode .sp-meta a, body.dark-mode .sp-posts summary, body.dark-mode .sp-posts a, body.dark-mode .sp-credits a { color:#7cc0f5; }
@@ -508,6 +514,8 @@ def content(recs, today):
 </div>
 <p class="sp-meta" style="margin-top:1.2em">Search their names in the <a href="https://t.me/meslinks" target="_blank" rel="noopener">MES Links Telegram</a> for many more posts. Groups and pictures are added on mes.fm; names, notes and links come from the MES spreadsheet.</p>
 <details class="sp-credits"><summary>Picture credits</summary><p>Wikimedia Commons photos are used under their stated licences; the others are the people's own public YouTube channel or Hive profile pictures. People without a picture show their initials.</p><ul>{credits}</ul></details>
+<figure class="sp-fig"><img src="/img/{SLUG}-icon.jpg" width="900" height="600" loading="lazy" decoding="async" alt="A collage of the faces in the 9/11 Spooks Database">
+<figcaption>The 9/11 Spooks Database: {len(recs)} people and counting.</figcaption></figure>
 </div>"""
 
 
