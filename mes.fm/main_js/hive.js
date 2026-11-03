@@ -1,9 +1,11 @@
 /* MESHive: the shared Hive helpers for mes.fm pages (window.MESHive; also require()-able in node for tests).
 
-   - Login with Hive Keychain: requestSignBuffer() on the Posting key proves the person controls the account (Keychain only
+   - Login with the Hive Keychain extension: requestSignBuffer() on the Posting key proves the person controls the account (Keychain only
      signs for an account whose key is in the wallet). The username (+ the public key that signed) is kept in localStorage
-     "mes-hive-user"; nothing is sent to mes.fm. Logout just forgets it. Every Keychain call goes through signer(), so a
-     HiveAuth signer can be added later beside the Keychain one without touching the pages that use this module.
+     "mes-hive-user"; nothing is sent to mes.fm. Logout just forgets it.
+   - No extension (phones in Brave / Chrome / Safari...): login() falls back to HiveAuth with the Keychain PHONE APP (see the HiveAuth
+     section below). keychain() then returns a stand-in object with the same request* calls as window.hive_keychain, so every page
+     written for Keychain (hive-store.js, polls, premium, comments) works unchanged; only memo encryption is missing (via() === "hiveauth").
    - call(method, params): Hive JSON-RPC with node fallbacks (api.hive.blog, api.deathwing.me, api.openhive.network,
      hive-api.arcange.eu), 7 s per node, the last node that answered is tried first.
    - render(md): a SAFE markdown -> HTML renderer for Hive post / comment bodies. Everything is escaped first, then a strict
@@ -231,14 +233,358 @@
     var subs = [];
     function user() {
         var s = ls(); if (!s) return null;
-        try { var u = JSON.parse(s.getItem(LS_USER) || "null"); return u && validName(u.name) ? u : null; } catch (e) { return null; }
+        try {
+            var u = JSON.parse(s.getItem(LS_USER) || "null");
+            if (!u || !validName(u.name)) return null;
+            /* a Keychain-app (HiveAuth) login ends when the app's session expires */
+            if (u.via === "hiveauth") { var h = hasSession(); if (!h || h.name !== u.name) return null; }
+            return u;
+        } catch (e) { return null; }
     }
     function emit() { var u = user(); subs.slice().forEach(function (f) { try { f(u); } catch (e) {} }); }
     function onChange(f) { subs.push(f); return function () { subs = subs.filter(function (x) { return x !== f; }); }; }
-    if (root.addEventListener) root.addEventListener("storage", function (e) { if (e.key === LS_USER) emit(); });
+    if (root.addEventListener) root.addEventListener("storage", function (e) { if (e.key === LS_USER || e.key === LS_HAS) emit(); });
 
-    /* ---------- signers (Keychain today; HiveAuth can be added as a second entry) ---------- */
+    /* ---------- HiveAuth (HAS): log in and sign with the Hive Keychain PHONE APP, no extension needed ----------
+       The same protocol 3Speak uses (through the Aioha library). The page talks to the public relay
+       wss://hive-auth.arcange.eu over a WebSocket; every payload is AES-encrypted (CryptoJS "Salted__" format: EVP_BytesToKey
+       with MD5, AES-256-CBC) with a random per-session key that only the page and the wallet app know: the relay can't read it.
+       auth_req carries a login challenge; the app learns the key from the QR code / has://auth_req/<base64 json> deep link
+       {account, uuid, key, host}. sign_req (ops + key_type, broadcast) and challenge_req (sign a message) reuse the session.
+       The session {name, key, token, expire} is kept in localStorage "mes-hive-has" until the app's expiry. HAS has NO memo
+       encryption, so requestEncodeMessage / requestVerifyKey fail with error "nomemo_hiveauth". No libraries: MD5 is inline,
+       AES is Web Crypto (secure context: https or localhost). */
+    var HAS_HOST = "wss://hive-auth.arcange.eu/";
+    var LS_HAS = "mes-hive-has";
+    var HAS_APP_META = { name: "mes.fm", description: "MES.fm calculators and tools", icon: "https://mes.fm/img/logo-mark-64.png" };
+    var QR_LIB = "https://cdnjs.cloudflare.com/ajax/libs/qrcode-generator/1.4.4/qrcode.min.js";
+    var KC_APP = "https://hive-keychain.com/";
+    var NO_MEMO = "Encrypted saves need your Hive memo key, and the Keychain phone-app login (HiveAuth) can't use it. " +
+        "Use a browser with the Hive Keychain extension, or open mes.fm inside the Keychain app's own browser, to save or open encrypted data.";
+
+    function md5(bytes) {
+        var K = [], S = [7, 12, 17, 22, 5, 9, 14, 20, 4, 11, 16, 23, 6, 10, 15, 21], i, j;
+        for (i = 0; i < 64; i++) K[i] = (Math.abs(Math.sin(i + 1)) * 4294967296) | 0;
+        var n = bytes.length, blocks = ((n + 8) >>> 6) + 1, M = new Int32Array(blocks * 16);
+        for (i = 0; i < n; i++) M[i >> 2] |= bytes[i] << ((i % 4) * 8);
+        M[n >> 2] |= 0x80 << ((n % 4) * 8);
+        M[blocks * 16 - 2] = n * 8;
+        M[blocks * 16 - 1] = Math.floor(n / 536870912);
+        var a0 = 0x67452301, b0 = 0xefcdab89 | 0, c0 = 0x98badcfe | 0, d0 = 0x10325476;
+        for (j = 0; j < M.length; j += 16) {
+            var A = a0, B = b0, C = c0, D = d0;
+            for (i = 0; i < 64; i++) {
+                var F, g;
+                if (i < 16) { F = (B & C) | (~B & D); g = i; }
+                else if (i < 32) { F = (D & B) | (~D & C); g = (5 * i + 1) % 16; }
+                else if (i < 48) { F = B ^ C ^ D; g = (3 * i + 5) % 16; }
+                else { F = C ^ (B | ~D); g = (7 * i) % 16; }
+                var tmp = D; D = C; C = B;
+                var x = (A + F + K[i] + M[j + g]) | 0, s = S[(i >> 4) * 4 + (i % 4)];
+                B = (B + ((x << s) | (x >>> (32 - s)))) | 0; A = tmp;
+            }
+            a0 = (a0 + A) | 0; b0 = (b0 + B) | 0; c0 = (c0 + C) | 0; d0 = (d0 + D) | 0;
+        }
+        var h = [a0, b0, c0, d0], out = new Uint8Array(16);
+        for (i = 0; i < 16; i++) out[i] = (h[i >> 2] >>> ((i % 4) * 8)) & 255;
+        return out;
+    }
+    function cat() {
+        var len = 0, i; for (i = 0; i < arguments.length; i++) len += arguments[i].length;
+        var o = new Uint8Array(len), at = 0;
+        for (i = 0; i < arguments.length; i++) { o.set(arguments[i], at); at += arguments[i].length; }
+        return o;
+    }
+    /* OpenSSL EVP_BytesToKey(MD5, 1 round): 32-byte key + 16-byte IV, exactly what CryptoJS.AES.encrypt(text, "passphrase") does */
+    function evpKdf(pass, salt) {
+        var out = new Uint8Array(48), block = new Uint8Array(0), have = 0;
+        while (have < 48) { block = md5(cat(block, pass, salt)); out.set(block.subarray(0, Math.min(16, 48 - have)), have); have += 16; }
+        return { key: out.subarray(0, 32), iv: out.subarray(32, 48) };
+    }
+    function subtle() { var c = root.crypto || (typeof globalThis !== "undefined" && globalThis.crypto); return c && c.subtle; }
+    function bin2b64(u) { var s = ""; for (var i = 0; i < u.length; i++) s += String.fromCharCode(u[i]); return btoa(s); }
+    function b642bin(s) { var b = atob(String(s)), u = new Uint8Array(b.length); for (var i = 0; i < b.length; i++) u[i] = b.charCodeAt(i); return u; }
+    function randomBytes(n) { var u = new Uint8Array(n); (root.crypto || globalThis.crypto).getRandomValues(u); return u; }
+    function uuid4() {
+        var c = root.crypto || globalThis.crypto;
+        if (c && c.randomUUID) return c.randomUUID();
+        var b = randomBytes(16); b[6] = (b[6] & 15) | 64; b[8] = (b[8] & 63) | 128;
+        var h = Array.prototype.map.call(b, function (x) { return (x < 16 ? "0" : "") + x.toString(16); }).join("");
+        return h.slice(0, 8) + "-" + h.slice(8, 12) + "-" + h.slice(12, 16) + "-" + h.slice(16, 20) + "-" + h.slice(20);
+    }
+    function aesEncrypt(text, pass, salt) {
+        var sb = subtle(); if (!sb) return Promise.reject(new Error("This browser can't encrypt (Web Crypto needs https)."));
+        salt = salt || randomBytes(8);
+        var k = evpKdf(new TextEncoder().encode(pass), salt);
+        return sb.importKey("raw", k.key, "AES-CBC", false, ["encrypt"])
+            .then(function (ck) { return sb.encrypt({ name: "AES-CBC", iv: k.iv }, ck, new TextEncoder().encode(text)); })
+            .then(function (ct) { return bin2b64(cat(new TextEncoder().encode("Salted__"), salt, new Uint8Array(ct))); });
+    }
+    function aesDecrypt(b64, pass) {
+        var sb = subtle(); if (!sb) return Promise.reject(new Error("This browser can't decrypt (Web Crypto needs https)."));
+        var all;
+        try { all = b642bin(b64); } catch (e) { return Promise.reject(new Error("bad ciphertext")); }
+        if (all.length < 32 || String.fromCharCode.apply(null, all.subarray(0, 8)) !== "Salted__") return Promise.reject(new Error("bad ciphertext"));
+        var k = evpKdf(new TextEncoder().encode(pass), all.subarray(8, 16));
+        return sb.importKey("raw", k.key, "AES-CBC", false, ["decrypt"])
+            .then(function (ck) { return sb.decrypt({ name: "AES-CBC", iv: k.iv }, ck, all.subarray(16)); })
+            .then(function (pt) { return new TextDecoder().decode(pt); });
+    }
+    /* has://<auth_req|sign_req|challenge_req>/<base64 {account, uuid, key, host}>: QR content and the app's deep link */
+    function hasLink(kind, account, id, key, host) {
+        return "has://" + kind + "_req/" + btoa(JSON.stringify({ account: account, uuid: id, key: key, host: host || HAS_HOST }));
+    }
+    function lcKey(t) { t = String(t || "posting").toLowerCase(); return t === "active" || t === "memo" ? t : "posting"; }
+    /* Keychain-style request -> Hive operations (what a HAS wallet signs) */
+    var opsFor = {
+        customJson: function (acc, id, keyType, json) {
+            var act = lcKey(keyType) === "active";
+            return [["custom_json", { required_auths: act ? [acc] : [], required_posting_auths: act ? [] : [acc], id: String(id), json: typeof json === "string" ? json : JSON.stringify(json) }]];
+        },
+        post: function (acc, title, body, parentPermlink, parentAuthor, meta, permlink, options) {
+            var ops = [["comment", { parent_author: parentAuthor || "", parent_permlink: parentPermlink || "", author: acc, permlink: permlink, title: title || "", body: body, json_metadata: typeof meta === "string" ? meta : JSON.stringify(meta || {}) }]];
+            if (options) ops.push(["comment_options", typeof options === "string" ? JSON.parse(options) : options]);
+            return ops;
+        },
+        vote: function (acc, permlink, author, weight) { return [["vote", { voter: acc, author: author, permlink: permlink, weight: Number(weight) }]]; },
+        transfer: function (acc, to, amount, memo, currency) { return [["transfer", { from: acc, to: to, amount: Number(amount).toFixed(3) + " " + currency, memo: memo || "" }]]; },
+        recurrentTransfer: function (acc, to, amount, currency, memo, recurrence, executions) {
+            return [["recurrent_transfer", { from: acc, to: to, amount: Number(amount).toFixed(3) + " " + currency, memo: memo || "", recurrence: Number(recurrence), executions: Number(executions), extensions: [] }]];
+        },
+        broadcast: function (ops) { return Array.isArray(ops) && typeof ops[0] === "string" ? [ops] : ops; }
+    };
+
+    function hasSession() {
+        var s = ls(); if (!s) return null;
+        try {
+            var x = JSON.parse(s.getItem(LS_HAS) || "null");
+            return x && validName(x.name) && x.key && Number(x.expire) > Date.now() + 5000 ? x : null;
+        } catch (e) { return null; }
+    }
+    function hasErr(msg, code) { var e = new Error(msg); e.code = code || "fail"; return e; }
+
+    var HAS = { ws: null, opening: null, timeout: 60000, cur: null, q: Promise.resolve() };
+    function hasSocket() {
+        if (HAS.ws && HAS.ws.readyState === 1) return Promise.resolve(HAS.ws);
+        if (HAS.opening) return HAS.opening;
+        if (typeof WebSocket === "undefined") return Promise.reject(hasErr("This browser can't open the HiveAuth connection.", "net"));
+        HAS.opening = new Promise(function (res, rej) {
+            var ws, t;
+            try { ws = new WebSocket(HAS_HOST); } catch (e) { HAS.opening = null; return rej(hasErr("Could not reach the HiveAuth server.", "net")); }
+            t = setTimeout(function () { try { ws.close(); } catch (e) {} HAS.opening = null; rej(hasErr("Could not reach the HiveAuth server. Check your connection and try again.", "net")); }, 12000);
+            ws.onopen = function () { clearTimeout(t); HAS.ws = ws; HAS.opening = null; res(ws); };
+            ws.onmessage = function (e) { var m; try { m = JSON.parse(e.data); } catch (x) { return; } hasOnMessage(m); };
+            ws.onerror = function () {};
+            ws.onclose = function () {
+                clearTimeout(t);
+                if (HAS.ws === ws) HAS.ws = null;
+                if (HAS.opening) { HAS.opening = null; rej(hasErr("Could not reach the HiveAuth server.", "net")); }
+                if (HAS.cur && HAS.cur.uuid) setTimeout(hasReattach, 1500);
+            };
+        });
+        return HAS.opening;
+    }
+    /* phones suspend the page while the person is in the wallet app; when it comes back, re-attach to the pending request */
+    function hasReattach() {
+        var c = HAS.cur; if (!c || !c.uuid) return;
+        if (root.document && root.document.hidden) return;
+        hasSocket().then(function (ws) { if (HAS.cur === c) ws.send(JSON.stringify({ cmd: "attach_req", uuid: c.uuid })); }, function () { if (HAS.cur === c) setTimeout(hasReattach, 3000); });
+    }
+    if (root.document && root.addEventListener) root.document.addEventListener("visibilitychange", function () { if (!root.document.hidden) hasReattach(); });
+    function hasOnMessage(m) {
+        if (!m || !m.cmd) return;
+        if (m.cmd === "connected") { if (m.timeout) HAS.timeout = m.timeout * 1000; return; }
+        var c = HAS.cur; if (!c) return;
+        if (!c.uuid) {
+            if (m.cmd === c.kind + "_wait") { c.waiting(m); return; }
+            if (m.cmd === "error") c.fail(hasErr("HiveAuth: " + (m.error || "the request was refused"), "fail"));
+            return;
+        }
+        if (m.uuid !== c.uuid) return;
+        if (m.cmd === c.kind + "_ack") c.ack(m);
+        else if (m.cmd === c.kind + "_nack") c.fail(hasErr(c.kind === "auth" ? "The login was refused in the Keychain app." : "Refused in the Keychain app.", "cancel"));
+        else if (m.cmd === c.kind + "_err") {
+            aesDecrypt(m.error, c.key).then(function (t) { c.fail(hasErr(t || "The Keychain app reported an error.")); }, function () { c.fail(hasErr(m.error || "The Keychain app reported an error.")); });
+        }
+    }
+    /* one request at a time (the protocol matches a *_wait to the last request) */
+    function hasRequest(kind, account, plain, key, token, ui) {
+        var run = function () {
+            return aesEncrypt(JSON.stringify(plain), key).then(function (data) {
+                return hasSocket().then(function (ws) {
+                    return new Promise(function (res, rej) {
+                        var c = { kind: kind, account: account, key: key, uuid: null, timer: null }, over = false;
+                        function end() { over = true; clearTimeout(c.timer); if (HAS.cur === c) HAS.cur = null; hasUiClose(c); }
+                        c.ack = function (m) { if (!over) { end(); res(m); } };
+                        c.fail = function (e) { if (!over) { end(); rej(e); } };
+                        c.waiting = function (m) {
+                            c.uuid = m.uuid; c.expire = Number(m.expire) || Date.now() + HAS.timeout;
+                            clearTimeout(c.timer);
+                            c.timer = setTimeout(function () { c.fail(hasErr("Time ran out: nothing was approved in the Keychain app. Try again.", "expired")); }, Math.max(5000, c.expire - Date.now() + 1500));
+                            c.link = hasLink(kind, account, c.uuid, key);
+                            hasUiOpen(c, ui || {});
+                        };
+                        HAS.cur = c;
+                        var msg = { cmd: kind + "_req", account: account, data: data };
+                        if (token) msg.token = token;
+                        c.timer = setTimeout(function () { c.fail(hasErr("The HiveAuth server did not answer. Try again.", "net")); }, 15000);
+                        ws.send(JSON.stringify(msg));
+                    });
+                });
+            });
+        };
+        var p = HAS.q.then(run, run);
+        HAS.q = p.catch(function () {});
+        return p;
+    }
+    function hasAuth(name, challenge, ui) {
+        var key = uuid4();
+        var plain = { app: HAS_APP_META, challenge: { key_type: "posting", challenge: challenge, nonce: Date.now() } };
+        return hasRequest("auth", name, plain, key, null, ui).then(function (m) {
+            return aesDecrypt(m.data, key).then(function (t) {
+                var d = JSON.parse(t);
+                var sess = { name: name, key: key, token: d.token || "", expire: Number(d.expire) || Date.now() + 86400000 };
+                var ch = d.challenge && typeof d.challenge === "object" ? d.challenge : {};
+                return { session: sess, signature: ch.challenge || "", pubkey: ch.pubkey || "" };
+            });
+        });
+    }
+    function hasSign(account, ops, keyType, title) {
+        var s = hasSession();
+        if (!s || s.name !== account) return Promise.reject(hasErr("Your Keychain app login has ended. Log in again.", "nologin"));
+        var plain = { key_type: lcKey(keyType), ops: ops, broadcast: true, nonce: Date.now() };
+        return hasRequest("sign", account, plain, s.key, s.token, { what: title || describeOps(ops), active: lcKey(keyType) === "active" }).then(function (m) {
+            var id = typeof m.data === "string" ? m.data : (m.data && (m.data.id || m.data.tx_id)) || "";
+            return { id: id, tx_id: id };
+        });
+    }
+    function hasChallenge(account, message, keyType, title) {
+        var s = hasSession();
+        if (!s || s.name !== account) return Promise.reject(hasErr("Your Keychain app login has ended. Log in again.", "nologin"));
+        return hasRequest("challenge", account, { key_type: lcKey(keyType), challenge: String(message), nonce: Date.now() }, s.key, s.token, { what: title || "Sign a message" })
+            .then(function (m) { return typeof m.data === "string" ? aesDecrypt(m.data, s.key).then(JSON.parse) : m.data; });
+    }
+    function describeOps(ops) {
+        var o = ops && ops[0]; if (!o) return "Approve a Hive action";
+        var t = o[0], d = o[1] || {};
+        if (t === "custom_json") return "Save app data (" + d.id + ")" + (ops.length > 1 ? " x" + ops.length : "");
+        if (t === "comment") return d.parent_author ? "Post a comment" : "Publish a post";
+        if (t === "vote") return "Vote on @" + d.author + "'s post";
+        if (t === "transfer") return "Send " + d.amount + " to @" + d.to;
+        if (t === "recurrent_transfer") return "Set up " + d.amount + " to @" + d.to + " every " + d.recurrence + " hours";
+        return "Approve a Hive action (" + t + ")";
+    }
+
+    /* the same calls as window.hive_keychain, so pages written for Keychain work unchanged */
+    function kcOk(cb, extra) { return function (r) { cb(Object.assign({ success: true, result: r, message: "Done in the Keychain app (HiveAuth)" }, extra || {})); }; }
+    function kcBad(cb) { return function (e) { cb({ success: false, error: e.code === "cancel" ? "user_cancel" : (e.code || "fail"), message: e.message }); }; }
+    var hasShim = {
+        hiveAuth: true,
+        requestHandshake: function (cb) { cb && cb(); },
+        requestSignBuffer: function (acc, msg, keyType, cb, rpc, title) {
+            hasChallenge(acc, msg, keyType, title).then(function (r) { cb({ success: true, result: r.challenge, publicKey: r.pubkey, data: { username: acc } }); }, kcBad(cb));
+        },
+        requestBroadcast: function (acc, ops, keyType, cb, rpc, title) { hasSign(acc, opsFor.broadcast(ops), keyType, title).then(kcOk(cb), kcBad(cb)); },
+        requestCustomJson: function (acc, id, keyType, json, display, cb) { hasSign(acc, opsFor.customJson(acc, id, keyType, json), keyType, display).then(kcOk(cb), kcBad(cb)); },
+        requestPost: function (acc, title, body, pp, pa, meta, permlink, options, cb) {
+            var ops; try { ops = opsFor.post(acc, title, body, pp, pa, meta, permlink, options); } catch (e) { return kcBad(cb)(e); }
+            hasSign(acc, ops, "posting").then(kcOk(cb), kcBad(cb));
+        },
+        requestVote: function (acc, permlink, author, weight, cb) { hasSign(acc, opsFor.vote(acc, permlink, author, weight), "posting").then(kcOk(cb), kcBad(cb)); },
+        requestTransfer: function (acc, to, amount, memo, currency, cb) {
+            if (/^#/.test(memo || "")) return cb({ success: false, error: "nomemo_hiveauth", message: "Encrypted memos (starting with #) can't be sent with the Keychain app login." });
+            hasSign(acc, opsFor.transfer(acc, to, amount, memo, currency), "active").then(kcOk(cb), kcBad(cb));
+        },
+        requestRecurrentTransfer: function (acc, to, amount, currency, memo, recurrence, executions, cb) {
+            hasSign(acc, opsFor.recurrentTransfer(acc, to, amount, currency, memo, recurrence, executions), "active").then(kcOk(cb), kcBad(cb));
+        },
+        requestEncodeMessage: function () { var cb = arguments[arguments.length - 1]; cb({ success: false, error: "nomemo_hiveauth", message: NO_MEMO }); },
+        requestVerifyKey: function () { var cb = arguments[arguments.length - 1]; cb({ success: false, error: "nomemo_hiveauth", message: NO_MEMO }); }
+    };
+
+    /* ---------- the HiveAuth window (QR code on computers, "Open the Keychain app" on phones) ---------- */
+    var qrLib = null;
+    function loadQr() {
+        if (root.qrcode) return Promise.resolve(root.qrcode);
+        if (qrLib) return qrLib;
+        qrLib = new Promise(function (ok, no) {
+            var s = root.document.createElement("script"); s.src = QR_LIB; s.async = true;
+            s.onload = function () { ok(root.qrcode); }; s.onerror = function () { qrLib = null; no(new Error("QR library blocked")); };
+            root.document.head.appendChild(s);
+        });
+        return qrLib;
+    }
+    function isPhone() { try { return root.matchMedia("(pointer: coarse)").matches && Math.min(root.screen.width, root.screen.height) < 820; } catch (e) { return false; } }
+    var HAS_CSS = ".mh-has{position:fixed;inset:0;z-index:2147483600;display:flex;align-items:center;justify-content:center;padding:16px;background:rgba(0,0,0,.55);font:16px/1.45 system-ui,-apple-system,Segoe UI,Roboto,sans-serif}" +
+        ".mh-has-box{background:#fff;color:#1d1d1f;border-radius:14px;max-width:400px;width:100%;max-height:calc(100vh - 32px);overflow:auto;padding:20px 20px 16px;box-shadow:0 12px 40px rgba(0,0,0,.35);text-align:center}" +
+        ".mh-has-box *{color:inherit;box-sizing:border-box}.mh-has h2{font-size:1.2em;margin:0 0 .4em;font-weight:700;line-height:1.25}.mh-has p{margin:.5em 0}" +
+        ".mh-has-what{font-weight:600}.mh-has-sub{font-size:.88em;color:#555!important}.mh-has-qr{display:inline-block;background:#fff;padding:8px;border-radius:8px;margin:.4em 0;border:1px solid #ddd}.mh-has-qr svg{display:block;width:220px;height:220px}" +
+        ".mh-has-open{display:block;margin:.6em 0;padding:.75em 1em;border-radius:10px;background:#e31337;color:#fff!important;font-weight:700;text-decoration:none;font-size:1.05em}.mh-has-open:focus-visible{outline:3px solid #ffb703;outline-offset:2px}" +
+        ".mh-has-open.is-quiet{background:transparent;color:#c0102e!important;border:1px solid #e31337;padding:.5em 1em;font-size:.95em}" +
+        ".mh-has-bar{height:6px;border-radius:3px;background:#eee;overflow:hidden;margin:.7em 0 .2em}.mh-has-bar i{display:block;height:100%;background:#e31337;width:100%;transition:width 1s linear}" +
+        ".mh-has-time{font-size:.85em;color:#555!important}.mh-has-cancel{margin-top:.5em;padding:.55em 1.4em;border-radius:8px;border:1px solid #bbb;background:transparent;font:inherit;cursor:pointer;min-height:44px}" +
+        ".mh-has-foot{font-size:.8em;color:#666!important;margin-top:.8em!important}.mh-has-foot a{color:#c0102e!important}.mh-has details{margin:.4em 0}.mh-has summary{cursor:pointer;color:#c0102e!important;font-size:.92em;min-height:32px}" +
+        "body.dark-mode .mh-has-box,body.dark .mh-has-box{background:#1f1f22;color:#eee}body.dark-mode .mh-has-sub,body.dark-mode .mh-has-time,body.dark-mode .mh-has-foot,body.dark .mh-has-sub,body.dark .mh-has-time,body.dark .mh-has-foot{color:#bbb!important}" +
+        "body.dark-mode .mh-has-bar,body.dark .mh-has-bar{background:#333}body.dark-mode .mh-has-cancel,body.dark .mh-has-cancel{border-color:#666}" +
+        "body.dark-mode .mh-has-foot a,body.dark-mode .mh-has summary,body.dark-mode .mh-has-open.is-quiet,body.dark .mh-has-foot a,body.dark .mh-has summary,body.dark .mh-has-open.is-quiet{color:#ff8fa3!important}";
+    function hasUiOpen(c, ui) {
+        var d = root.document; if (!d || !d.body) return;
+        if (!d.getElementById("mh-has-css")) { var st = d.createElement("style"); st.id = "mh-has-css"; st.textContent = HAS_CSS; d.head.appendChild(st); }
+        var phone = isPhone(), login = c.kind === "auth";
+        var wrap = d.createElement("div"); wrap.className = "mh-has"; wrap.setAttribute("role", "dialog"); wrap.setAttribute("aria-modal", "true"); wrap.setAttribute("aria-labelledby", "mh-has-t");
+        var open = '<a class="mh-has-open' + (phone ? "" : " is-quiet") + '" href="' + esc(c.link) + '">Open the Keychain app</a>';
+        var qr = '<div class="mh-has-qr" aria-label="QR code for the Hive Keychain app"><span class="mh-has-sub">Loading the QR code…</span></div>';
+        var body;
+        if (login) {
+            body = '<h2 id="mh-has-t">Log in as @' + esc(c.account) + ' with the Hive Keychain app</h2>' +
+                (phone
+                    ? '<p class="mh-has-sub">Keychain is on this phone? Tap the button, approve, then come back here.</p>' + open +
+                      '<details><summary>Keychain is on another phone? Show a QR code</summary>' + qr + '<p class="mh-has-sub">In the Keychain app tap the scan (QR) button and scan this code.</p></details>'
+                    : '<p class="mh-has-sub">Open Hive Keychain on your phone, tap the scan (QR) button and scan this code, then approve.</p>' + qr + open);
+        } else {
+            body = '<h2 id="mh-has-t">Approve in the Hive Keychain app</h2><p class="mh-has-what">' + esc(ui.what || "Approve a Hive action") + "</p>" +
+                '<p class="mh-has-sub">' + (phone ? "Tap the button to switch to Keychain, approve, then come back here." : "Open Hive Keychain on your phone (logged in as @" + esc(c.account) + ") and approve the request.") +
+                (ui.active ? " This needs your <b>active</b> key in the app." : "") + "</p>" + open;
+        }
+        wrap.innerHTML = '<div class="mh-has-box">' + body +
+            '<div class="mh-has-bar"><i></i></div><p class="mh-has-time" aria-live="polite">Waiting…</p>' +
+            '<button type="button" class="mh-has-cancel">Cancel</button>' +
+            '<p class="mh-has-foot">HiveAuth: your keys stay in the app and mes.fm never sees them. No app yet? <a href="' + KC_APP + '" target="_blank" rel="noopener">Get Hive Keychain</a> for iPhone or Android.</p></div>';
+        d.body.appendChild(wrap);
+        c.ui = wrap;
+        var bar = wrap.querySelector(".mh-has-bar i"), tm = wrap.querySelector(".mh-has-time"), total = Math.max(1000, c.expire - Date.now());
+        function tick() {
+            var left = Math.max(0, c.expire - Date.now()), s = Math.ceil(left / 1000);
+            bar.style.width = (100 * left / total).toFixed(1) + "%";
+            tm.textContent = "Waiting for the app… " + Math.floor(s / 60) + ":" + ("0" + (s % 60)).slice(-2) + " left";
+        }
+        tick(); c.tick = setInterval(tick, 1000);
+        var cancel = wrap.querySelector(".mh-has-cancel");
+        cancel.onclick = function () { c.fail(hasErr("Cancelled.", "cancel")); };
+        wrap.addEventListener("keydown", function (e) { if (e.key === "Escape") cancel.click(); });
+        c.prevFocus = d.activeElement;
+        (wrap.querySelector(".mh-has-open:not(.is-quiet)") || cancel).focus();
+        var box = wrap.querySelector(".mh-has-qr");
+        if (box) loadQr().then(function (q) {
+            var code = q(0, "M"); code.addData(c.link); code.make();
+            box.innerHTML = code.createSvgTag({ cellSize: 4, margin: 2, scalable: true });
+        }).catch(function () { box.innerHTML = '<span class="mh-has-sub">The QR code could not load (blocked?). On a phone with the app, use the button.</span>'; });
+    }
+    function hasUiClose(c) {
+        clearInterval(c.tick);
+        if (c.ui && c.ui.parentNode) c.ui.parentNode.removeChild(c.ui);
+        if (c.prevFocus && c.prevFocus.focus) try { c.prevFocus.focus(); } catch (e) {}
+        c.ui = null;
+    }
+    function via() { var u = user(); return u ? u.via || "keychain" : null; }
+
+    /* ---------- signers: the Keychain extension, or HiveAuth when the person logged in with the phone app ---------- */
     function keychain(wait) {
+        var u = user();
+        if (u && u.via === "hiveauth") return Promise.resolve(hasSession() ? hasShim : null);
+        return extension(wait);
+    }
+    function extension(wait) {
         if (root.hive_keychain) return Promise.resolve(root.hive_keychain);
         /* the extension injects hive_keychain shortly after the page loads */
         return new Promise(function (res) {
@@ -264,23 +610,60 @@
             });
         });
     }
-    function signer() { return { name: "keychain", available: hasKeychain }; }
+    function signer() { return via() === "hiveauth" ? { name: "hiveauth", available: function () { return !!hasSession(); } } : { name: "keychain", available: hasKeychain }; }
 
-    function login(name) {
+    /* login(name, {via: "keychain" | "hiveauth"}): the extension when it is there, else HiveAuth (Keychain phone app) */
+    function login(name, opt) {
+        opt = opt || {};
         name = cleanName(name);
         if (!validName(name)) return Promise.reject(new Error("That is not a valid Hive username."));
         var host = (root.location && root.location.host) || "mes.fm";
         var msg = "Log in to " + host + " as @" + name + " (" + new Date().toISOString() + " " + Math.random().toString(36).slice(2, 10) + ")";
-        return kc(function (k, done) { k.requestSignBuffer(name, msg, "Posting", done, null, "Log in to mes.fm"); }).then(function (r) {
-            var got = cleanName((r.data && r.data.username) || name);
-            var u = { name: got, key: r.publicKey || "", at: Date.now(), via: "keychain" };
+        function save(u) {
             var s = ls(); if (s) try { s.setItem(LS_USER, JSON.stringify(u)); } catch (e) {}
             emit();
             return u;
+        }
+        function viaHas() {
+            return hasAuth(name, msg).then(function (r) {
+                return checkKey(name, r.pubkey).then(function () {
+                    var s = ls(); if (s) try { s.setItem(LS_HAS, JSON.stringify(r.session)); } catch (e) {}
+                    return save({ name: name, key: r.pubkey, at: Date.now(), via: "hiveauth", exp: r.session.expire });
+                });
+            });
+        }
+        function viaExt(k) {
+            return new Promise(function (res, rej) {
+                k.requestSignBuffer(name, msg, "Posting", function (r) {
+                    if (r && r.success) res(r);
+                    else { var e = new Error((r && (r.message || (r.error && (r.error.message || r.error)))) || "Cancelled"); e.code = r && r.error === "user_cancel" ? "cancel" : "fail"; e.response = r; rej(e); }
+                }, null, "Log in to mes.fm");
+            }).then(function (r) {
+                var s = ls(); if (s) try { s.removeItem(LS_HAS); } catch (e) {}
+                return save({ name: cleanName((r.data && r.data.username) || name), key: r.publicKey || "", at: Date.now(), via: "keychain" });
+            });
+        }
+        if (opt.via === "hiveauth") return viaHas();
+        var t = root.performance && root.performance.now ? root.performance.now() : 0;
+        return extension(t > 3000 ? 0 : 1500).then(function (k) {
+            if (k) return viaExt(k);
+            if (opt.via === "keychain") throw noSigner();
+            return viaHas();
         });
     }
-    function logout() { var s = ls(); if (s) try { s.removeItem(LS_USER); } catch (e) {} emit(); }
-    function need() { var u = user(); if (!u) { var e = new Error("Log in with Hive Keychain first."); e.code = "nologin"; throw e; } return u; }
+    /* the key that answered must be one of the account's keys (skipped when no Hive node answers) */
+    function checkKey(name, pub) {
+        if (!pub) return Promise.resolve();
+        return call("condenser_api.get_accounts", [[name]]).then(function (r) {
+            var a = r && r[0];
+            if (!a) throw hasErr("Hive account @" + name + " was not found.");
+            var keys = [];
+            ["posting", "active", "owner"].forEach(function (t) { ((a[t] && a[t].key_auths) || []).forEach(function (k) { keys.push(k[0]); }); });
+            if (keys.indexOf(pub) < 0) throw hasErr("The Keychain app answered with a key that is not one of @" + name + "'s keys. Pick that account in the app.");
+        }, function () {});
+    }
+    function logout() { var s = ls(); if (s) try { s.removeItem(LS_USER); s.removeItem(LS_HAS); } catch (e) {} emit(); }
+    function need() { var u = user(); if (!u) { var e = new Error("Log in with Hive first."); e.code = "nologin"; throw e; } return u; }
 
     function post(o) {
         /* o = {parentAuthor, parentPermlink, body, title?, tags?, permlink?} */
@@ -319,20 +702,25 @@
     }
 
     function helpHtml() {
-        return '<div class="mh-help"><b>No Hive Keychain in this browser?</b> Keychain is the free, open-source wallet extension that signs Hive actions; ' +
-            'your keys never leave it and mes.fm never sees them. Install it for ' +
-            '<a href="https://chromewebstore.google.com/detail/hive-keychain/jcacnejopjdphbnjgfaaobbfafkihpep" target="_blank" rel="noopener">Chrome / Brave / Edge</a>, ' +
-            '<a href="https://addons.mozilla.org/firefox/addon/hive-keychain/" target="_blank" rel="noopener">Firefox</a> or as the ' +
-            '<a href="https://hive-keychain.com/" target="_blank" rel="noopener">Keychain mobile app</a> (open mes.fm in its built-in browser), import your account, then reload this page. ' +
+        return '<div class="mh-help"><b>No Hive Keychain extension in this browser?</b> Just press <b>Log in</b>: you can approve with the free ' +
+            '<a href="' + KC_APP + '" target="_blank" rel="noopener">Hive Keychain app</a> for iPhone or Android instead (HiveAuth, the phone login 3Speak uses). ' +
+            'On a phone that has the app, tap <b>Open the Keychain app</b>; on a computer, scan the QR code with the app. Your keys stay in the app and mes.fm never sees them. ' +
+            'On a computer you can also install the extension for ' +
+            '<a href="https://chromewebstore.google.com/detail/hive-keychain/jcacnejopjdphbnjgfaaobbfafkihpep" target="_blank" rel="noopener">Chrome / Brave / Edge</a> or ' +
+            '<a href="https://addons.mozilla.org/firefox/addon/hive-keychain/" target="_blank" rel="noopener">Firefox</a>. ' +
             'No Hive account yet? <a href="https://signup.hive.io/" target="_blank" rel="noopener">Get one at signup.hive.io</a>.</div>';
     }
+    function memoOk() { return via() !== "hiveauth"; }
 
     var api = {
         NODES: NODES, APP: APP, call: call, render: render, plain: plain, esc: esc,
         parseUrl: parseUrl, validName: validName, cleanName: cleanName, avatar: avatar, peakd: peakd, proxyImg: proxyImg,
         timeAgo: timeAgo, money: money, replyPermlink: replyPermlink,
         user: user, login: login, logout: logout, onChange: onChange, keychain: keychain, hasKeychain: hasKeychain, signer: signer,
-        post: post, vote: vote, transfer: transfer, recurrentTransfer: recurrentTransfer, helpHtml: helpHtml
+        post: post, vote: vote, transfer: transfer, recurrentTransfer: recurrentTransfer, helpHtml: helpHtml,
+        via: via, memoOk: memoOk, extension: extension, NO_MEMO: NO_MEMO,
+        hiveAuth: { HOST: HAS_HOST, md5: md5, evpKdf: evpKdf, aesEncrypt: aesEncrypt, aesDecrypt: aesDecrypt, link: hasLink, ops: opsFor,
+            describe: describeOps, session: hasSession, shim: hasShim, request: hasRequest, auth: hasAuth, uuid: uuid4, _state: HAS }
     };
     if (typeof module !== "undefined" && module.exports) module.exports = api;
     root.MESHive = root.MESHive || api;

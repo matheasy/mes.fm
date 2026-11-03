@@ -148,9 +148,123 @@ function safe(html) {
     assert.strictEqual(H.user(), null);
     await assert.rejects(H.vote('a', 'b', 100), (e) => e.code === 'nologin');
   });
-  await t('no Keychain -> nokeychain error', async () => {
+  await t('no Keychain + via keychain -> nokeychain error', async () => {
     delete global.hive_keychain;
-    await assert.rejects(H.login('mes'), (e) => e.code === 'nokeychain');
+    await assert.rejects(H.login('mes', { via: 'keychain' }), (e) => e.code === 'nokeychain');
+  });
+
+  // ---------- HiveAuth (Keychain phone app) ----------
+  const HA = H.hiveAuth;
+  const nodeCrypto = require('crypto');
+  await t('HiveAuth: md5 matches node crypto for many lengths', () => {
+    for (const n of [0, 1, 3, 55, 56, 57, 63, 64, 65, 119, 120, 1000]) {
+      const b = nodeCrypto.randomBytes(n);
+      assert.strictEqual(Buffer.from(HA.md5(new Uint8Array(b))).toString('hex'), nodeCrypto.createHash('md5').update(b).digest('hex'), 'len ' + n);
+    }
+  });
+  await t('HiveAuth: EVP_BytesToKey + AES-256-CBC match OpenSSL (CryptoJS passphrase format)', async () => {
+    const salt = new Uint8Array([1, 2, 3, 4, 5, 6, 7, 8]);
+    const ct = await HA.aesEncrypt('{"hello":"wörld"}', 'pass-123', salt);
+    const raw = Buffer.from(ct, 'base64');
+    assert.strictEqual(raw.slice(0, 8).toString(), 'Salted__');
+    // derive with OpenSSL's algorithm independently (MD5 chain) and decrypt with node
+    let d = Buffer.alloc(0), blk = Buffer.alloc(0);
+    while (d.length < 48) { blk = nodeCrypto.createHash('md5').update(Buffer.concat([blk, Buffer.from('pass-123'), Buffer.from(salt)])).digest(); d = Buffer.concat([d, blk]); }
+    const dec = nodeCrypto.createDecipheriv('aes-256-cbc', d.slice(0, 32), d.slice(32, 48));
+    assert.strictEqual(Buffer.concat([dec.update(raw.slice(16)), dec.final()]).toString(), '{"hello":"wörld"}');
+    assert.strictEqual(await HA.aesDecrypt(ct, 'pass-123'), '{"hello":"wörld"}');
+    await assert.rejects(HA.aesDecrypt(ct, 'wrong'));
+    await assert.rejects(HA.aesDecrypt('bm90IHNhbHRlZA==', 'x'), /bad ciphertext/);
+  });
+  // optional: cross-check with the real crypto-js (what HAS wallets use) when it is installed: CRYPTOJS=/path/to/node_modules/crypto-js
+  if (process.env.CRYPTOJS) await t('HiveAuth: interoperates with crypto-js', async () => {
+    const CJ = require(process.env.CRYPTOJS);
+    const mine = await HA.aesEncrypt('{"a":1,"ü":"✓"}', 'k-1');
+    assert.strictEqual(CJ.AES.decrypt(mine, 'k-1').toString(CJ.enc.Utf8), '{"a":1,"ü":"✓"}');
+    const theirs = CJ.AES.encrypt('{"token":"t","expire":5}', 'k-2').toString();
+    assert.strictEqual(await HA.aesDecrypt(theirs, 'k-2'), '{"token":"t","expire":5}');
+  });
+  await t('HiveAuth: deep link / QR payload', () => {
+    const l = HA.link('auth', 'mes', 'u-1', 'k-1');
+    assert.ok(l.startsWith('has://auth_req/'));
+    assert.deepStrictEqual(JSON.parse(Buffer.from(l.slice(15), 'base64').toString()), { account: 'mes', uuid: 'u-1', key: 'k-1', host: 'wss://hive-auth.arcange.eu/' });
+    assert.ok(HA.link('sign', 'mes', 'u', 'k').startsWith('has://sign_req/'));
+  });
+  await t('HiveAuth: Keychain requests -> Hive operations', () => {
+    assert.deepStrictEqual(HA.ops.customJson('mes', 'polls', 'Posting', { poll: 'a/b', choices: [1] }),
+      [['custom_json', { required_auths: [], required_posting_auths: ['mes'], id: 'polls', json: '{"poll":"a/b","choices":[1]}' }]]);
+    assert.deepStrictEqual(HA.ops.customJson('mes', 'x', 'Active', '{}')[0][1].required_auths, ['mes']);
+    const p = HA.ops.post('mes', 'T', 'B', 'hive-1', '', '{"app":"x"}', 'perm', '{"author":"mes","permlink":"perm","max_accepted_payout":"0.000 HBD","percent_hbd":10000,"allow_votes":true,"allow_curation_rewards":true,"extensions":[]}');
+    assert.strictEqual(p.length, 2); assert.strictEqual(p[0][0], 'comment'); assert.strictEqual(p[0][1].parent_author, ''); assert.strictEqual(p[1][1].max_accepted_payout, '0.000 HBD');
+    assert.strictEqual(HA.ops.post('mes', '', 'B', 'pp', 'pa', '{}', 'r', '').length, 1);
+    assert.deepStrictEqual(HA.ops.vote('mes', 'p', 'a', 5000), [['vote', { voter: 'mes', author: 'a', permlink: 'p', weight: 5000 }]]);
+    assert.strictEqual(HA.ops.transfer('mes', 'mes', '3', 'memo', 'HBD')[0][1].amount, '3.000 HBD');
+    assert.deepStrictEqual(HA.ops.recurrentTransfer('a', 'b', 1, 'HBD', 'm', 720, 12)[0][1], { from: 'a', to: 'b', amount: '1.000 HBD', memo: 'm', recurrence: 720, executions: 12, extensions: [] });
+    const one = ['custom_json', { id: 'x' }];
+    assert.deepStrictEqual(HA.ops.broadcast(one), [one]); assert.deepStrictEqual(HA.ops.broadcast([one, one]), [one, one]);
+    assert.ok(/Send 3.000 HBD to @mes/.test(HA.describe(HA.ops.transfer('a', 'mes', 3, '', 'HBD'))));
+  });
+
+  // a fake HAS relay + wallet app: answers auth / sign / challenge like Keychain mobile does
+  await t('HiveAuth: login, signing and memo refusal through a fake relay + wallet', async () => {
+    const KEY = '11111111-2222-4333-8444-555555555555';
+    const realUUID = global.crypto.randomUUID;
+    global.crypto.randomUUID = () => KEY;
+    const sent = [];
+    let mode = 'ok';
+    class FakeWS {
+      constructor(url) { this.url = url; this.readyState = 0; setTimeout(() => { this.readyState = 1; this.onopen && this.onopen(); this.recv({ cmd: 'connected', timeout: 60, protocol: 0.8 }); }, 5); }
+      recv(m) { setTimeout(() => this.onmessage && this.onmessage({ data: JSON.stringify(m) }), 5); }
+      close() { this.readyState = 3; this.onclose && this.onclose({}); }
+      async send(s) {
+        const m = JSON.parse(s); sent.push(m);
+        const plain = JSON.parse(await HA.aesDecrypt(m.data, KEY));
+        m.plain = plain;
+        const uuid = 'req-' + sent.length;
+        this.recv({ cmd: m.cmd.replace('_req', '_wait'), uuid, expire: Date.now() + 60000, account: m.account });
+        if (mode === 'nack') return this.recv({ cmd: m.cmd.replace('_req', '_nack'), uuid, data: await HA.aesEncrypt(uuid, KEY) });
+        if (m.cmd === 'auth_req') this.recv({ cmd: 'auth_ack', uuid, data: await HA.aesEncrypt(JSON.stringify({ token: 'tok', expire: Date.now() + 86400000, challenge: { challenge: 'SIG', pubkey: 'STM5pub' } }), KEY) });
+        else if (m.cmd === 'sign_req') this.recv({ cmd: 'sign_ack', uuid, broadcast: true, data: 'txid-' + sent.length });
+        else if (m.cmd === 'challenge_req') this.recv({ cmd: 'challenge_ack', uuid, data: await HA.aesEncrypt(JSON.stringify({ challenge: 'SIG2', pubkey: 'STM5pub' }), KEY) });
+      }
+    }
+    global.WebSocket = FakeWS;
+    global.fetch = async () => ({ ok: true, json: async () => ({ result: [{ name: 'mes', posting: { key_auths: [['STM5pub', 1]] }, active: { key_auths: [] }, owner: { key_auths: [] } }] }) });
+    try {
+      const u = await H.login('mes');           // no extension -> HiveAuth
+      assert.strictEqual(u.via, 'hiveauth'); assert.strictEqual(u.key, 'STM5pub'); assert.strictEqual(H.via(), 'hiveauth'); assert.strictEqual(H.memoOk(), false);
+      assert.strictEqual(sent[0].cmd, 'auth_req'); assert.strictEqual(sent[0].account, 'mes');
+      assert.strictEqual(sent[0].plain.app.name, 'mes.fm'); assert.strictEqual(sent[0].plain.challenge.key_type, 'posting'); assert.ok(/^Log in to .* as @mes/.test(sent[0].plain.challenge.challenge));
+      assert.strictEqual(HA.session().token, 'tok');
+      const k = await H.keychain(0);
+      assert.ok(k && k.hiveAuth);
+      await H.vote('mestruth', 'abc', 10000);
+      const s1 = sent[sent.length - 1];
+      assert.strictEqual(s1.cmd, 'sign_req'); assert.strictEqual(s1.token, 'tok'); assert.strictEqual(s1.plain.key_type, 'posting'); assert.strictEqual(s1.plain.broadcast, true);
+      assert.deepStrictEqual(s1.plain.ops, [['vote', { voter: 'mes', author: 'mestruth', permlink: 'abc', weight: 10000 }]]);
+      const r = await H.transfer('mes', 1, 'HBD', 'x');
+      assert.strictEqual(sent[sent.length - 1].plain.key_type, 'active'); assert.strictEqual(r.result.id, 'txid-' + sent.length);
+      // the same Keychain-style calls pages make directly (polls, hive-store)
+      const resp = await new Promise((res) => k.requestBroadcast('mes', [['custom_json', { required_auths: [], required_posting_auths: ['mes'], id: 'mes_store', json: '{}' }]], 'Posting', res, null, 'Save'));
+      assert.strictEqual(resp.success, true);
+      const sig = await new Promise((res) => k.requestSignBuffer('mes', 'hello', 'Posting', res));
+      assert.strictEqual(sig.result, 'SIG2'); assert.strictEqual(sent[sent.length - 1].cmd, 'challenge_req');
+      const memo = await new Promise((res) => k.requestEncodeMessage('mes', 'mes', '#x', 'Memo', res));
+      assert.strictEqual(memo.success, false); assert.strictEqual(memo.error, 'nomemo_hiveauth');
+      const n = sent.length;
+      const enc = await new Promise((res) => k.requestTransfer('mes', 'a', '1.000', '#secret', 'HBD', res));
+      assert.strictEqual(enc.success, false); assert.strictEqual(sent.length, n);
+      mode = 'nack';
+      await assert.rejects(H.vote('a', 'b', 100), (e) => e.code === 'cancel');
+      // expired session -> logged out
+      localStorage.setItem('mes-hive-has', JSON.stringify(Object.assign(HA.session(), { expire: Date.now() - 1 })));
+      assert.strictEqual(H.user(), null);
+      H.logout();
+      assert.strictEqual(localStorage.getItem('mes-hive-has'), null);
+    } finally {
+      global.crypto.randomUUID = realUUID;
+      const ws = HA._state.ws; if (ws) ws.close();
+    }
   });
   await t('call(): falls back to the next node', async () => {
     const tried = [];
