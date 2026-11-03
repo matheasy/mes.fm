@@ -519,6 +519,35 @@
 			]
 		},
 		{
+			name: "Gates, Fences & Barriers",
+			items: [
+				{ c: "🚧", n: "barrier", k: "gate fence barrier wall construction roadblock road block barricade blocked closed keep out", note: "Unicode has no gate or fence emoji; the construction barrier is the closest fence or gate." },
+				{ c: "⛩️", n: "shrine gate (torii)", k: "gate fence barrier wall torii gateway entrance japan shinto archway" },
+				{ c: "🧱", n: "brick wall", k: "gate fence barrier wall bricks masonry firewall" },
+				{ c: "🪵", n: "wood", k: "gate fence barrier wall log timber fence post picket rail" },
+				{ c: "🚪", n: "door", k: "gate fence barrier wall doorway entrance exit garden gate" },
+				{ c: "🏯", n: "japanese castle", k: "gate fence barrier wall gatehouse fortress castle gate" },
+				{ c: "🏰", n: "castle", k: "gate fence barrier wall fortress castle gate drawbridge walls" },
+				{ c: "🏡", n: "house with garden", k: "gate fence barrier wall yard garden fence picket home" },
+				{ c: "🛂", n: "passport control", k: "gate fence barrier wall border checkpoint security gate customs" },
+				{ c: "🛃", n: "customs", k: "gate fence barrier wall border checkpoint security gate" },
+				{ c: "⛔", n: "no entry", k: "gate fence barrier wall stop forbidden keep out blocked closed" },
+				{ c: "🚫", n: "prohibited", k: "gate fence barrier wall forbidden not allowed keep out blocked" },
+				{ c: "🚷", n: "no pedestrians", k: "gate fence barrier wall keep out no walking blocked" },
+				{ c: "🚳", n: "no bicycles", k: "gate fence barrier wall blocked" },
+				{ c: "🪜", n: "ladder", k: "gate fence barrier wall climb over the fence step ladder" },
+				{ c: "🏗️", n: "building construction", k: "gate fence barrier wall crane site fenced off" },
+				{ c: "🔒", n: "locked", k: "gate fence barrier wall lock padlock locked gate closed secure" },
+				{ c: "🔐", n: "locked with key", k: "gate fence barrier wall lock padlock secure" },
+				{ c: "🗝️", n: "old key", k: "gate fence barrier wall key unlock gate" },
+				{ c: "⛓️", n: "chains", k: "gate fence barrier wall chain link chainlink fence chained" },
+				{ c: "🪤", n: "trap", k: "gate fence barrier wall mouse trap" },
+				{ c: "🛡️", n: "shield", k: "gate fence barrier wall defence defense protection guard" },
+				{ c: "🌉", n: "bridge at night", k: "golden gate bridge" },
+				{ c: "🗽", n: "statue of liberty", k: "gateway new york" }
+			]
+		},
+		{
 			name: "Science & Zodiac",
 			items: [
 				{ c: "🪨", n: "rock" },
