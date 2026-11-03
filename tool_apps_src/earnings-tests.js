@@ -169,6 +169,32 @@ function res() { return { code: 0, headers: {}, setHeader(k, v) { this.headers[k
   const mw = require('fs').readFileSync(path.join(ROOT, 'middleware.js'), 'utf8');
   ok(/'\/api\/chart-notes'/.test(mw), 'notes API is behind the password');
 
+  // ---- MES Premium income (HBD transfers to @mes with the "mes.fm ad-free" memo)
+  const H = (i, ts, op, d) => [i, { timestamp: ts, op: [op, d] }];
+  const hist = [
+    H(1, '2026-10-29T10:00:00', 'transfer', { from: 'alice', to: 'mes', amount: '1.000 HBD', memo: 'mes.fm ad-free' }),
+    H(2, '2026-11-01T06:30:00', 'transfer', { from: 'alice', to: 'mes', amount: '3.000 HBD', memo: 'mes.fm ad-free' }),
+    H(3, '2026-11-01T07:00:00', 'fill_recurrent_transfer', { from: 'bob', to: 'mes', amount: { amount: '1000', precision: 3, nai: '@@000000013' }, memo: 'mes.fm ad-free', remaining_executions: 11 }),
+    H(4, '2026-11-01T08:00:00', 'transfer', { from: 'threespeak-pro', to: 'mes', amount: '0.024 HBD', memo: '3Speak ad revenue share' }),
+    H(5, '2026-11-01T09:00:00', 'transfer', { from: 'carol', to: 'mes', amount: '1.000 HIVE', memo: 'mes.fm ad-free' }),
+    H(6, '2026-11-01T09:30:00', 'transfer', { from: 'mes', to: 'mes', amount: '1.000 HBD', memo: 'mes.fm ad-free' }),
+    H(7, '2026-11-01T10:00:00', 'transfer', { from: 'mes', to: 'dave', amount: '1.000 HBD', memo: 'mes.fm ad-free' }),
+    H(8, '2026-11-02T05:00:00', 'transfer', { from: 'erin', to: 'mes', amount: '1.000 HBD', memo: 'Mes.fm AD-FREE thanks' }),
+  ];
+  const pays = earnings.premiumPayments(hist, Date.parse('2026-10-30T00:00:00Z'));
+  ok(pays.length === 3, 'premium: only ad-free HBD payments to @mes from others, after launch: ' + pays.length);
+  ok(pays[0].d === '2026-10-31' && pays[1].kind === 'subscription' && pays[1].d === '2026-11-01', 'premium: Pacific dates, recurrent fills counted');
+  ok(pays[2].d === '2026-11-01' && pays[2].user === 'erin', 'premium: 05:00 UTC is still the day before in Vancouver');
+  const prd = earnings.premiumByDay(pays);
+  ok(prd["2026-11-01"].hbd === 2 && prd["2026-11-01"].n === 2 && prd["2026-10-31"].hbd === 3, 'premium: summed per day');
+  const ap = earnings.aggregate(['2026-10-31', '2026-11-01'], { gads: {}, adsense: {}, premium: prd }, 1, 0.8);
+  ok(Math.abs(ap.totals.prem - 6.25) < 1e-9 && ap.totals.premHbd === 5 && ap.totals.premN === 3, 'premium: HBD = USD, converted to CAD');
+  ok(Math.abs(ap.daily[1].prem - 2.5) < 1e-9 && ap.daily[0].rev === 0, 'premium: per day, kept apart from AdSense');
+  ok(earnings.aggregate([d1], blobs, 18396.41).totals.prem === 0, 'premium: none without payments');
+  const realFetch = global.fetch;
+  global.fetch = async (url, o) => ({ ok: true, json: async () => ({ result: JSON.parse(o.body).params[1] === -1 ? hist : [] }) });
+  try { const fp = await earnings.fetchPremium(); ok(fp.length === 3, 'premium: fetched from the Hive API (mocked)'); } finally { global.fetch = realFetch; }
+
   console.log(`${passes} passed, ${fails} failed`);
   process.exit(fails ? 1 : 0);
 })();

@@ -147,5 +147,6 @@ module.exports.computeAdFree = computeAdFree;
 module.exports.parseAmount = parseAmount;
 module.exports.validName = validName;
 module.exports.status = status;
+module.exports.rpc = rpc; // used by api/earnings.js (MES Premium income on mes.fm/ads)
 module.exports.FILTER_LOW = FILTER_LOW;
 module.exports.FILTER_HIGH = FILTER_HIGH;

@@ -7,6 +7,11 @@
 //   from the Search Console page's 6-hour cache), read from the gscdash:* keys (see api/search-console.js, _gsc-join.js).
 // ?vs=1&days=30|60|90|180&cc=<alpha-2>&page=<path>: "Ads vs SEO", one country and / or landing page per day: ad spend,
 //   ad clicks, organic clicks and impressions, and a before / after comparison around the first day with ad spend.
+// MES Premium income (people paying HBD on mes.fm/premium for no ads) is read from the public Hive blockchain: @mes's
+//   account history, transfers and recurrent-transfer executions of HBD with the page's memo "mes.fm ad-free" (other
+//   HBD sent to @mes, e.g. 3Speak shares, is not Premium and is left out). HBD is counted as 1 USD, converted to CAD with
+//   the same daily rate as the rest. The payment list is cached in Redis for 10 min (adsdash:premium); if the Hive nodes
+//   don't answer, the page still loads and says Premium could not be read.
 const { lastNDayKeys } = require('./_bucket-keys');
 const GJ = require('./_gsc-join');
 
@@ -17,6 +22,11 @@ const TZ = 'America/Vancouver';
 function pacificDay(d) { return new Intl.DateTimeFormat('en-CA', { timeZone: TZ, year: 'numeric', month: '2-digit', day: '2-digit' }).format(d); }
 const FX_FALLBACK = { VND: 18396.41, USD: 0.72, CAD: 1 };
 const UNLISTED = '(pages AdSense did not list)';
+const PREM_SINCE = Date.parse('2026-10-30T00:00:00Z'); // MES Premium launched Oct 31, 2026: nothing older is read
+const PREM_MEMO = /ad-?free/i;
+const PREM_TO = 'mes';
+// account history operation filter: transfer (2) | fill_recurrent_transfer (83 -> high bit 19)
+const PREM_FILTER_LOW = 4, PREM_FILTER_HIGH = 524288;
 
 // "https://mes.fm/bmicalculator/index.html?x=1" -> "/bmicalculator"; other sites keep their host in front.
 function normPage(url) {
@@ -42,20 +52,27 @@ function normDevice(d) {
 }
 
 // Pure: blobs = { gads: {date: day}, adsense: {date: day} }, perCad = units of the Ads currency per 1 CAD.
-function aggregate(dates, blobs, perCad) {
+// blobs.premium (optional) = { date: { hbd, n } }; usdPerCad turns HBD (= USD) into CAD.
+function aggregate(dates, blobs, perCad, usdPerCad) {
   const daily = [];
   const pages = new Map();
   const countries = new Map();
   const devices = new Map();
   const campaigns = new Map();
   const domains = new Map();
-  const totals = { rev: 0, pv: 0, adImp: 0, adClicks: 0, spend: 0, clicks: 0, imp: 0 };
+  const totals = { rev: 0, pv: 0, adImp: 0, adClicks: 0, spend: 0, clicks: 0, imp: 0, prem: 0, premHbd: 0, premN: 0 };
+  const prem = blobs.premium || {};
+  const usd = usdPerCad || FX_FALLBACK.USD;
   const get = (m, k, init) => { if (!m.has(k)) m.set(k, init()); return m.get(k); };
   const cad = (micros) => micros / 1e6 / perCad;
   for (const d of dates.slice().sort()) {
     const g = blobs.gads[d];
     const a = blobs.adsense[d];
-    const day = { d, rev: 0, pv: 0, spend: 0, clicks: 0, has: { gads: !!g, adsense: !!a } };
+    const day = { d, rev: 0, pv: 0, spend: 0, clicks: 0, prem: 0, has: { gads: !!g, adsense: !!a } };
+    if (prem[d]) {
+      day.prem = prem[d].hbd / usd;
+      totals.prem += day.prem; totals.premHbd += prem[d].hbd; totals.premN += prem[d].n;
+    }
     if (a) {
       let pageRev = 0, pagePv = 0;
       for (const [url, earn, pv, imp, clk] of a.pages || []) {
@@ -123,6 +140,62 @@ function aggregate(dates, blobs, perCad) {
     campaigns: list(campaigns, 'name').map(fixNums).sort((a, b) => b.spend - a.spend),
     domains: list(domains, 'dom').map(fixNums).sort((a, b) => b.rev - a.rev),
   };
+}
+
+// Pure: @mes history entries -> MES Premium payments [{t, d (Pacific date), user, hbd, kind}], oldest first.
+function premiumPayments(history, sinceMs) {
+  const P = require('./premium');
+  const out = [];
+  for (const h of history || []) {
+    const e = Array.isArray(h) ? h[1] : h;
+    if (!e || !Array.isArray(e.op)) continue;
+    const [name, d] = e.op;
+    if ((name !== 'transfer' && name !== 'fill_recurrent_transfer') || !d) continue;
+    if (d.to !== PREM_TO || !d.from || d.from === PREM_TO || !PREM_MEMO.test(String(d.memo || ''))) continue;
+    const a = P.parseAmount(d.amount);
+    if (a.sym !== 'HBD' || !(a.n > 0)) continue;
+    const t = Date.parse(/Z$/.test(e.timestamp) ? e.timestamp : e.timestamp + 'Z');
+    if (!isFinite(t) || t < (sinceMs || 0)) continue;
+    out.push({ t, d: pacificDay(new Date(t)), user: d.from, hbd: a.n, kind: name === 'transfer' ? 'payment' : 'subscription' });
+  }
+  return out.sort((x, y) => x.t - y.t);
+}
+// Pure: payments -> { date: { hbd, n } }
+function premiumByDay(pays) {
+  const m = {};
+  for (const p of pays || []) { const x = m[p.d] || (m[p.d] = { hbd: 0, n: 0 }); x.hbd = Math.round((x.hbd + p.hbd) * 1000) / 1000; x.n++; }
+  return m;
+}
+// Reads @mes's transfers back to PREM_SINCE (a few pages of 1,000 at most).
+async function fetchPremium(fetchImpl) {
+  const P = require('./premium');
+  const hist = [];
+  let start = -1;
+  for (let page = 0; page < 6; page++) {
+    const limit = start === -1 ? 1000 : Math.min(1000, start + 1);
+    if (limit <= 0) break;
+    const res = await P.rpc('condenser_api.get_account_history', [PREM_TO, start, limit, PREM_FILTER_LOW, PREM_FILTER_HIGH], fetchImpl);
+    if (!Array.isArray(res) || !res.length) break;
+    hist.push(...res);
+    if (res.length < limit) break;
+    const oldest = res[0];
+    if (Date.parse(oldest[1].timestamp + 'Z') < PREM_SINCE) break;
+    start = oldest[0] - 1;
+    if (start < 0) break;
+  }
+  return premiumPayments(hist, PREM_SINCE);
+}
+async function premiumCached(cachedRaw) {
+  const c = pj(cachedRaw);
+  if (c && c.at && Date.now() - Date.parse(c.at) < 10 * 60e3) return c;
+  try {
+    const pays = await fetchPremium();
+    const v = { at: new Date().toISOString(), pays };
+    await redis([['SET', 'adsdash:premium', JSON.stringify(v), 'EX', String(30 * 86400)]]).catch(() => {});
+    return v;
+  } catch (e) {
+    return c ? Object.assign({}, c, { stale: true }) : { at: null, pays: [], error: 'Hive nodes did not answer' };
+  }
 }
 
 async function redis(commands) {
@@ -273,7 +346,7 @@ async function handler(req, res) {
   try {
     const keys = [];
     for (const d of dates) keys.push(`adsdash:gads:${d}`, `adsdash:adsense:${d}`);
-    const out = await redis([['MGET', ...keys], ['GET', 'adsdash:meta:gads'], ['GET', 'adsdash:meta:adsense'], ['GET', 'adsdash:fx']]);
+    const out = await redis([['MGET', ...keys], ['GET', 'adsdash:meta:gads'], ['GET', 'adsdash:meta:adsense'], ['GET', 'adsdash:fx'], ['GET', 'adsdash:premium']]);
     const vals = (out[0] && out[0].result) || [];
     const blobs = { gads: {}, adsense: {} };
     const have = [];
@@ -291,8 +364,17 @@ async function handler(req, res) {
     const earned = have.filter((d) => blobs.adsense[d] && (blobs.adsense[d].dev || []).concat(blobs.adsense[d].pages || []).some((r) => r[1] > 0)).sort();
     const from = earned[0];
     const shown = from ? have.filter((d) => d >= from) : have;
-    const agg = aggregate(shown, blobs, fx.perCad);
-    res.status(200).json(Object.assign({ range, today, tz: TZ, from: from || null, currency: 'CAD', adsCurrency: (meta.gads && meta.gads.currency) || 'VND', fx, meta }, agg));
+    const pr = await premiumCached(out[4] && out[4].result);
+    const pdays = premiumByDay(pr.pays);
+    // Premium days count even before the first AdSense day / without Ads data, so they are added to the shown dates.
+    const shownSet = new Set(shown);
+    for (const d of dates) if (pdays[d] && !shownSet.has(d)) shownSet.add(d);
+    blobs.premium = pdays;
+    const agg = aggregate([...shownSet], blobs, fx.perCad, fx.rates && fx.rates.USD);
+    const inRange = new Set(dates);
+    const premium = { at: pr.at, stale: !!pr.stale, error: pr.error || null, account: PREM_TO,
+      payments: pr.pays.filter((p) => inRange.has(p.d)).slice(-50).reverse().map((p) => ({ t: new Date(p.t).toISOString(), d: p.d, user: p.user, hbd: p.hbd, kind: p.kind })) };
+    res.status(200).json(Object.assign({ range, today, tz: TZ, from: from || null, currency: 'CAD', adsCurrency: (meta.gads && meta.gads.currency) || 'VND', fx, meta, premium }, agg));
   } catch (e) {
     res.status(502).json({ error: 'data unavailable' });
   }
@@ -305,3 +387,6 @@ module.exports.normDevice = normDevice;
 module.exports.pacificDay = pacificDay;
 module.exports.adSeries = adSeries;
 module.exports.pacificDays = pacificDays;
+module.exports.premiumPayments = premiumPayments;
+module.exports.premiumByDay = premiumByDay;
+module.exports.fetchPremium = fetchPremium;

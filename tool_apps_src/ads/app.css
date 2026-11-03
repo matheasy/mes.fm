@@ -107,3 +107,14 @@
 		#ad #ad-vstiles {display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:0.5em;}
 		#ad #ad-vstiles .tu-stat__value {font-size:1.25em;}
 	}
+	/* in-cell bars (app.js column option b): a thin bar under the number, full cell width, anchored right like the numbers,
+	   so the tables can be scanned by eye without getting wider on phones; MES Premium income = gold */
+	#ad {--ad-n:#9aa5b1;--ad-prem:#c99a06;}
+	body.dark-mode #ad.tu {--ad-n:#6f7a86;--ad-prem:#f2c14e;}
+	#ad .pm {color:#856400;}
+	body.dark-mode #ad.tu .pm {color:var(--ad-prem);}
+	#ad .ad-tip .pm {color:#f2c14e;}
+	.ad-key--prem {background:var(--ad-prem);}
+	.ad-ib {display:flex;justify-content:flex-end;height:4px;margin-top:3px;border-radius:2px;background:rgba(128,128,128,0.14);overflow:hidden;min-width:3.5em;}
+	.ad-ib i {display:block;height:100%;border-radius:2px;opacity:0.85;}
+	@media (max-width: 600px) { .ad-ib {min-width:2.6em;height:3px;} }

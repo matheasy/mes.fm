@@ -43,6 +43,7 @@
   var shows = function (m) { return !m || MODE === 'both' || MODE === m; };
   // Colour code: revenue blue (.rv), costs red (.cs), profit green / red (.pos / .neg); counts stay neutral.
   var R = function (h) { return h === '–' ? h : '<span class="rv">' + h + '</span>'; };
+  var PM = function (h) { return h === '–' ? h : '<span class="pm">' + h + '</span>'; }; // MES Premium (HBD) income: gold
   var C = function (h) { return h === '–' ? h : '<span class="cs">' + h + '</span>'; };
   var perK = function (v, pv) { return pv ? money(v / pv * 1000) : '–'; };
   var signedK = function (v, pv) { return pv ? signed(v / pv * 1000) : '–'; };
@@ -74,7 +75,22 @@
     });
     var n = st.opts.top || 15;
     var shown = st.all ? sorted : sorted.slice(0, n);
-    el.innerHTML += '<tbody>' + shown.map(function (r) { return '<tr>' + cols.map(function (c, i) { return '<td' + (i === 0 ? ' class="ad-path" title="' + esc(c.v(r)) + '"' : '') + '>' + (c.h ? c.h(r) : esc(c.v(r))) + '</td>'; }).join('') + '</tr>'; }).join('') + '</tbody>';
+    // in-cell bars (column option b = colour): scaled to the largest value in the whole column, so the bars compare
+    // across "Show all" too; 'net' = green / red by sign, scaled to the largest absolute value
+    var mx = {};
+    cols.forEach(function (c) {
+      if (!c.b) return;
+      var m = 0; st.rows.forEach(function (r) { var v = +c.v(r); if (isFinite(v)) m = Math.max(m, c.b === 'net' ? Math.abs(v) : v); });
+      mx[c.k] = m;
+    });
+    var cell = function (c, r) {
+      var h = c.h ? c.h(r) : esc(c.v(r));
+      if (!c.b || !mx[c.k]) return h;
+      var v = +c.v(r); if (!isFinite(v) || !v || (c.b !== 'net' && v < 0)) return h;
+      var col = c.b === 'net' ? (v >= 0 ? 'var(--ad-good)' : 'var(--ad-bad)') : c.b;
+      return h + '<span class="ad-ib" aria-hidden="true"><i style="width:' + Math.max(2, Math.min(100, Math.abs(v) / mx[c.k] * 100)).toFixed(1) + '%;background:' + col + '"></i></span>';
+    };
+    el.innerHTML += '<tbody>' + shown.map(function (r) { return '<tr>' + cols.map(function (c, i) { return '<td' + (i === 0 ? ' class="ad-path" title="' + esc(c.v(r)) + '"' : c.b ? ' class="ad-bc"' : '') + '>' + cell(c, r) + '</td>'; }).join('') + '</tr>'; }).join('') + '</tbody>';
     if (st.opts.foot) el.innerHTML += '<tfoot><tr>' + (Array.isArray(st.opts.foot) ? st.opts.foot : st.cols.map(function (c, i) { return i ? (c.f || '') : 'Total'; })).map(function (h) { return '<td>' + h + '</td>'; }).join('') + '</tr></tfoot>';
     attachResizer(el);
     if (st.moreId) {
@@ -145,6 +161,7 @@
       h.addEventListener('pointermove', move); h.addEventListener('pointerup', up); h.addEventListener('pointercancel', up);
     });
   }
+  var BR = 'var(--ad-rev)', BC = 'var(--ad-cost)', BN = 'var(--ad-n)', BG = 'var(--ad-gc)', BI = 'var(--ad-gi)';
   function bar(v, max, color) { var w = max ? Math.min(100, v / max * 100) : 0; return '<span class="ad-bar"><i style="width:' + w.toFixed(1) + '%;background:' + color + '"></i></span>'; }
 
   // ---- data
@@ -217,7 +234,7 @@
     var d = DATA, t = d.totals, m = d.meta || {};
     $('ad-meta').innerHTML = 'Google Ads data: <b>' + ago(m.gads && m.gads.at) + '</b> · AdSense data: <b>' + ago(m.adsense && m.adsense.at) + '</b> · ' +
       (d.fx && d.fx.rates ? '1 CAD = ' + Math.round(d.fx.rates.VND).toLocaleString() + ' VND = ' + d.fx.rates.USD.toFixed(3) + ' USD' + (d.fx.live ? '' : ' (fallback rate)') : '') +
-      '. Both update every hour. AdSense numbers are estimates until the month closes.' +
+      '. Both update every hour. AdSense numbers are estimates until the month closes.' + premMeta(d.premium) +
       (d.from && d.daily.length && d.daily[0].d === d.from && /d$/.test(d.range) ? ' Counting from ' + esc(d.from) + ', the first day with AdSense earnings (older ad spend is left out).' : '');
     endsNote();
     var missing = [];
@@ -226,14 +243,17 @@
     $('ad-setup').hidden = !missing.length;
     $('ad-setup').innerHTML = missing.length ? '<h2>Waiting for data</h2><ul>' + missing.join('') + '</ul><p class="tu-note">Both run every hour (resending the last 3 days) and once a day at 6 am (the last 35 days), so a day is filled in or corrected on the next run.</p>' : '';
 
-    var net = t.rev - t.spend;
+    // income = AdSense + MES Premium (HBD paid on mes.fm/premium); "earnings minus spend" counts both
+    var prem = t.prem || 0, inc = t.rev + prem, net = inc - t.spend;
     var T = [];
-    if (shows('tot')) T.push(tile(R(money(t.rev)), 'AdSense earnings'), tile(C(money(t.spend)), 'Google Ads spend'),
-      tile((net < 0 ? '−' : '') + money(Math.abs(net)), 'earnings minus spend', net >= 0 ? 'pos' : 'neg'));
-    if (shows('pk')) T.push(tile(R(perK(t.rev, t.pv)), 'earned per 1,000 views'), tile(C(perK(t.spend, t.pv)), 'ad spend per 1,000 views'),
-      tile((net < 0 ? '−' : '') + perK(Math.abs(net), t.pv), 'net per 1,000 views', net >= 0 ? 'pos' : 'neg'));
+    if (shows('tot')) T.push(tile(R(money(t.rev)), 'AdSense earnings'),
+      tile(PM(money(prem)), 'MES Premium' + (t.premN ? ' (' + t.premN + ' payment' + (t.premN === 1 ? '' : 's') + ', ' + (+t.premHbd.toFixed(3)) + ' HBD)' : ' (no payments yet)')),
+      tile(C(money(t.spend)), 'Google Ads spend'),
+      tile((net < 0 ? '−' : '') + money(Math.abs(net)), 'earnings + Premium − spend', net >= 0 ? 'pos' : 'neg'));
+    if (shows('pk')) T.push(tile(R(perK(t.rev, t.pv)), 'AdSense earned per 1,000 views'), tile(C(perK(t.spend, t.pv)), 'ad spend per 1,000 views'),
+      tile((net < 0 ? '−' : '') + perK(Math.abs(net), t.pv), 'net per 1,000 views (with Premium)', net >= 0 ? 'pos' : 'neg'));
     T.push(tile(int(t.pv), 'page views (AdSense)'), tile(int(t.clicks), 'ad clicks bought'), tile(C(cpc(t.spend, t.clicks)), 'average cost per click'),
-      tile(t.spend ? (t.rev / t.spend).toFixed(2) + '×' : '–', 'earnings ÷ spend (whole site)', t.spend ? (t.rev >= t.spend ? 'pos' : 'neg') : ''));
+      tile(t.spend ? (inc / t.spend).toFixed(2) + '×' : '–', 'earnings + Premium ÷ spend', t.spend ? (inc >= t.spend ? 'pos' : 'neg') : ''));
     T.push(tile(int(t.imp), 'ad impressions bought'));
     if (MODE === 'both') T.push(tile(t.pv ? (t.clicks / t.pv * 1000).toFixed(1) : '–', 'ad clicks per 1,000 views'));
     $('ad-tiles').innerHTML = T.join('');
@@ -258,66 +278,75 @@
       if (SEOL.some(function (x) { return x.charAt(0) === 'b'; })) sn.push(GSC.bingAt ? 'Bing: day totals as last read by the Search Console page (' + ago(GSC.bingAt) + ').' : 'Bing: open mes.fm/search-console once so its Bing numbers are cached.');
     }
     $('ad-seonote').textContent = sn.join(' ');
-    var maxRev = Math.max.apply(null, d.pages.map(function (p) { return p.rev; }).concat([0]));
     table('t-pages', 'm-pages', [
       { k: 'path', t: 'Page', v: function (r) { return r.path; }, h: function (r) { if (r.path.charAt(0) === '(') return '<i>' + esc(r.path) + '</i>'; var u = r.path.charAt(0) === '/' ? r.path : 'https://' + r.path; return '<a href="' + esc(u) + '" target="_blank" rel="noopener">' + esc(r.path) + '</a>'; } },
-      { k: 'clicks', t: 'Ad clicks', v: function (r) { return r.clicks; }, h: function (r) { return r.clicks ? int(r.clicks) : '–'; }, f: int(t.clicks) },
-      { k: 'spend', t: 'Spend', m: 'tot', v: function (r) { return r.spend; }, h: function (r) { return r.spend ? C(money(r.spend)) : '–'; }, f: C(money(t.spend)) },
-      { k: 'cpc', t: 'Cost/click', v: function (r) { return r.clicks ? r.spend / r.clicks : 0; }, h: function (r) { return C(cpc(r.spend, r.clicks)); }, f: C(cpc(t.spend, t.clicks)) },
-      { k: 'pv', t: 'Page views', v: function (r) { return r.pv; }, h: function (r) { return int(r.pv); }, f: int(t.pv) },
-      { k: 'rev', t: 'Earnings', m: 'tot', v: function (r) { return r.rev; }, h: function (r) { return bar(r.rev, maxRev, 'var(--ad-rev)') + R(money(r.rev)); }, f: R(money(t.rev)) },
-      { k: 'rpm', t: 'Earned / 1k views', m: 'pk', v: function (r) { return r.pv ? r.rev / r.pv : 0; }, h: function (r) { return R(perK(r.rev, r.pv)); }, f: R(perK(t.rev, t.pv)) },
-      { k: 'spk', t: 'Spent / 1k views', m: 'pk', v: function (r) { return r.pv ? r.spend / r.pv : 0; }, h: function (r) { return r.spend ? C(perK(r.spend, r.pv)) : '–'; }, f: C(perK(t.spend, t.pv)) },
-      { k: 'npk', t: 'Net / 1k views', m: 'pk', v: function (r) { return r.pv ? (r.rev - r.spend) / r.pv : 0; }, h: function (r) { return signedK(r.rev - r.spend, r.pv); }, f: signedK(t.rev - t.spend, t.pv) },
-      { k: 'net', t: 'Earn − spend', m: 'tot', v: function (r) { return r.rev - r.spend; }, h: function (r) { return signed(r.rev - r.spend); }, f: signed(t.rev - t.spend) },
-      { k: 'oc', t: 'Organic clicks', v: function (r) { var x = gp(r.path); return x ? x.c : -1; }, h: function (r) { var x = gp(r.path); return x ? int(x.c) : '–'; }, f: gTot('c') },
-      { k: 'oi', t: 'Organic impr.', v: function (r) { var x = gp(r.path); return x ? x.i : -1; }, h: function (r) { var x = gp(r.path); return x ? int(x.i) : '–'; }, f: gTot('i') },
+      { k: 'clicks', t: 'Ad clicks', b: BN, v: function (r) { return r.clicks; }, h: function (r) { return r.clicks ? int(r.clicks) : '–'; }, f: int(t.clicks) },
+      { k: 'spend', t: 'Spend', b: BC, m: 'tot', v: function (r) { return r.spend; }, h: function (r) { return r.spend ? C(money(r.spend)) : '–'; }, f: C(money(t.spend)) },
+      { k: 'cpc', t: 'Cost/click', b: BC, v: function (r) { return r.clicks ? r.spend / r.clicks : 0; }, h: function (r) { return C(cpc(r.spend, r.clicks)); }, f: C(cpc(t.spend, t.clicks)) },
+      { k: 'pv', t: 'Page views', b: BN, v: function (r) { return r.pv; }, h: function (r) { return int(r.pv); }, f: int(t.pv) },
+      { k: 'rev', t: 'Earnings', b: BR, m: 'tot', v: function (r) { return r.rev; }, h: function (r) { return R(money(r.rev)); }, f: R(money(t.rev)) },
+      { k: 'rpm', t: 'Earned / 1k views', b: BR, m: 'pk', v: function (r) { return r.pv ? r.rev / r.pv : 0; }, h: function (r) { return R(perK(r.rev, r.pv)); }, f: R(perK(t.rev, t.pv)) },
+      { k: 'spk', t: 'Spent / 1k views', b: BC, m: 'pk', v: function (r) { return r.pv ? r.spend / r.pv : 0; }, h: function (r) { return r.spend ? C(perK(r.spend, r.pv)) : '–'; }, f: C(perK(t.spend, t.pv)) },
+      { k: 'npk', t: 'Net / 1k views', b: 'net', m: 'pk', v: function (r) { return r.pv ? (r.rev - r.spend) / r.pv : 0; }, h: function (r) { return signedK(r.rev - r.spend, r.pv); }, f: signedK(t.rev - t.spend, t.pv) },
+      { k: 'net', t: 'Earn − spend', b: 'net', m: 'tot', v: function (r) { return r.rev - r.spend; }, h: function (r) { return signed(r.rev - r.spend); }, f: signed(t.rev - t.spend) },
+      { k: 'oc', t: 'Organic clicks', b: BG, v: function (r) { var x = gp(r.path); return x ? x.c : -1; }, h: function (r) { var x = gp(r.path); return x ? int(x.c) : '–'; }, f: gTot('c') },
+      { k: 'oi', t: 'Organic impr.', b: BI, v: function (r) { var x = gp(r.path); return x ? x.i : -1; }, h: function (r) { var x = gp(r.path); return x ? int(x.i) : '–'; }, f: gTot('i') },
       { k: 'back', t: 'Came back', v: function (r) { var x = ret[r.path]; return x && x.arrivals ? x.returned / x.arrivals : -1; }, h: function (r) { var x = ret[r.path]; return x && x.arrivals ? int(x.returned) + '<small>(' + pct(x.returned, x.arrivals) + ' of ' + int(x.arrivals) + ')</small>' : '–'; } },
     ], d.pages, { sort: 'rev', top: 15, empty: 'No AdSense or Google Ads data for this range yet.',
       foot: true });
 
     table('t-countries', 'm-countries', [
       { k: 'name', t: 'Country', v: function (r) { return r.name || r.cc; } },
-      { k: 'clicks', t: 'Ad clicks', v: function (r) { return r.clicks; }, h: function (r) { return r.clicks ? int(r.clicks) : '–'; }, f: int(t.clicks) },
-      { k: 'spend', t: 'Spend', m: 'tot', v: function (r) { return r.spend; }, h: function (r) { return r.spend ? C(money(r.spend)) : '–'; }, f: C(money(t.spend)) },
-      { k: 'cpc', t: 'Cost/click', v: function (r) { return r.clicks ? r.spend / r.clicks : 0; }, h: function (r) { return C(cpc(r.spend, r.clicks)); }, f: C(cpc(t.spend, t.clicks)) },
-      { k: 'pv', t: 'Page views', v: function (r) { return r.pv; }, h: function (r) { return int(r.pv); }, f: int(t.pv) },
-      { k: 'rev', t: 'Earnings', m: 'tot', v: function (r) { return r.rev; }, h: function (r) { return R(money(r.rev)); }, f: R(money(t.rev)) },
-      { k: 'rpm', t: 'Earned / 1k views', m: 'pk', v: function (r) { return r.pv ? r.rev / r.pv : 0; }, h: function (r) { return R(perK(r.rev, r.pv)); }, f: R(perK(t.rev, t.pv)) },
-      { k: 'spk', t: 'Spent / 1k views', m: 'pk', v: function (r) { return r.pv ? r.spend / r.pv : 0; }, h: function (r) { return r.spend ? C(perK(r.spend, r.pv)) : '–'; }, f: C(perK(t.spend, t.pv)) },
-      { k: 'npk', t: 'Net / 1k views', m: 'pk', v: function (r) { return r.pv ? (r.rev - r.spend) / r.pv : 0; }, h: function (r) { return signedK(r.rev - r.spend, r.pv); }, f: signedK(t.rev - t.spend, t.pv) },
-      { k: 'net', t: 'Earn − spend', m: 'tot', v: function (r) { return r.rev - r.spend; }, h: function (r) { return signed(r.rev - r.spend); }, f: signed(t.rev - t.spend) },
-      { k: 'oc', t: 'Organic clicks', v: function (r) { var x = gc(r.cc); return x ? x.c : -1; }, h: function (r) { var x = gc(r.cc); return x ? int(x.c) : '–'; }, f: gTot('c') },
-      { k: 'oi', t: 'Organic impr.', v: function (r) { var x = gc(r.cc); return x ? x.i : -1; }, h: function (r) { var x = gc(r.cc); return x ? int(x.i) : '–'; }, f: gTot('i') },
+      { k: 'clicks', t: 'Ad clicks', b: BN, v: function (r) { return r.clicks; }, h: function (r) { return r.clicks ? int(r.clicks) : '–'; }, f: int(t.clicks) },
+      { k: 'spend', t: 'Spend', b: BC, m: 'tot', v: function (r) { return r.spend; }, h: function (r) { return r.spend ? C(money(r.spend)) : '–'; }, f: C(money(t.spend)) },
+      { k: 'cpc', t: 'Cost/click', b: BC, v: function (r) { return r.clicks ? r.spend / r.clicks : 0; }, h: function (r) { return C(cpc(r.spend, r.clicks)); }, f: C(cpc(t.spend, t.clicks)) },
+      { k: 'pv', t: 'Page views', b: BN, v: function (r) { return r.pv; }, h: function (r) { return int(r.pv); }, f: int(t.pv) },
+      { k: 'rev', t: 'Earnings', b: BR, m: 'tot', v: function (r) { return r.rev; }, h: function (r) { return R(money(r.rev)); }, f: R(money(t.rev)) },
+      { k: 'rpm', t: 'Earned / 1k views', b: BR, m: 'pk', v: function (r) { return r.pv ? r.rev / r.pv : 0; }, h: function (r) { return R(perK(r.rev, r.pv)); }, f: R(perK(t.rev, t.pv)) },
+      { k: 'spk', t: 'Spent / 1k views', b: BC, m: 'pk', v: function (r) { return r.pv ? r.spend / r.pv : 0; }, h: function (r) { return r.spend ? C(perK(r.spend, r.pv)) : '–'; }, f: C(perK(t.spend, t.pv)) },
+      { k: 'npk', t: 'Net / 1k views', b: 'net', m: 'pk', v: function (r) { return r.pv ? (r.rev - r.spend) / r.pv : 0; }, h: function (r) { return signedK(r.rev - r.spend, r.pv); }, f: signedK(t.rev - t.spend, t.pv) },
+      { k: 'net', t: 'Earn − spend', b: 'net', m: 'tot', v: function (r) { return r.rev - r.spend; }, h: function (r) { return signed(r.rev - r.spend); }, f: signed(t.rev - t.spend) },
+      { k: 'oc', t: 'Organic clicks', b: BG, v: function (r) { var x = gc(r.cc); return x ? x.c : -1; }, h: function (r) { var x = gc(r.cc); return x ? int(x.c) : '–'; }, f: gTot('c') },
+      { k: 'oi', t: 'Organic impr.', b: BI, v: function (r) { var x = gc(r.cc); return x ? x.i : -1; }, h: function (r) { var x = gc(r.cc); return x ? int(x.i) : '–'; }, f: gTot('i') },
     ], d.countries, { sort: 'rev', top: 15, foot: true });
 
     table('t-campaigns', 'm-campaigns', [
       { k: 'name', t: 'Campaign', v: function (r) { return r.name; } },
-      { k: 'imp', t: 'Impressions', v: function (r) { return r.imp; }, h: function (r) { return int(r.imp); } },
-      { k: 'clicks', t: 'Clicks', v: function (r) { return r.clicks; }, h: function (r) { return int(r.clicks); } },
-      { k: 'ctr', t: 'CTR', v: function (r) { return r.imp ? r.clicks / r.imp : 0; }, h: function (r) { return pct(r.clicks, r.imp); } },
-      { k: 'spend', t: 'Spend', v: function (r) { return r.spend; }, h: function (r) { return C(money(r.spend)); } },
-      { k: 'cpc', t: 'Cost/click', v: function (r) { return r.clicks ? r.spend / r.clicks : 0; }, h: function (r) { return C(cpc(r.spend, r.clicks)); } },
+      { k: 'imp', t: 'Impressions', b: BN, v: function (r) { return r.imp; }, h: function (r) { return int(r.imp); } },
+      { k: 'clicks', t: 'Clicks', b: BN, v: function (r) { return r.clicks; }, h: function (r) { return int(r.clicks); } },
+      { k: 'ctr', t: 'CTR', b: BN, v: function (r) { return r.imp ? r.clicks / r.imp : 0; }, h: function (r) { return pct(r.clicks, r.imp); } },
+      { k: 'spend', t: 'Spend', b: BC, v: function (r) { return r.spend; }, h: function (r) { return C(money(r.spend)); } },
+      { k: 'cpc', t: 'Cost/click', b: BC, v: function (r) { return r.clicks ? r.spend / r.clicks : 0; }, h: function (r) { return C(cpc(r.spend, r.clicks)); } },
       { k: 'dev', t: 'Clicks by device', v: function (r) { return Object.keys(r.dev || {}).join(','); }, h: function (r) { return Object.keys(r.dev || {}).map(function (k) { return (DEV[k] || k) + ' ' + r.dev[k]; }).join(' · ') || '–'; } },
     ], d.campaigns, { sort: 'spend', top: 15, empty: 'No Google Ads data for this range yet.' });
 
     table('t-devices', null, [
       { k: 'dev', t: 'Device', v: function (r) { return DEV[r.dev] || r.dev; } },
-      { k: 'clicks', t: 'Ad clicks', v: function (r) { return r.clicks; }, h: function (r) { return int(r.clicks); } },
-      { k: 'spend', t: 'Spend', v: function (r) { return r.spend; }, h: function (r) { return C(money(r.spend)); } },
-      { k: 'pv', t: 'Page views', v: function (r) { return r.pv; }, h: function (r) { return int(r.pv); }, f: int(t.pv) },
-      { k: 'rev', t: 'Earnings', m: 'tot', v: function (r) { return r.rev; }, h: function (r) { return R(money(r.rev)); }, f: R(money(t.rev)) },
-      { k: 'rpm', t: 'Earned / 1k views', m: 'pk', v: function (r) { return r.pv ? r.rev / r.pv : 0; }, h: function (r) { return R(perK(r.rev, r.pv)); }, f: R(perK(t.rev, t.pv)) },
-      { k: 'spk', t: 'Spent / 1k views', m: 'pk', v: function (r) { return r.pv ? r.spend / r.pv : 0; }, h: function (r) { return r.spend ? C(perK(r.spend, r.pv)) : '–'; }, f: C(perK(t.spend, t.pv)) },
-      { k: 'npk', t: 'Net / 1k views', m: 'pk', v: function (r) { return r.pv ? (r.rev - r.spend) / r.pv : 0; }, h: function (r) { return signedK(r.rev - r.spend, r.pv); }, f: signedK(t.rev - t.spend, t.pv) },
-      { k: 'net', t: 'Earn − spend', m: 'tot', v: function (r) { return r.rev - r.spend; }, h: function (r) { return signed(r.rev - r.spend); } },
+      { k: 'clicks', t: 'Ad clicks', b: BN, v: function (r) { return r.clicks; }, h: function (r) { return int(r.clicks); } },
+      { k: 'spend', t: 'Spend', b: BC, v: function (r) { return r.spend; }, h: function (r) { return C(money(r.spend)); } },
+      { k: 'pv', t: 'Page views', b: BN, v: function (r) { return r.pv; }, h: function (r) { return int(r.pv); }, f: int(t.pv) },
+      { k: 'rev', t: 'Earnings', b: BR, m: 'tot', v: function (r) { return r.rev; }, h: function (r) { return R(money(r.rev)); }, f: R(money(t.rev)) },
+      { k: 'rpm', t: 'Earned / 1k views', b: BR, m: 'pk', v: function (r) { return r.pv ? r.rev / r.pv : 0; }, h: function (r) { return R(perK(r.rev, r.pv)); }, f: R(perK(t.rev, t.pv)) },
+      { k: 'spk', t: 'Spent / 1k views', b: BC, m: 'pk', v: function (r) { return r.pv ? r.spend / r.pv : 0; }, h: function (r) { return r.spend ? C(perK(r.spend, r.pv)) : '–'; }, f: C(perK(t.spend, t.pv)) },
+      { k: 'npk', t: 'Net / 1k views', b: 'net', m: 'pk', v: function (r) { return r.pv ? (r.rev - r.spend) / r.pv : 0; }, h: function (r) { return signedK(r.rev - r.spend, r.pv); }, f: signedK(t.rev - t.spend, t.pv) },
+      { k: 'net', t: 'Earn − spend', b: 'net', m: 'tot', v: function (r) { return r.rev - r.spend; }, h: function (r) { return signed(r.rev - r.spend); } },
     ], d.devices, { sort: 'rev', top: 10 });
 
     table('t-domains', null, [
       { k: 'dom', t: 'Site', v: function (r) { return r.dom; } },
-      { k: 'pv', t: 'Page views', v: function (r) { return r.pv; }, h: function (r) { return int(r.pv); }, f: int(t.pv) },
-      { k: 'rev', t: 'Earnings', v: function (r) { return r.rev; }, h: function (r) { return R(money(r.rev)); } },
+      { k: 'pv', t: 'Page views', b: BN, v: function (r) { return r.pv; }, h: function (r) { return int(r.pv); }, f: int(t.pv) },
+      { k: 'rev', t: 'Earnings', b: BR, v: function (r) { return r.rev; }, h: function (r) { return R(money(r.rev)); } },
     ], d.domains, { sort: 'pv', top: 20 });
+
+    // MES Premium payments (newest first, from the Hive blockchain)
+    var pp = (d.premium && d.premium.payments) || [], usd = (d.fx && d.fx.rates && d.fx.rates.USD) || 0.72;
+    table('t-premium', null, [
+      { k: 't', t: 'When', v: function (r) { return r.t; }, h: function (r) { return esc(r.d) + ' <small>' + esc(r.t.slice(11, 16)) + ' UTC</small>'; } },
+      { k: 'user', t: 'Hive account', v: function (r) { return r.user; }, h: function (r) { return '<a href="https://peakd.com/@' + esc(r.user) + '/wallet" target="_blank" rel="noopener">@' + esc(r.user) + '</a>'; } },
+      { k: 'kind', t: 'How', v: function (r) { return r.kind; }, h: function (r) { return r.kind === 'subscription' ? 'Subscription' : 'One-time'; } },
+      { k: 'hbd', t: 'HBD', b: 'var(--ad-prem)', v: function (r) { return r.hbd; }, h: function (r) { return PM(r.hbd.toFixed(3)); } },
+      { k: 'cad', t: 'Value', b: 'var(--ad-prem)', v: function (r) { return r.hbd / usd; }, h: function (r) { return PM(money(r.hbd / usd)); } },
+    ], pp, { sort: 't', top: 10, empty: d.premium && d.premium.error ? 'Could not read the Hive blockchain just now (' + d.premium.error + ').' : 'No MES Premium payments in this range yet.' });
 
     // ad visitors who came back (moved here from /stats)
     var rt = (RET && RET.totals) || { arrivals: 0, returned: 0, loyal: 0, returnDays: 0 };
@@ -332,6 +361,11 @@
       { k: 'per', t: 'Days back each', v: function (r) { return r.arrivals ? r.returnDays / r.arrivals : 0; }, h: function (r) { return (r.arrivals ? r.returnDays / r.arrivals : 0).toFixed(2); } },
     ], (RET && RET.rows) || [], { sort: 'arrivals', top: 10, empty: 'No ad visitors recorded yet (counting started Oct 22, 2026).',
       foot: ['Total', int(rt.arrivals), int(rt.returned) + '<small>(' + pct(rt.returned, rt.arrivals) + ')</small>', int(rt.loyal) + '<small>(' + pct(rt.loyal, rt.arrivals) + ')</small>', (rt.arrivals ? rt.returnDays / rt.arrivals : 0).toFixed(2)] });
+  }
+  function premMeta(p) {
+    if (!p) return '';
+    if (p.error && !p.at) return ' <b>MES Premium</b>: the Hive nodes did not answer, so Premium payments are missing.';
+    return ' MES Premium payments: read from the Hive blockchain (@' + esc(p.account || 'mes') + ', memo “mes.fm ad-free”) ' + ago(p.at) + (p.stale ? ' (Hive did not answer, last copy shown)' : '') + '; 1 HBD counted as 1 USD.';
   }
   function tile(v, label, cls) { return '<div class="tu-stat ' + (cls || '') + '"><div class="tu-stat__value">' + v + '</div><div class="tu-stat__label">' + esc(label) + '</div></div>'; }
 
@@ -355,7 +389,7 @@
     var W = box.clientWidth || 600, H = box.clientHeight || 200, padL = 46, padB = 22, padT = 8, padR = seo.length ? 44 : 8;
     svg.setAttribute('viewBox', '0 0 ' + W + ' ' + H);
     if (!days.length) { svg.innerHTML = '<text x="' + W / 2 + '" y="' + H / 2 + '" text-anchor="middle" fill="currentColor" font-size="13">No data yet</text>'; svg.style.color = 'var(--ad-muted)'; return; }
-    var max = 0; days.forEach(function (x) { max = Math.max(max, x.rev, x.spend); });
+    var max = 0; days.forEach(function (x) { max = Math.max(max, x.rev + (x.prem || 0), x.spend); });
     var nice = niceTop(max);
     var smax = 0; days.forEach(function (x) { var g = gmap[x.d]; if (g) seo.forEach(function (k) { if (g[k] != null) smax = Math.max(smax, g[k]); }); });
     var snice = niceTop(smax);
@@ -364,7 +398,7 @@
     var y2 = function (v) { return padT + ih - v / snice * ih; };
     var css = getComputedStyle($('ad'));
     var cv = function (n) { return css.getPropertyValue(n).trim(); };
-    var cRev = cv('--ad-rev'), cSp = cv('--ad-cost'), cLine = cv('--ad-line'), cMuted = cv('--ad-muted');
+    var cRev = cv('--ad-rev'), cSp = cv('--ad-cost'), cLine = cv('--ad-line'), cMuted = cv('--ad-muted'), cPrem = cv('--ad-prem');
     var s = '';
     for (var g = 0; g <= 4; g++) {
       var gv = nice * g / 4, gy = y(gv);
@@ -376,6 +410,10 @@
       var isToday = x.d === DATA.today;
       s += '<rect x="' + bx.toFixed(1) + '" y="' + y(x.rev).toFixed(1) + '" width="' + Math.max(1, bw * 0.7).toFixed(1) + '" height="' + bh.toFixed(1) + '" fill="' + cRev + '" rx="1.5"' +
         (isToday ? ' fill-opacity="0.45" stroke="' + cRev + '" stroke-dasharray="3 2"' : '') + '/>';
+      if (x.prem > 0) { // MES Premium stacked on top of the AdSense bar
+        var py = y(x.rev + x.prem), ph = Math.max(1.5, y(x.rev) - py);
+        s += '<rect x="' + bx.toFixed(1) + '" y="' + (y(x.rev) - ph).toFixed(1) + '" width="' + Math.max(1, bw * 0.7).toFixed(1) + '" height="' + ph.toFixed(1) + '" fill="' + cPrem + '" rx="1.5"' + (isToday ? ' fill-opacity="0.55"' : '') + '/>';
+      }
     });
     var cx = function (i) { return padL + i * bw + bw / 2; };
     var pts = days.map(function (x, i) { return cx(i).toFixed(1) + ',' + y(x.spend).toFixed(1); });
@@ -401,7 +439,7 @@
       var i = at(pt); if (i === -1) { $('ad-tip').style.display = 'none'; return; }
       var x = days[i], tip = $('ad-tip'), gx = gmap[x.d];
       var notes = window.MESNotes ? window.MESNotes.list().filter(function (n) { return n.d === x.d; }) : [];
-      tip.innerHTML = x.d + '<br>Earned ' + R(money(x.rev)) + ' · Spent ' + C(money(x.spend)) + '<br>' + int(x.pv) + ' views · ' + int(x.clicks) + ' ad clicks' +
+      tip.innerHTML = x.d + '<br>Earned ' + R(money(x.rev)) + (x.prem ? ' + Premium ' + PM(money(x.prem)) : '') + ' · Spent ' + C(money(x.spend)) + '<br>' + int(x.pv) + ' views · ' + int(x.clicks) + ' ad clicks' +
         (gx && gx.gc != null ? '<br>Google search: ' + int(gx.gc) + ' clicks · ' + int(gx.gi) + ' impr.' + (gx.gf ? ' (fresh)' : '') : '') +
         (gx && gx.bc != null && SEOL.some(function (k) { return k.charAt(0) === 'b'; }) ? '<br>Bing: ' + int(gx.bc) + ' clicks · ' + int(gx.bi) + ' impr.' : '') +
         notes.map(function (n) { return '<br>✎ ' + esc(n.t); }).join('');

@@ -414,6 +414,17 @@ body.dark-mode .tu .rw-head {color:#a0a8b3;border-bottom-color:#555;} body.dark-
 		#ad #ad-vstiles {display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:0.5em;}
 		#ad #ad-vstiles .tu-stat__value {font-size:1.25em;}
 	}
+	/* in-cell bars (app.js column option b): a thin bar under the number, full cell width, anchored right like the numbers,
+	   so the tables can be scanned by eye without getting wider on phones; MES Premium income = gold */
+	#ad {--ad-n:#9aa5b1;--ad-prem:#c99a06;}
+	body.dark-mode #ad.tu {--ad-n:#6f7a86;--ad-prem:#f2c14e;}
+	#ad .pm {color:#856400;}
+	body.dark-mode #ad.tu .pm {color:var(--ad-prem);}
+	#ad .ad-tip .pm {color:#f2c14e;}
+	.ad-key--prem {background:var(--ad-prem);}
+	.ad-ib {display:flex;justify-content:flex-end;height:4px;margin-top:3px;border-radius:2px;background:rgba(128,128,128,0.14);overflow:hidden;min-width:3.5em;}
+	.ad-ib i {display:block;height:100%;border-radius:2px;opacity:0.85;}
+	@media (max-width: 600px) { .ad-ib {min-width:2.6em;height:3px;} }
 
 
 	@media print {
@@ -540,6 +551,10 @@ body.is-stuck #navbar.hide { position: fixed; top: 56px; right: 8px; }
 	body.dark-mode .ad-bar{background:rgba(82,82,82,0.20)}
 	body.dark-mode #ad{--ad-gc:#2177e9;--ad-bc:#0ad2ff;--ad-bi:#96ff0a}
 	body.dark-mode #ad .ad-seot .ad-key--ln{border:2px solid #333333}
+	body.dark-mode #ad{--ad-prem:#f8c011}
+	body.dark-mode #ad .pm{color:#ffd75c}
+	body.dark-mode #ad .ad-tip .pm{color:#f4ca67}
+	body.dark-mode .ad-ib{background:rgba(82,82,82,0.14)}
 	/* TOOL-DARK:END */
 </style>
         <meta property="fb:app_id" content="" />
@@ -628,7 +643,7 @@ body.is-stuck #navbar.hide { position: fixed; top: 56px; right: 8px; }
 
 		<section class="tu-card ad-sec">
 			<div class="ad-head"><h2>Day by day</h2><span class="ad-hbtns"><button type="button" class="mes-pbtn" id="ad-notes" title="Chart notes: list, add, edit (shared with the Search Console chart)">Notes</button></span></div>
-			<p class="tu-note">AdSense earnings (bars) and Google Ads spend (line), in the currency chosen at the top. Hover or tap a day for its numbers; right-click a day to add a note.</p>
+			<p class="tu-note">AdSense earnings (blue bars, with MES Premium stacked on top in gold) and Google Ads spend (line), in the currency chosen at the top. Hover or tap a day for its numbers; right-click a day to add a note.</p>
 			<div class="ad-tabs ad-seot" id="ad-seot" role="group" aria-label="Search lines (right axis)">
 				<span class="ad-seol">Search (right axis):</span>
 				<button type="button" class="tu-chip" data-g="gc" aria-pressed="false" style="--k:var(--ad-gc)"><i class="ad-key ad-key--ln"></i>Google clicks</button>
@@ -637,9 +652,15 @@ body.is-stuck #navbar.hide { position: fixed; top: 56px; right: 8px; }
 				<button type="button" class="tu-chip" data-g="bi" aria-pressed="false" style="--k:var(--ad-bi)"><i class="ad-key ad-key--ln ad-key--dash"></i>Bing impressions</button>
 			</div>
 			<div class="ad-chart" id="ad-chart"><svg id="ad-svg" preserveAspectRatio="none" role="img" aria-label="Daily earnings and spend"></svg><div class="ad-tip" id="ad-tip"></div></div>
-			<div class="ad-legend"><span><i class="ad-key ad-key--rev"></i>AdSense earnings</span><span><i class="ad-key ad-key--spend"></i>Google Ads spend</span></div>
+			<div class="ad-legend"><span><i class="ad-key ad-key--rev"></i>AdSense earnings</span><span><i class="ad-key ad-key--prem"></i>MES Premium (HBD)</span><span><i class="ad-key ad-key--spend"></i>Google Ads spend</span></div>
 			<p class="tu-note" id="ad-seonote"></p>
 			<p class="tu-note ad-ends" id="ad-ends"></p>
+		</section>
+
+		<section class="tu-card ad-sec">
+			<div class="ad-head"><h2>MES Premium payments</h2></div>
+			<p class="tu-note">People who paid HBD on <a href="/premium">mes.fm/premium</a> for no ads: transfers and subscription payments to @mes with the memo “mes.fm ad-free”, read from the public Hive blockchain (other HBD sent to @mes is not counted). 1 HBD is counted as 1 US dollar. These are in the earnings tiles and the chart above.</p>
+			<div class="ad-wrap"><table class="ad-t" id="t-premium"></table></div>
 		</section>
 
 		<section class="tu-card ad-sec">
@@ -748,7 +769,7 @@ body.is-stuck #navbar.hide { position: fixed; top: 56px; right: 8px; }
             hide_search:false,
             current_tab:0
         }        </script><!-- FASTCOMMENTS-LAZY: widget init moved to main_js/main.js -- it pulls embed.min.js only when #fastcomments-widget nears the viewport or on the first Comments-toggle click, so it no longer blocks first render -->                <script src="https://mes.fm/main_js/lazysizes.min.js?v=1.0.3" async></script>
-	<script src="/earnings/js/earnings.js?v=12" defer></script>
+	<script src="/earnings/js/earnings.js?v=13" defer></script>
             <script src="https://mes.fm/main_js/main.js?v=1.0.5"></script>    <!-- PAGEVIEW-TRACKING-INSERTED --><script src="https://mes.fm/main_js/track.js" defer></script><script>document.getElementById('copyright-year').textContent = new Date().getFullYear();</script><script src="/main_js/info-bar-fit.js" defer></script><script>
   // Floating compact header bar (see #compact-nav CSS): appears once the
   // header + nav bar have scrolled off the top; nav links that don't fit
