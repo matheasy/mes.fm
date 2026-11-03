@@ -371,7 +371,7 @@ APPS = {
                       tag="Save text once, copy it anytime, back it up encrypted on Hive.", accent="#a16207", dark="#7a4a05", tint="#fbf1d9",
                       desc="Free online copy and paste notepad: save the texts you paste again and again (replies, signatures, addresses, links, hashtags, prompts) on boards and copy any of them with one click. Private, kept in your browser, with file backups and optional encrypted backups to your Hive account.",
                       meta_desc="Free copy and paste notepad: save texts you reuse on boards, copy any with one click. Private, in your browser, with encrypted Hive backups.",
-                      js_v="5", pre_js=["/main_js/hive.js?v=1", "/main_js/hive-store.js?v=1"]),
+                      js_v="6", pre_js=["/main_js/hive.js?v=2", "/main_js/hive-store.js?v=2"]),
     # Typing Test: WPM / accuracy / consistency test (time, words, passage, own text; 5 difficulty levels; weak-key practice; challenge links). lib.js = word lists, seeded text,
     # typing state machine + results maths (node-testable: tool_apps_src/typing-test-tests.js), app.js = UI. Medium-wide page, no sidebar. localStorage "mes-typingtest:v1".
     "typing-test": dict(title="MES Typing Test", page_title="Typing Test",
@@ -1069,7 +1069,7 @@ APPS = {
     "premium": dict(title="MES Premium", page_title="Premium: No Ads on mes.fm for 1 HBD a Month",
                 tag="No ads on mes.fm for 1 HBD a month, paid on Hive.", accent="#8a6508", dark="#6b4e06", tint="#fbf3dc",
                 desc="Turn off every ad on mes.fm for 1 HBD a month: log in with Hive Keychain, subscribe with a Hive recurrent transfer or pay once, and the site shows no ads in your browser. No account, no card, checked on the Hive blockchain.",
-                js_v="1", no_ads=True, pre_js=["/main_js/hive.js?v=1"], head_extra=PAGE3_HEAD),
+                js_v="1", no_ads=True, pre_js=["/main_js/hive.js?v=2"], head_extra=PAGE3_HEAD),
     "ratings": dict(title="MES Ratings", page_title="MES Ratings: Top Rated Pages and Feedback",
                 tag="Top rated pages, by the people who use them.", accent="#b45309", dark="#8a3f07", tint="#fdf0dd",
                 desc="The top rated, most rated and recently rated mes.fm calculators, tools and tutorials, from the Rate this page stars at the bottom of every page. Fair Bayesian ranking, filter by section, and send us feedback through the contact form.",
