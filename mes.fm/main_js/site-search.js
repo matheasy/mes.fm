@@ -647,6 +647,74 @@
     }
     if (document.readyState === "loading") document.addEventListener("DOMContentLoaded", ratingLoader); else ratingLoader();
 
+    /* Standard | Wide | Theatre (| Show sidebar) in the floating compact bar (2026-11-02). On big screens (>= 1400px), while #compact-nav is
+       showing, a small copy of the page's own width switch (aside.js .mes-mode, toc-flip.js .toc-mode, hub-theatre.js .hub-mode) sits in the
+       bar. Each copy button just clicks the matching button of the page's switch, so all the logic (pageMode / pageWide / asideForce ...) stays
+       in those scripts; pressed state and "Show sidebar" visibility are mirrored from the page's buttons. Not shown while the page's own switch
+       is hidden (narrow windows) or when the page has none. */
+    (function barModes() {
+        var MQ = window.matchMedia ? matchMedia("(min-width:1400px)") : null;
+        var src, wrap, copies = [], tries = 0;
+        function find() { return document.querySelector(".mes-mode, .toc-mode, .hub-mode"); }
+        function shown(el) { return !!(el && el.getClientRects().length); }
+        function sync() {
+            var bar = document.getElementById("compact-nav");
+            if (!wrap || !bar) return;
+            if (wrap.parentNode !== bar) place(bar);
+            var srcBtns = src.querySelectorAll("button"), any = false;
+            copies.forEach(function (c, i) {
+                var s = srcBtns[i], vis = shown(s) && c.className !== "mes-bm-skip";
+                c.hidden = !vis;
+                if (s) c.setAttribute("aria-pressed", s.getAttribute("aria-pressed") === "true" ? "true" : "false");
+                if (vis) any = true;
+            });
+            var on = any && MQ && MQ.matches && shown(src) && shown(bar) && (document.body.classList.contains("is-stuck") || bar.classList.contains("is-visible")) && !document.body.classList.contains("hc-barhide");
+            wrap.classList.toggle("on", !!on);
+        }
+        function place(bar) {
+            var links = bar.querySelector(".compact-nav-links");
+            if (links && links.parentNode === bar) bar.insertBefore(wrap, links.nextSibling); else bar.appendChild(wrap);
+        }
+        function build() {
+            src = find();
+            var bar = document.getElementById("compact-nav");
+            if (!src || !bar) return false;
+            if (!document.getElementById("mes-barmode-css")) {
+                var st = document.createElement("style"); st.id = "mes-barmode-css";
+                st.textContent = "#mes-barmode{display:none;flex:0 0 auto;align-items:center;border:1px solid #b9c2cc;border-radius:999px;overflow:hidden;background:#fff;font:13px/1.2 Arial,Helvetica,sans-serif;margin:0 4px}" +
+                    "#mes-barmode.on{display:inline-flex}#mes-barmode button{border:0;background:transparent;color:#1479c7;font:inherit;padding:5px 10px;cursor:pointer;white-space:nowrap}" +
+                    "#mes-barmode button[hidden]{display:none}#mes-barmode button:not([hidden])~button{border-left:1px solid #d5dbe2}#mes-barmode button:hover{background:#e8f2fb}" +
+                    "#mes-barmode button[aria-pressed=true]{background:#1479c7;color:#fff}" +
+                    ":is(body.dark-mode,body.dark) #mes-barmode{background:#2e2e2e;border-color:#555}:is(body.dark-mode,body.dark) #mes-barmode button{color:#6cb6f5}" +
+                    ":is(body.dark-mode,body.dark) #mes-barmode button:not([hidden])~button{border-left-color:#4a4a4a}:is(body.dark-mode,body.dark) #mes-barmode button:hover{background:#26323d}" +
+                    ":is(body.dark-mode,body.dark) #mes-barmode button[aria-pressed=true]{background:#6cb6f5;color:#111}";
+                document.head.appendChild(st);
+            }
+            wrap = document.createElement("div");
+            wrap.id = "mes-barmode"; wrap.setAttribute("role", "group"); wrap.setAttribute("aria-label", "Page width");
+            Array.prototype.forEach.call(src.querySelectorAll("button"), function (s) {
+                var b = document.createElement("button");
+                if (s.classList.contains("toc-reopen")) b.className = "mes-bm-skip";   /* "Jump to" reopen: jump-to.js has its own bar button */
+                b.type = "button"; b.textContent = s.textContent; b.title = s.title || s.textContent;
+                b.addEventListener("click", function () { s.click(); setTimeout(sync, 0); });
+                copies.push(b); wrap.appendChild(b);
+            });
+            place(bar);
+            if (window.MutationObserver) {
+                var mo = new MutationObserver(function () { clearTimeout(mo.t); mo.t = setTimeout(sync, 30); });
+                mo.observe(src, { attributes: true, subtree: true, attributeFilter: ["aria-pressed", "class", "style", "hidden"] });
+                mo.observe(bar, { attributes: true, attributeFilter: ["class", "style"] });
+                mo.observe(document.body, { attributes: true, attributeFilter: ["class"] });
+                mo.observe(document.documentElement, { attributes: true, attributeFilter: ["class"] });
+            }
+            window.addEventListener("resize", function () { clearTimeout(build.t); build.t = setTimeout(sync, 100); });
+            sync();
+            return true;
+        }
+        function retry() { if (wrap || build() || ++tries > 8) return; setTimeout(retry, 700 * tries); }   /* aside.js / toc-flip.js / hub-theatre.js / the bar may come later */
+        if (document.readyState === "loading") document.addEventListener("DOMContentLoaded", function () { setTimeout(retry, 300); }); else setTimeout(retry, 300);
+    })();
+
     /* Paid ad-free (mes.fm/premium): localStorage "mes-adfree" = {user, until, how, checked, off?}. The AdSense loaders,
        aside.js and bottom-ad.js skip ads while `until` is in the future. Re-check the payment on the chain once a day
        (/api/premium, edge-cached), so a cancelled subscription brings the ads back and a renewal extends `until`.
