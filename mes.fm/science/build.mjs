@@ -308,7 +308,7 @@ const PAGES = [
     tileLabel: "Light in a Medium Simulator",
   },
   {
-    // Tile only: links to the Light & Metamaterials Lab (negative refraction, flat lens, diffraction). Icon = img/negative-index-icon.jpg (PIL placeholder until Grok tile art lands; same file name).
+    // Tile only: links to the Light & Metamaterials Lab (negative refraction, flat lens, diffraction). Icon = img/negative-index-icon.jpg (Gemini art).
     slug: "negative-index",
     section: "tools",
     href: "/negative-index",
@@ -317,11 +317,11 @@ const PAGES = [
     tileLabel: "Light & Metamaterials Lab",
   },
   {
-    // Tile only: links to the Hologram Simulator (recording, playback, coherence, hologram types, computer-generated holograms). Icon = img/hologram-icon.jpg (PIL placeholder until Grok tile art lands; same file name).
+    // Tile only: links to the Hologram Simulator (recording, playback, coherence, hologram types, computer-generated holograms). Icon = img/hologram-icon.jpg (Gemini art).
     slug: "hologram",
     section: "tools",
     href: "/hologram",
-    iconVersion: 1,
+    iconVersion: 2,
     tileOnly: true,
     tileLabel: "Hologram Simulator",
   },
