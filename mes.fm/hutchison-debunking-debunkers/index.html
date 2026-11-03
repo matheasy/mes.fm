@@ -968,6 +968,8 @@
         f.allowFullscreen = true;
         f.style.cssText = 'width:100%;aspect-ratio:16/9;border:0;display:block';
         video.parentNode.replaceChild(f, video);
+        var b = document.querySelector('.video-badge[href*="3speak.tv"]');
+        if (b) { b.href = 'https://www.youtube.com/watch?v=Po0vWGJDu6M'; b.innerHTML = 'View on YouTube &nearr;'; }
       }
       function play(src) {
         if (video.canPlayType('application/vnd.apple.mpegurl')) {

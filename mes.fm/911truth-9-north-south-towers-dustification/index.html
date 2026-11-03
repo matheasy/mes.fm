@@ -942,6 +942,8 @@
         f.allow = 'accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture';
         f.allowFullscreen = true;
         video.parentNode.replaceChild(f, video);
+        var b = document.querySelector('.video-badge[href*="3speak.tv"]');
+        if (b) { b.href = 'https://www.youtube.com/watch?v=' + YT_ID; b.innerHTML = 'View on YouTube &nearr;'; }
       }
 
       function play(src) {
