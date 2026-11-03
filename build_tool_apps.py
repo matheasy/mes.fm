@@ -36,7 +36,7 @@ EXT_TAB = "<li class=\"info-bar__item\"><a class=\"info-bar__item__text\" href='
 
 # simulator pages whose boxes (.fl-wrap, .lm-wrap, ...) get the shared View bar from main_js/stage-ctl.js
 STAGE_CTL = {"julia-set-explorer", "fluid-simulator", "light-in-a-medium", "black-hole-simulator", "mandelbrot", "buddhabrot", "time-dilation", "metric-tensor", "orbit-simulator", "double-pendulum", "electromagnetic-fields-simulator", "photoelectric-effect-simulator", "solar-system-today", "atomic-clock-simulator",
-             "michelson-morley-experiment", "faster-than-light-shadow-simulator", "fountain-clock", "magnetic-isopotentials", "hutchison-effect-simulator", "heart-simulator", "neuron-simulator", "negative-index", "spin-simulator"}
+             "michelson-morley-experiment", "faster-than-light-shadow-simulator", "fountain-clock", "magnetic-isopotentials", "hutchison-effect-simulator", "heart-simulator", "neuron-simulator", "negative-index", "spin-simulator", "hologram"}
 
 # PDF family nav (2026-10-16): Home = the PDF Tools hub, then the editor and the six tools, ahead of Calculators / Tools
 PDF_NAV_INFO = '<li class="info-bar__item"><a class="info-bar__item__text" href=\'/pdf\'>Editor</a></li><li class="info-bar__item"><a class="info-bar__item__text" href=\'/merge-pdf\'>Merge</a></li><li class="info-bar__item"><a class="info-bar__item__text" href=\'/split-pdf\'>Split</a></li><li class="info-bar__item"><a class="info-bar__item__text" href=\'/organize-pdf\'>Organize</a></li><li class="info-bar__item"><a class="info-bar__item__text" href=\'/jpg-to-pdf\'>Images to PDF</a></li><li class="info-bar__item"><a class="info-bar__item__text" href=\'/pdf-to-jpg\'>PDF to images</a></li><li class="info-bar__item"><a class="info-bar__item__text" href=\'/compress-pdf\'>Compress</a></li>'
@@ -75,6 +75,20 @@ def _kids(slug, mode, seo, title, page_title, desc, tab, accent, dark, tint):
              pre_js=[] if mode == "hub" else ["/main_js/voice-picker.js?v=1"], nav_extra=KIDS_NAV_INFO, menu_extra=KIDS_NAV_MENU)
     if slug != "kids":
         d.update(js_path="kids/js/kids.js", brand=KIDS_BRAND, tab=tab)
+    return d
+# MES Practice Tests (2026-11-02): one source (tool_apps_src/practice-tests: lib.js = MESPT generators + scoring, passages.js = the literacy bank) for the hub
+# /practice-tests and four FSA-style test pages; data-page / data-grade / data-subject on #pt pick the page. Ads kept. Rebuild all five together, bump js_v on all.
+PT_BRAND = dict(slug="practice-tests", title="MES Practice Tests", tag="FSA-style numeracy and reading practice for Grades 4 and 7.")
+PT_PAGES = [("fsa-grade-4-numeracy", "Gr 4 Numeracy"), ("fsa-grade-4-literacy", "Gr 4 Literacy"), ("fsa-grade-7-numeracy", "Gr 7 Numeracy"), ("fsa-grade-7-literacy", "Gr 7 Literacy")]
+PT_NAV_INFO = "".join("<li class=\"info-bar__item\"><a class=\"info-bar__item__text\" href='/%s'>%s</a></li>" % (sl, nm) for sl, nm in PT_PAGES)
+PT_NAV_MENU = "".join('<li class="navbar__item"><a class="navbar__link" href="/%s">%s</a></li>' % (sl, nm.replace("Gr ", "Grade ")) for sl, nm in PT_PAGES)
+def _pt(slug, grade, subj, title, page_title, desc, tab):
+    d = dict(title=title, page_title=page_title, tag=PT_BRAND["tag"], accent="#0f6e8c", dark="#0b5670", tint="#e0f1f6", desc=desc, js_v="1",
+             src="practice-tests", js_parts=["passages.js"], nav_extra=PT_NAV_INFO, menu_extra=PT_NAV_MENU,
+             vars={"PAGE": "hub" if not grade else "test", "GRADE": str(grade or ""), "SUBJ": subj or "", "BODY": "@hub.html" if not grade else "@test.html",
+                   "SEO": "@seo/%s.html" % ("hub" if not grade else "g%d-%s" % (grade, subj))})
+    if slug != "practice-tests":
+        d.update(js_path="practice-tests/js/practice-tests.js", brand=PT_BRAND, tab=tab)
     return d
 APPS = {
     "earth-curvature-calculator": dict(title="MES Earth Curvature Calculator", page_title="Earth Curvature Calculator",
@@ -438,6 +452,13 @@ APPS = {
     # Light & Metamaterials Lab (2026-11-01, mes.fm/negative-index): negative refraction (Snell with signed n, Veselago flat lens), the perfect-lens transfer function,
     # a 2D TMz FDTD with Drude eps AND mu (ADE currents), Fraunhofer diffraction (slit / double slit / grating / white light) and ten "what light can do" demos
     # (lib.js = MESMeta, node-tested: tool_apps_src/negative-index-tests.js). Normal-width page in the tools sidebar collection, Wide by default, stage-ctl prefix ni.
+    # Hologram Simulator (2026-11-02, mes.fm/hologram): recording (|R + ΣO|² live on a zoomable plate patch, draggable points, partial coherence), numerical playback
+    # (angular spectrum via FFT: virtual / real / zero order, spectrum filter, camera opening for parallax), coherence, types (transmission, Gabor, Denisyuk with Kogelnik's
+    # Bragg curve, rainbow, embossed, Pepper's ghost), Gerchberg-Saxton CGH (lib.js = MESHolo, node-tested: tool_apps_src/hologram-tests.js). Tools sidebar, Wide by default, stage-ctl prefix hg.
+    "hologram": dict(title="MES Hologram Simulator", page_title="Hologram Simulator: How Holograms Are Recorded and Played Back",
+                     tag="Record light. Play it back in 3D.", accent="#0d9488", dark="#0f766e", tint="#ccfbf1",
+                     desc="A free hologram simulator: record the interference fringes of a reference beam and object points live, play the hologram back with real wave optics to see the virtual image, the twin and parallax, explore coherence, compare transmission, reflection, rainbow and embossed holograms and Pepper's ghost, and compute a phase hologram of your own drawing.",
+                     js_v="1"),
     "negative-index": dict(title="MES Light & Metamaterials Lab", page_title="Negative Refraction, Metamaterials and Diffraction: What Light Can Do",
                            tag="Bend light the wrong way.", accent="#4f46e5", dark="#4338ca", tint="#e0e7ff",
                            desc="A free light and metamaterials lab: see negative refraction and the Veselago flat lens with rays, the perfect lens and its loss limit, a live Maxwell simulation of a material with negative permittivity and permeability, a diffraction calculator for slits and gratings, and ten live demos of reflection, refraction, dispersion, interference, polarization, slow light and cloaking.",
@@ -547,7 +568,7 @@ APPS = {
     "photo": dict(title="MES Photo Editor", src="photo-editor", page_title="Free Online Photo Editor with Layers",
                          tag="Pro tools. No upload. No sign-up.", accent="#7c3aed", dark="#5b21b6", tint="#f1eafe",
                          desc="Free online photo editor with layers, selections, magic wand, clone stamp, levels and curves. Add text labels, arrows, callouts and blur boxes to screenshots, combine images, keep transparency, open PSD and GIMP (.xcf) files and export PNG, JPEG or WebP. Private: nothing is uploaded.",
-                         js_v="31", js_parts=["core.js", "tools.js", "tools2.js", "dialogs.js", "ai.js", "aiort.js", "erase.js", "upscale.js", "equation.js", "xcf.js", "files.js", "projects.js", "psd.js", "round7.js", "layerstyle.js", "fontcat.js", "fontpick.js", "icons.js"], lib_from=["image-converter"]),
+                         js_v="32", js_parts=["core.js", "tools.js", "tools2.js", "dialogs.js", "ai.js", "aiort.js", "erase.js", "upscale.js", "equation.js", "xcf.js", "files.js", "projects.js", "psd.js", "round7.js", "layerstyle.js", "fontcat.js", "fontpick.js", "icons.js", "adjust.js"], lib_from=["image-converter"]),
     # MES Audio Editor (mes.fm/audio): Audacity-style multi-track editor with AI noise removal. lib.js = MESAudio (clip model, edits, mixdown, peaks, fades, EQ,
     # BS.1770 loudness / true peak, limiter, compressor, de-click, WAV; node-tested with the shared denoiser: tool_apps_src/audio-tests.js), app.js = UI.
     # The noise removal is the shared /main_js/denoise.js (MESDenoise: DeepFilterNet3 ONNX + RNNoise wasm + spectral gate), also used by the video editor.
@@ -560,7 +581,7 @@ APPS = {
     "image-converter": dict(title="MES Bulk Image Converter", page_title="Bulk Image Converter: PNG to JPG, JPG to PNG, WebP",
                          tag="Convert many images at once. Nothing is uploaded.", accent="#0f766e", dark="#0b5a54", tint="#e2f3f1",
                          desc="Free bulk image converter: convert PNG to JPG, JPG to PNG or WebP in one go. Drop a whole folder, set the quality and size, and download everything as a ZIP. Runs in your browser, nothing is uploaded and there is no limit on files.",
-                         js_v="1"),
+                         js_v="2"),
     # Atomic Clock Simulator: caesium clock loop (quartz locked to atoms), Ramsey fringes / fountain, clock race, Allan-deviation chart, drift calculator.
     # lib.js = physics + drift maths (node-tested: tool_apps_src/atomic-clock-simulator-tests.js), app.js = UI. Wide page, dark stages, own Theatre button, no sidebar.
     "atomic-clock-simulator": dict(title="MES Atomic Clock Simulator", page_title="Atomic Clock Simulator",
@@ -1078,6 +1099,16 @@ APPS = {
     "kids-numbers": _kids("kids-numbers", "numbers", "numbers", "Numbers for Kids", "Numbers for Toddlers: Count 1 to 10 or 20 Out Loud (Free, No Ads)",
                   "Counting flashcards for toddlers and preschoolers: each number from 1 to 10 (or 20) big, with that many pictures to count, said and counted out loud, plus a Find the number game. Free, no ads.",
                   5, "#c2410c", "#9a3412", "#fff0e0"),
+    "practice-tests": _pt("practice-tests", 0, "", "MES Practice Tests", "Free FSA Practice Tests: Grade 4 and 7 Numeracy and Reading (B.C.)",
+                  "Free FSA-style practice tests for B.C. Grade 4 and Grade 7: numeracy with new random numbers every time and reading passages with multiple-choice and written questions. Full test, quick 10 or one topic, results by topic and every answer explained. No sign-up.", 0),
+    "fsa-grade-4-numeracy": _pt("fsa-grade-4-numeracy", 4, "numeracy", "Grade 4 Numeracy Practice Test", "Grade 4 Numeracy Practice Test (FSA Style): Free, New Questions Every Time",
+                  "Free Grade 4 numeracy practice test in the style of B.C.'s FSA: place value, money and change, clocks and elapsed time, fractions, number lines, area, shapes, patterns and graphs. Random numbers every time, easy to hard, results by topic and worked answers.", 1),
+    "fsa-grade-4-literacy": _pt("fsa-grade-4-literacy", 4, "literacy", "Grade 4 Literacy Practice Test", "Grade 4 Reading Practice Test (FSA Style Literacy): Free Passages and Questions",
+                  "Free Grade 4 reading practice in the style of B.C.'s FSA literacy test: original stories, information texts, poems and notices with multiple-choice, choose-two, put-in-order and written questions. Results by skill and every answer explained.", 2),
+    "fsa-grade-7-numeracy": _pt("fsa-grade-7-numeracy", 7, "numeracy", "Grade 7 Numeracy Practice Test", "Grade 7 Numeracy Practice Test (FSA Style): Free, New Questions Every Time",
+                  "Free Grade 7 numeracy practice test in the style of B.C.'s FSA: integers, order of operations, decimals, percent and sales tax, fractions, ratios and rates, equations, area, circles, angles, coordinates, statistics and probability. Worked answers, results by topic.", 3),
+    "fsa-grade-7-literacy": _pt("fsa-grade-7-literacy", 7, "literacy", "Grade 7 Literacy Practice Test", "Grade 7 Reading Practice Test (FSA Style Literacy): Free Passages and Questions",
+                  "Free Grade 7 reading practice in the style of B.C.'s FSA literacy test: original short stories, science articles, poems, a notice and an opinion letter with inference, theme, author's craft and written-response questions. Every answer explained.", 4),
     "kids-math": _kids("kids-math", "math", "math", "Math for Kids", "Math Games for Kids Ages 2 to 7: Count, Add and Take Away (Free, No Ads)",
                   "Free talking math games for toddlers and young kids: count pictures, which has more, add and take away with pictures, before and after, sums to 20, skip counting and patterns. Pick ages 2-3, 4-5 or 6-7. No ads.",
                   6, "#c2410c", "#9a3412", "#fff0e0"),
@@ -1121,7 +1152,7 @@ APPS = {
     "compress": dict(title="MES Compressor", page_title="Compressor: Compress Images, PDFs and Audio Online",
                        tag="Make pictures, PDFs and audio smaller.", accent="#4338ca", dark="#3730a3", tint="#e8e9fb",
                        desc="Free online compressor for pictures, PDFs and audio: shrink JPG, PNG and WebP to a quality or file size you choose, make PDFs smaller while keeping text selectable, and save audio as smaller MP3s. Before and after preview, ZIP download. Private: nothing is uploaded.",
-                       js_v="1", lib_from=["image-converter"]),
+                       js_v="2", lib_from=["image-converter"]),
     # MES Video Compressor (2026-10-18): WebCodecs fast path (mp4box.js demux, VideoDecoder -> VideoEncoder, mp4-muxer / webm-muxer, optional File System Access streaming to disk),
     # real-time canvas + MediaRecorder fallback. Decisions in lib.js (MESVid, node tests tool_apps_src/compress-video-tests.js).
     # 2026-10-20: "Choose a quality" = constant quality (per-frame H.264 quantizer, size measured on a short probe of each video), 10 s key frames.

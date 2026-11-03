@@ -1,0 +1,801 @@
+<!DOCTYPE html>    <html lang="en">
+<!-- MES Hologram Simulator -- mes.fm/hologram -->
+<!-- Added by HTTrack --><meta http-equiv="content-type" content="text/html;charset=UTF-8" /><!-- /Added by HTTrack -->
+<head>                    <link rel="icon" href="/hologram/img/logo.png?v=2" type="image/png" /><link rel="canonical" href="https://mes.fm/hologram" />                    <title>MES Hologram Simulator | Math Easy Solutions</title>
+        <meta name="viewport" content="width=device-width, initial-scale=1">	<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css" integrity="sha384-BVYiiSIFeK1dGmJRAkycuHAHRg32OmUcww7on3RYdg4Va+PmSTsz/K68vbdEjh4u" crossorigin="anonymous">
+        <style>html, body, div, span, applet, object, iframe, h1, h2, h3, h4, h5, h6, p, blockquote, pre, a, abbr, acronym, address, big, cite, code,del, dfn, em, img,
+ins, kbd, q, s, samp, small, strike, strong, sub, tt, var, u, i, center, dl, dt, dd, ol, ul, li, fieldset, form, label, legend, table, caption, tbody,
+tfoot, thead, tr, th, td, article, aside, canvas, details, embed, figure, figcaption, footer, header, hgroup, menu, nav, output, ruby, section, summary,
+time, mark, audio, video {margin:0;padding:0;border:0;font-size:100%;font-family:Helvetica,Arial,Optima,Sans Pro;vertical-align:baseline;color:#333333;}
+sup {margin:0;padding:0;border:0;font-size:100%;font-family:Helvetica,Arial,Optima,Sans Pro;vertical-align:super;color:black;}
+b {margin:0;padding:0;border:0;font-size:100%;font-family:Helvetica,Arial,Optima,Sans Pro;vertical-align:baseline;}
+/* HTML5 display-role reset for older browsers */
+article, aside, details, figcaption, figure, footer, header, hgroup, menu, nav, section {display:block;}
+body {background-color:#e2e2e2;line-height:1;}
+ol, ul {list-style:none;}
+blockquote, q {quotes:none;}
+blockquote:before, blockquote:after,
+q:before, q:after {content:'';content:none;}
+table {border-collapse:collapse;border-spacing:0;}
+a {text-decoration:none;}
+sub {vertical-align:sub;}        .warning-message {font-size:1em;text-align:center;padding:0.5em;background-color:#0d9488;color:white;}
+        .button {color:#0d9488;border:0.125em solid#0d9488;margin:0.7em 0;padding:0.5em 0.2em;text-align:center;-moz-user-select:none; -webkit-user-select:none; -ms-user-select:none; user-select:none; cursor:pointer;}
+        .button--subscribe {line-height:1.2;}
+        .button--share-calc {display: inline-block;padding-left: 1em;padding-right: 1em;margin-top: 0.5em;margin-bottom: 0.5em;}
+        .italic {font-style:italic;}
+        .bold {font-weight:700;}
+        .list {list-style-type:disc;}
+        .list__indent {line-height:1.2;margin-left:2em;margin-top:0.4em;margin-bottom:0.2em;font-size: 0.95em;}
+        .time {font-style:italic;font-weight:100;color:#939393;}
+        .small-text {font-size:0.9em;}
+        .big-text {font-size:1.1em;}
+        .link {color:#0d9488; font-weight:700;}
+        .link--dark {color: blue; font-weight: 700;}
+        .link--dark:hover {text-decoration: underline;}
+        .basic-table {margin:1em auto;}
+        .basic-table td, .basic-table th {border: 1px solid black; padding:0.5em 1em; text-align: center;}
+        .basic-table th {background-color: #ededed}
+        .basic-table--full {width:100%;}
+        .sponsored-ad {text-align:right;display:block;font-size:0.7em;margin-bottom:0.3em;font-style:italic;}
+        .box-border {border:0.1em solid#0d9488; padding:1em;margin-bottom: 1.2em;}
+        .selected {background-color:#0d9488;color:white;}
+        .right-arrow {font-size:2em;vertical-align:middle;margin:0 0.2em;display:inline-block;color:#0d9488;}
+        .share-calc-url {border: 2px solid black;font-size:0.9em;display:inline-block;width:15.5em;padding:0.45em 0.8em;font-weight:700;vertical-align:middle;color:#0d9488;background-color:#fdc010;}
+        .share-calc-url-container {margin-bottom: 0.5em;display: inline-block;}
+        .scissors-icon {vertical-align:middle;cursor: pointer;}
+        .hide {display:none;}
+        .crypto-container {background-color: #257bb6; padding: 10px; border-radius: 5px;}
+        .crypto-text {color: white; line-height: 1.4; padding: 5px;}.header2 {font-size:1.1em; margin-top:1.3em;margin-bottom:0.5em;}
+.header3 {font-size:1.0em; margin-top:1.0em;margin-bottom:0.3em;}
+.sentence {margin-top:0.5em; margin-bottom:0.5em;line-height:1.5}
+.sentence--indent {margin-left:1.5em;}
+
+.shadow {box-shadow:0.2em 0.2em 0.5em #999999;}
+.link:hover {color:#0f766e;text-decoration:underline; cursor:pointer;}
+
+.outer-container {width:68.25em;margin:0 auto;}
+.inner-container {padding:1em 2em 1em 2em;overflow:hidden;background-color:white;box-shadow:0 0 1em #BBBBBB;}
+.header {position:relative;margin-bottom: 0.7em;}
+.logo-image-container {display:table-cell;}
+.logo {display:block;}
+.logo-text-container {display:table-cell;vertical-align:middle;padding-left:1.5em;}
+.calculator-title-link {display: block;}
+.calculator-title {margin-bottom:0.3em;font-size:1.8em;}
+.tag-line {font-size:1.2em;}
+
+.social-container {position:absolute;right:0;top:0;}
+.social-container--bottom {position:absolute;right:0;bottom:0;}
+.social {display: table-cell;}
+.social__text {display:table-cell;font-size:1.2em;vertical-align:middle;padding-right:0.6em;font-style:italic;color:#0d9488;}.social__logo {float:left;}
+.social__logo:not(:last-child) {margin-right:0.5em;}
+.social__link {height:2em;width:2em;display:block;}
+.social__fb {background: url(https://mes.fm/main_img/social-sprites.png) 0 0;}
+.social__gplus {background: url(https://mes.fm/main_img/social-sprites.png) -2em 0;}
+.social__insta {background: url(https://mes.fm/main_img/social-sprites.png) -4em 0;}
+.social__pin {background: url(https://mes.fm/main_img/social-sprites.png) -6em 0;}
+.social__twitter {background: url(https://mes.fm/main_img/social-sprites.png) -8em 0;}
+.social__yt {background: url(https://mes.fm/main_img/social-sprites.png) -10em 0;}
+.social__patreon {background: url(https://mes.fm/main_img/social-sprites.png) -12em 0;}
+.social__steemit {background: url(https://mes.fm/main_img/social-sprites.png) -14em 0;}
+.social__hive {background: url(https://mes.fm/main_img/social-sprites.png) -16em 0;}
+.social__telegram {background: url(https://mes.fm/main_img/social-sprites.png) -18em 0;}
+
+.info-bar-container {display: table-cell;}
+.info-bar {display:inline-block;margin-left:-2em;padding-left:1.1em;overflow:hidden;}
+.info-bar__item {float:left;}
+.info-bar__item__text {display:block;text-align:center;padding:0.7em 1em 0.7em 1em;font-size:0.9em;color:white}
+.info-bar__logo-container {display: table-cell;vertical-align: middle;}
+.info-bar__logo {display: block; margin-left: 0.8em;}
+
+.outer-page-content {width:45.5em;display:inline-block;}
+.page-content {padding:1.2em 2.25em 0 0;}
+.color-box {width:1.2em;height:1.2em;display:inline-block;margin-right:0.5em;}
+.page-title {display:inline-block;font-size:1.5em;font-weight:400;margin-bottom:0.3em;}
+.page-description {line-height:1.3;}
+#main-content {margin:1.5em 0;position:relative;}
+
+.side-bar {width:18.75em;float:right;}
+.navbar-container {margin:2.1em 0.8em;}
+.navbar {margin-bottom:-1em;}
+.button--navbar {padding:0.7em 0.2em;font-size:1.2em;margin-bottom:0;color:#0d9488;border:0.125em solid#0d9488;}
+
+.navbar__item:hover {cursor:pointer;}
+.navbar__link  {display:block;color:white;padding:0.7em 1em 0.7em 1.4em;}
+.navbar__link--first {padding-top:0.8em;}
+.navbar__dropdown-item {color:#222222;}
+.navbar__dropdown-item:hover {text-decoration:underline;}
+.dropdown-symbol {margin-left:1em;color:white;}
+
+.latest-article {margin-top:1em;padding:0.5em;text-align:center;box-shadow:0 0 1em #BBBBBB;}
+.latest-article__tag:first-child {margin-bottom:0.5em;line-height:normal;}
+.latest-article__title:last-child {text-align:left;font-weight:700;}
+.latest-article__logo {vertical-align:bottom;margin-bottom:0.5em;}
+
+.footer {padding:2em;}
+.footer__item-container {display:table;width:100%;margin-bottom:1.6em;}
+.footer__item {display:table-cell;}
+.footer__item--extra-padding {padding-left:2.5em;}
+.footer__text {color:white;line-height:1.5;}
+.footer__text--title {display:inline-block;margin-bottom:1.6em;font-size:1.3em;font-style:italic;}
+.footer__text--extra-info {float:right;}
+.footer__text:not(.footer__text--copyright):hover {text-decoration:underline; cursor:pointer;}
+.footer__text--black {color:#000;}
+.footer__separator {color:white;}
+#copyright-year {color:white;}
+
+.active-tab {background-color:#fdc010;color: #222222;}
+.navbar__link:hover:not(.navbar__dropdown-item):not(.active-tab),.info-bar__item__text:hover:not(.active-tab) {background-color:#0f766e;}
+        .info-bar,.color-box,.navbar,.footer {background-color:#0d9488;}
+        .dropdown-symbol--dark {color:#0d9488;}
+        .button--active {background-color:#0d9488;color:white;}
+        .navbar__dropdown-container {color: #222222;background-color:#fdc010;}
+        .header2--top {margin-top: 0.5em;}
+        .basic-table td, .basic-table th {border: 1px solid black; padding:0.3em 0.5em; text-align: center;}
+        /* RESPONSIVE-FIX-INSERTED */
+@media (max-width: 768px) {
+  .outer-container { width: 100% !important; margin: 0 !important; }
+  .outer-page-content { width: 100% !important; display: block !important; }
+  .side-bar { width: 100% !important; float: none !important; }
+  .page-box { width: auto !important; display: block !important; margin: 0 auto 0.5em auto !important; }
+  img { max-width: 100% !important; height: auto !important; }
+  table { max-width: 100% !important; }
+
+  #info-bar > .info-bar__item:has(a[href$="index.html"]),
+  #info-bar > .info-bar__item:has(a[href*="donate"]),
+  #info-bar > .info-bar__item:has(a[href*="substack.com"]),
+  #info-bar > .info-bar__item:has(a[href*="mes.fm/links"]) { display: none !important; }
+}
+
+.inner-container { position: relative !important; }
+.header .social-container { display: none !important; }
+.side-bar { width: auto !important; float: none !important; }
+.navbar-container { margin: 0 !important; box-shadow: none !important; }
+.navbar__item--social { display: list-item; padding: 1em 1.6em 1em 1.4em; border-bottom: 1px solid rgba(255,255,255,0.25); }
+.navbar__item--social .social-container--navbar { position: static !important; display: flex; flex-wrap: wrap; align-items: center; gap: 0.6em; }
+.navbar__item--social .social__text { color: white; margin: 0; }
+.navbar__item--social .social { display: flex; flex-wrap: wrap; gap: 0.5em; margin: 0; padding: 0; }
+.navbar__item--social .info-bar__logo-container { display: block; margin-top: 0.4em; }
+#navbar-button {
+  position: absolute !important; top: 16px !important; right: 16px !important; z-index: 20;
+  width: 44px; height: 44px; padding: 0; margin: 0 !important;
+  background: transparent !important; border: none !important;
+  font-size: 0;
+}
+
+@media (max-width: 768px) {
+  .header { padding-right: 4em !important; box-sizing: border-box; }
+}
+#navbar-button::before {
+  content: ""; display: block; margin: 0 auto;
+  width: 26px; height: 4px; background: currentColor; border-radius: 1px;
+  box-shadow: 0 7px 0 currentColor, 0 -7px 0 currentColor;
+}
+#navbar { display: none; }
+#navbar.hide {
+  display: block !important; box-sizing: border-box;
+  position: absolute; top: 76px; right: 16px; z-index: 19;
+  width: 16em; max-width: 90vw; max-height: 75vh; overflow-y: auto;
+  scrollbar-gutter: stable;
+  box-shadow: 0 0.25em 1em rgba(0,0,0,0.3);
+  border-radius: 0.25em;
+}
+
+#navbar.hide { display: flex !important; flex-direction: column; }
+.navbar__item--social { order: 999; }
+.navbar__item--social .info-bar__logo-container { display: block !important; }
+
+.outer-container { width: auto !important; max-width: 50em; margin: 0 auto !important; }
+.outer-page-content { width: 100% !important; display: block !important; }
+.page-content { padding-right: 0 !important; }
+
+</style>	<style>
+	.hide {display:none;}
+	a,a:hover {text-decoration: none !important;color:white;}
+	a.active-tab:hover {color:#222222;}
+	.navbar {border:none;}
+
+	/* the tool itself (scoped to #main-content) */
+	/* shared widget kit for the calculator tool pages (build_tool_apps.py prepends this to each app's own CSS) */
+	.tu {margin:1em 0;--accent:#0d9488;--accent-dark:#0f766e;--tint:#ccfbf1;}
+	.tu *, .tu *::before, .tu *::after {box-sizing:border-box;}
+	.tu a {color:var(--accent);text-decoration:underline !important;}
+	.tu a:hover {color:var(--accent-dark);}
+	.tu button, .tu input, .tu select {font:inherit;}
+	.tu h2 {font-size:1.05em;color:#1e2733;margin:1.4em 0 0.6em;padding-bottom:0.3em;border-bottom:2px solid #ccfbf1;}
+	.tu h3 {font-size:0.98em;color:#1e2733;margin:1em 0 0.4em;}
+	.tu p {line-height:1.5;margin:0.5em 0;}
+	.tu-card {background:#fff;border:1px solid #dfe4ea;border-radius:0.55em;padding:1em 1.1em;}
+	.tu-card--tint {background:#ccfbf1;border-color:#ccfbf1;}
+	.tu-row {display:flex;flex-wrap:wrap;gap:0.9em 1.1em;align-items:flex-end;}
+	.tu-field {display:flex;flex-direction:column;gap:0.3em;flex:1 1 11em;min-width:0;}
+	.tu-field--sm {flex:0 1 8em;}
+	.tu-field > label, .tu-label {font-size:0.75em;font-weight:700;text-transform:uppercase;letter-spacing:0.04em;color:#667;}
+	.tu-input, .tu-select {width:100%;font-size:1.05em;padding:0.55em 0.65em;border:1px solid #b9c1cc;border-radius:0.4em;background:#fff;color:#222;}
+	.tu-input:focus, .tu-select:focus {outline:none;border-color:var(--accent);box-shadow:0 0 0 2px #ccfbf1;}
+	.tu-input--big {font-size:1.35em;padding:0.55em 0.7em;}
+	.tu-suffix {position:relative;}
+	.tu-suffix .tu-input {padding-right:3.2em;}
+	.tu-suffix span {position:absolute;right:0.7em;top:50%;transform:translateY(-50%);font-size:0.85em;color:#667085;pointer-events:none;}
+	.tu-btn {cursor:pointer;padding:0.5em 0.95em;border-radius:0.35em;border:0.125em solid var(--accent);background:#fff;color:var(--accent);font-size:0.9em;line-height:1.1;}
+	.tu-btn:hover {background:var(--accent);color:#fff;}
+	.tu-btn--primary {background:var(--accent);color:#fff;}
+	.tu-btn--primary:hover {background:var(--accent-dark);border-color:var(--accent-dark);}
+	.tu-btn--ghost {border-color:#c3c9d2;color:#555;}
+	.tu-btn--ghost:hover {background:#eef1f5;color:#222;border-color:#c3c9d2;}
+	.tu-seg {display:inline-flex;border:1px solid #b9c1cc;border-radius:0.4em;overflow:hidden;background:#fff;}
+	.tu-seg button {cursor:pointer;border:0;background:transparent;padding:0.55em 0.9em;color:#555;font-size:0.95em;border-right:1px solid #dfe4ea;}
+	.tu-seg button:last-child {border-right:0;}
+	.tu-seg button:hover {background:#f4f6f9;}
+	.tu-seg button[aria-pressed="true"] {background:var(--accent);color:#fff;}
+	.tu-chips {display:flex;flex-wrap:wrap;gap:0.4em;margin:0.6em 0 0;}
+	.tu-chip {cursor:pointer;font-size:0.82em;padding:0.35em 0.8em;border-radius:1.2em;border:1px solid #c3c9d2;background:#fff;color:#555;}
+	.tu-chip:hover {border-color:var(--accent);color:var(--accent);}
+	.tu-chip[aria-pressed="true"] {background:var(--accent);border-color:var(--accent);color:#fff;}
+	.tu-stats {display:grid;grid-template-columns:repeat(auto-fit,minmax(13em,1fr));gap:0.8em;margin:1em 0;}
+	.tu-stat {background:#fff;border:1px solid #dfe4ea;border-radius:0.55em;padding:0.8em 1em;}
+	.tu-stat--hero {background:#ccfbf1;border-color:#ccfbf1;}
+	.tu-stat__label {font-size:0.72em;font-weight:700;text-transform:uppercase;letter-spacing:0.05em;color:#667;}
+	.tu-stat__value {font-size:1.7em;font-weight:700;color:#1e2733;line-height:1.2;margin:0.15em 0;word-break:break-word;}
+	.tu-stat__sub {font-size:0.85em;color:#555d6b;line-height:1.35;}
+	.tu-pos {color:#1f7a3d !important;}
+	.tu-neg {color:#b3261e !important;}
+	.tu-table-wrap {overflow-x:auto;}
+	.tu-table {width:100%;border-collapse:collapse;font-size:0.95em;}
+	.tu-table th, .tu-table td {text-align:right;padding:0.5em 0.7em;border-bottom:1px solid #e3e7ec;color:#333;white-space:nowrap;}
+	.tu-table th:first-child, .tu-table td:first-child {text-align:left;}
+	.tu-table th {font-size:0.75em;text-transform:uppercase;letter-spacing:0.03em;color:#6a7280;background:#fff;}
+	.tu-table tr.is-active td {background:#ccfbf1;font-weight:700;}
+	.tu-note {font-size:0.85em;color:#6a7280;line-height:1.45;}
+	.tu-toast {position:fixed;left:50%;bottom:2em;transform:translateX(-50%) translateY(0.5em);background:#1e2733;color:#fff;padding:0.6em 1.1em;border-radius:2em;font-size:0.9em;box-shadow:0 0.4em 1.2em rgba(0,0,0,0.25);opacity:0;pointer-events:none;transition:opacity 0.15s, transform 0.15s;z-index:60;}
+	.tu-toast--show {opacity:1;transform:translateX(-50%) translateY(0);}
+	.tu-seo {margin-top:2em;border-top:1px solid #e3e3e3;padding-top:1.2em;}
+	/* SEO-HEADINGS: headlines and questions stand out from the body text (also added to built pages by add_seo_heading_style.py) */
+	body .tu-seo {font-size:1.04em;line-height:1.65;}
+	body .tu-seo h2 {font-size:1.45em;font-weight:800;line-height:1.25;margin:0 0 0.6em;color:#1e2733;border-bottom:0;padding-bottom:0;}
+	body .tu-seo h3 {font-size:1.2em;font-weight:800;line-height:1.3;margin:1.6em 0 0.5em;padding:0.15em 0 0.15em 0.65em;border-left:5px solid var(--accent,#4a6fa5);color:#1e2733;}
+	body .tu-seo h4, body .tu-seo dt {font-size:1.08em;font-weight:700;font-style:normal;line-height:1.35;margin:1.3em 0 0.3em;color:#1e2733;}
+	body .tu-seo dd {margin:0 0 0.6em;} body .tu-seo p, body .tu-seo li, body .tu-seo dd {line-height:1.65;}
+	body.dark-mode .tu-seo h2, body.dark-mode .tu-seo h3, body.dark-mode .tu-seo h4, body.dark-mode .tu-seo dt {color:#f2f2f2;}
+	.tu sup, .tu sub {font-size:0.72em !important;line-height:0;vertical-align:baseline;position:relative;} .tu sup {top:-0.5em;} .tu sub {top:0.3em;}
+	.tu div[class$="-eq"] {overflow-y:hidden;}
+	.tu-seo ul {list-style:disc;margin:0.5em 0 0.5em 1.5em;line-height:1.5;}
+	.tu-svg-line {fill:none;stroke:#1e2733;stroke-width:2;}
+	.tu-svg-accent {fill:none;stroke:var(--accent);stroke-width:3;}
+	.tu-svg-fill {fill:var(--accent);}
+	.tu-svg-tint {fill:#ccfbf1;}
+	.tu-svg-text {font-size:13px;fill:#333;}
+	.tu-svg-grid {stroke:#dfe4ea;stroke-width:1;fill:none;}
+	/* selected states: the derived dark theme would darken these, so restate them for dark mode */
+	/* the dark theme lightens --accent so it reads on dark; text on filled accent surfaces then has to be dark */
+	body.dark-mode .tu .tu-seg button[aria-pressed="true"], body.dark-mode .tu .tu-chip[aria-pressed="true"], body.dark-mode .tu .uc-cat[aria-selected="true"],
+	body.dark-mode .tu .tu-btn:hover, body.dark-mode .tu .tu-btn--primary, body.dark-mode .tu .tu-btn--primary:hover {background:var(--accent);border-color:var(--accent);color:#0b1416;}
+	body.dark-mode .tu .tu-btn--ghost:hover {background:#2e2e2e;border-color:#666;color:#eee;}
+	body.dark-mode .tu .uc-cat[aria-selected="true"] span {color:#0b1416;}
+	body.dark-mode .tu .tu-svg-tint {fill:rgba(255,255,255,0.09);}
+	body.dark-mode .tu .gm-card[aria-pressed="true"] {border-color:var(--accent);background:rgba(255,255,255,0.08);}
+	/* dark mode: the tool's accent lightened (same hue) so links, outlines and the text on filled buttons keep their contrast on the dark page */
+	body.dark-mode .tu {--accent:#0fab9e !important;--accent-dark:#0fab9e !important;}
+	@media (max-width:600px) {
+		.tu-stat__value {font-size:1.45em;}
+		.tu-field--sm {flex:1 1 7em;}
+	}
+	@media print {
+		.tu-btn, .tu-chips, .tu-seg {display:none !important;}
+	}
+
+/* row layout options on the grade / GPA / weighted-average calculators (names on-off, table layout) */
+.tu .rw-bar {display:flex;gap:0.4em;flex-wrap:wrap;margin:0.5em 0 0.1em;}
+.tu .gc-n {display:none;}
+.tu [data-names="0"] .rw-name {display:none !important;}
+.tu [data-names="0"] .rw-num, .tu [data-table="1"] .rw-num {display:block !important;flex:0 0 1.7em;text-align:right;color:#8a93a0;font-size:0.85em;padding-bottom:0.7em;}
+.tu [data-table="1"] .rw-head, .tu [data-table="1"] .rw-row {display:grid !important;grid-template-columns:var(--rw-cols);gap:0.3em;align-items:center;}
+.tu [data-table="1"] .rw-head {font-size:0.68em;font-weight:700;text-transform:uppercase;letter-spacing:0.03em;color:#667;padding:0.4em 0 0.2em;border-bottom:2px solid #d5dae1;} .tu [data-table="1"] .rw-head span {text-align:center;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;} .tu [data-table="1"] .rw-head span:first-child {text-align:right;}
+.tu [data-table="1"] .rw-row {padding:0.22em 0;border-bottom:1px solid #eceff3;}
+.tu [data-table="1"] .rw-row > * {order:0 !important;flex:none !important;margin:0 !important;min-width:0 !important;width:auto !important;}
+.tu [data-table="1"] .rw-row .rw-num {padding:0;}
+.tu [data-table="1"] .rw-f label {display:none;}
+.tu [data-table="1"] .rw-row .tu-input, .tu [data-table="1"] .rw-row .tu-select {padding:0.35em 0.2em;width:100%;min-width:0;text-align:center;}
+.tu [data-table="1"] .rw-row .rw-name .tu-input {text-align:left;padding-left:0.4em;}
+.tu [data-table="1"] .rw-del {padding:0.25em 0 !important;font-size:0.95em !important;}
+.tu [data-table="1"] .rw-pts {padding:0 !important;font-size:0.78em;text-align:center;}
+body.dark-mode .tu .rw-head {color:#a0a8b3;border-bottom-color:#555;} body.dark-mode .tu [data-table="1"] .rw-row {border-bottom-color:#333;}
+/* equation boxes typeset by main_js/mes-math.js (MathJax) */
+.tu [class$="-eq__f"].mes-tex {font-family:inherit;white-space:normal;display:inline-block;vertical-align:middle;max-width:100%;overflow-x:auto;overflow-y:hidden;}
+.tu [class$="-eq"] mjx-container {margin:0.15em 0 !important;}
+.tu [class$="-eq"] > div {margin:0.25em 0;}
+.tu [class$="-eq__n"] {vertical-align:middle;}
+
+	/* MES Hologram Simulator */
+	.tu [hidden] {display:none !important;}
+	#hg {--hg-bg:#070a12;--hg-card:#fff;--hg-line:#dfe4ea;--hg-mut:#566170;--hg-btn:#fff;--hg-btnfg:#1e2733;--hg-btnln:#c9d0d8;}
+	body.dark-mode #hg.hg {--hg-bg:#070a12;--hg-card:#262626;--hg-line:#3d3d3d;--hg-mut:#a9b0ba;--hg-btn:#2b2b2b;--hg-btnfg:#e8e8e8;--hg-btnln:#555;}
+	#hg span, #hg small, #hg b, #hg figcaption, #hg sub, #hg sup, #hg i, #hg em, #hg label {color:inherit;}
+	#hg .tu-label {text-transform:none;letter-spacing:0;}
+	#hg .hg-tabs {display:flex;gap:0.35em;flex-wrap:wrap;margin-bottom:0.9em;}
+	#hg .hg-tabs button, #hg .hg-seg button, #hg .hg-chips button {border:1px solid var(--hg-btnln);background:var(--hg-btn);color:var(--hg-btnfg);padding:0.45em 0.95em;border-radius:2em;cursor:pointer;font:inherit;font-size:0.93em;min-height:38px;}
+	#hg .hg-tabs button {min-height:40px;font-size:1em;}
+	#hg .hg-tabs button[aria-selected=true], #hg .hg-seg button[aria-pressed=true], #hg .hg-chips button[aria-pressed=true], #hg .hg-chips button[aria-selected=true] {background:var(--accent);border-color:var(--accent);color:#fff;font-weight:700;}
+	body.dark-mode #hg .hg-tabs button[aria-selected=true], body.dark-mode #hg .hg-seg button[aria-pressed=true], body.dark-mode #hg .hg-chips button[aria-pressed=true], body.dark-mode #hg .hg-chips button[aria-selected=true] {color:#0b1414;}
+	#hg .hg-lead {margin:0 0 0.9em;}
+	#hg .hg-wrap {margin:0 0 0.8em;position:relative;}
+	#hg .hg-stage {position:relative;background:var(--hg-bg);border-radius:0.7em;overflow:hidden;line-height:0;}
+	#hg .hg-stage canvas {width:100%;display:block;touch-action:none;}
+	#hg .hg-hint {position:absolute;right:0.6em;bottom:0.5em;line-height:1.2;color:#cfd6e6;font-size:0.8em;background:rgba(10,15,30,0.65);padding:0.2em 0.6em;border-radius:1em;pointer-events:none;}
+	#hg .hg-hint:empty {display:none;}
+	#hg .hg-fs {position:absolute;right:0.5em;top:0.5em;z-index:3;line-height:1;border:1px solid rgba(255,255,255,0.35);background:rgba(10,15,30,0.75);color:#f2f4f8;border-radius:0.4em;width:34px;height:34px;font-size:1em;cursor:pointer;}
+	#hg .hg-stage:fullscreen {display:flex;align-items:center;justify-content:center;} #hg .hg-stage:fullscreen canvas {max-height:100vh;object-fit:contain;}
+	#hg .hg-pair {display:grid;grid-template-columns:1fr 1fr;gap:0.7em;margin:0 0 0.8em;}
+	#hg .hg-pair figure {margin:0;} #hg .hg-pair figcaption {font-size:0.85em;color:var(--hg-mut);margin-top:0.3em;text-align:center;}
+	#hg .hg-pair canvas {touch-action:auto;}
+	#hg .hg-cards {display:grid;grid-template-columns:repeat(auto-fit,minmax(12em,1fr));gap:0.7em;margin:0.8em 0;}
+	#hg .hg-card {border:1px solid var(--hg-line);background:var(--hg-card);border-radius:0.6em;padding:0.7em 0.9em;}
+	#hg .hg-card h4 {margin:0 0 0.2em;font-size:0.88em;color:var(--hg-mut);font-weight:600;}
+	#hg .hg-card .hg-big {font-size:1.35em;font-weight:700;display:block;}
+	#hg .hg-card small {color:var(--hg-mut);display:block;margin-top:0.15em;line-height:1.35;}
+	#hg .hg-sw {display:inline-block;width:0.9em;height:0.9em;border-radius:0.2em;vertical-align:-0.1em;margin-right:0.3em;border:1px solid rgba(0,0,0,0.25);}
+	#hg .tu-card {background:var(--hg-card);border-color:var(--hg-line);color:inherit;} #hg .hg-controls {margin:0.8em 0;}
+	#hg .hg-grid {display:grid;grid-template-columns:repeat(auto-fit,minmax(15em,1fr));gap:0.9em 1.4em;}
+	#hg input[type=range] {width:100%;min-height:36px;} #hg select, #hg .tu-input {min-height:40px;}
+	#hg .hg-seg {display:flex;flex-wrap:wrap;gap:0.3em;}
+	#hg .hg-chips {display:flex;gap:0.4em;flex-wrap:wrap;margin:0 0 0.7em;}
+	#hg .hg-chips--sm {margin:0.4em 0 0;} #hg .hg-chips--sm button {font-size:0.85em;min-height:34px;padding:0.3em 0.7em;}
+	#hg .hg-check {display:flex;gap:0.45em;align-items:center;margin:0.25em 0;} #hg .hg-check input {width:1.1em;height:1.1em;flex:0 0 auto;}
+	#hg .hg-pts {margin-top:1em;display:flex;flex-direction:column;gap:0.5em;}
+	#hg .hg-pt {display:grid;grid-template-columns:auto 1fr 1fr 1fr auto;gap:0.4em 0.8em;align-items:center;border:1px solid var(--hg-line);border-radius:0.5em;padding:0.45em 0.7em;}
+	#hg .hg-pt.is-sel {border-color:var(--accent);box-shadow:0 0 0 1px var(--accent) inset;}
+	#hg .hg-pt .hg-dot {width:1em;height:1em;border-radius:50%;}
+	#hg .hg-pt label {font-size:0.85em;display:flex;flex-direction:column;}
+	#hg .hg-pt input[type=range] {min-height:30px;}
+	#hg .hg-pt button, #hg .hg-ptadd {border:1px solid var(--hg-btnln);background:var(--hg-btn);color:var(--hg-btnfg);border-radius:0.4em;padding:0.3em 0.7em;font:inherit;cursor:pointer;min-height:34px;}
+	#hg .hg-ptbar {display:flex;gap:0.5em;align-items:center;flex-wrap:wrap;}
+	#hg .hg-run {display:flex;gap:0.5em;flex-wrap:wrap;margin:0 0 0.8em;}
+	#hg .hg-table {width:100%;border-collapse:collapse;font-size:0.93em;} #hg .hg-table th, #hg .hg-table td {text-align:left;padding:0.4em 0.5em;border-bottom:1px solid var(--hg-line);vertical-align:top;} #hg .hg-table th {color:var(--hg-mut);font-weight:600;} #hg .hg-tw {overflow-x:auto;}
+	#hg .hg-ttext p {margin:0.3em 0 0.8em;}
+	#hg .hg-eq {display:grid;gap:0.5em;margin:0.8em 0;} #hg .hg-eq > div {display:flex;flex-wrap:wrap;gap:0.3em 1em;align-items:center;border:1px solid var(--hg-line);border-radius:0.5em;padding:0.5em 0.8em;background:var(--hg-card);min-width:0;overflow-x:auto;} #hg .hg-eq__n {color:var(--hg-mut);font-size:0.9em;min-width:9em;}
+	#hg .hg-ok {color:#047857;font-weight:700;} #hg .hg-bad {color:#b91c1c;font-weight:700;}
+	body.dark-mode #hg .hg-ok {color:#6ee7b7;} body.dark-mode #hg .hg-bad {color:#fca5a5;}
+	#hg h3 {margin-top:0;}
+	@media (max-width:640px) {#hg .hg-pair {grid-template-columns:1fr;} #hg .hg-pt {grid-template-columns:auto 1fr auto;} #hg .hg-pt label.hg-wide {grid-column:1 / -1;} #hg .hg-hint {display:none;}}
+
+
+	@media print {
+		.header, .info-bar-container, .side-bar, #footer, #comments-button, #comments-box, .color-box { display:none !important; }
+		.outer-container, .inner-container, .outer-page-content, .page-content { width:auto !important; box-shadow:none !important; padding:0 !important; margin:0 !important; }
+	}
+	/* Mobile layout: stack header/nav/footer, full-width calculator inputs */
+	@media (max-width: 600px) {
+		.inner-container { padding: 1em 0.75em; }
+
+		.header { display: flex; flex-wrap: wrap; align-items: center; }
+		.logo-image-container { flex: 0 0 auto; }
+		.logo-text-container { display: block; flex: 1 1 0; min-width: 0; padding-left: 0.75em; vertical-align: initial; }
+		.calculator-title { font-size: 1.3em; }
+		.tag-line { font-size: 1em; }
+		.social-container, .social-container--bottom { position: static; flex: 0 0 100%; margin-top: 0.5em; }
+		.social-container { display: flex; align-items: center; flex-wrap: wrap; gap: 0.5em; }
+		.social-container .social__text { margin: 0; font-size: 0.9em; }
+		.social { display: flex; gap: 0.4em; }
+		.social-container .info-bar__logo-container { margin-left: auto; }
+		#mes-logo { width: 110px; height: auto; }
+
+		.info-bar-container { display: block; width: 100%; }
+		.info-bar { display: flex; flex-wrap: wrap; margin-left: 0; padding-left: 0; width: 100%; }
+		.info-bar__item { float: none; flex: 1 1 33%; min-width: 0; }
+		.info-bar__item__text { padding: 0.5em 0.2em; font-size: 0.75em; text-align: center; white-space: normal; line-height: 1.2; }
+		.navbar-container { margin: 1em 0; width: 100%; box-sizing: border-box; }
+		.button--navbar { box-sizing: border-box; width: 100%; }
+		.navbar { width: 100%; }
+		.navbar__link { box-sizing: border-box; }
+
+		.page-content { padding: 1.2em 0 0 0; }
+
+		.footer { padding: 1.25em 0.75em; }
+		.footer__item-container { display: block; }
+		.footer__item { display: block; margin-bottom: 0.75em; }
+		.footer__item--extra-padding { padding-left: 0; }
+		.footer__text--extra-info { float: none; display: block; margin-top: 0.5em; }
+	}
+</style>
+        <meta property="fb:app_id" content="" />
+        <meta name="author" content="Math Easy Solutions Staff">
+        <meta property="og:type" content="website" />
+        <meta property="og:url" content="https://mes.fm/hologram" />            <meta property="og:title" content="MES Hologram Simulator | Math Easy Solutions" />        <meta property="og:image" content="https://mes.fm/hologram/img/logo-big.png" />
+        <meta property="og:description" content="A free hologram simulator: record the interference fringes of a reference beam and object points live, play the hologram back with real wave optics to see the virtual image, the twin and parallax, explore coherence, compare transmission, reflection, rainbow and embossed holograms and Pepper's ghost, and compute a phase hologram of your own drawing." />
+
+        <meta name="description" content="A free hologram simulator: record the interference fringes of a reference beam and object points live, play the hologram back with real wave optics to see the virtual image, the twin and parallax, explore coherence, compare transmission, reflection, rainbow and embossed holograms and Pepper's ghost, and compute a phase hologram of your own drawing.">            <meta name="twitter:card" content="summary">        <meta name="twitter:site" content="@MathEasySolns">
+        <meta name="twitter:title" content="MES Hologram Simulator">
+        <meta name="twitter:description" content="A free hologram simulator: record the interference fringes of a reference beam and object points live, play the hologram back with real wave optics to see the virtual image, the twin and parallax, explore coherence, compare transmission, reflection, rainbow and embossed holograms and Pepper's ghost, and compute a phase hologram of your own drawing.">
+        <meta name="twitter:image" content="https://mes.fm/hologram/img/logo-big.png">
+        <meta name="twitter:image:alt" content="MES Hologram Simulator">
+        <script type="application/ld+json">
+        {"@context": "https://schema.org", "@type": "WebApplication", "name": "MES Hologram Simulator", "url": "https://mes.fm/hologram", "applicationCategory": "UtilitiesApplication", "operatingSystem": "Any", "offers": {"@type": "Offer", "price": "0", "priceCurrency": "USD"}, "description": "A free hologram simulator: record the interference fringes of a reference beam and object points live, play the hologram back with real wave optics to see the virtual image, the twin and parallax, explore coherence, compare transmission, reflection, rainbow and embossed holograms and Pepper's ghost, and compute a phase hologram of your own drawing."}
+        </script>            <!-- Google Tag Manager -->
+            <script>(function(w,d,s,l,i){w[l]=w[l]||[];w[l].push({'gtm.start':
+            new Date().getTime(),event:'gtm.js'});var f=d.getElementsByTagName(s)[0],
+            j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
+            'https://www.googletagmanager.com/gtm.js?id='+i+dl;f.parentNode.insertBefore(j,f);
+            })(window,document,'script','dataLayer','GTM-PL6QNQR');</script>
+            <!-- End Google Tag Manager -->
+<!-- Legacy Universal Analytics removed: every UA property stopped processing data in 2023; pageviews are tracked via main_js/track.js (+ GTM) -->
+    <!-- ADSENSE-DEFERRED: load adsbygoogle.js (auto ads + consent) on the first
+     real interaction (scroll / pointer / key), or after a 15s idle fallback,
+     so its ad + consent JS (doubleclick ads ~100KB, Funding Choices ~70KB,
+     sodar, osd) never runs during the page-load / Lighthouse trace window. -->
+    <script>
+    (function () {
+      /* MES-ADFREE: paid ad-free on mes.fm/premium (localStorage mes-adfree = {user, until}): never load AdSense */
+      try { var af = JSON.parse(localStorage.getItem('mes-adfree') || 'null'); if (af && !af.off && +af.until > Date.now()) { document.documentElement.classList.add('mes-adfree'); return; } } catch (e) {}
+      var EVT = ['scroll', 'pointerdown', 'keydown', 'touchstart'];
+      var done = false;
+      function go() {
+        if (done) return;
+        done = true;
+        EVT.forEach(function (e) { removeEventListener(e, go); });
+        var s = document.createElement('script');
+        s.async = true;
+        s.crossOrigin = 'anonymous';
+        s.src = 'https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-1461238060884369';
+        document.head.appendChild(s);
+      }
+      EVT.forEach(function (e) { addEventListener(e, go, { passive: true }); });
+      setTimeout(go, 15000);
+    })();
+    </script>
+    <script>
+/* autoads-header-gap-guard: guards two gaps against Google Auto ads (in-page ad blocks,
+   class `google-auto-placed`), plus Google's separate "annotation" text-ad
+   formats, which are a different Auto ads mechanism than the in-page blocks
+   above. 1) Logo header <-> nav bar: on desktop, any in-page ad caught here
+   is relocated to just below the whole header+nav+logo-badge complex
+   (before .outer-page-content) and allowed to show if it fills; on mobile
+   (max-width: 768px, this repo's existing responsive breakpoint) it is
+   hidden outright instead -- no ad shows below the nav bar on mobile at
+   all. 2) Comments toggle (#comments-button) <-> comments widget
+   (#comments-box): on every device, any in-page ad caught here is relocated
+   to just after the comments box and allowed to show if it fills.
+   3) Annotation/related-entry chips -- any element carrying the
+   `google-anno-skip` class, which covers every chip variant Google serves
+   (`google-anno-sc` pill/badge tooltips, `goog-rentry` related-entry
+   tooltips, `google-anno-sa-qtx` tooltip text) -- and 4) in-text link ads
+   (`<a class="google-anno">` wrapping a `<span class="google-anno-t">`
+   around an ordinary word, e.g. turning "Calculate" into a
+   double-underlined, clickable ad): both are only guarded inside #header,
+   #footer, the top .info-bar-container nav, or the .side-bar "Site
+   Navigation" widget -- chips are hidden outright there, and in-text links
+   are unwrapped back to plain text there, so the word stays readable
+   without the ad behavior. Elsewhere in the actual page content both are
+   left alone on purpose. Unlike the in-page ad blocks, Google serves many
+   of these chips/links per page load, so removing the guarded-zone ones
+   doesn't cost the page its one shot at an ad the way deleting the in-page
+   block did -- no relocate/poll needed, just hide/unwrap on sight.
+   In the first two cases Google's own placeholder-collapse doesn't reliably
+   fire once we've moved the node, so we poll it: if no real ad iframe shows
+   up within ~2s, we force the reserved space to 0 ourselves, so an unfilled
+   slot never leaves a blank gap. */
+(function () {
+    function isMobile() {
+        return window.matchMedia('(max-width: 768px)').matches;
+    }
+    function isBetween(before, after, el) {
+        if (!before || !after) return false;
+        return !!(before.compareDocumentPosition(el) & Node.DOCUMENT_POSITION_FOLLOWING) &&
+               !!(after.compareDocumentPosition(el) & Node.DOCUMENT_POSITION_PRECEDING);
+    }
+    function collapseIfUnfilled(node) {
+        var attempts = 0;
+        var poll = setInterval(function () {
+            attempts++;
+            if (!node.isConnected) {
+                clearInterval(poll);
+                return;
+            }
+            if (node.querySelector('iframe')) {
+                clearInterval(poll);
+                return;
+            }
+            if (attempts >= 10) {
+                node.style.setProperty('display', 'none', 'important');
+                clearInterval(poll);
+            }
+        }, 200);
+    }
+    function handleHeaderNavZone(node) {
+        var header = document.getElementById('header');
+        var nav = document.querySelector('.info-bar-container');
+        if (!isBetween(header, nav, node)) return false;
+        if (isMobile()) {
+            node.style.setProperty('display', 'none', 'important');
+            return true;
+        }
+        var target = document.querySelector('.outer-page-content');
+        if (target) {
+            target.before(node);
+        } else if (nav) {
+            nav.after(node);
+        }
+        collapseIfUnfilled(node);
+        return true;
+    }
+    function handleCommentsZone(node) {
+        var button = document.getElementById('comments-button');
+        var box = document.getElementById('comments-box');
+        if (!isBetween(button, box, node)) return false;
+        box.after(node);
+        collapseIfUnfilled(node);
+        return true;
+    }
+    function inAnnotationGuardedZone(el) {
+        return !!(el.closest('#header') || el.closest('#footer') || el.closest('.side-bar') || el.closest('.info-bar-container'));
+    }
+    function handleAnnotationChip(node) {
+        if (node.classList && node.classList.contains('google-anno-skip') && inAnnotationGuardedZone(node)) {
+            node.style.setProperty('display', 'none', 'important');
+            return true;
+        }
+        return false;
+    }
+    function handleInTextLinkAd(node) {
+        if (node.classList && node.classList.contains('google-anno') && node.parentNode && inAnnotationGuardedZone(node)) {
+            node.replaceWith(document.createTextNode(node.textContent));
+            return true;
+        }
+        return false;
+    }
+    function handle(node) {
+        if (node.nodeType !== 1) return;
+        if (node.classList && node.classList.contains('google-auto-placed')) {
+            if (handleHeaderNavZone(node)) return;
+            handleCommentsZone(node);
+            return;
+        }
+        if (handleAnnotationChip(node)) return;
+        if (handleInTextLinkAd(node)) return;
+        if (node.querySelectorAll) {
+            node.querySelectorAll('.google-auto-placed').forEach(function (n) {
+                if (handleHeaderNavZone(n)) return;
+                handleCommentsZone(n);
+            });
+            node.querySelectorAll('.google-anno-skip').forEach(function (n) {
+                handleAnnotationChip(n);
+            });
+            node.querySelectorAll('.google-anno').forEach(function (n) {
+                handleInTextLinkAd(n);
+            });
+        }
+    }
+    new MutationObserver(function (mutations) {
+        mutations.forEach(function (m) {
+            m.addedNodes.forEach(handle);
+        });
+    }).observe(document.documentElement, {childList: true, subtree: true});
+})();
+</script>
+    </head>
+    <body>            <!-- Google Tag Manager (noscript) -->
+            <noscript><iframe src="https://www.googletagmanager.com/ns.html?id=GTM-PL6QNQR"
+            height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
+            <!-- End Google Tag Manager (noscript) -->        <div id="outer-container" class="outer-container">                <div class = "inner-container">                        <div id="header" class="header" role="banner">                                <a class="logo-image-container" href='/hologram'><img height="88" width="88" id="logo" class="logo" alt="MES Hologram Simulator logo" src="/hologram/img/logo.png?v=2"></a>
+                            <div class="logo-text-container">
+                                <a class="calculator-title-link" href='/hologram'>
+                                    <p class="calculator-title">MES Hologram Simulator</p>
+                                </a>
+                                <p class="tag-line">Record light. Play it back in 3D.</p>                            </div>
+
+                            <div class="social-container"><ul class="social">	<li class="social__logo social__hive"><a class="social__link" href="https://peakd.com/@mes" target="_blank"></a></li></a></li>
+    <li class="social__logo social__telegram"><a class="social__link" href="https://t.me/meslinks" target="_blank"></a></li></a></li></ul><a class="info-bar__logo-container" href="https://mes.fm/" title="Math Easy Solutions"><img id="mes-logo" class="info-bar__logo lazyload" alt="math easy solutions logo" height="29" width="126" data-src="https://mes.fm/main_img/mes-logo-small.png"></a>                            </div>                                                        </div>
+                        <div class="info-bar-container" role="navigation" aria-label="Primary">
+                            <ul id="info-bar" class="info-bar shadow">
+                                <li class="info-bar__item"><a class="info-bar__item__text" href='/hologram'>Home</a></li>                                    <li class="info-bar__item"><a class="info-bar__item__text" href='https://mes.fm/calculators'>Calculators</a></li><li class="info-bar__item"><a class="info-bar__item__text" href='https://mes.fm/tools'>Tools</a></li>                                    <li class="info-bar__item info-bar__item--utility" style="display:none !important;"><a class="info-bar__item__text" href='/contact'>Contact Us</a></li>
+                                    <li class="info-bar__item info-bar__item--utility" style="display:none !important;"><a class="info-bar__item__text" target='_blank' href='https://mes.fm/donate.html'>Donate</a></li><li class="info-bar__item info-bar__item--utility" style="display:none !important;"><a class="info-bar__item__text" target='_blank' rel="nofollow" href='https://matheasy.substack.com/'>Subscribe</a></li>
+                                    <li class="info-bar__item info-bar__item--mes"><a class="info-bar__item__text" href="/" style="font-weight:bold;">MES.fm</a></li></ul>
+                        </div>
+                                                        <!-- (Responsive) Horizontal -->
+                                                        <div class="outer-page-content">
+                            <div class="page-content" role="main">                                    <div class="color-box"></div>
+                                    <h1 class="page-title">Hologram Simulator: How Holograms Are Recorded and Played Back</h1>                                        <p class="page-description">A free hologram simulator: record the interference fringes of a reference beam and object points live, play the hologram back with real wave optics to see the virtual image, the twin and parallax, explore coherence, compare transmission, reflection, rainbow and embossed holograms and Pepper's ghost, and compute a phase hologram of your own drawing.</p>                                    	<div id="main-content">
+	<script>try{if(!localStorage.getItem('pageMode')){document.documentElement.classList.add('page-wide')}}catch(e){}</script>
+	<div class="tu hg" id="hg">
+		<div class="hg-tabs" role="tablist" aria-label="Hologram tools">
+			<button type="button" role="tab" data-tab="rec" aria-selected="true">1. Recording</button>
+			<button type="button" role="tab" data-tab="view" aria-selected="false">2. Playback (reconstruction)</button>
+			<button type="button" role="tab" data-tab="coh" aria-selected="false">Coherence</button>
+			<button type="button" role="tab" data-tab="types" aria-selected="false">Types of holograms</button>
+			<button type="button" role="tab" data-tab="cgh" aria-selected="false">Computer-generated</button>
+		</div>
+
+		<!-- ============ 1. RECORDING ============ -->
+		<section data-panel="rec" role="tabpanel">
+			<p class="tu-note hg-lead">A hologram is a photograph of <b>interference</b>. Laser light is split in two: the <b>reference beam</b> goes straight to the plate, the <b>object beam</b> lights the object, and each point of the object sends out a spherical wave. Where the two beams meet on the plate they add up or cancel, making a pattern of very fine <b>fringes</b>. The fringes store both the brightness and the direction (phase) of the light from the object. Drag the object points; the fringe pattern on the plate is computed live from <span class="mes-tex">\(I = |R + O_1 + O_2 + \dots|^2\)</span>.</p>
+			<div class="hg-chips" id="hg-r-pre" role="group" aria-label="Examples"></div>
+			<div class="hg-wrap"><div class="hg-stage"><canvas id="hg-rs" tabindex="0" role="img" aria-label="Side view of the recording: a reference beam and spherical waves from object points meet on the plate. Drag the points to move them."></canvas>
+				<button type="button" class="hg-fs" data-fs title="Full screen" aria-label="Full screen">⛶</button>
+				<div class="hg-hint">Drag a point · click empty space to add one</div></div></div>
+			<div class="hg-wrap"><div class="hg-stage"><canvas id="hg-rp" tabindex="0" role="img" aria-label="The fringe pattern recorded on a small patch of the plate, with a brightness profile underneath. Drag to move across the plate."></canvas>
+				<button type="button" class="hg-fs" data-fs title="Full screen" aria-label="Full screen">⛶</button>
+				<div class="hg-hint" id="hg-rp-hint">Drag to move across the plate</div></div></div>
+			<div class="hg-cards" id="hg-r-cards"></div>
+			<div class="tu-card hg-controls"><div class="hg-grid">
+				<div class="tu-field"><span class="tu-label" id="hg-r-lam-l">Laser colour (wavelength): <b id="hg-r-lam-v"></b></span><input type="range" id="hg-r-lam" min="400" max="700" step="1" aria-labelledby="hg-r-lam-l"></div>
+				<div class="tu-field"><span class="tu-label" id="hg-r-th-l">Reference beam angle: <b id="hg-r-th-v"></b></span><input type="range" id="hg-r-th" min="-60" max="60" step="0.5" aria-labelledby="hg-r-th-l"><span class="tu-note">0° = in-line (Gabor); tilted = off-axis (Leith-Upatnieks).</span></div>
+				<div class="tu-field"><span class="tu-label" id="hg-r-k-l">Beam ratio, reference : object: <b id="hg-r-k-v"></b></span><input type="range" id="hg-r-k" min="-1.3" max="1.3" step="0.01" aria-labelledby="hg-r-k-l"><span class="tu-note">Real holograms use about 3:1 to 10:1 so the fringes stay in the film's straight-line range.</span></div>
+				<div class="tu-field"><span class="tu-label" id="hg-r-z-l">Patch of plate shown: <b id="hg-r-z-v"></b></span><input type="range" id="hg-r-z" min="1" max="4.3" step="0.01" aria-labelledby="hg-r-z-l"><span class="tu-note">Real fringes are about a micrometre apart: zoom out and they blur into grey, as they would for your eye.</span></div>
+				<div class="tu-field"><label class="tu-label" for="hg-r-src">Light source</label><select id="hg-r-src" class="tu-select"></select></div>
+				<div class="tu-field"><span class="tu-label" id="hg-r-dl-l">Extra length of the reference arm: <b id="hg-r-dl-v"></b></span><input type="range" id="hg-r-dl" min="-60" max="60" step="0.05" aria-labelledby="hg-r-dl-l"><span class="tu-note">0 = the reference path equals the path to the middle of the object. Matters only when the light is not a good laser.</span></div>
+			</div>
+			<div class="hg-pts" id="hg-r-pts"></div></div>
+		</section>
+
+		<!-- ============ 2. PLAYBACK ============ -->
+		<section data-panel="view" role="tabpanel" hidden>
+			<p class="tu-note hg-lead">Light the developed plate with the same reference beam and the fringes act like a very complicated diffraction grating. Out of the plate come three waves: the <b>zero order</b> (the reference going straight on), the <b>virtual image</b> (an exact copy of the object's light: you see the object behind the plate, in 3D) and the <b>twin</b> or <b>real image</b>. This tab does the whole thing numerically on a small plate: it records the hologram, lights it, and propagates the light with the angular-spectrum method (FFT). Move the focus to look at different depths; move the camera across the plate to see parallax.</p>
+			<div class="hg-chips" id="hg-v-pre" role="group" aria-label="Object"></div>
+			<div class="hg-wrap"><div class="hg-stage"><canvas id="hg-vi" tabindex="0" role="img" aria-label="What a camera sees through the lit hologram at the chosen focus distance."></canvas>
+				<button type="button" class="hg-fs" data-fs title="Full screen" aria-label="Full screen">⛶</button>
+				<div class="hg-hint" id="hg-v-hint"></div></div></div>
+			<div class="hg-pair">
+				<figure><div class="hg-stage"><canvas id="hg-vh" role="img" aria-label="The recorded hologram (fringes)."></canvas></div><figcaption>The recorded plate (fringes)</figcaption></figure>
+				<figure><div class="hg-stage"><canvas id="hg-vs" tabindex="0" role="img" aria-label="Spectrum of the hologram: the zero order and the two image terms. Click a part to block it or let it through."></canvas></div><figcaption>Its spectrum: click a part to block it</figcaption></figure>
+			</div>
+			<div class="hg-cards" id="hg-v-cards"></div>
+			<div class="tu-card hg-controls"><div class="hg-grid">
+				<div class="tu-field"><span class="tu-label" id="hg-v-f-l">Focus: <b id="hg-v-f-v"></b></span><input type="range" id="hg-v-f" min="-4000" max="4000" step="10" aria-labelledby="hg-v-f-l"><div class="hg-chips hg-chips--sm" id="hg-v-fch" role="group" aria-label="Focus on"></div></div>
+				<div class="tu-field"><span class="tu-label">Light the plate with</span><div class="hg-seg" id="hg-v-light" role="group" aria-label="Playback light"><button type="button" data-v="1">The reference beam</button><button type="button" data-v="-1">The reversed beam</button></div><span class="tu-note">The reversed (phase-conjugate) beam comes from the other side and builds a <b>real image</b> in front of the plate.</span></div>
+				<div class="tu-field"><span class="tu-label">Let through</span><label class="hg-check"><input type="checkbox" id="hg-v-k0"> Zero order</label><label class="hg-check"><input type="checkbox" id="hg-v-k1"> Virtual-image term</label><label class="hg-check"><input type="checkbox" id="hg-v-k2"> Twin (real-image) term</label><span class="tu-note" id="hg-v-knote"></span></div>
+				<div class="tu-field"><span class="tu-label" id="hg-v-th-l">Reference angle when recording: <b id="hg-v-th-v"></b></span><input type="range" id="hg-v-th" min="0" max="12" step="0.25" aria-labelledby="hg-v-th-l"><span class="tu-note">0° = Gabor's in-line hologram: the three waves overlap.</span></div>
+				<div class="tu-field"><span class="tu-label" id="hg-v-k-l">Beam ratio, reference : object: <b id="hg-v-k-v"></b></span><input type="range" id="hg-v-k" min="0" max="1.5" step="0.01" aria-labelledby="hg-v-k-l"></div>
+				<div class="tu-field"><label class="hg-check"><input type="checkbox" id="hg-v-cam"> Look through a small camera opening (shows parallax)</label>
+					<span class="tu-label" id="hg-v-eu-l">Camera left / right: <b id="hg-v-eu-v"></b></span><input type="range" id="hg-v-eu" min="-1" max="1" step="0.01" aria-labelledby="hg-v-eu-l">
+					<span class="tu-label" id="hg-v-ev-l">Camera up / down: <b id="hg-v-ev-v"></b></span><input type="range" id="hg-v-ev" min="-1" max="1" step="0.01" aria-labelledby="hg-v-ev-l">
+					<span class="tu-label" id="hg-v-er-l">Opening size: <b id="hg-v-er-v"></b></span><input type="range" id="hg-v-er" min="0.08" max="0.5" step="0.01" aria-labelledby="hg-v-er-l"></div>
+				<div class="tu-field"><span class="tu-label" id="hg-v-g-l">Brightness: <b id="hg-v-g-v"></b></span><input type="range" id="hg-v-g" min="0.2" max="1" step="0.01" aria-labelledby="hg-v-g-l">
+					<label class="hg-check"><input type="checkbox" id="hg-v-diff"> Rough (diffuse) surface: makes speckle</label>
+					<label class="hg-check"><input type="checkbox" id="hg-v-mk"> Mark where the object really was</label>
+					<span class="tu-label">Plate size (grid)</span><div class="hg-seg" id="hg-v-n" role="group" aria-label="Grid"><button type="button" data-v="128">128²</button><button type="button" data-v="256">256²</button><button type="button" data-v="512">512²</button></div><span class="tu-note">A bigger plate gives a sharper image (resolution ≈ λz / plate width).</span></div>
+			</div></div>
+		</section>
+
+		<!-- ============ COHERENCE ============ -->
+		<section data-panel="coh" role="tabpanel" hidden>
+			<p class="tu-note hg-lead">Fringes only form if the two beams are <b>coherent</b>: if the light that went the long way still keeps step with the light that went the short way. Real light comes in wave trains about one <b>coherence length</b> long, <span class="mes-tex">\(L_c = \lambda^2 / \Delta\lambda\)</span>. When the path difference grows past that, the fringe contrast fades to nothing. That is why holograms need lasers, and why the object's depth is limited.</p>
+			<div class="hg-wrap"><div class="hg-stage"><canvas id="hg-c" tabindex="0" role="img" aria-label="Two wave trains with a path difference, the fringes they make, and the fringe contrast against the path difference. Drag on the curve to change the path difference."></canvas>
+				<button type="button" class="hg-fs" data-fs title="Full screen" aria-label="Full screen">⛶</button>
+				<div class="hg-hint">Drag on the curve</div></div></div>
+			<div class="hg-cards" id="hg-c-cards"></div>
+			<div class="tu-card hg-controls"><div class="hg-grid">
+				<div class="tu-field"><label class="tu-label" for="hg-c-src">Light source</label><select id="hg-c-src" class="tu-select"></select></div>
+				<div class="tu-field"><span class="tu-label" id="hg-c-w-l">Spectral width Δλ: <b id="hg-c-w-v"></b></span><input type="range" id="hg-c-w" min="-9" max="-0.3" step="0.01" aria-labelledby="hg-c-w-l"><span class="tu-note">Log scale. A narrower colour band = longer wave trains.</span></div>
+				<div class="tu-field"><span class="tu-label" id="hg-c-x-l">Path difference: <b id="hg-c-x-v"></b></span><input type="range" id="hg-c-x" min="0" max="2.5" step="0.005" aria-labelledby="hg-c-x-l"><span class="tu-note">In coherence lengths.</span></div>
+				<div class="tu-field"><span class="tu-label" id="hg-c-m-l">Movement during the exposure: <b id="hg-c-m-v"></b></span><input type="range" id="hg-c-m" min="0" max="400" step="1" aria-labelledby="hg-c-m-l"><span class="tu-note">A steady drift of the object (or a mirror) toward the plate. Light goes there and back, so a move of λ/2 shifts the fringes a whole period.</span></div>
+			</div></div>
+			<div class="tu-card"><h3>Typical light sources</h3><div class="hg-tw"><table class="hg-table" id="hg-c-tab"></table></div><p class="tu-note">Ballpark figures: real lasers vary a lot. The deepest scene you can record is about half the coherence length, because light reaching the back of the object travels farther than light reaching the front (and the reference path is matched to the middle).</p></div>
+		</section>
+
+		<!-- ============ TYPES ============ -->
+		<section data-panel="types" role="tabpanel" hidden>
+			<p class="tu-note hg-lead">Every true hologram records interference fringes, but the way the beams meet decides what you need to see it: a laser, a lamp, or just daylight. Pick a type.</p>
+			<div class="hg-chips" id="hg-t-list" role="tablist" aria-label="Types of holograms"></div>
+			<div class="hg-wrap"><div class="hg-stage"><canvas id="hg-t" tabindex="0" role="img" aria-label="Diagram of how this type of hologram is made and seen."></canvas>
+				<button type="button" class="hg-fs" data-fs title="Full screen" aria-label="Full screen">⛶</button>
+				<div class="hg-hint" id="hg-t-hint"></div></div></div>
+			<div class="hg-cards" id="hg-t-cards"></div>
+			<div class="tu-card hg-controls"><h3 id="hg-t-title"></h3><div class="hg-ttext" id="hg-t-text"></div><div class="hg-grid" id="hg-t-ctl"></div></div>
+			<div class="tu-card"><h3>The types side by side</h3><div class="hg-tw"><table class="hg-table">
+				<thead><tr><th>Type</th><th>Beams when recording</th><th>Lit by</th><th>Colour</th><th>Parallax</th><th>Examples</th></tr></thead>
+				<tbody>
+					<tr><td>In-line (Gabor, 1948)</td><td>One beam: the light that misses the object is the reference</td><td>Laser</td><td>Laser colour</td><td>Some; the twin image is in the way</td><td>Electron and X-ray holography, particle holography</td></tr>
+					<tr><td>Off-axis transmission (Leith-Upatnieks, 1962)</td><td>Both on the same side, at an angle</td><td>Laser from behind</td><td>Laser colour (white light smears into a rainbow)</td><td>Full: left-right and up-down</td><td>Museum and lab holograms, holographic interferometry</td></tr>
+					<tr><td>Reflection (Denisyuk, 1962)</td><td>From opposite sides</td><td>A small white lamp from the front</td><td>Picked by the layers (Bragg): one colour</td><td>Full</td><td>Display holograms, Lippmann photographs</td></tr>
+					<tr><td>Rainbow (Benton, 1968)</td><td>Same side, through a slit (a hologram of a hologram)</td><td>White light from behind (or mirror-backed)</td><td>Changes with eye height</td><td>Left-right only</td><td>Credit cards, book covers</td></tr>
+					<tr><td>Embossed</td><td>A rainbow master copied as a surface relief</td><td>Daylight, reflected off a metal coat</td><td>Rainbow colours</td><td>Left-right, often just a few views</td><td>Banknotes, passports, stickers</td></tr>
+					<tr><td>Computer-generated</td><td>None: the fringes are calculated</td><td>Laser</td><td>Laser colour</td><td>As designed</td><td>Laser projectors, optical tweezers, AR glasses</td></tr>
+					<tr><td>Pepper's ghost (not a hologram)</td><td>None: a sheet of glass reflects a hidden lit figure or screen</td><td>Its own light</td><td>Any</td><td>None: a flat picture</td><td>Stage "holograms", museum ghosts, teleprompters</td></tr>
+				</tbody></table></div></div>
+		</section>
+
+		<!-- ============ CGH ============ -->
+		<section data-panel="cgh" role="tabpanel" hidden>
+			<p class="tu-note hg-lead">You do not need an object to make a hologram: a computer can work out the fringes. Draw a picture on the left pad. The <b>Gerchberg-Saxton</b> algorithm then searches for a <b>phase-only</b> hologram (it changes only the delay of the light, not its brightness, like a liquid-crystal display used in laser projectors) whose far-field light pattern is your picture. It jumps between the hologram and the picture, keeping the phase it found and putting back what it knows each time.</p>
+			<div class="hg-chips" id="hg-g-pre" role="group" aria-label="Pictures"></div>
+			<div class="hg-wrap"><div class="hg-stage"><canvas id="hg-g" tabindex="0" role="img" aria-label="Drawing pad, the computed phase hologram, the light pattern it makes, and the error after each step. Draw on the pad."></canvas>
+				<button type="button" class="hg-fs" data-fs title="Full screen" aria-label="Full screen">⛶</button>
+				<div class="hg-hint">Draw on the pad</div></div></div>
+			<div class="hg-run" role="group" aria-label="Run"><button type="button" class="tu-btn tu-btn--primary" id="hg-g-run">▶ Compute the hologram</button><button type="button" class="tu-btn tu-btn--ghost" id="hg-g-new">New random start</button><button type="button" class="tu-btn tu-btn--ghost" id="hg-g-clear">Clear the pad</button><button type="button" class="tu-btn tu-btn--ghost" id="hg-g-save">Save hologram (PNG)</button></div>
+			<div class="hg-cards" id="hg-g-cards"></div>
+			<div class="tu-card hg-controls"><div class="hg-grid">
+				<div class="tu-field"><span class="tu-label">Pen</span><div class="hg-seg" id="hg-g-pen" role="group" aria-label="Pen"><button type="button" data-v="1">Draw</button><button type="button" data-v="0">Erase</button></div></div>
+				<div class="tu-field"><label class="tu-label" for="hg-g-lv">Phase steps the device can show</label><select id="hg-g-lv" class="tu-select"><option value="0">Any phase (continuous)</option><option value="16">16 steps</option><option value="8">8 steps</option><option value="4">4 steps</option><option value="2">2 steps (binary: 0 or π)</option></select><span class="tu-note">With 2 steps a mirror-image twin appears, as bright as the picture.</span></div>
+				<div class="tu-field"><span class="tu-label" id="hg-g-it-l">Steps (iterations): <b id="hg-g-it-v"></b></span><input type="range" id="hg-g-it" min="1" max="200" step="1" aria-labelledby="hg-g-it-l"></div>
+				<div class="tu-field"><span class="tu-label" id="hg-g-d-l">Phase depth the device really gives: <b id="hg-g-d-v"></b></span><input type="range" id="hg-g-d" min="40" max="100" step="1" aria-labelledby="hg-g-d-l"><span class="tu-note">Below 100 % some light is not steered at all and makes a bright zero-order spot in the middle.</span></div>
+				<div class="tu-field"><label class="hg-check"><input type="checkbox" id="hg-g-off"> Put the picture off-centre (away from the zero order)</label></div>
+			</div></div>
+		</section>
+
+		<div class="tu-seo">
+			<h2>How holograms work</h2>
+			<p>A normal photograph records only how bright the light was at each point. A <b>hologram</b> also records the light's <b>phase</b>: how far along its wave cycle it was. Film can only record brightness, so Dennis Gabor's trick (1948) was to add a second, simple wave, the <b>reference</b>, and record the interference of the two. The bright and dark fringes encode the phase: where the object's light was in step with the reference, the film is exposed; where it was out of step, it is not. Lighting the developed film with the reference again diffracts the light back into a copy of the object's wave, so you see the object in full 3D, with parallax, focus and depth, as if it were still there.</p>
+			<div class="hg-eq" role="math" aria-label="Key equations">
+				<div><span class="hg-eq__n">recorded intensity</span> <span class="hg-eq__f mes-tex">\(\displaystyle I = |R+O|^2 = |R|^2 + |O|^2 + R^{*}O + R\,O^{*}\)</span></div>
+				<div><span class="hg-eq__n">playback with R</span> <span class="hg-eq__f mes-tex">\(\displaystyle R\,I = R\left(|R|^2+|O|^2\right) + |R|^2\,O + R^2\,O^{*}\)</span></div>
+				<div><span class="hg-eq__n">fringe spacing</span> <span class="hg-eq__f mes-tex">\(\displaystyle d = \frac{\lambda}{2\sin(\theta/2)}\)</span></div>
+				<div><span class="hg-eq__n">coherence length</span> <span class="hg-eq__f mes-tex">\(\displaystyle L_c = \frac{\lambda^2}{\Delta\lambda}\)</span></div>
+				<div><span class="hg-eq__n">Bragg (reflection)</span> <span class="hg-eq__f mes-tex">\(\displaystyle \lambda = 2\,n\,\Lambda\cos\theta\)</span></div>
+				<div><span class="hg-eq__n">angular spectrum</span> <span class="hg-eq__f mes-tex">\(\displaystyle U(z) = \mathcal{F}^{-1}\!\left[\mathcal{F}[U(0)]\;e^{\,i2\pi z\sqrt{1/\lambda^2 - f_x^2 - f_y^2}}\right]\)</span></div>
+			</div>
+			<p>In the playback equation the middle term <span class="mes-tex">\(|R|^2 O\)</span> is the object's own wave (the <b>virtual image</b>), the last term is its mirror twin (the <b>real image</b>, which focuses in front of the plate) and the first is the <b>zero order</b>. Gabor's in-line holograms had all three on top of each other. Emmett Leith and Juris Upatnieks (1962) tilted the reference beam so the three leave the plate in different directions: the start of practical holography.</p>
+			<h3>Things to try</h3>
+			<ul>
+				<li><b>Recording:</b> zoom in until single fringes show, then change the reference angle: a steeper angle packs the fringes closer (λ / sin θ). Holographic film has to resolve thousands of lines per millimetre.</li>
+				<li><b>Recording:</b> choose the red LED as the light source. The fringes vanish unless the reference path matches the object path to within a few tens of micrometres.</li>
+				<li><b>Playback:</b> focus on each point in turn: only one is sharp at a time, because the image really is 3D. Then turn on the camera opening and move it: near and far points shift against each other (parallax).</li>
+				<li><b>Playback:</b> set the reference angle to 0°. Now the twin image and the zero order sit on top of the picture and the spectrum filter cannot separate them: Gabor's twin-image problem.</li>
+				<li><b>Reflection hologram:</b> tilt it and the colour moves toward blue; shrink the emulsion and a red-recorded hologram plays back green.</li>
+				<li><b>Computer-generated:</b> switch to 2 phase steps and watch the upside-down twin appear.</li>
+			</ul>
+			<h3>Things people ask</h3>
+			<ul>
+				<li><b>Are stage "holograms" of singers real holograms?</b> No. They are Pepper's ghost: a sheet of glass or foil reflects a bright video screen hidden below the stage. It is a flat picture with no recorded fringes and no true depth.</li>
+				<li><b>Why are credit-card holograms rainbow-coloured?</b> They are embossed rainbow holograms: thin surface ridges that act as a diffraction grating, so each colour leaves at a different angle. Benton's slit trick throws away up-down parallax so that each colour makes a sharp image at its own eye height.</li>
+				<li><b>Why can a reflection hologram be seen with a lamp?</b> Its fringes are layers through the depth of the emulsion, spaced about half a wavelength apart. Like the scales of a butterfly, they reflect only the colour that fits the spacing (Bragg's law), so the hologram picks its own narrow band out of white light.</li>
+				<li><b>If I cut a hologram in half, do I lose half the picture?</b> No: every part of the plate received light from every point of the object. You get the whole scene through a smaller window, with less parallax and a little less sharpness (try a small camera opening in the Playback tab).</li>
+				<li><b>What is modelled here?</b> Scalar waves in the paraxial and non-paraxial (angular spectrum) sense, a film whose transmission is proportional to the light it received, and a partially coherent source with a Gaussian spectrum. Not modelled: polarisation, film grain and non-linearity, the thickness of transmission holograms (except in the reflection-hologram section, which uses Kogelnik's coupled-wave formula).</li>
+			</ul>
+			<p>Everything runs on your device; nothing is uploaded. <a href="/negative-index?tab=diff">Diffraction calculator</a> · <a href="/light-in-a-medium">Light in a Medium</a> · <a href="/michelson-morley-experiment">Michelson-Morley interferometer</a> · <a href="/electromagnetic-fields-simulator?tab=wv">Electromagnetic waves</a> · <a href="/tools">More MES tools</a></p>
+		</div>
+		<script src="/main_js/mes-math.js" defer></script>
+	</div>
+	</div>                                    <!-- PC (Responsive/Rectangle) Matched Content -->
+                                                                        <div id="comments-button" class="hide-div-button button">Comments</div>
+                                    <div id="comments-box" class="hide">
+                                        <div id="fastcomments-widget"></div>                                    </div>                            </div>
+                        </div>
+
+                        <!-- side bar -->                            <div class="side-bar">                                    <div class="navbar-container shadow" role="navigation" aria-label="Site menu">
+                                        <div class="button button--navbar" id="navbar-button" style="position:relative;">Site Navigation<span class="dropdown-symbol dropdown-symbol--dark" style="position:absolute;right:0.75em;top:50%;transform:translateY(-50%);margin-left:0;">&#9660;</span></div>    <ul id="navbar" class="navbar">
+    <li class="navbar__item navbar__item--social"><div class="social-container social-container--navbar"><ul class="social">	<li class="social__logo social__hive"><a class="social__link" href="https://peakd.com/@mes" target="_blank"></a></li>
+    <li class="social__logo social__telegram"><a class="social__link" href="https://t.me/meslinks" target="_blank"></a></li></ul><a class="info-bar__logo-container" href="https://mes.fm/" title="Math Easy Solutions"><img id="mes-logo" class="info-bar__logo lazyload" alt="math easy solutions logo" height="29" width="126" data-src="https://mes.fm/main_img/mes-logo-small.png"></a></div></li>
+        <li class="navbar__item"><a class="navbar__link navbar__link--first" href="/hologram">Home</a></li>    <li class="navbar__item"><a class="navbar__link" href="/calculators">Calculators</a></li>
+    <li class="navbar__item"><a class="navbar__link" href="/tools">Tools</a></li>
+    <li class="navbar__item"><a class="navbar__link" href="/browser">Browser Extensions</a></li>
+    <!-- MOBILE-APPS-DROPDOWN-REMOVED: every linked app was a dead App Store / Play Store listing (lapsed developer account) -- add an entry back here for each app once it is relaunched -->
+    <li class="navbar__item"><a target="_blank" class="navbar__link" target='_blank' href="https://teespring.com/stores/mes-store">Store</a></li><li class="navbar__item"><a class="navbar__link" target="_blank" rel="nofollow" href="https://matheasy.substack.com/">Subscribe</a></li></ul>
+                                    </div>                                        <!-- (Responsive) Vertical -->
+
+                            </div>                            <!-- (Responsive) Horizontal -->
+                                            </div><div id="footer" class="footer" role="contentinfo">
+            <div class="footer__item-container">
+            <div class="footer__item">
+                <a class="footer__text footer__text--title" href="https://mes.fm/calculators.html">Calculators</a>
+            </div>
+
+            <div class="footer__item">
+                <a class="footer__text footer__text--title" href="https://mes.fm/tools">Tools</a>
+            </div>
+
+            <div class="footer__item footer__item--extra-padding">
+                <a class="footer__text footer__text--title" href="https://mes.fm/mobile-apps">Mobile Apps</a>
+            </div>
+
+            <div class="footer__item">
+                <a class="footer__text footer__text--title" href="https://mes.fm">MES.fm</a>
+            </div>
+        </div>
+        <a class="footer__text" href="/contact">Contact Us</a><span class="footer__separator"> | </span>
+        <a class="footer__text" href="/privacy-policy">Privacy Policy</a><span class="footer__separator"> | </span>
+        <a class="footer__text" target='_blank' href="https://mes.fm/donate.html">Donate</a><span class="footer__separator"> | </span><a class="footer__text" target='_blank' rel="nofollow" href="https://matheasy.substack.com/">Subscribe</a>
+        <div class="footer__text--extra-info"><span class="footer__text footer__text--copyright">Copyright &copy; <span id="copyright-year">2013</span>&nbsp;Math Easy Solutions</span></div>
+    </div>
+
+
+        </div>
+
+        <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.11.3/jquery.min.js"></script>
+        <script>
+        var MES_Vars = {
+            mobile:false,
+            hide_search:false,
+            current_tab:0
+        }        </script><!-- FASTCOMMENTS-LAZY: widget init moved to main_js/main.js -- it pulls embed.min.js only when #fastcomments-widget nears the viewport or on the first Comments-toggle click, so it no longer blocks first render -->                <script src="https://mes.fm/main_js/lazysizes.min.js?v=1.0.3" async></script>
+	<script src="/main_js/stage-ctl.js?v=2" defer></script><script src="/hologram/js/hologram.js?v=1" defer></script>
+            <script src="https://mes.fm/main_js/main.js?v=1.0.5"></script>    <!-- PAGEVIEW-TRACKING-INSERTED --><script src="https://mes.fm/main_js/track.js" defer></script><script>document.getElementById('copyright-year').textContent = new Date().getFullYear();</script><script src="/main_js/info-bar-fit.js" defer></script></body>
+
+</html>

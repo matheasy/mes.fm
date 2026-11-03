@@ -1,0 +1,150 @@
+	<script>try{if(!localStorage.getItem('pageMode')){document.documentElement.classList.add('page-wide')}}catch(e){}</script>
+	<div class="tu hg" id="hg">
+		<div class="hg-tabs" role="tablist" aria-label="Hologram tools">
+			<button type="button" role="tab" data-tab="rec" aria-selected="true">1. Recording</button>
+			<button type="button" role="tab" data-tab="view" aria-selected="false">2. Playback (reconstruction)</button>
+			<button type="button" role="tab" data-tab="coh" aria-selected="false">Coherence</button>
+			<button type="button" role="tab" data-tab="types" aria-selected="false">Types of holograms</button>
+			<button type="button" role="tab" data-tab="cgh" aria-selected="false">Computer-generated</button>
+		</div>
+
+		<!-- ============ 1. RECORDING ============ -->
+		<section data-panel="rec" role="tabpanel">
+			<p class="tu-note hg-lead">A hologram is a photograph of <b>interference</b>. Laser light is split in two: the <b>reference beam</b> goes straight to the plate, the <b>object beam</b> lights the object, and each point of the object sends out a spherical wave. Where the two beams meet on the plate they add up or cancel, making a pattern of very fine <b>fringes</b>. The fringes store both the brightness and the direction (phase) of the light from the object. Drag the object points; the fringe pattern on the plate is computed live from <span class="mes-tex">\(I = |R + O_1 + O_2 + \dots|^2\)</span>.</p>
+			<div class="hg-chips" id="hg-r-pre" role="group" aria-label="Examples"></div>
+			<div class="hg-wrap"><div class="hg-stage"><canvas id="hg-rs" tabindex="0" role="img" aria-label="Side view of the recording: a reference beam and spherical waves from object points meet on the plate. Drag the points to move them."></canvas>
+				<button type="button" class="hg-fs" data-fs title="Full screen" aria-label="Full screen">⛶</button>
+				<div class="hg-hint">Drag a point · click empty space to add one</div></div></div>
+			<div class="hg-wrap"><div class="hg-stage"><canvas id="hg-rp" tabindex="0" role="img" aria-label="The fringe pattern recorded on a small patch of the plate, with a brightness profile underneath. Drag to move across the plate."></canvas>
+				<button type="button" class="hg-fs" data-fs title="Full screen" aria-label="Full screen">⛶</button>
+				<div class="hg-hint" id="hg-rp-hint">Drag to move across the plate</div></div></div>
+			<div class="hg-cards" id="hg-r-cards"></div>
+			<div class="tu-card hg-controls"><div class="hg-grid">
+				<div class="tu-field"><span class="tu-label" id="hg-r-lam-l">Laser colour (wavelength): <b id="hg-r-lam-v"></b></span><input type="range" id="hg-r-lam" min="400" max="700" step="1" aria-labelledby="hg-r-lam-l"></div>
+				<div class="tu-field"><span class="tu-label" id="hg-r-th-l">Reference beam angle: <b id="hg-r-th-v"></b></span><input type="range" id="hg-r-th" min="-60" max="60" step="0.5" aria-labelledby="hg-r-th-l"><span class="tu-note">0° = in-line (Gabor); tilted = off-axis (Leith-Upatnieks).</span></div>
+				<div class="tu-field"><span class="tu-label" id="hg-r-k-l">Beam ratio, reference : object: <b id="hg-r-k-v"></b></span><input type="range" id="hg-r-k" min="-1.3" max="1.3" step="0.01" aria-labelledby="hg-r-k-l"><span class="tu-note">Real holograms use about 3:1 to 10:1 so the fringes stay in the film's straight-line range.</span></div>
+				<div class="tu-field"><span class="tu-label" id="hg-r-z-l">Patch of plate shown: <b id="hg-r-z-v"></b></span><input type="range" id="hg-r-z" min="1" max="4.3" step="0.01" aria-labelledby="hg-r-z-l"><span class="tu-note">Real fringes are about a micrometre apart: zoom out and they blur into grey, as they would for your eye.</span></div>
+				<div class="tu-field"><label class="tu-label" for="hg-r-src">Light source</label><select id="hg-r-src" class="tu-select"></select></div>
+				<div class="tu-field"><span class="tu-label" id="hg-r-dl-l">Extra length of the reference arm: <b id="hg-r-dl-v"></b></span><input type="range" id="hg-r-dl" min="-60" max="60" step="0.05" aria-labelledby="hg-r-dl-l"><span class="tu-note">0 = the reference path equals the path to the middle of the object. Matters only when the light is not a good laser.</span></div>
+			</div>
+			<div class="hg-pts" id="hg-r-pts"></div></div>
+		</section>
+
+		<!-- ============ 2. PLAYBACK ============ -->
+		<section data-panel="view" role="tabpanel" hidden>
+			<p class="tu-note hg-lead">Light the developed plate with the same reference beam and the fringes act like a very complicated diffraction grating. Out of the plate come three waves: the <b>zero order</b> (the reference going straight on), the <b>virtual image</b> (an exact copy of the object's light: you see the object behind the plate, in 3D) and the <b>twin</b> or <b>real image</b>. This tab does the whole thing numerically on a small plate: it records the hologram, lights it, and propagates the light with the angular-spectrum method (FFT). Move the focus to look at different depths; move the camera across the plate to see parallax.</p>
+			<div class="hg-chips" id="hg-v-pre" role="group" aria-label="Object"></div>
+			<div class="hg-wrap"><div class="hg-stage"><canvas id="hg-vi" tabindex="0" role="img" aria-label="What a camera sees through the lit hologram at the chosen focus distance."></canvas>
+				<button type="button" class="hg-fs" data-fs title="Full screen" aria-label="Full screen">⛶</button>
+				<div class="hg-hint" id="hg-v-hint"></div></div></div>
+			<div class="hg-pair">
+				<figure><div class="hg-stage"><canvas id="hg-vh" role="img" aria-label="The recorded hologram (fringes)."></canvas></div><figcaption>The recorded plate (fringes)</figcaption></figure>
+				<figure><div class="hg-stage"><canvas id="hg-vs" tabindex="0" role="img" aria-label="Spectrum of the hologram: the zero order and the two image terms. Click a part to block it or let it through."></canvas></div><figcaption>Its spectrum: click a part to block it</figcaption></figure>
+			</div>
+			<div class="hg-cards" id="hg-v-cards"></div>
+			<div class="tu-card hg-controls"><div class="hg-grid">
+				<div class="tu-field"><span class="tu-label" id="hg-v-f-l">Focus: <b id="hg-v-f-v"></b></span><input type="range" id="hg-v-f" min="-4000" max="4000" step="10" aria-labelledby="hg-v-f-l"><div class="hg-chips hg-chips--sm" id="hg-v-fch" role="group" aria-label="Focus on"></div></div>
+				<div class="tu-field"><span class="tu-label">Light the plate with</span><div class="hg-seg" id="hg-v-light" role="group" aria-label="Playback light"><button type="button" data-v="1">The reference beam</button><button type="button" data-v="-1">The reversed beam</button></div><span class="tu-note">The reversed (phase-conjugate) beam comes from the other side and builds a <b>real image</b> in front of the plate.</span></div>
+				<div class="tu-field"><span class="tu-label">Let through</span><label class="hg-check"><input type="checkbox" id="hg-v-k0"> Zero order</label><label class="hg-check"><input type="checkbox" id="hg-v-k1"> Virtual-image term</label><label class="hg-check"><input type="checkbox" id="hg-v-k2"> Twin (real-image) term</label><span class="tu-note" id="hg-v-knote"></span></div>
+				<div class="tu-field"><span class="tu-label" id="hg-v-th-l">Reference angle when recording: <b id="hg-v-th-v"></b></span><input type="range" id="hg-v-th" min="0" max="12" step="0.25" aria-labelledby="hg-v-th-l"><span class="tu-note">0° = Gabor's in-line hologram: the three waves overlap.</span></div>
+				<div class="tu-field"><span class="tu-label" id="hg-v-k-l">Beam ratio, reference : object: <b id="hg-v-k-v"></b></span><input type="range" id="hg-v-k" min="0" max="1.5" step="0.01" aria-labelledby="hg-v-k-l"></div>
+				<div class="tu-field"><label class="hg-check"><input type="checkbox" id="hg-v-cam"> Look through a small camera opening (shows parallax)</label>
+					<span class="tu-label" id="hg-v-eu-l">Camera left / right: <b id="hg-v-eu-v"></b></span><input type="range" id="hg-v-eu" min="-1" max="1" step="0.01" aria-labelledby="hg-v-eu-l">
+					<span class="tu-label" id="hg-v-ev-l">Camera up / down: <b id="hg-v-ev-v"></b></span><input type="range" id="hg-v-ev" min="-1" max="1" step="0.01" aria-labelledby="hg-v-ev-l">
+					<span class="tu-label" id="hg-v-er-l">Opening size: <b id="hg-v-er-v"></b></span><input type="range" id="hg-v-er" min="0.08" max="0.5" step="0.01" aria-labelledby="hg-v-er-l"></div>
+				<div class="tu-field"><span class="tu-label" id="hg-v-g-l">Brightness: <b id="hg-v-g-v"></b></span><input type="range" id="hg-v-g" min="0.2" max="1" step="0.01" aria-labelledby="hg-v-g-l">
+					<label class="hg-check"><input type="checkbox" id="hg-v-diff"> Rough (diffuse) surface: makes speckle</label>
+					<label class="hg-check"><input type="checkbox" id="hg-v-mk"> Mark where the object really was</label>
+					<span class="tu-label">Plate size (grid)</span><div class="hg-seg" id="hg-v-n" role="group" aria-label="Grid"><button type="button" data-v="128">128²</button><button type="button" data-v="256">256²</button><button type="button" data-v="512">512²</button></div><span class="tu-note">A bigger plate gives a sharper image (resolution ≈ λz / plate width).</span></div>
+			</div></div>
+		</section>
+
+		<!-- ============ COHERENCE ============ -->
+		<section data-panel="coh" role="tabpanel" hidden>
+			<p class="tu-note hg-lead">Fringes only form if the two beams are <b>coherent</b>: if the light that went the long way still keeps step with the light that went the short way. Real light comes in wave trains about one <b>coherence length</b> long, <span class="mes-tex">\(L_c = \lambda^2 / \Delta\lambda\)</span>. When the path difference grows past that, the fringe contrast fades to nothing. That is why holograms need lasers, and why the object's depth is limited.</p>
+			<div class="hg-wrap"><div class="hg-stage"><canvas id="hg-c" tabindex="0" role="img" aria-label="Two wave trains with a path difference, the fringes they make, and the fringe contrast against the path difference. Drag on the curve to change the path difference."></canvas>
+				<button type="button" class="hg-fs" data-fs title="Full screen" aria-label="Full screen">⛶</button>
+				<div class="hg-hint">Drag on the curve</div></div></div>
+			<div class="hg-cards" id="hg-c-cards"></div>
+			<div class="tu-card hg-controls"><div class="hg-grid">
+				<div class="tu-field"><label class="tu-label" for="hg-c-src">Light source</label><select id="hg-c-src" class="tu-select"></select></div>
+				<div class="tu-field"><span class="tu-label" id="hg-c-w-l">Spectral width Δλ: <b id="hg-c-w-v"></b></span><input type="range" id="hg-c-w" min="-9" max="-0.3" step="0.01" aria-labelledby="hg-c-w-l"><span class="tu-note">Log scale. A narrower colour band = longer wave trains.</span></div>
+				<div class="tu-field"><span class="tu-label" id="hg-c-x-l">Path difference: <b id="hg-c-x-v"></b></span><input type="range" id="hg-c-x" min="0" max="2.5" step="0.005" aria-labelledby="hg-c-x-l"><span class="tu-note">In coherence lengths.</span></div>
+				<div class="tu-field"><span class="tu-label" id="hg-c-m-l">Movement during the exposure: <b id="hg-c-m-v"></b></span><input type="range" id="hg-c-m" min="0" max="400" step="1" aria-labelledby="hg-c-m-l"><span class="tu-note">A steady drift of the object (or a mirror) toward the plate. Light goes there and back, so a move of λ/2 shifts the fringes a whole period.</span></div>
+			</div></div>
+			<div class="tu-card"><h3>Typical light sources</h3><div class="hg-tw"><table class="hg-table" id="hg-c-tab"></table></div><p class="tu-note">Ballpark figures: real lasers vary a lot. The deepest scene you can record is about half the coherence length, because light reaching the back of the object travels farther than light reaching the front (and the reference path is matched to the middle).</p></div>
+		</section>
+
+		<!-- ============ TYPES ============ -->
+		<section data-panel="types" role="tabpanel" hidden>
+			<p class="tu-note hg-lead">Every true hologram records interference fringes, but the way the beams meet decides what you need to see it: a laser, a lamp, or just daylight. Pick a type.</p>
+			<div class="hg-chips" id="hg-t-list" role="tablist" aria-label="Types of holograms"></div>
+			<div class="hg-wrap"><div class="hg-stage"><canvas id="hg-t" tabindex="0" role="img" aria-label="Diagram of how this type of hologram is made and seen."></canvas>
+				<button type="button" class="hg-fs" data-fs title="Full screen" aria-label="Full screen">⛶</button>
+				<div class="hg-hint" id="hg-t-hint"></div></div></div>
+			<div class="hg-cards" id="hg-t-cards"></div>
+			<div class="tu-card hg-controls"><h3 id="hg-t-title"></h3><div class="hg-ttext" id="hg-t-text"></div><div class="hg-grid" id="hg-t-ctl"></div></div>
+			<div class="tu-card"><h3>The types side by side</h3><div class="hg-tw"><table class="hg-table">
+				<thead><tr><th>Type</th><th>Beams when recording</th><th>Lit by</th><th>Colour</th><th>Parallax</th><th>Examples</th></tr></thead>
+				<tbody>
+					<tr><td>In-line (Gabor, 1948)</td><td>One beam: the light that misses the object is the reference</td><td>Laser</td><td>Laser colour</td><td>Some; the twin image is in the way</td><td>Electron and X-ray holography, particle holography</td></tr>
+					<tr><td>Off-axis transmission (Leith-Upatnieks, 1962)</td><td>Both on the same side, at an angle</td><td>Laser from behind</td><td>Laser colour (white light smears into a rainbow)</td><td>Full: left-right and up-down</td><td>Museum and lab holograms, holographic interferometry</td></tr>
+					<tr><td>Reflection (Denisyuk, 1962)</td><td>From opposite sides</td><td>A small white lamp from the front</td><td>Picked by the layers (Bragg): one colour</td><td>Full</td><td>Display holograms, Lippmann photographs</td></tr>
+					<tr><td>Rainbow (Benton, 1968)</td><td>Same side, through a slit (a hologram of a hologram)</td><td>White light from behind (or mirror-backed)</td><td>Changes with eye height</td><td>Left-right only</td><td>Credit cards, book covers</td></tr>
+					<tr><td>Embossed</td><td>A rainbow master copied as a surface relief</td><td>Daylight, reflected off a metal coat</td><td>Rainbow colours</td><td>Left-right, often just a few views</td><td>Banknotes, passports, stickers</td></tr>
+					<tr><td>Computer-generated</td><td>None: the fringes are calculated</td><td>Laser</td><td>Laser colour</td><td>As designed</td><td>Laser projectors, optical tweezers, AR glasses</td></tr>
+					<tr><td>Pepper's ghost (not a hologram)</td><td>None: a sheet of glass reflects a hidden lit figure or screen</td><td>Its own light</td><td>Any</td><td>None: a flat picture</td><td>Stage "holograms", museum ghosts, teleprompters</td></tr>
+				</tbody></table></div></div>
+		</section>
+
+		<!-- ============ CGH ============ -->
+		<section data-panel="cgh" role="tabpanel" hidden>
+			<p class="tu-note hg-lead">You do not need an object to make a hologram: a computer can work out the fringes. Draw a picture on the left pad. The <b>Gerchberg-Saxton</b> algorithm then searches for a <b>phase-only</b> hologram (it changes only the delay of the light, not its brightness, like a liquid-crystal display used in laser projectors) whose far-field light pattern is your picture. It jumps between the hologram and the picture, keeping the phase it found and putting back what it knows each time.</p>
+			<div class="hg-chips" id="hg-g-pre" role="group" aria-label="Pictures"></div>
+			<div class="hg-wrap"><div class="hg-stage"><canvas id="hg-g" tabindex="0" role="img" aria-label="Drawing pad, the computed phase hologram, the light pattern it makes, and the error after each step. Draw on the pad."></canvas>
+				<button type="button" class="hg-fs" data-fs title="Full screen" aria-label="Full screen">⛶</button>
+				<div class="hg-hint">Draw on the pad</div></div></div>
+			<div class="hg-run" role="group" aria-label="Run"><button type="button" class="tu-btn tu-btn--primary" id="hg-g-run">▶ Compute the hologram</button><button type="button" class="tu-btn tu-btn--ghost" id="hg-g-new">New random start</button><button type="button" class="tu-btn tu-btn--ghost" id="hg-g-clear">Clear the pad</button><button type="button" class="tu-btn tu-btn--ghost" id="hg-g-save">Save hologram (PNG)</button></div>
+			<div class="hg-cards" id="hg-g-cards"></div>
+			<div class="tu-card hg-controls"><div class="hg-grid">
+				<div class="tu-field"><span class="tu-label">Pen</span><div class="hg-seg" id="hg-g-pen" role="group" aria-label="Pen"><button type="button" data-v="1">Draw</button><button type="button" data-v="0">Erase</button></div></div>
+				<div class="tu-field"><label class="tu-label" for="hg-g-lv">Phase steps the device can show</label><select id="hg-g-lv" class="tu-select"><option value="0">Any phase (continuous)</option><option value="16">16 steps</option><option value="8">8 steps</option><option value="4">4 steps</option><option value="2">2 steps (binary: 0 or π)</option></select><span class="tu-note">With 2 steps a mirror-image twin appears, as bright as the picture.</span></div>
+				<div class="tu-field"><span class="tu-label" id="hg-g-it-l">Steps (iterations): <b id="hg-g-it-v"></b></span><input type="range" id="hg-g-it" min="1" max="200" step="1" aria-labelledby="hg-g-it-l"></div>
+				<div class="tu-field"><span class="tu-label" id="hg-g-d-l">Phase depth the device really gives: <b id="hg-g-d-v"></b></span><input type="range" id="hg-g-d" min="40" max="100" step="1" aria-labelledby="hg-g-d-l"><span class="tu-note">Below 100 % some light is not steered at all and makes a bright zero-order spot in the middle.</span></div>
+				<div class="tu-field"><label class="hg-check"><input type="checkbox" id="hg-g-off"> Put the picture off-centre (away from the zero order)</label></div>
+			</div></div>
+		</section>
+
+		<div class="tu-seo">
+			<h2>How holograms work</h2>
+			<p>A normal photograph records only how bright the light was at each point. A <b>hologram</b> also records the light's <b>phase</b>: how far along its wave cycle it was. Film can only record brightness, so Dennis Gabor's trick (1948) was to add a second, simple wave, the <b>reference</b>, and record the interference of the two. The bright and dark fringes encode the phase: where the object's light was in step with the reference, the film is exposed; where it was out of step, it is not. Lighting the developed film with the reference again diffracts the light back into a copy of the object's wave, so you see the object in full 3D, with parallax, focus and depth, as if it were still there.</p>
+			<div class="hg-eq" role="math" aria-label="Key equations">
+				<div><span class="hg-eq__n">recorded intensity</span> <span class="hg-eq__f mes-tex">\(\displaystyle I = |R+O|^2 = |R|^2 + |O|^2 + R^{*}O + R\,O^{*}\)</span></div>
+				<div><span class="hg-eq__n">playback with R</span> <span class="hg-eq__f mes-tex">\(\displaystyle R\,I = R\left(|R|^2+|O|^2\right) + |R|^2\,O + R^2\,O^{*}\)</span></div>
+				<div><span class="hg-eq__n">fringe spacing</span> <span class="hg-eq__f mes-tex">\(\displaystyle d = \frac{\lambda}{2\sin(\theta/2)}\)</span></div>
+				<div><span class="hg-eq__n">coherence length</span> <span class="hg-eq__f mes-tex">\(\displaystyle L_c = \frac{\lambda^2}{\Delta\lambda}\)</span></div>
+				<div><span class="hg-eq__n">Bragg (reflection)</span> <span class="hg-eq__f mes-tex">\(\displaystyle \lambda = 2\,n\,\Lambda\cos\theta\)</span></div>
+				<div><span class="hg-eq__n">angular spectrum</span> <span class="hg-eq__f mes-tex">\(\displaystyle U(z) = \mathcal{F}^{-1}\!\left[\mathcal{F}[U(0)]\;e^{\,i2\pi z\sqrt{1/\lambda^2 - f_x^2 - f_y^2}}\right]\)</span></div>
+			</div>
+			<p>In the playback equation the middle term <span class="mes-tex">\(|R|^2 O\)</span> is the object's own wave (the <b>virtual image</b>), the last term is its mirror twin (the <b>real image</b>, which focuses in front of the plate) and the first is the <b>zero order</b>. Gabor's in-line holograms had all three on top of each other. Emmett Leith and Juris Upatnieks (1962) tilted the reference beam so the three leave the plate in different directions: the start of practical holography.</p>
+			<h3>Things to try</h3>
+			<ul>
+				<li><b>Recording:</b> zoom in until single fringes show, then change the reference angle: a steeper angle packs the fringes closer (λ / sin θ). Holographic film has to resolve thousands of lines per millimetre.</li>
+				<li><b>Recording:</b> choose the red LED as the light source. The fringes vanish unless the reference path matches the object path to within a few tens of micrometres.</li>
+				<li><b>Playback:</b> focus on each point in turn: only one is sharp at a time, because the image really is 3D. Then turn on the camera opening and move it: near and far points shift against each other (parallax).</li>
+				<li><b>Playback:</b> set the reference angle to 0°. Now the twin image and the zero order sit on top of the picture and the spectrum filter cannot separate them: Gabor's twin-image problem.</li>
+				<li><b>Reflection hologram:</b> tilt it and the colour moves toward blue; shrink the emulsion and a red-recorded hologram plays back green.</li>
+				<li><b>Computer-generated:</b> switch to 2 phase steps and watch the upside-down twin appear.</li>
+			</ul>
+			<h3>Things people ask</h3>
+			<ul>
+				<li><b>Are stage "holograms" of singers real holograms?</b> No. They are Pepper's ghost: a sheet of glass or foil reflects a bright video screen hidden below the stage. It is a flat picture with no recorded fringes and no true depth.</li>
+				<li><b>Why are credit-card holograms rainbow-coloured?</b> They are embossed rainbow holograms: thin surface ridges that act as a diffraction grating, so each colour leaves at a different angle. Benton's slit trick throws away up-down parallax so that each colour makes a sharp image at its own eye height.</li>
+				<li><b>Why can a reflection hologram be seen with a lamp?</b> Its fringes are layers through the depth of the emulsion, spaced about half a wavelength apart. Like the scales of a butterfly, they reflect only the colour that fits the spacing (Bragg's law), so the hologram picks its own narrow band out of white light.</li>
+				<li><b>If I cut a hologram in half, do I lose half the picture?</b> No: every part of the plate received light from every point of the object. You get the whole scene through a smaller window, with less parallax and a little less sharpness (try a small camera opening in the Playback tab).</li>
+				<li><b>What is modelled here?</b> Scalar waves in the paraxial and non-paraxial (angular spectrum) sense, a film whose transmission is proportional to the light it received, and a partially coherent source with a Gaussian spectrum. Not modelled: polarisation, film grain and non-linearity, the thickness of transmission holograms (except in the reflection-hologram section, which uses Kogelnik's coupled-wave formula).</li>
+			</ul>
+			<p>Everything runs on your device; nothing is uploaded. <a href="/negative-index?tab=diff">Diffraction calculator</a> · <a href="/light-in-a-medium">Light in a Medium</a> · <a href="/michelson-morley-experiment">Michelson-Morley interferometer</a> · <a href="/electromagnetic-fields-simulator?tab=wv">Electromagnetic waves</a> · <a href="/tools">More MES tools</a></p>
+		</div>
+		<script src="/main_js/mes-math.js" defer></script>
+	</div>

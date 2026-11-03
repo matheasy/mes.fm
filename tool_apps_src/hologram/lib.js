@@ -129,10 +129,18 @@
 		var dm = (fu + fR) * (fu + fR) + fv * fv, dp = (fu - fR) * (fu - fR) + fv * fv;
 		if (d0 <= dm && d0 <= dp) return 0; return dm < dp ? 1 : -1;
 	};
+	// the plate's edges faded out smoothly (a Tukey window, `edge` = share of the width at each side), so a sharp plate border does not throw "+" shaped streaks
+	H.soften = function (Hh, N, edge) {
+		var out = Float64Array.from(Hh); if (!(edge > 0)) return out;
+		var w = new Float64Array(N), m = Math.max(1, Math.round(edge * N)), i, x, y;
+		for (i = 0; i < N; i++) { var d = Math.min(i, N - 1 - i); w[i] = d >= m ? 1 : 0.5 - 0.5 * Math.cos(PI * d / m); }
+		for (y = 0; y < N; y++) for (x = 0; x < N; x++) out[y * N + x] *= w[x] * w[y];
+		return out;
+	};
 	// the illuminated plate: U = filter(H) × light × pupil. light: +1 = the reference beam again, −1 = its reversed (phase-conjugate) twin. keep = {0: bool, 1: bool, "-1": bool}
 	// pupil = {u, v, r} (a camera aperture on the plate, µm) or null. Returns the spectrum of U (ready for H.propagateSpectrum).
 	H.illuminate = function (opt, Hh, keep, light, pupil) {
-		var N = opt.N, dx = opt.dx, n2 = N * N, re = Float64Array.from(Hh), im = new Float64Array(n2), x, y, i;
+		var N = opt.N, dx = opt.dx, n2 = N * N, re = H.soften(Hh, N, opt.edge == null ? 0.1 : opt.edge), im = new Float64Array(n2), x, y, i;
 		H.fft2(re, im, N, false);
 		var fR = H.lobeCentre(opt.lam, opt.thetaR || 0), rDC = opt.rDC || 0;
 		if (keep && !(keep[0] && keep[1] && keep[-1])) for (y = 0; y < N; y++) { var fv = H.freq(y, N, dx); for (x = 0; x < N; x++) { var l = H.lobeOf(H.freq(x, N, dx), fv, fR, rDC); if (!keep[l]) { i = y * N + x; re[i] = 0; im[i] = 0; } } }
