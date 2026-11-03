@@ -1,0 +1,98 @@
+		<nav class="pt-switch" aria-label="Other practice tests">
+			<a href="/fsa-grade-4-numeracy" data-k="4-numeracy">Grade 4 Numeracy</a><a href="/fsa-grade-4-literacy" data-k="4-literacy">Grade 4 Literacy</a><a href="/fsa-grade-7-numeracy" data-k="7-numeracy">Grade 7 Numeracy</a><a href="/fsa-grade-7-literacy" data-k="7-literacy">Grade 7 Literacy</a>
+		</nav>
+
+		<!-- ============ START ============ -->
+		<section id="pt-start" class="pt-screen">
+			<div class="tu-card pt-resume" id="pt-resume" hidden>
+				<div><b>You have a test in progress.</b> <span id="pt-resume-txt"></span></div>
+				<div class="pt-row"><button type="button" class="tu-btn tu-btn--primary pt-big-btn" id="pt-resume-go">Continue</button><button type="button" class="tu-btn tu-btn--ghost" id="pt-resume-drop">Start over</button></div>
+			</div>
+			<div class="tu-card">
+				<h2 class="pt-h2">Choose a practice test</h2>
+				<div class="pt-optrow">
+					<span class="pt-optlab" id="pt-l-mode">Test</span>
+					<div class="pt-modes" role="radiogroup" aria-labelledby="pt-l-mode">
+						<button type="button" role="radio" data-mode="full" aria-checked="false"><b>Full test</b><span id="pt-full-len"></span></button>
+						<button type="button" role="radio" data-mode="quick" aria-checked="false"><b>Quick 10</b><span id="pt-quick-len"></span></button>
+						<button type="button" role="radio" data-mode="topic" aria-checked="false"><b>Practise a topic</b><span>See the answer after each question</span></button>
+					</div>
+				</div>
+				<div class="pt-optrow" id="pt-topics-row" hidden>
+					<span class="pt-optlab" id="pt-l-top">Topics</span>
+					<div class="tu-chips pt-topics" id="pt-topics" role="group" aria-labelledby="pt-l-top"></div>
+				</div>
+				<div class="pt-optrow">
+					<span class="pt-optlab" id="pt-l-diff">Difficulty</span>
+					<div class="tu-seg pt-seg" id="pt-diff" role="group" aria-labelledby="pt-l-diff">
+						<button type="button" data-d="mixed" aria-pressed="true">Mixed</button><button type="button" data-d="easy" aria-pressed="false">Easy</button><button type="button" data-d="medium" aria-pressed="false">Medium</button><button type="button" data-d="hard" aria-pressed="false">Hard</button>
+					</div>
+				</div>
+				<div class="pt-optrow pt-checks">
+					<label><input type="checkbox" id="pt-o-timer" checked> Show the timer</label>
+					<label><input type="checkbox" id="pt-o-fb"> Show the answer after each question</label>
+				</div>
+				<details class="pt-code">
+					<summary>Use a test code (to get the same questions again)</summary>
+					<div class="pt-row"><label for="pt-code">Test code</label><input id="pt-code" class="tu-input" type="text" inputmode="numeric" autocomplete="off" maxlength="9" placeholder="e.g. 482915"></div>
+					<p class="pt-small">Every test has a code. Give the same code to a friend or class and everyone gets the same questions. Leave it empty for new questions.</p>
+				</details>
+				<div class="pt-row pt-startrow">
+					<button type="button" class="tu-btn tu-btn--primary pt-big-btn" id="pt-go">Start the test</button>
+					<button type="button" class="tu-btn tu-btn--ghost" id="pt-printblank">🖨 Print a test with answer key</button>
+				</div>
+			</div>
+			<div class="tu-card" id="pt-hist" hidden>
+				<h2 class="pt-h2">Your results on this page</h2>
+				<div id="pt-hist-list"></div>
+			</div>
+		</section>
+
+		<!-- ============ TEST ============ -->
+		<section id="pt-run" class="pt-screen" hidden>
+			<div class="pt-bar" id="pt-bar">
+				<div class="pt-prog"><span id="pt-prog-txt"></span><div class="pt-progbar" aria-hidden="true"><i id="pt-prog-fill"></i></div></div>
+				<span class="pt-clock" id="pt-clock" aria-label="Time taken"></span>
+				<button type="button" class="tu-btn tu-btn--ghost pt-sm" id="pt-mapbtn" aria-expanded="false" aria-controls="pt-map">Questions</button>
+				<button type="button" class="tu-btn pt-sm" id="pt-finish">Finish</button>
+			</div>
+			<div class="pt-map" id="pt-map" hidden></div>
+			<div class="pt-layout" id="pt-layout">
+				<aside class="pt-passage" id="pt-passage" hidden>
+					<details open id="pt-pdet"><summary id="pt-ptitle">Read the passage</summary><div class="pt-ptext" id="pt-ptext"></div></details>
+				</aside>
+				<div class="tu-card pt-qcard" id="pt-qcard">
+					<div class="pt-meta" id="pt-meta"></div>
+					<h2 class="pt-qn" id="pt-qn" tabindex="-1"></h2>
+					<div class="pt-q" id="pt-q"></div>
+					<div class="pt-ans" id="pt-ans"></div>
+					<div class="pt-fb" id="pt-fb" aria-live="polite"></div>
+					<div class="pt-nav">
+						<button type="button" class="tu-btn tu-btn--ghost" id="pt-prev">← Back</button>
+						<button type="button" class="tu-btn tu-btn--ghost" id="pt-flag" aria-pressed="false">⚑ Mark for review</button>
+						<button type="button" class="tu-btn" id="pt-check" hidden>Check</button>
+						<button type="button" class="tu-btn tu-btn--primary" id="pt-next">Next →</button>
+					</div>
+				</div>
+			</div>
+		</section>
+
+		<!-- ============ RESULTS ============ -->
+		<section id="pt-res" class="pt-screen" hidden>
+			<div class="tu-card pt-score" id="pt-score"></div>
+			<div class="tu-card">
+				<h2 class="pt-h2">Score by topic</h2>
+				<div id="pt-bytopic"></div>
+			</div>
+			<div class="pt-row pt-resact">
+				<button type="button" class="tu-btn tu-btn--primary" id="pt-again">New test</button>
+				<button type="button" class="tu-btn" id="pt-retake">Same questions again</button>
+				<button type="button" class="tu-btn" id="pt-print">🖨 Print or save as PDF</button>
+				<button type="button" class="tu-btn tu-btn--ghost" id="pt-copy">Copy my results</button>
+			</div>
+			<div class="tu-card">
+				<div class="pt-revhead"><h2 class="pt-h2">Review every question</h2>
+					<div class="tu-seg pt-seg" id="pt-revf" role="group" aria-label="Which questions to show"><button type="button" data-f="all" aria-pressed="true">All</button><button type="button" data-f="wrong" aria-pressed="false">Missed only</button></div></div>
+				<div id="pt-review"></div>
+			</div>
+		</section>

@@ -2,6 +2,14 @@
  "generated": "2026-11-02",
  "calculators": [
   {
+   "href": "/practice-tests",
+   "title": "Practice Tests (FSA Style)",
+   "icon": "/img/practice-tests-logo.png",
+   "desc": "Grade 4 and 7 numeracy and reading practice with new questions every time and every answer explained.",
+   "added": "2026-11-02",
+   "kind": "calculator"
+  },
+  {
    "href": "/bending-stress-calculator",
    "title": "Bending Stress & Beam Calculator",
    "icon": "/img/bending-stress-calculator-logo.png",
@@ -88,17 +96,17 @@
    "desc": "Bolts and pins in single or double shear, punching, and twisted shafts.",
    "added": "2026-10-20",
    "kind": "calculator"
-  },
-  {
-   "href": "/tensile-test-simulator",
-   "title": "Tensile Test Simulator",
-   "icon": "/img/tensile-test-simulator-logo.png",
-   "desc": "Pull a bar until it breaks and watch the stress-strain curve, necking and toughness.",
-   "added": "2026-10-20",
-   "kind": "calculator"
   }
  ],
  "tools": [
+  {
+   "href": "/hologram",
+   "title": "Hologram Simulator",
+   "icon": "/img/hologram-logo.png",
+   "desc": "Record interference fringes live, play the hologram back with real wave optics, see parallax and the twin image, compare hologram types and compute a phase hologram of your drawing.",
+   "added": "2026-11-02",
+   "kind": "tool"
+  },
   {
    "href": "/gallery",
    "title": "Gallery",
@@ -186,17 +194,25 @@
    "desc": "Every MES video since 2011 with its links on YouTube, Hive, 3Speak, Rumble, Odysee, BitChute and Telegram. Search, filter by series or site, sort and share.",
    "added": "2026-10-30",
    "kind": "tool"
-  },
-  {
-   "href": "/kids",
-   "title": "MES Kids",
-   "icon": "/img/kids-logo.png",
-   "desc": "Talking flashcards for toddlers: animals with real animal sounds, ABC, shapes, colours and counting, with a gentle What’s this? game. Kid-proof full screen, no ads.",
-   "added": "2026-10-29",
-   "kind": "tool"
   }
  ],
  "latest": [
+  {
+   "href": "/practice-tests",
+   "title": "Practice Tests (FSA Style)",
+   "icon": "/img/practice-tests-logo.png",
+   "desc": "Grade 4 and 7 numeracy and reading practice with new questions every time and every answer explained.",
+   "added": "2026-11-02",
+   "kind": "calculator"
+  },
+  {
+   "href": "/hologram",
+   "title": "Hologram Simulator",
+   "icon": "/img/hologram-logo.png",
+   "desc": "Record interference fringes live, play the hologram back with real wave optics, see parallax and the twin image, compare hologram types and compute a phase hologram of your drawing.",
+   "added": "2026-11-02",
+   "kind": "tool"
+  },
   {
    "href": "/gallery",
    "title": "Gallery",
@@ -242,22 +258,6 @@
    "title": "Neuron Simulator",
    "icon": "/img/neuron-simulator-logo.png",
    "desc": "The Hodgkin-Huxley action potential, nerve conduction with myelin and MS, EPSP summation, the neuromuscular junction and a Nernst / Goldman calculator.",
-   "added": "2026-10-31",
-   "kind": "tool"
-  },
-  {
-   "href": "/heart-simulator",
-   "title": "Heart Simulator",
-   "icon": "/img/heart-simulator-logo.png",
-   "desc": "An animated heart synced to a Wiggers diagram, pressure-volume loops with disease presets, an ECG rhythm trainer with calipers and a hemodynamics calculator.",
-   "added": "2026-10-31",
-   "kind": "tool"
-  },
-  {
-   "href": "/polls",
-   "title": "Polls",
-   "icon": "/img/polls-logo.png",
-   "desc": "Make a poll in seconds and share one short link: one or several picks, a closing time, live result bars and a pie chart. No sign-up.",
    "added": "2026-10-31",
    "kind": "tool"
   }
