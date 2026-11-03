@@ -197,16 +197,6 @@ const PAGES = [
     tileLabel: "Dr. Judy Wood's Rebuttal",
   },
   {
-    // Tile only: links to the mirror of MES Livestream 143 (9/11 Spooky Halloween Special, hand-made page, not generated here).
-    // Icon = img/livestream-143-911-spooks-icon.jpg, the stream thumbnail fitted whole onto a blurred 900x600 copy of itself;
-    // bump iconVersion if replaced.
-    slug: "livestream-143-911-spooks",
-    href: "/livestream-143-911-spooks",
-    iconVersion: 1,
-    tileOnly: true,
-    tileLabel: "Livestream 143: 9/11 Spooky Halloween Special",
-  },
-  {
     // Tile only: links to the Bob Greenyer hub (mes.fm/bg). Moved here from mes.fm/911. Icon = img/bg-icon.jpg, a 900x600 crop of
     // img/bg-logo-big.jpg.
     slug: "bg",
@@ -223,6 +213,16 @@ const PAGES = [
     iconVersion: 1,
     tileOnly: true,
     tileLabel: "Andrew Johnson's 9/11 Books",
+  },
+  {
+    // Tile only: no page is written. Links to the "9/11 Spooks" chip of mes.fm/livestreams (CATEGORIES id "spooks" in
+    // livestreams/build.mjs). Icon = img/911spooks-livestreams-icon.jpg, a 900x600 crop of the newest spook stream's
+    // thumbnail (Livestream 143); refresh it by hand (and bump iconVersion) when a newer one goes up.
+    slug: "911spooks-livestreams",
+    href: "/livestreams#spooks",
+    iconVersion: 1,
+    tileOnly: true,
+    tileLabel: "MES Livestreams",
   },
 ];
 addAllPage(SECTIONS, PAGES, { hub: "911spooks", name: "9/11 Spooks", withSectionChips: true });

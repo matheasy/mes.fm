@@ -77,7 +77,7 @@ const MIRRORS = {
 // Stats-screen pages (the Stats tab), newest first. `cats` are the filter chip ids (CATEGORIES) the stream
 // belongs to, so the chips filter this tab too: 141 is a Hutchison Effect stream, 140 is 9/11 Truth + MES Truth (both had Dr. Judy Wood on).
 const STATS = [
-  { href: "https://mes.fm/livestream-143-stats", title: "143: Stats", cats: "911 mestruth" },
+  { href: "https://mes.fm/livestream-143-stats", title: "143: Stats", cats: "911 spooks mestruth" },
   { href: "https://mes.fm/livestream-142-stats", title: "142: Stats", cats: "mestruth" },
   { href: "https://mes.fm/livestream-141-stats", title: "141: Stats", cats: "hutchison judywood" },
   { href: "https://mes.fm/livestream-140-stats", title: "140: Stats", cats: "911 mestruth judywood" },
@@ -94,6 +94,8 @@ const CATEGORIES = [
   { id: "hutchison", label: "Hutchison Effect", test: (v) => /hutchison/i.test(v.title), playlist: "https://www.youtube.com/playlist?list=PLai3U8-WIK0GlfVj5AYNtbF688pr8fk9X" },
   { id: "911", label: "9/11 Truth", test: (v) => /9\/11|\bWTC\b|towers|judy wood/i.test(v.title), playlist: "https://www.youtube.com/playlist?list=PLai3U8-WIK0G_HHWt33moIqEeUBP3cgCh" },
   { id: "judywood", label: "Dr. Judy Wood", test: (v) => /judy wood/i.test(v.title) },
+  // 9/11 Spooks = streams exposing 9/11 disinfo agents / spooks (mes.fm/911spooks links this chip as /livestreams#spooks).
+  { id: "spooks", label: "9/11 Spooks", test: (v) => /spook|disinfo/i.test(v.title) },
   { id: "planes", label: "9/11 Planes Research", test: (v) => /planes research/i.test(v.title) },
   { id: "mh370", label: "MH370", test: (v) => /mh370/i.test(v.title), playlist: "https://www.youtube.com/playlist?list=PLai3U8-WIK0EJGgDKXr-wW8z1jd7pZ069" },
   { id: "beneficence", label: "BeneficenceTV", test: (v) => /beneficence/i.test(v.title), playlist: "https://www.youtube.com/playlist?list=PLai3U8-WIK0EbRnMsUBx2RxlerL7GQuLX" },
@@ -108,6 +110,7 @@ const CATEGORIES = [
 const EXTRA_CATS = {
   lRxpPXnrLgo: ["911", "planes", "mestruth"], // Trailer for 55 (Debbie Welsh, UA93): about 9/11 planes research, shown with MES Truth
   PiJhwXKbRNU: ["911", "planes", "mestruth"], // Trailer for 130 (Impossible Crash Physics on 9/11): same as the 55 trailer
+  xLe2uhz4ANs: ["spooks"], // 42 (Bob Greenyer): unlisted as Bob is a spook (mes.fm/bg, on the 9/11 Spooks hub)
   Sde1DG0JhyA: ["judywood"], // 140 (Real 9/11 Avengers Meetup): Dr. Judy Wood was on the show
   Bzxr55VZ6OI: ["judywood"], // 141 (John Hutchison & Tom Sky): Dr. Judy Wood was on the show
   "1z-OrtI-rzI": ["judywood"], // 108 (Turning the Tide on 9/11 Disinformation Agents): its trailer is "Disinfo Agents Triggered by Dr. Judy Wood"
