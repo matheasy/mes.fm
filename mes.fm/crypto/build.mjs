@@ -54,10 +54,10 @@ const PAGES = [
     slug: "crypto-posts",
     sectionId: "crypto-posts",
     tileLabel: "Posts",
-    iconVersion: 2, // icon = crop of the newest post's image (img/crypto-posts-icon.jpg); bump when refreshed
+    iconVersion: 3, // icon = crop of the newest post's image (img/crypto-posts-icon.jpg); bump when refreshed
     title: "MES Crypto: Posts",
     description:
-      "MES crypto posts: Canada's first stablecoin CADD on Solana, 3Speak sharing ad revenue, the S&P 500 vs oil, Alex Jones on XRP and a $320M Bitcoin hack, the Hyperliquid flagged wallet, and getting the funds out with Claude AI.",
+      "MES crypto posts: MES Premium (no ads on mes.fm for 1 HBD a month), Canada's first stablecoin CADD on Solana, 3Speak sharing ad revenue, the S&P 500 vs oil, Alex Jones on XRP and a $320M Bitcoin hack, the Hyperliquid flagged wallet, and getting the funds out with Claude AI.",
   },
   {
     slug: "blockchain-tutorials",
@@ -67,6 +67,15 @@ const PAGES = [
     title: "MES Crypto: Blockchain Tutorials",
     description:
       "MES blockchain tutorials: Hive overview and sign-up, Blockchain: The Big Picture (what do you own, tokenization), Bitcoin and cryptography overview, Steemit tutorials and an AI YouTube-summary agent on Hive.",
+  },
+  {
+    // Tile only: no page is written. MES Premium (mes.fm/premium: no ads for 1 HBD a month); icon = img/premium-icon.jpg (Grok art).
+    slug: "premium",
+    href: "/premium",
+    icon: "premium",
+    tileLabel: "Premium: No Ads",
+    iconVersion: 1,
+    tileOnly: true,
   },
   {
     // Tile only: no page is written. MES Market Signals (mes.fm/signals, a build_tool_apps.py tool page); icon = img/signals-icon.jpg (Grok art, 2026-10-24).
