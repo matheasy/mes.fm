@@ -449,7 +449,7 @@ APPS = {
     "heart-simulator": dict(title="MES Heart Simulator", page_title="Heart Simulator: Cardiac Cycle, Wiggers Diagram, PV Loop and ECG Rhythms",
                             tag="Every valve, every wave, every beat.", accent="#be123c", dark="#9f1239", tint="#ffe4e6",
                             desc="A free heart and circulation simulator for students and health professionals: an animated heart synced to a Wiggers diagram, pressure-volume loops with preload, afterload and contractility sliders and disease presets, an ECG rhythm trainer with calipers, QTc and a quiz, and a hemodynamics calculator.",
-                            js_v="1"),
+                            js_v="2"),
     # Hutchison Effect Simulator (2026-10-26): top-down lab floor of John Hutchison's apparatus (Tesla coils, Van de Graaff, RF, spark gaps, tanks, inductors, field shaper ...), field superposition
     # heat maps (drive / |E| / |B| / overlap / standing waves / glitch risk / animated), samples with best-estimate effect rates (levitation, jelly metal, fracturing ...), target camera, schematic + equipment views.
     # (lib.js = MESHut, node-tested: tool_apps_src/hutchison-effect-simulator-tests.js.) Normal-width page in the tools sidebar collection, Wide by default.

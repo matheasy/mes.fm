@@ -68,6 +68,27 @@
 	chk("hs-o-ph", "ph"); chk("hs-o-ev", "ev"); chk("hs-o-la", "la"); chk("hs-o-lines", "lines", paintPV); chk("hs-o-ea", "ea", paintPV);
 
 	/* ---------- canvas sizing (works with stage-ctl's View bar: fixed aspect per stage) ---------- */
+	/* Finger-friendly dragging: the stages use touch-action:pan-y, so an up/down swipe always scrolls the page.
+	   Mouse and pen drag at once; a finger only takes over once the move is clearly sideways (or on a plain tap). */
+	function hdrag(cv, h) {
+		var id = null, on = false, sx = 0, sy = 0;
+		function begin(e) { on = true; h.down(e); try { cv.setPointerCapture(e.pointerId); } catch (x) {} }
+		cv.addEventListener("pointerdown", function (e) {
+			if (e.button > 0) return; id = e.pointerId; sx = e.clientX; sy = e.clientY; on = false;
+			if (e.pointerType !== "touch") begin(e);
+		});
+		cv.addEventListener("pointermove", function (e) {
+			if (e.pointerId !== id) return; if (on) { h.move(e); return; }
+			var dx = Math.abs(e.clientX - sx), dy = Math.abs(e.clientY - sy);
+			if (dx > 9 && dx > dy * 1.4) { begin(e); h.move(e); } else if (dy > 12) id = null;
+		});
+		cv.addEventListener("pointerup", function (e) {
+			if (e.pointerId !== id) return;
+			if (!on && Math.abs(e.clientX - sx) < 9 && Math.abs(e.clientY - sy) < 9) h.down(e);   // a tap moves the marker too
+			h.up(e); on = false; id = null;
+		});
+		cv.addEventListener("pointercancel", function (e) { if (e.pointerId !== id) return; if (on) h.up(e); on = false; id = null; });
+	}
 	var CV = { cycle: { st: $("hs-cstage"), cv: $("hs-cc") }, pv: { st: $("hs-pstage"), cv: $("hs-pc") }, ecg: { st: $("hs-estage"), cv: $("hs-ec") } };
 	function aspectOf(tab, w) {
 		if (tab === "cycle") return w >= 700 ? 2.15 : 0.62;
@@ -243,9 +264,7 @@
 	(function () {   // click / drag on the Wiggers diagram to scrub
 		var cv = CV.cycle.cv, down = false;
 		function at(e) { if (!wig) return; var rc = cv.getBoundingClientRect(), x = e.clientX - rc.left, L = wig.L; if (x < L.x - 10) return; var t = Math.max(0, Math.min(wig.span - 0.001, (x - L.x) / L.w * wig.span)); setPlay(false); tc = t; drawCycle(); }
-		cv.addEventListener("pointerdown", function (e) { down = true; at(e); try { cv.setPointerCapture(e.pointerId); } catch (x) {} });
-		cv.addEventListener("pointermove", function (e) { if (down) at(e); });
-		cv.addEventListener("pointerup", function () { down = false; }); cv.addEventListener("pointercancel", function () { down = false; });
+		hdrag(cv, { down: function (e) { down = true; at(e); }, move: function (e) { if (down) at(e); }, up: function () { down = false; } });
 		cv.addEventListener("keydown", function (e) { if (e.key === " ") { e.preventDefault(); setPlay(!S.play); } if (e.key === "ArrowRight" || e.key === "ArrowLeft") { setPlay(false); tc = Math.max(0, tc + (e.key === "ArrowRight" ? 0.01 : -0.01)); drawCycle(); } });
 	})();
 	/* lub-dub with WebAudio */
@@ -373,9 +392,8 @@
 	(function () {
 		var cv = CV.ecg.cv, drag = null;
 		function tAt(e) { var g = ecgGeom(), rc = cv.getBoundingClientRect(), t1 = Math.max(g.secs, tE); return t1 - g.secs + (e.clientX - rc.left) / (g.ppm * S.esp); }
-		cv.addEventListener("pointerdown", function (e) { if (!cal) return; var t = tAt(e); drag = Math.abs(t - cal.a) < Math.abs(t - cal.b) ? "a" : "b"; cal[drag] = t; if (eplay) setEPlay(false); drawECG(); try { cv.setPointerCapture(e.pointerId); } catch (x) {} });
-		cv.addEventListener("pointermove", function (e) { if (drag) { cal[drag] = tAt(e); drawECG(); } });
-		cv.addEventListener("pointerup", function () { drag = null; }); cv.addEventListener("pointercancel", function () { drag = null; });
+		hdrag(cv, { down: function (e) { if (!cal) return; var t = tAt(e); drag = Math.abs(t - cal.a) < Math.abs(t - cal.b) ? "a" : "b"; cal[drag] = t; if (eplay) setEPlay(false); drawECG(); },
+			move: function (e) { if (drag) { cal[drag] = tAt(e); drawECG(); } }, up: function () { drag = null; } });
 		cv.addEventListener("keydown", function (e) { if (e.key === " ") { e.preventDefault(); setEPlay(!eplay); } if (cal && (e.key === "ArrowLeft" || e.key === "ArrowRight")) { e.preventDefault(); cal.b += (e.key === "ArrowRight" ? 1 : -1) * (e.shiftKey ? 0.04 : 0.004); drawECG(); } });
 	})();
 	function ms(x) { return x == null ? "–" : Array.isArray(x) ? x.map(function (v) { return Math.round(v * 1000); }).join(", ") + " ms" : Math.round(x * 1000) + " ms"; }

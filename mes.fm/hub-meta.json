@@ -78,7 +78,7 @@
 },
 "/black-hole-simulator":{
 "added":"2026-10-12",
-"updated":"2026-10-14",
+"updated":"2026-11-02",
 "type":"Simulation"
 },
 "/bmi-calculator-kids":{
@@ -233,7 +233,7 @@
 },
 "/double-pendulum":{
 "added":"2026-10-12",
-"updated":"2026-10-14",
+"updated":"2026-11-02",
 "type":"Simulation"
 },
 "/due-date-calculator":{
@@ -358,7 +358,7 @@
 },
 "/heart-simulator":{
 "added":"2026-10-31",
-"updated":"2026-10-31",
+"updated":"2026-11-02",
 "type":"Simulation"
 },
 "/hutchison-effect-simulator":{

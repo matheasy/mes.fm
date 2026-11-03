@@ -61,7 +61,7 @@
 	.dp-spd span {min-width:4.2em;text-align:center;font-variant-numeric:tabular-nums;}
 	.dp-chartwrap {border-top:1px solid var(--dp-line);background:#080b12;}
 	.dp-chartwrap canvas {display:block;width:100%;height:150px;}
-	#dp-mc {cursor:crosshair;}
+	#dp-mc {cursor:crosshair;touch-action:pan-y;}   /* tap picks a start, a swipe scrolls the page */
 	.dp-mapwrap {display:grid;grid-template-columns:minmax(0,1fr);gap:0.8em;}
 	.dp-legend {display:flex;align-items:center;gap:0.6em;padding:0.5em 0.7em;background:#0e1118;border-top:1px solid var(--dp-line);color:var(--dp-dim);font-size:0.8em;flex-wrap:wrap;}
 	.dp-legend i {display:block;height:0.9em;flex:1 1 10em;border-radius:0.3em;background:linear-gradient(90deg,#fff7a8,#ffb454,#ef476f,#8e44ad,#2d3a8c,#0a0f2c);}
