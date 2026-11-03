@@ -166,7 +166,7 @@
 			if (i === R.sel) { x.lineWidth = 2.5; x.strokeStyle = "#fff"; x.stroke(); }
 			text(x, String(i + 1), ox, oy + 0.5, 11, "#0b0f1a", "center", "middle", true);
 		});
-		text(x, "Wave crests drawn " + sp + " mm apart; real ones are " + Math.round(R.lam) + " nm apart (" + fmt(sp * 1e6 / R.lam, 2) + "× closer)", 10, 16, 12, "#aeb8cc");
+		text(x, w < 560 ? "Crests drawn " + sp + " mm apart (real: " + Math.round(R.lam) + " nm)" : "Wave crests drawn " + sp + " mm apart; real ones are " + Math.round(R.lam) + " nm apart (" + fmt(sp * 1e6 / R.lam, 2) + "× closer)", 10, 16, w < 560 ? 11 : 12, "#aeb8cc");
 	}
 	var rsDrag = null;
 	function rsHit(pt) { var g = rsGeo(rs.clientWidth, rs.clientHeight), best = -1, bd = 18; R.pts.forEach(function (p, i) { var d = Math.hypot(pt.x - (g.px - p.z * g.s), pt.y - (g.cy - p.u * g.s)); if (d < bd) { bd = d; best = i; } }); return best; }
@@ -474,7 +474,7 @@
 				for (var l = 380; l <= 780; l += 2) { x.fillStyle = rgb(l, 0.22); x.fillRect(gx + (l - 380) / 400 * gw, gy + gh + 6, gw / 200 + 1, 10); }
 				line(x, gx, gy + gh, gx + gw, gy + gh, "#55607a", 1); line(x, gx, gy, gx, gy + gh, "#55607a", 1);
 				x.beginPath(); c.spec.forEach(function (e, i) { var X = gx + i / 400 * gw, Y = gy + gh - e * gh; if (i) x.lineTo(X, Y); else x.moveTo(X, Y); }); x.strokeStyle = "#fff"; x.lineWidth = 2; x.stroke();
-				[400, 500, 600, 700].forEach(function (l) { text(x, l + " nm", gx + (l - 380) / 400 * gw, gy + gh + 28, 10, "#8792a8", "center"); });
+				(gw < 300 ? [450, 650] : [400, 500, 600, 700]).forEach(function (l) { text(x, l + " nm", gx + (l - 380) / 400 * gw, gy + gh + 28, 10, "#8792a8", "center"); });
 				text(x, "100 %", gx - 4, gy, 10, "#8792a8", "right"); text(x, "reflected share of each colour", gx, gy - 14, 11, "#aeb8cc");
 				x.fillStyle = "rgb(" + c.col.map(Math.round).join(",") + ")"; x.fillRect(gx + 8, gy + 8, 34, 34); text(x, "what you see", gx + 48, gy + 25, 11, "#e6ebf5");
 			},
@@ -608,7 +608,7 @@
 		// pad
 		var cs = ps / PD; x.fillStyle = "#11182a"; x.fillRect(P[0][0], P[0][1], ps, ps);
 		for (var i = 0; i < PD; i++) for (var j = 0; j < PD; j++) if (pad[i * PD + j]) { x.fillStyle = "#ffd166"; x.fillRect(P[0][0] + j * cs, P[0][1] + i * cs, Math.ceil(cs), Math.ceil(cs)); }
-		text(x, "1. Your picture (draw here)", P[0][0], P[0][1] - 9, 12, "#e6ebf5");
+		var nar = ps < 240, fz = nar ? 10 : 12; text(x, nar ? "1. Draw here" : "1. Your picture (draw here)", P[0][0], P[0][1] - 9, fz, "#e6ebf5");
 		// replay
 		if (gState.phase) {
 			var I = H.cghReplay(gState.phase, NG, G.d / 100), mx = 0; for (i = 0; i < I.length; i++) if (I[i] > mx) mx = I[i];
@@ -618,10 +618,10 @@
 			x.imageSmoothingEnabled = false; x.drawImage(gOff, P[1][0], P[1][1], ps, ps);
 			var ph = gState.phase; grey(gOff, ph, NG, function (v) { var t = v / TAU; return [255 * t, 255 * t, 255 * t]; }); x.drawImage(gOff, P[2][0], P[2][1], ps, ps); x.imageSmoothingEnabled = true;
 		}
-		text(x, "2. Light pattern the hologram makes", P[1][0], P[1][1] - 9, 12, "#e6ebf5");
-		text(x, "3. The phase hologram (black 0 → white 2π)", P[2][0], P[2][1] - 9, 12, "#e6ebf5");
+		text(x, nar ? "2. Light pattern" : "2. Light pattern the hologram makes", P[1][0], P[1][1] - 9, fz, "#e6ebf5");
+		text(x, nar ? "3. Phase hologram" : "3. The phase hologram (black 0 → white 2π)", P[2][0], P[2][1] - 9, fz, "#e6ebf5");
 		// error plot
-		var ex = P[3][0], ey = P[3][1]; x.fillStyle = "#0d1220"; x.fillRect(ex, ey, ps, ps); text(x, "4. Error after each step", ex, ey - 9, 12, "#e6ebf5");
+		var ex = P[3][0], ey = P[3][1]; x.fillStyle = "#0d1220"; x.fillRect(ex, ey, ps, ps); text(x, nar ? "4. Error" : "4. Error after each step", ex, ey - 9, fz, "#e6ebf5");
 		var er = gState.errs, emx = er.length ? Math.max.apply(null, er) : 1; line(x, ex + 30, ey + ps - 20, ex + ps - 8, ey + ps - 20, "#55607a", 1); line(x, ex + 30, ey + 10, ex + 30, ey + ps - 20, "#55607a", 1);
 		x.beginPath(); er.forEach(function (e, k3) { var X = ex + 30 + k3 / Math.max(1, G.it) * (ps - 40), Y = ey + ps - 20 - e / (emx || 1) * (ps - 34); if (k3) x.lineTo(X, Y); else x.moveTo(X, Y); }); x.strokeStyle = "#5ec8ff"; x.lineWidth = 2; x.stroke();
 		if (er.length) text(x, fmt(er[er.length - 1] * 100, 3) + " %", ex + ps - 10, ey + 20, 12, "#5ec8ff", "right");

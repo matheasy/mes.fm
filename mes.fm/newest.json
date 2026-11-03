@@ -198,20 +198,20 @@
  ],
  "latest": [
   {
-   "href": "/practice-tests",
-   "title": "Practice Tests (FSA Style)",
-   "icon": "/img/practice-tests-logo.png",
-   "desc": "Grade 4 and 7 numeracy and reading practice with new questions every time and every answer explained.",
-   "added": "2026-11-02",
-   "kind": "calculator"
-  },
-  {
    "href": "/hologram",
    "title": "Hologram Simulator",
    "icon": "/img/hologram-logo.png",
    "desc": "Record interference fringes live, play the hologram back with real wave optics, see parallax and the twin image, compare hologram types and compute a phase hologram of your drawing.",
    "added": "2026-11-02",
    "kind": "tool"
+  },
+  {
+   "href": "/practice-tests",
+   "title": "Practice Tests (FSA Style)",
+   "icon": "/img/practice-tests-logo.png",
+   "desc": "Grade 4 and 7 numeracy and reading practice with new questions every time and every answer explained.",
+   "added": "2026-11-02",
+   "kind": "calculator"
   },
   {
    "href": "/gallery",

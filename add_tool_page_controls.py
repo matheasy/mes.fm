@@ -228,6 +228,7 @@ TOOLS = [  # (directory, compact-bar title[, home path of the site the page belo
     ("spin-simulator", "Spin Simulator"),
     ("gnm", "German New Medicine"),
     ("negative-index", "Light & Metamaterials Lab"),
+    ("hologram", "Hologram Simulator"),
     ("heart-simulator", "Heart Simulator"),
     ("hutchison-effect-simulator", "Hutchison Effect Simulator"),
     ("orbit-simulator", "Orbit Simulator"),

@@ -317,6 +317,15 @@ const PAGES = [
     tileLabel: "Light & Metamaterials Lab",
   },
   {
+    // Tile only: links to the Hologram Simulator (recording, playback, coherence, hologram types, computer-generated holograms). Icon = img/hologram-icon.jpg (PIL placeholder until Grok tile art lands; same file name).
+    slug: "hologram",
+    section: "tools",
+    href: "/hologram",
+    iconVersion: 1,
+    tileOnly: true,
+    tileLabel: "Hologram Simulator",
+  },
+  {
     // Tile only: no page is written; links to the tool. Icon = img/atomic-clock-simulator-icon.jpg (900x600 crop of the tool's share image).
     slug: "atomic-clock-simulator",
     section: "tools",

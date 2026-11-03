@@ -48,4 +48,4 @@
 	#hg .hg-ok {color:#047857;font-weight:700;} #hg .hg-bad {color:#b91c1c;font-weight:700;}
 	body.dark-mode #hg .hg-ok {color:#6ee7b7;} body.dark-mode #hg .hg-bad {color:#fca5a5;}
 	#hg h3 {margin-top:0;}
-	@media (max-width:640px) {#hg .hg-pair {grid-template-columns:1fr;} #hg .hg-pt {grid-template-columns:auto 1fr auto;} #hg .hg-pt label.hg-wide {grid-column:1 / -1;} #hg .hg-hint {display:none;}}
+	@media (max-width:640px) {#hg .hg-pair {grid-template-columns:1fr;} #hg .hg-pt {display:flex;flex-wrap:wrap;} #hg .hg-pt label {flex:1 1 40%;min-width:0;} #hg .hg-pt .hg-dot {flex:0 0 1em;} #hg .hg-hint {display:none;}}
