@@ -1,7 +1,8 @@
 /* MESHiveStore: optional "Save to Hive" for practical data on mes.fm pages (window.MESHiveStore; also require()-able in node).
 
    Where the data goes
-   - custom_json operations with id "mes_store", signed with the person's POSTING key through Hive Keychain (MESHive in
+   - custom_json operations with id "mes_store", signed with the person's POSTING key through Hive Keychain (extension, or the
+     Keychain phone app via HiveAuth: then canEncrypt() is false because HiveAuth has no memo encryption) (MESHive in
      /main_js/hive.js does the login; the same "mes-hive-user" login as Premium). Keys never leave Keychain; mes.fm has no server
      part in this at all.
    - custom_json was chosen over posts / comments (what Stickit uses): it never shows up in anyone's blog, feed or comments,
@@ -209,6 +210,7 @@
                     var m = (r && (r.message || (r.error && (r.error.message || r.error)))) || "Cancelled";
                     var err = new Error(String(m)); err.code = r && r.error === "user_cancel" ? "cancel" : "fail";
                     if (/memo/i.test(String(m)) && /key|missing|not found/i.test(String(m))) err.code = "nomemo";
+                    if (r && r.error === "nomemo_hiveauth") err.code = "nomemo-has";   /* Keychain phone-app login: no memo key */
                     rej(err);
                 });
             });
@@ -218,16 +220,18 @@
         return function (hexKey) {
             return kcCall(function (k, done) { k.requestEncodeMessage(account, account, "#" + hexKey, "Memo", done); })
                 .then(function (r) { return r.result; })
-                .catch(function (e) { if (e.code !== "cancel") e.message = memoHint(e.message); throw e; });
+                .catch(function (e) { if (e.code !== "cancel" && e.code !== "nomemo-has") e.message = memoHint(e.message); throw e; });
         };
     }
     function unwrapKeyFor(account) {
         return function (wrapped) {
             return kcCall(function (k, done) { k.requestVerifyKey(account, wrapped, "Memo", done); })
                 .then(function (r) { return r.result; })
-                .catch(function (e) { if (e.code !== "cancel") e.message = memoHint(e.message); throw e; });
+                .catch(function (e) { if (e.code !== "cancel" && e.code !== "nomemo-has") e.message = memoHint(e.message); throw e; });
         };
     }
+    /* false while logged in with the Keychain phone app (HiveAuth): it can't use the memo key, so saves can't be encrypted */
+    function canEncrypt() { var h = root.MESHive; return !(h && h.memoOk && !h.memoOk()); }
     function memoHint(m) {
         return (m || "Keychain could not use your memo key") +
             ". Encrypted Hive saves need your MEMO key in Keychain (Keychain > your account > Manage keys > add the memo key).";
@@ -250,6 +254,7 @@
         var say = opt.onProgress || function () {};
         return Promise.resolve().then(function () {
             var account = need();
+            if (opt.encrypt && !canEncrypt()) { var ne = new Error(H().NO_MEMO || "Encryption is not available with this login."); ne.code = "nomemo-has"; throw ne; }
             if (opt.encrypt) say("Confirm in Keychain: encrypt the backup key to your own memo key…");
             return pack(data, { encrypt: !!opt.encrypt, app: app, name: name, wrapKey: wrapKeyFor(account) }).then(function (pk) {
                 var jsons = chunkJsons(app, name, pk.saveId, pk.header, pk.payload);
@@ -312,7 +317,7 @@
         b64: b64, unb64: unb64, hex: hex, unhex: unhex, okName: okName, newSaveId: newSaveId,
         chunkJsons: chunkJsons, buildTxs: buildTxs, customJson: customJson, tombstone: tombstone, assemble: assemble,
         pack: pack, unpack: unpack,
-        save: save, list: list, load: load, forget: forget, rcPercent: rcPercent, explorer: explorer
+        save: save, list: list, load: load, forget: forget, canEncrypt: canEncrypt, rcPercent: rcPercent, explorer: explorer
     };
     if (typeof module !== "undefined" && module.exports) module.exports = api;
     root.MESHiveStore = root.MESHiveStore || api;

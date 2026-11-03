@@ -652,6 +652,7 @@
 	function encOn() { return $("cp-hive-encrypt").checked; }
 	function paintWarn() {
 		var w = $("cp-hive-warn");
+		if (HS() && HS().canEncrypt && !HS().canEncrypt()) { w.className = "cp-hive-warn is-open"; w.innerHTML = "⚠ <b>Logged in with the Keychain phone app:</b> it can't use your memo key, so a backup made here is <b>not encrypted</b>: every text will be public on the Hive blockchain, readable by anyone, forever. For encrypted backups (and to open them) use a computer with the Keychain extension, or open mes.fm in the Keychain app's own browser."; return; }
 		if (encOn()) { w.className = "cp-hive-warn"; w.innerHTML = "🔒 Encrypted: only your memo key can open it. Others can still see that a backup exists, when, and its size. Saved permanently."; }
 		else { w.className = "cp-hive-warn is-open"; w.innerHTML = "⚠ <b>Not encrypted:</b> every text and title will be <b>public on the Hive blockchain, readable by anyone, forever</b>. It can't be deleted later."; }
 	}
@@ -661,6 +662,9 @@
 		if (u) {
 			box.innerHTML = '<span class="cp-hive-who"><img src="' + HV().avatar(u.name) + '" alt="" width="24" height="24" loading="lazy"> Logged in as <b>@' + esc(u.name) + '</b></span> <button type="button" class="tu-btn tu-btn--ghost" data-h="logout">Log out</button>';
 			$("cp-hive-main").hidden = false; $("cp-hive-help").innerHTML = "";
+			var ce = $("cp-hive-encrypt"), can = !HS().canEncrypt || HS().canEncrypt();
+			if (!can) ce.checked = false; else if (ce.disabled) { try { ce.checked = localStorage.getItem(ENC_KEY) !== "0"; } catch (e) { ce.checked = true; } }
+			ce.disabled = !can; paintWarn();
 		} else {
 			box.innerHTML = '<div class="cp-hive-login"><input class="tu-input" id="cp-hive-name" type="text" placeholder="Your Hive username" aria-label="Your Hive username" autocomplete="username" autocapitalize="none" spellcheck="false" maxlength="17">' +
 				' <button type="button" class="tu-btn tu-btn--primary" data-h="login">Log in with Keychain</button></div>';
@@ -745,7 +749,7 @@
 		if (a === "login") {
 			var name = ($("cp-hive-name").value || "").trim();
 			if (!name) { $("cp-hive-name").focus(); hmsg("Type your Hive username first.", "err"); return; }
-			hmsg("Confirm the login in Hive Keychain…");
+			hmsg("Confirm the login in Hive Keychain (the browser extension, or the phone app if this browser has no extension)…");
 			HV().login(name).then(function () { hmsg(""); paintUser(); hiveLoad(true); }).catch(function (x) {
 				hmsg(x.code === "nokeychain" ? "Hive Keychain is not installed in this browser (see below)." : errText(x), "err");
 				if (x.code === "nokeychain") $("cp-hive-help").innerHTML = HV().helpHtml();

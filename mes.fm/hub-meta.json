@@ -173,7 +173,7 @@
 },
 "/copy-text":{
 "added":"2026-10-03",
-"updated":"2026-10-31",
+"updated":"2026-11-02",
 "type":"Tool"
 },
 "/countdown-timer":{
@@ -310,6 +310,11 @@
 "added":"2026-10-23",
 "updated":"2026-10-23",
 "type":"Calculator"
+},
+"/gallery":{
+"added":"2026-11-02",
+"updated":"2026-11-02",
+"type":"Tool"
 },
 "/gematria":{
 "added":"2026-07-13",
@@ -598,7 +603,7 @@
 },
 "/polls":{
 "added":"2026-10-31",
-"updated":"2026-10-31",
+"updated":"2026-11-02",
 "type":"Tool"
 },
 "/pomodoro-timer":{
