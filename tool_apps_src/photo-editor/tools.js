@@ -465,7 +465,7 @@
 			var hx = Math.abs(px - s0.x) < t ? -1 : Math.abs(px - s1.x) < t ? 1 : (Math.abs(px - (s0.x + s1.x) / 2) < t ? 0 : null), hy = Math.abs(py - s0.y) < t ? -1 : Math.abs(py - s1.y) < t ? 1 : (Math.abs(py - (s0.y + s1.y) / 2) < t ? 0 : null);
 			var inX = px > s0.x - t && px < s1.x + t, inY = py > s0.y - t && py < s1.y + t;
 			if (hx !== null && hy !== null && inX && inY && !(hx === 0 && hy === 0)) cdrag = { kind: "h", hx: hx, hy: hy, c0: Object.assign({}, crop), p0: e };
-			else if (px > s0.x && px < s1.x && py > s0.y && py < s1.y) cdrag = { kind: "move", c0: Object.assign({}, crop), p0: e };
+			else if (px > s0.x && px < s1.x && py > s0.y && py < s1.y && !(crop.x === 0 && crop.y === 0 && crop.w === PE.doc.w && crop.h === PE.doc.h)) cdrag = { kind: "move", c0: Object.assign({}, crop), p0: e };   // round 10: while the box is still the whole picture, a drag inside draws a new box (moving it did nothing)
 			else { crop = { x: e.x, y: e.y, w: 1, h: 1 }; cdrag = { kind: "new", p0: e }; }
 		},
 		move: function (e) {

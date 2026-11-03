@@ -765,6 +765,7 @@ $("pe-share").addEventListener("click", function () { if (needDoc()) PE.dlgShare
 	$("pe-e-new").addEventListener("click", function () { PE.dlgNew(); }); $("pe-e-paste").addEventListener("click", pasteInternal);
 	var recBox = $("pe-recent"); if (recBox && PE.recentEl) { var rl = PE.recentEl({ title: "Recent projects", compact: true, keep: true, limit: 6 }); recBox.appendChild(rl); }
 	if (S.opt) for (var k in S.opt) if (PE.opt[k]) for (var kk in S.opt[k]) if (kk in PE.opt[k]) PE.opt[k][kk] = S.opt[k][kk];
+	if (PE.opt.text && /^\s*['"]?MESfile/.test(String(PE.opt.text.font || ""))) PE.opt.text.font = PE.TEXTDEF.font;   // round 10: a font file loaded in an earlier visit is gone after a reload: new texts use the standard font instead of an invisible fallback
 	PE.opt.shape.next = 1; PE.opt.text.str = "Text";
 	showTab(S.tab === "comps" ? "comps" : "hist"); buildMenus(); buildTools(); PE.initPointer(); PE.initTextEditor(); buildColor(); resize(); PE.setTool("move"); status(); if (PE.recentReady) PE.recentReady(); saveState();
 	if (S.win) { autoWin = true; toggleWin(true); }

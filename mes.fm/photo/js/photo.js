@@ -2090,7 +2090,7 @@ var MESPixel = (function () {
 			var hx = Math.abs(px - s0.x) < t ? -1 : Math.abs(px - s1.x) < t ? 1 : (Math.abs(px - (s0.x + s1.x) / 2) < t ? 0 : null), hy = Math.abs(py - s0.y) < t ? -1 : Math.abs(py - s1.y) < t ? 1 : (Math.abs(py - (s0.y + s1.y) / 2) < t ? 0 : null);
 			var inX = px > s0.x - t && px < s1.x + t, inY = py > s0.y - t && py < s1.y + t;
 			if (hx !== null && hy !== null && inX && inY && !(hx === 0 && hy === 0)) cdrag = { kind: "h", hx: hx, hy: hy, c0: Object.assign({}, crop), p0: e };
-			else if (px > s0.x && px < s1.x && py > s0.y && py < s1.y) cdrag = { kind: "move", c0: Object.assign({}, crop), p0: e };
+			else if (px > s0.x && px < s1.x && py > s0.y && py < s1.y && !(crop.x === 0 && crop.y === 0 && crop.w === PE.doc.w && crop.h === PE.doc.h)) cdrag = { kind: "move", c0: Object.assign({}, crop), p0: e };   // round 10: while the box is still the whole picture, a drag inside draws a new box (moving it did nothing)
 			else { crop = { x: e.x, y: e.y, w: 1, h: 1 }; cdrag = { kind: "new", p0: e }; }
 		},
 		move: function (e) {
@@ -2341,7 +2341,7 @@ var MESPixel = (function () {
 	PE.loadFontFile = function (file) {
 		// round 10: the label keeps the file's name; the family is a plain identifier every browser accepts in FontFace() and ctx.font (Firefox rejected "8bit Font")
 		var name = file.name.replace(/\.[^.]+$/, "").replace(/[^\w \-]/g, "").trim() || "My font", fam = window.MESFontCat ? MESFontCat.safeFamily("MESfile", name) : name.replace(/[^A-Za-z]/g, "") || "MESfile";
-		return file.arrayBuffer().then(function (ab) { var ff = new FontFace(fam, ab); return ff.load().then(function () { document.fonts.add(ff); var v = "'" + fam + "', sans-serif"; PE.FONTS.push([v, name + " (yours)"]); PE.emit("fonts"); PE.optSet("text", "font", v); }); });
+		return file.arrayBuffer().then(function (ab) { var ff = new FontFace(fam, ab); return ff.load().then(function () { document.fonts.add(ff); var v = "'" + fam + "', '" + name.replace(/'/g, "") + "', sans-serif";   /* the file's own name second: if that font is installed, it is used after a reload too */ PE.FONTS.push([v, name + " (yours)"]); PE.emit("fonts"); PE.optSet("text", "font", v); }); });
 	};
 
 	/* ---------- text: edited in place on the canvas, like GIMP ----------
@@ -2967,6 +2967,8 @@ var MESPixel = (function () {
 		if (saved.pid !== d.pid || !saved.name) saved.name = PE.docBaseName();   // a name typed earlier is kept only for the same project
 		var f = PE.form([{ k: "fmt", label: "Format", help: HELP_FMT, type: "seg", options: [["png", "PNG"], ["jpg", "JPEG"], ["webp", "WebP"]], val: saved.fmt }, { k: "q", label: "Quality", help: "How much detail JPEG and WebP keep. Higher looks better but makes a bigger file. 85-92% is a good balance: the picture looks the same and the file is much smaller than PNG. PNG is lossless, so it has no quality setting.", type: "range", min: 30, max: 100, step: 1, val: saved.q, unit: "%" }, { k: "scale", label: "Scale", help: "Makes the exported picture bigger or smaller than the image you are editing. 100% keeps the size. 50% halves the width and height (a quarter of the pixels), handy for web use; 200% doubles it (the pixels are enlarged, it does not add detail).", type: "range", min: 10, max: 400, step: 1, val: saved.scale, unit: "%" }, { k: "bg", label: "Background (JPEG)", help: "JPEG cannot be see-through. Any transparent parts of your image are filled with this colour. PNG and WebP keep transparency, so they ignore this.", type: "color", val: saved.bg }, { k: "name", label: "File name", help: "The name of the downloaded file, without the ending (the ending comes from the format).", type: "text", val: saved.name }], function () { vis(); est(); });
 		wrap.appendChild(f.el); var info = el("div", "pe-exp-info", ""); wrap.appendChild(info);
+		// round 10: the sister tools, with this picture already in them (MESImg hand-over: same browser, nothing uploaded)
+		if (PE.sendPicture) { var more = el("div", "pe-exp-more", "Need it smaller, or many files at once? "); var b1 = el("button", "pe-linkbtn", "Compress it (aim for a size in KB)"), b2 = el("button", "pe-linkbtn", "Image Converter"); b1.type = b2.type = "button"; b1.addEventListener("click", function () { PE.sendPicture("/compress", "the Compressor"); }); b2.addEventListener("click", function () { PE.sendPicture("/image-converter", "the Image Converter"); }); more.appendChild(b1); more.appendChild(document.createTextNode(" · ")); more.appendChild(b2); wrap.appendChild(more); }
 		function vis() { var v = f.get(), F = I.FORMATS[v.fmt]; f.inputs.q.inp.closest(".pe-row").style.display = F.lossy ? "" : "none"; f.inputs.bg.inp.closest(".pe-row").style.display = F.alpha ? "none" : ""; }
 		var t = 0, token = 0; function est() { clearTimeout(t); t = setTimeout(function () { var v = f.get(), my = ++token; info.textContent = "Calculating…"; PE.exportBlob(v.fmt, v.q / 100, { scale: v.scale / 100, bg: v.bg }).then(function (b) { if (my !== token) return; info.innerHTML = "<b>" + Math.round(d.w * v.scale / 100) + " × " + Math.round(d.h * v.scale / 100) + " px</b> · " + I.formatBytes(b.size); }).catch(function (e) { info.textContent = e.message; }); }, 250); }
 		vis(); est();
@@ -5061,8 +5063,12 @@ var MESPixel = (function () {
 		});
 	}
 	/* make sure every Google font used by the text layers is loaded (after opening a project, undo, paste...) */
+	var ensureWarned = false;
 	PE.ensureFonts = function () {
 		if (!PE.doc) return; var seen = {};
+		var fileGone = 0; PE.doc.layers.forEach(function (L) { if (L.type === "text" && L.text && /^MESfile/.test(F.familyOf(L.text.font)) && document.fonts && !document.fonts.check("12px " + F.normStack(L.text.font).split(",")[0])) fileGone++; });
+		if (fileGone && !ensureWarned) { ensureWarned = true; PE.toast("A text uses a font file you loaded earlier: load the same file again (Text tool → Load font file…) to see it; until then a similar font is shown"); }
+		if (PE.opt && PE.opt.text) { var dn = F.familyOf(PE.opt.text.font); if (F.googleCat(dn) && !loaded[dn.toLowerCase()] && !loading[dn.toLowerCase()] && !installed(dn)) PE.loadGoogleFont(dn); }
 		PE.doc.layers.forEach(function (L) { if (L.type !== "text" || !L.text) return; var n = F.familyOf(L.text.font), k = n.toLowerCase(); if (seen[k] || loaded[k] || loading[k] || !F.googleCat(n)) return; seen[k] = 1; if (installed(n)) { loaded[k] = true; return; } PE.loadGoogleFont(n); });
 	};
 	var ensT = 0; PE.on("layers", function () { clearTimeout(ensT); ensT = setTimeout(PE.ensureFonts, 50); });
@@ -5074,7 +5080,7 @@ var MESPixel = (function () {
 	PE.fontButton = function (value, onPick) {
 		build(); var fam = F.familyOf(value), f = byName[fam.toLowerCase()];
 		if (!f) for (var fi = 0; fi < fonts.length; fi++) if (fonts[fi].value === value) { f = fonts[fi]; break; }   // a font file of your own: shown by its file name, not the internal family
-		if (f) fam = f.name;
+		if (f) fam = f.name; else if (/^MESfile/.test(fam)) { var nm2 = F.splitStack(value)[1]; fam = (nm2 && !/^(sans-serif|serif|cursive|monospace)$/.test(nm2) ? nm2 : "Your font") + " (font file: load it again)"; }
 		var b = el("button", "pe-fbtn"); b.type = "button"; b.dataset.noico = "1"; b.dataset.fam = fam; b.setAttribute("aria-haspopup", "listbox"); b.title = "Font: " + fam + " (click for the list: search, preview, " + fonts.length + " fonts)";
 		b.innerHTML = '<span class="pe-fbtn-n"></span><span class="pe-fbtn-a" aria-hidden="true">▾</span>'; b.firstChild.textContent = fam;
 		var setFace = function () { var face = f ? faceOf(f) : value; b.firstChild.style.fontFamily = face || "inherit"; };
@@ -6292,6 +6298,7 @@ $("pe-share").addEventListener("click", function () { if (needDoc()) PE.dlgShare
 	$("pe-e-new").addEventListener("click", function () { PE.dlgNew(); }); $("pe-e-paste").addEventListener("click", pasteInternal);
 	var recBox = $("pe-recent"); if (recBox && PE.recentEl) { var rl = PE.recentEl({ title: "Recent projects", compact: true, keep: true, limit: 6 }); recBox.appendChild(rl); }
 	if (S.opt) for (var k in S.opt) if (PE.opt[k]) for (var kk in S.opt[k]) if (kk in PE.opt[k]) PE.opt[k][kk] = S.opt[k][kk];
+	if (PE.opt.text && /^\s*['"]?MESfile/.test(String(PE.opt.text.font || ""))) PE.opt.text.font = PE.TEXTDEF.font;   // round 10: a font file loaded in an earlier visit is gone after a reload: new texts use the standard font instead of an invisible fallback
 	PE.opt.shape.next = 1; PE.opt.text.str = "Text";
 	showTab(S.tab === "comps" ? "comps" : "hist"); buildMenus(); buildTools(); PE.initPointer(); PE.initTextEditor(); buildColor(); resize(); PE.setTool("move"); status(); if (PE.recentReady) PE.recentReady(); saveState();
 	if (S.win) { autoWin = true; toggleWin(true); }

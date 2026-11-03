@@ -89,8 +89,12 @@
 		});
 	}
 	/* make sure every Google font used by the text layers is loaded (after opening a project, undo, paste...) */
+	var ensureWarned = false;
 	PE.ensureFonts = function () {
 		if (!PE.doc) return; var seen = {};
+		var fileGone = 0; PE.doc.layers.forEach(function (L) { if (L.type === "text" && L.text && /^MESfile/.test(F.familyOf(L.text.font)) && document.fonts && !document.fonts.check("12px " + F.normStack(L.text.font).split(",")[0])) fileGone++; });
+		if (fileGone && !ensureWarned) { ensureWarned = true; PE.toast("A text uses a font file you loaded earlier: load the same file again (Text tool → Load font file…) to see it; until then a similar font is shown"); }
+		if (PE.opt && PE.opt.text) { var dn = F.familyOf(PE.opt.text.font); if (F.googleCat(dn) && !loaded[dn.toLowerCase()] && !loading[dn.toLowerCase()] && !installed(dn)) PE.loadGoogleFont(dn); }
 		PE.doc.layers.forEach(function (L) { if (L.type !== "text" || !L.text) return; var n = F.familyOf(L.text.font), k = n.toLowerCase(); if (seen[k] || loaded[k] || loading[k] || !F.googleCat(n)) return; seen[k] = 1; if (installed(n)) { loaded[k] = true; return; } PE.loadGoogleFont(n); });
 	};
 	var ensT = 0; PE.on("layers", function () { clearTimeout(ensT); ensT = setTimeout(PE.ensureFonts, 50); });
@@ -102,7 +106,7 @@
 	PE.fontButton = function (value, onPick) {
 		build(); var fam = F.familyOf(value), f = byName[fam.toLowerCase()];
 		if (!f) for (var fi = 0; fi < fonts.length; fi++) if (fonts[fi].value === value) { f = fonts[fi]; break; }   // a font file of your own: shown by its file name, not the internal family
-		if (f) fam = f.name;
+		if (f) fam = f.name; else if (/^MESfile/.test(fam)) { var nm2 = F.splitStack(value)[1]; fam = (nm2 && !/^(sans-serif|serif|cursive|monospace)$/.test(nm2) ? nm2 : "Your font") + " (font file: load it again)"; }
 		var b = el("button", "pe-fbtn"); b.type = "button"; b.dataset.noico = "1"; b.dataset.fam = fam; b.setAttribute("aria-haspopup", "listbox"); b.title = "Font: " + fam + " (click for the list: search, preview, " + fonts.length + " fonts)";
 		b.innerHTML = '<span class="pe-fbtn-n"></span><span class="pe-fbtn-a" aria-hidden="true">▾</span>'; b.firstChild.textContent = fam;
 		var setFace = function () { var face = f ? faceOf(f) : value; b.firstChild.style.fontFamily = face || "inherit"; };

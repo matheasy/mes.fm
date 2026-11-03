@@ -336,6 +336,8 @@
 	#pe .pe-drawer-tile:hover {border-color:var(--pe-on);} #pe .pe-drawer-tile svg {width:1.9em;height:1.9em;}
 	@media (max-width:820px) {
 		#pe.pe-simple .pe-rail {flex-direction:row;width:auto;order:-8;border-right:0;border-bottom:1px solid var(--pe-line);overflow-x:auto;padding:0.25em;} #pe .pe-rail-b {flex:none;min-width:4.2em;} #pe .pe-rail-full {margin-top:0;margin-left:auto;}
-		#pe.pe-simple .pe-drawer:not([hidden]) {width:auto;order:-7;border-right:0;border-bottom:1px solid var(--pe-line);max-height:none;}
+		#pe.pe-simple .pe-drawer:not([hidden]) {width:auto;order:1;border-right:0;border-top:1px solid var(--pe-line);border-bottom:1px solid var(--pe-line);max-height:46vh;}   /* under the picture, so a slider's effect stays in view */
+		#pe.pe-simple .pe-adj-fl {grid-template-columns:repeat(auto-fill, minmax(3.6em, 1fr));max-height:9em;}
 	}
 	#pe .pe-drawer-b .pe-adj-h > span, #pe .pe-drawer-b .pe-adj-x {display:none;} #pe .pe-drawer-b .pe-adj-h {justify-content:flex-end;margin-bottom:0.2em;}
+	#pe .pe-exp-more {font-size:0.85em;color:var(--pe-dim);margin-top:0.7em;} #pe .pe-exp-more .pe-linkbtn {background:none;border:0;padding:0;color:var(--pe-acc2);text-decoration:underline;cursor:pointer;font:inherit;}

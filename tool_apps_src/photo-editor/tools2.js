@@ -10,7 +10,7 @@
 	PE.loadFontFile = function (file) {
 		// round 10: the label keeps the file's name; the family is a plain identifier every browser accepts in FontFace() and ctx.font (Firefox rejected "8bit Font")
 		var name = file.name.replace(/\.[^.]+$/, "").replace(/[^\w \-]/g, "").trim() || "My font", fam = window.MESFontCat ? MESFontCat.safeFamily("MESfile", name) : name.replace(/[^A-Za-z]/g, "") || "MESfile";
-		return file.arrayBuffer().then(function (ab) { var ff = new FontFace(fam, ab); return ff.load().then(function () { document.fonts.add(ff); var v = "'" + fam + "', sans-serif"; PE.FONTS.push([v, name + " (yours)"]); PE.emit("fonts"); PE.optSet("text", "font", v); }); });
+		return file.arrayBuffer().then(function (ab) { var ff = new FontFace(fam, ab); return ff.load().then(function () { document.fonts.add(ff); var v = "'" + fam + "', '" + name.replace(/'/g, "") + "', sans-serif";   /* the file's own name second: if that font is installed, it is used after a reload too */ PE.FONTS.push([v, name + " (yours)"]); PE.emit("fonts"); PE.optSet("text", "font", v); }); });
 	};
 
 	/* ---------- text: edited in place on the canvas, like GIMP ----------
