@@ -83,6 +83,7 @@
 				right = f.kept ? "" : "<button type='button' class='tu-btn tu-btn--primary' data-a='dl' data-i='" + f.id + "'>Download</button>" + (f.kind === "image" ? "<button type='button' class='tu-btn tu-btn--ghost' data-a='cmp' data-i='" + f.id + "'>Compare</button>" : "");
 			} else if (f.state === "error") meta = "<span class='cm-fm'><b class='cm-bad'>" + esc(f.note) + "</b></span>";
 			else if (f.state === "working") meta = "<span class='cm-fm'>" + esc(f.note || "Working...") + "</span><div class='cm-bar'><i style='width:" + (f.pct || 0) + "%'></i></div>";
+			if (f.kind === "image" && f.state !== "working") right += "<button type='button' class='tu-btn tu-btn--ghost' data-a='ed' data-i='" + f.id + "' title='Edit " + (f.state === "done" && !f.kept ? "the compressed" : "this") + " picture in the MES Photo Editor (new tab)'>Edit</button>";
 			return "<div class='cm-f' data-i='" + f.id + "'><span class='cm-th' aria-hidden='true'>" + thumb + "</span><div style='min-width:0'><div class='cm-fn' title='" + esc(f.name) + "'>" + esc(f.name) + "</div>" + meta + "</div><div class='cm-fr'>" + right + (busy ? "" : "<button type='button' class='cm-x' data-a='rm' data-i='" + f.id + "' aria-label='Remove " + esc(f.name) + "'>&times;</button>") + "</div></div>";
 		}).join("");
 		var pending = files.filter(function (f) { return f.state === "ready" || f.state === "error"; }).length;
@@ -94,6 +95,7 @@
 		if (b.getAttribute("data-a") === "rm") { files = files.filter(function (x) { return x !== f; }); if (!files.length) $("cm-work").hidden = true; render(); }
 		else if (b.getAttribute("data-a") === "dl") download(f.out.blob, f.out.name);
 		else if (b.getAttribute("data-a") === "cmp") compare(f);
+		else if (b.getAttribute("data-a") === "ed" && window.MESImg && MESImg.handoffSend) MESImg.handoffSend("/photo", [{ blob: f.out && !f.kept ? f.out.blob : f.file, name: f.out && !f.kept ? f.out.name : f.name }], function (u) { notice("Your browser blocked the new tab: allow pop-ups for mes.fm, or open " + u, false); }).catch(function () { notice("Could not hand the picture over (private window?): download it and open it in the Photo Editor.", false); });
 	});
 	function summary() {
 		var done = files.filter(function (f) { return f.state === "done" && !f.kept; }), el = $("cm-sum");
@@ -242,4 +244,6 @@
 		$("cm-mx").onclick = close; m.onclick = function (e) { if (e.target === m) close(); }; document.addEventListener("keydown", esc2);
 	}
 	render();
+	// round 10: pictures sent from the Photo Editor (or the Image Converter) arrive as ?handoff=<id>
+	if (window.MESImg && MESImg.handoffReceive) MESImg.handoffReceive().then(function (fs) { if (fs.length) add(fs); });
 })();

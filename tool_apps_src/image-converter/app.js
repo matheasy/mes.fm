@@ -102,7 +102,7 @@
 		else if (it.err) meta = '<span class="cv-err">' + esc(it.err) + "</span>";
 		else if (it.blob) { var pct = it.file.size ? Math.round(100 * (1 - it.blob.size / it.file.size)) : 0; meta = esc(it.ow + "×" + it.oh) + (it.nw !== it.ow ? " → " + it.nw + "×" + it.nh : "") + " · " + M.formatBytes(it.file.size) + " → <b>" + M.formatBytes(it.blob.size) + "</b> " + (pct >= 0 ? '<span class="cv-save">−' + pct + "%</span>" : '<span class="cv-grow">+' + (-pct) + "%</span>"); }
 		else meta = M.formatBytes(it.file.size) + " · waiting";
-		return '<img class="cv-th" src="' + it.thumb + '" alt="" loading="lazy"><div class="cv-nm" title="' + esc(it.file.name) + '">' + esc(it.blob ? it.out : it.file.name) + '</div><div class="cv-meta">' + meta + '</div><div class="cv-btns"><button type="button" data-a="dl" ' + (it.blob ? "" : "disabled") + ' aria-label="Download ' + esc(it.out || it.file.name) + '">⬇</button><button type="button" data-a="rm" aria-label="Remove">✕</button></div>';
+		return '<img class="cv-th" src="' + it.thumb + '" alt="" loading="lazy"><div class="cv-nm" title="' + esc(it.file.name) + '">' + esc(it.blob ? it.out : it.file.name) + '</div><div class="cv-meta">' + meta + '</div><div class="cv-btns"><button type="button" data-a="ed" title="Edit this picture in the MES Photo Editor (opens in a new tab)" aria-label="Edit ' + esc(it.blob ? it.out : it.file.name) + ' in the Photo Editor">✎</button><button type="button" data-a="dl" ' + (it.blob ? "" : "disabled") + ' aria-label="Download ' + esc(it.out || it.file.name) + '">⬇</button><button type="button" data-a="rm" aria-label="Remove">✕</button></div>';
 	}
 	function renderItem(it) { var li = $("cv-list").querySelector('[data-id="' + it.id + '"]'); if (li) li.innerHTML = itemHTML(it); }
 	function render() {
@@ -116,6 +116,7 @@
 	$("cv-list").addEventListener("click", function (e) {
 		var b = e.target.closest("button"); if (!b) return; var li = b.closest("li"), it = items.filter(function (x) { return String(x.id) === li.dataset.id; })[0]; if (!it) return;
 		if (b.dataset.a === "dl" && it.blob) save(it.blob, it.out);
+		if (b.dataset.a === "ed" && M.handoffSend) M.handoffSend("/photo", [{ blob: it.blob || it.file, name: it.blob ? it.out : it.file.name }], function (u) { toast("Your browser blocked the new tab: allow pop-ups for mes.fm, or open " + u); }).catch(function () { toast("Could not hand the picture over (private window?): download it and open it in the Photo Editor"); });
 		if (b.dataset.a === "rm") { URL.revokeObjectURL(it.thumb); items.splice(items.indexOf(it), 1); render(); }
 	});
 	$("cv-zip").addEventListener("click", function () {
@@ -149,4 +150,6 @@
 	$("cv-bg").addEventListener("input", function () { change("bg", this.value); });
 	$("cv-name").addEventListener("change", function () { change("name", this.value); });
 	syncUI();
+	// round 10: pictures sent from the Photo Editor (or the Compressor) arrive as ?handoff=<id>
+	if (M.handoffReceive) M.handoffReceive().then(function (fs) { if (fs.length) { add(fs); toast(fs.length === 1 ? "Picture received from the Photo Editor" : fs.length + " pictures received"); } });
 })();

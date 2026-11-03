@@ -84,7 +84,34 @@ var MESImg = (function () {
 		}
 		return out;
 	}
-	var api = { FORMATS: FORMATS, extOf: extOf, baseName: baseName, cleanFileName: cleanFileName, fitSize: fitSize, uniqueName: uniqueName, outName: outName, formatBytes: formatBytes, crc32: crc32, zipStore: zipStore, zipRead: zipRead };
+	/* ---------- hand pictures from one MES tool to another in the same browser (round 10: Photo Editor <-> Compressor <-> Image Converter) ----------
+	 * The pictures go through IndexedDB "mes-handoff" (same site, never uploaded) under a random id; the other page is opened with ?handoff=<id> and
+	 * takes them (they are deleted when taken, and anything older than an hour is cleared). send() opens the new tab inside the click so pop-up
+	 * blockers allow it, then points it at the page once the pictures are stored. */
+	var HDB = "mes-handoff";
+	function hdb() { return new Promise(function (res, rej) { if (typeof indexedDB === "undefined") { rej(new Error("no IndexedDB")); return; } var r = indexedDB.open(HDB, 1); r.onupgradeneeded = function () { r.result.createObjectStore("h"); }; r.onsuccess = function () { res(r.result); }; r.onerror = function () { rej(r.error); }; }); }
+	function htx(mode, fn) { return hdb().then(function (db) { return new Promise(function (res, rej) { var t = db.transaction("h", mode), st = t.objectStore("h"), out = fn(st); t.oncomplete = function () { db.close(); res(out && out.result !== undefined ? out.result : out); }; t.onerror = function () { db.close(); rej(t.error); }; }); }); }
+	function handoffPut(files) {
+		var id = Date.now().toString(36) + Math.random().toString(36).slice(2, 10), list = (files || []).map(function (f) { return { name: f.name || "picture.png", type: f.type || (f.blob && f.blob.type) || "image/png", blob: f.blob || f }; });
+		return htx("readwrite", function (st) { var c = st.openCursor(); c.onsuccess = function () { var cur = c.result; if (!cur) return; if (!cur.value || Date.now() - cur.value.t > 3600e3) cur.delete(); cur.continue(); }; st.put({ t: Date.now(), files: list }, id); }).then(function () { return id; });
+	}
+	function handoffTake(id) {
+		var got = null; return htx("readwrite", function (st) { var g = st.get(String(id)); g.onsuccess = function () { got = g.result || null; if (got) st.delete(String(id)); }; }).then(function () {
+			if (!got) return []; return got.files.map(function (f) { try { return new File([f.blob], f.name, { type: f.type }); } catch (e) { var b = f.blob; b.name = f.name; return b; } });
+		});
+	}
+	/* to = "/photo" | "/compress" | "/image-converter"; files = [File or {blob, name}]. Returns a promise; onBlocked(url) is called when no tab could open. */
+	function handoffSend(to, files, onBlocked) {
+		var w = null; try { w = window.open("about:blank", "_blank"); } catch (e) {}
+		return handoffPut(files).then(function (id) { var url = to + (to.indexOf("?") < 0 ? "?" : "&") + "handoff=" + encodeURIComponent(id); if (w && !w.closed) { try { w.opener = null; } catch (e) {} w.location.href = url; } else if (onBlocked) onBlocked(url); else location.href = url; return id; }, function (e) { if (w) w.close(); throw e; });
+	}
+	/* the pictures handed to this page (?handoff=<id>), and the address cleaned so a reload doesn't ask again */
+	function handoffReceive() {
+		if (typeof location === "undefined") return Promise.resolve([]); var m = /[?&]handoff=([\w-]+)/.exec(location.search); if (!m) return Promise.resolve([]);
+		try { var u = new URL(location.href); u.searchParams.delete("handoff"); history.replaceState(history.state, "", u.pathname + (u.search || "") + u.hash); } catch (e) {}
+		return handoffTake(m[1]).catch(function () { return []; });
+	}
+	var api = { FORMATS: FORMATS, extOf: extOf, baseName: baseName, cleanFileName: cleanFileName, fitSize: fitSize, uniqueName: uniqueName, outName: outName, formatBytes: formatBytes, crc32: crc32, zipStore: zipStore, zipRead: zipRead, handoffPut: handoffPut, handoffTake: handoffTake, handoffSend: handoffSend, handoffReceive: handoffReceive };
 	if (typeof module !== "undefined" && module.exports) module.exports = api;
 	return api;
 })();
@@ -858,11 +885,66 @@ var MESPixel = (function () {
 		return { effects: any ? Object.assign({ scale: 1 }, e) : null, fillOpacity: o.fill };
 	}
 
+	/* ---------- round 10: Quick adjust (Canva-style sliders + filters), kept on a layer (L.adj) and drawn live, never baked unless asked ----------
+	 * a = { temp, tint, bright, contrast, hi, sh, wh, bl, vib, sat } each -100..100 (0 = no change), plus filter = { id, amt 0..100 }.
+	 * Order: the filter (mixed with the original by its intensity), then the sliders: white balance, brightness (a gamma, so black and white stay),
+	 * contrast round mid-grey, tone (highlights / shadows / whites / blacks by luminance), vibrance (weak colours more), saturation (-100 = grey). */
+	var ADJKEYS = ["temp", "tint", "bright", "contrast", "hi", "sh", "wh", "bl", "vib", "sat"];
+	var QFILTERS = [
+		{ id: "bw", name: "B&W", a: { sat: -100, contrast: 12 } }, { id: "noir", name: "Noir", a: { sat: -100, contrast: 45, sh: -15, bl: -20 } },
+		{ id: "sepia", name: "Sepia", a: { contrast: 5 }, tone: "sepia" }, { id: "vivid", name: "Vivid", a: { sat: 28, vib: 30, contrast: 14 } },
+		{ id: "cool", name: "Cool", a: { temp: -38, tint: -4, vib: 8 } }, { id: "warm", name: "Warm", a: { temp: 38, tint: 4, sat: 6 } },
+		{ id: "fade", name: "Fade", a: { contrast: -22, sat: -18 }, fade: 0.16 }, { id: "matte", name: "Matte", a: { contrast: -12, sh: 18, sat: -10 }, fade: 0.1 },
+		{ id: "dramatic", name: "Dramatic", a: { contrast: 42, hi: -30, sh: 22, sat: -12, bl: -12 } }, { id: "vintage", name: "Vintage", a: { contrast: -8, temp: 18, sat: -25 }, tone: "sepia", toneK: 0.35, fade: 0.12 },
+		{ id: "bright", name: "Bright", a: { bright: 25, hi: -10, sh: 15, vib: 12 } }, { id: "mono-blue", name: "Blue tint", a: { sat: -100, contrast: 10 }, tone: "blue" }
+	];
+	function adjNorm(a) {
+		var o = {}; a = a || {}; ADJKEYS.forEach(function (k) { var v = +a[k]; o[k] = isFinite(v) ? clamp(Math.round(v), -100, 100) : 0; });
+		var f = a.filter && typeof a.filter === "object" ? a.filter : null; o.filter = f && QFILTERS.some(function (q) { return q.id === f.id; }) ? { id: f.id, amt: isFinite(+f.amt) ? clamp(Math.round(+f.amt), 0, 100) : 100 } : null;
+		return o;
+	}
+	function adjAny(a) { if (!a) return false; for (var i = 0; i < ADJKEYS.length; i++) if (+a[ADJKEYS[i]]) return true; return !!(a.filter && a.filter.id && +a.filter.amt > 0); }
+	function smooth(e0, e1, x) { var t = clamp((x - e0) / (e1 - e0), 0, 1); return t * t * (3 - 2 * t); }
+	function adjCore(d, a, tone, toneK, fade) {
+		var temp = (a.temp || 0) / 100, tint = (a.tint || 0) / 100, br = (a.bright || 0) / 100, ct = (a.contrast || 0) / 100, hi = (a.hi || 0) / 100, sh = (a.sh || 0) / 100, wh = (a.wh || 0) / 100, bl = (a.bl || 0) / 100;
+		var vib = (a.vib || 0) / 100, satF = 1 + (a.sat || 0) / 100, tk = toneK == null ? 1 : toneK, fd = fade || 0;
+		var g = Math.pow(2, -br * 0.9), k = ct >= 0 ? 1 + ct * 1.6 : 1 + ct * 0.85, lut = new Float32Array(256);
+		for (var v = 0; v < 256; v++) { var x = Math.pow(v / 255, g); x = (x - 0.5) * k + 0.5; lut[v] = x * 255; }
+		var rAdd = temp * 32 + tint * 14, gAdd = -tint * 26, bAdd = -temp * 32 + tint * 14, tones = hi || sh || wh || bl, vs = vib || satF !== 1 || tone;
+		for (var i = 0; i < d.length; i += 4) {
+			if (!d[i + 3]) continue;
+			var r = d[i] + rAdd, gg = d[i + 1] + gAdd, b = d[i + 2] + bAdd; r = r < 0 ? 0 : r > 255 ? 255 : r; gg = gg < 0 ? 0 : gg > 255 ? 255 : gg; b = b < 0 ? 0 : b > 255 ? 255 : b;
+			r = lut[r | 0] + (lut[Math.min(255, (r | 0) + 1)] - lut[r | 0]) * (r - (r | 0)); gg = lut[gg | 0] + (lut[Math.min(255, (gg | 0) + 1)] - lut[gg | 0]) * (gg - (gg | 0)); b = lut[b | 0] + (lut[Math.min(255, (b | 0) + 1)] - lut[b | 0]) * (b - (b | 0));
+			if (tones) {
+				var Y = clamp((0.2126 * r + 0.7152 * gg + 0.0722 * b) / 255, 0, 1);
+				var dl = hi * 0.32 * smooth(0.35, 0.95, Y) + sh * 0.32 * (1 - smooth(0.05, 0.65, Y)) + wh * 0.25 * smooth(0.65, 1, Y) + bl * 0.25 * (1 - smooth(0, 0.35, Y));
+				dl *= 255; r += dl; gg += dl; b += dl;
+			}
+			if (fd) { var lo = fd * 255 * 0.35, sc = 1 - fd * 0.47; r = lo + r * sc; gg = lo + gg * sc; b = lo + b * sc; }   // fade: lifted blacks, softer whites
+			if (vs) {
+				var y = 0.2126 * r + 0.7152 * gg + 0.0722 * b, f = satF;
+				if (vib) { var mx = Math.max(r, gg, b), mn = Math.min(r, gg, b), st = clamp((mx - mn) / 255, 0, 1); f *= vib > 0 ? 1 + vib * (1 - st) : 1 + vib; }
+				r = y + (r - y) * f; gg = y + (gg - y) * f; b = y + (b - y) * f;
+				if (tone) { var sr, sg, sb; if (tone === "sepia") { sr = y * 1.07 + 18; sg = y * 0.94 + 8; sb = y * 0.74; } else { sr = y * 0.85; sg = y * 0.95 + 4; sb = y * 1.05 + 22; } r = r + (sr - r) * tk; gg = gg + (sg - gg) * tk; b = b + (sb - b) * tk; }
+			}
+			d[i] = r; d[i + 1] = gg; d[i + 2] = b;   // a Uint8ClampedArray clamps and rounds
+		}
+	}
+	/* the whole Quick adjust on RGBA pixels (in place) */
+	function quickAdjust(d, a) {
+		a = adjNorm(a); var f = a.filter ? QFILTERS.filter(function (q) { return q.id === a.filter.id; })[0] : null;
+		if (f && a.filter.amt > 0) {
+			var amt = a.filter.amt / 100, o = amt < 1 ? new Uint8ClampedArray(d) : null; adjCore(d, f.a, f.tone, f.toneK, f.fade);
+			if (o) for (var i = 0; i < d.length; i += 4) { d[i] = o[i] + (d[i] - o[i]) * amt; d[i + 1] = o[i + 1] + (d[i + 1] - o[i + 1]) * amt; d[i + 2] = o[i + 2] + (d[i + 2] - o[i + 2]) * amt; }
+		}
+		var any = false; ADJKEYS.forEach(function (k) { if (a[k]) any = true; }); if (any) adjCore(d, a);
+	}
+
 	var api = { FXDEF: FXDEF, FXKEYS: FXKEYS, fxNorm: fxNorm, fxAny: fxAny, fxAngle: fxAngle, fxOffset: fxOffset, fxReach: fxReach, sdField: sdField, sdCover: sdCover, blurF: blurF, shiftF: shiftF, gradAt: gradAt, gradPlane: gradPlane, bevelPlanes: bevelPlanes, alphaBox: alphaBox, fxPlanes: fxPlanes, fxFromPsd: fxFromPsd, fxToPsd: fxToPsd, colorFromPsd: colorFromPsd, modeFromPsd: modeFromPsd, modeToPsd: modeToPsd, rgbToHsv: rgbToHsv, hsvToRgb: hsvToRgb, parseColor: parseColor, lightness: lightness, edt: edt, outlineAlpha: outlineAlpha, normToolLayout: normToolLayout, moveTool: moveTool, clampCrop: clampCrop, dragCrop: dragCrop, shiftCrop: shiftCrop, projectKind: projectKind, projectBase: projectBase, projectFileName: projectFileName, isZipBytes: isZipBytes, zipEntries: zipEntries, projectPrefix: projectPrefix, pruneRecent: pruneRecent, upsertRecent: upsertRecent, agoText: agoText, diskChanged: diskChanged, layerFileNames: layerFileNames, newProjectId: newProjectId,
 		unionBox: unionBox, boxesTouch: boxesTouch, rectFrom: rectFrom, snapTargets: snapTargets, snapAxis: snapAxis, snapBox: snapBox, guidesOn: guidesOn, linSolve: linSolve, scaleAbout: scaleAbout, wrapLines: wrapLines, textAnchorShift: textAnchorShift, angleDeg: angleDeg, degToRot: degToRot, snapAngle: snapAngle, versionedName: versionedName, nameVersion: nameVersion, pixelSig: pixelSig, psdMetaEncode: psdMetaEncode, psdMetaDecode: psdMetaDecode, psdXmp: psdXmp, carryUiState: carryUiState, richMask: richMask, richEdit: richEdit, richSet: richSet, richAll: richAll, richNorm: richNorm, richSegs: richSegs, fitFontSize: fitFontSize, folderProject: folderProject, caretLine: caretLine, hitInLine: hitInLine, wordAt: wordAt, describeSource: describeSource, bytesText: bytesText, panelClamp: panelClamp, panelKey: panelKey, clamp: clamp, hexToRgb: hexToRgb, rgbToHex: rgbToHex, rgbToHsl: rgbToHsl, hslToRgb: hslToRgb, histogram: histogram, identityLUT: identityLUT, applyLUT: applyLUT, levelsLUT: levelsLUT, curveLUT: curveLUT,
 		brightnessContrast: brightnessContrast, exposure: exposure, hueSat: hueSat, vibrance: vibrance, temperature: temperature, invert: invert, grayscale: grayscale, sepia: sepia, threshold: threshold, posterize: posterize,
 		gaussianBlur: gaussianBlur, boxBlur: boxBlur, unsharp: unsharp, noise: noise, pixelate: pixelate, vignette: vignette, convolve: convolve, floodMask: floodMask, growShrinkMask: growShrinkMask, featherMask: featherMask, invertMask: invertMask,
-		maskBounds: maskBounds, opaqueBounds: opaqueBounds, blendByMask: blendByMask, autoLevels: autoLevels, premultiply: premultiply, unpremultiply: unpremultiply };
+		maskBounds: maskBounds, opaqueBounds: opaqueBounds, ADJKEYS: ADJKEYS, QFILTERS: QFILTERS, adjNorm: adjNorm, adjAny: adjAny, quickAdjust: quickAdjust, blendByMask: blendByMask, autoLevels: autoLevels, premultiply: premultiply, unpremultiply: unpremultiply };
 	if (typeof module !== "undefined" && module.exports) module.exports = api;
 	return api;
 })();
@@ -1132,9 +1214,21 @@ var MESPixel = (function () {
 
 	/* ---------- compositing ---------- */
 	function clipCrop(x, L) { var cr = L.crop; if (!cr) return; x.beginPath(); x.rect(cr.x - L.canvas.width / 2, cr.y - L.canvas.height / 2, cr.w, cr.h); x.clip(); }
+	/* round 10: Quick adjust (L.adj, adjust.js): the layer's pixels with the sliders / filter applied, cached per layer. While a slider is being
+	 * dragged (L._adjLive) a big layer is worked out on a copy of at most ~1.2 megapixels (drawn stretched), then once at full size when it stops.
+	 * PE.adjBefore = the Before / After button: draw the layers without their adjustments. */
+	PE.adjCanvas = function (L) {
+		if (!L.adj || PE.adjBefore || !P.adjAny(L.adj) || L.type === "group") return null;
+		var cw = L.canvas.width, ch = L.canvas.height, big = cw * ch > 1.25e6, live = big && L._adjLive, k = live ? Math.sqrt(1.2e6 / (cw * ch)) : 1;
+		var key = [L.rev, cw, ch, JSON.stringify(L.adj), live ? 1 : 0].join("|"), c0 = L._adjc;
+		if (c0 && c0.key === key && c0.src === L.canvas) return c0.c;
+		var w = Math.max(1, Math.round(cw * k)), h = Math.max(1, Math.round(ch * k)), c = mk(w, h), x = c.getContext("2d"); x.imageSmoothingQuality = "high"; x.drawImage(L.canvas, 0, 0, w, h);
+		try { var id = x.getImageData(0, 0, w, h); P.quickAdjust(id.data, L.adj); x.putImageData(id, 0, 0); } catch (e) { return null; }
+		L._adjc = { key: key, src: L.canvas, c: c }; return c;
+	};
 	function drawLayer(ctx, L, base, tmpKey, w, h) {
 		if (PE.isGroup(L) || !L.visible) return; var op = L.opacity; for (var gp = L._p; gp; gp = gp._p) { if (!gp.visible) return; op *= gp.opacity; } if (op <= 0) return;
-		var src = L.preview || L.canvas, cw = L.canvas.width, ch = L.canvas.height, m = matrix(L), fx = fxOn(L) && !L.noFx ? fxCanvases(L) : null, msk = L.mask && !L.maskOff ? L.mask : null;
+		var src = L.preview || (L.adj ? PE.adjCanvas(L) : null) || L.canvas, cw = L.canvas.width, ch = L.canvas.height, m = matrix(L), fx = fxOn(L) && !L.noFx ? fxCanvases(L) : null, msk = L.mask && !L.maskOff ? L.mask : null;
 		if (L.mask && L.viewMask && PE.maskView) { src = PE.maskView(L); msk = null; fx = null; }   // Alt-click on the mask box: show the mask itself (white = shown)
 		var needTmp = msk || L.live || fx;
 		if (fx && fx.under.length) {   // drop shadow, outer glow, outside stroke / bevel: under the layer, blended with what is below it (their own blend modes)
@@ -1275,7 +1369,7 @@ var MESPixel = (function () {
 	var H = PE.hist = { stack: [], idx: -1 };
 	function snapLayer(L) {
 		var s = L._snap; if (!s || s.rev !== L.rev || (L.mask ? !s.m : !!s.m)) { s = L._snap = { rev: L.rev, c: clone(L.canvas), m: L.mask ? clone(L.mask) : null }; }
-		return { meta: { id: L.id, _pad: L._pad, _amw: L._amw, group: L.group, collapsed: L.collapsed, name: L.name, type: L.type, cx: L.cx, cy: L.cy, sx: L.sx, sy: L.sy, rot: L.rot, visible: L.visible, opacity: L.opacity, blend: L.blend, locked: L.locked, text: L.text ? JSON.parse(JSON.stringify(L.text)) : null, eq: L.eq ? JSON.parse(JSON.stringify(L.eq)) : null, editMask: L.editMask, maskOff: !!L.maskOff, src: L.src || null, crop: L.crop ? Object.assign({}, L.crop) : null, fx: L.fx ? JSON.parse(JSON.stringify(L.fx)) : null }, snap: s };
+		return { meta: { id: L.id, _pad: L._pad, _amw: L._amw, group: L.group, collapsed: L.collapsed, name: L.name, type: L.type, cx: L.cx, cy: L.cy, sx: L.sx, sy: L.sy, rot: L.rot, visible: L.visible, opacity: L.opacity, blend: L.blend, locked: L.locked, text: L.text ? JSON.parse(JSON.stringify(L.text)) : null, eq: L.eq ? JSON.parse(JSON.stringify(L.eq)) : null, editMask: L.editMask, maskOff: !!L.maskOff, src: L.src || null, crop: L.crop ? Object.assign({}, L.crop) : null, fx: L.fx ? JSON.parse(JSON.stringify(L.fx)) : null, adj: L.adj ? JSON.parse(JSON.stringify(L.adj)) : null }, snap: s };
 	}
 	var lastSel = { ver: -1, obj: null };
 	function takeSnapshot(label) {
@@ -1299,7 +1393,7 @@ var MESPixel = (function () {
 	};
 	function restore(e) {
 		var d = PE.doc, shown = d.layers; d.w = e.w; d.h = e.h; d.layers = e.layers.map(function (l) {
-			var L = PE.makeLayer({ canvas: clone(l.snap.c), type: l.meta.type, name: l.meta.name, text: l.meta.text }); for (var k in l.meta) if (k !== "text" && k !== "eq" && k !== "crop" && k !== "fx") L[k] = l.meta[k]; L.crop = l.meta.crop ? Object.assign({}, l.meta.crop) : null; L.fx = l.meta.fx ? JSON.parse(JSON.stringify(l.meta.fx)) : null; L.text = l.meta.text ? JSON.parse(JSON.stringify(l.meta.text)) : null; L.eq = l.meta.eq ? JSON.parse(JSON.stringify(l.meta.eq)) : null;
+			var L = PE.makeLayer({ canvas: clone(l.snap.c), type: l.meta.type, name: l.meta.name, text: l.meta.text }); for (var k in l.meta) if (k !== "text" && k !== "eq" && k !== "crop" && k !== "fx" && k !== "adj") L[k] = l.meta[k]; L.adj = l.meta.adj ? JSON.parse(JSON.stringify(l.meta.adj)) : null; L.crop = l.meta.crop ? Object.assign({}, l.meta.crop) : null; L.fx = l.meta.fx ? JSON.parse(JSON.stringify(l.meta.fx)) : null; L.text = l.meta.text ? JSON.parse(JSON.stringify(l.meta.text)) : null; L.eq = l.meta.eq ? JSON.parse(JSON.stringify(l.meta.eq)) : null;
 			L.mask = l.snap.m ? clone(l.snap.m) : null; L.rev = l.snap.rev; L._snap = l.snap; return L; });
 		P.carryUiState(shown, d.layers, ["collapsed"]);   // undo / redo never folds or unfolds a group (round 8)
 		d.comps = JSON.parse(e.comps || "[]"); d.light = e.light ? Object.assign({}, e.light) : null; d.activeId = e.active; if (!PE.layerById(d.activeId) && d.layers.length) d.activeId = d.layers[d.layers.length - 1].id;
@@ -1356,7 +1450,7 @@ var MESPixel = (function () {
 	PE.duplicateLayer = function (L) {
 		L = L || PE.active(); if (!L) return; var d = PE.doc, block = PE.blockOf(L), map = {}, copies = block.map(function (B) {
 			var n = PE.makeLayer({ canvas: clone(B.canvas), type: B.type, name: B.name + (B === L ? " copy" : ""), text: B.text ? JSON.parse(JSON.stringify(B.text)) : null }); map[B.id] = n;
-			["cx", "cy", "sx", "sy", "rot", "visible", "opacity", "blend", "collapsed", "_pad", "_amw"].forEach(function (k) { n[k] = B[k]; }); if (B.eq) n.eq = JSON.parse(JSON.stringify(B.eq)); if (B.mask) n.mask = clone(B.mask); if (B.src) n.src = Object.assign({}, B.src, { copy: true }); if (B.crop) n.crop = Object.assign({}, B.crop); if (B.fx) n.fx = JSON.parse(JSON.stringify(B.fx)); return n; });
+			["cx", "cy", "sx", "sy", "rot", "visible", "opacity", "blend", "collapsed", "_pad", "_amw"].forEach(function (k) { n[k] = B[k]; }); if (B.eq) n.eq = JSON.parse(JSON.stringify(B.eq)); if (B.mask) n.mask = clone(B.mask); if (B.src) n.src = Object.assign({}, B.src, { copy: true }); if (B.crop) n.crop = Object.assign({}, B.crop); if (B.fx) n.fx = JSON.parse(JSON.stringify(B.fx)); if (B.adj) n.adj = JSON.parse(JSON.stringify(B.adj)); return n; });
 		copies.forEach(function (n, i) { var B = block[i]; n.group = B === L ? L.group : (map[B.group] ? map[B.group].id : L.group); });
 		var at = d.layers.indexOf(L) + 1; Array.prototype.splice.apply(d.layers, [at, 0].concat(copies)); d.activeId = copies[copies.length - 1].id; PE.relink(); PE.commit("Duplicate " + (PE.isGroup(L) ? "group" : "layer"));
 	};
@@ -1491,7 +1585,7 @@ var MESPixel = (function () {
 	PE.projectBlob = function () {
 		var d = PE.doc, files = [], metas = [], jobs = [];
 		d.layers.forEach(function (L) {
-			var m = { id: L.id, group: L.group, collapsed: L.collapsed, name: L.name, type: L.type, cx: L.cx, cy: L.cy, sx: L.sx, sy: L.sy, rot: L.rot, visible: L.visible, opacity: L.opacity, blend: L.blend, locked: L.locked, text: L.text, w: L.canvas.width, h: L.canvas.height, hasMask: !!L.mask, eq: L.eq || null, src: L.src ? Object.assign({}, L.src, { hk: undefined }) : null, crop: L.crop || null, fx: L.fx || null, maskOff: !!L.maskOff }; metas.push(m);
+			var m = { id: L.id, group: L.group, collapsed: L.collapsed, name: L.name, type: L.type, cx: L.cx, cy: L.cy, sx: L.sx, sy: L.sy, rot: L.rot, visible: L.visible, opacity: L.opacity, blend: L.blend, locked: L.locked, text: L.text, w: L.canvas.width, h: L.canvas.height, hasMask: !!L.mask, eq: L.eq || null, src: L.src ? Object.assign({}, L.src, { hk: undefined }) : null, crop: L.crop || null, fx: L.fx || null, adj: L.adj || null, maskOff: !!L.maskOff }; metas.push(m);
 			jobs.push(canvasBytes(L.canvas).then(function (u) { files.push({ name: "layer-" + L.id + ".png", data: u }); }));
 			if (L.mask) jobs.push(canvasBytes(L.mask).then(function (u) { files.push({ name: "mask-" + L.id + ".png", data: u }); }));
 		});
@@ -1521,7 +1615,7 @@ var MESPixel = (function () {
 		var by = {}; files.forEach(function (f) { by[f.name] = f.data; }); if (!by["project.json"]) return Promise.reject(new Error("Not a MES project file"));
 		var p = JSON.parse(new TextDecoder().decode(by["project.json"])), layers = [];
 		return Promise.all(p.layers.map(function (m, i) {
-			return loadPng(by["layer-" + m.id + ".png"]).then(function (c) { var L = PE.makeLayer({ canvas: c, name: m.name, type: m.type, text: m.text }); L.id = m.id; L.eq = m.eq || null; L.src = m.src || (m.type === "group" ? null : { how: fileName === "autosave" ? "autosave" : "project", file: fileName === "autosave" ? "" : fileName || "" }); ["cx", "cy", "sx", "sy", "rot", "visible", "opacity", "blend", "locked", "group", "collapsed"].forEach(function (k) { if (m[k] !== undefined) L[k] = m[k]; }); L.crop = m.crop ? P.clampCrop(m.crop, c.width, c.height) : null; L.fx = m.fx && typeof m.fx === "object" ? m.fx : null; L.maskOff = !!m.maskOff; if (L.type === "text" && L.text) { try { var tl0 = PE.textLayout(L); L._pad = tl0.pad; L._amw = tl0.mw; } catch (x) {} } layers[i] = L; return m.hasMask ? loadPng(by["mask-" + m.id + ".png"]).then(function (mc) { L.mask = mc; }) : null; });
+			return loadPng(by["layer-" + m.id + ".png"]).then(function (c) { var L = PE.makeLayer({ canvas: c, name: m.name, type: m.type, text: m.text }); L.id = m.id; L.eq = m.eq || null; L.src = m.src || (m.type === "group" ? null : { how: fileName === "autosave" ? "autosave" : "project", file: fileName === "autosave" ? "" : fileName || "" }); ["cx", "cy", "sx", "sy", "rot", "visible", "opacity", "blend", "locked", "group", "collapsed"].forEach(function (k) { if (m[k] !== undefined) L[k] = m[k]; }); L.crop = m.crop ? P.clampCrop(m.crop, c.width, c.height) : null; L.fx = m.fx && typeof m.fx === "object" ? m.fx : null; L.adj = m.adj && typeof m.adj === "object" ? P.adjNorm(m.adj) : null; L.maskOff = !!m.maskOff; if (L.type === "text" && L.text) { try { var tl0 = PE.textLayout(L); L._pad = tl0.pad; L._amw = tl0.mw; } catch (x) {} } layers[i] = L; return m.hasMask ? loadPng(by["mask-" + m.id + ".png"]).then(function (mc) { L.mask = mc; }) : null; });
 		})).then(function () {
 			PE.doc = { w: p.w, h: p.h, layers: layers, activeId: p.active, next: p.next || 1000, name: p.name || "Untitled", comps: p.comps || [], light: p.light && typeof p.light === "object" ? { angle: +p.light.angle || 120, alt: +p.light.alt || 30 } : null, pid: p.pid || opts.pid || P.newProjectId(), file: PE.mkSrc(fileName === "autosave" ? { how: "autosave" } : Object.assign({ how: "project", file: fileName }, meta || {}, { how: "project" })) }; PE.relink(); PE.sel = null; H.stack = []; H.idx = -1; lastSel = { ver: -1 };
 			PE.commit("Open project"); PE.dirty = false; PE.emit("docsize"); PE.emit("sel"); PE.fit();
@@ -5176,6 +5270,261 @@ var MESPixel = (function () {
 	var srch = document.getElementById("pe-search"); if (srch) srch.placeholder = srch.placeholder.replace(/^\S+\s+/, "");
 })();
 
+/* MES Photo Editor round 10 -- Quick adjust (Canva-style), Simple mode and the hand-over to the Compressor / Image Converter.
+ *
+ * Quick adjust: a panel of sliders (Temperature, Tint, Brightness, Contrast, Highlights, Shadows, Whites, Blacks, Vibrance, Saturation) and one-click
+ * filters with thumbnails + intensity. The settings live on the layer (L.adj, MESPixel.adjNorm) and are drawn live by PE.adjCanvas (core.js), so they
+ * stay editable: change them, reset them, or "Apply to pixels" to bake them in. They travel with history, duplicates and .mesproj files; exports, PSD,
+ * XCF and merges include them (they all draw through PE.drawLayer). Before / After (button or the \ key) hides every layer's adjustments.
+ *
+ * Simple mode (a switch in the top bar, remembered): a Canva-like layout with a big picture, a left rail (Uploads, Sizes, Text, Elements, Draw,
+ * Crop, Adjust) and a drawer next to it; the full toolbox and the History panel are hidden. Everything stays the same editor underneath.
+ *
+ * Hand-over: File -> "Compress this picture" / "Convert this picture" send the flattened picture to mes.fm/compress or /image-converter through
+ * MESImg.handoffSend (IndexedDB in this browser, nothing uploaded); those pages send pictures back here with ?handoff=<id>. */
+(function () {
+	"use strict";
+	var PE = window.PE, P = window.MESPixel, I = window.MESImg; if (!PE || !P || !P.quickAdjust) return;
+	var el = PE.el, esc = PE.esc, $ = function (id) { return document.getElementById(id); };
+	var KEY = "mes-photo-editor:v1";
+	function sget() { try { return JSON.parse(localStorage.getItem(KEY) || "{}") || {}; } catch (e) { return {}; } }
+	function sset(o) { try { var c = sget(); for (var k in o) c[k] = o[k]; localStorage.setItem(KEY, JSON.stringify(c)); } catch (e) {} }
+
+	/* ---------- the panel ---------- */
+	var SLIDERS = [
+		["White balance", [["temp", "Temperature", "Cooler (blue) to warmer (yellow / orange). Fixes a picture that looks too blue or too yellow.", "pe-adj-r--temp"], ["tint", "Tint", "Green to magenta. Fixes a green cast from shop or office lights.", "pe-adj-r--tint"]]],
+		["Light", [["bright", "Brightness", "Lighter or darker overall; pure black and pure white stay as they are."], ["contrast", "Contrast", "More: darks darker and lights lighter (punchier). Less: flatter, softer."], ["hi", "Highlights", "Only the light parts: pull them down to bring back a bright sky or a shiny face."], ["sh", "Shadows", "Only the dark parts: lift them to see detail in a dark corner or a backlit face."], ["wh", "Whites", "The very brightest parts: set where white starts."], ["bl", "Blacks", "The very darkest parts: deeper blacks (minus) or a faded look (plus)."]]],
+		["Colour", [["vib", "Vibrance", "Boosts the dull colours more than the bright ones, so skin tones stay natural."], ["sat", "Saturation", "All colours stronger or weaker; -100 = black and white.", "pe-adj-r--sat"]]]
+	];
+	var box = null, ui = {}, thumbsKey = "", thumbT = 0, liveT = 0, before = false;
+	function target() { var L = PE.active(); return L && !PE.isGroup(L) ? L : null; }
+	function cur() { var L = target(); return P.adjNorm(L && L.adj); }
+	function build() {
+		if (box) return box;
+		box = el("div", "pe-panel pe-panel--adj"); box.id = "pe-adjp"; box.hidden = true; box.setAttribute("aria-label", "Quick adjust");
+		var head = el("div", "pe-ph pe-adj-h"); head.innerHTML = '<span>Adjust</span>';
+		var ba = el("button", "pe-mini pe-mini--t pe-adj-ba", "Before / After"); ba.type = "button"; ba.id = "pe-adj-ba"; ba.setAttribute("aria-pressed", "false"); ba.title = "Show the picture without the adjustments (hold the \\ key for a quick look)"; ba.addEventListener("click", function () { setBefore(!before); });
+		var cl = el("button", "pe-mini pe-adj-x", "✕"); cl.type = "button"; cl.title = "Close the Adjust panel"; cl.setAttribute("aria-label", "Close the Adjust panel"); cl.addEventListener("click", function () { PE.showAdjust(false); });
+		head.appendChild(ba); head.appendChild(cl); box.appendChild(head);
+		ui.who = el("div", "pe-adj-who"); box.appendChild(ui.who);
+		// filters
+		var fh = el("div", "pe-adj-sub", "Filters"); box.appendChild(fh);
+		ui.filters = el("div", "pe-adj-fl"); ui.filters.setAttribute("role", "listbox"); ui.filters.setAttribute("aria-label", "Filters"); box.appendChild(ui.filters);
+		[{ id: "", name: "Original" }].concat(P.QFILTERS).forEach(function (f) {
+			var b = el("button", "pe-adj-f"); b.type = "button"; b.dataset.f = f.id; b.setAttribute("role", "option"); b.title = f.id ? f.name + " filter" : "No filter";
+			var c = document.createElement("canvas"); c.width = c.height = 64; c.className = "pe-adj-ft"; b.appendChild(c); b.appendChild(el("span", "pe-adj-fn", esc(f.name)));
+			b.addEventListener("click", function () { var a = cur(); a.filter = f.id ? { id: f.id, amt: a.filter && a.filter.id === f.id ? a.filter.amt : 100 } : null; setAdj(a, true, f.id ? "Filter: " + f.name : "No filter"); });
+			ui.filters.appendChild(b);
+		});
+		ui.amtRow = row({ k: "amt", label: "Intensity", help: "How strong the filter is: 100 = the full filter, 50 = half way between the original and the filter.", min: 0, max: 100 }, function (v, live) { var a = cur(); if (!a.filter) return; a.filter.amt = v; setAdj(a, !live, "Filter intensity"); });
+		box.appendChild(ui.amtRow.w);
+		ui.rows = {};
+		SLIDERS.forEach(function (g) {
+			box.appendChild(el("div", "pe-adj-sub", esc(g[0])));
+			g[1].forEach(function (s) { var r = row({ k: s[0], label: s[1], help: s[2], cls: s[3], min: -100, max: 100 }, function (v, live) { var a = cur(); a[s[0]] = v; setAdj(a, !live, s[1]); }); ui.rows[s[0]] = r; box.appendChild(r.w); });
+		});
+		var acts = el("div", "pe-adj-acts");
+		var rs = el("button", "pe-btn pe-btn--sm", "Reset adjustments"); rs.type = "button"; rs.title = "Back to the original picture (the sliders to 0, no filter)"; rs.addEventListener("click", function () { var L = target(); if (!L || !L.adj) return; L.adj = null; L._adjc = null; PE.invalidate(); PE.commit("Reset adjustments"); sync(); });
+		var ap = el("button", "pe-btn pe-btn--sm", "Apply to pixels"); ap.type = "button"; ap.title = "Bake the adjustments into the layer's pixels (they can't be changed afterwards, except with Undo)"; ap.addEventListener("click", applyPixels);
+		acts.appendChild(rs); acts.appendChild(ap); box.appendChild(acts);
+		box.appendChild(el("p", "pe-adj-note", "The adjustments stay editable: they are kept on the layer (also in saved projects) and only change what you see and export. Painting on the layer paints the original colours."));
+		var side = $("pe-side"), sbar = side && side.querySelector(".pe-sbar"); if (side) side.insertBefore(box, sbar ? sbar.nextSibling : side.firstChild);
+		return box;
+	}
+	/* one slider row: label, range, number box, ? help; double-click the slider = 0 */
+	function row(o, cb) {
+		var w = el("div", "pe-adj-r" + (o.cls ? " " + o.cls : "")), id = "pe-adj-" + o.k, lb = el("label", "pe-adj-l", esc(o.label)); lb.htmlFor = id;
+		var rg = el("input"); rg.type = "range"; rg.id = id; rg.min = o.min; rg.max = o.max; rg.step = 1; rg.value = 0;
+		var nb = el("input", "pe-num pe-adj-n"); nb.type = "number"; nb.min = o.min; nb.max = o.max; nb.step = 1; nb.value = 0; nb.setAttribute("aria-label", o.label + " (number)");
+		var top = el("div", "pe-adj-rt"); top.appendChild(lb); top.appendChild(nb); if (o.help && PE.helpBtn) top.appendChild(PE.helpBtn(o.label, esc(o.help))); w.appendChild(top); w.appendChild(rg);
+		rg.addEventListener("input", function () { nb.value = rg.value; cb(+rg.value, true); });
+		rg.addEventListener("change", function () { cb(+rg.value, false); });
+		rg.addEventListener("dblclick", function () { var z = o.k === "amt" ? 100 : 0; rg.value = nb.value = z; cb(z, false); });
+		nb.addEventListener("input", function () { if (nb.value === "" || isNaN(+nb.value)) return; var v = Math.max(o.min, Math.min(o.max, Math.round(+nb.value))); rg.value = v; cb(v, true); });
+		nb.addEventListener("change", function () { if (nb.value === "" || isNaN(+nb.value)) nb.value = rg.value; cb(+rg.value, false); });
+		nb.addEventListener("keydown", function (e) { e.stopPropagation(); if (e.key === "Enter") nb.blur(); });
+		rg.addEventListener("keydown", function (e) { e.stopPropagation(); });
+		return { w: w, rg: rg, nb: nb, set: function (v) { if (document.activeElement !== nb) nb.value = v; rg.value = v; } };
+	}
+	/* change the active layer's adjustments: live = while a slider moves (quick preview of big layers), else the full picture + an undo step */
+	function setAdj(a, final, label) {
+		var L = target(); if (!L) { PE.toast(PE.doc ? "Select a layer first (in the Layers panel)" : "Open a picture first"); sync(); return; }
+		if (L.locked) { PE.toast("This layer is locked"); sync(); return; }
+		a = P.adjNorm(a); L.adj = P.adjAny(a) || a.filter ? a : null; L._adjLive = !final; if (before) setBefore(false);
+		clearTimeout(liveT); if (!final) liveT = setTimeout(function () { L._adjLive = false; PE.invalidate(); }, 260);
+		PE.invalidate(); syncFilters(a);
+		PE.later("adjust", function () { L._adjLive = false; PE.invalidate(); PE.commit(label ? "Adjust: " + label : "Adjust"); }, final ? 30 : 600);
+	}
+	function applyPixels() {
+		var L = target(); if (!L || !L.adj || !P.adjAny(L.adj)) { PE.toast("Nothing to apply: move a slider or pick a filter first"); return; }
+		if (L.locked) { PE.toast("This layer is locked"); return; }
+		if (PE.flushPending) PE.flushPending();
+		var a = L.adj; L.adj = null; L._adjc = null; if (L.type === "text" || L.eq) PE.prepare(L, true, true);
+		var x = L.canvas.getContext("2d"), id = x.getImageData(0, 0, L.canvas.width, L.canvas.height); P.quickAdjust(id.data, a); x.putImageData(id, 0, 0); L.rev++;
+		PE.invalidate(); PE.commit("Apply adjustments"); sync(); PE.toast("Adjustments are now part of the layer's pixels");
+	}
+	function setBefore(v) {
+		before = !!v; PE.adjBefore = before; var b = $("pe-adj-ba"); if (b) { b.setAttribute("aria-pressed", before ? "true" : "false"); b.textContent = before ? "Showing before" : "Before / After"; }
+		PE.invalidate();
+	}
+	PE.adjSetBefore = setBefore;
+	function sync() {
+		if (!box || box.hidden) return; var L = target(), a = cur();
+		ui.who.innerHTML = !PE.doc ? "Open a picture to adjust it." : !L ? "Select a layer (groups can't be adjusted: pick a layer inside)." : "Changes the layer <b>" + esc(L.name) + "</b>" + (L.adj && P.adjAny(L.adj) ? ' <span class="pe-adj-on">adjusted</span>' : "") + (L.locked ? " (locked)" : "");
+		box.classList.toggle("is-off", !L);
+		Object.keys(ui.rows).forEach(function (k) { ui.rows[k].set(a[k]); ui.rows[k].rg.disabled = ui.rows[k].nb.disabled = !L; });
+		syncFilters(a); thumbs();
+	}
+	function syncFilters(a) {
+		Array.prototype.forEach.call(ui.filters.children, function (b) { var on = a.filter ? b.dataset.f === a.filter.id : !b.dataset.f; b.setAttribute("aria-selected", on ? "true" : "false"); b.classList.toggle("is-on", on); });
+		ui.amtRow.w.hidden = !a.filter; if (a.filter) ui.amtRow.set(a.filter.amt);
+	}
+	/* filter thumbnails: the selected layer (or the whole picture) shrunk to 64 px, each filter applied at full strength */
+	function thumbs() {
+		clearTimeout(thumbT); thumbT = setTimeout(function () {
+			var L = target(); if (!box || box.hidden) return; var src = L ? L.canvas : null, k = L ? L.id + ":" + L.rev + ":" + src.width + "x" + src.height : "none"; if (k === thumbsKey) return; thumbsKey = k;
+			var base = document.createElement("canvas"); base.width = base.height = 64; var bx = base.getContext("2d");
+			if (src) { var s = Math.min(src.width, src.height), sx = (src.width - s) / 2, sy = (src.height - s) / 2; bx.fillStyle = "#808080"; bx.fillRect(0, 0, 64, 64); bx.imageSmoothingQuality = "high"; bx.drawImage(src, sx, sy, s, s, 0, 0, 64, 64); }
+			else { var g = bx.createLinearGradient(0, 0, 64, 64); g.addColorStop(0, "#f2b134"); g.addColorStop(0.5, "#4fb3bf"); g.addColorStop(1, "#3b5b92"); bx.fillStyle = g; bx.fillRect(0, 0, 64, 64); }
+			var id0 = bx.getImageData(0, 0, 64, 64);
+			Array.prototype.forEach.call(ui.filters.children, function (b) { var c = b.querySelector("canvas"), x = c.getContext("2d"), d = new ImageData(new Uint8ClampedArray(id0.data), 64, 64); if (b.dataset.f) P.quickAdjust(d.data, { filter: { id: b.dataset.f, amt: 100 } }); x.putImageData(d, 0, 0); });
+		}, 120);
+	}
+	PE.showAdjust = function (on) {
+		build(); if (on == null) on = box.hidden; box.hidden = !on; var tb = $("pe-adjbtn"); if (tb) tb.setAttribute("aria-pressed", on ? "true" : "false");
+		if (!on) setBefore(false); else { var sh = $("pe-sshow"); if (sh && !sh.hidden && !simple()) sh.click();   /* the panels were hidden: show them */ thumbsKey = ""; sync(); }
+		sset({ adjOpen: !!on }); if (simple()) placeAdjust();
+	};
+	PE.on("layers", function () { sync(); }); PE.on("history", function () { sync(); }); PE.on("active", function () { sync(); });
+	document.addEventListener("keydown", function (e) {   // \ = hold for a quick "before" look (like Lightroom), when no text field has the keys
+		if (e.key !== "\\" || e.ctrlKey || e.metaKey || e.altKey || !box || box.hidden) return; var t = e.target; if (t && (t.isContentEditable || /^(input|textarea|select)$/i.test(t.tagName))) return; if (!before) setBefore(true); e.preventDefault();
+	});
+	document.addEventListener("keyup", function (e) { if (e.key === "\\" && before && box && !box.hidden) setBefore(false); });
+
+	/* ---------- Adjust menu entry + top-bar button ---------- */
+	if (PE.ADJUST) PE.ADJUST.unshift({ id: "quick", title: "Quick adjust & filters (sliders)…" });
+	var run0 = PE.runAdjust; PE.runAdjust = function (id) { if (id === "quick") { PE.showAdjust(true); return; } return run0.apply(this, arguments); };
+
+	/* ---------- Simple mode ---------- */
+	var RAIL = [["uploads", "Uploads", "🖼"], ["sizes", "Sizes", "⤢"], ["text", "Text", "@text"], ["elements", "Elements", "@shape"], ["draw", "Draw", "@brush"], ["crop", "Crop", "@crop"], ["adjust", "Adjust", "◐"]];
+	function ico(g) { return g.charAt(0) === "@" && PE.toolIcon ? PE.toolIcon(g.slice(1), "") : esc(g); }
+	/* small line drawings for the Elements tiles (no emoji font needed: Windows 7 has none) */
+	var SV = function (b) { return '<svg viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">' + b + "</svg>"; };
+	var EL_ICO = { arrow: SV('<path d="M4 18L19 5"/><path d="M11 5h8v8"/>'), rect: SV('<rect x="4" y="6" width="16" height="12"/>'), round: SV('<rect x="4" y="6" width="16" height="12" rx="4"/>'), ellipse: SV('<circle cx="12" cy="12" r="8"/>'), line: SV('<path d="M5 19L19 5"/>'),
+		callout: SV('<path d="M4 6h16v10H11l-5 4v-4H4z"/>'), badge: SV('<circle cx="12" cy="12" r="9"/><path d="M11 9l2-1v8"/>'), highlight: SV('<path d="M3 15h18" stroke-width="7" stroke-opacity="0.45"/>'), redact: SV('<rect x="4" y="6" width="16" height="12"/><path d="M8 6v12M12 6v12M16 6v12M4 10h16M4 14h16" stroke-width="1"/>'), eq: SV('<path d="M17 5H7l6 7-6 7h10"/>') };
+	var rail = null, drawer = null, railSel = "";
+	function simple() { var r = $("pe"); return !!(r && r.classList.contains("pe-simple")); }
+	function buildRail() {
+		if (rail) return; var main = document.querySelector("#pe .pe-main"); if (!main) return;
+		rail = el("nav", "pe-rail"); rail.setAttribute("aria-label", "Simple mode"); drawer = el("div", "pe-drawer"); drawer.hidden = true;
+		RAIL.forEach(function (r) { var b = el("button", "pe-rail-b"); b.type = "button"; b.dataset.r = r[0]; b.setAttribute("aria-pressed", "false"); b.innerHTML = '<span class="pe-rail-i" aria-hidden="true">' + ico(r[2]) + '</span><span class="pe-rail-n">' + esc(r[1]) + "</span>"; b.addEventListener("click", function () { openDrawer(railSel === r[0] ? "" : r[0]); }); rail.appendChild(b); });
+		var full = el("button", "pe-rail-b pe-rail-full"); full.type = "button"; full.innerHTML = '<span class="pe-rail-i" aria-hidden="true">⚙</span><span class="pe-rail-n">Full editor</span>'; full.title = "Switch to the full editor (all tools, History)"; full.addEventListener("click", function () { setSimple(false); }); rail.appendChild(full);
+		main.insertBefore(drawer, main.firstChild); main.insertBefore(rail, main.firstChild);
+	}
+	function btn(label, cls, title, fn) { var b = el("button", "pe-btn " + (cls || ""), esc(label)); b.type = "button"; if (title) b.title = title; b.addEventListener("click", fn); return b; }
+	function addText(preset, str, rel) {
+		if (!PE.doc) { PE.newDoc(1080, 1080, "#ffffff", "Untitled"); }
+		var d = PE.doc, o = JSON.parse(JSON.stringify(PE.opt.text)); o.wrapW = 0; o.fit = false; o.boxH = 0; o.rich = null; o.bold = false; o.italic = false; o.underline = false; o.bgOn = false; o.strokeOn = false; o.shadowOn = false;
+		for (var k in preset) o[k] = preset[k]; o.str = str; o.size = Math.max(12, Math.round(Math.min(d.w, d.h) * rel));
+		var L = PE.makeLayer({ type: "text", name: str, text: o, w: 4, h: 4 }); PE.renderText(L); L.cx = d.w / 2; L.cy = d.h / 2; PE.addLayer(L); PE.setActive(L.id); PE.commit("Add text"); PE.setTool("move"); PE.invalidate();
+		PE.toast("Double-click the text to type your own words; drag a corner to resize it");
+	}
+	function openDrawer(id) {
+		railSel = id; Array.prototype.forEach.call(rail.querySelectorAll(".pe-rail-b"), function (b) { b.setAttribute("aria-pressed", b.dataset.r === id ? "true" : "false"); });
+		drawer.innerHTML = ""; drawer.hidden = !id; if (id !== "adjust" && box && box.parentNode === drawer) { PE.showAdjust(false); placeAdjust(); }
+		if (!id) { window.dispatchEvent(new Event("resize")); return; }
+		var h = el("div", "pe-drawer-h", esc(RAIL.filter(function (r) { return r[0] === id; })[0][1])), x = btn("✕", "pe-btn--sm pe-drawer-x", "Close", function () { openDrawer(""); }); h.appendChild(x); drawer.appendChild(h);
+		var body = el("div", "pe-drawer-b"); drawer.appendChild(body);
+		if (id === "uploads") {
+			body.appendChild(btn("Open picture(s)…", "pe-btn--primary pe-drawer-wide", "Open pictures from your computer (nothing is uploaded)", function () { PE.pickOpen(); }));
+			body.appendChild(btn("Add a picture as a layer…", "pe-drawer-wide", "Put another picture on top of this one", function () { if (!PE.doc) { PE.pickOpen(); return; } var inp = $("pe-file"); inp.accept = "image/*"; inp.multiple = true; inp.onchange = function () { var fs = Array.prototype.slice.call(inp.files); inp.value = ""; if (fs.length) PE.openFiles(fs, { place: true }); }; inp.click(); }));
+			body.appendChild(btn("Recent projects…", "pe-drawer-wide", null, function () { PE.dlgRecent(); }));
+			body.appendChild(el("p", "pe-drawer-p", "Or drop pictures anywhere on the editor, or press Ctrl+V to paste one."));
+		} else if (id === "sizes") {
+			body.appendChild(el("p", "pe-drawer-p", "Start a blank design in a common size:"));
+			[["Instagram post", 1080, 1080], ["Instagram story", 1080, 1920], ["YouTube thumbnail", 1280, 720], ["Facebook post", 1200, 630], ["X / Twitter post", 1600, 900], ["A4 (150 dpi)", 1240, 1754]].forEach(function (s) {
+				body.appendChild(btn(s[0] + "  " + s[1] + " × " + s[2], "pe-drawer-wide", "New blank image, " + s[1] + " × " + s[2] + " px", function () { if (PE.confirmReplace && !PE.confirmReplace()) return; PE.newDoc(s[1], s[2], "#ffffff", s[0]); PE.fit && PE.fit(); }));
+			});
+			body.appendChild(btn("Other size…", "pe-drawer-wide", null, function () { PE.dlgNew(); }));
+		} else if (id === "text") {
+			body.appendChild(btn("Add a heading", "pe-drawer-wide pe-drawer-h1", null, function () { addText({ bold: true, font: "Arial, Helvetica, sans-serif", color: "#111111", align: "center" }, "Add a heading", 0.09); }));
+			body.appendChild(btn("Add a subheading", "pe-drawer-wide pe-drawer-h2", null, function () { addText({ bold: true, font: "Arial, Helvetica, sans-serif", color: "#333333", align: "center" }, "Add a subheading", 0.055); }));
+			body.appendChild(btn("Add a little body text", "pe-drawer-wide", null, function () { addText({ font: "Arial, Helvetica, sans-serif", color: "#333333", align: "left" }, "Add a little body text", 0.035); }));
+			body.appendChild(el("div", "pe-adj-sub", "Styles"));
+			[["Yellow label", { bgOn: true, bgColor: "#ffeb3b", color: "#111111", bold: true, bgPad: 14, bgRadius: 8 }], ["Red callout", { bgOn: true, bgColor: "#e53935", color: "#ffffff", bold: true, bgPad: 14, bgRadius: 10 }], ["Meme text", { color: "#ffffff", strokeOn: true, stroke: "#000000", strokeW: 6, bold: true, font: "Impact, 'Arial Black', sans-serif", align: "center" }], ["Glow title", { color: "#ffffff", shadowOn: true, shadow: "#7c3aed", shadowBlur: 18, shadowDx: 0, shadowDy: 0, bold: true, align: "center" }]].forEach(function (p) {
+				body.appendChild(btn(p[0], "pe-drawer-wide", null, function () { addText(p[1], p[0], 0.06); }));
+			});
+			body.appendChild(el("p", "pe-drawer-p", "Tip: with the Text tool (T) you can click anywhere on the picture to type."));
+		} else if (id === "elements") {
+			var grid = el("div", "pe-drawer-g");
+			[["arrow", "Arrow"], ["rect", "Box"], ["round", "Rounded box"], ["ellipse", "Circle"], ["line", "Line"], ["callout", "Speech bubble"], ["badge", "Step number"], ["highlight", "Highlighter"], ["redact", "Blur / hide"]].forEach(function (k) {
+				var b = el("button", "pe-drawer-tile", EL_ICO[k[0]] + "<span>" + esc(k[1]) + "</span>"); b.type = "button"; b.title = "Draw a " + k[1].toLowerCase() + ": drag on the picture"; b.addEventListener("click", function () { PE.optSet("shape", "kind", k[0]); PE.setTool("shape"); PE.toast("Drag on the picture to draw the " + k[1].toLowerCase()); });
+				grid.appendChild(b);
+			});
+			var eq = el("button", "pe-drawer-tile", EL_ICO.eq + "<span>Equation</span>"); eq.type = "button"; eq.addEventListener("click", function () { PE.dlgEquation && PE.dlgEquation(null, null); }); grid.appendChild(eq);
+			body.appendChild(grid);
+		} else if (id === "draw") {
+			body.appendChild(btn("Brush", "pe-drawer-wide", null, function () { PE.setTool("brush"); })); body.appendChild(btn("Eraser", "pe-drawer-wide", null, function () { PE.setTool("eraser"); }));
+			body.appendChild(btn("Highlighter", "pe-drawer-wide", null, function () { PE.optSet("shape", "kind", "highlight"); PE.setTool("shape"); }));
+			body.appendChild(el("p", "pe-drawer-p", "Pick the colour in the Colour panel on the right; size and softness are in the bar above the picture."));
+		} else if (id === "crop") {
+			body.appendChild(btn("Crop the picture", "pe-btn--primary pe-drawer-wide", null, function () { PE.setTool("crop"); }));
+			body.appendChild(btn("Rotate / straighten…", "pe-drawer-wide", null, function () { if (PE.doc) PE.dlgStraighten(); }));
+			body.appendChild(btn("Resize the picture…", "pe-drawer-wide", null, function () { if (PE.doc) PE.dlgImageSize(); }));
+			body.appendChild(btn("Remove the background (AI)…", "pe-drawer-wide", null, function () { if (PE.aiRemoveBackground) PE.aiRemoveBackground(); }));
+		} else if (id === "adjust") { PE.showAdjust(true); }
+		placeAdjust(); window.dispatchEvent(new Event("resize"));
+	}
+	/* in Simple mode the Adjust panel sits in the drawer, else at the top of the side panels */
+	function placeAdjust() {
+		if (!box) return; var side = $("pe-side"), sbar = side && side.querySelector(".pe-sbar");
+		if (simple() && railSel === "adjust" && drawer) { var b = drawer.querySelector(".pe-drawer-b"); if (b && box.parentNode !== b) b.appendChild(box); }
+		else if (side && box.parentNode !== side) side.insertBefore(box, sbar ? sbar.nextSibling : side.firstChild);
+	}
+	function setSimple(on) {
+		var r = $("pe"); if (!r) return; buildRail(); r.classList.toggle("pe-simple", !!on); sset({ simple: !!on });
+		var b = $("pe-simplebtn"); if (b) { b.setAttribute("aria-pressed", on ? "true" : "false"); b.innerHTML = on ? "⚙<span> Full editor</span>" : "✨<span> Simple</span>"; b.title = on ? "Show all tools (the full editor)" : "Simple mode: a big picture and a few easy tools (like Canva)"; }
+		if (on && !railSel) openDrawer(PE.doc ? "adjust" : "uploads"); else if (!on) { if (railSel === "adjust") { railSel = ""; placeAdjust(); } else openDrawer(""); drawer.hidden = true; }
+		placeAdjust(); setTimeout(function () { window.dispatchEvent(new Event("resize")); if (PE.doc && PE.fit) PE.fit(); }, 30);
+	}
+	PE.setSimple = setSimple; PE.isSimple = simple;
+
+	/* ---------- top-bar buttons ---------- */
+	function topButtons() {
+		var tr = document.querySelector("#pe .pe-top-r"), save = $("pe-save"); if (!tr || $("pe-adjbtn")) return;
+		var ab = el("button", "pe-ib pe-ib--txt", '◐<span> Adjust</span>'); ab.type = "button"; ab.id = "pe-adjbtn"; ab.setAttribute("aria-pressed", "false"); ab.title = "Quick adjust: brightness, contrast, colour sliders and one-click filters";
+		ab.addEventListener("click", function () { if (simple()) { openDrawer(railSel === "adjust" ? "" : "adjust"); return; } PE.showAdjust(); });
+		var sb = el("button", "pe-ib pe-ib--txt", "✨<span> Simple</span>"); sb.type = "button"; sb.id = "pe-simplebtn"; sb.setAttribute("aria-pressed", "false"); sb.title = "Simple mode: a big picture and a few easy tools (like Canva)"; sb.addEventListener("click", function () { setSimple(!simple()); });
+		tr.insertBefore(sb, save || null); tr.insertBefore(ab, sb);
+	}
+
+	/* ---------- hand-over to / from the Compressor and the Image Converter ---------- */
+	PE.sendPicture = function (to, what) {
+		if (!PE.doc) { PE.toast("Open or create an image first"); return; } if (!I || !I.handoffSend) { window.open(to, "_blank"); return; }
+		var c = PE.flatten(), name = (I.cleanFileName ? I.cleanFileName(PE.doc.name || "picture") : "picture") + ".png";
+		// the tab must open inside the click: start the hand-over now, give it the PNG when it is ready
+		var blobP = new Promise(function (res) { c.toBlob(function (b) { res(b); }, "image/png"); });
+		var w = null; try { w = window.open("about:blank", "_blank"); } catch (e) {}
+		blobP.then(function (b) { return I.handoffPut([{ blob: b, name: name, type: "image/png" }]); }).then(function (id) {
+			var url = to + "?handoff=" + encodeURIComponent(id); if (w && !w.closed) { try { w.opener = null; } catch (e) {} w.location.href = url; PE.toast("Opened " + what + " with your picture in a new tab"); }
+			else PE.toast("Your browser blocked the new tab: allow pop-ups for mes.fm, or open " + url);
+		}).catch(function () { if (w) w.close(); PE.toast("Could not hand the picture over (private window?): export it and open it there"); });
+	};
+	function receive() {
+		if (!I || !I.handoffReceive || !/[?&]handoff=/.test(location.search)) return;
+		I.handoffReceive().then(function (fs) { if (!fs.length) { PE.toast("That picture is no longer waiting here (hand-overs last an hour): open it again"); return; } PE.openFiles(fs, { place: !!PE.doc, how: "open" }); });
+	}
+
+	/* ---------- start (after app.js has built the editor) ---------- */
+	function start() {
+		if (!PE.openFiles) { setTimeout(start, 50); return; }
+		topButtons(); build();
+		var st = sget(); if (st.simple || /[?&]simple=1/.test(location.search) || ($("pe") && $("pe").dataset.start === "simple")) setSimple(true); else if (st.adjOpen) PE.showAdjust(true);
+		receive();
+	}
+	if (document.readyState === "loading") document.addEventListener("DOMContentLoaded", function () { setTimeout(start, 0); }); else setTimeout(start, 0);
+})();
+
 /* MES Photo Editor -- mes.fm/photo-editor. UI: menus, tool + options bars, colour / layers / history panels, files (open, drop, paste, PSD, project),
  * shortcuts, autosave. Engine = core.js (layers, history, selection), tools.js / tools2.js, dialogs.js; pixel maths = lib.js (MESPixel, node-tested). */
 (function () {
@@ -5815,7 +6164,7 @@ $("pe-share").addEventListener("click", function () { if (needDoc()) PE.dlgShare
 	var MENUS = [
 		{ label: "File", items: [{ label: "New image…", act: function () { PE.dlgNew(); } }, { label: "Open image / PSD / GIMP / project…", key: MOD + "O", act: pickOpen }, { label: "Open project file…", icon: "📂", title: "Open a .mesproj (or a .zip with a project in it) so that Save writes back to the same file", act: function () { PE.openProjectPicker(); } }, { label: "Open project folder…", icon: "📁", title: "Open an unzipped project: a folder with project.json and the layer PNGs in it (Chrome / Edge: Save then writes back into that folder)", act: function () { PE.openProjectFolderPicker(); } }, { label: "Open recent…", act: function () { PE.dlgRecent(); }, title: "Projects autosaved in this browser and project files opened or saved here" }, { label: "Insert equation (LaTeX)…", act: function () { PE.dlgEquation(null, null); } }, { label: "Place image(s) as layers…", act: function () { if (!needDoc()) return; pickFiles("image/*,.xcf", true, function (fs) { openFiles(fs, { place: true }); }); } }, "-",
 			{ label: function () { var L = PE.psdHome && PE.psdHome() && PE.psdLink(); return L ? "Save " + (L.handle ? L.name : "PSD") : "Save project"; }, tag: "keeps layers", icon: "💾", hi: true, key: MOD + "S", act: saveProject, title: "Saves every layer, group, mask and text. A picture opened from a PSD (or saved as one) saves to that PSD; otherwise a .mesproj project file. Once it is in a file, this writes to that same file" }, { label: "Save project as…", key: MOD + "Alt+Shift+S", act: function () { PE.saveProjectAs(); }, title: "Save the project under a new name or in another folder" }, { label: function () { return (PE.autoFileOn() ? "✓ " : "") + "Auto-save to the project file"; }, act: function () { PE.setAutoFile(!PE.autoFileOn()); }, title: "Write changes into the linked project file 20 s after you stop editing, so a synced folder (OneDrive…) always has the latest" }, { label: "Download project as .zip", act: function () { PE.downloadProjectZip(); }, title: "The same project as a normal .zip file (project.json + one PNG per layer): drop it on the editor to keep working" }, "-", { label: "Export as PNG / JPEG / WebP…", key: MOD + "Shift+S", act: function () { if (needDoc()) PE.dlgExport(); } }, { label: "Export the selected group as its own image…", act: function () { if (needDoc()) PE.dlgExportGroup(); } }, { label: "Export all comps as pictures (ZIP)…", act: function () { if (needDoc()) PE.dlgExportComps(); } }, { label: "Export every layer as PNG (ZIP)…", act: function () { PE.dlgExportLayers(); }, title: "One PNG per layer plus layers.json with the positions, for other apps" }, { label: function () { var L = PE.psdLink && PE.psdLink(); return L && L.handle ? "Save to " + L.name : "Save as PSD (Photoshop)"; }, act: savePsd, title: "A Photoshop file with the layers. Once saved (or opened from a PSD), this writes to the same PSD again" }, { label: "Save as a new PSD…", act: function () { if (needDoc()) PE.savePsdAs(); }, title: "Pick a new name or folder for the PSD; later saves go there" }, { label: "Save as GIMP file (.xcf)", act: function () { PE.saveXcf(); } }, "-",
-			{ label: "Where are my images? (files, folder, autosave)…", act: function () { PE.dlgFolder("where"); } }, { label: "Keep working on another computer…", act: function () { PE.dlgFolder("move"); } }, { label: "Connect a folder on this computer…", act: function () { PE.dlgFolder("folder"); } }, "-", { label: "Copy merged image to clipboard", act: function () { if (needDoc()) copyMerged(); } }, { label: "Share as a link (temporary upload)…", act: function () { if (needDoc()) PE.dlgShare(); } }, "-", { label: "Bulk convert images…", act: function () { window.open("/image-converter", "_blank"); } }] },
+			{ label: "Where are my images? (files, folder, autosave)…", act: function () { PE.dlgFolder("where"); } }, { label: "Keep working on another computer…", act: function () { PE.dlgFolder("move"); } }, { label: "Connect a folder on this computer…", act: function () { PE.dlgFolder("folder"); } }, "-", { label: "Copy merged image to clipboard", act: function () { if (needDoc()) copyMerged(); } }, { label: "Share as a link (temporary upload)…", act: function () { if (needDoc()) PE.dlgShare(); } }, "-", { label: "Compress this picture (MES Compressor)…", title: "Opens mes.fm/compress in a new tab with this picture already in it: make the file smaller, aim for a size in KB. Nothing is uploaded.", act: function () { PE.sendPicture("/compress", "the Compressor"); } }, { label: "Convert this picture (PNG / JPG / WebP)…", title: "Opens the Bulk Image Converter in a new tab with this picture in it. Nothing is uploaded.", act: function () { PE.sendPicture("/image-converter", "the Image Converter"); } }, { label: "Bulk convert many images…", act: function () { window.open("/image-converter", "_blank"); } }] },
 		{ label: "Edit", items: [{ label: "Undo", key: MOD + "Z", act: function () { PE.undo(); } }, { label: "Redo", key: MOD + "Shift+Z", act: function () { PE.redo(); } }, "-", { label: "Cut", key: MOD + "X", act: function () { copySel(true); } }, { label: "Copy", key: MOD + "C", act: function () { copySel(false); } }, { label: "Copy merged", act: function () { if (needDoc()) copyMerged(); } }, { label: "Paste as new layer", key: MOD + "V", act: pasteInternal }, "-",
 			{ label: "Erase selection with AI (remove object)", act: function () { if (needSel()) PE.aiEraseRun(); } }, { label: "Clear selection (transparent)", key: "Del", act: clearSel }, { label: "Fill with foreground colour", key: "Alt+Backspace", act: function () { if (needDoc()) fillSel(PE.fg); } }, { label: "Fill with background colour", key: MOD + "Backspace", act: function () { if (needDoc()) fillSel(PE.bg); } }, "-",
 			{ label: "Select all", key: MOD + "A", act: function () { if (needDoc()) { PE.selAll(); PE.commit("Select all"); } } }, { label: "Deselect", key: MOD + "D", act: function () { if (PE.sel) { PE.selClear(); PE.commit("Deselect"); } } }, { label: "Invert selection", key: MOD + "Shift+I", act: function () { if (needDoc()) { PE.selInvert(); PE.commit("Invert selection"); } } },

@@ -84,7 +84,34 @@ var MESImg = (function () {
 		}
 		return out;
 	}
-	var api = { FORMATS: FORMATS, extOf: extOf, baseName: baseName, cleanFileName: cleanFileName, fitSize: fitSize, uniqueName: uniqueName, outName: outName, formatBytes: formatBytes, crc32: crc32, zipStore: zipStore, zipRead: zipRead };
+	/* ---------- hand pictures from one MES tool to another in the same browser (round 10: Photo Editor <-> Compressor <-> Image Converter) ----------
+	 * The pictures go through IndexedDB "mes-handoff" (same site, never uploaded) under a random id; the other page is opened with ?handoff=<id> and
+	 * takes them (they are deleted when taken, and anything older than an hour is cleared). send() opens the new tab inside the click so pop-up
+	 * blockers allow it, then points it at the page once the pictures are stored. */
+	var HDB = "mes-handoff";
+	function hdb() { return new Promise(function (res, rej) { if (typeof indexedDB === "undefined") { rej(new Error("no IndexedDB")); return; } var r = indexedDB.open(HDB, 1); r.onupgradeneeded = function () { r.result.createObjectStore("h"); }; r.onsuccess = function () { res(r.result); }; r.onerror = function () { rej(r.error); }; }); }
+	function htx(mode, fn) { return hdb().then(function (db) { return new Promise(function (res, rej) { var t = db.transaction("h", mode), st = t.objectStore("h"), out = fn(st); t.oncomplete = function () { db.close(); res(out && out.result !== undefined ? out.result : out); }; t.onerror = function () { db.close(); rej(t.error); }; }); }); }
+	function handoffPut(files) {
+		var id = Date.now().toString(36) + Math.random().toString(36).slice(2, 10), list = (files || []).map(function (f) { return { name: f.name || "picture.png", type: f.type || (f.blob && f.blob.type) || "image/png", blob: f.blob || f }; });
+		return htx("readwrite", function (st) { var c = st.openCursor(); c.onsuccess = function () { var cur = c.result; if (!cur) return; if (!cur.value || Date.now() - cur.value.t > 3600e3) cur.delete(); cur.continue(); }; st.put({ t: Date.now(), files: list }, id); }).then(function () { return id; });
+	}
+	function handoffTake(id) {
+		var got = null; return htx("readwrite", function (st) { var g = st.get(String(id)); g.onsuccess = function () { got = g.result || null; if (got) st.delete(String(id)); }; }).then(function () {
+			if (!got) return []; return got.files.map(function (f) { try { return new File([f.blob], f.name, { type: f.type }); } catch (e) { var b = f.blob; b.name = f.name; return b; } });
+		});
+	}
+	/* to = "/photo" | "/compress" | "/image-converter"; files = [File or {blob, name}]. Returns a promise; onBlocked(url) is called when no tab could open. */
+	function handoffSend(to, files, onBlocked) {
+		var w = null; try { w = window.open("about:blank", "_blank"); } catch (e) {}
+		return handoffPut(files).then(function (id) { var url = to + (to.indexOf("?") < 0 ? "?" : "&") + "handoff=" + encodeURIComponent(id); if (w && !w.closed) { try { w.opener = null; } catch (e) {} w.location.href = url; } else if (onBlocked) onBlocked(url); else location.href = url; return id; }, function (e) { if (w) w.close(); throw e; });
+	}
+	/* the pictures handed to this page (?handoff=<id>), and the address cleaned so a reload doesn't ask again */
+	function handoffReceive() {
+		if (typeof location === "undefined") return Promise.resolve([]); var m = /[?&]handoff=([\w-]+)/.exec(location.search); if (!m) return Promise.resolve([]);
+		try { var u = new URL(location.href); u.searchParams.delete("handoff"); history.replaceState(history.state, "", u.pathname + (u.search || "") + u.hash); } catch (e) {}
+		return handoffTake(m[1]).catch(function () { return []; });
+	}
+	var api = { FORMATS: FORMATS, extOf: extOf, baseName: baseName, cleanFileName: cleanFileName, fitSize: fitSize, uniqueName: uniqueName, outName: outName, formatBytes: formatBytes, crc32: crc32, zipStore: zipStore, zipRead: zipRead, handoffPut: handoffPut, handoffTake: handoffTake, handoffSend: handoffSend, handoffReceive: handoffReceive };
 	if (typeof module !== "undefined" && module.exports) module.exports = api;
 	return api;
 })();
@@ -193,7 +220,7 @@ var MESImg = (function () {
 		else if (it.err) meta = '<span class="cv-err">' + esc(it.err) + "</span>";
 		else if (it.blob) { var pct = it.file.size ? Math.round(100 * (1 - it.blob.size / it.file.size)) : 0; meta = esc(it.ow + "×" + it.oh) + (it.nw !== it.ow ? " → " + it.nw + "×" + it.nh : "") + " · " + M.formatBytes(it.file.size) + " → <b>" + M.formatBytes(it.blob.size) + "</b> " + (pct >= 0 ? '<span class="cv-save">−' + pct + "%</span>" : '<span class="cv-grow">+' + (-pct) + "%</span>"); }
 		else meta = M.formatBytes(it.file.size) + " · waiting";
-		return '<img class="cv-th" src="' + it.thumb + '" alt="" loading="lazy"><div class="cv-nm" title="' + esc(it.file.name) + '">' + esc(it.blob ? it.out : it.file.name) + '</div><div class="cv-meta">' + meta + '</div><div class="cv-btns"><button type="button" data-a="dl" ' + (it.blob ? "" : "disabled") + ' aria-label="Download ' + esc(it.out || it.file.name) + '">⬇</button><button type="button" data-a="rm" aria-label="Remove">✕</button></div>';
+		return '<img class="cv-th" src="' + it.thumb + '" alt="" loading="lazy"><div class="cv-nm" title="' + esc(it.file.name) + '">' + esc(it.blob ? it.out : it.file.name) + '</div><div class="cv-meta">' + meta + '</div><div class="cv-btns"><button type="button" data-a="ed" title="Edit this picture in the MES Photo Editor (opens in a new tab)" aria-label="Edit ' + esc(it.blob ? it.out : it.file.name) + ' in the Photo Editor">✎</button><button type="button" data-a="dl" ' + (it.blob ? "" : "disabled") + ' aria-label="Download ' + esc(it.out || it.file.name) + '">⬇</button><button type="button" data-a="rm" aria-label="Remove">✕</button></div>';
 	}
 	function renderItem(it) { var li = $("cv-list").querySelector('[data-id="' + it.id + '"]'); if (li) li.innerHTML = itemHTML(it); }
 	function render() {
@@ -207,6 +234,7 @@ var MESImg = (function () {
 	$("cv-list").addEventListener("click", function (e) {
 		var b = e.target.closest("button"); if (!b) return; var li = b.closest("li"), it = items.filter(function (x) { return String(x.id) === li.dataset.id; })[0]; if (!it) return;
 		if (b.dataset.a === "dl" && it.blob) save(it.blob, it.out);
+		if (b.dataset.a === "ed" && M.handoffSend) M.handoffSend("/photo", [{ blob: it.blob || it.file, name: it.blob ? it.out : it.file.name }], function (u) { toast("Your browser blocked the new tab: allow pop-ups for mes.fm, or open " + u); }).catch(function () { toast("Could not hand the picture over (private window?): download it and open it in the Photo Editor"); });
 		if (b.dataset.a === "rm") { URL.revokeObjectURL(it.thumb); items.splice(items.indexOf(it), 1); render(); }
 	});
 	$("cv-zip").addEventListener("click", function () {
@@ -240,4 +268,6 @@ var MESImg = (function () {
 	$("cv-bg").addEventListener("input", function () { change("bg", this.value); });
 	$("cv-name").addEventListener("change", function () { change("name", this.value); });
 	syncUI();
+	// round 10: pictures sent from the Photo Editor (or the Compressor) arrive as ?handoff=<id>
+	if (M.handoffReceive) M.handoffReceive().then(function (fs) { if (fs.length) { add(fs); toast(fs.length === 1 ? "Picture received from the Photo Editor" : fs.length + " pictures received"); } });
 })();

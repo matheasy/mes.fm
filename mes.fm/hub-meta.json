@@ -148,7 +148,7 @@
 },
 "/compress":{
 "added":"2026-10-16",
-"updated":"2026-10-18",
+"updated":"2026-11-02",
 "type":"Tool"
 },
 "/compress-video":{
@@ -366,6 +366,11 @@
 "updated":"2026-11-02",
 "type":"Simulation"
 },
+"/hologram":{
+"added":"2026-11-02",
+"updated":"2026-11-02",
+"type":"Simulation"
+},
 "/hutchison-effect-simulator":{
 "added":"2026-10-26",
 "updated":"2026-10-28",
@@ -378,7 +383,7 @@
 },
 "/image-converter":{
 "added":"2026-10-11",
-"updated":"2026-10-18",
+"updated":"2026-11-02",
 "type":"Tool"
 },
 "/impermanent-loss-calculator":{

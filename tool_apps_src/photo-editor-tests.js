@@ -418,4 +418,25 @@ t("fontShorthand: style, finite size, normalised stack", () => {
 t("safeFamily: FontFace names Firefox accepts", () => { const a = FC.safeFamily("MESpv", "Press Start 2P"), b = FC.safeFamily("MESpv", "Press Start 2P "), c = FC.safeFamily("MESfile", "8bit Wonder 2");
 	for (const x of [a, c]) assert(/^[A-Za-z]+$/.test(x), x); assert.notStrictEqual(a, b, "different names, different aliases"); assert.strictEqual(a, FC.safeFamily("MESpv", "Press Start 2P"), "stable"); assert(/^[A-Za-z]+$/.test(FC.safeFamily("x", "")));
 	assert(/^[A-Za-z]+$/.test(FC.safeFamily("x", "日本語 フォント"))); });
+t("quickAdjust: zero = no change, filters at 0% = no change", () => { const d = px([10, 120, 240, 255, 200, 50, 90, 128, 0, 0, 0, 0]), o = new Uint8ClampedArray(d); P.quickAdjust(d, {}); assert.deepStrictEqual(d, o);
+	P.quickAdjust(d, { filter: { id: "vivid", amt: 0 } }); assert.deepStrictEqual(d, o); assert.strictEqual(P.adjAny({}), false); assert.strictEqual(P.adjAny({ sat: 3 }), true); assert.strictEqual(P.adjAny({ filter: { id: "bw", amt: 0 } }), false); });
+t("quickAdjust sliders do what they say", () => {
+	const one = (a, c) => { const d = px([c[0], c[1], c[2], 255]); P.quickAdjust(d, a); return Array.from(d.slice(0, 3)); };
+	let g = one({ sat: -100 }, [200, 60, 30]); assert(Math.abs(g[0] - g[1]) <= 1 && Math.abs(g[1] - g[2]) <= 1, "saturation -100 = grey " + g);
+	g = one({ sat: 60 }, [160, 120, 100]); assert(g[0] - g[2] > 60, "more saturated " + g);
+	g = one({ temp: 60 }, [128, 128, 128]); assert(g[0] > 140 && g[2] < 116, "warmer = more red, less blue " + g); g = one({ temp: -60 }, [128, 128, 128]); assert(g[2] > g[0], "cooler");
+	g = one({ tint: 60 }, [128, 128, 128]); assert(g[1] < 115, "tint + = magenta (less green) " + g);
+	assert.deepStrictEqual(one({ bright: 80 }, [0, 0, 0]), [0, 0, 0], "black stays black"); assert.deepStrictEqual(one({ bright: 80 }, [255, 255, 255]), [255, 255, 255], "white stays white"); assert(one({ bright: 50 }, [100, 100, 100])[0] > 120);
+	assert(Math.abs(one({ contrast: 70 }, [128, 128, 128])[0] - 128) <= 1, "contrast pivots on mid-grey"); assert(one({ contrast: 70 }, [200, 200, 200])[0] > 220); assert(one({ contrast: -70 }, [200, 200, 200])[0] < 180);
+	const dk = one({ sh: 80 }, [40, 40, 40])[0] - 40, lt = one({ sh: 80 }, [220, 220, 220])[0] - 220; assert(dk > 25 && lt < 3, "shadows lift darks, not lights " + dk + " " + lt);
+	const hd = 230 - one({ hi: -80 }, [230, 230, 230])[0], hl = 30 - one({ hi: -80 }, [30, 30, 30])[0]; assert(hd > 25 && hl < 3, "highlights pull lights down " + hd + " " + hl);
+	assert(one({ bl: -80 }, [25, 25, 25])[0] < 15, "blacks deeper"); assert(one({ wh: 80 }, [225, 225, 225])[0] > 240, "whites brighter");
+	g = one({ vib: 80 }, [120, 110, 100]); const s1 = g[0] - g[2]; g = one({ vib: 80 }, [250, 20, 20]); assert(s1 > 20, "dull colour gets more vivid " + s1); });
+t("quickAdjust filters + intensity, alpha kept, transparent skipped", () => {
+	for (const f of P.QFILTERS) { const d = px([180, 90, 40, 200]); P.quickAdjust(d, { filter: { id: f.id, amt: 100 } }); assert.strictEqual(d[3], 200, f.id + " alpha"); }
+	const full = px([180, 90, 40, 255]), half = px([180, 90, 40, 255]); P.quickAdjust(full, { filter: { id: "bw", amt: 100 } }); P.quickAdjust(half, { filter: { id: "bw", amt: 50 } });
+	assert(Math.abs(full[0] - full[2]) <= 1, "B&W is grey"); assert(Math.abs(half[0] - (180 + full[0]) / 2) <= 1, "50% = half way");
+	const tr = px([10, 20, 30, 0]); P.quickAdjust(tr, { bright: 90, sat: 50 }); assert.deepStrictEqual(Array.from(tr), [10, 20, 30, 0]);
+	const n = P.adjNorm({ sat: 500, temp: "x", filter: { id: "nope", amt: 5 } }); assert.strictEqual(n.sat, 100); assert.strictEqual(n.temp, 0); assert.strictEqual(n.filter, null);
+	assert.deepStrictEqual(P.adjNorm({ filter: { id: "sepia" } }).filter, { id: "sepia", amt: 100 }); });
 console.log(n + " checks ok");

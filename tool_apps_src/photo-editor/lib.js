@@ -767,11 +767,66 @@ var MESPixel = (function () {
 		return { effects: any ? Object.assign({ scale: 1 }, e) : null, fillOpacity: o.fill };
 	}
 
+	/* ---------- round 10: Quick adjust (Canva-style sliders + filters), kept on a layer (L.adj) and drawn live, never baked unless asked ----------
+	 * a = { temp, tint, bright, contrast, hi, sh, wh, bl, vib, sat } each -100..100 (0 = no change), plus filter = { id, amt 0..100 }.
+	 * Order: the filter (mixed with the original by its intensity), then the sliders: white balance, brightness (a gamma, so black and white stay),
+	 * contrast round mid-grey, tone (highlights / shadows / whites / blacks by luminance), vibrance (weak colours more), saturation (-100 = grey). */
+	var ADJKEYS = ["temp", "tint", "bright", "contrast", "hi", "sh", "wh", "bl", "vib", "sat"];
+	var QFILTERS = [
+		{ id: "bw", name: "B&W", a: { sat: -100, contrast: 12 } }, { id: "noir", name: "Noir", a: { sat: -100, contrast: 45, sh: -15, bl: -20 } },
+		{ id: "sepia", name: "Sepia", a: { contrast: 5 }, tone: "sepia" }, { id: "vivid", name: "Vivid", a: { sat: 28, vib: 30, contrast: 14 } },
+		{ id: "cool", name: "Cool", a: { temp: -38, tint: -4, vib: 8 } }, { id: "warm", name: "Warm", a: { temp: 38, tint: 4, sat: 6 } },
+		{ id: "fade", name: "Fade", a: { contrast: -22, sat: -18 }, fade: 0.16 }, { id: "matte", name: "Matte", a: { contrast: -12, sh: 18, sat: -10 }, fade: 0.1 },
+		{ id: "dramatic", name: "Dramatic", a: { contrast: 42, hi: -30, sh: 22, sat: -12, bl: -12 } }, { id: "vintage", name: "Vintage", a: { contrast: -8, temp: 18, sat: -25 }, tone: "sepia", toneK: 0.35, fade: 0.12 },
+		{ id: "bright", name: "Bright", a: { bright: 25, hi: -10, sh: 15, vib: 12 } }, { id: "mono-blue", name: "Blue tint", a: { sat: -100, contrast: 10 }, tone: "blue" }
+	];
+	function adjNorm(a) {
+		var o = {}; a = a || {}; ADJKEYS.forEach(function (k) { var v = +a[k]; o[k] = isFinite(v) ? clamp(Math.round(v), -100, 100) : 0; });
+		var f = a.filter && typeof a.filter === "object" ? a.filter : null; o.filter = f && QFILTERS.some(function (q) { return q.id === f.id; }) ? { id: f.id, amt: isFinite(+f.amt) ? clamp(Math.round(+f.amt), 0, 100) : 100 } : null;
+		return o;
+	}
+	function adjAny(a) { if (!a) return false; for (var i = 0; i < ADJKEYS.length; i++) if (+a[ADJKEYS[i]]) return true; return !!(a.filter && a.filter.id && +a.filter.amt > 0); }
+	function smooth(e0, e1, x) { var t = clamp((x - e0) / (e1 - e0), 0, 1); return t * t * (3 - 2 * t); }
+	function adjCore(d, a, tone, toneK, fade) {
+		var temp = (a.temp || 0) / 100, tint = (a.tint || 0) / 100, br = (a.bright || 0) / 100, ct = (a.contrast || 0) / 100, hi = (a.hi || 0) / 100, sh = (a.sh || 0) / 100, wh = (a.wh || 0) / 100, bl = (a.bl || 0) / 100;
+		var vib = (a.vib || 0) / 100, satF = 1 + (a.sat || 0) / 100, tk = toneK == null ? 1 : toneK, fd = fade || 0;
+		var g = Math.pow(2, -br * 0.9), k = ct >= 0 ? 1 + ct * 1.6 : 1 + ct * 0.85, lut = new Float32Array(256);
+		for (var v = 0; v < 256; v++) { var x = Math.pow(v / 255, g); x = (x - 0.5) * k + 0.5; lut[v] = x * 255; }
+		var rAdd = temp * 32 + tint * 14, gAdd = -tint * 26, bAdd = -temp * 32 + tint * 14, tones = hi || sh || wh || bl, vs = vib || satF !== 1 || tone;
+		for (var i = 0; i < d.length; i += 4) {
+			if (!d[i + 3]) continue;
+			var r = d[i] + rAdd, gg = d[i + 1] + gAdd, b = d[i + 2] + bAdd; r = r < 0 ? 0 : r > 255 ? 255 : r; gg = gg < 0 ? 0 : gg > 255 ? 255 : gg; b = b < 0 ? 0 : b > 255 ? 255 : b;
+			r = lut[r | 0] + (lut[Math.min(255, (r | 0) + 1)] - lut[r | 0]) * (r - (r | 0)); gg = lut[gg | 0] + (lut[Math.min(255, (gg | 0) + 1)] - lut[gg | 0]) * (gg - (gg | 0)); b = lut[b | 0] + (lut[Math.min(255, (b | 0) + 1)] - lut[b | 0]) * (b - (b | 0));
+			if (tones) {
+				var Y = clamp((0.2126 * r + 0.7152 * gg + 0.0722 * b) / 255, 0, 1);
+				var dl = hi * 0.32 * smooth(0.35, 0.95, Y) + sh * 0.32 * (1 - smooth(0.05, 0.65, Y)) + wh * 0.25 * smooth(0.65, 1, Y) + bl * 0.25 * (1 - smooth(0, 0.35, Y));
+				dl *= 255; r += dl; gg += dl; b += dl;
+			}
+			if (fd) { var lo = fd * 255 * 0.35, sc = 1 - fd * 0.47; r = lo + r * sc; gg = lo + gg * sc; b = lo + b * sc; }   // fade: lifted blacks, softer whites
+			if (vs) {
+				var y = 0.2126 * r + 0.7152 * gg + 0.0722 * b, f = satF;
+				if (vib) { var mx = Math.max(r, gg, b), mn = Math.min(r, gg, b), st = clamp((mx - mn) / 255, 0, 1); f *= vib > 0 ? 1 + vib * (1 - st) : 1 + vib; }
+				r = y + (r - y) * f; gg = y + (gg - y) * f; b = y + (b - y) * f;
+				if (tone) { var sr, sg, sb; if (tone === "sepia") { sr = y * 1.07 + 18; sg = y * 0.94 + 8; sb = y * 0.74; } else { sr = y * 0.85; sg = y * 0.95 + 4; sb = y * 1.05 + 22; } r = r + (sr - r) * tk; gg = gg + (sg - gg) * tk; b = b + (sb - b) * tk; }
+			}
+			d[i] = r; d[i + 1] = gg; d[i + 2] = b;   // a Uint8ClampedArray clamps and rounds
+		}
+	}
+	/* the whole Quick adjust on RGBA pixels (in place) */
+	function quickAdjust(d, a) {
+		a = adjNorm(a); var f = a.filter ? QFILTERS.filter(function (q) { return q.id === a.filter.id; })[0] : null;
+		if (f && a.filter.amt > 0) {
+			var amt = a.filter.amt / 100, o = amt < 1 ? new Uint8ClampedArray(d) : null; adjCore(d, f.a, f.tone, f.toneK, f.fade);
+			if (o) for (var i = 0; i < d.length; i += 4) { d[i] = o[i] + (d[i] - o[i]) * amt; d[i + 1] = o[i + 1] + (d[i + 1] - o[i + 1]) * amt; d[i + 2] = o[i + 2] + (d[i + 2] - o[i + 2]) * amt; }
+		}
+		var any = false; ADJKEYS.forEach(function (k) { if (a[k]) any = true; }); if (any) adjCore(d, a);
+	}
+
 	var api = { FXDEF: FXDEF, FXKEYS: FXKEYS, fxNorm: fxNorm, fxAny: fxAny, fxAngle: fxAngle, fxOffset: fxOffset, fxReach: fxReach, sdField: sdField, sdCover: sdCover, blurF: blurF, shiftF: shiftF, gradAt: gradAt, gradPlane: gradPlane, bevelPlanes: bevelPlanes, alphaBox: alphaBox, fxPlanes: fxPlanes, fxFromPsd: fxFromPsd, fxToPsd: fxToPsd, colorFromPsd: colorFromPsd, modeFromPsd: modeFromPsd, modeToPsd: modeToPsd, rgbToHsv: rgbToHsv, hsvToRgb: hsvToRgb, parseColor: parseColor, lightness: lightness, edt: edt, outlineAlpha: outlineAlpha, normToolLayout: normToolLayout, moveTool: moveTool, clampCrop: clampCrop, dragCrop: dragCrop, shiftCrop: shiftCrop, projectKind: projectKind, projectBase: projectBase, projectFileName: projectFileName, isZipBytes: isZipBytes, zipEntries: zipEntries, projectPrefix: projectPrefix, pruneRecent: pruneRecent, upsertRecent: upsertRecent, agoText: agoText, diskChanged: diskChanged, layerFileNames: layerFileNames, newProjectId: newProjectId,
 		unionBox: unionBox, boxesTouch: boxesTouch, rectFrom: rectFrom, snapTargets: snapTargets, snapAxis: snapAxis, snapBox: snapBox, guidesOn: guidesOn, linSolve: linSolve, scaleAbout: scaleAbout, wrapLines: wrapLines, textAnchorShift: textAnchorShift, angleDeg: angleDeg, degToRot: degToRot, snapAngle: snapAngle, versionedName: versionedName, nameVersion: nameVersion, pixelSig: pixelSig, psdMetaEncode: psdMetaEncode, psdMetaDecode: psdMetaDecode, psdXmp: psdXmp, carryUiState: carryUiState, richMask: richMask, richEdit: richEdit, richSet: richSet, richAll: richAll, richNorm: richNorm, richSegs: richSegs, fitFontSize: fitFontSize, folderProject: folderProject, caretLine: caretLine, hitInLine: hitInLine, wordAt: wordAt, describeSource: describeSource, bytesText: bytesText, panelClamp: panelClamp, panelKey: panelKey, clamp: clamp, hexToRgb: hexToRgb, rgbToHex: rgbToHex, rgbToHsl: rgbToHsl, hslToRgb: hslToRgb, histogram: histogram, identityLUT: identityLUT, applyLUT: applyLUT, levelsLUT: levelsLUT, curveLUT: curveLUT,
 		brightnessContrast: brightnessContrast, exposure: exposure, hueSat: hueSat, vibrance: vibrance, temperature: temperature, invert: invert, grayscale: grayscale, sepia: sepia, threshold: threshold, posterize: posterize,
 		gaussianBlur: gaussianBlur, boxBlur: boxBlur, unsharp: unsharp, noise: noise, pixelate: pixelate, vignette: vignette, convolve: convolve, floodMask: floodMask, growShrinkMask: growShrinkMask, featherMask: featherMask, invertMask: invertMask,
-		maskBounds: maskBounds, opaqueBounds: opaqueBounds, blendByMask: blendByMask, autoLevels: autoLevels, premultiply: premultiply, unpremultiply: unpremultiply };
+		maskBounds: maskBounds, opaqueBounds: opaqueBounds, ADJKEYS: ADJKEYS, QFILTERS: QFILTERS, adjNorm: adjNorm, adjAny: adjAny, quickAdjust: quickAdjust, blendByMask: blendByMask, autoLevels: autoLevels, premultiply: premultiply, unpremultiply: unpremultiply };
 	if (typeof module !== "undefined" && module.exports) module.exports = api;
 	return api;
 })();
