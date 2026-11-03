@@ -16,9 +16,10 @@
 			tracks: [{ id: "v1", kind: "v", name: "Video 1" }, { id: "v2", kind: "v", name: "Video 2" }, { id: "a1", kind: "a", name: "Audio 1" }], clips: [], marks: { in: null, out: null } };
 	};
 	V.clipDefaults = function (c) {
-		var d = { speed: 1, vol: 1, mute: false, fin: 0, fout: 0, xin: 0, x: 0.5, y: 0.5, scale: 1, op: 1, crop: { l: 0, t: 0, r: 0, b: 0 }, clean: null, lufs: null, link: null, noAudio: false, afx: null };
+		var d = { speed: 1, vol: 1, mute: false, fin: 0, fout: 0, xin: 0, x: 0.5, y: 0.5, scale: 1, op: 1, crop: { l: 0, t: 0, r: 0, b: 0 }, rot: 0, anims: null, clean: null, lufs: null, link: null, noAudio: false, afx: null };
 		for (var k in d) if (c[k] == null) c[k] = typeof d[k] === "object" && d[k] ? JSON.parse(JSON.stringify(d[k])) : d[k];
 		if (c.type === "text") { c.text = Object.assign({}, V.TEXT_DEFAULT, c.text || {}); }
+		c.anims = V.cleanAnims(c.anims); c.rot = isFinite(+c.rot) ? +c.rot : 0;
 		return c;
 	};
 	// a project read from a file / storage: fill in defaults, drop clips whose track is gone, keep numbers sane
@@ -87,6 +88,7 @@
 		L.out = s; R.id = newId; R.in = s; R.start = t;
 		if (c.type === "text" || c.type === "image") { L.in = 0; L.out = s - c.in; R.in = 0; R.out = c.out - s; }
 		L.fout = 0; L.fin = Math.min(c.fin || 0, V.dur(L)); R.fin = 0; R.xin = 0; R.fout = Math.min(c.fout || 0, V.dur(R));
+		if (c.anims && c.anims.length) { var sa = V.splitAnims(c, t - c.start); L.anims = sa.left; V.setBase(R, sa.base); R.anims = sa.right; }
 		return [L, R];
 	};
 	// drag an edge: edge "l" moves the start (and the in point), "r" the end. t = wanted timeline time of that edge.
@@ -103,6 +105,8 @@
 			var e = V.clamp(t, c.start + min, hi);
 			o.out = c.in + (e - c.start) * sp;
 		}
+		// animations keep their place on the timeline (they belong to the picture), so a left trim shifts them inside the clip
+		if (c.anims && c.anims.length) o.anims = V.shiftAnims(c.anims, c.start - o.start);
 		return o;
 	};
 	// remove clips; ripple = move the later clips of the same track left by the removed length
@@ -126,8 +130,8 @@
 			var s = c.start, e = V.end(c);
 			if (e <= a + 1e-6) { out.push(c); return; }
 			if (s >= b - 1e-6) { c.start = s - (b - a); out.push(c); return; }
-			if (s < a) { var L = JSON.parse(JSON.stringify(c)); L.out = V.srcAt(c, a); L.fout = 0; if (c.type === "text" || c.type === "image") { L.in = 0; L.out = (a - s) * (c.speed || 1); } out.push(L); }
-			if (e > b) { var R = JSON.parse(JSON.stringify(c)); R.id = newId ? newId() : c.id + "r"; R.in = V.srcAt(c, b); R.start = a; R.fin = 0; R.xin = 0; if (c.type === "text" || c.type === "image") { R.in = 0; R.out = (e - b) * (c.speed || 1); } if (s >= a) R.id = c.id; out.push(R); }
+			if (s < a) { var L = JSON.parse(JSON.stringify(c)); L.out = V.srcAt(c, a); L.fout = 0; if (c.type === "text" || c.type === "image") { L.in = 0; L.out = (a - s) * (c.speed || 1); } if (c.anims && c.anims.length) L.anims = V.splitAnims(c, a - s).left; out.push(L); }
+			if (e > b) { var R = JSON.parse(JSON.stringify(c)); R.id = newId ? newId() : c.id + "r"; R.in = V.srcAt(c, b); R.start = a; R.fin = 0; R.xin = 0; if (c.type === "text" || c.type === "image") { R.in = 0; R.out = (e - b) * (c.speed || 1); } if (s >= a) R.id = c.id; if (c.anims && c.anims.length) { var sr = V.splitAnims(c, b - s); V.setBase(R, sr.base); R.anims = sr.right; } out.push(R); }
 		});
 		p.clips = out;
 		return p;
@@ -165,8 +169,8 @@
 			var cs = V.onTrack(p, tr.id);
 			for (var k = 0; k < cs.length; k++) {
 				var c = cs[k]; if (!V.active(c, t)) continue;
-				var a = V.envelope(c, t) * (c.op == null ? 1 : c.op); if (a <= 0.001) continue;
-				out.push({ clip: c, src: Math.max(0, V.srcAt(c, t)), alpha: Math.min(1, a) });
+				var pos = V.posAt(c, t), a = V.envelope(c, t) * pos.op; if (a <= 0.001) continue;
+				out.push({ clip: c, src: Math.max(0, V.srcAt(c, t)), alpha: Math.min(1, a), pos: pos });
 			}
 		}
 		return out;
@@ -307,6 +311,163 @@
 		return "avc1.64003e";
 	};
 
+
+	/* ---------- animations (Camtasia-style: each one moves the clip from where it is to new values over a stretch of time) ---------- */
+	// an animation: { id, t (start, seconds after the clip's start), d (length), ease, to: {props at its end}, from: {props at its start, optional},
+	// kind (the preset it came from, for its name) }. Props: x, y (centre as a share of the frame), scale, rot (degrees), op (0..1), cl ct cr cb (crop).
+	// The state before the first animation is the clip's own values; after an animation its "to" values hold. "from" values only apply while it
+	// runs (a slide in starts off the frame and ends where the clip is). Preview and export both draw through posAt, so they always agree.
+	V.ANIM_PROPS = ["x", "y", "scale", "rot", "op", "cl", "ct", "cr", "cb"];
+	V.EASES = [["inout", "Smooth (ease in and out)"], ["linear", "Linear (steady)"], ["out", "Ease out (slows down at the end)"], ["in", "Ease in (speeds up)"], ["back", "Overshoot (bounces past, then settles)"]];
+	V.ease = function (name, u) {
+		u = V.clamp(u, 0, 1);
+		switch (name) {
+			case "linear": return u;
+			case "in": return u * u * u;
+			case "out": return 1 - Math.pow(1 - u, 3);
+			case "back": var k = 1.70158, v = u - 1; return 1 + (k + 1) * v * v * v + k * v * v;
+			default: return u < 0.5 ? 4 * u * u * u : 1 - Math.pow(-2 * u + 2, 3) / 2;
+		}
+	};
+	function num(x, d) { x = +x; return isFinite(x) ? x : d; }
+	function cleanProps(o) {
+		if (!o || typeof o !== "object") return null;
+		var r = {}, any = false;
+		V.ANIM_PROPS.forEach(function (k) {
+			if (o[k] == null || !isFinite(+o[k])) return;
+			var v = +o[k];
+			if (k === "scale") v = V.clamp(v, 0.01, 40); else if (k === "op") v = V.clamp(v, 0, 1); else if (k.length === 2 && k[0] === "c") v = V.clamp(v, 0, 0.95); else if (k === "rot") v = V.clamp(v, -36000, 36000); else v = V.clamp(v, -20, 20);
+			r[k] = v; any = true;
+		});
+		return any ? r : null;
+	}
+	// animations read from a file / storage: keep only sane ones, sorted by start
+	V.cleanAnims = function (arr) {
+		if (!Array.isArray(arr) || !arr.length) return null;
+		var out = arr.filter(function (a) { return a && typeof a === "object"; }).map(function (a) {
+			var o = { id: String(a.id || V.uid("a")).slice(0, 40), t: num(a.t, 0), d: V.clamp(num(a.d, 1), 0.02, 3600), ease: V.EASES.some(function (e) { return e[0] === a.ease; }) ? a.ease : "inout", kind: String(a.kind || "custom").slice(0, 20) };
+			var to = cleanProps(a.to), from = cleanProps(a.from); if (to) o.to = to; if (from) o.from = from;
+			return o;
+		}).filter(function (a) { return a.to || a.from; });
+		out.sort(function (x, y) { return x.t - y.t; });
+		return out.length ? out : null;
+	};
+	// the clip's own (un-animated) values
+	V.baseState = function (c) {
+		var cr = c.crop || {};
+		return { x: c.x == null ? 0.5 : c.x, y: c.y == null ? 0.5 : c.y, scale: c.scale == null ? 1 : c.scale, rot: c.rot || 0, op: c.op == null ? 1 : c.op, cl: cr.l || 0, ct: cr.t || 0, cr: cr.r || 0, cb: cr.b || 0 };
+	};
+	V.setBase = function (c, s) { c.x = s.x; c.y = s.y; c.scale = s.scale; c.rot = s.rot; c.op = s.op; c.crop = { l: s.cl, t: s.ct, r: s.cr, b: s.cb }; return c; };
+	function sortedAnims(c) { return (c.anims || []).slice().sort(function (a, b) { return a.t - b.t; }); }
+	function lerpState(s, a, u) {
+		var f = Object.assign({}, s, a.from || {}), g = Object.assign({}, s, a.to || {}), o = {};
+		V.ANIM_PROPS.forEach(function (k) { o[k] = f[k] + (g[k] - f[k]) * u; });
+		return o;
+	}
+	// state at rel seconds after the clip's start (flat props)
+	V.stateAt = function (c, rel) {
+		var s = V.baseState(c), L = sortedAnims(c);
+		for (var j = 0; j < L.length; j++) {
+			var a = L[j];
+			if (rel >= a.t + a.d - EPS) { if (a.to) s = Object.assign(s, a.to); continue; }
+			if (rel < a.t) break;
+			s = lerpState(s, a, V.ease(a.ease, (rel - a.t) / a.d));
+		}
+		return s;
+	};
+	// what the compositor needs at timeline time t: { x, y, scale, rot, op, crop }
+	V.posAt = function (c, t) {
+		var s = c.anims && c.anims.length ? V.stateAt(c, t - c.start) : V.baseState(c);
+		return { x: s.x, y: s.y, scale: s.scale, rot: s.rot, op: s.op, crop: { l: s.cl, t: s.ct, r: s.cr, b: s.cb } };
+	};
+	// the animation running at rel (strictly inside it, more than tol from both ends), or null
+	V.animRunning = function (c, rel, tol) {
+		tol = tol == null ? 1e-3 : tol; var L = c.anims || [];
+		for (var j = 0; j < L.length; j++) if (rel > L[j].t + tol && rel < L[j].t + L[j].d - tol) return L[j];
+		return null;
+	};
+	// who decides prop k at rel: the last animation that has ended by then and sets k in its "to" (edit that one's end value), else the clip itself
+	V.propOwner = function (c, rel, k, tol) {
+		tol = tol == null ? 1e-3 : tol; var L = sortedAnims(c), own = null;
+		L.forEach(function (a) { if (a.t + a.d <= rel + tol && a.to && a.to[k] != null) { if (!own || a.t + a.d >= own.t + own.d) own = a; } });
+		return own;
+	};
+	// set prop k to v as seen at rel: on the animation that decides it there, else on the clip (moving text at an animation's end moves that keyframe)
+	V.setPropAt = function (c, rel, k, v, tol) {
+		var a = V.propOwner(c, rel, k, tol);
+		if (a) { a.to[k] = v; return a; }
+		var b = V.baseState(c); b[k] = v; V.setBase(c, b); return null;
+	};
+	// shift all animations by dt (seconds inside the clip)
+	V.shiftAnims = function (anims, dt) { return (anims || []).map(function (a) { var o = JSON.parse(JSON.stringify(a)); o.t = Math.round((o.t + dt) * 1e6) / 1e6; return o; }); };
+	// cut a clip's animations at rel: left = those starting before it, right = those still going (times from the cut; a running one keeps a
+	// negative start so it carries on exactly), base = the right half's own values (everything that had ended by then)
+	V.splitAnims = function (c, rel) {
+		var L = sortedAnims(c), b = V.baseState(c), left = [], right = [];
+		L.forEach(function (a) {
+			if (a.t < rel - EPS) left.push(JSON.parse(JSON.stringify(a)));
+			if (a.t + a.d <= rel + EPS) { if (a.to) Object.assign(b, a.to); }
+			else { var o = JSON.parse(JSON.stringify(a)); o.t = Math.round((a.t - rel) * 1e6) / 1e6; right.push(o); }
+		});
+		return { left: left.length ? left : null, right: right.length ? right : null, base: b };
+	};
+	// zoom-n-pan: the values that make the frame show rect (frame pixels, as it looks with state s) filling the W x H frame
+	V.zoomToRect = function (s, rect, W, H) {
+		var z = Math.min(W / Math.max(1, rect.w), H / Math.max(1, rect.h)), rx = rect.x + rect.w / 2, ry = rect.y + rect.h / 2;
+		return { x: (W / 2 + (s.x * W - rx) * z) / W, y: (H / 2 + (s.y * H - ry) * z) / H, scale: V.clamp(s.scale * z, 0.01, 40) };
+	};
+	// a rectangle of the frame's shape centred at (cx, cy), w wide, kept inside the frame where it fits
+	V.frameRect = function (cx, cy, w, W, H) { w = V.clamp(w, 8, W); var h = w * H / W, x = V.clamp(cx - w / 2, 0, W - w), y = V.clamp(cy - h / 2, 0, H - h); return { x: x, y: y, w: w, h: h }; };
+	V.ANIM_PRESETS = [
+		{ id: "zoomin", name: "Zoom in", desc: "1.5× bigger", at: "here" }, { id: "zoomout", name: "Zoom out", desc: "Back to the full frame", at: "here" },
+		{ id: "zoompan", name: "Zoom-n-pan", desc: "Draw a box on the preview", at: "here", rect: true },
+		{ id: "slidein-l", name: "Slide in", desc: "From the left", at: "start" }, { id: "slidein-r", name: "Slide in", desc: "From the right", at: "start" },
+		{ id: "slidein-b", name: "Slide in", desc: "From below", at: "start" }, { id: "slideout-l", name: "Slide out", desc: "To the left", at: "end" },
+		{ id: "slideout-r", name: "Slide out", desc: "To the right", at: "end" }, { id: "fadein", name: "Fade in", desc: "From see-through", at: "start" },
+		{ id: "fadeout", name: "Fade out", desc: "To see-through", at: "end" }, { id: "scaleup", name: "Scale up", desc: "1.25× bigger", at: "here" },
+		{ id: "scaledown", name: "Scale down", desc: "0.8× smaller", at: "here" }, { id: "popin", name: "Pop in", desc: "Grows from nothing", at: "start" },
+		{ id: "spin", name: "Spin", desc: "One full turn", at: "here" }, { id: "tilt", name: "Tilt", desc: "Turn 10°", at: "here" },
+		{ id: "custom", name: "Custom", desc: "Then move it in the preview", at: "here" }
+	];
+	V.animPreset = function (id) { for (var j = 0; j < V.ANIM_PRESETS.length; j++) if (V.ANIM_PRESETS[j].id === id) return V.ANIM_PRESETS[j]; return null; };
+	// make the animation for a preset: s = the clip's state where it starts, box = { w, h } of the clip on the frame (frame pixels), W x H frame,
+	// o = { rect (zoom-n-pan) }. -> { to, from } (either may be missing)
+	V.animValues = function (id, s, box, W, H, o) {
+		o = o || {}; var bw = box ? box.w : W, bh = box ? box.h : H;
+		switch (id) {
+			case "zoomin": return { to: { scale: s.scale * 1.5 } };
+			case "zoomout": return { to: { x: 0.5, y: 0.5, scale: 1, rot: 0 } };
+			case "zoompan": return o.rect ? { to: V.zoomToRect(s, o.rect, W, H) } : null;
+			case "scaleup": return { to: { scale: s.scale * 1.25 } };
+			case "scaledown": return { to: { scale: s.scale * 0.8 } };
+			case "slidein-l": return { from: { x: -(bw / 2) / W - 0.01 } };
+			case "slidein-r": return { from: { x: 1 + (bw / 2) / W + 0.01 } };
+			case "slidein-b": return { from: { y: 1 + (bh / 2) / H + 0.01 } };
+			case "slideout-l": return { to: { x: -(bw / 2) / W - 0.01 } };
+			case "slideout-r": return { to: { x: 1 + (bw / 2) / W + 0.01 } };
+			case "fadein": return { from: { op: 0 } };
+			case "fadeout": return { to: { op: 0 } };
+			case "popin": return { from: { scale: Math.max(0.01, s.scale * 0.02), op: 0 } };
+			case "spin": return { to: { rot: s.rot + 360 } };
+			case "tilt": return { to: { rot: s.rot + 10 } };
+			default: return { to: { x: s.x, y: s.y, scale: s.scale, rot: s.rot, op: s.op } };
+		}
+	};
+	// where a new animation of length d goes inside a clip of length len: "start", "end", or at rel ("here"), kept inside the clip
+	V.animSlot = function (at, rel, d, len) { d = Math.min(d, Math.max(0.05, len)); var t = at === "start" ? 0 : at === "end" ? len - d : V.clamp(rel, 0, Math.max(0, len - d)); return { t: Math.round(t * 1e6) / 1e6, d: d }; };
+	V.animName = function (a) { var p = V.animPreset(a.kind); return p ? p.name + (/^slide/.test(p.id) ? " " + p.desc.toLowerCase() : "") : "Animation"; };
+
+	/* ---------- preview view: zoom and pan of the canvas inside the stage ---------- */
+	// fit the W x H frame into a cw x ch stage with margin pixels around it -> { k (stage px per frame px), ox, oy (frame origin) }
+	V.viewFit = function (cw, ch, W, H, margin) {
+		margin = margin == null ? 12 : margin; var k = Math.max(1e-4, Math.min((cw - 2 * margin) / W, (ch - 2 * margin) / H));
+		return { k: k, ox: (cw - W * k) / 2, oy: (ch - H * k) / 2 };
+	};
+	// zoom to k2 keeping the stage point (px, py) over the same frame point
+	V.viewZoomAt = function (v, k2, px, py) { var fx = (px - v.ox) / v.k, fy = (py - v.oy) / v.k; return { k: k2, ox: px - fx * k2, oy: py - fy * k2 }; };
+	V.ZOOM_STEPS = [0.1, 0.25, 0.33, 0.5, 0.67, 0.75, 1, 1.25, 1.5, 2, 3, 4, 6, 8];
+	// rotate point (x, y) by deg degrees about (cx, cy)
+	V.rotPt = function (x, y, cx, cy, deg) { var a = deg * Math.PI / 180, c = Math.cos(a), s = Math.sin(a), dx = x - cx, dy = y - cy; return { x: cx + dx * c - dy * s, y: cy + dx * s + dy * c }; };
 
 	/* ---------- magnetic tracks (clips close up to the left, no gaps) ---------- */
 	// lay the clips of one track end to end from 0, in their current order (by start; ties keep array order)
@@ -498,7 +659,10 @@
 	};
 
 	/* ---------- canvas size ---------- */
-	V.CANVAS_PRESETS = [["1920x1080", "1080p (16:9)"], ["1280x720", "720p"], ["2560x1440", "1440p"], ["3840x2160", "4K (2160p)"], ["1080x1920", "Vertical 1080×1920 (Shorts, Reels)"], ["1080x1080", "Square 1080×1080"], ["1080x1350", "Portrait 4:5"]];
+	// [value, name, group]: the canvas size menu groups them
+	V.CANVAS_PRESETS = [["854x480", "480p (854×480)", "16:9"], ["1280x720", "720p (1280×720)", "16:9"], ["1920x1080", "1080p Full HD (1920×1080)", "16:9"], ["2560x1440", "1440p (2560×1440)", "16:9"], ["3840x2160", "4K (3840×2160)", "16:9"],
+		["1080x1920", "Vertical 9:16, 1080×1920 (Shorts, Reels, TikTok)", "Vertical and square"], ["720x1280", "Vertical 9:16, 720×1280", "Vertical and square"], ["1080x1080", "Square 1080×1080", "Vertical and square"], ["1080x1350", "Portrait 4:5, 1080×1350", "Vertical and square"],
+		["640x480", "4:3, 640×480", "4:3"], ["1440x1080", "4:3, 1440×1080", "4:3"]];
 	V.presetOf = function (w, h) { var k = w + "x" + h; for (var j = 0; j < V.CANVAS_PRESETS.length; j++) if (V.CANVAS_PRESETS[j][0] === k) return k; return "custom"; };
 	// "1280x720", "1280 × 720", "1280,720" -> { w, h } (even, 16..7680 x 16..4320) or null
 	V.parseSize = function (s) {

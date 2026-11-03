@@ -212,5 +212,76 @@ function proj(clips) { const p = V.newProject(); p.clips = clips; return p; }
 	eq([V.presetOf(1080, 1920), V.presetOf(1000, 700)], ["1080x1920", "custom"], "preset of a size");
 	eq([V.parseSize("1281 x 721"), V.parseSize("1280×720"), V.parseSize("abc"), V.parseSize("9000x100")], [{ w: 1282, h: 722 }, { w: 1280, h: 720 }, null, null], "custom size text");
 }
+
+// animations: easing
+{
+	V.EASES.forEach(function (e) { near(V.ease(e[0], 0), 0, 1e-12, "ease " + e[0] + " starts at 0"); near(V.ease(e[0], 1), 1, 1e-12, "ease " + e[0] + " ends at 1"); });
+	near(V.ease("inout", 0.5), 0.5, 1e-12, "smooth is symmetric"); near(V.ease("linear", 0.3), 0.3, 1e-12, "linear");
+	ok(V.ease("back", 0.8) > 1, "overshoot goes past the end"); ok(V.ease("out", 0.2) > 0.2 && V.ease("in", 0.2) < 0.2, "out is fast first, in slow first");
+	near(V.ease("inout", -1), 0, 0, "clamped below"); near(V.ease("inout", 2), 1, 0, "clamped above");
+}
+// animations: state over time (zoom in then move, with a slide in from the left)
+{
+	const c = clip({ start: 10, out: 10, x: 0.5, y: 0.5, scale: 1, anims: [
+		{ id: "z", t: 2, d: 2, ease: "linear", to: { scale: 2 } },
+		{ id: "m", t: 5, d: 1, ease: "linear", to: { x: 0.25 } },
+		{ id: "s", t: 0, d: 1, ease: "linear", from: { x: -0.5 } } ] });
+	eq(c.anims.map(a => a.id), ["s", "z", "m"], "kept sorted by start");
+	near(V.stateAt(c, 0).x, -0.5, 1e-12, "slide in starts off the frame"); near(V.stateAt(c, 0.5).x, 0, 1e-12, "half way in"); near(V.stateAt(c, 1).x, 0.5, 1e-12, "slide in ends where the clip is");
+	near(V.stateAt(c, 1.5).scale, 1, 0, "before the zoom"); near(V.stateAt(c, 3).scale, 1.5, 1e-12, "half way through the zoom"); near(V.stateAt(c, 4).scale, 2, 1e-12, "zoom done");
+	near(V.stateAt(c, 4.5).scale, 2, 0, "zoom holds"); near(V.stateAt(c, 5.5).x, 0.375, 1e-12, "moving"); near(V.stateAt(c, 9).x, 0.25, 0, "move holds"); near(V.stateAt(c, 9).scale, 2, 0, "zoom still holds");
+	const pos = V.posAt(c, 13); near(pos.scale, 1.5, 1e-12, "posAt takes timeline time"); ok(pos.crop && pos.crop.l === 0, "posAt has a crop");
+	near(V.layersAt(proj([c]), 13)[0].pos.scale, 1.5, 1e-12, "layersAt carries the animated position (preview and export draw from it)");
+	const f = clip({ start: 0, out: 4, anims: [{ t: 3, d: 1, ease: "linear", to: { op: 0 } }] });
+	near(V.layersAt(proj([f]), 3.5)[0].alpha, 0.5, 1e-9, "an opacity animation fades the layer");
+}
+// animations: who owns a value (dragging at an animation's end changes that keyframe)
+{
+	const c = clip({ start: 0, out: 10, x: 0.5, anims: [{ id: "a", t: 1, d: 2, to: { x: 0.2 } }, { id: "b", t: 5, d: 1, to: { scale: 2 } }] });
+	eq(V.propOwner(c, 0.5, "x"), null, "before: the clip owns x"); eq(V.propOwner(c, 3, "x").id, "a", "at the end of a: a owns x");
+	eq(V.propOwner(c, 8, "x").id, "a", "later: still a"); eq(V.propOwner(c, 8, "y"), null, "a never set y");
+	ok(V.animRunning(c, 2, 0.01) && !V.animRunning(c, 3, 0.01), "running inside, not at the end");
+	V.setPropAt(c, 3, "x", 0.7); near(c.anims[0].to.x, 0.7, 0, "moved the keyframe"); near(c.x, 0.5, 0, "clip value untouched");
+	V.setPropAt(c, 0.2, "x", 0.6); near(c.x, 0.6, 0, "before any animation: the clip's own value"); near(V.stateAt(c, 2).x, 0.65, 1e-12, "the animation now runs from the new start");
+}
+// animations: split, left trim and cutting a range keep every frame where it was
+{
+	const mk = () => clip({ id: "k", start: 4, in: 0, out: 10, x: 0.5, scale: 1, anims: [{ id: "a", t: 1, d: 4, ease: "inout", to: { scale: 3, x: 0.1 } }, { id: "b", t: 6, d: 2, to: { rot: 90 } }] });
+	const c = mk(), r = V.split(c, 7, "k2");
+	for (const t of [4.5, 6, 6.99]) { const a = V.posAt(c, t), b = V.posAt(r[0], t); near(b.scale, a.scale, 1e-9, "left half at " + t); }
+	for (const t of [7, 8.2, 9.5, 11, 13.9]) { const a = V.posAt(c, t), b = V.posAt(r[1], t); near(b.scale, a.scale, 1e-9, "right half scale at " + t); near(b.x, a.x, 1e-9, "right half x at " + t); near(b.rot, a.rot, 1e-9, "right half rot at " + t); }
+	ok(r[1].anims[0].t < 0, "the running animation carries on with a negative start");
+	const c2 = mk(), o = V.trim(c2, "l", 5.5, { mediaDur: 20 }), c3 = Object.assign(JSON.parse(JSON.stringify(c2)), o);
+	for (const t of [5.5, 6, 8, 12]) near(V.posAt(c3, t).scale, V.posAt(c2, t).scale, 1e-9, "left trim keeps the animation at " + t);
+	const p = proj([mk()]); V.removeRange(p, 6, 8, () => "n");
+	const L = p.clips.filter(x => x.start === 4)[0], R = p.clips.filter(x => x.start === 6 && x !== L)[0];
+	const orig = mk(); near(V.posAt(R, 6).scale, V.posAt(orig, 8).scale, 1e-9, "after a cut the right part continues the zoom"); near(V.posAt(L, 5.5).scale, V.posAt(orig, 5.5).scale, 1e-9, "left part unchanged");
+}
+// animations: zoom-n-pan, presets, slots, cleaning
+{
+	const s = V.baseState(clip({}));
+	const z = V.zoomToRect(s, { x: 960, y: 540, w: 960, h: 540 }, 1920, 1080);
+	near(z.scale, 2, 1e-12, "zoom to a quarter = 2×"); near(z.x, 0, 1e-12, "pans left"); near(z.y, 0, 1e-12, "pans up");
+	// the chosen rectangle really fills the frame: its corner (960,540) lands on (0,0) and (1920,1080) on (1920,1080)
+	const pl = V.place(1920, 1080, Object.assign({ crop: { l: 0, t: 0, r: 0, b: 0 } }, z), 1920, 1080), k = pl.dw / 1920;
+	near(pl.dx + 960 * k, 0, 1e-6, "rect corner at the frame corner"); near(pl.dx + 1920 * k, 1920, 1e-6, "far corner at the far edge");
+	const fr = V.frameRect(1900, 100, 400, 1920, 1080); near(fr.h, 225, 1e-9, "frame-shaped box"); near(fr.x, 1520, 1e-9, "kept inside");
+	near(V.animValues("zoomin", s).to.scale, 1.5, 0, "zoom in"); near(V.animValues("slidein-l", s, { w: 960, h: 540 }, 1920, 1080).from.x, -0.26, 1e-12, "slide in starts just off the left");
+	near(V.animValues("spin", Object.assign({}, s, { rot: 10 })).to.rot, 370, 0, "spin adds a turn"); eq(V.animValues("zoompan", s, null, 1920, 1080, {}), null, "zoom-n-pan needs a box");
+	eq(V.animSlot("end", 0, 1, 5), { t: 4, d: 1 }, "out animations at the end"); eq(V.animSlot("here", 4.6, 1, 5), { t: 4, d: 1 }, "kept inside the clip"); eq(V.animSlot("start", 3, 9, 2), { t: 0, d: 2 }, "never longer than the clip");
+	const cl = V.cleanAnims([{ t: "2", d: 0, to: { scale: 99, op: 5, bogus: 1 } }, { t: 1, d: 1 }, null, { t: 0, d: 1, ease: "zzz", from: { x: 0.1 } }]);
+	eq(cl.length, 2, "empty / bad animations dropped"); near(cl[1].d, 0.02, 0, "length kept positive"); near(cl[1].to.scale, 40, 0, "scale clamped"); near(cl[1].to.op, 1, 0, "opacity clamped"); ok(!("bogus" in cl[1].to), "unknown props dropped"); eq(cl[0].ease, "inout", "unknown easing -> smooth");
+	const n = V.normalize({ tracks: [{ id: "v1", kind: "v" }], clips: [{ id: "q", type: "image", track: "v1", start: 0, in: 0, out: 5, rot: "x", anims: [{ t: 0, d: 1, to: { rot: 45 } }] }] });
+	eq([n.clips[0].rot, n.clips[0].anims.length], [0, 1], "project files keep animations, fix a bad rotation");
+	ok(V.split(clip({ start: 0, out: 4 }), 2, "z")[1].anims === null, "a clip without animations splits as before");
+}
+// preview view maths
+{
+	const v = V.viewFit(1000, 600, 1920, 1080, 20);
+	near(v.k, 960 / 1920, 1e-12, "fits the width"); near(v.ox, 20, 1e-9, "margin left"); near(v.oy, (600 - 540) / 2, 1e-9, "centred vertically");
+	const w = V.viewZoomAt(v, 2, 500, 300); near((500 - w.ox) / w.k, (500 - v.ox) / v.k, 1e-9, "zoom keeps the point under the pointer");
+	const r = V.rotPt(2, 1, 1, 1, 90); near(r.x, 1, 1e-12, "rotate x"); near(r.y, 2, 1e-12, "rotate y");
+	eq(V.presetOf(854, 480), "854x480", "480p preset"); eq(V.presetOf(1440, 1080), "1440x1080", "4:3 preset"); ok(V.CANVAS_PRESETS.every(q => V.parseSize(q[0]) && q[2]), "every preset parses and has a group");
+}
 console.log(pass + " passed, " + fail + " failed");
 process.exit(fail ? 1 : 0);
