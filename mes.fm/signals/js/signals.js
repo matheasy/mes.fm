@@ -157,6 +157,35 @@
 		if (t.length > 200) { t = t.slice(0, 200); t = t.slice(0, Math.max(120, t.lastIndexOf(' '))).replace(/[\s,;:.\-–—]+$/, '') + '…'; }
 		return t;
 	};
+	// Feeds with no picture in the feed itself (NPR, Al Jazeera, DW, CNBC: see `og` in NEWS_FEEDS): the server reads the start of the
+	// article page and takes its og:image / twitter:image, still only from that feed's image hosts (imgOk), and never a site-wide
+	// default picture (NPR's "facebook-default", logos). ogOk(link, feed) = may this article page be read (its host is the feed's own site).
+	S.ogImage = function (html, hosts) {
+		var tags = String(html || '').match(/<meta\b[^>]*>/gi) || [], best = { 'og:image': null, 'og:image:url': null, 'og:image:secure_url': null, 'twitter:image': null, 'twitter:image:src': null };
+		for (var i = 0; i < tags.length; i++) {
+			var t = tags[i], k = /\b(?:property|name)\s*=\s*["']([^"']+)["']/i.exec(t), c = /\bcontent\s*=\s*["']([^"']+)["']/i.exec(t);
+			if (!k || !c) continue;
+			k = k[1].toLowerCase();
+			if (k in best && !best[k]) best[k] = unent(c[1]).trim();
+		}
+		var order = ['og:image:secure_url', 'og:image', 'og:image:url', 'twitter:image', 'twitter:image:src'];
+		for (var j = 0; j < order.length; j++) {
+			var u = best[order[j]];
+			if (u && S.imgOk(u, hosts) && !/default|placeholder|\/logos?\b|\blogo[-_.]/i.test(u)) return S.smallImg(u);
+		}
+		return null;
+	};
+	// card-sized copy where the image host resizes by URL (og:images are often 1600-1920 px wide)
+	S.smallImg = function (u) {
+		if (/^https:\/\/image\.cnbcfm\.com\//.test(u)) return u.replace(/([?&])w=\d+/, '$1w=640').replace(/([?&])h=\d+/, '$1h=360');
+		if (/^https:\/\/(www\.)?aljazeera\.com\/wp-content\//.test(u)) return u.replace(/([?&])resize=[^&]*/, '$1resize=640%2C425');
+		return u;
+	};
+	S.ogOk = function (link, feed) {
+		if (!feed || !feed.og || !/^https:\/\//i.test(link || '')) return false;
+		var h = S.hostOf(link);
+		return feed.og.some(function (x) { return h === x || h.slice(-x.length - 1) === '.' + x; });
+	};
 	S.parseRss = function (xml, n, opt) {
 		opt = opt || {};
 		var items = String(xml || '').match(/<(item|entry)\b[\s\S]*?<\/\1>/g) || [], out = [];
@@ -171,19 +200,20 @@
 		});
 		return out.slice(0, n || 8);
 	};
-	// The news feeds (all keyless; each checked from a server 2026-10-25). sec = News tab section; img = the hosts its thumbnails may come from.
+	// The news feeds (all keyless; each checked from a server 2026-10-25). sec = News tab section; img = the hosts its thumbnails may come from;
+	// og = the feed has no pictures, so the server reads its article pages (on these hosts only) for og:image (checked 2026-11-01).
 	S.NEWS_SECTIONS = [['crypto', 'Crypto'], ['markets', 'Stocks & markets'], ['world', 'World'], ['fed', 'Federal Reserve (monetary policy)']];
 	S.NEWS_FEEDS = [
 		{ id: 'coindesk', name: 'CoinDesk', sec: 'crypto', url: 'https://www.coindesk.com/arc/outboundfeeds/rss/', img: ['cdn.sanity.io', 'coindesk.com'] },
 		{ id: 'cointelegraph', name: 'Cointelegraph', sec: 'crypto', url: 'https://cointelegraph.com/rss', img: ['ctmedia.io', 'cointelegraph.com'] },
-		{ id: 'cnbc', name: 'CNBC', sec: 'markets', url: 'https://www.cnbc.com/id/20910258/device/rss/rss.html', img: ['cnbcfm.com'] },
+		{ id: 'cnbc', name: 'CNBC', sec: 'markets', url: 'https://www.cnbc.com/id/20910258/device/rss/rss.html', img: ['cnbcfm.com'], og: ['cnbc.com'] },
 		{ id: 'marketwatch', name: 'MarketWatch', sec: 'markets', url: 'https://feeds.content.dowjones.io/public/rss/mw_topstories', img: ['mktw.net'] },
 		{ id: 'bbcbiz', name: 'BBC Business', sec: 'markets', url: 'https://feeds.bbci.co.uk/news/business/rss.xml', img: ['bbci.co.uk'] },
 		{ id: 'bbcworld', name: 'BBC World', sec: 'world', url: 'https://feeds.bbci.co.uk/news/world/rss.xml', img: ['bbci.co.uk'] },
-		{ id: 'aljazeera', name: 'Al Jazeera', sec: 'world', url: 'https://www.aljazeera.com/xml/rss/all.xml', img: ['aljazeera.com'] },
-		{ id: 'npr', name: 'NPR World', sec: 'world', url: 'https://feeds.npr.org/1004/rss.xml', img: [] },
+		{ id: 'aljazeera', name: 'Al Jazeera', sec: 'world', url: 'https://www.aljazeera.com/xml/rss/all.xml', img: ['aljazeera.com'], og: ['aljazeera.com'] },
+		{ id: 'npr', name: 'NPR World', sec: 'world', url: 'https://feeds.npr.org/1004/rss.xml', img: ['media.npr.org'], og: ['npr.org'] },
 		{ id: 'guardian', name: 'The Guardian', sec: 'world', url: 'https://www.theguardian.com/world/rss', img: ['guim.co.uk'] },
-		{ id: 'dw', name: 'DW', sec: 'world', url: 'https://rss.dw.com/rdf/rss-en-world', img: ['dw.com'] }];
+		{ id: 'dw', name: 'DW', sec: 'world', url: 'https://rss.dw.com/rdf/rss-en-world', img: ['dw.com'], og: ['dw.com'] }];
 	// newest first, at most n per source so one busy feed cannot fill a section
 	S.mergeNews = function (lists, n) {
 		var out = []; lists.forEach(function (l) { out.push.apply(out, (l || []).slice(0, n || 12)); });
@@ -1088,22 +1118,50 @@
 		$('sg-srcs').innerHTML = Object.keys(NAMES).map(function (k) { var s = data.sources[k]; return '<li class="' + (s && s.ok ? 'ok' : 'bad') + '">' + (s && s.ok ? '&#10003; ' : '&#10007; ') + esc(NAMES[k]) + (s && !s.ok ? ' <span class="tu-note">' + esc(s.error) + '</span>' : '') + '</li>'; }).join('');
 	}
 	function status(m, bad) { var s = $('sg-status'); s.hidden = !m; s.className = 'sg-status' + (bad ? ' err' : ''); s.innerHTML = m || ''; }
+	/* Loading: render the last answer this browser saw at once (localStorage, up to 12 h old) so the page is never blank while /api/signals
+	   answers; draw the strip + the open tab first and leave the footer, the "since your last visit" box and the other tabs for idle time
+	   (other tabs are drawn only when opened). */
+	var LAST = KEY + ':last', fresh = false, stale = false;
+	var idle = window.requestIdleCallback ? function (f) { requestIdleCallback(f, { timeout: 1200 }); } : function (f) { setTimeout(f, 60); };
+	function busy(on) { ['sg-refresh', 'sg-refresh2'].forEach(function (id) { var b = $(id); if (!b) return; b.disabled = on; b.classList.toggle('is-busy', on); }); paintAgo(); }
+	function paintAgo() {
+		var el = $('sg-ago'); if (!el) return;
+		if (!data) { el.innerHTML = loading ? '<span class="sg-spin" aria-hidden="true"></span>Loading market data&hellip;' : 'No data yet'; return; }
+		var old = Date.now() - Date.parse(data.generated) > 15 * 60e3;
+		el.classList.toggle('is-old', old && !loading);
+		el.innerHTML = (loading ? '<span class="sg-spin" aria-hidden="true"></span>' : '') + (MOCK ? 'Sample data saved ' : stale ? 'Showing the numbers from ' : 'Updated ') + esc(ago(data.generated)) + (loading ? ' &middot; updating&hellip;' : '');
+	}
+	function render(j) {
+		data = j; root.classList.remove('sg-wait');
+		strip(); drawTab(st.tab); paintAgo();
+		idle(function () { if (data !== j) return; foot(); if (fresh && !j._seen) { j._seen = 1; visitDiff(); markChanged(); } });
+	}
 	function load(manual) {
-		if (loading) return; loading = true; $('sg-refresh').disabled = true;
-		fetch(MOCK ? '/signals/data/sample.json' : '/api/signals', manual && !MOCK ? { cache: 'reload' } : {}).then(function (r) { if (!r.ok && r.status !== 502) throw new Error('HTTP ' + r.status); return r.json(); }).then(function (j) {
-			loading = false; $('sg-refresh').disabled = false;
+		if (loading) return; loading = true; busy(true);
+		fetch(MOCK ? '/signals/data/sample.json' : '/api/signals', manual && !MOCK ? { cache: 'reload' } : {}).then(function (r) { if (!r.ok && r.status !== 502) throw new Error('HTTP ' + r.status); return r.text(); }).then(function (txt) {
+			var j = JSON.parse(txt);
+			loading = false;
 			if (!j || !j.sources) throw new Error('bad answer');
-			var first = !data; data = j; status(MOCK ? 'Showing <b>sample data</b> saved ' + esc(dshort(j.generated)) + ' (preview mode). The live page loads fresh numbers.' : '');
-			if (first) visitDiff();
-			strip(); foot(); drawTab(st.tab);
-		}).catch(function () { loading = false; $('sg-refresh').disabled = false; if (!data) { $('sg-strip').innerHTML = ''; status('Could not load the signals. Check your connection and press Refresh.', true); } else status('Refresh failed; showing the numbers from ' + esc(ago(data.generated)) + '.', true); });
+			fresh = true; stale = false;
+			status(MOCK ? 'Showing <b>sample data</b> saved ' + esc(dshort(j.generated)) + ' (preview mode). The live page loads fresh numbers.' : '');
+			render(j); busy(false);
+			if (!MOCK) idle(function () { try { localStorage.setItem(LAST, txt); } catch (e) {} });
+		}).catch(function () {
+			loading = false; busy(false);
+			if (!data) { $('sg-strip').innerHTML = ''; root.classList.remove('sg-wait'); status('Could not load the signals. Check your connection and press Refresh.', true); }
+			else status('Refresh failed; showing the numbers from ' + esc(ago(data.generated)) + '.', true);
+		});
 	}
 	$('sg-refresh').onclick = function () { load(true); };
+	$('sg-refresh2').onclick = function () { load(true); };
+	setInterval(paintAgo, 30000);
 	setInterval(function () {
 		var fo = S.nextFomc(Date.now()); if (fo) { var t = fo.live ? 'this week' : S.countdown(fo.at - Date.now()); if ($('sg-fomc-cd')) $('sg-fomc-cd').textContent = t; if ($('sg-fomc-big')) $('sg-fomc-big').textContent = fo.live ? 'This week' : t; }
 	}, 30000);
-	setInterval(function () { if (!document.hidden && data && Date.now() - Date.parse(data.generated) > 5 * 60e3) load(); }, 60000);
+	setInterval(function () { if (!document.hidden && data && fresh && Date.now() - Date.parse(data.generated) > 5 * 60e3) load(); }, 60000);
 	var rz; window.addEventListener('resize', function () { clearTimeout(rz); rz = setTimeout(function () { if (cxId) cxDraw(); [].forEach.call(root.querySelectorAll('.sg-chart'), function (b) { if (b._redraw && b.offsetParent) b._redraw(); }); }, 150); });
 	if (window.ResizeObserver) { var lastW = root.clientWidth; new ResizeObserver(function () { if (Math.abs(root.clientWidth - lastW) > 4) { lastW = root.clientWidth; clearTimeout(rz); rz = setTimeout(function () { if (data) drawTab(st.tab); }, 120); } }).observe(root); }
-	showTab(st.tab); rangeBtns(); load();
+	showTab(st.tab); rangeBtns();
+	if (!MOCK) { try { var c = JSON.parse(localStorage.getItem(LAST) || 'null'); if (c && c.sources && Date.now() - Date.parse(c.generated) < 12 * 3600e3) { stale = true; render(c); } } catch (e) {} }
+	load();
 })();

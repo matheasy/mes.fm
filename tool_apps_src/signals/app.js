@@ -484,22 +484,50 @@
 		$('sg-srcs').innerHTML = Object.keys(NAMES).map(function (k) { var s = data.sources[k]; return '<li class="' + (s && s.ok ? 'ok' : 'bad') + '">' + (s && s.ok ? '&#10003; ' : '&#10007; ') + esc(NAMES[k]) + (s && !s.ok ? ' <span class="tu-note">' + esc(s.error) + '</span>' : '') + '</li>'; }).join('');
 	}
 	function status(m, bad) { var s = $('sg-status'); s.hidden = !m; s.className = 'sg-status' + (bad ? ' err' : ''); s.innerHTML = m || ''; }
+	/* Loading: render the last answer this browser saw at once (localStorage, up to 12 h old) so the page is never blank while /api/signals
+	   answers; draw the strip + the open tab first and leave the footer, the "since your last visit" box and the other tabs for idle time
+	   (other tabs are drawn only when opened). */
+	var LAST = KEY + ':last', fresh = false, stale = false;
+	var idle = window.requestIdleCallback ? function (f) { requestIdleCallback(f, { timeout: 1200 }); } : function (f) { setTimeout(f, 60); };
+	function busy(on) { ['sg-refresh', 'sg-refresh2'].forEach(function (id) { var b = $(id); if (!b) return; b.disabled = on; b.classList.toggle('is-busy', on); }); paintAgo(); }
+	function paintAgo() {
+		var el = $('sg-ago'); if (!el) return;
+		if (!data) { el.innerHTML = loading ? '<span class="sg-spin" aria-hidden="true"></span>Loading market data&hellip;' : 'No data yet'; return; }
+		var old = Date.now() - Date.parse(data.generated) > 15 * 60e3;
+		el.classList.toggle('is-old', old && !loading);
+		el.innerHTML = (loading ? '<span class="sg-spin" aria-hidden="true"></span>' : '') + (MOCK ? 'Sample data saved ' : stale ? 'Showing the numbers from ' : 'Updated ') + esc(ago(data.generated)) + (loading ? ' &middot; updating&hellip;' : '');
+	}
+	function render(j) {
+		data = j; root.classList.remove('sg-wait');
+		strip(); drawTab(st.tab); paintAgo();
+		idle(function () { if (data !== j) return; foot(); if (fresh && !j._seen) { j._seen = 1; visitDiff(); markChanged(); } });
+	}
 	function load(manual) {
-		if (loading) return; loading = true; $('sg-refresh').disabled = true;
-		fetch(MOCK ? '/signals/data/sample.json' : '/api/signals', manual && !MOCK ? { cache: 'reload' } : {}).then(function (r) { if (!r.ok && r.status !== 502) throw new Error('HTTP ' + r.status); return r.json(); }).then(function (j) {
-			loading = false; $('sg-refresh').disabled = false;
+		if (loading) return; loading = true; busy(true);
+		fetch(MOCK ? '/signals/data/sample.json' : '/api/signals', manual && !MOCK ? { cache: 'reload' } : {}).then(function (r) { if (!r.ok && r.status !== 502) throw new Error('HTTP ' + r.status); return r.text(); }).then(function (txt) {
+			var j = JSON.parse(txt);
+			loading = false;
 			if (!j || !j.sources) throw new Error('bad answer');
-			var first = !data; data = j; status(MOCK ? 'Showing <b>sample data</b> saved ' + esc(dshort(j.generated)) + ' (preview mode). The live page loads fresh numbers.' : '');
-			if (first) visitDiff();
-			strip(); foot(); drawTab(st.tab);
-		}).catch(function () { loading = false; $('sg-refresh').disabled = false; if (!data) { $('sg-strip').innerHTML = ''; status('Could not load the signals. Check your connection and press Refresh.', true); } else status('Refresh failed; showing the numbers from ' + esc(ago(data.generated)) + '.', true); });
+			fresh = true; stale = false;
+			status(MOCK ? 'Showing <b>sample data</b> saved ' + esc(dshort(j.generated)) + ' (preview mode). The live page loads fresh numbers.' : '');
+			render(j); busy(false);
+			if (!MOCK) idle(function () { try { localStorage.setItem(LAST, txt); } catch (e) {} });
+		}).catch(function () {
+			loading = false; busy(false);
+			if (!data) { $('sg-strip').innerHTML = ''; root.classList.remove('sg-wait'); status('Could not load the signals. Check your connection and press Refresh.', true); }
+			else status('Refresh failed; showing the numbers from ' + esc(ago(data.generated)) + '.', true);
+		});
 	}
 	$('sg-refresh').onclick = function () { load(true); };
+	$('sg-refresh2').onclick = function () { load(true); };
+	setInterval(paintAgo, 30000);
 	setInterval(function () {
 		var fo = S.nextFomc(Date.now()); if (fo) { var t = fo.live ? 'this week' : S.countdown(fo.at - Date.now()); if ($('sg-fomc-cd')) $('sg-fomc-cd').textContent = t; if ($('sg-fomc-big')) $('sg-fomc-big').textContent = fo.live ? 'This week' : t; }
 	}, 30000);
-	setInterval(function () { if (!document.hidden && data && Date.now() - Date.parse(data.generated) > 5 * 60e3) load(); }, 60000);
+	setInterval(function () { if (!document.hidden && data && fresh && Date.now() - Date.parse(data.generated) > 5 * 60e3) load(); }, 60000);
 	var rz; window.addEventListener('resize', function () { clearTimeout(rz); rz = setTimeout(function () { if (cxId) cxDraw(); [].forEach.call(root.querySelectorAll('.sg-chart'), function (b) { if (b._redraw && b.offsetParent) b._redraw(); }); }, 150); });
 	if (window.ResizeObserver) { var lastW = root.clientWidth; new ResizeObserver(function () { if (Math.abs(root.clientWidth - lastW) > 4) { lastW = root.clientWidth; clearTimeout(rz); rz = setTimeout(function () { if (data) drawTab(st.tab); }, 120); } }).observe(root); }
-	showTab(st.tab); rangeBtns(); load();
+	showTab(st.tab); rangeBtns();
+	if (!MOCK) { try { var c = JSON.parse(localStorage.getItem(LAST) || 'null'); if (c && c.sources && Date.now() - Date.parse(c.generated) < 12 * 3600e3) { stale = true; render(c); } } catch (e) {} }
+	load();
 })();

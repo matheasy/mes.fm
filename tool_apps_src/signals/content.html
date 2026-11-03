@@ -1,8 +1,9 @@
-	<div class="tu sg" id="sg">
-		<div class="sg-strip" id="sg-strip" aria-label="Summary"><span class="sg-loading">Loading the latest numbers&hellip;</span></div>
+	<div class="tu sg sg-wait" id="sg">
+		<div class="sg-strip" id="sg-strip" aria-label="Summary"><span class="sg-loading" role="status"><span class="sg-spin" aria-hidden="true"></span>Loading market data&hellip;</span><span class="sg-skt" aria-hidden="true"></span><span class="sg-skt" aria-hidden="true"></span><span class="sg-skt" aria-hidden="true"></span><span class="sg-skt" aria-hidden="true"></span></div>
 		<p class="sg-disc"><b>Information, not advice.</b> These are public market readings put in one place with plain-English explanations. Nothing here tells you to buy or sell anything, and none of it predicts prices. Data can be late or wrong: check the source before you rely on a number.</p>
 		<div class="sg-changes" id="sg-changes" hidden></div>
 		<div class="sg-status" id="sg-status" role="status" aria-live="polite" hidden></div>
+		<div class="sg-top"><span class="sg-ago" id="sg-ago" aria-live="polite"><span class="sg-spin" aria-hidden="true"></span>Loading market data&hellip;</span><button type="button" class="tu-btn tu-btn--ghost sg-rbtn" id="sg-refresh2" aria-label="Refresh the numbers">&#8635; Refresh</button></div>
 		<div class="sg-tabs" role="tablist" id="sg-tabs">
 			<button type="button" role="tab" data-tab="over" aria-selected="true">Overview</button>
 			<button type="button" role="tab" data-tab="sent" aria-selected="false">Sentiment</button>
@@ -14,6 +15,7 @@
 			<button type="button" role="tab" data-tab="news" aria-selected="false">News</button>
 		</div>
 
+		<div class="sg-skel" id="sg-skel" aria-hidden="true"><div class="sg-skel__row"><span></span><span></span><span></span></div><div class="sg-skel__blk"></div><div class="sg-skel__row"><span></span><span></span></div></div>
 		<section class="sg-panel" id="sg-p-over" role="tabpanel">
 			<div class="tu-card sg-over" id="sg-over"></div>
 		</section>
