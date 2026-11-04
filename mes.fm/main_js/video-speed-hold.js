@@ -170,7 +170,7 @@
   function overlaps(a, b) { return a.width && a.height && a.left < b.right && a.right > b.left && a.top < b.bottom && a.bottom > b.top; }
   function checkCover() {
     covRaf = 0;
-    var big = document.querySelectorAll('.video-embed.theater-mode, .video-embed.wide-mode, #videoEmbed.theater-mode, #videoEmbed.wide-mode');
+    var big = document.querySelectorAll('.video-embed.theater-mode, .video-embed.wide-mode, #videoEmbed.theater-mode, #videoEmbed.wide-mode, .mes-vc-side.on.th');
     var rects = [], k, j;
     for (k = 0; k < big.length; k++) rects.push(big[k].getBoundingClientRect());
     var ps = document.querySelectorAll(PANELS);

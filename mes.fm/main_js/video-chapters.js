@@ -39,9 +39,9 @@
   var css = el('style');
   css.id = 'mes-vc-css';
   css.textContent = [
-    '.mes-vc{--vc-a:#277bb6;--vc-t:#1f2937;--vc-m:#5b6472;--vc-bg:#f3f6f9;--vc-bd:rgba(0,0,0,.12);--vc-seg:rgba(0,0,0,.16);--vc-pop:#fff;',
-    'position:relative;margin:-.9em 0 1.3em;padding:.55em .7em .5em;border:1px solid var(--vc-bd);border-top:0;border-radius:0 0 6px 6px;background:var(--vc-bg);color:var(--vc-t);font:14px/1.35 Arial,Helvetica,sans-serif;box-sizing:border-box}',
-    'body.dark .mes-vc,body.dark-mode .mes-vc{--vc-a:#6cb6f5;--vc-t:#e5e7eb;--vc-m:#a5adba;--vc-bg:#1d232b;--vc-bd:rgba(255,255,255,.14);--vc-seg:rgba(255,255,255,.2);--vc-pop:#232a33}',
+    '.mes-vc,.mes-vc-side{--vc-a:#277bb6;--vc-t:#1f2937;--vc-m:#5b6472;--vc-bg:#f3f6f9;--vc-bd:rgba(0,0,0,.12);--vc-seg:rgba(0,0,0,.16);--vc-pop:#fff}',
+    '.mes-vc{position:relative;margin:-.9em 0 1.3em;padding:.55em .7em .5em;border:1px solid var(--vc-bd);border-top:0;border-radius:0 0 6px 6px;background:var(--vc-bg);color:var(--vc-t);font:14px/1.35 Arial,Helvetica,sans-serif;box-sizing:border-box}',
+    'body.dark .mes-vc,body.dark-mode .mes-vc,body.dark .mes-vc-side,body.dark-mode .mes-vc-side{--vc-a:#6cb6f5;--vc-t:#e5e7eb;--vc-m:#a5adba;--vc-bg:#1d232b;--vc-bd:rgba(255,255,255,.14);--vc-seg:rgba(255,255,255,.2);--vc-pop:#232a33}',
     '.mes-vc.th{border-radius:0;border-left:0;border-right:0}',
     '.mes-vc *{box-sizing:border-box}',
     '.mes-vc-bar{display:flex;gap:3px;align-items:center;height:16px;cursor:pointer;touch-action:manipulation}',
@@ -60,7 +60,7 @@
     '.mes-vc-list[hidden]{display:none}',
     '.mes-vc-q{width:100%;height:34px;margin:0 0 .4em;padding:0 .7em;border:1px solid var(--vc-bd);border-radius:6px;background:var(--vc-pop);color:var(--vc-t);font:inherit}',
     '.mes-vc-ol{list-style:none;margin:0;padding:0;max-height:min(22em,55vh);overflow:auto;overscroll-behavior:contain}',
-    '.mes-vc .mes-vc-ol li{margin:0;padding:0;list-style:none;font-size:inherit!important;line-height:inherit}.mes-vc-ol li::before{content:none}',
+    '.mes-vc .mes-vc-ol li,.mes-vc-pan .mes-vc-ol li{margin:0;padding:0;list-style:none;font-size:inherit!important;line-height:inherit}.mes-vc-ol li::before{content:none}',
     '.mes-vc-it{display:flex;gap:.7em;width:100%;padding:.4em .5em;min-height:34px;border:0;border-radius:5px;background:none;color:var(--vc-t);font:inherit;text-align:left;cursor:pointer}',
     '.mes-vc-it:hover,.mes-vc-it:focus-visible{background:rgba(127,127,127,.14);outline:none}',
     '.mes-vc-it.on{background:rgba(39,123,182,.16);font-weight:700}body.dark .mes-vc-it.on,body.dark-mode .mes-vc-it.on{background:rgba(108,182,245,.18)}',
@@ -74,6 +74,37 @@
     'a.mes-vc-ts{font-variant-numeric:tabular-nums;font-weight:600;cursor:pointer}',
     '.mes-vc-cur{background:rgba(39,123,182,.12);border-radius:4px;box-shadow:-.35em 0 0 rgba(39,123,182,.12)}',
     'body.dark .mes-vc-cur,body.dark-mode .mes-vc-cur{background:rgba(108,182,245,.14);box-shadow:-.35em 0 0 rgba(108,182,245,.14)}',
+    /* chapters beside the video: the wrapper is display:contents (no box) until side mode is on */
+    '.mes-vc-side{display:contents}',
+    '.mes-vc-pan{display:none}',
+    '.mes-vc-side.on{position:relative;display:grid;grid-template-columns:minmax(0,1fr) var(--vc-sw,320px);margin:.6em 0 1.2em;box-sizing:border-box}',
+    '.mes-vc-side.on.left{grid-template-columns:var(--vc-sw,320px) minmax(0,1fr)}',
+    '.mes-vc-side.on.left>.mes-vc-pan{order:-1}',
+    '.mes-vc-side.on>.video-embed,.mes-vc-side.on>#videoEmbed{margin:0!important;width:auto!important;max-width:none!important;left:auto!important;right:auto!important;padding-bottom:0!important;height:auto!important;aspect-ratio:16/9;align-self:start;border-radius:4px 0 0 4px!important}',
+    '.mes-vc-side.on.left>.video-embed,.mes-vc-side.on.left>#videoEmbed{border-radius:0 4px 4px 0!important}',
+    '.mes-vc-side.on.th{left:50%;width:100vw;max-width:100vw;margin-left:-50vw;margin-right:-50vw;background:#000}',
+    '.mes-vc-side.on.th>.video-embed,.mes-vc-side.on.th>#videoEmbed{padding-bottom:0!important;aspect-ratio:auto;height:min(85vh,calc((100vw - var(--vc-sw,320px)) * .5625))!important;border-radius:0!important}',
+    '.mes-vc-side.on>.mes-vc-pan{display:block;position:relative;min-width:0;min-height:0;border:1px solid var(--vc-bd);border-left:0;border-radius:0 6px 6px 0;background:var(--vc-bg);color:var(--vc-t);font:14px/1.35 Arial,Helvetica,sans-serif}',
+    '.mes-vc-side.on.left>.mes-vc-pan{border-left:1px solid var(--vc-bd);border-right:0;border-radius:6px 0 0 6px}',
+    '.mes-vc-side.on.th>.mes-vc-pan{border-radius:0;border-top:0;border-bottom:0}',
+    '.mes-vc-pan *{box-sizing:border-box}',
+    '.mes-vc-pin{position:absolute;inset:0;display:flex;flex-direction:column;padding:.45em .5em .5em .7em}',
+    '.mes-vc-side.left .mes-vc-pin{padding:.45em .7em .5em .5em}',
+    '.mes-vc-ph{display:flex;align-items:center;gap:.3em;margin-bottom:.35em}',
+    '.mes-vc-ph b{flex:1 1 auto;min-width:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;font-size:15px}',
+    '.mes-vc-ph .mes-vc-btn{min-width:30px;height:30px;padding:0 .45em;font-weight:600}',
+    '.mes-vc-pan .mes-vc-list{display:flex;flex-direction:column;flex:1 1 auto;min-height:0;margin:0;padding:0;border:0}',
+    '.mes-vc-pan .mes-vc-q{flex:0 0 auto}',
+    '.mes-vc-pan .mes-vc-ol{flex:1 1 auto;min-height:0;max-height:none}',
+    '.mes-vc-grip{position:absolute;top:0;bottom:0;left:-6px;width:12px;z-index:4;cursor:col-resize;touch-action:none;background:none;border:0;padding:0;margin:0}',
+    '.mes-vc-side.left .mes-vc-grip{left:auto;right:-6px}',
+    '.mes-vc-grip::after{content:"";position:absolute;top:50%;left:50%;width:4px;height:44px;margin:-22px 0 0 -2px;border-radius:2px;background:var(--vc-m);opacity:.45;transition:opacity .15s}',
+    '.mes-vc-grip:hover::after,.mes-vc-grip:focus-visible::after,.mes-vc-grip.drag::after{opacity:1;background:var(--vc-a)}',
+    '.mes-vc-grip:focus-visible{outline:2px solid var(--vc-a);outline-offset:-2px}',
+    'body.mes-vc-dragging{cursor:col-resize;-webkit-user-select:none;user-select:none}',
+    'body.mes-vc-dragging iframe,body.mes-vc-dragging video{pointer-events:none}',
+    '.mes-vc-sb[aria-pressed=true]{border-color:var(--vc-a);color:var(--vc-a)}',
+    '.mes-vc.sideon .mes-vc-open{display:none}',
     '@media (max-width:480px){.mes-vc{font-size:13px;padding:.5em .55em}.mes-vc-btn .mes-vc-lab{display:none}}'
   ].join('');
 
@@ -338,12 +369,17 @@
     next.type = 'button'; next.title = 'Next chapter'; next.setAttribute('aria-label', 'Next chapter');
     var now = self.now = el('button', 'mes-vc-now');
     now.type = 'button'; now.title = 'Show the chapters';
-    var open = self.openB = el('button', 'mes-vc-btn');
+    var open = self.openB = el('button', 'mes-vc-btn mes-vc-open');
     open.type = 'button';
     open.innerHTML = '<span aria-hidden="true">☰</span><span class="mes-vc-lab">Chapters</span>';
     open.setAttribute('aria-expanded', 'false');
     open.setAttribute('aria-label', 'Chapters (' + list.length + ')');
-    row.appendChild(prev); row.appendChild(now); row.appendChild(next); row.appendChild(open);
+    var sideB = self.sideB = el('button', 'mes-vc-btn mes-vc-sb');
+    sideB.type = 'button';
+    sideB.innerHTML = '<span aria-hidden="true">▥</span><span class="mes-vc-lab">Beside video</span>';
+    sideB.title = 'Show the chapters beside the video';
+    sideB.setAttribute('aria-pressed', 'false');
+    row.appendChild(prev); row.appendChild(now); row.appendChild(next); row.appendChild(open); row.appendChild(sideB);
 
     var box = self.box = el('div', 'mes-vc-list');
     box.hidden = true;
@@ -377,6 +413,10 @@
     });
 
     function toggle(show) {
+      if (self.sideOn) {   // the list is always shown beside the video: just bring the current chapter into view
+        if (self.items[self.cur]) ol.scrollTop = Math.max(0, self.items[self.cur].offsetTop - ol.offsetTop - 40);
+        return;
+      }
       if (show == null) show = box.hidden;
       box.hidden = !show;
       open.setAttribute('aria-expanded', show ? 'true' : 'false');
@@ -397,15 +437,74 @@
     box.addEventListener('keydown', function (e) { if (e.key === 'Escape') { toggle(false); open.focus(); } });
 
     root.appendChild(bar); root.appendChild(row); root.appendChild(box); root.appendChild(tip);
-    embed.parentNode.insertBefore(root, embed.nextSibling);
+
+    // the wrapper is made once, before playback (moving an iframe later would reload it); while side mode is off it is
+    // display:contents, so the page's own CSS for the box is unchanged
+    var wrap = self.wrap = el('div', 'mes-vc-side');
+    embed.parentNode.insertBefore(wrap, embed);
+    wrap.appendChild(embed);
+    var pan = self.pan = el('div', 'mes-vc-pan');
+    pan.setAttribute('role', 'region');
+    pan.setAttribute('aria-label', 'Chapters beside the video');
+    var pin = el('div', 'mes-vc-pin');
+    var ph = el('div', 'mes-vc-ph');
+    ph.appendChild(el('b', '', 'Chapters (' + list.length + ')'));
+    var flip = el('button', 'mes-vc-btn', '⇄');
+    flip.type = 'button'; flip.title = 'Move the chapters to the other side'; flip.setAttribute('aria-label', 'Move the chapters to the other side');
+    var back = el('button', 'mes-vc-btn', '×');
+    back.type = 'button'; back.title = 'Put the chapters back under the video'; back.setAttribute('aria-label', 'Put the chapters back under the video');
+    ph.appendChild(flip); ph.appendChild(back);
+    var grip = self.grip = el('button', 'mes-vc-grip');
+    grip.type = 'button';
+    grip.title = 'Drag to make the chapters wider or narrower (double-click: reset)';
+    grip.setAttribute('aria-label', 'Chapters width: use the left and right arrow keys');
+    pin.appendChild(ph);
+    pan.appendChild(pin); pan.appendChild(grip);
+    wrap.appendChild(pan);
+    self.pin = pin;
+    wrap.parentNode.insertBefore(root, wrap.nextSibling);
+    self.toggleList = toggle;
+
+    sideB.addEventListener('click', function () { setPref({ on: self.sideOn ? 0 : 1 }); });
+    back.addEventListener('click', function () { setPref({ on: 0 }); sideB.focus(); });
+    flip.addEventListener('click', function () { setPref({ left: PREF.left ? 0 : 1 }); });
+    grip.addEventListener('dblclick', function () { setPref({ w: DEF_W }); });
+    grip.addEventListener('keydown', function (e) {
+      var d = e.key === 'ArrowLeft' ? -1 : e.key === 'ArrowRight' ? 1 : 0;
+      if (!d) return;
+      e.preventDefault();
+      // the grip is on the panel's inner edge: towards the video = wider
+      setPref({ w: self.clampW(PREF.w + (PREF.left ? d : -d) * (e.shiftKey ? 48 : 16)) });
+    });
+    grip.addEventListener('pointerdown', function (e) {
+      if (e.button) return;
+      e.preventDefault();
+      var x0 = e.clientX, w0 = self.curW || PREF.w, id = e.pointerId;
+      try { grip.setPointerCapture(id); } catch (er) {}
+      grip.classList.add('drag'); document.body.classList.add('mes-vc-dragging');
+      function mv(ev) {
+        if (ev.pointerId !== id) return;
+        var dx = ev.clientX - x0;
+        PREF.w = self.clampW(w0 + (PREF.left ? dx : -dx));
+        applyAll();
+      }
+      function up(ev) {
+        if (ev.pointerId !== id) return;
+        grip.removeEventListener('pointermove', mv); grip.removeEventListener('pointerup', up); grip.removeEventListener('pointercancel', up);
+        grip.classList.remove('drag'); document.body.classList.remove('mes-vc-dragging');
+        setPref({});
+      }
+      grip.addEventListener('pointermove', mv); grip.addEventListener('pointerup', up); grip.addEventListener('pointercancel', up);
+    });
 
     self.pill = el('div', 'mes-vc-pill');
     self.pill.setAttribute('aria-hidden', 'true');
     embed.appendChild(self.pill);
 
     self.player = new Player(embed, function () { self.update(); });
+    self.side();
     embed.addEventListener('transitionend', function () { self.sync(); });
-    new MutationObserver(function () { self.sync(); setTimeout(function () { self.sync(); }, 300); }).observe(embed, { attributes: true, attributeFilter: ['class'] });
+    new MutationObserver(function () { self.side(); setTimeout(function () { self.side(); }, 300); }).observe(embed, { attributes: true, attributeFilter: ['class'] });
     window.addEventListener('resize', function () { self.sync(); });
     self.layout();
     self.update();
@@ -438,8 +537,10 @@
   // the column); the strip copies the box's computed geometry so it always lines up with the picture.
   Chapters.prototype.sync = function () {
     var e = this.embed, r = this.root, th = e.classList.contains('theater-mode');
-    var cs = th ? getComputedStyle(e) : null;
-    var key = th ? [cs.width, cs.left, cs.marginLeft, cs.marginRight].join() : '';
+    if (this.wrap && this.wrap.classList.contains('th') !== (th && this.sideOn)) this.wrap.classList.toggle('th', th && this.sideOn);
+    var g = this.sideOn ? this.wrap : e;
+    var cs = th ? getComputedStyle(g) : null;
+    var key = th ? [cs.width, cs.left, cs.marginLeft, cs.marginRight, this.sideOn ? 's' : ''].join() : (this.sideOn ? 's' : '');
     if (key === this.geo) return;
     this.geo = key;
     r.classList.toggle('th', th);
@@ -451,6 +552,39 @@
     var pad = th ? Math.max(12, (parseFloat(cs.width) - 1280) / 2) + 'px' : '';
     r.style.paddingLeft = r.style.paddingRight = pad;
   };
+  // side mode: on when chosen and there is room (otherwise the list stays under the video)
+  Chapters.prototype.clampW = function (w) {
+    var avail = this.availW();
+    return Math.round(Math.max(MIN_W, Math.min(MAX_W, avail * 0.5, w || DEF_W)));
+  };
+  Chapters.prototype.availW = function () {
+    if (this.embed.classList.contains('theater-mode')) return document.documentElement.clientWidth;
+    var p = this.wrap.parentElement;
+    return p ? p.clientWidth : 0;
+  };
+  Chapters.prototype.side = function () {
+    var want = !!PREF.on, fits = this.availW() >= ROOM;
+    var on = want && fits, w = wrapW(this, on);
+    var wrap = this.wrap, was = this.sideOn;
+    this.sideOn = on;
+    this.sideB.hidden = !fits;
+    this.sideB.setAttribute('aria-pressed', on ? 'true' : 'false');
+    this.sideB.title = on ? 'Put the chapters back under the video' : 'Show the chapters beside the video';
+    wrap.classList.toggle('on', on);
+    wrap.classList.toggle('left', on && !!PREF.left);
+    wrap.classList.toggle('th', on && this.embed.classList.contains('theater-mode'));
+    this.root.classList.toggle('sideon', on);
+    if (on) { this.curW = w; wrap.style.setProperty('--vc-sw', w + 'px'); }
+    if (on !== was) {
+      if (on) { this.pin.appendChild(this.box); this.box.hidden = false; this.openB.setAttribute('aria-expanded', 'true'); }
+      else if (was) { this.root.insertBefore(this.box, this.tip); this.toggleList(false); }
+      if (on && this.items[this.cur]) { var ol = this.box.querySelector('.mes-vc-ol'), it = this.items[this.cur]; ol.scrollTop = Math.max(0, it.offsetTop - ol.offsetTop - 40); }
+      this.geo = null;
+      try { window.dispatchEvent(new Event('mes-vc-side')); } catch (e) {}
+    }
+    this.sync();
+  };
+  function wrapW(c, on) { return on ? c.clampW(PREF.w) : 0; }
   Chapters.prototype.update = function () {
     if (!this.player) return;   // the Player calls back while it is still being made
     this.sync();
@@ -508,6 +642,23 @@
     var self = this;
     setTimeout(function () { self.update(); }, 60);
   };
+
+  /* ---------- side-mode preference (shared by every page) ---------- */
+  var DEF_W = 320, MIN_W = 190, MAX_W = 600, ROOM = 640, KEY = 'mes-vc-side';
+  var PREF = { on: 0, left: 0, w: DEF_W };
+  try { var sp = JSON.parse(localStorage.getItem(KEY) || 'null'); if (sp) { PREF.on = sp.on ? 1 : 0; PREF.left = sp.left ? 1 : 0; PREF.w = +sp.w || DEF_W; } } catch (e) {}
+  function applyAll() { all.forEach(function (c) { c.side(); }); }
+  function setPref(p) {
+    for (var k in p) PREF[k] = p[k];
+    try { localStorage.setItem(KEY, JSON.stringify(PREF)); } catch (e) {}
+    applyAll();
+  }
+  window.addEventListener('storage', function (e) {
+    if (e.key !== KEY) return;
+    try { var v = JSON.parse(e.newValue || 'null'); if (v) { PREF.on = v.on ? 1 : 0; PREF.left = v.left ? 1 : 0; PREF.w = +v.w || DEF_W; applyAll(); } } catch (er) {}
+  });
+  var sideT = 0;
+  window.addEventListener('resize', function () { clearTimeout(sideT); sideT = setTimeout(applyAll, 80); });
 
   /* ---------- page setup ---------- */
   var all = [];
