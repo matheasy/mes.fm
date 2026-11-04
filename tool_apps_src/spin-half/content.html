@@ -1,0 +1,158 @@
+	<script>try{if(!localStorage.getItem('pageMode')){document.documentElement.classList.add('page-wide')}}catch(e){}</script>
+	<div class="tu sh" id="sh">
+		<div class="sh-tabs" role="tablist" aria-label="Spin-½ lab pictures">
+			<button type="button" role="tab" data-tab="belt" aria-selected="true">Belt trick</button>
+			<button type="button" role="tab" data-tab="five" aria-selected="false">Five ways back after 720°</button>
+			<button type="button" role="tab" data-tab="torus" aria-selected="false">Torus</button>
+			<button type="button" role="tab" data-tab="sheet" aria-selected="false">Twisted sheet</button>
+		</div>
+
+		<!-- ============================== 1. BELT TRICK ============================== -->
+		<section data-panel="belt" role="tabpanel">
+			<p class="tu-note sh-lead">A ball (the "particle") hangs in the middle, tied to a far wall by ribbons. Turn the ball once, <b>360°</b>: it looks exactly as it did, but the ribbons are <b>tangled</b>, and no amount of moving the ribbons will undo it while you hold the ball still. Turn it a second time, <b>720°</b>, and something surprising happens: now the ribbons <b>can</b> be untangled, without turning the ball at all. Press <b>Untangle</b> to watch. Drag the picture to look around it, scroll or pinch to zoom.</p>
+			<div class="sh-wrap"><div class="sh-stage" id="sh-b-stage">
+				<canvas id="sh-b-c" tabindex="0" role="img" aria-label="A ball in the middle of a sphere, tied to the sphere by coloured ribbons. As the ball turns, the ribbons twist around it."></canvas>
+				<div class="sh-run"><button type="button" id="sh-b-play" aria-pressed="false">▶ Play</button><button type="button" id="sh-b-un" class="sh-prim">Untangle</button><button type="button" id="sh-b-zero" title="Back to the start">↺ Reset</button><button type="button" id="sh-b-view" title="Back to the starting view">⟲ View</button><button type="button" id="sh-b-png" aria-label="Save as PNG" title="Save as a picture">📷</button><button type="button" class="sh-fs" aria-label="Full screen" title="Full screen">⛶</button></div>
+				<div class="sh-badge" id="sh-b-badge" aria-live="polite"></div>
+			</div>
+			<div class="sh-readouts" id="sh-b-ro"></div></div>
+			<div class="tu-card sh-controls">
+				<div class="sh-chips" id="sh-b-pre" role="group" aria-label="Examples"></div>
+				<div class="sh-grid">
+					<div class="tu-field"><span class="tu-label" id="sh-b-th-l">Ball turned: <b id="sh-b-th-v"></b></span><input type="range" id="sh-b-th" min="0" max="720" step="1" aria-labelledby="sh-b-th-l"><span class="tu-note" id="sh-b-th-n">Drag to turn the ball by hand.</span></div>
+					<div class="tu-field"><span class="tu-label" id="sh-b-sp-l">Speed: <b id="sh-b-sp-v"></b></span><input type="range" id="sh-b-sp" min="0.25" max="4" step="0.25" aria-labelledby="sh-b-sp-l"></div>
+					<label class="tu-field"><span class="tu-label">Ribbons</span><select id="sh-b-rib" class="tu-input"><option value="1">1 ribbon</option><option value="2">2 ribbons</option><option value="4">4 ribbons</option><option value="6">6 ribbons</option><option value="30">A sheet of 30</option></select></label>
+					<label class="tu-field"><span class="tu-label">Turn the ball about</span><select id="sh-b-ax" class="tu-input"><option value="z">the up axis (z)</option><option value="x">the x axis</option><option value="y">the y axis</option><option value="tilt">a tilted axis (1, 1, 1)</option></select></label>
+				</div>
+				<div class="sh-checks">
+					<span class="sh-seg" role="group" aria-label="Motion"><button type="button" data-bmode="twist" aria-pressed="true">Twist, then untangle</button><button type="button" data-bmode="anti" aria-pressed="false">Keep turning, never tangle</button></span>
+					<label class="sh-check"><input type="checkbox" id="sh-b-auto" checked> Untangle by itself at 720°</label>
+					<label class="sh-check"><input type="checkbox" id="sh-b-shell"> Show the turning shells</label>
+					<button type="button" class="tu-btn tu-btn--ghost" id="sh-b-link">Copy link</button>
+				</div>
+				<p class="tu-note sh-note" id="sh-b-note" aria-live="polite"></p>
+			</div>
+			<div class="sh-explain">
+				<h3>What you are seeing</h3>
+				<p>Think of the space around the ball as nested shells, like the layers of an onion. The wall (the outer shell) never moves; the shell touching the ball turns with the ball; each shell in between turns by some amount, and the ribbons simply ride along with their shells. In <b>Twist</b> mode every shell turns by a share of the ball's angle (θ at the ball, 0 at the wall), so the ribbons wind up.</p>
+				<p>After <b>360°</b> the ball looks the same, yet the ribbons hold one full twist. The readout <b>q</b> shows why this cannot be undone: follow the shells from the wall (q = +1) in to the ball, keeping track of the sign that rotations normally forget, and you arrive at <b>q = −1</b>. No smooth change of the ribbons can flip that sign while the ball and the wall are held still. After <b>720°</b> you arrive at <b>q = +1</b> again, and the ribbons can be lifted round the ball (that is what <b>Untangle</b> does) back to where they started. Try <b>Try at 360°</b>: the same move only works there if the ball swings through a full turn of its own.</p>
+				<p><b>Keep turning, never tangle</b> is the famous version where the ball spins on and on (think of a waiter carrying a tray, or the "Balinese cup trick"): the ribbons sway round the ball and are back home after every 720°. This is not just a trick of ribbons: an electron's or a neutron's wave function, a <i>spinor</i>, gets the same −1 after one turn and only comes back after two. The <a href="/spin-simulator">Spin Simulator</a> shows the 1975 neutron experiment that measured it, and the <a href="/quaternions">Quaternions</a> page shows why q = cos(θ/2) + sin(θ/2)·n is the natural way to write a turn.</p>
+			</div>
+		</section>
+
+		<!-- ============================== 2. FIVE WAYS ============================== -->
+		<section data-panel="five" role="tabpanel" hidden>
+			<p class="tu-note sh-lead">Five pictures of the same idea: something at the centre (the <b>core</b>) turns by θ while the stuff around it (the <b>medium</b>) only turns by <b>θ / 2</b>. When the core has made one full turn, the medium is upside down; only after <b>two</b> turns is everything as it was. Pick a picture, press Play, or drag the slider.</p>
+			<div class="sh-chips" id="sh-f-pre" role="group" aria-label="Pictures"></div>
+			<div class="sh-wrap"><div class="sh-stage" id="sh-f-stage">
+				<canvas id="sh-f-c" role="img" aria-label="An animation of one of five pictures where a core turns twice as fast as the medium around it."></canvas>
+				<div class="sh-run"><button type="button" id="sh-f-play" aria-pressed="false">▶ Play</button><button type="button" id="sh-f-zero" title="Back to the start">↺ Reset</button><button type="button" id="sh-f-png" aria-label="Save as PNG" title="Save as a picture">📷</button><button type="button" class="sh-fs" aria-label="Full screen" title="Full screen">⛶</button></div>
+			</div></div>
+			<div class="sh-wrap sh-wrap--2"><div class="sh-stage" id="sh-g-stage">
+				<canvas id="sh-g-c" role="img" aria-label="Two dials: the core angle and the medium's half angle. A chart of cos theta and cos theta over two against the core angle from 0 to 720 degrees."></canvas>
+			</div>
+			<div class="sh-readouts" id="sh-f-ro"></div></div>
+			<div class="tu-card sh-controls">
+				<div class="sh-grid">
+					<div class="tu-field"><span class="tu-label" id="sh-f-th-l">Core turned: <b id="sh-f-th-v"></b></span><input type="range" id="sh-f-th" min="0" max="720" step="1" aria-labelledby="sh-f-th-l"></div>
+					<div class="tu-field"><span class="tu-label" id="sh-f-sp-l">Speed: <b id="sh-f-sp-v"></b></span><input type="range" id="sh-f-sp" min="0.25" max="4" step="0.25" aria-labelledby="sh-f-sp-l"></div>
+				</div>
+				<div class="sh-checks"><button type="button" class="tu-btn tu-btn--ghost" id="sh-f-link">Copy link</button></div>
+				<div class="sh-scen" id="sh-f-note" aria-live="polite"></div>
+			</div>
+		</section>
+
+		<!-- ============================== 3. TORUS ============================== -->
+		<section data-panel="torus" role="tabpanel" hidden>
+			<p class="tu-note sh-lead">A doughnut (torus) coloured by a <b>phase</b>: every colour is one angle. The big circle stands for the core's turn, the small circle (the tube) for the medium's. The bright line follows one colour: for <b>spin ½</b> it goes once round the tube while going <b>twice</b> round the big circle, so it only closes after the core has turned <b>720°</b>. Drag to look around, scroll or pinch to zoom.</p>
+			<div class="sh-wrap"><div class="sh-stage" id="sh-t-stage">
+				<canvas id="sh-t-c" tabindex="0" role="img" aria-label="A torus coloured by phase, with a bright line that winds once around the tube while going twice around the hole, and a dot moving along it."></canvas>
+				<div class="sh-run"><button type="button" id="sh-t-play" aria-pressed="false">▶ Play</button><button type="button" id="sh-t-zero" title="Back to the start">↺ Reset</button><button type="button" id="sh-t-view" title="Back to the starting view">⟲ View</button><button type="button" id="sh-t-png" aria-label="Save as PNG" title="Save as a picture">📷</button><button type="button" class="sh-fs" aria-label="Full screen" title="Full screen">⛶</button></div>
+			</div>
+			<div class="sh-readouts" id="sh-t-ro"></div></div>
+			<div class="tu-card sh-controls">
+				<div class="sh-grid">
+					<div class="tu-field"><span class="tu-label" id="sh-t-th-l">Core turned: <b id="sh-t-th-v"></b></span><input type="range" id="sh-t-th" min="0" max="720" step="1" aria-labelledby="sh-t-th-l"></div>
+					<div class="tu-field"><span class="tu-label" id="sh-t-sp-l">Speed: <b id="sh-t-sp-v"></b></span><input type="range" id="sh-t-sp" min="0.25" max="4" step="0.25" aria-labelledby="sh-t-sp-l"></div>
+					<label class="tu-field"><span class="tu-label">Winding</span><select id="sh-t-k" class="tu-input"><option value="half">Spin ½: 1 tube turn per 2 core turns</option><option value="one">Spin 1: 1 tube turn per core turn</option><option value="threehalf">Spin 3/2: 3 tube turns per 2 core turns</option></select></label>
+				</div>
+				<div class="sh-checks">
+					<label class="sh-check"><input type="checkbox" id="sh-t-col" checked> Colour by phase</label>
+					<label class="sh-check"><input type="checkbox" id="sh-t-all"> Show every colour line</label>
+					<button type="button" class="tu-btn tu-btn--ghost" id="sh-t-link">Copy link</button>
+				</div>
+				<p class="tu-note sh-note" id="sh-t-note" aria-live="polite"></p>
+			</div>
+			<div class="sh-explain">
+				<h3>Why a torus?</h3>
+				<p>Two angles together (the core's angle and the medium's) make a torus: going once round the hole changes the first angle by 360°, going once round the tube changes the second. A line on the torus is a rule linking the two. A spin-1 object (an ordinary arrow) turns with its core, one-to-one: the line closes after one lap. A spin-½ object's medium turns half as fast, so its line is a <b>(2, 1) torus knot</b>: two laps round the hole for one round the tube. Colour the torus by the phase 2v − u (v = tube angle, u = core angle): it is smooth everywhere, and every line of one colour is such a spin-½ path. After one core turn you are on the far side of the tube, with the opposite colour beside you; after two you are home.</p>
+			</div>
+		</section>
+
+		<!-- ============================== 4. SHEET ============================== -->
+		<section data-panel="sheet" role="tabpanel" hidden>
+			<p class="tu-note sh-lead">A flat elastic sheet with a ball in the middle. The ball turns about an axis lying in the sheet, and drags the sheet near it; far away (beyond the <b>influence radius</b>) the sheet is held fixed. After <b>360°</b> the sheet is still crumpled; after <b>720°</b> it lies <b>flat again</b> while the ball has turned twice. Tick "naive twist" to see the same turn without the untangling move: then even 720° leaves the sheet twisted.</p>
+			<div class="sh-wrap"><div class="sh-stage" id="sh-s-stage">
+				<canvas id="sh-s-c" tabindex="0" role="img" aria-label="A square grid sheet in 3D with a ball in the middle. The grid near the ball rises and twists as the ball turns, and lies flat again after two turns."></canvas>
+				<div class="sh-run"><button type="button" id="sh-s-play" aria-pressed="false">▶ Play</button><button type="button" id="sh-s-zero" title="Back to the start">↺ Reset</button><button type="button" id="sh-s-view" title="Back to the starting view">⟲ View</button><button type="button" id="sh-s-png" aria-label="Save as PNG" title="Save as a picture">📷</button><button type="button" class="sh-fs" aria-label="Full screen" title="Full screen">⛶</button></div>
+				<div class="sh-badge" id="sh-s-badge" aria-live="polite"></div>
+			</div>
+			<div class="sh-readouts" id="sh-s-ro"></div></div>
+			<div class="tu-card sh-controls">
+				<div class="sh-chips" id="sh-s-pre" role="group" aria-label="How far to turn"></div>
+				<div class="sh-grid">
+					<div class="tu-field"><span class="tu-label" id="sh-s-th-l">Ball turned: <b id="sh-s-th-v"></b></span><input type="range" id="sh-s-th" min="0" max="720" step="1" aria-labelledby="sh-s-th-l"></div>
+					<div class="tu-field"><span class="tu-label" id="sh-s-R-l">Influence radius: <b id="sh-s-R-v"></b> × the ball</span><input type="range" id="sh-s-R" min="2" max="8" step="0.1" aria-labelledby="sh-s-R-l"></div>
+					<div class="tu-field"><span class="tu-label" id="sh-s-sp-l">Speed: <b id="sh-s-sp-v"></b></span><input type="range" id="sh-s-sp" min="0.25" max="4" step="0.25" aria-labelledby="sh-s-sp-l"></div>
+					<label class="tu-field"><span class="tu-label">How the twist falls off</span><select id="sh-s-prof" class="tu-input"><option value="smooth">Smooth, fixed edge</option><option value="inv2">Inverse square (1/r²), fixed edge</option><option value="linear">Straight line</option></select></label>
+				</div>
+				<div class="sh-checks">
+					<label class="sh-check"><input type="checkbox" id="sh-s-naive"> Naive twist (no untangling move)</label>
+					<label class="sh-check"><input type="checkbox" id="sh-s-fill" checked> Shade the sheet</label>
+					<button type="button" class="tu-btn tu-btn--ghost" id="sh-s-link">Copy link</button>
+				</div>
+				<p class="tu-note sh-note" id="sh-s-note" aria-live="polite"></p>
+			</div>
+			<div class="sh-explain">
+				<h3>An elastic medium (a model, not settled physics)</h3>
+				<p>Chantal Roth's idea is to picture a particle as a knot of motion in an elastic, space-filling medium: the core turns, the medium around it is dragged along and has to stay connected to the still medium far away. That is a <b>hypothesis</b>, a mechanical way to <i>imagine</i> spin; standard quantum mechanics does not say space is such a material. What is established mathematics is the topology underneath: rotations in 3D form a space in which a 360° loop cannot be shrunk to nothing but a 720° loop can (the rotation group SO(3) is doubly covered by the unit quaternions, SU(2)). The sheet here is deformed by exactly the same shell rotations as the belt trick, with the shell number set by how strongly each point is dragged: so the sheet must come back flat at 720°, and cannot at 360°.</p>
+			</div>
+		</section>
+
+		<div class="sh-credit">
+			<b>Inspired by Chantal Roth's Mechanical Universe simulations.</b> Watch her episode <a href="https://youtu.be/q15Zem6zqcI" target="_blank" rel="noopener">"What Is Spin-1/2, Really? A Mechanical Model"</a> and explore her library <a href="https://mechanical-universe-lab.korosten.chatgpt.site/" target="_blank" rel="noopener">Mechanical Universe Lab</a>; this page was inspired by her demos <a href="https://mechanical-universe-lab.korosten.chatgpt.site/demo/ejy8movb/" target="_blank" rel="noopener">Spin ½ belt</a>, <a href="https://mechanical-universe-lab.korosten.chatgpt.site/demo/five-ways-720/" target="_blank" rel="noopener">Five ways back after 720°</a>, <a href="https://mechanical-universe-lab.korosten.chatgpt.site/demo/L1t9cesx/" target="_blank" rel="noopener">the spin-½ torus</a>, <a href="https://mechanical-universe-lab.korosten.chatgpt.site/demo/gtc35beq/" target="_blank" rel="noopener">the twisted medium</a> and her <a href="https://mechanical-universe-lab.korosten.chatgpt.site/spin/" target="_blank" rel="noopener">spin lab</a>. The code and text here are MES's own.
+		</div>
+
+		<div class="tu-seo">
+			<h2>How the Spin-½ Lab works</h2>
+			<p>Everything is drawn in your browser from a few formulas; nothing is uploaded. The idea behind every tab is one fact about turning things in three dimensions: <strong>a turn of 360° is not always the same as no turn at all, but a turn of 720° is</strong>. Objects that notice the difference are called spin-½: electrons, protons, neutrons and quarks all are.</p>
+			<div class="sh-eq" role="math" aria-label="Key equations">
+				<div><span class="sh-eq__n">a turn as a quaternion</span> <span class="sh-eq__f mes-tex">\(\displaystyle q = \cos\frac{\theta}{2} + \sin\frac{\theta}{2}\,(n_x i + n_y j + n_z k),\qquad \mathbf v' = q\,\mathbf v\,q^{*}\)</span></div>
+				<div><span class="sh-eq__n">one turn, two turns</span> <span class="sh-eq__f mes-tex">\(\displaystyle q(360^\circ) = -1,\qquad q(720^\circ) = +1,\qquad \text{but } {-q}\text{ and } q \text{ turn every vector the same way}\)</span></div>
+				<div><span class="sh-eq__n">twisting the shells</span> <span class="sh-eq__f mes-tex">\(\displaystyle F(r,\theta) = R_{\mathbf n}\big(\theta\,(1-r)\big),\qquad r = 0 \text{ at the ball},\ r = 1 \text{ at the wall}\)</span></div>
+				<div><span class="sh-eq__n">untangling at 720°</span> <span class="sh-eq__f mes-tex">\(\displaystyle G(r,s) = R_{\mathbf m(s)}\big(2\pi(1-r)\big)\,R_{\mathbf n}\big(2\pi(1-r)\big),\qquad \mathbf m(s) = \cos(\pi s)\,\mathbf n + \sin(\pi s)\,\mathbf p\)</span></div>
+				<div><span class="sh-eq__n">never tangling</span> <span class="sh-eq__f mes-tex">\(\displaystyle A(r,\theta) = R_{\mathbf m(r)}\Big(\frac{\theta}{2}\Big)\,R_{\mathbf n}\Big(\frac{\theta}{2}\Big),\qquad A(r, 720^\circ) = 1 \text{ for every } r\)</span></div>
+				<div><span class="sh-eq__n">core and medium</span> <span class="sh-eq__f mes-tex">\(\displaystyle \text{core: }\cos\theta,\qquad \text{medium: }\cos\frac{\theta}{2},\qquad \text{torus phase } \varphi = 2v - u\)</span></div>
+				<div><span class="sh-eq__n">sheet drag</span> <span class="sh-eq__f mes-tex">\(\displaystyle f(\rho) = \tfrac12\Big(1 + \cos\frac{\pi(\rho - a)}{R - a}\Big),\qquad r = 1 - f(\rho)\)</span></div>
+			</div>
+			<h3>The belt trick (Dirac's string trick)</h3>
+			<p>Paul Dirac liked to show it with scissors tied to a chair by strings: give the scissors a full turn and the strings are tangled; give them a second turn and the strings can be untangled by passing them round the scissors. The page draws it with shells: the turn of the shell at distance r is a rotation F(r), the wall shell is never turned and the innermost shell turns with the ball. Untangling means changing the whole family of shell rotations smoothly while keeping both ends fixed. Joining the shells from the wall to the ball draws a path in the space of rotations; a 360° path is a loop that cannot be shrunk to a point there, a 720° path can. The family G(r, s) above is one way to shrink it: the 720° twist is written as two 360° twists about n, and as s goes from 0 to 1 the axis of the first one swings round from n to −n, until the two cancel shell by shell. The ball stays still throughout, because each factor is a full 360° turn at the ball and (−1)(−1) = +1. Each frame of the animation is checked in the page's tests: the wall shell stays at the identity, the ball shell stays put, neighbouring shells differ by a small turn, and the lifted quaternion at the ball is −1 after 360° and +1 after 720°.</p>
+			<h3>Five ways back after 720°</h3>
+			<p>The same 2 : 1 ratio appears in many pictures: a core tied to an elastic medium (the medium halfway out turns half as much), a wave on a ring whose crest takes two laps to come back, a direction carried round a Möbius band (one lap flips it, two restore it), a ring of beads whose arrows turn at half the ring's speed and come in ± pairs, and the rotation field of an elastic solid around a turning core. The dials compare the core's cos θ (back to 1 every 360°) with the medium's cos θ/2 (back to 1 only every 720°). Pictures 1 and 5, a particle as a core in an elastic medium, follow Chantal Roth's mechanical model; the other three are standard geometry.</p>
+			<h3>Questions</h3>
+			<dl>
+				<dt>Is the electron really a little ball with ribbons?</dt>
+				<dd>No one knows what an electron "is" inside, and standard quantum mechanics treats it as a point. The ribbons are a way to see a mathematical fact: an electron's state (a spinor) changes sign after a 360° turn and comes back after 720°, exactly as the ribbon picture does. That sign change has been measured with neutrons (see the <a href="/spin-simulator">Spin Simulator</a>).</dd>
+				<dt>If the ball looks the same after 360°, how can anything be different?</dt>
+				<dd>The ball alone cannot tell, just as a rotation matrix cannot tell. What differs is how it is connected to the rest of the world: the ribbons (or the wave's phase) remember the turn. Quaternions remember it too: q and −q give the same rotation, but following the turn smoothly from q = +1 ends at −1 after one turn.</dd>
+				<dt>Why exactly 720° and not 1080°?</dt>
+				<dd>Because two loops of 360° join into one that can be shrunk to nothing, the "number of tangles" only counts up to one: an even number of turns is untangled, an odd number is tangled once. 1080° is tangled again, 1440° is free, and so on.</dd>
+				<dt>What does "Keep turning, never tangle" show?</dt>
+				<dd>A motion where the ball turns continuously and the ribbons never pile up: they swing round the ball and repeat every 720°. Your arm does the same when you turn a cup on your palm twice (the "Balinese cup trick" or "plate trick").</dd>
+				<dt>Is the elastic medium real?</dt>
+				<dd>It is a model. The 720° topology it shows is solid mathematics, but whether space behaves like an elastic medium around particles is an open idea explored by Chantal Roth and others, not accepted physics.</dd>
+			</dl>
+			<p>Related: <a href="/spin-simulator">Spin Simulator (neutron 720° experiment)</a> · <a href="/quaternions">Quaternions</a> · <a href="/3d-graphing-calculator">3D Graphing Calculator</a> · <a href="/electromagnetic-fields-simulator">Electromagnetic Fields Simulator</a> · <a href="/physics">MES Physics</a> · <a href="/tools">More MES tools</a></p>
+		</div>
+		<script src="/main_js/mes-math.js" defer></script>
+	</div>

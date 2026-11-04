@@ -1,0 +1,180 @@
+	<script>try{if(!localStorage.getItem('pageMode')){document.documentElement.classList.add('page-wide')}}catch(e){}</script>
+	<div class="tu qn" id="qn">
+		<div class="qn-credit"><b>Inspired by Chantal Roth's Mechanical Universe simulations.</b>
+			<span>Video: <a href="https://youtu.be/q15Zem6zqcI" target="_blank" rel="noopener">What Is Spin-1/2, Really? A Mechanical Model</a> · <a href="https://mechanical-universe-lab.korosten.chatgpt.site/" target="_blank" rel="noopener">her simulation library</a> · demos: <a href="https://mechanical-universe-lab.korosten.chatgpt.site/demo/ijk-half-turns/" target="_blank" rel="noopener">i, j, k half-turns</a> and <a href="https://mechanical-universe-lab.korosten.chatgpt.site/demo/quaternions-at-work/" target="_blank" rel="noopener">quaternions at work</a>. The code and text here are our own.</span></div>
+		<div class="qn-tabs" role="tablist" aria-label="Quaternion lab sections">
+			<button type="button" role="tab" data-tab="ijk" aria-selected="true">i, j, k half-turns</button>
+			<button type="button" role="tab" data-tab="robot" aria-selected="false">Quaternions at work</button>
+			<button type="button" role="tab" data-tab="calc" aria-selected="false">Rotation calculator</button>
+			<button type="button" role="tab" data-tab="spinor" aria-selected="false">720° and spinors</button>
+		</div>
+
+		<!-- ============================== 1. i, j, k HALF-TURNS ============================== -->
+		<section data-panel="ijk" role="tabpanel">
+			<p class="tu-note qn-lead">Each of <b>i</b>, <b>j</b> and <b>k</b> is a <b>half-turn</b> (180°) about the x, y or z axis. Press the buttons to multiply them, one after another, and watch the hand turn. The hand only shows the <b>rotation</b>; the quaternion also carries a <b>sign</b>, ±1, that the hand cannot show: <b>i·i</b> is a full 360° turn, the hand looks exactly as it started, yet <b>i² = −1</b>. Drag the picture to look around it.</p>
+			<div class="qn-wrap"><div class="qn-stage" id="qn-i-stage">
+				<canvas id="qn-i-c" tabindex="0" role="img" aria-label="A 3D hand on x, y, z axes. Pressing the i, j or k button turns it half a turn about that axis; a faint outline shows where it started."></canvas>
+				<div class="qn-run"><button type="button" id="qn-i-view" title="Back to the starting view">⟲ View</button><button type="button" class="qn-link" title="Copy a link to this">🔗 Link</button><button type="button" id="qn-i-png" aria-label="Save as PNG" title="Save as a picture">📷</button><button type="button" class="qn-fs" aria-label="Full screen" title="Full screen">⛶</button></div>
+			</div>
+			<div class="qn-readouts" id="qn-i-ro"></div></div>
+			<div class="tu-card qn-controls">
+				<div class="qn-mult" role="group" aria-label="Multiply">
+					<button type="button" class="qn-x" data-m="i" title="Multiply by i: half-turn about x">×i</button>
+					<button type="button" class="qn-x" data-m="j" title="Multiply by j: half-turn about y">×j</button>
+					<button type="button" class="qn-x" data-m="k" title="Multiply by k: half-turn about z">×k</button>
+					<button type="button" class="qn-x" data-m="-1" title="Multiply by −1: a full 360° turn">×(−1)</button>
+					<button type="button" class="qn-small" id="qn-i-undo">↶ Undo</button>
+					<button type="button" class="qn-small" id="qn-i-reset">⟲ Start again</button>
+				</div>
+				<div class="qn-prod" id="qn-i-prod" aria-live="polite"></div>
+				<div class="qn-chips" id="qn-i-try" role="group" aria-label="Try this"></div>
+				<div class="qn-checks">
+					<label class="qn-check"><input type="checkbox" id="qn-i-left"> Turn about the room's axes (multiply on the left) instead of the hand's own axes</label>
+					<span class="tu-field qn-inline"><span class="tu-label" id="qn-i-sp-l">Turning speed: <b id="qn-i-sp-v"></b></span><input type="range" id="qn-i-sp" min="0.25" max="4" step="0.25" aria-labelledby="qn-i-sp-l"></span>
+				</div>
+				<p class="tu-note qn-note" id="qn-i-note" aria-live="polite"></p>
+			</div>
+			<div class="qn-wrap qn-wrap--2"><div class="qn-stage" id="qn-d-stage"><canvas id="qn-d-c" role="img" aria-label="Left: the quaternion's half-angle on a dial, +1 on the right, −1 on the left. Right: the four numbers w, x, y, z as bars."></canvas></div></div>
+				<div class="tu-card" style="margin-top:0.9em">
+					<h3 class="qn-h" style="margin-top:0">Hamilton's table</h3>
+					<p class="tu-note" style="margin:0 0 0.3em">Row times column. The last product is highlighted.</p>
+					<div style="overflow-x:auto"><table class="qn-tbl" id="qn-tbl" aria-label="Multiplication table of 1, i, j, k"></table></div>
+					<p class="tu-note">Order matters: <b>i·j = k</b> but <b>j·i = −k</b>. Both turn the hand to the same place (a half-turn about z), only the hidden sign differs.</p>
+				</div>
+		</section>
+
+		<!-- ============================== 2. QUATERNIONS AT WORK ============================== -->
+		<section data-panel="robot" role="tabpanel" hidden>
+			<p class="tu-note qn-lead">A robot arm has to move its gripper from <b>pose A</b> to <b>pose B</b>: both the place and the way the gripper is turned. Robots, drones, spacecraft and game engines store that turn as a quaternion and blend between the two with <b>SLERP</b> (spherical linear interpolation): one steady turn about one fixed axis, the shortest way. The orange ghost shows what happens if you blend the three <b>Euler angles</b> (yaw, pitch, roll) one by one instead: it wobbles, can go the long way round, and near pitch 90° (<b>gimbal lock</b>) it spins wildly. Drag to look around.</p>
+			<div class="qn-wrap"><div class="qn-stage" id="qn-r-stage">
+				<canvas id="qn-r-c" tabindex="0" role="img" aria-label="A four-joint robot arm on a floor grid moving its gripper from pose A to pose B along a dashed path. The gripper turns by SLERP; an orange ghost gripper shows Euler-angle blending, with the paths its top marker traces."></canvas>
+				<div class="qn-run"><button type="button" id="qn-r-play" aria-pressed="true">❚❚ Pause</button><button type="button" id="qn-r-restart">⏮ Restart</button><button type="button" id="qn-r-view" title="Back to the starting view">⟲ View</button><button type="button" class="qn-link" title="Copy a link to this">🔗 Link</button><button type="button" id="qn-r-png" aria-label="Save as PNG" title="Save as a picture">📷</button><button type="button" class="qn-fs" aria-label="Full screen" title="Full screen">⛶</button></div>
+			</div>
+			<div class="qn-readouts" id="qn-r-ro"></div></div>
+			<div class="tu-card qn-controls">
+				<div class="qn-chips" id="qn-r-pre" role="group" aria-label="Moves"></div>
+				<div class="qn-scrub"><span class="tu-label" id="qn-r-u-l">Along the move: <b id="qn-r-u-v"></b></span><input type="range" id="qn-r-u" min="0" max="1" step="0.001" aria-labelledby="qn-r-u-l"></div>
+				<div class="qn-row">
+					<span class="qn-seg" role="group" aria-label="How to turn the gripper"><button type="button" data-rm="slerp">SLERP</button><button type="button" data-rm="euler">Euler angles</button><button type="button" data-rm="both">Both</button></span>
+					<label class="qn-check"><input type="checkbox" id="qn-r-rep"> Repeat</label>
+					<label class="qn-check"><input type="checkbox" id="qn-r-tr"> Show the paths</label>
+					<span class="tu-field qn-inline"><span class="tu-label" id="qn-r-t-l">Time for one move: <b id="qn-r-t-v"></b></span><input type="range" id="qn-r-t" min="1" max="12" step="0.5" aria-labelledby="qn-r-t-l"></span>
+				</div>
+				<div class="qn-grid">
+					<div><h3 class="qn-h" style="margin-top:0.4em">Pose A (yaw, pitch, roll)</h3>
+						<div class="tu-field"><span class="tu-label" id="qn-a0-l">Yaw (about z): <b id="qn-a0-v"></b></span><input type="range" id="qn-a0" min="-180" max="180" step="1" aria-labelledby="qn-a0-l"></div>
+						<div class="tu-field"><span class="tu-label" id="qn-a1-l">Pitch (about y): <b id="qn-a1-v"></b></span><input type="range" id="qn-a1" min="-90" max="90" step="1" aria-labelledby="qn-a1-l"></div>
+						<div class="tu-field"><span class="tu-label" id="qn-a2-l">Roll (about x): <b id="qn-a2-v"></b></span><input type="range" id="qn-a2" min="-180" max="180" step="1" aria-labelledby="qn-a2-l"></div></div>
+					<div><h3 class="qn-h" style="margin-top:0.4em">Pose B (yaw, pitch, roll)</h3>
+						<div class="tu-field"><span class="tu-label" id="qn-b0-l">Yaw (about z): <b id="qn-b0-v"></b></span><input type="range" id="qn-b0" min="-180" max="180" step="1" aria-labelledby="qn-b0-l"></div>
+						<div class="tu-field"><span class="tu-label" id="qn-b1-l">Pitch (about y): <b id="qn-b1-v"></b></span><input type="range" id="qn-b1" min="-90" max="90" step="1" aria-labelledby="qn-b1-l"></div>
+						<div class="tu-field"><span class="tu-label" id="qn-b2-l">Roll (about x): <b id="qn-b2-v"></b></span><input type="range" id="qn-b2" min="-180" max="180" step="1" aria-labelledby="qn-b2-l"></div></div>
+				</div>
+				<p class="tu-note qn-note" id="qn-r-note" aria-live="polite"></p>
+				<div class="qn-eqi" role="math" aria-label="SLERP formulas">
+					<span class="mes-tex">\(\displaystyle q(u) = \mathrm{SLERP}(q_0, q_1, u) = \frac{\sin\big((1-u)\theta\big)}{\sin\theta}\,q_0 + \frac{\sin(u\theta)}{\sin\theta}\,q_1,\qquad \cos\theta = q_0\cdot q_1\)</span><br>
+					<span class="mes-tex">\(\displaystyle \Delta q = q_1\,q_0^{-1} = \cos\tfrac{\varphi}{2} + \mathbf{n}\,\sin\tfrac{\varphi}{2},\qquad q(u) = (\Delta q)^{u}\,q_0\)</span>
+				</div>
+			</div>
+			<div class="qn-wrap qn-wrap--2"><div class="qn-stage" id="qn-g-stage"><canvas id="qn-g-c" role="img" aria-label="Graph of the gripper's turning speed along the move: flat for SLERP, uneven for Euler-angle blending, and the wrist bend angle."></canvas></div></div>
+		</section>
+
+		<!-- ============================== 3. ROTATION CALCULATOR ============================== -->
+		<section data-panel="calc" role="tabpanel" hidden>
+			<p class="tu-note qn-lead">Type a rotation in any form and the others follow: <b>axis and angle</b>, <b>quaternion</b>, <b>rotation matrix</b> or <b>Euler angles</b> in any of the six orders. Below it, multiply two quaternions and turn a vector with <b>q v q*</b>. The picture shows the turn, its axis (dashed) and your vector.</p>
+			<div class="qn-wrap"><div class="qn-stage" id="qn-c-stage">
+				<canvas id="qn-c-c" tabindex="0" role="img" aria-label="The rotation applied to a hand on x, y, z axes, with the rotation axis dashed and the vector v and its turned copy as arrows."></canvas>
+				<div class="qn-run"><button type="button" id="qn-c-view" title="Back to the starting view">⟲ View</button><button type="button" class="qn-link" title="Copy a link to this rotation">🔗 Link</button><button type="button" id="qn-c-png" aria-label="Save as PNG" title="Save as a picture">📷</button><button type="button" class="qn-fs" aria-label="Full screen" title="Full screen">⛶</button></div>
+			</div>
+			<div class="qn-readouts" id="qn-c-ro"></div></div>
+			<div class="qn-two" style="margin-top:0.9em">
+				<div class="tu-card qn-card"><h3>Axis and angle</h3>
+					<div class="qn-nums"><label>axis x<input id="qn-aa-x" inputmode="decimal"></label><label>axis y<input id="qn-aa-y" inputmode="decimal"></label><label>axis z<input id="qn-aa-z" inputmode="decimal"></label><label>angle (°)<input id="qn-aa-a" inputmode="decimal"></label></div>
+					<p class="tu-note">The axis does not need to be a unit vector; it is scaled for you. Angles over 360° are kept: that is where the sign of q changes.</p></div>
+				<div class="tu-card qn-card"><h3>Quaternion q = w + xi + yj + zk</h3>
+					<div class="qn-nums"><label>w<input id="qn-q-w" inputmode="decimal"></label><label>x<input id="qn-q-x" inputmode="decimal"></label><label>y<input id="qn-q-y" inputmode="decimal"></label><label>z<input id="qn-q-z" inputmode="decimal"></label></div>
+					<p class="tu-note" id="qn-q-n"></p>
+					<div class="qn-btns"><button type="button" id="qn-c-id">Identity (1)</button><button type="button" id="qn-c-neg">Negate (−q)</button><button type="button" id="qn-c-nrm">Normalise</button><button type="button" id="qn-c-rnd">Random</button></div></div>
+				<div class="tu-card qn-card"><h3>Rotation matrix</h3>
+					<div class="qn-nums qn-nums--3" id="qn-m"></div>
+					<p class="tu-note">Edit a cell and the closest rotation is used. Columns are where the x, y and z axes end up.</p>
+					<p class="qn-warn" id="qn-m-w"></p></div>
+				<div class="tu-card qn-card"><h3>Euler angles</h3>
+					<div class="qn-row" style="margin-top:0"><label class="tu-label" for="qn-eo">Order</label><select id="qn-eo" class="tu-select"></select></div>
+					<div class="qn-nums qn-nums--3"><label id="qn-e0-l">a (°)<input id="qn-e0" inputmode="decimal"></label><label id="qn-e1-l">b (°)<input id="qn-e1" inputmode="decimal"></label><label id="qn-e2-l">c (°)<input id="qn-e2" inputmode="decimal"></label></div>
+					<p class="tu-note" id="qn-eo-n"></p>
+					<p class="qn-warn" id="qn-e-w"></p></div>
+			</div>
+			<div class="qn-two" style="margin-top:1em">
+				<div class="tu-card qn-card"><h3>Quaternion arithmetic</h3>
+					<div class="tu-label">q₁</div><div class="qn-nums"><label>w<input id="qn-q1-w" inputmode="decimal"></label><label>x<input id="qn-q1-x" inputmode="decimal"></label><label>y<input id="qn-q1-y" inputmode="decimal"></label><label>z<input id="qn-q1-z" inputmode="decimal"></label></div>
+					<div class="tu-label" style="margin-top:0.5em">q₂</div><div class="qn-nums"><label>w<input id="qn-q2-w" inputmode="decimal"></label><label>x<input id="qn-q2-x" inputmode="decimal"></label><label>y<input id="qn-q2-y" inputmode="decimal"></label><label>z<input id="qn-q2-z" inputmode="decimal"></label></div>
+					<div class="qn-btns"><button type="button" id="qn-q1-use">q₁ = the rotation above</button><button type="button" id="qn-q2-use">q₂ = the rotation above</button><button type="button" id="qn-pr-ij">q₁ = i, q₂ = j</button><button type="button" id="qn-pr-sw">Swap</button><button type="button" id="qn-pr-up">Use q₁·q₂ above</button></div>
+					<table class="qn-res" id="qn-ops" style="margin-top:0.6em"></table></div>
+				<div class="tu-card qn-card"><h3>Turn a vector: v′ = q v q*</h3>
+					<div class="qn-nums qn-nums--3"><label>v x<input id="qn-v-x" inputmode="decimal"></label><label>v y<input id="qn-v-y" inputmode="decimal"></label><label>v z<input id="qn-v-z" inputmode="decimal"></label></div>
+					<table class="qn-res" id="qn-vr" style="margin-top:0.6em"></table>
+					<p class="tu-note">The vector becomes a "pure" quaternion (no real part), is sandwiched between q and its conjugate, and comes out pure again. Using −q instead of q gives exactly the same v′: the two minus signs cancel.</p></div>
+			</div>
+		</section>
+
+		<!-- ============================== 4. 720° AND SPINORS ============================== -->
+		<section data-panel="spinor" role="tabpanel" hidden>
+			<p class="tu-note qn-lead">Turn the hand round and round about one axis. Its <b>rotation matrix</b> repeats every <b>360°</b>, but its <b>quaternion</b> w = cos(θ/2) only repeats every <b>720°</b>: after one turn q = −1. A ribbon tied from the wall to the hand shows the same thing: after one turn its twist cannot be undone by moving the ribbon around (without turning the hand), after two turns it can (Dirac's belt trick). Drag to look around.</p>
+			<div class="qn-wrap"><div class="qn-stage" id="qn-s-stage">
+				<canvas id="qn-s-c" tabindex="0" role="img" aria-label="A hand turning about an axis, tied to a wall by a two-coloured ribbon whose twist shows the least twist it can be relaxed to."></canvas>
+				<div class="qn-run"><button type="button" id="qn-s-play" aria-pressed="true">❚❚ Pause</button><button type="button" id="qn-s-zero">⏮ Back to 0°</button><button type="button" id="qn-s-view" title="Back to the starting view">⟲ View</button><button type="button" class="qn-link" title="Copy a link to this">🔗 Link</button><button type="button" id="qn-s-png" aria-label="Save as PNG" title="Save as a picture">📷</button><button type="button" class="qn-fs" aria-label="Full screen" title="Full screen">⛶</button></div>
+			</div>
+			<div class="qn-readouts" id="qn-s-ro"></div></div>
+			<div class="tu-card qn-controls">
+				<div class="qn-scrub"><span class="tu-label" id="qn-s-th-l">Turned by θ = <b id="qn-s-th-v"></b></span><input type="range" id="qn-s-th" min="0" max="1080" step="1" aria-labelledby="qn-s-th-l"></div>
+				<div class="qn-chips" id="qn-s-pre" role="group" aria-label="Jump to an angle"></div>
+				<div class="qn-row">
+					<label class="tu-label" for="qn-s-ax">Turn about</label><select id="qn-s-ax" class="tu-select"><option value="x">x: along the ribbon</option><option value="z">z: up</option><option value="y">y: sideways</option><option value="t">a tilted axis (1, 1, 1)</option></select>
+					<span class="qn-seg" role="group" aria-label="Ribbon"><button type="button" data-belt="relax">Ribbon relaxed as far as it goes</button><button type="button" data-belt="all">Ribbon keeps every turn</button><button type="button" data-belt="off">No ribbon</button></span>
+					<span class="tu-field qn-inline"><span class="tu-label" id="qn-s-sp-l">Speed: <b id="qn-s-sp-v"></b></span><input type="range" id="qn-s-sp" min="10" max="240" step="5" aria-labelledby="qn-s-sp-l"></span>
+				</div>
+				<p class="tu-note qn-note" id="qn-s-note" aria-live="polite"></p>
+				<p class="tu-note">More on spin-½: the <a href="/spin-simulator">Spin &amp; Angular Momentum Simulator</a> (the 1975 neutron experiments that saw the 720° turn) and <a href="/spin-half">Spin-½ explained</a>.</p>
+			</div>
+			<div class="qn-wrap qn-wrap--2"><div class="qn-stage" id="qn-p-stage"><canvas id="qn-p-c" role="img" aria-label="Graph against the turn angle from 0 to 1080 degrees: the quaternion's w = cos(θ/2), which repeats every 720 degrees, and the matrix entry cos θ, which repeats every 360 degrees."></canvas></div></div>
+		</section>
+
+		<div class="tu-seo">
+			<h2>How the Quaternion Lab works</h2>
+			<p>Everything is worked out in your browser with plain quaternion algebra; nothing is uploaded. A quaternion is four numbers, q = w + x<i>i</i> + y<i>j</i> + z<i>k</i>, with Hamilton's rule <i>i</i>² = <i>j</i>² = <i>k</i>² = <i>ijk</i> = −1 (1843, carved on Broom Bridge in Dublin). A unit quaternion is a turn: turning by θ about the unit axis <b>n</b> is q = cos(θ/2) + <b>n</b> sin(θ/2), and it turns a vector v by v′ = q v q*. Because of the half angle, q and −q are the same turn, and a turn of 360° gives q = −1.</p>
+			<div class="qn-eq" role="math" aria-label="Key equations">
+				<div><span class="qn-eq__n">Hamilton's rule</span> <span class="qn-eq__f mes-tex">\(\displaystyle i^2 = j^2 = k^2 = ijk = -1,\qquad ij = k = -ji,\quad jk = i = -kj,\quad ki = j = -ik\)</span></div>
+				<div><span class="qn-eq__n">a turn as a quaternion</span> <span class="qn-eq__f mes-tex">\(\displaystyle q = \cos\tfrac{\theta}{2} + (n_x i + n_y j + n_z k)\sin\tfrac{\theta}{2},\qquad v' = q\,v\,q^{*}\)</span></div>
+				<div><span class="qn-eq__n">the product</span> <span class="qn-eq__f mes-tex">\(\displaystyle q_1 q_2 = \big(w_1 w_2 - \mathbf{v}_1\!\cdot\!\mathbf{v}_2,\ \ w_1\mathbf{v}_2 + w_2\mathbf{v}_1 + \mathbf{v}_1\times\mathbf{v}_2\big)\)</span></div>
+				<div><span class="qn-eq__n">quaternion to matrix</span> <span class="qn-eq__f mes-tex">\(\displaystyle R = \begin{pmatrix} 1-2(y^2+z^2) & 2(xy - wz) & 2(xz + wy)\\ 2(xy + wz) & 1-2(x^2+z^2) & 2(yz - wx)\\ 2(xz - wy) & 2(yz + wx) & 1-2(x^2+y^2)\end{pmatrix}\)</span></div>
+				<div><span class="qn-eq__n">SLERP</span> <span class="qn-eq__f mes-tex">\(\displaystyle \mathrm{SLERP}(q_0,q_1,u) = \frac{\sin((1-u)\theta)}{\sin\theta}q_0 + \frac{\sin(u\theta)}{\sin\theta}q_1,\quad \cos\theta = |q_0\cdot q_1|\)</span></div>
+				<div><span class="qn-eq__n">720°</span> <span class="qn-eq__f mes-tex">\(\displaystyle q(2\pi) = \cos\pi = -1,\qquad q(4\pi) = +1,\qquad \operatorname{tr}R(\theta) = 1 + 2\cos\theta\)</span></div>
+			</div>
+			<h3>i, j and k as half-turns</h3>
+			<p>Put θ = 180° in the formula above and the cosine vanishes: the half-turn about x is exactly <i>i</i>, about y is <i>j</i>, about z is <i>k</i>. Multiplying on the right means "then turn about the hand's own (body) axis", which is how a robot wrist or an aircraft's controls work; ticking "the room's axes" multiplies on the left instead. Either way <i>i·j</i> lands on the same place as a half-turn about z, and <i>i·i</i> = −1 lands where it started. The hand cannot tell +1 from −1; the dial can.</p>
+			<h3>Why SLERP beats Euler angles</h3>
+			<p>Euler angles describe a turn as three turns about fixed-order axes. Blending each of the three numbers separately gives a path whose speed changes along the way and which can take the long way round (yaw 170° to −170° sweeps 340° instead of 20°). When the middle angle reaches ±90° the first and third axes line up and one degree of freedom is lost: <b>gimbal lock</b>, the problem that nearly hurt Apollo 13's guidance platform. SLERP works on the unit sphere of quaternions, where every orientation is one point, and walks the great circle between the two: one fixed axis, constant angular speed, the shortest turn. The robot arm here is drawn with simple inverse kinematics (a turning base, shoulder and elbow to place the wrist, then a roll-pitch-roll wrist to turn the gripper); the wrist readout shows when the wrist itself nears its own singularity.</p>
+			<h3>720° and spinors</h3>
+			<p>The quaternions of length 1 form the group SU(2), which covers the rotation group SO(3) twice: every turn has two quaternions, q and −q. Follow a turn continuously from 0° and you reach −1 at 360° and come back to +1 only at 720°. Spin-½ particles (electrons, neutrons) carry exactly this sign: in 1975 two groups turned neutrons by a magnetic field and saw their interference come back only after 720° (see the <a href="/spin-simulator">Spin Simulator</a>). The ribbon picture is the belt trick: tie a belt to a book, turn the book once and the belt's twist cannot be removed without turning the book back; turn it twice and you can pass the belt around the book until it is flat. The ribbon drawn here is the shortest path in SU(2) from 1 to q, which is the least twist the ribbon can be relaxed to; it is a picture of the mathematics, not a simulation of a real belt. Chantal Roth's elastic-medium model of spin, which inspired this page, is one proposed mechanical picture of why particles behave like this: a hypothesis, not established physics. The 720° property itself is established.</p>
+			<h3>Questions</h3>
+			<dl>
+				<dt>Why is the angle halved in the quaternion?</dt><dd>Because q appears twice in v′ = q v q*. Each copy turns v by θ/2 and together they turn it by θ.</dd>
+				<dt>Which Euler order should I use?</dt><dd>Aircraft, ships and most robot arms use ZYX (yaw, pitch, roll). Here "XYZ" means R = Rx · Ry · Rz: turn about x, then about the new y, then about the new z (the same as turning about the fixed z, y, x). The calculator lists all six Tait-Bryan orders.</dd>
+				<dt>Are q and −q different?</dt><dd>As rotations, no: they turn every vector the same way. As quaternions, yes, and the difference matters for spin-½ and when blending: SLERP flips one of them so it takes the short way round.</dd>
+				<dt>What is gimbal lock?</dt><dd>The point where the middle Euler angle is ±90°, so the first and last axes line up and only their sum or difference matters. The orientation is fine; the three numbers just stop describing it uniquely. Quaternions have no such point.</dd>
+				<dt>Is the matrix calculator exact?</dt><dd>It uses double-precision floating point (about 15 digits) and Shepperd's method to turn a matrix into a quaternion, which stays accurate near 180° turns.</dd>
+			</dl>
+			<div class="qn-further"><h3>Further</h3>
+				<ul>
+					<li>Chantal Roth, <a href="https://youtu.be/q15Zem6zqcI" target="_blank" rel="noopener">What Is Spin-1/2, Really? A Mechanical Model</a> (Red Pill channel) and her <a href="https://mechanical-universe-lab.korosten.chatgpt.site/" target="_blank" rel="noopener">Mechanical Universe simulation library</a>; demos <a href="https://mechanical-universe-lab.korosten.chatgpt.site/demo/ijk-half-turns/" target="_blank" rel="noopener">i, j, k half-turns</a> and <a href="https://mechanical-universe-lab.korosten.chatgpt.site/demo/quaternions-at-work/" target="_blank" rel="noopener">quaternions at work</a>.</li>
+					<li>W. R. Hamilton (1844). On quaternions; or on a new system of imaginaries in algebra. Philosophical Magazine 25, 10-13.</li>
+					<li>K. Shoemake (1985). Animating rotation with quaternion curves. SIGGRAPH '85, 245-254 (the SLERP paper).</li>
+					<li>S. W. Shepperd (1978). Quaternion from rotation matrix. Journal of Guidance and Control 1, 223-224.</li>
+					<li>H. Rauch et al. (1975), S. A. Werner et al. (1975): the neutron 4π experiments, Physics Letters A 54, 425 and Physical Review Letters 35, 1053.</li>
+				</ul>
+			</div>
+			<p>Related: <a href="/spin-simulator">Spin &amp; Angular Momentum Simulator</a> · <a href="/spin-half">Spin-½</a> · <a href="/matrix-calculator">Matrix Calculator</a> · <a href="/3d-graphing-calculator">3D Graphing Calculator</a> · <a href="/trigonometry">Trigonometry</a> · <a href="/tools">More MES tools</a></p>
+		</div>
+		<script src="/main_js/mes-math.js" defer></script>
+	</div>

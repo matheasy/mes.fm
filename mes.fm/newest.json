@@ -1,5 +1,5 @@
 {
- "generated": "2026-11-02",
+ "generated": "2026-11-03",
  "calculators": [
   {
    "href": "/practice-tests",
@@ -100,6 +100,38 @@
  ],
  "tools": [
   {
+   "href": "/spin-half",
+   "title": "Spin-½ Lab",
+   "icon": "/img/spin-half-logo.png",
+   "desc": "Dirac's belt trick in 3D: one turn tangles the ribbons, two turns untangle them, plus five pictures of why spin ½ needs 720°, a phase-coloured torus and an elastic sheet that lies flat only after 720°.",
+   "added": "2026-11-03",
+   "kind": "tool"
+  },
+  {
+   "href": "/maxwell-vortices",
+   "title": "Maxwell's Vortices",
+   "icon": "/img/maxwell-vortices-logo.png",
+   "desc": "A wire bent into a loop becomes a magnet, the electron's magnetic moment, Maxwell's 1861 spinning cells and idle wheels carrying currents and waves, and two magnets attracting or repelling.",
+   "added": "2026-11-03",
+   "kind": "tool"
+  },
+  {
+   "href": "/quaternions",
+   "title": "Quaternion Lab",
+   "icon": "/img/quaternions-logo.png",
+   "desc": "Multiply i, j, k and watch a 3D hand half-turn, see why i² = −1, compare SLERP with Euler angles on a robot arm, convert rotations and see the 720° spinor turn.",
+   "added": "2026-11-03",
+   "kind": "tool"
+  },
+  {
+   "href": "/spin-wave-field",
+   "title": "Spin Wave Field",
+   "icon": "/img/spin-wave-field-logo.png",
+   "desc": "A double-slit pattern forms in a crowd that waves with the wave, a 360° spin flipper swaps bright and dark stripes (720° brings them back), and a 3D wave field with tracer particles.",
+   "added": "2026-11-03",
+   "kind": "tool"
+  },
+  {
    "href": "/hologram",
    "title": "Hologram Simulator",
    "icon": "/img/hologram-logo.png",
@@ -162,41 +194,41 @@
    "desc": "An animated heart synced to a Wiggers diagram, pressure-volume loops with disease presets, an ECG rhythm trainer with calipers and a hemodynamics calculator.",
    "added": "2026-10-31",
    "kind": "tool"
-  },
-  {
-   "href": "/polls",
-   "title": "Polls",
-   "icon": "/img/polls-logo.png",
-   "desc": "Make a poll in seconds and share one short link: one or several picks, a closing time, live result bars and a pie chart. No sign-up.",
-   "added": "2026-10-31",
-   "kind": "tool"
-  },
-  {
-   "href": "/stream-chat",
-   "title": "Stream Chat",
-   "icon": "/img/stream-chat-logo.png",
-   "desc": "Your YouTube, Twitch and Odysee live chats in one window, Super Chats and tips highlighted. Add it to OBS as a chat dock and on-screen overlay.",
-   "added": "2026-10-31",
-   "kind": "tool"
-  },
-  {
-   "href": "/excel",
-   "title": "Spreadsheet Viewer (Excel files)",
-   "icon": "/img/excel-logo.png",
-   "desc": "Open .xlsx, .xls, .ods and CSV files, edit cells and formulas, sort and filter, save as .xlsx or CSV. Fast with big files, nothing is uploaded.",
-   "added": "2026-10-30",
-   "kind": "tool"
-  },
-  {
-   "href": "/database",
-   "title": "Video Database",
-   "icon": "/img/database-logo.png",
-   "desc": "Every MES video since 2011 with its links on YouTube, Hive, 3Speak, Rumble, Odysee, BitChute and Telegram. Search, filter by series or site, sort and share.",
-   "added": "2026-10-30",
-   "kind": "tool"
   }
  ],
  "latest": [
+  {
+   "href": "/spin-half",
+   "title": "Spin-½ Lab",
+   "icon": "/img/spin-half-logo.png",
+   "desc": "Dirac's belt trick in 3D: one turn tangles the ribbons, two turns untangle them, plus five pictures of why spin ½ needs 720°, a phase-coloured torus and an elastic sheet that lies flat only after 720°.",
+   "added": "2026-11-03",
+   "kind": "tool"
+  },
+  {
+   "href": "/maxwell-vortices",
+   "title": "Maxwell's Vortices",
+   "icon": "/img/maxwell-vortices-logo.png",
+   "desc": "A wire bent into a loop becomes a magnet, the electron's magnetic moment, Maxwell's 1861 spinning cells and idle wheels carrying currents and waves, and two magnets attracting or repelling.",
+   "added": "2026-11-03",
+   "kind": "tool"
+  },
+  {
+   "href": "/quaternions",
+   "title": "Quaternion Lab",
+   "icon": "/img/quaternions-logo.png",
+   "desc": "Multiply i, j, k and watch a 3D hand half-turn, see why i² = −1, compare SLERP with Euler angles on a robot arm, convert rotations and see the 720° spinor turn.",
+   "added": "2026-11-03",
+   "kind": "tool"
+  },
+  {
+   "href": "/spin-wave-field",
+   "title": "Spin Wave Field",
+   "icon": "/img/spin-wave-field-logo.png",
+   "desc": "A double-slit pattern forms in a crowd that waves with the wave, a 360° spin flipper swaps bright and dark stripes (720° brings them back), and a 3D wave field with tracer particles.",
+   "added": "2026-11-03",
+   "kind": "tool"
+  },
   {
    "href": "/practice-tests",
    "title": "Practice Tests (FSA Style)",
@@ -227,38 +259,6 @@
    "icon": "/img/spin-simulator-logo.png",
    "desc": "Neutrons that must turn 720° to come back, the Einstein-de Haas effect (flip a magnet, the iron turns) and the Barnett effect (spin iron, it magnetizes).",
    "added": "2026-11-01",
-   "kind": "tool"
-  },
-  {
-   "href": "/negative-index",
-   "title": "Light & Metamaterials Lab",
-   "icon": "/img/negative-index-logo.png",
-   "desc": "Negative refraction, the flat and perfect lens, a live Maxwell simulation of a metamaterial, diffraction gratings and ten things light can do.",
-   "added": "2026-11-01",
-   "kind": "tool"
-  },
-  {
-   "href": "/gnm",
-   "title": "German New Medicine Explorer",
-   "icon": "/img/gnm-logo.png",
-   "desc": "Dr. Hamer's two-phase chart with a draggable marker, organs by germ layer and brain relay, a describe-your-symptoms reader, the 5 Biological Laws and a glossary.",
-   "added": "2026-11-01",
-   "kind": "tool"
-  },
-  {
-   "href": "/3d-studio",
-   "title": "3D Studio (3D modeler for 3D printing)",
-   "icon": "/img/3d-studio-logo.png",
-   "desc": "Build 3D models from boxes, cylinders, text and holes, start from templates, check them for 3D printing and export STL or 3MF. Nothing is uploaded.",
-   "added": "2026-10-31",
-   "kind": "tool"
-  },
-  {
-   "href": "/neuron-simulator",
-   "title": "Neuron Simulator",
-   "icon": "/img/neuron-simulator-logo.png",
-   "desc": "The Hodgkin-Huxley action potential, nerve conduction with myelin and MS, EPSP summation, the neuromuscular junction and a Nernst / Goldman calculator.",
-   "added": "2026-10-31",
    "kind": "tool"
   }
  ]

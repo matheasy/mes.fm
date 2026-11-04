@@ -36,7 +36,7 @@ EXT_TAB = "<li class=\"info-bar__item\"><a class=\"info-bar__item__text\" href='
 
 # simulator pages whose boxes (.fl-wrap, .lm-wrap, ...) get the shared View bar from main_js/stage-ctl.js
 STAGE_CTL = {"julia-set-explorer", "fluid-simulator", "light-in-a-medium", "black-hole-simulator", "mandelbrot", "buddhabrot", "time-dilation", "metric-tensor", "orbit-simulator", "double-pendulum", "electromagnetic-fields-simulator", "photoelectric-effect-simulator", "solar-system-today", "atomic-clock-simulator",
-             "michelson-morley-experiment", "faster-than-light-shadow-simulator", "fountain-clock", "magnetic-isopotentials", "hutchison-effect-simulator", "heart-simulator", "neuron-simulator", "negative-index", "spin-simulator", "hologram"}
+             "michelson-morley-experiment", "faster-than-light-shadow-simulator", "fountain-clock", "magnetic-isopotentials", "hutchison-effect-simulator", "heart-simulator", "neuron-simulator", "negative-index", "spin-simulator", "hologram", "maxwell-vortices","spin-wave-field", "spin-half", "quaternions"}
 
 # PDF family nav (2026-10-16): Home = the PDF Tools hub, then the editor and the six tools, ahead of Calculators / Tools
 PDF_NAV_INFO = '<li class="info-bar__item"><a class="info-bar__item__text" href=\'/pdf\'>Editor</a></li><li class="info-bar__item"><a class="info-bar__item__text" href=\'/merge-pdf\'>Merge</a></li><li class="info-bar__item"><a class="info-bar__item__text" href=\'/split-pdf\'>Split</a></li><li class="info-bar__item"><a class="info-bar__item__text" href=\'/organize-pdf\'>Organize</a></li><li class="info-bar__item"><a class="info-bar__item__text" href=\'/jpg-to-pdf\'>Images to PDF</a></li><li class="info-bar__item"><a class="info-bar__item__text" href=\'/pdf-to-jpg\'>PDF to images</a></li><li class="info-bar__item"><a class="info-bar__item__text" href=\'/compress-pdf\'>Compress</a></li>'
@@ -502,6 +502,31 @@ APPS = {
                            tag="Turn it twice. Spin is real.", accent="#6d28d9", dark="#5b21b6", tint="#ede9fe",
                            desc="A free spin simulator: a neutron interferometer where the spin must turn 720 degrees, not 360, to come back (Rauch and Werner, 1975), with live counts and a field scan; the Einstein-de Haas effect, where flipping a hanging iron rod's magnetization makes it turn; and the Barnett effect, where spinning iron magnetizes it.",
                            js_v="1"),
+    # Maxwell's Vortices (2026-11-03): a charge going round is a magnet (3D Biot-Savart: wire, bending, loop, Bohr electron, proton / neutron models, dipole far field),
+    # Maxwell's 1861 spinning cells + idle wheels on a square lattice (current, loop, induction, elastic waves), two dipole magnets with Maxwell-stress check
+    # (lib.js = MESVortex, node-tested: tool_apps_src/maxwell-vortices-tests.js). Inspired by Chantal Roth's Mechanical Universe demos (credited on the page).
+    "maxwell-vortices": dict(title="MES Maxwell's Vortices", page_title="Maxwell's Spinning Cells and Idle Wheels: A Mechanical Model of Magnetism",
+                             tag="Spin is the field. Rolling wheels are the current.", accent="#c2410c", dark="#9a3412", tint="#ffedd5",
+                             desc="A free interactive model of magnetism: see a current-carrying wire bend into a loop and become a magnet, a single orbiting charge and the Bohr electron make a magnetic moment, Maxwell's 1861 spinning vortex cells and idle wheels carry currents, induction and waves, and two bar magnets attract or repel with force, torque and Maxwell's stresses.",
+                             js_v="1"),
+    # Quaternion Lab (2026-11-03): i, j, k half-turns on a 3D hand, a robot arm comparing SLERP with Euler-angle blending, a rotation calculator
+    # (axis-angle / quaternion / matrix / six Euler orders, products, q v q*), and the 720° spinor with a belt-trick ribbon (lib.js = MESQuat, node-tested: tool_apps_src/quaternions-tests.js).
+    "quaternions": dict(title="MES Quaternion Lab", page_title="Quaternion Lab: i, j, k Half-Turns, Rotations, SLERP and Spinors",
+                        tag="Half-turns, SLERP and the 720° turn.", accent="#0f766e", dark="#115e59", tint="#ccfbf1",
+                        desc="A free interactive quaternion lab: multiply i, j and k and watch each one turn a 3D hand half a turn, see why i² = −1 after a full 360° turn, compare SLERP with Euler-angle blending on a robot arm (gimbal lock included), convert between axis-angle, quaternions, rotation matrices and Euler angles, and see the 720° spinor turn.",
+                        js_v="1"),
+    # Spin Wave Field (2026-11-03): double slit drawn with a crowd of people turning with the wave's phase (Huygens sum), a spin-1/2 phase field (arrow = phi, sign = cos(phi/2), 360 vs 720 degree flipper)
+    # and a 3D height field of a driven medium with tracers. Inspired by Chantal Roth's Mechanical Universe demos. lib.js = MESSpinWave (node: tool_apps_src/spin-wave-field-tests.js). Boxes .sw-wrap get the stage-ctl View bar.
+    "spin-wave-field": dict(title="MES Spin Wave Field", page_title="Spin Wave Field: Double Slit with a Wave of People and Spin-½ Phase",
+                            tag="Every person turns with the wave.", accent="#1d4ed8", dark="#1e40af", tint="#dbeafe",
+                            desc="A free double-slit simulator where a crowd of people turns with the phase of the wave, so you can watch interference fringes form (d sin θ = mλ); a spin-½ phase field where a 360° turn in one slit flips the sign and shifts the fringes by half, and 720° brings them back; and a 3D wave field with tracer particles.",
+                            js_v="1"),
+    # Spin-1/2 Lab (2026-11-03): the belt / plate trick with ribbons and an untangling move at 720 deg, five pictures of "back after 720 deg", the spin-1/2 torus,
+    # a twisted elastic sheet (lib.js = MESHalf, node-tested: tool_apps_src/spin-half-tests.js). Inspired by Chantal Roth's Mechanical Universe; boxes .sh-wrap get the View bar.
+    "spin-half": dict(title="MES Spin-½ Lab", page_title="Spin-½ Lab: The Belt Trick, 720° and the Dirac String",
+                      tag="One turn tangles. Two turns untangle.", accent="#a21caf", dark="#86198f", tint="#fae8ff",
+                      desc="A free interactive spin-1/2 lab: Dirac's belt trick in 3D, where a ball tied to a wall by ribbons is tangled after 360 degrees but can be untangled after 720; five pictures of why a spinor needs two turns; a torus coloured by phase; and an elastic sheet that lies flat again only after 720 degrees. With quaternions, live readouts and the maths.",
+                      js_v="1"),
     # Neuron Simulator (2026-10-31): Hodgkin-Huxley action potential (RK4, current / voltage clamp, TTX / TEA / lidocaine / K+ / temperature), HH cable with myelin damage (MS slowing, block, Uhthoff),
     # synaptic summation neuron + neuromuscular junction (train-of-four, myasthenia, blockers, Lambert-Eaton), Nernst / GHK calculator (lib.js = MESNeuro, node-tested: tool_apps_src/neuron-simulator-tests.js).
     # Normal-width page in the tools sidebar collection, Wide by default; boxes .nr-wrap get the stage-ctl View bar.

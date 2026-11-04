@@ -263,6 +263,42 @@ const PAGES = [
     tileLabel: "Spin Simulator",
   },
   {
+    // Tile only: Spin-½ Lab (inspired by Chantal Roth's Mechanical Universe). Icon = img/spin-half-icon.jpg (Gemini share art).
+    slug: "spin-half",
+    section: "tools",
+    href: "/spin-half",
+    iconVersion: 1,
+    tileOnly: true,
+    tileLabel: "Spin-½ Lab",
+  },
+  {
+    // Tile only: Quaternion Lab (inspired by Chantal Roth's Mechanical Universe). Icon = img/quaternions-icon.jpg (Gemini share art).
+    slug: "quaternions",
+    section: "tools",
+    href: "/quaternions",
+    iconVersion: 1,
+    tileOnly: true,
+    tileLabel: "Quaternion Lab",
+  },
+  {
+    // Tile only: Maxwell's Vortices (inspired by Chantal Roth's Mechanical Universe). Icon = img/maxwell-vortices-icon.jpg (Gemini share art).
+    slug: "maxwell-vortices",
+    section: "tools",
+    href: "/maxwell-vortices",
+    iconVersion: 1,
+    tileOnly: true,
+    tileLabel: "Maxwell's Vortices",
+  },
+  {
+    // Tile only: Spin Wave Field (inspired by Chantal Roth's Mechanical Universe). Icon = img/spin-wave-field-icon.jpg (Gemini share art).
+    slug: "spin-wave-field",
+    section: "tools",
+    href: "/spin-wave-field",
+    iconVersion: 1,
+    tileOnly: true,
+    tileLabel: "Spin Wave Field",
+  },
+  {
     // Tile only: links to the Heart Simulator. Icon = img/heart-simulator-icon.jpg (placeholder until Grok tile art lands; same file name).
     slug: "heart-simulator",
     section: "tools",
