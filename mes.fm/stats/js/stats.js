@@ -405,9 +405,9 @@ function renderBreakdown(cfg) {
     const share = total ? r.views / total * 100 : 0;
     return '<tr><td><span class="dot" style="background:' + color + '"></span>' + (cfg.labels[key] || escapeHtml(key)) + '</td>' +
       '<td class="views">' + r.views.toLocaleString() + '</td>' +
-      '<td class="views share"><span class="share-bar"><i style="width:' + share.toFixed(1) + '%;background:' + color + '"></i></span>' + pctText(r.views, total) + '</td></tr>';
+      '<td class="views share"><span class="share-bar"><i style="width:' + share.toFixed(1) + '%;background:' + color + '"></i></span><span class="share-pct">' + pctText(r.views, total) + '</span></td></tr>';
   }).join('');
-  foot.innerHTML = '<tr><td>Total</td><td class="views">' + total.toLocaleString() + '</td><td class="views share">100%</td></tr>';
+  foot.innerHTML = '<tr><td>Total</td><td class="views">' + total.toLocaleString() + '</td><td class="views share"><span class="share-pct">100%</span></td></tr>';
   donut.innerHTML = donutSvg(sorted, total, cfg.colors, cfg.labels, cfg.keyName);
 }
 
