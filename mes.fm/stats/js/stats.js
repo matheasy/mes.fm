@@ -27,6 +27,7 @@ if (!(currentRange in RANGE_LABELS)) currentRange = '7d';
 // no extra request or API cost per click.
 const PAGES_PREVIEW_COUNT = 10;
 let topPagesData = [];
+let topPagesRange = null; // range the top-pages table above was loaded for
 let topPagesDevices = [];
 let topPagesSources = [];
 let deviceTotalsData = [];
@@ -484,6 +485,8 @@ async function loadStats() {
     const sources = data.sources && data.sources.length ? data.sources : DEFAULT_SOURCES;
 
     topPagesData = data.topPages || [];
+    topPagesRange = currentRange;
+    if (breakdown === 'pages') ensureTopPageSeries();
     topPagesDevices = visibleDevices(topPagesData, devices);
     topPagesSources = visibleSources(topPagesData, sources);
     showAllPages = false;
@@ -720,6 +723,18 @@ let breakdown = 'all';
 const hiddenSplit = new Set(); // split categories greyed out by clicking their chip
 let splitTotal = false; // draw the overall total over a split
 const sourceSeriesCache = {}; // range -> { bucketKey: { source: views } }
+// 'Split by page': the range's N most viewed pages (from the Most Viewed Pages
+// data) as their own lines, plus an "Others" line = total minus those pages.
+const SPLIT_TOP_CHOICES = [3, 5, 10];
+let splitTopN = 5;
+try { const n = parseInt(localStorage.getItem('statsSplitTop'), 10); if (SPLIT_TOP_CHOICES.indexOf(n) !== -1) splitTopN = n; } catch (e) {}
+const PAGE_SPLIT_COLORS = ['#2272c3', '#e8590c', '#2f9e44', '#9c36b5', '#d6336c', '#f08c00', '#0c8599', '#5f3dc4', '#c92a2a', '#5c940d'];
+const OTHERS_COLOR = '#a0a8b2';
+function isSplit() { return breakdown === 'devices' || breakdown === 'sources' || breakdown === 'pages'; }
+function topSplitKeys() {
+  if (topPagesRange !== currentRange) return null;
+  return topPagesData.slice().sort(function (a, b) { return b.views - a.views; }).slice(0, splitTopN).map(pageKey);
+}
 const tsBreakEl = document.getElementById('tsBreak');
 let tsToken = 0;
 // range -> { "site|path": { bucketKey: views } }; only pages not already
@@ -733,6 +748,21 @@ function pickLabel(key) {
 }
 
 function splitSeries(mode, agg) {
+  if (breakdown === 'pages') {
+    const keys = topSplitKeys();
+    const cache = pageSeriesCache[currentRange] || {};
+    if (!keys || !keys.length || keys.some(function (k) { return !cache[k]; })) return [];
+    const out = keys.map(function (k, i) {
+      return { id: k, kind: 'page', label: pickLabel(k), color: PAGE_SPLIT_COLORS[i % PAGE_SPLIT_COLORS.length],
+        points: agg(tsRawPoints.map(function (p) { return { key: p.key, views: cache[k][p.key] || 0 }; })) };
+    });
+    out.push({ id: 'others', kind: 'page', label: 'Others', color: OTHERS_COLOR,
+      points: agg(tsRawPoints.map(function (p) {
+        const top = keys.reduce(function (a, k) { return a + (cache[k][p.key] || 0); }, 0);
+        return { key: p.key, views: Math.max(0, p.views - top) };
+      })) });
+    return out;
+  }
   const isSrc = breakdown === 'sources';
   const cats = isSrc ? DEFAULT_SOURCES : DEFAULT_DEVICES;
   const labels = isSrc ? SOURCE_LABELS : DEVICE_LABELS;
@@ -750,7 +780,7 @@ function buildSeries(mode) {
   const agg = function (pts) { return mode === 'weekly' ? buildWeeklyPoints(pts) : pts; };
   const accent = getComputedStyle(document.documentElement).getPropertyValue('--accent').trim() || '#2272c3';
 
-  if (breakdown === 'devices' || breakdown === 'sources') {
+  if (isSplit()) {
     const all = splitSeries(mode, agg);
     if (all.length) {
       let split = all.filter(function (x) { return !hiddenSplit.has(x.id); });
@@ -758,7 +788,7 @@ function buildSeries(mode) {
       // the base (first) series must carry the x-axis keys either way
       return split;
     }
-    // sources still loading: fall through to the plain total meanwhile
+    // sources / page lines still loading: fall through to the plain total meanwhile
   }
 
   const cache = pageSeriesCache[currentRange] || {};
@@ -793,8 +823,12 @@ function renderBreakRow() {
   };
   let html = '<div class="ts-grp">' + BREAK_BUTTONS.filter(function (b) { return b[0] === 'all' || ['desktop', 'mobile', 'tablet'].indexOf(b[0]) !== -1 || has(b[0]); })
     .map(function (b) { return btn('bk', b[0], b[1], breakdown === b[0]); }).join('') + '</div>';
-  html += '<div class="ts-grp">' + btn('bk', 'devices', 'Split by device', breakdown === 'devices') + btn('bk', 'sources', 'Split by source', breakdown === 'sources', 'Loads the traffic-source history for this range') + '</div>';
-  const split = breakdown === 'devices' || breakdown === 'sources';
+  html += '<div class="ts-grp">' + btn('bk', 'devices', 'Split by device', breakdown === 'devices') + btn('bk', 'sources', 'Split by source', breakdown === 'sources', 'Loads the traffic-source history for this range') +
+    btn('bk', 'pages', 'Split by page', breakdown === 'pages', 'The most viewed pages of this range as their own lines, plus Others') + '</div>';
+  if (breakdown === 'pages') {
+    html += '<div class="ts-grp" title="How many pages get their own line">' + SPLIT_TOP_CHOICES.map(function (n) { return btn('tn', n, 'Top ' + n, splitTopN === n); }).join('') + '</div>';
+  }
+  const split = isSplit();
   if (picks.length > 1 || split) {
     const modes = [['lines', 'Lines'], ['stacked', 'Stacked']];
     if (!split && picks.length > 1) modes.push(['combined', 'Combined']);
@@ -827,6 +861,31 @@ async function ensureSourceSeries() {
   if (range === currentRange) renderTsChart();
 }
 
+// Page lines for the split share pageSeriesCache with the ticked pages, so
+// only pages not loaded yet for this range are requested (the API takes 8 a call).
+async function ensureTopPageSeries() {
+  const range = currentRange;
+  const keys = topSplitKeys();
+  if (!keys || !tsRawPoints.length) return; // the other loader calls back in when it finishes
+  const cache = pageSeriesCache[range] || (pageSeriesCache[range] = {});
+  const need = keys.filter(function (k) { return !cache[k]; });
+  if (!need.length) { renderTsChart(); return; }
+  tsNoteEl.textContent = 'Loading page lines…';
+  try {
+    for (let i = 0; i < need.length; i += 8) {
+      const chunk = need.slice(i, i + 8);
+      const res = await fetch('/api/stats-series?range=' + encodeURIComponent(range) + '&pages=' + encodeURIComponent(chunk.join(',')));
+      if (!res.ok) throw new Error('bad response');
+      const data = await res.json();
+      chunk.forEach(function (k) { cache[k] = (data.series && data.series[k]) || {}; });
+    }
+  } catch (e) {
+    if (range === currentRange) tsNoteEl.textContent = 'Page lines are temporarily unavailable.';
+    return;
+  }
+  if (range === currentRange && breakdown === 'pages') renderTsChart();
+}
+
 tsBreakEl.addEventListener('click', function (e) {
   const b = e.target.closest('button');
   if (!b) return;
@@ -834,6 +893,13 @@ tsBreakEl.addEventListener('click', function (e) {
     breakdown = b.dataset.bk;
     renderTsChart();
     if (breakdown === 'sources') ensureSourceSeries();
+    if (breakdown === 'pages') ensureTopPageSeries();
+  } else if (b.dataset.tn) {
+    splitTopN = parseInt(b.dataset.tn, 10);
+    try { localStorage.setItem('statsSplitTop', String(splitTopN)); } catch (e) {}
+    hiddenSplit.clear();
+    renderTsChart();
+    ensureTopPageSeries();
   } else if (b.dataset.cm) {
     chartMode = b.dataset.cm;
     renderTsChart();
@@ -841,7 +907,7 @@ tsBreakEl.addEventListener('click', function (e) {
 });
 
 function renderLegend() {
-  if (breakdown === 'devices' || breakdown === 'sources') {
+  if (isSplit()) {
     const parts = splitSeries('daily', function (pts) { return pts; });
     tsLegendEl.hidden = !parts.length;
     const nothingHidden = !parts.some(function (x) { return hiddenSplit.has(x.id); });
@@ -898,7 +964,7 @@ function renderTsChart() {
   if (!tsRawPoints.length) return;
   renderBreakRow();
   renderLegend();
-  const split = breakdown === 'devices' || breakdown === 'sources';
+  const split = isSplit();
   renderLineChart(tsSvgEl, tsPtsEl, buildSeries(mode), split && chartMode === 'combined' ? 'lines' : chartMode);
 
   const rangeDesc = currentRange === 'all' ? 'all tracked history' : ('the past ' + RANGE_LABELS[currentRange]);
@@ -912,9 +978,10 @@ function renderTsChart() {
   }
   if (breakdown === 'devices') note += ' One line per device type.';
   else if (breakdown === 'sources') note += ' One line per traffic source.';
+  else if (breakdown === 'pages') note += ' One line for each of the ' + splitTopN + ' most viewed pages of this range; Others = every other page.';
   else if (DEFAULT_DEVICES.indexOf(breakdown) !== -1) note += ' The Total line counts ' + DEVICE_LABELS[breakdown].toLowerCase() + ' views only; ticked pages always show all devices.';
   if (!picks.length && breakdown === 'all') note += ' Tick the boxes in Most Viewed Pages to chart individual pages.';
-  else if (picks.length && (breakdown === 'devices' || breakdown === 'sources')) note += ' Ticked pages are hidden while a split is active.';
+  else if (picks.length && isSplit()) note += ' Ticked pages are hidden while a split is active.';
   tsNoteEl.textContent = note;
 }
 
@@ -1036,6 +1103,7 @@ async function loadTimeSeries() {
     renderTsChart();
     ensurePickSeries();
     if (breakdown === 'sources') ensureSourceSeries();
+    if (breakdown === 'pages') ensureTopPageSeries();
   } catch (e) {
     tsNoteEl.textContent = 'Views-over-time data is temporarily unavailable.';
   }
