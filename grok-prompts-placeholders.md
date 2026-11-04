@@ -317,3 +317,23 @@ Square 1:1 app icon, 1024 x 1024. A rounded-square tile filled edge to edge with
 ```
 Wide social share image, 1200 x 630 pixels (aspect ratio 1.91:1). Solid Google blue background (hex #1a73e8) with a subtle darker gradient at the edges. On the left, the same bold app-icon symbol: a white bar chart with a rising line and a small magnifying glass over the tallest bar, drawn large and flat-ish in white and one accent colour. On the right, the words "MES Search Console" in very large, clear, bold white sans-serif text, left aligned, with the line "mes.fm/search-console" in smaller white text underneath. Everything inside safe margins, plenty of contrast, no photos, no other text, no watermark.
 ```
+
+## MES YouTube Audio Analyzer: https://mes.fm/youtube-audio
+
+`~/Downloads/youtube-audio-icon.jpg`
+
+```
+Square 1:1 app icon, 1024 x 1024. A rounded-square tile filled edge to edge with a flat burnt orange background (hex #c2410c, with a very subtle lighter gradient toward the top). In the centre, filling about 90% of the tile, one bold modern symbol: a white audio waveform made of rounded vertical bars, with a small white play triangle on its left and a thin loudness meter line running across the top. Clean flat-ish app-icon style with soft shading, crisp edges, high contrast, white and one accent colour only. No text, no letters unless part of the symbol described, no border, no drop shadow outside the tile, no watermark.
+```
+
+`~/Downloads/youtube-audio-share.jpg`
+
+```
+Wide social share image, 1200 x 630 pixels (aspect ratio 1.91:1). Solid burnt orange background (hex #c2410c) with a subtle darker gradient at the edges. On the left, the same bold app-icon symbol: a white audio waveform made of rounded vertical bars with a small play triangle and a thin loudness meter line across the top, drawn large and flat-ish in white and one accent colour. On the right, the words "YouTube Audio Analyzer" in very large, clear, bold white sans-serif text, left aligned, with the line "mes.fm/youtube-audio" in smaller white text underneath. Everything inside safe margins, plenty of contrast, no photos, no other text, no watermark.
+```
+
+`~/Downloads/youtube-audio-tile.jpg`
+
+```
+Wide 3:2 illustration, 900 x 600 pixels, no text at all. A glowing audio waveform stretched across a dark warm background, its bars turning into a colourful spectrogram (deep purple to orange to pale yellow) toward the right, with a thin horizontal loudness line and a few soft orange highlights. Burnt orange (hex #c2410c) as the main accent colour. Modern, clean, high contrast, no letters, no logos, no watermark.
+```
