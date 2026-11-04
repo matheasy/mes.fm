@@ -54,6 +54,9 @@
 	.in-bar {display:inline-block;width:4em;height:0.55em;border-radius:0.3em;background:rgba(128,128,128,0.18);margin-right:0.5em;vertical-align:middle;overflow:hidden;white-space:nowrap;font-size:0;}
 	.in-bar i {display:inline-block;height:100%;}
 	.in-bar--wide {width:7em;}
+	.in-ib {display:flex;justify-content:flex-end;height:4px;margin-top:3px;border-radius:2px;background:rgba(128,128,128,0.14);overflow:hidden;min-width:3.5em;}
+	.in-ib i {display:block;height:100%;opacity:0.85;}
+	.in-ib i:first-child {border-radius:0 2px 2px 0;}
 	.in-flag {margin-right:0.4em;}
 	.in-more {display:block;margin:0.7em auto 0;}
 	.in-more[hidden] {display:none;}
@@ -77,6 +80,7 @@
 		.in-t td:first-child {max-width:10em;}
 		.in-bar {width:2.5em;}
 		.in-bar--wide {width:3.5em;}
+		.in-ib {min-width:2.6em;height:3px;}
 		.in-chart {height:190px;}
 		.in-links {width:100%;}
 	}

@@ -180,33 +180,41 @@
     var lim = opts.limit || 1e9, more = $(opts.more || '');
     var h = '<thead><tr>' + cols.map(function (c) { return '<th data-k="' + c.k + '"' + (c.k === s.k ? ' class="on" aria-sort="' + (s.dir < 0 ? 'descending' : 'ascending') + '"' : '') + ' title="' + esc(c.title || 'Sort') + '">' + c.label + (c.k === s.k ? (s.dir < 0 ? ' ▾' : ' ▴') : '') + '</th>'; }).join('') + '</tr></thead><tbody>';
     if (!rows.length) h += '<tr><td class="empty" colspan="' + cols.length + '">Nothing in this range yet</td></tr>';
-    rows.slice(0, lim).forEach(function (r) { h += '<tr>' + cols.map(function (c) { return '<td' + (c.cls ? ' class="' + c.cls + '"' : '') + '>' + c.f(r) + '</td>'; }).join('') + '</tr>'; });
+    // in-cell bars (column option b = colour, or function(row) -> colour, or segs(row) -> [[value, colour], ...] for a
+    // stacked bar): a thin bar under the number, scaled to the column's largest value over every row (not just those shown)
+    var mx = {};
+    cols.forEach(function (c) { if (!c.b && !c.segs) return; var m = 0; rows.forEach(function (r) { var v = +c.v(r); if (isFinite(v) && v > m) m = v; }); mx[c.k] = m; });
+    var cell = function (c, r) {
+      var h = c.f(r); if (!mx[c.k]) return h;
+      var v = +c.v(r); if (!isFinite(v) || v <= 0) return h;
+      var segs = c.segs ? c.segs(r) : [[v, typeof c.b === 'function' ? c.b(r) : c.b]];
+      return h + '<span class="in-ib" aria-hidden="true">' + segs.map(function (g) { return g[0] > 0 ? '<i style="width:' + Math.max(c.segs ? 0 : 2, Math.min(100, g[0] / mx[c.k] * 100)).toFixed(1) + '%;background:' + g[1] + '"></i>' : ''; }).join('') + '</span>';
+    };
+    rows.slice(0, lim).forEach(function (r) { h += '<tr>' + cols.map(function (c) { var cl = (c.cls || '') + (mx[c.k] ? ' in-bc' : ''); return '<td' + (cl.trim() ? ' class="' + cl.trim() + '"' : '') + '>' + cell(c, r) + '</td>'; }).join('') + '</tr>'; });
     h += '</tbody>';
     if (opts.foot) h += '<tfoot><tr>' + opts.foot.map(function (x) { return '<td>' + x + '</td>'; }).join('') + '</tr></tfoot>';
     var t = $(id); t.innerHTML = h;
     t.querySelectorAll('th[data-k]').forEach(function (th) { th.onclick = function () { var k = th.dataset.k; var cur = SORT[id] || s; SORT[id] = { k: k, dir: cur.k === k ? -cur.dir : (k === cols[0].k ? 1 : -1) }; render(); }; });
     if (more) { more.hidden = rows.length <= 15; more.textContent = lim >= 1e6 ? 'Show fewer' : 'Show all ' + rows.length; }
   }
-  var bar = function (v, max, col) { return '<span class="in-bar"><i style="width:' + (max ? Math.max(2, v / max * 100) : 0).toFixed(1) + '%;background:' + col + '"></i></span>'; };
 
   function appTable() {
     var rows = DATA.apps.filter(function (a) { return !ST.app || a.k === ST.app; }).map(function (a) {
       var s = SUM.apps.filter(function (x) { return x.k === a.k; })[0] || { iosIns: 0, andIns: 0, dl: 0, re: 0, up: 0, un: 0, active: null };
       return { a: a, s: s, tot: (ST.plat === 'a' ? 0 : s.iosIns) + (ST.plat === 'i' ? 0 : s.andIns) };
     });
-    var max = Math.max.apply(null, rows.map(function (r) { return r.tot; }).concat([0]));
     var star = function (v, n) { return v ? '★ ' + v.toFixed(1) + (n ? ' <small>(' + n + ')</small>' : '') : '<span class="in-dim">–</span>'; };
     var cols = [
       { k: 'n', label: 'App', v: function (r) { return r.a.name; }, f: function (r) { return '<span class="in-sw" style="background:' + (APPC[r.a.k] || '#888') + '"></span><a href="' + esc(r.a.web) + '">' + esc(r.a.name) + '</a>'; } },
-      { k: 't', label: 'Installs', v: function (r) { return r.tot; }, f: function (r) { return bar(r.tot, max, APPC[r.a.k] || '#888') + int(r.tot); } }
+      { k: 't', label: 'Installs', v: function (r) { return r.tot; }, b: function (r) { return APPC[r.a.k] || '#888'; }, f: function (r) { return int(r.tot); } }
     ];
-    if (ST.plat !== 'a') cols.push({ k: 'i', label: 'iPhone', v: function (r) { return r.s.iosIns; }, f: function (r) { return int(r.s.iosIns); } },
-      { k: 'dl', label: 'First<small>iPhone</small>', title: 'First-time downloads', v: function (r) { return r.s.dl; }, f: function (r) { return int(r.s.dl); } },
-      { k: 're', label: 'Re-dl<small>iPhone</small>', title: 'Re-downloads', v: function (r) { return r.s.re; }, f: function (r) { return int(r.s.re); } });
-    if (ST.plat !== 'i') cols.push({ k: 'a', label: 'Android', v: function (r) { return r.s.andIns; }, f: function (r) { return int(r.s.andIns); } });
-    cols.push({ k: 'u', label: 'Updates', v: function (r) { return ST.plat === 'i' ? r.s.iosUp : ST.plat === 'a' ? r.s.andUp : r.s.up; }, f: function (r) { return int(ST.plat === 'i' ? r.s.iosUp : ST.plat === 'a' ? r.s.andUp : r.s.up); } });
-    if (ST.plat !== 'i') cols.push({ k: 'x', label: 'Uninst.<small>Android</small>', title: 'Uninstalls', v: function (r) { return r.s.un; }, f: function (r) { return int(r.s.un); } },
-      { k: 'ac', label: 'Active<small>Android</small>', title: 'Devices with the app installed (latest day)', v: function (r) { return r.s.active; }, f: function (r) { return int(r.s.active); } });
+    if (ST.plat !== 'a') cols.push({ k: 'i', label: 'iPhone', b: 'var(--in-ios)', v: function (r) { return r.s.iosIns; }, f: function (r) { return int(r.s.iosIns); } },
+      { k: 'dl', label: 'First<small>iPhone</small>', title: 'First-time downloads', b: 'var(--in-ios)', v: function (r) { return r.s.dl; }, f: function (r) { return int(r.s.dl); } },
+      { k: 're', label: 'Re-dl<small>iPhone</small>', title: 'Re-downloads', b: 'var(--in-ios)', v: function (r) { return r.s.re; }, f: function (r) { return int(r.s.re); } });
+    if (ST.plat !== 'i') cols.push({ k: 'a', label: 'Android', b: 'var(--in-and)', v: function (r) { return r.s.andIns; }, f: function (r) { return int(r.s.andIns); } });
+    cols.push({ k: 'u', label: 'Updates', b: 'var(--in-muted)', v: function (r) { return ST.plat === 'i' ? r.s.iosUp : ST.plat === 'a' ? r.s.andUp : r.s.up; }, f: function (r) { return int(ST.plat === 'i' ? r.s.iosUp : ST.plat === 'a' ? r.s.andUp : r.s.up); } });
+    if (ST.plat !== 'i') cols.push({ k: 'x', label: 'Uninst.<small>Android</small>', title: 'Uninstalls', b: 'var(--in-bad)', v: function (r) { return r.s.un; }, f: function (r) { return int(r.s.un); } },
+      { k: 'ac', label: 'Active<small>Android</small>', title: 'Devices with the app installed (latest day)', b: 'var(--in-and)', v: function (r) { return r.s.active; }, f: function (r) { return int(r.s.active); } });
     if (ST.plat !== 'a') cols.push({ k: 'ri', label: 'App Store', title: 'App Store rating (US)', v: function (r) { return r.a.ios.rating; }, f: function (r) { return star(r.a.ios.rating, r.a.ios.ratings); } });
     if (ST.plat !== 'i') cols.push({ k: 'ra', label: 'Play', title: 'Google Play rating', v: function (r) { return r.a.android.rating; }, f: function (r) { return star(r.a.android.rating); } });
     cols.push({ k: 'st', label: 'Get it', v: function (r) { return r.a.k; }, f: function (r) { return (r.a.ios.url ? '<a href="' + esc(r.a.ios.url) + '" target="_blank" rel="noopener">App Store</a>' : '') + (r.a.ios.url ? ' · ' : '') + '<a href="' + esc(r.a.android.url) + '" target="_blank" rel="noopener">Play</a>'; } });
@@ -214,24 +222,23 @@
   }
 
   function ccTable() {
-    var rows = SUM.countries, max = rows.length ? rows[0].ins : 0;
+    var rows = SUM.countries;
     var cols = [
       { k: 'n', label: 'Country', v: function (r) { return regionName(r.key); }, f: function (r) { return '<span class="in-flag">' + flag(r.key) + '</span>' + esc(regionName(r.key)); } },
-      { k: 't', label: 'Installs', v: function (r) { return r.ins; }, cls: 'in-barcell', f: function (r) { var w = function (v) { return max ? (v / max * 100).toFixed(1) : 0; }; return '<span class="in-bar in-bar--wide"><i style="width:' + w(r.i) + '%;background:var(--in-ios)"></i><i style="width:' + w(r.a) + '%;background:var(--in-and)"></i></span>' + int(r.ins); } }
+      { k: 't', label: 'Installs', v: function (r) { return r.ins; }, segs: function (r) { return [[r.i, 'var(--in-ios)'], [r.a, 'var(--in-and)']]; }, f: function (r) { return int(r.ins); } }
     ];
-    if (ST.plat !== 'a') cols.push({ k: 'i', label: 'iPhone', v: function (r) { return r.i; }, f: function (r) { return int(r.i); } });
-    if (ST.plat !== 'i') cols.push({ k: 'a', label: 'Android', v: function (r) { return r.a; }, f: function (r) { return int(r.a); } });
+    if (ST.plat !== 'a') cols.push({ k: 'i', label: 'iPhone', b: 'var(--in-ios)', v: function (r) { return r.i; }, f: function (r) { return int(r.i); } });
+    if (ST.plat !== 'i') cols.push({ k: 'a', label: 'Android', b: 'var(--in-and)', v: function (r) { return r.a; }, f: function (r) { return int(r.a); } });
     var tot = rows.reduce(function (s, r) { return s + r.ins; }, 0);
-    cols.push({ k: 'p', label: 'Share', v: function (r) { return r.ins; }, f: function (r) { return tot ? (r.ins / tot * 100).toFixed(r.ins / tot < 0.1 ? 1 : 0) + '%' : '–'; } });
-    cols.push({ k: 'u', label: 'Updates', v: function (r) { return r.up; }, f: function (r) { return int(r.up); } });
+    cols.push({ k: 'p', label: 'Share', b: 'var(--in-muted)', v: function (r) { return r.ins; }, f: function (r) { return tot ? (r.ins / tot * 100).toFixed(r.ins / tot < 0.1 ? 1 : 0) + '%' : '–'; } });
+    cols.push({ k: 'u', label: 'Updates', b: 'var(--in-muted)', v: function (r) { return r.up; }, f: function (r) { return int(r.up); } });
     table('t-cc', cols, rows, { sort: 't', limit: SHOW.cc, more: 'm-cc' });
   }
   function dimTable(k, rows, label) {
-    var max = Math.max.apply(null, rows.map(function (r) { return r.ins; }).concat([0]));
     var cols = [
       { k: 'n', label: label, v: function (r) { return r.key; }, f: function (r) { return (ST.plat ? '' : dot(r.plat)) + (k === 'ver' && !ST.app ? '<span class="in-dim">' + esc(appName(r.app).replace(/ Calculators?$/, '')) + '</span> ' : '') + esc(r.key); } },
-      { k: 't', label: 'Installs', v: function (r) { return r.ins; }, f: function (r) { return bar(r.ins, max, r.plat === 'i' ? 'var(--in-ios)' : 'var(--in-and)') + int(r.ins); } },
-      { k: 'u', label: 'Updates', v: function (r) { return r.up; }, f: function (r) { return int(r.up); } }
+      { k: 't', label: 'Installs', v: function (r) { return r.ins; }, b: function (r) { return r.plat === 'i' ? 'var(--in-ios)' : 'var(--in-and)'; }, f: function (r) { return int(r.ins); } },
+      { k: 'u', label: 'Updates', b: 'var(--in-muted)', v: function (r) { return r.up; }, f: function (r) { return int(r.up); } }
     ];
     table('t-' + k, cols, rows, { sort: 't', limit: SHOW[k], more: 'm-' + k });
   }

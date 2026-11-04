@@ -999,9 +999,7 @@
   // ---- table (sortable, quick search, top N + Show all, draggable first column); a row click adds it as a filter
   var ST = {};
   function cols(kind, label, noPrev) {
-    var max = 1;
-    return function (rows) {
-      rows.forEach(function (r) { max = Math.max(max, r.c); });
+    return function () {
       var c = [
         { k: 'k', t: label, v: function (r) { return kind === 'countries' ? country(r.k) : kind === 'devices' ? (DEV[r.k] || r.k) : r.k; },
           h: function (r) {
@@ -1010,12 +1008,12 @@
             if (kind === 'pages') { var u = r.u || (r.k.charAt(0) === '/' ? 'https://mes.fm' + r.k : 'https://' + r.k); return name + '<a class="gs-open" href="' + esc(u) + '" target="_blank" rel="noopener" title="Open the page" aria-label="Open the page">↗</a>'; }
             return name;
           } },
-        { k: 'c', t: 'Clicks', v: function (r) { return r.c; }, h: function (r) { return '<span class="gs-bar"><i style="width:' + (r.c / max * 100).toFixed(1) + '%;background:var(--accent)"></i></span>' + int(r.c) + chHtml(r.pi != null ? change(r.c, r.pc) : null); } },
-        { k: 'i', t: 'Impressions', v: function (r) { return r.i; }, h: function (r) { return int(r.i) + chHtml(r.pi != null ? change(r.i, r.pi) : null); } },
-        { k: 'ctr', t: 'CTR', v: function (r) { return ctrOf(r.c, r.i); }, h: function (r) { return pctTxt(ctrOf(r.c, r.i)) + chHtml(r.pi ? change(ctrOf(r.c, r.i), ctrOf(r.pc, r.pi), 'ctr') : null); } },
-        { k: 'p', t: 'Position', v: function (r) { return r.p || 999; }, h: function (r) { return posTxt(r.p) + chHtml(r.pp ? change(r.p, r.pp, 'pos') : null); } },
+        { k: 'c', t: 'Clicks', v: function (r) { return r.c; }, b: 'var(--gs-mc)', h: function (r) { return int(r.c) + chHtml(r.pi != null ? change(r.c, r.pc) : null); } },
+        { k: 'i', t: 'Impressions', b: 'var(--gs-mi)', v: function (r) { return r.i; }, h: function (r) { return int(r.i) + chHtml(r.pi != null ? change(r.i, r.pi) : null); } },
+        { k: 'ctr', t: 'CTR', b: 'var(--gs-mt)', v: function (r) { return ctrOf(r.c, r.i); }, h: function (r) { return pctTxt(ctrOf(r.c, r.i)) + chHtml(r.pi ? change(ctrOf(r.c, r.i), ctrOf(r.pc, r.pi), 'ctr') : null); } },
+        { k: 'p', t: 'Position', b: 'var(--gs-mp)', bv: function (r) { return r.p ? 1 / r.p : 0; }, v: function (r) { return r.p || 999; }, h: function (r) { return posTxt(r.p) + chHtml(r.pp ? change(r.p, r.pp, 'pos') : null); } },
       ];
-      if (CMP && !noPrev) c.push({ k: 'dc', t: 'Click change', v: function (r) { return r.c - (r.pc || 0); }, h: function (r) { var d = r.c - (r.pc || 0); return '<span class="' + (d > 0 ? 'up' : d < 0 ? 'dn' : 'flat') + '">' + (d > 0 ? '+' : d < 0 ? '−' : '') + int(Math.abs(d)) + '</span>'; } });
+      if (CMP && !noPrev) c.push({ k: 'dc', t: 'Click change', b: 'net', v: function (r) { return r.c - (r.pc || 0); }, h: function (r) { var d = r.c - (r.pc || 0); return '<span class="' + (d > 0 ? 'up' : d < 0 ? 'dn' : 'flat') + '">' + (d > 0 ? '+' : d < 0 ? '−' : '') + int(Math.abs(d)) + '</span>'; } });
       return c;
     };
   }
@@ -1101,6 +1099,20 @@
       return '<tr data-i="' + i + '"' + (onRow ? ' class="gs-click" tabindex="0" title="Filter the page by this"' : '') + '>' + cs.map(function (c, j) { return '<td' + (j === 0 ? ' class="gs-k" title="' + esc(c.v(r)) + '"' : '') + '>' + c.h(r) + '</td>'; }).join('') + '</tr>';
     }).join('') + '</tbody>';
     st.shown = shown;
+    // in-cell bars (column option b = colour or 'net' = green / red by sign; bv = bar value, default v), scaled to the
+    // column's largest value over every row, so the bars still compare after "Show all"
+    cs.forEach(function (c, j) {
+      if (!c.b) return;
+      var bv = c.bv || c.v, m = 0;
+      st.rows.forEach(function (r) { var v = +bv(r); if (isFinite(v)) m = Math.max(m, c.b === 'net' ? Math.abs(v) : v); });
+      if (!m) return;
+      el.querySelectorAll('tbody tr').forEach(function (tr, i) {
+        var v = +bv(shown[i]), td = tr.children[j]; if (!td || !isFinite(v) || !v || (c.b !== 'net' && v < 0)) return;
+        var col = c.b === 'net' ? (v > 0 ? 'var(--gs-good)' : 'var(--gs-bad)') : c.b;
+        td.classList.add('gs-bc');
+        td.insertAdjacentHTML('beforeend', '<span class="gs-ib" aria-hidden="true"><i style="width:' + Math.max(2, Math.min(100, Math.abs(v) / m * 100)).toFixed(1) + '%;background:' + col + '"></i></span>');
+      });
+    });
     if (onRow) {
       el.querySelectorAll('tbody tr').forEach(function (tr) {
         var go = function (e) { if (e.target.closest('a') || e.target.closest('.gs-lck')) return; onRow(st.shown[+tr.dataset.i]); };
@@ -1378,23 +1390,23 @@
   function renderAiTable(resetPage) {
     var blob = aiBlob(); if (!blob) return;
     var tab = AITAB[AISRC], rows = (blob[tab] || []).slice(), tp = blob.tp && blob.tp[tab];
-    var max = 1, tot = 0; rows.forEach(function (r) { var v = AISRC === 'bing' && tab === 'queries' ? r[3] : r[1]; max = Math.max(max, v); tot += v; });
+    var tot = 0; rows.forEach(function (r) { tot += AISRC === 'bing' && tab === 'queries' ? r[3] : r[1]; });
     var metric = AISRC === 'google' ? 'Impressions' : 'Citations';
-    var bar = function (v) { return '<span class="gs-bar"><i style="width:' + (v / max * 100).toFixed(1) + '%;background:var(' + (AISRC === 'google' ? '--gs-mi' : '--gs-b') + ')"></i></span>' + int(v); };
+    var BC = AISRC === 'google' ? 'var(--gs-mi)' : 'var(--gs-b)', bar = int;
     var share = function (v) { return tot ? pctTxt(v / tot) : '–'; };
     var cs;
     if (AISRC === 'bing' && tab === 'queries') cs = [
       { k: 'k', t: 'Grounding query', v: function (r) { return r[0]; }, h: function (r) { return esc(r[0]); } },
       { k: 'in', t: 'Intent', v: function (r) { return r[1]; }, h: function (r) { return esc(r[1] || '–'); } },
       { k: 'to', t: 'Topic', v: function (r) { return r[2]; }, h: function (r) { return esc(r[2] || '–'); } },
-      { k: 'c', t: 'Citations', v: function (r) { return r[3]; }, h: function (r) { return bar(r[3]); } },
-      { k: 'sh', t: 'Citation share', v: function (r) { return r[4]; }, h: function (r) { return r[4] ? (+r[4].toFixed(1)) + '%' : '–'; } },
+      { k: 'c', t: 'Citations', b: BC, v: function (r) { return r[3]; }, h: function (r) { return bar(r[3]); } },
+      { k: 'sh', t: 'Citation share', b: BC, v: function (r) { return r[4]; }, h: function (r) { return r[4] ? (+r[4].toFixed(1)) + '%' : '–'; } },
       { k: 'ap', t: 'Avg cited pages / day', v: function (r) { return r[5]; }, h: function (r) { return r[5] ? (+r[5].toFixed(2)).toString() : '–'; } },
     ];
     else cs = [
       { k: 'k', t: { pages: 'Page', countries: 'Country', devices: 'Device' }[tab], v: function (r) { return r[0]; }, h: function (r) { return tab === 'pages' ? aiPageCell(r[0]) : esc(r[0]); } },
-      { k: 'c', t: metric, v: function (r) { return r[1]; }, h: function (r) { return bar(r[1]); } },
-      { k: 'sh', t: 'Share', v: function (r) { return r[1]; }, h: function (r) { return share(r[1]); } },
+      { k: 'c', t: metric, b: BC, v: function (r) { return r[1]; }, h: function (r) { return bar(r[1]); } },
+      { k: 'sh', t: 'Share', b: 'var(--gs-muted)', v: function (r) { return r[1]; }, h: function (r) { return share(r[1]); } },
     ];
     var all = rows.length;
     if (AIQ) { var words = AIQ.split(/\s+/); rows = rows.filter(function (r) { var hay = r.join(' ').toLowerCase() + (tab === 'pages' && MESSCAI.oldSubdomain(r[0]) ? ' old address subdomain' : ''); return words.every(function (w) { return hay.indexOf(w) !== -1; }); }); }
