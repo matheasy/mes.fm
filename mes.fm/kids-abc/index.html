@@ -1,7 +1,7 @@
 <!DOCTYPE html>    <html lang="en">
 <!-- ABC for Kids -- mes.fm/kids-abc -->
 <!-- Added by HTTrack --><meta http-equiv="content-type" content="text/html;charset=UTF-8" /><!-- /Added by HTTrack -->
-<head>                    <link rel="icon" href="/kids/img/logo.png?v=2" type="image/png" /><link rel="canonical" href="https://mes.fm/kids-abc" />                    <title>ABC for Kids | Math Easy Solutions</title>
+<head>                    <link rel="icon" href="/kids/img/logo.png?v=2" type="image/png" /><link rel="canonical" href="https://mes.fm/kids-abc" />                    <title>ABC for Kids | Math Easy Solutions</title><!-- HUB-THEATRE-HEAD --><link rel="stylesheet" href="/main_js/hub-theatre.css?v=1"><script>try{var m=localStorage.getItem("pageMode")||"wide",c=document.documentElement.classList;if(m==="theatre")c.add("page-theatre");if(m!=="std")c.add("page-wide")}catch(e){}</script><!-- /HUB-THEATRE-HEAD -->
         <meta name="viewport" content="width=device-width, initial-scale=1">	<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css" integrity="sha384-BVYiiSIFeK1dGmJRAkycuHAHRg32OmUcww7on3RYdg4Va+PmSTsz/K68vbdEjh4u" crossorigin="anonymous">
         <style>html, body, div, span, applet, object, iframe, h1, h2, h3, h4, h5, h6, p, blockquote, pre, a, abbr, acronym, address, big, cite, code,del, dfn, em, img,
 ins, kbd, q, s, samp, small, strike, strong, sub, tt, var, u, i, center, dl, dt, dd, ol, ul, li, fieldset, form, label, legend, table, caption, tbody,
@@ -305,6 +305,9 @@ body.dark-mode .tu .rw-head {color:#a0a8b3;border-bottom-color:#555;} body.dark-
 .tu [class$="-eq"] > div {margin:0.25em 0;}
 .tu [class$="-eq__n"] {vertical-align:middle;}
 
+	/* page width: Standard = the tool shell (50em), Wide (default) and Theatre via main_js/hub-theatre.js (data-page-modes="3"); no sidebar, no ads */
+	html.page-wide body .outer-container {max-width:min(96vw,80em) !important;}
+	html.page-theatre body .outer-container {max-width:min(98vw,2400px) !important;}
 	/* MES Kids (tool_apps_src/kids). Colours are --kd-* custom properties on #kd, restated for dark mode under body.dark-mode #kd.kd
 	   (the derived TOOL-DARK block would otherwise rewrite them); hand-written dark rules carry the #kd prefix. */
 	#kd {--kd-ink:#22223b;--kd-mut:#5c5f7a;--kd-bg:#fff8ef;--kd-card:#ffffff;--kd-line:#e6dccd;--kd-btn:#ffffff;--kd-btn-ink:#22223b;--kd-btn-line:#d9cfc0;
@@ -410,7 +413,7 @@ body.dark-mode .tu .rw-head {color:#a0a8b3;border-bottom-color:#555;} body.dark-
 	#kd .kd-wrap.kd-on .kd-word {font-size:clamp(2.6rem, min(10vw, 11vh), 8rem);}
 	#kd .kd-wrap.kd-on .kd-choice {font-size:min(22vw, 34vh, 14rem);}
 	#kd .kd-wrap.kd-on .kd-hint {display:none;}
-	#kd .kd-wrap.kd-on #kd-fill, #kd .kd-wrap.kd-on #kd-fs {display:none;}
+	#kd .kd-wrap.kd-on #kd-fill, #kd .kd-wrap.kd-on #kd-fs, #kd .kd-wrap.kd-on #kd-mute {display:none;}
 	html.kd-lock, html.kd-lock body {overflow:hidden !important;overscroll-behavior:none;}
 	@media (max-width:560px) {
 		#kd .kd-tl {display:none;}
@@ -522,6 +525,8 @@ body.dark-mode .tu .rw-head {color:#a0a8b3;border-bottom-color:#555;} body.dark-
 	@media (max-width:640px) {#kd .kd-quiz .kd-choices .kd-choice.kd-mchoice {font-size:min(24vw, 14vh, 6rem);} #kd .kd-quiz .kd-choices[data-n="4"] .kd-choice.kd-mchoice {font-size:min(28vw, 12vh, 6rem);}}
 	@media (max-width:420px) {#kd .kd-ages button {padding:.25em .55em;font-size:.85em;}}
 	#kd .kd-t6 {background:var(--kd-c6);}
+
+	#kd #kd-mute[aria-pressed="true"] {border-color:var(--kd-no);}
 
 
 	@media print {
@@ -702,7 +707,7 @@ body.is-stuck #navbar.hide { position: fixed; top: 56px; right: 8px; }
                                                         <div class="outer-page-content">
                             <div class="page-content" role="main">                                    <div class="color-box"></div>
                                     <h1 class="page-title">ABC Flashcards for Toddlers: Talking Alphabet A to Z (Free, No Ads)</h1>                                        <p class="page-description">Talking ABC flashcards for toddlers and preschoolers: every letter A to Z big, with a picture and word (A is for apple), said out loud, plus a Find the letter game. Capitals, small letters or both. Free, no ads.</p>                                    	<div id="main-content" data-tool data-text-scale>
-	<div class="tu kd" id="kd" data-mode="abc">
+	<div class="tu kd" id="kd" data-mode="abc" data-page-modes="3">
 		<div class="kd-wrap" id="kd-wrap">
 			<div class="kd-top">
 				<div class="kd-modes" id="kd-modes" role="tablist" aria-label="Activity">
@@ -717,6 +722,7 @@ body.is-stuck #navbar.hide { position: fixed; top: 56px; right: 8px; }
 				<span class="kd-score" id="kd-score" aria-label="Stars collected" hidden>⭐ <b id="kd-stars">0</b></span>
 				<div class="kd-grown">
 					<button type="button" class="kd-hold" id="kd-gear" title="Grown-ups: hold for 2 seconds to open the settings" aria-label="Settings for grown-ups: hold for 2 seconds"><span class="kd-ring" aria-hidden="true"></span><span aria-hidden="true">⚙️</span><span class="kd-tl">Grown-ups</span></button>
+					<button type="button" class="kd-tbtn" id="kd-mute" aria-pressed="false" title="Sound on or off"><span aria-hidden="true">🔊</span><span class="kd-tl">Sound on</span></button>
 					<button type="button" class="kd-tbtn" id="kd-fill" title="Fill the browser window (kid-proof: hold ✕ for 2 seconds to leave)"><span aria-hidden="true">⤢</span><span class="kd-tl">Fill window</span></button>
 					<button type="button" class="kd-tbtn" id="kd-fs" title="Full screen (kid-proof: hold ✕ for 2 seconds to leave)"><span aria-hidden="true">⛶</span><span class="kd-tl">Full screen</span></button>
 					<button type="button" class="kd-hold kd-exit" id="kd-exit" title="Hold for 2 seconds to leave" aria-label="Leave: hold for 2 seconds" hidden><span class="kd-ring" aria-hidden="true"></span><span aria-hidden="true">✕</span><span class="kd-tl">Hold to leave</span></button>
@@ -780,6 +786,10 @@ body.is-stuck #navbar.hide { position: fixed; top: 56px; right: 8px; }
 							<div class="kd-seg" id="kd-o-theme" role="radiogroup" aria-label="Colours"><button type="button" data-v="bright" role="radio">🌈 Bright</button><button type="button" data-v="calm" role="radio">🌙 Calm</button></div>
 						</div>
 					</div>
+					<div class="kd-sec">
+						<h3>Sound</h3>
+						<label class="kd-chk"><input type="checkbox" id="kd-o-mute"> 🔇 No sound at all (silent mode: no voice and no animal recordings; the words still show)</label>
+					</div>
 					<div class="kd-sec" id="kd-sec-snd">
 						<h3>Animal sounds</h3>
 						<label class="kd-chk"><input type="checkbox" id="kd-o-snd"> Play real animal recordings</label>
@@ -824,6 +834,7 @@ body.is-stuck #navbar.hide { position: fixed; top: 56px; right: 8px; }
 			<p>More: <a href="/kids-numbers">Numbers</a> &middot; <a href="/kids-flashcards">Flashcards</a> &middot; <a href="/kids-animal-sounds">Animal Sounds</a> &middot; <a href="/kids">all MES Kids games</a></p>
 		</div>
 	</div>
+	<script src="/main_js/hub-theatre.js?v=2" defer></script>
 	</div>                                    <!-- PC (Responsive/Rectangle) Matched Content -->
                                                                         <div id="comments-button" class="hide-div-button button">Comments</div>
                                     <div id="comments-box" class="hide">
@@ -876,7 +887,7 @@ body.is-stuck #navbar.hide { position: fixed; top: 56px; right: 8px; }
             hide_search:false,
             current_tab:3
         }        </script><!-- FASTCOMMENTS-LAZY: widget init moved to main_js/main.js -- it pulls embed.min.js only when #fastcomments-widget nears the viewport or on the first Comments-toggle click, so it no longer blocks first render -->                <script src="https://mes.fm/main_js/lazysizes.min.js?v=1.0.3" async></script>
-	<script src="/main_js/voice-picker.js?v=1" defer></script><script src="/kids/js/kids.js?v=3" defer></script>
+	<script src="/main_js/voice-picker.js?v=1" defer></script><script src="/kids/js/kids.js?v=4" defer></script>
             <script src="https://mes.fm/main_js/main.js?v=1.0.5"></script>    <!-- PAGEVIEW-TRACKING-INSERTED --><script src="https://mes.fm/main_js/track.js" defer></script><script>document.getElementById('copyright-year').textContent = new Date().getFullYear();</script><script src="/main_js/info-bar-fit.js" defer></script><script>
   // Floating compact header bar (see #compact-nav CSS): appears once the
   // header + nav bar have scrolled off the top; nav links that don't fit

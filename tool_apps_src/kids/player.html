@@ -12,6 +12,7 @@
 				<span class="kd-score" id="kd-score" aria-label="Stars collected" hidden>⭐ <b id="kd-stars">0</b></span>
 				<div class="kd-grown">
 					<button type="button" class="kd-hold" id="kd-gear" title="Grown-ups: hold for 2 seconds to open the settings" aria-label="Settings for grown-ups: hold for 2 seconds"><span class="kd-ring" aria-hidden="true"></span><span aria-hidden="true">⚙️</span><span class="kd-tl">Grown-ups</span></button>
+					<button type="button" class="kd-tbtn" id="kd-mute" aria-pressed="false" title="Sound on or off"><span aria-hidden="true">🔊</span><span class="kd-tl">Sound on</span></button>
 					<button type="button" class="kd-tbtn" id="kd-fill" title="Fill the browser window (kid-proof: hold ✕ for 2 seconds to leave)"><span aria-hidden="true">⤢</span><span class="kd-tl">Fill window</span></button>
 					<button type="button" class="kd-tbtn" id="kd-fs" title="Full screen (kid-proof: hold ✕ for 2 seconds to leave)"><span aria-hidden="true">⛶</span><span class="kd-tl">Full screen</span></button>
 					<button type="button" class="kd-hold kd-exit" id="kd-exit" title="Hold for 2 seconds to leave" aria-label="Leave: hold for 2 seconds" hidden><span class="kd-ring" aria-hidden="true"></span><span aria-hidden="true">✕</span><span class="kd-tl">Hold to leave</span></button>
@@ -74,6 +75,10 @@
 						<div class="kd-row"><span>Colours</span>
 							<div class="kd-seg" id="kd-o-theme" role="radiogroup" aria-label="Colours"><button type="button" data-v="bright" role="radio">🌈 Bright</button><button type="button" data-v="calm" role="radio">🌙 Calm</button></div>
 						</div>
+					</div>
+					<div class="kd-sec">
+						<h3>Sound</h3>
+						<label class="kd-chk"><input type="checkbox" id="kd-o-mute"> 🔇 No sound at all (silent mode: no voice and no animal recordings; the words still show)</label>
 					</div>
 					<div class="kd-sec" id="kd-sec-snd">
 						<h3>Animal sounds</h3>

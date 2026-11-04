@@ -119,7 +119,7 @@
 	// say(text) -> promise that resolves when speech ends (or right away without speech). A voice that doesn't speak is marked bad and the text is said again with the next one.
 	function say(text, tk, retry) {
 		return new Promise(function (res) {
-			if (!synth || !text) return res();
+			if (!synth || !text || S.mute) return res();
 			var spoken = K.styleText(text, S.style), st = style();
 			var u = new SpeechSynthesisUtterance(spoken), v = voice(), done = false, started = false, boundary = false, t0 = 0, err = "";
 			if (v) { u.voice = v; u.lang = v.lang; } else u.lang = "en-US";
@@ -146,7 +146,7 @@
 	}
 	function play(src) {
 		return new Promise(function (res) {
-			if (!src) return res();
+			if (!src || S.mute) return res();
 			var a = new Audio(src); audio = a;
 			var done = false; function fin() { if (done) return; done = true; res(); }
 			a.onended = fin; a.onerror = fin;
@@ -198,7 +198,7 @@
 		wordEl.textContent = K.label(it, S.lcase);
 		wordEl.classList.toggle("kd-hide", !S.showWord);
 		subEl.textContent = S.showWord ? K.subLabel(it) : "";
-		$("kd-snd").hidden = !(it.cat === "animals" && (it.snd || it.sw));
+		$("kd-snd").hidden = S.mute || !(it.cat === "animals" && (it.snd || it.sw));
 		posEl.textContent = (idx + 1) + " / " + order.length;
 		cardEl.classList.remove("kd-in", "kd-l", "kd-r"); void cardEl.offsetWidth;
 		cardEl.classList.add(lastDir < 0 ? "kd-l" : lastDir > 0 ? "kd-r" : "kd-in");
@@ -208,6 +208,14 @@
 	function go(d) { if (play_ === "math") { lastDir = d; render(true); return; } if (!order.length) return; lastDir = d; idx = K.step(idx, d, order.length); if (d > 0 && idx === 0 && K.orderFor(S, mode) === "shuffle") { order = K.reshuffle(pool, order[order.length - 1]); } render(true); }
 	function shuffleNow() { order = K.reshuffle(pool, order[idx]); idx = 0; lastDir = 0; render(true); toast("Shuffled!"); }
 
+	// silent mode: no voice, no recordings (settings checkbox + the 🔊/🔇 button by Say it again)
+	function muteUi() {
+		root.classList.toggle("kd-muted", !!S.mute);
+		var b = $("kd-mute"); if (b) { b.setAttribute("aria-pressed", S.mute ? "true" : "false"); b.innerHTML = S.mute ? '<span aria-hidden="true">🔇</span><span class="kd-tl">Sound off</span>' : '<span aria-hidden="true">🔊</span><span class="kd-tl">Sound on</span>'; }
+		$("kd-say").hidden = !!S.mute;
+		if (S.mute) stopAll();
+		if (cur() && play_ === "learn") $("kd-snd").hidden = S.mute || !(cur().cat === "animals" && (cur().snd || cur().sw));
+	}
 	// slideshow
 	var advT;
 	function armAdv() { clearTimeout(advT); if (S.adv && play_ === "learn" && $("kd-set").hidden) advT = setTimeout(function () { go(1); }, S.adv * 1000); }
@@ -321,6 +329,7 @@
 	$("kd-back").addEventListener("click", function () { unlock(); go(-1); });
 	$("kd-fwd").addEventListener("click", function () { unlock(); go(1); });
 	$("kd-shuf").addEventListener("click", function () { unlock(); shuffleNow(); });
+	$("kd-mute").addEventListener("click", function () { S.mute = !S.mute; save(); var c = $("kd-o-mute"); if (c) c.checked = S.mute; muteUi(); toast(S.mute ? "Sound off" : "Sound on"); });
 	$("kd-say").addEventListener("click", function () { unlock(); if (play_ === "quiz" || play_ === "math") askAgain(); else sayCard(cur()); armAdv(); });
 	$("kd-qq").addEventListener("click", function () { unlock(); askAgain(); });
 	$("kd-snd").addEventListener("click", function () { unlock(); sayCard(cur(), { soundOnly: true }); armAdv(); });
@@ -443,7 +452,7 @@
 		$("kd-row-case").hidden = mode === "numbers" || !!MODE.math;
 		if (MODE.math) { $("kd-row-num").hidden = true; $("kd-row-count").hidden = true; }
 		chk("kd-o-word", "showWord", function () { render(false); });
-		chk("kd-o-count", "count"); chk("kd-o-snd", "snd"); chk("kd-o-sw", "sw"); chk("kd-o-auto", "auto");
+		chk("kd-o-count", "count"); chk("kd-o-mute", "mute", muteUi); chk("kd-o-snd", "snd"); chk("kd-o-sw", "sw"); chk("kd-o-auto", "auto");
 		seg("kd-o-case", S.lcase, function (v) { S.lcase = v; save(); render(false); });
 		seg("kd-o-order", K.orderFor(S, mode), function (v) { S.ord[mode] = v; save(); rebuild(order[idx]); render(false); });
 		seg("kd-o-num", S.maxNum, function (v) { S.maxNum = +v; save(); rebuild(order[idx]); render(false); });
@@ -525,6 +534,7 @@
 	caseLabels();
 	rebuild();
 	render(false);
+	muteUi();
 	var q = /[?&]play=quiz\b/.test(location.search);
 	if (MODE.math) {
 		play_ = "math";

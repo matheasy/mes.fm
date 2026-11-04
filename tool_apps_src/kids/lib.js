@@ -427,7 +427,7 @@
 	}
 
 	// ---------- Settings ----------
-	var DEFAULTS = { rate: 0.82, pitch: 1.18, style: "teacher", voice: "", auto: true, sw: true, snd: true, showWord: true, lcase: "title", maxNum: 10, count: true, adv: 0, quizN: 3, theme: "bright", age: 2 };
+	var DEFAULTS = { rate: 0.82, pitch: 1.18, style: "teacher", voice: "", auto: true, sw: true, snd: true, showWord: true, lcase: "title", maxNum: 10, count: true, adv: 0, quizN: 3, theme: "bright", age: 2, mute: false };
 	function clean(s) {
 		s = s && typeof s === "object" ? s : {};
 		var o = {};
@@ -436,7 +436,7 @@
 		o.rate = num(s.rate, 0.4, 1.5, DEFAULTS.rate); o.pitch = num(s.pitch, 0.5, 2, DEFAULTS.pitch);
 		o.voice = typeof s.voice === "string" ? s.voice.slice(0, 300) : "";
 		if (STYLES[s.style]) o.style = s.style;
-		["auto", "sw", "snd", "showWord", "count"].forEach(function (k) { if (typeof s[k] === "boolean") o[k] = s[k]; });
+		["auto", "sw", "snd", "showWord", "count", "mute"].forEach(function (k) { if (typeof s[k] === "boolean") o[k] = s[k]; });
 		if (["upper", "lower", "title", "both"].indexOf(s.lcase) >= 0) o.lcase = s.lcase;
 		o.ord = {};
 		if (s.ord && typeof s.ord === "object") for (var md in MODES) if (s.ord[md] === "order" || s.ord[md] === "shuffle") o.ord[md] = s.ord[md];

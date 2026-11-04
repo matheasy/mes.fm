@@ -1,3 +1,6 @@
+	/* page width: Standard = the tool shell (50em), Wide (default) and Theatre via main_js/hub-theatre.js (data-page-modes="3"); no sidebar, no ads */
+	html.page-wide body .outer-container {max-width:min(96vw,80em) !important;}
+	html.page-theatre body .outer-container {max-width:min(98vw,2400px) !important;}
 	/* MES Kids (tool_apps_src/kids). Colours are --kd-* custom properties on #kd, restated for dark mode under body.dark-mode #kd.kd
 	   (the derived TOOL-DARK block would otherwise rewrite them); hand-written dark rules carry the #kd prefix. */
 	#kd {--kd-ink:#22223b;--kd-mut:#5c5f7a;--kd-bg:#fff8ef;--kd-card:#ffffff;--kd-line:#e6dccd;--kd-btn:#ffffff;--kd-btn-ink:#22223b;--kd-btn-line:#d9cfc0;
@@ -103,7 +106,7 @@
 	#kd .kd-wrap.kd-on .kd-word {font-size:clamp(2.6rem, min(10vw, 11vh), 8rem);}
 	#kd .kd-wrap.kd-on .kd-choice {font-size:min(22vw, 34vh, 14rem);}
 	#kd .kd-wrap.kd-on .kd-hint {display:none;}
-	#kd .kd-wrap.kd-on #kd-fill, #kd .kd-wrap.kd-on #kd-fs {display:none;}
+	#kd .kd-wrap.kd-on #kd-fill, #kd .kd-wrap.kd-on #kd-fs, #kd .kd-wrap.kd-on #kd-mute {display:none;}
 	html.kd-lock, html.kd-lock body {overflow:hidden !important;overscroll-behavior:none;}
 	@media (max-width:560px) {
 		#kd .kd-tl {display:none;}
@@ -215,3 +218,5 @@
 	@media (max-width:640px) {#kd .kd-quiz .kd-choices .kd-choice.kd-mchoice {font-size:min(24vw, 14vh, 6rem);} #kd .kd-quiz .kd-choices[data-n="4"] .kd-choice.kd-mchoice {font-size:min(28vw, 12vh, 6rem);}}
 	@media (max-width:420px) {#kd .kd-ages button {padding:.25em .55em;font-size:.85em;}}
 	#kd .kd-t6 {background:var(--kd-c6);}
+
+	#kd #kd-mute[aria-pressed="true"] {border-color:var(--kd-no);}
