@@ -97,9 +97,109 @@
     }, true);
   }
 
+  /* ---- Left / Right arrow keys = back / forward 5 seconds, like YouTube ----
+     Acts on the video you last used if it is on screen, else a playing one on screen, else the most visible one.
+     Ignored while typing (inputs, text areas, editable text), on sliders / tabs / menus, with Ctrl / Alt / Cmd,
+     and when no video is on screen (the arrows then scroll the page as usual). */
+  var SEEK = 5, lastVideo = null, seekTimer = null;
+  css.textContent +=
+    '.vsh-seek{position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);z-index:6;pointer-events:none;opacity:0;' +
+    'transition:opacity .2s;padding:.45em 1em;border-radius:999px;background:rgba(0,0,0,.72);color:#fff;font:600 16px/1.3 Arial,Helvetica,sans-serif;white-space:nowrap}' +
+    '.vsh-seek.on{opacity:1;transition:none}' +
+    '.vsh-cov{opacity:0 !important;visibility:hidden !important;pointer-events:none !important;transition:opacity .2s,visibility 0s .2s !important}';
+
+  function allVideos() { return document.querySelectorAll('.video-embed video, #videoEmbed video'); }
+  function shown(v) {
+    var r = v.getBoundingClientRect(), h = window.innerHeight || document.documentElement.clientHeight;
+    if (!r.width || !r.height) return 0;
+    return Math.max(0, Math.min(r.bottom, h) - Math.max(r.top, 0)) / r.height;
+  }
+  function pickVideo() {
+    if (lastVideo && document.contains(lastVideo) && shown(lastVideo) > 0.15) return lastVideo;
+    var v = allVideos(), best = null, bestScore = 0, k, s;
+    for (k = 0; k < v.length; k++) {
+      s = shown(v[k]);
+      if (s <= 0.15) continue;
+      if (!v[k].paused) s += 2;
+      if (s > bestScore) { bestScore = s; best = v[k]; }
+    }
+    return best;
+  }
+  function seekPill(v, text) {
+    var box = v.parentElement, p = box.querySelector('.vsh-seek');
+    if (!p) { p = document.createElement('div'); p.className = 'vsh-seek'; p.setAttribute('aria-hidden', 'true'); box.appendChild(p); }
+    p.textContent = text;
+    p.classList.add('on');
+    clearTimeout(seekTimer);
+    seekTimer = setTimeout(function () { p.classList.remove('on'); }, 650);
+  }
+  function typing(t) {
+    if (!t || t === document.body) return false;
+    if (t.isContentEditable) return true;
+    var tag = t.tagName;
+    if (tag === 'INPUT' || tag === 'TEXTAREA' || tag === 'SELECT') return true;
+    var role = t.getAttribute && t.getAttribute('role');
+    return /^(slider|spinbutton|tab|listbox|option|menu|menuitem|combobox|textbox|separator|scrollbar)$/.test(role || '');
+  }
+  document.addEventListener('keydown', function (e) {
+    if (e.key !== 'ArrowLeft' && e.key !== 'ArrowRight') return;
+    if (e.defaultPrevented || e.ctrlKey || e.altKey || e.metaKey || e.shiftKey) return;
+    if (typing(e.target)) return;
+    var v = (e.target && e.target.tagName === 'VIDEO') ? e.target : pickVideo();
+    if (!v || !v.readyState) return;
+    e.preventDefault();
+    e.stopPropagation();   // a focused <video> would otherwise also seek with its own built-in step
+    var d = isFinite(v.duration) ? v.duration : Infinity;
+    var t = v.currentTime + (e.key === 'ArrowRight' ? SEEK : -SEEK);
+    v.currentTime = Math.max(0, Math.min(d - 0.05, t));
+    lastVideo = v;
+    seekPill(v, e.key === 'ArrowRight' ? SEEK + ' s ▶▶' : '◀◀ ' + SEEK + ' s');
+  }, true);
+  document.addEventListener('pointerdown', function (e) {
+    var v = e.target && e.target.closest && e.target.closest('.video-embed, #videoEmbed');
+    v = v && v.querySelector('video');
+    if (v) lastVideo = v;
+  }, true);
+  document.addEventListener('play', function (e) { if (e.target && e.target.tagName === 'VIDEO') lastVideo = e.target; }, true);
+
+  /* ---- Wide View / Theater Mode: fixed side panels (Jump-to list, "More like this" rail, their tabs) no longer
+     cover the widened video. A panel that overlaps it fades out while the video is on screen and comes back as
+     soon as you scroll past it, or go back to Default View. */
+  var PANELS = '.toc-sidebar, .toc-resize, .toc-reopen, .mes-aside--rail, .mes-rail-show';
+  var covRaf = 0;
+  function overlaps(a, b) { return a.width && a.height && a.left < b.right && a.right > b.left && a.top < b.bottom && a.bottom > b.top; }
+  function checkCover() {
+    covRaf = 0;
+    var big = document.querySelectorAll('.video-embed.theater-mode, .video-embed.wide-mode, #videoEmbed.theater-mode, #videoEmbed.wide-mode');
+    var rects = [], k, j;
+    for (k = 0; k < big.length; k++) rects.push(big[k].getBoundingClientRect());
+    var ps = document.querySelectorAll(PANELS);
+    for (k = 0; k < ps.length; k++) {
+      var r = ps[k].getBoundingClientRect(), hit = false;
+      for (j = 0; j < rects.length && !hit; j++) hit = overlaps(r, rects[j]);
+      ps[k].classList.toggle('vsh-cov', hit);
+    }
+  }
+  function queueCover() { if (!covRaf) covRaf = requestAnimationFrame(checkCover); }
+  function laterCover() { queueCover(); setTimeout(checkCover, 120); setTimeout(checkCover, 350); }
+  window.addEventListener('scroll', queueCover, { passive: true });
+  // panels built later (the Jump-to rail is made by jump-aside.js after load) are caught by a light re-check
+  setInterval(function () { if (document.querySelector('.theater-mode, .wide-mode, .vsh-cov')) checkCover(); }, 800);
+  window.addEventListener('resize', laterCover);
+  document.addEventListener('transitionend', function (e) { if (e.target && e.target.classList && e.target.classList.contains('video-embed')) queueCover(); }, true);
+  if (window.MutationObserver) {
+    new MutationObserver(function (ms) {
+      for (var i = 0; i < ms.length; i++) {
+        var t = ms[i].target;
+        if (t === document.body || t === document.documentElement || (t.classList && (t.classList.contains('video-embed') || t.id === 'videoEmbed'))) { laterCover(); return; }
+      }
+    }).observe(document.body || document.documentElement, { attributes: true, attributeFilter: ['class'], subtree: true });
+  }
+
   function init() {
-    var v = document.querySelectorAll('.video-embed video, #videoEmbed video');
+    var v = allVideos();
     for (var k = 0; k < v.length; k++) attach(v[k]);
+    laterCover();
   }
   if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', init); else init();
 })();
