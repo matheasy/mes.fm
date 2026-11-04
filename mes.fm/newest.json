@@ -1,5 +1,5 @@
 {
- "generated": "2026-11-03",
+ "generated": "2026-11-04",
  "calculators": [
   {
    "href": "/practice-tests",
@@ -100,6 +100,14 @@
  ],
  "tools": [
   {
+   "href": "/youtube-audio",
+   "title": "YouTube Audio Analyzer",
+   "icon": "/img/youtube-audio-logo.png",
+   "desc": "How loud is that video? Loudness in LUFS, true peak, waveform, spectrogram, silences and clipping for YouTube, 3Speak, Rumble, Odysee or your own files.",
+   "added": "2026-11-04",
+   "kind": "tool"
+  },
+  {
    "href": "/maxwell-vortices",
    "title": "Maxwell's Vortices",
    "icon": "/img/maxwell-vortices-logo.png",
@@ -186,17 +194,17 @@
    "desc": "The Hodgkin-Huxley action potential, nerve conduction with myelin and MS, EPSP summation, the neuromuscular junction and a Nernst / Goldman calculator.",
    "added": "2026-10-31",
    "kind": "tool"
-  },
-  {
-   "href": "/heart-simulator",
-   "title": "Heart Simulator",
-   "icon": "/img/heart-simulator-logo.png",
-   "desc": "An animated heart synced to a Wiggers diagram, pressure-volume loops with disease presets, an ECG rhythm trainer with calipers and a hemodynamics calculator.",
-   "added": "2026-10-31",
-   "kind": "tool"
   }
  ],
  "latest": [
+  {
+   "href": "/youtube-audio",
+   "title": "YouTube Audio Analyzer",
+   "icon": "/img/youtube-audio-logo.png",
+   "desc": "How loud is that video? Loudness in LUFS, true peak, waveform, spectrogram, silences and clipping for YouTube, 3Speak, Rumble, Odysee or your own files.",
+   "added": "2026-11-04",
+   "kind": "tool"
+  },
   {
    "href": "/maxwell-vortices",
    "title": "Maxwell's Vortices",
@@ -251,14 +259,6 @@
    "icon": "/img/gallery-logo.png",
    "desc": "View the photos and videos in your folders: fast thumbnails, rows, masonry or list, slideshow, zoom, favourites, and video speed 0.25x to 4x with A-B loops. Nothing is uploaded.",
    "added": "2026-11-02",
-   "kind": "tool"
-  },
-  {
-   "href": "/spin-simulator",
-   "title": "Spin Simulator",
-   "icon": "/img/spin-simulator-logo.png",
-   "desc": "Neutrons that must turn 720° to come back, the Einstein-de Haas effect (flip a magnet, the iron turns) and the Barnett effect (spin iron, it magnetizes).",
-   "added": "2026-11-01",
    "kind": "tool"
   }
  ]

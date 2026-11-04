@@ -189,6 +189,15 @@ APPS = {
                  tag="Like ping -t, in your browser.", accent="#0e7490", dark="#155e75", tint="#dcf1f6",
                  desc="Free continuous ping test: check latency, jitter and packet loss to Cloudflare 1.1.1.1, Google 8.8.8.8, mes.fm or any website, with a live chart, ping-style log and plain-word verdicts for gaming, calls and streaming. Nothing to install.",
                  js_v="1"),
+    # MES YouTube Audio Analyzer (2026-11-04, mes.fm/youtube-audio): waveform, loudness (LUFS / true peak / LRA), spectrogram, average spectrum,
+    # silences, loudest moments, clipping, platform targets. Sources: a dropped file (MESConvEngine for AVI / MKV ...), a direct media link the
+    # browser may fetch, or tab audio (getDisplayMedia) while the video plays in the site's own embedded player. No server: YouTube's audio is
+    # never downloaded. lib.js = MESYA (streaming BS.1770 analyzer), tests tool_apps_src/youtube-audio-tests.js.
+    "youtube-audio": dict(title="MES YouTube Audio Analyzer", page_title="YouTube Audio Analyzer: Loudness (LUFS), Waveform and Spectrogram",
+                     tag="How loud is that video, really?", accent="#c2410c", dark="#9a3412", tint="#fdeee4",
+                     desc="Free YouTube audio analyzer: measure any video's loudness in LUFS, true peak and loudness range, and see its waveform, spectrogram, silences and clipping. Works with YouTube, 3Speak, Rumble, Odysee, BitChute, X and your own audio or video files. Nothing is uploaded.",
+                     meta_desc="Measure a YouTube video's loudness (LUFS, true peak, LRA) and see its waveform, spectrogram, silences and clipping. Also 3Speak, Rumble, Odysee and your own files.",
+                     js_v="1", lib_from=["convert-video"], js_parts=["../convert-video/engine.js"]),
     # MES Mic Test (2026-10-28, mes.fm/mic-test): live dBFS meter (OBS style), verdict, noise floor, 10 s recording, spectrogram, speaker test; OBS / macOS / Yeti help.
     # lib.js = MESMic, tests tool_apps_src/mic-test-tests.js. Audio never leaves the browser.
     "mic-test": dict(title="MES Mic Test", page_title="Mic Test: Check Your Microphone Level in dBFS (OBS, Yeti, Mac)",

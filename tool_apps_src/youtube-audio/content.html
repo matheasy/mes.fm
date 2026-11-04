@@ -1,0 +1,170 @@
+	<script>try{if(!localStorage.getItem('pageMode')){document.documentElement.classList.add('page-wide')}}catch(e){}</script>
+	<div class="tu ya" id="ya">
+		<p class="ya-priv">Everything is measured in this browser. Nothing you play, drop or record is uploaded.</p>
+
+		<div class="tu-card ya-src">
+			<div class="ya-tabs" role="tablist" aria-label="Where the audio comes from">
+				<button type="button" role="tab" id="ya-t-link" aria-selected="true" aria-controls="ya-p-link" data-tab="link">🔗 Paste a video link</button>
+				<button type="button" role="tab" id="ya-t-file" aria-selected="false" aria-controls="ya-p-file" data-tab="file" tabindex="-1">📁 Drop a file</button>
+				<button type="button" role="tab" id="ya-t-tab" aria-selected="false" aria-controls="ya-p-tab" data-tab="tab" tabindex="-1">🔊 Listen to another tab</button>
+			</div>
+			<div class="ya-pane" role="tabpanel" id="ya-p-link" aria-labelledby="ya-t-link">
+				<form class="ya-linkrow" id="ya-form">
+					<label class="ya-sr" for="ya-url">Video or audio link</label>
+					<input class="tu-input tu-input--big" id="ya-url" type="url" inputmode="url" autocomplete="off" spellcheck="false" placeholder="https://www.youtube.com/watch?v=…  (also 3Speak, Rumble, Odysee, BitChute, X, a .mp3 / .mp4 link)">
+					<button type="submit" class="tu-btn tu-btn--primary ya-go">Open</button>
+				</form>
+				<div class="ya-sites" aria-hidden="true"><span>YouTube</span><span>3Speak</span><span>Rumble</span><span>Odysee</span><span>BitChute</span><span>X</span><span>Substack</span><span>.mp3 / .mp4 links</span></div>
+				<p class="ya-msg" id="ya-linkmsg" role="status" aria-live="polite"></p>
+			</div>
+			<div class="ya-pane" role="tabpanel" id="ya-p-file" aria-labelledby="ya-t-file" hidden>
+				<label class="ya-drop" id="ya-drop" for="ya-file">
+					<span class="ya-dropbig">Drop an audio or video file here</span>
+					<span class="ya-dropsub">or click to choose one: MP3, WAV, M4A, FLAC, OGG, MP4, MOV, WebM, MKV, AVI … Nothing is uploaded.</span>
+					<input type="file" id="ya-file" accept="audio/*,video/*,.mkv,.avi,.wmv,.flv,.ts,.m2ts,.mpg,.mpeg,.opus,.flac">
+				</label>
+				<p class="tu-note">Want the exact numbers for a YouTube video? Download it first (your own videos: YouTube Studio → Content → ⋮ → Download), then drop the file here.</p>
+			</div>
+			<div class="ya-pane" role="tabpanel" id="ya-p-tab" aria-labelledby="ya-t-tab" hidden>
+				<p>Open the video in another tab, then press the button, pick that tab and keep <b>Also share tab audio</b> on. Play the video: the page measures what the tab plays.</p>
+				<div class="tu-row"><button type="button" class="tu-btn tu-btn--primary" data-cap="other">🔊 Choose a tab to listen to</button></div>
+				<p class="tu-note">Works in Chrome, Edge, Brave and Opera on a computer. Firefox, Safari and phones can't share a tab's sound with a web page.</p>
+			</div>
+		</div>
+
+		<section class="tu-card ya-player" id="ya-player" hidden>
+			<div class="ya-chead"><h2 class="ya-h" id="ya-ptitle">Play the video here</h2><span id="ya-pbtns"></span></div>
+			<div class="ya-frame" id="ya-frame"></div>
+			<div class="ya-steps" id="ya-steps">
+				<ol>
+					<li>Press <b>● Start listening</b>. Your browser asks what to share: pick <b>This tab</b> and keep <b>Also share tab audio</b> switched on.</li>
+					<li>Play the video, with the player's own volume at <b>100%</b>. Measure the whole video, or the part you care about.</li>
+					<li>Press <b>■ Stop</b> to see every number and chart below.</li>
+				</ol>
+			</div>
+			<div class="tu-row ya-caprow">
+				<button type="button" class="tu-btn tu-btn--primary ya-big" id="ya-cap" data-cap="self">● Start listening</button>
+				<a class="tu-btn tu-btn--ghost" id="ya-open" href="#" target="_blank" rel="noopener">Open on the site ↗</a>
+			</div>
+			<p class="ya-msg" id="ya-capmsg" role="alert"></p>
+		</section>
+
+		<section class="tu-card ya-live" id="ya-live" hidden>
+			<div class="ya-chead"><h2 class="ya-h"><span class="ya-dot"></span> Listening <span class="ya-elapsed" id="ya-el">0:00</span></h2><button type="button" class="tu-btn ya-stop" id="ya-stop">■ Stop and show results</button></div>
+			<div class="ya-livenums">
+				<div class="ya-ln"><span class="ya-lnl">Momentary (0.4 s)</span><span class="ya-lnv" id="ya-lm">−∞</span><span class="ya-lnu">LUFS</span></div>
+				<div class="ya-ln"><span class="ya-lnl">Short-term (3 s)</span><span class="ya-lnv" id="ya-ls">−∞</span><span class="ya-lnu">LUFS</span></div>
+				<div class="ya-ln ya-ln--main"><span class="ya-lnl">Integrated so far</span><span class="ya-lnv" id="ya-li">−∞</span><span class="ya-lnu">LUFS</span></div>
+				<div class="ya-ln"><span class="ya-lnl">True peak</span><span class="ya-lnv" id="ya-lt">−∞</span><span class="ya-lnu">dBTP</span></div>
+			</div>
+			<canvas class="ya-livespec" id="ya-livespec" role="img" aria-label="Live spectrum"></canvas>
+			<p class="tu-note" id="ya-livenote">Silence while nothing plays is fine: quiet parts below −70 LUFS are left out of the loudness, as the standard says.</p>
+		</section>
+
+		<div class="ya-prog" id="ya-prog" hidden><div class="ya-progtext" id="ya-progtext">Reading…</div><div class="ya-bar"><i id="ya-progbar"></i></div><button type="button" class="tu-btn tu-btn--ghost" id="ya-cancel">Cancel</button></div>
+
+		<div id="ya-res" hidden>
+			<div class="ya-verdict" id="ya-verdict"><div class="ya-vh" id="ya-vh"></div><div class="ya-vt" id="ya-vt"></div><div class="ya-vsrc" id="ya-vsrc"></div></div>
+			<div class="tu-stats ya-stats" id="ya-stats"></div>
+			<div class="tu-card ya-yt" id="ya-ytfix" hidden>
+				<h3 class="ya-h3">Measured through YouTube's player?</h3>
+				<p>YouTube plays loud videos quieter than they were uploaded. Right-click the video → <b>Stats for nerds</b> and look at <b>Volume / Normalized</b>: for example <i>100% / 61% (content loudness 4.3dB)</i>. Type the content loudness number to get the loudness of the upload itself.</p>
+				<div class="tu-row"><label class="tu-label" for="ya-cl">Content loudness</label><input class="tu-input ya-num" id="ya-cl" type="text" inputmode="decimal" placeholder="4.3"><span>dB</span><span class="ya-clout" id="ya-clout" aria-live="polite"></span></div>
+			</div>
+
+			<section class="tu-card ya-tl" id="ya-tl">
+				<div class="ya-chead"><h2 class="ya-h">Over time</h2><span id="ya-tlbtns"></span></div>
+				<div class="ya-tlbar">
+					<div class="tu-seg" id="ya-lanes" role="group" aria-label="Charts to show">
+						<button type="button" data-lane="wave" aria-pressed="true">Waveform</button><button type="button" data-lane="loud" aria-pressed="true">Loudness</button><button type="button" data-lane="spec" aria-pressed="true">Spectrogram</button>
+					</div>
+					<div class="tu-seg" id="ya-wscale" role="group" aria-label="Waveform scale"><button type="button" data-ws="lin" aria-pressed="true">Linear</button><button type="button" data-ws="db" aria-pressed="false">dB</button></div>
+					<label class="ya-check"><input type="checkbox" id="ya-split"> Left / right apart</label>
+					<span class="ya-zoom"><button type="button" class="tu-btn tu-btn--ghost" id="ya-zout" aria-label="Zoom out">−</button><button type="button" class="tu-btn tu-btn--ghost" id="ya-zall">All</button><button type="button" class="tu-btn tu-btn--ghost" id="ya-zin" aria-label="Zoom in">+</button></span>
+				</div>
+				<div class="ya-read" id="ya-read" aria-live="off">&nbsp;</div>
+				<div class="ya-lanesbox" id="ya-lanesbox">
+					<div class="ya-lane" data-l="wave"><span class="ya-lname">Waveform</span><canvas id="ya-wave" role="img" aria-label="Waveform"></canvas></div>
+					<div class="ya-lane" data-l="loud"><span class="ya-lname">Loudness (LUFS)</span><canvas id="ya-loud" role="img" aria-label="Loudness over time"></canvas></div>
+					<div class="ya-lane" data-l="spec"><span class="ya-lname">Spectrogram</span><canvas id="ya-spec" role="img" aria-label="Spectrogram"></canvas></div>
+					<canvas class="ya-axis" id="ya-axis" aria-hidden="true"></canvas>
+				</div>
+				<div class="ya-legend"><span><i class="ya-k ya-k--m"></i>Momentary</span><span><i class="ya-k ya-k--s"></i>Short-term</span><span><i class="ya-k ya-k--i"></i>Integrated</span><span><i class="ya-k ya-k--t"></i>YouTube −14</span><span><i class="ya-k ya-k--q"></i>Quiet parts</span><span><i class="ya-k ya-k--c"></i>Clipping</span></div>
+				<p class="tu-note">Drag to move along, Ctrl + scroll (or pinch) to zoom, double-click to see it all. <span id="ya-seekhint">Click to play from there.</span></p>
+				<audio id="ya-audio" controls preload="metadata" hidden></audio>
+			</section>
+
+			<div class="ya-grid2">
+				<section class="tu-card" id="ya-tg">
+					<h2 class="ya-h">What each site would do</h2>
+					<div class="tu-table-wrap"><table class="tu-table ya-tt" id="ya-targets"><thead><tr><th>Where</th><th>Aims for</th><th>Change</th></tr></thead><tbody></tbody></table></div>
+					<p class="tu-note">Loudness normalization turns whole videos up or down; it never fixes a mix. Values are the sites' published targets and can change.</p>
+				</section>
+				<section class="tu-card" id="ya-sp">
+					<div class="ya-chead"><h2 class="ya-h">Average spectrum</h2><span id="ya-spbtns"></span></div>
+					<canvas class="ya-ltas" id="ya-ltas" role="img" aria-label="Average spectrum"></canvas>
+					<p class="tu-note" id="ya-spnote">How much of the sound sits at each pitch, averaged over the whole recording.</p>
+				</section>
+			</div>
+
+			<div class="ya-grid2">
+				<section class="tu-card" id="ya-sil">
+					<h2 class="ya-h">Silences and pauses</h2>
+					<div class="ya-silset">
+						<div class="tu-field tu-field--sm"><label class="tu-label" for="ya-thr">Quieter than <b id="ya-thrv">−45</b> dBFS</label><input type="range" id="ya-thr" min="-80" max="-20" step="1" value="-45"></div>
+						<div class="tu-field tu-field--sm"><label class="tu-label" for="ya-min">For at least <b id="ya-minv">0.5</b> s</label><input type="range" id="ya-min" min="0.2" max="10" step="0.1" value="0.5"></div>
+					</div>
+					<p class="ya-silsum" id="ya-silsum"></p>
+					<ol class="ya-list" id="ya-sillist"></ol>
+					<div class="tu-row"><button type="button" class="tu-btn tu-btn--ghost" id="ya-silcopy">Copy the list</button></div>
+				</section>
+				<section class="tu-card" id="ya-mom">
+					<h2 class="ya-h">Loudest moments</h2>
+					<ol class="ya-list" id="ya-loudlist"></ol>
+					<h3 class="ya-h3" id="ya-cliph">Clipping</h3>
+					<p id="ya-clipsum"></p>
+					<ol class="ya-list" id="ya-cliplist"></ol>
+				</section>
+			</div>
+
+			<div class="tu-card">
+				<h2 class="ya-h">Save the results</h2>
+				<div class="tu-row">
+					<button type="button" class="tu-btn tu-btn--ghost" id="ya-copy">Copy the summary</button>
+					<button type="button" class="tu-btn tu-btn--ghost" id="ya-csv">Loudness every 0.1 s (CSV)</button>
+					<button type="button" class="tu-btn tu-btn--ghost" id="ya-png">Charts as a picture (PNG)</button>
+				</div>
+			</div>
+		</div>
+		<div class="tu-toast" id="ya-toast" role="status" aria-live="polite"></div>
+
+		<div class="tu-seo">
+			<h2>How this works</h2>
+			<p>A web page is not allowed to read the sound inside a YouTube player (or any other site's player): the browser keeps other sites' media sealed off. There are three honest ways around that, and this page uses all of them:</p>
+			<ol>
+				<li><strong>A file you drop.</strong> The exact sound, measured from start to end in a few seconds. Video files work too (MP4, MOV, MKV, AVI…). For your own YouTube videos, download the file from YouTube Studio.</li>
+				<li><strong>A direct link to an audio or video file</strong> (ending in .mp3, .mp4, .wav…), when the site holding it lets other pages read it. If it doesn't, download it and drop it.</li>
+				<li><strong>Listening to a tab.</strong> For YouTube, 3Speak, Rumble, Odysee, BitChute, X and Substack, the video plays in the site's own player and the browser shares that tab's sound with this page (you choose the tab, and it asks first). It measures in real time, so a 10-minute video takes 10 minutes; you can stop any time.</li>
+			</ol>
+			<h3>What the numbers mean</h3>
+			<dl>
+				<dt>Integrated loudness (LUFS)</dt><dd>How loud the whole thing feels, as one number (ITU-R BS.1770, the method YouTube, Spotify and TV use). YouTube plays everything at about −14 LUFS: louder videos are turned down, quieter ones are left quiet.</dd>
+				<dt>True peak (dBTP)</dt><dd>The highest point of the sound wave, including the peaks that happen between samples. Keep it at −1 dBTP or lower so it doesn't distort after it is converted to AAC or Opus.</dd>
+				<dt>Loudness range (LU)</dt><dd>How much the loudness changes between the quieter and louder parts (EBU Tech 3342). Speech is often 3 to 8 LU; a film can be 15 or more.</dd>
+				<dt>Momentary and short-term</dt><dd>Loudness over the last 0.4 s and the last 3 s, the two lines on the loudness chart.</dd>
+				<dt>Peak-to-loudness ratio (PLR)</dt><dd>True peak minus integrated loudness: how much punch is left. Very low values (under 8) mean heavily squashed audio.</dd>
+				<dt>Noise floor</dt><dd>The level of the quietest tenth of the recording, usually room noise or hiss between words.</dd>
+				<dt>Clipping</dt><dd>Places where three or more samples in a row sit at full scale: the wave was cut flat and you hear distortion.</dd>
+			</dl>
+			<h3>Questions</h3>
+			<h4>Why does a YouTube video measure quieter than my file?</h4>
+			<p>Because YouTube turned it down. Its player lowers loud videos to about −14 LUFS before you hear them, and this page hears what the player plays. Stats for nerds shows how much (content loudness); type that number in the box under the results to get the upload's own loudness. Also check that the player's volume slider is at 100%.</p>
+			<h4>Is the tab's sound recorded?</h4>
+			<p>No. The page keeps only the measurements (loudness every 0.1 s, the waveform's outline and the spectrogram), never the sound itself, and none of it leaves your browser. Sharing stops when you press Stop or close the tab.</p>
+			<h4>Why can't it just download the YouTube video?</h4>
+			<p>YouTube does not offer that to other websites, and getting around its protections is against its terms. Playing the video in YouTube's own player and listening to the tab is allowed and needs nothing extra.</p>
+			<h4>Which loudness should I aim for?</h4>
+			<p>For YouTube, about −14 LUFS with true peaks at or below −1 dBTP. For podcasts, −16 LUFS. Broadcast TV: −23 LUFS (Europe) or −24 LUFS (North America). Our <a href="/audio">Audio Editor</a> can set the loudness of a file for you.</p>
+		</div>
+	</div>
+	<script src="/main_js/panel-view.js?v=1" defer></script>

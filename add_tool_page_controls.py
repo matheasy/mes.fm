@@ -75,6 +75,7 @@ TOOLS = [  # (directory, compact-bar title[, home path of the site the page belo
     ("database", "Video Database"),
     ("telegram", "Telegram Archive"),
     ("mic-test", "Mic Test"),
+    ("youtube-audio", "YouTube Audio Analyzer"),
     ("file-check", "File Safety Check"),
     ("storage", "Storage Analyzer"),
     ("gallery", "Gallery"),
