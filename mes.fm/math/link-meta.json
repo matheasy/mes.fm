@@ -2676,23 +2676,39 @@
     "image": "https://mes.fm/math-qa-73-thermal-expansion/img/thumbnail.jpg",
     "watchLinks": [
       {
+        "label": "3Speak",
+        "href": "https://3speak.tv/watch?v=mes/mes-math-qa-73-what-is-ther-487"
+      },
+      {
         "label": "YouTube",
         "href": "https://youtube.com/live/DprWTjHTgEk"
       },
       {
-        "label": "BitChute",
-        "href": "https://www.bitchute.com/channel/1B8tfwAKfSbU"
+        "label": "Rumble",
+        "href": "https://rumble.com/v7h7c58-mes-math-qa-73-what-is-thermal-expansion.html"
       },
       {
         "label": "Odysee",
         "href": "https://odysee.com/@mes:8/MES-Math-QA-73-Thermal-Expansion:2"
       },
       {
-        "label": "Rumble",
-        "href": "https://rumble.com/v7h7c58-mes-math-qa-73-what-is-thermal-expansion.html"
+        "label": "BitChute",
+        "href": "https://www.bitchute.com/video/3wv733p8UydK/"
+      },
+      {
+        "label": "X",
+        "href": "https://x.com/i/broadcasts/1yJAPwZnPyDGb"
+      },
+      {
+        "label": "Telegram",
+        "href": "https://t.me/meslinks/35657"
       }
     ],
     "namedLinks": [
+      {
+        "label": "Calculator",
+        "href": "https://mes.fm/materials"
+      },
       {
         "label": "See more",
         "href": "https://www.youtube.com/playlist?list=PLai3U8-WIK0F1GgkU63uA9NIncxDS2q0-"
