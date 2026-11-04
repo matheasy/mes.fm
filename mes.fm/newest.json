@@ -100,14 +100,6 @@
  ],
  "tools": [
   {
-   "href": "/spin-half",
-   "title": "Spin-½ Lab",
-   "icon": "/img/spin-half-logo.png",
-   "desc": "Dirac's belt trick in 3D: one turn tangles the ribbons, two turns untangle them, plus five pictures of why spin ½ needs 720°, a phase-coloured torus and an elastic sheet that lies flat only after 720°.",
-   "added": "2026-11-03",
-   "kind": "tool"
-  },
-  {
    "href": "/maxwell-vortices",
    "title": "Maxwell's Vortices",
    "icon": "/img/maxwell-vortices-logo.png",
@@ -128,6 +120,14 @@
    "title": "Spin Wave Field",
    "icon": "/img/spin-wave-field-logo.png",
    "desc": "A double-slit pattern forms in a crowd that waves with the wave, a 360° spin flipper swaps bright and dark stripes (720° brings them back), and a 3D wave field with tracer particles.",
+   "added": "2026-11-03",
+   "kind": "tool"
+  },
+  {
+   "href": "/spin-half",
+   "title": "Spin-½ Lab",
+   "icon": "/img/spin-half-logo.png",
+   "desc": "Dirac's belt trick in 3D: one turn tangles the ribbons, two turns untangle them, plus five pictures of why spin ½ needs 720°, a phase-coloured torus and an elastic sheet that lies flat only after 720°.",
    "added": "2026-11-03",
    "kind": "tool"
   },
@@ -198,14 +198,6 @@
  ],
  "latest": [
   {
-   "href": "/spin-half",
-   "title": "Spin-½ Lab",
-   "icon": "/img/spin-half-logo.png",
-   "desc": "Dirac's belt trick in 3D: one turn tangles the ribbons, two turns untangle them, plus five pictures of why spin ½ needs 720°, a phase-coloured torus and an elastic sheet that lies flat only after 720°.",
-   "added": "2026-11-03",
-   "kind": "tool"
-  },
-  {
    "href": "/maxwell-vortices",
    "title": "Maxwell's Vortices",
    "icon": "/img/maxwell-vortices-logo.png",
@@ -226,6 +218,14 @@
    "title": "Spin Wave Field",
    "icon": "/img/spin-wave-field-logo.png",
    "desc": "A double-slit pattern forms in a crowd that waves with the wave, a 360° spin flipper swaps bright and dark stripes (720° brings them back), and a 3D wave field with tracer particles.",
+   "added": "2026-11-03",
+   "kind": "tool"
+  },
+  {
+   "href": "/spin-half",
+   "title": "Spin-½ Lab",
+   "icon": "/img/spin-half-logo.png",
+   "desc": "Dirac's belt trick in 3D: one turn tangles the ribbons, two turns untangle them, plus five pictures of why spin ½ needs 720°, a phase-coloured torus and an elastic sheet that lies flat only after 720°.",
    "added": "2026-11-03",
    "kind": "tool"
   },

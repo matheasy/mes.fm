@@ -45,6 +45,24 @@ TEST_PDF = f"/{TEST_SLUG}"
 NOTES_PDF = "https://mes.fm/space-shuttle-columbia-pdf"
 esc = lambda t: html.escape(t, quote=True)
 
+# Short clips cut from the full video (YouTube playlist PLAYLIST). Each gets its own mirror page (child-template.html shell,
+# like the cubic-formula step pages): the clip's own Hive / 3Speak post + the matching sections of the full article's notes
+# (`notes` = the `##` headings of em304_src/post.md), and a card in the Playlist chapter of the main page. `permlink` is
+# found by title among @mes's posts on --fetch when empty; the post is cached in em304_src/children/<slug>.md / .json.
+PLAYLIST = "https://www.youtube.com/playlist?list=PLEJOImrX4SIc"
+CHILD_TEMPLATE = os.path.join(MES, "cubic-formula", "child-template.html")
+CHILDREN = [
+    dict(slug="columbia-disaster-introduction", permlink="introduction-and-space-shut-435", youtube="Gto7JxSO0rg",
+         title="Introduction and Space Shuttle Columbia Disaster News Footage",
+         notes=["Introduction: EM 304 Test Problem 1", "Live Footage of the Space Shuttle Columbia Disaster"],
+         fix={"resident's house being shook on Ear\n": "resident's house being shook on Earth\n"},
+         links=[("Rumble", "https://rumble.com/v7hu8xs-introduction-and-space-shuttle-columbia-disaster-news-footage.html"),
+                ("Odysee", "https://odysee.com/@mes:8/Columbia-Disaster-Introduction:2"),
+                ("BitChute", "https://www.bitchute.com/video/mfS5XRG5O9mz/"),
+                ("Telegram", "https://t.me/meslinks/35675")]),
+]
+CHILD_SRC = os.path.join(SRC, "children")
+
 CSS = r"""
     /* ---- EM 304 / Columbia page (build_em304_article.py) ---- */
     .pdf-box { display: flex; align-items: center; gap: 0.9em; flex-wrap: wrap; margin: 1em 0 1.3em; padding: 0.75em 1em; border: 1px solid rgba(39,123,182,0.45); border-left: 5px solid #277bb6; border-radius: 0 8px 8px 0; background: rgba(39,123,182,0.07); }
@@ -69,6 +87,28 @@ def fetch():
     meta["image"] = r["json_metadata"]["image"][0]
     json.dump(meta, open(os.path.join(SRC, "meta.json"), "w"), indent=1)
     print("fetched", PERMLINK)
+    os.makedirs(CHILD_SRC, exist_ok=True)
+    for c in CHILDREN:
+        pl = c["permlink"]
+        if not pl:
+            posts = hive("bridge.get_account_posts", {"account": AUTHOR, "sort": "posts", "limit": 20})
+            pl = next((p["permlink"] for p in posts if p["title"].strip() == c["title"]), "")
+            if not pl:
+                print(f"  {c['slug']}: no Hive post titled {c['title']!r} yet -- skipped")
+                continue
+        p = hive("bridge.get_post", {"author": AUTHOR, "permlink": pl})
+        open(os.path.join(CHILD_SRC, c["slug"] + ".md"), "w", encoding="utf-8").write(p["body"])
+        jm = p["json_metadata"]
+        meta = {k: p[k] for k in ("author", "permlink", "category", "title", "created")}
+        meta["image"] = (jm.get("image") or [""])[0]
+        meta["speak"] = (jm.get("video") or {}).get("info", {}).get("permlink") or ""
+        json.dump(meta, open(os.path.join(CHILD_SRC, c["slug"] + ".json"), "w"), indent=1)
+        print("fetched", c["slug"], "<-", pl)
+
+def hive(method, params):
+    req = urllib.request.Request("https://api.hive.blog", data=json.dumps({"jsonrpc": "2.0", "method": method,
+          "params": params, "id": 1}).encode(), headers={"Content-Type": "application/json"})
+    return json.load(urllib.request.urlopen(req, timeout=30))["result"]
 
 def md_to_html(md):
     js = ("import {marked} from %s; let s='';process.stdin.setEncoding('utf8');"
@@ -227,6 +267,152 @@ VIDEO_JS = r"""<script>
     })();
   </script>""".replace("@@SPEAK@@", SPEAK).replace("@@YT@@", YT_ID)
 
+def child_data(c):
+    """The cached Hive post of a clip, or None before it has been fetched."""
+    mp = os.path.join(CHILD_SRC, c["slug"] + ".json")
+    if not os.path.exists(mp):
+        return None
+    meta = json.load(open(mp, encoding="utf-8"))
+    body = open(os.path.join(CHILD_SRC, c["slug"] + ".md"), encoding="utf-8").read()
+    m = re.search(r"3speak\.tv/(?:embed|watch)\?v=([\w.-]+/[\w-]+)", body)
+    meta["speak"] = m.group(1) if m else ""
+    return meta, body
+
+def notes_md(main_md, headings):
+    """The `## heading` sections of the full article (each up to the next `#`/`##` heading), joined."""
+    out = []
+    for h in headings:
+        m = re.search(r"^##\s+" + re.escape(h) + r"\s*$([\s\S]*?)(?=^#{1,2}\s)", main_md, re.M)
+        if not m:
+            raise SystemExit(f"notes section not found in em304_src/post.md: {h!r}")
+        out.append(f"## {h}\n" + re.sub(r"(\s*^---\s*)+\Z", "", m.group(1).rstrip(), flags=re.M) + "\n")
+    return "\n".join(out)
+
+CHILD_CSS = r"""
+    /* build_em304_article.py clip pages */
+    .em-notes h2 { margin-top: 1.2em; }
+    .em-notes img { max-width: 100%; height: auto; border-radius: 4px; }
+    .em-notes blockquote { margin: 1em 0; padding: 0.4em 1em; border-left: 4px solid #277bb6; background: rgba(39,123,182,0.07); }
+    body.dark .em-notes blockquote { border-left-color: #6cb6f5; background: rgba(108,182,245,0.08); }
+    article a.ts-link { font-variant-numeric: tabular-nums; font-weight: 600; }
+    article { overflow-wrap: anywhere; }
+"""
+
+# the clip player: same runtime-3Speak / YouTube-fallback / timestamp-seek logic as VIDEO_JS, on the child template's ids
+CHILD_JS = ('  <script src="https://cdn.jsdelivr.net/npm/hls.js@1/dist/hls.min.js"></script>\n'
+            '  <script src="/main_js/video-speed-hold.js?v=1" defer></script>\n'
+            '  <script src="/main_js/video-chapters.js?v=1" defer></script>\n  ')
+
+def child_scripts(c, speak):
+    js = VIDEO_JS.replace("'" + SPEAK + "'", "'" + speak + "'").replace("'" + YT_ID + "'", "'" + c["youtube"] + "'")
+    js = js.replace("getElementById('emVideoEmbed')", "getElementById('videoEmbed')").replace("getElementById('speak-video-1')", "getElementById('qVideo')")
+    js = js.replace("// speak-video-hls (build_em304_article.py)", "// clip player (build_em304_article.py)")
+    return CHILD_JS + js
+
+def child_article(c, meta, desc, notes, imgs, main_title):
+    speak, poster = meta["speak"], meta["poster"]
+    watch_html = " &middot; ".join(f'<a href="{esc(h)}" target="_blank" rel="noopener">{esc(l)}</a>' for l, h in meta["watch"])
+    thumb = "".join(f'\n      <img loading="lazy" src="{esc(u)}" alt="{esc(meta["title"])}" style="max-width:100%;height:auto;border-radius:4px;display:block;margin:1.2em 0;">' for u in imgs)
+    return (f'      <div class="video-embed" id="videoEmbed" google-side-rail-overlap="false">\n'
+            f'        <video id="qVideo" controls playsinline preload="metadata" poster="{esc(poster)}"></video>\n'
+            '        <button class="theater-toggle-btn" id="wideToggle" type="button" aria-pressed="false" style="top:46px;">Wide View</button>\n'
+            '        <button class="theater-toggle-btn" id="theaterToggle" type="button" aria-pressed="false" style="top:82px;">Theater Mode</button>\n'
+            f'        <a class="video-badge" href="https://3speak.tv/watch?v={speak}" target="_blank" rel="noopener">View on 3Speak &nearr;</a>\n'
+            '      </div>\n\n' + desc +
+            '\n      <details class="written-solution em-notes" open>\n'
+            f'        <summary>Notes: {esc(", ".join(c["notes"]))}</summary>\n'
+            f'        <p class="ws-note">Written notes &mdash; mirrored from <a href="/{SLUG}">{esc(main_title)}</a>, which has the full video and the complete solution.</p>\n'
+            + notes + '      </details>\n\n      <ul class="source-list">\n'
+            f'        <li>Watch on: {watch_html}</li>\n'
+            f'        <li>Full video and written notes: <a href="/{SLUG}">{esc(main_title)}</a></li>\n'
+            f'        <li>Playlist: <a href="{PLAYLIST}" target="_blank" rel="noopener">Space Shuttle Columbia Disaster YouTube playlist</a></li>\n'
+            '        <li>More math: <a href="https://mes.fm/math">mes.fm/math</a></li>\n      </ul>\n'
+            + thumb + '\n      <hr>\n\n'
+            f'      <a class="source-link" href="{meta["peakd"]}" target="_blank" rel="noopener">Originally posted on the Hive blockchain &rarr;</a>\n'
+            f'      <div class="retrieved-note">Text and image retrieved from the Hive blockchain on {meta["date"]}.</div>')
+
+def build_child(c, main_md, main_title):
+    got = child_data(c)
+    if not got:
+        return None
+    meta, body = got
+    if f"mes.fm/{c['slug']}" not in body:
+        raise SystemExit(f"{c['slug']}: the Hive post @{meta['author']}/{meta['permlink']} does not link mes.fm/{c['slug']} (wrong post?)")
+    md = re.split(r"\n---+\s*\n\s*▶", body)[0]                        # 3Speak's "Watch on 3speak.tv" footer
+    md = re.sub(r"^#### Video Links\n(?:\[[^\n]*\]\([^)\n]*\)\s*\n)*", "", md, flags=re.M)   # repeats the Watch on links
+    md = re.sub(r"^#### Video Chapters\s*\n", "", md, flags=re.M)    # 3Speak's heading under our own "Timestamps:"
+    for a, b in c.get("fix", {}).items():                              # chapter titles 3Speak cut short
+        md = md.replace(a, b)
+    md = "\n".join(l for l in md.split("\n") if not re.match(r"^\s*https?://(play\.)?3speak\.tv/(embed|watch)\?v=", l))
+    imgs = re.findall(r"^!\[[^\]]*\]\((https?://[^)\s]+)\)\s*$", md, re.M)
+    md = re.sub(r"^!\[[^\]]*\]\((https?://[^)\s]+)\)\s*$\n?", "", md, flags=re.M)      # the thumbnail goes to the bottom
+    desc = md_to_html(md)
+    def ts(m):
+        t = secs(m.group(1))
+        return f'<li><a class="ts-link" data-t="{t}" href="https://youtu.be/{c["youtube"]}?t={t}">{m.group(1)}</a>'
+    desc = re.sub(r"<li>(\d+:\d\d(?::\d\d)?)(?=\s)", ts, desc)
+    def ts3(m):                                                        # 3Speak chapter links -> seek this page's player
+        t = int(m.group(1) or 0)
+        return f'<li><a class="ts-link" data-t="{t}" href="https://youtu.be/{c["youtube"]}?t={t}">{m.group(2)}</a>'
+    desc = re.sub(r'<li><a href="https://3speak\.tv/watch\?v=[\w./-]+?(?:&(?:amp;)?t=(\d+))?">(\d+:\d\d(?::\d\d)?)</a>', ts3, desc)
+    notes = md_to_html(notes_md(main_md, c["notes"]))
+    notes = re.sub(r"<img (?!loading)", '<img loading="lazy" ', notes)
+    notes = re.sub(r'<a href="(https?://)', r'<a target="_blank" rel="noopener" href="\1', notes)
+    meta["poster"] = meta.get("image") or (imgs[0] if imgs else "")
+    first = plain_text((re.search(r"<p>([\s\S]*?)</p>", desc) or [None, ""])[1])
+    blurb = first if len(first) <= 190 else (first[:190].rsplit(" ", 1)[0].rstrip(",;:") + "...")
+    from datetime import datetime
+    d = datetime.fromisoformat(meta["created"])
+    meta["date"] = f"{d.strftime('%B')} {d.day}, {d.year}"
+    meta["peakd"] = f"https://peakd.com/{meta['category']}/@{meta['author']}/{meta['permlink']}"
+    speak = meta["speak"]
+    meta["watch"] = [("3Speak", f"https://3speak.tv/watch?v={speak}" if speak else meta["peakd"]),
+                     ("YouTube", f"https://youtu.be/{c['youtube']}")] + c["links"]
+    note_links = " &middot; ".join(f'<a href="/{SLUG}#{slugify(h)}">{esc(h)}</a>' for h in c["notes"])
+    og = (f"https://mes.fm/{c['slug']}/img/share.jpg" if os.path.exists(os.path.join(MES, c["slug"], "img", "share.jpg"))
+          else meta["poster"])
+    T = open(CHILD_TEMPLATE, encoding="utf-8").read()
+    rep = {"@@DESC@@": esc(f"{meta['title']}. {blurb}"), "@@SLUG@@": c["slug"], "@@TITLE@@": esc(meta["title"]),
+           "@@OGIMAGE@@": esc(og),
+           "@@PARTOF@@": f'Part of <a href="/{SLUG}">{esc(main_title)}</a> &middot; {note_links}',
+           "@@SUBTITLE@@": f'Video &middot; {meta["date"]} &middot; mirrored from the <a href="{meta["peakd"]}">Hive blockchain</a>',
+           "@@VIDEO_SCRIPTS@@": child_scripts(c, speak),
+           "@@ARTICLE@@": child_article(c, meta, desc, notes, imgs, main_title)}
+    for k, v in rep.items():
+        T = T.replace(k, v)
+    if "@@" in T:
+        raise SystemExit(f"unfilled placeholder in {c['slug']}")
+    i = T.index("</style>")
+    T = T[:i] + CHILD_CSS + T[i:]
+    return T, {"title": meta["title"], "image": meta["poster"], "watch": meta["watch"], "url": f"https://mes.fm/{c['slug']}"}
+
+LP_SITES = ("youtube", "3speak", "rumble", "odysee", "bitchute", "telegram")
+
+def playlist_chapter(cards):
+    """Grid View / List View of the clip pages, in the markup the Problems Plus shell already styles and wires."""
+    grid, rows = [], []
+    for k in cards:
+        attrs = f'data-lp-def="mes" data-l-mes="{esc(k["url"])}"' + "".join(
+            f' data-l-{l.lower()}="{esc(h)}"' for l, h in k["watch"] if l.lower() in LP_SITES)
+        grid.append(f'<a class="link-card lp-a" {attrs} href="{esc(k["url"])}">\n'
+                    f'  <span class="link-card-thumb" style="background-image:url(\'{esc(k["image"])}\')"></span>\n'
+                    '  <span class="link-card-body">\n'
+                    f'    <span class="link-card-title">{esc(k["title"])}</span>\n'
+                    '    <span class="link-card-readmore"><span class="lp-ic" data-s="mes" aria-hidden="true"></span><span class="lp-name">View on MES.fm</span> &rarr;</span>\n'
+                    '  </span>\n</a>')
+        links = [("Notes", k["url"])] + k["watch"]
+        rows.append(f'<h2><a class="lp-a" href="{esc(k["url"])}" {attrs}>{esc(k["title"])}<span class="lp-ic" data-s="mes" aria-hidden="true"></span></a></h2>\n'
+                    "<p>" + " - ".join(f'<a href="{esc(h)}" target="_blank" rel="noopener">{esc(l)}</a>' for l, h in links) + "</p>\n"
+                    f'<img loading="lazy" class="playlist-row-thumb" src="{esc(k["image"])}" alt="">')
+    return ('<div class="chapter-toggle" id="playlist">\n'
+            '<h2 class="chapter-toggle-header chapter-top" onclick="toggleChapter(\'playlist-list\')"><center>Playlist <span id="arrowIcon-playlist-list" class="arrow-icon">&#9660;</span></center></h2>\n'
+            '<div id="playlist-list" class="chapter-toggle-list">\n'
+            f'<p>Short clips from the full video, each with its own page and notes. YouTube playlist: <a href="{PLAYLIST}" target="_blank" rel="noopener">Space Shuttle Columbia Disaster</a></p>\n'
+            '<div class="view-toggle">\n  <button type="button" class="view-toggle-btn active" id="playlistGridBtn">Grid View</button>\n'
+            '  <button type="button" class="view-toggle-btn" id="playlistListBtn">List View</button>\n</div>\n'
+            '<div class="card-grid" id="playlistGrid">\n' + "\n".join(grid) + '\n</div>\n'
+            '<div class="playlist-list-view view-hidden" id="playlistList">\n' + "\n".join(rows) + '\n</div>\n</div>\n</div>\n')
+
 def sub1(pattern, repl, text, flags=re.S):
     new, n = re.subn(pattern, lambda m: repl, text, flags=flags)
     if n != 1:
@@ -238,6 +424,10 @@ def build():
     md = open(os.path.join(SRC, "post.md"), encoding="utf-8").read()
     body = postprocess(md_to_html(preprocess(md)))
     content, toc = chapterize(body, meta["image"])
+    children = [r for r in (build_child(c, md, TITLE) for c in CHILDREN) if r]
+    if children:
+        content = playlist_chapter([k for _, k in children]) + "<hr>\n" + content
+        toc.insert(0, ("playlist", "Playlist", False))
 
     T = open(TEMPLATE, encoding="utf-8").read()
     head = f"""<meta name="description" content="{esc(DESC)}">
@@ -290,15 +480,15 @@ def build():
              "        if (ownArrow) ownArrow.textContent = '▲';\n"
              "      }\n", T)
 
-    left = [s for s in ("vector-functions-problems-p-729", "Problems Plus", "playlistGrid\"", "speak-video-2") if s in T.split("<!-- FASTCOMMENTS-BLOCK")[0].split("<body")[1]]
+    left = [s for s in ("vector-functions-problems-p-729", "Problems Plus", "speak-video-2") if s in T.split("<!-- FASTCOMMENTS-BLOCK")[0].split("<body")[1]]
     if left:
         raise SystemExit(f"leftover template text: {left}")
-    return T, toc
+    return T, toc, children
 
 if __name__ == "__main__":
     if "--fetch" in sys.argv:
         fetch()
-    out, toc = build()
+    out, toc, children = build()
     sys.path.insert(0, ROOT)
     from add_hive_marker import mark_html
     out = mark_html(out)[0]                # <meta name="mes:hive"> for the Hive comments tab
@@ -308,6 +498,12 @@ if __name__ == "__main__":
     if "-v" in sys.argv:
         for i, label, sub in toc:
             print(("    " if sub else "  ") + f"#{i}  {label}")
+    for c, (page, k) in zip([c for c in CHILDREN if child_data(c)], children):
+        dest = os.path.join(MES, c["slug"], "index.html")
+        print(f"  clip page {len(page)} bytes -> {os.path.relpath(dest, ROOT)}")
+        if apply:
+            os.makedirs(os.path.dirname(dest), exist_ok=True)
+            open(dest, "w", encoding="utf-8").write(mark_html(page)[0])
     if apply:
         os.makedirs(os.path.dirname(OUT), exist_ok=True)
         open(OUT, "w", encoding="utf-8").write(out)
