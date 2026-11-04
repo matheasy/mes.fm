@@ -130,3 +130,25 @@
 	#bgm .bgm-view.is-fill .bgm-svg, #bgm .bgm-view:fullscreen .bgm-svg {max-height:none;}
 	html.bgm-filled, html.bgm-filled body {overflow:hidden;}
 	@media (max-width:420px) {#bgm .bgm-vb {font-size:0.78em;padding:0.25em 0.6em;}}
+	/* side layout (landscape Fill window / Full screen): board fills the height, controls in a panel beside it; ⇄ swaps sides, Hide leaves a narrow strip of turn buttons */
+	#bgm .bgm-sideonly {display:none;}
+	#bgm .bgm-view.is-side {display:grid;grid-template-columns:var(--bgm-pw,220px) minmax(0,1fr);grid-template-rows:auto auto auto 1fr auto;
+		grid-template-areas:"top stage" "msg stage" "act stage" ". stage" "btns stage";column-gap:10px;padding:0.4em 0.5em;height:100%;box-sizing:border-box;overflow:hidden;}
+	#bgm .bgm-view.is-side.is-right {grid-template-columns:minmax(0,1fr) var(--bgm-pw,220px);grid-template-areas:"stage top" "stage msg" "stage act" "stage ." "stage btns";}
+	#bgm .bgm-view.is-side .bgm-vbar {display:contents;}
+	#bgm .bgm-view.is-side .bgm-top {grid-area:top;font-size:0.8em;line-height:1.4;}
+	#bgm .bgm-view.is-side .bgm-stage {grid-area:stage;align-self:center;width:100%;margin:0 auto;}
+	#bgm .bgm-view.is-side .bgm-msg {grid-area:msg;text-align:left;font-size:0.88em;line-height:1.35;margin:0.5em 0;}
+	#bgm .bgm-view.is-side .bgm-act {grid-area:act;display:grid;grid-template-columns:1fr 1fr;gap:0.35em;margin:0;}
+	#bgm .bgm-view.is-side .bgm-act .tu-btn:first-child {grid-column:1 / -1;}
+	#bgm .bgm-view.is-side .bgm-act .tu-btn {width:100%;min-height:40px;padding:0.4em 0.6em;font-size:0.9em;margin:0;}
+	#bgm .bgm-view.is-side .bgm-vbtns {grid-area:btns;display:grid;grid-template-columns:1fr 1fr;gap:0.3em;margin:0.4em 0 0;}
+	#bgm .bgm-view.is-side .bgm-vb {font-size:0.72em;padding:0.2em 0.4em;min-height:34px;white-space:normal;line-height:1.15;}
+	#bgm .bgm-view.is-side .bgm-sideonly {display:inline-block;}
+	#bgm .bgm-view.is-side:not(.is-mini) .bgm-ovl {display:none !important;}
+	/* hidden panel: only the turn buttons (Roll / Undo / Done / Take ...) in a narrow strip, never over the board */
+	#bgm .bgm-view.is-mini .bgm-top, #bgm .bgm-view.is-mini .bgm-msg, #bgm .bgm-view.is-mini .bgm-act, #bgm .bgm-view.is-mini #bgm-newtop, #bgm .bgm-view.is-mini #bgm-flip {display:none !important;}
+	#bgm .bgm-view.is-mini .bgm-vbtns {grid-template-columns:1fr;}
+	#bgm .bgm-view.is-mini .bgm-ovl {position:fixed;top:10px;left:0.5em !important;right:auto;width:calc(var(--bgm-pw,86px) - 2px);transform:none;flex-direction:column;align-items:stretch;gap:0.35em;white-space:normal;}
+	#bgm .bgm-view.is-mini.is-right .bgm-ovl {left:auto !important;right:0.5em;}
+	#bgm .bgm-view.is-mini .bgm-ob {font-size:0.8em;padding:0.3em 0.3em;min-height:44px;line-height:1.15;border-radius:0.8em;}

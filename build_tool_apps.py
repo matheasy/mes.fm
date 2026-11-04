@@ -1070,7 +1070,7 @@ APPS = {
     "search-console": dict(title="MES Search Console", page_title="Search Console: Google and Bing Search Performance",
                 tag="Google and Bing search clicks, impressions and positions.", accent="#1a73e8", dark="#1557b0", tint="#e8f0fe",
                 desc="Private dashboard: Google Search Console and Bing Webmaster clicks, impressions, CTR and average position for mes.fm, by day, query, page, country and device.",
-                js_v="7", no_ads=True,
+                js_v="8", no_ads=True,
                 head_extra='<meta name="robots" content="noindex, nofollow">' + PAGE3_HEAD),
     # MES Dashboard (private, mes.fm/dashboard, behind the middleware.js password like /ads): stats, comments and notifications of @mes and
     # @mestruth on YouTube, Rumble, Odysee, BitChute, 3Speak and Hive, read by api/dashboard.js (one adapter per platform; optional env
@@ -1087,7 +1087,7 @@ APPS = {
     "installs": dict(title="MES App Installs", page_title="MES App Installs: iPhone and Android Downloads",
                 tag="How many people install the MES apps.", accent="#1d6fd1", dark="#1557b0", tint="#e8f0fe",
                 desc="Live install numbers for the free MES mobile apps (Percentage, BMI, Grade, GPA and Fitness Calculators) on iPhone and Android: by day, app, country, device, Android version and app version, with updates, re-downloads, uninstalls and ratings.",
-                js_v="1", no_ads=True, head_extra=PAGE3_HEAD),
+                js_v="2", no_ads=True, head_extra=PAGE3_HEAD),
     # How much do YouTubers make?: leaderboard of big channels with ESTIMATED ad revenue (companion of /youtubemoney, ad-free like it). Data = mes.fm/how-much-do-youtubers-make/data/channels.json
     # (update_youtuber_snapshot.py), live refresh = mes.fm/api/youtuber-stats.js; lib.js = maths + a copy of the calculator's RPM tables (node-testable:
     # tool_apps_src/how-much-do-youtubers-make-tests.js), app.js = UI. Wide page, no sidebar.
@@ -1264,7 +1264,7 @@ APPS = {
     "backgammon": dict(title="MES Backgammon", page_title="Backgammon: Play Free Online Against the Computer",
                 tag="Play backgammon, learn the odds.", accent="#7c2d12", dark="#5c210d", tint="#fbeadf",
                 desc="Play backgammon free in your browser against the computer at three levels, with legal-move hints, the doubling cube, undo, a pip count, the odds of every roll and your win / loss statistics kept on your device.",
-                js_v="4"),
+                js_v="5"),
     "poker": dict(title="MES Poker", page_title="Texas Hold'em Poker: Play Free and Calculate Your Odds",
                 tag="Play Hold'em, see your odds.", accent="#166534", dark="#14532d", tint="#dcf3e3",
                 desc="Play Texas Hold'em poker free against computer players with play money, plus a poker odds calculator: your chance to win against random hands, outs, pot odds and hand rankings, and your session statistics kept on your device.",
@@ -1468,6 +1468,23 @@ _PHONE = ('<svg viewBox="0 0 24 24" width="18" height="18" aria-hidden="true" fo
           'stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="6" y="2" width="12" height="20" rx="2.5"></rect><path d="M11 18.5h2"></path></svg>')
 
 
+def app_pill(name, url):
+    """The small "free on the App Store" note under the page description, with a close button (hidden per app in localStorage)."""
+    key = re.sub(r"[^a-z0-9]+", "-", name.lower()).strip("-")
+    return ('<p class="mes-applink mes-apppill" id="mes-apppill" data-app="%s"><a href="%s" target="_blank" rel="noopener" title="Get the free %s app on the App Store">%s'
+            '<span>New: <b>%s</b> is free on the App Store for iPhone and iPad</span></a>'
+            '<button type="button" class="mes-apppill__x" aria-label="Close" title="Hide this note">&times;</button></p>'
+            '<script>(function(){var p=document.getElementById("mes-apppill");if(!p)return;var k="mes-apppill:"+p.getAttribute("data-app");'
+            'try{if(localStorage.getItem(k))p.hidden=true}catch(e){}p.querySelector("button").onclick=function(){p.hidden=true;try{localStorage.setItem(k,"1")}catch(e){}}})()</script>'
+            '<style>.mes-apppill{display:flex;align-items:center;gap:.25em;width:fit-content;max-width:100%%;box-sizing:border-box;margin:.5em 0 .3em;'
+            'padding:.15em .2em .15em .85em;border:1px solid currentColor;border-radius:1.4em;font-size:.95em;line-height:1.35}'
+            '.mes-apppill[hidden]{display:none}.mes-apppill a{display:flex;align-items:center;gap:.45em;padding:.25em 0;text-decoration:none}'
+            '.mes-apppill a svg{flex:none;margin:0!important}.mes-apppill a:hover span{text-decoration:underline}'
+            '.mes-apppill__x{flex:none;display:flex;align-items:center;justify-content:center;width:1.9em;height:1.9em;padding:0;margin:0;border:0;border-radius:50%%;'
+            'background:none;color:inherit;font:inherit;font-size:1.25em;line-height:1;cursor:pointer;opacity:.7}'
+            '.mes-apppill__x:hover,.mes-apppill__x:focus-visible{opacity:1;background:rgba(127,127,127,.22)}</style>' % (key, url, name, _PHONE, name))
+
+
 def add_app_links(page, slug):
     if slug not in APP_STORE or "mes-applink" in page:
         return page
@@ -1476,9 +1493,7 @@ def add_app_links(page, slug):
     info = ('<li class="info-bar__item info-bar__item--utility mes-applink" style="display:none !important;"><a class="info-bar__item__text" href="%s" target="_blank" '
             'rel="noopener" title="%s">%siPhone App</a></li>' % (url, title, _PHONE))
     nav = '<li class="navbar__item mes-applink"><a class="navbar__link" href="%s" target="_blank" rel="noopener" title="%s">%siPhone App</a></li>' % (url, title, _PHONE)
-    pill = ('<p class="mes-applink mes-apppill"><a href="%s" target="_blank" rel="noopener">%sNew: get <b>%s</b> free on the App Store (iPhone &amp; iPad)</a></p>'
-            '<style>.mes-apppill{margin:.4em 0 .2em;font-size:.95em}.mes-apppill a{display:inline-flex;align-items:center;gap:.1em;padding:.35em .85em;border-radius:999px;'
-            'border:1px solid currentColor;text-decoration:none}.mes-apppill a:hover{text-decoration:underline}</style>' % (url, _PHONE, name))
+    pill = app_pill(name, url)
     tools = "<li class=\"info-bar__item\"><a class=\"info-bar__item__text\" href='https://mes.fm/tools.html'>Tools</a></li>"
     be = '<li class="navbar__item"><a class="navbar__link" href="/browser">Browser Extensions</a></li>'
     page = page.replace(tools, tools + info, 1).replace(be, nav + be, 1)

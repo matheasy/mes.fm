@@ -990,7 +990,7 @@
 		var ob = function (a, label, cls, dis, title) { return '<button type="button" class="bgm-ob' + (cls ? " " + cls : "") + '" data-a="' + a + '"' + (dis ? " disabled" : "") + (title ? ' title="' + esc(title) + '"' : "") + ">" + label + "</button>"; };
 		if (p === "opening" && !G.opening) h = ob("open", "🎲 Roll to start", "is-main", false, "R");
 		else if (p === "roll") { h = ob("roll", "🎲 Roll", "is-main", false, "R"); if (BG.canDouble(0, ctx())) h += ob("double", "Double", "", false, "D: offer a double to " + G.cube.v * 2); }
-		else if (p === "move") { cx = 170; var done = !nextSteps().length; h = ob("undo", "↶ Undo", "", !G.steps.length, "U") + ob("confirm", "✓ Done", done ? "is-main" : "", !done, "Enter: confirm the move"); }
+		else if (p === "move") { if (root.querySelector("#bgm-view.is-big:not(.is-side)")) { h = ""; } else { cx = 170; var done = !nextSteps().length; h = ob("undo", "↶ Undo", "", !G.steps.length, "U") + ob("confirm", "✓ Done", done ? "is-main" : "", !done, "Enter: confirm the move"); } }
 		else if (p === "offer") h = ob("take", "Take", "is-main", false, "T") + ob("drop", "Drop", "", false, "P");
 		else if (p === "over") h = ob("next", "Next game", "is-main", false, "N");
 		else if (p === "matchOver") h = ob("next", "New match", "is-main", false, "N");
@@ -1355,8 +1355,35 @@
 		var canFs = !!(view.requestFullscreen || view.webkitRequestFullscreen);
 		if (!canFs) fsBtn.hidden = true;
 		function big() { return view.classList.contains("is-fill") || fsEl() === view; }
+		/* landscape (a phone held sideways, a wide window): the controls go in a panel beside the board, which then fills the height.
+		   Side and hidden state: localStorage mes-backgammon:side = {r: right side, m: panel hidden (only the turn-button strip)} */
+		var SKEY = "mes-backgammon:side", SP = { r: false, m: false };
+		try { var sp = JSON.parse(localStorage.getItem(SKEY) || "null"); if (sp) { SP.r = !!sp.r; SP.m = !!sp.m; } } catch (e) {}
+		function saveSide() { try { localStorage.setItem(SKEY, JSON.stringify(SP)); } catch (e) {} }
+		var flipBtn = $("bgm-flip"), hideBtn = $("bgm-hidep");
+		function fitSide() {
+			var vs = getComputedStyle(view), padV = parseFloat(vs.paddingTop) + parseFloat(vs.paddingBottom), padH = parseFloat(vs.paddingLeft) + parseFloat(vs.paddingRight);
+			var h = view.clientHeight - padV, w = view.clientWidth - padH, gap = 10;
+			var bw = Math.floor(h * W / H), pw;
+			if (SP.m) pw = 86;
+			else pw = Math.max(150, Math.min(300, w - bw - gap));
+			view.style.setProperty("--bgm-pw", pw + "px");
+			stage.style.maxWidth = Math.floor(Math.max(200, Math.min(w - pw - gap, bw))) + "px";
+		}
+		function wantSide() {
+			if (!big()) return false;
+			var w = view.clientWidth, h = view.clientHeight;
+			return w >= h * W / H * 0.92 + 150;
+		}
 		function fit() {
-			if (!big()) { stage.style.maxWidth = ""; return; }
+			if (!big()) { stage.style.maxWidth = ""; view.classList.remove("is-side", "is-mini", "is-right"); return; }
+			var side = wantSide();
+			if (side !== view.classList.contains("is-side")) { view.classList.toggle("is-side", side); renderOverlay(); }
+			view.classList.toggle("is-mini", side && SP.m);
+			view.classList.toggle("is-right", side && SP.r);
+			hideBtn.textContent = SP.m ? "‹ Show panel" : "Hide panel";
+			hideBtn.setAttribute("aria-pressed", SP.m ? "true" : "false");
+			if (side) { fitSide(); return; }
 			var other = 0;
 			Array.prototype.forEach.call(view.children, function (c) {
 				if (c === stage || c.hidden) return;
@@ -1372,7 +1399,9 @@
 			fillBtn.textContent = fill ? "✕ Close" : "⤢ Fill window";
 			fsBtn.textContent = fs ? "✕ Exit full screen" : "⛶ Full screen";
 			html.classList.toggle("bgm-filled", fill);
+			view.classList.toggle("is-big", fill || fs);
 			fit();
+			renderOverlay();
 		}
 		function setFill(on) { view.classList.toggle("is-fill", !!on); paint(); }
 		function toggleFs() {
@@ -1383,6 +1412,8 @@
 		}
 		fillBtn.addEventListener("click", function () { var on = !view.classList.contains("is-fill"); if (fsEl()) toggleFs(); setFill(on); });
 		fsBtn.addEventListener("click", toggleFs);
+		flipBtn.addEventListener("click", function () { SP.r = !SP.r; saveSide(); fit(); });
+		hideBtn.addEventListener("click", function () { SP.m = !SP.m; saveSide(); fit(); renderOverlay(); });
 		document.addEventListener("fullscreenchange", paint);
 		document.addEventListener("webkitfullscreenchange", paint);
 		window.addEventListener("resize", fit);
