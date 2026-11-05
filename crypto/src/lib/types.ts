@@ -225,6 +225,30 @@ export interface SovSnapshot {
   assets: SovAsset[];
 }
 
+/** mes.fm/cash and mes.fm/tokens: one asset (or pool) summed across the wallets it sits in */
+export interface BucketItem {
+  /** Grouping key, e.g. "HBD", "ACE", "BTC/HBD pool" */
+  key: string;
+  name: string;
+  /** Summed amount; null for a pool position (its two sides are in `legs`) */
+  amount: number | null;
+  valueUsd: number;
+  /** e.g. SURGE: what it would be worth at its $1 par value (shown for reference, not counted) */
+  parUsd?: number;
+  note?: string;
+  legs?: { symbol: string; amount: number; valueUsd: number | null }[];
+  lines: { where: string; source: string; symbol: string; label: string; amount: number; valueUsd: number | null }[];
+}
+
+export interface BucketSnapshot {
+  fetchedAt: string;
+  cadRate: number | null;
+  totalUsd: number;
+  items: BucketItem[];
+  /** Tokens page: smaller tokens (under $10 each) left out of the list and the total */
+  hidden?: { count: number; usd: number };
+}
+
 /** mes.fm/lp: the Main wallet's liquidity positions (PancakeSwap), pending farm rewards and LP history */
 export interface LpPosition {
   label: string;

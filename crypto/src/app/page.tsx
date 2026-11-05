@@ -1,6 +1,7 @@
 'use client';
 
 import AssetsTotalCard from '@/components/AssetsTotalCard';
+import { BucketCard } from '@/components/BucketView';
 import RandomWalletsCard from '@/components/RandomWalletsCard';
 import { useSWRConfig } from 'swr';
 import FreshNote from '@/components/FreshNote';
@@ -58,6 +59,8 @@ export default function OverviewPage() {
       <div className="grid gap-4 sm:grid-cols-2">
         <SovCard />
         <LpCard />
+        <BucketCard path="/api/cash" href="https://mes.fm/cash" label="Cash LP · stablecoins, BTC/HBD pool, ACE, SURGE" />
+        <BucketCard path="/api/tokens" href="https://mes.fm/tokens" label="Tokens · every other token worth $10+" />
         <RandomWalletsCard />
       </div>
     </div>
