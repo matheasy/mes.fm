@@ -5,12 +5,12 @@
 	"use strict";
 	var COLORS = ["", "y", "g", "b", "p", "r"];
 	function cleanNote(n, uid) {
-		return { id: uid(), title: String(n.title || "").slice(0, 80), text: n.text, c: COLORS.indexOf(n.c) >= 0 ? n.c : "", pin: !!n.pin, t: +n.t || Date.now() };
+		return { id: uid(), title: String(n.title || "").slice(0, 80), text: n.text, c: COLORS.indexOf(n.c) >= 0 ? n.c : "", pin: !!n.pin, t: +n.t || Date.now(), m: +n.m || 0 };
 	}
 	function valid(s) { if (!s || !Array.isArray(s.boards)) throw new Error("not a Copy Text backup"); return s; }
 	function snapshot(state) {
 		return { v: 1, boards: state.boards.map(function (b) {
-			return { name: b.name, notes: b.notes.map(function (n) { var o = { title: n.title || "", text: n.text }; if (n.c) o.c = n.c; if (n.pin) o.pin = 1; if (n.t) o.t = n.t; return o; }) };
+			return { name: b.name, notes: b.notes.map(function (n) { var o = { title: n.title || "", text: n.text }; if (n.c) o.c = n.c; if (n.pin) o.pin = 1; if (n.t) o.t = n.t; if (n.m) o.m = n.m; return o; }) };
 		}) };
 	}
 	function merge(state, incoming, uid) {
@@ -37,7 +37,27 @@
 		return st;
 	}
 	function count(s) { var n = 0; (s && s.boards || []).forEach(function (b) { n += Array.isArray(b.notes) ? b.notes.length : 0; }); return n; }
-	var api = { COLORS: COLORS, snapshot: snapshot, merge: merge, replace: replace, count: count };
+	/* Hive backup status (kept per browser, never on the chain): rec = {t: backup time ms, acct, h: [hashes of title + text]}.
+	   A note is "on" Hive when its title + text is in the last backup, "off" otherwise. */
+	function hash(n) {
+		var s = (n.title || "") + "\u0000" + (n.text || ""), h1 = 0x811c9dc5, h2 = 0x01000193;
+		for (var i = 0; i < s.length; i++) { var c = s.charCodeAt(i); h1 = Math.imul(h1 ^ c, 16777619) >>> 0; h2 = Math.imul(h2 ^ c, 2246822519) >>> 0; }
+		return h1.toString(36) + h2.toString(36);
+	}
+	function record(data, time, acct) {
+		var h = [];
+		(data && data.boards || []).forEach(function (b) { (b.notes || []).forEach(function (n) { if (n && typeof n.text === "string") { var x = hash(n); if (h.indexOf(x) < 0) h.push(x); } }); });
+		return { t: +time || Date.now(), acct: acct || "", h: h };
+	}
+	function status(state, rec) {
+		var on = {}, set = {}, out = { rec: rec || null, on: 0, off: 0, gone: 0, by: {} };
+		if (!rec || !Array.isArray(rec.h)) { (state.boards || []).forEach(function (b) { out.off += b.notes.length; }); return out; }
+		rec.h.forEach(function (x) { set[x] = 1; });
+		state.boards.forEach(function (b) { b.notes.forEach(function (n) { var x = hash(n); if (set[x]) { out.by[n.id] = "on"; out.on++; on[x] = 1; } else { out.by[n.id] = "off"; out.off++; } }); });
+		rec.h.forEach(function (x) { if (!on[x]) out.gone++; });
+		return out;
+	}
+	var api = { hash: hash, record: record, status: status, COLORS: COLORS, snapshot: snapshot, merge: merge, replace: replace, count: count };
 	if (typeof module !== "undefined" && module.exports) module.exports = api;
 	root.CTLib = api;
 })(typeof window !== "undefined" ? window : globalThis);
@@ -132,6 +152,33 @@
 
 	/* ---------- render ---------- */
 	var query = "", editing = null, expanded = {};
+	/* What the last Hive backup made / loaded in THIS browser held (CTLib.record: hashes of title + text, never the text) */
+	var REC_KEY = KEY + ":hiverec", hrec = null, hst = null;
+	try { hrec = JSON.parse(localStorage.getItem(REC_KEY) || "null"); } catch (e) {}
+	function setRec(r) { hrec = r; try { localStorage.setItem(REC_KEY, JSON.stringify(r)); } catch (e) {} }
+	function day(ms, withTime) {
+		var d = new Date(ms); if (!ms || isNaN(d)) return "";
+		var o = { month: "short", day: "numeric" }; if (d.getFullYear() !== new Date().getFullYear()) o.year = "numeric";
+		if (withTime) { o.hour = "numeric"; o.minute = "2-digit"; }
+		try { return d.toLocaleString(undefined, o); } catch (e) { return d.toDateString(); }
+	}
+	function hiveSummary() {
+		var el = $("cp-hivestate"); if (!el) return;
+		hst = CTLib.status(state, hrec);
+		if (!hrec) { el.hidden = true; return; }
+		var t = "☁ Last Hive backup: " + day(hrec.t, true) + (hrec.acct ? " (@" + hrec.acct + ")" : "") + ". ";
+		if (!hst.off && !hst.gone) { t += "Everything here is backed up."; el.className = "tu-note cp-hivestate is-ok"; }
+		else {
+			var bits = [];
+			if (hst.off) bits.push(hst.off + (hst.off === 1 ? " text is" : " texts are") + " new or changed since then");
+			if (hst.gone) bits.push(hst.gone + (hst.gone === 1 ? " backed-up text is" : " backed-up texts are") + " no longer here (deleted or edited)");
+			t += bits.join("; ") + ": "; el.className = "tu-note cp-hivestate is-due";
+		}
+		el.textContent = t;
+		if (hst.off || hst.gone) { var b = document.createElement("button"); b.type = "button"; b.className = "tu-chip"; b.textContent = "Back up now"; b.onclick = function () { openHive(true); }; el.appendChild(b); }
+		el.hidden = false;
+		var hb = $("cp-hivebtn"); if (hb) hb.textContent = "☁ Hive backup" + (hst.off || hst.gone ? " •" : " ✓");
+	}
 	function status() {
 		var total = 0, bytes = 0;
 		state.boards.forEach(function (b) { total += b.notes.length; });
@@ -140,6 +187,7 @@
 		$("cp-status").textContent = memOnly ? "Your browser is blocking storage, so these texts will be lost when you close the tab. Use More ▾ → Back up everything."
 			: total + (total === 1 ? " text" : " texts") + " on " + state.boards.length + (state.boards.length === 1 ? " board" : " boards") + " · " + kb + " of about 5 MB used in this browser";
 		$("cp-status").classList.toggle("cp-warn", memOnly);
+		hiveSummary();
 	}
 	function renderBoards() {
 		var h = state.boards.map(function (b) {
@@ -170,12 +218,22 @@
 			(long ? '<button type="button" class="cp-more">' + (ex ? "Show less" : "Show more") + "</button>" : "") +
 			'<div class="cp-foot"><button type="button" class="tu-btn tu-btn--primary cp-copy">Copy</button><button type="button" class="tu-btn tu-btn--ghost cp-show-btn" title="Show big: this text alone, filling the window (to show someone)" aria-label="Show big">⤢</button><button type="button" class="tu-btn tu-btn--ghost cp-edit-btn" title="Edit" aria-label="Edit">✎</button>' +
 			'<button type="button" class="tu-btn tu-btn--ghost cp-dup" title="Duplicate" aria-label="Duplicate">⧉</button><button type="button" class="tu-btn tu-btn--ghost cp-del" title="Delete" aria-label="Delete">🗑</button>' +
-			'<span class="cp-sp"></span><span class="cp-count">' + n.text.length + " chars · " + words(n.text) + " words</span></div></div>";
+			'<span class="cp-sp"></span><span class="cp-count">' + n.text.length + " chars · " + words(n.text) + " words</span></div>" + metaHtml(n) + "</div>";
+	}
+	function metaHtml(n) {
+		var bits = [];
+		if (n.t) bits.push('<span title="' + esc(day(n.t, true)) + '">Added ' + esc(day(n.t)) + "</span>");
+		if (n.m && n.m - (n.t || 0) > 60000) bits.push('<span title="' + esc(day(n.m, true)) + '">edited ' + esc(day(n.m)) + "</span>");
+		var hs = hst && hst.rec ? hst.by[n.id] : null;
+		if (hs === "on") bits.push('<span class="cp-hs is-on" title="This exact text is in your Hive backup of ' + esc(day(hst.rec.t, true)) + '">☁ On Hive</span>');
+		else if (hs === "off") bits.push('<span class="cp-hs is-off" title="New or changed after your last Hive backup (' + esc(day(hst.rec.t, true)) + '): back up to keep this version">☁ Not backed up</span>');
+		return bits.length ? '<div class="cp-meta">' + bits.join(" · ") + "</div>" : "";
 	}
 	function sorted(list) { // pinned first, otherwise the saved order
 		return list.map(function (n, i) { return { n: n, i: i }; }).sort(function (a, b) { return (b.n.pin ? 1 : 0) - (a.n.pin ? 1 : 0) || a.i - b.i; }).map(function (x) { return x.n; });
 	}
 	function render() {
+		hst = CTLib.status(state, hrec);
 		renderBoards();
 		var h = "", shown = 0;
 		if (query) {
@@ -429,7 +487,9 @@
 	function commitEdit(card, f, quiet) {
 		var text = card.querySelector(".cp-e-text").value, title = card.querySelector(".cp-e-title").value.trim(), to = card.querySelector(".cp-e-board").value;
 		if (!text.trim()) { toast("A text can't be empty (use Delete to remove it)"); return; }
-		f.n.text = text.replace(/\s+$/, ""); f.n.title = title; if (card.dataset.pc != null) f.n.c = card.dataset.pc;
+		var nt = text.replace(/\s+$/, "");
+		if (nt !== f.n.text || title !== (f.n.title || "")) f.n.m = Date.now();
+		f.n.text = nt; f.n.title = title; if (card.dataset.pc != null) f.n.c = card.dataset.pc;
 		if (to !== f.b.id && board(to)) { f.b.notes.splice(f.i, 1); board(to).notes.unshift(f.n); toast("Moved to “" + board(to).name + "”"); }
 		if (!quiet) { editing = null; save(); render(); } else save();
 	}
@@ -697,7 +757,9 @@
 		var u = HV().user();
 		HS().rcPercent(u.name).catch(function () { return null; }).then(function (rc) {
 			if (rc != null && rc < 3) throw new Error("Your account's Resource Credits are at " + rc.toFixed(0) + "%. They refill over about five days; try again later.");
-			return HS().save(HAPP, HNAME, CTLib.snapshot(state), { encrypt: enc, onProgress: function (m) { hmsg(m); } }).then(function (r) {
+			var snapData = CTLib.snapshot(state);
+			return HS().save(HAPP, HNAME, snapData, { encrypt: enc, onProgress: function (m) { hmsg(m); } }).then(function (r) {
+				setRec(CTLib.record(snapData, Date.now(), u.name)); render.noFocus = true; render(); render.noFocus = false;
 				hmsg("Saved " + n + (n === 1 ? " text" : " texts") + " to @" + u.name + " on Hive (" + kb(r.bytes) + (enc ? ", encrypted" : ", NOT encrypted") + ")." +
 					(rc != null ? " Resource Credits before: " + rc.toFixed(0) + "%." : "") + " It shows up in the list within a few seconds.", "ok");
 				toast("Saved to Hive");
@@ -709,10 +771,13 @@
 		if (hiveBusy && !quiet) return;
 		var u = HV().user(); if (!u) return;
 		busy(true); if (!quiet) hmsg("Looking for your backups on Hive…");
-		HS().list(u.name, { app: HAPP, name: HNAME, pages: 30, onProgress: function (i, of) { if (!quiet && i > 1) hmsg("Looking for your backups on Hive… (checked " + i * 1000 + " app actions)"); } }).then(function (saves) {
+		HS().list(u.name, { app: HAPP, name: HNAME, pages: 30, onProgress: function (i, of) { if (!quiet && i > 1) hmsg("Looking for your backups on Hive… (" + i + " pages of account history read)"); } }).then(function (saves) {
 			hiveList = saves.slice(0, 12);
 			paintList();
-			if (!quiet) hmsg(saves.length ? "Found " + saves.length + (saves.length === 1 ? " backup" : " backups") + ". Pick one to load." : "No Copy Text backups found on @" + u.name + " yet.", saves.length ? "" : "err");
+			var nw = saves[0], nt = nw ? Date.parse(/Z$/.test(nw.time) ? nw.time : nw.time + "Z") : 0;
+			var other = nw && nw.complete && (!hrec || hrec.acct !== u.name || nt - hrec.t > 120000);
+			if (!quiet) hmsg(saves.length ? "Found " + saves.length + (saves.length === 1 ? " backup" : " backups") + ". Pick one to load." +
+				(other ? " The newest one (" + when(nw.time) + ") was not made or loaded in this browser: press Add to mine on it to see which of your texts are in it." : "") : "No Copy Text backups found on @" + u.name + " yet.", saves.length ? "" : "err");
 		}).catch(function (e) { hmsg("Could not read from Hive: " + errText(e), "err"); }).then(function () { busy(false); });
 	}
 	function paintList() {
@@ -730,7 +795,8 @@
 		var e = hiveList && hiveList[i]; if (!e || hiveBusy) return;
 		busy(true); hmsg(e.encrypted ? "Confirm in Keychain: decrypt the backup key with your memo key…" : "Opening the backup…");
 		HS().load(e).then(function (data) {
-			var snap = JSON.stringify(state), n = CTLib.count(data);
+			var snap = JSON.stringify(state), n = CTLib.count(data), et = Date.parse(/Z$/.test(e.time) ? e.time : e.time + "Z");
+			if (i === 0 && (!hrec || !(et < hrec.t - 120000))) setRec(CTLib.record(data, et || Date.now(), HV().user() ? HV().user().name : ""));
 			if (mode === "replace") {
 				if (!confirm("Replace everything here with this backup (" + n + " texts)?\nYou can undo right after.")) { hmsg(""); return; }
 				state = CTLib.replace(data, uid); save(); render();

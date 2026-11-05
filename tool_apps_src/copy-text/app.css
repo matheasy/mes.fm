@@ -52,6 +52,17 @@
 	.tu .cp-foot {display:flex;flex-wrap:wrap;gap:0.35em;align-items:center;}
 	.tu .cp-foot .tu-btn {padding:0.35em 0.7em;font-size:0.85em;}
 	.tu .cp-count {font-size:0.72em;color:#8a93a0;white-space:nowrap;}
+	.tu .cp-meta {margin-top:0.4em;font-size:0.72em;color:#6b7480;}
+	.tu .cp-hs {font-weight:700;white-space:nowrap;}
+	.tu .cp-hs.is-on {color:#1d7a46;}
+	.tu .cp-hs.is-off {color:#b45309;}
+	.tu .cp-hivestate {margin-top:-0.2em;}
+	.tu .cp-hivestate.is-due {color:#92400e;}
+	.tu .cp-hivestate.is-ok {color:#1d7a46;}
+	.tu .cp-hivestate .tu-chip {margin-left:0.4em;}
+	body.dark-mode #cp .cp-meta {color:#a0a8b3;}
+	body.dark-mode #cp .cp-hs.is-on, body.dark-mode #cp .cp-hivestate.is-ok {color:#6ee7a0;}
+	body.dark-mode #cp .cp-hs.is-off, body.dark-mode #cp .cp-hivestate.is-due {color:#fbbf6a;}
 	.tu .cp-edit {gap:0.55em;}
 	.tu .cp-e-text {font:0.9em/1.45 ui-monospace,SFMono-Regular,Menlo,monospace;resize:vertical;min-height:7em;}
 	.tu .cp-e-row {display:flex;flex-wrap:wrap;gap:0.6em 1em;align-items:center;font-size:0.85em;}

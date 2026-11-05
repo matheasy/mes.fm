@@ -5,12 +5,12 @@
 	"use strict";
 	var COLORS = ["", "y", "g", "b", "p", "r"];
 	function cleanNote(n, uid) {
-		return { id: uid(), title: String(n.title || "").slice(0, 80), text: n.text, c: COLORS.indexOf(n.c) >= 0 ? n.c : "", pin: !!n.pin, t: +n.t || Date.now() };
+		return { id: uid(), title: String(n.title || "").slice(0, 80), text: n.text, c: COLORS.indexOf(n.c) >= 0 ? n.c : "", pin: !!n.pin, t: +n.t || Date.now(), m: +n.m || 0 };
 	}
 	function valid(s) { if (!s || !Array.isArray(s.boards)) throw new Error("not a Copy Text backup"); return s; }
 	function snapshot(state) {
 		return { v: 1, boards: state.boards.map(function (b) {
-			return { name: b.name, notes: b.notes.map(function (n) { var o = { title: n.title || "", text: n.text }; if (n.c) o.c = n.c; if (n.pin) o.pin = 1; if (n.t) o.t = n.t; return o; }) };
+			return { name: b.name, notes: b.notes.map(function (n) { var o = { title: n.title || "", text: n.text }; if (n.c) o.c = n.c; if (n.pin) o.pin = 1; if (n.t) o.t = n.t; if (n.m) o.m = n.m; return o; }) };
 		}) };
 	}
 	function merge(state, incoming, uid) {
@@ -37,7 +37,27 @@
 		return st;
 	}
 	function count(s) { var n = 0; (s && s.boards || []).forEach(function (b) { n += Array.isArray(b.notes) ? b.notes.length : 0; }); return n; }
-	var api = { COLORS: COLORS, snapshot: snapshot, merge: merge, replace: replace, count: count };
+	/* Hive backup status (kept per browser, never on the chain): rec = {t: backup time ms, acct, h: [hashes of title + text]}.
+	   A note is "on" Hive when its title + text is in the last backup, "off" otherwise. */
+	function hash(n) {
+		var s = (n.title || "") + "\u0000" + (n.text || ""), h1 = 0x811c9dc5, h2 = 0x01000193;
+		for (var i = 0; i < s.length; i++) { var c = s.charCodeAt(i); h1 = Math.imul(h1 ^ c, 16777619) >>> 0; h2 = Math.imul(h2 ^ c, 2246822519) >>> 0; }
+		return h1.toString(36) + h2.toString(36);
+	}
+	function record(data, time, acct) {
+		var h = [];
+		(data && data.boards || []).forEach(function (b) { (b.notes || []).forEach(function (n) { if (n && typeof n.text === "string") { var x = hash(n); if (h.indexOf(x) < 0) h.push(x); } }); });
+		return { t: +time || Date.now(), acct: acct || "", h: h };
+	}
+	function status(state, rec) {
+		var on = {}, set = {}, out = { rec: rec || null, on: 0, off: 0, gone: 0, by: {} };
+		if (!rec || !Array.isArray(rec.h)) { (state.boards || []).forEach(function (b) { out.off += b.notes.length; }); return out; }
+		rec.h.forEach(function (x) { set[x] = 1; });
+		state.boards.forEach(function (b) { b.notes.forEach(function (n) { var x = hash(n); if (set[x]) { out.by[n.id] = "on"; out.on++; on[x] = 1; } else { out.by[n.id] = "off"; out.off++; } }); });
+		rec.h.forEach(function (x) { if (!on[x]) out.gone++; });
+		return out;
+	}
+	var api = { hash: hash, record: record, status: status, COLORS: COLORS, snapshot: snapshot, merge: merge, replace: replace, count: count };
 	if (typeof module !== "undefined" && module.exports) module.exports = api;
 	root.CTLib = api;
 })(typeof window !== "undefined" ? window : globalThis);

@@ -274,24 +274,49 @@
         });
     }
 
-    /* list(account, {app, name, pages, first, onProgress}) -> saves newest first (no payload decoding).
-       Scans the account's custom_json history, 1000 at a time, up to `pages` pages (default 30). first: stop at the first
-       complete save. */
+    /* list(account, {app, name, pages, first, onProgress, since, cache}) -> saves newest first (no payload decoding).
+       Scans the account's custom_json history, 1000 at a time, newest first, up to `pages` pages (default 30).
+       Fast paths (2026-11-05, a full scan of a busy account took ~20 requests):
+       - since (ISO, default SINCE = the day MESHiveStore went live): stop once the history is older than that; no save can be.
+       - cache (default true in a browser): the account's mes_store ops already seen are kept in localStorage
+         ("mes-hive-store:hist:<account>": {top: newest history index scanned, ops: [[index, op]]}), so the next list only reads
+         history newer than `top` (usually one request). first: stop at the first complete save. */
+    var SINCE = "2026-10-30T00:00:00";
+    function cacheKey(account) { return "mes-hive-store:hist:" + account; }
+    function cacheGet(account) {
+        try { var c = JSON.parse(root.localStorage.getItem(cacheKey(account)) || "null"); if (c && c.v === 1 && Array.isArray(c.ops) && c.top >= 0) return c; } catch (e) {}
+        return null;
+    }
+    function cachePut(account, top, ops) {
+        try { root.localStorage.setItem(cacheKey(account), JSON.stringify({ v: 1, top: top, ops: ops.slice(-600) })); } catch (e) {}
+    }
+    function ours(it) { var op = it && it[1] && it[1].op; return !!(op && op[0] === "custom_json" && op[1] && op[1].id === ID); }
     function list(account, opt) {
         opt = opt || {};
-        var pages = opt.pages || 30, items = [], start = -1, n = 0;
+        var pages = opt.pages || 30, since = opt.since === undefined ? SINCE : opt.since, start = -1, n = 0, top = -1;
+        var useCache = opt.cache !== false && root.localStorage, cached = useCache ? cacheGet(account) : null;
+        var fresh = [];   /* our ops read this time, oldest first */
+        function result(whole) {
+            var all = fresh;
+            if (cached) { var seen = {}; fresh.forEach(function (it) { seen[it[0]] = 1; }); all = cached.ops.filter(function (it) { return !seen[it[0]]; }).concat(fresh); all.sort(function (a, b) { return a[0] - b[0]; }); }
+            if (useCache && whole && top >= 0) cachePut(account, Math.max(top, cached ? cached.top : -1), all);
+            return assemble(all, account, opt);
+        }
         function page() {
             return H().call("condenser_api.get_account_history", [account, start, start < 0 ? 1000 : Math.min(1000, start + 1), FILTER_CUSTOM_JSON, 0], { timeout: 15000 }).then(function (r) {
                 r = r || [];
-                items = r.concat(items);
                 n++;
+                if (r.length && top < 0) top = r[r.length - 1][0];
+                fresh = r.filter(ours).concat(fresh);
                 if (opt.onProgress) opt.onProgress(n, pages);
-                var got = assemble(items, account, opt);
-                var oldest = r.length ? r[0][0] : 0;
-                if (opt.first && got.some(function (e) { return e.complete; })) return got;
-                if (!r.length || oldest <= 0 || n >= pages || r.length < 2) return got;
+                var oldest = r.length ? r[0][0] : 0, oldT = r.length ? (r[0][1] && r[0][1].timestamp) || "" : "";
+                if (cached && oldest <= cached.top) return result(true);          /* reached what was read last time */
+                if (since && oldT && oldT < since) return result(true);          /* older than any possible save */
+                if (opt.first && assemble(fresh, account, opt).some(function (e) { return e.complete; })) return result(false);
+                if (n >= pages) return result(false);
+                if (!r.length || oldest <= 0 || r.length < 2) return result(true);
                 start = oldest - 1;
-                if (start < 0) return got;
+                if (start < 0) return result(true);
                 return page();
             });
         }
@@ -317,7 +342,7 @@
         b64: b64, unb64: unb64, hex: hex, unhex: unhex, okName: okName, newSaveId: newSaveId,
         chunkJsons: chunkJsons, buildTxs: buildTxs, customJson: customJson, tombstone: tombstone, assemble: assemble,
         pack: pack, unpack: unpack,
-        save: save, list: list, load: load, forget: forget, canEncrypt: canEncrypt, rcPercent: rcPercent, explorer: explorer
+        SINCE: SINCE, save: save, list: list, load: load, forget: forget, canEncrypt: canEncrypt, rcPercent: rcPercent, explorer: explorer
     };
     if (typeof module !== "undefined" && module.exports) module.exports = api;
     root.MESHiveStore = root.MESHiveStore || api;

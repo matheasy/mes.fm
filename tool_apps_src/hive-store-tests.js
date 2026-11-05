@@ -133,5 +133,34 @@ function rnd(len) { let s = ""; while (s.length < len) s += Math.random().toStri
         assert.throws(() => CT.merge(local, { nope: 1 }, uid));
     });
 
+    await t("Copy Text: backup status per note (record = hashes only)", () => {
+        const st = { boards: [{ id: "b", name: "W", notes: [{ id: "a", title: "x", text: "one" }, { id: "b2", title: "", text: "two" }] }] };
+        const rec = CT.record(CT.snapshot(st), 5, "alice");
+        assert(!JSON.stringify(rec).includes("one"));
+        let s = CT.status(st, rec); assert.strictEqual(s.on, 2); assert.strictEqual(s.off, 0); assert.strictEqual(s.gone, 0);
+        st.boards[0].notes[0].text = "one!"; st.boards[0].notes.push({ id: "c", text: "three" });
+        s = CT.status(st, rec); assert.strictEqual(s.by.a, "off"); assert.strictEqual(s.by.b2, "on"); assert.strictEqual(s.off, 2); assert.strictEqual(s.gone, 1);
+        assert.strictEqual(CT.status(st, null).off, 3);
+    });
+
+    await t("list: stops at SINCE and reads only new history the next time", async () => {
+        const store = {}; globalThis.localStorage = { getItem: (k) => (k in store ? store[k] : null), setItem: (k, v) => { store[k] = String(v); } };
+        const pk = await S.pack({ a: 1 }, { app: "copy-text", name: "boards", saveId: "dddd4444" });
+        const ours = S.buildTxs("alice", S.chunkJsons("copy-text", "boards", "dddd4444", pk.header, pk.payload))[0];
+        let hist = [];
+        for (let i = 0; i < 5000; i++) hist.push([i, { op: ["custom_json", { id: "other", json: "{}", required_posting_auths: ["alice"], required_auths: [] }], timestamp: i < 3000 ? "2026-01-01T00:00:00" : "2026-11-01T00:00:00", block: i }]);
+        ours.forEach((op) => hist.push([hist.length, { op, timestamp: "2026-11-02T00:00:00", block: 9e6, trx_id: "tx" }]));
+        let calls = 0;
+        globalThis.MESHive = { call: (m, [acct, start, limit]) => { calls++; const top = start < 0 ? hist.length - 1 : start; return Promise.resolve(hist.filter((h) => h[0] <= top).slice(-limit)); } };
+        let r = await S.list("alice", { app: "copy-text", name: "boards" });
+        assert.strictEqual(r.length, 1); assert(r[0].complete); assert.strictEqual(calls, 3, "stopped at the 2026-01 history");
+        calls = 0; r = await S.list("alice", { app: "copy-text", name: "boards" });
+        assert.strictEqual(r.length, 1); assert.strictEqual(calls, 1, "second look = one request");
+        hist.push([hist.length, { op: ["custom_json", { id: "mes_store", json: S.tombstone("copy-text", "boards", "dddd4444"), required_posting_auths: ["alice"], required_auths: [] }], timestamp: "2026-11-03T00:00:00", block: 9e6 + 1 }]);
+        calls = 0; r = await S.list("alice", { app: "copy-text", name: "boards" });
+        assert.strictEqual(r.length, 0); assert.strictEqual(calls, 1);
+        delete globalThis.MESHive; delete globalThis.localStorage;
+    });
+
     console.log("\n" + n + " tests passed");
 })().catch((e) => { console.error(e); process.exit(1); });
