@@ -1042,10 +1042,12 @@ var MESPixel = (function () {
 	};
 	PE.bounds = function (L) { if (PE.isGroup(L)) return PE.groupBounds(L); var c = PE.corners(L), x0 = 1e9, y0 = 1e9, x1 = -1e9, y1 = -1e9; c.forEach(function (p) { x0 = Math.min(x0, p[0]); x1 = Math.max(x1, p[0]); y0 = Math.min(y0, p[1]); y1 = Math.max(y1, p[1]); }); return { x: x0, y: y0, w: x1 - x0, h: y1 - y0 }; };
 	PE.toLayerPt = function (L, x, y) { var c = Math.cos(L.rot), s = Math.sin(L.rot), dx = x - L.cx, dy = y - L.cy; return { x: (c * dx + s * dy) / L.sx + L.canvas.width / 2, y: (-s * dx + c * dy) / L.sy + L.canvas.height / 2 }; };
-	PE.layerAt = function (x, y) {
-		var ls = PE.doc.layers;
+	/* opts.unlocked: a locked layer (or one inside a locked group) is not clickable, the click goes to what is under it */
+	PE.isLockedDeep = function (L) { if (L.locked) return true; return PE.ancestorsOf ? PE.ancestorsOf(L).some(function (g) { return g.locked; }) : false; };
+	PE.layerAt = function (x, y, opts) {
+		var ls = PE.doc.layers, ul = opts && opts.unlocked;
 		for (var i = ls.length - 1; i >= 0; i--) {
-			var L = ls[i]; if (PE.isGroup(L) || !PE.effVisible(L)) continue; var p = PE.toLayerPt(L, x, y);
+			var L = ls[i]; if (PE.isGroup(L) || !PE.effVisible(L) || (ul && PE.isLockedDeep(L))) continue; var p = PE.toLayerPt(L, x, y);
 			if (p.x < 0 || p.y < 0 || p.x >= L.canvas.width || p.y >= L.canvas.height) continue;
 			var cr = L.crop; if (cr && (p.x < cr.x || p.y < cr.y || p.x >= cr.x + cr.w || p.y >= cr.y + cr.h)) continue;   // hidden by the layer's crop box
 			try { if (L.canvas.getContext("2d").getImageData(p.x | 0, p.y | 0, 1, 1).data[3] > 8) return L; } catch (e) { return L; }
@@ -1956,7 +1958,7 @@ var MESPixel = (function () {
 					for (i = 0; i < 4; i++) { var dd = Math.hypot(corners[i].x - sp.x, corners[i].y - sp.y); if (dd >= 10 && dd < 30 && !PE.layerAtPoint(A, e.x, e.y)) { mv = { kind: "rot", L: A, a0: Math.atan2(e.y - A.cy, e.x - A.cx), rot0: A.rot }; return; } }
 				}
 			}
-			var raw = o.auto ? PE.layerAt(e.x, e.y) : null; if (raw && raw !== A && PE.isBackdrop(raw)) raw = null;
+			var raw = o.auto ? PE.layerAt(e.x, e.y, { unlocked: true }) : null; if (raw && raw !== A && PE.isBackdrop(raw)) raw = null;
 			var hit = raw ? pickTarget(raw, multi ? null : A, o.groups) : null;
 			if (e.shift || e.ctrl) {   // add to / take out of the selection; on empty canvas a rubber band adds
 				if (hit) { var now = PE.toggleMove(hit); if (now) startMove(PE.moveSet(), e); return; }
@@ -1967,7 +1969,7 @@ var MESPixel = (function () {
 			if (hit) { if (hit !== A || multi) { if (PE.setMulti) PE.setMulti([]); PE.setActive(hit.id); } startMove([hit], e); return; }
 			if (!o.auto) { if (set.length) startMove(set, e); return; }
 			if (multi) { var mb = setBox(set); if (mb && e.x >= mb.x && e.y >= mb.y && e.x <= mb.x + mb.w && e.y <= mb.y + mb.h) { startMove(set, e); return; } }
-			else if (A && PE.layerAtPoint(A, e.x, e.y) && PE.effVisible(A)) { startMove([A], e); return; }   // e.g. dragging the active background picture
+			else if (A && !PE.isLockedDeep(A) && PE.layerAtPoint(A, e.x, e.y) && PE.effVisible(A)) { startMove([A], e); return; }   // e.g. dragging the active background picture
 			mv = { kind: "band", a: e, b: e, add: false };   // empty canvas (or outside the picture): rubber-band select
 		},
 		move: function (e) {
@@ -2044,7 +2046,7 @@ var MESPixel = (function () {
 			// round 10: say what a text box handle does (a tooltip on the canvas)
 			var tip = ""; if (isTxt(A)) { if (h) tip = h.hx !== 0.5 && h.hy !== 0.5 ? "Drag to resize the text box (Auto-fit text: the size follows)" : h.hy === 0.5 ? "Drag to change the box width: the words re-wrap, the size stays" : "Drag to change the box height (Auto-fit text)"; else if (/resize/.test(cur)) tip = "Drag the corner to make the text bigger or smaller (Alt: from the centre)"; else if (cur === ROT_CUR) tip = "Drag to rotate"; }
 			if (PE.els.over.title !== tip) PE.els.over.title = tip;
-			var raw = PE.opt.move.auto ? PE.layerAt(e.x, e.y) : null; if (raw && PE.isBackdrop(raw)) raw = null; var hp2 = raw ? pickTarget(raw, PE.moveSet().length > 1 ? null : A, PE.opt.move.groups) : null; if (hp2 !== hoverPick) { hoverPick = hp2; PE.invalidateOverlay(); } var ht = PE.textAt ? PE.textAt(e) : null; if (ht === A) ht = null; if (ht !== hoverTM) { hoverTM = ht; PE.invalidateOverlay(); }
+			var raw = PE.opt.move.auto ? PE.layerAt(e.x, e.y, { unlocked: true }) : null; if (raw && PE.isBackdrop(raw)) raw = null; var hp2 = raw ? pickTarget(raw, PE.moveSet().length > 1 ? null : A, PE.opt.move.groups) : null; if (hp2 !== hoverPick) { hoverPick = hp2; PE.invalidateOverlay(); } var ht = PE.textAt ? PE.textAt(e) : null; if (ht === A) ht = null; if (ht !== hoverTM) { hoverTM = ht; PE.invalidateOverlay(); }
 		},
 		overlay: function (x, v) {
 			if (hoverTM && PE.doc.layers.indexOf(hoverTM) >= 0 && PE.drawTextFrame) PE.drawTextFrame(x, hoverTM, false);
@@ -2451,8 +2453,8 @@ var MESPixel = (function () {
 	PE.placeTextEditor = placeEditor;
 	function poke() { blinkOn = true; PE.invalidateOverlay(); }
 	function hitText(e, prefer) {   // the text layer under a point: its whole text box counts (clicking between letters edits, it does not start a new text)
-		if (prefer && prefer.type === "text" && prefer.text && PE.effVisible(prefer) && PE.layerAtPoint(prefer, e.x, e.y)) return prefer;   // only a text layer (the active picture under the click is not "a text to edit")
-		var ls = PE.doc.layers; for (var i = ls.length - 1; i >= 0; i--) { var L = ls[i]; if (L.type !== "text" || !L.text || !PE.effVisible(L) || L.locked) continue; if (PE.layerAtPoint(L, e.x, e.y)) return L; }
+		if (prefer && prefer.type === "text" && prefer.text && PE.effVisible(prefer) && !PE.isLockedDeep(prefer) && PE.layerAtPoint(prefer, e.x, e.y)) return prefer;   // only a text layer (the active picture under the click is not "a text to edit")
+		var ls = PE.doc.layers; for (var i = ls.length - 1; i >= 0; i--) { var L = ls[i]; if (L.type !== "text" || !L.text || !PE.effVisible(L) || PE.isLockedDeep(L)) continue; if (PE.layerAtPoint(L, e.x, e.y)) return L; }
 		return null;
 	}
 	function indexAt(L, x, y) {
@@ -4337,11 +4339,11 @@ var MESPixel = (function () {
 		bar = bar || document.getElementById("pe-projst"); if (!bar) return; var d = PE.doc, L = cur();
 		if (!d) { bar.hidden = true; return; } bar.hidden = false;
 		var PL = !L && PE.psdHome && PE.psdHome() ? PE.psdLink() : null;
-		if (PL) { var pd = PE.psdDirty(); bar.className = "pe-projst" + (pd ? " is-dirty" : ""); bar.innerHTML = '<span class="pe-projst-f">🖼 ' + esc(PL.handle ? PL.name : PL.base + ".psd") + '</span><span class="pe-projst-s">' + esc(pd ? (PL.handle ? "unsaved changes" : "Save = " + PE.psdWhere().replace(/^Downloads \((.*) next\)$/, "download $1")) : PL.savedAt ? "saved " + P.agoText(PL.savedAt) : "opened") + "</span>"; bar.title = PL.handle ? "This picture is linked to " + PL.name + ". " + PE.modKey() + "S writes the layers back into it." : "This browser can't write into the PSD you opened: " + PE.modKey() + "S downloads a new copy (" + PE.psdWhere() + ")."; return; }
+		if (PL) { var pd = PE.psdDirty(); bar.className = "pe-projst" + (pd ? " is-dirty" : ""); bar.innerHTML = '<span class="pe-projst-f" title="' + esc(PL.handle ? PL.name : PL.base + ".psd") + '">🖼 ' + esc(PL.handle ? PL.name : PL.base + ".psd") + '</span><span class="pe-projst-s">' + esc(pd ? (PL.handle ? "unsaved changes" : "Save = " + PE.psdWhere().replace(/^Downloads \((.*) next\)$/, "download $1")) : PL.savedAt ? "saved " + P.agoText(PL.savedAt) : "opened") + "</span>"; bar.title = PL.handle ? "This picture is linked to " + PL.name + ". " + PE.modKey() + "S writes the layers back into it." : "This browser can't write into the PSD you opened: " + PE.modKey() + "S downloads a new copy (" + PE.psdWhere() + ")."; return; }
 		var dirty = !!(PE.dirty && PE.hist.stack.length > 1), st = !L && !canSavePicker() ? (dirty ? "Save = new download" : "") : L ? (L.conflict ? "changed on disk" : L.needPerm && dirty ? "press Save to allow saving" : dirty ? "unsaved changes" : L.savedAt ? "saved " + P.agoText(L.savedAt) : "opened") : dirty ? "not saved to a file" : "";
 		var af = PE.autoFileOn(), title = L ? "This project is linked to the file " + whereText(L) + ". " + PE.modKey() + "S writes it there." + (af ? " Auto-save writes changes there " + AUTO_FILE_MS / 1000 + " s after you stop." : "") : "This project is not saved in a file yet: Save project makes one (in a folder you choose, or your Downloads).";
 		bar.className = "pe-projst" + (dirty ? " is-dirty" : "") + (L && L.conflict ? " is-warn" : "");
-		bar.innerHTML = (L ? '<span class="pe-projst-f">' + (L.handle && L.handle._folder ? "📁 " : "📄 ") + esc(L.name) + "</span>" : "") + (st ? '<span class="pe-projst-s">' + esc(st) + "</span>" : "")
+		bar.innerHTML = (L ? '<span class="pe-projst-f" title="' + esc(L.name) + '">' + (L.handle && L.handle._folder ? "📁 " : "📄 ") + esc(L.name) + "</span>" : "") + (st ? '<span class="pe-projst-s">' + esc(st) + "</span>" : "")
 			+ (L ? '<label class="pe-projst-a" title="Write changes to ' + esc(whereText(L)) + " " + AUTO_FILE_MS / 1000 + ' s after you stop editing (handy when the folder is synced by OneDrive)"><input type="checkbox"' + (af ? " checked" : "") + "> Auto-save</label>" : "");
 		bar.title = title; var cb = bar.querySelector("input"); if (cb) cb.addEventListener("change", function () { PE.setAutoFile(cb.checked); });
 	}
@@ -5010,6 +5012,15 @@ var MESPixel = (function () {
 		function score(f) { var n = f.name.toLowerCase(), w = words.join(" "); return (n === w ? 3 : 0) + (n.indexOf(w) === 0 ? 2 : 0) + (n.indexOf(w) >= 0 ? 1 : 0); }
 		return out;
 	}
+	/* order a filtered list: "" = as filter() made it, "az" / "za" = by name, "src" = where it comes from (basic, this computer, your files, Google) then A-Z, "kind" = by category then A-Z */
+	var SRCORD = { basic: 0, local: 1, file: 2, google: 3 }, CATORD = { sans: 0, serif: 1, display: 2, hand: 3, mono: 4 };
+	function sortFonts(list, how) {
+		if (!how) return list; var out = list.slice(), az = function (a, b) { return a.name.localeCompare(b.name, undefined, { sensitivity: "base" }); };
+		if (how === "az") out.sort(az); else if (how === "za") out.sort(function (a, b) { return az(b, a); });
+		else if (how === "src") out.sort(function (a, b) { return (SRCORD[a.src] || 0) - (SRCORD[b.src] || 0) || az(a, b); });
+		else if (how === "kind") out.sort(function (a, b) { return (CATORD[a.cat] || 0) - (CATORD[b.cat] || 0) || az(a, b); });
+		return out;
+	}
 	/* the Google Fonts CSS API: a tiny preview (only the letters of `text`), or the whole family with bold and italic when it has them (try in this order) */
 	function googleUrls(name, text) {
 		var f = encodeURIComponent(name).replace(/%20/g, "+"), b = "https://fonts.googleapis.com/css2?family=";
@@ -5058,7 +5069,7 @@ var MESPixel = (function () {
 	/* most recently used first, no duplicates, at most n */
 	function pushRecent(arr, v, n) { var a = (arr || []).filter(function (x) { return x !== v; }); a.unshift(v); return a.slice(0, n || 10); }
 
-	var api = { CATS: CATS, GENERIC: GENERIC, LOCAL: LOCAL, GOOGLE: GOOGLE, SYMBOL: SYMBOL, familyOf: familyOf, quote: quote, stack: stack, googleCat: googleCat, guessCat: guessCat, filter: filter, googleUrls: googleUrls, uniqChars: uniqChars, firstFontUrl: firstFontUrl, pushRecent: pushRecent, splitStack: splitStack, normStack: normStack, fontShorthand: fontShorthand, safeFamily: safeFamily };
+	var api = { CATS: CATS, GENERIC: GENERIC, LOCAL: LOCAL, GOOGLE: GOOGLE, SYMBOL: SYMBOL, familyOf: familyOf, quote: quote, stack: stack, googleCat: googleCat, guessCat: guessCat, filter: filter, sortFonts: sortFonts, googleUrls: googleUrls, uniqChars: uniqChars, firstFontUrl: firstFontUrl, pushRecent: pushRecent, splitStack: splitStack, normStack: normStack, fontShorthand: fontShorthand, safeFamily: safeFamily };
 	if (typeof module !== "undefined" && module.exports) module.exports = api;
 	if (root) root.MESFontCat = api;
 })(typeof window !== "undefined" ? window : null);
@@ -5187,7 +5198,7 @@ var MESPixel = (function () {
 	PE.fontPickerClose = closePicker;
 	function openPicker(btn, value, onPick) {
 		if (pop) { var same = pop.btn === btn; closePicker(); if (same) return; }
-		build(); var ui = sget().fpick || {}, st = { q: "", cat: ui.cat || "all", src: ui.src || "all", hi: 0, list: [], g: ui.g !== false };
+		build(); var ui = sget().fpick || {}, st = { q: "", cat: ui.cat || "all", src: ui.src || "all", hi: 0, list: [], g: ui.g !== false, sort: /^(az|za|src|kind)$/.test(ui.sort || "") ? ui.sort : "" };
 		var e = el("div", "pe-fpop"); e.setAttribute("role", "dialog"); e.setAttribute("aria-label", "Choose a font"); e.dataset.noico = "1";
 		e.innerHTML = '<div class="pe-fp-h"><input type="search" class="pe-fp-q" placeholder="Search ' + fonts.length + ' fonts…" aria-label="Search fonts" autocomplete="off" spellcheck="false"><button type="button" class="pe-fp-x" aria-label="Close" title="Close (Esc)">×</button></div>'
 			+ '<div class="pe-fp-chips pe-fp-cats" role="group" aria-label="Kind of font"></div><div class="pe-fp-chips pe-fp-srcs" role="group" aria-label="Where the font comes from"></div>'
@@ -5196,6 +5207,10 @@ var MESPixel = (function () {
 		(PE.els.root || document.body).appendChild(e);
 		var gtl = el("label", "pe-fp-gt"), gt = el("input"); gt.type = "checkbox"; gtl.appendChild(gt); gtl.appendChild(document.createTextNode(" Show Google Fonts")); gtl.title = "Untick to list only the fonts on this computer (Google Fonts are downloaded only when you pick one)"; e.querySelector(".pe-fp-sample").appendChild(gtl);
 		gt.addEventListener("change", function () { st.g = gt.checked; st.hi = 0; render(); });
+		var sol = el("label", "pe-fp-sort"), so = el("select"); sol.appendChild(document.createTextNode("Order ")); sol.appendChild(so); so.setAttribute("aria-label", "Order of the font list"); so.dataset.native = "1";
+		[["", "Suggested (no download first)"], ["az", "A to Z"], ["za", "Z to A"], ["src", "Where it comes from, A to Z"], ["kind", "Kind of font, A to Z"]].forEach(function (o) { var op = el("option"); op.value = o[0]; op.textContent = o[1]; so.appendChild(op); });
+		so.value = st.sort; sol.title = "Suggested: fonts that need no download first (search matches first while you type). A to Z / Z to A: by name. Recent keeps the order you used them in unless you pick another order.";
+		e.querySelector(".pe-fp-sample").appendChild(sol); so.addEventListener("change", function () { st.sort = so.value; st.hi = 0; render(); });
 		var q = e.querySelector(".pe-fp-q"), listEl = e.querySelector(".pe-fp-list"), cnt = e.querySelector(".pe-fp-n"), sampleIn = e.querySelector(".pe-fp-st");
 		sampleIn.value = ui.sample || "";
 		var cats = e.querySelector(".pe-fp-cats"), srcs = e.querySelector(".pe-fp-srcs");
@@ -5219,12 +5234,12 @@ var MESPixel = (function () {
 		function render(keepScroll) {
 			Array.prototype.forEach.call(cats.children, function (b) { b.setAttribute("aria-pressed", b.dataset.v === st.cat ? "true" : "false"); });
 			Array.prototype.forEach.call(srcs.children, function (b) { b.setAttribute("aria-pressed", b.dataset.v === st.src ? "true" : "false"); });
-			st.list = F.filter(fonts, st.q, st.cat, st.src, recent(), { google: st.g }); listEl.innerHTML = ""; if (!keepScroll) listEl.scrollTop = 0;
+			st.list = F.sortFonts(F.filter(fonts, st.q, st.cat, st.src, recent(), { google: st.g }), st.sort); listEl.innerHTML = ""; if (!keepScroll) listEl.scrollTop = 0;
 			gt.checked = st.g; gtl.hidden = st.src === "google" || st.src === "recent";
 			var cur = F.familyOf(value).toLowerCase(), sample = sampleIn.value.trim(), frag = document.createDocumentFragment();
 			var divDone = false;
 			st.list.forEach(function (f, i) {
-				if (!divDone && f.src === "google" && st.src === "all" && i > 0) { divDone = true; var dv = el("div", "pe-fp-div"); dv.setAttribute("role", "presentation"); dv.textContent = "Google Fonts (downloaded only when you pick one)"; frag.appendChild(dv); }
+				if (!divDone && f.src === "google" && st.src === "all" && (!st.sort || st.sort === "src") && i > 0) { divDone = true; var dv = el("div", "pe-fp-div"); dv.setAttribute("role", "presentation"); dv.textContent = "Google Fonts (downloaded only when you pick one)"; frag.appendChild(dv); }
 				var r = el("div", "pe-frow" + (f.name.toLowerCase() === cur ? " is-cur" : "")); r.setAttribute("role", "option"); r.id = "pe-fr-" + i; r._f = f; r.dataset.i = i;
 				var nm = el("span", "pe-frow-s"); nm.textContent = sample || f.name; r.appendChild(nm);
 				var meta = el("span", "pe-frow-m"); meta.textContent = (sample ? f.name + " · " : "") + (f.src === "google" ? "Google" : f.src === "file" ? "your file" : f.src === "basic" ? "basic" : "this computer"); r.appendChild(meta);
@@ -5232,7 +5247,7 @@ var MESPixel = (function () {
 			});
 			listEl.appendChild(frag); if (!st.list.length) listEl.innerHTML = '<div class="pe-fp-none">No font matches. Try another word or "All".</div>';
 			cnt.textContent = st.list.length + (st.list.length === 1 ? " font" : " fonts"); st.hi = Math.max(0, Math.min(st.hi, st.list.length - 1)); hilite(false);
-			sset({ fpick: { cat: st.cat, src: st.src, sample: sampleIn.value.trim(), g: st.g } }); setTimeout(scanVisible, 0);
+			sset({ fpick: { cat: st.cat, src: st.src, sample: sampleIn.value.trim(), g: st.g, sort: st.sort } }); setTimeout(scanVisible, 0);
 		}
 		function hilite(scroll) { Array.prototype.forEach.call(listEl.querySelectorAll(".is-hi"), function (r) { r.classList.remove("is-hi"); r.setAttribute("aria-selected", "false"); }); var r = document.getElementById("pe-fr-" + st.hi); if (r && r._f) { r.classList.add("is-hi"); r.setAttribute("aria-selected", "true"); listEl.setAttribute("aria-activedescendant", r.id); if (scroll) r.scrollIntoView({ block: "nearest" }); } }
 		cats.addEventListener("click", function (ev) { var b = ev.target.closest("button"); if (!b) return; st.cat = b.dataset.v; st.hi = 0; render(); q.focus(); });
@@ -6079,28 +6094,38 @@ $("pe-share").addEventListener("click", function () { if (needDoc()) PE.dlgShare
 
 	/* ---------- edit actions ---------- */
 	PE.clipCanvas = null;
+	/* copy / paste keep the spot: a pasted copy lands exactly where it was copied from (round 12). PE.clipXf = where + how the copy sat */
+	PE.clipXf = null;
+	function remember(c, xf) { PE.clipCanvas = c; PE.clipXf = xf; PE.clipSig = sig(c); }
+	function sig(c) { try { var t = PE.mk(12, 12), x = t.getContext("2d"); x.drawImage(c, 0, 0, 12, 12); return { w: c.width, h: c.height, d: x.getImageData(0, 0, 12, 12).data }; } catch (e) { return null; } }
+	function sameAsClip(im) { var a = PE.clipSig, w = im.naturalWidth || im.width, h = im.naturalHeight || im.height; if (!a || !PE.clipCanvas || a.w !== w || a.h !== h) return false; var b = sig(im); if (!b) return false; var diff = 0; for (var i = 0; i < a.d.length; i++) diff += Math.abs(a.d[i] - b.d[i]); return diff / a.d.length < 4; }
 	function copySel(cut) {
-		var L = PE.active(); if (!PE.doc || !L) return; var c;
-		if (PE.sel) { var b = PE.selBounds(); if (!b) return; c = PE.mk(b.w, b.h); var x = c.getContext("2d"); PE.drawLayer(x, L, [1, 0, 0, 1, -b.x, -b.y], "cp", b.w, b.h); x.globalCompositeOperation = "destination-in"; x.drawImage(PE.sel.c, b.x, b.y, b.w, b.h, 0, 0, b.w, b.h); }
-		else { c = PE.mk(L.canvas.width, L.canvas.height); c.getContext("2d").drawImage(L.canvas, 0, 0); }
-		PE.clipCanvas = c; c.toBlob(function (b) { try { navigator.clipboard.write([new ClipboardItem({ "image/png": b })]).catch(function () {}); } catch (e) {} });
+		var L = PE.active(); if (!PE.doc || !L) return; var c, xf;
+		if (PE.sel) { var b = PE.selBounds(); if (!b) return; c = PE.mk(b.w, b.h); var x = c.getContext("2d"); PE.drawLayer(x, L, [1, 0, 0, 1, -b.x, -b.y], "cp", b.w, b.h); x.globalCompositeOperation = "destination-in"; x.drawImage(PE.sel.c, b.x, b.y, b.w, b.h, 0, 0, b.w, b.h); xf = { cx: b.x + b.w / 2, cy: b.y + b.h / 2, sx: 1, sy: 1, rot: 0 }; }
+		else { c = PE.mk(L.canvas.width, L.canvas.height); c.getContext("2d").drawImage(L.canvas, 0, 0); xf = { cx: L.cx, cy: L.cy, sx: L.sx, sy: L.sy, rot: L.rot }; }
+		remember(c, xf); c.toBlob(function (b) { try { navigator.clipboard.write([new ClipboardItem({ "image/png": b })]).catch(function () {}); } catch (e) {} });
 		if (cut) clearSel(); PE.toast(cut ? "Cut" : "Copied");
 	}
-	function copyMerged() { if (!PE.doc) return; var c = PE.flatten(), b = PE.sel && PE.selBounds(); if (b) { var n = PE.mk(b.w, b.h), x = n.getContext("2d"); x.drawImage(c, b.x, b.y, b.w, b.h, 0, 0, b.w, b.h); x.globalCompositeOperation = "destination-in"; x.drawImage(PE.sel.c, b.x, b.y, b.w, b.h, 0, 0, b.w, b.h); c = n; } PE.clipCanvas = c; c.toBlob(function (bl) { try { navigator.clipboard.write([new ClipboardItem({ "image/png": bl })]).then(function () { PE.toast("Copied merged image"); }); } catch (e) { PE.toast("Copied"); } }); }
+	function copyMerged() { if (!PE.doc) return; var c = PE.flatten(), b = PE.sel && PE.selBounds(), xf = { cx: PE.doc.w / 2, cy: PE.doc.h / 2, sx: 1, sy: 1, rot: 0 }; if (b) { var n = PE.mk(b.w, b.h), x = n.getContext("2d"); x.drawImage(c, b.x, b.y, b.w, b.h, 0, 0, b.w, b.h); x.globalCompositeOperation = "destination-in"; x.drawImage(PE.sel.c, b.x, b.y, b.w, b.h, 0, 0, b.w, b.h); c = n; xf = { cx: b.x + b.w / 2, cy: b.y + b.h / 2, sx: 1, sy: 1, rot: 0 }; } remember(c, xf); c.toBlob(function (bl) { try { navigator.clipboard.write([new ClipboardItem({ "image/png": bl })]).then(function () { PE.toast("Copied merged image"); }); } catch (e) { PE.toast("Copied"); } }); }
 	function clearSel() { var L = PE.active(); if (!L) return; if (!PE.sel) { PE.toast("Make a selection first (or delete the layer)"); return; } if (!PE.prepare(L, false, true)) return; var t = L.editMask && L.mask ? L.mask : L.canvas, o = PE.origin(L), x = t.getContext("2d"); x.save(); x.globalCompositeOperation = "destination-out"; x.drawImage(PE.sel.c, -o.x, -o.y); x.restore(); L.rev++; PE.commit("Clear selection"); }
 	function fillSel(color) {
 		var L = PE.active(); if (!PE.doc || !PE.prepare(L)) return; var o = PE.origin(L), c = PE.mk(L.canvas.width, L.canvas.height), x = c.getContext("2d"); x.fillStyle = color; x.fillRect(0, 0, c.width, c.height);
 		PE.paintInto(L, c, o.x, o.y, { target: L.editMask && L.mask ? "mask" : "pixel" }); PE.commit("Fill");
 	}
 	function paintClipboardImage(src, name, at, clip) { var meta = { how: "paste", clip: clip || "clipboard" }; if (!PE.doc) { PE.openImageSource(src, name || "Pasted image", meta); PE.setTool("move"); return; } PE.placeSource(src, name || "Pasted", at, meta); PE.setTool("move"); }
-	function pasteInternal() { if (PE.clipCanvas) paintClipboardImage(PE.clipCanvas, "Pasted layer", null, "editor"); else if (navigator.clipboard && navigator.clipboard.read) { navigator.clipboard.read().then(function (items) { for (var i = 0; i < items.length; i++) { var t = items[i].types.filter(function (t) { return /^image\//.test(t); })[0]; if (t) { items[i].getType(t).then(function (b) { return PE.decodeFile(b); }).then(function (im) { paintClipboardImage(im, "Pasted image"); }); return; } } PE.toast("Nothing to paste"); }).catch(function () { PE.toast("Use Ctrl+V to paste an image"); }); } else PE.toast("Use Ctrl+V to paste an image"); }
+	function pasteOwn() {   // our own copy: back on the spot it came from (same size, turn and flip as the layer it was copied from)
+		var xf = PE.clipXf, L = PE.placeSource(PE.clipCanvas, "Pasted layer", xf ? { x: xf.cx, y: xf.cy } : null, { how: "paste", clip: "editor" });
+		if (L && xf && (xf.sx !== 1 || xf.sy !== 1 || xf.rot)) { L.sx = xf.sx; L.sy = xf.sy; L.rot = xf.rot; PE.invalidate(); PE.commit("Paste in place"); }
+		PE.setTool("move");
+	}
+	function pasteInternal() { if (PE.clipCanvas) pasteOwn(); else if (navigator.clipboard && navigator.clipboard.read) { navigator.clipboard.read().then(function (items) { for (var i = 0; i < items.length; i++) { var t = items[i].types.filter(function (t) { return /^image\//.test(t); })[0]; if (t) { items[i].getType(t).then(function (b) { return PE.decodeFile(b); }).then(function (im) { paintClipboardImage(im, "Pasted image"); }); return; } } PE.toast("Nothing to paste"); }).catch(function () { PE.toast("Use Ctrl+V to paste an image"); }); } else PE.toast("Use Ctrl+V to paste an image"); }
 	document.addEventListener("paste", function (e) {
 		if (/INPUT|TEXTAREA|SELECT/.test((e.target || {}).tagName || "") || PE.modalOpen()) return; var items = (e.clipboardData && e.clipboardData.items) || [];
 		var gf = []; for (var j = 0; j < items.length; j++) if (items[j].kind === "file") { var ff = items[j].getAsFile(); if (ff && /\.xcf$/i.test(ff.name)) gf.push(ff); }
 		if (gf.length) { e.preventDefault(); openFiles(gf, { place: !!PE.doc, how: "paste" }); return; }   // a GIMP file copied in the file manager
-		for (var i = 0; i < items.length; i++) if (items[i].kind === "file" && /^image\//.test(items[i].type)) { var f = items[i].getAsFile(); e.preventDefault(); PE.decodeFile(f).then(function (im) { paintClipboardImage(im, "Pasted image"); }).catch(function () { PE.toast("Can't read that image"); }); return; }
+		for (var i = 0; i < items.length; i++) if (items[i].kind === "file" && /^image\//.test(items[i].type)) { var f = items[i].getAsFile(); e.preventDefault(); PE.decodeFile(f).then(function (im) { if (PE.doc && sameAsClip(im)) pasteOwn(); else paintClipboardImage(im, "Pasted image"); }).catch(function () { PE.toast("Can't read that image"); }); return; }
 		var tx = e.clipboardData && e.clipboardData.getData("text/plain"); if (tx && PE.looksLikeLatex(tx)) { e.preventDefault(); PE.dlgEquation(null, null, tx.trim().replace(/^\$+|\$+$/g, "")); return; }
-		if (PE.clipCanvas) { e.preventDefault(); paintClipboardImage(PE.clipCanvas, "Pasted layer", null, "editor"); }
+		if (PE.clipCanvas) { e.preventDefault(); pasteOwn(); }
 	});
 	function align(how) {
 		var L = PE.active(), d = PE.doc; if (!L) return; var b = PE.bounds(L), dx = 0, dy = 0;

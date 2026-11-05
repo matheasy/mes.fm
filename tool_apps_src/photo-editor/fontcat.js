@@ -63,6 +63,15 @@
 		function score(f) { var n = f.name.toLowerCase(), w = words.join(" "); return (n === w ? 3 : 0) + (n.indexOf(w) === 0 ? 2 : 0) + (n.indexOf(w) >= 0 ? 1 : 0); }
 		return out;
 	}
+	/* order a filtered list: "" = as filter() made it, "az" / "za" = by name, "src" = where it comes from (basic, this computer, your files, Google) then A-Z, "kind" = by category then A-Z */
+	var SRCORD = { basic: 0, local: 1, file: 2, google: 3 }, CATORD = { sans: 0, serif: 1, display: 2, hand: 3, mono: 4 };
+	function sortFonts(list, how) {
+		if (!how) return list; var out = list.slice(), az = function (a, b) { return a.name.localeCompare(b.name, undefined, { sensitivity: "base" }); };
+		if (how === "az") out.sort(az); else if (how === "za") out.sort(function (a, b) { return az(b, a); });
+		else if (how === "src") out.sort(function (a, b) { return (SRCORD[a.src] || 0) - (SRCORD[b.src] || 0) || az(a, b); });
+		else if (how === "kind") out.sort(function (a, b) { return (CATORD[a.cat] || 0) - (CATORD[b.cat] || 0) || az(a, b); });
+		return out;
+	}
 	/* the Google Fonts CSS API: a tiny preview (only the letters of `text`), or the whole family with bold and italic when it has them (try in this order) */
 	function googleUrls(name, text) {
 		var f = encodeURIComponent(name).replace(/%20/g, "+"), b = "https://fonts.googleapis.com/css2?family=";
@@ -111,7 +120,7 @@
 	/* most recently used first, no duplicates, at most n */
 	function pushRecent(arr, v, n) { var a = (arr || []).filter(function (x) { return x !== v; }); a.unshift(v); return a.slice(0, n || 10); }
 
-	var api = { CATS: CATS, GENERIC: GENERIC, LOCAL: LOCAL, GOOGLE: GOOGLE, SYMBOL: SYMBOL, familyOf: familyOf, quote: quote, stack: stack, googleCat: googleCat, guessCat: guessCat, filter: filter, googleUrls: googleUrls, uniqChars: uniqChars, firstFontUrl: firstFontUrl, pushRecent: pushRecent, splitStack: splitStack, normStack: normStack, fontShorthand: fontShorthand, safeFamily: safeFamily };
+	var api = { CATS: CATS, GENERIC: GENERIC, LOCAL: LOCAL, GOOGLE: GOOGLE, SYMBOL: SYMBOL, familyOf: familyOf, quote: quote, stack: stack, googleCat: googleCat, guessCat: guessCat, filter: filter, sortFonts: sortFonts, googleUrls: googleUrls, uniqChars: uniqChars, firstFontUrl: firstFontUrl, pushRecent: pushRecent, splitStack: splitStack, normStack: normStack, fontShorthand: fontShorthand, safeFamily: safeFamily };
 	if (typeof module !== "undefined" && module.exports) module.exports = api;
 	if (root) root.MESFontCat = api;
 })(typeof window !== "undefined" ? window : null);

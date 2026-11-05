@@ -180,9 +180,10 @@
 	#pe .pe-dropbtn {font-size:0.95em;line-height:1;}
 	#pe .pe-opt .pe-dropbtn {width:1.9em;height:1.9em;margin-left:0.15em;}
 	/* round 5: linked project file in the top bar, recent projects, moving to another computer */
-	#pe .pe-projst {display:inline-flex;align-items:center;gap:0.45em;margin:0 0.35em 0 0.15em;font-size:0.82em;color:var(--pe-dim);max-width:22em;min-width:0;white-space:nowrap;}
+	#pe .pe-projst {display:inline-flex;align-items:center;gap:0.45em;margin:0 0.35em 0 0.15em;font-size:0.82em;color:var(--pe-dim);max-width:30em;flex-shrink:0.4;min-width:0;white-space:nowrap;}
 	#pe .pe-projst[hidden] {display:none;}
-	#pe .pe-projst-f {color:var(--pe-text);overflow:hidden;text-overflow:ellipsis;min-width:0;max-width:12em;}
+	#pe .pe-projst-f {color:var(--pe-text);overflow:hidden;text-overflow:ellipsis;min-width:min(9em, 100%);max-width:16em;flex:0 1 auto;}
+	#pe .pe-projst-s {flex:0 0 auto;}
 	#pe .pe-projst-s {color:var(--pe-dim);} #pe .pe-projst.is-dirty .pe-projst-s {color:var(--pe-acc2);} #pe .pe-projst.is-warn .pe-projst-s {color:#f5b942;font-weight:700;}
 	#pe .pe-projst-a {display:inline-flex;align-items:center;gap:0.25em;color:var(--pe-text);cursor:pointer;border:1px solid var(--pe-line);border-radius:999px;padding:0.1em 0.55em 0.1em 0.35em;}
 	#pe .pe-projst-a input {margin:0;width:1em;height:1em;accent-color:var(--pe-acc2);}
@@ -341,3 +342,8 @@
 	}
 	#pe .pe-drawer-b .pe-adj-h > span, #pe .pe-drawer-b .pe-adj-x {display:none;} #pe .pe-drawer-b .pe-adj-h {justify-content:flex-end;margin-bottom:0.2em;}
 	#pe .pe-exp-more {font-size:0.85em;color:var(--pe-dim);margin-top:0.7em;} #pe .pe-exp-more .pe-linkbtn {background:none;border:0;padding:0;color:var(--pe-acc2);text-decoration:underline;cursor:pointer;font:inherit;}
+
+	#pe .pe-fp-sample {display:flex;flex-wrap:wrap;align-items:center;gap:0.35em 0;}
+	#pe .pe-fp-gt input {width:1em;height:1em;margin:0;}
+	#pe .pe-fp-sort {display:inline-flex;align-items:center;gap:0.35em;margin-left:0.8em;white-space:nowrap;}
+	#pe .pe-fp-sort select {height:1.8em;padding:0 0.3em;background:var(--pe-field);color:var(--pe-text);border:1px solid var(--pe-line);border-radius:0.3em;font:inherit;max-width:15em;}

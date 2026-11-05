@@ -455,28 +455,38 @@ $("pe-share").addEventListener("click", function () { if (needDoc()) PE.dlgShare
 
 	/* ---------- edit actions ---------- */
 	PE.clipCanvas = null;
+	/* copy / paste keep the spot: a pasted copy lands exactly where it was copied from (round 12). PE.clipXf = where + how the copy sat */
+	PE.clipXf = null;
+	function remember(c, xf) { PE.clipCanvas = c; PE.clipXf = xf; PE.clipSig = sig(c); }
+	function sig(c) { try { var t = PE.mk(12, 12), x = t.getContext("2d"); x.drawImage(c, 0, 0, 12, 12); return { w: c.width, h: c.height, d: x.getImageData(0, 0, 12, 12).data }; } catch (e) { return null; } }
+	function sameAsClip(im) { var a = PE.clipSig, w = im.naturalWidth || im.width, h = im.naturalHeight || im.height; if (!a || !PE.clipCanvas || a.w !== w || a.h !== h) return false; var b = sig(im); if (!b) return false; var diff = 0; for (var i = 0; i < a.d.length; i++) diff += Math.abs(a.d[i] - b.d[i]); return diff / a.d.length < 4; }
 	function copySel(cut) {
-		var L = PE.active(); if (!PE.doc || !L) return; var c;
-		if (PE.sel) { var b = PE.selBounds(); if (!b) return; c = PE.mk(b.w, b.h); var x = c.getContext("2d"); PE.drawLayer(x, L, [1, 0, 0, 1, -b.x, -b.y], "cp", b.w, b.h); x.globalCompositeOperation = "destination-in"; x.drawImage(PE.sel.c, b.x, b.y, b.w, b.h, 0, 0, b.w, b.h); }
-		else { c = PE.mk(L.canvas.width, L.canvas.height); c.getContext("2d").drawImage(L.canvas, 0, 0); }
-		PE.clipCanvas = c; c.toBlob(function (b) { try { navigator.clipboard.write([new ClipboardItem({ "image/png": b })]).catch(function () {}); } catch (e) {} });
+		var L = PE.active(); if (!PE.doc || !L) return; var c, xf;
+		if (PE.sel) { var b = PE.selBounds(); if (!b) return; c = PE.mk(b.w, b.h); var x = c.getContext("2d"); PE.drawLayer(x, L, [1, 0, 0, 1, -b.x, -b.y], "cp", b.w, b.h); x.globalCompositeOperation = "destination-in"; x.drawImage(PE.sel.c, b.x, b.y, b.w, b.h, 0, 0, b.w, b.h); xf = { cx: b.x + b.w / 2, cy: b.y + b.h / 2, sx: 1, sy: 1, rot: 0 }; }
+		else { c = PE.mk(L.canvas.width, L.canvas.height); c.getContext("2d").drawImage(L.canvas, 0, 0); xf = { cx: L.cx, cy: L.cy, sx: L.sx, sy: L.sy, rot: L.rot }; }
+		remember(c, xf); c.toBlob(function (b) { try { navigator.clipboard.write([new ClipboardItem({ "image/png": b })]).catch(function () {}); } catch (e) {} });
 		if (cut) clearSel(); PE.toast(cut ? "Cut" : "Copied");
 	}
-	function copyMerged() { if (!PE.doc) return; var c = PE.flatten(), b = PE.sel && PE.selBounds(); if (b) { var n = PE.mk(b.w, b.h), x = n.getContext("2d"); x.drawImage(c, b.x, b.y, b.w, b.h, 0, 0, b.w, b.h); x.globalCompositeOperation = "destination-in"; x.drawImage(PE.sel.c, b.x, b.y, b.w, b.h, 0, 0, b.w, b.h); c = n; } PE.clipCanvas = c; c.toBlob(function (bl) { try { navigator.clipboard.write([new ClipboardItem({ "image/png": bl })]).then(function () { PE.toast("Copied merged image"); }); } catch (e) { PE.toast("Copied"); } }); }
+	function copyMerged() { if (!PE.doc) return; var c = PE.flatten(), b = PE.sel && PE.selBounds(), xf = { cx: PE.doc.w / 2, cy: PE.doc.h / 2, sx: 1, sy: 1, rot: 0 }; if (b) { var n = PE.mk(b.w, b.h), x = n.getContext("2d"); x.drawImage(c, b.x, b.y, b.w, b.h, 0, 0, b.w, b.h); x.globalCompositeOperation = "destination-in"; x.drawImage(PE.sel.c, b.x, b.y, b.w, b.h, 0, 0, b.w, b.h); c = n; xf = { cx: b.x + b.w / 2, cy: b.y + b.h / 2, sx: 1, sy: 1, rot: 0 }; } remember(c, xf); c.toBlob(function (bl) { try { navigator.clipboard.write([new ClipboardItem({ "image/png": bl })]).then(function () { PE.toast("Copied merged image"); }); } catch (e) { PE.toast("Copied"); } }); }
 	function clearSel() { var L = PE.active(); if (!L) return; if (!PE.sel) { PE.toast("Make a selection first (or delete the layer)"); return; } if (!PE.prepare(L, false, true)) return; var t = L.editMask && L.mask ? L.mask : L.canvas, o = PE.origin(L), x = t.getContext("2d"); x.save(); x.globalCompositeOperation = "destination-out"; x.drawImage(PE.sel.c, -o.x, -o.y); x.restore(); L.rev++; PE.commit("Clear selection"); }
 	function fillSel(color) {
 		var L = PE.active(); if (!PE.doc || !PE.prepare(L)) return; var o = PE.origin(L), c = PE.mk(L.canvas.width, L.canvas.height), x = c.getContext("2d"); x.fillStyle = color; x.fillRect(0, 0, c.width, c.height);
 		PE.paintInto(L, c, o.x, o.y, { target: L.editMask && L.mask ? "mask" : "pixel" }); PE.commit("Fill");
 	}
 	function paintClipboardImage(src, name, at, clip) { var meta = { how: "paste", clip: clip || "clipboard" }; if (!PE.doc) { PE.openImageSource(src, name || "Pasted image", meta); PE.setTool("move"); return; } PE.placeSource(src, name || "Pasted", at, meta); PE.setTool("move"); }
-	function pasteInternal() { if (PE.clipCanvas) paintClipboardImage(PE.clipCanvas, "Pasted layer", null, "editor"); else if (navigator.clipboard && navigator.clipboard.read) { navigator.clipboard.read().then(function (items) { for (var i = 0; i < items.length; i++) { var t = items[i].types.filter(function (t) { return /^image\//.test(t); })[0]; if (t) { items[i].getType(t).then(function (b) { return PE.decodeFile(b); }).then(function (im) { paintClipboardImage(im, "Pasted image"); }); return; } } PE.toast("Nothing to paste"); }).catch(function () { PE.toast("Use Ctrl+V to paste an image"); }); } else PE.toast("Use Ctrl+V to paste an image"); }
+	function pasteOwn() {   // our own copy: back on the spot it came from (same size, turn and flip as the layer it was copied from)
+		var xf = PE.clipXf, L = PE.placeSource(PE.clipCanvas, "Pasted layer", xf ? { x: xf.cx, y: xf.cy } : null, { how: "paste", clip: "editor" });
+		if (L && xf && (xf.sx !== 1 || xf.sy !== 1 || xf.rot)) { L.sx = xf.sx; L.sy = xf.sy; L.rot = xf.rot; PE.invalidate(); PE.commit("Paste in place"); }
+		PE.setTool("move");
+	}
+	function pasteInternal() { if (PE.clipCanvas) pasteOwn(); else if (navigator.clipboard && navigator.clipboard.read) { navigator.clipboard.read().then(function (items) { for (var i = 0; i < items.length; i++) { var t = items[i].types.filter(function (t) { return /^image\//.test(t); })[0]; if (t) { items[i].getType(t).then(function (b) { return PE.decodeFile(b); }).then(function (im) { paintClipboardImage(im, "Pasted image"); }); return; } } PE.toast("Nothing to paste"); }).catch(function () { PE.toast("Use Ctrl+V to paste an image"); }); } else PE.toast("Use Ctrl+V to paste an image"); }
 	document.addEventListener("paste", function (e) {
 		if (/INPUT|TEXTAREA|SELECT/.test((e.target || {}).tagName || "") || PE.modalOpen()) return; var items = (e.clipboardData && e.clipboardData.items) || [];
 		var gf = []; for (var j = 0; j < items.length; j++) if (items[j].kind === "file") { var ff = items[j].getAsFile(); if (ff && /\.xcf$/i.test(ff.name)) gf.push(ff); }
 		if (gf.length) { e.preventDefault(); openFiles(gf, { place: !!PE.doc, how: "paste" }); return; }   // a GIMP file copied in the file manager
-		for (var i = 0; i < items.length; i++) if (items[i].kind === "file" && /^image\//.test(items[i].type)) { var f = items[i].getAsFile(); e.preventDefault(); PE.decodeFile(f).then(function (im) { paintClipboardImage(im, "Pasted image"); }).catch(function () { PE.toast("Can't read that image"); }); return; }
+		for (var i = 0; i < items.length; i++) if (items[i].kind === "file" && /^image\//.test(items[i].type)) { var f = items[i].getAsFile(); e.preventDefault(); PE.decodeFile(f).then(function (im) { if (PE.doc && sameAsClip(im)) pasteOwn(); else paintClipboardImage(im, "Pasted image"); }).catch(function () { PE.toast("Can't read that image"); }); return; }
 		var tx = e.clipboardData && e.clipboardData.getData("text/plain"); if (tx && PE.looksLikeLatex(tx)) { e.preventDefault(); PE.dlgEquation(null, null, tx.trim().replace(/^\$+|\$+$/g, "")); return; }
-		if (PE.clipCanvas) { e.preventDefault(); paintClipboardImage(PE.clipCanvas, "Pasted layer", null, "editor"); }
+		if (PE.clipCanvas) { e.preventDefault(); pasteOwn(); }
 	});
 	function align(how) {
 		var L = PE.active(), d = PE.doc; if (!L) return; var b = PE.bounds(L), dx = 0, dy = 0;

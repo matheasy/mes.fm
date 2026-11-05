@@ -42,8 +42,8 @@
 	PE.placeTextEditor = placeEditor;
 	function poke() { blinkOn = true; PE.invalidateOverlay(); }
 	function hitText(e, prefer) {   // the text layer under a point: its whole text box counts (clicking between letters edits, it does not start a new text)
-		if (prefer && prefer.type === "text" && prefer.text && PE.effVisible(prefer) && PE.layerAtPoint(prefer, e.x, e.y)) return prefer;   // only a text layer (the active picture under the click is not "a text to edit")
-		var ls = PE.doc.layers; for (var i = ls.length - 1; i >= 0; i--) { var L = ls[i]; if (L.type !== "text" || !L.text || !PE.effVisible(L) || L.locked) continue; if (PE.layerAtPoint(L, e.x, e.y)) return L; }
+		if (prefer && prefer.type === "text" && prefer.text && PE.effVisible(prefer) && !PE.isLockedDeep(prefer) && PE.layerAtPoint(prefer, e.x, e.y)) return prefer;   // only a text layer (the active picture under the click is not "a text to edit")
+		var ls = PE.doc.layers; for (var i = ls.length - 1; i >= 0; i--) { var L = ls[i]; if (L.type !== "text" || !L.text || !PE.effVisible(L) || PE.isLockedDeep(L)) continue; if (PE.layerAtPoint(L, e.x, e.y)) return L; }
 		return null;
 	}
 	function indexAt(L, x, y) {

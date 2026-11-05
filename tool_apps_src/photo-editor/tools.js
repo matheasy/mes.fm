@@ -255,7 +255,7 @@
 					for (i = 0; i < 4; i++) { var dd = Math.hypot(corners[i].x - sp.x, corners[i].y - sp.y); if (dd >= 10 && dd < 30 && !PE.layerAtPoint(A, e.x, e.y)) { mv = { kind: "rot", L: A, a0: Math.atan2(e.y - A.cy, e.x - A.cx), rot0: A.rot }; return; } }
 				}
 			}
-			var raw = o.auto ? PE.layerAt(e.x, e.y) : null; if (raw && raw !== A && PE.isBackdrop(raw)) raw = null;
+			var raw = o.auto ? PE.layerAt(e.x, e.y, { unlocked: true }) : null; if (raw && raw !== A && PE.isBackdrop(raw)) raw = null;
 			var hit = raw ? pickTarget(raw, multi ? null : A, o.groups) : null;
 			if (e.shift || e.ctrl) {   // add to / take out of the selection; on empty canvas a rubber band adds
 				if (hit) { var now = PE.toggleMove(hit); if (now) startMove(PE.moveSet(), e); return; }
@@ -266,7 +266,7 @@
 			if (hit) { if (hit !== A || multi) { if (PE.setMulti) PE.setMulti([]); PE.setActive(hit.id); } startMove([hit], e); return; }
 			if (!o.auto) { if (set.length) startMove(set, e); return; }
 			if (multi) { var mb = setBox(set); if (mb && e.x >= mb.x && e.y >= mb.y && e.x <= mb.x + mb.w && e.y <= mb.y + mb.h) { startMove(set, e); return; } }
-			else if (A && PE.layerAtPoint(A, e.x, e.y) && PE.effVisible(A)) { startMove([A], e); return; }   // e.g. dragging the active background picture
+			else if (A && !PE.isLockedDeep(A) && PE.layerAtPoint(A, e.x, e.y) && PE.effVisible(A)) { startMove([A], e); return; }   // e.g. dragging the active background picture
 			mv = { kind: "band", a: e, b: e, add: false };   // empty canvas (or outside the picture): rubber-band select
 		},
 		move: function (e) {
@@ -343,7 +343,7 @@
 			// round 10: say what a text box handle does (a tooltip on the canvas)
 			var tip = ""; if (isTxt(A)) { if (h) tip = h.hx !== 0.5 && h.hy !== 0.5 ? "Drag to resize the text box (Auto-fit text: the size follows)" : h.hy === 0.5 ? "Drag to change the box width: the words re-wrap, the size stays" : "Drag to change the box height (Auto-fit text)"; else if (/resize/.test(cur)) tip = "Drag the corner to make the text bigger or smaller (Alt: from the centre)"; else if (cur === ROT_CUR) tip = "Drag to rotate"; }
 			if (PE.els.over.title !== tip) PE.els.over.title = tip;
-			var raw = PE.opt.move.auto ? PE.layerAt(e.x, e.y) : null; if (raw && PE.isBackdrop(raw)) raw = null; var hp2 = raw ? pickTarget(raw, PE.moveSet().length > 1 ? null : A, PE.opt.move.groups) : null; if (hp2 !== hoverPick) { hoverPick = hp2; PE.invalidateOverlay(); } var ht = PE.textAt ? PE.textAt(e) : null; if (ht === A) ht = null; if (ht !== hoverTM) { hoverTM = ht; PE.invalidateOverlay(); }
+			var raw = PE.opt.move.auto ? PE.layerAt(e.x, e.y, { unlocked: true }) : null; if (raw && PE.isBackdrop(raw)) raw = null; var hp2 = raw ? pickTarget(raw, PE.moveSet().length > 1 ? null : A, PE.opt.move.groups) : null; if (hp2 !== hoverPick) { hoverPick = hp2; PE.invalidateOverlay(); } var ht = PE.textAt ? PE.textAt(e) : null; if (ht === A) ht = null; if (ht !== hoverTM) { hoverTM = ht; PE.invalidateOverlay(); }
 		},
 		overlay: function (x, v) {
 			if (hoverTM && PE.doc.layers.indexOf(hoverTM) >= 0 && PE.drawTextFrame) PE.drawTextFrame(x, hoverTM, false);

@@ -67,10 +67,12 @@
 	};
 	PE.bounds = function (L) { if (PE.isGroup(L)) return PE.groupBounds(L); var c = PE.corners(L), x0 = 1e9, y0 = 1e9, x1 = -1e9, y1 = -1e9; c.forEach(function (p) { x0 = Math.min(x0, p[0]); x1 = Math.max(x1, p[0]); y0 = Math.min(y0, p[1]); y1 = Math.max(y1, p[1]); }); return { x: x0, y: y0, w: x1 - x0, h: y1 - y0 }; };
 	PE.toLayerPt = function (L, x, y) { var c = Math.cos(L.rot), s = Math.sin(L.rot), dx = x - L.cx, dy = y - L.cy; return { x: (c * dx + s * dy) / L.sx + L.canvas.width / 2, y: (-s * dx + c * dy) / L.sy + L.canvas.height / 2 }; };
-	PE.layerAt = function (x, y) {
-		var ls = PE.doc.layers;
+	/* opts.unlocked: a locked layer (or one inside a locked group) is not clickable, the click goes to what is under it */
+	PE.isLockedDeep = function (L) { if (L.locked) return true; return PE.ancestorsOf ? PE.ancestorsOf(L).some(function (g) { return g.locked; }) : false; };
+	PE.layerAt = function (x, y, opts) {
+		var ls = PE.doc.layers, ul = opts && opts.unlocked;
 		for (var i = ls.length - 1; i >= 0; i--) {
-			var L = ls[i]; if (PE.isGroup(L) || !PE.effVisible(L)) continue; var p = PE.toLayerPt(L, x, y);
+			var L = ls[i]; if (PE.isGroup(L) || !PE.effVisible(L) || (ul && PE.isLockedDeep(L))) continue; var p = PE.toLayerPt(L, x, y);
 			if (p.x < 0 || p.y < 0 || p.x >= L.canvas.width || p.y >= L.canvas.height) continue;
 			var cr = L.crop; if (cr && (p.x < cr.x || p.y < cr.y || p.x >= cr.x + cr.w || p.y >= cr.y + cr.h)) continue;   // hidden by the layer's crop box
 			try { if (L.canvas.getContext("2d").getImageData(p.x | 0, p.y | 0, 1, 1).data[3] > 8) return L; } catch (e) { return L; }
