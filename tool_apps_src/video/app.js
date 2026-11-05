@@ -173,9 +173,46 @@
 	if (spSel) { spSel.value = String(UI.speed || 1); P.speed = +spSel.value || 1; spSel.onchange = function () { P.setSpeed(+spSel.value); }; }
 	VE.on("speed", function (s) { UI.speed = s; saveUI(); if (spSel) { spSel.value = String(s); spSel.classList.toggle("is-on", s !== 1); } if (s !== 1) toast("Preview speed " + s + "× (the exported video is not changed)"); });
 	if (spSel) spSel.classList.toggle("is-on", P.speed !== 1);
-	document.querySelectorAll("[data-tp]").forEach(function (b) { b.onclick = function (e) { var a = b.getAttribute("data-tp"), f = 1 / VE.P.fps; if (a === "start") P.seek(0); else if (a === "end") P.seek(V.duration(VE.P)); else P.seek(VE.t + (a === "fwd" ? 1 : -1) * (e.shiftKey ? 1 : f)); }; });
-	function timeText() { $("vd-time").textContent = V.tc(VE.t, VE.P.fps) + " / " + V.tc(V.duration(VE.P), VE.P.fps); }
-	VE.on("time", timeText);
+	// previous / next clip edge (Camtasia: Ctrl+Alt+Left / Right)
+	VE.goEdit = function (dir) { if (P.playing) P.pause(); var t = V.nextEdit(VE.P, VE.t, dir, 0.5 / VE.P.fps); if (t == null) t = dir > 0 ? V.duration(VE.P) : 0; P.seek(t); VE.tl.reveal(t); };
+	// one frame back / forward; pressing and holding keeps stepping, waiting for each frame to show so it never runs ahead of the picture
+	VE.stepFrame = function (dir, big) { if (P.playing) P.pause(); P.seek(VE.t + dir * (big ? 1 : 1 / VE.P.fps)); VE.tl.reveal(VE.t); };
+	var hold = null;
+	function stopHold() { if (hold) { clearTimeout(hold.timer); hold = null; } }
+	document.querySelectorAll("[data-tp]").forEach(function (b) {
+		var a = b.getAttribute("data-tp");
+		if (a === "back" || a === "fwd") {
+			var dir = a === "fwd" ? 1 : -1;
+			b.addEventListener("pointerdown", function (e) {
+				if (e.button > 0) return; e.preventDefault(); stopHold(); VE.stepFrame(dir, e.shiftKey);
+				var big = e.shiftKey, h = hold = { last: performance.now() };
+				(function next(delay) { h.timer = setTimeout(function () { if (hold !== h) return; if (P.seeking() && performance.now() - h.last < 400) return next(15); h.last = performance.now(); VE.stepFrame(dir, big); next(big ? 120 : 1000 / Math.min(30, VE.P.fps)); }, delay); })(380);
+				try { b.setPointerCapture(e.pointerId); } catch (x) { /* ignore */ }
+			});
+			["pointerup", "pointercancel", "lostpointercapture"].forEach(function (ev) { b.addEventListener(ev, stopHold); });
+			b.addEventListener("keydown", function (e) { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); e.stopPropagation(); VE.stepFrame(dir, e.shiftKey); } });
+			return;
+		}
+		b.onclick = function () { if (a === "start") P.seek(0); else if (a === "end") P.seek(V.duration(VE.P)); else if (a === "prevclip") VE.goEdit(-1); else if (a === "nextclip") VE.goEdit(1); };
+	});
+	// the time under the preview is a box: type a time (4:23;13, 1:02:03, 263, 2m30s, +10, -5) and press Enter to go there
+	var tin = $("vd-tin");
+	function timeText() { if (document.activeElement !== tin) tin.value = V.tc(VE.t, VE.P.fps); tin.style.width = Math.max(7, tin.value.length + 1) + "ch"; $("vd-tdur").textContent = V.tc(V.duration(VE.P), VE.P.fps); }
+	tin.addEventListener("focus", function () { if (P.playing) P.pause(); tin.value = V.tc(VE.t, VE.P.fps); tin.select(); });
+	// the first click selects the whole time (so typing replaces it); a click while it has focus places the caret as usual
+	tin.addEventListener("mousedown", function (e) { if (document.activeElement !== tin) { e.preventDefault(); tin.focus(); } });
+	tin.addEventListener("input", function () { tin.style.width = Math.max(7, tin.value.length + 1) + "ch"; tin.classList.toggle("is-bad", tin.value.trim() !== "" && V.parseGoto(tin.value, VE.P.fps, VE.t) == null); });
+	tin.addEventListener("keydown", function (e) {
+		if (e.key === "Enter") {
+			e.preventDefault(); var t = V.parseGoto(tin.value, VE.P.fps, VE.t);
+			if (t == null) { tin.classList.add("is-bad"); toast("Type a time like 4:23;13, 1:02:03, 263 (seconds), 2m30s, or +10 / -5 to move from here."); return; }
+			var d = V.duration(VE.P); if (t > d) toast("That is after the end (" + V.tc(d, VE.P.fps) + "): went to the end.");
+			tin.classList.remove("is-bad"); P.seek(Math.max(0, Math.min(t, d))); VE.tl.reveal(VE.t); tin.blur();
+		} else if (e.key === "Escape") { e.preventDefault(); e.stopPropagation(); tin.classList.remove("is-bad"); tin.blur(); }
+		e.stopPropagation();
+	});
+	tin.addEventListener("blur", function () { tin.classList.remove("is-bad"); timeText(); });
+	VE.on("time", timeText); VE.on("change", timeText);
 	VE.on("play", function () { $("vd-play").innerHTML = "&#10074;&#10074;"; $("vd-play").setAttribute("aria-label", "Pause"); });
 	VE.on("pause", function () { $("vd-play").innerHTML = "&#9654;"; $("vd-play").setAttribute("aria-label", "Play"); timeText(); });
 	$("vd-fs").onclick = function () { var w = $("vd-stagewrap"); if (document.fullscreenElement) document.exitFullscreen(); else if (w.requestFullscreen) w.requestFullscreen().catch(function () { toast("Full screen is not allowed here."); }); };
@@ -473,19 +510,23 @@
 		if (mod && (k === "d" || k === "D")) { e.preventDefault(); VE.duplicate(); return; }
 		if (mod && e.shiftKey && (k === "a" || k === "A")) { e.preventDefault(); VE.separate(VE.selected()); return; }
 		if (mod && (k === "a" || k === "A")) { e.preventDefault(); VE.sel = VE.P.clips.map(function (c) { return c.id; }); VE.emit("select"); return; }
+		if ((mod || e.ctrlKey) && e.altKey && (k === "ArrowLeft" || k === "ArrowRight")) { e.preventDefault(); VE.goEdit(k === "ArrowRight" ? 1 : -1); return; }
+		if (mod && (k === "g" || k === "G")) { e.preventDefault(); tin.focus(); return; }
+		if (mod && (k === "Home" || k === "End")) { e.preventDefault(); P.seek(k === "Home" ? 0 : V.duration(VE.P)); VE.tl.reveal(VE.t); return; }
 		if (mod || e.altKey) return;
 		var h = true;
 		switch (k) {
 			case " ": if (e.repeat) break; if (P.hover && !P.playing) P.spaceDown(); else P.toggle(); break;   // over the preview: hold Space and drag to move the view
 			case "g": case "G": $("vd-vzguide").click(); break;
 			case "k": case "K": P.pause(); break;
-			case "<": case ",": if (k === "<" || e.shiftKey) P.stepSpeed(-1); else h = false; break;
-			case ">": case ".": if (k === ">" || e.shiftKey) P.stepSpeed(1); else h = false; break;
+			case "<": case ",": if (k === "<" || e.shiftKey) P.stepSpeed(-1); else VE.stepFrame(-1); break;
+			case ">": case ".": if (k === ">" || e.shiftKey) P.stepSpeed(1); else VE.stepFrame(1); break;
+			case "ArrowUp": VE.goEdit(-1); break; case "ArrowDown": VE.goEdit(1); break;
 			case "l": case "L": if (P.playing && !P.rev) P.play(Math.min(8, P.rate * 2)); else P.play(1); break;
 			case "j": case "J": if (P.playing && P.rev) P.reverse(Math.min(8, P.rate * 2)); else P.reverse(1); break;
-			case "ArrowLeft": P.seek(VE.t - (e.shiftKey ? 1 : f)); break;
-			case "ArrowRight": P.seek(VE.t + (e.shiftKey ? 1 : f)); break;
-			case "Home": P.seek(0); break; case "End": P.seek(V.duration(VE.P)); break;
+			case "ArrowLeft": VE.stepFrame(-1, e.shiftKey); break;
+			case "ArrowRight": VE.stepFrame(1, e.shiftKey); break;
+			case "Home": P.seek(0); VE.tl.reveal(0); break; case "End": P.seek(V.duration(VE.P)); VE.tl.reveal(VE.t); break;
 			case "s": case "S": VE.split(); break;
 			case "Delete": case "Backspace": VE.del(e.shiftKey); break;
 			case "i": case "I": mark("in"); break; case "o": case "O": mark("out"); break;

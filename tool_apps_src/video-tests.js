@@ -285,5 +285,18 @@ function proj(clips) { const p = V.newProject(); p.clips = clips; return p; }
 	const r = V.rotPt(2, 1, 1, 1, 90); near(r.x, 1, 1e-12, "rotate x"); near(r.y, 2, 1e-12, "rotate y");
 	eq(V.presetOf(854, 480), "854x480", "480p preset"); eq(V.presetOf(1440, 1080), "1440x1080", "4:3 preset"); ok(V.CANVAS_PRESETS.every(q => V.parseSize(q[0]) && q[2]), "every preset parses and has a group");
 }
+// go-to box, previous / next clip, magnetic left trim
+{
+	near(V.parseGoto("4:23;13", 30), 263 + 13 / 30, 1e-9, "go to m:ss;ff"); near(V.parseGoto("1:02:03.5", 30), 3723.5, 1e-9, "go to h:mm:ss.s");
+	near(V.parseGoto("263", 30), 263, 0, "plain seconds"); near(V.parseGoto("2m30s", 30), 150, 0, "2m30s"); near(V.parseGoto("1h", 30), 3600, 0, "1h");
+	near(V.parseGoto("+10", 30, 5), 15, 0, "relative +"); near(V.parseGoto("-1:00", 30, 100), 40, 0, "relative -"); near(V.parseGoto("15f", 30), 0.5, 1e-9, "frames");
+	near(V.parseGoto("0,5", 30), 0.5, 1e-9, "decimal comma"); ok(V.parseGoto("abc", 30) === null && V.parseGoto("", 30) === null && V.parseGoto("1:x", 30) === null, "bad input");
+	const p = proj([clip({ id: "a", start: 0, out: 5 }), clip({ id: "b", start: 8, out: 4 })]);
+	eq(V.editPoints(p), [0, 5, 8, 12], "edit points"); eq(V.nextEdit(p, 5, 1), 8, "next"); eq(V.nextEdit(p, 5, -1), 0, "previous"); eq(V.nextEdit(p, 6, -1), 5, "previous from inside a gap"); eq(V.nextEdit(p, 12, 1), null, "nothing after the end");
+	const c = clip({ start: 0, in: 20, out: 30 }), o = V.trim(c, "l", -4, { mediaDur: 100, mag: true, minDur: 1 / 30 });
+	near(o.start, 0, 0, "magnetic left trim keeps the start"); near(o.in, 16, 1e-9, "and brings back 4 s of media"); near(o.out, 30, 0, "end of media unchanged");
+	const o2 = V.trim(clip({ start: 10, in: 2, out: 30 }), "l", 0, { mediaDur: 100, mag: true }); near(o2.in, 0, 0, "cannot go before the start of the media");
+	const o3 = V.trim(clip({ start: 10, in: 2, out: 30 }), "l", 13, { mediaDur: 100, mag: true }); near(o3.in, 5, 1e-9, "dragging right hides the start"); near(o3.start, 10, 0, "start kept");
+}
 console.log(pass + " passed, " + fail + " failed");
 process.exit(fail ? 1 : 0);

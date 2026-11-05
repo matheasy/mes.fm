@@ -31,13 +31,13 @@
 				var badges = (c.link ? "🔗 " : "") + (c.speed && c.speed !== 1 ? c.speed + "×  " : "") + (c.clean && c.clean.key ? "✓ clean  " : "") + (V.afxOn(c) ? "fx  " : "") + (c.mute ? "muted  " : "") + (c.type === "video" && c.noAudio ? "no sound  " : "");
 				html += '<div class="vd-clip vd-clip--' + c.type + (sel[c.id] ? " is-sel" : "") + (m && m.state === "missing" ? " is-missing" : "") + '" data-id="' + c.id + '" style="left:' + x + "px;width:" + w + 'px" title="' + VE.esc(label) + " · " + V.short(V.dur(c)) + '">' +
 					(c.xin > 0 ? '<i class="vd-xf" style="width:' + c.xin * VE.pps + 'px"></i>' : "") +
-					'<canvas class="vd-cc" width="' + Math.min(4000, Math.ceil(w)) + '" height="' + (h - 4) + '"></canvas><span class="vd-cl">' + VE.esc(badges + label) + "</span>" +
+					'<canvas class="vd-cc" data-h="' + (h - 4) + '"></canvas><span class="vd-cl">' + VE.esc(badges + label) + "</span>" +
 					(c.fin > 0 ? '<i class="vd-fade vd-fade--in" style="width:' + c.fin * VE.pps + 'px"></i>' : "") + (c.fout > 0 ? '<i class="vd-fade vd-fade--out" style="width:' + c.fout * VE.pps + 'px"></i>' : "") + animMarks(c, w) + "</div>";
 			});
 			html += '</div><i class="vd-rgrip" data-rgrip="' + tr.id + '" title="Drag to make this track taller or shorter (double-click: normal height)"></i></div>';
 		});
 		rows.innerHTML = html;
-		rows.querySelectorAll(".vd-clip").forEach(function (el) { paintClip(el); });
+		rows.querySelectorAll(".vd-clip").forEach(function (el) { paintClip(el, true); });
 		var mk = p.marks || {};
 		if (mk.in != null && mk.out != null && mk.out > mk.in) { markEl.hidden = false; markEl.style.left = t2x(mk.in) + "px"; markEl.style.width = (mk.out - mk.in) * VE.pps + "px"; }
 		else markEl.hidden = true;
@@ -51,43 +51,54 @@
 			return '<i class="vd-an-mk' + (VE.animSel === a.id ? " is-sel" : "") + '" data-aid="' + VE.esc(a.id) + '" style="left:' + x + "px;width:" + aw + "px;top:" + (2 + (i % 2) * 13) + 'px" title="' + VE.esc(V.animName(a)) + " · " + (Math.round(a.d * 100) / 100) + ' s. Drag to move, drag an end to change its length, click to jump to its end."><u></u><s></s><b></b></i>';
 		}).join("");
 	}
-	function paintClip(el) {
+	// the canvas only covers the part of the clip that is on screen (plus a screen on each side), drawn at real size: a long clip zoomed
+	// in is never one huge stretched picture. Scrolling repaints a clip when the view leaves the part it has painted.
+	function view() { var m = sc.clientWidth || 800; return { v0: sc.scrollLeft - HEAD - m, v1: sc.scrollLeft - HEAD + 2 * m }; }
+	function paintClip(el, force) {
 		var c = V.clip(VE.P, el.getAttribute("data-id")); if (!c) return;
-		var cv = el.querySelector("canvas"), g = cv.getContext("2d"), W = cv.width, H = cv.height, m = VE.media(c.media), k = W / Math.max(1, V.dur(c) * VE.pps);
-		g.clearRect(0, 0, W, H);
+		var cv = el.querySelector("canvas"), m = VE.media(c.media), x0 = c.start * VE.pps, w = Math.max(4, V.dur(c) * VE.pps), vw = view();
+		var a = Math.max(0, Math.floor(vw.v0 - x0)), b = Math.min(Math.ceil(w), Math.ceil(vw.v1 - x0));
+		if (!force && cv._a != null && cv._a <= Math.max(0, sc.scrollLeft - HEAD - x0) && cv._b >= Math.min(w, sc.scrollLeft - HEAD + sc.clientWidth - x0)) return;
+		if (b <= a) { cv.style.display = "none"; cv._a = cv._b = null; return; }
+		var dpr = Math.min(2, window.devicePixelRatio || 1), H = +cv.getAttribute("data-h") || el.clientHeight, W = b - a;
+		cv.style.display = ""; cv.style.left = a + "px"; cv.style.width = W + "px"; cv.style.right = "auto";
+		cv.width = Math.min(16384, Math.round(W * dpr)); cv.height = Math.round(H * dpr); cv._a = a; cv._b = b;
+		var g = cv.getContext("2d"); g.setTransform(cv.width / W, 0, 0, dpr, -a * cv.width / W, 0); g.clearRect(a, 0, W, H);
 		if (c.type === "video" && m && m.thumbImg && m.thumbTimes) {
 			var th = H - (VE.hasSound(c) ? 18 : 0), tw = Math.max(8, th * m.thumbW / m.thumbH);
-			for (var x = 0; x < W; x += tw) {
-				var s = V.srcAt(c, c.start + (x + tw / 2) / k / VE.pps), idx = nearest(m.thumbTimes, s);
+			for (var x = Math.floor(a / tw) * tw; x < b; x += tw) {
+				var s = V.srcAt(c, c.start + (x + tw / 2) / VE.pps), idx = nearest(m.thumbTimes, s);
 				g.drawImage(m.thumbImg, idx * m.thumbW, 0, m.thumbW, m.thumbH, x, 0, tw, th);
 			}
 		} else if (c.type === "image" && m && m.bitmap) {
-			var ih = H, iw = ih * m.w / m.h; for (var x2 = 0; x2 < W; x2 += iw + 6) g.drawImage(m.bitmap, x2, 0, iw, ih);
+			var ih = H, iw = ih * m.w / m.h; for (var x2 = Math.floor(a / (iw + 6)) * (iw + 6); x2 < b; x2 += iw + 6) g.drawImage(m.bitmap, x2, 0, iw, ih);
 		}
 		if (VE.hasSound(c) && m && (m.wave || m.peaks)) {
 			var big = c.type === "audio", hh = big ? H : 18, top = big ? 0 : H - 18;
-			if (!big) { g.fillStyle = "rgba(2,6,23,0.6)"; g.fillRect(0, top, W, hh); }
-			paintWave(g, c, m, W, top, hh, k, big);
+			if (!big) { g.fillStyle = "rgba(2,6,23,0.6)"; g.fillRect(a, top, W, hh); }
+			paintWave(g, c, m, a, b, top, hh, big);
 		}
 	}
+	var scrollRaf = 0;
+	function repaintVisible() { scrollRaf = 0; rows.querySelectorAll(".vd-clip").forEach(function (el) { paintClip(el); }); }
 	// peak (light) and RMS (solid) of the clip's sound, mirrored; dB scale by default so quiet parts show too. With audio effects on, the
 	// original is drawn faint and the processed sound over it; red ticks where it would clip
-	function paintWave(g, c, m, W, top, hh, k, big) {
+	function paintWave(g, c, m, A, B, top, hh, big) {
 		var mode = T.wave, mid = top + hh / 2, half = hh / 2 - 1, vdb = V.db(c.vol == null ? 1 : c.vol), env = V.afxOn(c) ? VE.fxEnv(c) : null, w = m.wave, dim = c.mute ? 0.35 : 1;
 		if (!isFinite(vdb)) vdb = -120;
 		if (big && hh >= 56) {
 			g.save(); g.font = "9px Arial, sans-serif"; g.textBaseline = "middle";
 			(mode === "db" ? [0, -6, -12, -24, -48] : [0, -6, -12]).forEach(function (d) {
 				var y = V.waveY(d, mode) * half; g.fillStyle = d === 0 ? "rgba(248,113,113,0.35)" : "rgba(255,255,255,0.10)";
-				g.fillRect(0, Math.round(mid - y), W, 1); g.fillRect(0, Math.round(mid + y), W, 1);
-				if (d < 0 && y > 9 && y < half - 4) { g.fillStyle = "rgba(255,255,255,0.5)"; g.fillText(String(d), 3, mid - y + 6); }
+				g.fillRect(A, Math.round(mid - y), B - A, 1); g.fillRect(A, Math.round(mid + y), B - A, 1);
+				if (d < 0 && y > 9 && y < half - 4) { g.fillStyle = "rgba(255,255,255,0.5)"; g.fillText(String(d), Math.max(3, sc.scrollLeft - HEAD - c.start * VE.pps + 3), mid - y + 6); }
 			});
 			g.restore();
 		}
-		g.fillStyle = "rgba(255,255,255,0.14)"; g.fillRect(0, Math.round(mid), W, 1);
+		g.fillStyle = "rgba(255,255,255,0.14)"; g.fillRect(A, Math.round(mid), B - A, 1);
 		var cols = env ? ["rgba(255,255,255,0.16)", "rgba(110,231,183,0.75)", "#d1fae5"] : big ? [null, "rgba(110,231,183,0.62)", "#a7f3d0"] : [null, "rgba(125,211,252,0.55)", "#7dd3fc"];
-		for (var px = 0; px < W; px++) {
-			var s0 = V.srcAt(c, c.start + px / k / VE.pps), s1 = V.srcAt(c, c.start + (px + 1) / k / VE.pps), i0 = Math.max(0, Math.floor(s0 * 50)), i1 = Math.max(i0 + 1, Math.floor(s1 * 50)), pk = -Infinity, rm = -Infinity;
+		for (var px = A; px < B; px++) {
+			var s0 = V.srcAt(c, c.start + px / VE.pps), s1 = V.srcAt(c, c.start + (px + 1) / VE.pps), i0 = Math.max(0, Math.floor(s0 * 50)), i1 = Math.max(i0 + 1, Math.floor(s1 * 50)), pk = -Infinity, rm = -Infinity;
 			if (w) { for (var i = i0; i < i1 && i < w.pk.length; i++) { var a = V.decDb(w.pk[i]), b = V.decDb(w.rms[i]); if (a > pk) pk = a; if (b > rm) rm = b; } }
 			else { var mx = 0; for (var i2 = i0; i2 < i1 && i2 < m.peaks.length; i2++) if (m.peaks[i2] > mx) mx = m.peaks[i2]; pk = V.db(Math.pow(mx / 255, 2)); rm = pk - 9; }
 			if (!isFinite(pk)) continue;
@@ -119,7 +130,9 @@
 		var x = t2x(VE.t); ph.style.left = x + "px";
 		if (VE.preview && VE.preview.playing) { var v0 = sc.scrollLeft + HEAD, v1 = sc.scrollLeft + sc.clientWidth; if (x > v1 - 40 || x < v0) sc.scrollLeft = Math.max(0, x - HEAD - 60); }
 	};
-	sc.addEventListener("scroll", function () { drawRuler(); });
+	// scroll the timeline so time t is on screen (keyboard / button jumps)
+	T.reveal = function (t) { var x = t2x(t), v0 = sc.scrollLeft + HEAD, v1 = sc.scrollLeft + sc.clientWidth; if (x < v0 + 20 || x > v1 - 20) sc.scrollLeft = Math.max(0, x - HEAD - (sc.clientWidth - HEAD) / 3); };
+	sc.addEventListener("scroll", function () { drawRuler(); if (!scrollRaf) scrollRaf = requestAnimationFrame(repaintVisible); });
 	T.zoom = function (pps, aroundClientX) {
 		var old = VE.pps, b = sc.getBoundingClientRect(), ax = aroundClientX == null ? b.left + HEAD + (sc.clientWidth - HEAD) / 2 : aroundClientX, at = x2t(ax);
 		VE.pps = V.clamp(pps, 1, 600); T.render();
@@ -194,9 +207,19 @@
 			if (T.snap && !e.altKey) want = V.snap(want, snapPts(ign), 8 / VE.pps).t;
 			var nb = V.onTrack(VE.P, c.track).filter(function (x) { return x !== c; }), lo = 0, hi = Infinity;
 			if (!isMag) nb.forEach(function (x) { if (V.end(x) <= o.start + 1e-4) lo = Math.max(lo, V.end(x)); if (x.start >= V.end(c) - 1e-4) hi = Math.min(hi, x.start); });
-			Object.assign(c, V.trim(c, drag.edge, want, { mediaDur: VE.mediaDur(c), lo: lo, hi: hi, minDur: 1 / VE.P.fps }));
+			if (isMag && drag.edge === "l") want = o.start + dt;   // magnetic: the edge follows the pointer, no snapping
+			Object.assign(c, V.trim(c, drag.edge, want, { mediaDur: VE.mediaDur(c), lo: lo, hi: hi, minDur: 1 / VE.P.fps, mag: isMag }));
 			// linked partners get the same trim
-			drag.orig.forEach(function (q) { if (q.c !== c && c.link && q.c.link === c.link) { q.c.start = c.start; q.c.in = c.in; q.c.out = c.out; } });
+			var grow = V.dur(c) - (o.out - o.in) / (c.speed || 1);
+			if (isMag) {   // put the other clips back where they were, then let the partners' (non-magnetic) tracks ripple by the same amount
+				var keep0 = JSON.parse(drag.snap), was = {}; keep0.clips.forEach(function (x) { was[x.id] = x; });
+				VE.P.clips.forEach(function (x) { if (!ign[x.id] && was[x.id]) x.start = was[x.id].start; });
+			}
+			drag.orig.forEach(function (q) {
+				if (q.c === c || !c.link || q.c.link !== c.link) return;
+				q.c.start = c.start; q.c.in = c.in; q.c.out = c.out;
+				if (isMag && !mag(q.c.track)) V.onTrack(VE.P, q.c.track).forEach(function (x) { if (!ign[x.id] && x.start >= q.start + (q.out - q.in) / (q.c.speed || 1) - 1e-4) x.start = Math.max(0, x.start + grow); });
+			});
 			drag.bad = drag.orig.some(function (q) { return q.c !== c && !mag(q.c.track) && !V.canPlace(VE.P, q.c.track, q.c.start, V.dur(q.c), ign); });
 			if (isMag) V.pack(VE.P, c.track);
 			V.syncLinks(VE.P);
@@ -304,8 +327,8 @@
 	T.inside = function (clientX, clientY) { var b = sc.getBoundingClientRect(); return clientX >= b.left && clientX <= b.right && clientY >= b.top && clientY <= b.bottom; };
 
 	VE.on("change", function () { T.render(); });
-	VE.on("thumbs", function (m) { rows.querySelectorAll(".vd-clip").forEach(function (el) { var c = V.clip(VE.P, el.getAttribute("data-id")); if (c && c.media === m.id) paintClip(el); }); });
+	VE.on("thumbs", function (m) { rows.querySelectorAll(".vd-clip").forEach(function (el) { var c = V.clip(VE.P, el.getAttribute("data-id")); if (c && c.media === m.id) paintClip(el, true); }); });
 	VE.on("time", function () { T.playhead(); });
 	VE.on("select", markSel);
-	if (window.ResizeObserver) new ResizeObserver(function () { drawRuler(); }).observe(sc);
+	if (window.ResizeObserver) new ResizeObserver(function () { drawRuler(); rows.querySelectorAll(".vd-clip").forEach(function (el) { paintClip(el, true); }); }).observe(sc);
 })();

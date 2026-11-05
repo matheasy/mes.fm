@@ -72,12 +72,14 @@
 					</div>
 					<div class="vd-transport" role="toolbar" aria-label="Playback">
 						<button type="button" class="vd-btn vd-ico" data-tp="start" title="To the start (Home)" aria-label="To the start">&#9198;</button>
-						<button type="button" class="vd-btn vd-ico" data-tp="back" title="One frame back (Left arrow; Shift = 1 s)" aria-label="One frame back">&#9664;&#9646;</button>
+						<button type="button" class="vd-btn vd-ico" data-tp="prevclip" title="Previous clip edge (Up arrow, or Ctrl+Alt+Left as in Camtasia)" aria-label="Previous clip edge">&#9664;&#8739;</button>
+						<button type="button" class="vd-btn vd-ico" data-tp="back" title="One frame back (Left arrow or ,; hold to keep stepping; Shift = 1 s)" aria-label="One frame back">&#9664;&#9646;</button>
 						<button type="button" class="vd-btn vd-ico vd-play" id="vd-play" title="Play / pause (Space)" aria-label="Play">&#9654;</button>
-						<button type="button" class="vd-btn vd-ico" data-tp="fwd" title="One frame forward (Right arrow; Shift = 1 s)" aria-label="One frame forward">&#9646;&#9654;</button>
+						<button type="button" class="vd-btn vd-ico" data-tp="fwd" title="One frame forward (Right arrow or .; hold to keep stepping; Shift = 1 s)" aria-label="One frame forward">&#9646;&#9654;</button>
+						<button type="button" class="vd-btn vd-ico" data-tp="nextclip" title="Next clip edge (Down arrow, or Ctrl+Alt+Right as in Camtasia)" aria-label="Next clip edge">&#8739;&#9654;</button>
 						<button type="button" class="vd-btn vd-ico" data-tp="end" title="To the end (End)" aria-label="To the end">&#9197;</button>
 						<label class="vd-speed" title="Playback speed of the preview only (Shift+&lt; slower, Shift+&gt; faster). The exported video keeps its normal speed."><span>Speed</span><select id="vd-speed" aria-label="Playback speed of the preview (does not change the video)"><option value="0.25">0.25×</option><option value="0.5">0.5×</option><option value="0.75">0.75×</option><option value="1" selected>1×</option><option value="1.25">1.25×</option><option value="1.5">1.5×</option><option value="1.75">1.75×</option><option value="2">2×</option><option value="3">3×</option><option value="4">4×</option></select></label>
-						<span class="vd-time" id="vd-time" aria-live="off">0:00;00 / 0:00;00</span>
+						<span class="vd-time" id="vd-time"><input type="text" id="vd-tin" value="0:00;00" spellcheck="false" autocomplete="off" inputmode="text" aria-label="Playhead time: type a time and press Enter to go there" title="Type a time and press Enter to go there: 4:23;13, 1:02:03, 263, 2m30s, +10 or -5 (from here). Ctrl+G jumps here."> / <span id="vd-tdur">0:00;00</span></span>
 						<span class="vd-sp"></span>
 						<button type="button" class="vd-btn vd-sm" id="vd-snap" title="Save this frame as a PNG picture">PNG</button>
 						<button type="button" class="vd-btn vd-sm" id="vd-pvwin" aria-pressed="false" title="Play the preview filling the browser window (F; Esc leaves)">&#10530; Fill window</button>
@@ -125,7 +127,7 @@
 				<b>Keyboard</b>
 				<dl>
 					<dt>Space</dt><dd>Play / pause</dd><dt>J K L</dt><dd>Play backwards / stop / play (press again for 2&times;, 4&times;)</dd>
-					<dt>&larr; &rarr;</dt><dd>One frame (Shift: 1 second)</dd><dt>Home / End</dt><dd>Start / end</dd>
+					<dt>&larr; &rarr; or , .</dt><dd>One frame (hold to keep stepping; Shift: 1 second)</dd><dt>&uarr; &darr;, Ctrl+Alt+&larr; &rarr;</dt><dd>Previous / next clip edge (start or end of a clip, or a mark), as in Camtasia</dd><dt>Home / End</dt><dd>Start / end</dd><dt>Ctrl+G</dt><dd>Type a time to go to (also click the time under the preview)</dd>
 					<dt>S</dt><dd>Split at the playhead (the selected clips, or every clip there)</dd><dt>Delete</dt><dd>Delete; Shift+Delete closes the gap</dd>
 					<dt>I / O</dt><dd>Mark in / out; then &ldquo;Cut out marked&rdquo;, or export only that part</dd><dt>T</dt><dd>Add a title</dd>
 					<dt>Ctrl+Z / Ctrl+Shift+Z</dt><dd>Undo / redo</dd><dt>Ctrl+D</dt><dd>Duplicate</dd><dt>+ / &minus;</dt><dd>Zoom the timeline (Ctrl + wheel too)</dd>

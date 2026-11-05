@@ -95,6 +95,15 @@
 	// lim = { mediaDur (Infinity for stills / titles), lo, hi (neighbours on the track), minDur }
 	V.trim = function (c, edge, t, lim) {
 		var sp = c.speed || 1, min = lim.minDur || 1 / 30, still = !(lim.mediaDur < Infinity), o = { start: c.start, in: c.in, out: c.out };
+		if (edge === "l" && lim.mag) {
+			// magnetic track (Camtasia): the clip keeps its place and its left edge brings back (or hides) the start of its media; the
+			// track is packed afterwards, so the clips after it move along. t = where the pointer asks the edge to be.
+			var grow = c.start - t;
+			if (still) o.out = Math.max(min * sp, c.out + grow * sp);
+			else o.in = V.clamp(c.in - grow * sp, 0, c.out - min * sp);
+			if (c.anims && c.anims.length) o.anims = V.shiftAnims(c.anims, still ? (o.out - c.out) / sp : (c.in - o.in) / sp);
+			return o;
+		}
 		if (edge === "l") {
 			var endT = V.end(c), lo = Math.max(lim.lo != null ? lim.lo : 0, still ? -Infinity : c.start - c.in / sp, 0);
 			var s = V.clamp(t, lo, endT - min);
@@ -693,6 +702,31 @@
 		var parts = s.split(":").map(Number); if (parts.some(function (x) { return !isFinite(x); })) return null;
 		var t = 0; parts.forEach(function (x) { t = t * 60 + x; });
 		return t + fr;
+	};
+	// the "go to" box: 4:23;13, 1:02:03.5, 263, 90s, 2m30s, 1h, ;15 (frames), +10 / -1:00 (from now). Returns seconds or null.
+	V.parseGoto = function (s, fps, now) {
+		s = String(s || "").trim().replace(/\s+/g, "").replace(/,/g, "."); if (!s) return null;
+		fps = fps || 30;
+		var rel = 0; if (/^[+-]/.test(s)) { rel = s[0] === "+" ? 1 : -1; s = s.slice(1); if (!s) return null; }
+		var t = null, m;
+		if ((m = /^(?:(\d+(?:\.\d+)?)h)?(?:(\d+(?:\.\d+)?)m(?!s))?(?:(\d+(?:\.\d+)?)s)?(?:(\d+)f)?$/i.exec(s)) && /[hmsf]/i.test(s)) t = (+m[1] || 0) * 3600 + (+m[2] || 0) * 60 + (+m[3] || 0) + (+m[4] || 0) / fps;
+		else if (/^;\d+$/.test(s)) t = +s.slice(1) / fps;
+		else if (/^\d+(?:\.\d+)?(?::\d+(?:\.\d+)?){0,2}(?:;\d+)?$/.test(s)) t = V.parseTime(s, fps);
+		if (t == null || !isFinite(t)) return null;
+		return rel ? (now || 0) + rel * t : t;
+	};
+	// every place something starts or ends (clips on shown / heard tracks, the I / O marks, 0), sorted: for "previous / next clip"
+	V.editPoints = function (p) {
+		var pts = [0];
+		p.clips.forEach(function (c) { var tr = V.track(p, c.track); if (!tr) return; pts.push(c.start, V.end(c)); });
+		if (p.marks) { if (p.marks.in != null) pts.push(p.marks.in); if (p.marks.out != null) pts.push(p.marks.out); }
+		pts.sort(function (a, b) { return a - b; });
+		return pts.filter(function (x, i) { return i === 0 || x - pts[i - 1] > 1e-6; });
+	};
+	V.nextEdit = function (p, t, dir, tol) {
+		var pts = V.editPoints(p), e = tol == null ? 1e-3 : tol;
+		if (dir > 0) { for (var i = 0; i < pts.length; i++) if (pts[i] > t + e) return pts[i]; return null; }
+		for (var j = pts.length - 1; j >= 0; j--) if (pts[j] < t - e) return pts[j]; return null;
 	};
 	// ruler: a tick every "step" seconds so labels are at least minPx apart
 	V.tickStep = function (pps, minPx) {

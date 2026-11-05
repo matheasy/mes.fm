@@ -484,6 +484,15 @@
 	// lim = { mediaDur (Infinity for stills / titles), lo, hi (neighbours on the track), minDur }
 	V.trim = function (c, edge, t, lim) {
 		var sp = c.speed || 1, min = lim.minDur || 1 / 30, still = !(lim.mediaDur < Infinity), o = { start: c.start, in: c.in, out: c.out };
+		if (edge === "l" && lim.mag) {
+			// magnetic track (Camtasia): the clip keeps its place and its left edge brings back (or hides) the start of its media; the
+			// track is packed afterwards, so the clips after it move along. t = where the pointer asks the edge to be.
+			var grow = c.start - t;
+			if (still) o.out = Math.max(min * sp, c.out + grow * sp);
+			else o.in = V.clamp(c.in - grow * sp, 0, c.out - min * sp);
+			if (c.anims && c.anims.length) o.anims = V.shiftAnims(c.anims, still ? (o.out - c.out) / sp : (c.in - o.in) / sp);
+			return o;
+		}
 		if (edge === "l") {
 			var endT = V.end(c), lo = Math.max(lim.lo != null ? lim.lo : 0, still ? -Infinity : c.start - c.in / sp, 0);
 			var s = V.clamp(t, lo, endT - min);
@@ -1082,6 +1091,31 @@
 		var parts = s.split(":").map(Number); if (parts.some(function (x) { return !isFinite(x); })) return null;
 		var t = 0; parts.forEach(function (x) { t = t * 60 + x; });
 		return t + fr;
+	};
+	// the "go to" box: 4:23;13, 1:02:03.5, 263, 90s, 2m30s, 1h, ;15 (frames), +10 / -1:00 (from now). Returns seconds or null.
+	V.parseGoto = function (s, fps, now) {
+		s = String(s || "").trim().replace(/\s+/g, "").replace(/,/g, "."); if (!s) return null;
+		fps = fps || 30;
+		var rel = 0; if (/^[+-]/.test(s)) { rel = s[0] === "+" ? 1 : -1; s = s.slice(1); if (!s) return null; }
+		var t = null, m;
+		if ((m = /^(?:(\d+(?:\.\d+)?)h)?(?:(\d+(?:\.\d+)?)m(?!s))?(?:(\d+(?:\.\d+)?)s)?(?:(\d+)f)?$/i.exec(s)) && /[hmsf]/i.test(s)) t = (+m[1] || 0) * 3600 + (+m[2] || 0) * 60 + (+m[3] || 0) + (+m[4] || 0) / fps;
+		else if (/^;\d+$/.test(s)) t = +s.slice(1) / fps;
+		else if (/^\d+(?:\.\d+)?(?::\d+(?:\.\d+)?){0,2}(?:;\d+)?$/.test(s)) t = V.parseTime(s, fps);
+		if (t == null || !isFinite(t)) return null;
+		return rel ? (now || 0) + rel * t : t;
+	};
+	// every place something starts or ends (clips on shown / heard tracks, the I / O marks, 0), sorted: for "previous / next clip"
+	V.editPoints = function (p) {
+		var pts = [0];
+		p.clips.forEach(function (c) { var tr = V.track(p, c.track); if (!tr) return; pts.push(c.start, V.end(c)); });
+		if (p.marks) { if (p.marks.in != null) pts.push(p.marks.in); if (p.marks.out != null) pts.push(p.marks.out); }
+		pts.sort(function (a, b) { return a - b; });
+		return pts.filter(function (x, i) { return i === 0 || x - pts[i - 1] > 1e-6; });
+	};
+	V.nextEdit = function (p, t, dir, tol) {
+		var pts = V.editPoints(p), e = tol == null ? 1e-3 : tol;
+		if (dir > 0) { for (var i = 0; i < pts.length; i++) if (pts[i] > t + e) return pts[i]; return null; }
+		for (var j = pts.length - 1; j >= 0; j--) if (pts[j] < t - e) return pts[j]; return null;
 	};
 	// ruler: a tick every "step" seconds so labels are at least minPx apart
 	V.tickStep = function (pps, minPx) {
@@ -1916,7 +1950,15 @@
 		connect(e);
 		return e;
 	}
-	function release(id) { var e = els[id]; if (!e) return; try { e.el.pause(); e.el.removeAttribute("src"); e.el.load(); if (e.node) e.node.disconnect(); if (e.gain) e.gain.disconnect(); } catch (x) { /* ignore */ } delete els[id]; }
+	// a video element that was just told to go somewhere has no picture of that place yet (drawing it then can give a black frame):
+	// until the browser shows the new frame, the preview uses the last frame it gave
+	function setTime(e, t) {
+		e.el.currentTime = t; e.fresh = false;
+		var done = function () { e.fresh = true; draw(); };
+		if (e.el.requestVideoFrameCallback) { var n = e.vfc = (e.vfc || 0) + 1; e.el.requestVideoFrameCallback(function () { if (e.vfc === n) done(); }); setTimeout(function () { if (e.vfc === n && !e.el.seeking) done(); }, 400); }
+		else e.el.addEventListener("seeked", done, { once: true });
+	}
+	function release(id) { var e = els[id]; delete frames[id]; if (!e) return; try { e.el.pause(); e.el.removeAttribute("src"); e.el.load(); if (e.node) e.node.disconnect(); if (e.gain) e.gain.disconnect(); } catch (x) { /* ignore */ } delete els[id]; }
 
 	/* ---------- clock ---------- */
 	P.time = function () { return P.playing ? P.t0 + (performance.now() - P.p0) / 1000 * P.rate * (P.rev ? -1 : 1) : VE.t; };
@@ -1979,12 +2021,12 @@
 				if (Math.abs(e.el.playbackRate - pr) > 1e-3) e.el.playbackRate = pr;
 				var keep = Math.abs(P.rate - 1) > 1e-3 && Math.abs(P.rate - P.speed) < 1e-3;   // the speed menu: keep the voice's pitch (J / L shuttle and clip speed do not)
 				if (e.el.preservesPitch !== keep) e.el.preservesPitch = keep;
-				if (e.el.paused) { if (Math.abs(e.el.currentTime - src) > 0.02) e.el.currentTime = src; var pp = e.el.play(); if (pp && pp.catch) pp.catch(function () { }); }
-				else if (Math.abs(e.el.currentTime - src) > 0.3 * Math.max(1, P.rate)) e.el.currentTime = src;
+				if (e.el.paused) { if (Math.abs(e.el.currentTime - src) > 0.02) setTime(e, src); var pp = e.el.play(); if (pp && pp.catch) pp.catch(function () { }); }
+				else if (Math.abs(e.el.currentTime - src) > 0.3 * Math.max(1, P.rate)) setTime(e, src);
 			} else {
 				if (!e.el.paused) e.el.pause();
 				var fps = (m && m.fps) || 30;
-				if (Math.abs(e.el.currentTime - src) > 0.5 / fps && !e.el.seeking) e.el.currentTime = src;
+				if (Math.abs(e.el.currentTime - src) > 0.5 / fps && !e.el.seeking) setTime(e, src);
 			}
 			if (e.gain && ac) { var g = playing && active && !(c.clean && c.clean.key && cleanOn(c)) ? V.gainAt(p, c, t) * VE.fxGainAt(c, t + 0.015) : 0; e.gain.gain.setTargetAtTime(g, ac.currentTime, 0.012); }
 		});
@@ -1992,6 +2034,7 @@
 		cleanNodes.forEach(function (n) { var c = V.clip(p, n.id); if (!c || !ac) return; n.gain.gain.setTargetAtTime(V.gainAt(p, c, t) * VE.fxGainAt(c, t + 0.015), ac.currentTime, 0.012); });
 	}
 	P.sync = sync;
+	P.seeking = function () { return Object.keys(els).some(function (k) { return els[k].el.seeking; }); };
 	function cleanOn(c) { return !!cleanBufs[c.clean.key]; }
 	// noise-removed sound: AudioBuffer sources scheduled from the playhead
 	async function scheduleClean() {
@@ -2032,8 +2075,21 @@
 	function source(c) {
 		var m = VE.media(c.media); if (!m) return null;
 		if (m.kind === "image") return m.bitmap ? { img: m.bitmap, w: m.w, h: m.h } : null;
-		var e = els[c.id]; if (!e || e.el.readyState < 2) return P.lastFrame(c);
+		var e = els[c.id], fc = frames[c.id];
+		// while a video element seeks (frame steps, a jump, the start of playback) it has no picture for a moment: show the last
+		// frame it gave instead of a black flash
+		if (!e || e.el.readyState < 2 || e.el.seeking || e.fresh === false) return fc && fc.media === c.media ? { img: fc.cv, w: m.w, h: m.h } : P.lastFrame(c);
+		keepFrame(c, e.el);
 		return { img: e.el, w: m.w, h: m.h };
+	}
+	var frames = {};
+	function keepFrame(c, el) {
+		var fc = frames[c.id], now = performance.now(), w = el.videoWidth, h = el.videoHeight; if (!w || !h) return;
+		if (fc && fc.media === c.media && fc.at === el.currentTime) return;
+		if (fc && P.playing && now - fc.t < 300) return;   // while playing a copy now and then is enough (a seek during playback is rare)
+		if (!fc || fc.media !== c.media) { fc = frames[c.id] = { cv: document.createElement("canvas"), media: c.media }; }
+		if (fc.cv.width !== w || fc.cv.height !== h) { fc.cv.width = w; fc.cv.height = h; }
+		try { fc.cv.getContext("2d").drawImage(el, 0, 0, w, h); fc.at = el.currentTime; fc.t = now; } catch (x) { /* not ready */ }
 	}
 	P.lastFrame = function () { return null; };
 	var VKEY = "mes-video-editor:view", VS = { guides: false, dim: true };
@@ -2252,13 +2308,13 @@
 				var badges = (c.link ? "🔗 " : "") + (c.speed && c.speed !== 1 ? c.speed + "×  " : "") + (c.clean && c.clean.key ? "✓ clean  " : "") + (V.afxOn(c) ? "fx  " : "") + (c.mute ? "muted  " : "") + (c.type === "video" && c.noAudio ? "no sound  " : "");
 				html += '<div class="vd-clip vd-clip--' + c.type + (sel[c.id] ? " is-sel" : "") + (m && m.state === "missing" ? " is-missing" : "") + '" data-id="' + c.id + '" style="left:' + x + "px;width:" + w + 'px" title="' + VE.esc(label) + " · " + V.short(V.dur(c)) + '">' +
 					(c.xin > 0 ? '<i class="vd-xf" style="width:' + c.xin * VE.pps + 'px"></i>' : "") +
-					'<canvas class="vd-cc" width="' + Math.min(4000, Math.ceil(w)) + '" height="' + (h - 4) + '"></canvas><span class="vd-cl">' + VE.esc(badges + label) + "</span>" +
+					'<canvas class="vd-cc" data-h="' + (h - 4) + '"></canvas><span class="vd-cl">' + VE.esc(badges + label) + "</span>" +
 					(c.fin > 0 ? '<i class="vd-fade vd-fade--in" style="width:' + c.fin * VE.pps + 'px"></i>' : "") + (c.fout > 0 ? '<i class="vd-fade vd-fade--out" style="width:' + c.fout * VE.pps + 'px"></i>' : "") + animMarks(c, w) + "</div>";
 			});
 			html += '</div><i class="vd-rgrip" data-rgrip="' + tr.id + '" title="Drag to make this track taller or shorter (double-click: normal height)"></i></div>';
 		});
 		rows.innerHTML = html;
-		rows.querySelectorAll(".vd-clip").forEach(function (el) { paintClip(el); });
+		rows.querySelectorAll(".vd-clip").forEach(function (el) { paintClip(el, true); });
 		var mk = p.marks || {};
 		if (mk.in != null && mk.out != null && mk.out > mk.in) { markEl.hidden = false; markEl.style.left = t2x(mk.in) + "px"; markEl.style.width = (mk.out - mk.in) * VE.pps + "px"; }
 		else markEl.hidden = true;
@@ -2272,43 +2328,54 @@
 			return '<i class="vd-an-mk' + (VE.animSel === a.id ? " is-sel" : "") + '" data-aid="' + VE.esc(a.id) + '" style="left:' + x + "px;width:" + aw + "px;top:" + (2 + (i % 2) * 13) + 'px" title="' + VE.esc(V.animName(a)) + " · " + (Math.round(a.d * 100) / 100) + ' s. Drag to move, drag an end to change its length, click to jump to its end."><u></u><s></s><b></b></i>';
 		}).join("");
 	}
-	function paintClip(el) {
+	// the canvas only covers the part of the clip that is on screen (plus a screen on each side), drawn at real size: a long clip zoomed
+	// in is never one huge stretched picture. Scrolling repaints a clip when the view leaves the part it has painted.
+	function view() { var m = sc.clientWidth || 800; return { v0: sc.scrollLeft - HEAD - m, v1: sc.scrollLeft - HEAD + 2 * m }; }
+	function paintClip(el, force) {
 		var c = V.clip(VE.P, el.getAttribute("data-id")); if (!c) return;
-		var cv = el.querySelector("canvas"), g = cv.getContext("2d"), W = cv.width, H = cv.height, m = VE.media(c.media), k = W / Math.max(1, V.dur(c) * VE.pps);
-		g.clearRect(0, 0, W, H);
+		var cv = el.querySelector("canvas"), m = VE.media(c.media), x0 = c.start * VE.pps, w = Math.max(4, V.dur(c) * VE.pps), vw = view();
+		var a = Math.max(0, Math.floor(vw.v0 - x0)), b = Math.min(Math.ceil(w), Math.ceil(vw.v1 - x0));
+		if (!force && cv._a != null && cv._a <= Math.max(0, sc.scrollLeft - HEAD - x0) && cv._b >= Math.min(w, sc.scrollLeft - HEAD + sc.clientWidth - x0)) return;
+		if (b <= a) { cv.style.display = "none"; cv._a = cv._b = null; return; }
+		var dpr = Math.min(2, window.devicePixelRatio || 1), H = +cv.getAttribute("data-h") || el.clientHeight, W = b - a;
+		cv.style.display = ""; cv.style.left = a + "px"; cv.style.width = W + "px"; cv.style.right = "auto";
+		cv.width = Math.min(16384, Math.round(W * dpr)); cv.height = Math.round(H * dpr); cv._a = a; cv._b = b;
+		var g = cv.getContext("2d"); g.setTransform(cv.width / W, 0, 0, dpr, -a * cv.width / W, 0); g.clearRect(a, 0, W, H);
 		if (c.type === "video" && m && m.thumbImg && m.thumbTimes) {
 			var th = H - (VE.hasSound(c) ? 18 : 0), tw = Math.max(8, th * m.thumbW / m.thumbH);
-			for (var x = 0; x < W; x += tw) {
-				var s = V.srcAt(c, c.start + (x + tw / 2) / k / VE.pps), idx = nearest(m.thumbTimes, s);
+			for (var x = Math.floor(a / tw) * tw; x < b; x += tw) {
+				var s = V.srcAt(c, c.start + (x + tw / 2) / VE.pps), idx = nearest(m.thumbTimes, s);
 				g.drawImage(m.thumbImg, idx * m.thumbW, 0, m.thumbW, m.thumbH, x, 0, tw, th);
 			}
 		} else if (c.type === "image" && m && m.bitmap) {
-			var ih = H, iw = ih * m.w / m.h; for (var x2 = 0; x2 < W; x2 += iw + 6) g.drawImage(m.bitmap, x2, 0, iw, ih);
+			var ih = H, iw = ih * m.w / m.h; for (var x2 = Math.floor(a / (iw + 6)) * (iw + 6); x2 < b; x2 += iw + 6) g.drawImage(m.bitmap, x2, 0, iw, ih);
 		}
 		if (VE.hasSound(c) && m && (m.wave || m.peaks)) {
 			var big = c.type === "audio", hh = big ? H : 18, top = big ? 0 : H - 18;
-			if (!big) { g.fillStyle = "rgba(2,6,23,0.6)"; g.fillRect(0, top, W, hh); }
-			paintWave(g, c, m, W, top, hh, k, big);
+			if (!big) { g.fillStyle = "rgba(2,6,23,0.6)"; g.fillRect(a, top, W, hh); }
+			paintWave(g, c, m, a, b, top, hh, big);
 		}
 	}
+	var scrollRaf = 0;
+	function repaintVisible() { scrollRaf = 0; rows.querySelectorAll(".vd-clip").forEach(function (el) { paintClip(el); }); }
 	// peak (light) and RMS (solid) of the clip's sound, mirrored; dB scale by default so quiet parts show too. With audio effects on, the
 	// original is drawn faint and the processed sound over it; red ticks where it would clip
-	function paintWave(g, c, m, W, top, hh, k, big) {
+	function paintWave(g, c, m, A, B, top, hh, big) {
 		var mode = T.wave, mid = top + hh / 2, half = hh / 2 - 1, vdb = V.db(c.vol == null ? 1 : c.vol), env = V.afxOn(c) ? VE.fxEnv(c) : null, w = m.wave, dim = c.mute ? 0.35 : 1;
 		if (!isFinite(vdb)) vdb = -120;
 		if (big && hh >= 56) {
 			g.save(); g.font = "9px Arial, sans-serif"; g.textBaseline = "middle";
 			(mode === "db" ? [0, -6, -12, -24, -48] : [0, -6, -12]).forEach(function (d) {
 				var y = V.waveY(d, mode) * half; g.fillStyle = d === 0 ? "rgba(248,113,113,0.35)" : "rgba(255,255,255,0.10)";
-				g.fillRect(0, Math.round(mid - y), W, 1); g.fillRect(0, Math.round(mid + y), W, 1);
-				if (d < 0 && y > 9 && y < half - 4) { g.fillStyle = "rgba(255,255,255,0.5)"; g.fillText(String(d), 3, mid - y + 6); }
+				g.fillRect(A, Math.round(mid - y), B - A, 1); g.fillRect(A, Math.round(mid + y), B - A, 1);
+				if (d < 0 && y > 9 && y < half - 4) { g.fillStyle = "rgba(255,255,255,0.5)"; g.fillText(String(d), Math.max(3, sc.scrollLeft - HEAD - c.start * VE.pps + 3), mid - y + 6); }
 			});
 			g.restore();
 		}
-		g.fillStyle = "rgba(255,255,255,0.14)"; g.fillRect(0, Math.round(mid), W, 1);
+		g.fillStyle = "rgba(255,255,255,0.14)"; g.fillRect(A, Math.round(mid), B - A, 1);
 		var cols = env ? ["rgba(255,255,255,0.16)", "rgba(110,231,183,0.75)", "#d1fae5"] : big ? [null, "rgba(110,231,183,0.62)", "#a7f3d0"] : [null, "rgba(125,211,252,0.55)", "#7dd3fc"];
-		for (var px = 0; px < W; px++) {
-			var s0 = V.srcAt(c, c.start + px / k / VE.pps), s1 = V.srcAt(c, c.start + (px + 1) / k / VE.pps), i0 = Math.max(0, Math.floor(s0 * 50)), i1 = Math.max(i0 + 1, Math.floor(s1 * 50)), pk = -Infinity, rm = -Infinity;
+		for (var px = A; px < B; px++) {
+			var s0 = V.srcAt(c, c.start + px / VE.pps), s1 = V.srcAt(c, c.start + (px + 1) / VE.pps), i0 = Math.max(0, Math.floor(s0 * 50)), i1 = Math.max(i0 + 1, Math.floor(s1 * 50)), pk = -Infinity, rm = -Infinity;
 			if (w) { for (var i = i0; i < i1 && i < w.pk.length; i++) { var a = V.decDb(w.pk[i]), b = V.decDb(w.rms[i]); if (a > pk) pk = a; if (b > rm) rm = b; } }
 			else { var mx = 0; for (var i2 = i0; i2 < i1 && i2 < m.peaks.length; i2++) if (m.peaks[i2] > mx) mx = m.peaks[i2]; pk = V.db(Math.pow(mx / 255, 2)); rm = pk - 9; }
 			if (!isFinite(pk)) continue;
@@ -2340,7 +2407,9 @@
 		var x = t2x(VE.t); ph.style.left = x + "px";
 		if (VE.preview && VE.preview.playing) { var v0 = sc.scrollLeft + HEAD, v1 = sc.scrollLeft + sc.clientWidth; if (x > v1 - 40 || x < v0) sc.scrollLeft = Math.max(0, x - HEAD - 60); }
 	};
-	sc.addEventListener("scroll", function () { drawRuler(); });
+	// scroll the timeline so time t is on screen (keyboard / button jumps)
+	T.reveal = function (t) { var x = t2x(t), v0 = sc.scrollLeft + HEAD, v1 = sc.scrollLeft + sc.clientWidth; if (x < v0 + 20 || x > v1 - 20) sc.scrollLeft = Math.max(0, x - HEAD - (sc.clientWidth - HEAD) / 3); };
+	sc.addEventListener("scroll", function () { drawRuler(); if (!scrollRaf) scrollRaf = requestAnimationFrame(repaintVisible); });
 	T.zoom = function (pps, aroundClientX) {
 		var old = VE.pps, b = sc.getBoundingClientRect(), ax = aroundClientX == null ? b.left + HEAD + (sc.clientWidth - HEAD) / 2 : aroundClientX, at = x2t(ax);
 		VE.pps = V.clamp(pps, 1, 600); T.render();
@@ -2415,9 +2484,19 @@
 			if (T.snap && !e.altKey) want = V.snap(want, snapPts(ign), 8 / VE.pps).t;
 			var nb = V.onTrack(VE.P, c.track).filter(function (x) { return x !== c; }), lo = 0, hi = Infinity;
 			if (!isMag) nb.forEach(function (x) { if (V.end(x) <= o.start + 1e-4) lo = Math.max(lo, V.end(x)); if (x.start >= V.end(c) - 1e-4) hi = Math.min(hi, x.start); });
-			Object.assign(c, V.trim(c, drag.edge, want, { mediaDur: VE.mediaDur(c), lo: lo, hi: hi, minDur: 1 / VE.P.fps }));
+			if (isMag && drag.edge === "l") want = o.start + dt;   // magnetic: the edge follows the pointer, no snapping
+			Object.assign(c, V.trim(c, drag.edge, want, { mediaDur: VE.mediaDur(c), lo: lo, hi: hi, minDur: 1 / VE.P.fps, mag: isMag }));
 			// linked partners get the same trim
-			drag.orig.forEach(function (q) { if (q.c !== c && c.link && q.c.link === c.link) { q.c.start = c.start; q.c.in = c.in; q.c.out = c.out; } });
+			var grow = V.dur(c) - (o.out - o.in) / (c.speed || 1);
+			if (isMag) {   // put the other clips back where they were, then let the partners' (non-magnetic) tracks ripple by the same amount
+				var keep0 = JSON.parse(drag.snap), was = {}; keep0.clips.forEach(function (x) { was[x.id] = x; });
+				VE.P.clips.forEach(function (x) { if (!ign[x.id] && was[x.id]) x.start = was[x.id].start; });
+			}
+			drag.orig.forEach(function (q) {
+				if (q.c === c || !c.link || q.c.link !== c.link) return;
+				q.c.start = c.start; q.c.in = c.in; q.c.out = c.out;
+				if (isMag && !mag(q.c.track)) V.onTrack(VE.P, q.c.track).forEach(function (x) { if (!ign[x.id] && x.start >= q.start + (q.out - q.in) / (q.c.speed || 1) - 1e-4) x.start = Math.max(0, x.start + grow); });
+			});
 			drag.bad = drag.orig.some(function (q) { return q.c !== c && !mag(q.c.track) && !V.canPlace(VE.P, q.c.track, q.c.start, V.dur(q.c), ign); });
 			if (isMag) V.pack(VE.P, c.track);
 			V.syncLinks(VE.P);
@@ -2525,10 +2604,10 @@
 	T.inside = function (clientX, clientY) { var b = sc.getBoundingClientRect(); return clientX >= b.left && clientX <= b.right && clientY >= b.top && clientY <= b.bottom; };
 
 	VE.on("change", function () { T.render(); });
-	VE.on("thumbs", function (m) { rows.querySelectorAll(".vd-clip").forEach(function (el) { var c = V.clip(VE.P, el.getAttribute("data-id")); if (c && c.media === m.id) paintClip(el); }); });
+	VE.on("thumbs", function (m) { rows.querySelectorAll(".vd-clip").forEach(function (el) { var c = V.clip(VE.P, el.getAttribute("data-id")); if (c && c.media === m.id) paintClip(el, true); }); });
 	VE.on("time", function () { T.playhead(); });
 	VE.on("select", markSel);
-	if (window.ResizeObserver) new ResizeObserver(function () { drawRuler(); }).observe(sc);
+	if (window.ResizeObserver) new ResizeObserver(function () { drawRuler(); rows.querySelectorAll(".vd-clip").forEach(function (el) { paintClip(el, true); }); }).observe(sc);
 })();
 
 /* MES Video Editor export: every frame is drawn by the compositor from frames decoded with WebCodecs (one VideoDecoder per visible clip,
@@ -2855,9 +2934,46 @@
 	if (spSel) { spSel.value = String(UI.speed || 1); P.speed = +spSel.value || 1; spSel.onchange = function () { P.setSpeed(+spSel.value); }; }
 	VE.on("speed", function (s) { UI.speed = s; saveUI(); if (spSel) { spSel.value = String(s); spSel.classList.toggle("is-on", s !== 1); } if (s !== 1) toast("Preview speed " + s + "× (the exported video is not changed)"); });
 	if (spSel) spSel.classList.toggle("is-on", P.speed !== 1);
-	document.querySelectorAll("[data-tp]").forEach(function (b) { b.onclick = function (e) { var a = b.getAttribute("data-tp"), f = 1 / VE.P.fps; if (a === "start") P.seek(0); else if (a === "end") P.seek(V.duration(VE.P)); else P.seek(VE.t + (a === "fwd" ? 1 : -1) * (e.shiftKey ? 1 : f)); }; });
-	function timeText() { $("vd-time").textContent = V.tc(VE.t, VE.P.fps) + " / " + V.tc(V.duration(VE.P), VE.P.fps); }
-	VE.on("time", timeText);
+	// previous / next clip edge (Camtasia: Ctrl+Alt+Left / Right)
+	VE.goEdit = function (dir) { if (P.playing) P.pause(); var t = V.nextEdit(VE.P, VE.t, dir, 0.5 / VE.P.fps); if (t == null) t = dir > 0 ? V.duration(VE.P) : 0; P.seek(t); VE.tl.reveal(t); };
+	// one frame back / forward; pressing and holding keeps stepping, waiting for each frame to show so it never runs ahead of the picture
+	VE.stepFrame = function (dir, big) { if (P.playing) P.pause(); P.seek(VE.t + dir * (big ? 1 : 1 / VE.P.fps)); VE.tl.reveal(VE.t); };
+	var hold = null;
+	function stopHold() { if (hold) { clearTimeout(hold.timer); hold = null; } }
+	document.querySelectorAll("[data-tp]").forEach(function (b) {
+		var a = b.getAttribute("data-tp");
+		if (a === "back" || a === "fwd") {
+			var dir = a === "fwd" ? 1 : -1;
+			b.addEventListener("pointerdown", function (e) {
+				if (e.button > 0) return; e.preventDefault(); stopHold(); VE.stepFrame(dir, e.shiftKey);
+				var big = e.shiftKey, h = hold = { last: performance.now() };
+				(function next(delay) { h.timer = setTimeout(function () { if (hold !== h) return; if (P.seeking() && performance.now() - h.last < 400) return next(15); h.last = performance.now(); VE.stepFrame(dir, big); next(big ? 120 : 1000 / Math.min(30, VE.P.fps)); }, delay); })(380);
+				try { b.setPointerCapture(e.pointerId); } catch (x) { /* ignore */ }
+			});
+			["pointerup", "pointercancel", "lostpointercapture"].forEach(function (ev) { b.addEventListener(ev, stopHold); });
+			b.addEventListener("keydown", function (e) { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); e.stopPropagation(); VE.stepFrame(dir, e.shiftKey); } });
+			return;
+		}
+		b.onclick = function () { if (a === "start") P.seek(0); else if (a === "end") P.seek(V.duration(VE.P)); else if (a === "prevclip") VE.goEdit(-1); else if (a === "nextclip") VE.goEdit(1); };
+	});
+	// the time under the preview is a box: type a time (4:23;13, 1:02:03, 263, 2m30s, +10, -5) and press Enter to go there
+	var tin = $("vd-tin");
+	function timeText() { if (document.activeElement !== tin) tin.value = V.tc(VE.t, VE.P.fps); tin.style.width = Math.max(7, tin.value.length + 1) + "ch"; $("vd-tdur").textContent = V.tc(V.duration(VE.P), VE.P.fps); }
+	tin.addEventListener("focus", function () { if (P.playing) P.pause(); tin.value = V.tc(VE.t, VE.P.fps); tin.select(); });
+	// the first click selects the whole time (so typing replaces it); a click while it has focus places the caret as usual
+	tin.addEventListener("mousedown", function (e) { if (document.activeElement !== tin) { e.preventDefault(); tin.focus(); } });
+	tin.addEventListener("input", function () { tin.style.width = Math.max(7, tin.value.length + 1) + "ch"; tin.classList.toggle("is-bad", tin.value.trim() !== "" && V.parseGoto(tin.value, VE.P.fps, VE.t) == null); });
+	tin.addEventListener("keydown", function (e) {
+		if (e.key === "Enter") {
+			e.preventDefault(); var t = V.parseGoto(tin.value, VE.P.fps, VE.t);
+			if (t == null) { tin.classList.add("is-bad"); toast("Type a time like 4:23;13, 1:02:03, 263 (seconds), 2m30s, or +10 / -5 to move from here."); return; }
+			var d = V.duration(VE.P); if (t > d) toast("That is after the end (" + V.tc(d, VE.P.fps) + "): went to the end.");
+			tin.classList.remove("is-bad"); P.seek(Math.max(0, Math.min(t, d))); VE.tl.reveal(VE.t); tin.blur();
+		} else if (e.key === "Escape") { e.preventDefault(); e.stopPropagation(); tin.classList.remove("is-bad"); tin.blur(); }
+		e.stopPropagation();
+	});
+	tin.addEventListener("blur", function () { tin.classList.remove("is-bad"); timeText(); });
+	VE.on("time", timeText); VE.on("change", timeText);
 	VE.on("play", function () { $("vd-play").innerHTML = "&#10074;&#10074;"; $("vd-play").setAttribute("aria-label", "Pause"); });
 	VE.on("pause", function () { $("vd-play").innerHTML = "&#9654;"; $("vd-play").setAttribute("aria-label", "Play"); timeText(); });
 	$("vd-fs").onclick = function () { var w = $("vd-stagewrap"); if (document.fullscreenElement) document.exitFullscreen(); else if (w.requestFullscreen) w.requestFullscreen().catch(function () { toast("Full screen is not allowed here."); }); };
@@ -3155,19 +3271,23 @@
 		if (mod && (k === "d" || k === "D")) { e.preventDefault(); VE.duplicate(); return; }
 		if (mod && e.shiftKey && (k === "a" || k === "A")) { e.preventDefault(); VE.separate(VE.selected()); return; }
 		if (mod && (k === "a" || k === "A")) { e.preventDefault(); VE.sel = VE.P.clips.map(function (c) { return c.id; }); VE.emit("select"); return; }
+		if ((mod || e.ctrlKey) && e.altKey && (k === "ArrowLeft" || k === "ArrowRight")) { e.preventDefault(); VE.goEdit(k === "ArrowRight" ? 1 : -1); return; }
+		if (mod && (k === "g" || k === "G")) { e.preventDefault(); tin.focus(); return; }
+		if (mod && (k === "Home" || k === "End")) { e.preventDefault(); P.seek(k === "Home" ? 0 : V.duration(VE.P)); VE.tl.reveal(VE.t); return; }
 		if (mod || e.altKey) return;
 		var h = true;
 		switch (k) {
 			case " ": if (e.repeat) break; if (P.hover && !P.playing) P.spaceDown(); else P.toggle(); break;   // over the preview: hold Space and drag to move the view
 			case "g": case "G": $("vd-vzguide").click(); break;
 			case "k": case "K": P.pause(); break;
-			case "<": case ",": if (k === "<" || e.shiftKey) P.stepSpeed(-1); else h = false; break;
-			case ">": case ".": if (k === ">" || e.shiftKey) P.stepSpeed(1); else h = false; break;
+			case "<": case ",": if (k === "<" || e.shiftKey) P.stepSpeed(-1); else VE.stepFrame(-1); break;
+			case ">": case ".": if (k === ">" || e.shiftKey) P.stepSpeed(1); else VE.stepFrame(1); break;
+			case "ArrowUp": VE.goEdit(-1); break; case "ArrowDown": VE.goEdit(1); break;
 			case "l": case "L": if (P.playing && !P.rev) P.play(Math.min(8, P.rate * 2)); else P.play(1); break;
 			case "j": case "J": if (P.playing && P.rev) P.reverse(Math.min(8, P.rate * 2)); else P.reverse(1); break;
-			case "ArrowLeft": P.seek(VE.t - (e.shiftKey ? 1 : f)); break;
-			case "ArrowRight": P.seek(VE.t + (e.shiftKey ? 1 : f)); break;
-			case "Home": P.seek(0); break; case "End": P.seek(V.duration(VE.P)); break;
+			case "ArrowLeft": VE.stepFrame(-1, e.shiftKey); break;
+			case "ArrowRight": VE.stepFrame(1, e.shiftKey); break;
+			case "Home": P.seek(0); VE.tl.reveal(0); break; case "End": P.seek(V.duration(VE.P)); VE.tl.reveal(VE.t); break;
 			case "s": case "S": VE.split(); break;
 			case "Delete": case "Backspace": VE.del(e.shiftKey); break;
 			case "i": case "I": mark("in"); break; case "o": case "O": mark("out"); break;

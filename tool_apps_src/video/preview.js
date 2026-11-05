@@ -29,7 +29,15 @@
 		connect(e);
 		return e;
 	}
-	function release(id) { var e = els[id]; if (!e) return; try { e.el.pause(); e.el.removeAttribute("src"); e.el.load(); if (e.node) e.node.disconnect(); if (e.gain) e.gain.disconnect(); } catch (x) { /* ignore */ } delete els[id]; }
+	// a video element that was just told to go somewhere has no picture of that place yet (drawing it then can give a black frame):
+	// until the browser shows the new frame, the preview uses the last frame it gave
+	function setTime(e, t) {
+		e.el.currentTime = t; e.fresh = false;
+		var done = function () { e.fresh = true; draw(); };
+		if (e.el.requestVideoFrameCallback) { var n = e.vfc = (e.vfc || 0) + 1; e.el.requestVideoFrameCallback(function () { if (e.vfc === n) done(); }); setTimeout(function () { if (e.vfc === n && !e.el.seeking) done(); }, 400); }
+		else e.el.addEventListener("seeked", done, { once: true });
+	}
+	function release(id) { var e = els[id]; delete frames[id]; if (!e) return; try { e.el.pause(); e.el.removeAttribute("src"); e.el.load(); if (e.node) e.node.disconnect(); if (e.gain) e.gain.disconnect(); } catch (x) { /* ignore */ } delete els[id]; }
 
 	/* ---------- clock ---------- */
 	P.time = function () { return P.playing ? P.t0 + (performance.now() - P.p0) / 1000 * P.rate * (P.rev ? -1 : 1) : VE.t; };
@@ -92,12 +100,12 @@
 				if (Math.abs(e.el.playbackRate - pr) > 1e-3) e.el.playbackRate = pr;
 				var keep = Math.abs(P.rate - 1) > 1e-3 && Math.abs(P.rate - P.speed) < 1e-3;   // the speed menu: keep the voice's pitch (J / L shuttle and clip speed do not)
 				if (e.el.preservesPitch !== keep) e.el.preservesPitch = keep;
-				if (e.el.paused) { if (Math.abs(e.el.currentTime - src) > 0.02) e.el.currentTime = src; var pp = e.el.play(); if (pp && pp.catch) pp.catch(function () { }); }
-				else if (Math.abs(e.el.currentTime - src) > 0.3 * Math.max(1, P.rate)) e.el.currentTime = src;
+				if (e.el.paused) { if (Math.abs(e.el.currentTime - src) > 0.02) setTime(e, src); var pp = e.el.play(); if (pp && pp.catch) pp.catch(function () { }); }
+				else if (Math.abs(e.el.currentTime - src) > 0.3 * Math.max(1, P.rate)) setTime(e, src);
 			} else {
 				if (!e.el.paused) e.el.pause();
 				var fps = (m && m.fps) || 30;
-				if (Math.abs(e.el.currentTime - src) > 0.5 / fps && !e.el.seeking) e.el.currentTime = src;
+				if (Math.abs(e.el.currentTime - src) > 0.5 / fps && !e.el.seeking) setTime(e, src);
 			}
 			if (e.gain && ac) { var g = playing && active && !(c.clean && c.clean.key && cleanOn(c)) ? V.gainAt(p, c, t) * VE.fxGainAt(c, t + 0.015) : 0; e.gain.gain.setTargetAtTime(g, ac.currentTime, 0.012); }
 		});
@@ -105,6 +113,7 @@
 		cleanNodes.forEach(function (n) { var c = V.clip(p, n.id); if (!c || !ac) return; n.gain.gain.setTargetAtTime(V.gainAt(p, c, t) * VE.fxGainAt(c, t + 0.015), ac.currentTime, 0.012); });
 	}
 	P.sync = sync;
+	P.seeking = function () { return Object.keys(els).some(function (k) { return els[k].el.seeking; }); };
 	function cleanOn(c) { return !!cleanBufs[c.clean.key]; }
 	// noise-removed sound: AudioBuffer sources scheduled from the playhead
 	async function scheduleClean() {
@@ -145,8 +154,21 @@
 	function source(c) {
 		var m = VE.media(c.media); if (!m) return null;
 		if (m.kind === "image") return m.bitmap ? { img: m.bitmap, w: m.w, h: m.h } : null;
-		var e = els[c.id]; if (!e || e.el.readyState < 2) return P.lastFrame(c);
+		var e = els[c.id], fc = frames[c.id];
+		// while a video element seeks (frame steps, a jump, the start of playback) it has no picture for a moment: show the last
+		// frame it gave instead of a black flash
+		if (!e || e.el.readyState < 2 || e.el.seeking || e.fresh === false) return fc && fc.media === c.media ? { img: fc.cv, w: m.w, h: m.h } : P.lastFrame(c);
+		keepFrame(c, e.el);
 		return { img: e.el, w: m.w, h: m.h };
+	}
+	var frames = {};
+	function keepFrame(c, el) {
+		var fc = frames[c.id], now = performance.now(), w = el.videoWidth, h = el.videoHeight; if (!w || !h) return;
+		if (fc && fc.media === c.media && fc.at === el.currentTime) return;
+		if (fc && P.playing && now - fc.t < 300) return;   // while playing a copy now and then is enough (a seek during playback is rare)
+		if (!fc || fc.media !== c.media) { fc = frames[c.id] = { cv: document.createElement("canvas"), media: c.media }; }
+		if (fc.cv.width !== w || fc.cv.height !== h) { fc.cv.width = w; fc.cv.height = h; }
+		try { fc.cv.getContext("2d").drawImage(el, 0, 0, w, h); fc.at = el.currentTime; fc.t = now; } catch (x) { /* not ready */ }
 	}
 	P.lastFrame = function () { return null; };
 	var VKEY = "mes-video-editor:view", VS = { guides: false, dim: true };
