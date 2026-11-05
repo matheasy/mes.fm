@@ -10,14 +10,19 @@
     "v": 6
   },
   "conspiracy-posts": {
-    "key": "https://mes.fm/richmond-elections-sticker-2026",
-    "src": "/richmond-elections-sticker-2026/img/i-voted-sticker.jpg",
-    "v": 6
+    "key": "https://mes.fm/projectbluebeam-news-nov-2026",
+    "src": "https://img.leopedia.io/DQmcv2uB7mf4ULMgDUqPgezKGmxg2odh4PfZZyoGYATJKhC/img35679.jpg",
+    "v": 7
   },
   "mathiew-posts": {
     "key": "https://mes.fm/richmond-elections-sticker-2026",
     "src": "/richmond-elections-sticker-2026/img/i-voted-sticker.jpg",
     "v": 2
+  },
+  "mh370-posts": {
+    "key": "https://mes.fm/projectbluebeam-news-nov-2026",
+    "src": "https://img.leopedia.io/DQmcv2uB7mf4ULMgDUqPgezKGmxg2odh4PfZZyoGYATJKhC/img35679.jpg",
+    "v": 4
   },
   "science-posts": {
     "key": "https://mes.fm/space-shuttle-columbia-disaster-shook-house",

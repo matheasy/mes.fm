@@ -335,6 +335,28 @@
       }
     ]
   },
+  "https://mes.fm/projectbluebeam-news-nov-2026": {
+    "image": "https://img.leopedia.io/DQmcv2uB7mf4ULMgDUqPgezKGmxg2odh4PfZZyoGYATJKhC/img35679.jpg",
+    "watchLinks": [],
+    "namedLinks": [
+      {
+        "label": "Hive",
+        "href": "https://inleo.io/@mestruth/project-blue-beam-news-november-2026-cyn"
+      },
+      {
+        "label": "Telegram",
+        "href": "https://t.me/meslinks/35679"
+      },
+      {
+        "label": "More MH370 links",
+        "href": "https://mes.fm/mh370"
+      },
+      {
+        "label": "More conspiracy links",
+        "href": "https://mes.fm/conspiracy"
+      }
+    ]
+  },
   "https://mes.fm/richmond-elections-sticker-2026": {
     "image": "https://mes.fm/richmond-elections-sticker-2026/img/i-voted-sticker.jpg",
     "watchLinks": [],
@@ -407,12 +429,7 @@
         "href": "https://t.me/meslinks/35671"
       }
     ],
-    "namedLinks": [
-      {
-        "label": "Source",
-        "href": "https://youtu.be/hkrf8Jjv0tw?t=108"
-      }
-    ]
+    "namedLinks": []
   },
   "https://mes.fm/stephen-smith-jerry-jones-cowboys": {
     "image": "https://mes.fm/stephen-smith-jerry-jones-cowboys/img/stephen-a-smith-jerry-jones-cowboys.jpg",
