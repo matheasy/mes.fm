@@ -186,6 +186,11 @@
 "updated":"2026-11-01",
 "type":"Tool"
 },
+"/crash-physics":{
+"added":"2026-11-05",
+"updated":"2026-11-05",
+"type":"Simulation"
+},
 "/dark-mode":{
 "added":"2026-10-11",
 "updated":"2026-10-22",
@@ -298,7 +303,7 @@
 },
 "/fonts":{
 "added":"2026-10-19",
-"updated":"2026-10-19",
+"updated":"2026-11-05",
 "type":"Tool"
 },
 "/fountain-clock":{
@@ -688,7 +693,7 @@
 },
 "/search":{
 "added":"2026-09-28",
-"updated":"2026-11-04",
+"updated":"2026-11-05",
 "type":"Tool"
 },
 "/search-engines":{

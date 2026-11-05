@@ -225,6 +225,7 @@ TOOLS = [  # (directory, compact-bar title[, home path of the site the page belo
     ("magnetic-isopotentials", "Magnetic Isopotentials"),
     ("grounding-rod-simulator", "Ground Rod Simulator"),
     ("double-pendulum", "Double Pendulum"),
+    ("crash-physics", "Crash Physics"),
     ("neuron-simulator", "Neuron Simulator"),
     ("spin-simulator", "Spin Simulator"),
     ("spin-half", "Spin-½ Lab"),

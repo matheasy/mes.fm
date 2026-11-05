@@ -36,7 +36,7 @@ EXT_TAB = "<li class=\"info-bar__item\"><a class=\"info-bar__item__text\" href='
 
 # simulator pages whose boxes (.fl-wrap, .lm-wrap, ...) get the shared View bar from main_js/stage-ctl.js
 STAGE_CTL = {"julia-set-explorer", "fluid-simulator", "light-in-a-medium", "black-hole-simulator", "mandelbrot", "buddhabrot", "time-dilation", "metric-tensor", "orbit-simulator", "double-pendulum", "electromagnetic-fields-simulator", "photoelectric-effect-simulator", "solar-system-today", "atomic-clock-simulator",
-             "michelson-morley-experiment", "faster-than-light-shadow-simulator", "fountain-clock", "magnetic-isopotentials", "hutchison-effect-simulator", "heart-simulator", "neuron-simulator", "negative-index", "spin-simulator", "hologram", "maxwell-vortices","spin-wave-field", "spin-half", "quaternions"}
+             "michelson-morley-experiment", "faster-than-light-shadow-simulator", "fountain-clock", "magnetic-isopotentials", "hutchison-effect-simulator", "heart-simulator", "neuron-simulator", "negative-index", "spin-simulator", "hologram", "maxwell-vortices","spin-wave-field", "spin-half", "quaternions", "crash-physics"}
 
 # PDF family nav (2026-10-16): Home = the PDF Tools hub, then the editor and the six tools, ahead of Calculators / Tools
 PDF_NAV_INFO = '<li class="info-bar__item"><a class="info-bar__item__text" href=\'/pdf\'>Editor</a></li><li class="info-bar__item"><a class="info-bar__item__text" href=\'/merge-pdf\'>Merge</a></li><li class="info-bar__item"><a class="info-bar__item__text" href=\'/split-pdf\'>Split</a></li><li class="info-bar__item"><a class="info-bar__item__text" href=\'/organize-pdf\'>Organize</a></li><li class="info-bar__item"><a class="info-bar__item__text" href=\'/jpg-to-pdf\'>Images to PDF</a></li><li class="info-bar__item"><a class="info-bar__item__text" href=\'/pdf-to-jpg\'>PDF to images</a></li><li class="info-bar__item"><a class="info-bar__item__text" href=\'/compress-pdf\'>Compress</a></li>'
@@ -552,6 +552,13 @@ APPS = {
                              js_v="1"),
     # Double Pendulum: live chaotic pendulum (RK4, copies for the butterfly effect, angle and divergence graphs, Lyapunov estimate) + a flip-time chaos map of every starting pair of angles
     # (lib.js node-tested: tool_apps_src/double-pendulum-tests.js). Normal-width page in the tools sidebar collection, Wide by default.
+    # Crash Physics Simulator (2026-11-05): "Hit a target" (Poncelet penetration / plug / bending / denting / eroding + hypervelocity crater, ballistic limit, thickness to stop)
+    # and "Crash & drop test" (springs in series with restitution hysteresis, two vehicles by reduced mass, belted / airbag / unbelted occupant, HIC15 + chest 3 ms clip).
+    # lib.js = MESCrash, node tests: tool_apps_src/crash-physics-tests.js. Stage prefix "cr" in stage-ctl.js.
+    "crash-physics": dict(title="MES Crash Physics", page_title="Crash Physics Simulator: Impacts, Penetration and Car Crashes",
+                            tag="What happens when it hits?", accent="#b4321f", dark="#8f2416", tint="#fbe7e2",
+                            desc="Free impact and crash physics simulator: pick what flies (material, shape, size, speed, angle) and what it hits (material, thickness) to see whether it bounces, sticks, shatters or goes through, the exit speed, ballistic limit and thickness needed to stop it. Crash cars into walls or each other, or drop eggs and phones, with g-forces, crush and injury risk.",
+                            js_v="1"),
     "double-pendulum": dict(title="MES Double Pendulum", page_title="Double Pendulum Simulator: Chaos and the Butterfly Effect",
                             tag="Two arms. One butterfly effect.", accent="#7e22ce", dark="#6b21a8", tint="#f3e8ff",
                             desc="A free double pendulum simulator: drag the balls to set the start, watch the chaotic motion and its colourful trail, launch a fan of copies to see the butterfly effect, read the divergence graph, and explore the fractal chaos map of how long it takes to flip.",

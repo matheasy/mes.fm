@@ -1,0 +1,121 @@
+	<script>try{if(!localStorage.getItem('pageMode')){document.documentElement.classList.add('page-wide')}}catch(e){}</script>
+	<div class="tu cr" id="cr">
+		<div class="cr-tabs" role="tablist" aria-label="Crash physics tools">
+			<button type="button" role="tab" data-tab="hit" aria-selected="true">Hit a target</button>
+			<button type="button" role="tab" data-tab="crash" aria-selected="false">Crash &amp; drop test</button>
+		</div>
+
+		<section data-panel="hit" role="tabpanel">
+			<p class="tu-note cr-lead">Pick what flies, how fast, and what it hits. The simulator works out whether it <b>bounces, sticks, shatters or goes through</b>, how deep it gets, how fast it comes out the other side, and how thick the plate would have to be to stop it. Then press <b>Replay</b> to watch it in slow motion.</p>
+			<div class="cr-wrap"><div class="cr-stage" id="cr-st1">
+				<canvas id="cr-c1" role="img" aria-label="Side view of the object flying into the plate, in slow motion."></canvas>
+				<div class="cr-badge" id="cr-b1"></div>
+				<div class="cr-run"><button type="button" id="cr-play1">▶ Replay</button><button type="button" id="cr-slow1" aria-pressed="false" title="Play the impact even slower">🐢 Slower</button><button type="button" id="cr-png1" title="Save as a picture" aria-label="Save as PNG">📷</button><button type="button" id="cr-full1" title="Full screen" aria-label="Full screen">⛶</button></div>
+				<div class="cr-clock" id="cr-k1"></div>
+			</div>
+			<div class="cr-readouts" id="cr-ro1"></div></div>
+
+			<div class="tu-card cr-controls">
+				<div class="cr-chips" id="cr-pre1" role="group" aria-label="Examples"></div>
+				<div class="cr-cols">
+					<fieldset class="cr-fs"><legend>What hits</legend>
+						<div class="cr-grid">
+							<label class="tu-field"><span class="tu-label">Material</span><select id="cr-pm" class="tu-select"></select></label>
+							<label class="tu-field"><span class="tu-label">Shape</span><select id="cr-sh" class="tu-select"></select></label>
+							<div class="tu-field"><span class="tu-label" id="cr-d-l">Diameter</span><div class="cr-pair"><input id="cr-d" class="tu-input" inputmode="decimal" aria-labelledby="cr-d-l"><select id="cr-du" class="tu-select" aria-label="Size unit"><option value="mm">mm</option><option value="cm">cm</option><option value="m">m</option><option value="in">in</option></select></div></div>
+							<div class="tu-field" id="cr-L-f"><span class="tu-label" id="cr-L-l">Length</span><div class="cr-pair"><input id="cr-L" class="tu-input" inputmode="decimal" aria-labelledby="cr-L-l"><span class="cr-u" id="cr-L-u">mm</span></div></div>
+							<div class="tu-field"><span class="tu-label" id="cr-m-l">Mass</span><div class="cr-pair"><input id="cr-m" class="tu-input" inputmode="decimal" aria-labelledby="cr-m-l"><span class="cr-u">g</span><button type="button" class="cr-mini" id="cr-mauto" title="Work the mass out from the size and material again">auto</button></div><span class="tu-note" id="cr-m-n"></span></div>
+							<div class="tu-field"><span class="tu-label" id="cr-v-l">Speed</span><div class="cr-pair"><input id="cr-v" class="tu-input" inputmode="decimal" aria-labelledby="cr-v-l"><select id="cr-vu" class="tu-select" aria-label="Speed unit"><option value="ms">m/s</option><option value="kmh">km/h</option><option value="mph">mph</option><option value="fts">ft/s</option></select></div><input type="range" id="cr-vs" min="0" max="1000" step="1" aria-label="Speed slider (log scale)"></div>
+							<div class="tu-field"><span class="tu-label" id="cr-a-l">Angle from straight on: <b id="cr-a-v"></b>°</span><input type="range" id="cr-a" min="0" max="85" step="1" aria-labelledby="cr-a-l"></div>
+						</div>
+					</fieldset>
+					<fieldset class="cr-fs"><legend>What it hits</legend>
+						<div class="cr-grid">
+							<label class="tu-field"><span class="tu-label">Material</span><select id="cr-tm" class="tu-select"></select></label>
+							<div class="tu-field"><span class="tu-label" id="cr-h-l">Thickness</span><div class="cr-pair"><input id="cr-h" class="tu-input" inputmode="decimal" aria-labelledby="cr-h-l"><select id="cr-hu" class="tu-select" aria-label="Thickness unit"><option value="mm">mm</option><option value="cm">cm</option><option value="m">m</option><option value="in">in</option></select></div><input type="range" id="cr-hs" min="0" max="1000" step="1" aria-label="Thickness slider (log scale)"></div>
+							<div class="tu-field"><span class="tu-label" id="cr-w-l">Panel width (how far apart its supports are)</span><div class="cr-pair"><input id="cr-w" class="tu-input" inputmode="decimal" aria-labelledby="cr-w-l"><span class="cr-u">m</span></div><span class="tu-note">Matters for thin sheets: it sets how far the sheet can bend and how much load it can take before it breaks or dents.</span></div>
+						</div>
+					</fieldset>
+				</div>
+				<div class="cr-checks"><button type="button" class="tu-btn tu-btn--ghost" id="cr-link1">🔗 Copy link</button><span class="tu-note" id="cr-tip1">Tip: the bar chart below is clickable. Pick another material to hit.</span></div>
+			</div>
+
+			<div class="tu-card cr-result"><h2 class="cr-h" id="cr-vh">What happens</h2><p class="cr-verdict" id="cr-verdict"></p><div class="cr-tablewrap"><table class="tu-table cr-table" id="cr-tab1"></table></div></div>
+
+			<div class="cr-charts">
+				<div class="tu-card"><h3 class="cr-h3">Exit speed for every impact speed</h3><p class="tu-note">Below the <b>ballistic limit</b> it stays on this side; above it the exit speed climbs towards the impact speed. Hover to read it.</p><div class="cr-chwrap"><canvas id="cr-ch1" role="img" aria-label="Exit speed against impact speed for this object and plate"></canvas></div></div>
+				<div class="tu-card"><h3 class="cr-h3">How thick each material must be to stop it</h3><p class="tu-note">Same object, same speed and angle. Log scale. Click a bar to hit that material.</p><div class="cr-chwrap"><canvas id="cr-ch2" role="img" aria-label="Thickness of each material needed to stop the object"></canvas></div></div>
+			</div>
+		</section>
+
+		<section data-panel="crash" role="tabpanel" hidden>
+			<p class="tu-note cr-lead">Crash a car into a wall or another car, or drop an egg, a phone or a person onto the floor. The <b>stopping distance</b> decides everything: the same speed stopped over 60 cm of crumple zone or over 2 cm of concrete gives very different forces. Belts and airbags work the same way, by stretching the stop.</p>
+			<div class="cr-wrap"><div class="cr-stage" id="cr-st2">
+				<canvas id="cr-c2" role="img" aria-label="The crash or drop in slow motion"></canvas>
+				<div class="cr-badge" id="cr-b2"></div>
+				<div class="cr-run"><button type="button" id="cr-play2">▶ Replay</button><button type="button" id="cr-slow2" aria-pressed="false" title="Play the crash even slower">🐢 Slower</button><button type="button" id="cr-png2" title="Save as a picture" aria-label="Save as PNG">📷</button><button type="button" id="cr-full2" title="Full screen" aria-label="Full screen">⛶</button></div>
+				<div class="cr-clock" id="cr-k2"></div>
+			</div>
+			<div class="cr-chwrap cr-chwrap--in"><canvas id="cr-ch3" role="img" aria-label="Deceleration in g against time in milliseconds"></canvas></div>
+			<div class="cr-readouts" id="cr-ro2"></div></div>
+
+			<div class="tu-card cr-controls">
+				<div class="cr-chips" id="cr-pre2" role="group" aria-label="Examples"></div>
+				<div class="cr-cols">
+					<fieldset class="cr-fs"><legend>What moves</legend>
+						<div class="cr-grid">
+							<label class="tu-field"><span class="tu-label">Object</span><select id="cr-ob" class="tu-select"></select></label>
+							<div class="tu-field"><span class="tu-label" id="cr-om-l">Mass</span><div class="cr-pair"><input id="cr-om" class="tu-input" inputmode="decimal" aria-labelledby="cr-om-l"><span class="cr-u">kg</span></div></div>
+							<div class="tu-field"><span class="tu-label">Speed from</span><div class="tu-seg cr-seg" id="cr-vsrc" role="group" aria-label="Speed from"><button type="button" data-v="speed" aria-pressed="true">A speed</button><button type="button" data-v="fall" aria-pressed="false">A fall</button></div></div>
+							<div class="tu-field" id="cr-cv-f"><span class="tu-label" id="cr-cv-l">Speed</span><div class="cr-pair"><input id="cr-cv" class="tu-input" inputmode="decimal" aria-labelledby="cr-cv-l"><select id="cr-cvu" class="tu-select" aria-label="Speed unit"><option value="kmh">km/h</option><option value="mph">mph</option><option value="ms">m/s</option></select></div><input type="range" id="cr-cvs" min="0" max="1000" step="1" aria-label="Speed slider"></div>
+							<div class="tu-field" id="cr-fh-f" hidden><span class="tu-label" id="cr-fh-l">Fall height</span><div class="cr-pair"><input id="cr-fh" class="tu-input" inputmode="decimal" aria-labelledby="cr-fh-l"><select id="cr-fhu" class="tu-select" aria-label="Height unit"><option value="m">m</option><option value="ft">ft</option><option value="cm">cm</option></select></div><span class="tu-note" id="cr-fh-n"></span></div>
+							<div class="tu-field" id="cr-rs-f"><span class="tu-label">People inside</span><select id="cr-rs" class="tu-select"></select></div>
+						</div>
+					</fieldset>
+					<fieldset class="cr-fs"><legend>What it hits</legend>
+						<div class="cr-grid">
+							<label class="tu-field"><span class="tu-label">Hits</span><select id="cr-su" class="tu-select"></select></label>
+							<div class="tu-field" id="cr-o2-f" hidden><span class="tu-label">Other vehicle</span><select id="cr-o2" class="tu-select"></select></div>
+							<div class="tu-field" id="cr-d2-f" hidden><span class="tu-label">Its direction</span><select id="cr-d2" class="tu-select"><option value="head">Coming the other way (head-on)</option><option value="stop">Standing still</option><option value="same">Going the same way, slower (rear-end)</option></select></div>
+							<div class="tu-field" id="cr-v2-f" hidden><span class="tu-label" id="cr-v2-l">Its speed</span><div class="cr-pair"><input id="cr-v2" class="tu-input" inputmode="decimal" aria-labelledby="cr-v2-l"><span class="cr-u" id="cr-v2-u">km/h</span></div></div>
+							<div class="tu-field"><span class="tu-label" id="cr-e-l">Bounciness (restitution): <b id="cr-e-v"></b></span><input type="range" id="cr-e" min="0" max="100" step="1" aria-labelledby="cr-e-l"><span class="tu-note">0 = stays crushed together, 1 = a perfect bounce. Set by the object and surface; drag to change it.</span></div>
+						</div>
+					</fieldset>
+				</div>
+				<div class="cr-checks"><button type="button" class="tu-btn tu-btn--ghost" id="cr-link2">🔗 Copy link</button><button type="button" class="tu-btn tu-btn--ghost" id="cr-ereset">Reset bounciness</button></div>
+			</div>
+
+			<div class="tu-card cr-result"><h2 class="cr-h">What happens</h2><p class="cr-verdict" id="cr-verdict2"></p><div class="cr-tablewrap"><table class="tu-table cr-table" id="cr-tab2"></table></div></div>
+		</section>
+
+		<div class="tu-seo">
+			<h2>The physics of impacts and crashes</h2>
+			<p>Every collision is the same story: something moving has <strong>kinetic energy</strong> and <strong>momentum</strong>, and both have to go somewhere in a very short time. Where the energy goes (into crushing metal, cracking glass, heating the projectile, or bouncing back) decides what you see. How quickly the momentum is removed decides the force.</p>
+			<div class="cr-eq" role="math" aria-label="Key equations">
+				<div><span class="cr-eq__n">energy, momentum</span> <span class="cr-eq__f mes-tex">\(\displaystyle E = \tfrac12 m v^2, \qquad p = m v\)</span></div>
+				<div><span class="cr-eq__n">stopping force</span> <span class="cr-eq__f mes-tex">\(\displaystyle \bar F = \frac{m v^2}{2 s} = \frac{m\,\Delta v}{\Delta t}, \qquad \bar a = \frac{v^2}{2 s}\)</span></div>
+				<div><span class="cr-eq__n">Poncelet penetration</span> <span class="cr-eq__f mes-tex">\(\displaystyle m\frac{dv}{dt} = -A\left(R + B\rho_t v^2\right) \;\Rightarrow\; P = \frac{m}{2 B \rho_t A}\ln\!\left(1 + \frac{B\rho_t v^2}{R}\right)\)</span></div>
+				<div><span class="cr-eq__n">shear plug</span> <span class="cr-eq__f mes-tex">\(\displaystyle W_{\text{plug}} \approx \tfrac12\,\tau\,\pi d\,t^2\)</span></div>
+				<div><span class="cr-eq__n">exit speed</span> <span class="cr-eq__f mes-tex">\(\displaystyle v_r = \frac{m}{m + m_{\text{plug}}}\sqrt{v^2 - v_{\text{bl}}^2}\)</span></div>
+				<div><span class="cr-eq__n">fast impacts</span> <span class="cr-eq__f mes-tex">\(\displaystyle P \approx L\sqrt{\rho_p/\rho_t}\ \ \text{(Newton)}, \qquad P \approx 0.3\,d\sqrt{\rho_p/\rho_t}\left(\rho_t v^2/Y_t\right)^{1/3}\)</span></div>
+				<div><span class="cr-eq__n">head injury criterion</span> <span class="cr-eq__f mes-tex">\(\displaystyle \mathrm{HIC} = \max_{t_2-t_1\le 15\,\mathrm{ms}} \left[(t_2-t_1)\left(\frac{1}{t_2-t_1}\int_{t_1}^{t_2} a\,dt\right)^{2.5}\right]\)</span></div>
+			</div>
+			<h3>Hitting a target: what the simulator does</h3>
+			<ul>
+				<li><strong>First contact.</strong> The pressure at the nose is the target's resistance to being pushed aside, <em>R</em>, plus the inertia of the material it has to shove out of the way, <em>Bρv²</em> (at low speed the elastic Hertz contact pressure is used instead). If that pressure is less than the projectile can take, the projectile stays whole and pushes in. If not, a ductile one <strong>flattens</strong> (mushrooms) and a brittle one such as ice, glass or rock <strong>shatters</strong>. When even the projectile's own inertia, ½ρv², is bigger than the target's strength, both behave almost like fluids and the projectile <strong>erodes</strong> as it goes, which is how meteorites and space debris make craters.</li>
+				<li><strong>Through a plate.</strong> The projectile pushes in to some depth and then shears out the rest of the plate as a <strong>plug</strong> (or pushes petals aside, if it is pointed). The simulator finds the first depth at which the remaining energy is enough to finish the job; a thin plate is mostly plug, a thick one mostly penetration. The slowest speed that gets through is the <strong>ballistic limit</strong>.</li>
+				<li><strong>Thin sheets.</strong> A window breaks by bending, not by being punched: it can only store a little energy before its tensile strength gives way. A small pane breaks at a higher load, a wide one bends further before it goes. A thin metal sheet that is not punched through <strong>dents</strong>: the energy goes into bending and stretching it.</li>
+				<li><strong>Very fast impacts.</strong> Above about 3 km/s (space debris, micrometeoroids) the crater depth grows with the cube root of the impact pressure over the target strength, and a plate is perforated if it is thinner than about 1.8 times that crater depth. The projectile melts or vaporises and comes out as a cloud of debris, which is why the ISS uses spaced <em>Whipple shields</em>.</li>
+			</ul>
+			<h3>Crashes and drops: what the simulator does</h3>
+			<ul>
+				<li>Each object is a <strong>spring</strong> (a car's crumple zone is about 1 MN/m; an egg's shell about 150 kN/m), in series with the surface it hits. Loading follows the spring; unloading is stiffer, so only a fraction <em>e²</em> of the energy comes back (<em>e</em> = restitution). The result is the classic half-sine crash pulse.</li>
+				<li>Two vehicles are worked out with their <strong>reduced mass</strong> and closing speed; momentum is conserved, and the lighter one gets the bigger change of speed (Δv). That is why a small car loses to an SUV.</li>
+				<li>The person inside is a second mass held by a belt and an airbag (springs with damping) or by nothing at all, in which case they fly forward until they hit the dashboard. From their acceleration the page gets the chest 3 ms clip and the <strong>head injury criterion</strong>, and NHTSA's NCAP risk curves turn those into a rough chance of a severe injury (AIS 4+).</li>
+			</ul>
+			<h3>How good are the numbers?</h3>
+			<p>These are textbook engineering models, chosen because they show the right trends and the right orders of magnitude: expect roughly a factor of two against real tests. Real impacts depend on things a simulator like this leaves out: the exact alloy and heat treatment, strain rate, the shape of the nose, layered and laminated materials (a car windshield has plastic between two glass sheets), how the panel is held, and fragments. The crash pulse of a real car is not a perfect half sine, and the occupant model is a single mass, not a crash-test dummy. Use it to learn the physics, not to design or certify anything.</p>
+			<p>Everything runs on your device and nothing is uploaded. <a href="/materials">Mechanics of Materials</a> · <a href="/tensile-test-simulator">Tensile Test Simulator</a> · <a href="/jump-start">Jump-Start a Car</a> · <a href="/orbit-simulator">Orbit Simulator</a> · <a href="/tools">More MES tools</a></p>
+		</div>
+		<script src="/main_js/mes-math.js" defer></script>
+	</div>
