@@ -91,6 +91,14 @@ def patch(text, slot, remove, responsive=False, allow_tool=False):
     return new.replace("</body>", JS_BLOCK.format(v=ASSET_V) + "</body>", 1), None
 
 
+def only_match(path, only, site):
+    """--only: True when the page is one of the named ones (folder slug = its index.html, or a path relative to mes.fm/)."""
+    if not only:
+        return True
+    rel = os.path.relpath(str(path), str(site)).replace(os.sep, "/")
+    return any(rel in (o, o + "/index.html", o + ".html") for o in only)
+
+
 def main():
     ap = argparse.ArgumentParser(description=__doc__.split("\n")[0])
     ap.add_argument("--apply", action="store_true", help="write changes (default: dry run)")
@@ -98,7 +106,9 @@ def main():
     ap.add_argument("--family", action="append", help="only this family (repeatable); default all in FAMILIES")
     ap.add_argument("--ad-slot", default=None, help="AdSense data-ad-slot for every family (default: the responsive unit for RESPONSIVE_FAMILIES, else the fixed Bottom 300x250 unit)")
     ap.add_argument("--remove", action="store_true", help="strip the bottom ad from the selected families")
+    ap.add_argument("--only", default="", help="only these pages, by folder (comma separated, e.g. --only=photo,fonts; a page file without a folder: weighted-average-calculator): the other pages are left alone, so a one-tool rebuild touches only that tool")
     args = ap.parse_args()
+    only = [o.strip().strip("/") for o in args.only.split(",") if o.strip()]
 
     total = changed = 0
     skipped = {}
@@ -120,6 +130,8 @@ def main():
         if path in seen:
             continue
         seen.add(path)
+        if not only_match(path, only, SITE):
+            continue
         if NUMERIC_STUB.match(os.path.basename(path)):
             skipped.setdefault("pagination stub", []).append(path)
             continue

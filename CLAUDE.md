@@ -768,6 +768,15 @@ Note that other agent sessions sometimes have a repo-wide pass of their own sitt
 tree. Before committing one of these, compare `git status --porcelain | wc -l` against the file count your script
 reported; if there is a large gap, stage only your own paths rather than `git add -A`.
 
+**Rebuild follow-ups are now stable (2026-11-05).** `add_tool_page_controls.py`, `add_sidebar.py` and `add_bottom_ad.py` take
+`--only=<slug>[,<slug>...]` (a folder slug = its `index.html`, or a page file such as `weighted-average-calculator`), so after
+`build_tool_apps.py --only=X --apply` run them with `--only=X` and nothing else is touched. Even a full run no longer churns:
+(1) the "More like this" cards are picked by a fixed hash of (page, card) (`hpick()` in `add_sidebar.py`, plus the list neighbour),
+not by the page's position in the list, so adding a tool changes about 1 page instead of ~170; (2) the TOOL-DARK block goes back exactly
+where it was, and on a fresh page after the floating-bar CSS, so a second run no longer swaps the two. Checked: a second full run of all
+three (and `add_cross_links.py`) leaves every file byte-identical. If one of them starts rewriting unrelated pages again, that is a bug
+in the script to fix, not churn to throw away.
+
 - **Copy Text** (2026-10-03, `mes.fm/copy-text`, note-yellow `#a16207`; `/copy`, `/clipboard` 308 to it; card in `tools.html` "Text & Symbols"). A clipboard shelf built by
   `build_tool_apps.py` from `tool_apps_src/copy-text/`: notes on boards, click a note to copy, pin / colour / drag-reorder, search across boards, `{date}` `{time}` `{weekday}` `{year}` `{iso}`
   placeholders filled in at copy time (`{{date}}` = literal), undo for deletes, .txt / .json export, JSON restore (merges, skips duplicates), cross-tab sync via the `storage` event. All state is

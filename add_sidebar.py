@@ -27,6 +27,7 @@ Pilot family: percentagecalculator. Add a family to FAMILIES to roll it out.
 Idempotent; **dry-runs by default (-v lists every page), --apply writes.**  --remove strips the aside again.
 """
 import argparse
+import hashlib
 import glob
 import html
 import json
@@ -255,10 +256,24 @@ def rot(items, i, offsets, exclude=()):
     return out
 
 
-def other_calc(family, i, count):
+def hpick(items, key, count, exclude=()):
+    """Pick `count` items for one page by a fixed hash of (page, item) ("rendezvous hashing"), skipping `exclude` urls. Every page gets its
+    own spread of picks, inbound links stay even, and adding or removing an item only changes the few pages where that item ranks in the top
+    `count`. (Until 2026-11-05 picks rotated by the page's position in the list, so one new tool reshuffled ~170 pages on the next run.)"""
+    ranked = sorted((c for c in items if c["url"] not in exclude), key=lambda c: hashlib.md5((key + "|" + c["url"]).encode("utf-8")).hexdigest())
+    out = []
+    for c in ranked:
+        if c not in out:
+            out.append(c)
+        if len(out) >= count:
+            break
+    return out
+
+
+def other_calc(family, key, count, exclude=()):
     others = [{"url": u, "title": t, "img": u + "/img/logo.png", "logo": True, "kind": "Calculator"}
               for t, u in CALCS if u != "/" + family]
-    return [others[(i + k) % len(others)] for k in range(count)]
+    return hpick(others, key + "#calc", count, exclude)
 
 
 MAX_STATIC = 4  # + 1 random card added client-side: keeps the sticky aside (ad + list) shorter than a laptop viewport
@@ -272,15 +287,15 @@ def recs_for(family, page, cat, cfg):
         items = [it for it in cat["sections"][page["section"]] if not it.get("hide")]
         offs = cfg["sections"][page["section"]][2] or (1, max(2, len(items) // 7))
         i = items.index(page) if page in items else len(self_url)  # hidden (e.g. solution) pages: stable spread
-        cards = rot(items, i, offs, (self_url,)) + [calc] + other_calc(family, i, 1)
+        near = rot(items, i, offs[:1], (self_url,))   # the next item in the list (adding one changes only its neighbour)
+        cards = near + hpick(items, self_url, len(offs) - 1, (self_url,) + tuple(c["url"] for c in near)) + [calc] + other_calc(family, self_url, 1, (self_url,))
     else:  # the calculator itself, or a tutorial/article page
         arts = cat["articles"]
         j = arts.index(page) if page in arts else -1
         ordered = arts[j + 1:] + arts[:j] if j >= 0 else arts
-        base = len(self_url)  # arbitrary but stable spread for the few pages of this kind
         first = [it for it in next((sec for sec in cat["sections"] if sec), []) if not it.get("hide")]
-        cards = ordered[:2] + ([calc] if page is not calc else []) + other_calc(family, base, 1 if first else 3)
-        cards += rot(first, base, (0,))
+        cards = ordered[:2] + ([calc] if page is not calc else []) + other_calc(family, self_url, 1 if first else 3, (self_url,))
+        cards += hpick(first, self_url, 1, (self_url,))
     seen, out = set(), []
     for c in cards:
         if c["url"] != self_url and c["url"] not in seen:
@@ -348,6 +363,14 @@ def patch_page(text, block, remove):
     return new if n else None
 
 
+def only_match(path, only, site):
+    """--only: True when the page is one of the named ones (folder slug = its index.html, or a path relative to mes.fm/)."""
+    if not only:
+        return True
+    rel = os.path.relpath(str(path), str(site)).replace(os.sep, "/")
+    return any(rel in (o, o + "/index.html", o + ".html") for o in only)
+
+
 def main():
     ap = argparse.ArgumentParser(description=__doc__.split("\n")[0])
     ap.add_argument("--apply", action="store_true", help="write changes (default: dry run)")
@@ -355,7 +378,9 @@ def main():
     ap.add_argument("--family", action="append", help="only this family (repeatable); default all in FAMILIES")
     ap.add_argument("--ad-slot", default=None, help="AdSense data-ad-slot for the 300x250 unit (default: keep each page's, else the Sidebar 300x250 unit)")
     ap.add_argument("--remove", action="store_true", help="strip the aside from the selected families")
+    ap.add_argument("--only", default="", help="only these pages, by folder (comma separated, e.g. --only=photo,fonts; a page file without a folder: weighted-average-calculator): the other pages are left alone, so a one-tool rebuild touches only that tool")
     args = ap.parse_args()
+    only = [o.strip().strip("/") for o in args.only.split(",") if o.strip()]
 
     total = changed = 0
     skipped = []
@@ -371,6 +396,8 @@ def main():
             family, len(pages), ", ".join("%d %s" % (len(sec), cfg["sections"][n][0]) for n, sec in enumerate(cat["sections"])) or "no sections",
             len(cat["articles"]), sum(1 for m in items if m["logo"])))
         for page in pages:
+            if not only_match(page["path"], only, SITE):
+                continue
             total += 1
             old = read(page["path"])
             if args.ad_slot is not None:

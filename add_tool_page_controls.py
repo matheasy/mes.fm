@@ -19,6 +19,7 @@ Per page this script (idempotent; re-running refreshes the generated dark block)
 **Dry-runs by default; `--apply` writes.**
 """
 import colorsys
+import os
 import re
 import sys
 from pathlib import Path
@@ -28,6 +29,8 @@ import add_compact_nav_bar as cnb
 ROOT = Path(__file__).resolve().parent
 SITE = ROOT / "mes.fm"
 APPLY = "--apply" in sys.argv
+# --only=photo,fonts (or --only photo,fonts): just those pages, by folder; the rest are left alone
+ONLY = [o.strip().strip("/") for a in [x.split("=", 1)[1] for x in sys.argv if x.startswith("--only=")] + [sys.argv[i + 1] for i, x in enumerate(sys.argv[:-1]) if x == "--only"] for o in a.split(",") if o.strip()]
 
 TOOLS = [  # (directory, compact-bar title[, home path of the site the page belongs to])
     ("emoji", "Emoji Copier"),
@@ -441,14 +444,6 @@ def patch(text, dirname, title, home=None):
         logo = re.search(r'data-src="(/[^"]*/logo\.png[^"]*)"', text)
     logo = logo.group(1) if logo else "https://mes.fm/img/logo-mark.png"
 
-    # -- 3. generated dark block (strip any previous copy first so the derivation sees only hand-written CSS)
-    text = re.sub(r"\n\t" + re.escape(START) + r".*?" + re.escape(END) + r"\n", "", text, flags=re.S)
-    s, e = tool_style_span(text)
-    dark = derive_dark(text[s:e].replace(compact_css(accent), ""))
-    block = "\n\t%s\n\t%s\n\t%s\n\t%s\n" % (START, GENERIC, "\n\t".join(dark), END)
-    text = text[:e] + block + text[e:]
-    notes.append("dark: %d rules" % len(dark))
-
     # -- 1. floating bar
     if 'id="compact-nav"' not in text:
         css = compact_css(accent)
@@ -465,6 +460,19 @@ def patch(text, dirname, title, home=None):
         text = text.replace(cnb.JS_ANCHOR, cnb.JS_ANCHOR + cnb.JS_BLOCK, 1)
         notes.append("floating bar")
 
+    # -- 3. generated dark block (strip any previous copy first so the derivation sees only hand-written CSS). It goes back exactly where the
+    #    old copy was, and on a fresh page it is added after the floating-bar CSS (step 1 runs first), so a second run never moves it:
+    #    before 2026-11-05 a fresh page got [dark, bar] and the next run rewrote it as [bar, dark]
+    dark_re = re.compile(r"\n\t" + re.escape(START) + r".*?" + re.escape(END) + r"\n", re.S)
+    old_dark = dark_re.search(text)
+    text = dark_re.sub("", text)
+    s, e = tool_style_span(text)
+    dark = derive_dark(text[s:e].replace(compact_css(accent), ""))
+    block = "\n\t%s\n\t%s\n\t%s\n\t%s\n" % (START, GENERIC, "\n\t".join(dark), END)
+    at = old_dark.start() if old_dark and s <= old_dark.start() <= e else e
+    text = text[:at] + block + text[at:]
+    notes.append("dark: %d rules" % len(dark))
+
     # -- 2. controls
     if DC_TAG not in text:
         if "display-controls.js" in text.split("</style>")[-1]:
@@ -480,11 +488,21 @@ def patch(text, dirname, title, home=None):
     return text, notes
 
 
+def only_match(path, only, site):
+    """--only: True when the page is one of the named ones (folder slug = its index.html, or a path relative to mes.fm/)."""
+    if not only:
+        return True
+    rel = os.path.relpath(str(path), str(site)).replace(os.sep, "/")
+    return any(rel in (o, o + "/index.html", o + ".html") for o in only)
+
+
 def main():
     changed = 0
     for entry in TOOLS:
         d, title = entry[0], entry[1]
         p = SITE / d if d.endswith(".html") else SITE / d / "index.html"   # "<folder>/<page>.html" = a page inside another site's folder
+        if not only_match(p, ONLY, SITE):
+            continue
         old = p.read_text(encoding="utf-8")
         new, notes = patch(old, d, title, entry[2] if len(entry) > 2 else None)
         if new is None:
