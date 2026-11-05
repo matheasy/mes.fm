@@ -273,7 +273,8 @@ sub {vertical-align:sub;}        .warning-message {font-size:1em;text-align:cent
 	.ic-cchip button { width: 1.5em; height: 1.5em; border-radius: 50%; line-height: 1; }
 	.ic-cchip button:hover, .ic-cclear:hover { color: #b00020; background: #fbe9e7; }
 	.ic-cclear { font-size: 0.82em; padding: 0.3em 0.6em; text-decoration: underline; }
-	.ic-h2 .ic-foldall { float: right; font-weight: 400; margin-top: -0.2em; }
+	.ic-h2:has(.ic-foldall) { display: flex; align-items: center; flex-wrap: wrap; gap: 0.5em; }
+	.ic-h2 .ic-foldall { margin-left: auto; font-weight: 400; font-size: 0.8em; }
 	.ic-card--folded > :not(.ic-card__head) { display: none; }
 	.ic-card--folded .ic-card__head { margin-bottom: 0; }
 	.ic-card--folded .ic-tools > :not(.ic-fold) { display: none; }
