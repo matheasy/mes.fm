@@ -66,6 +66,8 @@ def article(img_prefix):
     return "\n".join(a)
 
 CSS = """    .em-intro { margin-bottom: 1.4em; }
+    .container article .em-head { font-size: calc(1rem * var(--ts, 1)); }
+    .container article :is(.em-fig figcaption, .em-att, .em-gap) { font-size: calc(0.9rem * var(--ts, 1)); }
     .em { border: 1px solid #d0d7de; border-left: 5px solid #1a73e8; border-radius: 8px; margin: 0 0 1.2em; background: #fff; overflow: hidden; }
     .em.em-mes { border-left-color: #0f766e; }
     .em-head { padding: 0.7em 1em; background: #f3f6fa; border-bottom: 1px solid #d0d7de; display: grid; grid-template-columns: 1fr auto; gap: 0.15em 1em; }
@@ -90,8 +92,7 @@ CSS = """    .em-intro { margin-bottom: 1.4em; }
     body.dark .em-tag, body.dark-mode .em-tag { background: #4a3a10; color: #ffe08a; border-color: #8a6d1d; }
     body.dark .em-att, body.dark-mode .em-att { border-color: #5a6470; }
 """
-PAGE3_HEAD = ('<!-- HUB-THEATRE-HEAD --><link rel="stylesheet" href="/main_js/hub-theatre.css?v=1"><script>try{var m=localStorage.getItem("pageMode")||"wide",'
-              'c=document.documentElement.classList;if(m==="theatre")c.add("page-theatre");if(m!=="std")c.add("page-wide")}catch(e){}</script><!-- /HUB-THEATRE-HEAD -->')
+
 
 def page():
     t = (R / "hive_mirror_template.html").read_text(encoding="utf-8")
@@ -99,9 +100,8 @@ def page():
     t = re.sub(r"\s*<!-- ADSENSE-DEFERRED:.*?</script>", "", t, count=1, flags=re.S)                 # private: no ads
     t = re.sub(r"\s*<!-- FASTCOMMENTS-BLOCK.*?comments\.js[^>]*></script>", "", t, count=1, flags=re.S)  # ... and no comments
     assert "adsbygoogle" not in t and "comments-box" not in t
-    t = t.replace('<link rel="canonical"', '<meta name="robots" content="noindex, nofollow">\n  ' + PAGE3_HEAD + '\n  <link rel="canonical"', 1)
+    t = t.replace('<link rel="canonical"', '<meta name="robots" content="noindex, nofollow">\n  <link rel="canonical"', 1)
     t = t.replace("<html lang=\"en\">", '<html lang="en" data-no-rating>', 1)
-    t = t.replace("</body>", '<div data-page-modes="3" hidden></div>\n<script src="/main_js/hub-theatre.js?v=2" defer></script>\n</body>', 1)
     desc = "Emails between Dr. Judy Wood and MES about the Space Shuttle Columbia disaster and her EM 304 test of February 6, 2003, in the order they were sent."
     for k, v in {"@@SLUG@@": SLUG, "@@TITLE@@": html.escape(TITLE, quote=False), "@@SUBTITLE@@": SUB, "@@DESC@@": html.escape(desc),
                  "@@OGIMAGE@@": "https://mes.fm/space-shuttle-columbia/img/share.jpg",
@@ -111,7 +111,8 @@ def page():
                  "@@COMPACT_MATH_LINK@@": '<li><a href="/math" tabindex="-1">Math Tutorials</a></li>', "@@ARTICLE@@": article("/%s/img/" % SLUG)}.items():
         t = t.replace(k, v)
     assert "@@" not in t
-    return t
+    import private_page_shell
+    return private_page_shell.apply(t)
 
 def print_html():
     body = article((SITE / SLUG / "img").as_uri() + "/")

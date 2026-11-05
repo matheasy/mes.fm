@@ -110,6 +110,7 @@ def build(slug, cfg):
         t = re.sub(r"\s*<!-- ADSENSE-DEFERRED:.*?</script>", "", t, count=1, flags=re.S)
         t = re.sub(r"\s*<!-- FASTCOMMENTS-BLOCK.*?comments\.js[^>]*></script>", "", t, count=1, flags=re.S)
         t = t.replace('<html lang="en">', '<html lang="en" data-no-rating>', 1)
+        import private_page_shell; t = private_page_shell.apply(t)   # Standard | Wide | Theatre (no sidebar)
     br = dict(href="/", logo="/img/logo-mark.png", title="MES.fm", tag="Videos, tutorials, calculators and research by Math Easy Solutions.")
     if cfg.get("brand"):
         sys.path.insert(0, str(R)); import convert_mirror_pages as cmp
