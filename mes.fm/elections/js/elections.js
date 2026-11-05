@@ -746,11 +746,26 @@
 	$('el-more').addEventListener('click', function (e) { if (e.target.id === 'el-morebtn') { shown += 60; drawList(); } });
 	$('el-find').addEventListener('input', function () { st.find = ''; shown = 30; drawList(); drawMap(cur()); });
 	$('el-list').addEventListener('click', function (e) { var b = e.target.closest('[data-pk]'); if (!b) return; setPick(b.closest('[data-k]').getAttribute('data-k'), b.getAttribute('data-pk')); });
+	// says what the shift actually did: on Blank it can't change the totals, and late in a count most open races are too lopsided to flip
+	function shiftNote(c) {
+		var el = $('el-shiftnote'), box = $('el'), open = c.rs.filter(function (r) { return !r.res && !st.picks[st.ch][r.key]; }).length, t;
+		if (box) box.classList.toggle('el-blank', st.base === 'blank');
+		if (st.base === 'blank') t = 'On Blank the shift only shades each race\'s bar in the list below; the totals count your own picks. Choose "Market favourites" to let the shift change the totals.';
+		else if (!open) t = 'Every race is settled or picked by you, so the shift has nothing left to move.';
+		else if (!st.shift) t = open + ' race' + (open === 1 ? '' : 's') + ' still open for the shift to move.';
+		else {
+			var o0 = E.outcome(c.rs, { picks: st.picks[st.ch], base: 'market', shift: 0 }), n = 0;
+			c.rs.forEach(function (r) { if (o0.by[r.key] !== c.o.by[r.key]) n++; });
+			t = n ? 'This shift flips ' + n + ' of the ' + open + ' open race' + (open === 1 ? '' : 's') + '.' : 'No open race is close enough to flip (' + open + ' still open). The shift moves a 50-50 race by the full amount but a race at 95% barely moves.';
+		}
+		el.textContent = t;
+	}
 	function drawBuild(fromSlider) {
 		segSet('el-ch', st.ch); segSet('el-base', st.base); segSet('el-sort', st.sort);
 		$('el-shift').value = st.shift; $('el-ind').value = st.ind;
 		$('el-shiftv').textContent = st.shift ? Math.abs(st.shift) + ' pts toward ' + (st.shift < 0 ? 'D' : 'R') : 'none';
 		var c = cur();
+		shiftNote(c);
 		// the slider runs D (left) to R (right); internally + = toward D
 		if (!c.rs.length) { $('el-result').innerHTML = '<p class="tu-note">Race markets did not load. Try Refresh.</p>'; }
 		drawResult(c); drawArc(c); drawMap(c); legend();

@@ -63,6 +63,9 @@
 	#el .el-shiftrow {display:flex;align-items:center;gap:0.5em;}
 	#el .el-shiftrow input[type=range] {flex:1;accent-color:var(--accent);min-height:30px;}
 	#el .el-shiftrow output {min-width:7.5em;font-size:0.85em;font-weight:700;}
+	#el .el-shiftnote {margin:0.3em 0 0;font-size:0.82em;line-height:1.35;opacity:0.85;}
+	#el .el-shiftnote:empty {display:none;}
+	#el.el-blank .el-shiftrow {opacity:0.55;}
 	#el .el-sd {font-weight:800;color:var(--el-td);} #el .el-sr {font-weight:800;color:var(--el-tr);}
 	#el .el-ctrl--btns {display:flex;gap:0.4em;}
 	#el .el-result {margin:0.6em 0 0.3em;}

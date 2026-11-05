@@ -291,7 +291,7 @@ APPS = {
                       tag="Results and market odds side by side, with every source. No spin.", accent="#0f6e6e", dark="#0a4f4f", tint="#dff3f2",
                       desc="Free, neutral elections tracker: the 2026 US midterms with every House, Senate and governor race priced by Polymarket and Kalshi, a build-your-own-outcome seat map, Canada's 2025 federal election and today's House of Commons, British Columbia's 2024 and 2026 elections with seats-versus-votes and majority tools, and a calendar of upcoming elections worldwide with sources.",
                       meta_desc="Neutral 2026 midterm tracker with race-by-race market odds and a seat builder, plus Canada and BC election results and a world election calendar.",
-                      js_v="1"),
+                      js_v="2"),
     # MES NBA Picks (2026-10-26, mes.fm/nba-picks): predicted final standings (15 teams per conference) scored against the live standings (exact, within 1/2/3, tier, points,
     # closeness, Spearman). Standings = mes.fm/api/nba-standings.js (ESPN, keyless); leaderboard = mes.fm/api/nba-picks.js (Upstash). lib.js is shared with both as
     # mes.fm/api/_nba-lib.js (byte-identical copy). Snapshot mes.fm/nba-picks/data/sample.json (`node mes.fm/api/nba-standings.js --write`). Tests: node tool_apps_src/nba-picks-tests.js.
