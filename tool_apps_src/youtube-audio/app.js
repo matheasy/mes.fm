@@ -6,7 +6,7 @@
 (function () {
 	'use strict';
 	var Y = MESYA, $ = function (id) { return document.getElementById(id); }, KEY = 'mes-youtube-audio:v1';
-	var S = { thr: -45, min: 0.5, lanes: { wave: true, loud: true, spec: true }, ws: 'lin', split: false, tab: 'link' };
+	var S = { thr: -45, min: 0.5, lanes: { wave: true, loud: true, spec: true }, ws: 'lin', split: false, tab: 'link', quiet: true };
 	try { var sv = JSON.parse(localStorage.getItem(KEY) || 'null'); if (sv) for (var k in sv) if (k in S) S[k] = sv[k]; } catch (e) {}
 	function save() { try { localStorage.setItem(KEY, JSON.stringify(S)); } catch (e) {} }
 	function esc(s) { return String(s == null ? '' : s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/"/g, '&quot;'); }
@@ -101,29 +101,53 @@
 
 	/* ---------- links ---------- */
 	function msg(id, html) { $(id).innerHTML = html || ''; }
+	/* whole file in 8 MB pieces (servers such as Odysee's drop one long download part way); plain download when ranges aren't offered */
+	async function fetchWhole(url, job, name) {
+		var CH = 8 << 20, parts = [], got = 0, total = 0, type = '', r, tries;
+		var show = function () { prog('Downloading ' + name + '… ' + (got / 1e6).toFixed(1) + (total ? ' of ' + (total / 1e6).toFixed(0) : '') + ' MB', total ? got / total : 0); };
+		var get = async function (range) {
+			for (tries = 0; ; tries++) {
+				try { var x = await fetch(url, { mode: 'cors', credentials: 'omit', headers: range ? { Range: range } : {} }); if (x.ok) return x; if ((x.status === 401 || x.status === 403) && got) throw new Error('stopped'); if (tries >= 2 || x.status < 500) throw new Error('The other site answered ' + x.status + '.'); }
+				catch (e) { if (job.cancel) throw new Error('Cancelled'); if (e.message === 'stopped') throw e; if (e instanceof TypeError && !got && !tries) throw new Error('cors'); if (tries >= 2) throw got ? new Error('stopped') : e; }
+				await new Promise(function (res) { setTimeout(res, 800 * (tries + 1)); });
+			}
+		};
+		r = await get('bytes=0-' + (CH - 1));
+		type = r.headers.get('content-type') || '';
+		if (r.status === 206) {
+			var cr = (r.headers.get('content-range') || '').match(/\/(\d+)\s*$/); total = cr ? +cr[1] : 0;
+			parts.push(new Uint8Array(await r.arrayBuffer())); got = parts[0].length; show();
+			while (!total || got < total) {
+				if (job.cancel) throw new Error('Cancelled');
+				var x = await get('bytes=' + got + '-' + (got + CH - 1));
+				if (x.status !== 206) throw new Error('The download was interrupted. Try again.');
+				var u = new Uint8Array(await x.arrayBuffer()); if (!u.length) break;
+				parts.push(u); got += u.length; show();
+				if (!total && u.length < CH) break;
+			}
+		} else {
+			total = +r.headers.get('content-length') || 0;
+			if (r.body && r.body.getReader) { var rd = r.body.getReader(); for (;;) { var y = await rd.read(); if (y.done) break; if (job.cancel) { try { rd.cancel(); } catch (e) {} throw new Error('Cancelled'); } parts.push(y.value); got += y.value.length; show(); } }
+			else { parts.push(new Uint8Array(await r.arrayBuffer())); got = parts[0].length; }
+		}
+		var all = new Uint8Array(got), o = 0; parts.forEach(function (p) { all.set(p, o); o += p.length; });
+		return { buf: all.buffer, type: type };
+	}
 	async function openDirect(L) {
 		var job = busy = { cancel: false }, name = L.file || 'the file';
 		stopCapture(true);
 		prog('Downloading ' + name + '…', 0);
 		try {
-			var r;
-			try { r = await fetch(L.watch, { mode: 'cors', credentials: 'omit' }); }
-			catch (e) { throw new Error('cors'); }
-			if (!r.ok) throw new Error('The other site answered ' + r.status + '.');
-			var total = +r.headers.get('content-length') || 0, buf;
-			if (r.body && r.body.getReader) {
-				var rd = r.body.getReader(), parts = [], got = 0;
-				for (;;) { var x = await rd.read(); if (x.done) break; if (job.cancel) { try { rd.cancel(); } catch (e) {} throw new Error('Cancelled'); } parts.push(x.value); got += x.value.length; prog('Downloading ' + name + '… ' + (got / 1e6).toFixed(1) + ' MB', total ? got / total : 0); }
-				var all = new Uint8Array(got), o = 0; parts.forEach(function (p) { all.set(p, o); o += p.length; }); buf = all.buffer;
-			} else buf = await r.arrayBuffer();
+			var dl = await fetchWhole(L.watch, job, name), buf = dl.buf, r = { headers: { get: function () { return dl.type; } } };
 			var file = null; try { file = new File([buf.slice(0)], name, { type: r.headers.get('content-type') || '' }); } catch (e) {}
 			var d = await decode(buf, file, job, name);
-			await analyseChannels(d.channels, d.sampleRate, { kind: 'direct', title: name, link: L.watch }, job);
+			await analyseChannels(d.channels, d.sampleRate, { kind: L.odysee ? 'odysee' : 'direct', title: name, link: L.page || L.watch }, job);
 			setPlayback(L.watch, true);
 			msg('ya-linkmsg', '');
 		} catch (e) {
 			if (/Cancelled/.test(e.message)) return;
-			if (e.message === 'cors') msg('ya-linkmsg', 'That site doesn\'t let other web pages read its files. <a href="' + esc(L.watch) + '" target="_blank" rel="noopener">Download the file</a> and drop it on the <b>Drop a file</b> tab, or play it in another tab and use <b>Listen to another tab</b>.');
+			if (e.message === 'stopped') msg('ya-linkmsg', (L.odysee ? 'Odysee stopped the download part way: it only lets other web pages read the first 32 MB of some videos.' : 'The other site stopped the download part way.') + ' Try again in a minute, or play the video and use <b>Start listening</b> (tick <b>Keep my speakers silent</b>).');
+			else if (e.message === 'cors') msg('ya-linkmsg', 'That site doesn\'t let other web pages read its files. <a href="' + esc(L.watch) + '" target="_blank" rel="noopener">Download the file</a> and drop it on the <b>Drop a file</b> tab, or play it in another tab and use <b>Listen to another tab</b>.');
 			else msg('ya-linkmsg', esc(e.message));
 		} finally { if (busy === job) busy = null; progOff(); }
 	}
@@ -132,12 +156,18 @@
 		msg('ya-linkmsg', '');
 		if (!L.ok) { msg('ya-linkmsg', esc(L.reason)); return; }
 		link = L;
-		if (L.kind === 'direct') { $('ya-player').hidden = true; openDirect(L); return; }
+		if (L.kind === 'direct') { stopHls(); $('ya-player').hidden = true; openDirect(L); return; }
 		var pl = $('ya-player'), fr = $('ya-frame');
 		pl.hidden = false; fr.innerHTML = '';
 		$('ya-open').href = L.watch;
 		$('ya-open').textContent = 'Open on ' + (L.kind === 'other' ? 'that site' : L.name) + ' ↗';
-		if (L.embed) {
+		stopHls(); $('ya-fullbtn').hidden = false; $('ya-or').hidden = false; $('ya-fullnote').textContent = L.kind === 'odysee' ? 'No playing needed: the page downloads the video file from Odysee and measures all of its sound (Odysee sometimes stops other sites part way through a long video: then use Start listening).' : 'No playing needed: the page reads the video\'s sound track straight from the site and measures all of it.'; $('ya-full').hidden = !(L.kind === '3speak' || (L.kind === 'odysee' && L.embed));
+		if (L.kind === '3speak') {
+			$('ya-ptitle').textContent = 'Play the 3Speak video here';
+			fr.className = 'ya-frame'; play3speak(L, fr);
+			$('ya-steps').hidden = false;
+			$('ya-cap').setAttribute('data-cap', 'self'); $('ya-cap').textContent = '● Start listening';
+		} else if (L.embed) {
 			$('ya-ptitle').textContent = 'Play the ' + L.name + ' video here';
 			var f = document.createElement('iframe');
 			f.src = L.embed; f.title = L.name + ' player'; f.setAttribute('allowfullscreen', '');
@@ -163,6 +193,111 @@
 	$('ya-form').addEventListener('submit', function (e) { e.preventDefault(); openLink($('ya-url').value); });
 	$('ya-url').addEventListener('paste', function () { var me = this; setTimeout(function () { if (Y.parseLink(me.value).ok) openLink(me.value); }, 0); });
 
+	/* ---------- 3Speak: our own player (their embed is a whole page) + reading the whole sound track ---------- */
+	var hls = null, pageVid = null, HLS_URL = 'https://cdn.jsdelivr.net/npm/hls.js@1.5.20/dist/hls.min.js';
+	function stopHls() { pageVid = null; if (hls) { try { hls.destroy(); } catch (e) {} hls = null; } }
+	function loadScript(u) { return new Promise(function (res, rej) { if (window.Hls) return res(); var x = document.createElement('script'); x.src = u; x.onload = res; x.onerror = function () { rej(new Error('Could not load the video player.')); }; document.head.appendChild(x); }); }
+	async function speakInfo(L) {
+		var r = await fetch('https://play.3speak.tv/api/embed?v=' + encodeURIComponent(L.id).replace('%2F', '/'), { credentials: 'omit' });
+		if (!r.ok) throw new Error('3Speak answered ' + r.status + '.');
+		var j = await r.json();
+		var u = j && (j.videoUrl || j.videoUrlFallback1 || j.videoUrlFallback2);
+		if (!u) throw new Error('3Speak has no video for that link' + (j && j.status ? ' (status: ' + j.status + ')' : '') + '.');
+		return { url: u, title: j.title || L.id };
+	}
+	async function play3speak(L, fr) {
+		fr.innerHTML = '<p class="ya-loading">Loading the 3Speak video…</p>';
+		try {
+			var info = await speakInfo(L);
+			if (link !== L) return;
+			var v = document.createElement('video'); v.controls = true; v.playsInline = true; v.preload = 'metadata'; v.title = info.title;
+			fr.innerHTML = ''; fr.appendChild(v); pageVid = v; watchVid(v);
+			sizeNote3speak(L, info);
+			if (v.canPlayType('application/vnd.apple.mpegurl')) v.src = info.url;
+			else { await loadScript(HLS_URL); if (link !== L) return; if (!window.Hls || !Hls.isSupported()) throw new Error('This browser can\'t play 3Speak videos here.'); hls = new Hls(); hls.loadSource(info.url); hls.attachMedia(v); }
+		} catch (e) { if (link === L) { fr.className = 'ya-frame ya-frame--none'; fr.innerHTML = '<p>' + esc(e.message) + ' <a href="' + esc(L.watch) + '" target="_blank" rel="noopener">Open it on 3Speak ↗</a></p>'; } }
+	}
+	async function sizeNote3speak(L, info) {
+		try {
+			var pl = Y.parseM3U8(await (await fetch(info.url, { credentials: 'omit' })).text(), info.url), bw = 0;
+			if (pl.variants.length) { var vv = Y.lightest(pl.variants); bw = vv.bw; pl = Y.parseM3U8(await (await fetch(vv.url, { credentials: 'omit' })).text(), vv.url); }
+			if (link !== L || !pl.total) return;
+			var mb = bw ? bw * pl.total / 8 / 1e6 : 0;
+			$('ya-fullnote').textContent = 'No playing needed: the page reads the sound track of all ' + Y.fmtTime(pl.total) + ' straight from 3Speak and measures it.' + (mb ? ' 3Speak keeps the sound inside the video, so this downloads up to about ' + (mb >= 1000 ? (mb / 1000).toFixed(1) + ' GB' : Math.max(1, Math.round(mb)) + ' MB') + '.' : '');
+		} catch (e) {}
+	}
+	function batchDecode(bytes, sr, nch) {
+		var oc = new OfflineAudioContext(Math.max(1, Math.min(2, nch || 2)), 1, sr);
+		return new Promise(function (res, rej) { var p = oc.decodeAudioData(bytes.buffer.slice(bytes.byteOffset, bytes.byteOffset + bytes.length), res, rej); if (p && p.then) p.then(res, rej); });
+	}
+	async function measure3speak(L) {
+		var job = busy = { cancel: false };
+		stopCapture(true); msg('ya-linkmsg', ''); $('ya-capmsg').textContent = '';
+		prog('Finding the video\'s sound track on 3Speak…', 0);
+		try {
+			var info = await speakInfo(L);
+			var get = async function (u) { var r = await fetch(u, { credentials: 'omit' }); if (!r.ok) throw new Error('3Speak answered ' + r.status + '.'); return r; };
+			var pl = Y.parseM3U8(await (await get(info.url)).text(), info.url);
+			if (pl.variants.length) { var vv = Y.lightest(pl.variants); pl = Y.parseM3U8(await (await get(vv.url)).text(), vv.url); }
+			var segs = pl.segments; if (!segs.length) throw new Error('That 3Speak video has no parts to read.');
+			var st = {}, keepLen = 0, pend = [], pendLen = 0, sr = 0, nch = 0, tail = null, got = 0, t0 = Date.now(), OV = 8, BATCH = 300;
+			Z = null; SRC = { kind: '3speak', title: info.title, link: L.watch }; userZoom = false; view = null; setPlayback(null);
+			var feedAll = async function (ab, skip) {
+				if (!Z) Z = new Y.Analyzer(ab.sampleRate, Math.min(2, ab.numberOfChannels));
+				var ch = []; for (var c = 0; c < Math.min(2, ab.numberOfChannels); c++) ch.push(ab.getChannelData(c).subarray(skip));
+				var n = ch[0].length, step = Math.round(ab.sampleRate * 2);
+				for (var i = 0; i < n; i += step) { Z.feed(ch.map(function (x) { return x.subarray(i, Math.min(n, i + step)); })); if (Date.now() - t0 > 120) { await yieldUI(); t0 = Date.now(); } }
+			};
+			var flush = async function (final) {
+				if (!pendLen) return;
+				var all = new Uint8Array(pendLen), o = 0; pend.forEach(function (x) { all.set(x, o); o += x.length; });
+				var A = Y.adtsFrames(all); if (!A.frames.length) return;
+				sr = sr || A.sr; nch = nch || A.ch;
+				var cut = final ? A.frames.length : A.frames.length - 1, last = A.frames[cut - 1], body = all.subarray(0, last.o + last.l);
+				var head = tail ? tail : new Uint8Array(0), buf = new Uint8Array(head.length + body.length); buf.set(head, 0); buf.set(body, head.length);
+				var ab = await batchDecode(buf, sr, nch), want = cut * 1024;
+				await feedAll(ab, Math.max(0, ab.length - want));
+				var tf = A.frames.slice(Math.max(0, cut - OV), cut); tail = all.slice(tf[0].o, last.o + last.l);
+				var rest = all.subarray(last.o + last.l); pend = rest.length ? [rest.slice()] : []; pendLen = rest.length;
+			};
+			var fetches = [], ahead = 3, seconds = 0;
+			for (var k = 0; k < Math.min(ahead, segs.length); k++) fetches.push(get(segs[k].url).then(function (r) { return r.arrayBuffer(); }));
+			for (var i = 0; i < segs.length; i++) {
+				if (job.cancel) throw new Error('Cancelled');
+				var b = new Uint8Array(await fetches[i]); got += b.length;
+				if (i + ahead < segs.length) fetches.push(get(segs[i + ahead].url).then(function (r) { return r.arrayBuffer(); }));
+				var a = Y.tsAudio(b, st);
+				if (a) { keepLen += a.length; pend.push(a); pendLen += a.length; }
+				seconds += segs[i].dur || 0;
+				prog('Reading the sound of “' + info.title + '”… ' + Y.fmtTime(seconds) + ' of ' + Y.fmtTime(pl.total) + ' (' + (got / 1e6).toFixed(0) + ' MB downloaded)', (i + 1) / segs.length);
+				if (sr ? pendLen > sr * BATCH / 1024 * 380 : pendLen > 6e6) await flush(false);
+			}
+			if (!keepLen) throw new Error('That 3Speak video has no sound track.');
+			await flush(true);
+			if (!Z || Z.n < 1) throw new Error('The sound track could not be read.');
+			finish();
+			setPlayback(null); $('ya-seekhint').hidden = !pageVid;
+		} catch (e) {
+			if (!/Cancelled/.test(e.message)) msg('ya-linkmsg', esc(e.message || String(e)) + ' You can still play the video and use <b>Start listening</b>.');
+		} finally { if (busy === job) busy = null; progOff(); }
+	}
+	/* Odysee: its own API gives a plain MP4 that other pages may read */
+	async function measureOdysee(L) {
+		prog('Finding the video file on Odysee…', 0);
+		var u;
+		try {
+			var r = await fetch('https://api.na-backend.odysee.com/api/v1/proxy?m=get', { method: 'POST', credentials: 'omit', headers: { 'Content-Type': 'text/plain' }, body: JSON.stringify({ jsonrpc: '2.0', method: 'get', params: { uri: Y.lbryUrl(L.id), save_file: false }, id: 1 }) });
+			var j = await r.json(); u = j && j.result && j.result.streaming_url;
+			if (!u) throw new Error((j && j.error && j.error.message) || 'Odysee did not give a file for that video (it may be members-only or a livestream).');
+		} catch (e) { progOff(); msg('ya-linkmsg', esc(e.message || String(e)) + ' You can still play the video and use <b>Start listening</b>.'); return; }
+		progOff();
+		await openDirect({ watch: u, file: decodeURIComponent((L.id.split('/').pop() || 'video').replace(/:[0-9a-f]+$/i, '')) + '.mp4', page: L.watch, odysee: true });
+	}
+	$('ya-fullbtn').addEventListener('click', function () { if (!link || busy) return; if (link.kind === '3speak') measure3speak(link); else if (link.kind === 'odysee') measureOdysee(link); });
+	/* "keep my speakers silent" (both copies of the tick box) */
+	var quietBoxes = [].slice.call(document.querySelectorAll('.ya-quietbox'));
+	quietBoxes.forEach(function (q) { q.checked = !!S.quiet; q.addEventListener('change', function () { S.quiet = q.checked; quietBoxes.forEach(function (o) { o.checked = S.quiet; }); save(); }); });
+
 	/* ---------- tab audio ---------- */
 	var TAP = 'class T extends AudioWorkletProcessor{constructor(){super();this.b=null;this.n=0;this.N=4096}process(i){var x=i[0];if(!x||!x.length)return true;var c=Math.min(2,x.length),k;if(!this.b||this.b.length!==c){this.b=[];for(k=0;k<c;k++)this.b.push(new Float32Array(this.N));this.n=0}for(k=0;k<c;k++)this.b[k].set(x[k],this.n);this.n+=x[0].length;if(this.n>=this.N){this.port.postMessage(this.b,this.b.map(function(a){return a.buffer}));this.b=null}return true}}registerProcessor("ya-tap",T);';
 	async function startCapture(self) {
@@ -174,7 +309,7 @@
 		try {
 			stream = await navigator.mediaDevices.getDisplayMedia({
 				video: { displaySurface: 'browser', frameRate: 1 },
-				audio: { echoCancellation: false, noiseSuppression: false, autoGainControl: false, suppressLocalAudioPlayback: false },
+				audio: { echoCancellation: false, noiseSuppression: false, autoGainControl: false, suppressLocalAudioPlayback: !!S.quiet },
 				preferCurrentTab: !!self, selfBrowserSurface: self ? 'include' : 'exclude', surfaceSwitching: 'include', systemAudio: 'exclude', monitorTypeSurfaces: 'exclude'
 			});
 		} catch (e) { say(e && e.name === 'NotAllowedError' ? 'Sharing was cancelled.' : 'Could not start: ' + (e && e.message || e)); return; }
@@ -308,7 +443,7 @@
 
 	/* ---------- playback ---------- */
 	var audio = $('ya-audio'), audioURL = null;
-	function canSeek() { return !audio.hidden && !!audio.src; }
+	function canSeek() { return (!audio.hidden && !!audio.src) || !!(pageVid && SRC && SRC.kind === '3speak' && document.contains(pageVid)); }
 	function setPlayback(url, show) {
 		if (audioURL && audioURL.indexOf('blob:') === 0) URL.revokeObjectURL(audioURL);
 		audioURL = url; audio.hidden = !url || !show;
@@ -317,13 +452,16 @@
 	}
 	audio.addEventListener('error', function () { if (audio.src) { audio.hidden = true; $('ya-seekhint').hidden = true; } });
 	function seek(t) {
-		if (canSeek()) { try { audio.currentTime = t; audio.play(); } catch (e) {} }
+		if (pageVid && SRC && SRC.kind === '3speak' && document.contains(pageVid)) { try { pageVid.currentTime = t; pageVid.play(); } catch (e) {} }
+		else if (canSeek()) { try { audio.currentTime = t; audio.play(); } catch (e) {} }
 		else toast('Jump to ' + Y.fmtTime(t) + ' in the player.');
 		if (view && (t < view.a || t > view.b)) { var w = view.b - view.a; setView(t - w * 0.25, t + w * 0.75); }
 	}
 	root.addEventListener('click', function (e) { var b = e.target.closest && e.target.closest('.ya-seek'); if (b) seek(+b.getAttribute('data-t')); });
 	var phRaf = 0;
-	function phLoop() { phRaf = 0; drawPlayhead(); if (!audio.paused) phRaf = requestAnimationFrame(phLoop); }
+	function playEl() { return pageVid && SRC && SRC.kind === '3speak' && document.contains(pageVid) ? pageVid : audio; }
+	function phLoop() { phRaf = 0; drawPlayhead(); if (!playEl().paused) phRaf = requestAnimationFrame(phLoop); }
+	function watchVid(v) { v.addEventListener('play', function () { if (!phRaf) phRaf = requestAnimationFrame(phLoop); }); v.addEventListener('seeked', drawPlayhead); v.addEventListener('pause', drawPlayhead); }
 	audio.addEventListener('play', function () { if (!phRaf) phRaf = requestAnimationFrame(phLoop); });
 	audio.addEventListener('seeked', drawPlayhead); audio.addEventListener('pause', drawPlayhead);
 
@@ -459,8 +597,8 @@
 	var cross = document.createElement('div'); cross.className = 'ya-cross'; $('ya-lanesbox').appendChild(cross);
 	function drawPlayhead() {
 		if (!view || !canSeek()) { ph.hidden = true; return; }
-		var t = audio.currentTime || 0, W = $('ya-lanesbox').clientWidth;
-		if (!audio.paused && (t > view.b || t < view.a) && userZoom) { var w = view.b - view.a; setView(t - w * 0.05, t + w * 0.95); }
+		var m = playEl(), t = m.currentTime || 0, W = $('ya-lanesbox').clientWidth;
+		if (!m.paused && (t > view.b || t < view.a) && userZoom) { var w = view.b - view.a; setView(t - w * 0.05, t + w * 0.95); }
 		ph.hidden = t < view.a || t > view.b; ph.style.left = xOfT(t, W) + 'px';
 	}
 

@@ -122,5 +122,31 @@ for (const sr of [48000, 44100]) {
   const sm = run([sine(48000, 4, 1000, -20)], 48000).summary(); ok(/Integrated loudness −23\.0 LUFS/.test(Y.reportText(sm)), 'report text');
 }
 
+/* ---- reading a 3Speak / HLS sound track: playlists, MPEG-TS audio, ADTS frames ---- */
+{ const master = '#EXTM3U\n#EXT-X-STREAM-INF:BANDWIDTH=4000000,RESOLUTION=1920x1080\n1080p/index.m3u8\n#EXT-X-STREAM-INF:BANDWIDTH=1800000,RESOLUTION=854x480\n480p/index.m3u8\n';
+  const M = Y.parseM3U8(master, 'https://cdn.example/ipfs/Qm/manifest.m3u8');
+  ok(M.variants.length === 2 && M.variants[1].url === 'https://cdn.example/ipfs/Qm/480p/index.m3u8' && M.variants[0].res === '1920x1080', 'master playlist');
+  ok(Y.lightest(M.variants).bw === 1800000, 'lightest rendition');
+  const P = Y.parseM3U8('#EXTM3U\n#EXT-X-TARGETDURATION:20\n#EXTINF:20.000000,\n480p_0.ts\n#EXTINF:12.5,\nhttps://other.example/480p_1.ts\n#EXT-X-ENDLIST\n', 'https://cdn.example/ipfs/Qm/480p/index.m3u8');
+  ok(P.segments.length === 2 && P.segments[0].url === 'https://cdn.example/ipfs/Qm/480p/480p_0.ts' && P.segments[1].url === 'https://other.example/480p_1.ts' && Math.abs(P.total - 32.5) < 1e-9, 'media playlist');
+  /* synthetic MPEG-TS: PAT -> PMT (video 0x1b on 256, AAC 0x0f on 257), a video packet, then one audio PES over two packets */
+  const adts = (len) => { const f = new Uint8Array(len); f[0] = 0xff; f[1] = 0xf1; f[2] = (1 << 6) | (4 << 2) | 0; f[3] = (2 << 6) | ((len >> 11) & 3); f[4] = (len >> 3) & 0xff; f[5] = ((len & 7) << 5) | 0x1f; f[6] = 0xfc; for (let i = 7; i < len; i++) f[i] = i & 0xff; return f; };
+  const es = new Uint8Array([...adts(150), ...adts(160)]);
+  const pkt = (pid, pusi, payload) => { const p = new Uint8Array(188).fill(0xff); p[0] = 0x47; p[1] = (pusi ? 0x40 : 0) | (pid >> 8); p[2] = pid & 0xff;
+    if (payload.length >= 184) { p[3] = 0x10; p.set(payload.subarray(0, 184), 4); return p; }
+    const stuff = 184 - payload.length; p[3] = 0x30; p[4] = stuff - 1; if (stuff > 1) p[5] = 0; p.set(payload, 4 + stuff); return p; };
+  const pat = new Uint8Array([0, 0x00, 0xb0, 13, 0, 1, 0xc1, 0, 0, 0, 1, 0xf0, 0x00, 0, 0, 0, 0]);
+  const pmt = new Uint8Array([0, 0x02, 0xb0, 23, 0, 1, 0xc1, 0, 0, 0xe1, 0x00, 0xf0, 0, 0x1b, 0xe1, 0x00, 0xf0, 0, 0x0f, 0xe1, 0x01, 0xf0, 0, 0, 0, 0, 0]);
+  const pes = new Uint8Array([0, 0, 1, 0xc0, 0, 0, 0x80, 0x80, 5, 0x21, 0, 1, 0, 1, ...es]);
+  const ts = new Uint8Array([...pkt(0, 1, pat), ...pkt(0x1000, 1, pmt), ...pkt(256, 1, new Uint8Array([0, 0, 1, 0xe0, 0, 0, 0x80, 0, 0, 9, 9, 9])), ...pkt(257, 1, pes.subarray(0, 184)), ...pkt(257, 0, pes.subarray(184))]);
+  const st = {}, a = Y.tsAudio(ts, st);
+  ok(st.pmt === 0x1000 && st.apid === 257, 'PAT / PMT find the AAC stream: ' + JSON.stringify(st));
+  ok(a && a.length === es.length && a.every((v, i) => v === es[i]), 'audio bytes come out whole, video left out');
+  ok(Y.tsAudio(new Uint8Array([...pkt(0, 1, pat), ...pkt(0x1000, 1, pmt), ...pkt(256, 1, new Uint8Array(10))])) === null, 'no audio -> null');
+  const A = Y.adtsFrames(new Uint8Array([...es, 0xff, 0xf1, 0x50]));
+  ok(A.frames.length === 2 && A.frames[1].o === 150 && A.frames[1].l === 160 && A.sr === 44100 && A.ch === 2 && A.used === 310, 'ADTS frames, rate, channels, partial tail ignored');
+  ok(Y.lbryUrl('@mestruth:9/911-plane-compilation-fumes:7') === 'lbry://@mestruth#9/911-plane-compilation-fumes#7' && Y.lbryUrl('video-name:a') === 'lbry://video-name#a', 'odysee path -> lbry url');
+}
+
 console.log(pass + ' passed, ' + fail + ' failed');
 process.exit(fail ? 1 : 0);

@@ -28,6 +28,7 @@
 			<div class="ya-pane" role="tabpanel" id="ya-p-tab" aria-labelledby="ya-t-tab" hidden>
 				<p>Open the video in another tab, then press the button, pick that tab and keep <b>Also share tab audio</b> on. Play the video: the page measures what the tab plays.</p>
 				<div class="tu-row"><button type="button" class="tu-btn tu-btn--primary" data-cap="other">🔊 Choose a tab to listen to</button></div>
+				<label class="ya-quiet"><input type="checkbox" class="ya-quietbox"> Keep my speakers silent while measuring <span class="ya-dim">(the video still plays, just not out loud)</span></label>
 				<p class="tu-note">Works in Chrome, Edge, Brave and Opera on a computer. Firefox, Safari and phones can't share a tab's sound with a web page.</p>
 			</div>
 		</div>
@@ -35,10 +36,15 @@
 		<section class="tu-card ya-player" id="ya-player" hidden>
 			<div class="ya-chead"><h2 class="ya-h" id="ya-ptitle">Play the video here</h2><span id="ya-pbtns"></span></div>
 			<div class="ya-frame" id="ya-frame"></div>
+			<div class="ya-full" id="ya-full" hidden>
+				<button type="button" class="tu-btn tu-btn--primary ya-big" id="ya-fullbtn">⚡ Measure the whole video now</button>
+				<p class="tu-note" id="ya-fullnote">No playing needed: the page reads the video's sound track straight from the site and measures all of it.</p>
+				<p class="ya-or" id="ya-or">Or measure while it plays:</p>
+			</div>
 			<div class="ya-steps" id="ya-steps">
 				<ol>
 					<li>Press <b>● Start listening</b>. Your browser asks what to share: pick <b>This tab</b> and keep <b>Also share tab audio</b> switched on.</li>
-					<li>Play the video, with the player's own volume at <b>100%</b>. Measure the whole video, or the part you care about.</li>
+					<li>Play the video, with the player's own volume at <b>100%</b> (not muted: to keep your room quiet, tick <b>Keep my speakers silent</b> below instead). Measure the whole video, or the part you care about.</li>
 					<li>Press <b>■ Stop</b> to see every number and chart below.</li>
 				</ol>
 			</div>
@@ -46,6 +52,7 @@
 				<button type="button" class="tu-btn tu-btn--primary ya-big" id="ya-cap" data-cap="self">● Start listening</button>
 				<a class="tu-btn tu-btn--ghost" id="ya-open" href="#" target="_blank" rel="noopener">Open on the site ↗</a>
 			</div>
+			<label class="ya-quiet"><input type="checkbox" class="ya-quietbox"> Keep my speakers silent while measuring <span class="ya-dim">(the video still plays, just not out loud)</span></label>
 			<p class="ya-msg" id="ya-capmsg" role="alert"></p>
 		</section>
 
@@ -140,11 +147,12 @@
 
 		<div class="tu-seo">
 			<h2>How this works</h2>
-			<p>A web page is not allowed to read the sound inside a YouTube player (or any other site's player): the browser keeps other sites' media sealed off. There are three honest ways around that, and this page uses all of them:</p>
+			<p>A web page is not allowed to read the sound inside a YouTube player (or any other site's player): the browser keeps other sites' media sealed off. There are four honest ways around that, and this page uses all of them:</p>
 			<ol>
 				<li><strong>A file you drop.</strong> The exact sound, measured from start to end in a few seconds. Video files work too (MP4, MOV, MKV, AVI…). For your own YouTube videos, download the file from YouTube Studio.</li>
 				<li><strong>A direct link to an audio or video file</strong> (ending in .mp3, .mp4, .wav…), when the site holding it lets other pages read it. If it doesn't, download it and drop it.</li>
-				<li><strong>Listening to a tab.</strong> For YouTube, 3Speak, Rumble, Odysee, BitChute, X and Substack, the video plays in the site's own player and the browser shares that tab's sound with this page (you choose the tab, and it asks first). It measures in real time, so a 10-minute video takes 10 minutes; you can stop any time.</li>
+				<li><strong>3Speak and Odysee: the whole video without playing.</strong> These two sites let other pages read their video files, so <b>⚡ Measure the whole video now</b> reads just the sound track and measures all of it in seconds to a few minutes (3Speak keeps the sound inside the video, so the download is the size of its smallest video version). Odysee sometimes stops other sites part way through a long video; then listen to it instead.</li>
+				<li><strong>Listening to a tab.</strong> For YouTube, Rumble, BitChute, X and Substack (and 3Speak or Odysee if you prefer), the video plays in the site's own player and the browser shares that tab's sound with this page (you choose the tab, and it asks first). It measures in real time, so a 10-minute video takes 10 minutes; you can stop any time. Tick <b>Keep my speakers silent</b> and the browser keeps sharing the sound while your speakers stay quiet.</li>
 			</ol>
 			<h3>What the numbers mean</h3>
 			<dl>
@@ -159,6 +167,10 @@
 			<h3>Questions</h3>
 			<h4>Why does a YouTube video measure quieter than my file?</h4>
 			<p>Because YouTube turned it down. Its player lowers loud videos to about −14 LUFS before you hear them, and this page hears what the player plays. Stats for nerds shows how much (content loudness); type that number in the box under the results to get the upload's own loudness. Also check that the player's volume slider is at 100%.</p>
+			<h4>Can it measure a YouTube video without playing it, or faster?</h4>
+			<p>Not from a web page. YouTube only gives its sound to its own player, and getting the file from a server would mean getting around YouTube's protection against downloaders, which we don't do. Playing faster would change the sound itself (and so the numbers). What you can do: tick <b>Keep my speakers silent</b> and let it play muted for you, or download your own video from YouTube Studio and drop the file here, which takes seconds.</p>
+			<h4>Why must the player's own volume stay at 100%?</h4>
+			<p>The page measures what the player plays. Muting the player or turning its slider down sends silence or a quieter copy. To keep your room quiet, leave the player at 100% and tick <b>Keep my speakers silent</b> instead: the browser then plays the tab to the page only.</p>
 			<h4>Is the tab's sound recorded?</h4>
 			<p>No. The page keeps only the measurements (loudness every 0.1 s, the waveform's outline and the spectrogram), never the sound itself, and none of it leaves your browser. Sharing stops when you press Stop or close the tab.</p>
 			<h4>Why can't it just download the YouTube video?</h4>

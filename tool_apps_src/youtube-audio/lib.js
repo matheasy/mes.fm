@@ -87,6 +87,63 @@
 		return out("other", null, null);
 	};
 
+	/* ---------- reading a whole video's sound without playing it (3Speak HLS, Odysee MP4) ---------- */
+	/* HLS playlist -> {variants: [{bw, res, url}], segments: [{url, dur}], total} (urls made absolute against base) */
+	Y.parseM3U8 = function (text, base) {
+		var lines = String(text || "").split(/\r?\n/), out = { variants: [], segments: [], total: 0 }, pend = null, dur = null;
+		var abs = function (x) { try { return new URL(x, base).toString(); } catch (e) { return x; } };
+		for (var i = 0; i < lines.length; i++) {
+			var l = lines[i].trim(); if (!l) continue;
+			if (/^#EXT-X-STREAM-INF:/i.test(l)) { var bw = l.match(/BANDWIDTH=(\d+)/i), rs = l.match(/RESOLUTION=(\d+x\d+)/i); pend = { bw: bw ? +bw[1] : 0, res: rs ? rs[1] : "" }; continue; }
+			if (/^#EXTINF:/i.test(l)) { dur = parseFloat(l.slice(8)) || 0; continue; }
+			if (l[0] === "#") continue;
+			if (pend) { pend.url = abs(l); out.variants.push(pend); pend = null; }
+			else { out.segments.push({ url: abs(l), dur: dur || 0 }); out.total += dur || 0; dur = null; }
+		}
+		return out;
+	};
+	/* the rendition with the smallest bandwidth (the sound is the same in every one) */
+	Y.lightest = function (vs) { return (vs || []).slice().sort(function (a, b) { return (a.bw || 9e15) - (b.bw || 9e15); })[0] || null; };
+	/* MPEG-TS bytes -> the AAC (ADTS) bytes of its first audio stream, or null when it has none */
+	Y.tsAudio = function (u8, st) {
+		st = st || {}; var n = u8.length, parts = [], len = 0, i;
+		for (i = 0; i + 188 <= n; i += 188) {
+			if (u8[i] !== 0x47) { var j = u8.indexOf(0x47, i + 1); if (j < 0) break; i = j - 188; continue; }
+			var pusi = u8[i + 1] & 0x40, pid = ((u8[i + 1] & 0x1f) << 8) | u8[i + 2], afc = (u8[i + 3] >> 4) & 3, p = i + 4;
+			if (afc === 2) continue;
+			if (afc === 3) p += 1 + u8[i + 4];
+			if (p >= i + 188) continue;
+			if (pid === 0 && pusi) { p += 1 + u8[p]; st.pmt = ((u8[p + 10] & 0x1f) << 8) | u8[p + 11]; continue; }
+			if (st.pmt != null && pid === st.pmt && pusi) {
+				p += 1 + u8[p];
+				var secLen = ((u8[p + 1] & 0x0f) << 8) | u8[p + 2], end = Math.min(i + 188, p + 3 + secLen - 4), info = ((u8[p + 10] & 0x0f) << 8) | u8[p + 11], q = p + 12 + info;
+				while (q + 5 <= end) { var type = u8[q], epid = ((u8[q + 1] & 0x1f) << 8) | u8[q + 2], el = ((u8[q + 3] & 0x0f) << 8) | u8[q + 4]; if (type === 0x0f && st.apid == null) st.apid = epid; q += 5 + el; }
+				continue;
+			}
+			if (st.apid == null || pid !== st.apid) continue;
+			if (pusi) { if (u8[p] !== 0 || u8[p + 1] !== 0 || u8[p + 2] !== 1) continue; p += 9 + u8[p + 8]; }
+			if (p < i + 188) { parts.push(u8.subarray(p, i + 188)); len += i + 188 - p; }
+		}
+		if (!len) return null;
+		var out = new Uint8Array(len), o = 0; parts.forEach(function (x) { out.set(x, o); o += x.length; });
+		return out;
+	};
+	/* ADTS bytes -> [{o: offset, l: length}] whole frames, plus {sr, ch} from the first header */
+	Y.ADTS_SR = [96000, 88200, 64000, 48000, 44100, 32000, 24000, 22050, 16000, 12000, 11025, 8000, 7350];
+	Y.adtsFrames = function (u8) {
+		var fr = [], i = 0, n = u8.length, sr = 0, ch = 0;
+		while (i + 7 <= n) {
+			if (u8[i] !== 0xff || (u8[i + 1] & 0xf6) !== 0xf0) { i++; continue; }
+			var l = ((u8[i + 3] & 3) << 11) | (u8[i + 4] << 3) | (u8[i + 5] >> 5);
+			if (l < 7 || i + l > n) break;
+			if (!sr) { sr = Y.ADTS_SR[(u8[i + 2] >> 2) & 15] || 0; ch = ((u8[i + 2] & 1) << 2) | (u8[i + 3] >> 6); }
+			fr.push({ o: i, l: l }); i += l;
+		}
+		return { frames: fr, sr: sr, ch: ch, used: i };
+	};
+	/* odysee.com/@chan:x/name:y path -> lbry://@chan#x/name#y */
+	Y.lbryUrl = function (path) { return "lbry://" + String(path || "").split("/").map(function (s) { return s.replace(/:([0-9a-f]+)$/i, "#$1"); }).join("/"); };
+
 	/* ---------- small DSP ---------- */
 	/* BS.1770 K-weighting: high shelf (+4 dB, ~1.5 kHz) then high pass (~38 Hz), coefficients for any rate */
 	Y.kCoefs = function (sr) {
