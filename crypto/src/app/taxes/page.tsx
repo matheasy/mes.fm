@@ -11,12 +11,16 @@ import TaxSummary, { money } from '@/components/TaxSummary';
 import YearNotes from '@/components/YearNotes';
 import { useTaxes } from '@/hooks/useTaxes';
 import { BASE_PATH } from '@/lib/basePath';
-import { TAX_GROUPS, TAX_GROUP_LABELS, sourceLabel, type TaxGroup } from '@/lib/tax/taxSources';
+import { sourceLabel } from '@/lib/tax/taxSources';
+import { SECTIONS, SECTION_LABELS, type Section } from '@/lib/sections';
+import SectionOverview from '@/components/SectionOverview';
 import { custodyLabelId, NOT_ROUND_TRIP, yearNotesId, type LabelRecord } from '@/lib/types';
 import { knownName } from '@/lib/tax/knownAddresses';
 
-function initialGroup(param: string | null): TaxGroup | undefined {
-  return TAX_GROUPS.includes(param as TaxGroup) ? (param as TaxGroup) : undefined;
+/** ?section=cash, or the older ?wallet=ai / ?wallet=mfa links from the AI Trading and MikeFA pages */
+function initialSection(section: string | null, wallet: string | null): Section | undefined {
+  if (SECTIONS.includes(section as Section)) return section as Section;
+  return wallet === 'ai' || wallet === 'mfa' ? wallet : undefined;
 }
 
 const amt = (n: number) => n.toLocaleString('en-US', { maximumFractionDigits: 4 });
@@ -34,10 +38,18 @@ function TaxesPageInner() {
     const y = Number(searchParams.get('year'));
     return Number.isInteger(y) && y > 2000 ? y : undefined;
   });
-  const [wallet, setWallet] = useState<TaxGroup | undefined>(() => initialGroup(searchParams.get('wallet')));
+  const [section, setSectionState] = useState<Section | undefined>(() => initialSection(searchParams.get('section'), searchParams.get('wallet')));
+  const setSection = (next: Section | undefined) => {
+    setSectionState(next);
+    const url = new URL(window.location.href);
+    url.searchParams.delete('wallet');
+    if (next) url.searchParams.set('section', next);
+    else url.searchParams.delete('section');
+    window.history.replaceState(null, '', url.toString());
+  };
   const [currency, setCurrency] = useState<'CAD' | 'USD'>('CAD');
   const [onlyNeedsInput, setOnlyNeedsInput] = useState(false);
-  const { taxes, isLoading, error, rateLimited, refresh } = useTaxes(year, wallet);
+  const { taxes, isLoading, error, rateLimited, refresh } = useTaxes(year, section);
 
   /** Switch a detected round-trip contract off / back on (stored like a row label) */
   async function setRoundTrip(network: string, address: string, on: boolean) {
@@ -69,7 +81,8 @@ function TaxesPageInner() {
         <p>
           Your capital gains, losses and crypto income for Canadian taxes, across <strong className="text-gray-200">every wallet and account at
           once</strong>: the Main, AI Trading and MikeFA Trading wallets, your Bitcoin and XRP addresses, and your Hive accounts (@mes,
-          @mestruth, @mathiew, @artgrafiken, TGLD included). The groupings are just for you - it&apos;s all yours, so it&apos;s all counted together.
+          @mestruth, @mathiew, @artgrafiken, TGLD included). The sections (AI Trading, MikeFA, Store of Value, Liquidity, Cash LP, Tokens) are
+          just for you - it&apos;s all yours, so it&apos;s all counted together.
         </p>
         <p>
           A row appears whenever you <strong className="text-gray-200">got rid of</strong> a coin: sold it, swapped it for another, or added it to a
@@ -98,12 +111,12 @@ function TaxesPageInner() {
           </select>
 
           <div className="flex flex-wrap gap-1 rounded-md border border-bg-border p-0.5">
-            <button type="button" onClick={() => setWallet(undefined)} className={chip(!wallet)}>
-              All wallets
+            <button type="button" onClick={() => setSection(undefined)} className={chip(!section)}>
+              All
             </button>
-            {TAX_GROUPS.map((k) => (
-              <button key={k} type="button" onClick={() => setWallet(k)} className={chip(wallet === k)}>
-                {TAX_GROUP_LABELS[k]}
+            {SECTIONS.map((k) => (
+              <button key={k} type="button" onClick={() => setSection(k)} className={chip(section === k)}>
+                {SECTION_LABELS[k]}
               </button>
             ))}
           </div>
@@ -118,13 +131,14 @@ function TaxesPageInner() {
         </div>
 
         <div className="flex gap-2">
-          <CsvExportButton year={taxes?.year ?? year} wallet={wallet} />
+          <CsvExportButton year={taxes?.year ?? year} section={section} />
         </div>
       </div>
 
       <StateView loading={isLoading && !taxes} error={rateLimited && taxes ? null : error} onRetry={refresh}>
         {taxes && (
           <div className="flex flex-col gap-6">
+            <SectionOverview year={taxes.year} sections={taxes.bySection} selected={section} onSelect={setSection} />
             {(taxes.needsInput.sends > 0 || taxes.needsInput.unknownCost > 0) && (
               <div className="panel flex flex-col gap-2 border-yellow-500/40 text-sm text-gray-300">
                 <p className="font-semibold text-yellow-300">Needs your input ({taxes.year})</p>
@@ -177,9 +191,9 @@ function TaxesPageInner() {
             )}
 
             <TaxSummary summary={taxes.summary} currency={currency} />
-            {wallet && (
+            {section && (
               <p className="-mt-2 text-xs text-gray-500">
-                Totals are for all wallets; the list below shows only {TAX_GROUP_LABELS[wallet]}&apos;s rows.
+                The totals above are for everything; the list below shows only {SECTION_LABELS[section]}&apos;s rows.
               </p>
             )}
 

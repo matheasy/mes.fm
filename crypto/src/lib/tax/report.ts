@@ -12,6 +12,7 @@ import {
   type TaxIncomeSummary,
   type TaxReceiptsSummary,
   type TaxRow,
+  type TaxSectionSummary,
   type TaxSourceStatus,
   type TaxYearSummary,
   type TaxesResponse,
@@ -23,6 +24,7 @@ import { contractsAmong, EVM_NETWORKS } from './contracts';
 import { isLpContract } from '../lp';
 import { isOwnAddress, isOwnExchangeDeposit } from './ownAddresses';
 import { groupOf, sourceLabel, sourceLink, type TaxGroup } from './taxSources';
+import { SECTIONS, taxSectionOf, type Section } from '../sections';
 
 /** Every source failed to load - carries each one's reason so the page can say which and why */
 export class NoWalletLoadedError extends Error {
@@ -63,6 +65,21 @@ function summarize(year: number, rows: AcbDisposal[]): TaxYearSummary {
       .reduce((s, r) => s + r.uncoveredQuantity * r.priceUsd * (r.cadRate ?? 0), 0),
     byAsset: [...byAsset.values()].sort((a, b) => Math.abs(b.gainCad) - Math.abs(a.gainCad)),
   };
+}
+
+/** The year's gains (transfers excluded, like summarize) and income per portfolio section */
+function summarizeSections(disposals: AcbDisposal[], income: AcbIncome[]): TaxSectionSummary[] {
+  const out = new Map<Section, TaxSectionSummary>(SECTIONS.map((section) => [section, { section, count: 0, proceedsCad: 0, costCad: 0, gainCad: 0, incomeCad: 0 }]));
+  for (const d of disposals) {
+    if (d.isTransfer) continue;
+    const e = out.get(taxSectionOf(d))!;
+    e.count += 1;
+    e.proceedsCad += d.proceedsCad ?? 0;
+    e.costCad += d.costCad ?? 0;
+    e.gainCad += d.gainCad ?? 0;
+  }
+  for (const i of income) out.get(taxSectionOf(i))!.incomeCad += i.cad ?? 0;
+  return [...out.values()];
 }
 
 function summarizeIncome(items: AcbIncome[]): TaxIncomeSummary {
@@ -195,7 +212,7 @@ function inReportOrder(bySource: Record<string, TaxEntry[]>): TaxEntry[] {
   return out;
 }
 
-export async function buildTaxReport(opts: { group?: TaxGroup; year?: number }): Promise<TaxesResponse> {
+export async function buildTaxReport(opts: { group?: TaxGroup; section?: Section; year?: number }): Promise<TaxesResponse> {
   const redis = redisClient();
   const [stored, labels, checks] = await Promise.all([
     readStoredLedger(),
@@ -253,9 +270,10 @@ export async function buildTaxReport(opts: { group?: TaxGroup; year?: number }):
   const year = opts.year ?? years[0] ?? new Date().getUTCFullYear();
   const inGroup = (source: string) => !opts.group || groupOf(source) === opts.group;
   const ofYear = disposals.filter((d) => d.taxYear === year);
+  const incomeOfYear = income.filter((i) => i.taxYear === year);
 
   const rows: TaxRow[] = ofYear
-    .filter((d) => inGroup(d.source))
+    .filter((d) => inGroup(d.source) && (!opts.section || taxSectionOf(d) === opts.section))
     .sort((a, b) => new Date(b.disposedAt).getTime() - new Date(a.disposedAt).getTime())
     .map((d) => {
       const label = labels[d.id] ?? null;
@@ -268,7 +286,8 @@ export async function buildTaxReport(opts: { group?: TaxGroup; year?: number }):
     // the year's totals always cover every source - the group filter only narrows the list
     summary: summarize(year, ofYear),
     rows,
-    income: summarizeIncome(income.filter((i) => i.taxYear === year)),
+    income: summarizeIncome(incomeOfYear),
+    bySection: summarizeSections(ofYear, incomeOfYear),
     receipts: summarizeReceipts(receipts.filter((r) => r.taxYear === year)),
     needsInput: {
       sends: rows.filter((r) => r.needsInput.includes('send')).length,

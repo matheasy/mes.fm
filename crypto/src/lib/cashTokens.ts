@@ -3,6 +3,7 @@ import { getSpot } from '@/apps/assets/lib/prices';
 import { HIVE_ENGINE_RPC } from '@/apps/assets/lib/config';
 import { getCadRates } from '@/lib/cadRate';
 import type { BucketItem, BucketSnapshot } from '@/lib/types';
+import { CASH_EXTRA, SOV_SYMBOLS, STABLE_SYMBOLS } from '@/lib/sections';
 
 /**
  * mes.fm/cash ("Cash LP") and mes.fm/tokens - two more slices of mes.fm/assets' snapshot, like
@@ -18,14 +19,6 @@ import type { BucketItem, BucketSnapshot } from '@/lib/types';
 
 const HIVE_ACCOUNTS = ['mes', 'mestruth', 'mathiew', 'artgrafiken'];
 
-/** Dollar (and other fiat) stablecoins, every chain's spelling */
-export const STABLE_SYMBOLS = new Set([
-  'HBD', 'SWAP.HBD', 'USDT', 'USDT0', 'USDC', 'USDC.E', 'USDBC', 'DAI', 'BUSD', 'FDUSD', 'TUSD', 'USDE', 'USDS', 'PYUSD', 'USD1', 'USDD',
-  'FRAX', 'LUSD', 'GUSD', 'RLUSD', 'USDB', 'USDP', 'SWAP.USDT', 'SWAP.USDC', 'SWAP.DAI', 'SWAP.BUSD', 'EURC', 'EURT',
-]);
-/** Hive Engine tokens the owner counts as cash */
-export const CASH_EXTRA = new Set(['ACE', 'SURGE']);
-const SOV_SYMBOLS = new Set(['BTC', 'BTCB', 'WBTC', 'CBBTC', 'RENBTC', 'HBTC', 'TBTC', 'SWAP.BTC', 'XRP', 'TGLD']);
 /** The same coin under another name: summed as one token on mes.fm/tokens */
 const ALIAS: Record<string, string> = { 'SWAP.HIVE': 'HIVE', 'SWAP.ETH': 'ETH', WETH: 'ETH', WBNB: 'BNB', 'SWAP.BNB': 'BNB', WPOL: 'POL', MATIC: 'POL', WHYPE: 'HYPE' };
 const NAMES: Record<string, string> = {

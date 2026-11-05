@@ -89,7 +89,7 @@ export async function GET(request: Request) {
   const stored = await storedAnswer(request, 'sov');
   if (stored) return stored;
   try {
-    const data = await cached<SovSnapshot>(cacheKey('sov-snapshot'), async () => {
+    const data = await cached<SovSnapshot>(cacheKey('sov-snapshot', 2), async () => {
       // the Assets section of this same app, called directly (it was a separate app until 2026-09-29)
       const snap: UpstreamSnapshot = await getSnapshot({ minValueUsd: 0 });
       const groupLabel = new Map(snap.groups.map((g) => [g.key, g.label]));
@@ -98,6 +98,7 @@ export async function GET(request: Request) {
       for (const h of snap.holdings) {
         const asset = assetOf(h.symbol);
         if (!asset || asset === 'TGLD' || h.kind === 'lp' || !(h.amount > 0)) continue; // LP shares aren't the coin itself; TGLD: see tgld()
+        if (h.group === 'ai' || h.group === 'mfa') continue; // those two wallets are their own sections (AI Trading, MikeFA), never counted twice
         const a = byAsset.get(asset) ?? { asset, amount: 0, valueUsd: 0, lines: [] };
         a.amount += h.amount;
         a.valueUsd += h.valueUsd ?? 0;

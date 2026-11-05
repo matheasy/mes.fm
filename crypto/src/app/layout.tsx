@@ -32,6 +32,16 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
               tagline={TAGLINE}
               homeHref="https://mes.fm/portfolio"
               pageTitles={{
+                taxes: {
+                  title: 'MES Crypto Taxes',
+                  tagline: 'Canadian capital gains and crypto income (ACB, in CAD), across every wallet.',
+                  homeHref: 'https://mes.fm/taxes',
+                },
+                transactions: {
+                  title: 'MES Crypto Transactions',
+                  tagline: 'Every transfer of the Main, AI Trading and MikeFA wallets.',
+                  homeHref: 'https://mes.fm/portfolio/transactions',
+                },
                 sov: {
                   title: 'MES Store of Value',
                   tagline: 'Long-term holdings: Bitcoin, XRP and TGLD, across every wallet.',

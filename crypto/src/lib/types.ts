@@ -167,6 +167,16 @@ export interface TaxYearSummary {
   byAsset: TaxAssetSummary[];
 }
 
+/** One portfolio section's share of the tax year (lib/sections.ts): gains of its rows + its income */
+export interface TaxSectionSummary {
+  section: 'ai' | 'mfa' | 'sov' | 'lp' | 'cash' | 'tokens';
+  count: number;
+  proceedsCad: number;
+  costCad: number;
+  gainCad: number;
+  incomeCad: number;
+}
+
 export interface TaxSourceStatus {
   key: string;
   label: string;
@@ -182,6 +192,8 @@ export interface TaxesResponse {
   summary: TaxYearSummary;
   rows: TaxRow[];
   income: TaxIncomeSummary;
+  /** The year's gains and income split by portfolio section (always across every row, like summary) */
+  bySection: TaxSectionSummary[];
   receipts: TaxReceiptsSummary;
   /** Rows of the year still needing the owner (see TaxRow.needsInput) */
   needsInput: { sends: number; unknownCost: number };

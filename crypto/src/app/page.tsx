@@ -2,6 +2,7 @@
 
 import AssetsTotalCard from '@/components/AssetsTotalCard';
 import { BucketCard } from '@/components/BucketView';
+import SectionsCheck from '@/components/SectionsCheck';
 import RandomWalletsCard from '@/components/RandomWalletsCard';
 import { useSWRConfig } from 'swr';
 import FreshNote from '@/components/FreshNote';
@@ -63,6 +64,7 @@ export default function OverviewPage() {
         <BucketCard path="/api/tokens" href="https://mes.fm/tokens" label="Tokens · every other token worth $10+" />
         <RandomWalletsCard />
       </div>
+      <SectionsCheck portfolio={portfolio} />
     </div>
   );
 }

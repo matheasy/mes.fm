@@ -1,6 +1,7 @@
 import { reportToCsv } from '@/lib/tax/csv';
 import { buildTaxReport } from '@/lib/tax/report';
 import { TAX_GROUPS, type TaxGroup } from '@/lib/tax/taxSources';
+import { SECTIONS, type Section } from '@/lib/sections';
 
 export const dynamic = 'force-dynamic';
 export const maxDuration = 300;
@@ -10,12 +11,14 @@ export async function GET(request: Request) {
   const { searchParams } = new URL(request.url);
   const walletParam = searchParams.get('wallet');
   const group = TAX_GROUPS.includes(walletParam as TaxGroup) ? (walletParam as TaxGroup) : undefined;
+  const sectionParam = searchParams.get('section');
+  const section = SECTIONS.includes(sectionParam as Section) ? (sectionParam as Section) : undefined;
   const yearParam = Number(searchParams.get('year'));
   const year = Number.isInteger(yearParam) && yearParam > 2000 ? yearParam : undefined;
 
   let report;
   try {
-    report = await buildTaxReport({ group, year });
+    report = await buildTaxReport({ group, section, year });
   } catch (err) {
     return new Response(err instanceof Error ? err.message : 'Failed to build the tax report', { status: 502 });
   }
@@ -35,7 +38,7 @@ export async function GET(request: Request) {
   return new Response(csv, {
     headers: {
       'Content-Type': 'text/csv; charset=utf-8',
-      'Content-Disposition': `attachment; filename="mes-crypto-taxes-${report.year}${group ? `-${group}` : ''}.csv"`,
+      'Content-Disposition': `attachment; filename="mes-crypto-taxes-${report.year}${section ? `-${section}` : group ? `-${group}` : ''}.csv"`,
     },
   });
 }

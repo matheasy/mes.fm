@@ -28,7 +28,7 @@ export default function StoreOfValuePage() {
     <div className="flex flex-col gap-6">
       <p className="text-sm text-gray-400">
         Your long-term holdings: Bitcoin (native, BTCB, WBTC and Hive Engine&apos;s SWAP.BTC, all counted as one), XRP and TGLD, across every
-        wallet and account. Balances come from{' '}
+        wallet and account except the AI Trading and MikeFA wallets (those are their own sections). Balances come from{' '}
         <a href="https://mes.fm/assets" className="text-accent hover:underline">
           mes.fm/assets
         </a>
@@ -52,7 +52,13 @@ export default function StoreOfValuePage() {
 
             <div className="grid gap-4 lg:grid-cols-3">
               {data.assets.map((a) => {
-                const h = acb.get(a.asset);
+                const pool = acb.get(a.asset);
+                // the ACB pool covers every wallet; the AI Trading / MikeFA wallets' units aren't shown here, so only
+                // this section's share of the pool's cost is (same average cost per unit)
+                const h =
+                  pool && pool.acbCad != null && pool.quantity > a.amount && pool.quantity > 0
+                    ? { ...pool, acbCad: (pool.acbCad * a.amount) / pool.quantity, quantity: a.amount }
+                    : pool;
                 const valueCad = rate ? a.valueUsd * rate : null;
                 // ACB covers the units the tracked history knows about; fewer units than held means some count at $0 cost
                 const gain = !a.noMarket && valueCad !== null && h?.acbCad != null ? valueCad - h.acbCad : null;

@@ -2,12 +2,13 @@ import { NextResponse } from 'next/server';
 import { buildTaxReport } from '@/lib/tax/report';
 import type { ApiResult, TaxesResponse } from '@/lib/types';
 import { TAX_GROUPS, type TaxGroup } from '@/lib/tax/taxSources';
+import { SECTIONS, type Section } from '@/lib/sections';
 
 export const dynamic = 'force-dynamic';
 export const maxDuration = 300;
 
 /**
- * GET /api/taxes?year=2026&wallet=hive
+ * GET /api/taxes?year=2026&section=cash (or the older &wallet=hive)
  *
  * mes.fm/taxes' data: every wallet's full history pooled into one Canadian ACB calculation
  * (lib/tax/acb.ts), in CAD at each day's Bank of Canada rate. `year` picks which tax year's
@@ -19,11 +20,13 @@ export async function GET(request: Request) {
   const { searchParams } = new URL(request.url);
   const walletParam = searchParams.get('wallet');
   const group = TAX_GROUPS.includes(walletParam as TaxGroup) ? (walletParam as TaxGroup) : undefined;
+  const sectionParam = searchParams.get('section');
+  const section = SECTIONS.includes(sectionParam as Section) ? (sectionParam as Section) : undefined;
   const yearParam = Number(searchParams.get('year'));
   const year = Number.isInteger(yearParam) && yearParam > 2000 ? yearParam : undefined;
 
   try {
-    const report = await buildTaxReport({ group, year });
+    const report = await buildTaxReport({ group, section, year });
     return NextResponse.json({ data: report } satisfies ApiResult<TaxesResponse>);
   } catch (err) {
     const message = err instanceof Error ? err.message : 'Failed to build the tax report';
