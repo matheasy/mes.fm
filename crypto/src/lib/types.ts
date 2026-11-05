@@ -177,6 +177,22 @@ export interface TaxSectionSummary {
   incomeCad: number;
 }
 
+/** One ACB pool (wrapped forms lumped in: BTC = BTC + BTCB + WBTC ...) for the token picker */
+export interface TaxTokenSummary {
+  asset: string;
+  /** Sections this token's sales / income / holdings fall in (lib/sections.ts) */
+  sections: TaxSectionSummary['section'][];
+  /** This tax year, across every section (transfers excluded) */
+  sales: number;
+  proceedsCad: number;
+  costCad: number;
+  gainCad: number;
+  incomeCad: number;
+  /** Units left in the pool today and their ACB */
+  held: number;
+  acbCad: number | null;
+}
+
 export interface TaxSourceStatus {
   key: string;
   label: string;
@@ -194,6 +210,8 @@ export interface TaxesResponse {
   income: TaxIncomeSummary;
   /** The year's gains and income split by portfolio section (always across every row, like summary) */
   bySection: TaxSectionSummary[];
+  /** Every token with a sale or income this year or still held, A-Z (the Taxes page's token picker) */
+  tokens: TaxTokenSummary[];
   receipts: TaxReceiptsSummary;
   /** Rows of the year still needing the owner (see TaxRow.needsInput) */
   needsInput: { sends: number; unknownCost: number };

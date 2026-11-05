@@ -13,12 +13,13 @@ import {
   type TaxReceiptsSummary,
   type TaxRow,
   type TaxSectionSummary,
+  type TaxTokenSummary,
   type TaxSourceStatus,
   type TaxYearSummary,
   type TaxesResponse,
   yearNotesId,
 } from '../types';
-import { computeAcb, custodyKey, disposalId, type AcbDisposal, type AcbIncome, type AcbReceipt, type TaxEntry } from './acb';
+import { computeAcb, custodyKey, disposalId, type AcbDisposal, type AcbHolding, type AcbIncome, type AcbReceipt, type TaxEntry } from './acb';
 import { assetKey } from './assetKey';
 import { contractsAmong, EVM_NETWORKS } from './contracts';
 import { isLpContract } from '../lp';
@@ -80,6 +81,43 @@ function summarizeSections(disposals: AcbDisposal[], income: AcbIncome[]): TaxSe
   }
   for (const i of income) out.get(taxSectionOf(i))!.incomeCad += i.cad ?? 0;
   return [...out.values()];
+}
+
+/** Every ACB pool touched this year (sales, income) or still held, with its sections, A-Z */
+function summarizeTokens(disposals: AcbDisposal[], income: AcbIncome[], holdings: AcbHolding[]): TaxTokenSummary[] {
+  const out = new Map<string, TaxTokenSummary & { sec: Set<Section> }>();
+  const get = (asset: string) => {
+    let e = out.get(asset);
+    if (!e) {
+      e = { asset, sections: [], sec: new Set(), sales: 0, proceedsCad: 0, costCad: 0, gainCad: 0, incomeCad: 0, held: 0, acbCad: null };
+      out.set(asset, e);
+    }
+    return e;
+  };
+  for (const d of disposals) {
+    if (d.isTransfer) continue;
+    const e = get(d.asset);
+    e.sec.add(taxSectionOf(d));
+    e.sales += 1;
+    e.proceedsCad += d.proceedsCad ?? 0;
+    e.costCad += d.costCad ?? 0;
+    e.gainCad += d.gainCad ?? 0;
+  }
+  for (const i of income) {
+    const e = get(i.asset);
+    e.sec.add(taxSectionOf(i));
+    e.incomeCad += i.cad ?? 0;
+  }
+  for (const h of holdings) {
+    if (!(h.quantity > 1e-12)) continue;
+    const e = get(h.asset);
+    e.held = h.quantity;
+    e.acbCad = h.acbCad;
+    if (e.sec.size === 0) e.sec.add(taxSectionOf({ source: '', asset: h.asset }));
+  }
+  return [...out.values()]
+    .map(({ sec, ...e }) => ({ ...e, sections: SECTIONS.filter((s) => sec.has(s)) }))
+    .sort((a, b) => a.asset.localeCompare(b.asset, 'en', { sensitivity: 'base' }));
 }
 
 function summarizeIncome(items: AcbIncome[]): TaxIncomeSummary {
@@ -288,6 +326,7 @@ export async function buildTaxReport(opts: { group?: TaxGroup; section?: Section
     rows,
     income: summarizeIncome(incomeOfYear),
     bySection: summarizeSections(ofYear, incomeOfYear),
+    tokens: summarizeTokens(ofYear, incomeOfYear, holdings),
     receipts: summarizeReceipts(receipts.filter((r) => r.taxYear === year)),
     needsInput: {
       sends: rows.filter((r) => r.needsInput.includes('send')).length,

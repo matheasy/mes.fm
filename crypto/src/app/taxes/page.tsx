@@ -14,6 +14,7 @@ import { BASE_PATH } from '@/lib/basePath';
 import { sourceLabel } from '@/lib/tax/taxSources';
 import { SECTIONS, SECTION_LABELS, type Section } from '@/lib/sections';
 import SectionOverview from '@/components/SectionOverview';
+import TokenPicker from '@/components/TokenPicker';
 import { custodyLabelId, NOT_ROUND_TRIP, yearNotesId, type LabelRecord } from '@/lib/types';
 import { knownName } from '@/lib/tax/knownAddresses';
 
@@ -45,6 +46,14 @@ function TaxesPageInner() {
     url.searchParams.delete('wallet');
     if (next) url.searchParams.set('section', next);
     else url.searchParams.delete('section');
+    window.history.replaceState(null, '', url.toString());
+  };
+  const [token, setTokenState] = useState<string | undefined>(() => searchParams.get('token') || undefined);
+  const setToken = (next: string | undefined) => {
+    setTokenState(next);
+    const url = new URL(window.location.href);
+    if (next) url.searchParams.set('token', next);
+    else url.searchParams.delete('token');
     window.history.replaceState(null, '', url.toString());
   };
   const [currency, setCurrency] = useState<'CAD' | 'USD'>('CAD');
@@ -121,7 +130,9 @@ function TaxesPageInner() {
             ))}
           </div>
 
-          <div className="flex gap-1 rounded-md border border-bg-border p-0.5">
+          {taxes && <TokenPicker tokens={taxes.tokens ?? []} year={taxes.year} value={token} onChange={setToken} />}
+
+          <div className={`flex gap-1 rounded-md border border-bg-border p-0.5 ${token ? 'ml-5' : ''}`}>
             {(['CAD', 'USD'] as const).map((c) => (
               <button key={c} type="button" onClick={() => setCurrency(c)} className={chip(currency === c)}>
                 {c}
@@ -200,11 +211,19 @@ function TaxesPageInner() {
             <YearNotes year={taxes.year} notes={taxes.yearNotes} onSave={(record) => saveLabel(yearNotesId(taxes.year), record)} />
             <FiledReports year={taxes.year} />
 
-            {taxes.rows.length === 0 ? (
-              <div className="panel py-12 text-center text-gray-400">Nothing sold or swapped in {taxes.year}.</div>
-            ) : (
-              <TaxesTable rows={onlyNeedsInput ? taxes.rows.filter((r) => r.needsInput.length > 0) : taxes.rows} currency={currency} onSaveLabel={saveLabel} />
-            )}
+            {token && <TokenDetail token={(taxes.tokens ?? []).find((t) => t.asset === token)} name={token} year={taxes.year} section={section} onAllSections={() => setSection(undefined)} />}
+
+            {(() => {
+              const rows = taxes.rows.filter((r) => (!token || r.asset === token) && (!onlyNeedsInput || r.needsInput.length > 0));
+              return rows.length === 0 ? (
+                <div className="panel py-12 text-center text-gray-400">
+                  Nothing {token ? `in ${token} ` : ''}sold or swapped in {taxes.year}
+                  {section ? ` in ${SECTION_LABELS[section]}` : ''}.
+                </div>
+              ) : (
+                <TaxesTable rows={rows} currency={currency} onSaveLabel={saveLabel} />
+              );
+            })()}
 
             <div className="panel flex flex-col gap-3">
               <div className="flex flex-wrap items-baseline justify-between gap-2">
@@ -416,6 +435,58 @@ function TaxesPageInner() {
           </div>
         )}
       </StateView>
+    </div>
+  );
+}
+
+/** The picked token's year at a glance: its sales (every section), income and what's still held */
+function TokenDetail({
+  token,
+  name,
+  year,
+  section,
+  onAllSections,
+}: {
+  token?: import('@/lib/types').TaxTokenSummary;
+  name: string;
+  year: number;
+  section?: Section;
+  onAllSections: () => void;
+}) {
+  if (!token) return <div className="panel text-sm text-gray-400">{name}: no sales, income or holdings found for {year}.</div>;
+  const cells = [
+    { label: `Sales in ${year}`, value: String(token.sales) },
+    { label: 'Proceeds', value: money(token.proceedsCad, 'CAD') },
+    { label: 'ACB of what was sold', value: money(token.costCad, 'CAD') },
+    { label: token.gainCad >= 0 ? 'Capital gain' : 'Capital loss', value: money(token.gainCad, 'CAD'), cls: token.gainCad >= 0 ? 'text-gain' : 'text-loss' },
+    { label: 'Income', value: money(token.incomeCad, 'CAD') },
+    {
+      label: 'Still held (ACB)',
+      value: token.held > 0 ? `${token.held.toLocaleString('en-US', { maximumFractionDigits: 8 })} (${token.acbCad === null ? '—' : money(token.acbCad, 'CAD')})` : '0',
+    },
+  ];
+  const other = section ? token.sections.filter((s) => s !== section) : [];
+  return (
+    <div className="panel flex flex-col gap-3">
+      <p className="stat-label">
+        {name}, {year} (CAD) · every section · in {token.sections.map((s) => SECTION_LABELS[s]).join(', ') || '—'}
+      </p>
+      <div className="grid gap-3 sm:grid-cols-3 lg:grid-cols-6">
+        {cells.map((c) => (
+          <div key={c.label}>
+            <p className="text-xs text-gray-500">{c.label}</p>
+            <p className={`text-lg font-semibold ${c.cls ?? ''}`}>{c.value}</p>
+          </div>
+        ))}
+      </div>
+      {other.length > 0 && (
+        <p className="text-xs text-gray-400">
+          The list below shows only {SECTION_LABELS[section!]}&apos;s {name} rows; {name} also has rows in {other.map((s) => SECTION_LABELS[s]).join(', ')}.{' '}
+          <button type="button" onClick={onAllSections} className="text-accent hover:underline">
+            Show every section
+          </button>
+        </p>
+      )}
     </div>
   );
 }
