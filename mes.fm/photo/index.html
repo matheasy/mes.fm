@@ -655,6 +655,12 @@ body.dark-mode .tu .rw-head {color:#a0a8b3;border-bottom-color:#555;} body.dark-
 	#pe .pe-fp-sort {display:inline-flex;align-items:center;gap:0.35em;margin-left:0.8em;white-space:nowrap;}
 	#pe .pe-fp-sort select {height:1.8em;padding:0 0.3em;background:var(--pe-field);color:var(--pe-text);border:1px solid var(--pe-line);border-radius:0.3em;font:inherit;max-width:15em;}
 #pe .pe-unitsel {width:auto;padding:0.15em 0.2em;font-size:0.9em;margin-left:0.25em;}
+	/* round 12: the font window can be moved (drag the top bar), resized (bottom-right corner) and made compact (Less) */
+	#pe .pe-fp-drag {display:flex;align-items:center;gap:0.45em;padding:0.3em 0.5em;background:var(--pe-panel2);border-bottom:1px solid var(--pe-line);cursor:move;user-select:none;touch-action:none;}
+	#pe .pe-fp-grip {color:var(--pe-dim);font-size:1.1em;line-height:1;} #pe .pe-fp-t {font-weight:600;margin-right:auto;}
+	#pe .pe-fp-less {background:none;border:1px solid var(--pe-line);border-radius:0.3em;color:var(--pe-text);padding:0.1em 0.5em;font-size:0.88em;cursor:pointer;}
+	#pe .pe-fpop.is-less .pe-fp-chips, #pe .pe-fpop.is-less .pe-fp-sample {display:none;}
+	#pe .pe-fp-rz {position:absolute;right:0;bottom:0;width:16px;height:16px;cursor:nwse-resize;touch-action:none;background:linear-gradient(135deg, transparent 50%, var(--pe-dim) 50%, var(--pe-dim) 58%, transparent 58%, transparent 70%, var(--pe-dim) 70%, var(--pe-dim) 78%, transparent 78%);}
 
 
 	@media print {
@@ -1131,7 +1137,7 @@ body.is-stuck #navbar.hide { position: fixed; top: 56px; right: 8px; }
             hide_search:false,
             current_tab:0
         }        </script><!-- FASTCOMMENTS-LAZY: widget init moved to main_js/main.js -- it pulls embed.min.js only when #fastcomments-widget nears the viewport or on the first Comments-toggle click, so it no longer blocks first render -->                <script src="https://mes.fm/main_js/lazysizes.min.js?v=1.0.3" async></script>
-	<script src="/photo/js/photo.js?v=39" defer></script>
+	<script src="/photo/js/photo.js?v=40" defer></script>
             <script src="https://mes.fm/main_js/main.js?v=1.0.5"></script>    <!-- PAGEVIEW-TRACKING-INSERTED --><script src="https://mes.fm/main_js/track.js" defer></script><script>document.getElementById('copyright-year').textContent = new Date().getFullYear();</script><script src="/main_js/info-bar-fit.js" defer></script><script>
   // Floating compact header bar (see #compact-nav CSS): appears once the
   // header + nav bar have scrolled off the top; nav links that don't fit

@@ -5216,7 +5216,7 @@ var MESPixel = (function () {
 		if (pop) { var same = pop.btn === btn; closePicker(); if (same) return; }
 		build(); var ui = sget().fpick || {}, st = { q: "", cat: ui.cat || "all", src: ui.src || "all", hi: 0, list: [], g: ui.g !== false, sort: /^(az|za|src|kind)$/.test(ui.sort || "") ? ui.sort : "", hv: ui.hv !== false, hvF: null };
 		var e = el("div", "pe-fpop"); e.setAttribute("role", "dialog"); e.setAttribute("aria-label", "Choose a font"); e.dataset.noico = "1";
-		e.innerHTML = '<div class="pe-fp-h"><input type="search" class="pe-fp-q" placeholder="Search ' + fonts.length + ' fonts…" aria-label="Search fonts" autocomplete="off" spellcheck="false"><button type="button" class="pe-fp-x" aria-label="Close" title="Close (Esc)">×</button></div>'
+		e.innerHTML = '<div class="pe-fp-drag" title="Drag to move this window (double-click: put it back under the button)"><span class="pe-fp-grip" aria-hidden="true">⠿</span><span class="pe-fp-t">Fonts</span><button type="button" class="pe-fp-less" title="Show fewer / more filters">Less</button></div><div class="pe-fp-h"><input type="search" class="pe-fp-q" placeholder="Search ' + fonts.length + ' fonts…" aria-label="Search fonts" autocomplete="off" spellcheck="false"><button type="button" class="pe-fp-x" aria-label="Close" title="Close (Esc)">×</button></div>'
 			+ '<div class="pe-fp-chips pe-fp-cats" role="group" aria-label="Kind of font"></div><div class="pe-fp-chips pe-fp-srcs" role="group" aria-label="Where the font comes from"></div>'
 			+ '<div class="pe-fp-sample"><label>Sample <input type="text" class="pe-fp-st" maxlength="40" placeholder="(the font name)" aria-label="Sample text shown in every font"></label></div>'
 			+ '<div class="pe-fp-list" role="listbox" tabindex="-1" aria-label="Fonts"></div><div class="pe-fp-f"><span class="pe-fp-n"></span><span class="pe-fp-b"></span></div>';
@@ -5300,13 +5300,29 @@ var MESPixel = (function () {
 		document.addEventListener("pointerdown", out, true);
 		pop = { el: e, btn: btn, io: io, out: out, unpv: function () { st.hvF = null; unpreview(); }, repaint: function (f) { Array.prototype.forEach.call(listEl.children, function (r) { if (r._f === f) paintRow(r); }); if (st.hvF === f) applyPreview(f); } };
 		// place it under the button (fixed, so it works in Full window and full screen too); on a phone it fills the width
-		var r = btn.getBoundingClientRect(), w = Math.min(380, window.innerWidth - 16), h = Math.min(520, window.innerHeight - 16);
+		var r = btn.getBoundingClientRect(), w = Math.min(340, window.innerWidth - 16), h = Math.min(420, window.innerHeight - 16);
 		e.style.width = w + "px"; e.style.maxHeight = h + "px"; var x = Math.max(8, Math.min(r.left, window.innerWidth - w - 8)), y = r.bottom + 4; if (y + 260 > window.innerHeight) y = Math.max(8, window.innerHeight - h - 8);
 		e.style.left = x + "px"; e.style.top = y + "px"; e.style.maxHeight = Math.min(h, window.innerHeight - y - 8) + "px";
+		// move / resize (round 12: it covered most of the picture and could not be moved). Position and size are remembered (fpos, viewport px).
+		var pos = sget().fpos || null, keep = function () { var b = e.getBoundingClientRect(); sset({ fpos: { x: Math.round(b.left), y: Math.round(b.top), w: Math.round(b.width), h: Math.round(b.height), less: e.classList.contains("is-less") } }); };
+		var fit = function (x, y, w2, h2) { var W = window.innerWidth, H = window.innerHeight; w2 = Math.max(240, Math.min(w2, W - 8)); h2 = Math.max(220, Math.min(h2, H - 8)); x = Math.max(4 - w2 + 80, Math.min(x, W - 80)); y = Math.max(4, Math.min(y, H - 40)); e.style.left = x + "px"; e.style.top = y + "px"; e.style.width = w2 + "px"; e.style.height = h2 + "px"; e.style.maxHeight = "none"; };
+		if (pos && pos.w) fit(pos.x, pos.y, pos.w, pos.h);
+		if (pos && pos.less) e.classList.add("is-less");
+		var lessB = e.querySelector(".pe-fp-less"), setLess = function () { lessB.textContent = e.classList.contains("is-less") ? "More" : "Less"; }; setLess();
+		lessB.addEventListener("click", function () { e.classList.toggle("is-less"); setLess(); keep(); });
+		var drag = function (handle, resize) {
+			handle.addEventListener("pointerdown", function (ev) { if (ev.button || ev.target.closest("button")) return; ev.preventDefault(); var b = e.getBoundingClientRect(), x0 = ev.clientX, y0 = ev.clientY; try { handle.setPointerCapture(ev.pointerId); } catch (_) {}
+				var mv = function (m) { var dx = m.clientX - x0, dy = m.clientY - y0; if (resize) fit(b.left, b.top, b.width + dx, b.height + dy); else fit(b.left + dx, b.top + dy, b.width, b.height); };
+				var up = function () { handle.removeEventListener("pointermove", mv); handle.removeEventListener("pointerup", up); handle.removeEventListener("pointercancel", up); keep(); };
+				handle.addEventListener("pointermove", mv); handle.addEventListener("pointerup", up); handle.addEventListener("pointercancel", up); });
+		};
+		var dh = e.querySelector(".pe-fp-drag"); drag(dh, false);
+		dh.addEventListener("dblclick", function () { sset({ fpos: null }); var b = btn.getBoundingClientRect(); e.style.height = ""; fit(Math.max(8, Math.min(b.left, window.innerWidth - 348)), b.bottom + 4, 340, Math.min(420, window.innerHeight - b.bottom - 12)); e.style.height = ""; e.style.maxHeight = Math.min(420, window.innerHeight - b.bottom - 12) + "px"; });
+		var rz = el("div", "pe-fp-rz"); rz.title = "Drag to make this window bigger or smaller"; rz.setAttribute("aria-hidden", "true"); e.appendChild(rz); drag(rz, true);
 		render(); var ci = st.list.findIndex(function (f) { return f.name.toLowerCase() === F.familyOf(value).toLowerCase(); }); if (ci >= 0) { st.hi = ci; hilite(true); }
 		q.focus({ preventScroll: true });
 	}
-	window.addEventListener("resize", function () { if (pop) closePicker(); });
+	window.addEventListener("resize", function () { if (!pop) return; var b = pop.el.getBoundingClientRect(); if (b.left > window.innerWidth - 80 || b.top > window.innerHeight - 40) closePicker(); });
 	window.addEventListener("scroll", function (e) { if (pop && !(e.target && e.target.closest && e.target.closest(".pe-fpop"))) closePicker(); }, true);   // the page scrolled away from the button
 })();
 

@@ -348,3 +348,9 @@
 	#pe .pe-fp-sort {display:inline-flex;align-items:center;gap:0.35em;margin-left:0.8em;white-space:nowrap;}
 	#pe .pe-fp-sort select {height:1.8em;padding:0 0.3em;background:var(--pe-field);color:var(--pe-text);border:1px solid var(--pe-line);border-radius:0.3em;font:inherit;max-width:15em;}
 #pe .pe-unitsel {width:auto;padding:0.15em 0.2em;font-size:0.9em;margin-left:0.25em;}
+	/* round 12: the font window can be moved (drag the top bar), resized (bottom-right corner) and made compact (Less) */
+	#pe .pe-fp-drag {display:flex;align-items:center;gap:0.45em;padding:0.3em 0.5em;background:var(--pe-panel2);border-bottom:1px solid var(--pe-line);cursor:move;user-select:none;touch-action:none;}
+	#pe .pe-fp-grip {color:var(--pe-dim);font-size:1.1em;line-height:1;} #pe .pe-fp-t {font-weight:600;margin-right:auto;}
+	#pe .pe-fp-less {background:none;border:1px solid var(--pe-line);border-radius:0.3em;color:var(--pe-text);padding:0.1em 0.5em;font-size:0.88em;cursor:pointer;}
+	#pe .pe-fpop.is-less .pe-fp-chips, #pe .pe-fpop.is-less .pe-fp-sample {display:none;}
+	#pe .pe-fp-rz {position:absolute;right:0;bottom:0;width:16px;height:16px;cursor:nwse-resize;touch-action:none;background:linear-gradient(135deg, transparent 50%, var(--pe-dim) 50%, var(--pe-dim) 58%, transparent 58%, transparent 70%, var(--pe-dim) 70%, var(--pe-dim) 78%, transparent 78%);}
