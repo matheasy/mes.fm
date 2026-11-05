@@ -29,6 +29,7 @@
 				<p>Open the video in another tab, then press the button, pick that tab and keep <b>Also share tab audio</b> on. Play the video: the page measures what the tab plays.</p>
 				<div class="tu-row"><button type="button" class="tu-btn tu-btn--primary" data-cap="other">🔊 Choose a tab to listen to</button></div>
 				<label class="ya-quiet"><input type="checkbox" class="ya-quietbox"> Keep my speakers silent while measuring <span class="ya-dim">(the video still plays, just not out loud)</span></label>
+				<label class="ya-quiet"><input type="checkbox" class="ya-keepbox"> Keep the sound so I can play it back <span class="ya-dim">(stays in this browser, about 1 MB a minute)</span></label>
 				<p class="tu-note">Works in Chrome, Edge, Brave and Opera on a computer. Firefox, Safari and phones can't share a tab's sound with a web page.</p>
 			</div>
 		</div>
@@ -53,6 +54,7 @@
 				<a class="tu-btn tu-btn--ghost" id="ya-open" href="#" target="_blank" rel="noopener">Open on the site ↗</a>
 			</div>
 			<label class="ya-quiet"><input type="checkbox" class="ya-quietbox"> Keep my speakers silent while measuring <span class="ya-dim">(the video still plays, just not out loud)</span></label>
+				<label class="ya-quiet"><input type="checkbox" class="ya-keepbox"> Keep the sound so I can play it back <span class="ya-dim">(stays in this browser, about 1 MB a minute)</span></label>
 			<p class="ya-msg" id="ya-capmsg" role="alert"></p>
 		</section>
 
@@ -140,6 +142,7 @@
 					<button type="button" class="tu-btn tu-btn--ghost" id="ya-copy">Copy the summary</button>
 					<button type="button" class="tu-btn tu-btn--ghost" id="ya-csv">Loudness every 0.1 s (CSV)</button>
 					<button type="button" class="tu-btn tu-btn--ghost" id="ya-png">Charts as a picture (PNG)</button>
+					<button type="button" class="tu-btn tu-btn--ghost" id="ya-dlrec" hidden>Download the recording</button>
 				</div>
 			</div>
 		</div>
@@ -172,7 +175,7 @@
 			<h4>Why must the player's own volume stay at 100%?</h4>
 			<p>The page measures what the player plays. Muting the player or turning its slider down sends silence or a quieter copy. To keep your room quiet, leave the player at 100% and tick <b>Keep my speakers silent</b> instead: the browser then plays the tab to the page only.</p>
 			<h4>Is the tab's sound recorded?</h4>
-			<p>No. The page keeps only the measurements (loudness every 0.1 s, the waveform's outline and the spectrogram), never the sound itself, and none of it leaves your browser. Sharing stops when you press Stop or close the tab.</p>
+			<p>Only if <b>Keep the sound so I can play it back</b> is ticked: then the shared sound is also saved as a compressed copy in this browser's memory so you can play it back from the charts or download it. It is never uploaded and is gone when you close or reload the page. Untick it and the page keeps only the measurements (loudness every 0.1 s, the waveform's outline and the spectrogram). Sharing stops when you press Stop or close the tab.</p>
 			<h4>Why can't it just download the YouTube video?</h4>
 			<p>YouTube does not offer that to other websites, and getting around its protections is against its terms. Playing the video in YouTube's own player and listening to the tab is allowed and needs nothing extra.</p>
 			<h4>Which loudness should I aim for?</h4>

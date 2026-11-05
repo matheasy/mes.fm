@@ -6,7 +6,7 @@
 (function () {
 	'use strict';
 	var Y = MESYA, $ = function (id) { return document.getElementById(id); }, KEY = 'mes-youtube-audio:v1';
-	var S = { thr: -45, min: 0.5, lanes: { wave: true, loud: true, spec: true }, ws: 'lin', split: false, tab: 'link', quiet: true };
+	var S = { thr: -45, min: 0.5, lanes: { wave: true, loud: true, spec: true }, ws: 'lin', split: false, tab: 'link', quiet: true, keep: true };
 	try { var sv = JSON.parse(localStorage.getItem(KEY) || 'null'); if (sv) for (var k in sv) if (k in S) S[k] = sv[k]; } catch (e) {}
 	function save() { try { localStorage.setItem(KEY, JSON.stringify(S)); } catch (e) {} }
 	function esc(s) { return String(s == null ? '' : s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/"/g, '&quot;'); }
@@ -298,6 +298,18 @@
 	var quietBoxes = [].slice.call(document.querySelectorAll('.ya-quietbox'));
 	quietBoxes.forEach(function (q) { q.checked = !!S.quiet; q.addEventListener('change', function () { S.quiet = q.checked; quietBoxes.forEach(function (o) { o.checked = S.quiet; }); save(); }); });
 
+	/* the kept copy of a tab's sound: MediaRecorder WebM has no duration, so ask for the end once to make it seekable */
+	var recBlob = null;
+	function recDone() {
+		if (!recBlob || !SRC || SRC.kind !== 'capture') return;
+		setPlayback(URL.createObjectURL(recBlob), true);
+		$('ya-dlrec').hidden = false;
+		var fix = function () { if (audio.duration === Infinity) { audio.currentTime = 1e101; audio.addEventListener('timeupdate', function f() { audio.removeEventListener('timeupdate', f); audio.currentTime = 0; }); } };
+		if (audio.readyState >= 1) fix(); else audio.addEventListener('loadedmetadata', fix, { once: true });
+	}
+	$('ya-dlrec').addEventListener('click', function () { if (recBlob) download(recBlob, baseName() + (/mp4/.test(recBlob.type) ? '.m4a' : '.webm')); });
+	var keepBoxes = [].slice.call(document.querySelectorAll('.ya-keepbox'));
+	keepBoxes.forEach(function (q) { q.checked = !!S.keep; q.addEventListener('change', function () { S.keep = q.checked; keepBoxes.forEach(function (o) { o.checked = S.keep; }); save(); }); });
 	/* ---------- tab audio ---------- */
 	var TAP = 'class T extends AudioWorkletProcessor{constructor(){super();this.b=null;this.n=0;this.N=4096}process(i){var x=i[0];if(!x||!x.length)return true;var c=Math.min(2,x.length),k;if(!this.b||this.b.length!==c){this.b=[];for(k=0;k<c;k++)this.b.push(new Float32Array(this.N));this.n=0}for(k=0;k<c;k++)this.b[k].set(x[k],this.n);this.n+=x[0].length;if(this.n>=this.N){this.port.postMessage(this.b,this.b.map(function(a){return a.buffer}));this.b=null}return true}}registerProcessor("ya-tap",T);';
 	async function startCapture(self) {
@@ -323,7 +335,17 @@
 		if (ctx.state === 'suspended') ctx.resume();
 		Z = null; SUM = null; SER = null; SRC = { kind: 'capture', self: !!self, title: self && link ? link.name + ' video' : 'Tab audio', link: self && link ? link.watch : '', yt: !!(self && link && link.kind === 'youtube') };
 		userZoom = false; view = null; setPlayback(null);
-		cap = { stream: stream, ctx: ctx, tap: tap, t0: Date.now(), timer: 0 };
+		cap = { stream: stream, ctx: ctx, tap: tap, t0: Date.now(), timer: 0, rec: null };
+		recBlob = null; $('ya-dlrec').hidden = true;
+		if (S.keep && window.MediaRecorder) {
+			try {
+				var mt = ['audio/webm;codecs=opus', 'audio/webm', 'audio/mp4'].filter(function (x) { return MediaRecorder.isTypeSupported(x); })[0];
+				var rec = new MediaRecorder(new MediaStream([at]), mt ? { mimeType: mt, audioBitsPerSecond: 128000 } : {}), parts = [];
+				rec.ondataavailable = function (e) { if (e.data && e.data.size) parts.push(e.data); };
+				rec.onstop = function () { if (!parts.length) return; recBlob = new Blob(parts, { type: rec.mimeType || mt || 'audio/webm' }); recDone(); };
+				rec.start(1000); cap.rec = rec;
+			} catch (e) {}
+		}
 		tap.port.onmessage = function (e) { if (!cap) return; if (!Z) Z = new Y.Analyzer(ctx.sampleRate, e.data.length); Z.feed(e.data); };
 		at.addEventListener('ended', function () { stopCapture(); });
 		var live = $('ya-live');
@@ -338,6 +360,8 @@
 		if (!cap) return;
 		var c = cap; cap = null;
 		clearInterval(c.timer);
+		var keepIt = !silent && c.rec;
+		try { if (c.rec && c.rec.state !== 'inactive') { if (!keepIt) c.rec.onstop = null; c.rec.stop(); } } catch (e) {}
 		try { c.stream.getTracks().forEach(function (t) { t.stop(); }); } catch (e) {}
 		try { c.tap.port.onmessage = null; c.ctx.close(); } catch (e) {}
 		$('ya-live').hidden = true; $('ya-cap').hidden = false;
@@ -446,6 +470,7 @@
 	function canSeek() { return (!audio.hidden && !!audio.src) || !!(pageVid && SRC && SRC.kind === '3speak' && document.contains(pageVid)); }
 	function setPlayback(url, show) {
 		if (audioURL && audioURL.indexOf('blob:') === 0) URL.revokeObjectURL(audioURL);
+		$('ya-dlrec').hidden = true;
 		audioURL = url; audio.hidden = !url || !show;
 		if (url) audio.src = url; else { audio.removeAttribute('src'); try { audio.load(); } catch (e) {} }
 		$('ya-seekhint').hidden = !canSeek();
