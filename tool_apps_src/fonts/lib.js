@@ -17,7 +17,7 @@
 		list("sans", "Roboto|Open Sans|Montserrat|Lato|Poppins|Inter|Nunito|Raleway|Work Sans|Source Sans 3|DM Sans|Rubik|Oswald|Bebas Neue|Barlow|Fira Sans|Quicksand|Manrope|Outfit|Josefin Sans"),
 		list("serif", "Playfair Display|Merriweather|Lora|Roboto Slab|Crimson Text|Libre Baskerville|Cormorant Garamond|PT Serif|EB Garamond|DM Serif Display|Bitter|Spectral"),
 		list("mono", "Roboto Mono|Fira Code|JetBrains Mono|Source Code Pro|Space Mono|IBM Plex Mono"),
-		list("display", "Anton|Bangers|Lobster|Pacifico|Righteous|Abril Fatface|Alfa Slab One|Fredoka|Press Start 2P|Permanent Marker|Orbitron|Bungee|Shrikhand|Monoton|Fascinate|Black Ops One|Rubik Mono One|Titan One"),
+		list("display", "Anton|Bangers|Lobster|Pacifico|Righteous|Abril Fatface|Alfa Slab One|Fredoka|Press Start 2P|Permanent Marker|Orbitron|Bungee|Shrikhand|Monoton|Fascinate|Black Ops One|Rubik Mono One|Titan One|Sixtyfour|Monofett|Zen Tokyo Zoo|Workbench"),
 		list("hand", "Dancing Script|Caveat|Great Vibes|Satisfy|Shadows Into Light|Indie Flower|Sacramento|Amatic SC|Kalam|Patrick Hand|Cookie|Yellowtail")
 	);
 	var DEFAULT = { text: "Your headline here", size: 56, weight: "400", italic: false, color: "#111111", bg: "#ffffff", bgOn: false, ls: 0, lh: 1.15, align: "left", tf: "none",

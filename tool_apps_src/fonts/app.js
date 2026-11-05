@@ -259,7 +259,7 @@
 			$("fn-matchnote").textContent = "Comparing… " + Math.round(i / combos.length * 100) + "%";
 			if (i < combos.length) { setTimeout(step, 0); return; }
 			$("fn-match").disabled = false; var seen = {}, best = out.sort(function (a, b) { return b.s - a.s; }).filter(function (r) { var k = r.f.name; if (seen[k]) return false; seen[k] = 1; return true; }).slice(0, 12);
-			$("fn-matchnote").textContent = best.length ? "Closest fonts among the " + fonts.length + " this page can draw. A high score means the letter shapes and proportions agree; if nothing scores well, your font is probably not in the list: try “Add 80 popular Google Fonts”, or the other identifiers below." : "Nothing to compare.";
+			$("fn-matchnote").textContent = best.length ? "Closest fonts among the " + fonts.length + " this page can draw. A high score means the letter shapes and proportions agree; if nothing scores well, your font is probably not in the list: try “Add 72 popular Google Fonts”, or the other identifiers below." : "Nothing to compare.";
 			var wrap = $("fn-results"); wrap.innerHTML = ""; best.forEach(function (r, k) {
 				var d = document.createElement("div"); d.className = "fn-res"; var pic = document.createElement("canvas"); pic.width = 300; pic.height = 70; var px = pic.getContext("2d"); px.fillStyle = "#fff"; px.fillRect(0, 0, 300, 70); var s = Math.min(280 / T.crop.w, 56 / T.crop.h); px.drawImage(src, T.crop.x, T.crop.y, T.crop.w, T.crop.h, 10, (70 - T.crop.h * s) / 2, T.crop.w * s, T.crop.h * s);
 				var smp = document.createElement("div"); smp.className = "fn-res-s"; smp.style.fontFamily = fam(r.f); smp.style.fontWeight = r.w; smp.style.fontStyle = r.it ? "italic" : "normal"; smp.textContent = text;

@@ -129,21 +129,23 @@
 	 * Snapping (MESPixel.snapBox / snapAxis): the canvas edges + centre lines and, with "Snap to other layers", every other visible layer's visible box
 	 * (its non-transparent pixels, so a text snaps by its letters, not by the padding around them). 6 screen px; Ctrl (or Alt while moving) = no snapping. */
 	var HANDLES = [[-1, -1], [0, -1], [1, -1], [1, 0], [1, 1], [0, 1], [-1, 1], [-1, 0]];
-	function handleScreen(L, hd) {
-		var c = Math.cos(L.rot), s = Math.sin(L.rot), hw = L.canvas.width * L.sx / 2, hh = L.canvas.height * L.sy / 2, lx = hd[0] * hw, ly = hd[1] * hh;
-		return PE.toScreen(L.cx + c * lx - s * ly, L.cy + s * lx + c * ly);
-	}
+	/* round 12: a layer cropped with Crop Layer gets its box, handles and rotate handle on the part that shows (the crop box), not the whole hidden canvas.
+	 * frameOf = that box in layer pixels measured from the layer's centre; fpt = a point of it in picture coordinates (u, v = -1..1 across it) */
+	function frameOf(L) { var W = L.canvas.width, H = L.canvas.height, cr = !isTxt(L) && L.crop; return cr ? { x0: cr.x - W / 2, y0: cr.y - H / 2, w: cr.w, h: cr.h } : { x0: -W / 2, y0: -H / 2, w: W, h: H }; }
+	function fpt(L, u, v, f) { f = f || frameOf(L); var c = Math.cos(L.rot), s = Math.sin(L.rot), lx = (f.x0 + (u + 1) / 2 * f.w) * L.sx, ly = (f.y0 + (v + 1) / 2 * f.h) * L.sy; return { x: L.cx + c * lx - s * ly, y: L.cy + s * lx + c * ly }; }
+	function cropped(L) { return !!(L && L.crop && !isTxt(L) && !PE.isGroup(L)); }
+	function handleScreen(L, hd) { var p = fpt(L, hd[0], hd[1]); return PE.toScreen(p.x, p.y); }
 	/* round 10: a text layer's box is the frame round its words (PE.textFramePt), not the padded layer canvas: one box, no second bigger one */
 	function isTxt(L) { return !!(L && L.type === "text" && L.text && PE.textFramePt); }
 	function hScreen(L, hd) { if (isTxt(L)) { var d = PE.textFramePt(L, hd[0], hd[1]); return PE.toScreen(d.x, d.y); } return handleScreen(L, hd); }
 	PE.rotHandlePt = function (L) { var h = rotHandle(L); return { x: h.x, y: h.y }; };
-	function boxCorners(L) { return isTxt(L) ? PE.textFrameCorners(L) : PE.corners(L); }
+	function boxCorners(L) { if (isTxt(L)) return PE.textFrameCorners(L); if (cropped(L)) { var f = frameOf(L); return [[-1, -1], [1, -1], [1, 1], [-1, 1]].map(function (q) { var p = fpt(L, q[0], q[1], f); return [p.x, p.y]; }); } return PE.corners(L); }
 	function boxHandle(b, hd) { return PE.toScreen(b.x + (hd[0] + 1) / 2 * b.w, b.y + (hd[1] + 1) / 2 * b.h); }
 	function scr(e) { var r = PE.els.over.getBoundingClientRect(); return { x: e.sx - r.left, y: e.sy - r.top }; }
 	/* round 9: the round rotate handle on a stem above the layer's top edge (it turns with the layer) */
 	var angleBox = {};
 	/* round 11: for a text layer the handle stands on the middle of its box (the box is not always centred on the layer: a shadow to one side) */
-	function rotHandle(L) { var T = hScreen(L, [0, -1]), C = isTxt(L) ? hScreen(L, [0, 0]) : PE.toScreen(L.cx, L.cy), dx = T.x - C.x, dy = T.y - C.y, l = Math.hypot(dx, dy); if (l < 1) { dx = Math.sin(L.rot); dy = -Math.cos(L.rot); l = 1; } return { x: T.x + dx / l * 28, y: T.y + dy / l * 28, tx: T.x, ty: T.y }; }
+	function rotHandle(L) { var T = hScreen(L, [0, -1]), C = isTxt(L) || cropped(L) ? hScreen(L, [0, 0]) : PE.toScreen(L.cx, L.cy), dx = T.x - C.x, dy = T.y - C.y, l = Math.hypot(dx, dy); if (l < 1) { dx = Math.sin(L.rot); dy = -Math.cos(L.rot); l = 1; } return { x: T.x + dx / l * 28, y: T.y + dy / l * 28, tx: T.x, ty: T.y }; }
 	function drawRotHandle(x, L, rot) {
 		var h = rotHandle(L); x.save(); x.strokeStyle = "#1a73e8"; x.lineWidth = 1.5; x.beginPath(); x.moveTo(h.tx, h.ty); x.lineTo(h.x, h.y); x.stroke();
 		x.fillStyle = rot ? "#1a73e8" : "#fff"; x.beginPath(); x.arc(h.x, h.y, 7, 0, Math.PI * 2); x.fill(); x.stroke();
@@ -202,6 +204,19 @@
 		var items = leaves(set).filter(function (k) { return !k.locked; });
 		mv = { kind: "move", set: set, items: items.map(function (k) { return [k, k.cx, k.cy]; }), p0: e, moved: false, box0: P.unionBox(items.filter(PE.effVisible).map(PE.visBox)), tg: targetsFor(items) };
 	}
+	function rotStart(A, e) { var pin = cropped(A), p = pin ? fpt(A, 0, 0) : { x: A.cx, y: A.cy }; return { kind: "rot", L: A, px: p.x, py: p.y, pin: pin, cx0: A.cx, cy0: A.cy, a0: Math.atan2(e.y - p.y, e.x - p.x), rot0: A.rot }; }
+	/* round 12: resize a cropped layer by its crop box: the opposite side (Alt: the middle) of the box stays put; corners keep the shape unless Shift */
+	function cropScale(m, e) {
+		var L = m.L, f = frameOf(L), hd = m.h, c = Math.cos(m.rot), s = Math.sin(m.rot), sx0 = m.sx0, sy0 = m.sy0;
+		var qx = e.alt || !hd[0] ? f.x0 + f.w / 2 : f.x0 + (1 - hd[0]) / 2 * f.w, qy = e.alt || !hd[1] ? f.y0 + f.h / 2 : f.y0 + (1 - hd[1]) / 2 * f.h;
+		var Ax = m.cx0 + c * qx * sx0 - s * qy * sy0, Ay = m.cy0 + s * qx * sx0 + c * qy * sy0, dx = e.x - Ax, dy = e.y - Ay, lx = c * dx + s * dy, ly = -s * dx + c * dy;
+		var W0 = f.w * Math.abs(sx0), H0 = f.h * Math.abs(sy0), k = e.alt ? 2 : 1;
+		var nw = hd[0] ? Math.max(2, lx * Math.sign(hd[0] * sx0 || 1) * k) : W0, nh = hd[1] ? Math.max(2, ly * Math.sign(hd[1] * sy0 || 1) * k) : H0;
+		var uniform = (hd[0] && hd[1]) ? !e.shift : e.shift;
+		if (uniform && hd[0] && hd[1]) { var g = Math.max(nw / W0, nh / H0); nw = W0 * g; nh = H0 * g; } else if (uniform) { var g2 = hd[0] ? nw / W0 : nh / H0; nw = W0 * g2; nh = H0 * g2; }
+		var sx = Math.sign(sx0 || 1) * nw / f.w, sy = Math.sign(sy0 || 1) * nh / f.h;
+		L.sx = sx; L.sy = sy; L.cx = Ax - (c * qx * sx - s * qy * sy); L.cy = Ay - (s * qx * sx + c * qy * sy);
+	}
 	/* one layer's resize, as before: from the dragged handle (Shift = the other proportion rule, Alt = from the centre) */
 	function scaleDims(m, e) {
 		var L = m.L, c = Math.cos(m.rot), s = Math.sin(m.rot), dx2 = e.x - m.cx0, dy2 = e.y - m.cy0, lx = c * dx2 + s * dy2, ly = -s * dx2 + c * dy2, hd = m.h, W0 = L.canvas.width * Math.abs(m.sx0), H0 = L.canvas.height * Math.abs(m.sy0);
@@ -242,7 +257,7 @@
 						var its = leaves(set).filter(function (k) { return !k.locked; }); if (its.length !== leaves(set).length) { PE.toast("A locked layer is in the selection"); return; }
 						mv = { kind: "mscale", set: set, b0: b, vb0: P.unionBox(its.filter(PE.effVisible).map(PE.visBox)) || b, h: HANDLES[i], items: its.map(function (k) { return [k, k.cx, k.cy, k.sx, k.sy, k.rot]; }), tg: targetsFor(its) }; return; } }
 				} else if (A && A.visible && !PE.isGroup(A) && !A.locked) {
-					var rh = rotHandle(A); if (Math.hypot(rh.x - sp.x, rh.y - sp.y) < 11) { mv = { kind: "rot", L: A, a0: Math.atan2(e.y - A.cy, e.x - A.cx), rot0: A.rot }; return; }
+					var rh = rotHandle(A); if (Math.hypot(rh.x - sp.x, rh.y - sp.y) < 11) { mv = rotStart(A, e); return; }
 					var isText = A.type === "text" && A.text && PE.textBoxHit;
 					if (isText) {   // a text layer: the purple handles on its box change the wrap width (and, with Auto-fit text, the box height); Alt on a box corner = scale
 						var tbh = PE.textBoxHit(A, e);
@@ -252,7 +267,7 @@
 					}
 					if (!isText) for (i = 0; i < 8; i++) { var s = handleScreen(A, HANDLES[i]); if (Math.hypot(s.x - sp.x, s.y - sp.y) < 9) { mv = { kind: "scale", L: A, h: HANDLES[i], sx0: A.sx, sy0: A.sy, cx0: A.cx, cy0: A.cy, rot: A.rot, p0: e, tg: targetsFor([A]) }; return; } }
 					var corners = [0, 2, 4, 6].map(function (k) { return hScreen(A, HANDLES[k]); });
-					for (i = 0; i < 4; i++) { var dd = Math.hypot(corners[i].x - sp.x, corners[i].y - sp.y); if (dd >= 10 && dd < 30 && !PE.layerAtPoint(A, e.x, e.y)) { mv = { kind: "rot", L: A, a0: Math.atan2(e.y - A.cy, e.x - A.cx), rot0: A.rot }; return; } }
+					for (i = 0; i < 4; i++) { var dd = Math.hypot(corners[i].x - sp.x, corners[i].y - sp.y); if (dd >= 10 && dd < 30 && !PE.layerAtPoint(A, e.x, e.y)) { mv = rotStart(A, e); return; } }
 				}
 			}
 			var raw = o.auto ? PE.layerAt(e.x, e.y, { unlocked: true }) : null; if (raw && raw !== A && PE.isBackdrop(raw)) raw = null;
@@ -283,8 +298,9 @@
 				}
 				mv.items.forEach(function (g) { g[0].cx = g[1] + dx; g[0].cy = g[2] + dy; }); mv.moved = mv.moved || dx !== 0 || dy !== 0; PE.invalidate(); return;
 			}
-			if (mv.kind === "rot") { var a = Math.atan2(e.y - L.cy, e.x - L.cx), rr = mv.rot0 + (a - mv.a0); rr = P.snapAngle(rr, e.shift ? 15 : 0, e.ctrl ? 0 : 2); L.rot = rr; mv.moved = true; mv.at = e; PE.invalidate(); PE.invalidateOverlay(); return; }
+			if (mv.kind === "rot") { var a = Math.atan2(e.y - mv.py, e.x - mv.px), rr = mv.rot0 + (a - mv.a0); rr = P.snapAngle(rr, e.shift ? 15 : 0, e.ctrl ? 0 : 2); L.rot = rr; if (mv.pin) { var pq = fpt(L, 0, 0); L.cx += mv.px - pq.x; L.cy += mv.py - pq.y; } mv.moved = true; mv.at = e; PE.invalidate(); PE.invalidateOverlay(); return; }
 			if (mv.kind === "scale") {
+				if (cropped(L)) { cropScale(mv, e); mv.moved = true; PE.invalidate(); return; }
 				var d = scaleDims(mv, e), nw = d.nw, nh = d.nh; applyDims(mv, d, nw, nh, e.alt); PE.guides = [];
 				var vr = visLocal(L);
 				if (snapOn(e) && vr && uprightish(mv.rot) && mv.sx0 > 0 && mv.sy0 > 0) {
@@ -333,7 +349,7 @@
 			if (m.kind === "move") m.items.forEach(function (g) { g[0].cx = g[1]; g[0].cy = g[2]; });
 			else if (m.kind === "mscale") m.items.forEach(function (it) { var k = it[0]; k.cx = it[1]; k.cy = it[2]; k.sx = it[3]; k.sy = it[4]; });
 			else if (m.kind === "tbox" || m.kind === "tscale") PE.textBoxAbort(m.tb);
-			else if (m.kind === "scale") { m.L.cx = m.cx0; m.L.cy = m.cy0; m.L.sx = m.sx0; m.L.sy = m.sy0; } else if (m.kind === "rot") m.L.rot = m.rot0;
+			else if (m.kind === "scale") { m.L.cx = m.cx0; m.L.cy = m.cy0; m.L.sx = m.sx0; m.L.sy = m.sy0; } else if (m.kind === "rot") { m.L.rot = m.rot0; if (m.cx0 != null) { m.L.cx = m.cx0; m.L.cy = m.cy0; } }
 			PE.invalidate();
 		},
 		cancel: function () { if (mv && mv.kind !== "band") this.abort(); mv = null; hoverTM = null; hoverPick = null; },
