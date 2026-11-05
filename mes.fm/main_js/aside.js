@@ -188,7 +188,11 @@ function asideImgFail() { this.onerror = null; this.src = "/img/logo-mark-64.png
         });
         group.appendChild(show);
         paint();
-        host.insertBefore(group, host.firstChild);
+        /* math-hub shell: when the column opens with its "Part of" box, float the switch INSIDE that box (aside.css) so the box's
+           links wrap beside / below it instead of running under an absolutely positioned pill */
+        var partOf = host.firstElementChild;
+        if (partOf && partOf.classList.contains("part-of")) partOf.insertBefore(group, partOf.firstChild);
+        else host.insertBefore(group, host.firstChild);
     }
 
     /* 3. random card */
