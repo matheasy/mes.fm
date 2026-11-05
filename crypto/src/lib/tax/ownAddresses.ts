@@ -31,6 +31,8 @@ const OWN_SET = new Set(OWN.map((a) => a.toLowerCase()));
 export const OWN_EXCHANGE_DEPOSITS: Record<string, string> = {
   // the owner's Shakepay ETH deposit address (confirmed from Shakepay's "You received ethereum" email, 2026-08-25)
   '0x27bf3c74df402476d5b11dd1f15022df3ba71552': 'Shakepay (your ETH deposit address)',
+  // the owner's own Binance.com deposit address (confirmed by the owner, 2026-11-05)
+  '0x5542efc8592e75d0b9399241cecc6fb56bfcdf91': 'Binance.com (your deposit address)',
 };
 
 export function isOwnExchangeDeposit(address: string | null | undefined): boolean {

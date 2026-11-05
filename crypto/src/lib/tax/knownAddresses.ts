@@ -24,6 +24,7 @@ export const KNOWN_ADDRESSES: Record<string, string> = {
   '0xd0e226f674bbf064f54ab47f42473ff80db98cba': 'PancakeSwap V3 ETH/WBNB pool (your liquidity)',
   // plain wallets (not contracts)
   '0x27bf3c74df402476d5b11dd1f15022df3ba71552': 'your Shakepay ETH deposit address (personal transfer)',
+  '0x5542efc8592e75d0b9399241cecc6fb56bfcdf91': 'your Binance.com deposit address (personal transfer)',
   '0x787300f3b94524360a7245923b20840131a42ada': 'plain wallet (active DEX trader)',
   '0xa95d9c1f655341597c94393fddc30cf3c08e4fce': 'Hyperliquid deposit relay - the USDC landed in your own Hyperliquid account',
   // Hive accounts
