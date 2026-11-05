@@ -63,8 +63,8 @@
 			var h = document.createElement("div"); h.className = "fn-chead"; h.innerHTML = '<span class="fn-name" title="' + esc(f.name) + '">' + esc(f.name) + '</span><span class="fn-acts"><button type="button" class="fn-ib' + (isFav ? " on" : "") + '" data-a="fav" title="' + (isFav ? "Remove from favourites" : "Add to favourites") + '" aria-label="Favourite">' + (isFav ? "★" : "☆") + '</button><button type="button" class="fn-ib' + (inCmp ? " on" : "") + '" data-a="cmp" title="Add to Compare (up to four)">⇆</button><button type="button" class="fn-ib" data-a="view" title="Show this font big (fill the window)" aria-label="Show big">⤢</button><button type="button" class="fn-ib" data-a="col" title="' + (isCol ? "Expand this card" : "Collapse this card to its name") + '" aria-label="' + (isCol ? "Expand" : "Collapse") + '" aria-expanded="' + !isCol + '">' + (isCol ? "▸" : "▾") + '</button><button type="button" class="fn-ib" data-a="hide" title="Hide this font (bring it back from Hidden fonts)" aria-label="Hide">⊘</button></span>';
 			c.appendChild(h); var s = sample(f); s.setAttribute("data-a", "big"); c.appendChild(s); c.setAttribute("data-f", f.name); frag.appendChild(c);
 		});
-		g.appendChild(frag); $("fn-count").textContent = list.length + " of " + fonts.length + " fonts shown"; renderHidden(); cardVars();
-		if (!list.length) g.innerHTML = '<p class="tu-note">No fonts match. Clear the search or the filter, or press “Add 80 popular Google Fonts”.</p>';
+		renderGsug(); g.appendChild(frag); $("fn-count").textContent = list.length + " of " + fonts.length + " fonts shown"; renderHidden(); cardVars();
+		if (!list.length) g.innerHTML = '<p class="tu-note">No fonts on the list match. Pick one of the Google Fonts above, or clear the search or the filter.</p>';
 	}
 	$("fn-grid").addEventListener("click", function (e) {
 		var c = e.target.closest(".fn-card"); if (!c) return; var name = c.getAttribute("data-f"), a = e.target.closest("[data-a]"); a = a && a.getAttribute("data-a");
@@ -184,15 +184,33 @@
 	var pr = $("fn-presets"); F.PRESETS.forEach(function (p) { var b = document.createElement("button"); b.type = "button"; b.className = "tu-chip"; b.textContent = p[0]; b.addEventListener("click", function () { var keep = S.text, keepR = S.runs; S = Object.assign({}, F.DEFAULT, p[1], { text: keep, runs: keepR }); CTL.forEach(function (c) { var el = $(c[0]), v = S[c[1]]; if (el.type === "checkbox") el.checked = !!v; else el.value = v; var pair = $(c[0] + "n"); if (pair) pair.value = v; }); save(); changed(); toast(p[0] + " look applied"); }); pr.appendChild(b); });
 
 	/* ---------- more fonts ---------- */
+	/* one Google family: its stylesheet, then check the browser can really draw it; resolves true when it was added */
+	function loadGoogle(name, cat) {
+		if (names[name]) return Promise.resolve(false);
+		return new Promise(function (res) {
+			var l = document.createElement("link"); l.rel = "stylesheet"; l.href = "https://fonts.googleapis.com/css2?family=" + encodeURIComponent(name).replace(/%20/g, "+") + "&display=swap"; l.onerror = function () { l.remove(); res(false); }; document.head.appendChild(l);
+			var to = setTimeout(function () { res(false); }, 9000); l.onload = function () { document.fonts.load("40px '" + name + "'").then(function () { clearTimeout(to); if (document.fonts.check("40px '" + name + "'")) res(addFont(name, cat || "display", "google")); else res(false); }, function () { clearTimeout(to); res(false); }); };
+		});
+	}
+	/* the search also offers Google Fonts that are not added yet: the photo editor's ~530-family catalogue, plus "try this exact name" for any other family */
+	var GCAT = (window.MESFontCat && MESFontCat.GOOGLE && MESFontCat.GOOGLE.length ? MESFontCat.GOOGLE : F.GOOGLE).concat(F.GOOGLE);
+	function titleCase(q) { return q.trim().replace(/\s+/g, " ").replace(/\b([a-z])/g, function (m) { return m.toUpperCase(); }); }
+	function renderGsug() {
+		var box = $("fn-gsug"), q = st.q.trim().toLowerCase(); if (q.length < 2) { box.hidden = true; box.innerHTML = ""; return; }
+		var seen = {}, hits = GCAT.filter(function (x) { var k = x[0].toLowerCase(); if (seen[k] || names[x[0]] || k.indexOf(q) < 0) return false; seen[k] = 1; return true; }).slice(0, 12);
+		var exact = titleCase(st.q), haveExact = names[exact] || hits.some(function (x) { return x[0].toLowerCase() === exact.toLowerCase(); });
+		if (!hits.length && haveExact) { box.hidden = true; box.innerHTML = ""; return; }
+		box.hidden = false; box.innerHTML = '<span class="fn-gsug-t">From Google Fonts:</span>';
+		hits.forEach(function (x) { add(x[0], x[1], x[0]); });
+		if (!haveExact && /^[a-z0-9 ]{2,40}$/i.test(exact)) add(exact, "display", "Try “" + exact + "”");
+		function add(name, cat, label) { var b = document.createElement("button"); b.type = "button"; b.className = "tu-chip"; b.textContent = "+ " + label; b.title = "Load " + name + " from Google Fonts and add it to the list";
+			b.onclick = function () { b.disabled = true; b.textContent = "Loading " + name + "…"; loadGoogle(name, cat).then(function (ok) { if (ok || names[name]) { toast("Added " + name); renderGrid(); openBig(name); } else { b.textContent = name + ": not found on Google Fonts"; } }); };
+			box.appendChild(b); }
+	}
 	var gbtn = $("fn-google");
 	gbtn.onclick = function () {
 		if (st.google) return; st.google = true; gbtn.disabled = true; var todo = F.GOOGLE.filter(function (x) { return !names[x[0]]; }), done = 0, added = 0; gbtn.textContent = "Loading Google Fonts… 0 / " + todo.length;
-		function one(x) {
-			return new Promise(function (res) {
-				var l = document.createElement("link"); l.rel = "stylesheet"; l.href = "https://fonts.googleapis.com/css2?family=" + encodeURIComponent(x[0]).replace(/%20/g, "+") + "&display=swap"; l.onerror = function () { res(); }; document.head.appendChild(l);
-				var to = setTimeout(res, 9000); l.onload = function () { document.fonts.load("40px '" + x[0] + "'").then(function () { clearTimeout(to); if (document.fonts.check("40px '" + x[0] + "'")) { addFont(x[0], x[1], "google"); added++; } res(); }, function () { clearTimeout(to); res(); }); };
-			}).then(function () { done++; gbtn.textContent = "Loading Google Fonts… " + done + " / " + todo.length; });
-		}
+		function one(x) { return loadGoogle(x[0], x[1]).then(function (ok) { if (ok) added++; done++; gbtn.textContent = "Loading Google Fonts… " + done + " / " + todo.length; }); }
 		var i = 0; function pump() { var batch = todo.slice(i, i + 8); i += 8; if (!batch.length) { gbtn.textContent = added ? "Google Fonts added (" + added + ")" : "Could not reach Google Fonts"; if (!added) { gbtn.disabled = false; st.google = false; } renderGrid(); return; } Promise.all(batch.map(one)).then(function () { renderGrid(); pump(); }); } pump();
 	};
 	if (window.queryLocalFonts) { $("fn-localfonts").hidden = false; $("fn-localfonts").onclick = function () { window.queryLocalFonts().then(function (list) { var seen = {}, added = 0; list.forEach(function (x) { if (seen[x.family]) return; seen[x.family] = 1; var cat = /mono|code|courier|consol/i.test(x.family) ? "mono" : /script|hand|brush|marker/i.test(x.family) ? "hand" : /serif/i.test(x.family) && !/sans/i.test(x.family) ? "serif" : "sans"; if (addFont(x.family, cat, "local")) added++; }); renderGrid(); toast(added + " more fonts added from this computer"); }, function () { toast("Permission was not given"); }); }; }
