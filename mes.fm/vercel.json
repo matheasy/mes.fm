@@ -1489,6 +1489,7 @@
   "headers": [
     { "source": "/v/(.*)", "headers": [{ "key": "X-Robots-Tag", "value": "noindex" }] },
     { "source": "/hp/(.*)", "headers": [{ "key": "X-Robots-Tag", "value": "noindex" }] },
+    { "source": "/djw-columbia-emails(.*)", "headers": [{ "key": "X-Robots-Tag", "value": "noindex, nofollow, noimageindex" }] },
     { "source": "/percentagecalculator/(.*)", "headers": [{ "key": "Cache-Control", "value": "public, max-age=0, s-maxage=86400, stale-while-revalidate=604800" }] },
     { "source": "/percentagecalculator/js/(.*)", "headers": [{ "key": "Cache-Control", "value": "public, max-age=31536000, immutable" }] },
     { "source": "/percentagecalculator/img/(.*)", "headers": [{ "key": "Cache-Control", "value": "public, max-age=31536000, immutable" }] }

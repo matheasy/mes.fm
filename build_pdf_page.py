@@ -3,7 +3,7 @@
 Used for mes.fm/em-304-problem-1-judy-wood, mes.fm/space-shuttle-columbia-pdf and Andrew Johnson's two 9/11 books (mes.fm/911-finding-truth-pdf, 911-holding-truth-pdf).
 Copies the PDF from ~/Downloads (or the page's own `src`, or --pdf) into mes.fm/<slug>/<pdf-name>, then writes mes.fm/<slug>/index.html.
   python3 build_pdf_page.py --apply          (the page definitions are in PAGES below; add one to host another PDF)
-Per-page options: `brand="911"` (a key of convert_mirror_pages.BRANDS without the slash: that hub's logo / title / tab instead of
+Per-page options: `noindex`, `private` (also no ads / comments / rating row), `brand="911"` (a key of convert_mirror_pages.BRANDS without the slash: that hub's logo / title / tab instead of
 MES.fm), `src` (where the PDF comes from), `meta` (Title / Author / Subject / Keywords written into the copied PDF, with
 DisplayDocTitle, so a browser's PDF viewer shows a real title: needs pymupdf (`pip install pymupdf`) when the PDF is copied in;
 CHECK every hosted PDF's metadata before publishing), `og_abs` (absolute og:image URL), `sidebar=False`.
@@ -41,6 +41,17 @@ PAGES = {
 <p><b>Prefer a web page?</b> The same notes, with the video, are at <a href="/space-shuttle-columbia"><b>mes.fm/space-shuttle-columbia</b></a>. The PDF (36 pages) is shown below; you can also download it, or use the OneDrive link.</p>""",
         outro="""<h2>About these notes</h2>
 <p>Dr. Judy Wood's original test is on its own page: <a href="/em-304-problem-1-judy-wood">mes.fm/em-304-problem-1-judy-wood</a>. Try the numbers yourself with the <a href="/materials">MES Mechanics of Materials calculators</a> (thermal stress, Young's modulus, shear).</p>"""),
+    "djw-columbia-emails-pdf": dict(   # private: noindex (+ X-Robots-Tag in vercel.json), no sidebar; the PDF is made by build_djw_columbia_emails.py
+        title="Dr. Judy Wood and MES: the Space Shuttle Columbia Emails (PDF)",
+        subtitle="Emails between Dr. Judy Wood and Mathiew Estepho (MES), September 19 to October 31, 2026",
+        desc="The emails between Dr. Judy Wood and MES about the Space Shuttle Columbia disaster and her EM 304 test of February 6, 2003, as a PDF.",
+        pdf="djw-columbia-emails.pdf", pdf_label="Dr. Judy Wood and MES: the Space Shuttle Columbia emails (PDF)",
+        src=R / "mes.fm/djw-columbia-emails-pdf/djw-columbia-emails.pdf", noindex=True, sidebar=False, private=True,
+        partof='Part of <a href="/space-shuttle-columbia">Exam Problem by Dr. Judy Wood: Space Shuttle Columbia Disaster</a> &middot; <a href="/djw-columbia-emails">Web page version</a>',
+        og_abs="https://mes.fm/space-shuttle-columbia/img/share.jpg",
+        intro="""<p>The emails between <b>Dr. Judy Wood</b> and <b>MES</b> about the <b>Space Shuttle Columbia disaster</b> and her EM 304 test problem, oldest first, as one PDF.</p>
+<p><b>Prefer a web page?</b> The same emails are at <a href="/djw-columbia-emails"><b>mes.fm/djw-columbia-emails</b></a>.</p>""",
+        outro="""<p>The video and notes: <a href="/space-shuttle-columbia">mes.fm/space-shuttle-columbia</a> &middot; Dr. Wood's test: <a href="/em-304-problem-1-judy-wood">mes.fm/em-304-problem-1-judy-wood</a></p>"""),
 }
 AJ_CREDIT = """<h2>About this book</h2>
 <p><b>Andrew Johnson</b> has kept the evidence of what happened to the World Trade Center on 9/11 in front of people for two decades, centred on the research of <b>Dr. Judy Wood</b>. He gave MES permission to publish both of his 9/11 books on mes.fm. The PDF is the author's own free edition, as published on his website <a href="https://www.checktheevidence.com/" target="_blank" rel="noopener">checktheevidence.com</a>; the text is &copy; Andrew Johnson and the cover graphic &copy; Nick Buchanan.</p>"""
@@ -93,7 +104,12 @@ def build(slug, cfg):
         pdf, ('<a class="pdf-btn alt" href="%s" target="_blank" rel="noopener">%s</a>' % (cfg["alt_url"], html.escape(cfg["alt_label"]))) if cfg.get("alt_url") else "", pdf)
     art += '<div class="pdf-wrap"><object class="pdf-frame" data="%s#view=FitH" type="application/pdf" aria-label="%s"><div class="pdf-fallback"><p>Your browser cannot show a PDF inside the page.</p><p><a class="pdf-btn" href="%s">Open the PDF</a></p></div></object></div>\n' % (pdf, html.escape(cfg["pdf_label"]), pdf)
     art += cfg["outro"]
-    if cfg.get("noindex"): t = t.replace('<link rel="canonical"', '<meta name="robots" content="noindex">\n  <link rel="canonical"', 1)
+    if cfg.get("noindex"): t = t.replace('<link rel="canonical"', '<meta name="robots" content="noindex%s">\n  <link rel="canonical"' % (", nofollow" if cfg.get("private") else ""), 1)
+    if cfg.get("private"):   # private page: no ads, no comments, no rating row
+        import re
+        t = re.sub(r"\s*<!-- ADSENSE-DEFERRED:.*?</script>", "", t, count=1, flags=re.S)
+        t = re.sub(r"\s*<!-- FASTCOMMENTS-BLOCK.*?comments\.js[^>]*></script>", "", t, count=1, flags=re.S)
+        t = t.replace('<html lang="en">', '<html lang="en" data-no-rating>', 1)
     br = dict(href="/", logo="/img/logo-mark.png", title="MES.fm", tag="Videos, tutorials, calculators and research by Math Easy Solutions.")
     if cfg.get("brand"):
         sys.path.insert(0, str(R)); import convert_mirror_pages as cmp
