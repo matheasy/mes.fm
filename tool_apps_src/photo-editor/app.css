@@ -347,3 +347,4 @@
 	#pe .pe-fp-gt input {width:1em;height:1em;margin:0;}
 	#pe .pe-fp-sort {display:inline-flex;align-items:center;gap:0.35em;margin-left:0.8em;white-space:nowrap;}
 	#pe .pe-fp-sort select {height:1.8em;padding:0 0.3em;background:var(--pe-field);color:var(--pe-text);border:1px solid var(--pe-line);border-radius:0.3em;font:inherit;max-width:15em;}
+#pe .pe-unitsel {width:auto;padding:0.15em 0.2em;font-size:0.9em;margin-left:0.25em;}
