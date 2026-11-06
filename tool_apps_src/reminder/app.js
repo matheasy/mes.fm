@@ -15,13 +15,17 @@
 	function toast(msg) { var t = $("rm-toast"); if (!t) { t = document.createElement("div"); t.id = "rm-toast"; t.className = "tu-toast"; document.body.appendChild(t); } t.textContent = msg; t.classList.add("tu-toast--show"); clearTimeout(toast._t); toast._t = setTimeout(function () { t.classList.remove("tu-toast--show"); }, 2400); }
 
 	/* ---------- state ---------- */
-	var S = { items: [], leads: [15, 0], sound: true, fired: {} };
+	var S = { items: [], leads: [15, 0], sound: true, speak: true, voice: "", leave: true, fired: {} };
+	var SAY = window.MESSay || null;
 	function load() {
 		try {
 			var s = JSON.parse(localStorage.getItem(KEY) || "null"); if (!s) return;
-			if (Array.isArray(s.items)) S.items = s.items.map(function (x) { var e = RM.clean(x); e.leads = Array.isArray(x.leads) ? x.leads.filter(function (m) { return LEADS.indexOf(m) >= 0; }) : [15, 0]; e.added = +x.added || Date.now(); return e; }).filter(function (e) { return !isNaN(RM.startOf(e)); }).slice(0, 50);
+			if (Array.isArray(s.items)) S.items = s.items.map(function (x) { var e = RM.clean(x); e.leads = Array.isArray(x.leads) ? x.leads.filter(function (m) { return LEADS.indexOf(m) >= 0; }) : [15, 0]; e.added = +x.added || Date.now(); e.say = RM.cleanSay(x.say); return e; }).filter(function (e) { return !isNaN(RM.startOf(e)); }).slice(0, 50);
 			if (Array.isArray(s.leads)) S.leads = s.leads.filter(function (m) { return LEADS.indexOf(m) >= 0; });
 			if (typeof s.sound === "boolean") S.sound = s.sound;
+			if (typeof s.speak === "boolean") S.speak = s.speak;
+			if (typeof s.leave === "boolean") S.leave = s.leave;
+			if (typeof s.voice === "string") S.voice = s.voice.slice(0, 300);
 			if (s.fired && typeof s.fired === "object") S.fired = s.fired;
 		} catch (e) {}
 	}
@@ -103,9 +107,10 @@
 		});
 		$("rm-browser").addEventListener("click", function () {
 			var q = RM.toQuery(EV), have = S.items.filter(function (x) { return RM.toQuery(x) === q; })[0];
-			if (have) have.leads = S.leads.slice(); else { var e = RM.clean(EV); e.leads = S.leads.slice(); e.added = Date.now(); S.items.unshift(e); }
+			var say = RM.cleanSay($("rm-saytext").value);
+			if (have) { have.leads = S.leads.slice(); have.say = say; } else { var e = RM.clean(EV); e.leads = S.leads.slice(); e.added = Date.now(); e.say = say; S.items.unshift(e); }
 			save(); renderMine();
-			var msg = "Saved in this browser. Keep a tab of mes.fm/reminder open to get the alert";
+			var msg = "Saved in this browser. Keep this tab open to get the alert" + (say && S.speak ? " and hear your message" : "");
 			if ("Notification" in window && Notification.permission === "default") Notification.requestPermission().then(function () { renderPerm(); });
 			$("rm-saved").hidden = false; $("rm-saved").textContent = "✓ " + msg + (S.leads.length ? " (" + S.leads.map(RM.leadText).join(", ") + ")." : ": tick at least one time above.");
 		});
@@ -124,9 +129,9 @@
 		var now = Date.now();
 		$("rm-mine").innerHTML = S.items.map(function (e, i) {
 			var st = state(e, now), cd = st.live ? "Now" : st.over ? "Ended" : RM.countdown(st.start - now).text.replace(/ \d+ s$/, "");
-			return '<div class="rm-item"><div class="rm-item-main"><a class="rm-item-title" href="/reminder?' + esc(RM.toQuery(e)) + '">' + esc(e.title) + '</a><div class="rm-item-sub">' + esc(shortWhen(st.start)) + (e.r === "weekly" ? " · weekly" : "") + " · alerts " + esc(e.leads.length ? e.leads.map(RM.leadText).join(", ") : "off") + '</div></div><span class="rm-item-cd" data-i="' + i + '">' + esc(cd) + '</span><button type="button" class="rm-x" data-del="' + i + '" aria-label="Remove">Remove</button></div>';
+			return '<div class="rm-item"><div class="rm-item-main"><a class="rm-item-title" href="/reminder?' + esc(RM.toQuery(e)) + '">' + esc(e.title) + '</a><div class="rm-item-sub">' + esc(shortWhen(st.start)) + (e.r === "weekly" ? " · weekly" : "") + " · alerts " + esc(e.leads.length ? e.leads.map(RM.leadText).join(", ") : "off") + '</div>' + (e.say ? '<div class="rm-item-say">🗣 “' + esc(e.say) + '”</div>' : "") + '</div><span class="rm-item-cd" data-i="' + i + '">' + esc(cd) + '</span><button type="button" class="rm-x" data-del="' + i + '" aria-label="Remove">Remove</button></div>';
 		}).join("");
-		$("rm-sound").checked = S.sound; renderPerm();
+		$("rm-sound").checked = S.sound; $("rm-speak").checked = S.speak; $("rm-leave").checked = S.leave; renderPerm();
 	}
 	$("rm-mine").addEventListener("click", function (e) {
 		var b = e.target.closest("[data-del]"); if (!b) return;
@@ -134,6 +139,32 @@
 		if (gone) toast("Removed " + gone.title);
 	});
 	$("rm-sound").addEventListener("change", function () { S.sound = this.checked; save(); });
+	$("rm-speak").addEventListener("change", function () { S.speak = this.checked; save(); $("rm-voicef").hidden = !S.speak || !SAY || !SAY.ok; });
+	$("rm-leave").addEventListener("change", function () { S.leave = this.checked; save(); });
+	/* ---------- read aloud ---------- */
+	function sayOpts() { return { voice: S.voice, vol: 1 }; }
+	if (SAY && SAY.ok) {
+		SAY.voiceSelect($("rm-voice"), S.voice, function (v) { S.voice = v; save(); });
+		$("rm-voicef").hidden = !S.speak;
+	} else { $("rm-voicef").hidden = true; $("rm-speakrow").title = "This browser cannot speak"; $("rm-speak").disabled = true; }
+	function upcoming() {     // a saved reminder with an alert still to come: worth keeping the tab open
+		var now = Date.now();
+		return S.items.some(function (e) { return e.leads.length && !state(e, now).over; });
+	}
+	if (SAY) {
+		SAY.armNote($("rm-arm"), function () { return upcoming() && (S.sound || S.speak); });
+		SAY.leaveGuard(function () { return S.leave && upcoming(); });
+	}
+	// the "Hear it" buttons: what the message will sound like for a reminder 15 minutes before
+	function hear(inputId, titleFn) {
+		var b = $(inputId + "-hear"); if (!b) return;
+		if (!SAY || !SAY.ok) { b.hidden = true; return; }
+		b.addEventListener("click", function () {
+			var now = Date.now(), start = now + 15 * 60000;
+			SAY.stop(); SAY.speak(RM.spoken($(inputId).value, titleFn(), start, now, timeOnly(start)), sayOpts()).then(function (r) { if (r === "failed") toast("That voice did not speak: pick another voice under My reminders"); });
+		});
+	}
+	function timeOnly(ms) { try { return new Intl.DateTimeFormat(undefined, { hour: "numeric", minute: "2-digit", timeZone: CK.zoneAt("", ms) }).format(new Date(ms)); } catch (e) { return ""; } }
 
 	var AC = null;
 	function chime() {
@@ -147,16 +178,25 @@
 			});
 		} catch (e) {}
 	}
-	function banner(title, body, link) {
+	function banner(title, body, link, said) {
 		var b = document.createElement("div"); b.className = "rm-banner"; b.setAttribute("role", "alert");
-		b.innerHTML = "<div><strong>⏰ " + esc(title) + "</strong><br>" + esc(body) + (link ? ' <a href="' + esc(link) + '" target="_blank" rel="noopener nofollow">Open the link</a>' : "") + "</div><button type=\"button\">OK</button>";
-		b.querySelector("button").addEventListener("click", function () { b.remove(); document.title = EV ? EV.title + " | Reminder | MES" : BASE_TITLE; });
+		b.innerHTML = "<div><strong>⏰ " + esc(title) + "</strong><br>" + esc(body) + (said ? '<br><span class="rm-said">🗣 ' + esc(said) + "</span>" : "") + (link ? ' <a href="' + esc(link) + '" target="_blank" rel="noopener nofollow">Open the link</a>' : "") + '</div><span class="rm-bbtns">' + (said && SAY && SAY.ok ? '<button type="button" class="rm-again">🔊 Say it again</button>' : "") + '<button type="button" class="rm-ok">OK</button></span>';
+		b.querySelector(".rm-ok").addEventListener("click", function () { if (SAY) SAY.stop(); b.remove(); document.title = EV ? EV.title + " | Reminder | MES" : BASE_TITLE; });
+		var ag = b.querySelector(".rm-again"); if (ag) ag.addEventListener("click", function () { SAY.stop(); SAY.speak(said, sayOpts()); });
 		document.body.appendChild(b);
+		return b;
 	}
 	function fire(e, a, now) {
 		var late = now - a.at > 120000, body = a.lead ? "Starts in " + RM.leadText(a.lead).replace(" before", "") + " (" + shortWhen(a.start) + ")" : "Starting now";
 		if (late) body += ". This alert was due at " + shortWhen(a.at) + ".";
-		banner(e.title, body, e.u); chime(); document.title = "⏰ " + e.title;
+		var said = S.speak && SAY && SAY.ok ? RM.spoken(e.say, e.title, a.start, now, timeOnly(a.start)) : "";
+		var bn = banner(e.title, body, e.u, said); chime(); document.title = "⏰ " + e.title;
+		if (said) setTimeout(function () {
+			SAY.speak(said, sayOpts()).then(function (r) {
+				if (r !== "blocked") return;     // the tab never had a click since it was opened: the browser will not let it talk yet
+				var n = document.createElement("span"); n.className = "rm-said"; n.textContent = " (Your browser kept it quiet because this page had not been clicked yet: press Say it again.)"; var d = bn.querySelector("div"); if (d) d.appendChild(n);
+			});
+		}, S.sound ? 1300 : 50);
 		if ("Notification" in window && Notification.permission === "granted") {
 			try { var n = new Notification(e.title, { body: body, icon: "/reminder/img/logo.png", tag: a.key, requireInteraction: a.lead === 0 }); n.onclick = function () { window.focus(); if (e.u) window.open(e.u, "_blank", "noopener"); n.close(); }; } catch (x) {}
 		}
@@ -170,7 +210,7 @@
 		if (changed) save();
 	}
 	$("rm-test").addEventListener("click", function () {
-		var go = function () { fire({ title: "Test reminder", u: "" }, { lead: 15, at: Date.now(), start: Date.now() + 900000, key: "test" + Date.now() }, Date.now()); renderPerm(); };
+		var go = function () { var it = S.items[0]; fire({ title: it ? it.title : "Test reminder", u: "", say: it ? it.say : "" }, { lead: 15, at: Date.now(), start: Date.now() + 900000, key: "test" + Date.now() }, Date.now()); renderPerm(); };
 		if ("Notification" in window && Notification.permission === "default") Notification.requestPermission().then(go); else go();
 	});
 	setInterval(function () {
@@ -272,6 +312,25 @@
 		var d2 = draft(); if (!d2.title.trim()) d2.title = "Reminder";
 		copyLater(getShort(d2).then(text, function () { return text(link); }), "Text copied: paste it into the description");
 	});
+	/* the maker's own "remind me here": saves the event typed above as a browser reminder (no link needed), with its spoken message */
+	try { $("rm-msay").value = localStorage.getItem(MK + ":say") || ""; } catch (e) {}
+	$("rm-msay").addEventListener("input", function () { try { localStorage.setItem(MK + ":say", this.value); } catch (e) {} });
+	$("rm-mremind").addEventListener("click", function () {
+		var d = draft(); if (!d.title.trim()) d.title = "Reminder";
+		if (!d.t || !d.tz || isNaN(RM.startOf(d))) { toast("Pick a date and a time first"); return; }
+		var e = RM.clean(d), q = RM.toQuery(e), have = S.items.filter(function (x) { return RM.toQuery(x) === q; })[0], say = RM.cleanSay($("rm-msay").value);
+		var leads = S.leads.length ? S.leads.slice() : [15, 0];
+		if (have) { have.leads = leads; have.say = say; } else { e.leads = leads; e.added = Date.now(); e.say = say; S.items.unshift(e); }
+		save(); renderMine();
+		if ("Notification" in window && Notification.permission === "default") Notification.requestPermission().then(function () { renderPerm(); });
+		toast("Saved: keep this tab open to get the alert (" + leads.map(RM.leadText).join(", ") + ")");
+		var h = $("rm-mine-h"); if (h) h.scrollIntoView({ behavior: "smooth", block: "start" });
+	});
+	hear("rm-msay", function () { return $("rm-title").value.trim() || "Reminder"; });
+	if (EV) {
+		hear("rm-saytext", function () { return EV.title; });
+		var mine = S.items.filter(function (x) { return RM.toQuery(x) === RM.toQuery(EV); })[0]; if (mine && mine.say) $("rm-saytext").value = mine.say;
+	}
 	$("rm-clear").addEventListener("click", function () { ["rm-title", "rm-url", "rm-desc", "rm-time"].forEach(function (id) { $(id).value = ""; }); $("rm-rep").value = ""; $("rm-len").value = "60"; $("rm-tz").value = LOCAL; upd(); });
 	upd();
 

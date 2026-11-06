@@ -559,6 +559,18 @@ body.dark-mode .tu .rw-head {color:#a0a8b3;border-bottom-color:#555;} body.dark-
 	.tm-dp__snd[aria-pressed="true"] {border-color:var(--dp8);color:var(--dp8);}
 	.tm-dp__bar {flex-wrap:wrap;row-gap:0.4em;} .tm-dp__btn {white-space:nowrap;}
 	@media (max-width:560px) {.tm-dp__btn {padding:0.45em 0.7em;font-size:0.92em;}}
+/* read-aloud messages (2026-11-06) */
+.tu .tm-sayrow {display:flex;gap:0.4em;align-items:center;margin:0.35em 0 0.2em;}
+.tu .tm-say {flex:1;min-width:0;font:inherit;font-size:0.9em;padding:0.4em 0.6em;border:1px solid #d8c9ad;border-radius:0.4em;background:#fffaf0;color:#3d2b05;}
+.tu .tm-saybtn.is-set {background:#fdf0dc;border-color:#a86706;box-shadow:inset 0 0 0 1px #a86706;}
+.tu .tm-voicef {margin-top:0.6em;max-width:28em;}
+.tu .tm-arm {margin:0 0 0.8em;padding:0.55em 0.8em;border-radius:0.5em;background:#fff4d6;color:#5b4300;border:1px solid #e9c46a;}
+.tu .tm-arm--now {animation:tmArm 1s ease-in-out 3;}
+@keyframes tmArm {50% {box-shadow:0 0 0 4px rgba(233,196,106,0.6);}}
+.tm-ring__say {font-size:0.85em;font-style:italic;margin-top:0.25em;opacity:0.95;}
+body.dark-mode #tm .tm-say {background:#2a241a;color:#f3e6cc;border-color:#6b5a3a;}
+body.dark-mode #tm .tm-arm {background:#3a3015;color:#f5dc9a;border-color:#7a6326;}
+body.dark-mode #tm .tm-saybtn.is-set {background:#4a3612;border-color:#d79a3e;box-shadow:inset 0 0 0 1px #d79a3e;}
 
 
 	@media print {
@@ -722,6 +734,9 @@ body.is-stuck #navbar.hide { position: fixed; top: 56px; right: 8px; }
 	body.dark-mode .tu .tm-size button{border:1px solid #3a424d;background:#1a1a1a;color:#bbbbbb}
 	body.dark-mode .tm-dp__rb button{border:2px solid #333333;background:#1a1a1a;color:#e48077}
 	body.dark-mode .tu .tm-al-cd__l{color:#9a9da3}
+	body.dark-mode .tu .tm-say{border:1px solid #755f37;background:#251d0e;color:#f3c668}
+	body.dark-mode .tu .tm-saybtn.is-set{background:#2f2514;border-color:#f69709}
+	body.dark-mode .tu .tm-arm{background:#342b14;color:#ffd45c;border:1px solid #b2861a}
 	/* TOOL-DARK:END */
 </style>
         <meta property="fb:app_id" content="" />
@@ -736,7 +751,7 @@ body.is-stuck #navbar.hide { position: fixed; top: 56px; right: 8px; }
         <meta name="twitter:image" content="https://mes.fm/timer/img/share.jpg">
         <meta name="twitter:image:alt" content="Timer by MES">
         <script type="application/ld+json">
-        {"@context": "https://schema.org", "@type": "WebApplication", "name": "Timer by MES", "url": "https://mes.fm/timer", "applicationCategory": "UtilitiesApplication", "operatingSystem": "Any", "offers": {"@type": "Offer", "price": "0", "priceCurrency": "USD"}, "description": "Free online timer: a countdown timer, stopwatch and alarm clock all on one page, plus Pomodoro, interval and date countdowns. Run several at once, auto-fitting side by side or stacked, drag to reorder, resize and fit to a small window, full screen, sounds you choose, time in your browser tab. No sign-up."}
+        {"@context": "https://schema.org", "@type": "WebApplication", "name": "Timer by MES", "url": "https://mes.fm/timer", "applicationCategory": "UtilitiesApplication", "operatingSystem": "Any", "offers": {"@type": "Offer", "price": "0", "priceCurrency": "USD"}, "description": "Free online timer: a countdown timer, stopwatch and alarm clock all on one page, plus Pomodoro, interval and date countdowns. Run several at once, auto-fitting side by side or stacked, drag to reorder, resize and fit to a small window, full screen, sounds you choose, messages read aloud when time is up, time in your browser tab. No sign-up."}
         </script>            <!-- Google Tag Manager -->
             <script>(function(w,d,s,l,i){w[l]=w[l]||[];w[l].push({'gtm.start':
             new Date().getTime(),event:'gtm.js'});var f=d.getElementsByTagName(s)[0],
@@ -933,13 +948,14 @@ body.is-stuck #navbar.hide { position: fixed; top: 56px; right: 8px; }
                                                         <!-- (Responsive) Horizontal -->
                                                         <div class="outer-page-content">
                             <div class="page-content" role="main">                                    <div class="color-box"></div>
-                                    <h1 class="page-title">Timer</h1>                                        <p class="page-description">Free online timer: a countdown timer, stopwatch and alarm clock all on one page, plus Pomodoro, interval and date countdowns. Run several at once, auto-fitting side by side or stacked, drag to reorder, resize and fit to a small window, full screen, sounds you choose, time in your browser tab. No sign-up.</p>                                    	<div id="main-content" data-tool data-text-scale>
+                                    <h1 class="page-title">Timer</h1>                                        <p class="page-description">Free online timer: a countdown timer, stopwatch and alarm clock all on one page, plus Pomodoro, interval and date countdowns. Run several at once, auto-fitting side by side or stacked, drag to reorder, resize and fit to a small window, full screen, sounds you choose, messages read aloud when time is up, time in your browser tab. No sign-up.</p>                                    	<div id="main-content" data-tool data-text-scale>
 	<div class="tu" id="tm" data-views="cd,sw,al" data-customize="1">
 		<div id="tm-ring" class="tm-ring" role="alertdialog" aria-live="assertive" hidden>
 			<div class="tm-ring__msg" id="tm-ring-msg"></div>
 			<div class="tm-ring__btns" id="tm-ring-btns"></div>
 		</div>
 
+		<p class="tm-arm" id="tm-arm" hidden>🔊 <strong>Click anywhere on this page once.</strong> Browsers only let a page play a sound or speak after you have clicked it since it was opened, so do it now and leave the tab open.</p>
 		<div class="tm-addbar" id="tm-addbar" hidden></div>
 		<div class="tm-secs" id="tm-secs"></div>
 		<div class="tu-card tm-onmain" id="tm-onmain" hidden><label class="tm-check"><input type="checkbox" id="tm-onmain-box"> <span id="tm-onmain-txt"></span></label></div>
@@ -965,8 +981,12 @@ body.is-stuck #navbar.hide { position: fixed; top: 56px; right: 8px; }
 				<label class="tm-check"><input type="checkbox" id="tm-opt-awake"> Keep the screen awake while running</label>
 				<label class="tm-check"><input type="checkbox" id="tm-opt-notify"> Pop-up notification when time is up</label>
 				<label class="tm-check"><input type="checkbox" id="tm-opt-tenths"> Show tenths of a second</label>
+				<label class="tm-check"><input type="checkbox" id="tm-opt-speak"> Read messages aloud: add one with the 🗣 button on a timer or alarm (e.g. &ldquo;Your driver&rsquo;s licence test is in 30 minutes&rdquo;)</label>
+				<label class="tm-check"><input type="checkbox" id="tm-opt-speakall"> Also read the timer&rsquo;s name when it has no message (&ldquo;Tea is done&rdquo;)</label>
+				<label class="tm-check"><input type="checkbox" id="tm-opt-leave"> Warn me if I close this tab while a timer or alarm is set</label>
 				<label class="tm-check"><input type="checkbox" id="tm-opt-compact"> Compact view: hide the hint text and the "add another" buttons</label>
 			</div>
+			<div class="tu-field tm-voicef" id="tm-voicef" hidden><label for="tm-voice">Voice for messages</label><select id="tm-voice" class="tu-select"></select></div>
 			<p class="tu-note" id="tm-store-note" style="margin-bottom:0;"></p>
 		</div>
 
@@ -990,6 +1010,8 @@ body.is-stuck #navbar.hide { position: fixed; top: 56px; right: 8px; }
 				<li><strong>Keeps counting.</strong> Reload the page or close the tab and a running timer or stopwatch carries on from the real clock; a timer that finished while you were away tells you so.</li>
 				<li><strong>Display mode.</strong> Press <em>&#128250; Display</em> (or <kbd>D</kbd>) to show just the times of the timers you choose, as big tiles on a full screen: a wall display for the kitchen, classroom, gym or stream. Pick what it shows with <em>Choose timers</em>.</li>
 				<li><strong>Full screen.</strong> A huge, easy-to-read display for a classroom, a presentation or the gym wall.</li>
+				<li><strong>Spoken messages.</strong> Press &#128483; on a countdown or alarm and type what it should say, such as &ldquo;Reminder: your ICBC driver&rsquo;s licence test is coming up in 30 minutes&rdquo;. When it rings, the page reads it aloud after the sound, in the voice you pick under <em>Sound and options</em>.</li>
+				<li><strong>No accidental closing.</strong> While a timer or alarm is set the page asks before you close or reload the tab, because a closed page cannot ring.</li>
 				<li><strong>Your sound.</strong> Friendly or annoying alarm, beeps, a chime or silence; once, three times or until you stop it.</li>
 				<li><strong>Share a timer.</strong> <code>mes.fm/timer?t=25m&amp;label=Focus</code> opens a ready-to-start 25-minute timer; add <code>&amp;start=1</code> to start it at once.</li>
 			</ul>
@@ -997,7 +1019,9 @@ body.is-stuck #navbar.hide { position: fixed; top: 56px; right: 8px; }
 			<h4>Will the timer still work if I switch tabs?</h4>
 			<p>Yes. It measures time from your computer&rsquo;s clock instead of counting ticks, so it stays accurate in a background tab. Browsers may delay the alert by up to a second or so when a tab is hidden.</p>
 			<h4>Why did I not hear the sound?</h4>
-			<p>Browsers only allow sound after you have clicked something on the page, so press <em>Start</em> or <em>Test sound</em> at least once. Check your volume and that the tab is not muted.</p>
+			<p>Browsers only allow sound after you have clicked something on the page, so press <em>Start</em> or <em>Test sound</em> at least once. If the tab was reopened by itself (after a restart, for example), a yellow note asks you to click the page once. Check your volume and that the tab is not muted.</p>
+			<h4>Does the spoken message use a server?</h4>
+			<p>No. The words are read by the voices built into your device&rsquo;s browser and system, so nothing you type leaves your computer or phone. Press &#9654; next to the message to hear it before it rings.</p>
 		</div>
 	</div>
 <script src="/main_js/when-parse.js?v=1" defer></script>
@@ -1060,7 +1084,7 @@ body.is-stuck #navbar.hide { position: fixed; top: 56px; right: 8px; }
             hide_search:false,
             current_tab:0
         }        </script><!-- FASTCOMMENTS-LAZY: widget init moved to main_js/main.js -- it pulls embed.min.js only when #fastcomments-widget nears the viewport or on the first Comments-toggle click, so it no longer blocks first render -->                <script src="https://mes.fm/main_js/lazysizes.min.js?v=1.0.3" async></script>
-	<script src="/timer/js/timer.js?v=24" defer></script>
+	<script src="/main_js/voice-picker.js?v=1" defer></script><script src="/main_js/say-aloud.js?v=1" defer></script><script src="/timer/js/timer.js?v=25" defer></script>
             <script src="https://mes.fm/main_js/main.js?v=1.0.5"></script>    <!-- PAGEVIEW-TRACKING-INSERTED --><script src="https://mes.fm/main_js/track.js" defer></script><script>document.getElementById('copyright-year').textContent = new Date().getFullYear();</script><script src="/main_js/info-bar-fit.js" defer></script><script>
   // Floating compact header bar (see #compact-nav CSS): appears once the
   // header + nav bar have scrolled off the top; nav links that don't fit

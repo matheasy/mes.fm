@@ -375,6 +375,17 @@ body.dark-mode .tu .rw-head {color:#a0a8b3;border-bottom-color:#555;} body.dark-
 	.tu .rm-ql {font-size:0.78em;font-weight:700;text-transform:uppercase;letter-spacing:0.05em;color:#6a7280;min-width:3.4em;}
 	.tu .rm-quick .tu-chip {font-size:0.88em;}
 	body.dark-mode #rm .rm-ql {color:#b8c0c8;}
+	/* read-aloud message (2026-11-06) */
+	.tu .rm-sayf {margin-top:0.8em;}
+	.tu .rm-sayhelp {margin:0.3em 0 0;font-size:0.85em;}
+	.tu .rm-voicef {margin-top:0.6em;max-width:28em;}
+	.tu .rm-item-say {font-size:0.85em;color:#6b2442;font-style:italic;margin-top:0.15em;overflow-wrap:anywhere;}
+	.tu .rm-arm {margin:0.7em 0 0;padding:0.55em 0.8em;border-radius:0.5em;background:#fff4d6;color:#5b4300;border:1px solid #e9c46a;}
+	.rm-banner .rm-said {display:inline-block;margin-top:0.3em;color:#ffd9e6;font-style:italic;}
+	.rm-banner .rm-bbtns {display:flex;flex-direction:column;gap:0.35em;flex:none;}
+	.rm-banner .rm-again {background:transparent;color:#fff;border:1px solid #8a96a8;}
+	body.dark-mode #rm .rm-item-say {color:#f2a6c4;}
+	body.dark-mode #rm .rm-arm {background:#3a3015;color:#f5dc9a;border-color:#7a6326;}
 
 
 	@media print {
@@ -516,21 +527,24 @@ body.is-stuck #navbar.hide { position: fixed; top: 56px; right: 8px; }
 	body.dark-mode .tu .rm-seg button + button{border-left:1px solid #363d47}
 	body.dark-mode .tu .rm-event:fullscreen{background:#1a1a1a}
 	body.dark-mode .tu .rm-ql{color:#9a9da3}
+	body.dark-mode .tu .rm-item-say{color:#d685a7}
+	body.dark-mode .tu .rm-arm{background:#342b14;color:#ffd45c;border:1px solid #b2861a}
+	body.dark-mode .rm-banner .rm-again{border:1px solid #5b687b}
 	/* TOOL-DARK:END */
 </style>
         <meta property="fb:app_id" content="" />
         <meta name="author" content="Math Easy Solutions Staff">
         <meta property="og:type" content="website" />
         <meta property="og:url" content="https://mes.fm/reminder" />            <meta property="og:title" content="Event Reminder | Math Easy Solutions" />        <meta property="og:image" content="https://mes.fm/reminder/img/logo-big.png" />
-        <meta property="og:description" content="Free event reminder link: make one link for a livestream, class or meeting and share it. Everyone who opens it sees a countdown and the time in their own time zone, and can add it to Google Calendar, Apple Calendar, Outlook or their phone with alerts, or get a browser notification." />
+        <meta property="og:description" content="Free event reminder link: make one link for a livestream, class or meeting and share it. Everyone who opens it sees a countdown and the time in their own time zone, and can add it to Google Calendar, Apple Calendar, Outlook or their phone with alerts, or get a browser notification that reads their own message aloud." />
 
-        <meta name="description" content="Free event reminder link: make one link for a livestream, class or meeting and share it. Everyone who opens it sees a countdown and the time in their own time zone, and can add it to Google Calendar, Apple Calendar, Outlook or their phone with alerts, or get a browser notification.">            <meta name="twitter:card" content="summary">        <meta name="twitter:site" content="@MathEasySolns">
+        <meta name="description" content="Free event reminder link: make one link for a livestream, class or meeting and share it. Everyone who opens it sees a countdown and the time in their own time zone, and can add it to Google Calendar, Apple Calendar, Outlook or their phone with alerts, or get a browser notification that reads their own message aloud.">            <meta name="twitter:card" content="summary">        <meta name="twitter:site" content="@MathEasySolns">
         <meta name="twitter:title" content="Event Reminder">
-        <meta name="twitter:description" content="Free event reminder link: make one link for a livestream, class or meeting and share it. Everyone who opens it sees a countdown and the time in their own time zone, and can add it to Google Calendar, Apple Calendar, Outlook or their phone with alerts, or get a browser notification.">
+        <meta name="twitter:description" content="Free event reminder link: make one link for a livestream, class or meeting and share it. Everyone who opens it sees a countdown and the time in their own time zone, and can add it to Google Calendar, Apple Calendar, Outlook or their phone with alerts, or get a browser notification that reads their own message aloud.">
         <meta name="twitter:image" content="https://mes.fm/reminder/img/logo-big.png">
         <meta name="twitter:image:alt" content="Event Reminder">
         <script type="application/ld+json">
-        {"@context": "https://schema.org", "@type": "WebApplication", "name": "Event Reminder", "url": "https://mes.fm/reminder", "applicationCategory": "UtilitiesApplication", "operatingSystem": "Any", "offers": {"@type": "Offer", "price": "0", "priceCurrency": "USD"}, "description": "Free event reminder link: make one link for a livestream, class or meeting and share it. Everyone who opens it sees a countdown and the time in their own time zone, and can add it to Google Calendar, Apple Calendar, Outlook or their phone with alerts, or get a browser notification."}
+        {"@context": "https://schema.org", "@type": "WebApplication", "name": "Event Reminder", "url": "https://mes.fm/reminder", "applicationCategory": "UtilitiesApplication", "operatingSystem": "Any", "offers": {"@type": "Offer", "price": "0", "priceCurrency": "USD"}, "description": "Free event reminder link: make one link for a livestream, class or meeting and share it. Everyone who opens it sees a countdown and the time in their own time zone, and can add it to Google Calendar, Apple Calendar, Outlook or their phone with alerts, or get a browser notification that reads their own message aloud."}
         </script>            <!-- Google Tag Manager -->
             <script>(function(w,d,s,l,i){w[l]=w[l]||[];w[l].push({'gtm.start':
             new Date().getTime(),event:'gtm.js'});var f=d.getElementsByTagName(s)[0],
@@ -727,7 +741,7 @@ body.is-stuck #navbar.hide { position: fixed; top: 56px; right: 8px; }
                                                         <!-- (Responsive) Horizontal -->
                                                         <div class="outer-page-content">
                             <div class="page-content" role="main">                                    <div class="color-box"></div>
-                                    <h1 class="page-title">Livestream and Event Reminder</h1>                                        <p class="page-description">Free event reminder link: make one link for a livestream, class or meeting and share it. Everyone who opens it sees a countdown and the time in their own time zone, and can add it to Google Calendar, Apple Calendar, Outlook or their phone with alerts, or get a browser notification.</p>                                    	<div id="main-content" data-tool data-text-scale>
+                                    <h1 class="page-title">Livestream and Event Reminder</h1>                                        <p class="page-description">Free event reminder link: make one link for a livestream, class or meeting and share it. Everyone who opens it sees a countdown and the time in their own time zone, and can add it to Google Calendar, Apple Calendar, Outlook or their phone with alerts, or get a browser notification that reads their own message aloud.</p>                                    	<div id="main-content" data-tool data-text-scale>
 	<div class="tu" id="rm">
 		<p class="tu-card rm-evmsg" id="rm-ev-msg" role="status" hidden></p>
 		<div class="tu-card rm-event" id="rm-event" hidden>
@@ -747,6 +761,9 @@ body.is-stuck #navbar.hide { position: fixed; top: 56px; right: 8px; }
 
 			<h3 class="rm-extra">Get reminded</h3>
 			<div class="rm-leads" id="rm-leads" role="group" aria-label="When to remind you"></div>
+			<div class="tu-field rm-sayf"><label for="rm-saytext">🗣 Message to read aloud (for <em>Remind me in this browser</em>, optional)</label>
+				<div class="rm-linkrow"><input id="rm-saytext" class="tu-input" type="text" maxlength="240" autocomplete="off" placeholder="e.g. Your driver's licence road test is in {in}. Time to leave!"><button type="button" class="tu-btn" id="rm-saytext-hear">▶ Hear it</button></div>
+				<p class="tu-note rm-sayhelp"><code>{title}</code>, <code>{in}</code> (time left, e.g. &ldquo;30 minutes&rdquo;) and <code>{time}</code> are filled in. Empty = &ldquo;Reminder: <em>title</em> starts in 15 minutes.&rdquo;</p></div>
 			<div class="rm-actions">
 				<a class="tu-btn tu-btn--primary" id="rm-gcal" target="_blank" rel="noopener">Google Calendar</a>
 				<button type="button" class="tu-btn tu-btn--primary" id="rm-ics">Apple / Outlook / phone calendar (.ics)</button>
@@ -762,8 +779,12 @@ body.is-stuck #navbar.hide { position: fixed; top: 56px; right: 8px; }
 			<div id="rm-mine"></div>
 			<div class="rm-row">
 				<label class="rm-check"><input type="checkbox" id="rm-sound"> Play a sound</label>
+				<label class="rm-check" id="rm-speakrow"><input type="checkbox" id="rm-speak"> Read the reminder aloud</label>
+				<label class="rm-check"><input type="checkbox" id="rm-leave"> Warn me if I close this tab</label>
 				<button type="button" class="tu-btn" id="rm-test">Test the alert</button>
 			</div>
+			<div class="tu-field rm-voicef" id="rm-voicef" hidden><label for="rm-voice">Voice</label><select id="rm-voice" class="tu-input"></select></div>
+			<p class="rm-arm" id="rm-arm" hidden>🔊 <strong>Click anywhere on this page once.</strong> Browsers only let a page play a sound or speak after you have clicked it, so do it now and leave the tab open.</p>
 			<p class="tu-note" id="rm-perm" style="margin-bottom:0;"></p>
 		</div>
 
@@ -792,7 +813,11 @@ body.is-stuck #navbar.hide { position: fixed; top: 56px; right: 8px; }
 			<div class="tu-field" style="margin-top:0.5em;"><label for="rm-link">Share this link</label>
 				<div class="rm-linkrow"><input id="rm-link" class="tu-input" type="text" readonly aria-label="Full link"><button type="button" class="tu-btn tu-btn--primary" id="rm-short" title="A short mes.fm/r/... link, handy in video descriptions">Copy short link</button><button type="button" class="tu-btn" id="rm-copy">Copy full link</button></div>
 				<div class="rm-linkrow rm-srow" id="rm-srow" hidden><input id="rm-slink" class="tu-input" type="text" readonly aria-label="Short link"><button type="button" class="tu-btn" id="rm-scopy">Copy</button></div></div>
+			<div class="tu-field rm-sayf"><label for="rm-msay">🗣 Message to read aloud when it alerts you here (optional, not in the link)</label>
+				<div class="rm-linkrow"><input id="rm-msay" class="tu-input" type="text" maxlength="240" autocomplete="off" placeholder="e.g. Reminder: your ICBC driver's licence test is coming up in {in}"><button type="button" class="tu-btn" id="rm-msay-hear">▶ Hear it</button></div>
+				<p class="tu-note rm-sayhelp"><code>{title}</code>, <code>{in}</code> (time left, e.g. &ldquo;30 minutes&rdquo;) and <code>{time}</code> are filled in. Empty = &ldquo;Reminder: <em>title</em> starts in 15 minutes.&rdquo;</p></div>
 			<div class="rm-actions" style="margin-top:0.6em;">
+				<button type="button" class="tu-btn tu-btn--primary" id="rm-mremind">🔔 Remind me in this browser</button>
 				<button type="button" class="tu-btn" id="rm-copytext">Copy text for a video description</button>
 				<a class="tu-btn" id="rm-open">Open the reminder page</a>
 				<button type="button" class="tu-btn" id="rm-clear">Clear</button>
@@ -806,11 +831,13 @@ body.is-stuck #navbar.hide { position: fixed; top: 56px; right: 8px; }
 			<h3>How to get reminded</h3>
 			<ul>
 				<li><strong>Calendar (recommended).</strong> Add it to your calendar and your phone or computer alerts you at the times you ticked, even when the browser is closed. Weekly events stay at the host&rsquo;s time across daylight saving changes.</li>
-				<li><strong>This browser.</strong> <em>Remind me in this browser</em> saves the event here and shows a notification with a sound. It only works while a tab of this page is open (a pinned tab is handy); if the tab was closed at the time, you get the alert when you next open it.</li>
+				<li><strong>This browser.</strong> <em>Remind me in this browser</em> saves the event here and shows a notification with a sound, and can <strong>read your own message aloud</strong> (for example &ldquo;Reminder: your ICBC driver&rsquo;s licence test is coming up in 30 minutes&rdquo;) with a voice you pick. It only works while a tab of this page is open (a pinned tab is handy), so the page asks before you close it; if the tab was closed at the time, you get the alert when you next open it. You can also make a reminder just for yourself: fill in the form below and press <em>Remind me in this browser</em>, no link needed.</li>
 			</ul>
 			<h3>Questions</h3>
 			<h4>Why not just use YouTube&rsquo;s &ldquo;Notify me&rdquo;?</h4>
 			<p>YouTube&rsquo;s live notifications are often late, grouped or never sent, depending on your notification settings and how many channels you follow. A calendar alert comes from your own device at the time you chose.</p>
+			<h4>Why does the page ask me to click it, or ask before I close the tab?</h4>
+			<p>Browsers only let a page play a sound or speak after you have clicked or typed on it at least once since it was opened, so a reminder tab that was reopened by itself has to be clicked once. The &ldquo;Leave site?&rdquo; question stops you closing the tab by accident while a reminder is still to come (untick <em>Warn me if I close this tab</em> to turn it off). The spoken message uses the voices on your own device; nothing is uploaded.</p>
 			<h4>Can I get an email?</h4>
 			<p>Not yet: an email reminder needs a server that stores your address and sends the message, and this page deliberately stores nothing. Most calendars can send you an email reminder themselves (in Google Calendar, edit the event and add an &ldquo;Email&rdquo; notification).</p>
 			<h4>What is stored?</h4>
@@ -880,7 +907,7 @@ body.is-stuck #navbar.hide { position: fixed; top: 56px; right: 8px; }
             hide_search:false,
             current_tab:0
         }        </script><!-- FASTCOMMENTS-LAZY: widget init moved to main_js/main.js -- it pulls embed.min.js only when #fastcomments-widget nears the viewport or on the first Comments-toggle click, so it no longer blocks first render -->                <script src="https://mes.fm/main_js/lazysizes.min.js?v=1.0.3" async></script>
-	<script src="/reminder/js/reminder.js?v=13" defer></script>
+	<script src="/main_js/voice-picker.js?v=1" defer></script><script src="/main_js/say-aloud.js?v=1" defer></script><script src="/reminder/js/reminder.js?v=14" defer></script>
             <script src="https://mes.fm/main_js/main.js?v=1.0.5"></script>    <!-- PAGEVIEW-TRACKING-INSERTED --><script src="https://mes.fm/main_js/track.js" defer></script><script>document.getElementById('copyright-year').textContent = new Date().getFullYear();</script><script src="/main_js/info-bar-fit.js" defer></script><script>
   // Floating compact header bar (see #compact-nav CSS): appears once the
   // header + nav bar have scrolled off the top; nav links that don't fit

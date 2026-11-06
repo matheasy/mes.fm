@@ -99,11 +99,11 @@
 	var CUSTOM = root.dataset.customize === "1", SOLO = PAGE_VIEWS.length === 1;
 
 	/* ---------- state ---------- */
-	function newTimer(total) { return { id: uid(), label: "", total: total || 300000, rem: total || 300000, end: 0, st: "idle" }; }
+	function newTimer(total) { return { id: uid(), label: "", say: "", total: total || 300000, rem: total || 300000, end: 0, st: "idle" }; }
 	function newSw() { return { id: uid(), label: "", st: "idle", startAt: 0, base: 0, laps: [] }; }
-	function newAlarm() { return { id: uid(), time: "", label: "", daily: false, cd: false, on: false, at: 0, snooze: 0 }; }
+	function newAlarm() { return { id: uid(), time: "", label: "", say: "", daily: false, cd: false, on: false, at: 0, snooze: 0 }; }
 	var S = {
-		show: ["cd", "sw", "al"], display: null, muted: [], order: ["cd", "sw", "al", "po", "iv", "ev"], layout: "auto", zoom: 1, fit: false, win: false, nobar: false, fs: "win", collapsed: {}, sound: "friendly", vol: 80, repeat: 1, optTitle: true, compact: false, titleSrc: "auto", optAwake: true, optNotify: false, optTenths: false,
+		show: ["cd", "sw", "al"], display: null, muted: [], order: ["cd", "sw", "al", "po", "iv", "ev"], layout: "auto", zoom: 1, fit: false, win: false, nobar: false, fs: "win", collapsed: {}, sound: "friendly", vol: 80, repeat: 1, optTitle: true, compact: false, titleSrc: "auto", optAwake: true, optNotify: false, optTenths: false, optSpeak: true, optSpeakAll: false, optLeave: true, voice: "",
 		timers: [newTimer(300000)], sws: [newSw()], alarms: [newAlarm()],
 		po: { label: "", focus: 25, short: 5, long: 15, rounds: 4, auto: true, phase: "focus", round: 1, st: "idle", end: 0, rem: 25 * 60000, day: "", done: 0 },
 		iv: { label: "", prep: 10, work: 20, rest: 10, rounds: 8, st: "idle", startAt: 0, base: 0 },
@@ -117,7 +117,8 @@
 			if (typeof s.sound === "string") S.sound = s.sound;
 			if (typeof s.soundPrev === "string") S.soundPrev = s.soundPrev;
 			S.vol = num(s.vol, 80, 0, 100); if (s.repeat === 0 || s.repeat === 1 || s.repeat === 3) S.repeat = s.repeat;
-			["optTitle", "optAwake", "optNotify", "optTenths", "compact"].forEach(function (k) { if (typeof s[k] === "boolean") S[k] = s[k]; });
+			if (typeof s.voice === "string") S.voice = s.voice.slice(0, 300);
+			["optTitle", "optAwake", "optNotify", "optTenths", "compact", "optSpeak", "optSpeakAll", "optLeave"].forEach(function (k) { if (typeof s[k] === "boolean") S[k] = s[k]; });
 			if (Array.isArray(s.show)) S.show = s.show.filter(function (v) { return PANELS[v]; });
 			if (Array.isArray(s.order)) { var o = s.order.filter(function (v) { return PANELS[v]; }); ORDER.forEach(function (v) { if (o.indexOf(v) < 0) o.push(v); }); S.order = o; }
 			S.layout = s.layout === "stack" ? "stack" : "auto";
@@ -125,11 +126,11 @@
 			if (s.collapsed && typeof s.collapsed === "object") S.collapsed = s.collapsed;
 			if (Array.isArray(s.muted)) S.muted = s.muted.filter(function (k) { return typeof k === "string"; }).slice(0, 60);
 			if (Array.isArray(s.display)) S.display = s.display.filter(function (k) { return typeof k === "string"; }).slice(0, 60);
-			if (Array.isArray(s.timers) && s.timers.length) S.timers = s.timers.slice(0, 8).map(function (t) { return { id: String(t.id || uid()), label: String(t.label || "").slice(0, 60), total: +t.total > 0 ? +t.total : 300000, rem: +t.rem >= 0 ? +t.rem : (+t.total || 300000), end: +t.end || 0, st: /^(idle|run|pause|done)$/.test(t.st) ? t.st : "idle" }; });
+			if (Array.isArray(s.timers) && s.timers.length) S.timers = s.timers.slice(0, 8).map(function (t) { return { id: String(t.id || uid()), label: String(t.label || "").slice(0, 60), say: String(t.say || "").slice(0, 240), total: +t.total > 0 ? +t.total : 300000, rem: +t.rem >= 0 ? +t.rem : (+t.total || 300000), end: +t.end || 0, st: /^(idle|run|pause|done)$/.test(t.st) ? t.st : "idle" }; });
 			var swl = Array.isArray(s.sws) ? s.sws : (s.sw && typeof s.sw === "object" ? [s.sw] : []);
 			if (swl.length) S.sws = swl.slice(0, 6).map(function (w) { return { id: String(w.id || uid()), label: String(w.label || "").slice(0, 60), st: /^(idle|run|pause)$/.test(w.st) ? w.st : "idle", startAt: +w.startAt || 0, base: +w.base || 0, laps: Array.isArray(w.laps) ? w.laps.map(Number).filter(isFinite).slice(0, 500) : [] }; });
 			var al = Array.isArray(s.alarms) ? s.alarms : (s.al && typeof s.al === "object" ? [s.al] : []);
-			if (al.length) S.alarms = al.slice(0, 6).map(function (a) { return { id: String(a.id || uid()), time: String(a.time || ""), label: String(a.label || "").slice(0, 60), daily: !!a.daily, cd: !!a.cd, on: !!a.on, at: +a.at || 0, snooze: +a.snooze || 0 }; });
+			if (al.length) S.alarms = al.slice(0, 6).map(function (a) { return { id: String(a.id || uid()), time: String(a.time || ""), label: String(a.label || "").slice(0, 60), say: String(a.say || "").slice(0, 240), daily: !!a.daily, cd: !!a.cd, on: !!a.on, at: +a.at || 0, snooze: +a.snooze || 0 }; });
 			if (s.po && typeof s.po === "object") { var p = s.po; S.po = { label: String(p.label || "").slice(0, 60), focus: num(p.focus, 25, 1, 180), short: num(p.short, 5, 1, 60), long: num(p.long, 15, 1, 90), rounds: Math.round(num(p.rounds, 4, 1, 12)), auto: p.auto !== false, phase: /^(focus|short|long)$/.test(p.phase) ? p.phase : "focus", round: Math.round(num(p.round, 1, 1, 12)), st: /^(idle|run|pause)$/.test(p.st) ? p.st : "idle", end: +p.end || 0, rem: +p.rem > 0 ? +p.rem : 25 * 60000, day: String(p.day || ""), done: Math.round(num(p.done, 0, 0, 999)) }; }
 			if (s.iv && typeof s.iv === "object") { var v = s.iv; S.iv = { label: String(v.label || "").slice(0, 60), prep: num(v.prep, 10, 0, 120), work: num(v.work, 20, 1, 3600), rest: num(v.rest, 10, 0, 3600), rounds: Math.round(num(v.rounds, 8, 1, 99)), st: /^(idle|run|pause)$/.test(v.st) ? v.st : "idle", startAt: +v.startAt || 0, base: +v.base || 0 }; }
 			if (Array.isArray(s.ev)) S.ev = s.ev.slice(0, 12).map(function (e) { return { id: String(e.id || uid()), name: String(e.name || "").slice(0, 60), at: +e.at || 0 }; }).filter(function (e) { return e.at; });
@@ -180,15 +181,26 @@
 		try { a.volume = vol(); a.currentTime = 0; var p = a.play(); if (p && p.catch) p.catch(function () {}); } catch (e) {}
 		return (isFinite(a.duration) && a.duration > 0 ? a.duration * 1000 : 6000) + 400;
 	}
-	function startRing(count) {
-		stopSound(); if (S.sound === "off") return; snd.active = true; snd.left = count;
+	/* the ring: sound, then (when the timer / alarm has a message) the message read aloud, repeated as the Repeat setting says.
+	   A long sound file is cut after 4 s so the words come quickly; with Silent the message is just spoken ("until I stop it" = 5 times at most). */
+	var SAY = window.MESSay && window.MESSay.ok ? window.MESSay : null;
+	function startRing(count, say) {
+		stopSound(); say = SAY && S.optSpeak ? String(say || "").trim() : "";
+		if (S.sound === "off" && !say) return;
+		snd.active = true; var n = 0, max = count === 0 ? (S.sound === "off" ? 5 : Infinity) : count;
 		(function next() {
-			if (!snd.active) return; var ms = playOnce(S.sound);
-			if (snd.left > 0) snd.left--; if (snd.left === 0 && count !== 0) { snd.loopT = setTimeout(function () { snd.active = false; }, ms); return; }
-			snd.loopT = setTimeout(next, Math.max(800, ms));
+			if (!snd.active) return; var ms = S.sound === "off" ? 0 : playOnce(S.sound); n++;
+			var wait = say ? Math.min(ms, 4000) : Math.max(800, ms);
+			snd.loopT = setTimeout(function () {
+				if (!snd.active) return;
+				function after() { if (!snd.active) return; if (n >= max) { snd.active = false; return; } snd.loopT = setTimeout(next, say ? 700 : 0); }
+				if (!say) { after(); return; }
+				["friendly", "annoying"].forEach(function (k) { if (snd.audio[k]) { try { snd.audio[k].pause(); } catch (e) {} } });
+				SAY.speak(say, { voice: S.voice, vol: Math.max(0.15, vol()) }).then(function (r) { if (r === "blocked") { var a = $("tm-arm"); if (a) { a.hidden = false; a.classList.add("tm-arm--now"); } } after(); });
+			}, wait);
 		})();
 	}
-	function stopSound() { snd.active = false; live.slice().forEach(function (o) { try { o.stop(); } catch (e) {} }); live.length = 0; clearTimeout(snd.loopT); ["friendly", "annoying"].forEach(function (k) { if (snd.audio[k]) { try { snd.audio[k].pause(); snd.audio[k].currentTime = 0; } catch (e) {} } }); }
+	function stopSound() { if (SAY) SAY.stop(); snd.active = false; live.slice().forEach(function (o) { try { o.stop(); } catch (e) {} }); live.length = 0; clearTimeout(snd.loopT); ["friendly", "annoying"].forEach(function (k) { if (snd.audio[k]) { try { snd.audio[k].pause(); snd.audio[k].currentTime = 0; } catch (e) {} } }); }
 
 	/* ---------- ringing banner ---------- */
 	var ringing = [], blinkT = null;     // items: {type: "t"|"a"|"p"|"i", id}
@@ -219,20 +231,21 @@
 		else { S.soundPrev = S.sound; S.sound = "off"; stopSound(); toast("All sounds off: timers still show when they finish"); }
 		var sel = $("tm-sound"); if (sel) sel.value = S.sound; save(); paintMute();
 	}
-	function ring(item, msg) {
-		ringing.push(item); item.msg = msg; notify("⏰ " + msg); if (!isMuted(itemKey(item))) startRing(S.repeat); drawRing();
+	function ring(item, msg, say) {
+		ringing.push(item); item.msg = msg; item.say = say || ""; notify("⏰ " + (say || msg)); if (!isMuted(itemKey(item))) startRing(S.repeat, say || (S.optSpeakAll ? msg.replace(/ · .*$/, "") : "")); drawRing();
 		if (!blinkT) blinkT = setInterval(function () { document.title = document.title.charAt(0) === "⏰" ? BASE_TITLE : "⏰ " + (ringing[0] ? ringing[0].msg : "Time's up!"); }, 800);
 	}
 	function drawRing() {
 		var box = $("tm-ring"); box.hidden = !ringing.length; box.style.animation = "";
 		var dr = $("tm-dp-ring"); if (dr) dr.hidden = !ringing.length;
 		if (!ringing.length) { clearInterval(blinkT); blinkT = null; lastTitle = ""; updateTitle(); return; }
-		$("tm-ring-msg").innerHTML = "⏰ " + esc(ringing.map(function (r) { return r.msg; }).join(" · "));
+		$("tm-ring-msg").innerHTML = "⏰ " + esc(ringing.map(function (r) { return r.msg; }).join(" · ")) + ringing.filter(function (r) { return r.say; }).map(function (r) { return '<div class="tm-ring__say">🗣 ' + esc(r.say) + "</div>"; }).join("");
 		var hasAlarm = ringing.some(function (r) { return r.type === "a"; }), hasTimer = ringing.some(function (r) { return r.type === "t"; });
 		if (dr) { dr.firstChild.innerHTML = "⏰ " + esc(ringing.map(function (r) { return r.msg; }).join(" · ")); dr.lastChild.innerHTML = '<button type="button" data-r="stop">Stop</button>' + (hasAlarm ? '<button type="button" data-r="snooze5">Snooze 5 min</button><button type="button" data-r="snooze10">Snooze 10 min</button>' : "") + (hasTimer ? '<button type="button" data-r="add1">+1 min</button><button type="button" data-r="add5">+5 min</button>' : ""); }
-		$("tm-ring-btns").innerHTML = '<button type="button" data-r="stop">Stop</button>' + (hasAlarm ? '<button type="button" class="alt" data-r="snooze5">Snooze 5 min</button><button type="button" class="alt" data-r="snooze10">Snooze 10 min</button>' : "") + (hasTimer ? '<button type="button" class="alt" data-r="add1">+1 min</button><button type="button" class="alt" data-r="add5">+5 min</button>' : "");
+		$("tm-ring-btns").innerHTML = '<button type="button" data-r="stop">Stop</button>' + (hasAlarm ? '<button type="button" class="alt" data-r="snooze5">Snooze 5 min</button><button type="button" class="alt" data-r="snooze10">Snooze 10 min</button>' : "") + (hasTimer ? '<button type="button" class="alt" data-r="add1">+1 min</button><button type="button" class="alt" data-r="add5">+5 min</button>' : "") + (SAY && ringing.some(function (r) { return r.say; }) ? '<button type="button" class="alt" data-r="again">🔊 Say it again</button>' : "");
 	}
 	function ringAct(a) {
+		if (a === "again") { var w = ringing.filter(function (r) { return r.say; }).map(function (r) { return r.say; }).join(". "); if (SAY) { SAY.stop(); SAY.speak(w, { voice: S.voice, vol: Math.max(0.15, vol()) }); } return; }
 		var now = Date.now(); stopSound();
 		ringing.forEach(function (r) {
 			if (r.type === "t") { var t = findTimer(r.id); if (t && (a === "add1" || a === "add5")) { var ms = a === "add1" ? 60000 : 300000; t.st = "run"; t.total = ms; t.end = now + ms; } }
@@ -351,17 +364,28 @@
 		var p = TM.parts(t.total, false), idle = t.st === "idle" || t.st === "done", old = $("tm-timers").querySelector('.tm-timer[data-id="' + t.id + '"]'), isFs = old && old.classList.contains("tm-fs");
 		return '<div class="tm-timer tm-fsable is-' + (t.st === "run" ? "running" : t.st) + (isFs ? " tm-fs" : "") + '" data-id="' + t.id + '">' +
 			'<div class="tm-head">' + (S.timers.length > 1 ? '<button type="button" class="tm-grip" title="Drag to move this timer" aria-label="Move timer ' + (i + 1) + ': drag, or use the arrow keys" data-grip="timer">⠿</button>' : "") + '<input class="tm-label" type="text" maxlength="60" autocomplete="off" placeholder="Timer ' + (i + 1) + '" aria-label="Label for timer ' + (i + 1) + '" value="' + esc(t.label) + '">' +
-			''+ pinBtn("t:" + t.id) + '<button type="button" class="tm-icon" data-a="full" title="Full screen" aria-label="Full screen">' + (isFs ? "✕ Close" : "⤢") + "</button>" + (S.timers.length > 1 ? '<button type="button" class="tm-icon" data-a="del" title="Remove this timer" aria-label="Remove this timer">✕</button>' : "") + "</div>" +
-			'<div class="tm-face" data-face>' + faceText(t) + '</div><div class="tm-bar"><i data-bar style="width:' + barPct(t) + '%"></i></div>' +
+			sayBtn(t) + pinBtn("t:" + t.id) + '<button type="button" class="tm-icon" data-a="full" title="Full screen" aria-label="Full screen">' + (isFs ? "✕ Close" : "⤢") + "</button>" + (S.timers.length > 1 ? '<button type="button" class="tm-icon" data-a="del" title="Remove this timer" aria-label="Remove this timer">✕</button>' : "") + "</div>" +
+			sayRow(t, "e.g. Take the cookies out of the oven") + '<div class="tm-face" data-face>' + faceText(t) + '</div><div class="tm-bar"><i data-bar style="width:' + barPct(t) + '%"></i></div>' +
 			(idle ? '<div class="tm-presets">' + PRESETS.map(function (x) { return '<button type="button" class="tu-chip" data-p="' + x[1] + '">' + x[0] + "</button>"; }).join("") + '</div>' : "") +
 			'<div class="tm-ctl">' + (idle ? '<div class="tm-set"><input class="tu-input" data-k="h" type="text" inputmode="numeric" value="' + p.h + '" aria-label="Hours"><span>h</span><input class="tu-input" data-k="m" type="text" inputmode="numeric" value="' + p.m + '" aria-label="Minutes"><span>m</span><input class="tu-input" data-k="s" type="text" inputmode="numeric" value="' + p.s + '" aria-label="Seconds"><span>s</span></div>' : "") +
 			'<div class="tm-btns tm-btns--center">' + btnsFor(t) + "</div></div></div>";
 	}
+	/* spoken message per timer / alarm: the 🗣 button opens a text box; {label} is filled in. Read aloud after the sound when it rings. */
+	var sayOpen = {};
+	function sayFor(x, kind) { var t = String(x.say || "").trim(); return t && window.MESSay ? window.MESSay.fill(t, { label: x.label || kind }) : ""; }
+	function sayBtn(x) { return SAY ? '<button type="button" class="tm-icon tm-saybtn tm-hide-fs' + (x.say ? " is-set" : "") + '" data-a="say" aria-pressed="' + String(!!(x.say || sayOpen[x.id])) + '" title="' + (x.say ? "Message read aloud: " + esc(x.say) : "Add a message to read aloud when it rings") + '" aria-label="Message to read aloud">🗣</button>' : ""; }
+	function sayRow(x, eg) {
+		if (!SAY || !(x.say || sayOpen[x.id])) return "";
+		return '<div class="tm-sayrow tm-hide-fs"><input class="tm-say" type="text" maxlength="240" autocomplete="off" placeholder="Message to read aloud, ' + esc(eg) + '" aria-label="Message to read aloud when it rings" value="' + esc(x.say) + '"><button type="button" class="tm-icon" data-a="sayhear" title="Hear it" aria-label="Hear the message">▶</button></div>';
+	}
+	function sayToggle(x) { if (x.say) return true; sayOpen[x.id] = !sayOpen[x.id]; return sayOpen[x.id]; }     // with a message the box stays (empty it to remove it)
+	function sayHear(x, kind) { var t = sayFor(x, kind) || ((x.label || kind) + (kind === "Timer" ? " is done" : "")); if (!SAY) return; SAY.stop(); SAY.speak(t, { voice: S.voice, vol: Math.max(0.15, vol()) }).then(function (r) { if (r === "failed") toast("That voice did not speak: pick another voice under Sound and options"); }); }
+	function keepFocus(box, cardSel, fid, cls) { if (!fid || !cls) return; var el = box.querySelector(cardSel + '[data-id="' + fid + '"] .' + cls); if (el) { el.focus(); var v = el.value; el.value = ""; el.value = v; } }
 	function renderTimers() {
 		var box = $("tm-timers"); if (!box) return;
-		var af = document.activeElement, fid = af && af.closest && af.closest(".tm-timer") ? af.closest(".tm-timer").dataset.id : null, wasLabel = af && /tm-label/.test(af.className || "");
+		var af = document.activeElement, fid = af && af.closest && af.closest(".tm-timer") ? af.closest(".tm-timer").dataset.id : null, cls = af && (/tm-label/.test(af.className || "") ? "tm-label" : /tm-say/.test(af.className || "") ? "tm-say" : "");
 		box.innerHTML = S.timers.map(cardHtml).join("");
-		if (fid && wasLabel) { var el = box.querySelector('.tm-timer[data-id="' + fid + '"] .tm-label'); if (el) { el.focus(); var v = el.value; el.value = ""; el.value = v; } }
+		keepFocus(box, ".tm-timer", fid, cls);
 		var add = $("tm-add"); if (add) add.hidden = S.timers.length >= 8;
 	}
 	function readInputs(card, t) { var v = {}; [].forEach.call(card.querySelectorAll(".tm-set input"), function (i) { v[i.dataset.k] = i.value; }); if (card.querySelector(".tm-set")) t.total = TM.hmsToMs(v.h, v.m, v.s); }
@@ -410,12 +434,12 @@
 	}
 	function renderAlarms() {
 		var box = $("tm-alarms"); if (!box) return;
-		var af = document.activeElement, focusId = af && af.closest && af.closest(".tm-alarm") && /tm-label/.test(af.className || "") ? af.closest(".tm-alarm").dataset.id : null;
+		var af = document.activeElement, focusId = af && af.closest && af.closest(".tm-alarm") ? af.closest(".tm-alarm").dataset.id : null, fcls = af && (/tm-label/.test(af.className || "") ? "tm-label" : /tm-say/.test(af.className || "") ? "tm-say" : "");
 		box.innerHTML = S.alarms.map(function (a, i) {
 			return '<div class="tm-alarm' + (a.on ? " is-on" : "") + '" data-id="' + a.id + '"><div class="tm-alarm__row"><input class="tu-input tu-input--big tm-time" data-k="time" type="time" step="60" value="' + esc(a.time) + '" aria-label="Alarm ' + (i + 1) + ' time"><input class="tm-label" data-k="label" type="text" maxlength="60" autocomplete="off" placeholder="Label (optional)" value="' + esc(a.label) + '" aria-label="Alarm ' + (i + 1) + ' label">' +
-				'<label class="tm-check"><input type="checkbox" data-k="daily"' + (a.daily ? " checked" : "") + '> Daily</label><label class="tm-check" title="Show a big countdown to this alarm"><input type="checkbox" data-k="cd"' + (a.cd ? " checked" : "") + '> Countdown</label><button type="button" class="tu-btn ' + (a.on ? "tu-btn--ghost" : "tu-btn--primary") + '" data-a="toggle">' + (a.on ? "Turn off" : "Turn on") + "</button>" + (S.alarms.length > 1 ? '<button type="button" class="tm-icon" data-a="del" aria-label="Remove alarm" title="Remove">✕</button>' : "") + '</div><div class="tm-alarm__cd" data-cd' + (alarmCd(a) ? "" : " hidden") + '>' + esc(alarmCd(a)) + '</div><div class="tm-alarm__st" data-st>' + esc(alarmStatus(a)) + "</div>" + pinBtn("a:" + a.id, "tm-tabpin--al") + "</div>";
+				'<label class="tm-check"><input type="checkbox" data-k="daily"' + (a.daily ? " checked" : "") + '> Daily</label><label class="tm-check" title="Show a big countdown to this alarm"><input type="checkbox" data-k="cd"' + (a.cd ? " checked" : "") + '> Countdown</label><button type="button" class="tu-btn ' + (a.on ? "tu-btn--ghost" : "tu-btn--primary") + '" data-a="toggle">' + (a.on ? "Turn off" : "Turn on") + "</button>" + sayBtn(a) + (S.alarms.length > 1 ? '<button type="button" class="tm-icon" data-a="del" aria-label="Remove alarm" title="Remove">✕</button>' : "") + '</div>' + sayRow(a, "e.g. Reminder: your ICBC driver's licence test is in 30 minutes") + '<div class="tm-alarm__cd" data-cd' + (alarmCd(a) ? "" : " hidden") + '>' + esc(alarmCd(a)) + '</div><div class="tm-alarm__st" data-st>' + esc(alarmStatus(a)) + "</div>" + pinBtn("a:" + a.id, "tm-tabpin--al") + "</div>";
 		}).join("");
-		if (focusId) { var el = box.querySelector('.tm-alarm[data-id="' + focusId + '"] .tm-label'); if (el) { el.focus(); var v = el.value; el.value = ""; el.value = v; } }
+		keepFocus(box, ".tm-alarm", focusId, fcls);
 		var add = $("tm-al-add"); if (add) add.hidden = S.alarms.length >= 6; alarmCds();
 	}
 
@@ -488,11 +512,14 @@
 				else if (a === "reset") { clearRingFor("t", t.id); t.st = "idle"; t.rem = t.total; }
 				else if (a === "del") { clearRingFor("t", t.id); S.timers = S.timers.filter(function (x) { return x !== t; }); }
 				else if (a === "full") { toggleFull(card); return; }
+				else if (a === "say") { var op = sayToggle(t); renderTimers(); if (op) { var si = $("tm-timers").querySelector('.tm-timer[data-id="' + t.id + '"] .tm-say'); if (si) si.focus(); } return; }
+				else if (a === "sayhear") { sayHear(t, "Timer"); return; }
 				renderTimers(); updateAwake(); updateTitle(); save();
 			};
 			tb.oninput = function (e) {
 				var card = e.target.closest(".tm-timer"); if (!card) return; var t = findTimer(card.dataset.id); if (!t) return;
 				if (e.target.classList.contains("tm-label")) { t.label = e.target.value; save(); return; }
+				if (e.target.classList.contains("tm-say")) { t.say = e.target.value.slice(0, 240); var sb0 = card.querySelector(".tm-saybtn"); if (sb0) sb0.classList.toggle("is-set", !!t.say); save(); return; }
 				if (e.target.dataset.k) { readInputs(card, t); if (t.st === "idle") t.rem = t.total; card.querySelector("[data-face]").innerHTML = faceText(t); save(); }
 			};
 			tb.onkeydown = function (e) { if (e.key === "Enter" && e.target.dataset.k) { var b = e.target.closest(".tm-timer").querySelector('[data-a="go"]'); if (b) b.click(); } };
@@ -518,13 +545,17 @@
 		if (ab) {
 			ab.onclick = function (e) {
 				var row = e.target.closest(".tm-alarm"), btn = e.target.closest("[data-a]"); if (!row || !btn) return; var a = findAlarm(row.dataset.id); if (!a) return; unlock();
+				if (btn.dataset.a === "say") { var op = sayToggle(a); renderAlarms(); if (op) { var si = ab.querySelector('.tm-alarm[data-id="' + a.id + '"] .tm-say'); if (si) si.focus(); } return; }
+				if (btn.dataset.a === "sayhear") { sayHear(a, "Alarm"); return; }
 				if (btn.dataset.a === "del") { clearRingFor("a", a.id); S.alarms = S.alarms.filter(function (x) { return x !== a; }); }
 				else if (a.on) { a.on = false; a.at = 0; a.snooze = 0; clearRingFor("a", a.id); }
 				else { if (!a.time) { toast("Pick a time first"); var t = row.querySelector(".tm-time"); if (t) t.focus(); return; } a.at = TM.nextAlarm(a.time, new Date()); a.snooze = 0; a.on = true; }
 				renderAlarms(); save();
 			};
 			ab.onchange = ab.oninput = function (e) {
-				var row = e.target.closest(".tm-alarm"); if (!row) return; var a = findAlarm(row.dataset.id); if (!a) return; var k = e.target.dataset.k; if (!k) return;
+				var row = e.target.closest(".tm-alarm"); if (!row) return; var a = findAlarm(row.dataset.id); if (!a) return;
+				if (e.target.classList.contains("tm-say")) { a.say = e.target.value.slice(0, 240); var sb1 = row.querySelector(".tm-saybtn"); if (sb1) sb1.classList.toggle("is-set", !!a.say); save(); return; }
+				var k = e.target.dataset.k; if (!k) return;
 				if (k === "daily" || k === "cd") { a[k] = e.target.checked; if (k === "cd") { alarmCds(); var cdEl = row.querySelector("[data-cd]"); cdEl.textContent = alarmCd(a); cdEl.hidden = !a.cd || !alarmCd(a); } } else a[k] = e.target.value;
 				if (k === "time" && a.on) { a.at = TM.nextAlarm(a.time, new Date()); a.snooze = 0; }
 				save();
@@ -816,7 +847,7 @@
 	document.addEventListener("fullscreenchange", function () { drawFsBar(); updateDpFs(); });
 
 	/* ---------- settings ---------- */
-	function fillSettings() { $("tm-sound").value = S.sound; $("tm-repeat").value = String(S.repeat); $("tm-vol").value = S.vol; $("tm-opt-title").checked = S.optTitle; $("tm-opt-awake").checked = S.optAwake; $("tm-opt-notify").checked = S.optNotify; $("tm-opt-tenths").checked = S.optTenths; }
+	function fillSettings() { $("tm-sound").value = S.sound; $("tm-repeat").value = String(S.repeat); $("tm-vol").value = S.vol; $("tm-opt-title").checked = S.optTitle; $("tm-opt-awake").checked = S.optAwake; $("tm-opt-notify").checked = S.optNotify; $("tm-opt-tenths").checked = S.optTenths; $("tm-opt-speak").checked = S.optSpeak; $("tm-opt-speakall").checked = S.optSpeakAll; $("tm-opt-leave").checked = S.optLeave; $("tm-voicef").hidden = !SAY || !S.optSpeak; }
 	$("tm-sound").onchange = function () { S.sound = this.value; save(); if (typeof testT !== "undefined" && testT) { stopSound(); testDone(); } };
 	$("tm-repeat").onchange = function () { S.repeat = +this.value; save(); };
 			$("tm-vol").oninput = function () { S.vol = +this.value; save(); };
@@ -837,6 +868,17 @@
 	document.addEventListener("click", function (e) { var b = e.target.closest && e.target.closest("[data-tabpin]"); if (!b) return; e.stopPropagation(); var k = b.dataset.tabpin, on = S.optTitle && S.titleSrc === k; if (!S.optTitle) { S.optTitle = true; $("tm-opt-title").checked = true; } pickTitle(on ? "auto" : k); toast(on ? "Browser tab: automatic" : "Showing this one in the browser tab"); }, true);
 	$("tm-opt-awake").onchange = function () { S.optAwake = this.checked; updateAwake(); save(); };
 	$("tm-opt-tenths").onchange = function () { S.optTenths = this.checked; save(); };
+	$("tm-opt-speak").onchange = function () { S.optSpeak = this.checked; $("tm-voicef").hidden = !SAY || !S.optSpeak; save(); };
+	$("tm-opt-speakall").onchange = function () { S.optSpeakAll = this.checked; save(); };
+	$("tm-opt-leave").onchange = function () { S.optLeave = this.checked; save(); };
+	if (SAY) SAY.voiceSelect($("tm-voice"), S.voice, function (v) { S.voice = v; save(); });
+	else { ["tm-opt-speak", "tm-opt-speakall"].forEach(function (id) { var b = $(id); b.disabled = true; b.parentNode.title = "This browser cannot speak"; }); }
+	/* something that will ring if the tab stays open: a running countdown, an alarm that is on, a running Pomodoro or interval workout */
+	function armed() { return S.timers.some(function (t) { return t.st === "run"; }) || S.alarms.some(function (a) { return a.on; }) || S.po.st === "run" || S.iv.st === "run"; }
+	if (window.MESSay) {
+		window.MESSay.armNote($("tm-arm"), armed);
+		window.MESSay.leaveGuard(function () { return S.optLeave && armed(); });
+	}
 	$("tm-opt-notify").onchange = function () {
 		var box = this; S.optNotify = box.checked;
 		if (box.checked) {
@@ -888,11 +930,11 @@
 	var cache = {};
 	function tick() {
 		var now = Date.now(), changed = false;
-		S.timers.forEach(function (t) { if (t.st === "run" && t.end <= now) { t.st = "done"; t.rem = 0; changed = true; ring({ type: "t", id: t.id }, (t.label || "Timer") + " is done"); renderTimers(); } });
+		S.timers.forEach(function (t) { if (t.st === "run" && t.end <= now) { t.st = "done"; t.rem = 0; changed = true; ring({ type: "t", id: t.id }, (t.label || "Timer") + " is done", sayFor(t, "Timer")); renderTimers(); } });
 		S.alarms.forEach(function (a) {
 			if (!a.on) return; var next = alarmNext(a);
 			if (next && next <= now) {
-				ring({ type: "a", id: a.id }, (a.label || "Alarm") + " · " + new Date().toLocaleTimeString([], { hour: "numeric", minute: "2-digit" })); changed = true;
+				ring({ type: "a", id: a.id }, (a.label || "Alarm") + " · " + new Date().toLocaleTimeString([], { hour: "numeric", minute: "2-digit" }), sayFor(a, "Alarm")); changed = true;
 				if (a.snooze && a.snooze <= now) { a.snooze = 0; if (!a.daily && a.at <= now) { a.on = false; a.at = 0; } }
 				else if (a.daily) a.at = TM.nextAlarm(a.time, new Date(now + 1000)); else { a.on = false; a.at = 0; }
 				renderAlarms();

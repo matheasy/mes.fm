@@ -17,6 +17,9 @@
 
 			<h3 class="rm-extra">Get reminded</h3>
 			<div class="rm-leads" id="rm-leads" role="group" aria-label="When to remind you"></div>
+			<div class="tu-field rm-sayf"><label for="rm-saytext">🗣 Message to read aloud (for <em>Remind me in this browser</em>, optional)</label>
+				<div class="rm-linkrow"><input id="rm-saytext" class="tu-input" type="text" maxlength="240" autocomplete="off" placeholder="e.g. Your driver's licence road test is in {in}. Time to leave!"><button type="button" class="tu-btn" id="rm-saytext-hear">▶ Hear it</button></div>
+				<p class="tu-note rm-sayhelp"><code>{title}</code>, <code>{in}</code> (time left, e.g. &ldquo;30 minutes&rdquo;) and <code>{time}</code> are filled in. Empty = &ldquo;Reminder: <em>title</em> starts in 15 minutes.&rdquo;</p></div>
 			<div class="rm-actions">
 				<a class="tu-btn tu-btn--primary" id="rm-gcal" target="_blank" rel="noopener">Google Calendar</a>
 				<button type="button" class="tu-btn tu-btn--primary" id="rm-ics">Apple / Outlook / phone calendar (.ics)</button>
@@ -32,8 +35,12 @@
 			<div id="rm-mine"></div>
 			<div class="rm-row">
 				<label class="rm-check"><input type="checkbox" id="rm-sound"> Play a sound</label>
+				<label class="rm-check" id="rm-speakrow"><input type="checkbox" id="rm-speak"> Read the reminder aloud</label>
+				<label class="rm-check"><input type="checkbox" id="rm-leave"> Warn me if I close this tab</label>
 				<button type="button" class="tu-btn" id="rm-test">Test the alert</button>
 			</div>
+			<div class="tu-field rm-voicef" id="rm-voicef" hidden><label for="rm-voice">Voice</label><select id="rm-voice" class="tu-input"></select></div>
+			<p class="rm-arm" id="rm-arm" hidden>🔊 <strong>Click anywhere on this page once.</strong> Browsers only let a page play a sound or speak after you have clicked it, so do it now and leave the tab open.</p>
 			<p class="tu-note" id="rm-perm" style="margin-bottom:0;"></p>
 		</div>
 
@@ -62,7 +69,11 @@
 			<div class="tu-field" style="margin-top:0.5em;"><label for="rm-link">Share this link</label>
 				<div class="rm-linkrow"><input id="rm-link" class="tu-input" type="text" readonly aria-label="Full link"><button type="button" class="tu-btn tu-btn--primary" id="rm-short" title="A short mes.fm/r/... link, handy in video descriptions">Copy short link</button><button type="button" class="tu-btn" id="rm-copy">Copy full link</button></div>
 				<div class="rm-linkrow rm-srow" id="rm-srow" hidden><input id="rm-slink" class="tu-input" type="text" readonly aria-label="Short link"><button type="button" class="tu-btn" id="rm-scopy">Copy</button></div></div>
+			<div class="tu-field rm-sayf"><label for="rm-msay">🗣 Message to read aloud when it alerts you here (optional, not in the link)</label>
+				<div class="rm-linkrow"><input id="rm-msay" class="tu-input" type="text" maxlength="240" autocomplete="off" placeholder="e.g. Reminder: your ICBC driver's licence test is coming up in {in}"><button type="button" class="tu-btn" id="rm-msay-hear">▶ Hear it</button></div>
+				<p class="tu-note rm-sayhelp"><code>{title}</code>, <code>{in}</code> (time left, e.g. &ldquo;30 minutes&rdquo;) and <code>{time}</code> are filled in. Empty = &ldquo;Reminder: <em>title</em> starts in 15 minutes.&rdquo;</p></div>
 			<div class="rm-actions" style="margin-top:0.6em;">
+				<button type="button" class="tu-btn tu-btn--primary" id="rm-mremind">🔔 Remind me in this browser</button>
 				<button type="button" class="tu-btn" id="rm-copytext">Copy text for a video description</button>
 				<a class="tu-btn" id="rm-open">Open the reminder page</a>
 				<button type="button" class="tu-btn" id="rm-clear">Clear</button>
@@ -76,11 +87,13 @@
 			<h3>How to get reminded</h3>
 			<ul>
 				<li><strong>Calendar (recommended).</strong> Add it to your calendar and your phone or computer alerts you at the times you ticked, even when the browser is closed. Weekly events stay at the host&rsquo;s time across daylight saving changes.</li>
-				<li><strong>This browser.</strong> <em>Remind me in this browser</em> saves the event here and shows a notification with a sound. It only works while a tab of this page is open (a pinned tab is handy); if the tab was closed at the time, you get the alert when you next open it.</li>
+				<li><strong>This browser.</strong> <em>Remind me in this browser</em> saves the event here and shows a notification with a sound, and can <strong>read your own message aloud</strong> (for example &ldquo;Reminder: your ICBC driver&rsquo;s licence test is coming up in 30 minutes&rdquo;) with a voice you pick. It only works while a tab of this page is open (a pinned tab is handy), so the page asks before you close it; if the tab was closed at the time, you get the alert when you next open it. You can also make a reminder just for yourself: fill in the form below and press <em>Remind me in this browser</em>, no link needed.</li>
 			</ul>
 			<h3>Questions</h3>
 			<h4>Why not just use YouTube&rsquo;s &ldquo;Notify me&rdquo;?</h4>
 			<p>YouTube&rsquo;s live notifications are often late, grouped or never sent, depending on your notification settings and how many channels you follow. A calendar alert comes from your own device at the time you chose.</p>
+			<h4>Why does the page ask me to click it, or ask before I close the tab?</h4>
+			<p>Browsers only let a page play a sound or speak after you have clicked or typed on it at least once since it was opened, so a reminder tab that was reopened by itself has to be clicked once. The &ldquo;Leave site?&rdquo; question stops you closing the tab by accident while a reminder is still to come (untick <em>Warn me if I close this tab</em> to turn it off). The spoken message uses the voices on your own device; nothing is uploaded.</p>
 			<h4>Can I get an email?</h4>
 			<p>Not yet: an email reminder needs a server that stores your address and sends the message, and this page deliberately stores nothing. Most calendars can send you an email reminder themselves (in Google Calendar, edit the event and add an &ldquo;Email&rdquo; notification).</p>
 			<h4>What is stored?</h4>

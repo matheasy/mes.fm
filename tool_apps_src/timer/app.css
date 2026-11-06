@@ -252,3 +252,15 @@
 	.tm-dp__snd[aria-pressed="true"] {border-color:var(--dp8);color:var(--dp8);}
 	.tm-dp__bar {flex-wrap:wrap;row-gap:0.4em;} .tm-dp__btn {white-space:nowrap;}
 	@media (max-width:560px) {.tm-dp__btn {padding:0.45em 0.7em;font-size:0.92em;}}
+/* read-aloud messages (2026-11-06) */
+.tu .tm-sayrow {display:flex;gap:0.4em;align-items:center;margin:0.35em 0 0.2em;}
+.tu .tm-say {flex:1;min-width:0;font:inherit;font-size:0.9em;padding:0.4em 0.6em;border:1px solid #d8c9ad;border-radius:0.4em;background:#fffaf0;color:#3d2b05;}
+.tu .tm-saybtn.is-set {background:#fdf0dc;border-color:#a86706;box-shadow:inset 0 0 0 1px #a86706;}
+.tu .tm-voicef {margin-top:0.6em;max-width:28em;}
+.tu .tm-arm {margin:0 0 0.8em;padding:0.55em 0.8em;border-radius:0.5em;background:#fff4d6;color:#5b4300;border:1px solid #e9c46a;}
+.tu .tm-arm--now {animation:tmArm 1s ease-in-out 3;}
+@keyframes tmArm {50% {box-shadow:0 0 0 4px rgba(233,196,106,0.6);}}
+.tm-ring__say {font-size:0.85em;font-style:italic;margin-top:0.25em;opacity:0.95;}
+body.dark-mode #tm .tm-say {background:#2a241a;color:#f3e6cc;border-color:#6b5a3a;}
+body.dark-mode #tm .tm-arm {background:#3a3015;color:#f5dc9a;border-color:#7a6326;}
+body.dark-mode #tm .tm-saybtn.is-set {background:#4a3612;border-color:#d79a3e;box-shadow:inset 0 0 0 1px #d79a3e;}

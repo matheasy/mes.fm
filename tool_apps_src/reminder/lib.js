@@ -47,7 +47,7 @@
 	// a mes.fm page may be given as a site path ("/livestream-143"): it becomes https://mes.fm/livestream-143
 	function safeUrl(u) { u = String(u || "").trim(); if (!u) return ""; if (/^\/(?![\/\\])/.test(u)) { if (u.indexOf("..") >= 0) return ""; u = "https://mes.fm" + u; } else if (!/^https?:\/\//i.test(u)) u = "https://" + u; try { var x = new URL(u); return /^https?:$/.test(x.protocol) && x.hostname.indexOf(".") > 0 ? x.href : ""; } catch (e) { return ""; } }
 	function host(u) { try { return new URL(u).hostname.replace(/^www\./, ""); } catch (e) { return ""; } }
-	var LIMITS = { title: 120, d: 600, u: 600 };
+	var LIMITS = { title: 120, d: 600, u: 600, say: 240 };
 	function clean(ev) {
 		return {
 			title: String(ev.title || "").replace(/[\u0000-\u001f]/g, " ").trim().slice(0, LIMITS.title),
@@ -131,6 +131,24 @@
 		return out;
 	}
 	function leadText(m) { return m === 0 ? "at the start" : m < 60 ? m + " min before" : m < 1440 ? (m / 60) + " hour" + (m === 60 ? "" : "s") + " before" : (m / 1440) + " day" + (m === 1440 ? "" : "s") + " before"; }
+	/* ---------- spoken alerts (read aloud by /main_js/say-aloud.js) ---------- */
+	// time left in words for speech, rounded UP (an alert that fires a few seconds late still says "15 minutes"): 90 s -> "2 minutes", 95 min -> "1 hour 35 minutes", 26 h -> "1 day 2 hours"; under 30 s -> "less than a minute"
+	function inWords(ms) {
+		if (!(ms > 30000)) return "less than a minute";
+		var m = Math.ceil((ms - 5000) / 60000), d = Math.floor(m / 1440), h = Math.floor((m % 1440) / 60), mi = m % 60;
+		function u(n, w) { return n + " " + w + (n === 1 ? "" : "s"); }
+		if (d) return u(d, "day") + (h ? " " + u(h, "hour") : "");
+		if (h) return u(h, "hour") + (mi ? " " + u(mi, "minute") : "");
+		return u(mi, "minute");
+	}
+	var SAY_DEFAULT = "Reminder: {title} starts in {in}.", SAY_NOW = "{title} is starting now.";
+	// what to say for one alert: the person's own message (placeholders {title} {in} {time}) or the default sentence; start / now in ms, time = start time as text
+	function spoken(msg, title, start, now, time) {
+		var rem = start - now, vars = { title: title || "Reminder", "in": inWords(rem), time: time || "" };
+		var t = String(msg || "").trim() || (rem > 30000 ? SAY_DEFAULT : SAY_NOW);
+		return t.replace(/\{(title|in|time)\}/g, function (x, k) { return vars[k]; }).slice(0, 600);
+	}
+	function cleanSay(s) { return String(s || "").replace(/[\u0000-\u001f]/g, " ").trim().slice(0, LIMITS.say); }
 	/* ---------- holidays for the quick buttons ---------- */
 	function easter(y) {     // Western (Gregorian) Easter Sunday, anonymous Gregorian algorithm -> {mo, d}
 		var a = y % 19, b = Math.floor(y / 100), c = y % 100, d = Math.floor(b / 4), e = b % 4, f = Math.floor((b + 8) / 25), g = Math.floor((b - f + 1) / 3);
@@ -153,6 +171,6 @@
 		return null;
 	}
 	var RM = { easter: easter, nthWeekday: nthWeekday, HOLIDAYS: HOLIDAYS, nextHoliday: nextHoliday, parseWall: parseWall, wallText: wallText, wallToUtc: wallToUtc, startOf: startOf, nextStart: nextStart, countdown: countdown, safeUrl: safeUrl, host: host, clean: clean,
-		toQuery: toQuery, fromQuery: fromQuery, sitePath: sitePath, apiBody: apiBody, fromApi: fromApi, shortId: shortId, ics: ics, googleUrl: googleUrl, outlookUrl: outlookUrl, dueAlerts: dueAlerts, leadText: leadText, utcStamp: utcStamp };
+		toQuery: toQuery, fromQuery: fromQuery, sitePath: sitePath, apiBody: apiBody, fromApi: fromApi, shortId: shortId, ics: ics, googleUrl: googleUrl, outlookUrl: outlookUrl, dueAlerts: dueAlerts, leadText: leadText, inWords: inWords, spoken: spoken, cleanSay: cleanSay, SAY_DEFAULT: SAY_DEFAULT, utcStamp: utcStamp };
 	if (typeof module !== "undefined" && module.exports) module.exports = RM; else root.RM = RM;
 })(typeof window !== "undefined" ? window : globalThis);

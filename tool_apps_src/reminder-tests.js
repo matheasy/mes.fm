@@ -76,5 +76,26 @@ ok(nh("christmas", 2026, 12, 25) === "2026-12-25", "christmas today counts");
 ok(nh("christmas", 2026, 12, 26) === "2027-12-25", "christmas passed");
 ok(nh("newyear", 2026, 10, 22) === "2027-1-1", "new year");
 ok(nh("easter", 2026, 10, 22) === "2027-3-28", "easter next year");
+/* spoken alerts (2026-11-06) */
+(function () {
+	var R = require("./reminder/lib.js"), assert = require("assert");
+	assert.strictEqual(R.inWords(10000), "less than a minute");
+	assert.strictEqual(R.inWords(60000), "1 minute");
+	assert.strictEqual(R.inWords(15 * 60000 + 2000), "15 minutes");
+	assert.strictEqual(R.inWords(60 * 60000), "1 hour");
+	assert.strictEqual(R.inWords(95 * 60000), "1 hour 35 minutes");
+	assert.strictEqual(R.inWords(24 * 3600000), "1 day");
+	assert.strictEqual(R.inWords(50 * 3600000), "2 days 2 hours");
+	var now = 1e12;
+	assert.strictEqual(R.spoken("", "ICBC road test", now + 1800000, now, "2:00 PM"), "Reminder: ICBC road test starts in 30 minutes.");
+	assert.strictEqual(R.spoken("  ", "Stream", now, now), "Stream is starting now.");
+	assert.strictEqual(R.spoken("Your {title} is in {in}, at {time}. {x}", "ICBC test", now + 3600000, now, "2 PM"), "Your ICBC test is in 1 hour, at 2 PM. {x}");
+	assert.strictEqual(R.cleanSay("a\nb" + "x".repeat(400)).length, 240);
+	assert.strictEqual(R.cleanSay(" hi\t"), "hi");
+	var say = require("../mes.fm/main_js/say-aloud.js");
+	assert.strictEqual(say.fill("{label}: time's up {n}", { label: "Tea" }), "Tea: time's up {n}");
+	console.log("spoken alert checks passed");
+})();
+
 console.log(bad ? bad + " of " + n + " failed" : "all " + n + " passed");
 process.exit(bad ? 1 : 0);

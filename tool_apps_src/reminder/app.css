@@ -68,3 +68,14 @@
 	.tu .rm-ql {font-size:0.78em;font-weight:700;text-transform:uppercase;letter-spacing:0.05em;color:#6a7280;min-width:3.4em;}
 	.tu .rm-quick .tu-chip {font-size:0.88em;}
 	body.dark-mode #rm .rm-ql {color:#b8c0c8;}
+	/* read-aloud message (2026-11-06) */
+	.tu .rm-sayf {margin-top:0.8em;}
+	.tu .rm-sayhelp {margin:0.3em 0 0;font-size:0.85em;}
+	.tu .rm-voicef {margin-top:0.6em;max-width:28em;}
+	.tu .rm-item-say {font-size:0.85em;color:#6b2442;font-style:italic;margin-top:0.15em;overflow-wrap:anywhere;}
+	.tu .rm-arm {margin:0.7em 0 0;padding:0.55em 0.8em;border-radius:0.5em;background:#fff4d6;color:#5b4300;border:1px solid #e9c46a;}
+	.rm-banner .rm-said {display:inline-block;margin-top:0.3em;color:#ffd9e6;font-style:italic;}
+	.rm-banner .rm-bbtns {display:flex;flex-direction:column;gap:0.35em;flex:none;}
+	.rm-banner .rm-again {background:transparent;color:#fff;border:1px solid #8a96a8;}
+	body.dark-mode #rm .rm-item-say {color:#f2a6c4;}
+	body.dark-mode #rm .rm-arm {background:#3a3015;color:#f5dc9a;border-color:#7a6326;}

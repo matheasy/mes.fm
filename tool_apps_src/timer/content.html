@@ -4,6 +4,7 @@
 			<div class="tm-ring__btns" id="tm-ring-btns"></div>
 		</div>
 
+		<p class="tm-arm" id="tm-arm" hidden>🔊 <strong>Click anywhere on this page once.</strong> Browsers only let a page play a sound or speak after you have clicked it since it was opened, so do it now and leave the tab open.</p>
 		<div class="tm-addbar" id="tm-addbar" hidden></div>
 		<div class="tm-secs" id="tm-secs"></div>
 		<div class="tu-card tm-onmain" id="tm-onmain" hidden><label class="tm-check"><input type="checkbox" id="tm-onmain-box"> <span id="tm-onmain-txt"></span></label></div>
@@ -29,8 +30,12 @@
 				<label class="tm-check"><input type="checkbox" id="tm-opt-awake"> Keep the screen awake while running</label>
 				<label class="tm-check"><input type="checkbox" id="tm-opt-notify"> Pop-up notification when time is up</label>
 				<label class="tm-check"><input type="checkbox" id="tm-opt-tenths"> Show tenths of a second</label>
+				<label class="tm-check"><input type="checkbox" id="tm-opt-speak"> Read messages aloud: add one with the 🗣 button on a timer or alarm (e.g. &ldquo;Your driver&rsquo;s licence test is in 30 minutes&rdquo;)</label>
+				<label class="tm-check"><input type="checkbox" id="tm-opt-speakall"> Also read the timer&rsquo;s name when it has no message (&ldquo;Tea is done&rdquo;)</label>
+				<label class="tm-check"><input type="checkbox" id="tm-opt-leave"> Warn me if I close this tab while a timer or alarm is set</label>
 				<label class="tm-check"><input type="checkbox" id="tm-opt-compact"> Compact view: hide the hint text and the "add another" buttons</label>
 			</div>
+			<div class="tu-field tm-voicef" id="tm-voicef" hidden><label for="tm-voice">Voice for messages</label><select id="tm-voice" class="tu-select"></select></div>
 			<p class="tu-note" id="tm-store-note" style="margin-bottom:0;"></p>
 		</div>
 
