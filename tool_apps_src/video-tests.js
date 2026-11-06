@@ -298,5 +298,11 @@ function proj(clips) { const p = V.newProject(); p.clips = clips; return p; }
 	const o2 = V.trim(clip({ start: 10, in: 2, out: 30 }), "l", 0, { mediaDur: 100, mag: true }); near(o2.in, 0, 0, "cannot go before the start of the media");
 	const o3 = V.trim(clip({ start: 10, in: 2, out: 30 }), "l", 13, { mediaDur: 100, mag: true }); near(o3.in, 5, 1e-9, "dragging right hides the start"); near(o3.start, 10, 0, "start kept");
 }
+{ // .mov sound: AAC settings inside a QuickTime "wave" box (OBS recording's stsd entry)
+	const b = Uint8Array.from(Buffer.from("0000009b6d7034610000000000000001000100000000000000020010fffe0000bb800000000004000000000000000000000000020000004f776176650000000c66726d616d7034610000003365736473000000000380808022000200048080801440150000000002710000027100058080800211900680808001020000000800000000000000186368616e00000000006500020000000000000000", "hex")), q = V.esdsAac(b);
+	ok(q && q.codec === "mp4a.40.2", "mov esds codec " + (q && q.codec)); ok(q && q.desc.length === 2 && q.desc[0] === 0x11 && q.desc[1] === 0x90, "mov AudioSpecificConfig 48 kHz stereo");
+	ok(V.esdsAac(new Uint8Array(20)) === null, "no esds -> null");
+	const g = V.aacConfig(48000, 2); ok(g.desc[0] === 0x11 && g.desc[1] === 0x90, "made-up AAC-LC config matches"); ok(V.aacConfig(12345, 2) === null, "odd rate -> null");
+}
 console.log(pass + " passed, " + fail + " failed");
 process.exit(fail ? 1 : 0);

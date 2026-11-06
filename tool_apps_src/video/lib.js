@@ -736,6 +736,33 @@
 	};
 	V.frameSnap = function (t, fps) { return Math.round(t * fps) / fps; };
 
+	/* ---------- AAC settings of a QuickTime (.mov) sound track ----------
+	   OBS / QuickTime write a version-1 sound description with the esds box inside a "wave" box, which mp4box.js does not read
+	   (codec comes back as plain "mp4a" with no description). bytes = the raw stsd entry (or any bytes holding an esds box).
+	   -> { codec: "mp4a.40.2", desc: Uint8Array AudioSpecificConfig } or null. */
+	V.esdsAac = function (bytes) {
+		var b = bytes, n = b.length, i, p = -1;
+		for (i = 4; i + 4 <= n; i++) if (b[i] === 0x65 && b[i + 1] === 0x73 && b[i + 2] === 0x64 && b[i + 3] === 0x73) { p = i + 8; break; } // "esds" + version/flags
+		if (p < 0) return null;
+		function len() { var l = 0, k = 0, c; do { c = b[p++]; l = (l << 7) | (c & 0x7f); k++; } while ((c & 0x80) && k < 4 && p < n); return l; }
+		if (b[p++] !== 0x03) return null;
+		len(); p += 2; var fl = b[p++];
+		if (fl & 0x80) p += 2; if (fl & 0x40) p += 1 + b[p]; if (fl & 0x20) p += 2;
+		if (b[p++] !== 0x04) return null;
+		len(); var oti = b[p]; p += 13;
+		if (b[p++] !== 0x05) return null;
+		var l = len(); if (!l || p + l > n) return null;
+		var desc = b.slice(p, p + l), aot = desc[0] >> 3;
+		if (aot === 31 && l > 1) aot = 32 + (((desc[0] & 7) << 3) | (desc[1] >> 5));
+		return { codec: "mp4a." + (oti || 0x40).toString(16) + "." + aot, desc: desc };
+	};
+	// no esds at all: an AAC-LC AudioSpecificConfig made from the rate and channel count
+	V.aacConfig = function (rate, chs) {
+		var R = [96000, 88200, 64000, 48000, 44100, 32000, 24000, 22050, 16000, 12000, 11025, 8000, 7350], fi = R.indexOf(rate);
+		if (fi < 0) return null;
+		return { codec: "mp4a.40.2", desc: new Uint8Array([(2 << 3) | (fi >> 1), ((fi & 1) << 7) | (Math.min(7, chs || 2) << 3)]) };
+	};
+
 	/* ---------- undo ---------- */
 	V.History = function (max) { this.max = max || 200; this.stack = []; this.i = -1; };
 	V.History.prototype.push = function (s) { if (this.i >= 0 && this.stack[this.i] === s) return; this.stack = this.stack.slice(0, this.i + 1); this.stack.push(s); if (this.stack.length > this.max) this.stack.shift(); this.i = this.stack.length - 1; };

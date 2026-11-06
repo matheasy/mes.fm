@@ -1125,6 +1125,33 @@
 	};
 	V.frameSnap = function (t, fps) { return Math.round(t * fps) / fps; };
 
+	/* ---------- AAC settings of a QuickTime (.mov) sound track ----------
+	   OBS / QuickTime write a version-1 sound description with the esds box inside a "wave" box, which mp4box.js does not read
+	   (codec comes back as plain "mp4a" with no description). bytes = the raw stsd entry (or any bytes holding an esds box).
+	   -> { codec: "mp4a.40.2", desc: Uint8Array AudioSpecificConfig } or null. */
+	V.esdsAac = function (bytes) {
+		var b = bytes, n = b.length, i, p = -1;
+		for (i = 4; i + 4 <= n; i++) if (b[i] === 0x65 && b[i + 1] === 0x73 && b[i + 2] === 0x64 && b[i + 3] === 0x73) { p = i + 8; break; } // "esds" + version/flags
+		if (p < 0) return null;
+		function len() { var l = 0, k = 0, c; do { c = b[p++]; l = (l << 7) | (c & 0x7f); k++; } while ((c & 0x80) && k < 4 && p < n); return l; }
+		if (b[p++] !== 0x03) return null;
+		len(); p += 2; var fl = b[p++];
+		if (fl & 0x80) p += 2; if (fl & 0x40) p += 1 + b[p]; if (fl & 0x20) p += 2;
+		if (b[p++] !== 0x04) return null;
+		len(); var oti = b[p]; p += 13;
+		if (b[p++] !== 0x05) return null;
+		var l = len(); if (!l || p + l > n) return null;
+		var desc = b.slice(p, p + l), aot = desc[0] >> 3;
+		if (aot === 31 && l > 1) aot = 32 + (((desc[0] & 7) << 3) | (desc[1] >> 5));
+		return { codec: "mp4a." + (oti || 0x40).toString(16) + "." + aot, desc: desc };
+	};
+	// no esds at all: an AAC-LC AudioSpecificConfig made from the rate and channel count
+	V.aacConfig = function (rate, chs) {
+		var R = [96000, 88200, 64000, 48000, 44100, 32000, 24000, 22050, 16000, 12000, 11025, 8000, 7350], fi = R.indexOf(rate);
+		if (fi < 0) return null;
+		return { codec: "mp4a.40.2", desc: new Uint8Array([(2 << 3) | (fi >> 1), ((fi & 1) << 7) | (Math.min(7, chs || 2) << 3)]) };
+	};
+
 	/* ---------- undo ---------- */
 	V.History = function (max) { this.max = max || 200; this.stack = []; this.i = -1; };
 	V.History.prototype.push = function (s) { if (this.i >= 0 && this.stack[this.i] === s) return; this.stack = this.stack.slice(0, this.i + 1); this.stack.push(s); if (this.stack.length > this.max) this.stack.shift(); this.i = this.stack.length - 1; };
@@ -1601,6 +1628,12 @@
 					var A = null;
 					if (at && window.AudioDecoder) {
 						var atr = mp4.getTrackById(at.id), ad = audioDescOf(atr), as = null;
+						if (!ad && /^mp4a/.test(at.codec)) { // .mov: the AAC settings hide in a QuickTime "wave" box mp4box skips
+							var ent = atr.mdia.minf.stbl.stsd.entries[0], qa = null;
+							try { if (ent && ent.start >= 0 && ent.size > 0 && ent.size < 65536) qa = V.esdsAac(new Uint8Array(await file.slice(ent.start, ent.start + ent.size).arrayBuffer())); } catch (e) { /* ignore */ }
+							qa = qa || V.aacConfig(at.audio.sample_rate, at.audio.channel_count);
+							if (qa) { ad = qa.desc; at.codec = qa.codec; }
+						}
 						try { as = await AudioDecoder.isConfigSupported({ codec: at.codec, sampleRate: at.audio.sample_rate, numberOfChannels: at.audio.channel_count, description: ad }); } catch (e) { /* ignore */ }
 						if (as && as.supported) { A = tableOf(atr.samples || []); A.codec = at.codec; A.desc = ad; A.rate = at.audio.sample_rate; A.chs = at.audio.channel_count; }
 					}
@@ -1692,11 +1725,19 @@
 	function win(m, w) {
 		m.wins = m.wins || {}; m.winOrder = m.winOrder || [];
 		if (m.wins[w]) { m.winOrder = m.winOrder.filter(function (x) { return x !== w; }).concat([w]); return m.wins[w]; }
-		var p = decodeWin(m, w); m.wins[w] = p; m.winOrder.push(w);
-		while (m.winOrder.length > 8) { var old = m.winOrder.shift(); delete m.wins[old]; }
-		p.catch(function () { delete m.wins[w]; });
+		var p = decodeWin(m, w); m.wins[w] = p; m.winOrder.push(w); m.winData = m.winData || {};
+		while (m.winOrder.length > 8) { var old = m.winOrder.shift(); delete m.wins[old]; delete m.winData[old]; }
+		p.then(function (d) { if (m.wins[w] === p) m.winData[w] = d; }, function () { delete m.wins[w]; });
 		return p;
 	}
+	// decoded sound around source time s right now (no waiting), or null and it starts decoding (then fires "pcmReady" with the media)
+	VE.pcmNow = function (m, s) {
+		if (m.pcm) return m.pcm;
+		if (!m.at || s < 0 || s > m.dur + 0.05) return null;
+		var w = Math.floor(s / WIN); if (m.winData && m.winData[w]) return m.winData[w];
+		if (!m.wins || !m.wins[w]) win(m, w).then(function () { VE.emit("pcmReady", m); }, function () { /* the coarse waveform stays */ });
+		return null;
+	};
 	async function decodeWin(m, w) {
 		var at = m.at, t0 = w * WIN, t1 = t0 + WIN, i = 0, j = at.n;
 		while (i < at.n && at.cts[i] + at.dur[i] < t0 - 0.05) i++;
@@ -2374,9 +2415,17 @@
 		}
 		g.fillStyle = "rgba(255,255,255,0.14)"; g.fillRect(A, Math.round(mid), B - A, 1);
 		var cols = env ? ["rgba(255,255,255,0.16)", "rgba(110,231,183,0.75)", "#d1fae5"] : big ? [null, "rgba(110,231,183,0.62)", "#a7f3d0"] : [null, "rgba(125,211,252,0.55)", "#7dd3fc"];
+		// zoomed in past the stored 50-a-second levels: work each pixel out from the decoded sound itself, so it stays sharp
+		var fine = Math.abs(V.srcAt(c, c.start + (A + 1) / VE.pps) - V.srcAt(c, c.start + A / VE.pps)) < 1 / 40;
 		for (var px = A; px < B; px++) {
 			var s0 = V.srcAt(c, c.start + px / VE.pps), s1 = V.srcAt(c, c.start + (px + 1) / VE.pps), i0 = Math.max(0, Math.floor(s0 * 50)), i1 = Math.max(i0 + 1, Math.floor(s1 * 50)), pk = -Infinity, rm = -Infinity;
-			if (w) { for (var i = i0; i < i1 && i < w.pk.length; i++) { var a = V.decDb(w.pk[i]), b = V.decDb(w.rms[i]); if (a > pk) pk = a; if (b > rm) rm = b; } }
+			var buf = fine ? VE.pcmNow(m, s0) : null;
+			if (buf) {
+				var j0 = Math.max(0, Math.floor((s0 - buf.start) * buf.rate)), j1 = Math.max(j0 + 1, Math.ceil((s1 - buf.start) * buf.rate)), mx = 0, e = 0, cnt = 0;
+				for (var ch = 0; ch < buf.ch.length; ch++) { var xs = buf.ch[ch]; for (var j = j0, je = Math.min(xs.length, j1); j < je; j++) { var v = xs[j]; e += v * v; cnt++; if (v > mx) mx = v; else if (-v > mx) mx = -v; } }
+				if (!cnt) continue;
+				pk = V.db(mx); rm = V.db(Math.sqrt(e / cnt));
+			} else if (w) { for (var i = i0; i < i1 && i < w.pk.length; i++) { var a = V.decDb(w.pk[i]), b = V.decDb(w.rms[i]); if (a > pk) pk = a; if (b > rm) rm = b; } }
 			else { var mx = 0; for (var i2 = i0; i2 < i1 && i2 < m.peaks.length; i2++) if (m.peaks[i2] > mx) mx = m.peaks[i2]; pk = V.db(Math.pow(mx / 255, 2)); rm = pk - 9; }
 			if (!isFinite(pk)) continue;
 			pk += vdb; rm += vdb;
@@ -2604,6 +2653,8 @@
 	T.inside = function (clientX, clientY) { var b = sc.getBoundingClientRect(); return clientX >= b.left && clientX <= b.right && clientY >= b.top && clientY <= b.bottom; };
 
 	VE.on("change", function () { T.render(); });
+	var pcmRaf = {};
+	VE.on("pcmReady", function (m) { if (pcmRaf[m.id]) return; pcmRaf[m.id] = requestAnimationFrame(function () { pcmRaf[m.id] = 0; rows.querySelectorAll(".vd-clip").forEach(function (el) { var c = V.clip(VE.P, el.getAttribute("data-id")); if (c && c.media === m.id) paintClip(el, true); }); }); });
 	VE.on("thumbs", function (m) { rows.querySelectorAll(".vd-clip").forEach(function (el) { var c = V.clip(VE.P, el.getAttribute("data-id")); if (c && c.media === m.id) paintClip(el, true); }); });
 	VE.on("time", function () { T.playhead(); });
 	VE.on("select", markSel);
@@ -2974,8 +3025,8 @@
 	});
 	tin.addEventListener("blur", function () { tin.classList.remove("is-bad"); timeText(); });
 	VE.on("time", timeText); VE.on("change", timeText);
-	VE.on("play", function () { $("vd-play").innerHTML = "&#10074;&#10074;"; $("vd-play").setAttribute("aria-label", "Pause"); });
-	VE.on("pause", function () { $("vd-play").innerHTML = "&#9654;"; $("vd-play").setAttribute("aria-label", "Play"); timeText(); });
+	VE.on("play", function () { $("vd-play").innerHTML = '<svg class="vd-ti" viewBox="0 0 16 16" aria-hidden="true"><rect x="3.5" y="2.5" width="3.2" height="11" rx="0.6"/><rect x="9.3" y="2.5" width="3.2" height="11" rx="0.6"/></svg>'; $("vd-play").setAttribute("aria-label", "Pause"); });
+	VE.on("pause", function () { $("vd-play").innerHTML = '<svg class="vd-ti" viewBox="0 0 16 16" aria-hidden="true"><path d="M4 2.5v11L13.5 8z"/></svg>'; $("vd-play").setAttribute("aria-label", "Play"); timeText(); });
 	$("vd-fs").onclick = function () { var w = $("vd-stagewrap"); if (document.fullscreenElement) document.exitFullscreen(); else if (w.requestFullscreen) w.requestFullscreen().catch(function () { toast("Full screen is not allowed here."); }); };
 	function snapshot() { VE.snapshot().then(function (b) { download(b, (VE.P.name || "frame").replace(/[\\/:*?"<>|]+/g, "-") + " " + V.tc(VE.t, VE.P.fps).replace(/[:;]/g, "-") + ".png"); }).catch(function (e) { toast("Could not save the frame: " + e.message); }); }
 	$("vd-snap").onclick = snapshot;

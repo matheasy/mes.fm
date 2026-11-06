@@ -97,9 +97,17 @@
 		}
 		g.fillStyle = "rgba(255,255,255,0.14)"; g.fillRect(A, Math.round(mid), B - A, 1);
 		var cols = env ? ["rgba(255,255,255,0.16)", "rgba(110,231,183,0.75)", "#d1fae5"] : big ? [null, "rgba(110,231,183,0.62)", "#a7f3d0"] : [null, "rgba(125,211,252,0.55)", "#7dd3fc"];
+		// zoomed in past the stored 50-a-second levels: work each pixel out from the decoded sound itself, so it stays sharp
+		var fine = Math.abs(V.srcAt(c, c.start + (A + 1) / VE.pps) - V.srcAt(c, c.start + A / VE.pps)) < 1 / 40;
 		for (var px = A; px < B; px++) {
 			var s0 = V.srcAt(c, c.start + px / VE.pps), s1 = V.srcAt(c, c.start + (px + 1) / VE.pps), i0 = Math.max(0, Math.floor(s0 * 50)), i1 = Math.max(i0 + 1, Math.floor(s1 * 50)), pk = -Infinity, rm = -Infinity;
-			if (w) { for (var i = i0; i < i1 && i < w.pk.length; i++) { var a = V.decDb(w.pk[i]), b = V.decDb(w.rms[i]); if (a > pk) pk = a; if (b > rm) rm = b; } }
+			var buf = fine ? VE.pcmNow(m, s0) : null;
+			if (buf) {
+				var j0 = Math.max(0, Math.floor((s0 - buf.start) * buf.rate)), j1 = Math.max(j0 + 1, Math.ceil((s1 - buf.start) * buf.rate)), mx = 0, e = 0, cnt = 0;
+				for (var ch = 0; ch < buf.ch.length; ch++) { var xs = buf.ch[ch]; for (var j = j0, je = Math.min(xs.length, j1); j < je; j++) { var v = xs[j]; e += v * v; cnt++; if (v > mx) mx = v; else if (-v > mx) mx = -v; } }
+				if (!cnt) continue;
+				pk = V.db(mx); rm = V.db(Math.sqrt(e / cnt));
+			} else if (w) { for (var i = i0; i < i1 && i < w.pk.length; i++) { var a = V.decDb(w.pk[i]), b = V.decDb(w.rms[i]); if (a > pk) pk = a; if (b > rm) rm = b; } }
 			else { var mx = 0; for (var i2 = i0; i2 < i1 && i2 < m.peaks.length; i2++) if (m.peaks[i2] > mx) mx = m.peaks[i2]; pk = V.db(Math.pow(mx / 255, 2)); rm = pk - 9; }
 			if (!isFinite(pk)) continue;
 			pk += vdb; rm += vdb;
@@ -327,6 +335,8 @@
 	T.inside = function (clientX, clientY) { var b = sc.getBoundingClientRect(); return clientX >= b.left && clientX <= b.right && clientY >= b.top && clientY <= b.bottom; };
 
 	VE.on("change", function () { T.render(); });
+	var pcmRaf = {};
+	VE.on("pcmReady", function (m) { if (pcmRaf[m.id]) return; pcmRaf[m.id] = requestAnimationFrame(function () { pcmRaf[m.id] = 0; rows.querySelectorAll(".vd-clip").forEach(function (el) { var c = V.clip(VE.P, el.getAttribute("data-id")); if (c && c.media === m.id) paintClip(el, true); }); }); });
 	VE.on("thumbs", function (m) { rows.querySelectorAll(".vd-clip").forEach(function (el) { var c = V.clip(VE.P, el.getAttribute("data-id")); if (c && c.media === m.id) paintClip(el, true); }); });
 	VE.on("time", function () { T.playhead(); });
 	VE.on("select", markSel);

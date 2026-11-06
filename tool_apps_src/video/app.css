@@ -11,7 +11,7 @@
 	#vd .vd-btn:hover:not(:disabled) {background:var(--vd-btnh);} #vd .vd-btn:disabled {opacity:0.45;cursor:default;} #vd .vd-btn:focus-visible, #vd .vd input:focus-visible, #vd .vd select:focus-visible, #vd .vd textarea:focus-visible, #vd .vd-mi:focus-visible {outline:2px solid var(--vd-sel);outline-offset:1px;}
 	#vd .vd-btn[aria-pressed="true"] {background:#0c4a6e;border-color:var(--vd-sel);}
 	#vd .vd-primary {background:var(--vd-acc);border-color:var(--vd-acc);color:#fff;font-weight:700;} #vd .vd-primary:hover:not(:disabled) {background:#be123c;}
-	#vd .vd-ico {min-width:34px;padding:0.3em 0.5em;text-align:center;} #vd .vd-sm {font-size:0.85em;min-height:32px;padding:0.25em 0.6em;}
+	#vd .vd-ico {min-width:34px;padding:0.3em 0.5em;text-align:center;} #vd .vd-ti {width:16px;height:16px;display:block;margin:auto;fill:currentColor;} #vd .vd-play .vd-ti {width:18px;height:18px;} #vd .vd-sm {font-size:0.85em;min-height:32px;padding:0.25em 0.6em;}
 	#vd .vd input, #vd .vd select, #vd .vd textarea {background:var(--vd-in);color:var(--vd-fg);border:1px solid var(--vd-line);border-radius:0.35em;font:inherit;font-size:0.92em;padding:0.3em 0.45em;min-height:32px;color-scheme:dark;user-select:text;-webkit-user-select:text;}
 	#vd .vd input[type=checkbox] {min-height:0;width:1.05em;height:1.05em;accent-color:var(--vd-acc);} #vd .vd input[type=color] {padding:0.1em;width:3em;height:32px;} #vd .vd input[type=range] {accent-color:var(--vd-acc);padding:0;border:0;background:transparent;}
 	#vd .vd kbd {font-size:0.8em;color:var(--vd-dim);margin-left:1em;}
@@ -25,6 +25,8 @@
 	#vd .vd.vd-noleft .vd-main {grid-template-columns:62px 0 0 minmax(0,1fr) 6px var(--vd-rw,290px);} #vd .vd.vd-noright .vd-main {grid-template-columns:62px var(--vd-lw,250px) 6px minmax(0,1fr) 0 0;}
 	#vd .vd.vd-noleft.vd-noright .vd-main {grid-template-columns:62px 0 0 minmax(0,1fr) 0 0;}
 	#vd .vd.vd-noleft .vd-left, #vd .vd.vd-noleft #vd-lgrip, #vd .vd.vd-noright .vd-insp, #vd .vd.vd-noright #vd-rgrip {display:none;}
+	/* fixed columns: a hidden panel (display:none) must not let the picture slide into its empty column */
+	#vd .vd-main > .vd-rail {grid-column:1;} #vd .vd-main > .vd-left {grid-column:2;} #vd #vd-lgrip {grid-column:3;} #vd .vd-main > .vd-center {grid-column:4;} #vd #vd-rgrip {grid-column:5;} #vd .vd-main > .vd-insp {grid-column:6;}
 	#vd .vd-rail {background:#0d1118;border-right:1px solid var(--vd-line);display:flex;flex-direction:column;gap:2px;padding:0.3em 0.2em;overflow:auto;min-height:0;}
 	#vd .vd-rail button {background:transparent;border:0;border-radius:0.4em;cursor:pointer;display:flex;flex-direction:column;align-items:center;gap:0.15em;padding:0.45em 0.1em;font:inherit;font-size:0.68em;line-height:1.15;color:var(--vd-dim);text-align:center;min-height:52px;}
 	#vd .vd-rail button i {font-style:normal;font-size:1.65em;line-height:1;filter:grayscale(0.35);} #vd .vd-rail .vd-ri-t {font-family:Georgia,serif;font-weight:700;}
@@ -115,6 +117,7 @@
 		#vd .vd.vd-winmode {grid-template-rows:auto minmax(0,1fr) 7px auto var(--vd-tlh,minmax(180px,40%)) auto;}
 		#vd .vd-main, #vd .vd.vd-noleft .vd-main, #vd .vd.vd-noright .vd-main, #vd .vd.vd-noleft.vd-noright .vd-main {grid-template-columns:minmax(0,1fr);grid-template-rows:auto;}
 		#vd .vd-vgrip {display:none;}
+		#vd .vd-main > .vd-rail, #vd .vd-main > .vd-left, #vd #vd-lgrip, #vd .vd-main > .vd-center, #vd #vd-rgrip, #vd .vd-main > .vd-insp {grid-column:auto;}
 		#vd .vd-rail {flex-direction:row;border-right:0;border-top:1px solid var(--vd-line);overflow-x:auto;} #vd .vd-rail button {flex:1 0 auto;min-width:64px;}
 		#vd .vd-rail button[aria-selected="true"] {box-shadow:inset 0 -3px 0 var(--vd-acc);}
 		#vd .vd-left {max-height:none;} #vd .vd-pane {max-height:26em;}

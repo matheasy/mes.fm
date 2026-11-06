@@ -213,8 +213,8 @@
 	});
 	tin.addEventListener("blur", function () { tin.classList.remove("is-bad"); timeText(); });
 	VE.on("time", timeText); VE.on("change", timeText);
-	VE.on("play", function () { $("vd-play").innerHTML = "&#10074;&#10074;"; $("vd-play").setAttribute("aria-label", "Pause"); });
-	VE.on("pause", function () { $("vd-play").innerHTML = "&#9654;"; $("vd-play").setAttribute("aria-label", "Play"); timeText(); });
+	VE.on("play", function () { $("vd-play").innerHTML = '<svg class="vd-ti" viewBox="0 0 16 16" aria-hidden="true"><rect x="3.5" y="2.5" width="3.2" height="11" rx="0.6"/><rect x="9.3" y="2.5" width="3.2" height="11" rx="0.6"/></svg>'; $("vd-play").setAttribute("aria-label", "Pause"); });
+	VE.on("pause", function () { $("vd-play").innerHTML = '<svg class="vd-ti" viewBox="0 0 16 16" aria-hidden="true"><path d="M4 2.5v11L13.5 8z"/></svg>'; $("vd-play").setAttribute("aria-label", "Play"); timeText(); });
 	$("vd-fs").onclick = function () { var w = $("vd-stagewrap"); if (document.fullscreenElement) document.exitFullscreen(); else if (w.requestFullscreen) w.requestFullscreen().catch(function () { toast("Full screen is not allowed here."); }); };
 	function snapshot() { VE.snapshot().then(function (b) { download(b, (VE.P.name || "frame").replace(/[\\/:*?"<>|]+/g, "-") + " " + V.tc(VE.t, VE.P.fps).replace(/[:;]/g, "-") + ".png"); }).catch(function (e) { toast("Could not save the frame: " + e.message); }); }
 	$("vd-snap").onclick = snapshot;

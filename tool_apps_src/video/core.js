@@ -124,6 +124,12 @@
 					var A = null;
 					if (at && window.AudioDecoder) {
 						var atr = mp4.getTrackById(at.id), ad = audioDescOf(atr), as = null;
+						if (!ad && /^mp4a/.test(at.codec)) { // .mov: the AAC settings hide in a QuickTime "wave" box mp4box skips
+							var ent = atr.mdia.minf.stbl.stsd.entries[0], qa = null;
+							try { if (ent && ent.start >= 0 && ent.size > 0 && ent.size < 65536) qa = V.esdsAac(new Uint8Array(await file.slice(ent.start, ent.start + ent.size).arrayBuffer())); } catch (e) { /* ignore */ }
+							qa = qa || V.aacConfig(at.audio.sample_rate, at.audio.channel_count);
+							if (qa) { ad = qa.desc; at.codec = qa.codec; }
+						}
 						try { as = await AudioDecoder.isConfigSupported({ codec: at.codec, sampleRate: at.audio.sample_rate, numberOfChannels: at.audio.channel_count, description: ad }); } catch (e) { /* ignore */ }
 						if (as && as.supported) { A = tableOf(atr.samples || []); A.codec = at.codec; A.desc = ad; A.rate = at.audio.sample_rate; A.chs = at.audio.channel_count; }
 					}
@@ -215,11 +221,19 @@
 	function win(m, w) {
 		m.wins = m.wins || {}; m.winOrder = m.winOrder || [];
 		if (m.wins[w]) { m.winOrder = m.winOrder.filter(function (x) { return x !== w; }).concat([w]); return m.wins[w]; }
-		var p = decodeWin(m, w); m.wins[w] = p; m.winOrder.push(w);
-		while (m.winOrder.length > 8) { var old = m.winOrder.shift(); delete m.wins[old]; }
-		p.catch(function () { delete m.wins[w]; });
+		var p = decodeWin(m, w); m.wins[w] = p; m.winOrder.push(w); m.winData = m.winData || {};
+		while (m.winOrder.length > 8) { var old = m.winOrder.shift(); delete m.wins[old]; delete m.winData[old]; }
+		p.then(function (d) { if (m.wins[w] === p) m.winData[w] = d; }, function () { delete m.wins[w]; });
 		return p;
 	}
+	// decoded sound around source time s right now (no waiting), or null and it starts decoding (then fires "pcmReady" with the media)
+	VE.pcmNow = function (m, s) {
+		if (m.pcm) return m.pcm;
+		if (!m.at || s < 0 || s > m.dur + 0.05) return null;
+		var w = Math.floor(s / WIN); if (m.winData && m.winData[w]) return m.winData[w];
+		if (!m.wins || !m.wins[w]) win(m, w).then(function () { VE.emit("pcmReady", m); }, function () { /* the coarse waveform stays */ });
+		return null;
+	};
 	async function decodeWin(m, w) {
 		var at = m.at, t0 = w * WIN, t1 = t0 + WIN, i = 0, j = at.n;
 		while (i < at.n && at.cts[i] + at.dur[i] < t0 - 0.05) i++;
