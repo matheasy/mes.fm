@@ -71,7 +71,8 @@
 	}
 	function colorBadge(id, small) {
 		var t = team(id), b = el('span', 'np-badge' + (small ? ' np-badge--s' : ''), id);
-		b.style.background = t.c1; b.style.color = N.textOn(t.c1); b.style.borderColor = t.c2;
+		var hx = function (c, d) { c = String(c || '').trim(); if (/^[0-9a-f]{6}$/i.test(c)) c = '#' + c; return /^#[0-9a-f]{6}$/i.test(c) ? c : d; }, c1 = hx(t.c1, '#64748b');
+		b.style.background = c1; b.style.color = N.textOn(c1); b.style.borderColor = hx(t.c2, c1);
 		return b;
 	}
 	function gname(k) { var m = N.groupMeta(CTX, k); return m ? m.short : k; }

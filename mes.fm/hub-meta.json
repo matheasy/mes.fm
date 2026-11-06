@@ -1,5 +1,5 @@
 {
-"generated":"2026-11-05",
+"generated":"2026-11-06",
 "pages":{
 "/2d-graphing-calculator":{
 "added":"2026-10-02",
@@ -428,7 +428,7 @@
 },
 "/la-liga-picks":{
 "added":"2026-10-27",
-"updated":"2026-10-27",
+"updated":"2026-11-06",
 "type":"Game"
 },
 "/latex":{
@@ -443,12 +443,12 @@
 },
 "/light-in-a-medium":{
 "added":"2026-10-12",
-"updated":"2026-11-01",
+"updated":"2026-11-06",
 "type":"Simulation"
 },
 "/llm-simulator":{
 "added":"2026-10-19",
-"updated":"2026-10-19",
+"updated":"2026-11-06",
 "type":"Simulation"
 },
 "/loan-calculator":{
@@ -508,7 +508,7 @@
 },
 "/mlb-picks":{
 "added":"2026-10-27",
-"updated":"2026-10-27",
+"updated":"2026-11-06",
 "type":"Game"
 },
 "/moon":{
@@ -523,7 +523,7 @@
 },
 "/nba-picks":{
 "added":"2026-10-26",
-"updated":"2026-10-27",
+"updated":"2026-11-06",
 "type":"Game"
 },
 "/negative-index":{
@@ -543,12 +543,12 @@
 },
 "/nfl-picks":{
 "added":"2026-10-27",
-"updated":"2026-10-27",
+"updated":"2026-11-06",
 "type":"Game"
 },
 "/nhl-picks":{
 "added":"2026-10-27",
-"updated":"2026-10-27",
+"updated":"2026-11-06",
 "type":"Game"
 },
 "/one-rep-max-calculator":{
@@ -643,7 +643,7 @@
 },
 "/premier-league-picks":{
 "added":"2026-10-27",
-"updated":"2026-10-27",
+"updated":"2026-11-06",
 "type":"Game"
 },
 "/pronounce":{

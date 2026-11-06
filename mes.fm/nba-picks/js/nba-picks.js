@@ -649,7 +649,7 @@
 		var h = String(hex || '#777777').replace('#', ''), r = parseInt(h.substr(0, 2), 16), g = parseInt(h.substr(2, 2), 16), b = parseInt(h.substr(4, 2), 16);
 		var L = function (c) { c /= 255; return c <= 0.03928 ? c / 12.92 : Math.pow((c + 0.055) / 1.055, 2.4); };
 		var lum = 0.2126 * L(r) + 0.7152 * L(g) + 0.0722 * L(b);
-		return lum > 0.4 ? '#111111' : '#ffffff';
+		return lum > 0.179 ? '#111111' : '#ffffff';  // 0.179 = where black and white text have the same contrast
 	}
 	// season labels: 'end' = the year a season ends (NBA / NHL 2027 = 2026-27), 'start' = the year it starts (soccer 2026 = 2026-27), 'single' = one year
 	function seasonLabel(year, lgId) {
@@ -752,7 +752,8 @@
 	}
 	function colorBadge(id, small) {
 		var t = team(id), b = el('span', 'np-badge' + (small ? ' np-badge--s' : ''), id);
-		b.style.background = t.c1; b.style.color = N.textOn(t.c1); b.style.borderColor = t.c2;
+		var hx = function (c, d) { c = String(c || '').trim(); if (/^[0-9a-f]{6}$/i.test(c)) c = '#' + c; return /^#[0-9a-f]{6}$/i.test(c) ? c : d; }, c1 = hx(t.c1, '#64748b');
+		b.style.background = c1; b.style.color = N.textOn(c1); b.style.borderColor = hx(t.c2, c1);
 		return b;
 	}
 	function gname(k) { var m = N.groupMeta(CTX, k); return m ? m.short : k; }
