@@ -158,3 +158,5 @@
 	.tu .tt-opts .tt-opt .tu-select {padding:0 2em 0 0.8em;width:auto;min-width:11em;display:block;line-height:2.6em;height:calc(2.6em + 2px);}
 	.tu .tt-opts .tt-opt .tu-label {line-height:1.2;}
 	@media (max-width:520px) {.tu .tt-opts .tt-opt .tu-seg button {font-size:0.85em;}}
+
+body.dark-mode #tv span[style*="1b6e3c"] {color:#7fd99f !important;} body.dark-mode #tv span[style*="b3261e"] {color:#ff9a8f !important;} body.dark-mode #tv span[style*="7a5200"] {color:#f2c46b !important;}

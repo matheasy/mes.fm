@@ -70,6 +70,7 @@
         "body.dark-mode .tag-line,body.dark-mode .page-content .calc__text--desc{color:#b8b8b8}",
         "body.dark-mode:not(.tool-page) .page-content a:not(.icon-grid__link):not(.calc-link):not(.memes__link):not(.btn-link){color:#6cb6f5}",
         "body.dark-mode:not(.tool-page) #main-content a:not([class]){color:#6cb6f5}",
+        "body.dark-mode:not(.tool-page) :where(#main-content) :where(em,i,cite,sub,sup){color:inherit}",
         "body.dark-mode .page-content .icon-grid__label{color:#fff}",
         "body.dark-mode .calc-link,body.dark-mode .memes__img{border-color:rgba(255,255,255,.2)}",
         "body.dark-mode .calc-link:hover,body.dark-mode .memes__img:hover{border-color:#6cb6f5}",

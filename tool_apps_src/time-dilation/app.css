@@ -59,7 +59,7 @@
 	body.dark-mode #td .td-eq {background:#262626;border-color:#3a3a3a;} body.dark-mode #td .td-eq__n {color:#a0a8b3;}
 	body.dark-mode #td .td-tabs {border-bottom-color:#3a3f48;} body.dark-mode #td .td-tabs button {color:#c9ced6;} body.dark-mode #td .td-tabs button:hover {background:#2a2d33;} body.dark-mode #td .td-tabs button[aria-selected="true"] {background:#23262b;color:#f0a0c4;border-bottom-color:#f0a0c4;}
 	body.dark-mode #td .td-chips button, body.dark-mode #td .td-seg button, body.dark-mode #td .tu-table button {background:#2b2f36;border-color:#454c58;color:#e6e8ec;}
-	body.dark-mode #td .td-chips button[aria-pressed="true"], body.dark-mode #td .td-seg button[aria-pressed="true"] {background:#f0a0c4;border-color:#f0a0c4;color:#1a1a1a;}
+	body.dark-mode #td .td-chips button[aria-pressed="true"], body.dark-mode #td .td-seg button[aria-pressed="true"], body.dark-mode #td .td-ctl__rate button[aria-pressed="true"] {background:#f0a0c4;border-color:#f0a0c4;color:#1a1a1a;}
 	body.dark-mode #td .td-seg, body.dark-mode #td .td-seg button + button {border-color:#454c58;}
 	body.dark-mode #td .td-more {background:#23262b;border-color:#3a3f48;}
 	body.dark-mode #td .td-res > div {background:#262a30;border-color:#3a3f48;} body.dark-mode #td .td-res span, body.dark-mode #td .td-res small {color:#a0a8b3;} body.dark-mode #td .td-res .td-hl {background:#2b2330;border-color:#f0a0c4;}

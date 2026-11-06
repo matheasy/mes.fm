@@ -354,3 +354,6 @@
 	#pe .pe-fp-less {background:none;border:1px solid var(--pe-line);border-radius:0.3em;color:var(--pe-text);padding:0.1em 0.5em;font-size:0.88em;cursor:pointer;}
 	#pe .pe-fpop.is-less .pe-fp-chips, #pe .pe-fpop.is-less .pe-fp-sample {display:none;}
 	#pe .pe-fp-rz {position:absolute;right:0;bottom:0;width:16px;height:16px;cursor:nwse-resize;touch-action:none;background:linear-gradient(135deg, transparent 50%, var(--pe-dim) 50%, var(--pe-dim) 58%, transparent 58%, transparent 70%, var(--pe-dim) 70%, var(--pe-dim) 78%, transparent 78%);}
+
+html body.dark-mode #pe.pe {--pe-on:#7c3aed;}
+html body.dark-mode #pe .pe-tabs button[aria-pressed="true"] {color:#fff;}
