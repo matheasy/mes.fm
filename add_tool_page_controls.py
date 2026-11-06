@@ -400,6 +400,8 @@ def derive_dark(tool_css):
 GENERIC = (
     "body.dark-mode .page-content :where(div,span,p,li,ul,ol,h1,h2,h3,h4,h5,h6,td,th,label,summary,small,strong,b,em,i,code,pre,"
     "legend,figcaption,dl,dt,dd,blockquote,caption,cite,button,input,select,textarea){color:#d8d8d8}\n\t"
+    "body.dark-mode .page-content :where(sub,sup){color:inherit}\n\t"   # the page reset paints sub/sup #333
+    "body.dark-mode .page-content :where([aria-pressed=\"true\"],[aria-selected=\"true\"]) :where(small,span,b,strong){color:inherit}\n\t"   # counts inside selected chips follow the chip's text
     "body.dark-mode .page-content code{background-color:#33363d;color:#f0a8bd}\n\t"   # bootstrap's pink-on-pink <code> chip
     "body.dark-mode .page-content .btn-default{background-color:#2e2e2e;background-image:none;color:#ddd;border-color:#555}"   # bootstrap default buttons (speedreader)
 )

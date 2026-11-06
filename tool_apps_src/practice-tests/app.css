@@ -8,6 +8,9 @@ body.dark-mode #pt.pt {--pt-ink:#e7ebf0;--pt-soft:#b4bec9;--pt-card:#232629;--pt
 #pt [hidden] {display:none !important;}
 #pt :where(:not(a, button, input, textarea, select, svg, svg *)) {color:inherit;}
 #pt button, #pt input, #pt textarea {color:var(--pt-ink);}
+/* #pt button above outranks the shared selected-button colour: restate it (white on the accent, dark on the lightened dark-mode accent) */
+#pt .tu-seg button[aria-pressed="true"], #pt .tu-chip[aria-pressed="true"] {color:#fff;}
+body.dark-mode #pt .tu-seg button[aria-pressed="true"], body.dark-mode #pt .tu-chip[aria-pressed="true"] {color:#0b1416;}
 #pt .tu-btn {color:var(--pt-acc);}
 #pt .tu-btn--primary, #pt .tu-btn:hover {color:#fff;}
 body.dark-mode #pt .tu-btn--primary, body.dark-mode #pt .tu-btn:hover {color:#0b1416;}

@@ -16,6 +16,7 @@
 	.fl-brushes {left:0.6em;bottom:0.6em;max-width:calc(100% - 1.2em);}
 	.fl-views button, .fl-brushes button, .fl-tools button {cursor:pointer;border:1px solid var(--fl-line);background:rgba(10,13,20,0.78);color:var(--fl-text);border-radius:0.4em;min-height:2em;padding:0 0.6em;font-size:0.82em;line-height:1;}
 	.fl-views button:hover, .fl-brushes button:hover, .fl-tools button:hover {border-color:var(--accent);color:#fff;}
+	body.dark-mode #fl .fl-views button[aria-pressed="true"], body.dark-mode #fl .fl-brushes button[aria-pressed="true"], body.dark-mode #fl .fl-tools button[aria-pressed="true"] {background:#0369a1;border-color:#0369a1;color:#fff;}
 	.fl-views button[aria-pressed="true"], .fl-brushes button[aria-pressed="true"], .fl-tools button[aria-pressed="true"] {background:var(--accent);border-color:var(--accent);color:#fff;}
 	.fl-hint {position:absolute;right:0.7em;bottom:0.7em;font-size:0.78em;color:var(--fl-dim);background:rgba(10,13,20,0.7);padding:0.25em 0.6em;border-radius:1em;pointer-events:none;transition:opacity 0.6s;max-width:45%;text-align:right;}
 	.fl-hint.is-gone {opacity:0;}

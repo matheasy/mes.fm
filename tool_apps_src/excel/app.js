@@ -2002,7 +2002,7 @@
 	var q = /[?&]new=1/.test(location.search);
 	if (q) newBook();
 	// dark mode switched: cell colours (dark text without a fill is lightened) and charts follow
-	if (window.MutationObserver) { var wasDark = isDark(); new MutationObserver(function () { var d = isDark(); if (d !== wasDark) { wasDark = d; cssCache = {}; render(); drawObjects(true); } }).observe(document.body, { attributes: true, attributeFilter: ["class"] }); }
+	if (window.MutationObserver) { var wasDark = isDark(); new MutationObserver(function () { var d = isDark(); if (d !== wasDark) { wasDark = d; cssCache = {}; if (wb) { render(); drawObjects(true); } } }).observe(document.body, { attributes: true, attributeFilter: ["class"] }); }
 	window.MESExcelDebug = { get wb() { return wb; }, get sel() { return sel; }, openBytes: openBytes, setCells: setCells, pasteText: pasteText, get stale() { return stale; }, select: select, actualRow: actualRow,
 		xlsxBytes: xlsxBytes, setFreeze: setFreeze, showSheet: showSheet, drawObjects: drawObjects, draw: draw };
 })();
