@@ -22,7 +22,22 @@
 	.tga-new {display:flex;flex-wrap:wrap;gap:0.4em 0.8em;align-items:center;margin-top:0.9em;font-size:0.92em;color:var(--tga-muted);}
 	.tga-res {margin-top:1em;}
 	.tga-empty {padding:2em 0;text-align:center;color:var(--tga-muted);}
-	.tga-grid {display:grid;grid-template-columns:repeat(auto-fill, minmax(17em, 1fr));gap:0.9em;align-items:start;}
+	.tga-opts {display:flex;flex-wrap:wrap;gap:0.6em 0.9em;align-items:flex-end;margin-top:0.8em;padding-top:0.7em;border-top:1px dashed var(--tga-line);}
+	.tga-opts[data-v="list"] .tga-gonly, .tga-opts[data-auto="0"] #tga-sizef {display:none;}
+	.tga-opts .tu-select {min-width:7.5em;}
+	#tga-lay {min-width:11em;}
+	.tga-chk {display:inline-flex;align-items:center;gap:0.35em;min-height:40px;font-size:0.92em;cursor:pointer;}
+	.tga-chk input {width:1.1em;height:1.1em;margin:0;accent-color:var(--accent);}
+	.tga-grid {display:grid;grid-template-columns:repeat(var(--tga-n, 3), minmax(0, 1fr));gap:var(--tga-gap, 0.9em);align-items:stretch;}
+	.tga-grid--mas {display:block;position:relative;}
+	.tga-grid--mas > .tga-item {position:absolute;top:0;left:0;}
+	.tga-grid--mas.tga-ready > .tga-item {transition:top 0.18s, left 0.18s;}
+	.tga-grid:not(.tga-grid--mas) .tga-body {flex:1;}
+	.tga-grid:not(.tga-grid--mas) .tga-pls {margin-top:auto;}
+	.tga-compact {--tga-gap:0.5em;}
+	.tga-compact .tga-body {padding:0.45em 0.6em 0.5em;gap:0.3em;}
+	.tga-compact .tga-text {font-size:0.9em;line-height:1.38;}
+	.tga-compact .tga-th, .tga-compact .tga-th img {max-height:11em;}
 	.tga-item {background:var(--tga-card);border:1px solid var(--tga-line);border-radius:0.6em;overflow:hidden;display:flex;flex-direction:column;min-width:0;}
 	.tga-item--new {border-color:var(--tga-new);box-shadow:0 0 0 1px var(--tga-new);}
 	.tga-th {position:relative;display:block;background:var(--tga-th);overflow:hidden;max-height:16em;}
@@ -61,7 +76,6 @@
 	@media (max-width: 640px) {
 		.tga-chipset {flex-direction:column;gap:0.3em;}
 		.tga-ct {flex:none;}
-		.tga-grid {grid-template-columns:minmax(0, 1fr);}
 		.tga-list .tga-th {flex-basis:6.5em;}
 		.tga-grow {display:none;}
 		.tga-bar {flex-basis:6em;}

@@ -7,6 +7,20 @@
 				<input class="tu-input tga-q" id="tga-q" type="search" placeholder="Search every post… (press / to start typing)" autocomplete="off" spellcheck="false">
 				<div class="tu-seg tga-views" id="tga-views" role="group" aria-label="View"><button type="button" data-v="grid" aria-pressed="true">▦ Grid</button><button type="button" data-v="list" aria-pressed="false">☰ List</button></div>
 			</div>
+			<div class="tga-opts" id="tga-opts">
+				<div class="tu-field tu-field--sm tga-gonly"><label class="tu-label" for="tga-lay">Layout</label>
+					<select class="tu-select" id="tga-lay"><option value="mas">Masonry (no gaps)</option><option value="rows">Even rows</option></select></div>
+				<div class="tu-field tu-field--sm tga-gonly"><label class="tu-label" for="tga-cols">Columns</label>
+					<select class="tu-select" id="tga-cols"><option value="0">Auto</option><option>1</option><option>2</option><option>3</option><option>4</option><option>5</option><option>6</option><option>7</option><option>8</option></select></div>
+				<div class="tu-field tu-field--sm tga-gonly" id="tga-sizef"><label class="tu-label" for="tga-size">Card size</label>
+					<select class="tu-select" id="tga-size"><option value="s">Small</option><option value="m">Medium</option><option value="l">Large</option></select></div>
+				<div class="tu-field tu-field--sm"><label class="tu-label" for="tga-txt">Post text</label>
+					<select class="tu-select" id="tga-txt"><option value="short">Short</option><option value="full">Full</option><option value="none">Hidden</option></select></div>
+				<div class="tu-field tu-field--sm"><label class="tu-label" for="tga-per">Per page</label>
+					<select class="tu-select" id="tga-per"><option>24</option><option>36</option><option>60</option><option>120</option></select></div>
+				<label class="tga-chk"><input type="checkbox" id="tga-pics" checked> Pictures</label>
+				<label class="tga-chk"><input type="checkbox" id="tga-compact"> Compact</label>
+			</div>
 			<div class="tga-row">
 				<div class="tu-field tu-field--sm"><label class="tu-label" for="tga-sort">Sort by</label>
 					<select class="tu-select" id="tga-sort"><option value="new">Newest first</option><option value="old">Oldest first</option><option value="views">Most viewed</option></select></div>

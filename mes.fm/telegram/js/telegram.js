@@ -312,8 +312,21 @@
 	if (!T || !root) return;
 	function $(id) { return document.getElementById(id); }
 	var esc = T.esc, KEY = 'mes-telegram:v1', LKEY = 'mes-telegram:latest', PER = { grid: 36, list: 60 };
+	// view options (this browser only): layout, columns, card size, text, pictures, compact, per page
+	var opt = { lay: 'mas', cols: 0, size: 'm', txt: 'short', pics: 1, compact: 0, per: { grid: 36, list: 60 } }, SIZE_EM = { s: 13, m: 17, l: 23 };
 	var idx = null, chunks = {}, posts = [], allLoaded = false, loading = null, fresh = [], st = T.parseQuery(location.search), shown = [], open = {};
-	try { var saved = JSON.parse(localStorage.getItem(KEY) || '{}'); if (!/[?&]view=/.test(location.search) && saved.view) st.view = saved.view; } catch (e) { }
+	try { var saved = JSON.parse(localStorage.getItem(KEY) || '{}'); if (!/[?&]view=/.test(location.search) && saved.view) st.view = saved.view;
+		if (saved.o) {
+			var o = saved.o;
+			if (/^(mas|rows)$/.test(o.lay)) opt.lay = o.lay;
+			if (o.cols >= 0 && o.cols <= 8) opt.cols = o.cols | 0;
+			if (SIZE_EM[o.size]) opt.size = o.size;
+			if (/^(short|full|none)$/.test(o.txt)) opt.txt = o.txt;
+			opt.pics = o.pics === 0 ? 0 : 1; opt.compact = o.compact ? 1 : 0;
+			if (o.per) ['grid', 'list'].forEach(function (k) { if ([24, 36, 60, 120].indexOf(o.per[k]) >= 0) opt.per[k] = o.per[k]; });
+		}
+	} catch (e) { }
+	PER = opt.per;
 	var SITE_NAME = {}; T.SITES.forEach(function (s) { SITE_NAME[s.k] = s.name; });
 	var PILLS = ['mes', 'yt', 'hive', 'x', 'rum', 'ody', 'bc'];
 	var MEDIA_NAME = { p: 'Photo', v: 'Video', d: 'File', o: 'Poll', a: 'Audio', s: 'Sticker', l: 'Location' };
@@ -327,7 +340,7 @@
 	function syncUrl(push) {
 		var u = location.pathname + T.toQuery(st) + location.hash;
 		if (u !== location.pathname + location.search + location.hash) history[push ? 'pushState' : 'replaceState'](null, '', u);
-		try { localStorage.setItem(KEY, JSON.stringify({ view: st.view })); } catch (e) { }
+		try { localStorage.setItem(KEY, JSON.stringify({ view: st.view, o: opt })); } catch (e) { }
 	}
 
 	// ---------- data ----------
@@ -404,17 +417,64 @@
 	}
 	function body(p) {
 		var max = st.view === 'list' ? 700 : 320, h = '';
+		if (opt.txt === 'full') max = 1e9;
 		if (p._new) h += '<span class="tga-badge">New</span> ';
 		if (p.f) h += '<div class="tga-fw">Forwarded from ' + (p.fu ? '<a href="' + esc(p.fu) + '" target="_blank" rel="noopener nofollow">' + esc(p.f) + '</a>' : esc(p.f)) + '</div>';
 		if (p.dt) h += '<div class="tga-dt">' + (p.m === 'o' ? '📊 ' : '📄 ') + esc(p.dt) + '</div>';
-		if (p.t) {
+		if (p.t && opt.txt === 'none') { }
+		else if (p.t) {
 			var long = p.t.length > max + 20, full = open[p.i];
 			h += '<div class="tga-text">' + T.textHtml(p.t, long && !full ? max : 0) + '</div>';
 			if (long) h += '<button type="button" class="tga-more" data-i="' + p.i + '">' + (full ? 'Show less' : 'Show more') + '</button>';
-		} else if (!p.dt) h += '<div class="tga-text tga-empty">' + esc(MEDIA_NAME[p.m] || 'Post') + ' without text</div>';
+		} else if (!p.dt && opt.txt !== 'none') h += '<div class="tga-text tga-empty">' + esc(MEDIA_NAME[p.m] || 'Post') + ' without text</div>';
 		if (p.pv && (p.pv.t || p.pv.s)) h += '<a class="tga-pv" href="' + esc(p.pv.u) + '" target="_blank" rel="noopener nofollow ugc">' + (p.pv.s ? '<b>' + esc(p.pv.s) + '</b>' : '') + (p.pv.t ? '<span>' + esc(p.pv.t) + '</span>' : '') + '</a>';
 		return h;
 	}
+	// ---------- grid layout ----------
+	function colCount(W) {
+		var em = parseFloat(getComputedStyle($('tga-res')).fontSize) || 16;
+		var n = opt.cols || Math.floor((W + 0.9 * em) / ((SIZE_EM[opt.size] + 0.9) * em));
+		return Math.max(1, Math.min(n, Math.floor(W / (10 * em)) || 1));   // never thinner than ~10em on a phone
+	}
+	var lastW = 0, lt = 0;
+	function layout(fresh) {
+		var g = $('tga-items'); if (!g || st.view !== 'grid') return;
+		var W = g.clientWidth; if (!W) return;
+		var n = colCount(W); lastW = W;
+		g.style.setProperty('--tga-n', n);
+		if (!g.classList.contains('tga-grid--mas')) { g.style.height = ''; return; }
+		var gap = (parseFloat(getComputedStyle(g).fontSize) || 16) * (opt.compact ? 0.5 : 0.9);
+		var cw = (W - gap * (n - 1)) / n, kids = g.children, hs = [], i, tops = [];
+		for (i = 0; i < n; i++) tops.push(0);
+		for (i = 0; i < kids.length; i++) kids[i].style.width = cw + 'px';
+		for (i = 0; i < kids.length; i++) hs.push(kids[i].offsetHeight);   // one reflow for all
+		for (i = 0; i < kids.length; i++) {
+			var c = 0; for (var k = 1; k < n; k++) if (tops[k] < tops[c] - 1) c = k;   // shortest column, leftmost on ties
+			kids[i].style.left = (c * (cw + gap)) + 'px'; kids[i].style.top = tops[c] + 'px';
+			tops[c] += hs[i] + gap;
+		}
+		g.style.height = Math.max(0, Math.max.apply(null, tops) - gap) + 'px';
+		if (!fresh) g.classList.add('tga-ready'); else { g.classList.remove('tga-ready'); }
+	}
+	function relayout() { cancelAnimationFrame(lt); lt = requestAnimationFrame(function () { layout(false); }); }
+	if (window.ResizeObserver) new ResizeObserver(function () { var g = $('tga-items'); if (g && g.clientWidth !== lastW) relayout(); }).observe($('tga-res'));
+	else window.addEventListener('resize', relayout);
+	$('tga-res').addEventListener('load', function (e) { if (e.target.tagName === 'IMG') relayout(); }, true);
+	if (document.fonts && document.fonts.addEventListener) document.fonts.addEventListener('loadingdone', relayout);
+	function drawOpts() {
+		var o = $('tga-opts'); o.dataset.v = st.view; o.dataset.auto = opt.cols ? '0' : '1';
+		$('tga-lay').value = opt.lay; $('tga-cols').value = String(opt.cols); $('tga-size').value = opt.size;
+		$('tga-txt').value = opt.txt; $('tga-per').value = String(opt.per[st.view]); $('tga-pics').checked = !!opt.pics; $('tga-compact').checked = !!opt.compact;
+	}
+	function setOpt(fn) { var first = (st.pg - 1) * PER[st.view]; fn(); st.pg = Math.floor(first / PER[st.view]) + 1; update(false, true); }
+	$('tga-lay').addEventListener('change', function () { var v = this.value; setOpt(function () { opt.lay = v; }); });
+	$('tga-cols').addEventListener('change', function () { var v = +this.value; setOpt(function () { opt.cols = v; }); });
+	$('tga-size').addEventListener('change', function () { var v = this.value; setOpt(function () { opt.size = v; }); });
+	$('tga-txt').addEventListener('change', function () { var v = this.value; setOpt(function () { opt.txt = v; }); });
+	$('tga-per').addEventListener('change', function () { var v = +this.value; setOpt(function () { opt.per[st.view] = v; }); });
+	$('tga-pics').addEventListener('change', function () { var v = this.checked ? 1 : 0; setOpt(function () { opt.pics = v; }); });
+	$('tga-compact').addEventListener('change', function () { var v = this.checked ? 1 : 0; setOpt(function () { opt.compact = v; }); });
+
 	function render() {
 		var partial = T.needsAll(st) && !allLoaded;
 		var list = T.sortPosts(T.filter(posts, st), st.sort), per = PER[st.view];
@@ -425,10 +485,11 @@
 		if (!partial && !allLoaded && st.pg * per > posts.length) { loadFor(st.pg).then(render); }
 		var items = list.slice((st.pg - 1) * per, st.pg * per), h;
 		if (!items.length) h = partial ? '<p class="tga-empty">Searching every post…</p>' : '<p class="tga-empty">No post matches. <button type="button" class="tu-btn tu-btn--ghost" id="tga-clear2">Clear the filters</button></p>';
-		else h = '<div class="tga-' + st.view + '">' + items.map(function (p) {
-			return '<article class="tga-item' + (p._new ? ' tga-item--new' : '') + '">' + thumb(p) + '<div class="tga-body"><div class="tga-meta">' + meta(p) + '</div>' + body(p) + '<div class="tga-pls">' + pills(p) + '</div></div></article>';
+		else h = '<div class="tga-' + st.view + (st.view === 'grid' && opt.lay === 'mas' ? ' tga-grid--mas' : '') + (opt.compact ? ' tga-compact' : '') + '" id="tga-items">' + items.map(function (p) {
+			return '<article class="tga-item' + (p._new ? ' tga-item--new' : '') + '">' + (opt.pics ? thumb(p) : '') + '<div class="tga-body"><div class="tga-meta">' + meta(p) + '</div>' + body(p) + '<div class="tga-pls">' + pills(p) + '</div></div></article>';
 		}).join('') + '</div>';
 		$('tga-res').innerHTML = h;
+		drawOpts(); layout(true);
 		var pg = '';
 		if (pages > 1) pg = '<button type="button" class="tu-btn tu-btn--ghost" data-pg="' + (st.pg - 1) + '"' + (st.pg === 1 ? ' disabled' : '') + '>‹ Previous</button><span class="tga-pgn">Page ' + st.pg.toLocaleString('en-US') + ' of ' + pages.toLocaleString('en-US') + '</span><button type="button" class="tu-btn tu-btn--ghost" data-pg="' + (st.pg + 1) + '"' + (st.pg === pages ? ' disabled' : '') + '>Next ›</button>';
 		$('tga-pager').innerHTML = pg;
