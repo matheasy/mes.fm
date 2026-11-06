@@ -231,6 +231,16 @@
 					var trak = mp4.getTrackById(vt.id), desc = descOf(trak), dec = null;
 					try { dec = await VideoDecoder.isConfigSupported({ codec: vt.codec, codedWidth: vt.video.width, codedHeight: vt.video.height, description: desc }); } catch (e) { /* ignore */ }
 					if (!dec || !dec.supported) return resolve(null);
+					var adesc = null; // .mov: the AAC settings hide in a QuickTime "wave" box mp4box skips (codec comes back as plain "mp4a")
+					if (at && /^mp4a/.test(at.codec)) {
+						var atr = mp4.getTrackById(at.id); adesc = audioDescOf(atr) || null;
+						if (!adesc) {
+							var ent = atr.mdia.minf.stbl.stsd.entries[0], qa = null;
+							try { if (ent && ent.start >= 0 && ent.size > 0 && ent.size < 65536) qa = V.esdsAac(new Uint8Array(await file.slice(ent.start, ent.start + ent.size).arrayBuffer())); } catch (e) { /* ignore */ }
+							qa = qa || V.aacConfig(at.audio.sample_rate, at.audio.channel_count);
+							if (qa) { adesc = qa.desc; at.codec = qa.codec; }
+						}
+					}
 					var dur = (i.duration || vt.movie_duration) / (i.timescale || vt.movie_timescale || 1), fps = vt.nb_samples && dur ? vt.nb_samples / dur : 30;
 					// where the quality probe will look: only those samples' positions are kept (a fragmented MP4 has none here, and then nothing is probed)
 					var ss = trak.samples || [], times = [], sync = [], pw = null, dmin = Infinity, dmax = 0;
@@ -240,7 +250,7 @@
 					var wins = V.probeWindows(times, sync, dur).map(function (wn) { var a = []; for (var q = wn.i; q < wn.i + wn.n; q++) { var s = ss[q]; if (!(s.size > 0) || !(s.offset >= 0)) return null; a.push({ o: s.offset, s: s.size, c: Math.round(s.cts * 1e6 / s.timescale), d: Math.round(s.duration * 1e6 / s.timescale), k: !!s.is_sync }); } return a.length ? a : null; }).filter(Boolean);
 					if (wins.length) pw = { codec: vt.codec, cw: vt.video.width, ch: vt.video.height, desc: desc, wins: wins };
 					resolve({ dur: dur, w: vt.video.width, h: vt.video.height, fps: Math.round(fps * 100) / 100, rot: V.rotationFromMatrix(vt.matrix), vbps: vt.bitrate || 0, vcodec: vt.codec,
-						hasAudio: !!at, abps: at ? at.bitrate || 0 : 0, acodec: at ? at.codec : "", acodecAac: !!at && /^mp4a\.40\./.test(at.codec), arate: at ? at.audio.sample_rate : 0, ach: at ? at.audio.channel_count : 0, nv: vt.nb_samples, pw: pw, cfr: cfr });
+						hasAudio: !!at, abps: at ? at.bitrate || 0 : 0, acodec: at ? at.codec : "", adesc: adesc, acodecAac: !!at && /^mp4a\.40\./.test(at.codec), arate: at ? at.audio.sample_rate : 0, ach: at ? at.audio.channel_count : 0, nv: vt.nb_samples, pw: pw, cfr: cfr });
 				} catch (e) { resolve(null); }
 			};
 			(async function () {
@@ -451,7 +461,7 @@
 				vdec.configure({ codec: vt.codec, codedWidth: vt.video.width, codedHeight: vt.video.height, description: descOf(vtrak) });
 				mp4.setExtractionOptions(vId, null, { nbSamples: 60 });
 				if (doAudio && at) {
-					aId = at.id; atrak = mp4.getTrackById(aId); var adesc = audioDescOf(atrak);
+					aId = at.id; atrak = mp4.getTrackById(aId); var adesc = audioDescOf(atrak) || i.adesc || undefined; if (at.codec === "mp4a" && i.acodec) at.codec = i.acodec;
 					try {
 						if (!passthru) {
 							adec = new AudioDecoder({ output: function (ad) { try { if (!failed && !cancelled(f)) aenc.encode(ad); } catch (e) { fail(e); } ad.close(); }, error: failer("audio decoder") });

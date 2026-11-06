@@ -171,7 +171,34 @@
 	function isVideo(name, type) { return /^video\//i.test(type || "") || VID_RE.test(name || ""); }
 	function isMp4Family(name, type) { return /\.(mp4|m4v|mov|3gp)$/i.test(name || "") || /^video\/(mp4|quicktime|3gpp)/i.test(type || ""); }
 
-	var V = { MB: MB, parseSize: parseSize, formatBytes: formatBytes, formatTime: formatTime, formatBitrate: formatBitrate, even: even, fitDims: fitDims, rotationFromMatrix: rotationFromMatrix,
+	/* ---------- AAC settings of a QuickTime (.mov) sound track ----------
+	   OBS / QuickTime write a version-1 sound description with the esds box inside a "wave" box, which mp4box.js does not read
+	   (codec comes back as plain "mp4a" with no description). bytes = the raw stsd entry (or any bytes holding an esds box).
+	   -> { codec: "mp4a.40.2", desc: Uint8Array AudioSpecificConfig } or null. */
+	function esdsAac (bytes) {
+		var b = bytes, n = b.length, i, p = -1;
+		for (i = 4; i + 4 <= n; i++) if (b[i] === 0x65 && b[i + 1] === 0x73 && b[i + 2] === 0x64 && b[i + 3] === 0x73) { p = i + 8; break; } // "esds" + version/flags
+		if (p < 0) return null;
+		function len() { var l = 0, k = 0, c; do { c = b[p++]; l = (l << 7) | (c & 0x7f); k++; } while ((c & 0x80) && k < 4 && p < n); return l; }
+		if (b[p++] !== 0x03) return null;
+		len(); p += 2; var fl = b[p++];
+		if (fl & 0x80) p += 2; if (fl & 0x40) p += 1 + b[p]; if (fl & 0x20) p += 2;
+		if (b[p++] !== 0x04) return null;
+		len(); var oti = b[p]; p += 13;
+		if (b[p++] !== 0x05) return null;
+		var l = len(); if (!l || p + l > n) return null;
+		var desc = b.slice(p, p + l), aot = desc[0] >> 3;
+		if (aot === 31 && l > 1) aot = 32 + (((desc[0] & 7) << 3) | (desc[1] >> 5));
+		return { codec: "mp4a." + (oti || 0x40).toString(16) + "." + aot, desc: desc };
+	};
+	// no esds at all: an AAC-LC AudioSpecificConfig made from the rate and channel count
+	function aacConfig (rate, chs) {
+		var R = [96000, 88200, 64000, 48000, 44100, 32000, 24000, 22050, 16000, 12000, 11025, 8000, 7350], fi = R.indexOf(rate);
+		if (fi < 0) return null;
+		return { codec: "mp4a.40.2", desc: new Uint8Array([(2 << 3) | (fi >> 1), ((fi & 1) << 7) | (Math.min(7, chs || 2) << 3)]) };
+	};
+
+	var V = { MB: MB, esdsAac: esdsAac, aacConfig: aacConfig, parseSize: parseSize, formatBytes: formatBytes, formatTime: formatTime, formatBitrate: formatBitrate, even: even, fitDims: fitDims, rotationFromMatrix: rotationFromMatrix,
 		outFps: outFps, keepFrame: keepFrame, muxFrameRate: muxFrameRate, avcCodec: avcCodec, vp9Codec: vp9Codec, PRESETS: PRESETS, presetBitrate: presetBitrate, targetBitrate: targetBitrate, retuneBitrate: retuneBitrate,
 		GOP_SEC: GOP_SEC, keyEvery: keyEvery, presetQ: presetQ, probeWindows: probeWindows, cqVideoBps: cqVideoBps, qForBps: qForBps, clampQ: clampQ, probeSlope: probeSlope, slopeOf: slopeOf, chooseQ: chooseQ,
 		qStepper: qStepper, retuneQ: retuneQ, VBR_FACTOR: VBR_FACTOR, needs8bit: needs8bit,
