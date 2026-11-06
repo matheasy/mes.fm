@@ -5,6 +5,7 @@
  * Optional "☁ Hive backup": CTLib.snapshot(state) saved through MESHiveStore (/main_js/hive-store.js, custom_json "mes_store",
  * app "copy-text", name "boards"), encrypted to the person's own memo key by default; loading merges (CTLib.merge) or replaces.
  * Encrypt choice: localStorage KEY + ":hiveenc" ("0" = off).
+ * Optional "☁ Sync": sync.js keeps a copy-text.json up to date in a cloud folder / Dropbox / OneDrive / Google Drive (save() calls syncApi.changed()).
  */
 (function () {
 	"use strict";
@@ -28,7 +29,9 @@
 	function save() {
 		try { localStorage.setItem(KEY, JSON.stringify(state)); memOnly = false; } catch (e) { memOnly = true; }
 		status();
+		if (syncApi) syncApi.changed();
 	}
+	var syncApi = null;
 	state = load();
 	if (!state.cur || !board(state.cur)) state.cur = state.boards[0].id;
 	function board(id) { for (var i = 0; i < state.boards.length; i++) if (state.boards[i].id === id) return state.boards[i]; return null; }
@@ -327,6 +330,8 @@
 			download("mes-copy-text-backup-" + expand("{iso}") + ".json", JSON.stringify(state, null, 1), "application/json");
 		} else if (act === "import") {
 			$("cp-file").click();
+		} else if (act === "sync") {
+			var sb = $("cp-syncbtn"); if ($("cp-sync").hidden) sb.click(); else $("cp-sync").scrollIntoView({ block: "nearest" });
 		} else if (act === "hive") {
 			openHive(true);
 		} else if (act === "examples") {
@@ -775,6 +780,18 @@
 	window.addEventListener("storage", function (e) {
 		if (e.key !== KEY) return;
 		try { var s = JSON.parse(e.newValue); if (s && Array.isArray(s.boards) && s.boards.length) { state = s; if (!board(state.cur)) state.cur = state.boards[0].id; if (!editing) render(); } } catch (x) {}
+	});
+
+	/* ---------- ☁ Save online & sync (sync.js) ---------- */
+	if (window.CTSync) syncApi = window.CTSync({
+		key: KEY, uid: uid, esc: esc, toast: toast, download: download,
+		state: function () { return state; },
+		busy: function () { return !!editing; },
+		apply: function (s) { // a synced copy replaces what is here (no new sync is started by this)
+			state = s; if (!board(state.cur)) state.cur = state.boards[0].id;
+			try { localStorage.setItem(KEY, JSON.stringify(state)); memOnly = false; } catch (e) { memOnly = true; }
+			status(); render.noFocus = true; render(); render.noFocus = false;
+		}
 	});
 
 	try { var d = JSON.parse(localStorage.getItem(KEY + ":draft") || "null"); if (d) { $("cp-new-text").value = d.t || ""; $("cp-new-title").value = d.h || ""; } } catch (e) {}

@@ -13,7 +13,7 @@
 					<button type="button" class="tu-btn tu-btn--ghost" id="cp-new-clear">Clear</button>
 				</div>
 			</div>
-			<p class="tu-note" style="margin-bottom:0;">Press <kbd>Ctrl</kbd>/<kbd>⌘</kbd> + <kbd>Enter</kbd> to save. Everything stays in this browser: nothing is uploaded, unless you choose <em>☁ Hive backup</em> (encrypted by default).</p>
+			<p class="tu-note" style="margin-bottom:0;">Press <kbd>Ctrl</kbd>/<kbd>⌘</kbd> + <kbd>Enter</kbd> to save. Everything stays in this browser: nothing is uploaded, unless you turn on <em>☁ Sync</em> (to your own OneDrive, Dropbox, Google Drive or iCloud) or <em>☁ Hive backup</em> (encrypted by default).</p>
 		</div>
 
 		<div class="tu-card cp-splitbox" id="cp-splitbox" hidden></div>
@@ -23,6 +23,7 @@
 		<div class="cp-bar">
 			<input id="cp-search" class="tu-input cp-search" type="search" placeholder="Search all your texts…" aria-label="Search all your texts" autocomplete="off">
 			<button type="button" class="tu-btn tu-btn--ghost" id="cp-copyall" title="Copy every text on this board, separated by blank lines">Copy all</button>
+			<button type="button" class="tu-btn tu-btn--ghost cp-syncbtn" id="cp-syncbtn" aria-expanded="false" aria-controls="cp-sync" title="Save your texts online to OneDrive, Dropbox, Google Drive or iCloud and keep them in sync">☁ Sync</button>
 			<button type="button" class="tu-btn tu-btn--ghost" id="cp-hivebtn" aria-expanded="false" aria-controls="cp-hive" title="Back up your texts to your Hive account (encrypted) and get them back on any device">☁ Hive backup</button>
 			<details class="cp-menu" id="cp-menu">
 				<summary class="tu-btn tu-btn--ghost">More ▾</summary>
@@ -31,6 +32,7 @@
 					<button type="button" data-act="txt">⬇ Download this board (.txt)</button>
 					<button type="button" data-act="export">⬇ Back up everything (.json)</button>
 					<button type="button" data-act="import">⬆ Restore from a backup…</button>
+					<button type="button" data-act="sync">☁ Save online &amp; sync…</button>
 					<button type="button" data-act="hive">☁ Save to / load from Hive…</button>
 					<button type="button" data-act="examples">✚ Add a few example texts</button>
 					<button type="button" data-act="delboard" class="cp-danger">🗑 Delete this board</button>
@@ -39,7 +41,16 @@
 			<input type="file" id="cp-file" accept=".json,application/json" hidden>
 		</div>
 		<p class="tu-note cp-status" id="cp-status"></p>
+		<p class="tu-note cp-syncstate" id="cp-syncstate" hidden aria-live="polite"></p>
 		<p class="tu-note cp-hivestate" id="cp-hivestate" hidden aria-live="polite"></p>
+
+		<div class="tu-card cp-hive cp-sync" id="cp-sync" hidden>
+			<div class="cp-hive-head">
+				<h2 class="cp-hive-title">☁ Save online &amp; sync</h2>
+				<button type="button" class="tu-btn tu-btn--ghost cp-hive-close" id="cp-sync-close" aria-label="Close the sync panel">✕</button>
+			</div>
+			<div id="cp-sync-body"></div>
+		</div>
 
 		<div class="tu-card cp-hive" id="cp-hive" hidden>
 			<div class="cp-hive-head">
@@ -88,10 +99,12 @@
 				<li><strong>Edit:</strong> the ✎ button edits the title and text, changes the colour and moves the note to another board.</li>
 				<li><strong>Back up:</strong> <em>More ▾ → Back up everything</em> downloads a file you can restore on this or another device. Or press <em>☁ Hive backup</em> to save an <strong>encrypted backup to your Hive account</strong> and load it on any device with Hive Keychain.</li>
 			</ul>
+			<h3>Save online and sync between devices</h3>
+			<p>Press <em>☁ Sync</em> to keep all your boards in one file, <code>copy-text.json</code>, in your own cloud storage. Every change is saved there automatically a few seconds later, and the line under the toolbar always tells you whether everything is saved (<b>✓ Everything is saved</b>) or not yet. On a computer with the OneDrive, Dropbox, Google Drive or iCloud app installed, create the sync file in that app's folder and it uploads every change; on your other computer, open the same file from its folder. If you change texts on two devices, both sets of changes are kept: new texts from both, and what you deleted or edited on one is deleted or edited on the other. Your browser writes the file itself; nothing goes through mes.fm.</p>
 			<h3>Notes that fill themselves in</h3>
 			<p>Put <code>{date}</code>, <code>{time}</code>, <code>{weekday}</code>, <code>{year}</code> or <code>{iso}</code> in a note and it is replaced with the current value at the moment you copy it, so a reply that says &ldquo;as of {date}&rdquo; is always up to date. Type <code>{{date}}</code> if you want the literal text <code>{date}</code>.</p>
 			<h3>Is it private?</h3>
-			<p>Yes. Your notes are stored only in this browser (localStorage) and are never sent to a server, so don't keep anything here that you would not keep in a browser on that computer, such as passwords. Clearing your browser's site data deletes them, and they don't sync between devices, so use the backup file if they matter.</p>
+			<p>Yes. Your notes are stored only in this browser (localStorage) and are never sent to a server, so don't keep anything here that you would not keep in a browser on that computer, such as passwords. Clearing your browser's site data deletes them, so if they matter turn on <em>☁ Sync</em> or keep a backup file.</p>
 			<h3>Encrypted backups on Hive</h3>
 			<p>If you have a <a href="https://hive.io" target="_blank" rel="noopener">Hive</a> account, <em>☁ Hive backup</em> saves all your boards to it, so you can load them on another computer or your phone (in the Keychain app's browser). Nothing goes through mes.fm: your browser compresses the backup, encrypts it with a new random key, locks that key to your own Hive memo key in Hive Keychain, and Keychain signs it onto the blockchain. Only you can open it. Hive is permanent and public, so others can see that a backup exists and its size, but not what it says. You can also save without encryption, but then anyone can read it forever. <a href="/tools">More MES tools</a></p>
 		</div>

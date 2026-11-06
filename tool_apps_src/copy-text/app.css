@@ -205,3 +205,24 @@
 	body.dark-mode #cp .cp-hive-intro, body.dark-mode #cp .cp-hive-more li, body.dark-mode #cp .cp-hive-enc, body.dark-mode #cp .cp-hive-title {color:#e4e4e4;}
 	.tu .cp-hive .mh-help {font-size:0.92em;margin:0.8em 0 0;padding:0.7em 0.9em;border-left:3px solid #e0a100;background:#fff8e6;border-radius:0 6px 6px 0;line-height:1.5;}
 	body.dark-mode #cp .cp-hive .mh-help {background:#2b2412;border-color:#c99100;color:#e4e4e4;}
+
+	/* ☁ Sync */
+	.tu .cp-syncstate {margin-top:-0.2em;}
+	.tu .cp-syncstate.is-ok {color:#1d7a46;}
+	.tu .cp-syncstate.is-due {color:#92400e;}
+	.tu .cp-syncstate.is-err {color:#b42318;font-weight:600;}
+	.tu .cp-syncstate .tu-chip {margin-left:0.4em;}
+	.tu .cp-syncbtn.is-ok {color:#1d7a46;border-color:#8fcca4;}
+	.tu .cp-syncbtn.is-due {color:#92400e;border-color:#e3b36b;}
+	.tu .cp-syncbtn.is-err {color:#b42318;border-color:#e8a29b;}
+	.tu .cp-sync-opt {margin:0.8em 0;padding:0.7em 0.9em;border:1px solid #e3d6b8;border-radius:0.5em;background:#fffaf0;}
+	.tu .cp-sync-opt h3 {margin:0 0 0.3em;font-size:1.02em;}
+	.tu .cp-sync-opt p {margin:0.3em 0 0.6em;}
+	.tu .cp-sync-acts {display:flex;flex-wrap:wrap;gap:0.5em;margin:0.5em 0;}
+	.tu .cp-sync-where {color:#6b5a3a;font-size:0.92em;}
+	.tu .cp-sync-err {color:#b42318;}
+	body.dark-mode #cp .cp-syncstate.is-ok, body.dark-mode #cp .cp-syncbtn.is-ok {color:#6ee7a0;}
+	body.dark-mode #cp .cp-syncstate.is-due, body.dark-mode #cp .cp-syncbtn.is-due {color:#fbbf6a;}
+	body.dark-mode #cp .cp-syncstate.is-err, body.dark-mode #cp .cp-syncbtn.is-err, body.dark-mode #cp .cp-sync-err {color:#ff9b91;}
+	body.dark-mode #cp .cp-sync-opt {background:#2a2418;border-color:#5a4a2a;color:#eee;}
+	body.dark-mode #cp .cp-sync-where {color:#d8c8a4;}

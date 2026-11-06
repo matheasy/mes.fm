@@ -57,7 +57,81 @@
 		rec.h.forEach(function (x) { if (!on[x]) out.gone++; });
 		return out;
 	}
-	var api = { hash: hash, record: record, status: status, COLORS: COLORS, snapshot: snapshot, merge: merge, replace: replace, count: count };
+
+	/* ---------- ☁ Sync (one copy-text.json file in a cloud folder / account) ----------
+	   fileText() = what is written; parseFile() reads it back (a plain .json backup works too); sig() = a fingerprint of a
+	   snapshot; plan() decides what a sync does from the fingerprints of the last synced copy (base), this browser (local) and
+	   the cloud copy (remote); merge3() combines two sides that both changed: deletes and edits on either side are kept,
+	   new texts on both sides are kept, same board name = same board, a note is its title + text. */
+	function sig(snap) { return hash({ title: "", text: JSON.stringify(snap && snap.boards || []) }); }
+	function fileText(snap, dev, time) {
+		return JSON.stringify({ app: "mes-copy-text", v: 1, saved: +time || Date.now(), dev: dev || "", data: snap }, null, 1);
+	}
+	function parseFile(text) {
+		if (text == null || !String(text).trim()) return null;
+		var o = JSON.parse(text);
+		var snap = o && o.app === "mes-copy-text" ? o.data : o;
+		valid(snap);
+		return { data: snapshot({ boards: snap.boards.filter(function (b) { return b && Array.isArray(b.notes); }).map(function (b) {
+			return { name: String(b.name || "My texts").slice(0, 40), notes: b.notes.filter(function (n) { return n && typeof n.text === "string"; }) };
+		}) }), saved: o && +o.saved || 0, dev: o && o.dev || "" };
+	}
+	function plan(bsig, lsig, rsig) {
+		if (rsig == null) return "push";            // no cloud copy yet
+		if (lsig === rsig) return "same";
+		if (bsig == null) return "merge";           // first sync on this browser with an existing file
+		if (rsig === bsig) return "push";           // only this browser changed
+		if (lsig === bsig) return "pull";           // only the cloud copy changed
+		return "merge";
+	}
+	function attrs(n) { return (n.c || "") + "|" + (n.pin ? 1 : 0); }
+	function merge3(base, local, remote) {
+		base = base || { boards: [] };
+		function byName(s) { var m = {}; (s.boards || []).forEach(function (b) { if (!m[b.name]) m[b.name] = b; }); return m; }
+		function keyed(b) { var m = {}; (b ? b.notes : []).forEach(function (n) { var k = hash(n); if (!m[k]) m[k] = n; }); return m; }
+		var B = byName(base), L = byName(local), R = byName(remote), names = [];
+		(remote.boards || []).forEach(function (b) { if (names.indexOf(b.name) < 0) names.push(b.name); });
+		(local.boards || []).forEach(function (b, i) { if (names.indexOf(b.name) < 0) names.splice(Math.min(i, names.length), 0, b.name); });
+		var out = [];
+		names.forEach(function (name) {
+			var b = B[name], l = L[name], r = R[name], kb = keyed(b), kl = keyed(l), kr = keyed(r);
+			var newL = l ? l.notes.filter(function (n) { return !kb[hash(n)]; }) : [], newR = r ? r.notes.filter(function (n) { return !kb[hash(n)]; }) : [];
+			if (b && !l && !newR.length) return;    // board deleted here, nothing new on the other side
+			if (b && !r && !newL.length) return;    // board deleted on the other side
+			var notes = [], seen = {};
+			(r ? r.notes : []).forEach(function (n) {
+				var k = hash(n); if (seen[k]) return;
+				if (kb[k] && l && !kl[k]) return;       // deleted (or edited) here
+				var ln = kl[k], bn = kb[k], use = n;
+				if (ln && bn && attrs(ln) !== attrs(bn)) use = ln; // colour / pin changed here
+				notes.push(use); seen[k] = 1;
+			});
+			if (l) l.notes.forEach(function (n, i) {
+				var k = hash(n); if (seen[k]) return;
+				if (kb[k] && r && !kr[k]) return;       // deleted on the other side
+				if (kb[k] && !r) { notes.push(n); seen[k] = 1; return; }
+				if (!kb[k]) { notes.splice(Math.min(i, notes.length), 0, n); seen[k] = 1; }
+			});
+			out.push({ name: name, notes: notes });
+		});
+		if (!out.length) out.push({ name: "My texts", notes: [] });
+		return snapshot({ boards: out });
+	}
+	function fromSnap(snap, state, uid) {   // a full state from a snapshot, keeping the open board when it still exists
+		var curName = null; (state && state.boards || []).forEach(function (b) { if (b.id === state.cur) curName = b.name; });
+		var st = replace(snap, uid);
+		st.boards.forEach(function (b) { if (b.name === curName) st.cur = b.id; });
+		return st;
+	}
+	function ago(ms, now) {
+		var s = Math.max(0, Math.round(((now || Date.now()) - ms) / 1000));
+		if (s < 45) return "just now";
+		if (s < 3600) { var m = Math.round(s / 60); return m + (m === 1 ? " minute ago" : " minutes ago"); }
+		if (s < 86400) { var h = Math.round(s / 3600); return h + (h === 1 ? " hour ago" : " hours ago"); }
+		var d = Math.round(s / 86400); return d + (d === 1 ? " day ago" : " days ago");
+	}
+	var api = { hash: hash, record: record, status: status, COLORS: COLORS, snapshot: snapshot, merge: merge, replace: replace, count: count,
+		sig: sig, fileText: fileText, parseFile: parseFile, plan: plan, merge3: merge3, fromSnap: fromSnap, ago: ago };
 	if (typeof module !== "undefined" && module.exports) module.exports = api;
 	root.CTLib = api;
 })(typeof window !== "undefined" ? window : globalThis);
