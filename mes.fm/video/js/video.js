@@ -2910,8 +2910,14 @@
 	app.addEventListener("drop", function (e) {
 		if (!e.dataTransfer || !e.dataTransfer.files || !e.dataTransfer.files.length) return;
 		e.preventDefault(); app.classList.remove("is-over"); VE.tl.dragHint(null, null, false);
+		var all = [].slice.call(e.dataTransfer.files), proj = all.filter(isProjectFile), media = all.filter(function (f) { return !isProjectFile(f); });
+		if (proj.length) {
+			if (proj.length > 1) toast("Only one project can be open: opening " + proj[0].name + ".");
+			if (media.length) toast("Opening the project first; drop the media files again afterwards to relink or add them.", 7000);
+			askOpenProject(proj[0]); return;
+		}
 		var x = e.clientX, y = e.clientY, onTl = VE.tl.inside(x, y), t = onTl ? VE.tl.x2t(x) : null;
-		importFiles(e.dataTransfer.files).then(function (ms) {
+		importFiles(media).then(function (ms) {
 			if (!onTl) return; var at = t;
 			ms.forEach(function (m) { if (m.state === "ready") { var c = VE.tl.placeMedia(m, null, y, at); at = V.end(c); } });
 		});
@@ -3052,8 +3058,20 @@
 		download(new Blob([JSON.stringify(data, null, 1)], { type: "application/json" }), (VE.P.name || "video").replace(/[\\/:*?"<>|]+/g, "-") + ".mesvideo");
 		toast("Project file saved. It holds the edit, not the media: keep the video files, and add them again when you open it on another computer.");
 	}
-	$("vd-projfile").onchange = function () {
-		var f = this.files[0]; this.value = ""; if (!f) return;
+	$("vd-projfile").onchange = function () { var f = this.files[0]; this.value = ""; if (f) askOpenProject(f); };
+	function isProjectFile(f) { return /\.mesvideo$/i.test(f.name || ""); }
+	// another project is open (clips or media in it): say so before replacing it
+	function askOpenProject(f) {
+		var n = VE.P.clips.length, nm = VE.bin.length;
+		if (!n && !nm) return openProject(f);
+		dialog("<h3>Open " + esc(f.name) + "?</h3><p class=\"vd-dtxt\">A project is already open: <b>" + esc(VE.P.name || "Untitled video") + "</b> (" + n + " clip" + (n === 1 ? "" : "s") + ", " + nm + " media file" + (nm === 1 ? "" : "s") + "). Opening the new one replaces it in this browser. Its media files stay in the library only if the new project uses them.</p>" +
+			"<p class=\"vd-dtxt\">Save a project file of the current one first if you want to come back to it.</p>" +
+			"<div class=\"vd-dlgact\"><button type=\"button\" class=\"vd-btn vd-primary\" id=\"vd-op-save\">Save current, then open</button> <button type=\"button\" class=\"vd-btn\" id=\"vd-op-go\">Open without saving</button> <button type=\"button\" class=\"vd-btn\" id=\"vd-op-no\">Cancel</button></div>");
+		$("vd-op-save").onclick = function () { saveProject(); closeDialog(); openProject(f); };
+		$("vd-op-go").onclick = function () { closeDialog(); openProject(f); };
+		$("vd-op-no").onclick = closeDialog;
+	}
+	function openProject(f) {
 		f.text().then(async function (txt) {
 			var d = JSON.parse(txt); if (!d || d.format !== "mes-video") throw new Error("This is not a MES Video Editor project file.");
 			P.pause(); var p = V.normalize(d.project), keep = {};
@@ -3072,7 +3090,7 @@
 			var miss = VE.bin.filter(function (m) { return m.state === "missing"; }).length;
 			toast(miss ? miss + " media file" + (miss > 1 ? "s are" : " is") + " missing: drop them in (same names) to relink." : "Project opened.", 8000);
 		}).catch(function (e) { toast("Could not open it: " + e.message); });
-	};
+	}
 
 	/* ---------- inspector ---------- */
 	var insp = $("vd-insp");

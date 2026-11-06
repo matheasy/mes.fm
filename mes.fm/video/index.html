@@ -414,6 +414,8 @@ body.dark-mode .tu .rw-head {color:#a0a8b3;border-bottom-color:#555;} body.dark-
 	#vd .vd-keys dl {display:grid;grid-template-columns:auto 1fr;gap:0.2em 0.8em;margin:0.4em 0 0;} #vd .vd-keys dt {font-weight:700;white-space:nowrap;} #vd .vd-keys dd {margin:0;color:var(--vd-dim);}
 	#vd .vd-modal {position:absolute;inset:0;z-index:60;background:rgba(0,0,0,0.6);display:flex;align-items:center;justify-content:center;padding:1em;}
 	#vd .vd-dlg {background:var(--vd-panel);border:1px solid var(--vd-line);border-radius:0.7em;padding:1em 1.1em;width:min(34em,100%);max-height:100%;overflow:auto;box-shadow:0 20px 50px rgba(0,0,0,0.6);}
+	#vd .vd-dtxt {font-size:0.9em;line-height:1.45;color:var(--vd-dim);margin:0 0 0.6em;} #vd .vd-dtxt b {color:var(--vd-fg);}
+	#vd .vd-dlgact {display:flex;flex-wrap:wrap;gap:0.5em;margin-top:0.9em;}
 	#vd .vd-dlg h3 {margin:0 0 0.6em;font-size:1.15em;color:var(--vd-fg);} #vd .vd-dlg .vd-f {font-size:0.9em;}
 	#vd .vd-xprog {margin:0.6em 0;} #vd .vd-bar {height:8px;background:var(--vd-line);border-radius:4px;overflow:hidden;} #vd .vd-bar i {display:block;height:100%;width:0;background:var(--vd-acc);transition:width .2s;}
 	#vd .vd-xprog p {font-size:0.88em;margin:0.4em 0;} #vd .vd-xprog a.vd-btn {display:inline-flex;align-items:center;text-decoration:none;margin-left:0.4em;} #vd .vd-xvid {width:100%;max-height:40vh;background:#000;border-radius:0.4em;margin-top:0.4em;}
@@ -903,7 +905,7 @@ body.is-stuck #navbar.hide { position: fixed; top: 56px; right: 8px; }
 							<button type="button" class="vd-btn vd-sm" id="vd-addsel" disabled title="Put the selected files one after another at the end of the timeline">Add selected in order</button>
 							<button type="button" class="vd-btn vd-sm" id="vd-addtitle">+ Title</button>
 						</div>
-						<p class="vd-hint" id="vd-binhint">Drop files here or anywhere in the editor. Drag them onto the timeline, or double-click to put one at the playhead. AVI, MKV, WMV and other formats are converted to MP4 first.</p>
+						<p class="vd-hint" id="vd-binhint">Drop files here or anywhere in the editor. Drag them onto the timeline, or double-click to put one at the playhead. AVI, MKV, WMV and other formats are converted to MP4 first. Drop a .mesvideo project file to open it.</p>
 					</section>
 					<section class="vd-pane" data-pane="titles" role="tabpanel" aria-label="Titles" hidden><div class="vd-panehead"><b>Titles &amp; annotations</b></div><p class="vd-hint">Click to put one at the playhead, or drag it onto the timeline.</p><div class="vd-cards" data-cards="titles"></div></section>
 					<section class="vd-pane" data-pane="trans" role="tabpanel" aria-label="Transitions" hidden><div class="vd-panehead"><b>Transitions</b><span class="vd-sp"></span><label class="vd-chk">Length <select id="vd-trdur" aria-label="Transition length"><option value="0.5">0.5 s</option><option value="1" selected>1 s</option><option value="2">2 s</option><option value="3">3 s</option></select></label></div><p class="vd-hint">Click to use it on the selected clips, or drag it onto a clip.</p><div class="vd-cards" data-cards="trans"></div></section>
@@ -1074,7 +1076,7 @@ body.is-stuck #navbar.hide { position: fixed; top: 56px; right: 8px; }
             hide_search:false,
             current_tab:0
         }        </script><!-- FASTCOMMENTS-LAZY: widget init moved to main_js/main.js -- it pulls embed.min.js only when #fastcomments-widget nears the viewport or on the first Comments-toggle click, so it no longer blocks first render -->                <script src="https://mes.fm/main_js/lazysizes.min.js?v=1.0.3" async></script>
-	<script src="/video/js/video.js?v=6" defer></script>
+	<script src="/video/js/video.js?v=7" defer></script>
             <script src="https://mes.fm/main_js/main.js?v=1.0.5"></script>    <!-- PAGEVIEW-TRACKING-INSERTED --><script src="https://mes.fm/main_js/track.js" defer></script><script>document.getElementById('copyright-year').textContent = new Date().getFullYear();</script><script src="/main_js/info-bar-fit.js" defer></script><script>
   // Floating compact header bar (see #compact-nav CSS): appears once the
   // header + nav bar have scrolled off the top; nav links that don't fit
