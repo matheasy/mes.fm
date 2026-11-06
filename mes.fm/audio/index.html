@@ -522,6 +522,9 @@ body.au-noscroll { overflow: hidden; }
 .au.au-win .au-scroll, .au:fullscreen .au-scroll { height: auto !important; max-height: none !important; }
 @media (pointer: coarse) { .au-hgrip { height: 16px; } .au-agrip { height: 18px; } }
 .au-f > span .au-q { margin-right: auto; }
+/* empty state in the page flow (an absolute box overflowed the short track area on phones) */
+.au-tl:has(> .au-empty:not([hidden])) > :is(.au-scroll, .au-agrip, .au-hbar) { display: none; }
+.au-tl > .au-empty:not([hidden]) { position: relative; inset: auto; flex: 1 1 auto; min-height: 220px; }
 
 
 	@media print {
