@@ -15,6 +15,10 @@
 (function () {
 	"use strict";
 	/* App keys (public client ids, not secrets). Leave "" to hide that button.
+	   Set up 2026-11-06: Dropbox app "MES Copy Text" (admin console of the Dropbox account, additional users enabled = up to 500 before
+	   Dropbox's production review); Google project "mes-copy-text" (admin@mes.fm, External, In production, drive.appdata = non-sensitive, no
+	   logo on purpose: a logo would need Google's review). OneDrive: not set up (a personal Microsoft account can't register apps without a
+	   work/school directory).
 	   Dropbox:  dropbox.com/developers/apps -> Create app -> Scoped access, App folder, name "MES Copy Text"; Permissions: files.content.read +
 	             files.content.write; Settings: Redirect URIs https://mes.fm/copy-text (and http://127.0.0.1:8430/copy-text/ to test); "App key" here.
 	   OneDrive: entra.microsoft.com -> App registrations -> New (accounts in any org + personal Microsoft accounts) -> Platform "Single-page
@@ -22,7 +26,7 @@
 	             "Application (client) ID" here.
 	   Google:   console.cloud.google.com -> APIs: enable Google Drive API; OAuth consent screen (scope .../auth/drive.appdata); Credentials ->
 	             OAuth client ID, Web application, Authorised JavaScript origin https://mes.fm; the client id here. */
-	var CLOUD = Object.assign({ dropbox: "", onedrive: "", gdrive: "" }, window.MES_CT_CLOUD || {});  // MES_CT_CLOUD: for testing only
+	var CLOUD = Object.assign({ dropbox: "iii9nua0gtgi3t6", onedrive: "", gdrive: "604980806442-dlqf3ur1qohoe67sc5i70qu4is9sfva9.apps.googleusercontent.com" }, window.MES_CT_CLOUD || {});  // MES_CT_CLOUD: for testing only
 	var FILE = "copy-text.json";
 
 	window.CTSync = function (app) {
