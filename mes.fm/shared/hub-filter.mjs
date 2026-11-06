@@ -111,7 +111,7 @@ export const FILTER_JS = String.raw`  // Search + category filter (see buildFilt
       if (e.key === 'Escape') { input.value = ''; setCat('all'); }
     });
     // Tab switches (wireViewToggle above runs first): re-count for the newly showing pane.
-    Array.prototype.forEach.call(document.querySelectorAll('#' + id + ' .view-toggle-btn'), function (b) {
+    Array.prototype.forEach.call(document.querySelectorAll('[id="' + id + '"] .view-toggle-btn'), function (b) {
       b.addEventListener('click', function () { setTimeout(apply, 0); });
     });
     // #<category> preselects a chip, on load and when the hash changes (e.g. a link to

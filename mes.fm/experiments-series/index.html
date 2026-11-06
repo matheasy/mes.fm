@@ -2140,7 +2140,7 @@ body.dark-mode .lp button:focus-visible, body.dark .lp button:focus-visible { ou
       if (e.key === 'Escape') { input.value = ''; setCat('all'); }
     });
     // Tab switches (wireViewToggle above runs first): re-count for the newly showing pane.
-    Array.prototype.forEach.call(document.querySelectorAll('#' + id + ' .view-toggle-btn'), function (b) {
+    Array.prototype.forEach.call(document.querySelectorAll('[id="' + id + '"] .view-toggle-btn'), function (b) {
       b.addEventListener('click', function () { setTimeout(apply, 0); });
     });
     // #<category> preselects a chip, on load and when the hash changes (e.g. a link to
