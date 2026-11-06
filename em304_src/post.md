@@ -59,7 +59,7 @@ Later in this video, I cover the Space Shuttle Columbia disaster and some of the
 
 ## Introduction: EM 304 Test Problem 1
 
-This is a problem for Mechanics of Engineering course EM 304 that Dr. Judy Wood, author of the famous book [Where Did The Towers Go](http://wheredidthetowersgo.com), gave to her class in Clemson University on February 6, 2003. 
+This is a problem for Mechanics of Materials course EM 304 that Dr. Judy Wood, author of the famous book [Where Did The Towers Go](http://wheredidthetowersgo.com), gave to her class in Clemson University on February 6, 2003. 
 
 She has sent me the test problem and solutions key so that I can make this tutorial.
 
