@@ -593,6 +593,8 @@ body.is-stuck #navbar.hide { position: fixed; top: 56px; right: 8px; }
 			<a class="icon-grid__link icon-grid__link--labeled" href="https://mes.fm/livestreams"><span class="icon-grid__thumb" style="background-image:url('img/livestreams-icon.jpg?v=3')"></span><span class="icon-grid__label">Livestreams</span></a>
 			<a class="icon-grid__link icon-grid__link--labeled" href="/youtube"><span class="icon-grid__thumb" style="background-image:url('img/youtube-icon.jpg?v=2')"></span><span class="icon-grid__label">YouTube Videos</span></a>
 			<a class="icon-grid__link icon-grid__link--labeled" href="/links"><span class="icon-grid__thumb" style="background-image:url('img/links-icon.jpg?v=1')"></span><span class="icon-grid__label">MES Links</span></a>
+			<a class="icon-grid__link icon-grid__link--labeled" id="mes-owner-tile" href="/dashboard" rel="nofollow" style="display:none"><span class="icon-grid__thumb" style="background-image:url('img/dashboard-icon.jpg?v=1')"></span><span class="icon-grid__label">MES Dashboard</span></a>
+			<script>try{if(localStorage.getItem("mes-owner")==="1")document.getElementById("mes-owner-tile").style.display=""}catch(e){}</script>
 		</div>
 
 		<h2 class="header2" id="popular">What's Popular on MES</h2>

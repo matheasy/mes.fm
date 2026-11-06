@@ -338,6 +338,7 @@
   if (!root || !D) return;
   var MOCK = /^(127\.0\.0\.1|localhost|\[::1\])$/.test(location.hostname) || /[?&]mock=1/.test(location.search);
   var LS = 'mes-dash:v1';
+  try { localStorage.setItem('mes-owner', '1'); } catch (e) {} // behind the password: the homepage then shows its owner-only Dashboard tile
   var NAMES = { mes: '@mes', mestruth: '@mestruth' };
   var st = load();
   var DATA = null, busy = false, shown = 60;
