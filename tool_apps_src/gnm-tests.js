@@ -79,6 +79,10 @@ ok(m("not tired at all").phase === null, "only negated words -> no phase");
 { const r = m("itchy rash that keeps coming back"); ok(r.organs[0].id === "skin" && r.scenario === "hanging", "chronic rash -> skin, hanging healing"); }
 { const r = m("back pain and swollen joints"); ok(r.organs.some(o => o.id === "bone") && r.organs.some(o => o.id === "joints") && r.phase === "pcla", "back pain + swollen joints -> new mesoderm healing"); }
 { const r = m("energy coming back"); ok(!r.organs.some(o => o.id === "bone"), "'coming back' is not the back"); }
+{ const r = m("baby keeps pooping blood. Pediatrician says baby may have dairy allergy, so mom is not going to drink dairy"); const ids = r.organs.map(o => o.id); ok(r.phase === "pcla" && ids.indexOf("intestine") >= 0 && ids.indexOf("rectum") >= 0, "baby pooping blood -> intestine + rectum, PCL-A"); ok(r.scenario === "hanging" && ["baby", "food", "blood"].every(k => r.notes.some(n => n.id === k)), "allergy = track; baby / food / blood notes"); }
+{ const r = m("blood in the diaper and spitting up"); ok(r.organs.some(o => o.id === "stomach") && r.organs.some(o => o.id === "rectum"), "diaper blood + spitting up"); }
+ok(!m("my blood pressure is high").notes.some(n => n.id === "blood"), "blood pressure is not bleeding");
+ok(m("no allergy").scenario === null, "negated allergy");
 ok(m("").empty && m("   ").empty, "empty input");
 ok(m("asdf qwerty").phase === null && m("asdf qwerty").organs.length === 0, "nothing matched");
 ok(G.match("Swellings and FEVER!!").phase === "pcla", "case, punctuation and plurals");

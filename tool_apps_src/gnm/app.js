@@ -262,7 +262,7 @@
 	$("gn-info").addEventListener("click", function (ev) { var b = ev.target.closest("[data-go=org]"); if (b) $("gn-orgcard").scrollIntoView({ behavior: "smooth", block: "start" }); });
 
 	/* ---------------------------------------------------------------- describe your symptoms */
-	var EX = ["cold hands, can't sleep, losing weight", "fever, swelling, tired", "cough and a runny nose", "chills, palpitations, cold sweat", "peeing a lot, energy coming back", "itchy rash that keeps coming back", "back pain and swollen joints", "no fever, but I wake up at 3 and keep thinking about it"];
+	var EX = ["cold hands, can't sleep, losing weight", "fever, swelling, tired", "cough and a runny nose", "chills, palpitations, cold sweat", "peeing a lot, energy coming back", "itchy rash that keeps coming back", "back pain and swollen joints", "baby with blood in the poop after feeds", "no fever, but I wake up at 3 and keep thinking about it"];
 	$("gn-ask-ex").innerHTML = EX.map(function (e) { return '<button type="button" class="tu-chip" data-ex="' + esc(e) + '">' + esc(e) + "</button>"; }).join("");
 	$("gn-ask-ex").addEventListener("click", function (ev) { var b = ev.target.closest("[data-ex]"); if (!b) return; $("gn-ask-in").value = b.getAttribute("data-ex"); ask(); });
 	$("gn-ask-go").addEventListener("click", ask);
@@ -271,7 +271,8 @@
 	function ask() {
 		var r = G.match($("gn-ask-in").value), out = $("gn-ask-out"), h = "";
 		if (r.empty) { out.innerHTML = '<p class="tu-note">Type a few words first.</p>'; return; }
-		if (!r.phase && !r.organs.length) { out.innerHTML = '<p class="gn-askres">No words from the GNM list were found. Try plain words such as <i>cold hands</i>, <i>tired</i>, <i>fever</i>, <i>cough</i>, <i>rash</i>, <i>chills</i>, <i>joint pain</i>.</p>'; return; }
+		var notesH = (r.notes || []).map(function (n) { return '<p class="gn-inote">' + esc(n.s) + "</p>"; }).join("");
+		if (!r.phase && !r.organs.length) { out.innerHTML = '<div class="gn-askres"><p>No symptom words from the GNM list were found. Try plain words such as <i>cold hands</i>, <i>tired</i>, <i>fever</i>, <i>cough</i>, <i>rash</i>, <i>diarrhea</i>, <i>blood in the poop</i>, <i>chills</i>, <i>joint pain</i>.</p>' + notesH + "</div>"; return; }
 		if (r.scenario === "hanging" && S.sc !== "hanging") { S.sc = "hanging"; rebuild(); }
 		if (r.organs.length) { S.organ = r.organs[0].id; renderOrgans(); }
 		if (r.phase) { var t = G.placeFor(M, r.phase, r.phase === "ca" ? 0.6 : 0.5); if (t != null) setT(t / M.T); else placeMarker(); } else placeMarker();
@@ -286,7 +287,8 @@
 			G.ORDER.forEach(function (p) { var v = r.scores[p]; if (!v) return; h += '<div class="gn-bar"><span>' + esc(G.PHASES[p].short) + '</span><i><b style="width:' + (100 * v / max).toFixed(0) + "%;background:" + G.PHASES[p].color + '"></b></i><em>' + v + "</em></div>"; });
 			h += "</div>";
 		}
-		if (r.scenario === "hanging") h += '<p class="gn-inote">Words like "keeps coming back" or "chronic" point, in GNM, to a hanging healing ' + q("hanging") + ", so the chart now shows that course.</p>";
+		if (r.scenario === "hanging") h += '<p class="gn-inote">Words like "allergy", "keeps coming back" or "chronic" point, in GNM, to a track or a hanging healing ' + q("hanging") + ", so the chart now shows that course.</p>";
+		h += notesH;
 		h += '<h4>Why</h4><ul class="gn-why">' + r.why.map(function (w) { return "<li" + (w.neg ? ' class="is-neg"' : "") + "><b>" + esc(w.w) + "</b>: " + esc(w.s) + (w.neg ? "" : ' <span class="gn-tag" style="background:' + (G.PHASES[w.p] ? G.PHASES[w.p].color : "#64748b") + '">' + esc(G.PHASES[w.p] ? G.PHASES[w.p].short : "recurrence") + "</span>") + "</li>"; }).join("") + "</ul>";
 		if (r.organs.length) {
 			h += '<h4>Organ candidates</h4><div class="gn-cands">' + r.organs.map(function (c) { var o = G.ORGAN_BY[c.id], Ly = G.LAYERS[o.layer]; return '<button type="button" class="gn-cand' + (c.id === S.organ ? " is-on" : "") + '" data-org="' + c.id + '"><i style="background:' + Ly.color + '"></i><span><b>' + esc(o.name) + "</b><small>" + esc(Ly.name) + " · " + esc(Ly.brain) + " · matched: " + esc(c.hits.join(", ")) + "</small></span></button>"; }).join("") + "</div>";

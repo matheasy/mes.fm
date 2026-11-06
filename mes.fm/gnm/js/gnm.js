@@ -98,10 +98,11 @@
 			"Brain stem, both sides of the lung relays.", ["lung", "lungs", "alveoli", "short of breath", "coughing up"], { "coughing up": "pcla" }),
 		O("stomach", "Stomach (greater curvature)", "endo", 120, 178, "Indigestible-morsel conflict: something that 'can't be digested', a hard-to-swallow situation.",
 			"More secretory cells, more acid and enzymes to digest the morsel; possible growth.", "Breakdown of the extra cells; possible bleeding, night sweats.", "Cramp-like stomach pain.",
-			"Brain stem, right side.", ["stomach", "indigestion", "heartburn", "nausea"], {}),
+			"Brain stem, right side.", ["stomach", "indigestion", "heartburn", "nausea", "vomit", "vomiting", "throwing up", "threw up", "spitting up", "spit up", "reflux"], {}),
 		O("intestine", "Small intestine and colon", "endo", 110, 212, "Indigestible-morsel conflict, often about money, food or 'something nasty' that can't be passed on.",
 			"Flat or cauliflower-like growth, more digestive secretion.", "Breakdown by fungi and mycobacteria, possible diarrhoea with blood or mucus, night sweats.", "Colicky cramps.",
-			"Brain stem, right side (small intestine) and left side (colon end).", ["intestine", "bowel", "gut", "colon", "diarrhea", "diarrhoea", "constipation", "belly", "abdomen"], { "diarrhea": "pcla", "diarrhoea": "pcla" }),
+			"Brain stem, right side (small intestine) and left side (colon end).", ["intestine", "bowel", "gut", "colon", "diarrhea", "diarrhoea", "constipation", "belly", "abdomen", "poop", "poo", "stool", "stools", "bowel movement", "bowel movements", "diaper", "nappy", "pooping blood", "blood in stool", "blood in his stool", "blood in her stool", "blood in the stool", "blood in poop", "blood in his poop", "blood in her poop", "blood in the poop", "blood in the diaper", "bloody stool", "bloody poop", "bloody diaper", "mucus in stool", "mucus in poop", "mucousy poop", "colic", "gas", "gassy", "tummy", "tummy ache", "stomach ache", "belly ache", "cramping"],
+			{ "diarrhea": "pcla", "diarrhoea": "pcla", "pooping blood": "pcla", "blood in stool": "pcla", "blood in his stool": "pcla", "blood in her stool": "pcla", "blood in the stool": "pcla", "blood in poop": "pcla", "blood in his poop": "pcla", "blood in her poop": "pcla", "blood in the poop": "pcla", "blood in the diaper": "pcla", "bloody stool": "pcla", "bloody poop": "pcla", "bloody diaper": "pcla", "mucus in stool": "pcla", "mucus in poop": "pcla", "mucousy poop": "pcla", "colic": "ec", "cramping": "ec", "constipation": "ca" }),
 		O("liver", "Liver (parenchyma)", "endo", 98, 180, "Starvation conflict: fear of not having enough to live on.",
 			"Compact growth of liver cells to make more of the food available.", "Breakdown by mycobacteria, night sweats.", "",
 			"Brain stem, right side.", ["liver"], {}),
@@ -171,6 +172,10 @@
 		O("bladder", "Bladder mucosa", "ecto", 110, 262, "Territorial-marking conflict: not being able to mark one's territory or boundaries.",
 			"Ulceration of the bladder lining.", "Restoration: burning, cystitis-like symptoms, sometimes blood in the urine.", "Spasm of the bladder.",
 			"Cortex.", ["bladder", "cystitis", "burning urine", "burning when peeing", "uti", "urinary infection"], { "cystitis": "pcla", "burning urine": "pcla", "burning when peeing": "pcla", "uti": "pcla", "urinary infection": "pcla" }),
+		O("rectum", "Rectum (lower end, mucosa)", "ecto", 110, 236, "Identity conflict: not knowing where one belongs or what one's place is; in GNM terms often a change of 'nest' or of who looks after one.",
+			"Ulceration of the rectal lining, often unnoticed.", "Restoration with swelling of the lining; bright red bleeding is typical of this healing (in GNM, haemorrhoids belong here).", "Spasm-like pain.",
+			"Cortex, left temporal lobe.", ["rectum", "rectal", "rectal bleeding", "hemorrhoids", "haemorrhoids", "piles", "bright red blood", "anal fissure", "fissure", "pooping blood", "blood in stool", "blood in the stool", "blood in poop", "blood in the poop", "blood in the diaper", "bloody stool", "bloody poop", "bloody diaper"],
+			{ "rectal bleeding": "pcla", "hemorrhoids": "pcla", "haemorrhoids": "pcla", "piles": "pcla", "bright red blood": "pcla", "pooping blood": "pcla", "blood in stool": "pcla", "blood in the stool": "pcla", "blood in poop": "pcla", "blood in the poop": "pcla", "blood in the diaper": "pcla", "bloody stool": "pcla", "bloody poop": "pcla", "bloody diaper": "pcla" }),
 		O("milkducts", "Milk ducts", "ecto", 140, 146, "Separation conflict: a child, partner or mother 'torn from the breast'.",
 			"Ulceration of the duct lining, the breast may pull in.", "Restoration with swelling of the ducts (in GNM terms, intraductal carcinoma).", "",
 			"Sensory cortex, side by handedness.", ["milk duct", "milk ducts", "nipple"], {}),
@@ -397,6 +402,13 @@
 		["scar", "pclb", 2, "scarring belongs to PCL-B"], ["hardened", "pclb", 1, "hardening fits PCL-B"],
 		["keeps coming back", "rec", 3, "a complaint that keeps coming back fits a hanging healing"], ["comes back", "rec", 2, "returning complaints fit recurrences"], ["chronic", "rec", 3, "in GNM, chronic complaints are often hanging healings"],
 		["on and off", "rec", 2, "on-and-off complaints fit recurrences"], ["flare", "rec", 2, "flare-ups fit recurrences on a track"], ["flares", "rec", 2, "flare-ups fit recurrences on a track"], ["every time", "rec", 2, "'every time' points to a track"],
+		["allergy", "rec", 2, "in GNM, an allergy is a track: something that was present at the original DHS (a food, a smell, a person, a place) sets the program off again"],
+		["allergies", "rec", 2, "in GNM, an allergy is a track: something present at the original DHS sets the program off again"], ["allergic", "rec", 2, "in GNM, an allergic reaction is a track being set off again"],
+		["intolerance", "rec", 2, "in GNM, a food that sets symptoms off is read as a track from the first DHS"], ["sensitive to", "rec", 1, "a trigger that sets symptoms off again fits a track"],
+		["after eating", "rec", 1, "symptoms after a certain food fit a track"], ["after feeding", "rec", 1, "symptoms after feeds fit a track"], ["after drinking", "rec", 1, "symptoms after a certain drink fit a track"],
+		["keeps happening", "rec", 2, "a complaint that keeps happening fits a hanging healing"], ["again and again", "rec", 2, "repeated complaints fit recurrences on a track"],
+		["bleeding", "pcla", 2, "in GNM, bleeding from a mucosa or a growth that is being broken down belongs to the healing phase"],
+		["fussy", "ca", 1, "a baby that is restless and fussy fits sympathicotonia"], ["crying a lot", "ca", 1, "much crying fits sympathicotonia in a baby"], ["won't sleep", "ca", 2, "sleeplessness is typical of the active phase"],
 		["fine", "norm", 1, "feeling fine fits normotonia"], ["normal", "norm", 1, "feeling normal fits normotonia"]
 	];
 	var NEG = /\b(no|not|without|never|don't|dont|didn't|didnt|isn't|no more|nor|none|free of)\s+(\w+\s+){0,2}$/;
@@ -411,9 +423,18 @@
 		return out;
 	}
 	function negated(txt, i) { return NEG.test(txt.slice(Math.max(0, i - 30), i + 1)); }
+	/* context notes: not phase cues, just what GNM looks at for this kind of situation */
+	var NOTES = [
+		[/ (baby|babies|infant|newborn|toddler|my son|my daughter|nephew|niece|grandson|granddaughter)('s)? /, "baby",
+			"In GNM, a baby's conflicts are mostly about the mother (being close to her, separated from her), feeding, a fright, or a change of surroundings, and Hamer held that a baby also lives through what the mother lives through. GNM asks what happened shortly before the symptoms first appeared: the birth, a hospital stay, a change in feeding (breast, bottle, formula, solids), a move, a new carer, a frightening noise, or a hard time for the mother."],
+		[/ (dairy|milk|formula|breastfeed|breastfeeding|breast milk|lactose|cow's milk|cows milk|gluten|wheat|peanut|egg|eggs|soy|food) /, "food",
+			"In GNM, a food that seems to set symptoms off is read as a track: it was present (as a taste, smell or situation) at the moment of the first DHS, so meeting it again restarts the program. GNM therefore looks for the first time the symptoms appeared and what was going on then, rather than at the food itself."],
+		[/ (blood(?! pressure| sugar| test)|bleed|bleeding|bloody) /, "blood",
+			"In GNM, bright red blood from the lower bowel usually points to the rectum (ectoderm, identity conflict), and blood mixed with mucus higher up to the intestine (endoderm, morsel conflict); in both, Hamer placed the bleeding in the healing phase. Both are listed below as organ candidates."]
+	];
 	function match(text) {
 		var txt = normText(text), sc = { norm: 0, dhs: 0, ca: 0, cl: 0, pcla: 0, ec: 0, pclb: 0, rec: 0 }, why = [], used = [];
-		if (txt.trim().length < 2) return { empty: true, phase: null, scores: sc, organs: [], why: [] };
+		if (txt.trim().length < 2) return { empty: true, phase: null, scores: sc, organs: [], why: [], notes: [] };
 		function overlaps(i, len) { for (var u = 0; u < used.length; u++) if (i < used[u][1] && i + len > used[u][0]) return true; return false; }
 		var cues = CUES.slice().sort(function (a, b) { return b[0].length - a[0].length; });   /* longer phrases first */
 		cues.forEach(function (c) {
@@ -427,13 +448,15 @@
 		/* organ candidates: keyword hits; organ cues also vote for a phase */
 		var org = [];
 		ORGANS.forEach(function (o) {
-			var hits = [], score = 0;
-			o.kw.forEach(function (k) {
+			var hits = [], score = 0, mine = [];
+			o.kw.slice().sort(function (a, b) { return b.length - a.length; }).forEach(function (k) {
 				findAll(txt, k).forEach(function (i) {
 					if (negated(txt, i)) return;
+					for (var v = 0; v < mine.length; v++) if (i < mine[v][1] && i + k.length + 1 > mine[v][0]) return;   /* "poop" inside "pooping blood" */
+					mine.push([i, i + k.length + 1]);
 					for (var u = 0; u < used.length; u++) if (i < used[u][1] && i + k.length + 1 > used[u][0] && used[u][1] - used[u][0] > k.length + 1) return;   /* "cold" inside "cold hands" */
 					if (hits.indexOf(k) < 0) { hits.push(k); score += k.indexOf(" ") > 0 ? 3 : 2; }
-					var cp = o.cue[k]; if (cp) { sc[cp] += 2; why.push({ w: k, p: cp, o: o.id, s: "in GNM, '" + k + "' on the " + o.name.toLowerCase() + " belongs to " + PHASES[cp].short }); }
+					var cp = o.cue[k]; if (cp) { sc[cp] += 2; if (!why.some(function (w) { return w.w === k && w.p === cp; })) why.push({ w: k, p: cp, o: o.id, s: "in GNM, '" + k + "' on the " + o.name.toLowerCase() + " belongs to " + PHASES[cp].short }); }
 				});
 			});
 			if (score) org.push({ id: o.id, score: score, hits: hits });
@@ -444,10 +467,11 @@
 		var total = 0; ORDER.forEach(function (p) { total += sc[p]; });
 		var scenario = sc.rec >= 2 ? "hanging" : null;
 		if (!best && sc.rec) best = "pcla";
-		return { empty: false, phase: best, conf: total ? bestS / total : 0, scores: sc, organs: org.slice(0, 5), why: why, scenario: scenario };
+		var notes = []; NOTES.forEach(function (n) { if (n[0].test(txt)) notes.push({ id: n[1], s: n[2] }); });
+		return { empty: false, phase: best, conf: total ? bestS / total : 0, scores: sc, organs: org.slice(0, 5), why: why, scenario: scenario, notes: notes };
 	}
 
-	var api = { PHASES: PHASES, ORDER: ORDER, LAYERS: LAYERS, LAYER_ORDER: LAYER_ORDER, ORGANS: ORGANS, ORGAN_BY: ORGAN_BY, LAWS: LAWS, GLOSSARY: GLOSSARY, SCEN: SCEN, CUES: CUES,
+	var api = { PHASES: PHASES, ORDER: ORDER, LAYERS: LAYERS, LAYER_ORDER: LAYER_ORDER, ORGANS: ORGANS, ORGAN_BY: ORGAN_BY, LAWS: LAWS, GLOSSARY: GLOSSARY, SCEN: SCEN, CUES: CUES, NOTES: NOTES,
 		build: build, levelAt: levelAt, phaseAt: phaseAt, sample: sample, placeFor: placeFor, cellSign: cellSign, organText: organText, focusLook: focusLook, match: match, normText: normText };
 	if (typeof module !== "undefined" && module.exports) module.exports = api; else root.MESGNM = api;
 })(this);
@@ -716,7 +740,7 @@
 	$("gn-info").addEventListener("click", function (ev) { var b = ev.target.closest("[data-go=org]"); if (b) $("gn-orgcard").scrollIntoView({ behavior: "smooth", block: "start" }); });
 
 	/* ---------------------------------------------------------------- describe your symptoms */
-	var EX = ["cold hands, can't sleep, losing weight", "fever, swelling, tired", "cough and a runny nose", "chills, palpitations, cold sweat", "peeing a lot, energy coming back", "itchy rash that keeps coming back", "back pain and swollen joints", "no fever, but I wake up at 3 and keep thinking about it"];
+	var EX = ["cold hands, can't sleep, losing weight", "fever, swelling, tired", "cough and a runny nose", "chills, palpitations, cold sweat", "peeing a lot, energy coming back", "itchy rash that keeps coming back", "back pain and swollen joints", "baby with blood in the poop after feeds", "no fever, but I wake up at 3 and keep thinking about it"];
 	$("gn-ask-ex").innerHTML = EX.map(function (e) { return '<button type="button" class="tu-chip" data-ex="' + esc(e) + '">' + esc(e) + "</button>"; }).join("");
 	$("gn-ask-ex").addEventListener("click", function (ev) { var b = ev.target.closest("[data-ex]"); if (!b) return; $("gn-ask-in").value = b.getAttribute("data-ex"); ask(); });
 	$("gn-ask-go").addEventListener("click", ask);
@@ -725,7 +749,8 @@
 	function ask() {
 		var r = G.match($("gn-ask-in").value), out = $("gn-ask-out"), h = "";
 		if (r.empty) { out.innerHTML = '<p class="tu-note">Type a few words first.</p>'; return; }
-		if (!r.phase && !r.organs.length) { out.innerHTML = '<p class="gn-askres">No words from the GNM list were found. Try plain words such as <i>cold hands</i>, <i>tired</i>, <i>fever</i>, <i>cough</i>, <i>rash</i>, <i>chills</i>, <i>joint pain</i>.</p>'; return; }
+		var notesH = (r.notes || []).map(function (n) { return '<p class="gn-inote">' + esc(n.s) + "</p>"; }).join("");
+		if (!r.phase && !r.organs.length) { out.innerHTML = '<div class="gn-askres"><p>No symptom words from the GNM list were found. Try plain words such as <i>cold hands</i>, <i>tired</i>, <i>fever</i>, <i>cough</i>, <i>rash</i>, <i>diarrhea</i>, <i>blood in the poop</i>, <i>chills</i>, <i>joint pain</i>.</p>' + notesH + "</div>"; return; }
 		if (r.scenario === "hanging" && S.sc !== "hanging") { S.sc = "hanging"; rebuild(); }
 		if (r.organs.length) { S.organ = r.organs[0].id; renderOrgans(); }
 		if (r.phase) { var t = G.placeFor(M, r.phase, r.phase === "ca" ? 0.6 : 0.5); if (t != null) setT(t / M.T); else placeMarker(); } else placeMarker();
@@ -740,7 +765,8 @@
 			G.ORDER.forEach(function (p) { var v = r.scores[p]; if (!v) return; h += '<div class="gn-bar"><span>' + esc(G.PHASES[p].short) + '</span><i><b style="width:' + (100 * v / max).toFixed(0) + "%;background:" + G.PHASES[p].color + '"></b></i><em>' + v + "</em></div>"; });
 			h += "</div>";
 		}
-		if (r.scenario === "hanging") h += '<p class="gn-inote">Words like "keeps coming back" or "chronic" point, in GNM, to a hanging healing ' + q("hanging") + ", so the chart now shows that course.</p>";
+		if (r.scenario === "hanging") h += '<p class="gn-inote">Words like "allergy", "keeps coming back" or "chronic" point, in GNM, to a track or a hanging healing ' + q("hanging") + ", so the chart now shows that course.</p>";
+		h += notesH;
 		h += '<h4>Why</h4><ul class="gn-why">' + r.why.map(function (w) { return "<li" + (w.neg ? ' class="is-neg"' : "") + "><b>" + esc(w.w) + "</b>: " + esc(w.s) + (w.neg ? "" : ' <span class="gn-tag" style="background:' + (G.PHASES[w.p] ? G.PHASES[w.p].color : "#64748b") + '">' + esc(G.PHASES[w.p] ? G.PHASES[w.p].short : "recurrence") + "</span>") + "</li>"; }).join("") + "</ul>";
 		if (r.organs.length) {
 			h += '<h4>Organ candidates</h4><div class="gn-cands">' + r.organs.map(function (c) { var o = G.ORGAN_BY[c.id], Ly = G.LAYERS[o.layer]; return '<button type="button" class="gn-cand' + (c.id === S.organ ? " is-on" : "") + '" data-org="' + c.id + '"><i style="background:' + Ly.color + '"></i><span><b>' + esc(o.name) + "</b><small>" + esc(Ly.name) + " · " + esc(Ly.brain) + " · matched: " + esc(c.hits.join(", ")) + "</small></span></button>"; }).join("") + "</div>";
