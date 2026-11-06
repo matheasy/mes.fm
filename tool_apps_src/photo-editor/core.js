@@ -550,10 +550,14 @@
 
 	/* ---------- layer commands ---------- */
 	PE.newRasterLayer = function (name) { PE.addLayer(PE.makeLayer({ name: name || "Layer " + PE.doc.next })); PE.commit("New layer"); };
+	/* a detached copy of one layer with everything on it: pixels, size / turn / flip, place, text, mask, crop, layer style, quick adjust (used by Duplicate and Copy / Paste) */
+	PE.copyLayerObj = function (B, suffix) {
+		var n = PE.makeLayer({ canvas: clone(B.canvas), type: B.type, name: B.name + (suffix || ""), text: B.text ? JSON.parse(JSON.stringify(B.text)) : null });
+		["cx", "cy", "sx", "sy", "rot", "visible", "opacity", "blend", "collapsed", "_pad", "_amw", "_drawnFont"].forEach(function (k) { if (B[k] !== undefined) n[k] = B[k]; }); if (B.eq) n.eq = JSON.parse(JSON.stringify(B.eq)); if (B.mask) n.mask = clone(B.mask); if (B.src) n.src = Object.assign({}, B.src, { copy: true }); if (B.crop) n.crop = Object.assign({}, B.crop); if (B.fx) n.fx = JSON.parse(JSON.stringify(B.fx)); if (B.adj) n.adj = JSON.parse(JSON.stringify(B.adj)); return n;
+	};
 	PE.duplicateLayer = function (L) {
 		L = L || PE.active(); if (!L) return; var d = PE.doc, block = PE.blockOf(L), map = {}, copies = block.map(function (B) {
-			var n = PE.makeLayer({ canvas: clone(B.canvas), type: B.type, name: B.name + (B === L ? " copy" : ""), text: B.text ? JSON.parse(JSON.stringify(B.text)) : null }); map[B.id] = n;
-			["cx", "cy", "sx", "sy", "rot", "visible", "opacity", "blend", "collapsed", "_pad", "_amw"].forEach(function (k) { n[k] = B[k]; }); if (B.eq) n.eq = JSON.parse(JSON.stringify(B.eq)); if (B.mask) n.mask = clone(B.mask); if (B.src) n.src = Object.assign({}, B.src, { copy: true }); if (B.crop) n.crop = Object.assign({}, B.crop); if (B.fx) n.fx = JSON.parse(JSON.stringify(B.fx)); if (B.adj) n.adj = JSON.parse(JSON.stringify(B.adj)); return n; });
+			var n = PE.copyLayerObj(B, B === L ? " copy" : ""); map[B.id] = n; return n; });
 		copies.forEach(function (n, i) { var B = block[i]; n.group = B === L ? L.group : (map[B.group] ? map[B.group].id : L.group); });
 		var at = d.layers.indexOf(L) + 1; Array.prototype.splice.apply(d.layers, [at, 0].concat(copies)); d.activeId = copies[copies.length - 1].id; PE.relink(); PE.commit("Duplicate " + (PE.isGroup(L) ? "group" : "layer"));
 	};

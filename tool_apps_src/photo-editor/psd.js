@@ -104,26 +104,28 @@
 	};
 
 	/* ---------- downloads: the browser cannot write into the file you opened, so name each save clearly ---------- */
-	function nameMode() { return sget().psdName === "same" ? "same" : "ver"; }
+	/* default = the same name every time, like Photopea: in Firefox with "Always ask where to save files" you pick the old file and press Replace.
+	 * psdNaming replaces the old psdName setting (whose default was numbered copies), so everybody sees the choice once more. */
+	function nameMode() { return sget().psdNaming === "ver" ? "ver" : "same"; }
 	function nextDownloadName(L) { return nameMode() === "same" ? L.base + ".psd" : P.versionedName(L.base, "psd", Math.max(L.opened ? 2 : 1, L.n + 1)); }
 	function downloadPsd(L) {
 		var go = function () {
 			var e0 = edits, nm = nextDownloadName(L);
 			return PE.psdBlob().then(function (r) { PE.download(r.blob, nm); if (nameMode() === "ver") L.n = P.nameVersion(nm).n; done(L, e0, nm + " to your Downloads", r); return true; }).catch(function (x) { PE.toast("Could not save the PSD: " + errText(x)); return false; });
 		};
-		if (sget().psdDlSeen || PE._psdExplained) return go();   // explained once per visit (or never again, if ticked)
+		if ((sget().psdDlSeen && sget().psdNaming) || PE._psdExplained) return go();   // explained once per visit (or never again, if ticked)
 		return explain(L).then(function (ok) { if (ok) PE._psdExplained = true; return ok ? go() : false; });
 	}
 	function explain(L) {
 		return new Promise(function (res) {
 			var br = isBrave(), w = el("div", "pe-xcf-notes pe-psdsave"), v = P.versionedName(L.base, "psd", Math.max(L.opened ? 2 : 1, L.n + 1));
 			w.innerHTML = "<p>This browser can't write into a file on your computer, so <b>each Save downloads the PSD</b>. Pick how it is named:</p>"
+				+ '<label class="pe-psdsave-o"><input type="radio" name="pe-psdnm" value="same"' + (nameMode() === "same" ? " checked" : "") + "> <span><b>" + esc(L.base) + ".psd</b> every time (like Photopea)<br><small>Best when your browser asks where to save each file (Firefox: Settings → General → Files and Applications → “Always ask you where to save files”): choose the old file and press <b>Replace</b>. Otherwise the browser adds (1), (2)… to the name.</small></span></label>"
 				+ '<label class="pe-psdsave-o"><input type="radio" name="pe-psdnm" value="ver"' + (nameMode() === "ver" ? " checked" : "") + "> <span><b>" + esc(v) + "</b>, then <b>" + esc(P.versionedName(L.base, "psd", Math.max(L.opened ? 2 : 1, L.n + 1) + 1)) + "</b>…<br><small>A new numbered copy each time: the highest number is the newest. Delete old ones whenever you like.</small></span></label>"
-				+ '<label class="pe-psdsave-o"><input type="radio" name="pe-psdnm" value="same"' + (nameMode() === "same" ? " checked" : "") + "> <span><b>" + esc(L.base) + ".psd</b> every time<br><small>Best when your browser asks where to save each file (Firefox: Settings → General → Files and Applications → “Always ask you where to save files”): choose the old file and press <b>Replace</b>. Otherwise the browser adds (1), (2)… to the name.</small></span></label>"
 				+ "<p><small>To open a saved PSD again: File → Open, or drop it on the editor. Text you typed here stays editable.</small></p>"
 				+ (br ? "<p><small>Brave can save straight into the same file if you switch on <b>" + BRAVE_FLAG + "</b> (then reopen this page).</small></p>" : "<p><small>Chrome, Edge and Opera save straight back into the same file, no downloads.</small></p>")
 				+ '<label class="pe-check"><input type="checkbox" id="pe-psdnoask"> Don\'t show this again</label>';
-			var fin = false, end = function (m, ok) { if (fin) return; fin = true; var r = w.querySelector('input[name="pe-psdnm"]:checked'); if (ok && r) sset({ psdName: r.value }); if (ok && w.querySelector("#pe-psdnoask").checked) sset({ psdDlSeen: true }); m.close(); res(ok); };
+			var fin = false, end = function (m, ok) { if (fin) return; fin = true; var r = w.querySelector('input[name="pe-psdnm"]:checked'); if (ok && r) sset({ psdNaming: r.value }); if (ok && w.querySelector("#pe-psdnoask").checked) sset({ psdDlSeen: true }); m.close(); res(ok); };
 			PE.modal({ title: "Save the PSD", body: w, onClose: function () { if (!fin) { fin = true; res(false); } }, buttons: [{ label: "Cancel", act: function (m) { end(m, false); } }, { label: "Download the PSD", primary: true, act: function (m) { end(m, true); } }] });
 		});
 	}

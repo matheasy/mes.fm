@@ -1525,10 +1525,14 @@ var MESPixel = (function () {
 
 	/* ---------- layer commands ---------- */
 	PE.newRasterLayer = function (name) { PE.addLayer(PE.makeLayer({ name: name || "Layer " + PE.doc.next })); PE.commit("New layer"); };
+	/* a detached copy of one layer with everything on it: pixels, size / turn / flip, place, text, mask, crop, layer style, quick adjust (used by Duplicate and Copy / Paste) */
+	PE.copyLayerObj = function (B, suffix) {
+		var n = PE.makeLayer({ canvas: clone(B.canvas), type: B.type, name: B.name + (suffix || ""), text: B.text ? JSON.parse(JSON.stringify(B.text)) : null });
+		["cx", "cy", "sx", "sy", "rot", "visible", "opacity", "blend", "collapsed", "_pad", "_amw", "_drawnFont"].forEach(function (k) { if (B[k] !== undefined) n[k] = B[k]; }); if (B.eq) n.eq = JSON.parse(JSON.stringify(B.eq)); if (B.mask) n.mask = clone(B.mask); if (B.src) n.src = Object.assign({}, B.src, { copy: true }); if (B.crop) n.crop = Object.assign({}, B.crop); if (B.fx) n.fx = JSON.parse(JSON.stringify(B.fx)); if (B.adj) n.adj = JSON.parse(JSON.stringify(B.adj)); return n;
+	};
 	PE.duplicateLayer = function (L) {
 		L = L || PE.active(); if (!L) return; var d = PE.doc, block = PE.blockOf(L), map = {}, copies = block.map(function (B) {
-			var n = PE.makeLayer({ canvas: clone(B.canvas), type: B.type, name: B.name + (B === L ? " copy" : ""), text: B.text ? JSON.parse(JSON.stringify(B.text)) : null }); map[B.id] = n;
-			["cx", "cy", "sx", "sy", "rot", "visible", "opacity", "blend", "collapsed", "_pad", "_amw"].forEach(function (k) { n[k] = B[k]; }); if (B.eq) n.eq = JSON.parse(JSON.stringify(B.eq)); if (B.mask) n.mask = clone(B.mask); if (B.src) n.src = Object.assign({}, B.src, { copy: true }); if (B.crop) n.crop = Object.assign({}, B.crop); if (B.fx) n.fx = JSON.parse(JSON.stringify(B.fx)); if (B.adj) n.adj = JSON.parse(JSON.stringify(B.adj)); return n; });
+			var n = PE.copyLayerObj(B, B === L ? " copy" : ""); map[B.id] = n; return n; });
 		copies.forEach(function (n, i) { var B = block[i]; n.group = B === L ? L.group : (map[B.group] ? map[B.group].id : L.group); });
 		var at = d.layers.indexOf(L) + 1; Array.prototype.splice.apply(d.layers, [at, 0].concat(copies)); d.activeId = copies[copies.length - 1].id; PE.relink(); PE.commit("Duplicate " + (PE.isGroup(L) ? "group" : "layer"));
 	};
@@ -4609,26 +4613,28 @@ var MESPixel = (function () {
 	};
 
 	/* ---------- downloads: the browser cannot write into the file you opened, so name each save clearly ---------- */
-	function nameMode() { return sget().psdName === "same" ? "same" : "ver"; }
+	/* default = the same name every time, like Photopea: in Firefox with "Always ask where to save files" you pick the old file and press Replace.
+	 * psdNaming replaces the old psdName setting (whose default was numbered copies), so everybody sees the choice once more. */
+	function nameMode() { return sget().psdNaming === "ver" ? "ver" : "same"; }
 	function nextDownloadName(L) { return nameMode() === "same" ? L.base + ".psd" : P.versionedName(L.base, "psd", Math.max(L.opened ? 2 : 1, L.n + 1)); }
 	function downloadPsd(L) {
 		var go = function () {
 			var e0 = edits, nm = nextDownloadName(L);
 			return PE.psdBlob().then(function (r) { PE.download(r.blob, nm); if (nameMode() === "ver") L.n = P.nameVersion(nm).n; done(L, e0, nm + " to your Downloads", r); return true; }).catch(function (x) { PE.toast("Could not save the PSD: " + errText(x)); return false; });
 		};
-		if (sget().psdDlSeen || PE._psdExplained) return go();   // explained once per visit (or never again, if ticked)
+		if ((sget().psdDlSeen && sget().psdNaming) || PE._psdExplained) return go();   // explained once per visit (or never again, if ticked)
 		return explain(L).then(function (ok) { if (ok) PE._psdExplained = true; return ok ? go() : false; });
 	}
 	function explain(L) {
 		return new Promise(function (res) {
 			var br = isBrave(), w = el("div", "pe-xcf-notes pe-psdsave"), v = P.versionedName(L.base, "psd", Math.max(L.opened ? 2 : 1, L.n + 1));
 			w.innerHTML = "<p>This browser can't write into a file on your computer, so <b>each Save downloads the PSD</b>. Pick how it is named:</p>"
+				+ '<label class="pe-psdsave-o"><input type="radio" name="pe-psdnm" value="same"' + (nameMode() === "same" ? " checked" : "") + "> <span><b>" + esc(L.base) + ".psd</b> every time (like Photopea)<br><small>Best when your browser asks where to save each file (Firefox: Settings → General → Files and Applications → “Always ask you where to save files”): choose the old file and press <b>Replace</b>. Otherwise the browser adds (1), (2)… to the name.</small></span></label>"
 				+ '<label class="pe-psdsave-o"><input type="radio" name="pe-psdnm" value="ver"' + (nameMode() === "ver" ? " checked" : "") + "> <span><b>" + esc(v) + "</b>, then <b>" + esc(P.versionedName(L.base, "psd", Math.max(L.opened ? 2 : 1, L.n + 1) + 1)) + "</b>…<br><small>A new numbered copy each time: the highest number is the newest. Delete old ones whenever you like.</small></span></label>"
-				+ '<label class="pe-psdsave-o"><input type="radio" name="pe-psdnm" value="same"' + (nameMode() === "same" ? " checked" : "") + "> <span><b>" + esc(L.base) + ".psd</b> every time<br><small>Best when your browser asks where to save each file (Firefox: Settings → General → Files and Applications → “Always ask you where to save files”): choose the old file and press <b>Replace</b>. Otherwise the browser adds (1), (2)… to the name.</small></span></label>"
 				+ "<p><small>To open a saved PSD again: File → Open, or drop it on the editor. Text you typed here stays editable.</small></p>"
 				+ (br ? "<p><small>Brave can save straight into the same file if you switch on <b>" + BRAVE_FLAG + "</b> (then reopen this page).</small></p>" : "<p><small>Chrome, Edge and Opera save straight back into the same file, no downloads.</small></p>")
 				+ '<label class="pe-check"><input type="checkbox" id="pe-psdnoask"> Don\'t show this again</label>';
-			var fin = false, end = function (m, ok) { if (fin) return; fin = true; var r = w.querySelector('input[name="pe-psdnm"]:checked'); if (ok && r) sset({ psdName: r.value }); if (ok && w.querySelector("#pe-psdnoask").checked) sset({ psdDlSeen: true }); m.close(); res(ok); };
+			var fin = false, end = function (m, ok) { if (fin) return; fin = true; var r = w.querySelector('input[name="pe-psdnm"]:checked'); if (ok && r) sset({ psdNaming: r.value }); if (ok && w.querySelector("#pe-psdnoask").checked) sset({ psdDlSeen: true }); m.close(); res(ok); };
 			PE.modal({ title: "Save the PSD", body: w, onClose: function () { if (!fin) { fin = true; res(false); } }, buttons: [{ label: "Cancel", act: function (m) { end(m, false); } }, { label: "Download the PSD", primary: true, act: function (m) { end(m, true); } }] });
 		});
 	}
@@ -6158,14 +6164,19 @@ $("pe-share").addEventListener("click", function () { if (needDoc()) PE.dlgShare
 	PE.clipCanvas = null;
 	/* copy / paste keep the spot: a pasted copy lands exactly where it was copied from (round 12). PE.clipXf = where + how the copy sat */
 	PE.clipXf = null;
-	function remember(c, xf) { PE.clipCanvas = c; PE.clipXf = xf; PE.clipSig = sig(c); }
+	/* PE.clipLayer = a whole-layer copy (size, turn, flip, text, mask, crop, style...) when nothing was selected.
+	 * clipAway: the window lost focus since that copy. Until it does, whatever the system clipboard holds on Ctrl+V is our own copy (the
+	 * browser's re-encoded PNG can differ by colour profile / scale, so comparing pixels alone sometimes missed it and the copy came back at its full size). */
+	PE.clipLayer = null; var clipAway = true;
+	window.addEventListener("blur", function () { clipAway = true; });
+	function remember(c, xf, layer) { PE.clipCanvas = c; PE.clipXf = xf; PE.clipSig = sig(c); PE.clipLayer = layer || null; clipAway = false; }
 	function sig(c) { try { var t = PE.mk(12, 12), x = t.getContext("2d"); x.drawImage(c, 0, 0, 12, 12); return { w: c.width, h: c.height, d: x.getImageData(0, 0, 12, 12).data }; } catch (e) { return null; } }
-	function sameAsClip(im) { var a = PE.clipSig, w = im.naturalWidth || im.width, h = im.naturalHeight || im.height; if (!a || !PE.clipCanvas || a.w !== w || a.h !== h) return false; var b = sig(im); if (!b) return false; var diff = 0; for (var i = 0; i < a.d.length; i++) diff += Math.abs(a.d[i] - b.d[i]); return diff / a.d.length < 4; }
+	function sameAsClip(im) { var a = PE.clipSig, w = im.naturalWidth || im.width, h = im.naturalHeight || im.height; if (!PE.clipCanvas) return false; if (!clipAway) return true; if (!a) return false; var r = w / a.w; if (Math.abs(h / a.h - r) > 0.02 || !(Math.abs(r - 1) < 0.02 || Math.abs(r - 2) < 0.04 || Math.abs(r - 0.5) < 0.02)) return false; var b = sig(im); if (!b) return false; var diff = 0; for (var i = 0; i < a.d.length; i++) diff += Math.abs(a.d[i] - b.d[i]); return diff / a.d.length < 14; }
 	function copySel(cut) {
 		var L = PE.active(); if (!PE.doc || !L) return; var c, xf;
 		if (PE.sel) { var b = PE.selBounds(); if (!b) return; c = PE.mk(b.w, b.h); var x = c.getContext("2d"); PE.drawLayer(x, L, [1, 0, 0, 1, -b.x, -b.y], "cp", b.w, b.h); x.globalCompositeOperation = "destination-in"; x.drawImage(PE.sel.c, b.x, b.y, b.w, b.h, 0, 0, b.w, b.h); xf = { cx: b.x + b.w / 2, cy: b.y + b.h / 2, sx: 1, sy: 1, rot: 0 }; }
 		else { c = PE.mk(L.canvas.width, L.canvas.height); c.getContext("2d").drawImage(L.canvas, 0, 0); xf = { cx: L.cx, cy: L.cy, sx: L.sx, sy: L.sy, rot: L.rot }; }
-		remember(c, xf); c.toBlob(function (b) { try { navigator.clipboard.write([new ClipboardItem({ "image/png": b })]).catch(function () {}); } catch (e) {} });
+		remember(c, xf, !PE.sel && !PE.isGroup(L) ? PE.copyLayerObj(L, "") : null); c.toBlob(function (b) { try { navigator.clipboard.write([new ClipboardItem({ "image/png": b })]).catch(function () {}); } catch (e) {} });
 		if (cut) clearSel(); PE.toast(cut ? "Cut" : "Copied");
 	}
 	function copyMerged() { if (!PE.doc) return; var c = PE.flatten(), b = PE.sel && PE.selBounds(), xf = { cx: PE.doc.w / 2, cy: PE.doc.h / 2, sx: 1, sy: 1, rot: 0 }; if (b) { var n = PE.mk(b.w, b.h), x = n.getContext("2d"); x.drawImage(c, b.x, b.y, b.w, b.h, 0, 0, b.w, b.h); x.globalCompositeOperation = "destination-in"; x.drawImage(PE.sel.c, b.x, b.y, b.w, b.h, 0, 0, b.w, b.h); c = n; xf = { cx: b.x + b.w / 2, cy: b.y + b.h / 2, sx: 1, sy: 1, rot: 0 }; } remember(c, xf); c.toBlob(function (bl) { try { navigator.clipboard.write([new ClipboardItem({ "image/png": bl })]).then(function () { PE.toast("Copied merged image"); }); } catch (e) { PE.toast("Copied"); } }); }
@@ -6176,6 +6187,7 @@ $("pe-share").addEventListener("click", function () { if (needDoc()) PE.dlgShare
 	}
 	function paintClipboardImage(src, name, at, clip) { var meta = { how: "paste", clip: clip || "clipboard" }; if (!PE.doc) { PE.openImageSource(src, name || "Pasted image", meta); PE.setTool("move"); return; } PE.placeSource(src, name || "Pasted", at, meta); PE.setTool("move"); }
 	function pasteOwn() {   // our own copy: back on the spot it came from (same size, turn and flip as the layer it was copied from)
+		if (PE.clipLayer && PE.doc) { var n = PE.copyLayerObj(PE.clipLayer, " copy"); n.locked = false; PE.addLayer(n); PE.commit("Paste layer"); PE.setTool("move"); return; }
 		var xf = PE.clipXf, L = PE.placeSource(PE.clipCanvas, "Pasted layer", xf ? { x: xf.cx, y: xf.cy } : null, { how: "paste", clip: "editor" });
 		if (L && xf && (xf.sx !== 1 || xf.sy !== 1 || xf.rot)) { L.sx = xf.sx; L.sy = xf.sy; L.rot = xf.rot; PE.invalidate(); PE.commit("Paste in place"); }
 		PE.setTool("move");

@@ -470,14 +470,19 @@ $("pe-share").addEventListener("click", function () { if (needDoc()) PE.dlgShare
 	PE.clipCanvas = null;
 	/* copy / paste keep the spot: a pasted copy lands exactly where it was copied from (round 12). PE.clipXf = where + how the copy sat */
 	PE.clipXf = null;
-	function remember(c, xf) { PE.clipCanvas = c; PE.clipXf = xf; PE.clipSig = sig(c); }
+	/* PE.clipLayer = a whole-layer copy (size, turn, flip, text, mask, crop, style...) when nothing was selected.
+	 * clipAway: the window lost focus since that copy. Until it does, whatever the system clipboard holds on Ctrl+V is our own copy (the
+	 * browser's re-encoded PNG can differ by colour profile / scale, so comparing pixels alone sometimes missed it and the copy came back at its full size). */
+	PE.clipLayer = null; var clipAway = true;
+	window.addEventListener("blur", function () { clipAway = true; });
+	function remember(c, xf, layer) { PE.clipCanvas = c; PE.clipXf = xf; PE.clipSig = sig(c); PE.clipLayer = layer || null; clipAway = false; }
 	function sig(c) { try { var t = PE.mk(12, 12), x = t.getContext("2d"); x.drawImage(c, 0, 0, 12, 12); return { w: c.width, h: c.height, d: x.getImageData(0, 0, 12, 12).data }; } catch (e) { return null; } }
-	function sameAsClip(im) { var a = PE.clipSig, w = im.naturalWidth || im.width, h = im.naturalHeight || im.height; if (!a || !PE.clipCanvas || a.w !== w || a.h !== h) return false; var b = sig(im); if (!b) return false; var diff = 0; for (var i = 0; i < a.d.length; i++) diff += Math.abs(a.d[i] - b.d[i]); return diff / a.d.length < 4; }
+	function sameAsClip(im) { var a = PE.clipSig, w = im.naturalWidth || im.width, h = im.naturalHeight || im.height; if (!PE.clipCanvas) return false; if (!clipAway) return true; if (!a) return false; var r = w / a.w; if (Math.abs(h / a.h - r) > 0.02 || !(Math.abs(r - 1) < 0.02 || Math.abs(r - 2) < 0.04 || Math.abs(r - 0.5) < 0.02)) return false; var b = sig(im); if (!b) return false; var diff = 0; for (var i = 0; i < a.d.length; i++) diff += Math.abs(a.d[i] - b.d[i]); return diff / a.d.length < 14; }
 	function copySel(cut) {
 		var L = PE.active(); if (!PE.doc || !L) return; var c, xf;
 		if (PE.sel) { var b = PE.selBounds(); if (!b) return; c = PE.mk(b.w, b.h); var x = c.getContext("2d"); PE.drawLayer(x, L, [1, 0, 0, 1, -b.x, -b.y], "cp", b.w, b.h); x.globalCompositeOperation = "destination-in"; x.drawImage(PE.sel.c, b.x, b.y, b.w, b.h, 0, 0, b.w, b.h); xf = { cx: b.x + b.w / 2, cy: b.y + b.h / 2, sx: 1, sy: 1, rot: 0 }; }
 		else { c = PE.mk(L.canvas.width, L.canvas.height); c.getContext("2d").drawImage(L.canvas, 0, 0); xf = { cx: L.cx, cy: L.cy, sx: L.sx, sy: L.sy, rot: L.rot }; }
-		remember(c, xf); c.toBlob(function (b) { try { navigator.clipboard.write([new ClipboardItem({ "image/png": b })]).catch(function () {}); } catch (e) {} });
+		remember(c, xf, !PE.sel && !PE.isGroup(L) ? PE.copyLayerObj(L, "") : null); c.toBlob(function (b) { try { navigator.clipboard.write([new ClipboardItem({ "image/png": b })]).catch(function () {}); } catch (e) {} });
 		if (cut) clearSel(); PE.toast(cut ? "Cut" : "Copied");
 	}
 	function copyMerged() { if (!PE.doc) return; var c = PE.flatten(), b = PE.sel && PE.selBounds(), xf = { cx: PE.doc.w / 2, cy: PE.doc.h / 2, sx: 1, sy: 1, rot: 0 }; if (b) { var n = PE.mk(b.w, b.h), x = n.getContext("2d"); x.drawImage(c, b.x, b.y, b.w, b.h, 0, 0, b.w, b.h); x.globalCompositeOperation = "destination-in"; x.drawImage(PE.sel.c, b.x, b.y, b.w, b.h, 0, 0, b.w, b.h); c = n; xf = { cx: b.x + b.w / 2, cy: b.y + b.h / 2, sx: 1, sy: 1, rot: 0 }; } remember(c, xf); c.toBlob(function (bl) { try { navigator.clipboard.write([new ClipboardItem({ "image/png": bl })]).then(function () { PE.toast("Copied merged image"); }); } catch (e) { PE.toast("Copied"); } }); }
@@ -488,6 +493,7 @@ $("pe-share").addEventListener("click", function () { if (needDoc()) PE.dlgShare
 	}
 	function paintClipboardImage(src, name, at, clip) { var meta = { how: "paste", clip: clip || "clipboard" }; if (!PE.doc) { PE.openImageSource(src, name || "Pasted image", meta); PE.setTool("move"); return; } PE.placeSource(src, name || "Pasted", at, meta); PE.setTool("move"); }
 	function pasteOwn() {   // our own copy: back on the spot it came from (same size, turn and flip as the layer it was copied from)
+		if (PE.clipLayer && PE.doc) { var n = PE.copyLayerObj(PE.clipLayer, " copy"); n.locked = false; PE.addLayer(n); PE.commit("Paste layer"); PE.setTool("move"); return; }
 		var xf = PE.clipXf, L = PE.placeSource(PE.clipCanvas, "Pasted layer", xf ? { x: xf.cx, y: xf.cy } : null, { how: "paste", clip: "editor" });
 		if (L && xf && (xf.sx !== 1 || xf.sy !== 1 || xf.rot)) { L.sx = xf.sx; L.sy = xf.sy; L.rot = xf.rot; PE.invalidate(); PE.commit("Paste in place"); }
 		PE.setTool("move");
