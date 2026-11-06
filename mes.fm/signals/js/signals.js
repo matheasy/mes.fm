@@ -787,8 +787,8 @@
 		var big = snaps.list.filter(function (c) { return c.big; });
 		box.hidden = false;
 		box.innerHTML = '<b>Since your last visit (' + esc(S.ago(Date.now() - snaps.t)) + ' ago):</b> ' + (big.length ? big.map(function (c) { return '<span class="sg-cc ' + (c.up ? 'up' : 'dn') + '">' + esc(c.name) + ' ' + esc(c.text) + '</span>'; }).join('') : '<span class="tu-note">no big moves</span>') +
-			'<details class="sg-cmore"><summary>All changes</summary>' + snaps.list.map(function (c) { return '<span class="sg-cc' + (c.big ? ' ' + (c.up ? 'up' : 'dn') : '') + '">' + esc(c.name) + ' ' + esc(c.text) + '</span>'; }).join('') + '</details><button type="button" class="sg-cx" aria-label="Hide">&times;</button>';
-		box.querySelector('.sg-cx').onclick = function () { box.hidden = true; };
+			'<details class="sg-cmore"><summary>All changes</summary>' + snaps.list.map(function (c) { return '<span class="sg-cc' + (c.big ? ' ' + (c.up ? 'up' : 'dn') : '') + '">' + esc(c.name) + ' ' + esc(c.text) + '</span>'; }).join('') + '</details><button type="button" class="sg-chx" aria-label="Hide">&times;</button>';
+		box.querySelector('.sg-chx').onclick = function () { box.hidden = true; };
 	}
 	function markChanged() {
 		if (!snaps) return;

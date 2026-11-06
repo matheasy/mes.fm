@@ -18,7 +18,7 @@
 	#sg .sg-cc {display:inline-block;margin:0 0.3em;padding:0 0.5em;border-radius:1em;background:var(--sg-card);border:1px solid var(--sg-line);font-size:0.9em;line-height:1.7;}
 	#sg .sg-cc.up {border-color:var(--sg-up);color:var(--sg-up);} #sg .sg-cc.dn {border-color:var(--sg-dn);color:var(--sg-dn);}
 	#sg .sg-cmore {display:inline-block;margin-left:0.4em;font-size:0.9em;} #sg .sg-cmore summary {cursor:pointer;color:var(--sg-mut);}
-	#sg .sg-cx {position:absolute;top:0.3em;right:0.4em;border:0;background:none;font-size:1.3em;cursor:pointer;color:var(--sg-mut);}
+	#sg .sg-chx {position:absolute;top:0.3em;right:0.4em;border:0;background:none;font-size:1.3em;cursor:pointer;color:var(--sg-mut);}
 	#sg .sg-status {margin:0 0 0.8em;padding:0.6em 0.9em;border-radius:0.5em;background:#eef4ff;border:1px solid #bcd0f5;color:#1d3a73;}
 	#sg .sg-status.err {background:#fff1f2;border-color:#e11d48;color:#7f1020;}
 	#sg .sg-tabs {display:flex;gap:0.3em;flex-wrap:wrap;border-bottom:2px solid var(--sg-line);margin:0.4em 0 1em;scroll-margin-top:7em;}
@@ -198,7 +198,11 @@
 #sg .sg-mt__tg {position:absolute;top:-0.25em;bottom:-0.25em;width:2px;background:var(--sg-fg);}
 #sg .sg-ov .sg-spark {flex:0 0 96px;width:96px;height:26px;}
 #sg .sg-rules {margin-top:0.4em;font-size:0.92em;} #sg .sg-rules summary {cursor:pointer;color:var(--sg-mut);} #sg .sg-rules ul {margin:0.5em 0 0.3em 1.2em;line-height:1.5;}
-@media (max-width:900px) {#sg .sg-ov__go {grid-template-columns:minmax(0, 1fr) auto 1em;} #sg .sg-ov__v {grid-column:1 / 3;} #sg .sg-ov__f {grid-column:1 / 3;} #sg .sg-ov__arr {grid-row:1 / 4;grid-column:3;}}
+/* Narrow layout keyed to the list's own width (sidebar, Standard / Wide / Theatre, A+ all change it), not the window:
+   the 5-column grid starved the facts column to one word per line in Standard with the sidebar. */
+#sg .sg-ov {container-type:inline-size;container-name:sgov;}
+@container sgov (max-width:58em) {#sg .sg-ov__go {grid-template-columns:minmax(0, 1fr) auto 1em;} #sg .sg-ov__v {grid-column:1 / 3;} #sg .sg-ov__f {grid-column:1 / 3;} #sg .sg-ov__arr {grid-row:1 / 4;grid-column:3;}}
+@supports not (container-type:inline-size) {@media (max-width:1500px) {#sg .sg-ov__go {grid-template-columns:minmax(0, 1fr) auto 1em;} #sg .sg-ov__v {grid-column:1 / 3;} #sg .sg-ov__f {grid-column:1 / 3;} #sg .sg-ov__arr {grid-row:1 / 4;grid-column:3;}}}
 /* ---------- perps table bars ---------- */
 #sg .sg-ptbl {min-width:720px;} #sg .sg-ptbl td.r, #sg .sg-ptbl th.r {text-align:right;}
 #sg .sg-ptbl td, #sg .sg-ptbl th {vertical-align:middle;text-align:left;}
