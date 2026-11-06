@@ -12,6 +12,12 @@
     /* paid ad-free (mes.fm/premium, localStorage "mes-adfree"): no box at all, nothing requested */
     var adFree = (function () { try { var af = JSON.parse(localStorage.getItem("mes-adfree") || "null"); return !!(af && !af.off && +af.until > Date.now()); } catch (e) { return false; } })();
     if (adFree) { Array.prototype.forEach.call(boxes, function (b) { b.style.display = "none"; b.setAttribute("data-adfree", "1"); }); return; }
+    /* the "Advertisement" label is an inline #595959: unreadable on the dark themes (body.dark-mode / math shell body.dark) */
+    if (!document.getElementById("mes-bad-css")) {
+        var css = document.createElement("style"); css.id = "mes-bad-css";
+        css.textContent = "body.dark-mode .mes-bottom-ad>span,body.dark .mes-bottom-ad>span{color:#a3a3a3!important}";
+        (document.head || document.documentElement).appendChild(css);
+    }
 
     function load(box) {
         if (box.getAttribute("data-loaded")) return;

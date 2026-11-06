@@ -40,6 +40,7 @@
 	.f3-eq__n {display:inline-block;min-width:8.5em;font-size:0.72em;font-weight:700;text-transform:uppercase;letter-spacing:0.05em;color:#667;}
 	.f3-eq__f {font-family:"Cambria Math","STIX Two Math",Georgia,serif;white-space:nowrap;}
 	.f3-eq b {font-style:italic;font-weight:600;}
+	body.dark-mode #f3 .f3-views button[aria-pressed="true"], body.dark-mode #f3 .f3-brushes button[aria-pressed="true"], body.dark-mode #f3 .f3-tools button[aria-pressed="true"] {background:#0e7490;border-color:#0e7490;color:#fff;}
 	body.dark-mode #f3 .f3-eq {background:#262626;border-color:#3a3a3a;} body.dark-mode #f3 .f3-eq__n {color:#a0a8b3;}
 	@media (max-width: 640px) {
 		.f3-views {max-width:calc(100% - 1.2em);top:0.4em;left:0.4em;} .f3-tools {top:auto;bottom:3.1em;right:0.4em;} .f3-brushes {left:0.4em;bottom:0.4em;}
