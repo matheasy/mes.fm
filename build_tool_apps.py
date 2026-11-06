@@ -220,7 +220,7 @@ APPS = {
                      tag="Every post of the MES Links channel, searchable.", accent="#0e6f9e", dark="#0b5679", tint="#e1f2fb",
                      desc="Search every post of the MES Links Telegram channel (t.me/meslinks) since 2021: new videos and livestreams, #911Truth, the Hutchison Effect, math, science, crypto and Hive, memes and more. Filter by topic, year, kind of post or the site a post links to.",
                      meta_desc="Search every post of the MES Links Telegram channel (t.me/meslinks): videos, livestreams, 9/11 Truth, Hutchison Effect, math, crypto and memes.",
-                     js_v="1"),
+                     js_v="2"),
     # MES Storage Analyzer (2026-10-29, mes.fm/storage): WinDirStat / DaisyDisk in the browser. lib.js = MESStorage (scan of a FileSystemDirectoryHandle,
     # also run as a Blob Web Worker from its own source; model in typed arrays, squarify, sunburst, lists, CSV/JSON), tests tool_apps_src/storage-tests.js.
     "storage": dict(title="MES Storage Analyzer", page_title="Storage Analyzer: See What Is Taking Up Space in a Folder",
@@ -545,7 +545,7 @@ APPS = {
     "gnm": dict(title="MES German New Medicine Explorer", page_title="German New Medicine (GNM): Interactive Chart of the 5 Biological Laws",
                 tag="Two phases. Three levels. Five laws.", accent="#4d7c0f", dark="#3f6212", tint="#ecfccb",
                 desc="An interactive, visual guide to German New Medicine (GNM) by Dr. Ryke Geerd Hamer: drag a marker along the two-phase chart (DHS, conflict-active phase, conflictolysis, PCL-A, epileptoid crisis, PCL-B), see what GNM expects for psyche, brain relay and organ by germ layer, describe your symptoms in plain words, and explore the Five Biological Laws and a glossary.",
-                js_v="8"),
+                js_v="9"),
     "neuron-simulator": dict(title="MES Neuron Simulator", page_title="Neuron Simulator: Action Potential, Nerve Conduction and Synapses",
                              tag="Spike, conduct, connect.", accent="#0e7490", dark="#155e75", tint="#cffafe",
                              desc="A free neuron simulator: the Hodgkin-Huxley action potential with sodium and potassium gates, threshold and refractory periods, TTX, TEA, lidocaine, hyperkalaemia and temperature; saltatory conduction along myelinated and unmyelinated axons with multiple sclerosis demyelination and block; EPSP and IPSP summation; the neuromuscular junction with myasthenia gravis and train-of-four; and a Nernst and Goldman equation calculator.",
@@ -1103,7 +1103,7 @@ APPS = {
     "installs": dict(title="MES App Installs", page_title="MES App Installs: iPhone and Android Downloads",
                 tag="How many people install the MES apps.", accent="#1d6fd1", dark="#1557b0", tint="#e8f0fe",
                 desc="Live install numbers for the free MES mobile apps (Percentage, BMI, Grade, GPA and Fitness Calculators) on iPhone and Android: by day, app, country, device, Android version and app version, with updates, re-downloads, uninstalls and ratings.",
-                js_v="2", no_ads=True, head_extra=PAGE3_HEAD),
+                js_v="3", no_ads=True, head_extra=PAGE3_HEAD),
     # How much do YouTubers make?: leaderboard of big channels with ESTIMATED ad revenue (companion of /youtubemoney, ad-free like it). Data = mes.fm/how-much-do-youtubers-make/data/channels.json
     # (update_youtuber_snapshot.py), live refresh = mes.fm/api/youtuber-stats.js; lib.js = maths + a copy of the calculator's RPM tables (node-testable:
     # tool_apps_src/how-much-do-youtubers-make-tests.js), app.js = UI. Wide page, no sidebar.
