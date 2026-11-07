@@ -2170,7 +2170,9 @@ var MESPixel = (function () {
 				}
 			}
 			if (o.merged || !L) { var c = PE.flatten(), id = c.getContext("2d").getImageData(0, 0, c.width, c.height); mask = P.floodMask(id.data, c.width, c.height, e.x, e.y, o.tol, o.contiguous); w = c.width; h = c.height; }
-			else { var og = PE.origin(L), lp = PE.toLayerPt(L, e.x, e.y); if (!PE.isIdentity(L)) { PE.bake(L); og = PE.origin(L); lp = { x: e.x - og.x, y: e.y - og.y }; } var data = PE.layerData(L); var m = P.floodMask(data.data, data.width, data.height, lp.x, lp.y, o.tol, o.contiguous); mask = new Uint8Array(d.w * d.h); for (var y = 0; y < data.height; y++) { var dy = y + og.y; if (dy < 0 || dy >= d.h) continue; for (var x = 0; x < data.width; x++) { var dx = x + og.x; if (dx >= 0 && dx < d.w) mask[dy * d.w + dx] = m[y * data.width + x]; } } w = d.w; h = d.h; }
+			else { var og = PE.origin(L), lp = PE.toLayerPt(L, e.x, e.y); if (!PE.isIdentity(L)) { PE.bake(L); og = PE.origin(L); lp = { x: e.x - og.x, y: e.y - og.y }; } var data = PE.layerData(L), buf = new Uint8ClampedArray(d.w * d.h * 4);   // the layer on a canvas-size sheet: everything outside the layer is transparent, so clicking empty space selects ALL of it (like Photoshop), not just the layer's own box
+				var x0 = Math.max(0, og.x), x1 = Math.min(d.w, og.x + data.width); if (x1 > x0) for (var y = 0; y < data.height; y++) { var dy = y + og.y; if (dy < 0 || dy >= d.h) continue; buf.set(data.data.subarray(((y * data.width) + x0 - og.x) * 4, ((y * data.width) + x1 - og.x) * 4), (dy * d.w + x0) * 4); }
+				mask = P.floodMask(buf, d.w, d.h, e.x, e.y, o.tol, o.contiguous); w = d.w; h = d.h; }
 			if (o.smooth) mask = P.featherMask(P.growShrinkMask(mask, w, h, 0, true), w, h, 1.5);
 			PE.selFromMask(mask, selMode(e)); PE.commit("Magic wand");
 		} });
