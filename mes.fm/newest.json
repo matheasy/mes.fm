@@ -2,6 +2,14 @@
  "generated": "2026-11-07",
  "calculators": [
   {
+   "href": "/relative-speed-calculator",
+   "title": "Relative Speed, Jump and Fall Calculator",
+   "icon": "/img/relative-speed-calculator-logo.png",
+   "desc": "Animal speeds in body lengths per second, jumps and falls scaled to human size.",
+   "added": "2026-11-07",
+   "kind": "calculator"
+  },
+  {
    "href": "/relative-time-calculator",
    "title": "Relative Time Calculator",
    "icon": "/img/relative-time-calculator-logo.png",
@@ -88,30 +96,22 @@
    "desc": "Mean, median, standard deviation, quartiles, regression, distributions and hypothesis tests, with the working shown.",
    "added": "2026-10-23",
    "kind": "calculator"
-  },
-  {
-   "href": "/materials",
-   "title": "Mechanics of Materials",
-   "icon": "/img/materials-logo.png",
-   "desc": "Stress, strain, shear, torsion, Poisson's ratio, thermal stress and 30 materials.",
-   "added": "2026-10-20",
-   "kind": "calculator"
   }
  ],
  "tools": [
-  {
-   "href": "/connect-four",
-   "title": "Connect Four",
-   "icon": "/img/connect-four-logo.png",
-   "desc": "Connect 3, 4, 5 or 6 on any board, against the computer, a friend or a Hive player.",
-   "added": "2026-11-07",
-   "kind": "tool"
-  },
   {
    "href": "/party",
    "title": "Party Invitations & RSVP",
    "icon": "/img/party-logo.png",
    "desc": "Make a themed invitation, send one link and see who's coming: Going / Maybe / Can't go, plus-ones, waitlist, what to bring. No sign-up for anyone.",
+   "added": "2026-11-07",
+   "kind": "tool"
+  },
+  {
+   "href": "/connect-four",
+   "title": "Connect Four",
+   "icon": "/img/connect-four-logo.png",
+   "desc": "Connect 3, 4, 5 or 6 on any board, against the computer, a friend or a Hive player.",
    "added": "2026-11-07",
    "kind": "tool"
   },
@@ -198,18 +198,26 @@
  ],
  "latest": [
   {
-   "href": "/connect-four",
-   "title": "Connect Four",
-   "icon": "/img/connect-four-logo.png",
-   "desc": "Connect 3, 4, 5 or 6 on any board, against the computer, a friend or a Hive player.",
-   "added": "2026-11-07",
-   "kind": "tool"
-  },
-  {
    "href": "/party",
    "title": "Party Invitations & RSVP",
    "icon": "/img/party-logo.png",
    "desc": "Make a themed invitation, send one link and see who's coming: Going / Maybe / Can't go, plus-ones, waitlist, what to bring. No sign-up for anyone.",
+   "added": "2026-11-07",
+   "kind": "tool"
+  },
+  {
+   "href": "/relative-speed-calculator",
+   "title": "Relative Speed, Jump and Fall Calculator",
+   "icon": "/img/relative-speed-calculator-logo.png",
+   "desc": "Animal speeds in body lengths per second, jumps and falls scaled to human size.",
+   "added": "2026-11-07",
+   "kind": "calculator"
+  },
+  {
+   "href": "/connect-four",
+   "title": "Connect Four",
+   "icon": "/img/connect-four-logo.png",
+   "desc": "Connect 3, 4, 5 or 6 on any board, against the computer, a friend or a Hive player.",
    "added": "2026-11-07",
    "kind": "tool"
   },
@@ -251,14 +259,6 @@
    "icon": "/img/font-finder-logo.png",
    "desc": "Drop or paste a picture and find the font among 2,000+ free fonts and the fonts on your computer, with your letters shown next to each match. Private: nothing is uploaded.",
    "added": "2026-11-06",
-   "kind": "tool"
-  },
-  {
-   "href": "/crash-physics",
-   "title": "Crash Physics Simulator",
-   "icon": "/img/crash-physics-logo.png",
-   "desc": "Fire anything at anything: pick the material, speed and plate thickness and see if it bounces, sticks or goes through. Crash cars, drop eggs, read the g-forces.",
-   "added": "2026-11-05",
    "kind": "tool"
   }
  ]

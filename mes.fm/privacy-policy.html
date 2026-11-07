@@ -346,6 +346,19 @@ sub {vertical-align:sub;}        .warning-message {font-size:1em;text-align:cent
 	app, or our contact form, which you then send yourself. What you write is not posted on the site.
 	</p>
 
+	<h2 class="mini-title" id="party">Party invitations</h2>
+
+	<p>
+	When you make an invitation with <a href="https://mes.fm/party">MES Party</a>, we store its details (name, date, place, description,
+	settings, updates, questions and the "what to bring" list) and the replies guests send (the name they type, their reply, plus-ones,
+	note and answers) on our server until two months after the event; then they are deleted (the host can also delete the event at any
+	time). Anyone with the invitation's link can see it; the host chooses whether guests see the guest list, only the numbers, or
+	nothing, and only the host sees answers to questions. To let a guest change their own reply, we keep a scrambled form of a random
+	number their browser makes up for itself, and, to limit spam from one network, a salted, one-way hash of the internet (IP) address
+	with a count of replies from it; the IP address itself is never stored. The secret key that lets the host change the event is
+	stored only as a one-way hash; the list of your events and their keys is kept in your own browser.
+	</p>
+
 	<h2 class="mini-title">Polls</h2>
 
 	<p>

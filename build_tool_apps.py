@@ -188,6 +188,14 @@ APPS = {
                   desc="Free online poll maker: type a question and up to 20 answers, choose one or several picks, when voting ends and who sees the results, then share one short link. Live result bars and a pie chart, one vote per person, no sign-up.",
                   meta_desc="Free poll maker: make a poll in seconds, share one short link and watch live results. Single or multiple choice, closing time, no sign-up.",
                   js_v="2"),
+    # MES Party (2026-11-07, mes.fm/party; an invitation is mes.fm/p/<id> = vercel rewrite to /party?e=<id>): invitations + RSVPs like Partiful.
+    # Shared core tool_apps_src/party/lib.js (= MESParty; byte-identical copy at mes.fm/api/_party-lib.js), server mes.fm/api/party.js (Upstash),
+    # tests tool_apps_src/party-tests.js. On localhost / ?mock=1 the page runs on an in-browser stand-in.
+    "party": dict(title="MES Party", page_title="Party Invitations and RSVP: Free Online Invite Maker, No Sign-Up",
+                  tag="Make an invite, send one link, see who's coming.", accent="#d6246e", dark="#a8164f", tint="#fde7f0",
+                  desc="Free online party invitations with RSVP: pick a theme, add the date, place and details, send one short link by text, WhatsApp or email, and guests reply Going, Maybe or Can't go with no app or account. Plus-ones, guest limit with a waitlist, reply-by date, questions, a what-to-bring list, updates to guests, calendar buttons and a guest list download.",
+                  meta_desc="Free party invitation maker with RSVP: themes, one short link, Going / Maybe / Can't go replies, plus-ones, waitlist, what to bring. No sign-up for anyone.",
+                  js_v="1"),
     "ping": dict(title="MES Ping Test", page_title="Ping Test: Continuous Latency, Jitter and Packet Loss Test",
                  tag="Like ping -t, in your browser.", accent="#0e7490", dark="#155e75", tint="#dcf1f6",
                  desc="Free continuous ping test: check latency, jitter and packet loss to Cloudflare 1.1.1.1, Google 8.8.8.8, mes.fm or any website, with a live chart, ping-style log and plain-word verdicts for gaming, calls and streaming. Nothing to install.",

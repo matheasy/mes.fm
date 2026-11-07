@@ -1,0 +1,241 @@
+	<script>try{if(!localStorage.getItem('pageMode')){document.documentElement.classList.add('page-wide')}}catch(e){}</script>
+	<div class="tu pa" id="pa">
+		<p class="tu-card pa-msg" id="pa-msg" role="status" hidden></p>
+
+		<!-- ===== one event (?e=<id>) ===== -->
+		<div id="pa-event" hidden>
+			<div class="pa-hostbar" id="pa-hostbar" hidden>
+				<span class="pa-hostbadge">You're the host</span>
+				<span class="pa-hosttip">Share the link below. Replies show up here as they come in.</span>
+			</div>
+			<div class="pa-layout">
+				<div class="pa-main">
+					<div id="pa-card" class="pa-cover-wrap"></div>
+					<div class="pa-banner" id="pa-banner" hidden></div>
+
+					<section class="tu-card pa-sec pa-rsvp" id="pa-rsvp" aria-labelledby="pa-rsvp-h">
+						<h2 id="pa-rsvp-h" class="pa-h">Are you coming?</h2>
+						<p class="pa-to" id="pa-to" hidden></p>
+						<div class="pa-choices" id="pa-choices" role="group" aria-label="Your reply">
+							<button type="button" class="pa-choice" data-s="y"><span class="pa-ce" aria-hidden="true">🙌</span><span class="pa-cl">Going</span></button>
+							<button type="button" class="pa-choice" data-s="m"><span class="pa-ce" aria-hidden="true">🤔</span><span class="pa-cl">Maybe</span></button>
+							<button type="button" class="pa-choice" data-s="n"><span class="pa-ce" aria-hidden="true">😢</span><span class="pa-cl">Can't go</span></button>
+						</div>
+						<form class="pa-form" id="pa-form" hidden autocomplete="on">
+							<div class="tu-row">
+								<div class="tu-field"><label for="pa-name">Your name</label><input id="pa-name" class="tu-input" type="text" maxlength="60" autocomplete="name" placeholder="First and last name"></div>
+								<div class="tu-field tu-field--sm" id="pa-pluswrap" hidden><label for="pa-plus">Bringing</label>
+									<div class="pa-step"><button type="button" class="pa-stepb" data-d="-1" aria-label="One fewer">−</button><output id="pa-plus" aria-live="polite">0</output><button type="button" class="pa-stepb" data-d="1" aria-label="One more">+</button></div>
+								</div>
+							</div>
+							<p class="tu-note pa-plusnote" id="pa-plusnote" hidden></p>
+							<div id="pa-qs"></div>
+							<div class="tu-field"><label for="pa-note">Note to the host <span class="pa-opt">(optional)</span></label><textarea id="pa-note" class="tu-input" rows="2" maxlength="400" placeholder="Can't wait! / Running a bit late / ..."></textarea></div>
+							<input type="text" id="pa-hp" class="pa-hp" tabindex="-1" autocomplete="off" aria-hidden="true">
+							<div class="pa-formact">
+								<button type="submit" class="tu-btn tu-btn--primary pa-send" id="pa-send">Send my reply</button>
+								<button type="button" class="tu-btn tu-btn--ghost" id="pa-cancelform">Cancel</button>
+							</div>
+						</form>
+						<div class="pa-done" id="pa-done" hidden></div>
+					</section>
+
+					<section class="tu-card pa-sec" id="pa-details" aria-label="Details"></section>
+					<section class="tu-card pa-sec" id="pa-updates" hidden aria-labelledby="pa-up-h"><h2 id="pa-up-h" class="pa-h">Updates from the host</h2><ol class="pa-uplist" id="pa-uplist"></ol></section>
+					<section class="tu-card pa-sec" id="pa-bring" hidden aria-labelledby="pa-br-h"><h2 id="pa-br-h" class="pa-h">What to bring</h2><p class="tu-note" id="pa-brnote"></p><ul class="pa-brlist" id="pa-brlist"></ul></section>
+					<section class="tu-card pa-sec" id="pa-guests" aria-labelledby="pa-gl-h">
+						<div class="pa-hrow"><h2 id="pa-gl-h" class="pa-h">Guest list</h2><span class="pa-live" id="pa-live" title="Updates by itself every 20 seconds">● live</span></div>
+						<div class="pa-stats" id="pa-stats"></div>
+						<div class="pa-tabs" id="pa-gtabs" role="tablist"></div>
+						<ul class="pa-glist" id="pa-glist"></ul>
+						<p class="tu-note" id="pa-glnote"></p>
+					</section>
+				</div>
+
+				<aside class="pa-side">
+					<section class="tu-card pa-sec pa-host" id="pa-host" hidden aria-labelledby="pa-host-h">
+						<h2 id="pa-host-h" class="pa-h">Host tools</h2>
+						<div class="pa-hgrid">
+							<button type="button" class="tu-btn tu-btn--primary" id="pa-h-edit">✏️ Edit event</button>
+							<button type="button" class="tu-btn" id="pa-h-post">📣 Post an update</button>
+							<button type="button" class="tu-btn" id="pa-h-add">➕ Add a guest</button>
+							<button type="button" class="tu-btn" id="pa-h-csv">⬇ Guest list (CSV)</button>
+							<button type="button" class="tu-btn" id="pa-h-names">📋 Copy names</button>
+							<button type="button" class="tu-btn" id="pa-h-remind">⏰ Reminder text</button>
+							<button type="button" class="tu-btn" id="pa-h-close">🔒 Close replies</button>
+							<button type="button" class="tu-btn" id="pa-h-cancel">🚫 Cancel event</button>
+							<button type="button" class="tu-btn" id="pa-h-mgr">🔑 Host link</button>
+							<button type="button" class="tu-btn pa-danger" id="pa-h-del">🗑 Delete</button>
+						</div>
+						<div class="pa-hpanel" id="pa-hpost" hidden>
+							<label class="tu-label" for="pa-upmsg">Message to every guest (shown on this page)</label>
+							<textarea id="pa-upmsg" class="tu-input" rows="3" maxlength="600" placeholder="e.g. Parking is on 2nd Avenue. Bring a sweater, we'll be outside!"></textarea>
+							<div class="pa-formact"><button type="button" class="tu-btn tu-btn--primary" id="pa-upsend">Post update</button><button type="button" class="tu-btn tu-btn--ghost" data-close="pa-hpost">Cancel</button></div>
+						</div>
+						<div class="pa-hpanel" id="pa-hadd" hidden>
+							<p class="tu-note" style="margin-top:0;">For people who replied by text, phone or in person.</p>
+							<div class="tu-row">
+								<div class="tu-field"><label for="pa-an">Name</label><input id="pa-an" class="tu-input" type="text" maxlength="60"></div>
+								<div class="tu-field tu-field--sm"><label for="pa-ap">+ guests</label><input id="pa-ap" class="tu-input" type="number" min="0" max="10" value="0" inputmode="numeric"></div>
+							</div>
+							<div class="tu-seg pa-aseg" role="group" aria-label="Their reply"><button type="button" data-s="y" aria-pressed="true">Going</button><button type="button" data-s="m" aria-pressed="false">Maybe</button><button type="button" data-s="n" aria-pressed="false">Can't go</button></div>
+							<div class="tu-field" style="margin-top:0.6em;"><label for="pa-ac">Note (optional)</label><input id="pa-ac" class="tu-input" type="text" maxlength="400"></div>
+							<div class="pa-formact"><button type="button" class="tu-btn tu-btn--primary" id="pa-asend">Add to the list</button><button type="button" class="tu-btn tu-btn--ghost" data-close="pa-hadd">Cancel</button></div>
+						</div>
+					</section>
+
+					<section class="tu-card pa-sec pa-share" id="pa-share" aria-labelledby="pa-sh-h">
+						<h2 id="pa-sh-h" class="pa-h">Invite people</h2>
+						<div class="pa-linkrow"><input id="pa-link" class="tu-input" type="text" readonly aria-label="Invitation link"><button type="button" class="tu-btn tu-btn--primary" id="pa-copy">Copy link</button></div>
+						<div class="pa-shbtns">
+							<button type="button" class="pa-shb" id="pa-sh-native" hidden><span aria-hidden="true">📤</span>Share…</button>
+							<a class="pa-shb" id="pa-sh-sms" target="_blank" rel="noopener"><span aria-hidden="true">💬</span>Text</a>
+							<a class="pa-shb" id="pa-sh-wa" target="_blank" rel="noopener"><span aria-hidden="true">🟢</span>WhatsApp</a>
+							<a class="pa-shb" id="pa-sh-mail" target="_blank" rel="noopener"><span aria-hidden="true">✉️</span>Email</a>
+							<button type="button" class="pa-shb" id="pa-sh-msg"><span aria-hidden="true">📋</span>Copy message</button>
+							<button type="button" class="pa-shb" id="pa-sh-qr"><span aria-hidden="true">▦</span>QR code</button>
+						</div>
+						<div class="pa-qr" id="pa-qr" hidden></div>
+						<details class="pa-det" id="pa-personal">
+							<summary>Personal invite links</summary>
+							<p class="tu-note">Type a name and the invitation opens with "<em>Name</em>, you're invited" and their name filled in.</p>
+							<div class="pa-linkrow"><input id="pa-pname" class="tu-input" type="text" maxlength="60" placeholder="e.g. Sarah"><button type="button" class="tu-btn" id="pa-pcopy">Copy their link</button></div>
+						</details>
+					</section>
+
+					<section class="tu-card pa-sec" id="pa-cal" aria-labelledby="pa-cal-h">
+						<h2 id="pa-cal-h" class="pa-h">Add to calendar</h2>
+						<div class="pa-calbtns">
+							<a class="tu-btn" id="pa-cal-g" target="_blank" rel="noopener">Google</a>
+							<button type="button" class="tu-btn" id="pa-cal-ics">Apple / .ics</button>
+							<a class="tu-btn" id="pa-cal-o" target="_blank" rel="noopener">Outlook</a>
+						</div>
+					</section>
+					<p class="pa-makeown"><a href="/party">＋ Make your own invitation</a></p>
+				</aside>
+			</div>
+		</div>
+
+		<!-- ===== start page: my events + the maker ===== -->
+		<div id="pa-start">
+			<section class="pa-hero" id="pa-hero">
+				<div class="pa-hero-txt">
+					<h2 class="pa-hero-h">Party invitations people actually answer</h2>
+					<p>Make a good-looking invite in a minute, send one link by text, WhatsApp or email, and watch the replies come in. Guests tap <strong>Going</strong>, <strong>Maybe</strong> or <strong>Can't go</strong>: no app, no account, no sign-up for anyone.</p>
+					<ul class="pa-ticks"><li>16 themes and 6 title styles</li><li>Plus-ones, guest limit with a waitlist, reply-by date</li><li>Questions for guests and a "what to bring" list</li><li>Updates to every guest, calendar buttons, guest list download</li></ul>
+					<button type="button" class="tu-btn tu-btn--primary pa-bigbtn" id="pa-start-btn">Create an invitation</button>
+				</div>
+			</section>
+
+			<section id="pa-mine-sec" hidden aria-labelledby="pa-mine-h">
+				<h2 id="pa-mine-h">My events</h2>
+				<div class="pa-mine" id="pa-mine"></div>
+				<p class="tu-note">Kept in this browser only, along with the keys that let you manage your events. To manage an event on another device, open its <strong>Host link</strong> there.</p>
+			</section>
+
+			<h2 id="pa-make-h">Create an invitation</h2>
+			<div class="pa-tpl" id="pa-tpl" role="group" aria-label="Start from an idea"></div>
+			<div class="pa-make-wrap">
+				<form class="pa-make" id="pa-make" autocomplete="off">
+					<fieldset class="tu-card pa-fs">
+						<legend>Look</legend>
+						<div class="pa-themes" id="pa-themes" role="radiogroup" aria-label="Theme"></div>
+						<div class="pa-lab">Title style</div>
+						<div class="pa-fonts" id="pa-fonts" role="radiogroup" aria-label="Title style"></div>
+						<div class="tu-row" style="margin-top:0.8em;">
+							<div class="tu-field tu-field--sm"><label for="pa-em">Emoji</label><input id="pa-em" class="tu-input pa-eminp" type="text" maxlength="16" placeholder="🎉"></div>
+							<div class="pa-emsug" id="pa-emsug"></div>
+						</div>
+					</fieldset>
+
+					<fieldset class="tu-card pa-fs">
+						<legend>What</legend>
+						<div class="tu-field"><label for="pa-t">Event name</label><input id="pa-t" class="tu-input tu-input--big" type="text" maxlength="120" placeholder="e.g. Mia's 30th Birthday"></div>
+						<div class="tu-field" style="margin-top:0.7em;"><label for="pa-hn">Hosted by</label><input id="pa-hn" class="tu-input" type="text" maxlength="60" placeholder="Your name" autocomplete="name"></div>
+						<div class="tu-field" style="margin-top:0.7em;"><label for="pa-d">Description <span class="pa-opt">(optional)</span></label><textarea id="pa-d" class="tu-input" rows="4" maxlength="3000" placeholder="What's happening, dress code, parking, what to expect..."></textarea></div>
+					</fieldset>
+
+					<fieldset class="tu-card pa-fs">
+						<legend>When</legend>
+						<div class="tu-row">
+							<div class="tu-field"><label for="pa-date">Date</label><input id="pa-date" class="tu-input" type="date"></div>
+							<div class="tu-field"><label for="pa-time">Starts</label><input id="pa-time" class="tu-input" type="time" value="19:00"></div>
+							<div class="tu-field"><label for="pa-etime">Ends <span class="pa-opt">(optional)</span></label><input id="pa-etime" class="tu-input" type="time"></div>
+						</div>
+						<div class="tu-field" style="margin-top:0.7em;"><label for="pa-z">Time zone</label><input id="pa-z" class="tu-input" type="text" list="pa-zones" spellcheck="false" autocomplete="off"><datalist id="pa-zones"></datalist></div>
+						<p class="tu-note" id="pa-whennote"></p>
+					</fieldset>
+
+					<fieldset class="tu-card pa-fs">
+						<legend>Where</legend>
+						<div class="tu-field"><label for="pa-l">Place or address</label><input id="pa-l" class="tu-input" type="text" maxlength="200" placeholder="e.g. 123 Main St, Vancouver"></div>
+						<div class="tu-field" style="margin-top:0.7em;"><label for="pa-o">Online link <span class="pa-opt">(video call, livestream; optional)</span></label><input id="pa-o" class="tu-input" type="url" maxlength="400" placeholder="https://"></div>
+						<label class="pa-check"><input type="checkbox" id="pa-lh"> Show the place and link only to people who reply Going or Maybe</label>
+					</fieldset>
+
+					<fieldset class="tu-card pa-fs">
+						<legend>Guests</legend>
+						<div class="tu-row">
+							<div class="tu-field"><label for="pa-po">Each guest can bring</label><select id="pa-po" class="tu-input"><option value="0">Nobody (just them)</option><option value="1" selected>1 other person</option><option value="2">2 others</option><option value="3">3 others</option><option value="4">4 others</option><option value="5">5 others</option><option value="6">6 others</option><option value="8">8 others</option><option value="10">10 others</option></select></div>
+							<div class="tu-field"><label for="pa-cap">Guest limit <span class="pa-opt">(0 = none)</span></label><input id="pa-cap" class="tu-input" type="number" min="0" max="5000" value="0" inputmode="numeric"></div>
+							<div class="tu-field"><label for="pa-dl">Reply by <span class="pa-opt">(optional)</span></label><input id="pa-dl" class="tu-input" type="date"></div>
+						</div>
+						<p class="tu-note">With a limit, people who reply Going after it is full go on a waitlist and move up by themselves when someone drops out.</p>
+						<div class="pa-lab">Who sees the guest list?</div>
+						<div class="tu-seg pa-glseg" id="pa-gl" role="radiogroup" aria-label="Who sees the guest list">
+							<button type="button" data-v="all" aria-pressed="true">Everyone</button><button type="button" data-v="count" aria-pressed="false">Only the numbers</button><button type="button" data-v="host" aria-pressed="false">Only me</button>
+						</div>
+						<label class="pa-check"><input type="checkbox" id="pa-mb" checked> Let guests answer "Maybe"</label>
+					</fieldset>
+
+					<details class="tu-card pa-fs pa-more" id="pa-more">
+						<summary>Questions and a "what to bring" list <span class="pa-opt">(optional)</span></summary>
+						<div class="pa-lab">Questions for guests <span class="pa-opt">(up to 3; only you see the answers)</span></div>
+						<div class="tu-field"><input id="pa-q0" class="tu-input" type="text" maxlength="120" placeholder="e.g. Any food allergies?" aria-label="Question 1"></div>
+						<div class="tu-field" style="margin-top:0.4em;"><input id="pa-q1" class="tu-input" type="text" maxlength="120" placeholder="e.g. T-shirt size?" aria-label="Question 2"></div>
+						<div class="tu-field" style="margin-top:0.4em;"><input id="pa-q2" class="tu-input" type="text" maxlength="120" placeholder="Question 3" aria-label="Question 3"></div>
+						<div class="pa-lab" style="margin-top:1em;">What to bring <span class="pa-opt">(one per line, up to 30; guests pick an item)</span></div>
+						<textarea id="pa-br" class="tu-input" rows="4" placeholder="Chips&#10;Drinks&#10;Dessert&#10;Ice" aria-label="Things to bring"></textarea>
+					</details>
+
+					<div class="pa-makeact">
+						<button type="submit" class="tu-btn tu-btn--primary pa-bigbtn" id="pa-create">Create invitation</button>
+						<button type="button" class="tu-btn tu-btn--ghost" id="pa-reset">Start over</button>
+						<span class="pa-makeerr" id="pa-makeerr" role="alert"></span>
+					</div>
+				</form>
+				<div class="pa-preview">
+					<div class="pa-lab pa-prevlab">Preview</div>
+					<div id="pa-prev" class="pa-cover-wrap"></div>
+				</div>
+			</div>
+		</div>
+
+		<div class="tu-seo">
+			<h2>A free party invitation and RSVP maker</h2>
+			<p>MES Party makes an online invitation for a birthday, dinner, BBQ, game night, baby shower, holiday party, watch party, meeting or anything else, with one short link (mes.fm/p/...) to send however you like: a group chat, a text to each person, WhatsApp, email or a QR code on a flyer. Guests open it in any browser and reply <strong>Going</strong>, <strong>Maybe</strong> or <strong>Can't go</strong> with their name. You see who is coming, how many people in total, and every note and answer, updated live.</p>
+			<h3>What you can set</h3>
+			<dl>
+				<dt>Plus-ones</dt><dd>How many people each guest may bring (0 to 10). Totals count everyone.</dd>
+				<dt>Guest limit and waitlist</dt><dd>When the event is full, new "Going" replies wait in line and move up by themselves, in order, when someone changes their reply.</dd>
+				<dt>Reply by</dt><dd>After that date the invitation still shows, but new replies are closed. You can also close replies by hand at any time.</dd>
+				<dt>Private place</dt><dd>Keep the address (and any online link) hidden until someone replies Going or Maybe.</dd>
+				<dt>Who sees the guest list</dt><dd>Everyone who has the link, only the numbers, or only you.</dd>
+				<dt>Questions and what to bring</dt><dd>Ask up to three questions (food allergies, a song request...). Only you see the answers. A "what to bring" list lets each guest pick an item so you don't end up with five bags of chips.</dd>
+				<dt>Updates</dt><dd>Post a message (a change of plan, parking, the weather) that every guest sees at the top of the invitation.</dd>
+			</dl>
+			<h3>No accounts</h3>
+			<p>Nobody signs up. When you create an invitation your browser gets a secret host key: keep the <strong>Host link</strong> (it is saved in this browser and you can copy it from Host tools) to manage the event from another phone or computer. Each guest's browser gets a random number, so a guest can change their reply later from the same device.</p>
+			<h3>Privacy</h3>
+			<p>The invitation, the replies and the "what to bring" picks are kept on our server until two months after the event, then deleted. Guest names are whatever people type. We never store your internet address, only a scrambled code used to limit spam per network. See the <a href="/privacy-policy#party">privacy policy</a>.</p>
+			<h3>Questions</h3>
+			<dl>
+				<dt>Do guests need an app?</dt><dd>No. The link opens in any browser on any phone or computer.</dd>
+				<dt>Can I change the date after sending the link?</dt><dd>Yes. Edit the event and everyone sees the new details on the same link. Post an update too so people notice.</dd>
+				<dt>Can I add people who replied by text?</dt><dd>Yes: <strong>Add a guest</strong> in Host tools puts them on the list with their reply.</dd>
+				<dt>Can I see it as a spreadsheet?</dt><dd>Download the guest list as a CSV file (opens in Excel, Numbers or Google Sheets) with names, replies, plus-ones, notes and answers.</dd>
+			</dl>
+			<p>Need everyone to pick a date first? Make a <a href="/polls">poll</a>. Counting down? Use the <a href="/countdown-to-date">Date Countdown</a> or a <a href="/reminder">reminder link</a>.</p>
+		</div>
+	</div>
+<script src="/main_js/time-input.js?v=3" defer></script>

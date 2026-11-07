@@ -348,7 +348,7 @@
 },
 "/go":{
 "added":"2026-10-06",
-"updated":"2026-11-06",
+"updated":"2026-11-07",
 "type":"Tool"
 },
 "/gpacalculator":{
@@ -701,6 +701,11 @@
 "updated":"2026-11-01",
 "type":"Simulation"
 },
+"/relative-speed-calculator":{
+"added":"2026-11-07",
+"updated":"2026-11-07",
+"type":"Calculator"
+},
 "/relative-time-calculator":{
 "added":"2026-11-07",
 "updated":"2026-11-07",
@@ -723,7 +728,7 @@
 },
 "/search":{
 "added":"2026-09-28",
-"updated":"2026-11-06",
+"updated":"2026-11-07",
 "type":"Tool"
 },
 "/search-engines":{
@@ -758,7 +763,7 @@
 },
 "/site-index":{
 "added":"2026-10-03",
-"updated":"2026-11-06",
+"updated":"2026-11-07",
 "type":"Tool"
 },
 "/site-traffic":{
