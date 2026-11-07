@@ -706,6 +706,7 @@ body.is-stuck #navbar.hide { position: fixed; top: 56px; right: 8px; }
 				</div>
 				<div class="vc-row" id="vc-diskrow"><label><input type="checkbox" id="vc-disk"> Save into a folder I choose (best for big files: nothing is kept in memory)</label></div>
 				<p class="vc-note" id="vc-disknote"></p>
+				<div class="vc-row"><label class="mes-tp" title="While this runs, the browser tab shows the percent done and the time left, so you can work in other tabs. Remembered for every MES tool."><input type="checkbox" class="mes-tp-ck" checked> Show progress in the browser tab</label></div>
 			</div>
 			<div class="vc-list" id="vc-list" aria-live="polite"></div>
 			<div class="vc-actions">
@@ -790,7 +791,7 @@ body.is-stuck #navbar.hide { position: fixed; top: 56px; right: 8px; }
             hide_search:false,
             current_tab:0
         }        </script><!-- FASTCOMMENTS-LAZY: widget init moved to main_js/main.js -- it pulls embed.min.js only when #fastcomments-widget nears the viewport or on the first Comments-toggle click, so it no longer blocks first render -->                <script src="https://mes.fm/main_js/lazysizes.min.js?v=1.0.3" async></script>
-	<script src="/convert-video/js/convert-video.js?v=2" defer></script>
+	<script src="/main_js/tab-progress.js?v=1" defer></script><script src="/convert-video/js/convert-video.js?v=3" defer></script>
             <script src="https://mes.fm/main_js/main.js?v=1.0.5"></script>    <!-- PAGEVIEW-TRACKING-INSERTED --><script src="https://mes.fm/main_js/track.js" defer></script><script>document.getElementById('copyright-year').textContent = new Date().getFullYear();</script><script src="/main_js/info-bar-fit.js" defer></script><script>
   // Floating compact header bar (see #compact-nav CSS): appears once the
   // header + nav bar have scrolled off the top; nav links that don't fit

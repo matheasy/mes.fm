@@ -506,8 +506,9 @@
 		$("cv-go").disabled = busy || !ready; $("cv-go").textContent = busy ? "Compressing..." : ready > 1 ? "Compress " + ready + " videos" : "Compress";
 	}
 	function savedLine(f) { var d = f.file.size - f.out.size; return d > 0 ? "smaller by " + Math.round(d / f.file.size * 100) + "% (was " + V.formatBytes(f.file.size) + ")" : "not smaller than the original (" + V.formatBytes(f.file.size) + ")"; }
+	function tabTask(label) { return window.MESTabProgress ? window.MESTabProgress.task(label) : { set: function () {}, label: function () {}, done: function () {}, fail: function () {}, stop: function () {} }; }
 	function setProgress(f, pct, note) {
-		f.pct = Math.max(0, Math.min(100, pct)); if (note != null) f.note = note;
+		f.pct = Math.max(0, Math.min(100, pct)); if (note != null) f.note = note; if (f.tp) f.tp.set(f.pct / 100);
 		var el = root.querySelector('[data-fid="' + f.id + '"]'); if (!el) return;
 		var bar = el.querySelector(".cv-bar i"), st = el.querySelector("[data-st]"); if (bar) bar.style.width = f.pct + "%"; if (st) st.textContent = f.note;
 	}
@@ -534,13 +535,14 @@
 		var used = {}, total = todo.length, n = 0;
 		for (var i = 0; i < todo.length; i++) {
 			var f = todo[i]; n++; if (cancelAll) { f.state = "cancelled"; f.note = "Stopped."; continue; }
-			f.state = "working"; f.pct = 0; f.note = "Starting..."; f.started = Date.now(); $("cv-prog").textContent = "File " + n + " of " + total; render();
+			f.state = "working"; f.pct = 0; f.note = "Starting..."; f.started = Date.now(); if (f.tp) f.tp.stop(); f.tp = tabTask("Compressing " + f.file.name + (total > 1 ? " (" + n + " of " + total + ")" : "")); $("cv-prog").textContent = "File " + n + " of " + total; render();
 			try {
 				var out = f.plan.engine === "webcodecs" ? await runFast(f, dest, used) : await runRecorder(f, dest, used);
 				if (f.cancel) { f.state = "cancelled"; f.note = "Cancelled."; } else { f.out = out; f.state = "done"; f.note = out.note || ""; }
 			} catch (e) {
 				if (f.cancel || (e && e.cancelled)) { f.state = "cancelled"; f.note = "Cancelled."; } else { f.state = "error"; f.note = (e && e.message) || "Compression failed."; if (window.console) console.error(e); }
 			}
+			if (f.tp) { if (f.state === "done") f.tp.done(V.formatBytes(f.file.size) + " \u2192 " + V.formatBytes(f.out.size)); else f.tp.fail(f.state === "cancelled" ? "Cancelled" : "Failed"); f.tp = null; }
 			render();
 		}
 		busy = false; unlock(); $("cv-prog").textContent = ""; render(); kick();

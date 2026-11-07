@@ -647,7 +647,7 @@ APPS = {
                          tag="Cut, clean and export audio. No upload. No sign-up.", accent="#0369a1", dark="#075985", tint="#e0f2fe",
                          desc="Free online audio editor with AI noise removal: open audio or the sound of a video, remove background noise, hum and clicks, cut, fade and arrange tracks, set the loudness to -14 or -16 LUFS and export WAV, MP3 or M4A. Runs in your browser: nothing is uploaded.",
                          meta_desc="Free online audio editor with AI noise removal. Cut, fade, clean up voice, set LUFS loudness and export WAV, MP3 or M4A. Runs in your browser, nothing uploaded.",
-                         js_v="2", pre_js=["/main_js/denoise.js?v=2"], lib_from=["convert-video"], js_parts=["../convert-video/engine.js"]),
+                         js_v="3", pre_js=["/main_js/tab-progress.js?v=1", "/main_js/denoise.js?v=2"], lib_from=["convert-video"], js_parts=["../convert-video/engine.js"]),
     # Bulk Image Converter: PNG / JPEG / WebP in bulk in the browser (canvas), optional resize, ZIP download. lib.js = MESImg (formats, sizes, names, ZIP writer; node-tested: tool_apps_src/image-converter-tests.js), shared with the photo editor.
     "image-converter": dict(title="MES Bulk Image Converter", page_title="Bulk Image Converter: PNG to JPG, JPG to PNG, WebP",
                          tag="Convert many images at once. Nothing is uploaded.", accent="#0f766e", dark="#0b5a54", tint="#e2f3f1",
@@ -1234,21 +1234,21 @@ APPS = {
     "compress": dict(title="MES Compressor", page_title="Compressor: Compress Images, PDFs and Audio Online",
                        tag="Make pictures, PDFs and audio smaller.", accent="#4338ca", dark="#3730a3", tint="#e8e9fb",
                        desc="Free online compressor for pictures, PDFs and audio: shrink JPG, PNG and WebP to a quality or file size you choose, make PDFs smaller while keeping text selectable, and save audio as smaller MP3s. Before and after preview, ZIP download. Private: nothing is uploaded.",
-                       js_v="2", lib_from=["image-converter"]),
+                       js_v="3", pre_js=["/main_js/tab-progress.js?v=1"], lib_from=["image-converter"]),
     # MES Video Compressor (2026-10-18): WebCodecs fast path (mp4box.js demux, VideoDecoder -> VideoEncoder, mp4-muxer / webm-muxer, optional File System Access streaming to disk),
     # real-time canvas + MediaRecorder fallback. Decisions in lib.js (MESVid, node tests tool_apps_src/compress-video-tests.js).
     # 2026-10-20: "Choose a quality" = constant quality (per-frame H.264 quantizer, size measured on a short probe of each video), 10 s key frames.
     "compress-video": dict(title="MES Video Compressor", page_title="Video Compressor: Make Videos Smaller Online, No Upload",
                        tag="Make videos smaller, privately.", accent="#0f766e", dark="#115e59", tint="#dcf5f1",
                        desc="Free online video compressor: shrink MP4 and MOV videos to a file size you choose (say 25 MB for email or chat) or a quality, lower the resolution and frame rate, and save as MP4 or WebM. Fast with your computer's own video encoder, a queue for several files, and nothing is uploaded.",
-                       js_v="4"),
+                       js_v="5", pre_js=["/main_js/tab-progress.js?v=1"]),
     # MES Video Converter (2026-10-28): any video -> MP4 (H.264 + AAC) for Camtasia etc. AVI + H.264 is remuxed by our own AVI reader (lib.js = MESConv, node tests
     # tool_apps_src/convert-video-tests.js; engine.js = MESConvEngine, shared with the MES Video Editor), everything else goes through ffmpeg.wasm (self-hosted
     # /main_js/ffmpeg/0.12.15/ + @ffmpeg/core 0.12.10 from jsDelivr, loaded on first use). lib_from image-converter for the ZIP writer.
     "convert-video": dict(title="MES Video Converter", page_title="Video Converter: AVI, MKV, WMV, MOV to MP4 Online, No Upload",
                        tag="Any video to MP4, privately.", accent="#4338ca", dark="#3730a3", tint="#e9e8fd",
                        desc="Free online video converter: turn AVI, MKV, WMV, FLV, MOV, WebM and MPG files into MP4 (H.264 + AAC) that Camtasia, Premiere and every phone can open. AVI screen recordings with H.264 are copied without re-encoding, so even big files take seconds. A queue for many files, ZIP or save to a folder, nothing is uploaded.",
-                       js_v="2", js_parts=["engine.js"], lib_from=["image-converter"]),
+                       js_v="3", pre_js=["/main_js/tab-progress.js?v=1"], js_parts=["engine.js"], lib_from=["image-converter"]),
     # MES Video Editor (2026-10-28): Camtasia-lite timeline editor. lib.js = MESVed (pure timeline maths, node tests tool_apps_src/video-tests.js); js_parts = the converter's
     # engine (imports any format: AVI + H.264 remux / ffmpeg.wasm), core (state, IndexedDB, media analysis, compositor), preview, timeline, export (WebCodecs + mp4-muxer).
     # Noise removal comes from window.MESDenoise (/main_js/denoise.js, written for mes.fm/audio). Normal page in the tools sidebar collection, always-dark workspace (--vd-*).
@@ -1262,7 +1262,7 @@ APPS = {
     "video": dict(title="MES Video Editor", page_title="Free Online Video Editor: Cut, Join, Add Titles, Clean Up Sound",
                        tag="Cut, join, add titles, clean up the sound. No upload.", accent="#be123c", dark="#9f1239", tint="#fde4ea",
                        desc="Free online video editor in your browser: put videos, sound and pictures on a multi-track timeline, trim and split clips, join many videos in order, add titles and overlays, cross-fade, remove background noise, even out the loudness and export MP4 up to 4K. Opens AVI, MKV, WMV and MOV too. Nothing is uploaded.",
-                       js_v="10", lib_from=["convert-video"], js_parts=["../convert-video/engine.js", "core.js", "preview.js", "timeline.js", "export.js"]),
+                       js_v="11", pre_js=["/main_js/tab-progress.js?v=1"], lib_from=["convert-video"], js_parts=["../convert-video/engine.js", "core.js", "preview.js", "timeline.js", "export.js"]),
     # MES Font Preview and Finder (2026-10-19): text in every font the browser really has (+ optional Google Fonts), effects, PNG / CSS export, compare, and a picture matcher. lib.js = MESFont (node tests tool_apps_src/fonts-tests.js).
     "fonts": dict(title="MES Font Preview and Finder", page_title="Font Preview: See Your Text in Every Font, and Find a Font from a Picture",
                   tag="See your text in every font.", accent="#7c2d92", dark="#5f2070", tint="#f3e5f8",

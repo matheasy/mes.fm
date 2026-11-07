@@ -83,7 +83,8 @@
 		var o = el("div", { class: "au-busy" }, '<div class="au-busy-in"><div class="au-busy-t">' + esc(title) + '</div><div class="au-prog"><i></i></div><div class="au-busy-m">Starting…</div><div><button type="button" class="au-btn au-btn--sm">Cancel</button></div></div>');
 		root.appendChild(o); var ac = window.AbortController ? new AbortController() : { signal: { aborted: false }, abort: function () { this.signal.aborted = true; } };
 		busyAbort = ac; o.querySelector("button").onclick = function () { ac.abort(); o.querySelector(".au-busy-m").textContent = "Stopping…"; };
-		return { signal: ac.signal, set: function (f, m) { o.querySelector("i").style.width = Math.round(f * 100) + "%"; if (m) o.querySelector(".au-busy-m").textContent = m + " · " + Math.round(f * 100) + "%"; }, done: function () { o.remove(); busyAbort = null; } };
+		var tp = window.MESTabProgress ? window.MESTabProgress.task(title) : null;   // shows in the browser tab once the job has run a couple of seconds
+		return { signal: ac.signal, set: function (f, m) { o.querySelector("i").style.width = Math.round(f * 100) + "%"; if (m) o.querySelector(".au-busy-m").textContent = m + " · " + Math.round(f * 100) + "%"; if (tp) tp.set(f); }, done: function () { o.remove(); busyAbort = null; if (tp) { if (ac.signal.aborted) tp.fail("Cancelled"); else tp.done(); } } };
 	}
 	function tick() { return new Promise(function (r) { setTimeout(r, 0); }); }
 
@@ -751,7 +752,7 @@
 			'<label class="au-f"><span>Range</span><select id="ex-range"><option value="all">Whole project</option><option value="sel"' + (S.sel ? "" : " disabled") + '>Selection only</option></select></label>' +
 			'<label class="au-f"><span>Loudness on export</span><select id="ex-lufs"><option value="none">Leave as it is</option><option value="-14">−14 LUFS, −1 dBTP (YouTube, Spotify)</option><option value="-16">−16 LUFS, −1 dBTP (podcasts)</option><option value="-23">−23 LUFS, −1 dBTP (broadcast)</option></select></label>' +
 			'<label class="au-f"><span>File name</span><input type="text" id="ex-name" spellcheck="false"></label>' +
-			'<div class="au-row"><button type="button" class="au-btn au-btn--primary" id="ex-go">⬇ Export</button></div><div class="au-note" id="ex-note">Muted tracks are left out; track volume and pan are applied. Encoding happens in this browser.</div>';
+			'<div class="au-row"><button type="button" class="au-btn au-btn--primary" id="ex-go">⬇ Export</button> ' + '<label class="mes-tp" title="While this runs, the browser tab shows the percent done and the time left, so you can work in other tabs. Remembered for every MES tool."><input type="checkbox" class="mes-tp-ck"' + (!window.MESTabProgress || window.MESTabProgress.enabled() ? " checked" : "") + '> Show progress in the browser tab</label>' + '</div><div class="au-note" id="ex-note">Muted tracks are left out; track volume and pan are applied. Encoding happens in this browser.</div>';
 		openPanel("Export", box);
 		["fmt", "bits", "kbps", "rate", "ch", "range", "lufs"].forEach(function (k) { var s = $("ex-" + k); if (EX_LS[k] && s.querySelector('option[value="' + EX_LS[k] + '"]:not([disabled])')) s.value = EX_LS[k]; s.onchange = function () { EX_LS[k] = s.value; store("export", EX_LS); vis(); }; });
 		$("ex-name").value = S.name || "audio";

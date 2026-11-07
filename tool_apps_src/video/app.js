@@ -468,7 +468,7 @@
 		if (cleaning) return; var stEl = function (t) { var e = $("vd-dn-st"); if (e) e.textContent = t; };
 		var D = await loadDenoise();
 		if (!D || typeof D.process !== "function") { stEl("Noise removal is not available yet: it is being added to mes.fm (the MES Audio Editor's engine). Normalize loudness works now."); return; }
-		cleaning = true; var model = UI.dnModel || "auto", strength = UI.dnStr == null ? 1 : UI.dnStr, done = 0;
+		cleaning = true; var model = UI.dnModel || "auto", strength = UI.dnStr == null ? 1 : UI.dnStr, done = 0; var tp = tabTask("Removing noise" + (list.length > 1 ? " from " + list.length + " clips" : ""));
 		try {
 			if (D.load) { stEl("Loading the noise-removal model..."); await D.load({ model: model, onProgress: function (x) { stEl("Loading the noise-removal model... " + Math.round((x && x.progress != null ? x.progress : x) * 100) + "%"); } }); }
 			for (var j = 0; j < list.length; j++) {
@@ -477,14 +477,14 @@
 				stEl(tag + "reading the sound...");
 				var pcm = await VE.pcmRange(m, a, b, function (x) { stEl(tag + "reading the sound... " + Math.round(x * 100) + "%"); });
 				stEl(tag + "removing noise...");
-				var out = await D.process(pcm, 48000, { model: model, strength: strength, onProgress: function (x) { stEl(tag + "removing noise... " + Math.round((x && x.progress != null ? x.progress : x) * 100) + "%"); } });
+				var out = await D.process(pcm, 48000, { model: model, strength: strength, onProgress: function (x) { var fx = x && x.progress != null ? x.progress : x; tp.set((j + fx) / list.length); stEl(tag + "removing noise... " + Math.round(fx * 100) + "%"); } });
 				if (!out || !out.length) throw new Error("the noise remover returned no sound");
 				var key = V.uid("k"); await VE.idbPut("blobs", "c:" + key, { a: a, rate: 48000, ch: out.map(function (x) { return x.buffer.byteLength === x.length * 4 ? x.buffer : x.slice().buffer; }) });
 				VE.cleanCache[key] = { start: a, rate: 48000, ch: out };
 				c.clean = { key: key, a: a, b: b, model: (D.lastModel || model), strength: strength }; done++;
 			}
-			VE.commit("Remove noise"); toast("Noise removed from " + done + " clip" + (done > 1 ? "s" : "") + ". Press Play to hear it, or Compare before / after to see it.");
-		} catch (e) { stEl("Noise removal failed: " + (e && e.message || e)); if (window.console) console.error(e); }
+			tp.done(); VE.commit("Remove noise"); toast("Noise removed from " + done + " clip" + (done > 1 ? "s" : "") + ". Press Play to hear it, or Compare before / after to see it.");
+		} catch (e) { tp.fail("Failed"); stEl("Noise removal failed: " + (e && e.message || e)); if (window.console) console.error(e); }
 		cleaning = false;
 	}
 	async function normalize(list) {
@@ -650,6 +650,7 @@
 	};
 
 	/* ---------- export dialog ---------- */
+	function tabTask(label) { return window.MESTabProgress ? window.MESTabProgress.task(label) : { set: function () {}, label: function () {}, done: function () {}, fail: function () {}, stop: function () {} }; }
 	var exporting = null;
 	/* ---------- hand the finished MP4 to the Video Compressor (same IndexedDB "mes-handoff" as the photo tools) ----------
 	 * A file written to disk is passed as its file handle (nothing is copied, even for a 6 GB video); a file made in memory is passed as the blob.
@@ -685,7 +686,7 @@
 			'<label class="vd-f"><span>What</span><select id="vd-x-range"><option value="all">The whole video (' + V.tc(d, p.fps) + ')</option>' + (hasMarks ? '<option value="marks">Only the marked part (' + V.tc(mk.out - mk.in, p.fps) + ")</option>" : "") + "</select></label></div>" +
 			'<label class="vd-f vd-wide"><span>File name</span><input type="text" id="vd-x-name" value="' + esc((p.name || "video").replace(/[\\/:*?"<>|]+/g, "-")) + '.mp4"></label>' +
 			(window.showSaveFilePicker ? '<div class="vd-checks"><label><input type="checkbox" id="vd-x-disk"' + (UI.exDisk !== false ? " checked" : "") + "> Write it straight to a file I choose (best for long videos)</label></div>" : '<p class="vd-sub">The MP4 is made in memory and downloaded at the end.' + (navigator.brave ? " Brave can write straight to disk if you turn on brave://flags/#file-system-access-api." : "") + "</p>") +
-			'<div class="vd-checks"><label title="A tab opens now and waits; when the export is done the MP4 opens in the MES Video Compressor (constant quality, usually much smaller). Nothing is uploaded."><input type="checkbox" id="vd-x-cmp"' + (UI.exCmp ? " checked" : "") + '> Then make it smaller in the Video Compressor</label></div>' + '<p class="vd-sub" id="vd-x-est"></p><div class="vd-xprog" id="vd-x-prog" hidden><div class="vd-bar"><i id="vd-x-bar"></i></div><p id="vd-x-txt" aria-live="polite"></p></div>' +
+			'<div class="vd-checks"><label title="A tab opens now and waits; when the export is done the MP4 opens in the MES Video Compressor (constant quality, usually much smaller). Nothing is uploaded."><input type="checkbox" id="vd-x-cmp"' + (UI.exCmp ? " checked" : "") + '> Then make it smaller in the Video Compressor</label><label title="While it exports, the browser tab shows the percent done and the time left. Remembered for every MES tool."><input type="checkbox" class="mes-tp-ck"' + (!window.MESTabProgress || window.MESTabProgress.enabled() ? " checked" : "") + '> Show progress in the browser tab</label></div>' + '<p class="vd-sub" id="vd-x-est"></p><div class="vd-xprog" id="vd-x-prog" hidden><div class="vd-bar"><i id="vd-x-bar"></i></div><p id="vd-x-txt" aria-live="polite"></p></div>' +
 			'<div class="vd-row vd-end"><button type="button" class="vd-btn" id="vd-x-cancel">Close</button><button type="button" class="vd-btn vd-primary" id="vd-x-go">Export</button></div>';
 		dialog(h);
 		$("vd-x-q").value = UI.exQ || "balanced";
@@ -699,19 +700,19 @@
 			if (disk) { try { handle = await window.showSaveFilePicker({ suggestedName: name, types: [{ description: "MP4 video", accept: { "video/mp4": [".mp4"] } }] }); } catch (e) { return; } }
 			var cmpTab = wantCmp ? waitTab(name) : null;
 			var go = $("vd-x-go"); go.disabled = true; $("vd-x-cancel").textContent = "Cancel"; $("vd-x-prog").hidden = false;
-			exporting = { cancel: false };
+			exporting = { cancel: false }; var tp = tabTask("Exporting " + name);
 			try {
 				var res = await VE.exportVideo({ w: z.w, h: z.h, fps: fps, quality: q, a: range === "marks" ? mk.in : 0, b: range === "marks" ? mk.out : d, handle: handle,
 					cancelled: function () { return exporting && exporting.cancel; },
-					onProgress: function (f, txt) { $("vd-x-bar").style.width = Math.round(f * 100) + "%"; $("vd-x-txt").textContent = Math.round(f * 100) + "% · " + txt; } });
+					onProgress: function (f, txt) { tp.set(f); $("vd-x-bar").style.width = Math.round(f * 100) + "%"; $("vd-x-txt").textContent = Math.round(f * 100) + "% · " + txt; } });
 				var url = res.blob ? URL.createObjectURL(res.blob) : null;
 				$("vd-x-txt").innerHTML = "<b>Done</b>: " + esc(name) + ", " + C.formatBytes(res.size) + " in " + V.short(res.secs).replace(/\.\d$/, "") + (res.sound ? "" : " (without sound)") + "." + (url ? ' <a class="vd-btn vd-primary" href="' + url + '" download="' + esc(name) + '">Download</a>' : " Saved where you chose.");
-				$("vd-x-bar").style.width = "100%";
+				$("vd-x-bar").style.width = "100%"; tp.done(C.formatBytes(res.size));
 				var cb = document.createElement("button"); cb.type = "button"; cb.className = "vd-btn vd-sm"; cb.textContent = "Make it smaller in the Video Compressor \u2197"; cb.title = "Opens the MES Video Compressor in a new tab with this MP4 already added";
 				cb.onclick = function () { sendToCompressor(handle, res.blob, name, null); }; $("vd-x-txt").appendChild(document.createTextNode(" ")); $("vd-x-txt").appendChild(cb);
 				if (cmpTab) { sendToCompressor(handle, res.blob, name, cmpTab); cmpTab = null; } else if (wantCmp) toast("Your browser blocked the Video Compressor tab: press \u201cMake it smaller in the Video Compressor\u201d.", 8000);
 				if (url) { var v = document.createElement("video"); v.controls = true; v.src = url; v.className = "vd-xvid"; $("vd-x-prog").appendChild(v); }
-			} catch (e) { $("vd-x-txt").textContent = /Cancelled/.test(e.message) ? "Export cancelled." : "Export failed: " + e.message; if (window.console) console.error(e); if (cmpTab) { try { cmpTab.close(); } catch (x) { /* ignore */ } } }
+			} catch (e) { tp.fail(/Cancelled/.test(e.message) ? "Cancelled" : "Failed"); $("vd-x-txt").textContent = /Cancelled/.test(e.message) ? "Export cancelled." : "Export failed: " + e.message; if (window.console) console.error(e); if (cmpTab) { try { cmpTab.close(); } catch (x) { /* ignore */ } } }
 			exporting = null; go.disabled = false; $("vd-x-cancel").textContent = "Close";
 		};
 	}

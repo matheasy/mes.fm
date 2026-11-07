@@ -106,12 +106,15 @@
 	}
 
 	/* ---------- run ---------- */
-	function setP(f, pct, note) { f.pct = pct; f.note = note; var row = root.querySelector(".cm-f[data-i='" + f.id + "']"); if (row) { var bar = row.querySelector(".cm-bar i"), m = row.querySelector(".cm-fm"); if (bar) bar.style.width = pct + "%"; if (m && note) m.textContent = note; } }
+	var cmTP = null;   // { tp, i, n } of the run in progress, so each file's own progress moves the tab too
+	function setP(f, pct, note) { f.pct = pct; f.note = note; if (cmTP) cmTP.tp.set((cmTP.i + Math.max(0, Math.min(100, pct)) / 100) / cmTP.n); var row = root.querySelector(".cm-f[data-i='" + f.id + "']"); if (row) { var bar = row.querySelector(".cm-bar i"), m = row.querySelector(".cm-fm"); if (bar) bar.style.width = pct + "%"; if (m && note) m.textContent = note; } }
+	function tabTask(label) { return window.MESTabProgress ? window.MESTabProgress.task(label) : { set: function () {}, label: function () {}, done: function () {}, fail: function () {}, stop: function () {} }; }
 	$("cm-go").onclick = function () {
-		if (busy) return; busy = true; var used = {}, todo = files.slice();
+		if (busy) return; busy = true; var used = {}, todo = files.slice(), tp = tabTask(todo.length > 1 ? "Compressing " + todo.length + " files" : "Compressing " + (todo[0] ? todo[0].name : "")), b0 = 0, b1 = 0;
 		files.forEach(function (f) { f.state = "ready"; f.out = null; f.kept = false; f.note = ""; }); render();
 		(function next(i) {
-			if (i >= todo.length) { busy = false; $("cm-prog").textContent = ""; render(); return; }
+			if (i >= todo.length) { busy = false; $("cm-prog").textContent = ""; render(); todo.forEach(function (f) { if (f.state === "done") { b0 += f.size; b1 += f.out ? f.out.blob.size : f.size; } }); cmTP = null; if (b0) tp.done(C.formatBytes(b0) + " \u2192 " + C.formatBytes(b1)); else tp.fail("Failed"); return; }
+			cmTP = { tp: tp, i: i, n: todo.length }; tp.set(i / todo.length, todo.length > 1 ? "file " + (i + 1) + " of " + todo.length : "");
 			var f = todo[i]; f.state = "working"; f.pct = 3; f.note = "Starting..."; $("cm-prog").textContent = "File " + (i + 1) + " of " + todo.length; render();
 			var job = f.kind === "image" ? doImage(f, used) : f.kind === "pdf" ? doPdf(f, used) : doAudio(f, used);
 			job.then(function (r) {

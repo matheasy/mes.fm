@@ -77,6 +77,7 @@
 	});
 
 	/* ---------- converting ---------- */
+	function tabTask(label) { return window.MESTabProgress ? window.MESTabProgress.task(label) : { set: function () {}, label: function () {}, done: function () {}, fail: function () {}, stop: function () {} }; }
 	$("vc-go").onclick = async function () {
 		if (busy) return;
 		if (S.disk && canDir && !dirHandle) { try { dirHandle = await window.showDirectoryPicker({ mode: "readwrite", id: "mes-convert-video" }); } catch (e) { return; } }
@@ -85,20 +86,20 @@
 		render(); var t0 = Date.now(), n = 0;
 		for (var j = 0; j < files.length; j++) {
 			var f = files[j]; if (f.state !== "queued") continue;
-			f.state = "working"; f.pct = 0; f.status = "Starting..."; render(); var start = Date.now();
+			f.state = "working"; f.pct = 0; f.status = "Starting..."; render(); var start = Date.now(), tp = tabTask("Converting " + f.file.name);
 			try {
 				var handle = null;
 				if (S.disk && dirHandle) handle = await dirHandle.getFileHandle(await freeName(dirHandle, f.out), { create: true });
 				var res = await E.convert(f.file, {
 					probe: f.p, handle: handle, quality: S.quality, reencode: S.reenc,
 					cancelled: function () { return f.cancel; },
-					onProgress: function (x) { f.pct = x; f.status = "Converting... " + Math.round(x * 100) + "%" + eta(start, x); paint(f); },
-					onStatus: function (txt, x) { f.status = txt; if (x != null) f.pct = x; paint(f); }
+					onProgress: function (x) { f.pct = x; tp.set(x); f.status = "Converting... " + Math.round(x * 100) + "%" + eta(start, x); paint(f); },
+					onStatus: function (txt, x) { f.status = txt; if (x != null) { f.pct = x; tp.set(x); } paint(f); }
 				});
 				f.state = "done"; f.size = res.size; f.note = res.note; f.secs = (Date.now() - start) / 1000;
 				if (res.blob) { f.blob = res.blob; f.url = URL.createObjectURL(res.blob); }
-				n++;
-			} catch (e) { f.state = "error"; f.note = (e && e.message) || "Failed."; if (window.console) console.error("[video converter]", e); }
+				n++; tp.done(C.formatBytes(res.size));
+			} catch (e) { tp.fail(f.cancel ? "Cancelled" : "Failed"); f.state = "error"; f.note = (e && e.message) || "Failed."; if (window.console) console.error("[video converter]", e); }
 			render();
 		}
 		busy = false; render();
