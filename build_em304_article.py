@@ -60,6 +60,15 @@ CHILDREN = [
                 ("Odysee", "https://odysee.com/@mes:8/Columbia-Disaster-Introduction:2"),
                 ("BitChute", "https://www.bitchute.com/video/mfS5XRG5O9mz/"),
                 ("Telegram", "https://t.me/meslinks/35675")]),
+    dict(slug="mechanics-materials-review", permlink="review-of-mechanics-of-mate-789", youtube="IgncLmqQRQc",
+         title="Review of Mechanics of Materials: Strain, Stress, Shear, Thermal Expansion",
+         notes=["Solution: Review of Mechanics of Materials"],
+         fix={"divided by that cross section\n": "divided by that cross section area\n",
+              "divided by the axial strain (a negative sign is\n": "divided by the axial strain (a negative sign is included so the ratio is positive)\n"},
+         links=[("Rumble", "https://rumble.com/v7hzf0m-review-of-mechanics-of-materials-strain-stress-shear-thermal-expansion.html"),
+                ("Odysee", "https://odysee.com/@mes:8/mechanics-materials-review:1"),
+                ("BitChute", "https://www.bitchute.com/video/m8QRoHi2RV9p/"),
+                ("Telegram", "https://t.me/meslinks/35686")]),
 ]
 CHILD_SRC = os.path.join(SRC, "children")
 
