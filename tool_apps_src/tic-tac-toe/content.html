@@ -1,0 +1,105 @@
+	<script>try{if(!localStorage.getItem('pageMode')){document.documentElement.classList.add('page-wide')}}catch(e){}</script>
+	<div class="tu tt" id="tt">
+		<div class="tt-tabs" id="tt-tabs" role="tablist" aria-label="Tic-tac-toe sections">
+			<button type="button" class="tt-tab" role="tab" data-t="play" aria-selected="true" aria-controls="tt-p-play">Play</button><button type="button" class="tt-tab" role="tab" data-t="online" aria-selected="false" aria-controls="tt-p-online" tabindex="-1">Play online</button><button type="button" class="tt-tab" role="tab" data-t="stats" aria-selected="false" aria-controls="tt-p-stats" tabindex="-1">Statistics</button><button type="button" class="tt-tab" role="tab" data-t="rules" aria-selected="false" aria-controls="tt-p-rules" tabindex="-1">Rules</button>
+		</div>
+
+		<section id="tt-p-play" role="tabpanel" aria-label="Play">
+			<div class="tu-card tt-setup" id="tt-setup">
+				<div class="tu-row">
+					<div class="tu-field tt-f-game"><label for="tt-game">Game</label>
+						<select id="tt-game" class="tu-select"></select></div>
+					<div class="tu-field tt-f-seg"><span class="tu-label" id="tt-opp-l">Play against</span>
+						<div class="tu-seg" id="tt-opp" role="group" aria-labelledby="tt-opp-l"><button type="button" data-v="cpu" aria-pressed="true">Computer</button><button type="button" data-v="local" aria-pressed="false">A friend here</button></div></div>
+					<div class="tu-field tt-f-seg tt-cpuonly"><span class="tu-label" id="tt-lv-l">Level</span>
+						<div class="tu-seg" id="tt-lv" role="group" aria-labelledby="tt-lv-l"><button type="button" data-v="easy" aria-pressed="false">Easy</button><button type="button" data-v="medium" aria-pressed="true">Medium</button><button type="button" data-v="hard" aria-pressed="false">Hard</button></div></div>
+					<div class="tu-field tt-f-seg tt-cpuonly"><span class="tu-label" id="tt-me-l">You go</span>
+						<div class="tu-seg" id="tt-me" role="group" aria-labelledby="tt-me-l"><button type="button" data-v="first" aria-pressed="true">First</button><button type="button" data-v="second" aria-pressed="false">Second</button><button type="button" data-v="alt" aria-pressed="false">Take turns</button></div></div>
+				</div>
+				<div class="tu-row tt-custom" id="tt-custom" hidden>
+					<div class="tu-field tt-f-num"><label for="tt-cw">Width</label><input id="tt-cw" class="tu-input" type="number" min="3" max="19" value="5" inputmode="numeric"></div>
+					<div class="tu-field tt-f-num"><label for="tt-ch">Height</label><input id="tt-ch" class="tu-input" type="number" min="3" max="19" value="5" inputmode="numeric"></div>
+					<div class="tu-field tt-f-num"><label for="tt-cd">Layers (3D)</label><input id="tt-cd" class="tu-input" type="number" min="1" max="4" value="1" inputmode="numeric"></div>
+					<div class="tu-field tt-f-num"><label for="tt-ck">In a row</label><input id="tt-ck" class="tu-input" type="number" min="3" max="7" value="4" inputmode="numeric"></div>
+					<div class="tt-checks">
+						<label><input type="checkbox" id="tt-cg"> Gravity (pieces drop)</label>
+						<label><input type="checkbox" id="tt-cm"> Misère (a line loses)</label>
+						<label><input type="checkbox" id="tt-cx"> Wild (choose X or O)</label>
+					</div>
+					<p class="tu-note tt-cnote" id="tt-cnote"></p>
+				</div>
+				<p class="tt-desc" id="tt-desc"></p>
+			</div>
+
+			<div class="tt-view" id="tt-view">
+				<div class="tt-vbar">
+					<p class="tt-status" id="tt-status" role="status" aria-live="polite"></p>
+					<span class="tt-vbtns" role="group" aria-label="Game"><button type="button" class="tt-vb tt-vb--main" id="tt-new" title="Start a new game (N)">↺ New game</button><button type="button" class="tt-vb" id="tt-undo" title="Take back your last move (U)">↶ Undo</button><button type="button" class="tt-vb" id="tt-hint" title="Show the best move the computer can find (H)">💡 Hint</button><button type="button" class="tt-vb" id="tt-fill" aria-pressed="false" title="Fill the browser window with the board (W; Esc closes)">⤢ Fill window</button><button type="button" class="tt-vb" id="tt-fs" title="Full screen (F; Esc leaves)">⛶ Full screen</button></span>
+				</div>
+				<div class="tt-online-bar" id="tt-obar" hidden></div>
+				<div class="tt-pick" id="tt-pick" hidden></div>
+				<div class="tt-stage" id="tt-stage">
+					<div class="tt-board" id="tt-board" tabindex="0" aria-label="Board: arrow keys move, Enter plays"></div>
+				</div>
+				<div class="tt-score" id="tt-score"></div>
+				<div class="tt-replay" id="tt-replay">
+					<span class="tt-rbtns" role="group" aria-label="Look back through the moves"><button type="button" class="tt-vb" data-r="first" title="Start of the game">⏮</button><button type="button" class="tt-vb" data-r="prev" title="One move back (←)">◀</button><button type="button" class="tt-vb" data-r="next" title="One move forward (→)">▶</button><button type="button" class="tt-vb" data-r="last" title="Back to now">⏭</button></span>
+					<span class="tt-rpos" id="tt-rpos"></span>
+					<button type="button" class="tt-vb" id="tt-link" title="Copy a link that opens this game at this move">🔗 Copy link</button>
+				</div>
+				<ol class="tt-moves" id="tt-moves" aria-label="Moves"></ol>
+			</div>
+			<p class="tu-note">Keys: arrows + <kbd>Enter</kbd> play a cell, <kbd>N</kbd> new game, <kbd>U</kbd> undo, <kbd>H</kbd> hint, <kbd>W</kbd> fill window, <kbd>F</kbd> full screen. Your games and settings stay in this browser.</p>
+		</section>
+
+		<section id="tt-p-online" role="tabpanel" aria-label="Play online" hidden>
+			<div class="tu-card">
+				<h2 class="tt-h">Play someone online</h2>
+				<p class="tt-sub">No account needed. Make a game and send the link to a friend, or pick an open game from the list below. The game is the one chosen on the Play tab.</p>
+				<div class="tu-row">
+					<div class="tu-field tt-f-name"><label for="tt-name">Your name</label><input id="tt-name" class="tu-input" maxlength="24" autocomplete="nickname" placeholder="Guest"></div>
+					<div class="tu-field tt-f-seg"><span class="tu-label" id="tt-ofirst-l">Who goes first</span>
+						<div class="tu-seg" id="tt-ofirst" role="group" aria-labelledby="tt-ofirst-l"><button type="button" data-v="host" aria-pressed="true">Me</button><button type="button" data-v="guest" aria-pressed="false">The other player</button><button type="button" data-v="random" aria-pressed="false">Random</button></div></div>
+				</div>
+				<label class="tt-chk"><input type="checkbox" id="tt-opub" checked> List my game under "Open games" so anyone can join</label>
+				<p class="tt-ogame">Game: <b id="tt-ovar"></b> <button type="button" class="tt-linkbtn" id="tt-ochange">change</button></p>
+				<p><button type="button" class="tu-btn tu-btn--primary" id="tt-ocreate">Make a game</button></p>
+				<div id="tt-oinvite" hidden></div>
+			</div>
+			<div class="tu-card">
+				<div class="tt-lobhead"><h2 class="tt-h">Open games</h2><button type="button" class="tu-btn" id="tt-orefresh">↻ Refresh</button></div>
+				<div id="tt-lobby"><p class="tt-sub">Loading…</p></div>
+			</div>
+			<p class="tu-note">Online games are kept on mes.fm's server for a few hours, then deleted. Only the game itself and the names you type are stored. Coming soon: games on the Hive blockchain, signed with your Hive account, with results kept for good.</p>
+		</section>
+
+		<section id="tt-p-stats" role="tabpanel" aria-label="Statistics" hidden>
+			<p class="tu-note">Kept in this browser only (nothing is uploaded). Games left unfinished are not counted.</p>
+			<div id="tt-stats"></div>
+		</section>
+
+		<section id="tt-p-rules" role="tabpanel" aria-label="Rules" hidden>
+			<div id="tt-rules"></div>
+		</section>
+
+		<div class="tu-toast" id="tt-toast" role="status" aria-live="polite"></div>
+
+		<div class="tu-seo">
+			<h2>Tic-tac-toe with fifteen ways to play</h2>
+			<p>Play classic noughts and crosses against the computer or a friend, then try the variants: misère (where three in a row loses), wild tic-tac-toe, numerical tic-tac-toe, bigger boards with four or five in a row, gomoku, a gravity game where pieces drop, ultimate tic-tac-toe, 3D Qubic, Notakto and Order &amp; Chaos. You can also make your own board: any size from 3 × 3 to 19 × 19, up to four layers, three to seven in a row. Nothing to install and no account.</p>
+			<h3>How strong is the computer?</h3>
+			<dl>
+				<dt>Easy</dt><dd>Mostly plays at random, and only sometimes notices that it can win. Good for young children.</dd>
+				<dt>Medium</dt><dd>Always takes a win and always stops yours when it can, but otherwise often plays a harmless move instead of the best one.</dd>
+				<dt>Hard</dt><dd>On small boards it works out the game to the end, so on the classic 3 × 3 board it never loses. On bigger boards it searches several moves ahead and weighs every possible line; on ultimate tic-tac-toe, Notakto and Order &amp; Chaos it plays out thousands of random games from each possible move and picks the one that wins most often. It thinks in the background, so the page never freezes.</dd>
+			</dl>
+			<h3>Questions</h3>
+			<dl>
+				<dt>Can you always win at tic-tac-toe?</dt><dd>No. If both players make no mistakes the classic game is always a draw. You can only win when the other player slips, which is why the Hard computer never loses it. Bigger boards are different: on 4 × 4 with three in a row, the first player can always force a win.</dd>
+				<dt>What is the best first move?</dt><dd>On the classic board the centre and the corners are both fine; an edge is the riskiest start but still a draw with good play. Against a beginner, a corner gives them the most ways to go wrong.</dd>
+				<dt>How does online play work?</dt><dd>Make a game, send the link, and the board updates for both of you within a second or two. Moves are checked on mes.fm's server so nobody can cheat or play out of turn. If the other player disappears for three minutes on their turn you can claim the win.</dd>
+				<dt>Is there an undo?</dt><dd>Yes, against the computer and against a friend on the same device (not in online games). The Hint button shows the Hard computer's choice for your move.</dd>
+			</dl>
+			<p>Related: <a href="/backgammon">Backgammon</a> &middot; <a href="/poker">Poker</a> &middot; <a href="/dice-roller">Dice roller</a> &middot; <a href="/tools">All MES tools</a></p>
+		</div>
+	</div>

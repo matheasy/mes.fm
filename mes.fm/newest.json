@@ -1,5 +1,5 @@
 {
- "generated": "2026-11-05",
+ "generated": "2026-11-06",
  "calculators": [
   {
    "href": "/practice-tests",
@@ -100,6 +100,22 @@
  ],
  "tools": [
   {
+   "href": "/tic-tac-toe",
+   "title": "Tic-Tac-Toe",
+   "icon": "/img/tic-tac-toe-logo.png",
+   "desc": "Classic, ultimate, 3D, gomoku, Notakto and more, against the computer, a friend or someone online.",
+   "added": "2026-11-06",
+   "kind": "tool"
+  },
+  {
+   "href": "/font-finder",
+   "title": "Font Finder: What Font Is This?",
+   "icon": "/img/font-finder-logo.png",
+   "desc": "Drop or paste a picture and find the font among 2,000+ free fonts and the fonts on your computer, with your letters shown next to each match. Private: nothing is uploaded.",
+   "added": "2026-11-06",
+   "kind": "tool"
+  },
+  {
    "href": "/crash-physics",
    "title": "Crash Physics Simulator",
    "icon": "/img/crash-physics-logo.png",
@@ -178,25 +194,25 @@
    "desc": "Negative refraction, the flat and perfect lens, a live Maxwell simulation of a metamaterial, diffraction gratings and ten things light can do.",
    "added": "2026-11-01",
    "kind": "tool"
-  },
-  {
-   "href": "/gnm",
-   "title": "German New Medicine Explorer",
-   "icon": "/img/gnm-logo.png",
-   "desc": "Dr. Hamer's two-phase chart with a draggable marker, organs by germ layer and brain relay, a describe-your-symptoms reader, the 5 Biological Laws and a glossary.",
-   "added": "2026-11-01",
-   "kind": "tool"
-  },
-  {
-   "href": "/3d-studio",
-   "title": "3D Studio (3D modeler for 3D printing)",
-   "icon": "/img/3d-studio-logo.png",
-   "desc": "Build 3D models from boxes, cylinders, text and holes, start from templates, check them for 3D printing and export STL or 3MF. Nothing is uploaded.",
-   "added": "2026-10-31",
-   "kind": "tool"
   }
  ],
  "latest": [
+  {
+   "href": "/tic-tac-toe",
+   "title": "Tic-Tac-Toe",
+   "icon": "/img/tic-tac-toe-logo.png",
+   "desc": "Classic, ultimate, 3D, gomoku, Notakto and more, against the computer, a friend or someone online.",
+   "added": "2026-11-06",
+   "kind": "tool"
+  },
+  {
+   "href": "/font-finder",
+   "title": "Font Finder: What Font Is This?",
+   "icon": "/img/font-finder-logo.png",
+   "desc": "Drop or paste a picture and find the font among 2,000+ free fonts and the fonts on your computer, with your letters shown next to each match. Private: nothing is uploaded.",
+   "added": "2026-11-06",
+   "kind": "tool"
+  },
   {
    "href": "/crash-physics",
    "title": "Crash Physics Simulator",
@@ -243,22 +259,6 @@
    "icon": "/img/spin-half-logo.png",
    "desc": "Dirac's belt trick in 3D: one turn tangles the ribbons, two turns untangle them, plus five pictures of why spin ½ needs 720°, a phase-coloured torus and an elastic sheet that lies flat only after 720°.",
    "added": "2026-11-03",
-   "kind": "tool"
-  },
-  {
-   "href": "/practice-tests",
-   "title": "Practice Tests (FSA Style)",
-   "icon": "/img/practice-tests-logo.png",
-   "desc": "Grade 4 and 7 numeracy and reading practice with new questions every time and every answer explained.",
-   "added": "2026-11-02",
-   "kind": "calculator"
-  },
-  {
-   "href": "/hologram",
-   "title": "Hologram Simulator",
-   "icon": "/img/hologram-logo.png",
-   "desc": "Record interference fringes live, play the hologram back with real wave optics, see parallax and the twin image, compare hologram types and compute a phase hologram of your drawing.",
-   "added": "2026-11-02",
    "kind": "tool"
   }
  ]
