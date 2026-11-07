@@ -35,6 +35,90 @@ let sourceTotalsData = [];
 let showAllPages = false;
 const showMoreBtn = document.getElementById('showMorePages');
 
+// Page search: typing filters the loaded top 50 at once, then (after a pause) asks /api/stats?q= to search the
+// whole leaderboard (top 3,000 pages) so pages outside the top 50 turn up too, with their full breakdowns.
+const pgSearchInput = document.getElementById('pgSearch');
+const pgSearchClear = document.getElementById('pgSearchClear');
+const pgSearchNote = document.getElementById('pgSearchNote');
+let pageQuery = '';
+let searchResult = null;      // { key: range|q, rows, meta } from the server
+let searchPending = false;
+let searchTimer = 0;
+const searchCache = new Map();
+
+function queryWords(q) {
+  return q.toLowerCase().split(/\s+/).filter(Boolean).slice(0, 8);
+}
+function localMatches(q) {
+  const words = queryWords(q);
+  return topPagesData.filter(function (p) {
+    const hay = (p.site + p.path).toLowerCase();
+    return words.every(function (w) { return hay.indexOf(w) !== -1; });
+  });
+}
+function searchKey() { return currentRange + '|' + queryWords(pageQuery).join(' '); }
+// Rows the table shows: the top 50, or the search hits (server answer when it is in, else the local filter).
+function tableRows() {
+  if (!pageQuery) return topPagesData;
+  if (searchResult && searchResult.key === searchKey()) return searchResult.rows;
+  return localMatches(pageQuery);
+}
+function highlight(label) {
+  const html = escapeHtml(label);
+  const words = queryWords(pageQuery).map(function (w) { return escapeHtml(w).replace(/[.*+?^${}()|[\]\\]/g, '\\$&'); });
+  if (!words.length) return html;
+  return html.replace(new RegExp('(' + words.join('|') + ')', 'gi'), '<mark>$1</mark>');
+}
+function renderSearchNote() {
+  pgSearchClear.hidden = !pageQuery;
+  if (!pageQuery) { pgSearchNote.textContent = ''; return; }
+  const res = searchResult && searchResult.key === searchKey() ? searchResult : null;
+  if (!res) {
+    const n = localMatches(pageQuery).length;
+    pgSearchNote.textContent = (searchPending ? 'Searching every page… ' : '') + n + ' of the top ' + topPagesData.length + ' match' + (n === 1 ? 'es' : '') + '.';
+    return;
+  }
+  const m = res.meta;
+  if (!m.matches) { pgSearchNote.textContent = 'No page matches “' + pageQuery.trim() + '” in the past ' + RANGE_LABELS[currentRange] + '.'; return; }
+  pgSearchNote.textContent = m.matches.toLocaleString() + ' page' + (m.matches === 1 ? '' : 's') + ' match' + (m.matches === 1 ? 'es' : '') +
+    ' · ' + m.matchViews.toLocaleString() + ' views' +
+    (m.matches > res.rows.length ? ' · showing the ' + res.rows.length + ' most viewed' : '') +
+    (m.more ? ' (searched the ' + m.scanned.toLocaleString() + ' most viewed pages)' : '') + '. # = rank among all pages.';
+}
+async function runSearch() {
+  const key = searchKey();
+  if (!pageQuery) return;
+  if (searchCache.has(key)) { searchResult = searchCache.get(key); searchPending = false; renderTopPages(); return; }
+  searchPending = true; renderSearchNote();
+  try {
+    const res = await fetch('/api/stats?range=' + encodeURIComponent(currentRange) + '&q=' + encodeURIComponent(queryWords(pageQuery).join(' ')));
+    if (!res.ok) throw new Error('bad response');
+    const data = await res.json();
+    if (!data.search) throw new Error('no search');
+    const result = { key: key, rows: data.topPages || [], meta: data.search };
+    searchCache.set(key, result);
+    if (searchKey() === key) searchResult = result;
+  } catch (e) {
+    // no /api (local preview) or a failure: the local filter of the top 50 stays
+  }
+  if (searchKey() === key) { searchPending = false; renderTopPages(); }
+}
+pgSearchInput.addEventListener('input', function () {
+  pageQuery = pgSearchInput.value.trim() ? pgSearchInput.value : '';
+  showAllPages = !!pageQuery;
+  clearTimeout(searchTimer);
+  searchPending = !!pageQuery && !searchCache.has(searchKey());
+  if (pageQuery) searchTimer = setTimeout(runSearch, 450);
+  renderTopPages();
+});
+pgSearchInput.addEventListener('keydown', function (e) {
+  if (e.key === 'Escape' && pgSearchInput.value) { e.preventDefault(); pgSearchInput.value = ''; pgSearchInput.dispatchEvent(new Event('input')); }
+  if (e.key === 'Enter') { clearTimeout(searchTimer); runSearch(); }
+});
+pgSearchClear.addEventListener('click', function () {
+  pgSearchInput.value = ''; pgSearchInput.dispatchEvent(new Event('input')); pgSearchInput.focus();
+});
+
 // Per-table sort state. Text columns (page path, device/source name)
 // default to A-Z; numeric columns (views, and each device/source view
 // count) default to most-first. Clicking the already-active column just
@@ -305,9 +389,11 @@ function renderTopPages() {
     return;
   }
 
+  renderSearchNote();
+  const rows = tableRows();
   const devices = topPagesDevices;
   const sources = topPagesSources;
-  const sorted = sortRows(topPagesData, pagesSort);
+  const sorted = sortRows(rows, pagesSort);
   const visible = showAllPages ? sorted : sorted.slice(0, PAGES_PREVIEW_COUNT);
   const breakdownKeys = devices.concat(sources);
 
@@ -319,6 +405,13 @@ function renderTopPages() {
     thCell('Views', 'views', pagesSort, 'views sticky-col sticky-right') + '</tr>';
   attachPageColResizer();
 
+  if (!rows.length) {
+    topPagesBody.innerHTML = '<tr><td colspan="99" class="empty-state">' + (searchPending ? 'Searching every page&hellip;' : 'No page matches that search.') + '</td></tr>';
+    topPagesFoot.innerHTML = '';
+    showMoreBtn.style.display = 'none';
+    return;
+  }
+
   topPagesBody.innerHTML = visible.map(function (p) {
     const url = 'https://' + p.site + p.path;
     const label = pageLabel(p);
@@ -328,7 +421,7 @@ function renderTopPages() {
     const picked = picks.indexOf(key) !== -1;
     const pick = '<input type="checkbox" class="pg-pick" data-page-key="' + escapeHtml(key) + '" title="Show in chart" aria-label="Show ' + escapeHtml(label) + ' in chart"' +
       (picked ? ' checked style="accent-color:' + colorFor(key) + '"' : (picks.length >= MAX_PICKS ? ' disabled' : '')) + '>';
-    const row = '<tr><td class="page-cell sticky-col sticky-left">' + pick + toggle + '<a href="' + escapeHtml(url) + '" title="' + escapeHtml(label) + '" target="_blank" rel="noopener"><span class="page-path">' + escapeHtml(label) + '</span></a></td>' +
+    const row = '<tr><td class="page-cell sticky-col sticky-left">' + pick + toggle + '<a href="' + escapeHtml(url) + '" title="' + escapeHtml(label) + '" target="_blank" rel="noopener"><span class="page-path">' + (pageQuery && p.rank ? '<span class="pg-rank">#' + p.rank + '</span>' : '') + (pageQuery ? highlight(label) : escapeHtml(label)) + '</span></a></td>' +
       breakdownKeys.map(function (k) { return breakdownCell(p, k); }).join('') +
       '<td class="views sticky-col sticky-right">' + p.views.toLocaleString() + '</td></tr>';
     if (!isExpanded) return row;
@@ -339,16 +432,16 @@ function renderTopPages() {
   // slice), same as Views by Device/Source -- but unlike those tables
   // this ISN'T every page ever viewed, just the leaderboard's top N, so
   // the label says so rather than implying a true grand total.
-  const totalViews = topPagesData.reduce(function (sum, p) { return sum + p.views; }, 0);
+  const totalViews = rows.reduce(function (sum, p) { return sum + p.views; }, 0);
   const breakdownTotals = breakdownKeys.map(function (k) {
-    const sum = topPagesData.reduce(function (acc, p) { return acc + breakdownValue(p, k); }, 0);
+    const sum = rows.reduce(function (acc, p) { return acc + breakdownValue(p, k); }, 0);
     return '<td class="views">' + sum.toLocaleString() + '</td>';
   }).join('');
-  topPagesFoot.innerHTML = '<tr><td class="sticky-col sticky-left">Total (top ' + topPagesData.length + ')</td>' + breakdownTotals + '<td class="views sticky-col sticky-right">' + totalViews.toLocaleString() + '</td></tr>';
+  topPagesFoot.innerHTML = '<tr><td class="sticky-col sticky-left">' + (pageQuery ? 'Total (' + rows.length + ' shown)' : 'Total (top ' + rows.length + ')') + '</td>' + breakdownTotals + '<td class="views sticky-col sticky-right">' + totalViews.toLocaleString() + '</td></tr>';
 
-  if (topPagesData.length > PAGES_PREVIEW_COUNT) {
+  if (rows.length > PAGES_PREVIEW_COUNT) {
     showMoreBtn.style.display = 'block';
-    showMoreBtn.textContent = showAllPages ? 'Show top ' + PAGES_PREVIEW_COUNT : 'Show all (' + topPagesData.length + ')';
+    showMoreBtn.textContent = showAllPages ? 'Show top ' + PAGES_PREVIEW_COUNT : 'Show all (' + rows.length + ')';
   } else {
     showMoreBtn.style.display = 'none';
   }
@@ -489,8 +582,9 @@ async function loadStats() {
     if (breakdown === 'pages') ensureTopPageSeries();
     topPagesDevices = visibleDevices(topPagesData, devices);
     topPagesSources = visibleSources(topPagesData, sources);
-    showAllPages = false;
+    showAllPages = !!pageQuery;
     renderTopPages();
+    if (pageQuery) runSearch();
 
     deviceTotalsData = data.deviceTotals || [];
     renderDeviceTotals();

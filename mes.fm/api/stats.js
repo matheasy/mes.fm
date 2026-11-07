@@ -1,6 +1,7 @@
 const { lastNDayKeys, lastNHourKeys } = require('./_bucket-keys');
 
 const TOP_N = 50;
+const SEARCH_SCAN = 3000;
 
 // Must match the categories api/track.js's detectDevice() / detectSource() can produce.
 const DEVICES = ['desktop', 'mobile', 'tablet', 'tv', 'bot', 'unknown'];
@@ -102,7 +103,12 @@ module.exports = async (req, res) => {
   // &n=30..500 (slim only): a longer leaderboard, e.g. the Table view of /calculators and /tools needs the views of
   // every hub card. Still one ZREVRANGE, so the cost barely changes.
   const nAsked = parseInt(req.query.n, 10);
-  const topN = slim ? (nAsked >= 30 ? Math.min(nAsked, 500) : 30) : TOP_N;
+  // &q=words (full mode only): search the leaderboard instead of taking its top 50. Reads the top SEARCH_SCAN
+  // pages (one ZREVRANGE, same command count), keeps those whose site+path contains every word, and returns the
+  // best TOP_N of them with the usual breakdowns. `rank` = the page's place in the whole leaderboard.
+  const q = slim ? '' : String(req.query.q || '').trim().toLowerCase().slice(0, 80);
+  const words = q ? q.split(/\s+/).filter(Boolean).slice(0, 8) : [];
+  const topN = slim ? (nAsked >= 30 ? Math.min(nAsked, 500) : 30) : (words.length ? SEARCH_SCAN : TOP_N);
 
   let commands;
   let leaderboardResultIndex;
@@ -172,9 +178,23 @@ module.exports = async (req, res) => {
   const deviceTotalsRaw = results[deviceTotalsResultIndex]?.result || [];
   const sourceTotalsRaw = results[sourceTotalsResultIndex]?.result || [];
 
-  const topPages = [];
+  let topPages = [];
   for (let i = 0; i < topPagesRaw.length; i += 2) {
-    topPages.push(parseMember(topPagesRaw[i], topPagesRaw[i + 1]));
+    const p = parseMember(topPagesRaw[i], topPagesRaw[i + 1]);
+    p.rank = i / 2 + 1;
+    topPages.push(p);
+  }
+  let search = null;
+  if (words.length) {
+    const hits = topPages.filter((p) => {
+      const hay = (p.site + p.path).toLowerCase();
+      return words.every((w) => hay.includes(w));
+    });
+    search = {
+      q: words.join(" "), matches: hits.length, scanned: topPages.length, more: topPages.length >= SEARCH_SCAN,
+      matchViews: hits.reduce((a, p) => a + p.views, 0),
+    };
+    topPages = hits.slice(0, TOP_N);
   }
 
   const deviceTotals = [];
@@ -284,6 +304,7 @@ module.exports = async (req, res) => {
     devices: DEVICES,
     sources: SOURCES,
     topPages,
+    ...(search ? { search } : {}),
     deviceTotals,
     sourceTotals,
     updatedAt: new Date().toISOString(),

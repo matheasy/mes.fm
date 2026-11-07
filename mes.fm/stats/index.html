@@ -264,6 +264,25 @@ sub {vertical-align:sub;}        .warning-message {font-size:1em;text-align:cent
 	.st .section-head {display:flex;align-items:baseline;justify-content:space-between;flex-wrap:wrap;gap:0.5em;}
 	.st .section-head h2 {flex:1 1 auto;}
 
+	/* Most Viewed Pages search */
+	.st .pg-search {margin:0 0 0.6em;}
+	.st .pg-search__box {display:flex;align-items:center;gap:0.45em;max-width:32em;padding:0 0.6em;border:1px solid #c3c9d2;border-radius:0.5em;background:#fff;color:#6b7280;}
+	.st .pg-search__box:focus-within {border-color:var(--accent);box-shadow:0 0 0 3px rgba(47,128,237,0.18);}
+	.st .pg-search__box input {flex:1;min-width:0;border:0;outline:0;background:transparent;font-size:16px;padding:0.5em 0;color:#222;}
+	.st .pg-search__box input::-webkit-search-cancel-button {display:none;}
+	.st .pg-search__clear {border:0;background:none;font-size:1.3em;line-height:1;cursor:pointer;color:#6b7280;padding:0.1em 0.2em;}
+	.st .pg-search__clear:hover {color:#222;}
+	.st .pg-search__note {margin:0.35em 0 0;font-size:0.82em;color:#5f6b7a;min-height:1.2em;}
+	.st .page-cell mark {background:#fde68a;color:inherit;border-radius:2px;padding:0 1px;}
+	.st .pg-rank {display:inline-block;min-width:2.4em;margin-right:0.25em;font-size:0.78em;color:#7a8594;font-variant-numeric:tabular-nums;}
+	body.dark-mode .st .pg-search__box {background:#1f2329;border-color:#454c57;color:#9aa4b2;}
+	body.dark-mode .st .pg-search__box input {color:#e6e8eb;}
+	body.dark-mode .st .pg-search__clear {color:#9aa4b2;}
+	body.dark-mode .st .pg-search__clear:hover {color:#fff;}
+	body.dark-mode .st .pg-search__note {color:#a8b1bd;}
+	body.dark-mode .st .page-cell mark {background:#7c5e10;color:#fff7dd;}
+	body.dark-mode .st .pg-rank {color:#98a2b0;}
+
 	/* Views Over Time (daily/weekly toggle) */
 	.st .ts-toggle {display:flex;gap:0.4em;margin-bottom:0.6em;}
 	.st .ts-toggle-btn {font-size:0.82em;cursor:pointer;padding:0.4em 0.85em;border-radius:1.2em;border:1px solid #c3c9d2;background:#fff;color:#555;}
@@ -734,6 +753,14 @@ body.is-stuck #navbar.hide { position: fixed; top: 56px; right: 8px; }
 					<button type="button" class="view-btn" data-view="theater" aria-pressed="false">Theater view</button>
 				</div>
 			</div>
+			<div class="pg-search">
+				<label class="pg-search__box">
+					<svg viewBox="0 0 24 24" width="16" height="16" aria-hidden="true"><circle cx="10.5" cy="10.5" r="6.5" fill="none" stroke="currentColor" stroke-width="2.2"/><path d="M15.5 15.5 21 21" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"/></svg>
+					<input type="search" id="pgSearch" placeholder="Search every page, e.g. grade, /memes, calculadora" autocomplete="off" spellcheck="false" aria-label="Search pages" aria-describedby="pgSearchNote">
+					<button type="button" id="pgSearchClear" class="pg-search__clear" title="Clear (Esc)" aria-label="Clear search" hidden>&times;</button>
+				</label>
+				<p class="pg-search__note" id="pgSearchNote" aria-live="polite"></p>
+			</div>
 			<div class="table-wrap">
 				<table class="wide-table">
 					<thead id="topPagesHead">
@@ -789,6 +816,7 @@ body.is-stuck #navbar.hide { position: fixed; top: 56px; right: 8px; }
 			<ul>
 				<li>Use the <strong>range tabs</strong> to switch between the past 24 hours, 7 days, 30 days, 365 days or all tracked history &mdash; your choice is remembered next visit.</li>
 				<li><strong>Views Over Time</strong> is hourly for the last 24 hours and daily otherwise; flip to <strong>Weekly</strong> to smooth out day-to-day noise. The dashed segment is the current, still-filling-in period. Hover or tab to a point to see its exact count.</li>
+				<li>Type in the search box above <strong>Most Viewed Pages</strong> to find any page, not just the top 50 (it searches the 3,000 most viewed); <strong>#</strong> is the page&rsquo;s rank across the site. Esc clears it.</li>
 				<li>In <strong>Most Viewed Pages</strong>, click any column heading to sort, or click the <strong>&#9656;</strong> beside a page to see its full device &times; source breakdown.</li>
 			</ul>
 
@@ -855,7 +883,7 @@ body.is-stuck #navbar.hide { position: fixed; top: 56px; right: 8px; }
             hide_search:false,
             current_tab:0
         }        </script><!-- FASTCOMMENTS-LAZY: widget init moved to main_js/main.js -- it pulls embed.min.js only when #fastcomments-widget nears the viewport or on the first Comments-toggle click, so it no longer blocks first render -->                <script src="https://mes.fm/main_js/lazysizes.min.js?v=1.0.3" async></script>
-	<script src="/stats/js/stats.js?v=16" defer></script>
+	<script src="/stats/js/stats.js?v=17" defer></script>
             <script src="https://mes.fm/main_js/main.js?v=1.0.5"></script>    <!-- PAGEVIEW-TRACKING-INSERTED --><script src="https://mes.fm/main_js/track.js" defer></script><script>document.getElementById('copyright-year').textContent = new Date().getFullYear();</script><script src="/main_js/info-bar-fit.js" defer></script><script>
   // Floating compact header bar (see #compact-nav CSS): appears once the
   // header + nav bar have scrolled off the top; nav links that don't fit
