@@ -844,7 +844,7 @@
   function remember(q, from, to, eng) {
     if (!q.trim() || !outText) return;
     cur = { q: q, o: outText, f: from, t: to, e: eng, d: Date.now() }; starState();
-    if (MODE === "translate" && pages && pages.length && !$("tr-onote").hidden) onote(picLang ? "Read as <b>" + esc(lname(picLang)) + "</b> and translated into " + esc(lname(to)) + ". You can fix the text and translate again." : "");
+    if (MODE === "translate" && srcKey !== "text" && pages && pages.length && !$("tr-onote").hidden && picLang) onote(noteHead(picLang) + "Translated into " + esc(lname(to)) + ". You can fix the text and translate again.");
     if (!S.keep) return;
     var h = store.hist, e = { q: q.slice(0, 2000), o: outText.slice(0, 3000), f: from, t: to, e: eng, d: Date.now() };
     var last = h[0];
@@ -935,17 +935,31 @@
     if (!inp.value.trim()) { setOut(""); setDet(""); msg(""); return; }
     if (S.live) typeT = setTimeout(function () { translate(false, true); }, 650);
   });
+  // the text came from a picture read in another language than From: read it again in From first (it was read with the wrong letters)
+  function needReread() {
+    return MODE === "translate" && srcKey !== "text" && pages.length && !unread() && !ocrBusy && S.from !== "auto" && passLang &&
+      T.norm(S.from) !== T.norm(passLang) && T.norm(S.from) !== T.norm(forced || "") && !!T.toTess(S.from);
+  }
   $("tr-go").addEventListener("click", function () {
     clearTimeout(typeT); this.classList.remove("tr-go--pulse");
     if (MODE === "translate" && srcKey !== "text" && pages.length && unread()) { readOcr(true); return; }
-    translate(true);
+    if (needReread()) { rereadAs(S.from); return; }
+    var pic = MODE === "translate" && srcKey !== "text" && pages.length;
+    translate(true).then(pic ? afterPicTranslate : revealOut);
   });
   inp.addEventListener("keydown", function (e) { if (e.key === "Enter" && (e.ctrlKey || e.metaKey)) { e.preventDefault(); translate(true); } });
+  // changing a language after something was translated translates again (you already asked for a translation)
   fromSel.addEventListener("change", function () {
     S.from = fromSel.value; save(); applyDirs();
-    previewBadge(); if (inp.value.trim()) translate(false, true);
+    if (needReread()) { rereadAs(S.from); return; }
+    previewBadge(); if (inp.value.trim()) retranslate();
   });
-  toSel.addEventListener("change", function () { S.to = toSel.value; save(); previewBadge(); if (inp.value.trim()) translate(false, true); });
+  toSel.addEventListener("change", function () { S.to = toSel.value; save(); previewBadge(); if (inp.value.trim()) retranslate(); });
+  function retranslate() {
+    var had = !!outText, pic = MODE === "translate" && srcKey !== "text" && pages.length;
+    if (had && pic) onote(noteHead(picLang || (S.from !== "auto" ? S.from : "")) + "Translating into " + esc(lname(S.to)) + "…");
+    translate(had, !had).then(function () { if (had) { if (pic) afterPicTranslate(); else revealOut(); } });
+  }
   engSel.addEventListener("change", function () { S.engine = engSel.value; save(); msg(""); previewBadge(); });
   $("tr-live").addEventListener("change", function () { S.live = this.checked; save(); });
   $("tr-swap").addEventListener("click", function () {
@@ -1159,7 +1173,7 @@
     }).then(function () { if (my === urlGen) $("tr-urlgo").disabled = false; });
   }
   $("tr-urlform").addEventListener("submit", function (e) { e.preventDefault(); loadUrl($("tr-url").value); });
-  function reread() { if (!pages.length) return; if (ocrBusy) cancelOcr(); pages.forEach(function (p) { p.lines = null; }); readLangs = ""; selected = {}; drawBoxes(); readOcr(false); }
+  function reread() { if (!pages.length) return; if (ocrBusy) cancelOcr(); pages.forEach(function (p) { p.lines = null; }); readLangs = ""; selected = {}; drawBoxes(); readOcr(!!outText); }
   olSel.addEventListener("change", function () { S.olang = olSel.value; S.olangPicked = true; save(); reread(); });
   $("tr-oeng").addEventListener("change", function () { S.oeng = this.checked; save(); reread(); });
 
@@ -1221,7 +1235,7 @@
     });
     return job.then(function (ps) {
       if (my !== loadGen) return;
-      pages = ps; pgi = 0; selected = {}; picLang = ""; onote("");
+      pages = ps; pgi = 0; selected = {}; picLang = ""; passLang = ""; forced = ""; onote("");
       $("tr-otext").value = ""; $("tr-ostat").textContent = isPdf ? "PDF: " + ps.length + (ps.length === 1 ? " page" : " pages") + " ready" : "";
       if (MODE === "translate") { inp.value = ""; counts(); setOut(""); setDet(""); msg(""); }
       drawPages(); showPage(0); syncInput();
@@ -1275,7 +1289,7 @@
   $("tr-oother").addEventListener("click", function () { if (srcKey === "cam") $("tr-camgo").click(); else fileIn.click(); });
   $("tr-oclear").addEventListener("click", function () {
     if (ocrBusy) cancelOcr();
-    pages = []; selected = {}; picLang = ""; onote(""); $("tr-thumbs").innerHTML = ""; $("tr-ocr").hidden = MODE === "translate"; $("tr-ores").hidden = true; $("tr-otext").value = ""; $("tr-ostat").textContent = "";
+    pages = []; selected = {}; picLang = ""; passLang = ""; forced = ""; onote(""); $("tr-thumbs").innerHTML = ""; $("tr-ocr").hidden = MODE === "translate"; $("tr-ores").hidden = true; $("tr-otext").value = ""; $("tr-ostat").textContent = "";
     if (MODE === "translate") { inp.value = ""; counts(); setOut(""); setDet(""); msg(""); }
     if (pickers.olang) pickers.olang.refresh();
     syncInput();
@@ -1373,15 +1387,34 @@
     if (/loading language|loading tesseract|initializ/i.test(m.status)) prog("tr-oprog", (m.progress || 0) * 0.3, base + (/language/i.test(m.status) ? "Downloading the " + lname(T.fromTess(workerLangs) || "en") + " reading data (cached after the first time)…" : "Starting the text reader…"));
     else if (/recogniz/i.test(m.status)) prog("tr-oprog", 0.3 + (m.progress || 0) * 0.7, base + "Reading the text: " + Math.round((m.progress || 0) * 100) + "%");
   }
-  var readLangs = "", picLang = "";
+  var readLangs = "", picLang = "", passLang = "", forced = "";
   // Read every page not read yet. "Automatic" picture language: read with the From language (else the browser's), guess the
   // language of what came out, and read again in that language when it is clearly another one (so a Spanish picture keeps its accents).
   function readOcr(gesture) {
     if (!pages.length || ocrBusy) return;
     var auto = olSel.value === "auto";
+    forced = "";
     runPass(T.ocrFirst(olSel.value, S.from, prefs), gesture, auto, 0);
   }
-  function runPass(lang, gesture, mayRecheck, t0) {
+  function avgConf() { var c = 0, n = 0; pages.forEach(function (p) { (p.lines || []).forEach(function (l) { l.words.forEach(function (w) { c += w.conf; n++; }); }); }); return n ? c / n : 0; }
+  // the words the reader is sure of (a blurry photo's junk letters made "Czech" out of English)
+  function sureText() {
+    var ws = []; pages.forEach(function (p) { (p.lines || []).forEach(function (l) { l.words.forEach(function (w) { if (w.conf >= 70 && /\p{L}{2,}/u.test(w.text)) ws.push(w.text); }); }); });
+    return ws.length >= 5 ? ws.join(" ") : "";
+  }
+  // Read the picture again in a language the person chose (a "Read it as" button, or a new From language), then translate.
+  function rereadAs(c) {
+    if (!pages.length) return;
+    c = T.norm(c);
+    if (olSel.value !== "auto") { S.olang = c; olSel.value = c; S.olangPicked = true; save(); }
+    if (ocrBusy) cancelOcr();
+    if (!T.toTess(c)) { forced = c; setLangsFor(c); onote(noteHead(c) + "Translating into " + esc(lname(S.to)) + "…"); translate(true).then(afterPicTranslate); return; }
+    pages.forEach(function (p) { p.lines = null; }); readLangs = ""; selected = {}; drawBoxes();
+    forced = c;
+    onote("Reading the picture again as <b>" + esc(lname(c)) + "</b>…", "info");
+    runPass(c, true, false, 0);
+  }
+  function runPass(lang, gesture, mayRecheck, t0, prev) {
     var langs = T.tessLangs(lang, $("tr-oeng").checked);
     if (langs !== readLangs) pages.forEach(function (p) { p.lines = null; });
     readLangs = langs;
@@ -1406,15 +1439,23 @@
     }).then(function () {
       if (!ocrBusy) return;
       var all = pages.map(function (p) { return (pages.length > 1 ? "— " + p.name + " —\n" : "") + (p.text || ""); }).join("\n\n").trim();
+      // a second reading in the guessed language that came out less sure than the first: the guess was wrong, keep the first
+      if (prev && avgConf() < prev.conf - 2) {
+        pages.forEach(function (p, i) { p.lines = prev.lines[i]; p.text = prev.text[i]; });
+        readLangs = prev.langs;
+        return done(prev.all, prev.lang, { lang: prev.lang, conf: 0.5 });
+      }
       if (!all) return done(all, lang, null);
+      if (forced) return done(all, lang, { lang: forced, conf: 1 });
       prog("tr-oprog", 0.98, "Working out the language…");
-      return detectText(all, gesture).then(function (g) {
+      return detectText(sureText() || all, gesture).then(function (g) {
         if (!ocrBusy) return;
         var again = mayRecheck ? T.ocrRecheck(lang, g) : null;
         if (again) {
+          var snap = { lang: lang, langs: readLangs, all: all, conf: avgConf(), lines: pages.map(function (p) { return p.lines; }), text: pages.map(function (p) { return p.text; }) };
           ocrBusy = false;
           onote("The text looks like " + esc(lname(again)) + ": reading it again in " + esc(lname(again)) + "…", "info");
-          return runPass(again, gesture, false, t0);
+          return runPass(again, gesture, false, t0, snap);
         }
         done(all, lang, g);
       });
@@ -1427,7 +1468,8 @@
       ocrBusy = false; prog("tr-oprog", null);
       var lines = 0, conf = 0, nw = 0;
       pages.forEach(function (p) { (p.lines || []).forEach(function (l) { lines++; l.words.forEach(function (w) { conf += w.conf; nw++; }); }); });
-      picLang = olSel.value !== "auto" ? olSel.value : g && g.conf >= 0.5 ? T.norm(g.lang) : "";
+      passLang = lang;
+      picLang = forced || (olSel.value !== "auto" ? olSel.value : g && g.conf >= 0.5 ? T.norm(g.lang) : "");
       if (pickers.olang) pickers.olang.refresh();
       $("tr-otext").value = all;
       $("tr-otext").setAttribute("dir", T.isRtl(picLang || lang) ? "rtl" : "auto");
@@ -1441,10 +1483,29 @@
       if (MODE === "translate") textToInput(all, picLang, gesture);
       else {
         var r = setLangsFor(picLang);
-        onote(picLang ? "Read as " + esc(lname(picLang)) + (olSel.value === "auto" ? " (detected)" : "") + "." + (r ? " Translating below would go " + esc(lname(S.from)) + " → " + esc(lname(S.to)) + "." : "") : langUnknownNote(nw ? conf / nw : 0), picLang ? "" : "info");
+        onote(picLang ? noteHead(picLang) + (r ? "Translating below would go " + esc(lname(S.from)) + " → " + esc(lname(S.to)) + "." : "") : langUnknownNote(nw ? conf / nw : 0) + fixChips(""), picLang ? "" : "info");
       }
     }
   }
+  // "Read as Czech. Not Czech? [English] [French] [Other…]": one tap reads the picture again in that language and translates
+  function fixChips(lang) {
+    var seen = {}, list = [];
+    prefs.concat(["en"], S.recent || []).forEach(function (c) { c = T.norm(c); if (!c || c === "auto" || seen[c] || c === T.norm(lang || "") || !T.known(c)) return; seen[c] = 1; list.push(c); });
+    list = list.slice(0, 3);
+    return '<span class="tr-fix">' + (lang ? "Not " + esc(lname(lang)) + "?" : "Read it as:") + " " +
+      list.map(function (c) { return '<button type="button" class="tr-fixb" data-reread="' + esc(c) + '">' + esc(lname(c)) + "</button>"; }).join("") +
+      '<button type="button" class="tr-fixb tr-fixb--more" data-reread="pick">Other…</button></span>';
+  }
+  function noteHead(lang) {
+    if (!lang) return "";
+    return "Read as <b>" + esc(lname(lang)) + "</b>" + (olSel.value === "auto" && !forced ? " (detected)" : "") + ". " + fixChips(lang) + " ";
+  }
+  root.addEventListener("click", function (e) {
+    var b = e.target.closest("[data-reread]"); if (!b) return;
+    var c = b.getAttribute("data-reread");
+    if (c === "pick") { pickers.from.open(); return; }
+    rereadAs(c);
+  });
   function langUnknownNote(avg) {
     return "Couldn't tell the language of the text" + (avg < 60 ? " (the reading looks unsure)" : "") + ". If it isn't in the Latin alphabet, choose the <b>Language in the picture</b> under Reading options.";
   }
@@ -1480,9 +1541,9 @@
     if (!t.trim()) { toast("No text to translate yet"); return false; }
     inp.value = T.ocrParagraphs(t); counts();
     if (lang) setLangsFor(lang);
-    var head = lang ? "Read as <b>" + esc(lname(lang)) + "</b>" + (olSel.value === "auto" ? " (detected)" : "") + ". " : "";
-    if (!lang) onote(langUnknownNote(100), "info");
-    if (gesture) { onote(head + "Translating into " + esc(lname(S.to)) + "…"); translate(true).then(function () { if (outText) onote(head + "Translated into " + esc(lname(S.to)) + ". You can fix the text and translate again."); }); return true; }
+    var head = noteHead(lang);
+    if (!lang) onote(langUnknownNote(100) + fixChips(""), "info");
+    if (gesture) { onote(head + "Translating into " + esc(lname(S.to)) + "…"); translate(true).then(afterPicTranslate); return true; }
     var g0 = gen + 1;
     translate(false, true).then(function () {
       if (outText && gen === g0) onote(head + "Translated into " + esc(lname(S.to)) + " on this device.");
@@ -1490,6 +1551,16 @@
       if (!outText) $("tr-go").classList.add("tr-go--pulse");
     });
     return true;
+  }
+  // after translating text read from a picture: say so (with the language buttons) and bring the translation into view on a phone
+  function afterPicTranslate() {
+    if (!outText) return;
+    if (pages.length && (srcKey !== "text" || MODE === "ocr")) onote(noteHead(picLang || (S.from !== "auto" ? S.from : "")) + "Translated into " + esc(lname(S.to)) + ". You can fix the text and translate again.");
+    revealOut();
+  }
+  function revealOut() {
+    var r = out.getBoundingClientRect(), vh = window.innerHeight || 800;
+    if (r.top > vh - 80 || r.bottom < 60) out.scrollIntoView({ behavior: "smooth", block: "center" });
   }
   function useText(t) {
     if (!textToInput(t, picLang, true)) return;
