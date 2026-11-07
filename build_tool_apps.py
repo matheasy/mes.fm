@@ -43,6 +43,9 @@ PDF_NAV_INFO = '<li class="info-bar__item"><a class="info-bar__item__text" href=
 PDF_NAV_MENU = '<li class="navbar__item"><a class="navbar__link" href="/pdf">Editor</a></li><li class="navbar__item"><a class="navbar__link" href="/merge-pdf">Merge</a></li><li class="navbar__item"><a class="navbar__link" href="/split-pdf">Split</a></li><li class="navbar__item"><a class="navbar__link" href="/organize-pdf">Organize</a></li><li class="navbar__item"><a class="navbar__link" href="/jpg-to-pdf">Images to PDF</a></li><li class="navbar__item"><a class="navbar__link" href="/pdf-to-jpg">PDF to images</a></li><li class="navbar__item"><a class="navbar__link" href="/compress-pdf">Compress</a></li>'
 
 # MES Mechanics of Materials family nav (2026-10-20): Home = /materials (all tools as tabs), then the three single-topic pages and the materials table
+# Storage family nav (2026-11-07): the Storage Analyzer (disk folders) and Browser Storage & Memory (what mes.fm keeps in this browser) link each other
+ST_NAV_INFO = "<li class=\"info-bar__item\"><a class=\"info-bar__item__text\" href='/browser-storage'>Browser Storage</a></li>"
+ST_NAV_MENU = "<li class=\"navbar__item\"><a class=\"navbar__link\" href=\"/browser-storage\">Browser Storage &amp; Memory</a></li>"
 TR_BRAND = dict(slug="translate", title="MES Translate", tag="Translate text, photos and PDFs, on your device when it can.")
 TR_NAV_INFO = "<li class=\"info-bar__item\"><a class=\"info-bar__item__text\" href='/image-to-text'>Image to Text</a></li>"
 TR_NAV_MENU = "<li class=\"navbar__item\"><a class=\"navbar__link\" href=\"/image-to-text\">Image to Text (OCR)</a></li>"
@@ -226,7 +229,17 @@ APPS = {
     "storage": dict(title="MES Storage Analyzer", page_title="Storage Analyzer: See What Is Taking Up Space in a Folder",
                     tag="Find what fills your disk.", accent="#0d7a5f", dark="#0a5c48", tint="#dff2ec",
                     desc="Free disk usage analyzer in your browser, like WinDirStat or DaisyDisk: pick a folder and see what takes up the space as a sunburst or treemap, with a folder table, largest files, file types, old and large files, duplicates and empty folders. Nothing is uploaded.",
-                    js_v="1"),
+                    js_v="1", nav_extra=ST_NAV_INFO, menu_extra=ST_NAV_MENU),
+    # Browser Storage & Memory (2026-11-07, mes.fm/browser-storage): a sub-page of the Storage Analyzer brand. Measures what mes.fm keeps in this browser
+    # (localStorage, sessionStorage, IndexedDB, Cache storage, OPFS, cookies, service workers), names the tool each piece belongs to, deletes per item / tool,
+    # asks for persistent storage, backs up / restores saved settings; this tab's JS memory (performance.memory) with a live chart; a per-browser guide
+    # for every site's storage and per-tab memory (pages can't see those). lib.js = MESBS (node tests tool_apps_src/browser-storage-tests.js).
+    "browser-storage": dict(title="Browser Storage & Memory", page_title="Browser Storage and Memory: What This Site Keeps in Your Browser",
+                    tag="See and clear what mes.fm stores in this browser.", accent="#0d7a5f", dark="#0a5c48", tint="#dff2ec",
+                    desc="See what mes.fm keeps in your browser, tool by tool: saved settings (localStorage), autosaved projects (IndexedDB), downloaded AI models (Cache storage), private files and cookies, with sizes, the browser's storage limit and a delete button for each. Plus this tab's memory over time and where your browser shows every site's storage and every tab's memory. Nothing is uploaded.",
+                    meta_desc="See and clear what mes.fm stores in your browser: settings, autosaved projects, AI model downloads and cookies, with sizes and the storage limit, plus this tab's memory.",
+                    brand=dict(slug="storage", title="MES Storage Analyzer", tag="Find what fills your disk."), tab=1,
+                    nav_extra=ST_NAV_INFO, menu_extra=ST_NAV_MENU, js_v="1"),
     # MES File Safety Check (2026-10-29, mes.fm/file-check): what a file really is (magic bytes vs name), common malware tricks (disguised programs, double
     # endings, RLO, Office macros / template injection / DDE, PDF JavaScript / Launch, password zips, zip bombs, phishing HTML, shortcuts), EICAR, hashes with
     # VirusTotal / MalwareBazaar links, a link checker and an honest "how to really scan your computer" guide. Not an antivirus. lib.js = MESScan (node tests

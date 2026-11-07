@@ -1,0 +1,86 @@
+	<script>try{if(!localStorage.getItem('pageMode')){document.documentElement.classList.add('page-wide')}}catch(e){}</script>
+	<div class="tu bs" id="bs">
+		<p class="bs-honest"><b>What this page can see:</b> browsers only let a page look at its <em>own</em> site's data, so this lists what <b>mes.fm</b> keeps in this browser (tool settings, autosaved projects, downloaded AI models, …) and lets you clear it piece by piece. Other websites' data and your other tabs' memory are hidden from every web page; the guide at the bottom shows where your browser lists them. Nothing here is uploaded. For the files on your disk, use the <a href="/storage">Storage Analyzer</a>.</p>
+
+		<section class="tu-card bs-sum" id="bs-sum">
+			<div class="bs-head">
+				<h2 class="bs-h">mes.fm in this browser</h2>
+				<div class="bs-btns">
+					<button type="button" class="tu-btn tu-btn--primary" id="bs-scan">Measure again</button>
+				</div>
+			</div>
+			<div class="bs-stats" id="bs-stats"></div>
+			<div class="bs-qbar" id="bs-qbar" role="img" aria-label="Storage used by mes.fm out of the browser's limit"><span id="bs-qfill"></span></div>
+			<div class="bs-qlegend" id="bs-qleg"></div>
+			<p class="tu-note" id="bs-qnote"></p>
+			<div class="bs-persist" id="bs-persist"></div>
+		</section>
+
+		<section class="tu-card" id="bs-tools">
+			<div class="bs-head">
+				<h2 class="bs-h">What each tool keeps</h2>
+				<div class="bs-btns">
+					<input type="search" class="tu-input bs-q" id="bs-q" placeholder="Filter: tool or name…" aria-label="Filter the list">
+					<div class="tu-seg bs-seg" role="group" aria-label="Show">
+						<button type="button" data-kind="all" aria-pressed="true">All</button><button type="button" data-kind="big" aria-pressed="false">Big files</button><button type="button" data-kind="ls" aria-pressed="false">Settings</button>
+					</div>
+					<span class="bs-cbtns" id="bs-tbtns"></span>
+				</div>
+			</div>
+			<p class="bs-prog" id="bs-prog" aria-live="polite">Measuring…</p>
+			<div class="bs-tablewrap"><table class="tu-table bs-table" id="bs-table">
+				<thead><tr><th class="bs-c-tool">Tool</th><th>Where</th><th class="bs-num">Size</th><th class="bs-c-act"><span class="bs-sr">Actions</span></th></tr></thead>
+				<tbody id="bs-body"></tbody>
+			</table></div>
+			<p class="tu-note">Sizes are measured by this page: text counts 2 bytes a letter, files their real size. The browser's own total (above) also counts its bookkeeping and padding, so it is usually a bit bigger. "Delete" removes that data for good: an autosaved project or a saved setting can't be brought back, so download a backup first if unsure.</p>
+			<div class="tu-row bs-danger">
+				<button type="button" class="tu-btn tu-btn--ghost" id="bs-export">Download a backup of saved settings</button>
+				<label class="tu-btn tu-btn--ghost bs-filebtn">Restore settings from a backup<input type="file" id="bs-import" accept=".json,application/json" hidden></label>
+				<button type="button" class="tu-btn bs-red" id="bs-all">Delete everything mes.fm keeps…</button>
+			</div>
+		</section>
+
+		<section class="tu-card" id="bs-mem">
+			<div class="bs-head">
+				<h2 class="bs-h">Memory</h2>
+				<span class="bs-cbtns" id="bs-mbtns"></span>
+			</div>
+			<div class="bs-stats" id="bs-mstats"></div>
+			<div class="bs-chart" id="bs-chartbox" hidden>
+				<div class="bs-chartnote" id="bs-chartnote"></div>
+				<canvas id="bs-canvas" role="img" aria-label="JavaScript memory of this tab over the last minutes"></canvas>
+			</div>
+			<p class="tu-note" id="bs-mnote"></p>
+		</section>
+
+		<section class="tu-card" id="bs-guide">
+			<h2 class="bs-h">Every website and every tab: where your browser shows it</h2>
+			<p>A web page can't see other sites' storage or how much memory your other tabs use: that would let any site spy on your browsing. Your browser shows both:</p>
+			<div class="bs-guide" id="bs-glist"></div>
+			<p class="tu-note">Settings pages like <code>chrome://…</code> can't be opened from a link, so copy the address and paste it into the address bar. Clearing "cookies and site data" for a site signs you out of it and deletes what it saved, like the tools listed above.</p>
+		</section>
+
+		<div class="bs-modal" id="bs-modal" hidden role="dialog" aria-modal="true" aria-labelledby="bs-mtitle">
+			<div class="bs-mbox">
+				<h3 id="bs-mtitle">Delete?</h3>
+				<div id="bs-mtext"></div>
+				<div class="bs-mbtns"><button type="button" class="tu-btn tu-btn--ghost" id="bs-mno">Cancel</button><button type="button" class="tu-btn bs-red" id="bs-myes">Delete</button></div>
+			</div>
+		</div>
+		<div class="tu-toast" id="bs-toast" role="status" aria-live="polite"></div>
+
+		<div class="tu-seo">
+			<h2>See what a website stores in your browser</h2>
+			<p>Websites can keep data in your browser: small settings in <strong>localStorage</strong>, projects and files in <strong>IndexedDB</strong>, downloaded files in the <strong>Cache storage</strong>, private files in the <strong>origin private file system</strong>, and <strong>cookies</strong>. MES.fm's tools use these to remember your settings, autosave your work (Photo Editor, Video Editor, Audio Editor, 3D Studio, Copy Text …) and keep big AI models so they download only once. This page measures all of it for mes.fm, names the tool each piece belongs to, and lets you delete what you don't need.</p>
+			<h3>Questions</h3>
+			<dl>
+				<dt>Can this page see other websites' data?</dt><dd>No. Browsers keep every site's storage apart, so a page sees only its own. To see every site, use the browser settings page listed in the guide above.</dd>
+				<dt>What is the "limit" number?</dt><dd>It is how much the browser would let mes.fm store (its quota), usually worked out from your disk size. It is not your free disk space. Chrome, Edge and Brave allow a site up to about 60% of the disk; Firefox up to 10% of the disk or 10 GB (more once data is kept as "persistent"); Safari 17 and later up to about 60%, older Safari about 1 GB.</dd>
+				<dt>What does "Keep this data" do?</dt><dd>When the disk gets full, browsers may delete website data they think is unused. Asking to keep it (persistent storage) tells the browser not to delete mes.fm's data on its own; it still goes when you clear site data. Chrome grants it to sites you use often or have bookmarked or installed; Firefox asks you.</dd>
+				<dt>Why does the memory section show only this tab?</dt><dd>Chrome, Edge, Brave and Opera tell a page roughly how much JavaScript memory <em>it</em> uses (rounded, to protect privacy). Total memory, other tabs and extensions are only in the browser's task manager (Shift+Esc) or your system's. Firefox and Safari don't report a page's memory at all.</dd>
+				<dt>Is it safe to delete?</dt><dd>Deleting a tool's data resets that tool: settings go back to the defaults and autosaved work is lost. Downloaded models download again the next time you use the feature. Nothing on your disk outside the browser is touched.</dd>
+				<dt>What about the browser's normal cache?</dt><dd>The ordinary web cache (pages, pictures and scripts kept to load faster) is managed by the browser and hidden from pages, so it isn't listed here. Clear it in the browser's "Clear browsing data" window.</dd>
+			</dl>
+		</div>
+	</div>
+	<script src="/main_js/panel-view.js?v=1" defer></script>

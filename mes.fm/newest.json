@@ -1,6 +1,14 @@
 {
- "generated": "2026-11-06",
+ "generated": "2026-11-07",
  "calculators": [
+  {
+   "href": "/relative-time-calculator",
+   "title": "Relative Time Calculator",
+   "icon": "/img/relative-time-calculator-logo.png",
+   "desc": "How long an hour feels at another age: share of life, felt life and animal lifespans.",
+   "added": "2026-11-07",
+   "kind": "calculator"
+  },
   {
    "href": "/practice-tests",
    "title": "Practice Tests (FSA Style)",
@@ -88,17 +96,17 @@
    "desc": "Stress, strain, shear, torsion, Poisson's ratio, thermal stress and 30 materials.",
    "added": "2026-10-20",
    "kind": "calculator"
-  },
-  {
-   "href": "/shear-stress-calculator",
-   "title": "Shear Stress Calculator",
-   "icon": "/img/shear-stress-calculator-logo.png",
-   "desc": "Bolts and pins in single or double shear, punching, and twisted shafts.",
-   "added": "2026-10-20",
-   "kind": "calculator"
   }
  ],
  "tools": [
+  {
+   "href": "/maps",
+   "title": "Maps: Projections, Globe & Capitals",
+   "icon": "/img/maps-logo.png",
+   "desc": "Morph between 28 map projections, spin a globe with day and night, explore countries, capitals and states, drag countries to their true size, measure great circles and play a geography quiz.",
+   "added": "2026-11-07",
+   "kind": "tool"
+  },
   {
    "href": "/tic-tac-toe",
    "title": "Tic-Tac-Toe",
@@ -186,17 +194,25 @@
    "desc": "Neutrons that must turn 720° to come back, the Einstein-de Haas effect (flip a magnet, the iron turns) and the Barnett effect (spin iron, it magnetizes).",
    "added": "2026-11-01",
    "kind": "tool"
-  },
-  {
-   "href": "/negative-index",
-   "title": "Light & Metamaterials Lab",
-   "icon": "/img/negative-index-logo.png",
-   "desc": "Negative refraction, the flat and perfect lens, a live Maxwell simulation of a metamaterial, diffraction gratings and ten things light can do.",
-   "added": "2026-11-01",
-   "kind": "tool"
   }
  ],
  "latest": [
+  {
+   "href": "/maps",
+   "title": "Maps: Projections, Globe & Capitals",
+   "icon": "/img/maps-logo.png",
+   "desc": "Morph between 28 map projections, spin a globe with day and night, explore countries, capitals and states, drag countries to their true size, measure great circles and play a geography quiz.",
+   "added": "2026-11-07",
+   "kind": "tool"
+  },
+  {
+   "href": "/relative-time-calculator",
+   "title": "Relative Time Calculator",
+   "icon": "/img/relative-time-calculator-logo.png",
+   "desc": "How long an hour feels at another age: share of life, felt life and animal lifespans.",
+   "added": "2026-11-07",
+   "kind": "calculator"
+  },
   {
    "href": "/tic-tac-toe",
    "title": "Tic-Tac-Toe",
@@ -242,22 +258,6 @@
    "title": "Quaternion Lab",
    "icon": "/img/quaternions-logo.png",
    "desc": "Multiply i, j, k and watch a 3D hand half-turn, see why i² = −1, compare SLERP with Euler angles on a robot arm, convert rotations and see the 720° spinor turn.",
-   "added": "2026-11-03",
-   "kind": "tool"
-  },
-  {
-   "href": "/spin-wave-field",
-   "title": "Spin Wave Field",
-   "icon": "/img/spin-wave-field-logo.png",
-   "desc": "A double-slit pattern forms in a crowd that waves with the wave, a 360° spin flipper swaps bright and dark stripes (720° brings them back), and a 3D wave field with tracer particles.",
-   "added": "2026-11-03",
-   "kind": "tool"
-  },
-  {
-   "href": "/spin-half",
-   "title": "Spin-½ Lab",
-   "icon": "/img/spin-half-logo.png",
-   "desc": "Dirac's belt trick in 3D: one turn tangles the ribbons, two turns untangle them, plus five pictures of why spin ½ needs 720°, a phase-coloured torus and an elastic sheet that lies flat only after 720°.",
    "added": "2026-11-03",
    "kind": "tool"
   }

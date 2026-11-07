@@ -81,6 +81,7 @@ TOOLS = [  # (directory, compact-bar title[, home path of the site the page belo
     ("youtube-audio", "YouTube Audio Analyzer"),
     ("file-check", "File Safety Check"),
     ("storage", "Storage Analyzer"),
+    ("browser-storage", "Storage Analyzer", "/storage"),   # 2026-11-07 sub-page (brand option)
     ("gallery", "Gallery"),
     ("signals", "Market Signals"),
     ("elections", "Elections"),

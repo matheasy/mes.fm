@@ -482,7 +482,7 @@
 "/maps":{
 "added":"2026-11-07",
 "updated":"2026-11-07",
-"type":"Simulation"
+"type":"Tool"
 },
 "/march-madness":{
 "added":"2026-10-27",
@@ -692,6 +692,11 @@
 "updated":"2026-11-01",
 "type":"Simulation"
 },
+"/relative-time-calculator":{
+"added":"2026-11-07",
+"updated":"2026-11-07",
+"type":"Calculator"
+},
 "/reminder":{
 "added":"2026-10-21",
 "updated":"2026-11-06",
@@ -799,7 +804,7 @@
 },
 "/storage":{
 "added":"2026-10-29",
-"updated":"2026-10-29",
+"updated":"2026-11-07",
 "type":"Tool"
 },
 "/stream-chat":{
