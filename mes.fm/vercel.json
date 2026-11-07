@@ -172,7 +172,6 @@
     { "source": "/ultimate-tic-tac-toe", "destination": "/tic-tac-toe", "permanent": true },
     { "source": "/gomoku", "destination": "/tic-tac-toe", "permanent": true },
     { "source": "/five-in-a-row", "destination": "/tic-tac-toe", "permanent": true },
-    { "source": "/connect-four", "destination": "/tic-tac-toe", "permanent": true },
     { "source": "/drop-four", "destination": "/tic-tac-toe", "permanent": true },
     { "source": "/qubic", "destination": "/tic-tac-toe", "permanent": true },
     { "source": "/3d-tic-tac-toe", "destination": "/tic-tac-toe", "permanent": true },

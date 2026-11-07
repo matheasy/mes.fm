@@ -1,0 +1,134 @@
+	<script>try{if(!localStorage.getItem('pageMode')){document.documentElement.classList.add('page-wide')}}catch(e){}</script>
+	<script src="/main_js/panel-view.js" defer></script>
+	<div class="tu c4" id="c4">
+		<div class="c4-tabs" id="c4-tabs" role="tablist" aria-label="Connect Four sections">
+			<button type="button" class="c4-tab" role="tab" data-t="play" aria-selected="true" aria-controls="c4-p-play">Play</button><button type="button" class="c4-tab" role="tab" data-t="online" aria-selected="false" aria-controls="c4-p-online" tabindex="-1">Play online</button><button type="button" class="c4-tab" role="tab" data-t="stats" aria-selected="false" aria-controls="c4-p-stats" tabindex="-1">Statistics</button><button type="button" class="c4-tab" role="tab" data-t="rules" aria-selected="false" aria-controls="c4-p-rules" tabindex="-1">Rules</button>
+		</div>
+
+		<section id="c4-p-play" role="tabpanel" aria-label="Play">
+			<div class="tu-card c4-setup" id="c4-setup">
+				<div class="tu-row">
+					<div class="tu-field c4-f-game"><label for="c4-game">Game</label>
+						<select id="c4-game" class="tu-select"></select></div>
+					<div class="tu-field c4-f-seg c4-2only"><span class="tu-label" id="c4-opp-l">Play against</span>
+						<div class="tu-seg" id="c4-opp" role="group" aria-labelledby="c4-opp-l"><button type="button" data-v="cpu" aria-pressed="true">Computer</button><button type="button" data-v="local" aria-pressed="false">A friend here</button></div></div>
+					<div class="tu-field c4-f-seg c4-cpuonly"><span class="tu-label" id="c4-lv-l">Level</span>
+						<div class="tu-seg" id="c4-lv" role="group" aria-labelledby="c4-lv-l"><button type="button" data-v="easy" aria-pressed="false">Easy</button><button type="button" data-v="medium" aria-pressed="true">Medium</button><button type="button" data-v="hard" aria-pressed="false">Hard</button><button type="button" data-v="expert" aria-pressed="false">Expert</button></div></div>
+					<div class="tu-field c4-f-seg c4-cpuonly"><span class="tu-label" id="c4-me-l">You go</span>
+						<div class="tu-seg" id="c4-me" role="group" aria-labelledby="c4-me-l"><button type="button" data-v="first" aria-pressed="true">First</button><button type="button" data-v="second" aria-pressed="false">Second</button><button type="button" data-v="alt" aria-pressed="false">Take turns</button></div></div>
+				</div>
+				<div class="tu-row c4-custom" id="c4-custom" hidden>
+					<div class="tu-field c4-f-num"><label for="c4-cw">Columns</label><input id="c4-cw" class="tu-input" type="number" min="4" max="12" value="7" inputmode="numeric"></div>
+					<div class="tu-field c4-f-num"><label for="c4-ch">Rows</label><input id="c4-ch" class="tu-input" type="number" min="4" max="10" value="6" inputmode="numeric"></div>
+					<div class="tu-field c4-f-num"><label for="c4-ck">In a row</label><input id="c4-ck" class="tu-input" type="number" min="3" max="7" value="4" inputmode="numeric"></div>
+					<div class="c4-checks">
+						<label><input type="checkbox" id="c4-cp"> Pop Out</label>
+						<label><input type="checkbox" id="c4-cm"> Misère (a line loses)</label>
+						<label><input type="checkbox" id="c4-ct"> Three players</label>
+					</div>
+					<p class="tu-note c4-cnote" id="c4-cnote"></p>
+				</div>
+				<p class="c4-desc" id="c4-desc"></p>
+				<p class="tu-note c4-3note" id="c4-3note" hidden>Three-player games are pass and play: take turns on this device.</p>
+				<div class="c4-opts">
+					<label><input type="checkbox" id="c4-marks"> Marks on the discs (colour-blind friendly: ring, cross, triangle)</label>
+					<label><input type="checkbox" id="c4-anal"> Show the computer's score for every column (learning)</label>
+				</div>
+			</div>
+
+			<div class="c4-view" id="c4-view">
+				<div class="c4-vbar">
+					<p class="c4-status" id="c4-status" role="status" aria-live="polite"></p>
+					<span class="c4-vbtns" id="c4-pbar" role="group" aria-label="Game"><button type="button" class="c4-vb c4-vb--main" id="c4-new" title="Start a new game (N)">↺ New game</button><button type="button" class="c4-vb" id="c4-undo" title="Take back your last move (U)">↶ Undo</button><button type="button" class="c4-vb" id="c4-hsave" hidden title="Write this game's moves and result to your Hive account (self-reported)">⬢ Save result to Hive</button></span>
+				</div>
+				<p class="c4-hsaved" id="c4-hsaved"></p>
+				<div class="c4-online-bar" id="c4-obar" hidden></div>
+				<p class="c4-anote" id="c4-anote" aria-live="polite"></p>
+				<div class="c4-stage" id="c4-stage">
+					<div class="c4-board" id="c4-board" tabindex="0" aria-label="Board: left and right arrows choose a column, Enter drops a disc, P pops one out (Pop Out)"></div>
+				</div>
+				<div class="c4-score" id="c4-score"></div>
+				<div class="c4-replay" id="c4-replay">
+					<span class="c4-rbtns" role="group" aria-label="Look back through the moves"><button type="button" class="c4-vb" data-r="first" title="Start of the game">⏮</button><button type="button" class="c4-vb" data-r="prev" title="One move back (←)">◀</button><button type="button" class="c4-vb" data-r="next" title="One move forward (→)">▶</button><button type="button" class="c4-vb" data-r="last" title="Back to now">⏭</button></span>
+					<span class="c4-rpos" id="c4-rpos"></span>
+					<button type="button" class="c4-vb" id="c4-link" title="Copy a link that opens this position">🔗 Copy link</button>
+				</div>
+				<ol class="c4-moves" id="c4-moves" aria-label="Moves"></ol>
+			</div>
+			<p class="tu-note">Keys: <kbd>1</kbd>–<kbd>9</kbd> (and <kbd>0</kbd> for column 10) drop a disc, <kbd>Shift</kbd> + number pops (Pop Out); on the board <kbd>←</kbd> <kbd>→</kbd> + <kbd>Enter</kbd>; <kbd>N</kbd> new game, <kbd>U</kbd> undo, <kbd>W</kbd> fill window, <kbd>F</kbd> full screen. Your games and settings stay in this browser.</p>
+		</section>
+
+		<section id="c4-p-online" role="tabpanel" aria-label="Play online" hidden>
+			<div class="tu-card">
+				<h2 class="c4-h">Play someone online as a guest</h2>
+				<p class="c4-sub">No account needed. Make a game and send the link to a friend, or pick an open game from the list below. The game is the one chosen on the Play tab (two players).</p>
+				<div class="tu-row">
+					<div class="tu-field c4-f-name"><label for="c4-name">Your name</label><input id="c4-name" class="tu-input" maxlength="24" autocomplete="nickname" placeholder="Guest"></div>
+					<div class="tu-field c4-f-seg"><span class="tu-label" id="c4-ofirst-l">Who goes first</span>
+						<div class="tu-seg" id="c4-ofirst" role="group" aria-labelledby="c4-ofirst-l"><button type="button" data-v="host" aria-pressed="true">Me</button><button type="button" data-v="guest" aria-pressed="false">The other player</button><button type="button" data-v="random" aria-pressed="false">Random</button></div></div>
+				</div>
+				<label class="c4-chk"><input type="checkbox" id="c4-opub" checked> List my game under "Open games" so anyone can join</label>
+				<p class="c4-ogame">Game: <b id="c4-ovar"></b> <button type="button" class="c4-linkbtn" id="c4-ochange">change</button></p>
+				<p><button type="button" class="tu-btn tu-btn--primary" id="c4-ocreate">Make a guest game</button></p>
+			</div>
+			<div class="tu-card">
+				<div class="c4-lobhead"><h2 class="c4-h">Open games</h2><button type="button" class="tu-btn" id="c4-orefresh">↻ Refresh</button></div>
+				<div id="c4-lobby"><p class="c4-sub">Loading…</p></div>
+			</div>
+			<div class="tu-card c4-hive" id="c4-hive">
+				<h2 class="c4-h"><span class="c4-hivelogo" aria-hidden="true">⬢</span> Play on Hive</h2>
+				<p class="c4-sub">Every move is signed with your Hive account (the Hive Keychain extension or the Keychain phone app) and kept on the Hive blockchain for good. No mes.fm server decides anything: both browsers read the moves from the chain and check them with the same rules, so the whole game and its result are public and can't be changed by anyone. A move takes about 3 to 6 seconds to reach the other player and costs no HIVE (only a little of your account's free Resource Credits).</p>
+				<div id="c4-hlogin"></div>
+				<div id="c4-hmake" hidden>
+					<div class="tu-row">
+						<div class="tu-field c4-f-name"><label for="c4-hto">Challenge an account (optional)</label><input id="c4-hto" class="tu-input" maxlength="17" autocomplete="off" spellcheck="false" placeholder="@username, or leave empty"></div>
+					</div>
+					<p class="c4-ogame">Game: <b id="c4-hvar"></b> · who goes first: the setting above.</p>
+					<p><button type="button" class="tu-btn tu-btn--primary" id="c4-hcreate">Make a Hive game</button></p>
+					<p class="tu-note">Empty = an open game anyone on Hive can join from the list below (it stays open for an hour). With a name, only that account can join: send them the link.</p>
+				</div>
+				<div class="c4-lobhead"><h3 class="c4-h3">Open Hive games</h3><button type="button" class="tu-btn" id="c4-hrefresh">↻ Refresh</button></div>
+				<div id="c4-hlobby"><p class="c4-sub">Loading…</p></div>
+				<div id="c4-hminebox" hidden><h3 class="c4-h3">My Hive games</h3><div id="c4-hmine"></div></div>
+				<h3 class="c4-h3">Recently on Hive</h3>
+				<div id="c4-hrecent"><p class="c4-sub">Loading…</p></div>
+			</div>
+			<p class="tu-note">Guest online games are kept on mes.fm's server for a few hours, then deleted. Only the game itself and the names you type are stored. Hive games and saved results are public and permanent, like everything on Hive; mes.fm only keeps a short list of open and recent Hive games so players can find each other.</p>
+		</section>
+
+		<section id="c4-p-stats" role="tabpanel" aria-label="Statistics" hidden>
+			<p class="tu-note">Kept in this browser only (nothing is uploaded), per game and level. Games left unfinished are not counted.</p>
+			<div id="c4-stats"></div>
+		</section>
+
+		<section id="c4-p-rules" role="tabpanel" aria-label="Rules" hidden>
+			<div id="c4-rules"></div>
+		</section>
+
+		<div class="tu-toast" id="c4-toast" role="status" aria-live="polite"></div>
+
+		<div class="tu-seo">
+			<h2>Connect Four, and every way to play it</h2>
+			<p>Drop your discs, line up four and keep the other player from doing the same. Play the classic 7 × 6 game against the computer at four levels, against a friend on the same phone or computer, or online: as a guest with a link, or on the Hive blockchain where every move is signed and kept for good. Then try the variants: Pop Out (pop your own disc out of the bottom), misère (four in a row loses), Connect 3 for beginners, Connect 5 and Connect 6 on bigger boards, smaller and bigger boards for four in a row, three players, and any board you like from 4 × 4 to 12 × 10. Nothing to install and no account.</p>
+			<h3>How strong is the computer?</h3>
+			<dl>
+				<dt>Easy</dt><dd>Plays mostly at random (with a liking for the middle), only sometimes takes a win or blocks yours. Good for young children.</dd>
+				<dt>Medium</dt><dd>Always takes a win, never hands you one on a plate, and looks four moves ahead, but often picks a good move instead of the best one.</dd>
+				<dt>Hard</dt><dd>Searches the game tree with alpha-beta pruning for about a second, typically 12 to 16 moves ahead on the classic board in the middle game, using threats on odd and even rows (the way Victor Allis solved the game in 1988) to judge positions. Very hard to beat.</dd>
+				<dt>Expert</dt><dd>The same engine with three times the thinking time. Near the end of a game it sees every move to the finish.</dd>
+			</dl>
+			<p>Tick <b>Show the computer's score</b> to see what the Hard engine thinks of every column: "Win in 5" means you can force a win in five of your moves, "Lose in 3" means that column loses by force, and numbers show which side stands better. It is a good way to learn why the middle column matters.</p>
+			<h3>How Hive games work</h3>
+			<p>A Hive game is a series of small signed messages from your Hive account (custom_json operations with the id <code>mes_c4</code>, signed with your posting key, never your active or owner key). The host opens a game, the other player joins, and each move is one operation with its move number. Both browsers read both accounts' histories from a Hive node and replay the moves with the same rules, so they always agree and nobody, not even mes.fm, can change a move or the result. A player who stops answering for five minutes on their turn can lose by a "claim", judged by block times. You can also save the result of a game against the computer or a friend to your account; that is marked as self-reported, because the moves were not signed one by one as they happened.</p>
+			<h3>Questions</h3>
+			<dl>
+				<dt>Who wins Connect Four with perfect play?</dt><dd>The first player. It was solved in 1988 by James D. Allen and, independently, Victor Allis: the first player wins by starting in the middle column. Starting in the two columns next to it leads to a draw, and any other first move loses with perfect play.</dd>
+				<dt>What is the best strategy?</dt><dd>Take the middle column, build threats (three in a row with an empty space) rather than just blocking, and watch which row a threat is on: the first player wants threats on odd rows (1, 3, 5 counted from the bottom), the second player on even rows. Two threats at once usually win.</dd>
+				<dt>What is Pop Out?</dt><dd>A variant from the original makers: instead of dropping a disc you may pull one of your own discs out of the bottom row, and the column drops down. It turns blocked positions into new chances, so games rarely end in a full board. If a pop gives both players a line, the player who popped wins.</dd>
+				<dt>How does online play work?</dt><dd>Make a game, send the link, and the board updates for both of you within a second or two. Moves are checked on mes.fm's server so nobody can cheat or play out of turn. If the other player disappears for three minutes on their turn you can claim the win.</dd>
+				<dt>Can I play on a phone?</dt><dd>Yes: tap anywhere in a column to drop a disc there. Fill window and Full screen make the board as big as your screen.</dd>
+				<dt>Is there an undo?</dt><dd>Yes, against the computer and against a friend on the same device (not in online games).</dd>
+			</dl>
+			<p>Related: <a href="/tic-tac-toe">Tic-Tac-Toe</a> &middot; <a href="/backgammon">Backgammon</a> &middot; <a href="/minesweeper">Minesweeper</a> &middot; <a href="/poker">Poker</a> &middot; <a href="/tools">All MES tools</a></p>
+		</div>
+	</div>
