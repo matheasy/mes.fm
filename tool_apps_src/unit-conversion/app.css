@@ -14,7 +14,7 @@
 	.tu .uc-quick {margin-top:0.9em;padding:0.8em 1em;border-radius:0.5em;background:var(--tint);display:flex;flex-wrap:wrap;gap:0.6em 1em;align-items:center;justify-content:space-between;}
 	.tu .uc-quick[hidden], .tu #uc-matches[hidden], .tu #uc-nomatch[hidden] {display:none;}
 	.tu .uc-quick__text {font-size:1.35em;font-weight:700;color:#1e2733;}
-	.tu .uc-quick__text small {display:block;font-size:0.6em;font-weight:400;color:#667;}
+	.tu .uc-quick__text small {display:block;font-size:0.66em;line-height:1.45;margin-top:0.35em;font-weight:400;color:#556;}
 	.tu #uc-all tbody tr {cursor:pointer;}
 	.tu #uc-all tbody tr:hover td {background:#f4f8f9;}
 	.tu #uc-all td:last-child {font-variant-numeric:tabular-nums;}

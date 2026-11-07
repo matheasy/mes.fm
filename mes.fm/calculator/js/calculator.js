@@ -351,6 +351,10 @@ if (typeof module !== 'undefined' && module.exports) module.exports = MC;
 	function compute(text) {
 		try { return { v: MC.evaluate(text, { deg: state.both ? true : state.deg, ans: ans }) }; } catch (e) {
 			// plain English ("what is 38 percent of 75", "100 multiplied by 84"): main_js/mes-ask.js
+			// grocery / fuel prices: "$3.72 per kilo to per pound", "$5.49 for 2 lb vs $3.99 for 750 g" (main_js/unit-price.js)
+			var pr = window.MESUnitPrice && MESUnitPrice.parse(text);
+			if (pr && pr.expr) { try { return { v: MC.evaluate(pr.expr, { deg: false, ans: ans }), read: pr.text, lines: pr.lines, src: pr.expr, price: true }; } catch (e3) {} }
+			if (pr && pr.error) return { err: pr.error };
 			var w = window.MESAsk && MESAsk.calc(text);
 			if (w) { try { return { v: MC.evaluate(w.expr, { deg: state.both ? true : state.deg, ans: ans }), read: w.said, unit: w.unit, src: w.expr }; } catch (e2) {} }
 			return { err: e.message };
@@ -359,6 +363,7 @@ if (typeof module !== 'undefined' && module.exports) module.exports = MC;
 	// the small line under the answer: how words were read, SI prefixes used, the answer with a prefix
 	function noteFor(text, r) {
 		var bits = [];
+		if (r.price) { bits.push('<b>' + esc(r.read) + '</b>'); (r.lines || []).forEach(function (l) { bits.push(esc(l)); }); bits.push('<a href="/unit-conversion?q=' + encodeURIComponent(text) + '">More in the Unit Converter</a>'); return bits.join(' · '); }
 		if (r.read) bits.push('Read as <b>' + esc(r.read) + '</b>');
 		var src = r.src || text, used = /\d\s?[QRYZEPTGMkKmuµμnpfazy](?![A-Za-z(])|\d\s?[QRYZEPTGMkKmuµμnpfazy]?(?:Ω|ohms?|Hz|V|A|F|H|W|J|C|S|s|g)\b/.test(src.replace(/\s+/g, '')), un = MC.units(src);
 		if (used) bits.push('SI prefixes: k = 10³, M = 10⁶, m = 10⁻³, µ or u = 10⁻⁶, n = 10⁻⁹, p = 10⁻¹²');

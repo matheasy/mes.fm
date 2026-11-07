@@ -81,6 +81,20 @@
 			{ id: "ukmpg", sym: "mpg (UK)", name: "mile per gallon (UK)", al: ["mpg uk", "imperial mpg", "uk mpg"], to: function (v) { return 282.480936331 / v; }, from: function (v) { return 282.480936331 / v; } },
 			{ id: "kml", sym: "km/L", name: "kilometer per liter", al: ["km/l", "kmpl", "km per l"], to: function (v) { return 100 / v; }, from: function (v) { return 100 / v; } }] }
 	];
+	/* price per weight / volume / length: grocery produce, fuel, fabric ("$3.72 per kg" -> per lb). A price per unit
+	   converts the opposite way to the unit itself, so each "per X" unit gets factor 1 / X. */
+	function perCat(id, name, icon, srcId, ids, common) {
+		var src = CATS.filter(function (c) { return c.id === srcId; })[0];
+		ids = ids || src.units.map(function (x) { return x.id; });
+		return { id: id, name: name, icon: icon, common: common, units: ids.map(function (uid) {
+			var u = src.units.filter(function (x) { return x.id === uid; })[0], nm = u.name.replace(/\s*\(.*\)/, "");
+			var al = ["per " + u.sym, "/" + u.sym, "per " + nm, "per " + nm + "s", "a " + nm].concat(u.al.map(function (a) { return "per " + a; }));
+			return U("p" + uid, "per " + u.sym, "price per " + u.name, 1 / u.f, al);
+		}) };
+	}
+	CATS.push(perCat("pricem", "Price per weight", "🛒", "mass", ["g", "kg", "oz", "lb", "st", "t", "ton"], [["pkg", "plb"], ["plb", "pkg"], ["poz", "pg"]]));
+	CATS.push(perCat("pricev", "Price per volume", "🛢️", "volume", null, [["pgal", "pl"], ["pl", "pgal"], ["pukgal", "pl"]]));
+	CATS.push(perCat("pricel", "Price per length", "🧵", "length", ["cm", "m", "km", "in", "ft", "yd", "mi"], [["pyd", "pm"], ["pft", "pm"], ["pm", "pft"]]));
 	CATS.forEach(function (c) { c.units.forEach(function (u) { if (!u.to) lin(u); u.cat = c; }); });
 
 	/* alias index: normalized key -> [unit] */
@@ -107,7 +121,7 @@
 	function unitOf(cat, id) { return cat.units.filter(function (u) { return u.id === id; })[0]; }
 	function convert(v, from, to) { return to.from(from.to(v)); }
 	function parseVal(s) {
-		s = String(s).trim().replace(/\s/g, "");
+		s = String(s).trim().replace(/\s/g, "").replace(/^(?:US\$|C\$|CA\$|A\$|R\$|[$€£¥₫₹₩₱฿])/, "").replace(/(?:[$€£¥₫₹₩₱฿]|USD|CAD|EUR|GBP|VND)$/i, "");
 		if (/^-?\d{1,3}(,\d{3})+(\.\d+)?$/.test(s)) s = s.replace(/,/g, "");
 		else s = s.replace(",", ".");
 		var m = /^[-+]?(\d+\.?\d*|\.\d+)(e[-+]?\d+)?$/i.exec(s);
@@ -186,10 +200,29 @@
 		for (var i = 0; i < A.length; i++) for (var j = 0; j < B.length; j++) if (A[i].cat === B[j].cat && A[i] !== B[j]) return { v: v, a: A[i], b: B[j] };
 		return null;
 	}
+	// a MESUnitPrice unit -> the matching "price per ..." unit of this page (or null)
+	function priceUnit(u) {
+		var cat = catById({ m: "pricem", v: "pricev", l: "pricel" }[u.dim]); if (!cat) return null;
+		var id = { "100g": "g", "100ml": "ml", l: "l", floz: "floz", ukgal: "ukgal" }[u.id] || u.id;
+		return unitOf(cat, "p" + id) || null;
+	}
 	function search() {
 		var q = $("uc-q").value.trim(), quick = $("uc-quick"), matches = $("uc-matches");
 		quick.hidden = true; matches.hidden = true;
 		if (!q) { renderCats(null); return; }
+		var pr = window.MESUnitPrice && MESUnitPrice.parse(q);
+		if (pr) {
+			quick.hidden = false; quick._p = null; quick._pr = pr;
+			var ap = pr.kind === "rate" ? priceUnit(pr.a) : null, bp = pr.kind === "rate" ? priceUnit(pr.b) : null;
+			quick.innerHTML = '<div class="uc-quick__text">' + esc(pr.error || pr.text) + (pr.lines && pr.lines.length ? "<small>" + pr.lines.map(esc).join("<br>") + "</small>" : "") + "</div>" +
+				'<div style="display:flex;gap:0.5em;flex-wrap:wrap;">' + (ap && bp ? '<button type="button" class="tu-btn tu-btn--primary" data-act="open">Open in converter</button>' : "") +
+				'<button type="button" class="tu-btn tu-btn--ghost" data-act="copy">Copy</button>' +
+				'<a class="tu-btn tu-btn--ghost" href="/calculator?q=' + encodeURIComponent(q) + '">Open in Calculator</a></div>';
+			if (ap && bp) quick._p = { v: pr.v, a: ap, b: bp };
+			renderCats(null);
+			return;
+		}
+		quick._pr = null;
 		var p = parseQuick(q);
 		if (p) {
 			var r = convert(p.v, p.a, p.b);
@@ -241,6 +274,7 @@
 		$("uc-val").value = state.val;
 		Array.prototype.forEach.call($("uc-cats").querySelectorAll(".uc-cat"), function (b) { b.setAttribute("aria-selected", b.getAttribute("data-c") === cat.id ? "true" : "false"); });
 		fillSelects(); update(true);
+		if (q.q) { $("uc-q").value = q.q; setTimeout(search, 0); }
 
 		$("uc-cats").addEventListener("click", function (e) { var b = e.target.closest(".uc-cat"); if (b) selectCat(catById(b.getAttribute("data-c"))); });
 		$("uc-val").addEventListener("input", function () { state.val = $("uc-val").value; update(); });
@@ -265,8 +299,8 @@
 		$("uc-quick").addEventListener("click", function (e) {
 			var b = e.target.closest("button"); if (!b) return;
 			var quick = $("uc-quick");
-			if (b.getAttribute("data-act") === "copy") copy($("uc-quick").querySelector(".uc-quick__text").firstChild.textContent, "Result copied");
-			else { var p = quick._p; $("uc-q").value = ""; search(); selectCat(p.a.cat, p.a.id, p.b.id, fmt(p.v, "auto").replace(/,/g, "")); $("uc-panel").scrollIntoView({ behavior: "smooth", block: "center" }); }
+			if (b.getAttribute("data-act") === "copy") copy(quick._pr ? [quick._pr.error || quick._pr.text].concat(quick._pr.lines || []).join("\n") : $("uc-quick").querySelector(".uc-quick__text").firstChild.textContent, "Result copied");
+			else { var p = quick._p; if (!p) return; $("uc-q").value = ""; search(); selectCat(p.a.cat, p.a.id, p.b.id, fmt(p.v, "auto").replace(/,/g, "")); $("uc-panel").scrollIntoView({ behavior: "smooth", block: "center" }); }
 		});
 		$("uc-matches").addEventListener("click", function (e) {
 			var b = e.target.closest("button"); if (!b) return;

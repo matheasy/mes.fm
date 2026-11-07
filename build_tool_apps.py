@@ -107,7 +107,7 @@ APPS = {
     "unit-conversion": dict(title="MES Unit Conversion Calculator", page_title="Unit Conversion Calculator",
                             tag="Convert length, weight, temperature, speed and more.", accent="#00838f", dark="#005f68", tint="#dff2f4",
                             desc="Free unit converter with search: type “10 miles to km” or pick a category to convert length, mass, temperature, area, volume, speed, time, pressure, energy, power, data and more.",
-                            js_v="2"),
+                            js_v="3", pre_js=["/main_js/unit-price.js?v=1"]),
     # a tools-hub tool, not a calculator (listed on tools.html), but built the same way
     "share": dict(title="MES Share Launcher", page_title="Share Launcher",
                   tag="Cross-post one video or link to 30+ sites.", accent="#5b3cc4", dark="#43299a", tint="#eeeafb",
@@ -125,7 +125,7 @@ APPS = {
     "calculator": dict(title="MES Calculator", page_title="Calculator",
                        tag="Multiply, divide, squares, roots and more.", accent="#c2255c", dark="#8f1a43", tint="#fbe6ee",
                        desc="Free online calculator: type any expression or use the keypad for multiplication, division, squares, square roots, powers, percentages, fractions, factorials, logarithms and trigonometry, plus exact big-number maths, prime factors, GCD, LCM and more.",
-                       js_v="4", pre_js=["/main_js/mes-ask.js?v=1"]),
+                       js_v="5", pre_js=["/main_js/mes-ask.js?v=1", "/main_js/unit-price.js?v=1"]),
     # 2D graphing calculator (Desmos-style): lib.js = tokenizer/parser -> compiled JS functions + key-point numerics (node-testable), app.js = canvas UI.
     # Slug keeps the capital D as requested (Vercel is case-sensitive on static paths).
     "2d-graphing-calculator": dict(title="MES 2D Graphing Calculator", page_title="2D Graphing Calculator",
