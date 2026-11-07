@@ -18,17 +18,23 @@
 				<canvas id="hx-c" tabindex="0" role="img" aria-label="Top-down floor plan of the lab: equipment, cables, samples and a colour map of the fields. Drag things to move them; keys: arrows nudge, R turns, Delete removes, Ctrl+D duplicates."></canvas>
 				<div class="hx-leg" id="hx-leg"></div>
 				<div class="hx-tb" id="hx-tb">
+					<div class="hx-sidehd" id="hx-sidehd">
+						<button type="button" id="hx-shide" title="Hide the controls: a narrow strip stays (H)" aria-label="Hide the controls">‹ Hide</button><button type="button" id="hx-sswap" title="Move the controls to the other side of the floor" aria-label="Move the controls to the other side">⇄</button><button type="button" id="hx-stop" title="Put the controls back above the floor">▴ Top</button>
+					</div>
+					<div class="hx-ministrip" id="hx-mini" role="toolbar" aria-label="Controls (hidden)">
+						<button type="button" id="hx-mshow" title="Show the controls (H)" aria-label="Show the controls">›<small>Show</small></button><button type="button" id="hx-mplay" aria-label="Pause">❚❚</button><button type="button" id="hx-mfit" title="Fit the whole room" aria-label="Fit the whole room">⤢</button><button type="button" id="hx-mswap" title="Move the strip to the other side" aria-label="Move to the other side">⇄</button>
+					</div>
 					<div class="hx-tbrow" id="hx-tools" role="toolbar" aria-label="Floor tools">
 						<span class="hx-grp"><button type="button" data-tool="move" aria-pressed="true" title="Select, move and turn things (drag the yellow handle to turn)">✥ Move</button><button type="button" data-tool="cable" aria-pressed="false" title="Draw a cable with an arrow: click the device that feeds, then the device it feeds">⇢ Connect</button><button type="button" data-tool="del" aria-pressed="false" title="Click anything to remove it">✕ Remove</button></span>
 						<span class="hx-grp"><button type="button" id="hx-addbtn" aria-expanded="false" aria-controls="hx-addpop" title="Add equipment or samples">＋ Add</button><button type="button" id="hx-delsel" title="Remove the selected item (Delete)" hidden>🗑 Delete</button></span>
 						<span class="hx-grp"><button type="button" id="hx-play" aria-pressed="true">❚❚ Pause</button><button type="button" id="hx-restart" title="Start the experiment clock again">↺ Restart</button></span>
 						<span class="hx-grp hx-spd" role="group" aria-label="Speed of the experiment clock" id="hx-spd"></span>
 						<span class="hx-grp" role="group" aria-label="Zoom"><button type="button" id="hx-zout" aria-label="Zoom out" title="Zoom out (Ctrl + scroll, pinch)">−</button><button type="button" id="hx-zfit" title="Fit the whole room (0)">100%</button><button type="button" id="hx-zin" aria-label="Zoom in" title="Zoom in (Ctrl + scroll, pinch); drag the empty floor to pan">+</button></span>
-						<span class="hx-grp"><button type="button" id="hx-views" aria-pressed="true" title="Show where each camera is looking">◭ Camera views</button><button type="button" id="hx-labs" aria-pressed="true" title="Labels on the floor: device names, room size, camera labels (L)">🏷 Labels</button><button type="button" id="hx-show" aria-expanded="false" aria-controls="hx-showpop" title="Show or hide each part: floor, legend, toolbar, recording, timeline, readouts">▤ Show ▾</button><button type="button" id="hx-png" title="Save the floor as a picture" aria-label="Save as PNG">📷</button><button type="button" id="hx-full" title="Full screen" aria-label="Full screen">⛶</button></span>
+						<span class="hx-grp"><button type="button" id="hx-views" aria-pressed="true" title="Show where each camera is looking">◭ Camera views</button><button type="button" id="hx-labs" aria-pressed="true" title="Labels on the floor: device names, room size, camera labels (L)">🏷 Labels</button><button type="button" id="hx-show" aria-expanded="false" aria-controls="hx-showpop" title="Show or hide each part: floor, legend, toolbar, recording, timeline, readouts">▤ Show ▾</button><button type="button" id="hx-png" title="Save the floor as a picture" aria-label="Save as PNG">📷</button><button type="button" id="hx-full" title="Full screen" aria-label="Full screen">⛶</button><button type="button" id="hx-side" title="Put the controls in a panel beside the floor (good on wide screens and phones held sideways)">⇆ Side panel</button><button type="button" id="hx-tbhide" title="Hide this toolbar (H); a small Controls button brings it back">▴ Hide</button></span>
 					</div>
 					<div class="hx-tnote" id="hx-note" aria-live="polite"></div>
 				</div>
-				<button type="button" class="hx-showpill" id="hx-showpill" aria-expanded="false" aria-controls="hx-showpop" title="The toolbar is hidden: show it or other parts again" hidden>▤ Show ▾</button>
+				<button type="button" class="hx-showpill" id="hx-showpill" title="The toolbar is hidden: show it again (H)" hidden>▾ Controls</button>
 				<div class="hx-showpop" id="hx-showpop" role="group" aria-label="Show or hide parts of the simulator" hidden>
 					<div class="hx-addh">Show <button type="button" id="hx-showx" aria-label="Close">✕</button></div>
 					<div class="hx-showlist" id="hx-showlist"></div>

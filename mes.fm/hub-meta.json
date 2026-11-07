@@ -386,7 +386,7 @@
 },
 "/hutchison-effect-simulator":{
 "added":"2026-10-26",
-"updated":"2026-10-28",
+"updated":"2026-11-07",
 "type":"Simulation"
 },
 "/ideal-weight-calculator":{
@@ -520,6 +520,8 @@
 "type":"Simulation"
 },
 "/minesweeper":{
+"added":"2026-11-07",
+"updated":"2026-11-07",
 "type":"Game"
 },
 "/mlb-picks":{
@@ -691,11 +693,6 @@
 "added":"2026-10-16",
 "updated":"2026-11-01",
 "type":"Simulation"
-},
-"/relative-time-calculator":{
-"added":"2026-11-07",
-"updated":"2026-11-07",
-"type":"Calculator"
 },
 "/reminder":{
 "added":"2026-10-21",

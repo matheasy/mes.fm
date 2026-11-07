@@ -564,13 +564,13 @@
 	/* ================= state ================= */
 	var SPEEDS = [1, 10, 60, 600, 3600];
 	function nearestSpeed(v) { var best = 60; SPEEDS.forEach(function (x) { if (Math.abs(Math.log(x / v)) < Math.abs(Math.log(best / v))) best = x; }); return isFinite(v) && v > 0 ? best : 60; }
-	var st = null, ui = {tool: "move", sel: null, add: null, map: "D", speed: 60, run: true, opts: {cab: true, lab: true, cam: true, arr: false, ring: true, view: true, disp: true}, show: {plan: true, rec: true, tl: true, ro: true, tb: true, leg: true}, showOpen: false, selCab: -1, hovCab: -1, cableFrom: null, tab: "lab", recCam: null}, zm = {z: 1, px: 0, py: 0}, view0 = {s: 40, ox: 20, oy: 20}, VB = 0, simT = 0, events = [], anims = [], parts = [], gapNext = {}, ostate = {}, rnd = H.rng(1989), idn = 0;
+	var st = null, ui = {tool: "move", sel: null, add: null, map: "D", speed: 60, run: true, opts: {cab: true, lab: true, cam: true, arr: false, ring: true, view: true, disp: true}, show: {plan: true, rec: true, tl: true, ro: true, tb: true, leg: true}, tbPos: "auto", tbSide: "l", mini: false, showOpen: false, selCab: -1, hovCab: -1, cableFrom: null, tab: "lab", recCam: null}, zm = {z: 1, px: 0, py: 0}, view0 = {s: 40, ox: 20, oy: 20}, VB = 0, FX0 = 0, FX1 = 800, blackUntil = 0, blackAt = -1e9, SIDE = false, simT = 0, events = [], anims = [], parts = [], gapNext = {}, ostate = {}, rnd = H.rng(1989), idn = 0;
 	function newId() { var id; do { id = "u" + (++idn).toString(36); } while (st.items.some(function (d) { return d.id === id; })); return id; }
 	function byId(id) { for (var i = 0; i < st.items.length; i++) if (st.items[i].id === id) return st.items[i]; return null; }
 	function loadPreset(k) { var P = H.PRESETS[k]; st = P.build(); st.preset = k; resetRun(); ui.sel = null; ui.recCam = null; zm = {z: 1, px: 0, py: 0}; dirty(true); renderAll(); pnote(P.note); }
 	function pnote(t) { var n = $("hx-pnote"); if (n) n.textContent = t || ""; }
 	function resetRun() { simT = 0; events = []; anims = []; parts = []; gapNext = {}; ostate = {}; rnd = H.rng(1989); }
-	function save() { try { localStorage.setItem(KEY, JSON.stringify({s: H.pack(st), ui: {map: ui.map, speed: ui.speed, opts: ui.opts, show: ui.show}})); } catch (e) { /* ignore */ } }
+	function save() { try { localStorage.setItem(KEY, JSON.stringify({s: H.pack(st), ui: {map: ui.map, speed: ui.speed, opts: ui.opts, show: ui.show, tbPos: ui.tbPos, tbSide: ui.tbSide, mini: ui.mini}})); } catch (e) { /* ignore */ } }
 	var saveT = 0; function saveSoon() { clearTimeout(saveT); saveT = setTimeout(save, 400); }
 	function init() {
 		var q = new URLSearchParams(location.search), s = q.get("s"), saved = null;
@@ -578,6 +578,7 @@
 		if (saved && saved.ui) { if (saved.ui.map) ui.map = saved.ui.map; if (saved.ui.speed) ui.speed = nearestSpeed(+saved.ui.speed); if (saved.ui.opts) Object.keys(ui.opts).forEach(function (k) { if (saved.ui.opts[k] != null) ui.opts[k] = !!saved.ui.opts[k]; });
 			if (saved.ui.show) Object.keys(ui.show).forEach(function (k) { if (saved.ui.show[k] != null) ui.show[k] = !!saved.ui.show[k]; });
 			else { if (ui.opts.disp === false) ui.show.rec = ui.show.tl = ui.show.ro = false; if (ui.opts.cam === false) ui.show.rec = ui.show.tl = false; }   // older saves: the Displays / Camera recording switches
+			if (/^(auto|top|side)$/.test(saved.ui.tbPos || "")) ui.tbPos = saved.ui.tbPos; if (saved.ui.tbSide === "r") ui.tbSide = "r"; ui.mini = !!saved.ui.mini;
 			ui.opts.disp = true; ui.opts.cam = true; }
 		if (s) st = H.decode(s);
 		if (!st && q.get("p") && H.PRESETS[q.get("p")]) { st = H.PRESETS[q.get("p")].build(); st.preset = q.get("p"); }
@@ -687,7 +688,16 @@
 		camC.style.display = S.rec ? "" : "none"; if (tlC) tlC.style.display = S.tl ? "" : "none"; camwrap.style.display = (S.rec || S.tl) ? "" : "none";
 		if (ro) ro.style.display = S.ro ? "" : "none"; if (tb) tb.hidden = !S.tb; if (lg) lg.hidden = !S.leg || !S.plan;
 		root.classList.toggle("hx-noplan", !S.plan); root.classList.toggle("hx-notb", !S.tb);   // on the root: stage-ctl finds the stage by its class ending in "-stage"
-		var band = S.tb && tb ? tb.offsetHeight : 0, pill = $("hx-showpill"); if (pill) pill.hidden = S.tb;
+		// controls beside the floor (like the backgammon board): in Fill window / full screen on a wide window (Auto), or whenever the person picked Side panel
+		var fullish0 = document.fullscreenElement === wrap || wrap.classList.contains("mes-fill");
+		SIDE = !!(S.tb && S.plan && w >= 420 && (ui.tbPos === "side" || (ui.tbPos === "auto" && fullish0 && w > window.innerHeight * 1.15)));
+		var mini = SIDE && ui.mini, PW = !SIDE ? 0 : mini ? 54 : Math.round(Math.max(172, Math.min(236, w * 0.2)));
+		root.classList.toggle("hx-side", SIDE); root.classList.toggle("hx-side-r", SIDE && ui.tbSide === "r"); root.classList.toggle("hx-strip", mini);
+		root.style.setProperty("--hx-pw", PW + "px");
+		FX0 = SIDE && ui.tbSide !== "r" ? PW : 0; FX1 = SIDE && ui.tbSide === "r" ? w - PW : w;
+		var ms = $("hx-mshow"), hs = $("hx-shide"); if (ms && ms.firstChild) ms.firstChild.nodeValue = ui.tbSide === "r" ? "‹" : "›"; if (hs) hs.textContent = ui.tbSide === "r" ? "Hide ›" : "‹ Hide";
+		var sb = $("hx-side"); if (sb) { sb.setAttribute("aria-pressed", SIDE ? "true" : "false"); sb.hidden = !S.plan; }
+		var band = S.tb && tb && !SIDE ? tb.offsetHeight : 0, pill = $("hx-showpill"); if (pill) pill.hidden = S.tb;
 		var menu = $("hx-showpop"), mTop = S.tb ? band : 38, menuH = ui.showOpen && menu ? menu.offsetHeight + 12 + (S.tb ? 0 : 38) : 0;
 		var fullish = document.fullscreenElement === wrap || wrap.classList.contains("mes-fill"), top0 = (wrap.classList.contains("mes-fill") || wrap.classList.contains("mes-fs")) ? 34 : 0;
 		CW = w; var tlH = S.tl ? 38 : 0, roH = S.ro && ro ? ro.offsetHeight : 0, h;
@@ -697,33 +707,41 @@
 			if (fullish && S.rec) CH = Math.max(150, window.innerHeight - top0 - h - tlH - roH - 4);
 		} else {
 			CH = Math.round(Math.max(150, Math.min(260, w * 0.28)));
-			var asp = Math.max(1.1, Math.min(2.2, st.room.w / st.room.h)); h = Math.round(w / asp + 24);
+			var asp = Math.max(1.1, Math.min(2.2, st.room.w / st.room.h)); h = Math.round((FX1 - FX0) / asp + 24);
 			if (w < 600 && !fullish) h = Math.max(h, Math.round(w * 0.82));
 			h += band;   // the toolbar sits over the top of the stage: the floor is drawn below it, never under it
 			wrap.setAttribute("data-mes-free", "1"); if (window.MESStage && window.MESStage.sh) h = window.MESStage.sh(stage, h);
 			if (S.rec) camC.style.height = CH + "px";
 			if (fullish) h = window.MESStage && window.MESStage.fillH ? window.MESStage.fillH(wrap) : window.innerHeight - 260;
 			h = Math.max(260 + band, h, menuH + band);
+			if (SIDE && tb && !fullish) h = Math.max(h, Math.min(tb.scrollHeight, 640));   // inline side panel: tall enough for its buttons (it scrolls past that)
 		}
 		stage.style.height = h + "px"; W = w; Hh = h; VB = band;
 		var cw = Math.round(w * dpr), ch = Math.round(h * dpr); if (cv.width !== cw || cv.height !== ch) { cv.width = cw; cv.height = ch; }
-		var pad = 26, avail = h - band, s = Math.max(1, Math.min((w - 2 * pad) / st.room.w, (avail - 2 * pad - 10) / st.room.h)); view0 = {s: s, ox: (w - s * st.room.w) / 2, oy: band + (avail - s * st.room.h) / 2 + 4};
+		// the legend sits over the top-left of the floor; on a narrow floor it would cover the room, so the room starts below it there
+		// fit the room; if the legend would cover it, move the room below the legend or beside it, whichever leaves it bigger
+		var fw = FX1 - FX0, lgH = lg && !lg.hidden ? lg.offsetHeight : 0, lgW = lg && !lg.hidden ? lg.offsetWidth : 0, lgTop = band + 6, pad = fw < 520 ? 18 : 26;
+		function fitR(pl, pt) { var aw = fw - pl, ah = h - band - pt, sc = Math.max(1, Math.min((aw - 2 * pad) / st.room.w, (ah - 2 * pad - 10) / st.room.h)); return {s: sc, ox: FX0 + pl + (aw - sc * st.room.w) / 2, oy: band + pt + (ah - sc * st.room.h) / 2 + 4}; }
+		var f0 = fitR(0, 0);
+		if (lgH && f0.ox < FX0 + 8 + lgW + 4 && f0.oy < lgTop + lgH + 4) { var fT = fitR(0, lgH + 8), fL = fitR(lgW + 10, 0); f0 = fT.s >= fL.s * 0.97 ? fT : fL; }
+		var s = f0.s; view0 = f0;
 		applyView();
-		if (lg) lg.style.top = (band + 6) + "px";
-		var pop = $("hx-addpop"); if (pop) { pop.style.top = (band + 4) + "px"; pop.style.maxHeight = Math.max(120, h - band - 12) + "px"; }
-		if (menu) menu.style.top = (mTop + 4) + "px";
+		if (lg) { lg.style.top = lgTop + "px"; lg.style.left = (FX0 + 8) + "px"; }
+		var pop = $("hx-addpop"); if (pop) { pop.style.top = (band + 4) + "px"; pop.style.left = (FX0 + 6) + "px"; pop.style.right = (w - FX1 + 6) + "px"; pop.style.maxHeight = Math.max(120, h - band - 12) + "px"; }
+		if (menu) { menu.style.top = (SIDE ? 6 : mTop + 4) + "px"; menu.style.right = (w - FX1 + 6) + "px"; }
+		if (pill) pill.style.right = "0.4em";
 		camC.style.height = CH + "px"; camC.width = Math.round(CW * dpr); camC.height = Math.round(CH * dpr);
 		if (tlC) { tlC.width = Math.round(CW * dpr); tlC.height = Math.round(38 * dpr); }
 		drawCharts(); drawTL();
 	}
 	/* zoom and pan: view0 = the whole room fitted below the toolbar; zm scales it about the middle of the floor area and shifts it */
 	function applyView() {
-		var cx0 = W / 2, cy0 = VB + (Hh - VB) / 2;
+		var cx0 = (FX0 + FX1) / 2, cy0 = VB + (Hh - VB) / 2;
 		view = {s: view0.s * zm.z, ox: cx0 + (view0.ox - cx0) * zm.z + zm.px, oy: cy0 + (view0.oy - cy0) * zm.z + zm.py};
 		var b = $("hx-zfit"); if (b) b.textContent = Math.round(zm.z * 100) + "%";
 	}
 	function zoomAt(f, sx, sy) {
-		if (sx == null) { sx = W / 2; sy = VB + (Hh - VB) / 2; }
+		if (sx == null) { sx = (FX0 + FX1) / 2; sy = VB + (Hh - VB) / 2; }
 		var m = toM(sx, sy); zm.z = H.clamp(zm.z * f, 0.5, 12); applyView();
 		var p2 = toPx(m[0], m[1]); zm.px += sx - p2[0]; zm.py += sy - p2[1];
 		if (Math.abs(zm.z - 1) < 1e-6) { zm.px = 0; zm.py = 0; }
@@ -763,7 +781,7 @@
 		// cable being drawn
 		if (ui.tool === "cable" && ui.cableFrom && hover) { var a = byId(ui.cableFrom); if (a) { var pa = toPx(a.x, a.y); c.strokeStyle = "#fde047"; c.setLineDash([6, 5]); c.lineWidth = 2; c.beginPath(); c.moveTo(pa[0], pa[1]); c.lineTo(hover.px, hover.py); c.stroke(); c.setLineDash([]); } }
 		// scale bar
-		var bar = view.s >= 30 ? 1 : view.s >= 12 ? 2 : 5; c.strokeStyle = "#e2e8f0"; c.lineWidth = 2; c.beginPath(); c.moveTo(12, Hh - 12); c.lineTo(12 + bar * view.s, Hh - 12); c.stroke(); c.fillStyle = "#e2e8f0"; c.textAlign = "left"; c.font = "11px system-ui,sans-serif"; c.fillText(bar + " m", 14, Hh - 17);
+		var bar = view.s >= 30 ? 1 : view.s >= 12 ? 2 : 5; c.strokeStyle = "#e2e8f0"; c.lineWidth = 2; c.beginPath(); c.moveTo(FX0 + 12, Hh - 12); c.lineTo(FX0 + 12 + bar * view.s, Hh - 12); c.stroke(); c.fillStyle = "#e2e8f0"; c.textAlign = "left"; c.font = "11px system-ui,sans-serif"; c.fillText(bar + " m", FX0 + 14, Hh - 17);
 		// placement ghost
 		if (ui.add && hover) { c.globalAlpha = 0.55; var t = ui.add.t; sym(c, t === "sample" ? "sample" : t, hover.px, hover.py, Math.max(22, (DEV[t] ? DEV[t].size : 0.4) * view.s), "#fde047"); c.globalAlpha = 1; }
 	}
@@ -932,11 +950,15 @@
 	}
 
 	/* ================= particles (smoke, dust, bubbles, sparks) ================= */
-	function puff(where, x, y, kind, n) { for (var i = 0; i < n; i++) parts.push({w: where, x: x, y: y, vx: (Math.random() - 0.5) * (kind === "dust" ? 60 : 14), vy: kind === "bub" ? -10 - Math.random() * 20 : kind === "dust" ? -30 * Math.random() : -12 - Math.random() * 18, life: 0, max: 1.2 + Math.random() * 1.6, k: kind}); if (parts.length > 900) parts.splice(0, parts.length - 900); }
-	function stepParts(dt) { for (var i = parts.length - 1; i >= 0; i--) { var p = parts[i]; p.life += dt; if (p.life > p.max) { parts.splice(i, 1); continue; } p.x += p.vx * dt; p.y += p.vy * dt; if (p.k === "dust") p.vy += 40 * dt; if (p.k === "smoke") p.vx *= 0.99; } }
+	// floor particles live in metres and spread out flat from where they start (a top-down view: nothing drifts "up" off the room), so zoom, pan and resizing keep them in place
+	function puff(where, x, y, kind, n) {
+		if (where === "floor") { for (var j = 0; j < n; j++) { var an = Math.random() * TAU, sp = kind === "dust" ? 0.6 + Math.random() * 1.4 : kind === "spark" ? 0.4 + Math.random() * 1.1 : 0.08 + Math.random() * 0.25; parts.push({w: where, x: x, y: y, vx: Math.cos(an) * sp, vy: Math.sin(an) * sp, life: 0, max: kind === "spark" ? 0.5 + Math.random() * 0.5 : 1.2 + Math.random() * 1.4, k: kind}); } if (parts.length > 900) parts.splice(0, parts.length - 900); return; }
+		for (var i = 0; i < n; i++) parts.push({w: where, x: x, y: y, vx: (Math.random() - 0.5) * (kind === "dust" ? 60 : 14), vy: kind === "bub" ? -10 - Math.random() * 20 : kind === "dust" ? -30 * Math.random() : -12 - Math.random() * 18, life: 0, max: 1.2 + Math.random() * 1.6, k: kind}); if (parts.length > 900) parts.splice(0, parts.length - 900); }
+	function stepParts(dt) { for (var i = parts.length - 1; i >= 0; i--) { var p = parts[i]; p.life += dt; if (p.life > p.max) { parts.splice(i, 1); continue; } p.x += p.vx * dt; p.y += p.vy * dt; if (p.w === "floor") { var fr = Math.exp(-2.5 * dt); p.vx *= fr; p.vy *= fr; continue; } if (p.k === "dust") p.vy += 40 * dt; if (p.k === "smoke") p.vx *= 0.99; } }
 	function drawParts(c, where) {
 		parts.forEach(function (p) {
 			if (p.w !== where) return; var u = p.life / p.max;
+			if (where === "floor") { if (p.x < -0.05 || p.y < -0.05 || p.x > st.room.w + 0.05 || p.y > st.room.h + 0.05) return; var q = toPx(p.x, p.y), k = Math.max(0.7, Math.min(1.6, view.s / 30)); p = {x: q[0], y: q[1], k: p.k}; if (p.k === "smoke") { c.fillStyle = "rgba(220,225,235," + (0.35 * (1 - u)) + ")"; c.beginPath(); c.arc(p.x, p.y, (3 + u * 12) * k, 0, TAU); c.fill(); return; } }
 			if (p.k === "smoke") { c.fillStyle = "rgba(220,225,235," + (0.35 * (1 - u)) + ")"; c.beginPath(); c.arc(p.x, p.y, 3 + u * 12, 0, TAU); c.fill(); }
 			else if (p.k === "dust") { c.fillStyle = "rgba(245,245,240," + (0.9 * (1 - u)) + ")"; c.fillRect(p.x, p.y, 2, 2); }
 			else if (p.k === "bub") { c.strokeStyle = "rgba(186,230,253," + (1 - u) + ")"; c.lineWidth = 1; c.beginPath(); c.arc(p.x, p.y, 1.5 + u * 3, 0, TAU); c.stroke(); }
@@ -974,7 +996,8 @@
 		list.forEach(function (d, i) { drawSampleSide(c, d, CW * (0.1 + 0.8 * (i + 0.5) / Math.max(1, n)), ty, Math.min(CW / Math.max(4, n) * 0.55, CH * 0.38), now); });
 		drawParts(c, "cam");
 		// interference: snow and torn lines grow with the field at the camera; dropouts come in short bursts (more often in stronger fields) and with spark-gap shots
-		var gapShot = Object.keys(flash).some(function (id) { return now - flash[id] < 250; }), drop = 0;
+		var gapShot = now < blackUntil, drop = 0;
+		if (!gapShot && now - blackAt > 1600 && Object.keys(flash).some(function (id) { return now - flash[id] < 120; })) { blackAt = now; blackUntil = now + 220; gapShot = true; }
 		if (cam && noise > 0 && !reduce) {
 			var g = noise;
 			if (Math.random() < g * 0.45) { var by = Math.random() * CH, bh = 3 + Math.random() * 18 * g, sh = (Math.random() - 0.5) * 40 * g; try { c.drawImage(camC, 0, by * dpr, CW * dpr, bh * dpr, sh, by, CW, bh); } catch (e) { /* ignore */ } }
@@ -1045,7 +1068,7 @@
 		st.items.forEach(function (d) {
 			if (d.t !== "sparkgap" || d.on === false) return; var iv = Math.max(1, +d.gap || 40);
 			if (gapNext[d.id] == null) gapNext[d.id] = simT + iv * (0.3 + 0.7 * rnd());
-			if (simT >= gapNext[d.id]) { gapNext[d.id] = simT + iv * (0.8 + 0.4 * rnd()); flash[d.id] = now; boost[d.id] = 1; var p = toPx(d.x, d.y); puff("floor", p[0], p[1], "spark", 10); lastGap = simT; }
+			if (simT >= gapNext[d.id]) { gapNext[d.id] = simT + iv * (0.8 + 0.4 * rnd()); flash[d.id] = now; boost[d.id] = 1; puff("floor", d.x, d.y, "spark", 10); lastGap = simT; }
 		});
 		var w = H.warm(simT / 60, 20), recent = simT - lastGap < 4 ? 3 : 1;
 		samples().forEach(function (d) {
@@ -1068,8 +1091,7 @@
 		if (e.id === "fus") o.fused = 1;
 		o.n++;
 		events.push({t: simT, id: d.id, e: e.id, txt: nameOf(d) + ": " + mag.txt}); if (events.length > 400) events.shift();
-		var p = toPx(d.x, d.y);
-		if (e.id === "fum") puff("floor", p[0], p[1], "smoke", 14); if (e.id === "frc") puff("floor", p[0], p[1], "dust", 30); if (e.id === "bub") puff("floor", p[0], p[1], "bub", 12);
+		if (e.id === "fum") puff("floor", d.x, d.y, "smoke", 14); if (e.id === "frc") puff("floor", d.x, d.y, "dust", 30); if (e.id === "bub") puff("floor", d.x, d.y, "bub", 12);
 		logEvent(events[events.length - 1]);
 	}
 	function logEvent(ev) {
@@ -1170,6 +1192,7 @@
 		var here = e.target === cv || e.target === document.body || (e.target.closest && e.target.closest("#hx .hx-wrap"));
 		if (e.key === " " && ui.tab === "lab" && (e.target === cv || e.target === document.body)) { e.preventDefault(); setRun(!ui.run); }
 		if ((e.key === "l" || e.key === "L") && !e.ctrlKey && !e.metaKey && !e.altKey && ui.tab === "lab" && here) { e.preventDefault(); toggleLabels(); }
+		if ((e.key === "h" || e.key === "H") && !e.ctrlKey && !e.metaKey && !e.altKey && ui.tab === "lab" && here) { e.preventDefault(); hideControls(); }
 	});
 	function place(a, x, y) {
 		var d;
@@ -1496,7 +1519,19 @@
 	function openShow() { var m = $("hx-showpop"); if (!m) return; closeAdd(); m.hidden = false; ui.showOpen = true; $("hx-show").setAttribute("aria-expanded", "true"); var pl = $("hx-showpill"); if (pl) pl.setAttribute("aria-expanded", "true"); layout(); var f = m.querySelector("input"); if (f) f.focus({preventScroll: true}); }
 	function closeShow() { var m = $("hx-showpop"); if (!m || m.hidden) return; m.hidden = true; ui.showOpen = false; $("hx-show").setAttribute("aria-expanded", "false"); var pl = $("hx-showpill"); if (pl) pl.setAttribute("aria-expanded", "false"); layout(); }
 	$("hx-show").onclick = function () { if (ui.showOpen) closeShow(); else openShow(); };
-	$("hx-showpill").onclick = function () { if (ui.showOpen) closeShow(); else openShow(); };
+	$("hx-showpill").onclick = function () { setShow("tb", true); var b = $("hx-tbhide"); if (b) b.focus({preventScroll: true}); };
+	/* controls beside the floor: Side panel (or Auto in Fill window / full screen on a wide window), ⇄ swaps sides, Hide leaves a narrow strip */
+	function setTbPos(v) { ui.tbPos = v; ui.mini = false; layout(); saveSoon(); }
+	function setMini(m) { ui.mini = m; layout(); saveSoon(); var b = $(m ? "hx-mshow" : "hx-shide"); if (b) b.focus({preventScroll: true}); }
+	function hideControls() { if (SIDE && ui.show.tb) setMini(!ui.mini); else setShow("tb", !ui.show.tb); }
+	$("hx-side").onclick = function () { setTbPos(SIDE ? "top" : "side"); note(SIDE ? "Controls beside the floor. ⇄ Side moves them to the other side, ‹ Hide folds them into a narrow strip." : ""); };
+	$("hx-stop").onclick = function () { setTbPos("top"); };
+	$("hx-tbhide").onclick = hideControls;
+	$("hx-shide").onclick = function () { setMini(true); };
+	$("hx-mshow").onclick = function () { setMini(false); };
+	$("hx-sswap").onclick = $("hx-mswap").onclick = function () { ui.tbSide = ui.tbSide === "r" ? "l" : "r"; layout(); saveSoon(); };
+	$("hx-mplay").onclick = function () { setRun(!ui.run); };
+	$("hx-mfit").onclick = function () { zoomFit(); };
 	$("hx-showx").onclick = closeShow;
 	$("hx-showpop").addEventListener("keydown", function (e) { if (e.key === "Escape") { e.stopPropagation(); closeShow(); var b = ui.show.tb ? $("hx-show") : $("hx-showpill"); if (b) b.focus(); } });
 	document.addEventListener("pointerdown", function (e) { if (ui.showOpen && !e.target.closest("#hx-showpop, #hx-show, #hx-showpill")) closeShow(); });
@@ -1508,7 +1543,7 @@
 	function setRoomInputs() { $("hx-rw").value = st.room.w; $("hx-rh").value = st.room.h; $("hx-rr").value = st.room.refl || 0; $("hx-rr-v").textContent = Math.round((st.room.refl || 0) * 100) + "%"; }
 	$("hx-rw").onchange = $("hx-rh").onchange = function () { var w = parseFloat($("hx-rw").value), h = parseFloat($("hx-rh").value); if (w >= 2 && w <= 60) st.room.w = w; if (h >= 2 && h <= 60) st.room.h = h; st.items.forEach(function (d) { d.x = H.clamp(d.x, 0, st.room.w); d.y = H.clamp(d.y, 0, st.room.h); }); samplesChanged(); dirty(true); layout(); renderPanels(); };
 	$("hx-rr").oninput = function () { st.room.refl = parseFloat(this.value) || 0; $("hx-rr-v").textContent = Math.round(st.room.refl * 100) + "%"; samplesChanged(); dirty(false); clearTimeout(edT); edT = setTimeout(renderPanels, 300); };
-	function setRun(r) { ui.run = r; var b = $("hx-play"); b.textContent = r ? "❚❚ Pause" : "▶ Run"; b.setAttribute("aria-pressed", r ? "true" : "false"); updateReadouts(); }
+	function setRun(r) { ui.run = r; var b = $("hx-play"); b.textContent = r ? "❚❚ Pause" : "▶ Run"; b.setAttribute("aria-pressed", r ? "true" : "false"); var m = $("hx-mplay"); if (m) { m.textContent = r ? "❚❚" : "▶"; m.setAttribute("aria-label", r ? "Pause" : "Run"); } updateReadouts(); }
 	$("hx-play").onclick = function () { setRun(!ui.run); };
 	$("hx-restart").onclick = function () { resetRun(); var l = $("hx-log"); if (l) l.innerHTML = ""; samplesChanged(); renderPanels(); updateReadouts(); note("Experiment restarted: the warm-up starts again from zero."); };
 	function paintSpeed() { Array.prototype.forEach.call(document.querySelectorAll("#hx-spd button"), function (b) { b.setAttribute("aria-pressed", +b.dataset.v === ui.speed ? "true" : "false"); }); }
@@ -1557,5 +1592,6 @@
 	window.addEventListener("resize", function () { clearTimeout(rzT); rzT = setTimeout(function () { layout(); if (ui.tab === "sch") drawSchematic(); if (ui.tab === "eq") paintEquipment(); }, 80); });
 	var rzT = 0; if (window.ResizeObserver) new ResizeObserver(function () { clearTimeout(rzT); rzT = setTimeout(function () { layout(); }, 80); }).observe(stage.parentNode);
 	new MutationObserver(function () { renderPanels(); if (ui.tab === "sch") drawSchematic(); }).observe(document.body, {attributes: true, attributeFilter: ["class"]});
+	if (/[?&]debug\b/.test(location.search)) window.MESHutDebug = {st: function () { return st; }, ui: ui, toPx: toPx, view: function () { return view; }, handles: viewHandles, layout: layout};   // for tests only
 	requestAnimationFrame(loop);
 })();

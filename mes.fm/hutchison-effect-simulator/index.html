@@ -333,8 +333,8 @@ body.dark-mode .tu .rw-head {color:#a0a8b3;border-bottom-color:#555;} body.dark-
 	.hx-wrap {border-radius:0.6em;overflow:hidden;border:1px solid var(--hx-line);background:var(--hx-bg);}
 	.hx-wrap:fullscreen {display:flex;flex-direction:column;border-radius:0;border:0;}
 	.hx-stage {position:relative;margin:0 auto;max-width:100%;background:var(--hx-bg);}
-	.hx-stage canvas {position:absolute;inset:0;width:100%;height:100%;display:block;outline:none;touch-action:none;}
-	.hx-stage canvas:focus-visible {box-shadow:inset 0 0 0 2px #facc15;}
+	.hx-stage > canvas {position:absolute;inset:0;width:100%;height:100%;display:block;outline:none;touch-action:none;}
+	.hx-stage > canvas:focus-visible {box-shadow:inset 0 0 0 2px #facc15;}
 	.hx-leg {position:absolute;left:0.6em;top:0.5em;font-size:0.72em;color:var(--hx-text);background:rgba(7,9,15,0.78);padding:0.35em 0.6em;border-radius:0.5em;pointer-events:none;max-width:46%;}
 	.hx-leg b {display:block;font-weight:600;margin-bottom:0.2em;}
 	.hx-lgbar {display:block;height:0.55em;border-radius:0.3em;min-width:10em;}
@@ -478,6 +478,29 @@ body.dark-mode .tu .rw-head {color:#a0a8b3;border-bottom-color:#555;} body.dark-
 	.hx-lgc {display:flex;align-items:center;gap:0.4em;margin-top:0.25em;color:var(--hx-text);}
 	.hx-lgc svg {flex:none;}
 	@media (max-width:560px) {.hx-lgc {display:inline-flex;margin-right:0.7em;}}
+	/* controls beside the floor (2026-11-07, like the backgammon board's side layout): the panel scrolls on its own, ⇄ swaps sides, Hide leaves a 54px strip */
+	.hx-sidehd, .hx-ministrip {display:none;}
+	#hx .hx-tb #hx-stop {display:none;}
+	.hx.hx-side .hx-tb {right:auto;bottom:0;width:var(--hx-pw,200px);box-sizing:border-box;border-bottom:0;border-right:1px solid var(--hx-line);overflow-y:auto;overscroll-behavior:contain;padding:0.4em;display:flex;flex-direction:column;gap:0.4em;}
+	.hx.hx-side.hx-side-r .hx-tb {left:auto;right:0;border-right:0;border-left:1px solid var(--hx-line);}
+	.hx.hx-side .hx-sidehd {display:grid;grid-template-columns:1fr 1fr 1fr;gap:0.25em;}
+	.hx.hx-side .hx-tbrow {flex-direction:column;align-items:stretch;gap:0.45em;}
+	.hx.hx-side .hx-grp {display:flex;flex-wrap:wrap;gap:0.25em;}
+	#hx.hx-side .hx-tb button {flex:1 1 calc(50% - 0.25em);min-width:0;padding:0 0.3em;min-height:2.5em;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+	#hx.hx-side .hx-spd button {flex-basis:calc(33% - 0.25em);}
+	#hx.hx-side .hx-tb #hx-zfit {flex:1.6 1 0;} #hx.hx-side .hx-tb #hx-zin, #hx.hx-side .hx-tb #hx-zout {flex:1 1 0;}
+	#hx.hx-side .hx-tb #hx-show, #hx.hx-side .hx-tb #hx-views, #hx.hx-side .hx-tb #hx-side {flex-basis:100%;}
+	#hx.hx-side .hx-sidehd button {font-size:0.74em;}
+	#hx.hx-side .hx-tb #hx-stop {display:block;}
+	.hx.hx-side .hx-tnote {padding:0.1em 0.1em 0;}
+	.hx.hx-strip .hx-tbrow, .hx.hx-strip .hx-tnote, .hx.hx-strip .hx-sidehd {display:none !important;}
+	.hx.hx-strip .hx-ministrip {display:flex;flex-direction:column;gap:0.35em;}
+	#hx.hx-strip .hx-tb {padding:0.35em 0.3em;}
+	#hx.hx-strip .hx-ministrip button {min-height:44px;font-size:1em;padding:0;}
+	#hx .hx-ministrip small {display:block;font-size:0.6em;font-weight:700;line-height:1;color:inherit;}
+	#hx.hx-strip .hx-ministrip #hx-mshow {min-height:52px;font-size:1.15em;background:var(--hx-yel);border-color:var(--hx-yel);color:var(--hx-lo);}
+	#hx .hx-showpill {font-size:0.85em;min-height:2.5em;background:var(--hx-yel);border-color:var(--hx-yel);color:var(--hx-lo);font-weight:700;opacity:1;}
+	@media (max-width:560px) {#hx .hx-tb #hx-side {display:none;}}
 
 
 	@media print {
@@ -863,17 +886,23 @@ body.is-stuck #navbar.hide { position: fixed; top: 56px; right: 8px; }
 				<canvas id="hx-c" tabindex="0" role="img" aria-label="Top-down floor plan of the lab: equipment, cables, samples and a colour map of the fields. Drag things to move them; keys: arrows nudge, R turns, Delete removes, Ctrl+D duplicates."></canvas>
 				<div class="hx-leg" id="hx-leg"></div>
 				<div class="hx-tb" id="hx-tb">
+					<div class="hx-sidehd" id="hx-sidehd">
+						<button type="button" id="hx-shide" title="Hide the controls: a narrow strip stays (H)" aria-label="Hide the controls">‹ Hide</button><button type="button" id="hx-sswap" title="Move the controls to the other side of the floor" aria-label="Move the controls to the other side">⇄</button><button type="button" id="hx-stop" title="Put the controls back above the floor">▴ Top</button>
+					</div>
+					<div class="hx-ministrip" id="hx-mini" role="toolbar" aria-label="Controls (hidden)">
+						<button type="button" id="hx-mshow" title="Show the controls (H)" aria-label="Show the controls">›<small>Show</small></button><button type="button" id="hx-mplay" aria-label="Pause">❚❚</button><button type="button" id="hx-mfit" title="Fit the whole room" aria-label="Fit the whole room">⤢</button><button type="button" id="hx-mswap" title="Move the strip to the other side" aria-label="Move to the other side">⇄</button>
+					</div>
 					<div class="hx-tbrow" id="hx-tools" role="toolbar" aria-label="Floor tools">
 						<span class="hx-grp"><button type="button" data-tool="move" aria-pressed="true" title="Select, move and turn things (drag the yellow handle to turn)">✥ Move</button><button type="button" data-tool="cable" aria-pressed="false" title="Draw a cable with an arrow: click the device that feeds, then the device it feeds">⇢ Connect</button><button type="button" data-tool="del" aria-pressed="false" title="Click anything to remove it">✕ Remove</button></span>
 						<span class="hx-grp"><button type="button" id="hx-addbtn" aria-expanded="false" aria-controls="hx-addpop" title="Add equipment or samples">＋ Add</button><button type="button" id="hx-delsel" title="Remove the selected item (Delete)" hidden>🗑 Delete</button></span>
 						<span class="hx-grp"><button type="button" id="hx-play" aria-pressed="true">❚❚ Pause</button><button type="button" id="hx-restart" title="Start the experiment clock again">↺ Restart</button></span>
 						<span class="hx-grp hx-spd" role="group" aria-label="Speed of the experiment clock" id="hx-spd"></span>
 						<span class="hx-grp" role="group" aria-label="Zoom"><button type="button" id="hx-zout" aria-label="Zoom out" title="Zoom out (Ctrl + scroll, pinch)">−</button><button type="button" id="hx-zfit" title="Fit the whole room (0)">100%</button><button type="button" id="hx-zin" aria-label="Zoom in" title="Zoom in (Ctrl + scroll, pinch); drag the empty floor to pan">+</button></span>
-						<span class="hx-grp"><button type="button" id="hx-views" aria-pressed="true" title="Show where each camera is looking">◭ Camera views</button><button type="button" id="hx-labs" aria-pressed="true" title="Labels on the floor: device names, room size, camera labels (L)">🏷 Labels</button><button type="button" id="hx-show" aria-expanded="false" aria-controls="hx-showpop" title="Show or hide each part: floor, legend, toolbar, recording, timeline, readouts">▤ Show ▾</button><button type="button" id="hx-png" title="Save the floor as a picture" aria-label="Save as PNG">📷</button><button type="button" id="hx-full" title="Full screen" aria-label="Full screen">⛶</button></span>
+						<span class="hx-grp"><button type="button" id="hx-views" aria-pressed="true" title="Show where each camera is looking">◭ Camera views</button><button type="button" id="hx-labs" aria-pressed="true" title="Labels on the floor: device names, room size, camera labels (L)">🏷 Labels</button><button type="button" id="hx-show" aria-expanded="false" aria-controls="hx-showpop" title="Show or hide each part: floor, legend, toolbar, recording, timeline, readouts">▤ Show ▾</button><button type="button" id="hx-png" title="Save the floor as a picture" aria-label="Save as PNG">📷</button><button type="button" id="hx-full" title="Full screen" aria-label="Full screen">⛶</button><button type="button" id="hx-side" title="Put the controls in a panel beside the floor (good on wide screens and phones held sideways)">⇆ Side panel</button><button type="button" id="hx-tbhide" title="Hide this toolbar (H); a small Controls button brings it back">▴ Hide</button></span>
 					</div>
 					<div class="hx-tnote" id="hx-note" aria-live="polite"></div>
 				</div>
-				<button type="button" class="hx-showpill" id="hx-showpill" aria-expanded="false" aria-controls="hx-showpop" title="The toolbar is hidden: show it or other parts again" hidden>▤ Show ▾</button>
+				<button type="button" class="hx-showpill" id="hx-showpill" title="The toolbar is hidden: show it again (H)" hidden>▾ Controls</button>
 				<div class="hx-showpop" id="hx-showpop" role="group" aria-label="Show or hide parts of the simulator" hidden>
 					<div class="hx-addh">Show <button type="button" id="hx-showx" aria-label="Close">✕</button></div>
 					<div class="hx-showlist" id="hx-showlist"></div>
@@ -1082,7 +1111,7 @@ body.is-stuck #navbar.hide { position: fixed; top: 56px; right: 8px; }
             hide_search:false,
             current_tab:0
         }        </script><!-- FASTCOMMENTS-LAZY: widget init moved to main_js/main.js -- it pulls embed.min.js only when #fastcomments-widget nears the viewport or on the first Comments-toggle click, so it no longer blocks first render -->                <script src="https://mes.fm/main_js/lazysizes.min.js?v=1.0.3" async></script>
-	<script src="/main_js/stage-ctl.js?v=2" defer></script><script src="/hutchison-effect-simulator/js/hutchison-effect-simulator.js?v=3" defer></script>
+	<script src="/main_js/stage-ctl.js?v=2" defer></script><script src="/hutchison-effect-simulator/js/hutchison-effect-simulator.js?v=4" defer></script>
             <script src="https://mes.fm/main_js/main.js?v=1.0.5"></script>    <!-- PAGEVIEW-TRACKING-INSERTED --><script src="https://mes.fm/main_js/track.js" defer></script><script>document.getElementById('copyright-year').textContent = new Date().getFullYear();</script><script src="/main_js/info-bar-fit.js" defer></script><script>
   // Floating compact header bar (see #compact-nav CSS): appears once the
   // header + nav bar have scrolled off the top; nav links that don't fit

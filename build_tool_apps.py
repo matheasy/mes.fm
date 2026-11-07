@@ -517,7 +517,7 @@ APPS = {
     "hutchison-effect-simulator": dict(title="MES Hutchison Effect Simulator", page_title="Hutchison Effect Simulator: Tesla Coils, Fields and Levitation",
                                        tag="Cross the fields. Watch the samples.", accent="#b45309", dark="#92400e", tint="#fef3c7",
                                        desc="A free Hutchison Effect simulator: lay out John Hutchison's apparatus (Tesla coils, Van de Graaff, RF transmitters, spark gaps, tank circuits, inductors, field shaper), see where their fields cross, and watch samples levitate, bend like jelly, fracture, glow, smoke and bubble. Includes George Hathaway's LADS Phase I lab, a schematic view and an equipment guide for planning a replication.",
-                                       js_v="3"),
+                                       js_v="4"),
     # Spin & Angular Momentum Simulator (2026-11-01): neutron interferometer (the 720 degree spinor turn, Rauch / Werner 1975: live Poisson counts, Larmor dial, field scan + period fit),
     # Einstein-de Haas (rod on a torsion fibre, AC resonance, g' readout, angular-momentum bookkeeping) and Barnett (magnetization by rotation). lib.js = MESSpin (node: tool_apps_src/spin-simulator-tests.js).
     # Normal-width page in the tools sidebar collection, Wide by default; boxes .sn-wrap get the stage-ctl View bar.
