@@ -100,6 +100,22 @@
  ],
  "tools": [
   {
+   "href": "/minesweeper",
+   "title": "Minesweeper",
+   "icon": "/img/minesweeper-logo.png",
+   "desc": "Classic levels, daily board, no-guess boards and hexagons; best times saved, optionally on Hive.",
+   "added": "2026-11-07",
+   "kind": "tool"
+  },
+  {
+   "href": "/party",
+   "title": "Party Invitations & RSVP",
+   "icon": "/img/party-logo.png",
+   "desc": "Make a themed invitation, send one link and see who's coming: Going / Maybe / Can't go, plus-ones, waitlist, what to bring. No sign-up for anyone.",
+   "added": "2026-11-07",
+   "kind": "tool"
+  },
+  {
    "href": "/maps",
    "title": "Maps: Projections, Globe & Capitals",
    "icon": "/img/maps-logo.png",
@@ -178,30 +194,22 @@
    "desc": "Record interference fringes live, play the hologram back with real wave optics, see parallax and the twin image, compare hologram types and compute a phase hologram of your drawing.",
    "added": "2026-11-02",
    "kind": "tool"
-  },
-  {
-   "href": "/gallery",
-   "title": "Gallery",
-   "icon": "/img/gallery-logo.png",
-   "desc": "View the photos and videos in your folders: fast thumbnails, rows, masonry or list, slideshow, zoom, favourites, and video speed 0.25x to 4x with A-B loops. Nothing is uploaded.",
-   "added": "2026-11-02",
-   "kind": "tool"
-  },
-  {
-   "href": "/spin-simulator",
-   "title": "Spin Simulator",
-   "icon": "/img/spin-simulator-logo.png",
-   "desc": "Neutrons that must turn 720° to come back, the Einstein-de Haas effect (flip a magnet, the iron turns) and the Barnett effect (spin iron, it magnetizes).",
-   "added": "2026-11-01",
-   "kind": "tool"
   }
  ],
  "latest": [
   {
-   "href": "/maps",
-   "title": "Maps: Projections, Globe & Capitals",
-   "icon": "/img/maps-logo.png",
-   "desc": "Morph between 28 map projections, spin a globe with day and night, explore countries, capitals and states, drag countries to their true size, measure great circles and play a geography quiz.",
+   "href": "/minesweeper",
+   "title": "Minesweeper",
+   "icon": "/img/minesweeper-logo.png",
+   "desc": "Classic levels, daily board, no-guess boards and hexagons; best times saved, optionally on Hive.",
+   "added": "2026-11-07",
+   "kind": "tool"
+  },
+  {
+   "href": "/party",
+   "title": "Party Invitations & RSVP",
+   "icon": "/img/party-logo.png",
+   "desc": "Make a themed invitation, send one link and see who's coming: Going / Maybe / Can't go, plus-ones, waitlist, what to bring. No sign-up for anyone.",
    "added": "2026-11-07",
    "kind": "tool"
   },
@@ -212,6 +220,14 @@
    "desc": "How long an hour feels at another age: share of life, felt life and animal lifespans.",
    "added": "2026-11-07",
    "kind": "calculator"
+  },
+  {
+   "href": "/maps",
+   "title": "Maps: Projections, Globe & Capitals",
+   "icon": "/img/maps-logo.png",
+   "desc": "Morph between 28 map projections, spin a globe with day and night, explore countries, capitals and states, drag countries to their true size, measure great circles and play a geography quiz.",
+   "added": "2026-11-07",
+   "kind": "tool"
   },
   {
    "href": "/tic-tac-toe",
@@ -243,22 +259,6 @@
    "icon": "/img/youtube-audio-logo.png",
    "desc": "How loud is that video? Loudness in LUFS, true peak, waveform, spectrogram, silences and clipping for YouTube, 3Speak, Rumble, Odysee or your own files.",
    "added": "2026-11-04",
-   "kind": "tool"
-  },
-  {
-   "href": "/maxwell-vortices",
-   "title": "Maxwell's Vortices",
-   "icon": "/img/maxwell-vortices-logo.png",
-   "desc": "A wire bent into a loop becomes a magnet, the electron's magnetic moment, Maxwell's 1861 spinning cells and idle wheels carrying currents and waves, and two magnets attracting or repelling.",
-   "added": "2026-11-03",
-   "kind": "tool"
-  },
-  {
-   "href": "/quaternions",
-   "title": "Quaternion Lab",
-   "icon": "/img/quaternions-logo.png",
-   "desc": "Multiply i, j, k and watch a 3D hand half-turn, see why i² = −1, compare SLERP with Euler angles on a robot arm, convert rotations and see the 720° spinor turn.",
-   "added": "2026-11-03",
    "kind": "tool"
   }
  ]

@@ -1,0 +1,97 @@
+	<script>try{if(!localStorage.getItem('pageMode')){document.documentElement.classList.add('page-wide')}}catch(e){}</script>
+	<div class="tu ms" id="ms">
+		<div class="ms-tabs" id="ms-tabs" role="tablist" aria-label="Minesweeper sections">
+			<button type="button" class="ms-tab" role="tab" data-t="play" aria-selected="true" aria-controls="ms-p-play">Play</button><button type="button" class="ms-tab" role="tab" data-t="lb" aria-selected="false" aria-controls="ms-p-lb" tabindex="-1">Leaderboard</button><button type="button" class="ms-tab" role="tab" data-t="stats" aria-selected="false" aria-controls="ms-p-stats" tabindex="-1">Statistics</button>
+		</div>
+
+		<section id="ms-p-play" role="tabpanel" aria-label="Play">
+			<div class="tu-card ms-setup">
+				<div class="tu-row">
+					<div class="tu-field ms-f-seg"><span class="tu-label" id="ms-lv-l">Level</span>
+						<div class="tu-seg" id="ms-lv" role="group" aria-labelledby="ms-lv-l"><button type="button" data-v="b" aria-pressed="true">Beginner</button><button type="button" data-v="i" aria-pressed="false">Intermediate</button><button type="button" data-v="e" aria-pressed="false">Expert</button><button type="button" data-v="c" aria-pressed="false">Custom</button></div></div>
+					<div class="tu-field ms-f-seg"><span class="tu-label" id="ms-bd-l">Board</span>
+						<div class="tu-seg" id="ms-bd" role="group" aria-labelledby="ms-bd-l"><button type="button" data-v="r" aria-pressed="true">New random</button><button type="button" data-v="d" aria-pressed="false">Today's daily</button></div></div>
+					<div class="ms-checks">
+						<label title="Every board can be solved by logic from the first click: you never have to guess"><input type="checkbox" id="ms-ng"> No-guess board</label>
+						<label title="Right-click a flag again to turn it into a question mark"><input type="checkbox" id="ms-q"> ? marks</label>
+					</div>
+				</div>
+				<div class="tu-row ms-custom" id="ms-custom" hidden>
+					<div class="tu-field ms-f-num"><label for="ms-cw">Columns</label><input id="ms-cw" class="tu-input" type="number" min="5" max="50" value="20" inputmode="numeric"></div>
+					<div class="tu-field ms-f-num"><label for="ms-ch">Rows</label><input id="ms-ch" class="tu-input" type="number" min="5" max="30" value="12" inputmode="numeric"></div>
+					<div class="tu-field ms-f-num"><label for="ms-cm">Mines</label><input id="ms-cm" class="tu-input" type="number" min="1" max="500" value="40" inputmode="numeric"></div>
+					<p class="tu-note ms-cnote" id="ms-cnote"></p>
+				</div>
+				<p class="ms-desc" id="ms-desc"></p>
+			</div>
+
+			<div class="ms-view" id="ms-view">
+				<div class="ms-vbar" id="ms-vbar">
+					<div class="ms-panel">
+						<span class="ms-lcd" id="ms-left" title="Mines left (mines minus flags)">010</span>
+						<button type="button" class="ms-face" id="ms-face" title="New game (N)" aria-label="New game">🙂</button>
+						<span class="ms-lcd" id="ms-time" title="Time">0</span>
+					</div>
+					<span class="ms-vbtns" role="group" aria-label="Game"><button type="button" class="ms-vb" id="ms-flagmode" aria-pressed="false" title="Taps place flags instead of opening cells (good on a phone)">🚩 Flag mode</button><button type="button" class="ms-vb" id="ms-hint" title="Show one cell that logic can prove (H). The game then counts as assisted.">💡 Hint</button><span class="ms-zoom" role="group" aria-label="Cell size"><button type="button" class="ms-vb" id="ms-zout" title="Smaller cells (-)" aria-label="Smaller cells">−</button><span class="ms-zlab" id="ms-zlab">Fit</span><button type="button" class="ms-vb" id="ms-zin" title="Bigger cells (+)" aria-label="Bigger cells">+</button><button type="button" class="ms-vb" id="ms-zfit" title="Fit the board to the box (0)">Fit</button></span></span>
+				</div>
+				<p class="ms-status" id="ms-status" role="status" aria-live="polite"></p>
+				<div class="ms-scroll" id="ms-scroll">
+					<div class="ms-board" id="ms-board" tabindex="0" role="grid" aria-label="Minefield: arrow keys move, Space opens, F flags, D chords"></div>
+				</div>
+				<div class="ms-after" id="ms-after" hidden></div>
+			</div>
+			<p class="tu-note ms-keys">Mouse: left click opens, right click flags, click an open number whose flags are all placed (or press both buttons, or the middle button) to open the cells around it. Touch: tap opens, press and hold flags, or turn on Flag mode. Keys: arrows move, <kbd>Space</kbd> opens, <kbd>F</kbd> flags, <kbd>D</kbd> chords, <kbd>N</kbd> new game, <kbd>H</kbd> hint, <kbd>+</kbd> / <kbd>−</kbd> cell size.</p>
+		</section>
+
+		<section id="ms-p-lb" role="tabpanel" aria-label="Leaderboard" hidden>
+			<div class="tu-card">
+				<div class="ms-lbtop">
+					<div class="tu-seg" id="ms-lbk" role="group" aria-label="Which leaderboard"><button type="button" data-v="d" aria-pressed="true">Daily</button><button type="button" data-v="a" aria-pressed="false">All-time</button><button type="button" data-v="n" aria-pressed="false">No-guess</button></div>
+					<div class="tu-seg" id="ms-lbl" role="group" aria-label="Level"><button type="button" data-v="b" aria-pressed="true">Beginner</button><button type="button" data-v="i" aria-pressed="false">Intermediate</button><button type="button" data-v="e" aria-pressed="false">Expert</button></div>
+					<button type="button" class="tu-btn" id="ms-lbref">↻ Refresh</button>
+				</div>
+				<p class="ms-sub" id="ms-lbnote"></p>
+				<div id="ms-lb"><p class="ms-sub">Loading…</p></div>
+			</div>
+			<div class="tu-card">
+				<h2 class="ms-h">Your Hive account</h2>
+				<div id="ms-hlogin"></div>
+				<p class="tu-note">Only wins saved to Hive (signed with your Hive account) appear on the leaderboard, and only after mes.fm has replayed every move of the game and confirmed it is a real win. Daily boards rank per UTC day; All-time is for random boards of the three standard sizes; No-guess for random no-guess boards. Games where you used a hint are saved but not ranked.</p>
+			</div>
+		</section>
+
+		<section id="ms-p-stats" role="tabpanel" aria-label="Statistics" hidden>
+			<p class="tu-note">Kept in this browser only (nothing is uploaded). A game counts once you have opened your first cell.</p>
+			<div id="ms-stats"></div>
+			<p><button type="button" class="tu-btn" id="ms-sreset">Clear my statistics</button></p>
+		</section>
+
+		<div class="tu-toast ms-toast" id="ms-toast" role="status" aria-live="polite"></div>
+
+		<div class="tu-seo">
+			<h2>Minesweeper, the classic, free in your browser</h2>
+			<p>Clear the minefield without touching a mine. Every number tells you how many mines touch that cell (above, below, left, right and the four corners). Use the numbers to work out where the mines are, flag them, and open everything else. Three standard sizes (Beginner 9 × 9 with 10 mines, Intermediate 16 × 16 with 40, Expert 30 × 16 with 99) or your own size. No install, no account.</p>
+			<h3>How to play</h3>
+			<dl>
+				<dt>Open a cell</dt><dd>Left click (or tap). Your first click is always safe and opens an area. A 0 opens all the cells around it by itself.</dd>
+				<dt>Flag a mine</dt><dd>Right click (or press and hold on a phone, or switch on Flag mode). The counter on the left shows mines minus flags.</dd>
+				<dt>Chord</dt><dd>When a number already has that many flags around it, click it (or press both mouse buttons, or the middle button) to open all its other neighbours in one go. A wrong flag makes this blow up, so be sure first.</dd>
+				<dt>Win</dt><dd>Open every cell that is not a mine. You don't have to flag the mines.</dd>
+			</dl>
+			<h3>The daily board</h3>
+			<p>Each UTC day there is one board per level that is the same for everyone in the world. It starts on the marked cell (the blue ring) and is always a no-guess board, so it is a fair race: the leaderboard shows who cleared today's board fastest. You can play it as often as you like; your best time counts.</p>
+			<h3>No-guess boards</h3>
+			<p>Normal Minesweeper sometimes leaves you with a 50/50 guess. With "No-guess board" ticked, the page keeps making boards until its own logic solver can clear one from your first click without ever guessing, using only the rules a person can use (a number's flags are complete, a number needs all its hidden cells, and comparing two numbers that share cells). If it can't find one quickly it gives you a normal board and says so.</p>
+			<h3>Saving to Hive</h3>
+			<p>After a win you can save the result to the Hive blockchain with "Save to Hive". It sends one small public message (a custom_json operation with the id mes_mines) from your Hive account, signed with your posting key through Hive Keychain (the browser extension or the phone app). It contains the board's seed and size, your time, the 3BV and the list of your clicks with their timing, and nothing else. It costs nothing (only a little of your account's free Resource Credits), and like everything on Hive it is public and permanent. Your posting key never leaves Keychain; mes.fm never sees it and can't do anything else with your account. mes.fm then replays your clicks on the same board to check the win before it goes on the leaderboard.</p>
+			<h3>Questions</h3>
+			<dl>
+				<dt>What is 3BV?</dt><dd>The "Bechtel's Board Benchmark Value": the smallest number of clicks that clears the board (one for each open area plus one for each number that doesn't touch an open area). 3BV per second (3BV/s) compares speed across boards of different difficulty.</dd>
+				<dt>What does the Hint button do?</dt><dd>It shows one cell that can be proved safe (green) or a mine (red) from what you can see. It never peeks at hidden mines. A game where you used a hint is marked "assisted" and doesn't count for best times or the leaderboard.</dd>
+				<dt>Can I play Expert on a phone?</dt><dd>Yes. The board scrolls inside its box, the − and + buttons change the cell size, and Flag mode or press-and-hold places flags. Fill window gives the board the whole screen.</dd>
+				<dt>Are my times kept?</dt><dd>In this browser, under Statistics: games, wins, streaks, your ten best times per level with 3BV/s. Nothing is uploaded unless you press Save to Hive.</dd>
+			</dl>
+			<p>Related: <a href="/tic-tac-toe">Tic-Tac-Toe</a> &middot; <a href="/backgammon">Backgammon</a> &middot; <a href="/poker">Poker</a> &middot; <a href="/tools">All MES tools</a></p>
+		</div>
+	</div>
+	<script src="/main_js/panel-view.js?v=1" defer></script>

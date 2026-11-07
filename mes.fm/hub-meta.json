@@ -589,6 +589,11 @@
 "updated":"2026-11-04",
 "type":"Calculator"
 },
+"/party":{
+"added":"2026-11-07",
+"updated":"2026-11-07",
+"type":"Tool"
+},
 "/pdf":{
 "added":"2026-10-15",
 "updated":"2026-10-30",
@@ -693,6 +698,11 @@
 "added":"2026-10-16",
 "updated":"2026-11-01",
 "type":"Simulation"
+},
+"/relative-time-calculator":{
+"added":"2026-11-07",
+"updated":"2026-11-07",
+"type":"Calculator"
 },
 "/reminder":{
 "added":"2026-10-21",
