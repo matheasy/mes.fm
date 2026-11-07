@@ -2,6 +2,6 @@
   "ignoreCommand": "if git diff --quiet HEAD^ HEAD -- ./ 2>/dev/null; then exit 0; else exit 1; fi",
   "redirects": [
     { "source": "/", "destination": "https://mes.fm/gradecalculator", "permanent": true },
-    { "source": "/(.*)", "destination": "https://mes.fm/gradecalculator/$1", "permanent": true }
+    { "source": "/((?!0e926cef45bfa6bf96d05218b17febc0\\.txt).*)", "destination": "https://mes.fm/gradecalculator/$1", "permanent": true }
   ]
 }
