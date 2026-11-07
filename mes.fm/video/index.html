@@ -491,6 +491,31 @@ body.dark-mode .tu .rw-head {color:#a0a8b3;border-bottom-color:#555;} body.dark-
 	#vd .vd-anease {display:flex;align-items:center;gap:0.4em;font-size:0.82em;color:var(--vd-dim);margin-bottom:0.2em;} #vd .vd-anease select {flex:1;min-width:0;}
 	html body.dark-mode #vd .vd-an.is-sel {border-color:#38bdf8;}
 	#vd .vd-an .vd-f.vd-wide {grid-column:1 / -1;margin:0;}
+	/* seek bar: always above the play buttons, also in Fill window / Full screen (the transport row goes with it) */
+	#vd .vd-seek {flex:1 0 100%;order:-1;position:relative;height:18px;margin:0 0.2em 0.1em;cursor:pointer;touch-action:none;outline:none;}
+	#vd .vd-seek-tr {position:absolute;left:0;right:0;top:7px;height:4px;border-radius:2px;background:rgba(148,163,184,0.28);transition:height .12s,top .12s;}
+	#vd .vd-seek:hover .vd-seek-tr, #vd .vd-seek.is-drag .vd-seek-tr, #vd .vd-seek:focus-visible .vd-seek-tr {top:6px;height:6px;}
+	#vd .vd-seek-fill {position:absolute;left:0;top:0;bottom:0;width:0;border-radius:inherit;background:#e11d48;}
+	#vd .vd-seek-mk {position:absolute;top:-3px;bottom:-3px;background:rgba(250,204,21,0.35);display:none;}
+	#vd .vd-seek-ticks i {position:absolute;top:-2px;bottom:-2px;width:1px;background:rgba(226,232,240,0.45);}
+	#vd .vd-seek-th {position:absolute;top:3px;width:12px;height:12px;margin-left:-6px;border-radius:50%;background:#fff;box-shadow:0 0 0 2px #e11d48,0 1px 3px rgba(0,0,0,0.5);left:0;pointer-events:none;}
+	#vd .vd-seek:focus-visible .vd-seek-th {box-shadow:0 0 0 2px #e11d48,0 0 0 5px rgba(225,29,72,0.35);}
+	#vd .vd-seek-tip {position:absolute;bottom:20px;transform:translateX(-50%);background:#0b0e13;color:#f1f5f9;border:1px solid rgba(148,163,184,0.4);font:11px ui-monospace,Menlo,Consolas,monospace;padding:2px 5px;border-radius:4px;white-space:nowrap;pointer-events:none;z-index:3;}
+	#vd .vd-seek-tip[hidden] {display:none;}
+	html body.dark-mode #vd .vd-seek-tip {background:#0b0e13;color:#f1f5f9;} html body.dark-mode #vd .vd-seek-th {background:#fff;} html body.dark-mode #vd .vd-seek-fill {background:#e11d48;}
+	/* compare before / after (sound) */
+	#vd .vd-dlg.vd-dlg--cmp {width:min(1400px,100%);}
+	#vd .vd-cmp-bar {display:flex;flex-wrap:wrap;align-items:center;gap:0.45em;margin-bottom:0.6em;font-size:0.9em;}
+	#vd .vd-cmp-bar .vd-sp {flex:1;} #vd .vd-cmp-ab {display:inline-flex;gap:2px;} #vd .vd-cmp-ck {display:inline-flex;align-items:center;gap:0.3em;color:var(--vd-fg);white-space:nowrap;}
+	#vd .vd-cmp-rows {display:flex;flex-direction:column;gap:0.35em;}
+	#vd .vd-cmp-time {font:0.85em ui-monospace,Menlo,Consolas,monospace;color:var(--vd-dim);}
+	#vd .vd-cmp-lab {display:flex;flex-wrap:wrap;gap:0.2em 0.8em;align-items:baseline;font-size:0.85em;color:var(--vd-fg);margin-bottom:2px;} #vd .vd-cmp-lab span {color:var(--vd-dim);}
+	#vd .vd-cmp-cv {position:relative;height:clamp(70px,16vh,170px);background:#0b0e13;border:1px solid var(--vd-line);border-radius:0.35em;cursor:crosshair;touch-action:none;overflow:hidden;}
+	#vd .vd-cmp-cv canvas {position:absolute;left:0;top:0;display:block;}
+	#vd .vd-cmp-ph {position:absolute;top:0;bottom:0;width:2px;margin-left:-1px;background:#f43f5e;pointer-events:none;left:0;}
+	#vd .vd-cmp-sum {margin:0.4em 0 0;font-size:0.9em;color:var(--vd-fg);}
+	html body.dark-mode #vd .vd-cmp-cv {background:#0b0e13;} html body.dark-mode #vd .vd-cmp-ph {background:#f43f5e;}
+
 
 
 	@media print {
@@ -644,6 +669,11 @@ body.is-stuck #navbar.hide { position: fixed; top: 56px; right: 8px; }
 	body.dark-mode #vd .vd-vz{background:rgba(59,77,104,0.78)}
 	body.dark-mode #vd .vd-an-mk b{border-left:9px solid #caaa02}
 	body.dark-mode #vd .vd-an-mk.is-sel b{border-left-color:#078bc5}
+	body.dark-mode #vd .vd-seek-tr{background:rgba(33,39,49,0.28)}
+	body.dark-mode #vd .vd-seek-ticks i{background:rgba(32,37,43,0.45)}
+	body.dark-mode #vd .vd-seek-th{background:#1a1a1a}
+	body.dark-mode #vd .vd-seek-tip{background:#3c4c67;border:1px solid rgba(83,101,125,0.40)}
+	body.dark-mode #vd .vd-cmp-cv{background:#3c4c67}
 	/* TOOL-DARK:END */
 </style>
         <meta property="fb:app_id" content="" />
@@ -929,12 +959,13 @@ body.is-stuck #navbar.hide { position: fixed; top: 56px; right: 8px; }
 						</div>
 					</div>
 					<div class="vd-transport" role="toolbar" aria-label="Playback">
+						<div class="vd-seek" id="vd-seek" role="slider" tabindex="0" aria-label="Position in the video" aria-valuemin="0" aria-valuemax="0" aria-valuenow="0" aria-valuetext="0:00;00" title="Drag to move through the video (arrow keys: a frame, Shift: 1 s, Page Up / Down: 10 s)"><div class="vd-seek-tr"><i class="vd-seek-mk" id="vd-seek-mk"></i><i class="vd-seek-fill" id="vd-seek-fill"></i><span class="vd-seek-ticks" id="vd-seek-ticks"></span></div><b class="vd-seek-th" id="vd-seek-th"></b><span class="vd-seek-tip" id="vd-seek-tip" hidden></span></div>
 						<button type="button" class="vd-btn vd-ico" data-tp="start" title="To the start (Home)" aria-label="To the start"><svg class="vd-ti" viewBox="0 0 16 16" aria-hidden="true"><rect x="2" y="3" width="2" height="10"/><path d="M9 3v10L4.5 8zM14 3v10L9.5 8z"/></svg></button>
-						<button type="button" class="vd-btn vd-ico" data-tp="prevclip" title="Previous clip edge (Up arrow, or Ctrl+Alt+Left as in Camtasia)" aria-label="Previous clip edge"><svg class="vd-ti" viewBox="0 0 16 16" aria-hidden="true"><path d="M10 3v10L3 8z"/><rect x="12" y="2" width="1.6" height="12"/></svg></button>
-						<button type="button" class="vd-btn vd-ico" data-tp="back" title="One frame back (Left arrow or ,; hold to keep stepping; Shift = 1 s)" aria-label="One frame back"><svg class="vd-ti" viewBox="0 0 16 16" aria-hidden="true"><path d="M9 3v10L3 8z"/><rect x="10.5" y="3" width="3" height="10" rx="0.5"/></svg></button>
+						<button type="button" class="vd-btn vd-ico" data-tp="prevclip" title="Previous clip edge (Up arrow, or Ctrl+Alt+Left as in Camtasia)" aria-label="Previous clip edge"><svg class="vd-ti" viewBox="0 0 16 16" aria-hidden="true"><rect x="3.5" y="3" width="1.8" height="10"/><path d="M12.5 3v10L6.5 8z"/></svg></button>
+						<button type="button" class="vd-btn vd-ico" data-tp="back" title="One frame back (Left arrow or ,; hold to keep stepping; Shift = 1 s)" aria-label="One frame back"><svg class="vd-ti" viewBox="0 0 16 16" aria-hidden="true"><path d="M9.5 3v10L3.5 8z"/><rect x="10.5" y="3" width="2.4" height="10" rx="0.4"/></svg></button>
 						<button type="button" class="vd-btn vd-ico vd-play" id="vd-play" title="Play / pause (Space)" aria-label="Play"><svg class="vd-ti" viewBox="0 0 16 16" aria-hidden="true"><path d="M4 2.5v11L13.5 8z"/></svg></button>
-						<button type="button" class="vd-btn vd-ico" data-tp="fwd" title="One frame forward (Right arrow or .; hold to keep stepping; Shift = 1 s)" aria-label="One frame forward"><svg class="vd-ti" viewBox="0 0 16 16" aria-hidden="true"><rect x="2.5" y="3" width="3" height="10" rx="0.5"/><path d="M7 3v10l6-5z"/></svg></button>
-						<button type="button" class="vd-btn vd-ico" data-tp="nextclip" title="Next clip edge (Down arrow, or Ctrl+Alt+Right as in Camtasia)" aria-label="Next clip edge"><svg class="vd-ti" viewBox="0 0 16 16" aria-hidden="true"><rect x="2.4" y="2" width="1.6" height="12"/><path d="M6 3v10l7-5z"/></svg></button>
+						<button type="button" class="vd-btn vd-ico" data-tp="fwd" title="One frame forward (Right arrow or .; hold to keep stepping; Shift = 1 s)" aria-label="One frame forward"><svg class="vd-ti" viewBox="0 0 16 16" aria-hidden="true"><rect x="3.1" y="3" width="2.4" height="10" rx="0.4"/><path d="M6.5 3v10l6-5z"/></svg></button>
+						<button type="button" class="vd-btn vd-ico" data-tp="nextclip" title="Next clip edge (Down arrow, or Ctrl+Alt+Right as in Camtasia)" aria-label="Next clip edge"><svg class="vd-ti" viewBox="0 0 16 16" aria-hidden="true"><path d="M3.5 3v10l6-5z"/><rect x="10.7" y="3" width="1.8" height="10"/></svg></button>
 						<button type="button" class="vd-btn vd-ico" data-tp="end" title="To the end (End)" aria-label="To the end"><svg class="vd-ti" viewBox="0 0 16 16" aria-hidden="true"><path d="M2 3v10l4.5-5zM7 3v10l4.5-5z"/><rect x="12" y="3" width="2" height="10"/></svg></button>
 						<label class="vd-speed" title="Playback speed of the preview only (Shift+&lt; slower, Shift+&gt; faster). The exported video keeps its normal speed."><span>Speed</span><select id="vd-speed" aria-label="Playback speed of the preview (does not change the video)"><option value="0.25">0.25×</option><option value="0.5">0.5×</option><option value="0.75">0.75×</option><option value="1" selected>1×</option><option value="1.25">1.25×</option><option value="1.5">1.5×</option><option value="1.75">1.75×</option><option value="2">2×</option><option value="3">3×</option><option value="4">4×</option></select></label>
 						<span class="vd-time" id="vd-time"><input type="text" id="vd-tin" value="0:00;00" spellcheck="false" autocomplete="off" inputmode="text" aria-label="Playhead time: type a time and press Enter to go there" title="Type a time and press Enter to go there: 4:23;13, 1:02:03, 263, 2m30s, +10 or -5 (from here). Ctrl+G jumps here."> / <span id="vd-tdur">0:00;00</span></span>
@@ -1076,7 +1107,7 @@ body.is-stuck #navbar.hide { position: fixed; top: 56px; right: 8px; }
             hide_search:false,
             current_tab:0
         }        </script><!-- FASTCOMMENTS-LAZY: widget init moved to main_js/main.js -- it pulls embed.min.js only when #fastcomments-widget nears the viewport or on the first Comments-toggle click, so it no longer blocks first render -->                <script src="https://mes.fm/main_js/lazysizes.min.js?v=1.0.3" async></script>
-	<script src="/video/js/video.js?v=8" defer></script>
+	<script src="/video/js/video.js?v=9" defer></script>
             <script src="https://mes.fm/main_js/main.js?v=1.0.5"></script>    <!-- PAGEVIEW-TRACKING-INSERTED --><script src="https://mes.fm/main_js/track.js" defer></script><script>document.getElementById('copyright-year').textContent = new Date().getFullYear();</script><script src="/main_js/info-bar-fit.js" defer></script><script>
   // Floating compact header bar (see #compact-nav CSS): appears once the
   // header + nav bar have scrolled off the top; nav links that don't fit

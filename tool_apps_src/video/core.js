@@ -79,7 +79,7 @@
 				status(m, "Decoding the sound...");
 				var buf = await m.file.arrayBuffer(), ctx = new OfflineAudioContext(2, 1, 48000), ab = await ctx.decodeAudioData(buf);
 				m.pcm = { start: 0, rate: ab.sampleRate, ch: [] }; for (var c = 0; c < Math.min(2, ab.numberOfChannels); c++) m.pcm.ch.push(ab.getChannelData(c));
-				m.dur = ab.duration; m.hasAudio = true; m.peaks = V.peaks(m.pcm.ch, m.pcm.rate, 50); m.wave = V.wave(m.pcm.ch, m.pcm.rate, 50);
+				m.dur = ab.duration; m.hasAudio = true; m.peaks = V.peaks(m.pcm.ch, m.pcm.rate, 50); m.wave = V.wave(m.pcm.ch, m.pcm.rate, V.WAVE_RATE);
 			} else {
 				await VE.loadScript(VE.LIB.box);
 				var info = /\.(mp4|m4v|mov|3gp)$/i.test(m.file.name) || /mp4|quicktime/.test(m.file.type) || m.converted ? await VE.analyzeMp4(m.file).catch(function () { return null; }) : null;
@@ -99,7 +99,7 @@
 			VE.emit("binItem", m); VE.emit("mediaReady", m); VE.save();
 			if (m.kind === "video" && !m.thumbTimes) VE.makeThumbs(m).catch(function () { /* thumbnails are optional */ });
 			else if (m.kind === "video" && m.thumbTimes) VE.loadThumbs(m);
-			if (m.kind === "video" && m.hasAudio && (!m.peaks || !m.wave)) VE.makePeaks(m).catch(function () { /* optional */ });
+			if (m.kind === "video" && m.hasAudio && (!m.peaks || !m.wave || m.wave.r !== V.WAVE_RATE)) VE.makePeaks(m).catch(function () { /* optional */ });
 		} catch (e) {
 			m.state = "error"; m.status = (e && e.message) || "This file could not be used."; if (window.console) console.error("[video editor]", e);
 			VE.emit("binItem", m);
@@ -231,7 +231,7 @@
 		if (m.pcm) return m.pcm;
 		if (!m.at || s < 0 || s > m.dur + 0.05) return null;
 		var w = Math.floor(s / WIN); if (m.winData && m.winData[w]) return m.winData[w];
-		if (!m.wins || !m.wins[w]) win(m, w).then(function () { VE.emit("pcmReady", m); }, function () { /* the coarse waveform stays */ });
+		if (!m.wins || !m.wins[w]) win(m, w).then(function () { VE.emit("pcmReady", m); }, function (e) { if (!m.pcmErr && window.console) console.warn("[video editor] sound of " + m.name + " could not be decoded for the zoomed waveform", e); m.pcmErr = 1; });
 		return null;
 	};
 	async function decodeWin(m, w) {
@@ -270,11 +270,11 @@
 		return out;
 	};
 	VE.makePeaks = async function (m) {
-		var parts = [], wp = [], total = 0;
-		for (var w = 0; w * WIN < m.dur; w++) { var p = await win(m, w); var pk = V.peaks(p.ch, p.rate, 50); parts.push(pk); wp.push(V.wave(p.ch, p.rate, 50)); total += pk.length; }
-		var out = new Uint8Array(total), wpk = new Uint8Array(total), wrm = new Uint8Array(total), o = 0;
-		parts.forEach(function (p, k) { out.set(p, o); wpk.set(wp[k].pk, o); wrm.set(wp[k].rms, o); o += p.length; });
-		m.peaks = out; m.wave = { pk: wpk, rms: wrm }; VE.save(); VE.emit("thumbs", m);
+		var parts = [], wp = [], total = 0, wt = 0;
+		for (var w = 0; w * WIN < m.dur; w++) { var p = await win(m, w); var pk = V.peaks(p.ch, p.rate, 50); parts.push(pk); wp.push(V.wave(p.ch, p.rate, V.WAVE_RATE)); total += pk.length; wt += wp[wp.length - 1].pk.length; }
+		var out = new Uint8Array(total), wpk = new Uint8Array(wt), wrm = new Uint8Array(wt), o = 0, o2 = 0;
+		parts.forEach(function (p, k) { out.set(p, o); o += p.length; wpk.set(wp[k].pk, o2); wrm.set(wp[k].rms, o2); o2 += wp[k].pk.length; });
+		m.peaks = out; m.wave = { pk: wpk, rms: wrm, r: V.WAVE_RATE }; VE.save(); VE.emit("thumbs", m);
 	};
 
 	/* ---------- noise-removed sound ---------- */

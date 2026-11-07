@@ -219,6 +219,44 @@
 	});
 	tin.addEventListener("blur", function () { tin.classList.remove("is-bad"); timeText(); });
 	VE.on("time", timeText); VE.on("change", timeText);
+	/* ---------- seek bar (Camtasia-style scrubber above the play buttons; also in Fill window / Full screen) ---------- */
+	(function () {
+		var bar = $("vd-seek"), fill = $("vd-seek-fill"), th = $("vd-seek-th"), tip = $("vd-seek-tip"), mk = $("vd-seek-mk"), ticks = $("vd-seek-ticks"), drag = false, wasPlay = false, tickKey = "";
+		if (!bar) return;
+		function dur() { return Math.max(0, V.duration(VE.P)); }
+		function tAt(x) { var r = bar.getBoundingClientRect(); return Math.max(0, Math.min(1, (x - r.left) / Math.max(1, r.width))) * dur(); }
+		function pct(t) { var d = dur(); return d > 0 ? Math.max(0, Math.min(100, t / d * 100)) : 0; }
+		function show() {
+			var p = pct(VE.t) + "%"; fill.style.width = p; th.style.left = p;
+			bar.setAttribute("aria-valuemax", String(Math.round(dur() * 100) / 100)); bar.setAttribute("aria-valuenow", String(Math.round(VE.t * 100) / 100)); bar.setAttribute("aria-valuetext", V.tc(VE.t, VE.P.fps));
+		}
+		function marks() {
+			var m = VE.P.marks || {};
+			if (m.in != null && m.out != null && m.out > m.in) { mk.style.display = "block"; mk.style.left = pct(m.in) + "%"; mk.style.width = (pct(m.out) - pct(m.in)) + "%"; } else mk.style.display = "none";
+			// thin ticks at clip edges, so you can see where the cuts are
+			var d = dur(), ts = {}; VE.P.clips.forEach(function (c) { var a = c.start, b = c.start + V.dur(c); if (a > 0.01 && a < d - 0.01) ts[a.toFixed(3)] = 1; if (b > 0.01 && b < d - 0.01) ts[b.toFixed(3)] = 1; });
+			var keys = Object.keys(ts).slice(0, 400), key = d.toFixed(3) + "|" + keys.join(",");
+			if (key !== tickKey) { tickKey = key; ticks.innerHTML = keys.map(function (k) { return '<i style="left:' + pct(+k) + '%"></i>'; }).join(""); }
+		}
+		function tipAt(x) { var r = bar.getBoundingClientRect(), t = tAt(x); tip.hidden = false; tip.textContent = V.tc(t, VE.P.fps); tip.style.left = Math.max(30, Math.min(r.width - 30, x - r.left)) + "px"; }
+		bar.addEventListener("pointerdown", function (e) {
+			if (e.button !== 0 || !dur()) return; e.preventDefault(); bar.focus({ preventScroll: true });
+			drag = true; wasPlay = P.playing && !P.rev; if (P.playing) P.pause(); bar.classList.add("is-drag");
+			try { bar.setPointerCapture(e.pointerId); } catch (x) { /* ignore */ }
+			P.seek(tAt(e.clientX)); tipAt(e.clientX);
+		});
+		bar.addEventListener("pointermove", function (e) { if (!dur()) return; tipAt(e.clientX); if (drag) P.seek(tAt(e.clientX)); });
+		function end(e) { if (!drag) return; drag = false; bar.classList.remove("is-drag"); VE.tl.reveal(VE.t); if (wasPlay) P.play(P.rate); if (e.pointerType !== "mouse") tip.hidden = true; }
+		bar.addEventListener("pointerup", end); bar.addEventListener("pointercancel", end);
+		bar.addEventListener("pointerleave", function () { if (!drag) tip.hidden = true; });
+		bar.addEventListener("keydown", function (e) {
+			var f = 1 / VE.P.fps, st = e.shiftKey ? 1 : f, t = null;
+			if (e.key === "ArrowLeft" || e.key === "ArrowDown") t = VE.t - st; else if (e.key === "ArrowRight" || e.key === "ArrowUp") t = VE.t + st;
+			else if (e.key === "PageUp") t = VE.t - 10; else if (e.key === "PageDown") t = VE.t + 10; else if (e.key === "Home") t = 0; else if (e.key === "End") t = dur();
+			if (t == null) return; e.preventDefault(); e.stopPropagation(); if (P.playing) P.pause(); P.seek(t); VE.tl.reveal(VE.t);
+		});
+		VE.on("time", show); VE.on("change", function () { show(); marks(); }); show(); marks();
+	})();
 	VE.on("play", function () { $("vd-play").innerHTML = '<svg class="vd-ti" viewBox="0 0 16 16" aria-hidden="true"><rect x="3.5" y="2.5" width="3.2" height="11" rx="0.6"/><rect x="9.3" y="2.5" width="3.2" height="11" rx="0.6"/></svg>'; $("vd-play").setAttribute("aria-label", "Pause"); });
 	VE.on("pause", function () { $("vd-play").innerHTML = '<svg class="vd-ti" viewBox="0 0 16 16" aria-hidden="true"><path d="M4 2.5v11L13.5 8z"/></svg>'; $("vd-play").setAttribute("aria-label", "Play"); timeText(); });
 	$("vd-fs").onclick = function () { var w = $("vd-stagewrap"); if (document.fullscreenElement) document.exitFullscreen(); else if (w.requestFullscreen) w.requestFullscreen().catch(function () { toast("Full screen is not allowed here."); }); };
@@ -328,7 +366,7 @@
 		var cleaned = list.filter(function (x) { return x.clean && x.clean.key; }).length;
 		h += '<div class="vd-clean"><div class="vd-grid"><label class="vd-f"><span>Noise removal</span><select id="vd-dn-model"><option value="auto">Automatic (best available)</option><option value="deepfilter">DeepFilterNet (AI, best)</option><option value="rnnoise">RNNoise (AI, fast)</option><option value="spectral">Spectral (no download)</option></select></label>' + num("vd-dn-str", "Strength", Math.round((UI.dnStr == null ? 1 : UI.dnStr) * 100), 5, 0, 100, "%") + "</div>" +
 			'<div class="vd-row"><button type="button" class="vd-btn vd-sm vd-primary" id="vd-dn-go">Remove noise' + (list.length > 1 ? " (" + list.length + " clips)" : "") + "</button>" + (cleaned ? '<button type="button" class="vd-btn vd-sm" id="vd-dn-off">Use the original sound</button>' : "") + '</div><p class="vd-sub" id="vd-dn-st">' + (cleaned ? (list.length > 1 ? cleaned + " of " + list.length + " clips have" : "This clip has") + " noise removed (" + esc((c.clean && c.clean.model) || "") + ")." : "Takes out hum, hiss and room noise. The first time, the AI model downloads (a few MB).") + "</p></div>";
-		h += '<div class="vd-clean"><div class="vd-grid"><label class="vd-f"><span>Normalize loudness to</span><select id="vd-ln-tgt">' + [[-14, "-14 LUFS (YouTube, loud)"], [-16, "-16 LUFS (videos, podcasts)"], [-19, "-19 LUFS (quieter)"], [-23, "-23 LUFS (TV, EBU R128)"]].map(function (q) { return '<option value="' + q[0] + '"' + ((UI.lnTgt || -16) === q[0] ? " selected" : "") + ">" + q[1] + "</option>"; }).join("") + '</select></label></div><div class="vd-row"><button type="button" class="vd-btn vd-sm" id="vd-ln-go">Normalize loudness' + (list.length > 1 ? " (" + list.length + " clips)" : "") + '</button></div><p class="vd-sub" id="vd-ln-st">' + (c.lufs != null ? "Set to " + c.lufs + " LUFS." : "Sets the volume so the clip is as loud as the target, never clipping.") + "</p></div></div>";
+		h += '<div class="vd-clean"><div class="vd-grid"><label class="vd-f"><span>Normalize loudness to</span><select id="vd-ln-tgt">' + [[-14, "-14 LUFS (YouTube, loud)"], [-16, "-16 LUFS (videos, podcasts)"], [-19, "-19 LUFS (quieter)"], [-23, "-23 LUFS (TV, EBU R128)"]].map(function (q) { return '<option value="' + q[0] + '"' + ((UI.lnTgt || -16) === q[0] ? " selected" : "") + ">" + q[1] + "</option>"; }).join("") + '</select></label></div><div class="vd-row"><button type="button" class="vd-btn vd-sm" id="vd-ln-go">Normalize loudness' + (list.length > 1 ? " (" + list.length + " clips)" : "") + '</button></div><p class="vd-sub" id="vd-ln-st">' + (c.lufs != null ? "Set to " + c.lufs + " LUFS." : "Sets the volume so the clip is as loud as the target, never clipping.") + "</p></div>" + (list.length === 1 ? '<div class="vd-row"><button type="button" class="vd-btn vd-sm" id="vd-cmp-go" title="See and hear the original and the edited sound one above the other (C)">&#8645; Compare before / after</button></div>' : "") + "</div>";
 		return h;
 	}
 	function renderMulti(sel) {
@@ -355,6 +393,7 @@
 	}
 	function bindInsp(c) {
 		function on(id, ev, fn) { var el = $(id); if (el) el.addEventListener(ev, fn); }
+		on("vd-cmp-go", "click", function () { VE.compareSound(c); });
 		function setNum(id, fn, label) { on(id, "change", function () { var v = parseFloat(this.value); if (!isFinite(v)) return renderInsp(); fn(v); VE.commit(label); }); }
 		setNum("vd-i-start", function (v) { var s = Math.max(0, v); if (V.canPlace(VE.P, c.track, s, V.dur(c), (function () { var o = {}; o[c.id] = 1; return o; })())) c.start = s; else toast("There is no room there on this track."); }, "Move");
 		setNum("vd-i-dur", function (v) { var r = V.trim(c, "r", c.start + Math.max(0.05, v), { mediaDur: VE.mediaDur(c), hi: nextStart(c), minDur: 1 / VE.P.fps }); Object.assign(c, r); }, "Length");
@@ -444,7 +483,7 @@
 				VE.cleanCache[key] = { start: a, rate: 48000, ch: out };
 				c.clean = { key: key, a: a, b: b, model: (D.lastModel || model), strength: strength }; done++;
 			}
-			VE.commit("Remove noise"); toast("Noise removed from " + done + " clip" + (done > 1 ? "s" : "") + ". Press Play to hear it.");
+			VE.commit("Remove noise"); toast("Noise removed from " + done + " clip" + (done > 1 ? "s" : "") + ". Press Play to hear it, or Compare before / after to see it.");
 		} catch (e) { stEl("Noise removal failed: " + (e && e.message || e)); if (window.console) console.error(e); }
 		cleaning = false;
 	}
@@ -467,6 +506,148 @@
 			if (n) { VE.commit("Normalize loudness"); toast(n + " clip" + (n > 1 ? "s" : "") + " set to " + target + " LUFS."); }
 		} catch (e) { stEl("Could not measure: " + (e && e.message || e)); }
 	}
+
+	/* ---------- compare a clip's sound before / after its edits ---------- */
+	// Original (the media's own sound) above Edited (noise removed, volume, fades, audio effects: what the export plays), on the same time and
+	// level scale, plus "What was taken out" when noise was removed. Play keeps going when you switch Before / After (B), so you hear the
+	// exact same words both ways. "Match levels" turns the edited sound up / down to the original's level so only the clean-up is compared.
+	VE.compareSound = function (c) {
+		var m = VE.media(c.media); if (!m || !VE.hasSound(c)) { toast("This clip has no sound to compare."); return; }
+		var RATE = 48000, cl = { len: UI.cmpLen || 10, t0: 0, mode: "b", match: !!UI.cmpMatch, loop: UI.cmpLoop !== false, pos: 0, data: null, tok: 0 };
+		var ac = null, srcs = [], gB = null, gA = null, playAt = 0, playFrom = 0, raf = 0;
+		function cs() { return c.start; } function ce() { return V.end(c); }
+		function place(t) { var L = Math.min(cl.len, ce() - cs()); cl.t0 = Math.max(cs(), Math.min(ce() - L, t)); cl.t1 = cl.t0 + L; }
+		place(VE.t - cl.len / 2);
+		dialog('<h3>Compare the sound: before and after</h3>' +
+			'<div class="vd-cmp-bar"><button type="button" class="vd-btn vd-primary" id="vd-cmp-play" title="Play / pause (Space)">&#9654; Play</button>' +
+			'<span class="vd-cmp-ab" role="radiogroup" aria-label="Listen to"><button type="button" class="vd-btn" data-ab="b" role="radio">Before (original)</button><button type="button" class="vd-btn" data-ab="a" role="radio">After (edited)</button></span>' +
+			'<span class="vd-sub">B switches without stopping</span><span class="vd-sp"></span>' +
+			'<label class="vd-cmp-ck"><input type="checkbox" id="vd-cmp-match"' + (cl.match ? " checked" : "") + '> Match levels</label><label class="vd-cmp-ck"><input type="checkbox" id="vd-cmp-loop"' + (cl.loop ? " checked" : "") + '> Loop</label>' +
+			'<label class="vd-cmp-ck">Show <select id="vd-cmp-len">' + [5, 10, 30, 60].map(function (x) { return '<option value="' + x + '"' + (x === cl.len ? " selected" : "") + ">" + x + " s</option>"; }).join("") + '</select></label>' +
+			'<button type="button" class="vd-btn vd-sm" id="vd-cmp-prev" title="Earlier part of the clip">&#8249; Earlier</button><button type="button" class="vd-btn vd-sm" id="vd-cmp-next" title="Later part of the clip">Later &#8250;</button></div>' +
+			'<div class="vd-cmp-rows" id="vd-cmp-rows"><p class="vd-sub">Reading the sound...</p></div>' +
+			'<p class="vd-sub" id="vd-cmp-note">Click or drag on a waveform to move. Both waveforms use the same scale (' + (VE.tl.wave === "db" ? "dB" : "linear") + '), so a quieter background shows as a thinner band between the words.</p>' +
+			'<div class="vd-dlgact"><button type="button" class="vd-btn" id="vd-cmp-close">Close</button></div>');
+		$("vd-dlg").classList.add("vd-dlg--cmp");
+		dlgClose = function () { stop(); cl.tok++; if (ac) { try { ac.close(); } catch (e) { /* ignore */ } ac = null; } UI.cmpLen = cl.len; UI.cmpMatch = cl.match; UI.cmpLoop = cl.loop; saveUI(); };
+		function abBtns() { $("vd-dlg").querySelectorAll("[data-ab]").forEach(function (b) { var on = b.getAttribute("data-ab") === cl.mode; b.classList.toggle("vd-primary", on); b.setAttribute("aria-checked", on ? "true" : "false"); }); }
+		abBtns();
+		function stats(ch) {
+			var n = ch[0].length, blk = Math.round(RATE * 0.05), rms = [], pk = 0, e = 0;
+			for (var i = 0; i < n; i += blk) { var be = 0, cnt = 0; for (var k = 0; k < ch.length; k++) { var x = ch[k]; for (var j = i, je = Math.min(n, i + blk); j < je; j++) { var v = x[j]; be += v * v; cnt++; if (v > pk) pk = v; else if (-v > pk) pk = -v; } } e += be; if (cnt) rms.push(be / cnt); }
+			var sorted = rms.slice().sort(function (a, b) { return a - b; }), fl = sorted.length ? sorted[Math.floor(sorted.length * 0.1)] : 0;
+			return { peak: V.db(pk), rms: V.db(Math.sqrt(e / Math.max(1, n * ch.length))), floor: V.db(Math.sqrt(fl)) };
+		}
+		function f1(d) { return isFinite(d) ? d.toFixed(1) + " dB" : "silent"; }
+		async function load() {
+			var tok = ++cl.tok; stop(); $("vd-cmp-rows").innerHTML = '<p class="vd-sub">Reading the sound...</p>';
+			try {
+				var sp = c.speed || 1, sa = V.srcAt(c, cl.t0), sb = V.srcAt(c, cl.t1), n = Math.max(1, Math.round((sb - sa) * RATE));
+				var orig = await VE.pcmRange(m, Math.max(0, sa), sb); if (tok !== cl.tok) return;
+				var nch = orig.length, cleaned = null;
+				if (c.clean && c.clean.key) { var cp = await VE.cleanPcm(c.clean.key); if (cp) { cleaned = []; for (var k = 0; k < nch; k++) cleaned.push(new Float32Array(n)); V.mixInto(cleaned, 0, n, cp, sa, 1 / RATE, null); } }
+				if (tok !== cl.tok) return;
+				var base = cleaned || orig, after = [], blk = 480;
+				for (var k2 = 0; k2 < nch; k2++) after.push(new Float32Array(n));
+				for (var i = 0; i < n; i += blk) {
+					var t = cl.t0 + (i + blk / 2) / RATE / sp, g = V.gainAt(VE.P, c, t) * VE.fxGainAt(c, t);
+					for (var k3 = 0; k3 < nch; k3++) { var src = base[k3] || base[0], dst = after[k3]; for (var j = i, je = Math.min(n, i + blk); j < je; j++) dst[j] = src[j] * g; }
+				}
+				var removed = null;
+				if (cleaned) { removed = []; for (var k4 = 0; k4 < nch; k4++) { var r = new Float32Array(n), o = orig[k4], cc = cleaned[k4]; for (var j2 = 0; j2 < n; j2++) r[j2] = o[j2] - cc[j2]; removed.push(r); } }
+				var sB = stats(orig), sA = stats(after), match = isFinite(sB.rms) && isFinite(sA.rms) ? V.fromDb(Math.max(-30, Math.min(30, sB.rms - sA.rms))) : 1;
+				cl.data = { n: n, sp: sp, orig: orig, after: after, removed: removed, sB: sB, sA: sA, sR: removed ? stats(removed) : null, match: match };
+				cl.pos = Math.max(0, Math.min(n / RATE / sp, VE.t - cl.t0));
+				build(); bufs = null;
+			} catch (e) { if (tok === cl.tok) $("vd-cmp-rows").innerHTML = '<p class="vd-sub">Could not read the sound: ' + esc(e && e.message || String(e)) + "</p>"; }
+		}
+		function row(id, label, info) { return '<div class="vd-cmp-row"><div class="vd-cmp-lab"><b>' + label + '</b><span>' + info + '</span></div><div class="vd-cmp-cv"><canvas id="' + id + '"></canvas><i class="vd-cmp-ph"></i></div></div>'; }
+		function build() {
+			var D = cl.data, eg = D.match !== 1 && cl.match ? " (shown " + (V.db(D.match) > 0 ? "+" : "") + V.db(D.match).toFixed(1) + " dB to match)" : "";
+			var h = '<div class="vd-cmp-time" id="vd-cmp-time"></div>' +
+				row("vd-cmp-b", "Before: the original", "Peak " + f1(D.sB.peak) + " · average " + f1(D.sB.rms) + " · background " + f1(D.sB.floor)) +
+				row("vd-cmp-a", "After: what the export plays", "Peak " + f1(D.sA.peak) + " · average " + f1(D.sA.rms) + " · background " + f1(D.sA.floor) + eg);
+			if (D.removed) h += row("vd-cmp-r", "What was taken out", "Average " + f1(D.sR.rms) + ". Mostly noise is good; words here mean the clean-up was too strong.");
+			var diff = D.sA.floor - D.sB.floor;
+			h += '<p class="vd-cmp-sum">' + (isFinite(diff) ? "Background between the words: " + f1(D.sB.floor) + " &rarr; " + f1(D.sA.floor) + " (" + (diff <= 0 ? diff.toFixed(1) : "+" + diff.toFixed(1)) + " dB" + (cl.match ? "" : ", volume change included") + ")." : "") + "</p>";
+			$("vd-cmp-rows").innerHTML = h; draw();
+			$("vd-cmp-rows").querySelectorAll(".vd-cmp-cv").forEach(function (box) {
+				function at(e) { var r = box.getBoundingClientRect(); return Math.max(0, Math.min(1, (e.clientX - r.left) / r.width)) * D.n / RATE / D.sp; }
+				var down = false;
+				box.addEventListener("pointerdown", function (e) { down = true; try { box.setPointerCapture(e.pointerId); } catch (x) { /* ignore */ } seekTo(at(e)); });
+				box.addEventListener("pointermove", function (e) { if (down) seekTo(at(e)); });
+				box.addEventListener("pointerup", function () { down = false; }); box.addEventListener("pointercancel", function () { down = false; });
+			});
+			marker();
+		}
+		function paint(cv, ch, color, color2, gain) {
+			var box = cv.parentNode, W = Math.max(50, box.clientWidth), H = box.clientHeight || 90, dpr = Math.min(2, window.devicePixelRatio || 1);
+			cv.width = Math.round(W * dpr); cv.height = Math.round(H * dpr); cv.style.width = W + "px"; cv.style.height = H + "px";
+			var g = cv.getContext("2d"); g.setTransform(dpr, 0, 0, dpr, 0, 0); g.clearRect(0, 0, W, H);
+			var mode = VE.tl.wave, mid = H / 2, half = H / 2 - 2, n = ch[0].length, gdb = V.db(gain || 1);
+			g.font = "9px Arial, sans-serif"; g.textBaseline = "middle";
+			(mode === "db" ? [0, -12, -24, -48] : [0, -6, -12]).forEach(function (d) { var y = V.waveY(d, mode) * half; g.fillStyle = d === 0 ? "rgba(248,113,113,0.3)" : "rgba(255,255,255,0.09)"; g.fillRect(0, Math.round(mid - y), W, 1); g.fillRect(0, Math.round(mid + y), W, 1); if (d < 0 && y > 8) { g.fillStyle = "rgba(255,255,255,0.45)"; g.fillText(String(d), 3, mid - y + 6); } });
+			g.fillStyle = "rgba(255,255,255,0.14)"; g.fillRect(0, Math.round(mid), W, 1);
+			for (var x = 0; x < W; x++) {
+				var a = Math.floor(x * n / W), b = Math.max(a + 1, Math.floor((x + 1) * n / W)), mx = 0, e = 0, cnt = 0;
+				for (var k = 0; k < ch.length; k++) { var xs = ch[k]; for (var j = a; j < b && j < n; j++) { var v = xs[j]; e += v * v; cnt++; if (v > mx) mx = v; else if (-v > mx) mx = -v; } }
+				if (!cnt) continue;
+				var ph = V.waveY(V.db(mx) + gdb, mode) * half, rh = V.waveY(V.db(Math.sqrt(e / cnt)) + gdb, mode) * half;
+				if (ph > 0.3) { g.fillStyle = color; g.fillRect(x, mid - ph, 1, ph * 2); }
+				if (rh > 0.3) { g.fillStyle = color2; g.fillRect(x, mid - rh, 1, rh * 2); }
+			}
+		}
+		function draw() {
+			var D = cl.data; if (!D) return;
+			paint($("vd-cmp-b"), D.orig, "rgba(147,197,253,0.6)", "#bfdbfe", 1);
+			paint($("vd-cmp-a"), D.after, "rgba(110,231,183,0.62)", "#a7f3d0", cl.match ? D.match : 1);
+			if (D.removed) paint($("vd-cmp-r"), D.removed, "rgba(251,191,36,0.55)", "#fde68a", 1);
+		}
+		function dur() { var D = cl.data; return D ? D.n / RATE / D.sp : 0; }
+		function marker() {
+			var D = cl.data; if (!D) return; var p = dur() ? cl.pos / dur() * 100 : 0;
+			$("vd-cmp-rows").querySelectorAll(".vd-cmp-ph").forEach(function (el) { el.style.left = p + "%"; });
+			var tm = $("vd-cmp-time"); if (tm) tm.textContent = V.tc(cl.t0 + cl.pos, VE.P.fps) + "   (" + V.tc(cl.t0, VE.P.fps) + " to " + V.tc(cl.t1, VE.P.fps) + ")";
+		}
+		var bufs = null;
+		function mkBuf(ch, gain) { var b = ac.createBuffer(Math.max(1, ch.length), ch[0].length, RATE); for (var k = 0; k < ch.length; k++) { var d = b.getChannelData(k), s = ch[k]; if (gain === 1) d.set(s); else for (var j = 0; j < s.length; j++) d[j] = s[j] * gain; } return b; }
+		function play() {
+			var D = cl.data; if (!D) return;
+			if (!ac) { try { ac = new (window.AudioContext || window.webkitAudioContext)(); } catch (e) { toast("This browser cannot play sound here."); return; } }
+			if (ac.state === "suspended") ac.resume();
+			if (!bufs || bufs.match !== cl.match) bufs = { b: mkBuf(D.orig, 1), a: mkBuf(D.after, cl.match ? D.match : 1), match: cl.match };
+			stop(true); if (cl.pos >= dur() - 0.02) cl.pos = 0;
+			gB = ac.createGain(); gA = ac.createGain(); gB.gain.value = cl.mode === "b" ? 1 : 0; gA.gain.value = cl.mode === "a" ? 1 : 0; gB.connect(ac.destination); gA.connect(ac.destination);
+			var when = ac.currentTime + 0.03, off = cl.pos * D.sp;
+			[[bufs.b, gB], [bufs.a, gA]].forEach(function (q) { var s = ac.createBufferSource(); s.buffer = q[0]; s.playbackRate.value = D.sp; s.connect(q[1]); s.start(when, off); srcs.push(s); });
+			srcs[0].onended = function () { if (!srcs.length) return; if (cl.loop) { cl.pos = 0; play(); } else { stop(); cl.pos = dur(); marker(); } };
+			playAt = when; playFrom = cl.pos; $("vd-cmp-play").innerHTML = "&#10074;&#10074; Pause";
+			cancelAnimationFrame(raf); (function tick() { if (!srcs.length) return; cl.pos = Math.max(0, Math.min(dur(), playFrom + (ac.currentTime - playAt))); marker(); raf = requestAnimationFrame(tick); })();
+		}
+		function stop(keep) {
+			cancelAnimationFrame(raf); var list = srcs; srcs = [];
+			list.forEach(function (s) { s.onended = null; try { s.stop(); } catch (e) { /* ignore */ } });
+			if (!keep) { var b = $("vd-cmp-play"); if (b) b.innerHTML = "&#9654; Play"; }
+		}
+		function seekTo(t) { cl.pos = t; marker(); if (srcs.length) play(); }
+		function setMode(md) { cl.mode = md; abBtns(); if (gB && ac) { var now = ac.currentTime; gB.gain.setTargetAtTime(md === "b" ? 1 : 0, now, 0.01); gA.gain.setTargetAtTime(md === "a" ? 1 : 0, now, 0.01); } }
+		$("vd-cmp-play").onclick = function () { if (srcs.length) stop(); else play(); };
+		$("vd-dlg").querySelectorAll("[data-ab]").forEach(function (b) { b.onclick = function () { setMode(b.getAttribute("data-ab")); }; });
+		$("vd-cmp-match").onchange = function () { cl.match = this.checked; if (cl.data) { build(); if (srcs.length) play(); } };
+		$("vd-cmp-loop").onchange = function () { cl.loop = this.checked; };
+		$("vd-cmp-len").onchange = function () { cl.len = +this.value; place(cl.t0 + cl.pos - cl.len / 2); load(); };
+		$("vd-cmp-prev").onclick = function () { place(cl.t0 - (cl.t1 - cl.t0)); load(); };
+		$("vd-cmp-next").onclick = function () { place(cl.t1); load(); };
+		$("vd-cmp-close").onclick = closeDialog;
+		$("vd-dlg").addEventListener("keydown", function (e) {
+			if (e.target.tagName === "SELECT" || e.target.tagName === "INPUT") return;
+			if (e.key === " ") { e.preventDefault(); e.stopPropagation(); $("vd-cmp-play").click(); }
+			else if (e.key === "b" || e.key === "B") { e.preventDefault(); e.stopPropagation(); setMode(cl.mode === "b" ? "a" : "b"); }
+		});
+		var ro = window.ResizeObserver ? new ResizeObserver(function () { draw(); }) : null; if (ro) ro.observe($("vd-cmp-rows"));
+		var prevClose = dlgClose; dlgClose = function () { if (ro) ro.disconnect(); prevClose(); };
+		load();
+	};
 
 	/* ---------- export dialog ---------- */
 	var exporting = null;
@@ -508,8 +689,9 @@
 			exporting = null; go.disabled = false; $("vd-x-cancel").textContent = "Close";
 		};
 	}
-	function dialog(h) { $("vd-dlg").innerHTML = h; $("vd-modal").hidden = false; setTimeout(function () { var f = $("vd-dlg").querySelector("select, input, button"); if (f) f.focus(); }, 30); }
-	function closeDialog() { if (exporting) return; $("vd-modal").hidden = true; }
+	var dlgClose = null;
+	function dialog(h) { if (dlgClose) { var f0 = dlgClose; dlgClose = null; f0(); } $("vd-dlg").className = "vd-dlg"; $("vd-dlg").innerHTML = h; $("vd-modal").hidden = false; setTimeout(function () { var f = $("vd-dlg").querySelector("select, input, button"); if (f) f.focus(); }, 30); }
+	function closeDialog() { if (exporting) return; $("vd-modal").hidden = true; if (dlgClose) { var f0 = dlgClose; dlgClose = null; f0(); } }
 	$("vd-modal").addEventListener("click", function (e) { if (e.target === this) closeDialog(); });
 	$("vd-export").onclick = openExport;
 

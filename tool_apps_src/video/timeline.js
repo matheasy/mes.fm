@@ -84,7 +84,7 @@
 	// peak (light) and RMS (solid) of the clip's sound, mirrored; dB scale by default so quiet parts show too. With audio effects on, the
 	// original is drawn faint and the processed sound over it; red ticks where it would clip
 	function paintWave(g, c, m, A, B, top, hh, big) {
-		var mode = T.wave, mid = top + hh / 2, half = hh / 2 - 1, vdb = V.db(c.vol == null ? 1 : c.vol), env = V.afxOn(c) ? VE.fxEnv(c) : null, w = m.wave, dim = c.mute ? 0.35 : 1;
+		var mode = T.wave, mid = top + hh / 2, half = hh / 2 - 1, vdb = V.db(c.vol == null ? 1 : c.vol), env = V.afxOn(c) ? VE.fxEnv(c) : null, w = m.wave, wr = (m.wave && m.wave.r) || 50, dim = c.mute ? 0.35 : 1;
 		if (!isFinite(vdb)) vdb = -120;
 		if (big && hh >= 56) {
 			g.save(); g.font = "9px Arial, sans-serif"; g.textBaseline = "middle";
@@ -97,10 +97,10 @@
 		}
 		g.fillStyle = "rgba(255,255,255,0.14)"; g.fillRect(A, Math.round(mid), B - A, 1);
 		var cols = env ? ["rgba(255,255,255,0.16)", "rgba(110,231,183,0.75)", "#d1fae5"] : big ? [null, "rgba(110,231,183,0.62)", "#a7f3d0"] : [null, "rgba(125,211,252,0.55)", "#7dd3fc"];
-		// zoomed in past the stored 50-a-second levels: work each pixel out from the decoded sound itself, so it stays sharp
-		var fine = Math.abs(V.srcAt(c, c.start + (A + 1) / VE.pps) - V.srcAt(c, c.start + A / VE.pps)) < 1 / 40;
+		// zoomed in past the stored 200-a-second levels: work each pixel out from the decoded sound itself, so it stays sharp
+		var fine = Math.abs(V.srcAt(c, c.start + (A + 1) / VE.pps) - V.srcAt(c, c.start + A / VE.pps)) < 1 / 160;
 		for (var px = A; px < B; px++) {
-			var s0 = V.srcAt(c, c.start + px / VE.pps), s1 = V.srcAt(c, c.start + (px + 1) / VE.pps), i0 = Math.max(0, Math.floor(s0 * 50)), i1 = Math.max(i0 + 1, Math.floor(s1 * 50)), pk = -Infinity, rm = -Infinity;
+			var s0 = V.srcAt(c, c.start + px / VE.pps), s1 = V.srcAt(c, c.start + (px + 1) / VE.pps), i0 = Math.max(0, Math.floor(s0 * (w ? wr : 50))), i1 = Math.max(i0 + 1, Math.floor(s1 * (w ? wr : 50))), pk = -Infinity, rm = -Infinity;
 			var buf = fine ? VE.pcmNow(m, s0) : null;
 			if (buf) {
 				var j0 = Math.max(0, Math.floor((s0 - buf.start) * buf.rate)), j1 = Math.max(j0 + 1, Math.ceil((s1 - buf.start) * buf.rate)), mx = 0, e = 0, cnt = 0;

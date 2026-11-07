@@ -659,15 +659,18 @@
 	// levels stored as bytes: 0 = -96 dBFS or less, 255 = 0 dBFS (0.38 dB steps)
 	V.encDb = function (a) { var d = V.db(a); return !isFinite(d) || d <= -96 ? 0 : Math.min(255, Math.round((d + 96) / 96 * 255)); };
 	V.decDb = function (b) { return b <= 0 ? -Infinity : b / 255 * 96 - 96; };
-	// peak and RMS per bin (perSec bins a second) -> { pk, rms } byte arrays (encDb)
+	// peak and RMS per bin (perSec bins a second) -> { pk, rms, r } byte arrays (encDb). Bin edges are worked out from the exact sample
+	// rate, so 44.1 kHz at 200 a second (220.5 samples) never drifts when 10 s windows are joined end to end
+	V.WAVE_RATE = 200;
 	V.wave = function (chs, rate, perSec) {
-		var bin = Math.max(1, Math.round(rate / perSec)), n = Math.ceil(chs[0].length / bin), pk = new Uint8Array(n), rm = new Uint8Array(n);
+		perSec = perSec || V.WAVE_RATE;
+		var len = chs[0].length, n = Math.max(1, Math.round(len * perSec / rate)), pk = new Uint8Array(n), rm = new Uint8Array(n), step = rate / perSec;
 		for (var b = 0; b < n; b++) {
-			var m = 0, e = 0, cnt = 0;
-			for (var c = 0; c < chs.length; c++) { var x = chs[c]; for (var i = b * bin, en = Math.min(x.length, i + bin); i < en; i++) { var v = x[i]; e += v * v; cnt++; if (v > m) m = v; else if (-v > m) m = -v; } }
+			var m = 0, e = 0, cnt = 0, i0 = Math.floor(b * step), i1 = Math.min(len, Math.max(i0 + 1, Math.floor((b + 1) * step)));
+			for (var c = 0; c < chs.length; c++) { var x = chs[c]; for (var i = i0; i < i1; i++) { var v = x[i]; e += v * v; cnt++; if (v > m) m = v; else if (-v > m) m = -v; } }
 			pk[b] = V.encDb(m); rm[b] = V.encDb(cnt ? Math.sqrt(e / cnt) : 0);
 		}
-		return { pk: pk, rms: rm };
+		return { pk: pk, rms: rm, r: perSec };
 	};
 	// height (0..1) a level (dB) is drawn at: "db" = a -54..0 dB scale (quiet parts visible), "lin" = amplitude
 	V.waveY = function (db, mode) {
