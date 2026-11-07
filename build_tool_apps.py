@@ -846,6 +846,11 @@ APPS = {
                              tag="Wake up at the end of a sleep cycle.", accent="#3730a3", dark="#28237a", tint="#e6e5f8",
                              desc="Free sleep calculator: find the best bedtime for the time you need to wake up, or the best wake-up time if you go to bed now, using 90-minute sleep cycles. See your night's sleep stages, an evening plan, nap times and your weekly sleep debt.",
                              js_v="1"),
+    # Relative Time Calculator (2026-11-07; tests: tool_apps_src/relative-time-calculator-tests.js): how long a span "feels" at another age (share of life / square-root / clock models) or as a share of another lifespan.
+    "relative-time-calculator": dict(title="Relative Time Calculator", page_title="Relative Time Calculator: How Long Does an Hour Feel at Another Age?",
+                             tag="An hour for a baby is how long for a grandparent?", accent="#6d28d9", dark="#521ea6", tint="#ede6fb",
+                             desc="Free relative time calculator: see how long a span of time feels at another age. One hour for a 9-week-old baby is the same share of life as 16.9 days for a 70-year-old. Compare the share-of-life and square-root models, see how much of your felt life is behind you, and compare animal lifespans.",
+                             js_v="1"),
     # One-Rep Max, Body Surface Area and Pregnancy / Breastfeeding Calorie calculators (2026-10-15; tests: tool_apps_src/<slug>-tests.js). The pregnancy page builds on the BMR calculator's lib (lib_from).
     "one-rep-max-calculator": dict(title="One-Rep Max Calculator", page_title="One-Rep Max (1RM) Calculator: 7 Formulas, Rep Chart, Plates and Strength Level",
                                    tag="Estimate your 1RM and load the bar.", accent="#b91c1c", dark="#8f1414", tint="#fbe1e1",

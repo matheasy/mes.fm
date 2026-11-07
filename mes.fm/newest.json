@@ -100,10 +100,10 @@
  ],
  "tools": [
   {
-   "href": "/minesweeper",
-   "title": "Minesweeper",
-   "icon": "/img/minesweeper-logo.png",
-   "desc": "Classic levels, daily board, no-guess boards and hexagons; best times saved, optionally on Hive.",
+   "href": "/connect-four",
+   "title": "Connect Four",
+   "icon": "/img/connect-four-logo.png",
+   "desc": "Connect 3, 4, 5 or 6 on any board, against the computer, a friend or a Hive player.",
    "added": "2026-11-07",
    "kind": "tool"
   },
@@ -112,6 +112,14 @@
    "title": "Party Invitations & RSVP",
    "icon": "/img/party-logo.png",
    "desc": "Make a themed invitation, send one link and see who's coming: Going / Maybe / Can't go, plus-ones, waitlist, what to bring. No sign-up for anyone.",
+   "added": "2026-11-07",
+   "kind": "tool"
+  },
+  {
+   "href": "/minesweeper",
+   "title": "Minesweeper",
+   "icon": "/img/minesweeper-logo.png",
+   "desc": "Classic levels, daily board, no-guess boards and hexagons; best times saved, optionally on Hive.",
    "added": "2026-11-07",
    "kind": "tool"
   },
@@ -186,22 +194,14 @@
    "desc": "Dirac's belt trick in 3D: one turn tangles the ribbons, two turns untangle them, plus five pictures of why spin ½ needs 720°, a phase-coloured torus and an elastic sheet that lies flat only after 720°.",
    "added": "2026-11-03",
    "kind": "tool"
-  },
-  {
-   "href": "/hologram",
-   "title": "Hologram Simulator",
-   "icon": "/img/hologram-logo.png",
-   "desc": "Record interference fringes live, play the hologram back with real wave optics, see parallax and the twin image, compare hologram types and compute a phase hologram of your drawing.",
-   "added": "2026-11-02",
-   "kind": "tool"
   }
  ],
  "latest": [
   {
-   "href": "/minesweeper",
-   "title": "Minesweeper",
-   "icon": "/img/minesweeper-logo.png",
-   "desc": "Classic levels, daily board, no-guess boards and hexagons; best times saved, optionally on Hive.",
+   "href": "/connect-four",
+   "title": "Connect Four",
+   "icon": "/img/connect-four-logo.png",
+   "desc": "Connect 3, 4, 5 or 6 on any board, against the computer, a friend or a Hive player.",
    "added": "2026-11-07",
    "kind": "tool"
   },
@@ -220,6 +220,14 @@
    "desc": "How long an hour feels at another age: share of life, felt life and animal lifespans.",
    "added": "2026-11-07",
    "kind": "calculator"
+  },
+  {
+   "href": "/minesweeper",
+   "title": "Minesweeper",
+   "icon": "/img/minesweeper-logo.png",
+   "desc": "Classic levels, daily board, no-guess boards and hexagons; best times saved, optionally on Hive.",
+   "added": "2026-11-07",
+   "kind": "tool"
   },
   {
    "href": "/maps",
@@ -251,14 +259,6 @@
    "icon": "/img/crash-physics-logo.png",
    "desc": "Fire anything at anything: pick the material, speed and plate thickness and see if it bounces, sticks or goes through. Crash cars, drop eggs, read the g-forces.",
    "added": "2026-11-05",
-   "kind": "tool"
-  },
-  {
-   "href": "/youtube-audio",
-   "title": "YouTube Audio Analyzer",
-   "icon": "/img/youtube-audio-logo.png",
-   "desc": "How loud is that video? Loudness in LUFS, true peak, waveform, spectrogram, silences and clipping for YouTube, 3Speak, Rumble, Odysee or your own files.",
-   "added": "2026-11-04",
    "kind": "tool"
   }
  ]

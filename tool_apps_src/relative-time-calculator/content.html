@@ -1,0 +1,89 @@
+	<div class="tu" id="rt">
+		<div class="tu-card" id="rt-setup">
+			<div class="tu-seg rt-modes" id="rt-mode" role="group" aria-label="What to compare"><button type="button" data-m="age" aria-pressed="true">Two ages</button><button type="button" data-m="life" aria-pressed="false">Two lifespans (animals)</button></div>
+
+			<div id="rt-agebox">
+				<div class="rt-sentence">
+					<div class="tu-field rt-f"><label for="rt-d">How long</label><input id="rt-d" class="tu-input tu-input--big" type="text" value="1 hour" autocomplete="off" spellcheck="false" aria-describedby="rt-d-read"><input type="range" id="rt-ds" class="rt-range" min="0" max="1000" step="1" aria-label="How long (slider)"><span class="rt-read" id="rt-d-read"></span></div>
+					<div class="tu-field rt-f"><label for="rt-a">for someone aged</label><input id="rt-a" class="tu-input tu-input--big" type="text" value="9 weeks" autocomplete="off" spellcheck="false" aria-describedby="rt-a-read"><input type="range" id="rt-as" class="rt-range" min="0" max="1000" step="1" aria-label="First age (slider)"><span class="rt-read" id="rt-a-read"></span></div>
+					<div class="tu-field rt-f"><label for="rt-b">feels like how long at age</label><input id="rt-b" class="tu-input tu-input--big" type="text" value="70 years" autocomplete="off" spellcheck="false" aria-describedby="rt-b-read"><input type="range" id="rt-bs" class="rt-range" min="0" max="1000" step="1" aria-label="Second age (slider)"><span class="rt-read" id="rt-b-read"></span></div>
+				</div>
+				<div class="rt-modelrow">
+					<span class="tu-label" id="rt-k-label">How time feels with age</span>
+					<div class="tu-seg rt-kseg" id="rt-kseg" role="group" aria-labelledby="rt-k-label"><button type="button" data-k="1" aria-pressed="true">Share of life</button><button type="button" data-k="0.5" aria-pressed="false">Square root</button><button type="button" data-k="0" aria-pressed="false">Clock time</button></div>
+					<label class="rt-kcustom" for="rt-k">Custom: <b id="rt-ko">1.00</b> <input type="range" id="rt-k" min="0" max="1.5" step="0.05" value="1"></label>
+				</div>
+			</div>
+
+			<div id="rt-lifebox" hidden>
+				<div class="rt-sentence">
+					<div class="tu-field rt-f"><label for="rt-ld">How long</label><input id="rt-ld" class="tu-input tu-input--big" type="text" value="1 day" autocomplete="off" spellcheck="false"><span class="rt-read" id="rt-ld-read"></span></div>
+					<div class="tu-field rt-f"><label for="rt-la">in the life of a</label><select id="rt-la" class="tu-select"></select><input id="rt-lac" class="tu-input" type="text" placeholder="Lifespan, e.g. 5 years" hidden><span class="rt-read" id="rt-la-read"></span></div>
+					<div class="tu-field rt-f"><label for="rt-lb">is the same share of life for a</label><select id="rt-lb" class="tu-select"></select><input id="rt-lbc" class="tu-input" type="text" placeholder="Lifespan, e.g. 80 years" hidden><span class="rt-read" id="rt-lb-read"></span></div>
+				</div>
+			</div>
+
+			<div class="rt-tools">
+				<button type="button" class="tu-btn tu-btn--ghost" id="rt-swap" title="Swap the two ages">&#8646; Swap</button>
+				<button type="button" class="tu-btn tu-btn--ghost" id="rt-reset">Reset</button>
+				<button type="button" class="tu-btn" id="rt-link">Copy link</button>
+			</div>
+			<div class="rt-ex"><span class="tu-label">Try</span><div class="rt-chips" id="rt-ex"></div></div>
+		</div>
+
+		<div class="tu-card rt-hero" id="rt-hero" aria-live="polite">
+			<div class="rt-big" id="rt-big"></div>
+			<div class="rt-sub" id="rt-sub"></div>
+			<p class="rt-say" id="rt-say"></p>
+		</div>
+
+		<div class="tu-stats rt-models" id="rt-models"></div>
+
+		<h2>The same slice of two lives</h2>
+		<div class="tu-card"><div class="rt-chart" id="rt-bars" role="img"></div><p class="tu-note" id="rt-barsnote" style="margin-bottom:0;"></p></div>
+
+		<div id="rt-feltcard">
+			<h2>How much of your felt life is behind you?</h2>
+			<div class="tu-card">
+				<div class="tu-row">
+					<div class="tu-field tu-field--sm" style="flex-basis:9em;"><label for="rt-L">Lifespan (years)</label><input id="rt-L" class="tu-input" type="number" min="10" max="130" step="1" value="80"></div>
+					<div class="tu-field tu-field--sm" style="flex-basis:12em;"><label for="rt-a0">Memories start at age</label><input id="rt-a0" class="tu-input" type="number" min="0" max="10" step="0.5" value="5"></div>
+				</div>
+				<div class="rt-chart rt-felt" id="rt-felt" role="img"></div>
+				<div class="rt-readout" id="rt-feltread" aria-live="polite"></div>
+				<p class="tu-note" style="margin-bottom:0;">Move over the chart to read any age. The bold line is the model you picked; the thin lines are the other two. Felt time is counted from the age your lasting memories start, because almost nobody remembers being 2.</p>
+			</div>
+
+			<h2>This span at other ages</h2>
+			<div class="tu-card"><div class="tu-table-wrap"><table class="tu-table" id="rt-table"></table></div></div>
+		</div>
+
+		<h2>The maths</h2>
+		<div class="tu-card">
+			<div class="rt-eq">
+				<div><span class="rt-eq__n">share of life (Janet)</span> <span class="rt-eq__f mes-tex">\( \displaystyle d_B = d_A \times \frac{B}{A} \)</span></div>
+				<div><span class="rt-eq__n">any model: same felt length</span> <span class="rt-eq__f mes-tex">\( \displaystyle \int_A^{A+d_A} t^{-k}\,dt = \int_B^{B+d_B} t^{-k}\,dt \)</span></div>
+				<div><span class="rt-eq__n">short spans</span> <span class="rt-eq__f mes-tex">\( \displaystyle d_B \approx d_A \left(\frac{B}{A}\right)^{k} \)</span></div>
+				<div><span class="rt-eq__n">felt life used by age a (k = 1)</span> <span class="rt-eq__f mes-tex">\( \displaystyle \frac{\ln(a/a_0)}{\ln(L/a_0)} \)</span></div>
+			</div>
+			<p class="tu-note" style="margin-bottom:0;"><i>k</i> = 1 is the share-of-life rule, <i>k</i> = 0.5 the square-root model and <i>k</i> = 0 plain clock time. For <i>k</i> = 1 the integral gives exactly <i>d<sub>A</sub></i>/<i>A</i> = <i>d<sub>B</sub></i>/<i>B</i>, so &ldquo;share of the life lived so far&rdquo; and &ldquo;time felt in proportion to age&rdquo; are the same rule, even for long spans.</p>
+		</div>
+
+		<div class="tu-seo">
+			<h2>How the relative time calculator works</h2>
+			<p>A popular idea, first written down by the French philosopher Paul Janet in 1877, is that a stretch of time feels as long as its <b>share of the life you have lived so far</b>. A 9-week-old baby has lived 63 days, so one hour is 1/1,512 of its whole life. For a 70-year-old, 1/1,512 of their life is about <b>16.9 days</b>. In that sense an hour for the baby is &ldquo;as long&rdquo; as two and a half weeks for the grandparent.</p>
+			<p>The calculator also has a gentler <b>square-root model</b> (Lemlich, 1975), where felt time shrinks with the square root of age (the same hour is then about 20 hours for the 70-year-old), plain <b>clock time</b> for comparison, and a slider for anything in between.</p>
+			<h3>Is this real?</h3>
+			<p>It is a model, not a measurement. People of all ages say the years seem to go faster as they get older, and studies agree that it <i>feels</i> that way looking back, but they do not find that an older person's hour or day actually drags or flies by. Likely reasons include fewer new experiences (new events make time feel longer in memory), routine, and attention. Use the numbers as a way to think about time, not as a scientific fact.</p>
+			<h3>Questions</h3>
+			<dl>
+				<dt>What can I type?</dt><dd>Things like <i>1 hour</i>, <i>90 min</i>, <i>1h 30m</i>, <i>1:30</i>, <i>9 weeks</i>, <i>2.5 years</i>, <i>a summer</i> or <i>half an hour</i>. A bare number means hours for the length and years for an age.</dd>
+				<dt>Why does a summer feel endless to a child?</dt><dd>For a 6-year-old, 3 months is 1/24 of their life. The same share of a 40-year-old's life is 20 months.</dd>
+				<dt>What is the &ldquo;felt life&rdquo; chart?</dt><dd>It adds up felt time from the age your memories start. With the share-of-life rule, memories from age 5 and an 80-year lifespan, half of your felt life is used by age 20, the geometric mean of 5 and 80.</dd>
+				<dt>What about animals?</dt><dd>The &ldquo;Two lifespans&rdquo; tab compares a span as a share of a whole typical lifespan: one day of a 12-year dog life is about 6.6 days of a 79-year human life. Lifespans are rough averages and vary a lot by breed and species.</dd>
+				<dt>Is anything sent anywhere?</dt><dd>No. Everything runs in your browser; your last numbers are kept in this browser only.</dd>
+			</dl>
+			<p>Related: <a href="/time-dilation">Time Dilation Simulator</a> &middot; <a href="/days-between-dates-calculator">Days Between Dates</a> &middot; <a href="/percentagecalculator">Percentage Calculator</a> &middot; <a href="/unit-conversion">Unit Converter</a> &middot; <a href="/calculator">Calculator</a></p>
+		</div>
+	</div>
+<script src="/main_js/mes-math.js" defer></script>
