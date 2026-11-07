@@ -4603,7 +4603,7 @@ var MESPixel = (function () {
 	PE.savePsdAs = function () {
 		if (!PE.doc) { PE.toast("Open or create an image first"); return Promise.resolve(false); }
 		var L = cur(), base = L ? L.base : (window.MESImg ? window.MESImg.cleanFileName(PE.doc.name) : PE.doc.name) || "image";
-		if (!canPicker()) { if (!L) { PE.linkPsd(null, base + ".psd", {}); L = cur(); L.n = 0; } return downloadPsd(L); }
+		if (!canPicker()) return askName(base).then(function (nm) { if (!nm) return false; PE.linkPsd(null, nm + ".psd", {}); var N = cur(); N.base = nm; N.n = 0; N.opened = false; return downloadPsd(N); });
 		var e0 = edits, dh = PE.folderHandle && PE.folderHandle(), o = { suggestedName: (L && L.handle ? P.versionedName(L.base, "psd", L.n + 1) : base + ".psd"), id: "mes-photo-psd", types: [{ description: "Photoshop file", accept: { "image/vnd.adobe.photoshop": [".psd"] } }] };
 		if (L && L.handle) o.startIn = L.handle; else if (dh) o.startIn = dh;
 		var pick = function (opt) { return window.showSaveFilePicker(opt).catch(function (x) { if (x && x.name === "TypeError" && opt.startIn) { var o2 = Object.assign({}, opt); delete o2.startIn; return window.showSaveFilePicker(o2); } throw x; }); };
@@ -4625,12 +4625,26 @@ var MESPixel = (function () {
 		if ((sget().psdDlSeen && sget().psdNaming) || PE._psdExplained) return go();   // explained once per visit (or never again, if ticked)
 		return explain(L).then(function (ok) { if (ok) PE._psdExplained = true; return ok ? go() : false; });
 	}
+	/* Save as a new PSD without a file picker (Firefox, Safari, Brave without the flag): ask for the name here, then download it under that name */
+	function cleanName(v) { return String(v || "").replace(/\.psd$/i, "").replace(/[\\/:*?"<>|\u0000-\u001f]+/g, " ").replace(/\s+/g, " ").trim().slice(0, 120); }
+	function askName(base) {
+		return new Promise(function (res) {
+			var w = el("div", "pe-xcf-notes pe-psdsave"); w.innerHTML = '<label class="pe-psdname"><span>File name</span> <input type="text" id="pe-psdnm-in" spellcheck="false" autocomplete="off"> <b>.psd</b></label>'
+				+ "<p><small>This browser can't write into a file on your computer, so the PSD is downloaded under this name. Later Saves (" + PE.modKey() + "S) use it too.</small></p>";
+			var inp = w.querySelector("input"); inp.value = cleanName(base) || "image";
+			var fin = false, end = function (m, ok) { if (fin) return; var v = cleanName(inp.value); if (ok && !v) { inp.focus(); return; } fin = true; m.close(); res(ok ? v : null); };
+			inp.addEventListener("keydown", function (e) { if (e.key === "Enter") { e.preventDefault(); end(curM, true); } });
+			var curM = PE.modal({ title: "Save as a new PSD", body: w, onClose: function () { if (!fin) { fin = true; res(null); } }, buttons: [{ label: "Cancel", act: function (m) { end(m, false); } }, { label: "Download the PSD", primary: true, act: function (m) { end(m, true); } }] });
+			setTimeout(function () { inp.focus(); inp.select(); }, 30);
+		});
+	}
 	function explain(L) {
 		return new Promise(function (res) {
 			var br = isBrave(), w = el("div", "pe-xcf-notes pe-psdsave"), v = P.versionedName(L.base, "psd", Math.max(L.opened ? 2 : 1, L.n + 1));
 			w.innerHTML = "<p>This browser can't write into a file on your computer, so <b>each Save downloads the PSD</b>. Pick how it is named:</p>"
 				+ '<label class="pe-psdsave-o"><input type="radio" name="pe-psdnm" value="same"' + (nameMode() === "same" ? " checked" : "") + "> <span><b>" + esc(L.base) + ".psd</b> every time (like Photopea)<br><small>Best when your browser asks where to save each file (Firefox: Settings → General → Files and Applications → “Always ask you where to save files”): choose the old file and press <b>Replace</b>. Otherwise the browser adds (1), (2)… to the name.</small></span></label>"
 				+ '<label class="pe-psdsave-o"><input type="radio" name="pe-psdnm" value="ver"' + (nameMode() === "ver" ? " checked" : "") + "> <span><b>" + esc(v) + "</b>, then <b>" + esc(P.versionedName(L.base, "psd", Math.max(L.opened ? 2 : 1, L.n + 1) + 1)) + "</b>…<br><small>A new numbered copy each time: the highest number is the newest. Delete old ones whenever you like.</small></span></label>"
+				+ "<p><small>Want a different name? Cancel, then <b>File → Save as a new PSD…</b></small></p>"
 				+ "<p><small>To open a saved PSD again: File → Open, or drop it on the editor. Text you typed here stays editable.</small></p>"
 				+ (br ? "<p><small>Brave can save straight into the same file if you switch on <b>" + BRAVE_FLAG + "</b> (then reopen this page).</small></p>" : "<p><small>Chrome, Edge and Opera save straight back into the same file, no downloads.</small></p>")
 				+ '<label class="pe-check"><input type="checkbox" id="pe-psdnoask"> Don\'t show this again</label>';

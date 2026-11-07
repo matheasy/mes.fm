@@ -357,3 +357,7 @@
 
 html body.dark-mode #pe.pe {--pe-on:#7c3aed;}
 html body.dark-mode #pe .pe-tabs button[aria-pressed="true"] {color:#fff;}
+/* Save as a new PSD: file name box (browsers without a save window) */
+#pe .pe-psdname { display: flex; align-items: center; gap: .5em; margin: .2em 0 .6em; }
+#pe .pe-psdname span { font-weight: 600; }
+#pe .pe-psdname input { flex: 1; min-width: 0; padding: .45em .6em; font-size: 1.05em; }
