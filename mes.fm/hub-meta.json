@@ -301,6 +301,11 @@
 "updated":"2026-10-14",
 "type":"Simulation"
 },
+"/font-finder":{
+"added":"2026-11-06",
+"updated":"2026-11-06",
+"type":"Tool"
+},
 "/fonts":{
 "added":"2026-10-19",
 "updated":"2026-11-06",

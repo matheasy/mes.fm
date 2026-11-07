@@ -85,6 +85,7 @@
 	/* ---------- keeping the elements in step ---------- */
 	function sync() {
 		var t = VE.t, p = VE.P, playing = P.playing && !P.rev, want = {}, now = performance.now();
+		if (playing && ac && ac.state !== "running" && ac.state !== "closed" && now - (P.resumeAt || 0) > 1000) { P.resumeAt = now; ac.resume().catch(function () { }); }
 		p.clips.forEach(function (c) {
 			if (c.type !== "video" && c.type !== "audio") return;
 			var tr = V.track(p, c.track); if (!tr) return;
@@ -107,21 +108,29 @@
 				var fps = (m && m.fps) || 30;
 				if (Math.abs(e.el.currentTime - src) > 0.5 / fps && !e.el.seeking) setTime(e, src);
 			}
-			if (e.gain && ac) { var g = playing && active && !(c.clean && c.clean.key && cleanOn(c)) ? V.gainAt(p, c, t) * VE.fxGainAt(c, t + 0.015) : 0; e.gain.gain.setTargetAtTime(g, ac.currentTime, 0.012); }
+			if (e.gain && ac) { var g = playing && active && !cleanCovers(c, t) ? V.gainAt(p, c, t) * VE.fxGainAt(c, t + 0.015) : 0; e.gain.gain.setTargetAtTime(g, ac.currentTime, 0.012); }
 		});
 		Object.keys(els).forEach(function (k) { if (!want[k] && now - els[k].used > 4000) release(k); else if (!want[k]) { els[k].el.pause(); if (els[k].gain && ac) els[k].gain.gain.setTargetAtTime(0, ac.currentTime, 0.01); } });
 		cleanNodes.forEach(function (n) { var c = V.clip(p, n.id); if (!c || !ac) return; n.gain.gain.setTargetAtTime(V.gainAt(p, c, t) * VE.fxGainAt(c, t + 0.015), ac.currentTime, 0.012); });
 	}
 	P.sync = sync;
 	P.seeking = function () { return Object.keys(els).some(function (k) { return els[k].el.seeking; }); };
-	function cleanOn(c) { return !!cleanBufs[c.clean.key]; }
+	// the noise-removed copy plays instead of the clip's own sound only where it exists (a clip trimmed wider than the cleaned part plays the
+	// original outside it) and only once its source is really scheduled (while it is being restarted the original keeps playing: never silence)
+	function cleanCovers(c, t) {
+		if (!c.clean || !c.clean.key) return false;
+		var buf = cleanBufs[c.clean.key], cp = VE.cleanCache[c.clean.key]; if (!buf || !cp) return false;
+		if (!cleanNodes.some(function (n) { return n.id === c.id; })) return false;
+		var s = V.srcAt(c, t); return s >= cp.start - 0.01 && s < cp.start + buf.duration - 0.03;
+	}
 	// noise-removed sound: AudioBuffer sources scheduled from the playhead
+	var cleanGen = 0;
 	async function scheduleClean() {
 		stopClean();
-		var p = VE.P, t = VE.t, a = audio(); if (!a) return;
+		var gen = ++cleanGen, p = VE.P, t = VE.t, a = audio(); if (!a) return;
 		var list = p.clips.filter(function (c) { return c.clean && c.clean.key && VE.hasSound(c) && V.end(c) > t; });
 		for (var j = 0; j < list.length; j++) {
-			var c = list[j], cp = await VE.cleanPcm(c.clean.key); if (!cp || !P.playing) continue;
+			var c = list[j], cp = await VE.cleanPcm(c.clean.key); if (gen !== cleanGen || !P.playing || P.rev) return; if (!cp) continue;
 			var buf = cleanBufs[c.clean.key];
 			if (!buf) { buf = a.createBuffer(cp.ch.length, cp.ch[0].length, cp.rate); cp.ch.forEach(function (x, k) { buf.copyToChannel(x, k); }); cleanBufs[c.clean.key] = buf; }
 			var now = P.time(), from = Math.max(now, c.start - (c.xin || 0)), src = V.srcAt(c, from), off = src - cp.start;
@@ -145,7 +154,7 @@
 		cleanNodes.push({ id: c.id, gain: gain, node: { stop: function () { clearTimeout(timer); el.pause(); el.removeAttribute("src"); }, disconnect: function () { sn.disconnect(); } } });
 		void len;
 	}
-	function stopClean() { cleanNodes.forEach(function (n) { try { n.node.stop(); n.node.disconnect(); n.gain.disconnect(); } catch (e) { /* ignore */ } }); cleanNodes = []; }
+	function stopClean() { cleanGen++; cleanNodes.forEach(function (n) { try { n.node.stop(); n.node.disconnect(); n.gain.disconnect(); } catch (e) { /* ignore */ } }); cleanNodes = []; }
 	P.forgetClean = function (key) { delete cleanBufs[key]; if (cleanUrls[key]) { URL.revokeObjectURL(cleanUrls[key]); delete cleanUrls[key]; } };
 
 	/* ---------- drawing: the frame on a zoomable, movable pasteboard ---------- */
