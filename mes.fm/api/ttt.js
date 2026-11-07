@@ -12,6 +12,13 @@
 // A game: {id, v (game code), names [2], tok [2 sha256 of the seat keys], moves [], status "wait"|"play"|"over", win {p, why}|null,
 // round, pub, first, created, at (last activity)}. Kept 6 hours after the last activity (Redis EX). "claim" wins when the other
 // player has not moved for CLAIM_MS on their turn. "rematch" swaps the seats (the other player goes first) and starts again.
+//
+// Hive games (the moves live on the Hive blockchain, see lib.js T.hive; this is only an index so players can find each other):
+// GET  ?hlobby=1                      -> {open:[{host, g, v, f, age}]}   open Hive games nobody has joined yet
+// GET  ?hg=<host>/<gid>               -> {joiners:[accounts]}           who has joined (the browsers check the order on chain)
+// POST {act:"hopen", host, g}         the server reads the host's account history and lists the game if the "open" op is there
+// POST {act:"hjoin", host, g, acct}   same for a "join" op; the game leaves the lobby
+// POST {act:"hcancel", host, g}       same for a "cancel" op
 // Abuse limits: JSON only, <= 2 KB, Origin https://mes.fm in production, per salted IP hash per hour: 30 new games, 120 joins,
 // 1,500 moves / actions.
 const crypto = require('crypto');
@@ -61,11 +68,75 @@ async function load(id) {
 }
 function store(g) { return ['SET', `ttt:g:${g.id}`, JSON.stringify(g), 'EX', TTL]; }
 
+const HIVE_NODES = ['https://api.hive.blog', 'https://api.deathwing.me', 'https://api.openhive.network'];
+const ACCT_RE = /^[a-z][a-z0-9.-]{2,15}$/;
+async function hiveOps(acct) {
+  const body = JSON.stringify({ jsonrpc: '2.0', id: 1, method: 'condenser_api.get_account_history', params: [acct, -1, 200, 262144, 0] });
+  for (const node of HIVE_NODES) {
+    try {
+      const ac = new AbortController(), t = setTimeout(() => ac.abort(), 6000);
+      const r = await fetch(node, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body, signal: ac.signal });
+      clearTimeout(t);
+      const j = await r.json();
+      if (j && Array.isArray(j.result)) return T.hive.parse(j.result, acct);
+    } catch (e) { /* next node */ }
+  }
+  return null;
+}
+async function hiveHandler(req, res, b, now, ip) {
+  if (!ACCT_RE.test(String(b.host || '')) || !T.hive.GID_RE.test(String(b.g || ''))) return send(res, 400, { error: 'Bad Hive game.' });
+  if (await limit(ip, b.act === 'hopen' ? 'n' : 'j')) return send(res, 429, { error: 'Too many requests from your network: try again later.' });
+  const key = `ttth:g:${b.host}/${b.g}`;
+  const who = b.act === 'hjoin' ? String(b.acct || '') : b.host;
+  if (!ACCT_RE.test(who)) return send(res, 400, { error: 'Bad account.' });
+  const ops = await hiveOps(who);
+  if (!ops) return send(res, 502, { error: 'No Hive node answered: try again.' });
+  const want = b.act === 'hopen' ? 'open' : b.act === 'hjoin' ? 'join' : 'cancel';
+  const op = ops.find((o) => o.a === want && o.g === b.g && (want === 'open' || o.h === b.host));
+  if (!op) return send(res, 404, { error: 'That operation is not on the chain yet: wait a few seconds.' });
+  const cur = await redis([['GET', key]]);
+  let g = cur[0] && cur[0].result ? JSON.parse(cur[0].result) : null;
+  if (want === 'open') {
+    if (now - op.ts > T.hive.OPEN_S * 1000) return send(res, 409, { error: 'That game is too old.' });
+    if (!g) g = { host: b.host, g: b.g, v: op.v, f: op.f, to: op.to || null, ts: op.ts, joiners: [], cancelled: false };
+    const cmds = [['SET', key, JSON.stringify(g), 'EX', 6 * 3600]];
+    if (!g.to && !g.joiners.length && !g.cancelled) cmds.push(['ZADD', 'ttth:lobby', op.ts, `${b.host}/${b.g}`], ['ZREMRANGEBYSCORE', 'ttth:lobby', 0, now - T.hive.OPEN_S * 1000]);
+    await redis(cmds);
+    return send(res, 200, { ok: true });
+  }
+  if (!g) return send(res, 404, { error: 'Game not listed.' });
+  if (want === 'join') { if (g.joiners.indexOf(who) < 0 && g.joiners.length < 5 && who !== g.host && (!g.to || g.to === who)) g.joiners.push(who); }
+  else g.cancelled = true;
+  await redis([['SET', key, JSON.stringify(g), 'EX', 6 * 3600], ['ZREM', 'ttth:lobby', `${b.host}/${b.g}`]]);
+  return send(res, 200, { ok: true, joiners: g.joiners });
+}
+
 async function handler(req, res) {
   if (!process.env.UPSTASH_REDIS_REST_URL) return send(res, 503, { error: 'Online games are not set up yet.' });
   const now = Date.now();
   if (req.method === 'GET') {
     const q = req.query || {};
+    if (q.hlobby) {
+      const r = await redis([['ZREVRANGE', 'ttth:lobby', 0, 39]]);
+      const ids = (r[0] && r[0].result) || [];
+      if (!ids.length) return send(res, 200, { open: [] });
+      const got = await redis([['MGET', ...ids.map((i) => `ttth:g:${i}`)]]);
+      const open = [], stale = [];
+      ((got[0] && got[0].result) || []).forEach((v, i) => {
+        const g = v && JSON.parse(v);
+        if (!g || g.joiners.length || g.cancelled || now - g.ts > T.hive.OPEN_S * 1000) { stale.push(ids[i]); return; }
+        open.push({ host: g.host, g: g.g, v: g.v, f: g.f, age: now - g.ts });
+      });
+      if (stale.length) await redis([['ZREM', 'ttth:lobby', ...stale]]);
+      return send(res, 200, { open });
+    }
+    if (q.hg) {
+      const m = /^([a-z][a-z0-9.-]{2,15})\/([a-z0-9]{8})$/.exec(String(q.hg));
+      if (!m) return send(res, 400, { error: 'Bad Hive game.' });
+      const r = await redis([['GET', `ttth:g:${m[1]}/${m[2]}`]]);
+      const g = r[0] && r[0].result ? JSON.parse(r[0].result) : null;
+      return send(res, 200, { joiners: g ? g.joiners : [], listed: !!g });
+    }
     if (q.lobby) {
       const r = await redis([['ZREVRANGE', 'ttt:lobby', 0, 59]]);
       const ids = (r[0] && r[0].result) || [];
@@ -94,6 +165,7 @@ async function handler(req, res) {
   const b = typeof req.body === 'string' ? (() => { try { return JSON.parse(req.body); } catch (e) { return null; } })() : req.body;
   if (!b || typeof b !== 'object' || JSON.stringify(b).length > 2048) return send(res, 400, { error: 'Bad request.' });
   const ip = clientIp(req);
+  if (b.act === 'hopen' || b.act === 'hjoin' || b.act === 'hcancel') return hiveHandler(req, res, b, now, ip);
 
   if (b.act === 'new') {
     if (await limit(ip, 'n')) return send(res, 429, { error: 'Too many new games from your network: try again in an hour.' });

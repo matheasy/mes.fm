@@ -54,7 +54,7 @@
 
 		<section id="tt-p-online" role="tabpanel" aria-label="Play online" hidden>
 			<div class="tu-card">
-				<h2 class="tt-h">Play someone online</h2>
+				<h2 class="tt-h">Play someone online as a guest</h2>
 				<p class="tt-sub">No account needed. Make a game and send the link to a friend, or pick an open game from the list below. The game is the one chosen on the Play tab.</p>
 				<div class="tu-row">
 					<div class="tu-field tt-f-name"><label for="tt-name">Your name</label><input id="tt-name" class="tu-input" maxlength="24" autocomplete="nickname" placeholder="Guest"></div>
@@ -63,14 +63,30 @@
 				</div>
 				<label class="tt-chk"><input type="checkbox" id="tt-opub" checked> List my game under "Open games" so anyone can join</label>
 				<p class="tt-ogame">Game: <b id="tt-ovar"></b> <button type="button" class="tt-linkbtn" id="tt-ochange">change</button></p>
-				<p><button type="button" class="tu-btn tu-btn--primary" id="tt-ocreate">Make a game</button></p>
+				<p><button type="button" class="tu-btn tu-btn--primary" id="tt-ocreate">Make a guest game</button></p>
 				<div id="tt-oinvite" hidden></div>
 			</div>
 			<div class="tu-card">
 				<div class="tt-lobhead"><h2 class="tt-h">Open games</h2><button type="button" class="tu-btn" id="tt-orefresh">↻ Refresh</button></div>
 				<div id="tt-lobby"><p class="tt-sub">Loading…</p></div>
 			</div>
-			<p class="tu-note">Online games are kept on mes.fm's server for a few hours, then deleted. Only the game itself and the names you type are stored. Coming soon: games on the Hive blockchain, signed with your Hive account, with results kept for good.</p>
+			<div class="tu-card tt-hive" id="tt-hive">
+				<h2 class="tt-h"><span class="tt-hivelogo" aria-hidden="true">⬢</span> Play on Hive</h2>
+				<p class="tt-sub">Every move is signed with your Hive account (the Hive Keychain extension or the Keychain phone app) and kept on the Hive blockchain for good. No mes.fm server decides anything: both browsers read the moves from the chain and check them with the same rules. A move takes about 3 to 6 seconds to reach the other player, and it costs no HIVE (only a little of your account's free Resource Credits).</p>
+				<div id="tt-hlogin"></div>
+				<div id="tt-hmake" hidden>
+					<div class="tu-row">
+						<div class="tu-field tt-f-name"><label for="tt-hto">Challenge an account (optional)</label><input id="tt-hto" class="tu-input" maxlength="17" autocomplete="off" spellcheck="false" placeholder="@username, or leave empty"></div>
+					</div>
+					<p class="tt-ogame">Game: <b id="tt-hvar"></b> · who goes first: the setting above.</p>
+					<p><button type="button" class="tu-btn tu-btn--primary" id="tt-hcreate">Make a Hive game</button></p>
+					<p class="tu-note">Empty = an open game anyone on Hive can join from the list below (it stays open for an hour). With a name, only that account can join: send them the link.</p>
+				</div>
+				<div class="tt-lobhead"><h3 class="tt-h3">Open Hive games</h3><button type="button" class="tu-btn" id="tt-hrefresh">↻ Refresh</button></div>
+				<div id="tt-hlobby"><p class="tt-sub">Loading…</p></div>
+				<div id="tt-hminebox" hidden><h3 class="tt-h3">My Hive games</h3><div id="tt-hmine"></div></div>
+			</div>
+			<p class="tu-note">Guest online games are kept on mes.fm's server for a few hours, then deleted. Only the game itself and the names you type are stored. Hive games are public and permanent, like everything on Hive; mes.fm only keeps a short list of open Hive games so players can find each other.</p>
 		</section>
 
 		<section id="tt-p-stats" role="tabpanel" aria-label="Statistics" hidden>
@@ -98,6 +114,7 @@
 				<dt>Can you always win at tic-tac-toe?</dt><dd>No. If both players make no mistakes the classic game is always a draw. You can only win when the other player slips, which is why the Hard computer never loses it. Bigger boards are different: on 4 × 4 with three in a row, the first player can always force a win.</dd>
 				<dt>What is the best first move?</dt><dd>On the classic board the centre and the corners are both fine; an edge is the riskiest start but still a draw with good play. Against a beginner, a corner gives them the most ways to go wrong.</dd>
 				<dt>How does online play work?</dt><dd>Make a game, send the link, and the board updates for both of you within a second or two. Moves are checked on mes.fm's server so nobody can cheat or play out of turn. If the other player disappears for three minutes on their turn you can claim the win.</dd>
+				<dt>What does "Play on Hive" do?</dt><dd>It plays the game on the Hive blockchain: each move is a small signed message (a custom_json operation with the id mes_ttt) from your Hive account, so the whole game and its result are public and kept for good, and nobody, not even mes.fm, can change them. You need a Hive account and Hive Keychain. In the Keychain extension you can tick "don't ask again" for this kind of operation on mes.fm, so moves go out with one click or none.</dd>
 				<dt>Is there an undo?</dt><dd>Yes, against the computer and against a friend on the same device (not in online games). The Hint button shows the Hard computer's choice for your move.</dd>
 			</dl>
 			<p>Related: <a href="/backgammon">Backgammon</a> &middot; <a href="/poker">Poker</a> &middot; <a href="/dice-roller">Dice roller</a> &middot; <a href="/tools">All MES tools</a></p>

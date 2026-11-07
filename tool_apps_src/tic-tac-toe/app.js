@@ -81,7 +81,7 @@
 		maybeCpu();
 	}
 	function newGame() {
-		if (mode === "online") return toast("Leave the online game first (button above the board).");
+		if (mode === "online" || mode === "hive") return toast("Leave the online game first (button above the board).");
 		var c = setupCfg();
 		if (!c) return toast("That board doesn't work: check the custom settings.");
 		mode = S.opp;
@@ -102,9 +102,10 @@
 		if (mode === "local") return true;
 		if (mode === "cpu") return st.turn === human;
 		if (mode === "online") return on.g && on.g.status === "play" && st.turn === on.seat;
+		if (mode === "hive") return hv.R && hv.R.status === "play" && hv.R.turnAcct === hMe();
 		return false;
 	}
-	function canInput() { return !st.win && vi === null && !busy && isHumanTurn() && !(mode === "online" && on.sending); }
+	function canInput() { return !st.win && vi === null && !busy && isHumanTurn() && !(mode === "online" && on.sending) && !(mode === "hive" && (hv.busy || hv.pending.some(function (p) { return p.a === "mv"; }))); }
 
 	/* ---------- the computer ---------- */
 	function maybeCpu() {
@@ -149,6 +150,7 @@
 			return;
 		}
 		if (mode === "online") return onlineMove(m);
+		if (mode === "hive") return hiveMove(m);
 		commit(m);
 	}
 	function commit(m) {
@@ -167,11 +169,12 @@
 			if (w.p < 0) score.d++; else if (w.p === 0) score.a++; else score.b++;
 			msg = w.p < 0 ? "Draw." : T.playerName(cfg, w.p) + " wins!";
 		} else {
-			var me = mode === "cpu" ? human : on.seat, res = w.p < 0 ? "d" : w.p === me ? "w" : "l";
+			var me = mode === "cpu" ? human : mode === "hive" ? (hv.R ? hv.R.players.indexOf(hMe()) : -1) : on.seat, res = w.p < 0 ? "d" : w.p === me ? "w" : "l";
+			if (me < 0) { toast(w.p < 0 ? "Draw." : T.playerName(cfg, w.p) + " wins."); return; }
 			score[res]++;
-			var key = code + "|" + (mode === "cpu" ? S.lv : "online");
+			var key = code + "|" + (mode === "cpu" ? S.lv : mode);
 			var rec = true;
-			if (mode === "online") { var tag = on.id + ":" + (on.g ? on.g.round : 0); if (S.orec[tag]) rec = false; else S.orec[tag] = 1; pruneOrec(); }
+			if (mode === "online" || mode === "hive") { var tag = mode === "hive" ? "h:" + hv.host + "/" + hv.gid : on.id + ":" + (on.g ? on.g.round : 0); if (S.orec[tag]) rec = false; else S.orec[tag] = 1; pruneOrec(); }
 			if (rec) { var a = S.stats[key] || [0, 0, 0]; a[res === "w" ? 0 : res === "d" ? 1 : 2]++; S.stats[key] = a; }
 			msg = res === "w" ? "You win! 🎉" : res === "d" ? "Draw." : (mode === "cpu" ? "The computer wins." : "You lost this one.");
 			save();
@@ -182,7 +185,7 @@
 	}
 	function pruneOrec() { var k = Object.keys(S.orec); if (k.length > 60) k.slice(0, k.length - 60).forEach(function (x) { delete S.orec[x]; }); }
 	function undo() {
-		if (mode === "online" || busy || !st.hist.length) return;
+		if (mode === "online" || mode === "hive" || busy || !st.hist.length) return;
 		var h = st.hist.slice();
 		if (mode === "cpu") {
 			h.pop();
@@ -337,14 +340,22 @@
 		var base = T.playerName(cfg, p);
 		if (mode === "cpu") return (p === human ? "You" : "Computer") + " (" + base + ")";
 		if (mode === "online" && on.g) { var nm = on.g.names[p] || "waiting…"; return (p === on.seat ? "You" : esc(nm)) + " (" + base + ")"; }
+		if (mode === "hive" && hv.R) { var hn = hv.R.players[p]; return (hn && hn === hMe() ? "You" : hn ? "@" + esc(hn) : "waiting…") + " (" + base + ")"; }
 		return base;
 	}
-	function youAre(p) { return (mode === "cpu" && p === human) || (mode === "online" && p === on.seat); }
+	function youAre(p) { return (mode === "cpu" && p === human) || (mode === "online" && p === on.seat) || (mode === "hive" && hv.R && hv.R.players[p] === hMe()); }
 	function sym(p) { var cls = cfg.t === "notakto" || cfg.t === "num" ? "" : (p === 0 ? "tt-sx" : "tt-so"); return '<span class="' + cls + '">' + nameOf(p) + "</span>"; }
 	function statusText(s) {
 		if (mode === "online" && on.g && on.g.status === "wait") return "Waiting for someone to join…";
+		if (mode === "hive") {
+			if (!hv.R || !hv.R.open) return "Reading the game from Hive…";
+			if (hv.R.status === "wait") return "Waiting for a player (Hive game)…";
+			if (hv.busy) return "Approve it in Hive Keychain…";
+			if (!s.win && hv.pending.length) return "Sent: waiting for the next Hive block…";
+		}
 		if (s.win) {
-			var why = { resign: " (resigned)", timeout: " (the other player ran out of time)", left: " (the other player left)" }[s.win.why] || "";
+			var lp = 1 - s.win.p, loser = youAre(lp) ? "you" : nameOf(lp).split(" (")[0];
+			var why = { resign: " (" + loser + " resigned)", timeout: " (" + loser + (youAre(lp) ? " were" : " was") + " away too long)", left: " (" + loser + " left)" }[s.win.why] || "";
 			if (s.win.p < 0) return s.win.why === "full" ? "Draw: the board is full." : "Draw.";
 			var W = function (p) { return youAre(p) ? "<b>You win</b>" : sym(p) + " wins"; };
 			if (why) return W(s.win.p) + why + ".";
@@ -415,9 +426,9 @@
 		drawBoard(s, pop && vi === null ? s.last : -1);
 		renderMoves();
 		renderScore();
-		var on1 = mode === "online";
+		var on1 = mode === "online" || mode === "hive";
 		$("tt-undo").disabled = on1 || busy || !st.hist.length;
-		$("tt-hint").disabled = !canInput();
+		$("tt-hint").disabled = !canInput() || on1;
 		$("tt-undo").hidden = on1;
 		$("tt-new").hidden = on1;
 		$("tt-link").hidden = on1 && !st.win;
@@ -460,7 +471,7 @@
 		$(id).addEventListener("click", function (e) { var b = e.target.closest("button[data-v]"); if (!b) return; segSet(id, b.getAttribute("data-v")); fn(b.getAttribute("data-v")); });
 	}
 	function setupLock() {
-		var lock = mode === "online", els = $("tt-setup").querySelectorAll("select, input, button");
+		var lock = mode === "online" || mode === "hive", els = $("tt-setup").querySelectorAll("select, input, button");
 		for (var i = 0; i < els.length; i++) els[i].disabled = lock;
 	}
 	fillGameSelect();
@@ -591,7 +602,7 @@
 			$("tt-p-" + tabs[i].getAttribute("data-t")).hidden = !on1;
 			if (on1 && focus) tabs[i].focus();
 		}
-		if (name === "online") loadLobby();
+		if (name === "online") { loadLobby(); loadHiveLobby(); renderHiveCard(); }
 		if (name === "stats") renderStats();
 		lobbyTimer(name === "online");
 	}
@@ -607,7 +618,7 @@
 	function renderStats() {
 		var box = $("tt-stats"), keys = Object.keys(S.stats);
 		if (!keys.length) { box.innerHTML = '<p class="tt-sub">No finished games yet. Play one against the computer or online and it shows up here.</p>'; return; }
-		var LV = { easy: "Easy", medium: "Medium", hard: "Hard", online: "Online" };
+		var LV = { easy: "Easy", medium: "Medium", hard: "Hard", online: "Online (guest)", hive: "On Hive" };
 		var tot = [0, 0, 0];
 		keys.sort();
 		var rows = keys.map(function (k) {
@@ -647,7 +658,7 @@
 	}
 	$("tt-rules").addEventListener("click", function (e) {
 		var b = e.target.closest("[data-play]"); if (!b) return;
-		if (mode === "online") return toast("Leave the online game first.");
+		if (mode === "online" || mode === "hive") return toast("Leave the online game first.");
 		S.game = b.getAttribute("data-play"); save(); syncSetup(); showTab("play"); newGame();
 		window.scrollTo({ top: root.getBoundingClientRect().top + window.scrollY - 70, behavior: "smooth" });
 	});
@@ -689,7 +700,7 @@
 		poll(0);
 	}
 	$("tt-ocreate").addEventListener("click", function () {
-		if (mode === "online") return toast("You are already in an online game.");
+		if (mode === "online" || mode === "hive") return toast("You are already in an online game.");
 		var c = setupCfg();
 		if (!c) return toast("Fix the custom board first.");
 		S.name = ($("tt-name").value || "").trim().slice(0, 24); save();
@@ -718,6 +729,7 @@
 	function inviteLink() { return location.origin + location.pathname + "?join=" + on.id; }
 	function renderObar() {
 		var box = $("tt-obar");
+		if (mode === "hive") return renderHbar();
 		if (mode !== "online" || !on.g) { box.hidden = true; return; }
 		box.hidden = false;
 		var g = on.g, other = g.names[1 - on.seat], h = "";
@@ -824,7 +836,7 @@
 
 	/* lobby */
 	var lobT = null;
-	function lobbyTimer(onTab) { clearInterval(lobT); if (onTab) lobT = setInterval(function () { if (!document.hidden) loadLobby(); }, 8000); }
+	function lobbyTimer(onTab) { clearInterval(lobT); if (onTab) lobT = setInterval(function () { if (!document.hidden) { loadLobby(); loadHiveLobby(); } }, 8000); }
 	function ago(ms) { var s = Math.round(ms / 1000); return s < 60 ? "just now" : Math.round(s / 60) + " min ago"; }
 	function loadLobby() {
 		api("GET", null, "?lobby=1").then(function (r) {
@@ -841,13 +853,332 @@
 	$("tt-lobby").addEventListener("click", function (e) { var b = e.target.closest("[data-join]"); if (b) join(b.getAttribute("data-join")); });
 	$("tt-orefresh").addEventListener("click", loadLobby);
 
+
+	/* ===================================================================== Hive games =====================================================================
+	   Moves are custom_json operations (id mes_ttt) signed with the player's posting key through main_js/hive.js (MESHive: Keychain extension
+	   or the Keychain phone app). The game is worked out from both players' account histories with MESTTT.hive.build(); /api/ttt only keeps a
+	   short list of open games ("hopen" / "hjoin"). On localhost (MOCK) a stand-in chain in localStorage "mes-ttt:hchain" + a per-tab account
+	   (sessionStorage "mes-ttt:hacct") let two tabs play each other with no Keychain. */
+	var H = T.hive;
+	var hv = { host: null, gid: null, R: null, pending: [], timer: null, joiners: [], busy: false, ops: {}, lastErr: 0, reOffer: null, listed: false };
+	var HA = MOCK ? mockHive() : realHive();
+	function realHive() {
+		var M = function () { return window.MESHive || null; };
+		return {
+			user: function () { var u = M() && M().user(); return u ? u.name : ""; },
+			login: function (n) { return M() ? M().login(n) : Promise.reject(new Error("The Hive helpers did not load: reload the page.")); },
+			logout: function () { if (M()) M().logout(); },
+			onChange: function (f) { if (M()) M().onChange(f); else document.addEventListener("DOMContentLoaded", function () { if (M()) M().onChange(f); }); },
+			help: function () { return M() ? M().helpHtml() : ""; },
+			send: function (obj, label) {
+				var me = this.user();
+				return M().keychain().then(function (k) {
+					if (!k) { var e = new Error("Hive Keychain is not installed in this browser."); e.code = "nokeychain"; throw e; }
+					return new Promise(function (ok, no) {
+						k.requestCustomJson(me, H.ID, "Posting", H.json(obj), label, function (r) {
+							if (r && r.success) { var x = r.result || {}; ok({ trx: x.id || x.tx_id || x.trx_id || "" }); }
+							else no(new Error((r && (r.message || (r.error && (r.error.message || r.error)))) || "Cancelled in Keychain"));
+						});
+					});
+				});
+			},
+			ops: function (acct, since) {
+				var all = [], pages = 0;
+				function page(start) {
+					return M().call("condenser_api.get_account_history", [acct, start, start < 0 ? 200 : Math.min(1000, start + 1), 262144, 0]).then(function (r) {
+						r = r || []; pages++;
+						all = r.concat(all);
+						var oldest = r.length ? r[0] : null, oldT = oldest ? Date.parse(oldest[1].timestamp + "Z") : 0;
+						if (oldest && oldest[0] > 0 && oldT > since && pages < 4 && r.length >= (start < 0 ? 200 : 2)) return page(oldest[0] - 1);
+						return H.parse(all, acct);
+					});
+				}
+				return page(-1);
+			}
+		};
+	}
+	function mockHive() {
+		var subs = [];
+		function chain() { try { return JSON.parse(localStorage.getItem("mes-ttt:hchain") || "[]"); } catch (e) { return []; } }
+		return {
+			user: function () { try { return sessionStorage.getItem("mes-ttt:hacct") || ""; } catch (e) { return ""; } },
+			login: function (n) { n = String(n || "").replace(/^@/, "").toLowerCase(); if (!H.ACCT_RE.test(n)) return Promise.reject(new Error("Type a Hive username.")); sessionStorage.setItem("mes-ttt:hacct", n); subs.forEach(function (f) { f(); }); return Promise.resolve({ name: n }); },
+			logout: function () { sessionStorage.removeItem("mes-ttt:hacct"); subs.forEach(function (f) { f(); }); },
+			onChange: function (f) { subs.push(f); },
+			help: function () { return ""; },
+			send: function (obj, label) {
+				var me = this.user(), c = chain(), now = Date.now(), trx = Math.random().toString(16).slice(2, 12);
+				c.push([c.length + 1, { trx_id: trx, block: Math.floor(now / 3000) + 1, timestamp: new Date(now).toISOString().slice(0, 19),
+					op: ["custom_json", { id: H.ID, required_auths: [], required_posting_auths: [me], json: H.json(obj) }] }]);
+				localStorage.setItem("mes-ttt:hchain", JSON.stringify(c));
+				return new Promise(function (r) { setTimeout(function () { r({ trx: trx }); }, 300); });
+			},
+			ops: function (acct) {
+				// a block is "made" every 3 seconds: operations newer than that are not visible yet
+				var cut = Math.floor(Date.now() / 3000);
+				return Promise.resolve(H.parse(chain().filter(function (e) { return e[1].block <= cut && e[1].op[1].required_posting_auths[0] === acct; }), acct));
+			}
+		};
+	}
+	function hMe() { return HA.user(); }
+	function hLink(host, gid) { return location.origin + location.pathname + "?hive=" + host + "/" + gid; }
+
+	/* login strip + maker */
+	function renderHiveCard() {
+		var box = $("tt-hlogin"), me = hMe();
+		$("tt-hmake").hidden = !me;
+		var cc = setupCfg();
+		$("tt-hvar").textContent = cc ? T.describe(cc) : "—";
+		if (me) {
+			box.innerHTML = '<p class="tt-hwho">Signed in as ' + (MOCK ? "" : '<img alt="" src="https://images.hive.blog/u/' + esc(me) + '/avatar/small">') + "<b>@" + esc(me) + '</b> <button type="button" class="tu-btn" id="tt-hlogout">Log out</button></p>';
+			$("tt-hlogout").addEventListener("click", function () { HA.logout(); });
+			loadMine();
+		} else {
+			box.innerHTML = '<div class="tt-hrow"><input class="tu-input" id="tt-huser" placeholder="Your Hive username" autocomplete="username" spellcheck="false" aria-label="Hive username"><button type="button" class="tu-btn tu-btn--primary" id="tt-hlogin-b">Log in with Hive</button></div>' +
+				'<p class="tu-note">' + (MOCK ? "Test mode: any username works here, nothing is signed (no Keychain on this local copy)." : "Keychain proves you own the account by signing a message with your posting key; your keys never leave Keychain and mes.fm never sees them.") + "</p>";
+			var go = function () {
+				var b = $("tt-hlogin-b"); b.disabled = true; b.textContent = "Check Keychain…";
+				HA.login($("tt-huser").value).then(function () { toast("Logged in."); }, function (e) {
+					b.disabled = false; b.textContent = "Log in with Hive";
+					if (e && /keychain|signer/i.test(e.message + (e.code || ""))) { var d = document.createElement("div"); d.innerHTML = HA.help(); box.appendChild(d); }
+					else toast((e && e.message) || "Could not log in.");
+				});
+			};
+			$("tt-hlogin-b").addEventListener("click", go);
+			$("tt-huser").addEventListener("keydown", function (e) { if (e.key === "Enter") go(); });
+			$("tt-hminebox").hidden = true;
+		}
+	}
+	HA.onChange(function () { renderHiveCard(); render(); });
+
+	function hiveCreate() {
+		var me = hMe(); if (!me) return toast("Log in with Hive first.");
+		if (mode === "online" || mode === "hive") return toast("Leave the game you are in first.");
+		var c = setupCfg(); if (!c) return toast("Fix the custom board first.");
+		var to = ($("tt-hto").value || "").trim().replace(/^@/, "").toLowerCase();
+		if (to && (!H.ACCT_RE.test(to) || to === me)) return toast(to === me ? "You can't challenge yourself." : "That isn't a Hive username.");
+		var obj = { a: "open", g: H.newGid(), v: T.cfgCode(c), f: S.ofirst };
+		if (to) obj.to = to;
+		hiveOpen(obj, to ? "Challenge @" + to + " to tic-tac-toe" : "Open a tic-tac-toe game");
+	}
+	function hiveOpen(obj, label) {
+		var b = $("tt-hcreate"); b.disabled = true;
+		HA.send(obj, label).then(function (r) {
+			b.disabled = false;
+			hiveEnter(hMe(), obj.g, [pend(obj, r.trx)]);
+			register("hopen", { host: hMe(), g: obj.g });
+			toast(obj.to ? "Challenge sent: copy the link above the board and send it to @" + obj.to + "." : "Your game is open: it will show up under Open Hive games.");
+		}, function (e) { b.disabled = false; toast(e.message); });
+	}
+	/** tell the index about an operation (it reads it back from the chain, so retry while the block is being made) */
+	function register(act, body, tries) {
+		tries = tries || 0;
+		body.act = act;
+		api("POST", body).then(function (r) {
+			if (r && r.error && /not on the chain/i.test(r.error) && tries < 6) setTimeout(function () { register(act, body, tries + 1); }, 3500);
+			else if (act === "hopen" && r && r.ok) hv.listed = true;
+		});
+	}
+	function pend(obj, trx) { var o = H.clean(JSON.parse(H.json(obj))); o.acct = hMe(); o.trx = trx || ("p" + Math.random()); o.block = 0; o.ts = Date.now(); o.i = 1e12 + hv.pending.length; o.pend = true; return o; }
+
+	function hiveJoin(host, gid) {
+		var me = hMe();
+		if (!me) { showTab("online"); toast("Log in with Hive first, then press Join again."); hv.wantJoin = host + "/" + gid; return; }
+		if (host === me) return hiveEnter(host, gid, []);
+		toast("Checking the game on Hive…");
+		Promise.all([HA.ops(host, 0), HA.ops(me, 0)]).then(function (res) {
+			var R = H.build(host, gid, res[0].concat(res[1]), Date.now());
+			if (!R.open) return toast("That Hive game wasn't found (it may not be in a block yet: try again in a few seconds).");
+			if (R.guest === me || R.status !== "wait") return hiveEnter(host, gid, []);
+			if (R.open.to && R.open.to !== me) return toast("That game is a challenge for @" + R.open.to + ".");
+			var obj = { a: "join", h: host, g: gid };
+			HA.send(obj, "Join @" + host + "'s tic-tac-toe game").then(function (r) {
+				hiveEnter(host, gid, [pend(obj, r.trx)]);
+				register("hjoin", { host: host, g: gid, acct: me });
+			}, function (e) { toast(e.message); });
+		}, function () { toast("No Hive node answered: try again."); });
+	}
+	function hiveEnter(host, gid, pending) {
+		clearTimeout(hv.timer);
+		hv.host = host; hv.gid = gid; hv.R = null; hv.pending = pending || []; hv.joiners = []; hv.reOffer = null; hv.listed = false; hv.busy = false;
+		S.hive = { host: host, gid: gid }; save();
+		mode = "hive";
+		showTab("play");
+		hivePoll(0);
+		render();
+	}
+	function hiveLeave() {
+		clearTimeout(hv.timer);
+		hv.host = null; hv.R = null; S.hive = null; save();
+		mode = S.opp; newGame();
+	}
+	function hivePoll(delay) {
+		clearTimeout(hv.timer);
+		hv.timer = setTimeout(hiveRefresh, delay);
+	}
+	function hiveRefresh() {
+		if (mode !== "hive" || !hv.host) return;
+		var me = hMe(), R = hv.R;
+		var accts = [hv.host];
+		if (R && R.guest) accts.push(R.guest);
+		else hv.joiners.forEach(function (a) { if (accts.indexOf(a) < 0) accts.push(a); });
+		if (me && accts.indexOf(me) < 0) accts.push(me);
+		if (R && R.open && R.open.to && accts.indexOf(R.open.to) < 0) accts.push(R.open.to);
+		var since = R && R.open ? R.open.ts - 60000 : 0;
+		var jobs = accts.map(function (a) { return HA.ops(a, since).then(function (o) { hv.ops[a] = o; }, function () { hv.lastErr = Date.now(); }); });
+		if (!R || R.status === "wait") jobs.push(api("GET", null, "?hg=" + hv.host + "/" + hv.gid).then(function (r) { if (r && r.joiners) hv.joiners = r.joiners.slice(0, 5); }));
+		Promise.all(jobs).then(function () {
+			if (mode !== "hive" || !hv.host) return;
+			hiveRebuild();
+			if (hv.R && hv.R.status === "wait" && hv.host === me && !hv.listed && !hv.R.open.to) register("hopen", { host: me, g: hv.gid });
+			hivePoll(hiveDelay());
+		});
+	}
+	function hiveDelay() {
+		var R = hv.R;
+		if (document.hidden) return 9000;
+		if (!R || R.status === "wait") return 4000;
+		if (R.status === "play") return R.turnAcct === hMe() ? 6000 : 3000;
+		return 6000;
+	}
+	function hiveRebuild() {
+		var all = [];
+		Object.keys(hv.ops).forEach(function (a) { all = all.concat(hv.ops[a]); });
+		// pending = signed by us but not yet seen in a block
+		var now = Date.now();
+		hv.pending = hv.pending.filter(function (p) {
+			var seen = all.some(function (o) { return (p.trx && o.trx === p.trx) || (o.acct === p.acct && o.a === p.a && o.g === p.g && o.n === p.n); });
+			return !seen && now - p.ts < 120000;
+		});
+		var R = H.build(hv.host, hv.gid, all.concat(hv.pending), now);
+		var prev = hv.R;
+		hv.R = R;
+		if (R.cfg && (!cfg || T.cfgCode(R.cfg) !== code)) { cfg = R.cfg; code = T.cfgCode(cfg); }
+		var was = st && st.win;
+		var sameGame = prev && prev.open && R.open && prev.open.g === R.open.g;
+		var grew = sameGame && prev.s && R.s && R.s.hist.length > prev.s.hist.length;
+		st = R.s ? R.s : T.create(cfg || T.parseCode("L3x3k3"));
+		if (sameGame && was) st._fin = true;
+		if (prev && prev.status === "wait" && R.status === "play") toast("@" + R.guest + " joined. " + (R.turnAcct === hMe() ? "Your move!" : "They go first."));
+		// a rematch offered by the other player (a new open game that points back at this one)
+		hv.reOffer = null;
+		if (R.status === "over") {
+			var other = R.players[0] === hMe() ? R.players[1] : R.players[0];
+			var mine = H.myGames(other, hv.ops[other] || []).filter(function (g) { return g.re === hv.host + "/" + hv.gid && g.role === "host"; });
+			if (mine.length) hv.reOffer = mine[0];
+		}
+		render(grew);
+		if (st.win && !st._fin) finish();
+	}
+	function hiveSend(obj, label) {
+		hv.busy = true; render();
+		return HA.send(obj, label).then(function (r) {
+			hv.busy = false;
+			hv.pending.push(pend(obj, r.trx));
+			hiveRebuild();
+			hivePoll(2500);
+		}, function (e) { hv.busy = false; render(); toast(e.message); throw e; });
+	}
+	function hiveMove(m) {
+		hiveSend({ a: "mv", h: hv.host, g: hv.gid, n: st.hist.length, m: T.mstr(m) }, "Tic-tac-toe move " + (st.hist.length + 1) + " vs @" + hiveOther()).catch(function () {});
+	}
+	function hiveOther() { var R = hv.R, me = hMe(); if (!R) return ""; return R.players[0] === me ? (R.players[1] || "") : (R.players[0] || R.open && R.open.to || ""); }
+	function renderHbar() {
+		var box = $("tt-obar"), R = hv.R, me = hMe();
+		box.hidden = false;
+		var h, link = '<span class="tt-chain">On Hive · game <a href="https://hivehub.dev/@' + esc(hv.host) + '" target="_blank" rel="noopener">@' + esc(hv.host) + "</a>/" + esc(hv.gid) + "</span>";
+		if (!R || !R.open) h = '<span><span class="tt-dot is-off"></span>Reading the game from Hive…</span><span class="tt-vbtns"><button type="button" class="tt-vb" data-h="leave">Leave</button></span>';
+		else if (R.status === "wait") {
+			h = '<span><span class="tt-dot"></span>' + (R.open.to ? "Waiting for @" + esc(R.open.to) + " to accept" : "Waiting for someone on Hive to join") + ".</span>" + link + '<span class="tt-vbtns">' +
+				'<button type="button" class="tt-vb tt-vb--main" data-h="copy">🔗 Copy invite link</button>' + (hv.host === me ? '<button type="button" class="tt-vb" data-h="cancel">Cancel game</button>' : "") + '<button type="button" class="tt-vb" data-h="leave">Leave</button></span>';
+		} else if (R.status === "cancelled" || R.status === "expired") {
+			h = "<span>This Hive game was " + (R.status === "cancelled" ? "cancelled" : "never joined (open games last an hour)") + '.</span><span class="tt-vbtns"><button type="button" class="tt-vb" data-h="leave">Close</button></span>';
+		} else {
+			var other = hiveOther(), mine = R.players.indexOf(me) >= 0;
+			h = '<span><span class="tt-dot' + (Date.now() - hv.lastErr < 10000 ? " is-off" : "") + '"></span>' + (mine ? "Hive game vs <b>@" + esc(other) + "</b>" : "Watching <b>@" + esc(R.players[0]) + "</b> vs <b>@" + esc(R.players[1]) + "</b>") + "</span>" + link + '<span class="tt-vbtns">';
+			if (R.status === "play" && mine) {
+				if (R.turnAcct !== me && Date.now() > R.canClaimAt) h += '<button type="button" class="tt-vb tt-vb--main" data-h="claim">Claim the win (away 5 min)</button>';
+				h += '<button type="button" class="tt-vb" data-h="resign">Resign</button>';
+			} else if (R.status === "over" && mine) {
+				if (hv.reOffer) h += '<button type="button" class="tt-vb tt-vb--main" data-h="accept">Accept @' + esc(other) + "'s rematch</button>";
+				else h += '<button type="button" class="tt-vb tt-vb--main" data-h="rematch">↺ Offer a rematch</button>';
+			}
+			h += '<button type="button" class="tt-vb" data-h="leave">Leave</button></span>';
+		}
+		box.innerHTML = h;
+	}
+	$("tt-obar").addEventListener("click", function (e) {
+		var b = e.target.closest("[data-h]"); if (!b) return;
+		var a = b.getAttribute("data-h"), R = hv.R;
+		if (a === "copy") return copy(hLink(hv.host, hv.gid), "Invite link copied.");
+		if (a === "leave") return hiveLeave();
+		if (a === "cancel") return hiveSend({ a: "cancel", h: hv.host, g: hv.gid }, "Cancel my open tic-tac-toe game").then(function () { register("hcancel", { host: hv.host, g: hv.gid }); }, function () {});
+		if (a === "resign") { if (confirm("Resign this Hive game? It is final.")) hiveSend({ a: "res", h: hv.host, g: hv.gid }, "Resign tic-tac-toe vs @" + hiveOther()).catch(function () {}); return; }
+		if (a === "claim") return hiveSend({ a: "claim", h: hv.host, g: hv.gid }, "Claim the win: @" + hiveOther() + " is away").catch(function () {});
+		if (a === "accept" && hv.reOffer) return hiveJoin(hv.reOffer.host, hv.reOffer.gid);
+		if (a === "rematch" && R) {
+			var other = hiveOther(), iWasFirst = R.players[0] === hMe();
+			var obj = { a: "open", g: H.newGid(), v: R.open.v, f: iWasFirst ? "guest" : "host", to: other, re: hv.host + "/" + hv.gid };
+			HA.send(obj, "Offer @" + other + " a tic-tac-toe rematch").then(function (r) { hiveEnter(hMe(), obj.g, [pend(obj, r.trx)]); toast("Rematch offered: @" + other + " sees an Accept button."); }, function (e2) { toast(e2.message); });
+		}
+	});
+
+	/* lobby + my games */
+	function loadHiveLobby() {
+		api("GET", null, "?hlobby=1").then(function (r) {
+			var box = $("tt-hlobby"), me = hMe();
+			if (r.error) { box.innerHTML = '<p class="tt-sub">' + esc(r.error) + "</p>"; return; }
+			var list = r.open || [];
+			if (!list.length) { box.innerHTML = '<p class="tt-sub">No open Hive games right now.' + (me ? " Make one above." : " Log in to make one.") + "</p>"; return; }
+			box.innerHTML = '<ul class="tt-lob">' + list.map(function (o) {
+				var c = T.parseCode(o.v);
+				return '<li><span class="tt-lobn">@' + esc(o.host) + ' <span class="tt-lobv">· ' + esc(c ? T.describe(c) : o.v) + " · " + (o.f === "host" ? "they go first" : o.f === "guest" ? "you go first" : "random start") + " · " + ago(o.age) + '</span></span><button type="button" class="tu-btn tu-btn--primary" data-hjoin="' + esc(o.host + "/" + o.g) + '">' + (o.host === me ? "Open" : "Join") + "</button></li>";
+			}).join("") + "</ul>";
+		});
+	}
+	function loadMine() {
+		var me = hMe(); if (!me) return;
+		HA.ops(me, Date.now() - 30 * 86400000).then(function (ops) {
+			var games = H.myGames(me, ops).slice(0, 12), box = $("tt-hmine");
+			$("tt-hminebox").hidden = !games.length;
+			box.innerHTML = '<ul class="tt-lob">' + games.map(function (g) {
+				var c = g.v && T.parseCode(g.v);
+				return '<li><span class="tt-lobn">' + (g.role === "host" ? "You opened" + (g.to ? " (challenge to @" + esc(g.to) + ")" : "") : "You joined @" + esc(g.host)) + ' <span class="tt-lobv">· ' + (c ? esc(T.describe(c)) + " · " : "") + new Date(g.ts).toLocaleString() + '</span></span><button type="button" class="tu-btn" data-hjoin="' + esc(g.host + "/" + g.gid) + '">Open</button></li>';
+			}).join("") + "</ul>";
+		}, function () {});
+	}
+	$("tt-hive").addEventListener("click", function (e) {
+		var b = e.target.closest("[data-hjoin]"); if (!b) return;
+		var p = b.getAttribute("data-hjoin").split("/");
+		if (mode === "hive" && hv.host === p[0] && hv.gid === p[1]) return showTab("play");
+		if (mode === "online") return toast("Leave the guest game first.");
+		hiveJoin(p[0], p[1]);
+	});
+	$("tt-hcreate").addEventListener("click", hiveCreate);
+	$("tt-hrefresh").addEventListener("click", function () { loadHiveLobby(); loadMine(); });
+
 	/* in-browser stand-in for /api/ttt (local testing: two tabs can play each other) */
 	function mockApi(method, b, query) {
 		var db; try { db = JSON.parse(localStorage.getItem("mes-ttt:mock") || "{}"); } catch (e) { db = {}; }
 		var now = Date.now(), put = function () { localStorage.setItem("mes-ttt:mock", JSON.stringify(db)); };
 		var pub = function (g) { return { id: g.id, v: g.v, names: g.names, moves: g.moves, status: g.status, win: g.win, round: g.round, pub: g.pub, first: g.first, idle: now - g.at }; };
+		if (method === "GET" && /hlobby/.test(query)) return { open: Object.keys(db).filter(function (k) { return /^h:/.test(k); }).map(function (k) { return db[k]; }).filter(function (g) { return !g.joiners.length && !g.cancelled && !g.to && now - g.ts < 3600000; }).map(function (g) { return { host: g.host, g: g.g, v: g.v, f: g.f, age: now - g.ts }; }) };
+		if (method === "GET" && /hg=/.test(query)) { var hk = "h:" + decodeURIComponent((/hg=([^&]+)/.exec(query) || [])[1] || ""); return { joiners: db[hk] ? db[hk].joiners : [] }; }
+		if (method === "POST" && /^h(open|join|cancel)$/.test(b.act)) {
+			var who = b.act === "hjoin" ? b.acct : b.host, hops = HA.ops(who), want = b.act.slice(1);
+			return hops.then(function (ops) {
+				var op = ops.filter(function (o) { return o.a === want && o.g === b.g && (want === "open" || o.h === b.host); })[0];
+				if (!op) return { error: "That operation is not on the chain yet: wait a few seconds." };
+				var db2; try { db2 = JSON.parse(localStorage.getItem("mes-ttt:mock") || "{}"); } catch (e) { db2 = {}; }
+				var k2 = "h:" + b.host + "/" + b.g;
+				if (want === "open") db2[k2] = db2[k2] || { host: b.host, g: b.g, v: op.v, f: op.f, to: op.to || null, ts: op.ts, joiners: [], cancelled: false };
+				else if (db2[k2]) { if (want === "join" && db2[k2].joiners.indexOf(who) < 0) db2[k2].joiners.push(who); if (want === "cancel") db2[k2].cancelled = true; }
+				localStorage.setItem("mes-ttt:mock", JSON.stringify(db2));
+				return { ok: true, joiners: db2[k2] ? db2[k2].joiners : [] };
+			});
+		}
 		if (method === "GET") {
-			if (/lobby/.test(query)) return { open: Object.keys(db).map(function (k) { return db[k]; }).filter(function (g) { return g.status === "wait" && g.pub && now - g.created < 1800000; }).map(function (g) { return { id: g.id, v: g.v, name: g.names[g.tok[0] ? 0 : 1], first: g.first, age: now - g.created }; }) };
+			if (/lobby/.test(query)) return { open: Object.keys(db).filter(function (k) { return !/^h:/.test(k); }).map(function (k) { return db[k]; }).filter(function (g) { return g.status === "wait" && g.pub && now - g.created < 1800000; }).map(function (g) { return { id: g.id, v: g.v, name: g.names[g.tok[0] ? 0 : 1], first: g.first, age: now - g.created }; }) };
 			var id = (/id=([a-z0-9]+)/.exec(query) || [])[1], g0 = db[id];
 			return g0 ? { g: pub(g0) } : { error: "Game not found (it may have expired)." };
 		}
@@ -893,31 +1224,46 @@
 	syncSetup();
 	renderRules();
 	var q = new URLSearchParams(location.search);
-	var joinId = q.get("join"), qg = q.get("g");
-	if (joinId || qg || q.get("v")) { try { history.replaceState(null, "", location.pathname + location.hash); } catch (e) {} }
-	if (q.get("v") && T.preset(q.get("v"))) { S.game = q.get("v"); syncSetup(); }
-	if (S.online && S.online.id && !joinId) {
-		// back to the online game we were in
-		mode = "online"; on.id = S.online.id; on.key = S.online.key; on.seat = S.online.seat;
-		api("GET", null, "?id=" + on.id).then(function (r) {
-			if (r.g) { cfg = T.parseCode(r.g.v); startOnline({ g: r.g, key: on.key, seat: on.seat }); }
-			else { on.id = null; S.online = null; save(); mode = S.opp; resumeOrNew(); }
-		});
-		cfg = setupCfg() || T.parseCode("L3x3k3"); code = T.cfgCode(cfg); st = T.create(cfg); render();
+	var joinId = q.get("join"), qg = q.get("g"), qh = q.get("hive"), qv = q.get("v");
+	if (joinId || qg || qh || qv) { try { history.replaceState(null, "", location.pathname + location.hash); } catch (e) {} }
+	if (qv && T.preset(qv)) { S.game = qv; syncSetup(); }
+	function blank() { cfg = setupCfg() || T.parseCode("L3x3k3"); code = T.cfgCode(cfg); st = T.create(cfg); mode = S.opp; render(); }
+	if (qh && /^[a-z][a-z0-9.-]{2,15}\/[a-z0-9]{8}$/.test(qh)) {
+		// a Hive game link
+		blank();
+		var qp = qh.split("/");
+		setTimeout(function () { hiveJoin(qp[0], qp[1]); }, 300);
 	} else if (joinId && /^[a-z0-9]{6,12}$/.test(joinId)) {
-		cfg = setupCfg() || T.parseCode("L3x3k3"); code = T.cfgCode(cfg); st = T.create(cfg); mode = S.opp; render();
-		if (S.online && S.online.id === joinId) { on.id = joinId; on.key = S.online.key; on.seat = S.online.seat; refetch(); mode = "online"; api("GET", null, "?id=" + joinId).then(function (r) { if (r.g) startOnline({ g: r.g, key: on.key, seat: on.seat }); }); }
+		// a guest game invite
+		blank();
+		if (S.online && S.online.id === joinId) api("GET", null, "?id=" + joinId).then(function (r) { if (r.g) startOnline({ g: r.g, key: S.online.key, seat: S.online.seat }); });
 		else { S.online = null; join(joinId); }
 	} else if (qg && T.parseCode(qg)) {
+		// a shared position
 		var c = T.parseCode(qg), mv = (q.get("m") || "").split(".").filter(Boolean);
 		var p = T.presetByCode(qg);
 		if (p) S.game = p.id; else { S.game = "custom"; S.custom = { w: c.w, h: c.h, d: c.d, k: c.k, g: c.grav, m: c.mis, x: c.wild }; }
+		S.online = null; S.hive = null;
 		save(); syncSetup();
 		var s0 = T.replay(c, mv);
 		mode = S.opp;
 		setGame(c, s0 ? mv : [], { human: s0 ? s0.turn : 0 });
 		toast("Game loaded from the link.");
+	} else if (S.hive && S.hive.host) {
+		// back to the Hive game we were in
+		blank();
+		var sh = S.hive;
+		setTimeout(function () { hiveEnter(sh.host, sh.gid, []); }, 0);
+	} else if (S.online && S.online.id) {
+		// back to the guest game we were in
+		blank();
+		mode = "online"; on.id = S.online.id; on.key = S.online.key; on.seat = S.online.seat;
+		api("GET", null, "?id=" + on.id).then(function (r) {
+			if (r.g) startOnline({ g: r.g, key: on.key, seat: on.seat });
+			else { on.id = null; S.online = null; save(); mode = S.opp; resumeOrNew(); }
+		});
 	} else resumeOrNew();
+	renderHiveCard();
 	function resumeOrNew() {
 		var cc = S.cur && T.parseCode(S.cur.code);
 		if (cc && !S.cur.done && S.cur.moves && S.cur.moves.length && T.replay(cc, S.cur.moves)) {

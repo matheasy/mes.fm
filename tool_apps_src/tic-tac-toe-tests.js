@@ -127,6 +127,61 @@ s = play("L5x5k4", [6, 0, 7]);              // O to move: X threatens an open th
 const hb = T.think(s, "hard", { seed: 2, ms: 300 }).m.c;
 ok([5, 8, 9].includes(hb), "hard answers an open two on a 5-wide row (played " + hb + ")");
 
+
+// ---------- Hive games ----------
+const H = T.hive;
+let blk = 1000;
+function entry(acct, j, opt) { opt = opt || {}; const b = opt.block || ++blk; return [opt.i || b, { trx_id: opt.trx || ("t" + b + acct), block: b, timestamp: new Date(Date.UTC(2026, 10, 6, 12, 0, 0) + (opt.sec !== undefined ? opt.sec : (b - 1000) * 3) * 1000).toISOString().slice(0, 19),
+	op: ["custom_json", { id: opt.id || "mes_ttt", required_auths: [], required_posting_auths: [acct], json: JSON.stringify(j) }] }]; }
+const gid = "abcd2345";
+let E = [entry("alice", { a: "open", g: gid, v: "L3x3k3", f: "host" })];
+E.push(entry("bob", { a: "join", h: "alice", g: gid }));
+E.push(entry("carl", { a: "join", h: "alice", g: gid }));           // too late
+E.push(entry("alice", { a: "mv", h: "alice", g: gid, n: 0, m: "0" }));
+E.push(entry("bob", { a: "mv", h: "alice", g: gid, n: 0, m: "1" }));   // wrong number: ignored
+E.push(entry("bob", { a: "mv", h: "alice", g: gid, n: 1, m: "0" }));   // occupied: ignored
+E.push(entry("bob", { a: "mv", h: "alice", g: gid, n: 1, m: "3" }));
+E.push(entry("carl", { a: "mv", h: "alice", g: gid, n: 2, m: "8" }));  // not a player
+E.push(entry("alice", { a: "mv", h: "alice", g: gid, n: 2, m: "1" }));
+E.push(entry("bob", { a: "mv", h: "alice", g: gid, n: 3, m: "4" }));
+E.push(entry("alice", { a: "mv", h: "alice", g: gid, n: 4, m: "2" }));
+E.push(entry("bob", { a: "x", h: "alice", g: gid }));
+E.push(entry("bob", { a: "mv", h: "alice", g: gid, n: 0, m: "4" }, { id: "other_app" }));
+let ops = [];
+for (const a of ["alice", "bob", "carl"]) ops = ops.concat(H.parse(E.filter(e => e[1].op[1].required_posting_auths[0] === a), a));
+ok(ops.length === 11, "parse keeps only mes_ttt ops with valid shape (" + ops.length + ")");
+let R = H.build("alice", gid, ops, 0);
+ok(R.guest === "bob" && R.players.join() === "alice,bob", "first join gets the seat");
+ok(R.status === "over" && R.win.p === 0 && R.s.hist.join() === "0,3,1,4,2", "moves validated, alice wins (" + R.s.hist.join() + ")");
+// shuffled input gives the same result
+R = H.build("alice", gid, ops.slice().reverse(), 0);
+ok(R.status === "over" && R.win.p === 0, "order comes from blocks, not input order");
+// resign / claim / cancel / challenge / random coin
+let E2 = [entry("alice", { a: "open", g: "zzzz2222", v: "U", f: "guest", to: "bob" }), entry("carl", { a: "join", h: "alice", g: "zzzz2222" }), entry("bob", { a: "join", h: "alice", g: "zzzz2222" })];
+let o2 = H.parse(E2.slice(0, 1), "alice").concat(H.parse(E2.slice(1, 2), "carl"), H.parse(E2.slice(2), "bob"));
+R = H.build("alice", "zzzz2222", o2, 0);
+ok(R.guest === "bob" && R.players[0] === "bob", "challenge: only the named account may join; guest goes first");
+const resign = H.parse([entry("alice", { a: "res", h: "alice", g: "zzzz2222" })], "alice");
+R = H.build("alice", "zzzz2222", o2.concat(resign), 0);
+ok(R.status === "over" && R.win.p === 0 && R.win.why === "resign", "resign: the other player (bob = seat 0) wins");
+const early = H.parse([entry("alice", { a: "claim", h: "alice", g: "zzzz2222" }, { sec: 60 })], "alice");
+ok(H.build("alice", "zzzz2222", o2.concat(early), 0).status === "play", "claim too early is ignored");
+const late = H.parse([entry("alice", { a: "claim", h: "alice", g: "zzzz2222" }, { sec: 1000 })], "alice");
+R = H.build("alice", "zzzz2222", o2.concat(late), 0);
+ok(R.status === "over" && R.win.p === 1 && R.win.why === "timeout", "claim after 5 minutes on the other player's turn");
+const ownTurn = H.parse([entry("bob", { a: "claim", h: "alice", g: "zzzz2222" }, { sec: 1000 })], "bob");
+ok(H.build("alice", "zzzz2222", o2.concat(ownTurn), 0).status === "play", "can't claim on your own turn");
+const E3 = [entry("alice", { a: "open", g: "yyyy3333", v: "L3x3k3", f: "random" }), entry("alice", { a: "cancel", h: "alice", g: "yyyy3333" }), entry("bob", { a: "join", h: "alice", g: "yyyy3333" })];
+R = H.build("alice", "yyyy3333", H.parse(E3.slice(0, 2), "alice").concat(H.parse(E3.slice(2), "bob")), 0);
+ok(R.status === "cancelled" && !R.guest, "cancel before a join");
+ok(H.coin("aa", "bb") === H.coin("aa", "bb") && [0, 1].includes(H.coin("x", "y")), "coin is deterministic");
+ok(H.build("alice", "yyyy3333", H.parse(E3.slice(0, 1), "alice"), Date.UTC(2026, 10, 6, 14)).status === "expired", "unjoined open game expires after an hour");
+ok(H.clean({ a: "open", g: "abcd2345", v: "L2x2k2" }) === null && H.clean({ a: "mv", g: "abcd2345", h: "al", n: 0, m: "1" }) === null && H.clean({ a: "mv", g: "short", h: "alice", n: 0, m: "1" }) === null, "malformed ops refused");
+ok(JSON.parse(H.json({ a: "mv", h: "alice", g: gid, n: 3, m: "4", acct: "x", trx: "y" })).acct === undefined, "json() drops local fields");
+const mg = H.myGames("bob", ops.concat(o2));
+ok(mg.length === 2 && mg[0].gid === "zzzz2222" && mg[0].role === "guest", "my games, newest first");
+ok(H.ID === "mes_ttt" && H.newGid().length === 8 && H.GID_RE.test(H.newGid()), "game ids");
+
 // server copy is identical
 const api = path.join(__dirname, "..", "mes.fm", "api", "_ttt-lib.js");
 if (fs.existsSync(api)) ok(fs.readFileSync(api, "utf8") === fs.readFileSync(path.join(__dirname, "tic-tac-toe", "lib.js"), "utf8"), "mes.fm/api/_ttt-lib.js is a byte-identical copy (cp it)");

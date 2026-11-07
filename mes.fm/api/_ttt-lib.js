@@ -515,6 +515,121 @@
 		return p === 0 ? "X" : "O";
 	};
 
+	/* ---------- Hive games ----------
+	   Every action is a custom_json operation with id "mes_ttt", signed with the player's posting key. Nothing else decides the game:
+	   both browsers read both players' account histories and run build() on the same operations, so they always agree.
+	     {"a":"open","g":"<8 chars>","v":"<game code>","f":"host|guest|random"[,"to":"account"][,"re":"host/gid"]}   by the host
+	     {"a":"join","h":"<host>","g":"<gid>"}                                                                         by the guest
+	     {"a":"mv","h":"<host>","g":"<gid>","n":<move number from 0>,"m":"<move string>"}
+	     {"a":"res","h","g"}  resign   ·   {"a":"claim","h","g"}  win when the other player has not acted for CLAIM_S on their turn
+	     {"a":"cancel","h","g"}  the host withdraws an open game nobody has joined
+	   Order = block number, then position in the block (account-history "i" breaks ties for one account; operations of two accounts
+	   in the same block are ordered by trx id, which both sides see the same). First valid join wins the seat. "random" first player:
+	   parity of the first hex digit of sha-free mix of the two transaction ids (charCode sum), the same for both sides. */
+	var H = T.hive = { ID: "mes_ttt", CLAIM_S: 300, OPEN_S: 3600, GID_RE: /^[a-z0-9]{8}$/, ACCT_RE: /^[a-z][a-z0-9.-]{2,15}$/ };
+	/** account-history entries -> our operations [{a, g, h, ..., acct, trx, block, ts (ms), i}] (anything else is skipped) */
+	H.parse = function (entries, acct) {
+		var out = [];
+		(entries || []).forEach(function (e) {
+			var idx = e[0], x = e[1] || {}, op = x.op;
+			if (!op || op[0] !== "custom_json" || !op[1] || op[1].id !== H.ID) return;
+			var auths = op[1].required_posting_auths || [];
+			if (auths.length !== 1 || (acct && auths[0] !== acct)) return;
+			var j;
+			try { j = typeof op[1].json === "string" ? JSON.parse(op[1].json) : op[1].json; } catch (er) { return; }
+			var o = H.clean(j);
+			if (!o) return;
+			o.acct = auths[0]; o.trx = x.trx_id || ""; o.block = x.block || 0; o.i = idx;
+			o.ts = Date.parse(String(x.timestamp || "") + (/Z$/.test(x.timestamp || "") ? "" : "Z")) || 0;
+			out.push(o);
+		});
+		return out;
+	};
+	/** keep only well-formed operations, with only the known fields */
+	H.clean = function (j) {
+		if (!j || typeof j !== "object" || !H.GID_RE.test(String(j.g))) return null;
+		var a = j.a, o = { a: a, g: j.g };
+		if (a === "open") {
+			if (!T.parseCode(j.v)) return null;
+			o.v = j.v; o.f = ["host", "guest", "random"].indexOf(j.f) >= 0 ? j.f : "host";
+			if (j.to !== undefined) { if (!H.ACCT_RE.test(String(j.to))) return null; o.to = j.to; }
+			if (j.re !== undefined && /^[a-z][a-z0-9.-]{2,15}\/[a-z0-9]{8}$/.test(String(j.re))) o.re = j.re;
+			return o;
+		}
+		if (!H.ACCT_RE.test(String(j.h))) return null;
+		o.h = j.h;
+		if (a === "join" || a === "res" || a === "claim" || a === "cancel") return o;
+		if (a === "mv") {
+			if (typeof j.n !== "number" || j.n < 0 || j.n > 400 || (j.n | 0) !== j.n || !T.mparse(j.m)) return null;
+			o.n = j.n; o.m = String(j.m);
+			return o;
+		}
+		return null;
+	};
+	H.json = function (o) { var c = {}; for (var k in o) if (["a", "g", "v", "f", "to", "re", "h", "n", "m"].indexOf(k) >= 0) c[k] = o[k]; return JSON.stringify(c); };
+	H.newGid = function (r) { var A = "abcdefghijkmnpqrstuvwxyz23456789", s = ""; r = r || Math.random; for (var i = 0; i < 8; i++) s += A[(r() * A.length) | 0]; return s; };
+	function order(a, b) { return (a.block || Infinity) - (b.block || Infinity) || (a.acct === b.acct ? a.i - b.i : a.trx < b.trx ? -1 : a.trx > b.trx ? 1 : 0) || (a.ts - b.ts); }
+	H.order = order;
+	/** who plays first (seat 0) for a "random" game: the same answer on both sides */
+	H.coin = function (trxA, trxB) { var s = String(trxA) + String(trxB), n = 0; for (var i = 0; i < s.length; i++) n += s.charCodeAt(i); return n % 2; };
+	/**
+	 * Work out a Hive game from operations (any accounts, any games: only this game's are used).
+	 * host, gid: the game; ops: parsed operations of the host + guest (+ other joiners); now: ms (for "can claim").
+	 * -> {ok, open, host, guest, players: [seat0, seat1], s (rules state), status "none|wait|play|over|cancelled", win, lastTs, turnAcct, canClaimAt}
+	 */
+	H.build = function (host, gid, ops, now) {
+		var mine = ops.filter(function (o) { return o.g === gid && (o.a === "open" ? o.acct === host : o.h === host); }).sort(order);
+		var R = { host: host, gid: gid, open: null, guest: null, players: [null, null], s: null, status: "none", win: null, lastTs: 0, turnAcct: null, canClaimAt: 0, why: "" };
+		for (var i = 0; i < mine.length; i++) {
+			var o = mine[i];
+			if (!R.open) {
+				if (o.a === "open") { R.open = o; R.cfg = T.parseCode(o.v); R.s = T.create(R.cfg); R.status = "wait"; R.lastTs = o.ts; }
+				continue;
+			}
+			if (o.a === "open") continue;                 // a second open with the same id: ignored
+			if (R.status === "wait") {
+				if (o.a === "cancel" && o.acct === host) { R.status = "cancelled"; R.lastTs = o.ts; continue; }
+				if (o.a === "join" && o.acct !== host && (!R.open.to || R.open.to === o.acct)) {
+					R.guest = o.acct; R.join = o;
+					var hostFirst = R.open.f === "host" ? true : R.open.f === "guest" ? false : H.coin(R.open.trx, o.trx) === 0;
+					R.players = hostFirst ? [host, o.acct] : [o.acct, host];
+					R.status = "play"; R.lastTs = o.ts;
+				}
+				continue;
+			}
+			if (R.status !== "play") continue;
+			var seat = R.players.indexOf(o.acct);
+			if (seat < 0) continue;
+			if (o.a === "mv") {
+				if (o.n !== R.s.hist.length || R.s.turn !== seat) continue;
+				var m = T.mparse(o.m);
+				if (!T.isLegal(R.s, m)) continue;
+				T.apply(R.s, m); R.lastTs = o.ts;
+				if (R.s.win) { R.status = "over"; R.win = { p: R.s.win.p, why: R.s.win.why }; }
+			} else if (o.a === "res") {
+				R.status = "over"; R.win = { p: 1 - seat, why: "resign" }; R.s.win = { p: 1 - seat, line: null, why: "resign" };
+			} else if (o.a === "claim") {
+				if (R.s.turn !== seat && o.ts - R.lastTs >= H.CLAIM_S * 1000) {
+					R.status = "over"; R.win = { p: seat, why: "timeout" }; R.s.win = { p: seat, line: null, why: "timeout" };
+				}
+			}
+		}
+		if (R.status === "wait" && now && R.open && now - R.open.ts > H.OPEN_S * 1000) R.status = "expired";
+		if (R.status === "play") { R.turnAcct = R.players[R.s.turn]; R.canClaimAt = R.lastTs + H.CLAIM_S * 1000; }
+		R.ok = R.status !== "none";
+		return R;
+	};
+	/** the games an account opened or joined, newest first: [{host, gid, role, v?, ts}] */
+	H.myGames = function (acct, ops) {
+		var seen = {}, out = [];
+		ops.filter(function (o) { return o.acct === acct && (o.a === "open" || o.a === "join"); }).sort(order).reverse().forEach(function (o) {
+			var host = o.a === "open" ? acct : o.h, k = host + "/" + o.g;
+			if (seen[k]) return; seen[k] = 1;
+			out.push({ host: host, gid: o.g, role: o.a === "open" ? "host" : "guest", v: o.v, to: o.to, re: o.re, ts: o.ts });
+		});
+		return out;
+	};
+
 	if (typeof module !== "undefined" && module.exports) module.exports = T;
 	root.MESTTT = T;
 })(typeof self !== "undefined" ? self : this);

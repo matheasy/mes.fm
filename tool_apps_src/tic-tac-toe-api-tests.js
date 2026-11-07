@@ -2,7 +2,12 @@
 "use strict";
 process.env.UPSTASH_REDIS_REST_URL = "http://redis.test"; process.env.UPSTASH_REDIS_REST_TOKEN = "t";
 const store = new Map(), z = new Map();
+const chain = {};   // account -> account-history entries (fake Hive node)
 global.fetch = async (url, opts) => {
+  if (!/redis\.test/.test(url)) {
+    const q = JSON.parse(opts.body);
+    return { json: async () => ({ result: chain[q.params[0]] || [] }) };
+  }
   const out = JSON.parse(opts.body).map((c) => {
     const [op, k, v] = c;
     if (op === "SET") { if (c.includes("NX") && store.has(k)) return { result: null }; store.set(k, v); return { result: "OK" }; }
@@ -75,6 +80,21 @@ const post = (body, ip) => call("POST", { body, headers: { "x-forwarded-for": ip
   eq((await call("GET", { query: { id: "../etc" } })).code, 400, "bad id");
   eq((await call("PUT", {})).code, 405, "method");
   eq((await call("POST", { body: { act: "new", v: "U" }, headers: { "content-type": "text/plain" } })).code, 415, "json only");
+  // Hive index: listed only when the op is really in the account's history
+  const ts = new Date().toISOString().slice(0, 19);
+  const ent = (acct, j, b) => [b, { trx_id: "x" + b, block: b, timestamp: ts, op: ["custom_json", { id: "mes_ttt", required_auths: [], required_posting_auths: [acct], json: JSON.stringify(j) }] }];
+  eq((await post({ act: "hopen", host: "alice", g: "abcd2345" }, "5.5.5.5")).code, 404, "hive open not on chain yet");
+  chain.alice = [ent("alice", { a: "open", g: "abcd2345", v: "L3x3k3", f: "host" }, 10)];
+  eq((await post({ act: "hopen", host: "alice", g: "abcd2345" }, "5.5.5.5")).code, 200, "hive open listed");
+  r = await call("GET", { query: { hlobby: "1" } });
+  eq(r.body.open.map((o) => o.host + "/" + o.g + "/" + o.v), ["alice/abcd2345/L3x3k3"], "hive lobby");
+  eq((await post({ act: "hjoin", host: "alice", g: "abcd2345", acct: "bob" }, "5.5.5.5")).code, 404, "join not on chain refused");
+  chain.bob = [ent("bob", { a: "join", h: "alice", g: "abcd2345" }, 11)];
+  r = await post({ act: "hjoin", host: "alice", g: "abcd2345", acct: "bob" }, "5.5.5.5");
+  eq(r.body.joiners, ["bob"], "hive join recorded");
+  eq((await call("GET", { query: { hlobby: "1" } })).body.open.length, 0, "joined game leaves the hive lobby");
+  eq((await call("GET", { query: { hg: "alice/abcd2345" } })).body.joiners, ["bob"], "who joined");
+  eq((await post({ act: "hopen", host: "Al!ce", g: "abcd2345" })).code, 400, "bad account refused");
   for (let i = 0; i < 31; i++) r = await post({ act: "new", v: "U", name: "spam" }, "9.9.9.9");
   eq(r.code, 429, "rate limit on new games");
   console.log((n - f) + " passed, " + f + " failed");
