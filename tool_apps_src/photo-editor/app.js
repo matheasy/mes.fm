@@ -475,7 +475,27 @@ $("pe-share").addEventListener("click", function () { if (needDoc()) PE.dlgShare
 	 * browser's re-encoded PNG can differ by colour profile / scale, so comparing pixels alone sometimes missed it and the copy came back at its full size). */
 	PE.clipLayer = null; var clipAway = true;
 	window.addEventListener("blur", function () { clipAway = true; });
-	function remember(c, xf, layer) { PE.clipCanvas = c; PE.clipXf = xf; PE.clipSig = sig(c); PE.clipLayer = layer || null; clipAway = false; }
+	function remember(c, xf, layer) { PE.clipCanvas = c; PE.clipXf = xf; PE.clipSig = sig(c); PE.clipLayer = layer || null; clipAway = false; memoSave(c, xf, layer); }
+	/* the copy also survives in localStorage (size, place, turn, crop, style, text; not the pixels: those are the PNG on the system clipboard), so a paste in another
+	 * tab, after a reload or after reopening the project still lands with the copied size on the copied spot. The pasted picture is recognised by its fingerprint. */
+	var MEMO = "mes-photo-editor:clip";
+	function grey(g) { var o = []; for (var i = 0; i < g.d.length; i += 4) o.push(Math.round((g.d[i] + g.d[i + 1] + g.d[i + 2]) / 3 * g.d[i + 3] / 255)); return o; }
+	function memoSave(c, xf, layer) {
+		try { var g = PE.clipSig; if (!g) { localStorage.removeItem(MEMO); return; } var m = { t: Date.now(), w: c.width, h: c.height, g: grey(g), xf: xf };
+			if (layer) { m.L = {}; ["name", "type", "opacity", "blend", "_pad", "_amw", "_drawnFont"].forEach(function (k) { if (layer[k] !== undefined) m.L[k] = layer[k]; }); ["text", "eq", "crop", "fx", "adj"].forEach(function (k) { if (layer[k]) m.L[k] = JSON.parse(JSON.stringify(layer[k])); }); }
+			localStorage.setItem(MEMO, JSON.stringify(m)); } catch (e) {}
+	}
+	function memoFor(im) {
+		var m; try { m = JSON.parse(localStorage.getItem(MEMO) || "null"); } catch (e) { return null; } if (!m || !m.g || Date.now() - m.t > 7 * 864e5) return null;
+		var w = im.naturalWidth || im.width, h = im.naturalHeight || im.height, r = w / m.w; if (Math.abs(h / m.h - r) > 0.02 || !(Math.abs(r - 1) < 0.02 || Math.abs(r - 2) < 0.04 || Math.abs(r - 0.5) < 0.02)) return null;
+		var b = sig(im); if (!b) return null; var gb = grey(b), diff = 0; for (var i = 0; i < m.g.length; i++) diff += Math.abs(m.g[i] - gb[i]); return diff / m.g.length < 14 ? m : null;
+	}
+	function pasteRemembered(im) {   // true when the picture is a copy made in this editor (another tab / before a reload): placed like the copied layer
+		if (!PE.doc) return false; var m = memoFor(im); if (!m) return false; var c = PE.mk(m.w, m.h); c.getContext("2d").drawImage(im, 0, 0, m.w, m.h);
+		var xf = m.xf || {}, info = m.L || {}, L = PE.makeLayer({ canvas: c, name: (info.name || "Pasted layer") + (info.name ? " copy" : ""), text: info.text || null, cx: xf.cx != null ? xf.cx : PE.doc.w / 2, cy: xf.cy != null ? xf.cy : PE.doc.h / 2, src: PE.mkSrc({ how: "paste", clip: "editor" }, m.w, m.h) });
+		L.sx = xf.sx || 1; L.sy = xf.sy || 1; L.rot = xf.rot || 0; ["type", "opacity", "blend", "_pad", "_amw", "_drawnFont", "eq", "crop", "fx", "adj"].forEach(function (k) { if (info[k] !== undefined) L[k] = info[k]; });
+		PE.addLayer(L); PE.commit("Paste layer"); PE.setTool("move"); return true;
+	}
 	function sig(c) { try { var t = PE.mk(12, 12), x = t.getContext("2d"); x.drawImage(c, 0, 0, 12, 12); return { w: c.width, h: c.height, d: x.getImageData(0, 0, 12, 12).data }; } catch (e) { return null; } }
 	function sameAsClip(im) { var a = PE.clipSig, w = im.naturalWidth || im.width, h = im.naturalHeight || im.height; if (!PE.clipCanvas) return false; if (!clipAway) return true; if (!a) return false; var r = w / a.w; if (Math.abs(h / a.h - r) > 0.02 || !(Math.abs(r - 1) < 0.02 || Math.abs(r - 2) < 0.04 || Math.abs(r - 0.5) < 0.02)) return false; var b = sig(im); if (!b) return false; var diff = 0; for (var i = 0; i < a.d.length; i++) diff += Math.abs(a.d[i] - b.d[i]); return diff / a.d.length < 14; }
 	function copySel(cut) {
@@ -498,12 +518,12 @@ $("pe-share").addEventListener("click", function () { if (needDoc()) PE.dlgShare
 		if (L && xf && (xf.sx !== 1 || xf.sy !== 1 || xf.rot)) { L.sx = xf.sx; L.sy = xf.sy; L.rot = xf.rot; PE.invalidate(); PE.commit("Paste in place"); }
 		PE.setTool("move");
 	}
-	function pasteInternal() { if (PE.clipCanvas) pasteOwn(); else if (navigator.clipboard && navigator.clipboard.read) { navigator.clipboard.read().then(function (items) { for (var i = 0; i < items.length; i++) { var t = items[i].types.filter(function (t) { return /^image\//.test(t); })[0]; if (t) { items[i].getType(t).then(function (b) { return PE.decodeFile(b); }).then(function (im) { paintClipboardImage(im, "Pasted image"); }); return; } } PE.toast("Nothing to paste"); }).catch(function () { PE.toast("Use Ctrl+V to paste an image"); }); } else PE.toast("Use Ctrl+V to paste an image"); }
+	function pasteInternal() { if (PE.clipCanvas) pasteOwn(); else if (navigator.clipboard && navigator.clipboard.read) { navigator.clipboard.read().then(function (items) { for (var i = 0; i < items.length; i++) { var t = items[i].types.filter(function (t) { return /^image\//.test(t); })[0]; if (t) { items[i].getType(t).then(function (b) { return PE.decodeFile(b); }).then(function (im) { if (!pasteRemembered(im)) paintClipboardImage(im, "Pasted image"); }); return; } } PE.toast("Nothing to paste"); }).catch(function () { PE.toast("Use Ctrl+V to paste an image"); }); } else PE.toast("Use Ctrl+V to paste an image"); }
 	document.addEventListener("paste", function (e) {
 		if (/INPUT|TEXTAREA|SELECT/.test((e.target || {}).tagName || "") || PE.modalOpen()) return; var items = (e.clipboardData && e.clipboardData.items) || [];
 		var gf = []; for (var j = 0; j < items.length; j++) if (items[j].kind === "file") { var ff = items[j].getAsFile(); if (ff && /\.xcf$/i.test(ff.name)) gf.push(ff); }
 		if (gf.length) { e.preventDefault(); openFiles(gf, { place: !!PE.doc, how: "paste" }); return; }   // a GIMP file copied in the file manager
-		for (var i = 0; i < items.length; i++) if (items[i].kind === "file" && /^image\//.test(items[i].type)) { var f = items[i].getAsFile(); e.preventDefault(); PE.decodeFile(f).then(function (im) { if (PE.doc && sameAsClip(im)) pasteOwn(); else paintClipboardImage(im, "Pasted image"); }).catch(function () { PE.toast("Can't read that image"); }); return; }
+		for (var i = 0; i < items.length; i++) if (items[i].kind === "file" && /^image\//.test(items[i].type)) { var f = items[i].getAsFile(); e.preventDefault(); PE.decodeFile(f).then(function (im) { if (PE.doc && sameAsClip(im)) pasteOwn(); else if (!pasteRemembered(im)) paintClipboardImage(im, "Pasted image"); }).catch(function () { PE.toast("Can't read that image"); }); return; }
 		var tx = e.clipboardData && e.clipboardData.getData("text/plain"); if (tx && PE.looksLikeLatex(tx)) { e.preventDefault(); PE.dlgEquation(null, null, tx.trim().replace(/^\$+|\$+$/g, "")); return; }
 		if (PE.clipCanvas) { e.preventDefault(); pasteOwn(); }
 	});
