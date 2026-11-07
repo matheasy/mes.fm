@@ -1,0 +1,74 @@
+	<div class="tu" id="rs">
+		<div class="tu-card" id="rs-setup">
+			<div class="tu-seg rs-tabs" id="rs-tab" role="group" aria-label="What to compare"><button type="button" data-t="speed" aria-pressed="true">Speed</button><button type="button" data-t="jump" aria-pressed="false">Jumps</button><button type="button" data-t="fall" aria-pressed="false">Falls</button></div>
+			<div class="rs-common">
+				<div class="tu-field rs-f"><label for="rs-ref">Compare with</label><select id="rs-ref" class="tu-select"></select><input id="rs-refc" class="tu-input" type="text" placeholder="e.g. 5 ft 9 in or 1.8 m" hidden></div>
+				<div class="tu-field rs-f rs-units"><span class="tu-label" id="rs-u-label">Units</span><div class="tu-seg" id="rs-units" role="group" aria-labelledby="rs-u-label"><button type="button" data-u="0" aria-pressed="true">Metric</button><button type="button" data-u="1" aria-pressed="false">US</button></div></div>
+			</div>
+
+			<div class="rs-pane" data-pane="speed">
+				<div class="rs-grid">
+					<div class="tu-field rs-f"><label for="rs-sp">Animal or thing</label><select id="rs-sp" class="tu-select"></select></div>
+					<div class="tu-field rs-f"><label for="rs-sv">Speed</label><input id="rs-sv" class="tu-input tu-input--big" type="text" autocomplete="off" spellcheck="false"><span class="rs-read" id="rs-sv-read"></span></div>
+					<div class="tu-field rs-f"><label for="rs-sl">Body length</label><input id="rs-sl" class="tu-input tu-input--big" type="text" autocomplete="off" spellcheck="false"><span class="rs-read" id="rs-sl-read"></span></div>
+				</div>
+			</div>
+			<div class="rs-pane" data-pane="jump" hidden>
+				<div class="rs-grid">
+					<div class="tu-field rs-f"><label for="rs-jp">Animal</label><select id="rs-jp" class="tu-select"></select></div>
+					<div class="tu-field rs-f"><span class="tu-label" id="rs-jk-label">Jump</span><div class="tu-seg" id="rs-jk" role="group" aria-labelledby="rs-jk-label"><button type="button" data-k="up" aria-pressed="true">Straight up</button><button type="button" data-k="long" aria-pressed="false">Long jump</button></div></div>
+					<div class="tu-field rs-f"><label for="rs-jh" id="rs-jh-label">Jump height</label><input id="rs-jh" class="tu-input tu-input--big" type="text" autocomplete="off" spellcheck="false"><span class="rs-read" id="rs-jh-read"></span></div>
+					<div class="tu-field rs-f"><label for="rs-jl">Body length</label><input id="rs-jl" class="tu-input tu-input--big" type="text" autocomplete="off" spellcheck="false"><span class="rs-read" id="rs-jl-read"></span></div>
+					<div class="tu-field rs-f"><label for="rs-jpush">Push-off distance (legs straightening)</label><input id="rs-jpush" class="tu-input" type="text" autocomplete="off" spellcheck="false"><span class="rs-read" id="rs-jpush-read"></span></div>
+				</div>
+			</div>
+			<div class="rs-pane" data-pane="fall" hidden>
+				<div class="rs-grid">
+					<div class="tu-field rs-f"><label for="rs-fp">Animal</label><select id="rs-fp" class="tu-select"></select></div>
+					<div class="tu-field rs-f"><label for="rs-fh">Drop height</label><input id="rs-fh" class="tu-input tu-input--big" type="text" autocomplete="off" spellcheck="false"><input type="range" id="rs-fhs" class="rs-range" min="0" max="1000" step="1" aria-label="Drop height (slider)"><span class="rs-read" id="rs-fh-read"></span></div>
+					<div class="tu-field rs-f"><label for="rs-fm">Mass</label><input id="rs-fm" class="tu-input" type="text" autocomplete="off" spellcheck="false"><span class="rs-read" id="rs-fm-read"></span></div>
+					<div class="tu-field rs-f"><label for="rs-fa">Drag area C<sub>d</sub>&times;A (m&sup2;)</label><input id="rs-fa" class="tu-input" type="text" autocomplete="off" spellcheck="false" inputmode="decimal"><span class="rs-read" id="rs-fa-read"></span></div>
+				</div>
+			</div>
+			<div class="rs-tools"><button type="button" class="tu-btn tu-btn--ghost" id="rs-reset">Reset</button><button type="button" class="tu-btn" id="rs-link">Copy link</button></div>
+		</div>
+
+		<div class="tu-card rs-hero" id="rs-hero" aria-live="polite"><div class="rs-big" id="rs-big"></div><div class="rs-sub" id="rs-sub"></div><p class="rs-say" id="rs-say"></p></div>
+		<div class="tu-stats" id="rs-stats"></div>
+
+		<h2 id="rs-ch-h">Everyone side by side</h2>
+		<div class="tu-card"><div class="rs-chart" id="rs-chart" role="img"></div><div class="rs-readout" id="rs-chread" aria-live="polite"></div><p class="tu-note" id="rs-chnote" style="margin-bottom:0;"></p></div>
+
+		<div class="tu-card rs-why" id="rs-why"></div>
+
+		<h2>The maths</h2>
+		<div class="tu-card">
+			<div class="rs-eq">
+				<div><span class="rs-eq__n">body lengths per second</span> <span class="rs-eq__f mes-tex">\( \displaystyle n = \frac{v}{L}, \qquad v_{\text{scaled}} = n\,L_{\text{you}} \)</span></div>
+				<div><span class="rs-eq__n">fair (Froude) speed</span> <span class="rs-eq__f mes-tex">\( \displaystyle \frac{v^2}{gL} = \frac{v_{\text{fair}}^2}{g L_{\text{you}}} \;\Rightarrow\; v_{\text{fair}} = v\sqrt{\frac{L_{\text{you}}}{L}} \)</span></div>
+				<div><span class="rs-eq__n">take-off speed</span> <span class="rs-eq__f mes-tex">\( \displaystyle v_0 = \sqrt{2gh}\ \text{(up)}, \qquad v_0 = \sqrt{g\,d}\ \text{(long jump at 45°)}, \qquad a = \frac{v_0^2}{2s} \)</span></div>
+				<div><span class="rs-eq__n">terminal and impact speed</span> <span class="rs-eq__f mes-tex">\( \displaystyle v_t = \sqrt{\frac{2mg}{\rho\, C_d A}}, \qquad v(h) = v_t\sqrt{1 - e^{-2gh/v_t^2}} \)</span></div>
+			</div>
+		</div>
+
+		<div class="tu-seo">
+			<h2>How the relative speed, jump and fall calculator works</h2>
+			<p>Small animals look astonishingly fast and strong when you measure them in <b>body lengths</b>. A tiger beetle runs about 2.5 m/s, which is 125 of its own 2 cm body lengths every second. A person doing 125 body lengths a second would be going about <b>790 km/h (490 mph)</b>. A flea jumps about 90 times its body length; scaled up to a person, that is a jump of about 160 m.</p>
+			<p>Those headline numbers are fun but misleading, because physics does not scale in a straight line. This page shows the straight-line number and, next to it, what physics says.</p>
+			<h3>Speed: the Froude number</h3>
+			<p>For running and walking, engineers compare animals of different sizes with the <b>Froude number</b> <i>v</i>&sup2;/(<i>gL</i>). Two animals with the same Froude number move in a &ldquo;dynamically similar&rdquo; way (it is why a toddler has to trot to keep up with a walking adult). Matching it gives the fair speed <i>v</i>&radic;(<i>L</i><sub>you</sub>/<i>L</i>): for the tiger beetle about 84 km/h, still far beyond any human sprinter.</p>
+			<h3>Jumps: everyone jumps about the same height</h3>
+			<p>As far back as the 1680s Giovanni Borelli noticed that animals of very different sizes jump roughly the same absolute height. Muscle energy grows with muscle mass, and so does the weight to lift, so the height a body can reach stays about the same. What changes is the <b>acceleration</b>: a flea has only a fraction of a millimetre to push off, so it needs hundreds of g and uses a spring (resilin) instead of plain muscle.</p>
+			<h3>Falls: the square-cube law</h3>
+			<p>Double an animal's length and its weight goes up 8 times but its area only 4 times, so its <b>terminal speed</b> (the speed at which air drag balances weight) goes up by about &radic;2. A mouse tops out near 35 km/h and usually walks away from any fall; a cat spreads out and tops out near 100 km/h; a person near 190 km/h; a horse far faster. J. B. S. Haldane made the point in his 1926 essay <i>On Being the Right Size</i>. The &ldquo;like a person falling from&rdquo; number shows how hard each impact is in human terms.</p>
+			<h3>Questions</h3>
+			<dl>
+				<dt>What can I type?</dt><dd>Speeds like <i>2.5 m/s</i>, <i>60 mph</i>, <i>8 ft/s</i>, <i>100 km/h</i>; lengths like <i>20 mm</i>, <i>1.75 m</i>, <i>5 ft 9 in</i>; masses like <i>4 kg</i>, <i>20 g</i>, <i>10 lb</i>.</dd>
+				<dt>How accurate are the animal numbers?</dt><dd>They are commonly reported values, rounded. Real animals vary a lot with species, size, temperature and how the measurement was made, so treat them as typical examples and type your own numbers if you have better ones.</dd>
+				<dt>Is it true that cats survive falls from great heights?</dt><dd>Cats often survive falls that seem impossible, because their terminal speed is modest and they turn over and spread out. Falls are still dangerous for cats: keep windows and balconies safe.</dd>
+				<dt>What is the drag area?</dt><dd>C<sub>d</sub>&times;A is the drag coefficient times the area facing the air. For a new animal, a rough guess is 0.3 times the body length squared; the presets use values that give the usually quoted terminal speeds.</dd>
+			</dl>
+			<p>Related: <a href="/relative-time-calculator">Relative Time Calculator</a> &middot; <a href="/unit-conversion">Unit Converter</a> &middot; <a href="/crash-physics">Crash Physics Simulator</a> &middot; <a href="/orbit-simulator">Orbit Simulator</a></p>
+		</div>
+	</div>
+<script src="/main_js/mes-math.js" defer></script>

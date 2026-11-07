@@ -198,20 +198,20 @@
  ],
  "latest": [
   {
-   "href": "/party",
-   "title": "Party Invitations & RSVP",
-   "icon": "/img/party-logo.png",
-   "desc": "Make a themed invitation, send one link and see who's coming: Going / Maybe / Can't go, plus-ones, waitlist, what to bring. No sign-up for anyone.",
-   "added": "2026-11-07",
-   "kind": "tool"
-  },
-  {
    "href": "/relative-speed-calculator",
    "title": "Relative Speed, Jump and Fall Calculator",
    "icon": "/img/relative-speed-calculator-logo.png",
    "desc": "Animal speeds in body lengths per second, jumps and falls scaled to human size.",
    "added": "2026-11-07",
    "kind": "calculator"
+  },
+  {
+   "href": "/party",
+   "title": "Party Invitations & RSVP",
+   "icon": "/img/party-logo.png",
+   "desc": "Make a themed invitation, send one link and see who's coming: Going / Maybe / Can't go, plus-ones, waitlist, what to bring. No sign-up for anyone.",
+   "added": "2026-11-07",
+   "kind": "tool"
   },
   {
    "href": "/connect-four",
