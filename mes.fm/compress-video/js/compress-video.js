@@ -764,6 +764,40 @@
 	}
 
 	probeCaps(); fillOptions();
+	/* ---------- a video handed over by another MES tool (the Video Editor's export: ?handoff=<id>, IndexedDB "mes-handoff") ----------
+	 * Entries are { name, type, blob } or { name, type, handle } (a file on disk: read through its handle, so a 6 GB export is never copied).
+	 * Reading a handle in a new tab may need one click (the browser asks to allow it). */
+	(function () {
+		var m = /[?&]handoff=([\w-]+)/.exec(location.search); if (!m || !window.indexedDB) return;
+		try { var u = new URL(location.href); u.searchParams.delete("handoff"); history.replaceState(history.state, "", u.pathname + (u.search || "") + u.hash); } catch (e) { /* ignore */ }
+		var r = indexedDB.open("mes-handoff", 1);
+		r.onupgradeneeded = function () { r.result.createObjectStore("h"); };
+		r.onsuccess = function () {
+			var db = r.result, t = db.transaction("h", "readwrite"), st = t.objectStore("h"), g = st.get(m[1]), got = null;
+			g.onsuccess = function () { got = g.result || null; if (got) st.delete(m[1]); };
+			t.oncomplete = function () { db.close(); if (!got || !got.files || !got.files.length) { notice("The video from the other tab was not found (hand-overs are kept for an hour). Choose it with “Choose videos” instead.", true); return; } take(got.files); };
+		};
+		async function fileOf(it) {
+			if (it.blob) { try { return new File([it.blob], it.name, { type: it.type || "video/mp4" }); } catch (e) { return it.blob; } }
+			if (it.handle) { var ok = it.handle.queryPermission ? await it.handle.queryPermission({ mode: "read" }) : "granted"; if (ok !== "granted") return null; return it.handle.getFile(); }
+			return null;
+		}
+		async function take(items) {
+			var ready = [], wait = [];
+			for (var i = 0; i < items.length; i++) { try { var f = await fileOf(items[i]); if (f) ready.push(f); else if (items[i].handle) wait.push(items[i]); } catch (e) { if (items[i].handle) wait.push(items[i]); } }
+			if (ready.length) { add(ready); notice("Added " + ready.map(function (f) { return f.name; }).join(", ") + " from the MES Video Editor. Pick a quality and press Compress."); }
+			if (wait.length) {
+				var n = $("cv-notice"); n.hidden = false; n.classList.remove("is-err"); n.textContent = "The browser needs your OK to read " + wait.map(function (x) { return x.name; }).join(", ") + " from your disk. ";
+				var b = document.createElement("button"); b.type = "button"; b.className = "tu-btn tu-btn--primary"; b.textContent = "Allow and add it"; n.appendChild(b);
+				b.onclick = async function () {
+					var got = [];
+					for (var j = 0; j < wait.length; j++) { try { var p = await wait[j].handle.requestPermission({ mode: "read" }); if (p === "granted") got.push(await wait[j].handle.getFile()); } catch (e) { /* refused */ } }
+					if (got.length) { add(got); notice("Added " + got.map(function (f) { return f.name; }).join(", ") + ". Pick a quality and press Compress."); }
+					else notice("The browser did not allow reading the file. Choose it with “Choose videos” instead.", true);
+				};
+			}
+		}
+	})();
 	if (qs.get("debug") === "1") window.MESVidDebug = { get files() { return files; }, support: support, caps: caps };   // for testing: the queue, probe results and plans
 	window.addEventListener("beforeunload", function (e) { if (busy) { e.preventDefault(); e.returnValue = ""; } });
 })();

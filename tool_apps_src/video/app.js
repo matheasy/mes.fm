@@ -651,6 +651,28 @@
 
 	/* ---------- export dialog ---------- */
 	var exporting = null;
+	/* ---------- hand the finished MP4 to the Video Compressor (same IndexedDB "mes-handoff" as the photo tools) ----------
+	 * A file written to disk is passed as its file handle (nothing is copied, even for a 6 GB video); a file made in memory is passed as the blob.
+	 * The tab is opened inside the Export click (pop-up blockers allow that) and waits until the export is done. */
+	function waitTab(name) {
+		var w = null; try { w = window.open("about:blank", "_blank"); } catch (e) { /* blocked */ }
+		if (!w) return null;
+		try { w.document.title = "Waiting for the export..."; w.document.body.style.cssText = "font:16px Arial,sans-serif;background:#11151c;color:#e2e8f0;padding:2em;line-height:1.5"; w.document.body.innerHTML = "<h2>MES Video Compressor</h2><p>Waiting for the MES Video Editor to finish exporting <b></b>.</p><p>Keep this tab open: the video opens here by itself when it is done.</p>"; w.document.querySelector("b").textContent = name; } catch (e) { /* ignore */ }
+		return w;
+	}
+	function handoffDb() { return new Promise(function (res, rej) { var r = indexedDB.open("mes-handoff", 1); r.onupgradeneeded = function () { r.result.createObjectStore("h"); }; r.onsuccess = function () { res(r.result); }; r.onerror = function () { rej(r.error); }; }); }
+	async function sendToCompressor(handle, blob, name, tab) {
+		if (!tab) { try { tab = window.open("about:blank", "_blank"); } catch (e) { tab = null; } }
+		try {
+			var id = Date.now().toString(36) + Math.random().toString(36).slice(2, 10), item = handle ? { name: name, type: "video/mp4", handle: handle } : { name: name, type: "video/mp4", blob: blob };
+			var db = await handoffDb();
+			await new Promise(function (res, rej) { var t = db.transaction("h", "readwrite"), st = t.objectStore("h"), cur = st.openCursor(); cur.onsuccess = function () { var c = cur.result; if (!c) return; if (!c.value || Date.now() - c.value.t > 3600e3) c.delete(); c.continue(); }; st.put({ t: Date.now(), files: [item] }, id); t.oncomplete = res; t.onerror = function () { rej(t.error); }; });
+			db.close();
+			var url = "/compress-video?handoff=" + encodeURIComponent(id);
+			if (tab && !tab.closed) tab.location.href = url;
+			else toast("Your browser blocked the new tab: press “Make it smaller in the Video Compressor” to open it.", 7000);
+		} catch (e) { if (tab) { try { tab.close(); } catch (x) { /* ignore */ } } toast("Could not hand the video over: " + (e && e.message || e)); }
+	}
 	function openExport() {
 		var p = VE.P, d = V.duration(p);
 		if (!d) { toast("The timeline is empty: add a clip first."); return; }
@@ -663,7 +685,7 @@
 			'<label class="vd-f"><span>What</span><select id="vd-x-range"><option value="all">The whole video (' + V.tc(d, p.fps) + ')</option>' + (hasMarks ? '<option value="marks">Only the marked part (' + V.tc(mk.out - mk.in, p.fps) + ")</option>" : "") + "</select></label></div>" +
 			'<label class="vd-f vd-wide"><span>File name</span><input type="text" id="vd-x-name" value="' + esc((p.name || "video").replace(/[\\/:*?"<>|]+/g, "-")) + '.mp4"></label>' +
 			(window.showSaveFilePicker ? '<div class="vd-checks"><label><input type="checkbox" id="vd-x-disk"' + (UI.exDisk !== false ? " checked" : "") + "> Write it straight to a file I choose (best for long videos)</label></div>" : '<p class="vd-sub">The MP4 is made in memory and downloaded at the end.' + (navigator.brave ? " Brave can write straight to disk if you turn on brave://flags/#file-system-access-api." : "") + "</p>") +
-			'<p class="vd-sub" id="vd-x-est"></p><div class="vd-xprog" id="vd-x-prog" hidden><div class="vd-bar"><i id="vd-x-bar"></i></div><p id="vd-x-txt" aria-live="polite"></p></div>' +
+			'<div class="vd-checks"><label title="A tab opens now and waits; when the export is done the MP4 opens in the MES Video Compressor (constant quality, usually much smaller). Nothing is uploaded."><input type="checkbox" id="vd-x-cmp"' + (UI.exCmp ? " checked" : "") + '> Then make it smaller in the Video Compressor</label></div>' + '<p class="vd-sub" id="vd-x-est"></p><div class="vd-xprog" id="vd-x-prog" hidden><div class="vd-bar"><i id="vd-x-bar"></i></div><p id="vd-x-txt" aria-live="polite"></p></div>' +
 			'<div class="vd-row vd-end"><button type="button" class="vd-btn" id="vd-x-cancel">Close</button><button type="button" class="vd-btn vd-primary" id="vd-x-go">Export</button></div>';
 		dialog(h);
 		$("vd-x-q").value = UI.exQ || "balanced";
@@ -672,9 +694,10 @@
 		$("vd-x-cancel").onclick = function () { if (exporting) { exporting.cancel = true; return; } closeDialog(); };
 		$("vd-x-go").onclick = async function () {
 			var size = $("vd-x-size").value, z = V.exportSize(p, size), fps = +$("vd-x-fps").value, q = $("vd-x-q").value, range = $("vd-x-range").value, name = ($("vd-x-name").value || "video.mp4").replace(/[\\/:*?"<>|]+/g, "-"); if (!/\.mp4$/i.test(name)) name += ".mp4";
-			var disk = $("vd-x-disk") && $("vd-x-disk").checked; UI.exSize = size; UI.exQ = q; UI.exDisk = disk; saveUI();
+			var disk = $("vd-x-disk") && $("vd-x-disk").checked, wantCmp = $("vd-x-cmp").checked; UI.exSize = size; UI.exQ = q; UI.exDisk = disk; UI.exCmp = wantCmp; saveUI();
 			var handle = null;
 			if (disk) { try { handle = await window.showSaveFilePicker({ suggestedName: name, types: [{ description: "MP4 video", accept: { "video/mp4": [".mp4"] } }] }); } catch (e) { return; } }
+			var cmpTab = wantCmp ? waitTab(name) : null;
 			var go = $("vd-x-go"); go.disabled = true; $("vd-x-cancel").textContent = "Cancel"; $("vd-x-prog").hidden = false;
 			exporting = { cancel: false };
 			try {
@@ -684,8 +707,11 @@
 				var url = res.blob ? URL.createObjectURL(res.blob) : null;
 				$("vd-x-txt").innerHTML = "<b>Done</b>: " + esc(name) + ", " + C.formatBytes(res.size) + " in " + V.short(res.secs).replace(/\.\d$/, "") + (res.sound ? "" : " (without sound)") + "." + (url ? ' <a class="vd-btn vd-primary" href="' + url + '" download="' + esc(name) + '">Download</a>' : " Saved where you chose.");
 				$("vd-x-bar").style.width = "100%";
+				var cb = document.createElement("button"); cb.type = "button"; cb.className = "vd-btn vd-sm"; cb.textContent = "Make it smaller in the Video Compressor \u2197"; cb.title = "Opens the MES Video Compressor in a new tab with this MP4 already added";
+				cb.onclick = function () { sendToCompressor(handle, res.blob, name, null); }; $("vd-x-txt").appendChild(document.createTextNode(" ")); $("vd-x-txt").appendChild(cb);
+				if (cmpTab) { sendToCompressor(handle, res.blob, name, cmpTab); cmpTab = null; } else if (wantCmp) toast("Your browser blocked the Video Compressor tab: press \u201cMake it smaller in the Video Compressor\u201d.", 8000);
 				if (url) { var v = document.createElement("video"); v.controls = true; v.src = url; v.className = "vd-xvid"; $("vd-x-prog").appendChild(v); }
-			} catch (e) { $("vd-x-txt").textContent = /Cancelled/.test(e.message) ? "Export cancelled." : "Export failed: " + e.message; if (window.console) console.error(e); }
+			} catch (e) { $("vd-x-txt").textContent = /Cancelled/.test(e.message) ? "Export cancelled." : "Export failed: " + e.message; if (window.console) console.error(e); if (cmpTab) { try { cmpTab.close(); } catch (x) { /* ignore */ } } }
 			exporting = null; go.disabled = false; $("vd-x-cancel").textContent = "Close";
 		};
 	}
