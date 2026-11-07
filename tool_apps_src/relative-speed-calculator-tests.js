@@ -29,6 +29,17 @@ eq(RS.impactSpeed(10, 30) < RS.noDragSpeed(10), true, "drag slows");
 const mo = RS.find(RS.FALLERS, "mouse"), hm = RS.heightFor(RS.terminal(mo.m, mo.cda), vth); eq(hm > 3 && hm < 8, true, "mouse terminal = person from " + hm.toFixed(1) + " m");
 eq(RS.terminal(8, 0.36) / RS.terminal(1, 0.09), Math.sqrt(2), "square-cube: double size -> sqrt2 faster", 1e-12);
 RS.FALLERS.forEach(x => eq(x.m > 0 && x.cda > 0 && x.L > 0, true, "faller ok " + x.id));
+// groups, flyers, swimmers
+RS.RUNNERS.forEach(r => eq(["run", "fly", "swim"].indexOf(r.g) >= 0, true, "group " + r.id)); RS.GROUPS.forEach(g => eq(RS.RUNNERS.filter(r => r.g === g.id).length >= 5, true, "enough in " + g.id));
+eq(new Set(RS.RUNNERS.map(r => r.id)).size, RS.RUNNERS.length, "runner ids unique");
+eq(Math.round(RS.bodyLengths(27.3, 0.071)), 385, "hummingbird 385 BL/s");
+// strength
+const db = RS.find(RS.LIFTERS, "dungbeetle"); eq(RS.strengthLoad(db.x, 80), 91280, "dung beetle at 80 kg = 91.3 t", 1e-12);
+eq(RS.fairMultiple(db.x, db.m, 80), 1141 * Math.cbrt(1.5e-4 / 80), "fair multiple"); eq(RS.fairMultiple(5, 60, 60), 5, "same mass, same multiple");
+eq(RS.fairMultiple(RS.fairMultiple(10, 1, 8), 8, 1), 10, "fair multiple round trip", 1e-12); eq(RS.fairMultiple(10, 1, 8), 5, "8x heavier -> half the multiple", 1e-12);
+eq(RS.thingFor(91280).name, "a loaded lorry", "thing"); eq(RS.thingFor(0.5), null, "too light for a thing"); eq(RS.thingFor(3000).n, 2, "two cars");
+RS.LIFTERS.forEach(l => eq(l.x > 0 && l.m > 0 && !!l.note, true, "lifter ok " + l.id)); eq(new Set(RS.LIFTERS.map(l => l.id)).size, RS.LIFTERS.length, "lifter ids unique");
+eq(RS.fmtMass(91280), "91.3 t", "t"); eq(RS.fmtMass(0.00015), "150 mg", "mg"); eq(RS.fmtMass(80, true), "176 lb", "lb");
 // formatting
 eq(RS.fmtLen(0.002), "2 mm", "mm"); eq(RS.fmtLen(157.5), "158 m", "m"); eq(RS.fmtLen(1.75, true), "5.74 ft", "ft"); eq(RS.fmtSpeed(218.75), "788 km/h", "km/h"); eq(RS.fmtSpeed(26.8224, true), "60 mph", "mph"); eq(RS.round(1234567), "1,234,567", "commas");
 console.log(f ? f + " of " + n + " FAILED" : "all " + n + " passed"); process.exit(f ? 1 : 0);

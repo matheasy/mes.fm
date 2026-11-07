@@ -1,7 +1,7 @@
 <!DOCTYPE html>    <html lang="en">
-<!-- Relative Speed, Jump and Fall Calculator -- mes.fm/relative-speed-calculator -->
+<!-- Relative Speed, Strength, Jump and Fall Calculator -- mes.fm/relative-speed-calculator -->
 <!-- Added by HTTrack --><meta http-equiv="content-type" content="text/html;charset=UTF-8" /><!-- /Added by HTTrack -->
-<head>                    <link rel="icon" href="/relative-speed-calculator/img/logo.png?v=2" type="image/png" /><link rel="canonical" href="https://mes.fm/relative-speed-calculator" />                    <title>Relative Speed, Jump and Fall Calculator | Math Easy Solutions</title>
+<head>                    <link rel="icon" href="/relative-speed-calculator/img/logo.png?v=2" type="image/png" /><link rel="canonical" href="https://mes.fm/relative-speed-calculator" />                    <title>Relative Speed, Strength, Jump and Fall Calculator | Math Easy Solutions</title>
         <meta name="viewport" content="width=device-width, initial-scale=1">	<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css" integrity="sha384-BVYiiSIFeK1dGmJRAkycuHAHRg32OmUcww7on3RYdg4Va+PmSTsz/K68vbdEjh4u" crossorigin="anonymous">
         <style>html, body, div, span, applet, object, iframe, h1, h2, h3, h4, h5, h6, p, blockquote, pre, a, abbr, acronym, address, big, cite, code,del, dfn, em, img,
 ins, kbd, q, s, samp, small, strike, strong, sub, tt, var, u, i, center, dl, dt, dd, ol, ul, li, fieldset, form, label, legend, table, caption, tbody,
@@ -308,6 +308,7 @@ body.dark-mode .tu .rw-head {color:#a0a8b3;border-bottom-color:#555;} body.dark-
 	/* Relative Speed, Jump & Fall Calculator */
 	.tu [hidden] {display:none !important;}
 	.tu .rs-tabs {display:flex;flex-wrap:wrap;max-width:100%;margin-bottom:1em;} .tu .rs-tabs button {flex:1 1 auto;padding:0.65em 1em;font-weight:600;}
+	.tu .rs-groups {display:flex;flex-wrap:wrap;max-width:100%;margin-bottom:0.9em;} .tu .rs-groups button {flex:1 1 auto;}
 	.tu .rs-common {display:flex;flex-wrap:wrap;gap:0.8em 1.2em;align-items:flex-end;padding-bottom:1em;margin-bottom:1em;border-bottom:1px solid #e4e8ee;}
 	.tu .rs-common .rs-f {flex:1 1 15em;} .tu .rs-common .rs-units {flex:0 0 auto;}
 	.tu .rs-grid {display:grid;grid-template-columns:repeat(auto-fit,minmax(14em,1fr));gap:0.9em 1.2em;}
@@ -335,7 +336,7 @@ body.dark-mode .tu .rw-head {color:#a0a8b3;border-bottom-color:#555;} body.dark-
 	body.dark-mode #rs .rs-gl {stroke:#3a4048;} body.dark-mode #rs .rs-ax, body.dark-mode #rs .rs-cl {fill:#a6aeb8;} body.dark-mode #rs .rs-cl--on {fill:var(--accent);} body.dark-mode #rs .rs-bl {fill:#e8e8e8;} body.dark-mode #rs .rs-bv {fill:#c2c9d3;}
 	body.dark-mode #rs .rs-bar {fill:#4b3f72;} body.dark-mode #rs .rs-row.is-on .rs-bar, body.dark-mode #rs .rs-row.is-on:hover .rs-bar {fill:var(--accent);} body.dark-mode #rs .rs-row:hover .rs-bar {fill:#6a58a0;} body.dark-mode #rs .rs-row:focus .rs-bar {stroke:#f0f0f0;}
 	body.dark-mode #rs .rs-c {stroke:#5d6672;} body.dark-mode #rs .rs-c--on {stroke:var(--accent);} body.dark-mode #rs .rs-c--free {stroke:#f2a640;} body.dark-mode #rs .rs-dot {fill:#1e1e1e;} body.dark-mode #rs .rs-guide {stroke:#f0f0f0;}
-	body.dark-mode #rs .rs-eq > div {border-bottom-color:#3a4048;} body.dark-mode #rs .rs-tabs button, body.dark-mode #rs #rs-units button, body.dark-mode #rs #rs-jk button {border-bottom-color:#444;}
+	body.dark-mode #rs .rs-eq > div {border-bottom-color:#3a4048;} body.dark-mode #rs .rs-groups button, body.dark-mode #rs .rs-tabs button, body.dark-mode #rs #rs-units button, body.dark-mode #rs #rs-jk button {border-bottom-color:#444;}
 	@media (max-width:600px) {.tu .rs-big {font-size:1.7em;} #rs .rs-eq__n {flex-basis:100%;}}
 
 
@@ -482,16 +483,16 @@ body.is-stuck #navbar.hide { position: fixed; top: 56px; right: 8px; }
         <meta property="fb:app_id" content="" />
         <meta name="author" content="Math Easy Solutions Staff">
         <meta property="og:type" content="website" />
-        <meta property="og:url" content="https://mes.fm/relative-speed-calculator" />            <meta property="og:title" content="Relative Speed, Jump and Fall Calculator | Math Easy Solutions" />        <meta property="og:image" content="https://mes.fm/relative-speed-calculator/img/logo-big.png" />
-        <meta property="og:description" content="Free relative speed calculator: turn an animal's speed into body lengths per second and scale it to human size. A tiger beetle's 2.5 m/s is 125 body lengths a second, about 790 km/h for a person. Also scaled jumps (fleas, squirrels, cats) and falls (why mice and cats survive), with the fair Froude-number comparison and the physics." />
+        <meta property="og:url" content="https://mes.fm/relative-speed-calculator" />            <meta property="og:title" content="Relative Speed, Strength, Jump and Fall Calculator | Math Easy Solutions" />        <meta property="og:image" content="https://mes.fm/relative-speed-calculator/img/logo-big.png" />
+        <meta property="og:description" content="Free relative speed and strength calculator: turn an animal's speed into body lengths per second and scale it to human size (a tiger beetle's 2.5 m/s is about 790 km/h for a person), for runners, birds, insects and swimmers. Also how much animals lift for their weight (dung beetles, ants), how high they jump (fleas, squirrels, cats) and why mice and cats survive falls, with the fair square-cube and Froude comparisons." />
 
-        <meta name="description" content="Free relative speed calculator: turn an animal's speed into body lengths per second and scale it to human size. A tiger beetle's 2.5 m/s is 125 body lengths a second, about 790 km/h for a person. Also scaled jumps (fleas, squirrels, cats) and falls (why mice and cats survive), with the fair Froude-number comparison and the physics.">            <meta name="twitter:card" content="summary">        <meta name="twitter:site" content="@MathEasySolns">
-        <meta name="twitter:title" content="Relative Speed, Jump and Fall Calculator">
-        <meta name="twitter:description" content="Free relative speed calculator: turn an animal's speed into body lengths per second and scale it to human size. A tiger beetle's 2.5 m/s is 125 body lengths a second, about 790 km/h for a person. Also scaled jumps (fleas, squirrels, cats) and falls (why mice and cats survive), with the fair Froude-number comparison and the physics.">
+        <meta name="description" content="Free relative speed and strength calculator: turn an animal's speed into body lengths per second and scale it to human size (a tiger beetle's 2.5 m/s is about 790 km/h for a person), for runners, birds, insects and swimmers. Also how much animals lift for their weight (dung beetles, ants), how high they jump (fleas, squirrels, cats) and why mice and cats survive falls, with the fair square-cube and Froude comparisons.">            <meta name="twitter:card" content="summary">        <meta name="twitter:site" content="@MathEasySolns">
+        <meta name="twitter:title" content="Relative Speed, Strength, Jump and Fall Calculator">
+        <meta name="twitter:description" content="Free relative speed and strength calculator: turn an animal's speed into body lengths per second and scale it to human size (a tiger beetle's 2.5 m/s is about 790 km/h for a person), for runners, birds, insects and swimmers. Also how much animals lift for their weight (dung beetles, ants), how high they jump (fleas, squirrels, cats) and why mice and cats survive falls, with the fair square-cube and Froude comparisons.">
         <meta name="twitter:image" content="https://mes.fm/relative-speed-calculator/img/logo-big.png">
-        <meta name="twitter:image:alt" content="Relative Speed, Jump and Fall Calculator">
+        <meta name="twitter:image:alt" content="Relative Speed, Strength, Jump and Fall Calculator">
         <script type="application/ld+json">
-        {"@context": "https://schema.org", "@type": "WebApplication", "name": "Relative Speed, Jump and Fall Calculator", "url": "https://mes.fm/relative-speed-calculator", "applicationCategory": "UtilitiesApplication", "operatingSystem": "Any", "offers": {"@type": "Offer", "price": "0", "priceCurrency": "USD"}, "description": "Free relative speed calculator: turn an animal's speed into body lengths per second and scale it to human size. A tiger beetle's 2.5 m/s is 125 body lengths a second, about 790 km/h for a person. Also scaled jumps (fleas, squirrels, cats) and falls (why mice and cats survive), with the fair Froude-number comparison and the physics."}
+        {"@context": "https://schema.org", "@type": "WebApplication", "name": "Relative Speed, Strength, Jump and Fall Calculator", "url": "https://mes.fm/relative-speed-calculator", "applicationCategory": "UtilitiesApplication", "operatingSystem": "Any", "offers": {"@type": "Offer", "price": "0", "priceCurrency": "USD"}, "description": "Free relative speed and strength calculator: turn an animal's speed into body lengths per second and scale it to human size (a tiger beetle's 2.5 m/s is about 790 km/h for a person), for runners, birds, insects and swimmers. Also how much animals lift for their weight (dung beetles, ants), how high they jump (fleas, squirrels, cats) and why mice and cats survive falls, with the fair square-cube and Froude comparisons."}
         </script>            <!-- Google Tag Manager -->
             <script>(function(w,d,s,l,i){w[l]=w[l]||[];w[l].push({'gtm.start':
             new Date().getTime(),event:'gtm.js'});var f=d.getElementsByTagName(s)[0],
@@ -659,7 +660,7 @@ body.is-stuck #navbar.hide { position: fixed; top: 56px; right: 8px; }
             height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
             <!-- End Google Tag Manager (noscript) -->        <div id="compact-nav" aria-hidden="true" style="display:none">
   <a href="/relative-speed-calculator" tabindex="-1"><img class="compact-nav-logo" alt="" width="32" height="32" src="/relative-speed-calculator/img/logo.png?v=2"></a>
-  <a class="compact-nav-title" href="/relative-speed-calculator" tabindex="-1">Relative Speed, Jump and Fall Calculator</a>
+  <a class="compact-nav-title" href="/relative-speed-calculator" tabindex="-1">Relative Speed and Strength Calculator</a>
   <ul class="compact-nav-links">
     <li><a href="/math" tabindex="-1">Math Tutorials</a></li>
     <li><a href="/calculators" tabindex="-1">Calculators</a></li>
@@ -670,10 +671,10 @@ body.is-stuck #navbar.hide { position: fixed; top: 56px; right: 8px; }
     <li><a href="/" tabindex="-1"><b>MES.fm</b></a></li>
   </ul>
 </div>
-<div id="outer-container" class="outer-container has-aside">                <div class = "inner-container">                        <div id="header" class="header" role="banner">                                <a class="logo-image-container" href='/relative-speed-calculator'><img height="88" width="88" id="logo" class="logo" alt="Relative Speed, Jump and Fall Calculator logo" src="/relative-speed-calculator/img/logo.png?v=2"></a>
+<div id="outer-container" class="outer-container has-aside">                <div class = "inner-container">                        <div id="header" class="header" role="banner">                                <a class="logo-image-container" href='/relative-speed-calculator'><img height="88" width="88" id="logo" class="logo" alt="Relative Speed, Strength, Jump and Fall Calculator logo" src="/relative-speed-calculator/img/logo.png?v=2"></a>
                             <div class="logo-text-container">
                                 <a class="calculator-title-link" href='/relative-speed-calculator'>
-                                    <p class="calculator-title">Relative Speed, Jump and Fall Calculator</p>
+                                    <p class="calculator-title">Relative Speed, Strength, Jump and Fall Calculator</p>
                                 </a>
                                 <p class="tag-line">If a beetle were your size, how fast would it run?</p>                            </div>
 
@@ -688,16 +689,17 @@ body.is-stuck #navbar.hide { position: fixed; top: 56px; right: 8px; }
                                                         <!-- (Responsive) Horizontal -->
                                                         <div class="outer-page-content">
                             <div class="page-content" role="main">                                    <div class="color-box"></div>
-                                    <h1 class="page-title">Relative Speed Calculator: Body Lengths per Second, Animal Jumps and Falls Scaled to Human Size</h1>                                        <p class="page-description">Free relative speed calculator: turn an animal's speed into body lengths per second and scale it to human size. A tiger beetle's 2.5 m/s is 125 body lengths a second, about 790 km/h for a person. Also scaled jumps (fleas, squirrels, cats) and falls (why mice and cats survive), with the fair Froude-number comparison and the physics.</p>                                    	<div id="main-content" data-tool data-text-scale>
+                                    <h1 class="page-title">Relative Speed and Strength Calculator: Animals Scaled to Human Size (Running, Flying, Jumps, Falls)</h1>                                        <p class="page-description">Free relative speed and strength calculator: turn an animal's speed into body lengths per second and scale it to human size (a tiger beetle's 2.5 m/s is about 790 km/h for a person), for runners, birds, insects and swimmers. Also how much animals lift for their weight (dung beetles, ants), how high they jump (fleas, squirrels, cats) and why mice and cats survive falls, with the fair square-cube and Froude comparisons.</p>                                    	<div id="main-content" data-tool data-text-scale>
 	<div class="tu" id="rs">
 		<div class="tu-card" id="rs-setup">
-			<div class="tu-seg rs-tabs" id="rs-tab" role="group" aria-label="What to compare"><button type="button" data-t="speed" aria-pressed="true">Speed</button><button type="button" data-t="jump" aria-pressed="false">Jumps</button><button type="button" data-t="fall" aria-pressed="false">Falls</button></div>
+			<div class="tu-seg rs-tabs" id="rs-tab" role="group" aria-label="What to compare"><button type="button" data-t="speed" aria-pressed="true">Speed</button><button type="button" data-t="jump" aria-pressed="false">Jumps</button><button type="button" data-t="fall" aria-pressed="false">Falls</button><button type="button" data-t="strength" aria-pressed="false">Strength</button></div>
 			<div class="rs-common">
 				<div class="tu-field rs-f"><label for="rs-ref">Compare with</label><select id="rs-ref" class="tu-select"></select><input id="rs-refc" class="tu-input" type="text" placeholder="e.g. 5 ft 9 in or 1.8 m" hidden></div>
 				<div class="tu-field rs-f rs-units"><span class="tu-label" id="rs-u-label">Units</span><div class="tu-seg" id="rs-units" role="group" aria-labelledby="rs-u-label"><button type="button" data-u="0" aria-pressed="true">Metric</button><button type="button" data-u="1" aria-pressed="false">US</button></div></div>
 			</div>
 
 			<div class="rs-pane" data-pane="speed">
+				<div class="tu-seg rs-groups" id="rs-sg" role="group" aria-label="How it moves"><button type="button" data-g="run" aria-pressed="true">Running</button><button type="button" data-g="fly" aria-pressed="false">Flying</button><button type="button" data-g="swim" aria-pressed="false">Swimming</button></div>
 				<div class="rs-grid">
 					<div class="tu-field rs-f"><label for="rs-sp">Animal or thing</label><select id="rs-sp" class="tu-select"></select></div>
 					<div class="tu-field rs-f"><label for="rs-sv">Speed</label><input id="rs-sv" class="tu-input tu-input--big" type="text" autocomplete="off" spellcheck="false"><span class="rs-read" id="rs-sv-read"></span></div>
@@ -721,6 +723,14 @@ body.is-stuck #navbar.hide { position: fixed; top: 56px; right: 8px; }
 					<div class="tu-field rs-f"><label for="rs-fa">Drag area C<sub>d</sub>&times;A (m&sup2;)</label><input id="rs-fa" class="tu-input" type="text" autocomplete="off" spellcheck="false" inputmode="decimal"><span class="rs-read" id="rs-fa-read"></span></div>
 				</div>
 			</div>
+			<div class="rs-pane" data-pane="strength" hidden>
+				<div class="rs-grid">
+					<div class="tu-field rs-f"><label for="rs-kp">Animal</label><select id="rs-kp" class="tu-select"></select></div>
+					<div class="tu-field rs-f"><label for="rs-km">Its body mass</label><input id="rs-km" class="tu-input tu-input--big" type="text" autocomplete="off" spellcheck="false"><span class="rs-read" id="rs-km-read"></span></div>
+					<div class="tu-field rs-f"><label for="rs-kl">Load it lifts, holds or pulls</label><input id="rs-kl" class="tu-input tu-input--big" type="text" autocomplete="off" spellcheck="false"><span class="rs-read" id="rs-kl-read"></span></div>
+					<div class="tu-field rs-f"><label for="rs-kw">Person's weight to compare</label><input id="rs-kw" class="tu-input" type="text" autocomplete="off" spellcheck="false"><span class="rs-read" id="rs-kw-read"></span></div>
+				</div>
+			</div>
 			<div class="rs-tools"><button type="button" class="tu-btn tu-btn--ghost" id="rs-reset">Reset</button><button type="button" class="tu-btn" id="rs-link">Copy link</button></div>
 		</div>
 
@@ -738,12 +748,13 @@ body.is-stuck #navbar.hide { position: fixed; top: 56px; right: 8px; }
 				<div><span class="rs-eq__n">body lengths per second</span> <span class="rs-eq__f mes-tex">\( \displaystyle n = \frac{v}{L}, \qquad v_{\text{scaled}} = n\,L_{\text{you}} \)</span></div>
 				<div><span class="rs-eq__n">fair (Froude) speed</span> <span class="rs-eq__f mes-tex">\( \displaystyle \frac{v^2}{gL} = \frac{v_{\text{fair}}^2}{g L_{\text{you}}} \;\Rightarrow\; v_{\text{fair}} = v\sqrt{\frac{L_{\text{you}}}{L}} \)</span></div>
 				<div><span class="rs-eq__n">take-off speed</span> <span class="rs-eq__f mes-tex">\( \displaystyle v_0 = \sqrt{2gh}\ \text{(up)}, \qquad v_0 = \sqrt{g\,d}\ \text{(long jump at 45°)}, \qquad a = \frac{v_0^2}{2s} \)</span></div>
+				<div><span class="rs-eq__n">strength (square-cube law)</span> <span class="rs-eq__f mes-tex">\( \displaystyle \frac{F}{W} \propto \frac{L^2}{L^3} = \frac{1}{L}, \qquad x_{\text{fair}} = x\left(\frac{M}{M_{\text{you}}}\right)^{1/3} \)</span></div>
 				<div><span class="rs-eq__n">terminal and impact speed</span> <span class="rs-eq__f mes-tex">\( \displaystyle v_t = \sqrt{\frac{2mg}{\rho\, C_d A}}, \qquad v(h) = v_t\sqrt{1 - e^{-2gh/v_t^2}} \)</span></div>
 			</div>
 		</div>
 
 		<div class="tu-seo">
-			<h2>How the relative speed, jump and fall calculator works</h2>
+			<h2>How the relative speed, strength, jump and fall calculator works</h2>
 			<p>Small animals look astonishingly fast and strong when you measure them in <b>body lengths</b>. A tiger beetle runs about 2.5 m/s, which is 125 of its own 2 cm body lengths every second. A person doing 125 body lengths a second would be going about <b>790 km/h (490 mph)</b>. A flea jumps about 90 times its body length; scaled up to a person, that is a jump of about 160 m.</p>
 			<p>Those headline numbers are fun but misleading, because physics does not scale in a straight line. This page shows the straight-line number and, next to it, what physics says.</p>
 			<h3>Speed: the Froude number</h3>
@@ -752,6 +763,10 @@ body.is-stuck #navbar.hide { position: fixed; top: 56px; right: 8px; }
 			<p>As far back as the 1680s Giovanni Borelli noticed that animals of very different sizes jump roughly the same absolute height. Muscle energy grows with muscle mass, and so does the weight to lift, so the height a body can reach stays about the same. What changes is the <b>acceleration</b>: a flea has only a fraction of a millimetre to push off, so it needs hundreds of g and uses a spring (resilin) instead of plain muscle.</p>
 			<h3>Falls: the square-cube law</h3>
 			<p>Double an animal's length and its weight goes up 8 times but its area only 4 times, so its <b>terminal speed</b> (the speed at which air drag balances weight) goes up by about &radic;2. A mouse tops out near 35 km/h and usually walks away from any fall; a cat spreads out and tops out near 100 km/h; a person near 190 km/h; a horse far faster. J. B. S. Haldane made the point in his 1926 essay <i>On Being the Right Size</i>. The &ldquo;like a person falling from&rdquo; number shows how hard each impact is in human terms.</p>
+			<h3>Strength: why ants and beetles look so strong</h3>
+			<p>Muscle force depends on the muscle's cross-section (length squared), but body weight depends on volume (length cubed). Shrink an animal and its strength falls more slowly than its weight, so the load it can lift <i>as a multiple of its own weight</i> goes up. The fair comparison scales the multiple by the cube root of the mass ratio: a 0.15 g dung beetle pulling 1,141 times its weight is like a 75 kg person pulling about 14 times their weight. Still extraordinary, but not six buses.</p>
+			<h3>Flying and swimming</h3>
+			<p>The Speed tab also has birds, bats, insects, fish and other swimmers. Anna's hummingbird reaches about 385 body lengths a second in its courtship dive, faster for its size than a peregrine falcon's famous stoop (about 260) or a fighter jet. The Froude comparison is meant for walking and running, so for flyers and swimmers the page shows the body-length numbers on their own.</p>
 			<h3>Questions</h3>
 			<dl>
 				<dt>What can I type?</dt><dd>Speeds like <i>2.5 m/s</i>, <i>60 mph</i>, <i>8 ft/s</i>, <i>100 km/h</i>; lengths like <i>20 mm</i>, <i>1.75 m</i>, <i>5 ft 9 in</i>; masses like <i>4 kg</i>, <i>20 g</i>, <i>10 lb</i>.</dd>
@@ -822,7 +837,7 @@ body.is-stuck #navbar.hide { position: fixed; top: 56px; right: 8px; }
             hide_search:false,
             current_tab:0
         }        </script><!-- FASTCOMMENTS-LAZY: widget init moved to main_js/main.js -- it pulls embed.min.js only when #fastcomments-widget nears the viewport or on the first Comments-toggle click, so it no longer blocks first render -->                <script src="https://mes.fm/main_js/lazysizes.min.js?v=1.0.3" async></script>
-	<script src="/relative-speed-calculator/js/relative-speed-calculator.js?v=1" defer></script>
+	<script src="/relative-speed-calculator/js/relative-speed-calculator.js?v=2" defer></script>
             <script src="https://mes.fm/main_js/main.js?v=1.0.5"></script>    <!-- PAGEVIEW-TRACKING-INSERTED --><script src="https://mes.fm/main_js/track.js" defer></script><script>document.getElementById('copyright-year').textContent = new Date().getFullYear();</script><script src="/main_js/info-bar-fit.js" defer></script><script>
   // Floating compact header bar (see #compact-nav CSS): appears once the
   // header + nav bar have scrolled off the top; nav links that don't fit

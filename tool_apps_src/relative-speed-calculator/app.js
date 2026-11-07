@@ -1,6 +1,6 @@
 /* MES Relative Speed, Jump & Fall Calculator -- mes.fm/relative-speed-calculator (UI; maths in lib.js, global RS).
  * localStorage "mes-relative-speed:v1" = { t, imp, ref, refc, sp, sv, sl, jp, jk, jh, jl, jpush, fp, fh, fm, fa }.
- * Links: ?t=speed&v=2.5m/s&l=20mm | ?t=jump&k=up&h=18cm&l=2mm | ?t=fall&p=cat&h=20m  (+ &r=car / &r=1.8m, &u=us) */
+ * Links: ?t=speed&v=2.5m/s&l=20mm | ?t=strength&p=dungbeetle (or &m=150mg&load=171g&w=75kg) | ?t=jump&k=up&h=18cm&l=2mm | ?t=fall&p=cat&h=20m  (+ &r=car / &r=1.8m, &u=us) */
 (function () {
 	"use strict";
 	var $ = function (id) { return document.getElementById(id); };
@@ -8,13 +8,13 @@
 	var KEY = "mes-relative-speed:v1", SVGNS = "http://www.w3.org/2000/svg";
 	function esc(s) { return String(s == null ? "" : s).replace(/[&<>"]/g, function (c) { return { "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c]; }); }
 	function clamp(x, lo, hi) { return Math.max(lo, Math.min(hi, x)); }
-	var DEF = { t: "speed", imp: false, ref: "human", refc: "", sp: "tigerbeetle", sv: "2.5 m/s", sl: "20 mm", jp: "flea", jk: "up", jh: "18 cm", jl: "2 mm", jpush: "0.4 mm", fp: "cat", fh: "20 m", fm: "4 kg", fa: "0.09" };
+	var DEF = { t: "speed", imp: false, ref: "human", refc: "", sg: "run", kp: "dungbeetle", km: "150 mg", kl: "171.2 g", kw: "75 kg", sp: "tigerbeetle", sv: "2.5 m/s", sl: "20 mm", jp: "flea", jk: "up", jh: "18 cm", jl: "2 mm", jpush: "0.4 mm", fp: "cat", fh: "20 m", fm: "4 kg", fa: "0.09" };
 	var st = JSON.parse(JSON.stringify(DEF));
 	function clean(s) {
 		var o = JSON.parse(JSON.stringify(DEF)); if (!s || typeof s !== "object") return o;
-		if (["speed", "jump", "fall"].indexOf(s.t) >= 0) o.t = s.t; o.imp = s.imp === true;
+		if (["speed", "jump", "fall", "strength"].indexOf(s.t) >= 0) o.t = s.t; if (["run", "fly", "swim"].indexOf(s.sg) >= 0) o.sg = s.sg; if (s.kp === "custom" || RS.find(RS.LIFTERS, s.kp)) o.kp = s.kp; o.imp = s.imp === true;
 		if (RS.find(RS.REFS, s.ref)) o.ref = s.ref;
-		["refc", "sv", "sl", "jh", "jl", "jpush", "fh", "fm", "fa"].forEach(function (k) { if (typeof s[k] === "string") o[k] = s[k].slice(0, 40); });
+		["refc", "sv", "sl", "jh", "jl", "jpush", "fh", "fm", "fa", "km", "kl", "kw"].forEach(function (k) { if (typeof s[k] === "string") o[k] = s[k].slice(0, 40); });
 		if (s.sp === "custom" || RS.find(RS.RUNNERS, s.sp)) o.sp = s.sp; if (s.jp === "custom" || RS.find(RS.JUMPERS, s.jp)) o.jp = s.jp; if (s.fp === "custom" || RS.find(RS.FALLERS, s.fp)) o.fp = s.fp;
 		if (s.jk === "long") o.jk = "long"; return o;
 	}
@@ -29,15 +29,19 @@
 		if (q.get("u") === "us") s.imp = true; var r = q.get("r"); if (r) { if (RS.find(RS.REFS, r)) s.ref = r; else { s.ref = "custom"; s.refc = r; } }
 		if (s.t === "speed") { if (q.get("p") && RS.find(RS.RUNNERS, q.get("p"))) pickRunner(s, q.get("p")); if (q.get("v")) { s.sv = q.get("v"); s.sp = "custom"; } if (q.get("l")) { s.sl = q.get("l"); s.sp = "custom"; } }
 		if (s.t === "jump") { if (q.get("p") && RS.find(RS.JUMPERS, q.get("p"))) pickJumper(s, q.get("p")); if (q.get("k")) s.jk = q.get("k"); if (q.get("h")) { s.jh = q.get("h"); s.jp = "custom"; } if (q.get("l")) { s.jl = q.get("l"); s.jp = "custom"; } }
+		if (s.t === "strength") { if (q.get("p") && RS.find(RS.LIFTERS, q.get("p"))) pickLifter(s, q.get("p")); if (q.get("m")) { s.km = q.get("m"); s.kp = "custom"; } if (q.get("load")) { s.kl = q.get("load"); s.kp = "custom"; } if (q.get("w")) s.kw = q.get("w"); }
 		if (s.t === "fall") { if (q.get("p") && RS.find(RS.FALLERS, q.get("p"))) pickFaller(s, q.get("p")); if (q.get("h")) s.fh = q.get("h"); if (q.get("m")) { s.fm = q.get("m"); s.fp = "custom"; } if (q.get("a")) { s.fa = q.get("a"); s.fp = "custom"; } }
 		st = clean(s);
 	}
-	function pickRunner(s, id) { var r = RS.find(RS.RUNNERS, id); s.sp = id; s.sv = spdText(r.v); s.sl = lenText(r.L); }
+	function massText(kg) { return RS.fmtMass(kg, false).replace(/,/g, ""); }
+	function pickLifter(s, id) { var l = RS.find(RS.LIFTERS, id); s.kp = id; s.km = massText(l.m); var kg = l.x * l.m; s.kl = kg < 1 ? +(kg * 1000).toPrecision(4) + " g" : kg < 1000 ? +kg.toPrecision(4) + " kg" : +(kg / 1000).toPrecision(4) + " t"; }
+	function pickRunner(s, id) { var r = RS.find(RS.RUNNERS, id); s.sp = id; s.sg = r.g; s.sv = spdText(r.v); s.sl = lenText(r.L); }
 	function pickJumper(s, id) { var j = RS.find(RS.JUMPERS, id); s.jp = id; s.jk = j.kind; s.jh = lenText(j.h); s.jl = lenText(j.L); s.jpush = lenText(j.push); }
 	function pickFaller(s, id) { var f = RS.find(RS.FALLERS, id); s.fp = id; s.fm = f.m < 0.001 ? RS.round(f.m * 1e6, 3) + " mg" : f.m < 1 ? RS.round(f.m * 1000, 3) + " g" : RS.round(f.m, 3) + " kg"; s.fa = String(f.cda); }
 
 	function opts(list) { return list.map(function (x) { return '<option value="' + x.id + '">' + esc(x.name) + "</option>"; }).join("") + '<option value="custom">Your own numbers</option>'; }
-	$("rs-sp").innerHTML = opts(RS.RUNNERS); $("rs-jp").innerHTML = opts(RS.JUMPERS); $("rs-fp").innerHTML = opts(RS.FALLERS);
+	function spOpts() { $("rs-sp").innerHTML = opts(RS.RUNNERS.filter(function (r) { return r.g === st.sg; })); }
+	$("rs-kp").innerHTML = opts(RS.LIFTERS); $("rs-jp").innerHTML = opts(RS.JUMPERS); $("rs-fp").innerHTML = opts(RS.FALLERS);
 	$("rs-ref").innerHTML = RS.REFS.map(function (r) { return '<option value="' + r.id + '">' + esc(r.name) + "</option>"; }).join("");
 
 	function refLen() { if (st.ref === "custom") return RS.parseLen(st.refc, "m"); return RS.find(RS.REFS, st.ref).L; }
@@ -53,6 +57,8 @@
 		[].forEach.call($("rs-units").children, function (b) { b.setAttribute("aria-pressed", String((b.dataset.u === "1") === st.imp)); });
 		[].forEach.call($("rs-jk").children, function (b) { b.setAttribute("aria-pressed", String(b.dataset.k === st.jk)); });
 		$("rs-ref").value = st.ref; $("rs-refc").hidden = st.ref !== "custom"; $("rs-refc").value = st.refc;
+		[].forEach.call($("rs-sg").children, function (b) { b.setAttribute("aria-pressed", String(b.dataset.g === st.sg)); }); spOpts();
+		$("rs-kp").value = st.kp; $("rs-km").value = st.km; $("rs-kl").value = st.kl; $("rs-kw").value = st.kw;
 		$("rs-sp").value = st.sp; $("rs-sv").value = st.sv; $("rs-sl").value = st.sl;
 		$("rs-jp").value = st.jp; $("rs-jh").value = st.jh; $("rs-jl").value = st.jl; $("rs-jpush").value = st.jpush; $("rs-jh-label").textContent = st.jk === "up" ? "Jump height" : "Jump distance";
 		$("rs-fp").value = st.fp; $("rs-fh").value = st.fh; $("rs-fm").value = st.fm; $("rs-fa").value = st.fa;
@@ -60,9 +66,10 @@
 		$("rs-ch-h").textContent = st.t === "fall" ? "Impact speed for every drop height" : "Everyone side by side";
 	}
 	function update() {
-		var Lr = refLen(); if (st.ref === "custom") read("rs-refc", !!Lr, "");
-		if (!Lr) return empty("Type your height or length in the Compare with box.");
-		if (st.t === "speed") return speed(Lr); if (st.t === "jump") return jump(Lr); return fall(Lr);
+		root.querySelector(".rs-common .rs-f").hidden = st.t === "strength";
+		var Lr = refLen(); if (st.t !== "strength" && st.ref === "custom") read("rs-refc", !!Lr, "");
+		if (!Lr && st.t !== "strength") return empty("Type your height or length in the Compare with box.");
+		if (st.t === "strength") return strength(); if (st.t === "speed") return speed(Lr); if (st.t === "jump") return jump(Lr); return fall(Lr);
 	}
 
 	function speed(Lr) {
@@ -73,16 +80,19 @@
 		$("rs-big").textContent = RS.round(n, 3) + " body lengths per second";
 		$("rs-sub").textContent = p ? p.note : "your own numbers";
 		var mach = vs / RS.SOUND;
-		$("rs-say").innerHTML = "At the size of " + esc(refName()) + " that would be <b>" + esc(V2(vs)) + "</b>" + (mach >= 0.8 ? " (" + RS.round(mach, 2) + " times the speed of sound)" : "") + ". The fair comparison (same Froude number) is <b>" + esc(V_(vf)) + "</b>.";
+		var run = st.sg === "run";
+		$("rs-say").innerHTML = "At the size of " + esc(refName()) + " that would be <b>" + esc(V2(vs)) + "</b>" + (mach >= 0.8 ? " (" + RS.round(mach, 2) + " times the speed of sound)" : "") + "." + (run ? " The fair comparison (same Froude number) is <b>" + esc(V_(vf)) + "</b>." : "");
 		var bolt = 12.4 * Math.sqrt(Lr / 1.95);
 		$("rs-stats").innerHTML = stat("Body lengths per second", RS.round(n, 3), "Real speed " + esc(V2(v)) + ", body " + esc(L_(L)), true)
 			+ stat("Straight scaling", V_(vs), "Same body lengths per second at " + esc(L_(Lr)) + (mach >= 0.8 ? ". That is Mach " + RS.round(mach, 2) : ""))
-			+ stat("Fair (Froude) speed", V_(vf), vf > bolt ? "Faster than Usain Bolt at this size (" + esc(V_(bolt)) + ")" : "Usain Bolt at this size: " + esc(V_(bolt)))
+			+ (run ? stat("Fair (Froude) speed", V_(vf), vf > bolt ? "Faster than Usain Bolt at this size (" + esc(V_(bolt)) + ")" : "Usain Bolt at this size: " + esc(V_(bolt)))
+				: stat("Real speed", V_(v), st.sg === "fly" ? "A swift cruises at about " + esc(V_(31)) + "; a passenger jet does about 3.5 body lengths a second" : "Michael Phelps swims about " + esc(V_(2.1)) + ", about 1 body length a second"))
 			+ stat("A person doing it", RS.round(n, 3) + " × 1.75 m", "= " + esc(RS.round(n * 1.75, 3)) + " m every second");
-		var rows = RS.RUNNERS.map(function (r) { return { id: r.id, name: r.name, val: r.v / r.L, sub: V_(r.v) }; });
+		var rows = RS.RUNNERS.filter(function (r) { return r.g === st.sg; }).map(function (r) { return { id: r.id, name: r.name, val: r.v / r.L, sub: V_(r.v) }; });
 		if (!p) rows.push({ id: "custom", name: "Your numbers", val: n, sub: V_(v) });
 		bars(rows, st.sp, function (x) { return RS.round(x, 3) + " BL/s"; }, function (id) { if (id === "custom") return; pickRunner(st, id); save(); syncInputs(); update(); });
-		$("rs-chnote").textContent = "Body lengths per second on a log scale (each grid line is 10 times more). Click a bar to load that animal. Small animals win easily, which is exactly why the fair comparison matters.";
+		$("rs-chnote").textContent = "Body lengths per second on a log scale (each grid line is 10 times more). Click a bar to load that one; switch Running / Flying / Swimming for the other lists." + (run ? " Small animals win easily, which is exactly why the fair comparison matters." : "");
+		if (!run) { $("rs-why").innerHTML = "<h3>Fast for its size</h3><p>For " + (st.sg === "fly" ? "flying" : "swimming") + " the Froude number (made for legs swinging like pendulums) does not apply, so the straight body-length number stands on its own. It is a fair way to say how fast an animal is <i>for its size</i>, not how fast it would be if it were bigger: " + (st.sg === "fly" ? "a bird the size of a person could not flap fast enough to fly at all." : "drag and the water's thickness work very differently at small and large sizes.") + "</p>"; return; }
 		$("rs-why").innerHTML = "<h3>Why two answers?</h3><p>Straight scaling keeps the body lengths per second the same. But legs swing like pendulums, and a pendulum's natural speed grows only with the square root of its length, so bigger animals cannot keep up the same stride rate. The Froude number <i>v</i>&sup2;/<i>gL</i> captures that: " + esc(name === "It" ? "this runner" : "the " + name.toLowerCase()) + " has a Froude number of " + esc(RS.round(RS.froude(v, L), 3)) + ", and " + esc(refName()) + " would need " + esc(V_(vf)) + " to match it.</p>";
 	}
 	var LANDMARKS = [[6, "a house"], [30, "a 10-storey building"], [46, "Niagara Falls"], [93, "the Statue of Liberty"], [169, "the Washington Monument"], [330, "the Eiffel Tower"], [553, "the CN Tower"], [828, "the Burj Khalifa"]];
@@ -106,6 +116,23 @@
 		bars(rows, st.jp, function (x) { return RS.round(x, 3) + " BL"; }, function (id) { if (id === "custom") return; pickJumper(st, id); save(); syncInputs(); update(); });
 		$("rs-chnote").textContent = (up ? "Height" : "Distance") + " in body lengths on a log scale. Click a bar to load that animal; switch Straight up / Long jump for the other list.";
 		$("rs-why").innerHTML = "<h3>But nobody could really jump " + esc(L_(hs)) + "</h3><p>Muscle energy grows with muscle mass, and so does the weight to lift, so animals of very different sizes jump to roughly the same absolute height (Borelli noticed this in the 1680s). A person's standing jump raises the body about " + esc(L_(person)) + (up ? "" : " in a standing long jump") + "; the " + esc(p ? p.name.toLowerCase() : "jumper") + " goes " + esc(L_(h)) + ". The real difference is the push: a small body has very little distance to speed up in, so it needs huge accelerations" + (isFinite(g) && g > 30 ? " (" + esc(RS.round(g, 3)) + " g here), which is why fleas and froghoppers use springs that store energy before the jump" : "") + ".</p>";
+	}
+	function strength() {
+		var m = RS.parseMass(st.km, "g"), load = RS.parseMass(st.kl, "g"), w = RS.parseMass(st.kw, "kg"), p = st.kp === "custom" ? null : RS.find(RS.LIFTERS, st.kp);
+		read("rs-km-read", !!m, m ? RS.fmtMass(m, false) + " (" + RS.fmtMass(m, true) + ")" : ""); read("rs-kl-read", !!load, load ? RS.fmtMass(load, false) + " (" + RS.fmtMass(load, true) + ")" : ""); read("rs-kw-read", !!w, w ? RS.fmtMass(w, false) + " (" + RS.fmtMass(w, true) + ")" : "");
+		if (!m || !load || !w) return empty("Type the body mass, the load and a person's weight.");
+		var x = load / m, big = RS.strengthLoad(x, w), fx = RS.fairMultiple(x, m, w), fl = fx * w, th = RS.thingFor(big), tf = RS.thingFor(fl), name = p ? p.name : "it";
+		$("rs-big").textContent = RS.round(x, 3) + " × its body weight";
+		$("rs-sub").textContent = p ? p.note : "your own numbers";
+		$("rs-say").innerHTML = "A " + esc(RS.fmtMass(w, st.imp)) + " person doing the same would lift <b>" + esc(RS.fmtMass(big, st.imp)) + "</b>" + (th ? ", about " + esc(RS.round(th.n, 2)) + " × " + esc(th.name) : "") + ". The fair (square-cube) comparison is <b>" + esc(RS.round(fx, 3)) + "×</b> their weight: " + esc(RS.fmtMass(fl, st.imp)) + (tf ? " (" + (tf.n < 1.15 ? "about " : RS.round(tf.n, 2) + " × ") + esc(tf.name) + ")" : "") + ".";
+		$("rs-stats").innerHTML = stat("Times its body weight", RS.round(x, 4), "Load " + esc(RS.fmtMass(load, st.imp)) + ", body " + esc(RS.fmtMass(m, st.imp)), true)
+			+ stat("Straight scaling", RS.fmtMass(big, st.imp), th ? "≈ " + esc(RS.round(th.n, 2)) + " × " + esc(th.name) : "Same multiple at " + esc(RS.fmtMass(w, st.imp)))
+			+ stat("Fair multiple", RS.round(fx, 3) + "×", "Muscle force grows like mass^(2/3), weight like mass")
+			+ stat("Fair load for the person", RS.fmtMass(fl, st.imp), fl > 500 ? "A lifting record is about 500 kg" : "What the same muscles would manage at " + esc(RS.fmtMass(w, st.imp)));
+		var rows = RS.LIFTERS.map(function (l) { return { id: l.id, name: l.name, val: l.x, sub: "" }; }); if (!p) rows.push({ id: "custom", name: "Your numbers", val: x });
+		bars(rows, st.kp, function (v) { return RS.round(v, 3) + "×"; }, function (id) { if (id === "custom") return; pickLifter(st, id); save(); syncInputs(); update(); });
+		$("rs-chnote").textContent = "Load as a multiple of body weight, log scale. Click a bar to load that animal. Numbers are commonly reported values; how they were measured (pulling, holding, carrying) varies.";
+		$("rs-why").innerHTML = "<h3>The square-cube law</h3><p>Make an animal twice as long and its muscles get 4 times stronger (their cross-section) but its body 8 times heavier, so the load it can manage <i>per kilogram of its own weight</i> halves. Going the other way, tiny animals look super-strong. Scaled fairly, " + esc(p ? "the " + name.toLowerCase().replace(/ \(.*\)$/, "") : "this animal") + "'s " + esc(RS.round(x, 3)) + "× becomes " + esc(RS.round(fx, 3)) + "× at a person's weight" + (fx > 5 ? ", still beyond the best human lifters (about 5×)" : fx < 1 ? ", less than an average person can lift" : "") + ".</p>";
 	}
 	function fall(Lr) {
 		var h = RS.parseLen(st.fh, "m"), m = RS.parseMass(st.fm, "kg"), a = parseFloat(String(st.fa).replace(",", ".")), p = st.fp === "custom" ? null : RS.find(RS.FALLERS, st.fp);
@@ -184,10 +211,12 @@
 	$("rs-jk").addEventListener("click", function (e) { var b = e.target.closest("button"); if (!b) return; st.jk = b.dataset.k; var p = RS.find(RS.JUMPERS, st.jp); if (p && p.kind !== st.jk) { var alt = RS.JUMPERS.filter(function (j) { return j.kind === st.jk; })[0]; pickJumper(st, alt.id); } save(); syncInputs(); update(); });
 	$("rs-ref").addEventListener("change", function () { st.ref = this.value; save(); syncInputs(); if (st.ref === "custom") $("rs-refc").focus(); update(); });
 	$("rs-refc").addEventListener("input", function () { st.refc = this.value; save(); update(); });
+	$("rs-sg").addEventListener("click", function (e) { var b = e.target.closest("button"); if (!b) return; st.sg = b.dataset.g; var first = RS.RUNNERS.filter(function (r) { return r.g === st.sg; })[0]; pickRunner(st, first.id); save(); syncInputs(); update(); });
+	$("rs-kp").addEventListener("change", function () { if (this.value === "custom") st.kp = "custom"; else pickLifter(st, this.value); save(); syncInputs(); update(); });
 	$("rs-sp").addEventListener("change", function () { if (this.value === "custom") st.sp = "custom"; else pickRunner(st, this.value); save(); syncInputs(); update(); });
 	$("rs-jp").addEventListener("change", function () { if (this.value === "custom") st.jp = "custom"; else pickJumper(st, this.value); save(); syncInputs(); update(); });
 	$("rs-fp").addEventListener("change", function () { if (this.value === "custom") st.fp = "custom"; else pickFaller(st, this.value); save(); syncInputs(); update(); });
-	[["rs-sv", "sv", "sp"], ["rs-sl", "sl", "sp"], ["rs-jh", "jh", "jp"], ["rs-jl", "jl", "jp"], ["rs-jpush", "jpush", null], ["rs-fm", "fm", "fp"], ["rs-fa", "fa", "fp"], ["rs-fh", "fh", null]].forEach(function (x) {
+	[["rs-km", "km", "kp"], ["rs-kl", "kl", "kp"], ["rs-kw", "kw", null], ["rs-sv", "sv", "sp"], ["rs-sl", "sl", "sp"], ["rs-jh", "jh", "jp"], ["rs-jl", "jl", "jp"], ["rs-jpush", "jpush", null], ["rs-fm", "fm", "fp"], ["rs-fa", "fa", "fp"], ["rs-fh", "fh", null]].forEach(function (x) {
 		$(x[0]).addEventListener("input", function () { st[x[1]] = this.value; if (x[2] && st[x[2]] !== "custom") { st[x[2]] = "custom"; $("rs-" + x[2]).value = "custom"; } if (x[1] === "fh") { var h = RS.parseLen(st.fh, "m"); if (h) $("rs-fhs").value = Math.round(clamp((Math.log10(h) + 1) / 4, 0, 1) * 1000); } save(); update(); });
 	});
 	$("rs-fhs").addEventListener("input", function () { var h = Math.pow(10, -1 + 4 * (+this.value) / 1000); h = h < 1 ? Math.round(h * 100) / 100 : h < 10 ? Math.round(h * 10) / 10 : Math.round(h); st.fh = h + " m"; $("rs-fh").value = st.fh; save(); update(); });
@@ -197,6 +226,7 @@
 		var nospace = function (s) { return String(s).replace(/\s+/g, ""); };
 		if (st.t === "speed") { if (st.sp !== "custom") q.set("p", st.sp); else { q.set("v", nospace(st.sv)); q.set("l", nospace(st.sl)); } }
 		if (st.t === "jump") { if (st.jp !== "custom") q.set("p", st.jp); else { q.set("k", st.jk); q.set("h", nospace(st.jh)); q.set("l", nospace(st.jl)); } }
+		if (st.t === "strength") { if (st.kp !== "custom") q.set("p", st.kp); else { q.set("m", nospace(st.km)); q.set("load", nospace(st.kl)); } if (st.kw !== "75 kg") q.set("w", nospace(st.kw)); }
 		if (st.t === "fall") { if (st.fp !== "custom") q.set("p", st.fp); else { q.set("m", nospace(st.fm)); q.set("a", nospace(st.fa)); } q.set("h", nospace(st.fh)); }
 		copy(location.origin + location.pathname + "?" + q.toString(), "Link copied");
 	};

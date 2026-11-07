@@ -1,6 +1,7 @@
 	/* Relative Speed, Jump & Fall Calculator */
 	.tu [hidden] {display:none !important;}
 	.tu .rs-tabs {display:flex;flex-wrap:wrap;max-width:100%;margin-bottom:1em;} .tu .rs-tabs button {flex:1 1 auto;padding:0.65em 1em;font-weight:600;}
+	.tu .rs-groups {display:flex;flex-wrap:wrap;max-width:100%;margin-bottom:0.9em;} .tu .rs-groups button {flex:1 1 auto;}
 	.tu .rs-common {display:flex;flex-wrap:wrap;gap:0.8em 1.2em;align-items:flex-end;padding-bottom:1em;margin-bottom:1em;border-bottom:1px solid #e4e8ee;}
 	.tu .rs-common .rs-f {flex:1 1 15em;} .tu .rs-common .rs-units {flex:0 0 auto;}
 	.tu .rs-grid {display:grid;grid-template-columns:repeat(auto-fit,minmax(14em,1fr));gap:0.9em 1.2em;}
@@ -28,5 +29,5 @@
 	body.dark-mode #rs .rs-gl {stroke:#3a4048;} body.dark-mode #rs .rs-ax, body.dark-mode #rs .rs-cl {fill:#a6aeb8;} body.dark-mode #rs .rs-cl--on {fill:var(--accent);} body.dark-mode #rs .rs-bl {fill:#e8e8e8;} body.dark-mode #rs .rs-bv {fill:#c2c9d3;}
 	body.dark-mode #rs .rs-bar {fill:#4b3f72;} body.dark-mode #rs .rs-row.is-on .rs-bar, body.dark-mode #rs .rs-row.is-on:hover .rs-bar {fill:var(--accent);} body.dark-mode #rs .rs-row:hover .rs-bar {fill:#6a58a0;} body.dark-mode #rs .rs-row:focus .rs-bar {stroke:#f0f0f0;}
 	body.dark-mode #rs .rs-c {stroke:#5d6672;} body.dark-mode #rs .rs-c--on {stroke:var(--accent);} body.dark-mode #rs .rs-c--free {stroke:#f2a640;} body.dark-mode #rs .rs-dot {fill:#1e1e1e;} body.dark-mode #rs .rs-guide {stroke:#f0f0f0;}
-	body.dark-mode #rs .rs-eq > div {border-bottom-color:#3a4048;} body.dark-mode #rs .rs-tabs button, body.dark-mode #rs #rs-units button, body.dark-mode #rs #rs-jk button {border-bottom-color:#444;}
+	body.dark-mode #rs .rs-eq > div {border-bottom-color:#3a4048;} body.dark-mode #rs .rs-groups button, body.dark-mode #rs .rs-tabs button, body.dark-mode #rs #rs-units button, body.dark-mode #rs #rs-jk button {border-bottom-color:#444;}
 	@media (max-width:600px) {.tu .rs-big {font-size:1.7em;} #rs .rs-eq__n {flex-basis:100%;}}

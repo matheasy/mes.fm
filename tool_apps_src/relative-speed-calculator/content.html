@@ -1,12 +1,13 @@
 	<div class="tu" id="rs">
 		<div class="tu-card" id="rs-setup">
-			<div class="tu-seg rs-tabs" id="rs-tab" role="group" aria-label="What to compare"><button type="button" data-t="speed" aria-pressed="true">Speed</button><button type="button" data-t="jump" aria-pressed="false">Jumps</button><button type="button" data-t="fall" aria-pressed="false">Falls</button></div>
+			<div class="tu-seg rs-tabs" id="rs-tab" role="group" aria-label="What to compare"><button type="button" data-t="speed" aria-pressed="true">Speed</button><button type="button" data-t="jump" aria-pressed="false">Jumps</button><button type="button" data-t="fall" aria-pressed="false">Falls</button><button type="button" data-t="strength" aria-pressed="false">Strength</button></div>
 			<div class="rs-common">
 				<div class="tu-field rs-f"><label for="rs-ref">Compare with</label><select id="rs-ref" class="tu-select"></select><input id="rs-refc" class="tu-input" type="text" placeholder="e.g. 5 ft 9 in or 1.8 m" hidden></div>
 				<div class="tu-field rs-f rs-units"><span class="tu-label" id="rs-u-label">Units</span><div class="tu-seg" id="rs-units" role="group" aria-labelledby="rs-u-label"><button type="button" data-u="0" aria-pressed="true">Metric</button><button type="button" data-u="1" aria-pressed="false">US</button></div></div>
 			</div>
 
 			<div class="rs-pane" data-pane="speed">
+				<div class="tu-seg rs-groups" id="rs-sg" role="group" aria-label="How it moves"><button type="button" data-g="run" aria-pressed="true">Running</button><button type="button" data-g="fly" aria-pressed="false">Flying</button><button type="button" data-g="swim" aria-pressed="false">Swimming</button></div>
 				<div class="rs-grid">
 					<div class="tu-field rs-f"><label for="rs-sp">Animal or thing</label><select id="rs-sp" class="tu-select"></select></div>
 					<div class="tu-field rs-f"><label for="rs-sv">Speed</label><input id="rs-sv" class="tu-input tu-input--big" type="text" autocomplete="off" spellcheck="false"><span class="rs-read" id="rs-sv-read"></span></div>
@@ -30,6 +31,14 @@
 					<div class="tu-field rs-f"><label for="rs-fa">Drag area C<sub>d</sub>&times;A (m&sup2;)</label><input id="rs-fa" class="tu-input" type="text" autocomplete="off" spellcheck="false" inputmode="decimal"><span class="rs-read" id="rs-fa-read"></span></div>
 				</div>
 			</div>
+			<div class="rs-pane" data-pane="strength" hidden>
+				<div class="rs-grid">
+					<div class="tu-field rs-f"><label for="rs-kp">Animal</label><select id="rs-kp" class="tu-select"></select></div>
+					<div class="tu-field rs-f"><label for="rs-km">Its body mass</label><input id="rs-km" class="tu-input tu-input--big" type="text" autocomplete="off" spellcheck="false"><span class="rs-read" id="rs-km-read"></span></div>
+					<div class="tu-field rs-f"><label for="rs-kl">Load it lifts, holds or pulls</label><input id="rs-kl" class="tu-input tu-input--big" type="text" autocomplete="off" spellcheck="false"><span class="rs-read" id="rs-kl-read"></span></div>
+					<div class="tu-field rs-f"><label for="rs-kw">Person's weight to compare</label><input id="rs-kw" class="tu-input" type="text" autocomplete="off" spellcheck="false"><span class="rs-read" id="rs-kw-read"></span></div>
+				</div>
+			</div>
 			<div class="rs-tools"><button type="button" class="tu-btn tu-btn--ghost" id="rs-reset">Reset</button><button type="button" class="tu-btn" id="rs-link">Copy link</button></div>
 		</div>
 
@@ -47,12 +56,13 @@
 				<div><span class="rs-eq__n">body lengths per second</span> <span class="rs-eq__f mes-tex">\( \displaystyle n = \frac{v}{L}, \qquad v_{\text{scaled}} = n\,L_{\text{you}} \)</span></div>
 				<div><span class="rs-eq__n">fair (Froude) speed</span> <span class="rs-eq__f mes-tex">\( \displaystyle \frac{v^2}{gL} = \frac{v_{\text{fair}}^2}{g L_{\text{you}}} \;\Rightarrow\; v_{\text{fair}} = v\sqrt{\frac{L_{\text{you}}}{L}} \)</span></div>
 				<div><span class="rs-eq__n">take-off speed</span> <span class="rs-eq__f mes-tex">\( \displaystyle v_0 = \sqrt{2gh}\ \text{(up)}, \qquad v_0 = \sqrt{g\,d}\ \text{(long jump at 45°)}, \qquad a = \frac{v_0^2}{2s} \)</span></div>
+				<div><span class="rs-eq__n">strength (square-cube law)</span> <span class="rs-eq__f mes-tex">\( \displaystyle \frac{F}{W} \propto \frac{L^2}{L^3} = \frac{1}{L}, \qquad x_{\text{fair}} = x\left(\frac{M}{M_{\text{you}}}\right)^{1/3} \)</span></div>
 				<div><span class="rs-eq__n">terminal and impact speed</span> <span class="rs-eq__f mes-tex">\( \displaystyle v_t = \sqrt{\frac{2mg}{\rho\, C_d A}}, \qquad v(h) = v_t\sqrt{1 - e^{-2gh/v_t^2}} \)</span></div>
 			</div>
 		</div>
 
 		<div class="tu-seo">
-			<h2>How the relative speed, jump and fall calculator works</h2>
+			<h2>How the relative speed, strength, jump and fall calculator works</h2>
 			<p>Small animals look astonishingly fast and strong when you measure them in <b>body lengths</b>. A tiger beetle runs about 2.5 m/s, which is 125 of its own 2 cm body lengths every second. A person doing 125 body lengths a second would be going about <b>790 km/h (490 mph)</b>. A flea jumps about 90 times its body length; scaled up to a person, that is a jump of about 160 m.</p>
 			<p>Those headline numbers are fun but misleading, because physics does not scale in a straight line. This page shows the straight-line number and, next to it, what physics says.</p>
 			<h3>Speed: the Froude number</h3>
@@ -61,6 +71,10 @@
 			<p>As far back as the 1680s Giovanni Borelli noticed that animals of very different sizes jump roughly the same absolute height. Muscle energy grows with muscle mass, and so does the weight to lift, so the height a body can reach stays about the same. What changes is the <b>acceleration</b>: a flea has only a fraction of a millimetre to push off, so it needs hundreds of g and uses a spring (resilin) instead of plain muscle.</p>
 			<h3>Falls: the square-cube law</h3>
 			<p>Double an animal's length and its weight goes up 8 times but its area only 4 times, so its <b>terminal speed</b> (the speed at which air drag balances weight) goes up by about &radic;2. A mouse tops out near 35 km/h and usually walks away from any fall; a cat spreads out and tops out near 100 km/h; a person near 190 km/h; a horse far faster. J. B. S. Haldane made the point in his 1926 essay <i>On Being the Right Size</i>. The &ldquo;like a person falling from&rdquo; number shows how hard each impact is in human terms.</p>
+			<h3>Strength: why ants and beetles look so strong</h3>
+			<p>Muscle force depends on the muscle's cross-section (length squared), but body weight depends on volume (length cubed). Shrink an animal and its strength falls more slowly than its weight, so the load it can lift <i>as a multiple of its own weight</i> goes up. The fair comparison scales the multiple by the cube root of the mass ratio: a 0.15 g dung beetle pulling 1,141 times its weight is like a 75 kg person pulling about 14 times their weight. Still extraordinary, but not six buses.</p>
+			<h3>Flying and swimming</h3>
+			<p>The Speed tab also has birds, bats, insects, fish and other swimmers. Anna's hummingbird reaches about 385 body lengths a second in its courtship dive, faster for its size than a peregrine falcon's famous stoop (about 260) or a fighter jet. The Froude comparison is meant for walking and running, so for flyers and swimmers the page shows the body-length numbers on their own.</p>
 			<h3>Questions</h3>
 			<dl>
 				<dt>What can I type?</dt><dd>Speeds like <i>2.5 m/s</i>, <i>60 mph</i>, <i>8 ft/s</i>, <i>100 km/h</i>; lengths like <i>20 mm</i>, <i>1.75 m</i>, <i>5 ft 9 in</i>; masses like <i>4 kg</i>, <i>20 g</i>, <i>10 lb</i>.</dd>

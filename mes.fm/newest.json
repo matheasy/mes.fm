@@ -3,9 +3,9 @@
  "calculators": [
   {
    "href": "/relative-speed-calculator",
-   "title": "Relative Speed, Jump and Fall Calculator",
+   "title": "Relative Speed & Strength Calculator",
    "icon": "/img/relative-speed-calculator-logo.png",
-   "desc": "Animal speeds in body lengths per second, jumps and falls scaled to human size.",
+   "desc": "Animal speeds (running, flying, swimming), strength, jumps and falls scaled to human size.",
    "added": "2026-11-07",
    "kind": "calculator"
   },
@@ -199,9 +199,9 @@
  "latest": [
   {
    "href": "/relative-speed-calculator",
-   "title": "Relative Speed, Jump and Fall Calculator",
+   "title": "Relative Speed & Strength Calculator",
    "icon": "/img/relative-speed-calculator-logo.png",
-   "desc": "Animal speeds in body lengths per second, jumps and falls scaled to human size.",
+   "desc": "Animal speeds (running, flying, swimming), strength, jumps and falls scaled to human size.",
    "added": "2026-11-07",
    "kind": "calculator"
   },
