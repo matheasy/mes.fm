@@ -36,7 +36,7 @@ EXT_TAB = "<li class=\"info-bar__item\"><a class=\"info-bar__item__text\" href='
 
 # simulator pages whose boxes (.fl-wrap, .lm-wrap, ...) get the shared View bar from main_js/stage-ctl.js
 STAGE_CTL = {"julia-set-explorer", "fluid-simulator", "light-in-a-medium", "black-hole-simulator", "mandelbrot", "buddhabrot", "time-dilation", "metric-tensor", "orbit-simulator", "double-pendulum", "electromagnetic-fields-simulator", "photoelectric-effect-simulator", "solar-system-today", "atomic-clock-simulator",
-             "michelson-morley-experiment", "faster-than-light-shadow-simulator", "fountain-clock", "magnetic-isopotentials", "hutchison-effect-simulator", "heart-simulator", "neuron-simulator", "negative-index", "spin-simulator", "hologram", "maxwell-vortices","spin-wave-field", "spin-half", "quaternions", "crash-physics"}
+             "michelson-morley-experiment", "faster-than-light-shadow-simulator", "fountain-clock", "magnetic-isopotentials", "hutchison-effect-simulator", "heart-simulator", "neuron-simulator", "negative-index", "spin-simulator", "hologram", "maxwell-vortices","spin-wave-field", "spin-half", "quaternions", "crash-physics", "gta-stunt-jump-simulator"}
 
 # PDF family nav (2026-10-16): Home = the PDF Tools hub, then the editor and the six tools, ahead of Calculators / Tools
 PDF_NAV_INFO = '<li class="info-bar__item"><a class="info-bar__item__text" href=\'/pdf\'>Editor</a></li><li class="info-bar__item"><a class="info-bar__item__text" href=\'/merge-pdf\'>Merge</a></li><li class="info-bar__item"><a class="info-bar__item__text" href=\'/split-pdf\'>Split</a></li><li class="info-bar__item"><a class="info-bar__item__text" href=\'/organize-pdf\'>Organize</a></li><li class="info-bar__item"><a class="info-bar__item__text" href=\'/jpg-to-pdf\'>Images to PDF</a></li><li class="info-bar__item"><a class="info-bar__item__text" href=\'/pdf-to-jpg\'>PDF to images</a></li><li class="info-bar__item"><a class="info-bar__item__text" href=\'/compress-pdf\'>Compress</a></li>'
@@ -93,6 +93,21 @@ def _pt(slug, grade, subj, title, page_title, desc, tab):
                    "SEO": "@seo/%s.html" % ("hub" if not grade else "g%d-%s" % (grade, subj))})
     if slug != "practice-tests":
         d.update(js_path="practice-tests/js/practice-tests.js", brand=PT_BRAND, tab=tab)
+    return d
+# MES GTA 6 Hub (2026-11-07): one source (tool_apps_src/gta: lib.js = MESGTA physics + countdown + download maths, also mes.fm/api/_gta-lib.js for the
+# news function api/gta-news.js; sim.js = the stunt jump simulator UI; app.js = hub / countdown / download / jump calculator) for the hub /gta and three pages.
+# data-page on #gt picks the page. Unofficial fan pages (no Rockstar art or names beyond the game title). Rebuild all four together, bump js_v on all.
+GTA_BRAND = dict(slug="gta", title="MES GTA 6 Hub", tag="Unofficial GTA 6 tools: countdown, download time and a stunt jump simulator.")
+GTA_PAGES = [("gta", "Hub"), ("gta-stunt-jump-simulator", "Stunt Jump Simulator"), ("gta-6-countdown", "Countdown"), ("gta-6-download-time", "Download Time")]
+GTA_NAV_INFO = "".join("<li class=\"info-bar__item\"><a class=\"info-bar__item__text\" href='/%s'>%s</a></li>" % (sl, nm.replace("Stunt Jump Simulator", "Stunt Jump")) for sl, nm in GTA_PAGES[1:])
+GTA_NAV_MENU = "".join('<li class="navbar__item"><a class="navbar__link" href="/%s">GTA 6 %s</a></li>' % (sl, nm) for sl, nm in GTA_PAGES[1:])
+def _gta(slug, page, title, page_title, desc, tab, meta_desc):
+    fam = "".join('<a href="/%s"%s>%s</a>' % (sl, ' aria-current="page"' if sl == slug else "", "GTA 6 Hub" if sl == "gta" else nm) for sl, nm in GTA_PAGES)
+    d = dict(title=title, page_title=page_title, tag=GTA_BRAND["tag"], accent="#c2185b", dark="#8e1145", tint="#fce4ec", desc=desc, meta_desc=meta_desc, js_v="1",
+             src="gta", lib_from=["clock"], js_parts=["sim.js"], nav_extra=GTA_NAV_INFO, menu_extra=GTA_NAV_MENU,
+             vars={"PAGE": page, "FAM": fam, "BODY": "@%s.html" % page, "SEO": "@seo/%s.html" % page})
+    if slug != "gta":
+        d.update(js_path="gta/js/gta.js", brand=GTA_BRAND, tab=tab)
     return d
 APPS = {
     "earth-curvature-calculator": dict(title="MES Earth Curvature Calculator", page_title="Earth Curvature Calculator",
@@ -1181,6 +1196,19 @@ APPS = {
     "kids-numbers": _kids("kids-numbers", "numbers", "numbers", "Numbers for Kids", "Numbers for Toddlers: Count 1 to 10 or 20 Out Loud (Free, No Ads)",
                   "Counting flashcards for toddlers and preschoolers: each number from 1 to 10 (or 20) big, with that many pictures to count, said and counted out loud, plus a Find the number game. Free, no ads.",
                   5, "#c2410c", "#9a3412", "#fff0e0"),
+    # MES GTA 6 Hub (see GTA_BRAND above)
+    "gta": _gta("gta", "hub", "MES GTA 6 Hub", "GTA 6 Hub: Countdown, Download Time and Stunt Jump Simulator (Unofficial)",
+                "Unofficial GTA 6 hub: a countdown to the exact unlock time in your time zone, a download time and storage calculator for the 212 GB install, a stunt jump simulator with real car physics, and the latest GTA headlines.", 0,
+                "Unofficial GTA 6 hub: countdown to your local unlock time, 212 GB download time and storage check, a real-physics stunt jump simulator and GTA news."),
+    "gta-stunt-jump-simulator": _gta("gta-stunt-jump-simulator", "jump", "Stunt Jump Simulator", "Stunt Jump Simulator: Real Car Physics for Ramps, Gaps and Landings",
+                "A free stunt jump simulator with real car physics: suspension, tyre grip, engine power and air drag. Jump cars, bikes and monster trucks over gaps and canyons, see airtime, rotation and landing g-force, and find the speed window for a clean landing.", 1,
+                "Free stunt jump simulator with real car physics: ramps, gaps, canyons, airtime, rotation and landing g-force, plus the speed window for a clean landing."),
+    "gta-6-countdown": _gta("gta-6-countdown", "countdown", "GTA 6 Countdown", "GTA 6 Countdown: Exact Unlock Time in Your Time Zone",
+                "GTA 6 countdown to midnight on November 19, 2026 in your own time zone, the first unlock in the world, unlock times in 18 cities, the preload countdown and a calendar reminder.", 2,
+                "GTA 6 countdown to November 19, 2026: the unlock time in your time zone and around the world, the preload countdown and a calendar reminder."),
+    "gta-6-download-time": _gta("gta-6-download-time", "download", "GTA 6 Download Time", "GTA 6 Download Time and Storage Calculator (212 GB)",
+                "How long will GTA 6 take to download? Enter your internet speed to see the time for the 212 GB install, when it finishes if you start at preload, and whether it fits on your PS5 or Xbox Series X|S.", 3,
+                "How long GTA 6 (212 GB) takes to download on your internet, when it finishes if you preload, and whether it fits on your PS5 or Xbox."),
     "practice-tests": _pt("practice-tests", 0, "", "MES Practice Tests", "Free FSA Practice Tests: Grade 4 and 7 Numeracy and Reading (B.C.)",
                   "Free FSA-style practice tests for B.C. Grade 4 and Grade 7: numeracy with new random numbers every time and reading passages with multiple-choice and written questions. Full test, quick 10 or one topic, results by topic and every answer explained. No sign-up.", 0),
     "fsa-grade-4-numeracy": _pt("fsa-grade-4-numeracy", 4, "numeracy", "Grade 4 Numeracy Practice Test", "Grade 4 Numeracy Practice Test (FSA Style): Free, New Questions Every Time",

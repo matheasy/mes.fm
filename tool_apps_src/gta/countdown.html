@@ -1,0 +1,26 @@
+		<section class="gc-main" id="gc-box">
+			<div class="gc-bar"><span class="gc-mode tu-seg" id="gc-mode" role="group" aria-label="Count down to"><button type="button" data-v="local">Midnight where I am</button><button type="button" data-v="first">First in the world</button><button type="button" data-v="zone">Another time zone</button></span>
+				<span class="gc-btns"><button type="button" id="gc-fill" title="Fill the window (W)">⤢ Fill window</button><button type="button" id="gc-fs" title="Full screen (F)">⛶ Full screen</button></span></div>
+			<label class="gc-zone" id="gc-zonef" hidden><span>Time zone</span><select id="gc-zone" class="tu-select"></select></label>
+			<p class="gc-what" id="gc-what">GTA 6 unlocks in</p>
+			<div class="gc-digits" aria-live="off"><span><b id="gc-d">–</b><small>days</small></span><span><b id="gc-h">–</b><small>hours</small></span><span><b id="gc-m">–</b><small>minutes</small></span><span><b id="gc-s">–</b><small>seconds</small></span></div>
+			<p class="gc-when" id="gc-when"></p>
+			<div class="gc-prog"><div id="gc-prog"></div></div>
+			<p class="gc-pre" id="gc-pre"></p>
+		</section>
+		<div class="gc-acts">
+			<a class="tu-btn" id="gc-remind" href="/reminder">🔔 Set a reminder</a>
+			<a class="tu-btn tu-btn--ghost" id="gc-gcal" target="_blank" rel="noopener">Add to Google Calendar</a>
+			<button type="button" class="tu-btn tu-btn--ghost" id="gc-ics">Download calendar file (.ics)</button>
+			<button type="button" class="tu-btn tu-btn--ghost" id="gc-share">🔗 Copy link</button>
+		</div>
+		<div class="tu-card">
+			<h2 class="gt-h">When it unlocks around the world</h2>
+			<p class="tu-note">If it unlocks at midnight in each place (how PlayStation usually releases digital games), New Zealand plays first and Hawaii last, 23 hours later. The middle column is that midnight on your own clock.</p>
+			<div class="gc-tablewrap"><table class="tu-table gc-table"><thead><tr><th>City (midnight there)</th><th>Your time</th><th>Starts in</th></tr></thead><tbody id="gc-world"></tbody></table></div>
+		</div>
+		<div class="tu-card gc-note">
+			<h2 class="gt-h">How sure is the time?</h2>
+			<p><b>The date is official: November 19, 2026.</b> Rockstar has not said the hour. Most guides expect midnight local time on PlayStation (each region at its own midnight), and Xbox has often used a single worldwide time instead, so the two can differ by hours. This page counts to midnight in your time zone by default; switch to <b>First in the world</b> to count to the New Zealand midnight. We will update it if Rockstar announces an hour.</p>
+			<p class="tu-note" id="gc-src"></p>
+		</div>

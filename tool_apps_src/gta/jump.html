@@ -1,0 +1,118 @@
+		<div class="gt-tabs" role="tablist" aria-label="Stunt jump tools">
+			<button type="button" role="tab" data-tab="sim" aria-selected="true">Simulator</button>
+			<button type="button" role="tab" data-tab="calc" aria-selected="false">Jump calculator</button>
+		</div>
+		<section data-panel="sim" role="tabpanel">
+			<p class="tu-note gt-lead">Pick a car and a jump, press <b>Go</b>. The car is a real physics model: springs and dampers on each axle, tyre grip, engine power, air drag, and wheels whose spin turns the body in the air. It takes off, rotates, lands and either rolls away or wrecks, with the g-force the driver would feel.</p>
+			<div class="gj-chips" id="gj-pre" role="group" aria-label="Example jumps"></div>
+			<div class="gj-wrap"><div class="gj-stage" id="gj-st">
+				<canvas id="gj-c" tabindex="0" role="img" aria-label="Side view of the car, the ramps and the jump. Space starts, R resets, arrow keys drive."></canvas>
+				<div class="gj-badge" id="gj-badge"></div>
+				<div class="gj-clock" id="gj-clock"></div>
+				<div class="gj-run">
+					<button type="button" id="gj-go" class="gj-go">▶ Go</button>
+					<button type="button" id="gj-reset" title="Back to the start (R)">↺ Reset</button>
+					<button type="button" id="gj-replay" title="Watch the jump again in slow motion">⟲ Replay</button>
+					<label class="gj-sel" title="Playback speed"><span class="gj-sr">Playback speed</span><select id="gj-slow"><option value="1">1×</option><option value="0.5">½×</option><option value="0.25">¼×</option><option value="0.1">0.1×</option><option value="2">2×</option></select></label>
+					<button type="button" id="gj-png" title="Save as a picture" aria-label="Save as PNG">📷</button>
+				</div>
+				<div class="gj-verdict" id="gj-verdict" hidden></div>
+				<div class="gj-touch" id="gj-touch" hidden>
+					<button type="button" data-k="tl" aria-label="Lean back">⟲</button>
+					<button type="button" data-k="brake" aria-label="Brake">Brake</button>
+					<button type="button" data-k="gas" aria-label="Gas">Gas</button>
+					<button type="button" data-k="tr" aria-label="Lean forward">⟳</button>
+				</div>
+			</div>
+			<div class="gj-scrub" hidden><label for="gj-scrub">Scrub through the jump</label><input type="range" id="gj-scrub" min="0" max="1" value="0"></div>
+			<div class="gj-ro" id="gj-ro"></div></div>
+
+			<div class="tu-card gj-controls">
+				<div class="gj-cols">
+					<fieldset class="gj-fs"><legend>Vehicle</legend>
+						<div class="gj-grid">
+							<label class="tu-field"><span class="tu-label">Vehicle</span><select id="gj-veh" class="tu-select"></select><span class="tu-note" id="gj-vinfo"></span></label>
+							<label class="tu-field gj-colf"><span class="tu-label">Paint</span><input type="color" id="gj-col" class="gj-color"></label>
+							<div class="tu-field"><span class="tu-label">How it drives</span><div class="tu-seg gj-seg" id="gj-mode" role="group" aria-label="Driving mode"><button type="button" data-v="auto">Set speed</button><button type="button" data-v="drive">Drive it yourself</button></div><span class="tu-note">Set speed holds the speed up to the lip. Drive: ↑ gas, ↓ brake (or the on-screen buttons).</span></div>
+							<div class="tu-field" id="gj-spdf"><span class="tu-label" id="gj-spdl">Speed at the ramp</span><div class="gj-pair"><input id="gj-spd-n" class="tu-input" inputmode="decimal" aria-labelledby="gj-spdl"><span class="gj-u" id="gj-spd-u">km/h</span></div><input type="range" id="gj-spd-r" aria-labelledby="gj-spdl"></div>
+						</div>
+					</fieldset>
+					<fieldset class="gj-fs"><legend>Takeoff ramp</legend>
+						<div class="gj-grid">
+							<div class="tu-field"><span class="tu-label">Ramp</span><div class="tu-seg gj-seg" id="gj-ramp" role="group" aria-label="Ramp shape"><button type="button" data-v="straight">Straight</button><button type="button" data-v="curved">Curved kicker</button><button type="button" data-v="none">No ramp (edge)</button></div></div>
+							<div id="gj-rampf" class="gj-sub">
+								<div class="tu-field"><span class="tu-label" id="gj-a-l">Angle</span><div class="gj-pair"><input id="gj-a-n" class="tu-input" inputmode="decimal" aria-labelledby="gj-a-l"><span class="gj-u" id="gj-a-u">°</span></div><input type="range" id="gj-a-r" aria-labelledby="gj-a-l"></div>
+								<div class="tu-field"><span class="tu-label" id="gj-h-l">Height of the lip</span><div class="gj-pair"><input id="gj-h-n" class="tu-input" inputmode="decimal" aria-labelledby="gj-h-l"><span class="gj-u" id="gj-h-u">m</span></div><input type="range" id="gj-h-r" aria-labelledby="gj-h-l"></div>
+							</div>
+						</div>
+					</fieldset>
+					<fieldset class="gj-fs"><legend>Gap</legend>
+						<div class="gj-grid">
+							<div class="tu-field"><span class="tu-label" id="gj-gp-l">Gap to the landing</span><div class="gj-pair"><input id="gj-gp-n" class="tu-input" inputmode="decimal" aria-labelledby="gj-gp-l"><span class="gj-u" id="gj-gp-u">m</span></div><input type="range" id="gj-gp-r" aria-labelledby="gj-gp-l"></div>
+							<div class="tu-field"><span class="tu-label" id="gj-pd-l">Drop into the gap (0 = flat ground)</span><div class="gj-pair"><input id="gj-pd-n" class="tu-input" inputmode="decimal" aria-labelledby="gj-pd-l"><span class="gj-u" id="gj-pd-u">m</span></div><input type="range" id="gj-pd-r" aria-labelledby="gj-pd-l"></div>
+							<label class="tu-field" id="gj-ptf"><span class="tu-label">In the gap</span><select id="gj-pt" class="tu-select"><option value="ground">Ground</option><option value="water">Water</option></select></label>
+						</div>
+					</fieldset>
+					<fieldset class="gj-fs"><legend>Landing</legend>
+						<div class="gj-grid">
+							<div class="tu-field"><span class="tu-label">Land on</span><div class="tu-seg gj-seg" id="gj-land" role="group" aria-label="Landing"><button type="button" data-v="ramp">Landing ramp</button><button type="button" data-v="platform">Platform / roof</button><button type="button" data-v="flat">Flat ground</button></div></div>
+							<div id="gj-landf" class="gj-sub">
+								<div class="tu-field"><span class="tu-label" id="gj-lh-l">Height (below the road is negative)</span><div class="gj-pair"><input id="gj-lh-n" class="tu-input" inputmode="decimal" aria-labelledby="gj-lh-l"><span class="gj-u" id="gj-lh-u">m</span></div><input type="range" id="gj-lh-r" aria-labelledby="gj-lh-l"></div>
+								<div class="tu-field" id="gj-laf"><span class="tu-label" id="gj-la-l">Slope of the landing</span><div class="gj-pair"><input id="gj-la-n" class="tu-input" inputmode="decimal" aria-labelledby="gj-la-l"><span class="gj-u" id="gj-la-u">°</span></div><input type="range" id="gj-la-r" aria-labelledby="gj-la-l"></div>
+								<div class="tu-field" id="gj-plf"><span class="tu-label" id="gj-pl-l">Platform length</span><div class="gj-pair"><input id="gj-pl-n" class="tu-input" inputmode="decimal" aria-labelledby="gj-pl-l"><span class="gj-u" id="gj-pl-u">m</span></div><input type="range" id="gj-pl-r" aria-labelledby="gj-pl-l"></div>
+							</div>
+						</div>
+					</fieldset>
+					<fieldset class="gj-fs"><legend>World and view</legend>
+						<div class="gj-grid">
+							<label class="tu-field"><span class="tu-label">Gravity</span><select id="gj-gr" class="tu-select"><option value="earth">Earth (9.81 m/s²)</option><option value="moon">Moon (1.62 m/s², no air)</option><option value="mars">Mars (3.71 m/s²)</option><option value="jupiter">Jupiter (24.8 m/s²)</option></select></label>
+							<div class="tu-field"><span class="tu-label">Units</span><div class="tu-seg gj-seg" id="gj-units" role="group" aria-label="Units"><button type="button" data-v="m">km/h, m</button><button type="button" data-v="i">mph, ft</button></div></div>
+							<div class="tu-field"><span class="tu-label">Camera</span><div class="tu-seg gj-seg" id="gj-cam" role="group" aria-label="Camera"><button type="button" data-v="auto">Auto</button><button type="button" data-v="whole">Whole jump</button><button type="button" data-v="follow">Follow</button></div></div>
+							<label class="gj-check"><input type="checkbox" id="gj-ac"> Game-style air control (←/→ tilts the car in the air; not real physics)</label>
+						</div>
+					</fieldset>
+				</div>
+				<div class="gj-actions"><button type="button" class="tu-btn tu-btn--ghost" id="gj-link">🔗 Copy link to this jump</button><span class="tu-note">Tip: in the air, ↑ (gas) lifts the nose and ↓ (brake) drops it. That part is real: speeding the wheels up turns the car the other way.</span></div>
+			</div>
+
+			<div class="tu-card gj-sweepcard">
+				<h2 class="gt-h">Find the right speed</h2>
+				<p class="tu-note" id="gj-sweeptxt"></p>
+				<button type="button" class="tu-btn" id="gj-sweep">Find the right speed</button>
+				<div id="gj-swwrap" hidden><div class="gj-chwrap"><canvas id="gj-swc" role="img" aria-label="Landing distance and result for every speed"></canvas></div><div class="gj-lg" id="gj-swlg"></div></div>
+			</div>
+
+			<div class="gj-charts" id="gj-charts" hidden>
+				<div class="tu-card"><h3 class="gt-h3">The path</h3><p class="tu-note">Height against distance, coloured by speed. The dashed line is your best landing on this jump.</p><div class="gj-chwrap"><canvas id="gj-ch1" role="img" aria-label="Height of the car against distance"></canvas></div></div>
+				<div class="tu-card"><h3 class="gt-h3">What the driver feels</h3><p class="tu-note">g-force against time. 1 g is sitting still, 0 g is weightless in the air; above 6 g is a hard landing, above 12 g brutal.</p><div class="gj-chwrap"><canvas id="gj-ch2" role="img" aria-label="g-force against time"></canvas></div></div>
+			</div>
+
+			<div class="tu-card">
+				<div class="gj-runhead"><h2 class="gt-h">Your jumps</h2><span><button type="button" class="tu-btn tu-btn--ghost" id="gj-csv">Copy as a table</button> <button type="button" class="tu-btn tu-btn--ghost" id="gj-clear">Clear</button></span></div>
+				<div class="gj-tablewrap"><table class="tu-table gj-table"><thead><tr><th>#</th><th>Vehicle</th><th>Takeoff</th><th>Angle</th><th>Airtime</th><th>Distance</th><th>Landing</th><th>Result</th></tr></thead><tbody id="gj-runs"></tbody></table></div>
+			</div>
+		</section>
+
+		<section data-panel="calc" role="tabpanel" hidden>
+			<p class="tu-note gt-lead">The textbook version: a point flying off a ramp, with or without air drag. No rotation, no suspension, so it is the best case. The simulator tab shows what a real car adds.</p>
+			<div class="tu-card">
+				<div class="gj-grid gj-grid--calc">
+					<div class="tu-field"><span class="tu-label" id="jc-v-l">Takeoff speed</span><div class="gj-pair"><input id="jc-v" class="tu-input" inputmode="decimal" value="80" aria-labelledby="jc-v-l"><select id="jc-vu" class="tu-select" aria-label="Speed unit"><option value="kmh">km/h</option><option value="mph">mph</option><option value="ms">m/s</option></select></div></div>
+					<div class="tu-field"><span class="tu-label" id="jc-a-l">Ramp angle</span><div class="gj-pair"><input id="jc-a" class="tu-input" inputmode="decimal" value="10" aria-labelledby="jc-a-l"><span class="gj-u">°</span></div></div>
+					<div class="tu-field"><span class="tu-label" id="jc-h-l">Landing is this far below the lip (negative = above)</span><div class="gj-pair"><input id="jc-h" class="tu-input" inputmode="decimal" value="0" aria-labelledby="jc-h-l"><select id="jc-hu" class="tu-select" aria-label="Height unit"><option value="m">m</option><option value="ft">ft</option></select></div></div>
+					<div class="tu-field"><span class="tu-label" id="jc-x-l">Gap to clear</span><div class="gj-pair"><input id="jc-x" class="tu-input" inputmode="decimal" value="20" aria-labelledby="jc-x-l"><span class="gj-u" id="jc-xu">m</span></div></div>
+					<label class="tu-field"><span class="tu-label">Air drag</span><select id="jc-drag" class="tu-select"></select></label>
+					<label class="tu-field"><span class="tu-label">Gravity</span><select id="jc-g" class="tu-select"><option value="9.80665">Earth</option><option value="1.62">Moon</option><option value="3.71">Mars</option><option value="24.79">Jupiter</option></select></label>
+				</div>
+			</div>
+			<div class="gj-calcout" id="jc-out"></div>
+			<div class="tu-card"><h3 class="gt-h3">The flight</h3><div class="gj-chwrap"><canvas id="jc-c" role="img" aria-label="The jump's path with and without air drag"></canvas></div><div class="gj-lg"><span><i style="background:#c2185b"></i>with air drag</span><span><i style="background:#7a8699"></i>no air</span><span><i style="background:#22b35a"></i>the gap</span></div></div>
+			<div class="tu-card gj-eqs">
+				<h3 class="gt-h3">The equations</h3>
+				<div class="gj-eq"><span class="gj-eq__l">Where it is after time t (no air)</span><span class="gj-eq__f mes-tex">\( \displaystyle x = v\cos\theta\,t, \qquad y = v\sin\theta\,t - \tfrac12 g t^2 \)</span></div>
+				<div class="gj-eq"><span class="gj-eq__l">Speed needed to cover a gap x landing h below the lip</span><span class="gj-eq__f mes-tex">\( \displaystyle v = \sqrt{\frac{g\,x^2}{2\cos^2\theta\,\left(x\tan\theta + h\right)}} \)</span></div>
+				<div class="gj-eq"><span class="gj-eq__l">Airtime</span><span class="gj-eq__f mes-tex">\( \displaystyle t = \frac{v\sin\theta + \sqrt{v^2\sin^2\theta + 2gh}}{g} \)</span></div>
+				<div class="gj-eq"><span class="gj-eq__l">Longest jump for a given speed (not 45° when you land lower)</span><span class="gj-eq__f mes-tex">\( \displaystyle \tan\theta_{\text{best}} = \frac{v}{\sqrt{v^2 + 2gh}} \)</span></div>
+				<div class="gj-eq"><span class="gj-eq__l">Air drag (slows it, the rest is numerical)</span><span class="gj-eq__f mes-tex">\( \displaystyle F_{\text{drag}} = \tfrac12 \rho\, C_d A\, v^2 \)</span></div>
+			</div>
+		</section>

@@ -371,6 +371,16 @@
 "updated":"2026-10-14",
 "type":"Simulation"
 },
+"/gta":{
+"added":"2026-11-07",
+"updated":"2026-11-07",
+"type":"Game"
+},
+"/gta-stunt-jump-simulator":{
+"added":"2026-11-07",
+"updated":"2026-11-07",
+"type":"Simulation"
+},
 "/heart-rate-zone-calculator":{
 "added":"2026-10-14",
 "updated":"2026-11-04",

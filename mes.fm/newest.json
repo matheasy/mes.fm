@@ -100,6 +100,22 @@
  ],
  "tools": [
   {
+   "href": "/gta-stunt-jump-simulator",
+   "title": "Stunt Jump Simulator",
+   "icon": "/img/gta-stunt-jump-simulator-logo.png",
+   "desc": "Jump cars, bikes and monster trucks over gaps and canyons with real suspension physics: airtime, rotation, landing g-force and the speed window for a clean landing.",
+   "added": "2026-11-07",
+   "kind": "tool"
+  },
+  {
+   "href": "/gta",
+   "title": "GTA 6 Hub",
+   "icon": "/img/gta-logo.png",
+   "desc": "Unofficial GTA 6 tools: the unlock time in your time zone, how long the 212 GB download takes, a stunt jump simulator and the latest news.",
+   "added": "2026-11-07",
+   "kind": "tool"
+  },
+  {
    "href": "/party",
    "title": "Party Invitations & RSVP",
    "icon": "/img/party-logo.png",
@@ -178,25 +194,25 @@
    "desc": "Multiply i, j, k and watch a 3D hand half-turn, see why i² = −1, compare SLERP with Euler angles on a robot arm, convert rotations and see the 720° spinor turn.",
    "added": "2026-11-03",
    "kind": "tool"
-  },
-  {
-   "href": "/spin-wave-field",
-   "title": "Spin Wave Field",
-   "icon": "/img/spin-wave-field-logo.png",
-   "desc": "A double-slit pattern forms in a crowd that waves with the wave, a 360° spin flipper swaps bright and dark stripes (720° brings them back), and a 3D wave field with tracer particles.",
-   "added": "2026-11-03",
-   "kind": "tool"
-  },
-  {
-   "href": "/spin-half",
-   "title": "Spin-½ Lab",
-   "icon": "/img/spin-half-logo.png",
-   "desc": "Dirac's belt trick in 3D: one turn tangles the ribbons, two turns untangle them, plus five pictures of why spin ½ needs 720°, a phase-coloured torus and an elastic sheet that lies flat only after 720°.",
-   "added": "2026-11-03",
-   "kind": "tool"
   }
  ],
  "latest": [
+  {
+   "href": "/gta-stunt-jump-simulator",
+   "title": "Stunt Jump Simulator",
+   "icon": "/img/gta-stunt-jump-simulator-logo.png",
+   "desc": "Jump cars, bikes and monster trucks over gaps and canyons with real suspension physics: airtime, rotation, landing g-force and the speed window for a clean landing.",
+   "added": "2026-11-07",
+   "kind": "tool"
+  },
+  {
+   "href": "/gta",
+   "title": "GTA 6 Hub",
+   "icon": "/img/gta-logo.png",
+   "desc": "Unofficial GTA 6 tools: the unlock time in your time zone, how long the 212 GB download takes, a stunt jump simulator and the latest news.",
+   "added": "2026-11-07",
+   "kind": "tool"
+  },
   {
    "href": "/relative-speed-calculator",
    "title": "Relative Speed & Strength Calculator",
@@ -243,22 +259,6 @@
    "icon": "/img/maps-logo.png",
    "desc": "Morph between 28 map projections, spin a globe with day and night, explore countries, capitals and states, drag countries to their true size, measure great circles and play a geography quiz.",
    "added": "2026-11-07",
-   "kind": "tool"
-  },
-  {
-   "href": "/tic-tac-toe",
-   "title": "Tic-Tac-Toe",
-   "icon": "/img/tic-tac-toe-logo.png",
-   "desc": "Classic, ultimate, 3D, gomoku, Notakto and more, against the computer, a friend or someone online.",
-   "added": "2026-11-06",
-   "kind": "tool"
-  },
-  {
-   "href": "/font-finder",
-   "title": "Font Finder: What Font Is This?",
-   "icon": "/img/font-finder-logo.png",
-   "desc": "Drop or paste a picture and find the font among 2,000+ free fonts and the fonts on your computer, with your letters shown next to each match. Private: nothing is uploaded.",
-   "added": "2026-11-06",
    "kind": "tool"
   }
  ]
