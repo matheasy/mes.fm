@@ -1,0 +1,186 @@
+	<script>try{if(!localStorage.getItem('pageMode')){document.documentElement.classList.add('page-wide')}}catch(e){}</script>
+	<div class="tu mp" id="mp">
+		<div class="mp-tabs" role="tablist" aria-label="Map tools">
+			<button type="button" role="tab" data-tab="proj" aria-selected="true">🗺️ Projections</button>
+			<button type="button" role="tab" data-tab="globe" aria-selected="false">🌍 Globe</button>
+			<button type="button" role="tab" data-tab="countries" aria-selected="false">🏛️ Countries &amp; capitals</button>
+			<button type="button" role="tab" data-tab="truesize" aria-selected="false">📏 True size</button>
+			<button type="button" role="tab" data-tab="dist" aria-selected="false">✈️ Distances</button>
+			<button type="button" role="tab" data-tab="quiz" aria-selected="false">🎯 Quiz</button>
+		</div>
+
+		<div class="mp-stagewrap" id="mp-stagewrap">
+			<div class="mp-stage" id="mp-stage">
+				<canvas id="mp-cv" tabindex="0" role="img" aria-label="Interactive world map. Drag to turn it, Ctrl and scroll or use the + and − buttons to zoom, click a country for its facts. Arrow keys turn the map."></canvas>
+				<div class="mp-badge" id="mp-badge" aria-live="polite"></div>
+				<div class="mp-tb" role="toolbar" aria-label="Map view">
+					<button type="button" id="mp-zin" title="Zoom in" aria-label="Zoom in">+</button>
+					<button type="button" id="mp-zout" title="Zoom out" aria-label="Zoom out">−</button>
+					<button type="button" id="mp-zreset" title="Reset the view" aria-label="Reset the view">⟲</button>
+					<button type="button" id="mp-png" title="Save as a picture (PNG)" aria-label="Save as a picture">⤓</button>
+					<button type="button" id="mp-fill" title="Fill window" aria-label="Fill window" aria-pressed="false">⤢</button>
+					<button type="button" id="mp-fs" title="Full screen" aria-label="Full screen">⛶</button>
+				</div>
+				<div class="mp-tip" id="mp-tip" hidden></div>
+				<div class="mp-note" id="mp-note"></div>
+				<div class="mp-loading" id="mp-loading">Loading…</div>
+				<div class="mp-toast" id="mp-toast" role="status" hidden></div>
+			</div>
+			<div class="mp-legend" id="mp-legend" hidden></div>
+		</div>
+
+		<div class="mp-layers" role="group" aria-label="Map layers">
+			<label>Colour countries by <select id="mp-color">
+				<option value="continent">Continent</option>
+				<option value="density">People per km²</option>
+				<option value="population">Population</option>
+				<option value="gdppc">GDP per person</option>
+				<option value="area">Area</option>
+				<option value="plain">One colour</option>
+			</select></label>
+			<label><input type="checkbox" id="mp-o-labels"> Country names</label>
+			<label><input type="checkbox" id="mp-o-caps"> Capitals</label>
+			<label><input type="checkbox" id="mp-o-states"> States &amp; provinces</label>
+			<label><input type="checkbox" id="mp-o-grat"> Grid lines</label>
+			<label><input type="checkbox" id="mp-o-night"> Day &amp; night now</label>
+			<label><input type="checkbox" id="mp-o-legend" checked> Legend</label>
+			<label>Units <select id="mp-unit"><option value="km">km</option><option value="mi">miles</option><option value="nmi">nautical miles</option></select></label>
+			<button type="button" class="mp-lnk" id="mp-link">🔗 Copy link</button>
+		</div>
+
+		<div class="tu-card mp-info" id="mp-info" hidden></div>
+
+		<!-- ============ PROJECTIONS ============ -->
+		<section data-panel="proj" role="tabpanel">
+			<p class="tu-note mp-lead">The Earth is round, a map is flat, and no flat map can keep every shape, size, distance and direction at once (Gauss proved it in 1827). Each <b>projection</b> chooses what to keep. Pick one and watch the map <b>morph</b> into it; turn on <b>Tissot circles</b> or <b>area colours</b> to see exactly what it stretches.</p>
+			<div class="mp-pcols">
+				<div class="tu-card mp-pinfo" id="mp-pinfo"></div>
+				<div class="tu-card mp-pctl">
+					<div class="mp-row">
+						<button type="button" class="mp-btn mp-pri" id="mp-tour" aria-pressed="false">▶ Tour all projections</button>
+						<button type="button" class="mp-btn" id="mp-toglobe">🌍 Roll it into a globe</button>
+					</div>
+					<label class="mp-sl">Centre longitude <span id="mp-lonv">0°</span><input type="range" id="mp-lon" min="-180" max="180" step="1" value="0"></label>
+					<label class="mp-sl">Centre latitude <small>(azimuthal maps)</small> <span id="mp-latv">0°</span><input type="range" id="mp-lat" min="-90" max="90" step="1" value="0"></label>
+					<div class="mp-row mp-checks">
+						<label><input type="checkbox" id="mp-o-tissot"> Tissot circles <small>(equal circles on the globe)</small></label>
+						<label><input type="checkbox" id="mp-o-dist"> Area colours <small>(red = drawn too big)</small></label>
+						<label><input type="checkbox" id="mp-animate"> Animate changes</label>
+					</div>
+				</div>
+			</div>
+			<div class="mp-pgrid" id="mp-pgrid" aria-label="Choose a projection"></div>
+		</section>
+
+		<!-- ============ GLOBE ============ -->
+		<section data-panel="globe" role="tabpanel" hidden>
+			<p class="tu-note mp-lead">The only map without distortion is a globe. Drag to spin it (flick it and it keeps turning), zoom with + / − or Ctrl+scroll, click a country to fly there. <b>Unroll</b> it to watch the round Earth peel flat into the projection you choose.</p>
+			<div class="tu-card mp-gctl">
+				<div class="mp-row">
+					<button type="button" class="mp-btn" id="mp-spin" aria-pressed="true">⏸ Stop spinning</button>
+					<label class="mp-sl mp-inl">Speed <input type="range" id="mp-speed" min="1" max="30" step="1" value="4"></label>
+					<button type="button" class="mp-btn" id="mp-gnight">🌗 Show where it is night now</button>
+				</div>
+				<div class="mp-row">
+					<button type="button" class="mp-btn mp-pri" id="mp-unroll">🗺️ Unroll into</button>
+					<select id="mp-unrollto" aria-label="Projection to unroll into"></select>
+				</div>
+				<form class="mp-row" id="mp-gform"><label class="mp-grow">Fly to a country <input type="search" id="mp-gsearch" list="mp-clist" placeholder="e.g. Japan" autocomplete="off"></label><button type="submit" class="mp-btn">Fly ✈️</button></form>
+			</div>
+		</section>
+
+		<!-- ============ COUNTRIES ============ -->
+		<section data-panel="countries" role="tabpanel" hidden>
+			<div class="mp-row mp-ctop">
+				<label class="mp-grow">Search <input type="search" id="mp-csearch" placeholder="Country, capital or code" autocomplete="off"></label>
+				<label>Map <select id="mp-eproj"></select></label>
+			</div>
+			<div class="mp-chips" id="mp-cchips" role="group" aria-label="Continent"></div>
+			<p class="mp-count" id="mp-ccount"></p>
+			<div class="mp-tablewrap"><table class="mp-table">
+				<thead id="mp-cthead"><tr><th>#</th><th data-s="n" tabindex="0">Country ▾</th><th data-s="cap" tabindex="0">Capital ▾</th><th data-s="p" tabindex="0" class="r">People ▾</th><th data-s="a" tabindex="0" class="r">Area ▾</th><th data-s="d" tabindex="0" class="r">Density ▾</th></tr></thead>
+				<tbody id="mp-ctable"></tbody>
+			</table></div>
+			<p class="tu-note">Click a row or a country on the map. Population and GDP are 2019 estimates (Natural Earth); areas are worked out from the map outline, so they are close but not official. Turn on <b>States &amp; provinces</b> to see the states, provinces and their capitals of the USA, Canada, Australia, Brazil, China, India, Indonesia, Russia and South Africa.</p>
+		</section>
+
+		<!-- ============ TRUE SIZE ============ -->
+		<section data-panel="truesize" role="tabpanel" hidden>
+			<p class="tu-note mp-lead">On the Mercator map (Google Maps, most classroom maps) things grow the further they are from the equator. Make a copy of any country and <b>drag it</b>: it is moved over the real globe, so it keeps its true size and shape, and you see how big it really is next to the others. Switch to an equal-area map and nothing changes size at all.</p>
+			<div class="tu-card">
+				<div class="mp-row">
+					<div class="mp-seg" id="mp-tsproj" role="group" aria-label="Map"><button type="button" data-v="mercator">Mercator</button><button type="button" data-v="equal-earth">Equal Earth (true sizes)</button></div>
+					<form class="mp-row mp-grow" id="mp-tsform"><input type="search" id="mp-tsadd" list="mp-clist" placeholder="Add a country, e.g. Greenland" autocomplete="off" aria-label="Add a country"><button type="submit" class="mp-btn">Add</button></form>
+					<button type="button" class="mp-lnk" id="mp-tsclear">Clear all</button>
+				</div>
+				<div class="mp-chips" id="mp-tspre" role="group" aria-label="Examples"></div>
+				<div id="mp-tslist" class="mp-tslist"></div>
+			</div>
+		</section>
+
+		<!-- ============ DISTANCES ============ -->
+		<section data-panel="dist" role="tabpanel" hidden>
+			<p class="tu-note mp-lead">Why do flights from North America to Europe fly over Greenland? The shortest route on a sphere is a <b>great circle</b>, which looks curved on most maps. Drag the <b>A</b> and <b>B</b> pins or click the map to place them, or type two capitals.</p>
+			<div class="tu-card">
+				<form class="mp-row" id="mp-dform">
+					<label class="mp-grow">A <input type="search" id="mp-da" list="mp-cities" autocomplete="off"></label>
+					<button type="button" class="mp-btn" id="mp-dswap" title="Swap A and B" aria-label="Swap A and B">⇄</button>
+					<label class="mp-grow">B <input type="search" id="mp-db" list="mp-cities" autocomplete="off"></label>
+					<button type="submit" class="mp-btn mp-pri">Show route</button>
+					<label>Map <select id="mp-dproj"></select></label>
+				</form>
+				<div id="mp-dout"></div>
+			</div>
+		</section>
+
+		<!-- ============ QUIZ ============ -->
+		<section data-panel="quiz" role="tabpanel" hidden>
+			<div class="tu-card">
+				<div class="mp-row">
+					<div class="mp-seg" id="mp-qmode" role="group" aria-label="Game">
+						<button type="button" data-v="find">Find the country</button>
+						<button type="button" data-v="which">Name the country</button>
+						<button type="button" data-v="capital">Capitals</button>
+						<button type="button" data-v="scap">State &amp; province capitals</button>
+					</div>
+				</div>
+				<div class="mp-row">
+					<label>Region <select id="mp-qreg"></select></label>
+					<div class="mp-seg" id="mp-qmap" role="group" aria-label="Map"><button type="button" data-v="ortho">Globe</button><button type="button" data-v="equal-earth">Flat map</button></div>
+					<label><input type="checkbox" id="mp-qsmall"> Include tiny countries</label>
+					<button type="button" class="mp-btn mp-pri" id="mp-qstart">Start</button>
+				</div>
+				<div class="mp-qbox" id="mp-qbox"></div>
+			</div>
+		</section>
+
+		<datalist id="mp-clist"></datalist>
+		<datalist id="mp-cities"></datalist>
+
+		<div class="tu-seo">
+			<h2>Map projections explained</h2>
+			<p>A map projection is a rule that turns every point on the round Earth (its latitude and longitude) into a point on a flat page. Peel an orange and try to press the peel flat: it tears or stretches. Maps do the same in a controlled way, and the choice of projection decides what gets stretched. Carl Friedrich Gauss proved in his <i>Theorema Egregium</i> (1827) that a sphere can never be flattened without distortion, so every flat world map is a compromise.</p>
+			<h3>What a projection can keep</h3>
+			<dl>
+				<dt>Conformal (angles)</dt><dd>Small shapes and angles are right, so a coastline looks right up close. Sizes are not: Mercator, stereographic and Lambert conformal conic are conformal.</dd>
+				<dt>Equal area (sizes)</dt><dd>Every country has its true size relative to the others, so maps of population, forests or anything per square kilometre stay honest. Equal Earth, Mollweide, Gall-Peters and Albers are equal area.</dd>
+				<dt>Equidistant (distances)</dt><dd>Distances are true along some lines, for example from the centre of an azimuthal equidistant map, or along the meridians of the equirectangular map.</dd>
+				<dt>Gnomonic (shortest routes)</dt><dd>Every straight line is a great circle, the shortest path on the sphere, which is why navigators plan long routes on it.</dd>
+				<dt>Compromise</dt><dd>Robinson and Winkel tripel keep nothing exactly, but spread the errors so the whole world looks about right.</dd>
+			</dl>
+			<h3>How to read Tissot circles</h3>
+			<p>Nicolas Tissot (1859) drew identical small circles all over the globe and looked at what the projection did to them. Where the circles stay round the map is conformal; where they keep the same area (but turn into ellipses) it is equal area; where they grow, the map exaggerates. On Mercator the circles near the poles become huge but stay round.</p>
+			<h3>Is the "flat earth map" a real map?</h3>
+			<p>The map often shown as a flat Earth is the <b>azimuthal equidistant projection centred on the North Pole</b>, also the basis of the United Nations emblem. It is a projection of the globe like any other: distances and directions from the North Pole are true, but everything else stretches with distance from the centre. Antarctica, a continent, becomes a thin ring round the edge, and southern countries are drawn far wider than they are. Try it in the Projections tab with Tissot circles on, then measure a southern route such as Sydney to Santiago in the Distances tab: on that map the flight looks impossibly long, on the globe it is a 11,300 km great circle that real airlines fly.</p>
+			<h3>Why does Greenland look as big as Africa?</h3>
+			<p>On Mercator the scale grows with the secant of the latitude, and area with its square: at 60° north everything is drawn 4 times too big, at 72° (central Greenland) about 10 times. Africa is in fact about 14 times larger than Greenland. Drag Greenland onto Africa in the True size tab to see it.</p>
+			<h3>Questions</h3>
+			<dl>
+				<dt>Which projection is the most accurate?</dt><dd>None is accurate in every way. For fair sizes use an equal-area map such as Equal Earth; for a good overall look, Winkel tripel; for navigation by compass, Mercator; for one country, a conic map centred on it.</dd>
+				<dt>Why does Google Maps use Mercator?</dt><dd>Because it is conformal: streets meet at the right angles at every zoom level, and north is always up. At world scale the sizes are badly wrong.</dd>
+				<dt>Where do the data come from?</dt><dd>Country, state and province outlines and capitals come from Natural Earth (public domain) via the world-atlas files; populations and GDP are Natural Earth's 2019 estimates. Disputed borders follow Natural Earth's de facto lines and are not a statement about any claim.</dd>
+				<dt>Is anything uploaded?</dt><dd>No. Everything runs in your browser; your settings are kept on this device only.</dd>
+			</dl>
+			<p><a href="/earth-curvature-calculator">Earth Curvature Calculator</a> · <a href="/solar-system-today">Solar System Today</a> · <a href="/timezone">Time Zone Converter</a> · <a href="/clock">World Clock</a> · <a href="/tools">More MES tools</a></p>
+		</div>
+	</div>

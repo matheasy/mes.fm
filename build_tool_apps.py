@@ -478,6 +478,14 @@ APPS = {
     # Hologram Simulator (2026-11-02, mes.fm/hologram): recording (|R + ΣO|² live on a zoomable plate patch, draggable points, partial coherence), numerical playback
     # (angular spectrum via FFT: virtual / real / zero order, spectrum filter, camera opening for parallax), coherence, types (transmission, Gabor, Denisyuk with Kogelnik's
     # Bragg curve, rainbow, embossed, Pepper's ghost), Gerchberg-Saxton CGH (lib.js = MESHolo, node-tested: tool_apps_src/hologram-tests.js). Tools sidebar, Wide by default, stage-ctl prefix hg.
+    # MES Maps (2026-11-07, mes.fm/maps): 28 projections drawn by d3 7.9.0 + d3-geo-projection 4.0.0 (loaded on start) with animated morphs between them,
+    # Tissot circles and an area-distortion overlay, a spinning globe with day / night that unrolls into any projection, countries & capitals explorer
+    # (Natural Earth data built by build_maps_data.py into mes.fm/maps/data/), states / provinces of 9 countries, a True size drag tool, great-circle vs
+    # rhumb-line distances and a quiz. lib.js = MESMaps (node-tested: tool_apps_src/maps-tests.js). Tools sidebar, Wide by default.
+    "maps": dict(title="MES Maps", page_title="World Map Projections, Globe, Countries and Capitals: Interactive Maps",
+                 tag="Every way to flatten the Earth.", accent="#1c7ed6", dark="#1864ab", tint="#d0ebff",
+                 desc="Free interactive world maps: morph between 28 map projections (Mercator, Equal Earth, Robinson, Winkel tripel, the azimuthal 'flat earth' map...) and see what each one stretches with Tissot circles, spin a globe with day and night, explore every country with its capital, population and states or provinces, drag countries to compare their true size, measure great-circle routes and play a geography quiz.",
+                 js_v="1"),
     "hologram": dict(title="MES Hologram Simulator", page_title="Hologram Simulator: How Holograms Are Recorded and Played Back",
                      tag="Record light. Play it back in 3D.", accent="#0d9488", dark="#0f766e", tint="#ccfbf1",
                      desc="A free hologram simulator: record the interference fringes of a reference beam and object points live, play the hologram back with real wave optics to see the virtual image, the twin and parallax, explore coherence, compare transmission, reflection, rainbow and embossed holograms and Pepper's ghost, and compute a phase hologram of your own drawing.",
