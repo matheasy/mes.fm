@@ -185,6 +185,7 @@ TOOLS = [  # (directory, compact-bar title[, home path of the site the page belo
     ("docx", "MES Word Viewer"),
     ("excel", "MES Spreadsheet Viewer"),
     ("fonts", "MES Font Preview and Finder"),
+    ("font-finder", "MES Font Finder"),
     ("llm-simulator", "MES Toy Language Model Simulator"),
     ("letter-recognition", "MES Letter and Digit Recognition"),
     ("neural-network-playground", "MES Neural Network Playground"),

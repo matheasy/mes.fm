@@ -273,4 +273,5 @@
 
 	/* ---------- start ---------- */
 	renderGrid(); if (startFont && fontByName(startFont)) openBig(startFont);
+	else if (startFont && qp.get("g") === "1") loadGoogle(startFont, qp.get("c") || "sans").then(function (ok) { if (ok || names[startFont]) { renderGrid(); openBig(startFont); } else toast(startFont + " was not found on Google Fonts"); });
 })();

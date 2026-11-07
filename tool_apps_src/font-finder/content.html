@@ -1,0 +1,94 @@
+	<script>try{if(!localStorage.getItem('pageMode')){document.documentElement.classList.add('page-wide')}}catch(e){}</script>
+	<div class="tu ff" id="ff">
+		<div class="ff-steps" aria-hidden="true"><span data-step="1" class="is-on">1 Picture</span><span data-step="2">2 Letters</span><span data-step="3">3 Matches</span></div>
+
+		<section class="tu-card ff-card" id="ff-s1" aria-labelledby="ff-s1h">
+			<h2 class="ff-h" id="ff-s1h"><span class="ff-n">1</span> Add a picture with the text</h2>
+			<div class="ff-drop" id="ff-drop" tabindex="0" role="button" aria-label="Choose, drop or paste a picture">
+				<div class="ff-drop__big">Choose a picture, or drop it here</div>
+				<div class="ff-drop__sub">or paste a screenshot with <kbd>Ctrl</kbd>/<kbd>&#8984;</kbd> + <kbd>V</kbd> anywhere on this page</div>
+				<input type="file" id="ff-file" accept="image/*" hidden>
+			</div>
+			<div class="ff-src">
+				<form class="ff-url" id="ff-urlform"><input type="url" class="tu-input" id="ff-url" placeholder="…or paste a link to a picture (https://…)" aria-label="Link to a picture"><button type="submit" class="tu-btn tu-btn--ghost">Open link</button></form>
+				<button type="button" class="tu-btn tu-btn--ghost" id="ff-cam" hidden>&#128247;&#65038; Take a photo</button><input type="file" id="ff-camfile" accept="image/*" capture="environment" hidden>
+			</div>
+			<div class="ff-ex"><span class="tu-note">No picture handy? Try one:</span> <span id="ff-examples"></span></div>
+			<p class="tu-note ff-priv">&#128274;&#65038; Your picture never leaves your computer: the letters are cut out and compared right here in your browser. Only small letter files of the font library are downloaded.</p>
+		</section>
+
+		<section class="tu-card ff-card" id="ff-s2" aria-labelledby="ff-s2h" hidden>
+			<h2 class="ff-h" id="ff-s2h"><span class="ff-n">2</span> Pick the text and check the letters</h2>
+			<div class="ff-tools" role="toolbar" aria-label="Picture tools">
+				<button type="button" class="tu-btn tu-btn--ghost ff-sm" id="ff-rotl" title="Turn left">&#10226; Turn</button>
+				<button type="button" class="tu-btn tu-btn--ghost ff-sm" id="ff-rotr" title="Turn right">Turn &#10227;</button>
+				<label class="ff-tilt">Straighten <input type="range" id="ff-tilt" min="-20" max="20" step="0.5" value="0" aria-label="Straighten the picture"> <output id="ff-tiltv">0&deg;</output></label>
+				<span class="tu-seg" id="ff-ink" role="group" aria-label="Text colour"><button type="button" data-v="auto" aria-pressed="true">Auto</button><button type="button" data-v="dark" aria-pressed="false">Dark text</button><button type="button" data-v="light" aria-pressed="false">Light text</button></span>
+				<label class="ff-tilt" title="How dark a pixel must be to count as ink">Ink <input type="range" id="ff-thr" min="-60" max="60" step="2" value="0" aria-label="Ink threshold"></label>
+				<button type="button" class="tu-btn tu-btn--ghost ff-sm" id="ff-edit" title="Crop, rotate, straighten or clean up the picture">&#9998;&#65038; Edit picture</button>
+				<button type="button" class="tu-btn tu-btn--ghost ff-sm" id="ff-new">New picture</button>
+			</div>
+			<div class="ff-stage" id="ff-stage">
+				<canvas id="ff-cv" aria-label="Your picture. Drag a box around the line of text to use."></canvas>
+				<div class="ff-hint" id="ff-hint">Drag a box around the line of text you want to identify.</div>
+			</div>
+			<div class="ff-lines" id="ff-lines" hidden></div>
+
+			<div class="ff-say">
+				<label class="tu-label" for="ff-text">What does it say?</label>
+				<div class="ff-sayrow">
+					<input type="text" class="tu-input" id="ff-text" placeholder="Type the letters you see (spaces don't matter)" autocomplete="off" spellcheck="false" maxlength="60">
+					<button type="button" class="tu-btn tu-btn--ghost" id="ff-ocr" title="Let the page read the letters (downloads a text reader the first time)">&#128065;&#65038; Read it for me</button>
+				</div>
+				<div class="tu-note" id="ff-saynote"></div>
+			</div>
+			<div class="ff-glyphs" id="ff-glyphs" aria-label="Letters found"></div>
+			<div class="tu-note ff-gnote">Click a letter to fix it. <b>&#8853;</b> joins it to the next one, <b>&#9986;&#65038;</b> splits it in two, <b>&#10005;</b> leaves it out (a smudge, or a letter in another font). A few clear letters are enough: 5 to 10 work best.</div>
+			<div class="ff-go">
+				<button type="button" class="tu-btn ff-gobtn" id="ff-go" disabled>Find the font</button>
+				<label><input type="checkbox" id="ff-local" checked> Also check the fonts on this computer</label>
+				<label><input type="checkbox" id="ff-deep" checked> Try nearby weights (more accurate)</label>
+			</div>
+			<div class="ff-prog" id="ff-prog" hidden><div class="ff-bar"><i id="ff-barv"></i></div><span id="ff-progt"></span></div>
+		</section>
+
+		<section class="tu-card ff-card" id="ff-s3" aria-labelledby="ff-s3h" hidden>
+			<div class="ff-rhead">
+				<h2 class="ff-h" id="ff-s3h"><span class="ff-n">3</span> Closest fonts</h2>
+				<span class="tu-seg" id="ff-view" role="group" aria-label="Show"><button type="button" data-v="cards" aria-pressed="true">Cards</button><button type="button" data-v="list" aria-pressed="false">List</button></span>
+			</div>
+			<p class="tu-note" id="ff-rnote"></p>
+			<div class="ff-rbar">
+				<div class="tu-chips" id="ff-cats"></div>
+				<label class="ff-pv">Preview text <input type="text" class="tu-input" id="ff-pvtext" maxlength="60" spellcheck="false"></label>
+				<label><input type="checkbox" id="ff-overlay"> Overlay letters</label>
+			</div>
+			<div class="ff-results" id="ff-results"></div>
+			<button type="button" class="tu-btn tu-btn--ghost" id="ff-more" hidden>Show more matches</button>
+			<details class="ff-notfound">
+				<summary>Not the right font?</summary>
+				<ul>
+					<li><b>Pick cleaner letters:</b> a big, sharp, straight line of text works best. Leave out letters that touch, have effects (outline, shadow, 3D) or are blurry, and fix any letter the page read wrong.</li>
+					<li><b>Mostly capitals or mostly small letters?</b> Include a few of the letters that differ most between fonts: <b>a g R Q e k y 2 3 &amp;</b>.</li>
+					<li><b>It may be a paid font.</b> This library has the 2,000+ free open-licence fonts (all of Google Fonts plus Fontsource). Big paid families (Helvetica, Futura, Gotham, Proxima Nova…) are not in it, but their free look-alikes are, and fonts installed on your computer are checked too.</li>
+					<li><b>Other identifiers</b> also search paid fonts (they upload your picture to their servers): <a href="https://www.whatfontis.com/" target="_blank" rel="noopener nofollow">WhatFontIs</a> &middot; <a href="https://www.myfonts.com/pages/whatthefont" target="_blank" rel="noopener nofollow">WhatTheFont</a> &middot; <a href="https://www.fontsquirrel.com/matcherator" target="_blank" rel="noopener nofollow">Font Squirrel Matcherator</a> &middot; <a href="http://www.identifont.com/" target="_blank" rel="noopener nofollow">Identifont</a> (answers questions about the letters).</li>
+				</ul>
+			</details>
+		</section>
+
+		<section class="tu-card ff-card" id="ff-saved" hidden>
+			<h2 class="ff-h">&#9733; Fonts you saved</h2>
+			<div class="ff-savedlist" id="ff-savedlist"></div>
+		</section>
+
+		<section class="tu-card ff-card ff-twins">
+			<h2 class="ff-h">Famous paid fonts and their free look-alikes</h2>
+			<p class="tu-note">Found a paid font? These free fonts are close (or made to have the same letter widths). Click one to open it in Font Preview.</p>
+			<div class="ff-twinlist" id="ff-twinlist"></div>
+		</section>
+
+		<div class="tu-seo">
+			{{SEO}}
+		</div>
+	</div>
+	<script src="/main_js/photo-prep.js" defer></script>

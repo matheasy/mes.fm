@@ -1227,7 +1227,17 @@ APPS = {
     "fonts": dict(title="MES Font Preview and Finder", page_title="Font Preview: See Your Text in Every Font, and Find a Font from a Picture",
                   tag="See your text in every font.", accent="#7c2d92", dark="#5f2070", tint="#f3e5f8",
                   desc="Free online font previewer: type your text and see it in every font on your computer at once, with size, colour, shadow, outline, gradient and glow. Make marketing text, download a transparent PNG or copy the CSS, compare fonts side by side, and find a font from a picture. Private: nothing is uploaded.",
-                  js_v="7", js_parts=["../photo-editor/fontcat.js"]),
+                  js_v="8", js_parts=["../photo-editor/fontcat.js"],
+                  nav_extra="<li class=\"info-bar__item\"><a class=\"info-bar__item__text\" href='/font-finder'>Font Finder</a></li>",
+                  menu_extra="<li class=\"navbar__item\"><a class=\"navbar__link\" href=\"/font-finder\">Font Finder (from a picture)</a></li>"),
+    # MES Font Finder (2026-11-06): find a font from a picture. Letter index = mes.fm/font-finder/data (build_font_finder_data.py); lib = MESFF (tests: node tool_apps_src/font-finder-tests.js); MESFont.LOCAL from the fonts lib
+    "font-finder": dict(title="MES Font Finder", page_title="Font Finder: What Font Is This? Identify a Font from an Image, Free",
+                  tag="What font is this? Find it from a picture.", accent="#7c2d92", dark="#5f2070", tint="#f3e5f8",
+                  desc="Free font finder: drop, paste or link a picture and find the font. Your letters are compared with 3,300+ styles of over 2,000 free fonts (Google Fonts and Fontsource) plus the fonts on your computer, with your letters shown next to each match. Private: the picture never leaves your browser.",
+                  meta_desc="What font is this? Free font finder: identify a font from an image among 2,000+ free Google Fonts and the fonts on your computer. Private, no upload, no sign-up.",
+                  js_v="1", lib_from=["fonts"], vars={"SEO": "@seo/font-finder.html"},
+                  nav_extra="<li class=\"info-bar__item\"><a class=\"info-bar__item__text\" href='/fonts'>Font Preview</a></li>",
+                  menu_extra="<li class=\"navbar__item\"><a class=\"navbar__link\" href=\"/fonts\">Font Preview</a></li>"),
     # Machine-learning teaching tools (2026-10-19): matrix calculator (lib = MESMat), neural network playground (MESNN), letter / digit recognition (MESOCR, uses MESNN), toy language model (MESLM). Node tests: tool_apps_src/<slug>-tests.js
     "matrix-calculator": dict(title="MES Matrix Calculator", page_title="Matrix Calculator with Steps: Multiply, Inverse, Determinant, Eigenvalues, SVD and Machine Learning",
                   tag="Linear algebra with the working shown, plus machine-learning tools.", accent="#0369a1", dark="#075985", tint="#e0f2fe",
