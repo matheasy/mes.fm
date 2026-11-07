@@ -775,7 +775,10 @@ reported; if there is a large gap, stage only your own paths rather than `git ad
 not by the page's position in the list, so adding a tool changes about 1 page instead of ~170; (2) the TOOL-DARK block goes back exactly
 where it was, and on a fresh page after the floating-bar CSS, so a second run no longer swaps the two. Checked: a second full run of all
 three (and `add_cross_links.py`) leaves every file byte-identical. If one of them starts rewriting unrelated pages again, that is a bug
-in the script to fix, not churn to throw away.
+in the script to fix, not churn to throw away. `add_sidebar_math.py` got the same treatment on 2026-11-06 (it had rewritten ~210 article
+pages on every run): cards = the list neighbour + two `base.hpick()` picks, the `MES-ASIDE-HEAD` block is refreshed where it sits (later
+scripts add `<meta name="mes:hive">` after it, and re-appending it before `</head>` made it hop below that tag each run), and `--only=<slug>`;
+a second full run changes 0 of 222 pages.
 
 - **Copy Text** (2026-10-03, `mes.fm/copy-text`, note-yellow `#a16207`; `/copy`, `/clipboard` 308 to it; card in `tools.html` "Text & Symbols"). A clipboard shelf built by
   `build_tool_apps.py` from `tool_apps_src/copy-text/`: notes on boards, click a note to copy, pin / colour / drag-reorder, search across boards, `{date}` `{time}` `{weekday}` `{year}` `{iso}`

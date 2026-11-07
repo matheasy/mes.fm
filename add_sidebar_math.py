@@ -106,7 +106,10 @@ def recs_for(page, groups):
     peers = groups[page["group"]]
     i = peers.index(page) if page in peers else 0
     n = len(peers)
-    cards = base.rot(peers, i, (1, max(2, n // 5), max(3, 2 * n // 5)), (page["url"],))[:3]
+    # The list neighbour plus two picks by a fixed hash of (page, card) (base.hpick), not by the page's position in the list:
+    # position-based picks reshuffled every page of a group whenever one page was added (2026-11-06).
+    near = base.rot(peers, i, (1,), (page["url"],))
+    cards = (near + base.hpick(peers, page["url"], 2, (page["url"],) + tuple(c["url"] for c in near)))[:3]
     hub = {"url": page["group"], "title": page["hub_title"] or "More like this", "kind": "Collection"}
     cards.append(hub)
     for fb in FALLBACK:
@@ -138,7 +141,9 @@ def aside_html(group, cards, slot):
 
 def patch_page(text, aside, remove):
     text = COLS_START_RE.sub("", COLS_END_RE.sub("", text))
-    text = base.HEAD_RE.sub("", text)
+    had_head = bool(base.HEAD_RE.search(text))
+    if remove:
+        text = base.HEAD_RE.sub("", text)
     text = base.JS_RE.sub("", text)
     text = CONTAINER_RE.sub(lambda m: m.group(1) + m.group(3), text)
     if remove:
@@ -156,7 +161,11 @@ def patch_page(text, aside, remove):
     block = "<!-- MES-COLS-END --></div>" + aside + "</div><!-- /MES-COLS-END -->\n"
     new = text[:end] + block + text[end:]
     new = new[:part] + COLS_START + new[part:]
-    new = new.replace("</head>", base.HEAD_BLOCK.format(v=base.ASSET_V) + "</head>", 1)
+    head = base.HEAD_BLOCK.format(v=base.ASSET_V)
+    if had_head:  # refresh it where it is: later scripts add tags (e.g. <meta name="mes:hive">) after it, and re-appending it
+        new = base.HEAD_RE.sub(lambda m: head, new, count=1)  # before </head> made it hop below them on every run
+    else:
+        new = new.replace("</head>", head + "</head>", 1)
     anchor = "<!-- MES-BOTTOM-AD-JS -->" if "<!-- MES-BOTTOM-AD-JS -->" in new else "</body>"
     new = new.replace(anchor, base.JS_BLOCK.format(v=base.ASSET_V) + anchor, 1)
     new, n = re.subn(r'<div class="container">', '<div class="container has-aside">', new, count=1)
@@ -169,6 +178,7 @@ def main():
     ap.add_argument("-v", "--verbose", action="store_true")
     ap.add_argument("--ad-slot", default=None, help="AdSense data-ad-slot (default: keep each page's, else the Sidebar 300x250 unit)")
     ap.add_argument("--remove", action="store_true")
+    ap.add_argument("--only", default="", help="only these pages, by folder slug (comma separated, e.g. --only=mechanics-materials-review); the others are left alone")
     args = ap.parse_args()
 
     items, groups = catalog()
@@ -176,7 +186,10 @@ def main():
           ", ".join("%s %d" % (g, len(v)) for g, v in sorted(groups.items(), key=lambda x: -len(x[1])))))
     changed = 0
     skipped = []
+    only = {x.strip().strip("/") for x in args.only.split(",") if x.strip()}
     for it in items:
+        if only and os.path.basename(os.path.dirname(it["path"])) not in only:
+            continue
         old = base.read(it["path"])
         if args.ad_slot is not None:
             slot = args.ad_slot
