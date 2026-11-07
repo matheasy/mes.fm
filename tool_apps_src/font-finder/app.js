@@ -88,14 +88,14 @@
 		autoLines.forEach(function (L) { cx.strokeRect(L.x * s + .5, L.y * s + .5, L.w * s, L.h * s); }); cx.restore();
 		var b = drag && drag.box ? drag.box : sel;
 		if (b) {
-			cx.fillStyle = "rgba(15,15,30,.42)"; cx.beginPath(); cx.rect(0, 0, cv.width, cv.height); cx.rect(b.x * s, b.y * s, b.w * s, b.h * s); cx.fill("evenodd");
+			cx.fillStyle = "rgba(15,15,30,.3)"; cx.beginPath(); cx.rect(0, 0, cv.width, cv.height); cx.rect(b.x * s, b.y * s, b.w * s, b.h * s); cx.fill("evenodd");
 			cx.strokeStyle = "#f59e0b"; cx.lineWidth = 2; cx.strokeRect(b.x * s, b.y * s, b.w * s, b.h * s);
 		}
 		if (!drag && crop) {
 			letters.forEach(function (L, i) {
 				var g = L.g, k = 1 / crop.s, x = (crop.x + g.x0 * k) * s, y = (crop.y + g.y0 * k) * s, w = (g.x1 - g.x0 + 1) * k * s, h = (g.y1 - g.y0 + 1) * k * s;
 				cx.strokeStyle = L.off ? "rgba(150,150,150,.8)" : (L.ch && meta && meta.chars.indexOf(L.ch) < 0) ? "#ef4444" : "#22c55e"; cx.lineWidth = 1.5; cx.strokeRect(x, y, w, h);
-				cx.fillStyle = "#22c55e"; cx.font = "bold 11px system-ui,sans-serif"; if (!L.off) cx.fillText(L.ch || String(i + 1), x + 1, y - 3);
+				if (!L.off) { cx.font = "bold 13px system-ui,sans-serif"; cx.lineWidth = 3; cx.strokeStyle = "rgba(0,0,0,.85)"; cx.strokeText(L.ch || String(i + 1), x + 1, y - 4); cx.fillStyle = "#4ade80"; cx.fillText(L.ch || String(i + 1), x + 1, y - 4); }
 			});
 		}
 	}

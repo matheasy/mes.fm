@@ -1235,7 +1235,7 @@ APPS = {
                   tag="What font is this? Find it from a picture.", accent="#7c2d92", dark="#5f2070", tint="#f3e5f8",
                   desc="Free font finder: drop, paste or link a picture and find the font. Your letters are compared with 3,300+ styles of over 2,000 free fonts (Google Fonts and Fontsource) plus the fonts on your computer, with your letters shown next to each match. Private: the picture never leaves your browser.",
                   meta_desc="What font is this? Free font finder: identify a font from an image among 2,000+ free Google Fonts and the fonts on your computer. Private, no upload, no sign-up.",
-                  js_v="1", lib_from=["fonts"], vars={"SEO": "@seo/font-finder.html"},
+                  js_v="2", lib_from=["fonts"], vars={"SEO": "@seo/font-finder.html"},
                   nav_extra="<li class=\"info-bar__item\"><a class=\"info-bar__item__text\" href='/fonts'>Font Preview</a></li>",
                   menu_extra="<li class=\"navbar__item\"><a class=\"navbar__link\" href=\"/fonts\">Font Preview</a></li>"),
     # Machine-learning teaching tools (2026-10-19): matrix calculator (lib = MESMat), neural network playground (MESNN), letter / digit recognition (MESOCR, uses MESNN), toy language model (MESLM). Node tests: tool_apps_src/<slug>-tests.js
