@@ -36,7 +36,7 @@ EXT_TAB = "<li class=\"info-bar__item\"><a class=\"info-bar__item__text\" href='
 
 # simulator pages whose boxes (.fl-wrap, .lm-wrap, ...) get the shared View bar from main_js/stage-ctl.js
 STAGE_CTL = {"julia-set-explorer", "fluid-simulator", "light-in-a-medium", "black-hole-simulator", "mandelbrot", "buddhabrot", "time-dilation", "metric-tensor", "orbit-simulator", "double-pendulum", "electromagnetic-fields-simulator", "photoelectric-effect-simulator", "solar-system-today", "atomic-clock-simulator",
-             "michelson-morley-experiment", "faster-than-light-shadow-simulator", "fountain-clock", "magnetic-isopotentials", "hutchison-effect-simulator", "heart-simulator", "neuron-simulator", "negative-index", "spin-simulator", "hologram", "maxwell-vortices","spin-wave-field", "spin-half", "quaternions", "crash-physics", "gta-stunt-jump-simulator"}
+             "michelson-morley-experiment", "faster-than-light-shadow-simulator", "fountain-clock", "magnetic-isopotentials", "hutchison-effect-simulator", "heart-simulator", "neuron-simulator", "negative-index", "spin-simulator", "hologram", "maxwell-vortices","spin-wave-field", "spin-half", "quaternions", "crash-physics"}
 
 # PDF family nav (2026-10-16): Home = the PDF Tools hub, then the editor and the six tools, ahead of Calculators / Tools
 PDF_NAV_INFO = '<li class="info-bar__item"><a class="info-bar__item__text" href=\'/pdf\'>Editor</a></li><li class="info-bar__item"><a class="info-bar__item__text" href=\'/merge-pdf\'>Merge</a></li><li class="info-bar__item"><a class="info-bar__item__text" href=\'/split-pdf\'>Split</a></li><li class="info-bar__item"><a class="info-bar__item__text" href=\'/organize-pdf\'>Organize</a></li><li class="info-bar__item"><a class="info-bar__item__text" href=\'/jpg-to-pdf\'>Images to PDF</a></li><li class="info-bar__item"><a class="info-bar__item__text" href=\'/pdf-to-jpg\'>PDF to images</a></li><li class="info-bar__item"><a class="info-bar__item__text" href=\'/compress-pdf\'>Compress</a></li>'
@@ -103,8 +103,8 @@ GTA_NAV_INFO = "".join("<li class=\"info-bar__item\"><a class=\"info-bar__item__
 GTA_NAV_MENU = "".join('<li class="navbar__item"><a class="navbar__link" href="/%s">GTA 6 %s</a></li>' % (sl, nm) for sl, nm in GTA_PAGES[1:])
 def _gta(slug, page, title, page_title, desc, tab, meta_desc):
     fam = "".join('<a href="/%s"%s>%s</a>' % (sl, ' aria-current="page"' if sl == slug else "", "GTA 6 Hub" if sl == "gta" else nm) for sl, nm in GTA_PAGES)
-    d = dict(title=title, page_title=page_title, tag=GTA_BRAND["tag"], accent="#c2185b", dark="#8e1145", tint="#fce4ec", desc=desc, meta_desc=meta_desc, js_v="1",
-             src="gta", lib_from=["clock"], js_parts=["sim.js"], nav_extra=GTA_NAV_INFO, menu_extra=GTA_NAV_MENU,
+    d = dict(title=title, page_title=page_title, tag=GTA_BRAND["tag"], accent="#c2185b", dark="#8e1145", tint="#fce4ec", desc=desc, meta_desc=meta_desc, js_v="3",
+             src="gta", lib_from=["clock"], js_parts=["sim3d.js", "sim.js"], nav_extra=GTA_NAV_INFO, menu_extra=GTA_NAV_MENU,
              vars={"PAGE": page, "FAM": fam, "BODY": "@%s.html" % page, "SEO": "@seo/%s.html" % page})
     if slug != "gta":
         d.update(js_path="gta/js/gta.js", brand=GTA_BRAND, tab=tab)

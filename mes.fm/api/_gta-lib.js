@@ -48,6 +48,7 @@
 			case "monster": P = [[0.02, 0.45], [0.04, 0.72], [0.25, 0.76], [0.33, 1], [0.7, 1], [0.8, 0.76], [0.98, 0.72], [1, 0.45]]; break;
 			default: P = [[0.05, 0.15], [0.12, 0.6], [0.4, 0.68], [0.55, 1], [0.75, 0.95], [0.95, 0.55], [1, 0.25], [0.8, 0.05]]; /* bikes: rider + machine */
 		}
+		if (!v.bike) P = P.map(function (p) { return [1 - p[0], p[1]]; }).reverse(); /* profiles are written tail-first: mirror so the bonnet faces forward (+x) */
 		var pts = P.map(function (p) { return pt(p[0], p[1]); });
 		var top = pts.filter(function (p, i) { return P[i][1] >= 0.95; }); /* roof points: touching = crashed */
 		return { pts: pts, roof: top, gc: gc };
@@ -60,7 +61,7 @@
 		{ id: "kicker", name: "Kicker on flat ground", veh: "hatch", kmh: 45, c: { ramp: "straight", angle: 8, height: 0.6, gap: 0, pit: 0, land: "flat" }, note: "A small kicker with nowhere soft to land: every landing on flat ground is hard. Compare it with Pro landing ramp." },
 		{ id: "pro", name: "Pro landing ramp", veh: "super", kmh: 78, c: { ramp: "straight", angle: 10, height: 4, gap: 15, pit: 0, land: "ramp", landAngle: 10, landHeight: 4 }, note: "Matching takeoff and landing ramps, like a real stunt show: clean from about 77 to 80 km/h, hard up to 86, then brutal." },
 		{ id: "canal", name: "Over the canal", veh: "muscle", kmh: 90, c: { ramp: "straight", angle: 10, height: 2, gap: 20, pit: 5, pitType: "water", land: "ramp", landAngle: 10, landHeight: 2 }, note: "A 20 m canal with a small landing ramp on the far bank. The window is only a few km/h wide." },
-		{ id: "roof", name: "Rooftop to rooftop", veh: "sports", kmh: 53, c: { ramp: "none", angle: 0, height: 0, gap: 8, pit: 14, land: "platform", landHeight: -2, plat: 25 }, note: "No ramp: straight off a roof edge onto a lower roof across the street. It lands nose first, so it is always hard." },
+		{ id: "roof", name: "Rooftop to rooftop", veh: "muscle", kmh: 46, c: { ramp: "none", angle: 0, height: 0, gap: 6, pit: 14, land: "platform", landHeight: -2, plat: 25 }, note: "No ramp: straight off a roof edge, over a 6 m street, onto a lower roof. A flat landing is always hard, and a few km/h either way is a wreck." },
 		{ id: "canyon", name: "Canyon jump", veh: "super", kmh: 105, c: { ramp: "straight", angle: 10, height: 4, gap: 30, pit: 40, land: "ramp", landAngle: 10, landHeight: 4 }, note: "A 30 m canyon with a 40 m drop. Too slow and there is no second try." },
 		{ id: "mega", name: "Mega ramp", veh: "dirt", kmh: 78, c: { ramp: "straight", angle: 20, height: 8, gap: 30, pit: 0, land: "ramp", landAngle: 20, landHeight: 8 }, note: "A dirt bike over a 30 m gap between 8 m towers: long airtime, big height." },
 		{ id: "monster", name: "Monster truck show", veh: "monster", kmh: 83, c: { ramp: "straight", angle: 15, height: 4, gap: 15, pit: 0, land: "ramp", landAngle: 8, landHeight: 6 }, note: "Five tonnes on 0.7 m of suspension travel: the widest window of any vehicle here." },
@@ -183,7 +184,7 @@
 	}
 	Sim.prototype.reset = function (opts) {
 		opts = opts || this.o; var co = this.co, v = this.v;
-		var target = (opts.kmh || 0) / 3.6, x0 = opts.mode === "drive" ? co.rampStart - (opts.approach || 260) : co.rampStart - Math.max(25, Math.min(80, target * 1.6));
+		var target = (opts.kmh || 0) / 3.6, x0 = opts.mode === "drive" ? co.rampStart - (opts.approach || 140) : co.rampStart - Math.max(25, Math.min(80, target * 1.6));
 		this.x = x0; this.y = v.hcg; this.th = 0; this.vx = opts.mode === "drive" ? 0 : target; this.vy = 0; this.w = 0; this.t = 0;
 		var self = this; this.ax.forEach(function (A) { A.spin = self.vx / v.r; A.comp = v.trav * v.sag; A.ang = 0; });
 		this.target = target; this.state = "approach"; this.ev = { scrape: false, bodyG: 0, takeoff: null, land: null, apex: null, firstTouch: null, maxH: -1e9, peakG: 0, peakGair: 0, landPeakG: 0, roof: false, body: false, splash: false, flips: 0 };
@@ -222,8 +223,9 @@
 				var sg = hit.seg, N = F * Math.max(0, -(dnx * sg.nx + dny * sg.ny)), vc = self.velAt(hit.x, hit.y), vt = vc[0] * sg.tx + vc[1] * sg.ty;
 				var want = 0;
 				if (A.driven && gas > 0) want += gas * Math.min(Pw / Math.max(Math.abs(vt), 2.5), A.load * m * g * v.mu * 1.4) * (v.drive === "a" ? 0.5 : 1);
-				if (brake > 0) want -= brake * v.mu * N * (vt >= 0 ? 1 : -1);
-				want -= 0.013 * N * (vt > 0.05 ? 1 : vt < -0.05 ? -1 : 0); /* rolling resistance */
+				var stopF = vt * A.load * m / dt; /* the force that would stop this axle in one step: brakes and rolling resistance never go past it */
+				if (brake > 0) want -= Math.max(-brake * v.mu * N, Math.min(brake * v.mu * N, stopF));
+				want -= Math.max(-0.013 * N, Math.min(0.013 * N, stopF)); /* rolling resistance */
 				var slip = A.spin * v.r - vt, fix = slip * A.Iw / (v.r * v.r * dt) * 0.5, Ft = want + fix, lim = v.mu * N;
 				if (Ft > lim) Ft = lim; else if (Ft < -lim) Ft = -lim;
 				force(hit.x, hit.y, sg.tx * Ft, sg.ty * Ft);

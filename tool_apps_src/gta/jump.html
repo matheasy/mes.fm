@@ -5,29 +5,46 @@
 		<section data-panel="sim" role="tabpanel">
 			<p class="tu-note gt-lead">Pick a car and a jump, press <b>Go</b>. The car is a real physics model: springs and dampers on each axle, tyre grip, engine power, air drag, and wheels whose spin turns the body in the air. It takes off, rotates, lands and either rolls away or wrecks, with the g-force the driver would feel.</p>
 			<div class="gj-chips" id="gj-pre" role="group" aria-label="Example jumps"></div>
+			<div class="gj-app" id="gj-app">
 			<div class="gj-wrap"><div class="gj-stage" id="gj-st">
 				<canvas id="gj-c" tabindex="0" role="img" aria-label="Side view of the car, the ramps and the jump. Space starts, R resets, arrow keys drive."></canvas>
-				<div class="gj-badge" id="gj-badge"></div>
-				<div class="gj-clock" id="gj-clock"></div>
-				<div class="gj-run">
-					<button type="button" id="gj-go" class="gj-go">▶ Go</button>
-					<button type="button" id="gj-reset" title="Back to the start (R)">↺ Reset</button>
-					<button type="button" id="gj-replay" title="Watch the jump again in slow motion">⟲ Replay</button>
+				<div class="gj-3d" id="gj-3d" hidden></div>
+				<div class="gj-status"><span class="gj-badge" id="gj-badge"></span><span class="gj-clock" id="gj-clock"></span></div>
+				<div class="gj-bar" role="toolbar" aria-label="Simulator controls">
+					<button type="button" id="gj-go" class="gj-go">▶︎ Go</button>
+					<button type="button" id="gj-reset" title="Back to the start (R)" aria-label="Reset">↺<span class="gj-t"> Reset</span></button>
+					<button type="button" id="gj-replay" title="Watch the jump again in slow motion" aria-label="Replay">⟲<span class="gj-t"> Replay</span></button>
 					<label class="gj-sel" title="Playback speed"><span class="gj-sr">Playback speed</span><select id="gj-slow"><option value="1">1×</option><option value="0.5">½×</option><option value="0.25">¼×</option><option value="0.1">0.1×</option><option value="2">2×</option></select></label>
+					<span class="gj-vseg" id="gj-view" role="group" aria-label="View"><button type="button" data-v="2d">2D</button><button type="button" data-v="3d">3D</button></span>
+					<label class="gj-sel" title="Camera"><span class="gj-sr">Camera</span><select id="gj-camsel"></select></label>
+					<button type="button" id="gj-statsb" class="gj-fillonly" title="Show or hide the stats strip" aria-label="Stats" aria-pressed="true">📊<span class="gj-t"> Stats</span></button>
+					<button type="button" id="gj-opt" title="Show or hide the options" aria-label="Options" aria-expanded="false">⚙︎<span class="gj-t"> Options</span></button>
+					<button type="button" id="gj-fill" title="Fill the browser window (W)" aria-label="Fill window">⤢<span class="gj-t"> Fill</span></button>
+					<button type="button" id="gj-fs" title="Full screen (F)" aria-label="Full screen">⛶︎</button>
 					<button type="button" id="gj-png" title="Save as a picture" aria-label="Save as PNG">📷</button>
 				</div>
+				<div class="gj-hud" id="gj-hud" aria-hidden="true"><b id="gj-hs">0</b><span id="gj-hu">km/h</span><i><s id="gj-hg"></s></i><em id="gj-hgt">1.0 g</em></div>
+				<div class="gj-hint" id="gj-hint" hidden></div>
 				<div class="gj-verdict" id="gj-verdict" hidden></div>
 				<div class="gj-touch" id="gj-touch" hidden>
-					<button type="button" data-k="tl" aria-label="Lean back">⟲</button>
-					<button type="button" data-k="brake" aria-label="Brake">Brake</button>
-					<button type="button" data-k="gas" aria-label="Gas">Gas</button>
-					<button type="button" data-k="tr" aria-label="Lean forward">⟳</button>
+					<div class="gj-tl"><button type="button" data-k="brake" aria-label="Brake">BRAKE</button><button type="button" data-k="tl" class="gj-tilt" aria-label="Lean back">⟲</button></div>
+					<div class="gj-tr"><button type="button" data-k="tr" class="gj-tilt" aria-label="Lean forward">⟳</button><button type="button" data-k="gas" class="gj-gas" aria-label="Gas">GAS</button></div>
 				</div>
+				<div class="gj-load" id="gj-load" hidden>Loading 3D…</div>
 			</div>
-			<div class="gj-scrub" hidden><label for="gj-scrub">Scrub through the jump</label><input type="range" id="gj-scrub" min="0" max="1" value="0"></div>
-			<div class="gj-ro" id="gj-ro"></div></div>
-
-			<div class="tu-card gj-controls">
+			<div class="gj-under">
+				<div class="gj-quick" id="gj-quick">
+					<button type="button" id="gj-qprev" aria-label="Previous vehicle">◀︎</button><label class="gj-sel gj-qveh"><span class="gj-sr">Vehicle</span><select id="gj-qveh"></select></label><button type="button" id="gj-qnext" aria-label="Next vehicle">▶︎</button>
+					<label class="gj-qspd" id="gj-qspdf"><span class="gj-sr">Speed at the ramp</span><input type="range" id="gj-qspd" min="10" max="260" step="1"><b id="gj-qspdv"></b></label>
+					<button type="button" id="gj-edit" aria-pressed="true" title="Show or hide the drag handles on the ramps">✎︎<span class="gj-t"> Handles</span></button>
+				</div>
+				<div class="gj-scrub" hidden><label for="gj-scrub">Scrub</label><input type="range" id="gj-scrub" min="0" max="1" value="0"></div>
+				<div class="gj-ro" id="gj-ro"></div>
+			</div></div>
+			<aside class="gj-drawer" id="gj-drawer" aria-label="Options"><div class="gj-dhead"><b>Options</b><button type="button" id="gj-dclose" aria-label="Close the options">✕</button></div><div class="gj-chips" id="gj-pre2" role="group" aria-label="Example jumps"></div><div id="gj-dbody"></div></aside>
+			</div>
+			<div id="gj-ph"></div>
+			<div class="tu-card gj-controls" id="gj-panel">
 				<div class="gj-cols">
 					<fieldset class="gj-fs"><legend>Vehicle</legend>
 						<div class="gj-grid">
@@ -67,7 +84,6 @@
 						<div class="gj-grid">
 							<label class="tu-field"><span class="tu-label">Gravity</span><select id="gj-gr" class="tu-select"><option value="earth">Earth (9.81 m/s²)</option><option value="moon">Moon (1.62 m/s², no air)</option><option value="mars">Mars (3.71 m/s²)</option><option value="jupiter">Jupiter (24.8 m/s²)</option></select></label>
 							<div class="tu-field"><span class="tu-label">Units</span><div class="tu-seg gj-seg" id="gj-units" role="group" aria-label="Units"><button type="button" data-v="m">km/h, m</button><button type="button" data-v="i">mph, ft</button></div></div>
-							<div class="tu-field"><span class="tu-label">Camera</span><div class="tu-seg gj-seg" id="gj-cam" role="group" aria-label="Camera"><button type="button" data-v="auto">Auto</button><button type="button" data-v="whole">Whole jump</button><button type="button" data-v="follow">Follow</button></div></div>
 							<label class="gj-check"><input type="checkbox" id="gj-ac"> Game-style air control (←/→ tilts the car in the air; not real physics)</label>
 						</div>
 					</fieldset>
