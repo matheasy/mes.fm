@@ -44,6 +44,7 @@ export const SECTIONS = [
     id: "911-videos",
     title: "Videos",
     items: [
+      { href: "https://mes.fm/911-contact-lens-melted", title: "9/11 Survivor Ron DiFrancesco says his contact lens melted to his eyes" },
       { href: "https://mes.fm/911-plane-compilation-fumes", title: "Compilation of the 2nd \"Plane\" Impact and Giant Column of Fumes Thousands of Feet in the Air" },
       { href: "https://mes.fm/richard-gage-gatekeeper", title: "Richard Gage: \"We Are Necessarily Gatekeepers\" of 9/11 Truth 🤡" },
       { href: "https://mes.fm/ua175-airborne-flight-explorer", title: "MSNBC Live 9/11 Flight Explorer Data Shows United 175 Still Airborne After the South Tower \"Crash\"" },
@@ -89,7 +90,7 @@ export const SECTIONS = [
         links: [["Hive", "https://peakd.com/hive-113182/@mes/tpcoktor"], ["3Speak", "https://3speak.tv/watch?v=mes/tpcoktor"], ["YouTube", "https://youtu.be/5WnjoqIQOt4"], ["BitChute", "https://bitchute.com/video/Hb48wWKRBuwA/"], ["Odysee", "https://odysee.com/911Truth-34-EMF-2nd-Impact-911:b6a06a3175fca18562ad4fe1b861bc157346162b"], ["Rumble", "https://rumble.com/v6e6y0g-911truth-part-34-electromagnetic-interference-during-2nd-impact-on-911.html"]] },
       { title: "Part 33: Electromagnetic Field Interference on 9/11",
         image: "https://files.peakd.com/file/peakd-hive/mes/24244XqiweEFHBsrHxS9Y7pu4M9Fq3VTuypqMNFHE3uEUeLmPH7y9mbmMZNAzaG2TJFZ3.jpeg",
-        links: [["Hive", "https://peakd.com/hive-113182/@mes/grpqbovi"], ["3Speak", "https://3speak.tv/watch?v=mes/grpqbovi"], ["YouTube", "https://youtu.be/FuN-MIyIpv4"], ["BitChute", "https://bitchute.com/video/MqhNUFHGD6F3/"], ["Odysee", "https://odysee.com/@mes:8/911truth-EMF-Interference:7"], ["Rumble", "https://rumble.com/v6a8dvs-911truth-part-33-electromagnetic-field-interference-on-911.html"]] },
+        links: [["Notes", "https://mes.fm/911truth-33-emf-911"], ["Hive", "https://peakd.com/hive-113182/@mes/grpqbovi"], ["3Speak", "https://3speak.tv/watch?v=mes/grpqbovi"], ["YouTube", "https://youtu.be/FuN-MIyIpv4"], ["BitChute", "https://bitchute.com/video/MqhNUFHGD6F3/"], ["Odysee", "https://odysee.com/@mes:8/911truth-EMF-Interference:7"], ["Rumble", "https://rumble.com/v6a8dvs-911truth-part-33-electromagnetic-field-interference-on-911.html"]] },
       { title: "Part 32: 3D Volumetric Image Projection on 9/11 (Clip from Censored Documentary)",
         image: "https://files.peakd.com/file/peakd-hive/mes/23xAeRgDZYXQeNfZp7h8icZcw8R9etrRWtrRBkiSdmhkCTez9tHe4Rba2f57XbW3p3ctm.jpeg",
         links: [["Hive", "https://peakd.com/hive-113182/@mes/kqogyjjx"], ["3Speak", "https://3speak.tv/watch?v=mes/kqogyjjx"], ["YouTube", "https://youtu.be/aUoVE7ky3qY"], ["BitChute", "https://bitchute.com/video/EDt0wuB9B061/"], ["Odysee", "https://odysee.com/@mes:8/911Truth-Part-32-Volumetric-Projection:7"], ["Rumble", "https://rumble.com/v5emgh1-911truth-part-32-3d-volumetric-image-projection-on-911-clip-from-censored-d.html"]] },

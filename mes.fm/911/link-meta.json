@@ -1106,5 +1106,35 @@
       }
     ],
     "namedLinks": []
+  },
+  "https://mes.fm/911-contact-lens-melted": {
+    "image": "https://mes.fm/911-contact-lens-melted/img/poster.jpg",
+    "watchLinks": [
+      {
+        "label": "3Speak",
+        "href": "https://3speak.tv/watch?v=mestruth/911-survivor-ron-difrancesc-244"
+      },
+      {
+        "label": "YouTube",
+        "href": "https://youtu.be/e_L09-nZq6g"
+      },
+      {
+        "label": "Rumble",
+        "href": "https://rumble.com/v7i18mu-911-survivor-ron-difrancesco-says-his-contact-lens-melted-to-his-eyes.html"
+      },
+      {
+        "label": "Odysee",
+        "href": "https://odysee.com/@mestruth:9/911-contact-lens-melted:9"
+      },
+      {
+        "label": "BitChute",
+        "href": "https://www.bitchute.com/video/cAVwURsQlKgS/"
+      },
+      {
+        "label": "Telegram",
+        "href": "https://t.me/meslinks/28340"
+      }
+    ],
+    "namedLinks": []
   }
 }
