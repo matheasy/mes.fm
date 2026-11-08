@@ -419,7 +419,7 @@
         if (mobMQ && mobMQ.addEventListener) mobMQ.addEventListener("change", layout); else if (mobMQ && mobMQ.addListener) mobMQ.addListener(layout);
         /* the hide / show tab */
         var tab = document.createElement("button"); tab.type = "button"; tab.id = "hdrBarTab";
-        tab.innerHTML = '<svg viewBox="0 0 24 24" width="16" height="16" aria-hidden="true" focusable="false"><path d="M5 9l7 7 7-7" fill="none" stroke="currentColor" stroke-width="2.8" stroke-linecap="round" stroke-linejoin="round"/></svg>';
+        tab.innerHTML = '<svg viewBox="0 0 24 24" width="16" height="16" aria-hidden="true" focusable="false"><path d="M5 15l7-7 7 7" fill="none" stroke="currentColor" stroke-width="2.8" stroke-linecap="round" stroke-linejoin="round"/></svg>';
         document.body.appendChild(tab);
         function bar(hide, save) {
             document.body.classList.toggle("hc-barhide", hide); if (hide) closePanel();
