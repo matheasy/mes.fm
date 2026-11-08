@@ -1,0 +1,15 @@
+.DS_Store
+*.log
+android/keystore.properties
+android/local.properties
+android/build/
+android/app/build/
+android/.gradle/
+android/.kotlin/
+*.jks
+*.keystore
+*.apk
+*.aab
+ios/build/
+ios/*.xcarchive
+DerivedData/

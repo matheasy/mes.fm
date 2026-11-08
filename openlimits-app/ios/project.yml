@@ -1,0 +1,57 @@
+name: OpenLimits
+options:
+  bundleIdPrefix: fm.mes
+  deploymentTarget:
+    iOS: "16.0"
+  createIntermediateGroups: true
+settings:
+  base:
+    DEVELOPMENT_TEAM: BS5YQPDA5X
+    CODE_SIGN_STYLE: Automatic
+    MARKETING_VERSION: "1.0"
+    CURRENT_PROJECT_VERSION: "1"
+    SWIFT_VERSION: "5.0"
+    TARGETED_DEVICE_FAMILY: "1,2"
+targets:
+  OpenLimits:
+    type: application
+    platform: iOS
+    sources: [App, Shared]
+    settings:
+      base:
+        PRODUCT_BUNDLE_IDENTIFIER: fm.mes.openlimits
+        INFOPLIST_FILE: App/Info.plist
+        CODE_SIGN_ENTITLEMENTS: App/OpenLimits.entitlements
+        ASSETCATALOG_COMPILER_APPICON_NAME: AppIcon
+        ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME: AccentColor
+    dependencies:
+      - target: ShieldConfig
+      - target: ShieldAction
+      - target: Monitor
+  ShieldConfig:
+    type: app-extension
+    platform: iOS
+    sources: [ShieldConfig, Shared]
+    settings:
+      base:
+        PRODUCT_BUNDLE_IDENTIFIER: fm.mes.openlimits.ShieldConfig
+        INFOPLIST_FILE: ShieldConfig/Info.plist
+        CODE_SIGN_ENTITLEMENTS: Extension.entitlements
+  ShieldAction:
+    type: app-extension
+    platform: iOS
+    sources: [ShieldAction, Shared]
+    settings:
+      base:
+        PRODUCT_BUNDLE_IDENTIFIER: fm.mes.openlimits.ShieldAction
+        INFOPLIST_FILE: ShieldAction/Info.plist
+        CODE_SIGN_ENTITLEMENTS: Extension.entitlements
+  Monitor:
+    type: app-extension
+    platform: iOS
+    sources: [Monitor, Shared]
+    settings:
+      base:
+        PRODUCT_BUNDLE_IDENTIFIER: fm.mes.openlimits.Monitor
+        INFOPLIST_FILE: Monitor/Info.plist
+        CODE_SIGN_ENTITLEMENTS: Extension.entitlements

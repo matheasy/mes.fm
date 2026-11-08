@@ -1,0 +1,10 @@
+<resources>
+    <style name="Theme.OpenLimits" parent="android:Theme.Material.Light.NoActionBar">
+        <item name="android:statusBarColor">@android:color/transparent</item>
+        <item name="android:navigationBarColor">@android:color/transparent</item>
+        <item name="android:windowBackground">@color/bg</item>
+    </style>
+    <style name="Theme.OpenLimits.Gate" parent="Theme.OpenLimits">
+        <item name="android:windowBackground">@color/gate_bg</item>
+    </style>
+</resources>

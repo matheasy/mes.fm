@@ -1,0 +1,6 @@
+<resources>
+    <string name="app_name">Open Limits</string>
+    <string name="service_label">MES Open Limits</string>
+    <string name="service_summary">Counts how many times you open the apps you chose and locks them when you reach your daily limit.</string>
+    <string name="service_description">MES Open Limits only looks at which app is on screen, so it can count opens of the apps you put a limit on, show the pause screen and lock an app when its opens are used up. It does not read what is on your screen, does not type or tap for you, and sends nothing anywhere: everything stays on this phone.</string>
+</resources>
