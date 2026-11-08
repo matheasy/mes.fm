@@ -279,7 +279,7 @@ APPS = {
                     tag="Your photos and videos, beautifully, nothing uploaded.", accent="#7c3aed", dark="#5b21b6", tint="#ede7fd",
                     desc="Free photo and video viewer in your browser: open a folder (with subfolders) and see thousands of pictures and videos in rows, squares, masonry or a list, grouped by day, month, folder or type. Big viewer with zoom, slideshow, rotation, favourites and star ratings, and video speed controls from 0.25x to 4x with frame steps and A-B loops. Nothing is uploaded.",
                     meta_desc="Free photo and video viewer for your own folders: fast thumbnails, rows / masonry / list, slideshow, zoom, video speed 0.25x-4x and A-B loops. Nothing is uploaded.",
-                    js_v="1", lib_from=["exif-viewer"],
+                    js_v="2", lib_from=["exif-viewer"],
                     head_extra='<link rel="manifest" href="/gallery/manifest.webmanifest"><meta name="theme-color" content="#5b21b6">'),
     "exif-viewer": dict(title="MES EXIF Viewer", page_title="EXIF Viewer: Photo Metadata, GPS Location and AI Flags",
                         tag="See the hidden data in a photo.", accent="#0f766e", dark="#0a5750", tint="#dcf2ef",

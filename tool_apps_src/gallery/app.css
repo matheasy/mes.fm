@@ -68,7 +68,7 @@
 	.mg-t .mg-ph {position:absolute;inset:0;display:flex;align-items:center;justify-content:center;flex-direction:column;gap:0.2em;font-size:0.82em;color:var(--mg-muted);text-align:center;padding:0.4em;}
 	.mg-t .mg-ph b {font-size:1.6em;opacity:0.65;}
 	.mg-badge {position:absolute;right:6px;bottom:6px;background:var(--mg-shade);color:var(--mg-on);font-size:0.78em;padding:0.1em 0.45em;border-radius:1em;pointer-events:none;font-variant-numeric:tabular-nums;backdrop-filter:blur(4px);}
-	.mg-badge::before {content:"▶ ";font-size:0.85em;}
+	.mg-badge::before {content:"▶\FE0E  ";font-size:0.85em;}
 	.mg-nm {position:absolute;left:0;right:0;bottom:0;padding:1.4em 0.5em 0.35em;background:linear-gradient(transparent, var(--mg-shade));color:var(--mg-on);font-size:0.8em;text-align:left;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;opacity:0;transition:opacity 0.2s;pointer-events:none;}
 	.mg-t:hover .mg-nm, .mg-shownames .mg-nm {opacity:1;}
 	.mg-t.mg-hasbadge .mg-nm {padding-right:4.2em;}
@@ -232,6 +232,26 @@
 		.mgv-vbar {padding:0.35em 0.4em;}
 		.mgv-vrow .mgv-hidesm {display:none;}
 	}
+	/* big play button while a video is paused (phones block sound until a tap) */
+	.mgv-bigplay {position:absolute;left:50%;top:50%;width:76px;height:76px;margin:-38px 0 0 -38px;border-radius:50%;border:0;background:rgba(0,0,0,0.55);color:#fff;font-size:2em;line-height:1;padding-left:0.18em;z-index:2;cursor:pointer;backdrop-filter:blur(6px);-webkit-backdrop-filter:blur(6px);box-shadow:0 4px 18px rgba(0,0,0,0.4);}
+	.mgv-bigplay[hidden] {display:none;}
+	html body.dark-mode #mgv .mgv-bigplay {background:rgba(0,0,0,0.55);color:#fff;}
+	video.mgv-media {background:#000;}
+	/* short screens (a phone held sideways): the picture uses the whole screen, the bars float over it and hide while it plays */
+	.mgv.mgv-short {--mv-stripH:0px !important;}
+	.mgv-short .mgv-strip {display:none !important;}
+	.mgv-short .mgv-top {padding:0.25em max(0.5em, env(safe-area-inset-right)) 0.25em max(0.5em, env(safe-area-inset-left));}
+	.mgv-short .mgv-top .mgv-b {height:34px;min-width:34px;}
+	.mgv-short .mgv-tt small {display:none;}
+	.mgv-short .mgv-vbar {bottom:max(6px, env(safe-area-inset-bottom));width:min(960px, calc(100% - 12px - env(safe-area-inset-left) - env(safe-area-inset-right)));padding:0.2em 0.5em 0.3em;gap:0.1em;background:rgba(10,12,18,0.72);}
+	.mgv-short .mgv-vrow {flex-wrap:nowrap;overflow:hidden;}
+	.mgv-short .mgv-vrow .mgv-b {height:32px;min-width:32px;padding:0 0.45em;}
+	.mgv-short .mgv-vrow .mgv-hidesm, .mgv-short .mgv-vol input {display:none;}
+	.mgv-short .mgv-nav {width:44px;height:44px;margin-top:-22px;}
+	.mgv-short .mgv-pop {max-height:calc(100% - 3.6em);overflow-y:auto;top:2.9em;}
+	.mgv-short .mgv-help {max-height:92%;}
+	.mgv-fsb {font-size:1.05em;}
+	input[type=file][hidden], #mg input[type=file][hidden] {display:none !important;}
 	/* while the viewer is open, nothing else may sit on top of it: no ads (anchor / vignette / sidebar), no floating bar */
 	body.mg-viewing ins.adsbygoogle, body.mg-viewing .google-auto-placed, body.mg-viewing iframe[id^="aswift"], body.mg-viewing iframe[id^="google_ads"], body.mg-viewing #compact-nav,
 	body.mg-filling ins.adsbygoogle, body.mg-filling .google-auto-placed, body.mg-filling iframe[id^="aswift"], body.mg-filling iframe[id^="google_ads"], body.mg-filling #compact-nav {visibility:hidden !important;}

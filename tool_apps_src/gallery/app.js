@@ -272,7 +272,7 @@
 		if (m.w && m.h) { it.w = m.w; it.h = m.h; it.ar = m.w / m.h; }
 		if (m.taken) it.taken = m.taken;
 		if (m.dur) it.dur = m.dur;
-		if (m.bad) it.bad = m.bad;
+		if (m.bad && m.bad !== 'video') it.bad = m.bad;   // 'video' = old thumbnail-only failures (iPhone): try again
 	}
 
 	/* ---------------- filtering, sorting, layout ---------------- */
@@ -338,7 +338,7 @@
 			var n = heads.get(key);
 			if (!n) {
 				n = el('div', 'mg-h'); n.dataset.g = h.g;
-				n.innerHTML = '<span>' + esc(h.label) + '</span> <small>' + h.count.toLocaleString() + '</small><button type="button" data-play="' + h.g + '" title="Slideshow of this group">▶ Play</button>';
+				n.innerHTML = '<span>' + esc(h.label) + '</span> <small>' + h.count.toLocaleString() + '</small><button type="button" data-play="' + h.g + '" title="Slideshow of this group">▶︎ Play</button>';
 				cv.appendChild(n); heads.set(key, n);
 			}
 			n.style.transform = 'translateY(' + h.y + 'px)'; n.style.height = h.h + 'px'; n.style.top = '0';
@@ -354,7 +354,7 @@
 	function tileInner(it, isList) {
 		var r = rating(it), heart = '<button type="button" class="mg-hb' + (r.f ? ' mg-on' : '') + '" data-fav="1" aria-label="Favourite" aria-pressed="' + (!!r.f) + '" tabindex="-1">♥</button>';
 		var th = thumbURL.get(it.id), img = th ? '<img alt="" src="' + th + '" class="mg-in" draggable="false">' : '<img alt="" draggable="false">';
-		var ph = it.bad ? '<span class="mg-ph"><b>' + (it.kind === 'video' ? '🎞' : '🖼') + '</b>' + esc((it.ext || '').toUpperCase()) + '<br>' + (it.bad === 'video' ? 'can\'t play here' : 'can\'t show here') + '</span>' : '';
+		var ph = it.bad ? '<span class="mg-ph"><b>' + (it.kind === 'video' ? '🎞' : '🖼') + '</b>' + esc((it.ext || '').toUpperCase()) + '<br>' + (it.bad === 'video-err' ? 'can\'t play here' : 'can\'t show here') + '</span>' : it.nothumb ? '<span class="mg-ph"><b>🎞</b>' + esc((it.ext || '').toUpperCase()) + '</span>' : '';
 		if (isList) {
 			return '<span class="mg-lt">' + img + ph.replace('<br>', ' ') + '</span><span class="mg-lname">' + esc(it.name) + '<small>' + esc(it.folder || rootName) + '</small></span>' +
 				'<span class="mg-lc mg-lx">' + (it.kind === 'video' ? (it.dur ? G.fmtDur(it.dur) : 'video') : (it.w ? it.w + '×' + it.h : '')) + '</span>' +
@@ -474,16 +474,33 @@
 	}
 	function markBad(it, what) { it.bad = what; iput('meta', metaKey(it), { w: it.w, h: it.h, taken: it.taken, bad: what }); var n = rendered.get(it.id); if (n) updateTile(n, it); }
 	function videoThumb(it) {
+		// A failed thumbnail never means "can't play": only a real decode error does (iPhone Safari often won't seek a video that has not played).
 		return new Promise(function (res) {
-			var v = document.createElement('video'), u = URL.createObjectURL(it.file), done = false, to = setTimeout(function () { fin(null, true); }, 12000);
-			function fin(r, bad) { if (done) return; done = true; clearTimeout(to); try { v.removeAttribute('src'); v.load(); } catch (e) {} URL.revokeObjectURL(u); if (bad) markBad(it, 'video'); res(r); }
-			v.muted = true; v.playsInline = true; v.preload = 'auto';
-			v.onloadedmetadata = function () { it.dur = v.duration; v.currentTime = G.posterTime(v.duration); };
-			v.onseeked = function () {
-				if (!v.videoWidth) return fin(null, true);
-				drawThumb(v, v.videoWidth, v.videoHeight).then(function (r) { r.dur = v.duration; fin(r); }, function () { fin(null, true); });
+			var v = document.createElement('video'), u = URL.createObjectURL(it.file), done = false, kick = 0, to = setTimeout(function () { fin(null); }, 9000);
+			function fin(r, bad) {
+				if (done) return; done = true; clearTimeout(to); clearTimeout(kick);
+				try { v.pause(); v.removeAttribute('src'); v.load(); } catch (e) {} if (v.parentNode) v.remove(); URL.revokeObjectURL(u);
+				if (bad) markBad(it, 'video-err'); else if (!r) { it.nothumb = true; var n = rendered.get(it.id); if (n) updateTile(n, it); }
+				res(r);
+			}
+			function grab() {
+				if (done || !v.videoWidth) return;
+				drawThumb(v, v.videoWidth, v.videoHeight).then(function (r) { r.dur = v.duration; fin(r); }, function () { fin(null); });
+			}
+			v.muted = true; v.defaultMuted = true; v.playsInline = true; v.setAttribute('playsinline', ''); v.setAttribute('muted', ''); v.preload = 'auto';
+			// in the page (off screen): Safari decodes frames of attached videos more reliably
+			v.style.cssText = 'position:fixed;left:-9999px;top:0;width:2px;height:2px;opacity:0;pointer-events:none';
+			v.onloadedmetadata = function () {
+				it.dur = v.duration;
+				if (!v.videoWidth && !v.videoHeight) return fin(null, true);   // sound only / undecodable picture
+				var t = G.posterTime(v.duration); if (t > 0.05) v.currentTime = t;
+				// no "seeked" (iPhone): play it silently for a moment, then take that frame
+				kick = setTimeout(function () { var p = v.play(); if (p && p.then) p.then(function () { setTimeout(function () { v.pause(); grab(); }, 250); }, function () { grab(); }); else grab(); }, 1800);
 			};
+			v.onloadeddata = function () { if (G.posterTime(v.duration) <= 0.05) grab(); };
+			v.onseeked = grab;
 			v.onerror = function () { fin(null, true); };
+			(document.body || document.documentElement).appendChild(v);
 			v.src = u;
 		});
 	}
@@ -547,7 +564,7 @@
 		if (vw) return vw;
 		vw = el('div', 'mgv'); vw.id = 'mgv'; vw.setAttribute('role', 'dialog'); vw.setAttribute('aria-modal', 'true'); vw.setAttribute('aria-label', 'Photo viewer'); vw.tabIndex = -1;
 		vw.innerHTML =
-			'<div class="mgv-stage" id="mgv-stage"></div><div class="mgv-spin" id="mgv-spin"></div><div class="mgv-sbar" id="mgv-sbar"></div><div class="mgv-osd" id="mgv-osd"></div>' +
+			'<div class="mgv-stage" id="mgv-stage"></div><button type="button" class="mgv-bigplay" id="mgv-bigplay" data-a="play" aria-label="Play" hidden>▶︎</button><div class="mgv-spin" id="mgv-spin"></div><div class="mgv-sbar" id="mgv-sbar"></div><div class="mgv-osd" id="mgv-osd"></div>' +
 			'<div class="mgv-top">' +
 			'<button type="button" class="mgv-b mgv-x" data-a="close" title="Close (Esc)" aria-label="Close">✕</button>' +
 			'<div class="mgv-tt"><b id="mgv-name"></b><small id="mgv-sub"></small></div>' +
@@ -555,10 +572,10 @@
 			'<button type="button" class="mgv-b mgv-hidesm" data-a="rotl" title="Rotate left (Shift+R)" aria-label="Rotate left">⟲</button>' +
 			'<button type="button" class="mgv-b" data-a="rotr" title="Rotate right (R)" aria-label="Rotate right">⟳</button>' +
 			'<button type="button" class="mgv-b mgv-zoom" data-a="sizemenu" title="Size: fit, fill, 100%, custom" aria-haspopup="true" id="mgv-zoom">Fit</button>' +
-			'<button type="button" class="mgv-b" data-a="slide" title="Slideshow (P)" aria-pressed="false" id="mgv-slide">▶<span class="mgv-hidesm"> Slideshow</span></button>' +
+			'<button type="button" class="mgv-b" data-a="slide" title="Slideshow (P)" aria-pressed="false" id="mgv-slide">▶︎<span class="mgv-hidesm"> Slideshow</span></button>' +
 			'<button type="button" class="mgv-b mgv-hidesm" data-a="strip" title="Strip of thumbnails (T)" aria-pressed="false" id="mgv-stripb">▭</button>' +
 			'<button type="button" class="mgv-b" data-a="info" title="Details (I)" aria-pressed="false" id="mgv-infob">ⓘ</button>' +
-			'<button type="button" class="mgv-b mgv-hidesm" data-a="fs" title="Full screen (F)" aria-label="Full screen">⛶</button>' +
+			'<button type="button" class="mgv-b mgv-fsb" data-a="fs" title="Full screen (F)" aria-label="Full screen">⛶</button>' +
 			'<button type="button" class="mgv-b mgv-hidesm" data-a="help" title="Keyboard shortcuts (?)" aria-label="Keyboard shortcuts">?</button>' +
 			'</div>' +
 			'<div class="mgv-pop" id="mgv-sizepop" hidden role="menu">' +
@@ -575,13 +592,13 @@
 			'<div class="mgv-vbar" id="mgv-vbar" hidden>' +
 			'<div class="mgv-seek" id="mgv-seek"><span class="mgv-track"></span><span class="mgv-buf" id="mgv-buf"></span><span class="mgv-ab" id="mgv-ab" hidden></span><span class="mgv-done" id="mgv-done"></span><span class="mgv-knob" id="mgv-knob"></span><span class="mgv-hov" id="mgv-hov" hidden></span></div>' +
 			'<div class="mgv-vrow">' +
-			'<button type="button" class="mgv-b" data-a="play" id="mgv-pp" title="Play / pause (Space, K)">▶</button>' +
+			'<button type="button" class="mgv-b" data-a="play" id="mgv-pp" title="Play / pause (Space, K)">▶︎</button>' +
 			'<button type="button" class="mgv-b mgv-hidesm" data-a="fback" title="One frame back (,)">⏮︎</button><button type="button" class="mgv-b mgv-hidesm" data-a="ffwd" title="One frame forward (.)">⏭︎</button>' +
 			'<span class="mgv-time" id="mgv-time">0:00 / 0:00</span>' +
 			'<span class="mgv-sp"><button type="button" class="mgv-b" data-a="slower" title="Slower (S)">−</button><button type="button" class="mgv-b mgv-spv" data-a="speedmenu" id="mgv-spv" title="Speed: click for presets, R resets">1×</button><button type="button" class="mgv-b" data-a="faster" title="Faster (D)">+</button></span>' +
 			'<span class="mgv-grow"></span>' +
 			'<button type="button" class="mgv-b" data-a="seta" title="Loop start here (A)">A</button><button type="button" class="mgv-b" data-a="setb" title="Loop end here (B)">B</button><button type="button" class="mgv-b mgv-hidesm" data-a="clearab" title="Clear the A-B loop (C)" id="mgv-clab">✕AB</button>' +
-			'<button type="button" class="mgv-b" data-a="loop" title="Repeat the whole video" aria-pressed="false" id="mgv-loop">🔁</button>' +
+			'<button type="button" class="mgv-b" data-a="loop" title="Repeat the whole video" aria-pressed="false" id="mgv-loop">🔁︎</button>' +
 			'<span class="mgv-vol"><button type="button" class="mgv-b" data-a="mute" id="mgv-mute" title="Mute (M)">🔊</button><input type="range" id="mgv-vol" min="0" max="1" step="0.02" aria-label="Volume"></span>' +
 			'</div></div>' +
 			'<div class="mgv-pop" id="mgv-speedpop" hidden role="menu" style="top:auto;bottom:calc(var(--mv-stripH,0px) + 110px);right:auto;left:50%;transform:translateX(-50%);min-width:10em"></div>' +
@@ -645,6 +662,7 @@
 		vw.querySelector('[data-a=prev]').disabled = i === 0 && !V.slide; vw.querySelector('[data-a=next]').disabled = i === VIEW.length - 1 && !V.slide;
 		syncFav();
 		vq('mgv-vbar').hidden = it.kind !== 'video';
+		vq('mgv-bigplay').hidden = true; V.wantPlay = false;
 		var stage = vq('mgv-stage'), oldMsg = stage.querySelector('.mgv-msg'); if (oldMsg) oldMsg.remove();
 		// old picture slides / fades away
 		if (prev) {
@@ -660,11 +678,13 @@
 		if (it.kind === 'video') {
 			m = document.createElement('video'); m.className = 'mgv-media'; m.playsInline = true; m.preload = 'auto'; m.loop = !!P.loopAll;
 			m.volume = P.vol; m.muted = !!P.muted; m.src = url;
+			V.wantPlay = true; startPlay(m);
 			m.addEventListener('loadedmetadata', function () {
 				if (gen !== loadGen) return; clearTimeout(spinT); vq('mgv-spin').classList.remove('mgv-on');
 				V.natW = m.videoWidth || 1280; V.natH = m.videoHeight || 720; it.dur = m.duration;
-				placeNew(m, dir, fromTile); m.playbackRate = V.rate || 1; m.play().catch(function () {}); syncVideo();
+				placeNew(m, dir, fromTile); m.playbackRate = V.rate || 1; if (m.paused && V.wantPlay) startPlay(m); syncVideo();
 			});
+			m.addEventListener('playing', function once() { m.removeEventListener('playing', once); setTimeout(function () { thumbFromViewer(it, m); }, 400); });
 			m.addEventListener('error', function () { if (gen !== loadGen) return; clearTimeout(spinT); vq('mgv-spin').classList.remove('mgv-on'); cantShow(it); });
 			wireVideo(m);
 		} else {
@@ -697,13 +717,34 @@
 		vq('mgv-stage').appendChild(msg);
 		if (V.slide) slideTick();
 	}
-	function sizeEl(m) { m.style.setProperty('width', V.natW + 'px', 'important'); m.style.setProperty('height', V.natH + 'px', 'important'); }
+	// a video whose thumbnail failed (iPhone) gets one from the viewer once it really plays
+	function thumbFromViewer(it, m) {
+		if (thumbURL.has(it.id) || !m.videoWidth || m !== V.media) return;
+		drawThumb(m, m.videoWidth, m.videoHeight).then(function (r) {
+			if (!r || !r.blob) return;
+			iput('thumbs', G.thumbKey(it, TPX), { b: r.blob, w: r.w, h: r.h, dur: m.duration || 0 });
+			it.nothumb = false; if (it.bad === 'video') it.bad = null;
+			setThumb(it, URL.createObjectURL(r.blob)); var n = rendered.get(it.id); if (n) updateTile(n, it);
+		}, function () {});
+	}
+	function startPlay(m) { var pr = m.play(); if (pr && pr.catch) pr.catch(function () { if (m === V.media) syncVideo(); }); }
+	// phones held sideways: the controls float over the picture instead of shrinking it
+	function isShort() { return Math.min(window.innerHeight, (window.visualViewport && window.visualViewport.height) || 1e9) <= 520; }
+	// videos are laid out at their shown size (no scale()): phones draw a scaled-down full-size video element badly (wrong place, flicker, black)
+	function xf(m, tx, ty, k) {
+		k = k == null ? V.s : k;
+		if (m.tagName === 'VIDEO') {
+			m.style.setProperty('width', Math.max(1, V.natW * k) + 'px', 'important'); m.style.setProperty('height', Math.max(1, V.natH * k) + 'px', 'important');
+			m.style.transform = 'translate(-50%,-50%) translate(' + tx + 'px,' + ty + 'px) rotate(' + V.rot + 'deg)';
+		} else m.style.transform = 'translate(-50%,-50%) translate(' + tx + 'px,' + ty + 'px) rotate(' + V.rot + 'deg) scale(' + k + ')';
+	}
+	function sizeEl(m) { if (m.tagName === 'VIDEO') return; m.style.setProperty('width', V.natW + 'px', 'important'); m.style.setProperty('height', V.natH + 'px', 'important'); }
 	function placeNew(m, dir, fromTile) {
 		sizeEl(m); m.style.opacity = '0';
 		vq('mgv-stage').appendChild(m);
 		fitNow(false);
 		var target = m.style.transform;
-		if (fromTile && fromTile.getBoundingClientRect) {
+		if (fromTile && fromTile.getBoundingClientRect && m.tagName !== 'VIDEO') {
 			// zoom out of the tile it was clicked on
 			var r = fromTile.getBoundingClientRect(), sr = vw.getBoundingClientRect(), cx = r.left + r.width / 2 - (sr.left + sr.width / 2), cy = r.top + r.height / 2 - (sr.top + sr.height / 2);
 			var k = Math.max(r.width / (V.natW || 1), r.height / (V.natH || 1));
@@ -714,7 +755,13 @@
 		m.style.transform = target; m.style.opacity = '1';
 		setTimeout(function () { m.classList.remove('mgv-anim', 'mgv-fade'); }, 340);
 	}
-	function stageSize() { var s = vq('mgv-stage'); var w = s.clientWidth, h = s.clientHeight; if (vw.classList.contains('mgv-info-open') && w > 700) w -= Math.min(352, w * 0.86); var bottom = 0; if (!vq('mgv-strip').hidden) bottom += 74; if (V.it && V.it.kind === 'video') bottom += 92; return { w: Math.max(80, w), h: Math.max(80, h - bottom - 56), off: -(bottom - 56) / 2 }; }
+	function stageSize() {
+		var s = vq('mgv-stage'); var w = s.clientWidth, h = s.clientHeight; if (vw.classList.contains('mgv-info-open') && w > 700) w -= Math.min(352, w * 0.86);
+		var short = isShort(); vw.classList.toggle('mgv-short', short);
+		if (short) return { w: Math.max(80, w), h: Math.max(80, h), off: 0 };
+		var bottom = 0; if (!vq('mgv-strip').hidden) bottom += 74; if (V.it && V.it.kind === 'video') bottom += vq('mgv-vbar').offsetHeight + 16 || 92;
+		return { w: Math.max(80, w), h: Math.max(80, h - bottom - 56), off: -(bottom - 56) / 2 };
+	}
 	function fitNow(anim, keepZoom) {
 		if (!V.media || !V.natW) return;
 		var ss = stageSize(), dpr = window.devicePixelRatio || 1;
@@ -730,7 +777,7 @@
 		V.x = c.x; V.y = c.y;
 		var shiftX = vw.classList.contains('mgv-info-open') && vq('mgv-stage').clientWidth > 700 ? -Math.min(352, vq('mgv-stage').clientWidth * 0.86) / 2 : 0;
 		if (anim) { m.classList.add('mgv-anim'); clearTimeout(m._at); m._at = setTimeout(function () { m.classList.remove('mgv-anim'); }, 300); }
-		m.style.transform = 'translate(-50%,-50%) translate(' + (V.x + shiftX) + 'px,' + (V.y + ss.off) + 'px) rotate(' + V.rot + 'deg) scale(' + V.s + ')';
+		xf(m, V.x + shiftX, V.y + ss.off);
 		m.classList.toggle('mgv-pix', V.s * (window.devicePixelRatio || 1) > 3);
 		vq('mgv-stage').classList.toggle('mgv-fitted', V.s <= V.fitS * 1.01);
 		var pct = Math.round(V.s * (window.devicePixelRatio || 1) * 100);
@@ -774,7 +821,10 @@
 		});
 		wireSeek(); wirePointer();
 		document.addEventListener('keydown', onKey, true);
-		window.addEventListener('resize', function () { if (V.open) fitNow(false, true); });
+		var rzT = 0, refit = function () { if (!V.open) return; cancelAnimationFrame(rzT); rzT = requestAnimationFrame(function () { fitNow(false, true); syncStrip(); }); };
+		window.addEventListener('resize', refit);
+		if (window.visualViewport) window.visualViewport.addEventListener('resize', refit);
+		window.addEventListener('orientationchange', function () { refit(); setTimeout(refit, 350); setTimeout(refit, 800); });
 	}
 	function refreshTileOf(it) { var n = rendered.get(it.id); if (n) updateTile(n, it); }
 	function syncFav() { var b = vw.querySelector('[data-a=fav]'), f = !!rating(V.it).f; b.setAttribute('aria-pressed', String(f)); b.title = f ? 'Remove from favourites (H)' : 'Add to favourites (H)'; }
@@ -794,7 +844,17 @@
 		else if (a === 'slide') { if (V.slide) stopSlide(); else startSlide(); }
 		else if (a === 'strip') { P.strip = !P.strip; save(); vq('mgv-stripb').setAttribute('aria-pressed', String(P.strip)); syncStrip(); fitNow(true, true); }
 		else if (a === 'info') { P.info = !P.info; save(); vw.classList.toggle('mgv-info-open', P.info); vq('mgv-infob').setAttribute('aria-pressed', String(P.info)); fillInfo(); fitNow(true, true); }
-		else if (a === 'fs') { if (document.fullscreenElement) document.exitFullscreen(); else if (vw.requestFullscreen) vw.requestFullscreen().catch(function () { osd('Full screen is not allowed here'); }); }
+		else if (a === 'fs') {
+			var fsEl = document.fullscreenElement || document.webkitFullscreenElement;
+			if (fsEl) { (document.exitFullscreen || document.webkitExitFullscreen).call(document); }
+			else if (vw.requestFullscreen || vw.webkitRequestFullscreen) {
+				var pr = (vw.requestFullscreen || vw.webkitRequestFullscreen).call(vw);
+				var lock = function () { if (isV && V.natW > V.natH && screen.orientation && screen.orientation.lock && matchMedia('(pointer:coarse)').matches) screen.orientation.lock('landscape').catch(function () {}); };
+				if (pr && pr.then) pr.then(lock, function () { osd('Full screen is not allowed here'); }); else lock();
+			}
+			else if (isV && m.webkitEnterFullscreen) m.webkitEnterFullscreen();
+			else osd('Full screen is not available in this browser');
+		}
 		else if (a === 'help') { vq('mgv-help').hidden = !vq('mgv-help').hidden; }
 		else if (a === 'edit') editInPhoto();
 		else if (a === 'opentab') { var u = URL.createObjectURL(V.it.file); window.open(u, '_blank', 'noopener'); setTimeout(function () { URL.revokeObjectURL(u); }, 60000); }
@@ -842,7 +902,8 @@
 	function syncVideo() {
 		var m = V.media; if (!m || m.tagName !== 'VIDEO' || !vw) return;
 		var d = m.duration || 0, t = m.currentTime || 0, f = d ? t / d : 0;
-		vq('mgv-pp').textContent = m.paused ? '▶' : '❚❚';
+		vq('mgv-pp').textContent = m.paused ? '▶︎' : '❚❚';
+		vq('mgv-bigplay').hidden = !m.paused || m.ended && !m.loop && V.slide;
 		vq('mgv-time').textContent = G.fmtTime(t) + ' / ' + G.fmtTime(d);
 		vq('mgv-done').style.width = (f * 100) + '%'; vq('mgv-knob').style.left = (f * 100) + '%';
 		try { var b = m.buffered; if (b.length) vq('mgv-buf').style.width = (b.end(b.length - 1) / (d || 1) * 100) + '%'; } catch (e) {}
@@ -892,7 +953,8 @@
 			else if (V.media && moved) {
 				// swipe: the picture follows the finger
 				var ss = stageSize();
-				V.media.style.transform = 'translate(-50%,-50%) translate(' + dx + 'px,' + (Math.abs(dy) > Math.abs(dx) && dy > 0 ? dy : 0) * 1 + ss.off + 'px) rotate(' + V.rot + 'deg) scale(' + V.s * (dy > 0 && Math.abs(dy) > Math.abs(dx) ? Math.max(0.6, 1 - dy / 1200) : 1) + ')';
+				var down = dy > 0 && Math.abs(dy) > Math.abs(dx);
+				xf(V.media, down ? 0 : dx, (down ? dy : 0) + ss.off, V.s * (down ? Math.max(0.6, 1 - dy / 1200) : 1));
 			}
 		});
 		function end(e) {
@@ -971,7 +1033,7 @@
 	/* ---------- slideshow ---------- */
 	var slideT = 0, slideStart = 0, slideRaf = 0;
 	function startSlide() { V.slide = true; vq('mgv-slide').setAttribute('aria-pressed', 'true'); vq('mgv-slide').firstChild.textContent = '❚❚'; osd('Slideshow · every ' + P.slide + ' s'); slideTick(); poke(); }
-	function stopSlide() { if (!vw) return; V.slide = false; clearTimeout(slideT); cancelAnimationFrame(slideRaf); vq('mgv-sbar').style.width = '0'; vq('mgv-slide').setAttribute('aria-pressed', 'false'); vq('mgv-slide').firstChild.textContent = '▶'; }
+	function stopSlide() { if (!vw) return; V.slide = false; clearTimeout(slideT); cancelAnimationFrame(slideRaf); vq('mgv-sbar').style.width = '0'; vq('mgv-slide').setAttribute('aria-pressed', 'false'); vq('mgv-slide').firstChild.textContent = '▶︎'; }
 	function slideTick() {
 		clearTimeout(slideT); cancelAnimationFrame(slideRaf);
 		if (!V.slide) return;
@@ -1105,5 +1167,6 @@
 	}
 
 	/* debug hook for testing in a hidden pane */
-	if (/[?&]debug=1/.test(location.search)) window.MESGalleryDebug = { all: function () { return ALL; }, view: function () { return VIEW; }, lay: function () { return LAY; }, V: V, P: P, open: openViewer, refresh: refresh, render: render, act: function (a) { act(a); } };
+	if (/[?&]debug=1/.test(location.search)) window.MESGalleryDebug = { all: function () { return ALL; }, view: function () { return VIEW; }, lay: function () { return LAY; }, V: V, P: P, open: openViewer, refresh: refresh, render: render, act: function (a) { act(a); }, urls: function (list) { return Promise.all(list.map(function (u) { return fetch(u).then(function (r) { return r.blob(); }).then(function (b) { return new File([b], u.split('/').pop(), { type: b.type || '', lastModified: Date.now() }); }); })).then(function (fs) { fromFileList(fs, 'Test files'); }); } };
+	if (/[?&]debug=1/.test(location.search) && /[?&]urls=/.test(location.search)) window.MESGalleryDebug.urls(decodeURIComponent(location.search.match(/[?&]urls=([^&]+)/)[1]).split(','));
 })();

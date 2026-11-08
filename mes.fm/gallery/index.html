@@ -375,7 +375,7 @@ body.dark-mode .tu .rw-head {color:#a0a8b3;border-bottom-color:#555;} body.dark-
 	.mg-t .mg-ph {position:absolute;inset:0;display:flex;align-items:center;justify-content:center;flex-direction:column;gap:0.2em;font-size:0.82em;color:var(--mg-muted);text-align:center;padding:0.4em;}
 	.mg-t .mg-ph b {font-size:1.6em;opacity:0.65;}
 	.mg-badge {position:absolute;right:6px;bottom:6px;background:var(--mg-shade);color:var(--mg-on);font-size:0.78em;padding:0.1em 0.45em;border-radius:1em;pointer-events:none;font-variant-numeric:tabular-nums;backdrop-filter:blur(4px);}
-	.mg-badge::before {content:"▶ ";font-size:0.85em;}
+	.mg-badge::before {content:"▶\FE0E  ";font-size:0.85em;}
 	.mg-nm {position:absolute;left:0;right:0;bottom:0;padding:1.4em 0.5em 0.35em;background:linear-gradient(transparent, var(--mg-shade));color:var(--mg-on);font-size:0.8em;text-align:left;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;opacity:0;transition:opacity 0.2s;pointer-events:none;}
 	.mg-t:hover .mg-nm, .mg-shownames .mg-nm {opacity:1;}
 	.mg-t.mg-hasbadge .mg-nm {padding-right:4.2em;}
@@ -539,6 +539,26 @@ body.dark-mode .tu .rw-head {color:#a0a8b3;border-bottom-color:#555;} body.dark-
 		.mgv-vbar {padding:0.35em 0.4em;}
 		.mgv-vrow .mgv-hidesm {display:none;}
 	}
+	/* big play button while a video is paused (phones block sound until a tap) */
+	.mgv-bigplay {position:absolute;left:50%;top:50%;width:76px;height:76px;margin:-38px 0 0 -38px;border-radius:50%;border:0;background:rgba(0,0,0,0.55);color:#fff;font-size:2em;line-height:1;padding-left:0.18em;z-index:2;cursor:pointer;backdrop-filter:blur(6px);-webkit-backdrop-filter:blur(6px);box-shadow:0 4px 18px rgba(0,0,0,0.4);}
+	.mgv-bigplay[hidden] {display:none;}
+	html body.dark-mode #mgv .mgv-bigplay {background:rgba(0,0,0,0.55);color:#fff;}
+	video.mgv-media {background:#000;}
+	/* short screens (a phone held sideways): the picture uses the whole screen, the bars float over it and hide while it plays */
+	.mgv.mgv-short {--mv-stripH:0px !important;}
+	.mgv-short .mgv-strip {display:none !important;}
+	.mgv-short .mgv-top {padding:0.25em max(0.5em, env(safe-area-inset-right)) 0.25em max(0.5em, env(safe-area-inset-left));}
+	.mgv-short .mgv-top .mgv-b {height:34px;min-width:34px;}
+	.mgv-short .mgv-tt small {display:none;}
+	.mgv-short .mgv-vbar {bottom:max(6px, env(safe-area-inset-bottom));width:min(960px, calc(100% - 12px - env(safe-area-inset-left) - env(safe-area-inset-right)));padding:0.2em 0.5em 0.3em;gap:0.1em;background:rgba(10,12,18,0.72);}
+	.mgv-short .mgv-vrow {flex-wrap:nowrap;overflow:hidden;}
+	.mgv-short .mgv-vrow .mgv-b {height:32px;min-width:32px;padding:0 0.45em;}
+	.mgv-short .mgv-vrow .mgv-hidesm, .mgv-short .mgv-vol input {display:none;}
+	.mgv-short .mgv-nav {width:44px;height:44px;margin-top:-22px;}
+	.mgv-short .mgv-pop {max-height:calc(100% - 3.6em);overflow-y:auto;top:2.9em;}
+	.mgv-short .mgv-help {max-height:92%;}
+	.mgv-fsb {font-size:1.05em;}
+	input[type=file][hidden], #mg input[type=file][hidden] {display:none !important;}
 	/* while the viewer is open, nothing else may sit on top of it: no ads (anchor / vignette / sidebar), no floating bar */
 	body.mg-viewing ins.adsbygoogle, body.mg-viewing .google-auto-placed, body.mg-viewing iframe[id^="aswift"], body.mg-viewing iframe[id^="google_ads"], body.mg-viewing #compact-nav,
 	body.mg-filling ins.adsbygoogle, body.mg-filling .google-auto-placed, body.mg-filling iframe[id^="aswift"], body.mg-filling iframe[id^="google_ads"], body.mg-filling #compact-nav {visibility:hidden !important;}
@@ -692,6 +712,9 @@ body.is-stuck #navbar.hide { position: fixed; top: 56px; right: 8px; }
 	body.dark-mode .mgv-strip{background:linear-gradient(rgba(82,82,82,0.00), rgba(82,82,82,0.75))}
 	body.dark-mode .mgv-strip button{background:#525252}
 	body.dark-mode .mgv-osd{background:rgba(82,82,82,0.70)}
+	body.dark-mode .mgv-bigplay{background:rgba(82,82,82,0.55)}
+	body.dark-mode video.mgv-media{background:#525252}
+	body.dark-mode .mgv-short .mgv-vbar{background:rgba(58,70,105,0.72)}
 	/* TOOL-DARK:END */
 </style>
         <meta property="fb:app_id" content="" />
@@ -930,7 +953,7 @@ body.is-stuck #navbar.hide { position: fixed; top: 56px; right: 8px; }
 				<div class="mg-row mg-row1">
 					<div class="mg-title"><b id="mg-name">Photos</b> <span id="mg-stats" class="mg-stats"></span></div>
 					<div class="mg-acts">
-						<button type="button" class="tu-btn tu-btn--primary mg-sm" id="mg-play" title="Slideshow of what is showing (P)">▶ Slideshow</button>
+						<button type="button" class="tu-btn tu-btn--primary mg-sm" id="mg-play" title="Slideshow of what is showing (P)">▶︎ Slideshow</button>
 						<button type="button" class="tu-btn mg-sm" id="mg-more" aria-haspopup="true" aria-expanded="false">📁 Open ▾</button>
 						<button type="button" class="tu-btn tu-btn--ghost mg-sm mg-ico" id="mg-fill" title="Fill the browser window (W)">⤢ <span>Fill window</span></button>
 						<button type="button" class="tu-btn tu-btn--ghost mg-sm mg-ico" id="mg-fs" title="Full screen">⛶ <span>Full screen</span></button>
@@ -1024,7 +1047,7 @@ body.is-stuck #navbar.hide { position: fixed; top: 56px; right: 8px; }
 <!-- /MES-BOTTOM-AD -->
                             </div>
                         <!-- MES-ASIDE -->
-<aside id="mes-aside" class="mes-aside" data-aside-family="tools" aria-label="More from MES Tools"><div class="mes-aside__sticky"><div class="mes-aside__ad" data-ad-slot="8429975111"></div><div class="mes-aside__head"><h2 class="mes-aside__title-h">More like this</h2><button type="button" class="mes-aside__flip" aria-label="Move this sidebar to the other side" title="Move sidebar to the other side">&#8644;</button></div><ul class="mes-aside__list"><li><a class="mes-aside__card" href="/domain-lookup"><img class="mes-aside__img mes-aside__img--logo" src="/domain-lookup/img/logo.png" width="56" height="56" loading="lazy" alt=""><span class="mes-aside__text"><span class="mes-aside__name">Domain Lookup: Whois, Domain Age, Owner and Hosting</span><span class="mes-aside__tag">Tool</span></span></a></li><li><a class="mes-aside__card" href="/time-dilation"><img class="mes-aside__img mes-aside__img--logo" src="/time-dilation/img/logo.png" width="56" height="56" loading="lazy" alt=""><span class="mes-aside__text"><span class="mes-aside__name">Time Dilation Calculator and Simulator: How Much Would You Age?</span><span class="mes-aside__tag">Tool</span></span></a></li><li><a class="mes-aside__card" href="/tools"><img class="mes-aside__img" src="/img/tools-icon.jpg" width="56" height="56" loading="lazy" alt=""><span class="mes-aside__text"><span class="mes-aside__name">All MES Tools</span><span class="mes-aside__tag">Gallery</span></span></a></li><li><a class="mes-aside__card" href="/gradecalculator"><img class="mes-aside__img mes-aside__img--logo" src="/gradecalculator/img/logo.png" width="56" height="56" loading="lazy" alt=""><span class="mes-aside__text"><span class="mes-aside__name">Grade Calculator</span><span class="mes-aside__tag">Calculator</span></span></a></li></ul></div></aside>
+<aside id="mes-aside" class="mes-aside" data-aside-family="tools" aria-label="More from MES Tools"><div class="mes-aside__sticky"><div class="mes-aside__ad" data-ad-slot="8429975111"></div><div class="mes-aside__head"><h2 class="mes-aside__title-h">More like this</h2><button type="button" class="mes-aside__flip" aria-label="Move this sidebar to the other side" title="Move sidebar to the other side">&#8644;</button></div><ul class="mes-aside__list"><li><a class="mes-aside__card" href="/maps"><img class="mes-aside__img mes-aside__img--logo" src="/maps/img/logo.png" width="56" height="56" loading="lazy" alt=""><span class="mes-aside__text"><span class="mes-aside__name">World Map Projections, Globe, Countries and Capitals: Interactive Maps</span><span class="mes-aside__tag">Tool</span></span></a></li><li><a class="mes-aside__card" href="/time-dilation"><img class="mes-aside__img mes-aside__img--logo" src="/time-dilation/img/logo.png" width="56" height="56" loading="lazy" alt=""><span class="mes-aside__text"><span class="mes-aside__name">Time Dilation Calculator and Simulator: How Much Would You Age?</span><span class="mes-aside__tag">Tool</span></span></a></li><li><a class="mes-aside__card" href="/tools"><img class="mes-aside__img" src="/img/tools-icon.jpg" width="56" height="56" loading="lazy" alt=""><span class="mes-aside__text"><span class="mes-aside__name">All MES Tools</span><span class="mes-aside__tag">Gallery</span></span></a></li><li><a class="mes-aside__card" href="/gradecalculator"><img class="mes-aside__img mes-aside__img--logo" src="/gradecalculator/img/logo.png" width="56" height="56" loading="lazy" alt=""><span class="mes-aside__text"><span class="mes-aside__name">Grade Calculator</span><span class="mes-aside__tag">Calculator</span></span></a></li></ul></div></aside>
 <!-- /MES-ASIDE -->
 </div>
 
@@ -1074,7 +1097,7 @@ body.is-stuck #navbar.hide { position: fixed; top: 56px; right: 8px; }
             hide_search:false,
             current_tab:0
         }        </script><!-- FASTCOMMENTS-LAZY: widget init moved to main_js/main.js -- it pulls embed.min.js only when #fastcomments-widget nears the viewport or on the first Comments-toggle click, so it no longer blocks first render -->                <script src="https://mes.fm/main_js/lazysizes.min.js?v=1.0.3" async></script>
-	<script src="/gallery/js/gallery.js?v=1" defer></script>
+	<script src="/gallery/js/gallery.js?v=2" defer></script>
             <script src="https://mes.fm/main_js/main.js?v=1.0.5"></script>    <!-- PAGEVIEW-TRACKING-INSERTED --><script src="https://mes.fm/main_js/track.js" defer></script><script>document.getElementById('copyright-year').textContent = new Date().getFullYear();</script><script src="/main_js/info-bar-fit.js" defer></script><script>
   // Floating compact header bar (see #compact-nav CSS): appears once the
   // header + nav bar have scrolled off the top; nav links that don't fit
