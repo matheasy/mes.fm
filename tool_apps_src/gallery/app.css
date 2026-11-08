@@ -251,6 +251,8 @@
 	.mgv-short .mgv-pop {max-height:calc(100% - 3.6em);overflow-y:auto;top:2.9em;}
 	.mgv-short .mgv-help {max-height:92%;}
 	.mgv-fsb {font-size:1.05em;}
+	.mg-watchlink {text-align:center;margin:0.8em 0 0;font-size:0.92em;color:var(--mg-muted);}
+	.mg-watchlink a {color:var(--mg-sel);font-weight:600;}
 	input[type=file][hidden], #mg input[type=file][hidden] {display:none !important;}
 	/* while the viewer is open, nothing else may sit on top of it: no ads (anchor / vignette / sidebar), no floating bar */
 	body.mg-viewing ins.adsbygoogle, body.mg-viewing .google-auto-placed, body.mg-viewing iframe[id^="aswift"], body.mg-viewing iframe[id^="google_ads"], body.mg-viewing #compact-nav,

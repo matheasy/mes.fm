@@ -2,6 +2,13 @@
   "ignoreCommand": "if [ -n \"$VERCEL_GIT_PREVIOUS_SHA\" ] && git cat-file -e \"$VERCEL_GIT_PREVIOUS_SHA^{commit}\" 2>/dev/null && git diff --quiet \"$VERCEL_GIT_PREVIOUS_SHA\" HEAD -- ./; then exit 0; else exit 1; fi",
   "cleanUrls": true,
   "redirects": [
+    { "source": "/youtube-player", "destination": "/watch", "permanent": true },
+    { "source": "/distraction-free-youtube", "destination": "/watch", "permanent": true },
+    { "source": "/watch-youtube", "destination": "/watch", "permanent": true },
+    { "source": "/video-player", "destination": "/watch", "permanent": true },
+    { "source": "/mes-watch", "destination": "/watch", "permanent": true },
+    { "source": "/watch-later", "destination": "/watch", "permanent": true },
+    { "source": "/focus-youtube", "destination": "/watch", "permanent": true },
     { "source": "/fsa", "destination": "/practice-tests", "permanent": true },
     { "source": "/fsa-practice", "destination": "/practice-tests", "permanent": true },
     { "source": "/fsa-practice-test", "destination": "/practice-tests", "permanent": true },

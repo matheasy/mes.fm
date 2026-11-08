@@ -100,10 +100,10 @@
  ],
  "tools": [
   {
-   "href": "/gta-stunt-jump-simulator",
-   "title": "Stunt Jump Simulator",
-   "icon": "/img/gta-stunt-jump-simulator-logo.png",
-   "desc": "Jump cars, bikes and monster trucks over gaps and canyons with real suspension physics: airtime, rotation, landing g-force and the speed window for a clean landing.",
+   "href": "/watch",
+   "title": "Watch",
+   "icon": "/img/watch-logo.png",
+   "desc": "Watch YouTube, 3Speak, Odysee and Rumble videos on a plain page: no recommendations or comments. Up next list, save for later, resume, speed.",
    "added": "2026-11-07",
    "kind": "tool"
   },
@@ -112,6 +112,14 @@
    "title": "GTA 6 Hub",
    "icon": "/img/gta-logo.png",
    "desc": "Unofficial GTA 6 tools: the unlock time in your time zone, how long the 212 GB download takes, a stunt jump simulator and the latest news.",
+   "added": "2026-11-07",
+   "kind": "tool"
+  },
+  {
+   "href": "/gta-stunt-jump-simulator",
+   "title": "Stunt Jump Simulator",
+   "icon": "/img/gta-stunt-jump-simulator-logo.png",
+   "desc": "Jump cars, bikes and monster trucks over gaps and canyons with real suspension physics: airtime, rotation, landing g-force and the speed window for a clean landing.",
    "added": "2026-11-07",
    "kind": "tool"
   },
@@ -186,22 +194,14 @@
    "desc": "A wire bent into a loop becomes a magnet, the electron's magnetic moment, Maxwell's 1861 spinning cells and idle wheels carrying currents and waves, and two magnets attracting or repelling.",
    "added": "2026-11-03",
    "kind": "tool"
-  },
-  {
-   "href": "/quaternions",
-   "title": "Quaternion Lab",
-   "icon": "/img/quaternions-logo.png",
-   "desc": "Multiply i, j, k and watch a 3D hand half-turn, see why i² = −1, compare SLERP with Euler angles on a robot arm, convert rotations and see the 720° spinor turn.",
-   "added": "2026-11-03",
-   "kind": "tool"
   }
  ],
  "latest": [
   {
-   "href": "/gta-stunt-jump-simulator",
-   "title": "Stunt Jump Simulator",
-   "icon": "/img/gta-stunt-jump-simulator-logo.png",
-   "desc": "Jump cars, bikes and monster trucks over gaps and canyons with real suspension physics: airtime, rotation, landing g-force and the speed window for a clean landing.",
+   "href": "/watch",
+   "title": "Watch",
+   "icon": "/img/watch-logo.png",
+   "desc": "Watch YouTube, 3Speak, Odysee and Rumble videos on a plain page: no recommendations or comments. Up next list, save for later, resume, speed.",
    "added": "2026-11-07",
    "kind": "tool"
   },
@@ -210,6 +210,14 @@
    "title": "GTA 6 Hub",
    "icon": "/img/gta-logo.png",
    "desc": "Unofficial GTA 6 tools: the unlock time in your time zone, how long the 212 GB download takes, a stunt jump simulator and the latest news.",
+   "added": "2026-11-07",
+   "kind": "tool"
+  },
+  {
+   "href": "/gta-stunt-jump-simulator",
+   "title": "Stunt Jump Simulator",
+   "icon": "/img/gta-stunt-jump-simulator-logo.png",
+   "desc": "Jump cars, bikes and monster trucks over gaps and canyons with real suspension physics: airtime, rotation, landing g-force and the speed window for a clean landing.",
    "added": "2026-11-07",
    "kind": "tool"
   },
@@ -250,14 +258,6 @@
    "title": "Minesweeper",
    "icon": "/img/minesweeper-logo.png",
    "desc": "Classic levels, daily board, no-guess boards and hexagons; best times saved, optionally on Hive.",
-   "added": "2026-11-07",
-   "kind": "tool"
-  },
-  {
-   "href": "/maps",
-   "title": "Maps: Projections, Globe & Capitals",
-   "icon": "/img/maps-logo.png",
-   "desc": "Morph between 28 map projections, spin a globe with day and night, explore countries, capitals and states, drag countries to their true size, measure great circles and play a geography quiz.",
    "added": "2026-11-07",
    "kind": "tool"
   }

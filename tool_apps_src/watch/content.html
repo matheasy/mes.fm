@@ -1,0 +1,86 @@
+	<script>try{if(!localStorage.getItem('pageMode')){document.documentElement.classList.add('page-wide')}}catch(e){}</script>
+	<div class="tu wt" id="wt">
+		<form class="tu-card wt-add" id="wt-form" autocomplete="off">
+			<label class="wt-sr" for="wt-in">Video links</label>
+			<textarea class="tu-input wt-in" id="wt-in" rows="1" spellcheck="false" inputmode="url" placeholder="Paste video links: YouTube, 3Speak, Odysee, Rumble…"></textarea>
+			<div class="wt-addrow">
+				<button type="submit" class="tu-btn tu-btn--primary" id="wt-play">▶&#xFE0E; Play</button>
+				<button type="button" class="tu-btn tu-btn--ghost" id="wt-qadd">+ Up next</button>
+				<button type="button" class="tu-btn tu-btn--ghost" id="wt-sadd">☆ Save for later</button>
+				<span class="wt-msg" id="wt-msg" role="status" aria-live="polite"></span>
+			</div>
+			<div class="wt-mes"><span>Latest from MES:</span>
+				<button type="button" class="wt-chip" data-ch="mes">Math Easy Solutions</button>
+				<button type="button" class="wt-chip" data-ch="mestruth">MES Truth</button>
+			</div>
+			<div class="wt-latest" id="wt-latest" hidden></div>
+		</form>
+
+		<section class="tu-card wt-player" id="wt-player">
+			<div class="wt-bar" id="wt-bar">
+				<div class="wt-ctl">
+					<button type="button" class="wt-b" id="wt-prev" title="Previous (Shift+N)" aria-label="Previous">⏮&#xFE0E;</button>
+					<button type="button" class="wt-b" id="wt-next" title="Next (N)" aria-label="Next">⏭&#xFE0E;</button>
+					<span class="wt-speed" id="wt-speed" title="Speed: S slower, D faster, R normal">
+						<button type="button" class="wt-b" id="wt-slower" aria-label="Slower">−</button><button type="button" class="wt-b wt-sv" id="wt-sv" aria-label="Normal speed">1×</button><button type="button" class="wt-b" id="wt-faster" aria-label="Faster">+</button>
+					</span>
+					<button type="button" class="wt-b" id="wt-star" title="Save for later" aria-pressed="false">☆</button>
+					<button type="button" class="wt-b" id="wt-copy" title="Copy a link to this spot in the video">🔗&#xFE0E; Link</button>
+					<a class="wt-b" id="wt-open" href="#" target="_blank" rel="noopener" title="Open it on its own site">↗&#xFE0E; Site</a>
+				</div>
+				<span class="wt-pbtns" id="wt-pbtns"></span>
+			</div>
+			<div class="wt-stage" id="wt-stage">
+				<div class="wt-empty" id="wt-empty"><b>Nothing playing yet.</b><span>Paste a link above, or pick something from <em>Latest from MES</em>.</span></div>
+			</div>
+			<div class="wt-meta">
+				<div class="wt-title" id="wt-title"></div>
+				<div class="wt-sub" id="wt-sub"></div>
+				<label class="wt-check"><input type="checkbox" id="wt-auto" checked> Play the next one automatically</label>
+			</div>
+		</section>
+
+		<section class="tu-card wt-lists" id="wt-lists">
+			<div class="wt-tabs" role="tablist">
+				<button type="button" role="tab" class="wt-tab" data-tab="q" aria-selected="true">Up next <small id="wt-nq">0</small></button>
+				<button type="button" role="tab" class="wt-tab" data-tab="saved" aria-selected="false">Saved <small id="wt-ns">0</small></button>
+				<button type="button" role="tab" class="wt-tab" data-tab="hist" aria-selected="false">History <small id="wt-nh">0</small></button>
+			</div>
+			<div class="wt-list" id="wt-list" role="tabpanel"></div>
+			<div class="wt-lacts">
+				<button type="button" class="tu-btn tu-btn--ghost" id="wt-share">Copy a link to this list</button>
+				<button type="button" class="tu-btn tu-btn--ghost" id="wt-clear">Clear this list</button>
+			</div>
+		</section>
+		<div class="tu-toast" id="wt-toast" role="status" aria-live="polite"></div>
+
+		<div class="tu-seo">
+			<h2>Watch videos without the distractions</h2>
+			<p>MES Watch plays a video from YouTube, 3Speak, Odysee, Rumble, BitChute or X on a plain page: no recommended videos down the side, no comments, no autoplaying feed of other people's videos. Paste one link or a whole list, and the page plays them in order. It remembers where you stopped, so a long video picks up from the same spot next time, even after you close the tab.</p>
+			<h3>What works with each site</h3>
+			<dl>
+				<dt>YouTube</dt><dd>Played with YouTube's own player in privacy-enhanced mode (youtube-nocookie.com). Speed from 0.25× to 2×, resume, and the next video starts by itself when one ends. Shorts and live links work too.</dd>
+				<dt>3Speak and Odysee</dt><dd>The page plays the video file straight from the site in a normal player, so any speed from 0.25× to 4×, resume and auto-next all work.</dd>
+				<dt>Rumble, BitChute and X</dt><dd>These play in the site's own small player, so the speed buttons and resume don't reach inside them. For Rumble use the <em>Embed</em> link (Share, then Embed): a normal rumble.com page link can't be played on another site, so the page offers to open it on Rumble instead.</dd>
+				<dt>Video files</dt><dd>A link straight to an .mp4, .webm or .mp3 file plays in the normal player, if the site that has the file allows it.</dd>
+			</dl>
+			<h3>Keyboard shortcuts</h3>
+			<dl>
+				<dt>Space or K</dt><dd>Play / pause</dd>
+				<dt>J / L, ← / →</dt><dd>Back / forward 10 s, 5 s</dd>
+				<dt>S / D / R</dt><dd>Slower, faster, normal speed</dd>
+				<dt>N / Shift+N</dt><dd>Next, previous</dd>
+				<dt>W</dt><dd>Fill the window with the video</dd>
+			</dl>
+			<h3>Questions</h3>
+			<h4>Is anything sent to MES?</h4>
+			<p>No. Your lists, history and resume points are kept in this browser only. The videos come straight from the sites that host them, the same as on those sites.</p>
+			<h4>Does YouTube still count the view?</h4>
+			<p>Yes. It is YouTube's own player, so views, ads and the creator's earnings work as on youtube.com.</p>
+			<h4>How do I move my list to another computer or phone?</h4>
+			<p>Press <em>Copy a link to this list</em> and open that link on the other device.</p>
+			<h4>Can I see my own videos from my computer here?</h4>
+			<p>Use the <a href="/gallery">MES Gallery</a> for photos and videos saved on your computer or phone.</p>
+		</div>
+	</div>
+	<script src="/main_js/panel-view.js?v=1" defer></script>
