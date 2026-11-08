@@ -321,7 +321,7 @@ CSS = r"""
 #main-content .sp-db { color:#333; }
 body.dark-mode #main-content .sp-db { color:#ddd; }
 /* the page reset paints p / b / li / span #333: let them take the container colour (pills, initials and link chips keep theirs) */
-#main-content .sp-db :is(p, b, li, ul, summary, span, div, h2, label, article, details):not(.sp-grp):not(.sp-ini):not(.lp-ic):not(.sp-l) { color:inherit; }
+#main-content .sp-db :is(p, b, li, ul, summary, span, div, h2, label, article, details):not(.sp-grp):not(.sp-ini):not(.lp-ic):not(.sp-l):not(.sp-none) { color:inherit; }
 .sp-meta a { color:#1d5f91; }
 .sp-bar { display:flex; flex-wrap:wrap; gap:.6em; align-items:center; margin:.2em 0 1em; }
 .sp-bar label { font-size:.92em; color:#444; }
@@ -395,7 +395,7 @@ body.dark-mode #main-content .sp-db { color:#ddd; }
 .sp-table td.sp-tnote { min-width:16em; line-height:1.4; overflow-wrap:anywhere; }
 .sp-table td.sp-tl { min-width:9em; }
 .sp-table td.sp-tl .sp-l { margin:0 .25em .25em 0; font-size:.8em; padding:.15em .5em; }
-.sp-table td.sp-tp { white-space:nowrap; }
+.sp-table td.sp-tp { white-space:nowrap; color:#1d5f91; }
 .sp-table td.sp-tp .sp-posts { margin:0; font-size:1em; white-space:normal; min-width:12em; }
 .sp-table td.sp-tp .sp-posts summary { white-space:nowrap; }
 .sp-table .sp-grp { white-space:nowrap; }
@@ -408,7 +408,9 @@ body.dark-mode .sp-table td.sp-tn { background:#1e1e1e; }
 body.dark-mode .sp-table td.sp-tn a { color:#f1f1f1; }
 body.dark-mode .sp-table tbody tr:hover td { background:#262c32; }
 body.dark-mode .sp-table tr.sp-hl td { background:#22323f; }
-body.dark-mode .sp-table .sp-none { color:#777; }
+body.dark-mode #main-content .sp-table td { color:#d6d6d6; }
+body.dark-mode #main-content .sp-table td.sp-tp, body.dark-mode #main-content .sp-table td.sp-tnote a, body.dark-mode #main-content .sp-table .sp-posts a { color:#7cc0f5; }
+body.dark-mode #main-content .sp-table .sp-none { color:#8a8a8a; }
 .sp-card[hidden] { display:none !important; }
 .sp-credits { margin-top:1.5em; font-size:.85em; color:#555; }
 .sp-credits summary { cursor:pointer; }
