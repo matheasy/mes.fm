@@ -40,6 +40,10 @@
 		return "png";
 	}
 	var MIME = { jpg: "image/jpeg", webp: "image/webp", png: "image/png" };
+	// PNG kept as PNG: colour reduction (palette quantisation, like TinyPNG) is where the real saving is; 0 = all colours (lossless re-pack)
+	var PNG_COLOURS = [[256, "256 colours (smaller, usually looks the same)"], [128, "128 colours"], [64, "64 colours"], [32, "32 colours (smallest)"], [0, "All colours (lossless)"]];
+	// colour counts to try, best first, when aiming for a size: start at the chosen count and halve down to 16
+	function pngSteps(start) { start = start | 0; if (!start) return [0, 256, 128, 64, 32, 16]; var o = []; for (var c = start; c >= 16; c = c >> 1) o.push(c); return o; }
 	function fitDims(w, h, maxSide) {
 		maxSide = maxSide | 0; if (!(w > 0 && h > 0)) return { w: 1, h: 1, scale: 1 };
 		var big = Math.max(w, h); if (!maxSide || big <= maxSide) return { w: w, h: h, scale: 1 };
@@ -104,7 +108,7 @@
 	function formatTime(sec) { sec = Math.max(0, Math.round(sec)); var h = Math.floor(sec / 3600), m = Math.floor(sec % 3600 / 60), s = sec % 60; return (h ? h + ":" + (m < 10 ? "0" : "") : "") + m + ":" + (s < 10 ? "0" : "") + s; }
 
 	var C = { kindOf: kindOf, ext: ext, base: base, clean: clean, formatBytes: formatBytes, pctSaved: pctSaved, savedText: savedText, outName: outName,
-		IMG_OUT: IMG_OUT, imageOut: imageOut, MIME: MIME, fitDims: fitDims, fitQuality: fitQuality, PDF_LEVELS: PDF_LEVELS, pdfLevel: pdfLevel, recompressPlan: recompressPlan, keepIfSmaller: keepIfSmaller,
+		IMG_OUT: IMG_OUT, imageOut: imageOut, MIME: MIME, PNG_COLOURS: PNG_COLOURS, pngSteps: pngSteps, fitDims: fitDims, fitQuality: fitQuality, PDF_LEVELS: PDF_LEVELS, pdfLevel: pdfLevel, recompressPlan: recompressPlan, keepIfSmaller: keepIfSmaller,
 		BITRATES: BITRATES, RATES: RATES, mp3Plan: mp3Plan, estimateMp3Bytes: estimateMp3Bytes, floatToInt16: floatToInt16, mixToMono: mixToMono, resampledLength: resampledLength, duration: duration, formatTime: formatTime };
 	if (typeof module !== "undefined" && module.exports) module.exports = C; else root.MESCmp = C;
 })(typeof window !== "undefined" ? window : this);

@@ -15,3 +15,4 @@ const enc = (q) => Promise.resolve(Math.round(1000 + 99000 * q * q));
   r = await C.fitQuality(enc, 100); eq(r.ok, false, "impossible target"); eq(r.q, 0.3, "gives the lowest quality");
   console.log(n + " checks, " + f + " failed"); process.exit(f ? 1 : 0);
 })();
+eq(C.pngSteps(256).join(), "256,128,64,32,16", "png steps 256"); eq(C.pngSteps(64).join(), "64,32,16", "png steps 64"); eq(C.pngSteps(0)[0], 0, "png steps lossless first");

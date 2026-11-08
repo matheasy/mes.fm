@@ -1271,7 +1271,7 @@ APPS = {
     "compress": dict(title="MES Compressor", page_title="Compressor: Compress Images, PDFs and Audio Online",
                        tag="Make pictures, PDFs and audio smaller.", accent="#4338ca", dark="#3730a3", tint="#e8e9fb",
                        desc="Free online compressor for pictures, PDFs and audio: shrink JPG, PNG and WebP to a quality or file size you choose, make PDFs smaller while keeping text selectable, and save audio as smaller MP3s. Before and after preview, ZIP download. Private: nothing is uploaded.",
-                       js_v="3", pre_js=["/main_js/tab-progress.js?v=1"], lib_from=["image-converter"]),
+                       js_v="4", pre_js=["/main_js/tab-progress.js?v=1"], lib_from=["image-converter"]),
     # MES Video Compressor (2026-10-18): WebCodecs fast path (mp4box.js demux, VideoDecoder -> VideoEncoder, mp4-muxer / webm-muxer, optional File System Access streaming to disk),
     # real-time canvas + MediaRecorder fallback. Decisions in lib.js (MESVid, node tests tool_apps_src/compress-video-tests.js).
     # 2026-10-20: "Choose a quality" = constant quality (per-frame H.264 quantizer, size measured on a short probe of each video), 10 s key frames.

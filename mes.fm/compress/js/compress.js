@@ -158,6 +158,10 @@ var MESImg = (function () {
 		return "png";
 	}
 	var MIME = { jpg: "image/jpeg", webp: "image/webp", png: "image/png" };
+	// PNG kept as PNG: colour reduction (palette quantisation, like TinyPNG) is where the real saving is; 0 = all colours (lossless re-pack)
+	var PNG_COLOURS = [[256, "256 colours (smaller, usually looks the same)"], [128, "128 colours"], [64, "64 colours"], [32, "32 colours (smallest)"], [0, "All colours (lossless)"]];
+	// colour counts to try, best first, when aiming for a size: start at the chosen count and halve down to 16
+	function pngSteps(start) { start = start | 0; if (!start) return [0, 256, 128, 64, 32, 16]; var o = []; for (var c = start; c >= 16; c = c >> 1) o.push(c); return o; }
 	function fitDims(w, h, maxSide) {
 		maxSide = maxSide | 0; if (!(w > 0 && h > 0)) return { w: 1, h: 1, scale: 1 };
 		var big = Math.max(w, h); if (!maxSide || big <= maxSide) return { w: w, h: h, scale: 1 };
@@ -222,7 +226,7 @@ var MESImg = (function () {
 	function formatTime(sec) { sec = Math.max(0, Math.round(sec)); var h = Math.floor(sec / 3600), m = Math.floor(sec % 3600 / 60), s = sec % 60; return (h ? h + ":" + (m < 10 ? "0" : "") : "") + m + ":" + (s < 10 ? "0" : "") + s; }
 
 	var C = { kindOf: kindOf, ext: ext, base: base, clean: clean, formatBytes: formatBytes, pctSaved: pctSaved, savedText: savedText, outName: outName,
-		IMG_OUT: IMG_OUT, imageOut: imageOut, MIME: MIME, fitDims: fitDims, fitQuality: fitQuality, PDF_LEVELS: PDF_LEVELS, pdfLevel: pdfLevel, recompressPlan: recompressPlan, keepIfSmaller: keepIfSmaller,
+		IMG_OUT: IMG_OUT, imageOut: imageOut, MIME: MIME, PNG_COLOURS: PNG_COLOURS, pngSteps: pngSteps, fitDims: fitDims, fitQuality: fitQuality, PDF_LEVELS: PDF_LEVELS, pdfLevel: pdfLevel, recompressPlan: recompressPlan, keepIfSmaller: keepIfSmaller,
 		BITRATES: BITRATES, RATES: RATES, mp3Plan: mp3Plan, estimateMp3Bytes: estimateMp3Bytes, floatToInt16: floatToInt16, mixToMono: mixToMono, resampledLength: resampledLength, duration: duration, formatTime: formatTime };
 	if (typeof module !== "undefined" && module.exports) module.exports = C; else root.MESCmp = C;
 })(typeof window !== "undefined" ? window : this);
@@ -236,7 +240,8 @@ var MESImg = (function () {
 	var C = window.MESCmp, Z = window.MESImg, KEY = "mes-compressor:v1";
 	var PDFJS = "https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js", WORKER = "https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js",
 		PDFLIB = "https://cdnjs.cloudflare.com/ajax/libs/pdf-lib/1.17.1/pdf-lib.min.js", LAME = "https://cdnjs.cloudflare.com/ajax/libs/lamejs/1.2.1/lame.min.js";
-	var S = { imgOut: "keep", q: 75, max: 0, target: 0, pdf: "balanced", kbps: 128, mono: false, rate: "keep" };
+	var UPNG_URL = "https://cdnjs.cloudflare.com/ajax/libs/upng-js/2.1.0/UPNG.min.js", PAKO_URL = "https://cdnjs.cloudflare.com/ajax/libs/pako/2.1.0/pako.min.js";
+	var S = { imgOut: "keep", pngc: 256, q: 75, max: 0, target: 0, pdf: "balanced", kbps: 128, mono: false, rate: "keep" };
 	try { var sv = JSON.parse(localStorage.getItem(KEY)); if (sv) for (var k in S) if (sv[k] != null) S[k] = sv[k]; } catch (e) { /* ignore */ }
 	function save() { try { localStorage.setItem(KEY, JSON.stringify(S)); } catch (e) { /* ignore */ } }
 	var files = [], busy = false, uid = 0, urls = [];
@@ -273,15 +278,17 @@ var MESImg = (function () {
 	$("cm-clear").onclick = function () { if (busy) return; files = []; urls.forEach(function (u) { URL.revokeObjectURL(u); }); urls = []; $("cm-work").hidden = true; $("cm-sum").hidden = true; notice(""); render(); };
 
 	/* ---------- options ---------- */
+	function pngOut() { return files.some(function (f) { return f.kind === "image" && C.imageOut(C.ext(f.name), S.imgOut) === "png"; }); }
 	function has(k) { return files.some(function (f) { return f.kind === k; }); }
 	function renderOpts() {
 		var h = "";
 		if (has("image")) {
 			h += "<h3>Pictures</h3><div class='cm-row'><label>Save as <select id='o-out' class='tu-select' style='width:auto'>" + Object.keys(C.IMG_OUT).map(function (k) { return "<option value='" + k + "'" + (S.imgOut === k ? " selected" : "") + ">" + C.IMG_OUT[k] + "</option>"; }).join("") + "</select></label>" +
+				"<label class='cm-pngc'" + (pngOut() ? "" : " hidden") + ">PNG <select id='o-pngc' class='tu-select' style='width:auto'>" + C.PNG_COLOURS.map(function (o) { return "<option value='" + o[0] + "'" + (S.pngc === o[0] ? " selected" : "") + ">" + o[1] + "</option>"; }).join("") + "</select></label>" +
 				"<label>Quality <input type='range' id='o-q' min='30' max='95' value='" + S.q + "'> <b id='o-qv'>" + S.q + "</b></label>" +
 				"<label>Largest side <select id='o-max' class='tu-select' style='width:auto'>" + [[0, "Original"], [3840, "3840 px (4K)"], [2560, "2560 px"], [1920, "1920 px (HD)"], [1600, "1600 px"], [1280, "1280 px"], [1024, "1024 px"], [800, "800 px"]].map(function (o) { return "<option value='" + o[0] + "'" + (S.max === o[0] ? " selected" : "") + ">" + o[1] + "</option>"; }).join("") + "</select></label>" +
 				"<label>Aim for at most <input type='number' id='o-tg' min='0' step='10' placeholder='off' value='" + (S.target || "") + "'> KB each</label></div>" +
-				"<p class='cm-note'>With a size target, the quality slider is the ceiling and each picture gets the highest quality that fits. PNG stays PNG only if you keep the format: for photos choose WebP or JPEG.</p>";
+				"<p class='cm-note'>With a size target, the quality slider is the ceiling and each picture gets the highest quality that fits. PNGs kept as PNG get fewer colours (like TinyPNG), which keeps sharp edges and transparency: right for labels, logos and screenshots. For photos, WebP or JPEG is smaller.</p>";
 		}
 		if (has("pdf")) {
 			h += "<h3>PDFs</h3>" + C.PDF_LEVELS.map(function (l) { return "<label class='cm-lv'><input type='radio' name='o-pdf' value='" + l.id + "'" + (S.pdf === l.id ? " checked" : "") + "><span><b>" + l.name + "</b><br><span class='cm-note'>" + l.note + "</span></span></label>"; }).join("");
@@ -293,7 +300,7 @@ var MESImg = (function () {
 		}
 		var o = $("cm-opts"); o.innerHTML = h; o.hidden = !h;
 		function on(id, ev, fn) { var e = $(id); if (e) e.addEventListener(ev, fn); }
-		on("o-out", "change", function (e) { S.imgOut = e.target.value; save(); }); on("o-q", "input", function (e) { S.q = +e.target.value; $("o-qv").textContent = S.q; save(); }); on("o-max", "change", function (e) { S.max = +e.target.value; save(); });
+		on("o-out", "change", function (e) { S.imgOut = e.target.value; save(); var pl = o.querySelector(".cm-pngc"); if (pl) pl.hidden = !pngOut(); }); on("o-pngc", "change", function (e) { S.pngc = +e.target.value; save(); }); on("o-q", "input", function (e) { S.q = +e.target.value; $("o-qv").textContent = S.q; save(); }); on("o-max", "change", function (e) { S.max = +e.target.value; save(); });
 		on("o-tg", "input", function (e) { S.target = Math.max(0, parseInt(e.target.value, 10) || 0); save(); });
 		[].forEach.call(o.querySelectorAll("input[name=o-pdf]"), function (r) { r.addEventListener("change", function () { S.pdf = r.value; save(); }); });
 		on("o-kb", "change", function (e) { S.kbps = +e.target.value; save(); }); on("o-mono", "change", function (e) { S.mono = e.target.checked; save(); }); on("o-rate", "change", function (e) { S.rate = e.target.value; save(); });
@@ -373,10 +380,53 @@ var MESImg = (function () {
 			var iw = im.width || im.naturalWidth, ih = im.height || im.naturalHeight, d = C.fitDims(iw, ih, S.max); f.info = iw + " × " + ih + " px";
 			var c = drawScaled(im, d.w, d.h, oext === "jpg" ? "#ffffff" : null); if (im.close) im.close(); setP(f, 30, "Compressing...");
 			var qMax = S.q / 100, lossy = oext !== "png";
-			if (!lossy) return enc(c, mime).then(function (b) { return { blob: b, name: C.outName(f.name, oext, used), note: d.scale < 1 ? "resized to " + d.w + " × " + d.h : "", keepNote: "A PNG kept as PNG cannot get smaller without being resized. Choose WebP or JPEG above for a real saving.", src: f.file }; });
+			if (!lossy) return doPng(f, c, d, used);
 			if (S.target > 0) return C.fitQuality(function (q) { return enc(c, mime, q).then(function (b) { return b.size; }); }, S.target * 1024, 0.3, qMax).then(function (r) { return enc(c, mime, r.q).then(function (b) { return { blob: b, name: C.outName(f.name, oext, used), note: (r.ok ? "" : "could not reach " + S.target + " KB; this is the smallest at the lowest quality; ") + "quality " + Math.round(r.q * 100), src: f.file, force: false }; }); });
 			return enc(c, mime, qMax).then(function (b) { return { blob: b, name: C.outName(f.name, oext, used), note: "quality " + S.q + (d.scale < 1 ? ", resized to " + d.w + " × " + d.h : ""), src: f.file }; });
 		});
+	}
+
+	/* ---------- PNG kept as PNG: palette quantisation with UPNG.js (pako deflate), in a Web Worker so a huge picture does not freeze the page ---------- */
+	var pngWorker = null;
+	function pngEncoder() {
+		if (pngWorker) return pngWorker;
+		pngWorker = new Promise(function (res) {
+			try {
+				var src = "self.window=self;importScripts(" + JSON.stringify(PAKO_URL) + "," + JSON.stringify(UPNG_URL) + ");self.onmessage=function(e){var d=e.data;try{var o=UPNG.encode([d.buf],d.w,d.h,d.c);self.postMessage({id:d.id,out:o},[o]);}catch(x){self.postMessage({id:d.id,err:String(x&&x.message||x)});}};";
+				var w = new Worker(URL.createObjectURL(new Blob([src], { type: "text/javascript" }))), n = 0, wait = {};
+				w.onmessage = function (e) { var p = wait[e.data.id]; delete wait[e.data.id]; if (p) e.data.err ? p.rej(new Error(e.data.err)) : p.res(e.data.out); };
+				w.onerror = function () { w.terminate(); for (var k in wait) wait[k].rej(new Error("worker")); wait = {}; pngWorker = null; };
+				res(function (buf, wd, ht, cols) { return new Promise(function (ok, no) { var id = ++n; wait[id] = { res: ok, rej: no }; w.postMessage({ id: id, buf: buf, w: wd, h: ht, c: cols }, [buf]); }); });
+			} catch (e) { res(null); }
+		}).then(function (fn) {
+			if (fn) return fn;
+			return Promise.all([loadScript(PAKO_URL), loadScript(UPNG_URL)]).then(function () { return function (buf, wd, ht, cols) { return Promise.resolve(window.UPNG.encode([buf], wd, ht, cols)); }; });
+		});
+		return pngWorker;
+	}
+	function pngTry(c, cols) {
+		var px = c.getContext("2d").getImageData(0, 0, c.width, c.height).data.buffer;
+		return pngEncoder().then(function (fn) { return fn(px, c.width, c.height, cols); }).catch(function (e) {
+			// the worker could not start (blocked importScripts, memory): try once on the page itself
+			pngWorker = null; return Promise.all([loadScript(PAKO_URL), loadScript(UPNG_URL)]).then(function () { return window.UPNG.encode([c.getContext("2d").getImageData(0, 0, c.width, c.height).data.buffer], c.width, c.height, cols); });
+		}).then(function (ab) { return new Blob([ab], { type: "image/png" }); });
+	}
+	function doPng(f, c, d, used) {
+		var big = c.width * c.height > 30e6, sized = d.scale < 1 ? "resized to " + d.w + " × " + d.h : "";
+		var steps = S.target > 0 ? C.pngSteps(S.pngc) : [S.pngc], target = S.target * 1024, best = null, i = 0;
+		function label(cols) { return cols ? cols + " colours" : "all colours, lossless"; }
+		function step() {
+			var cols = steps[i];
+			setP(f, 30 + Math.round(i / steps.length * 60), (cols ? "Reducing to " + cols + " colours..." : "Re-packing losslessly...") + (big ? " (big picture: this can take a minute)" : ""));
+			return pngTry(c, cols).then(function (b) {
+				if (!best || b.size < best.blob.size) best = { blob: b, cols: cols };
+				if (S.target > 0 && b.size > target && ++i < steps.length) return step();
+				var miss = S.target > 0 && best.blob.size > target;
+				return { blob: best.blob, name: C.outName(f.name, "png", used), note: (miss ? "could not reach " + S.target + " KB even at " + label(best.cols) + "; " : "") + label(best.cols) + (sized ? ", " + sized : ""), src: f.file,
+					keepNote: best.cols ? "Already as small as this PNG gets at " + label(best.cols) + ". Try fewer colours, a smaller largest side, or WebP." : "Lossless re-packing could not make this PNG smaller. Choose 256 colours (or WebP) for a real saving." };
+			});
+		}
+		return step();
 	}
 
 	/* ---------- PDFs ---------- */
