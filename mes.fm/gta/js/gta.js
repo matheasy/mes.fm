@@ -1465,6 +1465,26 @@
 	function copy(text, msg) { (navigator.clipboard && navigator.clipboard.writeText ? navigator.clipboard.writeText(text) : Promise.reject()).then(function () { toast(msg); }, function () { prompt("Copy this:", text); }); }
 	function srcLine(el) { if (!el) return; el.innerHTML = "Checked " + M.FACTS.checked + ": " + M.FACTS.sources.map(function (s) { return '<a href="' + s[1] + '" target="_blank" rel="noopener">' + esc(s[0]) + "</a>"; }).join(" · ") + "."; }
 
+	/* ---------------- equation boxes: scale each typeset formula down to fit its box (no scroll bars) ---------------- */
+	(function () {
+		var els = Array.prototype.slice.call(root.querySelectorAll(".gj-eq__f")); if (!els.length) return;
+		function fit() {
+			els.forEach(function (e) {
+				var c = e.querySelector("mjx-container"); if (!c || !e.clientWidth) return;
+				e.style.fontSize = "";
+				var avail = e.clientWidth - 2, w = c.getBoundingClientRect().width;
+				if (w > avail) e.style.fontSize = (1.05 * avail / w).toFixed(3) + "em";
+			});
+		}
+		if (window.MutationObserver) els.forEach(function (e) { new MutationObserver(fit).observe(e, { attributes: true, attributeFilter: ["class"], childList: true }); });
+		if (window.ResizeObserver) { var lw = 0; new ResizeObserver(function () { var w = root.clientWidth; if (Math.abs(w - lw) > 4) { lw = w; fit(); } }).observe(root); }
+		else window.addEventListener("resize", fit);
+		var mc = document.getElementById("main-content");
+		if (mc && window.MutationObserver) new MutationObserver(function () { setTimeout(fit, 30); }).observe(mc, { attributes: true, attributeFilter: ["style", "class"] });
+		window.addEventListener("resize", function () { setTimeout(fit, 50); });
+		fit();
+	})();
+
 	/* ---------------- tabs (simulator page) ---------------- */
 	var tabs = root.querySelector(".gt-tabs");
 	if (tabs) {

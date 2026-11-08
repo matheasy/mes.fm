@@ -483,7 +483,8 @@ body.dark-mode .tu .rw-head {color:#a0a8b3;border-bottom-color:#555;} body.dark-
 	.gj-calcerr {color:#9a1c1c;}
 	.gj-eqs .gj-eq {display:grid;grid-template-columns:minmax(0,1fr);gap:0.2em;padding:0.65em 0;border-top:1px solid #eee4ef;}
 	.gj-eq__l {font-size:0.8em;font-weight:700;text-transform:uppercase;letter-spacing:0.04em;color:#6c5f78;}
-	.gj-eq__f {overflow-x:auto;min-width:0;font-size:1.05em;}
+	.tu .gj-eq__f.mes-tex {display:block;overflow:visible;min-width:0;max-width:100%;font-size:1.05em;padding:0.3em 0;}
+	.gj-eq__f mjx-container {margin:0 !important;max-width:none !important;overflow:visible !important;}
 
 	/* ---- hub ---- */
 	.gh-hero {display:flex;flex-wrap:wrap;gap:1.2em;align-items:center;justify-content:space-between;padding:1.3em 1.4em;border-radius:0.9em;background:linear-gradient(120deg,#1b1446 0%,#5a1f6b 45%,#d14b6b 80%,#ff9d4d 100%);color:var(--gt-ink);margin-bottom:1em;}
@@ -1104,7 +1105,7 @@ body.is-stuck #navbar.hide { position: fixed; top: 56px; right: 8px; }
             hide_search:false,
             current_tab:2
         }        </script><!-- FASTCOMMENTS-LAZY: widget init moved to main_js/main.js -- it pulls embed.min.js only when #fastcomments-widget nears the viewport or on the first Comments-toggle click, so it no longer blocks first render -->                <script src="https://mes.fm/main_js/lazysizes.min.js?v=1.0.3" async></script>
-	<script src="/gta/js/gta.js?v=3" defer></script>
+	<script src="/gta/js/gta.js?v=4" defer></script>
             <script src="https://mes.fm/main_js/main.js?v=1.0.5"></script>    <!-- PAGEVIEW-TRACKING-INSERTED --><script src="https://mes.fm/main_js/track.js" defer></script><script>document.getElementById('copyright-year').textContent = new Date().getFullYear();</script><script src="/main_js/info-bar-fit.js" defer></script><script>
   // Floating compact header bar (see #compact-nav CSS): appears once the
   // header + nav bar have scrolled off the top; nav links that don't fit

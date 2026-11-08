@@ -176,7 +176,8 @@
 	.gj-calcerr {color:#9a1c1c;}
 	.gj-eqs .gj-eq {display:grid;grid-template-columns:minmax(0,1fr);gap:0.2em;padding:0.65em 0;border-top:1px solid #eee4ef;}
 	.gj-eq__l {font-size:0.8em;font-weight:700;text-transform:uppercase;letter-spacing:0.04em;color:#6c5f78;}
-	.gj-eq__f {overflow-x:auto;min-width:0;font-size:1.05em;}
+	.tu .gj-eq__f.mes-tex {display:block;overflow:visible;min-width:0;max-width:100%;font-size:1.05em;padding:0.3em 0;}
+	.gj-eq__f mjx-container {margin:0 !important;max-width:none !important;overflow:visible !important;}
 
 	/* ---- hub ---- */
 	.gh-hero {display:flex;flex-wrap:wrap;gap:1.2em;align-items:center;justify-content:space-between;padding:1.3em 1.4em;border-radius:0.9em;background:linear-gradient(120deg,#1b1446 0%,#5a1f6b 45%,#d14b6b 80%,#ff9d4d 100%);color:var(--gt-ink);margin-bottom:1em;}
