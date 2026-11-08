@@ -562,9 +562,20 @@
 		document.body.classList.toggle("tt-filling", on1);
 		$("tt-fill").setAttribute("aria-pressed", on1 ? "true" : "false");
 		$("tt-fill").textContent = on1 ? "✕ Close" : "⤢ Fill window";
+		if (view.__mesSide) view.__mesSide.apply();
 		render();
 	}
 	$("tt-fill").addEventListener("click", function () { setFill(!view.classList.contains("tt-fill")); });
+	/* phone held sideways / wide window: shared side panel layout from main_js/panel-view.js (controls beside the board) */
+	function addSide() {
+		if (!window.MESPanel || !window.MESPanel.side || view.__mesSide) return;
+		window.MESPanel.side(view, { stage: $("tt-stage"),
+			open: function () { return view.classList.contains("tt-fill") || document.fullscreenElement === view; },
+			onChange: function () { render(); },
+			close: function () { if (document.fullscreenElement) document.exitFullscreen(); else setFill(false); } });
+	}
+	addSide();
+	if (!view.__mesSide) window.addEventListener("load", addSide);
 	$("tt-fs").addEventListener("click", function () {
 		if (document.fullscreenElement) document.exitFullscreen();
 		else if (view.requestFullscreen) view.requestFullscreen().catch(function () { toast("Full screen isn't allowed here: try Fill window."); });

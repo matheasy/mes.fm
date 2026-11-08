@@ -338,6 +338,8 @@ body.dark-mode .tu .rw-head {color:#a0a8b3;border-bottom-color:#555;} body.dark-
 	body.dark-mode #rs .rs-c {stroke:#5d6672;} body.dark-mode #rs .rs-c--on {stroke:var(--accent);} body.dark-mode #rs .rs-c--free {stroke:#f2a640;} body.dark-mode #rs .rs-dot {fill:#1e1e1e;} body.dark-mode #rs .rs-guide {stroke:#f0f0f0;}
 	body.dark-mode #rs .rs-eq > div {border-bottom-color:#3a4048;} body.dark-mode #rs .rs-groups button, body.dark-mode #rs .rs-tabs button, body.dark-mode #rs #rs-units button, body.dark-mode #rs #rs-jk button {border-bottom-color:#444;}
 	@media (max-width:600px) {.tu .rs-big {font-size:1.7em;} #rs .rs-eq__n {flex-basis:100%;}}
+	/* a seg stretched by its column field: let the buttons share the width (an empty strip looked like a missing third button) */
+	.tu .rs-f > .tu-seg button {flex:1 1 0;}
 
 
 	@media print {

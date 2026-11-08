@@ -411,6 +411,19 @@ body.dark-mode .tu .rw-head {color:#a0a8b3;border-bottom-color:#555;} body.dark-
 	#ms .ms-view.mes-pfill {border:0;}
 	#ms .ms-view.mes-pfill .ms-scroll, #ms .ms-view:fullscreen .ms-scroll {flex:1 1 auto;max-height:none;min-height:0;}
 	#ms .ms-view.mes-pfill .ms-after {max-height:40vh;overflow:auto;}
+	/* phone held sideways / wide window: panel-view.js puts the bar, status and results in a side column (.mes-pside) */
+	#ms .ms-view.mes-pside .ms-scroll {display:flex;border-radius:0;}
+	#ms .ms-view.mes-pside .ms-board {margin:auto;}
+	#ms .ms-view.mes-pside .ms-vbar {flex-direction:column;align-items:stretch;gap:0.45em;}
+	#ms .ms-view.mes-pside .ms-panel {justify-content:space-between;}
+	#ms .ms-view.mes-pside .ms-vbtns {display:grid;grid-template-columns:1fr 1fr;gap:0.35em;}
+	#ms .ms-view.mes-pside .ms-zoom {grid-column:1 / -1;display:grid;grid-template-columns:auto 1fr auto auto;}
+	#ms .ms-view.mes-pside .mes-pbtns {grid-column:1 / -1;display:grid;grid-template-columns:1fr 1fr;}
+	#ms .ms-view.mes-pside .ms-vb, #ms .ms-view.mes-pside .mes-pbtn {width:100%;font-size:0.82em;padding:0.3em 0.4em;white-space:normal;line-height:1.15;}
+	#ms .ms-view.mes-pside .ms-status {font-size:0.88em;margin:0.5em 0;}
+	#ms .ms-view.mes-pside .ms-after {max-height:none;font-size:0.88em;margin-top:0.3em;}
+	#ms .ms-view.mes-pside .ms-after .tu-btn {padding:0.4em 0.6em;font-size:0.92em;}
+	#ms .ms-vb[aria-pressed="true"]#ms-zfit {border-color:var(--accent);box-shadow:inset 0 0 0 2px var(--accent);}
 	html.mes-pfill-on ins.adsbygoogle, html.mes-pfill-on #compact-nav {visibility:hidden !important;}
 	@media (max-width: 600px) {
 		#ms .ms-view {padding:0.5em;}
@@ -860,7 +873,7 @@ body.is-stuck #navbar.hide { position: fixed; top: 56px; right: 8px; }
 <!-- /MES-BOTTOM-AD -->
                             </div>
                         <!-- MES-ASIDE -->
-<aside id="mes-aside" class="mes-aside" data-aside-family="tools" aria-label="More from MES Tools"><div class="mes-aside__sticky"><div class="mes-aside__ad" data-ad-slot="8429975111"></div><div class="mes-aside__head"><h2 class="mes-aside__title-h">More like this</h2><button type="button" class="mes-aside__flip" aria-label="Move this sidebar to the other side" title="Move sidebar to the other side">&#8644;</button></div><ul class="mes-aside__list"><li><a class="mes-aside__card" href="/nba-picks"><img class="mes-aside__img mes-aside__img--logo" src="/nba-picks/img/logo.png" width="56" height="56" loading="lazy" alt=""><span class="mes-aside__text"><span class="mes-aside__name">NBA Standings and Playoff Predictions Tracker: How Many of Your Picks Are Right?</span><span class="mes-aside__tag">Tool</span></span></a></li><li><a class="mes-aside__card" href="/geometry"><img class="mes-aside__img mes-aside__img--logo" src="/geometry/img/logo.png" width="56" height="56" loading="lazy" alt=""><span class="mes-aside__text"><span class="mes-aside__name">Geometry Angle Calculator and Simulator: Triangles, Parallel Lines, Circles and Polygons</span><span class="mes-aside__tag">Calculator</span></span></a></li><li><a class="mes-aside__card" href="/tools"><img class="mes-aside__img" src="/img/tools-icon.jpg" width="56" height="56" loading="lazy" alt=""><span class="mes-aside__text"><span class="mes-aside__name">All MES Tools</span><span class="mes-aside__tag">Gallery</span></span></a></li><li><a class="mes-aside__card" href="/gpacalculator"><img class="mes-aside__img mes-aside__img--logo" src="/gpacalculator/img/logo.png" width="56" height="56" loading="lazy" alt=""><span class="mes-aside__text"><span class="mes-aside__name">GPA Calculator</span><span class="mes-aside__tag">Calculator</span></span></a></li></ul></div></aside>
+<aside id="mes-aside" class="mes-aside" data-aside-family="tools" aria-label="More from MES Tools"><div class="mes-aside__sticky"><div class="mes-aside__ad" data-ad-slot="8429975111"></div><div class="mes-aside__head"><h2 class="mes-aside__title-h">More like this</h2><button type="button" class="mes-aside__flip" aria-label="Move this sidebar to the other side" title="Move sidebar to the other side">&#8644;</button></div><ul class="mes-aside__list"><li><a class="mes-aside__card" href="/connect-four"><img class="mes-aside__img mes-aside__img--logo" src="/connect-four/img/logo.png" width="56" height="56" loading="lazy" alt=""><span class="mes-aside__text"><span class="mes-aside__name">Connect Four: Play Free Against the Computer, a Friend or Online</span><span class="mes-aside__tag">Tool</span></span></a></li><li><a class="mes-aside__card" href="/geometry"><img class="mes-aside__img mes-aside__img--logo" src="/geometry/img/logo.png" width="56" height="56" loading="lazy" alt=""><span class="mes-aside__text"><span class="mes-aside__name">Geometry Angle Calculator and Simulator: Triangles, Parallel Lines, Circles and Polygons</span><span class="mes-aside__tag">Calculator</span></span></a></li><li><a class="mes-aside__card" href="/tools"><img class="mes-aside__img" src="/img/tools-icon.jpg" width="56" height="56" loading="lazy" alt=""><span class="mes-aside__text"><span class="mes-aside__name">All MES Tools</span><span class="mes-aside__tag">Gallery</span></span></a></li><li><a class="mes-aside__card" href="/gpacalculator"><img class="mes-aside__img mes-aside__img--logo" src="/gpacalculator/img/logo.png" width="56" height="56" loading="lazy" alt=""><span class="mes-aside__text"><span class="mes-aside__name">GPA Calculator</span><span class="mes-aside__tag">Calculator</span></span></a></li></ul></div></aside>
 <!-- /MES-ASIDE -->
 </div>
 
@@ -910,7 +923,7 @@ body.is-stuck #navbar.hide { position: fixed; top: 56px; right: 8px; }
             hide_search:false,
             current_tab:0
         }        </script><!-- FASTCOMMENTS-LAZY: widget init moved to main_js/main.js -- it pulls embed.min.js only when #fastcomments-widget nears the viewport or on the first Comments-toggle click, so it no longer blocks first render -->                <script src="https://mes.fm/main_js/lazysizes.min.js?v=1.0.3" async></script>
-	<script src="/main_js/hive.js?v=2" defer></script><script src="/minesweeper/js/minesweeper.js?v=1" defer></script>
+	<script src="/main_js/hive.js?v=2" defer></script><script src="/minesweeper/js/minesweeper.js?v=2" defer></script>
             <script src="https://mes.fm/main_js/main.js?v=1.0.5"></script>    <!-- PAGEVIEW-TRACKING-INSERTED --><script src="https://mes.fm/main_js/track.js" defer></script><script>document.getElementById('copyright-year').textContent = new Date().getFullYear();</script><script src="/main_js/info-bar-fit.js" defer></script><script>
   // Floating compact header bar (see #compact-nav CSS): appears once the
   // header + nav bar have scrolled off the top; nav links that don't fit

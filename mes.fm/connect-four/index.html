@@ -404,6 +404,16 @@ body.dark-mode .tu .rw-head {color:#a0a8b3;border-bottom-color:#555;} body.dark-
 	/* fill window / full screen (main_js/panel-view.js adds .mes-pfill) */
 	#c4 .c4-view.mes-pfill .c4-stage {flex:1 1 auto;align-items:center;}
 	#c4 .c4-view.mes-pfill .c4-board {max-width:min(100%, calc((100vh - 12em) * var(--c4-ar, 1)));}
+	/* phone held sideways / wide window: panel-view.js moves everything but the board into a side column */
+	#c4 .c4-view.mes-pside .c4-stage {align-items:center;}
+	#c4 .c4-view.mes-pside .c4-board {margin:auto;max-width:min(100%, calc((var(--mes-sh, 300px) - 8px) * var(--c4-ar, 1)));}
+	#c4 .c4-view.mes-pside .c4-vbar {flex-direction:column;align-items:stretch;}
+	#c4 .c4-view.mes-pside .c4-vbar > *, #c4 .c4-view.mes-pside .c4-replay > * {flex:0 0 auto;max-width:100%;}
+	#c4 .c4-view.mes-pside .c4-vbtns, #c4 .c4-view.mes-pside .mes-pbtns {display:grid;grid-template-columns:1fr 1fr;gap:0.35em;}
+	#c4 .c4-view.mes-pside .c4-vbtns .mes-pbtns {grid-column:1 / -1;}
+	#c4 .c4-view.mes-pside .c4-vbtns .c4-vb, #c4 .c4-view.mes-pside .mes-pbtn {width:100%;white-space:normal;line-height:1.15;font-size:0.82em;}
+	#c4 .c4-view.mes-pside .c4-replay {flex-wrap:wrap;font-size:0.9em;}
+	#c4 .c4-view.mes-pside .c4-status {font-size:0.9em;}
 	html body.dark-mode #c4 .c4-view.mes-pfill {background:#1a1a1a !important;}
 	html.mes-pfill-on ins.adsbygoogle, html.mes-pfill-on #compact-nav {visibility:hidden !important;}
 	#c4 .tu-toast {z-index:2147483600;}
@@ -989,7 +999,7 @@ body.is-stuck #navbar.hide { position: fixed; top: 56px; right: 8px; }
             hide_search:false,
             current_tab:0
         }        </script><!-- FASTCOMMENTS-LAZY: widget init moved to main_js/main.js -- it pulls embed.min.js only when #fastcomments-widget nears the viewport or on the first Comments-toggle click, so it no longer blocks first render -->                <script src="https://mes.fm/main_js/lazysizes.min.js?v=1.0.3" async></script>
-	<script src="/main_js/hive.js?v=2" defer></script><script src="/connect-four/js/connect-four.js?v=1" defer></script>
+	<script src="/main_js/hive.js?v=2" defer></script><script src="/connect-four/js/connect-four.js?v=2" defer></script>
             <script src="https://mes.fm/main_js/main.js?v=1.0.5"></script>    <!-- PAGEVIEW-TRACKING-INSERTED --><script src="https://mes.fm/main_js/track.js" defer></script><script>document.getElementById('copyright-year').textContent = new Date().getFullYear();</script><script src="/main_js/info-bar-fit.js" defer></script><script>
   // Floating compact header bar (see #compact-nav CSS): appears once the
   // header + nav bar have scrolled off the top; nav links that don't fit

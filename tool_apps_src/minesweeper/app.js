@@ -145,7 +145,8 @@
 			cs = Math.max(COARSE ? 26 : 18, Math.min(full ? 64 : 40, cs));
 		}
 		$("ms-board").style.setProperty("--cs", cs + "px");
-		$("ms-zlab").textContent = S.cs ? cs + " px" : "Fit";
+		$("ms-zlab").textContent = cs + " px";
+		$("ms-zfit").setAttribute("aria-pressed", S.cs ? "false" : "true");
 	}
 	function zoom(d) {
 		var cur = parseInt($("ms-board").style.getPropertyValue("--cs"), 10) || 28;
@@ -477,7 +478,7 @@
 	/* fill window / full screen */
 	function panelInit() {
 		if (!window.MESPanel || $("ms-view").__mesPanel) return;
-		window.MESPanel.add($("ms-view"), { bar: $("ms-vbar").querySelector(".ms-vbtns"), onChange: function () { setTimeout(fit, 30); } });
+		window.MESPanel.add($("ms-view"), { bar: $("ms-vbar").querySelector(".ms-vbtns"), stage: $("ms-scroll"), onChange: function () { setTimeout(fit, 30); } });
 	}
 	panelInit();
 	window.addEventListener("load", panelInit);

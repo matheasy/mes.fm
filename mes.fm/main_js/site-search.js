@@ -33,8 +33,8 @@
         "body.is-stuck .hc-group{top:7px !important;right:54px !important;bottom:auto !important;transform:none !important}",
         "body.is-stuck #navbar-button{top:7px !important}body.is-stuck #navbar.hide{top:64px !important}",
         /* a small tab under the floating bar hides / shows the whole bar (logo, buttons, hamburger) on phones, like the tab on Google's own anchor ads */
-        "#hdrBarTab{display:none;position:fixed;top:60px;right:62px;z-index:16;width:50px;height:22px;padding:0;align-items:center;justify-content:center;background:#fff;color:#444;border:1px solid #cfd4da;border-top:0;border-radius:0 0 11px 11px;cursor:pointer;box-shadow:0 2px 4px rgba(0,0,0,.15)}",
-        "#hdrBarTab svg{transition:transform .2s}body.is-stuck #hdrBarTab{display:flex}",
+        "#hdrBarTab{display:none;position:fixed;top:60px;right:62px;z-index:16;width:44px;height:18px;opacity:.7;padding:0;align-items:center;justify-content:center;background:#fff;color:#444;border:1px solid #cfd4da;border-top:0;border-radius:0 0 11px 11px;cursor:pointer;box-shadow:0 2px 4px rgba(0,0,0,.15)}",
+        "#hdrBarTab:hover,#hdrBarTab:focus-visible{opacity:1}#hdrBarTab svg{transition:transform .2s}body.is-stuck #hdrBarTab{display:flex}",
         "body.hc-barhide #compact-nav{transform:translateY(-120%) !important}body.hc-barhide.is-stuck .hc-group,body.hc-barhide.is-stuck #navbar-button{display:none !important}",
         "body.hc-barhide #hdrBarTab{top:0}body.hc-barhide #hdrBarTab svg{transform:rotate(180deg)}",
         "body.dark-mode #hdrBarTab,body.dark #hdrBarTab{background:#2a2a2a;color:#eee;border-color:#454545}",

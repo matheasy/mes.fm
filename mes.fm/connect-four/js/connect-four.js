@@ -1075,7 +1075,7 @@
 	/* ---------- fill window / full screen (shared panel-view.js) ---------- */
 	var view = $("c4-view");
 	function addPanel() {
-		if (window.MESPanel && !view.__mesPanel) window.MESPanel.add(view, { bar: $("c4-pbar"), onChange: function () { render(true); } });
+		if (window.MESPanel && !view.__mesPanel) window.MESPanel.add(view, { bar: $("c4-pbar"), stage: $("c4-stage"), onChange: function () { render(true); } });
 	}
 	addPanel();
 	if (!view.__mesPanel) document.addEventListener("DOMContentLoaded", addPanel);

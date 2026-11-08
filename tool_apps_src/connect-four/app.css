@@ -97,6 +97,16 @@
 	/* fill window / full screen (main_js/panel-view.js adds .mes-pfill) */
 	#c4 .c4-view.mes-pfill .c4-stage {flex:1 1 auto;align-items:center;}
 	#c4 .c4-view.mes-pfill .c4-board {max-width:min(100%, calc((100vh - 12em) * var(--c4-ar, 1)));}
+	/* phone held sideways / wide window: panel-view.js moves everything but the board into a side column */
+	#c4 .c4-view.mes-pside .c4-stage {align-items:center;}
+	#c4 .c4-view.mes-pside .c4-board {margin:auto;max-width:min(100%, calc((var(--mes-sh, 300px) - 8px) * var(--c4-ar, 1)));}
+	#c4 .c4-view.mes-pside .c4-vbar {flex-direction:column;align-items:stretch;}
+	#c4 .c4-view.mes-pside .c4-vbar > *, #c4 .c4-view.mes-pside .c4-replay > * {flex:0 0 auto;max-width:100%;}
+	#c4 .c4-view.mes-pside .c4-vbtns, #c4 .c4-view.mes-pside .mes-pbtns {display:grid;grid-template-columns:1fr 1fr;gap:0.35em;}
+	#c4 .c4-view.mes-pside .c4-vbtns .mes-pbtns {grid-column:1 / -1;}
+	#c4 .c4-view.mes-pside .c4-vbtns .c4-vb, #c4 .c4-view.mes-pside .mes-pbtn {width:100%;white-space:normal;line-height:1.15;font-size:0.82em;}
+	#c4 .c4-view.mes-pside .c4-replay {flex-wrap:wrap;font-size:0.9em;}
+	#c4 .c4-view.mes-pside .c4-status {font-size:0.9em;}
 	html body.dark-mode #c4 .c4-view.mes-pfill {background:#1a1a1a !important;}
 	html.mes-pfill-on ins.adsbygoogle, html.mes-pfill-on #compact-nav {visibility:hidden !important;}
 	#c4 .tu-toast {z-index:2147483600;}

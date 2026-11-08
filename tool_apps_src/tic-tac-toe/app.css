@@ -92,6 +92,17 @@
 	#tt .tt-view.tt-fill .tt-board.is-wide, #tt .tt-view:fullscreen .tt-board.is-wide {max-width:100%;}
 	#tt .tt-view:fullscreen {overflow:auto;display:flex;flex-direction:column;}
 	body.tt-filling {overflow:hidden;}
+	#tt .tt-view:fullscreen, #tt .tt-view.tt-fill {padding:0.6em 0.9em;}
+	@media (max-height: 520px) {#tt .tt-view:fullscreen, #tt .tt-view.tt-fill {padding:6px 10px;}}
+	/* phone held sideways / wide window: everything but the board goes into a side column (main_js/panel-view.js MESPanel.side) */
+	#tt .tt-view.mes-pside .tt-stage {align-items:center;}
+	#tt .tt-view.mes-pside .tt-board {margin:auto;max-width:min(100%, calc(var(--mes-sh, 300px) - 8px));}
+	#tt .tt-view.mes-pside .tt-board.is-wide {max-width:100%;}
+	#tt .tt-view.mes-pside .tt-vbar {flex-direction:column;align-items:stretch;}
+	#tt .tt-view.mes-pside .tt-vbar > *, #tt .tt-view.mes-pside .tt-replay > * {flex:0 0 auto;max-width:100%;}
+	#tt .tt-view.mes-pside .tt-vbtns {display:grid;grid-template-columns:1fr 1fr;gap:0.35em;}
+	#tt .tt-view.mes-pside .tt-vbtns .tt-vb {width:100%;white-space:normal;line-height:1.15;font-size:0.82em;}
+	#tt .tt-view.mes-pside .tt-replay {flex-wrap:wrap;font-size:0.9em;}
 	#tt .tu-toast {z-index:2147483600;}
 	body.tt-filling ins.adsbygoogle, body.tt-filling #compact-nav {visibility:hidden !important;}
 	/* online */

@@ -29,6 +29,10 @@
 		'.mes-top{position:fixed;left:0;right:0;top:0;height:34px;z-index:2147483000;display:flex;align-items:center;justify-content:flex-end;gap:0.5em;padding:0 0.6em;background:#0a0d14;border-bottom:1px solid #2a3040;box-sizing:border-box}.mes-top--in{position:absolute}' +
 		'.mes-top button{cursor:pointer;font:inherit;font-size:0.85em;padding:0.25em 0.9em;border-radius:0.4em;border:1px solid #3a4258;background:#151a28;color:#e8ecf5;min-height:26px}.mes-top button:hover{border-color:var(--accent,#7fd0ff)}.mes-top button{white-space:nowrap}@media (max-width:520px){.mes-top .mes-tt{display:none}}.mes-top .mes-tt{margin-right:auto;color:#9aa5bb;font-size:0.8em;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}' +
 		'.mes-nopanel > :not([class$="-stage"]):not(.mes-grip):not(.mes-top):not(.td-run):not(.ss-transport){display:none !important}.mes-nopanel .td-ctl{display:none !important}' +
+		'.mes-fside{display:grid !important;grid-template-columns:minmax(0,1fr) var(--mes-pw,280px);grid-template-rows:repeat(40,min-content) 1fr;column-gap:10px;row-gap:0;align-content:start;justify-content:stretch}' +
+		'.mes-fside>*{grid-column:2;min-width:0;max-width:100%;box-sizing:border-box}.mes-fside>*:not([class$="-stage"]) canvas,.mes-fside>*:not([class$="-stage"]) svg{max-width:100%}' +
+		'.mes-fside>[class$="-stage"]{grid-column:1;grid-row:1/-1;align-self:start;position:sticky;top:0;margin:0 auto !important}.mes-fside>.mes-grip{display:none !important}' +
+		'.mes-fside.mes-fill{justify-content:stretch}' +
 		'.mes-fill-x{position:fixed;right:0.8em;top:0.7em;z-index:2147483000;cursor:pointer;font:inherit;font-size:0.85em;padding:0.35em 0.9em;border-radius:0.4em;border:1px solid #3a4258;background:rgba(10,13,20,0.9);color:#e8ecf5}' +
 		'body.dark-mode .mes-sbar{color:#a0a8b3}body.dark-mode .mes-sbar button{background:#2b2f36;border-color:#454c58;color:#e6e8ec}body.dark-mode .mes-sbar button[aria-pressed="true"]{background:#1d4f7a;border-color:var(--accent,#5aa9e6);color:#fff;font-weight:600}';
 	var st = document.createElement('style'); st.textContent = css; (document.head || document.documentElement).appendChild(st);
@@ -95,7 +99,7 @@
 		});
 	}
 	var pt = 0;
-	function ping() { clearTimeout(pt); pt = setTimeout(function () { try { window.dispatchEvent(new Event('resize')); } catch (e) { /* ignore */ } }, 30); }
+	function ping() { clearTimeout(pt); pt = setTimeout(function () { try { layoutSide(filling); layoutSide(fsWrap); } catch (e) { /* ignore */ } try { window.dispatchEvent(new Event('resize')); } catch (e) { /* ignore */ } }, 30); }
 
 	function attach(wrap) {
 		if (wrap.__mesStage) return; wrap.__mesStage = true;
@@ -159,9 +163,35 @@
 			var cs = getComputedStyle(k); return cs.position !== 'absolute' && cs.position !== 'fixed' && (k.offsetHeight > 0 || wrap.classList.contains('mes-nopanel'));
 		}).length > 0;
 	}
+	/* phone held sideways / wide window with the panel shown (the backgammon layout): the picture keeps the whole height on the left and the
+	   readouts, graphs and controls go into a scrolling column on the right (.mes-fside). The simulations size themselves from wrap.clientWidth,
+	   so while the box is in this layout wrap.clientWidth reports the picture column's width (an own getter, removed again afterwards). */
+	var CW = Object.getOwnPropertyDescriptor(Element.prototype, 'clientWidth');
+	function sideWanted(wrap) {
+		var big = wrap.classList.contains('mes-fill') || wrap.classList.contains('mes-fs');
+		var w = window.innerWidth, h = window.innerHeight;
+		return big && !wrap.classList.contains('mes-nopanel') && w >= 560 && w >= h * 1.25 && h < 900 && hideables(wrap);
+	}
+	function layoutSide(wrap) {
+		if (!wrap) return;
+		var on = sideWanted(wrap), was = wrap.classList.contains('mes-fside');
+		if (on) {
+			var W = wrap.classList.contains('mes-fill') ? window.innerWidth : CW.get.call(wrap);
+			var pw = Math.round(Math.max(220, Math.min(380, W * 0.34))), gap = 10;
+			if (wrap.classList.contains('mes-fill')) wrap.style.setProperty('--mes-fw', window.innerWidth + 'px');
+			wrap.style.setProperty('--mes-pw', pw + 'px');
+			wrap.classList.add('mes-fside');
+			if (!wrap.__cwOwn) { wrap.__cwOwn = true; Object.defineProperty(wrap, 'clientWidth', { configurable: true, get: function () { var cs = getComputedStyle(this); return Math.max(200, CW.get.call(this) - (parseFloat(cs.paddingLeft) || 0) - (parseFloat(cs.paddingRight) || 0) - (parseFloat(cs.getPropertyValue('--mes-pw')) || pw) - gap); } }); }
+		} else if (was || wrap.__cwOwn) {
+			wrap.classList.remove('mes-fside'); wrap.style.removeProperty('--mes-pw');
+			if (wrap.__cwOwn) { delete wrap.clientWidth; wrap.__cwOwn = false; }
+			if (wrap.classList.contains('mes-fill')) wrap.style.setProperty('--mes-fw', fillWidth(wrap) + 'px');
+		}
+	}
 	/* the height a stage may take inside a filled / full-screen box: the window minus the 34px top bar minus whatever panels (readouts, graphs) are showing */
 	function fillH(wrap) {
 		var top = (wrap.classList.contains('mes-fill') || wrap.classList.contains('mes-fs')) ? 34 : 0, extra = 0;
+		if (wrap.classList.contains('mes-fside')) return Math.max(120, window.innerHeight - top - 2);
 		Array.prototype.forEach.call(wrap.children, function (k) {
 			if ((k.matches && k.matches('[class$="-stage"]')) || k.classList.contains('mes-grip') || k.classList.contains('mes-top')) return;
 			var cs = getComputedStyle(k); if (cs.display === 'none' || cs.position === 'absolute' || cs.position === 'fixed') return;
@@ -195,19 +225,19 @@
 	}
 	function leave() {
 		if (!filling) return;
-		filling.classList.remove('mes-fill', 'mes-nopanel'); filling.style.removeProperty('--mes-fw');
+		filling.classList.remove('mes-fill', 'mes-nopanel'); layoutSide(filling); filling.style.removeProperty('--mes-fw');
 		var ih = null; try { ih = localStorage.getItem('mes-inlhide'); } catch (x) { /* ignore */ } if (ih === '1') filling.classList.add('mes-nopanel');
 		wraps.forEach(function (o) { if (o.wrap === filling) paintHide(o.wrap, o.bar); }); document.documentElement.classList.remove('mes-fill-on');
 		if (backdrop) backdrop.remove(); if (closeBtn) closeBtn.remove(); backdrop = closeBtn = null; filling = null;
 		apply(); ping(); setTimeout(ping, 150);
 	}
 	document.addEventListener('keydown', function (e) { if (e.key === 'Escape' && filling && !document.fullscreenElement) leave(); });
-	window.addEventListener('resize', function () { if (filling) { filling.style.setProperty('--mes-fw', fillWidth(filling) + 'px'); } else apply(); });
+	window.addEventListener('resize', function () { if (filling) { if (!filling.classList.contains('mes-fside')) filling.style.setProperty('--mes-fw', fillWidth(filling) + 'px'); layoutSide(filling); } else apply(); if (fsWrap) layoutSide(fsWrap); });
 	/* the browser's own full screen on a simulation box: same top bar (inside the box, the only thing visible in full screen) and the same hide / show panel */
 	var fsBar = null, fsWrap = null;
 	document.addEventListener('fullscreenchange', function () {
 		var el = document.fullscreenElement;
-		if (fsWrap) { fsWrap.classList.remove('mes-fs', 'mes-nopanel'); if (fsBar) fsBar.remove(); fsBar = fsWrap = null; }
+		if (fsWrap) { fsWrap.classList.remove('mes-fs', 'mes-nopanel'); layoutSide(fsWrap); if (fsBar) fsBar.remove(); fsBar = fsWrap = null; }
 		if (el && wraps.some(function (o) { return o.wrap === el; })) {
 			fsWrap = el; el.classList.add('mes-fs'); fsBar = topBar(el, true, function () { try { document.exitFullscreen(); } catch (e) { /* ignore */ } }); el.insertBefore(fsBar, el.firstChild);
 		}
