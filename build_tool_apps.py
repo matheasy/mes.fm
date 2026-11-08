@@ -1150,7 +1150,7 @@ APPS = {
     "dashboard": dict(title="MES Dashboard", page_title="MES Dashboard: Channels, Comments and Notifications",
                 tag="Every MES channel in one place.", accent="#4f46e5", dark="#3730a3", tint="#eef2ff",
                 desc="Private dashboard: followers, views, uploads, comments and notifications of the MES channels on YouTube, Rumble, Odysee, BitChute, 3Speak and Hive.",
-                js_v="1", no_ads=True, no_comments=True,
+                js_v="2", no_ads=True, no_comments=True,
                 head_extra='<meta name="robots" content="noindex, nofollow">' + PAGE3_HEAD),
     # MES App Installs (public, mes.fm/installs): installs of the MES mobile apps on iPhone (App Store Connect Sales and Trends) and Android
     # (Google Play installs CSVs in the developer's Cloud Storage bucket), read by api/installs.js (env APPSTORE_* / PLAY_*; lib.js = MESInst,

@@ -288,9 +288,13 @@
     return out;
   };
   /** One newest-first inbox over every source; ids are "<platform>:<account>:<item id>". */
+  /** Author name in a comparable form: "@MES:9" / "@mes" / "mes" -> "mes". */
+  D.normName = function (n) { return String(n || '').trim().toLowerCase().replace(/^@/, '').replace(/[:#].*$/, ''); };
+  /** Items written by any of our own accounts (a mention / reblog / reply by @mes on @mestruth...) are marked own. */
   D.inbox = function (sources, max) {
-    var all = [];
-    (sources || []).forEach(function (s) { (s.inbox || []).forEach(function (it) { var x = {}; for (var k in it) x[k] = it[k]; x.p = s.p; x.a = s.a; x.key = s.p + ':' + s.a + ':' + it.id; all.push(x); }); });
+    var all = [], mine = {};
+    (sources || []).forEach(function (s) { if (s.a) mine[D.normName(s.a)] = 1; });
+    (sources || []).forEach(function (s) { (s.inbox || []).forEach(function (it) { var x = {}; for (var k in it) x[k] = it[k]; x.p = s.p; x.a = s.a; x.key = s.p + ':' + s.a + ':' + it.id; if (!x.own && mine[D.normName(x.author)]) x.own = true; all.push(x); }); });
     all.sort(function (a, b) { return (b.ts || 0) - (a.ts || 0); });
     return all.slice(0, max || 400);
   };
