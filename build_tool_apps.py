@@ -210,7 +210,7 @@ APPS = {
                   tag="Make an invite, send one link, see who's coming.", accent="#d6246e", dark="#a8164f", tint="#fde7f0",
                   desc="Free online party invitations with RSVP: pick a theme, add the date, place and details, send one short link by text, WhatsApp or email, and guests reply Going, Maybe or Can't go with no app or account. Plus-ones, guest limit with a waitlist, reply-by date, questions, a what-to-bring list, updates to guests, calendar buttons and a guest list download.",
                   meta_desc="Free party invitation maker with RSVP: themes, one short link, Going / Maybe / Can't go replies, plus-ones, waitlist, what to bring. No sign-up for anyone.",
-                  js_v="1"),
+                  js_v="2"),
     "ping": dict(title="MES Ping Test", page_title="Ping Test: Continuous Latency, Jitter and Packet Loss Test",
                  tag="Like ping -t, in your browser.", accent="#0e7490", dark="#155e75", tint="#dcf1f6",
                  desc="Free continuous ping test: check latency, jitter and packet loss to Cloudflare 1.1.1.1, Google 8.8.8.8, mes.fm or any website, with a live chart, ping-style log and plain-word verdicts for gaming, calls and streaming. Nothing to install.",

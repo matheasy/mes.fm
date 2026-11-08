@@ -86,6 +86,7 @@
 		put();
 		return Object.assign({ _code: 200, ok: true }, P.view(b.id, st, ctx));
 	}
+	var BASE = /^\/p\//.test(location.pathname) ? "/party" : location.pathname;
 	function shareUrl(id) { return MOCK ? location.origin + location.pathname + "?e=" + id : "https://mes.fm/p/" + id; }
 	function hostUrl(id, key) { return (MOCK ? location.origin + location.pathname : "https://mes.fm/party") + "?e=" + id + "#k=" + key; }
 
@@ -451,7 +452,7 @@
 	$("pa-h-mgr").addEventListener("click", function () { copy(hostUrl(EID, hostKey()), "Host link copied. Keep it private: anyone with it can change your event."); });
 	$("pa-h-del").addEventListener("click", function () {
 		if (!confirm("Delete this event and every reply for good? This cannot be undone.")) return;
-		hostAct({ act: "del" }).then(function (j) { if (j.deleted) { S.mine = S.mine.filter(function (m) { return m.id !== EID; }); save(); location.href = location.pathname; } });
+		hostAct({ act: "del" }).then(function (j) { if (j.deleted) { S.mine = S.mine.filter(function (m) { return m.id !== EID; }); save(); location.href = BASE; } });
 	});
 	$("pa-h-edit").addEventListener("click", function () { startMaker(V.ev); });
 
@@ -601,7 +602,7 @@
 			remember("mine", j.id, { key: j.key, t: j.ev.t, s: j.ev.s, th: j.ev.th, em: j.ev.em, c: Date.now() });
 			try { localStorage.removeItem(DKEY); } catch (e2) {}
 			EID = j.id; KEYH = j.key;
-			history.pushState(null, "", location.pathname + "?e=" + j.id);   // never the key: people copy the address bar
+			history.pushState(null, "", BASE + "?e=" + j.id);   // never the key: people copy the address bar
 			setView(j); window.scrollTo(0, 0); confetti();
 			toast("Your invitation is ready. Copy the link and send it!");
 		});
@@ -615,7 +616,7 @@
 		var now = Date.now();
 		items.sort(function (a, b) { var ua = (a.s || 0) < now - 864e5, ub = (b.s || 0) < now - 864e5; return ua !== ub ? (ua ? 1 : -1) : ua ? (b.s || 0) - (a.s || 0) : (a.s || 0) - (b.s || 0); });
 		items.forEach(function (m) {
-			var a = el("a", "pa-mi"); a.href = location.pathname + "?e=" + m.id + (m.host ? "#k=" + m.key : "");
+			var a = el("a", "pa-mi"); a.href = BASE + "?e=" + m.id + (m.host ? "#k=" + m.key : "");
 			var th = P.themeOf(m.th); var sw = el("span", "pa-mism", m.em || th.em[0] || "🎉"); sw.style.background = th.bg; a.appendChild(sw);
 			var b = el("span", "pa-mib"); b.appendChild(el("strong", null, m.t || "Event"));
 			b.appendChild(el("span", "pa-mis", (m.s ? shortDate(m.s) + " · " + P.fromNow(m.s, now) : "") + (m.host ? " · you host" : m.r ? " · " + { y: "going", m: "maybe", n: "can't go" }[m.r] : "")));
@@ -625,7 +626,9 @@
 
 	/* ---------- start ---------- */
 	function route() {
-		EID = (qs.get("e") || "").toLowerCase();
+		// mes.fm/p/<id> is a rewrite to /party?e=<id>, so the address bar keeps /p/<id>: read the id from the path too
+		var pm = /^\/p\/([A-Za-z0-9]{8})\/?$/.exec(location.pathname);
+		EID = (qs.get("e") || (pm ? pm[1] : "")).toLowerCase();
 		var h = /[#&]k=([a-f0-9]{32})/.exec(location.hash); KEYH = h ? h[1] : "";
 		clearInterval(timer);
 		if (/^[a-z0-9]{8}$/.test(EID)) {
