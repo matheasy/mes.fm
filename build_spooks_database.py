@@ -376,6 +376,39 @@ body.dark-mode #main-content .sp-db { color:#ddd; }
   .sp-compact .sp-note { grid-column:auto; grid-row:auto; }
   .sp-count { margin-left:0; width:100%; }
 }
+/* Table view: built from the cards by the page script; no pictures */
+.sp-twrap { overflow-x:auto; border:1px solid #e1e4e8; border-radius:10px; -webkit-overflow-scrolling:touch; }
+.sp-twrap[hidden], .sp-grid[hidden] { display:none !important; }
+.sp-table { border-collapse:collapse; width:100%; font-size:.92em; min-width:44em; }
+.sp-table th, .sp-table td { text-align:left; vertical-align:top; padding:.45em .65em; border-bottom:1px solid #eceef1; }
+.sp-table thead th { position:sticky; top:0; background:#f6f8fa; z-index:1; white-space:nowrap; padding:0; }
+.sp-table th button { font:inherit; font-weight:600; border:0; background:none; color:#222; padding:.5em .65em; cursor:pointer; width:100%; text-align:left; }
+.sp-table th button::after { content:"\2195"; opacity:.35; margin-left:.35em; font-weight:400; }
+.sp-table th[aria-sort="ascending"] button::after { content:"\25B2"; opacity:.8; font-size:.75em; }
+.sp-table th[aria-sort="descending"] button::after { content:"\25BC"; opacity:.8; font-size:.75em; }
+.sp-table tbody tr:hover td { background:#f7fafd; }
+.sp-table tr.sp-hl td { background:#e7f2fb; }
+.sp-table tr[hidden] { display:none; }
+.sp-table td.sp-tn { font-weight:600; white-space:nowrap; position:sticky; left:0; background:#fff; z-index:0; }
+.sp-table td.sp-tn a { color:#1a1a1a; text-decoration:none; }
+.sp-table td.sp-tn a:hover { text-decoration:underline; }
+.sp-table td.sp-tnote { min-width:16em; line-height:1.4; overflow-wrap:anywhere; }
+.sp-table td.sp-tl { min-width:9em; }
+.sp-table td.sp-tl .sp-l { margin:0 .25em .25em 0; font-size:.8em; padding:.15em .5em; }
+.sp-table td.sp-tp { white-space:nowrap; }
+.sp-table td.sp-tp .sp-posts { margin:0; font-size:1em; white-space:normal; min-width:12em; }
+.sp-table td.sp-tp .sp-posts summary { white-space:nowrap; }
+.sp-table .sp-grp { white-space:nowrap; }
+.sp-table .sp-none { color:#999; }
+body.dark-mode .sp-twrap { border-color:#3a3a3a; }
+body.dark-mode .sp-table th, body.dark-mode .sp-table td { border-bottom-color:#333; }
+body.dark-mode .sp-table thead th { background:#2a2a2a; }
+body.dark-mode .sp-table th button { color:#eee; }
+body.dark-mode .sp-table td.sp-tn { background:#1e1e1e; }
+body.dark-mode .sp-table td.sp-tn a { color:#f1f1f1; }
+body.dark-mode .sp-table tbody tr:hover td { background:#262c32; }
+body.dark-mode .sp-table tr.sp-hl td { background:#22323f; }
+body.dark-mode .sp-table .sp-none { color:#777; }
 .sp-card[hidden] { display:none !important; }
 .sp-credits { margin-top:1.5em; font-size:.85em; color:#555; }
 .sp-credits summary { cursor:pointer; }
@@ -416,7 +449,7 @@ body.dark-mode .sp-grp[data-g="online"] { background:#3c2228; color:#f2a6b3; bor
 
 JS = r"""
 <script>
-/* 9/11 Spooks Database: search, group chips, sort, Cards / Compact (build_spooks_database.py) */
+/* 9/11 Spooks Database: search, group chips, sort, Cards / Compact / Table (build_spooks_database.py) */
 (function () {
   var grid = document.getElementById('spGrid'); if (!grid) return;
   var cards = Array.prototype.slice.call(grid.querySelectorAll('.sp-card'));
@@ -434,6 +467,7 @@ JS = r"""
       var ok = (g === 'all' || (g === 'pics' ? c.getAttribute('data-i') === '1' : g === 'posts' ? c.getAttribute('data-p') !== '0' : c.getAttribute('data-g') === g))
         && words.every(function (w) { return k.indexOf(w) !== -1; });
       c.hidden = !ok; if (ok) shown++;
+      if (c._row) c._row.hidden = !ok;
     });
     count.textContent = shown === cards.length ? cards.length + ' people' : shown + ' of ' + cards.length + ' people';
     empty.hidden = shown !== 0;
@@ -446,6 +480,57 @@ JS = r"""
       sheet: function (a, b) { return (+a.getAttribute('data-o')) - (+b.getAttribute('data-o')); }
     }[m] || null;
     if (by) cards.slice().sort(by).forEach(function (c) { grid.appendChild(c); });
+    tsort = null; tOrder();
+  }
+  /* Table view: one row per card, no pictures; click a heading to sort */
+  var twrap = document.getElementById('spTable'), tbody = null, tsort = null;
+  var COLS = [['n', 'Name'], ['g', 'Group'], ['note', 'Notes'], ['l', 'Links'], ['p', 'MES posts']];
+  function txt(el) { return el ? (el.textContent || '').trim() : ''; }
+  function buildTable() {
+    if (tbody) return;
+    var t = document.createElement('table'); t.className = 'sp-table';
+    var hr = '<thead><tr>' + COLS.map(function (c) { return '<th scope="col" data-k="' + c[0] + '"><button type="button">' + c[1] + '</button></th>'; }).join('') + '</tr></thead>';
+    t.innerHTML = hr + '<tbody></tbody>'; tbody = t.querySelector('tbody');
+    cards.forEach(function (c) {
+      var tr = document.createElement('tr'); tr.setAttribute('data-id', c.id);
+      var note = c.querySelector('.sp-note'), links = c.querySelectorAll('.sp-l'), posts = c.querySelector('.sp-posts'), grp = c.querySelector('.sp-grp');
+      tr._s = { n: c.getAttribute('data-n'), g: txt(grp).toLowerCase(), note: txt(note).toLowerCase(), l: links.length, p: +c.getAttribute('data-p') };
+      var td = function (cls, html) { var d = document.createElement('td'); d.className = cls; if (typeof html === 'string') d.innerHTML = html; else if (html) d.appendChild(html); tr.appendChild(d); return d; };
+      var a = document.createElement('a'); a.href = '#' + c.id; a.textContent = txt(c.querySelector('.sp-name'));
+      td('sp-tn', a);
+      td('sp-tg', grp ? grp.cloneNode(true) : '');
+      td('sp-tnote', note ? note.innerHTML : '<span class="sp-none">&mdash;</span>');
+      var lc = td('sp-tl', '');
+      if (links.length) Array.prototype.forEach.call(links, function (l) { lc.appendChild(l.cloneNode(true)); }); else lc.innerHTML = '<span class="sp-none">&mdash;</span>';
+      td('sp-tp', posts ? posts.cloneNode(true) : '<span class="sp-none">0</span>');
+      tr.hidden = c.hidden; c._row = tr; tbody.appendChild(tr);
+    });
+    t.querySelector('thead').addEventListener('click', function (e) {
+      var th = e.target.closest('th'); if (!th) return;
+      var k = th.getAttribute('data-k');
+      var first = (k === 'l' || k === 'p') ? -1 : 1;
+      tsort = (tsort && tsort.k === k) ? { k: k, d: -tsort.d } : { k: k, d: first };
+      st.tsort = tsort; save(); tOrder();
+    });
+    twrap.appendChild(t);
+  }
+  function tOrder() {
+    if (!tbody) return;
+    var rows = cards.map(function (c) { return c._row; });
+    if (tsort) {
+      var k = tsort.k, d = tsort.d;
+      rows.sort(function (a, b) {
+        var x = a._s[k], y = b._s[k];
+        var r = typeof x === 'number' ? x - y : (x === '' ? 1 : 0) - (y === '' ? 1 : 0) || x.localeCompare(y);
+        if (typeof x !== 'number' && (x === '' || y === '')) return r;
+        return (r * d) || a._s.n.localeCompare(b._s.n);
+      });
+    }
+    rows.forEach(function (r) { tbody.appendChild(r); });
+    Array.prototype.forEach.call(twrap.querySelectorAll('th'), function (th) {
+      var on = tsort && th.getAttribute('data-k') === tsort.k;
+      if (on) th.setAttribute('aria-sort', tsort.d > 0 ? 'ascending' : 'descending'); else th.removeAttribute('aria-sort');
+    });
   }
   chips.addEventListener('click', function (e) {
     var b = e.target.closest('button'); if (!b) return;
@@ -455,22 +540,28 @@ JS = r"""
   });
   q.addEventListener('input', apply);
   q.addEventListener('keydown', function (e) { if (e.key === 'Escape') { q.value = ''; apply(); } });
-  sortSel.addEventListener('change', function () { st.sort = sortSel.value; save(); sort(); });
+  sortSel.addEventListener('change', function () { st.sort = sortSel.value; sort(); st.tsort = null; save(); });
   var views = document.getElementById('spView');
   function setView(v) {
     grid.classList.toggle('sp-compact', v === 'compact');
+    if (v === 'table') { buildTable(); tOrder(); }
+    grid.hidden = v === 'table'; twrap.hidden = v !== 'table';
     Array.prototype.forEach.call(views.querySelectorAll('button'), function (x) { x.setAttribute('aria-pressed', x.getAttribute('data-v') === v ? 'true' : 'false'); });
   }
   views.addEventListener('click', function (e) { var b = e.target.closest('button'); if (!b) return; st.view = b.getAttribute('data-v'); save(); setView(st.view); });
   if (st.sort && sortSel.querySelector('option[value="' + st.sort + '"]')) sortSel.value = st.sort;
-  setView(st.view === 'compact' ? 'compact' : 'cards');
-  sort(); apply();
+  if (st.tsort && st.tsort.k) tsort = st.tsort;
+  var keepT = tsort;
+  sort(); tsort = keepT;
+  setView(st.view === 'compact' || st.view === 'table' ? st.view : 'cards');
+  apply();
   function hash() {
     var id = decodeURIComponent(location.hash.slice(1)); if (!id) return;
     var c = document.getElementById(id); if (!c || !c.classList.contains('sp-card')) return;
     if (c.hidden) { q.value = ''; g = 'all'; chips.querySelector('button[data-c="all"]').click(); }
-    cards.forEach(function (x) { x.classList.remove('sp-hl'); }); c.classList.add('sp-hl');
-    setTimeout(function () { c.scrollIntoView({ block: 'center' }); }, 60);
+    cards.forEach(function (x) { x.classList.remove('sp-hl'); if (x._row) x._row.classList.remove('sp-hl'); }); c.classList.add('sp-hl');
+    var el = (!twrap.hidden && c._row) ? c._row : c; el.classList.add('sp-hl');
+    setTimeout(function () { el.scrollIntoView({ block: 'center' }); }, 60);
   }
   window.addEventListener('hashchange', hash); hash();
 })();
@@ -505,13 +596,14 @@ def content(recs, today):
 </div>
 <div class="sp-bar">
   <label>Sort <select id="spSort" aria-label="Sort"><option value="az">A to Z</option><option value="za">Z to A</option><option value="posts">Most MES posts</option><option value="sheet">Sheet order</option></select></label>
-  <span class="sp-seg" id="spView" role="group" aria-label="View"><button type="button" data-v="cards" aria-pressed="true">Cards</button><button type="button" data-v="compact" aria-pressed="false">Compact</button></span>
+  <span class="sp-seg" id="spView" role="group" aria-label="View"><button type="button" data-v="cards" aria-pressed="true">Cards</button><button type="button" data-v="compact" aria-pressed="false">Compact</button><button type="button" data-v="table" aria-pressed="false">Table</button></span>
   <span class="sp-count" id="spCount" aria-live="polite">{len(recs)} people</span>
 </div>
 <p class="ls-empty" id="spEmpty" hidden>Nothing matches. Try fewer words or a different group.</p>
 <div class="sp-grid" id="spGrid">
 {chr(10).join(card(r) for r in recs)}
 </div>
+<div class="sp-twrap" id="spTable" hidden></div>
 <p class="sp-meta" style="margin-top:1.2em">Search their names in the <a href="https://t.me/meslinks" target="_blank" rel="noopener">MES Links Telegram</a> for many more posts. Groups and pictures are added on mes.fm; names, notes and links come from the MES spreadsheet.</p>
 <details class="sp-credits"><summary>Picture credits</summary><p>Wikimedia Commons photos are used under their stated licences; the others are the people's own public YouTube channel or Hive profile pictures. People without a picture show their initials.</p><ul>{credits}</ul></details>
 <figure class="sp-fig"><img src="/img/{SLUG}-icon.jpg" width="900" height="600" loading="lazy" decoding="async" alt="A collage of the faces in the 9/11 Spooks Database">
