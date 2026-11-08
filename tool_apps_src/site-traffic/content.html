@@ -4,7 +4,7 @@
 			<label class="tu-label" for="st-q">Website or domain name</label>
 			<div class="st-row"><input id="st-q" class="tu-input tu-input--big" type="text" inputmode="url" autocomplete="off" autocapitalize="off" spellcheck="false" placeholder="example.com or https://www.example.com/page"><button type="button" class="tu-btn tu-btn--primary st-go" id="st-go">Check site</button></div>
 			<div class="tu-chips" id="st-recent" aria-label="Recent checks"></div>
-			<p class="tu-note"><b>An honest note first:</b> real visit counts (the numbers Similarweb shows) come from paid panels and private analytics that nobody can see from outside. This page does <b>not</b> guess them. It shows a site's public <b>popularity rank</b>, how its rank has moved, how old the domain is, who hosts it and when the Internet Archive first saved it.</p>
+			<p class="tu-note"><b>An honest note first:</b> real visit counts (the numbers Similarweb shows) come from paid panels and private analytics that nobody can see from outside. This page shows a site's public <b>popularity rank</b> and turns it into a <b>rough range</b> of monthly visits (worked out from sites whose traffic is roughly known, so treat it as a ballpark, not a count). It also shows how its rank has moved, how old the domain is, who hosts it and when the Internet Archive first saved it.</p>
 		</div>
 		<div class="st-status" id="st-status" role="status" aria-live="polite" hidden></div>
 		<div id="st-out" hidden>
@@ -13,15 +13,23 @@
 				<div class="st-hero__lab">Popularity rank</div>
 				<div class="st-hero__big" id="st-rank">&mdash;</div>
 				<div class="st-hero__sub" id="st-tier"></div>
+				<div class="st-est" id="st-est" hidden><div class="st-hero__lab">Estimated visits a month</div><div class="st-est__v" id="st-estv"></div><div class="st-hero__sub" id="st-ests"></div></div>
 				<div class="tu-row st-hero__btns"><button type="button" class="tu-btn tu-btn--ghost" id="st-copy">Copy summary</button><button type="button" class="tu-btn tu-btn--ghost" id="st-link">Copy link</button></div>
 			</div>
 			<h2>Things to know</h2>
 			<ul class="st-sig" id="st-sig"></ul>
 			<div class="tu-card" id="st-chartcard" hidden>
-				<div class="st-charthead"><b>Rank over the last <span id="st-days">30</span> days</b><span class="tu-note">Higher on the chart = better rank (closer to #1)</span></div>
-				<div class="st-chartwrap"><svg id="st-chart" viewBox="0 0 640 200" role="img" aria-label="Rank history chart" preserveAspectRatio="none"></svg><div class="st-tip" id="st-tip" hidden></div></div>
+				<div class="st-charthead"><b>History over <span id="st-days">30 days</span></b><span class="tu-chips st-cmode" id="st-cmode" role="group" aria-label="Chart shows"><button type="button" class="tu-chip" data-m="visits" aria-pressed="true">Estimated visits</button><button type="button" class="tu-chip" data-m="rank" aria-pressed="false">Rank</button></span></div>
+				<div class="st-chartwrap"><span class="st-ylab st-ylab--t" id="st-ytop"></span><svg id="st-chart" viewBox="0 0 640 200" role="img" aria-label="History chart" preserveAspectRatio="none"></svg><span class="st-ylab st-ylab--b" id="st-ybot"></span><div class="st-tip" id="st-tip" hidden></div></div>
+				<div class="st-xlab"><span id="st-x0"></span><span id="st-x1"></span></div>
+				<p class="tu-note" id="st-cnote" style="margin-bottom:0"></p>
+				<p class="tu-note" style="margin-bottom:0">The public list only goes back 30 days, so mes.fm keeps every daily rank it sees: the more a site is checked, the longer its chart grows.</p>
 			</div>
 			<div class="tu-stats" id="st-cards"></div>
+			<section hidden><h2>Real Chrome visitors (Google)</h2>
+			<div class="tu-card" id="st-crux"></div></section>
+			<section hidden><h2>Cloudflare Radar</h2>
+			<div class="tu-card" id="st-radar"></div></section>
 			<h2>Internet Archive history</h2>
 			<div class="tu-card" id="st-arch"><span class="tu-note">Checking the Internet Archive&hellip;</span></div>
 			<h2>Technology on the home page</h2>
@@ -34,7 +42,7 @@
 		</div>
 		<h2 id="extension">Rank badge in your browser: the MES Site Rank extension</h2>
 		<div class="tu-card tu-card--tint">
-			<p style="margin-top:0">If you use a traffic extension such as Similarweb, <b>MES Site Rank</b> is the honest version for Chrome, Brave and Edge: click its button on any website to see that site's public <b>Tranco rank</b>, its tier (Top 1,000, Top 10,000 &hellip;), and the 30-day rank line, then open the full report here. Tick one box and the rank also shows as a small badge on the toolbar icon for every site you visit. Rank only: it never shows or invents visit counts.</p>
+			<p style="margin-top:0">If you use a traffic extension such as Similarweb, <b>MES Site Rank</b> is the honest version for Chrome, Brave and Edge: click its button on any website to see that site's public <b>Tranco rank</b>, its tier (Top 1,000, Top 10,000 &hellip;), a rough range of monthly visits worked out from that rank, and the rank line, then open the full report here. Tick one box and the rank also shows as a small badge on the toolbar icon for every site you visit.</p>
 			<div class="tu-row" style="gap:0.5em"><a class="tu-btn tu-btn--primary" href="/site-traffic/mes-site-traffic.zip" download>Download <span id="st-ver">v1.0.0</span> (zip)</a><a class="tu-btn tu-btn--ghost" href="#st-install">How to install</a><a class="tu-btn tu-btn--ghost" href="/site-traffic/extension/popup.js">View the source</a></div>
 			<p class="tu-note" style="margin-bottom:0"><b>Privacy:</b> it asks only for the page you click it on. When you click, the site's <em>domain name</em> (never the full address) is sent to mes.fm, which asks Tranco for the rank. The automatic badge is off until you tick it and allow the extra &ldquo;tabs&rdquo; permission, and then every domain you visit is looked up the same way, so leave it off if that bothers you. No accounts, no tracking.</p>
 		</div>
@@ -50,12 +58,14 @@
 		<div class="tu-toast" id="st-toast" role="status" aria-live="polite"></div>
 		<div class="tu-seo">
 			<h2>Website traffic checker: how popular is a site, and how old?</h2>
-			<p>Type any website to see its <strong>popularity rank</strong> from the Tranco list, the daily rank for the last 30 days (so you can see whether it is growing), how old the domain is, who hosts it, and how long the Internet Archive has been saving it. It works as a free, honest alternative to browser extensions that show a rank badge on every site.</p>
+			<p>Type any website to see its <strong>popularity rank</strong> from the Tranco list, a rough <strong>estimate of monthly visits</strong>, a history chart (so you can see whether it is growing), the phone / desktop split and speed of real Chrome visitors, how old the domain is, who hosts it, and how long the Internet Archive has been saving it. It works as a free, honest alternative to browser extensions that show a rank badge on every site.</p>
 			<h3>Where the rank comes from</h3>
 			<p>The <a href="https://tranco-list.eu" target="_blank" rel="noopener">Tranco list</a> is a research ranking that combines five public sources: the Chrome User Experience Report (real Chrome users), Cloudflare Radar, Majestic, Cisco Umbrella and Farsight. It averages 30 days so one lucky day cannot push a site up. Lower is better: #1 is the most visited domain. The ranking is by registrable domain, so <em>www.example.com</em> and <em>blog.example.com</em> share the rank of <em>example.com</em>.</p>
 			<h3>Questions</h3>
 			<h4>Does this show how many visitors a site gets?</h4>
-			<p>No, and no free tool can. Visits are only known to the site's owner (through their analytics) or estimated by paid services from private panels of users. A rank tells you roughly how a site compares with others, not how many people visit. A site at #100,000 is typically far bigger than one at #2,000,000, but the rank cannot be turned into an exact number of visits.</p>
+			<p>Only as an estimate. Real visits are known to the site's owner (through their analytics); paid services such as Similarweb estimate them from private panels of users. This page turns the public rank into a range using a curve fitted to about thirty sites whose monthly visits are roughly known (from Google and YouTube down to small calculator sites). Real sites sit up to about three times either side of that curve, so the page shows a range such as &ldquo;5M to 48M&rdquo;, not a single number. It is good for &ldquo;is this site big or small, and is it growing&rdquo;, not for exact figures.</p>
+			<h4>Where does the phone / desktop split come from?</h4>
+			<p>From Google's Chrome UX Report: anonymous data from Chrome users who share usage statistics, published for every site with enough visitors. It is real data, but it covers Chrome only, and only sites big enough to be included. Unlike the rank, it works per address, so it can show a subdomain such as mail.google.com on its own.</p>
 			<h4>Why does my site not appear?</h4>
 			<p>The list covers the few million most visited domains. New, small or niche sites, and sites with mostly direct or app traffic, are often missing. Being absent says "small", not "bad".</p>
 			<h4>Why does a github.io or blogspot.com site show a huge rank?</h4>

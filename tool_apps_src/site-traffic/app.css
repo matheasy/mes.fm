@@ -15,3 +15,14 @@
 	body.dark-mode #st .st-sig li {background:#262626;border-color:#444;} body.dark-mode #st .st-sig li.warn {background:#2e1a1e;}
 	body.dark-mode #st #st-chart .st-grid {stroke:#555;} body.dark-mode #st #st-chart .st-dot {stroke:#222;} body.dark-mode #st .st-tip {background:#eee;color:#111;}
 	body.dark-mode #st .st-years span {background:#1e2f55;color:#cfe3ff;} body.dark-mode #st .st-techlist span, body.dark-mode #st .st-links a {border-color:#555;color:#cfe3ff;} body.dark-mode #st .st-techlist small, body.dark-mode #st .st-links small {color:#aaa;}
+	.st-est {margin-top:0.9em;padding-top:0.8em;border-top:1px dashed #c3c9d2;} .st-est__v {font-size:1.9em;font-weight:800;color:#1e2733;line-height:1.15;}
+	.st-cmode {margin:0;} .st-cmode .tu-chip[aria-pressed="true"] {background:var(--accent);border-color:var(--accent);color:#fff;}
+	.st-ylab {position:absolute;left:0.3em;font-size:0.78em;color:#555;background:rgba(255,255,255,0.85);padding:0 0.3em;border-radius:0.3em;pointer-events:none;} .st-ylab--t {top:0;} .st-ylab--b {bottom:0;}
+	.st-xlab {display:flex;justify-content:space-between;font-size:0.78em;color:#666;margin-top:0.2em;} #st-chart .st-cur {stroke:#64748b;stroke-width:1;vector-effect:non-scaling-stroke;}
+	.st-ffbar {display:flex;border-radius:0.5em;overflow:hidden;margin:0.6em 0;font-size:0.88em;font-weight:700;} .st-ff {padding:0.45em 0.6em;color:#fff;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;min-width:0;}
+	.st-ff--phone {background:#0f766e;} .st-ff--desktop {background:#1d4ed8;} .st-ff--tablet {background:#a16207;}
+	.st-leg {font-size:0.85em;color:#555;} .st-leg i {display:inline-block;width:0.8em;height:0.8em;border-radius:0.2em;margin:0 0.25em 0 0.6em;vertical-align:-0.05em;}
+	.st-ffchart {width:100%;height:8em;display:block;} .st-ffl {fill:none;stroke-width:2.5;vector-effect:non-scaling-stroke;} .st-ffl--phone {stroke:#0f766e;} .st-ffl--desktop {stroke:#1d4ed8;} .st-ffl--tablet {stroke:#a16207;}
+	.st-cw--good {color:#15803d !important;} .st-cw--ok {color:#b45309 !important;} .st-cw--poor {color:#b91c1c !important;}
+	body.dark-mode #st .st-est__v {color:#eee;} body.dark-mode #st .st-est {border-color:#555;} body.dark-mode #st .st-ylab {background:rgba(30,30,30,0.85);color:#ccc;} body.dark-mode #st .st-xlab, body.dark-mode #st .st-leg {color:#bbb;}
+	body.dark-mode #st .st-cw--good {color:#4ade80 !important;} body.dark-mode #st .st-cw--ok {color:#fbbf24 !important;} body.dark-mode #st .st-cw--poor {color:#f87171 !important;} body.dark-mode #st .st-ffl--phone {stroke:#2dd4bf;} body.dark-mode #st .st-ffl--desktop {stroke:#60a5fa;} body.dark-mode #st .st-ffl--tablet {stroke:#fbbf24;}

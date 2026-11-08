@@ -1,6 +1,10 @@
-// Site rank / popularity for mes.fm/site-traffic. NOT visit counts: nobody outside a site's own analytics (or a paid panel such as Similarweb's) has those, so this
-// function never produces one. It returns only public data:
-//   (default)      Tranco rank (research list combining Chrome UX Report, Cloudflare Radar, Majestic, Umbrella, Farsight) with its last ~30 daily ranks
+// Site rank / popularity for mes.fm/site-traffic. Real visit counts are only known to a site's owner (or a paid panel such as Similarweb's); the page turns the
+// rank into a rough visits RANGE itself (MESTraffic.estimate in tool_apps_src/site-traffic/lib.js). This function returns only public data:
+//   (default)      Tranco rank (research list combining Chrome UX Report, Cloudflare Radar, Majestic, Umbrella, Farsight) with its last ~30 daily ranks, plus
+//                  `longHistory`: every daily rank we have seen for that domain, kept in Upstash (`st:rh:<apex>`, date -> rank, 800 days) so the chart grows past 30 days
+//   ?only=crux     Chrome UX Report (free Google API, env CRUX_API_KEY): phone / desktop / tablet share, Core Web Vitals, ~40 weeks of weekly history, for the origin
+//   ?only=radar    Cloudflare Radar (free token, env CLOUDFLARE_RADAR_TOKEN, permission "User Details Read" is enough): rank or bucket, categories, top countries
+//                  Without a key either mode answers {setup: true} and the page just leaves that section out.
 //   ?only=wayback  Internet Archive capture history (one capture per year, first and latest)
 //   ?only=tech     OPT-IN: fetches the site's home page once and reports the technology it can recognise (headers, <meta generator>, script URLs).
 //                  Only the recognised names and a few public header values leave this function, never the page itself.
@@ -8,7 +12,7 @@
 // GET /api/site-traffic?d=example.com[&only=wayback|tech]
 // Safety (same spirit as api/domain-lookup.js): the name is validated, the only fetches in rank / wayback mode go to fixed services; tech mode visits the *typed* site, so it
 // resolves the name through DNS-over-HTTPS first and refuses any address that is not public, re-checks every redirect hop the same way, uses https/http on the default ports only,
-// stops after 250 KB and 5 s, sends no cookies and returns nothing but the fingerprint results. Edge-cached; errors are no-store. No keys, no storage.
+// stops after 250 KB and 5 s, sends no cookies and returns nothing but the fingerprint results. Edge-cached; errors are no-store. Keys stay on the server and are never echoed.
 const { cleanHost } = require('./domain-lookup.js');
 
 function bad(res, code, msg) { res.setHeader('Cache-Control', 'no-store'); res.status(code).json({ error: msg }); }
@@ -46,6 +50,79 @@ async function tranco(apex) {
   if (!ranks.length) return { ranked: false };
   const cur = ranks[ranks.length - 1].rank;
   return { ranked: true, rank: cur, date: ranks[ranks.length - 1].date, bucket: bucket(cur), history: ranks };
+}
+
+// ---- rank history kept in Upstash (only ranked domains, so only names Tranco already lists can be stored) ----
+async function redis(commands) {
+  const r = await tfetch(process.env.UPSTASH_REDIS_REST_URL + '/pipeline', { method: 'POST', headers: { Authorization: 'Bearer ' + process.env.UPSTASH_REDIS_REST_TOKEN, 'Content-Type': 'application/json' }, body: JSON.stringify(commands) }, 3000);
+  return r.json();
+}
+const DATE_RE = /^\d{4}-\d{2}-\d{2}$/;
+async function keepHistory(apex, history, store) {
+  store = store || (process.env.UPSTASH_REDIS_REST_URL && process.env.UPSTASH_REDIS_REST_TOKEN ? redis : null);
+  if (!store || !history || !history.length) return null;
+  const key = 'st:rh:' + apex, hset = ['HSET', key];
+  history.forEach((h) => { if (DATE_RE.test(h.date)) hset.push(h.date, String(h.rank)); });
+  try {
+    const out = await store([hset, ['EXPIRE', key, String(800 * 86400)], ['HGETALL', key]]);
+    const flat = out && out[2] && out[2].result; if (!Array.isArray(flat)) return null;
+    const rows = []; for (let i = 0; i + 1 < flat.length; i += 2) { const n = +flat[i + 1]; if (DATE_RE.test(flat[i]) && n > 0) rows.push({ date: flat[i], rank: n }); }
+    return rows.sort((a, b) => a.date < b.date ? -1 : 1);
+  } catch (e) { return null; }
+}
+
+// ---- Chrome UX Report (real Chrome users; per origin, so subdomains work too) ----
+const CRUX_METRICS = ['form_factors', 'navigation_types', 'largest_contentful_paint', 'interaction_to_next_paint', 'cumulative_layout_shift', 'experimental_time_to_first_byte'];
+const ymd = (d) => d ? d.year + '-' + String(d.month).padStart(2, '0') + '-' + String(d.day).padStart(2, '0') : null;
+const num = (x) => { const n = typeof x === 'string' ? parseFloat(x) : x; return Number.isFinite(n) ? n : null; };
+function cruxNow(rec) {
+  const m = rec.metrics || {}, out = { period: rec.collectionPeriod ? { first: ymd(rec.collectionPeriod.firstDate), last: ymd(rec.collectionPeriod.lastDate) } : null };
+  if (m.form_factors && m.form_factors.fractions) out.ff = m.form_factors.fractions;
+  if (m.navigation_types && m.navigation_types.fractions) out.nav = m.navigation_types.fractions;
+  const cwv = {}; [['lcp', 'largest_contentful_paint'], ['inp', 'interaction_to_next_paint'], ['cls', 'cumulative_layout_shift'], ['ttfb', 'experimental_time_to_first_byte']].forEach(([k, n]) => {
+    const x = m[n]; if (!x) return; cwv[k] = { p75: num(x.percentiles && x.percentiles.p75), good: x.histogram && x.histogram[0] ? num(x.histogram[0].density) : null };
+  });
+  out.cwv = cwv; return out;
+}
+function cruxHist(rec) {
+  const m = rec.metrics || {}, out = { dates: (rec.collectionPeriods || []).map((p) => ymd(p.lastDate)) };
+  const ft = m.form_factors && m.form_factors.fractionTimeseries;
+  if (ft) { out.ff = {}; ['desktop', 'phone', 'tablet'].forEach((k) => { out.ff[k] = ft[k] && Array.isArray(ft[k].fractions) ? ft[k].fractions.map(num) : null; }); }
+  [['lcp', 'largest_contentful_paint'], ['inp', 'interaction_to_next_paint'], ['cls', 'cumulative_layout_shift']].forEach(([k, n]) => {
+    const x = m[n]; out[k] = x && x.percentilesTimeseries && Array.isArray(x.percentilesTimeseries.p75s) ? x.percentilesTimeseries.p75s.map(num) : null;
+  });
+  return out;
+}
+async function crux(host, key) {
+  key = key || process.env.CRUX_API_KEY; if (!key) return { setup: true };
+  const base = 'https://chromeuxreport.googleapis.com/v1/records:';
+  const ask = (what, origin, extra) => tfetch(base + what + '?key=' + encodeURIComponent(key), { method: 'POST', headers: { 'content-type': 'application/json', accept: 'application/json' }, body: JSON.stringify(Object.assign({ origin, metrics: CRUX_METRICS }, extra || {})) }, 7000)
+    .then(async (r) => ({ status: r.status, j: r.ok ? await r.json() : null })).catch(() => ({ status: 0, j: null }));
+  const origins = ['https://' + host, host.startsWith('www.') ? 'https://' + host.slice(4) : 'https://www.' + host];
+  for (const origin of origins) {
+    const [now, hist] = await Promise.all([ask('queryRecord', origin), ask('queryHistoryRecord', origin, { collectionPeriodCount: 40 })]);
+    if (now.status === 0 || now.status === 429 || now.status >= 500) return { unavailable: true };
+    if (now.status === 400 || now.status === 403) return { unavailable: true, keyProblem: now.status === 403 };
+    if (now.j && now.j.record) return Object.assign({ found: true, origin }, cruxNow(now.j.record), { history: hist.j && hist.j.record ? cruxHist(hist.j.record) : null });
+  }
+  return { found: false };
+}
+
+// ---- Cloudflare Radar ----
+async function radar(apex, token) {
+  token = token || process.env.CLOUDFLARE_RADAR_TOKEN; if (!token) return { setup: true };
+  const opt = { headers: { Authorization: 'Bearer ' + token, accept: 'application/json' } }, B = 'https://api.cloudflare.com/client/v4/radar/ranking/';
+  const [d, ts] = await Promise.all([getJson(B + 'domain/' + encodeURIComponent(apex) + '?includeTopLocations=true&format=JSON', opt, 7000),
+    getJson(B + 'timeseries_groups?domains=' + encodeURIComponent(apex) + '&dateRange=52w&format=JSON', opt, 7000)]);
+  if (d.status === 401 || d.status === 403) return { unavailable: true, keyProblem: true };
+  if (!d.j || !d.j.result) return d.status === 404 || d.status === 400 ? { found: false } : { unavailable: true };
+  const x = d.j.result.details_0 || {};
+  const out = { found: !!(x.rank || x.bucket), rank: num(x.rank), bucket: num(x.bucket), categories: (x.categories || []).map((c) => c && c.name).filter(Boolean).slice(0, 6),
+    locations: (x.top_locations || []).slice(0, 10).map((l) => ({ code: l.locationCode, name: l.locationName, rank: num(l.rank) })) };
+  const s = ts.j && ts.j.result && ts.j.result.serie_0;
+  if (s && Array.isArray(s.timestamps)) { const vals = s[apex] || Object.keys(s).filter((k) => k !== 'timestamps').map((k) => s[k])[0];
+    if (Array.isArray(vals) && vals.some((v) => num(v))) out.series = s.timestamps.map((t, i) => ({ date: String(t).slice(0, 10), rank: num(vals[i]) })).filter((p) => p.rank); }
+  return out;
 }
 
 // ---- wayback ----
@@ -157,9 +234,18 @@ module.exports = async (req, res) => {
       const t = await tech(host); res.setHeader('Cache-Control', t.error ? 'public, s-maxage=300' : 'public, s-maxage=3600, stale-while-revalidate=86400');
       return res.status(200).json({ domain: host, tech: t });
     }
+    if (only === 'crux') {
+      const c = await crux(host); res.setHeader('Cache-Control', c.unavailable ? 'no-store' : c.setup ? 'public, s-maxage=600' : 'public, s-maxage=43200, stale-while-revalidate=172800');
+      return res.status(200).json({ domain: host, crux: c });
+    }
+    if (only === 'radar') {
+      const r = await radar(apex); res.setHeader('Cache-Control', r.unavailable ? 'no-store' : r.setup ? 'public, s-maxage=600' : 'public, s-maxage=43200, stale-while-revalidate=172800');
+      return res.status(200).json({ domain: host, apex, radar: r });
+    }
     const rank = await tranco(apex);
+    if (rank.ranked) { const long = await keepHistory(apex, rank.history); if (long && long.length > rank.history.length) rank.longHistory = long; }
     res.setHeader('Cache-Control', rank.unavailable ? 'public, s-maxage=60' : 'public, s-maxage=3600, stale-while-revalidate=43200');
     res.status(200).json({ domain: host, apex, shared: isShared(apex), subdomain: host !== apex, rank, source: { name: 'Tranco', url: 'https://tranco-list.eu/query_rank?domain=' + encodeURIComponent(apex) }, ms: Date.now() - t0 });
   } catch (e) { bad(res, 502, 'The lookup failed. Try again in a moment.'); }
 };
-Object.assign(module.exports, { registrable, isShared, bucket, ipv4Public, ipv6Public, detect });
+Object.assign(module.exports, { keepHistory, crux, cruxNow, cruxHist, radar, registrable, isShared, bucket, ipv4Public, ipv6Public, detect });

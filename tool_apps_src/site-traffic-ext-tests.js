@@ -11,5 +11,5 @@ eq(S.spark([{ rank: 10 }, { rank: 20 }], 100, 50, 5), 'M5.0 5.0 L95.0 45.0', 'sp
 var m = JSON.parse(fs.readFileSync(__dirname + '/../mes.fm/site-traffic/extension/manifest.json', 'utf8'));
 eq(m.manifest_version, 3, 'mv3'); eq(m.permissions.join(), 'storage,activeTab', 'no broad permissions by default'); eq(m.optional_permissions.join(), 'tabs', 'tabs is optional'); eq(m.host_permissions.join(), 'https://mes.fm/*', 'one host');
 ['popup.html', 'popup.js', 'background.js', 'shared.js', 'popup.css'].forEach(function (f) { eq(fs.existsSync(__dirname + '/../mes.fm/site-traffic/extension/' + f), true, 'file ' + f); });
-eq(/visit/i.test(Object.keys(S).join()), false, 'no visit estimator');
+eq(S.estText(S.estimate(39)), '450M to 4B', 'estimate text');
 console.log(n + ' checks, ' + fails + ' failed'); process.exit(fails ? 1 : 0);

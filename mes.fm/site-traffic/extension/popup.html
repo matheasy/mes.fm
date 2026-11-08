@@ -6,12 +6,13 @@
 <div id="out" hidden>
 	<div class="rank" id="rank"></div>
 	<div class="tier" id="tier"></div>
+	<div class="est" id="est" hidden><span>Estimated visits a month</span><b id="estv"></b><small id="ests"></small></div>
 	<svg id="chart" viewBox="0 0 300 70" preserveAspectRatio="none" hidden><path id="line" fill="none" stroke-width="2.5" vector-effect="non-scaling-stroke"/></svg>
 	<div class="trend" id="trend"></div>
 </div>
 <div class="note" id="note"></div>
-<a class="go" id="full" href="#" target="_blank" rel="noopener" hidden>Full report: age, hosting, history &rsaquo;</a>
+<a class="go" id="full" href="#" target="_blank" rel="noopener" hidden>Full report: devices, history, age &rsaquo;</a>
 <label class="auto"><input type="checkbox" id="auto"> Show the rank on the toolbar icon for every site I visit</label>
-<div class="fine">Rank is a position in the public Tranco list, <b>not</b> a visit count. Only the site's domain name is sent to mes.fm; never the full address.</div>
+<div class="fine">Rank is a position in the public Tranco list. Visits are a rough range worked out from it (real sites can be ~3x either side). Only the site's domain name is sent to mes.fm; never the full address.</div>
 <script src="shared.js"></script><script src="popup.js"></script>
 </body></html>

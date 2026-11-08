@@ -12,8 +12,24 @@ eq(T.signals({ apex: 'github.io', domain: 'me.github.io', shared: true, subdomai
 eq(T.signals({ apex: 'a.com', domain: 'a.com', rank: { ranked: false } }, null, 0)[0].text.indexOf('Not in the Tranco list') === 0, true, 'unranked text');
 eq(T.signals({ apex: 'a.com', domain: 'a.com', rank: { ranked: false } }, { rdap: { created: '2026-10-01T00:00:00Z' } }, Date.UTC(2026, 9, 22)).some(function (x) { return /21 days ago/.test(x.text); }), true, 'new domain note');
 eq(T.links('x.com').length, 8, 'links'); eq(T.links('a b.com')[0][1].indexOf('a%20b.com') > 0, true, 'links encoded');
-// no function may invent visits
-eq(Object.keys(T).some(function (k) { return /visit/i.test(k); }), false, 'no visit estimator exists');
+// visits estimate: monotone, always a range, page and extension use the same curve
+var S2 = require('../mes.fm/site-traffic/extension/shared.js');
+eq(JSON.stringify(T.CURVE), JSON.stringify(S2.CURVE), 'same curve in page and extension');
+var prev = Infinity; [1, 5, 39, 160, 1143, 5186, 20204, 174763, 1e6, 3e6, 9e6].forEach(function (r) { var e = T.estimate(r); eq(e.mid <= prev, true, 'falls with rank ' + r); eq(e.low < e.mid && e.mid < e.high, true, 'range ' + r); eq(S2.estimate(r).mid, e.mid, 'ext same ' + r); prev = e.mid; });
+eq(T.estimate(0), null, 'no rank no estimate'); eq(T.estimate(10).mid, 1e10, 'curve point'); eq(T.estimate(200000).factor, 4, 'wider past 100k');
+eq(T.big(1.3e9), '1.3B', 'big B'); eq(T.big(48e6), '48M', 'big M'); eq(T.estText(T.estimate(20204)), '5.3M to 48M', 'est text');
+// rank history kept in Redis: merged, sorted, bad rows dropped
+var stored = {}; function fakeStore(cmds) { var k = cmds[0][1]; stored[k] = stored[k] || {}; for (var i = 2; i < cmds[0].length; i += 2) stored[k][cmds[0][i]] = cmds[0][i + 1]; var flat = []; Object.keys(stored[k]).forEach(function (f) { flat.push(f, stored[k][f]); }); return Promise.resolve([{ result: 1 }, { result: 1 }, { result: flat }]); }
+stored['st:rh:a.com'] = { '2026-01-01': '900', junk: '5' };
+var pending = api.keepHistory('a.com', [{ date: '2026-11-02', rank: 800 }, { date: '2026-11-01', rank: 810 }], fakeStore).then(function (rows) {
+	eq(rows.length, 3, 'merged history'); eq(rows[0].date, '2026-01-01', 'sorted'); eq(rows[2].rank, 800, 'newest last');
+});
+// CrUX parsing (shapes from the API docs)
+var cn = api.cruxNow({ metrics: { form_factors: { fractions: { phone: 0.7, desktop: 0.28, tablet: 0.02 } }, largest_contentful_paint: { histogram: [{ start: 0, end: 2500, density: 0.81 }], percentiles: { p75: 2100 } }, cumulative_layout_shift: { histogram: [{ density: '0.9' }], percentiles: { p75: '0.05' } } }, collectionPeriod: { firstDate: { year: 2026, month: 10, day: 1 }, lastDate: { year: 2026, month: 10, day: 28 } } });
+eq(cn.ff.phone, 0.7, 'crux ff'); eq(cn.cwv.lcp.p75, 2100, 'crux lcp'); eq(cn.cwv.cls.p75, 0.05, 'crux cls string'); eq(cn.period.last, '2026-10-28', 'crux period');
+var ch = api.cruxHist({ metrics: { form_factors: { fractionTimeseries: { phone: { fractions: [0.6, 'NaN'] }, desktop: { fractions: [0.4, 0.3] } } }, largest_contentful_paint: { percentilesTimeseries: { p75s: [2000, null] } } }, collectionPeriods: [{ lastDate: { year: 2026, month: 1, day: 3 } }, { lastDate: { year: 2026, month: 1, day: 10 } }] });
+eq(ch.ff.phone[1], null, 'NaN -> null'); eq(ch.ff.tablet, null, 'missing series'); eq(ch.lcp[0], 2000, 'lcp series'); eq(ch.dates[1], '2026-01-10', 'dates');
+var noKey = Promise.all([api.crux('a.com', ''), api.radar('a.com', '')]).then(function (r) { if (!process.env.CRUX_API_KEY) eq(r[0].setup, true, 'crux setup'); if (!process.env.CLOUDFLARE_RADAR_TOKEN) eq(r[1].setup, true, 'radar setup'); });
 // api helpers
 eq(api.registrable('www.example.com'), 'example.com', 'apex www'); eq(api.registrable('a.b.example.co.uk'), 'example.co.uk', 'apex co.uk'); eq(api.registrable('example.com'), 'example.com', 'apex plain'); eq(api.registrable('bbc.co.uk'), 'bbc.co.uk', 'apex bbc'); eq(api.registrable('foo.org.au'), 'foo.org.au', 'apex org.au'); eq(api.registrable('x.y.com.br'), 'y.com.br', 'apex com.br');
 eq(api.isShared('github.io'), true, 'shared'); eq(api.isShared('example.com'), false, 'not shared');
@@ -24,4 +40,4 @@ eq(api.bucket(900), 'Top 1,000', 'bucket'); eq(api.bucket(6e6), null, 'bucket no
 var d = api.detect({ server: 'nginx/1.2', 'cf-ray': 'abc', 'x-powered-by': 'PHP/8.2' }, '<html><meta name="generator" content="WordPress 6.5"><script src="/wp-content/x.js"></script><script src="https://www.googletagmanager.com/gtag/js?id=G-1"></script>');
 var names = d.tech.map(function (x) { return x.name; }); ['nginx', 'Cloudflare', 'PHP', 'WordPress', 'Google Analytics'].forEach(function (x) { eq(names.indexOf(x) >= 0, true, 'detect ' + x); }); eq(names.filter(function (x) { return x === 'WordPress'; }).length, 1, 'no duplicate'); eq(d.generator, 'WordPress 6.5', 'generator');
 eq(api.detect({}, '<html>plain</html>').tech.length, 0, 'nothing detected on plain page');
-console.log(n + ' checks, ' + fails + ' failed'); process.exit(fails ? 1 : 0);
+Promise.all([pending, noKey]).then(function () { console.log(n + ' checks, ' + fails + ' failed'); process.exit(fails ? 1 : 0); });

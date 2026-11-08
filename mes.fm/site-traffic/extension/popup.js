@@ -10,8 +10,9 @@
 		$('out').hidden = false;
 		if (!r.ranked) { $('rank').textContent = 'Unranked'; $('tier').textContent = 'Not in the Tranco list'; return say('Small or new sites are often missing. That says "small", not "bad".'); }
 		var t = S.tier(r.rank); $('rank').textContent = '#' + S.fmt(r.rank); $('tier').textContent = t.label; $('tier').style.color = t.color;
-		var d = S.spark(r.history, 300, 70, 4); if (d) { $('chart').hidden = false; $('line').setAttribute('d', d); $('line').setAttribute('stroke', t.color); }
-		var tr = S.trend(r.history); $('trend').textContent = tr ? (tr.dir === 'steady' ? 'Steady' : tr.dir === 'rising' ? 'Climbing' : 'Dropping') + ' over ' + tr.days + ' days (' + (tr.pct > 0 ? '+' : '') + tr.pct.toFixed(0) + '%)' : '';
+		var e = S.estimate(r.rank); $('est').hidden = false; $('estv').textContent = S.estText(e); $('ests').textContent = 'about ' + S.big(e.mid) + ' a month' + (res.apex !== host ? ' for all of ' + res.apex : '');
+		var d = S.spark(r.longHistory || r.history, 300, 70, 4); if (d) { $('chart').hidden = false; $('line').setAttribute('d', d); $('line').setAttribute('stroke', t.color); }
+		var tr = S.trend(r.longHistory || r.history); $('trend').textContent = tr ? (tr.dir === 'steady' ? 'Steady' : tr.dir === 'rising' ? 'Climbing' : 'Dropping') + ' over ' + tr.days + ' days (' + (tr.pct > 0 ? '+' : '') + tr.pct.toFixed(0) + '%)' : '';
 		if (res.shared) say(res.apex + ' is a shared platform: this is the rank of the whole platform, not of this page or account.');
 	}
 	api.tabs.query({ active: true, currentWindow: true }, function (tabs) {

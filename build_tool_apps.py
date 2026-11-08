@@ -224,6 +224,14 @@ APPS = {
                      desc="Free YouTube audio analyzer: measure any video's loudness in LUFS, true peak and loudness range, and see its waveform, spectrogram, silences and clipping. Works with YouTube, 3Speak, Rumble, Odysee, BitChute, X and your own audio or video files. Nothing is uploaded.",
                      meta_desc="Measure a YouTube video's loudness (LUFS, true peak, LRA) and see its waveform, spectrogram, silences and clipping. Also 3Speak, Rumble, Odysee and your own files.",
                      js_v="2", lib_from=["convert-video"], js_parts=["../convert-video/engine.js"]),
+    # MES Watch (2026-11-07, mes.fm/watch): a plain player for YouTube (IFrame API, nocookie), 3Speak (HLS) and Odysee (file) in our own <video>,
+    # Rumble / BitChute / X embeds; Up next / Saved / History with resume, in localStorage mes-watch:v1. lib.js = MESWatch on top of
+    # youtube-audio's MESYA.parseLink (lib_from). Tests: node tool_apps_src/watch-tests.js.
+    "watch": dict(title="MES Watch", page_title="Watch YouTube, 3Speak, Rumble and Odysee Videos Without Distractions",
+                  tag="Just the video. No feed, no comments.", accent="#be185d", dark="#9d174d", tint="#fce7f1",
+                  desc="Free distraction-free video player: paste YouTube, 3Speak, Odysee, Rumble, BitChute or X links and watch them on a plain page with no recommendations or comments. Up next list, save for later, resume where you stopped, speed up to 4x. Nothing is uploaded.",
+                  meta_desc="Watch YouTube, 3Speak, Odysee and Rumble videos on a plain page: no recommendations, no comments. Up next list, save for later, resume, speed control.",
+                  js_v="1", lib_from=["youtube-audio"]),
     # MES Mic Test (2026-10-28, mes.fm/mic-test): live dBFS meter (OBS style), verdict, noise floor, 10 s recording, spectrogram, speaker test; OBS / macOS / Yeti help.
     # lib.js = MESMic, tests tool_apps_src/mic-test-tests.js. Audio never leaves the browser.
     "mic-test": dict(title="MES Mic Test", page_title="Mic Test: Check Your Microphone Level in dBFS (OBS, Yeti, Mac)",
@@ -291,11 +299,12 @@ APPS = {
                           desc="Free domain lookup (whois / RDAP): see when a domain was registered and how old the website is, the registrar, expiry date, name servers, who hosts it, DNS and email setup, when the Internet Archive first saved it, and warning signs like a brand-new domain.",
                           js_v="1"),
     # Site Traffic & Rank: Tranco popularity rank (+30-day history), domain age / hosting (domain-lookup's lib via lib_from + its API), Wayback history, opt-in tech detection (api/site-traffic.js).
-    # Rank only, never visit counts (Similarweb's numbers are proprietary). Tests: node tool_apps_src/site-traffic-tests.js.
+    # Visits = a rough range estimated from the rank (MESTraffic.estimate; Similarweb's real numbers are proprietary); rank history kept in Upstash so the chart grows past 30 days;
+    # optional free sources: Chrome UX Report (env CRUX_API_KEY) and Cloudflare Radar (env CLOUDFLARE_RADAR_TOKEN). Tests: node tool_apps_src/site-traffic-tests.js.
     "site-traffic": dict(title="MES Site Traffic & Rank", page_title="Website Traffic Checker: Site Rank, Popularity and Age",
                          tag="How popular is a website, and for how long?", accent="#0f766e", dark="#134e4a", tint="#d9f2ee",
-                         desc="Free website traffic checker: see a site's public popularity rank and its 30-day trend, how old the domain is, who hosts it, when the Internet Archive first saved it and what technology it uses. Rank data, never made-up visit numbers.",
-                         js_v="2", lib_from=["domain-lookup"]),
+                         desc="Free website traffic checker: a site's popularity rank, a rough estimate of its monthly visits, a history chart, the phone / desktop split of real Chrome visitors, domain age, hosting and what technology it uses.",
+                         js_v="3", lib_from=["domain-lookup"]),
     # MES Market Signals (2026-10-24, mes.fm/signals; part of MES Crypto): data = mes.fm/api/signals.js (one aggregator, keyless sources); lib.js is shared with the API
     # as mes.fm/api/_signals-lib.js (byte-identical copy). Tests: node tool_apps_src/signals-tests.js. Informational only, never advice.
     "signals": dict(title="MES Market Signals", page_title="Market Signals: Fear & Greed, Fed Rate, Yield Curve and Crypto Dashboard",
