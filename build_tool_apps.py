@@ -103,7 +103,7 @@ GTA_NAV_INFO = "".join("<li class=\"info-bar__item\"><a class=\"info-bar__item__
 GTA_NAV_MENU = "".join('<li class="navbar__item"><a class="navbar__link" href="/%s">GTA 6 %s</a></li>' % (sl, nm) for sl, nm in GTA_PAGES[1:])
 def _gta(slug, page, title, page_title, desc, tab, meta_desc):
     fam = "".join('<a href="/%s"%s>%s</a>' % (sl, ' aria-current="page"' if sl == slug else "", "GTA 6 Hub" if sl == "gta" else nm) for sl, nm in GTA_PAGES)
-    d = dict(title=title, page_title=page_title, tag=GTA_BRAND["tag"], accent="#c2185b", dark="#8e1145", tint="#fce4ec", desc=desc, meta_desc=meta_desc, js_v="3",
+    d = dict(title=title, page_title=page_title, tag=GTA_BRAND["tag"], accent="#c2185b", dark="#8e1145", tint="#fce4ec", desc=desc, meta_desc=meta_desc, js_v="4",
              src="gta", lib_from=["clock"], js_parts=["sim3d.js", "sim.js"], nav_extra=GTA_NAV_INFO, menu_extra=GTA_NAV_MENU,
              vars={"PAGE": page, "FAM": fam, "BODY": "@%s.html" % page, "SEO": "@seo/%s.html" % page})
     if slug != "gta":
@@ -654,7 +654,7 @@ APPS = {
     "photo": dict(title="MES Photo Editor", src="photo-editor", page_title="Free Online Photo Editor with Layers",
                          tag="Pro tools. No upload. No sign-up.", accent="#7c3aed", dark="#5b21b6", tint="#f1eafe",
                          desc="Free online photo editor with layers, selections, magic wand, clone stamp, levels and curves. Add text labels, arrows, callouts and blur boxes to screenshots, combine images, keep transparency, open PSD and GIMP (.xcf) files and export PNG, JPEG or WebP. Private: nothing is uploaded.",
-                         js_v="45", js_parts=["core.js", "tools.js", "tools2.js", "dialogs.js", "ai.js", "aiort.js", "erase.js", "upscale.js", "equation.js", "xcf.js", "files.js", "projects.js", "psd.js", "round7.js", "layerstyle.js", "fontcat.js", "fontpick.js", "icons.js", "adjust.js"], lib_from=["image-converter"]),
+                         js_v="46", js_parts=["core.js", "tools.js", "tools2.js", "dialogs.js", "ai.js", "aiort.js", "erase.js", "upscale.js", "equation.js", "xcf.js", "files.js", "projects.js", "psd.js", "round7.js", "layerstyle.js", "fontcat.js", "fontpick.js", "icons.js", "adjust.js"], lib_from=["image-converter"]),
     # MES Audio Editor (mes.fm/audio): Audacity-style multi-track editor with AI noise removal. lib.js = MESAudio (clip model, edits, mixdown, peaks, fades, EQ,
     # BS.1770 loudness / true peak, limiter, compressor, de-click, WAV; node-tested with the shared denoiser: tool_apps_src/audio-tests.js), app.js = UI.
     # The noise removal is the shared /main_js/denoise.js (MESDenoise: DeepFilterNet3 ONNX + RNNoise wasm + spectral gate), also used by the video editor.
