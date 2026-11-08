@@ -394,5 +394,12 @@
   "img": "witney-webb.jpg",
   "credit": "YouTube channel picture (@UnlimitedHangoutPodcast)",
   "credit_url": "https://www.youtube.com/@UnlimitedHangoutPodcast"
+ },
+ "Fully Charged Zone": {
+  "group": "science",
+  "aka": "fully charged|dallas gier",
+  "img": "fully-charged-zone.jpg",
+  "credit": "YouTube channel picture (@FullyChargedZone)",
+  "credit_url": "https://www.youtube.com/@FullyChargedZone"
  }
 }

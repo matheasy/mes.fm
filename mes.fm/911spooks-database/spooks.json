@@ -1,8 +1,8 @@
 {
  "title": "9/11 Spooks Database",
- "updated": "2026-11-02",
+ "updated": "2026-11-08",
  "source": "https://docs.google.com/spreadsheets/d/1-pBVHR4KCT2nVngaWkUhjpHOw0KoJIqehDT3ah5yCSk/edit?gid=686862064",
- "count": 80,
+ "count": 81,
  "groups": {
   "ae911": "AE911Truth & thermite",
   "truth": "9/11 Truth circles",
@@ -13,6 +13,16 @@
   "online": "Online spammers"
  },
  "people": [
+  {
+   "name": "Fully Charged Zone",
+   "group": "science",
+   "note": "Dallas Gier, pretended to befriend MES and John Hutchison to upload Hutchison Videos, but his plan was to distance the Hutchison Effect from 9/11 dustification.",
+   "links": [
+    "https://mes.fm/livestream-143-911-spooks"
+   ],
+   "img": "/911spooks-database/img/fully-charged-zone.jpg",
+   "posts": []
+  },
   {
    "name": "Abby Martin",
    "group": "media",

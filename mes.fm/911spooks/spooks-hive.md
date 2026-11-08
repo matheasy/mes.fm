@@ -4,13 +4,13 @@
 
 </center>
 
-The MES list of 9/11 disinfo agents, spooks and controlled opposition: **80+ and counting** (80 as of November 2, 2026), with notes and links. Search their names in the [MES Links Telegram](https://t.me/meslinks) for many more posts.
+The MES list of 9/11 disinfo agents, spooks and controlled opposition: **80+ and counting** (81 as of November 8, 2026), with notes and links. Search their names in the [MES Links Telegram](https://t.me/meslinks) for many more posts.
 
 **Searchable version with filters, pictures and the MES posts about each person:** https://mes.fm/911spooks-database
 
 Kept in: [Google Sheet](https://docs.google.com/spreadsheets/d/1-pBVHR4KCT2nVngaWkUhjpHOw0KoJIqehDT3ah5yCSk/edit?gid=686862064) · [Excel (OneDrive)](https://1drv.ms/x/s!As32ynv0LoaIi6UOFw7QTWr1sVrCtA) · [mes.fm](https://mes.fm/911spooks-database) · [Hive](https://peakd.com/hive-113182/@mestruth/911-spooks-database-ayc) · Download: [CSV](https://mes.fm/911spooks-database/spooks.csv) · [JSON](https://mes.fm/911spooks-database/spooks.json)
 
-First shown on [MES Livestream 112: 9/11 Spooks Database](https://mes.fm/livestream-112-911-spooks). Last updated: November 2, 2026.
+First shown on [MES Livestream 112: 9/11 Spooks Database](https://mes.fm/livestream-112-911-spooks). Last updated: November 8, 2026.
 
 
 ## AE911Truth & thermite (14)
@@ -97,13 +97,14 @@ First shown on [MES Livestream 112: 9/11 Spooks Database](https://mes.fm/livestr
 | **Witney Webb** |  | [Telegram chat](https://t.me/meslinkschat/46701) |
 
 
-## UFOs, MH370 & fringe science (6)
+## UFOs, MH370 & fringe science (7)
 
 | Name | Notes | Links |
 |---|---|---|
 | **Ashton Forbes** | MH370 Grift | [Telegram](https://t.me/meslinks/29685) · [MES posts (3)](https://mes.fm/911spooks-database#ashton-forbes) |
 | **Bob Greenyer** | "Cold Fusion Engineer" | [MES.fm](https://mes.fm/bg-wildin) · [MES posts (10)](https://mes.fm/911spooks-database#bob-greenyer) |
 | **Chuck Huber** | Agent 17 Voice Actor | [X](https://x.com/MathEasySolns/status/1997454968316661774) |
+| **Fully Charged Zone** | Dallas Gier, pretended to befriend MES and John Hutchison to upload Hutchison Videos, but his plan was to distance the Hutchison Effect from 9/11 dustification. | [MES.fm](https://mes.fm/livestream-143-911-spooks) |
 | **Jeremy Rys** | Alien Scientist | [Hive](https://peakd.com/hive-113182/@mes/yaiugjff) |
 | **Robert Murray Smith** | Covers up Hutchison Effect | [Telegram](https://t.me/meslinks/26237) |
 | **Steven Greer** |  | [Telegram](https://t.me/meslinks/24558) · [MES posts (1)](https://mes.fm/911spooks-database#steven-greer) |
