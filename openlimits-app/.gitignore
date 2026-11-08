@@ -13,3 +13,4 @@ android/.kotlin/
 ios/build/
 ios/*.xcarchive
 DerivedData/
+store/accessibility-disclosure.mp4
