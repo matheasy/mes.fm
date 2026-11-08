@@ -149,6 +149,8 @@ private fun HomeScreen(onAdd: () -> Unit) {
             modifier = Modifier.clickable { ctx.startActivity(Intent(Intent.ACTION_VIEW, Uri.parse("https://mes.fm/mobile-apps"))) }.padding(vertical = 4.dp))
         Text("Want a feature? Tell us at mes.fm/contact", color = MaterialTheme.colorScheme.primary, fontSize = 13.sp,
             modifier = Modifier.clickable { ctx.startActivity(Intent(Intent.ACTION_VIEW, Uri.parse("https://mes.fm/contact?subject=Open%20Limits%20app%20idea"))) }.padding(vertical = 4.dp))
+        Text("Privacy policy", color = MaterialTheme.colorScheme.primary, fontSize = 13.sp,
+            modifier = Modifier.clickable { ctx.startActivity(Intent(Intent.ACTION_VIEW, Uri.parse("https://mes.fm/privacy-policy#open-limits"))) }.padding(vertical = 4.dp))
         Spacer(Modifier.height(24.dp))
     }
 
