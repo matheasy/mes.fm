@@ -715,6 +715,51 @@
         if (document.readyState === "loading") document.addEventListener("DOMContentLoaded", function () { setTimeout(retry, 300); }); else setTimeout(retry, 300);
     })();
 
+    /* Typing on a phone held sideways (2026-11-07): with the keyboard open the visible strip is only ~100-200px tall, the
+       floating compact bar takes 60px of it, and the browser's own autofill strip (key / card / pin) sits over the bottom
+       without the browser counting it, so the field ended up hidden. While a text field has focus and the visible area
+       (visualViewport) is under 330px tall, html.mes-kb hides the floating bar / pinned header controls / known sticky
+       panels, and the field is scrolled to just under the top of the visible strip (room for its label above it).
+       Portrait phones and computers are untouched. */
+    (function keyboardFit() {
+        var vv = window.visualViewport;
+        if (!vv || !window.matchMedia || !matchMedia("(pointer: coarse)").matches) return;
+        var st = document.createElement("style");
+        st.textContent = "html.mes-kb #compact-nav,html.mes-kb #hdrBarTab,html.mes-kb #hdrMorePanel,html.mes-kb .mes-top{display:none !important}" +
+            "html.mes-kb body.is-stuck .hc-group,html.mes-kb body.is-stuck #header-controls,html.mes-kb body.is-stuck .header-controls,html.mes-kb body.is-stuck #navbar-button{visibility:hidden !important}" +
+            "html.mes-kb #mc-display,html.mes-kb .sg-strip{position:static !important}";
+        (document.head || document.documentElement).appendChild(st);
+        var NOTEXT = /^(checkbox|radio|range|button|submit|reset|color|file|image|hidden)$/i, t = 0, last = null;
+        function field(e) {
+            if (!e || e === document.body) return false;
+            if (e.isContentEditable) return true;
+            if (e.tagName === "TEXTAREA") return !e.readOnly;
+            return e.tagName === "INPUT" && !NOTEXT.test(e.type) && !e.readOnly && e.inputMode !== "none";
+        }
+        function small() { return vv.height < 330 && vv.height < window.innerHeight * 0.8; }
+        function off() { document.documentElement.classList.remove("mes-kb"); last = null; }
+        function fit() {
+            t = 0;
+            var el = document.activeElement;
+            if (!field(el) || !small()) { off(); return; }
+            document.documentElement.classList.add("mes-kb");
+            var r = el.getBoundingClientRect(), h = Math.min(r.height, vv.height - 8);
+            var room = vv.height - h;                       /* space left in the visible strip */
+            var want = Math.max(4, Math.min(30, room / 2)); /* label room above the field */
+            var top = r.top - vv.offsetTop;                 /* field's top inside the visible strip */
+            if (el !== last || top < 2 || top + h > vv.height - 2) {
+                var d = top - want;
+                if (Math.abs(d) > 3) window.scrollBy(0, d);
+            }
+            last = el;
+        }
+        function soon(ms) { if (t) clearTimeout(t); t = setTimeout(fit, ms); }
+        vv.addEventListener("resize", function () { soon(60); });
+        document.addEventListener("focusin", function () { last = null; soon(320); });
+        document.addEventListener("focusout", function () { setTimeout(function () { if (!field(document.activeElement)) off(); }, 150); });
+        window.addEventListener("orientationchange", function () { soon(500); });
+    })();
+
     /* Paid ad-free (mes.fm/premium): localStorage "mes-adfree" = {user, until, how, checked, off?}. The AdSense loaders,
        aside.js and bottom-ad.js skip ads while `until` is in the future. Re-check the payment on the chain once a day
        (/api/premium, edge-cached), so a cancelled subscription brings the ads back and a renewal extends `until`.
