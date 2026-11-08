@@ -152,7 +152,7 @@
 	function btn(label, cls, title, fn) { var b = el("button", "pe-btn " + (cls || ""), esc(label)); b.type = "button"; if (title) b.title = title; b.addEventListener("click", fn); return b; }
 	function addText(preset, str, rel) {
 		if (!PE.doc) { PE.newDoc(1080, 1080, "#ffffff", "Untitled"); }
-		var d = PE.doc, o = JSON.parse(JSON.stringify(PE.opt.text)); o.wrapW = 0; o.fit = false; o.boxH = 0; o.rich = null; o.bold = false; o.italic = false; o.underline = false; o.bgOn = false; o.strokeOn = false; o.shadowOn = false;
+		var d = PE.doc, o = JSON.parse(JSON.stringify(PE.opt.text)); o.wrapW = 0; o.fit = false; o.boxH = 0; o.rich = null; o.rsz = null; o.bold = false; o.italic = false; o.underline = false; o.bgOn = false; o.strokeOn = false; o.shadowOn = false;
 		for (var k in preset) o[k] = preset[k]; o.str = str; o.size = Math.max(12, Math.round(Math.min(d.w, d.h) * rel));
 		var L = PE.makeLayer({ type: "text", name: str, text: o, w: 4, h: 4 }); PE.renderText(L); L.cx = d.w / 2; L.cy = d.h / 2; PE.addLayer(L); PE.setActive(L.id); PE.commit("Add text"); PE.setTool("move"); PE.invalidate();
 		PE.toast("Double-click the text to type your own words; drag a corner to resize it");

@@ -518,6 +518,31 @@ var MESPixel = (function () {
 		for (var i = a + 1; i <= b; i++) if (i === b || rich[i] !== rich[st]) { out.push({ s: st, e: i, m: +rich[st] }); st = i; }
 		return out;
 	}
+	/* ---------- per-character text size (t.rsz): one factor per character, 1 = the layer's Size; null = every character at the layer's Size ----------
+	 * Factors (not pixel sizes) so scaling the whole text (corners, Size slider without a selection, Auto-fit) keeps the mix. Plain array: survives JSON. */
+	function sizeEdit(rsz, oldS, newS) {
+		if (rsz == null) return null; oldS = String(oldS); newS = String(newS); var ol = oldS.length, nl = newS.length, p = 0, s = 0, a = rsz.slice(0, ol);
+		while (a.length < ol) a.push(1);
+		while (p < ol && p < nl && oldS[p] === newS[p]) p++;
+		while (s < ol - p && s < nl - p && oldS[ol - 1 - s] === newS[nl - 1 - s]) s++;
+		var k = p > 0 ? a[p - 1] : ol > 0 ? a[0] : 1, mid = []; for (var i = 0; i < nl - p - s; i++) mid.push(k);
+		return a.slice(0, p).concat(mid, a.slice(ol - s));
+	}
+	/* set characters a..b to factor k (rounded to 0.001) */
+	function sizeSet(rsz, n, a, b, k) { var out = []; k = Math.round(k * 1000) / 1000; for (var i = 0; i < n; i++) out.push(i >= a && i < b ? k : rsz && rsz[i] != null ? rsz[i] : 1); return out; }
+	/* all the same -> {rsz: null, k}; else {rsz, k: null} */
+	function sizeNorm(rsz) { if (!rsz || !rsz.length) return { rsz: null, k: 1 }; for (var i = 1; i < rsz.length; i++) if (rsz[i] !== rsz[0]) return { rsz: rsz, k: null }; return { rsz: null, k: rsz[0] }; }
+	/* runs of equal style AND size in a..b: [{s, e, m, k}] */
+	function textSegs(rich, rsz, a, b, base) {
+		var out = [], st = a; if (b <= a) return out;
+		var M = function (i) { return rich == null ? base : +rich[i]; }, K = function (i) { return rsz == null ? 1 : rsz[i]; };
+		for (var i = a + 1; i <= b; i++) if (i === b || M(i) !== M(st) || K(i) !== K(st)) { out.push({ s: st, e: i, m: M(st), k: K(st) }); st = i; }
+		return out;
+	}
+	/* the biggest factor on each line (an empty line: the character before it, so a blank line after big text stays big) */
+	function lineScales(lines, rsz) {
+		return lines.map(function (ln) { if (rsz == null) return 1; var m = 0; for (var i = ln.start; i < ln.end; i++) m = Math.max(m, rsz[i]); if (!m) m = rsz[Math.max(0, ln.start - 1)] || rsz[ln.start] || 1; return m; });
+	}
 	/* Auto-fit text: the largest font size whose wrapped text fits a box w x h (box height = size * (lh * lines + 0.25), like the editor's text frame),
 	 * without breaking a word. measureAt(size) -> measure(s, start). Returns a size in steps of 0.5 between lo and hi. */
 	function fitFontSize(str, w, h, lh, measureAt, lo, hi) {
@@ -965,7 +990,7 @@ var MESPixel = (function () {
 	}
 
 	var api = { FXDEF: FXDEF, FXKEYS: FXKEYS, fxNorm: fxNorm, fxAny: fxAny, fxAngle: fxAngle, fxOffset: fxOffset, fxReach: fxReach, sdField: sdField, sdCover: sdCover, blurF: blurF, shiftF: shiftF, gradAt: gradAt, gradPlane: gradPlane, bevelPlanes: bevelPlanes, alphaBox: alphaBox, fxPlanes: fxPlanes, fxFromPsd: fxFromPsd, fxToPsd: fxToPsd, colorFromPsd: colorFromPsd, modeFromPsd: modeFromPsd, modeToPsd: modeToPsd, rgbToHsv: rgbToHsv, hsvToRgb: hsvToRgb, parseColor: parseColor, lightness: lightness, edt: edt, outlineAlpha: outlineAlpha, normToolLayout: normToolLayout, moveTool: moveTool, clampCrop: clampCrop, dragCrop: dragCrop, shiftCrop: shiftCrop, projectKind: projectKind, projectBase: projectBase, projectFileName: projectFileName, isZipBytes: isZipBytes, zipEntries: zipEntries, projectPrefix: projectPrefix, pruneRecent: pruneRecent, upsertRecent: upsertRecent, agoText: agoText, diskChanged: diskChanged, layerFileNames: layerFileNames, newProjectId: newProjectId,
-		unionBox: unionBox, boxesTouch: boxesTouch, rectFrom: rectFrom, snapTargets: snapTargets, snapAxis: snapAxis, snapBox: snapBox, guidesOn: guidesOn, linSolve: linSolve, scaleAbout: scaleAbout, wrapLines: wrapLines, textAnchorShift: textAnchorShift, textFrameBox: textFrameBox, textHold: textHold, fontFileMatch: fontFileMatch, angleDeg: angleDeg, degToRot: degToRot, snapAngle: snapAngle, versionedName: versionedName, nameVersion: nameVersion, pixelSig: pixelSig, psdMetaEncode: psdMetaEncode, psdMetaDecode: psdMetaDecode, psdXmp: psdXmp, carryUiState: carryUiState, richMask: richMask, richEdit: richEdit, richSet: richSet, richAll: richAll, richNorm: richNorm, richSegs: richSegs, fitFontSize: fitFontSize, folderProject: folderProject, caretLine: caretLine, hitInLine: hitInLine, wordAt: wordAt, describeSource: describeSource, bytesText: bytesText, panelClamp: panelClamp, panelKey: panelKey, clamp: clamp, hexToRgb: hexToRgb, rgbToHex: rgbToHex, rgbToHsl: rgbToHsl, hslToRgb: hslToRgb, histogram: histogram, identityLUT: identityLUT, applyLUT: applyLUT, levelsLUT: levelsLUT, curveLUT: curveLUT,
+		unionBox: unionBox, boxesTouch: boxesTouch, rectFrom: rectFrom, snapTargets: snapTargets, snapAxis: snapAxis, snapBox: snapBox, guidesOn: guidesOn, linSolve: linSolve, scaleAbout: scaleAbout, wrapLines: wrapLines, textAnchorShift: textAnchorShift, textFrameBox: textFrameBox, textHold: textHold, fontFileMatch: fontFileMatch, angleDeg: angleDeg, degToRot: degToRot, snapAngle: snapAngle, versionedName: versionedName, nameVersion: nameVersion, pixelSig: pixelSig, psdMetaEncode: psdMetaEncode, psdMetaDecode: psdMetaDecode, psdXmp: psdXmp, carryUiState: carryUiState, richMask: richMask, richEdit: richEdit, richSet: richSet, richAll: richAll, richNorm: richNorm, richSegs: richSegs, sizeEdit: sizeEdit, sizeSet: sizeSet, sizeNorm: sizeNorm, textSegs: textSegs, lineScales: lineScales, fitFontSize: fitFontSize, folderProject: folderProject, caretLine: caretLine, hitInLine: hitInLine, wordAt: wordAt, describeSource: describeSource, bytesText: bytesText, panelClamp: panelClamp, panelKey: panelKey, clamp: clamp, hexToRgb: hexToRgb, rgbToHex: rgbToHex, rgbToHsl: rgbToHsl, hslToRgb: hslToRgb, histogram: histogram, identityLUT: identityLUT, applyLUT: applyLUT, levelsLUT: levelsLUT, curveLUT: curveLUT,
 		brightnessContrast: brightnessContrast, exposure: exposure, hueSat: hueSat, vibrance: vibrance, temperature: temperature, invert: invert, grayscale: grayscale, sepia: sepia, threshold: threshold, posterize: posterize,
 		gaussianBlur: gaussianBlur, boxBlur: boxBlur, unsharp: unsharp, noise: noise, pixelate: pixelate, vignette: vignette, convolve: convolve, floodMask: floodMask, growShrinkMask: growShrinkMask, featherMask: featherMask, invertMask: invertMask,
 		maskBounds: maskBounds, opaqueBounds: opaqueBounds, ADJKEYS: ADJKEYS, QFILTERS: QFILTERS, adjNorm: adjNorm, adjAny: adjAny, quickAdjust: quickAdjust, blendByMask: blendByMask, autoLevels: autoLevels, premultiply: premultiply, unpremultiply: unpremultiply };
@@ -1108,6 +1133,7 @@ var MESPixel = (function () {
 	PE.TEXTDEF = { str: "Text", font: "Arial, Helvetica, sans-serif", size: 64, bold: false, italic: false, underline: false, color: "#000000", align: "left", lh: 1.2, bgOn: false, bgColor: "#ffeb3b", bgPad: 12, bgRadius: 8, strokeOn: false, stroke: "#ffffff", strokeW: 4, shadowOn: false, shadow: "#000000", shadowBlur: 8, shadowDx: 4, shadowDy: 4, ls: 0, wrapW: 0, fit: false, boxH: 0 };
 	/* rich text (MESPixel.rich*): t.rich = one style digit per character (1 bold, 2 italic, 4 underline) or null = the layer's own bold / italic / underline */
 	PE.textRich = function (t) { return t && typeof t.rich === "string" && t.rich.length === String(t.str).length && t.rich.length ? t.rich : null; };
+	PE.textSizes = function (t) { return t && Array.isArray(t.rsz) && t.rsz.length === String(t.str).length && t.rsz.length ? t.rsz : null; };
 	PE.textMask = function (t) { return P.richMask(t.bold, t.italic, t.underline); };
 	/* round 10: built by MESFontCat.fontShorthand, which quotes family names Firefox would reject (the reason a font "went back to default") */
 	function fontFor(t, m, size) { var F = window.MESFontCat; var sz = size == null ? t.size : size; return F ? F.fontShorthand(m, sz, t.font) : (m & 2 ? "italic " : "") + (m & 1 ? "bold " : "") + sz + "px " + t.font; }
@@ -1175,24 +1201,25 @@ var MESPixel = (function () {
 	/* a measure(s, start) for a text at a given size: rich parts are measured with their own font */
 	function measurer(t, size, ctx) {
 		var rich = PE.textRich(t), base = PE.textMask(t), ls = (t.ls || 0) + "px", cache = {}, set = function (fn) { if (ctx._mesFont !== fn) setFont(ctx, fn); if ("letterSpacing" in ctx && ctx.letterSpacing !== ls) ctx.letterSpacing = ls; };
-		if (!rich) { var f = fontFor(t, base, size); return function (s) { var w = cache[s]; if (w == null) { set(f); w = cache[s] = ctx.measureText(s).width; } return w; }; }
+		var rsz = PE.textSizes(t);
+		if (!rich && !rsz) { var f = fontFor(t, base, size); return function (s) { var w = cache[s]; if (w == null) { set(f); w = cache[s] = ctx.measureText(s).width; } return w; }; }
 		return function (s, st) {
 			st = st || 0; var key = st + "|" + s, w = cache[key]; if (w != null) return w; w = 0;
-			P.richSegs(rich, st, st + s.length, base).forEach(function (g) { set(fontFor(t, g.m, size)); w += ctx.measureText(s.slice(g.s - st, g.e - st)).width; });
+			P.textSegs(rich, rsz, st, st + s.length, base).forEach(function (g) { set(fontFor(t, g.m, size * g.k)); w += ctx.measureText(s.slice(g.s - st, g.e - st)).width; });
 			return (cache[key] = w);
 		};
 	}
 	/* how far the ink of the letters reaches outside the text box (left of a line, right of its advance width, above the ascent we allow, below the line) */
-	function inkOver(t, lines, lw, ctx) {
-		var rich = PE.textRich(t), base = PE.textMask(t), worst = 0, top = t.size * 0.92, lhp = t.size * t.lh;
+	function inkOver(t, lines, lw, ctx, km) {
+		var rich = PE.textRich(t), rsz = PE.textSizes(t), base = PE.textMask(t), worst = 0, lhp = t.size * t.lh;
 		if (!ctx.measureText || !("actualBoundingBoxRight" in (ctx.measureText("x") || {}))) return 0;
 		lines.forEach(function (ln, i) {
-			if (!ln.text) return; var segs = P.richSegs(rich, ln.start, ln.end, base), x0 = 0;
+			if (!ln.text) return; var segs = P.textSegs(rich, rsz, ln.start, ln.end, base), x0 = 0, top = t.size * 0.92 * (km ? km[i] : 1);
 			segs.forEach(function (g, k) {
-				setFont(ctx, fontFor(t, g.m)); var tx = ln.text.slice(g.s - ln.start, g.e - ln.start), mm = ctx.measureText(tx);
+				setFont(ctx, fontFor(t, g.m, t.size * g.k)); var tx = ln.text.slice(g.s - ln.start, g.e - ln.start), mm = ctx.measureText(tx);
 				if (k === 0) worst = Math.max(worst, mm.actualBoundingBoxLeft || 0);
 				if (k === segs.length - 1) worst = Math.max(worst, x0 + (mm.actualBoundingBoxRight || 0) - lw[i]);
-				worst = Math.max(worst, (mm.actualBoundingBoxAscent || 0) - top, i === lines.length - 1 ? (mm.actualBoundingBoxDescent || 0) - (t.size * 0.3 + Math.max(0, lhp - t.size)) : 0);
+				worst = Math.max(worst, (mm.actualBoundingBoxAscent || 0) - top, i === lines.length - 1 ? (mm.actualBoundingBoxDescent || 0) - (t.size * 0.3 + Math.max(0, lhp - t.size)) * (km ? km[i] : 1) : 0);
 				x0 += mm.width;
 			});
 		});
@@ -1209,17 +1236,18 @@ var MESPixel = (function () {
 	var lmc = null;
 	PE.textLayout = function (L) {
 		var t = L.text; if (!t) return null; var rich = PE.textRich(t), f = fontFor(t, PE.textMask(t)), dw = PE.doc ? PE.doc.w : 1200, fit = !!(t.fit && t.wrapW > 0 && t.boxH > 0);
-		var key = JSON.stringify([PE.fontAvailable(t.font), t.str, f, rich, t.ls || 0, t.wrapW, t.lh, t.align, t.bgOn && t.bgPad, t.strokeOn && t.strokeW, t.shadowOn && [t.shadowBlur, t.shadowDx, t.shadowDy], t.wrapW > 0 ? 0 : dw, fit && t.boxH]);
+		var rsz = PE.textSizes(t), key = JSON.stringify([PE.fontAvailable(t.font), t.str, f, rich, rsz, t.ls || 0, t.wrapW, t.lh, t.align, t.bgOn && t.bgPad, t.strokeOn && t.strokeW, t.shadowOn && [t.shadowBlur, t.shadowDx, t.shadowDy], t.wrapW > 0 ? 0 : dw, fit && t.boxH]);
 		if (L._lay && L._lay.key === key) return L._lay;
 		var m = lmc || (lmc = mk(8, 8).getContext("2d")), measure = measurer(t, t.size, m);
 		// word wrap: an explicit box width (Box width option / the handles on the box), else never wider than 90% of the image so pasted text stays reasonable
 		var lim = t.wrapW > 0 ? t.wrapW : Math.max(160, dw * 0.9), lines = P.wrapLines(t.str, lim, measure);
 		var lw = lines.map(function (s) { return measure(s.text, s.start); }), mw = t.wrapW > 0 ? t.wrapW : Math.max.apply(null, lw.concat([1])), lhp = t.size * t.lh;
-		var ink = inkOver(t, lines, lw, m);   // round 9: letters that reach past their own width (italics, script fonts, big sizes) get room so they are never cut off
+		var km = P.lineScales(lines, rsz), lhs = km.map(function (k) { return lhp * k; }), tops = [], cum = 0; lhs.forEach(function (h) { tops.push(cum); cum += h; }); var lastK = km[km.length - 1] || 1;   // per-character sizes: each line is as tall as its biggest letters
+		var ink = inkOver(t, lines, lw, m, km);   // round 9: letters that reach past their own width (italics, script fonts, big sizes) get room so they are never cut off
 		var sw = t.strokeOn ? Math.max(0, t.strokeW || 0) : 0, bgp = t.bgOn ? t.bgPad : 0, pad = Math.ceil(bgp + sw + (t.shadowOn ? t.shadowBlur * 2 + Math.max(Math.abs(t.shadowDx), Math.abs(t.shadowDy)) : 0) + Math.max(t.size * 0.15, ink) + 2);
-		var lx = lw.map(function (w) { return t.align === "center" ? pad + mw / 2 - w / 2 : t.align === "right" ? pad + mw - w : pad; }), base = lines.map(function (s, i) { return pad + lhp * i + t.size * 0.92; });
-		var th = lhp * lines.length + t.size * 0.25, bh = fit ? Math.max(t.boxH, th) : th;
-		L._lay = { key: key, font: f, rich: rich, lines: lines, lw: lw, lx: lx, base: base, mw: mw, lhp: lhp, pad: pad, bgp: bgp, bh: bh, fit: fit, W: Math.ceil(mw) + pad * 2, H: Math.ceil(Math.max(lhp * lines.length + t.size * 0.3, bh + t.size * 0.05)) + pad * 2, size: t.size, measure: measure };
+		var lx = lw.map(function (w) { return t.align === "center" ? pad + mw / 2 - w / 2 : t.align === "right" ? pad + mw - w : pad; }), base = lines.map(function (s, i) { return pad + tops[i] + t.size * 0.92 * km[i]; });
+		var th = cum + t.size * 0.25 * lastK, bh = fit ? Math.max(t.boxH, th) : th;
+		L._lay = { key: key, font: f, rich: rich, lines: lines, lw: lw, lx: lx, base: base, mw: mw, lhp: lhp, pad: pad, bgp: bgp, bh: bh, fit: fit, W: Math.ceil(mw) + pad * 2, H: Math.ceil(Math.max(cum + t.size * 0.3 * lastK, bh + t.size * 0.05)) + pad * 2, size: t.size, measure: measure, km: km, lhs: lhs, tops: tops, th: cum, lastK: lastK, rsz: rsz };
 		return L._lay;
 	};
 	PE.renderText = function (L) {
@@ -1230,16 +1258,16 @@ var MESPixel = (function () {
 		var W = lay.W, H = lay.H; if (W * H > PE.MAXAREA) return;
 		var oldW = L.canvas.width, oldH = L.canvas.height, c = mk(W, H), x = c.getContext("2d"), sw = t.strokeOn ? Math.max(0, t.strokeW || 0) : 0;
 		if ("letterSpacing" in x) x.letterSpacing = (t.ls || 0) + "px"; x.textBaseline = "alphabetic"; x.lineJoin = "round"; x.textAlign = "left";
-		if (t.bgOn) { var inner = Math.ceil(lhp * lines.length + sz * 0.3 - sz * 0.1) - Math.round(sz * 0.05); if (lay.fit) inner = Math.max(inner, Math.ceil(lay.bh)); var bx = pad - bgp, by = pad - bgp, bw = Math.ceil(mw) + bgp * 2, bh = inner + bgp * 2, br = Math.min(t.bgRadius, bw / 2, bh / 2); x.fillStyle = t.bgColor; x.beginPath(); x.moveTo(bx + br, by); x.arcTo(bx + bw, by, bx + bw, by + bh, br); x.arcTo(bx + bw, by + bh, bx, by + bh, br); x.arcTo(bx, by + bh, bx, by, br); x.arcTo(bx, by, bx + bw, by, br); x.closePath(); x.fill(); }
+		if (t.bgOn) { var inner = Math.ceil(lay.th + sz * 0.3 * lay.lastK - sz * 0.1) - Math.round(sz * 0.05); if (lay.fit) inner = Math.max(inner, Math.ceil(lay.bh)); var bx = pad - bgp, by = pad - bgp, bw = Math.ceil(mw) + bgp * 2, bh = inner + bgp * 2, br = Math.min(t.bgRadius, bw / 2, bh / 2); x.fillStyle = t.bgColor; x.beginPath(); x.moveTo(bx + br, by); x.arcTo(bx + bw, by, bx + bw, by + bh, br); x.arcTo(bx + bw, by + bh, bx, by + bh, br); x.arcTo(bx, by + bh, bx, by, br); x.arcTo(bx, by, bx + bw, by, br); x.closePath(); x.fill(); }
 		// underline: scaled to the font size, from the first to the last underlined letter of each run (not the letter spacing after the last one)
 		var uOff = Math.max(1, sz * 0.11), uTh = Math.max(1, sz * 0.065), ls = t.ls || 0;
 		lines.forEach(function (ln, i) {
-			var py = lay.base[i], x0 = lay.lx[i], segs = P.richSegs(rich, ln.start, ln.end, base), ul = [];
+			var py = lay.base[i], x0 = lay.lx[i], segs = P.textSegs(rich, lay.rsz, ln.start, ln.end, base), ul = [];
 			segs.forEach(function (g) { g.x = x0 + lay.measure(ln.text.slice(0, g.s - ln.start), ln.start); g.txt = ln.text.slice(g.s - ln.start, g.e - ln.start); });
-			segs.forEach(function (g) { if (!(g.m & 4)) return; var xe = x0 + lay.measure(ln.text.slice(0, g.e - ln.start), ln.start) - (ls > 0 ? ls : 0), last = ul[ul.length - 1]; if (last && last.e === g.s) { last.e = g.e; last.x1 = xe; } else ul.push({ s: g.s, e: g.e, x0: g.x, x1: xe }); });
+			segs.forEach(function (g) { if (!(g.m & 4)) return; var xe = x0 + lay.measure(ln.text.slice(0, g.e - ln.start), ln.start) - (ls > 0 ? ls : 0), last = ul[ul.length - 1]; if (last && last.e === g.s) { last.e = g.e; last.x1 = xe; last.k = Math.max(last.k, g.k); } else ul.push({ s: g.s, e: g.e, x0: g.x, x1: xe, k: g.k }); });
 			ul = ul.filter(function (u) { return u.x1 > u.x0; });
-			var draw = function (fn) { segs.forEach(function (g) { setFont(x, fontFor(t, g.m)); fn(g); }); };
-			var bars = function (fn) { ul.forEach(function (u) { fn(u.x0, py + uOff, u.x1 - u.x0, uTh); }); };
+			var draw = function (fn) { segs.forEach(function (g) { setFont(x, fontFor(t, g.m, sz * g.k)); fn(g); }); };
+			var bars = function (fn) { ul.forEach(function (u) { fn(u.x0, py + uOff * u.k, u.x1 - u.x0, uTh * u.k); }); };
 			if (t.shadowOn) { x.save(); x.shadowColor = t.shadow; x.shadowBlur = t.shadowBlur; x.shadowOffsetX = t.shadowDx; x.shadowOffsetY = t.shadowDy; x.fillStyle = t.color; draw(function (g) { x.fillText(g.txt, g.x, py); }); bars(function (a, b, w, h) { x.fillRect(a, b, w, h); }); x.restore(); }
 			if (sw > 0) { x.strokeStyle = t.stroke; x.lineWidth = sw * 2; draw(function (g) { x.strokeText(g.txt, g.x, py); }); bars(function (a, b, w, h) { x.strokeRect(a, b, w, h); }); }
 			x.fillStyle = t.color; draw(function (g) { x.fillText(g.txt, g.x, py); }); bars(function (a, b, w, h) { x.fillRect(a, b, w, h); });
@@ -2480,9 +2508,10 @@ var MESPixel = (function () {
 		return null;
 	}
 	function indexAt(L, x, y) {
-		var lay = PE.textLayout(L), p = PE.toLayerPt(L, x, y), n = lay.lines.length, i = Math.max(0, Math.min(n - 1, Math.floor((p.y - lay.pad) / lay.lhp)));
+		var lay = PE.textLayout(L), p = PE.toLayerPt(L, x, y), n = lay.lines.length, i = 0; if (lay.tops) { while (i < n - 1 && p.y - lay.pad >= lay.tops[i + 1]) i++; } else i = Math.max(0, Math.min(n - 1, Math.floor((p.y - lay.pad) / lay.lhp)));
 		return P.hitInLine(lay.lines[i], p.x - lay.lx[i], lay.measure);
 	}
+	function caretK(t, i) { var r = PE.textSizes(t); if (!r) return 1; return r[Math.max(0, i - 1)] || r[i] || 1; }   // the caret is as tall as the letter before it
 	function focusIdx(ta) { return ta.selectionDirection === "backward" ? ta.selectionStart : ta.selectionEnd; }
 	function anchorIdx(ta) { return ta.selectionDirection === "backward" ? ta.selectionEnd : ta.selectionStart; }
 	function setSel(a, b) { var ta = editor(); if (b >= a) ta.setSelectionRange(a, b, "forward"); else ta.setSelectionRange(b, a, "backward"); poke(); }
@@ -2522,7 +2551,7 @@ var MESPixel = (function () {
 	}
 	PE.initTextEditor = function () {
 		var ta = editor();
-		ta.addEventListener("input", function () { if (!te) return; var tt = te.L.text; if (PE.textRich(tt) || tt.rich) { var nr = P.richNorm(P.richEdit(tt.rich || String(PE.textMask(tt)).repeat(tt.str.length), tt.str, ta.value, PE.textMask(tt))); tt.rich = nr.rich; if (nr.mask != null) normFlags(tt, nr.mask); } tt.str = ta.value; PE.renderText(te.L); PE.touch(te.L); placeEditor(); poke(); });
+		ta.addEventListener("input", function () { if (!te) return; var tt = te.L.text; if (PE.textRich(tt) || tt.rich) { var nr = P.richNorm(P.richEdit(tt.rich || String(PE.textMask(tt)).repeat(tt.str.length), tt.str, ta.value, PE.textMask(tt))); tt.rich = nr.rich; if (nr.mask != null) normFlags(tt, nr.mask); } if (PE.textSizes(tt) || tt.rsz) { var ns = P.sizeNorm(P.sizeEdit(tt.rsz || [], tt.str, ta.value)); tt.rsz = ns.rsz; if (!ns.rsz && ns.k !== 1 && ta.value.length) { tt.size = Math.round(tt.size * ns.k * 10) / 10; } } tt.str = ta.value; PE.renderText(te.L); PE.touch(te.L); placeEditor(); poke(); });
 		ta.addEventListener("keydown", function (e) {
 			e.stopPropagation(); if (!te) return; var mod = e.ctrlKey || e.metaKey;
 			if (e.key === "Escape" || (e.key === "Enter" && mod)) { e.preventDefault(); PE.endTextEdit(false); return; }
@@ -2557,7 +2586,7 @@ var MESPixel = (function () {
 	};
 	/* ---------- bold / italic / underline of a range (rich text) ---------- */
 	function normFlags(t, m) { t.bold = !!(m & 1); t.italic = !!(m & 2); t.underline = !!(m & 4); }
-	var BITS = { bold: 1, italic: 2, underline: 4 };
+	var BITS = { bold: 1, italic: 2, underline: 4 }, sizeBefore = null;
 	/* set (force = true / false) or toggle (force = null) one style bit on the characters a..b of a text layer; the whole text when a..b is empty */
 	function styleRange(L, bit, a, b, force) {
 		var t = L.text, n = String(t.str).length, key = bit === 1 ? "bold" : bit === 2 ? "italic" : "underline";
@@ -2662,15 +2691,15 @@ var MESPixel = (function () {
 			lay.lines.forEach(function (ln, i) {
 				var s0 = Math.max(a, ln.start), s1 = Math.min(b, ln.end); var past = b > ln.end && a <= ln.end;   // the selection runs on past this line: show the line break as selected too
 				if (s1 < s0 || (s1 === s0 && !past)) return; var x0 = lay.lx[i] + lay.measure(ln.text.slice(0, s0 - ln.start), ln.start), x1 = lay.lx[i] + lay.measure(ln.text.slice(0, s1 - ln.start), ln.start) + (past ? sz * 0.25 : 0);
-				x.fillRect(x0, lay.base[i] - sz * 0.86, x1 - x0, sz * 1.1);
+				var kk = lay.km ? lay.km[i] : 1; x.fillRect(x0, lay.base[i] - sz * 0.86 * kk, x1 - x0, sz * 1.1 * kk);
 			});
 		} else if (blinkOn) {
-			var cl = P.caretLine(lay.lines, focusIdx(ta)), ln = lay.lines[cl.line], cx = lay.lx[cl.line] + lay.measure(ln.text.slice(0, cl.k), ln.start), y0 = lay.base[cl.line] - sz * 0.86, y1 = lay.base[cl.line] + sz * 0.24;
+			var cl = P.caretLine(lay.lines, focusIdx(ta)), ln = lay.lines[cl.line], cx = lay.lx[cl.line] + lay.measure(ln.text.slice(0, cl.k), ln.start), ck = caretK(L.text, focusIdx(ta)), y0 = lay.base[cl.line] - sz * 0.86 * ck, y1 = lay.base[cl.line] + sz * 0.24 * ck;
 			x.lineCap = "butt"; x.strokeStyle = "rgba(255,255,255,0.95)"; x.lineWidth = 4 / sc; x.beginPath(); x.moveTo(cx, y0); x.lineTo(cx, y1); x.stroke(); x.strokeStyle = "#111"; x.lineWidth = 2 / sc; x.stroke();
 		}
 		x.restore();
 	}
-	PE.defTool({ id: "text", name: "Text / Label", key: "t", icon: "T", opts: JSON.parse(JSON.stringify(PE.TEXTDEF)), hint: "Click empty canvas to add text, click a text to edit it (caret where you click, drag to select, double-click a word, triple-click a line). Ctrl/Cmd+B, I, U = bold, italic, underline of the selected letters. Drag the white pills on the sides of the box to change its width so the words re-wrap (with Auto-fit text: the corners too, and the size follows). Enter = new line, Ctrl+Enter, Esc or a click outside = done.",
+	PE.defTool({ id: "text", name: "Text / Label", key: "t", icon: "T", opts: JSON.parse(JSON.stringify(PE.TEXTDEF)), hint: "Click empty canvas to add text, click a text to edit it (caret where you click, drag to select, double-click a word, triple-click a line). Ctrl/Cmd+B, I, U = bold, italic, underline of the selected letters; highlight words and move Size to change only their size. Drag the white pills on the sides of the box to change its width so the words re-wrap (with Auto-fit text: the corners too, and the size follows). Enter = new line, Ctrl+Enter, Esc or a click outside = done.",
 		ui: [{ type: "button", label: "✓ Done", cls: "pe-btn--primary", title: "Finish this text (Ctrl+Enter or Esc)", when: function () { return !!te; }, act: function () { PE.endTextEdit(false); PE.emit("opts", "text"); } },
 			{ type: "button", label: "✕ Cancel", title: "Throw away the changes made since the last step of this text", when: function () { return !!te; }, act: function () { if (!te) return; var L = te.L, o = te.orig, isNew = te.isNew; L.text = JSON.parse(o); PE.renderText(L); PE.touch(L); PE.endTextEdit(isNew); PE.emit("opts", "text"); } },
 			{ k: "font", label: "Font", type: "select", options: "fonts" }, { k: "size", label: "Size", type: "range", min: 6, max: 400, step: 1, unit: "px", help: "How big the letters are. The box next to the number picks the unit: pt = points like in Word or Google Docs (12 pt = 16 px, 72 pt = 96 px); px = pixels of the image; pt (72/in) = points the way Photoshop, Photopea and GIMP count them for screen images (1 pt = 1 px). Only the number shown changes: the text looks the same." }, { k: "wrapW", label: "Box width (0 = auto)", type: "range", min: 0, max: 4000, step: 10, unit: "px" }, { k: "fit", label: "Auto-fit text", type: "check" }, { k: "boxH", label: "Box height", type: "range", min: 0, max: 4000, step: 10, unit: "px", show: "fit" }, { k: "bold", label: "Bold", type: "check" }, { k: "italic", label: "Italic", type: "check" }, { k: "underline", label: "Underline", type: "check" }, { k: "align", label: "Align", type: "seg", options: [["left", "Left"], ["center", "Centre"], ["right", "Right"]] }, { k: "lh", label: "Line height", type: "range", min: 0.8, max: 3, step: 0.05 }, { k: "ls", label: "Letter spacing", type: "range", min: -10, max: 60, step: 1, unit: "px" }, { k: "color", label: "Colour", type: "color" },
@@ -2680,14 +2709,19 @@ var MESPixel = (function () {
 			{ type: "button", label: "Load font file…", act: function () { PE.pickFontFile(); } }, { type: "button", label: "Yellow label", act: function () { preset({ bgOn: true, bgColor: "#ffeb3b", color: "#111111", bold: true, bgPad: 14, bgRadius: 8 }); } }, { type: "button", label: "Red callout", act: function () { preset({ bgOn: true, bgColor: "#e53935", color: "#ffffff", bold: true, bgPad: 14, bgRadius: 10 }); } }, { type: "button", label: "Meme text", act: function () { preset({ bgOn: false, color: "#ffffff", strokeOn: true, stroke: "#000000", strokeW: 6, bold: true, font: "Impact, 'Arial Black', sans-serif", align: "center" }); } }],
 		optsTarget: function () { var L = PE.active(); return L && L.type === "text" && L.text ? L.text : null; },
 		optGet: function (k) {   // B / I / U while a text is open show the selected letters; with mixed styles, ticked = every letter has it
+			if (k === "size") { var Ls = te ? te.L : null, rs = Ls && selRange(); if (rs && Ls.text) { var rz = PE.textSizes(Ls.text); return Math.round(Ls.text.size * (rz ? rz[rs[0]] : 1) * 10) / 10; } return undefined; }
 			if (!BITS[k]) return undefined; var L = te ? te.L : PE.active(); if (!L || L.type !== "text" || !L.text) return undefined; var t = L.text, r = PE.textRich(t), rg = selRange();
 			if (rg) return P.richAll(r || String(PE.textMask(t)).repeat(t.str.length), rg[0], rg[1], BITS[k]); return undefined;
 		},
-		beforeopt: function () { if (te && !PE.hasPendingKey("textstyle")) PE.textCheckpoint("Type text"); },   // round 9: what was typed before a style change is its own undo step
+		beforeopt: function (k) { if (te && !PE.hasPendingKey("textstyle")) PE.textCheckpoint("Type text"); if (k === "size") { var Lb = PE.active(); sizeBefore = Lb && Lb.text ? Lb.text.size : null; } },   // round 9: what was typed before a style change is its own undo step
 		onopt: function (k, v) { var L = PE.active(); if (!L || L.type !== "text") return; var t = L.text;
 			if (BITS[k]) { var rg = te && te.L === L ? selRange() : null; if (rg) styleRange(L, BITS[k], rg[0], rg[1], v); else if (PE.textRich(t)) styleRange(L, BITS[k], 0, t.str.length, v); lastSig = ""; }
 			if (k === "fit" && v) { var ly = PE.textLayout(L); if (!(t.wrapW > 0)) t.wrapW = Math.round(ly.mw); if (!(t.boxH > 0)) t.boxH = Math.round(ly.bh); setTimeout(function () { PE.emit("opts", "text"); }, 0); }
-			if (k === "size" && t.fit) { t.fit = false; PE.opt.text.fit = false; PE.toast("Auto-fit text is off now, so the size you set is kept"); setTimeout(function () { PE.emit("opts", "text"); }, 0); }
+			if (k === "size" && te && te.L === L && selRange() && sizeBefore > 0) {   // only the highlighted letters change size (like GIMP / Camtasia / Word)
+				var rg2 = selRange(), n2 = String(t.str).length, ns2 = P.sizeNorm(P.sizeSet(PE.textSizes(t), n2, rg2[0], rg2[1], v / sizeBefore)); t.size = sizeBefore; PE.opt.text.size = sizeBefore;
+				if (ns2.rsz) t.rsz = ns2.rsz; else { t.rsz = null; t.size = Math.round(sizeBefore * ns2.k * 10) / 10; }
+			}
+			else if (k === "size" && t.fit) { t.fit = false; PE.opt.text.fit = false; PE.toast("Auto-fit text is off now, so the size you set is kept"); setTimeout(function () { PE.emit("opts", "text"); }, 0); }
 			PE.renderText(L); PE.touch(L); if (te) { placeEditor(); poke(); }
 			PE.later("textstyle", function () { if (te) PE.textCheckpoint("Text style"); else PE.commit("Text style"); }, 450); },   // round 9: a style change is its own undo step, also while the text is open (a slider drag = one step)
 		overlay: function (x, v) {
@@ -5624,7 +5658,7 @@ var MESPixel = (function () {
 	function btn(label, cls, title, fn) { var b = el("button", "pe-btn " + (cls || ""), esc(label)); b.type = "button"; if (title) b.title = title; b.addEventListener("click", fn); return b; }
 	function addText(preset, str, rel) {
 		if (!PE.doc) { PE.newDoc(1080, 1080, "#ffffff", "Untitled"); }
-		var d = PE.doc, o = JSON.parse(JSON.stringify(PE.opt.text)); o.wrapW = 0; o.fit = false; o.boxH = 0; o.rich = null; o.bold = false; o.italic = false; o.underline = false; o.bgOn = false; o.strokeOn = false; o.shadowOn = false;
+		var d = PE.doc, o = JSON.parse(JSON.stringify(PE.opt.text)); o.wrapW = 0; o.fit = false; o.boxH = 0; o.rich = null; o.rsz = null; o.bold = false; o.italic = false; o.underline = false; o.bgOn = false; o.strokeOn = false; o.shadowOn = false;
 		for (var k in preset) o[k] = preset[k]; o.str = str; o.size = Math.max(12, Math.round(Math.min(d.w, d.h) * rel));
 		var L = PE.makeLayer({ type: "text", name: str, text: o, w: 4, h: 4 }); PE.renderText(L); L.cx = d.w / 2; L.cy = d.h / 2; PE.addLayer(L); PE.setActive(L.id); PE.commit("Add text"); PE.setTool("move"); PE.invalidate();
 		PE.toast("Double-click the text to type your own words; drag a corner to resize it");

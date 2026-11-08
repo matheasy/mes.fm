@@ -462,4 +462,12 @@ t("round 11: fontFileMatch finds texts that used a font file", () => {
 	assert(P.fontFileMatch(["MESfileOldxb", "8bit Font", "sans-serif"], "8bit Font", "MESfilebitFontxa"), "another alias, same file name");
 	assert(!P.fontFileMatch(["Georgia", "8bit Font"], "8bit Font", "MESfilebitFontxa"), "only a fallback entry of an unrelated stack");
 	assert(!P.fontFileMatch(["Arial", "sans-serif"], "8bit Font", "MESfilebitFontxa")); });
+t("per-letter text size", function () {
+	var r = P.sizeSet(null, 6, 0, 3, 1.5); assert.deepStrictEqual(r, [1.5, 1.5, 1.5, 1, 1, 1]);
+	assert.deepStrictEqual(P.sizeEdit(r, "abcdef", "abXcdef"), [1.5, 1.5, 1.5, 1.5, 1, 1, 1]);   // typing inside the big part -> big
+	assert.deepStrictEqual(P.sizeEdit(r, "abcdef", "def"), [1, 1, 1]);
+	assert.deepStrictEqual(P.sizeNorm([2, 2]), { rsz: null, k: 2 }); assert.strictEqual(P.sizeNorm([1, 2]).k, null);
+	var segs = P.textSegs("0011", [1, 2, 2, 2], 0, 4, 0); assert.deepStrictEqual(segs.map(function (g) { return [g.s, g.e, g.m, g.k]; }), [[0, 1, 0, 1], [1, 2, 0, 2], [2, 4, 1, 2]]);
+	assert.deepStrictEqual(P.lineScales([{ start: 0, end: 2 }, { start: 3, end: 3 }, { start: 3, end: 4 }], [1, 2, 1, 1]), [2, 1, 1]);
+	assert.deepStrictEqual(P.lineScales([{ start: 0, end: 2 }], null), [1]); });
 console.log(n + " checks ok");

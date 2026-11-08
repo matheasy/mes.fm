@@ -654,7 +654,7 @@ APPS = {
     "photo": dict(title="MES Photo Editor", src="photo-editor", page_title="Free Online Photo Editor with Layers",
                          tag="Pro tools. No upload. No sign-up.", accent="#7c3aed", dark="#5b21b6", tint="#f1eafe",
                          desc="Free online photo editor with layers, selections, magic wand, clone stamp, levels and curves. Add text labels, arrows, callouts and blur boxes to screenshots, combine images, keep transparency, open PSD and GIMP (.xcf) files and export PNG, JPEG or WebP. Private: nothing is uploaded.",
-                         js_v="46", js_parts=["core.js", "tools.js", "tools2.js", "dialogs.js", "ai.js", "aiort.js", "erase.js", "upscale.js", "equation.js", "xcf.js", "files.js", "projects.js", "psd.js", "round7.js", "layerstyle.js", "fontcat.js", "fontpick.js", "icons.js", "adjust.js"], lib_from=["image-converter"]),
+                         js_v="48", js_parts=["core.js", "tools.js", "tools2.js", "dialogs.js", "ai.js", "aiort.js", "erase.js", "upscale.js", "equation.js", "xcf.js", "files.js", "projects.js", "psd.js", "round7.js", "layerstyle.js", "fontcat.js", "fontpick.js", "icons.js", "adjust.js"], lib_from=["image-converter"]),
     # MES Audio Editor (mes.fm/audio): Audacity-style multi-track editor with AI noise removal. lib.js = MESAudio (clip model, edits, mixdown, peaks, fades, EQ,
     # BS.1770 loudness / true peak, limiter, compressor, de-click, WAV; node-tested with the shared denoiser: tool_apps_src/audio-tests.js), app.js = UI.
     # The noise removal is the shared /main_js/denoise.js (MESDenoise: DeepFilterNet3 ONNX + RNNoise wasm + spectral gate), also used by the video editor.
@@ -1362,16 +1362,16 @@ APPS = {
     "tic-tac-toe": dict(title="MES Tic-Tac-Toe", page_title="Tic-Tac-Toe: Play Free Against the Computer, a Friend or Online",
                 tag="Fifteen ways to play noughts and crosses.", accent="#0b6e99", dark="#08557a", tint="#ddf0f9",
                 desc="Play tic-tac-toe free against the computer at three levels, a friend on the same device or someone online (as a guest or on the Hive blockchain), with 15 variants: classic, misère, wild, numerical, 4 × 4, gomoku, drop four, ultimate tic-tac-toe, 3D Qubic, Notakto, Order & Chaos and your own board size.",
-                js_v="2", pre_js=["/main_js/hive.js?v=2"]),
+                js_v="3", pre_js=["/main_js/hive.js?v=2"]),
     # 2026-11-07: Minesweeper (results / daily board on Hive, verified leaderboard in api/mines.js) and Connect Four (variants, computer, guests, Hive like tic-tac-toe, api/c4.js).
     "minesweeper": dict(title="MES Minesweeper", page_title="Minesweeper: Play Free Online, Daily Board and Hive Leaderboard",
                 tag="Classic Minesweeper, a daily board and best times.", accent="#475569", dark="#334155", tint="#e7ebf0",
                 desc="Play Minesweeper free in your browser: Beginner, Intermediate, Expert and custom boards, a daily board that is the same for everyone, no-guess boards, chording, flags, touch controls and your best times, with the option to save results to the Hive blockchain for a verified leaderboard.",
-                js_v="1", pre_js=["/main_js/hive.js?v=2"]),
+                js_v="2", pre_js=["/main_js/hive.js?v=2"]),
     "connect-four": dict(title="MES Connect Four", page_title="Connect Four: Play Free Against the Computer, a Friend or Online",
                 tag="Four in a row, and every variation.", accent="#1d4ed8", dark="#1e3a8a", tint="#e0e9ff",
                 desc="Play Connect Four free against the computer at several levels, a friend on the same device or someone online (as a guest or on the Hive blockchain), with variants: connect 3, 5 or 6, bigger and smaller boards, Pop Out, PopTen-style rules, misere, three players and your own size.",
-                js_v="1", pre_js=["/main_js/hive.js?v=2"]),
+                js_v="2", pre_js=["/main_js/hive.js?v=2"]),
     "poker": dict(title="MES Poker", page_title="Texas Hold'em Poker: Play Free and Calculate Your Odds",
                 tag="Play Hold'em, see your odds.", accent="#166534", dark="#14532d", tint="#dcf3e3",
                 desc="Play Texas Hold'em poker free against computer players with play money, plus a poker odds calculator: your chance to win against random hands, outs, pot odds and hand rankings, and your session statistics kept on your device.",

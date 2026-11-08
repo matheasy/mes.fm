@@ -400,6 +400,31 @@ var MESPixel = (function () {
 		for (var i = a + 1; i <= b; i++) if (i === b || rich[i] !== rich[st]) { out.push({ s: st, e: i, m: +rich[st] }); st = i; }
 		return out;
 	}
+	/* ---------- per-character text size (t.rsz): one factor per character, 1 = the layer's Size; null = every character at the layer's Size ----------
+	 * Factors (not pixel sizes) so scaling the whole text (corners, Size slider without a selection, Auto-fit) keeps the mix. Plain array: survives JSON. */
+	function sizeEdit(rsz, oldS, newS) {
+		if (rsz == null) return null; oldS = String(oldS); newS = String(newS); var ol = oldS.length, nl = newS.length, p = 0, s = 0, a = rsz.slice(0, ol);
+		while (a.length < ol) a.push(1);
+		while (p < ol && p < nl && oldS[p] === newS[p]) p++;
+		while (s < ol - p && s < nl - p && oldS[ol - 1 - s] === newS[nl - 1 - s]) s++;
+		var k = p > 0 ? a[p - 1] : ol > 0 ? a[0] : 1, mid = []; for (var i = 0; i < nl - p - s; i++) mid.push(k);
+		return a.slice(0, p).concat(mid, a.slice(ol - s));
+	}
+	/* set characters a..b to factor k (rounded to 0.001) */
+	function sizeSet(rsz, n, a, b, k) { var out = []; k = Math.round(k * 1000) / 1000; for (var i = 0; i < n; i++) out.push(i >= a && i < b ? k : rsz && rsz[i] != null ? rsz[i] : 1); return out; }
+	/* all the same -> {rsz: null, k}; else {rsz, k: null} */
+	function sizeNorm(rsz) { if (!rsz || !rsz.length) return { rsz: null, k: 1 }; for (var i = 1; i < rsz.length; i++) if (rsz[i] !== rsz[0]) return { rsz: rsz, k: null }; return { rsz: null, k: rsz[0] }; }
+	/* runs of equal style AND size in a..b: [{s, e, m, k}] */
+	function textSegs(rich, rsz, a, b, base) {
+		var out = [], st = a; if (b <= a) return out;
+		var M = function (i) { return rich == null ? base : +rich[i]; }, K = function (i) { return rsz == null ? 1 : rsz[i]; };
+		for (var i = a + 1; i <= b; i++) if (i === b || M(i) !== M(st) || K(i) !== K(st)) { out.push({ s: st, e: i, m: M(st), k: K(st) }); st = i; }
+		return out;
+	}
+	/* the biggest factor on each line (an empty line: the character before it, so a blank line after big text stays big) */
+	function lineScales(lines, rsz) {
+		return lines.map(function (ln) { if (rsz == null) return 1; var m = 0; for (var i = ln.start; i < ln.end; i++) m = Math.max(m, rsz[i]); if (!m) m = rsz[Math.max(0, ln.start - 1)] || rsz[ln.start] || 1; return m; });
+	}
 	/* Auto-fit text: the largest font size whose wrapped text fits a box w x h (box height = size * (lh * lines + 0.25), like the editor's text frame),
 	 * without breaking a word. measureAt(size) -> measure(s, start). Returns a size in steps of 0.5 between lo and hi. */
 	function fitFontSize(str, w, h, lh, measureAt, lo, hi) {
@@ -847,7 +872,7 @@ var MESPixel = (function () {
 	}
 
 	var api = { FXDEF: FXDEF, FXKEYS: FXKEYS, fxNorm: fxNorm, fxAny: fxAny, fxAngle: fxAngle, fxOffset: fxOffset, fxReach: fxReach, sdField: sdField, sdCover: sdCover, blurF: blurF, shiftF: shiftF, gradAt: gradAt, gradPlane: gradPlane, bevelPlanes: bevelPlanes, alphaBox: alphaBox, fxPlanes: fxPlanes, fxFromPsd: fxFromPsd, fxToPsd: fxToPsd, colorFromPsd: colorFromPsd, modeFromPsd: modeFromPsd, modeToPsd: modeToPsd, rgbToHsv: rgbToHsv, hsvToRgb: hsvToRgb, parseColor: parseColor, lightness: lightness, edt: edt, outlineAlpha: outlineAlpha, normToolLayout: normToolLayout, moveTool: moveTool, clampCrop: clampCrop, dragCrop: dragCrop, shiftCrop: shiftCrop, projectKind: projectKind, projectBase: projectBase, projectFileName: projectFileName, isZipBytes: isZipBytes, zipEntries: zipEntries, projectPrefix: projectPrefix, pruneRecent: pruneRecent, upsertRecent: upsertRecent, agoText: agoText, diskChanged: diskChanged, layerFileNames: layerFileNames, newProjectId: newProjectId,
-		unionBox: unionBox, boxesTouch: boxesTouch, rectFrom: rectFrom, snapTargets: snapTargets, snapAxis: snapAxis, snapBox: snapBox, guidesOn: guidesOn, linSolve: linSolve, scaleAbout: scaleAbout, wrapLines: wrapLines, textAnchorShift: textAnchorShift, textFrameBox: textFrameBox, textHold: textHold, fontFileMatch: fontFileMatch, angleDeg: angleDeg, degToRot: degToRot, snapAngle: snapAngle, versionedName: versionedName, nameVersion: nameVersion, pixelSig: pixelSig, psdMetaEncode: psdMetaEncode, psdMetaDecode: psdMetaDecode, psdXmp: psdXmp, carryUiState: carryUiState, richMask: richMask, richEdit: richEdit, richSet: richSet, richAll: richAll, richNorm: richNorm, richSegs: richSegs, fitFontSize: fitFontSize, folderProject: folderProject, caretLine: caretLine, hitInLine: hitInLine, wordAt: wordAt, describeSource: describeSource, bytesText: bytesText, panelClamp: panelClamp, panelKey: panelKey, clamp: clamp, hexToRgb: hexToRgb, rgbToHex: rgbToHex, rgbToHsl: rgbToHsl, hslToRgb: hslToRgb, histogram: histogram, identityLUT: identityLUT, applyLUT: applyLUT, levelsLUT: levelsLUT, curveLUT: curveLUT,
+		unionBox: unionBox, boxesTouch: boxesTouch, rectFrom: rectFrom, snapTargets: snapTargets, snapAxis: snapAxis, snapBox: snapBox, guidesOn: guidesOn, linSolve: linSolve, scaleAbout: scaleAbout, wrapLines: wrapLines, textAnchorShift: textAnchorShift, textFrameBox: textFrameBox, textHold: textHold, fontFileMatch: fontFileMatch, angleDeg: angleDeg, degToRot: degToRot, snapAngle: snapAngle, versionedName: versionedName, nameVersion: nameVersion, pixelSig: pixelSig, psdMetaEncode: psdMetaEncode, psdMetaDecode: psdMetaDecode, psdXmp: psdXmp, carryUiState: carryUiState, richMask: richMask, richEdit: richEdit, richSet: richSet, richAll: richAll, richNorm: richNorm, richSegs: richSegs, sizeEdit: sizeEdit, sizeSet: sizeSet, sizeNorm: sizeNorm, textSegs: textSegs, lineScales: lineScales, fitFontSize: fitFontSize, folderProject: folderProject, caretLine: caretLine, hitInLine: hitInLine, wordAt: wordAt, describeSource: describeSource, bytesText: bytesText, panelClamp: panelClamp, panelKey: panelKey, clamp: clamp, hexToRgb: hexToRgb, rgbToHex: rgbToHex, rgbToHsl: rgbToHsl, hslToRgb: hslToRgb, histogram: histogram, identityLUT: identityLUT, applyLUT: applyLUT, levelsLUT: levelsLUT, curveLUT: curveLUT,
 		brightnessContrast: brightnessContrast, exposure: exposure, hueSat: hueSat, vibrance: vibrance, temperature: temperature, invert: invert, grayscale: grayscale, sepia: sepia, threshold: threshold, posterize: posterize,
 		gaussianBlur: gaussianBlur, boxBlur: boxBlur, unsharp: unsharp, noise: noise, pixelate: pixelate, vignette: vignette, convolve: convolve, floodMask: floodMask, growShrinkMask: growShrinkMask, featherMask: featherMask, invertMask: invertMask,
 		maskBounds: maskBounds, opaqueBounds: opaqueBounds, ADJKEYS: ADJKEYS, QFILTERS: QFILTERS, adjNorm: adjNorm, adjAny: adjAny, quickAdjust: quickAdjust, blendByMask: blendByMask, autoLevels: autoLevels, premultiply: premultiply, unpremultiply: unpremultiply };
