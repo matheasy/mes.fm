@@ -33,7 +33,7 @@
 },
 "/archive":{
 "added":"2026-10-14",
-"updated":"2026-10-16",
+"updated":"2026-11-08",
 "type":"Tool"
 },
 "/atomic-clock-simulator":{
@@ -198,7 +198,7 @@
 },
 "/dark-mode":{
 "added":"2026-10-11",
-"updated":"2026-10-22",
+"updated":"2026-11-08",
 "type":"Browser extension"
 },
 "/database":{
@@ -703,7 +703,7 @@
 },
 "/read-aloud":{
 "added":"2026-10-11",
-"updated":"2026-11-02",
+"updated":"2026-11-08",
 "type":"Browser extension"
 },
 "/redshift-simulator":{
@@ -778,7 +778,7 @@
 },
 "/site-traffic":{
 "added":"2026-10-22",
-"updated":"2026-11-07",
+"updated":"2026-11-08",
 "type":"Tool"
 },
 "/sleep-calculator":{
@@ -858,7 +858,7 @@
 },
 "/text-size":{
 "added":"2026-10-11",
-"updated":"2026-11-01",
+"updated":"2026-11-08",
 "type":"Browser extension"
 },
 "/tic-tac-toe":{
@@ -933,12 +933,12 @@
 },
 "/videospeed":{
 "added":"2026-10-11",
-"updated":"2026-10-14",
+"updated":"2026-11-08",
 "type":"Browser extension"
 },
 "/volume-booster":{
 "added":"2026-10-11",
-"updated":"2026-11-01",
+"updated":"2026-11-08",
 "type":"Browser extension"
 },
 "/waist-to-hip-ratio-calculator":{

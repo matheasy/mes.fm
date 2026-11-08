@@ -1,8 +1,8 @@
 {
   "manifest_version": 3,
   "name": "MES Site Rank",
-  "version": "1.1.0",
-  "description": "See how popular the website you are on is: its public Tranco rank, a rough monthly-visits range worked out from it, and the rank trend, with an optional rank badge on the toolbar icon. Free. By MES (mes.fm).",
+  "version": "1.1.1",
+  "description": "See how popular the site you're on is: its Tranco rank, a rough monthly-visits range and the rank trend. Free, by mes.fm.",
   "homepage_url": "https://mes.fm/site-traffic",
   "icons": { "16": "icons/icon16.png", "32": "icons/icon32.png", "48": "icons/icon48.png", "128": "icons/icon128.png" },
   "action": {

@@ -1,8 +1,8 @@
 {
   "manifest_version": 3,
   "name": "MES Archive",
-  "version": "1.2.0",
-  "description": "One click archives the page you are on: opens the Wayback Machine, archive.today, Ghostarchive and any archive sites you choose, and can hand the page to ArcHive for the Hive blockchain. Free, private. By MES (mes.fm).",
+  "version": "1.2.1",
+  "description": "Archive the page you're on in one click: Wayback Machine, archive.today, Ghostarchive and more, or send it to ArcHive on Hive.",
   "homepage_url": "https://mes.fm/archive",
   "icons": {
     "16": "icons/icon16.png",

@@ -1,0 +1,10 @@
+{
+  "_note": "Chrome Web Store links of the MES extensions (fill in each URL once Google approves it; empty = not listed yet). Read by main_js/ext-store.js.",
+  "videospeed": "",
+  "read-aloud": "",
+  "dark-mode": "",
+  "volume-booster": "",
+  "text-size": "",
+  "archive": "",
+  "site-traffic": ""
+}

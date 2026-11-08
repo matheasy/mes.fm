@@ -1,9 +1,9 @@
 {
   "manifest_version": 3,
   "name": "MES Volume Booster",
-  "version": "1.1.0",
+  "version": "1.1.1",
   "minimum_chrome_version": "116",
-  "description": "Boost the volume of videos (YouTube and more) beyond the site's own limit, up to 600%, with a soft limiter and per-site memory. Free, private, no tracking. By MES (mes.fm).",
+  "description": "Boost video and tab volume past the site's limit, up to 600%, with a soft limiter and per-site memory. Free, no tracking.",
   "homepage_url": "https://mes.fm/volume-booster",
   "icons": { "16": "icons/icon16.png", "32": "icons/icon32.png", "48": "icons/icon48.png", "128": "icons/icon128.png" },
   "action": {

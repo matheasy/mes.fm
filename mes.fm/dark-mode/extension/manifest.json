@@ -1,8 +1,8 @@
 {
   "manifest_version": 3,
   "name": "MES Dark Mode",
-  "version": "1.5.1",
-  "description": "Dark mode (or light mode) for any website, with per-site control, schedules and brightness / sepia tweaks. Free, private, no tracking. By MES (mes.fm).",
+  "version": "1.5.2",
+  "description": "Dark or light mode for any website, per tab or per site, with schedules and brightness / sepia tweaks. Free, no tracking.",
   "homepage_url": "https://mes.fm/dark-mode",
   "icons": {
     "16": "icons/icon16.png",

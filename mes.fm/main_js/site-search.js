@@ -647,6 +647,15 @@
     }
     if (document.readyState === "loading") document.addEventListener("DOMContentLoaded", ratingLoader); else ratingLoader();
 
+    /* Chrome Web Store buttons (main_js/ext-store.js): only on extension pages (a /<slug>/mes-*.zip download) and /browser. */
+    function extStoreLoader() {
+        if (window.__mesExtStoreLoad) return;
+        if (!/^\/browser(\/(index\.html)?)?$/.test(location.pathname) && !document.querySelector('a[href*="/mes-"][href*=".zip"]')) return;
+        window.__mesExtStoreLoad = 1;
+        var s = document.createElement("script"); s.src = "/main_js/ext-store.js?v=1"; s.defer = true; document.head.appendChild(s);
+    }
+    if (document.readyState === "loading") document.addEventListener("DOMContentLoaded", extStoreLoader); else extStoreLoader();
+
     /* Standard | Wide | Theatre (| Show sidebar) in the floating compact bar (2026-11-02). On big screens (>= 1400px), while #compact-nav is
        showing, a small copy of the page's own width switch (aside.js .mes-mode, toc-flip.js .toc-mode, hub-theatre.js .hub-mode) sits in the
        bar. Each copy button just clicks the matching button of the page's switch, so all the logic (pageMode / pageWide / asideForce ...) stays
