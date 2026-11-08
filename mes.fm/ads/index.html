@@ -425,6 +425,9 @@ body.dark-mode .tu .rw-head {color:#a0a8b3;border-bottom-color:#555;} body.dark-
 	.ad-ib {display:flex;justify-content:flex-end;height:4px;margin-top:3px;border-radius:2px;background:rgba(128,128,128,0.14);overflow:hidden;min-width:3.5em;}
 	.ad-ib i {display:block;height:100%;border-radius:2px;opacity:0.85;}
 	@media (max-width: 600px) { .ad-ib {min-width:2.6em;height:3px;} }
+	.ad-t td.ad-path .ad-subs {font-size:.82em;margin-top:.2em;white-space:normal;}
+	.ad-t td.ad-path .ad-subs summary {cursor:pointer;color:var(--ad-muted, #6b7280);}
+	.ad-t td.ad-path .ad-subs div {margin:.15em 0 0 .9em;white-space:nowrap;}
 
 
 	@media print {
@@ -557,6 +560,7 @@ body.is-stuck #navbar.hide { position: fixed; top: 56px; right: 8px; }
 	body.dark-mode #ad .pm{color:#ffd75c}
 	body.dark-mode #ad .ad-tip .pm{color:#f4ca67}
 	body.dark-mode .ad-ib{background:rgba(82,82,82,0.14)}
+	body.dark-mode .ad-t td.ad-path .ad-subs summary{color:var(--ad-muted, #9a9da2)}
 	/* TOOL-DARK:END */
 </style>
         <meta property="fb:app_id" content="" />
@@ -771,7 +775,7 @@ body.is-stuck #navbar.hide { position: fixed; top: 56px; right: 8px; }
             hide_search:false,
             current_tab:0
         }        </script><!-- FASTCOMMENTS-LAZY: widget init moved to main_js/main.js -- it pulls embed.min.js only when #fastcomments-widget nears the viewport or on the first Comments-toggle click, so it no longer blocks first render -->                <script src="https://mes.fm/main_js/lazysizes.min.js?v=1.0.3" async></script>
-	<script src="/earnings/js/earnings.js?v=13" defer></script>
+	<script src="/earnings/js/earnings.js?v=14" defer></script>
             <script src="https://mes.fm/main_js/main.js?v=1.0.5"></script>    <!-- PAGEVIEW-TRACKING-INSERTED --><script src="https://mes.fm/main_js/track.js" defer></script><script>document.getElementById('copyright-year').textContent = new Date().getFullYear();</script><script src="/main_js/info-bar-fit.js" defer></script><script>
   // Floating compact header bar (see #compact-nav CSS): appears once the
   // header + nav bar have scrolled off the top; nav links that don't fit

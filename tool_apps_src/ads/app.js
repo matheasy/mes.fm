@@ -60,6 +60,12 @@
     if (!st.cols.some(function (c) { return c.k === st.key; })) { st.key = opts.sort; if (!st.cols.some(function (c) { return c.k === st.key; })) st.key = st.cols[1].k; st.dir = 'desc'; }
     renderTable(id);
   }
+  // shared poll pages (/v/<id>) are rolled into the /polls row by api/earnings.js; list each one under it
+  function subsHtml(r) {
+    if (!r.subs || !r.subs.length) return '';
+    return '<details class="ad-subs"><summary>incl. ' + r.subs.length + ' shared poll page' + (r.subs.length === 1 ? '' : 's') + '</summary>' +
+      r.subs.map(function (x) { return '<div><a href="' + esc(x.path) + '" target="_blank" rel="noopener">' + esc(x.path) + '</a> <small>' + R(money(x.rev)) + ' · ' + int(x.pv) + ' views</small></div>'; }).join('') + '</details>';
+  }
   function renderTable(id) {
     var st = TABLES[id], el = $(id), cols = st.cols;
     el.innerHTML = '<thead><tr>' + cols.map(function (c) {
@@ -279,7 +285,7 @@
     }
     $('ad-seonote').textContent = sn.join(' ');
     table('t-pages', 'm-pages', [
-      { k: 'path', t: 'Page', v: function (r) { return r.path; }, h: function (r) { if (r.path.charAt(0) === '(') return '<i>' + esc(r.path) + '</i>'; var u = r.path.charAt(0) === '/' ? r.path : 'https://' + r.path; return '<a href="' + esc(u) + '" target="_blank" rel="noopener">' + esc(r.path) + '</a>'; } },
+      { k: 'path', t: 'Page', v: function (r) { return r.path; }, h: function (r) { if (r.path.charAt(0) === '(') return '<i>' + esc(r.path) + '</i>'; var u = r.path.charAt(0) === '/' ? r.path : 'https://' + r.path; return '<a href="' + esc(u) + '" target="_blank" rel="noopener">' + esc(r.path) + '</a>' + subsHtml(r); } },
       { k: 'clicks', t: 'Ad clicks', b: BN, v: function (r) { return r.clicks; }, h: function (r) { return r.clicks ? int(r.clicks) : '–'; }, f: int(t.clicks) },
       { k: 'spend', t: 'Spend', b: BC, m: 'tot', v: function (r) { return r.spend; }, h: function (r) { return r.spend ? C(money(r.spend)) : '–'; }, f: C(money(t.spend)) },
       { k: 'cpc', t: 'Cost/click', b: BC, v: function (r) { return r.clicks ? r.spend / r.clicks : 0; }, h: function (r) { return C(cpc(r.spend, r.clicks)); }, f: C(cpc(t.spend, t.clicks)) },

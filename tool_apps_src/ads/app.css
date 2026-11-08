@@ -118,3 +118,6 @@
 	.ad-ib {display:flex;justify-content:flex-end;height:4px;margin-top:3px;border-radius:2px;background:rgba(128,128,128,0.14);overflow:hidden;min-width:3.5em;}
 	.ad-ib i {display:block;height:100%;border-radius:2px;opacity:0.85;}
 	@media (max-width: 600px) { .ad-ib {min-width:2.6em;height:3px;} }
+	.ad-t td.ad-path .ad-subs {font-size:.82em;margin-top:.2em;white-space:normal;}
+	.ad-t td.ad-path .ad-subs summary {cursor:pointer;color:var(--ad-muted, #6b7280);}
+	.ad-t td.ad-path .ad-subs div {margin:.15em 0 0 .9em;white-space:nowrap;}

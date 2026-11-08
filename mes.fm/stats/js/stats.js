@@ -163,6 +163,9 @@ function pageKey(p) {
 // subdomains) still needs disambiguating, so its domain is prefixed
 // right into the page label instead of getting its own column. Used for
 // both display and the "Page" sort key so the two never disagree.
+// Pages whose row also counts other addresses (main_js/track.js maps them): shown as a small note after the path.
+const PATH_NOTES = { '/polls': 'incl. shared polls /v/…', '/fav': 'incl. short links /f/…', '/reminder': 'incl. short links /r/…', '/party': 'incl. /p/… links' };
+
 function pageLabel(p) {
   return p.site === 'mes.fm' ? p.path : (p.site + p.path);
 }
@@ -421,7 +424,7 @@ function renderTopPages() {
     const picked = picks.indexOf(key) !== -1;
     const pick = '<input type="checkbox" class="pg-pick" data-page-key="' + escapeHtml(key) + '" title="Show in chart" aria-label="Show ' + escapeHtml(label) + ' in chart"' +
       (picked ? ' checked style="accent-color:' + colorFor(key) + '"' : (picks.length >= MAX_PICKS ? ' disabled' : '')) + '>';
-    const row = '<tr><td class="page-cell sticky-col sticky-left">' + pick + toggle + '<a href="' + escapeHtml(url) + '" title="' + escapeHtml(label) + '" target="_blank" rel="noopener"><span class="page-path">' + (pageQuery && p.rank ? '<span class="pg-rank">#' + p.rank + '</span>' : '') + (pageQuery ? highlight(label) : escapeHtml(label)) + '</span></a></td>' +
+    const row = '<tr><td class="page-cell sticky-col sticky-left">' + pick + toggle + '<a href="' + escapeHtml(url) + '" title="' + escapeHtml(label) + '" target="_blank" rel="noopener"><span class="page-path">' + (pageQuery && p.rank ? '<span class="pg-rank">#' + p.rank + '</span>' : '') + (pageQuery ? highlight(label) : escapeHtml(label)) + '</span></a>' + (p.site === 'mes.fm' && PATH_NOTES[p.path] ? ' <small class="pg-note" style="opacity:.7;font-size:.8em;white-space:nowrap">' + PATH_NOTES[p.path] + '</small>' : '') + '</td>' +
       breakdownKeys.map(function (k) { return breakdownCell(p, k); }).join('') +
       '<td class="views sticky-col sticky-right">' + p.views.toLocaleString() + '</td></tr>';
     if (!isExpanded) return row;

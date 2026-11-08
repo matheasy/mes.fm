@@ -42,6 +42,12 @@ function normPage(url) {
   return host === 'mes.fm' || host === '' ? path : host + path;
 }
 
+// Shared poll pages (mes.fm/v/<id>, Hive polls /hp/<author>/<permlink>) are rows of their own in AdSense, while
+// mes.fm/stats and the "came back" numbers count them as /polls (main_js/track.js). The ads page rolls them into one
+// '/polls' row and keeps each poll as a sub-row (subs), so the two pages agree and you can still see which poll earned.
+const POLL_PAGE = /^\/(v\/[a-z0-9]+|hp\/[^/]+\/[^/]+)$/i;
+function groupPage(path) { return POLL_PAGE.test(path) ? '/polls' : path; }
+
 function normDevice(d) {
   const s = String(d || '').toLowerCase();
   if (/desktop|computer/.test(s)) return 'desktop';
@@ -76,8 +82,14 @@ function aggregate(dates, blobs, perCad, usdPerCad) {
     if (a) {
       let pageRev = 0, pagePv = 0;
       for (const [url, earn, pv, imp, clk] of a.pages || []) {
-        const p = get(pages, normPage(url), () => ({ rev: 0, pv: 0, adClicks: 0, spend: 0, clicks: 0 }));
+        const np = normPage(url), gk = groupPage(np);
+        const p = get(pages, gk, () => ({ rev: 0, pv: 0, adClicks: 0, spend: 0, clicks: 0 }));
         p.rev += earn; p.pv += pv; p.adClicks += clk;
+        if (gk !== np) {
+          if (!p.sub) p.sub = new Map();
+          const sb = get(p.sub, np, () => ({ rev: 0, pv: 0, adClicks: 0 }));
+          sb.rev += earn; sb.pv += pv; sb.adClicks += clk;
+        }
         pageRev += earn; pagePv += pv;
         totals.adImp += imp; totals.adClicks += clk;
       }
@@ -121,7 +133,7 @@ function aggregate(dates, blobs, perCad, usdPerCad) {
         c.spend += cad(micros); c.clicks += clk; c.imp += imp; if (!c.name) c.name = name;
       }
       for (const [url, , clk, micros] of g.lp || []) {
-        const p = get(pages, normPage(url), () => ({ rev: 0, pv: 0, adClicks: 0, spend: 0, clicks: 0 }));
+        const p = get(pages, groupPage(normPage(url)), () => ({ rev: 0, pv: 0, adClicks: 0, spend: 0, clicks: 0 }));
         p.spend += cad(micros); p.clicks += clk;
       }
     }
@@ -134,7 +146,11 @@ function aggregate(dates, blobs, perCad, usdPerCad) {
   return {
     totals: fixNums(totals),
     daily: daily.map(fixNums),
-    pages: list(pages, 'path').map(fixNums).sort((a, b) => (b.rev + b.spend) - (a.rev + a.spend)).slice(0, 400),
+    pages: list(pages, 'path').map((p) => {
+      if (p.sub) p.subs = list(p.sub, 'path').map(fixNums).sort((a, b) => b.rev - a.rev || b.pv - a.pv);
+      delete p.sub;
+      return fixNums(p);
+    }).sort((a, b) => (b.rev + b.spend) - (a.rev + a.spend)).slice(0, 400),
     countries: list(countries, 'cc').map(fixNums).sort((a, b) => (b.rev + b.spend) - (a.rev + a.spend)),
     devices: list(devices, 'dev').map(fixNums),
     campaigns: list(campaigns, 'name').map(fixNums).sort((a, b) => b.spend - a.spend),
@@ -290,7 +306,7 @@ async function gscHandler(req, res) {
 function adSeries(dates, gads, perCad, page, cc) {
   const cad = (m) => m / 1e6 / perCad;
   const camps = new Set();
-  if (page) for (const d of dates) for (const [url, name] of (gads[d] && gads[d].lp) || []) if (normPage(url) === page) camps.add(name);
+  if (page) for (const d of dates) for (const [url, name] of (gads[d] && gads[d].lp) || []) if (groupPage(normPage(url)) === page) camps.add(name);
   const rows = dates.map((d) => {
     const g = gads[d], o = { d, spend: 0, adClicks: 0, adImp: 0 };
     if (!g) return o;
@@ -300,7 +316,7 @@ function adSeries(dates, gads, perCad, page, cc) {
         o.spend += cad(mic); o.adClicks += clk; o.adImp += imp;
       }
     } else if (page) {
-      for (const [url, , clk, mic] of g.lp || []) if (normPage(url) === page) { o.spend += cad(mic); o.adClicks += clk; }
+      for (const [url, , clk, mic] of g.lp || []) if (groupPage(normPage(url)) === page) { o.spend += cad(mic); o.adClicks += clk; }
       for (const [camp, , imp] of g.camps || []) if (camps.has(camp)) o.adImp += imp;
     } else {
       for (const [, , imp, clk, mic] of g.camps || []) { o.spend += cad(mic); o.adClicks += clk; o.adImp += imp; }
@@ -383,6 +399,7 @@ async function handler(req, res) {
 module.exports = handler;
 module.exports.aggregate = aggregate;
 module.exports.normPage = normPage;
+module.exports.groupPage = groupPage;
 module.exports.normDevice = normDevice;
 module.exports.pacificDay = pacificDay;
 module.exports.adSeries = adSeries;

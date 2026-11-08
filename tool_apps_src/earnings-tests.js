@@ -191,6 +191,12 @@ function res() { return { code: 0, headers: {}, setHeader(k, v) { this.headers[k
   ok(Math.abs(ap.totals.prem - 6.25) < 1e-9 && ap.totals.premHbd === 5 && ap.totals.premN === 3, 'premium: HBD = USD, converted to CAD');
   ok(Math.abs(ap.daily[1].prem - 2.5) < 1e-9 && ap.daily[0].rev === 0, 'premium: per day, kept apart from AdSense');
   ok(earnings.aggregate([d1], blobs, 18396.41).totals.prem === 0, 'premium: none without payments');
+  const apo = earnings.aggregate(['2026-11-07'], { gads: { '2026-11-07': { lp: [['https://mes.fm/v/syhxvs66', 'X', 1, 1e6]] } }, adsense: { '2026-11-07': { pages: [
+    ['https://mes.fm/v/7knbzp66', 0.58, 131, 172, 5], ['https://mes.fm/v/syhxvs66', 0.51, 119, 154, 2], ['https://mes.fm/polls', 0.1, 10, 20, 0], ['https://mes.fm/gradecalculator', 0.6, 116, 380, 2]] } } }, 1);
+  const pol = apo.pages.find((p) => p.path === '/polls');
+  ok(pol && Math.abs(pol.rev - 1.19) < 1e-9 && pol.pv === 260 && pol.spend === 1 && !apo.pages.some((p) => /^\/v\//.test(p.path)), 'polls: /v/<id> rolled into /polls (earnings, views, ad spend)');
+  ok(pol.subs.length === 2 && pol.subs[0].path === '/v/7knbzp66' && pol.subs[1].pv === 119 && !apo.pages.find((p) => p.path === '/gradecalculator').subs, 'polls: each poll kept as a sub-row');
+  ok(earnings.groupPage('/hp/mes/abc') === '/polls' && earnings.groupPage('/v') === '/v' && earnings.groupPage('/vatcalculator') === '/vatcalculator', 'polls: groupPage');
   const realFetch = global.fetch;
   global.fetch = async (url, o) => ({ ok: true, json: async () => ({ result: JSON.parse(o.body).params[1] === -1 ? hist : [] }) });
   try { const fp = await earnings.fetchPremium(); ok(fp.length === 3, 'premium: fetched from the Hive API (mocked)'); } finally { global.fetch = realFetch; }
