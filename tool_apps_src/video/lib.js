@@ -48,6 +48,28 @@
 	// where in its file a clip begins and ends (the "source times"), e.g. after splitting a long recording into parts
 	V.hasSource = function (c) { return !!c && (c.type === "video" || c.type === "audio"); };
 	V.srcText = function (c, fps) { return V.tc(c.in, fps) + " \u2013 " + V.tc(c.out, fps); };
+	// media folder (a folder inside OneDrive / Dropbox / Google Drive / iCloud that its desktop app syncs): which media files are in it
+	V.MEDIA_EXT = /\.(mp4|m4v|mov|webm|mkv|avi|wmv|flv|mpg|mpeg|ts|mts|m2ts|3gp|ogv|mp3|wav|m4a|aac|ogg|oga|opus|flac|wma|aif|aiff|png|jpe?g|gif|webp|bmp|avif|heic)$/i;
+	V.folderIndex = function (files) {   // [{name, size, path}] -> {n: count, by: {lower-case name: [entries]}}
+		var by = {}; (files || []).forEach(function (f) { var k = String(f.name || "").toLowerCase(); (by[k] = by[k] || []).push(f); });
+		return { n: (files || []).length, by: by };
+	};
+	// "in" = the same file is in the folder (same name and size, or the original of a converted file); "differs" = a file of that
+	// name with another size; "out" = not in the folder; "found" = missing here but in the folder (can be relinked)
+	V.mediaPlace = function (m, idx) {
+		if (!idx || !m || m.kind === "text") return { s: "none" };
+		var a = idx.by[String(m.name || "").toLowerCase()] || [], o = m.origName ? idx.by[String(m.origName).toLowerCase()] || [] : [];
+		if (m.state === "missing") { var hit = a.concat(o).filter(function (e) { return !m.size || e.size === m.size; })[0] || o[0] || a[0]; return hit ? { s: "found", e: hit } : { s: "out" }; }
+		var same = a.filter(function (e) { return e.size === m.size; })[0] || o[0];
+		if (same) return { s: "in", e: same };
+		if (a.length) return { s: "differs", e: a[0] };
+		return { s: "out" };
+	};
+	V.mediaSyncSummary = function (bin, idx) {
+		var r = { in: 0, out: [], differs: [], found: [], total: 0 };
+		(bin || []).forEach(function (m) { var pl = V.mediaPlace(m, idx); if (pl.s === "none") return; r.total++; if (pl.s === "in") r.in++; else r[pl.s].push(m); });
+		return r;
+	};
 	V.sourceList = function (p, nameOf) {   // one line per video / sound clip, in timeline order: "name: 1:23;10 - 4:56;00 (length 3:33;00)"
 		return p.clips.filter(V.hasSource).slice().sort(function (a, b) { return a.start - b.start || String(a.track).localeCompare(String(b.track)); }).map(function (c) {
 			return (nameOf ? nameOf(c) + ": " : "") + V.srcText(c, p.fps) + " (at " + V.tc(c.start, p.fps) + " on the timeline, length " + V.tc(c.out - c.in, p.fps) + ")";

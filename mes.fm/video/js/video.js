@@ -437,6 +437,28 @@
 	// where in its file a clip begins and ends (the "source times"), e.g. after splitting a long recording into parts
 	V.hasSource = function (c) { return !!c && (c.type === "video" || c.type === "audio"); };
 	V.srcText = function (c, fps) { return V.tc(c.in, fps) + " \u2013 " + V.tc(c.out, fps); };
+	// media folder (a folder inside OneDrive / Dropbox / Google Drive / iCloud that its desktop app syncs): which media files are in it
+	V.MEDIA_EXT = /\.(mp4|m4v|mov|webm|mkv|avi|wmv|flv|mpg|mpeg|ts|mts|m2ts|3gp|ogv|mp3|wav|m4a|aac|ogg|oga|opus|flac|wma|aif|aiff|png|jpe?g|gif|webp|bmp|avif|heic)$/i;
+	V.folderIndex = function (files) {   // [{name, size, path}] -> {n: count, by: {lower-case name: [entries]}}
+		var by = {}; (files || []).forEach(function (f) { var k = String(f.name || "").toLowerCase(); (by[k] = by[k] || []).push(f); });
+		return { n: (files || []).length, by: by };
+	};
+	// "in" = the same file is in the folder (same name and size, or the original of a converted file); "differs" = a file of that
+	// name with another size; "out" = not in the folder; "found" = missing here but in the folder (can be relinked)
+	V.mediaPlace = function (m, idx) {
+		if (!idx || !m || m.kind === "text") return { s: "none" };
+		var a = idx.by[String(m.name || "").toLowerCase()] || [], o = m.origName ? idx.by[String(m.origName).toLowerCase()] || [] : [];
+		if (m.state === "missing") { var hit = a.concat(o).filter(function (e) { return !m.size || e.size === m.size; })[0] || o[0] || a[0]; return hit ? { s: "found", e: hit } : { s: "out" }; }
+		var same = a.filter(function (e) { return e.size === m.size; })[0] || o[0];
+		if (same) return { s: "in", e: same };
+		if (a.length) return { s: "differs", e: a[0] };
+		return { s: "out" };
+	};
+	V.mediaSyncSummary = function (bin, idx) {
+		var r = { in: 0, out: [], differs: [], found: [], total: 0 };
+		(bin || []).forEach(function (m) { var pl = V.mediaPlace(m, idx); if (pl.s === "none") return; r.total++; if (pl.s === "in") r.in++; else r[pl.s].push(m); });
+		return r;
+	};
 	V.sourceList = function (p, nameOf) {   // one line per video / sound clip, in timeline order: "name: 1:23;10 - 4:56;00 (length 3:33;00)"
 		return p.clips.filter(V.hasSource).slice().sort(function (a, b) { return a.start - b.start || String(a.track).localeCompare(String(b.track)); }).map(function (c) {
 			return (nameOf ? nameOf(c) + ": " : "") + V.srcText(c, p.fps) + " (at " + V.tc(c.start, p.fps) + " on the timeline, length " + V.tc(c.out - c.in, p.fps) + ")";
@@ -2854,7 +2876,7 @@
 		var st = m.state === "ready" ? (m.converted ? "converted from " + esc(m.origName || "") : "") : m.state === "error" ? '<span class="vd-bad">' + esc(m.status) + "</span>" : m.state === "missing" ? '<span class="vd-bad">' + esc(m.status) + "</span>" : esc(m.status || "") + (m.pct ? '<i class="vd-mbar"><i style="width:' + Math.round(m.pct * 100) + '%"></i></i>' : "");
 		var used = VE.P.clips.filter(function (c) { return c.media === m.id; }).length;
 		return '<div class="vd-mi' + (binSel[m.id] ? " is-sel" : "") + (m.state !== "ready" ? " is-wait" : "") + '" role="option" aria-selected="' + !!binSel[m.id] + '" data-mid="' + m.id + '" tabindex="0">' +
-			'<canvas class="vd-mth" width="96" height="54" data-th="' + m.id + '"></canvas><div class="vd-mt"><div class="vd-mn" title="' + esc(m.name) + '">' + esc(m.name) + "</div><div class=\"vd-mm\">" + esc(meta) + (used ? " · on timeline" + (used > 1 ? " ×" + used : "") : "") + "</div><div class=\"vd-mm\">" + st + "</div></div>" +
+			'<canvas class="vd-mth" width="96" height="54" data-th="' + m.id + '"></canvas><div class="vd-mt"><div class="vd-mn" title="' + esc(m.name) + '">' + esc(m.name) + "</div><div class=\"vd-mm\">" + esc(meta) + (used ? " · on timeline" + (used > 1 ? " ×" + used : "") : "") + "</div><div class=\"vd-mm\">" + st + syncBadge(m) + "</div></div>" +
 			'<span class="vd-mact"><button type="button" class="vd-btn vd-ico vd-sm" data-madd="' + m.id + '" title="Put it at the playhead" aria-label="Add ' + esc(m.name) + ' at the playhead"' + (m.state !== "ready" ? " disabled" : "") + '>+</button><button type="button" class="vd-btn vd-ico vd-sm" data-mrm="' + m.id + '" title="Remove from the project" aria-label="Remove ' + esc(m.name) + '">&times;</button></span></div>';
 	}
 	function renderBin() {
@@ -3110,25 +3132,27 @@
 	fm.addEventListener("click", function (e) {
 		var b = e.target.closest("[data-act]"); if (!b) return; fm.hidden = true; var a = b.getAttribute("data-act");
 		if (a === "import") $("vd-file").click(); else if (a === "title") VE.addTitle(); else if (a === "saveproj") saveProject(); else if (a === "saveprojas") saveProject(true); else if (a === "openproj") pickProject();
-		else if (a === "new") { if (window.confirm("Start a new, empty project? The current one and its media are removed from this browser (save a project file first if you want it).")) { P.pause(); VE.clearAll(); linkProject(null); } }
+		else if (a === "new") { if (window.confirm("Start a new, empty project? The current one and its media are removed from this browser (save a project file first if you want it).")) { P.pause(); VE.clearAll().then(function () { if (mdir.h) VE.idbPut("kv", "mediadir", mdir.h).catch(function () { }); }); linkProject(null); cloudUnlink(); } }
 		else if (a === "snapshot") snapshot(); else if (a === "export") openExport();
 	});
 	/* ---------- project file: like the Photo Editor, a project opened from or saved to a file stays linked to it, so Ctrl+S writes
 	   that same file again (no new name each time). Needs the File System Access API (Chrome, Edge, Opera on a computer; Brave behind
 	   brave://flags/#file-system-access-api); elsewhere every save is a download. The link survives a reload (handle in IndexedDB). */
 	var proj = { h: null, name: "", lm: 0, savedRev: -1 }, FSA = !!window.showSaveFilePicker, rev = 0;
-	VE.on("change", function (label) { rev++; if (label === "restore") proj.savedRev = rev; projState(); });   // the autosave coming back is not a new change
+	VE.on("change", function (label) { rev++; if (label === "restore") { proj.savedRev = rev; cloudRev = rev; } projState(); if (cloud) cloud.changed(vdoc); renderSync(); });   // the autosave coming back is not a new change
 	function projData() { return { format: "mes-video", v: 1, saved: new Date().toISOString(), project: VE.P, media: VE.bin.map(function (m) { return { id: m.id, name: m.name, origName: m.origName || "", size: m.size, kind: m.kind, dur: m.dur }; }) }; }
 	function projBlob() { return new Blob([JSON.stringify(projData(), null, 1)], { type: "application/json" }); }
 	function projFileName() { return (VE.P.name || "video").replace(/[\\/:*?"<>|]+/g, "-") + ".mesvideo"; }
 	function linkProject(h, lm) {
 		proj.h = h || null; proj.name = h ? h.name : ""; proj.lm = lm || 0; proj.savedRev = h ? rev : -1;
+		if (h) cloudUnlink();   // one place to save to at a time
 		(h ? VE.idbPut("kv", "projfile", { h: h, lm: proj.lm }) : VE.idbDel("kv", "projfile")).catch(function () { /* the link just won't survive a reload */ });
 		projState();
 	}
 	VE.idbGet("kv", "projfile").then(function (v) { if (v && v.h && v.h.kind === "file") { proj.h = v.h; proj.name = v.h.name; proj.lm = v.lm || 0; proj.savedRev = rev; projState(); } }).catch(function () { });
 	function projState() {
 		var b = fm.querySelector('[data-act="saveproj"]'), st = $("vd-projst");
+		if (cloud && cloud.linked(vdoc)) { var cl = cloud.link(vdoc); if (b) b.innerHTML = "Save to " + esc(cl.name) + " (" + esc(cl.p === "file" ? "file" : (cloud.providers[cl.p] || {}).name || cl.p) + ") <kbd>Ctrl+S</kbd>"; if (st) st.hidden = true; return; }
 		if (b) b.innerHTML = (proj.h ? "Save to " + esc(proj.name) : "Save project file (.mesvideo)") + " <kbd>Ctrl+S</kbd>";
 		if (st) { var dirty = proj.h && proj.savedRev !== rev; st.hidden = !proj.h; st.textContent = proj.h ? (dirty ? "● " : "") + proj.name : ""; st.title = proj.h ? (dirty ? "Changes not saved to " + proj.name + " yet (Ctrl+S saves them)" : "Linked to " + proj.name + ": Ctrl+S saves to it") : ""; st.classList.toggle("is-dirty", !!dirty); }
 	}
@@ -3138,6 +3162,7 @@
 	async function writeTo(h) { var w = await h.createWritable(); await w.write(projBlob()); await w.close(); var f = await h.getFile(); return f.lastModified; }
 	var dlNoted = false;
 	async function saveProject(asNew) {
+		if (!asNew && cloud && cloud.linked(vdoc)) { cloud.save(vdoc); return true; }
 		if (!FSA) {
 			download(projBlob(), projFileName());
 			toast(dlNoted ? "Project file downloaded." : "Project file downloaded. This browser can't write back into a file, so each save is a new download" + (navigator.brave ? " (Brave can: turn on brave://flags/#file-system-access-api)" : "") + ". It holds the edit, not the media: keep the video files.", 9000);
@@ -3153,12 +3178,12 @@
 					if (pick === "theirs") { openProject(cur, h); return false; }
 				}
 				var lm = await writeTo(h); proj.lm = lm; proj.savedRev = rev; VE.idbPut("kv", "projfile", { h: h, lm: lm }).catch(function () { }); projState();
-				toast("Saved to " + proj.name + "."); return true;
+				toast("Saved to " + proj.name + "." + mediaWarnText()); return true;
 			} catch (e) { if (e && e.name === "NotFoundError") { toast(proj.name + " is gone (moved or deleted): choose where to save it."); return saveProject(true); } toast("Could not save: " + (e && e.message || e)); return false; }
 		}
 		try { h = await window.showSaveFilePicker({ suggestedName: proj.name || projFileName(), types: [{ description: "MES Video Editor project", accept: { "application/json": [".mesvideo"] } }] }); }
 		catch (e) { return false; }   // cancelled
-		try { var lm2 = await writeTo(h); linkProject(h, lm2); toast("Saved to " + h.name + ". From now on Ctrl+S saves to this file. It holds the edit, not the media: keep the video files.", 8000); return true; }
+		try { var lm2 = await writeTo(h); linkProject(h, lm2); toast("Saved to " + h.name + ". From now on Ctrl+S saves to this file. It holds the edit, not the media: keep the video files" + (mdir.h ? "." + mediaWarnText() : " (Media → Link my media folder keeps track of them)."), 9000); return true; }
 		catch (e) { toast("Could not save: " + (e && e.message || e)); return false; }
 	}
 	function askConflict(f) {
@@ -3188,8 +3213,10 @@
 		$("vd-op-go").onclick = function () { closeDialog(); openProject(f, h); };
 		$("vd-op-no").onclick = closeDialog;
 	}
-	function openProject(f, h) {
-		f.text().then(async function (txt) {
+	function openProject(f, h) { return f.text().then(function (txt) { return openProjectText(txt, f.name, h, f.lastModified, false); }); }
+	// opens a project's text; h = the local file it came from (linked for Ctrl+S), cloud = it came through the ☁ Cloud button
+	function openProjectText(txt, name, h, lm, cloud) {
+		return Promise.resolve().then(async function () {
 			var d = JSON.parse(txt); if (!d || d.format !== "mes-video") throw new Error("This is not a MES Video Editor project file.");
 			P.pause(); var p = V.normalize(d.project), keep = {};
 			VE.bin.forEach(function (m) { keep[m.id] = m; });
@@ -3205,11 +3232,159 @@
 			VE.bin.forEach(function (m) { if (m.state === "working" && m.file && !m.url) VE.prepare(m, false); });
 			VE.emit("bin"); VE.commit("Open project");
 			var hh = h && typeof h.then === "function" ? await h.catch(function () { return null; }) : h;   // a dropped file's handle arrives as a promise
-			if (hh && hh.kind === "file") linkProject(hh, f.lastModified); else linkProject(null);
+			if (hh && hh.kind === "file") linkProject(hh, lm); else linkProject(null);
+			if (!cloud) cloudUnlink();
+			var got = await relinkFromFolder(false);
 			var miss = VE.bin.filter(function (m) { return m.state === "missing"; }).length;
-			toast(miss ? miss + " media file" + (miss > 1 ? "s are" : " is") + " missing: drop them in (same names) to relink." : "Project opened.", 8000);
-		}).catch(function (e) { toast("Could not open it: " + e.message); });
+			toast((got ? "Found " + got + " media file" + (got > 1 ? "s" : "") + " in your media folder. " : "") + (miss ? miss + " media file" + (miss > 1 ? "s are" : " is") + " missing: " + (mdir.h ? "they are not in " + mdir.h.name + ". " : "") + "drop them in (same names) to relink" + (mdir.h ? "." : ", or link the folder they are in (Media → Link my media folder).") : "Project opened."), 9000);
+			return true;
+		}).catch(function (e) { toast("Could not open it: " + e.message); return false; });
 	}
+	/* ---------- media folder: the videos stay in a folder that OneDrive / Dropbox / Google Drive / iCloud syncs (their desktop app
+	   uploads them, which is far better at multi-GB files than a web page). The editor remembers that folder (handle in IndexedDB),
+	   checks which media files are in it, relinks missing ones from it by name when a project opens, and warns about media that is
+	   only in this browser (with a button that copies them into the folder). Nothing is uploaded by mes.fm. */
+	var mdir = { h: null, idx: null, perm: "", busy: false, err: "" }, FSD = !!window.showDirectoryPicker;
+	async function scanDir(h) {
+		var out = [], n = 0;
+		async function walk(d, path, depth) {
+			for await (var e of d.values()) {
+				if (++n > 40000) return;
+				if (e.kind === "file") { if (V.MEDIA_EXT.test(e.name)) { var f = await e.getFile(); out.push({ name: e.name, size: f.size, path: path + e.name, h: e }); } }
+				else if (depth < 5 && !/^\.|^(node_modules|\$RECYCLE\.BIN)$/i.test(e.name)) await walk(e, path + e.name + "/", depth + 1);
+			}
+		}
+		await walk(h, "", 0); return V.folderIndex(out);
+	}
+	async function folderPerm(ask, write) {
+		if (!mdir.h) return false;
+		var o = { mode: write ? "readwrite" : "read" };
+		try { var st = await mdir.h.queryPermission(o); if (st !== "granted" && ask) st = await mdir.h.requestPermission(o); mdir.perm = st; return st === "granted"; } catch (e) { mdir.perm = "denied"; return false; }
+	}
+	async function rescan(ask) {
+		if (!mdir.h || mdir.busy) return false;
+		if (!(await folderPerm(ask))) { renderSync(); return false; }
+		mdir.busy = true; mdir.err = ""; renderSync();
+		try { mdir.idx = await scanDir(mdir.h); } catch (e) { mdir.err = e && e.name === "NotFoundError" ? mdir.h.name + " is gone (moved or deleted)." : String(e && e.message || e); mdir.idx = null; }
+		mdir.busy = false; renderSync(); renderBin(); return !!mdir.idx;
+	}
+	// missing media that is in the folder: open it from there
+	async function relinkFromFolder(ask) {
+		if (!mdir.h) return 0;
+		if (!mdir.idx && !(await rescan(ask))) return 0;
+		var n = 0;
+		for (var i = 0; i < VE.bin.length; i++) {
+			var m = VE.bin[i], pl = V.mediaPlace(m, mdir.idx); if (pl.s !== "found") continue;
+			try { var f = await pl.e.h.getFile(); if (VE.relink(f)) n++; } catch (e) { /* skip */ }
+		}
+		if (n) renderBin();
+		return n;
+	}
+	async function linkFolder() {
+		if (!FSD) return toast("This browser can't link a folder" + (navigator.brave ? " (Brave can: turn on brave://flags/#file-system-access-api)" : ": use Chrome, Edge or Opera on a computer") + ". You can still drop the files in to relink them.", 9000);
+		var h; try { h = await window.showDirectoryPicker({ id: "mes-video-media", mode: "read" }); } catch (e) { return; }
+		mdir.h = h; mdir.idx = null; mdir.perm = "granted";
+		VE.idbPut("kv", "mediadir", h).catch(function () { });
+		await rescan(false);
+		var got = await relinkFromFolder(false);
+		var sm = V.mediaSyncSummary(VE.bin, mdir.idx);
+		toast("Linked " + h.name + (mdir.idx ? " (" + mdir.idx.n + " media files)" : "") + "." + (got ? " Relinked " + got + " missing file" + (got > 1 ? "s" : "") + "." : "") + (sm.out.length ? " " + sm.out.length + " of your media file" + (sm.out.length > 1 ? "s are" : " is") + " not in it yet." : ""), 8000);
+	}
+	function unlinkFolder() { mdir.h = null; mdir.idx = null; mdir.perm = ""; VE.idbDel("kv", "mediadir").catch(function () { }); renderSync(); renderBin(); }
+	// copy media that is only in this browser into the folder, so the other computer gets it through the sync app
+	async function copyIntoFolder() {
+		var sm = V.mediaSyncSummary(VE.bin, mdir.idx), list = sm.out.filter(function (m) { return m.file && m.state !== "missing"; });
+		if (!list.length) return toast("Nothing to copy: every media file here is in the folder (or missing).");
+		if (!(await folderPerm(true, true))) return toast("The browser did not allow writing into " + mdir.h.name + ".");
+		mdir.busy = true; renderSync(); var done = 0;
+		for (var i = 0; i < list.length; i++) {
+			var m = list[i]; $("vd-sync-st") && ($("vd-sync-st").textContent = "Copying " + m.name + " (" + (i + 1) + " of " + list.length + ")…");
+			try {
+				var nm = m.name; try { await mdir.h.getFileHandle(nm); nm = nm.replace(/(\.[^.]+)?$/, " (from MES)$1"); } catch (e) { /* free name */ }
+				var fh = await mdir.h.getFileHandle(nm, { create: true }), w = await fh.createWritable(); await w.write(m.file); await w.close();
+				if (nm !== m.name) { m.name = nm; VE.save(); }
+				done++;
+			} catch (e) { toast("Could not copy " + m.name + ": " + (e && e.message || e)); break; }
+		}
+		mdir.busy = false; await rescan(false);
+		toast("Copied " + done + " file" + (done === 1 ? "" : "s") + " into " + mdir.h.name + ". Your sync app uploads " + (done === 1 ? "it" : "them") + " from there.", 8000);
+	}
+	function mediaWarnText() {
+		if (!mdir.h || !mdir.idx) return "";
+		var sm = V.mediaSyncSummary(VE.bin, mdir.idx), k = sm.out.length + sm.differs.length;
+		return k ? " ⚠ " + k + " media file" + (k > 1 ? "s are" : " is") + " not in " + mdir.h.name + ", so another computer won't find " + (k > 1 ? "them" : "it") + " (Media panel: Copy into the folder)." : "";
+	}
+	function syncBadge(m) {
+		if (!mdir.idx) return "";
+		var pl = V.mediaPlace(m, mdir.idx);
+		if (pl.s === "in") return '<span class="vd-msync is-in" title="In your media folder: ' + esc(pl.e.path) + '">✓ in folder</span>';
+		if (pl.s === "differs") return '<span class="vd-msync is-warn" title="The folder has a file called ' + esc(pl.e.path) + ' but of another size: not the same file">⚠ different file in folder</span>';
+		if (pl.s === "out") return '<span class="vd-msync is-warn" title="Only in this browser: another computer can\'t find it. Use Copy into the folder.">⚠ not in folder</span>';
+		return "";
+	}
+	function renderSync() {
+		var el = $("vd-sync"); if (!el || !mdir) return;
+		var h;
+		if (!mdir.h) {
+			var k = VE.bin.filter(function (m) { return m.kind !== "text"; }).length;
+			h = '<button type="button" class="vd-btn vd-sm" data-sy="link" title="Choose the folder your videos are in, ideally inside OneDrive / Dropbox / Google Drive / iCloud">&#128193; Link my media folder</button>' + (k ? '<span class="vd-sync-t">Keep your videos in a synced folder so the project opens on any computer.</span>' : "");
+		} else {
+			var sm = mdir.idx ? V.mediaSyncSummary(VE.bin, mdir.idx) : null, warn = sm ? sm.out.length + sm.differs.length : 0;
+			h = '<span class="vd-sync-f" title="Your media folder">&#128193; ' + esc(mdir.h.name) + "</span>";
+			if (mdir.busy) h += '<span class="vd-sync-t" id="vd-sync-st">Looking through the folder…</span>';
+			else if (mdir.err) h += '<span class="vd-sync-t vd-bad">' + esc(mdir.err) + "</span>";
+			else if (!mdir.idx) h += '<button type="button" class="vd-btn vd-sm" data-sy="allow">Allow access</button><span class="vd-sync-t">The browser asks again after a restart.</span>';
+			else {
+				h += '<span class="vd-sync-t' + (warn ? " is-warn" : "") + '">' + (sm.total ? sm.in + " of " + sm.total + " media files in the folder" : mdir.idx.n + " media files in the folder") + (warn ? " · ⚠ " + warn + " only in this browser" : sm.total ? " ✓" : "") + (sm.found.length ? " · " + sm.found.length + " can be relinked" : "") + "</span>";
+				if (sm.out.length) h += '<button type="button" class="vd-btn vd-sm vd-primary" data-sy="copy" title="Copy the media files that are only in this browser into the folder">Copy into the folder</button>';
+				if (sm.found.length) h += '<button type="button" class="vd-btn vd-sm" data-sy="relink">Relink from the folder</button>';
+			}
+			h += '<span class="vd-sp"></span><button type="button" class="vd-btn vd-sm vd-ico" data-sy="rescan" title="Look through the folder again" aria-label="Look through the folder again">&#8635;</button><button type="button" class="vd-btn vd-sm vd-ico" data-sy="unlink" title="Stop using this folder" aria-label="Stop using this folder">&times;</button>';
+		}
+		el.innerHTML = h;
+	}
+	$("vd-sync").addEventListener("click", function (e) {
+		var b = e.target.closest("[data-sy]"); if (!b) return; var a = b.getAttribute("data-sy");
+		if (a === "link") linkFolder(); else if (a === "unlink") unlinkFolder(); else if (a === "copy") copyIntoFolder();
+		else if (a === "rescan" || a === "allow") rescan(true).then(function (ok) { if (ok) relinkFromFolder(false); });
+		else if (a === "relink") relinkFromFolder(true).then(function (n) { toast(n ? "Relinked " + n + " file" + (n > 1 ? "s" : "") + "." : "Nothing to relink."); });
+	});
+	VE.on("bin", renderSync);
+	VE.idbGet("kv", "mediadir").then(function (h) { if (h && h.kind === "directory") { mdir.h = h; renderSync(); rescan(false).then(function (ok) { if (ok) relinkFromFolder(false); }); } }).catch(function () { });
+	renderSync();
+
+	/* ---------- ☁ Cloud: the project file in the person's own OneDrive / Dropbox / Google Drive (or a synced folder), the same
+	   MESCloud button and sign-in as /excel, /docx, /pdf and Copy Text. Saves 3 s after changes, notices a newer version saved on
+	   another computer. Only the small project file goes this way; the videos sync through the media folder above. */
+	var vdoc = { name: "" }, cloudRev = -1, CKEY = "mes-video-editor:cloud";
+	function cloudKeep() {
+		var l = cloud && cloud.link(vdoc);
+		try { if (!l) localStorage.removeItem(CKEY); else localStorage.setItem(CKEY, JSON.stringify({ p: l.p, ref: l.p === "file" ? null : l.ref, hid: l.hid || null, name: l.name, ver: l.ver })); } catch (e) { /* ignore */ }
+	}
+	function cloudUnlink() { if (vdoc.__mcl) { vdoc = { name: "" }; cloudRev = -1; cloudKeep(); if (cloud) cloud.refresh(); } }
+	var cloud = window.MESCloud ? window.MESCloud.attach({
+		app: "video", what: "video project", defExt: "mesvideo", btnClass: "vd-btn", before: $("vd-projst"), replaces: true, toast: toast,
+		exts: [".mesvideo"], accept: [{ description: "MES Video Editor project", accept: { "application/json": [".mesvideo"] } }],
+		doc: function () { return vdoc; },
+		name: function (d) { return d.name || projFileName(); },
+		bytes: function () { return projBlob().arrayBuffer().then(function (b) { return new Uint8Array(b); }); },
+		open: function (u8, name) {
+			return openProjectText(new TextDecoder().decode(u8), name, null, 0, true).then(function (ok) { if (!ok) return null; vdoc = { name: name }; cloudRev = rev; setTimeout(function () { cloudKeep(); projState(); }, 0); return vdoc; });
+		},
+		dirty: function () { return cloudRev !== rev; },
+		saved: function (d, name) { d.name = name; cloudRev = rev; if (proj.h) linkProject(null); cloudKeep(); projState(); var w = mediaWarnText(); if (w) toast("Saved." + w, 9000); else if (!mdir.h && VE.bin.length) toast("Saved the project file. The videos don't go with it: keep them in a synced folder and link it (Media → Link my media folder).", 9000); }
+	}) : null;
+	// a cloud link survives a reload (the autosaved project here is the same one)
+	(function () {
+		var k = null; try { k = JSON.parse(localStorage.getItem(CKEY) || "null"); } catch (e) { /* ignore */ }
+		if (!k || !cloud) return;
+		function put(ref) { vdoc = { name: k.name, __mcl: { p: k.p, ref: ref, name: k.name, ver: k.ver, at: Date.now(), hid: k.hid || undefined } }; cloudRev = rev; cloud.refresh(); projState(); }
+		if (k.p !== "file") return put(k.ref);
+		if (!k.hid || !window.indexedDB) return;
+		var q = indexedDB.open("mes-cloud", 1);
+		q.onupgradeneeded = function () { q.result.createObjectStore("h"); };
+		q.onsuccess = function () { try { var r = q.result.transaction("h").objectStore("h").get(k.hid); r.onsuccess = function () { if (r.result) { r.result.__mclId = k.hid; put(r.result); } }; } catch (e) { /* ignore */ } };
+	})();
 
 	/* ---------- inspector ---------- */
 	var insp = $("vd-insp");

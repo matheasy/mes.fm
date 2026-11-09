@@ -16,8 +16,8 @@
 (function () {
 	"use strict";
 	var H = {
-		extOf: function (n) { var m = /\.([A-Za-z0-9]{1,6})$/.exec(String(n || "")); return m ? m[1].toLowerCase() : ""; },
-		baseName: function (n) { return String(n || "").replace(/\.[A-Za-z0-9]{1,6}$/, ""); },
+		extOf: function (n) { var m = /\.([A-Za-z0-9]{1,8})$/.exec(String(n || "")); return m ? m[1].toLowerCase() : ""; },
+		baseName: function (n) { return String(n || "").replace(/\.[A-Za-z0-9]{1,8}$/, ""); },
 		accepts: function (name, exts) { var e = H.extOf(name); return exts.some(function (x) { return x.replace(/^\./, "").toLowerCase() === e; }); },
 		// a file name the services accept: no slashes / control characters / reserved Windows characters, not empty, <= 200 chars
 		safeName: function (n, fallbackExt) {

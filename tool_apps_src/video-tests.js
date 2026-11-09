@@ -314,5 +314,17 @@ function proj(clips) { const p = V.newProject(); p.clips = clips; return p; }
 	const L = V.sourceList(p, function () { return "rec.mp4"; });
 	ok(L.length === 2 && L[0].indexOf("rec.mp4: 0:00;00") === 0 && L[1].indexOf("4:23;15") > 0, "source list in timeline order");
 }
+{   // media folder matching
+	const idx = V.folderIndex([{ name: "Talk.MP4", size: 100, path: "a/Talk.MP4" }, { name: "intro.mp4", size: 5, path: "intro.mp4" }, { name: "old.avi", size: 9, path: "old.avi" }]);
+	ok(V.mediaPlace({ name: "talk.mp4", size: 100, state: "ready" }, idx).s === "in", "same name (any case) and size = in the folder");
+	ok(V.mediaPlace({ name: "intro.mp4", size: 6, state: "ready" }, idx).s === "differs", "same name, other size = differs");
+	ok(V.mediaPlace({ name: "x.mp4", size: 6, state: "ready" }, idx).s === "out", "not there = out");
+	ok(V.mediaPlace({ name: "old.mp4", origName: "old.avi", size: 77, state: "ready" }, idx).s === "in", "converted file: its original in the folder counts");
+	ok(V.mediaPlace({ name: "talk.mp4", size: 100, state: "missing" }, idx).s === "found", "missing here, in the folder = found");
+	ok(V.mediaPlace({ name: "t", kind: "text" }, idx).s === "none" && V.mediaPlace({ name: "a" }, null).s === "none", "no folder / titles = nothing to say");
+	const sm = V.mediaSyncSummary([{ name: "talk.mp4", size: 100, state: "ready" }, { name: "x.mp4", size: 1, state: "ready" }], idx);
+	ok(sm.total === 2 && sm.in === 1 && sm.out.length === 1, "summary counts");
+	ok(V.MEDIA_EXT.test("a.MOV") && !V.MEDIA_EXT.test("notes.txt"), "media endings");
+}
 console.log(pass + " passed, " + fail + " failed");
 process.exit(fail ? 1 : 0);
