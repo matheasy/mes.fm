@@ -104,6 +104,15 @@
 #wt .wt-zhint {position:absolute;left:50%;top:0.6em;transform:translateX(-50%);margin:0;padding:0.25em 0.8em;border-radius:999px;background:rgba(15,17,23,0.75);color:#e6e9ee;font-size:0.82em;white-space:nowrap;pointer-events:none;}
 @media (max-width:480px) {#wt .wt-zhint {display:none;} #wt .wt-zpill button {padding:0 0.5em;min-width:2.3em;}}
 #wt .wt-player .wt-stage {overflow:hidden !important;}   /* the side-panel layout gives the stage overflow:auto; a zoomed picture must be cut, not scrolled */
+.wt-zmini {display:none;}
+@media (hover: hover) and (pointer: fine) {
+	.wt-zmini {display:flex;flex-direction:column;gap:3px;position:absolute;right:8px;top:50%;transform:translateY(-50%);z-index:4;padding:4px;border-radius:12px;background:rgba(15,17,23,0.78);opacity:0;transition:opacity .2s;pointer-events:none;}
+	.wt-stage:hover .wt-zmini, .wt-zmini:focus-within {opacity:1;pointer-events:auto;}
+	#wt .wt-zmini button {font:inherit;font-size:13px;min-width:44px;height:30px;padding:0 6px;border:0;border-radius:8px;background:rgba(255,255,255,0.12);color:#fff;cursor:pointer;}
+	#wt .wt-zmini button:hover {background:rgba(255,255,255,0.26);}
+	#wt .wt-zmini .wt-zv {font-variant-numeric:tabular-nums;font-weight:600;}
+	.wt-stage:has(.wt-zfull) .wt-zmini {display:none;}
+}
 /* "+ List" menu */
 .wt-menu {position:fixed;z-index:2147483000;min-width:13em;max-width:min(22em,calc(100vw - 16px));max-height:60vh;overflow:auto;background:#fff;color:#1f2430;border:1px solid #d9dee6;border-radius:0.6em;box-shadow:0 8px 24px rgba(0,0,0,0.18);padding:0.35em;display:flex;flex-direction:column;font-size:15px;}
 .wt-menu[hidden] {display:none;}

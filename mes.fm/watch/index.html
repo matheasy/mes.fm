@@ -411,6 +411,15 @@ body.dark-mode .tu .rw-head {color:#a0a8b3;border-bottom-color:#555;} body.dark-
 #wt .wt-zhint {position:absolute;left:50%;top:0.6em;transform:translateX(-50%);margin:0;padding:0.25em 0.8em;border-radius:999px;background:rgba(15,17,23,0.75);color:#e6e9ee;font-size:0.82em;white-space:nowrap;pointer-events:none;}
 @media (max-width:480px) {#wt .wt-zhint {display:none;} #wt .wt-zpill button {padding:0 0.5em;min-width:2.3em;}}
 #wt .wt-player .wt-stage {overflow:hidden !important;}   /* the side-panel layout gives the stage overflow:auto; a zoomed picture must be cut, not scrolled */
+.wt-zmini {display:none;}
+@media (hover: hover) and (pointer: fine) {
+	.wt-zmini {display:flex;flex-direction:column;gap:3px;position:absolute;right:8px;top:50%;transform:translateY(-50%);z-index:4;padding:4px;border-radius:12px;background:rgba(15,17,23,0.78);opacity:0;transition:opacity .2s;pointer-events:none;}
+	.wt-stage:hover .wt-zmini, .wt-zmini:focus-within {opacity:1;pointer-events:auto;}
+	#wt .wt-zmini button {font:inherit;font-size:13px;min-width:44px;height:30px;padding:0 6px;border:0;border-radius:8px;background:rgba(255,255,255,0.12);color:#fff;cursor:pointer;}
+	#wt .wt-zmini button:hover {background:rgba(255,255,255,0.26);}
+	#wt .wt-zmini .wt-zv {font-variant-numeric:tabular-nums;font-weight:600;}
+	.wt-stage:has(.wt-zfull) .wt-zmini {display:none;}
+}
 /* "+ List" menu */
 .wt-menu {position:fixed;z-index:2147483000;min-width:13em;max-width:min(22em,calc(100vw - 16px));max-height:60vh;overflow:auto;background:#fff;color:#1f2430;border:1px solid #d9dee6;border-radius:0.6em;box-shadow:0 8px 24px rgba(0,0,0,0.18);padding:0.35em;display:flex;flex-direction:column;font-size:15px;}
 .wt-menu[hidden] {display:none;}
@@ -574,6 +583,9 @@ body.is-stuck #navbar.hide { position: fixed; top: 56px; right: 8px; }
 	body.dark-mode #wt .wt-zpill button{background:rgba(26,26,26,0.12)}
 	body.dark-mode #wt .wt-zpill button:hover{background:rgba(26,26,26,0.24)}
 	body.dark-mode #wt .wt-zhint{background:rgba(64,73,99,0.75)}
+	body.dark-mode .wt-zmini{background:rgba(64,73,99,0.78)}
+	body.dark-mode #wt .wt-zmini button{background:rgba(26,26,26,0.12)}
+	body.dark-mode #wt .wt-zmini button:hover{background:rgba(26,26,26,0.26)}
 	body.dark-mode .wt-menu{background:#1a1a1a;color:#d3d6dc;border:1px solid #28313e}
 	body.dark-mode .wt-menu b{color:#999da4}
 	body.dark-mode .wt-menu button:hover{background:#191c20}
@@ -834,7 +846,7 @@ body.is-stuck #navbar.hide { position: fixed; top: 56px; right: 8px; }
 				<div class="wt-title" id="wt-title"></div>
 				<div class="wt-sub" id="wt-sub"></div>
 				<label class="wt-check"><input type="checkbox" id="wt-auto" checked> Play the next one automatically</label>
-				<label class="wt-check"><input type="checkbox" id="wt-pz" checked> Tap the video to play / pause, pinch or double-tap to zoom</label>
+				<label class="wt-check"><input type="checkbox" id="wt-pz" checked> Touch screens: tap the video to play / pause, pinch or double-tap to zoom</label>
 				<label class="wt-check"><input type="checkbox" id="wt-priv" checked> Private: keep these videos out of my YouTube / Rumble / BitChute watch history</label>
 			</div>
 		</section>
@@ -872,7 +884,7 @@ body.is-stuck #navbar.hide { position: fixed; top: 56px; right: 8px; }
 			<h3>Latest videos from any channel</h3>
 			<p>Press <em>+ Channel</em> and paste a YouTube channel link (youtube.com/@name) or just @name, or paste the channel link in the box above. It gets its own chip under <em>Latest from</em> showing its 15 newest uploads (newest first; tick <em>Shorts</em> to include them). Add them all to Up next, or keep them as one of your playlists. Your channels are kept in this browser only; × on a chip removes it.</p>
 			<h3>Zoom and full screen</h3>
-			<p>Pinch the video with two fingers (or Ctrl + scroll on a computer), and drag to move around, up to 400%. Double-tap goes to <em>Fill</em> and back; one tap plays or pauses. The player's own control bar at the bottom still works. The <em>Zoom</em> button (or Z) adds − / + buttons. <em>Fill</em> crops the black bars so the picture fills a wide phone screen. For zoom in full screen, use the page's own <em>Full screen</em> or <em>Fill window</em> button above the video rather than the player's own full-screen button.</p>
+			<p>Pinch the video with two fingers (or Ctrl + scroll on a computer), and drag to move around, up to 400%. Double-tap goes to <em>Fill</em> and back; one tap plays or pauses. The player's own control bar at the bottom still works. With a mouse, the player is left alone at 100% (click, double-click and dragging the captions work as on YouTube): zoom with the small + / − / Fill strip on the right of the video, or the + and − keys, then drag to move around. The <em>Zoom</em> button (or Z) adds − / + buttons. <em>Fill</em> crops the black bars so the picture fills a wide phone screen. For zoom in full screen, use the page's own <em>Full screen</em> or <em>Fill window</em> button above the video rather than the player's own full-screen button.</p>
 			<h3>Keyboard shortcuts</h3>
 			<dl>
 				<dt>Space or K</dt><dd>Play / pause</dd>
@@ -955,7 +967,7 @@ body.is-stuck #navbar.hide { position: fixed; top: 56px; right: 8px; }
             hide_search:false,
             current_tab:0
         }        </script><!-- FASTCOMMENTS-LAZY: widget init moved to main_js/main.js -- it pulls embed.min.js only when #fastcomments-widget nears the viewport or on the first Comments-toggle click, so it no longer blocks first render -->                <script src="https://mes.fm/main_js/lazysizes.min.js?v=1.0.3" async></script>
-	<script src="/watch/js/watch.js?v=4" defer></script>
+	<script src="/watch/js/watch.js?v=5" defer></script>
             <script src="https://mes.fm/main_js/main.js?v=1.0.5"></script>    <!-- PAGEVIEW-TRACKING-INSERTED --><script src="https://mes.fm/main_js/track.js" defer></script><script>document.getElementById('copyright-year').textContent = new Date().getFullYear();</script><script src="/main_js/info-bar-fit.js" defer></script><script>
   // Floating compact header bar (see #compact-nav CSS): appears once the
   // header + nav bar have scrolled off the top; nav links that don't fit

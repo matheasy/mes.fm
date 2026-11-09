@@ -152,7 +152,7 @@
 				'</span><a class="tu-btn tu-btn--primary" href="' + esc(cur.u) + '" target="_blank" rel="noopener">Open it on ' + esc(W.siteName(cur)) + ' ↗&#xFE0E;</a></div>');
 		}
 		syncSpeed();
-		if (S.pz !== false && !S.pzHint && /^(yt|hls|odysee|file)$/.test(mode)) { S.pzHint = 1; save(); setTimeout(function () { toast('Tap the video to play / pause · pinch or double-tap to zoom'); }, 1500); }
+		if (S.pz !== false && !S.pzHint && !(finePtr && finePtr.matches) && /^(yt|hls|odysee|file)$/.test(mode)) { S.pzHint = 1; save(); setTimeout(function () { toast('Tap the video to play / pause · pinch or double-tap to zoom'); }, 1500); }
 	}
 	function failed(text) {
 		var stage = $('wt-stage');
@@ -460,13 +460,22 @@
 			'<button type="button" data-z="out" aria-label="Zoom out">−</button><button type="button" data-z="reset" class="wt-zv" title="Back to 100%">100%</button><button type="button" data-z="in" aria-label="Zoom in">+</button>' +
 			'<button type="button" data-z="fill" title="Fill the box (crops the black bars)">Fill</button><button type="button" data-z="done" class="wt-zdone">✓ Done</button></div>' +
 			'<p class="wt-zhint">Pinch or drag to zoom and move · double-tap = Fill / 100%</p>';
-		st.appendChild(ov); wireZoom(ov); applyZoom();
+		st.appendChild(ov); wireZoom(ov);
+		// mouse computers: no layer over the player at 100% (so YouTube's own clicks, double-click full screen and caption dragging
+		// work as on youtube.com); a small zoom strip shows on the right while the pointer is over the video instead
+		var mini = document.createElement('div'); mini.className = 'wt-zmini'; mini.setAttribute('role', 'toolbar'); mini.setAttribute('aria-label', 'Zoom');
+		mini.innerHTML = '<button type="button" data-z="in" title="Zoom in (+)" aria-label="Zoom in">+</button><button type="button" data-z="reset" class="wt-zv" title="Back to 100% (0)">100%</button><button type="button" data-z="out" title="Zoom out (−)" aria-label="Zoom out">−</button><button type="button" data-z="fill" title="Fill the box (crops the black bars)">Fill</button>';
+		mini.addEventListener('click', function (e) { var b = e.target.closest('[data-z]'); if (!b) return; var z = b.dataset.z, k = (S.zoom || {}).k || 1; if (z === 'in') zoomTo(k * 1.25); else if (z === 'out') zoomTo(k / 1.25); else if (z === 'reset') zoomTo(1); else zoomTo(fillK()); });
+		mini.addEventListener('wheel', function (e) { e.preventDefault(); zoomTo(((S.zoom || {}).k || 1) * Math.pow(1.0015, -e.deltaY)); }, { passive: false });
+		st.appendChild(mini); applyZoom();
 	}
+	var finePtr = window.matchMedia ? window.matchMedia('(hover: hover) and (pointer: fine)') : null;
+	if (finePtr && finePtr.addEventListener) finePtr.addEventListener('change', function () { applyZoom(); });
 	function applyZoom() {
 		var st = $('wt-stage'), b = stageBox(), z = W.clampZoom(S.zoom || {}, b.w, b.h); S.zoom = z;
 		st.style.setProperty('--zk', z.k); st.style.setProperty('--zx', z.x + 'px'); st.style.setProperty('--zy', z.y + 'px');
 		st.classList.toggle('wt-zoomed', z.k > 1.001);
-		var pct = Math.round(z.k * 100) + '%', v = st.querySelector('.wt-zv'); if (v) v.textContent = pct;
+		var pct = Math.round(z.k * 100) + '%'; st.querySelectorAll('.wt-zv').forEach(function (v) { v.textContent = pct; });
 		var zb = $('wt-zoom'); zb.innerHTML = '🔍&#xFE0E; ' + (z.k > 1.001 ? pct : 'Zoom'); zb.setAttribute('aria-pressed', String(zMode));
 		// the layer is always over a playing video (pinch / drag / double-tap zoom, tap = play / pause); it leaves the player's
 		// own control bar at the bottom free, except in zoom mode. Not over Rumble / BitChute / X: their play button is inside
@@ -482,6 +491,7 @@
 	function touchOn() {
 		if (S.pz === false || !cur) return false;
 		var m = W.mode(cur); if (!/^(yt|hls|odysee|file)$/.test(m)) return false;
+		if (finePtr && finePtr.matches && ((S.zoom || {}).k || 1) <= 1.001) return false;   // mouse at 100%: leave the player alone
 		return !!$('wt-stage').querySelector('iframe#wt-yt, video');
 	}
 	var zSave = 0; function zoomTo(k, px, py) {
