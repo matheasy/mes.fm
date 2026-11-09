@@ -168,3 +168,23 @@
 	#bl .bl-dim button {min-height:38px;padding:0 0.8em;font-weight:700;}
 	#bl .bl-cam {min-height:38px;width:auto;font-size:0.88em;padding:0 0.5em;}
 	#bl .bl-3dhint {position:absolute;left:10px;bottom:10px;background:rgba(0,0,0,0.6);color:#fff;font-size:0.8em;padding:0.3em 0.7em;border-radius:999px;pointer-events:none;max-width:calc(100% - 20px);}
+	/* background music / video */
+	#bl .bl-sr {position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);}
+	#bl .bl-muspanel {margin:0 0 0.6em;padding:0.6em 0.7em;border-radius:10px;background:var(--bl-cell);border:1px solid var(--bl-cardline);}
+	#bl .bl-musrow {display:flex;flex-wrap:wrap;gap:0.4em;align-items:center;margin:0;}
+	#bl .bl-musrow input {flex:1 1 16em;min-width:0;}
+	#bl .bl-musrec {display:flex;flex-wrap:wrap;gap:0.35em;margin-top:0.45em;}
+	#bl .bl-musrec button {cursor:pointer;font:inherit;font-size:0.82em;border:1px solid var(--bl-cardline);background:var(--bl-card);color:var(--bl-ink);border-radius:999px;padding:0.25em 0.7em;max-width:16em;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+	#bl .bl-musnote {margin:0.45em 0 0;font-size:0.82em;color:var(--bl-sub);line-height:1.45;}
+	#bl #bl-mus[aria-expanded="true"] {border-color:var(--bl-acc);}
+	#bl .bl-mp {position:fixed;right:14px;bottom:14px;z-index:2147483000;width:320px;max-width:calc(100vw - 28px);background:#111;border-radius:10px;overflow:hidden;box-shadow:0 6px 24px rgba(0,0,0,0.5);}
+	#bl .bl-mp.is-big {width:480px;}
+	#bl .bl-mpbar {display:flex;align-items:center;gap:0.2em;padding:0.25em 0.35em 0.25em 0.6em;background:#1d1d1d;color:#eee;font-size:0.82em;cursor:move;touch-action:none;}
+	#bl .bl-mpt {flex:1 1 auto;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;color:#eee;}
+	#bl .bl-mpbar button {cursor:pointer;font:inherit;background:transparent;border:0;color:#eee;min-width:32px;min-height:30px;border-radius:6px;}
+	#bl .bl-mpbar button:hover {background:#333;}
+	#bl .bl-mpv {position:relative;height:0;padding-bottom:56.25%;overflow:hidden;}
+	#bl .bl-mpv iframe {position:absolute;inset:0;width:100%;height:100%;border:0;}
+	#bl .bl-mp.is-min .bl-mpv {padding-bottom:0;height:56px;}
+	#bl .bl-gbtn {min-width:7.5em;font-size:0.82em;}
+	#bl .bl-gbtn.is-off {border-color:var(--bl-bad);}

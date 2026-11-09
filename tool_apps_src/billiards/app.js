@@ -30,7 +30,7 @@
 
 	/* ---------- saved settings ---------- */
 	var S = { game: "8", opp: "cpu", lv: "medium", me: "first", alt: 0, guide: "full", orient: "auto", speed: "1", cloth: "green", snd: true, rel: true, nums: false,
-		names: ["", ""], dim: "2d", cam: "auto", name: "", ofirst: "host", opub: true, cur: null, stats: {}, online: null, hive: null, saved: {}, chal: {}, power: 350 };
+		names: ["", ""], mus: [], mpBig: false, dim: "2d", cam: "auto", name: "", ofirst: "host", opub: true, cur: null, stats: {}, online: null, hive: null, saved: {}, chal: {}, power: 350 };
 	try { var saved = JSON.parse(localStorage.getItem(KEY) || "null"); if (saved) for (var k0 in saved) S[k0] = saved[k0]; } catch (e) {}
 	function save() { try { localStorage.setItem(KEY, JSON.stringify(S)); } catch (e) {} }
 
@@ -377,7 +377,7 @@
 		if (aiming && st.bih && place) { xs[0] = place[0]; ys[0] = place[1]; ons[0] = 1; }
 		var c0 = [xs[0], ys[0]], d = B.dirOf(aim), info = { xs: xs, ys: ys, ons: ons, c0: c0, dir: [d.x, d.y], phase: anim ? "anim" : "aim" };
 		if (anim && anim.shotDir) { info.shotDir = anim.shotDir; info.shotC0 = anim.shotC0; }
-		if (aiming && (S.guide !== "off" || mode === "solo") && !cpuAim) info.guide = guideShapes(c0);
+		if (aiming && S.guide !== "off" && !cpuAim) info.guide = guideShapes(c0);
 		if ((aiming && ons[0]) || (anim && anim.strike !== undefined)) {
 			var pull = anim && anim.strike !== undefined ? (0.03 + 0.17 * power / 1000) * (1 - anim.strike) : 0.03 + 0.17 * power / 1000;
 			info.cue = { x: c0[0], y: c0[1], dx: d.x, dy: d.y, pull: pull };
@@ -408,7 +408,7 @@
 		for (i = 0; i < n; i++) if (ons[i]) { var p = w2s(xs[i], ys[i]); g.beginPath(); g.ellipse(p[0] + R * k * 0.22, p[1] + R * k * 0.28, R * k * 0.98, R * k * 0.9, 0, 0, 7); g.fill(); }
 		// the guide (under the balls)
 		var c0 = [xs[0], ys[0]];
-		if (aiming && (S.guide !== "off" || mode === "solo") && !cpuAim) drawGuide(g, c0);
+		if (aiming && S.guide !== "off" && !cpuAim) drawGuide(g, c0);
 		// balls
 		for (i = 0; i < n; i++) if (ons[i]) {
 			var q = w2s(xs[i], ys[i]), sp = sprite(st.k[i]), sz = sp.width / LY.dpr;
@@ -439,7 +439,7 @@
 	/* the aiming guide as plain shapes in table metres (drawn by the 2D canvas and by the 3D view):
 	   lines [x1, y1, x2, y2, colour, width (m), dashed], rings [x, y, r, colour, dashed] */
 	function guideShapes(c0) {
-		var d = B.dirOf(aim), gd = B.guide(st, c0[0], c0[1], d.x, d.y), R = st.T.R, short = S.guide === "short" && mode !== "solo";
+		var d = B.dirOf(aim), gd = B.guide(st, c0[0], c0[1], d.x, d.y), R = st.T.R, short = S.guide === "short";
 		var maxLen = short ? 0.32 : 9, out = { lines: [], rings: [] };
 		var endT = gd.kind === "none" ? 0.5 : Math.min(gd.t, maxLen);
 		out.lines.push([c0[0], c0[1], c0[0] + d.x * endT, c0[1] + d.y * endT, "rgba(255,255,255,0.75)", 0.004, true]);
@@ -661,6 +661,73 @@
 	}, { passive: false });
 	function syncCamSel() { if (v3 && v3.camMode === "orbit" && S.cam !== "orbit") { S.cam = "orbit"; save(); $("bl-cam").value = "orbit"; } }
 
+	/* ===================================================================== music / video while playing ===================================================================== */
+	function ytParse(u) {
+		var m, id = "", list = "";
+		try { var x = new URL(u); } catch (e) { return null; }
+		var h = x.hostname.replace(/^(www|m|music)\./, "");
+		if (h === "youtu.be") id = x.pathname.slice(1, 12);
+		else if (h === "youtube.com" || h === "youtube-nocookie.com") {
+			id = x.searchParams.get("v") || ((m = /^\/(shorts|live|embed)\/([\w-]{11})/.exec(x.pathname)) ? m[2] : "");
+			list = x.searchParams.get("list") || "";
+		} else return null;
+		if (id && !/^[\w-]{11}$/.test(id)) id = "";
+		if (list && !/^[\w-]{10,64}$/.test(list)) list = "";
+		return id || list ? { id: id, list: list } : null;
+	}
+	function ytEmbed(y) {
+		var base = "https://www.youtube-nocookie.com/embed/", q = "autoplay=1&rel=0&playsinline=1&modestbranding=1";
+		if (y.id && y.list) return base + y.id + "?list=" + y.list + "&" + q;
+		if (y.list) return base + "videoseries?list=" + y.list + "&loop=1&" + q;
+		return base + y.id + "?loop=1&playlist=" + y.id + "&" + q;
+	}
+	function openWatch(u) {
+		var w = window.open("/watch" + (u ? "?v=" + encodeURIComponent(u) : ""), "meswatch", "popup,width=600,height=440");
+		if (!w) location.href = "/watch" + (u ? "?v=" + encodeURIComponent(u) : "");
+		toast("MES Watch opened in its own window: leave it open and come back here to play.");
+	}
+	function musRender() {
+		$("bl-musrec").innerHTML = (S.mus || []).map(function (r, i) { return '<button type="button" data-mi="' + i + '" title="' + esc(r.u) + '">▶ ' + esc(r.t) + "</button>"; }).join("");
+	}
+	function musLabel(u, y) { if (!y) { try { return new URL(u).hostname.replace(/^www\./, "") + new URL(u).pathname.slice(0, 18); } catch (e) { return u.slice(0, 30); } } return y.list && !y.id ? "YouTube playlist" : "YouTube " + y.id; }
+	function musPlay(u) {
+		u = String(u || "").trim();
+		if (!u) return toast("Paste a link first.");
+		if (!/^https?:\/\//i.test(u)) u = "https://" + u;
+		var y = ytParse(u);
+		S.mus = [{ u: u, t: musLabel(u, y) }].concat((S.mus || []).filter(function (r) { return r.u !== u; })).slice(0, 6); save(); musRender();
+		if (!y) return openWatch(u);
+		var mp = $("bl-mp");
+		$("bl-mpv").innerHTML = '<iframe src="' + esc(ytEmbed(y)) + '" title="Music while you play" allow="autoplay; encrypted-media; picture-in-picture" allowfullscreen referrerpolicy="strict-origin-when-cross-origin"></iframe>';
+		$("bl-mpt").textContent = musLabel(u, y);
+		mp.hidden = false; mp.classList.remove("is-min"); mp.classList.toggle("is-big", !!S.mpBig);
+	}
+	function musToggle() {
+		var p = $("bl-muspanel"), open = p.hidden;
+		p.hidden = !open; $("bl-mus").setAttribute("aria-expanded", open ? "true" : "false");
+		if (open) { musRender(); setTimeout(function () { $("bl-musurl").focus(); }, 0); }
+	}
+	$("bl-mus").addEventListener("click", musToggle);
+	$("bl-musform").addEventListener("submit", function (e) { e.preventDefault(); musPlay($("bl-musurl").value); });
+	$("bl-muswatch").addEventListener("click", function () { openWatch(""); });
+	$("bl-musrec").addEventListener("click", function (e) { var b = e.target.closest("[data-mi]"); if (b) { var r = S.mus[+b.getAttribute("data-mi")]; if (r) { $("bl-musurl").value = r.u; musPlay(r.u); } } });
+	$("bl-mpclose").addEventListener("click", function () { $("bl-mpv").innerHTML = ""; $("bl-mp").hidden = true; });
+	$("bl-mpmin").addEventListener("click", function () { $("bl-mp").classList.toggle("is-min"); });
+	$("bl-mpsize").addEventListener("click", function () { S.mpBig = !S.mpBig; save(); $("bl-mp").classList.toggle("is-big", S.mpBig); $("bl-mp").classList.remove("is-min"); });
+	(function () {   // drag the mini player by its bar
+		var bar = document.querySelector("#bl .bl-mpbar"), mp = $("bl-mp"), dg = null;
+		bar.addEventListener("pointerdown", function (e) {
+			if (e.target.closest("button")) return;
+			var r = mp.getBoundingClientRect(); dg = { dx: e.clientX - r.left, dy: e.clientY - r.top }; bar.setPointerCapture(e.pointerId); e.preventDefault();
+		});
+		bar.addEventListener("pointermove", function (e) {
+			if (!dg) return;
+			var x = Math.max(0, Math.min(window.innerWidth - mp.offsetWidth, e.clientX - dg.dx)), y = Math.max(0, Math.min(window.innerHeight - 40, e.clientY - dg.dy));
+			mp.style.left = x + "px"; mp.style.top = y + "px"; mp.style.right = "auto"; mp.style.bottom = "auto";
+		});
+		bar.addEventListener("pointerup", function () { dg = null; });
+	})();
+
 	/* ===================================================================== input ===================================================================== */
 	var drag = null;
 	function evXY(e) { var r = cv.getBoundingClientRect(); return [e.clientX - r.left, e.clientY - r.top]; }
@@ -799,6 +866,8 @@
 		else if (k === "n") { if (mode !== "online" && mode !== "hive") newGame(); }
 		else if (k === "f") panelBtn(1);
 		else if (k === "v") setDim(S.dim === "3d" ? "2d" : "3d");
+		else if (k === "m") musToggle();
+		else if (k === "g") cycleGuide();
 		else if (k === "k") { if (S.dim === "3d") cycleCam(); }
 	});
 
@@ -945,7 +1014,12 @@
 	segWire("bl-lv", function (v) { S.lv = v; save(); if (mode === "cpu" && st.hist.length && !st.win) toast("The new level plays from the computer's next shot."); render(); });
 	segWire("bl-me", function (v) { S.me = v; save(); newGame(true); });
 	segWire("bl-ofirst", function (v) { S.ofirst = v; save(); });
-	segWire("bl-guide", function (v) { S.guide = v; save(); need(); });
+	segWire("bl-guide", function (v) { S.guide = v; save(); guideBtn(); need(); });
+	var GLAB = { full: "Guide: Full", "short": "Guide: Short", off: "Guide: Off" };
+	function guideBtn() { var b = $("bl-gbtn"); b.textContent = GLAB[S.guide] || GLAB.full; b.classList.toggle("is-off", S.guide === "off"); b.setAttribute("aria-label", b.textContent + " (press to change)"); }
+	function cycleGuide() { var o = ["full", "short", "off"]; S.guide = o[(o.indexOf(S.guide) + 1) % 3]; save(); segSet("bl-guide", S.guide); guideBtn(); need(); toast(S.guide === "off" ? "Guide off: aim by eye." : S.guide === "short" ? "Short guide: only the first part of the line." : "Full guide."); }
+	$("bl-gbtn").addEventListener("click", cycleGuide);
+	guideBtn();
 	segWire("bl-orient", function (v) { S.orient = v; save(); relayout(); });
 	segWire("bl-speed", function (v) { S.speed = v; save(); });
 	segWire("bl-cloth", function (v) { S.cloth = v; save(); staticCv = null; need(); });

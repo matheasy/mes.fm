@@ -475,6 +475,26 @@ body.dark-mode .tu .rw-head {color:#a0a8b3;border-bottom-color:#555;} body.dark-
 	#bl .bl-dim button {min-height:38px;padding:0 0.8em;font-weight:700;}
 	#bl .bl-cam {min-height:38px;width:auto;font-size:0.88em;padding:0 0.5em;}
 	#bl .bl-3dhint {position:absolute;left:10px;bottom:10px;background:rgba(0,0,0,0.6);color:#fff;font-size:0.8em;padding:0.3em 0.7em;border-radius:999px;pointer-events:none;max-width:calc(100% - 20px);}
+	/* background music / video */
+	#bl .bl-sr {position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);}
+	#bl .bl-muspanel {margin:0 0 0.6em;padding:0.6em 0.7em;border-radius:10px;background:var(--bl-cell);border:1px solid var(--bl-cardline);}
+	#bl .bl-musrow {display:flex;flex-wrap:wrap;gap:0.4em;align-items:center;margin:0;}
+	#bl .bl-musrow input {flex:1 1 16em;min-width:0;}
+	#bl .bl-musrec {display:flex;flex-wrap:wrap;gap:0.35em;margin-top:0.45em;}
+	#bl .bl-musrec button {cursor:pointer;font:inherit;font-size:0.82em;border:1px solid var(--bl-cardline);background:var(--bl-card);color:var(--bl-ink);border-radius:999px;padding:0.25em 0.7em;max-width:16em;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+	#bl .bl-musnote {margin:0.45em 0 0;font-size:0.82em;color:var(--bl-sub);line-height:1.45;}
+	#bl #bl-mus[aria-expanded="true"] {border-color:var(--bl-acc);}
+	#bl .bl-mp {position:fixed;right:14px;bottom:14px;z-index:2147483000;width:320px;max-width:calc(100vw - 28px);background:#111;border-radius:10px;overflow:hidden;box-shadow:0 6px 24px rgba(0,0,0,0.5);}
+	#bl .bl-mp.is-big {width:480px;}
+	#bl .bl-mpbar {display:flex;align-items:center;gap:0.2em;padding:0.25em 0.35em 0.25em 0.6em;background:#1d1d1d;color:#eee;font-size:0.82em;cursor:move;touch-action:none;}
+	#bl .bl-mpt {flex:1 1 auto;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;color:#eee;}
+	#bl .bl-mpbar button {cursor:pointer;font:inherit;background:transparent;border:0;color:#eee;min-width:32px;min-height:30px;border-radius:6px;}
+	#bl .bl-mpbar button:hover {background:#333;}
+	#bl .bl-mpv {position:relative;height:0;padding-bottom:56.25%;overflow:hidden;}
+	#bl .bl-mpv iframe {position:absolute;inset:0;width:100%;height:100%;border:0;}
+	#bl .bl-mp.is-min .bl-mpv {padding-bottom:0;height:56px;}
+	#bl .bl-gbtn {min-width:7.5em;font-size:0.82em;}
+	#bl .bl-gbtn.is-off {border-color:var(--bl-bad);}
 
 
 	@media print {
@@ -609,6 +629,9 @@ body.is-stuck #navbar.hide { position: fixed; top: 56px; right: 8px; }
 	body.dark-mode #bl .bl-bar .bd{background:#4c5257}
 	body.dark-mode #bl .bl-3d .bl-3dmsg{color:#9e9e9e}
 	body.dark-mode #bl .bl-3dhint{background:rgba(82,82,82,0.60)}
+	body.dark-mode #bl .bl-mp{background:#525252}
+	body.dark-mode #bl .bl-mpbar{background:#525252}
+	body.dark-mode #bl .bl-mpbar button:hover{background:#525252}
 	/* TOOL-DARK:END */
 </style>
         <meta property="fb:app_id" content="" />
@@ -869,15 +892,29 @@ body.is-stuck #navbar.hide { position: fixed; top: 56px; right: 8px; }
 			<div class="bl-view" id="bl-view">
 				<div class="bl-vbar">
 					<div class="bl-players" id="bl-players" aria-live="polite"></div>
-					<span class="bl-vbtns" id="bl-pbar" role="group" aria-label="Game"><button type="button" class="bl-vb bl-vb--main" id="bl-new" title="Start a new game (N)">↺ New game</button><button type="button" class="bl-vb" id="bl-undo" title="Take back your last shot (U)">↶ Undo</button><button type="button" class="bl-vb" id="bl-replay" title="Watch the last shot again (R)">▶ Replay shot</button><button type="button" class="bl-vb" id="bl-hsave" hidden title="Write this game's shots and result to your Hive account (self-reported)">⬢ Save result to Hive</button><span class="tu-seg bl-dim" id="bl-dim" role="group" aria-label="View"><button type="button" data-v="2d" aria-pressed="true" title="Flat view from above (V switches)">2D</button><button type="button" data-v="3d" aria-pressed="false" title="3D view with cameras (V switches)">3D</button></span><select id="bl-cam" class="tu-select bl-cam" aria-label="3D camera" title="3D camera (K changes it)" hidden><option value="auto">Camera: auto</option><option value="behind">Behind the cue</option><option value="overhead">From above</option><option value="side">From the side</option><option value="orbit">Free (drag to turn)</option></select></span>
+					<span class="bl-vbtns" id="bl-pbar" role="group" aria-label="Game"><button type="button" class="bl-vb bl-vb--main" id="bl-new" title="Start a new game (N)">↺ New game</button><button type="button" class="bl-vb" id="bl-undo" title="Take back your last shot (U)">↶ Undo</button><button type="button" class="bl-vb" id="bl-replay" title="Watch the last shot again (R)">▶ Replay shot</button><button type="button" class="bl-vb" id="bl-hsave" hidden title="Write this game's shots and result to your Hive account (self-reported)">⬢ Save result to Hive</button><button type="button" class="bl-vb" id="bl-mus" title="Play music or a video while you play (M)" aria-expanded="false" aria-controls="bl-muspanel">🎵 Music</button><span class="tu-seg bl-dim" id="bl-dim" role="group" aria-label="View"><button type="button" data-v="2d" aria-pressed="true" title="Flat view from above (V switches)">2D</button><button type="button" data-v="3d" aria-pressed="false" title="3D view with cameras (V switches)">3D</button></span><select id="bl-cam" class="tu-select bl-cam" aria-label="3D camera" title="3D camera (K changes it)" hidden><option value="auto">Camera: auto</option><option value="behind">Behind the cue</option><option value="overhead">From above</option><option value="side">From the side</option><option value="orbit">Free (drag to turn)</option></select></span>
 				</div>
 				<p class="bl-msg" id="bl-msg" role="status" aria-live="polite"></p>
 				<p class="bl-hsaved" id="bl-hsaved"></p>
 				<div class="bl-online-bar" id="bl-obar" hidden></div>
+				<div class="bl-muspanel" id="bl-muspanel" hidden>
+					<form class="bl-musrow" id="bl-musform">
+						<label class="bl-sr" for="bl-musurl">Music or video link</label>
+						<input id="bl-musurl" class="tu-input" type="url" inputmode="url" autocomplete="off" spellcheck="false" placeholder="Paste a YouTube video or playlist link (Odysee, 3Speak, Rumble… open in MES Watch)">
+						<button type="submit" class="bl-vb bl-vb--main">▶ Play</button>
+						<button type="button" class="bl-vb" id="bl-muswatch" title="Open MES Watch in a small window: queue, playlists, Odysee, 3Speak, Rumble and more">Open MES Watch ↗</button>
+					</form>
+					<div class="bl-musrec" id="bl-musrec"></div>
+					<p class="bl-musnote">The video plays in a small player in the corner and keeps going between shots, in 2D and 3D, Fill window and full screen. Turn the game's own sounds off in Options if you like. Only you hear it; nothing is shared with the other player.</p>
+				</div>
 				<div class="bl-stage" id="bl-stage">
 					<canvas id="bl-cv" class="bl-cv" tabindex="0" aria-label="Billiards table. Drag on the table to aim, use the power bar to shoot. Keys: left and right arrows aim, up and down set the power, Space shoots."></canvas>
 					<div class="bl-3d" id="bl-3d" hidden aria-label="3D billiards table. Behind the cue: drag left or right to aim. Other cameras: press on the table where you want to aim. Right-drag or two fingers turn the camera."></div>
 					<div class="bl-think" id="bl-think" hidden><span></span> The computer is thinking…</div>
+				</div>
+				<div class="bl-mp" id="bl-mp" hidden>
+					<div class="bl-mpbar"><span class="bl-mpt" id="bl-mpt">Music</span><button type="button" id="bl-mpsize" title="Bigger / smaller">⤢</button><button type="button" id="bl-mpmin" title="Shrink to a bar (the sound keeps playing)">▁</button><button type="button" id="bl-mpclose" title="Stop and close">✕</button></div>
+					<div class="bl-mpv" id="bl-mpv"></div>
 				</div>
 				<div class="bl-ctl" id="bl-ctl">
 					<div class="bl-spin" title="Where the cue hits the cue ball: top = follow, bottom = draw (back spin), sides = side spin. Double-click to centre.">
@@ -891,12 +928,13 @@ body.is-stuck #navbar.hide { position: fixed; top: 56px; right: 8px; }
 							<button type="button" class="bl-vb bl-fine" data-fine="-1" title="Aim a hair to the left (Left arrow; Shift = more)">⟲</button>
 							<span class="bl-aimv" id="bl-aimv">0.00°</span>
 							<button type="button" class="bl-vb bl-fine" data-fine="1" title="Aim a hair to the right (Right arrow; Shift = more)">⟳</button>
+							<button type="button" class="bl-vb bl-gbtn" id="bl-gbtn" title="Aiming guide: full, short or off (G). Off is the real test.">Guide: Full</button>
 						</div>
 					</div>
 					<button type="button" class="bl-shoot" id="bl-shoot" title="Take the shot (Space)">Shoot</button>
 				</div>
 			</div>
-			<p class="tu-note bl-keys">Drag on the table to aim (the further from the cue ball you drag, the finer the aim), then pull the power bar and let go. <span class="bl-bihnote">With ball in hand, drag the white ball to place it.</span> Keys: <kbd>←</kbd> <kbd>→</kbd> aim (<kbd>Shift</kbd> = bigger steps), <kbd>↑</kbd> <kbd>↓</kbd> power, <kbd>W</kbd> <kbd>A</kbd> <kbd>S</kbd> <kbd>D</kbd> spin, <kbd>Space</kbd> shoot, <kbd>R</kbd> replay, <kbd>U</kbd> undo, <kbd>N</kbd> new game, <kbd>F</kbd> full screen. Your games and settings stay in this browser.</p>
+			<p class="tu-note bl-keys">Drag on the table to aim (the further from the cue ball you drag, the finer the aim), then pull the power bar and let go. <span class="bl-bihnote">With ball in hand, drag the white ball to place it.</span> Keys: <kbd>←</kbd> <kbd>→</kbd> aim (<kbd>Shift</kbd> = bigger steps), <kbd>↑</kbd> <kbd>↓</kbd> power, <kbd>W</kbd> <kbd>A</kbd> <kbd>S</kbd> <kbd>D</kbd> spin, <kbd>Space</kbd> shoot, <kbd>R</kbd> replay, <kbd>U</kbd> undo, <kbd>N</kbd> new game, <kbd>V</kbd> 2D / 3D, <kbd>K</kbd> camera, <kbd>M</kbd> music, <kbd>G</kbd> guide full / short / off, <kbd>F</kbd> full screen. Your games and settings stay in this browser.</p>
 		</section>
 
 		<section id="bl-p-online" role="tabpanel" aria-label="Play online" hidden>
