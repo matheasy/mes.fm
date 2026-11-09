@@ -921,7 +921,7 @@
 	'use strict';
 	var W = window.MESWatch, $ = function (id) { return document.getElementById(id); };
 	var KEY = 'mes-watch:v1', HLS_URL = 'https://cdn.jsdelivr.net/npm/hls.js@1.5.20/dist/hls.min.js';
-	var S = { q: [], i: -1, saved: [], hist: [], lists: [], chans: [], shorts: false, rate: 1, tab: 'q', auto: true, priv: true, histOn: true, pz: true, pzHint: 0, zoom: { k: 1, x: 0, y: 0 } };
+	var S = { q: [], i: -1, saved: [], hist: [], lists: [], chans: [], shorts: false, rate: 1, tab: 'q', auto: true, priv: true, histOn: true, cm: false, pz: true, pzHint: 0, zoom: { k: 1, x: 0, y: 0 } };
 	var openList = null;
 	try { var raw = JSON.parse(localStorage.getItem(KEY) || 'null'); if (raw) for (var k in S) if (raw[k] != null) S[k] = raw[k]; } catch (e) {}
 	var saveHooks = [];
@@ -967,7 +967,7 @@
 		}).then(function (j) {
 			var u = j && (j.videoUrl || j.videoUrlFallback1 || j.videoUrlFallback2);
 			if (!u) throw new Error('3Speak has no video for that link.');
-			return { url: u, title: j.title || '', thumb: j.thumbnail || j.thumbnailUrl || '' };
+			return { url: u, title: j.title || '', thumb: j.thumbnail || j.thumbnailUrl || '', owner: j.owner || '', hive: j.hivePermlink || j.permlink || '' };
 		});
 	}
 	function odyseeInfo(uri) {
@@ -1073,6 +1073,7 @@
 				'</span><a class="tu-btn tu-btn--primary" href="' + esc(cur.u) + '" target="_blank" rel="noopener">Open it on ' + esc(W.siteName(cur)) + ' ↗&#xFE0E;</a></div>');
 		}
 		syncSpeed();
+		if (S.cm) loadComments();
 		if (S.pz !== false && !S.pzHint && !(finePtr && finePtr.matches) && /^(yt|hls|odysee|file)$/.test(mode)) { S.pzHint = 1; save(); setTimeout(function () { toast('Tap the video to play / pause · pinch or double-tap to zoom'); }, 1500); }
 	}
 	function failed(text) {
@@ -1514,6 +1515,7 @@
 		else if (k === 's' && cur && W.canSpeed(cur)) step(-1); else if (k === 'd' && cur && W.canSpeed(cur)) step(1); else if (k === 'r' && cur && W.canSpeed(cur)) setRate(1);
 		else if (k === 'n') go(e.shiftKey ? -1 : 1);
 		else if (k === 'z') setZMode(!zMode);
+		else if (k === 'c') $('wt-cmbtn').click();
 		else if ((e.key === '+' || e.key === '=') && cur) zoomTo(((S.zoom || {}).k || 1) * 1.25);
 		else if ((e.key === '-' || e.key === '_') && cur) zoomTo(((S.zoom || {}).k || 1) / 1.25);
 		else if (k === '0' && cur) zoomTo(1);
@@ -1529,7 +1531,7 @@
 		var vp = document.querySelector('meta[name=viewport]'); if (vp && !/viewport-fit/.test(vp.content)) vp.content += ', viewport-fit=cover';
 		if (window.MESPanel) window.MESPanel.add($('wt-player'), { bar: $('wt-pbtns'), stage: $('wt-stage'), onChange: function () { setTimeout(applyZoom, 60); } });
 		zoomLayer();
-		renderList(); showMeta(); syncSpeed(); setTab(S.tab || 'q');
+		renderList(); showMeta(); syncSpeed(); setTab(S.tab || 'q'); paintCmBtn();
 		if (/[?&]debug=1/.test(location.search)) window.MESWatchDebug = { S: S, play: play, go: go, position: position, cur: function () { return cur; } };
 		var Q = W.fromQuery(location.search);
 		if (Q.links.length) {
@@ -1548,7 +1550,99 @@
 			setStage('<div class="wt-empty"><b>' + esc(W.label(cur)) + '</b><span>' + (histRec(cur) && histRec(cur).pos > 20 && !W.done(histRec(cur)) ? 'You stopped at ' + W.fmt(histRec(cur).pos) + '.' : 'Ready to play.') + '</span><button type="button" class="tu-btn tu-btn--primary" id="wt-resume">▶&#xFE0E; ' + (histRec(cur) && histRec(cur).pos > 20 && !W.done(histRec(cur)) ? 'Continue' : 'Play') + '</button></div>');
 			$('wt-resume').onclick = function () { play(cur); };
 		}
+		if (S.cm && cur && !$('wt-cm').innerHTML) loadComments();
 	}
+	/* ---------- comments (off by default; S.cm) ---------- */
+	var cmGen = 0, cmState = null;
+	function paintCmBtn() { var b = $('wt-cmbtn'); b.setAttribute('aria-pressed', String(!!S.cm)); b.innerHTML = '💬&#xFE0E; ' + (S.cm ? 'Hide comments' : 'Comments'); $('wt-cm').hidden = !S.cm; }
+	$('wt-cmbtn').onclick = function () { S.cm = !S.cm; save(); paintCmBtn(); if (S.cm) loadComments(); else { cmGen++; $('wt-cm').innerHTML = ''; } };
+	function cmText(t, md) {
+		t = String(t || '');
+		if (md) t = t.replace(/!\[[^\]]*\]\([^)]*\)/g, '[picture]').replace(/\[([^\]]+)\]\([^)]*\)/g, '$1').replace(/<[^>]+>/g, '').replace(/[*_`#>]+/g, '');
+		t = t.trim(); var long = t.length > 900;
+		return { html: esc(long ? t.slice(0, 900) + '…' : t).replace(/\n{3,}/g, '\n\n').replace(/\n/g, '<br>'), long: long };
+	}
+	function cmRow(c, site) {
+		var tx = cmText(c.text, c.md);
+		return '<li class="wt-cmi"><div class="wt-cmh"><b>' + esc(c.author || 'Someone') + '</b>' + (c.creator ? ' <span class="wt-cmc">creator</span>' : '') + (c.when ? ' <span class="wt-cmw">' + esc(c.when) + '</span>' : '') + '</div>' +
+			'<div class="wt-cmt">' + tx.html + '</div><div class="wt-cmf">' + [
+				c.likes ? '♥ ' + c.likes.toLocaleString() : '',
+				c.replies ? (c.url ? '<a href="' + esc(c.url) + '" target="_blank" rel="noopener">' : '') + c.replies + (c.replies === 1 ? ' reply' : ' replies') + (c.url ? ' ↗&#xFE0E;</a>' : '') : '',
+				tx.long && c.url ? '<a href="' + esc(c.url) + '" target="_blank" rel="noopener">Read all on ' + esc(site) + ' ↗&#xFE0E;</a>' : ''
+			].filter(Boolean).join(' · ') + '</div></li>';
+	}
+	function cmPaint() {
+		var box = $('wt-cm'), c = cmState; if (!c) return;
+		var head = '<div class="wt-cmhead"><b>Comments' + (c.count != null ? ' (' + Number(c.count).toLocaleString() + ')' : '') + '</b><span class="wt-cmsrc">from ' + esc(c.site) + '</span>' +
+			(cur ? '<a class="wt-cmopen" href="' + esc(cur.u) + '" target="_blank" rel="noopener">Reply on ' + esc(c.site) + ' ↗&#xFE0E;</a>' : '') + '</div>';
+		box.innerHTML = head + (c.msg ? '<p class="wt-cmmsg">' + c.msg + '</p>' : '') + (c.items.length ? '<ul class="wt-cml">' + c.items.map(function (x) { return cmRow(x, c.site); }).join('') + '</ul>' : '') +
+			(c.more ? '<button type="button" class="tu-btn tu-btn--ghost wt-cmmore" data-cmmore' + (c.busy ? ' disabled' : '') + '>' + (c.busy ? 'Loading…' : 'Load more') + '</button>' : (c.busy ? '<p class="wt-cmmsg">Loading…</p>' : ''));
+	}
+	$('wt-cm').addEventListener('click', function (e) { if (e.target.closest('[data-cmmore]') && cmState && cmState.more && !cmState.busy) cmState.more(); });
+	function hivePost(author, permlink) {
+		var nodes = ['https://api.hive.blog', 'https://api.deathwing.me', 'https://api.openhive.network'];
+		function tryN(i) {
+			return fetch(nodes[i], { method: 'POST', credentials: 'omit', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ jsonrpc: '2.0', method: 'bridge.get_discussion', params: { author: author, permlink: permlink }, id: 1 }) })
+				.then(function (r) { return r.json(); }).then(function (j) { if (!j || !j.result) throw new Error('no answer'); return j.result; })
+				.catch(function (e) { if (i + 1 < nodes.length) return tryN(i + 1); throw e; });
+		}
+		return tryN(0);
+	}
+	function loadComments() {
+		var g = ++cmGen, it = cur, box = $('wt-cm'); if (!it) { box.innerHTML = '<p class="wt-cmmsg">Play a video to see its comments.</p>'; return; }
+		var mode = W.mode(it), site = W.siteName(it);
+		cmState = { site: site, items: [], count: null, msg: '', more: null, busy: true }; cmPaint();
+		function done() { if (g === cmGen) { cmState.busy = false; cmPaint(); } }
+		function fail(t) { if (g !== cmGen) return; cmState.msg = esc(t); done(); }
+		if (it.k === 'youtube') {
+			var ytPage = function (c, ver) {
+				cmState.busy = true; cmPaint();
+				fetch('/api/yt-comments?v=' + encodeURIComponent(it.id) + (c ? '&c=' + encodeURIComponent(c) + '&ver=' + encodeURIComponent(ver) : '')).then(function (r) { if (!r.ok) throw new Error(); return r.json(); }).then(function (j) {
+					if (g !== cmGen) return;
+					if (j.count != null) cmState.count = j.count;
+					cmState.items = cmState.items.concat((j.items || []).map(function (x) { return { author: x.author, creator: x.creator, when: x.when, text: x.text, likes: x.likes, replies: x.replies, url: 'https://www.youtube.com/watch?v=' + it.id + '&lc=' + x.id }; }));
+					cmState.more = j.next ? function () { ytPage(j.next, j.ver); } : null;
+					if (!cmState.items.length) cmState.msg = j.off ? 'Comments are turned off for this video.' : 'No comments yet.';
+					done();
+				}).catch(function () { fail('Could not load the comments right now.'); });
+			};
+			ytPage();
+		} else if (it.k === '3speak') {
+			var ap = String(it.id).split('/');
+			// newer 3Speak uploads sit on a Hive post with another address (the embed answer's hivePermlink)
+			speakInfo(it).then(function (i) { if (i.owner) ap[0] = i.owner; if (i.hive) ap[1] = i.hive; }, function () {}).then(function () { return hivePost(ap[0], ap[1]); }).then(function (all) {
+				if (g !== cmGen) return;
+				var top = Object.keys(all).map(function (k) { return all[k]; }).filter(function (p) { return p.depth === 1 && p.parent_author === ap[0] && p.parent_permlink === ap[1]; })
+					.sort(function (a, b) { return (b.net_votes || (b.stats || {}).total_votes || 0) - (a.net_votes || (a.stats || {}).total_votes || 0) || String(b.created).localeCompare(String(a.created)); });
+				cmState.count = top.length; cmState.site = '3Speak (Hive)';
+				cmState.items = top.map(function (p) { return { author: '@' + p.author, creator: p.author === ap[0], when: W.ago(Date.parse(p.created + 'Z')), text: p.body, md: true, likes: (p.stats || {}).total_votes || 0, replies: p.children || 0, url: 'https://peakd.com/@' + p.author + '/' + p.permlink }; });
+				if (!top.length) cmState.msg = 'No comments yet.';
+				done();
+			}).catch(function () { fail('Could not reach Hive for the comments right now.'); });
+		} else if (it.k === 'odysee' && it.id) {
+			var uri = 'lbry://' + String(it.id).split('/').map(function (x) { return x.replace(/:([0-9a-f]+)$/i, '#$1'); }).join('/');
+			fetch('https://api.na-backend.odysee.com/api/v1/proxy?m=resolve', { method: 'POST', credentials: 'omit', headers: { 'Content-Type': 'text/plain' }, body: JSON.stringify({ jsonrpc: '2.0', method: 'resolve', params: { urls: [uri] }, id: 1 }) })
+				.then(function (r) { return r.json(); }).then(function (j) {
+					var c = j && j.result && j.result[uri]; if (!c || !c.claim_id) throw new Error();
+					var pg = 0, odPage = function () {
+						pg++; cmState.busy = true; cmPaint();
+						fetch('https://comments.odysee.tv/api/v2?m=comment.List', { method: 'POST', credentials: 'omit', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ jsonrpc: '2.0', id: 1, method: 'comment.List', params: { claim_id: c.claim_id, page: pg, page_size: 20, sort_by: 3, top_level: true } }) })
+							.then(function (r) { return r.json(); }).then(function (k) {
+								if (g !== cmGen) return; var r = (k && k.result) || {};
+								if (r.total_items != null) cmState.count = r.total_items;
+								cmState.items = cmState.items.concat((r.items || []).map(function (x) { return { author: x.channel_name || 'Anonymous', creator: !!x.is_creator, when: x.timestamp ? W.ago(x.timestamp * 1000) : '', text: x.comment, md: true, likes: 0, replies: x.replies || 0, url: it.u + '?lc=' + x.comment_id }; }));
+								cmState.more = r.total_pages && pg < r.total_pages ? odPage : null;
+								if (!cmState.items.length) cmState.msg = 'No comments yet.';
+								done();
+							}).catch(function () { fail('Could not load the comments right now.'); });
+					};
+					odPage();
+				}).catch(function () { fail('Could not find this video on Odysee.'); });
+		} else {
+			cmState.msg = esc(site) + ' comments can only be read on ' + esc(site) + ': <a href="' + esc(it.u) + '" target="_blank" rel="noopener">open the video there ↗&#xFE0E;</a>'; done();
+		}
+	}
+
 	/* ☁ Sync & backup (sync.js): it reads / replaces the shared lists through this */
 	function applySnap(d) {
 		var ck = cur && cur.key;

@@ -66,6 +66,11 @@
 "updated":"2026-10-30",
 "type":"Calculator"
 },
+"/billiards":{
+"added":"2026-11-09",
+"updated":"2026-11-09",
+"type":"Game"
+},
 "/birthday":{
 "added":"2026-10-21",
 "updated":"2026-10-23",

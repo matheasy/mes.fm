@@ -30,6 +30,7 @@
 					<button type="button" class="wt-b" id="wt-addl" title="Add to one of my playlists" aria-haspopup="true">+ List</button>
 					<button type="button" class="wt-b" id="wt-zoom" title="Zoom in on the picture: pinch or drag, + / − (key Z)" aria-pressed="false">🔍&#xFE0E; Zoom</button>
 					<button type="button" class="wt-b" id="wt-copy" title="Copy a link to this spot in the video">🔗&#xFE0E; Link</button>
+					<button type="button" class="wt-b" id="wt-cmbtn" aria-pressed="false" aria-controls="wt-cm" title="Show or hide the video's comments (C)">💬&#xFE0E; Comments</button>
 					<a class="wt-b" id="wt-open" href="#" target="_blank" rel="noopener" title="Open it on its own site">↗&#xFE0E; Site</a>
 				</div>
 				<span class="wt-pbtns" id="wt-pbtns"></span>
@@ -44,6 +45,7 @@
 				<label class="wt-check"><input type="checkbox" id="wt-pz" checked> Touch screens: tap the video to play / pause, pinch or double-tap to zoom</label>
 				<label class="wt-check"><input type="checkbox" id="wt-priv" checked> Private: keep these videos out of my YouTube / Rumble / BitChute watch history</label>
 			</div>
+			<div class="wt-cm" id="wt-cm" hidden aria-live="polite"></div>
 		</section>
 
 		<section class="tu-card wt-lists" id="wt-lists">
@@ -110,11 +112,14 @@
 				<dt>S / D / R</dt><dd>Slower, faster, normal speed</dd>
 				<dt>N / Shift+N</dt><dd>Next, previous</dd>
 				<dt>W</dt><dd>Fill the window with the video</dd>
+				<dt>C</dt><dd>Show / hide the comments</dd>
 				<dt>Z, + / −, 0</dt><dd>Zoom mode, zoom in / out, back to 100%</dd>
 			</dl>
 			<h3>Questions</h3>
 			<h4>Is anything sent to MES?</h4>
 			<p>No. Your lists, history and resume points are kept in this browser only. The videos come straight from the sites that host them, the same as on those sites.</p>
+			<h4>Can I see the comments?</h4>
+			<p>Only if you want to: press <em>💬 Comments</em> under the video (or C). It stays the way you leave it. YouTube comments come from YouTube (top comments first, Load more for the rest), 3Speak comments are the replies to its Hive post, and Odysee comments come from Odysee. Rumble, BitChute and X comments are only on their own sites. Comments are read-only here; to reply, open the video on its site.</p>
 			<h4>Will these videos show up in my YouTube history?</h4>
 			<p>Not while <em>Private</em> is ticked: the players are loaded without your sign-in cookies (YouTube's privacy-enhanced player, and a "credentialless" frame in Chrome, Edge, Brave and Opera), so YouTube, Rumble and BitChute don't know it is you. Untick it if you want them in your history.</p>
 			<h4>Does YouTube still count the view?</h4>
