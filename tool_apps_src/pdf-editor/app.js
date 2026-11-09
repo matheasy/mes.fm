@@ -49,7 +49,7 @@
 		if (!PD.doc && !(e.ctrlKey || e.metaKey)) return; var t = e.target, typing = t && /INPUT|TEXTAREA|SELECT/.test(t.tagName); if (typing || PD.isEditing() || !$("pd-modal").hidden) { if (e.key === "Escape" && !$("pd-modal").hidden) PD.closeDialog(); return; }
 		var k = e.key.toLowerCase(), mod = e.ctrlKey || e.metaKey;
 		if (mod && k === "z") { e.preventDefault(); e.shiftKey ? PD.redo() : PD.undo(); return; } if (mod && k === "y") { e.preventDefault(); PD.redo(); return; }
-		if (mod && k === "d") { e.preventDefault(); PD.duplicateSel(); return; } if (mod && k === "c") { if (PD.copySel()) e.preventDefault(); return; } if (mod && k === "s") { e.preventDefault(); PD.exportDialog(); return; } if (mod && k === "p") { if (PD.doc) { e.preventDefault(); PD.printPdf(); } return; } if (mod && k === "o") { e.preventDefault(); $("pd-file").click(); return; } if (mod) return;
+		if (mod && k === "d") { e.preventDefault(); PD.duplicateSel(); return; } if (mod && k === "c") { if (PD.copySel()) e.preventDefault(); return; } if (mod && k === "s") { e.preventDefault(); PD.endEdit(); if (!(cloud && cloud.save(PD.doc))) PD.exportDialog(); return; } if (mod && k === "p") { if (PD.doc) { e.preventDefault(); PD.printPdf(); } return; } if (mod && k === "o") { e.preventDefault(); $("pd-file").click(); return; } if (mod) return;
 		if (e.key === "Delete" || e.key === "Backspace") { if (PD.selAnnot()) { e.preventDefault(); PD.removeSel(); } return; }
 		if (e.key === "Escape") { if (PD.selAnnot()) PD.select(null, null); else if (PD.tool !== "select") PD.setTool("select"); return; }
 		var step = e.shiftKey ? 10 : 1, mv = { ArrowLeft: [-step, 0], ArrowRight: [step, 0], ArrowUp: [0, step], ArrowDown: [0, -step] }[e.key]; if (mv && PD.nudge(mv[0], mv[1])) { e.preventDefault(); return; }
@@ -110,5 +110,28 @@
 	raBtn.onclick = readAloud;
 	document.addEventListener("keydown", function (e) { if (e.altKey && e.shiftKey && e.code === "KeyR" && PD.doc) { e.preventDefault(); readAloud(); } });
 	PD.on("open", function () { if (window.MESReadAloud) window.MESReadAloud.stop(); });
+
+	/* ---------- ☁ Cloud: open from / keep saved to OneDrive, Dropbox, Google Drive or a synced folder (/main_js/cloud-files.js) ----------
+	   A save writes the same PDF as Download (annotations drawn into the pages; comments as PDF notes). Black cover boxes always make a
+	   flattened save, like the Download dialog's default, so a redaction never leaves the hidden words in the cloud copy. */
+	function hasBlack() { return PD.doc.pages.some(function (p) { return p.annots.some(function (a) { return a.t === "rect" && /^#0{6}$/.test(a.fill || "") && !a.alpha; }); }); }
+	var cloud = window.MESCloud ? window.MESCloud.attach({
+		app: "pdf", what: "PDF", defExt: "pdf", btnClass: "pd-btn", before: $("pd-name"), replaces: true, toast: function (m) { PD.toast(m, 3500); },
+		exts: [".pdf"],
+		accept: [{ description: "PDF", accept: { "application/pdf": [".pdf"] } }],
+		doc: function () { return PD.doc; },
+		name: function (d) { return d.name; },
+		writeName: function (n) { return /\.pdf$/i.test(n || "") ? n : (n || "document").replace(/\.[A-Za-z0-9]{1,6}$/, "") + ".pdf"; },
+		bytes: function (d) {
+			if (d !== PD.doc) return Promise.reject(new Error("That PDF is no longer open."));
+			if (PD.isEditing()) PD.endEdit();
+			var flat = hasBlack();
+			return PD.exportBytes({ flatten: flat, dpi: 150 }).then(function (r) { return r.bytes instanceof Uint8Array ? r.bytes : new Uint8Array(r.bytes); });
+		},
+		open: function (u8, name) { var before = PD.doc; PD.dirty = false; return PD.open(new File([u8], name, { type: "application/pdf" })).then(function () { return PD.doc && PD.doc !== before ? PD.doc : null; }); },
+		dirty: function (d) { return d === PD.doc && !!PD.dirty; },
+		saved: function (d, name) { if (name && name !== d.name) d.name = name; if (d === PD.doc) PD.dirty = false; PD.status(); }
+	}) : null;
+	if (cloud) PD.on("history", function () { if (PD.dirty) cloud.changed(PD.doc); });
 	PD.status();
 })();
