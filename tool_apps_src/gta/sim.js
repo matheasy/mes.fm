@@ -108,9 +108,10 @@
 		var sel = $("gj-camsel"), list = CAMS[S.view], cur = S.view === "3d" ? S.cam3 : S.cam2;
 		if (sel.getAttribute("data-for") !== S.view) { sel.innerHTML = list.map(function (c) { return '<option value="' + c[0] + '">' + c[1] + "</option>"; }).join(""); sel.setAttribute("data-for", S.view); }
 		sel.value = cur;
-		var ckSel = $("gj-ck"); if (ckSel) { ckSel.value = S.ck; ckSel.parentNode.hidden = !(S.view === "3d" && S.cam3 === "driver"); ckSel.options[0].textContent = veh && veh.bike ? "Handlebars + gauge" : "Wheel + dashboard"; ckSel.options[1].textContent = veh && veh.bike ? "Clear view" : "Windshield only"; }
+		var ckSel = $("gj-ck"); if (ckSel) { ckSel.value = S.ck; ckSel.parentNode.hidden = !(S.view === "3d" && S.cam3 === "driver"); ckSel.options[0].textContent = veh && veh.bike ? "Handlebars + gauge" : "Wheel + dashboard"; ckSel.options[1].textContent = "Windshield only"; ckSel.options[1].hidden = ckSel.options[1].disabled = !!(veh && veh.bike); if (veh && veh.bike && S.ck === "glass") ckSel.value = "off"; }
+		var cr = $("gj-camreset"); if (cr) cr.hidden = !(S.view === "3d" && r3 && r3.free.on && S.cam3 !== "orbit");
 	}
-	$("gj-camsel").addEventListener("change", function (e) { if (S.view === "3d") S.cam3 = e.target.value; else S.cam2 = e.target.value; save(); paintCamSel(); camSnap = true; frame(); });
+	$("gj-camsel").addEventListener("change", function (e) { if (S.view === "3d") { S.cam3 = e.target.value; if (r3) r3.resetFree(); } else S.cam2 = e.target.value; save(); paintCamSel(); camSnap = true; frame(); });
 	$("gj-ck").addEventListener("change", function (e) { S.ck = e.target.value; save(); frame(); });
 	seg("gj-mode", "m", function () { reset(); }); seg("gj-ramp", "r"); seg("gj-land", "l");
 	seg("gj-units", "u", function () { paintInputs(); paintRuns(); paintRo(); drawCharts(); paintSweep(); drawSweep(); });
@@ -277,7 +278,7 @@
 		if (is3 && !r3 && !r3loading) {
 			if (!window.GJ3D) { S.view = "2d"; paintSeg(); setView(); return; }
 			r3loading = true; $("gj-load").hidden = false;
-			window.GJ3D.create($("gj-3d")).then(function (r) { r3 = r; r3loading = false; $("gj-load").hidden = true; r3.setScene(co, veh, S.color || veh.color, GRAV[S.gr]); size(); camSnap = true; frame(); },
+			window.GJ3D.create($("gj-3d")).then(function (r) { r3 = r; r3loading = false; r3.onFree = function () { paintCamSel(); }; $("gj-load").hidden = true; r3.setScene(co, veh, S.color || veh.color, GRAV[S.gr]); size(); camSnap = true; frame(); },
 				function (err) { r3loading = false; $("gj-load").hidden = true; S.view = "2d"; paintSeg(); setView(); toast("3D could not start here (" + (err && err.message || "no WebGL") + "). Showing 2D."); });
 		}
 		paintRun(); size(); frame();
@@ -336,6 +337,7 @@
 			tx = clamp(pos.x + vw * 0.22, lo, hi); ty = vert(ts, pos.y);
 			if (pre) { ts = Math.min(W / span, avail / (fb.top - fb.bot)); tx = (fb.x0 + fb.x1) / 2; ty = vert(ts, null); }
 		}
+		if (!(ts > 0.5)) ts = 0.5; /* a very short stage (toolbar taller than the picture) would give a negative scale */
 		if (camSnap) { cam.x = tx; cam.y = ty; cam.s = ts; camSnap = false; }
 		else { var k = 0.1; cam.x += (tx - cam.x) * k; cam.y += (ty - cam.y) * k; cam.s += (ts - cam.s) * k; }
 	}
@@ -414,7 +416,7 @@
 	function bodyPt(st, bx, by) { var cs = Math.cos(st.th), sn = Math.sin(st.th); return [wx(st.x + bx * cs - by * sn), wy(st.y + bx * sn + by * cs)]; }
 	function drawVehicle(c, st) {
 		var v = veh, sh = sim.shape, col = S.color || v.color, cs = Math.cos(st.th), sn = Math.sin(st.th), dnx = sn, dny = -cs;
-		var gy = M.groundAt(co, st.x).y, alt = st.y - gy; if (gy > -1e8) { c.fillStyle = "rgba(0,0,0," + clamp(0.35 - alt * 0.02, 0.05, 0.35) + ")"; c.beginPath(); c.ellipse(wx(st.x), wy(gy) - 1, v.len * 0.5 * cam.s * (1 + alt * 0.03), Math.max(1.5, 0.18 * cam.s), 0, 0, 7); c.fill(); }
+		var gy = M.groundAt(co, st.x).y, alt = st.y - gy; if (gy > -1e8) { c.fillStyle = "rgba(0,0,0," + clamp(0.35 - alt * 0.02, 0.05, 0.35) + ")"; c.beginPath(); c.ellipse(wx(st.x), wy(gy) - 1, Math.max(0.1, v.len * 0.5 * cam.s * (1 + alt * 0.03)), Math.max(1.5, 0.18 * cam.s), 0, 0, 7); c.fill(); }
 		var wheels = sim.ax.map(function (A, i) { var att = [st.x + A.bx * cs - A.ya * sn, st.y + A.bx * sn + A.ya * cs], d = A.L0 - (st.comp[i] || 0); return { x: att[0] + dnx * d, y: att[1] + dny * d, ax: att, ang: st.ang[i] }; });
 		c.strokeStyle = "#555"; c.lineWidth = Math.max(1, v.r * 0.18 * cam.s); wheels.forEach(function (w) { c.beginPath(); c.moveTo(wx(w.ax[0]), wy(w.ax[1])); c.lineTo(wx(w.x), wy(w.y)); c.stroke(); });
 		if (v.bike) { drawBike(c, st, wheels, col); return; }
@@ -658,7 +660,8 @@
 	});
 	$("gj-go").addEventListener("click", go);
 	$("gj-reset").addEventListener("click", reset);
-	$("gj-3d").addEventListener("click", function () { if (S.cam3 !== "orbit" && !running && (!sim || !sim.done) && !replay) go(); });
+	$("gj-camreset").addEventListener("click", function () { if (r3) r3.resetFree(); });
+	$("gj-3d").addEventListener("click", function () { if (r3 && r3.takeDrag()) return; if (S.cam3 !== "orbit" && !running && (!sim || !sim.done) && !replay) go(); });
 	$("gj-hint").addEventListener("click", function (e) { if (e.target.closest(".gj-hintx")) { hintDone(); $("gj-hint").hidden = true; return; } if (S.m !== "drive") go(); });
 	$("gj-col").addEventListener("input", function (e) { S.color = e.target.value; save(); if (r3) r3.setScene(co, veh, S.color, GRAV[S.gr]); frame(); });
 

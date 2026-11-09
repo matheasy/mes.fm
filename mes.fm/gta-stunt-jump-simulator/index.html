@@ -1028,6 +1028,7 @@ body.is-stuck #navbar.hide { position: fixed; top: 56px; right: 8px; }
 					<label class="gj-sel" title="Playback speed"><span class="gj-sr">Playback speed</span><select id="gj-slow"><option value="1">1×</option><option value="0.5">½×</option><option value="0.25">¼×</option><option value="0.1">0.1×</option><option value="2">2×</option></select></label>
 					<span class="gj-vseg" id="gj-view" role="group" aria-label="View"><button type="button" data-v="2d">2D</button><button type="button" data-v="3d">3D</button></span>
 					<label class="gj-sel" title="Camera"><span class="gj-sr">Camera</span><select id="gj-camsel"></select></label>
+					<button type="button" id="gj-camreset" title="Back to this camera's own automatic view (or double-click the picture)" aria-label="Auto view" hidden>🎥<span class="gj-t"> Auto view</span></button>
 					<label class="gj-sel" title="What you see from the driver's seat" hidden><span class="gj-sr">Inside view</span><select id="gj-ck"><option value="full">Wheel + dashboard</option><option value="glass">Windshield only</option><option value="off">Clear view</option></select></label>
 					<button type="button" id="gj-statsb" class="gj-fillonly" title="Show or hide the stats strip" aria-label="Stats" aria-pressed="true">📊<span class="gj-t"> Stats</span></button>
 					<button type="button" id="gj-opt" title="Show or hide the options" aria-label="Options" aria-expanded="false">⚙︎<span class="gj-t"> Options</span></button>
@@ -1227,7 +1228,7 @@ body.is-stuck #navbar.hide { position: fixed; top: 56px; right: 8px; }
             hide_search:false,
             current_tab:1
         }        </script><!-- FASTCOMMENTS-LAZY: widget init moved to main_js/main.js -- it pulls embed.min.js only when #fastcomments-widget nears the viewport or on the first Comments-toggle click, so it no longer blocks first render -->                <script src="https://mes.fm/main_js/lazysizes.min.js?v=1.0.3" async></script>
-	<script src="/gta/js/gta.js?v=7" defer></script>
+	<script src="/gta/js/gta.js?v=8" defer></script>
             <script src="https://mes.fm/main_js/main.js?v=1.0.5"></script>    <!-- PAGEVIEW-TRACKING-INSERTED --><script src="https://mes.fm/main_js/track.js" defer></script><script>document.getElementById('copyright-year').textContent = new Date().getFullYear();</script><script src="/main_js/info-bar-fit.js" defer></script><script>
   // Floating compact header bar (see #compact-nav CSS): appears once the
   // header + nav bar have scrolled off the top; nav links that don't fit

@@ -30,23 +30,36 @@
 		container.appendChild(R.domElement); R.domElement.style.cssText = "position:absolute;inset:0;width:100%;height:100%;display:block;touch-action:none";
 		this.scene = new THREE.Scene(); this.camera = new THREE.PerspectiveCamera(55, 16 / 9, 0.1, 4000);
 		this.camPos = new THREE.Vector3(-20, 6, 12); this.camLook = new THREE.Vector3();
-		/* orbit control (only used in orbit mode) */
-		this.orb = { yaw: -0.7, pitch: 0.25, dist: 16 }; var ptr = {}, pinch = 0;
+		/* orbit control. Orbit mode: the camera circles the car. Every other mode: a drag turns the camera
+		   around what it looks at (driver's seat: looks around), on top of that camera's own movement;
+		   "Auto view" (resetFree) drops the offset. */
+		this.orb = { yaw: -0.7, pitch: 0.25, dist: 16 }; this.free = { yaw: 0, pitch: 0, zoom: 1, on: false }; var ptr = {}, moved = 0;
 		var d = R.domElement;
-		d.addEventListener("pointerdown", function (e) { ptr[e.pointerId] = [e.clientX, e.clientY]; try { d.setPointerCapture(e.pointerId); } catch (x) { /* ignore */ } });
+		function big() { return !!d.closest(".is-fill, .is-fs") || !!document.fullscreenElement; }
+		function zoomBy(k) { if (self.mode === "orbit") self.orb.dist = Math.max(5, Math.min(120, self.orb.dist * k)); else if (self.mode !== "driver") { self.free.zoom = Math.max(0.25, Math.min(6, self.free.zoom * k)); self.setFree(); } self.redraw(); }
+		d.addEventListener("pointerdown", function (e) { ptr[e.pointerId] = [e.clientX, e.clientY]; moved = 0; self.dragged = false; try { d.setPointerCapture(e.pointerId); } catch (x) { /* ignore */ } });
 		d.addEventListener("pointermove", function (e) {
-			if (!ptr[e.pointerId] || self.mode !== "orbit") { if (ptr[e.pointerId]) ptr[e.pointerId] = [e.clientX, e.clientY]; return; }
+			var p = ptr[e.pointerId]; if (!p) return;
 			var ids = Object.keys(ptr);
-			if (ids.length === 2) { var a = ptr[ids[0]], b = ptr[ids[1]]; ptr[e.pointerId] = [e.clientX, e.clientY]; var a2 = ptr[ids[0]], b2 = ptr[ids[1]], d0 = Math.hypot(a[0] - b[0], a[1] - b[1]), d1 = Math.hypot(a2[0] - b2[0], a2[1] - b2[1]); if (d0 > 0) self.orb.dist = Math.max(5, Math.min(120, self.orb.dist * d0 / d1)); return; }
-			var p = ptr[e.pointerId]; self.orb.yaw -= (e.clientX - p[0]) * 0.008; self.orb.pitch = Math.max(-0.1, Math.min(1.45, self.orb.pitch + (e.clientY - p[1]) * 0.006)); ptr[e.pointerId] = [e.clientX, e.clientY]; self.redraw();
+			if (ids.length === 2) { var a = ptr[ids[0]], b = ptr[ids[1]]; ptr[e.pointerId] = [e.clientX, e.clientY]; var a2 = ptr[ids[0]], b2 = ptr[ids[1]], d0 = Math.hypot(a[0] - b[0], a[1] - b[1]), d1 = Math.hypot(a2[0] - b2[0], a2[1] - b2[1]); self.dragged = true; if (d0 > 0 && d1 > 0) zoomBy(d0 / d1); return; }
+			var dx = e.clientX - p[0], dy = e.clientY - p[1]; ptr[e.pointerId] = [e.clientX, e.clientY];
+			moved += Math.abs(dx) + Math.abs(dy); if (moved < 5) return; self.dragged = true;
+			if (self.mode === "orbit") { self.orb.yaw -= dx * 0.008; self.orb.pitch = Math.max(-0.1, Math.min(1.45, self.orb.pitch + dy * 0.006)); }
+			else if (self.mode === "driver") { self.free.yaw = Math.max(-2.6, Math.min(2.6, self.free.yaw + dx * 0.005)); self.free.pitch = Math.max(-0.9, Math.min(0.9, self.free.pitch - dy * 0.004)); self.setFree(); }
+			else { self.free.yaw -= dx * 0.008; self.free.pitch = Math.max(-1.2, Math.min(1.2, self.free.pitch + dy * 0.006)); self.setFree(); }
+			self.redraw();
 		});
 		function up(e) { delete ptr[e.pointerId]; }
 		d.addEventListener("pointerup", up); d.addEventListener("pointercancel", up);
-		d.addEventListener("wheel", function (e) { if (self.mode !== "orbit") return; e.preventDefault(); self.orb.dist = Math.max(5, Math.min(120, self.orb.dist * Math.exp(e.deltaY * 0.001))); self.redraw(); }, { passive: false });
+		d.addEventListener("wheel", function (e) { if (self.mode !== "orbit" && !big() && !e.ctrlKey) return; e.preventDefault(); zoomBy(Math.exp(e.deltaY * 0.001)); }, { passive: false });
+		d.addEventListener("dblclick", function () { self.resetFree(); });
 		this.buildWorld();
 	}
 	View.prototype.canvas = function () { return this.renderer.domElement; };
 	View.prototype.resize = function (w, h) { this.renderer.setSize(w, h, false); this.camera.aspect = w / Math.max(1, h); this.camera.updateProjectionMatrix(); this.redraw(); };
+	View.prototype.setFree = function () { var f = this.free, on = Math.abs(f.yaw) > 0.01 || Math.abs(f.pitch) > 0.01 || Math.abs(f.zoom - 1) > 0.01; if (on !== f.on) { f.on = on; if (this.onFree) this.onFree(on); } };
+	View.prototype.resetFree = function () { var f = this.free; f.yaw = f.pitch = 0; f.zoom = 1; this.setFree(); this.redraw(); };
+	View.prototype.takeDrag = function () { var t = this.dragged; this.dragged = false; return t; };
 	View.prototype.redraw = function () { if (this.last) this.draw(this.last[0], this.last[1]); };
 
 	/* sky, sun, lights, far city: built once */
@@ -305,7 +318,17 @@
 		else { var ob = this.orb; pos.set(st.x + Math.cos(ob.yaw) * Math.cos(ob.pitch) * ob.dist, st.y + Math.sin(ob.pitch) * ob.dist + 0.5, Math.sin(ob.yaw) * Math.cos(ob.pitch) * ob.dist); look.copy(car); }
 		if (o.snap || m === "driver" || m === "orbit") { this.camPos.copy(pos); this.camLook.copy(look); }
 		else { this.camPos.lerp(pos, 0.12); this.camLook.lerp(look, 0.2); }
-		this.camera.position.copy(this.camPos); this.camera.lookAt(this.camLook);
+		var cp = this.camPos.clone(), cl = this.camLook.clone(), f = this.free;
+		if (f.on && m !== "orbit") {
+			if (m === "driver") { /* turn the head: rotate the look point around the eye */
+				var v0 = cl.clone().sub(cp), hz = Math.hypot(v0.x, v0.z), yw = Math.atan2(v0.z, v0.x) + f.yaw, pt = Math.atan2(v0.y, hz) + f.pitch, L0 = v0.length();
+				cl.set(cp.x + Math.cos(yw) * Math.cos(pt) * L0, cp.y + Math.sin(pt) * L0, cp.z + Math.sin(yw) * Math.cos(pt) * L0);
+			} else { /* swing the camera around the point it looks at */
+				var v = cp.clone().sub(cl), r = v.length() * f.zoom, h0 = Math.hypot(v.x, v.z), yaw = Math.atan2(v.z, v.x) + f.yaw, pitch = Math.max(-0.05, Math.min(1.5, Math.atan2(v.y, h0) + f.pitch));
+				cp.set(cl.x + Math.cos(yaw) * Math.cos(pitch) * r, cl.y + Math.sin(pitch) * r, cl.z + Math.sin(yaw) * Math.cos(pitch) * r);
+			}
+		}
+		this.camera.position.copy(cp); this.camera.lookAt(cl);
 		this.sky.position.copy(this.camera.position);
 		this.sun.position.set(this.camera.position.x + 900, 120, this.camera.position.z - 500);
 		this.light.position.set(st.x + 60, st.y + 70, st.z || 40); this.light.target.position.set(st.x, st.y, 0); this.light.target.updateMatrixWorld();
