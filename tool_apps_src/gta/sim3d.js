@@ -36,7 +36,8 @@
 		this.orb = { yaw: -0.7, pitch: 0.25, dist: 16 }; this.free = { yaw: 0, pitch: 0, zoom: 1, on: false }; var ptr = {}, moved = 0;
 		var d = R.domElement;
 		function big() { return !!d.closest(".is-fill, .is-fs") || !!document.fullscreenElement; }
-		function zoomBy(k) { if (self.mode === "orbit") self.orb.dist = Math.max(5, Math.min(120, self.orb.dist * k)); else if (self.mode !== "driver") { self.free.zoom = Math.max(0.25, Math.min(6, self.free.zoom * k)); self.setFree(); } self.redraw(); }
+		function zoomBy(k) { if (self.mode === "orbit") self.orb.dist = Math.max(5, Math.min(120, self.orb.dist * k)); else if (self.mode === "driver") { self.free.zoom = Math.max(0.55, Math.min(1.55, self.free.zoom * k)); self.setFree(); } /* driver's seat: zoom = field of view (wider shows the wheel and dash) */
+			else { self.free.zoom = Math.max(0.25, Math.min(6, self.free.zoom * k)); self.setFree(); } self.redraw(); }
 		d.addEventListener("pointerdown", function (e) { ptr[e.pointerId] = [e.clientX, e.clientY]; moved = 0; self.dragged = false; try { d.setPointerCapture(e.pointerId); } catch (x) { /* ignore */ } });
 		d.addEventListener("pointermove", function (e) {
 			var p = ptr[e.pointerId]; if (!p) return;
@@ -53,6 +54,7 @@
 		d.addEventListener("pointerup", up); d.addEventListener("pointercancel", up);
 		d.addEventListener("wheel", function (e) { if (self.mode !== "orbit" && !big() && !e.ctrlKey) return; e.preventDefault(); zoomBy(Math.exp(e.deltaY * 0.001)); }, { passive: false });
 		d.addEventListener("dblclick", function () { self.resetFree(); });
+		this.zoomBy = zoomBy;
 		this.buildWorld();
 	}
 	View.prototype.canvas = function () { return this.renderer.domElement; };
@@ -308,7 +310,7 @@
 		var car = new THREE.Vector3(st.x, st.y, 0), pos = new THREE.Vector3(), look = new THREE.Vector3(), air = st.state === "air" || (sim.ev.takeoff && !sim.ev.land && st.x > this.co.lip.x);
 		var m = mode, ckMode = o.cockpit || "full", ckOn = m === "driver" && ckMode !== "off", ck = this.ck;
 		if (ck) { ck.g.visible = ckOn; ck.full.visible = ckMode === "full"; if (ckOn && ckMode === "full") { this.paintGauge(st.sp || 0, st.g == null ? 1 : st.g, !!o.mph); ck.steer.rotation.x = Math.max(-0.25, Math.min(0.25, ((st.g || 1) - 1.5) * 0.02)) * Math.sin(st.t * 38); } }
-		var fov = ckOn ? 70 : 55; if (this.camera.fov !== fov) { this.camera.fov = fov; this.camera.updateProjectionMatrix(); }
+		var fov = ckOn ? 70 : 55; if (m === "driver" && this.free.on) fov = Math.max(36, Math.min(108, fov * this.free.zoom)); if (this.camera.fov !== fov) { this.camera.fov = fov; this.camera.updateProjectionMatrix(); }
 		if (m === "auto") m = air ? "auto-air" : sim.ev.land && st.state !== "approach" ? "chase" : "chase";
 		if (m === "chase") { pos.set(st.x - 9 - veh.len, st.y + 3.2 + veh.ht * 0.6, 5.5); look.set(st.x + 8, st.y + 0.6, 0); }
 		else if (m === "auto-air") { var a = 0.9 + Math.min(1.2, (st.t - (sim.ev.takeoff ? sim.ev.takeoff.t : st.t)) * 0.35); pos.set(st.x - Math.cos(a) * 16, st.y + 3.5, Math.sin(a) * 16 + 2); look.set(st.x + 4, st.y, 0); }

@@ -648,6 +648,9 @@
 		else if (e.code === "KeyF") { e.preventDefault(); $("gj-fs").click(); }
 		else if (e.code === "Escape" && isFill() && !document.fullscreenElement) { e.preventDefault(); leaveFill(); }
 		else if (e.code === "KeyO") { $("gj-opt").click(); }
+		else if (S.view === "3d" && r3 && (e.code === "Minus" || e.code === "NumpadSubtract")) { e.preventDefault(); r3.zoomBy(1.1); } /* - = zoom out (wider) */
+		else if (S.view === "3d" && r3 && (e.code === "Equal" || e.code === "NumpadAdd")) { e.preventDefault(); r3.zoomBy(1 / 1.1); }
+		else if (S.view === "3d" && r3 && e.code === "Digit0") { e.preventDefault(); r3.resetFree(); }
 	});
 	document.addEventListener("keyup", function (e) { if (KM[e.code]) keys[KM[e.code]] = 0; });
 	window.addEventListener("blur", function () { keys = { gas: 0, brake: 0, tl: 0, tr: 0 }; touch = { gas: 0, brake: 0, tl: 0, tr: 0 }; });
