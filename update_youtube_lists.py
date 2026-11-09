@@ -5,6 +5,8 @@
   * https://www.youtube.com/@mestruth/videos       -> mes.fm/math/youtube-mestruth-videos.json (page mes.fm/youtube-mestruth, same build)
   * playlist PLai3U8-WIK0FfZ_7hUuyO7xN8lp5oaDiu    -> mes.fm/experiments/draft-videos.json (page mes.fm/experiments-draft, mes.fm/experiments/build.mjs;
                                                       an unlisted "DRAFT experiments" playlist)
+  * playlist PLai3U8-WIK0HdmnNqdqxhSSd5jNSUtvKk    -> mes.fm/math/djw-youtube-videos.json  (page mes.fm/djw-youtube, mes.fm/math/build.mjs;
+                                                      the unlisted DJW playlist, playlist order; the page is noindex)
 
 Per video: id, title, duration (seconds), views. Order is YouTube's own, newest first (channel Videos tab; the draft playlist is kept newest first
 too, which was checked on 2026-10-09). Private / deleted entries are dropped. The build scripts run offline from these snapshots, so after new
@@ -14,7 +16,7 @@ uploads:
     cd mes.fm/math && npm run build              # then diff, and `git checkout math/link-meta.json`
     cd mes.fm/experiments && npm run build
 
-Dry-runs by default (prints counts and what changed); --apply writes. --only=mes,mestruth,draft limits it to those lists.
+Dry-runs by default (prints counts and what changed); --apply writes. --only=mes,mestruth,draft,djw limits it to those lists.
 """
 import json
 import pathlib
@@ -27,6 +29,7 @@ LISTS = [
     ("mes", "https://www.youtube.com/@mes/videos", ROOT / "math" / "youtube-videos.json"),
     ("mestruth", "https://www.youtube.com/@mestruth/videos", ROOT / "math" / "youtube-mestruth-videos.json"),
     ("draft", "https://www.youtube.com/playlist?list=PLai3U8-WIK0FfZ_7hUuyO7xN8lp5oaDiu", ROOT / "experiments" / "draft-videos.json"),
+    ("djw", "https://www.youtube.com/playlist?list=PLai3U8-WIK0HdmnNqdqxhSSd5jNSUtvKk", ROOT / "math" / "djw-youtube-videos.json"),
 ]
 
 

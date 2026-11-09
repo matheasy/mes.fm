@@ -124,6 +124,31 @@ const PAGES = [
     description:
       "Every video on the @mestruth YouTube channel (MES Truth) in one searchable list: 9/11 evidence and Dr. Judy Wood, the disinfo spooks, Pentagon and Shanksville, war and politics, health and censored documentaries. Search, filter by topic and sort by views or length.",
   },
+  {
+    // mes.fm/djw-youtube: every video of the unlisted DJW playlist PLai3U8-WIK0HdmnNqdqxhSSd5jNSUtvKk (snapshot djw-youtube-videos.json, playlist
+    // order, written by `python3 update_youtube_lists.py --only=djw --apply`). Part of the Dr. Judy Wood hub (mes.fm/djw, its own build.mjs, which
+    // has the tile). noindex = robots meta (plus the /djw* X-Robots-Tag header in vercel.json): the playlist is unlisted, so the page stays out of
+    // Google, the sitemap and the site search. No runtime top-up (that reads a channel feed, not a playlist): refresh the snapshot and rebuild.
+    slug: "djw-youtube",
+    sectionId: "djwYoutube",
+    noTile: true,
+    noindex: true,
+    tileLabel: "DJW YouTube Playlist",
+    brand: {
+      name: "Dr. Judy Wood",
+      home: "/djw",
+      logo: "https://mes.fm/img/djw-logo.jpg",
+      favicon: "https://mes.fm/img/djw-logo.jpg",
+      ogImage: "https://mes.fm/img/djw-logo-big.jpg",
+      tagline: "Posts, videos and the Space Shuttle Columbia exam problem.",
+      crumbs: [["/djw", "Dr. Judy Wood"]],
+      nav: [["/djw", "DJW"], ["/djw-posts", "Posts"], ["/djw-youtube", "YouTube"], ["/djw-columbia", "Columbia"]],
+      tab: 2,
+      titleSuffix: "Dr. Judy Wood",
+    },
+    description:
+      "Every video of the DJW YouTube playlist in one searchable list: Dr. Judy Wood's talks and interviews, Hurricane Erin, the disinfo spooks, the Hutchison Effect and cold fusion. Search, filter by topic and sort by views or length.",
+  },
   // Tile only (no page written): MES math tools, shown as small square-logo links in the "Calculators & Tools" section under the tiles (img/<logo>); img/<slug>-icon.jpg (900x600 share-image crops) is kept for use as big tiles.
   { slug: "latex", href: "/latex", logo: "latex-logo.png", iconVersion: 1, tileOnly: true, tileLabel: "LaTeX Render" },
   { slug: "symbols", href: "/symbols", logo: "symbols-logo.png", iconVersion: 1, tileOnly: true, tileLabel: "Math Symbols Copier" },
@@ -493,6 +518,52 @@ const TRUTH_TOPUP_HTML = topupScripts({
   section: "truthYoutube", source: "yt", ch: "mestruth", noun: "video", nouns: "videos", count: TRUTH_VIDEOS.length,
   known: TRUTH_VIDEOS.slice(0, 60).map((v) => v.id), cats: TRUTH_TOPUP_CATS,
   skip: { re: "^(?:MES Livestream \\d|MES Math Q\\/A \\d)", fl: "i" },
+});
+
+// ---------------------------------------------------------------------------
+// mes.fm/djw-youtube: the unlisted DJW playlist (djw-youtube-videos.json, playlist order), same markup as mes.fm/youtube-mestruth, own topics.
+// ---------------------------------------------------------------------------
+const DJW_CATEGORIES = [
+  { id: "wood", label: "Dr. Judy Wood", test: (t) => /judy wood|\bdjw\b|wdttg|where did the towers go|new horizons/i.test(t) },
+  { id: "erin", label: "Hurricane Erin & Weather", test: (t) => /hurricane|tornado|ball lightning|fujita|weather|magnetic field/i.test(t) },
+  { id: "dew", label: "DEW & Dustification", test: (t) => /directed energy|\bdew\b|dustif|toasted|rolled up carpet|evaporated|thermite|spire|tipping top|alka-seltzer|mini-tornado|mystery object|shiny orange|plasma/i.test(t) },
+  { id: "spooks", label: "Disinfo Spooks", test: (t) => /disinfo|gage|fetzer|chandler|steven jones|\bjones\b|tarpley|hughes|jonathan cole|coste|clown|ae911/i.test(t) },
+  { id: "bg", label: "Bob Greenyer", test: (t) => /greenyer/i.test(t) },
+  { id: "jrh", label: "Jackson Rip Holmes", test: (t) => /jackson rip holmes/i.test(t) },
+  { id: "pent", label: "Pentagon & Planes", test: (t) => /pentagon|plane|missile|impact flash|mayday|british airways|ntsb|handschuh|fremson/i.test(t) },
+  { id: "s911", label: "9/11 Evidence", test: (t) => /9\/11|9 11|911|\bwtc\b|tower|ground zero|sonnenfeld|building 6|millennium hilton|bethlehem steel|bathtub/i.test(t) },
+  { id: "sci", label: "Hutchison, Cold Fusion & Science", test: (t) => /hutchison|cold fusion|fleischmann|bearden|tesla|aharonov|scalar|over-unity|gyro|matter wave|laser|hologra|fog image|moon|smarter every day|krivit/i.test(t) },
+  { id: "media", label: "Media & Interviews", test: (t) => /tucker|coast to coast|joyce riley|theo chalmers|charlie rose|jon snow|clyde lewis|alex jones|kim hill|pbd|patrick bet|interview|show|livestream|trailer|yeadon|geraldo|senator|perry mason|corriher/i.test(t) },
+  { id: "animals", label: "Animals & Everyday", test: (t) => /chicken|chick\b|rooster|falcon|bird|albatross|geese|squirrel|rabbit|cat fishing|flower|pest|chloe|ants?\b|soccer/i.test(t) },
+];
+const DJW_VIDEOS = JSON.parse(readFileSync(join(__dirname, "djw-youtube-videos.json"), "utf8"));
+SECTIONS.push({
+  id: "djwYoutube",
+  thumbAlt: true,
+  title: "DJW YouTube Playlist",
+  compactList: true,
+  sortable: true,
+  big: true,
+  filter: [...DJW_CATEGORIES, { id: "other", label: "Everything else" }],
+  filterPlaceholder: `Search all ${DJW_VIDEOS.length.toLocaleString("en-US")} videos\u2026`,
+  items: [
+    { href: "https://www.youtube.com/playlist?list=PLai3U8-WIK0HdmnNqdqxhSSd5jNSUtvKk", title: "DJW playlist on YouTube", standalone: true },
+    ...DJW_VIDEOS.map((v, i) => {
+      const cats = DJW_CATEGORIES.filter((c) => c.test(v.title)).map((c) => c.id);
+      const yt = `https://www.youtube.com/watch?v=${v.id}&list=PLai3U8-WIK0HdmnNqdqxhSSd5jNSUtvKk`;
+      return {
+        href: yt,
+        links: [{ label: "YouTube", href: yt }],
+        title: v.title,
+        image: `https://i.ytimg.com/vi/${v.id}/hqdefault.jpg`,
+        yt: v.id,
+        listThumb: true,
+        meta: `${fmtDuration(v.dur)} \u00b7 ${fmtViews(v.views)}`,
+        sortKeys: { i, v: v.views, d: v.dur },
+        cats: (cats.length ? cats : ["other"]).join(" "),
+      };
+    }),
+  ],
 });
 
 const FILTER_CSS = `/* Search box + category chips (same look as the chips on mes.fm/calculators). */
@@ -1108,7 +1179,7 @@ function buildPage(meta, page) {
 <html lang="en">
 <!-- Added by HTTrack --><meta http-equiv="content-type" content="text/html;charset=UTF-8" /><!-- /Added by HTTrack -->
 <head>
-  ${B.favicon}
+  ${B.favicon}${page.noindex ? '\n  <meta name="robots" content="noindex, nofollow, noimageindex" />' : ""}
   <link rel="canonical" href="${CANONICAL}" />
   <title>${escapeHtml(pageTitle)} | ${B.suffix}</title>
   <meta charset="UTF-8">
@@ -2717,14 +2788,14 @@ var MES_Vars = {
     mobile:false,
     hide_search:false,
     current_tab:1,
-    info_bar_tab:0
+    info_bar_tab:${page.brand && page.brand.tab != null ? page.brand.tab : 0}
 }
 </script>
 <script src="/main_js/lazysizes.min.js?v=1.0.3" async></script>
 <script src="/main_js/main.js?v=1.0.3"></script>
 <script>document.getElementById('copyright-year').textContent = new Date().getFullYear();</script>
 <!-- PAGEVIEW-TRACKING-INSERTED --><script src="/main_js/track.js" defer></script><script src="/main_js/info-bar-fit.js" defer></script>
-${page.sectionId === "mathYoutube" ? YT_TOPUP_HTML + "\n" + '<script src="/main_js/yt-thumbs.js?v=1" defer></script>' + "\n" : ""}${page.sectionId === "truthYoutube" ? TRUTH_TOPUP_HTML + "\n" + '<script src="/main_js/yt-thumbs.js?v=1" defer></script>' + "\n" : ""}<script src="/main_js/site-search.js?v=1" defer></script><!-- HUB-THEATRE-JS --><script src="/main_js/hub-theatre.js?v=1" defer></script><!-- /HUB-THEATRE-JS -->${hasLinkPref ? LP_SCRIPT : ""}</body>
+${page.sectionId === "mathYoutube" ? YT_TOPUP_HTML + "\n" + '<script src="/main_js/yt-thumbs.js?v=1" defer></script>' + "\n" : ""}${page.sectionId === "djwYoutube" ? '<script src="/main_js/yt-thumbs.js?v=1" defer></script>' + "\n" : ""}${page.sectionId === "truthYoutube" ? TRUTH_TOPUP_HTML + "\n" + '<script src="/main_js/yt-thumbs.js?v=1" defer></script>' + "\n" : ""}<script src="/main_js/site-search.js?v=1" defer></script><!-- HUB-THEATRE-JS --><script src="/main_js/hub-theatre.js?v=1" defer></script><!-- /HUB-THEATRE-JS -->${hasLinkPref ? LP_SCRIPT : ""}</body>
 </html>
 `;
 }

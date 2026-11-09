@@ -1,12 +1,9 @@
 {
-  "name": "djw-post-builder",
+  "name": "mes-djw-builder",
   "private": true,
-  "description": "Build-time generator for mes.fm/djw — fetches a Hive post via the bridge API and writes static index.html. Not deployed; run manually before committing.",
+  "description": "Build-time generator for the Dr. Judy Wood hub mes.fm/djw. Not deployed; run manually before committing.",
   "type": "module",
   "scripts": {
     "build": "node build.mjs"
-  },
-  "dependencies": {
-    "marked": "^15.0.0"
   }
 }
