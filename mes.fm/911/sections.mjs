@@ -18,7 +18,7 @@ export const SECTIONS = [
     id: "911-posts",
     title: "Posts",
     items: [
-      { href: "https://mes.fm/spooks-news-nov-2026", title: "Let's Check Up on Spooky News (November 2026)" },
+      { href: "https://mes.fm/spooks-news-nov-2026", title: "Spooky News Checkup: Ashton Forbes, 9/11 Revisionist, Off-Guardian wildin'" },
       { href: "https://mes.fm/judy-wood-rebuttal", title: "Dr. Judy Wood's Rebuttal to All the “Debunkers”", who: "judy" },
       { href: "https://mes.fm/david-hughes-fetzer-2.0", title: "Dear Dr. David A. Fetzer...", who: "judy" },
       { href: "https://mes.fm/911planesresearch-telegram", title: "Mark Conlon aka 9/11 Planes Research Is Back with a New Telegram Channel" },
