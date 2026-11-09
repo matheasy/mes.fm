@@ -1136,5 +1136,23 @@
       }
     ],
     "namedLinks": []
+  },
+  "https://mes.fm/spooks-news-nov-2026": {
+    "image": "https://mes.fm/spooks-news-nov-2026/img/spooks-news-og.jpg",
+    "watchLinks": [],
+    "namedLinks": [
+      {
+        "label": "Hive",
+        "href": "https://inleo.io/@mestruth/spooks-news-nov-2026"
+      },
+      {
+        "label": "Telegram",
+        "href": "https://t.me/meslinks/35689"
+      },
+      {
+        "label": "Telegram 2",
+        "href": "https://t.me/meslinks/35698"
+      }
+    ]
   }
 }

@@ -15,6 +15,7 @@ export const SECTIONS = [
     id: "conspiracy-posts",
     title: "Posts",
     items: [
+  { href: "https://mes.fm/spooks-news-nov-2026", title: "Let's Check Up on Spooky News (November 2026)" },
   { href: "https://mes.fm/telegram-database", title: "Made a Sortable Database of All My Telegram Posts (26,000+ and Counting) 🤯💯" },
   { href: "https://mes.fm/projectbluebeam-news-nov-2026", title: "Project Blue Beam News: Politics talkin' UFOs and Aliens 🛸👽" },
   { href: "https://mes.fm/richmond-elections-sticker-2026", title: "Local Elections Requiring a Mandatory Mark of the BC, Canada Voting Sticker" },
