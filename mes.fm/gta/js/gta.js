@@ -762,6 +762,7 @@
 			var roofF = sh.roof.reduce(function (b, p) { return p[0] > b[0] ? p : b; }, sh.roof[0] || [0.5, e[1] + 0.2]);
 			var fwd = sh.pts.filter(function (p) { return p[0] > roofF[0] + 0.05 && p[1] < roofF[1] - 0.05; }).sort(function (a, b) { return a[0] - b[0]; });
 			var cowl = fwd[0] || [roofF[0] + 0.8, roofF[1] - 0.5], hw = w / 2 - 0.1;
+			e[0] = Math.min(e[0], cowl[0] - 0.75); /* sit far enough behind the windshield base for a dash (the muscle car's cabin is set back) */
 			/* A-pillars, roof header, liner, glass, mirror */
 			[-hw, hw].forEach(function (z) { bar(ck.glass, cowl, roofF, z, 0.07, 0.1, trim); });
 			box(ck.glass, 0.16, 0.09, w - 0.14, roofF[0] - 0.06, roofF[1] - 0.07, 0, trim);
@@ -826,7 +827,7 @@
 		if (m === "chase") { pos.set(st.x - 9 - veh.len, st.y + 3.2 + veh.ht * 0.6, 5.5); look.set(st.x + 8, st.y + 0.6, 0); }
 		else if (m === "auto-air") { var a = 0.9 + Math.min(1.2, (st.t - (sim.ev.takeoff ? sim.ev.takeoff.t : st.t)) * 0.35); pos.set(st.x - Math.cos(a) * 16, st.y + 3.5, Math.sin(a) * 16 + 2); look.set(st.x + 4, st.y, 0); }
 		else if (m === "side") { pos.set(st.x + 3, st.y + 2.5, 24); look.set(st.x + 3, st.y + 0.5, 0); }
-		else if (m === "driver") { var hx = veh.bike ? 0.1 : 0.2, hy = veh.ht - veh.hcg - (veh.bike ? -0.05 : 0.22), dn = ckOn ? 0.17 : 0; pos.set(st.x + hx * cs - hy * sn, st.y + hx * sn + hy * cs, veh.bike ? 0 : -0.35); look.set(pos.x + 20 * Math.cos(st.th - dn), pos.y + 20 * Math.sin(st.th - dn), pos.z); }
+		else if (m === "driver") { var hx = ck && ck.eye ? ck.eye[0] : veh.bike ? 0.1 : 0.2, hy = veh.ht - veh.hcg - (veh.bike ? -0.05 : 0.22), dn = ckOn ? 0.17 : 0; pos.set(st.x + hx * cs - hy * sn, st.y + hx * sn + hy * cs, veh.bike ? 0 : -0.35); look.set(pos.x + 20 * Math.cos(st.th - dn), pos.y + 20 * Math.sin(st.th - dn), pos.z); }
 		else if (m === "landing") { var lz = this.co.zone[0] + 6, gy = window.MESGTA.groundAt(this.co, lz).y; pos.set(lz, Math.max(gy, 0) + 2.2, 13); look.copy(car); }
 		else { var ob = this.orb; pos.set(st.x + Math.cos(ob.yaw) * Math.cos(ob.pitch) * ob.dist, st.y + Math.sin(ob.pitch) * ob.dist + 0.5, Math.sin(ob.yaw) * Math.cos(ob.pitch) * ob.dist); look.copy(car); }
 		if (o.snap || m === "driver" || m === "orbit") { this.camPos.copy(pos); this.camLook.copy(look); }
