@@ -123,7 +123,9 @@ function eq(a, b, msg) { ok(JSON.stringify(a) === JSON.stringify(b), msg + ' -> 
   calls.length = 0; res = fakeRes();
   await API({ query: {} }, res);
   ok(res.code === 200 && res.body.channel === 'mes', 'api default channel');
-  for (const bad of ['https://evil.example/feed', 'UCUUBq1GPBvvGNz7dpgO14Ow', '__proto__', 'constructor', 'toString']) {
+  eq(res.body.title, 'Math Easy Solutions', 'api channel title from the feed');
+  ok(API.validKey('UCUUBq1GPBvvGNz7dpgO14Ow') && API.validKey('@some.channel_1') && !API.validKey('@x') && !API.validKey('@a/b') && !API.validKey('UC123'), 'validKey patterns');
+  for (const bad of ['https://evil.example/feed', 'UCUUBq1GPBvvGNz7dpgO14O', '@../x', '@a b c', '__proto__', 'constructor', 'toString']) {
     calls.length = 0; res = fakeRes();
     await API({ query: { ch: bad } }, res);
     ok(res.code === 400 && calls.length === 0 && res.headers['Cache-Control'] === 'no-store', 'api refuses ch=' + bad + ' without fetching');

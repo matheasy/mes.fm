@@ -34,14 +34,25 @@
 	W.key = function (it) { return it.k + ":" + (it.id || it.u); };
 	/* text with any number of links (lines, spaces, commas) -> {items, errors}; duplicates dropped */
 	W.parseMany = function (text) {
-		var parts = String(text || "").split(/[\s,]+/).filter(function (x) { return /[./]/.test(x); }), seen = {}, items = [], errors = [], lists = [];
+		var parts = String(text || "").split(/[\s,]+/).filter(function (x) { return /[./]/.test(x) || /^@[A-Za-z0-9._-]{3,30}$/.test(x); }), seen = {}, items = [], errors = [], lists = [];
+		var chans = [];
 		parts.forEach(function (p) {
+			var ch = W.channelRef(p); if (ch) { if (chans.indexOf(ch) < 0) chans.push(ch); return; }
 			var pl = W.playlistId(p);
 			if (pl && lists.indexOf(pl) < 0) lists.push(pl);
 			if (pl && !/[?&]v=|youtu\.be\/[\w-]{6}/.test(p)) return;   // a playlist page: its videos come from YouTube later
 			var it = W.item(p); if (it.err) { errors.push({ text: p, reason: it.err }); return; } if (seen[it.key]) return; seen[it.key] = 1; items.push(it);
 		});
-		return { items: items, errors: errors, playlists: lists };
+		return { items: items, errors: errors, playlists: lists, channels: chans };
+	};
+	/* a YouTube channel in a link or as @handle -> the key /api/yt-latest takes ("@name" or "UC..."), else "" */
+	W.channelRef = function (text) {
+		var t = String(text || "").trim(), m;
+		if ((m = /^@([A-Za-z0-9._-]{3,30})$/.exec(t))) return "@" + m[1];
+		if (!/^(https?:\/\/)?([\w-]+\.)?youtube\.com\//i.test(t)) return "";
+		if ((m = /youtube\.com\/@([A-Za-z0-9._-]{3,30})(?:[\/?#]|$)/i.exec(t))) return "@" + m[1];
+		if ((m = /youtube\.com\/channel\/(UC[A-Za-z0-9_-]{22})(?:[\/?#]|$)/i.exec(t))) return m[1];
+		return "";
 	};
 	/* YouTube playlist id in a link (list=PL..., OLAK..., UU...), or "" (radio mixes RD... are endless, so left out) */
 	W.playlistId = function (text) {

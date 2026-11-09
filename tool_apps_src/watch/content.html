@@ -9,9 +9,11 @@
 				<button type="button" class="tu-btn tu-btn--ghost" id="wt-sadd">☆ Save for later</button>
 				<span class="wt-msg" id="wt-msg" role="status" aria-live="polite"></span>
 			</div>
-			<div class="wt-mes"><span>Latest from MES:</span>
+			<div class="wt-mes" id="wt-chans"><span>Latest from:</span>
 				<button type="button" class="wt-chip" data-ch="mes">Math Easy Solutions</button>
 				<button type="button" class="wt-chip" data-ch="mestruth">MES Truth</button>
+				<span id="wt-mychans" class="wt-mychans"></span>
+				<button type="button" class="wt-chip wt-chip--add" id="wt-chadd" title="Add any YouTube channel: paste its link or @handle">+ Channel</button>
 			</div>
 			<div class="wt-latest" id="wt-latest" hidden></div>
 		</form>
@@ -33,7 +35,7 @@
 				<span class="wt-pbtns" id="wt-pbtns"></span>
 			</div>
 			<div class="wt-stage" id="wt-stage">
-				<div class="wt-empty" id="wt-empty"><b>Nothing playing yet.</b><span>Paste a link above, or pick something from <em>Latest from MES</em>.</span></div>
+				<div class="wt-empty" id="wt-empty"><b>Nothing playing yet.</b><span>Paste a link above, or pick something from <em>Latest from</em>.</span></div>
 			</div>
 			<div class="wt-meta">
 				<div class="wt-title" id="wt-title"></div>
@@ -74,6 +76,8 @@
 			</dl>
 			<h3>Playlists</h3>
 			<p>Paste a YouTube playlist link (one with <em>list=</em> in it) and its videos are added, and kept under <em>My playlists</em> with the playlist's name. You can also build your own: press <em>+ List</em> under the video to add it to a playlist, or <em>+ New playlist from Up next</em>. Mix YouTube, 3Speak, Odysee and Rumble videos in the same playlist. YouTube sends at most 200 videos of a playlist this way.</p>
+			<h3>Latest videos from any channel</h3>
+			<p>Press <em>+ Channel</em> and paste a YouTube channel link (youtube.com/@name) or just @name, or paste the channel link in the box above. It gets its own chip under <em>Latest from</em> showing its 15 newest uploads (newest first; tick <em>Shorts</em> to include them). Add them all to Up next, or keep them as one of your playlists. Your channels are kept in this browser only; × on a chip removes it.</p>
 			<h3>Zoom and full screen</h3>
 			<p>Pinch the video with two fingers (or Ctrl + scroll on a computer), and drag to move around, up to 400%. Double-tap goes to <em>Fill</em> and back; one tap plays or pauses. The player's own control bar at the bottom still works. The <em>Zoom</em> button (or Z) adds − / + buttons. <em>Fill</em> crops the black bars so the picture fills a wide phone screen. For zoom in full screen, use the page's own <em>Full screen</em> or <em>Fill window</em> button above the video rather than the player's own full-screen button.</p>
 			<h3>Keyboard shortcuts</h3>

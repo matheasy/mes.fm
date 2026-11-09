@@ -5,8 +5,10 @@
 //
 // Source: the channel's public RSS feed (https://www.youtube.com/feeds/videos.xml?channel_id=...), no API key. The feed also lists Shorts,
 // which the snapshot (the channel's Videos tab) does not: each entry is checked once with a HEAD-style request to /shorts/<id> (200 = a Short,
-// 303 to /watch = a normal video), a failed check counts as "not a Short". Nothing from the client reaches a URL except `ch`, and only as a key
-// into the fixed CHANNELS table below, so this cannot be used as a proxy. A good answer is edge-cached for an hour (stale for a day while it
+// 303 to /watch = a normal video), a failed check counts as "not a Short".
+// `ch` is a key of the fixed CHANNELS table, a channel id (UC + 22 characters) or a handle (@name, 3-30 letters / digits / . _ -), used by
+// mes.fm/watch's "Latest from" chips for any channel. Each is pattern-checked and only ever lands in a youtube.com address on a fixed path
+// (the feed, or the handle's channel page to look up its id), so this still cannot be used as a proxy. A good answer is edge-cached for an hour (stale for a day while it
 // revalidates); errors are never cached.
 const CHANNELS = {
   mes: 'UCUUBq1GPBvvGNz7dpgO14Ow',      // youtube.com/@mes (Math Easy Solutions)
@@ -51,21 +53,37 @@ async function isShort(id) {
   }
 }
 
+const RE_ID = /^UC[A-Za-z0-9_-]{22}$/, RE_HANDLE = /^@[A-Za-z0-9._-]{3,30}$/;
+function validKey(k) { return Object.prototype.hasOwnProperty.call(CHANNELS, k) || RE_ID.test(k) || RE_HANDLE.test(k); }
+
+// @handle -> UC id, from the handle's channel page (its canonical link / externalId)
+async function handleId(h) {
+  const res = await fetch('https://www.youtube.com/' + h, { headers: { 'User-Agent': UA, 'Accept-Language': 'en' } });
+  if (!res.ok) throw new Error('handle HTTP ' + res.status);
+  const html = await res.text();
+  const m = /<link rel="canonical" href="https:\/\/www\.youtube\.com\/channel\/(UC[A-Za-z0-9_-]{22})"/.exec(html) || /"externalId":"(UC[A-Za-z0-9_-]{22})"/.exec(html) || /"channelId":"(UC[A-Za-z0-9_-]{22})"/.exec(html);
+  if (!m) throw new Error('no channel id');
+  return m[1];
+}
+
 async function build(key) {
-  const id = CHANNELS[key];
+  const id = CHANNELS[key] || (RE_ID.test(key) ? key : await handleId(key));
   const res = await fetch('https://www.youtube.com/feeds/videos.xml?channel_id=' + id, { headers: { 'User-Agent': UA } });
   if (!res.ok) throw new Error('feed HTTP ' + res.status);
-  const items = parseFeed(await res.text());
+  const xml = await res.text();
+  const items = parseFeed(xml);
+  const head = String(xml).split('<entry>')[0];
+  const title = decode(((/<title>([\s\S]*?)<\/title>/.exec(head) || [])[1] || '').trim());
   const shorts = await Promise.all(items.map((v) => isShort(v.id)));
   items.forEach((v, i) => { v.short = shorts[i]; });
-  return { channel: key, fetched: new Date().toISOString(), items };
+  return { channel: key, id, title, fetched: new Date().toISOString(), items };
 }
 
 module.exports = async (req, res) => {
   const fail = (code, body) => { res.setHeader('Cache-Control', 'no-store'); res.status(code).json(body); };
   const q = (req && req.query) || {};
   const key = typeof q.ch === 'string' && q.ch ? q.ch : 'mes';
-  if (!Object.prototype.hasOwnProperty.call(CHANNELS, key)) return fail(400, { error: 'unknown channel' });
+  if (!validKey(key)) return fail(400, { error: 'unknown channel' });
   try {
     const data = await build(key);
     res.setHeader('Content-Type', 'application/json; charset=utf-8');
@@ -77,4 +95,5 @@ module.exports = async (req, res) => {
 };
 module.exports.parseFeed = parseFeed;
 module.exports.CHANNELS = CHANNELS;
+module.exports.validKey = validKey;
 module.exports.build = build;

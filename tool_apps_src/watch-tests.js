@@ -55,4 +55,8 @@ eq(W.clampZoom({ k: 2, x: 900, y: -900 }, 400, 225), { k: 2, x: 200, y: -112.5 }
 eq(W.clampZoom({ k: 0.5, x: 10 }, 400, 225), { k: 1, x: 0, y: 0 }, 'no zoom out below 1');
 eq(W.fillZoom(1600, 720), 1.25, 'fill a 20:9 screen');
 s = W.shareUrl('https://mes.fm/watch', [a[0]], 0, 'My list'); eq(W.fromQuery(s.split('?')[1]).name, 'My list', 'named list link');
+// channels
+eq(['@veritasium','https://www.youtube.com/@mes/videos','youtube.com/channel/UCUUBq1GPBvvGNz7dpgO14Ow','https://x.com/@mes','https://www.youtube.com/watch?v=dQw4w9WgXcQ','@a'].map(W.channelRef), ['@veritasium','@mes','UCUUBq1GPBvvGNz7dpgO14Ow','','',''], 'channelRef');
+let pc = W.parseMany('@veritasium https://youtu.be/dQw4w9WgXcQ youtube.com/@mes');
+eq([pc.channels, pc.items.length], [['@veritasium','@mes'], 1], 'parseMany channels');
 console.log('watch tests ok:', n);

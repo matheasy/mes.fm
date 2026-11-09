@@ -494,14 +494,25 @@
 	W.key = function (it) { return it.k + ":" + (it.id || it.u); };
 	/* text with any number of links (lines, spaces, commas) -> {items, errors}; duplicates dropped */
 	W.parseMany = function (text) {
-		var parts = String(text || "").split(/[\s,]+/).filter(function (x) { return /[./]/.test(x); }), seen = {}, items = [], errors = [], lists = [];
+		var parts = String(text || "").split(/[\s,]+/).filter(function (x) { return /[./]/.test(x) || /^@[A-Za-z0-9._-]{3,30}$/.test(x); }), seen = {}, items = [], errors = [], lists = [];
+		var chans = [];
 		parts.forEach(function (p) {
+			var ch = W.channelRef(p); if (ch) { if (chans.indexOf(ch) < 0) chans.push(ch); return; }
 			var pl = W.playlistId(p);
 			if (pl && lists.indexOf(pl) < 0) lists.push(pl);
 			if (pl && !/[?&]v=|youtu\.be\/[\w-]{6}/.test(p)) return;   // a playlist page: its videos come from YouTube later
 			var it = W.item(p); if (it.err) { errors.push({ text: p, reason: it.err }); return; } if (seen[it.key]) return; seen[it.key] = 1; items.push(it);
 		});
-		return { items: items, errors: errors, playlists: lists };
+		return { items: items, errors: errors, playlists: lists, channels: chans };
+	};
+	/* a YouTube channel in a link or as @handle -> the key /api/yt-latest takes ("@name" or "UC..."), else "" */
+	W.channelRef = function (text) {
+		var t = String(text || "").trim(), m;
+		if ((m = /^@([A-Za-z0-9._-]{3,30})$/.exec(t))) return "@" + m[1];
+		if (!/^(https?:\/\/)?([\w-]+\.)?youtube\.com\//i.test(t)) return "";
+		if ((m = /youtube\.com\/@([A-Za-z0-9._-]{3,30})(?:[\/?#]|$)/i.exec(t))) return "@" + m[1];
+		if ((m = /youtube\.com\/channel\/(UC[A-Za-z0-9_-]{22})(?:[\/?#]|$)/i.exec(t))) return m[1];
+		return "";
 	};
 	/* YouTube playlist id in a link (list=PL..., OLAK..., UU...), or "" (radio mixes RD... are endless, so left out) */
 	W.playlistId = function (text) {
@@ -592,7 +603,7 @@
 	'use strict';
 	var W = window.MESWatch, $ = function (id) { return document.getElementById(id); };
 	var KEY = 'mes-watch:v1', HLS_URL = 'https://cdn.jsdelivr.net/npm/hls.js@1.5.20/dist/hls.min.js';
-	var S = { q: [], i: -1, saved: [], hist: [], lists: [], rate: 1, tab: 'q', auto: true, priv: true, histOn: true, pz: true, pzHint: 0, zoom: { k: 1, x: 0, y: 0 } };
+	var S = { q: [], i: -1, saved: [], hist: [], lists: [], chans: [], shorts: false, rate: 1, tab: 'q', auto: true, priv: true, histOn: true, pz: true, pzHint: 0, zoom: { k: 1, x: 0, y: 0 } };
 	var openList = null;
 	try { var raw = JSON.parse(localStorage.getItem(KEY) || 'null'); if (raw) for (var k in S) if (raw[k] != null) S[k] = raw[k]; } catch (e) {}
 	function save() { try { localStorage.setItem(KEY, JSON.stringify(S)); } catch (e) {} }
@@ -803,6 +814,7 @@
 	function take(then) {
 		if (taking) return;
 		var r = W.parseMany($('wt-in').value);
+		if (r.channels.length) { r.channels.forEach(function (ch, i) { addChannel(ch, i === r.channels.length - 1); }); if (!r.items.length && !r.playlists.length) { $('wt-in').value = ''; grow(); msg(r.channels.length === 1 ? 'Channel added: its newest videos are below.' : r.channels.length + ' channels added.'); return; } }
 		if (!r.items.length && !r.playlists.length) { msg(r.errors.length ? r.errors[0].reason : 'Paste a video link first.'); return; }
 		var skipped = r.errors.length ? r.errors.length + ' link' + (r.errors.length > 1 ? 's' : '') + ' skipped (not a web link).' : '';
 		msg(skipped); $('wt-in').value = ''; grow();
@@ -862,27 +874,59 @@
 	$('wt-in').addEventListener('input', grow);
 	$('wt-in').addEventListener('keydown', function (e) { if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); $('wt-form').requestSubmit ? $('wt-form').requestSubmit() : $('wt-play').click(); } });
 
-	/* ---------- Latest from MES (the channels' RSS through /api/yt-latest) ---------- */
+	/* ---------- Latest from: the two MES channels + the person's own (any YouTube channel, through /api/yt-latest) ---------- */
 	var latestCh = null, latestCache = {};
-	document.querySelectorAll('.wt-chip[data-ch]').forEach(function (b) {
-		b.onclick = function () {
-			var ch = b.dataset.ch, box = $('wt-latest');
-			document.querySelectorAll('.wt-chip[data-ch]').forEach(function (x) { x.setAttribute('aria-pressed', String(x === b && latestCh !== ch)); });
-			if (latestCh === ch) { latestCh = null; box.hidden = true; return; }
-			latestCh = ch; box.hidden = false; box.innerHTML = '<p class="wt-loading">Loading…</p>';
-			(latestCache[ch] || (latestCache[ch] = fetch('/api/yt-latest?ch=' + ch).then(function (r) { if (!r.ok) throw new Error(); return r.json(); }))).then(function (j) {
-				if (latestCh !== ch) return;
-				var items = (j.items || []).filter(function (v) { return !v.short; }).map(function (v) { var it = W.item('https://www.youtube.com/watch?v=' + v.id); it.t = v.title; return it; });
-				if (!items.length) { box.innerHTML = '<p class="wt-loading">No videos found.</p>'; return; }
-				box.innerHTML = '<div class="wt-lhead"><b>' + items.length + ' newest videos</b><button type="button" class="tu-btn tu-btn--ghost" data-lall>+ Add all to Up next</button></div><div class="wt-lgrid">' +
-					items.map(function (it, i) { return '<button type="button" class="wt-lcard" data-li="' + i + '"><img alt="" loading="lazy" src="' + esc(it.th) + '"><span>' + esc(it.t) + '</span></button>'; }).join('') + '</div>';
-				box.onclick = function (e) {
-					var c = e.target.closest('[data-li]'); if (c) { var it = items[+c.dataset.li]; play(it); setTab('q'); $('wt-player').scrollIntoView({ behavior: 'smooth', block: 'start' }); return; }
-					if (e.target.closest('[data-lall]')) { S.q = W.add(S.q, items); save(); setTab('q'); showMeta(); toast('Added to Up next'); }
-				};
-			}).catch(function () { delete latestCache[ch]; if (latestCh === ch) box.innerHTML = '<p class="wt-loading">Could not load the list right now.</p>'; });
-		};
+	function latestOf(ch) {
+		return latestCache[ch] || (latestCache[ch] = fetch('/api/yt-latest?ch=' + encodeURIComponent(ch)).then(function (r) { if (!r.ok) throw new Error(r.status === 400 ? 'That is not a YouTube channel link.' : 'YouTube did not answer.'); return r.json(); }));
+	}
+	function chPath(ch, id) { return ch === 'mes' || ch === 'mestruth' ? '@' + ch : /^@/.test(ch) ? ch : 'channel/' + (id || ch); }
+	function renderChans() {
+		$('wt-mychans').innerHTML = S.chans.map(function (c) {
+			return '<span class="wt-chipw"><button type="button" class="wt-chip" data-ch="' + esc(c.k) + '" aria-pressed="' + (latestCh === c.k) + '">' + esc(c.n || c.k) + '</button><button type="button" class="wt-chipx" data-chx="' + esc(c.k) + '" title="Remove ' + esc(c.n || c.k) + '" aria-label="Remove ' + esc(c.n || c.k) + '">×</button></span>';
+		}).join('');
+		document.querySelectorAll('#wt-chans .wt-chip[data-ch]').forEach(function (x) { x.setAttribute('aria-pressed', String(x.dataset.ch === latestCh)); });
+	}
+	function addChannel(ch, open) {
+		var known = ch === 'mes' || ch === 'mestruth' || S.chans.some(function (c) { return c.k === ch; });
+		if (!known) { S.chans = S.chans.concat([{ k: ch, n: '' }]).slice(-30); save(); }
+		renderChans();
+		if (open) showLatest(ch, true);
+	}
+	function showLatest(ch, force) {
+		var box = $('wt-latest');
+		if (latestCh === ch && !force) { latestCh = null; box.hidden = true; renderChans(); return; }
+		latestCh = ch; box.hidden = false; box.innerHTML = '<p class="wt-loading">Loading…</p>'; renderChans();
+		latestOf(ch).then(function (j) {
+			if (latestCh !== ch) return;
+			var c = S.chans.filter(function (x) { return x.k === ch; })[0];
+			if (c && j.title && c.n !== j.title) { c.n = j.title; save(); renderChans(); }
+			var name = j.title || (c && c.n) || ch, all = j.items || [], nShort = all.filter(function (v) { return v.short; }).length;
+			var items = all.filter(function (v) { return S.shorts || !v.short; }).map(function (v) { var it = W.item('https://www.youtube.com/watch?v=' + v.id); it.t = v.title; return it; });
+			box.innerHTML = '<div class="wt-lhead"><b>' + esc(name) + ' · ' + items.length + ' newest</b><span class="wt-lbtns">' +
+				(nShort ? '<label class="wt-check"><input type="checkbox" data-lshorts' + (S.shorts ? ' checked' : '') + '> Shorts (' + nShort + ')</label>' : '') +
+				(items.length ? '<button type="button" class="tu-btn tu-btn--ghost" data-lall>+ Add all to Up next</button><button type="button" class="tu-btn tu-btn--ghost" data-lsave>Save as a playlist</button>' : '') +
+				'<a class="tu-btn tu-btn--ghost" href="https://www.youtube.com/' + esc(chPath(ch, j.id)) + '/videos" target="_blank" rel="noopener">All videos ↗&#xFE0E;</a></span></div>' +
+				(items.length ? '<div class="wt-lgrid">' + items.map(function (it, i) { return '<button type="button" class="wt-lcard" data-li="' + i + '"><img alt="" loading="lazy" src="' + esc(it.th) + '"><span>' + esc(it.t) + '</span></button>'; }).join('') + '</div>' : '<p class="wt-loading">' + (nShort ? 'Only Shorts lately: tick Shorts to see them.' : 'No videos found.') + '</p>');
+			box.onclick = function (e) {
+				var cd = e.target.closest('[data-li]'); if (cd) { play(items[+cd.dataset.li]); setTab('q'); $('wt-player').scrollIntoView({ behavior: 'smooth', block: 'start' }); return; }
+				if (e.target.closest('[data-lall]')) { S.q = W.add(S.q, items); save(); setTab('q'); showMeta(); toast(items.length + ' added to Up next'); }
+				if (e.target.closest('[data-lsave]')) { var l = W.newList(name + ' (newest)', items); S.lists.unshift(l); save(); openList = l.id; setTab('lists'); toast('Saved under My playlists'); }
+			};
+			box.onchange = function (e) { if (e.target.matches('[data-lshorts]')) { S.shorts = e.target.checked; save(); showLatest(ch, true); } };
+		}).catch(function (e) { delete latestCache[ch]; if (latestCh === ch) box.innerHTML = '<p class="wt-loading">' + esc((e && e.message) || 'Could not load the list right now.') + '</p>'; });
+	}
+	$('wt-chans').addEventListener('click', function (e) {
+		var x = e.target.closest('[data-chx]');
+		if (x) { var k = x.dataset.chx; S.chans = S.chans.filter(function (c) { return c.k !== k; }); save(); if (latestCh === k) { latestCh = null; $('wt-latest').hidden = true; } renderChans(); return; }
+		var b = e.target.closest('.wt-chip[data-ch]'); if (b) showLatest(b.dataset.ch);
 	});
+	$('wt-chadd').onclick = function () {
+		var t = prompt('Paste a YouTube channel link, or its @handle:', '@'); if (!t) return;
+		var ch = W.channelRef(t.trim()) || W.channelRef('@' + t.trim().replace(/^@/, ''));
+		if (!ch) { toast('That is not a YouTube channel link or @handle'); return; }
+		addChannel(ch, true);
+	};
+	renderChans();
 
 	/* ---------- lists ---------- */
 	function setTab(t) { if (t !== 'lists') openList = null; S.tab = t; save(); document.querySelectorAll('.wt-tab').forEach(function (b) { b.setAttribute('aria-selected', String(b.dataset.tab === t)); }); renderList(); }
