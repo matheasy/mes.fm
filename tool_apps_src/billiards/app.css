@@ -160,3 +160,11 @@
 		#bl .bl-shoot {min-width:6em;}
 		#bl .bl-pl {padding:0.3em 0.5em;}
 	}
+	/* 3D view */
+	#bl .bl-3d {position:relative;touch-action:none;user-select:none;-webkit-user-select:none;border-radius:8px;overflow:hidden;cursor:grab;}
+	#bl .bl-3d.is-aimpick {cursor:crosshair;}
+	#bl .bl-3d canvas {display:block;border-radius:8px;}
+	#bl .bl-3d .bl-3dmsg {position:absolute;inset:0;display:flex;align-items:center;justify-content:center;color:#ddd;font-weight:600;}
+	#bl .bl-dim button {min-height:38px;padding:0 0.8em;font-weight:700;}
+	#bl .bl-cam {min-height:38px;width:auto;font-size:0.88em;padding:0 0.5em;}
+	#bl .bl-3dhint {position:absolute;left:10px;bottom:10px;background:rgba(0,0,0,0.6);color:#fff;font-size:0.8em;padding:0.3em 0.7em;border-radius:999px;pointer-events:none;max-width:calc(100% - 20px);}

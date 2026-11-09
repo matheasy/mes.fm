@@ -30,7 +30,7 @@
 
 	/* ---------- saved settings ---------- */
 	var S = { game: "8", opp: "cpu", lv: "medium", me: "first", alt: 0, guide: "full", orient: "auto", speed: "1", cloth: "green", snd: true, rel: true, nums: false,
-		names: ["", ""], name: "", ofirst: "host", opub: true, cur: null, stats: {}, online: null, hive: null, saved: {}, chal: {}, power: 350 };
+		names: ["", ""], dim: "2d", cam: "auto", name: "", ofirst: "host", opub: true, cur: null, stats: {}, online: null, hive: null, saved: {}, chal: {}, power: 350 };
 	try { var saved = JSON.parse(localStorage.getItem(KEY) || "null"); if (saved) for (var k0 in saved) S[k0] = saved[k0]; } catch (e) {}
 	function save() { try { localStorage.setItem(KEY, JSON.stringify(S)); } catch (e) {} }
 
@@ -69,6 +69,7 @@
 		gen++; busy = false; anim = null; queue = []; cpuAim = null;
 		seed = newSeed();
 		st = B.create(S.game, seed) || B.create("8", seed);
+		if (v3) v3.resetRoll();
 		mode = effOpp();
 		if (mode === "cpu") {
 			if (!keepAlt && S.me === "alt") S.alt = 1 - (S.alt || 0);
@@ -215,6 +216,7 @@
 		} else s2 = B.replay(st.v, st.seed, h.slice(0, k));
 		if (!s2) return;
 		st = s2;
+		if (v3) v3.resetRoll();
 		resetAim();
 		storeCur();
 		toast("Shot taken back.");
@@ -251,6 +253,11 @@
 		cv.width = Math.round(w * dpr); cv.height = Math.round(h * dpr);
 		LY = { k: kk, w: w, h: h, dpr: dpr, up: up, cx: w / 2, cy: h / 2, cush: cush, wood: wood, T: T, Lo: Lo, Wo: Wo };
 		staticCv = null; sprites = {};
+		if (S.dim === "3d" && v3) {
+			var portrait = aw < 620 && window.innerHeight > window.innerWidth * 1.15;
+			var h3 = fill ? ah : Math.min(ah, Math.round(aw * (portrait ? 1.05 : 0.58)));
+			v3.size(Math.floor(aw), Math.floor(Math.max(200, h3)));
+		}
 		draw();
 	}
 	function w2s(x, y) { return LY.up ? [LY.cx + y * LY.k, LY.cy - x * LY.k] : [LY.cx + x * LY.k, LY.cy + y * LY.k]; }
@@ -355,8 +362,33 @@
 		var f = anim.frames, idx = anim.idx, i0 = Math.min(f.length - 1, Math.floor(idx)), i1 = Math.min(f.length - 1, i0 + 1), t = idx - Math.floor(idx);
 		return { a: f[i0], b: f[i1], t: i0 === i1 ? 0 : t };
 	}
+	function ballXY() {
+		var P = positions(), n = st.n, xs = [], ys = [], ons = [], i;
+		for (i = 0; i < n; i++) {
+			if (P) { var ax = P.a[i * 3], bx = P.b[i * 3]; xs.push(ax + (bx - ax) * P.t); ys.push(P.a[i * 3 + 1] + (P.b[i * 3 + 1] - P.a[i * 3 + 1]) * P.t); ons.push(P.t < 0.5 ? P.a[i * 3 + 2] : P.b[i * 3 + 2]); }
+			else if (anim && anim.pre) { xs.push(anim.pre[i * 3]); ys.push(anim.pre[i * 3 + 1]); ons.push(anim.pre[i * 3 + 2]); }
+			else { xs.push(st.x[i]); ys.push(st.y[i]); ons.push(st.on[i]); }
+		}
+		return { xs: xs, ys: ys, ons: ons };
+	}
+	function draw3() {
+		var P = ballXY(), xs = P.xs, ys = P.ys, ons = P.ons;
+		var aiming = !anim && (canShoot() || cpuAim);
+		if (aiming && st.bih && place) { xs[0] = place[0]; ys[0] = place[1]; ons[0] = 1; }
+		var c0 = [xs[0], ys[0]], d = B.dirOf(aim), info = { xs: xs, ys: ys, ons: ons, c0: c0, dir: [d.x, d.y], phase: anim ? "anim" : "aim" };
+		if (anim && anim.shotDir) { info.shotDir = anim.shotDir; info.shotC0 = anim.shotC0; }
+		if (aiming && (S.guide !== "off" || mode === "solo") && !cpuAim) info.guide = guideShapes(c0);
+		if ((aiming && ons[0]) || (anim && anim.strike !== undefined)) {
+			var pull = anim && anim.strike !== undefined ? (0.03 + 0.17 * power / 1000) * (1 - anim.strike) : 0.03 + 0.17 * power / 1000;
+			info.cue = { x: c0[0], y: c0[1], dx: d.x, dy: d.y, pull: pull };
+		}
+		if (aiming && st.bih && place) info.place = { x: place[0], y: place[1], ok: B.placeOk(st, place[0], place[1]) };
+		v3.setTable(st, S.cloth, S.nums);
+		v3.frame(info);
+	}
 	function draw() {
 		if (!LY || !st) return;
+		if (S.dim === "3d" && v3) return draw3();
 		if (!staticCv) buildStatic();
 		var g = ctx, k = LY.k, R = st.T.R;
 		g.setTransform(1, 0, 0, 1, 0, 0);
@@ -404,35 +436,37 @@
 			g.fillRect(Math.min(a[0], b[0]), Math.min(a[1], b[1]), Math.abs(a[0] - b[0]), Math.abs(a[1] - b[1]));
 		}
 	}
-	function drawGuide(g, c0) {
-		var d = B.dirOf(aim), gd = B.guide(st, c0[0], c0[1], d.x, d.y), R = st.T.R, k = LY.k, short = S.guide === "short" && mode !== "solo";
-		var maxLen = short ? 0.32 : 9;
-		var a = w2s(c0[0], c0[1]);
-		g.lineWidth = Math.max(1.2, 0.004 * k);
-		g.strokeStyle = "rgba(255,255,255,0.75)";
+	/* the aiming guide as plain shapes in table metres (drawn by the 2D canvas and by the 3D view):
+	   lines [x1, y1, x2, y2, colour, width (m), dashed], rings [x, y, r, colour, dashed] */
+	function guideShapes(c0) {
+		var d = B.dirOf(aim), gd = B.guide(st, c0[0], c0[1], d.x, d.y), R = st.T.R, short = S.guide === "short" && mode !== "solo";
+		var maxLen = short ? 0.32 : 9, out = { lines: [], rings: [] };
 		var endT = gd.kind === "none" ? 0.5 : Math.min(gd.t, maxLen);
-		var e = w2s(c0[0] + d.x * endT, c0[1] + d.y * endT);
-		g.setLineDash([6, 5]); g.beginPath(); g.moveTo(a[0], a[1]); g.lineTo(e[0], e[1]); g.stroke(); g.setLineDash([]);
+		out.lines.push([c0[0], c0[1], c0[0] + d.x * endT, c0[1] + d.y * endT, "rgba(255,255,255,0.75)", 0.004, true]);
 		if (gd.kind === "ball" && gd.t <= maxLen) {
 			var legal = B.targets(st).indexOf(gd.b) >= 0 || (st.brk && st.g.table === "pool");
-			var gp = w2s(gd.x, gd.y);
-			g.strokeStyle = legal ? "rgba(255,255,255,0.9)" : "#ff5c5c";
-			g.beginPath(); g.arc(gp[0], gp[1], R * k, 0, 7); g.stroke();
+			out.rings.push([gd.x, gd.y, R, legal ? "rgba(255,255,255,0.9)" : "#ff5c5c", false]);
 			if (!short) {
-				var ob = w2s(st.x[gd.b], st.y[gd.b]), ol = 0.18 + 0.75 * Math.max(0, gd.cut);
-				var oe = w2s(st.x[gd.b] + gd.ox * ol, st.y[gd.b] + gd.oy * ol);
-				g.strokeStyle = legal ? "rgba(255,240,120,0.95)" : "rgba(255,120,120,0.9)"; g.lineWidth = Math.max(1.5, 0.005 * k);
-				g.beginPath(); g.moveTo(ob[0], ob[1]); g.lineTo(oe[0], oe[1]); g.stroke();
-				var tl = 0.08 + 0.3 * Math.sqrt(Math.max(0, 1 - gd.cut * gd.cut)), te = w2s(gd.x + gd.tx * tl, gd.y + gd.ty * tl);
-				g.strokeStyle = "rgba(160,220,255,0.75)"; g.lineWidth = Math.max(1, 0.003 * k);
-				g.beginPath(); g.moveTo(gp[0], gp[1]); g.lineTo(te[0], te[1]); g.stroke();
+				var ol = 0.18 + 0.75 * Math.max(0, gd.cut);
+				out.lines.push([st.x[gd.b], st.y[gd.b], st.x[gd.b] + gd.ox * ol, st.y[gd.b] + gd.oy * ol, legal ? "rgba(255,240,120,0.95)" : "rgba(255,120,120,0.9)", 0.005, false]);
+				var tl = 0.08 + 0.3 * Math.sqrt(Math.max(0, 1 - gd.cut * gd.cut));
+				out.lines.push([gd.x, gd.y, gd.x + gd.tx * tl, gd.y + gd.ty * tl, "rgba(160,220,255,0.75)", 0.003, false]);
 			}
 		} else if (gd.kind === "rail" && !short) {
-			var rp = w2s(gd.x, gd.y), re = w2s(gd.x + gd.rx * 0.35, gd.y + gd.ry * 0.35);
-			g.strokeStyle = "rgba(255,255,255,0.45)"; g.setLineDash([3, 5]);
-			g.beginPath(); g.moveTo(rp[0], rp[1]); g.lineTo(re[0], re[1]); g.stroke(); g.setLineDash([]);
-			g.strokeStyle = "rgba(255,255,255,0.75)"; g.beginPath(); g.arc(rp[0], rp[1], R * k, 0, 7); g.stroke();
+			out.lines.push([gd.x, gd.y, gd.x + gd.rx * 0.35, gd.y + gd.ry * 0.35, "rgba(255,255,255,0.45)", 0.003, true]);
+			out.rings.push([gd.x, gd.y, R, "rgba(255,255,255,0.75)", false]);
 		}
+		return out;
+	}
+	function drawGuide(g, c0) {
+		var sh = guideShapes(c0), k = LY.k;
+		sh.lines.forEach(function (l) {
+			var a = w2s(l[0], l[1]), b = w2s(l[2], l[3]);
+			g.strokeStyle = l[4]; g.lineWidth = Math.max(1, l[5] * k); g.setLineDash(l[6] ? [6, 5] : []);
+			g.beginPath(); g.moveTo(a[0], a[1]); g.lineTo(b[0], b[1]); g.stroke();
+		});
+		g.setLineDash([]); g.lineWidth = Math.max(1.2, 0.004 * k);
+		sh.rings.forEach(function (r) { var p = w2s(r[0], r[1]); g.strokeStyle = r[3]; g.beginPath(); g.arc(p[0], p[1], r[2] * k, 0, 7); g.stroke(); });
 	}
 	function drawCue(g, c0) {
 		var d = B.dirOf(aim), R = st.T.R, k = LY.k;
@@ -462,6 +496,8 @@
 		var it = queue.shift();
 		if (!it) { anim = null; render(); draw(); return; }
 		anim = { frames: it.frames, ev: it.ev, done: it.done, idx: 0, evi: 0, strike: 0, t0: performance.now(), playing: false, pre: it.frames[0], item: it };
+		var f0 = it.frames[0], f2 = it.frames[Math.min(2, it.frames.length - 1)], ddx = f2[0] - f0[0], ddy = f2[1] - f0[1], dl = Math.sqrt(ddx * ddx + ddy * ddy);
+		if (dl > 1e-6) { anim.shotDir = [ddx / dl, ddy / dl]; anim.shotC0 = [f0[0], f0[1]]; }
 		power = power || 350;
 		var spd = +S.speed || 1;
 		var loop = function (now) {
@@ -528,6 +564,102 @@
 		else if (e.e === "rail") sound("rail", e.v / 3.5);
 		else if (e.e === "pot") sound("pot", 0.8);
 	}
+
+	/* ===================================================================== 3D view ===================================================================== */
+	var v3 = null, v3busy = false, box3 = $("bl-3d");
+	function setDim(d, quiet) {
+		if (d === "3d" && !window.BL3D) d = "2d";
+		S.dim = d; save(); segSet("bl-dim", d);
+		$("bl-cam").hidden = d !== "3d";
+		if (d === "2d") { box3.hidden = true; cv.hidden = false; relayout(); return; }
+		if (v3) { box3.hidden = false; cv.hidden = true; relayout(); return; }
+		if (v3busy) return;
+		v3busy = true;
+		box3.hidden = false; cv.hidden = true;
+		box3.style.width = (LY ? LY.w : 600) + "px"; box3.style.height = (LY ? LY.h : 330) + "px";
+		box3.innerHTML = '<div class="bl-3dmsg">Loading the 3D view…</div>';
+		window.BL3D.create(box3).then(function (v) {
+			v3busy = false; v3 = v;
+			var msg = box3.querySelector(".bl-3dmsg"); if (msg) msg.remove();
+			box3.style.width = box3.style.height = "";
+			v3.setCam(S.cam);
+			addHint();
+			relayout();
+		}, function (e) {
+			v3busy = false; box3.innerHTML = ""; box3.hidden = true; cv.hidden = false;
+			S.dim = "2d"; save(); segSet("bl-dim", "2d"); $("bl-cam").hidden = true;
+			if (!quiet) toast("The 3D view could not start (" + ((e && e.message) || "no WebGL") + "). Showing 2D.");
+			relayout();
+		});
+	}
+	function addHint() {
+		var h = document.createElement("div"); h.className = "bl-3dhint";
+		h.textContent = "Behind the cue: drag sideways to aim · other cameras: press where to aim · right-drag or two fingers: turn the camera · Ctrl + wheel / pinch: zoom";
+		box3.appendChild(h); setTimeout(function () { h.remove(); }, 7000);
+	}
+	segWire("bl-dim", function (v) { setDim(v); });
+	$("bl-cam").addEventListener("change", function () { S.cam = this.value; save(); if (v3) { v3.setCam(S.cam); draw(); } });
+	function cycleCam() { var o = ["auto", "behind", "overhead", "side", "orbit"], i = (o.indexOf(S.cam) + 1) % o.length; S.cam = o[i]; save(); $("bl-cam").value = S.cam; if (v3) { v3.setCam(S.cam); draw(); } }
+	function behindMode() { return S.cam === "behind" || S.cam === "auto"; }
+	var d3 = null, pts3 = {};
+	box3.addEventListener("contextmenu", function (e) { e.preventDefault(); });
+	box3.addEventListener("pointerdown", function (e) {
+		if (!v3) return;
+		ensureAudio();
+		pts3[e.pointerId] = [e.clientX, e.clientY];
+		box3.setPointerCapture(e.pointerId);
+		var ids = Object.keys(pts3);
+		if (ids.length === 2) { var a = pts3[ids[0]], b = pts3[ids[1]]; d3 = { kind: "two", dist: Math.hypot(a[0] - b[0], a[1] - b[1]), mx: (a[0] + b[0]) / 2, my: (a[1] + b[1]) / 2 }; return; }
+		if (anim) { skipAnim(); d3 = null; return; }
+		if (e.button === 2 || e.shiftKey || !canShoot()) { d3 = { kind: "orbit", x: e.clientX, y: e.clientY }; return; }
+		var w = v3.pick(e.clientX, e.clientY), c = cueXY();
+		if (st.bih && w && Math.hypot(w[0] - c[0], w[1] - c[1]) < st.T.R * 3) { d3 = { kind: "ball", ox: c[0] - w[0], oy: c[1] - w[1] }; return; }
+		if (behindMode() && S.cam !== "orbit") { d3 = { kind: "turn", x: e.clientX, y: e.clientY, a0: aim, moved: false, w: w }; return; }
+		var onTable = w && Math.abs(w[0]) < st.T.L / 2 + 0.2 && Math.abs(w[1]) < st.T.W / 2 + 0.2;
+		if (onTable) { d3 = { kind: "aim" }; setAimTo(w); }
+		else d3 = { kind: "orbit", x: e.clientX, y: e.clientY };
+		e.preventDefault();
+	});
+	box3.addEventListener("pointermove", function (e) {
+		if (!v3 || !pts3[e.pointerId]) return;
+		pts3[e.pointerId] = [e.clientX, e.clientY];
+		if (!d3) return;
+		if (d3.kind === "two") {
+			var ids = Object.keys(pts3); if (ids.length < 2) return;
+			var a = pts3[ids[0]], b = pts3[ids[1]], dist = Math.hypot(a[0] - b[0], a[1] - b[1]), mx = (a[0] + b[0]) / 2, my = (a[1] + b[1]) / 2;
+			if (d3.dist > 10) v3.zoom(d3.dist / Math.max(10, dist));
+			v3.orbit(mx - d3.mx, my - d3.my); syncCamSel();
+			d3.dist = dist; d3.mx = mx; d3.my = my; draw(); return;
+		}
+		if (d3.kind === "orbit") { v3.orbit(e.clientX - d3.x, e.clientY - d3.y); d3.x = e.clientX; d3.y = e.clientY; syncCamSel(); draw(); return; }
+		if (d3.kind === "ball") { var w = v3.pick(e.clientX, e.clientY); if (w) { place = clampPlace(w[0] + d3.ox, w[1] + d3.oy); draw(); } return; }
+		if (d3.kind === "turn") {
+			var dx = e.clientX - d3.x;
+			if (Math.abs(dx) > 4) d3.moved = true;
+			var per = (e.altKey ? 0.02 : 0.12) * 10000 * (d3.fine ? 0.25 : 1);
+			aim = (((d3.a0 + Math.round(dx * per)) % 3600000) + 3600000) % 3600000; renderAim(); draw(); return;
+		}
+		if (d3.kind === "aim") { var w2 = v3.pick(e.clientX, e.clientY); if (w2) setAimTo(w2); }
+	});
+	function end3(e) {
+		delete pts3[e.pointerId];
+		if (d3 && d3.kind === "turn" && !d3.moved && d3.w) {
+			// a tap on a ball aims straight at it
+			var w = d3.w, best = -1, bd = 1e9;
+			for (var i = 1; i < st.n; i++) if (st.on[i]) { var dd = Math.hypot(st.x[i] - w[0], st.y[i] - w[1]); if (dd < bd) { bd = dd; best = i; } }
+			if (best > 0 && bd < st.T.R * 2.5) { var c = cueXY(); aim = B.angleOf(st.x[best] - c[0], st.y[best] - c[1]); renderAim(); draw(); }
+		}
+		d3 = null; render();
+	}
+	box3.addEventListener("pointerup", end3);
+	box3.addEventListener("pointercancel", end3);
+	box3.addEventListener("wheel", function (e) {
+		if (!v3) return;
+		if (!(e.ctrlKey || view.classList.contains("mes-pfill"))) return;
+		e.preventDefault();
+		v3.zoom(e.deltaY > 0 ? 1.08 : 1 / 1.08); draw();
+	}, { passive: false });
+	function syncCamSel() { if (v3 && v3.camMode === "orbit" && S.cam !== "orbit") { S.cam = "orbit"; save(); $("bl-cam").value = "orbit"; } }
 
 	/* ===================================================================== input ===================================================================== */
 	var drag = null;
@@ -666,6 +798,8 @@
 		else if (k === "u") undo();
 		else if (k === "n") { if (mode !== "online" && mode !== "hive") newGame(); }
 		else if (k === "f") panelBtn(1);
+		else if (k === "v") setDim(S.dim === "3d" ? "2d" : "3d");
+		else if (k === "k") { if (S.dim === "3d") cycleCam(); }
 	});
 
 	/* ---------- fill window / full screen (shared panel-view.js) ---------- */
@@ -919,6 +1053,7 @@
 	function setOnlineGame(v, sd, shots) {
 		gen++; busy = false; anim = null; queue = []; cpuAim = null; $("bl-think").hidden = true;
 		st = B.replay(v, sd, shots) || B.create(v, sd);
+		if (v3) v3.resetRoll();
 		seed = sd;
 		place = st.bih ? defaultPlace() : null;
 		autoAimNext();
@@ -1529,6 +1664,8 @@
 		});
 	} else resumeOrNew();
 	renderHiveCard();
+	$("bl-cam").value = S.cam;
+	if (S.dim === "3d") setTimeout(function () { setDim("3d", true); }, 0);
 	function resumeOrNew() {
 		var c = S.cur;
 		if (c && !c.done && c.v === S.game && c.hist && c.hist.length && B.game(c.v)) {
