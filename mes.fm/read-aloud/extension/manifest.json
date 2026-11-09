@@ -1,7 +1,7 @@
 {
   "manifest_version": 3,
   "name": "MES Read Aloud",
-  "version": "1.9.3",
+  "version": "1.9.4",
   "description": "Reads web pages, Google Docs, PDFs and Word files aloud, highlighting each word and sentence. Free, private, no tracking.",
   "homepage_url": "https://mes.fm/read-aloud",
   "icons": {

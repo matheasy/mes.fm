@@ -90,13 +90,16 @@
   var SOFT = { NAV: 1, ASIDE: 1, FOOTER: 1, FORM: 1, DIALOG: 1 };
   var SOFTROLE = { navigation: 1, banner: 1, complementary: 1, contentinfo: 1, search: 1, dialog: 1, alert: 1, menu: 1, menubar: 1, toolbar: 1 };
   var BLOCK = 'p,li,h1,h2,h3,h4,h5,h6,blockquote,pre,td,th,dd,dt,div,section,article,figcaption,tr,ul,ol,table,header,footer,aside,main,nav,form,details,summary,caption,body';
-  var memo, vmemo;
+  var memo, vmemo, layerRoot = null;
 
   function skipped(el, soft) {
     if (!el) return true;
     var key = soft ? 1 : 0, m = memo[key];
     if (m.has(el)) return m.get(el);
     var r = false, tag = el.tagName;
+    if (el === layerRoot) { m.set(el, false); return false; }   // a floating article (often aria-hidden / role=dialog itself): read it
+    var inLayer = layerRoot && layerRoot.contains(el), role = el.getAttribute && el.getAttribute('role');
+    if (inLayer && soft && (tag === 'DIALOG' || role === 'dialog' || role === 'alertdialog')) { r = el.parentElement ? skipped(el.parentElement, soft) : false; m.set(el, r); return r; }
     if (HARD[tag] || (el.getAttribute && el.getAttribute('aria-hidden') === 'true') || el.hasAttribute('hidden') || el.id === 'mesra-host') r = true;
     else if (soft && (SOFT[tag] || SOFTROLE[el.getAttribute('role')] || (P.skipCode && tag === 'PRE') || (P.skipTables && tag === 'TABLE'))) r = true;
     else if (el.parentElement) r = skipped(el.parentElement, soft);
@@ -129,18 +132,59 @@
     return id;
   }
 
-  function pickRoot() {
-    if (P.scope === 'page') return document.body;
-    var sels = (window.__mesraRoots || []).concat(['article', '[role=main]', 'main', '#content', '.post-content', '.entry-content', '.article-body', '.article', '.post', '#main']), best = null, bestLen = 299;
+  var ROOT_SELS = ['article', '[role=main]', 'main', '#content', '.post-content', '.entry-content', '.article-body', '.article', '.post', '#main'];
+  function pickIn(scope, min) {
+    var sels = (window.__mesraRoots || []).concat(ROOT_SELS), best = null, bestLen = min;
     for (var i = 0; i < sels.length; i++) {
-      var list = document.querySelectorAll(sels[i]);
+      var list = scope.querySelectorAll(sels[i]);
       for (var j = 0; j < list.length; j++) {
         if (skipped(list[j], false)) continue;
         var len = (list[j].innerText || '').length;
         if (len > bestLen) { best = list[j]; bestLen = len; }
       }
     }
-    return best || document.body;
+    return best;
+  }
+
+  // A floating article (a post opened in a pop-up over the feed, a modal reader view...): the outermost fixed-position element
+  // under most of the middle of the window, if it covers a good part of it and holds real text. Sites often mark these
+  // aria-hidden or role=dialog, which the normal search skips, so without this the reader read the page BEHIND the article.
+  function floatingLayer() {
+    var W = window.innerWidth, H = window.innerHeight;
+    if (!W || !H || !document.elementFromPoint) return null;
+    var pts = [[0.5, 0.4], [0.5, 0.55], [0.36, 0.5], [0.64, 0.5], [0.5, 0.7]], seen = [], counts = [];
+    pts.forEach(function (pt) {
+      var el = document.elementFromPoint(W * pt[0], H * pt[1]), top = null;
+      if (!el || el.id === 'mesra-host' || (el.closest && el.closest('#mesra-host'))) return;
+      for (var e = el; e && e !== document.body && e !== document.documentElement; e = e.parentElement) {
+        var pos = ''; try { pos = getComputedStyle(e).position; } catch (x) { /* ignore */ }
+        if (pos === 'fixed') top = e;
+      }
+      if (!top) return;
+      var k = seen.indexOf(top);
+      if (k < 0) { seen.push(top); counts.push(1); } else counts[k]++;
+    });
+    var best = null, n = 0;
+    for (var i = 0; i < seen.length; i++) if (counts[i] > n) { n = counts[i]; best = seen[i]; }
+    if (!best || n < 3) return null;
+    var r = best.getBoundingClientRect();
+    if (r.width < W * 0.4 || r.height < H * 0.5) return null;
+    if ((best.innerText || '').replace(/\s+/g, ' ').length < 300) return null;
+    return best;
+  }
+
+  function pickRoot() {
+    layerRoot = null; st.layer = '';
+    if (P.scope === 'page') return document.body;
+    var normal = pickIn(document, 299), ov = null;
+    try { ov = floatingLayer(); } catch (e) { ov = null; }
+    // a fixed app shell that holds the article anyway is not a floating layer
+    if (ov && (ov.contains(normal) || (normal && normal.contains(ov)))) ov = null;
+    if (!ov) return normal || document.body;
+    if (st.useBehind) { st.layer = 'behind'; return normal || document.body; }
+    layerRoot = ov; memo = [new Map(), new Map()];   // the skip rules change inside the layer
+    st.layer = 'over';
+    return pickIn(ov, 199) || ov;
   }
 
   function textNodes(root, range, soft) {
@@ -542,7 +586,7 @@
 
   // ---- the player -----------------------------------------------------------------------------------------------------
   var CSS_UI = '*{box-sizing:border-box}:host{all:initial}.p{position:fixed;left:50%;transform:translateX(-50%);z-index:2147483647;width:min(640px,calc(100vw - 20px));background:#1f2023;color:#f2f2f2;border:1px solid #3a3c41;border-radius:14px;box-shadow:0 6px 24px rgba(0,0,0,.45);font:13px/1.3 system-ui,-apple-system,Segoe UI,Roboto,sans-serif;padding:8px 10px 10px;zoom:var(--z,1)}' +
-    '.p.bottom{bottom:12px}.p.top{top:12px}.bar{height:5px;border-radius:3px;background:#3a3c41;cursor:pointer;margin:2px 0 8px;position:relative}.fill{height:100%;border-radius:3px;background:#4cc38a;width:0}' +
+    '.p.bottom{bottom:12px}.p.top{top:12px}.bar{height:18px;cursor:pointer;margin:-2px 0 4px;position:relative;touch-action:none;outline:none}.bar::before{content:"";position:absolute;left:0;right:0;top:6px;height:6px;border-radius:3px;background:#3a3c41;transition:top .1s,height .1s}.bar:hover::before,.bar.drag::before,.bar:focus-visible::before{top:5px;height:8px}.fill{position:absolute;left:0;top:6px;height:6px;border-radius:3px;background:#4cc38a;width:0;pointer-events:none;transition:top .1s,height .1s}.bar:hover .fill,.bar.drag .fill,.bar:focus-visible .fill{top:5px;height:8px}.thumb{position:absolute;top:2px;width:14px;height:14px;margin-left:-7px;border-radius:50%;background:#f2f2f2;box-shadow:0 1px 4px rgba(0,0,0,.5);left:0;opacity:0;pointer-events:none;transition:opacity .1s}.bar:hover .thumb,.bar.drag .thumb,.bar:focus-visible .thumb{opacity:1}.bar:focus-visible::before{box-shadow:0 0 0 2px #4cc38a}.btip{position:absolute;bottom:20px;transform:translateX(-50%);max-width:320px;width:max-content;background:#0f1012;color:#f2f2f2;border:1px solid #3a3c41;border-radius:8px;padding:5px 8px;font-size:12px;line-height:1.35;pointer-events:none;white-space:normal;display:none;z-index:3}.btip b{color:#4cc38a;font-weight:600;display:block}.bar:hover .btip,.bar.drag .btip{display:block}.p.pip .btip{bottom:auto;top:20px}.lay{font-size:12px;padding:0 10px;background:#2b3a67;height:28px}.lay[hidden]{display:none}' +
     '.row{display:flex;align-items:center;gap:6px;flex-wrap:wrap}button{all:unset;cursor:pointer;min-width:34px;height:34px;border-radius:8px;display:flex;align-items:center;justify-content:center;font:600 16px/1 system-ui,sans-serif;color:#f2f2f2;background:#2c2e33;padding:0 8px;text-align:center}' +
     'button:hover,button:focus-visible{background:#3d4047;outline:none}button.pl{background:#15803d;min-width:44px}button.pl:hover{background:#1a9a49}select{font:inherit;background:#2c2e33;color:#f2f2f2;border:1px solid #3a3c41;border-radius:8px;height:34px;padding:0 6px;max-width:170px}' +
     '.rate{min-width:54px;font-size:13px}.st{margin-left:auto;color:#aab0b8;font-size:12px;text-align:right;min-width:90px}.st.err{color:#ff9b8f}.sp{flex:1}' +
@@ -566,17 +610,17 @@
     var sh = h.attachShadow({ mode: 'closed' });
     sh.innerHTML = '<style>' + CSS_UI + '</style><div class="p ' + (P.playerPosition === 'top' ? 'top' : 'bottom') + '" role="region" aria-label="MES Read Aloud">' +
       '<div class="tp" role="region" aria-label="Text being read"><div class="th"><b class="tl">Text being read</b><button class="tsm2" title="Smaller text in this box" aria-label="Smaller text in the box">A&minus;</button><button class="tsp2" title="Larger text in this box" aria-label="Larger text in the box">A+</button><button class="tpe" title="Taller box: see more of the text" aria-label="Make the text box taller" aria-pressed="false"><svg viewBox="0 0 24 24" width="15" height="15" aria-hidden="true"><path d="M12 3v18M7 8l5-5 5 5M7 16l5 5 5-5" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" fill="none"/></svg></button><button class="tpx" title="Hide this box" aria-label="Hide the text box">&times;</button></div><div class="tb" tabindex="0"></div><div class="tgr" role="separator" aria-orientation="horizontal" aria-label="Text box height: drag, or use the Up and Down arrow keys" title="Drag to make the text box taller or shorter (double-click: normal height)" tabindex="0"></div></div>' +
-      '<div class="bar" title="Click to jump"><div class="fill"></div></div>' +
+      '<div class="bar" role="slider" tabindex="0" aria-label="Position in the text: click or drag to jump" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0"><div class="fill"></div><div class="thumb"></div><div class="btip"></div></div>' +
       '<div class="rz" title="Drag to resize the player (double-click for normal size)" aria-label="Resize the player"></div>' +
       '<div class="row"><button class="grip" title="Drag to move the player (double-click to put it back)">&#8942;&#8942;</button><button class="prev" title="Previous sentence (Left arrow)">&#9198;</button><button class="pl" title="Pause / resume (Space)">&#9654;</button><button class="next" title="Next sentence (Right arrow)">&#9197;</button>' +
       '<button class="slow" title="Slower (Down arrow)">&minus;</button><button class="rate" title="Speed">1.0&times;</button><button class="fast" title="Faster (Up arrow)">+</button>' +
       '<button class="tsm" title="Smaller text on the page" aria-label="Smaller text">A&minus;</button><button class="tsp" title="Larger text on the page" aria-label="Larger text">A+</button>' +
       '<button class="tpb" title="Show / hide the text being read in a box above the player" aria-label="Show or hide the text box"><svg viewBox="0 0 24 24" width="17" height="17" aria-hidden="true"><path d="M4 6h16M4 11h16M4 16h10" stroke="currentColor" stroke-width="2" stroke-linecap="round" fill="none"/></svg></button><button class="vol" title="Mute / unmute"></button><input class="volr" type="range" min="0" max="1" step="0.05" title="Volume" aria-label="Volume">' +
       '<select class="voice" title="Voice"></select><select class="setup" title="Setup"></select>' +
-      '<span class="st" aria-live="polite"></span><button class="rs" hidden title="Stop and read the text you just highlighted on the page">Read selection</button><button class="hl" title="Turn highlighting on / off (H)"><i>ab</i></button><button class="dk" title="Dark / light page: inverts the page colours (pictures and video keep theirs). Remembered for this site." aria-label="Dark or light page">&#9680;</button><button class="pip-b" title="Pop out into a floating window you can move anywhere, even outside the browser" aria-label="Pop out"><svg viewBox="0 0 24 24" width="17" height="17" aria-hidden="true"><path d="M3 5h18v14H3z" fill="none" stroke="currentColor" stroke-width="2"/><rect x="11" y="11" width="8" height="6" fill="currentColor"/></svg></button><button class="gear" title="Settings">&#9881;</button><button class="mini" title="Minimise to a small bar (M)">&#9662;</button><button class="x" title="Close (Esc)">&times;</button><a class="dml" href="https://mes.fm/dark-mode" target="_blank" rel="noopener" title="Like the dark page? MES Dark Mode (free extension) keeps pages dark even after you close this player">Dark Mode<svg viewBox="0 0 24 24" width="13" height="13" aria-hidden="true"><path d="M14 4h6v6M20 4l-9 9M18 14v5a1 1 0 0 1-1 1H5a1 1 0 0 1-1-1V7a1 1 0 0 1 1-1h5" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg></a></div></div>';
+      '<span class="st" aria-live="polite"></span><button class="lay" hidden></button><button class="rs" hidden title="Stop and read the text you just highlighted on the page">Read selection</button><button class="hl" title="Turn highlighting on / off (H)"><i>ab</i></button><button class="dk" title="Dark / light page: inverts the page colours (pictures and video keep theirs). Remembered for this site." aria-label="Dark or light page">&#9680;</button><button class="pip-b" title="Pop out into a floating window you can move anywhere, even outside the browser" aria-label="Pop out"><svg viewBox="0 0 24 24" width="17" height="17" aria-hidden="true"><path d="M3 5h18v14H3z" fill="none" stroke="currentColor" stroke-width="2"/><rect x="11" y="11" width="8" height="6" fill="currentColor"/></svg></button><button class="gear" title="Settings">&#9881;</button><button class="mini" title="Minimise to a small bar (M)">&#9662;</button><button class="x" title="Close (Esc)">&times;</button><a class="dml" href="https://mes.fm/dark-mode" target="_blank" rel="noopener" title="Like the dark page? MES Dark Mode (free extension) keeps pages dark even after you close this player">Dark Mode<svg viewBox="0 0 24 24" width="13" height="13" aria-hidden="true"><path d="M14 4h6v6M20 4l-9 9M18 14v5a1 1 0 0 1-1 1H5a1 1 0 0 1-1-1V7a1 1 0 0 1 1-1h5" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg></a></div></div>';
     var q = function (c) { return sh.querySelector(c); };
     if (window.__mesraSite) { var gearBtn = sh.querySelector('.gear'); if (gearBtn) gearBtn.style.display = 'none'; }   // the site player has no options page
-    ui = { host: h, sh: sh, p: q('.p'), fill: q('.fill'), bar: q('.bar'), pl: q('.pl'), rate: q('.rate'), voice: q('.voice'), setup: q('.setup'), st: q('.st'), hl: q('.hl'), rs: q('.rs'), dk: q('.dk'), mini: q('.mini'), grip: q('.grip'), vol: q('.vol'), volr: q('.volr'), pipb: q('.pip-b'), tp: q('.tp'), tb: q('.tb'), tl: q('.tl'), tpb: q('.tpb'), wEls: null, curW: null, curS: null, tkey: 0 };
+    ui = { host: h, sh: sh, p: q('.p'), fill: q('.fill'), bar: q('.bar'), thumb: q('.thumb'), btip: q('.btip'), lay: q('.lay'), pl: q('.pl'), rate: q('.rate'), voice: q('.voice'), setup: q('.setup'), st: q('.st'), hl: q('.hl'), rs: q('.rs'), dk: q('.dk'), mini: q('.mini'), grip: q('.grip'), vol: q('.vol'), volr: q('.volr'), pipb: q('.pip-b'), tp: q('.tp'), tb: q('.tb'), tl: q('.tl'), tpb: q('.tpb'), wEls: null, curW: null, curS: null, tkey: 0 };
     if (window.MESRAPick) ui.pick = MESRAPick.attach(q('.voice'), { up: function () { return pipWin ? null : P.playerPosition !== 'top'; }, sample: 'This is how MES Read Aloud sounds with this voice.',
       voice: function (id) { for (var i = 0; i < voices.length; i++) if (voices[i].voiceURI === id) return voices[i]; return null; }, onPreview: function () { if (st.playing) pause(); } });
     q('.prev').onclick = function () { jumpSentence(-1); };
@@ -631,12 +675,55 @@
       st.idx = i; sentIdx = -1; if (st.playing) speakFrom(i); else { highlight(i); fillUi(); }
     };
     q('.gear').onclick = function () { try { chrome.runtime.sendMessage({ mesra: 'options' }); } catch (e) { /* ignore */ } };
-    ui.bar.onclick = function (e) {
+    // the progress bar: click or drag to jump (snaps to the start of the sentence under the pointer), hover to preview
+    function barWord(e) {
+      var r = ui.bar.getBoundingClientRect(), f = Math.max(0, Math.min(1, (e.clientX - r.left) / (r.width || 1)));
+      var w = Math.min(st.words.length - 1, Math.floor(f * st.words.length));
+      return { f: f, i: st.starts[SR.sentenceStartAt(st.starts, w)] || 0 };
+    }
+    function barTip(b) {
+      if (!st.words) { ui.btip.textContent = ''; return; }
+      var si = SR.sentenceStartAt(st.starts, b.i), end = si + 1 < st.starts.length ? st.starts[si + 1] : st.words.length;
+      var snip = st.text.slice(st.words[b.i].s, st.words[Math.max(b.i, end - 1)].e).replace(/\s+/g, ' ').trim();
+      if (snip.length > 110) snip = snip.slice(0, 107).replace(/\s+\S*$/, '') + '…';
+      var at = SR.speechEstimateMs(st.words, 0, b.i, P.rate);
+      ui.btip.innerHTML = '';
+      var hd = document.createElement('b'); hd.textContent = 'Sentence ' + (si + 1) + ' / ' + st.starts.length + ' · ' + SR.formatDuration(at) + ' in';
+      ui.btip.appendChild(hd); ui.btip.appendChild(document.createTextNode(snip));
+      var bw = ui.bar.getBoundingClientRect().width || 1, x = Math.max(80, Math.min(bw - 80, b.f * bw));
+      ui.btip.style.left = x + 'px';
+    }
+    function seekWord(i) { st.idx = i; sentIdx = -1; if (st.playing) speakFrom(i); else { highlight(i); fillUi(); } fillProgress(); }
+    var scrub = null;
+    ui.bar.addEventListener('pointermove', function (e) {
       if (!st.words) return;
-      var r = ui.bar.getBoundingClientRect(), f = Math.max(0, Math.min(1, (e.clientX - r.left) / r.width));
-      var i = st.starts[Math.min(st.starts.length - 1, Math.floor(f * st.starts.length))];
-      st.idx = i; sentIdx = -1; if (st.playing) speakFrom(i); else { highlight(i); fillUi(); }
-    };
+      var b = barWord(e); barTip(b);
+      if (scrub) { scrub.i = b.i; ui.fill.style.width = (100 * b.f) + '%'; ui.thumb.style.left = (100 * b.f) + '%'; }
+    });
+    ui.bar.addEventListener('pointerdown', function (e) {
+      if (!st.words || e.button > 0) return;
+      e.preventDefault();
+      try { ui.bar.setPointerCapture(e.pointerId); } catch (x) { /* ignore */ }
+      var b = barWord(e); scrub = { i: b.i }; ui.bar.classList.add('drag'); barTip(b);
+      ui.fill.style.width = (100 * b.f) + '%'; ui.thumb.style.left = (100 * b.f) + '%';
+    });
+    function endScrub(go) {
+      if (!scrub) return;
+      var i = scrub.i; scrub = null; ui.bar.classList.remove('drag');
+      if (go) seekWord(i); else fillProgress();
+    }
+    ui.bar.addEventListener('pointerup', function () { endScrub(true); });
+    ui.bar.addEventListener('pointercancel', function () { endScrub(false); });
+    ui.bar.addEventListener('lostpointercapture', function () { endScrub(true); });
+    ui.bar.addEventListener('keydown', function (e) {
+      if (!st.words) return;
+      var si = SR.sentenceStartAt(st.starts, st.idx), n = st.starts.length, to = -1, step = Math.max(1, Math.round(n / 10));
+      if (e.key === 'Home') to = 0; else if (e.key === 'End') to = n - 1;
+      else if (e.key === 'PageDown') to = Math.min(n - 1, si + step); else if (e.key === 'PageUp') to = Math.max(0, si - step);
+      if (to < 0) return;
+      e.preventDefault(); e.stopPropagation(); seekWord(st.starts[to]);
+    });
+    ui.lay.onclick = function () { st.useBehind = st.layer === 'over'; begin('page'); };
     ui.voice.onchange = function () { P.voice = ui.voice.value; voiceFails = 0; st.noticeUntil = 0; saveSettings(); if (st.playing) restartSoon(); };
     ui.setup.onchange = function () { S.active = ui.setup.value; saveSettings(); P = RA.resolveProfile(S, host).config; applyStyle(); fillUi(); if (st.playing) restartSoon(); };
     ui.hl.onclick = toggleHighlight;
@@ -868,7 +955,13 @@
 
   function fillProgress() {
     if (!ui || !st.words) return;
-    ui.fill.style.width = Math.round(100 * (st.idx + 1) / st.words.length) + '%';
+    var pct = 100 * (st.idx + 1) / st.words.length;
+    if (!ui.bar.classList.contains('drag')) { ui.fill.style.width = pct + '%'; ui.thumb.style.left = pct + '%'; } ui.bar.setAttribute('aria-valuenow', String(Math.round(pct)));
+    var si0 = SR.sentenceStartAt(st.starts, st.idx);
+    ui.bar.setAttribute('aria-valuetext', 'Sentence ' + (si0 + 1) + ' of ' + st.starts.length);
+    ui.lay.hidden = !(st.layer && st.mode === 'page');
+    ui.lay.textContent = st.layer === 'over' ? 'Read the page behind' : 'Read the article on top';
+    ui.lay.title = st.layer === 'over' ? 'This page has an article floating on top, so that is what is being read. Read the page behind it instead.' : 'Read the article floating on top of this page instead of the page behind it.';
     if (!ui.st.classList.contains('err') && !(st.noticeUntil > Date.now())) {
       var left = SR.speechEstimateMs(st.words, st.idx, st.words.length, P.rate);
       var si = SR.sentenceStartAt(st.starts, st.idx) + 1;
