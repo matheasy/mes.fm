@@ -30,7 +30,7 @@
 
 	/* ---------- saved settings ---------- */
 	var S = { game: "8", opp: "cpu", lv: "medium", me: "first", alt: 0, guide: "full", orient: "auto", speed: "1", cloth: "green", snd: true, rel: true, nums: false,
-		names: ["", ""], mus: [], mpBig: false, dim: "2d", cam: "auto", name: "", ofirst: "host", opub: true, cur: null, stats: {}, online: null, hive: null, saved: {}, chal: {}, power: 350 };
+		names: ["", ""], mus: [], mpBig: false, dim: "2d", cam: "auto", room: "bar", name: "", ofirst: "host", opub: true, cur: null, stats: {}, online: null, hive: null, saved: {}, chal: {}, power: 350 };
 	try { var saved = JSON.parse(localStorage.getItem(KEY) || "null"); if (saved) for (var k0 in saved) S[k0] = saved[k0]; } catch (e) {}
 	function save() { try { localStorage.setItem(KEY, JSON.stringify(S)); } catch (e) {} }
 
@@ -570,7 +570,7 @@
 	function setDim(d, quiet) {
 		if (d === "3d" && !window.BL3D) d = "2d";
 		S.dim = d; save(); segSet("bl-dim", d);
-		$("bl-cam").hidden = d !== "3d";
+		$("bl-cam").hidden = $("bl-room").hidden = d !== "3d";
 		if (d === "2d") { box3.hidden = true; cv.hidden = false; relayout(); return; }
 		if (v3) { box3.hidden = false; cv.hidden = true; relayout(); return; }
 		if (v3busy) return;
@@ -583,11 +583,12 @@
 			var msg = box3.querySelector(".bl-3dmsg"); if (msg) msg.remove();
 			box3.style.width = box3.style.height = "";
 			v3.setCam(S.cam);
+			v3.roomName = S.room;
 			addHint();
 			relayout();
 		}, function (e) {
 			v3busy = false; box3.innerHTML = ""; box3.hidden = true; cv.hidden = false;
-			S.dim = "2d"; save(); segSet("bl-dim", "2d"); $("bl-cam").hidden = true;
+			S.dim = "2d"; save(); segSet("bl-dim", "2d"); $("bl-cam").hidden = $("bl-room").hidden = true;
 			if (!quiet) toast("The 3D view could not start (" + ((e && e.message) || "no WebGL") + "). Showing 2D.");
 			relayout();
 		});
@@ -599,6 +600,7 @@
 	}
 	segWire("bl-dim", function (v) { setDim(v); });
 	$("bl-cam").addEventListener("change", function () { S.cam = this.value; save(); if (v3) { v3.setCam(S.cam); draw(); } });
+	$("bl-room").addEventListener("change", function () { S.room = this.value; save(); if (v3) { v3.setRoom(S.room); draw(); } });
 	function cycleCam() { var o = ["auto", "behind", "overhead", "side", "orbit"], i = (o.indexOf(S.cam) + 1) % o.length; S.cam = o[i]; save(); $("bl-cam").value = S.cam; if (v3) { v3.setCam(S.cam); draw(); } }
 	function behindMode() { return S.cam === "behind" || S.cam === "auto"; }
 	var d3 = null, pts3 = {};
@@ -1739,6 +1741,7 @@
 	} else resumeOrNew();
 	renderHiveCard();
 	$("bl-cam").value = S.cam;
+	$("bl-room").value = S.room;
 	if (S.dim === "3d") setTimeout(function () { setDim("3d", true); }, 0);
 	function resumeOrNew() {
 		var c = S.cur;
