@@ -353,16 +353,21 @@
 	function textTex(w, h, draw) { return tex(w, h, draw); }
 	function std(col, rough, extra) { var o = { color: col, roughness: rough === undefined ? 0.85 : rough, metalness: 0 }; if (extra) for (var k in extra) o[k] = extra[k]; return new THREE.MeshStandardMaterial(o); }
 	function box(g, w, h, d, mat, x, y, z, shadow) { var m = new THREE.Mesh(new THREE.BoxGeometry(w, h, d), mat); m.position.set(x, y, z); if (shadow) { m.castShadow = true; m.receiveShadow = true; } g.add(m); return m; }
-	function neonTex(text, col) {
-		return textTex(512, 160, function (c, w, h) {
-			c.fillStyle = "rgba(0,0,0,0)"; c.clearRect(0, 0, w, h);
-			c.font = "700 104px system-ui,sans-serif"; c.textAlign = "center"; c.textBaseline = "middle";
+	function neonTex(text, col) {   // the canvas is as wide as the text plus room for the glow, so nothing is cut off
+		var probe = document.createElement("canvas").getContext("2d"), fs = 104, pad = 70;
+		probe.font = "700 " + fs + "px system-ui,sans-serif";
+		var tw = Math.ceil(probe.measureText(text).width), w = tw + pad * 2, h = 200;
+		var t = tex(w, h, function (c) {
+			c.clearRect(0, 0, w, h);
+			c.font = "700 " + fs + "px system-ui,sans-serif"; c.textAlign = "center"; c.textBaseline = "middle";
 			c.shadowColor = col; c.shadowBlur = 28; c.fillStyle = col; c.fillText(text, w / 2, h / 2 + 4);
 			c.shadowBlur = 8; c.fillStyle = "#fff"; c.fillText(text, w / 2, h / 2 + 4);
 		});
+		return { t: t, tw: tw, w: w, h: h };
 	}
-	function sign(g, text, col, w, x, y, z, ry) {
-		var t = neonTex(text, col), m = new THREE.Mesh(new THREE.PlaneGeometry(w, w * 160 / 512), new THREE.MeshBasicMaterial({ map: t, transparent: true, depthWrite: false }));
+	function sign(g, text, col, w, x, y, z, ry) {   // w = width of the lettering in metres
+		var n = neonTex(text, col), pw = w * n.w / n.tw, ph = pw * n.h / n.w;
+		var m = new THREE.Mesh(new THREE.PlaneGeometry(pw, ph), new THREE.MeshBasicMaterial({ map: n.t, transparent: true, depthWrite: false }));
 		m.position.set(x, y, z); m.rotation.y = ry || 0; g.add(m); return m;
 	}
 	function walls(g, X, Z, H, mat, floorMat) {
