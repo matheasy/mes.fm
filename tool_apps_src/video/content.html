@@ -3,12 +3,13 @@
 		<div class="vd" id="vd-app" tabindex="-1">
 			<div class="vd-top" role="toolbar" aria-label="Project">
 				<div class="vd-menu">
-					<button type="button" class="vd-btn" id="vd-filebtn" aria-haspopup="true" aria-expanded="false">File &#9662;</button>
+					<button type="button" class="vd-btn" id="vd-filebtn" aria-haspopup="true" aria-expanded="false">File &#9662;</button><span class="vd-projst" id="vd-projst" hidden></span>
 					<div class="vd-pop" id="vd-filemenu" hidden role="menu">
 						<button type="button" role="menuitem" data-act="import">Import videos, sound, pictures&hellip; <kbd>Ctrl+I</kbd></button>
 						<button type="button" role="menuitem" data-act="title">Add a title <kbd>T</kbd></button>
 						<hr>
 						<button type="button" role="menuitem" data-act="saveproj">Save project file (.mesvideo) <kbd>Ctrl+S</kbd></button>
+						<button type="button" role="menuitem" data-act="saveprojas">Save project as&hellip; <kbd>Ctrl+Shift+S</kbd></button>
 						<button type="button" role="menuitem" data-act="openproj">Open project file&hellip;</button>
 						<button type="button" role="menuitem" data-act="new">New project&hellip;</button>
 						<hr>
@@ -150,7 +151,7 @@
 				<dt>Laid out like Camtasia</dt><dd>The library on the left has Media, Titles, Transitions, Audio effects and Visual effects: click a card to use it on the selected clips, or drag it onto a clip. The properties of the selected clip are on the right. Hide either panel or drag its edge to make it wider, and drag the bar above the timeline to give the preview or the timeline more room. The editor remembers the sizes.</dd>
 				<dt>Magnetic tracks and separated sound</dt><dd>Press the magnet on a track and its clips close up to the left with no gaps: delete or move a clip and the rest slide along. <b>Separate video and audio</b> puts a clip's sound on its own audio track, linked to the video, so you can see a tall waveform (peaks and average level, on a dB scale so quiet parts show too) and work on the sound alone. Drag the bottom edge of any track to make it taller.</dd>
 				<dt>Audio effects that even out the sound</dt><dd>The <b>Leveler</b> brings quiet and loud parts to the same loudness over a few seconds, the <b>Compressor</b> tames the loudest moments, and <b>Ducking</b> lowers music while a voice speaks. They never change your files: they are worked out from the sound as you play and export, the waveform shows the result over the original, and you can change or remove them any time.</dd>
-				<dt>Your work is saved as you go</dt><dd>The project and its media are kept in this browser, so closing the tab loses nothing. <b>Save project file</b> writes a small .mesvideo file you can open again later; the media files are matched by name, so keep them.</dd>
+				<dt>Your work is saved as you go</dt><dd>The project and its media are kept in this browser, so closing the tab loses nothing. <b>Save project file</b> writes a small .mesvideo file you can open again later; after the first save (or after opening one) Ctrl+S saves to that same file, and you are warned if it was changed on another computer. The media files are matched by name, so keep them.</dd>
 				<dt>How the export works</dt><dd>Every frame is decoded with your computer's video decoder (WebCodecs), drawn with the titles and overlays, and encoded again with its H.264 encoder, usually on the graphics chip; the sound is mixed and encoded to AAC. In Chrome, Edge and Brave (with the File System Access API on) the MP4 can be written straight to disk, so even long exports do not fill the memory.</dd>
 				<dt>Animations, like Camtasia</dt><dd>Open <b>Animations</b> in the library: zoom in or out, <b>zoom-n-pan</b> to a box you draw on the preview, slide in and out, fade, scale, pop in, spin or a custom move. Each one is an arrow on the clip in the timeline: drag it to move it, drag its ends to change how long it takes, and pick the easing in the properties. Put the playhead at the end of an animation and drag the clip, its corner or its turn handle in the preview to change where it ends up. Animations work on videos, pictures and titles, go into the export exactly as you see them, and are saved in the project.</dd>
 				<dt>See the whole frame</dt><dd>The preview shows the frame with a grey margin around it: anything that hangs over the edge is drawn there, darkened, so you can see what is cut off. Zoom out to see more, zoom in to check the edges (Ctrl + wheel, pinch, or the zoom menu), drag the grey area to move around, and press Fit to see it all again. Guides show the title-safe and action-safe areas.</dd>

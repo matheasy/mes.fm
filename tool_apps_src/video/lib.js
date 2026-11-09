@@ -45,6 +45,14 @@
 	V.end = function (c) { return c.start + V.dur(c); };
 	V.srcAt = function (c, t) { return c.in + (t - c.start) * (c.speed || 1); };   // source time shown at timeline time t (before start = cross-fade pre-roll)
 	V.timeAtSrc = function (c, s) { return c.start + (s - c.in) / (c.speed || 1); };
+	// where in its file a clip begins and ends (the "source times"), e.g. after splitting a long recording into parts
+	V.hasSource = function (c) { return !!c && (c.type === "video" || c.type === "audio"); };
+	V.srcText = function (c, fps) { return V.tc(c.in, fps) + " \u2013 " + V.tc(c.out, fps); };
+	V.sourceList = function (p, nameOf) {   // one line per video / sound clip, in timeline order: "name: 1:23;10 - 4:56;00 (length 3:33;00)"
+		return p.clips.filter(V.hasSource).slice().sort(function (a, b) { return a.start - b.start || String(a.track).localeCompare(String(b.track)); }).map(function (c) {
+			return (nameOf ? nameOf(c) + ": " : "") + V.srcText(c, p.fps) + " (at " + V.tc(c.start, p.fps) + " on the timeline, length " + V.tc(c.out - c.in, p.fps) + ")";
+		});
+	};
 	V.onTrack = function (p, trackId, ignore) {
 		return p.clips.filter(function (c) { return c.track === trackId && !(ignore && ignore[c.id]); }).sort(function (a, b) { return a.start - b.start; });
 	};

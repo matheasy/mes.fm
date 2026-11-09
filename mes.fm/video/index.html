@@ -370,11 +370,16 @@ body.dark-mode .tu .rw-head {color:#a0a8b3;border-bottom-color:#555;} body.dark-
 	#vd .vd-stagewrap:fullscreen {background:#000;} #vd #vd-canvas {display:block;background:#000;touch-action:none;}
 	#vd .vd-transport {background:var(--vd-panel);border-top:1px solid var(--vd-line);justify-content:flex-start;}
 	#vd .vd-play {background:var(--vd-acc);border-color:var(--vd-acc);color:#fff;min-width:44px;}
-	#vd .vd-time {font-family:ui-monospace,Menlo,Consolas,monospace;font-size:0.9em;padding:0 0.4em;color:var(--vd-fg);white-space:nowrap;}
-	#vd #vd-tin {font:inherit;color:inherit;background:transparent;border:1px solid transparent;border-radius:4px;padding:0.15em 0.3em;width:8ch;min-width:7ch;cursor:text;text-align:right;}
+	#vd .vd-time {font-family:ui-monospace,Menlo,Consolas,monospace;font-size:0.9em;padding:0 0.4em;color:var(--vd-fg);white-space:nowrap;flex-shrink:0;}
+	#vd #vd-tin {box-sizing:content-box;flex-shrink:0;font:inherit;color:inherit;background:transparent;border:1px solid transparent;border-radius:4px;padding:0.15em 0.3em;width:8ch;min-width:7ch;cursor:text;text-align:right;}
 	#vd #vd-tin:hover {border-color:rgba(255,255,255,0.25);background:rgba(255,255,255,0.05);}
 	#vd #vd-tin:focus {outline:none;border-color:#e11d48;background:rgba(2,6,23,0.8);text-align:left;}
 	#vd #vd-tin.is-bad {border-color:#f87171;}
+	#vd .vd-src {margin:0.5em 0;padding:0.45em 0.55em;border:1px solid var(--vd-line);border-radius:6px;background:rgba(255,255,255,0.03);}
+	#vd .vd-srch {display:block;font-size:0.85em;color:var(--vd-fg);margin-bottom:0.3em;} #vd .vd-srch small {font-weight:400;color:var(--vd-dim);}
+	#vd .vd-f input.vd-tcin {font-family:ui-monospace,Menlo,Consolas,monospace;}
+	#vd .vd-cst {position:absolute;left:4px;bottom:1px;font:600 10px/1.2 ui-monospace,Menlo,Consolas,monospace;white-space:nowrap;text-shadow:0 1px 2px #000,0 0 3px #000;pointer-events:none;color:#e2e8f0;opacity:0.9;}
+	#vd .vd-srclist {margin:0.3em 0 0.4em;padding-left:1.4em;font:0.78em/1.45 ui-monospace,Menlo,Consolas,monospace;color:var(--vd-fg);max-height:14em;overflow:auto;word-break:break-word;}
 	#vd .vd-insp h3 {font-size:1.05em;margin:0.1em 0 0.1em;overflow-wrap:anywhere;color:var(--vd-fg);} #vd .vd-sub {font-size:0.8em;color:var(--vd-dim);margin:0.15em 0 0.4em;}
 	#vd .vd-sec {border-top:1px solid var(--vd-line);padding:0.5em 0 0.4em;margin-top:0.4em;} #vd .vd-sec > b {display:block;font-size:0.82em;text-transform:uppercase;letter-spacing:0.04em;color:var(--vd-dim);margin-bottom:0.35em;}
 	#vd .vd-grid {display:grid;grid-template-columns:1fr 1fr;gap:0.35em 0.5em;margin:0.2em 0;}
@@ -517,6 +522,8 @@ body.dark-mode .tu .rw-head {color:#a0a8b3;border-bottom-color:#555;} body.dark-
 	html body.dark-mode #vd .vd-cmp-cv {background:#0b0e13;} html body.dark-mode #vd .vd-cmp-ph {background:#f43f5e;}
 
 
+	#vd .vd-projst {font-size:0.78em;color:var(--vd-dim);margin-left:0.45em;white-space:nowrap;max-width:16em;overflow:hidden;text-overflow:ellipsis;vertical-align:middle;display:inline-block;} #vd .vd-projst.is-dirty {color:#fbbf24;}
+
 
 	@media print {
 		.header, .info-bar-container, .side-bar, #footer, #comments-button, #comments-box, .color-box { display:none !important; }
@@ -650,6 +657,7 @@ body.is-stuck #navbar.hide { position: fixed; top: 56px; right: 8px; }
 	body.dark-mode #vd #vd-tin:hover{border-color:rgba(51,51,51,0.25);background:rgba(26,26,26,0.05)}
 	body.dark-mode #vd #vd-tin:focus{border-color:#e21d48}
 	body.dark-mode #vd #vd-tin.is-bad{border-color:#bf0909}
+	body.dark-mode #vd .vd-src{background:rgba(26,26,26,0.03)}
 	body.dark-mode #vd .vd-tl{background:#3c4c67}
 	body.dark-mode #vd .vd-trow{border-bottom:1px solid #3b485e}
 	body.dark-mode #vd .vd-trow--a{background:#416257}
@@ -674,6 +682,7 @@ body.is-stuck #navbar.hide { position: fixed; top: 56px; right: 8px; }
 	body.dark-mode #vd .vd-seek-th{background:#1a1a1a}
 	body.dark-mode #vd .vd-seek-tip{background:#3c4c67;border:1px solid rgba(83,101,125,0.40)}
 	body.dark-mode #vd .vd-cmp-cv{background:#3c4c67}
+	body.dark-mode #vd .vd-projst.is-dirty{color:#fcd05f}
 	/* TOOL-DARK:END */
 </style>
         <meta property="fb:app_id" content="" />
@@ -891,12 +900,13 @@ body.is-stuck #navbar.hide { position: fixed; top: 56px; right: 8px; }
 		<div class="vd" id="vd-app" tabindex="-1">
 			<div class="vd-top" role="toolbar" aria-label="Project">
 				<div class="vd-menu">
-					<button type="button" class="vd-btn" id="vd-filebtn" aria-haspopup="true" aria-expanded="false">File &#9662;</button>
+					<button type="button" class="vd-btn" id="vd-filebtn" aria-haspopup="true" aria-expanded="false">File &#9662;</button><span class="vd-projst" id="vd-projst" hidden></span>
 					<div class="vd-pop" id="vd-filemenu" hidden role="menu">
 						<button type="button" role="menuitem" data-act="import">Import videos, sound, pictures&hellip; <kbd>Ctrl+I</kbd></button>
 						<button type="button" role="menuitem" data-act="title">Add a title <kbd>T</kbd></button>
 						<hr>
 						<button type="button" role="menuitem" data-act="saveproj">Save project file (.mesvideo) <kbd>Ctrl+S</kbd></button>
+						<button type="button" role="menuitem" data-act="saveprojas">Save project as&hellip; <kbd>Ctrl+Shift+S</kbd></button>
 						<button type="button" role="menuitem" data-act="openproj">Open project file&hellip;</button>
 						<button type="button" role="menuitem" data-act="new">New project&hellip;</button>
 						<hr>
@@ -1038,7 +1048,7 @@ body.is-stuck #navbar.hide { position: fixed; top: 56px; right: 8px; }
 				<dt>Laid out like Camtasia</dt><dd>The library on the left has Media, Titles, Transitions, Audio effects and Visual effects: click a card to use it on the selected clips, or drag it onto a clip. The properties of the selected clip are on the right. Hide either panel or drag its edge to make it wider, and drag the bar above the timeline to give the preview or the timeline more room. The editor remembers the sizes.</dd>
 				<dt>Magnetic tracks and separated sound</dt><dd>Press the magnet on a track and its clips close up to the left with no gaps: delete or move a clip and the rest slide along. <b>Separate video and audio</b> puts a clip's sound on its own audio track, linked to the video, so you can see a tall waveform (peaks and average level, on a dB scale so quiet parts show too) and work on the sound alone. Drag the bottom edge of any track to make it taller.</dd>
 				<dt>Audio effects that even out the sound</dt><dd>The <b>Leveler</b> brings quiet and loud parts to the same loudness over a few seconds, the <b>Compressor</b> tames the loudest moments, and <b>Ducking</b> lowers music while a voice speaks. They never change your files: they are worked out from the sound as you play and export, the waveform shows the result over the original, and you can change or remove them any time.</dd>
-				<dt>Your work is saved as you go</dt><dd>The project and its media are kept in this browser, so closing the tab loses nothing. <b>Save project file</b> writes a small .mesvideo file you can open again later; the media files are matched by name, so keep them.</dd>
+				<dt>Your work is saved as you go</dt><dd>The project and its media are kept in this browser, so closing the tab loses nothing. <b>Save project file</b> writes a small .mesvideo file you can open again later; after the first save (or after opening one) Ctrl+S saves to that same file, and you are warned if it was changed on another computer. The media files are matched by name, so keep them.</dd>
 				<dt>How the export works</dt><dd>Every frame is decoded with your computer's video decoder (WebCodecs), drawn with the titles and overlays, and encoded again with its H.264 encoder, usually on the graphics chip; the sound is mixed and encoded to AAC. In Chrome, Edge and Brave (with the File System Access API on) the MP4 can be written straight to disk, so even long exports do not fill the memory.</dd>
 				<dt>Animations, like Camtasia</dt><dd>Open <b>Animations</b> in the library: zoom in or out, <b>zoom-n-pan</b> to a box you draw on the preview, slide in and out, fade, scale, pop in, spin or a custom move. Each one is an arrow on the clip in the timeline: drag it to move it, drag its ends to change how long it takes, and pick the easing in the properties. Put the playhead at the end of an animation and drag the clip, its corner or its turn handle in the preview to change where it ends up. Animations work on videos, pictures and titles, go into the export exactly as you see them, and are saved in the project.</dd>
 				<dt>See the whole frame</dt><dd>The preview shows the frame with a grey margin around it: anything that hangs over the edge is drawn there, darkened, so you can see what is cut off. Zoom out to see more, zoom in to check the edges (Ctrl + wheel, pinch, or the zoom menu), drag the grey area to move around, and press Fit to see it all again. Guides show the title-safe and action-safe areas.</dd>
@@ -1107,7 +1117,7 @@ body.is-stuck #navbar.hide { position: fixed; top: 56px; right: 8px; }
             hide_search:false,
             current_tab:0
         }        </script><!-- FASTCOMMENTS-LAZY: widget init moved to main_js/main.js -- it pulls embed.min.js only when #fastcomments-widget nears the viewport or on the first Comments-toggle click, so it no longer blocks first render -->                <script src="https://mes.fm/main_js/lazysizes.min.js?v=1.0.3" async></script>
-	<script src="/main_js/tab-progress.js?v=1" defer></script><script src="/video/js/video.js?v=11" defer></script>
+	<script src="/main_js/tab-progress.js?v=1" defer></script><script src="/video/js/video.js?v=12" defer></script>
             <script src="https://mes.fm/main_js/main.js?v=1.0.5"></script>    <!-- PAGEVIEW-TRACKING-INSERTED --><script src="https://mes.fm/main_js/track.js" defer></script><script>document.getElementById('copyright-year').textContent = new Date().getFullYear();</script><script src="/main_js/info-bar-fit.js" defer></script><script>
   // Floating compact header bar (see #compact-nav CSS): appears once the
   // header + nav bar have scrolled off the top; nav links that don't fit

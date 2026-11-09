@@ -98,11 +98,13 @@
 	app.addEventListener("drop", function (e) {
 		if (!e.dataTransfer || !e.dataTransfer.files || !e.dataTransfer.files.length) return;
 		e.preventDefault(); app.classList.remove("is-over"); VE.tl.dragHint(null, null, false);
-		var all = [].slice.call(e.dataTransfer.files), proj = all.filter(isProjectFile), media = all.filter(function (f) { return !isProjectFile(f); });
+		var all = [].slice.call(e.dataTransfer.files), proj = all.filter(isProjectFile), media = all.filter(function (f) { return !isProjectFile(f); }), projH = null;
+		// the file handle has to be asked for during the drop event itself: it lets Save write back into the dropped project file
+		if (proj.length) [].some.call(e.dataTransfer.items || [], function (it) { if (it.kind === "file" && it.getAsFileSystemHandle && /\.mesvideo$/i.test((it.getAsFile() || {}).name || "")) { try { projH = it.getAsFileSystemHandle(); } catch (er) { projH = null; } return true; } return false; });
 		if (proj.length) {
 			if (proj.length > 1) toast("Only one project can be open: opening " + proj[0].name + ".");
 			if (media.length) toast("Opening the project first; drop the media files again afterwards to relink or add them.", 7000);
-			askOpenProject(proj[0]); return;
+			askOpenProject(proj[0], projH); return;
 		}
 		var x = e.clientX, y = e.clientY, onTl = VE.tl.inside(x, y), t = onTl ? VE.tl.x2t(x) : null;
 		importFiles(media).then(function (ms) {
@@ -275,29 +277,86 @@
 	document.addEventListener("click", function (e) { if (!fm.hidden && !e.target.closest(".vd-menu")) { fm.hidden = true; $("vd-filebtn").setAttribute("aria-expanded", "false"); } });
 	fm.addEventListener("click", function (e) {
 		var b = e.target.closest("[data-act]"); if (!b) return; fm.hidden = true; var a = b.getAttribute("data-act");
-		if (a === "import") $("vd-file").click(); else if (a === "title") VE.addTitle(); else if (a === "saveproj") saveProject(); else if (a === "openproj") $("vd-projfile").click();
-		else if (a === "new") { if (window.confirm("Start a new, empty project? The current one and its media are removed from this browser (save a project file first if you want it).")) { P.pause(); VE.clearAll(); } }
+		if (a === "import") $("vd-file").click(); else if (a === "title") VE.addTitle(); else if (a === "saveproj") saveProject(); else if (a === "saveprojas") saveProject(true); else if (a === "openproj") pickProject();
+		else if (a === "new") { if (window.confirm("Start a new, empty project? The current one and its media are removed from this browser (save a project file first if you want it).")) { P.pause(); VE.clearAll(); linkProject(null); } }
 		else if (a === "snapshot") snapshot(); else if (a === "export") openExport();
 	});
-	function saveProject() {
-		var data = { format: "mes-video", v: 1, saved: new Date().toISOString(), project: VE.P, media: VE.bin.map(function (m) { return { id: m.id, name: m.name, origName: m.origName || "", size: m.size, kind: m.kind, dur: m.dur }; }) };
-		download(new Blob([JSON.stringify(data, null, 1)], { type: "application/json" }), (VE.P.name || "video").replace(/[\\/:*?"<>|]+/g, "-") + ".mesvideo");
-		toast("Project file saved. It holds the edit, not the media: keep the video files, and add them again when you open it on another computer.");
+	/* ---------- project file: like the Photo Editor, a project opened from or saved to a file stays linked to it, so Ctrl+S writes
+	   that same file again (no new name each time). Needs the File System Access API (Chrome, Edge, Opera on a computer; Brave behind
+	   brave://flags/#file-system-access-api); elsewhere every save is a download. The link survives a reload (handle in IndexedDB). */
+	var proj = { h: null, name: "", lm: 0, savedRev: -1 }, FSA = !!window.showSaveFilePicker, rev = 0;
+	VE.on("change", function (label) { rev++; if (label === "restore") proj.savedRev = rev; projState(); });   // the autosave coming back is not a new change
+	function projData() { return { format: "mes-video", v: 1, saved: new Date().toISOString(), project: VE.P, media: VE.bin.map(function (m) { return { id: m.id, name: m.name, origName: m.origName || "", size: m.size, kind: m.kind, dur: m.dur }; }) }; }
+	function projBlob() { return new Blob([JSON.stringify(projData(), null, 1)], { type: "application/json" }); }
+	function projFileName() { return (VE.P.name || "video").replace(/[\\/:*?"<>|]+/g, "-") + ".mesvideo"; }
+	function linkProject(h, lm) {
+		proj.h = h || null; proj.name = h ? h.name : ""; proj.lm = lm || 0; proj.savedRev = h ? rev : -1;
+		(h ? VE.idbPut("kv", "projfile", { h: h, lm: proj.lm }) : VE.idbDel("kv", "projfile")).catch(function () { /* the link just won't survive a reload */ });
+		projState();
+	}
+	VE.idbGet("kv", "projfile").then(function (v) { if (v && v.h && v.h.kind === "file") { proj.h = v.h; proj.name = v.h.name; proj.lm = v.lm || 0; proj.savedRev = rev; projState(); } }).catch(function () { });
+	function projState() {
+		var b = fm.querySelector('[data-act="saveproj"]'), st = $("vd-projst");
+		if (b) b.innerHTML = (proj.h ? "Save to " + esc(proj.name) : "Save project file (.mesvideo)") + " <kbd>Ctrl+S</kbd>";
+		if (st) { var dirty = proj.h && proj.savedRev !== rev; st.hidden = !proj.h; st.textContent = proj.h ? (dirty ? "● " : "") + proj.name : ""; st.title = proj.h ? (dirty ? "Changes not saved to " + proj.name + " yet (Ctrl+S saves them)" : "Linked to " + proj.name + ": Ctrl+S saves to it") : ""; st.classList.toggle("is-dirty", !!dirty); }
+	}
+	async function permOk(h) {
+		try { var o = { mode: "readwrite" }; if (await h.queryPermission(o) === "granted") return true; return await h.requestPermission(o) === "granted"; } catch (e) { return false; }
+	}
+	async function writeTo(h) { var w = await h.createWritable(); await w.write(projBlob()); await w.close(); var f = await h.getFile(); return f.lastModified; }
+	var dlNoted = false;
+	async function saveProject(asNew) {
+		if (!FSA) {
+			download(projBlob(), projFileName());
+			toast(dlNoted ? "Project file downloaded." : "Project file downloaded. This browser can't write back into a file, so each save is a new download" + (navigator.brave ? " (Brave can: turn on brave://flags/#file-system-access-api)" : "") + ". It holds the edit, not the media: keep the video files.", 9000);
+			dlNoted = true; proj.savedRev = rev; return true;
+		}
+		var h = asNew ? null : proj.h;
+		if (h) {
+			if (!(await permOk(h))) { toast("The browser did not allow writing to " + proj.name + ". Use File → Save project as… to pick a file."); return false; }
+			try {
+				var cur = await h.getFile();
+				if (proj.lm && cur.lastModified > proj.lm + 1000) {   // changed somewhere else (another computer through OneDrive / Dropbox, another tab)
+					var pick = await askConflict(cur); if (pick === "cancel") return false;
+					if (pick === "theirs") { openProject(cur, h); return false; }
+				}
+				var lm = await writeTo(h); proj.lm = lm; proj.savedRev = rev; VE.idbPut("kv", "projfile", { h: h, lm: lm }).catch(function () { }); projState();
+				toast("Saved to " + proj.name + "."); return true;
+			} catch (e) { if (e && e.name === "NotFoundError") { toast(proj.name + " is gone (moved or deleted): choose where to save it."); return saveProject(true); } toast("Could not save: " + (e && e.message || e)); return false; }
+		}
+		try { h = await window.showSaveFilePicker({ suggestedName: proj.name || projFileName(), types: [{ description: "MES Video Editor project", accept: { "application/json": [".mesvideo"] } }] }); }
+		catch (e) { return false; }   // cancelled
+		try { var lm2 = await writeTo(h); linkProject(h, lm2); toast("Saved to " + h.name + ". From now on Ctrl+S saves to this file. It holds the edit, not the media: keep the video files.", 8000); return true; }
+		catch (e) { toast("Could not save: " + (e && e.message || e)); return false; }
+	}
+	function askConflict(f) {
+		return new Promise(function (res) {
+			dialog("<h3>" + esc(proj.name) + " was changed somewhere else</h3><p class=\"vd-dtxt\">The file was saved at " + esc(new Date(f.lastModified).toLocaleString()) + ", after you last opened or saved it here (another computer through OneDrive / Dropbox, or another tab).</p>" +
+				"<div class=\"vd-dlgact\"><button type=\"button\" class=\"vd-btn vd-primary\" id=\"vd-cf-mine\">Keep mine (overwrite it)</button> <button type=\"button\" class=\"vd-btn\" id=\"vd-cf-theirs\">Open theirs</button> <button type=\"button\" class=\"vd-btn\" id=\"vd-cf-no\">Cancel</button></div>");
+			$("vd-cf-mine").onclick = function () { closeDialog(); res("mine"); };
+			$("vd-cf-theirs").onclick = function () { closeDialog(); res("theirs"); };
+			$("vd-cf-no").onclick = function () { closeDialog(); res("cancel"); };
+		});
+	}
+	async function pickProject() {
+		if (!window.showOpenFilePicker) return $("vd-projfile").click();
+		var hs; try { hs = await window.showOpenFilePicker({ types: [{ description: "MES Video Editor project", accept: { "application/json": [".mesvideo"] } }] }); } catch (e) { return; }
+		var f = await hs[0].getFile(); askOpenProject(f, hs[0]);
 	}
 	$("vd-projfile").onchange = function () { var f = this.files[0]; this.value = ""; if (f) askOpenProject(f); };
 	function isProjectFile(f) { return /\.mesvideo$/i.test(f.name || ""); }
 	// another project is open (clips or media in it): say so before replacing it
-	function askOpenProject(f) {
+	function askOpenProject(f, h) {
 		var n = VE.P.clips.length, nm = VE.bin.length;
-		if (!n && !nm) return openProject(f);
+		if (!n && !nm) return openProject(f, h);
 		dialog("<h3>Open " + esc(f.name) + "?</h3><p class=\"vd-dtxt\">A project is already open: <b>" + esc(VE.P.name || "Untitled video") + "</b> (" + n + " clip" + (n === 1 ? "" : "s") + ", " + nm + " media file" + (nm === 1 ? "" : "s") + "). Opening the new one replaces it in this browser. Its media files stay in the library only if the new project uses them.</p>" +
 			"<p class=\"vd-dtxt\">Save a project file of the current one first if you want to come back to it.</p>" +
 			"<div class=\"vd-dlgact\"><button type=\"button\" class=\"vd-btn vd-primary\" id=\"vd-op-save\">Save current, then open</button> <button type=\"button\" class=\"vd-btn\" id=\"vd-op-go\">Open without saving</button> <button type=\"button\" class=\"vd-btn\" id=\"vd-op-no\">Cancel</button></div>");
-		$("vd-op-save").onclick = function () { saveProject(); closeDialog(); openProject(f); };
-		$("vd-op-go").onclick = function () { closeDialog(); openProject(f); };
+		$("vd-op-save").onclick = async function () { closeDialog(); if (await saveProject()) openProject(f, h); };
+		$("vd-op-go").onclick = function () { closeDialog(); openProject(f, h); };
 		$("vd-op-no").onclick = closeDialog;
 	}
-	function openProject(f) {
+	function openProject(f, h) {
 		f.text().then(async function (txt) {
 			var d = JSON.parse(txt); if (!d || d.format !== "mes-video") throw new Error("This is not a MES Video Editor project file.");
 			P.pause(); var p = V.normalize(d.project), keep = {};
@@ -313,6 +372,8 @@
 			VE.bin = bin; VE.P = p; VE.sel = []; VE.hist = new V.History(200); VE.hist.push(JSON.stringify(p));
 			VE.bin.forEach(function (m) { if (m.state === "working" && m.file && !m.url) VE.prepare(m, false); });
 			VE.emit("bin"); VE.commit("Open project");
+			var hh = h && typeof h.then === "function" ? await h.catch(function () { return null; }) : h;   // a dropped file's handle arrives as a promise
+			if (hh && hh.kind === "file") linkProject(hh, f.lastModified); else linkProject(null);
 			var miss = VE.bin.filter(function (m) { return m.state === "missing"; }).length;
 			toast(miss ? miss + " media file" + (miss > 1 ? "s are" : " is") + " missing: drop them in (same names) to relink." : "Project opened.", 8000);
 		}).catch(function (e) { toast("Could not open it: " + e.message); });
@@ -322,13 +383,25 @@
 	var insp = $("vd-insp");
 	function num(id, label, val, step, min, max, unit, title) { return '<label class="vd-f" title="' + esc(title || "") + '"><span>' + label + '</span><input type="number" id="' + id + '" value="' + val + '" step="' + step + '"' + (min != null ? ' min="' + min + '"' : "") + (max != null ? ' max="' + max + '"' : "") + ">" + (unit ? "<em>" + unit + "</em>" : "") + "</label>"; }
 	function r1(x) { return Math.round(x * 100) / 100; }
+	function tcBox(id, label, t, title) { return '<label class="vd-f" title="' + esc(title || "") + '"><span>' + label + '</span><input type="text" class="vd-tcin" id="' + id + '" value="' + esc(V.tc(t, VE.P.fps)) + '" spellcheck="false" autocomplete="off"></label>'; }
+	function copyText(txt, msg) {
+		var done = function () { toast(msg); };
+		if (navigator.clipboard && navigator.clipboard.writeText) navigator.clipboard.writeText(txt).then(done, fallback); else fallback();
+		function fallback() { var ta = document.createElement("textarea"); ta.value = txt; ta.style.position = "fixed"; ta.style.opacity = "0"; document.body.appendChild(ta); ta.select(); try { document.execCommand("copy"); done(); } catch (e) { toast("Could not copy: select the text and copy it yourself."); } ta.remove(); }
+	}
+	function clipName(c) { var m = VE.media(c.media); return m ? m.name : "(missing file)"; }
+	function copyAllSources() {
+		var lines = V.sourceList(VE.P, clipName);
+		if (!lines.length) return toast("There are no video or sound clips on the timeline.");
+		copyText(lines.join("\n"), "Copied the source times of " + lines.length + " clip" + (lines.length === 1 ? "" : "s") + ".");
+	}
 	function renderInsp() {
 		var sel = VE.selected();
 		if (!sel.length) return renderProject();
 		if (sel.length > 1) return renderMulti(sel);
 		var c = sel[0], m = VE.media(c.media), h = '<h3>' + esc(c.type === "text" ? "Title" : m ? m.name : "Clip") + '</h3><p class="vd-sub">' + ({ video: "Video clip", audio: "Sound clip", image: "Picture", text: "Title" })[c.type] + " · " + V.short(V.dur(c)) + "</p>";
 		h += '<div class="vd-sec"><b>Time</b><div class="vd-grid">' + num("vd-i-start", "Starts at", r1(c.start), 0.01, 0, null, "s") + num("vd-i-dur", "Length", r1(V.dur(c)), 0.01, 0.05, null, "s") + "</div>";
-		if (c.type === "video" || c.type === "audio") h += '<p class="vd-sub">From ' + V.short(c.in) + " to " + V.short(c.out) + " of the file.</p>";
+		if (V.hasSource(c)) h += '<div class="vd-src"><b class="vd-srch">Source times <small>(where this clip is in its file)</small></b><div class="vd-grid">' + tcBox("vd-i-sin", "Begins at", c.in, "Where the clip begins in " + (m ? m.name : "its file") + ". Type a time (1:02:03;15, 263, 4m23s) and press Enter to trim the start.") + tcBox("vd-i-sout", "Ends at", c.out, "Where the clip ends in its file. Type a time and press Enter to trim the end.") + '</div><div class="vd-row"><button type="button" class="vd-btn vd-sm" id="vd-i-scopy" title="Copy the begin and end times in the file">Copy source times</button>' + (VE.P.clips.filter(V.hasSource).length > 1 ? '<button type="button" class="vd-btn vd-sm" id="vd-i-scopyall" title="Copy the source times of every video and sound clip, in timeline order">Copy for all clips</button>' : "") + "</div></div>";
 		h += '<div class="vd-grid">' + num("vd-i-fin", "Fade in", r1(c.fin || 0), 0.1, 0, 30, "s") + num("vd-i-fout", "Fade out", r1(c.fout || 0), 0.1, 0, 30, "s") + "</div>";
 		var prev = V.prevTouching(VE.P, c);
 		h += num("vd-i-xin", "Cross-fade from the clip before", r1(c.xin || 0), 0.1, 0, 10, "s", prev ? "The clip starts showing this long before its start, fading in over the clip before it" : "Put this clip right after another one on the same track to cross-fade");
@@ -383,6 +456,8 @@
 		var bin0 = VE.bin.filter(function (m) { return m.kind === "video" && m.w; })[0];
 		h += '<div class="vd-row vd-wrap">' + V.CANVAS_PRESETS.map(function (s) { return '<button type="button" class="vd-btn vd-sm" data-size="' + s[0] + '"' + (p.w + "x" + p.h === s[0] ? ' aria-pressed="true"' : "") + ">" + s[1] + "</button>"; }).join("") + (bin0 ? '<button type="button" class="vd-btn vd-sm" data-size="' + (Math.round(bin0.w / 2) * 2) + "x" + (Math.round(bin0.h / 2) * 2) + '">Like ' + esc(bin0.name.slice(0, 18)) + " (" + bin0.w + "×" + bin0.h + ")</button>" : "") + "</div>";
 		h += '<div class="vd-grid"><label class="vd-f"><span>Frame rate</span><select id="vd-p-fps">' + [24, 25, 29.97, 30, 50, 60].map(function (f) { return '<option value="' + f + '"' + (Math.abs(p.fps - f) < 0.01 ? " selected" : "") + ">" + f + " fps</option>"; }).join("") + (([24, 25, 29.97, 30, 50, 60].some(function (f) { return Math.abs(p.fps - f) < 0.01; })) ? "" : '<option selected value="' + p.fps + '">' + p.fps + " fps</option>") + '</select></label><label class="vd-f"><span>Background</span><input type="color" id="vd-p-bg" value="' + esc(p.bg) + '"></label></div></div>';
+		var nsrc = p.clips.filter(V.hasSource).length;
+		if (nsrc) h += '<div class="vd-sec"><b>Source times</b><p class="vd-sub">Where each video and sound clip begins and ends in its file (handy after splitting a long recording into parts).</p><ol class="vd-srclist">' + V.sourceList(p, clipName).slice(0, 40).map(function (l) { return "<li>" + esc(l) + "</li>"; }).join("") + "</ol>" + (nsrc > 40 ? '<p class="vd-sub">… and ' + (nsrc - 40) + " more (all of them are copied).</p>" : "") + '<div class="vd-row"><button type="button" class="vd-btn vd-sm" id="vd-p-scopy">Copy the list</button></div></div>';
 		h += '<div class="vd-sec"><b>Start here</b><ol class="vd-steps"><li>Import videos, sound and pictures (or drop them in).</li><li>Drag them onto the timeline, or select several and press <i>Add selected in order</i> to join them.</li><li>Click a clip to trim, split (S), fade, move or clean up its sound here.</li><li>Press <i>Export MP4</i>.</li></ol><p class="vd-sub">Your work is saved in this browser as you go.</p></div>';
 		insp.innerHTML = h;
 		function setSize(w, hh) { VE.setCanvas(w, hh); }
@@ -390,10 +465,31 @@
 		insp.querySelectorAll("[data-size]").forEach(function (b) { b.onclick = function () { var s = b.getAttribute("data-size").split("x"); setSize(+s[0], +s[1]); }; });
 		$("vd-p-fps").onchange = function () { p.fps = +this.value; VE.commit("Frame rate"); };
 		$("vd-p-bg").onchange = function () { p.bg = this.value; VE.commit("Background"); };
+		if ($("vd-p-scopy")) $("vd-p-scopy").onclick = copyAllSources;
 	}
 	function bindInsp(c) {
 		function on(id, ev, fn) { var el = $(id); if (el) el.addEventListener(ev, fn); }
 		on("vd-cmp-go", "click", function () { VE.compareSound(c); });
+		// source times: typing a new begin / end trims the clip in place (its start on the timeline stays put)
+		function setSrc(id, which) {
+			var el = $(id); if (!el) return;
+			el.addEventListener("keydown", function (e) { if (e.key === "Enter") { e.preventDefault(); el.blur(); } else if (e.key === "Escape") { el.value = V.tc(which === "in" ? c.in : c.out, VE.P.fps); el.blur(); } e.stopPropagation(); });
+			el.addEventListener("change", function () {
+				var cur = which === "in" ? c.in : c.out, v = V.parseGoto(el.value, VE.P.fps, cur);
+				if (v == null) { toast("Type a time like 1:02:03;15, 263 (seconds) or 4m23s."); return renderInsp(); }
+				var sp = c.speed || 1, min = sp / VE.P.fps, md = VE.mediaDur(c), nIn = c.in, nOut = c.out;
+				if (which === "in" ? v >= c.out - min : v <= c.in + min) { toast(which === "in" ? "The begin has to be before the end (" + V.tc(c.out, VE.P.fps) + ")." : "The end has to be after the begin (" + V.tc(c.in, VE.P.fps) + ")."); return renderInsp(); }
+				if (which === "in") nIn = V.clamp(v, 0, c.out - min); else nOut = V.clamp(v, c.in + min, md < Infinity ? md : Infinity);
+				var ign = {}; ign[c.id] = 1;
+				if (!V.canPlace(VE.P, c.track, c.start, (nOut - nIn) / sp, ign)) { toast("That makes the clip run into the next clip on its track. Move that clip first."); return renderInsp(); }
+				if (Math.abs(nIn - v) > 1e-6 && which === "in" || Math.abs(nOut - v) > 1e-6 && which === "out") toast("The file only goes from 0:00;00 to " + V.tc(md, VE.P.fps) + ": used the nearest time.");
+				c.in = nIn; c.out = nOut; c.fin = Math.min(c.fin || 0, V.dur(c)); c.fout = Math.min(c.fout || 0, V.dur(c));
+				VE.commit(which === "in" ? "Source begin" : "Source end");
+			});
+		}
+		setSrc("vd-i-sin", "in"); setSrc("vd-i-sout", "out");
+		on("vd-i-scopy", "click", function () { copyText(clipName(c) + ": " + V.srcText(c, VE.P.fps), "Copied: " + V.srcText(c, VE.P.fps)); });
+		on("vd-i-scopyall", "click", copyAllSources);
 		function setNum(id, fn, label) { on(id, "change", function () { var v = parseFloat(this.value); if (!isFinite(v)) return renderInsp(); fn(v); VE.commit(label); }); }
 		setNum("vd-i-start", function (v) { var s = Math.max(0, v); if (V.canPlace(VE.P, c.track, s, V.dur(c), (function () { var o = {}; o[c.id] = 1; return o; })())) c.start = s; else toast("There is no room there on this track."); }, "Move");
 		setNum("vd-i-dur", function (v) { var r = V.trim(c, "r", c.start + Math.max(0.05, v), { mediaDur: VE.mediaDur(c), hi: nextStart(c), minDur: 1 / VE.P.fps }); Object.assign(c, r); }, "Length");
@@ -731,7 +827,7 @@
 		if (!$("vd-modal").hidden) { if (k === "Escape") closeDialog(); return; }
 		if (mod && (k === "z" || k === "Z")) { e.preventDefault(); if (e.shiftKey) VE.redo(); else VE.undo(); return; }
 		if (mod && (k === "y" || k === "Y")) { e.preventDefault(); VE.redo(); return; }
-		if (mod && (k === "s" || k === "S")) { e.preventDefault(); saveProject(); return; }
+		if (mod && (k === "s" || k === "S")) { e.preventDefault(); saveProject(e.shiftKey); return; }
 		if (mod && (k === "e" || k === "E")) { e.preventDefault(); openExport(); return; }
 		if (mod && (k === "i" || k === "I")) { e.preventDefault(); $("vd-file").click(); return; }
 		if (mod && (k === "d" || k === "D")) { e.preventDefault(); VE.duplicate(); return; }

@@ -304,5 +304,15 @@ function proj(clips) { const p = V.newProject(); p.clips = clips; return p; }
 	ok(V.esdsAac(new Uint8Array(20)) === null, "no esds -> null");
 	const g = V.aacConfig(48000, 2); ok(g.desc[0] === 0x11 && g.desc[1] === 0x90, "made-up AAC-LC config matches"); ok(V.aacConfig(12345, 2) === null, "odd rate -> null");
 }
+{   // source times: where each clip begins / ends in its file, listed in timeline order
+	const p = { fps: 30, clips: [
+		{ id: "b", type: "video", track: "v1", start: 10, in: 263.5, out: 300, media: "m" },
+		{ id: "a", type: "video", track: "v1", start: 0, in: 0, out: 10, media: "m" },
+		{ id: "t", type: "text", track: "v2", start: 0, in: 0, out: 5 } ] };
+	ok(V.hasSource(p.clips[0]) && !V.hasSource(p.clips[2]), "titles have no source times");
+	ok(V.srcText(p.clips[0], 30) === "4:23;15 \u2013 5:00;00", "source text " + V.srcText(p.clips[0], 30));
+	const L = V.sourceList(p, function () { return "rec.mp4"; });
+	ok(L.length === 2 && L[0].indexOf("rec.mp4: 0:00;00") === 0 && L[1].indexOf("4:23;15") > 0, "source list in timeline order");
+}
 console.log(pass + " passed, " + fail + " failed");
 process.exit(fail ? 1 : 0);
