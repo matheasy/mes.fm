@@ -55,6 +55,9 @@
 	.gj-hud em {grid-column:1 / -1;font-style:normal;font-size:0.7em;color:#cfc8e2;font-variant-numeric:tabular-nums;}
 	.gj-hint {position:absolute;left:50%;top:52%;transform:translate(-50%,-50%);z-index:3;max-width:min(88%,26em);text-align:center;padding:0.7em 1.1em;border-radius:0.8em;background:rgba(14,9,30,0.78);color:var(--gt-ink);font-size:0.92em;line-height:1.5;cursor:pointer;border:1px solid var(--gt-line);}
 	.gj-hint b {display:block;font-size:1.15em;margin-bottom:0.2em;}
+	.gj-hint .gj-hintx {position:absolute;top:0.15em;right:0.25em;width:1.7em;height:1.7em;padding:0;border:0;border-radius:50%;background:transparent;color:inherit;font-size:1.15em;line-height:1;cursor:pointer;opacity:0.75;}
+	.gj-hint .gj-hintx:hover, .gj-hint .gj-hintx:focus-visible {opacity:1;background:rgba(255,255,255,0.12);}
+	.gj-hint {padding-right:2em;padding-left:2em;}
 	.gj-hint kbd {display:inline-block;padding:0 0.4em;border-radius:0.3em;background:#3a2f5c;border:1px solid #55487e;font:inherit;font-size:0.9em;}
 	.gj-verdict {position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);z-index:5;max-width:min(90%,30em);text-align:center;padding:0.9em 2em 0.9em 1.3em;border-radius:0.8em;background:rgba(14,9,30,0.9);color:var(--gt-ink);box-shadow:0 10px 40px rgba(0,0,0,0.5);border:2px solid var(--gt-line);cursor:pointer;animation:gjpop 0.3s ease-out;transition:all 0.35s ease;}
 	.gj-verdict b {display:block;font-size:1.25em;margin-bottom:0.25em;}

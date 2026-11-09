@@ -771,21 +771,21 @@
 			var mir = box(ck.glass, 0.04, 0.07, 0.24, roofF[0] - 0.12, roofF[1] - 0.17, -0.04, dark); box(mir, 0.005, 0.055, 0.22, -0.023, 0, 0, chrome);
 			box(ck.glass, 0.02, 0.1, 0.02, roofF[0] - 0.1, roofF[1] - 0.11, -0.04, dark);
 			/* dashboard + door sills */
-			var dTop = Math.min(cowl[1] - 0.03, e[1] - 0.3), xd = Math.min(e[0] + 0.62, cowl[0] - 0.25);
-			box(ck.full, Math.max(0.2, cowl[0] - 0.04 - xd), 0.07, w - 0.12, (cowl[0] - 0.04 + xd) / 2, dTop, 0, dark);
+			var dTop = e[1] - 0.3, xd = Math.max(e[0] + 0.45, Math.min(e[0] + 0.6, cowl[0] - 0.1)); /* placed from the eye so the gauge and wheel sit in view in every body */
+			bar(ck.full, [xd, dTop], [cowl[0] + 0.08, cowl[1] + 0.012], 0, 0.07, w - 0.12, dark); /* dash top runs into the base of the windshield, so no road shows between dash and bonnet */
 			box(ck.full, 0.1, 0.4, w - 0.12, xd, dTop - 0.2, 0, trim);
-			box(ck.full, 0.26, 0.08, 0.52, xd + 0.04, dTop + 0.06, e[2], dark);
-			var cl = new THREE.Mesh(new THREE.PlaneGeometry(0.3, 0.15), gaugeM); cl.position.set(xd - 0.055, dTop - 0.04, e[2]); cl.rotation.set(0, -Math.PI / 2, 0); cl.rotateX(-0.25); ck.full.add(cl);
+			box(ck.full, 0.2, 0.035, 0.44, xd - 0.06, dTop + 0.075, e[2], dark); box(ck.full, 0.1, 0.13, 0.44, xd - 0.03, dTop, e[2], dark); /* cluster hood + back */
+			var cl = new THREE.Mesh(new THREE.PlaneGeometry(0.3, 0.15), gaugeM); cl.position.set(xd - 0.09, dTop - 0.005, e[2]); cl.rotation.set(0, -Math.PI / 2, 0); cl.rotateX(-0.25); ck.full.add(cl);
 			box(ck.full, 0.04, 0.12, 0.26, xd - 0.04, dTop - 0.1, 0.12, trim); /* centre vents */
 			[-1, 1].forEach(function (sd) { box(ck.full, Math.max(0.3, cowl[0] - e[0] + 0.6), 0.08, 0.1, (cowl[0] + e[0] - 0.6) / 2, dTop + 0.03, sd * (w / 2 - 0.07), trim); });
 			/* steering wheel */
-			var R = 0.18, rim = new THREE.Mesh(new THREE.TorusGeometry(R, 0.022, 10, 40), dark); steer.add(rim);
+			var R = 0.2, rim = new THREE.Mesh(new THREE.TorusGeometry(R, 0.022, 10, 40), dark); steer.add(rim);
 			[[0, 0], [Math.PI, 0], [-Math.PI / 2, 0]].forEach(function (a) { var sp = new THREE.Mesh(new THREE.BoxGeometry(R, 0.03, 0.015), trim); sp.position.set(Math.cos(a[0]) * R / 2, Math.sin(a[0]) * R / 2, 0); sp.rotation.z = a[0]; steer.add(sp); });
 			var hub = new THREE.Mesh(new THREE.CylinderGeometry(0.055, 0.055, 0.05, 20), trim); hub.rotation.x = Math.PI / 2; steer.add(hub);
 			var badge = new THREE.Mesh(new THREE.CircleGeometry(0.022, 16), new THREE.MeshStandardMaterial({ color: new THREE.Color(paint.color), metalness: 0.6, roughness: 0.3 })); badge.position.z = 0.027; steer.add(badge);
 			steer.rotation.y = -Math.PI / 2;
 			var col = new THREE.Mesh(new THREE.CylinderGeometry(0.03, 0.04, 0.42, 12), trim); col.rotation.z = -Math.PI / 2; col.position.x = 0.21; sw.add(col);
-			sw.position.set(Math.min(e[0] + 0.48, xd - 0.15), e[1] - 0.42, e[2]); sw.rotation.z = -0.45; ck.full.add(sw);
+			sw.position.set(Math.max(e[0] + 0.32, xd - 0.2), e[1] - 0.52, e[2]); sw.rotation.z = -0.45; ck.full.add(sw);
 		} else {
 			/* handlebars with grips, risers, a small gauge pod */
 			var hbx = e[0] + 0.5, hby = e[1] - 0.44;
@@ -980,7 +980,11 @@
 	function simOpts() { var gg = GRAV[S.gr]; return { mode: S.m, kmh: S.k, g: gg[0], rho: gg[1], airControl: S.ac, approach: 140 }; }
 	function rebuild() { co = M.buildCourse(courseOpts()); veh = M.vehicle(S.v); if (r3) r3.setScene(co, veh, S.color || veh.color, GRAV[S.gr]); paintCamSel(); }
 	function reset() { cancelAnimationFrame(replayTimer); rebuild(); sim = new M.Sim(co, veh, simOpts()); running = false; replay = null; acc = 0; $("gj-verdict").hidden = true; scrubSetup(); paintRun(); camSnap = true; paintRo(); frame(); }
-	function go() {
+	/* the centre tip shows until the first run (or ×), separately for Go and Drive-it-yourself; remembered */
+	var hintSeen = {}; try { hintSeen = JSON.parse(localStorage.getItem(KEY + ":hints") || "{}") || {}; } catch (e) { hintSeen = {}; }
+	function hintKey() { return S.m === "drive" ? "d" : "g"; }
+	function hintDone() { if (hintSeen[hintKey()]) return; hintSeen[hintKey()] = 1; try { localStorage.setItem(KEY + ":hints", JSON.stringify(hintSeen)); } catch (e) { /* private mode */ } }
+	function go() { hintDone();
 		if (running) { running = false; paintRun(); return; }
 		if (!sim || sim.done || replay) reset();
 		if (touchDev && window.innerHeight < 520 && !isFill()) enterFill(); /* a phone held sideways: play in the whole window */
@@ -1060,10 +1064,11 @@
 	function paintRun() {
 		var b = $("gj-go"); b.textContent = running ? "❚❚ Pause" : sim && sim.done ? "▶︎ Again" : sim && sim.t > 0 ? "▶︎ Resume" : (S.m === "drive" ? "▶︎ Start" : "▶︎ Go");
 		var hint = $("gj-hint");
-		if (!running && sim && sim.t === 0) {
+		if (!running && sim && sim.t === 0 && !hintSeen[hintKey()]) {
 			hint.hidden = false;
 			hint.innerHTML = S.m === "drive" ? "<b>Drive it yourself</b>Hold <kbd>Gas</kbd> or <kbd>↑</kbd> to drive at the ramp. <kbd>↓</kbd> brakes." + (S.ac ? " <kbd>←</kbd> <kbd>→</kbd> tilt in the air." : " In the air, gas lifts the nose and brake drops it.")
 				: "<b>Press Go</b>" + (touchDev && window.innerHeight < 520 ? "It opens in the whole window. " : "") + (S.edit && S.view === "2d" ? "Drag the white handles to reshape the ramps." : "Pick an example or open ⚙︎ Options to build your own jump.");
+			hint.insertAdjacentHTML("afterbegin", '<button type="button" class="gj-hintx" aria-label="Hide this tip" title="Hide this tip">×</button>');
 		} else hint.hidden = true;
 		$("gj-quick").classList.toggle("gj-quick--run", running);
 		$("gj-replay").hidden = !(sim && sim.done && sim.track.length); /* nothing to replay before a run */
@@ -1497,7 +1502,7 @@
 	$("gj-go").addEventListener("click", go);
 	$("gj-reset").addEventListener("click", reset);
 	$("gj-3d").addEventListener("click", function () { if (S.cam3 !== "orbit" && !running && (!sim || !sim.done) && !replay) go(); });
-	$("gj-hint").addEventListener("click", function () { if (S.m !== "drive") go(); });
+	$("gj-hint").addEventListener("click", function (e) { if (e.target.closest(".gj-hintx")) { hintDone(); $("gj-hint").hidden = true; return; } if (S.m !== "drive") go(); });
 	$("gj-col").addEventListener("input", function (e) { S.color = e.target.value; save(); if (r3) r3.setScene(co, veh, S.color, GRAV[S.gr]); frame(); });
 
 	/* ---------------- start ---------------- */

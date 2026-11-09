@@ -137,7 +137,11 @@
 	function simOpts() { var gg = GRAV[S.gr]; return { mode: S.m, kmh: S.k, g: gg[0], rho: gg[1], airControl: S.ac, approach: 140 }; }
 	function rebuild() { co = M.buildCourse(courseOpts()); veh = M.vehicle(S.v); if (r3) r3.setScene(co, veh, S.color || veh.color, GRAV[S.gr]); paintCamSel(); }
 	function reset() { cancelAnimationFrame(replayTimer); rebuild(); sim = new M.Sim(co, veh, simOpts()); running = false; replay = null; acc = 0; $("gj-verdict").hidden = true; scrubSetup(); paintRun(); camSnap = true; paintRo(); frame(); }
-	function go() {
+	/* the centre tip shows until the first run (or ×), separately for Go and Drive-it-yourself; remembered */
+	var hintSeen = {}; try { hintSeen = JSON.parse(localStorage.getItem(KEY + ":hints") || "{}") || {}; } catch (e) { hintSeen = {}; }
+	function hintKey() { return S.m === "drive" ? "d" : "g"; }
+	function hintDone() { if (hintSeen[hintKey()]) return; hintSeen[hintKey()] = 1; try { localStorage.setItem(KEY + ":hints", JSON.stringify(hintSeen)); } catch (e) { /* private mode */ } }
+	function go() { hintDone();
 		if (running) { running = false; paintRun(); return; }
 		if (!sim || sim.done || replay) reset();
 		if (touchDev && window.innerHeight < 520 && !isFill()) enterFill(); /* a phone held sideways: play in the whole window */
@@ -217,10 +221,11 @@
 	function paintRun() {
 		var b = $("gj-go"); b.textContent = running ? "❚❚ Pause" : sim && sim.done ? "▶︎ Again" : sim && sim.t > 0 ? "▶︎ Resume" : (S.m === "drive" ? "▶︎ Start" : "▶︎ Go");
 		var hint = $("gj-hint");
-		if (!running && sim && sim.t === 0) {
+		if (!running && sim && sim.t === 0 && !hintSeen[hintKey()]) {
 			hint.hidden = false;
 			hint.innerHTML = S.m === "drive" ? "<b>Drive it yourself</b>Hold <kbd>Gas</kbd> or <kbd>↑</kbd> to drive at the ramp. <kbd>↓</kbd> brakes." + (S.ac ? " <kbd>←</kbd> <kbd>→</kbd> tilt in the air." : " In the air, gas lifts the nose and brake drops it.")
 				: "<b>Press Go</b>" + (touchDev && window.innerHeight < 520 ? "It opens in the whole window. " : "") + (S.edit && S.view === "2d" ? "Drag the white handles to reshape the ramps." : "Pick an example or open ⚙︎ Options to build your own jump.");
+			hint.insertAdjacentHTML("afterbegin", '<button type="button" class="gj-hintx" aria-label="Hide this tip" title="Hide this tip">×</button>');
 		} else hint.hidden = true;
 		$("gj-quick").classList.toggle("gj-quick--run", running);
 		$("gj-replay").hidden = !(sim && sim.done && sim.track.length); /* nothing to replay before a run */
@@ -654,7 +659,7 @@
 	$("gj-go").addEventListener("click", go);
 	$("gj-reset").addEventListener("click", reset);
 	$("gj-3d").addEventListener("click", function () { if (S.cam3 !== "orbit" && !running && (!sim || !sim.done) && !replay) go(); });
-	$("gj-hint").addEventListener("click", function () { if (S.m !== "drive") go(); });
+	$("gj-hint").addEventListener("click", function (e) { if (e.target.closest(".gj-hintx")) { hintDone(); $("gj-hint").hidden = true; return; } if (S.m !== "drive") go(); });
 	$("gj-col").addEventListener("input", function (e) { S.color = e.target.value; save(); if (r3) r3.setScene(co, veh, S.color, GRAV[S.gr]); frame(); });
 
 	/* ---------------- start ---------------- */
