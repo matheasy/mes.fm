@@ -150,6 +150,23 @@
  * The status line under the toolbar always says whether everything is saved online.
  * window.CTSync(app) is called by app.js; it returns { changed() }.
  */
+/* Relay for MES Cloud Files (/main_js/cloud-files.js, used by mes.fm/excel, /docx ...): Dropbox and Microsoft only return a sign-in to
+ * https://mes.fm/copy-text, so other pages sign in through a pop-up that lands here. If the state belongs to such a pop-up
+ * (localStorage "mes-cloud:oauth:<state>"), hand the code to the opener (localStorage "mes-cloud:code:<state>"), clean the
+ * address bar (so Copy Text's own sign-in below ignores it) and close the pop-up. */
+(function () {
+	try {
+		var q = new URLSearchParams(location.search), st = q.get("state");
+		if (!st || !localStorage.getItem("mes-cloud:oauth:" + st)) return;
+		localStorage.setItem("mes-cloud:code:" + st, JSON.stringify({ code: q.get("code"), error: q.get("error"), desc: q.get("error_description"), t: Date.now() }));
+		localStorage.removeItem("mes-cloud:oauth:" + st);
+		history.replaceState(null, "", location.pathname);
+		window.__mesCloudRelay = true;
+		setTimeout(function () { window.close(); }, 300);
+		var show = function () { var t = document.createElement("div"); t.style.cssText = "position:fixed;inset:0;z-index:2147483647;background:#fff;color:#111;font:18px system-ui;display:flex;align-items:center;justify-content:center;text-align:center;padding:2em"; t.textContent = "Signed in. You can close this window and go back to the page you came from."; document.body.appendChild(t); };
+		if (document.body) show(); else document.addEventListener("DOMContentLoaded", show);
+	} catch (e) { /* ignore */ }
+})();
 (function () {
 	"use strict";
 	/* App keys (public client ids, not secrets). Leave "" to hide that button.

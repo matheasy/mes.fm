@@ -4572,7 +4572,7 @@
 		if (!inUs) return;
 		var k = e.key.toLowerCase(), typing = document.activeElement && /input|textarea|select/i.test(document.activeElement.tagName);
 		if (k === "o") { e.preventDefault(); pick(); }
-		else if (k === "s" && wb) { e.preventDefault(); saveAs(wb.vbaraw ? "xlsm" : "xlsx"); }
+		else if (k === "s" && wb) { e.preventDefault(); if (editing && !commitEdit()) return; if (!(cloud && cloud.save(file))) saveAs(wb.vbaraw ? "xlsm" : "xlsx"); }
 		else if (k === "p" && wb) { e.preventDefault(); printSheet(); }
 		else if (k === "f" && wb) { e.preventDefault(); $("xl-q").focus(); $("xl-q").select(); }
 		else if ((k === "z" || k === "y") && wb && !typing) { e.preventDefault(); doUndo(k === "y" || e.shiftKey); }
@@ -4754,6 +4754,7 @@
 	function autosave() {
 		if (!file) return;
 		file.autosaved = false;
+		if (cloud) cloud.changed(file);
 		clearTimeout(asT);
 		if (!S.remember) return;
 		asT = setTimeout(function () {
@@ -4826,6 +4827,30 @@
 			}).catch(function (err) { note("Could not save: " + esc(err && err.message || err), true); });
 		} catch (err) { note("Could not save: " + esc(err.message || err), true); }
 	}
+	/* ---------- ☁ Cloud: open from / keep saved to OneDrive, Dropbox, Google Drive or a synced folder (/main_js/cloud-files.js) ---------- */
+	var WRITABLE = { xlsx: 1, xlsm: 1, ods: 1, csv: 1, tsv: 1 };
+	function cloudWriteName(n) { var e = (/\.([a-z0-9]+)$/i.exec(n || "") || [])[1]; e = e ? e.toLowerCase() : ""; if (e === "xlsm" && !(wb && wb.vbaraw)) return X.baseName(n) + ".xlsx"; return WRITABLE[e] ? n : X.baseName(n || "Untitled") + ".xlsx"; }
+	function cloudBytes(f, name) {
+		var e = ((/\.([a-z0-9]+)$/i.exec(name) || [])[1] || "xlsx").toLowerCase();
+		if (e === "csv" || e === "tsv") {
+			if (wb.SheetNames.length > 1 && f.__mclCsvNote !== 1) { f.__mclCsvNote = 1; toast("A ." + e + " file holds one sheet: saving the sheet on screen"); }
+			return Promise.resolve(new TextEncoder().encode("\ufeff" + X.toDelimited(sheetRows(), e === "csv" ? "," : "\t")));
+		}
+		if (e === "ods") { prepWrite(); return Promise.resolve(new Uint8Array(window.XLSX.write(wb, { bookType: "ods", type: "array", compression: true }))); }
+		return xlsxBytes(e === "xlsm" ? "xlsm" : "xlsx").then(function (res) { return res.bytes instanceof Uint8Array ? res.bytes : new Uint8Array(res.bytes); });
+	}
+	var cloud = window.MESCloud ? window.MESCloud.attach({
+		app: "excel", what: "spreadsheet", defExt: "xlsx", btnClass: "xl-btn", before: $("xl-fname"), replaces: true, toast: toast,
+		exts: [".xlsx", ".xlsm", ".xls", ".xlsb", ".ods", ".csv", ".tsv"],
+		accept: [{ description: "Spreadsheet", accept: { "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet": [".xlsx"], "application/vnd.ms-excel.sheet.macroEnabled.12": [".xlsm"], "application/vnd.ms-excel": [".xls"], "application/vnd.oasis.opendocument.spreadsheet": [".ods"], "text/csv": [".csv"], "text/tab-separated-values": [".tsv"] } }],
+		doc: function () { return wb ? file : null; },
+		name: function (f) { return f.name; },
+		writeName: cloudWriteName,
+		bytes: function (f, name) { if (f !== file) return Promise.reject(new Error("That spreadsheet is no longer open.")); return cloudBytes(f, name); },
+		open: function (u8, name) { if (editing) cancelEdit(); return openBytes(u8, name, {}).then(function () { return wb && file && file.bytes === u8 ? file : null; }); },
+		dirty: function (f) { return !!f.dirty; },
+		saved: function (f, name) { if (name && name !== f.name) f.name = name; f.dirty = false; f.saved = true; renderName(); recentUpdate(f.key, function (r) { delete r.draft; delete r.draftTime; r.name = f.name; }); }
+	}) : null;
 	// .xlsx bytes: SheetJS writes the cells, then ooxml.js grafts back the original styles, theme, freeze panes, tables, charts,
 	// pictures and conditional formatting (only the last four need the rows / columns / sheets to be unchanged since opening)
 	function graftInfo() {
@@ -4866,7 +4891,7 @@
 		return info;
 	}
 	// SheetJS's writer fails on a missing row inside the data (left by inserting rows): fill the holes first
-	function prepWrite() { wb.SheetNames.forEach(function (n) { var d = wb.Sheets[n]["!data"]; if (d) for (var r = 0; r < d.length; r++) if (!d[r]) d[r] = []; }); }
+	function prepWrite() { wb.SheetNames.forEach(function (n) { var d = wb.Sheets[n]["!data"]; if (d && !d.length) d.push([]); if (d) for (var r = 0; r < d.length; r++) if (!d[r]) d[r] = []; }); }
 	function xlsxBytes(bt) {
 		var vba = bt === "xlsm";
 		prepWrite();

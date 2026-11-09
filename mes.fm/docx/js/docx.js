@@ -1221,7 +1221,7 @@ var MESDocx = (function () {
 	function sel() { return getSelection(); }
 	var saveDraft = debounce(function () { if (cur && cur.dirty) recentDraft(cur); }, 2500);
 	var refreshSoon = debounce(function () { if (cur) cur.edText = null; if (S.tab === "outline" || S.tab === "info") fillPane(); status(); }, 600);
-	function markDirty() { if (!cur) return; var was = cur.dirty; cur.dirty = cur.everEdited = true; cur.src = cur.mode === "edit" ? "edited" : cur.src; cur.editedBytes = null; if (!was) renderTabs(); saveDraft(); refreshSoon(); }
+	function markDirty() { if (!cur) return; var was = cur.dirty; cur.dirty = cur.everEdited = true; cur.src = cur.mode === "edit" ? "edited" : cur.src; cur.editedBytes = null; if (!was) renderTabs(); saveDraft(); refreshSoon(); if (cloud) cloud.changed(cur); }
 	function inEditor(node) { return cur && cur.editEl && node && cur.editEl.contains(node.nodeType === 1 ? node : node.parentNode); }
 	function syncBar() {
 		if (!cur || cur.mode !== "edit") return;
@@ -1357,6 +1357,22 @@ var MESDocx = (function () {
 			else if (kind === "copy") { var t = D.toText(model); (navigator.clipboard ? navigator.clipboard.writeText(t) : Promise.reject()).then(function () { toast("Copied " + D.countText(t).words.toLocaleString() + " words"); }, function () { toast("Copy was blocked by the browser."); }); }
 		}).catch(fail);
 	};
+	/* ---------- ☁ Cloud: open from / keep saved to OneDrive, Dropbox, Google Drive or a synced folder (/main_js/cloud-files.js) ---------- */
+	var cloud = window.MESCloud ? window.MESCloud.attach({
+		app: "docx", what: "document", defExt: "docx", btnClass: "dx-btn", before: $("dx-tabs"), toast: toast,
+		exts: [".docx", ".docm", ".dotx"],
+		accept: [{ description: "Word document", accept: { "application/vnd.openxmlformats-officedocument.wordprocessingml.document": [".docx"] } }],
+		doc: function () { return cur; },
+		name: function (d) { return d.name; },
+		writeName: function (n) { return /\.docx$/i.test(n || "") ? n : D.baseName(n || "Untitled") + ".docx"; },
+		bytes: function (d) { if (docs.indexOf(d) < 0) return Promise.reject(new Error("That document was closed.")); return !d.everEdited && !d.blank ? Promise.resolve(d.bytes) : buildEdited(d); },
+		open: function (u8, name, replace) {
+			if (replace && docs.indexOf(replace) >= 0) { replace.dirty = false; closeDoc(replace); }
+			return openBytes(u8, name, {}).then(function (d) { return d || null; });
+		},
+		dirty: function (d) { return !!d.dirty; },
+		saved: function (d, name) { if (name && name !== d.name) d.name = name; d.dirty = false; renderTabs(); recentClearDraft(d); status(); }
+	}) : null;
 	function recentClearDraft(d) { if (!d.key) return; store("readwrite", function (st) { var g = st.get(d.key); g.onsuccess = function () { var r = g.result; if (r && r.draft) { delete r.draft; st.put(r); } }; }).catch(function () { }); }
 	function fail(err) { note("Something went wrong: " + esc(err && err.message || err), true); }
 	function printDoc() {
@@ -1423,7 +1439,7 @@ var MESDocx = (function () {
 		if (mod && e.key.toLowerCase() === "o") { e.preventDefault(); pick(); return; }
 		if (!cur) return;
 		if (mod && e.key.toLowerCase() === "f") { e.preventDefault(); if (!S.side) setSide(true); setTab("find"); return; }
-		if (mod && e.key.toLowerCase() === "s") { e.preventDefault(); menu.querySelector('[data-dl="docx"]').click(); return; }
+		if (mod && e.key.toLowerCase() === "s") { e.preventDefault(); if (!(cloud && cloud.save(cur))) menu.querySelector('[data-dl="docx"]').click(); return; }
 		if (mod && e.key.toLowerCase() === "p") { e.preventDefault(); printDoc(); return; }
 		if (mod && (e.key === "=" || e.key === "+")) { e.preventDefault(); stepZoom(1); return; }
 		if (mod && e.key === "-") { e.preventDefault(); stepZoom(-1); return; }

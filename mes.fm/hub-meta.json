@@ -178,7 +178,7 @@
 },
 "/copy-text":{
 "added":"2026-10-03",
-"updated":"2026-11-06",
+"updated":"2026-11-08",
 "type":"Tool"
 },
 "/countdown-timer":{
@@ -233,7 +233,7 @@
 },
 "/docx":{
 "added":"2026-10-26",
-"updated":"2026-10-30",
+"updated":"2026-11-08",
 "type":"Tool"
 },
 "/domain-lookup":{
@@ -278,7 +278,7 @@
 },
 "/excel":{
 "added":"2026-10-30",
-"updated":"2026-11-03",
+"updated":"2026-11-08",
 "type":"Tool"
 },
 "/exif-viewer":{
