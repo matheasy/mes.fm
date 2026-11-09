@@ -1,0 +1,135 @@
+	<script>try{if(!localStorage.getItem('pageMode')){document.documentElement.classList.add('page-wide')}}catch(e){}</script>
+	<script src="/main_js/panel-view.js" defer></script>
+	<div class="tu bl" id="bl" data-start="{{START}}">
+		<nav class="bl-fam" aria-label="MES Billiards pages">{{FAM}}</nav>
+		<div class="bl-tabs" id="bl-tabs" role="tablist" aria-label="Billiards sections">
+			<button type="button" class="bl-tab" role="tab" data-t="play" aria-selected="true" aria-controls="bl-p-play">Play</button><button type="button" class="bl-tab" role="tab" data-t="online" aria-selected="false" aria-controls="bl-p-online" tabindex="-1">Play online</button><button type="button" class="bl-tab" role="tab" data-t="chal" aria-selected="false" aria-controls="bl-p-chal" tabindex="-1">Challenges</button><button type="button" class="bl-tab" role="tab" data-t="stats" aria-selected="false" aria-controls="bl-p-stats" tabindex="-1">Statistics</button><button type="button" class="bl-tab" role="tab" data-t="rules" aria-selected="false" aria-controls="bl-p-rules" tabindex="-1">Rules &amp; help</button>
+		</div>
+
+		<section id="bl-p-play" role="tabpanel" aria-label="Play">
+			<div class="tu-card bl-setup" id="bl-setup">
+				<div class="tu-row">
+					<div class="tu-field bl-f-game"><label for="bl-game">Game</label>
+						<select id="bl-game" class="tu-select"></select></div>
+					<div class="tu-field bl-f-seg bl-2only"><span class="tu-label" id="bl-opp-l">Play against</span>
+						<div class="tu-seg" id="bl-opp" role="group" aria-labelledby="bl-opp-l"><button type="button" data-v="cpu" aria-pressed="true">Computer</button><button type="button" data-v="local" aria-pressed="false">A friend here</button></div></div>
+					<div class="tu-field bl-f-seg bl-cpuonly"><span class="tu-label" id="bl-lv-l">Level</span>
+						<div class="tu-seg" id="bl-lv" role="group" aria-labelledby="bl-lv-l"><button type="button" data-v="easy" aria-pressed="false">Easy</button><button type="button" data-v="medium" aria-pressed="true">Medium</button><button type="button" data-v="hard" aria-pressed="false">Hard</button><button type="button" data-v="pro" aria-pressed="false">Pro</button></div></div>
+					<div class="tu-field bl-f-seg bl-cpuonly"><span class="tu-label" id="bl-me-l">Who breaks</span>
+						<div class="tu-seg" id="bl-me" role="group" aria-labelledby="bl-me-l"><button type="button" data-v="first" aria-pressed="true">Me</button><button type="button" data-v="second" aria-pressed="false">Computer</button><button type="button" data-v="alt" aria-pressed="false">Take turns</button></div></div>
+				</div>
+				<p class="bl-desc" id="bl-desc"></p>
+				<details class="bl-more" id="bl-more">
+					<summary>Options</summary>
+					<div class="bl-opts">
+						<div class="tu-field bl-f-seg"><span class="tu-label" id="bl-guide-l">Aiming guide</span>
+							<div class="tu-seg" id="bl-guide" role="group" aria-labelledby="bl-guide-l"><button type="button" data-v="full" aria-pressed="true">Full</button><button type="button" data-v="short" aria-pressed="false">Short</button><button type="button" data-v="off" aria-pressed="false">Off</button></div></div>
+						<div class="tu-field bl-f-seg"><span class="tu-label" id="bl-orient-l">Table</span>
+							<div class="tu-seg" id="bl-orient" role="group" aria-labelledby="bl-orient-l"><button type="button" data-v="auto" aria-pressed="true">Auto</button><button type="button" data-v="across" aria-pressed="false">Across</button><button type="button" data-v="upright" aria-pressed="false">Upright</button></div></div>
+						<div class="tu-field bl-f-seg"><span class="tu-label" id="bl-speed-l">Shot speed</span>
+							<div class="tu-seg" id="bl-speed" role="group" aria-labelledby="bl-speed-l"><button type="button" data-v="0.5" aria-pressed="false">Slow</button><button type="button" data-v="1" aria-pressed="true">Normal</button><button type="button" data-v="2" aria-pressed="false">Fast</button></div></div>
+						<div class="tu-field bl-f-seg"><span class="tu-label" id="bl-cloth-l">Cloth</span>
+							<div class="tu-seg" id="bl-cloth" role="group" aria-labelledby="bl-cloth-l"><button type="button" data-v="green" aria-pressed="true">Green</button><button type="button" data-v="blue" aria-pressed="false">Blue</button><button type="button" data-v="red" aria-pressed="false">Red</button><button type="button" data-v="grey" aria-pressed="false">Grey</button></div></div>
+						<div class="bl-checks">
+							<label><input type="checkbox" id="bl-snd" checked> Sound</label>
+							<label><input type="checkbox" id="bl-rel" checked> Let go of the power bar to shoot</label>
+							<label><input type="checkbox" id="bl-nums"> Big numbers on the balls</label>
+						</div>
+						<div class="tu-row bl-names bl-localonly">
+							<div class="tu-field"><label for="bl-n1">Player 1</label><input id="bl-n1" class="tu-input" maxlength="20" placeholder="Player 1"></div>
+							<div class="tu-field"><label for="bl-n2">Player 2</label><input id="bl-n2" class="tu-input" maxlength="20" placeholder="Player 2"></div>
+						</div>
+					</div>
+				</details>
+			</div>
+
+			<div class="bl-view" id="bl-view">
+				<div class="bl-vbar">
+					<div class="bl-players" id="bl-players" aria-live="polite"></div>
+					<span class="bl-vbtns" id="bl-pbar" role="group" aria-label="Game"><button type="button" class="bl-vb bl-vb--main" id="bl-new" title="Start a new game (N)">↺ New game</button><button type="button" class="bl-vb" id="bl-undo" title="Take back your last shot (U)">↶ Undo</button><button type="button" class="bl-vb" id="bl-replay" title="Watch the last shot again (R)">▶ Replay shot</button><button type="button" class="bl-vb" id="bl-hsave" hidden title="Write this game's shots and result to your Hive account (self-reported)">⬢ Save result to Hive</button></span>
+				</div>
+				<p class="bl-msg" id="bl-msg" role="status" aria-live="polite"></p>
+				<p class="bl-hsaved" id="bl-hsaved"></p>
+				<div class="bl-online-bar" id="bl-obar" hidden></div>
+				<div class="bl-stage" id="bl-stage">
+					<canvas id="bl-cv" class="bl-cv" tabindex="0" aria-label="Billiards table. Drag on the table to aim, use the power bar to shoot. Keys: left and right arrows aim, up and down set the power, Space shoots."></canvas>
+					<div class="bl-think" id="bl-think" hidden><span></span> The computer is thinking…</div>
+				</div>
+				<div class="bl-ctl" id="bl-ctl">
+					<div class="bl-spin" title="Where the cue hits the cue ball: top = follow, bottom = draw (back spin), sides = side spin. Double-click to centre.">
+						<canvas id="bl-spin" width="128" height="128" aria-label="Cue ball spin: drag the red dot. Keys W A S D move it, C centres it." tabindex="0"></canvas>
+						<span class="bl-spinl" id="bl-spinl">Centre</span>
+					</div>
+					<div class="bl-powwrap">
+						<div class="bl-powlab"><span>Power</span><b id="bl-powv">35%</b></div>
+						<div class="bl-pow" id="bl-pow" role="slider" tabindex="0" aria-label="Shot power" aria-valuemin="1" aria-valuemax="100" aria-valuenow="35"><div class="bl-powfill" id="bl-powfill"></div><div class="bl-powknob" id="bl-powknob"></div></div>
+						<div class="bl-aimrow">
+							<button type="button" class="bl-vb bl-fine" data-fine="-1" title="Aim a hair to the left (Left arrow; Shift = more)">⟲</button>
+							<span class="bl-aimv" id="bl-aimv">0.00°</span>
+							<button type="button" class="bl-vb bl-fine" data-fine="1" title="Aim a hair to the right (Right arrow; Shift = more)">⟳</button>
+						</div>
+					</div>
+					<button type="button" class="bl-shoot" id="bl-shoot" title="Take the shot (Space)">Shoot</button>
+				</div>
+			</div>
+			<p class="tu-note bl-keys">Drag on the table to aim (the further from the cue ball you drag, the finer the aim), then pull the power bar and let go. <span class="bl-bihnote">With ball in hand, drag the white ball to place it.</span> Keys: <kbd>←</kbd> <kbd>→</kbd> aim (<kbd>Shift</kbd> = bigger steps), <kbd>↑</kbd> <kbd>↓</kbd> power, <kbd>W</kbd> <kbd>A</kbd> <kbd>S</kbd> <kbd>D</kbd> spin, <kbd>Space</kbd> shoot, <kbd>R</kbd> replay, <kbd>U</kbd> undo, <kbd>N</kbd> new game, <kbd>F</kbd> full screen. Your games and settings stay in this browser.</p>
+		</section>
+
+		<section id="bl-p-online" role="tabpanel" aria-label="Play online" hidden>
+			<div class="tu-card">
+				<h2 class="bl-h">Play someone online as a guest</h2>
+				<p class="bl-sub">No account needed. Make a game and send the link to a friend, or pick an open game from the list below. Every shot is worked out by the same physics on mes.fm's server and in both browsers, so you both see exactly the same table.</p>
+				<div class="tu-row">
+					<div class="tu-field bl-f-name"><label for="bl-name">Your name</label><input id="bl-name" class="tu-input" maxlength="24" autocomplete="nickname" placeholder="Guest"></div>
+					<div class="tu-field bl-f-seg"><span class="tu-label" id="bl-ofirst-l">Who breaks</span>
+						<div class="tu-seg" id="bl-ofirst" role="group" aria-labelledby="bl-ofirst-l"><button type="button" data-v="host" aria-pressed="true">Me</button><button type="button" data-v="guest" aria-pressed="false">The other player</button><button type="button" data-v="random" aria-pressed="false">Random</button></div></div>
+				</div>
+				<label class="bl-chk"><input type="checkbox" id="bl-opub" checked> List my game under "Open games" so anyone can join</label>
+				<p class="bl-ogame">Game: <b id="bl-ovar"></b> <button type="button" class="bl-linkbtn" id="bl-ochange">change</button></p>
+				<p><button type="button" class="tu-btn tu-btn--primary" id="bl-ocreate">Make a guest game</button></p>
+			</div>
+			<div class="tu-card">
+				<div class="bl-lobhead"><h2 class="bl-h">Open games</h2><button type="button" class="tu-btn" id="bl-orefresh">↻ Refresh</button></div>
+				<div id="bl-lobby"><p class="bl-sub">Loading…</p></div>
+			</div>
+			<div class="tu-card bl-hive" id="bl-hive">
+				<h2 class="bl-h"><span class="bl-hivelogo" aria-hidden="true">⬢</span> Play on Hive</h2>
+				<p class="bl-sub">Every shot is signed with your Hive account (the Hive Keychain extension or the Keychain phone app) and kept on the Hive blockchain for good. No mes.fm server decides anything: both browsers read the shots from the chain and run them through the same physics, which is written so every browser gets exactly the same result, so the whole game and its result are public and can't be changed. A shot takes about 3 to 6 seconds to reach the other player and costs no HIVE (only a little of your account's free Resource Credits).</p>
+				<div id="bl-hlogin"></div>
+				<div id="bl-hmake" hidden>
+					<div class="tu-row">
+						<div class="tu-field bl-f-name"><label for="bl-hto">Challenge an account (optional)</label><input id="bl-hto" class="tu-input" maxlength="17" autocomplete="off" spellcheck="false" placeholder="@username, or leave empty"></div>
+					</div>
+					<p class="bl-ogame">Game: <b id="bl-hvar"></b> · who breaks: the setting above.</p>
+					<p><button type="button" class="tu-btn tu-btn--primary" id="bl-hcreate">Make a Hive game</button></p>
+					<p class="tu-note">Empty = an open game anyone on Hive can join from the list below (it stays open for an hour). With a name, only that account can join: send them the link.</p>
+				</div>
+				<div class="bl-lobhead"><h3 class="bl-h3">Open Hive games</h3><button type="button" class="tu-btn" id="bl-hrefresh">↻ Refresh</button></div>
+				<div id="bl-hlobby"><p class="bl-sub">Loading…</p></div>
+				<div id="bl-hminebox" hidden><h3 class="bl-h3">My Hive games</h3><div id="bl-hmine"></div></div>
+				<h3 class="bl-h3">Recently on Hive</h3>
+				<div id="bl-hrecent"><p class="bl-sub">Loading…</p></div>
+			</div>
+			<p class="tu-note">Guest online games are kept on mes.fm's server for a few hours, then deleted. Only the game itself and the names you type are stored. Hive games and saved results are public and permanent, like everything on Hive; mes.fm only keeps a short list of open and recent Hive games so players can find each other.</p>
+		</section>
+
+		<section id="bl-p-chal" role="tabpanel" aria-label="Challenges" hidden>
+			<p class="bl-sub">Set shots to practise the skills that win games: straight pots, cuts, banks, combinations, draw and follow. Pot the ball (or balls) within the shots allowed without the cue ball going in. Your best results stay in this browser.</p>
+			<div class="bl-chals" id="bl-chals"></div>
+		</section>
+
+		<section id="bl-p-stats" role="tabpanel" aria-label="Statistics" hidden>
+			<p class="tu-note">Kept in this browser only (nothing is uploaded), per game and level. Games left unfinished are not counted.</p>
+			<div id="bl-stats"></div>
+		</section>
+
+		<section id="bl-p-rules" role="tabpanel" aria-label="Rules and help" hidden>
+			<div id="bl-rules"></div>
+		</section>
+
+		<div class="tu-toast" id="bl-toast" role="status" aria-live="polite"></div>
+
+		<div class="tu-seo">
+{{SEO}}
+		</div>
+	</div>
